@@ -5,7 +5,16 @@ import gnu.getopt.Getopt;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
+import owl.core.connections.NoMatchFoundException;
+import owl.core.connections.SiftsConnection;
+import owl.core.connections.UniProtConnection;
+import owl.core.features.InvalidFeatureCoordinatesException;
+import owl.core.features.OverlappingFeatureException;
+import owl.core.features.SiftsFeature;
 import owl.core.runners.blast.BlastError;
 import owl.core.sequence.UniprotHomolog;
 import owl.core.sequence.UniprotHomologList;
@@ -15,6 +24,10 @@ import owl.core.structure.PdbCodeNotFoundError;
 import owl.core.structure.PdbLoadError;
 import owl.core.structure.PdbasePdb;
 import owl.core.util.MySQLConnection;
+import uk.ac.ebi.kraken.interfaces.uniprot.DatabaseType;
+import uk.ac.ebi.kraken.interfaces.uniprot.UniProtEntry;
+import uk.ac.ebi.kraken.interfaces.uniprot.dbx.embl.Embl;
+import uk.ac.ebi.kraken.uuw.services.remoting.EntryIterator;
 
 public class CRKMain {
 	
@@ -22,10 +35,13 @@ public class CRKMain {
 	
 	private static final String PDBASEDB = "pdbase";
 	
+	private static final String SIFTS_FILE = "/nfs/data/dbs/uniprot/current/pdb_chain_uniprot.lst";
+	
 	private static final String BLAST_BIN_DIR = "/usr/bin";
 	private static final String BLAST_DB_DIR = "/nfs/data/dbs/uniprot/current";
 	private static final String BLAST_DB = "uniprot_sprot.fasta";//"uniprot_all.fasta";
 	private static final int DEFAULT_BLAST_NUMTHREADS = 1;
+	
 
 	public static void main(String[] args) throws SQLException, PdbCodeNotFoundError, PdbLoadError, IOException, BlastError {
 		
@@ -83,6 +99,38 @@ public class CRKMain {
 		Pdb pdb = new PdbasePdb(pdbCode,PDBASEDB,conn);
 		pdb.load(pdbChainCode);
 		
+		SiftsConnection siftsConn = new SiftsConnection(SIFTS_FILE);
+		Collection<SiftsFeature> mappings = null;
+		try {
+			mappings = siftsConn.getMappings(pdbCode, pdbChainCode);		
+			for (SiftsFeature mapping:mappings) {
+				pdb.addFeature(mapping); 
+			}
+		} catch (NoMatchFoundException e) {
+			System.err.println(e.getMessage());
+			//TODO blast, find uniprot mapping and use it if one can be found
+		} catch (OverlappingFeatureException e1) {
+			System.err.println(e1.getMessage());
+			System.exit(1);
+		} catch (InvalidFeatureCoordinatesException e2){
+			System.err.println(e2.getMessage());
+			System.exit(1);			
+		}
+		
+		// 1) getting the uniprot ids corresponding to the query (the pdb sequence)
+		List<UniprotHomolog> queryMembers = new ArrayList<UniprotHomolog>();
+		for (SiftsFeature sifts:mappings) {
+			queryMembers.add(new UniprotHomolog(sifts.getUniprotId()));
+		}
+		System.out.println("Uniprot ids for the query ("+pdbCode+pdbChainCode+")");
+		for (UniprotHomolog queryMember:queryMembers) {
+			queryMember.retrieveUniprotKBData();
+			queryMember.retrieveEmblCdsSeqs();
+			System.out.println(queryMember.getUniId());
+		}
+
+		
+		// 2) getting the homologues and sequence data
 		UniprotHomologList homologs = new UniprotHomologList(pdbId, pdb.getSequence());
 		
 		System.out.println("Blasting...");
