@@ -11,23 +11,20 @@ import java.util.List;
 
 import owl.core.connections.NoMatchFoundException;
 import owl.core.connections.SiftsConnection;
-import owl.core.connections.UniProtConnection;
 import owl.core.features.InvalidFeatureCoordinatesException;
 import owl.core.features.OverlappingFeatureException;
 import owl.core.features.SiftsFeature;
+import owl.core.runners.TcoffeeError;
 import owl.core.runners.blast.BlastError;
 import owl.core.sequence.UniprotHomolog;
 import owl.core.sequence.UniprotHomologList;
 import owl.core.sequence.Sequence;
+import owl.core.sequence.alignment.MultipleSequenceAlignment;
 import owl.core.structure.Pdb;
 import owl.core.structure.PdbCodeNotFoundError;
 import owl.core.structure.PdbLoadError;
 import owl.core.structure.PdbasePdb;
 import owl.core.util.MySQLConnection;
-import uk.ac.ebi.kraken.interfaces.uniprot.DatabaseType;
-import uk.ac.ebi.kraken.interfaces.uniprot.UniProtEntry;
-import uk.ac.ebi.kraken.interfaces.uniprot.dbx.embl.Embl;
-import uk.ac.ebi.kraken.uuw.services.remoting.EntryIterator;
 
 public class CRKMain {
 	
@@ -41,6 +38,8 @@ public class CRKMain {
 	private static final String BLAST_DB_DIR = "/nfs/data/dbs/uniprot/current";
 	private static final String BLAST_DB = "uniprot_sprot.fasta";//"uniprot_all.fasta";
 	private static final int DEFAULT_BLAST_NUMTHREADS = 1;
+	
+	private static final File TCOFFE_BIN = new File("/usr/bin/t_coffee");
 	
 
 	public static void main(String[] args) throws SQLException, PdbCodeNotFoundError, PdbLoadError, IOException, BlastError {
@@ -142,21 +141,33 @@ public class CRKMain {
 		System.out.println("Retrieving EMBL cds sequences...");
 		homologs.retrieveEmblCdsSeqs();
 		
-		System.out.println("Summary:");
-		for (UniprotHomolog hom:homologs) {
-			System.out.printf("%s\t%5.1f",hom.getUniId(),hom.getPercentIdentity());
-			for (String id:hom.getTaxIds()){
-				System.out.print("\t"+id);
-			}
-			for (String emblCdsId:hom.getEmblCdsIds()) {
-				System.out.print("\t"+emblCdsId);
-			}
-			System.out.println();
-			for (Sequence seq:hom.getEmblCdsSeqs()) {
-				seq.writeToPrintStream(System.out);
-			}
-		}
+//		System.out.println("Summary:");
+//		for (UniprotHomolog hom:homologs) {
+//			System.out.printf("%s\t%5.1f",hom.getUniId(),hom.getPercentIdentity());
+//			for (String id:hom.getTaxIds()){
+//				System.out.print("\t"+id);
+//			}
+//			for (String emblCdsId:hom.getEmblCdsIds()) {
+//				System.out.print("\t"+emblCdsId);
+//			}
+//			System.out.println();
+//			for (Sequence seq:hom.getEmblCdsSeqs()) {
+//				seq.writeToPrintStream(System.out);
+//			}
+//		}
 		
+		// 3) alignment of the protein sequences using tcoffee
+		System.out.println("Aligning with t_coffee...");
+		MultipleSequenceAlignment aln = null;
+		try {
+			aln = homologs.getTcoffeeAlignment(TCOFFE_BIN);
+		} catch (TcoffeeError e) {
+			System.err.println("t_coffee failed to run");
+			System.err.println("Error: "+e.getMessage() );
+			System.exit(1);
+			
+		}
+		aln.printFasta();
 	}
 
 }
