@@ -4,23 +4,21 @@ import gnu.getopt.Getopt;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import owl.core.connections.NoMatchFoundException;
-import owl.core.connections.SiftsConnection;
-import owl.core.features.InvalidFeatureCoordinatesException;
-import owl.core.features.OverlappingFeatureException;
-import owl.core.features.SiftsFeature;
+import org.xml.sax.SAXException;
+
+import owl.core.connections.pisa.PisaConnection;
+import owl.core.connections.pisa.PisaInterface;
+import owl.core.connections.pisa.PisaMolecule;
+import owl.core.connections.pisa.PisaResidue;
+import owl.core.connections.pisa.PisaRimCore;
 import owl.core.runners.TcoffeeError;
 import owl.core.runners.blast.BlastError;
-import owl.core.sequence.UniprotHomolog;
-import owl.core.sequence.UniprotHomologList;
-//import owl.core.sequence.Sequence;
-import owl.core.sequence.alignment.MultipleSequenceAlignment;
 import owl.core.structure.Pdb;
 import owl.core.structure.PdbCodeNotFoundError;
 import owl.core.structure.PdbLoadError;
@@ -35,7 +33,7 @@ public class CRKMain {
 	
 	private static final String   SIFTS_FILE = "/nfs/data/dbs/uniprot/current/pdb_chain_uniprot.lst";
 	
-	private static final String   BLAST_BIN_DIR = "/usr/bin";
+	private static final String   BLAST_BIN_DIR = "/home/duarte_j/bin";
 	private static final String   BLAST_DB_DIR = "/nfs/data/dbs/uniprot/current";
 	private static final String   BLAST_DB = "uniprot_all.fasta"; //"uniprot_sprot.fasta";
 	private static final int      DEFAULT_BLAST_NUMTHREADS = 1;
@@ -45,10 +43,17 @@ public class CRKMain {
 	
 	private static final double   DEFAULT_IDENTITY_CUTOFF = 0.6;
 	
+	private static final String   PISA_INTERFACES_URL = "http://www.ebi.ac.uk/msd-srv/pisa/cgi-bin/interfaces.pisa?";
+	
+	// core assignment
+	private static final double   SOFT_CUTOFF_CA = 0.95;
+	private static final double   HARD_CUTOFF_CA = 0.82;
+	private static final double   RELAX_STEP_CA = 0.01;
+	private static final int      MIN_NUM_RES_CA = 6;
 
-	public static void main(String[] args) throws SQLException, PdbCodeNotFoundError, PdbLoadError, IOException, BlastError {
+	public static void main(String[] args) throws SQLException, PdbCodeNotFoundError, PdbLoadError, IOException, BlastError, TcoffeeError, SAXException {
 		
-		String pdbId = null;
+		String pdbCode = null;
 		double idCutoff = DEFAULT_IDENTITY_CUTOFF;
 		String baseName = null;
 		File outDir = new File(".");
@@ -69,7 +74,7 @@ public class CRKMain {
 		while ((c = g.getopt()) != -1) {
 			switch(c){
 			case 'i':
-				pdbId = g.getOptarg();
+				pdbCode = g.getOptarg();
 				break;
 			case 'd':
 				idCutoff = Double.parseDouble(g.getOptarg());
@@ -91,107 +96,109 @@ public class CRKMain {
 			}
 		}
 		
-		if (pdbId==null) {
+		if (pdbCode==null) {
 			System.err.println("Missing argument -i");
 			System.exit(1);
 		}
 		
 		if (baseName==null) {
-			baseName=pdbId;
+			baseName=pdbCode;
 		}
 
 		// files
 		
 		File alnFile = new File(outDir,baseName+".homologs.aln");
 		
-		// 1) getting the uniprot ids corresponding to the query (the pdb sequence)
+
 
 		MySQLConnection conn = new MySQLConnection();
 	
-		String pdbCode = pdbId.substring(0, 4);
-		String pdbChainCode = pdbId.substring(4,5);
-		
 		Pdb pdb = new PdbasePdb(pdbCode,PDBASEDB,conn);
-		pdb.load(pdbChainCode);
-		
-		SiftsConnection siftsConn = new SiftsConnection(SIFTS_FILE);
-		Collection<SiftsFeature> mappings = null;
-		try {
-			mappings = siftsConn.getMappings(pdbCode, pdbChainCode);		
-			for (SiftsFeature mapping:mappings) {
-				pdb.addFeature(mapping); 
-			}
-		} catch (NoMatchFoundException e) {
-			System.err.println(e.getMessage());
-			//TODO blast, find uniprot mapping and use it if one can be found
-		} catch (OverlappingFeatureException e1) {
-			System.err.println(e1.getMessage());
-			System.exit(1);
-		} catch (InvalidFeatureCoordinatesException e2){
-			System.err.println(e2.getMessage());
-			System.exit(1);			
-		}
-		
-		List<UniprotHomolog> queryMembers = new ArrayList<UniprotHomolog>();
-		for (SiftsFeature sifts:mappings) {
-			queryMembers.add(new UniprotHomolog(sifts.getUniprotId()));
-		}
-		System.out.println("Uniprot ids for the query ("+pdbCode+pdbChainCode+")");
-		for (UniprotHomolog queryMember:queryMembers) {
-			queryMember.retrieveUniprotKBData();
-			queryMember.retrieveEmblCdsSeqs();
-			System.out.println(queryMember.getUniId());
-		}
-
-		
-		// 2) getting the homologues and sequence data
-		UniprotHomologList homologs = new UniprotHomologList(pdbId, pdb.getSequence());
-		
-		System.out.println("Blasting...");
-		homologs.searchWithBlast(BLAST_BIN_DIR, BLAST_DB_DIR, BLAST_DB, blastNumThreads);
-		System.out.println(homologs.size()+" homologs found by blast");
-		
-		// applying identity cutoff
-		homologs.restrictToMinId(idCutoff);
-		System.out.println(homologs.size()+" homologs after applying "+String.format("%4.2f",idCutoff)+" identity cutoff");
-		
-		System.out.println("Looking up UniprotKB data...");
-		homologs.retrieveUniprotKBData();
-		
-		System.out.println("Retrieving EMBL cds sequences...");
-		homologs.retrieveEmblCdsSeqs();
-		
-//		System.out.println("Summary:");
-//		for (UniprotHomolog hom:homologs) {
-//			System.out.printf("%s\t%5.1f",hom.getUniId(),hom.getPercentIdentity());
-//			for (String id:hom.getTaxIds()){
-//				System.out.print("\t"+id);
-//			}
-//			for (String emblCdsId:hom.getEmblCdsIds()) {
-//				System.out.print("\t"+emblCdsId);
-//			}
-//			System.out.println();
-//			for (Sequence seq:hom.getEmblCdsSeqs()) {
-//				seq.writeToPrintStream(System.out);
-//			}
-//		}
-		
-		// 3) alignment of the protein sequences using tcoffee
-		System.out.println("Aligning protein sequences with t_coffee...");
-		MultipleSequenceAlignment aln = null;
-		try {
-			aln = homologs.getTcoffeeAlignment(TCOFFE_BIN, true);
-		} catch (TcoffeeError e) {
-			System.err.println("t_coffee failed to run");
-			System.err.println("Error: "+e.getMessage() );
-			System.exit(1);
+		String[] chains = pdb.getChains();
+		Map<String, List<String>> uniqSequences = new HashMap<String, List<String>>();
+		// finding the entities (groups of identical chains)
+		for (String chain:chains) {
 			
+			pdb.load(chain);
+			if (uniqSequences.containsKey(pdb.getSequence())) {
+				uniqSequences.get(pdb.getSequence()).add(chain);
+			} else {
+				List<String> list = new ArrayList<String>();
+				list.add(chain);
+				uniqSequences.put(pdb.getSequence(),list);
+			}		
 		}
-		// writing the alignment to file
-		aln.writeFasta(new PrintStream(alnFile), 80, TCOFFEE_VERYFAST_MODE);
+		System.out.println("Unique sequences for "+pdbCode+": ");
+		int i = 1;
+		for (List<String> entity:uniqSequences.values()) {
+			System.out.print(i+":");
+			for (String chain:entity) {
+				System.out.print(" "+chain);
+			}
+			System.out.println();
+		}
+		
+
+		Map<String,ChainEvolContext> allChains = new HashMap<String,ChainEvolContext>();
+		for (List<String> entity:uniqSequences.values()) {
+			String representativeChain = entity.get(0);
+			ChainEvolContext chainEvCont = new ChainEvolContext(new PdbasePdb(pdbCode,PDBASEDB,conn), representativeChain);
+			// 1) getting the uniprot ids corresponding to the query (the pdb sequence)
+			chainEvCont.retrieveQueryData(SIFTS_FILE);
+			// 2) getting the homologs and sequence data and creating multiple sequence alignment
+			chainEvCont.retrieveHomologs(BLAST_BIN_DIR, BLAST_DB_DIR, BLAST_DB, blastNumThreads, idCutoff);
+			// align
+			chainEvCont.align(TCOFFE_BIN, TCOFFEE_VERYFAST_MODE);
+			// writing the alignment to file
+			chainEvCont.writeAlignmentToFile(alnFile);
+
+			for (String chain:entity) {
+				allChains.put(chain,chainEvCont);
+			}
+		}
+		
+		
+		// 3) getting PISA interfaces description
+		PisaConnection pc = new PisaConnection(PISA_INTERFACES_URL, null, null);
+		List<String> pdbCodes = new ArrayList<String>();
+		pdbCodes.add(pdbCode);
+		List<PisaInterface> interfaces = pc.getInterfacesDescription(pdbCodes).get(pdbCode);
+		
+		for (PisaInterface pi:interfaces) {
+			PisaMolecule mol1 = pi.getFirstMolecule();
+			PisaRimCore rimcore1 = mol1.getRimAndCore(SOFT_CUTOFF_CA,HARD_CUTOFF_CA,RELAX_STEP_CA,MIN_NUM_RES_CA);
+			
+			PisaMolecule mol2 = pi.getSecondMolecule();
+			PisaRimCore rimcore2 = mol2.getRimAndCore(SOFT_CUTOFF_CA,HARD_CUTOFF_CA,RELAX_STEP_CA,MIN_NUM_RES_CA);
+			
+
+			System.out.println("## Interface "+pi.getId());
+			System.out.println("# First molecule "+mol1.getChainId());
+			if (rimcore1!=null) {
+				System.out.printf("bsa/asa cutoff used: %4.2f\n",rimcore1.getBsaToAsaCutoff());
+				System.out.println("Core: ");
+				System.out.println(rimcore1.getCoreResidues());
+				System.out.println("Rim: ");
+				System.out.println(rimcore1.getRimResidues());
+			} else {
+				System.out.println("No core within the cutoffs");
+			}
+			
+			System.out.println("# Second molecule "+mol2.getChainId());
+			if (rimcore2!=null) {			
+				System.out.printf("bsa/asa cutoff used: %4.1f\n",rimcore2.getBsaToAsaCutoff());
+				System.out.println("Core: ");
+				System.out.println(rimcore2.getCoreResidues());
+				System.out.println("Rim: ");
+				System.out.println(rimcore2.getRimResidues());
+			} else {
+				System.out.println("No core within the cutoffs");
+			}
+
+		}
 		
 		// 4) getting entropies and printing them
-		aln.printProfile(System.out, pdbId);
+		//aln.printProfile(System.out, pdbId);
 	}
 
 }
