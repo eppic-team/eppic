@@ -127,4 +127,12 @@ public class ChainEvolContext {
 	public void writeAlignmentToFile(File alnFile) throws FileNotFoundException {
 		aln.writeFasta(new PrintStream(alnFile), 80, true);
 	}
+	
+	public MultipleSequenceAlignment getAlignment() {
+		return aln;
+	}
+
+	public Pdb getPdb() {
+		return pdb;
+	}
 }

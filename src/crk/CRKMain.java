@@ -14,9 +14,6 @@ import org.xml.sax.SAXException;
 
 import owl.core.connections.pisa.PisaConnection;
 import owl.core.connections.pisa.PisaInterface;
-import owl.core.connections.pisa.PisaMolecule;
-import owl.core.connections.pisa.PisaResidue;
-import owl.core.connections.pisa.PisaRimCore;
 import owl.core.runners.TcoffeeError;
 import owl.core.runners.blast.BlastError;
 import owl.core.structure.Pdb;
@@ -50,6 +47,8 @@ public class CRKMain {
 	private static final double   HARD_CUTOFF_CA = 0.82;
 	private static final double   RELAX_STEP_CA = 0.01;
 	private static final int      MIN_NUM_RES_CA = 6;
+	
+	private static final double   CUTOFF_ASA_INTERFACE_REPORTING = 400;
 
 	public static void main(String[] args) throws SQLException, PdbCodeNotFoundError, PdbLoadError, IOException, BlastError, TcoffeeError, SAXException {
 		
@@ -136,6 +135,7 @@ public class CRKMain {
 				System.out.print(" "+chain);
 			}
 			System.out.println();
+			i++;
 		}
 		
 
@@ -164,41 +164,33 @@ public class CRKMain {
 		pdbCodes.add(pdbCode);
 		List<PisaInterface> interfaces = pc.getInterfacesDescription(pdbCodes).get(pdbCode);
 		
+		// 4) scoring
 		for (PisaInterface pi:interfaces) {
-			PisaMolecule mol1 = pi.getFirstMolecule();
-			PisaRimCore rimcore1 = mol1.getRimAndCore(SOFT_CUTOFF_CA,HARD_CUTOFF_CA,RELAX_STEP_CA,MIN_NUM_RES_CA);
-			
-			PisaMolecule mol2 = pi.getSecondMolecule();
-			PisaRimCore rimcore2 = mol2.getRimAndCore(SOFT_CUTOFF_CA,HARD_CUTOFF_CA,RELAX_STEP_CA,MIN_NUM_RES_CA);
-			
+			if (pi.getInterfaceArea()>CUTOFF_ASA_INTERFACE_REPORTING) {
+				ArrayList<ChainEvolContext> chainsEvCs = new ArrayList<ChainEvolContext>();
+				chainsEvCs.add(allChains.get(pi.getFirstMolecule().getChainId()));
+				chainsEvCs.add(allChains.get(pi.getSecondMolecule().getChainId()));
+				InterfaceEvolContext iec = new InterfaceEvolContext(pi, chainsEvCs);
+				
+				// entropy scoring
+				InterfaceScore scoreNW = iec.scoreEntropy(SOFT_CUTOFF_CA, HARD_CUTOFF_CA, RELAX_STEP_CA, MIN_NUM_RES_CA,false);
+				InterfaceScore scoreW = iec.scoreEntropy(SOFT_CUTOFF_CA, HARD_CUTOFF_CA, RELAX_STEP_CA, MIN_NUM_RES_CA,true);
 
-			System.out.println("## Interface "+pi.getId());
-			System.out.println("# First molecule "+mol1.getChainId());
-			if (rimcore1!=null) {
-				System.out.printf("bsa/asa cutoff used: %4.2f\n",rimcore1.getBsaToAsaCutoff());
-				System.out.println("Core: ");
-				System.out.println(rimcore1.getCoreResidues());
-				System.out.println("Rim: ");
-				System.out.println(rimcore1.getRimResidues());
-			} else {
-				System.out.println("No core within the cutoffs");
+				System.out.println("Interface "+pi.getId()+": "+pi.getFirstMolecule().getChainId()+" "+pi.getSecondMolecule().getChainId());
+				System.out.printf("%45s\t%45s\n","non-weighted","weighted");
+				
+				scoreNW.printHeader(System.out);
+				System.out.print("\t");
+				scoreW.printHeader(System.out);
+				System.out.println();
+				scoreNW.printTabular(System.out);
+				System.out.print("\t");
+				scoreW.printTabular(System.out);
+				System.out.println();
 			}
 			
-			System.out.println("# Second molecule "+mol2.getChainId());
-			if (rimcore2!=null) {			
-				System.out.printf("bsa/asa cutoff used: %4.1f\n",rimcore2.getBsaToAsaCutoff());
-				System.out.println("Core: ");
-				System.out.println(rimcore2.getCoreResidues());
-				System.out.println("Rim: ");
-				System.out.println(rimcore2.getRimResidues());
-			} else {
-				System.out.println("No core within the cutoffs");
-			}
-
 		}
 		
-		// 4) getting entropies and printing them
-		//aln.printProfile(System.out, pdbId);
 	}
 
 }
