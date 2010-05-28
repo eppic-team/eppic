@@ -106,7 +106,7 @@ public class CRKMain {
 
 		// files
 		
-		File alnFile = new File(outDir,baseName+".homologs.aln");
+		File alnFileBase = new File(outDir,baseName);
 		
 
 
@@ -150,7 +150,7 @@ public class CRKMain {
 			// align
 			chainEvCont.align(TCOFFE_BIN, TCOFFEE_VERYFAST_MODE);
 			// writing the alignment to file
-			chainEvCont.writeAlignmentToFile(alnFile);
+			chainEvCont.writeAlignmentToFile(new File(alnFileBase+"."+pdbCode+representativeChain+".aln"));
 
 			for (String chain:entity) {
 				allChains.put(chain,chainEvCont);
@@ -176,7 +176,7 @@ public class CRKMain {
 				InterfaceScore scoreNW = iec.scoreEntropy(SOFT_CUTOFF_CA, HARD_CUTOFF_CA, RELAX_STEP_CA, MIN_NUM_RES_CA,false);
 				InterfaceScore scoreW = iec.scoreEntropy(SOFT_CUTOFF_CA, HARD_CUTOFF_CA, RELAX_STEP_CA, MIN_NUM_RES_CA,true);
 
-				System.out.println("Interface "+pi.getId()+": "+pi.getFirstMolecule().getChainId()+" "+pi.getSecondMolecule().getChainId());
+				System.out.println("Interface "+pi.getId()+": "+pi.getFirstMolecule().getChainId()+" "+pi.getSecondMolecule().getChainId()+", area: "+String.format("%6.1f", pi.getInterfaceArea()));
 				System.out.printf("%45s\t%45s\n","non-weighted","weighted");
 				
 				scoreNW.printHeader(System.out);
