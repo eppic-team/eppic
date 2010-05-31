@@ -7,6 +7,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.sql.SQLException;
@@ -113,7 +114,6 @@ public class CRKMain {
 
 		// files
 		
-		File alnFileBase = new File(outDir,baseName);
 		File cifFile = getCifFile(pdbCode, ONLINE, outDir);
 		Pdb pdb = new CiffilePdb(cifFile);
 		String[] chains = pdb.getChains();
@@ -152,8 +152,16 @@ public class CRKMain {
 			chainEvCont.retrieveHomologs(BLAST_BIN_DIR, BLAST_DB_DIR, BLAST_DB, blastNumThreads, idCutoff);
 			// align
 			chainEvCont.align(TCOFFE_BIN, TCOFFEE_VERYFAST_MODE);
+			
+			// printing summary to file
+			PrintStream log = new PrintStream(new File(outDir,baseName+"."+pdbCode+representativeChain+".log"));
+			chainEvCont.printSummary(log);
+			log.close();
 			// writing the alignment to file
-			chainEvCont.writeAlignmentToFile(new File(alnFileBase+"."+pdbCode+representativeChain+".aln"));
+			chainEvCont.writeAlignmentToFile(new File(outDir,baseName+"."+pdbCode+representativeChain+".aln"));
+			PrintStream entLog = new PrintStream(new File(outDir,baseName+"."+pdbCode+representativeChain+".entropies"));
+			chainEvCont.printEntropies(entLog);
+			entLog.close();
 
 			for (String chain:entity) {
 				allChains.put(chain,chainEvCont);
@@ -166,8 +174,17 @@ public class CRKMain {
 		List<String> pdbCodes = new ArrayList<String>();
 		pdbCodes.add(pdbCode);
 		List<PisaInterface> interfaces = pc.getInterfacesDescription(pdbCodes).get(pdbCode);
+		PrintStream pisaLogPS = new PrintStream(new File(outDir,baseName+".pisa.interfaces"));
+		for (PisaInterface pi:interfaces) {
+			pisaLogPS.println("Interfaces for "+pdbCode);
+			pi.printTabular(pisaLogPS);
+		}
+		pisaLogPS.close();
 		
 		// 4) scoring
+		PrintStream scorePS = new PrintStream(new File(outDir,baseName+".scores"));
+		printScoringHeaders(System.out);
+		printScoringHeaders(scorePS);
 		for (PisaInterface pi:interfaces) {
 			if (pi.getInterfaceArea()>CUTOFF_ASA_INTERFACE_REPORTING) {
 				ArrayList<ChainEvolContext> chainsEvCs = new ArrayList<ChainEvolContext>();
@@ -178,22 +195,33 @@ public class CRKMain {
 				// entropy scoring
 				InterfaceScore scoreNW = iec.scoreEntropy(SOFT_CUTOFF_CA, HARD_CUTOFF_CA, RELAX_STEP_CA, MIN_NUM_RES_CA,false);
 				InterfaceScore scoreW = iec.scoreEntropy(SOFT_CUTOFF_CA, HARD_CUTOFF_CA, RELAX_STEP_CA, MIN_NUM_RES_CA,true);
-
-				System.out.println("Interface "+pi.getId()+": "+pi.getFirstMolecule().getChainId()+" "+pi.getSecondMolecule().getChainId()+", area: "+String.format("%6.1f", pi.getInterfaceArea()));
-				System.out.printf("%45s\t%45s\n","non-weighted","weighted");
 				
-				scoreNW.printHeader(System.out);
-				System.out.print("\t");
-				scoreW.printHeader(System.out);
-				System.out.println();
-				scoreNW.printTabular(System.out);
-				System.out.print("\t");
-				scoreW.printTabular(System.out);
-				System.out.println();
+				printScores(System.out, pi, scoreNW, scoreW);
+				printScores(scorePS, pi, scoreNW, scoreW);
 			}
 			
 		}
+		scorePS.close();
+	}
+	
+	private static void printScoringHeaders(PrintStream ps) {
+		ps.printf("%15s\t%6s\t","interface","area");
+		InterfaceScore.printHeader(ps);
+		ps.print("\t");
+		InterfaceScore.printHeader(ps);
+		ps.println();
+		//ps.printf("%45s\t%45s\n","non-weighted","weighted");		
+	}
+	
+	private static void printScores(PrintStream ps, PisaInterface pi, InterfaceScore scoreNW, InterfaceScore scoreW) {
+		ps.printf("%15s\t%6.1f",
+				pi.getId()+"("+pi.getFirstMolecule().getChainId()+"+"+pi.getSecondMolecule().getChainId()+")",
+				pi.getInterfaceArea());
 		
+		scoreNW.printTabular(ps);
+		ps.print("\t");
+		scoreW.printTabular(ps);
+		ps.println();		
 	}
 	
 	private static File getCifFile(String pdbCode, boolean online, File outDir) {

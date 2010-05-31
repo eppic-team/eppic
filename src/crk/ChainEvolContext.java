@@ -135,4 +135,32 @@ public class ChainEvolContext {
 	public Pdb getPdb() {
 		return pdb;
 	}
+	
+	public void printSummary(PrintStream ps) {
+		ps.println("Query: "+pdb.getPdbCode()+pdbChainCode);
+		ps.println("Uniprot ids for query:");
+		for (UniprotHomolog hom:queryData) {
+			ps.print(hom.getUniId()+" (");
+			for (String emblcdsid: hom.getEmblCdsIds()) {
+				ps.print(" "+emblcdsid);
+			}
+			ps.println(" )");
+		}
+		ps.println();
+		ps.println("Homologs: "+homologs.size()+" at "+String.format("%3.1f",homologs.getIdCutoff())+" identity cut-off");
+		for (UniprotHomolog hom:homologs) {
+			ps.print(hom.getUniId()+" (");
+			for (String emblcdsid: hom.getEmblCdsIds()) {
+				ps.print(" "+emblcdsid);
+			}
+			ps.println(" )");
+			
+		}
+	}
+	
+	public void printEntropies(PrintStream ps) {
+		for (int i=1;i<=this.aln.getAlignmentLength();i++) {
+			ps.printf("%4d\t%5.2f\n",i,this.aln.getColumnEntropy(i));
+		}
+	}
 }

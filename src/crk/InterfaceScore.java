@@ -100,16 +100,16 @@ public class InterfaceScore {
 	
 	public void printTabular(PrintStream ps) {
 		ps.printf("%5d\t%5.2f\t%5.2f\t%5.2f\t%5.2f\t%5d\t%5.2f\t%5.2f\t%5.2f\t%5.2f\t%5.2f",
-				this.rimCore1.getCoreSize(),this.rimCore1.getBsaToAsaCutoff(),
+				(rimCore1==null)?0:this.rimCore1.getCoreSize(),(rimCore1==null)?0:this.rimCore1.getBsaToAsaCutoff(),
 				this.getScoreCore1(),this.getScoreRim1(),
 				this.getRatio1(),
-				this.rimCore2.getCoreSize(),this.rimCore2.getBsaToAsaCutoff(),
+				(rimCore2==null)?0:this.rimCore2.getCoreSize(),(rimCore2==null)?0:this.rimCore2.getBsaToAsaCutoff(),
 				this.getScoreCore2(),this.getScoreRim2(),
 				this.getRatio2(),
 				this.getAvrgRatio());
 	}
 
-	public void printHeader(PrintStream ps) {
+	public static void printHeader(PrintStream ps) {
 		ps.printf("%5s\t%5s\t%5s\t%5s\t%5s\t%5s\t%5s\t%5s\t%5s\t%5s\t%5s",
 				"size1","CA1","core1","rim1","rat1","size2","CA2","core2","rim2","rat2","avrg");
 

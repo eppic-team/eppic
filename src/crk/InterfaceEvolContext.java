@@ -32,7 +32,7 @@ public class InterfaceEvolContext {
 		PisaRimCore rimCore1 = null;
 		PisaRimCore rimCore2 = null;
 		
-		if ((firstMolecule.getMolClass().equals(PisaMolecule.CLASS_PROTEIN)) && (secondMolecule.getMolClass().equals(PisaMolecule.CLASS_PROTEIN))) {
+		if ((firstMolecule.isProtein()) && (secondMolecule.isProtein())) {
 			Map<Integer,PisaRimCore> rimcores = this.pisaInterf.getRimAndCore(bsaToAsaSoftCutoff, bsaToAsaHardCutoff, relaxationStep, minNumResidues);
 			rimCore1 = rimcores.get(1);
 			rimCore2 = rimcores.get(2);
@@ -42,19 +42,21 @@ public class InterfaceEvolContext {
 			coreEnt2 = getEntropy(rimCore2.getCoreResidues(), chains.get(1).getAlignment(), chains.get(1).getPdb(),weighted);
 
 		} else {
-			if (firstMolecule.getMolClass().equals(PisaMolecule.CLASS_PROTEIN)){
+			if (firstMolecule.isProtein()){
 				rimCore1 = firstMolecule.getRimAndCore(bsaToAsaSoftCutoff, bsaToAsaHardCutoff, relaxationStep, minNumResidues);			
 				rimEnt1 = getEntropy(rimCore1.getRimResidues(), chains.get(0).getAlignment(), chains.get(0).getPdb(),weighted);
 				coreEnt1 = getEntropy(rimCore1.getCoreResidues(), chains.get(0).getAlignment(), chains.get(0).getPdb(),weighted);
 			}
-			if (secondMolecule.getMolClass().equals(PisaMolecule.CLASS_PROTEIN)) {
+			if (secondMolecule.isProtein()) {
 				rimCore2 = pisaInterf.getSecondMolecule().getRimAndCore(bsaToAsaSoftCutoff, bsaToAsaHardCutoff, relaxationStep, minNumResidues);
 				rimEnt2 = getEntropy(rimCore2.getRimResidues(), chains.get(1).getAlignment(), chains.get(1).getPdb(),weighted);
 				coreEnt2 = getEntropy(rimCore2.getCoreResidues(), chains.get(1).getAlignment(), chains.get(1).getPdb(),weighted);
 			}
 		}
-		
-		if (rimCore1.getCoreSize()+rimCore2.getCoreSize()<minNumResidues) {
+		int totalCoreResidues = 0;
+		if (firstMolecule.isProtein()) totalCoreResidues+=rimCore1.getCoreSize();
+		if (secondMolecule.isProtein()) totalCoreResidues+=rimCore2.getCoreSize();
+		if (totalCoreResidues<minNumResidues) {
 			rimEnt1 = Double.NaN;
 			coreEnt1 = Double.NaN;
 			rimEnt2 = Double.NaN;
