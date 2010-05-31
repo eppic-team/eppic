@@ -23,36 +23,27 @@ public class InterfaceEvolContext {
 		this.firstMolecule = pisaInterf.getFirstMolecule();
 		this.secondMolecule = pisaInterf.getSecondMolecule();
 	}
-	
+
 	public InterfaceScore scoreEntropy(double bsaToAsaSoftCutoff, double bsaToAsaHardCutoff, double relaxationStep, int minNumResidues, boolean weighted) {
-		double rimEnt1 = 0;
-		double coreEnt1 = 0;
-		double rimEnt2 = 0;
-		double coreEnt2 = 0;
+		double rimEnt1 = Double.NaN;
+		double coreEnt1 = Double.NaN;
+		double rimEnt2 = Double.NaN;
+		double coreEnt2 = Double.NaN;
 		PisaRimCore rimCore1 = null;
 		PisaRimCore rimCore2 = null;
 		
-		if ((firstMolecule.isProtein()) && (secondMolecule.isProtein())) {
-			Map<Integer,PisaRimCore> rimcores = this.pisaInterf.getRimAndCore(bsaToAsaSoftCutoff, bsaToAsaHardCutoff, relaxationStep, minNumResidues);
-			rimCore1 = rimcores.get(1);
-			rimCore2 = rimcores.get(2);
+		Map<Integer,PisaRimCore> rimcores = this.pisaInterf.getRimAndCore(bsaToAsaSoftCutoff, bsaToAsaHardCutoff, relaxationStep, minNumResidues);
+		rimCore1 = rimcores.get(1);
+		rimCore2 = rimcores.get(2);
+		if (rimCore1 != null) {
 			rimEnt1 = getEntropy(rimCore1.getRimResidues(), chains.get(0).getAlignment(), chains.get(0).getPdb(),weighted);
 			coreEnt1 = getEntropy(rimCore1.getCoreResidues(), chains.get(0).getAlignment(), chains.get(0).getPdb(),weighted);
+		}
+		if (rimCore2 != null) {
 			rimEnt2 = getEntropy(rimCore2.getRimResidues(), chains.get(1).getAlignment(), chains.get(1).getPdb(),weighted);
 			coreEnt2 = getEntropy(rimCore2.getCoreResidues(), chains.get(1).getAlignment(), chains.get(1).getPdb(),weighted);
-
-		} else {
-			if (firstMolecule.isProtein()){
-				rimCore1 = firstMolecule.getRimAndCore(bsaToAsaSoftCutoff, bsaToAsaHardCutoff, relaxationStep, minNumResidues);			
-				rimEnt1 = getEntropy(rimCore1.getRimResidues(), chains.get(0).getAlignment(), chains.get(0).getPdb(),weighted);
-				coreEnt1 = getEntropy(rimCore1.getCoreResidues(), chains.get(0).getAlignment(), chains.get(0).getPdb(),weighted);
-			}
-			if (secondMolecule.isProtein()) {
-				rimCore2 = pisaInterf.getSecondMolecule().getRimAndCore(bsaToAsaSoftCutoff, bsaToAsaHardCutoff, relaxationStep, minNumResidues);
-				rimEnt2 = getEntropy(rimCore2.getRimResidues(), chains.get(1).getAlignment(), chains.get(1).getPdb(),weighted);
-				coreEnt2 = getEntropy(rimCore2.getCoreResidues(), chains.get(1).getAlignment(), chains.get(1).getPdb(),weighted);
-			}
 		}
+
 		int totalCoreResidues = 0;
 		if (firstMolecule.isProtein()) totalCoreResidues+=rimCore1.getCoreSize();
 		if (secondMolecule.isProtein()) totalCoreResidues+=rimCore2.getCoreSize();
@@ -62,8 +53,6 @@ public class InterfaceEvolContext {
 			rimEnt2 = Double.NaN;
 			coreEnt2 = Double.NaN;
 		}
-
-		
 		
 		return new InterfaceScore(rimCore1, rimCore2, coreEnt1, rimEnt1, coreEnt2, rimEnt2);
 	}

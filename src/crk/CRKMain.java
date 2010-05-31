@@ -206,6 +206,8 @@ public class CRKMain {
 	
 	private static void printScoringHeaders(PrintStream ps) {
 		ps.printf("%15s\t%6s\t","interface","area");
+		InterfaceScore.printRimAndCoreHeader(ps);
+		ps.print("\t");
 		InterfaceScore.printHeader(ps);
 		ps.print("\t");
 		InterfaceScore.printHeader(ps);
@@ -217,7 +219,8 @@ public class CRKMain {
 		ps.printf("%15s\t%6.1f",
 				pi.getId()+"("+pi.getFirstMolecule().getChainId()+"+"+pi.getSecondMolecule().getChainId()+")",
 				pi.getInterfaceArea());
-		
+		scoreNW.printRimAndCoreInfo(ps);
+		ps.print("\t");
 		scoreNW.printTabular(ps);
 		ps.print("\t");
 		scoreW.printTabular(ps);
