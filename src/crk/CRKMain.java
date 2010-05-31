@@ -3,12 +3,18 @@ package crk;
 import gnu.getopt.Getopt;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.net.URLConnection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.zip.GZIPInputStream;
 
 import org.xml.sax.SAXException;
 
@@ -16,17 +22,18 @@ import owl.core.connections.pisa.PisaConnection;
 import owl.core.connections.pisa.PisaInterface;
 import owl.core.runners.TcoffeeError;
 import owl.core.runners.blast.BlastError;
+import owl.core.structure.CiffilePdb;
 import owl.core.structure.Pdb;
 import owl.core.structure.PdbCodeNotFoundError;
 import owl.core.structure.PdbLoadError;
-import owl.core.structure.PdbasePdb;
-import owl.core.util.MySQLConnection;
 
 public class CRKMain {
 	
 	private static final String   PROGRAM_NAME = "crk";
 	
-	private static final String   PDBASEDB = "pdbase";
+	private static final String   LOCAL_CIF_DIR = "/nfs/data/dbs/pdb/data/structures/all/mmCIF";
+	private static final String   PDB_FTP_CIF_URL = "ftp://ftp.wwpdb.org/pub/pdb/data/structures/all/mmCIF/";
+	private static final boolean  ONLINE = false;
 	
 	private static final String   SIFTS_FILE = "/nfs/data/dbs/uniprot/current/pdb_chain_uniprot.lst";
 	
@@ -107,12 +114,8 @@ public class CRKMain {
 		// files
 		
 		File alnFileBase = new File(outDir,baseName);
-		
-
-
-		MySQLConnection conn = new MySQLConnection();
-	
-		Pdb pdb = new PdbasePdb(pdbCode,PDBASEDB,conn);
+		File cifFile = getCifFile(pdbCode, ONLINE, outDir);
+		Pdb pdb = new CiffilePdb(cifFile);
 		String[] chains = pdb.getChains();
 		Map<String, List<String>> uniqSequences = new HashMap<String, List<String>>();
 		// finding the entities (groups of identical chains)
@@ -142,7 +145,7 @@ public class CRKMain {
 		Map<String,ChainEvolContext> allChains = new HashMap<String,ChainEvolContext>();
 		for (List<String> entity:uniqSequences.values()) {
 			String representativeChain = entity.get(0);
-			ChainEvolContext chainEvCont = new ChainEvolContext(new PdbasePdb(pdbCode,PDBASEDB,conn), representativeChain);
+			ChainEvolContext chainEvCont = new ChainEvolContext(new CiffilePdb(cifFile), representativeChain);
 			// 1) getting the uniprot ids corresponding to the query (the pdb sequence)
 			chainEvCont.retrieveQueryData(SIFTS_FILE);
 			// 2) getting the homologs and sequence data and creating multiple sequence alignment
@@ -191,6 +194,52 @@ public class CRKMain {
 			
 		}
 		
+	}
+	
+	private static File getCifFile(String pdbCode, boolean online, File outDir) {
+		File cifFile = new File(outDir,pdbCode + ".cif");
+		String gzCifFileName = pdbCode+".cif.gz";
+		File gzCifFile = null;
+		if (!online) {	
+			gzCifFile = new File(LOCAL_CIF_DIR,gzCifFileName);
+		} else {
+			gzCifFile = new File(outDir, gzCifFileName);
+			try {
+				System.out.println("Downloading cif file from ftp...");
+				// getting gzipped cif file from ftp
+				URL url = new URL(PDB_FTP_CIF_URL+gzCifFileName);
+				URLConnection urlc = url.openConnection();
+				InputStream is = urlc.getInputStream();
+				FileOutputStream os = new FileOutputStream(gzCifFile);
+				int b;
+				while ( (b=is.read())!=-1) {
+					os.write(b);
+				}
+				is.close();
+				os.close();
+			} catch (IOException e) {
+				System.err.println("Couldn't get "+gzCifFileName+" file from ftp.");
+				System.err.println(e.getMessage());
+				System.exit(1);
+			}
+		} 
+
+		// unzipping file
+		try {
+			GZIPInputStream zis = new GZIPInputStream(new FileInputStream(gzCifFile));
+			FileOutputStream os = new FileOutputStream(cifFile);
+			int b;
+			while ( (b=zis.read())!=-1) {
+				os.write(b);
+			}
+			zis.close();
+			os.close();
+		} catch (IOException e) {
+			System.err.println("Couldn't uncompress "+gzCifFile+" file into "+cifFile);
+			System.err.println(e.getMessage());
+			System.exit(1);
+		}
+		return cifFile;
 	}
 
 }
