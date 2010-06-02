@@ -24,7 +24,7 @@ public class InterfaceEvolContext {
 		this.secondMolecule = pisaInterf.getSecondMolecule();
 	}
 
-	public InterfaceScore scoreEntropy(double bsaToAsaSoftCutoff, double bsaToAsaHardCutoff, double relaxationStep, int minNumResidues, boolean weighted) {
+	public InterfaceScore scoreEntropy(double bsaToAsaSoftCutoff, double bsaToAsaHardCutoff, double relaxationStep, int minNumResidues, boolean weighted, int reducedAlphabet) {
 		double rimEnt1 = Double.NaN;
 		double coreEnt1 = Double.NaN;
 		double rimEnt2 = Double.NaN;
@@ -36,12 +36,12 @@ public class InterfaceEvolContext {
 		rimCore1 = rimcores.get(1);
 		rimCore2 = rimcores.get(2);
 		if (rimCore1 != null) {
-			rimEnt1 = getEntropy(rimCore1.getRimResidues(), chains.get(0).getAlignment(), chains.get(0).getPdb(),weighted);
-			coreEnt1 = getEntropy(rimCore1.getCoreResidues(), chains.get(0).getAlignment(), chains.get(0).getPdb(),weighted);
+			rimEnt1 = getEntropy(rimCore1.getRimResidues(), chains.get(0).getAlignment(), chains.get(0).getPdb(),weighted, reducedAlphabet);
+			coreEnt1 = getEntropy(rimCore1.getCoreResidues(), chains.get(0).getAlignment(), chains.get(0).getPdb(),weighted, reducedAlphabet);
 		}
 		if (rimCore2 != null) {
-			rimEnt2 = getEntropy(rimCore2.getRimResidues(), chains.get(1).getAlignment(), chains.get(1).getPdb(),weighted);
-			coreEnt2 = getEntropy(rimCore2.getCoreResidues(), chains.get(1).getAlignment(), chains.get(1).getPdb(),weighted);
+			rimEnt2 = getEntropy(rimCore2.getRimResidues(), chains.get(1).getAlignment(), chains.get(1).getPdb(),weighted, reducedAlphabet);
+			coreEnt2 = getEntropy(rimCore2.getCoreResidues(), chains.get(1).getAlignment(), chains.get(1).getPdb(),weighted, reducedAlphabet);
 		}
 
 		int totalCoreResidues = 0;
@@ -61,7 +61,7 @@ public class InterfaceEvolContext {
 		return 0;
 	}
 	
-	private double getEntropy(List<PisaResidue> residues, MultipleSequenceAlignment aln, Pdb pdb, boolean weighted) {
+	private double getEntropy(List<PisaResidue> residues, MultipleSequenceAlignment aln, Pdb pdb, boolean weighted, int reducedAlphabet) {
 		double totalEnt = 0.0;
 		double totalWeight = 0.0;
 		for (PisaResidue res:residues){
@@ -70,7 +70,7 @@ public class InterfaceEvolContext {
 			if (weighted) {
 				weight = res.getBsa();
 			}
-			totalEnt += weight*(aln.getColumnEntropy(aln.seq2al(pdb.getPdbCode()+pdb.getPdbChainCode(), resSer)));
+			totalEnt += weight*(aln.getColumnEntropy(aln.seq2al(pdb.getPdbCode()+pdb.getPdbChainCode(), resSer),reducedAlphabet));
 			totalWeight += weight;
 		}
 		return totalEnt/totalWeight;

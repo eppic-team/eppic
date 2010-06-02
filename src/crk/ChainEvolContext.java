@@ -158,9 +158,9 @@ public class ChainEvolContext {
 		}
 	}
 	
-	public void printEntropies(PrintStream ps) {
+	public void printEntropies(PrintStream ps, int reducedAlphabet) {
 		for (int i=1;i<=this.aln.getAlignmentLength();i++) {
-			ps.printf("%4d\t%5.2f\n",i,this.aln.getColumnEntropy(i));
+			ps.printf("%4d\t%5.2f\n",i,this.aln.getColumnEntropy(i,reducedAlphabet));
 		}
 	}
 }

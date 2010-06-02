@@ -27,6 +27,7 @@ import owl.core.structure.CiffilePdb;
 import owl.core.structure.Pdb;
 import owl.core.structure.PdbCodeNotFoundError;
 import owl.core.structure.PdbLoadError;
+import owl.core.structure.AminoAcid;
 
 public class CRKMain {
 	
@@ -57,7 +58,21 @@ public class CRKMain {
 	private static final int      MIN_NUM_RES_CA = 6;
 	
 	private static final double   CUTOFF_ASA_INTERFACE_REPORTING = 400;
+	
+	// entropy calculation
+	private static final int      DEFAULT_ALPHABET = 20;
 
+	/**
+	 * 
+	 * @param args
+	 * @throws SQLException
+	 * @throws PdbCodeNotFoundError
+	 * @throws PdbLoadError
+	 * @throws IOException
+	 * @throws BlastError
+	 * @throws TcoffeeError
+	 * @throws SAXException
+	 */
 	public static void main(String[] args) throws SQLException, PdbCodeNotFoundError, PdbLoadError, IOException, BlastError, TcoffeeError, SAXException {
 		
 		String pdbCode = null;
@@ -65,6 +80,7 @@ public class CRKMain {
 		String baseName = null;
 		File outDir = new File(".");
 		int blastNumThreads = DEFAULT_BLAST_NUMTHREADS;
+		int reducedAlphabet = DEFAULT_ALPHABET;
 
 		String help = "Usage: \n" +
 		PROGRAM_NAME+"\n" +
@@ -73,10 +89,12 @@ public class CRKMain {
 		"         default: "+String.format("%3.1f",DEFAULT_IDENTITY_CUTOFF)+"\n"+
 		"  [-a]:  number of threads for blast. Default: "+DEFAULT_BLAST_NUMTHREADS+"\n"+
 		"  [-b]:  basename for output files. Default: PDB code \n"+
-		"  [-o]:  output dir, where output files will be written. Default: current dir \n\n";
+		"  [-o]:  output dir, where output files will be written. Default: current dir \n" +
+		"  [-r]:  specify the number of groups of aminoacids (reduced alphabet) to be used.\n" +
+		"         Valid values are 2, 4, 6, 8, 10, 15 and 20. Default: "+DEFAULT_ALPHABET+"\n\n";
 
 
-		Getopt g = new Getopt(PROGRAM_NAME, args, "i:d:a:b:o:h?");
+		Getopt g = new Getopt(PROGRAM_NAME, args, "i:d:a:b:o:r:h?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
@@ -95,6 +113,9 @@ public class CRKMain {
 			case 'o':
 				outDir = new File(g.getOptarg());
 				break;
+			case 'r':
+				reducedAlphabet = Integer.parseInt(g.getOptarg()); 
+				break;
 			case 'h':
 			case '?':
 				System.out.println(help);
@@ -110,6 +131,11 @@ public class CRKMain {
 		
 		if (baseName==null) {
 			baseName=pdbCode;
+		}
+		
+		if (!AminoAcid.isValidNumGroupsReducedAlphabet(reducedAlphabet)) {
+			System.err.println("Invalid number of amino acid groups specified ("+reducedAlphabet+")");
+			System.exit(1);
 		}
 
 		// files
@@ -160,7 +186,8 @@ public class CRKMain {
 			// writing the alignment to file
 			chainEvCont.writeAlignmentToFile(new File(outDir,baseName+"."+pdbCode+representativeChain+".aln"));
 			PrintStream entLog = new PrintStream(new File(outDir,baseName+"."+pdbCode+representativeChain+".entropies"));
-			chainEvCont.printEntropies(entLog);
+			entLog.println("# Entropies based on a "+reducedAlphabet+" letters alphabet.");
+			chainEvCont.printEntropies(entLog, reducedAlphabet);
 			entLog.close();
 
 			for (String chain:entity) {
@@ -193,8 +220,8 @@ public class CRKMain {
 				InterfaceEvolContext iec = new InterfaceEvolContext(pi, chainsEvCs);
 				
 				// entropy scoring
-				InterfaceScore scoreNW = iec.scoreEntropy(SOFT_CUTOFF_CA, HARD_CUTOFF_CA, RELAX_STEP_CA, MIN_NUM_RES_CA,false);
-				InterfaceScore scoreW = iec.scoreEntropy(SOFT_CUTOFF_CA, HARD_CUTOFF_CA, RELAX_STEP_CA, MIN_NUM_RES_CA,true);
+				InterfaceScore scoreNW = iec.scoreEntropy(SOFT_CUTOFF_CA, HARD_CUTOFF_CA, RELAX_STEP_CA, MIN_NUM_RES_CA,false,reducedAlphabet);
+				InterfaceScore scoreW = iec.scoreEntropy(SOFT_CUTOFF_CA, HARD_CUTOFF_CA, RELAX_STEP_CA, MIN_NUM_RES_CA,true,reducedAlphabet);
 				
 				printScores(System.out, pi, scoreNW, scoreW);
 				printScores(scorePS, pi, scoreNW, scoreW);
