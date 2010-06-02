@@ -90,7 +90,8 @@ public class CRKMain {
 		"  [-a]:  number of threads for blast. Default: "+DEFAULT_BLAST_NUMTHREADS+"\n"+
 		"  [-b]:  basename for output files. Default: PDB code \n"+
 		"  [-o]:  output dir, where output files will be written. Default: current dir \n" +
-		"  [-r]:  specify the number of groups of aminoacids (reduced alphabet) to be used.\n" +
+		"  [-r]:  specify the number of groups of aminoacids (reduced alphabet) to be used\n" +
+		"         for entropy calculations.\n" +
 		"         Valid values are 2, 4, 6, 8, 10, 15 and 20. Default: "+DEFAULT_ALPHABET+"\n\n";
 
 
