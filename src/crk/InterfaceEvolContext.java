@@ -54,7 +54,7 @@ public class InterfaceEvolContext {
 			coreEnt2 = Double.NaN;
 		}
 		
-		return new InterfaceScore(rimCore1, rimCore2, coreEnt1, rimEnt1, coreEnt2, rimEnt2);
+		return new InterfaceScore(rimCore1, rimCore2, coreEnt1, rimEnt1, coreEnt2, rimEnt2, minNumResidues);
 	}
 	
 	public double scoreCRK() {

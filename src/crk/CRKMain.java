@@ -57,10 +57,14 @@ public class CRKMain {
 	private static final double   RELAX_STEP_CA = 0.01;
 	private static final int      MIN_NUM_RES_CA = 6;
 	
-	private static final double   CUTOFF_ASA_INTERFACE_REPORTING = 400;
+	private static final double   CUTOFF_ASA_INTERFACE_REPORTING = 350;
 	
 	// entropy calculation
 	private static final int      DEFAULT_ALPHABET = 20;
+	
+	// cutoffs for the final bio/xtal call
+	private static final double   DEFAULT_BIO_CUTOFF = 0.95;
+	private static final double   DEFAULT_XTAL_CUTOFF = 1.05;
 
 	/**
 	 * 
@@ -249,9 +253,9 @@ public class CRKMain {
 				pi.getInterfaceArea());
 		scoreNW.printRimAndCoreInfo(ps);
 		ps.print("\t");
-		scoreNW.printTabular(ps);
+		scoreNW.printTabular(ps, DEFAULT_BIO_CUTOFF, DEFAULT_XTAL_CUTOFF);
 		ps.print("\t");
-		scoreW.printTabular(ps);
+		scoreW.printTabular(ps, DEFAULT_BIO_CUTOFF, DEFAULT_XTAL_CUTOFF);
 		ps.println();		
 	}
 	
