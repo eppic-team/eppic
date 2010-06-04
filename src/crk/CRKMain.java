@@ -51,11 +51,15 @@ public class CRKMain {
 	
 	private static final String   PISA_INTERFACES_URL = "http://www.ebi.ac.uk/msd-srv/pisa/cgi-bin/interfaces.pisa?";
 	
+	// cutoffs
+	private static final int      MIN_HOMOLOGS_CUTOFF = 10;
+	
 	// core assignment
 	private static final double   SOFT_CUTOFF_CA = 0.95;
 	private static final double   HARD_CUTOFF_CA = 0.82;
 	private static final double   RELAX_STEP_CA = 0.01;
-	private static final int      MIN_NUM_RES_CA = 6;
+	private static final int      MIN_NUM_RES_CA = 6;        // threshold for total sum of 2 members of interface
+	private static final int      MIN_NUM_RES_MEMBER_CA = 4; // threshold for each of the member of the interface
 	
 	private static final double   CUTOFF_ASA_INTERFACE_REPORTING = 350;
 	
@@ -225,8 +229,10 @@ public class CRKMain {
 				InterfaceEvolContext iec = new InterfaceEvolContext(pi, chainsEvCs);
 				
 				// entropy scoring
-				InterfaceScore scoreNW = iec.scoreEntropy(SOFT_CUTOFF_CA, HARD_CUTOFF_CA, RELAX_STEP_CA, MIN_NUM_RES_CA,false,reducedAlphabet);
-				InterfaceScore scoreW = iec.scoreEntropy(SOFT_CUTOFF_CA, HARD_CUTOFF_CA, RELAX_STEP_CA, MIN_NUM_RES_CA,true,reducedAlphabet);
+				InterfaceScore scoreNW = iec.scoreEntropy(SOFT_CUTOFF_CA, HARD_CUTOFF_CA, RELAX_STEP_CA, MIN_NUM_RES_CA, MIN_NUM_RES_MEMBER_CA,
+						MIN_HOMOLOGS_CUTOFF, false, reducedAlphabet);
+				InterfaceScore scoreW = iec.scoreEntropy(SOFT_CUTOFF_CA, HARD_CUTOFF_CA, RELAX_STEP_CA, MIN_NUM_RES_CA, MIN_NUM_RES_MEMBER_CA, 
+						MIN_HOMOLOGS_CUTOFF, true,reducedAlphabet);
 				
 				printScores(System.out, pi, scoreNW, scoreW);
 				printScores(scorePS, pi, scoreNW, scoreW);
@@ -238,11 +244,21 @@ public class CRKMain {
 	
 	private static void printScoringHeaders(PrintStream ps) {
 		ps.printf("%15s\t%6s\t","interface","area");
-		InterfaceScore.printRimAndCoreHeader(ps);
+		InterfaceMemberScore.printRimAndCoreHeader(ps,1);
 		ps.print("\t");
-		InterfaceScore.printHeader(ps);
+		InterfaceMemberScore.printRimAndCoreHeader(ps,2);
 		ps.print("\t");
-		InterfaceScore.printHeader(ps);
+		InterfaceMemberScore.printHeader(ps,1);
+		ps.print("\t");
+		InterfaceMemberScore.printHeader(ps,2);
+		ps.print("\t");
+		InterfaceCall.printHeader(ps);
+		ps.print("\t");
+		InterfaceMemberScore.printHeader(ps,1);
+		ps.print("\t");
+		InterfaceMemberScore.printHeader(ps,2);
+		ps.print("\t");		
+		InterfaceCall.printHeader(ps);
 		ps.println();
 		//ps.printf("%45s\t%45s\n","non-weighted","weighted");		
 	}
@@ -251,11 +267,21 @@ public class CRKMain {
 		ps.printf("%15s\t%6.1f",
 				pi.getId()+"("+pi.getFirstMolecule().getChainId()+"+"+pi.getSecondMolecule().getChainId()+")",
 				pi.getInterfaceArea());
-		scoreNW.printRimAndCoreInfo(ps);
+		scoreNW.getMemberScore(0).printRimAndCoreInfo(ps);
 		ps.print("\t");
-		scoreNW.printTabular(ps, DEFAULT_BIO_CUTOFF, DEFAULT_XTAL_CUTOFF);
+		scoreNW.getMemberScore(1).printRimAndCoreInfo(ps);
 		ps.print("\t");
-		scoreW.printTabular(ps, DEFAULT_BIO_CUTOFF, DEFAULT_XTAL_CUTOFF);
+		scoreNW.getMemberScore(0).printTabular(ps);
+		ps.print("\t");
+		scoreNW.getMemberScore(1).printTabular(ps);
+		ps.print("\t");
+		scoreNW.getCall(DEFAULT_BIO_CUTOFF, DEFAULT_XTAL_CUTOFF).printTabular(ps);
+		ps.print("\t");
+		scoreW.getMemberScore(0).printTabular(ps);
+		ps.print("\t");
+		scoreW.getMemberScore(1).printTabular(ps);
+		ps.print("\t");
+		scoreW.getCall(DEFAULT_BIO_CUTOFF, DEFAULT_XTAL_CUTOFF).printTabular(ps);
 		ps.println();		
 	}
 	

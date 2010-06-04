@@ -163,4 +163,8 @@ public class ChainEvolContext {
 			ps.printf("%4d\t%5.2f\n",i,this.aln.getColumnEntropy(i,reducedAlphabet));
 		}
 	}
+	
+	public int getNumHomologs() {
+		return homologs.size();
+	}
 }
