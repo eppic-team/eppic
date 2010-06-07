@@ -7,11 +7,10 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import owl.core.connections.NoMatchFoundException;
 import owl.core.connections.SiftsConnection;
-import owl.core.features.InvalidFeatureCoordinatesException;
-import owl.core.features.OverlappingFeatureException;
 import owl.core.features.SiftsFeature;
 import owl.core.runners.TcoffeeError;
 import owl.core.runners.blast.BlastError;
@@ -23,54 +22,48 @@ import owl.core.structure.PdbLoadError;
 
 public class ChainEvolContext {
 	
-	private Pdb pdb;
-	private String pdbChainCode;
+	private Map<String,Pdb> pdbs; 		// pdbs for all chains corresponding to this entity (pdb chain codes to Pdb objects)
+	private String representativeChain;	// the pdb chain code of the representative chain
+	private String pdbCode; 		 	// the pdb code (if no pdb code then Pdb.NO_PDB_CODE)
+	private String sequence; 			// the sequence for this chain
 	
-	private List<UniprotHomolog> queryData;
+	private List<UniprotHomolog> queryData;	// the uniprot id, seq, cds corresponding to this chain's sequence
 	
-	private UniprotHomologList homologs;
+	private UniprotHomologList homologs;	// the homologs of this chain's sequence
 	
 	private MultipleSequenceAlignment aln;
 	
-	public ChainEvolContext(Pdb pdb, String pdbChainCode) {
-		this.pdb = pdb;
-		this.pdbChainCode = pdbChainCode;
+	public ChainEvolContext(Map<String,Pdb> pdbs, String representativeChain) {
+		this.pdbs = pdbs;
+		this.pdbCode = pdbs.get(representativeChain).getPdbCode();
+		this.sequence = pdbs.get(representativeChain).getSequence();
+		this.representativeChain = representativeChain;
 	}
 	
 	public void retrieveQueryData(String siftsFile) throws IOException, PdbLoadError {
 		
 		queryData = new ArrayList<UniprotHomolog>();
-		pdb.load(pdbChainCode);
-		if (!pdb.getPdbCode().equals(Pdb.NO_PDB_CODE)) {
-			String pdbCode = pdb.getPdbCode();
+		if (!pdbCode.equals(Pdb.NO_PDB_CODE)) {
 			SiftsConnection siftsConn = new SiftsConnection(siftsFile);
 			Collection<SiftsFeature> mappings = null;
 			try {
-				mappings = siftsConn.getMappings(pdbCode, pdbChainCode);		
-				for (SiftsFeature mapping:mappings) {
-					pdb.addFeature(mapping); 
-				}
+				mappings = siftsConn.getMappings(pdbCode, representativeChain);		
+				//for (SiftsFeature mapping:mappings) {
+				//	pdb.addFeature(mapping); 
+				//}
 				for (SiftsFeature sifts:mappings) {
 					queryData.add(new UniprotHomolog(sifts.getUniprotId()));
 				}
 
 			} catch (NoMatchFoundException e) {
-				System.err.println("No SIFTS mapping could be found for "+pdbCode+pdbChainCode);
+				System.err.println("No SIFTS mapping could be found for "+pdbCode+representativeChain);
 				//TODO blast, find uniprot mapping and use it if one can be found
-			} catch (OverlappingFeatureException e1) {
-				System.err.println("Unexpected error");
-				System.err.println(e1.getMessage());
-				System.exit(1);
-			} catch (InvalidFeatureCoordinatesException e2){
-				System.err.println("Unexpected error");
-				System.err.println(e2.getMessage());
-				System.exit(1);			
 			}
 		} else {
 			//TODO blast to find mapping
 		}
 
-		System.out.println("Uniprot ids for the query "+pdb.getPdbCode()+pdbChainCode+": ");
+		System.out.println("Uniprot ids for the query "+pdbCode+representativeChain+": ");
 		for (UniprotHomolog queryMember:queryData) {
 			queryMember.retrieveUniprotKBData();
 			queryMember.retrieveEmblCdsSeqs();
@@ -80,7 +73,7 @@ public class ChainEvolContext {
 	
 	public void retrieveHomologs(String blastBinDir, String blastDbDir, String blastDb, int blastNumThreads, double idCutoff) 
 	throws IOException, BlastError {
-		homologs = new UniprotHomologList(pdb.getPdbCode()+pdbChainCode, pdb.getSequence());
+		homologs = new UniprotHomologList(pdbCode+representativeChain, sequence);
 		
 		System.out.println("Blasting...");
 		homologs.searchWithBlast(blastBinDir, blastDbDir, blastDb, blastNumThreads);
@@ -132,12 +125,12 @@ public class ChainEvolContext {
 		return aln;
 	}
 
-	public Pdb getPdb() {
-		return pdb;
+	public Pdb getPdb(String pdbChainCode) {
+		return pdbs.get(pdbChainCode);
 	}
 	
 	public void printSummary(PrintStream ps) {
-		ps.println("Query: "+pdb.getPdbCode()+pdbChainCode);
+		ps.println("Query: "+pdbCode+representativeChain);
 		ps.println("Uniprot ids for query:");
 		for (UniprotHomolog hom:queryData) {
 			ps.print(hom.getUniId()+" (");
@@ -167,4 +160,9 @@ public class ChainEvolContext {
 	public int getNumHomologs() {
 		return homologs.size();
 	}
+	
+	public String getRepresentativeChainCode() {
+		return representativeChain;
+	}
+
 }

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import owl.core.connections.pisa.PisaInterface;
+import owl.core.connections.pisa.PisaMolecule;
 import owl.core.connections.pisa.PisaResidue;
 import owl.core.connections.pisa.PisaRimCore;
 import owl.core.sequence.alignment.MultipleSequenceAlignment;
@@ -37,13 +38,13 @@ public class InterfaceEvolContext {
 		PisaRimCore rimCore2 = rimcores.get(2);
 		// rimCore1/2 will be null when the molecule is not a protein
 		if (rimCore1 != null) {
-			rimEnt1 = getEntropy(rimCore1.getRimResidues(), chains.get(0).getAlignment(), chains.get(0).getPdb(), weighted, reducedAlphabet);
-			coreEnt1 = getEntropy(rimCore1.getCoreResidues(), chains.get(0).getAlignment(), chains.get(0).getPdb(), weighted, reducedAlphabet);
+			rimEnt1 = getEntropy(rimCore1.getRimResidues(), chains.get(0), pisaInterf.getFirstMolecule(), weighted, reducedAlphabet);
+			coreEnt1 = getEntropy(rimCore1.getCoreResidues(), chains.get(0), pisaInterf.getFirstMolecule(), weighted, reducedAlphabet);
 			numHomologs1 = chains.get(0).getNumHomologs();
 		}
 		if (rimCore2 != null) {
-			rimEnt2 = getEntropy(rimCore2.getRimResidues(), chains.get(1).getAlignment(), chains.get(1).getPdb(), weighted, reducedAlphabet);
-			coreEnt2 = getEntropy(rimCore2.getCoreResidues(), chains.get(1).getAlignment(), chains.get(1).getPdb(), weighted, reducedAlphabet);
+			rimEnt2 = getEntropy(rimCore2.getRimResidues(), chains.get(1), pisaInterf.getSecondMolecule(), weighted, reducedAlphabet);
+			coreEnt2 = getEntropy(rimCore2.getCoreResidues(), chains.get(1), pisaInterf.getSecondMolecule(), weighted, reducedAlphabet);
 			numHomologs2 = chains.get(1).getNumHomologs();
 		}
 				
@@ -57,7 +58,10 @@ public class InterfaceEvolContext {
 		return 0;
 	}
 	
-	private double getEntropy(List<PisaResidue> residues, MultipleSequenceAlignment aln, Pdb pdb, boolean weighted, int reducedAlphabet) {
+	private double getEntropy(List<PisaResidue> residues, ChainEvolContext chain, PisaMolecule pisaMol, boolean weighted, int reducedAlphabet) {
+		MultipleSequenceAlignment aln = chain.getAlignment();
+		Pdb pdb = chain.getPdb(pisaMol.getChainId());
+
 		double totalEnt = 0.0;
 		double totalWeight = 0.0;
 		for (PisaResidue res:residues){
@@ -66,7 +70,7 @@ public class InterfaceEvolContext {
 			if (weighted) {
 				weight = res.getBsa();
 			}
-			totalEnt += weight*(aln.getColumnEntropy(aln.seq2al(pdb.getPdbCode()+pdb.getPdbChainCode(), resSer),reducedAlphabet));
+			totalEnt += weight*(aln.getColumnEntropy(aln.seq2al(pdb.getPdbCode()+chain.getRepresentativeChainCode(), resSer),reducedAlphabet));
 			totalWeight += weight;
 		}
 		return totalEnt/totalWeight;

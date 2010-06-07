@@ -152,6 +152,7 @@ public class CRKMain {
 		File cifFile = getCifFile(pdbCode, ONLINE, outDir);
 		Pdb pdb = new CiffilePdb(cifFile);
 		String[] chains = pdb.getChains();
+		// map of sequences to list of chain codes
 		Map<String, List<String>> uniqSequences = new HashMap<String, List<String>>();
 		// finding the entities (groups of identical chains)
 		for (String chain:chains) {
@@ -180,7 +181,13 @@ public class CRKMain {
 		Map<String,ChainEvolContext> allChains = new HashMap<String,ChainEvolContext>();
 		for (List<String> entity:uniqSequences.values()) {
 			String representativeChain = entity.get(0);
-			ChainEvolContext chainEvCont = new ChainEvolContext(new CiffilePdb(cifFile), representativeChain);
+			Map<String,Pdb> pdbs = new HashMap<String,Pdb>();
+			for (String pdbChainCode:entity) {
+				Pdb perChainPdb = new CiffilePdb(cifFile);
+				perChainPdb.load(pdbChainCode);
+				pdbs.put(pdbChainCode,perChainPdb);
+			}
+			ChainEvolContext chainEvCont = new ChainEvolContext(pdbs, representativeChain);
 			// 1) getting the uniprot ids corresponding to the query (the pdb sequence)
 			chainEvCont.retrieveQueryData(SIFTS_FILE);
 			// 2) getting the homologs and sequence data and creating multiple sequence alignment
