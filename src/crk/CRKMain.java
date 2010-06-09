@@ -189,9 +189,9 @@ public class CRKMain {
 			}
 			ChainEvolContext chainEvCont = new ChainEvolContext(pdbs, representativeChain);
 			// 1) getting the uniprot ids corresponding to the query (the pdb sequence)
-			chainEvCont.retrieveQueryData(SIFTS_FILE);
+			chainEvCont.retrieveQueryData(SIFTS_FILE, new File(outDir,baseName+"."+pdbCode+representativeChain+".query.emblcds.fa"));
 			// 2) getting the homologs and sequence data and creating multiple sequence alignment
-			chainEvCont.retrieveHomologs(BLAST_BIN_DIR, BLAST_DB_DIR, BLAST_DB, blastNumThreads, idCutoff);
+			chainEvCont.retrieveHomologs(BLAST_BIN_DIR, BLAST_DB_DIR, BLAST_DB, blastNumThreads, idCutoff, new File(outDir,baseName+"."+pdbCode+representativeChain+".homologs.emblcds.fa"));
 			// align
 			chainEvCont.align(TCOFFE_BIN, TCOFFEE_VERYFAST_MODE);
 			

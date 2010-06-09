@@ -40,11 +40,19 @@ public class ChainEvolContext {
 		this.representativeChain = representativeChain;
 	}
 	
-	public void retrieveQueryData(String siftsFile) throws IOException, PdbLoadError {
+	/**
+	 * 
+	 * @param siftsLocation file or URL of the SIFTS PDB to Uniprot mapping table
+	 * @param emblCDScache a FASTA file containing the cached sequences (if present, sequences
+	 * won't be refetched online
+	 * @throws IOException
+	 * @throws PdbLoadError
+	 */
+	public void retrieveQueryData(String siftsLocation, File emblCDScache) throws IOException, PdbLoadError {
 		
 		queryData = new ArrayList<UniprotHomolog>();
 		if (!pdbCode.equals(Pdb.NO_PDB_CODE)) {
-			SiftsConnection siftsConn = new SiftsConnection(siftsFile);
+			SiftsConnection siftsConn = new SiftsConnection(siftsLocation);
 			Collection<SiftsFeature> mappings = null;
 			try {
 				mappings = siftsConn.getMappings(pdbCode, representativeChain);		
@@ -66,12 +74,12 @@ public class ChainEvolContext {
 		System.out.println("Uniprot ids for the query "+pdbCode+representativeChain+": ");
 		for (UniprotHomolog queryMember:queryData) {
 			queryMember.retrieveUniprotKBData();
-			queryMember.retrieveEmblCdsSeqs();
+			queryMember.retrieveEmblCdsSeqs(emblCDScache);
 			System.out.println(queryMember.getUniId());
 		}
 	}
 	
-	public void retrieveHomologs(String blastBinDir, String blastDbDir, String blastDb, int blastNumThreads, double idCutoff) 
+	public void retrieveHomologs(String blastBinDir, String blastDbDir, String blastDb, int blastNumThreads, double idCutoff, File emblCDScache) 
 	throws IOException, BlastError {
 		homologs = new UniprotHomologList(pdbCode+representativeChain, sequence);
 		
@@ -85,23 +93,8 @@ public class ChainEvolContext {
 		homologs.retrieveUniprotKBData();
 		
 		System.out.println("Retrieving EMBL cds sequences...");
-		homologs.retrieveEmblCdsSeqs();
-		
-//		System.out.println("Summary:");
-//		for (UniprotHomolog hom:homologs) {
-//			System.out.printf("%s\t%5.1f",hom.getUniId(),hom.getPercentIdentity());
-//			for (String id:hom.getTaxIds()){
-//				System.out.print("\t"+id);
-//			}
-//			for (String emblCdsId:hom.getEmblCdsIds()) {
-//				System.out.print("\t"+emblCdsId);
-//			}
-//			System.out.println();
-//			for (Sequence seq:hom.getEmblCdsSeqs()) {
-//				seq.writeToPrintStream(System.out);
-//			}
-//		}
-		
+		homologs.retrieveEmblCdsSeqs(emblCDScache);
+				
 	}
 	
 	public void applyIdentityCutoff(double idCutoff) {
