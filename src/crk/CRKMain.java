@@ -69,6 +69,9 @@ public class CRKMain {
 	// cutoffs for the final bio/xtal call
 	protected static final double   DEFAULT_BIO_CUTOFF = 0.95;
 	protected static final double   DEFAULT_XTAL_CUTOFF = 1.05;
+	
+	// embl cds caching
+	private static final String   EMBL_CDS_CACHE_DIR = "/nfs/data/dbs/emblcds_cache";
 
 	/**
 	 * 
@@ -189,9 +192,10 @@ public class CRKMain {
 			}
 			ChainEvolContext chainEvCont = new ChainEvolContext(pdbs, representativeChain);
 			// 1) getting the uniprot ids corresponding to the query (the pdb sequence)
-			chainEvCont.retrieveQueryData(SIFTS_FILE, new File(outDir,baseName+"."+pdbCode+representativeChain+".query.emblcds.fa"));
+			chainEvCont.retrieveQueryData(SIFTS_FILE, new File(EMBL_CDS_CACHE_DIR,baseName+"."+pdbCode+representativeChain+".query.emblcds.fa"));
 			// 2) getting the homologs and sequence data and creating multiple sequence alignment
-			chainEvCont.retrieveHomologs(BLAST_BIN_DIR, BLAST_DB_DIR, BLAST_DB, blastNumThreads, idCutoff, new File(outDir,baseName+"."+pdbCode+representativeChain+".homologs.emblcds.fa"));
+			chainEvCont.retrieveHomologs(BLAST_BIN_DIR, BLAST_DB_DIR, BLAST_DB, blastNumThreads, idCutoff, 
+					new File(EMBL_CDS_CACHE_DIR,baseName+"."+pdbCode+representativeChain+".homologs.emblcds.fa"));
 			// align
 			chainEvCont.align(TCOFFE_BIN, TCOFFEE_VERYFAST_MODE);
 			
