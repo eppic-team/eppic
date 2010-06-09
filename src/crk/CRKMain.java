@@ -67,8 +67,8 @@ public class CRKMain {
 	private static final int      DEFAULT_ALPHABET = 20;
 	
 	// cutoffs for the final bio/xtal call
-	private static final double   DEFAULT_BIO_CUTOFF = 0.95;
-	private static final double   DEFAULT_XTAL_CUTOFF = 1.05;
+	protected static final double   DEFAULT_BIO_CUTOFF = 0.95;
+	protected static final double   DEFAULT_XTAL_CUTOFF = 1.05;
 
 	/**
 	 * 
@@ -243,6 +243,9 @@ public class CRKMain {
 				
 				printScores(System.out, pi, scoreNW, scoreW);
 				printScores(scorePS, pi, scoreNW, scoreW);
+				
+				scoreNW.serialize(new File(outDir,baseName+"."+pi.getId()+".scoreNW.dat"));
+				scoreW.serialize(new File(outDir,baseName+"."+pi.getId()+".scoreW.dat"));
 			}
 			
 		}

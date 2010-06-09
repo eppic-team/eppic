@@ -1,10 +1,13 @@
 package crk;
 
 import java.io.PrintStream;
+import java.io.Serializable;
 
 import owl.core.connections.pisa.PisaRimCore;
 
-public class InterfaceMemberScore {
+public class InterfaceMemberScore implements Serializable {
+	
+	private static final long serialVersionUID = -3409108391018870468L;
 	
 	private PisaRimCore rimCore;
 	private double scoreCore;
