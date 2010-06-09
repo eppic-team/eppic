@@ -133,6 +133,7 @@ public class ChainEvolContext {
 			ps.println(" )");
 		}
 		ps.println();
+		ps.println("Uniprot version: "+homologs.getUniprotVer());
 		ps.println("Homologs: "+homologs.size()+" at "+String.format("%3.1f",homologs.getIdCutoff())+" identity cut-off");
 		for (UniprotHomolog hom:homologs) {
 			ps.print(hom.getUniId()+" (");
