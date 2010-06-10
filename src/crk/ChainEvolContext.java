@@ -79,12 +79,12 @@ public class ChainEvolContext {
 		}
 	}
 	
-	public void retrieveHomologs(String blastBinDir, String blastDbDir, String blastDb, int blastNumThreads, double idCutoff, File emblCDScache) 
+	public void retrieveHomologs(String blastBinDir, String blastDbDir, String blastDb, int blastNumThreads, double idCutoff, File emblCDScache, File blastCache) 
 	throws IOException, BlastError {
 		homologs = new UniprotHomologList(pdbCode+representativeChain, sequence);
 		
 		System.out.println("Blasting...");
-		homologs.searchWithBlast(blastBinDir, blastDbDir, blastDb, blastNumThreads);
+		homologs.searchWithBlast(blastBinDir, blastDbDir, blastDb, blastNumThreads, blastCache);
 		System.out.println(homologs.size()+" homologs found by blast");
 		
 		applyIdentityCutoff(idCutoff);

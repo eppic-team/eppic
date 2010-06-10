@@ -70,8 +70,9 @@ public class CRKMain {
 	protected static final double   DEFAULT_BIO_CUTOFF = 0.95;
 	protected static final double   DEFAULT_XTAL_CUTOFF = 1.05;
 	
-	// embl cds caching
+	// cache dirs
 	private static final String   EMBL_CDS_CACHE_DIR = "/nfs/data/dbs/emblcds_cache";
+	private static final String   BLAST_CACHE_DIR = "/nfs/data/dbs/blast_cache/uniprot_2010_06";
 
 	/**
 	 * 
@@ -195,7 +196,8 @@ public class CRKMain {
 			chainEvCont.retrieveQueryData(SIFTS_FILE, new File(EMBL_CDS_CACHE_DIR,baseName+"."+pdbCode+representativeChain+".query.emblcds.fa"));
 			// 2) getting the homologs and sequence data and creating multiple sequence alignment
 			chainEvCont.retrieveHomologs(BLAST_BIN_DIR, BLAST_DB_DIR, BLAST_DB, blastNumThreads, idCutoff, 
-					new File(EMBL_CDS_CACHE_DIR,baseName+"."+pdbCode+representativeChain+".homologs.emblcds.fa"));
+					new File(EMBL_CDS_CACHE_DIR,baseName+"."+pdbCode+representativeChain+".homologs.emblcds.fa"),
+					new File(BLAST_CACHE_DIR,baseName+"."+pdbCode+representativeChain+".blast.xml"));
 			// align
 			chainEvCont.align(TCOFFE_BIN, TCOFFEE_VERYFAST_MODE);
 			
