@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -120,6 +121,15 @@ public class ChainEvolContext {
 
 	public Pdb getPdb(String pdbChainCode) {
 		return pdbs.get(pdbChainCode);
+	}
+	
+	public void setEntropiesAsBfactors(String pdbChainCode, int reducedAlphabet) {
+		Pdb pdb = getPdb(pdbChainCode);
+		HashMap<Integer,Double> entropies = new HashMap<Integer, Double>();
+		for (int resser:pdb.getAllSortedResSerials()){
+			entropies.put(resser, this.aln.getColumnEntropy(this.aln.seq2al(pdbCode+representativeChain, resser), reducedAlphabet));
+		}
+		pdb.setBFactorsPerResidue(entropies);
 	}
 	
 	public void printSummary(PrintStream ps) {

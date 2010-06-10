@@ -1,5 +1,8 @@
 package crk;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintStream;
 import java.util.List;
 import java.util.Map;
 
@@ -74,5 +77,23 @@ public class InterfaceEvolContext {
 			totalWeight += weight;
 		}
 		return totalEnt/totalWeight;
+	}
+	
+	public void writePdbFile(File file, int reducedAlphabet) throws IOException {
+		PrintStream ps = new PrintStream(file);
+		if (pisaInterf.getFirstMolecule().isProtein()) {
+			chains.get(0).setEntropiesAsBfactors(pisaInterf.getFirstMolecule().getChainId(), reducedAlphabet);
+			// we copy in order to leave the original Pdbs unaltered (essential to be able to apply transformations several times)
+			Pdb pdb1 = chains.get(0).getPdb(pisaInterf.getFirstMolecule().getChainId()).copy();
+			pdb1.transform(pisaInterf.getFirstMolecule().getSymOp());
+			pdb1.writeAtomLines(ps);
+		}
+		if (pisaInterf.getSecondMolecule().isProtein()) {
+			chains.get(1).setEntropiesAsBfactors(pisaInterf.getSecondMolecule().getChainId(), reducedAlphabet);
+			Pdb pdb2 = chains.get(1).getPdb(pisaInterf.getSecondMolecule().getChainId()).copy();
+			pdb2.transform(pisaInterf.getSecondMolecule().getSymOp());
+			pdb2.writeAtomLines(ps);
+		}
+		ps.close();
 	}
 }

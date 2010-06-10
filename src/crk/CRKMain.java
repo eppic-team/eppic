@@ -214,6 +214,8 @@ public class CRKMain {
 
 			for (String chain:entity) {
 				allChains.put(chain,chainEvCont);
+				//chainEvCont.setEntropiesAsBfactors(chain, reducedAlphabet);
+				//pdb.writeToPDBFile(new File(outDir,baseName+"."+pdbCode+chain+".pdb").getAbsolutePath());
 			}
 		}
 		
@@ -252,6 +254,9 @@ public class CRKMain {
 				
 				scoreNW.serialize(new File(outDir,baseName+"."+pi.getId()+".scoreNW.dat"));
 				scoreW.serialize(new File(outDir,baseName+"."+pi.getId()+".scoreW.dat"));
+				
+				// writing out the interface pdb file with entropies as b factors (for visualization)
+				iec.writePdbFile(new File(outDir, baseName+"."+pi.getId()+".pdb"), reducedAlphabet);
 			}
 			
 		}
