@@ -59,7 +59,7 @@ public class CRKMain {
 	private static final double   HARD_CUTOFF_CA = 0.82;
 	private static final double   RELAX_STEP_CA = 0.01;
 	private static final int      MIN_NUM_RES_CA = 6;        // threshold for total sum of 2 members of interface
-	private static final int      MIN_NUM_RES_MEMBER_CA = 4; // threshold for each of the member of the interface
+	private static final int      MIN_NUM_RES_MEMBER_CA = 3; // threshold for each of the member of the interface
 	
 	private static final double   CUTOFF_ASA_INTERFACE_REPORTING = 350;
 	
@@ -67,8 +67,8 @@ public class CRKMain {
 	private static final int      DEFAULT_ALPHABET = 20;
 	
 	// cutoffs for the final bio/xtal call
-	protected static final double   DEFAULT_BIO_CUTOFF = 0.95;
-	protected static final double   DEFAULT_XTAL_CUTOFF = 1.05;
+	protected static final double DEFAULT_BIO_CUTOFF = 0.95;
+	protected static final double DEFAULT_XTAL_CUTOFF = 1.05;
 	
 	// cache dirs
 	private static final String   EMBL_CDS_CACHE_DIR = "/nfs/data/dbs/emblcds_cache";
