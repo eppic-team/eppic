@@ -69,12 +69,17 @@ public class InterfaceEvolContext {
 		double totalWeight = 0.0;
 		for (PisaResidue res:residues){
 			int resSer = pdb.getResSerFromPdbResSer(res.getPdbResSer());
-			double weight = 1.0;
-			if (weighted) {
-				weight = res.getBsa();
+			if (resSer!=-1) {
+				double weight = 1.0;
+				if (weighted) {
+					weight = res.getBsa();
+				}
+				totalEnt += weight*(aln.getColumnEntropy(aln.seq2al(pdb.getPdbCode()+chain.getRepresentativeChainCode(), resSer),reducedAlphabet));
+				totalWeight += weight;
+			} else {
+				System.err.println("Can't map PISA pdb residue serial "+res.getPdbResSer()+" (res type:"+res.getResType()+", PISA serial: "+res.getResSerial()+")");
+				System.err.println("The residue will not be used for scoring");
 			}
-			totalEnt += weight*(aln.getColumnEntropy(aln.seq2al(pdb.getPdbCode()+chain.getRepresentativeChainCode(), resSer),reducedAlphabet));
-			totalWeight += weight;
 		}
 		return totalEnt/totalWeight;
 	}
