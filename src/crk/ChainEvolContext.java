@@ -15,6 +15,8 @@ import owl.core.connections.SiftsConnection;
 import owl.core.features.SiftsFeature;
 import owl.core.runners.TcoffeeError;
 import owl.core.runners.blast.BlastError;
+import owl.core.sequence.Sequence;
+import owl.core.sequence.UniprotEntry;
 import owl.core.sequence.UniprotHomolog;
 import owl.core.sequence.UniprotHomologList;
 import owl.core.sequence.alignment.MultipleSequenceAlignment;
@@ -28,7 +30,7 @@ public class ChainEvolContext {
 	private String pdbCode; 		 	// the pdb code (if no pdb code then Pdb.NO_PDB_CODE)
 	private String sequence; 			// the sequence for this chain
 	
-	private List<UniprotHomolog> queryData;	// the uniprot id, seq, cds corresponding to this chain's sequence
+	private List<UniprotEntry> queryData;	// the uniprot id, seq, cds corresponding to this chain's sequence
 	
 	private UniprotHomologList homologs;	// the homologs of this chain's sequence
 	
@@ -51,7 +53,7 @@ public class ChainEvolContext {
 	 */
 	public void retrieveQueryData(String siftsLocation, File emblCDScache) throws IOException, PdbLoadError {
 		
-		queryData = new ArrayList<UniprotHomolog>();
+		queryData = new ArrayList<UniprotEntry>();
 		if (!pdbCode.equals(Pdb.NO_PDB_CODE)) {
 			SiftsConnection siftsConn = new SiftsConnection(siftsLocation);
 			Collection<SiftsFeature> mappings = null;
@@ -61,7 +63,7 @@ public class ChainEvolContext {
 				//	pdb.addFeature(mapping); 
 				//}
 				for (SiftsFeature sifts:mappings) {
-					queryData.add(new UniprotHomolog(sifts.getUniprotId()));
+					queryData.add(new UniprotEntry(sifts.getUniprotId()));
 				}
 
 			} catch (NoMatchFoundException e) {
@@ -73,10 +75,10 @@ public class ChainEvolContext {
 		}
 
 		System.out.println("Uniprot ids for the query "+pdbCode+representativeChain+": ");
-		for (UniprotHomolog queryMember:queryData) {
-			queryMember.retrieveUniprotKBData();
-			queryMember.retrieveEmblCdsSeqs(emblCDScache);
-			System.out.println(queryMember.getUniId());
+		for (UniprotEntry entry:queryData) {
+			entry.retrieveUniprotKBData();
+			entry.retrieveEmblCdsSeqs(emblCDScache);
+			System.out.println(entry.getUniId());
 		}
 	}
 	
@@ -98,7 +100,7 @@ public class ChainEvolContext {
 				
 	}
 	
-	public void applyIdentityCutoff(double idCutoff) {
+	private void applyIdentityCutoff(double idCutoff) {
 		// applying identity cutoff
 		homologs.restrictToMinId(idCutoff);
 		System.out.println(homologs.size()+" homologs after applying "+String.format("%4.2f",idCutoff)+" identity cutoff");
@@ -135,9 +137,9 @@ public class ChainEvolContext {
 	public void printSummary(PrintStream ps) {
 		ps.println("Query: "+pdbCode+representativeChain);
 		ps.println("Uniprot ids for query:");
-		for (UniprotHomolog hom:queryData) {
-			ps.print(hom.getUniId()+" (");
-			for (String emblcdsid: hom.getEmblCdsIds()) {
+		for (UniprotEntry entry:queryData) {
+			ps.print(entry.getUniId()+" (");
+			for (String emblcdsid: entry.getEmblCdsIds()) {
 				ps.print(" "+emblcdsid);
 			}
 			ps.println(" )");
@@ -147,7 +149,7 @@ public class ChainEvolContext {
 		ps.println("Homologs: "+homologs.size()+" at "+String.format("%3.1f",homologs.getIdCutoff())+" identity cut-off");
 		for (UniprotHomolog hom:homologs) {
 			ps.print(hom.getUniId()+" (");
-			for (String emblcdsid: hom.getEmblCdsIds()) {
+			for (String emblcdsid: hom.getUniprotEntry().getEmblCdsIds()) {
 				ps.print(" "+emblcdsid);
 			}
 			ps.println(" )");
@@ -168,5 +170,32 @@ public class ChainEvolContext {
 	public String getRepresentativeChainCode() {
 		return representativeChain;
 	}
+	
+	public void checkEmblCDSMatching() {
+		homologs.checkEmblCDSMatching();
+	}
+	
+	public int getNumHomologsWithCDS() {
+		return homologs.getNumHomologsWithCDS();
+	}
+	
+	public int getNumHomologsWithValidCDS() {
+		return homologs.getNumHomologsWithValidCDS();
+	}
 
+	public Sequence getRepQueryCDS() {
+		Sequence seq = null;
+		for (UniprotEntry entry:queryData) {
+			seq = entry.getRepresentativeCDS();
+			if (seq == null){
+				continue;
+			} else {
+				if (queryData.size()>1) {
+					System.err.println("Query has multiple SIFTS mapping to uniprot, using the first one with good CDS translation.");
+				}
+				break;
+			}
+		}
+		return seq;
+	}
 }

@@ -72,7 +72,7 @@ public class CRKMain {
 	
 	// cache dirs
 	private static final String   EMBL_CDS_CACHE_DIR = "/nfs/data/dbs/emblcds_cache";
-	private static final String   BLAST_CACHE_DIR = "/nfs/data/dbs/blast_cache/uniprot_2010_06";
+	private static final String   BLAST_CACHE_DIR = "/nfs/data/dbs/blast_cache/current";
 
 	/**
 	 * 
@@ -151,6 +151,9 @@ public class CRKMain {
 			System.exit(1);
 		}
 
+		// to throw away jaligner logging
+		System.setProperty("java.util.logging.config.file","/dev/null");
+		
 		// files
 		
 		File cifFile = getCifFile(pdbCode, ONLINE, outDir);
@@ -194,12 +197,21 @@ public class CRKMain {
 			ChainEvolContext chainEvCont = new ChainEvolContext(pdbs, representativeChain);
 			// 1) getting the uniprot ids corresponding to the query (the pdb sequence)
 			chainEvCont.retrieveQueryData(SIFTS_FILE, new File(EMBL_CDS_CACHE_DIR,baseName+"."+pdbCode+representativeChain+".query.emblcds.fa"));
+			//if (chainEvCont.getRepQueryCDS()==null) {
+			//	System.err.println("No CDS good match for query sequence!!");
+			//	System.exit(1);
+			//}
 			// 2) getting the homologs and sequence data and creating multiple sequence alignment
 			chainEvCont.retrieveHomologs(BLAST_BIN_DIR, BLAST_DB_DIR, BLAST_DB, blastNumThreads, idCutoff, 
 					new File(EMBL_CDS_CACHE_DIR,baseName+"."+pdbCode+representativeChain+".homologs.emblcds.fa"),
 					new File(BLAST_CACHE_DIR,baseName+"."+pdbCode+representativeChain+".blast.xml"));
 			// align
 			chainEvCont.align(TCOFFE_BIN, TCOFFEE_VERYFAST_MODE);
+			
+			// check the back-translation of CDS to uniprot
+			// check whether there we have a good enough CDS for the chain
+			System.out.println("Number of homologs with at least one uniprot CDS mapping: "+chainEvCont.getNumHomologsWithCDS());
+			System.out.println("Number of homologs with valid CDS: "+chainEvCont.getNumHomologsWithValidCDS());
 			
 			// printing summary to file
 			PrintStream log = new PrintStream(new File(outDir,baseName+"."+pdbCode+representativeChain+".log"));
