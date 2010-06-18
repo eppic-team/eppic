@@ -12,6 +12,8 @@ import java.util.Map;
 
 import owl.core.connections.NoMatchFoundException;
 import owl.core.connections.SiftsConnection;
+import owl.core.features.InvalidFeatureCoordinatesException;
+import owl.core.features.OverlappingFeatureException;
 import owl.core.features.SiftsFeature;
 import owl.core.runners.TcoffeeError;
 import owl.core.runners.blast.BlastError;
@@ -54,14 +56,13 @@ public class ChainEvolContext {
 	public void retrieveQueryData(String siftsLocation, File emblCDScache) throws IOException, PdbLoadError {
 		
 		queryData = new ArrayList<UniprotEntry>();
+		// two possible cases: 
+		// 1) PDB code known and so SiftsFeatures can be taken from SiftsConnection
+		Collection<SiftsFeature> mappings = null;
 		if (!pdbCode.equals(Pdb.NO_PDB_CODE)) {
 			SiftsConnection siftsConn = new SiftsConnection(siftsLocation);
-			Collection<SiftsFeature> mappings = null;
 			try {
 				mappings = siftsConn.getMappings(pdbCode, representativeChain);		
-				//for (SiftsFeature mapping:mappings) {
-				//	pdb.addFeature(mapping); 
-				//}
 				for (SiftsFeature sifts:mappings) {
 					queryData.add(new UniprotEntry(sifts.getUniprotId()));
 				}
@@ -70,15 +71,37 @@ public class ChainEvolContext {
 				System.err.println("No SIFTS mapping could be found for "+pdbCode+representativeChain);
 				//TODO blast, find uniprot mapping and use it if one can be found
 			}
+		// 2) PDB code not known and so SiftsFeatures have to be found by blasting, aligning etc.
 		} else {
 			//TODO blast to find mapping
 		}
 
+		// once we have the identifiers we get the data from uniprot
 		System.out.println("Uniprot ids for the query "+pdbCode+representativeChain+": ");
 		for (UniprotEntry entry:queryData) {
 			entry.retrieveUniprotKBData();
 			entry.retrieveEmblCdsSeqs(emblCDScache);
 			System.out.println(entry.getUniId());
+		}
+		// and finally we add the SiftsFeatures if we have them
+		if (mappings!=null) {
+			try {
+				for (UniprotEntry entry:queryData) {
+					for (SiftsFeature sifts:mappings) {
+						if (sifts.getUniprotId().equals(entry.getUniId())) {
+							entry.addFeature(sifts);
+						}
+					}
+				}
+			} catch (InvalidFeatureCoordinatesException e) {
+				System.err.println("Unexpected error: inconsistency in SIFTS mapping data.");
+				System.err.println(e.getMessage());
+				System.exit(1);
+			} catch (OverlappingFeatureException e) {
+				System.err.println("Unexpected error: inconsistency in SIFTS mapping data.");
+				System.err.println(e.getMessage());
+				System.exit(1);
+			} 
 		}
 	}
 	
