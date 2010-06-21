@@ -17,7 +17,7 @@ import owl.core.features.OverlappingFeatureException;
 import owl.core.features.SiftsFeature;
 import owl.core.runners.TcoffeeError;
 import owl.core.runners.blast.BlastError;
-import owl.core.sequence.Sequence;
+import owl.core.sequence.ProteinToCDSMatch;
 import owl.core.sequence.UniprotEntry;
 import owl.core.sequence.UniprotHomolog;
 import owl.core.sequence.UniprotHomologList;
@@ -194,10 +194,6 @@ public class ChainEvolContext {
 		return representativeChain;
 	}
 	
-	public void checkEmblCDSMatching() {
-		homologs.checkEmblCDSMatching();
-	}
-	
 	public int getNumHomologsWithCDS() {
 		return homologs.getNumHomologsWithCDS();
 	}
@@ -206,8 +202,8 @@ public class ChainEvolContext {
 		return homologs.getNumHomologsWithValidCDS();
 	}
 
-	public Sequence getRepQueryCDS() {
-		Sequence seq = null;
+	public ProteinToCDSMatch getRepQueryCDS() {
+		ProteinToCDSMatch seq = null;
 		for (UniprotEntry entry:queryData) {
 			seq = entry.getRepresentativeCDS();
 			if (seq == null){

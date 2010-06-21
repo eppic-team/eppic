@@ -197,10 +197,10 @@ public class CRKMain {
 			ChainEvolContext chainEvCont = new ChainEvolContext(pdbs, representativeChain);
 			// 1) getting the uniprot ids corresponding to the query (the pdb sequence)
 			chainEvCont.retrieveQueryData(SIFTS_FILE, new File(EMBL_CDS_CACHE_DIR,baseName+"."+pdbCode+representativeChain+".query.emblcds.fa"));
-			//if (chainEvCont.getRepQueryCDS()==null) {
-			//	System.err.println("No CDS good match for query sequence!!");
-			//	System.exit(1);
-			//}
+			if (chainEvCont.getRepQueryCDS()==null) {
+				System.err.println("No CDS good match for query sequence!!");
+				System.exit(1);
+			}
 			// 2) getting the homologs and sequence data and creating multiple sequence alignment
 			chainEvCont.retrieveHomologs(BLAST_BIN_DIR, BLAST_DB_DIR, BLAST_DB, blastNumThreads, idCutoff, 
 					new File(EMBL_CDS_CACHE_DIR,baseName+"."+pdbCode+representativeChain+".homologs.emblcds.fa"),
