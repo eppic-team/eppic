@@ -37,6 +37,7 @@ public class ChainEvolContext {
 	private UniprotHomologList homologs;	// the homologs of this chain's sequence
 	
 	private MultipleSequenceAlignment aln;
+	private MultipleSequenceAlignment nucAln; // the cached nucleotides alignment
 	
 	public ChainEvolContext(Map<String,Pdb> pdbs, String representativeChain) {
 		this.pdbs = pdbs;
@@ -140,8 +141,27 @@ public class ChainEvolContext {
 		aln.writeFasta(new PrintStream(alnFile), 80, true);
 	}
 	
+	public void writeNucleotideAlignmentToFile(File alnFile) throws FileNotFoundException {
+		if (nucAln==null) {
+			nucAln = getNucleotideAlignment();
+		}
+		nucAln.writeFasta(new PrintStream(alnFile), 80, true);
+	}
+	
 	public MultipleSequenceAlignment getAlignment() {
 		return aln;
+	}
+	
+	/**
+	 * Returns a multiple sequence alignment of all valid CDS sequences from the 
+	 * UniprotHomologList by mapping the CDS to the protein sequences alignment. 
+	 * @return
+	 */
+	public MultipleSequenceAlignment getNucleotideAlignment() {
+		if (nucAln==null) {
+			nucAln = homologs.getNucleotideAlignment(this.aln);
+		}
+		return nucAln;
 	}
 
 	public Pdb getPdb(String pdbChainCode) {
@@ -157,6 +177,11 @@ public class ChainEvolContext {
 		pdb.setBFactorsPerResidue(entropies);
 	}
 	
+	/**
+	 * Prints a summary of the query and uniprot/cds identifiers and homologs with 
+	 * their uniprot/cds identifiers
+	 * @param ps
+	 */
 	public void printSummary(PrintStream ps) {
 		ps.println("Query: "+pdbCode+representativeChain);
 		ps.println("Uniprot ids for query:");
@@ -202,6 +227,10 @@ public class ChainEvolContext {
 		return homologs.getNumHomologsWithValidCDS();
 	}
 
+	/**
+	 * Gets the ProteinToCDSMatch of the best CDS match for the query protein.  
+	 * @return
+	 */
 	public ProteinToCDSMatch getRepQueryCDS() {
 		ProteinToCDSMatch seq = null;
 		for (UniprotEntry entry:queryData) {

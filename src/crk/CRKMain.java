@@ -219,6 +219,10 @@ public class CRKMain {
 			log.close();
 			// writing the alignment to file
 			chainEvCont.writeAlignmentToFile(new File(outDir,baseName+"."+pdbCode+representativeChain+".aln"));
+			// writing the nucleotides alignment to file
+			chainEvCont.writeNucleotideAlignmentToFile(new File(outDir,baseName+"."+pdbCode+representativeChain+".cds.aln"));
+			
+			// writing the entropies log file
 			PrintStream entLog = new PrintStream(new File(outDir,baseName+"."+pdbCode+representativeChain+".entropies"));
 			entLog.println("# Entropies based on a "+reducedAlphabet+" letters alphabet.");
 			chainEvCont.printEntropies(entLog, reducedAlphabet);
