@@ -15,6 +15,7 @@ import owl.core.connections.SiftsConnection;
 import owl.core.features.InvalidFeatureCoordinatesException;
 import owl.core.features.OverlappingFeatureException;
 import owl.core.features.SiftsFeature;
+import owl.core.runners.SelectonRunner;
 import owl.core.runners.TcoffeeError;
 import owl.core.runners.blast.BlastError;
 import owl.core.sequence.ProteinToCDSMatch;
@@ -24,6 +25,7 @@ import owl.core.sequence.UniprotHomologList;
 import owl.core.sequence.alignment.MultipleSequenceAlignment;
 import owl.core.structure.Pdb;
 import owl.core.structure.PdbLoadError;
+import owl.core.util.FileFormatError;
 
 public class ChainEvolContext {
 	
@@ -36,8 +38,12 @@ public class ChainEvolContext {
 	
 	private UniprotHomologList homologs;	// the homologs of this chain's sequence
 	
-	private MultipleSequenceAlignment aln;
+	private MultipleSequenceAlignment aln;	  // the protein sequences alignment
 	private MultipleSequenceAlignment nucAln; // the cached nucleotides alignment
+	
+	private int reducedAlphabet;
+	private List<Double> entropies;
+	private List<Double> kaksRatios;
 	
 	public ChainEvolContext(Map<String,Pdb> pdbs, String representativeChain) {
 		this.pdbs = pdbs;
@@ -163,18 +169,81 @@ public class ChainEvolContext {
 		}
 		return nucAln;
 	}
+	
+	public void computeEntropies(int reducedAlphabet) {
+		this.reducedAlphabet = reducedAlphabet;
+		this.entropies = new ArrayList<Double>(); 
+		for (int i=0;i<this.sequence.length();i++){
+			entropies.add(this.aln.getColumnEntropy(this.aln.seq2al(pdbCode+representativeChain,i+1), reducedAlphabet));
+		}
+	}
+	
+	public void computeKaKsRatiosSelecton(File selectonBin, File resultsFile, File logFile, File treeFile, File globalResultsFile, double epsilon) 
+	throws IOException {
+		kaksRatios = new ArrayList<Double>();
+		SelectonRunner sr = new SelectonRunner(selectonBin);
+		if(!resultsFile.exists()) {
+			File alnFile = File.createTempFile("selecton.", ".cds.aln");
+			alnFile.deleteOnExit();
+			this.nucAln.writeFasta(new PrintStream(alnFile), 80, true);
+			sr.run(alnFile, resultsFile, logFile, treeFile, null, globalResultsFile, this.getQueryRepCDS().getCDSName(), this.homologs.getGeneticCodeType(),epsilon);
+		} else {
+			System.out.println("Selecton output file "+resultsFile+" already exists. Using the file instead of running selecton.");
+			try {
+				sr.parseResultsFile(resultsFile, this.getQueryRepCDS().getCDSName());
+			} catch (FileFormatError e) {
+				System.err.println("Warning! cached output selecton file "+resultsFile+" does not seem to be in the righ format");
+				System.err.println(e.getMessage());
+				System.err.println("Running selecton and overwritting the file.");
+				File alnFile = File.createTempFile("selecton.", ".cds.aln");
+				alnFile.deleteOnExit();
+				this.nucAln.writeFasta(new PrintStream(alnFile), 80, true);
+				sr.run(alnFile, resultsFile, logFile, treeFile, null, globalResultsFile, this.getQueryRepCDS().getCDSName(), this.homologs.getGeneticCodeType(),epsilon);				
+			}
+		}
+		kaksRatios = sr.getKaKsRatios();
+		if (kaksRatios.size()!=sequence.length()) {
+			System.err.println("Warning! Size of ka/ks ratio list ("+kaksRatios.size()+") is not the same as length of reference sequence ("+sequence.length()+")");
+		}
+	}
 
 	public Pdb getPdb(String pdbChainCode) {
 		return pdbs.get(pdbChainCode);
 	}
-	
-	public void setEntropiesAsBfactors(String pdbChainCode, int reducedAlphabet) {
+
+	/**
+	 * Set the b-factors of the Pdb object corresponding to given pdbChainCode
+	 * with conservation score values (entropy or ka/ks).
+	 * @param pdbChainCode
+	 * @param scoType
+	 * @throws NullPointerException if ka/ks ratios are not calculated yet by calling {@link #computeKaKsRatiosSelecton(File)}
+	 */
+	public void setConservationScoresAsBfactors(String pdbChainCode, ScoringType scoType) {
+		List<Double> conservationScores = getConservationScores(scoType);		
 		Pdb pdb = getPdb(pdbChainCode);
-		HashMap<Integer,Double> entropies = new HashMap<Integer, Double>();
+		HashMap<Integer,Double> map = new HashMap<Integer, Double>();
 		for (int resser:pdb.getAllSortedResSerials()){
-			entropies.put(resser, this.aln.getColumnEntropy(this.aln.seq2al(pdbCode+representativeChain, resser), reducedAlphabet));
+			map.put(resser, conservationScores.get(resser-1));
 		}
-		pdb.setBFactorsPerResidue(entropies);
+		pdb.setBFactorsPerResidue(map);		
+	}
+	
+	public List<Double> getConservationScores(ScoringType scoType) {
+		if (scoType.equals(ScoringType.ENTROPY)) {
+			return entropies;
+		}
+		if (scoType.equals(ScoringType.KAKS)) {
+			return kaksRatios;
+		}
+		throw new IllegalArgumentException("Given scoring type "+scoType+" is not recognized ");
+	}
+	
+	/**
+	 * Gets the size of the reduced alphabet used for calculating entropies
+	 * @return the size of the reduced alphabet or 0 if no entropies have been computed
+	 */
+	public int getReducedAlphabet() {
+		return reducedAlphabet;
 	}
 	
 	/**
@@ -200,14 +269,20 @@ public class ChainEvolContext {
 			for (String emblcdsid: hom.getUniprotEntry().getEmblCdsIds()) {
 				ps.print(" "+emblcdsid);
 			}
-			ps.println(" )");
-			
+			ps.print(" )");
+			ps.println("\t"+String.format("%5.1f",hom.getPercentIdentity())+"\t"+hom.getUniprotEntry().getFirstTaxon()+"\t"+hom.getUniprotEntry().getLastTaxon());
 		}
 	}
 	
-	public void printEntropies(PrintStream ps, int reducedAlphabet) {
-		for (int i=1;i<=this.aln.getAlignmentLength();i++) {
-			ps.printf("%4d\t%5.2f\n",i,this.aln.getColumnEntropy(i,reducedAlphabet));
+	public void printConservationScores(PrintStream ps, ScoringType scoType) {
+		if (scoType.equals(ScoringType.ENTROPY)) {
+			ps.println("# Entropies for all query sequence positions based on a "+this.reducedAlphabet+" letters alphabet.");
+		} else if (scoType.equals(ScoringType.KAKS)){
+			ps.println("# Ka/Ks for all query sequence positions.");
+		}
+		List<Double> conservationScores = getConservationScores(scoType);
+		for (int i=0;i<conservationScores.size();i++) {
+			ps.printf("%4d\t%5.2f\n",i+1,conservationScores.get(i));
 		}
 	}
 	
@@ -231,7 +306,7 @@ public class ChainEvolContext {
 	 * Gets the ProteinToCDSMatch of the best CDS match for the query protein.  
 	 * @return
 	 */
-	public ProteinToCDSMatch getRepQueryCDS() {
+	public ProteinToCDSMatch getQueryRepCDS() {
 		ProteinToCDSMatch seq = null;
 		for (UniprotEntry entry:queryData) {
 			seq = entry.getRepresentativeCDS();
@@ -245,5 +320,9 @@ public class ChainEvolContext {
 			}
 		}
 		return seq;
+	}
+	
+	public boolean isConsistentGeneticCodeType() {
+		return this.homologs.isConsistentGeneticCodeType();
 	}
 }

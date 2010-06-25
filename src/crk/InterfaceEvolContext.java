@@ -10,7 +10,6 @@ import owl.core.connections.pisa.PisaInterface;
 import owl.core.connections.pisa.PisaMolecule;
 import owl.core.connections.pisa.PisaResidue;
 import owl.core.connections.pisa.PisaRimCore;
-import owl.core.sequence.alignment.MultipleSequenceAlignment;
 import owl.core.structure.Pdb;
 
 public class InterfaceEvolContext {
@@ -24,10 +23,33 @@ public class InterfaceEvolContext {
 		this.chains = chains;
 	}
 
-	public InterfaceScore scoreEntropy(double bsaToAsaSoftCutoff, double bsaToAsaHardCutoff, double relaxationStep, int minCoreSize, int minMemberCoreSize,
+	public InterfaceScore scoreEntropy(double bsaToAsaSoftCutoff, double bsaToAsaHardCutoff, double relaxationStep, 
+			int minCoreSize, int minMemberCoreSize,
+			int homologsCutoff,  
+			boolean weighted) {
+		return scoreInterface(bsaToAsaSoftCutoff, bsaToAsaHardCutoff, relaxationStep, 
+				minCoreSize, minMemberCoreSize, 
+				homologsCutoff,
+				weighted,
+				ScoringType.ENTROPY);
+	}
+
+	public InterfaceScore scoreKaKs(double bsaToAsaSoftCutoff, double bsaToAsaHardCutoff, double relaxationStep, 
+			int minCoreSize, int minMemberCoreSize,
+			int homologsCutoff,  
+			boolean weighted) {
+		return scoreInterface(bsaToAsaSoftCutoff, bsaToAsaHardCutoff, relaxationStep, 
+				minCoreSize, minMemberCoreSize, 
+				homologsCutoff,
+				weighted,
+				ScoringType.KAKS);
+	}
+
+	private InterfaceScore scoreInterface(double bsaToAsaSoftCutoff, double bsaToAsaHardCutoff, double relaxationStep, 
+			int minCoreSize, int minMemberCoreSize,
 			int homologsCutoff,  
 			boolean weighted, 
-			int reducedAlphabet) {
+			ScoringType scoType) {
 
 		double rimEnt1 = Double.NaN;
 		double coreEnt1 = Double.NaN;
@@ -41,14 +63,17 @@ public class InterfaceEvolContext {
 		PisaRimCore rimCore2 = rimcores.get(2);
 		// rimCore1/2 will be null when the molecule is not a protein
 		if (rimCore1 != null) {
-			rimEnt1 = getEntropy(rimCore1.getRimResidues(), chains.get(0), pisaInterf.getFirstMolecule(), weighted, reducedAlphabet);
-			coreEnt1 = getEntropy(rimCore1.getCoreResidues(), chains.get(0), pisaInterf.getFirstMolecule(), weighted, reducedAlphabet);
-			numHomologs1 = chains.get(0).getNumHomologs();
+			ChainEvolContext chain = chains.get(0);
+			
+			rimEnt1  = calcScore(rimCore1.getRimResidues(), chain.getPdb(pisaInterf.getFirstMolecule().getChainId()), chain.getConservationScores(scoType), pisaInterf.getFirstMolecule(), weighted);
+			coreEnt1 = calcScore(rimCore1.getCoreResidues(),chain.getPdb(pisaInterf.getFirstMolecule().getChainId()), chain.getConservationScores(scoType), pisaInterf.getFirstMolecule(), weighted);
+			numHomologs1 = chain.getNumHomologs();
 		}
 		if (rimCore2 != null) {
-			rimEnt2 = getEntropy(rimCore2.getRimResidues(), chains.get(1), pisaInterf.getSecondMolecule(), weighted, reducedAlphabet);
-			coreEnt2 = getEntropy(rimCore2.getCoreResidues(), chains.get(1), pisaInterf.getSecondMolecule(), weighted, reducedAlphabet);
-			numHomologs2 = chains.get(1).getNumHomologs();
+			ChainEvolContext chain = chains.get(1);
+			rimEnt2  = calcScore(rimCore2.getRimResidues(), chain.getPdb(pisaInterf.getSecondMolecule().getChainId()), chain.getConservationScores(scoType), pisaInterf.getSecondMolecule(), weighted);
+			coreEnt2 = calcScore(rimCore2.getCoreResidues(),chain.getPdb(pisaInterf.getSecondMolecule().getChainId()), chain.getConservationScores(scoType), pisaInterf.getSecondMolecule(), weighted);
+			numHomologs2 = chain.getNumHomologs();
 		}
 				
 		InterfaceMemberScore ims1 = new InterfaceMemberScore(rimCore1, coreEnt1, rimEnt1, numHomologs1, homologsCutoff, minMemberCoreSize, 1);
@@ -57,15 +82,8 @@ public class InterfaceEvolContext {
 		return new InterfaceScore(ims1, ims2, minCoreSize);
 	}
 	
-	public double scoreCRK() {
-		return 0;
-	}
-	
-	private double getEntropy(List<PisaResidue> residues, ChainEvolContext chain, PisaMolecule pisaMol, boolean weighted, int reducedAlphabet) {
-		MultipleSequenceAlignment aln = chain.getAlignment();
-		Pdb pdb = chain.getPdb(pisaMol.getChainId());
-
-		double totalEnt = 0.0;
+	private double calcScore(List<PisaResidue> residues, Pdb pdb, List<Double> scores, PisaMolecule pisaMol, boolean weighted) {
+		double totalScore = 0.0;
 		double totalWeight = 0.0;
 		for (PisaResidue res:residues){
 			int resSer = pdb.getResSerFromPdbResSer(res.getPdbResSer());
@@ -74,27 +92,27 @@ public class InterfaceEvolContext {
 				if (weighted) {
 					weight = res.getBsa();
 				}
-				totalEnt += weight*(aln.getColumnEntropy(aln.seq2al(pdb.getPdbCode()+chain.getRepresentativeChainCode(), resSer),reducedAlphabet));
+				totalScore += weight*(scores.get(resSer-1));
 				totalWeight += weight;
 			} else {
 				System.err.println("Can't map PISA pdb residue serial "+res.getPdbResSer()+" (res type:"+res.getResType()+", PISA serial: "+res.getResSerial()+")");
 				System.err.println("The residue will not be used for scoring");
 			}
 		}
-		return totalEnt/totalWeight;
+		return totalScore/totalWeight;
 	}
 	
-	public void writePdbFile(File file, int reducedAlphabet) throws IOException {
+	public void writePdbFile(File file, ScoringType scoType) throws IOException {
 		PrintStream ps = new PrintStream(file);
 		if (pisaInterf.getFirstMolecule().isProtein()) {
-			chains.get(0).setEntropiesAsBfactors(pisaInterf.getFirstMolecule().getChainId(), reducedAlphabet);
+			chains.get(0).setConservationScoresAsBfactors(pisaInterf.getFirstMolecule().getChainId(),scoType);
 			// we copy in order to leave the original Pdbs unaltered (essential to be able to apply transformations several times)
 			Pdb pdb1 = chains.get(0).getPdb(pisaInterf.getFirstMolecule().getChainId()).copy();
 			pdb1.transform(pisaInterf.getFirstMolecule().getSymOp());
 			pdb1.writeAtomLines(ps);
 		}
 		if (pisaInterf.getSecondMolecule().isProtein()) {
-			chains.get(1).setEntropiesAsBfactors(pisaInterf.getSecondMolecule().getChainId(), reducedAlphabet);
+			chains.get(1).setConservationScoresAsBfactors(pisaInterf.getSecondMolecule().getChainId(),scoType);
 			Pdb pdb2 = chains.get(1).getPdb(pisaInterf.getSecondMolecule().getChainId()).copy();
 			pdb2.transform(pisaInterf.getSecondMolecule().getSymOp());
 			pdb2.writeAtomLines(ps);
