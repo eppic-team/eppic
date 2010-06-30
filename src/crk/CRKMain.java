@@ -218,7 +218,7 @@ public class CRKMain {
 			// 1) getting the uniprot ids corresponding to the query (the pdb sequence)
 			chainEvCont.retrieveQueryData(SIFTS_FILE, new File(EMBL_CDS_CACHE_DIR,baseName+"."+pdbCode+representativeChain+".query.emblcds.fa"));
 			if (chainEvCont.getQueryRepCDS()==null) {
-				System.err.println("No CDS good match for query sequence!!");
+				System.err.println("No CDS good match for query sequence!! Exiting");
 				System.exit(1);
 			}
 			// 2) getting the homologs and sequence data and creating multiple sequence alignment
