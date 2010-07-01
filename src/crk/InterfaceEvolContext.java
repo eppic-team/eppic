@@ -64,15 +64,14 @@ public class InterfaceEvolContext {
 		// rimCore1/2 will be null when the molecule is not a protein
 		if (rimCore1 != null) {
 			ChainEvolContext chain = chains.get(0);
-			
-			rimEnt1  = calcScore(rimCore1.getRimResidues(), chain.getPdb(pisaInterf.getFirstMolecule().getChainId()), chain.getConservationScores(scoType), pisaInterf.getFirstMolecule(), weighted);
-			coreEnt1 = calcScore(rimCore1.getCoreResidues(),chain.getPdb(pisaInterf.getFirstMolecule().getChainId()), chain.getConservationScores(scoType), pisaInterf.getFirstMolecule(), weighted);
+			rimEnt1  = calcScore(rimCore1.getRimResidues(), chain, scoType, pisaInterf.getFirstMolecule(), weighted);
+			coreEnt1 = calcScore(rimCore1.getCoreResidues(),chain, scoType, pisaInterf.getFirstMolecule(), weighted);
 			numHomologs1 = chain.getNumHomologs();
 		}
 		if (rimCore2 != null) {
 			ChainEvolContext chain = chains.get(1);
-			rimEnt2  = calcScore(rimCore2.getRimResidues(), chain.getPdb(pisaInterf.getSecondMolecule().getChainId()), chain.getConservationScores(scoType), pisaInterf.getSecondMolecule(), weighted);
-			coreEnt2 = calcScore(rimCore2.getCoreResidues(),chain.getPdb(pisaInterf.getSecondMolecule().getChainId()), chain.getConservationScores(scoType), pisaInterf.getSecondMolecule(), weighted);
+			rimEnt2  = calcScore(rimCore2.getRimResidues(), chain, scoType, pisaInterf.getSecondMolecule(), weighted);
+			coreEnt2 = calcScore(rimCore2.getCoreResidues(),chain, scoType, pisaInterf.getSecondMolecule(), weighted);
 			numHomologs2 = chain.getNumHomologs();
 		}
 				
@@ -82,17 +81,30 @@ public class InterfaceEvolContext {
 		return new InterfaceScore(ims1, ims2, minCoreSize);
 	}
 	
-	private double calcScore(List<PisaResidue> residues, Pdb pdb, List<Double> scores, PisaMolecule pisaMol, boolean weighted) {
+	private double calcScore(List<PisaResidue> residues, ChainEvolContext chain, ScoringType scoType, PisaMolecule pisaMol, boolean weighted) {
 		double totalScore = 0.0;
 		double totalWeight = 0.0;
 		for (PisaResidue res:residues){
-			int resSer = pdb.getResSerFromPdbResSer(res.getPdbResSer());
+			int resSer = chain.getResSerFromPdbResSer(pisaMol.getChainId(), res.getPdbResSer());
+
+			// we always check whether the residue is in a reliable position (PDB SEQRES matching its uniprot)
+			if (!chain.isPdbSeqPositionMatchingUniprot(resSer)) {
+				System.err.println("Interface residue serial "+resSer+" can't be evaluated because the PDB SEQRES does not match the Uniprot sequence at that position. Assigning no score to this interface.");
+				return Double.NaN;
+			}
+			// for KAKS scoring we additionally check for reliability of the position with regards to CDS matching
+			if (scoType==ScoringType.KAKS) {
+				if (!chain.isPdbSeqPositionReliable(resSer)) {
+					System.err.println("Interface residue serial "+resSer+" can't be evaluated because it has unreliable CDS sequence information. Assigning no score to this interface.");
+					return Double.NaN;
+				}				
+			} 
 			if (resSer!=-1) {
 				double weight = 1.0;
 				if (weighted) {
 					weight = res.getBsa();
 				}
-				totalScore += weight*(scores.get(resSer-1));
+				totalScore += weight*(chain.getConservationScores(scoType).get(chain.getQueryUniprotPosForPDBPos(resSer)));
 				totalWeight += weight;
 			} else {
 				System.err.println("Can't map PISA pdb residue serial "+res.getPdbResSer()+" (res type:"+res.getResType()+", PISA serial: "+res.getResSerial()+")");

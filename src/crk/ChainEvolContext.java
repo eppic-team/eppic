@@ -12,8 +12,6 @@ import java.util.Map;
 
 import owl.core.connections.NoMatchFoundException;
 import owl.core.connections.SiftsConnection;
-import owl.core.features.InvalidFeatureCoordinatesException;
-import owl.core.features.OverlappingFeatureException;
 import owl.core.features.SiftsFeature;
 import owl.core.runners.TcoffeeError;
 import owl.core.runners.blast.BlastError;
@@ -22,6 +20,8 @@ import owl.core.sequence.UniprotEntry;
 import owl.core.sequence.UniprotHomolog;
 import owl.core.sequence.UniprotHomologList;
 import owl.core.sequence.alignment.MultipleSequenceAlignment;
+import owl.core.sequence.alignment.PairwiseSequenceAlignment;
+import owl.core.sequence.alignment.PairwiseSequenceAlignment.PairwiseSequenceAlignmentException;
 import owl.core.structure.Pdb;
 import owl.core.structure.PdbLoadError;
 
@@ -32,7 +32,8 @@ public class ChainEvolContext {
 	private String pdbCode; 		 		// the pdb code (if no pdb code then Pdb.NO_PDB_CODE)
 	private String sequence;
 	
-	private UniprotEntry query;				// the uniprot id, seq, cds corresponding to this chain's sequence
+	private UniprotEntry query;							// the uniprot id, seq, cds corresponding to this chain's sequence
+	private PairwiseSequenceAlignment alnPdb2Uniprot; 	// the alignment between the pdb sequence and the uniprot sequence (query)
 	
 	private UniprotHomologList homologs;	// the homologs of this chain's sequence
 		
@@ -80,10 +81,13 @@ public class ChainEvolContext {
 
 			} catch (NoMatchFoundException e) {
 				System.err.println("No SIFTS mapping could be found for "+pdbCode+representativeChain);
+				System.exit(1);
 				//TODO blast, find uniprot mapping and use it if one can be found
 			}
 		// 2) PDB code not known and so SiftsFeatures have to be found by blasting, aligning etc.
 		} else {
+			System.err.println("No PDB code given. Can't continue, not implemented yet!");
+			System.exit(1);
 			//TODO blast to find mapping
 		}
 		
@@ -95,22 +99,21 @@ public class ChainEvolContext {
 		query.retrieveEmblCdsSeqs(emblCDScache);
 		
 		
-		// and finally we add the SiftsFeatures if we have them
-		if (mappings!=null) {
-			try {				
-				for (SiftsFeature sifts:mappings) {
-					query.addFeature(sifts);
-				}
-			} catch (InvalidFeatureCoordinatesException e) {
-				System.err.println("Unexpected error: inconsistency in SIFTS mapping data.");
-				System.err.println(e.getMessage());
-				System.exit(1);
-			} catch (OverlappingFeatureException e) {
-				System.err.println("Unexpected error: inconsistency in SIFTS mapping data.");
-				System.err.println(e.getMessage());
-				System.exit(1);
-			} 
+		// and finally we align the 2 sequences (rather than trusting the SIFTS alignment info)
+		try {
+			alnPdb2Uniprot = new PairwiseSequenceAlignment(sequence, query.getUniprotSeq().getSeq(), pdbCode+representativeChain, query.getUniprotSeq().getName());
+			System.out.println("The PDB SEQRES to Uniprot alignmnent:");
+			alnPdb2Uniprot.writeAlignment(System.out);
+		} catch (PairwiseSequenceAlignmentException e1) {
+			System.err.println("Problem aligning PDB sequence "+pdbCode+representativeChain+" to its Uniprot match "+query.getUniId());
+			System.err.println(e1.getMessage());
+			System.err.println("Can't continue");
+			System.exit(1);
 		}
+		// TODO anyway we should do also a sanity check of our alignment against the SIFTS mappings (if we have them) 
+		//if (mappings!=null) {
+		// compare mappings to the alnPdb2Uniprot	
+		//}
 	}
 	
 	public void retrieveHomologs(String blastBinDir, String blastDbDir, String blastDb, int blastNumThreads, double idCutoff, File emblCDScache, File blastCache) 
@@ -167,6 +170,10 @@ public class ChainEvolContext {
 	
 	public Pdb getPdb(String pdbChainCode) {
 		return pdbs.get(pdbChainCode);
+	}
+	
+	public int getResSerFromPdbResSer(String pdbChainCode, String pdbResSer) {
+		return this.getPdb(pdbChainCode).getResSerFromPdbResSer(pdbResSer);
 	}
 
 	/**
@@ -300,4 +307,44 @@ public class ChainEvolContext {
 		return this.homologs.isConsistentGeneticCodeType();
 	}
 	
+	/**
+	 * Tells whether a given position of the reference PDB sequence (starting at 1)
+	 * is reliable with respect to:
+	 *  the PDB to uniprot matching (mismatches occur mostly because of engineered residues in PDB)
+	 * @param resser the (cif) PDB residue serial corresponding to the SEQRES record, starting at 1
+	 * @return
+	 */
+	public boolean isPdbSeqPositionMatchingUniprot(int resser) {
+		// we check if the PDB to uniprot mapping is reliable (identity) at the resser position
+		if (!alnPdb2Uniprot.isMatchingTo2(resser-1)) {
+			return false;
+		}
+		return true;
+	}
+	
+	/**
+	 * Tells whether a given position of the reference PDB sequence (starting at 1)
+	 * is reliable with respect to:
+	 * a) the CDS matching of the reference sequence (not reliable if CDS translation doesn't match exactly the protein residue)
+	 * b) the CDS matchings of the homologs (not reliable if CDS translation doesn't match exactly the protein residue)
+	 * @param resser the (cif) PDB residue serial corresponding to the SEQRES record, starting at 1
+	 * @return
+	 */
+	public boolean isPdbSeqPositionReliable(int resser) {
+		// we map the pdb resser to the uniprot sequence position and check whether it is reliable CDS-wise for all homologs
+		if (!homologs.isReferenceSeqPositionReliable(getQueryUniprotPosForPDBPos(resser))) {
+			return false;
+		}
+		return true;		
+	}
+	
+	/**
+	 * Given a residue serial of the reference PDB SEQRES sequence (starting at 1), returns
+	 * its corresponding uniprot's sequence index (starting at 0)
+	 * @param resser
+	 * @return
+	 */
+	public int getQueryUniprotPosForPDBPos(int resser) {
+		return alnPdb2Uniprot.getMapping1To2(resser-1);
+	}
 }
