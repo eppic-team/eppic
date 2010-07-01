@@ -116,7 +116,7 @@ public class ChainEvolContext {
 		//}
 	}
 	
-	public void retrieveHomologs(String blastBinDir, String blastDbDir, String blastDb, int blastNumThreads, double idCutoff, File emblCDScache, File blastCache) 
+	public void retrieveHomologs(String blastBinDir, String blastDbDir, String blastDb, int blastNumThreads, double idCutoff, double queryCovCutoff, File emblCDScache, File blastCache) 
 	throws IOException, BlastError {
 		homologs = new UniprotHomologList(query);
 		
@@ -124,7 +124,7 @@ public class ChainEvolContext {
 		homologs.searchWithBlast(blastBinDir, blastDbDir, blastDb, blastNumThreads, blastCache);
 		System.out.println(homologs.size()+" homologs found by blast");
 		
-		applyIdentityCutoff(idCutoff);
+		applyIdentityCutoff(idCutoff, queryCovCutoff);
 		
 		System.out.println("Looking up UniprotKB data...");
 		homologs.retrieveUniprotKBData();
@@ -134,10 +134,10 @@ public class ChainEvolContext {
 				
 	}
 	
-	private void applyIdentityCutoff(double idCutoff) {
+	private void applyIdentityCutoff(double idCutoff, double queryCovCutoff) {
 		// applying identity cutoff
-		homologs.restrictToMinId(idCutoff);
-		System.out.println(homologs.size()+" homologs after applying "+String.format("%4.2f",idCutoff)+" identity cutoff");
+		homologs.restrictToMinIdAndCoverage(idCutoff, queryCovCutoff);
+		System.out.println(homologs.size()+" homologs after applying "+String.format("%4.2f",idCutoff)+" identity cutoff and "+String.format("%4.2f",queryCovCutoff)+" query coverage cutoff");
 
 	}
 

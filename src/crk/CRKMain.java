@@ -64,6 +64,7 @@ public class CRKMain {
 	// crk parameters
 	// cutoffs
 	private static final double   DEFAULT_IDENTITY_CUTOFF = 0.6;
+	private static final double   QUERY_COVERAGE_CUTOFF = 0.85;
 	private static final int      MIN_HOMOLOGS_CUTOFF = 10;
 	private static final double   CUTOFF_ASA_INTERFACE_REPORTING = 350;
 	
@@ -222,7 +223,7 @@ public class CRKMain {
 				System.exit(1);
 			}
 			// 2) getting the homologs and sequence data and creating multiple sequence alignment
-			chainEvCont.retrieveHomologs(BLAST_BIN_DIR, BLAST_DB_DIR, BLAST_DB, blastNumThreads, idCutoff, 
+			chainEvCont.retrieveHomologs(BLAST_BIN_DIR, BLAST_DB_DIR, BLAST_DB, blastNumThreads, idCutoff, QUERY_COVERAGE_CUTOFF, 
 					new File(EMBL_CDS_CACHE_DIR,baseName+"."+pdbCode+representativeChain+".homologs.emblcds.fa"),
 					new File(BLAST_CACHE_DIR,baseName+"."+pdbCode+representativeChain+".blast.xml"));
 			if (doScoreCRK) {
