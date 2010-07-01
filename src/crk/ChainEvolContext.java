@@ -342,9 +342,19 @@ public class ChainEvolContext {
 	 * Given a residue serial of the reference PDB SEQRES sequence (starting at 1), returns
 	 * its corresponding uniprot's sequence index (starting at 0)
 	 * @param resser
-	 * @return
+	 * @return the mapped uniprot sequence position or -1 if it maps to a gap
 	 */
 	public int getQueryUniprotPosForPDBPos(int resser) {
 		return alnPdb2Uniprot.getMapping1To2(resser-1);
+	}
+	
+	/**
+	 * Given a residue serial of the reference PDB SEQRES sequence (starting at 1), returns 
+	 * its corresponding representative-translated-CDS sequence index (starting at 0)  
+	 * @param resser
+	 * @return the mapped translated-CDS sequence position or -1 if it maps to a gap
+	 */
+	public int getQueryCDSPosForPDBPos(int resser) {
+		return this.getQueryRepCDS().getBestTranslation().getAln().getMapping1To2(getQueryUniprotPosForPDBPos(resser));
 	}
 }

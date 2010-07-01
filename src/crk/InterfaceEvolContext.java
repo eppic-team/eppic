@@ -3,6 +3,7 @@ package crk;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -17,10 +18,24 @@ public class InterfaceEvolContext {
 	private PisaInterface pisaInterf;
 	private List<ChainEvolContext> chains;  // At the moment strictly 2 members (matching the 2 PisaMolecules of pisaInterf). 
 											// If either of the 2 molecules is not a protein then is null.
+//	private List<List<Residue>> unreliablePDBPositions; // At the moment strictly 2 members (matching the 2 PisaMolecules of pisaInterf).
+													 	// The lists contain all residues that are in an unreliable positions (because of PDB to uniprot mapping problems in the query)
+//	private List<List<Residue>> unreliableCDSPositions; // At the moment strictly 2 members (matching the 2 PisaMolecules of pisaInterf).
+ 														// The lists contain all residues that are in an unreliable positions (because uniprot to CDS matching problems of the homologs)
+
+	
 	
 	public InterfaceEvolContext(PisaInterface pisaInterf, List<ChainEvolContext> chains) {
 		this.pisaInterf = pisaInterf;
 		this.chains = chains;
+		
+//		unreliablePDBPositions = new ArrayList<List<Residue>>();
+//		unreliableCDSPositions = new ArrayList<List<Residue>>();
+//		
+//		unreliablePDBPositions.add(checkResiduesForPDBReliability(chains.get(0), pisaInterf.getFirstMolecule()));
+//		unreliablePDBPositions.add(checkResiduesForPDBReliability(chains.get(1), pisaInterf.getSecondMolecule()));
+//		unreliableCDSPositions.add(checkResiduesForCDSReliability(chains.get(0), pisaInterf.getFirstMolecule()));
+//		unreliableCDSPositions.add(checkResiduesForCDSReliability(chains.get(1), pisaInterf.getSecondMolecule()));
 	}
 
 	public InterfaceScore scoreEntropy(double bsaToAsaSoftCutoff, double bsaToAsaHardCutoff, double relaxationStep, 
@@ -61,51 +76,139 @@ public class InterfaceEvolContext {
 		Map<Integer,PisaRimCore> rimcores = this.pisaInterf.getRimAndCore(bsaToAsaSoftCutoff, bsaToAsaHardCutoff, relaxationStep, minCoreSize);
 		PisaRimCore rimCore1 = rimcores.get(1);
 		PisaRimCore rimCore2 = rimcores.get(2);
+		// first checking residues for the consistency of the CDS data (alignments of translations) and PDB data (alignment of PDB to uniprot)
+		List<PisaResidue> unrelRimResidues1 = new ArrayList<PisaResidue>();
+		List<PisaResidue> unrelCoreResidues1 = new ArrayList<PisaResidue>();
+		List<PisaResidue> unrelRimResidues2 = new ArrayList<PisaResidue>();
+		List<PisaResidue> unrelCoreResidues2 = new ArrayList<PisaResidue>();
 		// rimCore1/2 will be null when the molecule is not a protein
 		if (rimCore1 != null) {
 			ChainEvolContext chain = chains.get(0);
 			rimEnt1  = calcScore(rimCore1.getRimResidues(), chain, scoType, pisaInterf.getFirstMolecule(), weighted);
 			coreEnt1 = calcScore(rimCore1.getCoreResidues(),chain, scoType, pisaInterf.getFirstMolecule(), weighted);
 			numHomologs1 = chain.getNumHomologs();
+			unrelRimResidues1.addAll(checkResiduesForPDBReliability(rimCore1.getRimResidues(), chain, pisaInterf.getFirstMolecule()));
+			unrelCoreResidues1.addAll(checkResiduesForPDBReliability(rimCore1.getCoreResidues(), chain, pisaInterf.getFirstMolecule()));
+			if (scoType==ScoringType.KAKS) {
+				unrelRimResidues1.addAll(checkResiduesForCDSReliability(rimCore1.getRimResidues(), chain, pisaInterf.getFirstMolecule()));	
+				unrelCoreResidues1.addAll(checkResiduesForCDSReliability(rimCore1.getCoreResidues(), chain, pisaInterf.getFirstMolecule()));
+			}
 		}
 		if (rimCore2 != null) {
 			ChainEvolContext chain = chains.get(1);
 			rimEnt2  = calcScore(rimCore2.getRimResidues(), chain, scoType, pisaInterf.getSecondMolecule(), weighted);
 			coreEnt2 = calcScore(rimCore2.getCoreResidues(),chain, scoType, pisaInterf.getSecondMolecule(), weighted);
 			numHomologs2 = chain.getNumHomologs();
+			unrelRimResidues2.addAll(checkResiduesForPDBReliability(rimCore2.getRimResidues(), chain, pisaInterf.getSecondMolecule()));
+			unrelCoreResidues2.addAll(checkResiduesForPDBReliability(rimCore2.getCoreResidues(), chain, pisaInterf.getSecondMolecule()));
+			if (scoType==ScoringType.KAKS) {
+				unrelRimResidues2.addAll(checkResiduesForCDSReliability(rimCore2.getRimResidues(), chain, pisaInterf.getSecondMolecule()));	
+				unrelCoreResidues2.addAll(checkResiduesForCDSReliability(rimCore2.getCoreResidues(), chain, pisaInterf.getSecondMolecule()));
+			}
 		}
 				
-		InterfaceMemberScore ims1 = new InterfaceMemberScore(rimCore1, coreEnt1, rimEnt1, numHomologs1, homologsCutoff, minMemberCoreSize, 1);
-		InterfaceMemberScore ims2 = new InterfaceMemberScore(rimCore2, coreEnt2, rimEnt2, numHomologs2, homologsCutoff, minMemberCoreSize, 2);
+		InterfaceMemberScore ims1 = new InterfaceMemberScore(rimCore1, coreEnt1, rimEnt1, numHomologs1, homologsCutoff, minMemberCoreSize, unrelRimResidues1, unrelCoreResidues1, 1);
+		InterfaceMemberScore ims2 = new InterfaceMemberScore(rimCore2, coreEnt2, rimEnt2, numHomologs2, homologsCutoff, minMemberCoreSize, unrelRimResidues2, unrelCoreResidues2, 2);
 		
 		return new InterfaceScore(ims1, ims2, minCoreSize);
+	}
+	
+//	private List<Residue> checkResiduesForPDBReliability(ChainEvolContext chain, PisaMolecule pisaMol) {
+//		List<Residue> unreliableResidues = new ArrayList<Residue>();
+//		Pdb pdb = chain.getPdb(pisaMol.getChainId());
+//		
+//		for (PisaResidue res:pisaMol.getResidues()) {
+//			int resSer = chain.getResSerFromPdbResSer(pisaMol.getChainId(), res.getPdbResSer());
+//
+//			if (resSer!=-1 && !chain.isPdbSeqPositionMatchingUniprot(resSer)) {
+//				unreliableResidues.add(pdb.getResidue(resSer));
+//			}
+//		}
+//		
+//		return unreliableResidues;
+//	}
+//	
+//	private List<Residue> checkResiduesForCDSReliability(ChainEvolContext chain, PisaMolecule pisaMol) {
+//		List<Residue> unreliableResidues = new ArrayList<Residue>();
+//		Pdb pdb = chain.getPdb(pisaMol.getChainId());
+//		
+//		for (PisaResidue res:pisaMol.getResidues()) {
+//			int resSer = chain.getResSerFromPdbResSer(pisaMol.getChainId(), res.getPdbResSer());
+//
+//			if (resSer!=-1 && !chain.isPdbSeqPositionReliable(resSer)) {
+//				unreliableResidues.add(pdb.getResidue(resSer));
+//			}
+//		}
+//		
+//		return unreliableResidues;
+//	}
+	
+	private List<PisaResidue> checkResiduesForPDBReliability(List<PisaResidue> residues, ChainEvolContext chain, PisaMolecule pisaMol) {
+		List<PisaResidue> unreliableResidues = new ArrayList<PisaResidue>();
+		for (PisaResidue res:residues){
+			int resSer = chain.getResSerFromPdbResSer(pisaMol.getChainId(), res.getPdbResSer());
+			if (resSer!=-1 && !chain.isPdbSeqPositionMatchingUniprot(resSer)) {
+				unreliableResidues.add(res);
+			}
+		}
+		if (!unreliableResidues.isEmpty()) {
+			System.err.print("Interface residue serials ");
+			for (int i=0;i<unreliableResidues.size();i++) {
+				System.err.print(unreliableResidues.get(i).getResType()+unreliableResidues.get(i).getPdbResSer());
+				if (i!=unreliableResidues.size()-1) {
+					System.err.print(",");
+				}
+			}
+			System.err.println(" can't be evaluated because of PDB SEQRES not matching the Uniprot sequence at those positions.");
+		}
+		return unreliableResidues;
+	}
+	
+	private List<PisaResidue> checkResiduesForCDSReliability(List<PisaResidue> residues, ChainEvolContext chain, PisaMolecule pisaMol) {
+		List<PisaResidue> unreliableResidues = new ArrayList<PisaResidue>();
+		for (PisaResidue res:residues){
+			int resSer = chain.getResSerFromPdbResSer(pisaMol.getChainId(), res.getPdbResSer());
+			if (resSer!=-1 && !chain.isPdbSeqPositionReliable(resSer)) {
+				unreliableResidues.add(res);
+			}				
+		}
+		if (!unreliableResidues.isEmpty()) {
+			System.err.print("Interface residue serials ");
+			for (int i=0;i<unreliableResidues.size();i++) {
+				System.err.print(unreliableResidues.get(i).getResType()+unreliableResidues.get(i).getPdbResSer());
+				if (i!=unreliableResidues.size()-1) {
+					System.err.print(",");
+				}
+			}
+			System.err.println(" can't be evaluated because of unreliable CDS sequence information.");			
+		}
+		return unreliableResidues;
 	}
 	
 	private double calcScore(List<PisaResidue> residues, ChainEvolContext chain, ScoringType scoType, PisaMolecule pisaMol, boolean weighted) {
 		double totalScore = 0.0;
 		double totalWeight = 0.0;
+		List<Double> conservScores = chain.getConservationScores(scoType);
 		for (PisaResidue res:residues){
 			int resSer = chain.getResSerFromPdbResSer(pisaMol.getChainId(), res.getPdbResSer());
 
-			// we always check whether the residue is in a reliable position (PDB SEQRES matching its uniprot)
-			if (!chain.isPdbSeqPositionMatchingUniprot(resSer)) {
-				System.err.println("Interface residue serial "+resSer+" can't be evaluated because the PDB SEQRES does not match the Uniprot sequence at that position. Assigning no score to this interface.");
-				return Double.NaN;
-			}
-			// for KAKS scoring we additionally check for reliability of the position with regards to CDS matching
-			if (scoType==ScoringType.KAKS) {
-				if (!chain.isPdbSeqPositionReliable(resSer)) {
-					System.err.println("Interface residue serial "+resSer+" can't be evaluated because it has unreliable CDS sequence information. Assigning no score to this interface.");
-					return Double.NaN;
-				}				
-			} 
 			if (resSer!=-1) {
-				double weight = 1.0;
-				if (weighted) {
-					weight = res.getBsa();
+				int queryPos = -2;
+				if (scoType==ScoringType.ENTROPY) {
+					queryPos = chain.getQueryUniprotPosForPDBPos(resSer); 
+				} else if (scoType==ScoringType.KAKS) {
+					queryPos = chain.getQueryCDSPosForPDBPos(resSer);
 				}
-				totalScore += weight*(chain.getConservationScores(scoType).get(chain.getQueryUniprotPosForPDBPos(resSer)));
-				totalWeight += weight;
+				if (queryPos!=-1) {   
+					double weight = 1.0;
+					if (weighted) {
+						weight = res.getBsa();
+					}
+					totalScore += weight*(conservScores.get(queryPos));
+					totalWeight += weight;
+				} else {
+					
+				}
 			} else {
 				System.err.println("Can't map PISA pdb residue serial "+res.getPdbResSer()+" (res type:"+res.getResType()+", PISA serial: "+res.getResSerial()+")");
 				System.err.println("The residue will not be used for scoring");

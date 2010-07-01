@@ -2,12 +2,16 @@ package crk;
 
 import java.io.PrintStream;
 import java.io.Serializable;
+import java.util.List;
 
+import owl.core.connections.pisa.PisaResidue;
 import owl.core.connections.pisa.PisaRimCore;
 
 public class InterfaceMemberScore implements Serializable {
 	
 	private static final long serialVersionUID = -3409108391018870468L;
+	
+	private static final double MAX_ALLOWED_UNREL_RES = 0.05; // 5% maximum allowed unreliable residues for core or rim
 	
 	private PisaRimCore rimCore;
 	private double scoreCore;
@@ -15,15 +19,23 @@ public class InterfaceMemberScore implements Serializable {
 	private int numHomologs;
 	private int homologsCutoff;
 	private int minMemberCoreSize;
+	private List<PisaResidue> unreliableRimResidues;
+	private List<PisaResidue> unreliableCoreResidues;
 	private int memberSerial;
 
-	public InterfaceMemberScore(PisaRimCore rimCore, double scoreCore, double scoreRim, int numHomologs, int homologsCutoff, int minMemberCoreSize, int memberSerial) {
+	public InterfaceMemberScore(PisaRimCore rimCore, double scoreCore, double scoreRim, int numHomologs, int homologsCutoff, 
+			int minMemberCoreSize,
+			List<PisaResidue> unreliableRimResidues,
+			List<PisaResidue> unreliableCoreResidues,
+			int memberSerial) {
 		this.rimCore = rimCore;
 		this.scoreCore = scoreCore;
 		this.scoreRim = scoreRim;
 		this.numHomologs = numHomologs;
 		this.homologsCutoff = homologsCutoff;
 		this.minMemberCoreSize = minMemberCoreSize;
+		this.unreliableRimResidues = unreliableRimResidues;
+		this.unreliableCoreResidues = unreliableCoreResidues;
 		this.memberSerial = memberSerial;
 	}
 
@@ -46,27 +58,21 @@ public class InterfaceMemberScore implements Serializable {
 	public boolean hasEnoughCore() {
 		return rimCore.getCoreSize()>=minMemberCoreSize;
 	}
-
-//	public InterfaceCall getCall(double bioCutoff, double xtalCutoff) {
-//		if (!isProtein()) {
-//			return new InterfaceCall(CallType.NO_PREDICTION,Double.NaN,"Not a protein");
-//		}
-//		if (!hasEnoughHomologs()) {
-//			return new InterfaceCall(CallType.NO_PREDICTION,Double.NaN,"Not enough homologs ("+numHomologs+")");
-//		}
-//		if (!hasEnoughCore()) {
-//			return new InterfaceCall(CallType.CRYSTAL,Double.NaN, "Core too small ("+rimCore.getCoreSize()+"). Likely a crystal interface.");
-//		}
-//		double ratio = this.getRatio();
-//		if (ratio<bioCutoff) {
-//			return new InterfaceCall(CallType.BIO, ratio, "Putative biological interface");
-//		} else if (ratio>xtalCutoff) {
-//			return new InterfaceCall(CallType.CRYSTAL, ratio, "Putative crystal interface");
-//		} else {
-//			return new InterfaceCall(CallType.GRAY, ratio, "Undecided");
-//		}
-//	}
 	
+	public boolean hasEnoughReliableCoreRes() {
+		if (((double)this.unreliableCoreResidues.size()/(double)this.rimCore.getCoreSize())>MAX_ALLOWED_UNREL_RES) {
+			return false;
+		}
+		return true;
+	}
+	
+	public boolean hasEnoughReliableRimRes() {
+		if (((double)this.unreliableRimResidues.size()/(double)this.rimCore.getRimSize())>MAX_ALLOWED_UNREL_RES) {
+			return false;
+		}
+		return true;		
+	}
+
 	public CallType getCall(double bioCutoff, double xtalCutoff) {
 		if (!isProtein()) {
 			return CallType.NO_PREDICTION;
@@ -76,6 +82,12 @@ public class InterfaceMemberScore implements Serializable {
 		}
 		if (!hasEnoughCore()) {
 			return CallType.CRYSTAL;
+		}
+		if (!hasEnoughReliableCoreRes()) {
+			return CallType.NO_PREDICTION;
+		}
+		if (!hasEnoughReliableRimRes()) {
+			return CallType.NO_PREDICTION;
 		}
 		double ratio = this.getRatio();
 		if (ratio<bioCutoff) {
