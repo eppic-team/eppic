@@ -235,6 +235,9 @@ public class CRKMain {
 			// align
 			chainEvCont.align(TCOFFE_BIN, TCOFFEE_VERYFAST_MODE);
 			
+			// writing homolog sequences to file
+			chainEvCont.writeHomologSeqsToFile(new File(outDir,baseName+"."+pdbCode+representativeChain+".fa"));
+			
 			// check the back-translation of CDS to uniprot
 			// check whether there we have a good enough CDS for the chain
 			if (doScoreCRK) {

@@ -155,6 +155,10 @@ public class ChainEvolContext {
 		homologs.writeNucleotideAlignmentToFile(alnFile);
 	}
 	
+	public void writeHomologSeqsToFile(File outFile) throws FileNotFoundException {
+		homologs.writeToFasta(outFile, false);
+	}
+	
 	public MultipleSequenceAlignment getAlignment() {
 		return homologs.getAlignment();
 	}
