@@ -4,12 +4,16 @@ import java.io.PrintStream;
 import java.io.Serializable;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 import owl.core.connections.pisa.PisaResidue;
 import owl.core.connections.pisa.PisaRimCore;
 
 public class InterfaceMemberScore implements Serializable {
 	
 	private static final long serialVersionUID = -3409108391018870468L;
+	
+	private static final Logger LOGGER = Logger.getLogger(InterfaceMemberScore.class);
 	
 	private static final double MAX_ALLOWED_UNREL_RES = 0.05; // 5% maximum allowed unreliable residues for core or rim
 	
@@ -75,18 +79,23 @@ public class InterfaceMemberScore implements Serializable {
 
 	public CallType getCall(double bioCutoff, double xtalCutoff) {
 		if (!isProtein()) {
+			LOGGER.info("Interface member "+memberSerial+" calls NOPRED because it is not a protein");
 			return CallType.NO_PREDICTION;
 		}
 		if (!hasEnoughHomologs()) {
+			LOGGER.info("Interface member "+memberSerial+" calls NOPRED because there are not enough homologs to evaluate conservation scores");
 			return CallType.NO_PREDICTION;
 		}
 		if (!hasEnoughCore()) {
+			LOGGER.info("Interface member "+memberSerial+" calls NOPRED because core is too small ("+rimCore.getCoreSize()+" residues)");
 			return CallType.CRYSTAL;
 		}
 		if (!hasEnoughReliableCoreRes()) {
+			LOGGER.info("Interface member "+memberSerial+" calls NOPRED because there are not enough reliable core residues ("+this.unreliableCoreResidues.size()+" unreliable residues out of "+this.rimCore.getCoreSize()+" residues in core)");
 			return CallType.NO_PREDICTION;
 		}
 		if (!hasEnoughReliableRimRes()) {
+			LOGGER.info("Interface member "+memberSerial+" calls NOPRED because there are not enough reliable rim residues ("+this.unreliableRimResidues.size()+" unreliable residues out of "+this.rimCore.getRimSize()+" residues in rim)");
 			return CallType.NO_PREDICTION;
 		}
 		double ratio = this.getRatio();
