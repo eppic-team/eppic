@@ -128,6 +128,10 @@ public class ChainEvolContext {
 		applyIdentityCutoff(idCutoff, queryCovCutoff);
 	}
 	
+	public void removeRedundancy() {
+		homologs.removeRedundancy();
+	}
+	
 	public void retrieveHomologsData(File emblCDScache) throws IOException {
 		homologs.retrieveUniprotKBData();
 		

@@ -241,6 +241,7 @@ public class CRKMain {
 			System.out.println("Blasting...");
 			chainEvCont.retrieveHomologs(BLAST_BIN_DIR, BLAST_DB_DIR, BLAST_DB, blastNumThreads, idCutoff, QUERY_COVERAGE_CUTOFF, 
 					new File(BLAST_CACHE_DIR,baseName+"."+pdbCode+representativeChain+".blast.xml"));
+			
 			System.out.println("Retrieving UniprotKB data and EMBL CDS sequences");
 			chainEvCont.retrieveHomologsData(new File(EMBL_CDS_CACHE_DIR,baseName+"."+pdbCode+representativeChain+".homologs.emblcds.fa"));
 			if (doScoreCRK) {
@@ -249,6 +250,9 @@ public class CRKMain {
 					System.exit(1);
 				}
 			}
+			// remove redundancy
+			chainEvCont.removeRedundancy();
+			
 			// align
 			System.out.println("Aligning protein sequences with t_coffee...");
 			chainEvCont.align(TCOFFE_BIN, TCOFFEE_VERYFAST_MODE);
