@@ -105,7 +105,7 @@ public class ChainEvolContext {
 		// and finally we align the 2 sequences (rather than trusting the SIFTS alignment info)
 		try {
 			alnPdb2Uniprot = new PairwiseSequenceAlignment(sequence, query.getUniprotSeq().getSeq(), pdbCode+representativeChain, query.getUniprotSeq().getName());
-			LOGGER.info("The PDB SEQRES to Uniprot alignmnent:\n"+alnPdb2Uniprot.getFormattedAlignmentString());
+			LOGGER.debug("The PDB SEQRES to Uniprot alignmnent:\n"+alnPdb2Uniprot.getFormattedAlignmentString());
 		} catch (PairwiseSequenceAlignmentException e1) {
 			LOGGER.fatal("Problem aligning PDB sequence "+pdbCode+representativeChain+" to its Uniprot match "+query.getUniId());
 			LOGGER.fatal(e1.getMessage());
