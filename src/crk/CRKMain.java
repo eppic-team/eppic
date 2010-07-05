@@ -17,6 +17,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
 
+import org.apache.log4j.FileAppender;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.apache.log4j.PatternLayout;
 import org.xml.sax.SAXException;
 
 import owl.core.connections.pisa.PisaConnection;
@@ -89,6 +93,11 @@ public class CRKMain {
 	private static final String   BLAST_CACHE_DIR = "/nfs/data/dbs/blast_cache/current";
 
 
+	// logger (log4j)
+	private static final Logger ROOTLOGGER = Logger.getRootLogger();
+
+	
+	
 	/**
 	 * 
 	 * @param args
@@ -172,11 +181,17 @@ public class CRKMain {
 			System.exit(1);
 		}
 
-		// to throw away jaligner logging
-		System.setProperty("java.util.logging.config.file","/dev/null");
+		// turn off jaligner logging (we only use NeedlemanWunschGotoh)
+		// (for some reason this doesn't work if condensated into one line, it seems that one needs to instantiate the logger and then call setLevel)
+		java.util.logging.Logger jalLogger = java.util.logging.Logger.getLogger("NeedlemanWunschGotoh");
+		jalLogger.setLevel(java.util.logging.Level.OFF);
 		
-		// files
+		// setting up the file logger for log4j
+	    ROOTLOGGER.addAppender(new FileAppender(new PatternLayout("%d{ABSOLUTE} %5p - %m%n"),outDir+"/"+baseName+".log",false));
+	    ROOTLOGGER.setLevel(Level.INFO);
+
 		
+		// files		
 		File cifFile = getCifFile(pdbCode, ONLINE, outDir);
 		Pdb pdb = new CiffilePdb(cifFile);
 		String[] chains = pdb.getChains();
@@ -194,17 +209,16 @@ public class CRKMain {
 				uniqSequences.put(pdb.getSequence(),list);
 			}		
 		}
-		System.out.println("Unique sequences for "+pdbCode+": ");
+		String msg = "Unique sequences for "+pdbCode+": ";
 		int i = 1;
 		for (List<String> entity:uniqSequences.values()) {
-			System.out.print(i+":");
+			msg+=i+":";
 			for (String chain:entity) {
-				System.out.print(" "+chain);
+				msg+=" "+chain;
 			}
-			System.out.println();
 			i++;
 		}
-		
+		ROOTLOGGER.info(msg);
 
 		Map<String,ChainEvolContext> allChains = new HashMap<String,ChainEvolContext>();
 		for (List<String> entity:uniqSequences.values()) {
@@ -219,20 +233,24 @@ public class CRKMain {
 			// 1) getting the uniprot ids corresponding to the query (the pdb sequence)
 			chainEvCont.retrieveQueryData(SIFTS_FILE, new File(EMBL_CDS_CACHE_DIR,baseName+"."+pdbCode+representativeChain+".query.emblcds.fa"));
 			if (chainEvCont.getQueryRepCDS()==null) {
-				System.err.println("No CDS good match for query sequence!! Exiting");
+				//System.err.println("No CDS good match for query sequence!! Exiting");
+				ROOTLOGGER.fatal("No CDS good match for query sequence!! Exiting");
 				System.exit(1);
 			}
 			// 2) getting the homologs and sequence data and creating multiple sequence alignment
+			System.out.println("Blasting...");
 			chainEvCont.retrieveHomologs(BLAST_BIN_DIR, BLAST_DB_DIR, BLAST_DB, blastNumThreads, idCutoff, QUERY_COVERAGE_CUTOFF, 
-					new File(EMBL_CDS_CACHE_DIR,baseName+"."+pdbCode+representativeChain+".homologs.emblcds.fa"),
 					new File(BLAST_CACHE_DIR,baseName+"."+pdbCode+representativeChain+".blast.xml"));
+			System.out.println("Retrieving UniprotKB data and EMBL CDS sequences");
+			chainEvCont.retrieveHomologsData(new File(EMBL_CDS_CACHE_DIR,baseName+"."+pdbCode+representativeChain+".homologs.emblcds.fa"));
 			if (doScoreCRK) {
 				if (!chainEvCont.isConsistentGeneticCodeType()){
-					System.err.println("The list of homologs does not have a single genetic code type, can't do CRK analysis on it.");
+					ROOTLOGGER.fatal("The list of homologs does not have a single genetic code type, can't do CRK analysis on it.");
 					System.exit(1);
 				}
 			}
 			// align
+			System.out.println("Aligning protein sequences with t_coffee...");
 			chainEvCont.align(TCOFFE_BIN, TCOFFEE_VERYFAST_MODE);
 			
 			// writing homolog sequences to file
@@ -241,8 +259,8 @@ public class CRKMain {
 			// check the back-translation of CDS to uniprot
 			// check whether there we have a good enough CDS for the chain
 			if (doScoreCRK) {
-				System.out.println("Number of homologs with at least one uniprot CDS mapping: "+chainEvCont.getNumHomologsWithCDS());
-				System.out.println("Number of homologs with valid CDS: "+chainEvCont.getNumHomologsWithValidCDS());
+				ROOTLOGGER.info("Number of homologs with at least one uniprot CDS mapping: "+chainEvCont.getNumHomologsWithCDS());
+				ROOTLOGGER.info("Number of homologs with valid CDS: "+chainEvCont.getNumHomologsWithValidCDS());
 			}
 			
 			// printing summary to file
@@ -299,6 +317,7 @@ public class CRKMain {
 		pisaLogPS.close();
 		
 		// 4) scoring
+		System.out.println("Scores:");
 		PrintStream scoreEntrPS = new PrintStream(new File(outDir,baseName+ENTROPIES_FILE_SUFFIX+".scores"));
 		printScoringHeaders(System.out);
 		printScoringHeaders(scoreEntrPS);

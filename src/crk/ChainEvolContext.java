@@ -10,6 +10,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
+
 import owl.core.connections.NoMatchFoundException;
 import owl.core.connections.SiftsConnection;
 import owl.core.features.SiftsFeature;
@@ -26,6 +28,8 @@ import owl.core.structure.Pdb;
 import owl.core.structure.PdbLoadError;
 
 public class ChainEvolContext {
+	
+	private static final Logger LOGGER = Logger.getLogger(ChainEvolContext.class);
 	
 	private Map<String,Pdb> pdbs; 			// pdbs for all chains corresponding to this entity (pdb chain codes to Pdb objects)
 	private String representativeChain;		// the pdb chain code of the representative chain
@@ -67,20 +71,20 @@ public class ChainEvolContext {
 					uniqUniIds.add(sifts.getUniprotId());
 				}
 				if (uniqUniIds.size()>1) {
-					System.err.println("More than one uniprot SIFTS mapping for the query PDB code "+pdbCode);
-					System.err.print("Uniprot IDs are: ");
+					LOGGER.error("More than one uniprot SIFTS mapping for the query PDB code "+pdbCode);
+					String msg = ("Uniprot IDs are: ");
 					for (String uniId:uniqUniIds){
-						System.err.print(uniId+" ");
+						msg+=(uniId+" ");
 					}
-					System.err.println();
-					System.err.println("Check if the PDB entry is biologically reasonable (likely to be an engineered entry). Won't continue.");
+					LOGGER.error(msg);
+					LOGGER.error("Check if the PDB entry is biologically reasonable (likely to be an engineered entry). Won't continue.");
 					System.exit(1);
 				}
 				query = new UniprotEntry(uniqUniIds.iterator().next());
 
 
 			} catch (NoMatchFoundException e) {
-				System.err.println("No SIFTS mapping could be found for "+pdbCode+representativeChain);
+				LOGGER.warn("No SIFTS mapping could be found for "+pdbCode+representativeChain);
 				System.exit(1);
 				//TODO blast, find uniprot mapping and use it if one can be found
 			}
@@ -91,8 +95,7 @@ public class ChainEvolContext {
 			//TODO blast to find mapping
 		}
 		
-		System.out.print("Uniprot id for the query "+pdbCode+representativeChain+": ");
-		System.out.println(query.getUniId());
+		LOGGER.info("Uniprot id for the query "+pdbCode+representativeChain+": "+query.getUniId());
 		
 		// once we have the identifier we get the data from uniprot
 		query.retrieveUniprotKBData();
@@ -102,12 +105,11 @@ public class ChainEvolContext {
 		// and finally we align the 2 sequences (rather than trusting the SIFTS alignment info)
 		try {
 			alnPdb2Uniprot = new PairwiseSequenceAlignment(sequence, query.getUniprotSeq().getSeq(), pdbCode+representativeChain, query.getUniprotSeq().getName());
-			System.out.println("The PDB SEQRES to Uniprot alignmnent:");
-			alnPdb2Uniprot.writeAlignment(System.out);
+			LOGGER.info("The PDB SEQRES to Uniprot alignmnent:\n"+alnPdb2Uniprot.getFormattedAlignmentString());
 		} catch (PairwiseSequenceAlignmentException e1) {
-			System.err.println("Problem aligning PDB sequence "+pdbCode+representativeChain+" to its Uniprot match "+query.getUniId());
-			System.err.println(e1.getMessage());
-			System.err.println("Can't continue");
+			LOGGER.fatal("Problem aligning PDB sequence "+pdbCode+representativeChain+" to its Uniprot match "+query.getUniId());
+			LOGGER.fatal(e1.getMessage());
+			LOGGER.fatal("Can't continue");
 			System.exit(1);
 		}
 		// TODO anyway we should do also a sanity check of our alignment against the SIFTS mappings (if we have them) 
@@ -116,34 +118,32 @@ public class ChainEvolContext {
 		//}
 	}
 	
-	public void retrieveHomologs(String blastBinDir, String blastDbDir, String blastDb, int blastNumThreads, double idCutoff, double queryCovCutoff, File emblCDScache, File blastCache) 
+	public void retrieveHomologs(String blastBinDir, String blastDbDir, String blastDb, int blastNumThreads, double idCutoff, double queryCovCutoff, File blastCache) 
 	throws IOException, BlastError {
 		homologs = new UniprotHomologList(query);
 		
-		System.out.println("Blasting...");
 		homologs.searchWithBlast(blastBinDir, blastDbDir, blastDb, blastNumThreads, blastCache);
-		System.out.println(homologs.size()+" homologs found by blast");
+		LOGGER.info(homologs.size()+" homologs found by blast");
 		
 		applyIdentityCutoff(idCutoff, queryCovCutoff);
-		
-		System.out.println("Looking up UniprotKB data...");
+	}
+	
+	public void retrieveHomologsData(File emblCDScache) throws IOException {
 		homologs.retrieveUniprotKBData();
 		
-		System.out.println("Retrieving EMBL cds sequences...");
 		homologs.retrieveEmblCdsSeqs(emblCDScache);
-				
+		
 	}
 	
 	private void applyIdentityCutoff(double idCutoff, double queryCovCutoff) {
 		// applying identity cutoff
 		homologs.restrictToMinIdAndCoverage(idCutoff, queryCovCutoff);
-		System.out.println(homologs.size()+" homologs after applying "+String.format("%4.2f",idCutoff)+" identity cutoff and "+String.format("%4.2f",queryCovCutoff)+" query coverage cutoff");
+		LOGGER.info(homologs.size()+" homologs after applying "+String.format("%4.2f",idCutoff)+" identity cutoff and "+String.format("%4.2f",queryCovCutoff)+" query coverage cutoff");
 
 	}
 
 	public void align(File tcoffeeBin, boolean tcoffeeVeryFastMode) throws IOException, TcoffeeError{
 		// 3) alignment of the protein sequences using tcoffee
-		System.out.println("Aligning protein sequences with t_coffee...");
 		homologs.computeTcoffeeAlignment(tcoffeeBin, tcoffeeVeryFastMode);
 	}
 	

@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
+
 import owl.core.connections.pisa.PisaInterface;
 import owl.core.connections.pisa.PisaMolecule;
 import owl.core.connections.pisa.PisaResidue;
@@ -15,6 +17,8 @@ import owl.core.structure.Pdb;
 
 public class InterfaceEvolContext {
 
+	private static final Logger LOGGER = Logger.getLogger(InterfaceEvolContext.class);
+	
 	private PisaInterface pisaInterf;
 	private List<ChainEvolContext> chains;  // At the moment strictly 2 members (matching the 2 PisaMolecules of pisaInterf). 
 											// If either of the 2 molecules is not a protein then is null.
@@ -152,14 +156,15 @@ public class InterfaceEvolContext {
 			}
 		}
 		if (!unreliableResidues.isEmpty()) {
-			System.err.print("Interface residue serials ");
+			String msg = "Interface residue serials ";
 			for (int i=0;i<unreliableResidues.size();i++) {
-				System.err.print(unreliableResidues.get(i).getResType()+unreliableResidues.get(i).getPdbResSer());
+				msg+=unreliableResidues.get(i).getResType()+unreliableResidues.get(i).getPdbResSer();
 				if (i!=unreliableResidues.size()-1) {
-					System.err.print(",");
+					msg+=",";
 				}
 			}
-			System.err.println(" can't be evaluated because of PDB SEQRES not matching the Uniprot sequence at those positions.");
+			msg+=" can't be evaluated because of PDB SEQRES not matching the Uniprot sequence at those positions.";
+			LOGGER.warn(msg);
 		}
 		return unreliableResidues;
 	}
@@ -173,14 +178,15 @@ public class InterfaceEvolContext {
 			}				
 		}
 		if (!unreliableResidues.isEmpty()) {
-			System.err.print("Interface residue serials ");
+			String msg = "Interface residue serials ";
 			for (int i=0;i<unreliableResidues.size();i++) {
-				System.err.print(unreliableResidues.get(i).getResType()+unreliableResidues.get(i).getPdbResSer());
+				msg+=unreliableResidues.get(i).getResType()+unreliableResidues.get(i).getPdbResSer();
 				if (i!=unreliableResidues.size()-1) {
-					System.err.print(",");
+					msg+=(",");
 				}
 			}
-			System.err.println(" can't be evaluated because of unreliable CDS sequence information.");			
+			msg+=" can't be evaluated because of unreliable CDS sequence information.";		
+			LOGGER.warn(msg);
 		}
 		return unreliableResidues;
 	}
@@ -210,8 +216,8 @@ public class InterfaceEvolContext {
 					
 				}
 			} else {
-				System.err.println("Can't map PISA pdb residue serial "+res.getPdbResSer()+" (res type:"+res.getResType()+", PISA serial: "+res.getResSerial()+")");
-				System.err.println("The residue will not be used for scoring");
+				LOGGER.warn("Can't map PISA pdb residue serial "+res.getPdbResSer()+" (res type:"+res.getResType()+", PISA serial: "+res.getResSerial()+")");
+				LOGGER.warn("The residue will not be used for scoring");
 			}
 		}
 		return totalScore/totalWeight;
