@@ -87,7 +87,7 @@ public class InterfaceMemberScore implements Serializable {
 			return CallType.NO_PREDICTION;
 		}
 		if (!hasEnoughCore()) {
-			LOGGER.info("Interface member "+memberSerial+" calls NOPRED because core is too small ("+rimCore.getCoreSize()+" residues)");
+			LOGGER.info("Interface member "+memberSerial+" calls XTAL because core is too small ("+rimCore.getCoreSize()+" residues)");
 			return CallType.CRYSTAL;
 		}
 		if (!hasEnoughReliableCoreRes()) {
