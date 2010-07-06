@@ -4,5 +4,7 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/owl"/>
 	<classpathentry kind="lib" path="/owl/jars/java-getopt-1.0.13.jar"/>
+	<classpathentry kind="lib" path="/owl/jars/vecmath.jar"/>
+	<classpathentry kind="lib" path="/owl/jars/uniprot/log4j.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
