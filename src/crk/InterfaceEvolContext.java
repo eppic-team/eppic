@@ -70,10 +70,10 @@ public class InterfaceEvolContext {
 			boolean weighted, 
 			ScoringType scoType) {
 
-		double rimEnt1 = Double.NaN;
-		double coreEnt1 = Double.NaN;
-		double rimEnt2 = Double.NaN;
-		double coreEnt2 = Double.NaN;
+		double rimScore1 = Double.NaN;
+		double coreScore1 = Double.NaN;
+		double rimScore2 = Double.NaN;
+		double coreScore2 = Double.NaN;
 		int numHomologs1 = 0;
 		int numHomologs2 = 0;
 		
@@ -88,8 +88,8 @@ public class InterfaceEvolContext {
 		// rimCore1/2 will be null when the molecule is not a protein
 		if (rimCore1 != null) {
 			ChainEvolContext chain = chains.get(0);
-			rimEnt1  = calcScore(rimCore1.getRimResidues(), chain, scoType, pisaInterf.getFirstMolecule(), weighted);
-			coreEnt1 = calcScore(rimCore1.getCoreResidues(),chain, scoType, pisaInterf.getFirstMolecule(), weighted);
+			rimScore1  = calcScore(rimCore1.getRimResidues(), chain, scoType, pisaInterf.getFirstMolecule(), weighted);
+			coreScore1 = calcScore(rimCore1.getCoreResidues(),chain, scoType, pisaInterf.getFirstMolecule(), weighted);
 			numHomologs1 = chain.getNumHomologs();
 			unrelRimResidues1.addAll(checkResiduesForPDBReliability(rimCore1.getRimResidues(), chain, pisaInterf.getFirstMolecule()));
 			unrelCoreResidues1.addAll(checkResiduesForPDBReliability(rimCore1.getCoreResidues(), chain, pisaInterf.getFirstMolecule()));
@@ -100,8 +100,8 @@ public class InterfaceEvolContext {
 		}
 		if (rimCore2 != null) {
 			ChainEvolContext chain = chains.get(1);
-			rimEnt2  = calcScore(rimCore2.getRimResidues(), chain, scoType, pisaInterf.getSecondMolecule(), weighted);
-			coreEnt2 = calcScore(rimCore2.getCoreResidues(),chain, scoType, pisaInterf.getSecondMolecule(), weighted);
+			rimScore2  = calcScore(rimCore2.getRimResidues(), chain, scoType, pisaInterf.getSecondMolecule(), weighted);
+			coreScore2 = calcScore(rimCore2.getCoreResidues(),chain, scoType, pisaInterf.getSecondMolecule(), weighted);
 			numHomologs2 = chain.getNumHomologs();
 			unrelRimResidues2.addAll(checkResiduesForPDBReliability(rimCore2.getRimResidues(), chain, pisaInterf.getSecondMolecule()));
 			unrelCoreResidues2.addAll(checkResiduesForPDBReliability(rimCore2.getCoreResidues(), chain, pisaInterf.getSecondMolecule()));
@@ -111,8 +111,8 @@ public class InterfaceEvolContext {
 			}
 		}
 				
-		InterfaceMemberScore ims1 = new InterfaceMemberScore(rimCore1, coreEnt1, rimEnt1, numHomologs1, homologsCutoff, minMemberCoreSize, unrelRimResidues1, unrelCoreResidues1, 1);
-		InterfaceMemberScore ims2 = new InterfaceMemberScore(rimCore2, coreEnt2, rimEnt2, numHomologs2, homologsCutoff, minMemberCoreSize, unrelRimResidues2, unrelCoreResidues2, 2);
+		InterfaceMemberScore ims1 = new InterfaceMemberScore(rimCore1, coreScore1, rimScore1, numHomologs1, homologsCutoff, minMemberCoreSize, unrelRimResidues1, unrelCoreResidues1, 1);
+		InterfaceMemberScore ims2 = new InterfaceMemberScore(rimCore2, coreScore2, rimScore2, numHomologs2, homologsCutoff, minMemberCoreSize, unrelRimResidues2, unrelCoreResidues2, 2);
 		
 		return new InterfaceScore(ims1, ims2, minCoreSize);
 	}
