@@ -269,7 +269,7 @@ public class CRKMain {
 		
 		// setting up the file logger for log4j
 	    ROOTLOGGER.addAppender(new FileAppender(new PatternLayout("%d{ABSOLUTE} %5p - %m%n"),outDir+"/"+baseName+".log",false));
-	    ROOTLOGGER.setLevel(Level.INFO);
+	    ROOTLOGGER.setLevel(Level.DEBUG);
 
 		
 		// loading settings from config file
