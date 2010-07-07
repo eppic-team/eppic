@@ -97,6 +97,8 @@ public class CRKMain {
 
 	private static final boolean  DEF_USE_TCOFFEE_VERYFAST_MODE = true;
 	
+	private static final int      DEF_MAX_NUM_SEQUENCES_SELECTON = 60;
+	
 	// GLOBAL VARIABLES ASSIGNABLE FROM CONFIG FILE
 	private static String   LOCAL_CIF_DIR;
 	private static String   PDB_FTP_CIF_URL;
@@ -164,6 +166,7 @@ public class CRKMain {
 		
 		double selectonEpsilon = DEF_SELECTON_EPSILON;
 
+		int maxNumSeqsSelecton = DEF_MAX_NUM_SEQUENCES_SELECTON;
 
 		String help = "Usage: \n" +
 		PROGRAM_NAME+"\n" +
@@ -190,7 +193,11 @@ public class CRKMain {
 		"  [-M <int>]  :  cutoff for number of interface member core residues, if still \n" +
 		"                 below this value after applying hard cutoff then the interface \n" +
 		"                 member is not scored and considerd a crystal contact. Default: "+DEF_MIN_NUM_RES_MEMBER_CA+"\n" +
-		"  [-e <float>]:  epsilon value for selecton. Default "+String.format("%4.2f",DEF_SELECTON_EPSILON)+"\n\n";
+		"  [-e <float>]:  epsilon value for selecton. Default "+String.format("%4.2f",DEF_SELECTON_EPSILON)+"\n" +
+		"  [-q <int>]  :  maximum number of sequences to keep for calculation of conservation scores.\n" +
+		"                 Default: "+DEF_MAX_NUM_SEQUENCES_SELECTON+". This is especially important when using the -k option,\n" +
+		"                 with too many sequences, selecton will run too long (and \n" +
+		"                 inaccurately because of ks saturation)\n\n";
 		
 
 
@@ -264,26 +271,16 @@ public class CRKMain {
 
 		// turn off jaligner logging (we only use NeedlemanWunschGotoh)
 		// (for some reason this doesn't work if condensated into one line, it seems that one needs to instantiate the logger and then call setLevel)
+		// (and even weirder, for some reason it doesn't work if you put the code in its own private static method!)
 		java.util.logging.Logger jalLogger = java.util.logging.Logger.getLogger("NeedlemanWunschGotoh");
 		jalLogger.setLevel(java.util.logging.Level.OFF);
 		
 		// setting up the file logger for log4j
 	    ROOTLOGGER.addAppender(new FileAppender(new PatternLayout("%d{ABSOLUTE} %5p - %m%n"),outDir+"/"+baseName+".log",false));
-	    ROOTLOGGER.setLevel(Level.DEBUG);
+	    ROOTLOGGER.setLevel(Level.INFO);
 
 		
-		// loading settings from config file
-		File userConfigFile = new File(System.getProperty("user.home"),CONFIG_FILE_NAME);  
-		try {
-			if (userConfigFile.exists()) {
-				ROOTLOGGER.info("Loading user configuration file " + userConfigFile);
-				applyUserProperties(loadConfigFile(userConfigFile.getAbsolutePath()));
-			}
-		} catch (IOException e) {
-			System.err.println("Error while reading from config file " + userConfigFile + ": " + e.getMessage());
-			System.exit(1);
-		}
-
+		loadConfigFile();
 		
 		// files		
 		File cifFile = getCifFile(pdbCode, USE_ONLINE_PDB, outDir);
@@ -357,6 +354,9 @@ public class CRKMain {
 			}
 			// remove redundancy
 			chainEvCont.removeRedundancy();
+			
+			// skimming so that there's not too many sequences for selecton
+			chainEvCont.skimList(maxNumSeqsSelecton);
 			
 			// align
 			System.out.println("Aligning protein sequences with t_coffee...");
@@ -615,5 +615,20 @@ public class CRKMain {
 					"Please check the config file.");
 			System.exit(1);
 		}
+	}
+		
+	private static void loadConfigFile() {
+		// loading settings from config file
+		File userConfigFile = new File(System.getProperty("user.home"),CONFIG_FILE_NAME);  
+		try {
+			if (userConfigFile.exists()) {
+				ROOTLOGGER.info("Loading user configuration file " + userConfigFile);
+				applyUserProperties(loadConfigFile(userConfigFile.getAbsolutePath()));
+			}
+		} catch (IOException e) {
+			System.err.println("Error while reading from config file " + userConfigFile + ": " + e.getMessage());
+			System.exit(1);
+		}
+
 	}
 }

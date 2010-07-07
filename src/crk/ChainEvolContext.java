@@ -84,7 +84,7 @@ public class ChainEvolContext {
 
 
 			} catch (NoMatchFoundException e) {
-				LOGGER.warn("No SIFTS mapping could be found for "+pdbCode+representativeChain);
+				LOGGER.error("No SIFTS mapping could be found for "+pdbCode+representativeChain);
 				System.exit(1);
 				//TODO blast, find uniprot mapping and use it if one can be found
 			}
@@ -105,7 +105,7 @@ public class ChainEvolContext {
 		// and finally we align the 2 sequences (rather than trusting the SIFTS alignment info)
 		try {
 			alnPdb2Uniprot = new PairwiseSequenceAlignment(sequence, query.getUniprotSeq().getSeq(), pdbCode+representativeChain, query.getUniprotSeq().getName());
-			LOGGER.debug("The PDB SEQRES to Uniprot alignmnent:\n"+alnPdb2Uniprot.getFormattedAlignmentString());
+			LOGGER.info("The PDB SEQRES to Uniprot alignmnent:\n"+alnPdb2Uniprot.getFormattedAlignmentString());
 		} catch (PairwiseSequenceAlignmentException e1) {
 			LOGGER.fatal("Problem aligning PDB sequence "+pdbCode+representativeChain+" to its Uniprot match "+query.getUniId());
 			LOGGER.fatal(e1.getMessage());
@@ -130,6 +130,10 @@ public class ChainEvolContext {
 	
 	public void removeRedundancy() {
 		homologs.removeRedundancy();
+	}
+	
+	public void skimList(int maxDesiredHomologs) {
+		homologs.skimList(maxDesiredHomologs);
 	}
 	
 	public void retrieveHomologsData(File emblCDScache) throws IOException {
