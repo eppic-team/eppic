@@ -282,200 +282,215 @@ public class CRKMain {
 		
 		loadConfigFile();
 		
-		// files		
-		File cifFile = getCifFile(pdbCode, USE_ONLINE_PDB, outDir);
-		Pdb pdb = new CiffilePdb(cifFile);
-		String[] chains = pdb.getChains();
-		// map of sequences to list of chain codes
-		Map<String, List<String>> uniqSequences = new HashMap<String, List<String>>();
-		// finding the entities (groups of identical chains)
-		for (String chain:chains) {
-			
-			pdb.load(chain);
-			if (uniqSequences.containsKey(pdb.getSequence())) {
-				uniqSequences.get(pdb.getSequence()).add(chain);
-			} else {
-				List<String> list = new ArrayList<String>();
-				list.add(chain);
-				uniqSequences.put(pdb.getSequence(),list);
-			}		
-		}
-		String msg = "Unique sequences for "+pdbCode+": ";
-		int i = 1;
-		for (List<String> entity:uniqSequences.values()) {
-			msg+=i+":";
-			for (String chain:entity) {
-				msg+=" "+chain;
-			}
-			i++;
-		}
-		ROOTLOGGER.info(msg);
+		
+		try {
 
-		Map<String,ChainEvolContext> allChains = new HashMap<String,ChainEvolContext>();
-		for (List<String> entity:uniqSequences.values()) {
-			String representativeChain = entity.get(0);
-			Map<String,Pdb> pdbs = new HashMap<String,Pdb>();
-			for (String pdbChainCode:entity) {
-				Pdb perChainPdb = new CiffilePdb(cifFile);
-				perChainPdb.load(pdbChainCode);
-				pdbs.put(pdbChainCode,perChainPdb);
+			// files		
+			File cifFile = getCifFile(pdbCode, USE_ONLINE_PDB, outDir);
+			Pdb pdb = new CiffilePdb(cifFile);
+			String[] chains = pdb.getChains();
+			// map of sequences to list of chain codes
+			Map<String, List<String>> uniqSequences = new HashMap<String, List<String>>();
+			// finding the entities (groups of identical chains)
+			for (String chain:chains) {
+
+				pdb.load(chain);
+				if (uniqSequences.containsKey(pdb.getSequence())) {
+					uniqSequences.get(pdb.getSequence()).add(chain);
+				} else {
+					List<String> list = new ArrayList<String>();
+					list.add(chain);
+					uniqSequences.put(pdb.getSequence(),list);
+				}		
 			}
-			ChainEvolContext chainEvCont = new ChainEvolContext(pdbs, representativeChain);
-			// 1) getting the uniprot ids corresponding to the query (the pdb sequence)
-			File emblQueryCacheFile = null;
-			if (EMBL_CDS_CACHE_DIR!=null) {
-				emblQueryCacheFile = new File(EMBL_CDS_CACHE_DIR,baseName+"."+pdbCode+representativeChain+".query.emblcds.fa");
+			String msg = "Unique sequences for "+pdbCode+": ";
+			int i = 1;
+			for (List<String> entity:uniqSequences.values()) {
+				msg+=i+":";
+				for (String chain:entity) {
+					msg+=" "+chain;
+				}
+				i++;
 			}
-			chainEvCont.retrieveQueryData(SIFTS_FILE, emblQueryCacheFile);
-			if (chainEvCont.getQueryRepCDS()==null) {
-				//System.err.println("No CDS good match for query sequence!! Exiting");
-				ROOTLOGGER.fatal("No CDS good match for query sequence!! Exiting");
-				System.exit(1);
-			}
-			// 2) getting the homologs and sequence data and creating multiple sequence alignment
-			System.out.println("Blasting...");
-			File blastCacheFile = null;
-			if (BLAST_CACHE_DIR!=null) {
-				blastCacheFile = new File(BLAST_CACHE_DIR,baseName+"."+pdbCode+representativeChain+".blast.xml"); 
-			}
-			chainEvCont.retrieveHomologs(BLAST_BIN_DIR, BLAST_DB_DIR, BLAST_DB, blastNumThreads, idCutoff, QUERY_COVERAGE_CUTOFF, blastCacheFile);
-			
-			System.out.println("Retrieving UniprotKB data and EMBL CDS sequences");
-			File emblHomsCacheFile = null;
-			if (EMBL_CDS_CACHE_DIR!=null) {
-				emblHomsCacheFile = new File(EMBL_CDS_CACHE_DIR,baseName+"."+pdbCode+representativeChain+".homologs.emblcds.fa");
-			}
-			chainEvCont.retrieveHomologsData(emblHomsCacheFile);
-			if (doScoreCRK) {
-				if (!chainEvCont.isConsistentGeneticCodeType()){
-					ROOTLOGGER.fatal("The list of homologs does not have a single genetic code type, can't do CRK analysis on it.");
+			ROOTLOGGER.info(msg);
+
+			Map<String,ChainEvolContext> allChains = new HashMap<String,ChainEvolContext>();
+			for (List<String> entity:uniqSequences.values()) {
+				String representativeChain = entity.get(0);
+				Map<String,Pdb> pdbs = new HashMap<String,Pdb>();
+				for (String pdbChainCode:entity) {
+					Pdb perChainPdb = new CiffilePdb(cifFile);
+					perChainPdb.load(pdbChainCode);
+					pdbs.put(pdbChainCode,perChainPdb);
+				}
+				ChainEvolContext chainEvCont = new ChainEvolContext(pdbs, representativeChain);
+				// 1) getting the uniprot ids corresponding to the query (the pdb sequence)
+				File emblQueryCacheFile = null;
+				if (EMBL_CDS_CACHE_DIR!=null) {
+					emblQueryCacheFile = new File(EMBL_CDS_CACHE_DIR,baseName+"."+pdbCode+representativeChain+".query.emblcds.fa");
+				}
+				chainEvCont.retrieveQueryData(SIFTS_FILE, emblQueryCacheFile);
+				if (chainEvCont.getQueryRepCDS()==null) {
+					//System.err.println("No CDS good match for query sequence!! Exiting");
+					ROOTLOGGER.fatal("No CDS good match for query sequence!! Exiting");
 					System.exit(1);
 				}
-			}
-			// remove redundancy
-			chainEvCont.removeRedundancy();
-			
-			// skimming so that there's not too many sequences for selecton
-			chainEvCont.skimList(maxNumSeqsSelecton);
-			
-			// align
-			System.out.println("Aligning protein sequences with t_coffee...");
-			chainEvCont.align(TCOFFEE_BIN, useTcoffeeVeryFastMode);
-			
-			// writing homolog sequences to file
-			chainEvCont.writeHomologSeqsToFile(new File(outDir,baseName+"."+pdbCode+representativeChain+".fa"));
-			
-			// check the back-translation of CDS to uniprot
-			// check whether there we have a good enough CDS for the chain
-			if (doScoreCRK) {
-				ROOTLOGGER.info("Number of homologs with at least one uniprot CDS mapping: "+chainEvCont.getNumHomologsWithCDS());
-				ROOTLOGGER.info("Number of homologs with valid CDS: "+chainEvCont.getNumHomologsWithValidCDS());
-			}
-			
-			// printing summary to file
-			PrintStream log = new PrintStream(new File(outDir,baseName+"."+pdbCode+representativeChain+".log"));
-			chainEvCont.printSummary(log);
-			log.close();
-			// writing the alignment to file
-			chainEvCont.writeAlignmentToFile(new File(outDir,baseName+"."+pdbCode+representativeChain+".aln"));
-			// writing the nucleotides alignment to file
-			if (doScoreCRK) {
-				chainEvCont.writeNucleotideAlignmentToFile(new File(outDir,baseName+"."+pdbCode+representativeChain+".cds.aln"));
-			}
-			
-			// computing entropies
-			chainEvCont.computeEntropies(reducedAlphabet);
-			
-			// compute ka/ks ratios
-			if (doScoreCRK) {
-				System.out.println("Running selecton (this will take long)...");
-				chainEvCont.computeKaKsRatiosSelecton(SELECTON_BIN, 
-						new File(outDir,baseName+"."+pdbCode+representativeChain+".selecton.res"),
-						new File(outDir,baseName+"."+pdbCode+representativeChain+".selecton.log"), 
-						new File(outDir,baseName+"."+pdbCode+representativeChain+".selecton.tree"),
-						new File(outDir,baseName+"."+pdbCode+representativeChain+".selecton.global"),
-						selectonEpsilon);
-			}
-			
-			// writing the conservation scores (entropies/kaks) log file 
-			PrintStream conservScoLog = new PrintStream(new File(outDir,baseName+"."+pdbCode+representativeChain+ENTROPIES_FILE_SUFFIX));
-			chainEvCont.printConservationScores(conservScoLog, ScoringType.ENTROPY);
-			conservScoLog.close();
-			if (doScoreCRK) {
-				conservScoLog = new PrintStream(new File(outDir,baseName+"."+pdbCode+representativeChain+KAKS_FILE_SUFFIX));
-				chainEvCont.printConservationScores(conservScoLog, ScoringType.KAKS);
-				conservScoLog.close();				
-			}
-
-			for (String chain:entity) {
-				allChains.put(chain,chainEvCont);
-			}
-		}
-		
-		
-		// 3) getting PISA interfaces description
-		PisaConnection pc = new PisaConnection(PISA_INTERFACES_URL, null, null);
-		List<String> pdbCodes = new ArrayList<String>();
-		pdbCodes.add(pdbCode);
-		List<PisaInterface> interfaces = pc.getInterfacesDescription(pdbCodes).get(pdbCode);
-		PrintStream pisaLogPS = new PrintStream(new File(outDir,baseName+".pisa.interfaces"));
-		for (PisaInterface pi:interfaces) {
-			pisaLogPS.println("Interfaces for "+pdbCode);
-			pi.printTabular(pisaLogPS);
-		}
-		pisaLogPS.close();
-		
-		// 4) scoring
-		System.out.println("Scores:");
-		PrintStream scoreEntrPS = new PrintStream(new File(outDir,baseName+ENTROPIES_FILE_SUFFIX+".scores"));
-		printScoringHeaders(System.out);
-		printScoringHeaders(scoreEntrPS);
-		PrintStream scoreKaksPS = new PrintStream(new File(outDir,baseName+KAKS_FILE_SUFFIX+".scores"));
-		printScoringHeaders(scoreKaksPS);
-
-		for (PisaInterface pi:interfaces) {
-			if (pi.getInterfaceArea()>CUTOFF_ASA_INTERFACE_REPORTING) {
-				ArrayList<ChainEvolContext> chainsEvCs = new ArrayList<ChainEvolContext>();
-				chainsEvCs.add(allChains.get(pi.getFirstMolecule().getChainId()));
-				chainsEvCs.add(allChains.get(pi.getSecondMolecule().getChainId()));
-				InterfaceEvolContext iec = new InterfaceEvolContext(pi, chainsEvCs);
-				
-				// entropy scoring
-				InterfaceScore scoreNW = iec.scoreEntropy(softCutoffCA, hardCutoffCA, relaxStepCA, minNumResCA, minNumResMemberCA,
-						MIN_HOMOLOGS_CUTOFF, false);
-				InterfaceScore scoreW = iec.scoreEntropy(softCutoffCA, hardCutoffCA, relaxStepCA, minNumResCA, minNumResMemberCA, 
-						MIN_HOMOLOGS_CUTOFF, true);
-				
-				printScores(System.out, pi, scoreNW, scoreW, ENTR_BIO_CUTOFF, ENTR_XTAL_CUTOFF);
-				printScores(scoreEntrPS, pi, scoreNW, scoreW, ENTR_BIO_CUTOFF, ENTR_XTAL_CUTOFF);
-				
-				scoreNW.serialize(new File(outDir,baseName+"."+pi.getId()+ENTROPIES_FILE_SUFFIX+".scoreNW.dat"));
-				scoreW.serialize(new File(outDir,baseName+"."+pi.getId()+ENTROPIES_FILE_SUFFIX+".scoreW.dat"));
-				
-				// ka/ks scoring
-				if (doScoreCRK) {
-					scoreNW = iec.scoreKaKs(softCutoffCA, hardCutoffCA, relaxStepCA, minNumResCA, minNumResMemberCA,
-						MIN_HOMOLOGS_CUTOFF, false);
-					scoreW = iec.scoreKaKs(softCutoffCA, hardCutoffCA, relaxStepCA, minNumResCA, minNumResMemberCA, 
-						MIN_HOMOLOGS_CUTOFF, true);
-					
-					printScores(System.out, pi, scoreNW, scoreW, KAKS_BIO_CUTOFF, KAKS_XTAL_CUTOFF);
-					printScores(scoreKaksPS, pi, scoreNW, scoreW, KAKS_BIO_CUTOFF, KAKS_XTAL_CUTOFF);
-					
-					scoreNW.serialize(new File(outDir,baseName+"."+pi.getId()+KAKS_FILE_SUFFIX+".scoreNW.dat"));
-					scoreW.serialize(new File(outDir,baseName+"."+pi.getId()+KAKS_FILE_SUFFIX+".scoreW.dat"));					
+				// 2) getting the homologs and sequence data and creating multiple sequence alignment
+				System.out.println("Blasting...");
+				File blastCacheFile = null;
+				if (BLAST_CACHE_DIR!=null) {
+					blastCacheFile = new File(BLAST_CACHE_DIR,baseName+"."+pdbCode+representativeChain+".blast.xml"); 
 				}
-				
-				// writing out the interface pdb file with conservation scores as b factors (for visualization)
-				iec.writePdbFile(new File(outDir, baseName+"."+pi.getId()+ENTROPIES_FILE_SUFFIX+".pdb"), ScoringType.ENTROPY);
+				chainEvCont.retrieveHomologs(BLAST_BIN_DIR, BLAST_DB_DIR, BLAST_DB, blastNumThreads, idCutoff, QUERY_COVERAGE_CUTOFF, blastCacheFile);
+
+				System.out.println("Retrieving UniprotKB data and EMBL CDS sequences");
+				File emblHomsCacheFile = null;
+				if (EMBL_CDS_CACHE_DIR!=null) {
+					emblHomsCacheFile = new File(EMBL_CDS_CACHE_DIR,baseName+"."+pdbCode+representativeChain+".homologs.emblcds.fa");
+				}
+				chainEvCont.retrieveHomologsData(emblHomsCacheFile);
 				if (doScoreCRK) {
-					iec.writePdbFile(new File(outDir, baseName+"."+pi.getId()+KAKS_FILE_SUFFIX+".pdb"), ScoringType.KAKS);
+					if (!chainEvCont.isConsistentGeneticCodeType()){
+						ROOTLOGGER.fatal("The list of homologs does not have a single genetic code type, can't do CRK analysis on it.");
+						System.exit(1);
+					}
+				}
+				// remove redundancy
+				chainEvCont.removeRedundancy();
+
+				// skimming so that there's not too many sequences for selecton
+				chainEvCont.skimList(maxNumSeqsSelecton);
+
+				// align
+				System.out.println("Aligning protein sequences with t_coffee...");
+				chainEvCont.align(TCOFFEE_BIN, useTcoffeeVeryFastMode);
+
+				// writing homolog sequences to file
+				chainEvCont.writeHomologSeqsToFile(new File(outDir,baseName+"."+pdbCode+representativeChain+".fa"));
+
+				// check the back-translation of CDS to uniprot
+				// check whether there we have a good enough CDS for the chain
+				if (doScoreCRK) {
+					ROOTLOGGER.info("Number of homologs with at least one uniprot CDS mapping: "+chainEvCont.getNumHomologsWithCDS());
+					ROOTLOGGER.info("Number of homologs with valid CDS: "+chainEvCont.getNumHomologsWithValidCDS());
+				}
+
+				// printing summary to file
+				PrintStream log = new PrintStream(new File(outDir,baseName+"."+pdbCode+representativeChain+".log"));
+				chainEvCont.printSummary(log);
+				log.close();
+				// writing the alignment to file
+				chainEvCont.writeAlignmentToFile(new File(outDir,baseName+"."+pdbCode+representativeChain+".aln"));
+				// writing the nucleotides alignment to file
+				if (doScoreCRK) {
+					chainEvCont.writeNucleotideAlignmentToFile(new File(outDir,baseName+"."+pdbCode+representativeChain+".cds.aln"));
+				}
+
+				// computing entropies
+				chainEvCont.computeEntropies(reducedAlphabet);
+
+				// compute ka/ks ratios
+				if (doScoreCRK) {
+					System.out.println("Running selecton (this will take long)...");
+					chainEvCont.computeKaKsRatiosSelecton(SELECTON_BIN, 
+							new File(outDir,baseName+"."+pdbCode+representativeChain+".selecton.res"),
+							new File(outDir,baseName+"."+pdbCode+representativeChain+".selecton.log"), 
+							new File(outDir,baseName+"."+pdbCode+representativeChain+".selecton.tree"),
+							new File(outDir,baseName+"."+pdbCode+representativeChain+".selecton.global"),
+							selectonEpsilon);
+				}
+
+				// writing the conservation scores (entropies/kaks) log file 
+				PrintStream conservScoLog = new PrintStream(new File(outDir,baseName+"."+pdbCode+representativeChain+ENTROPIES_FILE_SUFFIX));
+				chainEvCont.printConservationScores(conservScoLog, ScoringType.ENTROPY);
+				conservScoLog.close();
+				if (doScoreCRK) {
+					conservScoLog = new PrintStream(new File(outDir,baseName+"."+pdbCode+representativeChain+KAKS_FILE_SUFFIX));
+					chainEvCont.printConservationScores(conservScoLog, ScoringType.KAKS);
+					conservScoLog.close();				
+				}
+
+				for (String chain:entity) {
+					allChains.put(chain,chainEvCont);
 				}
 			}
-			
+
+
+			// 3) getting PISA interfaces description
+			PisaConnection pc = new PisaConnection(PISA_INTERFACES_URL, null, null);
+			List<String> pdbCodes = new ArrayList<String>();
+			pdbCodes.add(pdbCode);
+			List<PisaInterface> interfaces = pc.getInterfacesDescription(pdbCodes).get(pdbCode);
+			PrintStream pisaLogPS = new PrintStream(new File(outDir,baseName+".pisa.interfaces"));
+			for (PisaInterface pi:interfaces) {
+				pisaLogPS.println("Interfaces for "+pdbCode);
+				pi.printTabular(pisaLogPS);
+			}
+			pisaLogPS.close();
+
+			// 4) scoring
+			System.out.println("Scores:");
+			PrintStream scoreEntrPS = new PrintStream(new File(outDir,baseName+ENTROPIES_FILE_SUFFIX+".scores"));
+			printScoringHeaders(System.out);
+			printScoringHeaders(scoreEntrPS);
+			PrintStream scoreKaksPS = new PrintStream(new File(outDir,baseName+KAKS_FILE_SUFFIX+".scores"));
+			printScoringHeaders(scoreKaksPS);
+
+			for (PisaInterface pi:interfaces) {
+				if (pi.getInterfaceArea()>CUTOFF_ASA_INTERFACE_REPORTING) {
+					ArrayList<ChainEvolContext> chainsEvCs = new ArrayList<ChainEvolContext>();
+					chainsEvCs.add(allChains.get(pi.getFirstMolecule().getChainId()));
+					chainsEvCs.add(allChains.get(pi.getSecondMolecule().getChainId()));
+					InterfaceEvolContext iec = new InterfaceEvolContext(pi, chainsEvCs);
+
+					// entropy scoring
+					InterfaceScore scoreNW = iec.scoreEntropy(softCutoffCA, hardCutoffCA, relaxStepCA, minNumResCA, minNumResMemberCA,
+							MIN_HOMOLOGS_CUTOFF, false);
+					InterfaceScore scoreW = iec.scoreEntropy(softCutoffCA, hardCutoffCA, relaxStepCA, minNumResCA, minNumResMemberCA, 
+							MIN_HOMOLOGS_CUTOFF, true);
+
+					printScores(System.out, pi, scoreNW, scoreW, ENTR_BIO_CUTOFF, ENTR_XTAL_CUTOFF);
+					printScores(scoreEntrPS, pi, scoreNW, scoreW, ENTR_BIO_CUTOFF, ENTR_XTAL_CUTOFF);
+
+					scoreNW.serialize(new File(outDir,baseName+"."+pi.getId()+ENTROPIES_FILE_SUFFIX+".scoreNW.dat"));
+					scoreW.serialize(new File(outDir,baseName+"."+pi.getId()+ENTROPIES_FILE_SUFFIX+".scoreW.dat"));
+
+					// ka/ks scoring
+					if (doScoreCRK) {
+						scoreNW = iec.scoreKaKs(softCutoffCA, hardCutoffCA, relaxStepCA, minNumResCA, minNumResMemberCA,
+								MIN_HOMOLOGS_CUTOFF, false);
+						scoreW = iec.scoreKaKs(softCutoffCA, hardCutoffCA, relaxStepCA, minNumResCA, minNumResMemberCA, 
+								MIN_HOMOLOGS_CUTOFF, true);
+
+						printScores(System.out, pi, scoreNW, scoreW, KAKS_BIO_CUTOFF, KAKS_XTAL_CUTOFF);
+						printScores(scoreKaksPS, pi, scoreNW, scoreW, KAKS_BIO_CUTOFF, KAKS_XTAL_CUTOFF);
+
+						scoreNW.serialize(new File(outDir,baseName+"."+pi.getId()+KAKS_FILE_SUFFIX+".scoreNW.dat"));
+						scoreW.serialize(new File(outDir,baseName+"."+pi.getId()+KAKS_FILE_SUFFIX+".scoreW.dat"));					
+					}
+
+					// writing out the interface pdb file with conservation scores as b factors (for visualization)
+					iec.writePdbFile(new File(outDir, baseName+"."+pi.getId()+ENTROPIES_FILE_SUFFIX+".pdb"), ScoringType.ENTROPY);
+					if (doScoreCRK) {
+						iec.writePdbFile(new File(outDir, baseName+"."+pi.getId()+KAKS_FILE_SUFFIX+".pdb"), ScoringType.KAKS);
+					}
+				}
+
+			}
+			scoreEntrPS.close();
+			scoreKaksPS.close();
+
+		} catch (Exception e) {
+			ROOTLOGGER.fatal("Unexpected error. Exiting.");
+			ROOTLOGGER.fatal(e.getMessage());
+			String stack = "";
+			for (StackTraceElement el:e.getStackTrace()) {
+				stack+=el.toString();				
+			}
+			ROOTLOGGER.fatal("Stack trace: ");
+			ROOTLOGGER.fatal(stack);
+			System.exit(1);
 		}
-		scoreEntrPS.close();
-		scoreKaksPS.close();
 	}
 	
 	private static void printScoringHeaders(PrintStream ps) {
