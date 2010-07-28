@@ -481,14 +481,13 @@ public class CRKMain {
 			scoreKaksPS.close();
 
 		} catch (Exception e) {
-			ROOTLOGGER.fatal("Unexpected error. Exiting.");
-			ROOTLOGGER.fatal(e.getMessage());
+			e.printStackTrace();
+
 			String stack = "";
 			for (StackTraceElement el:e.getStackTrace()) {
-				stack+=el.toString();				
+				stack+="\tat "+el.toString()+"\n";				
 			}
-			ROOTLOGGER.fatal("Stack trace: ");
-			ROOTLOGGER.fatal(stack);
+			ROOTLOGGER.fatal("Unexpected error. Exiting.\n"+e+"\n"+stack);
 			System.exit(1);
 		}
 	}
