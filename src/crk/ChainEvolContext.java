@@ -200,11 +200,27 @@ public class ChainEvolContext {
 		Pdb pdb = getPdb(pdbChainCode);
 		HashMap<Integer,Double> map = new HashMap<Integer, Double>();
 		for (int resser:pdb.getAllSortedResSerials()){
-			map.put(resser, conservationScores.get(resser-1));
+			int queryPos = -2;
+			if (scoType==ScoringType.ENTROPY) {
+				queryPos = this.getQueryUniprotPosForPDBPos(resser); 
+			} else if (scoType==ScoringType.KAKS) {
+				queryPos = this.getQueryCDSPosForPDBPos(resser);
+			}
+			if (queryPos!=-1) {   
+				map.put(resser, conservationScores.get(queryPos));	
+			}
 		}
 		pdb.setBFactorsPerResidue(map);		
 	}
 	
+	/**
+	 * Returns a list of the conservation scores values, i.e. entropy or ka/ks ratios 
+	 * depending on scoType.
+	 * The sequence to which the list refers is the query Uniprot/CDS translated sequence, 
+	 * not the PDB SEQRES.   
+	 * @param scoType
+	 * @return
+	 */
 	public List<Double> getConservationScores(ScoringType scoType) {
 		if (scoType.equals(ScoringType.ENTROPY)) {
 			return homologs.getEntropies();
@@ -277,12 +293,20 @@ public class ChainEvolContext {
 	public void printConservationScores(PrintStream ps, ScoringType scoType) {
 		if (scoType.equals(ScoringType.ENTROPY)) {
 			ps.println("# Entropies for all query sequence positions based on a "+homologs.getReducedAlphabet()+" letters alphabet.");
+			ps.println("# seqres\tuniprot\tentropy");
 		} else if (scoType.equals(ScoringType.KAKS)){
 			ps.println("# Ka/Ks for all query sequence positions.");
+			ps.println("# seqres\ttranslated-CDS\tka/ks");
 		}
 		List<Double> conservationScores = getConservationScores(scoType);
 		for (int i=0;i<conservationScores.size();i++) {
-			ps.printf("%4d\t%5.2f\n",i+1,conservationScores.get(i));
+			int resser = 0;
+			if (scoType.equals(ScoringType.ENTROPY)) {
+				resser = getPDBPosForQueryUniprotPos(i);
+			} else if (scoType.equals(ScoringType.KAKS)){
+				resser = getPDBPosForQueryCDSPos(i);
+			}
+			ps.printf("%4d\t%4d\t%5.2f\n",resser,i+1,conservationScores.get(i));
 		}
 	}
 	
@@ -361,6 +385,16 @@ public class ChainEvolContext {
 	}
 	
 	/**
+	 * Given a sequence index of the query Uniprot sequence (starting at 0), returns its
+	 * corresponding PDB SEQRES position (starting at 1)
+	 * @param queryPos
+	 * @return the mapped PDB SEQRES sequence position or -1 if it maps to a gap
+	 */
+	public int getPDBPosForQueryUniprotPos(int queryPos) {
+		return alnPdb2Uniprot.getMapping2To1(queryPos)+1;
+	}
+	
+	/**
 	 * Given a residue serial of the reference PDB SEQRES sequence (starting at 1), returns 
 	 * its corresponding representative-translated-CDS sequence index (starting at 0)  
 	 * @param resser
@@ -368,5 +402,15 @@ public class ChainEvolContext {
 	 */
 	public int getQueryCDSPosForPDBPos(int resser) {
 		return this.getQueryRepCDS().getBestTranslation().getAln().getMapping1To2(getQueryUniprotPosForPDBPos(resser));
+	}
+	
+	/**
+	 * Given a sequence index of the query's representative-translated CDS sequence (starting at 0), 
+	 * returns its corresponding residue serial of the reference PDB SEQRES sequence (starting at 1). 
+	 * @param queryPos
+	 * @return the mapped PDB SEQRES sequence position or -1 if it maps to a gap
+	 */
+	public int getPDBPosForQueryCDSPos(int queryPos) {
+		return this.getPDBPosForQueryUniprotPos(this.getQueryRepCDS().getBestTranslation().getAln().getMapping2To1(queryPos));
 	}
 }
