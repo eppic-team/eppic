@@ -368,7 +368,11 @@ public class ChainEvolContext {
 	 */
 	public boolean isPdbSeqPositionReliable(int resser) {
 		// we map the pdb resser to the uniprot sequence position and check whether it is reliable CDS-wise for all homologs
-		if (!homologs.isReferenceSeqPositionReliable(getQueryUniprotPosForPDBPos(resser))) {
+		int uniprotPos = getQueryUniprotPosForPDBPos(resser);
+		if (uniprotPos==-1) {
+			return false; // if it maps to a gap then we have no info whatsoever from CDSs, totally unreliable
+		}
+		if (!homologs.isReferenceSeqPositionReliable(uniprotPos)) {
 			return false;
 		}
 		return true;		
@@ -401,7 +405,11 @@ public class ChainEvolContext {
 	 * @return the mapped translated-CDS sequence position or -1 if it maps to a gap
 	 */
 	public int getQueryCDSPosForPDBPos(int resser) {
-		return this.getQueryRepCDS().getBestTranslation().getAln().getMapping1To2(getQueryUniprotPosForPDBPos(resser));
+		int uniprotPos = getQueryUniprotPosForPDBPos(resser);
+		if (uniprotPos==-1) {
+			return -1;
+		}
+		return this.getQueryRepCDS().getBestTranslation().getAln().getMapping1To2(uniprotPos);
 	}
 	
 	/**
@@ -411,6 +419,10 @@ public class ChainEvolContext {
 	 * @return the mapped PDB SEQRES sequence position or -1 if it maps to a gap
 	 */
 	public int getPDBPosForQueryCDSPos(int queryPos) {
-		return this.getPDBPosForQueryUniprotPos(this.getQueryRepCDS().getBestTranslation().getAln().getMapping2To1(queryPos));
+		int uniprotPos = this.getQueryRepCDS().getBestTranslation().getAln().getMapping2To1(queryPos);
+		if (uniprotPos==-1){
+			return -1;
+		}
+		return this.getPDBPosForQueryUniprotPos(uniprotPos);
 	}
 }
