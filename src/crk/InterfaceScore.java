@@ -21,22 +21,50 @@ public class InterfaceScore implements Serializable {
 	private int minCoreSize; // the cut-off of minimum number of core residues used for this score
 	
 	public InterfaceScore(InterfaceMemberScore ims1, InterfaceMemberScore ims2, int minCoreSize) {
-		memberScores = new ArrayList<InterfaceMemberScore>();
-		memberScores.add(ims1);
-		memberScores.add(ims2);
+		this.memberScores = new ArrayList<InterfaceMemberScore>();
+		this.memberScores.add(ims1);
+		this.memberScores.add(ims2);
+		this.minCoreSize = minCoreSize;
 	}
 	
 	/**
-	 * Gets the average core to rim ratio for the list of indices of members given.
+	 * Gets the average core to rim ratio for the list of given indices of members.
 	 * @param a list of indices of the memberScores List
 	 * @return
 	 */
-	public double getAvrgRatio(List<Integer> indices) {
+	private double getAvrgRatio(List<Integer> indices) {
 		double sum = 0.0;
 		for (int i:indices) {
 			sum+=memberScores.get(i).getRatio();				
 		}
 		return sum/(double)indices.size();
+	}
+	
+	/**
+	 * Gets the sum of the core sizes of given indices of members 
+	 * @param indices
+	 * @return
+	 */
+	private int getSumCoreSize(List<Integer> indices) {
+		int size = 0;
+		for (int i:indices) {
+			size+=memberScores.get(i).getRimCore().getCoreSize();
+		}
+		return size;
+	}
+	
+	/**
+	 * Tells whether the sum of core sizes of given indices of members is above the 
+	 * minCoreSize cut-off.
+	 * @param indices
+	 * @return
+	 */
+	private boolean hasEnoughCore(List<Integer> indices) {
+		int size = getSumCoreSize(indices);
+		if (size<minCoreSize) {
+			return false;
+		}
+		return true;
 	}
 		
 	/**
@@ -119,6 +147,11 @@ public class InterfaceScore implements Serializable {
 			indices.addAll(bioCalls);
 			indices.addAll(xtalCalls);
 			double score = getAvrgRatio(indices);
+			
+			// first we check that the sum of core sizes is above the cutoff (if not we call xtal directly)
+			if (!hasEnoughCore(indices)) {
+				return new InterfaceCall(CallType.CRYSTAL, this, score, allCalls);
+			}
 
 			if (score<bioCutoff) {
 				return new InterfaceCall(CallType.BIO,this,score,allCalls);
