@@ -443,8 +443,8 @@ public class CRKMain {
 					chainsEvCs.add(allChains.get(pi.getFirstMolecule().getChainId()));
 					chainsEvCs.add(allChains.get(pi.getSecondMolecule().getChainId()));
 					boolean canDoCRK = true;
-					if (!sufficientDataForCRK.get(pi.getFirstMolecule().getChainId()) || 
-						!sufficientDataForCRK.get(pi.getSecondMolecule().getChainId()) ) {
+					if ((pi.getFirstMolecule().isProtein() && !sufficientDataForCRK.get(pi.getFirstMolecule().getChainId())) || 
+						(pi.getSecondMolecule().isProtein() && !sufficientDataForCRK.get(pi.getSecondMolecule().getChainId())) ) {
 						canDoCRK = false;
 					}
 					InterfaceEvolContext iec = new InterfaceEvolContext(pi, chainsEvCs);
