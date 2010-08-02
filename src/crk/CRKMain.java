@@ -315,6 +315,8 @@ public class CRKMain {
 			ROOTLOGGER.info(msg);
 
 			Map<String,ChainEvolContext> allChains = new HashMap<String,ChainEvolContext>();
+			// chains to booleans (true: data available is sufficient for crk analysis, false: data available doesn't permit crk analysis)
+			Map<String,Boolean> sufficientDataForCRK = new HashMap<String,Boolean>();
 			for (List<String> entity:uniqSequences.values()) {
 				String representativeChain = entity.get(0);
 				Map<String,Pdb> pdbs = new HashMap<String,Pdb>();
@@ -330,10 +332,10 @@ public class CRKMain {
 					emblQueryCacheFile = new File(EMBL_CDS_CACHE_DIR,baseName+"."+pdbCode+representativeChain+".query.emblcds.fa");
 				}
 				chainEvCont.retrieveQueryData(SIFTS_FILE, emblQueryCacheFile);
-				if (chainEvCont.getQueryRepCDS()==null) {
-					//System.err.println("No CDS good match for query sequence!! Exiting");
-					ROOTLOGGER.fatal("No CDS good match for query sequence!! Exiting");
-					System.exit(1);
+				boolean canDoCRK = true;
+				if (doScoreCRK && chainEvCont.getQueryRepCDS()==null) {
+					ROOTLOGGER.error("No CDS good match for query sequence! can't do CRK analysis on it.");
+					canDoCRK = false;
 				}
 				// 2) getting the homologs and sequence data and creating multiple sequence alignment
 				System.out.println("Blasting...");
@@ -349,18 +351,16 @@ public class CRKMain {
 					emblHomsCacheFile = new File(EMBL_CDS_CACHE_DIR,baseName+"."+pdbCode+representativeChain+".homologs.emblcds.fa");
 				}
 				chainEvCont.retrieveHomologsData(emblHomsCacheFile);
-				if (doScoreCRK) {
-					if (!chainEvCont.isConsistentGeneticCodeType()){
-						ROOTLOGGER.fatal("The list of homologs does not have a single genetic code type, can't do CRK analysis on it.");
-						System.exit(1);
-					}
+				if (doScoreCRK && !chainEvCont.isConsistentGeneticCodeType()){
+					ROOTLOGGER.error("The list of homologs does not have a single genetic code type, can't do CRK analysis on it.");
+					canDoCRK = false;
 				}
 				// remove redundancy
 				chainEvCont.removeRedundancy();
 
 				// skimming so that there's not too many sequences for selecton
 				chainEvCont.skimList(maxNumSeqsSelecton);
-
+				
 				// align
 				System.out.println("Aligning protein sequences with t_coffee...");
 				chainEvCont.align(TCOFFEE_BIN, useTcoffeeVeryFastMode);
@@ -369,8 +369,8 @@ public class CRKMain {
 				chainEvCont.writeHomologSeqsToFile(new File(outDir,baseName+"."+pdbCode+representativeChain+".fa"));
 
 				// check the back-translation of CDS to uniprot
-				// check whether there we have a good enough CDS for the chain
-				if (doScoreCRK) {
+				// check whether we have a good enough CDS for the chain
+				if (doScoreCRK && canDoCRK) {
 					ROOTLOGGER.info("Number of homologs with at least one uniprot CDS mapping: "+chainEvCont.getNumHomologsWithCDS());
 					ROOTLOGGER.info("Number of homologs with valid CDS: "+chainEvCont.getNumHomologsWithValidCDS());
 				}
@@ -382,7 +382,7 @@ public class CRKMain {
 				// writing the alignment to file
 				chainEvCont.writeAlignmentToFile(new File(outDir,baseName+"."+pdbCode+representativeChain+".aln"));
 				// writing the nucleotides alignment to file
-				if (doScoreCRK) {
+				if (doScoreCRK && canDoCRK) {
 					chainEvCont.writeNucleotideAlignmentToFile(new File(outDir,baseName+"."+pdbCode+representativeChain+".cds.aln"));
 				}
 
@@ -390,7 +390,7 @@ public class CRKMain {
 				chainEvCont.computeEntropies(reducedAlphabet);
 
 				// compute ka/ks ratios
-				if (doScoreCRK) {
+				if (doScoreCRK && canDoCRK) {
 					System.out.println("Running selecton (this will take long)...");
 					chainEvCont.computeKaKsRatiosSelecton(SELECTON_BIN, 
 							new File(outDir,baseName+"."+pdbCode+representativeChain+".selecton.res"),
@@ -404,7 +404,7 @@ public class CRKMain {
 				PrintStream conservScoLog = new PrintStream(new File(outDir,baseName+"."+pdbCode+representativeChain+ENTROPIES_FILE_SUFFIX));
 				chainEvCont.printConservationScores(conservScoLog, ScoringType.ENTROPY);
 				conservScoLog.close();
-				if (doScoreCRK) {
+				if (doScoreCRK && canDoCRK) {
 					conservScoLog = new PrintStream(new File(outDir,baseName+"."+pdbCode+representativeChain+KAKS_FILE_SUFFIX));
 					chainEvCont.printConservationScores(conservScoLog, ScoringType.KAKS);
 					conservScoLog.close();				
@@ -412,6 +412,7 @@ public class CRKMain {
 
 				for (String chain:entity) {
 					allChains.put(chain,chainEvCont);
+					sufficientDataForCRK.put(chain, canDoCRK);
 				}
 			}
 
@@ -441,6 +442,11 @@ public class CRKMain {
 					ArrayList<ChainEvolContext> chainsEvCs = new ArrayList<ChainEvolContext>();
 					chainsEvCs.add(allChains.get(pi.getFirstMolecule().getChainId()));
 					chainsEvCs.add(allChains.get(pi.getSecondMolecule().getChainId()));
+					boolean canDoCRK = true;
+					if (!sufficientDataForCRK.get(pi.getFirstMolecule().getChainId()) || 
+						!sufficientDataForCRK.get(pi.getSecondMolecule().getChainId()) ) {
+						canDoCRK = false;
+					}
 					InterfaceEvolContext iec = new InterfaceEvolContext(pi, chainsEvCs);
 
 					// entropy scoring
@@ -456,7 +462,7 @@ public class CRKMain {
 					scoreW.serialize(new File(outDir,baseName+"."+pi.getId()+ENTROPIES_FILE_SUFFIX+".scoreW.dat"));
 
 					// ka/ks scoring
-					if (doScoreCRK) {
+					if (doScoreCRK && canDoCRK) {
 						scoreNW = iec.scoreKaKs(softCutoffCA, hardCutoffCA, relaxStepCA, minNumResCA, minNumResMemberCA,
 								MIN_HOMOLOGS_CUTOFF, false);
 						scoreW = iec.scoreKaKs(softCutoffCA, hardCutoffCA, relaxStepCA, minNumResCA, minNumResMemberCA, 
@@ -471,7 +477,7 @@ public class CRKMain {
 
 					// writing out the interface pdb file with conservation scores as b factors (for visualization)
 					iec.writePdbFile(new File(outDir, baseName+"."+pi.getId()+ENTROPIES_FILE_SUFFIX+".pdb"), ScoringType.ENTROPY);
-					if (doScoreCRK) {
+					if (doScoreCRK && canDoCRK) {
 						iec.writePdbFile(new File(outDir, baseName+"."+pi.getId()+KAKS_FILE_SUFFIX+".pdb"), ScoringType.KAKS);
 					}
 				}
