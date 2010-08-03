@@ -73,8 +73,8 @@ public class CRKMain {
 	// cutoffs for the final bio/xtal call
 	private static final double   DEF_ENTR_BIO_CUTOFF = 0.95;
 	private static final double   DEF_ENTR_XTAL_CUTOFF = 1.05;
-	private static final double   DEF_KAKS_BIO_CUTOFF = 0.79;
-	private static final double   DEF_KAKS_XTAL_CUTOFF = 0.81;
+	private static final double   DEF_KAKS_BIO_CUTOFF = 0.84;
+	private static final double   DEF_KAKS_XTAL_CUTOFF = 0.86;
 	
 	// default cache dirs
 	private static final String   DEF_EMBL_CDS_CACHE_DIR = null;
