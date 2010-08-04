@@ -7,7 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import owl.core.connections.pisa.PisaInterface;
 import owl.core.connections.pisa.PisaMolecule;
@@ -17,7 +18,8 @@ import owl.core.structure.Pdb;
 
 public class InterfaceEvolContext {
 
-	private static final Logger LOGGER = Logger.getLogger(InterfaceEvolContext.class);
+	private static final Log LOGGER = LogFactory.getLog(InterfaceEvolContext.class);
+
 	
 	private PisaInterface pisaInterf;
 	private List<ChainEvolContext> chains;  // At the moment strictly 2 members (matching the 2 PisaMolecules of pisaInterf). 

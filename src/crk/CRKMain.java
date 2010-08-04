@@ -19,6 +19,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.zip.GZIPInputStream;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -134,6 +136,8 @@ public class CRKMain {
 	
 	// THE ROOT LOGGER (log4j)
 	private static final Logger ROOTLOGGER = Logger.getRootLogger();
+	private static final Log LOGGER = LogFactory.getLog(CRKMain.class);
+	
 
 	
 	/**
@@ -279,6 +283,10 @@ public class CRKMain {
 	    ROOTLOGGER.addAppender(new FileAppender(new PatternLayout("%d{ABSOLUTE} %5p - %m%n"),outDir+"/"+baseName+".log",false));
 	    ROOTLOGGER.setLevel(Level.INFO);
 
+	    // TODO now using the apache common logging framework which acts as a meta framework for other frameworks such
+	    //      as log4j or java logging. We always should instantiate loggers from apache commons (LogFactory.getLog()).
+	    //      Left to do is still configure the logging in CRK properly by using the apache commons mechanism. At the moment
+	    //      the logging configuration is done using log4j/java logger mechanisms.
 		
 		loadConfigFile();
 		
@@ -312,7 +320,7 @@ public class CRKMain {
 				}
 				i++;
 			}
-			ROOTLOGGER.info(msg);
+			LOGGER.info(msg);
 
 			Map<String,ChainEvolContext> allChains = new HashMap<String,ChainEvolContext>();
 			// chains to booleans (true: data available is sufficient for crk analysis, false: data available doesn't permit crk analysis)
@@ -334,7 +342,7 @@ public class CRKMain {
 				chainEvCont.retrieveQueryData(SIFTS_FILE, emblQueryCacheFile);
 				boolean canDoCRK = true;
 				if (doScoreCRK && chainEvCont.getQueryRepCDS()==null) {
-					ROOTLOGGER.error("No CDS good match for query sequence! can't do CRK analysis on it.");
+					LOGGER.error("No CDS good match for query sequence! can't do CRK analysis on it.");
 					canDoCRK = false;
 				}
 				// 2) getting the homologs and sequence data and creating multiple sequence alignment
@@ -352,7 +360,7 @@ public class CRKMain {
 				}
 				chainEvCont.retrieveHomologsData(emblHomsCacheFile);
 				if (doScoreCRK && !chainEvCont.isConsistentGeneticCodeType()){
-					ROOTLOGGER.error("The list of homologs does not have a single genetic code type, can't do CRK analysis on it.");
+					LOGGER.error("The list of homologs does not have a single genetic code type, can't do CRK analysis on it.");
 					canDoCRK = false;
 				}
 				// remove redundancy
@@ -371,8 +379,8 @@ public class CRKMain {
 				// check the back-translation of CDS to uniprot
 				// check whether we have a good enough CDS for the chain
 				if (doScoreCRK && canDoCRK) {
-					ROOTLOGGER.info("Number of homologs with at least one uniprot CDS mapping: "+chainEvCont.getNumHomologsWithCDS());
-					ROOTLOGGER.info("Number of homologs with valid CDS: "+chainEvCont.getNumHomologsWithValidCDS());
+					LOGGER.info("Number of homologs with at least one uniprot CDS mapping: "+chainEvCont.getNumHomologsWithCDS());
+					LOGGER.info("Number of homologs with valid CDS: "+chainEvCont.getNumHomologsWithValidCDS());
 				}
 
 				// printing summary to file
@@ -493,7 +501,7 @@ public class CRKMain {
 			for (StackTraceElement el:e.getStackTrace()) {
 				stack+="\tat "+el.toString()+"\n";				
 			}
-			ROOTLOGGER.fatal("Unexpected error. Exiting.\n"+e+"\n"+stack);
+			LOGGER.fatal("Unexpected error. Exiting.\n"+e+"\n"+stack);
 			System.exit(1);
 		}
 	}
@@ -642,7 +650,7 @@ public class CRKMain {
 		File userConfigFile = new File(System.getProperty("user.home"),CONFIG_FILE_NAME);  
 		try {
 			if (userConfigFile.exists()) {
-				ROOTLOGGER.info("Loading user configuration file " + userConfigFile);
+				LOGGER.info("Loading user configuration file " + userConfigFile);
 				applyUserProperties(loadConfigFile(userConfigFile.getAbsolutePath()));
 			}
 		} catch (IOException e) {

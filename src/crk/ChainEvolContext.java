@@ -10,7 +10,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import owl.core.connections.NoMatchFoundException;
 import owl.core.connections.SiftsConnection;
@@ -29,7 +30,8 @@ import owl.core.structure.PdbLoadError;
 
 public class ChainEvolContext {
 	
-	private static final Logger LOGGER = Logger.getLogger(ChainEvolContext.class);
+	private static final Log LOGGER = LogFactory.getLog(ChainEvolContext.class);
+
 	
 	private Map<String,Pdb> pdbs; 			// pdbs for all chains corresponding to this entity (pdb chain codes to Pdb objects)
 	private String representativeChain;		// the pdb chain code of the representative chain

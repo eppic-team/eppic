@@ -4,7 +4,8 @@ import java.io.PrintStream;
 import java.io.Serializable;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import owl.core.connections.pisa.PisaResidue;
 import owl.core.connections.pisa.PisaRimCore;
@@ -13,7 +14,8 @@ public class InterfaceMemberScore implements Serializable {
 	
 	private static final long serialVersionUID = -3409108391018870468L;
 	
-	private static final Logger LOGGER = Logger.getLogger(InterfaceMemberScore.class);
+	private static final Log LOGGER = LogFactory.getLog(InterfaceMemberScore.class);
+
 	
 	private static final double MAX_ALLOWED_UNREL_RES = 0.05; // 5% maximum allowed unreliable residues for core or rim
 	
