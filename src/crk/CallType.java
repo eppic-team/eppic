@@ -28,4 +28,13 @@ public enum CallType {
 	public int getIndex(){
 		return index;
 	}
+	
+	public static CallType getByName(String name) {
+		for (CallType call:CallType.values()) {
+			if (call.getName().equals(name)) {
+				return call;
+			}
+		}
+		return null;
+	}
 }
