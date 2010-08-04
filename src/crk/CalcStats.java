@@ -100,7 +100,8 @@ public class CalcStats {
 		}
 
 		
-		int total = entrFilesW.size();
+		//int total = entrFilesW.size();
+		int total = toAnalyse.size();
 		
 		int[] entrCountsW = analyseFiles(entrFilesW, ScoringType.ENTROPY, kaksBioCutoff, kaksXtalCutoff, entrBioCutoff, entrXtalCutoff);
 		int[] entrCountsNW = analyseFiles(entrFilesNW, ScoringType.ENTROPY, kaksBioCutoff, kaksXtalCutoff, entrBioCutoff, entrXtalCutoff);
