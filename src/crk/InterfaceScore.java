@@ -32,7 +32,7 @@ public class InterfaceScore implements Serializable {
 	 * @param a list of indices of the memberScores List
 	 * @return
 	 */
-	private double getAvrgRatio(List<Integer> indices) {
+	protected double getAvrgRatio(List<Integer> indices) {
 		double sum = 0.0;
 		for (int i:indices) {
 			sum+=memberScores.get(i).getRatio();				
