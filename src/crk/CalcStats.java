@@ -21,6 +21,8 @@ public class CalcStats {
 	private static final double   DEF_KAKS_BIO_CUTOFF = 0.95;
 	private static final double   DEF_KAKS_XTAL_CUTOFF = 1.05;
 
+	private static final String   PROGRAM_NAME ="CalcStats";
+	
 	/**
 	 * @param args
 	 */
@@ -35,7 +37,7 @@ public class CalcStats {
 		double entrXtalCutoff = DEF_ENTR_XTAL_CUTOFF;
 
 		String help = "Usage: \n" +
-		"CalcStats\n" +
+		PROGRAM_NAME+"\n" +
 		"   -i         :  input dir\n" +
 		"   -t         :  truth: either bio or xtal\n" +
 		"   -l         :  list file containing all the pdbIds + interface serials to analyse\n"+
@@ -44,7 +46,7 @@ public class CalcStats {
 		"  [-e]        :  rim to core entropy ratio cutoff for calling bio\n"+
 		"  [-E]        :  rim to core entropy ratio cutoff for calling xtal\n\n";
 
-		Getopt g = new Getopt("CalcStats", args, "i:t:l:k:K:e:E:h?");
+		Getopt g = new Getopt(PROGRAM_NAME, args, "i:t:l:k:K:e:E:h?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
