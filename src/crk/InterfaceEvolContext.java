@@ -227,17 +227,35 @@ public class InterfaceEvolContext {
 	
 	public void writePdbFile(File file, ScoringType scoType) throws IOException {
 		PrintStream ps = new PrintStream(file);
+		String chain1 = null;
+		String chain2 = null;
 		if (pisaInterf.getFirstMolecule().isProtein()) {
-			chains.get(0).setConservationScoresAsBfactors(pisaInterf.getFirstMolecule().getChainId(),scoType);
+			chain1 = pisaInterf.getFirstMolecule().getChainId();
+			chains.get(0).setConservationScoresAsBfactors(chain1,scoType);
 			// we copy in order to leave the original Pdbs unaltered (essential to be able to apply transformations several times)
-			Pdb pdb1 = chains.get(0).getPdb(pisaInterf.getFirstMolecule().getChainId()).copy();
+			Pdb pdb1 = chains.get(0).getPdb(chain1).copy();
 			pdb1.transform(pisaInterf.getFirstMolecule().getSymOp());
 			pdb1.writeAtomLines(ps);
 		}
 		if (pisaInterf.getSecondMolecule().isProtein()) {
-			chains.get(1).setConservationScoresAsBfactors(pisaInterf.getSecondMolecule().getChainId(),scoType);
-			Pdb pdb2 = chains.get(1).getPdb(pisaInterf.getSecondMolecule().getChainId()).copy();
+			
+			chain2 = pisaInterf.getSecondMolecule().getChainId();
+			String chain2forOutput = chain2; // the name we will put to the chain2 in the output pdb file
+			if (chain1!=null && chain1.equals(chain2)) {
+				// if both chains are named equally we want to still named them differently in the output pdb file
+				// so that molecular viewers can handle properly the 2 chains as separate entities 
+				char letter = chain1.charAt(0);
+				if (letter!='Z' && letter!='z') {
+					chain2forOutput = Character.toString((char)(letter+1)); // i.e. next letter in alphabet
+				} else {
+					chain2forOutput = Character.toString((char)(letter-25)); //i.e. 'A' or 'a'
+				}
+				LOGGER.warn("Chain "+chain2+" renamed to "+chain2forOutput+" to write the output PDB file "+file);
+			}
+			chains.get(1).setConservationScoresAsBfactors(chain2,scoType);
+			Pdb pdb2 = chains.get(1).getPdb(chain2).copy();
 			pdb2.transform(pisaInterf.getSecondMolecule().getSymOp());
+			pdb2.setChainCode(chain2forOutput);
 			pdb2.writeAtomLines(ps);
 		}
 		ps.close();
