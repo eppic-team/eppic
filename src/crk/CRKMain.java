@@ -28,9 +28,10 @@ import org.apache.log4j.PatternLayout;
 import org.xml.sax.SAXException;
 
 import owl.core.connections.pisa.PisaConnection;
-import owl.core.connections.pisa.PisaInterface;
 import owl.core.runners.TcoffeeError;
 import owl.core.runners.blast.BlastError;
+import owl.core.structure.ChainInterface;
+import owl.core.structure.ChainInterfaceList;
 import owl.core.structure.CiffilePdb;
 import owl.core.structure.Pdb;
 import owl.core.structure.PdbCodeNotFoundError;
@@ -291,7 +292,7 @@ public class CRKMain {
 		loadConfigFile();
 		
 		
-		try {
+		//try {
 
 			// files		
 			File cifFile = getCifFile(pdbCode, USE_ONLINE_PDB, outDir);
@@ -429,9 +430,9 @@ public class CRKMain {
 			PisaConnection pc = new PisaConnection(PISA_INTERFACES_URL, null, null);
 			List<String> pdbCodes = new ArrayList<String>();
 			pdbCodes.add(pdbCode);
-			List<PisaInterface> interfaces = pc.getInterfacesDescription(pdbCodes).get(pdbCode);
+			ChainInterfaceList interfaces = pc.getInterfacesDescription(pdbCodes).get(pdbCode);
 			PrintStream pisaLogPS = new PrintStream(new File(outDir,baseName+".pisa.interfaces"));
-			for (PisaInterface pi:interfaces) {
+			for (ChainInterface pi:interfaces) {
 				pisaLogPS.println("Interfaces for "+pdbCode);
 				pi.printTabular(pisaLogPS);
 			}
@@ -445,14 +446,14 @@ public class CRKMain {
 			PrintStream scoreKaksPS = new PrintStream(new File(outDir,baseName+KAKS_FILE_SUFFIX+".scores"));
 			printScoringHeaders(scoreKaksPS);
 
-			for (PisaInterface pi:interfaces) {
+			for (ChainInterface pi:interfaces) {
 				if (pi.getInterfaceArea()>CUTOFF_ASA_INTERFACE_REPORTING) {
 					ArrayList<ChainEvolContext> chainsEvCs = new ArrayList<ChainEvolContext>();
-					chainsEvCs.add(allChains.get(pi.getFirstMolecule().getChainId()));
-					chainsEvCs.add(allChains.get(pi.getSecondMolecule().getChainId()));
+					chainsEvCs.add(allChains.get(pi.getFirstMolecule().getPdbChainCode()));
+					chainsEvCs.add(allChains.get(pi.getSecondMolecule().getPdbChainCode()));
 					boolean canDoCRK = true;
-					if ((pi.getFirstMolecule().isProtein() && !sufficientDataForCRK.get(pi.getFirstMolecule().getChainId())) || 
-						(pi.getSecondMolecule().isProtein() && !sufficientDataForCRK.get(pi.getSecondMolecule().getChainId())) ) {
+					if ((pi.isFirstProtein() && !sufficientDataForCRK.get(pi.getFirstMolecule().getPdbChainCode())) || 
+						(pi.isSecondProtein() && !sufficientDataForCRK.get(pi.getSecondMolecule().getPdbChainCode())) ) {
 						canDoCRK = false;
 					}
 					InterfaceEvolContext iec = new InterfaceEvolContext(pi, chainsEvCs);
@@ -494,16 +495,16 @@ public class CRKMain {
 			scoreEntrPS.close();
 			scoreKaksPS.close();
 
-		} catch (Exception e) {
-			e.printStackTrace();
+		//} catch (Exception e) {
+		//	e.printStackTrace();
 
-			String stack = "";
-			for (StackTraceElement el:e.getStackTrace()) {
-				stack+="\tat "+el.toString()+"\n";				
-			}
-			LOGGER.fatal("Unexpected error. Exiting.\n"+e+"\n"+stack);
-			System.exit(1);
-		}
+		//	String stack = "";
+		//	for (StackTraceElement el:e.getStackTrace()) {
+		//		stack+="\tat "+el.toString()+"\n";				
+		//	}
+		//	LOGGER.fatal("Unexpected error. Exiting.\n"+e+"\n"+stack);
+		//	System.exit(1);
+		//}
 	}
 	
 	private static void printScoringHeaders(PrintStream ps) {
@@ -527,9 +528,9 @@ public class CRKMain {
 		//ps.printf("%45s\t%45s\n","non-weighted","weighted");		
 	}
 	
-	private static void printScores(PrintStream ps, PisaInterface pi, InterfaceScore scoreNW, InterfaceScore scoreW, double bioCutoff, double xtalCutoff) {
+	private static void printScores(PrintStream ps, ChainInterface pi, InterfaceScore scoreNW, InterfaceScore scoreW, double bioCutoff, double xtalCutoff) {
 		ps.printf("%15s\t%6.1f",
-				pi.getId()+"("+pi.getFirstMolecule().getChainId()+"+"+pi.getSecondMolecule().getChainId()+")",
+				pi.getId()+"("+pi.getFirstMolecule().getPdbChainCode()+"+"+pi.getSecondMolecule().getPdbChainCode()+")",
 				pi.getInterfaceArea());
 		scoreNW.getMemberScore(0).printRimAndCoreInfo(ps);
 		ps.print("\t");

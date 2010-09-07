@@ -10,18 +10,17 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import owl.core.connections.pisa.PisaInterface;
-import owl.core.connections.pisa.PisaMolecule;
-import owl.core.connections.pisa.PisaResidue;
-import owl.core.connections.pisa.PisaRimCore;
+import owl.core.structure.ChainInterface;
+import owl.core.structure.InterfaceRimCore;
 import owl.core.structure.Pdb;
+import owl.core.structure.Residue;
 
 public class InterfaceEvolContext {
 
 	private static final Log LOGGER = LogFactory.getLog(InterfaceEvolContext.class);
 
 	
-	private PisaInterface pisaInterf;
+	private ChainInterface pisaInterf;
 	private List<ChainEvolContext> chains;  // At the moment strictly 2 members (matching the 2 PisaMolecules of pisaInterf). 
 											// If either of the 2 molecules is not a protein then is null.
 //	private List<List<Residue>> unreliablePDBPositions; // At the moment strictly 2 members (matching the 2 PisaMolecules of pisaInterf).
@@ -31,7 +30,7 @@ public class InterfaceEvolContext {
 
 	
 	
-	public InterfaceEvolContext(PisaInterface pisaInterf, List<ChainEvolContext> chains) {
+	public InterfaceEvolContext(ChainInterface pisaInterf, List<ChainEvolContext> chains) {
 		this.pisaInterf = pisaInterf;
 		this.chains = chains;
 		
@@ -79,14 +78,14 @@ public class InterfaceEvolContext {
 		int numHomologs1 = 0;
 		int numHomologs2 = 0;
 		
-		Map<Integer,PisaRimCore> rimcores = this.pisaInterf.getRimAndCore(bsaToAsaSoftCutoff, bsaToAsaHardCutoff, relaxationStep, minCoreSize);
-		PisaRimCore rimCore1 = rimcores.get(1);
-		PisaRimCore rimCore2 = rimcores.get(2);
+		Map<Integer,InterfaceRimCore> rimcores = this.pisaInterf.getRimAndCore(bsaToAsaSoftCutoff, bsaToAsaHardCutoff, relaxationStep, minCoreSize);
+		InterfaceRimCore rimCore1 = rimcores.get(1);
+		InterfaceRimCore rimCore2 = rimcores.get(2);
 		// first checking residues for the consistency of the CDS data (alignments of translations) and PDB data (alignment of PDB to uniprot)
-		List<PisaResidue> unrelRimResidues1 = new ArrayList<PisaResidue>();
-		List<PisaResidue> unrelCoreResidues1 = new ArrayList<PisaResidue>();
-		List<PisaResidue> unrelRimResidues2 = new ArrayList<PisaResidue>();
-		List<PisaResidue> unrelCoreResidues2 = new ArrayList<PisaResidue>();
+		List<Residue> unrelRimResidues1 = new ArrayList<Residue>();
+		List<Residue> unrelCoreResidues1 = new ArrayList<Residue>();
+		List<Residue> unrelRimResidues2 = new ArrayList<Residue>();
+		List<Residue> unrelCoreResidues2 = new ArrayList<Residue>();
 		// rimCore1/2 will be null when the molecule is not a protein
 		if (rimCore1 != null) {
 			ChainEvolContext chain = chains.get(0);
@@ -149,10 +148,10 @@ public class InterfaceEvolContext {
 //		return unreliableResidues;
 //	}
 	
-	private List<PisaResidue> checkResiduesForPDBReliability(List<PisaResidue> residues, ChainEvolContext chain, PisaMolecule pisaMol) {
-		List<PisaResidue> unreliableResidues = new ArrayList<PisaResidue>();
-		for (PisaResidue res:residues){
-			int resSer = chain.getResSerFromPdbResSer(pisaMol.getChainId(), res.getPdbResSer());
+	private List<Residue> checkResiduesForPDBReliability(List<Residue> residues, ChainEvolContext chain, Pdb pisaMol) {
+		List<Residue> unreliableResidues = new ArrayList<Residue>();
+		for (Residue res:residues){
+			int resSer = chain.getResSerFromPdbResSer(pisaMol.getPdbChainCode(), res.getPdbSerial());
 			if (resSer!=-1 && !chain.isPdbSeqPositionMatchingUniprot(resSer)) {
 				unreliableResidues.add(res);
 			}
@@ -160,7 +159,7 @@ public class InterfaceEvolContext {
 		if (!unreliableResidues.isEmpty()) {
 			String msg = "Interface residue serials ";
 			for (int i=0;i<unreliableResidues.size();i++) {
-				msg+=unreliableResidues.get(i).getResType()+unreliableResidues.get(i).getPdbResSer();
+				msg+=unreliableResidues.get(i).getAaType().getThreeLetterCode()+unreliableResidues.get(i).getPdbSerial();
 				if (i!=unreliableResidues.size()-1) {
 					msg+=",";
 				}
@@ -171,10 +170,10 @@ public class InterfaceEvolContext {
 		return unreliableResidues;
 	}
 	
-	private List<PisaResidue> checkResiduesForCDSReliability(List<PisaResidue> residues, ChainEvolContext chain, PisaMolecule pisaMol) {
-		List<PisaResidue> unreliableResidues = new ArrayList<PisaResidue>();
-		for (PisaResidue res:residues){
-			int resSer = chain.getResSerFromPdbResSer(pisaMol.getChainId(), res.getPdbResSer());
+	private List<Residue> checkResiduesForCDSReliability(List<Residue> residues, ChainEvolContext chain, Pdb pisaMol) {
+		List<Residue> unreliableResidues = new ArrayList<Residue>();
+		for (Residue res:residues){
+			int resSer = chain.getResSerFromPdbResSer(pisaMol.getPdbChainCode(), res.getPdbSerial());
 			if (resSer!=-1 && !chain.isPdbSeqPositionReliable(resSer)) {
 				unreliableResidues.add(res);
 			}				
@@ -182,7 +181,7 @@ public class InterfaceEvolContext {
 		if (!unreliableResidues.isEmpty()) {
 			String msg = "Interface residue serials ";
 			for (int i=0;i<unreliableResidues.size();i++) {
-				msg+=unreliableResidues.get(i).getResType()+unreliableResidues.get(i).getPdbResSer();
+				msg+=unreliableResidues.get(i).getAaType().getThreeLetterCode()+unreliableResidues.get(i).getPdbSerial();
 				if (i!=unreliableResidues.size()-1) {
 					msg+=(",");
 				}
@@ -193,12 +192,12 @@ public class InterfaceEvolContext {
 		return unreliableResidues;
 	}
 	
-	private double calcScore(List<PisaResidue> residues, ChainEvolContext chain, ScoringType scoType, PisaMolecule pisaMol, boolean weighted) {
+	private double calcScore(List<Residue> residues, ChainEvolContext chain, ScoringType scoType, Pdb pisaMol, boolean weighted) {
 		double totalScore = 0.0;
 		double totalWeight = 0.0;
 		List<Double> conservScores = chain.getConservationScores(scoType);
-		for (PisaResidue res:residues){
-			int resSer = chain.getResSerFromPdbResSer(pisaMol.getChainId(), res.getPdbResSer());
+		for (Residue res:residues){
+			int resSer = chain.getResSerFromPdbResSer(pisaMol.getPdbChainCode(), res.getPdbSerial());
 
 			if (resSer!=-1) {
 				int queryPos = -2;
@@ -218,7 +217,7 @@ public class InterfaceEvolContext {
 					
 				}
 			} else {
-				LOGGER.warn("Can't map PISA pdb residue serial "+res.getPdbResSer()+" (res type:"+res.getResType()+", PISA serial: "+res.getResSerial()+")");
+				LOGGER.warn("Can't map PISA pdb residue serial "+res.getPdbSerial()+" (res type: "+res.getAaType().getThreeLetterCode()+", PISA serial: "+res.getSerial()+")");
 				LOGGER.warn("The residue will not be used for scoring");
 			}
 		}
@@ -229,17 +228,17 @@ public class InterfaceEvolContext {
 		PrintStream ps = new PrintStream(file);
 		String chain1 = null;
 		String chain2 = null;
-		if (pisaInterf.getFirstMolecule().isProtein()) {
-			chain1 = pisaInterf.getFirstMolecule().getChainId();
+		if (pisaInterf.isFirstProtein()) {
+			chain1 = pisaInterf.getFirstMolecule().getPdbChainCode();
 			chains.get(0).setConservationScoresAsBfactors(chain1,scoType);
 			// we copy in order to leave the original Pdbs unaltered (essential to be able to apply transformations several times)
 			Pdb pdb1 = chains.get(0).getPdb(chain1).copy();
-			pdb1.transform(pisaInterf.getFirstMolecule().getSymOp());
+			pdb1.transform(pisaInterf.getFirstTransfOrth());
 			pdb1.writeAtomLines(ps);
 		}
-		if (pisaInterf.getSecondMolecule().isProtein()) {
+		if (pisaInterf.isSecondProtein()) {
 			
-			chain2 = pisaInterf.getSecondMolecule().getChainId();
+			chain2 = pisaInterf.getSecondMolecule().getPdbChainCode();
 			String chain2forOutput = chain2; // the name we will put to the chain2 in the output pdb file
 			if (chain1!=null && chain1.equals(chain2)) {
 				// if both chains are named equally we want to still named them differently in the output pdb file
@@ -254,7 +253,7 @@ public class InterfaceEvolContext {
 			}
 			chains.get(1).setConservationScoresAsBfactors(chain2,scoType);
 			Pdb pdb2 = chains.get(1).getPdb(chain2).copy();
-			pdb2.transform(pisaInterf.getSecondMolecule().getSymOp());
+			pdb2.transform(pisaInterf.getSecondTransfOrth());
 			pdb2.setChainCode(chain2forOutput);
 			pdb2.writeAtomLines(ps);
 		}

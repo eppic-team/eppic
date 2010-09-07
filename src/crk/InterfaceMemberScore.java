@@ -7,8 +7,8 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import owl.core.connections.pisa.PisaResidue;
-import owl.core.connections.pisa.PisaRimCore;
+import owl.core.structure.InterfaceRimCore;
+import owl.core.structure.Residue;
 
 public class InterfaceMemberScore implements Serializable {
 	
@@ -19,20 +19,20 @@ public class InterfaceMemberScore implements Serializable {
 	
 	private static final double MAX_ALLOWED_UNREL_RES = 0.05; // 5% maximum allowed unreliable residues for core or rim
 	
-	private PisaRimCore rimCore;
+	private InterfaceRimCore rimCore;
 	private double scoreCore;
 	private double scoreRim;
 	private int numHomologs;
 	private int homologsCutoff;
 	private int minMemberCoreSize;
-	private List<PisaResidue> unreliableRimResidues;
-	private List<PisaResidue> unreliableCoreResidues;
+	private List<Residue> unreliableRimResidues;
+	private List<Residue> unreliableCoreResidues;
 	private int memberSerial;
 
-	public InterfaceMemberScore(PisaRimCore rimCore, double scoreCore, double scoreRim, int numHomologs, int homologsCutoff, 
+	public InterfaceMemberScore(InterfaceRimCore rimCore, double scoreCore, double scoreRim, int numHomologs, int homologsCutoff, 
 			int minMemberCoreSize,
-			List<PisaResidue> unreliableRimResidues,
-			List<PisaResidue> unreliableCoreResidues,
+			List<Residue> unreliableRimResidues,
+			List<Residue> unreliableCoreResidues,
 			int memberSerial) {
 		this.rimCore = rimCore;
 		this.scoreCore = scoreCore;
@@ -118,14 +118,14 @@ public class InterfaceMemberScore implements Serializable {
 	/**
 	 * @return the rimCore
 	 */
-	public PisaRimCore getRimCore() {
+	public InterfaceRimCore getRimCore() {
 		return rimCore;
 	}
 	
 	/**
 	 * @param rimCore the rimCore to set
 	 */
-	public void setRimCore(PisaRimCore rimCore) {
+	public void setRimCore(InterfaceRimCore rimCore) {
 		this.rimCore = rimCore;
 	}
 
