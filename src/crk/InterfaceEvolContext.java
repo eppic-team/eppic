@@ -89,26 +89,28 @@ public class InterfaceEvolContext {
 		// rimCore1/2 will be null when the molecule is not a protein
 		if (rimCore1 != null) {
 			ChainEvolContext chain = chains.get(0);
-			rimScore1  = calcScore(rimCore1.getRimResidues(), chain, scoType, pisaInterf.getFirstMolecule(), weighted);
-			coreScore1 = calcScore(rimCore1.getCoreResidues(),chain, scoType, pisaInterf.getFirstMolecule(), weighted);
+			String pdbChainCode = pisaInterf.getFirstMolecule().getPdbChainCode();
+			rimScore1  = calcScore(rimCore1.getRimResidues(), chain, scoType, pdbChainCode, weighted);
+			coreScore1 = calcScore(rimCore1.getCoreResidues(),chain, scoType, pdbChainCode, weighted);
 			numHomologs1 = chain.getNumHomologs();
-			unrelRimResidues1.addAll(checkResiduesForPDBReliability(rimCore1.getRimResidues(), chain, pisaInterf.getFirstMolecule()));
-			unrelCoreResidues1.addAll(checkResiduesForPDBReliability(rimCore1.getCoreResidues(), chain, pisaInterf.getFirstMolecule()));
+			unrelRimResidues1.addAll(checkResiduesForPDBReliability(rimCore1.getRimResidues(), chain, pdbChainCode));
+			unrelCoreResidues1.addAll(checkResiduesForPDBReliability(rimCore1.getCoreResidues(), chain, pdbChainCode));
 			if (scoType==ScoringType.KAKS) {
-				unrelRimResidues1.addAll(checkResiduesForCDSReliability(rimCore1.getRimResidues(), chain, pisaInterf.getFirstMolecule()));	
-				unrelCoreResidues1.addAll(checkResiduesForCDSReliability(rimCore1.getCoreResidues(), chain, pisaInterf.getFirstMolecule()));
+				unrelRimResidues1.addAll(checkResiduesForCDSReliability(rimCore1.getRimResidues(), chain, pdbChainCode));	
+				unrelCoreResidues1.addAll(checkResiduesForCDSReliability(rimCore1.getCoreResidues(), chain, pdbChainCode));
 			}
 		}
 		if (rimCore2 != null) {
 			ChainEvolContext chain = chains.get(1);
-			rimScore2  = calcScore(rimCore2.getRimResidues(), chain, scoType, pisaInterf.getSecondMolecule(), weighted);
-			coreScore2 = calcScore(rimCore2.getCoreResidues(),chain, scoType, pisaInterf.getSecondMolecule(), weighted);
+			String pdbChainCode = pisaInterf.getSecondMolecule().getPdbChainCode();
+			rimScore2  = calcScore(rimCore2.getRimResidues(), chain, scoType, pdbChainCode, weighted);
+			coreScore2 = calcScore(rimCore2.getCoreResidues(),chain, scoType, pdbChainCode, weighted);
 			numHomologs2 = chain.getNumHomologs();
-			unrelRimResidues2.addAll(checkResiduesForPDBReliability(rimCore2.getRimResidues(), chain, pisaInterf.getSecondMolecule()));
-			unrelCoreResidues2.addAll(checkResiduesForPDBReliability(rimCore2.getCoreResidues(), chain, pisaInterf.getSecondMolecule()));
+			unrelRimResidues2.addAll(checkResiduesForPDBReliability(rimCore2.getRimResidues(), chain, pdbChainCode));
+			unrelCoreResidues2.addAll(checkResiduesForPDBReliability(rimCore2.getCoreResidues(), chain, pdbChainCode));
 			if (scoType==ScoringType.KAKS) {
-				unrelRimResidues2.addAll(checkResiduesForCDSReliability(rimCore2.getRimResidues(), chain, pisaInterf.getSecondMolecule()));	
-				unrelCoreResidues2.addAll(checkResiduesForCDSReliability(rimCore2.getCoreResidues(), chain, pisaInterf.getSecondMolecule()));
+				unrelRimResidues2.addAll(checkResiduesForCDSReliability(rimCore2.getRimResidues(), chain, pdbChainCode));	
+				unrelCoreResidues2.addAll(checkResiduesForCDSReliability(rimCore2.getCoreResidues(), chain, pdbChainCode));
 			}
 		}
 				
@@ -148,10 +150,10 @@ public class InterfaceEvolContext {
 //		return unreliableResidues;
 //	}
 	
-	private List<Residue> checkResiduesForPDBReliability(List<Residue> residues, ChainEvolContext chain, Pdb pisaMol) {
+	private List<Residue> checkResiduesForPDBReliability(List<Residue> residues, ChainEvolContext chain, String pdbChainCode) {
 		List<Residue> unreliableResidues = new ArrayList<Residue>();
 		for (Residue res:residues){
-			int resSer = chain.getResSerFromPdbResSer(pisaMol.getPdbChainCode(), res.getPdbSerial());
+			int resSer = chain.getResSerFromPdbResSer(pdbChainCode, res.getPdbSerial());
 			if (resSer!=-1 && !chain.isPdbSeqPositionMatchingUniprot(resSer)) {
 				unreliableResidues.add(res);
 			}
@@ -170,10 +172,10 @@ public class InterfaceEvolContext {
 		return unreliableResidues;
 	}
 	
-	private List<Residue> checkResiduesForCDSReliability(List<Residue> residues, ChainEvolContext chain, Pdb pisaMol) {
+	private List<Residue> checkResiduesForCDSReliability(List<Residue> residues, ChainEvolContext chain, String pdbChainCode) {
 		List<Residue> unreliableResidues = new ArrayList<Residue>();
 		for (Residue res:residues){
-			int resSer = chain.getResSerFromPdbResSer(pisaMol.getPdbChainCode(), res.getPdbSerial());
+			int resSer = chain.getResSerFromPdbResSer(pdbChainCode, res.getPdbSerial());
 			if (resSer!=-1 && !chain.isPdbSeqPositionReliable(resSer)) {
 				unreliableResidues.add(res);
 			}				
@@ -192,12 +194,12 @@ public class InterfaceEvolContext {
 		return unreliableResidues;
 	}
 	
-	private double calcScore(List<Residue> residues, ChainEvolContext chain, ScoringType scoType, Pdb pisaMol, boolean weighted) {
+	private double calcScore(List<Residue> residues, ChainEvolContext chain, ScoringType scoType, String pdbChainCode, boolean weighted) {
 		double totalScore = 0.0;
 		double totalWeight = 0.0;
 		List<Double> conservScores = chain.getConservationScores(scoType);
 		for (Residue res:residues){
-			int resSer = chain.getResSerFromPdbResSer(pisaMol.getPdbChainCode(), res.getPdbSerial());
+			int resSer = chain.getResSerFromPdbResSer(pdbChainCode, res.getPdbSerial());
 
 			if (resSer!=-1) {
 				int queryPos = -2;

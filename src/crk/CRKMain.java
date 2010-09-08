@@ -32,8 +32,7 @@ import owl.core.runners.TcoffeeError;
 import owl.core.runners.blast.BlastError;
 import owl.core.structure.ChainInterface;
 import owl.core.structure.ChainInterfaceList;
-import owl.core.structure.CiffilePdb;
-import owl.core.structure.Pdb;
+import owl.core.structure.PdbAsymUnit;
 import owl.core.structure.PdbCodeNotFoundError;
 import owl.core.structure.PdbLoadError;
 import owl.core.structure.AminoAcid;
@@ -292,26 +291,12 @@ public class CRKMain {
 		loadConfigFile();
 		
 		
-		//try {
+		try {
 
-			// files		
+		
 			File cifFile = getCifFile(pdbCode, USE_ONLINE_PDB, outDir);
-			Pdb pdb = new CiffilePdb(cifFile);
-			String[] chains = pdb.getChains();
-			// map of sequences to list of chain codes
-			Map<String, List<String>> uniqSequences = new HashMap<String, List<String>>();
-			// finding the entities (groups of identical chains)
-			for (String chain:chains) {
-
-				pdb.load(chain);
-				if (uniqSequences.containsKey(pdb.getSequence())) {
-					uniqSequences.get(pdb.getSequence()).add(chain);
-				} else {
-					List<String> list = new ArrayList<String>();
-					list.add(chain);
-					uniqSequences.put(pdb.getSequence(),list);
-				}		
-			}
+			PdbAsymUnit pdb = new PdbAsymUnit(cifFile);
+			Map<String, List<String>> uniqSequences = pdb.getUniqueSequences();
 			String msg = "Unique sequences for "+pdbCode+": ";
 			int i = 1;
 			for (List<String> entity:uniqSequences.values()) {
@@ -328,13 +313,8 @@ public class CRKMain {
 			Map<String,Boolean> sufficientDataForCRK = new HashMap<String,Boolean>();
 			for (List<String> entity:uniqSequences.values()) {
 				String representativeChain = entity.get(0);
-				Map<String,Pdb> pdbs = new HashMap<String,Pdb>();
-				for (String pdbChainCode:entity) {
-					Pdb perChainPdb = new CiffilePdb(cifFile);
-					perChainPdb.load(pdbChainCode);
-					pdbs.put(pdbChainCode,perChainPdb);
-				}
-				ChainEvolContext chainEvCont = new ChainEvolContext(pdbs, representativeChain);
+	
+				ChainEvolContext chainEvCont = new ChainEvolContext(pdb, representativeChain);
 				// 1) getting the uniprot ids corresponding to the query (the pdb sequence)
 				File emblQueryCacheFile = null;
 				if (EMBL_CDS_CACHE_DIR!=null) {
@@ -495,16 +475,16 @@ public class CRKMain {
 			scoreEntrPS.close();
 			scoreKaksPS.close();
 
-		//} catch (Exception e) {
-		//	e.printStackTrace();
+		} catch (Exception e) {
+			e.printStackTrace();
 
-		//	String stack = "";
-		//	for (StackTraceElement el:e.getStackTrace()) {
-		//		stack+="\tat "+el.toString()+"\n";				
-		//	}
-		//	LOGGER.fatal("Unexpected error. Exiting.\n"+e+"\n"+stack);
-		//	System.exit(1);
-		//}
+			String stack = "";
+			for (StackTraceElement el:e.getStackTrace()) {
+				stack+="\tat "+el.toString()+"\n";				
+			}
+			LOGGER.fatal("Unexpected error. Exiting.\n"+e+"\n"+stack);
+			System.exit(1);
+		}
 	}
 	
 	private static void printScoringHeaders(PrintStream ps) {

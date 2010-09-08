@@ -8,7 +8,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -26,6 +25,7 @@ import owl.core.sequence.alignment.MultipleSequenceAlignment;
 import owl.core.sequence.alignment.PairwiseSequenceAlignment;
 import owl.core.sequence.alignment.PairwiseSequenceAlignment.PairwiseSequenceAlignmentException;
 import owl.core.structure.Pdb;
+import owl.core.structure.PdbAsymUnit;
 import owl.core.structure.PdbLoadError;
 
 public class ChainEvolContext {
@@ -33,7 +33,7 @@ public class ChainEvolContext {
 	private static final Log LOGGER = LogFactory.getLog(ChainEvolContext.class);
 
 	
-	private Map<String,Pdb> pdbs; 			// pdbs for all chains corresponding to this entity (pdb chain codes to Pdb objects)
+	private PdbAsymUnit pdb; 				// all chains of the corresponding PDB entry 
 	private String representativeChain;		// the pdb chain code of the representative chain
 	private String pdbCode; 		 		// the pdb code (if no pdb code then Pdb.NO_PDB_CODE)
 	private String sequence;
@@ -44,10 +44,10 @@ public class ChainEvolContext {
 	private UniprotHomologList homologs;	// the homologs of this chain's sequence
 		
 	
-	public ChainEvolContext(Map<String,Pdb> pdbs, String representativeChain) {
-		this.pdbs = pdbs;
-		this.pdbCode = pdbs.get(representativeChain).getPdbCode();
-		this.sequence = pdbs.get(representativeChain).getSequence();
+	public ChainEvolContext(PdbAsymUnit pdb, String representativeChain) {
+		this.pdb = pdb;
+		this.pdbCode = pdb.getPdbCode();
+		this.sequence = pdb.getChain(representativeChain).getSequence();
 		this.representativeChain = representativeChain;
 	}
 	
@@ -183,7 +183,7 @@ public class ChainEvolContext {
 	}
 	
 	public Pdb getPdb(String pdbChainCode) {
-		return pdbs.get(pdbChainCode);
+		return pdb.getChain(pdbChainCode);
 	}
 	
 	public int getResSerFromPdbResSer(String pdbChainCode, String pdbResSer) {
