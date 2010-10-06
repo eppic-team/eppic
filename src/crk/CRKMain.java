@@ -374,13 +374,14 @@ public class CRKMain {
 			for (List<String> entity:uniqSequences.values()) {
 				String representativeChain = entity.get(0);
 	
-				ChainEvolContext chainEvCont = new ChainEvolContext(pdb, representativeChain);
+				ChainEvolContext chainEvCont = new ChainEvolContext(pdb, representativeChain, pdbName);
 				// 1) getting the uniprot ids corresponding to the query (the pdb sequence)
 				File emblQueryCacheFile = null;
 				if (EMBL_CDS_CACHE_DIR!=null) {
 					emblQueryCacheFile = new File(EMBL_CDS_CACHE_DIR,baseName+"."+pdbName+representativeChain+".query.emblcds.fa");
 				}
-				chainEvCont.retrieveQueryData(SIFTS_FILE, emblQueryCacheFile);
+				System.out.println("Finding query's uniprot mapping (through SIFTS or blasting)");
+				chainEvCont.retrieveQueryData(SIFTS_FILE, emblQueryCacheFile, BLAST_BIN_DIR, BLAST_DB_DIR, BLAST_DB, numThreads);
 				boolean canDoCRK = true;
 				if (doScoreCRK && chainEvCont.getQueryRepCDS()==null) {
 					LOGGER.error("No CDS good match for query sequence! can't do CRK analysis on it.");
@@ -487,8 +488,8 @@ public class CRKMain {
 			System.out.println("Done");
 			
 			PrintStream interfLogPS = new PrintStream(new File(outDir,baseName+".interfaces"));
+			interfLogPS.println("Interfaces for "+pdbName);
 			for (ChainInterface pi:interfaces) {
-				interfLogPS.println("Interfaces for "+pdbName);
 				pi.printTabular(interfLogPS);
 			}
 			interfLogPS.close();

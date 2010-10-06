@@ -8,16 +8,23 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.regex.Matcher;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.xml.sax.SAXException;
 
 import owl.core.connections.NoMatchFoundException;
 import owl.core.connections.SiftsConnection;
 import owl.core.features.SiftsFeature;
 import owl.core.runners.TcoffeeError;
 import owl.core.runners.blast.BlastError;
+import owl.core.runners.blast.BlastHit;
+import owl.core.runners.blast.BlastHitList;
+import owl.core.runners.blast.BlastRunner;
+import owl.core.runners.blast.BlastXMLParser;
 import owl.core.sequence.ProteinToCDSMatch;
+import owl.core.sequence.Sequence;
 import owl.core.sequence.UniprotEntry;
 import owl.core.sequence.UniprotHomolog;
 import owl.core.sequence.UniprotHomologList;
@@ -32,11 +39,24 @@ public class ChainEvolContext {
 	
 	private static final Log LOGGER = LogFactory.getLog(ChainEvolContext.class);
 
+	// blast constants
+	private static final String BLASTOUT_SUFFIX = "blast.out.xml";
+	private static final String BLAST_BASENAME = "pdb2unimapping";
+	private static final String FASTA_SUFFIX = ".fa";
+	private static final int 	BLAST_OUTPUT_TYPE = 7;  // xml output
+	private static final boolean BLAST_NO_FILTERING = true;
+	private static final boolean DEBUG = false;
+	
+	private static final double PDB2UNIPROT_ID_THRESHOLD = 95.0;
+	private static final double PDB2UNIPROT_QCOVERAGE_THRESHOLD = 0.85;
+
+	
 	
 	private PdbAsymUnit pdb; 				// all chains of the corresponding PDB entry 
 	private String representativeChain;		// the pdb chain code of the representative chain
 	private String pdbCode; 		 		// the pdb code (if no pdb code then Pdb.NO_PDB_CODE)
 	private String sequence;
+	private String pdbName;					// a name to identify the PDB, will be the pdbCode if a PDB entry or the file name without extension if from file
 	
 	private UniprotEntry query;							// the uniprot id, seq, cds corresponding to this chain's sequence
 	private PairwiseSequenceAlignment alnPdb2Uniprot; 	// the alignment between the pdb sequence and the uniprot sequence (query)
@@ -44,9 +64,10 @@ public class ChainEvolContext {
 	private UniprotHomologList homologs;	// the homologs of this chain's sequence
 		
 	
-	public ChainEvolContext(PdbAsymUnit pdb, String representativeChain) {
+	public ChainEvolContext(PdbAsymUnit pdb, String representativeChain, String pdbName) {
 		this.pdb = pdb;
 		this.pdbCode = pdb.getPdbCode();
+		this.pdbName = pdbName;
 		this.sequence = pdb.getChain(representativeChain).getSequence();
 		this.representativeChain = representativeChain;
 	}
@@ -56,10 +77,16 @@ public class ChainEvolContext {
 	 * @param siftsLocation file or URL of the SIFTS PDB to Uniprot mapping table
 	 * @param emblCDScache a FASTA file containing the cached sequences (if present, sequences
 	 * won't be refetched online
+	 * @param blastBinDir
+	 * @param blastDbDir
+	 * @param blastDb
+	 * @param blastNumThreads
 	 * @throws IOException
 	 * @throws PdbLoadError
+	 * @throws BlastError
 	 */
-	public void retrieveQueryData(String siftsLocation, File emblCDScache) throws IOException, PdbLoadError {
+	public void retrieveQueryData(String siftsLocation, File emblCDScache, String blastBinDir, String blastDbDir, String blastDb, int blastNumThreads) 
+	throws IOException, PdbLoadError, BlastError {
 		
 		// two possible cases: 
 		// 1) PDB code known and so SiftsFeatures can be taken from SiftsConnection
@@ -86,15 +113,14 @@ public class ChainEvolContext {
 
 
 			} catch (NoMatchFoundException e) {
-				LOGGER.error("No SIFTS mapping could be found for "+pdbCode+representativeChain);
-				System.exit(1);
-				//TODO blast, find uniprot mapping and use it if one can be found
+				LOGGER.warn("No SIFTS mapping could be found for "+pdbCode+representativeChain);
+				LOGGER.info("Trying blasting to find one.");
+				query = findUniprotMapping(blastBinDir, blastDbDir, blastDb, blastNumThreads);
 			}
 		// 2) PDB code not known and so SiftsFeatures have to be found by blasting, aligning etc.
 		} else {
-			System.err.println("No PDB code given. Can't continue, not implemented yet!");
-			System.exit(1);
-			//TODO blast to find mapping
+			LOGGER.info("No PDB code available. Can't use SIFTS. Blasting to find the query's Uniprot mapping.");
+			query = findUniprotMapping(blastBinDir, blastDbDir, blastDb, blastNumThreads);
 		}
 		
 		LOGGER.info("Uniprot id for the query "+pdbCode+representativeChain+": "+query.getUniId());
@@ -104,7 +130,7 @@ public class ChainEvolContext {
 		query.retrieveEmblCdsSeqs(emblCDScache);
 		
 		
-		// and finally we align the 2 sequences (rather than trusting the SIFTS alignment info)
+		// and finally we align the 2 sequences (in case of mapping from SIFTS we rather do this than trusting the SIFTS alignment info)
 		try {
 			alnPdb2Uniprot = new PairwiseSequenceAlignment(sequence, query.getUniprotSeq().getSeq(), pdbCode+representativeChain, query.getUniprotSeq().getName());
 			LOGGER.info("The PDB SEQRES to Uniprot alignmnent:\n"+alnPdb2Uniprot.getFormattedAlignmentString());
@@ -271,7 +297,7 @@ public class ChainEvolContext {
 	 * @param ps
 	 */
 	public void printSummary(PrintStream ps) {
-		ps.println("Query: "+pdbCode+representativeChain);
+		ps.println("Query: "+pdbName+representativeChain);
 		ps.println("Uniprot id for query:");
 		ps.print(this.query.getUniId()+" (");
 		for (String emblcdsid: query.getEmblCdsIds()) {
@@ -427,4 +453,53 @@ public class ChainEvolContext {
 		}
 		return this.getPDBPosForQueryUniprotPos(uniprotPos);
 	}
+	
+	private UniprotEntry findUniprotMapping(String blastBinDir, String blastDbDir, String blastDb, int blastNumThreads) throws IOException, BlastError {
+		
+		File outBlast = File.createTempFile(BLAST_BASENAME,BLASTOUT_SUFFIX);
+		File inputSeqFile = File.createTempFile(BLAST_BASENAME,FASTA_SUFFIX);
+		if (!DEBUG) {
+			outBlast.deleteOnExit();
+			inputSeqFile.deleteOnExit();
+		}
+		
+		new Sequence(pdbName,this.sequence).writeToFastaFile(inputSeqFile);
+
+		BlastRunner blastRunner = new BlastRunner(blastBinDir, blastDbDir);
+		blastRunner.runBlastp(inputSeqFile, blastDb, outBlast, BLAST_OUTPUT_TYPE, BLAST_NO_FILTERING, blastNumThreads);
+		String uniprotVer = UniprotHomologList.readUniprotVer(blastDbDir);
+		LOGGER.info("Query blast search for Uniprot mapping using Uniprot version "+uniprotVer);
+		
+
+		BlastHitList blastList = null;
+		try {
+			BlastXMLParser blastParser = new BlastXMLParser(outBlast);
+			blastList = blastParser.getHits();
+		} catch (SAXException e) {
+			// if this happens it means that blast doesn't format correctly its XML, i.e. has a bug
+			System.err.println("Unexpected error: "+e.getMessage());
+			System.exit(1);
+		}
+
+		UniprotEntry uniprotMapping = null;
+		BlastHit best = blastList.getBestHit();
+		if (best.getPercentIdentity()>PDB2UNIPROT_ID_THRESHOLD && best.getQueryCoverage()>PDB2UNIPROT_QCOVERAGE_THRESHOLD) {
+			
+			String sid = best.getSubjectId();
+			Matcher m = Sequence.DEFLINE_PRIM_ACCESSION_REGEX.matcher(sid);
+			if (m.matches()) {
+				String uniId = m.group(1);
+				uniprotMapping = new UniprotEntry(uniId);
+			} else {
+				LOGGER.error("Could not find uniprot id in subject id "+sid);
+				System.exit(1);
+			}
+		} else {
+			LOGGER.error("No Uniprot match could be found for the query "+pdbName+". Best was "+
+					String.format("%5.2f%% id and %4.2f coverage",best.getPercentIdentity(),best.getQueryCoverage()));
+			System.exit(1);
+		}
+		return uniprotMapping;
+	}
+	
 }
