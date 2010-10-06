@@ -17,6 +17,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.logging.Log;
@@ -30,6 +32,7 @@ import org.xml.sax.SAXException;
 import owl.core.connections.pisa.PisaConnection;
 import owl.core.runners.TcoffeeError;
 import owl.core.runners.blast.BlastError;
+import owl.core.structure.Asa;
 import owl.core.structure.ChainInterface;
 import owl.core.structure.ChainInterfaceList;
 import owl.core.structure.PdbAsymUnit;
@@ -44,6 +47,8 @@ public class CRKMain {
 	private static final String   CONFIG_FILE_NAME = ".crk.conf";
 	private static final String   ENTROPIES_FILE_SUFFIX = ".entropies";
 	private static final String   KAKS_FILE_SUFFIX = ".kaks";
+	private static final Pattern  PDBCODE_PATTERN = Pattern.compile("^\\d\\w\\w\\w$");
+	private static final double   INTERFACE_DIST_CUTOFF = 5.9;
 	
 	// DEFAULTS FOR CONFIG FILE ASSIGNABLE CONSTANTS
 	// defaults for pdb data location
@@ -67,6 +72,9 @@ public class CRKMain {
 	private static final File     DEF_SELECTON_BIN = new File("/usr/bin/selecton");
 	private static final double	  DEF_SELECTON_EPSILON = 0.1;
 
+	// default naccess location
+	private static final File     DEF_NACCESS_EXE = new File("/usr/bin/naccess");
+	
 	// default crk cutoffs
 	private static final double   DEF_QUERY_COVERAGE_CUTOFF = 0.85;
 	private static final int      DEF_MIN_HOMOLOGS_CUTOFF = 10;
@@ -85,7 +93,7 @@ public class CRKMain {
 	// DEFAULTS FOR COMMAND LINE PARAMETERS
 	private static final double   DEF_IDENTITY_CUTOFF = 0.6;
 
-	private static final int      DEF_BLAST_NUMTHREADS = 1;
+	private static final int      DEF_NUMTHREADS = Runtime.getRuntime().availableProcessors();
 	
 	// default entropy calculation default
 	private static final int      DEF_ENTROPY_ALPHABET = 20;
@@ -116,6 +124,8 @@ public class CRKMain {
 	
 	private static File     SELECTON_BIN;
 
+	private static File     NACCESS_EXE;
+	
 	private static double   QUERY_COVERAGE_CUTOFF;
 	private static int      MIN_HOMOLOGS_CUTOFF;
 	private static double   CUTOFF_ASA_INTERFACE_REPORTING; 
@@ -158,7 +168,7 @@ public class CRKMain {
 		double idCutoff = DEF_IDENTITY_CUTOFF;
 		String baseName = null;
 		File outDir = new File(".");
-		int blastNumThreads = DEF_BLAST_NUMTHREADS;
+		int numThreads = DEF_NUMTHREADS;
 		int reducedAlphabet = DEF_ENTROPY_ALPHABET;
 		boolean useTcoffeeVeryFastMode = DEF_USE_TCOFFEE_VERYFAST_MODE;
 		
@@ -171,15 +181,19 @@ public class CRKMain {
 		double selectonEpsilon = DEF_SELECTON_EPSILON;
 
 		int maxNumSeqsSelecton = DEF_MAX_NUM_SEQUENCES_SELECTON;
+		
+		boolean usePisa = false;
 
+		boolean useNaccess = false;
+		
 		String help = "Usage: \n" +
 		PROGRAM_NAME+"\n" +
-		"   -i         :  input PDB code\n" +
+		"   -i         :  input PDB code or PDB file or mmCIF file\n" +
 		"  [-k]        :  score based on ka/ks ratios as well as on entropies. Much \n" +
 		"                 slower, requires running of the selecton external program\n" +
 		"  [-d <float>]:  sequence identity cut-off, homologs below this threshold won't\n" +
 		"                 be considered, default: "+String.format("%3.1f",DEF_IDENTITY_CUTOFF)+"\n"+
-		"  [-a <int>]  :  number of threads for blast. Default: "+DEF_BLAST_NUMTHREADS+"\n"+
+		"  [-a <int>]  :  number of threads for blast and ASA calculation. Default: "+DEF_NUMTHREADS+"\n"+
 		"  [-b <str>]  :  basename for output files. Default: PDB code \n"+
 		"  [-o <dir>]  :  output dir, where output files will be written. Default: current\n" +
 		"                 dir \n" +
@@ -201,11 +215,15 @@ public class CRKMain {
 		"  [-q <int>]  :  maximum number of sequences to keep for calculation of conservation scores.\n" +
 		"                 Default: "+DEF_MAX_NUM_SEQUENCES_SELECTON+". This is especially important when using the -k option,\n" +
 		"                 with too many sequences, selecton will run too long (and \n" +
-		"                 inaccurately because of ks saturation)\n\n";
+		"                 inaccurately because of ks saturation)\n" +
+		"  [-p]        :  use PISA interface enumeration (will be downloaded from web) \n" +
+		"                 instead of ours (only possible for existing PDB entries).\n" +
+		"  [-n]        :  use NACCESS for ASA/BSA calculations, otherwise area calculations done with the internal\n" +
+		"                 rolling ball algorithm implementation\n\n";
 		
 
 
-		Getopt g = new Getopt(PROGRAM_NAME, args, "i:kd:a:b:o:r:tc:C:x:m:M:e:h?");
+		Getopt g = new Getopt(PROGRAM_NAME, args, "i:kd:a:b:o:r:tc:C:x:m:M:e:q:pnh?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
@@ -219,7 +237,7 @@ public class CRKMain {
 				idCutoff = Double.parseDouble(g.getOptarg());
 				break;
 			case 'a':
-				blastNumThreads = Integer.parseInt(g.getOptarg());
+				numThreads = Integer.parseInt(g.getOptarg());
 				break;
 			case 'b':
 				baseName = g.getOptarg();
@@ -251,6 +269,15 @@ public class CRKMain {
 			case 'e':
 				selectonEpsilon = Double.parseDouble(g.getOptarg());
 				break;
+			case 'q':
+				maxNumSeqsSelecton = Integer.parseInt(g.getOptarg());
+				break;
+			case 'p':
+				usePisa = true;
+				break;
+			case 'n':
+				useNaccess = true;
+				break;
 			case 'h':
 			case '?':
 				System.out.println(help);
@@ -264,12 +291,31 @@ public class CRKMain {
 			System.exit(1);
 		}
 		
+		File inFile = new File(pdbCode);
+		Matcher m = PDBCODE_PATTERN.matcher(pdbCode);
+		if (m.matches()) {
+			inFile = null;
+		}
+		
+		if (inFile!=null && !inFile.exists()){
+			System.err.println("Given file "+inFile+" does not exist!");
+			System.exit(1);
+		}
+		
 		if (baseName==null) {
 			baseName=pdbCode;
+			if (inFile!=null) {
+				baseName = inFile.getName().substring(0, inFile.getName().lastIndexOf('.'));
+			}
 		}
 		
 		if (!AminoAcid.isValidNumGroupsReducedAlphabet(reducedAlphabet)) {
 			System.err.println("Invalid number of amino acid groups specified ("+reducedAlphabet+")");
+			System.exit(1);
+		}
+		
+		if (usePisa && inFile!=null) {
+			System.err.println("Can only get PISA interface enumeration for a PDB code. Can't use '-p' if the PDB given is a file");
 			System.exit(1);
 		}
 
@@ -293,11 +339,25 @@ public class CRKMain {
 		
 		try {
 
-		
-			File cifFile = getCifFile(pdbCode, USE_ONLINE_PDB, outDir);
-			PdbAsymUnit pdb = new PdbAsymUnit(cifFile);
+			PdbAsymUnit pdb = null;
+			String pdbName = pdbCode; // the name to be used in many of the output files
+
+
+			if (inFile==null) {
+				File cifFile = getCifFile(pdbCode, USE_ONLINE_PDB, outDir);
+				pdb = new PdbAsymUnit(cifFile);	
+			} else {
+				pdb = new PdbAsymUnit(inFile);
+				pdbName = inFile.getName().substring(0, inFile.getName().lastIndexOf('.'));
+			}
+			
+			if (pdb.getCrystalCell()==null) {
+				LOGGER.fatal("No crystal information found in source "+pdbCode);
+				System.exit(1);
+			}
+			
 			Map<String, List<String>> uniqSequences = pdb.getUniqueSequences();
-			String msg = "Unique sequences for "+pdbCode+": ";
+			String msg = "Unique sequences for "+pdbName+": ";
 			int i = 1;
 			for (List<String> entity:uniqSequences.values()) {
 				msg+=i+":";
@@ -318,7 +378,7 @@ public class CRKMain {
 				// 1) getting the uniprot ids corresponding to the query (the pdb sequence)
 				File emblQueryCacheFile = null;
 				if (EMBL_CDS_CACHE_DIR!=null) {
-					emblQueryCacheFile = new File(EMBL_CDS_CACHE_DIR,baseName+"."+pdbCode+representativeChain+".query.emblcds.fa");
+					emblQueryCacheFile = new File(EMBL_CDS_CACHE_DIR,baseName+"."+pdbName+representativeChain+".query.emblcds.fa");
 				}
 				chainEvCont.retrieveQueryData(SIFTS_FILE, emblQueryCacheFile);
 				boolean canDoCRK = true;
@@ -330,14 +390,14 @@ public class CRKMain {
 				System.out.println("Blasting...");
 				File blastCacheFile = null;
 				if (BLAST_CACHE_DIR!=null) {
-					blastCacheFile = new File(BLAST_CACHE_DIR,baseName+"."+pdbCode+representativeChain+".blast.xml"); 
+					blastCacheFile = new File(BLAST_CACHE_DIR,baseName+"."+pdbName+representativeChain+".blast.xml"); 
 				}
-				chainEvCont.retrieveHomologs(BLAST_BIN_DIR, BLAST_DB_DIR, BLAST_DB, blastNumThreads, idCutoff, QUERY_COVERAGE_CUTOFF, blastCacheFile);
+				chainEvCont.retrieveHomologs(BLAST_BIN_DIR, BLAST_DB_DIR, BLAST_DB, numThreads, idCutoff, QUERY_COVERAGE_CUTOFF, blastCacheFile);
 
 				System.out.println("Retrieving UniprotKB data and EMBL CDS sequences");
 				File emblHomsCacheFile = null;
 				if (EMBL_CDS_CACHE_DIR!=null) {
-					emblHomsCacheFile = new File(EMBL_CDS_CACHE_DIR,baseName+"."+pdbCode+representativeChain+".homologs.emblcds.fa");
+					emblHomsCacheFile = new File(EMBL_CDS_CACHE_DIR,baseName+"."+pdbName+representativeChain+".homologs.emblcds.fa");
 				}
 				chainEvCont.retrieveHomologsData(emblHomsCacheFile);
 				if (doScoreCRK && !chainEvCont.isConsistentGeneticCodeType()){
@@ -355,7 +415,7 @@ public class CRKMain {
 				chainEvCont.align(TCOFFEE_BIN, useTcoffeeVeryFastMode);
 
 				// writing homolog sequences to file
-				chainEvCont.writeHomologSeqsToFile(new File(outDir,baseName+"."+pdbCode+representativeChain+".fa"));
+				chainEvCont.writeHomologSeqsToFile(new File(outDir,baseName+"."+pdbName+representativeChain+".fa"));
 
 				// check the back-translation of CDS to uniprot
 				// check whether we have a good enough CDS for the chain
@@ -365,14 +425,14 @@ public class CRKMain {
 				}
 
 				// printing summary to file
-				PrintStream log = new PrintStream(new File(outDir,baseName+"."+pdbCode+representativeChain+".log"));
+				PrintStream log = new PrintStream(new File(outDir,baseName+"."+pdbName+representativeChain+".log"));
 				chainEvCont.printSummary(log);
 				log.close();
 				// writing the alignment to file
-				chainEvCont.writeAlignmentToFile(new File(outDir,baseName+"."+pdbCode+representativeChain+".aln"));
+				chainEvCont.writeAlignmentToFile(new File(outDir,baseName+"."+pdbName+representativeChain+".aln"));
 				// writing the nucleotides alignment to file
 				if (doScoreCRK && canDoCRK) {
-					chainEvCont.writeNucleotideAlignmentToFile(new File(outDir,baseName+"."+pdbCode+representativeChain+".cds.aln"));
+					chainEvCont.writeNucleotideAlignmentToFile(new File(outDir,baseName+"."+pdbName+representativeChain+".cds.aln"));
 				}
 
 				// computing entropies
@@ -382,19 +442,19 @@ public class CRKMain {
 				if (doScoreCRK && canDoCRK) {
 					System.out.println("Running selecton (this will take long)...");
 					chainEvCont.computeKaKsRatiosSelecton(SELECTON_BIN, 
-							new File(outDir,baseName+"."+pdbCode+representativeChain+".selecton.res"),
-							new File(outDir,baseName+"."+pdbCode+representativeChain+".selecton.log"), 
-							new File(outDir,baseName+"."+pdbCode+representativeChain+".selecton.tree"),
-							new File(outDir,baseName+"."+pdbCode+representativeChain+".selecton.global"),
+							new File(outDir,baseName+"."+pdbName+representativeChain+".selecton.res"),
+							new File(outDir,baseName+"."+pdbName+representativeChain+".selecton.log"), 
+							new File(outDir,baseName+"."+pdbName+representativeChain+".selecton.tree"),
+							new File(outDir,baseName+"."+pdbName+representativeChain+".selecton.global"),
 							selectonEpsilon);
 				}
 
 				// writing the conservation scores (entropies/kaks) log file 
-				PrintStream conservScoLog = new PrintStream(new File(outDir,baseName+"."+pdbCode+representativeChain+ENTROPIES_FILE_SUFFIX));
+				PrintStream conservScoLog = new PrintStream(new File(outDir,baseName+"."+pdbName+representativeChain+ENTROPIES_FILE_SUFFIX));
 				chainEvCont.printConservationScores(conservScoLog, ScoringType.ENTROPY);
 				conservScoLog.close();
 				if (doScoreCRK && canDoCRK) {
-					conservScoLog = new PrintStream(new File(outDir,baseName+"."+pdbCode+representativeChain+KAKS_FILE_SUFFIX));
+					conservScoLog = new PrintStream(new File(outDir,baseName+"."+pdbName+representativeChain+KAKS_FILE_SUFFIX));
 					chainEvCont.printConservationScores(conservScoLog, ScoringType.KAKS);
 					conservScoLog.close();				
 				}
@@ -406,17 +466,32 @@ public class CRKMain {
 			}
 
 
-			// 3) getting PISA interfaces description
-			PisaConnection pc = new PisaConnection(PISA_INTERFACES_URL, null, null);
-			List<String> pdbCodes = new ArrayList<String>();
-			pdbCodes.add(pdbCode);
-			ChainInterfaceList interfaces = pc.getInterfacesDescription(pdbCodes).get(pdbCode);
-			PrintStream pisaLogPS = new PrintStream(new File(outDir,baseName+".pisa.interfaces"));
-			for (ChainInterface pi:interfaces) {
-				pisaLogPS.println("Interfaces for "+pdbCode);
-				pi.printTabular(pisaLogPS);
+			// 3) getting interfaces 
+			ChainInterfaceList interfaces = null;
+			if (usePisa) {
+				System.out.println("Getting PISA interfaces...");
+				LOGGER.info("Interfaces from PISA.");
+				PisaConnection pc = new PisaConnection(PISA_INTERFACES_URL, null, null);
+				List<String> pdbCodes = new ArrayList<String>();
+				pdbCodes.add(pdbCode);
+				interfaces = pc.getInterfacesDescription(pdbCodes).get(pdbCode);
+			} else {
+				System.out.println("Calculating possible interfaces...");
+				LOGGER.info("Interfaces calculated.");
+				if (useNaccess) {
+					interfaces = pdb.getAllInterfaces(INTERFACE_DIST_CUTOFF, NACCESS_EXE, 0, 0);
+				} else {
+					interfaces = pdb.getAllInterfaces(INTERFACE_DIST_CUTOFF, null, Asa.DEFAULT_N_SPHERE_POINTS,numThreads);
+				}
 			}
-			pisaLogPS.close();
+			System.out.println("Done");
+			
+			PrintStream interfLogPS = new PrintStream(new File(outDir,baseName+".interfaces"));
+			for (ChainInterface pi:interfaces) {
+				interfLogPS.println("Interfaces for "+pdbName);
+				pi.printTabular(interfLogPS);
+			}
+			interfLogPS.close();
 
 			// 4) scoring
 			System.out.println("Scores:");
@@ -447,8 +522,9 @@ public class CRKMain {
 					printScores(System.out, pi, scoreNW, scoreW, ENTR_BIO_CUTOFF, ENTR_XTAL_CUTOFF);
 					printScores(scoreEntrPS, pi, scoreNW, scoreW, ENTR_BIO_CUTOFF, ENTR_XTAL_CUTOFF);
 
-					scoreNW.serialize(new File(outDir,baseName+"."+pi.getId()+ENTROPIES_FILE_SUFFIX+".scoreNW.dat"));
-					scoreW.serialize(new File(outDir,baseName+"."+pi.getId()+ENTROPIES_FILE_SUFFIX+".scoreW.dat"));
+					// TODO not writing out the objects for the moment, we have to make many classes serializable for that
+					//scoreNW.serialize(new File(outDir,baseName+"."+pi.getId()+ENTROPIES_FILE_SUFFIX+".scoreNW.dat"));
+					//scoreW.serialize(new File(outDir,baseName+"."+pi.getId()+ENTROPIES_FILE_SUFFIX+".scoreW.dat"));
 
 					// ka/ks scoring
 					if (doScoreCRK && canDoCRK) {
@@ -460,8 +536,9 @@ public class CRKMain {
 						printScores(System.out, pi, scoreNW, scoreW, KAKS_BIO_CUTOFF, KAKS_XTAL_CUTOFF);
 						printScores(scoreKaksPS, pi, scoreNW, scoreW, KAKS_BIO_CUTOFF, KAKS_XTAL_CUTOFF);
 
-						scoreNW.serialize(new File(outDir,baseName+"."+pi.getId()+KAKS_FILE_SUFFIX+".scoreNW.dat"));
-						scoreW.serialize(new File(outDir,baseName+"."+pi.getId()+KAKS_FILE_SUFFIX+".scoreW.dat"));					
+						// TODO not writing out the objects for the moment, we have to make many classes serializable for that
+						//scoreNW.serialize(new File(outDir,baseName+"."+pi.getId()+KAKS_FILE_SUFFIX+".scoreNW.dat"));
+						//scoreW.serialize(new File(outDir,baseName+"."+pi.getId()+KAKS_FILE_SUFFIX+".scoreW.dat"));					
 					}
 
 					// writing out the interface pdb file with conservation scores as b factors (for visualization)
@@ -606,6 +683,8 @@ public class CRKMain {
 			TCOFFEE_BIN 		= new File(p.getProperty("TCOFFEE_BIN", DEF_TCOFFE_BIN.toString()));
 			
 			SELECTON_BIN 		= new File(p.getProperty("SELECTON_BIN", DEF_SELECTON_BIN.toString()));
+			
+			NACCESS_EXE         = new File(p.getProperty("NACCESS_EXE", DEF_NACCESS_EXE.toString()));
 
 			QUERY_COVERAGE_CUTOFF = Double.parseDouble(p.getProperty("QUERY_COVERAGE_CUTOFF", new Double(DEF_QUERY_COVERAGE_CUTOFF).toString()));
 			MIN_HOMOLOGS_CUTOFF = Integer.parseInt(p.getProperty("MIN_HOMOLOGS_CUTOFF", new Integer(DEF_MIN_HOMOLOGS_CUTOFF).toString()));
