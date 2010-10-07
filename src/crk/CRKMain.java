@@ -212,14 +212,15 @@ public class CRKMain {
 		"                 below this value after applying hard cutoff then the interface \n" +
 		"                 member is not scored and considerd a crystal contact. Default: "+DEF_MIN_NUM_RES_MEMBER_CA+"\n" +
 		"  [-e <float>]:  epsilon value for selecton. Default "+String.format("%4.2f",DEF_SELECTON_EPSILON)+"\n" +
-		"  [-q <int>]  :  maximum number of sequences to keep for calculation of conservation scores.\n" +
-		"                 Default: "+DEF_MAX_NUM_SEQUENCES_SELECTON+". This is especially important when using the -k option,\n" +
-		"                 with too many sequences, selecton will run too long (and \n" +
-		"                 inaccurately because of ks saturation)\n" +
+		"  [-q <int>]  :  maximum number of sequences to keep for calculation of conservation \n" +
+		"                 scores. Default: "+DEF_MAX_NUM_SEQUENCES_SELECTON+". This is especially important when using \n" +
+		"                 the -k option, with too many sequences, selecton will run too long\n" +
+		"                 (and inaccurately because of ks saturation)\n" +
 		"  [-p]        :  use PISA interface enumeration (will be downloaded from web) \n" +
 		"                 instead of ours (only possible for existing PDB entries).\n" +
-		"  [-n]        :  use NACCESS for ASA/BSA calculations, otherwise area calculations done with the internal\n" +
-		"                 rolling ball algorithm implementation\n\n";
+		"  [-n]        :  use NACCESS for ASA/BSA calculations, otherwise area calculations \n" +
+		"                 done with the internal rolling ball algorithm implementation \n" +
+		"                 (multi-threaded using number of CPUs specified in -a)\n\n";
 		
 
 
