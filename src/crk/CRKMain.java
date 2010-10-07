@@ -32,7 +32,6 @@ import org.xml.sax.SAXException;
 import owl.core.connections.pisa.PisaConnection;
 import owl.core.runners.TcoffeeError;
 import owl.core.runners.blast.BlastError;
-import owl.core.structure.Asa;
 import owl.core.structure.ChainInterface;
 import owl.core.structure.ChainInterfaceList;
 import owl.core.structure.PdbAsymUnit;
@@ -108,6 +107,8 @@ public class CRKMain {
 	private static final boolean  DEF_USE_TCOFFEE_VERYFAST_MODE = true;
 	
 	private static final int      DEF_MAX_NUM_SEQUENCES_SELECTON = 60;
+	
+	private static final int      DEF_NSPHEREPOINTS_ASA_CALC = 960;
 	
 	// GLOBAL VARIABLES ASSIGNABLE FROM CONFIG FILE
 	private static String   LOCAL_CIF_DIR;
@@ -186,6 +187,8 @@ public class CRKMain {
 
 		boolean useNaccess = false;
 		
+		int nSpherePointsASAcalc = DEF_NSPHEREPOINTS_ASA_CALC;
+		
 		String help = "Usage: \n" +
 		PROGRAM_NAME+"\n" +
 		"   -i         :  input PDB code or PDB file or mmCIF file\n" +
@@ -220,11 +223,14 @@ public class CRKMain {
 		"                 instead of ours (only possible for existing PDB entries).\n" +
 		"  [-n]        :  use NACCESS for ASA/BSA calculations, otherwise area calculations \n" +
 		"                 done with the internal rolling ball algorithm implementation \n" +
-		"                 (multi-threaded using number of CPUs specified in -a)\n\n";
+		"                 (multi-threaded using number of CPUs specified in -a)\n" +
+		"  [-A <int>]  :  number of sphere points for ASA calculation, this parameter controls\n" +
+		"                 the accuracy of the ASA calculations, the bigger the more accurate \n" +
+		"                 (and slower). Default: "+DEF_NSPHEREPOINTS_ASA_CALC+"\n\n";
 		
 
 
-		Getopt g = new Getopt(PROGRAM_NAME, args, "i:kd:a:b:o:r:tc:C:x:m:M:e:q:pnh?");
+		Getopt g = new Getopt(PROGRAM_NAME, args, "i:kd:a:b:o:r:tc:C:x:m:M:e:q:pnA:h?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
@@ -278,6 +284,9 @@ public class CRKMain {
 				break;
 			case 'n':
 				useNaccess = true;
+				break;
+			case 'A':
+				nSpherePointsASAcalc = Integer.parseInt(g.getOptarg());
 				break;
 			case 'h':
 			case '?':
@@ -483,7 +492,7 @@ public class CRKMain {
 				if (useNaccess) {
 					interfaces = pdb.getAllInterfaces(INTERFACE_DIST_CUTOFF, NACCESS_EXE, 0, 0);
 				} else {
-					interfaces = pdb.getAllInterfaces(INTERFACE_DIST_CUTOFF, null, Asa.DEFAULT_N_SPHERE_POINTS,numThreads);
+					interfaces = pdb.getAllInterfaces(INTERFACE_DIST_CUTOFF, null, nSpherePointsASAcalc, numThreads);
 				}
 			}
 			System.out.println("Done");
