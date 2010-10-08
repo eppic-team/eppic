@@ -27,6 +27,7 @@ import org.xml.sax.SAXException;
 import owl.core.connections.pisa.PisaConnection;
 import owl.core.runners.TcoffeeError;
 import owl.core.runners.blast.BlastError;
+import owl.core.sequence.UniprotVerMisMatchException;
 import owl.core.structure.ChainInterface;
 import owl.core.structure.ChainInterfaceList;
 import owl.core.structure.PdbAsymUnit;
@@ -343,7 +344,7 @@ public class CRKMain {
 		loadConfigFile();
 		
 		
-		try {
+		//try {
 
 			PdbAsymUnit pdb = null;
 			String pdbName = pdbCode; // the name to be used in many of the output files
@@ -416,7 +417,14 @@ public class CRKMain {
 				if (EMBL_CDS_CACHE_DIR!=null) {
 					emblHomsCacheFile = new File(EMBL_CDS_CACHE_DIR,baseName+"."+pdbName+representativeChain+".homologs.emblcds.fa");
 				}
-				chainEvCont.retrieveHomologsData(emblHomsCacheFile);
+				try {
+					chainEvCont.retrieveHomologsData(emblHomsCacheFile);
+				} catch (UniprotVerMisMatchException e) {
+					LOGGER.error(e.getMessage());
+					System.err.println("Mismatch of Uniprot versions! Exiting.");
+					System.err.println(e.getMessage());
+					System.exit(1);
+				}
 				if (doScoreCRK && !chainEvCont.isConsistentGeneticCodeType()){
 					LOGGER.error("The list of homologs does not have a single genetic code type, can't do CRK analysis on it.");
 					canDoCRK = false;
@@ -569,16 +577,16 @@ public class CRKMain {
 			scoreEntrPS.close();
 			scoreKaksPS.close();
 
-		} catch (Exception e) {
-			e.printStackTrace();
+		//} catch (Exception e) {
+		//	e.printStackTrace();
 
-			String stack = "";
-			for (StackTraceElement el:e.getStackTrace()) {
-				stack+="\tat "+el.toString()+"\n";				
-			}
-			LOGGER.fatal("Unexpected error. Exiting.\n"+e+"\n"+stack);
-			System.exit(1);
-		}
+		//	String stack = "";
+		//	for (StackTraceElement el:e.getStackTrace()) {
+		//		stack+="\tat "+el.toString()+"\n";				
+		//	}
+		//	LOGGER.fatal("Unexpected error. Exiting.\n"+e+"\n"+stack);
+		//	System.exit(1);
+		//}
 	}
 	
 	private static void printScoringHeaders(PrintStream ps) {

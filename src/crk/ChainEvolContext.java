@@ -28,6 +28,7 @@ import owl.core.sequence.Sequence;
 import owl.core.sequence.UniprotEntry;
 import owl.core.sequence.UniprotHomolog;
 import owl.core.sequence.UniprotHomologList;
+import owl.core.sequence.UniprotVerMisMatchException;
 import owl.core.sequence.alignment.MultipleSequenceAlignment;
 import owl.core.sequence.alignment.PairwiseSequenceAlignment;
 import owl.core.sequence.alignment.PairwiseSequenceAlignment.PairwiseSequenceAlignmentException;
@@ -164,7 +165,7 @@ public class ChainEvolContext {
 		homologs.skimList(maxDesiredHomologs);
 	}
 	
-	public void retrieveHomologsData(File emblCDScache) throws IOException {
+	public void retrieveHomologsData(File emblCDScache) throws IOException, UniprotVerMisMatchException {
 		homologs.retrieveUniprotKBData();
 		
 		homologs.retrieveEmblCdsSeqs(emblCDScache);
