@@ -5,12 +5,8 @@ import gnu.getopt.Getopt;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintStream;
-import java.net.URL;
-import java.net.URLConnection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,7 +15,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -38,6 +33,7 @@ import owl.core.structure.PdbAsymUnit;
 import owl.core.structure.PdbCodeNotFoundError;
 import owl.core.structure.PdbLoadError;
 import owl.core.structure.AminoAcid;
+import owl.core.util.FileFormatError;
 
 public class CRKMain {
 	
@@ -351,15 +347,25 @@ public class CRKMain {
 
 			PdbAsymUnit pdb = null;
 			String pdbName = pdbCode; // the name to be used in many of the output files
-
-
-			if (inFile==null) {
-				File cifFile = getCifFile(pdbCode, USE_ONLINE_PDB, outDir);
-				pdb = new PdbAsymUnit(cifFile);	
-			} else {
-				pdb = new PdbAsymUnit(inFile);
-				pdbName = inFile.getName().substring(0, inFile.getName().lastIndexOf('.'));
-			}
+			File cifFile = null; // if given a pdb code in command line we will store the cif file here, we need to use it later if interf desc downloaded from PISA
+			
+			try {
+				if (inFile==null) {
+					cifFile = new File(outDir,pdbCode + ".cif");
+					PdbAsymUnit.grabCifFile(LOCAL_CIF_DIR, PDB_FTP_CIF_URL, pdbCode, cifFile, USE_ONLINE_PDB);
+					pdb = new PdbAsymUnit(cifFile);	
+				} else {
+					pdb = new PdbAsymUnit(inFile);
+					pdbName = inFile.getName().substring(0, inFile.getName().lastIndexOf('.'));
+				}
+			} catch (IOException e) {
+				System.err.println("Couldn't get cif file for code "+pdbCode+" from ftp or couldn't uncompress it.");
+				System.err.println(e.getMessage());
+				System.exit(1);
+			} catch (FileFormatError e) {
+				LOGGER.error("File format error: "+e.getMessage());
+				System.exit(1);
+			} 
 			
 			if (pdb.getCrystalCell()==null) {
 				LOGGER.fatal("No crystal information found in source "+pdbCode);
@@ -618,52 +624,6 @@ public class CRKMain {
 		ps.println();		
 	}
 	
-	private static File getCifFile(String pdbCode, boolean online, File outDir) {
-		File cifFile = new File(outDir,pdbCode + ".cif");
-		String gzCifFileName = pdbCode+".cif.gz";
-		File gzCifFile = null;
-		if (!online) {	
-			gzCifFile = new File(LOCAL_CIF_DIR,gzCifFileName);
-		} else {
-			gzCifFile = new File(outDir, gzCifFileName);
-			try {
-				System.out.println("Downloading cif file from ftp...");
-				// getting gzipped cif file from ftp
-				URL url = new URL(PDB_FTP_CIF_URL+gzCifFileName);
-				URLConnection urlc = url.openConnection();
-				InputStream is = urlc.getInputStream();
-				FileOutputStream os = new FileOutputStream(gzCifFile);
-				int b;
-				while ( (b=is.read())!=-1) {
-					os.write(b);
-				}
-				is.close();
-				os.close();
-			} catch (IOException e) {
-				System.err.println("Couldn't get "+gzCifFileName+" file from ftp.");
-				System.err.println(e.getMessage());
-				System.exit(1);
-			}
-		} 
-
-		// unzipping file
-		try {
-			GZIPInputStream zis = new GZIPInputStream(new FileInputStream(gzCifFile));
-			FileOutputStream os = new FileOutputStream(cifFile);
-			int b;
-			while ( (b=zis.read())!=-1) {
-				os.write(b);
-			}
-			zis.close();
-			os.close();
-		} catch (IOException e) {
-			System.err.println("Couldn't uncompress "+gzCifFile+" file into "+cifFile);
-			System.err.println(e.getMessage());
-			System.exit(1);
-		}
-		return cifFile;
-	}
-
 	private static Properties loadConfigFile(String fileName) throws FileNotFoundException, IOException {
 		Properties p = new Properties();
 		p.load(new FileInputStream(fileName));
