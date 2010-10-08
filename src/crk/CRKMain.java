@@ -344,7 +344,7 @@ public class CRKMain {
 		loadConfigFile();
 		
 		
-		//try {
+		try {
 
 			PdbAsymUnit pdb = null;
 			String pdbName = pdbCode; // the name to be used in many of the output files
@@ -410,7 +410,14 @@ public class CRKMain {
 				if (BLAST_CACHE_DIR!=null) {
 					blastCacheFile = new File(BLAST_CACHE_DIR,baseName+"."+pdbName+representativeChain+".blast.xml"); 
 				}
-				chainEvCont.retrieveHomologs(BLAST_BIN_DIR, BLAST_DB_DIR, BLAST_DB, numThreads, idCutoff, QUERY_COVERAGE_CUTOFF, blastCacheFile);
+				try {
+					chainEvCont.retrieveHomologs(BLAST_BIN_DIR, BLAST_DB_DIR, BLAST_DB, numThreads, idCutoff, QUERY_COVERAGE_CUTOFF, blastCacheFile);
+				} catch (UniprotVerMisMatchException e) {
+					LOGGER.error(e.getMessage());
+					System.err.println("Mismatch of Uniprot versions! Exiting.");
+					System.err.println(e.getMessage());
+					System.exit(1);					
+				}
 
 				System.out.println("Retrieving UniprotKB data and EMBL CDS sequences");
 				File emblHomsCacheFile = null;
@@ -577,16 +584,16 @@ public class CRKMain {
 			scoreEntrPS.close();
 			scoreKaksPS.close();
 
-		//} catch (Exception e) {
-		//	e.printStackTrace();
+		} catch (Exception e) {
+			e.printStackTrace();
 
-		//	String stack = "";
-		//	for (StackTraceElement el:e.getStackTrace()) {
-		//		stack+="\tat "+el.toString()+"\n";				
-		//	}
-		//	LOGGER.fatal("Unexpected error. Exiting.\n"+e+"\n"+stack);
-		//	System.exit(1);
-		//}
+			String stack = "";
+			for (StackTraceElement el:e.getStackTrace()) {
+				stack+="\tat "+el.toString()+"\n";				
+			}
+			LOGGER.fatal("Unexpected error. Exiting.\n"+e+"\n"+stack);
+			System.exit(1);
+		}
 	}
 	
 	private static void printScoringHeaders(PrintStream ps) {

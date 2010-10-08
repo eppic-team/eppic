@@ -148,7 +148,7 @@ public class ChainEvolContext {
 	}
 	
 	public void retrieveHomologs(String blastBinDir, String blastDbDir, String blastDb, int blastNumThreads, double idCutoff, double queryCovCutoff, File blastCache) 
-	throws IOException, BlastError {
+	throws IOException, BlastError, UniprotVerMisMatchException {
 		homologs = new UniprotHomologList(query);
 		
 		homologs.searchWithBlast(blastBinDir, blastDbDir, blastDb, blastNumThreads, blastCache);
