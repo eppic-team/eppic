@@ -92,7 +92,7 @@ public class CRKMain {
 	private static final int      DEF_NUMTHREADS = Runtime.getRuntime().availableProcessors();
 	
 	// default entropy calculation default
-	private static final int      DEF_ENTROPY_ALPHABET = 20;
+	private static final int      DEF_ENTROPY_ALPHABET = 10;
 
 	// default crk core assignment thresholds
 	private static final double   DEF_SOFT_CUTOFF_CA = 0.95;
