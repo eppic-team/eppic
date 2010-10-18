@@ -95,9 +95,10 @@ public class CRKMain {
 	private static final int      DEF_ENTROPY_ALPHABET = 10;
 
 	// default crk core assignment thresholds
-	private static final double   DEF_SOFT_CUTOFF_CA = 0.95;
-	private static final double   DEF_HARD_CUTOFF_CA = 0.82;
-	private static final double   DEF_RELAX_STEP_CA = 0.01;	
+	//private static final double   DEF_SOFT_CUTOFF_CA = 0.95;
+	//private static final double   DEF_HARD_CUTOFF_CA = 0.82;
+	//private static final double   DEF_RELAX_STEP_CA = 0.01;	
+	private static final double[] DEF_CA_CUTOFFS = {0.85, 0.90, 0.95};
 	private static final int      DEF_MIN_NUM_RES_CA = 6;
 	private static final int      DEF_MIN_NUM_RES_MEMBER_CA = 3; 
 
@@ -170,9 +171,12 @@ public class CRKMain {
 		int reducedAlphabet = DEF_ENTROPY_ALPHABET;
 		boolean useTcoffeeVeryFastMode = DEF_USE_TCOFFEE_VERYFAST_MODE;
 		
-		double   softCutoffCA = DEF_SOFT_CUTOFF_CA;
-		double   hardCutoffCA = DEF_HARD_CUTOFF_CA;
-		double   relaxStepCA  = DEF_RELAX_STEP_CA;
+		double[] cutoffsCA  = DEF_CA_CUTOFFS;
+		String defCACutoffsStr = String.format("%4.2f",DEF_CA_CUTOFFS[0]);
+		for (int i=1;i<DEF_CA_CUTOFFS.length;i++) {
+			defCACutoffsStr += String.format(",%4.2f",DEF_CA_CUTOFFS[i]);
+		}
+		
 		int      minNumResCA  = DEF_MIN_NUM_RES_CA;
 		int      minNumResMemberCA = DEF_MIN_NUM_RES_MEMBER_CA; 
 		
@@ -202,9 +206,7 @@ public class CRKMain {
 		"                 Valid values are 2, 4, 6, 8, 10, 15 and 20. Default: "+DEF_ENTROPY_ALPHABET+"\n" +
 		"  [-t]        :  if specified t_coffee will be run in normal mode instead of very\n" +
 		"                 fast mode\n" +
-		"  [-c <float>]:  soft BSA cutoff for core assignment. Default: "+String.format("%4.2f", DEF_SOFT_CUTOFF_CA)+"\n" +
-		"  [-C <float>]:  hard BSA cutoff for core assignment. Default: "+String.format("%4.2f", DEF_HARD_CUTOFF_CA)+"\n" +
-		"  [-x <float>]:  relaxation BSA step in core assignment. Default: "+String.format("%4.2f", DEF_RELAX_STEP_CA)+"\n" +
+		"  [-c <floats>]: comma separated list of BSA cutoffs for core assignment. Default: "+defCACutoffsStr+"\n" +
 		"  [-m <int>]  :  cutoff for number of interface core residues, if still below \n" +
 		"                 this value after applying hard cutoff then the interface is not\n" +
 		"                 scored and considered a crystal contact. Default "+DEF_MIN_NUM_RES_CA+"\n" +
@@ -227,7 +229,7 @@ public class CRKMain {
 		
 
 
-		Getopt g = new Getopt(PROGRAM_NAME, args, "i:kd:a:b:o:r:tc:C:x:m:M:e:q:pnA:h?");
+		Getopt g = new Getopt(PROGRAM_NAME, args, "i:kd:a:b:o:r:tc:m:M:e:q:pnA:h?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
@@ -256,13 +258,11 @@ public class CRKMain {
 				useTcoffeeVeryFastMode = false;
 				break;
 			case 'c':
-				softCutoffCA = Double.parseDouble(g.getOptarg());
-				break;
-			case 'C':
-				hardCutoffCA = Double.parseDouble(g.getOptarg());
-				break;
-			case 'x':
-				relaxStepCA = Double.parseDouble(g.getOptarg());
+				String[] tokens = g.getOptarg().split(",");
+				cutoffsCA = new double[tokens.length];
+				for (int i=0;i<tokens.length;i++) {
+					cutoffsCA[i] = Double.parseDouble(tokens[i]);
+				}
 				break;
 			case 'm':
 				minNumResCA = Integer.parseInt(g.getOptarg());
@@ -516,6 +516,8 @@ public class CRKMain {
 					interfaces = pdb.getAllInterfaces(INTERFACE_DIST_CUTOFF, null, nSpherePointsASAcalc, numThreads);
 				}
 			}
+			interfaces.calcRimAndCores(cutoffsCA);
+			
 			System.out.println("Done");
 			
 			PrintStream interfLogPS = new PrintStream(new File(outDir,baseName+".interfaces"));
@@ -528,10 +530,10 @@ public class CRKMain {
 			// 4) scoring
 			System.out.println("Scores:");
 			PrintStream scoreEntrPS = new PrintStream(new File(outDir,baseName+ENTROPIES_FILE_SUFFIX+".scores"));
-			printScoringHeaders(System.out);
-			printScoringHeaders(scoreEntrPS);
+			InterfaceEvolContext.printScoringHeaders(System.out);
+			InterfaceEvolContext.printScoringHeaders(scoreEntrPS);
 			PrintStream scoreKaksPS = new PrintStream(new File(outDir,baseName+KAKS_FILE_SUFFIX+".scores"));
-			printScoringHeaders(scoreKaksPS);
+			InterfaceEvolContext.printScoringHeaders(scoreKaksPS);
 
 			for (ChainInterface pi:interfaces) {
 				if (pi.getInterfaceArea()>CUTOFF_ASA_INTERFACE_REPORTING) {
@@ -543,41 +545,41 @@ public class CRKMain {
 						(pi.isSecondProtein() && !sufficientDataForCRK.get(pi.getSecondMolecule().getPdbChainCode())) ) {
 						canDoCRK = false;
 					}
-					InterfaceEvolContext iec = new InterfaceEvolContext(pi, chainsEvCs);
+					InterfaceEvolContext iecNW = new InterfaceEvolContext(pi, chainsEvCs);
+					InterfaceEvolContext iecW = new InterfaceEvolContext(pi, chainsEvCs);
+					iecNW.scoreEntropy(false);
+					iecW.scoreEntropy(true);
 
-					// entropy scoring
-					InterfaceScore scoreNW = iec.scoreEntropy(softCutoffCA, hardCutoffCA, relaxStepCA, minNumResCA, minNumResMemberCA,
-							MIN_HOMOLOGS_CUTOFF, false);
-					InterfaceScore scoreW = iec.scoreEntropy(softCutoffCA, hardCutoffCA, relaxStepCA, minNumResCA, minNumResMemberCA, 
-							MIN_HOMOLOGS_CUTOFF, true);
-
-					printScores(System.out, pi, scoreNW, scoreW, ENTR_BIO_CUTOFF, ENTR_XTAL_CUTOFF);
-					printScores(scoreEntrPS, pi, scoreNW, scoreW, ENTR_BIO_CUTOFF, ENTR_XTAL_CUTOFF);
-
+					iecNW.printScoresTable(System.out, ENTR_BIO_CUTOFF, ENTR_XTAL_CUTOFF, MIN_HOMOLOGS_CUTOFF, minNumResCA, minNumResMemberCA);
+					iecNW.printScoresTable(scoreEntrPS,ENTR_BIO_CUTOFF, ENTR_XTAL_CUTOFF, MIN_HOMOLOGS_CUTOFF, minNumResCA, minNumResMemberCA);
+					iecW.printScoresTable(System.out,  ENTR_BIO_CUTOFF, ENTR_XTAL_CUTOFF, MIN_HOMOLOGS_CUTOFF, minNumResCA, minNumResMemberCA);
+					iecW.printScoresTable(scoreEntrPS, ENTR_BIO_CUTOFF, ENTR_XTAL_CUTOFF, MIN_HOMOLOGS_CUTOFF, minNumResCA, minNumResMemberCA);
+					// writing out the interface pdb file with conservation scores as b factors (for visualization) (we use the weighted scores)
+					iecW.writePdbFile(new File(outDir, baseName+"."+pi.getId()+ENTROPIES_FILE_SUFFIX+".pdb"), ScoringType.ENTROPY);
+					
+					
 					// TODO not writing out the objects for the moment, we have to make many classes serializable for that
-					//scoreNW.serialize(new File(outDir,baseName+"."+pi.getId()+ENTROPIES_FILE_SUFFIX+".scoreNW.dat"));
-					//scoreW.serialize(new File(outDir,baseName+"."+pi.getId()+ENTROPIES_FILE_SUFFIX+".scoreW.dat"));
+					//iecNW.serialize(new File(outDir,baseName+"."+pi.getId()+ENTROPIES_FILE_SUFFIX+".scoreNW.dat"));
+					//iecW.serialize(new File(outDir,baseName+"."+pi.getId()+ENTROPIES_FILE_SUFFIX+".scoreW.dat"));
 
 					// ka/ks scoring
 					if (doScoreCRK && canDoCRK) {
-						scoreNW = iec.scoreKaKs(softCutoffCA, hardCutoffCA, relaxStepCA, minNumResCA, minNumResMemberCA,
-								MIN_HOMOLOGS_CUTOFF, false);
-						scoreW = iec.scoreKaKs(softCutoffCA, hardCutoffCA, relaxStepCA, minNumResCA, minNumResMemberCA, 
-								MIN_HOMOLOGS_CUTOFF, true);
-
-						printScores(System.out, pi, scoreNW, scoreW, KAKS_BIO_CUTOFF, KAKS_XTAL_CUTOFF);
-						printScores(scoreKaksPS, pi, scoreNW, scoreW, KAKS_BIO_CUTOFF, KAKS_XTAL_CUTOFF);
+						iecNW.scoreKaKs(false);
+						iecW.scoreKaKs(true);
+						
+						iecNW.printScoresTable(System.out, KAKS_BIO_CUTOFF, KAKS_XTAL_CUTOFF, MIN_HOMOLOGS_CUTOFF, minNumResCA, minNumResMemberCA);
+						iecNW.printScoresTable(scoreKaksPS,KAKS_BIO_CUTOFF, KAKS_XTAL_CUTOFF, MIN_HOMOLOGS_CUTOFF, minNumResCA, minNumResMemberCA);
+						iecW.printScoresTable(System.out,  KAKS_BIO_CUTOFF, KAKS_XTAL_CUTOFF, MIN_HOMOLOGS_CUTOFF, minNumResCA, minNumResMemberCA);
+						iecW.printScoresTable(scoreKaksPS, KAKS_BIO_CUTOFF, KAKS_XTAL_CUTOFF, MIN_HOMOLOGS_CUTOFF, minNumResCA, minNumResMemberCA);
 
 						// TODO not writing out the objects for the moment, we have to make many classes serializable for that
-						//scoreNW.serialize(new File(outDir,baseName+"."+pi.getId()+KAKS_FILE_SUFFIX+".scoreNW.dat"));
-						//scoreW.serialize(new File(outDir,baseName+"."+pi.getId()+KAKS_FILE_SUFFIX+".scoreW.dat"));					
+						//iecNW.serialize(new File(outDir,baseName+"."+pi.getId()+KAKS_FILE_SUFFIX+".scoreNW.dat"));
+						//iecW.serialize(new File(outDir,baseName+"."+pi.getId()+KAKS_FILE_SUFFIX+".scoreW.dat"));
+						
+						// writing out the interface pdb file with conservation scores as b factors (for visualization) (we use the weighted scores)
+						iecW.writePdbFile(new File(outDir, baseName+"."+pi.getId()+KAKS_FILE_SUFFIX+".pdb"), ScoringType.KAKS);
 					}
 
-					// writing out the interface pdb file with conservation scores as b factors (for visualization)
-					iec.writePdbFile(new File(outDir, baseName+"."+pi.getId()+ENTROPIES_FILE_SUFFIX+".pdb"), ScoringType.ENTROPY);
-					if (doScoreCRK && canDoCRK) {
-						iec.writePdbFile(new File(outDir, baseName+"."+pi.getId()+KAKS_FILE_SUFFIX+".pdb"), ScoringType.KAKS);
-					}
 				}
 
 			}
@@ -596,49 +598,7 @@ public class CRKMain {
 		}
 	}
 	
-	private static void printScoringHeaders(PrintStream ps) {
-		ps.printf("%15s\t%6s\t","interface","area");
-		InterfaceMemberScore.printRimAndCoreHeader(ps,1);
-		ps.print("\t");
-		InterfaceMemberScore.printRimAndCoreHeader(ps,2);
-		ps.print("\t");
-		InterfaceMemberScore.printHeader(ps,1);
-		ps.print("\t");
-		InterfaceMemberScore.printHeader(ps,2);
-		ps.print("\t");
-		InterfaceCall.printHeader(ps);
-		ps.print("\t");
-		InterfaceMemberScore.printHeader(ps,1);
-		ps.print("\t");
-		InterfaceMemberScore.printHeader(ps,2);
-		ps.print("\t");		
-		InterfaceCall.printHeader(ps);
-		ps.println();
-		//ps.printf("%45s\t%45s\n","non-weighted","weighted");		
-	}
-	
-	private static void printScores(PrintStream ps, ChainInterface pi, InterfaceScore scoreNW, InterfaceScore scoreW, double bioCutoff, double xtalCutoff) {
-		ps.printf("%15s\t%6.1f",
-				pi.getId()+"("+pi.getFirstMolecule().getPdbChainCode()+"+"+pi.getSecondMolecule().getPdbChainCode()+")",
-				pi.getInterfaceArea());
-		scoreNW.getMemberScore(0).printRimAndCoreInfo(ps);
-		ps.print("\t");
-		scoreNW.getMemberScore(1).printRimAndCoreInfo(ps);
-		ps.print("\t");
-		scoreNW.getMemberScore(0).printTabular(ps);
-		ps.print("\t");
-		scoreNW.getMemberScore(1).printTabular(ps);
-		ps.print("\t");
-		scoreNW.getCall(bioCutoff, xtalCutoff).printTabular(ps);
-		ps.print("\t");
-		scoreW.getMemberScore(0).printTabular(ps);
-		ps.print("\t");
-		scoreW.getMemberScore(1).printTabular(ps);
-		ps.print("\t");
-		scoreW.getCall(bioCutoff, xtalCutoff).printTabular(ps);
-		ps.println();		
-	}
-	
+
 	private static Properties loadConfigFile(String fileName) throws FileNotFoundException, IOException {
 		Properties p = new Properties();
 		p.load(new FileInputStream(fileName));
