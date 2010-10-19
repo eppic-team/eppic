@@ -1,11 +1,7 @@
 package crk;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -204,6 +200,15 @@ public class InterfaceEvolContext {
 		return totalScore/totalWeight;
 	}
 	
+	/**
+	 * Writes out a PDB file with the 2 chains of this interface with evolutionary scores 
+	 * as b-factors.
+	 * In order for the file to be handled properly by molecular viewers whenever the two
+	 * chains have the same name we rename the second one to the next letter in alphabet.
+	 * @param file
+	 * @param scoType
+	 * @throws IOException
+	 */
 	public void writePdbFile(File file, ScoringType scoType) throws IOException {
 		PrintStream ps = new PrintStream(file);
 		String chain1 = null;
@@ -578,6 +583,7 @@ public class InterfaceEvolContext {
 		ps.printf("%15s\t%6s\t","interface","area");
 		ps.printf("%5s\t%5s\t%5s","size1", "size2","CA");
 		ps.print("\t");
+		ps.printf("%2s\t%2s\t","n1","n2");
 		ps.printf("%5s\t%5s\t%5s","core1","rim1","rat1");
 		ps.print("\t");
 		ps.printf("%5s\t%5s\t%5s","core2","rim2","rat2");
@@ -605,6 +611,19 @@ public class InterfaceEvolContext {
 
 	}
 	
+	private void printHomologsInfo(PrintStream ps) {
+		int numHoms1 = -1;
+		int numHoms2 = -1;
+		if (lastScoType==ScoringType.ENTROPY) {
+			if (isProtein(FIRST)) numHoms1 = chains.get(FIRST).getNumHomologs();
+			if (isProtein(SECOND)) numHoms2 = chains.get(SECOND).getNumHomologs();
+		} else if (lastScoType==ScoringType.KAKS) {
+			if (isProtein(FIRST)) numHoms1 = chains.get(FIRST).getNumHomologsWithValidCDS();
+			if (isProtein(SECOND)) numHoms2 = chains.get(SECOND).getNumHomologsWithValidCDS();
+		}
+		ps.printf("%2d\t%2d\t",numHoms1,numHoms2);
+	}
+	
 	private void printScores(PrintStream ps, int i, CallType[] calls) {
 		ps.printf("%5.2f\t%5.2f\t%5.2f",
 				this.getCoreScore(0)[i], this.getRimScore(0)[i], this.getCoreScore(0)[i]/this.getRimScore(0)[i]);
@@ -626,25 +645,10 @@ public class InterfaceEvolContext {
 			} else {
 				printRimCoreInfo(ps, i, false);
 			}
+			printHomologsInfo(ps);
 			printScores(ps, i, calls);
 			ps.println();
 		}
 	}
 	
-	public void serialize(File serializedFile) throws IOException {
-		FileOutputStream fileOut = new FileOutputStream(serializedFile);
-		ObjectOutputStream out = new ObjectOutputStream(fileOut);
-		out.writeObject(this);
-		out.close();
-		fileOut.close();
-	}
-
-	public static InterfaceEvolContext readFromFile(File serialized) throws IOException, ClassNotFoundException {
-		FileInputStream fileIn = new FileInputStream(serialized);
-		ObjectInputStream in = new ObjectInputStream(fileIn);
-		InterfaceEvolContext interfSc = (InterfaceEvolContext) in.readObject();
-		in.close();
-		fileIn.close();		
-		return interfSc;
-	}
 }

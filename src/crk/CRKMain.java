@@ -532,8 +532,11 @@ public class CRKMain {
 			PrintStream scoreEntrPS = new PrintStream(new File(outDir,baseName+ENTROPIES_FILE_SUFFIX+".scores"));
 			InterfaceEvolContext.printScoringHeaders(System.out);
 			InterfaceEvolContext.printScoringHeaders(scoreEntrPS);
-			PrintStream scoreKaksPS = new PrintStream(new File(outDir,baseName+KAKS_FILE_SUFFIX+".scores"));
-			InterfaceEvolContext.printScoringHeaders(scoreKaksPS);
+			PrintStream scoreKaksPS = null;
+			if (doScoreCRK) {
+				scoreKaksPS = new PrintStream(new File(outDir,baseName+KAKS_FILE_SUFFIX+".scores"));
+				InterfaceEvolContext.printScoringHeaders(scoreKaksPS);
+			}
 
 			for (ChainInterface pi:interfaces) {
 				if (pi.getInterfaceArea()>CUTOFF_ASA_INTERFACE_REPORTING) {
@@ -549,16 +552,15 @@ public class CRKMain {
 					InterfaceEvolContext iecW = new InterfaceEvolContext(pi, chainsEvCs);
 					iecNW.scoreEntropy(false);
 					iecW.scoreEntropy(true);
-
+					// table output
 					iecNW.printScoresTable(System.out, ENTR_BIO_CUTOFF, ENTR_XTAL_CUTOFF, MIN_HOMOLOGS_CUTOFF, minNumResCA, minNumResMemberCA);
 					iecNW.printScoresTable(scoreEntrPS,ENTR_BIO_CUTOFF, ENTR_XTAL_CUTOFF, MIN_HOMOLOGS_CUTOFF, minNumResCA, minNumResMemberCA);
 					iecW.printScoresTable(System.out,  ENTR_BIO_CUTOFF, ENTR_XTAL_CUTOFF, MIN_HOMOLOGS_CUTOFF, minNumResCA, minNumResMemberCA);
 					iecW.printScoresTable(scoreEntrPS, ENTR_BIO_CUTOFF, ENTR_XTAL_CUTOFF, MIN_HOMOLOGS_CUTOFF, minNumResCA, minNumResMemberCA);
 					// writing out the interface pdb file with conservation scores as b factors (for visualization) (we use the weighted scores)
 					iecW.writePdbFile(new File(outDir, baseName+"."+pi.getId()+ENTROPIES_FILE_SUFFIX+".pdb"), ScoringType.ENTROPY);
-					
-					
-					// TODO not writing out the objects for the moment, we have to make many classes serializable for that
+					// serializing the objects to file to save them for further analysis
+					// can't do it! external classes (like those of jaligner) need to be serializable
 					//iecNW.serialize(new File(outDir,baseName+"."+pi.getId()+ENTROPIES_FILE_SUFFIX+".scoreNW.dat"));
 					//iecW.serialize(new File(outDir,baseName+"."+pi.getId()+ENTROPIES_FILE_SUFFIX+".scoreW.dat"));
 
@@ -566,25 +568,25 @@ public class CRKMain {
 					if (doScoreCRK && canDoCRK) {
 						iecNW.scoreKaKs(false);
 						iecW.scoreKaKs(true);
-						
+						// table output
 						iecNW.printScoresTable(System.out, KAKS_BIO_CUTOFF, KAKS_XTAL_CUTOFF, MIN_HOMOLOGS_CUTOFF, minNumResCA, minNumResMemberCA);
 						iecNW.printScoresTable(scoreKaksPS,KAKS_BIO_CUTOFF, KAKS_XTAL_CUTOFF, MIN_HOMOLOGS_CUTOFF, minNumResCA, minNumResMemberCA);
 						iecW.printScoresTable(System.out,  KAKS_BIO_CUTOFF, KAKS_XTAL_CUTOFF, MIN_HOMOLOGS_CUTOFF, minNumResCA, minNumResMemberCA);
 						iecW.printScoresTable(scoreKaksPS, KAKS_BIO_CUTOFF, KAKS_XTAL_CUTOFF, MIN_HOMOLOGS_CUTOFF, minNumResCA, minNumResMemberCA);
-
-						// TODO not writing out the objects for the moment, we have to make many classes serializable for that
-						//iecNW.serialize(new File(outDir,baseName+"."+pi.getId()+KAKS_FILE_SUFFIX+".scoreNW.dat"));
-						//iecW.serialize(new File(outDir,baseName+"."+pi.getId()+KAKS_FILE_SUFFIX+".scoreW.dat"));
-						
 						// writing out the interface pdb file with conservation scores as b factors (for visualization) (we use the weighted scores)
 						iecW.writePdbFile(new File(outDir, baseName+"."+pi.getId()+KAKS_FILE_SUFFIX+".pdb"), ScoringType.KAKS);
+						// serializing the objects to file to save them for further analysis
+						// can't do it! external classes (like those of jaligner) need to be serializable
+						//iecNW.serialize(new File(outDir,baseName+"."+pi.getId()+KAKS_FILE_SUFFIX+".scoreNW.dat"));
+						//iecW.serialize(new File(outDir,baseName+"."+pi.getId()+KAKS_FILE_SUFFIX+".scoreW.dat"));
+
 					}
 
 				}
 
 			}
 			scoreEntrPS.close();
-			scoreKaksPS.close();
+			if (doScoreCRK) scoreKaksPS.close();
 
 		} catch (Exception e) {
 			e.printStackTrace();
