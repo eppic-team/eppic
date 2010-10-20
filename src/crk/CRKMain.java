@@ -558,7 +558,8 @@ public class CRKMain {
 					iecW.printScoresTable(System.out,  ENTR_BIO_CUTOFF, ENTR_XTAL_CUTOFF, MIN_HOMOLOGS_CUTOFF, minNumResCA, minNumResMemberCA);
 					iecW.printScoresTable(scoreEntrPS, ENTR_BIO_CUTOFF, ENTR_XTAL_CUTOFF, MIN_HOMOLOGS_CUTOFF, minNumResCA, minNumResMemberCA);
 					// writing out the interface pdb file with conservation scores as b factors (for visualization) (we use the weighted scores)
-					iecW.writePdbFile(new File(outDir, baseName+"."+pi.getId()+ENTROPIES_FILE_SUFFIX+".pdb"));
+					iecW.writePdbFile(new File(outDir, baseName+"."+pi.getId()+ENTROPIES_FILE_SUFFIX+".pdb"), InterfaceEvolContext.SCORES);
+					iecW.writePdbFile(new File(outDir, baseName+"."+pi.getId()+".rimcore.pdb"), InterfaceEvolContext.RIMCORE);
 					// serializing the objects to file to save them for further analysis
 					// can't do it! external classes (like those of jaligner) need to be serializable
 					//iecNW.serialize(new File(outDir,baseName+"."+pi.getId()+ENTROPIES_FILE_SUFFIX+".scoreNW.dat"));
@@ -574,7 +575,8 @@ public class CRKMain {
 						iecW.printScoresTable(System.out,  KAKS_BIO_CUTOFF, KAKS_XTAL_CUTOFF, MIN_HOMOLOGS_CUTOFF, minNumResCA, minNumResMemberCA);
 						iecW.printScoresTable(scoreKaksPS, KAKS_BIO_CUTOFF, KAKS_XTAL_CUTOFF, MIN_HOMOLOGS_CUTOFF, minNumResCA, minNumResMemberCA);
 						// writing out the interface pdb file with conservation scores as b factors (for visualization) (we use the weighted scores)
-						iecW.writePdbFile(new File(outDir, baseName+"."+pi.getId()+KAKS_FILE_SUFFIX+".pdb"));
+						iecW.writePdbFile(new File(outDir, baseName+"."+pi.getId()+KAKS_FILE_SUFFIX+".pdb"), InterfaceEvolContext.SCORES);
+						iecW.writePdbFile(new File(outDir, baseName+"."+pi.getId()+".rimcore.pdb"), InterfaceEvolContext.RIMCORE);
 						// serializing the objects to file to save them for further analysis
 						// can't do it! external classes (like those of jaligner) need to be serializable
 						//iecNW.serialize(new File(outDir,baseName+"."+pi.getId()+KAKS_FILE_SUFFIX+".scoreNW.dat"));

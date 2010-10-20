@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.TreeMap;
 
@@ -21,6 +22,9 @@ public class InterfaceEvolContext {
 
 	private static final int FIRST  = 0;
 	private static final int SECOND = 1;
+
+	public static final boolean SCORES  = true;
+	public static final boolean RIMCORE = false;
 	
 	private static final double MAX_ALLOWED_UNREL_RES = 0.05; // 5% maximum allowed unreliable residues for core or rim
 	
@@ -206,15 +210,22 @@ public class InterfaceEvolContext {
 	 * In order for the file to be handled properly by molecular viewers whenever the two
 	 * chains have the same name we rename the second one to the next letter in alphabet.
 	 * @param file
+	 * @param valuesToWrite if {@link #SCORES} evolutionary scores are written as b-factors,
+	 * if {@link #RIMCORE} rim/core residues are written as b-factors (3 different values: 
+	 * rim, score and all other residues)
 	 * @throws IOException
 	 */
-	public void writePdbFile(File file) throws IOException {
+	public void writePdbFile(File file, boolean valuesToWrite) throws IOException {
 		PrintStream ps = new PrintStream(file);
 		String chain1 = null;
 		String chain2 = null;
 		if (interf.isFirstProtein()) {
 			chain1 = interf.getFirstMolecule().getPdbChainCode();
-			chains.get(FIRST).setConservationScoresAsBfactors(chain1,lastScoType);
+			if (valuesToWrite) {
+				chains.get(FIRST).setConservationScoresAsBfactors(chain1,lastScoType);
+			} else {
+				setRimCoreAsBfactors(FIRST);
+			}
 			// we copy in order to leave the original Pdbs unaltered (essential to be able to apply transformations several times)
 			Pdb pdb1 = chains.get(FIRST).getPdb(chain1).copy();
 			pdb1.transform(interf.getFirstTransfOrth());
@@ -235,13 +246,44 @@ public class InterfaceEvolContext {
 				}
 				LOGGER.warn("Chain "+chain2+" renamed to "+chain2forOutput+" to write the output PDB file "+file);
 			}
-			chains.get(SECOND).setConservationScoresAsBfactors(chain2,lastScoType);
+			if (valuesToWrite) {
+				chains.get(SECOND).setConservationScoresAsBfactors(chain2,lastScoType);
+			} else {
+				setRimCoreAsBfactors(SECOND);
+			}
 			Pdb pdb2 = chains.get(SECOND).getPdb(chain2).copy();
 			pdb2.transform(interf.getSecondTransfOrth());
 			pdb2.setChainCode(chain2forOutput);
 			pdb2.writeAtomLines(ps);
 		}
 		ps.close();
+	}
+	
+	private void setRimCoreAsBfactors(int molecId) {
+		HashMap<Integer,Double> rimcoreVals = new HashMap<Integer, Double>();
+		InterfaceRimCore rimCore = null;
+		String pdbChainCode = null;
+		if (molecId==FIRST) {
+			pdbChainCode = interf.getFirstMolecule().getPdbChainCode();
+			rimCore = this.interf.getFirstRimCores()[0];
+		} else if (molecId==SECOND) {
+			pdbChainCode = interf.getSecondMolecule().getPdbChainCode();
+			rimCore = this.interf.getSecondRimCores()[0];
+		}
+		Pdb pdb = chains.get(molecId).getPdb(pdbChainCode);
+		// first we assign all residues same color (50 hopefully gives a yellowish one)
+		for (int resser:pdb.getAllSortedResSerials()) {
+			rimcoreVals.put(resser,50.0);
+		}
+		// core residues : 1 for a blue
+		for (Residue res:rimCore.getCoreResidues()) {
+			rimcoreVals.put(res.getSerial(), 1.0);
+		}
+		// rim residues: 200 for a red  
+		for (Residue res:rimCore.getRimResidues()) {
+			rimcoreVals.put(res.getSerial(), 200.0);
+		}
+		pdb.setBFactorsPerResidue(rimcoreVals);
 	}
 	
 	private double[] getScoreRatios(int molecId) {
