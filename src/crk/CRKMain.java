@@ -521,10 +521,7 @@ public class CRKMain {
 			System.out.println("Done");
 			
 			PrintStream interfLogPS = new PrintStream(new File(outDir,baseName+".interfaces"));
-			interfLogPS.println("Interfaces for "+pdbName);
-			for (ChainInterface pi:interfaces) {
-				pi.printTabular(interfLogPS);
-			}
+			interfaces.printTabular(interfLogPS, pdbName);
 			interfLogPS.close();
 
 			// 4) scoring
