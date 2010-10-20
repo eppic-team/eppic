@@ -192,40 +192,40 @@ public class CRKMain {
 		
 		String help = "Usage: \n" +
 		PROGRAM_NAME+"\n" +
-		"   -i         :  input PDB code or PDB file or mmCIF file\n" +
-		"  [-k]        :  score based on ka/ks ratios as well as on entropies. Much \n" +
-		"                 slower, requires running of the selecton external program\n" +
-		"  [-d <float>]:  sequence identity cut-off, homologs below this threshold won't\n" +
-		"                 be considered, default: "+String.format("%3.1f",DEF_IDENTITY_CUTOFF)+"\n"+
-		"  [-a <int>]  :  number of threads for blast and ASA calculation. Default: "+DEF_NUMTHREADS+"\n"+
-		"  [-b <str>]  :  basename for output files. Default: PDB code \n"+
-		"  [-o <dir>]  :  output dir, where output files will be written. Default: current\n" +
-		"                 dir \n" +
-		"  [-r <int>]  :  specify the number of groups of aminoacids (reduced alphabet) to\n" +
-		"                 be used for entropy calculations.\n" +
-		"                 Valid values are 2, 4, 6, 8, 10, 15 and 20. Default: "+DEF_ENTROPY_ALPHABET+"\n" +
-		"  [-t]        :  if specified t_coffee will be run in normal mode instead of very\n" +
-		"                 fast mode\n" +
-		"  [-c <floats>]: comma separated list of BSA cutoffs for core assignment. Default: "+defCACutoffsStr+"\n" +
-		"  [-m <int>]  :  cutoff for number of interface core residues, if still below \n" +
-		"                 this value after applying hard cutoff then the interface is not\n" +
-		"                 scored and considered a crystal contact. Default "+DEF_MIN_NUM_RES_CA+"\n" +
-		"  [-M <int>]  :  cutoff for number of interface member core residues, if still \n" +
-		"                 below this value after applying hard cutoff then the interface \n" +
-		"                 member is not scored and considerd a crystal contact. Default: "+DEF_MIN_NUM_RES_MEMBER_CA+"\n" +
-		"  [-e <float>]:  epsilon value for selecton. Default "+String.format("%4.2f",DEF_SELECTON_EPSILON)+"\n" +
-		"  [-q <int>]  :  maximum number of sequences to keep for calculation of conservation \n" +
-		"                 scores. Default: "+DEF_MAX_NUM_SEQUENCES_SELECTON+". This is especially important when using \n" +
-		"                 the -k option, with too many sequences, selecton will run too long\n" +
-		"                 (and inaccurately because of ks saturation)\n" +
-		"  [-p]        :  use PISA interface enumeration (will be downloaded from web) \n" +
-		"                 instead of ours (only possible for existing PDB entries).\n" +
-		"  [-n]        :  use NACCESS for ASA/BSA calculations, otherwise area calculations \n" +
-		"                 done with the internal rolling ball algorithm implementation \n" +
-		"                 (multi-threaded using number of CPUs specified in -a)\n" +
-		"  [-A <int>]  :  number of sphere points for ASA calculation, this parameter controls\n" +
-		"                 the accuracy of the ASA calculations, the bigger the more accurate \n" +
-		"                 (and slower). Default: "+DEF_NSPHEREPOINTS_ASA_CALC+"\n\n";
+		"   -i          :  input PDB code or PDB file or mmCIF file\n" +
+		"  [-k]         :  score based on ka/ks ratios as well as on entropies. Much \n" +
+		"                  slower, requires running of the selecton external program\n" +
+		"  [-d <float>] :  sequence identity cut-off, homologs below this threshold won't\n" +
+		"                  be considered, default: "+String.format("%3.1f",DEF_IDENTITY_CUTOFF)+"\n"+
+		"  [-a <int>]   :  number of threads for blast and ASA calculation. Default: "+DEF_NUMTHREADS+"\n"+
+		"  [-b <str>]   :  basename for output files. Default: PDB code \n"+
+		"  [-o <dir>]   :  output dir, where output files will be written. Default: current\n" +
+		"                  dir \n" +
+		"  [-r <int>]   :  specify the number of groups of aminoacids (reduced alphabet) to\n" +
+		"                  be used for entropy calculations.\n" +
+		"                  Valid values are 2, 4, 6, 8, 10, 15 and 20. Default: "+DEF_ENTROPY_ALPHABET+"\n" +
+		"  [-t]         :  if specified t_coffee will be run in normal mode instead of very\n" +
+		"                  fast mode\n" +
+		"  [-c <floats>]:  comma separated list of BSA cutoffs for core assignment. Default: "+defCACutoffsStr+"\n" +
+		"  [-m <int>]   :  cutoff for number of interface core residues, if still below \n" +
+		"                  this value after applying hard cutoff then the interface is not\n" +
+		"                  scored and considered a crystal contact. Default "+DEF_MIN_NUM_RES_CA+"\n" +
+		"  [-M <int>]   :  cutoff for number of interface member core residues, if still \n" +
+		"                  below this value after applying hard cutoff then the interface \n" +
+		"                  member is not scored and considerd a crystal contact. Default: "+DEF_MIN_NUM_RES_MEMBER_CA+"\n" +
+		"  [-e <float>] :  epsilon value for selecton. Default "+String.format("%4.2f",DEF_SELECTON_EPSILON)+"\n" +
+		"  [-q <int>]   :  maximum number of sequences to keep for calculation of conservation \n" +
+		"                  scores. Default: "+DEF_MAX_NUM_SEQUENCES_SELECTON+". This is especially important when using \n" +
+		"                  the -k option, with too many sequences, selecton will run too long\n" +
+		"                  (and inaccurately because of ks saturation)\n" +
+		"  [-p]         :  use PISA interface enumeration (will be downloaded from web) \n" +
+		"                  instead of ours (only possible for existing PDB entries).\n" +
+		"  [-n]         :  use NACCESS for ASA/BSA calculations, otherwise area calculations \n" +
+		"                  done with the internal rolling ball algorithm implementation \n" +
+		"                  (multi-threaded using number of CPUs specified in -a)\n" +
+		"  [-A <int>]   :  number of sphere points for ASA calculation, this parameter controls\n" +
+		"                  the accuracy of the ASA calculations, the bigger the more accurate \n" +
+		"                  (and slower). Default: "+DEF_NSPHEREPOINTS_ASA_CALC+"\n\n";
 		
 
 
@@ -527,12 +527,15 @@ public class CRKMain {
 			// 4) scoring
 			System.out.println("Scores:");
 			PrintStream scoreEntrPS = new PrintStream(new File(outDir,baseName+ENTROPIES_FILE_SUFFIX+".scores"));
+			printScoringParams(scoreEntrPS, ScoringType.ENTROPY, idCutoff, QUERY_COVERAGE_CUTOFF, maxNumSeqsSelecton, ENTR_BIO_CUTOFF, ENTR_XTAL_CUTOFF, minNumResCA, minNumResMemberCA);
 			InterfaceEvolContext.printScoringHeaders(System.out);
 			InterfaceEvolContext.printScoringHeaders(scoreEntrPS);
 			PrintStream scoreKaksPS = null;
 			if (doScoreCRK) {
 				scoreKaksPS = new PrintStream(new File(outDir,baseName+KAKS_FILE_SUFFIX+".scores"));
+				printScoringParams(scoreKaksPS, ScoringType.KAKS, idCutoff, QUERY_COVERAGE_CUTOFF, maxNumSeqsSelecton, KAKS_BIO_CUTOFF, KAKS_XTAL_CUTOFF, minNumResCA, minNumResMemberCA);
 				InterfaceEvolContext.printScoringHeaders(scoreKaksPS);
+				
 			}
 
 			for (ChainInterface pi:interfaces) {
@@ -555,7 +558,7 @@ public class CRKMain {
 					iecW.printScoresTable(System.out,  ENTR_BIO_CUTOFF, ENTR_XTAL_CUTOFF, MIN_HOMOLOGS_CUTOFF, minNumResCA, minNumResMemberCA);
 					iecW.printScoresTable(scoreEntrPS, ENTR_BIO_CUTOFF, ENTR_XTAL_CUTOFF, MIN_HOMOLOGS_CUTOFF, minNumResCA, minNumResMemberCA);
 					// writing out the interface pdb file with conservation scores as b factors (for visualization) (we use the weighted scores)
-					iecW.writePdbFile(new File(outDir, baseName+"."+pi.getId()+ENTROPIES_FILE_SUFFIX+".pdb"), ScoringType.ENTROPY);
+					iecW.writePdbFile(new File(outDir, baseName+"."+pi.getId()+ENTROPIES_FILE_SUFFIX+".pdb"));
 					// serializing the objects to file to save them for further analysis
 					// can't do it! external classes (like those of jaligner) need to be serializable
 					//iecNW.serialize(new File(outDir,baseName+"."+pi.getId()+ENTROPIES_FILE_SUFFIX+".scoreNW.dat"));
@@ -571,7 +574,7 @@ public class CRKMain {
 						iecW.printScoresTable(System.out,  KAKS_BIO_CUTOFF, KAKS_XTAL_CUTOFF, MIN_HOMOLOGS_CUTOFF, minNumResCA, minNumResMemberCA);
 						iecW.printScoresTable(scoreKaksPS, KAKS_BIO_CUTOFF, KAKS_XTAL_CUTOFF, MIN_HOMOLOGS_CUTOFF, minNumResCA, minNumResMemberCA);
 						// writing out the interface pdb file with conservation scores as b factors (for visualization) (we use the weighted scores)
-						iecW.writePdbFile(new File(outDir, baseName+"."+pi.getId()+KAKS_FILE_SUFFIX+".pdb"), ScoringType.KAKS);
+						iecW.writePdbFile(new File(outDir, baseName+"."+pi.getId()+KAKS_FILE_SUFFIX+".pdb"));
 						// serializing the objects to file to save them for further analysis
 						// can't do it! external classes (like those of jaligner) need to be serializable
 						//iecNW.serialize(new File(outDir,baseName+"."+pi.getId()+KAKS_FILE_SUFFIX+".scoreNW.dat"));
@@ -597,6 +600,20 @@ public class CRKMain {
 		}
 	}
 	
+	private static void printScoringParams(PrintStream ps, ScoringType scoType, 
+			double idCutoff, double queryCovCutoff, int maxNumSeqsSelecton, 
+			double bioCallCutoff, double xtalCallCutoff, 
+			int minNumResCA, int minNumResMemberCA) {
+		ps.println("# Score type: "+scoType.getName());
+		ps.printf ("# Sequence identity cutoff: %4.2f\n",idCutoff);
+		ps.printf ("# Query coverage cutoff: %4.2f\n",queryCovCutoff);
+		ps.println("# Max num sequences used: "+maxNumSeqsSelecton);
+		ps.printf ("# Bio-call cutoff:  %4.2f\n",bioCallCutoff);
+		ps.printf ("# Xtal-call cutoff: %4.2f\n",xtalCallCutoff);
+		ps.println("# Total core size xtal-call cutoff: "+minNumResCA);
+		ps.println("# Per-member core size xtal-call cutoff: "+minNumResMemberCA);
+		
+	}
 
 	private static Properties loadConfigFile(String fileName) throws FileNotFoundException, IOException {
 		Properties p = new Properties();

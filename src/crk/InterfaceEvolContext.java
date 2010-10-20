@@ -206,16 +206,15 @@ public class InterfaceEvolContext {
 	 * In order for the file to be handled properly by molecular viewers whenever the two
 	 * chains have the same name we rename the second one to the next letter in alphabet.
 	 * @param file
-	 * @param scoType
 	 * @throws IOException
 	 */
-	public void writePdbFile(File file, ScoringType scoType) throws IOException {
+	public void writePdbFile(File file) throws IOException {
 		PrintStream ps = new PrintStream(file);
 		String chain1 = null;
 		String chain2 = null;
 		if (interf.isFirstProtein()) {
 			chain1 = interf.getFirstMolecule().getPdbChainCode();
-			chains.get(FIRST).setConservationScoresAsBfactors(chain1,scoType);
+			chains.get(FIRST).setConservationScoresAsBfactors(chain1,lastScoType);
 			// we copy in order to leave the original Pdbs unaltered (essential to be able to apply transformations several times)
 			Pdb pdb1 = chains.get(FIRST).getPdb(chain1).copy();
 			pdb1.transform(interf.getFirstTransfOrth());
@@ -236,7 +235,7 @@ public class InterfaceEvolContext {
 				}
 				LOGGER.warn("Chain "+chain2+" renamed to "+chain2forOutput+" to write the output PDB file "+file);
 			}
-			chains.get(SECOND).setConservationScoresAsBfactors(chain2,scoType);
+			chains.get(SECOND).setConservationScoresAsBfactors(chain2,lastScoType);
 			Pdb pdb2 = chains.get(SECOND).getPdb(chain2).copy();
 			pdb2.transform(interf.getSecondTransfOrth());
 			pdb2.setChainCode(chain2forOutput);
