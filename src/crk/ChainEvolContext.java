@@ -82,11 +82,12 @@ public class ChainEvolContext {
 	 * @param blastDbDir
 	 * @param blastDb
 	 * @param blastNumThreads
+	 * @param retrieveCDS whether to retrieve CDSs or not
 	 * @throws IOException
 	 * @throws PdbLoadError
 	 * @throws BlastError
 	 */
-	public void retrieveQueryData(String siftsLocation, File emblCDScache, String blastBinDir, String blastDbDir, String blastDb, int blastNumThreads) 
+	public void retrieveQueryData(String siftsLocation, File emblCDScache, String blastBinDir, String blastDbDir, String blastDb, int blastNumThreads, boolean retrieveCDS) 
 	throws IOException, PdbLoadError, BlastError {
 		
 		// two possible cases: 
@@ -128,7 +129,9 @@ public class ChainEvolContext {
 		
 		// once we have the identifier we get the data from uniprot
 		query.retrieveUniprotKBData();
-		query.retrieveEmblCdsSeqs(emblCDScache);
+		if (retrieveCDS) {
+			query.retrieveEmblCdsSeqs(emblCDScache);
+		}
 		
 		
 		// and finally we align the 2 sequences (in case of mapping from SIFTS we rather do this than trusting the SIFTS alignment info)
@@ -165,10 +168,18 @@ public class ChainEvolContext {
 		homologs.skimList(maxDesiredHomologs);
 	}
 	
-	public void retrieveHomologsData(File emblCDScache) throws IOException, UniprotVerMisMatchException {
+	/**
+	 * Retrieves the uniprot and CDS data and metadata
+	 * @param emblCDScache
+	 * @param retrieveCDS whether to retrieve CDS data as well or not
+	 * @throws IOException
+	 * @throws UniprotVerMisMatchException
+	 */
+	public void retrieveHomologsData(File emblCDScache, boolean retrieveCDS) throws IOException, UniprotVerMisMatchException {
 		homologs.retrieveUniprotKBData();
-		
-		homologs.retrieveEmblCdsSeqs(emblCDScache);
+		if (retrieveCDS) {
+			homologs.retrieveEmblCdsSeqs(emblCDScache);
+		}
 		
 	}
 	

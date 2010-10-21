@@ -344,7 +344,7 @@ public class CRKMain {
 		loadConfigFile();
 		
 		
-		//try {
+		try {
 
 			PdbAsymUnit pdb = null;
 			String pdbName = pdbCode; // the name to be used in many of the output files
@@ -396,7 +396,7 @@ public class CRKMain {
 					emblQueryCacheFile = new File(EMBL_CDS_CACHE_DIR,baseName+"."+pdbName+representativeChain+".query.emblcds.fa");
 				}
 				System.out.println("Finding query's uniprot mapping (through SIFTS or blasting)");
-				chainEvCont.retrieveQueryData(SIFTS_FILE, emblQueryCacheFile, BLAST_BIN_DIR, BLAST_DB_DIR, BLAST_DB, numThreads);
+				chainEvCont.retrieveQueryData(SIFTS_FILE, emblQueryCacheFile, BLAST_BIN_DIR, BLAST_DB_DIR, BLAST_DB, numThreads,doScoreCRK);
 				if (doScoreCRK && chainEvCont.getQueryRepCDS()==null) {
 					// note calling chainEvCont.canDoCRK() will also check for this condition (here we only want to log it once)
 					LOGGER.error("No CDS good match for query sequence! can't do CRK analysis on it.");
@@ -422,7 +422,7 @@ public class CRKMain {
 					emblHomsCacheFile = new File(EMBL_CDS_CACHE_DIR,baseName+"."+pdbName+representativeChain+".homologs.emblcds.fa");
 				}
 				try {
-					chainEvCont.retrieveHomologsData(emblHomsCacheFile);
+					chainEvCont.retrieveHomologsData(emblHomsCacheFile, doScoreCRK);
 				} catch (UniprotVerMisMatchException e) {
 					LOGGER.error(e.getMessage());
 					System.err.println("Mismatch of Uniprot versions! Exiting.");
@@ -564,16 +564,16 @@ public class CRKMain {
 			}
 			
 
-		//} catch (Exception e) {
-		//	e.printStackTrace();
+		} catch (Exception e) {
+			e.printStackTrace();
 
-		//	String stack = "";
-		//	for (StackTraceElement el:e.getStackTrace()) {
-		//		stack+="\tat "+el.toString()+"\n";				
-		//	}
-		//	LOGGER.fatal("Unexpected error. Exiting.\n"+e+"\n"+stack);
-		//	System.exit(1);
-		//}
+			String stack = "";
+			for (StackTraceElement el:e.getStackTrace()) {
+				stack+="\tat "+el.toString()+"\n";				
+			}
+			LOGGER.fatal("Unexpected error. Exiting.\n"+e+"\n"+stack);
+			System.exit(1);
+		}
 	}
 
 	private static Properties loadConfigFile(String fileName) throws FileNotFoundException, IOException {
