@@ -41,8 +41,11 @@ public class InterfaceEvolContext {
 	private TreeMap<Integer,ArrayList<Integer>> xtalCalls;
 	private TreeMap<Integer,ArrayList<Integer>> grayCalls;
 	private TreeMap<Integer,ArrayList<Integer>> noPredictCalls;
-		
+	
+	// cached values of scoring (filled upon call of score methods and getCalls)
 	private ScoringType lastScoType; // the type of the last scoring run (either kaks or entropy)
+	//private boolean lastScoWeighted; // whether last scoring run was weighted or not
+	
 
 	
 	public InterfaceEvolContext(ChainInterface interf, List<ChainEvolContext> chains) {
@@ -64,6 +67,7 @@ public class InterfaceEvolContext {
 	public void scoreEntropy(boolean weighted) {
 		scoreInterface(weighted, ScoringType.ENTROPY);
 		lastScoType = ScoringType.ENTROPY;
+		//lastScoWeighted = weighted;
 	}
 	
 	/**
@@ -75,6 +79,7 @@ public class InterfaceEvolContext {
 	public void scoreKaKs(boolean weighted) {
 		scoreInterface(weighted, ScoringType.KAKS);
 		lastScoType = ScoringType.KAKS;
+		//lastScoWeighted = weighted;
 	}
 
 	private void scoreInterface(boolean weighted, ScoringType scoType) {
@@ -206,9 +211,11 @@ public class InterfaceEvolContext {
 	
 	/**
 	 * Writes out a PDB file with the 2 chains of this interface with evolutionary scores 
-	 * as b-factors.
+	 * or rim core residues as b-factors.
 	 * In order for the file to be handled properly by molecular viewers whenever the two
 	 * chains have the same name we rename the second one to the next letter in alphabet.
+	 * In the case of writing rim/core residues we choose the rim/core residues corresponding 
+	 * to the first CA cutoff only. 
 	 * @param file
 	 * @param valuesToWrite if {@link #SCORES} evolutionary scores are written as b-factors,
 	 * if {@link #RIMCORE} rim/core residues are written as b-factors (3 different values: 
@@ -390,9 +397,9 @@ public class InterfaceEvolContext {
 		}
 		
 		if (!isProtein(molecId)) {
-			LOGGER.info("Interface member "+memberSerial+" calls NOPRED because it is not a protein");
+			LOGGER.info("Interface "+this.interf.getId()+", member "+memberSerial+" calls NOPRED because it is not a protein");
 		} else if (!hasEnoughHomologs(molecId, homologsCutoff)) {
-			LOGGER.info("Interface member "+memberSerial+" calls NOPRED because there are not enough homologs to evaluate conservation scores");
+			LOGGER.info("Interface "+this.interf.getId()+", member "+memberSerial+" calls NOPRED because there are not enough homologs to evaluate conservation scores");
 		} else {
 			boolean[] enoughCore = hasEnoughCore(molecId, minMemberCoreSize);
 			int[] countsRelCoreRes = countReliableCoreRes(molecId);
@@ -409,16 +416,16 @@ public class InterfaceEvolContext {
 					calls[i] = CallType.NO_PREDICTION;
 				}
 				else if (!enoughCore[i]) {
-					LOGGER.info("Interface member "+memberSerial+" calls XTAL because core is too small ("+rimCores[i].getCoreSize()+" residues)");
+					LOGGER.info("Interface "+this.interf.getId()+", member "+memberSerial+" calls XTAL because core is too small ("+rimCores[i].getCoreSize()+" residues)");
 					calls[i] = CallType.CRYSTAL;
 				}
 				else if (((double)countsRelCoreRes[i]/(double)rimCores[i].getCoreSize())>MAX_ALLOWED_UNREL_RES) {
-					LOGGER.info("Interface member "+memberSerial+" calls NOPRED because there are not enough reliable core residues ("+
+					LOGGER.info("Interface "+this.interf.getId()+", member "+memberSerial+" calls NOPRED because there are not enough reliable core residues ("+
 							countsRelCoreRes[i]+" unreliable residues out of "+rimCores[i].getCoreSize()+" residues in core)");
 					calls[i] = CallType.NO_PREDICTION;
 				}
 				else if (((double)countsRelRimRes[i]/(double)rimCores[i].getRimSize())>MAX_ALLOWED_UNREL_RES) {
-					LOGGER.info("Interface member "+memberSerial+" calls NOPRED because there are not enough reliable rim residues ("+
+					LOGGER.info("Interface "+this.interf.getId()+", member "+memberSerial+" calls NOPRED because there are not enough reliable rim residues ("+
 							countsRelRimRes[i]+" unreliable residues out of "+rimCores[i].getRimSize()+" residues in rim)");
 					calls[i] = CallType.NO_PREDICTION;
 				}
@@ -447,6 +454,12 @@ public class InterfaceEvolContext {
 	 * @return
 	 */
 	public CallType[] getCalls(double bioCutoff, double xtalCutoff, int homologsCutoff, int minCoreSize, int minMemberCoreSize) {
+		//this.bioCutoff = bioCutoff;
+		//this.xtalCutoff = xtalCutoff;
+		//this.homologsCutoff = homologsCutoff;
+		//this.minCoreSize = minCoreSize;
+		//this.minMemberCoreSize = minMemberCoreSize;
+		
 		CallType[] calls = new CallType[this.interf.getNumBsaToAsaCutoffs()];
 		finalScores = new double[this.interf.getNumBsaToAsaCutoffs()];
 		
@@ -597,6 +610,44 @@ public class InterfaceEvolContext {
 		return coreScores.get(molecId);
 	}
 	
+	//public boolean isLastScoWeighted() {
+	//	return lastScoWeighted;
+	//}
+
+	//public double getBioCutoff() {
+	//	return bioCutoff;
+	//}
+
+	//public double getXtalCutoff() {
+	//	return xtalCutoff;
+	//}
+
+	//public int getHomologsCutoff() {
+	//	return homologsCutoff;
+	//}
+
+	//public int getMinCoreSize() {
+	//	return minCoreSize;
+	//}
+
+	//public int getMinMemberCoreSize() {
+	//	return minMemberCoreSize;
+	//}
+
+	/**
+	 * Tells whether CRK analysis (ka/ks ratio) is possible for this interface.
+	 * It will not be possible when there is no sufficient data from either chain.
+	 * @return
+	 */
+	public boolean canDoCRK() {
+		boolean canDoCRK = true;
+		if ((this.interf.isFirstProtein() && !chains.get(FIRST).canDoCRK()) || 
+			(this.interf.isSecondProtein() && !chains.get(SECOND).canDoCRK()) ) {
+			canDoCRK = false;
+		}
+		return canDoCRK;
+	}
+	
 	private String getVotersString(int i) {
 		String finalStr = "";
 		for (CallType callType: CallType.values()) {
@@ -618,20 +669,6 @@ public class InterfaceEvolContext {
 			finalStr+=String.format("\t%6s",callsStr);
 		}
 		return finalStr;
-	}
-	
-	public static void printScoringHeaders(PrintStream ps) {
-		ps.printf("%15s\t%6s\t","interface","area");
-		ps.printf("%5s\t%5s\t%5s","size1", "size2","CA");
-		ps.print("\t");
-		ps.printf("%2s\t%2s\t","n1","n2");
-		ps.printf("%5s\t%5s\t%5s","core1","rim1","rat1");
-		ps.print("\t");
-		ps.printf("%5s\t%5s\t%5s","core2","rim2","rat2");
-		ps.print("\t");
-		ps.printf("%6s\t%5s\t%6s\t%6s\t%6s\t%6s",
-				"call","score",CallType.BIO.getName(),CallType.CRYSTAL.getName(),CallType.GRAY.getName(),CallType.NO_PREDICTION.getName());
-		ps.println();
 	}
 	
 	private void printRimCoreInfo(PrintStream ps, int i, boolean printInterfDesc) {
@@ -675,7 +712,6 @@ public class InterfaceEvolContext {
 		// call type, score, voters
 		ps.printf("%6s\t%5.2f", calls[i].getName(),	this.getFinalScores()[i]);
 		ps.print(this.getVotersString(i));
-		// more possible things to output: number of homologues (?)		
 	}
 	
 	public void printScoresTable(PrintStream ps, double bioCutoff, double xtalCutoff, int homologsCutoff, int minCoreSize, int minMemberCoreSize) {

@@ -52,7 +52,7 @@ public class ChainEvolContext {
 	private static final double PDB2UNIPROT_QCOVERAGE_THRESHOLD = 0.85;
 
 	
-	
+	// members
 	private PdbAsymUnit pdb; 				// all chains of the corresponding PDB entry 
 	private String representativeChain;		// the pdb chain code of the representative chain
 	private String pdbCode; 		 		// the pdb code (if no pdb code then Pdb.NO_PDB_CODE)
@@ -64,7 +64,7 @@ public class ChainEvolContext {
 	
 	private UniprotHomologList homologs;	// the homologs of this chain's sequence
 		
-	
+
 	public ChainEvolContext(PdbAsymUnit pdb, String representativeChain, String pdbName) {
 		this.pdb = pdb;
 		this.pdbCode = pdb.getPdbCode();
@@ -501,6 +501,20 @@ public class ChainEvolContext {
 			System.exit(1);
 		}
 		return uniprotMapping;
+	}
+
+	/**
+	 * Tells whether CRK analysis (ka/ks ratio assessment) is possible for this chain.
+	 * CRK analysis will not be possible in 2 cases: no representative CDS for the query
+	 * or when there's no consistency in genetic code types in homologs
+	 * @return
+	 */
+	public boolean canDoCRK() {
+		boolean canDoCRK = true;
+		if (getQueryRepCDS()==null || !isConsistentGeneticCodeType()) {
+			canDoCRK = false;
+		}
+		return canDoCRK;
 	}
 	
 }

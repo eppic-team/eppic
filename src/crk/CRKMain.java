@@ -344,7 +344,7 @@ public class CRKMain {
 		loadConfigFile();
 		
 		
-		try {
+		//try {
 
 			PdbAsymUnit pdb = null;
 			String pdbName = pdbCode; // the name to be used in many of the output files
@@ -386,8 +386,6 @@ public class CRKMain {
 			LOGGER.info(msg);
 
 			Map<String,ChainEvolContext> allChains = new HashMap<String,ChainEvolContext>();
-			// chains to booleans (true: data available is sufficient for crk analysis, false: data available doesn't permit crk analysis)
-			Map<String,Boolean> sufficientDataForCRK = new HashMap<String,Boolean>();
 			for (List<String> entity:uniqSequences.values()) {
 				String representativeChain = entity.get(0);
 	
@@ -399,10 +397,9 @@ public class CRKMain {
 				}
 				System.out.println("Finding query's uniprot mapping (through SIFTS or blasting)");
 				chainEvCont.retrieveQueryData(SIFTS_FILE, emblQueryCacheFile, BLAST_BIN_DIR, BLAST_DB_DIR, BLAST_DB, numThreads);
-				boolean canDoCRK = true;
 				if (doScoreCRK && chainEvCont.getQueryRepCDS()==null) {
+					// note calling chainEvCont.canDoCRK() will also check for this condition (here we only want to log it once)
 					LOGGER.error("No CDS good match for query sequence! can't do CRK analysis on it.");
-					canDoCRK = false;
 				}
 				// 2) getting the homologs and sequence data and creating multiple sequence alignment
 				System.out.println("Blasting...");
@@ -433,8 +430,8 @@ public class CRKMain {
 					System.exit(1);
 				}
 				if (doScoreCRK && !chainEvCont.isConsistentGeneticCodeType()){
+					// note calling chainEvCont.canDoCRK() will also check for this condition (here we only want to log it once)
 					LOGGER.error("The list of homologs does not have a single genetic code type, can't do CRK analysis on it.");
-					canDoCRK = false;
 				}
 				// remove redundancy
 				chainEvCont.removeRedundancy();
@@ -451,7 +448,7 @@ public class CRKMain {
 
 				// check the back-translation of CDS to uniprot
 				// check whether we have a good enough CDS for the chain
-				if (doScoreCRK && canDoCRK) {
+				if (doScoreCRK && chainEvCont.canDoCRK()) {
 					LOGGER.info("Number of homologs with at least one uniprot CDS mapping: "+chainEvCont.getNumHomologsWithCDS());
 					LOGGER.info("Number of homologs with valid CDS: "+chainEvCont.getNumHomologsWithValidCDS());
 				}
@@ -463,7 +460,7 @@ public class CRKMain {
 				// writing the alignment to file
 				chainEvCont.writeAlignmentToFile(new File(outDir,baseName+"."+pdbName+representativeChain+".aln"));
 				// writing the nucleotides alignment to file
-				if (doScoreCRK && canDoCRK) {
+				if (doScoreCRK && chainEvCont.canDoCRK()) {
 					chainEvCont.writeNucleotideAlignmentToFile(new File(outDir,baseName+"."+pdbName+representativeChain+".cds.aln"));
 				}
 
@@ -471,7 +468,7 @@ public class CRKMain {
 				chainEvCont.computeEntropies(reducedAlphabet);
 
 				// compute ka/ks ratios
-				if (doScoreCRK && canDoCRK) {
+				if (doScoreCRK && chainEvCont.canDoCRK()) {
 					System.out.println("Running selecton (this will take long)...");
 					chainEvCont.computeKaKsRatiosSelecton(SELECTON_BIN, 
 							new File(outDir,baseName+"."+pdbName+representativeChain+".selecton.res"),
@@ -485,7 +482,7 @@ public class CRKMain {
 				PrintStream conservScoLog = new PrintStream(new File(outDir,baseName+"."+pdbName+representativeChain+ENTROPIES_FILE_SUFFIX));
 				chainEvCont.printConservationScores(conservScoLog, ScoringType.ENTROPY);
 				conservScoLog.close();
-				if (doScoreCRK && canDoCRK) {
+				if (doScoreCRK && chainEvCont.canDoCRK()) {
 					conservScoLog = new PrintStream(new File(outDir,baseName+"."+pdbName+representativeChain+KAKS_FILE_SUFFIX));
 					chainEvCont.printConservationScores(conservScoLog, ScoringType.KAKS);
 					conservScoLog.close();				
@@ -493,7 +490,6 @@ public class CRKMain {
 
 				for (String chain:entity) {
 					allChains.put(chain,chainEvCont);
-					sufficientDataForCRK.put(chain, canDoCRK);
 				}
 			}
 
@@ -526,95 +522,58 @@ public class CRKMain {
 
 			// 4) scoring
 			System.out.println("Scores:");
-			PrintStream scoreEntrPS = new PrintStream(new File(outDir,baseName+ENTROPIES_FILE_SUFFIX+".scores"));
-			printScoringParams(scoreEntrPS, ScoringType.ENTROPY, idCutoff, QUERY_COVERAGE_CUTOFF, maxNumSeqsSelecton, ENTR_BIO_CUTOFF, ENTR_XTAL_CUTOFF, minNumResCA, minNumResMemberCA);
-			InterfaceEvolContext.printScoringHeaders(System.out);
-			InterfaceEvolContext.printScoringHeaders(scoreEntrPS);
-			PrintStream scoreKaksPS = null;
-			if (doScoreCRK) {
-				scoreKaksPS = new PrintStream(new File(outDir,baseName+KAKS_FILE_SUFFIX+".scores"));
-				printScoringParams(scoreKaksPS, ScoringType.KAKS, idCutoff, QUERY_COVERAGE_CUTOFF, maxNumSeqsSelecton, KAKS_BIO_CUTOFF, KAKS_XTAL_CUTOFF, minNumResCA, minNumResMemberCA);
-				InterfaceEvolContext.printScoringHeaders(scoreKaksPS);
-				
-			}
 
+			InterfaceEvolContextList iecList = new InterfaceEvolContextList(MIN_HOMOLOGS_CUTOFF, minNumResCA, minNumResMemberCA, 
+					idCutoff, QUERY_COVERAGE_CUTOFF, maxNumSeqsSelecton);
 			for (ChainInterface pi:interfaces) {
-				if (pi.getInterfaceArea()>CUTOFF_ASA_INTERFACE_REPORTING) {
-					ArrayList<ChainEvolContext> chainsEvCs = new ArrayList<ChainEvolContext>();
-					chainsEvCs.add(allChains.get(pi.getFirstMolecule().getPdbChainCode()));
-					chainsEvCs.add(allChains.get(pi.getSecondMolecule().getPdbChainCode()));
-					boolean canDoCRK = true;
-					if ((pi.isFirstProtein() && !sufficientDataForCRK.get(pi.getFirstMolecule().getPdbChainCode())) || 
-						(pi.isSecondProtein() && !sufficientDataForCRK.get(pi.getSecondMolecule().getPdbChainCode())) ) {
-						canDoCRK = false;
-					}
-					InterfaceEvolContext iecNW = new InterfaceEvolContext(pi, chainsEvCs);
-					InterfaceEvolContext iecW = new InterfaceEvolContext(pi, chainsEvCs);
-					iecNW.scoreEntropy(false);
-					iecW.scoreEntropy(true);
-					// table output
-					iecNW.printScoresTable(System.out, ENTR_BIO_CUTOFF, ENTR_XTAL_CUTOFF, MIN_HOMOLOGS_CUTOFF, minNumResCA, minNumResMemberCA);
-					iecNW.printScoresTable(scoreEntrPS,ENTR_BIO_CUTOFF, ENTR_XTAL_CUTOFF, MIN_HOMOLOGS_CUTOFF, minNumResCA, minNumResMemberCA);
-					iecW.printScoresTable(System.out,  ENTR_BIO_CUTOFF, ENTR_XTAL_CUTOFF, MIN_HOMOLOGS_CUTOFF, minNumResCA, minNumResMemberCA);
-					iecW.printScoresTable(scoreEntrPS, ENTR_BIO_CUTOFF, ENTR_XTAL_CUTOFF, MIN_HOMOLOGS_CUTOFF, minNumResCA, minNumResMemberCA);
-					// writing out the interface pdb file with conservation scores as b factors (for visualization) (we use the weighted scores)
-					iecW.writePdbFile(new File(outDir, baseName+"."+pi.getId()+ENTROPIES_FILE_SUFFIX+".pdb"), InterfaceEvolContext.SCORES);
-					iecW.writePdbFile(new File(outDir, baseName+"."+pi.getId()+".rimcore.pdb"), InterfaceEvolContext.RIMCORE);
-					// serializing the objects to file to save them for further analysis
-					// can't do it! external classes (like those of jaligner) need to be serializable
-					//iecNW.serialize(new File(outDir,baseName+"."+pi.getId()+ENTROPIES_FILE_SUFFIX+".scoreNW.dat"));
-					//iecW.serialize(new File(outDir,baseName+"."+pi.getId()+ENTROPIES_FILE_SUFFIX+".scoreW.dat"));
-
-					// ka/ks scoring
-					if (doScoreCRK && canDoCRK) {
-						iecNW.scoreKaKs(false);
-						iecW.scoreKaKs(true);
-						// table output
-						iecNW.printScoresTable(System.out, KAKS_BIO_CUTOFF, KAKS_XTAL_CUTOFF, MIN_HOMOLOGS_CUTOFF, minNumResCA, minNumResMemberCA);
-						iecNW.printScoresTable(scoreKaksPS,KAKS_BIO_CUTOFF, KAKS_XTAL_CUTOFF, MIN_HOMOLOGS_CUTOFF, minNumResCA, minNumResMemberCA);
-						iecW.printScoresTable(System.out,  KAKS_BIO_CUTOFF, KAKS_XTAL_CUTOFF, MIN_HOMOLOGS_CUTOFF, minNumResCA, minNumResMemberCA);
-						iecW.printScoresTable(scoreKaksPS, KAKS_BIO_CUTOFF, KAKS_XTAL_CUTOFF, MIN_HOMOLOGS_CUTOFF, minNumResCA, minNumResMemberCA);
-						// writing out the interface pdb file with conservation scores as b factors (for visualization) (we use the weighted scores)
-						iecW.writePdbFile(new File(outDir, baseName+"."+pi.getId()+KAKS_FILE_SUFFIX+".pdb"), InterfaceEvolContext.SCORES);
-						iecW.writePdbFile(new File(outDir, baseName+"."+pi.getId()+".rimcore.pdb"), InterfaceEvolContext.RIMCORE);
-						// serializing the objects to file to save them for further analysis
-						// can't do it! external classes (like those of jaligner) need to be serializable
-						//iecNW.serialize(new File(outDir,baseName+"."+pi.getId()+KAKS_FILE_SUFFIX+".scoreNW.dat"));
-						//iecW.serialize(new File(outDir,baseName+"."+pi.getId()+KAKS_FILE_SUFFIX+".scoreW.dat"));
-
-					}
-
-				}
-
+				ArrayList<ChainEvolContext> chainsEvCs = new ArrayList<ChainEvolContext>();
+				chainsEvCs.add(allChains.get(pi.getFirstMolecule().getPdbChainCode()));
+				chainsEvCs.add(allChains.get(pi.getSecondMolecule().getPdbChainCode()));
+				InterfaceEvolContext iec = new InterfaceEvolContext(pi, chainsEvCs);
+				iecList.add(iec);
 			}
+
+			PrintStream scoreEntrPS = new PrintStream(new File(outDir,baseName+ENTROPIES_FILE_SUFFIX+".scores"));
+			// entropy nw
+			iecList.scoreEntropy(false);
+			iecList.printScoresTable(System.out, ENTR_BIO_CUTOFF, ENTR_XTAL_CUTOFF, CUTOFF_ASA_INTERFACE_REPORTING);
+			iecList.printScoresTable(scoreEntrPS, ENTR_BIO_CUTOFF, ENTR_XTAL_CUTOFF, CUTOFF_ASA_INTERFACE_REPORTING);
+			// entropy w
+			iecList.scoreEntropy(true);
+			iecList.printScoresTable(System.out, ENTR_BIO_CUTOFF, ENTR_XTAL_CUTOFF, CUTOFF_ASA_INTERFACE_REPORTING);
+			iecList.printScoresTable(scoreEntrPS, ENTR_BIO_CUTOFF, ENTR_XTAL_CUTOFF, CUTOFF_ASA_INTERFACE_REPORTING);
+			iecList.writeScoresPDBFiles(outDir, baseName, ENTROPIES_FILE_SUFFIX+".pdb", CUTOFF_ASA_INTERFACE_REPORTING);
+			iecList.writeRimCorePDBFiles(outDir, baseName, ".rimcore.pdb", CUTOFF_ASA_INTERFACE_REPORTING);
 			scoreEntrPS.close();
-			if (doScoreCRK) scoreKaksPS.close();
 
-		} catch (Exception e) {
-			e.printStackTrace();
-
-			String stack = "";
-			for (StackTraceElement el:e.getStackTrace()) {
-				stack+="\tat "+el.toString()+"\n";				
+			
+			// ka/ks scoring
+			if (doScoreCRK) {
+				PrintStream scoreKaksPS = new PrintStream(new File(outDir,baseName+KAKS_FILE_SUFFIX+".scores"));
+				// kaks nw
+				iecList.scoreKaKs(false);
+				iecList.printScoresTable(System.out,  KAKS_BIO_CUTOFF, KAKS_XTAL_CUTOFF, CUTOFF_ASA_INTERFACE_REPORTING);
+				iecList.printScoresTable(scoreKaksPS,  KAKS_BIO_CUTOFF, KAKS_XTAL_CUTOFF, CUTOFF_ASA_INTERFACE_REPORTING);
+				// kaks w
+				iecList.scoreKaKs(true);
+				iecList.printScoresTable(System.out,  KAKS_BIO_CUTOFF, KAKS_XTAL_CUTOFF, CUTOFF_ASA_INTERFACE_REPORTING);
+				iecList.printScoresTable(scoreKaksPS,  KAKS_BIO_CUTOFF, KAKS_XTAL_CUTOFF, CUTOFF_ASA_INTERFACE_REPORTING);
+				iecList.writeScoresPDBFiles(outDir, baseName, KAKS_FILE_SUFFIX+".pdb", CUTOFF_ASA_INTERFACE_REPORTING);
+				iecList.writeRimCorePDBFiles(outDir, baseName, ".rimcore.pdb", CUTOFF_ASA_INTERFACE_REPORTING);
+				scoreKaksPS.close();
 			}
-			LOGGER.fatal("Unexpected error. Exiting.\n"+e+"\n"+stack);
-			System.exit(1);
-		}
-	}
-	
-	private static void printScoringParams(PrintStream ps, ScoringType scoType, 
-			double idCutoff, double queryCovCutoff, int maxNumSeqsSelecton, 
-			double bioCallCutoff, double xtalCallCutoff, 
-			int minNumResCA, int minNumResMemberCA) {
-		ps.println("# Score type: "+scoType.getName());
-		ps.printf ("# Sequence identity cutoff: %4.2f\n",idCutoff);
-		ps.printf ("# Query coverage cutoff: %4.2f\n",queryCovCutoff);
-		ps.println("# Max num sequences used: "+maxNumSeqsSelecton);
-		ps.printf ("# Bio-call cutoff:  %4.2f\n",bioCallCutoff);
-		ps.printf ("# Xtal-call cutoff: %4.2f\n",xtalCallCutoff);
-		ps.println("# Total core size xtal-call cutoff: "+minNumResCA);
-		ps.println("# Per-member core size xtal-call cutoff: "+minNumResMemberCA);
-		
+			
+
+		//} catch (Exception e) {
+		//	e.printStackTrace();
+
+		//	String stack = "";
+		//	for (StackTraceElement el:e.getStackTrace()) {
+		//		stack+="\tat "+el.toString()+"\n";				
+		//	}
+		//	LOGGER.fatal("Unexpected error. Exiting.\n"+e+"\n"+stack);
+		//	System.exit(1);
+		//}
 	}
 
 	private static Properties loadConfigFile(String fileName) throws FileNotFoundException, IOException {
