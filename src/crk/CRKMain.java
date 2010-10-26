@@ -512,6 +512,13 @@ public class CRKMain {
 					interfaces = pdb.getAllInterfaces(INTERFACE_DIST_CUTOFF, null, nSpherePointsASAcalc, numThreads);
 				}
 			}
+			
+			if (!usePisa && interfaces.hasInterfacesWithClashes()) {
+				LOGGER.error("Clashes found in some of the interfaces. This is either an error in the PDB entry or a bug in this program. Please report it!");
+				System.err.println("Clashes found in some of the interfaces. This is either an error in the PDB entry or a bug in this program. Please report it!");
+				System.exit(1);
+			}
+			
 			interfaces.calcRimAndCores(cutoffsCA);
 			
 			System.out.println("Done");
