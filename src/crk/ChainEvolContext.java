@@ -477,11 +477,10 @@ public class ChainEvolContext {
 		
 		new Sequence(pdbName,this.sequence).writeToFastaFile(inputSeqFile);
 
-		BlastRunner blastRunner = new BlastRunner(blastBinDir, blastDbDir);
-		blastRunner.runBlastp(inputSeqFile, blastDb, outBlast, BLAST_OUTPUT_TYPE, BLAST_NO_FILTERING, blastNumThreads);
 		String uniprotVer = UniprotHomologList.readUniprotVer(blastDbDir);
 		LOGGER.info("Query blast search for Uniprot mapping using Uniprot version "+uniprotVer);
-		
+		BlastRunner blastRunner = new BlastRunner(blastBinDir, blastDbDir);
+		blastRunner.runBlastp(inputSeqFile, blastDb, outBlast, BLAST_OUTPUT_TYPE, BLAST_NO_FILTERING, blastNumThreads);
 
 		BlastHitList blastList = null;
 		try {

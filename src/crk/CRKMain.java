@@ -45,6 +45,7 @@ public class CRKMain {
 	private static final String   KAKS_FILE_SUFFIX = ".kaks";
 	private static final Pattern  PDBCODE_PATTERN = Pattern.compile("^\\d\\w\\w\\w$");
 	private static final double   INTERFACE_DIST_CUTOFF = 5.9;
+	private static final Pattern  NONPROT_PATTERN = Pattern.compile("^X+$");
 	
 	// DEFAULTS FOR CONFIG FILE ASSIGNABLE CONSTANTS
 	// defaults for pdb data location
@@ -374,10 +375,10 @@ public class CRKMain {
 			}
 			
 			Map<String, List<String>> uniqSequences = pdb.getUniqueSequences();
-			String msg = "Unique sequences for "+pdbName+": ";
+			String msg = "Unique sequences for "+pdbName+":";
 			int i = 1;
 			for (List<String> entity:uniqSequences.values()) {
-				msg+=i+":";
+				msg+=" "+i+":";
 				for (String chain:entity) {
 					msg+=" "+chain;
 				}
@@ -386,8 +387,15 @@ public class CRKMain {
 			LOGGER.info(msg);
 
 			Map<String,ChainEvolContext> allChains = new HashMap<String,ChainEvolContext>();
-			for (List<String> entity:uniqSequences.values()) {
+			for (String seq:uniqSequences.keySet()) {
+				List<String> entity = uniqSequences.get(seq);
 				String representativeChain = entity.get(0);
+				
+				Matcher nonprotMatcher = NONPROT_PATTERN.matcher(seq);
+				if (nonprotMatcher.matches()) {
+					LOGGER.warn("Representative chain "+representativeChain+" does not seem to be a protein chain. Won't analyse it.");
+					continue;
+				}
 	
 				ChainEvolContext chainEvCont = new ChainEvolContext(pdb, representativeChain, pdbName);
 				// 1) getting the uniprot ids corresponding to the query (the pdb sequence)
@@ -402,7 +410,7 @@ public class CRKMain {
 					LOGGER.error("No CDS good match for query sequence! can't do CRK analysis on it.");
 				}
 				// 2) getting the homologs and sequence data and creating multiple sequence alignment
-				System.out.println("Blasting...");
+				System.out.println("Blasting for homologues...");
 				File blastCacheFile = null;
 				if (BLAST_CACHE_DIR!=null) {
 					blastCacheFile = new File(BLAST_CACHE_DIR,baseName+"."+pdbName+representativeChain+".blast.xml"); 
@@ -514,8 +522,8 @@ public class CRKMain {
 			}
 			
 			if (!usePisa && interfaces.hasInterfacesWithClashes()) {
-				LOGGER.error("Clashes found in some of the interfaces. This is either an error in the PDB entry or a bug in this program. Please report it!");
-				System.err.println("Clashes found in some of the interfaces. This is either an error in the PDB entry or a bug in this program. Please report it!");
+				LOGGER.error("Clashes found in some of the interfaces. This is most likely an error in the structure. If you think the structure is correct, please report a bug.");
+				System.err.println("Clashes found in some of the interfaces. This is most likely an error in the structure. If you think the structure is correct, please report a bug.");
 				System.exit(1);
 			}
 			
