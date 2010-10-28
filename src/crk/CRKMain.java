@@ -75,7 +75,7 @@ public class CRKMain {
 	// default crk cutoffs
 	private static final double   DEF_QUERY_COVERAGE_CUTOFF = 0.85;
 	private static final int      DEF_MIN_HOMOLOGS_CUTOFF = 10;
-	private static final double   DEF_CUTOFF_ASA_INTERFACE_REPORTING = 350;
+	private static final double   DEF_MIN_INTERF_AREA_REPORTING = 350;
 		
 	// cutoffs for the final bio/xtal call
 	private static final double   DEF_ENTR_BIO_CUTOFF = 0.95;
@@ -128,7 +128,7 @@ public class CRKMain {
 	
 	private static double   QUERY_COVERAGE_CUTOFF;
 	private static int      MIN_HOMOLOGS_CUTOFF;
-	private static double   CUTOFF_ASA_INTERFACE_REPORTING; 
+	private static double   MIN_INTERF_AREA_REPORTING; 
 			
 	private static double 	ENTR_BIO_CUTOFF;
 	private static double 	ENTR_XTAL_CUTOFF;
@@ -374,6 +374,45 @@ public class CRKMain {
 				System.exit(1);
 			}
 			
+			// 1 finding interfaces 
+			ChainInterfaceList interfaces = null;
+			if (usePisa) {
+				System.out.println("Getting PISA interfaces...");
+				LOGGER.info("Interfaces from PISA.");
+				PisaConnection pc = new PisaConnection(PISA_INTERFACES_URL, null, null);
+				List<String> pdbCodes = new ArrayList<String>();
+				pdbCodes.add(pdbCode);
+				interfaces = pc.getInterfacesDescription(pdbCodes).get(pdbCode);
+			} else {
+				System.out.println("Calculating possible interfaces...");
+				LOGGER.info("Interfaces calculated.");
+				if (useNaccess) {
+					interfaces = pdb.getAllInterfaces(INTERFACE_DIST_CUTOFF, NACCESS_EXE, 0, 0);
+				} else {
+					interfaces = pdb.getAllInterfaces(INTERFACE_DIST_CUTOFF, null, nSpherePointsASAcalc, numThreads);
+				}
+			}
+			interfaces.calcRimAndCores(cutoffsCA);
+			
+			System.out.println("Done");
+			
+			PrintStream interfLogPS = new PrintStream(new File(outDir,baseName+".interfaces"));
+			interfaces.printTabular(interfLogPS, pdbName);
+			interfLogPS.close();
+			
+			if (!usePisa && interfaces.hasInterfacesWithClashes()) {
+				LOGGER.error("Clashes found in some of the interfaces. This is most likely an error in the structure. If you think the structure is correct, please report a bug.");
+				System.err.println("Clashes found in some of the interfaces. This is most likely an error in the structure. If you think the structure is correct, please report a bug.");
+				System.exit(1);
+			}
+			if (interfaces.getNumInterfacesAboveArea(MIN_INTERF_AREA_REPORTING)==0) {
+				LOGGER.info(String.format("No interfaces with area above %4.0f. Nothing to score.\n",MIN_INTERF_AREA_REPORTING));
+				System.out.printf("No interfaces with area above %4.0f. Nothing to score.\n",MIN_INTERF_AREA_REPORTING);
+				System.exit(0);
+			}
+
+			
+			// 2 finding evolutionary context
 			Map<String, List<String>> uniqSequences = pdb.getUniqueSequences();
 			String msg = "Unique sequences for "+pdbName+":";
 			int i = 1;
@@ -398,7 +437,7 @@ public class CRKMain {
 				}
 	
 				ChainEvolContext chainEvCont = new ChainEvolContext(pdb, representativeChain, pdbName);
-				// 1) getting the uniprot ids corresponding to the query (the pdb sequence)
+				// a) getting the uniprot ids corresponding to the query (the pdb sequence)
 				File emblQueryCacheFile = null;
 				if (EMBL_CDS_CACHE_DIR!=null) {
 					emblQueryCacheFile = new File(EMBL_CDS_CACHE_DIR,baseName+"."+pdbName+representativeChain+".query.emblcds.fa");
@@ -409,7 +448,7 @@ public class CRKMain {
 					// note calling chainEvCont.canDoCRK() will also check for this condition (here we only want to log it once)
 					LOGGER.error("No CDS good match for query sequence! can't do CRK analysis on it.");
 				}
-				// 2) getting the homologs and sequence data and creating multiple sequence alignment
+				// b) getting the homologs and sequence data and creating multiple sequence alignment
 				System.out.println("Blasting for homologues...");
 				File blastCacheFile = null;
 				if (BLAST_CACHE_DIR!=null) {
@@ -447,7 +486,7 @@ public class CRKMain {
 				// skimming so that there's not too many sequences for selecton
 				chainEvCont.skimList(maxNumSeqsSelecton);
 				
-				// align
+				// c) align
 				System.out.println("Aligning protein sequences with t_coffee...");
 				chainEvCont.align(TCOFFEE_BIN, useTcoffeeVeryFastMode);
 
@@ -472,10 +511,10 @@ public class CRKMain {
 					chainEvCont.writeNucleotideAlignmentToFile(new File(outDir,baseName+"."+pdbName+representativeChain+".cds.aln"));
 				}
 
-				// computing entropies
+				// d) computing entropies
 				chainEvCont.computeEntropies(reducedAlphabet);
 
-				// compute ka/ks ratios
+				// e) compute ka/ks ratios
 				if (doScoreCRK && chainEvCont.canDoCRK()) {
 					System.out.println("Running selecton (this will take long)...");
 					chainEvCont.computeKaKsRatiosSelecton(SELECTON_BIN, 
@@ -502,44 +541,11 @@ public class CRKMain {
 			}
 
 
-			// 3) getting interfaces 
-			ChainInterfaceList interfaces = null;
-			if (usePisa) {
-				System.out.println("Getting PISA interfaces...");
-				LOGGER.info("Interfaces from PISA.");
-				PisaConnection pc = new PisaConnection(PISA_INTERFACES_URL, null, null);
-				List<String> pdbCodes = new ArrayList<String>();
-				pdbCodes.add(pdbCode);
-				interfaces = pc.getInterfacesDescription(pdbCodes).get(pdbCode);
-			} else {
-				System.out.println("Calculating possible interfaces...");
-				LOGGER.info("Interfaces calculated.");
-				if (useNaccess) {
-					interfaces = pdb.getAllInterfaces(INTERFACE_DIST_CUTOFF, NACCESS_EXE, 0, 0);
-				} else {
-					interfaces = pdb.getAllInterfaces(INTERFACE_DIST_CUTOFF, null, nSpherePointsASAcalc, numThreads);
-				}
-			}
-			
-			if (!usePisa && interfaces.hasInterfacesWithClashes()) {
-				LOGGER.error("Clashes found in some of the interfaces. This is most likely an error in the structure. If you think the structure is correct, please report a bug.");
-				System.err.println("Clashes found in some of the interfaces. This is most likely an error in the structure. If you think the structure is correct, please report a bug.");
-				System.exit(1);
-			}
-			
-			interfaces.calcRimAndCores(cutoffsCA);
-			
-			System.out.println("Done");
-			
-			PrintStream interfLogPS = new PrintStream(new File(outDir,baseName+".interfaces"));
-			interfaces.printTabular(interfLogPS, pdbName);
-			interfLogPS.close();
-
 			// 4) scoring
 			System.out.println("Scores:");
 
 			InterfaceEvolContextList iecList = new InterfaceEvolContextList(MIN_HOMOLOGS_CUTOFF, minNumResCA, minNumResMemberCA, 
-					idCutoff, QUERY_COVERAGE_CUTOFF, maxNumSeqsSelecton);
+					idCutoff, QUERY_COVERAGE_CUTOFF, maxNumSeqsSelecton, MIN_INTERF_AREA_REPORTING);
 			for (ChainInterface pi:interfaces) {
 				ArrayList<ChainEvolContext> chainsEvCs = new ArrayList<ChainEvolContext>();
 				chainsEvCs.add(allChains.get(pi.getFirstMolecule().getPdbChainCode()));
@@ -547,18 +553,18 @@ public class CRKMain {
 				InterfaceEvolContext iec = new InterfaceEvolContext(pi, chainsEvCs);
 				iecList.add(iec);
 			}
-
+			
 			PrintStream scoreEntrPS = new PrintStream(new File(outDir,baseName+ENTROPIES_FILE_SUFFIX+".scores"));
 			// entropy nw
 			iecList.scoreEntropy(false);
-			iecList.printScoresTable(System.out, ENTR_BIO_CUTOFF, ENTR_XTAL_CUTOFF, CUTOFF_ASA_INTERFACE_REPORTING);
-			iecList.printScoresTable(scoreEntrPS, ENTR_BIO_CUTOFF, ENTR_XTAL_CUTOFF, CUTOFF_ASA_INTERFACE_REPORTING);
+			iecList.printScoresTable(System.out, ENTR_BIO_CUTOFF, ENTR_XTAL_CUTOFF);
+			iecList.printScoresTable(scoreEntrPS, ENTR_BIO_CUTOFF, ENTR_XTAL_CUTOFF);
 			// entropy w
 			iecList.scoreEntropy(true);
-			iecList.printScoresTable(System.out, ENTR_BIO_CUTOFF, ENTR_XTAL_CUTOFF, CUTOFF_ASA_INTERFACE_REPORTING);
-			iecList.printScoresTable(scoreEntrPS, ENTR_BIO_CUTOFF, ENTR_XTAL_CUTOFF, CUTOFF_ASA_INTERFACE_REPORTING);
-			iecList.writeScoresPDBFiles(outDir, baseName, ENTROPIES_FILE_SUFFIX+".pdb", CUTOFF_ASA_INTERFACE_REPORTING);
-			iecList.writeRimCorePDBFiles(outDir, baseName, ".rimcore.pdb", CUTOFF_ASA_INTERFACE_REPORTING);
+			iecList.printScoresTable(System.out, ENTR_BIO_CUTOFF, ENTR_XTAL_CUTOFF);
+			iecList.printScoresTable(scoreEntrPS, ENTR_BIO_CUTOFF, ENTR_XTAL_CUTOFF);
+			iecList.writeScoresPDBFiles(outDir, baseName, ENTROPIES_FILE_SUFFIX+".pdb");
+			iecList.writeRimCorePDBFiles(outDir, baseName, ".rimcore.pdb");
 			scoreEntrPS.close();
 
 			
@@ -567,14 +573,14 @@ public class CRKMain {
 				PrintStream scoreKaksPS = new PrintStream(new File(outDir,baseName+KAKS_FILE_SUFFIX+".scores"));
 				// kaks nw
 				iecList.scoreKaKs(false);
-				iecList.printScoresTable(System.out,  KAKS_BIO_CUTOFF, KAKS_XTAL_CUTOFF, CUTOFF_ASA_INTERFACE_REPORTING);
-				iecList.printScoresTable(scoreKaksPS,  KAKS_BIO_CUTOFF, KAKS_XTAL_CUTOFF, CUTOFF_ASA_INTERFACE_REPORTING);
+				iecList.printScoresTable(System.out,  KAKS_BIO_CUTOFF, KAKS_XTAL_CUTOFF);
+				iecList.printScoresTable(scoreKaksPS,  KAKS_BIO_CUTOFF, KAKS_XTAL_CUTOFF);
 				// kaks w
 				iecList.scoreKaKs(true);
-				iecList.printScoresTable(System.out,  KAKS_BIO_CUTOFF, KAKS_XTAL_CUTOFF, CUTOFF_ASA_INTERFACE_REPORTING);
-				iecList.printScoresTable(scoreKaksPS,  KAKS_BIO_CUTOFF, KAKS_XTAL_CUTOFF, CUTOFF_ASA_INTERFACE_REPORTING);
-				iecList.writeScoresPDBFiles(outDir, baseName, KAKS_FILE_SUFFIX+".pdb", CUTOFF_ASA_INTERFACE_REPORTING);
-				iecList.writeRimCorePDBFiles(outDir, baseName, ".rimcore.pdb", CUTOFF_ASA_INTERFACE_REPORTING);
+				iecList.printScoresTable(System.out,  KAKS_BIO_CUTOFF, KAKS_XTAL_CUTOFF);
+				iecList.printScoresTable(scoreKaksPS,  KAKS_BIO_CUTOFF, KAKS_XTAL_CUTOFF);
+				iecList.writeScoresPDBFiles(outDir, baseName, KAKS_FILE_SUFFIX+".pdb");
+				iecList.writeRimCorePDBFiles(outDir, baseName, ".rimcore.pdb");
 				scoreKaksPS.close();
 			}
 			
@@ -626,7 +632,7 @@ public class CRKMain {
 
 			QUERY_COVERAGE_CUTOFF = Double.parseDouble(p.getProperty("QUERY_COVERAGE_CUTOFF", new Double(DEF_QUERY_COVERAGE_CUTOFF).toString()));
 			MIN_HOMOLOGS_CUTOFF = Integer.parseInt(p.getProperty("MIN_HOMOLOGS_CUTOFF", new Integer(DEF_MIN_HOMOLOGS_CUTOFF).toString()));
-			CUTOFF_ASA_INTERFACE_REPORTING = Double.parseDouble(p.getProperty("CUTOFF_ASA_INTERFACE_REPORTING", new Double(DEF_CUTOFF_ASA_INTERFACE_REPORTING).toString())); 
+			MIN_INTERF_AREA_REPORTING = Double.parseDouble(p.getProperty("MIN_INTERF_AREA_REPORTING", new Double(DEF_MIN_INTERF_AREA_REPORTING).toString())); 
 					
 			ENTR_BIO_CUTOFF     = Double.parseDouble(p.getProperty("ENTR_BIO_CUTOFF",new Double(DEF_ENTR_BIO_CUTOFF).toString()));
 			ENTR_XTAL_CUTOFF    = Double.parseDouble(p.getProperty("ENTR_XTAL_CUTOFF",new Double(DEF_ENTR_XTAL_CUTOFF).toString()));

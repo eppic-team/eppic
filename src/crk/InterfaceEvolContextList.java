@@ -21,17 +21,18 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext> 
 	private double idCutoff;
 	private double queryCovCutoff;
 	private int maxNumSeqsCutoff;
-
+	private double minInterfAreaReporting;
 	
 	public InterfaceEvolContextList(int homologsCutoff, int minCoreSize, int minMemberCoreSize, 
-			double idCutoff, double queryCovCutoff, int maxNumSeqsCutoff) {
+			double idCutoff, double queryCovCutoff, int maxNumSeqsCutoff, double minInterfAreaReporting) {
 		this.homologsCutoff = homologsCutoff;
 		this.minCoreSize = minCoreSize;
 		this.minMemberCoreSize = minMemberCoreSize;
 		this.idCutoff = idCutoff;
 		this.queryCovCutoff = queryCovCutoff;
 		this.maxNumSeqsCutoff = maxNumSeqsCutoff;
-
+		this.minInterfAreaReporting = minInterfAreaReporting;
+		
 		list = new ArrayList<InterfaceEvolContext>();
 	}
 	
@@ -68,7 +69,7 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext> 
 		return isScoreWeighted;
 	}
 	
-	public void printScoresTable(PrintStream ps, double bioCutoff, double xtalCutoff, double cutoffInterfAreaReporting) {
+	public void printScoresTable(PrintStream ps, double bioCutoff, double xtalCutoff) {
 		this.bioCutoff = bioCutoff;
 		this.xtalCutoff = xtalCutoff;
 		
@@ -76,23 +77,23 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext> 
 		printScoringHeaders(ps);
 		
 		for (InterfaceEvolContext iec:this) {
-			if (iec.getInterface().getInterfaceArea()>cutoffInterfAreaReporting) {
+			if (iec.getInterface().getInterfaceArea()>minInterfAreaReporting) {
 				iec.printScoresTable(ps, bioCutoff, xtalCutoff, homologsCutoff, minCoreSize, minMemberCoreSize);
 			}
 		}
 	}
 	
-	public void writeScoresPDBFiles(File outDir, String baseName, String suffix, double cutoffInterfAreaReporting) throws IOException {
+	public void writeScoresPDBFiles(File outDir, String baseName, String suffix) throws IOException {
 		for (InterfaceEvolContext iec:this) {
-			if (iec.getInterface().getInterfaceArea()>cutoffInterfAreaReporting) {
+			if (iec.getInterface().getInterfaceArea()>minInterfAreaReporting) {
 				iec.writePdbFile(new File(outDir, baseName+"."+iec.getInterface().getId()+suffix), InterfaceEvolContext.SCORES);
 			}
 		}
 	}
 	
-	public void writeRimCorePDBFiles(File outDir, String baseName, String suffix, double cutoffInterfAreaReporting) throws IOException {
+	public void writeRimCorePDBFiles(File outDir, String baseName, String suffix) throws IOException {
 		for (InterfaceEvolContext iec:this) {
-			if (iec.getInterface().getInterfaceArea()>cutoffInterfAreaReporting) {
+			if (iec.getInterface().getInterfaceArea()>minInterfAreaReporting) {
 				iec.writePdbFile(new File(outDir, baseName+"."+iec.getInterface().getId()+suffix), InterfaceEvolContext.RIMCORE);
 			}
 		}
