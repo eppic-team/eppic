@@ -83,18 +83,18 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext> 
 		}
 	}
 	
-	public void writeScoresPDBFiles(File outDir, String baseName, String suffix) throws IOException {
+	public void writeScoresPDBFiles(File outDir, String baseName, String suffix, boolean transform) throws IOException {
 		for (InterfaceEvolContext iec:this) {
 			if (iec.getInterface().getInterfaceArea()>minInterfAreaReporting) {
-				iec.writePdbFile(new File(outDir, baseName+"."+iec.getInterface().getId()+suffix), InterfaceEvolContext.SCORES);
+				iec.writePdbFile(new File(outDir, baseName+"."+iec.getInterface().getId()+suffix), InterfaceEvolContext.SCORES, transform);
 			}
 		}
 	}
 	
-	public void writeRimCorePDBFiles(File outDir, String baseName, String suffix) throws IOException {
+	public void writeRimCorePDBFiles(File outDir, String baseName, String suffix, boolean transform) throws IOException {
 		for (InterfaceEvolContext iec:this) {
 			if (iec.getInterface().getInterfaceArea()>minInterfAreaReporting) {
-				iec.writePdbFile(new File(outDir, baseName+"."+iec.getInterface().getId()+suffix), InterfaceEvolContext.RIMCORE);
+				iec.writePdbFile(new File(outDir, baseName+"."+iec.getInterface().getId()+suffix), InterfaceEvolContext.RIMCORE, transform);
 			}
 		}
 	}	

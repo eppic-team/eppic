@@ -211,18 +211,21 @@ public class InterfaceEvolContext {
 	
 	/**
 	 * Writes out a PDB file with the 2 chains of this interface with evolutionary scores 
-	 * or rim core residues as b-factors.
+	 * or rim core residues as b-factors. We use pdb chain codes, not cif.
 	 * In order for the file to be handled properly by molecular viewers whenever the two
-	 * chains have the same name we rename the second one to the next letter in alphabet.
+	 * chains have the same code we rename the second one to the next letter in alphabet.
+	 * PDB chain codes are used for the output, not cif codes.  
 	 * In the case of writing rim/core residues we choose the rim/core residues corresponding 
 	 * to the first CA cutoff only. 
 	 * @param file
 	 * @param valuesToWrite if {@link #SCORES} evolutionary scores are written as b-factors,
 	 * if {@link #RIMCORE} rim/core residues are written as b-factors (3 different values: 
 	 * rim, score and all other residues)
+	 * @param transform whether to transform the output molecule (only needed if the interface 
+	 * was read from PISA and thus the PDB in member chains were not transformed yet)
 	 * @throws IOException
 	 */
-	public void writePdbFile(File file, boolean valuesToWrite) throws IOException {
+	public void writePdbFile(File file, boolean valuesToWrite, boolean transform) throws IOException {
 		PrintStream ps = new PrintStream(file);
 		String chain1 = null;
 		String chain2 = null;
@@ -234,16 +237,21 @@ public class InterfaceEvolContext {
 				setRimCoreAsBfactors(FIRST);
 			}
 			// we copy in order to leave the original Pdbs unaltered (essential to be able to apply transformations several times)
-			Pdb pdb1 = chains.get(FIRST).getPdb(chain1).copy();
-			pdb1.transform(interf.getFirstTransfOrth());
-			pdb1.writeAtomLines(ps);
+			Pdb pdb1 = null;
+			if (transform) {
+				pdb1 = chains.get(FIRST).getPdb(chain1).copy();
+				pdb1.transform(interf.getFirstTransfOrth());
+			} else {
+				pdb1 = chains.get(FIRST).getPdb(chain1);
+			}
+			pdb1.writeAtomLines(ps, pdb1.getPdbChainCode());
 		}
 		if (interf.isSecondProtein()) {
 			
 			chain2 = interf.getSecondMolecule().getPdbChainCode();
 			String chain2forOutput = chain2; // the name we will put to the chain2 in the output pdb file
 			if (chain1!=null && chain1.equals(chain2)) {
-				// if both chains are named equally we want to still named them differently in the output pdb file
+				// if both chains are named equally we want to still name them differently in the output pdb file
 				// so that molecular viewers can handle properly the 2 chains as separate entities 
 				char letter = chain1.charAt(0);
 				if (letter!='Z' && letter!='z') {
@@ -258,10 +266,14 @@ public class InterfaceEvolContext {
 			} else {
 				setRimCoreAsBfactors(SECOND);
 			}
-			Pdb pdb2 = chains.get(SECOND).getPdb(chain2).copy();
-			pdb2.transform(interf.getSecondTransfOrth());
-			pdb2.setChainCode(chain2forOutput);
-			pdb2.writeAtomLines(ps);
+			Pdb pdb2 = null;
+			if (transform) {
+				pdb2 = chains.get(SECOND).getPdb(chain2).copy();
+				pdb2.transform(interf.getSecondTransfOrth());
+			} else {
+				pdb2 = chains.get(SECOND).getPdb(chain2);
+			}
+			pdb2.writeAtomLines(ps, chain2forOutput);
 		}
 		ps.close();
 	}

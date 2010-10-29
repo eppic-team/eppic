@@ -75,7 +75,7 @@ public class CRKMain {
 	// default crk cutoffs
 	private static final double   DEF_QUERY_COVERAGE_CUTOFF = 0.85;
 	private static final int      DEF_MIN_HOMOLOGS_CUTOFF = 10;
-	private static final double   DEF_MIN_INTERF_AREA_REPORTING = 350;
+	private static final double   DEF_MIN_INTERF_AREA_REPORTING = 300;
 		
 	// cutoffs for the final bio/xtal call
 	private static final double   DEF_ENTR_BIO_CUTOFF = 0.95;
@@ -543,6 +543,9 @@ public class CRKMain {
 
 			// 4) scoring
 			System.out.println("Scores:");
+			
+			//whether to transform the output PDB files with operators read from PISA (only if we are using PISA, otherwise we have everything properly transformed already)
+			boolean transform = usePisa; 
 
 			InterfaceEvolContextList iecList = new InterfaceEvolContextList(MIN_HOMOLOGS_CUTOFF, minNumResCA, minNumResMemberCA, 
 					idCutoff, QUERY_COVERAGE_CUTOFF, maxNumSeqsSelecton, MIN_INTERF_AREA_REPORTING);
@@ -563,8 +566,8 @@ public class CRKMain {
 			iecList.scoreEntropy(true);
 			iecList.printScoresTable(System.out, ENTR_BIO_CUTOFF, ENTR_XTAL_CUTOFF);
 			iecList.printScoresTable(scoreEntrPS, ENTR_BIO_CUTOFF, ENTR_XTAL_CUTOFF);
-			iecList.writeScoresPDBFiles(outDir, baseName, ENTROPIES_FILE_SUFFIX+".pdb");
-			iecList.writeRimCorePDBFiles(outDir, baseName, ".rimcore.pdb");
+			iecList.writeScoresPDBFiles(outDir, baseName, ENTROPIES_FILE_SUFFIX+".pdb",transform);
+			iecList.writeRimCorePDBFiles(outDir, baseName, ".rimcore.pdb",transform);
 			scoreEntrPS.close();
 
 			
@@ -579,8 +582,8 @@ public class CRKMain {
 				iecList.scoreKaKs(true);
 				iecList.printScoresTable(System.out,  KAKS_BIO_CUTOFF, KAKS_XTAL_CUTOFF);
 				iecList.printScoresTable(scoreKaksPS,  KAKS_BIO_CUTOFF, KAKS_XTAL_CUTOFF);
-				iecList.writeScoresPDBFiles(outDir, baseName, KAKS_FILE_SUFFIX+".pdb");
-				iecList.writeRimCorePDBFiles(outDir, baseName, ".rimcore.pdb");
+				iecList.writeScoresPDBFiles(outDir, baseName, KAKS_FILE_SUFFIX+".pdb",transform);
+				iecList.writeRimCorePDBFiles(outDir, baseName, ".rimcore.pdb",transform);
 				scoreKaksPS.close();
 			}
 			
