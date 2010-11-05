@@ -527,4 +527,12 @@ public class ChainEvolContext {
 		return canDoCRK;
 	}
 	
+	/**
+	 * Gets the PDB identifier: a PDB code if query was a PDB entry or a PDB file name. 
+	 * @return
+	 */
+	public String getPdbName() {
+		return this.pdbName;
+	}
+	
 }

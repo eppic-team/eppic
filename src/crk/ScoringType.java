@@ -11,6 +11,16 @@ public enum ScoringType {
 	public String getName() {
 		return name;
 	}
+	
+	public static ScoringType getByName(String name) {
+		if (name.equals("entropy")) {
+			return ScoringType.ENTROPY;
+		} else if (name.equals("KaKs ratio")) {
+			return ScoringType.KAKS;
+		} else {
+			return null;
+		}
+	}
 }
 
 

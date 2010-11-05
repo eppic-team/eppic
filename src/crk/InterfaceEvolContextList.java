@@ -1,16 +1,57 @@
 package crk;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import owl.core.util.FileFormatError;
 
 public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext> {
 
+	private static final String IDENTIFIER_HEADER       = "# PDB identifier:";
+	private static final String SCORE_METHOD_HEADER 	= "# Score method:";
+	private static final String SCORE_TYPE_HEADER   	= "# Score type:";
+	private static final String NUM_HOMS_CUTOFF_HEADER  = "# Min number homologs required:";
+	private static final String SEQUENCE_ID_HEADER  	= "# Sequence identity cutoff:";
+	private static final String QUERY_COV_HEADER    	= "# Query coverage cutoff:";
+	private static final String MAX_NUM_SEQS_HEADER     = "# Max num sequences used:";
+	private static final String BIO_CALL_HEADER         = "# Bio-call cutoff:";
+	private static final String XTAL_CALL_HEADER        = "# Xtal-call cutoff:";
+	private static final String CA_CUTOFF_HEADER        = "# Total core size xtal-call cutoff:";
+	private static final String CA_MEMBER_CUTOFF_HEADER = "# Per-member core size xtal-call cutoff:";
+	private static final String BSA_TO_ASA_CUTOFFS_HEADER = "# Core assignment cutoffs:";
+	
+	
+	private static final Pattern IDENTIFIER_PAT = Pattern.compile("^"+Pattern.quote(IDENTIFIER_HEADER)+"\\s+(.*)$");
+	private static final Pattern SCORE_METHOD_PAT = Pattern.compile("^"+Pattern.quote(SCORE_METHOD_HEADER)+"\\s+(.*)$");
+	private static final Pattern SCORE_TYPE_PAT = Pattern.compile("^"+Pattern.quote(SCORE_TYPE_HEADER)+"\\s+(.*)$");
+	private static final Pattern NUM_HOMS_CUTOFF_PAT = Pattern.compile("^"+Pattern.quote(NUM_HOMS_CUTOFF_HEADER)+"\\s+(.*)$");
+	private static final Pattern SEQUENCE_ID_PAT = Pattern.compile("^"+Pattern.quote(SEQUENCE_ID_HEADER)+"\\s+(.*)$");
+	private static final Pattern QUERY_COV_PAT = Pattern.compile("^"+Pattern.quote(QUERY_COV_HEADER)+"\\s+(.*)$");
+	private static final Pattern MAX_NUM_SEQS_PAT = Pattern.compile("^"+Pattern.quote(MAX_NUM_SEQS_HEADER)+"\\s+(.*)$");
+	private static final Pattern BIO_CALL_PAT = Pattern.compile("^"+Pattern.quote(BIO_CALL_HEADER)+"\\s+(.*)$");
+	private static final Pattern XTAL_CALL_PAT = Pattern.compile("^"+Pattern.quote(XTAL_CALL_HEADER)+"\\s+(.*)$");
+	private static final Pattern CA_CUTOFF_PAT = Pattern.compile("^"+Pattern.quote(CA_CUTOFF_HEADER)+"\\s+(.*)$");
+	private static final Pattern CA_MEMBER_CUTOFF_PAT = Pattern.compile("^"+Pattern.quote(CA_MEMBER_CUTOFF_HEADER)+"\\s+(.*)$");
+	private static final Pattern BSA_TO_ASA_CUTOFFS_PAT = Pattern.compile("^"+Pattern.quote(BSA_TO_ASA_CUTOFFS_HEADER)+"\\s+(.*)$");
+	
+	private static final Pattern TITLES_LINE_PAT = Pattern.compile("^\\s+interface.*");
+	//                                                     size1   size2        CA             n1        n2        core1          rim1             rat1         core2           rim2           rat2         call       score
+	private static final String  INTERF_PAT_STRING = "\\s+(\\d+)\\s+(\\d+)\\s+(\\d\\.\\d+)\\s+(\\d+)\\s+(\\d+)\\s+([Na0-9.]+)\\s+([Na0-9.]+)\\s+([Na0-9.]+)\\s+([Na0-9.]+)\\s+([Na0-9.]+)\\s+([Na0-9.]+)\\s+(\\w+)\\s+([Na0-9.]+).*$";
+	//                                                                          id    chain1  chain2       area
+	private static final Pattern FIRST_INTERF_LINE_PAT = Pattern.compile("^\\s*(\\d+)\\((.*)\\+(.*)\\)\\s+(\\d+\\.\\d+)"+INTERF_PAT_STRING);
+	private static final Pattern INTERF_LINE_PAT = Pattern.compile("^"+INTERF_PAT_STRING);
+	
 	private List<InterfaceEvolContext> list;
 
+	private String pdbName;
 	private ScoringType scoType;
 	private boolean isScoreWeighted;
 	private double bioCutoff;
@@ -23,8 +64,13 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext> 
 	private int maxNumSeqsCutoff;
 	private double minInterfAreaReporting;
 	
-	public InterfaceEvolContextList(int homologsCutoff, int minCoreSize, int minMemberCoreSize, 
+	public InterfaceEvolContextList(){
+		list = new ArrayList<InterfaceEvolContext>();
+	}
+	
+	public InterfaceEvolContextList(String pdbName, int homologsCutoff, int minCoreSize, int minMemberCoreSize, 
 			double idCutoff, double queryCovCutoff, int maxNumSeqsCutoff, double minInterfAreaReporting) {
+		this.pdbName = pdbName;
 		this.homologsCutoff = homologsCutoff;
 		this.minCoreSize = minCoreSize;
 		this.minMemberCoreSize = minMemberCoreSize;
@@ -124,16 +170,22 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext> 
 	}
 
 	private void printScoringParams(PrintStream ps) {
-		ps.println("# Score method: "+scoType.getName());
-		ps.println("# Score type:   "+(isScoreWeighted?"weighted":"unweighted"));
-		ps.printf ("# Sequence identity cutoff: %4.2f\n",idCutoff);
-		ps.printf ("# Query coverage cutoff: %4.2f\n",queryCovCutoff);
-		ps.println("# Max num sequences used: "+maxNumSeqsCutoff);
-		ps.printf ("# Bio-call cutoff:  %4.2f\n",bioCutoff);
-		ps.printf ("# Xtal-call cutoff: %4.2f\n",xtalCutoff);
-		ps.println("# Total core size xtal-call cutoff: "+minCoreSize);
-		ps.println("# Per-member core size xtal-call cutoff: "+minMemberCoreSize);
-		
+		ps.println(IDENTIFIER_HEADER+" "+pdbName);
+		ps.println(SCORE_METHOD_HEADER+" "+scoType.getName());
+		ps.println(SCORE_TYPE_HEADER+"   "+(isScoreWeighted?"weighted":"unweighted"));
+		ps.println(NUM_HOMS_CUTOFF_HEADER+" "+homologsCutoff);
+		ps.printf (SEQUENCE_ID_HEADER+" %4.2f\n",idCutoff);
+		ps.printf (QUERY_COV_HEADER+" %4.2f\n",queryCovCutoff);
+		ps.println(MAX_NUM_SEQS_HEADER+" "+maxNumSeqsCutoff);
+		ps.printf (BIO_CALL_HEADER+"  %4.2f\n",bioCutoff);
+		ps.printf (XTAL_CALL_HEADER+" %4.2f\n",xtalCutoff);
+		ps.println(CA_CUTOFF_HEADER+" "+minCoreSize);
+		ps.println(CA_MEMBER_CUTOFF_HEADER+" "+minMemberCoreSize);
+		ps.print(BSA_TO_ASA_CUTOFFS_HEADER+" ");
+		for (double bsaToAsaCutoff:list.get(0).getInterface().getBsaToAsaCutoffs()) {
+			ps.printf("%4.2f ",bsaToAsaCutoff);
+		}
+		ps.println();
 	}
 	
 	private static void printScoringHeaders(PrintStream ps) {
@@ -150,5 +202,167 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext> 
 		ps.println();
 	}
 	
+	public static PdbScore[] parseScoresFile(File scoresFile) throws IOException, FileFormatError {
+		PdbScore[] pdbScs = new PdbScore[2];
+		pdbScs[0] = new PdbScore();
+		pdbScs[1] = new PdbScore();
+		
+		BufferedReader br = new BufferedReader(new FileReader(scoresFile));
+		String line;
+		int i = 0;
+		int lineCount=0;
+		InterfaceScore isc = null;
+		int[] sizes1 = null;
+		int[] sizes2 = null;
+		double[] core1Scs = null;
+		double[] rim1Scs = null;
+		double[] core2Scs = null;
+		double[] rim2Scs = null;
+		double[] finalScs = null;
+		CallType[] calls = null;
+		int bsaToAsaCoInd = 0;
+		while ((line=br.readLine())!=null){
+			lineCount++;
+			if (line.startsWith("#")) {
+				Matcher m = IDENTIFIER_PAT.matcher(line);
+				if (m.matches()){
+					pdbScs[i].setPdbName(m.group(1).trim());
+				}
+				m = SCORE_METHOD_PAT.matcher(line);
+				if (m.matches()) {
+					pdbScs[i].setScoType(ScoringType.getByName(m.group(1).trim()));
+				}
+				m = SCORE_TYPE_PAT.matcher(line);
+				if (m.matches()) {
+					String val = m.group(1).trim();
+					if (val.equals("unweighted")) {
+						if (i!=0) throw new FileFormatError("CRK scores file "+scoresFile+" must have unweighted scores in first position"); 
+						pdbScs[i].setScoreWeighted(false);
+					} else if (val.equals("weighted")){
+						if (i!=1) throw new FileFormatError("CRK scores file "+scoresFile+" must have unweighted scores in first position");
+						pdbScs[i].setScoreWeighted(true);
+					}
+				}
+				m = NUM_HOMS_CUTOFF_PAT.matcher(line);
+				if (m.matches()) {
+					pdbScs[i].setHomologsCutoff(Integer.parseInt(m.group(1).trim()));
+				}
+				m = SEQUENCE_ID_PAT.matcher(line);
+				if (m.matches()) {
+					pdbScs[i].setIdCutoff(Double.parseDouble(m.group(1).trim()));
+				}
+				m = QUERY_COV_PAT.matcher(line);
+				if (m.matches()){
+					pdbScs[i].setQueryCovCutoff(Double.parseDouble(m.group(1).trim()));
+				}
+				m = MAX_NUM_SEQS_PAT.matcher(line);
+				if (m.matches()){
+					pdbScs[i].setMaxNumSeqsCutoff(Integer.parseInt(m.group(1).trim()));
+				}
+				m = BIO_CALL_PAT.matcher(line);
+				if (m.matches()){
+					pdbScs[i].setBioCutoff(Double.parseDouble(m.group(1).trim()));
+				}
+				m = XTAL_CALL_PAT.matcher(line);
+				if (m.matches()){
+					pdbScs[i].setXtalCutoff(Double.parseDouble(m.group(1).trim()));
+				}
+				m = CA_CUTOFF_PAT.matcher(line);
+				if (m.matches()){
+					pdbScs[i].setMinCoreSize(Integer.parseInt(m.group(1).trim()));
+				}
+				m = CA_MEMBER_CUTOFF_PAT.matcher(line);
+				if (m.matches()){
+					pdbScs[i].setMinMemberCoreSize(Integer.parseInt(m.group(1).trim()));
+				}
+				m = BSA_TO_ASA_CUTOFFS_PAT.matcher(line);
+				if (m.matches()){
+					String[] tokens = m.group(1).trim().split("\\s+");
+					double[] bsaToAsaCutoffs = new double[tokens.length];
+					for (int c=0;c<tokens.length;c++) {
+						bsaToAsaCutoffs[c] = Double.parseDouble(tokens[c]);
+					}
+					pdbScs[i].setBsaToAsaCutoffs(bsaToAsaCutoffs);
+					i++; // last field before scores table, we increment for next one
+				}
+					
+ 			} else {
+ 				Matcher m = TITLES_LINE_PAT.matcher(line);
+				if (m.matches()) continue;
+				m = FIRST_INTERF_LINE_PAT.matcher(line);
+				if (m.matches()) {
+					sizes1 = new int[pdbScs[i-1].getBsaToAsaCutoffs().length];
+					sizes2 = new int[pdbScs[i-1].getBsaToAsaCutoffs().length];
+					core1Scs = new double[pdbScs[i-1].getBsaToAsaCutoffs().length];
+					rim1Scs = new double[pdbScs[i-1].getBsaToAsaCutoffs().length];
+					core2Scs = new double[pdbScs[i-1].getBsaToAsaCutoffs().length];
+					rim2Scs = new double[pdbScs[i-1].getBsaToAsaCutoffs().length];
+					calls = new CallType[pdbScs[i-1].getBsaToAsaCutoffs().length];
+					finalScs = new double[pdbScs[i-1].getBsaToAsaCutoffs().length];
+					bsaToAsaCoInd = 0;
+					
+					isc = new InterfaceScore();
+					// get the fields
+					int id = Integer.parseInt(m.group(1).trim());
+					String chain1 = m.group(2).trim();
+					String chain2 = m.group(3).trim();
+					double area = Double.parseDouble(m.group(4).trim());
+					isc.setId(id);
+					isc.setFirstChainId(chain1);
+					isc.setSecondChainId(chain2);
+					isc.setInterfArea(area);
+					
+					pdbScs[i-1].addInterfScore(isc);
+					
+					sizes1[bsaToAsaCoInd] = Integer.parseInt(m.group(5).trim());
+					sizes2[bsaToAsaCoInd] = Integer.parseInt(m.group(6).trim());
+					// skip 7 (bsaToAsaCutoff)
+					int numHoms1 = Integer.parseInt(m.group(8).trim());
+					int numHoms2 = Integer.parseInt(m.group(9).trim());
+					core1Scs[bsaToAsaCoInd] = Double.parseDouble(m.group(10).trim());
+					rim1Scs[bsaToAsaCoInd] = Double.parseDouble(m.group(11).trim());
+					// we skip 12 (ratio1)
+					core2Scs[bsaToAsaCoInd] = Double.parseDouble(m.group(13).trim());
+					rim2Scs[bsaToAsaCoInd] = Double.parseDouble(m.group(14).trim());
+					// we skip 15 (ratio2)
+					calls[bsaToAsaCoInd] = CallType.getByName(m.group(16).trim());
+					finalScs[bsaToAsaCoInd] = Double.parseDouble(m.group(17).trim());
+					
+					isc.setNumHomologs1(numHoms1);
+					isc.setNumHomologs2(numHoms2);
+					
+					isc.setCoreSize1(sizes1);
+					isc.setCoreSize2(sizes2);
+					isc.setCore1Scores(core1Scs);
+					isc.setRim1Scores(rim1Scs);
+					isc.setCore2Scores(core2Scs);
+					isc.setRim2Scores(rim2Scs);
+					isc.setFinalScores(finalScs);
+					isc.setCalls(calls);
+
+				}
+				m = INTERF_LINE_PAT.matcher(line);
+				if (m.matches()) {
+					bsaToAsaCoInd++;
+					sizes1[bsaToAsaCoInd] = Integer.parseInt(m.group(1).trim());
+					sizes2[bsaToAsaCoInd] = Integer.parseInt(m.group(2).trim());
+					// skip 3 (bsaToAsaCutoff)
+					// skip 4,5 (num homologues, already parsed with FIRST_INTERF_LINE_PAT)
+					core1Scs[bsaToAsaCoInd] = Double.parseDouble(m.group(6).trim());
+					rim1Scs[bsaToAsaCoInd] = Double.parseDouble(m.group(7).trim());
+					// we skip 8 (ratio1)
+					core2Scs[bsaToAsaCoInd] = Double.parseDouble(m.group(9).trim());
+					rim2Scs[bsaToAsaCoInd] = Double.parseDouble(m.group(10).trim());
+					// we skip 11 (ratio2)
+					calls[bsaToAsaCoInd] = CallType.getByName(m.group(12));
+					finalScs[bsaToAsaCoInd] = Double.parseDouble(m.group(13).trim());
+				}
+				
+			}
+		}
+		br.close();
+		
+		return pdbScs;
+	}
 
 }

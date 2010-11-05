@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.TreeMap;
 
+import owl.core.util.FileFormatError;
 import owl.core.util.RegexFileFilter;
 
 public class CalcStats {
@@ -86,99 +87,136 @@ public class CalcStats {
 		
 		TreeMap<String,List<Integer>> toAnalyse = readListFile(list);
 
-		List<File> entrFilesW = new ArrayList<File>();
-		List<File> entrFilesNW = new ArrayList<File>();
-		List<File> kaksFilesW = new ArrayList<File>();
-		List<File> kaksFilesNW = new ArrayList<File>();
+		List<File> entrFiles = new ArrayList<File>();
+		List<File> kaksFiles = new ArrayList<File>();
 		
 		for (String pdbId:toAnalyse.keySet()) {
-			List<Integer> interfaces = toAnalyse.get(pdbId);
-			for (int interf:interfaces) {
-				entrFilesW.addAll (Arrays.asList(dir.listFiles(new RegexFileFilter("^"+pdbId+"\\."+interf+"\\.entropies\\.scoreW\\.dat"))));
-				entrFilesNW.addAll(Arrays.asList(dir.listFiles(new RegexFileFilter("^"+pdbId+"\\."+interf+"\\.entropies\\.scoreNW\\.dat"))));
-				kaksFilesW.addAll (Arrays.asList(dir.listFiles(new RegexFileFilter("^"+pdbId+"\\."+interf+"\\.kaks\\.scoreW\\.dat"))));
-				kaksFilesNW.addAll(Arrays.asList(dir.listFiles(new RegexFileFilter("^"+pdbId+"\\."+interf+"\\.kaks\\.scoreNW\\.dat"))));
-			}
+			
+			entrFiles.addAll (Arrays.asList(dir.listFiles(new RegexFileFilter("^"+pdbId+"\\.entropies\\.scores"))));
+			kaksFiles.addAll (Arrays.asList(dir.listFiles(new RegexFileFilter("^"+pdbId+"\\.kaks\\.scores"))));
+			
 		}
 
+		List<List<InterfaceScore>> entScores = parseFiles(toAnalyse, dir, ScoringType.ENTROPY);
+		List<InterfaceScore> entNwScores = entScores.get(0);
+		List<InterfaceScore> entWScores  = entScores.get(1);
 		
+
+		List<List<InterfaceScore>> kScores = parseFiles(toAnalyse, dir, ScoringType.KAKS);
+		List<InterfaceScore> kNwScores = kScores.get(0);
+		List<InterfaceScore> kWScores  = kScores.get(1);
+
 		//int total = entrFilesW.size();
 		int total = toAnalyse.size();
 		
-		int[] entrCountsW = analyseFiles(entrFilesW, ScoringType.ENTROPY, kaksBioCutoff, kaksXtalCutoff, entrBioCutoff, entrXtalCutoff);
-		int[] entrCountsNW = analyseFiles(entrFilesNW, ScoringType.ENTROPY, kaksBioCutoff, kaksXtalCutoff, entrBioCutoff, entrXtalCutoff);
-		int[] kaksCountsW = analyseFiles(kaksFilesW, ScoringType.KAKS, kaksBioCutoff, kaksXtalCutoff, entrBioCutoff, entrXtalCutoff);
-		int[] kaksCountsNW = analyseFiles(kaksFilesNW, ScoringType.KAKS, kaksBioCutoff, kaksXtalCutoff, entrBioCutoff, entrXtalCutoff);
+		
+		int[][] entrCountsNW = analyse(entNwScores, entrBioCutoff, entrXtalCutoff);
+		int[][] entrCountsW = analyse(entWScores, entrBioCutoff, entrXtalCutoff);
+
+		int[][] kaksCountsNW = analyse(kNwScores, kaksBioCutoff, kaksXtalCutoff);
+		int[][] kaksCountsW = analyse(kWScores, kaksBioCutoff, kaksXtalCutoff);
+
 		
 		System.out.printf("%4s\t%4s\t%4s\t%4s\t%4s\t%4s\t%4s\t%4s\t%4s\n","set","tot","chk","tp","fn","gray","fail","acc","rec");
 		printStats(System.out,entrCountsW,total,"entrW",truth);
 		printStats(System.out,entrCountsNW,total,"entrNW",truth);
-		printStats(System.out,kaksCountsW,total,"kaksW",truth);
-		printStats(System.out,kaksCountsNW,total,"kaksNW",truth);
+		if (kaksCountsNW!=null) printStats(System.out,kaksCountsW,total,"kaksW",truth);
+		if (kaksCountsW!=null) printStats(System.out,kaksCountsNW,total,"kaksNW",truth);
+		
+
+		
 	}
 	
-	private static void printStats(PrintStream ps, int[] counts, int total, String title, CallType truth) {
-		int bio = counts[0];
-		int xtal = counts[1];
-		int gray = counts[2];
+	private static List<List<InterfaceScore>> parseFiles(TreeMap<String,List<Integer>> toAnalyse, File dir, ScoringType scoType) throws IOException, FileFormatError {
 		
-		int tp = 0;
-		int fn = 0;
+		List<List<InterfaceScore>> lists = new ArrayList<List<InterfaceScore>>();
+		lists.add(new ArrayList<InterfaceScore>()); // here we store non-weighted scores
+		lists.add(new ArrayList<InterfaceScore>()); // here we store weighted scores
 		
-		if (truth.equals(CallType.BIO)) {
-			tp = bio;
-			fn = xtal;
-		} else if (truth.equals(CallType.CRYSTAL)) {
-			tp = xtal;
-			fn = bio;
-		} else {
-			throw new IllegalArgumentException("Invalid value "+truth);
-		}
-		int failed = total-tp-fn-gray;
-		double accuracy = (double)tp/(double)(tp+fn+gray);
-		double recall = (double)(total-failed)/(double)total;
-		int checksum = tp+fn+gray+failed;
-		ps.printf("%6s\t%4d\t%4d\t%4d\t%4d\t%4d\t%4d\t%4.2f\t%4.2f\n",title,total,checksum,tp,fn,gray,failed,accuracy,recall);
-
-	}
-	
-	
-	private static int[] analyseFiles(List<File> files, ScoringType scoType, 
-			double kaksBioCutoff, double kaksXtalCutoff, double entrBioCutoff, double entrXtalCutoff) throws IOException, ClassNotFoundException {
-		
-		//ps.printf("%4s\t%4s\t%4s\t%4s\t%4s\n","tot","tp","fn","prec","rec");
-		
-		int bio = 0;
-		int xtal = 0;
-		int gray = 0;
-
-		for (int i=0;i<files.size();i++	){
-			File file = files.get(i);
-			InterfaceScore interfSc = InterfaceScore.readFromFile(file);
-			double bioCutoff = 0;
-			double xtalCutoff = 0;
-			if (scoType.equals(ScoringType.ENTROPY)) {
-				bioCutoff = entrBioCutoff;
-				xtalCutoff = entrXtalCutoff;
-			} else if (scoType.equals(ScoringType.KAKS)) {
-				bioCutoff = kaksBioCutoff;
-				xtalCutoff = kaksXtalCutoff;
+		for (String pdbId:toAnalyse.keySet()) {
+			String regex = null;
+			if (scoType==ScoringType.ENTROPY) {
+				regex = "^"+pdbId+"\\.entropies\\.scores";
+			} else if (scoType==ScoringType.KAKS) {
+				regex = "^"+pdbId+"\\.kaks\\.scores";
 			}
-
-			CallType call = interfSc.getCall(bioCutoff, xtalCutoff).getType();
-			//System.out.println(title+"\t"+pdbId+"."+interfaceSerial+"\t"+String.format("%8.2f",interfArea)+"\t"+call.getName());
-
-			if (call.equals(CallType.BIO)) {
-				bio++;
-			} else if (call.equals(CallType.CRYSTAL)) {
-				xtal++;
-			} else if (call.equals(CallType.GRAY)) {
-				gray++;
-			}// else if (call.equals(CallType.NO_PREDICTION)) {
-			//	failed++;
-			//}
+			
+			List<Integer> interfIds = toAnalyse.get(pdbId);
+			for (File file: dir.listFiles(new RegexFileFilter(regex))) {
+				PdbScore[] pdbScores = InterfaceEvolContextList.parseScoresFile(file);
+				PdbScore scoresNW = pdbScores[0];
+				PdbScore scoresW = pdbScores[1];
+				for (int interfId:interfIds) {
+					lists.get(0).add(scoresNW.getInterfScore(interfId));
+					lists.get(1).add(scoresW.getInterfScore(interfId));
+				}
+				
+			}
 		}
-		int[] counts = {bio,xtal,gray};
+		return lists;
+	}
+	
+	private static void printStats(PrintStream ps, int[][] counts, int total, String title, CallType truth) {
+		int[] bio = counts[0];
+		int[] xtal = counts[1];
+		int[] gray = counts[2];
+		int numBsaToAsaCutoffs = bio.length;
+		
+		for (int i=0;i<numBsaToAsaCutoffs;i++) {
+			int tp = 0;
+			int fn = 0;
+
+			if (truth.equals(CallType.BIO)) {
+				tp = bio[i];
+				fn = xtal[i];
+			} else if (truth.equals(CallType.CRYSTAL)) {
+				tp = xtal[i];
+				fn = bio[i];
+			} else {
+				throw new IllegalArgumentException("Invalid value "+truth);
+			}
+			int failed = total-tp-fn-gray[i];
+			double accuracy = (double)tp/(double)(tp+fn+gray[i]);
+			double recall = (double)(total-failed)/(double)total;
+			int checksum = tp+fn+gray[i]+failed;
+			if (i==0) {
+				ps.printf("%6s\t%4d\t%4d\t%4d\t%4d\t%4d\t%4d\t%4.2f\t%4.2f\n",title,total,checksum,tp,fn,gray[i],failed,accuracy,recall);
+			} else {
+				ps.printf("%6s\t%4d\t%4d\t%4d\t%4d\t%4d\t%4d\t%4.2f\t%4.2f\n","",total,checksum,tp,fn,gray[i],failed,accuracy,recall);
+			}
+		}
+	}
+	
+	
+	private static int[][] analyse(List<InterfaceScore> scores, double bioCutoff, double xtalCutoff) {
+		
+		if (scores.isEmpty()) {
+			return null;
+		}
+			
+		int numBsaToAsaCutoffs = scores.get(0).getNumBsaToAsaCutoffs();
+		
+		int[] bio = new int[numBsaToAsaCutoffs];
+		int[] xtal = new int[numBsaToAsaCutoffs];
+		int[] gray = new int[numBsaToAsaCutoffs];
+
+		for (InterfaceScore interfScore:scores) {
+			CallType[] calls = interfScore.getCalls();
+			for (int i=0;i<numBsaToAsaCutoffs;i++) {
+				if (calls[0].equals(CallType.BIO)) {
+					bio[i]++;
+				} else if (calls[0].equals(CallType.CRYSTAL)) {
+					xtal[i]++;
+				} else if (calls[0].equals(CallType.GRAY)) {
+					gray[i]++;
+				}
+			}
+		}
+		int[][] counts = new int[3][];
+		counts[0] = bio;
+		counts[1] = xtal;
+		counts[2] = gray;
+
 		return counts;
 	}
 	

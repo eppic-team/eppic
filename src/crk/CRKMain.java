@@ -547,7 +547,7 @@ public class CRKMain {
 			//whether to transform the output PDB files with operators read from PISA (only if we are using PISA, otherwise we have everything properly transformed already)
 			boolean transform = usePisa; 
 
-			InterfaceEvolContextList iecList = new InterfaceEvolContextList(MIN_HOMOLOGS_CUTOFF, minNumResCA, minNumResMemberCA, 
+			InterfaceEvolContextList iecList = new InterfaceEvolContextList(pdbName, MIN_HOMOLOGS_CUTOFF, minNumResCA, minNumResMemberCA, 
 					idCutoff, QUERY_COVERAGE_CUTOFF, maxNumSeqsSelecton, MIN_INTERF_AREA_REPORTING);
 			for (ChainInterface pi:interfaces) {
 				ArrayList<ChainEvolContext> chainsEvCs = new ArrayList<ChainEvolContext>();
