@@ -34,6 +34,7 @@ import owl.core.structure.PdbAsymUnit;
 import owl.core.structure.PdbCodeNotFoundError;
 import owl.core.structure.PdbLoadError;
 import owl.core.structure.AminoAcid;
+import owl.core.structure.SpaceGroup;
 import owl.core.util.FileFormatError;
 
 public class CRKMain {
@@ -86,6 +87,9 @@ public class CRKMain {
 	// default cache dirs
 	private static final String   DEF_EMBL_CDS_CACHE_DIR = null;
 	private static final String   DEF_BLAST_CACHE_DIR = null;
+	
+	// default clash distance: in theory, a disulfide bond distance (2.05) is the minimum distance we could reasonably expect
+	private static final double   DEF_INTERCHAIN_ATOM_CLASH_DISTANCE = 1.5; 
 
 	// DEFAULTS FOR COMMAND LINE PARAMETERS
 	private static final double   DEF_IDENTITY_CUTOFF = 0.6;
@@ -137,6 +141,8 @@ public class CRKMain {
 	
 	private static String   EMBL_CDS_CACHE_DIR;
 	private static String   BLAST_CACHE_DIR;
+	
+	private static double   INTERCHAIN_ATOM_CLASH_DISTANCE;
 
 	// and finally the ones with no defaults
 	private static String   BLAST_DB_DIR; // no default
@@ -400,7 +406,16 @@ public class CRKMain {
 			interfaces.printTabular(interfLogPS, pdbName);
 			interfLogPS.close();
 			
-			if (!usePisa && interfaces.hasInterfacesWithClashes()) {
+			// checking for clashes
+			if (!usePisa && interfaces.hasInterfacesWithClashes(INTERCHAIN_ATOM_CLASH_DISTANCE)) {				
+				LOGGER.error("Clashes found in some of the interfaces (atoms distance below "+INTERCHAIN_ATOM_CLASH_DISTANCE+"):");
+				List<ChainInterface> clashyInterfs = interfaces.getInterfacesWithClashes(INTERCHAIN_ATOM_CLASH_DISTANCE);
+				for (ChainInterface clashyInterf:clashyInterfs) {
+					LOGGER.error("Interface: "+clashyInterf.getFirstMolecule().getPdbChainCode()+"+"
+							+clashyInterf.getSecondMolecule().getPdbChainCode()+" ("+
+							SpaceGroup.getAlgebraicFromMatrix(clashyInterf.getSecondTransf())+
+							") Clashes: "+clashyInterf.getNumClashes(INTERCHAIN_ATOM_CLASH_DISTANCE));
+				}
 				LOGGER.error("Clashes found in some of the interfaces. This is most likely an error in the structure. If you think the structure is correct, please report a bug.");
 				System.err.println("Clashes found in some of the interfaces. This is most likely an error in the structure. If you think the structure is correct, please report a bug.");
 				System.exit(1);
@@ -645,6 +660,7 @@ public class CRKMain {
 			EMBL_CDS_CACHE_DIR  = p.getProperty("EMBL_CDS_CACHE_DIR", DEF_EMBL_CDS_CACHE_DIR);
 			BLAST_CACHE_DIR     = p.getProperty("BLAST_CACHE_DIR", DEF_BLAST_CACHE_DIR);
 
+			INTERCHAIN_ATOM_CLASH_DISTANCE = Double.parseDouble(p.getProperty("INTERCHAIN_ATOM_CLASH_DISTANCE", new Double(DEF_INTERCHAIN_ATOM_CLASH_DISTANCE).toString()));
 		} catch (NumberFormatException e) {
 			System.err.println("A numerical value in the config file was incorrectly specified: "+e.getMessage()+".\n" +
 					"Please check the config file.");
