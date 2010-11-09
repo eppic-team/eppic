@@ -3,6 +3,7 @@ package crk;
 
 public class InterfaceScore {
 
+	private PdbScore parent;
 	
 	private int id;
 	private double interfArea;
@@ -21,8 +22,8 @@ public class InterfaceScore {
 	private CallType[] calls;
 	
 	
-	public InterfaceScore() {
-		
+	public InterfaceScore(PdbScore parent) {
+		this.parent = parent;
 	}
 
 	public int getId() {
@@ -141,4 +142,7 @@ public class InterfaceScore {
 		return coreSize1.length;
 	}
 	
+	public PdbScore getParent() {
+		return parent;
+	}
 }

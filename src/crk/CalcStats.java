@@ -86,6 +86,11 @@ public class CalcStats {
 		}
 		
 		TreeMap<String,List<Integer>> toAnalyse = readListFile(list);
+		int total = 0;
+		for (List<Integer> vals:toAnalyse.values()) {
+			total+=vals.size();
+		}
+		
 
 		List<File> entrFiles = new ArrayList<File>();
 		List<File> kaksFiles = new ArrayList<File>();
@@ -105,16 +110,13 @@ public class CalcStats {
 		List<List<InterfaceScore>> kScores = parseFiles(toAnalyse, dir, ScoringType.KAKS);
 		List<InterfaceScore> kNwScores = kScores.get(0);
 		List<InterfaceScore> kWScores  = kScores.get(1);
-
-		//int total = entrFilesW.size();
-		int total = toAnalyse.size();
-		
+				
 		
 		int[][] entrCountsNW = analyse(entNwScores, entrBioCutoff, entrXtalCutoff);
-		int[][] entrCountsW = analyse(entWScores, entrBioCutoff, entrXtalCutoff);
+		int[][] entrCountsW  = analyse(entWScores, entrBioCutoff, entrXtalCutoff);
 
 		int[][] kaksCountsNW = analyse(kNwScores, kaksBioCutoff, kaksXtalCutoff);
-		int[][] kaksCountsW = analyse(kWScores, kaksBioCutoff, kaksXtalCutoff);
+		int[][] kaksCountsW  = analyse(kWScores, kaksBioCutoff, kaksXtalCutoff);
 
 		
 		System.out.printf("%4s\t%4s\t%4s\t%4s\t%4s\t%4s\t%4s\t%4s\t%4s\n","set","tot","chk","tp","fn","gray","fail","acc","rec");
@@ -203,11 +205,11 @@ public class CalcStats {
 		for (InterfaceScore interfScore:scores) {
 			CallType[] calls = interfScore.getCalls();
 			for (int i=0;i<numBsaToAsaCutoffs;i++) {
-				if (calls[0].equals(CallType.BIO)) {
+				if (calls[i].equals(CallType.BIO)) {
 					bio[i]++;
-				} else if (calls[0].equals(CallType.CRYSTAL)) {
+				} else if (calls[i].equals(CallType.CRYSTAL)) {
 					xtal[i]++;
-				} else if (calls[0].equals(CallType.GRAY)) {
+				} else if (calls[i].equals(CallType.GRAY)) {
 					gray[i]++;
 				}
 			}
@@ -225,6 +227,7 @@ public class CalcStats {
 		BufferedReader br = new BufferedReader(new FileReader(list));
 		String line;
 		while ((line=br.readLine())!=null){
+			if (line.startsWith("#")) continue;
 			String[] fields = line.trim().split("\\s+");
 			String pdbId = fields[0];
 			int interf = Integer.parseInt(fields[1]);

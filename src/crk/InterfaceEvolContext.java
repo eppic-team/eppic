@@ -407,50 +407,52 @@ public class InterfaceEvolContext {
 		} else if (molecId==SECOND) {
 			rimCores = this.interf.getSecondRimCores();
 		}
-		
+		// we first log just once if we have NOPREDs due to molec not being protein or not enough homologs
 		if (!isProtein(molecId)) {
 			LOGGER.info("Interface "+this.interf.getId()+", member "+memberSerial+" calls NOPRED because it is not a protein");
 		} else if (!hasEnoughHomologs(molecId, homologsCutoff)) {
 			LOGGER.info("Interface "+this.interf.getId()+", member "+memberSerial+" calls NOPRED because there are not enough homologs to evaluate conservation scores");
-		} else {
-			boolean[] enoughCore = hasEnoughCore(molecId, minMemberCoreSize);
-			int[] countsRelCoreRes = countReliableCoreRes(molecId);
-			int[] countsRelRimRes = countReliableRimRes(molecId);
+		}
+
+		// and then assign the calls for all bsaToAsaCutoffs
+		boolean[] enoughCore = hasEnoughCore(molecId, minMemberCoreSize);
+		int[] countsRelCoreRes = countReliableCoreRes(molecId);
+		int[] countsRelRimRes = countReliableRimRes(molecId);
 
 
-			double[] ratios = this.getScoreRatios(molecId);
+		double[] ratios = this.getScoreRatios(molecId);
 
-			for (int i=0;i<this.interf.getNumBsaToAsaCutoffs();i++) {
-				if (!isProtein(molecId)) {
-					calls[i] = CallType.NO_PREDICTION;
-				}
-				else if (!hasEnoughHomologs(molecId,homologsCutoff)) {
-					calls[i] = CallType.NO_PREDICTION;
-				}
-				else if (!enoughCore[i]) {
-					LOGGER.info("Interface "+this.interf.getId()+", member "+memberSerial+" calls XTAL because core is too small ("+rimCores[i].getCoreSize()+" residues)");
+		for (int i=0;i<this.interf.getNumBsaToAsaCutoffs();i++) {
+			if (!isProtein(molecId)) {
+				calls[i] = CallType.NO_PREDICTION;
+			}
+			else if (!hasEnoughHomologs(molecId,homologsCutoff)) {
+				calls[i] = CallType.NO_PREDICTION;
+			}
+			else if (!enoughCore[i]) {
+				LOGGER.info("Interface "+this.interf.getId()+", member "+memberSerial+" calls XTAL because core is too small ("+rimCores[i].getCoreSize()+" residues)");
+				calls[i] = CallType.CRYSTAL;
+			}
+			else if (((double)countsRelCoreRes[i]/(double)rimCores[i].getCoreSize())>MAX_ALLOWED_UNREL_RES) {
+				LOGGER.info("Interface "+this.interf.getId()+", member "+memberSerial+" calls NOPRED because there are not enough reliable core residues ("+
+						countsRelCoreRes[i]+" unreliable residues out of "+rimCores[i].getCoreSize()+" residues in core)");
+				calls[i] = CallType.NO_PREDICTION;
+			}
+			else if (((double)countsRelRimRes[i]/(double)rimCores[i].getRimSize())>MAX_ALLOWED_UNREL_RES) {
+				LOGGER.info("Interface "+this.interf.getId()+", member "+memberSerial+" calls NOPRED because there are not enough reliable rim residues ("+
+						countsRelRimRes[i]+" unreliable residues out of "+rimCores[i].getRimSize()+" residues in rim)");
+				calls[i] = CallType.NO_PREDICTION;
+			}
+			else {
+				if (ratios[i]<bioCutoff) {
+					calls[i] = CallType.BIO;
+				} else if (ratios[i]>xtalCutoff) {
 					calls[i] = CallType.CRYSTAL;
-				}
-				else if (((double)countsRelCoreRes[i]/(double)rimCores[i].getCoreSize())>MAX_ALLOWED_UNREL_RES) {
-					LOGGER.info("Interface "+this.interf.getId()+", member "+memberSerial+" calls NOPRED because there are not enough reliable core residues ("+
-							countsRelCoreRes[i]+" unreliable residues out of "+rimCores[i].getCoreSize()+" residues in core)");
-					calls[i] = CallType.NO_PREDICTION;
-				}
-				else if (((double)countsRelRimRes[i]/(double)rimCores[i].getRimSize())>MAX_ALLOWED_UNREL_RES) {
-					LOGGER.info("Interface "+this.interf.getId()+", member "+memberSerial+" calls NOPRED because there are not enough reliable rim residues ("+
-							countsRelRimRes[i]+" unreliable residues out of "+rimCores[i].getRimSize()+" residues in rim)");
-					calls[i] = CallType.NO_PREDICTION;
-				}
-				else {
-					if (ratios[i]<bioCutoff) {
-						calls[i] = CallType.BIO;
-					} else if (ratios[i]>xtalCutoff) {
-						calls[i] = CallType.CRYSTAL;
-					} else {
-						calls[i] = CallType.GRAY;
-					}
+				} else {
+					calls[i] = CallType.GRAY;
 				}
 			}
+
 		}
 		return calls;
 	}

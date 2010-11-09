@@ -42,9 +42,12 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext> 
 	private static final Pattern CA_MEMBER_CUTOFF_PAT = Pattern.compile("^"+Pattern.quote(CA_MEMBER_CUTOFF_HEADER)+"\\s+(.*)$");
 	private static final Pattern BSA_TO_ASA_CUTOFFS_PAT = Pattern.compile("^"+Pattern.quote(BSA_TO_ASA_CUTOFFS_HEADER)+"\\s+(.*)$");
 	
+	private static final String  DOUBLE_REGEX = "NaN|Infinity|(?:[+-]?[0-9]+\\.[0-9]+)";
 	private static final Pattern TITLES_LINE_PAT = Pattern.compile("^\\s+interface.*");
-	//                                                     size1   size2        CA             n1        n2        core1          rim1             rat1         core2           rim2           rat2         call       score
-	private static final String  INTERF_PAT_STRING = "\\s+(\\d+)\\s+(\\d+)\\s+(\\d\\.\\d+)\\s+(\\d+)\\s+(\\d+)\\s+([Na0-9.]+)\\s+([Na0-9.]+)\\s+([Na0-9.]+)\\s+([Na0-9.]+)\\s+([Na0-9.]+)\\s+([Na0-9.]+)\\s+(\\w+)\\s+([Na0-9.]+).*$";
+	//                                                     size1   size2        CA             n1        n2         
+	private static final String  INTERF_PAT_STRING = "\\s+(\\d+)\\s+(\\d+)\\s+(\\d\\.\\d+)\\s+(\\d+)\\s+(\\d+)\\s+("
+		//    core1                   rim1                rat1                   core2                 rim2                   rat2           call          score
+		+DOUBLE_REGEX+")\\s+("+DOUBLE_REGEX+")\\s+("+DOUBLE_REGEX+")\\s+("+DOUBLE_REGEX+")\\s+("+DOUBLE_REGEX+")\\s+("+DOUBLE_REGEX+")\\s+(\\w+)\\s+("+DOUBLE_REGEX+").*$";
 	//                                                                          id    chain1  chain2       area
 	private static final Pattern FIRST_INTERF_LINE_PAT = Pattern.compile("^\\s*(\\d+)\\((.*)\\+(.*)\\)\\s+(\\d+\\.\\d+)"+INTERF_PAT_STRING);
 	private static final Pattern INTERF_LINE_PAT = Pattern.compile("^"+INTERF_PAT_STRING);
@@ -65,7 +68,7 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext> 
 	private double minInterfAreaReporting;
 	
 	public InterfaceEvolContextList(){
-		list = new ArrayList<InterfaceEvolContext>();
+		list = new ArrayList<InterfaceEvolContext>();		
 	}
 	
 	public InterfaceEvolContextList(String pdbName, int homologsCutoff, int minCoreSize, int minMemberCoreSize, 
@@ -301,7 +304,7 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext> 
 					finalScs = new double[pdbScs[i-1].getBsaToAsaCutoffs().length];
 					bsaToAsaCoInd = 0;
 					
-					isc = new InterfaceScore();
+					isc = new InterfaceScore(pdbScs[i-1]);
 					// get the fields
 					int id = Integer.parseInt(m.group(1).trim());
 					String chain1 = m.group(2).trim();
