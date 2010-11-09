@@ -522,9 +522,7 @@ public class InterfaceEvolContext {
 			if (countNoPredict==chains.size()) {
 				finalScores[i] = Double.NaN;
 				calls[i]=CallType.NO_PREDICTION;
-			}
-
-			if (countBio>countXtal) {
+			} else if (countBio>countXtal) {
 				//TODO check the discrepancies among the different voters. The variance could be a measure of the confidence of the call
 				//TODO need to do a study about the correlation of scores in members of the same interface
 				//TODO it might be the case that there is good agreement and bad agreement would indicate things like a bio-mimicking crystal interface
