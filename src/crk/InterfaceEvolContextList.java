@@ -28,6 +28,7 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext> 
 	private static final String CA_MEMBER_CUTOFF_HEADER = "# Per-member core size xtal-call cutoff:";
 	private static final String BSA_TO_ASA_CUTOFFS_HEADER = "# Core assignment cutoffs:";
 	
+	private static final String  DOUBLE_REGEX = "NaN|Infinity|(?:[+-]?[0-9]+\\.[0-9]+)";
 	
 	private static final Pattern IDENTIFIER_PAT = Pattern.compile("^"+Pattern.quote(IDENTIFIER_HEADER)+"\\s+(.*)$");
 	private static final Pattern SCORE_METHOD_PAT = Pattern.compile("^"+Pattern.quote(SCORE_METHOD_HEADER)+"\\s+(.*)$");
@@ -41,8 +42,8 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext> 
 	private static final Pattern CA_CUTOFF_PAT = Pattern.compile("^"+Pattern.quote(CA_CUTOFF_HEADER)+"\\s+(.*)$");
 	private static final Pattern CA_MEMBER_CUTOFF_PAT = Pattern.compile("^"+Pattern.quote(CA_MEMBER_CUTOFF_HEADER)+"\\s+(.*)$");
 	private static final Pattern BSA_TO_ASA_CUTOFFS_PAT = Pattern.compile("^"+Pattern.quote(BSA_TO_ASA_CUTOFFS_HEADER)+"\\s+(.*)$");
+	private static final Pattern ZOOMED_PAT = Pattern.compile("^zoomed\\s\\(("+DOUBLE_REGEX+"),("+DOUBLE_REGEX+"),("+DOUBLE_REGEX+").*$");
 	
-	private static final String  DOUBLE_REGEX = "NaN|Infinity|(?:[+-]?[0-9]+\\.[0-9]+)";
 	private static final Pattern TITLES_LINE_PAT = Pattern.compile("^\\s+interface.*");
 	//                                                     size1   size2        CA             n1        n2         
 	private static final String  INTERF_PAT_STRING = "\\s+(\\d+)\\s+(\\d+)\\s+(\\d\\.\\d+)\\s+(\\d+)\\s+(\\d+)\\s+("
@@ -185,10 +186,17 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext> 
 		ps.println(CA_CUTOFF_HEADER+" "+minCoreSize);
 		ps.println(CA_MEMBER_CUTOFF_HEADER+" "+minMemberCoreSize);
 		ps.print(BSA_TO_ASA_CUTOFFS_HEADER+" ");
-		for (double bsaToAsaCutoff:list.get(0).getInterface().getBsaToAsaCutoffs()) {
-			ps.printf("%4.2f ",bsaToAsaCutoff);
+		if (list.get(0).getInterface().isRimAndCoreZoomed()){
+			ps.printf("zoomed (%4.2f,%4.2f,%4.2f)\n",
+					list.get(0).getInterface().getBsaToAsaSoftCutoff(),
+					list.get(0).getInterface().getBsaToAsaCutoffs()[0],
+					list.get(0).getInterface().getBsaToAsaRelaxStep());
+		} else {
+			for (double bsaToAsaCutoff:list.get(0).getInterface().getBsaToAsaCutoffs()) {
+				ps.printf("%4.2f ",bsaToAsaCutoff);
+			}
+			ps.println();
 		}
-		ps.println();
 	}
 	
 	private static void printScoringHeaders(PrintStream ps) {
@@ -280,12 +288,26 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext> 
 				}
 				m = BSA_TO_ASA_CUTOFFS_PAT.matcher(line);
 				if (m.matches()){
-					String[] tokens = m.group(1).trim().split("\\s+");
-					double[] bsaToAsaCutoffs = new double[tokens.length];
-					for (int c=0;c<tokens.length;c++) {
-						bsaToAsaCutoffs[c] = Double.parseDouble(tokens[c]);
+					String caStr = m.group(1).trim();
+					Matcher zm = ZOOMED_PAT.matcher(caStr);
+					if (zm.matches()) {
+						double[] bsaToAsaCutoffs = new double[1];
+						double bsaToAsaSoftCutoff = Double.parseDouble(zm.group(1));
+						bsaToAsaCutoffs[0] = Double.parseDouble(zm.group(2));
+						double bsaToAsaRelaxStep = Double.parseDouble(zm.group(3));
+						pdbScs[i].setBsaToAsaCutoffs(bsaToAsaCutoffs);
+						pdbScs[i].setBsaToAsaSoftCutoff(bsaToAsaSoftCutoff);
+						pdbScs[i].setBsaToAsaRelaxStep(bsaToAsaRelaxStep);
+						pdbScs[i].setZoomUsed(true);
+					} else {
+						String[] tokens = m.group(1).trim().split("\\s+");
+						double[] bsaToAsaCutoffs = new double[tokens.length];
+						for (int c=0;c<tokens.length;c++) {
+							bsaToAsaCutoffs[c] = Double.parseDouble(tokens[c]);
+						}
+						pdbScs[i].setZoomUsed(false);
+						pdbScs[i].setBsaToAsaCutoffs(bsaToAsaCutoffs);
 					}
-					pdbScs[i].setBsaToAsaCutoffs(bsaToAsaCutoffs);
 					i++; // last field before scores table, we increment for next one
 				}
 					

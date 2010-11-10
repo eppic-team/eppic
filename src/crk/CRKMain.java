@@ -100,9 +100,9 @@ public class CRKMain {
 	private static final int      DEF_ENTROPY_ALPHABET = 10;
 
 	// default crk core assignment thresholds
-	//private static final double   DEF_SOFT_CUTOFF_CA = 0.95;
-	//private static final double   DEF_HARD_CUTOFF_CA = 0.82;
-	//private static final double   DEF_RELAX_STEP_CA = 0.01;	
+	private static final double   DEF_SOFT_CUTOFF_CA = 0.95;
+	private static final double   DEF_HARD_CUTOFF_CA = 0.82;
+	private static final double   DEF_RELAX_STEP_CA = 0.01;	
 	private static final double[] DEF_CA_CUTOFFS = {0.85, 0.90, 0.95};
 	private static final int      DEF_MIN_NUM_RES_CA = 6;
 	private static final int      DEF_MIN_NUM_RES_MEMBER_CA = 3; 
@@ -178,6 +178,12 @@ public class CRKMain {
 		int reducedAlphabet = DEF_ENTROPY_ALPHABET;
 		boolean useTcoffeeVeryFastMode = DEF_USE_TCOFFEE_VERYFAST_MODE;
 		
+		boolean zooming = false;
+		
+		double bsaToAsaSoftCutoff = DEF_SOFT_CUTOFF_CA;
+		double bsaToAsaHardCutoff = DEF_HARD_CUTOFF_CA;
+		double relaxationStep = DEF_RELAX_STEP_CA;
+		
 		double[] cutoffsCA  = DEF_CA_CUTOFFS;
 		String defCACutoffsStr = String.format("%4.2f",DEF_CA_CUTOFFS[0]);
 		for (int i=1;i<DEF_CA_CUTOFFS.length;i++) {
@@ -214,6 +220,10 @@ public class CRKMain {
 		"  [-t]         :  if specified t_coffee will be run in normal mode instead of very\n" +
 		"                  fast mode\n" +
 		"  [-c <floats>]:  comma separated list of BSA cutoffs for core assignment. Default: "+defCACutoffsStr+"\n" +
+		"  [-z]         :  use zooming for core assignment\n"+
+		"  [-Z <floats>]:  set parameters for zooming (only used if -z specified). Specify 3 \n" +
+		"                  comma separated values: soft BSA cutoff, hard BSA cutoff and \n" +
+		"                  relaxation step. Default: "+DEF_SOFT_CUTOFF_CA+","+DEF_HARD_CUTOFF_CA+","+DEF_RELAX_STEP_CA+"\n"+
 		"  [-m <int>]   :  cutoff for number of interface core residues, if still below \n" +
 		"                  this value after applying hard cutoff then the interface is not\n" +
 		"                  scored and considered a crystal contact. Default "+DEF_MIN_NUM_RES_CA+"\n" +
@@ -236,7 +246,7 @@ public class CRKMain {
 		
 
 
-		Getopt g = new Getopt(PROGRAM_NAME, args, "i:kd:a:b:o:r:tc:m:M:e:q:pnA:h?");
+		Getopt g = new Getopt(PROGRAM_NAME, args, "i:kd:a:b:o:r:tc:zZ:m:M:e:q:pnA:h?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
@@ -265,11 +275,21 @@ public class CRKMain {
 				useTcoffeeVeryFastMode = false;
 				break;
 			case 'c':
-				String[] tokens = g.getOptarg().split(",");
-				cutoffsCA = new double[tokens.length];
-				for (int i=0;i<tokens.length;i++) {
-					cutoffsCA[i] = Double.parseDouble(tokens[i]);
+				String[] ctokens = g.getOptarg().split(",");
+				cutoffsCA = new double[ctokens.length];
+				for (int i=0;i<ctokens.length;i++) {
+					cutoffsCA[i] = Double.parseDouble(ctokens[i]);
 				}
+				break;
+			case 'z':
+				zooming = true;
+				break;
+			case 'Z':
+				String[] ztokens = g.getOptarg().split(",");
+				cutoffsCA = new double[ztokens.length];
+				bsaToAsaSoftCutoff = Double.parseDouble(ztokens[0]);
+				bsaToAsaHardCutoff = Double.parseDouble(ztokens[1]);
+				relaxationStep = Double.parseDouble(ztokens[2]);
 				break;
 			case 'm':
 				minNumResCA = Integer.parseInt(g.getOptarg());
@@ -351,7 +371,7 @@ public class CRKMain {
 		loadConfigFile();
 		
 		
-		try {
+		//try {
 
 			PdbAsymUnit pdb = null;
 			String pdbName = pdbCode; // the name to be used in many of the output files
@@ -398,7 +418,11 @@ public class CRKMain {
 					interfaces = pdb.getAllInterfaces(INTERFACE_DIST_CUTOFF, null, nSpherePointsASAcalc, numThreads);
 				}
 			}
-			interfaces.calcRimAndCores(cutoffsCA);
+			if (zooming) {
+				interfaces.calcRimAndCores(bsaToAsaSoftCutoff, bsaToAsaHardCutoff, relaxationStep, minNumResCA);
+			} else {
+				interfaces.calcRimAndCores(cutoffsCA);
+			}
 			
 			System.out.println("Done");
 			
@@ -603,16 +627,16 @@ public class CRKMain {
 			}
 			
 
-		} catch (Exception e) {
-			e.printStackTrace();
+		//} catch (Exception e) {
+		//	e.printStackTrace();
 
-			String stack = "";
-			for (StackTraceElement el:e.getStackTrace()) {
-				stack+="\tat "+el.toString()+"\n";				
-			}
-			LOGGER.fatal("Unexpected error. Exiting.\n"+e+"\n"+stack);
-			System.exit(1);
-		}
+		//	String stack = "";
+		//	for (StackTraceElement el:e.getStackTrace()) {
+		//		stack+="\tat "+el.toString()+"\n";				
+		//	}
+		//	LOGGER.fatal("Unexpected error. Exiting.\n"+e+"\n"+stack);
+		//	System.exit(1);
+		//}
 	}
 
 	private static Properties loadConfigFile(String fileName) throws FileNotFoundException, IOException {

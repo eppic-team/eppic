@@ -17,6 +17,9 @@ public class PdbScore {
 	private double queryCovCutoff;
 	private int maxNumSeqsCutoff;
 	private double[] bsaToAsaCutoffs;
+	private double bsaToAsaSoftCutoff;
+	private double bsaToAsaRelaxStep;
+	private boolean zoomUsed;
 
 	private Map<Integer,InterfaceScore> interfScores; // strictly 2 members: non-weighted (0), weighted (1)
 	
@@ -120,11 +123,35 @@ public class PdbScore {
 	public double[] getBsaToAsaCutoffs() {
 		return bsaToAsaCutoffs;
 	}
-
+	
 	public void setBsaToAsaCutoffs(double[] bsaToAsaCutoffs) {
 		this.bsaToAsaCutoffs = bsaToAsaCutoffs;
 	}
-	
+
+	public double getBsaToAsaSoftCutoff() {
+		return bsaToAsaSoftCutoff;
+	}
+
+	public void setBsaToAsaSoftCutoff(double bsaToAsaSoftCutoff) {
+		this.bsaToAsaSoftCutoff = bsaToAsaSoftCutoff;
+	}
+
+	public double getBsaToAsaRelaxStep() {
+		return bsaToAsaRelaxStep;
+	}
+
+	public void setBsaToAsaRelaxStep(double bsaToAsaRelaxStep) {
+		this.bsaToAsaRelaxStep = bsaToAsaRelaxStep;
+	}
+
+	public boolean isZoomUsed() {
+		return zoomUsed;
+	}
+
+	public void setZoomUsed(boolean zoomUsed) {
+		this.zoomUsed = zoomUsed;
+	}
+
 	public InterfaceScore getInterfScore(int id) {
 		return this.interfScores.get(id);
 	}
