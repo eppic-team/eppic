@@ -1,5 +1,7 @@
 package crk;
 
+import java.util.Arrays;
+
 
 public class InterfaceScore {
 
@@ -145,4 +147,30 @@ public class InterfaceScore {
 	public PdbScore getParent() {
 		return parent;
 	}
+	
+	/**
+	 * Gets the prediction call for this interface by using the interface zooming protocol
+	 * with the calculated data, i.e. bsaToAsa soft cutoff will be the highest of the calculated
+	 * cutoffs and hard the lowest. The bsaToAsa cutoffs are asummed to be ordered ascending.
+	 * @return
+	 * @throws IllegalArgumentException if the bsaToAsa cutoffs are not in ascending order
+	 */
+	public CallType getZoomingCall() {
+		
+		double[] bsaToAsaCutoffs = parent.getBsaToAsaCutoffs();
+		double[] toSort = Arrays.copyOf(bsaToAsaCutoffs, bsaToAsaCutoffs.length);
+		Arrays.sort(toSort);
+		if (toSort[0]!=bsaToAsaCutoffs[0]) {
+			throw new IllegalArgumentException("Core assignment cutoffs are not in ascending order.");
+		}
+
+		int i = 0;
+		for (i=bsaToAsaCutoffs.length-1;i>=0;i--) {
+			if ((coreSize1[i]+coreSize2[i])>=parent.getMinCoreSize()) {
+				break;
+			}
+		}
+		return calls[i];
+	}
+	
 }

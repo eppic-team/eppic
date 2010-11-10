@@ -198,9 +198,9 @@ public class CalcStats {
 			
 		int numBsaToAsaCutoffs = scores.get(0).getNumBsaToAsaCutoffs();
 		
-		int[] bio = new int[numBsaToAsaCutoffs];
-		int[] xtal = new int[numBsaToAsaCutoffs];
-		int[] gray = new int[numBsaToAsaCutoffs];
+		int[] bio = new int[numBsaToAsaCutoffs+1];
+		int[] xtal = new int[numBsaToAsaCutoffs+1];
+		int[] gray = new int[numBsaToAsaCutoffs+1];
 
 		for (InterfaceScore interfScore:scores) {
 			CallType[] calls = interfScore.getCalls();
@@ -213,6 +213,10 @@ public class CalcStats {
 					gray[i]++;
 				}
 			}
+			CallType zoomingCall = interfScore.getZoomingCall();
+			if (zoomingCall.equals(CallType.BIO)) bio[numBsaToAsaCutoffs]++;
+			else if (zoomingCall.equals(CallType.CRYSTAL)) xtal[numBsaToAsaCutoffs]++;
+			else if (zoomingCall.equals(CallType.GRAY)) gray[numBsaToAsaCutoffs]++;
 		}
 		int[][] counts = new int[3][];
 		counts[0] = bio;
