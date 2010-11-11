@@ -78,19 +78,13 @@ public class CRKMain {
 	private static final int      DEF_MIN_HOMOLOGS_CUTOFF = 10;
 	private static final double   DEF_MIN_INTERF_AREA_REPORTING = 300;
 		
-	// cutoffs for the final bio/xtal call
-	private static final double   DEF_ENTR_BIO_CUTOFF = 0.95;
-	private static final double   DEF_ENTR_XTAL_CUTOFF = 1.05;
-	private static final double   DEF_KAKS_BIO_CUTOFF = 0.84;
-	private static final double   DEF_KAKS_XTAL_CUTOFF = 0.86;
-	
 	// default cache dirs
 	private static final String   DEF_EMBL_CDS_CACHE_DIR = null;
 	private static final String   DEF_BLAST_CACHE_DIR = null;
 	
 	// default clash distance: in theory, a disulfide bond distance (2.05) is the minimum distance we could reasonably expect
 	private static final double   DEF_INTERCHAIN_ATOM_CLASH_DISTANCE = 1.5; 
-
+	
 	// DEFAULTS FOR COMMAND LINE PARAMETERS
 	private static final double   DEF_IDENTITY_CUTOFF = 0.6;
 
@@ -99,6 +93,11 @@ public class CRKMain {
 	// default entropy calculation default
 	private static final int      DEF_ENTROPY_ALPHABET = 10;
 
+	// default cutoffs for the final bio/xtal call
+	private static final double   DEF_GRAY_ZONE_WIDTH = 0.01;
+	private static final double   DEF_ENTR_CALL_CUTOFF = 1.00;
+	private static final double   DEF_KAKS_CALL_CUTOFF = 0.85;
+	
 	// default crk core assignment thresholds
 	private static final double   DEF_SOFT_CUTOFF_CA = 0.95;
 	private static final double   DEF_HARD_CUTOFF_CA = 0.82;
@@ -111,7 +110,7 @@ public class CRKMain {
 	
 	private static final int      DEF_MAX_NUM_SEQUENCES_SELECTON = 60;
 	
-	private static final int      DEF_NSPHEREPOINTS_ASA_CALC = 960;
+	private static final int      DEF_NSPHEREPOINTS_ASA_CALC = 9600;
 	
 	// GLOBAL VARIABLES ASSIGNABLE FROM CONFIG FILE
 	private static String   LOCAL_CIF_DIR;
@@ -134,11 +133,6 @@ public class CRKMain {
 	private static int      MIN_HOMOLOGS_CUTOFF;
 	private static double   MIN_INTERF_AREA_REPORTING; 
 			
-	private static double 	ENTR_BIO_CUTOFF;
-	private static double 	ENTR_XTAL_CUTOFF;
-	private static double 	KAKS_BIO_CUTOFF;
-	private static double 	KAKS_XTAL_CUTOFF;
-	
 	private static String   EMBL_CDS_CACHE_DIR;
 	private static String   BLAST_CACHE_DIR;
 	
@@ -202,6 +196,11 @@ public class CRKMain {
 		boolean useNaccess = false;
 		
 		int nSpherePointsASAcalc = DEF_NSPHEREPOINTS_ASA_CALC;
+
+		double grayZoneWidth = DEF_GRAY_ZONE_WIDTH;
+		double[] entrCallCutoff  = {DEF_ENTR_CALL_CUTOFF};
+		double[] kaksCallCutoff  = {DEF_KAKS_CALL_CUTOFF};
+
 		
 		String help = "Usage: \n" +
 		PROGRAM_NAME+"\n" +
@@ -219,7 +218,8 @@ public class CRKMain {
 		"                  Valid values are 2, 4, 6, 8, 10, 15 and 20. Default: "+DEF_ENTROPY_ALPHABET+"\n" +
 		"  [-t]         :  if specified t_coffee will be run in normal mode instead of very\n" +
 		"                  fast mode\n" +
-		"  [-c <floats>]:  comma separated list of BSA cutoffs for core assignment. Default: "+defCACutoffsStr+"\n" +
+		"  [-c <floats>]:  comma separated list of BSA cutoffs for core assignment. Default: \n"+
+		"                  "+defCACutoffsStr+"\n" +
 		"  [-z]         :  use zooming for core assignment\n"+
 		"  [-Z <floats>]:  set parameters for zooming (only used if -z specified). Specify 3 \n" +
 		"                  comma separated values: soft BSA cutoff, hard BSA cutoff and \n" +
@@ -230,6 +230,10 @@ public class CRKMain {
 		"  [-M <int>]   :  cutoff for number of interface member core residues, if still \n" +
 		"                  below this value after applying hard cutoff then the interface \n" +
 		"                  member is not scored and considerd a crystal contact. Default: "+DEF_MIN_NUM_RES_MEMBER_CA+"\n" +
+		"  [-x <floats>]:  comma separated list of entropy score cutoffs for calling BIO/XTAL\n" +
+		"  [-X <floats>]:  comma separated list of ka/ks score cutoffs for calling BIO/XTAL\n"+
+		"  [-g <float>] :  a margin to be added around the score cutoffs for calling BIO/XTAL\n" +
+		"                  defining an undetermined (gray) prediction zone. Default: "+String.format("%4.2f",DEF_GRAY_ZONE_WIDTH)+"\n"+
 		"  [-e <float>] :  epsilon value for selecton. Default "+String.format("%4.2f",DEF_SELECTON_EPSILON)+"\n" +
 		"  [-q <int>]   :  maximum number of sequences to keep for calculation of conservation \n" +
 		"                  scores. Default: "+DEF_MAX_NUM_SEQUENCES_SELECTON+". This is especially important when using \n" +
@@ -246,7 +250,7 @@ public class CRKMain {
 		
 
 
-		Getopt g = new Getopt(PROGRAM_NAME, args, "i:kd:a:b:o:r:tc:zZ:m:M:e:q:pnA:h?");
+		Getopt g = new Getopt(PROGRAM_NAME, args, "i:kd:a:b:o:r:tc:zZ:m:M:x:X:g:e:q:pnA:h?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
@@ -296,6 +300,23 @@ public class CRKMain {
 				break;
 			case 'M':
 				minNumResMemberCA = Integer.parseInt(g.getOptarg());
+				break;
+			case 'x':
+				String[] xtokens = g.getOptarg().split(",");
+				entrCallCutoff = new double[xtokens.length];
+				for (int i=0;i<xtokens.length;i++){
+					entrCallCutoff[i] = Double.parseDouble(xtokens[i]);
+				}
+				break;
+			case 'X':
+				String[] Xtokens = g.getOptarg().split(",");
+				kaksCallCutoff = new double[Xtokens.length];
+				for (int i=0;i<Xtokens.length;i++){
+					kaksCallCutoff[i] = Double.parseDouble(Xtokens[i]);
+				}				
+				break;
+			case 'g':
+				grayZoneWidth = Double.parseDouble(g.getOptarg());
 				break;
 			case 'e':
 				selectonEpsilon = Double.parseDouble(g.getOptarg());
@@ -371,7 +392,7 @@ public class CRKMain {
 		loadConfigFile();
 		
 		
-		//try {
+		try {
 
 			PdbAsymUnit pdb = null;
 			String pdbName = pdbCode; // the name to be used in many of the output files
@@ -596,47 +617,55 @@ public class CRKMain {
 				iecList.add(iec);
 			}
 			
-			PrintStream scoreEntrPS = new PrintStream(new File(outDir,baseName+ENTROPIES_FILE_SUFFIX+".scores"));
-			// entropy nw
-			iecList.scoreEntropy(false);
-			iecList.printScoresTable(System.out, ENTR_BIO_CUTOFF, ENTR_XTAL_CUTOFF);
-			iecList.printScoresTable(scoreEntrPS, ENTR_BIO_CUTOFF, ENTR_XTAL_CUTOFF);
-			// entropy w
-			iecList.scoreEntropy(true);
-			iecList.printScoresTable(System.out, ENTR_BIO_CUTOFF, ENTR_XTAL_CUTOFF);
-			iecList.printScoresTable(scoreEntrPS, ENTR_BIO_CUTOFF, ENTR_XTAL_CUTOFF);
-			iecList.writeScoresPDBFiles(outDir, baseName, ENTROPIES_FILE_SUFFIX+".pdb",transform);
-			iecList.writeRimCorePDBFiles(outDir, baseName, ".rimcore.pdb",transform);
-			scoreEntrPS.close();
-
+			for (int callCutoffIdx=0;callCutoffIdx<entrCallCutoff.length;callCutoffIdx++) {
+				String suffix = null;
+				if (entrCallCutoff.length==1) suffix="";
+				else suffix="."+Integer.toString(callCutoffIdx+1);
+				PrintStream scoreEntrPS = new PrintStream(new File(outDir,baseName+ENTROPIES_FILE_SUFFIX+".scores"+suffix));
+				// entropy nw
+				iecList.scoreEntropy(false);
+				iecList.printScoresTable(System.out, entrCallCutoff[callCutoffIdx]-grayZoneWidth, entrCallCutoff[callCutoffIdx]+grayZoneWidth);
+				iecList.printScoresTable(scoreEntrPS, entrCallCutoff[callCutoffIdx]-grayZoneWidth, entrCallCutoff[callCutoffIdx]+grayZoneWidth);
+				// entropy w
+				iecList.scoreEntropy(true);
+				iecList.printScoresTable(System.out, entrCallCutoff[callCutoffIdx]-grayZoneWidth, entrCallCutoff[callCutoffIdx]+grayZoneWidth);
+				iecList.printScoresTable(scoreEntrPS, entrCallCutoff[callCutoffIdx]-grayZoneWidth, entrCallCutoff[callCutoffIdx]+grayZoneWidth);
+				iecList.writeScoresPDBFiles(outDir, baseName, ENTROPIES_FILE_SUFFIX+".pdb",transform);
+				iecList.writeRimCorePDBFiles(outDir, baseName, ".rimcore.pdb",transform);
+				scoreEntrPS.close();
+			}
 			
 			// ka/ks scoring
 			if (doScoreCRK) {
-				PrintStream scoreKaksPS = new PrintStream(new File(outDir,baseName+KAKS_FILE_SUFFIX+".scores"));
-				// kaks nw
-				iecList.scoreKaKs(false);
-				iecList.printScoresTable(System.out,  KAKS_BIO_CUTOFF, KAKS_XTAL_CUTOFF);
-				iecList.printScoresTable(scoreKaksPS,  KAKS_BIO_CUTOFF, KAKS_XTAL_CUTOFF);
-				// kaks w
-				iecList.scoreKaKs(true);
-				iecList.printScoresTable(System.out,  KAKS_BIO_CUTOFF, KAKS_XTAL_CUTOFF);
-				iecList.printScoresTable(scoreKaksPS,  KAKS_BIO_CUTOFF, KAKS_XTAL_CUTOFF);
-				iecList.writeScoresPDBFiles(outDir, baseName, KAKS_FILE_SUFFIX+".pdb",transform);
-				iecList.writeRimCorePDBFiles(outDir, baseName, ".rimcore.pdb",transform);
-				scoreKaksPS.close();
+				for (int callCutoffIdx=0;callCutoffIdx<kaksCallCutoff.length;callCutoffIdx++) {
+					String suffix = null;
+					if (kaksCallCutoff.length==1) suffix="";
+					else suffix="."+Integer.toString(callCutoffIdx+1);
+					PrintStream scoreKaksPS = new PrintStream(new File(outDir,baseName+KAKS_FILE_SUFFIX+".scores"+suffix));
+					// kaks nw
+					iecList.scoreKaKs(false);
+					iecList.printScoresTable(System.out,  kaksCallCutoff[callCutoffIdx]-grayZoneWidth, kaksCallCutoff[callCutoffIdx]+grayZoneWidth);
+					iecList.printScoresTable(scoreKaksPS,  kaksCallCutoff[callCutoffIdx]-grayZoneWidth, kaksCallCutoff[callCutoffIdx]+grayZoneWidth);
+					// kaks w
+					iecList.scoreKaKs(true);
+					iecList.printScoresTable(System.out,  kaksCallCutoff[callCutoffIdx]-grayZoneWidth, kaksCallCutoff[callCutoffIdx]+grayZoneWidth);
+					iecList.printScoresTable(scoreKaksPS,  kaksCallCutoff[callCutoffIdx]-grayZoneWidth, kaksCallCutoff[callCutoffIdx]+grayZoneWidth);
+					iecList.writeScoresPDBFiles(outDir, baseName, KAKS_FILE_SUFFIX+".pdb",transform);
+					iecList.writeRimCorePDBFiles(outDir, baseName, ".rimcore.pdb",transform);
+					scoreKaksPS.close();
+				}
 			}
-			
 
-		//} catch (Exception e) {
-		//	e.printStackTrace();
+		} catch (Exception e) {
+			e.printStackTrace();
 
-		//	String stack = "";
-		//	for (StackTraceElement el:e.getStackTrace()) {
-		//		stack+="\tat "+el.toString()+"\n";				
-		//	}
-		//	LOGGER.fatal("Unexpected error. Exiting.\n"+e+"\n"+stack);
-		//	System.exit(1);
-		//}
+			String stack = "";
+			for (StackTraceElement el:e.getStackTrace()) {
+				stack+="\tat "+el.toString()+"\n";				
+			}
+			LOGGER.fatal("Unexpected error. Exiting.\n"+e+"\n"+stack);
+			System.exit(1);
+		}
 	}
 
 	private static Properties loadConfigFile(String fileName) throws FileNotFoundException, IOException {
@@ -676,15 +705,11 @@ public class CRKMain {
 			MIN_HOMOLOGS_CUTOFF = Integer.parseInt(p.getProperty("MIN_HOMOLOGS_CUTOFF", new Integer(DEF_MIN_HOMOLOGS_CUTOFF).toString()));
 			MIN_INTERF_AREA_REPORTING = Double.parseDouble(p.getProperty("MIN_INTERF_AREA_REPORTING", new Double(DEF_MIN_INTERF_AREA_REPORTING).toString())); 
 					
-			ENTR_BIO_CUTOFF     = Double.parseDouble(p.getProperty("ENTR_BIO_CUTOFF",new Double(DEF_ENTR_BIO_CUTOFF).toString()));
-			ENTR_XTAL_CUTOFF    = Double.parseDouble(p.getProperty("ENTR_XTAL_CUTOFF",new Double(DEF_ENTR_XTAL_CUTOFF).toString()));
-			KAKS_BIO_CUTOFF     = Double.parseDouble(p.getProperty("KAKS_BIO_CUTOFF",new Double(DEF_KAKS_BIO_CUTOFF).toString()));
-			KAKS_XTAL_CUTOFF    = Double.parseDouble(p.getProperty("KAKS_XTAL_CUTOFF",new Double(DEF_KAKS_XTAL_CUTOFF).toString()));;
-			
 			EMBL_CDS_CACHE_DIR  = p.getProperty("EMBL_CDS_CACHE_DIR", DEF_EMBL_CDS_CACHE_DIR);
 			BLAST_CACHE_DIR     = p.getProperty("BLAST_CACHE_DIR", DEF_BLAST_CACHE_DIR);
 
 			INTERCHAIN_ATOM_CLASH_DISTANCE = Double.parseDouble(p.getProperty("INTERCHAIN_ATOM_CLASH_DISTANCE", new Double(DEF_INTERCHAIN_ATOM_CLASH_DISTANCE).toString()));
+			
 		} catch (NumberFormatException e) {
 			System.err.println("A numerical value in the config file was incorrectly specified: "+e.getMessage()+".\n" +
 					"Please check the config file.");
