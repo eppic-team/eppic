@@ -17,10 +17,6 @@ import owl.core.util.RegexFileFilter;
 
 public class CalcStats {
 
-	private static final double   DEF_ENTR_BIO_CUTOFF = 0.95;
-	private static final double   DEF_ENTR_XTAL_CUTOFF = 1.05;
-	private static final double   DEF_KAKS_BIO_CUTOFF = 0.95;
-	private static final double   DEF_KAKS_XTAL_CUTOFF = 1.05;
 
 	private static final String   PROGRAM_NAME ="CalcStats";
 	
@@ -32,22 +28,14 @@ public class CalcStats {
 		File dir    = null;
 		CallType truth = null;
 		File list   = null;
-		double kaksBioCutoff = DEF_KAKS_BIO_CUTOFF;
-		double kaksXtalCutoff = DEF_KAKS_XTAL_CUTOFF;
-		double entrBioCutoff = DEF_ENTR_BIO_CUTOFF;
-		double entrXtalCutoff = DEF_ENTR_XTAL_CUTOFF;
 
 		String help = "Usage: \n" +
 		PROGRAM_NAME+"\n" +
 		"   -i         :  input dir\n" +
 		"   -t         :  truth: either bio or xtal\n" +
-		"   -l         :  list file containing all the pdbIds + interface serials to analyse\n"+
-		"  [-k]        :  rim to core kaks ratio cutoff for calling bio\n" +
-		"  [-K]        :  rim to core kaks ratio cutoff for calling xtal\n"+
-		"  [-e]        :  rim to core entropy ratio cutoff for calling bio\n"+
-		"  [-E]        :  rim to core entropy ratio cutoff for calling xtal\n\n";
+		"   -l         :  list file containing all the pdbIds + interface serials to analyse\n\n";
 
-		Getopt g = new Getopt(PROGRAM_NAME, args, "i:t:l:k:K:e:E:h?");
+		Getopt g = new Getopt(PROGRAM_NAME, args, "i:t:l:h?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
@@ -59,18 +47,6 @@ public class CalcStats {
 				break;				
 			case 'l':
 				list = new File(g.getOptarg());
-				break;
-			case 'k':
-				kaksBioCutoff = Double.parseDouble(g.getOptarg());
-				break;
-			case 'K':
-				kaksXtalCutoff = Double.parseDouble(g.getOptarg());
-				break;
-			case 'e':
-				entrBioCutoff = Double.parseDouble(g.getOptarg());
-				break;				
-			case 'E':
-				entrXtalCutoff = Double.parseDouble(g.getOptarg());
 				break;
 			case 'h':
 			case '?':
@@ -112,11 +88,11 @@ public class CalcStats {
 		List<InterfaceScore> kWScores  = kScores.get(1);
 				
 		
-		int[][] entrCountsNW = analyse(entNwScores, entrBioCutoff, entrXtalCutoff);
-		int[][] entrCountsW  = analyse(entWScores, entrBioCutoff, entrXtalCutoff);
+		int[][] entrCountsNW = analyse(entNwScores);
+		int[][] entrCountsW  = analyse(entWScores);
 
-		int[][] kaksCountsNW = analyse(kNwScores, kaksBioCutoff, kaksXtalCutoff);
-		int[][] kaksCountsW  = analyse(kWScores, kaksBioCutoff, kaksXtalCutoff);
+		int[][] kaksCountsNW = analyse(kNwScores);
+		int[][] kaksCountsW  = analyse(kWScores);
 
 		
 		System.out.printf("%4s\t%4s\t%4s\t%4s\t%4s\t%4s\t%4s\t%4s\t%4s\n","set","tot","chk","tp","fn","gray","fail","acc","rec");
@@ -190,7 +166,7 @@ public class CalcStats {
 	}
 	
 	
-	private static int[][] analyse(List<InterfaceScore> scores, double bioCutoff, double xtalCutoff) {
+	private static int[][] analyse(List<InterfaceScore> scores) {
 		
 		if (scores.isEmpty()) {
 			return null;
