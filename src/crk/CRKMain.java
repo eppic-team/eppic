@@ -230,8 +230,10 @@ public class CRKMain {
 		"  [-M <int>]   :  cutoff for number of interface member core residues, if still \n" +
 		"                  below this value after applying hard cutoff then the interface \n" +
 		"                  member is not scored and considerd a crystal contact. Default: "+DEF_MIN_NUM_RES_MEMBER_CA+"\n" +
-		"  [-x <floats>]:  comma separated list of entropy score cutoffs for calling BIO/XTAL\n" +
-		"  [-X <floats>]:  comma separated list of ka/ks score cutoffs for calling BIO/XTAL\n"+
+		"  [-x <floats>]:  comma separated list of entropy score cutoffs for calling BIO/XTAL.\n" +
+		"                  Default: " + String.format("%4.2f",DEF_ENTR_CALL_CUTOFF)+"\n"+
+		"  [-X <floats>]:  comma separated list of ka/ks score cutoffs for calling BIO/XTAL.\n"+
+		"                  Default: " + String.format("%4.2f",DEF_KAKS_CALL_CUTOFF)+"\n"+
 		"  [-g <float>] :  a margin to be added around the score cutoffs for calling BIO/XTAL\n" +
 		"                  defining an undetermined (gray) prediction zone. Default: "+String.format("%4.2f",DEF_GRAY_ZONE_WIDTH)+"\n"+
 		"  [-e <float>] :  epsilon value for selecton. Default "+String.format("%4.2f",DEF_SELECTON_EPSILON)+"\n" +
