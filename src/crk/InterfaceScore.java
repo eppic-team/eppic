@@ -170,7 +170,13 @@ public class InterfaceScore {
 				break;
 			}
 		}
-		return calls[i];
+		if (i==-1) {
+			// core it's never above minimum required core size, we return the lowest cut-off (hard-cutoff) call
+			return calls[0];
+		} else {
+			return calls[i];
+		}
+
 	}
 	
 }
