@@ -151,11 +151,13 @@ public class InterfaceScore {
 	/**
 	 * Gets the prediction call for this interface by using the interface zooming protocol
 	 * with the calculated data, i.e. bsaToAsa soft cutoff will be the highest of the calculated
-	 * cutoffs and hard the lowest. The bsaToAsa cutoffs are asummed to be ordered ascending.
+	 * cutoffs and hard the given minIndex. The bsaToAsa cutoffs are asummed to be ordered ascending.
 	 * @return
+	 * @param minIndex the minimum index of the bsaToAsa cutoffs array to be taken as the hard
+	 * cutoff
 	 * @throws IllegalArgumentException if the bsaToAsa cutoffs are not in ascending order
 	 */
-	public CallType getZoomingCall() {
+	public CallType getZoomingCall(int minIndex) {
 		
 		double[] bsaToAsaCutoffs = parent.getBsaToAsaCutoffs();
 		double[] toSort = Arrays.copyOf(bsaToAsaCutoffs, bsaToAsaCutoffs.length);
@@ -165,14 +167,14 @@ public class InterfaceScore {
 		}
 
 		int i = 0;
-		for (i=bsaToAsaCutoffs.length-1;i>=0;i--) {
+		for (i=bsaToAsaCutoffs.length-1;i>=minIndex;i--) {
 			if ((coreSize1[i]+coreSize2[i])>=parent.getMinCoreSize()) {
 				break;
 			}
 		}
-		if (i==-1) {
-			// core it's never above minimum required core size, we return the lowest cut-off (hard-cutoff) call
-			return calls[0];
+		if (i==minIndex-1) {
+			// core it's never above minimum required core size, we return the minIndex cut-off (hard-cutoff) call
+			return calls[minIndex];
 		} else {
 			return calls[i];
 		}
