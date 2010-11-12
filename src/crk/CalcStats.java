@@ -94,7 +94,7 @@ public class CalcStats {
 			List<InterfaceScore> entWScores  = entScores.get(1);
 
 			// parse the files and return a list of 2 lists of ka/ks scores per interface (one non-weighted, one weighted)
-			List<List<InterfaceScore>> kScores = parseFiles(toAnalyse, dir, "\\.kaks\\.scores."+indexRegex);
+			List<List<InterfaceScore>> kScores = parseFiles(toAnalyse, dir, "\\.kaks\\.scores"+indexRegex);
 			List<InterfaceScore> kNwScores = kScores.get(0);
 			List<InterfaceScore> kWScores  = kScores.get(1);
 
