@@ -1,4 +1,4 @@
-package crk;
+package analysis;
 
 import gnu.getopt.Getopt;
 
@@ -9,6 +9,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
+
+import crk.CallType;
+import crk.InterfaceScore;
 
 import owl.core.util.RegexFileFilter;
 

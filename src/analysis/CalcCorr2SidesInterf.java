@@ -1,8 +1,11 @@
-package crk;
+package analysis;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+
+import crk.CallType;
+import crk.InterfaceScore;
 
 import owl.core.util.RegexFileFilter;
 

@@ -1,4 +1,4 @@
-package crk;
+package analysis;
 
 import gnu.getopt.Getopt;
 
@@ -10,6 +10,11 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
+
+import crk.CallType;
+import crk.InterfaceEvolContextList;
+import crk.InterfaceScore;
+import crk.PdbScore;
 
 import owl.core.util.FileFormatError;
 import owl.core.util.RegexFileFilter;
