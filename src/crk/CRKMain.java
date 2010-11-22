@@ -416,7 +416,12 @@ public class CRKMain {
 			} catch (FileFormatError e) {
 				LOGGER.error("File format error: "+e.getMessage());
 				System.exit(1);
-			} 
+			} catch (PdbLoadError e) {
+				LOGGER.error("Couldn't load file "+((inFile==null)?cifFile.toString():inFile.toString()));
+				LOGGER.error(e.getMessage());
+				System.err.println("Couldn't load file "+((inFile==null)?cifFile.toString():inFile.toString()));
+				System.exit(1);
+			}
 			
 			if (pdb.getCrystalCell()==null) {
 				LOGGER.fatal("No crystal information found in source "+pdbCode);
