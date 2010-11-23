@@ -29,34 +29,40 @@ public class CalcStats {
 	 */
 	public static void main(String[] args) throws Exception {
 
-		File dir    = null;
-		CallType truth = null;
-		File list   = null;
+		File bioDir    = null;
+		File xtalDir   = null;
+		//CallType truth = null;
+		File bioList   = null;
+		File xtalList  = null;
 		int maxIndex = 1;
 		int minIndexForZoomingCall = 0;
 		
 		String help = "Usage: \n" +
 		PROGRAM_NAME+"\n" +
-		"   -i         :  input dir\n" +
-		"   -t         :  truth: either bio or xtal\n" +
-		"   -l         :  list file containing all the pdbIds + interface serials to \n" +
-		"                 analyse\n" +
+		"   -B         :  input dir containing the interfaces given with -b\n" +
+		"   -X         :  input dir containing the interfaces given with -x\n"+
+		"   -b         :  list file containing all the pdbIds + interface serials to \n" +
+		"                 analyse that are known to be true bio contacts\n" +
+		"   -x         :  list file containing all the pdbIds + interface serials to \n" +
+		"                 analyse that are known to be true xtal contacts\n"+
 		"   [-m <int>] :  max index of the scoring files (when using several bio/xtal \n" +
 		"                 call cutoffs)\n" +
 		"   [-z <int>] :  the minimum index of the bsaToAsaCutoffs array to use for zooming call \n\n";
 
-		Getopt g = new Getopt(PROGRAM_NAME, args, "i:t:l:m:z:h?");
+		Getopt g = new Getopt(PROGRAM_NAME, args, "B:X:b:x:m:z:h?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
-			case 'i':
-				dir = new File(g.getOptarg());
+			case 'B':
+				bioDir = new File(g.getOptarg());
 				break;
-			case 't':
-				truth = CallType.getByName(g.getOptarg());
-				break;				
-			case 'l':
-				list = new File(g.getOptarg());
+			case 'X':
+				xtalDir = new File(g.getOptarg());
+			case 'b':
+				bioList = new File(g.getOptarg());
+				break;
+			case 'x':
+				xtalList = new File(g.getOptarg());
 				break;
 			case 'm':
 				maxIndex = Integer.parseInt(g.getOptarg());
@@ -72,15 +78,19 @@ public class CalcStats {
 			}
 		}
 		
-		if (dir==null || truth==null || list==null){
-			System.err.println("Missing parameter: input dir, truth call or list file");
+		if (bioDir==null || bioList==null || xtalDir==null || xtalList==null) {
+			System.err.println("Must specify a bio list, a bio dir, a xtal list and xtal dir");
 			System.exit(1);
 		}
 		
 		// read the list file containing the interfaces to analyse (known to be bio or xtal depending on -t)
-		TreeMap<String,List<Integer>> toAnalyse = readListFile(list);
+		TreeMap<String,List<Integer>> bioToAnalyse = readListFile(bioList);
+		TreeMap<String,List<Integer>> xtalToAnalyse = readListFile(xtalList);
 		int total = 0;
-		for (List<Integer> vals:toAnalyse.values()) {
+		for (List<Integer> vals:bioToAnalyse.values()) {
+			total+=vals.size();
+		}
+		for (List<Integer> vals:xtalToAnalyse.values()) {
 			total+=vals.size();
 		}
 
@@ -94,21 +104,30 @@ public class CalcStats {
 				indexRegex = "";
 			}
 			// parse the files and return a list of 2 lists of entropy scores per interface (one non-weighted, one weighted)
-			List<List<InterfaceScore>> entScores = parseFiles(toAnalyse, dir, "\\.entropies\\.scores"+indexRegex);
-			List<InterfaceScore> entNwScores = entScores.get(0);
-			List<InterfaceScore> entWScores  = entScores.get(1);
-
+			List<List<InterfaceScore>> bioEntScores = parseFiles(bioToAnalyse, bioDir, "\\.entropies\\.scores"+indexRegex);
+			List<InterfaceScore> bioEntNwScores = bioEntScores.get(0);
+			List<InterfaceScore> bioEntWScores  = bioEntScores.get(1);
 			// parse the files and return a list of 2 lists of ka/ks scores per interface (one non-weighted, one weighted)
-			List<List<InterfaceScore>> kScores = parseFiles(toAnalyse, dir, "\\.kaks\\.scores"+indexRegex);
-			List<InterfaceScore> kNwScores = kScores.get(0);
-			List<InterfaceScore> kWScores  = kScores.get(1);
+			List<List<InterfaceScore>> bioKScores = parseFiles(bioToAnalyse, bioDir, "\\.kaks\\.scores"+indexRegex);
+			List<InterfaceScore> bioKNwScores = bioKScores.get(0);
+			List<InterfaceScore> bioKWScores  = bioKScores.get(1);
 
-			// print out statistics
-			printStats(System.out,entNwScores,total,"entrNW",truth,minIndexForZoomingCall);
-			printStats(System.out,entWScores,total,"entrW",truth,minIndexForZoomingCall);
+			// parse the files and return a list of 2 lists of entropy scores per interface (one non-weighted, one weighted)
+			List<List<InterfaceScore>> xtalEntScores = parseFiles(xtalToAnalyse, xtalDir, "\\.entropies\\.scores"+indexRegex);
+			List<InterfaceScore> xtalEntNwScores = xtalEntScores.get(0);
+			List<InterfaceScore> xtalEntWScores  = xtalEntScores.get(1);
+			// parse the files and return a list of 2 lists of ka/ks scores per interface (one non-weighted, one weighted)
+			List<List<InterfaceScore>> xtalKScores = parseFiles(xtalToAnalyse, xtalDir, "\\.kaks\\.scores"+indexRegex);
+			List<InterfaceScore> xtalKNwScores = xtalKScores.get(0);
+			List<InterfaceScore> xtalKWScores  = xtalKScores.get(1);
 			
-			printStats(System.out,kNwScores,total,"kaksNW",truth,minIndexForZoomingCall);
-			printStats(System.out,kWScores,total,"kaksW",truth,minIndexForZoomingCall);
+			
+			// print out statistics
+			printStats(System.out,bioEntNwScores,xtalEntNwScores, total,"entrNW",minIndexForZoomingCall);
+			printStats(System.out,bioEntWScores,xtalEntWScores, total,"entrW",minIndexForZoomingCall);
+			
+			printStats(System.out,bioKNwScores,xtalKNwScores, total,"kaksNW",minIndexForZoomingCall);
+			printStats(System.out,bioKWScores,xtalKWScores, total,"kaksW",minIndexForZoomingCall);
 
 		}
 		
@@ -124,13 +143,16 @@ public class CalcStats {
 			String regex = "^"+pdbId+regexSuffix;
 			
 			List<Integer> interfIds = toAnalyse.get(pdbId);
-			for (File file: dir.listFiles(new RegexFileFilter(regex))) {
+			File[] files = dir.listFiles(new RegexFileFilter(regex));
+			for (File file: files) {
 				PdbScore[] pdbScores = InterfaceEvolContextList.parseScoresFile(file);
 				PdbScore scoresNW = pdbScores[0];
 				PdbScore scoresW = pdbScores[1];
 				for (int interfId:interfIds) {
-					lists.get(0).add(scoresNW.getInterfScore(interfId));
-					lists.get(1).add(scoresW.getInterfScore(interfId));
+					InterfaceScore interfScoreNW = scoresNW.getInterfScore(interfId);
+					InterfaceScore interfScoreW = scoresW.getInterfScore(interfId);
+					lists.get(0).add(interfScoreNW);
+					lists.get(1).add(interfScoreW);
 				}
 				
 			}
@@ -138,46 +160,51 @@ public class CalcStats {
 		return lists;
 	}
 	
-	private static void printStats(PrintStream ps, List<InterfaceScore> scores, int total, String title, CallType truth, int minIndexForZoomingCall) {
+	private static void printStats(PrintStream ps, List<InterfaceScore> bioScores, List<InterfaceScore> xtalScores, int total, String title, int minIndexForZoomingCall) {
+		
+		if (bioScores.isEmpty() || xtalScores.isEmpty()) return;
 		
 		// compute the counts of predictions
-		if (scores.isEmpty()) return;
-		int[][] counts = analyse(scores, minIndexForZoomingCall);
+		int[][] bioCounts = analyse(bioScores, minIndexForZoomingCall);
+		int[][] xtalCounts = analyse(xtalScores, minIndexForZoomingCall);
 		
-		PdbScore parent = scores.get(0).getParent();
+		PdbScore parent = bioScores.get(0).getParent();
 		double bioCutoff = parent.getBioCutoff();
 		double xtalCutoff = parent.getXtalCutoff();
 		double[] bsaToAsaCutoffs = parent.getBsaToAsaCutoffs();
 		
-		int[] bio = counts[0];
-		int[] xtal = counts[1];
-		int[] gray = counts[2];
-		int numBsaToAsaCutoffsPlus1 = bio.length;
+		int[] bioSetbioCalls = bioCounts[0];
+		int[] bioSetxtalCalls = bioCounts[1];
+		int[] bioSetgrayCalls = bioCounts[2];
+		int[] xtalSetbioCalls = xtalCounts[0];
+		int[] xtalSetxtalCalls = xtalCounts[1];
+		int[] xtalSetgrayCalls = xtalCounts[2];
+
+		int numBsaToAsaCutoffsPlus1 = bioSetbioCalls.length;
 		
 		for (int i=0;i<numBsaToAsaCutoffsPlus1;i++) {
 			int tp = 0;
 			int fn = 0;
 
-			if (truth.equals(CallType.BIO)) {
-				tp = bio[i];
-				fn = xtal[i];
-			} else if (truth.equals(CallType.CRYSTAL)) {
-				tp = xtal[i];
-				fn = bio[i];
-			} else {
-				throw new IllegalArgumentException("Invalid value "+truth);
-			}
-			int failed = total-tp-fn-gray[i];
-			double accuracy = (double)tp/(double)(tp+fn+gray[i]);
+			tp += bioSetbioCalls[i];
+			fn += bioSetxtalCalls[i];
+
+			tp += xtalSetxtalCalls[i];
+			fn += xtalSetbioCalls[i]; 
+			
+			int gray = bioSetgrayCalls[i]+xtalSetgrayCalls[i];
+			
+			int failed = total-tp-fn-gray;
+			double accuracy = (double)tp/(double)(tp+fn+gray);
 			double recall = (double)(total-failed)/(double)total;
-			int checksum = tp+fn+gray[i]+failed;
+			int checksum = tp+fn+gray+failed;
 			double bsaToAsaCutoffOutput = -1.0;
 			if (i<numBsaToAsaCutoffsPlus1-1) {
 				bsaToAsaCutoffOutput = bsaToAsaCutoffs[i];
 			}
 			
 			ps.printf("%6s\t%4.2f\t%4.2f\t%5.2f\t%4d\t%4d\t%4d\t%4d\t%4d\t%4d\t%4.2f\t%4.2f\n",
-					title,bioCutoff,xtalCutoff,bsaToAsaCutoffOutput,total,checksum,tp,fn,gray[i],failed,accuracy,recall);
+					title,bioCutoff,xtalCutoff,bsaToAsaCutoffOutput,total,checksum,tp,fn,gray,failed,accuracy,recall);
 		}
 	}
 	
