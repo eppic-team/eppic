@@ -414,6 +414,7 @@ public class InterfaceEvolContext {
 			LOGGER.info("Interface "+this.interf.getId()+", member "+memberSerial+" calls NOPRED because there are not enough homologs to evaluate conservation scores");
 		}
 
+		
 		// and then assign the calls for all bsaToAsaCutoffs
 		boolean[] enoughCore = hasEnoughCore(molecId, minMemberCoreSize);
 		int[] countsRelCoreRes = countReliableCoreRes(molecId);
