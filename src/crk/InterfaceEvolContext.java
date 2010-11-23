@@ -426,12 +426,12 @@ public class InterfaceEvolContext {
 			if (!isProtein(molecId)) {
 				calls[i] = CallType.NO_PREDICTION;
 			}
-			else if (!hasEnoughHomologs(molecId,homologsCutoff)) {
-				calls[i] = CallType.NO_PREDICTION;
-			}
 			else if (!enoughCore[i]) {
 				LOGGER.info("Interface "+this.interf.getId()+", member "+memberSerial+" calls XTAL because core is too small ("+rimCores[i].getCoreSize()+" residues)");
 				calls[i] = CallType.CRYSTAL;
+			}			
+			else if (!hasEnoughHomologs(molecId,homologsCutoff)) {
+				calls[i] = CallType.NO_PREDICTION;
 			}
 			else if (((double)countsRelCoreRes[i]/(double)rimCores[i].getCoreSize())>MAX_ALLOWED_UNREL_RES) {
 				LOGGER.info("Interface "+this.interf.getId()+", member "+memberSerial+" calls NOPRED because there are not enough reliable core residues ("+
