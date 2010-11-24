@@ -34,7 +34,6 @@ import owl.core.sequence.alignment.PairwiseSequenceAlignment;
 import owl.core.sequence.alignment.PairwiseSequenceAlignment.PairwiseSequenceAlignmentException;
 import owl.core.structure.Pdb;
 import owl.core.structure.PdbAsymUnit;
-import owl.core.structure.PdbLoadError;
 
 public class ChainEvolContext {
 	
@@ -84,11 +83,10 @@ public class ChainEvolContext {
 	 * @param blastNumThreads
 	 * @param retrieveCDS whether to retrieve CDSs or not
 	 * @throws IOException
-	 * @throws PdbLoadError
 	 * @throws BlastError
 	 */
 	public void retrieveQueryData(String siftsLocation, File emblCDScache, String blastBinDir, String blastDbDir, String blastDb, int blastNumThreads, boolean retrieveCDS) 
-	throws IOException, PdbLoadError, BlastError {
+	throws IOException, BlastError {
 		
 		// two possible cases: 
 		// 1) PDB code known and so SiftsFeatures can be taken from SiftsConnection
@@ -488,13 +486,14 @@ public class ChainEvolContext {
 			blastList = blastParser.getHits();
 		} catch (SAXException e) {
 			// if this happens it means that blast doesn't format correctly its XML, i.e. has a bug
+			LOGGER.fatal("Unexpected error: "+e.getMessage());
 			System.err.println("Unexpected error: "+e.getMessage());
 			System.exit(1);
 		}
 
 		UniprotEntry uniprotMapping = null;
-		BlastHit best = blastList.getBestHit();
-		if (best.getPercentIdentity()>PDB2UNIPROT_ID_THRESHOLD && best.getQueryCoverage()>PDB2UNIPROT_QCOVERAGE_THRESHOLD) {
+		BlastHit best = blastList.getBestHit(); // if null then list was empty, no hits at all
+		if (best!=null && best.getPercentIdentity()>PDB2UNIPROT_ID_THRESHOLD && best.getQueryCoverage()>PDB2UNIPROT_QCOVERAGE_THRESHOLD) {
 			
 			String sid = best.getSubjectId();
 			Matcher m = Sequence.DEFLINE_PRIM_ACCESSION_REGEX.matcher(sid);
@@ -506,8 +505,11 @@ public class ChainEvolContext {
 				System.exit(1);
 			}
 		} else {
-			LOGGER.error("No Uniprot match could be found for the query "+pdbName+". Best was "+
-					String.format("%5.2f%% id and %4.2f coverage",best.getPercentIdentity(),best.getQueryCoverage()));
+			LOGGER.error("No Uniprot match could be found for the query "+pdbName);
+			if (best!=null) {
+				LOGGER.error("Best match was "+
+						String.format("%5.2f%% id and %4.2f coverage",best.getPercentIdentity(),best.getQueryCoverage()));
+			}
 			System.exit(1);
 		}
 		return uniprotMapping;

@@ -7,7 +7,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -31,7 +30,6 @@ import owl.core.sequence.UniprotVerMisMatchException;
 import owl.core.structure.ChainInterface;
 import owl.core.structure.ChainInterfaceList;
 import owl.core.structure.PdbAsymUnit;
-import owl.core.structure.PdbCodeNotFoundError;
 import owl.core.structure.PdbLoadError;
 import owl.core.structure.AminoAcid;
 import owl.core.structure.SpaceGroup;
@@ -151,17 +149,9 @@ public class CRKMain {
 
 	
 	/**
-	 * 
-	 * @param args
-	 * @throws SQLException
-	 * @throws PdbCodeNotFoundError
-	 * @throws PdbLoadError
-	 * @throws IOException
-	 * @throws BlastError
-	 * @throws TcoffeeError
-	 * @throws SAXException
+	 * The main of CRK 
 	 */
-	public static void main(String[] args) throws PdbLoadError, IOException, BlastError, TcoffeeError, SAXException {
+	public static void main(String[] args) throws IOException {
 		
 		String pdbCode = null;
 		boolean doScoreCRK = false;
@@ -383,7 +373,13 @@ public class CRKMain {
 		jalLogger.setLevel(java.util.logging.Level.OFF);
 		
 		// setting up the file logger for log4j
-	    ROOTLOGGER.addAppender(new FileAppender(new PatternLayout("%d{ABSOLUTE} %5p - %m%n"),outDir+"/"+baseName+".log",false));
+		try {
+			ROOTLOGGER.addAppender(new FileAppender(new PatternLayout("%d{ABSOLUTE} %5p - %m%n"),outDir+"/"+baseName+".log",false));
+		} catch (IOException e) {
+			System.err.println("Couldn't open log file "+outDir+"/"+baseName+".log"+" for writing.");
+			System.err.println(e.getMessage());
+			System.exit(1);
+		}
 	    ROOTLOGGER.setLevel(Level.INFO);
 
 	    // TODO now using the apache common logging framework which acts as a meta framework for other frameworks such
@@ -436,7 +432,14 @@ public class CRKMain {
 				PisaConnection pc = new PisaConnection(PISA_INTERFACES_URL, null, null);
 				List<String> pdbCodes = new ArrayList<String>();
 				pdbCodes.add(pdbCode);
-				interfaces = pc.getInterfacesDescription(pdbCodes).get(pdbCode);
+				try {
+					interfaces = pc.getInterfacesDescription(pdbCodes).get(pdbCode);
+				} catch (SAXException e) {
+					LOGGER.fatal("Error while reading PISA xml file");
+					LOGGER.fatal(e.getMessage());
+					System.err.println("Error while reading PISA xml file");
+					System.exit(1);
+				}
 			} else {
 				System.out.println("Calculating possible interfaces...");
 				LOGGER.info("Interfaces calculated.");
@@ -510,7 +513,14 @@ public class CRKMain {
 					emblQueryCacheFile = new File(EMBL_CDS_CACHE_DIR,baseName+"."+pdbName+representativeChain+".query.emblcds.fa");
 				}
 				System.out.println("Finding query's uniprot mapping (through SIFTS or blasting)");
-				chainEvCont.retrieveQueryData(SIFTS_FILE, emblQueryCacheFile, BLAST_BIN_DIR, BLAST_DB_DIR, BLAST_DB, numThreads,doScoreCRK);
+				try {
+					chainEvCont.retrieveQueryData(SIFTS_FILE, emblQueryCacheFile, BLAST_BIN_DIR, BLAST_DB_DIR, BLAST_DB, numThreads,doScoreCRK);
+				} catch (BlastError e) {
+					LOGGER.error("Couldn't run blast to retrieve query's uniprot mapping");
+					LOGGER.error(e.getMessage());
+					System.err.println("Couldn't run blast to retrieve query's uniprot mapping");
+					System.exit(1);
+				} 
 				if (doScoreCRK && chainEvCont.getQueryRepCDS()==null) {
 					// note calling chainEvCont.canDoCRK() will also check for this condition (here we only want to log it once)
 					LOGGER.error("No CDS good match for query sequence! can't do CRK analysis on it.");
@@ -528,6 +538,11 @@ public class CRKMain {
 					System.err.println("Mismatch of Uniprot versions! Exiting.");
 					System.err.println(e.getMessage());
 					System.exit(1);					
+				} catch (BlastError e) {
+					LOGGER.error("Couldn't run blast to retrieve homologs.");
+					LOGGER.error(e.getMessage());
+					System.err.println("Couldn't run blast to retrieve homologs.");
+					System.exit(1);
 				}
 
 				System.out.println("Retrieving UniprotKB data and EMBL CDS sequences");
@@ -555,7 +570,14 @@ public class CRKMain {
 				
 				// c) align
 				System.out.println("Aligning protein sequences with t_coffee...");
-				chainEvCont.align(TCOFFEE_BIN, useTcoffeeVeryFastMode);
+				try {
+					chainEvCont.align(TCOFFEE_BIN, useTcoffeeVeryFastMode);
+				} catch (TcoffeeError e) {
+					LOGGER.error("Couldn't run t_coffee to align protein sequences");
+					LOGGER.error(e.getMessage());
+					System.err.println("Couldn't run t_coffee to align protein sequences");
+					System.exit(1);
+				}
 
 				// writing homolog sequences to file
 				chainEvCont.writeHomologSeqsToFile(new File(outDir,baseName+"."+pdbName+representativeChain+".fa"));
