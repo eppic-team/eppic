@@ -111,7 +111,6 @@ public class ChainEvolContext {
 				}
 				query = new UniprotEntry(uniqUniIds.iterator().next());
 
-
 			} catch (NoMatchFoundException e) {
 				LOGGER.warn("No SIFTS mapping could be found for "+pdbCode+representativeChain);
 				LOGGER.info("Trying blasting to find one.");
@@ -126,7 +125,13 @@ public class ChainEvolContext {
 		LOGGER.info("Uniprot id for the query "+pdbCode+representativeChain+": "+query.getUniId());
 		
 		// once we have the identifier we get the data from uniprot
-		query.retrieveUniprotKBData();
+		try {
+			query.retrieveUniprotKBData();
+		} catch (NoMatchFoundException e) {
+			LOGGER.error("Couldn't find uniprot id "+query.getUniId()+" through Uniprot JAPI. Obsolete?");
+			System.exit(1);
+		}
+
 		if (retrieveCDS) {
 			query.retrieveEmblCdsSeqs(emblCDScache);
 		}
@@ -507,7 +512,7 @@ public class ChainEvolContext {
 		} else {
 			LOGGER.error("No Uniprot match could be found for the query "+pdbName);
 			if (best!=null) {
-				LOGGER.error("Best match was "+
+				LOGGER.error("Best match was "+best.getSubjectId()+", with "+
 						String.format("%5.2f%% id and %4.2f coverage",best.getPercentIdentity(),best.getQueryCoverage()));
 			}
 			System.exit(1);
