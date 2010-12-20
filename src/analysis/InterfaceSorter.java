@@ -13,6 +13,7 @@ import java.util.regex.Pattern;
 
 import owl.core.structure.ChainInterface;
 import owl.core.structure.ChainInterfaceList;
+import owl.core.structure.Pdb;
 import owl.core.structure.PdbAsymUnit;
 import owl.core.structure.PdbLoadError;
 import owl.core.structure.SpaceGroup;
@@ -27,7 +28,7 @@ public class InterfaceSorter {
 	private static final String BASENAME = "interf_sort";
 	private static final String TMPDIR = System.getProperty("java.io.tmpdir");
 	
-	private static final int NSPHEREPOINTS =960;
+	private static final int NSPHEREPOINTS =9600;
 	private static final int NTHREADS = Runtime.getRuntime().availableProcessors();
 	private static final double CUTOFF = 5.9; 
 	private static final double CLASHDISTANCE = 1.5;
@@ -37,16 +38,16 @@ public class InterfaceSorter {
 		String pdbCode;
 		double area;
 		String operator;
-		String pdbChainCode1;
-		String pdbChainCode2;
+		Pdb molec1;
+		Pdb molec2;
 		int clashes;
 		
-		public SimpleInterface(String pdbCode,double area, String operator, String pdbChainCode1, String pdbChainCode2, int clashes) {
+		public SimpleInterface(String pdbCode,double area, String operator, Pdb molec1, Pdb molec2, int clashes) {
 			this.pdbCode = pdbCode;
 			this.area = area;
 			this.operator = operator;
-			this.pdbChainCode1 = pdbChainCode1;
-			this.pdbChainCode2 = pdbChainCode2;
+			this.molec1 = molec1;
+			this.molec2 = molec2;
 			this.clashes = clashes;
 		}
 
@@ -112,13 +113,13 @@ public class InterfaceSorter {
 			ChainInterface firstInterf = interfList.get(0);
 			
 			
-			String pdbChainCode1 = firstInterf.getFirstMolecule().getPdbChainCode();
-			String pdbChainCode2 = firstInterf.getSecondMolecule().getPdbChainCode();
+			Pdb molec1 = firstInterf.getFirstMolecule();
+			Pdb molec2 = firstInterf.getSecondMolecule();
 			String op = SpaceGroup.getAlgebraicFromMatrix(firstInterf.getSecondTransf());
 			double area = firstInterf.getInterfaceArea();
 			int clashes = firstInterf.getAICGraph().getNumClashes(CLASHDISTANCE);
 			
-			firstInterfaces.add(new InterfaceSorter().new SimpleInterface(pdbCode, area, op, pdbChainCode1, pdbChainCode2, clashes));
+			firstInterfaces.add(new InterfaceSorter().new SimpleInterface(pdbCode, area, op, molec1, molec2, clashes));
 		}
 		System.out.println();
 		
@@ -128,7 +129,11 @@ public class InterfaceSorter {
 			PrintWriter pw = new PrintWriter(outFile);
 
 			for (SimpleInterface interf:firstInterfaces) {
-				pw.printf("%4s\t%4s\t%20s\t%8.2f\t%3d\n",interf.pdbCode,interf.pdbChainCode1+"+"+interf.pdbChainCode2,interf.operator,interf.area,interf.clashes);
+				pw.printf("%4s\t%4s\t%20s\t%8.2f\t%3d\t%3.1f\t%4.2f\t%4.2f\n",
+						interf.pdbCode,
+						interf.molec1.getPdbChainCode()+"+"+interf.molec2.getPdbChainCode(),
+						interf.operator,interf.area,interf.clashes,
+						interf.molec1.getResolution(),interf.molec1.getRfree(),interf.molec1.getRsym());
 			}
 			pw.close();
 		} catch (IOException e) {
