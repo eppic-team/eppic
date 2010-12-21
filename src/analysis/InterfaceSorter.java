@@ -13,7 +13,6 @@ import java.util.regex.Pattern;
 
 import owl.core.structure.ChainInterface;
 import owl.core.structure.ChainInterfaceList;
-import owl.core.structure.Pdb;
 import owl.core.structure.PdbAsymUnit;
 import owl.core.structure.PdbLoadError;
 import owl.core.structure.SpaceGroup;
@@ -38,17 +37,24 @@ public class InterfaceSorter {
 		String pdbCode;
 		double area;
 		String operator;
-		Pdb molec1;
-		Pdb molec2;
+		String pdbChainCode1;
+		String pdbChainCode2;
+		double resolution;
+		double rFree;
+		double rSym;
+		
 		int clashes;
 		
-		public SimpleInterface(String pdbCode,double area, String operator, Pdb molec1, Pdb molec2, int clashes) {
+		public SimpleInterface(String pdbCode,double area, String operator, String pdbChainCode1, String pdbChainCode2, int clashes, double resolution, double rFree, double rSym) {
 			this.pdbCode = pdbCode;
 			this.area = area;
 			this.operator = operator;
-			this.molec1 = molec1;
-			this.molec2 = molec2;
+			this.pdbChainCode1 = pdbChainCode1;
+			this.pdbChainCode2 = pdbChainCode2;
 			this.clashes = clashes;
+			this.resolution = resolution;
+			this.rFree = rFree;
+			this.rSym = rSym;
 		}
 
 		@Override
@@ -113,13 +119,14 @@ public class InterfaceSorter {
 			ChainInterface firstInterf = interfList.get(0);
 			
 			
-			Pdb molec1 = firstInterf.getFirstMolecule();
-			Pdb molec2 = firstInterf.getSecondMolecule();
+			String pdbChainCode1 = firstInterf.getFirstMolecule().getPdbChainCode();
+			String pdbChainCode2 = firstInterf.getSecondMolecule().getPdbChainCode();
 			String op = SpaceGroup.getAlgebraicFromMatrix(firstInterf.getSecondTransf());
 			double area = firstInterf.getInterfaceArea();
 			int clashes = firstInterf.getAICGraph().getNumClashes(CLASHDISTANCE);
 			
-			firstInterfaces.add(new InterfaceSorter().new SimpleInterface(pdbCode, area, op, molec1, molec2, clashes));
+			firstInterfaces.add(new InterfaceSorter().new SimpleInterface(pdbCode, area, op, pdbChainCode1, pdbChainCode2, clashes,
+					firstInterf.getFirstMolecule().getResolution(),firstInterf.getFirstMolecule().getRfree(),firstInterf.getFirstMolecule().getRsym()));
 		}
 		System.out.println();
 		
@@ -131,9 +138,9 @@ public class InterfaceSorter {
 			for (SimpleInterface interf:firstInterfaces) {
 				pw.printf("%4s\t%4s\t%20s\t%8.2f\t%3d\t%3.1f\t%4.2f\t%4.2f\n",
 						interf.pdbCode,
-						interf.molec1.getPdbChainCode()+"+"+interf.molec2.getPdbChainCode(),
+						interf.pdbChainCode1+"+"+interf.pdbChainCode2,
 						interf.operator,interf.area,interf.clashes,
-						interf.molec1.getResolution(),interf.molec1.getRfree(),interf.molec1.getRsym());
+						interf.resolution,interf.rFree,interf.rSym);
 			}
 			pw.close();
 		} catch (IOException e) {
