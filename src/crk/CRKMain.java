@@ -483,10 +483,10 @@ public class CRKMain {
 
 			
 			// 2 finding evolutionary context
-			Map<String, List<String>> uniqSequences = pdb.getUniqueSequences();
 			String msg = "Unique sequences for "+pdbName+":";
 			int i = 1;
-			for (List<String> entity:uniqSequences.values()) {
+			for (String representativeChain:pdb.getAllRepChains()) {
+				List<String> entity = pdb.getSeqIdenticalGroup(representativeChain);
 				msg+=" "+i+":";
 				for (String chain:entity) {
 					msg+=" "+chain;
@@ -496,11 +496,10 @@ public class CRKMain {
 			LOGGER.info(msg);
 
 			Map<String,ChainEvolContext> allChains = new HashMap<String,ChainEvolContext>();
-			for (String seq:uniqSequences.keySet()) {
-				List<String> entity = uniqSequences.get(seq);
-				String representativeChain = entity.get(0);
+			for (String representativeChain:pdb.getAllRepChains()) {
+				List<String> entity = pdb.getSeqIdenticalGroup(representativeChain);
 				
-				Matcher nonprotMatcher = NONPROT_PATTERN.matcher(seq);
+				Matcher nonprotMatcher = NONPROT_PATTERN.matcher(pdb.getChain(representativeChain).getSequence());
 				if (nonprotMatcher.matches()) {
 					LOGGER.warn("Representative chain "+representativeChain+" does not seem to be a protein chain. Won't analyse it.");
 					continue;
