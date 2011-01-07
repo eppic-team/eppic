@@ -5,7 +5,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -33,7 +32,6 @@ import owl.core.sequence.alignment.MultipleSequenceAlignment;
 import owl.core.sequence.alignment.PairwiseSequenceAlignment;
 import owl.core.sequence.alignment.PairwiseSequenceAlignment.PairwiseSequenceAlignmentException;
 import owl.core.structure.Pdb;
-import owl.core.structure.PdbAsymUnit;
 
 public class ChainEvolContext {
 	
@@ -51,8 +49,7 @@ public class ChainEvolContext {
 	private static final double PDB2UNIPROT_QCOVERAGE_THRESHOLD = 0.85;
 
 	
-	// members
-	private PdbAsymUnit pdb; 				// all chains of the corresponding PDB entry 
+	// members 
 	private String representativeChain;		// the pdb chain code of the representative chain
 	private String pdbCode; 		 		// the pdb code (if no pdb code then Pdb.NO_PDB_CODE)
 	private String sequence;
@@ -64,11 +61,10 @@ public class ChainEvolContext {
 	private UniprotHomologList homologs;	// the homologs of this chain's sequence
 		
 
-	public ChainEvolContext(PdbAsymUnit pdb, String representativeChain, String pdbName) {
-		this.pdb = pdb;
-		this.pdbCode = pdb.getPdbCode();
+	public ChainEvolContext(String sequence, String representativeChain, String pdbCode, String pdbName) {
+		this.pdbCode = pdbCode;
 		this.pdbName = pdbName;
-		this.sequence = pdb.getChain(representativeChain).getSequence();
+		this.sequence = sequence;
 		this.representativeChain = representativeChain;
 	}
 	
@@ -221,39 +217,6 @@ public class ChainEvolContext {
 	 */
 	public MultipleSequenceAlignment getNucleotideAlignment() {
 		return homologs.getNucleotideAlignment();
-	}
-	
-	public Pdb getPdb(String pdbChainCode) {
-		return pdb.getChain(pdbChainCode);
-	}
-	
-	public int getResSerFromPdbResSer(String pdbChainCode, String pdbResSer) {
-		return this.getPdb(pdbChainCode).getResSerFromPdbResSer(pdbResSer);
-	}
-
-	/**
-	 * Set the b-factors of the Pdb object corresponding to given pdbChainCode
-	 * with conservation score values (entropy or ka/ks).
-	 * @param pdbChainCode
-	 * @param scoType
-	 * @throws NullPointerException if ka/ks ratios are not calculated yet by calling {@link #computeKaKsRatiosSelecton(File)}
-	 */
-	public void setConservationScoresAsBfactors(String pdbChainCode, ScoringType scoType) {
-		List<Double> conservationScores = getConservationScores(scoType);		
-		Pdb pdb = getPdb(pdbChainCode);
-		HashMap<Integer,Double> map = new HashMap<Integer, Double>();
-		for (int resser:pdb.getAllSortedResSerials()){
-			int queryPos = -2;
-			if (scoType==ScoringType.ENTROPY) {
-				queryPos = this.getQueryUniprotPosForPDBPos(resser); 
-			} else if (scoType==ScoringType.KAKS) {
-				queryPos = this.getQueryCDSPosForPDBPos(resser);
-			}
-			if (queryPos!=-1) {   
-				map.put(resser, conservationScores.get(queryPos));	
-			}
-		}
-		pdb.setBFactorsPerResidue(map);		
 	}
 	
 	/**

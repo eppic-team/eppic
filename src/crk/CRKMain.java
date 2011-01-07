@@ -219,7 +219,7 @@ public class CRKMain {
 		"                  scored and considered a crystal contact. Default "+DEF_MIN_NUM_RES_CA+"\n" +
 		"  [-M <int>]   :  cutoff for number of interface member core residues, if still \n" +
 		"                  below this value after applying hard cutoff then the interface \n" +
-		"                  member is not scored and considerd a crystal contact. Default: "+DEF_MIN_NUM_RES_MEMBER_CA+"\n" +
+		"                  member is not scored and considered a crystal contact. Default: "+DEF_MIN_NUM_RES_MEMBER_CA+"\n" +
 		"  [-x <floats>]:  comma separated list of entropy score cutoffs for calling BIO/XTAL.\n" +
 		"                  Default: " + String.format("%4.2f",DEF_ENTR_CALL_CUTOFF)+"\n"+
 		"  [-X <floats>]:  comma separated list of ka/ks score cutoffs for calling BIO/XTAL.\n"+
@@ -390,7 +390,7 @@ public class CRKMain {
 		loadConfigFile();
 		
 		
-		try {
+		//try {
 
 			PdbAsymUnit pdb = null;
 			String pdbName = pdbCode; // the name to be used in many of the output files
@@ -433,7 +433,7 @@ public class CRKMain {
 				List<String> pdbCodes = new ArrayList<String>();
 				pdbCodes.add(pdbCode);
 				try {
-					interfaces = pc.getInterfacesDescription(pdbCodes).get(pdbCode);
+					interfaces = pc.getInterfacesDescription(pdbCodes).get(pdbCode).convertToChainInterfaceList(pdb);
 				} catch (SAXException e) {
 					LOGGER.fatal("Error while reading PISA xml file");
 					LOGGER.fatal(e.getMessage());
@@ -506,7 +506,7 @@ public class CRKMain {
 					continue;
 				}
 	
-				ChainEvolContext chainEvCont = new ChainEvolContext(pdb, representativeChain, pdbName);
+				ChainEvolContext chainEvCont = new ChainEvolContext(pdb.getChain(representativeChain).getSequence(), representativeChain, pdb.getPdbCode(), pdbName);
 				// a) getting the uniprot ids corresponding to the query (the pdb sequence)
 				File emblQueryCacheFile = null;
 				if (EMBL_CDS_CACHE_DIR!=null) {
@@ -633,17 +633,16 @@ public class CRKMain {
 			// 4) scoring
 			System.out.println("Scores:");
 			
-			//whether to transform the output PDB files with operators read from PISA (only if we are using PISA, otherwise we have everything properly transformed already)
-			boolean transform = usePisa; 
-
 			InterfaceEvolContextList iecList = new InterfaceEvolContextList(pdbName, MIN_HOMOLOGS_CUTOFF, minNumResCA, minNumResMemberCA, 
 					idCutoff, QUERY_COVERAGE_CUTOFF, maxNumSeqsSelecton, MIN_INTERF_AREA_REPORTING);
 			for (ChainInterface pi:interfaces) {
-				ArrayList<ChainEvolContext> chainsEvCs = new ArrayList<ChainEvolContext>();
-				chainsEvCs.add(allChains.get(pi.getFirstMolecule().getPdbChainCode()));
-				chainsEvCs.add(allChains.get(pi.getSecondMolecule().getPdbChainCode()));
-				InterfaceEvolContext iec = new InterfaceEvolContext(pi, chainsEvCs);
-				iecList.add(iec);
+				if (pi.isProtein()) {
+					ArrayList<ChainEvolContext> chainsEvCs = new ArrayList<ChainEvolContext>();
+					chainsEvCs.add(allChains.get(pi.getFirstMolecule().getPdbChainCode()));
+					chainsEvCs.add(allChains.get(pi.getSecondMolecule().getPdbChainCode()));
+					InterfaceEvolContext iec = new InterfaceEvolContext(pi, chainsEvCs);
+					iecList.add(iec);
+				}
 			}
 			
 			for (int callCutoffIdx=0;callCutoffIdx<entrCallCutoff.length;callCutoffIdx++) {
@@ -659,8 +658,8 @@ public class CRKMain {
 				iecList.scoreEntropy(true);
 				iecList.printScoresTable(System.out, entrCallCutoff[callCutoffIdx]-grayZoneWidth, entrCallCutoff[callCutoffIdx]+grayZoneWidth);
 				iecList.printScoresTable(scoreEntrPS, entrCallCutoff[callCutoffIdx]-grayZoneWidth, entrCallCutoff[callCutoffIdx]+grayZoneWidth);
-				iecList.writeScoresPDBFiles(outDir, baseName, ENTROPIES_FILE_SUFFIX+".pdb",transform);
-				iecList.writeRimCorePDBFiles(outDir, baseName, ".rimcore.pdb",transform);
+				iecList.writeScoresPDBFiles(outDir, baseName, ENTROPIES_FILE_SUFFIX+".pdb");
+				iecList.writeRimCorePDBFiles(outDir, baseName, ".rimcore.pdb");
 				scoreEntrPS.close();
 			}
 			
@@ -679,22 +678,22 @@ public class CRKMain {
 					iecList.scoreKaKs(true);
 					iecList.printScoresTable(System.out,  kaksCallCutoff[callCutoffIdx]-grayZoneWidth, kaksCallCutoff[callCutoffIdx]+grayZoneWidth);
 					iecList.printScoresTable(scoreKaksPS,  kaksCallCutoff[callCutoffIdx]-grayZoneWidth, kaksCallCutoff[callCutoffIdx]+grayZoneWidth);
-					iecList.writeScoresPDBFiles(outDir, baseName, KAKS_FILE_SUFFIX+".pdb",transform);
-					iecList.writeRimCorePDBFiles(outDir, baseName, ".rimcore.pdb",transform);
+					iecList.writeScoresPDBFiles(outDir, baseName, KAKS_FILE_SUFFIX+".pdb");
+					iecList.writeRimCorePDBFiles(outDir, baseName, ".rimcore.pdb");
 					scoreKaksPS.close();
 				}
 			}
 
-		} catch (Exception e) {
-			e.printStackTrace();
+		//} catch (Exception e) {
+		//	e.printStackTrace();
 
-			String stack = "";
-			for (StackTraceElement el:e.getStackTrace()) {
-				stack+="\tat "+el.toString()+"\n";				
-			}
-			LOGGER.fatal("Unexpected error. Exiting.\n"+e+"\n"+stack);
-			System.exit(1);
-		}
+		//	String stack = "";
+		//	for (StackTraceElement el:e.getStackTrace()) {
+		//		stack+="\tat "+el.toString()+"\n";				
+		//	}
+		//	LOGGER.fatal("Unexpected error. Exiting.\n"+e+"\n"+stack);
+		//	System.exit(1);
+		//}
 	}
 
 	private static Properties loadConfigFile(String fileName) throws FileNotFoundException, IOException {

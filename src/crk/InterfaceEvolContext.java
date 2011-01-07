@@ -124,10 +124,10 @@ public class InterfaceEvolContext {
 
 	}
 		
-	private List<Residue> checkResiduesForPDBReliability(List<Residue> residues, ChainEvolContext chain, String pdbChainCode) {
+	private List<Residue> checkResiduesForPDBReliability(List<Residue> residues, ChainEvolContext chain) {
 		List<Residue> unreliableResidues = new ArrayList<Residue>();
 		for (Residue res:residues){
-			int resSer = chain.getResSerFromPdbResSer(pdbChainCode, res.getPdbSerial());
+			int resSer = res.getSerial(); // used to be: chain.getResSerFromPdbResSer(pdbChainCode, res.getPdbSerial()); pdbChainCode was passed
 			if (resSer!=-1 && !chain.isPdbSeqPositionMatchingUniprot(resSer)) {
 				unreliableResidues.add(res);
 			}
@@ -146,10 +146,10 @@ public class InterfaceEvolContext {
 		return unreliableResidues;
 	}
 	
-	private List<Residue> checkResiduesForCDSReliability(List<Residue> residues, ChainEvolContext chain, String pdbChainCode) {
+	private List<Residue> checkResiduesForCDSReliability(List<Residue> residues, ChainEvolContext chain) {
 		List<Residue> unreliableResidues = new ArrayList<Residue>();
 		for (Residue res:residues){
-			int resSer = chain.getResSerFromPdbResSer(pdbChainCode, res.getPdbSerial());
+			int resSer = res.getSerial(); // used to be: chain.getResSerFromPdbResSer(pdbChainCode, res.getPdbSerial()); pdbChainCode was passed
 			if (resSer!=-1 && !chain.isPdbSeqPositionReliable(resSer)) {
 				unreliableResidues.add(res);
 			}				
@@ -170,19 +170,16 @@ public class InterfaceEvolContext {
 	
 	private double calcScore(List<Residue> residues, int molecId, ScoringType scoType, boolean weighted) {
 		ChainEvolContext chain = null;
-		String pdbChainCode = null;
 		if (molecId==FIRST) {
 			chain = chains.get(FIRST);
-			pdbChainCode = interf.getFirstMolecule().getPdbChainCode();
 		} else if (molecId == SECOND) {
 			chain = chains.get(SECOND);
-			pdbChainCode = interf.getSecondMolecule().getPdbChainCode();
 		}
 		double totalScore = 0.0;
 		double totalWeight = 0.0;
 		List<Double> conservScores = chain.getConservationScores(scoType);
 		for (Residue res:residues){
-			int resSer = chain.getResSerFromPdbResSer(pdbChainCode, res.getPdbSerial());
+			int resSer = res.getSerial(); // used to be: chain.getResSerFromPdbResSer(pdbChainCode, res.getPdbSerial());
 
 			if (resSer!=-1) {
 				int queryPos = -2;
@@ -221,75 +218,67 @@ public class InterfaceEvolContext {
 	 * @param valuesToWrite if {@link #SCORES} evolutionary scores are written as b-factors,
 	 * if {@link #RIMCORE} rim/core residues are written as b-factors (3 different values: 
 	 * rim, score and all other residues)
-	 * @param transform whether to transform the output molecule (only needed if the interface 
-	 * was read from PISA and thus the PDB in member chains were not transformed yet)
 	 * @throws IOException
 	 */
-	public void writePdbFile(File file, boolean valuesToWrite, boolean transform) throws IOException {
-		PrintStream ps = new PrintStream(file);
-		String chain1 = null;
-		String chain2 = null;
-		if (interf.isFirstProtein()) {
-			chain1 = interf.getFirstMolecule().getPdbChainCode();
+	public void writePdbFile(File file, boolean valuesToWrite) throws IOException {
+
+		if (interf.isFirstProtein() && interf.isSecondProtein()) {
+
 			if (valuesToWrite) {
-				chains.get(FIRST).setConservationScoresAsBfactors(chain1,lastScoType);
+				setConservationScoresAsBfactors(FIRST,lastScoType);
+				setConservationScoresAsBfactors(SECOND,lastScoType);
 			} else {
 				setRimCoreAsBfactors(FIRST);
-			}
-			// we copy in order to leave the original Pdbs unaltered (essential to be able to apply transformations several times)
-			Pdb pdb1 = null;
-			if (transform) {
-				pdb1 = chains.get(FIRST).getPdb(chain1).copy();
-				pdb1.transform(interf.getFirstTransfOrth());
-			} else {
-				pdb1 = chains.get(FIRST).getPdb(chain1);
-			}
-			pdb1.writeAtomLines(ps, pdb1.getPdbChainCode());
-		}
-		if (interf.isSecondProtein()) {
-			
-			chain2 = interf.getSecondMolecule().getPdbChainCode();
-			String chain2forOutput = chain2; // the name we will put to the chain2 in the output pdb file
-			if (chain1!=null && chain1.equals(chain2)) {
-				// if both chains are named equally we want to still name them differently in the output pdb file
-				// so that molecular viewers can handle properly the 2 chains as separate entities 
-				char letter = chain1.charAt(0);
-				if (letter!='Z' && letter!='z') {
-					chain2forOutput = Character.toString((char)(letter+1)); // i.e. next letter in alphabet
-				} else {
-					chain2forOutput = Character.toString((char)(letter-25)); //i.e. 'A' or 'a'
-				}
-				LOGGER.warn("Chain "+chain2+" renamed to "+chain2forOutput+" to write the output PDB file "+file);
-			}
-			if (valuesToWrite) {
-				chains.get(SECOND).setConservationScoresAsBfactors(chain2,lastScoType);
-			} else {
 				setRimCoreAsBfactors(SECOND);
 			}
-			Pdb pdb2 = null;
-			if (transform) {
-				pdb2 = chains.get(SECOND).getPdb(chain2).copy();
-				pdb2.transform(interf.getSecondTransfOrth());
-			} else {
-				pdb2 = chains.get(SECOND).getPdb(chain2);
-			}
-			pdb2.writeAtomLines(ps, chain2forOutput);
+			
+			this.interf.writeToPdbFile(file);
 		}
-		ps.close();
+	}
+	
+	/**
+	 * Set the b-factors of the given molecId (FIRST or SECOND) to conservation score values (entropy or ka/ks).
+	 * @param molecId
+	 * @param scoType
+	 * @throws NullPointerException if ka/ks ratios are not calculated yet by calling {@link #computeKaKsRatiosSelecton(File)}
+	 */
+	private void setConservationScoresAsBfactors(int molecId, ScoringType scoType) {
+		List<Double> conservationScores = null;
+		Pdb pdb = null;
+		if (molecId==FIRST) {
+			pdb = interf.getFirstMolecule();
+			conservationScores = chains.get(FIRST).getConservationScores(scoType);
+		} else if (molecId==SECOND) {
+			pdb = interf.getSecondMolecule();
+			conservationScores = chains.get(SECOND).getConservationScores(scoType);
+		}
+		
+		HashMap<Integer,Double> map = new HashMap<Integer, Double>();
+		for (int resser:pdb.getAllSortedResSerials()){
+			int queryPos = -2;
+			if (scoType==ScoringType.ENTROPY) {
+				queryPos = chains.get(molecId).getQueryUniprotPosForPDBPos(resser); 
+			} else if (scoType==ScoringType.KAKS) {
+				queryPos = chains.get(molecId).getQueryCDSPosForPDBPos(resser);
+			}
+			if (queryPos!=-1) {   
+				map.put(resser, conservationScores.get(queryPos));	
+			}
+		}
+		pdb.setBFactorsPerResidue(map);		
 	}
 	
 	private void setRimCoreAsBfactors(int molecId) {
 		HashMap<Integer,Double> rimcoreVals = new HashMap<Integer, Double>();
 		InterfaceRimCore rimCore = null;
-		String pdbChainCode = null;
+		Pdb pdb = null;
 		if (molecId==FIRST) {
-			pdbChainCode = interf.getFirstMolecule().getPdbChainCode();
+			pdb = interf.getFirstMolecule();
 			rimCore = this.interf.getFirstRimCores()[0];
 		} else if (molecId==SECOND) {
-			pdbChainCode = interf.getSecondMolecule().getPdbChainCode();
+			pdb = interf.getSecondMolecule();
 			rimCore = this.interf.getSecondRimCores()[0];
 		}
-		Pdb pdb = chains.get(molecId).getPdb(pdbChainCode);
 		// first we assign all residues same color (50 hopefully gives a yellowish one)
 		for (int resser:pdb.getAllSortedResSerials()) {
 			rimcoreVals.put(resser,50.0);
@@ -345,21 +334,18 @@ public class InterfaceEvolContext {
 
 	private int[] countReliableCoreRes(int molecId) {
 		InterfaceRimCore[] rimCores = null;
-		String pdbChainCode = null;
 		if (molecId==FIRST) {
 			rimCores = this.interf.getFirstRimCores();
-			pdbChainCode = interf.getFirstMolecule().getPdbChainCode();
 		} else if (molecId==SECOND) {
 			rimCores = this.interf.getSecondRimCores();
-			pdbChainCode = interf.getSecondMolecule().getPdbChainCode();
 		}
 
 		int[] counts = new int[this.interf.getNumBsaToAsaCutoffs()];
 		for (int i=0;i<this.interf.getNumBsaToAsaCutoffs();i++) {
 			List<Residue> unreliableCoreResidues = new ArrayList<Residue>(); 
-			unreliableCoreResidues.addAll(checkResiduesForPDBReliability(rimCores[i].getCoreResidues(), chains.get(molecId), pdbChainCode));
+			unreliableCoreResidues.addAll(checkResiduesForPDBReliability(rimCores[i].getCoreResidues(), chains.get(molecId)));
 			if (lastScoType==ScoringType.KAKS) {
-				unreliableCoreResidues.addAll(checkResiduesForCDSReliability(rimCores[i].getCoreResidues(), chains.get(molecId), pdbChainCode));
+				unreliableCoreResidues.addAll(checkResiduesForCDSReliability(rimCores[i].getCoreResidues(), chains.get(molecId)));
 			}
 			counts[i] = unreliableCoreResidues.size();
 		}
@@ -368,21 +354,18 @@ public class InterfaceEvolContext {
 	
 	private int[] countReliableRimRes(int molecId) {
 		InterfaceRimCore[] rimCores = null;
-		String pdbChainCode = null;
 		if (molecId==FIRST) {
 			rimCores = this.interf.getFirstRimCores();
-			pdbChainCode = interf.getFirstMolecule().getPdbChainCode();
 		} else if (molecId==SECOND) {
 			rimCores = this.interf.getSecondRimCores();
-			pdbChainCode = interf.getSecondMolecule().getPdbChainCode();
 		}
 		int[] counts = new int[this.interf.getNumBsaToAsaCutoffs()];
 		for (int i=0;i<this.interf.getNumBsaToAsaCutoffs();i++) {
 			List<Residue> unreliableRimResidues = new ArrayList<Residue>();
 			
-			unreliableRimResidues.addAll(checkResiduesForPDBReliability(rimCores[i].getRimResidues(), chains.get(molecId), pdbChainCode));
+			unreliableRimResidues.addAll(checkResiduesForPDBReliability(rimCores[i].getRimResidues(), chains.get(molecId)));
 			if (lastScoType==ScoringType.KAKS) {
-				unreliableRimResidues.addAll(checkResiduesForCDSReliability(rimCores[i].getRimResidues(), chains.get(molecId), pdbChainCode));
+				unreliableRimResidues.addAll(checkResiduesForCDSReliability(rimCores[i].getRimResidues(), chains.get(molecId)));
 			}
 			counts[i]=unreliableRimResidues.size();
 		}

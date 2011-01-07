@@ -13,6 +13,7 @@ import java.util.Set;
 import org.xml.sax.SAXException;
 
 import owl.core.connections.pisa.PisaConnection;
+import owl.core.connections.pisa.PisaInterfaceList;
 import owl.core.structure.Asa;
 import owl.core.structure.ChainInterface;
 import owl.core.structure.ChainInterfaceList;
@@ -21,6 +22,14 @@ import owl.core.structure.PdbLoadError;
 import owl.core.structure.SpaceGroup;
 import owl.core.util.FileFormatError;
 
+/**
+ * Script to print side by side a comparison of the interfaces calculated 
+ * by PISA (automatically downloaded from the PISA web site as xml files) and
+ * the interfaces calculated with owl's implementation.
+ * 
+ * @author duarte_j
+ *
+ */
 public class CompToPisaInterf {
 	
 	private static final String   LOCAL_CIF_DIR = "/nfs/data/dbs/pdb/data/structures/all/mmCIF";
@@ -61,9 +70,9 @@ public class CompToPisaInterf {
 		// getting PISA interfaces
 		PisaConnection pc = new PisaConnection(PISA_INTERFACES_URL, null, null);
 		System.out.println("Downloading PISA interfaces");
-		Map<String, ChainInterfaceList> all = null;
+		Map<String, PisaInterfaceList> allPisaInterfaces = null;
 		try {
-			all = pc.getInterfacesDescription(pdbCodes);
+			allPisaInterfaces = pc.getInterfacesDescription(pdbCodes);
 		} catch (IOException e1) {
 			System.err.println(e1.getMessage());
 			System.exit(1);
@@ -76,9 +85,6 @@ public class CompToPisaInterf {
 		
 		for (String pdbCode: pdbCodes) {
 		
-			ChainInterfaceList pisaInterfaces = all.get(pdbCode);
-			// we sort them on interface area because pisa doesn't always sort them like that (it does some kind of grouping)
-			pisaInterfaces.sort();
 			
 			PdbAsymUnit pdb = null;
 			try {
@@ -98,6 +104,10 @@ public class CompToPisaInterf {
 
 			System.out.println("##"+pdbCode);
 
+			ChainInterfaceList pisaInterfaces = allPisaInterfaces.get(pdbCode).convertToChainInterfaceList(pdb);
+			// we sort them on interface area because pisa doesn't always sort them like that (it does some kind of grouping)
+			pisaInterfaces.sort();
+			
 			ChainInterfaceList interfaces = null;
 			try {
 				interfaces = pdb.getAllInterfaces(CUTOFF, null, Asa.DEFAULT_N_SPHERE_POINTS, NTHREADS);
