@@ -390,7 +390,7 @@ public class CRKMain {
 		loadConfigFile();
 		
 		
-		//try {
+		try {
 
 			PdbAsymUnit pdb = null;
 			String pdbName = pdbCode; // the name to be used in many of the output files
@@ -683,16 +683,16 @@ public class CRKMain {
 				}
 			}
 
-		//} catch (Exception e) {
-		//	e.printStackTrace();
+		} catch (Exception e) {
+			e.printStackTrace();
 
-		//	String stack = "";
-		//	for (StackTraceElement el:e.getStackTrace()) {
-		//		stack+="\tat "+el.toString()+"\n";				
-		//	}
-		//	LOGGER.fatal("Unexpected error. Exiting.\n"+e+"\n"+stack);
-		//	System.exit(1);
-		//}
+			String stack = "";
+			for (StackTraceElement el:e.getStackTrace()) {
+				stack+="\tat "+el.toString()+"\n";				
+			}
+			LOGGER.fatal("Unexpected error. Exiting.\n"+e+"\n"+stack);
+			System.exit(1);
+		}
 	}
 
 	private static Properties loadConfigFile(String fileName) throws FileNotFoundException, IOException {
