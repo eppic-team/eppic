@@ -67,13 +67,18 @@ public class InterfaceSorter {
 	
 	public static void main(String[] args) {
 
-		if (args.length<2) {
-			System.err.println("Usage: InterfaceSorter <list file> <ouput file>");
-			System.exit(1);
-		}
+		int numThreads = NTHREADS;
 		
+		if (args.length<2) {
+			System.err.println("Usage: InterfaceSorter <list file> <ouput file> [<number of threads for asa calculation>]");
+			System.exit(1);
+		}		
 		File listFile = new File(args[0]);
 		File outFile = new File(args[1]);
+		if (args.length>2) {
+			numThreads = Integer.parseInt(args[2]);
+		}
+		
 		
 		List<String> pdbCodes = readListFile(listFile);
 		
@@ -86,7 +91,7 @@ public class InterfaceSorter {
 			try {
 				PdbAsymUnit.grabCifFile(LOCAL_CIF_DIR, null, pdbCode, cifFile, false);
 			} catch (IOException e) {
-				System.out.println("\nError. Couldn't find cif file "+new File(LOCAL_CIF_DIR,pdbCode+".cif.gz").toString());
+				System.out.println("\nError while reading cif.gz file ("+new File(LOCAL_CIF_DIR,pdbCode+".cif.gz").toString()+") or writing temp cif file: "+e.getMessage());
 				continue;
 			}
 			PdbAsymUnit pdb = null;
@@ -102,10 +107,12 @@ public class InterfaceSorter {
 				System.out.println("\nError. Couldn't load cif file "+cifFile+". Error: "+e.getMessage());
 				continue;
 			}
+			cifFile.delete();
+			
 			long start = System.currentTimeMillis();
 			ChainInterfaceList interfList = null;
 			try {
-				interfList = pdb.getAllInterfaces(CUTOFF, null, NSPHEREPOINTS, NTHREADS);
+				interfList = pdb.getAllInterfaces(CUTOFF, null, NSPHEREPOINTS, numThreads);
 			} catch (IOException e) {
 				// do nothing, this won't happen as we are not using naccess
 			}
