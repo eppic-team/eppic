@@ -91,6 +91,7 @@ public class CompToPisaInterf {
 				File cifFile = new File(TMPDIR,pdbCode+".cif");
 				PdbAsymUnit.grabCifFile(LOCAL_CIF_DIR, null, pdbCode, cifFile, false);
 				pdb = new PdbAsymUnit(cifFile);
+				cifFile.delete();
 			} catch (IOException e) {
 				System.err.println("Problems reading cif file for "+pdbCode+". Error: "+e.getMessage());
 				continue;
@@ -102,6 +103,7 @@ public class CompToPisaInterf {
 				continue;
 			}
 
+			
 			System.out.println("##"+pdbCode);
 
 			ChainInterfaceList pisaInterfaces = allPisaInterfaces.get(pdbCode).convertToChainInterfaceList(pdb);
