@@ -285,7 +285,8 @@ public class ChainEvolContext {
 		
 		ps.println();
 		ps.println("Uniprot version: "+homologs.getUniprotVer());
-		ps.println("Homologs: "+homologs.size()+" at "+String.format("%3.1f",homologs.getIdCutoff())+" identity cut-off");
+		ps.println("Homologs: "+homologs.size()+" at "+String.format("%3.1f",homologs.getIdCutoff())+" identity cut-off and "+
+				String.format("%3.1f",homologs.getQCovCutoff())+" query coverage cutoff");
 		for (UniprotHomolog hom:homologs) {
 			ps.print(hom.getUniId()+" (");
 			for (String emblcdsid: hom.getUniprotEntry().getEmblCdsIds()) {
