@@ -506,4 +506,7 @@ public class ChainEvolContext {
 		return this.pdbName;
 	}
 	
+	public String getUniprotVer() {
+		return this.homologs.getUniprotVer();
+	}
 }

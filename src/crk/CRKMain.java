@@ -532,6 +532,7 @@ public class CRKMain {
 				}
 				try {
 					chainEvCont.retrieveHomologs(BLAST_BIN_DIR, BLAST_DB_DIR, BLAST_DB, numThreads, idCutoff, QUERY_COVERAGE_CUTOFF, blastCacheFile);
+					LOGGER.info("Uniprot version used: "+chainEvCont.getUniprotVer());
 				} catch (UniprotVerMisMatchException e) {
 					LOGGER.error(e.getMessage());
 					System.err.println("Mismatch of Uniprot versions! Exiting.");
