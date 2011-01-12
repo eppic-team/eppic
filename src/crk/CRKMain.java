@@ -442,11 +442,12 @@ public class CRKMain {
 				}
 			} else {
 				System.out.println("Calculating possible interfaces...");
-				LOGGER.info("Interfaces calculated.");
 				if (useNaccess) {
 					interfaces = pdb.getAllInterfaces(INTERFACE_DIST_CUTOFF, NACCESS_EXE, 0, 0);
+					LOGGER.info("Interfaces calculated with NACCESS.");
 				} else {
 					interfaces = pdb.getAllInterfaces(INTERFACE_DIST_CUTOFF, null, nSpherePointsASAcalc, numThreads);
+					LOGGER.info("Interfaces calculated with "+nSpherePointsASAcalc+" sphere points.");
 				}
 			}
 			if (zooming) {
