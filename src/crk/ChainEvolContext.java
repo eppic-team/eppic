@@ -462,7 +462,7 @@ public class ChainEvolContext {
 
 		UniprotEntry uniprotMapping = null;
 		BlastHit best = blastList.getBestHit(); // if null then list was empty, no hits at all
-		if (best!=null && best.getPercentIdentity()>PDB2UNIPROT_ID_THRESHOLD && best.getQueryCoverage()>PDB2UNIPROT_QCOVERAGE_THRESHOLD) {
+		if (best!=null && best.getTotalPercentIdentity()>PDB2UNIPROT_ID_THRESHOLD && best.getQueryCoverage()>PDB2UNIPROT_QCOVERAGE_THRESHOLD) {
 			
 			String sid = best.getSubjectId();
 			Matcher m = Sequence.DEFLINE_PRIM_ACCESSION_REGEX.matcher(sid);
@@ -477,7 +477,7 @@ public class ChainEvolContext {
 			LOGGER.error("No Uniprot match could be found for the query "+pdbName);
 			if (best!=null) {
 				LOGGER.error("Best match was "+best.getSubjectId()+", with "+
-						String.format("%5.2f%% id and %4.2f coverage",best.getPercentIdentity(),best.getQueryCoverage()));
+						String.format("%5.2f%% id and %4.2f coverage",best.getTotalPercentIdentity(),best.getQueryCoverage()));
 			}
 			System.exit(1);
 		}

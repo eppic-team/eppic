@@ -104,12 +104,12 @@ public class Pdb2UniprotCheck {
 				BlastHitList blastList = blastIt(pdb);
 				BlastHit bestHit = blastList.getBestHit();
 				if (bestHit!=null) {
-					double identity = bestHit.getPercentIdentity();
+					double identity = bestHit.getTotalPercentIdentity();
 					double coverage = bestHit.getQueryCoverage();
 					ps.printf("%s\t%s\t%4.1f\t%4.2f\n",pdbCode+pdbChainCode,bestHit.getSubjectId(),identity,coverage);
 					PairwiseSequenceAlignment pwAl = new PairwiseSequenceAlignment(
-							bestHit.getAlignment().getSequenceNoGaps(bestHit.getQueryId()), 
-							bestHit.getAlignment().getSequenceNoGaps(bestHit.getSubjectId()), 
+							bestHit.getMaxScoringHsp().getAlignment().getSequenceNoGaps(bestHit.getQueryId()), 
+							bestHit.getMaxScoringHsp().getAlignment().getSequenceNoGaps(bestHit.getSubjectId()), 
 							bestHit.getQueryId(), 
 							bestHit.getSubjectId());
 					pwAl.writeAlignment(ps);
