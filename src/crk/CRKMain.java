@@ -6,12 +6,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Properties;
+import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -21,18 +17,11 @@ import org.apache.log4j.FileAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
-import org.xml.sax.SAXException;
 
-import owl.core.connections.pisa.PisaConnection;
-import owl.core.runners.TcoffeeError;
-import owl.core.runners.blast.BlastError;
-import owl.core.sequence.UniprotVerMisMatchException;
-import owl.core.structure.ChainInterface;
 import owl.core.structure.ChainInterfaceList;
 import owl.core.structure.PdbAsymUnit;
 import owl.core.structure.PdbLoadError;
 import owl.core.structure.AminoAcid;
-import owl.core.structure.SpaceGroup;
 import owl.core.util.FileFormatError;
 
 public class CRKMain {
@@ -44,7 +33,6 @@ public class CRKMain {
 	private static final String   KAKS_FILE_SUFFIX = ".kaks";
 	private static final Pattern  PDBCODE_PATTERN = Pattern.compile("^\\d\\w\\w\\w$");
 	private static final double   INTERFACE_DIST_CUTOFF = 5.9;
-	private static final Pattern  NONPROT_PATTERN = Pattern.compile("^X+$");
 	
 	// DEFAULTS FOR CONFIG FILE ASSIGNABLE CONSTANTS
 	// defaults for pdb data location
@@ -392,298 +380,44 @@ public class CRKMain {
 		
 		try {
 
-			PdbAsymUnit pdb = null;
-			String pdbName = pdbCode; // the name to be used in many of the output files
-			File cifFile = null; // if given a pdb code in command line we will store the cif file here, we need to use it later if interf desc downloaded from PISA
-			
-			try {
-				if (inFile==null) {
-					cifFile = new File(outDir,pdbCode + ".cif");
-					PdbAsymUnit.grabCifFile(LOCAL_CIF_DIR, PDB_FTP_CIF_URL, pdbCode, cifFile, USE_ONLINE_PDB);
-					pdb = new PdbAsymUnit(cifFile);	
-				} else {
-					pdb = new PdbAsymUnit(inFile);
-					pdbName = inFile.getName().substring(0, inFile.getName().lastIndexOf('.'));
-				}
-			} catch (IOException e) {
-				System.err.println("Couldn't get cif file for code "+pdbCode+" from ftp or couldn't uncompress it.");
-				System.err.println(e.getMessage());
-				System.exit(1);
-			} catch (FileFormatError e) {
-				LOGGER.error("File format error: "+e.getMessage());
-				System.exit(1);
-			} catch (PdbLoadError e) {
-				LOGGER.error("Couldn't load file "+((inFile==null)?cifFile.toString():inFile.toString()));
-				LOGGER.error(e.getMessage());
-				System.err.println("Couldn't load file "+((inFile==null)?cifFile.toString():inFile.toString()));
-				System.exit(1);
-			}
-			
-			if (pdb.getCrystalCell()==null) {
-				LOGGER.fatal("No crystal information found in source "+pdbCode);
-				System.exit(1);
-			}
-			
-			// 1 finding interfaces 
-			ChainInterfaceList interfaces = null;
-			if (usePisa) {
-				System.out.println("Getting PISA interfaces...");
-				LOGGER.info("Interfaces from PISA.");
-				PisaConnection pc = new PisaConnection(PISA_INTERFACES_URL, null, null);
-				List<String> pdbCodes = new ArrayList<String>();
-				pdbCodes.add(pdbCode);
-				try {
-					interfaces = pc.getInterfacesDescription(pdbCodes).get(pdbCode).convertToChainInterfaceList(pdb);
-				} catch (SAXException e) {
-					LOGGER.fatal("Error while reading PISA xml file");
-					LOGGER.fatal(e.getMessage());
-					System.err.println("Error while reading PISA xml file");
-					System.exit(1);
-				}
-			} else {
-				System.out.println("Calculating possible interfaces...");
-				if (useNaccess) {
-					interfaces = pdb.getAllInterfaces(INTERFACE_DIST_CUTOFF, NACCESS_EXE, 0, 0);
-					LOGGER.info("Interfaces calculated with NACCESS.");
-				} else {
-					interfaces = pdb.getAllInterfaces(INTERFACE_DIST_CUTOFF, null, nSpherePointsASAcalc, numThreads);
-					LOGGER.info("Interfaces calculated with "+nSpherePointsASAcalc+" sphere points.");
-				}
-			}
-			if (zooming) {
-				interfaces.calcRimAndCores(bsaToAsaSoftCutoff, bsaToAsaHardCutoff, relaxationStep, minNumResCA);
-			} else {
-				interfaces.calcRimAndCores(cutoffsCA);
-			}
-			
-			System.out.println("Done");
-			
-			PrintStream interfLogPS = new PrintStream(new File(outDir,baseName+".interfaces"));
-			interfaces.printTabular(interfLogPS, pdbName);
-			interfLogPS.close();
-			
-			// checking for clashes
-			if (!usePisa && interfaces.hasInterfacesWithClashes(INTERCHAIN_ATOM_CLASH_DISTANCE)) {				
-				LOGGER.error("Clashes found in some of the interfaces (atoms distance below "+INTERCHAIN_ATOM_CLASH_DISTANCE+"):");
-				List<ChainInterface> clashyInterfs = interfaces.getInterfacesWithClashes(INTERCHAIN_ATOM_CLASH_DISTANCE);
-				for (ChainInterface clashyInterf:clashyInterfs) {
-					LOGGER.error("Interface: "+clashyInterf.getFirstMolecule().getPdbChainCode()+"+"
-							+clashyInterf.getSecondMolecule().getPdbChainCode()+" ("+
-							SpaceGroup.getAlgebraicFromMatrix(clashyInterf.getSecondTransf())+
-							") Clashes: "+clashyInterf.getNumClashes(INTERCHAIN_ATOM_CLASH_DISTANCE));
-				}
-				LOGGER.error("Clashes found in some of the interfaces. This is most likely an error in the structure. If you think the structure is correct, please report a bug.");
-				System.err.println("Clashes found in some of the interfaces. This is most likely an error in the structure. If you think the structure is correct, please report a bug.");
-				System.exit(1);
-			}
-			if (interfaces.getNumInterfacesAboveArea(MIN_INTERF_AREA_REPORTING)==0) {
-				LOGGER.info(String.format("No interfaces with area above %4.0f. Nothing to score.\n",MIN_INTERF_AREA_REPORTING));
-				System.out.printf("No interfaces with area above %4.0f. Nothing to score.\n",MIN_INTERF_AREA_REPORTING);
-				System.exit(0);
-			}
 
+			String pdbName = pdbCode; // the name to be used in many of the output files
+			if (inFile!=null) pdbName = inFile.getName().substring(0, inFile.getName().lastIndexOf('.'));
+			
+			// 0 load pdb
+			PdbAsymUnit pdb = doLoadPdb(inFile, pdbCode, outDir);
+			
+			// 1 finding interfaces
+			InterfaceEnumerator interfEnumerator = new InterfaceEnumerator();
+			ChainInterfaceList interfaces = 
+				interfEnumerator.enumerate(pdb, usePisa, useNaccess, PISA_INTERFACES_URL, INTERFACE_DIST_CUTOFF, NACCESS_EXE, nSpherePointsASAcalc, numThreads);
+			interfEnumerator.calcRimAndCores(zooming, bsaToAsaSoftCutoff, bsaToAsaHardCutoff, relaxationStep, minNumResCA, cutoffsCA);
+			interfEnumerator.logToFile(outDir, baseName, pdbName);
+			interfEnumerator.checkForClashes(usePisa, INTERCHAIN_ATOM_CLASH_DISTANCE);
+			interfEnumerator.checkNotEmptyListAboveArea(MIN_INTERF_AREA_REPORTING);
 			
 			// 2 finding evolutionary context
-			String msg = "Unique sequences for "+pdbName+":";
-			int i = 1;
-			for (String representativeChain:pdb.getAllRepChains()) {
-				List<String> entity = pdb.getSeqIdenticalGroup(representativeChain);
-				msg+=" "+i+":";
-				for (String chain:entity) {
-					msg+=" "+chain;
-				}
-				i++;
-			}
-			LOGGER.info(msg);
-
-			Map<String,ChainEvolContext> allChains = new HashMap<String,ChainEvolContext>();
-			for (String representativeChain:pdb.getAllRepChains()) {
-				List<String> entity = pdb.getSeqIdenticalGroup(representativeChain);
-				
-				Matcher nonprotMatcher = NONPROT_PATTERN.matcher(pdb.getChain(representativeChain).getSequence());
-				if (nonprotMatcher.matches()) {
-					LOGGER.warn("Representative chain "+representativeChain+" does not seem to be a protein chain. Won't analyse it.");
-					continue;
-				}
-	
-				ChainEvolContext chainEvCont = new ChainEvolContext(pdb.getChain(representativeChain).getSequence(), representativeChain, pdb.getPdbCode(), pdbName);
-				// a) getting the uniprot ids corresponding to the query (the pdb sequence)
-				File emblQueryCacheFile = null;
-				if (EMBL_CDS_CACHE_DIR!=null) {
-					emblQueryCacheFile = new File(EMBL_CDS_CACHE_DIR,baseName+"."+pdbName+representativeChain+".query.emblcds.fa");
-				}
-				System.out.println("Finding query's uniprot mapping (through SIFTS or blasting)");
-				try {
-					chainEvCont.retrieveQueryData(SIFTS_FILE, emblQueryCacheFile, BLAST_BIN_DIR, BLAST_DB_DIR, BLAST_DB, numThreads,doScoreCRK);
-				} catch (BlastError e) {
-					LOGGER.error("Couldn't run blast to retrieve query's uniprot mapping");
-					LOGGER.error(e.getMessage());
-					System.err.println("Couldn't run blast to retrieve query's uniprot mapping");
-					System.exit(1);
-				} 
-				if (doScoreCRK && chainEvCont.getQueryRepCDS()==null) {
-					// note calling chainEvCont.canDoCRK() will also check for this condition (here we only want to log it once)
-					LOGGER.error("No CDS good match for query sequence! can't do CRK analysis on it.");
-				}
-				// b) getting the homologs and sequence data and creating multiple sequence alignment
-				System.out.println("Blasting for homologues...");
-				File blastCacheFile = null;
-				if (BLAST_CACHE_DIR!=null) {
-					blastCacheFile = new File(BLAST_CACHE_DIR,baseName+"."+pdbName+representativeChain+".blast.xml"); 
-				}
-				try {
-					chainEvCont.retrieveHomologs(BLAST_BIN_DIR, BLAST_DB_DIR, BLAST_DB, numThreads, idCutoff, QUERY_COVERAGE_CUTOFF, blastCacheFile);
-					LOGGER.info("Uniprot version used: "+chainEvCont.getUniprotVer());
-				} catch (UniprotVerMisMatchException e) {
-					LOGGER.error(e.getMessage());
-					System.err.println("Mismatch of Uniprot versions! Exiting.");
-					System.err.println(e.getMessage());
-					System.exit(1);					
-				} catch (BlastError e) {
-					LOGGER.error("Couldn't run blast to retrieve homologs.");
-					LOGGER.error(e.getMessage());
-					System.err.println("Couldn't run blast to retrieve homologs.");
-					System.exit(1);
-				}
-
-				System.out.println("Retrieving UniprotKB data and EMBL CDS sequences");
-				File emblHomsCacheFile = null;
-				if (EMBL_CDS_CACHE_DIR!=null) {
-					emblHomsCacheFile = new File(EMBL_CDS_CACHE_DIR,baseName+"."+pdbName+representativeChain+".homologs.emblcds.fa");
-				}
-				try {
-					chainEvCont.retrieveHomologsData(emblHomsCacheFile, doScoreCRK);
-				} catch (UniprotVerMisMatchException e) {
-					LOGGER.error(e.getMessage());
-					System.err.println("Mismatch of Uniprot versions! Exiting.");
-					System.err.println(e.getMessage());
-					System.exit(1);
-				}
-				if (doScoreCRK && !chainEvCont.isConsistentGeneticCodeType()){
-					// note calling chainEvCont.canDoCRK() will also check for this condition (here we only want to log it once)
-					LOGGER.error("The list of homologs does not have a single genetic code type, can't do CRK analysis on it.");
-				}
-				// remove redundancy
-				chainEvCont.removeRedundancy();
-
-				// skimming so that there's not too many sequences for selecton
-				chainEvCont.skimList(maxNumSeqsSelecton);
-				
-				// c) align
-				System.out.println("Aligning protein sequences with t_coffee...");
-				try {
-					chainEvCont.align(TCOFFEE_BIN, useTcoffeeVeryFastMode);
-				} catch (TcoffeeError e) {
-					LOGGER.error("Couldn't run t_coffee to align protein sequences");
-					LOGGER.error(e.getMessage());
-					System.err.println("Couldn't run t_coffee to align protein sequences");
-					System.exit(1);
-				}
-
-				// writing homolog sequences to file
-				chainEvCont.writeHomologSeqsToFile(new File(outDir,baseName+"."+pdbName+representativeChain+".fa"));
-
-				// check the back-translation of CDS to uniprot
-				// check whether we have a good enough CDS for the chain
-				if (doScoreCRK && chainEvCont.canDoCRK()) {
-					LOGGER.info("Number of homologs with at least one uniprot CDS mapping: "+chainEvCont.getNumHomologsWithCDS());
-					LOGGER.info("Number of homologs with valid CDS: "+chainEvCont.getNumHomologsWithValidCDS());
-				}
-
-				// printing summary to file
-				PrintStream log = new PrintStream(new File(outDir,baseName+"."+pdbName+representativeChain+".log"));
-				chainEvCont.printSummary(log);
-				log.close();
-				// writing the alignment to file
-				chainEvCont.writeAlignmentToFile(new File(outDir,baseName+"."+pdbName+representativeChain+".aln"));
-				// writing the nucleotides alignment to file
-				if (doScoreCRK && chainEvCont.canDoCRK()) {
-					chainEvCont.writeNucleotideAlignmentToFile(new File(outDir,baseName+"."+pdbName+representativeChain+".cds.aln"));
-				}
-
-				// d) computing entropies
-				chainEvCont.computeEntropies(reducedAlphabet);
-
-				// e) compute ka/ks ratios
-				if (doScoreCRK && chainEvCont.canDoCRK()) {
-					System.out.println("Running selecton (this will take long)...");
-					chainEvCont.computeKaKsRatiosSelecton(SELECTON_BIN, 
-							new File(outDir,baseName+"."+pdbName+representativeChain+".selecton.res"),
-							new File(outDir,baseName+"."+pdbName+representativeChain+".selecton.log"), 
-							new File(outDir,baseName+"."+pdbName+representativeChain+".selecton.tree"),
-							new File(outDir,baseName+"."+pdbName+representativeChain+".selecton.global"),
-							selectonEpsilon);
-				}
-
-				// writing the conservation scores (entropies/kaks) log file 
-				PrintStream conservScoLog = new PrintStream(new File(outDir,baseName+"."+pdbName+representativeChain+ENTROPIES_FILE_SUFFIX));
-				chainEvCont.printConservationScores(conservScoLog, ScoringType.ENTROPY);
-				conservScoLog.close();
-				if (doScoreCRK && chainEvCont.canDoCRK()) {
-					conservScoLog = new PrintStream(new File(outDir,baseName+"."+pdbName+representativeChain+KAKS_FILE_SUFFIX));
-					chainEvCont.printConservationScores(conservScoLog, ScoringType.KAKS);
-					conservScoLog.close();				
-				}
-
-				for (String chain:entity) {
-					allChains.put(chain,chainEvCont);
-				}
-			}
-
-
-			// 4) scoring
+			EvolContextFinder evolContextFinder = new EvolContextFinder(pdb, pdbName, baseName);
+			evolContextFinder.logUniqSequences();
+			TreeMap<String,ChainEvolContext> cecs = evolContextFinder.getAllChainEvContext();
+			evolContextFinder.retrieveQueryData(EMBL_CDS_CACHE_DIR, SIFTS_FILE, BLAST_BIN_DIR, BLAST_DB_DIR, BLAST_DB, numThreads, doScoreCRK);
+			evolContextFinder.retrieveHomologues(BLAST_CACHE_DIR, BLAST_BIN_DIR, BLAST_DB_DIR, BLAST_DB, numThreads, idCutoff, QUERY_COVERAGE_CUTOFF, EMBL_CDS_CACHE_DIR, doScoreCRK, maxNumSeqsSelecton);			
+			evolContextFinder.align(TCOFFEE_BIN, useTcoffeeVeryFastMode);
+			evolContextFinder.writeSeqsAndAlnToFile(doScoreCRK,outDir);
+			evolContextFinder.computeEvolutionaryScores(outDir, reducedAlphabet, doScoreCRK, SELECTON_BIN, selectonEpsilon);
+			evolContextFinder.writeEvolScoresLog(outDir, doScoreCRK, ENTROPIES_FILE_SUFFIX, KAKS_FILE_SUFFIX);
+			
+			// 3 scoring
 			System.out.println("Scores:");
 			
-			InterfaceEvolContextList iecList = new InterfaceEvolContextList(pdbName, MIN_HOMOLOGS_CUTOFF, minNumResCA, minNumResMemberCA, 
-					idCutoff, QUERY_COVERAGE_CUTOFF, maxNumSeqsSelecton, MIN_INTERF_AREA_REPORTING);
-			for (ChainInterface pi:interfaces) {
-				if (pi.isProtein()) {
-					ArrayList<ChainEvolContext> chainsEvCs = new ArrayList<ChainEvolContext>();
-					chainsEvCs.add(allChains.get(pi.getFirstMolecule().getPdbChainCode()));
-					chainsEvCs.add(allChains.get(pi.getSecondMolecule().getPdbChainCode()));
-					InterfaceEvolContext iec = new InterfaceEvolContext(pi, chainsEvCs);
-					iecList.add(iec);
-				}
-			}
+			InterfaceScorer interfScorer = new InterfaceScorer(interfaces, cecs, pdb, outDir, baseName, pdbName);
+			interfScorer.createInterfEvolContextList(MIN_HOMOLOGS_CUTOFF, minNumResCA, minNumResMemberCA, 
+				idCutoff, QUERY_COVERAGE_CUTOFF, maxNumSeqsSelecton, MIN_INTERF_AREA_REPORTING);
+			interfScorer.doEntropyScoring(ENTROPIES_FILE_SUFFIX, entrCallCutoff, grayZoneWidth);
+			interfScorer.doKaksScoring(doScoreCRK, KAKS_FILE_SUFFIX, kaksCallCutoff, grayZoneWidth);
 			
-			for (int callCutoffIdx=0;callCutoffIdx<entrCallCutoff.length;callCutoffIdx++) {
-				String suffix = null;
-				if (entrCallCutoff.length==1) suffix="";
-				else suffix="."+Integer.toString(callCutoffIdx+1);
-				PrintStream scoreEntrPS = new PrintStream(new File(outDir,baseName+ENTROPIES_FILE_SUFFIX+".scores"+suffix));
-				// entropy nw
-				iecList.scoreEntropy(false);
-				iecList.printScoresTable(System.out, entrCallCutoff[callCutoffIdx]-grayZoneWidth, entrCallCutoff[callCutoffIdx]+grayZoneWidth);
-				iecList.printScoresTable(scoreEntrPS, entrCallCutoff[callCutoffIdx]-grayZoneWidth, entrCallCutoff[callCutoffIdx]+grayZoneWidth);
-				// entropy w
-				iecList.scoreEntropy(true);
-				iecList.printScoresTable(System.out, entrCallCutoff[callCutoffIdx]-grayZoneWidth, entrCallCutoff[callCutoffIdx]+grayZoneWidth);
-				iecList.printScoresTable(scoreEntrPS, entrCallCutoff[callCutoffIdx]-grayZoneWidth, entrCallCutoff[callCutoffIdx]+grayZoneWidth);
-				iecList.writeScoresPDBFiles(outDir, baseName, ENTROPIES_FILE_SUFFIX+".pdb");
-				iecList.writeRimCorePDBFiles(outDir, baseName, ".rimcore.pdb");
-				scoreEntrPS.close();
-			}
 			
-			// ka/ks scoring
-			if (doScoreCRK) {
-				for (int callCutoffIdx=0;callCutoffIdx<kaksCallCutoff.length;callCutoffIdx++) {
-					String suffix = null;
-					if (kaksCallCutoff.length==1) suffix="";
-					else suffix="."+Integer.toString(callCutoffIdx+1);
-					PrintStream scoreKaksPS = new PrintStream(new File(outDir,baseName+KAKS_FILE_SUFFIX+".scores"+suffix));
-					// kaks nw
-					iecList.scoreKaKs(false);
-					iecList.printScoresTable(System.out,  kaksCallCutoff[callCutoffIdx]-grayZoneWidth, kaksCallCutoff[callCutoffIdx]+grayZoneWidth);
-					iecList.printScoresTable(scoreKaksPS,  kaksCallCutoff[callCutoffIdx]-grayZoneWidth, kaksCallCutoff[callCutoffIdx]+grayZoneWidth);
-					// kaks w
-					iecList.scoreKaKs(true);
-					iecList.printScoresTable(System.out,  kaksCallCutoff[callCutoffIdx]-grayZoneWidth, kaksCallCutoff[callCutoffIdx]+grayZoneWidth);
-					iecList.printScoresTable(scoreKaksPS,  kaksCallCutoff[callCutoffIdx]-grayZoneWidth, kaksCallCutoff[callCutoffIdx]+grayZoneWidth);
-					iecList.writeScoresPDBFiles(outDir, baseName, KAKS_FILE_SUFFIX+".pdb");
-					iecList.writeRimCorePDBFiles(outDir, baseName, ".rimcore.pdb");
-					scoreKaksPS.close();
-				}
-			}
+			
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -695,6 +429,38 @@ public class CRKMain {
 			LOGGER.fatal("Unexpected error. Exiting.\n"+e+"\n"+stack);
 			System.exit(1);
 		}
+	}
+	
+	private static PdbAsymUnit doLoadPdb(File inFile, String pdbCode, File outDir) {
+		PdbAsymUnit pdb = null;
+		File cifFile = null; // if given a pdb code in command line we will store the cif file here
+		try {
+			if (inFile==null) {
+				cifFile = new File(outDir,pdbCode + ".cif");
+				PdbAsymUnit.grabCifFile(LOCAL_CIF_DIR, PDB_FTP_CIF_URL, pdbCode, cifFile, USE_ONLINE_PDB);
+				pdb = new PdbAsymUnit(cifFile);	
+			} else {
+				pdb = new PdbAsymUnit(inFile);
+			}
+		} catch (IOException e) {
+			System.err.println("Couldn't get cif file for code "+pdbCode+" from ftp or couldn't uncompress it.");
+			System.err.println(e.getMessage());
+			System.exit(1);
+		} catch (FileFormatError e) {
+			LOGGER.error("File format error: "+e.getMessage());
+			System.exit(1);
+		} catch (PdbLoadError e) {
+			LOGGER.error("Couldn't load file "+((inFile==null)?cifFile.toString():inFile.toString()));
+			LOGGER.error(e.getMessage());
+			System.err.println("Couldn't load file "+((inFile==null)?cifFile.toString():inFile.toString()));
+			System.exit(1);
+		}
+		
+		if (pdb.getCrystalCell()==null) {
+			LOGGER.fatal("No crystal information found in source "+pdbCode);
+			System.exit(1);
+		}
+		return pdb;
 	}
 
 	private static Properties loadConfigFile(String fileName) throws FileNotFoundException, IOException {
