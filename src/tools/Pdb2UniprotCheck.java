@@ -18,7 +18,7 @@ import owl.core.runners.blast.BlastXMLParser;
 import owl.core.sequence.Sequence;
 import owl.core.sequence.alignment.PairwiseSequenceAlignment;
 import owl.core.structure.Pdb;
-import owl.core.structure.PdbCodeNotFoundError;
+import owl.core.structure.PdbCodeNotFoundException;
 import owl.core.structure.PdbLoadError;
 import owl.core.structure.PdbasePdb;
 import owl.core.util.MySQLConnection;
@@ -95,7 +95,7 @@ public class Pdb2UniprotCheck {
 //					System.out.println();
 //				}
 
-			} catch (PdbCodeNotFoundError e) {
+			} catch (PdbCodeNotFoundException e) {
 				System.err.println(e.getMessage());
 				continue;
 			} catch (NoMatchFoundException e) {
