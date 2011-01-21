@@ -189,8 +189,12 @@ public class CRKMain {
 	private TreeMap<String,ChainEvolContext> cecs;
 	private File cifFile;
 	private InterfaceEvolContextList iecList;
+	
+	private PrintStream progressLogPS;
 
-	public CRKMain() {
+	public CRKMain(PrintStream progressLogPS) {
+		this.progressLogPS = progressLogPS;
+		
 		pdbCode = null;
 		doScoreCRK = false;
 		idCutoff = DEF_IDENTITY_CUTOFF;
@@ -230,7 +234,7 @@ public class CRKMain {
 		entrCallCutoff[0] = DEF_ENTR_CALL_CUTOFF;
 		kaksCallCutoff  = new double[1];
 		kaksCallCutoff[0] = DEF_KAKS_CALL_CUTOFF;
-
+ 
 	}
 	
 	public void parseCommandLine(String[] args) {
@@ -483,7 +487,7 @@ public class CRKMain {
 	public void doFindInterfaces() throws CRKException {
 
 		if (usePisa) {
-			System.out.println("Getting PISA interfaces...");
+			progressLogPS.println("Getting PISA interfaces...");
 			LOGGER.info("Interfaces from PISA.");
 			PisaConnection pc = new PisaConnection(PISA_INTERFACES_URL, null, null);
 			List<String> pdbCodes = new ArrayList<String>();
@@ -496,7 +500,7 @@ public class CRKMain {
 				throw new CRKException(e,"Error while retrieving PISA xml file: "+e.getMessage(),true);
 			}
 		} else {
-			System.out.println("Calculating possible interfaces...");
+			progressLogPS.println("Calculating possible interfaces...");
 			try {
 				if (useNaccess) {
 					interfaces = pdb.getAllInterfaces(INTERFACE_DIST_CUTOFF, NACCESS_EXE, 0, 0);
@@ -510,7 +514,7 @@ public class CRKMain {
 			}
 		}
 
-		System.out.println("Done");
+		progressLogPS.println("Done");
 
 
 		// checking for clashes
@@ -579,7 +583,7 @@ public class CRKMain {
 			if (EMBL_CDS_CACHE_DIR!=null) {
 				emblQueryCacheFile = new File(EMBL_CDS_CACHE_DIR,baseName+"."+pdbName+chainEvCont.getRepresentativeChainCode()+".query.emblcds.fa");
 			}
-			System.out.println("Finding query's uniprot mapping (through SIFTS or blasting)");
+			progressLogPS.println("Finding query's uniprot mapping (through SIFTS or blasting)");
 			try {
 				chainEvCont.retrieveQueryData(SIFTS_FILE, emblQueryCacheFile, BLAST_BIN_DIR, BLAST_DB_DIR, BLAST_DB, numThreads,doScoreCRK);
 			} catch (BlastError e) {
@@ -593,7 +597,7 @@ public class CRKMain {
 			}
 
 			// b) getting the homologs and sequence data 
-			System.out.println("Blasting for homologues...");
+			progressLogPS.println("Blasting for homologues...");
 			File blastCacheFile = null;
 			if (BLAST_CACHE_DIR!=null) {
 				blastCacheFile = new File(BLAST_CACHE_DIR,baseName+"."+pdbName+chainEvCont.getRepresentativeChainCode()+".blast.xml"); 
@@ -609,7 +613,7 @@ public class CRKMain {
 				throw new CRKException(e,"Problem while blasting for sequence homologs: "+e.getMessage(),true);
 			}
 
-			System.out.println("Retrieving UniprotKB data and EMBL CDS sequences");
+			progressLogPS.println("Retrieving UniprotKB data and EMBL CDS sequences");
 			File emblHomsCacheFile = null;
 			if (EMBL_CDS_CACHE_DIR!=null) {
 				emblHomsCacheFile = new File(EMBL_CDS_CACHE_DIR,baseName+"."+pdbName+chainEvCont.getRepresentativeChainCode()+".homologs.emblcds.fa");
@@ -640,7 +644,7 @@ public class CRKMain {
 			}
 
 			// c) align
-			System.out.println("Aligning protein sequences with t_coffee...");
+			progressLogPS.println("Aligning protein sequences with t_coffee...");
 			try {
 				chainEvCont.align(TCOFFEE_BIN, useTcoffeeVeryFastMode);
 			} catch (TcoffeeError e) {
@@ -678,7 +682,7 @@ public class CRKMain {
 
 			// e) compute ka/ks ratios
 			if (doScoreCRK && chainEvCont.canDoCRK()) {
-				System.out.println("Running selecton (this will take long)...");
+				progressLogPS.println("Running selecton (this will take long)...");
 				try {
 				chainEvCont.computeKaKsRatiosSelecton(SELECTON_BIN, 
 						new File(outDir,baseName+"."+pdbName+chainEvCont.getRepresentativeChainCode()+".selecton.res"),
@@ -714,7 +718,7 @@ public class CRKMain {
 	public void doScoring() throws CRKException {
 		if (interfaces.getNumInterfacesAboveArea(MIN_INTERF_AREA_REPORTING)==0) return;
 		
-		System.out.println("Scores:");
+		progressLogPS.println("Scores:");
 		
 		iecList = new InterfaceEvolContextList(pdbName, MIN_HOMOLOGS_CUTOFF, minNumResCA, minNumResMemberCA, 
 				idCutoff, QUERY_COVERAGE_CUTOFF, maxNumSeqsSelecton, MIN_INTERF_AREA_REPORTING);
@@ -737,11 +741,11 @@ public class CRKMain {
 				PrintStream scoreEntrPS = new PrintStream(new File(outDir,baseName+ENTROPIES_FILE_SUFFIX+".scores"+suffix));
 				// entropy nw
 				iecList.scoreEntropy(false);
-				iecList.printScoresTable(System.out, entrCallCutoff[callCutoffIdx]-grayZoneWidth, entrCallCutoff[callCutoffIdx]+grayZoneWidth);
+				iecList.printScoresTable(progressLogPS, entrCallCutoff[callCutoffIdx]-grayZoneWidth, entrCallCutoff[callCutoffIdx]+grayZoneWidth);
 				iecList.printScoresTable(scoreEntrPS, entrCallCutoff[callCutoffIdx]-grayZoneWidth, entrCallCutoff[callCutoffIdx]+grayZoneWidth);
 				// entropy w
 				iecList.scoreEntropy(true);
-				iecList.printScoresTable(System.out, entrCallCutoff[callCutoffIdx]-grayZoneWidth, entrCallCutoff[callCutoffIdx]+grayZoneWidth);
+				iecList.printScoresTable(progressLogPS, entrCallCutoff[callCutoffIdx]-grayZoneWidth, entrCallCutoff[callCutoffIdx]+grayZoneWidth);
 				iecList.printScoresTable(scoreEntrPS, entrCallCutoff[callCutoffIdx]-grayZoneWidth, entrCallCutoff[callCutoffIdx]+grayZoneWidth);
 				iecList.writeScoresPDBFiles(outDir, baseName, ENTROPIES_FILE_SUFFIX+".pdb");
 				iecList.writeRimCorePDBFiles(outDir, baseName, ".rimcore.pdb");
@@ -760,11 +764,11 @@ public class CRKMain {
 					PrintStream scoreKaksPS = new PrintStream(new File(outDir,baseName+KAKS_FILE_SUFFIX+".scores"+suffix));
 					// kaks nw
 					iecList.scoreKaKs(false);
-					iecList.printScoresTable(System.out,  kaksCallCutoff[callCutoffIdx]-grayZoneWidth, kaksCallCutoff[callCutoffIdx]+grayZoneWidth);
+					iecList.printScoresTable(progressLogPS,  kaksCallCutoff[callCutoffIdx]-grayZoneWidth, kaksCallCutoff[callCutoffIdx]+grayZoneWidth);
 					iecList.printScoresTable(scoreKaksPS,  kaksCallCutoff[callCutoffIdx]-grayZoneWidth, kaksCallCutoff[callCutoffIdx]+grayZoneWidth);
 					// kaks w
 					iecList.scoreKaKs(true);
-					iecList.printScoresTable(System.out,  kaksCallCutoff[callCutoffIdx]-grayZoneWidth, kaksCallCutoff[callCutoffIdx]+grayZoneWidth);
+					iecList.printScoresTable(progressLogPS,  kaksCallCutoff[callCutoffIdx]-grayZoneWidth, kaksCallCutoff[callCutoffIdx]+grayZoneWidth);
 					iecList.printScoresTable(scoreKaksPS,  kaksCallCutoff[callCutoffIdx]-grayZoneWidth, kaksCallCutoff[callCutoffIdx]+grayZoneWidth);
 					iecList.writeScoresPDBFiles(outDir, baseName, KAKS_FILE_SUFFIX+".pdb");
 					iecList.writeRimCorePDBFiles(outDir, baseName, ".rimcore.pdb");
@@ -782,7 +786,7 @@ public class CRKMain {
 	 */
 	public static void main(String[] args) {
 		
-		CRKMain crkMain = new CRKMain();
+		CRKMain crkMain = new CRKMain(System.out);
 		
 		crkMain.parseCommandLine(args);
 
