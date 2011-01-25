@@ -10,7 +10,6 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -186,7 +185,7 @@ public class CRKMain {
 	private String pdbName;
 	private PdbAsymUnit pdb;
 	private ChainInterfaceList interfaces;
-	private TreeMap<String,ChainEvolContext> cecs;
+	private ChainEvolContextList cecs;
 	private File cifFile;
 	private InterfaceEvolContextList iecList;
 	
@@ -543,6 +542,11 @@ public class CRKMain {
 			LOGGER.warn(String.format("No interfaces with area above %4.0f. Nothing to score.\n",MIN_INTERF_AREA_REPORTING));			
 		}
 
+		try {
+			interfaces.serialize(new File(outDir,baseName+".interfaces.dat"));
+		} catch (IOException e) {
+			throw new CRKException(e,"Couldn't write serialized ChainInterfaceList object to file: "+e.getMessage(),false);
+		}
 	}
 	
 	public void doFindEvolContext() throws CRKException {
@@ -560,7 +564,9 @@ public class CRKMain {
 		}
 		LOGGER.info(msg);
 		
-		cecs = new TreeMap<String, ChainEvolContext>();
+		
+		
+		cecs = new ChainEvolContextList();
 
 		for (String representativeChain:pdb.getAllRepChains()) {
 			
@@ -570,10 +576,11 @@ public class CRKMain {
 				continue;
 			}
 
-			cecs.put(representativeChain,new ChainEvolContext(pdb.getChain(representativeChain).getSequence(), representativeChain, pdb.getPdbCode(), pdbName));
+			cecs.addChainEvolContext(representativeChain,pdb.getSeqIdenticalGroup(representativeChain),
+					new ChainEvolContext(pdb.getChain(representativeChain).getSequence(), representativeChain, pdb.getPdbCode(), pdbName));
 		}
 		// a) getting the uniprot ids corresponding to the query (the pdb sequence)
-		for (ChainEvolContext chainEvCont:cecs.values()) {
+		for (ChainEvolContext chainEvCont:cecs.getAllChainEvolContext()) {
 			File emblQueryCacheFile = null;
 			if (EMBL_CDS_CACHE_DIR!=null) {
 				emblQueryCacheFile = new File(EMBL_CDS_CACHE_DIR,baseName+"."+pdbName+chainEvCont.getRepresentativeChainCode()+".query.emblcds.fa");
@@ -708,6 +715,12 @@ public class CRKMain {
 			}
 		}
 		
+		try {
+			this.cecs.serialize(new File(outDir,baseName+".chainevolcontext.dat"));
+		} catch (IOException e) {
+			throw new CRKException(e,"Couldn't write serialized ChainEvolContextList object to file: "+e.getMessage(),false);
+		}
+		
 	}
 	
 	public void doScoring() throws CRKException {
@@ -722,8 +735,8 @@ public class CRKMain {
 				ArrayList<ChainEvolContext> chainsEvCs = new ArrayList<ChainEvolContext>();
 				Pdb molec1 = pi.getFirstMolecule();
 				Pdb molec2 = pi.getSecondMolecule();
-				chainsEvCs.add(cecs.get(pdb.getRepChain(molec1.getPdbChainCode())));
-				chainsEvCs.add(cecs.get(pdb.getRepChain(molec2.getPdbChainCode())));
+				chainsEvCs.add(cecs.getChainEvolContext(molec1.getPdbChainCode()));
+				chainsEvCs.add(cecs.getChainEvolContext(molec2.getPdbChainCode()));
 				InterfaceEvolContext iec = new InterfaceEvolContext(pi, chainsEvCs);
 				iecList.add(iec);
 			}

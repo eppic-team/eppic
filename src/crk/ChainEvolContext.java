@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -33,8 +34,10 @@ import owl.core.sequence.alignment.PairwiseSequenceAlignment;
 import owl.core.sequence.alignment.PairwiseSequenceAlignment.PairwiseSequenceAlignmentException;
 import owl.core.structure.Pdb;
 
-public class ChainEvolContext {
+public class ChainEvolContext implements Serializable {
 	
+	private static final long serialVersionUID = 1L;
+
 	private static final Log LOGGER = LogFactory.getLog(ChainEvolContext.class);
 
 	// blast constants
