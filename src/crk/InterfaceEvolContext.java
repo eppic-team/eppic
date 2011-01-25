@@ -1,8 +1,13 @@
 package crk;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.PrintStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -16,7 +21,9 @@ import owl.core.structure.InterfaceRimCore;
 import owl.core.structure.Pdb;
 import owl.core.structure.Residue;
 
-public class InterfaceEvolContext {
+public class InterfaceEvolContext implements Serializable {
+
+	private static final long serialVersionUID = 1L;
 
 	private static final Log LOGGER = LogFactory.getLog(InterfaceEvolContext.class);
 
@@ -722,6 +729,23 @@ public class InterfaceEvolContext {
 			printScores(ps, i, calls);
 			ps.println();
 		}
+	}
+	
+	public void serialize(File serializedFile) throws IOException {
+		FileOutputStream fileOut = new FileOutputStream(serializedFile);
+		ObjectOutputStream out = new ObjectOutputStream(fileOut);
+		out.writeObject(this);
+		out.close();
+		fileOut.close();
+	}
+
+	public static InterfaceEvolContext readFromFile(File serialized) throws IOException, ClassNotFoundException {
+		FileInputStream fileIn = new FileInputStream(serialized);
+		ObjectInputStream in = new ObjectInputStream(fileIn);
+		InterfaceEvolContext interfSc = (InterfaceEvolContext) in.readObject();
+		in.close();
+		fileIn.close();
+		return interfSc;
 	}
 	
 }

@@ -2,9 +2,14 @@ package crk;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.PrintStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -13,8 +18,10 @@ import java.util.regex.Pattern;
 
 import owl.core.util.FileFormatError;
 
-public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext> {
+public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>, Serializable {
 
+	private static final long serialVersionUID = 1L;
+	
 	private static final String IDENTIFIER_HEADER       = "# PDB identifier:";
 	private static final String SCORE_METHOD_HEADER 	= "# Score method:";
 	private static final String SCORE_TYPE_HEADER   	= "# Score type:";
@@ -388,6 +395,23 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext> 
 		br.close();
 		
 		return pdbScs;
+	}
+	
+	public void serialize(File serializedFile) throws IOException {
+		FileOutputStream fileOut = new FileOutputStream(serializedFile);
+		ObjectOutputStream out = new ObjectOutputStream(fileOut);
+		out.writeObject(this);
+		out.close();
+		fileOut.close();
+	}
+
+	public static InterfaceEvolContextList readFromFile(File serialized) throws IOException, ClassNotFoundException {
+		FileInputStream fileIn = new FileInputStream(serialized);
+		ObjectInputStream in = new ObjectInputStream(fileIn);
+		InterfaceEvolContextList interfSc = (InterfaceEvolContextList) in.readObject();
+		in.close();
+		fileIn.close();
+		return interfSc;
 	}
 
 }
