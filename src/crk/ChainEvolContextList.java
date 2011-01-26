@@ -33,6 +33,12 @@ public class ChainEvolContextList implements Serializable {
 		}
 	}
 	
+	/**
+	 * Gets the ChainEvolContext corresponding to the given PDB chain code (can be 
+	 * any chain code, representative or not)
+	 * @param pdbChainCode
+	 * @return
+	 */
 	public ChainEvolContext getChainEvolContext(String pdbChainCode) {
 		return cecs.get(allchains2representative.get(pdbChainCode));
 	}

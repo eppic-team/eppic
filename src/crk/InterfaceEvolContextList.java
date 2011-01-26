@@ -16,6 +16,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import owl.core.structure.ChainInterface;
+import owl.core.structure.ChainInterfaceList;
 import owl.core.util.FileFormatError;
 
 public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>, Serializable {
@@ -95,6 +97,25 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 	
 	public void add(InterfaceEvolContext iec) {
 		list.add(iec);
+	}
+	
+	/**
+	 * Given a ChainInterfaceList with all interfaces of a given PDB and a ChainEvolContextList with
+	 * all evolutionary contexts of chains of that same PDB adds an InterfaceEvolContext (containing a pair
+	 * of ChainEvolContext and a ChainInterface) to this list for each protein-portein interface. 
+	 * @param interfaces
+	 * @param cecs
+	 */
+	public void addAll(ChainInterfaceList interfaces, ChainEvolContextList cecs) {
+		for (ChainInterface pi:interfaces) {
+			if (pi.isProtein()) {
+				ArrayList<ChainEvolContext> chainsEvCs = new ArrayList<ChainEvolContext>();
+				chainsEvCs.add(cecs.getChainEvolContext(pi.getFirstMolecule().getPdbChainCode()));
+				chainsEvCs.add(cecs.getChainEvolContext(pi.getSecondMolecule().getPdbChainCode()));
+				InterfaceEvolContext iec = new InterfaceEvolContext(pi, chainsEvCs);
+				this.add(iec);
+			}
+		}
 	}
 	
 	@Override

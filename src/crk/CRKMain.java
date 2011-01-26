@@ -27,7 +27,6 @@ import owl.core.runners.blast.BlastError;
 import owl.core.sequence.UniprotVerMisMatchException;
 import owl.core.structure.ChainInterface;
 import owl.core.structure.ChainInterfaceList;
-import owl.core.structure.Pdb;
 import owl.core.structure.PdbAsymUnit;
 import owl.core.structure.PdbLoadError;
 import owl.core.structure.AminoAcid;
@@ -189,6 +188,9 @@ public class CRKMain {
 	private File cifFile;
 	private InterfaceEvolContextList iecList;
 	
+	private File interfSerFile;
+	private File chainEvContextSerFile;
+	
 	private PrintStream progressLogPS;
 
 	public CRKMain(PrintStream progressLogPS) {
@@ -234,6 +236,9 @@ public class CRKMain {
 		kaksCallCutoff  = new double[1];
 		kaksCallCutoff[0] = DEF_KAKS_CALL_CUTOFF;
  
+		interfSerFile = null;
+		chainEvContextSerFile = null;
+		
 	}
 	
 	public void parseCommandLine(String[] args) {
@@ -283,11 +288,15 @@ public class CRKMain {
 		"                  (multi-threaded using number of CPUs specified in -a)\n" +
 		"  [-A <int>]   :  number of sphere points for ASA calculation, this parameter controls\n" +
 		"                  the accuracy of the ASA calculations, the bigger the more accurate \n" +
-		"                  (and slower). Default: "+DEF_NSPHEREPOINTS_ASA_CALC+"\n\n";
+		"                  (and slower). Default: "+DEF_NSPHEREPOINTS_ASA_CALC+"\n" +
+		"  [-I <file>]  :  binary file containing the interface enumeration output of a previous \n" +
+		"                  run of CRK\n" +
+		"  [-C <file>]  :  binary file containing the evolutionary scores for a particular \n" +
+		"                  sequence output of a previous run of CRK\n\n";
 		
 
 
-		Getopt g = new Getopt(PROGRAM_NAME, args, "i:kd:a:b:o:r:tc:zZ:m:M:x:X:g:e:q:pnA:h?");
+		Getopt g = new Getopt(PROGRAM_NAME, args, "i:kd:a:b:o:r:tc:zZ:m:M:x:X:g:e:q:pnA:I:C:h?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
@@ -369,6 +378,12 @@ public class CRKMain {
 				break;
 			case 'A':
 				nSpherePointsASAcalc = Integer.parseInt(g.getOptarg());
+				break;
+			case 'I':
+				interfSerFile = new File(g.getOptarg());
+				break;
+			case 'C':
+				chainEvContextSerFile = new File(g.getOptarg());
 				break;
 			case 'h':
 			case '?':
@@ -477,6 +492,32 @@ public class CRKMain {
 			throw new CRKException(null, "No crystal information found in source "+((inFile==null)?pdbCode:inFile.toString()), true);
 		}
 	}
+	
+	public void doLoadInterfacesFromFile() throws CRKException {
+		try {
+			progressLogPS.println("Loading interfaces enumeration from file "+interfSerFile);
+			LOGGER.info("Loading interfaces enumeration from file "+interfSerFile);
+			interfaces = ChainInterfaceList.readFromFile(interfSerFile);
+		} catch (ClassNotFoundException e) {
+			throw new CRKException(e,"Couldn't load interface enumeration binary file: "+e.getMessage(),true);
+		} catch (IOException e) {
+			throw new CRKException(e,"Couldn't load interface enumeration binary file: "+e.getMessage(),true);
+		}
+		
+		if (!pdb.getPdbCode().equals(interfaces.get(0).getFirstMolecule().getPdbCode())) {
+			throw new CRKException(null,"PDB codes of given PDB entry/file and given interface enumeration binary file don't match.",true);
+		}
+		
+		if (zooming) {
+			interfaces.calcRimAndCores(bsaToAsaSoftCutoff, bsaToAsaHardCutoff, relaxationStep, minNumResCA);
+		} else {
+			interfaces.calcRimAndCores(cutoffsCA);
+		}
+		
+		if (interfaces.getNumInterfacesAboveArea(MIN_INTERF_AREA_REPORTING)==0) {
+			LOGGER.warn(String.format("No interfaces with area above %4.0f. Nothing to score.\n",MIN_INTERF_AREA_REPORTING));			
+		}
+	}
 
 	public void doFindInterfaces() throws CRKException {
 
@@ -547,6 +588,34 @@ public class CRKMain {
 		} catch (IOException e) {
 			throw new CRKException(e,"Couldn't write serialized ChainInterfaceList object to file: "+e.getMessage(),false);
 		}
+	}
+	
+	public void doLoadEvolContextFromFile() throws CRKException {
+		if (interfaces.getNumInterfacesAboveArea(MIN_INTERF_AREA_REPORTING)==0) return;
+		
+		String msg = "Unique sequences for "+pdbName+":";
+		int i = 1;
+		for (String representativeChain:pdb.getAllRepChains()) {
+			List<String> entity = pdb.getSeqIdenticalGroup(representativeChain);
+			msg+=" "+i+":";
+			for (String chain:entity) {
+				msg+=" "+chain;
+			}
+			i++;
+		}
+		LOGGER.info(msg);
+		
+		try {
+			progressLogPS.println("Loading chain evolutionary scores from file "+chainEvContextSerFile);
+			LOGGER.info("Loading chain evolutionary scores from file "+chainEvContextSerFile);
+			cecs = ChainEvolContextList.readFromFile(chainEvContextSerFile);
+		} catch (ClassNotFoundException e) {
+			throw new CRKException(e,"Couldn't load interface enumeration binary file: "+e.getMessage(),true);
+		} catch(IOException e) {
+			throw new CRKException(e,"Couldn't load interface enumeration binary file: "+e.getMessage(),true);
+		}
+
+		// TODO check whether this looks compatible with the interfaces that we have
 	}
 	
 	public void doFindEvolContext() throws CRKException {
@@ -730,17 +799,8 @@ public class CRKMain {
 		
 		iecList = new InterfaceEvolContextList(pdbName, MIN_HOMOLOGS_CUTOFF, minNumResCA, minNumResMemberCA, 
 				idCutoff, QUERY_COVERAGE_CUTOFF, maxNumSeqsSelecton, MIN_INTERF_AREA_REPORTING);
-		for (ChainInterface pi:interfaces) {
-			if (pi.isProtein()) {
-				ArrayList<ChainEvolContext> chainsEvCs = new ArrayList<ChainEvolContext>();
-				Pdb molec1 = pi.getFirstMolecule();
-				Pdb molec2 = pi.getSecondMolecule();
-				chainsEvCs.add(cecs.getChainEvolContext(molec1.getPdbChainCode()));
-				chainsEvCs.add(cecs.getChainEvolContext(molec2.getPdbChainCode()));
-				InterfaceEvolContext iec = new InterfaceEvolContext(pi, chainsEvCs);
-				iecList.add(iec);
-			}
-		}		
+		iecList.addAll(interfaces,cecs);
+		
 		try {
 			for (int callCutoffIdx=0;callCutoffIdx<entrCallCutoff.length;callCutoffIdx++) {
 				String suffix = null;
@@ -813,10 +873,18 @@ public class CRKMain {
 			crkMain.doLoadPdb();
 
 			// 1 finding interfaces
-			crkMain.doFindInterfaces();
+			if (crkMain.interfSerFile!=null) {
+				crkMain.doLoadInterfacesFromFile();
+			} else {
+				crkMain.doFindInterfaces();
+			}
 
 			// 2 finding evolutionary context
-			crkMain.doFindEvolContext();
+			if (crkMain.chainEvContextSerFile!=null) {
+				crkMain.doLoadEvolContextFromFile();
+			} else {
+				crkMain.doFindEvolContext();
+			}
 
 			// 3 scoring
 			crkMain.doScoring();
