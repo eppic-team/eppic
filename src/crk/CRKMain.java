@@ -1,7 +1,5 @@
 package crk;
 
-import gnu.getopt.Getopt;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -29,7 +27,6 @@ import owl.core.structure.ChainInterface;
 import owl.core.structure.ChainInterfaceList;
 import owl.core.structure.PdbAsymUnit;
 import owl.core.structure.PdbLoadError;
-import owl.core.structure.AminoAcid;
 import owl.core.structure.SpaceGroup;
 import owl.core.util.FileFormatError;
 
@@ -40,7 +37,6 @@ public class CRKMain {
 	private static final String   CONFIG_FILE_NAME = ".crk.conf";
 	private static final String   ENTROPIES_FILE_SUFFIX = ".entropies";
 	private static final String   KAKS_FILE_SUFFIX = ".kaks";
-	private static final Pattern  PDBCODE_PATTERN = Pattern.compile("^\\d\\w\\w\\w$");
 	private static final Pattern  NONPROT_PATTERN = Pattern.compile("^X+$");
 	private static final double   INTERFACE_DIST_CUTOFF = 5.9;
 	
@@ -98,7 +94,7 @@ public class CRKMain {
 	private static final double   DEF_SOFT_CUTOFF_CA = 0.95;
 	private static final double   DEF_HARD_CUTOFF_CA = 0.82;
 	private static final double   DEF_RELAX_STEP_CA = 0.01;	
-	private static final double[] DEF_CA_CUTOFFS = {0.85, 0.90, 0.95};
+	private static final double[] DEF_CA_CUTOFFS = {0.85};
 	private static final int      DEF_MIN_NUM_RES_CA = 6;
 	private static final int      DEF_MIN_NUM_RES_MEMBER_CA = 3; 
 
@@ -145,103 +141,40 @@ public class CRKMain {
 	private static final Log LOGGER = LogFactory.getLog(CRKMain.class);
 	
 	// fields
-	private String pdbCode;
-	private boolean doScoreCRK;
-	private double idCutoff;
-	private String baseName;
-	private File outDir;
-	private int numThreads;
-	private int reducedAlphabet;
-	private boolean useTcoffeeVeryFastMode;
+	private CRKParams params;
 	
-	private boolean zooming;
-	
-	private double bsaToAsaSoftCutoff;
-	private double bsaToAsaHardCutoff;
-	private double relaxationStep;
-	
-	private double[] cutoffsCA;
-	private String defCACutoffsStr;
-	
-	private int      minNumResCA;
-	private int      minNumResMemberCA; 
-	
-	private double selectonEpsilon;
-
-	private int maxNumSeqsSelecton;
-	
-	private boolean usePisa;
-
-	private boolean useNaccess;
-	
-	private int nSpherePointsASAcalc;
-
-	private double grayZoneWidth;
-	private double[] entrCallCutoff;
-	private double[] kaksCallCutoff;
-	
-	private File inFile;
-	private String pdbName;
 	private PdbAsymUnit pdb;
 	private ChainInterfaceList interfaces;
 	private ChainEvolContextList cecs;
-	private File cifFile;
 	private InterfaceEvolContextList iecList;
-	
-	private File interfSerFile;
-	private File chainEvContextSerFile;
-	
+		
 	private PrintStream progressLogPS;
 
 	public CRKMain(PrintStream progressLogPS) {
 		this.progressLogPS = progressLogPS;
 		
-		pdbCode = null;
-		doScoreCRK = false;
-		idCutoff = DEF_IDENTITY_CUTOFF;
-		baseName = null;
-		outDir = new File(".");
-		numThreads = DEF_NUMTHREADS;
-		reducedAlphabet = DEF_ENTROPY_ALPHABET;
-		useTcoffeeVeryFastMode = DEF_USE_TCOFFEE_VERYFAST_MODE;
-		
-		zooming = false;
-		
-		bsaToAsaSoftCutoff = DEF_SOFT_CUTOFF_CA;
-		bsaToAsaHardCutoff = DEF_HARD_CUTOFF_CA;
-		relaxationStep = DEF_RELAX_STEP_CA;
-		
-		cutoffsCA  = DEF_CA_CUTOFFS;
-		defCACutoffsStr = String.format("%4.2f",DEF_CA_CUTOFFS[0]);
+		double[] entrCallCutoff = {DEF_ENTR_CALL_CUTOFF};
+		double[] kaksCallCutoff  = {DEF_KAKS_CALL_CUTOFF};
+		this.params = new CRKParams(null, false, DEF_IDENTITY_CUTOFF,null,new File("."),
+				DEF_NUMTHREADS,
+				DEF_ENTROPY_ALPHABET,DEF_USE_TCOFFEE_VERYFAST_MODE,
+				false,DEF_SOFT_CUTOFF_CA,DEF_HARD_CUTOFF_CA, DEF_RELAX_STEP_CA, 
+				DEF_CA_CUTOFFS,
+				DEF_MIN_NUM_RES_CA, DEF_MIN_NUM_RES_MEMBER_CA,
+				DEF_SELECTON_EPSILON, DEF_MAX_NUM_SEQUENCES_SELECTON,
+				false, false,
+				DEF_NSPHEREPOINTS_ASA_CALC,
+				DEF_GRAY_ZONE_WIDTH,
+				entrCallCutoff,kaksCallCutoff,
+				null,null);
+	}
+	
+	public void parseCommandLine(String[] args) {
+		String defCACutoffsStr = String.format("%4.2f",DEF_CA_CUTOFFS[0]);
 		for (int i=1;i<DEF_CA_CUTOFFS.length;i++) {
 			defCACutoffsStr += String.format(",%4.2f",DEF_CA_CUTOFFS[i]);
 		}
 		
-		minNumResCA  = DEF_MIN_NUM_RES_CA;
-		minNumResMemberCA = DEF_MIN_NUM_RES_MEMBER_CA; 
-		
-		selectonEpsilon = DEF_SELECTON_EPSILON;
-
-		maxNumSeqsSelecton = DEF_MAX_NUM_SEQUENCES_SELECTON;
-		
-		usePisa = false;
-
-		useNaccess = false;
-		
-		nSpherePointsASAcalc = DEF_NSPHEREPOINTS_ASA_CALC;
-
-		grayZoneWidth = DEF_GRAY_ZONE_WIDTH;
-		entrCallCutoff  = new double[1]; 
-		entrCallCutoff[0] = DEF_ENTR_CALL_CUTOFF;
-		kaksCallCutoff  = new double[1];
-		kaksCallCutoff[0] = DEF_KAKS_CALL_CUTOFF;
- 
-		interfSerFile = null;
-		chainEvContextSerFile = null;
-		
-	}
-	
-	public void parseCommandLine(String[] args) {
 		String help = "Usage: \n" +
 		PROGRAM_NAME+"\n" +
 		"   -i          :  input PDB code or PDB file or mmCIF file\n" +
@@ -294,147 +227,18 @@ public class CRKMain {
 		"  [-C <file>]  :  binary file containing the evolutionary scores for a particular \n" +
 		"                  sequence output of a previous run of CRK\n\n";
 		
-
-
-		Getopt g = new Getopt(PROGRAM_NAME, args, "i:kd:a:b:o:r:tc:zZ:m:M:x:X:g:e:q:pnA:I:C:h?");
-		int c;
-		while ((c = g.getopt()) != -1) {
-			switch(c){
-			case 'i':
-				pdbCode = g.getOptarg();
-				break;
-			case 'k':
-				doScoreCRK = true;
-				break;				
-			case 'd':
-				idCutoff = Double.parseDouble(g.getOptarg());
-				break;
-			case 'a':
-				numThreads = Integer.parseInt(g.getOptarg());
-				break;
-			case 'b':
-				baseName = g.getOptarg();
-				break;				
-			case 'o':
-				outDir = new File(g.getOptarg());
-				break;
-			case 'r':
-				reducedAlphabet = Integer.parseInt(g.getOptarg()); 
-				break;
-			case 't':
-				useTcoffeeVeryFastMode = false;
-				break;
-			case 'c':
-				String[] ctokens = g.getOptarg().split(",");
-				cutoffsCA = new double[ctokens.length];
-				for (int i=0;i<ctokens.length;i++) {
-					cutoffsCA[i] = Double.parseDouble(ctokens[i]);
-				}
-				break;
-			case 'z':
-				zooming = true;
-				break;
-			case 'Z':
-				String[] ztokens = g.getOptarg().split(",");
-				cutoffsCA = new double[ztokens.length];
-				bsaToAsaSoftCutoff = Double.parseDouble(ztokens[0]);
-				bsaToAsaHardCutoff = Double.parseDouble(ztokens[1]);
-				relaxationStep = Double.parseDouble(ztokens[2]);
-				break;
-			case 'm':
-				minNumResCA = Integer.parseInt(g.getOptarg());
-				break;
-			case 'M':
-				minNumResMemberCA = Integer.parseInt(g.getOptarg());
-				break;
-			case 'x':
-				String[] xtokens = g.getOptarg().split(",");
-				entrCallCutoff = new double[xtokens.length];
-				for (int i=0;i<xtokens.length;i++){
-					entrCallCutoff[i] = Double.parseDouble(xtokens[i]);
-				}
-				break;
-			case 'X':
-				String[] Xtokens = g.getOptarg().split(",");
-				kaksCallCutoff = new double[Xtokens.length];
-				for (int i=0;i<Xtokens.length;i++){
-					kaksCallCutoff[i] = Double.parseDouble(Xtokens[i]);
-				}				
-				break;
-			case 'g':
-				grayZoneWidth = Double.parseDouble(g.getOptarg());
-				break;
-			case 'e':
-				selectonEpsilon = Double.parseDouble(g.getOptarg());
-				break;
-			case 'q':
-				maxNumSeqsSelecton = Integer.parseInt(g.getOptarg());
-				break;
-			case 'p':
-				usePisa = true;
-				break;
-			case 'n':
-				useNaccess = true;
-				break;
-			case 'A':
-				nSpherePointsASAcalc = Integer.parseInt(g.getOptarg());
-				break;
-			case 'I':
-				interfSerFile = new File(g.getOptarg());
-				break;
-			case 'C':
-				chainEvContextSerFile = new File(g.getOptarg());
-				break;
-			case 'h':
-			case '?':
-				System.out.println(help);
-				System.exit(0);
-				break; // getopt() already printed an error
-			}
-		}
-		
-		if (pdbCode==null) {
-			System.err.println("Missing argument -i");
-			System.exit(1);
-		}
-		
-		inFile = new File(pdbCode);
-		Matcher m = PDBCODE_PATTERN.matcher(pdbCode);
-		if (m.matches()) {
-			inFile = null;
-		}
-		
-		if (inFile!=null && !inFile.exists()){
-			System.err.println("Given file "+inFile+" does not exist!");
-			System.exit(1);
-		}
-		
-		if (baseName==null) {
-			baseName=pdbCode;
-			if (inFile!=null) {
-				baseName = inFile.getName().substring(0, inFile.getName().lastIndexOf('.'));
-			}
-		}
-		
-		if (!AminoAcid.isValidNumGroupsReducedAlphabet(reducedAlphabet)) {
-			System.err.println("Invalid number of amino acid groups specified ("+reducedAlphabet+")");
-			System.exit(1);
-		}
-		
-		if (usePisa && inFile!=null) {
-			System.err.println("Can only get PISA interface enumeration for a PDB code. Can't use '-p' if the PDB given is a file");
-			System.exit(1);
-		}
+		params.parseCommandLine(args, PROGRAM_NAME, help);
+		params.checkCommandLineInput();
 
 	}
-	
+		
 	public void setUpLogging() {
 		
 		// setting up the file logger for log4j
 		try {
-			ROOTLOGGER.addAppender(new FileAppender(new PatternLayout("%d{ABSOLUTE} %5p - %m%n"),outDir+"/"+baseName+".log",false));
+			ROOTLOGGER.addAppender(new FileAppender(new PatternLayout("%d{ABSOLUTE} %5p - %m%n"),params.getOutDir()+"/"+params.getBaseName()+".log",false));
 		} catch (IOException e) {
-			System.err.println("Couldn't open log file "+outDir+"/"+baseName+".log"+" for writing.");
+			System.err.println("Couldn't open log file "+params.getOutDir()+"/"+params.getBaseName()+".log"+" for writing.");
 			System.err.println(e.getMessage());
 			System.exit(1);
 		}
@@ -463,41 +267,40 @@ public class CRKMain {
 	}
 
 	public void doLoadPdb() throws CRKException {
-		pdbName = pdbCode; // the name to be used in many of the output files
-		if (inFile!=null) pdbName = inFile.getName().substring(0, inFile.getName().lastIndexOf('.'));
 
 		pdb = null;
-		cifFile = null; // if given a pdb code in command line we will store the cif file here
+		File cifFile = null; // if given a pdb code in command line we will store the cif file here
 		try {
-			if (inFile==null) {
-				cifFile = new File(outDir,pdbCode + ".cif");
+			if (!params.isInputAFile()) {
+				cifFile = new File(params.getOutDir(),params.getPdbCode() + ".cif");
 				try {
-					PdbAsymUnit.grabCifFile(LOCAL_CIF_DIR, PDB_FTP_CIF_URL, pdbCode, cifFile, USE_ONLINE_PDB);
+					PdbAsymUnit.grabCifFile(LOCAL_CIF_DIR, PDB_FTP_CIF_URL, params.getPdbCode(), cifFile, USE_ONLINE_PDB);
 				} catch(IOException e) {
-					throw new CRKException(e,"Couldn't get cif file for code "+pdbCode+" from ftp or couldn't uncompress it. Error: "+e.getMessage(),true);
+					throw new CRKException(e,"Couldn't get cif file for code "+params.getPdbCode()+" from ftp or couldn't uncompress it. Error: "+e.getMessage(),true);
 				}
-				pdb = new PdbAsymUnit(cifFile);	
+					
 			} else {
-				pdb = new PdbAsymUnit(inFile);
+				cifFile = params.getInFile();
 			}
+			pdb = new PdbAsymUnit(cifFile);
 		} catch (FileFormatError e) {
 			throw new CRKException(e,"File format error: "+e.getMessage(),true);
 		} catch (PdbLoadError e) {
-			throw new CRKException(e,"Couldn't load file "+((inFile==null)?cifFile.toString():inFile.toString())+". Error: "+e.getMessage(),true);
+			throw new CRKException(e,"Couldn't load file "+cifFile+". Error: "+e.getMessage(),true);
 		} catch (IOException e) {
-			throw new CRKException(e,"Problems reading PDB data from "+((inFile==null)?cifFile.toString():inFile.toString())+". Error: "+e.getMessage(),true);
+			throw new CRKException(e,"Problems reading PDB data from "+cifFile+". Error: "+e.getMessage(),true);
 		}
 		
 		if (pdb.getCrystalCell()==null) {
-			throw new CRKException(null, "No crystal information found in source "+((inFile==null)?pdbCode:inFile.toString()), true);
+			throw new CRKException(null, "No crystal information found in source "+params.getPdbCode(), true);
 		}
 	}
 	
 	public void doLoadInterfacesFromFile() throws CRKException {
 		try {
-			progressLogPS.println("Loading interfaces enumeration from file "+interfSerFile);
-			LOGGER.info("Loading interfaces enumeration from file "+interfSerFile);
-			interfaces = ChainInterfaceList.readFromFile(interfSerFile);
+			progressLogPS.println("Loading interfaces enumeration from file "+params.getInterfSerFile());
+			LOGGER.info("Loading interfaces enumeration from file "+params.getInterfSerFile());
+			interfaces = ChainInterfaceList.readFromFile(params.getInterfSerFile());
 		} catch (ClassNotFoundException e) {
 			throw new CRKException(e,"Couldn't load interface enumeration binary file: "+e.getMessage(),true);
 		} catch (IOException e) {
@@ -508,10 +311,10 @@ public class CRKMain {
 			throw new CRKException(null,"PDB codes of given PDB entry/file and given interface enumeration binary file don't match.",true);
 		}
 		
-		if (zooming) {
-			interfaces.calcRimAndCores(bsaToAsaSoftCutoff, bsaToAsaHardCutoff, relaxationStep, minNumResCA);
+		if (params.isZooming()) {
+			interfaces.calcRimAndCores(params.getBsaToAsaSoftCutoff(), params.getBsaToAsaHardCutoff(), params.getRelaxationStep(), params.getMinNumResCA());
 		} else {
-			interfaces.calcRimAndCores(cutoffsCA);
+			interfaces.calcRimAndCores(params.getCutoffsCA());
 		}
 		
 		if (interfaces.getNumInterfacesAboveArea(MIN_INTERF_AREA_REPORTING)==0) {
@@ -521,7 +324,7 @@ public class CRKMain {
 
 	public void doFindInterfaces() throws CRKException {
 
-		if (usePisa) {
+		if (params.isUsePisa()) {
 			progressLogPS.println("Getting PISA interfaces...");
 			LOGGER.info("Interfaces from PISA.");
 			PisaConnection pc = new PisaConnection(PISA_INTERFACES_URL, null, null);
@@ -537,12 +340,12 @@ public class CRKMain {
 		} else {
 			progressLogPS.println("Calculating possible interfaces...");
 			try {
-				if (useNaccess) {
+				if (params.isUseNaccess()) {
 					interfaces = pdb.getAllInterfaces(INTERFACE_DIST_CUTOFF, NACCESS_EXE, 0, 0);
 					LOGGER.info("Interfaces calculated with NACCESS.");
 				} else {
-					interfaces = pdb.getAllInterfaces(INTERFACE_DIST_CUTOFF, null, nSpherePointsASAcalc, numThreads);
-					LOGGER.info("Interfaces calculated with "+nSpherePointsASAcalc+" sphere points.");
+					interfaces = pdb.getAllInterfaces(INTERFACE_DIST_CUTOFF, null, params.getnSpherePointsASAcalc(), params.getNumThreads());
+					LOGGER.info("Interfaces calculated with "+params.getnSpherePointsASAcalc()+" sphere points.");
 				}
 			} catch (IOException e) {
 				throw new CRKException(e,"Couldn't run NACCESS for BSA calculation. Error: "+e.getMessage(),true);
@@ -553,7 +356,7 @@ public class CRKMain {
 
 
 		// checking for clashes
-		if (!usePisa && interfaces.hasInterfacesWithClashes(INTERCHAIN_ATOM_CLASH_DISTANCE)) {
+		if (!params.isUsePisa() && interfaces.hasInterfacesWithClashes(INTERCHAIN_ATOM_CLASH_DISTANCE)) {
 			String msg = "Clashes found in some of the interfaces (atoms distance below "+INTERCHAIN_ATOM_CLASH_DISTANCE+"):";
 			List<ChainInterface> clashyInterfs = interfaces.getInterfacesWithClashes(INTERCHAIN_ATOM_CLASH_DISTANCE);
 			for (ChainInterface clashyInterf:clashyInterfs) {
@@ -565,16 +368,16 @@ public class CRKMain {
 			msg+=("\nThis is most likely an error in the structure. If you think the structure is correct, please report a bug.");
 			throw new CRKException(null, msg, true);
 		}
-		if (zooming) {
-			interfaces.calcRimAndCores(bsaToAsaSoftCutoff, bsaToAsaHardCutoff, relaxationStep, minNumResCA);
+		if (params.isZooming()) {
+			interfaces.calcRimAndCores(params.getBsaToAsaSoftCutoff(), params.getBsaToAsaHardCutoff(), params.getRelaxationStep(), params.getMinNumResCA());
 		} else {
-			interfaces.calcRimAndCores(cutoffsCA);
+			interfaces.calcRimAndCores(params.getCutoffsCA());
 		}
 
 
 		try {
-			PrintStream interfLogPS = new PrintStream(new File(outDir,baseName+".interfaces"));
-			interfaces.printTabular(interfLogPS, pdbName);
+			PrintStream interfLogPS = new PrintStream(params.getOutputFile(".interfaces"));
+			interfaces.printTabular(interfLogPS, params.getJobName());
 			interfLogPS.close();
 		} catch(IOException	e) {
 			throw new CRKException(e,"Couldn't log interfaces description to file: "+e.getMessage(),false);
@@ -584,7 +387,7 @@ public class CRKMain {
 		}
 
 		try {
-			interfaces.serialize(new File(outDir,baseName+".interfaces.dat"));
+			interfaces.serialize(params.getOutputFile(".interfaces.dat"));
 		} catch (IOException e) {
 			throw new CRKException(e,"Couldn't write serialized ChainInterfaceList object to file: "+e.getMessage(),false);
 		}
@@ -593,7 +396,7 @@ public class CRKMain {
 	public void doLoadEvolContextFromFile() throws CRKException {
 		if (interfaces.getNumInterfacesAboveArea(MIN_INTERF_AREA_REPORTING)==0) return;
 		
-		String msg = "Unique sequences for "+pdbName+":";
+		String msg = "Unique sequences for "+params.getJobName()+":";
 		int i = 1;
 		for (String representativeChain:pdb.getAllRepChains()) {
 			List<String> entity = pdb.getSeqIdenticalGroup(representativeChain);
@@ -606,9 +409,9 @@ public class CRKMain {
 		LOGGER.info(msg);
 		
 		try {
-			progressLogPS.println("Loading chain evolutionary scores from file "+chainEvContextSerFile);
-			LOGGER.info("Loading chain evolutionary scores from file "+chainEvContextSerFile);
-			cecs = ChainEvolContextList.readFromFile(chainEvContextSerFile);
+			progressLogPS.println("Loading chain evolutionary scores from file "+params.getChainEvContextSerFile());
+			LOGGER.info("Loading chain evolutionary scores from file "+params.getChainEvContextSerFile());
+			cecs = ChainEvolContextList.readFromFile(params.getChainEvContextSerFile());
 		} catch (ClassNotFoundException e) {
 			throw new CRKException(e,"Couldn't load interface enumeration binary file: "+e.getMessage(),true);
 		} catch(IOException e) {
@@ -621,7 +424,7 @@ public class CRKMain {
 	public void doFindEvolContext() throws CRKException {
 		if (interfaces.getNumInterfacesAboveArea(MIN_INTERF_AREA_REPORTING)==0) return;
 		
-		String msg = "Unique sequences for "+pdbName+":";
+		String msg = "Unique sequences for "+params.getJobName()+":";
 		int i = 1;
 		for (String representativeChain:pdb.getAllRepChains()) {
 			List<String> entity = pdb.getSeqIdenticalGroup(representativeChain);
@@ -646,23 +449,23 @@ public class CRKMain {
 			}
 
 			cecs.addChainEvolContext(representativeChain,pdb.getSeqIdenticalGroup(representativeChain),
-					new ChainEvolContext(pdb.getChain(representativeChain).getSequence(), representativeChain, pdb.getPdbCode(), pdbName));
+					new ChainEvolContext(pdb.getChain(representativeChain).getSequence(), representativeChain, pdb.getPdbCode(), params.getJobName()));
 		}
 		// a) getting the uniprot ids corresponding to the query (the pdb sequence)
 		for (ChainEvolContext chainEvCont:cecs.getAllChainEvolContext()) {
 			File emblQueryCacheFile = null;
 			if (EMBL_CDS_CACHE_DIR!=null) {
-				emblQueryCacheFile = new File(EMBL_CDS_CACHE_DIR,baseName+"."+pdbName+chainEvCont.getRepresentativeChainCode()+".query.emblcds.fa");
+				emblQueryCacheFile = new File(EMBL_CDS_CACHE_DIR,params.getBaseName()+"."+chainEvCont.getRepresentativeChainCode()+".query.emblcds.fa");
 			}
 			progressLogPS.println("Finding query's uniprot mapping (through SIFTS or blasting)");
 			try {
-				chainEvCont.retrieveQueryData(SIFTS_FILE, emblQueryCacheFile, BLAST_BIN_DIR, BLAST_DB_DIR, BLAST_DB, numThreads,doScoreCRK);
+				chainEvCont.retrieveQueryData(SIFTS_FILE, emblQueryCacheFile, BLAST_BIN_DIR, BLAST_DB_DIR, BLAST_DB, params.getNumThreads(),params.isDoScoreCRK());
 			} catch (BlastError e) {
 				throw new CRKException(e,"Couldn't run blast to retrieve query's uniprot mapping: "+e.getMessage(),true);
 			}  catch (IOException e) {
 				throw new CRKException(e,"Problems while retrieving query data: "+e.getMessage(),true);
 			}
-			if (doScoreCRK && chainEvCont.getQueryRepCDS()==null) {
+			if (params.isDoScoreCRK() && chainEvCont.getQueryRepCDS()==null) {
 				// note calling chainEvCont.canDoCRK() will also check for this condition (here we only want to log it once)
 				LOGGER.error("No CDS good match for query sequence! can't do CRK analysis on it.");
 			}
@@ -671,10 +474,10 @@ public class CRKMain {
 			progressLogPS.println("Blasting for homologues...");
 			File blastCacheFile = null;
 			if (BLAST_CACHE_DIR!=null) {
-				blastCacheFile = new File(BLAST_CACHE_DIR,baseName+"."+pdbName+chainEvCont.getRepresentativeChainCode()+".blast.xml"); 
+				blastCacheFile = new File(BLAST_CACHE_DIR,params.getBaseName()+"."+chainEvCont.getRepresentativeChainCode()+".blast.xml"); 
 			}
 			try {
-				chainEvCont.retrieveHomologs(BLAST_BIN_DIR, BLAST_DB_DIR, BLAST_DB, numThreads, idCutoff, QUERY_COVERAGE_CUTOFF, blastCacheFile);
+				chainEvCont.retrieveHomologs(BLAST_BIN_DIR, BLAST_DB_DIR, BLAST_DB, params.getNumThreads(), params.getIdCutoff(), QUERY_COVERAGE_CUTOFF, blastCacheFile);
 				LOGGER.info("Uniprot version used: "+chainEvCont.getUniprotVer());
 			} catch (UniprotVerMisMatchException e) {
 				throw new CRKException(e, "Mismatch of Uniprot versions! "+e.getMessage(), true);
@@ -687,16 +490,16 @@ public class CRKMain {
 			progressLogPS.println("Retrieving UniprotKB data and EMBL CDS sequences");
 			File emblHomsCacheFile = null;
 			if (EMBL_CDS_CACHE_DIR!=null) {
-				emblHomsCacheFile = new File(EMBL_CDS_CACHE_DIR,baseName+"."+pdbName+chainEvCont.getRepresentativeChainCode()+".homologs.emblcds.fa");
+				emblHomsCacheFile = new File(EMBL_CDS_CACHE_DIR,params.getBaseName()+"."+chainEvCont.getRepresentativeChainCode()+".homologs.emblcds.fa");
 			}
 			try {
-				chainEvCont.retrieveHomologsData(emblHomsCacheFile, doScoreCRK);
+				chainEvCont.retrieveHomologsData(emblHomsCacheFile, params.isDoScoreCRK());
 			} catch (UniprotVerMisMatchException e) {
 				throw new CRKException(e, "Mismatch of Uniprot versions! "+e.getMessage(), true);
 			} catch (IOException e) {
 				throw new CRKException(e, "Problem while fetching CDS data: "+e.getMessage(),true);
 			}
-			if (doScoreCRK && !chainEvCont.isConsistentGeneticCodeType()){
+			if (params.isDoScoreCRK() && !chainEvCont.isConsistentGeneticCodeType()){
 				// note calling chainEvCont.canDoCRK() will also check for this condition (here we only want to log it once)
 				LOGGER.error("The list of homologs does not have a single genetic code type, can't do CRK analysis on it.");
 			}
@@ -705,11 +508,11 @@ public class CRKMain {
 			chainEvCont.removeRedundancy();
 
 			// skimming so that there's not too many sequences for selecton
-			chainEvCont.skimList(maxNumSeqsSelecton);
+			chainEvCont.skimList(params.getMaxNumSeqsSelecton());
 			
 			// check the back-translation of CDS to uniprot
 			// check whether we have a good enough CDS for the chain
-			if (doScoreCRK && chainEvCont.canDoCRK()) {
+			if (params.isDoScoreCRK() && chainEvCont.canDoCRK()) {
 				LOGGER.info("Number of homologs with at least one uniprot CDS mapping: "+chainEvCont.getNumHomologsWithCDS());
 				LOGGER.info("Number of homologs with valid CDS: "+chainEvCont.getNumHomologsWithValidCDS());
 			}
@@ -717,7 +520,7 @@ public class CRKMain {
 			// c) align
 			progressLogPS.println("Aligning protein sequences with t_coffee...");
 			try {
-				chainEvCont.align(TCOFFEE_BIN, useTcoffeeVeryFastMode);
+				chainEvCont.align(TCOFFEE_BIN, params.isUseTcoffeeVeryFastMode());
 			} catch (TcoffeeError e) {
 				throw new CRKException(e, "Couldn't run t_coffee to align protein sequences: "+e.getMessage(), true);
 			} catch (IOException e) {
@@ -727,20 +530,20 @@ public class CRKMain {
 			File outFile = null;
 			try {
 				// writing homolog sequences to file
-				outFile = new File(outDir,baseName+"."+pdbName+chainEvCont.getRepresentativeChainCode()+".fa");
+				outFile = params.getOutputFile("."+chainEvCont.getRepresentativeChainCode()+".fa");
 				chainEvCont.writeHomologSeqsToFile(outFile);
 
 				// printing summary to file
-				outFile = new File(outDir,baseName+"."+pdbName+chainEvCont.getRepresentativeChainCode()+".log");
+				outFile = params.getOutputFile("."+chainEvCont.getRepresentativeChainCode()+".log");
 				PrintStream log = new PrintStream(outFile);
 				chainEvCont.printSummary(log);
 				log.close();
 				// writing the alignment to file
-				outFile = new File(outDir,baseName+"."+pdbName+chainEvCont.getRepresentativeChainCode()+".aln");
+				outFile = params.getOutputFile("."+chainEvCont.getRepresentativeChainCode()+".aln");
 				chainEvCont.writeAlignmentToFile(outFile);
 				// writing the nucleotides alignment to file
-				if (doScoreCRK && chainEvCont.canDoCRK()) {
-					outFile = new File(outDir,baseName+"."+pdbName+chainEvCont.getRepresentativeChainCode()+".cds.aln");
+				if (params.isDoScoreCRK() && chainEvCont.canDoCRK()) {
+					outFile = params.getOutputFile("."+chainEvCont.getRepresentativeChainCode()+".cds.aln");
 					chainEvCont.writeNucleotideAlignmentToFile(outFile);
 				}
 			} catch(FileNotFoundException e){
@@ -749,18 +552,18 @@ public class CRKMain {
 			}
 
 			// d) computing entropies
-			chainEvCont.computeEntropies(reducedAlphabet);
+			chainEvCont.computeEntropies(params.getReducedAlphabet());
 
 			// e) compute ka/ks ratios
-			if (doScoreCRK && chainEvCont.canDoCRK()) {
+			if (params.isDoScoreCRK() && chainEvCont.canDoCRK()) {
 				progressLogPS.println("Running selecton (this will take long)...");
 				try {
 				chainEvCont.computeKaKsRatiosSelecton(SELECTON_BIN, 
-						new File(outDir,baseName+"."+pdbName+chainEvCont.getRepresentativeChainCode()+".selecton.res"),
-						new File(outDir,baseName+"."+pdbName+chainEvCont.getRepresentativeChainCode()+".selecton.log"), 
-						new File(outDir,baseName+"."+pdbName+chainEvCont.getRepresentativeChainCode()+".selecton.tree"),
-						new File(outDir,baseName+"."+pdbName+chainEvCont.getRepresentativeChainCode()+".selecton.global"),
-						selectonEpsilon);
+						params.getOutputFile("."+chainEvCont.getRepresentativeChainCode()+".selecton.res"),
+						params.getOutputFile("."+chainEvCont.getRepresentativeChainCode()+".selecton.log"), 
+						params.getOutputFile("."+chainEvCont.getRepresentativeChainCode()+".selecton.tree"),
+						params.getOutputFile("."+chainEvCont.getRepresentativeChainCode()+".selecton.global"),
+						params.getSelectonEpsilon());
 				} catch (IOException e) {
 					throw new CRKException(e, "Problems while running selecton: "+e.getMessage(), true);
 				}
@@ -768,12 +571,12 @@ public class CRKMain {
 
 			try {
 				// writing the conservation scores (entropies/kaks) log file
-				outFile = new File(outDir,baseName+"."+pdbName+chainEvCont.getRepresentativeChainCode()+ENTROPIES_FILE_SUFFIX);
+				outFile = params.getOutputFile("."+chainEvCont.getRepresentativeChainCode()+ENTROPIES_FILE_SUFFIX);
 				PrintStream conservScoLog = new PrintStream(outFile);
 				chainEvCont.printConservationScores(conservScoLog, ScoringType.ENTROPY);
 				conservScoLog.close();
-				if (doScoreCRK && chainEvCont.canDoCRK()) {
-					outFile = new File(outDir,baseName+"."+pdbName+chainEvCont.getRepresentativeChainCode()+KAKS_FILE_SUFFIX);
+				if (params.isDoScoreCRK() && chainEvCont.canDoCRK()) {
+					outFile = params.getOutputFile("."+chainEvCont.getRepresentativeChainCode()+KAKS_FILE_SUFFIX);
 					conservScoLog = new PrintStream(outFile);
 					chainEvCont.printConservationScores(conservScoLog, ScoringType.KAKS);
 					conservScoLog.close();				
@@ -785,7 +588,7 @@ public class CRKMain {
 		}
 		
 		try {
-			this.cecs.serialize(new File(outDir,baseName+".chainevolcontext.dat"));
+			this.cecs.serialize(params.getOutputFile(".chainevolcontext.dat"));
 		} catch (IOException e) {
 			throw new CRKException(e,"Couldn't write serialized ChainEvolContextList object to file: "+e.getMessage(),false);
 		}
@@ -797,26 +600,26 @@ public class CRKMain {
 		
 		progressLogPS.println("Scores:");
 		
-		iecList = new InterfaceEvolContextList(pdbName, MIN_HOMOLOGS_CUTOFF, minNumResCA, minNumResMemberCA, 
-				idCutoff, QUERY_COVERAGE_CUTOFF, maxNumSeqsSelecton, MIN_INTERF_AREA_REPORTING);
+		iecList = new InterfaceEvolContextList(params.getJobName(), MIN_HOMOLOGS_CUTOFF, params.getMinNumResCA(), params.getMinNumResMemberCA(), 
+				params.getIdCutoff(), QUERY_COVERAGE_CUTOFF, params.getMaxNumSeqsSelecton(), MIN_INTERF_AREA_REPORTING);
 		iecList.addAll(interfaces,cecs);
 		
 		try {
-			for (int callCutoffIdx=0;callCutoffIdx<entrCallCutoff.length;callCutoffIdx++) {
+			for (int callCutoffIdx=0;callCutoffIdx<params.getEntrCallCutoffs().length;callCutoffIdx++) {
 				String suffix = null;
-				if (entrCallCutoff.length==1) suffix="";
+				if (params.getEntrCallCutoffs().length==1) suffix="";
 				else suffix="."+Integer.toString(callCutoffIdx+1);
-				PrintStream scoreEntrPS = new PrintStream(new File(outDir,baseName+ENTROPIES_FILE_SUFFIX+".scores"+suffix));
+				PrintStream scoreEntrPS = new PrintStream(params.getOutputFile(ENTROPIES_FILE_SUFFIX+".scores"+suffix));
 				// entropy nw
 				iecList.scoreEntropy(false);
-				iecList.printScoresTable(progressLogPS, entrCallCutoff[callCutoffIdx]-grayZoneWidth, entrCallCutoff[callCutoffIdx]+grayZoneWidth);
-				iecList.printScoresTable(scoreEntrPS, entrCallCutoff[callCutoffIdx]-grayZoneWidth, entrCallCutoff[callCutoffIdx]+grayZoneWidth);
+				iecList.printScoresTable(progressLogPS, params.getEntrCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getEntrCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
+				iecList.printScoresTable(scoreEntrPS, params.getEntrCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getEntrCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
 				// entropy w
 				iecList.scoreEntropy(true);
-				iecList.printScoresTable(progressLogPS, entrCallCutoff[callCutoffIdx]-grayZoneWidth, entrCallCutoff[callCutoffIdx]+grayZoneWidth);
-				iecList.printScoresTable(scoreEntrPS, entrCallCutoff[callCutoffIdx]-grayZoneWidth, entrCallCutoff[callCutoffIdx]+grayZoneWidth);
-				iecList.writeScoresPDBFiles(outDir, baseName, ENTROPIES_FILE_SUFFIX+".pdb");
-				iecList.writeRimCorePDBFiles(outDir, baseName, ".rimcore.pdb");
+				iecList.printScoresTable(progressLogPS, params.getEntrCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getEntrCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
+				iecList.printScoresTable(scoreEntrPS, params.getEntrCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getEntrCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
+				iecList.writeScoresPDBFiles(params.getOutDir(), params.getBaseName(), ENTROPIES_FILE_SUFFIX+".pdb");
+				iecList.writeRimCorePDBFiles(params.getOutDir(), params.getBaseName(), ".rimcore.pdb");
 				scoreEntrPS.close();
 			}
 		} catch (IOException e) {
@@ -824,22 +627,22 @@ public class CRKMain {
 		}
 		try {
 			// ka/ks scoring
-			if (doScoreCRK) {
-				for (int callCutoffIdx=0;callCutoffIdx<kaksCallCutoff.length;callCutoffIdx++) {
+			if (params.isDoScoreCRK()) {
+				for (int callCutoffIdx=0;callCutoffIdx<params.getKaksCallCutoffs().length;callCutoffIdx++) {
 					String suffix = null;
-					if (kaksCallCutoff.length==1) suffix="";
+					if (params.getKaksCallCutoffs().length==1) suffix="";
 					else suffix="."+Integer.toString(callCutoffIdx+1);
-					PrintStream scoreKaksPS = new PrintStream(new File(outDir,baseName+KAKS_FILE_SUFFIX+".scores"+suffix));
+					PrintStream scoreKaksPS = new PrintStream(params.getOutputFile(KAKS_FILE_SUFFIX+".scores"+suffix));
 					// kaks nw
 					iecList.scoreKaKs(false);
-					iecList.printScoresTable(progressLogPS,  kaksCallCutoff[callCutoffIdx]-grayZoneWidth, kaksCallCutoff[callCutoffIdx]+grayZoneWidth);
-					iecList.printScoresTable(scoreKaksPS,  kaksCallCutoff[callCutoffIdx]-grayZoneWidth, kaksCallCutoff[callCutoffIdx]+grayZoneWidth);
+					iecList.printScoresTable(progressLogPS,  params.getKaksCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getKaksCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
+					iecList.printScoresTable(scoreKaksPS,  params.getKaksCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getKaksCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
 					// kaks w
 					iecList.scoreKaKs(true);
-					iecList.printScoresTable(progressLogPS,  kaksCallCutoff[callCutoffIdx]-grayZoneWidth, kaksCallCutoff[callCutoffIdx]+grayZoneWidth);
-					iecList.printScoresTable(scoreKaksPS,  kaksCallCutoff[callCutoffIdx]-grayZoneWidth, kaksCallCutoff[callCutoffIdx]+grayZoneWidth);
-					iecList.writeScoresPDBFiles(outDir, baseName, KAKS_FILE_SUFFIX+".pdb");
-					iecList.writeRimCorePDBFiles(outDir, baseName, ".rimcore.pdb");
+					iecList.printScoresTable(progressLogPS,  params.getKaksCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getKaksCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
+					iecList.printScoresTable(scoreKaksPS,  params.getKaksCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getKaksCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
+					iecList.writeScoresPDBFiles(params.getOutDir(), params.getBaseName(), KAKS_FILE_SUFFIX+".pdb");
+					iecList.writeRimCorePDBFiles(params.getOutDir(), params.getBaseName(), ".rimcore.pdb");
 					scoreKaksPS.close();
 				}
 			}
@@ -855,9 +658,9 @@ public class CRKMain {
 	public static void main(String[] args) {
 		
 		CRKMain crkMain = new CRKMain(System.out);
-		
-		crkMain.parseCommandLine(args);
 
+		crkMain.parseCommandLine(args);
+		
 		// turn off jaligner logging (we only use NeedlemanWunschGotoh from that package)
 		// (for some reason this doesn't work if condensated into one line, it seems that one needs to instantiate the logger and then call setLevel)
 		// (and even weirder, for some reason it doesn't work if you put the code in its own separate method!)
@@ -865,22 +668,23 @@ public class CRKMain {
 		jalLogger.setLevel(java.util.logging.Level.OFF);
 		
 		crkMain.setUpLogging();
-		
+
 		crkMain.loadConfigFile();
 
 		try {
+
 			// 0 load pdb
 			crkMain.doLoadPdb();
 
 			// 1 finding interfaces
-			if (crkMain.interfSerFile!=null) {
+			if (crkMain.params.getInterfSerFile()!=null) {
 				crkMain.doLoadInterfacesFromFile();
 			} else {
 				crkMain.doFindInterfaces();
 			}
 
 			// 2 finding evolutionary context
-			if (crkMain.chainEvContextSerFile!=null) {
+			if (crkMain.params.getChainEvContextSerFile()!=null) {
 				crkMain.doLoadEvolContextFromFile();
 			} else {
 				crkMain.doFindEvolContext();
@@ -893,16 +697,16 @@ public class CRKMain {
 			e.log(LOGGER);
 			e.exitIfFatal(1);
 		} 
-		catch (Exception e) {
-			e.printStackTrace();
-
-			String stack = "";
-			for (StackTraceElement el:e.getStackTrace()) {
-				stack+="\tat "+el.toString()+"\n";				
-			}
-			LOGGER.fatal("Unexpected error. Exiting.\n"+e+"\n"+stack);
-			System.exit(1);
-		}
+//		catch (Exception e) {
+//			e.printStackTrace();
+//
+//			String stack = "";
+//			for (StackTraceElement el:e.getStackTrace()) {
+//				stack+="\tat "+el.toString()+"\n";				
+//			}
+//			LOGGER.fatal("Unexpected error. Exiting.\n"+e+"\n"+stack);
+//			System.exit(1);
+//		}
 	}
 	
 
