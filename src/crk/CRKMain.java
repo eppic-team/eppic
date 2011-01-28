@@ -153,20 +153,6 @@ public class CRKMain {
 	public CRKMain(PrintStream progressLogPS) {
 		this.progressLogPS = progressLogPS;
 		
-		double[] entrCallCutoff = {DEF_ENTR_CALL_CUTOFF};
-		double[] kaksCallCutoff  = {DEF_KAKS_CALL_CUTOFF};
-		this.params = new CRKParams(null, false, DEF_IDENTITY_CUTOFF,null,new File("."),
-				DEF_NUMTHREADS,
-				DEF_ENTROPY_ALPHABET,DEF_USE_TCOFFEE_VERYFAST_MODE,
-				false,DEF_SOFT_CUTOFF_CA,DEF_HARD_CUTOFF_CA, DEF_RELAX_STEP_CA, 
-				DEF_CA_CUTOFFS,
-				DEF_MIN_NUM_RES_CA, DEF_MIN_NUM_RES_MEMBER_CA,
-				DEF_SELECTON_EPSILON, DEF_MAX_NUM_SEQUENCES_SELECTON,
-				false, false,
-				DEF_NSPHEREPOINTS_ASA_CALC,
-				DEF_GRAY_ZONE_WIDTH,
-				entrCallCutoff,kaksCallCutoff,
-				null,null);
 	}
 	
 	public void parseCommandLine(String[] args) {
@@ -652,6 +638,23 @@ public class CRKMain {
 		
 	}
 	
+	public void setDefaults() {
+		double[] entrCallCutoff = {DEF_ENTR_CALL_CUTOFF};
+		double[] kaksCallCutoff  = {DEF_KAKS_CALL_CUTOFF};
+		this.params = new CRKParams(null, false, DEF_IDENTITY_CUTOFF,null,new File("."),
+				DEF_NUMTHREADS,
+				DEF_ENTROPY_ALPHABET,DEF_USE_TCOFFEE_VERYFAST_MODE,
+				false,DEF_SOFT_CUTOFF_CA,DEF_HARD_CUTOFF_CA, DEF_RELAX_STEP_CA, 
+				DEF_CA_CUTOFFS,
+				DEF_MIN_NUM_RES_CA, DEF_MIN_NUM_RES_MEMBER_CA,
+				DEF_SELECTON_EPSILON, DEF_MAX_NUM_SEQUENCES_SELECTON,
+				false, false,
+				DEF_NSPHEREPOINTS_ASA_CALC,
+				DEF_GRAY_ZONE_WIDTH,
+				entrCallCutoff,kaksCallCutoff,
+				null,null);
+	}
+	
 	/**
 	 * The main of CRK 
 	 */
@@ -659,6 +662,7 @@ public class CRKMain {
 		
 		CRKMain crkMain = new CRKMain(System.out);
 
+		crkMain.setDefaults();
 		crkMain.parseCommandLine(args);
 		
 		// turn off jaligner logging (we only use NeedlemanWunschGotoh from that package)
@@ -758,5 +762,9 @@ public class CRKMain {
 			System.exit(1);
 		}
 	}
-		
+	
+	public CRKParams getCRKParams()
+	{
+		return params;
+	}
 }
