@@ -104,7 +104,7 @@ public class CRKParams {
 		while ((c = g.getopt()) != -1) {
 			switch(c){
 			case 'i':
-				pdbCode = g.getOptarg();
+				setPdbCode(g.getOptarg());
 				break;
 			case 'k':
 				doScoreCRK = true;
@@ -204,12 +204,6 @@ public class CRKParams {
 			System.exit(1);
 		}
 		
-		inFile = new File(pdbCode);
-		Matcher m = PDBCODE_PATTERN.matcher(pdbCode);
-		if (m.matches()) {
-			inFile = null;
-		}
-		
 		if (inFile!=null && !inFile.exists()){
 			System.err.println("Given file "+inFile+" does not exist!");
 			System.exit(1);
@@ -267,9 +261,16 @@ public class CRKParams {
 	public String getPdbCode() {
 		return pdbCode;
 	}
+	
 	public void setPdbCode(String pdbCode) {
+		inFile = new File(pdbCode);
+		Matcher m = PDBCODE_PATTERN.matcher(pdbCode);
+		if (m.matches()) {
+			inFile = null;
+		}
 		this.pdbCode = pdbCode;
 	}
+	
 	public boolean isDoScoreCRK() {
 		return doScoreCRK;
 	}
