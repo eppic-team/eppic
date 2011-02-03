@@ -3,7 +3,9 @@ package ch.systemsx.sybit.crkwebui.client.callbacks;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 import ch.systemsx.sybit.crkwebui.client.data.ResultsData;
 
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import model.PdbScore;
 
 public class GetResultsDataCallback implements AsyncCallback
 {

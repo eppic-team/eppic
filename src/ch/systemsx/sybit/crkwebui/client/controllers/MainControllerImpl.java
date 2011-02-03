@@ -6,6 +6,7 @@ import ch.systemsx.sybit.crkwebui.client.data.ResultsData;
 import ch.systemsx.sybit.crkwebui.client.data.StatusData;
 import ch.systemsx.sybit.crkwebui.client.gui.InputDataPanel;
 import ch.systemsx.sybit.crkwebui.client.gui.MainViewPort;
+import ch.systemsx.sybit.crkwebui.client.gui.OverviewPanel;
 import ch.systemsx.sybit.crkwebui.client.gui.ResultsPanel;
 import ch.systemsx.sybit.crkwebui.client.gui.StatusPanel;
 
@@ -65,6 +66,8 @@ public class MainControllerImpl implements MainController
 		inputDataPanelWrapper.setBodyBorder(false);
 		inputDataPanelWrapper.getHeader().setVisible(false);
 		
+//		mainViewPort.getDisplayPanel().setLayout(vBoxLayout);
+		
 		InputDataPanel inputDataPanel = new InputDataPanel(this);
 		
 		inputDataPanelWrapper.add(inputDataPanel);
@@ -92,9 +95,14 @@ public class MainControllerImpl implements MainController
 	{
 		mainViewPort.getDisplayPanel().removeAll();
 		
-		ResultsPanel resultsPanel = new ResultsPanel(this, resultData);
+//		ResultsPanel resultsPanel = new ResultsPanel(this);
+//		resultsPanel.getOverViewTabItem().getOverviewPanel().setResults(resultData);
+		
 		mainViewPort.getDisplayPanel().setLayout(new FitLayout());
-		mainViewPort.getDisplayPanel().add(resultsPanel);
+//		mainViewPort.getDisplayPanel().add(resultsPanel);
+		OverviewPanel overViewPanel = new OverviewPanel(this, resultData);
+		overViewPanel.setResults(resultData);
+		mainViewPort.getDisplayPanel().add(overViewPanel);
 		mainViewPort.getDisplayPanel().layout();
 	}
 	
@@ -117,23 +125,6 @@ public class MainControllerImpl implements MainController
 		
 		mainViewPort.getDisplayPanel().add(statusPanelWrapper);
 		mainViewPort.getDisplayPanel().layout();
-		
-//		if(mainPanel.getDisplayPanel().getWidgetCount() > 0 &&
-//		   mainPanel.getDisplayPanel().getWidget(0) instanceof StatusPanelGWT)
-//		{
-//			((StatusPanelGWT)(mainPanel.getDisplayPanel().getWidget(0))).fillData(statusData);
-//		}
-//		else
-//		{
-//			for(int i=0; i<mainPanel.getDisplayPanel().getWidgetCount(); i++)
-//			{
-//				mainPanel.getDisplayPanel().remove(i);
-//			}
-//			
-//			StatusPanelGWT statusPanel = new StatusPanelGWT(this);
-//			mainPanel.getDisplayPanel().add(statusPanel);
-//			statusPanel.fillData(statusData);
-//		}
 	}
 	
 	public void showError(String errorMessage)

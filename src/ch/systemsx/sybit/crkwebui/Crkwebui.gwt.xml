@@ -12,6 +12,8 @@
 
   <inherits name="com.extjs.gxt.ui.GXT" />
   <!-- Other module inherits                                      -->
+  
+  <inherits name='model'/>
 
   <!-- Specify the app entry point class.                         -->
   <entry-point class='ch.systemsx.sybit.crkwebui.client.Crkwebui'/>

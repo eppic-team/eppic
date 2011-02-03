@@ -13,8 +13,9 @@ public class DisplayPanel extends FormPanel
 	{
 		this.mainController = mainController;
 		this.getHeader().setVisible(false);
-		this.setBorders(true);
+		this.setBorders(false);
 		this.setBodyBorder(false);
+		this.setPadding(0);
 		
 //		VBoxLayout vBoxLayout = new VBoxLayout();
 //		vBoxLayout.setVBoxLayoutAlign(VBoxLayoutAlign.CENTER);

@@ -11,16 +11,17 @@ public class ResultsPanel extends TabPanel
 	
 	private OverViewTabItem overViewTabItem;
 	
-	private ResultsData resultsData;
-	
-	public ResultsPanel(MainController mainController,
-						ResultsData resultsData)
+	public ResultsPanel(MainController mainController, ResultsData resultsData)
 	{
 		this.mainController = mainController;
-		this.resultsData = resultsData;
 		this.setBorders(false);
 		
 		overViewTabItem = new OverViewTabItem(mainController, resultsData);
 		this.add(overViewTabItem);
+	}
+	
+	public OverViewTabItem getOverViewTabItem()
+	{
+		return overViewTabItem;
 	}
 }

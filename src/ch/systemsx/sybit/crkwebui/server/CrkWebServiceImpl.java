@@ -1,22 +1,33 @@
 package ch.systemsx.sybit.crkwebui.server;
 
 import java.io.BufferedInputStream;
+import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
+
+import owl.core.util.RegexFileFilter;
 
 import ch.systemsx.sybit.crkwebui.client.CrkWebService;
+import ch.systemsx.sybit.crkwebui.client.data.InterfaceScore;
 import ch.systemsx.sybit.crkwebui.client.data.ResultsData;
 import ch.systemsx.sybit.crkwebui.client.data.StatusData;
 import ch.systemsx.sybit.crkwebui.shared.FieldVerifier;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
+
+import crk.InterfaceEvolContextList;
+import model.PdbScore;
 
 /**
  * The server side implementation of the RPC service.
@@ -318,9 +329,109 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements
 	@Override
 	public ResultsData getResultData(String id) 
 	{
-		//this should be retrieved from the database
-		ResultsData res = new ResultsData();
-		return res;
+		ResultsData resultsData = null;
+		
+		if((id != null) && (id.length() != 0))
+		{
+			File resultFileDirectory = new File(properties.getProperty("destination_path") + "/" + id);
+			
+			if(resultFileDirectory.exists() &&
+				resultFileDirectory.isDirectory())
+			{
+				String[] directoryContent = resultFileDirectory.list(new FilenameFilter() {
+					
+					public boolean accept(File dir, String name) 
+					{
+						if(name.endsWith(".scores"))
+						{
+							return true;
+						}
+						else
+						{
+							return false;
+						}
+					}
+				});
+				
+				if(directoryContent != null &&
+					directoryContent.length > 0)
+				{
+					File resultFile = new File(resultFileDirectory + "/" + directoryContent[0]);
+					
+					if(resultFile.exists())
+					{
+						try
+						{
+							model.PdbScore[] pdbScores = InterfaceEvolContextList.parseScoresFile(resultFile);
+							
+							if((pdbScores != null) && (pdbScores.length > 1))
+							{
+								resultsData = new ResultsData();
+								resultsData.setPdbName(pdbScores[0].getPdbName());
+								resultsData.setHomologsCutoff(pdbScores[0].getHomologsCutoff());
+								resultsData.setQueryCovCutoff(pdbScores[0].getQueryCovCutoff());
+								resultsData.setBioCutoff(pdbScores[0].getBioCutoff());
+								resultsData.setXtalCutoff(pdbScores[0].getXtalCutoff());
+								
+								int nrOfInterface = pdbScores[0].getInterfaceScoreMap().size();
+								
+								int i = 1;
+								
+//								resultsData.setMinCoreSize(nrOfInterface);
+								
+								while(i <= nrOfInterface)
+								{
+									InterfaceScore interfaceScore = new InterfaceScore();
+									interfaceScore.setId(i);
+									interfaceScore.setInterfArea(pdbScores[0].getInterfaceScoreMap().get(i).getInterfArea());
+									interfaceScore.setFirstChainId(pdbScores[0].getInterfaceScoreMap().get(i).getFirstChainId());
+									interfaceScore.setSecondChainId(pdbScores[0].getInterfaceScoreMap().get(i).getSecondChainId());
+									interfaceScore.setCoreSize1(pdbScores[0].getInterfaceScoreMap().get(i).getCoreSize1()[0]);
+									interfaceScore.setCoreSize2(pdbScores[0].getInterfaceScoreMap().get(i).getCoreSize2()[0]);
+									interfaceScore.setNumHomologs1(pdbScores[0].getInterfaceScoreMap().get(i).getNumHomologs1());
+									interfaceScore.setNumHomologs2(pdbScores[0].getInterfaceScoreMap().get(i).getNumHomologs2());
+									
+									double[] rim1SCores =  new double[2];
+									rim1SCores[0] = pdbScores[0].getInterfaceScoreMap().get(i).getRim1Scores()[0];
+									rim1SCores[1] = pdbScores[1].getInterfaceScoreMap().get(i).getRim1Scores()[0];
+									interfaceScore.setRim1Scores(rim1SCores);
+									
+									double[] core1SCores =  new double[2];
+									core1SCores[0] = pdbScores[0].getInterfaceScoreMap().get(i).getCore1Scores()[0];
+									core1SCores[1] = pdbScores[1].getInterfaceScoreMap().get(i).getCore1Scores()[0];
+									interfaceScore.setCore1Scores(core1SCores);
+									
+									double[] rim2SCores =  new double[2];
+									rim2SCores[0] = pdbScores[0].getInterfaceScoreMap().get(i).getRim2Scores()[0];
+									rim2SCores[1] = pdbScores[1].getInterfaceScoreMap().get(i).getRim2Scores()[0];
+									interfaceScore.setRim2Scores(rim2SCores);
+									
+									double[] core2SCores =  new double[2];
+									core2SCores[0] = pdbScores[0].getInterfaceScoreMap().get(i).getCore2Scores()[0];
+									core2SCores[1] = pdbScores[1].getInterfaceScoreMap().get(i).getCore2Scores()[0];
+									interfaceScore.setCore2Scores(core2SCores);
+									
+									double[] finalScores =  new double[2];
+									finalScores[0] = pdbScores[0].getInterfaceScoreMap().get(i).getFinalScores()[0];
+									finalScores[1] = pdbScores[1].getInterfaceScoreMap().get(i).getFinalScores()[0];
+									interfaceScore.setFinalScores(finalScores);
+									
+									resultsData.addInterfScore(interfaceScore);
+									
+									i++;
+								}
+							}
+						}
+						catch(Exception e)
+						{
+							
+						}
+					}
+				}
+			}
+		}
+		
+		return resultsData;
 	}
 	
 	public String test(String test)
