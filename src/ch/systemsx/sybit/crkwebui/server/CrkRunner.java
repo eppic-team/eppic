@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.io.PrintStream;
 
 import ch.systemsx.sybit.crkwebui.server.data.EmailData;
-import crk.CRKException;
 import crk.CRKMain;
 
 public class CrkRunner implements Runnable

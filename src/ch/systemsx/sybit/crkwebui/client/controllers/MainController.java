@@ -2,7 +2,7 @@ package ch.systemsx.sybit.crkwebui.client.controllers;
 
 import java.util.List;
 
-import ch.systemsx.sybit.crkwebui.client.data.ResultsData;
+import model.PdbScore;
 import ch.systemsx.sybit.crkwebui.client.data.StatusData;
 
 import com.google.gwt.core.client.GWT;
@@ -23,7 +23,7 @@ public interface MainController
 	
 	public abstract void displayInputView();
 	
-	public abstract void displayResultView(ResultsData resultData);
+	public abstract void displayResultView(PdbScore resultData);
 	
 	public abstract void displayStatusView(StatusData statusData);
 	

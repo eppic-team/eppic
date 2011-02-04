@@ -1,33 +1,26 @@
 package ch.systemsx.sybit.crkwebui.server;
 
 import java.io.BufferedInputStream;
-import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletResponse;
 
-import owl.core.util.RegexFileFilter;
-
+import model.InterfaceScore;
+import model.PdbScore;
 import ch.systemsx.sybit.crkwebui.client.CrkWebService;
-import ch.systemsx.sybit.crkwebui.client.data.InterfaceScore;
-import ch.systemsx.sybit.crkwebui.client.data.ResultsData;
 import ch.systemsx.sybit.crkwebui.client.data.StatusData;
 import ch.systemsx.sybit.crkwebui.shared.FieldVerifier;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 import crk.InterfaceEvolContextList;
-import model.PdbScore;
 
 /**
  * The server side implementation of the RPC service.
@@ -327,9 +320,9 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements
 	}
 
 	@Override
-	public ResultsData getResultData(String id) 
+	public PdbScore getResultData(String id) 
 	{
-		ResultsData resultsData = null;
+		PdbScore resultsData = null;
 		
 		if((id != null) && (id.length() != 0))
 		{
@@ -362,32 +355,25 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements
 					{
 						try
 						{
-							model.PdbScore[] pdbScores = InterfaceEvolContextList.parseScoresFile(resultFile);
+							PdbScore[] pdbScores = InterfaceEvolContextList.parseScoresFile(resultFile);
 							
 							if((pdbScores != null) && (pdbScores.length > 1))
 							{
-								resultsData = new ResultsData();
-								resultsData.setPdbName(pdbScores[0].getPdbName());
-								resultsData.setHomologsCutoff(pdbScores[0].getHomologsCutoff());
-								resultsData.setQueryCovCutoff(pdbScores[0].getQueryCovCutoff());
-								resultsData.setBioCutoff(pdbScores[0].getBioCutoff());
-								resultsData.setXtalCutoff(pdbScores[0].getXtalCutoff());
+								resultsData = pdbScores[0];
 								
 								int nrOfInterface = pdbScores[0].getInterfaceScoreMap().size();
 								
 								int i = 1;
 								
-//								resultsData.setMinCoreSize(nrOfInterface);
-								
 								while(i <= nrOfInterface)
 								{
-									InterfaceScore interfaceScore = new InterfaceScore();
+									InterfaceScore interfaceScore = new InterfaceScore(resultsData);
 									interfaceScore.setId(i);
 									interfaceScore.setInterfArea(pdbScores[0].getInterfaceScoreMap().get(i).getInterfArea());
 									interfaceScore.setFirstChainId(pdbScores[0].getInterfaceScoreMap().get(i).getFirstChainId());
 									interfaceScore.setSecondChainId(pdbScores[0].getInterfaceScoreMap().get(i).getSecondChainId());
-									interfaceScore.setCoreSize1(pdbScores[0].getInterfaceScoreMap().get(i).getCoreSize1()[0]);
-									interfaceScore.setCoreSize2(pdbScores[0].getInterfaceScoreMap().get(i).getCoreSize2()[0]);
+									interfaceScore.setCoreSize1(pdbScores[0].getInterfaceScoreMap().get(i).getCoreSize1());
+									interfaceScore.setCoreSize2(pdbScores[0].getInterfaceScoreMap().get(i).getCoreSize2());
 									interfaceScore.setNumHomologs1(pdbScores[0].getInterfaceScoreMap().get(i).getNumHomologs1());
 									interfaceScore.setNumHomologs2(pdbScores[0].getInterfaceScoreMap().get(i).getNumHomologs2());
 									
@@ -410,6 +396,16 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements
 									core2SCores[0] = pdbScores[0].getInterfaceScoreMap().get(i).getCore2Scores()[0];
 									core2SCores[1] = pdbScores[1].getInterfaceScoreMap().get(i).getCore2Scores()[0];
 									interfaceScore.setCore2Scores(core2SCores);
+									
+									double[] ratio1SCores =  new double[2];
+									ratio1SCores[0] = pdbScores[0].getInterfaceScoreMap().get(i).getRatio1Scores()[0];
+									ratio1SCores[1] = pdbScores[1].getInterfaceScoreMap().get(i).getRatio1Scores()[0];
+									interfaceScore.setRatio1Scores(ratio1SCores);
+									
+									double[] ratio2SCores =  new double[2];
+									ratio2SCores[0] = pdbScores[0].getInterfaceScoreMap().get(i).getRatio2Scores()[0];
+									ratio2SCores[1] = pdbScores[1].getInterfaceScoreMap().get(i).getRatio2Scores()[0];
+									interfaceScore.setRatio2Scores(ratio2SCores);
 									
 									double[] finalScores =  new double[2];
 									finalScores[0] = pdbScores[0].getInterfaceScoreMap().get(i).getFinalScores()[0];

@@ -2,7 +2,7 @@ package ch.systemsx.sybit.crkwebui.client;
 
 import java.util.List;
 
-import ch.systemsx.sybit.crkwebui.client.data.ResultsData;
+import model.PdbScore;
 import ch.systemsx.sybit.crkwebui.client.data.StatusData;
 
 import com.google.gwt.user.client.rpc.RemoteService;
@@ -22,7 +22,7 @@ public interface CrkWebService extends RemoteService
 	
 	public StatusData getStatusData(String id);
 	
-	public ResultsData getResultData(String id);
+	public PdbScore getResultData(String id);
 
 	public String killJob(String id);
 

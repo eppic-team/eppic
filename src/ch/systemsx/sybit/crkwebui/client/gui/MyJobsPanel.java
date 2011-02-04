@@ -5,6 +5,7 @@ import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 import ch.systemsx.sybit.crkwebui.client.data.StatusData;
+import ch.systemsx.sybit.crkwebui.client.model.MyJobsModel;
 
 import com.extjs.gxt.ui.client.event.ButtonEvent;
 import com.extjs.gxt.ui.client.event.IconButtonEvent;
@@ -12,6 +13,7 @@ import com.extjs.gxt.ui.client.event.SelectionListener;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.MessageBox;
+import com.extjs.gxt.ui.client.widget.Window;
 import com.extjs.gxt.ui.client.widget.button.Button;
 import com.extjs.gxt.ui.client.widget.button.ToolButton;
 import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
@@ -72,6 +74,26 @@ public class MyJobsPanel extends ContentPanel
 		}); 
 		
 		toolBar.add(killJob);  
+		
+		Button test = new Button("Test", new SelectionListener<ButtonEvent>() {  
+			   
+			public void componentSelected(ButtonEvent ce) 
+			{
+				InterfacesWindow iw = new InterfacesWindow(null);
+				iw.show();
+				
+				Window w = new Window();        
+				   w.setHeading("Product Information");
+				   w.setModal(true);
+				   w.setSize(600, 400);
+				   w.setMaximizable(true);
+				   w.setToolTip("The ExtGWT product page...");
+				   w.setUrl("http://google.com");
+				   w.show();
+			}  
+		}); 
+		
+		toolBar.add(test);  
 		
 		this.setTopComponent(toolBar);
 		

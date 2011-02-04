@@ -2,12 +2,11 @@ package ch.systemsx.sybit.crkwebui.client.controllers;
 
 import java.util.List;
 
-import ch.systemsx.sybit.crkwebui.client.data.ResultsData;
+import model.PdbScore;
 import ch.systemsx.sybit.crkwebui.client.data.StatusData;
 import ch.systemsx.sybit.crkwebui.client.gui.InputDataPanel;
 import ch.systemsx.sybit.crkwebui.client.gui.MainViewPort;
 import ch.systemsx.sybit.crkwebui.client.gui.OverviewPanel;
-import ch.systemsx.sybit.crkwebui.client.gui.ResultsPanel;
 import ch.systemsx.sybit.crkwebui.client.gui.StatusPanel;
 
 import com.extjs.gxt.ui.client.widget.Viewport;
@@ -91,7 +90,7 @@ public class MainControllerImpl implements MainController
 		serviceController.getResultData(selectedId);
 	}
 	
-	public void displayResultView(ResultsData resultData)
+	public void displayResultView(PdbScore resultData)
 	{
 		mainViewPort.getDisplayPanel().removeAll();
 		
@@ -151,5 +150,4 @@ public class MainControllerImpl implements MainController
 	{
 		serviceController.untieJobsFromSession();
 	}
-	
 }

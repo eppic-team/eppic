@@ -1,7 +1,7 @@
 package ch.systemsx.sybit.crkwebui.client.gui;
 
+import model.PdbScore;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
-import ch.systemsx.sybit.crkwebui.client.data.ResultsData;
 
 import com.extjs.gxt.ui.client.widget.TabItem;
 
@@ -10,7 +10,7 @@ public class OverViewTabItem extends TabItem
 	private OverviewPanel overviewPanel;
 	
 	public OverViewTabItem(MainController mainController,
-						   ResultsData resultsData)
+							PdbScore resultsData)
 	{
 		this.setText("Overview");
 		this.setBorders(false);

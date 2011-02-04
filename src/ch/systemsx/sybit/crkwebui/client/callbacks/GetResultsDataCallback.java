@@ -1,11 +1,9 @@
 package ch.systemsx.sybit.crkwebui.client.callbacks;
 
-import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
-import ch.systemsx.sybit.crkwebui.client.data.ResultsData;
-
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.rpc.AsyncCallback;
 import model.PdbScore;
+import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
+
+import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public class GetResultsDataCallback implements AsyncCallback
 {
@@ -29,11 +27,15 @@ public class GetResultsDataCallback implements AsyncCallback
 	@Override
 	public void onSuccess(Object result) 
 	{
-		if((result != null) && (result instanceof ResultsData))
+		if((result != null) && (result instanceof PdbScore))
 		{
-			ResultsData resultsData = (ResultsData)result;
+			PdbScore resultsData = (PdbScore)result;
 			resultsData.setJobId(selectedId);
 			mainController.displayResultView(resultsData);
+			
+//			BeanModelFactory beanModelFactory = BeanModelLookup.get().getFactory(InterfaceScore.class);
+//			BeanModel model = beanModelFactory.createModel(resultsData.getInterfaceScoreMap().get(1));
+//			Window.alert(model.getProperties().toString());
 		}
 		else
 		{
