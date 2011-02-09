@@ -52,16 +52,16 @@ public class InputDataPanel extends FormPanel
 	    generalFieldSet.setBorders(false);
 	    generalFieldSet.setLayout(layout);
 	    
-	    TextField<String> emailTextField = new TextField<String>();  
+	    final TextField<String> emailTextField = new TextField<String>();  
 	    emailTextField.setName("email");
-	    emailTextField.setFieldLabel("Email");  
+	    emailTextField.setFieldLabel(MainController.CONSTANTS.input_email());  
 	    generalFieldSet.add(emailTextField);  
 	  
-	    FileUploadField file = new FileUploadField();
+	    final FileUploadField file = new FileUploadField();
 	    file.setWidth(200);
 	    file.setAllowBlank(false);  
 	    file.setName("uploadFormElement");  
-	    file.setFieldLabel("PDB File");  
+	    file.setFieldLabel(MainController.CONSTANTS.input_file());  
 	    generalFieldSet.add(file);  
 	    
 	    FormPanel breakPanel = new FormPanel();
@@ -70,7 +70,7 @@ public class InputDataPanel extends FormPanel
 	    breakPanel.setBorders(false);
 	    generalFieldSet.add(breakPanel);
 	    
-	    OptionsInputPanel optionsInputPanel = new OptionsInputPanel();
+	    final OptionsInputPanel optionsInputPanel = new OptionsInputPanel(mainController.getSettings().getDefaultParametersValues());
 	    generalFieldSet.add(optionsInputPanel);
 	    optionsInputPanel.collapse();
 	  
@@ -82,7 +82,20 @@ public class InputDataPanel extends FormPanel
 	        }
 	    });
 	    
-	    Button submitButton = new Button("Submit");  
+	    Button resetButton = new Button("Reset");  
+	    resetButton.addSelectionListener(new SelectionListener<ButtonEvent>() 
+		{  
+	    	public void componentSelected(ButtonEvent ce) 
+	    	{  
+	    		emailTextField.setValue("");
+	    		file.setValue("");
+	    		optionsInputPanel.fillDefaultValues(mainController.getSettings().getDefaultParametersValues());
+	    	}  
+	    }); 
+	    
+	    this.addButton(resetButton); 
+	    
+	    Button submitButton = new Button(MainController.CONSTANTS.input_submit());  
 	    submitButton.addSelectionListener(new SelectionListener<ButtonEvent>() 
 		{  
 	    	public void componentSelected(ButtonEvent ce) 

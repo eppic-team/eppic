@@ -20,6 +20,7 @@ import model.PdbScore;
 import ch.systemsx.sybit.crkwebui.client.CrkWebService;
 import ch.systemsx.sybit.crkwebui.shared.FieldVerifier;
 import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
+import ch.systemsx.sybit.crkwebui.shared.model.InputParameters;
 import ch.systemsx.sybit.crkwebui.shared.model.StatusData;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
@@ -546,6 +547,46 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements
 			String[] scoringMethods = supportedMethods.split(","); 
 			settings.setScoresTypes(scoringMethods);
 		}
+		
+		// default input parameters values
+		InputStream defaultInputParametersStream = 
+			getServletContext().getResourceAsStream("/WEB-INF/classes/ch/systemsx/sybit/crkwebui/server/input_default_parameters.properties");
+		
+		Properties defaultInputParametersProperties = new Properties();
+		
+		try 
+		{
+			defaultInputParametersProperties.load(defaultInputParametersStream);
+		} 
+		catch (IOException e) 
+		{
+			e.printStackTrace();
+//			throw new ServletException("Properties file can not be read");
+		}
+		
+		InputParameters defaultInputParameters = new InputParameters();
+		
+		boolean useTcoffee = Boolean.parseBoolean((String)defaultInputParametersProperties.get("use_tcoffee"));
+		boolean usePisa = Boolean.parseBoolean((String)defaultInputParametersProperties.get("use_pisa"));
+		boolean useNaccess = Boolean.parseBoolean((String)defaultInputParametersProperties.get("use_naccess"));
+		
+		int asaCalc = Integer.parseInt((String)defaultInputParametersProperties.get("asa_calc"));
+		int maxNrOfSequences = Integer.parseInt((String)defaultInputParametersProperties.get("max_nr_of_sequences"));
+		int reducedAlphabet = Integer.parseInt((String)defaultInputParametersProperties.get("reduced_alphabet"));
+		
+		float identityCutoff = Float.parseFloat((String)defaultInputParametersProperties.get("identity_cutoff"));
+		float selecton = Float.parseFloat((String)defaultInputParametersProperties.get("selecton"));
+
+		defaultInputParameters.setUseTCoffee(useTcoffee);
+		defaultInputParameters.setUsePISA(usePisa);
+		defaultInputParameters.setUseNACCESS(useNaccess);
+		defaultInputParameters.setAsaCalc(asaCalc);
+		defaultInputParameters.setMaxNrOfSequences(maxNrOfSequences);
+		defaultInputParameters.setReducedAlphabet(reducedAlphabet);
+		defaultInputParameters.setIdentityCutoff(identityCutoff);
+		defaultInputParameters.setSelecton(selecton);
+		
+		settings.setDefaultParametersValues(defaultInputParameters);
 		
 		return settings;
 	}

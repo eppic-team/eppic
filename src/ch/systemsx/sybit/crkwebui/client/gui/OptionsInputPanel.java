@@ -1,5 +1,8 @@
 package ch.systemsx.sybit.crkwebui.client.gui;
 
+import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
+import ch.systemsx.sybit.crkwebui.shared.model.InputParameters;
+
 import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.widget.form.ComboBox;
@@ -14,10 +17,25 @@ import com.extjs.gxt.ui.client.widget.layout.FormLayout;
 public class OptionsInputPanel extends FieldSet 
 {
 	private FormData formData;
+	private ListStore<BaseModel> reducedAlphabetValues;  
+	private ComboBox<BaseModel> reducedAlphabetCombo;  
+	private TextField<String> selecton;  
+	private TextField<String> identityCutOff;  
+	private Radio useTCoffeeYes;  
+	private Radio useTCoffeeNo;  
+	private RadioGroup useTCoffee;  
+	private TextField<String> maxNumSequences;  
+	private Radio usePisaYes;  
+	private Radio usePisaNo;  
+	private RadioGroup usePisa;  
+	private TextField<String> asaCalcParam;  
+	private Radio useNAccessYes;  
+	private Radio useNAccessNo;  
+	private RadioGroup useNAccess;  
 	
-	public OptionsInputPanel()
+	public OptionsInputPanel(InputParameters defaultInputParameters)
 	{
-	    this.setHeading("Advanced");  
+	    this.setHeading(MainController.CONSTANTS.input_advanced());  
 	    this.setCollapsible(true);
 	    this.setBorders(false);
 	    
@@ -27,23 +45,20 @@ public class OptionsInputPanel extends FieldSet
 	    layout.setLabelWidth(150); 
 	    this.setLayout(layout);  
 	  
-	    FieldSet methodsFieldSet = new FieldSet();  
-	    methodsFieldSet.setHeading("Method");  
-	    
 	    FormLayout entropySetLayout = new FormLayout();  
 	    entropySetLayout.setLabelWidth(150); 
 	    
 	    FieldSet entropyFieldSet = new FieldSet();  
-	    entropyFieldSet.setHeading("Entropy"); 
+	    entropyFieldSet.setHeading(MainController.CONSTANTS.parameters_entropy()); 
 	    entropyFieldSet.setCheckboxToggle(true);
 	    entropyFieldSet.setLayout(entropySetLayout);
 	    
-	    ListStore<BaseModel> values = new ListStore<BaseModel>();  
+	    reducedAlphabetValues = new ListStore<BaseModel>();  
 	  
-	    ComboBox<BaseModel> reducedAlphabetCombo = new ComboBox<BaseModel>();  
-	    reducedAlphabetCombo.setFieldLabel("Reduced alphabet");
+	    reducedAlphabetCombo = new ComboBox<BaseModel>();  
+	    reducedAlphabetCombo.setFieldLabel(MainController.CONSTANTS.parameters_reduced_alphabet());
 	    reducedAlphabetCombo.setWidth(150);  
-	    reducedAlphabetCombo.setStore(values);  
+	    reducedAlphabetCombo.setStore(reducedAlphabetValues);  
 	    reducedAlphabetCombo.setTypeAhead(true);  
 	    reducedAlphabetCombo.setTriggerAction(TriggerAction.ALL);  
 	    entropyFieldSet.add(reducedAlphabetCombo, formData); 
@@ -56,12 +71,12 @@ public class OptionsInputPanel extends FieldSet
 	    kaksFieldSetLayout.setLabelWidth(150); 
 	    
 	    FieldSet kaksFieldSet = new FieldSet();  
-	    kaksFieldSet.setHeading("KAKS"); 
+	    kaksFieldSet.setHeading(MainController.CONSTANTS.parameters_kaks()); 
 	    kaksFieldSet.setCheckboxToggle(true);
 	    kaksFieldSet.setLayout(kaksFieldSetLayout);
 	    
-	    TextField<String> selecton = new TextField<String>();  
-	    selecton.setFieldLabel("Selecton");  
+	    selecton = new TextField<String>();  
+	    selecton.setFieldLabel(MainController.CONSTANTS.parameters_selecton());  
 	    selecton.setAllowBlank(false);  
 	    kaksFieldSet.add(selecton, formData);  
 	    
@@ -75,29 +90,29 @@ public class OptionsInputPanel extends FieldSet
 	    allignmentsParametersFieldSetLayout.setLabelWidth(150); 
 	    
 	    FieldSet allignmentsParametersFieldSet = new FieldSet();  
-	    allignmentsParametersFieldSet.setHeading("Allignment"); 
+	    allignmentsParametersFieldSet.setHeading(MainController.CONSTANTS.parameters_allignment()); 
 	    allignmentsParametersFieldSet.setLayout(allignmentsParametersFieldSetLayout);
 	    
-	    TextField<String> identityCutOff = new TextField<String>();  
-	    identityCutOff.setFieldLabel("Identity cutoff");  
+	    identityCutOff = new TextField<String>();  
+	    identityCutOff.setFieldLabel(MainController.CONSTANTS.parameters_identity_cutoff());  
 	    identityCutOff.setAllowBlank(false);  
 	    allignmentsParametersFieldSet.add(identityCutOff, formData); 
 	    
-	    Radio useTCoffeeYes = new Radio();  
-	    useTCoffeeYes.setBoxLabel("Yes");  
+	    useTCoffeeYes = new Radio();  
+	    useTCoffeeYes.setBoxLabel(MainController.CONSTANTS.yes());  
 	    useTCoffeeYes.setValue(true);  
 	  
-	    Radio useTCoffeeNo = new Radio();  
-	    useTCoffeeNo.setBoxLabel("No");  
+	    useTCoffeeNo = new Radio();  
+	    useTCoffeeNo.setBoxLabel(MainController.CONSTANTS.no());  
 	  
-	    RadioGroup useTCoffee = new RadioGroup();  
-	    useTCoffee.setFieldLabel("Use TCoffee");  
+	    useTCoffee = new RadioGroup();  
+	    useTCoffee.setFieldLabel(MainController.CONSTANTS.parameters_use_tcoffee());  
 	    useTCoffee.add(useTCoffeeYes);  
 	    useTCoffee.add(useTCoffeeNo);  
 	    allignmentsParametersFieldSet.add(useTCoffee, formData); 
 	    
-	    TextField<String> maxNumSequences = new TextField<String>();  
-	    maxNumSequences.setFieldLabel("Max num sequences");  
+	    maxNumSequences = new TextField<String>();  
+	    maxNumSequences.setFieldLabel(MainController.CONSTANTS.parameters_max_num_sequences());  
 	    maxNumSequences.setAllowBlank(false);  
 	    allignmentsParametersFieldSet.add(maxNumSequences, formData); 
 	    
@@ -108,42 +123,77 @@ public class OptionsInputPanel extends FieldSet
 	    othersParametersFieldSetLayout.setLabelWidth(150); 
 	    
 	    FieldSet othersParametersFieldSet = new FieldSet();  
-	    othersParametersFieldSet.setHeading("Others"); 
+	    othersParametersFieldSet.setHeading(MainController.CONSTANTS.parameters_others()); 
 	    othersParametersFieldSet.setLayout(othersParametersFieldSetLayout);
 	    
-	    Radio usePisaYes = new Radio();  
-	    usePisaYes.setBoxLabel("Yes");  
+	    usePisaYes = new Radio();  
+	    usePisaYes.setBoxLabel(MainController.CONSTANTS.yes());  
 	    usePisaYes.setValue(true);  
 	  
-	    Radio usePisaNo = new Radio();  
-	    usePisaNo.setBoxLabel("No");  
+	    usePisaNo = new Radio();  
+	    usePisaNo.setBoxLabel(MainController.CONSTANTS.no());  
 	  
-	    RadioGroup usePisa = new RadioGroup();  
-	    usePisa.setFieldLabel("Use PISA");  
+	    usePisa = new RadioGroup();  
+	    usePisa.setFieldLabel(MainController.CONSTANTS.parameters_use_pisa());  
 	    usePisa.add(usePisaYes);  
 	    usePisa.add(usePisaNo);  
 	    othersParametersFieldSet.add(usePisa, formData);  
 	    
-	    TextField<String> asaCalcParam = new TextField<String>();  
-	    asaCalcParam.setFieldLabel("ASA calc");  
+	    asaCalcParam = new TextField<String>();  
+	    asaCalcParam.setFieldLabel(MainController.CONSTANTS.parameters_asa_calc());  
 	    asaCalcParam.setAllowBlank(false);  
 	    othersParametersFieldSet.add(asaCalcParam, formData); 
 	    
-	    Radio useNAccessYes = new Radio();  
-	    useNAccessYes.setBoxLabel("Yes");  
+	    useNAccessYes = new Radio();  
+	    useNAccessYes.setBoxLabel(MainController.CONSTANTS.yes());  
 	    useNAccessYes.setValue(true);  
 	  
-	    Radio useNAccessNo = new Radio();  
-	    useNAccessNo.setBoxLabel("No");  
+	    useNAccessNo = new Radio();  
+	    useNAccessNo.setBoxLabel(MainController.CONSTANTS.no());  
 	  
-	    RadioGroup useNAccess = new RadioGroup();  
-	    useNAccess.setFieldLabel("Use NACCESS");  
+	    useNAccess = new RadioGroup();  
+	    useNAccess.setFieldLabel(MainController.CONSTANTS.parameters_use_naccess());  
 	    useNAccess.add(useNAccessYes);  
 	    useNAccess.add(useNAccessNo);  
 	    othersParametersFieldSet.add(useNAccess, formData); 
 	    
 	    this.add(othersParametersFieldSet);  
-	  
 	    
+	    fillDefaultValues(defaultInputParameters);
+	}
+	
+	public void fillDefaultValues(InputParameters defaultParameters)
+	{
+		if(defaultParameters.isUseNACCESS() == true)
+		{
+			useNAccessYes.setValue(true);
+		}
+		else
+		{
+			useNAccessNo.setValue(true);
+		}
+		
+		if(defaultParameters.isUsePISA() == true)
+		{
+			usePisaYes.setValue(true);
+		}
+		else
+		{
+			usePisaNo.setValue(true);
+		}
+		
+		if(defaultParameters.isUseTCoffee() == true)
+		{
+			useTCoffeeYes.setValue(true);
+		}
+		else
+		{
+			useTCoffeeNo.setValue(true);
+		}
+		
+		asaCalcParam.setValue(String.valueOf(defaultParameters.getAsaCalc()));
+		identityCutOff.setValue(String.valueOf(defaultParameters.getIdentityCutoff()));
+		selecton.setValue(String.valueOf(defaultParameters.getSelecton()));
+		maxNumSequences.setValue(String.valueOf(defaultParameters.getMaxNrOfSequences()));
 	}
 }

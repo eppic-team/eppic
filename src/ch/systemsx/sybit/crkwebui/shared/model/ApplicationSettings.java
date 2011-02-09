@@ -15,6 +15,8 @@ public class ApplicationSettings implements Serializable
 	
 	// grid settings - column specification
 	private Map<String, String> gridProperties;
+	
+	private InputParameters defaultParametersValues;
 
 	public void setScoresTypes(String[] scoresTypes) {
 		this.scoresTypes = scoresTypes;
@@ -30,5 +32,13 @@ public class ApplicationSettings implements Serializable
 
 	public Map<String, String> getGridProperties() {
 		return gridProperties;
+	}
+
+	public void setDefaultParametersValues(InputParameters defaultParametersValues) {
+		this.defaultParametersValues = defaultParametersValues;
+	}
+
+	public InputParameters getDefaultParametersValues() {
+		return defaultParametersValues;
 	}
 }

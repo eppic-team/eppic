@@ -42,7 +42,7 @@ public class StructurePanel extends FormPanel
 		
 		for(int j=0; j<100; j++)
 		{
-			InterfacesModel interfacesModel = new InterfacesModel("a");
+			InterfacesModel interfacesModel = new InterfacesModel();
 			interfacesModel.set("seq", j);
 			interfacesModel.set("res", j);
 			interfacesModel.set("asa", j);

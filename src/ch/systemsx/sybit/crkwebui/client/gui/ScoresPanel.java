@@ -9,7 +9,6 @@ import model.InterfaceScoreItemKey;
 import model.PDBScoreItem;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 import ch.systemsx.sybit.crkwebui.client.gui.renderers.GridCellRendererFactory;
-import ch.systemsx.sybit.crkwebui.client.model.ScoresModel;
 
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.data.BeanModel;
@@ -27,15 +26,16 @@ import com.extjs.gxt.ui.client.widget.grid.GroupingView;
 import com.extjs.gxt.ui.client.widget.grid.HeaderGroupConfig;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 import com.extjs.gxt.ui.client.widget.layout.FormData;
+import com.google.gwt.user.client.Window;
 
 public class ScoresPanel extends FormPanel
 {
 	private MainController mainController;
 	
 	private List<ColumnConfig> scoresConfigs;
-	private GroupingStore<ScoresModel> scoresStore;
+	private GroupingStore<BeanModel> scoresStore;
 	private ColumnModel scoresColumnModel;
-	private Grid<ScoresModel> scoresGrid;
+	private Grid<BeanModel> scoresGrid;
 	
 	private PDBScoreItem resultsData;
 	
@@ -53,7 +53,7 @@ public class ScoresPanel extends FormPanel
 		
 		scoresConfigs = createColumnConfig(); 
 		   
-		scoresStore = new GroupingStore<ScoresModel>();  
+		scoresStore = new GroupingStore<BeanModel>();  
 		scoresStore.groupBy("method");
 		
 		scoresColumnModel = new ColumnModel(scoresConfigs);  
@@ -68,7 +68,7 @@ public class ScoresPanel extends FormPanel
 		scoresColumnModel.addHeaderGroup(1, 7, new HeaderGroupConfig("Structure 1", 1, 3));  
 		scoresColumnModel.addHeaderGroup(1, 10, new HeaderGroupConfig("Structure 2", 1, 3));  
 		
-		scoresGrid = new Grid<ScoresModel>(scoresStore, scoresColumnModel);  
+		scoresGrid = new Grid<BeanModel>(scoresStore, scoresColumnModel);  
 //		scoresGrid.getView().setForceFit(true);  
 		scoresGrid.setBorders(true);  
 		scoresGrid.setStripeRows(true);
@@ -96,7 +96,7 @@ public class ScoresPanel extends FormPanel
 	{
 		scoresStore.removeAll();
 		
-		List<ScoresModel> data = new ArrayList<ScoresModel>();
+		List<BeanModel> data = new ArrayList<BeanModel>();
 		
 		///TODO
 		for(InterfaceScoreItemKey key : resultsData.getInterfaceScores().keySet())
@@ -107,24 +107,26 @@ public class ScoresPanel extends FormPanel
 				
 				if(interfaceScoreItem != null)
 				{
-					ScoresModel scoresModel = new ScoresModel("");
-					scoresModel.set("unweightedrim1", interfaceScoreItem.getUnweightedRim1Scores());
-					scoresModel.set("weightedrim1", interfaceScoreItem.getWeightedRim1Scores());
-					scoresModel.set("unweightedcore1", interfaceScoreItem.getUnweightedCore1Scores());
-					scoresModel.set("weightedcore1", interfaceScoreItem.getWeightedCore1Scores());
-					scoresModel.set("unweightedrim2", interfaceScoreItem.getUnweightedRim2Scores());
-					scoresModel.set("weightedrim2", interfaceScoreItem.getWeightedRim2Scores());
-					scoresModel.set("unweightedcore2", interfaceScoreItem.getUnweightedCore2Scores());
-					scoresModel.set("weightedcore2", interfaceScoreItem.getWeightedCore2Scores());
-					scoresModel.set("unweightedscore", interfaceScoreItem.getUnweightedFinalScores());
-					scoresModel.set("weightedscore", interfaceScoreItem.getWeightedFinalScores());
-					
-					scoresModel.set("weightedrat1", interfaceScoreItem.getWeightedRatio1Scores());
-					scoresModel.set("unweightedrat1", interfaceScoreItem.getUnweightedRatio1Scores());
-					scoresModel.set("weightedrat2", interfaceScoreItem.getWeightedRatio2Scores());
-					scoresModel.set("unweightedrat2", interfaceScoreItem.getUnweightedRatio2Scores());
-					
-					scoresModel.set("method", interfaceScoreItem.getMethod());
+					BeanModelFactory beanModelFactory = BeanModelLookup.get().getFactory(InterfaceScoreItem.class);
+					BeanModel scoresModel = beanModelFactory.createModel(interfaceScoreItem);
+//					ScoresModel scoresModel = new ScoresModel("");
+//					scoresModel.set("unweightedrim1", interfaceScoreItem.getUnweightedRim1Scores());
+//					scoresModel.set("weightedrim1", interfaceScoreItem.getWeightedRim1Scores());
+//					scoresModel.set("unweightedcore1", interfaceScoreItem.getUnweightedCore1Scores());
+//					scoresModel.set("weightedcore1", interfaceScoreItem.getWeightedCore1Scores());
+//					scoresModel.set("unweightedrim2", interfaceScoreItem.getUnweightedRim2Scores());
+//					scoresModel.set("weightedrim2", interfaceScoreItem.getWeightedRim2Scores());
+//					scoresModel.set("unweightedcore2", interfaceScoreItem.getUnweightedCore2Scores());
+//					scoresModel.set("weightedcore2", interfaceScoreItem.getWeightedCore2Scores());
+//					scoresModel.set("unweightedscore", interfaceScoreItem.getUnweightedFinalScores());
+//					scoresModel.set("weightedscore", interfaceScoreItem.getWeightedFinalScores());
+//					
+//					scoresModel.set("weightedrat1", interfaceScoreItem.getWeightedRatio1Scores());
+//					scoresModel.set("unweightedrat1", interfaceScoreItem.getUnweightedRatio1Scores());
+//					scoresModel.set("weightedrat2", interfaceScoreItem.getWeightedRatio2Scores());
+//					scoresModel.set("unweightedrat2", interfaceScoreItem.getUnweightedRatio2Scores());
+//					
+//					scoresModel.set("method", interfaceScoreItem.getMethod());
 					
 					data.add(scoresModel);
 				}
