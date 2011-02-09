@@ -1,19 +1,26 @@
 package ch.systemsx.sybit.crkwebui.client.gui;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import model.InterfaceScoreItem;
 import model.InterfaceScoreItemKey;
 import model.PDBScoreItem;
+import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
+import ch.systemsx.sybit.crkwebui.client.gui.renderers.GridCellRendererFactory;
 import ch.systemsx.sybit.crkwebui.client.model.ScoresModel;
 
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
+import com.extjs.gxt.ui.client.data.BeanModel;
+import com.extjs.gxt.ui.client.data.BeanModelFactory;
+import com.extjs.gxt.ui.client.data.BeanModelLookup;
 import com.extjs.gxt.ui.client.store.GroupingStore;
 import com.extjs.gxt.ui.client.widget.form.FormPanel;
 import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
 import com.extjs.gxt.ui.client.widget.grid.ColumnModel;
 import com.extjs.gxt.ui.client.widget.grid.Grid;
+import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
 import com.extjs.gxt.ui.client.widget.grid.GridGroupRenderer;
 import com.extjs.gxt.ui.client.widget.grid.GroupColumnData;
 import com.extjs.gxt.ui.client.widget.grid.GroupingView;
@@ -23,6 +30,8 @@ import com.extjs.gxt.ui.client.widget.layout.FormData;
 
 public class ScoresPanel extends FormPanel
 {
+	private MainController mainController;
+	
 	private List<ColumnConfig> scoresConfigs;
 	private GroupingStore<ScoresModel> scoresStore;
 	private ColumnModel scoresColumnModel;
@@ -30,8 +39,10 @@ public class ScoresPanel extends FormPanel
 	
 	private PDBScoreItem resultsData;
 	
-	public ScoresPanel(PDBScoreItem resultsData)
+	public ScoresPanel(PDBScoreItem resultsData,
+					   MainController mainController)
 	{
+		this.mainController = mainController;
 		FormData formData = new FormData("100%");  
 //		infoPanel.setFrame(true);  
 		this.getHeader().setVisible(false);  
@@ -46,7 +57,7 @@ public class ScoresPanel extends FormPanel
 		scoresStore.groupBy("method");
 		
 		scoresColumnModel = new ColumnModel(scoresConfigs);  
-   
+
 		scoresColumnModel.addHeaderGroup(0, 0, new HeaderGroupConfig("Weighted", 1, 7));  
 		
 		scoresColumnModel.addHeaderGroup(1, 0, new HeaderGroupConfig("Structure 1", 1, 3));  
@@ -128,111 +139,217 @@ public class ScoresPanel extends FormPanel
 	{
 		List<ColumnConfig> configs = new ArrayList<ColumnConfig>();  
 		   
-		ColumnConfig column = new ColumnConfig();  
-		column.setId("weightedcore1");  
-		column.setHeader("core1");  
-		column.setWidth(75); 
-		column.setAlignment(HorizontalAlignment.CENTER);
-		configs.add(column); 
+		BeanModelFactory beanModelFactory = BeanModelLookup.get().getFactory(InterfaceScoreItem.class);
+		BeanModel model = beanModelFactory.createModel(new InterfaceScoreItem());
 		
-		column = new ColumnConfig();  
-		column.setId("weightedrim1");  
-		column.setHeader("rim1");  
-		column.setWidth(75); 
-		column.setAlignment(HorizontalAlignment.CENTER);
-		configs.add(column); 
+//		String list = "";
+//		
+//		for(int i=0; i<model.getPropertyNames().size(); i++)
+//		{
+//			list = list + "," + model.getProperties().values().;
+//		}
+//		
+		String columnOrder = mainController.getSettings().getGridProperties().get("scores_columns");
 		
-		column = new ColumnConfig();  
-		column.setId("weightedrat1");  
-		column.setHeader("rat1");  
-		column.setWidth(75); 
-		column.setAlignment(HorizontalAlignment.CENTER);
-		configs.add(column); 
+		String[] columns = null;
 		
-		column = new ColumnConfig();  
-		column.setId("weightedcore2");  
-		column.setHeader("core2");  
-		column.setWidth(75);  
-		column.setAlignment(HorizontalAlignment.CENTER);
-		configs.add(column); 
-   
-		column = new ColumnConfig();  
-		column.setId("weightedrim2");  
-		column.setHeader("rim2");  
-		column.setWidth(75);  
-		column.setAlignment(HorizontalAlignment.CENTER);
-		configs.add(column); 
-		
-		column = new ColumnConfig();  
-		column.setId("weightedrat2");  
-		column.setHeader("rat2");  
-		column.setWidth(75);
-		column.setAlignment(HorizontalAlignment.CENTER);  
-		configs.add(column); 
-		
-		column = new ColumnConfig();  
-		column.setId("weightedscore");  
-		column.setHeader("score");  
-		column.setWidth(75);  
-		column.setAlignment(HorizontalAlignment.CENTER);
-		configs.add(column); 
-		
-		column = new ColumnConfig();  
-		column.setId("unweightedcore1");  
-		column.setHeader("core1");  
-		column.setWidth(75); 
-		column.setAlignment(HorizontalAlignment.CENTER);
-		configs.add(column); 
-		
-		column = new ColumnConfig();  
-		column.setId("unweightedrim1");  
-		column.setHeader("rim1");  
-		column.setWidth(75);  
-		column.setAlignment(HorizontalAlignment.CENTER);
-		configs.add(column); 
-		
-		column = new ColumnConfig();  
-		column.setId("unweightedrat1");  
-		column.setHeader("rat1");  
-		column.setWidth(75);  
-		column.setAlignment(HorizontalAlignment.CENTER);
-		configs.add(column); 
-		
-		column = new ColumnConfig();  
-		column.setId("unweightedcore2");  
-		column.setHeader("core2");  
-		column.setWidth(75);  
-		column.setAlignment(HorizontalAlignment.CENTER);
-		configs.add(column); 
-   
-		column = new ColumnConfig();  
-		column.setId("unweightedrim2");  
-		column.setHeader("rim2");  
-		column.setWidth(75);  
-		column.setAlignment(HorizontalAlignment.CENTER);
-		configs.add(column); 
-		
-		column = new ColumnConfig();  
-		column.setId("unweightedrat2");  
-		column.setHeader("rat2");  
-		column.setWidth(75);  
-		column.setAlignment(HorizontalAlignment.CENTER);
-		configs.add(column); 
-		
-		column = new ColumnConfig();  
-		column.setId("unweightedscore");  
-		column.setHeader("score");  
-		column.setWidth(75);  
-		column.setAlignment(HorizontalAlignment.CENTER);
-		configs.add(column); 
-		
-		column = new ColumnConfig();  
-		column.setId("method");  
-		column.setHeader("method");  
-		column.setWidth(75);  
-		column.setAlignment(HorizontalAlignment.CENTER);
-		configs.add(column); 
+		if(columnOrder == null)
+		{
+			columns = new String[model.getPropertyNames().size()];
+			
+			Iterator<String> fieldsIterator = model.getPropertyNames().iterator();
+			
+			int i=0;
+			
+			while(fieldsIterator.hasNext())
+			{
+				columns[i] = fieldsIterator.next();
+				i++;
+			}
+		}
+		else
+		{
+			columns = columnOrder.split(",");
+		}
+			
+		for(String columnName : columns)
+		{
+			boolean addColumn = true;
+			
+			String customAdd = mainController.getSettings().getGridProperties().get("scores_" + columnName + "_add");
+			if(customAdd != null)
+			{
+				if(!customAdd.equals("yes"))
+				{
+					addColumn = false;
+				}
+			}
+			
+			if(addColumn)
+			{
+				boolean displayColumn = true;
+				
+				String customVisibility = mainController.getSettings().getGridProperties().get("scores_" + columnName + "_visible");
+				if(customVisibility != null)
+				{
+					if(!customVisibility.equals("yes"))
+					{
+						displayColumn = false;
+					}
+				}
+				
+				
+				
+				int columnWidth = 75;
+				String customColumnWidth = mainController.getSettings().getGridProperties().get("scores_" + columnName + "_width");
+				if(customColumnWidth != null)
+				{
+					columnWidth = Integer.parseInt(customColumnWidth);
+				}
+				
+				
+				
+				String customRenderer = mainController.getSettings().getGridProperties().get("scores_" + columnName + "_renderer");
+				
+				GridCellRenderer<BeanModel> renderer = null;
+				if((customRenderer != null) && (!customRenderer.equals("")))
+				{
+					renderer = GridCellRendererFactory.createGridCellRenderer(customRenderer, mainController);
+				}
+				
+				String header = columnName;
+				String customHeader = mainController.getSettings().getGridProperties().get("scores_" + columnName + "_header");
+				if(customHeader != null)
+				{
+					header = customHeader;
+				}
+				
+				ColumnConfig column = new ColumnConfig();
+				column.setId(columnName);  
+				column.setHeader(header);  
+				column.setWidth(columnWidth); 
+				column.setAlignment(HorizontalAlignment.CENTER);
+
+				column.setHidden(!displayColumn);
+				
+				if(renderer != null)
+				{
+					column.setRenderer(renderer);
+				}
+				
+				configs.add(column);  
+			}
+		}
 		
 		return configs;
+		
+//		List<ColumnConfig> configs = new ArrayList<ColumnConfig>();  
+//		   
+//		ColumnConfig column = new ColumnConfig();  
+//		column.setId("weightedcore1");  
+//		column.setHeader("core1");  
+//		column.setWidth(75); 
+//		column.setAlignment(HorizontalAlignment.CENTER);
+//		configs.add(column); 
+//		
+//		column = new ColumnConfig();  
+//		column.setId("weightedrim1");  
+//		column.setHeader("rim1");  
+//		column.setWidth(75); 
+//		column.setAlignment(HorizontalAlignment.CENTER);
+//		configs.add(column); 
+//		
+//		column = new ColumnConfig();  
+//		column.setId("weightedrat1");  
+//		column.setHeader("rat1");  
+//		column.setWidth(75); 
+//		column.setAlignment(HorizontalAlignment.CENTER);
+//		configs.add(column); 
+//		
+//		column = new ColumnConfig();  
+//		column.setId("weightedcore2");  
+//		column.setHeader("core2");  
+//		column.setWidth(75);  
+//		column.setAlignment(HorizontalAlignment.CENTER);
+//		configs.add(column); 
+//   
+//		column = new ColumnConfig();  
+//		column.setId("weightedrim2");  
+//		column.setHeader("rim2");  
+//		column.setWidth(75);  
+//		column.setAlignment(HorizontalAlignment.CENTER);
+//		configs.add(column); 
+//		
+//		column = new ColumnConfig();  
+//		column.setId("weightedrat2");  
+//		column.setHeader("rat2");  
+//		column.setWidth(75);
+//		column.setAlignment(HorizontalAlignment.CENTER);  
+//		configs.add(column); 
+//		
+//		column = new ColumnConfig();  
+//		column.setId("weightedscore");  
+//		column.setHeader("score");  
+//		column.setWidth(75);  
+//		column.setAlignment(HorizontalAlignment.CENTER);
+//		configs.add(column); 
+//		
+//		column = new ColumnConfig();  
+//		column.setId("unweightedcore1");  
+//		column.setHeader("core1");  
+//		column.setWidth(75); 
+//		column.setAlignment(HorizontalAlignment.CENTER);
+//		configs.add(column); 
+//		
+//		column = new ColumnConfig();  
+//		column.setId("unweightedrim1");  
+//		column.setHeader("rim1");  
+//		column.setWidth(75);  
+//		column.setAlignment(HorizontalAlignment.CENTER);
+//		configs.add(column); 
+//		
+//		column = new ColumnConfig();  
+//		column.setId("unweightedrat1");  
+//		column.setHeader("rat1");  
+//		column.setWidth(75);  
+//		column.setAlignment(HorizontalAlignment.CENTER);
+//		configs.add(column); 
+//		
+//		column = new ColumnConfig();  
+//		column.setId("unweightedcore2");  
+//		column.setHeader("core2");  
+//		column.setWidth(75);  
+//		column.setAlignment(HorizontalAlignment.CENTER);
+//		configs.add(column); 
+//   
+//		column = new ColumnConfig();  
+//		column.setId("unweightedrim2");  
+//		column.setHeader("rim2");  
+//		column.setWidth(75);  
+//		column.setAlignment(HorizontalAlignment.CENTER);
+//		configs.add(column); 
+//		
+//		column = new ColumnConfig();  
+//		column.setId("unweightedrat2");  
+//		column.setHeader("rat2");  
+//		column.setWidth(75);  
+//		column.setAlignment(HorizontalAlignment.CENTER);
+//		configs.add(column); 
+//		
+//		column = new ColumnConfig();  
+//		column.setId("unweightedscore");  
+//		column.setHeader("score");  
+//		column.setWidth(75);  
+//		column.setAlignment(HorizontalAlignment.CENTER);
+//		configs.add(column); 
+//		
+//		column = new ColumnConfig();  
+//		column.setId("method");  
+//		column.setHeader("method");  
+//		column.setWidth(75);  
+//		column.setAlignment(HorizontalAlignment.CENTER);
+//		configs.add(column); 
+//		
+//		return configs;
 	}
 }

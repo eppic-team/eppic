@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
-import ch.systemsx.sybit.crkwebui.client.data.StatusData;
 import ch.systemsx.sybit.crkwebui.client.model.MyJobsModel;
+import ch.systemsx.sybit.crkwebui.shared.model.StatusData;
 
 import com.extjs.gxt.ui.client.event.ButtonEvent;
 import com.extjs.gxt.ui.client.event.IconButtonEvent;

@@ -16,5 +16,7 @@ public interface ServiceController
 	public abstract void getJobsForCurrentSession();
 
 	public abstract void untieJobsFromSession();
+	
+	public abstract void loadSettings();
 
 }

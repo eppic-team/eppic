@@ -6,17 +6,21 @@ import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 
-import model.InterfaceScore;
+import model.PDBScoreItem;
 import model.PdbScore;
 import ch.systemsx.sybit.crkwebui.client.CrkWebService;
-import ch.systemsx.sybit.crkwebui.client.data.StatusData;
 import ch.systemsx.sybit.crkwebui.shared.FieldVerifier;
+import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
+import ch.systemsx.sybit.crkwebui.shared.model.StatusData;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
@@ -320,9 +324,9 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements
 	}
 
 	@Override
-	public PdbScore getResultData(String id) 
+	public PDBScoreItem getResultData(String id) 
 	{
-		PdbScore resultsData = null;
+		PDBScoreItem resultsData = null;
 		
 		if((id != null) && (id.length() != 0))
 		{
@@ -349,80 +353,51 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements
 				if(directoryContent != null &&
 					directoryContent.length > 0)
 				{
-					File resultFile = new File(resultFileDirectory + "/" + directoryContent[0]);
+					PdbScore[] allPdbScores = null;
 					
-					if(resultFile.exists())
+					List<PdbScore[]> pdbScores = new ArrayList<PdbScore[]>();
+					
+					for(int i=0; i<directoryContent.length; i++)
 					{
-						try
+						File resultFile = new File(resultFileDirectory + "/" + directoryContent[0]);
+						
+						if(resultFile.exists())
 						{
-							PdbScore[] pdbScores = InterfaceEvolContextList.parseScoresFile(resultFile);
-							
-							if((pdbScores != null) && (pdbScores.length > 1))
+							try
 							{
-								resultsData = pdbScores[0];
+								PdbScore[] pdbScoresForMethod = InterfaceEvolContextList.parseScoresFile(resultFile);
+								pdbScores.add(pdbScoresForMethod);
+							}
+							catch(Exception e)
+							{
 								
-								int nrOfInterface = pdbScores[0].getInterfaceScoreMap().size();
-								
-								int i = 1;
-								
-								while(i <= nrOfInterface)
-								{
-									InterfaceScore interfaceScore = new InterfaceScore(resultsData);
-									interfaceScore.setId(i);
-									interfaceScore.setInterfArea(pdbScores[0].getInterfaceScoreMap().get(i).getInterfArea());
-									interfaceScore.setFirstChainId(pdbScores[0].getInterfaceScoreMap().get(i).getFirstChainId());
-									interfaceScore.setSecondChainId(pdbScores[0].getInterfaceScoreMap().get(i).getSecondChainId());
-									interfaceScore.setCoreSize1(pdbScores[0].getInterfaceScoreMap().get(i).getCoreSize1());
-									interfaceScore.setCoreSize2(pdbScores[0].getInterfaceScoreMap().get(i).getCoreSize2());
-									interfaceScore.setNumHomologs1(pdbScores[0].getInterfaceScoreMap().get(i).getNumHomologs1());
-									interfaceScore.setNumHomologs2(pdbScores[0].getInterfaceScoreMap().get(i).getNumHomologs2());
-									
-									double[] rim1SCores =  new double[2];
-									rim1SCores[0] = pdbScores[0].getInterfaceScoreMap().get(i).getRim1Scores()[0];
-									rim1SCores[1] = pdbScores[1].getInterfaceScoreMap().get(i).getRim1Scores()[0];
-									interfaceScore.setRim1Scores(rim1SCores);
-									
-									double[] core1SCores =  new double[2];
-									core1SCores[0] = pdbScores[0].getInterfaceScoreMap().get(i).getCore1Scores()[0];
-									core1SCores[1] = pdbScores[1].getInterfaceScoreMap().get(i).getCore1Scores()[0];
-									interfaceScore.setCore1Scores(core1SCores);
-									
-									double[] rim2SCores =  new double[2];
-									rim2SCores[0] = pdbScores[0].getInterfaceScoreMap().get(i).getRim2Scores()[0];
-									rim2SCores[1] = pdbScores[1].getInterfaceScoreMap().get(i).getRim2Scores()[0];
-									interfaceScore.setRim2Scores(rim2SCores);
-									
-									double[] core2SCores =  new double[2];
-									core2SCores[0] = pdbScores[0].getInterfaceScoreMap().get(i).getCore2Scores()[0];
-									core2SCores[1] = pdbScores[1].getInterfaceScoreMap().get(i).getCore2Scores()[0];
-									interfaceScore.setCore2Scores(core2SCores);
-									
-									double[] ratio1SCores =  new double[2];
-									ratio1SCores[0] = pdbScores[0].getInterfaceScoreMap().get(i).getRatio1Scores()[0];
-									ratio1SCores[1] = pdbScores[1].getInterfaceScoreMap().get(i).getRatio1Scores()[0];
-									interfaceScore.setRatio1Scores(ratio1SCores);
-									
-									double[] ratio2SCores =  new double[2];
-									ratio2SCores[0] = pdbScores[0].getInterfaceScoreMap().get(i).getRatio2Scores()[0];
-									ratio2SCores[1] = pdbScores[1].getInterfaceScoreMap().get(i).getRatio2Scores()[0];
-									interfaceScore.setRatio2Scores(ratio2SCores);
-									
-									double[] finalScores =  new double[2];
-									finalScores[0] = pdbScores[0].getInterfaceScoreMap().get(i).getFinalScores()[0];
-									finalScores[1] = pdbScores[1].getInterfaceScoreMap().get(i).getFinalScores()[0];
-									interfaceScore.setFinalScores(finalScores);
-									
-									resultsData.addInterfScore(interfaceScore);
-									
-									i++;
-								}
 							}
 						}
-						catch(Exception e)
+					}
+					
+					
+					if(pdbScores.size() > 0)
+					{
+						allPdbScores = pdbScores.get(0);
+						
+						int totalLength = 0;
+						  
+						for (PdbScore[] array : pdbScores) 
 						{
-							
+						    totalLength += array.length;
+						}
+						
+						int offset = pdbScores.get(0).length;
+						
+						for(int i=1; i< pdbScores.size(); i++) 
+						{
+						    System.arraycopy(pdbScores.get(i), 0, allPdbScores, offset, pdbScores.get(i).length);
+						    offset += pdbScores.get(0).length;
 						}
 					}
+					
+					resultsData = PDBScoreItem.createPDBScoreItem(allPdbScores);
+
 				}
 			}
 		}
@@ -534,5 +509,44 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements
 		String sessionId = getThreadLocalRequest().getSession().getId();
 		
 		return DBUtils.untieJobsFromSession(sessionId);
+	}
+	
+	@Override
+	public ApplicationSettings getSettings()
+	{
+		ApplicationSettings settings = new ApplicationSettings();
+		
+		InputStream propertiesStream = 
+			getServletContext().getResourceAsStream("/WEB-INF/classes/ch/systemsx/sybit/crkwebui/server/grid.properties");
+		
+		Properties gridProperties = new Properties();
+		
+		try 
+		{
+			gridProperties.load(propertiesStream);
+		} 
+		catch (IOException e) 
+		{
+			e.printStackTrace();
+//			throw new ServletException("Properties file can not be read");
+		}
+		
+		Map<String, String> gridPropetiesMap = new HashMap<String, String>();
+		for(Object key : gridProperties.keySet())
+		{
+			gridPropetiesMap.put((String)key, (String)gridProperties.get(key));
+		}
+		
+		settings.setGridProperties(gridPropetiesMap);
+		
+		String supportedMethods = gridProperties.getProperty("supported_methods");
+		
+		if(supportedMethods != null)
+		{
+			String[] scoringMethods = supportedMethods.split(","); 
+			settings.setScoresTypes(scoringMethods);
+		}
+		
+		return settings;
 	}
 }

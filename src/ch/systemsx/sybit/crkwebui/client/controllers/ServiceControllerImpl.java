@@ -5,6 +5,7 @@ import ch.systemsx.sybit.crkwebui.client.CrkWebServiceAsync;
 import ch.systemsx.sybit.crkwebui.client.callbacks.CheckIfDataProcessedCallback;
 import ch.systemsx.sybit.crkwebui.client.callbacks.GetJobsForCurrentSession;
 import ch.systemsx.sybit.crkwebui.client.callbacks.GetResultsDataCallback;
+import ch.systemsx.sybit.crkwebui.client.callbacks.GetSettingsCallback;
 import ch.systemsx.sybit.crkwebui.client.callbacks.GetStatusDataCallback;
 import ch.systemsx.sybit.crkwebui.client.callbacks.KillJobCallback;
 import ch.systemsx.sybit.crkwebui.client.callbacks.TestCallback;
@@ -68,5 +69,10 @@ public class ServiceControllerImpl implements ServiceController
 	public void untieJobsFromSession()
 	{
 		crkWebService.untieJobsFromSession(new UntieJobsFromSessionCallback(mainController));
+	}
+	
+	public void loadSettings()
+	{
+		crkWebService.getSettings(new GetSettingsCallback(mainController));
 	}
 }

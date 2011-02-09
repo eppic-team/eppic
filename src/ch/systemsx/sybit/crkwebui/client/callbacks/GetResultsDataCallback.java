@@ -1,8 +1,14 @@
 package ch.systemsx.sybit.crkwebui.client.callbacks;
 
-import model.PdbScore;
+import model.InterfaceItem;
+import model.InterfaceScoreItem;
+import model.PDBScoreItem;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 
+import com.extjs.gxt.ui.client.data.BeanModel;
+import com.extjs.gxt.ui.client.data.BeanModelFactory;
+import com.extjs.gxt.ui.client.data.BeanModelLookup;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public class GetResultsDataCallback implements AsyncCallback
@@ -27,14 +33,15 @@ public class GetResultsDataCallback implements AsyncCallback
 	@Override
 	public void onSuccess(Object result) 
 	{
-		if((result != null) && (result instanceof PdbScore))
+		if((result != null) && (result instanceof PDBScoreItem))
 		{
-			PdbScore resultsData = (PdbScore)result;
+			PDBScoreItem resultsData = (PDBScoreItem)result;
 			resultsData.setJobId(selectedId);
+			mainController.setPDBScoreItem(resultsData);
 			mainController.displayResultView(resultsData);
 			
-//			BeanModelFactory beanModelFactory = BeanModelLookup.get().getFactory(InterfaceScore.class);
-//			BeanModel model = beanModelFactory.createModel(resultsData.getInterfaceScoreMap().get(1));
+//			BeanModelFactory beanModelFactory = BeanModelLookup.get().getFactory(InterfaceScoreItem.class);
+//			BeanModel model = beanModelFactory.createModel(new InterfaceScoreItem());
 //			Window.alert(model.getProperties().toString());
 		}
 		else

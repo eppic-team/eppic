@@ -1,6 +1,6 @@
 package ch.systemsx.sybit.crkwebui.client.gui;
 
-import model.PdbScore;
+import model.PDBScoreItem;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 
 import com.extjs.gxt.ui.client.widget.TabPanel;
@@ -11,7 +11,7 @@ public class ResultsPanel extends TabPanel
 	
 	private OverViewTabItem overViewTabItem;
 	
-	public ResultsPanel(MainController mainController, PdbScore resultsData)
+	public ResultsPanel(MainController mainController, PDBScoreItem resultsData)
 	{
 		this.mainController = mainController;
 		this.setBorders(false);

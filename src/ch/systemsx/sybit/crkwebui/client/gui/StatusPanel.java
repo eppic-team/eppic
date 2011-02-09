@@ -1,7 +1,7 @@
 package ch.systemsx.sybit.crkwebui.client.gui;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
-import ch.systemsx.sybit.crkwebui.client.data.StatusData;
+import ch.systemsx.sybit.crkwebui.shared.model.StatusData;
 
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.widget.form.FormPanel;

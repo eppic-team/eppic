@@ -3,7 +3,7 @@ package ch.systemsx.sybit.crkwebui.client.callbacks;
 import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
-import ch.systemsx.sybit.crkwebui.client.data.StatusData;
+import ch.systemsx.sybit.crkwebui.shared.model.StatusData;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 

@@ -2,38 +2,198 @@ package ch.systemsx.sybit.crkwebui.client.controllers;
 
 import java.util.List;
 
-import model.PdbScore;
-import ch.systemsx.sybit.crkwebui.client.data.StatusData;
+import model.PDBScoreItem;
+import ch.systemsx.sybit.crkwebui.client.gui.InputDataPanel;
+import ch.systemsx.sybit.crkwebui.client.gui.MainViewPort;
+import ch.systemsx.sybit.crkwebui.client.gui.OverviewPanel;
+import ch.systemsx.sybit.crkwebui.client.gui.StatusPanel;
+import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
+import ch.systemsx.sybit.crkwebui.shared.model.StatusData;
 
+import com.extjs.gxt.ui.client.widget.Viewport;
+import com.extjs.gxt.ui.client.widget.form.FormPanel;
+import com.extjs.gxt.ui.client.widget.layout.FitLayout;
+import com.extjs.gxt.ui.client.widget.layout.VBoxLayout;
+import com.extjs.gxt.ui.client.widget.layout.VBoxLayout.VBoxLayoutAlign;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.RootPanel;
 
-public interface MainController 
+public class MainController 
 {
 	public static final AppProperties CONSTANTS = (AppProperties) GWT.create(AppProperties.class);
 	
-	public abstract void test(String testValue);
+	private MainViewPort mainViewPort;
 	
-	public abstract void displayView(String token);
+	private ServiceController serviceController;
 	
-	public abstract void displayResults(String selectedId);
+	private ApplicationSettings settings;
 	
-	public abstract void getStatusData(String selectedId);
+	private PDBScoreItem pdbScoreItem;
 	
-	public abstract void getResultData(String selectedId);
+//	private String selectedId;
 	
-	public abstract void displayInputView();
+	public MainController(Viewport viewport)
+	{
+		mainViewPort = new MainViewPort(this);
+		RootPanel.get().add(mainViewPort);
+//		viewport.add(mainViewPort);
+		this.serviceController = new ServiceControllerImpl(this);
+	}
 	
-	public abstract void displayResultView(PdbScore resultData);
+	public void test(String testValue)
+	{
+		serviceController.test(testValue);
+	}
 	
-	public abstract void displayStatusView(StatusData statusData);
+	public void displayView(String token)
+	{
+		if((token != null) &&
+		   (token.length() > 3) &&
+		   (token.startsWith("id")))
+		{
+			String selectedId = token.substring(3);
+			displayResults(selectedId);
+		}
+//		else if((token != null) &&
+//				(token.length() > 10) &&
+//				(token.startsWith("interface")))
+//		{
+//			String selectedInterface = token.substring(9, token.indexOf("/"));
+//			String selectedId = token.substring(token.indexOf("/") + 1);
+//			displayResults(selectedId);
+//		}
+		else
+		{
+			displayInputView();
+		}
+	}
 	
-	public abstract void showError(String errorMessage);
+	public void displayInputView()
+	{
+		mainViewPort.getDisplayPanel().removeAll();
+		
+		VBoxLayout vBoxLayout = new VBoxLayout();
+		vBoxLayout.setVBoxLayoutAlign(VBoxLayoutAlign.CENTER);
+		FormPanel inputDataPanelWrapper = new FormPanel();
+		inputDataPanelWrapper.setLayout(vBoxLayout);
+		inputDataPanelWrapper.setBorders(false);
+		inputDataPanelWrapper.setBodyBorder(false);
+		inputDataPanelWrapper.getHeader().setVisible(false);
+		
+//		mainViewPort.getDisplayPanel().setLayout(vBoxLayout);
+		
+		InputDataPanel inputDataPanel = new InputDataPanel(this);
+		
+		inputDataPanelWrapper.add(inputDataPanel);
+		mainViewPort.getDisplayPanel().add(inputDataPanelWrapper);
+		mainViewPort.getDisplayPanel().layout();
+//		mainPanel.getDisplayPanel().setCellHorizontalAlignment(inputDataPanel, HasHorizontalAlignment.ALIGN_CENTER);
+	}
 	
-	public abstract void killJob(String selectedId);
+	public void displayResults(String selectedId)
+	{
+		serviceController.checkIfDataProcessed(selectedId);
+	}
 	
-	public abstract void getJobsForCurrentSession();
+	public void getStatusData(String selectedId)
+	{
+		serviceController.getStatusData(selectedId);
+	}
 	
-	public abstract void setJobs(List<StatusData> statusData);
+	public void getResultData(String selectedId)
+	{
+		serviceController.getResultData(selectedId);
+	}
 	
-	public abstract void untieJobsFromSession();
+	public void displayResultView(PDBScoreItem resultData)
+	{
+		mainViewPort.getDisplayPanel().removeAll();
+		
+//		ResultsPanel resultsPanel = new ResultsPanel(this);
+//		resultsPanel.getOverViewTabItem().getOverviewPanel().setResults(resultData);
+		
+		mainViewPort.getDisplayPanel().setLayout(new FitLayout());
+//		mainViewPort.getDisplayPanel().add(resultsPanel);
+		OverviewPanel overViewPanel = new OverviewPanel(this, resultData);
+		overViewPanel.setResults(resultData);
+		mainViewPort.getDisplayPanel().add(overViewPanel);
+		mainViewPort.getDisplayPanel().layout();
+	}
+	
+	public void displayStatusView(StatusData statusData)
+	{
+		mainViewPort.getDisplayPanel().removeAll();
+		
+		VBoxLayout vBoxLayout = new VBoxLayout();
+		vBoxLayout.setVBoxLayoutAlign(VBoxLayoutAlign.CENTER);
+		FormPanel statusPanelWrapper = new FormPanel();
+		statusPanelWrapper.setLayout(vBoxLayout);
+		statusPanelWrapper.setBorders(false);
+		statusPanelWrapper.setBodyBorder(false);
+		statusPanelWrapper.getHeader().setVisible(false);
+		
+		StatusPanel statusPanel = new StatusPanel(this);
+		statusPanel.fillData(statusData);
+		
+		statusPanelWrapper.add(statusPanel);
+		
+		mainViewPort.getDisplayPanel().add(statusPanelWrapper);
+		mainViewPort.getDisplayPanel().layout();
+	}
+	
+	public void showError(String errorMessage)
+	{
+		Window.alert(errorMessage);
+	}
+	
+	public void killJob(String selectedId)
+	{
+		serviceController.killJob(selectedId);
+	}
+	
+	public void getJobsForCurrentSession()
+	{
+		serviceController.getJobsForCurrentSession();
+	}
+	
+	public void setJobs(List<StatusData> statusData)
+	{
+		mainViewPort.getMyJobsPanel().setJobs(statusData);
+	}
+	
+	public void untieJobsFromSession()
+	{
+		serviceController.untieJobsFromSession();
+	}
+
+	public void setSettings(ApplicationSettings settings) 
+	{
+		this.settings = settings;
+	}
+	
+	public ApplicationSettings getSettings()
+	{
+		return settings;
+	}
+
+	public void loadSettings()
+	{
+		serviceController.loadSettings();
+	}
+
+	public void setPDBScoreItem(PDBScoreItem pdbScoreItem) 
+	{
+		this.pdbScoreItem = pdbScoreItem;
+	}
+	
+	public PDBScoreItem getPdbScoreItem()
+	{
+		return pdbScoreItem;
+	}
+	
+	public MainViewPort getMainViewPort()
+	{
+		return mainViewPort;
+	}
 }

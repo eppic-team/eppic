@@ -11,7 +11,8 @@ import java.util.List;
 
 import javax.naming.NamingException;
 
-import ch.systemsx.sybit.crkwebui.client.data.StatusData;
+import ch.systemsx.sybit.crkwebui.shared.model.StatusData;
+
 
 //TODO will be changed to use datasource
 public class DBUtils 

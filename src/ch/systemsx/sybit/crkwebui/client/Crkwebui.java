@@ -1,7 +1,6 @@
 package ch.systemsx.sybit.crkwebui.client;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
-import ch.systemsx.sybit.crkwebui.client.controllers.MainControllerImpl;
 
 import com.extjs.gxt.ui.client.widget.Viewport;
 import com.google.gwt.core.client.EntryPoint;
@@ -25,7 +24,7 @@ public class Crkwebui implements EntryPoint, ValueChangeHandler<String>
 	 */
 	public void onModuleLoad() 
 	{
-		mainController = new MainControllerImpl(viewport);
+		mainController = new MainController(viewport);
 		
 	    History.addValueChangeHandler(this);
 	    
@@ -40,8 +39,9 @@ public class Crkwebui implements EntryPoint, ValueChangeHandler<String>
 	    
 	    mainController.getJobsForCurrentSession();
 	    
+	    mainController.loadSettings();
+	    
 	    // Now that we've setup our listener, fire the initial history state.
-	    History.fireCurrentHistoryState();
 	}
 
 

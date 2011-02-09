@@ -1,6 +1,6 @@
 package ch.systemsx.sybit.crkwebui.client.gui;
 
-import model.PdbScore;
+import model.PDBScoreItem;
 
 import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.util.Padding;
@@ -18,7 +18,7 @@ import com.google.gwt.user.client.ui.HTML;
 
 public class InfoPanel extends FormPanel
 {
-	public InfoPanel(PdbScore resultsData)
+	public InfoPanel(PDBScoreItem resultsData)
 	{
 		FormData formData = new FormData("100%");  
 //		infoPanel.setFrame(true);  

@@ -2,8 +2,9 @@ package ch.systemsx.sybit.crkwebui.client;
 
 import java.util.List;
 
-import model.PdbScore;
-import ch.systemsx.sybit.crkwebui.client.data.StatusData;
+import model.PDBScoreItem;
+import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
+import ch.systemsx.sybit.crkwebui.shared.model.StatusData;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
@@ -22,12 +23,14 @@ public interface CrkWebService extends RemoteService
 	
 	public StatusData getStatusData(String id);
 	
-	public PdbScore getResultData(String id);
+	public PDBScoreItem getResultData(String id);
 
 	public String killJob(String id);
 
 	public List<StatusData> getJobsForCurrentSession();
 
 	public String untieJobsFromSession();
+
+	public ApplicationSettings getSettings();
 	
 }
