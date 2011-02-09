@@ -3,8 +3,9 @@ package ch.systemsx.sybit.crkwebui.client.gui;
 import java.util.ArrayList;
 import java.util.List;
 
-import model.InterfaceScore;
-import model.PdbScore;
+import model.InterfaceScoreItem;
+import model.InterfaceScoreItemKey;
+import model.PDBScoreItem;
 import ch.systemsx.sybit.crkwebui.client.model.ScoresModel;
 
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
@@ -27,9 +28,9 @@ public class ScoresPanel extends FormPanel
 	private ColumnModel scoresColumnModel;
 	private Grid<ScoresModel> scoresGrid;
 	
-	private PdbScore resultsData;
+	private PDBScoreItem resultsData;
 	
-	public ScoresPanel(PdbScore resultsData)
+	public ScoresPanel(PDBScoreItem resultsData)
 	{
 		FormData formData = new FormData("100%");  
 //		infoPanel.setFrame(true);  
@@ -79,50 +80,48 @@ public class ScoresPanel extends FormPanel
 		   
 	}
 	
-	public void fillResultsGrid(PdbScore resultsData,  
+	public void fillResultsGrid(PDBScoreItem resultsData,  
 								int selectedInterface)
 	{
 		scoresStore.removeAll();
 		
 		List<ScoresModel> data = new ArrayList<ScoresModel>();
 		
-		InterfaceScore interfaceScore = resultsData.getInterfScore(selectedInterface);
-		
-		//TODO remove this loop
-		for(int i=0; i<2; i++)
+		///TODO
+		for(InterfaceScoreItemKey key : resultsData.getInterfaceScores().keySet())
 		{
-			if(interfaceScore != null)
+			if(key.getInterfaceId() == selectedInterface)
 			{
-				ScoresModel scoresModel = new ScoresModel(String.valueOf(interfaceScore.getRim1Scores()[0]));
-				scoresModel.set("unweightedrim1", interfaceScore.getRim1Scores()[0]);
-				scoresModel.set("weightedrim1", interfaceScore.getRim1Scores()[1]);
-				scoresModel.set("unweightedcore1", interfaceScore.getCore1Scores()[0]);
-				scoresModel.set("weightedcore1", interfaceScore.getCore1Scores()[1]);
-				scoresModel.set("unweightedrim2", interfaceScore.getRim2Scores()[0]);
-				scoresModel.set("weightedrim2", interfaceScore.getRim2Scores()[1]);
-				scoresModel.set("unweightedcore2", interfaceScore.getCore2Scores()[0]);
-				scoresModel.set("weightedcore2", interfaceScore.getCore2Scores()[1]);
-				scoresModel.set("unweightedscore", interfaceScore.getFinalScores()[0]);
-				scoresModel.set("weightedscore", interfaceScore.getFinalScores()[1]);
+				InterfaceScoreItem interfaceScoreItem = resultsData.getInterfaceScores().get(key);
 				
-				scoresModel.set("weightedrat1", interfaceScore.getRatio1Scores()[0]);
-				scoresModel.set("unweightedrat1", interfaceScore.getRatio1Scores()[1]);
-				scoresModel.set("weightedrat2", interfaceScore.getRatio2Scores()[0]);
-				scoresModel.set("unweightedrat2", interfaceScore.getRatio2Scores()[1]);
-				
-				scoresModel.set("method", "Entropy");
-				
-				if(i == 1)
+				if(interfaceScoreItem != null)
 				{
-					scoresModel.set("method", "KAKS");
+					ScoresModel scoresModel = new ScoresModel("");
+					scoresModel.set("unweightedrim1", interfaceScoreItem.getUnweightedRim1Scores());
+					scoresModel.set("weightedrim1", interfaceScoreItem.getWeightedRim1Scores());
+					scoresModel.set("unweightedcore1", interfaceScoreItem.getUnweightedCore1Scores());
+					scoresModel.set("weightedcore1", interfaceScoreItem.getWeightedCore1Scores());
+					scoresModel.set("unweightedrim2", interfaceScoreItem.getUnweightedRim2Scores());
+					scoresModel.set("weightedrim2", interfaceScoreItem.getWeightedRim2Scores());
+					scoresModel.set("unweightedcore2", interfaceScoreItem.getUnweightedCore2Scores());
+					scoresModel.set("weightedcore2", interfaceScoreItem.getWeightedCore2Scores());
+					scoresModel.set("unweightedscore", interfaceScoreItem.getUnweightedFinalScores());
+					scoresModel.set("weightedscore", interfaceScoreItem.getWeightedFinalScores());
+					
+					scoresModel.set("weightedrat1", interfaceScoreItem.getWeightedRatio1Scores());
+					scoresModel.set("unweightedrat1", interfaceScoreItem.getUnweightedRatio1Scores());
+					scoresModel.set("weightedrat2", interfaceScoreItem.getWeightedRatio2Scores());
+					scoresModel.set("unweightedrat2", interfaceScoreItem.getUnweightedRatio2Scores());
+					
+					scoresModel.set("method", interfaceScoreItem.getMethod());
+					
+					data.add(scoresModel);
 				}
 				
-				data.add(scoresModel);
+				scoresStore.add(data);
+				scoresGrid.reconfigure(scoresStore, scoresColumnModel);
 			}
 		}
-		
-		scoresStore.add(data);
-		scoresGrid.reconfigure(scoresStore, scoresColumnModel);
 	}
 	
 	private List<ColumnConfig> createColumnConfig()
