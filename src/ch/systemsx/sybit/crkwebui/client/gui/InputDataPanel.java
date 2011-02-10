@@ -1,6 +1,9 @@
 package ch.systemsx.sybit.crkwebui.client.gui;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
+import ch.systemsx.sybit.crkwebui.client.gui.validators.EmailFieldValidator;
+import ch.systemsx.sybit.crkwebui.shared.model.InputParameters;
+import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
 
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
@@ -12,9 +15,11 @@ import com.extjs.gxt.ui.client.widget.button.Button;
 import com.extjs.gxt.ui.client.widget.form.FieldSet;
 import com.extjs.gxt.ui.client.widget.form.FileUploadField;
 import com.extjs.gxt.ui.client.widget.form.FormPanel;
+import com.extjs.gxt.ui.client.widget.form.HiddenField;
 import com.extjs.gxt.ui.client.widget.form.TextField;
 import com.extjs.gxt.ui.client.widget.layout.FormLayout;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.user.client.Window;
 
 public class InputDataPanel extends FormPanel 
 {
@@ -55,6 +60,7 @@ public class InputDataPanel extends FormPanel
 	    final TextField<String> emailTextField = new TextField<String>();  
 	    emailTextField.setName("email");
 	    emailTextField.setFieldLabel(MainController.CONSTANTS.input_email());  
+	    emailTextField.setValidator(new EmailFieldValidator());
 	    generalFieldSet.add(emailTextField);  
 	  
 	    final FileUploadField file = new FileUploadField();
@@ -70,15 +76,33 @@ public class InputDataPanel extends FormPanel
 	    breakPanel.setBorders(false);
 	    generalFieldSet.add(breakPanel);
 	    
-	    final OptionsInputPanel optionsInputPanel = new OptionsInputPanel(mainController.getSettings().getDefaultParametersValues());
+	    final OptionsInputPanel optionsInputPanel = new OptionsInputPanel(mainController.getSettings().getDefaultParametersValues(),
+	    																  mainController.getSettings().getReducedAlphabetList());
 	    generalFieldSet.add(optionsInputPanel);
 	    optionsInputPanel.collapse();
+	    
+//	    HiddenField<InputParameters> selectedParameters = new HiddenField<InputParameters>();
+//	    selectedParameters.setName("crkparameters");
+//	    selectedParameters.setValue(optionsInputPanel.getCurrentInputParameters());
+//	    generalFieldSet.add(selectedParameters);
 	  
 	    this.addListener(Events.Submit, new Listener<FormEvent>() 
 		{
 	        public void handleEvent(FormEvent formEvent) 
 	        {
-	        	mainController.getJobsForCurrentSession();
+	        	//TODO do checking
+	        	String jobId = formEvent.getResultHtml();
+	        	jobId = jobId.replace("<pre>", "");
+	        	jobId = jobId.replace("</pre>", "");
+	        	jobId = jobId.replaceFirst("\n", "");
+	        	
+	        	RunJobData runJobData = new RunJobData();
+	        	runJobData.setEmailAddress(emailTextField.getValue());
+	        	runJobData.setFileName(file.getValue());
+	        	runJobData.setJobId(jobId);
+	        	runJobData.setInputParameters(optionsInputPanel.getCurrentInputParameters());
+	        	
+	        	mainController.runJob(runJobData);
 	        }
 	    });
 	    

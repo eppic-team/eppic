@@ -8,6 +8,7 @@ import ch.systemsx.sybit.crkwebui.client.gui.MainViewPort;
 import ch.systemsx.sybit.crkwebui.client.gui.OverviewPanel;
 import ch.systemsx.sybit.crkwebui.client.gui.StatusPanel;
 import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
+import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
 import ch.systemsx.sybit.crkwebui.shared.model.StatusData;
 
 import com.extjs.gxt.ui.client.widget.Viewport;
@@ -16,6 +17,7 @@ import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 import com.extjs.gxt.ui.client.widget.layout.VBoxLayout;
 import com.extjs.gxt.ui.client.widget.layout.VBoxLayout.VBoxLayoutAlign;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.RootPanel;
 
@@ -32,6 +34,8 @@ public class MainController
 	private PDBScoreItem pdbScoreItem;
 	
 //	private String selectedId;
+	
+	private Timer autoRefreshMyJobs;
 	
 	public MainController(Viewport viewport)
 	{
@@ -195,5 +199,25 @@ public class MainController
 	public MainViewPort getMainViewPort()
 	{
 		return mainViewPort;
+	}
+	
+	public void runJob(RunJobData runJobData)
+	{
+		serviceController.runJob(runJobData);
+	}
+	
+	public void runAutoRefresh()
+	{
+		getJobsForCurrentSession();
+		
+		autoRefreshMyJobs = new Timer()
+		{
+			public void run() 
+			{
+				getJobsForCurrentSession();
+			}        
+		};
+		
+		autoRefreshMyJobs.scheduleRepeating(10000);
 	}
 }

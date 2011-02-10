@@ -1,6 +1,8 @@
 package ch.systemsx.sybit.crkwebui.client;
 
+import ch.systemsx.sybit.crkwebui.client.callbacks.RunJobCallback;
 import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
+import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
@@ -27,5 +29,7 @@ public interface CrkWebServiceAsync
 	public void untieJobsFromSession(AsyncCallback callback);
 
 	public void getSettings(AsyncCallback<ApplicationSettings> callback);
+
+	public void runJob(RunJobData runJobData, AsyncCallback callback);
 
 }

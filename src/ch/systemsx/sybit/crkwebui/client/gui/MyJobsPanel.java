@@ -79,18 +79,8 @@ public class MyJobsPanel extends ContentPanel
 			   
 			public void componentSelected(ButtonEvent ce) 
 			{
-				InterfacesWindow iw = new InterfacesWindow(null);
-				iw.show();
-				
-				Window w = new Window();        
-				   w.setHeading("Product Information");
-				   w.setModal(true);
-				   w.setSize(600, 400);
-				   w.setMaximizable(true);
-				   w.setToolTip("The ExtGWT product page...");
-				   w.setUrl("http://google.com");
-				   w.show();
-			}  
+				openJmol("");
+			}
 		}); 
 		
 		toolBar.add(test);  
@@ -171,7 +161,7 @@ public class MyJobsPanel extends ContentPanel
 	    column.setWidth(100);  
 	    column.setRowHeader(true); 
 	    column.setRenderer(jobRenderer);
-	    configs.add(column);  
+	    configs.add(column);
 	    
 	    column = new ColumnConfig();  
 	    column.setId("status");  
@@ -215,4 +205,11 @@ public class MyJobsPanel extends ContentPanel
 		myJobsStore.add(data);
 		myJobsGrid.reconfigure(myJobsStore, myJobsColumnModel);
 	}
+	
+	public native void openJmol(String msg) /*-{
+		var jmolWindow = window.open("", "Jmol");
+		$wnd.jmolInitialize("http://localhost/jmol");
+		$wnd.jmolSetDocument(jmolWindow.document);
+        $wnd.jmolApplet(900,'load http://localhost/pdb1aor.pdb');
+	}-*/;
 }

@@ -37,8 +37,6 @@ public class Crkwebui implements EntryPoint, ValueChangeHandler<String>
 			}
 		});
 	    
-	    mainController.getJobsForCurrentSession();
-	    
 	    mainController.loadSettings();
 	    
 	    // Now that we've setup our listener, fire the initial history state.

@@ -3,7 +3,10 @@ package ch.systemsx.sybit.crkwebui.server;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
 import java.io.PrintWriter;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
@@ -19,6 +22,7 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.lang.RandomStringUtils;
 
 import ch.systemsx.sybit.crkwebui.server.data.EmailData;
+import ch.systemsx.sybit.crkwebui.shared.model.InputParameters;
 
 /**
  * Servlet used to upload documents by the users to server
@@ -32,14 +36,8 @@ public class FileUploadServlet extends FileBaseServlet
 	 */
 	private static final long serialVersionUID = 1L;
 	
-	private EmailData emailData;
-	
 	private String generalTmpDirectoryName;
 	private String generalDestinationDirectoryName;
-	
-	private CrkThreadGroup runInstances;
-	 
-	private String dataSource;
 	
 	/**
 	 * Read properties file
@@ -94,16 +92,6 @@ public class FileUploadServlet extends FileBaseServlet
 		{
 			throw new ServletException(generalDestinationDirectoryName + " is not a directory");
 		}
-		
-		emailData = new EmailData();
-		emailData.setEmailSender(properties.getProperty("email_username", ""));
-		emailData.setEmailSender(properties.getProperty("email_password", ""));
-		
-		runInstances = new CrkThreadGroup("instances");
-		getServletContext().setAttribute("instances", runInstances);
-		
-		dataSource = properties.getProperty("data_source");
-		DBUtils.setDataSource(dataSource);
 	}
  
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException 
@@ -156,14 +144,7 @@ public class FileUploadServlet extends FileBaseServlet
 				
 				for(FileItem item : items) 
 				{
-					if(item.isFormField())
-					{
-						if(item.getFieldName().equals("email"))
-						{
-							emailData.setEmailRecipient(item.getString());
-						}
-					}
-					else 
+					if(!item.isFormField())
 					{
 						fileName = item.getName(); 
 						File file = new File(localDestinationDir, item.getName());
@@ -173,17 +154,6 @@ public class FileUploadServlet extends FileBaseServlet
 						processingFile.createNewFile();
 					}
 				}
-				
-				CrkRunner crkRunner = new CrkRunner(emailData, 
-													fileName, 
-													"resultPath", 
-													localDestinationDirName,
-													request.getSession().getId(),
-													randomDirectoryName);
-				
-				Thread crkRunnerThread = new Thread(runInstances, crkRunner, randomDirectoryName);
-				
-				crkRunnerThread.start();
 				
 				out.println(randomDirectoryName);
 				out.close();
@@ -195,8 +165,14 @@ public class FileUploadServlet extends FileBaseServlet
 			} 
 			catch(Exception ex) 
 			{
+				String errorStack = "";
+				for(StackTraceElement element : ex.getStackTrace())
+				{
+					errorStack += element.toString() + "<br>"; 
+				}
+				
 				response.sendError(HttpServletResponse.SC_EXPECTATION_FAILED,
-								   "Error encountered while uploading file");
+								   "Error encountered while uploading file" + errorStack);
 			}
 			
 		}

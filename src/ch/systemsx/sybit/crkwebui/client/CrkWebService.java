@@ -4,6 +4,7 @@ import java.util.List;
 
 import model.PDBScoreItem;
 import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
+import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
 import ch.systemsx.sybit.crkwebui.shared.model.StatusData;
 
 import com.google.gwt.user.client.rpc.RemoteService;
@@ -32,5 +33,7 @@ public interface CrkWebService extends RemoteService
 	public String untieJobsFromSession();
 
 	public ApplicationSettings getSettings();
+
+	public boolean runJob(RunJobData runJobData);
 	
 }

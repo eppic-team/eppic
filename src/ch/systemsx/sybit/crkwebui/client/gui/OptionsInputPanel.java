@@ -1,6 +1,9 @@
 package ch.systemsx.sybit.crkwebui.client.gui;
 
+import java.util.List;
+
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
+import ch.systemsx.sybit.crkwebui.client.model.ReducedAlphabetComboModel;
 import ch.systemsx.sybit.crkwebui.shared.model.InputParameters;
 
 import com.extjs.gxt.ui.client.data.BaseModel;
@@ -8,32 +11,35 @@ import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.widget.form.ComboBox;
 import com.extjs.gxt.ui.client.widget.form.ComboBox.TriggerAction;
 import com.extjs.gxt.ui.client.widget.form.FieldSet;
+import com.extjs.gxt.ui.client.widget.form.NumberField;
 import com.extjs.gxt.ui.client.widget.form.Radio;
 import com.extjs.gxt.ui.client.widget.form.RadioGroup;
 import com.extjs.gxt.ui.client.widget.form.TextField;
 import com.extjs.gxt.ui.client.widget.layout.FormData;
 import com.extjs.gxt.ui.client.widget.layout.FormLayout;
+import com.google.gwt.i18n.client.NumberFormat;
 
 public class OptionsInputPanel extends FieldSet 
 {
 	private FormData formData;
-	private ListStore<BaseModel> reducedAlphabetValues;  
-	private ComboBox<BaseModel> reducedAlphabetCombo;  
-	private TextField<String> selecton;  
-	private TextField<String> identityCutOff;  
+	private ListStore<ReducedAlphabetComboModel> reducedAlphabetValues;  
+	private ComboBox<ReducedAlphabetComboModel> reducedAlphabetCombo;  
+	private NumberField selecton;  
+	private NumberField identityCutOff;  
 	private Radio useTCoffeeYes;  
 	private Radio useTCoffeeNo;  
 	private RadioGroup useTCoffee;  
-	private TextField<String> maxNumSequences;  
+	private NumberField maxNrOfSequences;  
 	private Radio usePisaYes;  
 	private Radio usePisaNo;  
 	private RadioGroup usePisa;  
-	private TextField<String> asaCalcParam;  
+	private NumberField asaCalcParam;  
 	private Radio useNAccessYes;  
 	private Radio useNAccessNo;  
 	private RadioGroup useNAccess;  
 	
-	public OptionsInputPanel(InputParameters defaultInputParameters)
+	public OptionsInputPanel(InputParameters defaultInputParameters,
+							 List<Integer> reducedAlphabetDefaultList)
 	{
 	    this.setHeading(MainController.CONSTANTS.input_advanced());  
 	    this.setCollapsible(true);
@@ -42,25 +48,33 @@ public class OptionsInputPanel extends FieldSet
 	    formData = new FormData("-20"); 
 	    
 	    FormLayout layout = new FormLayout();  
-	    layout.setLabelWidth(150); 
+	    layout.setLabelWidth(200); 
 	    this.setLayout(layout);  
 	  
 	    FormLayout entropySetLayout = new FormLayout();  
-	    entropySetLayout.setLabelWidth(150); 
+	    entropySetLayout.setLabelWidth(200); 
 	    
 	    FieldSet entropyFieldSet = new FieldSet();  
 	    entropyFieldSet.setHeading(MainController.CONSTANTS.parameters_entropy()); 
 	    entropyFieldSet.setCheckboxToggle(true);
 	    entropyFieldSet.setLayout(entropySetLayout);
 	    
-	    reducedAlphabetValues = new ListStore<BaseModel>();  
+	    reducedAlphabetValues = new ListStore<ReducedAlphabetComboModel>(); 
+	    
+	    for(Integer value : reducedAlphabetDefaultList)
+	    {
+	    	ReducedAlphabetComboModel model = new ReducedAlphabetComboModel(value);
+	    	reducedAlphabetValues.add(model);
+	    }
 	  
-	    reducedAlphabetCombo = new ComboBox<BaseModel>();  
+	    reducedAlphabetCombo = new ComboBox<ReducedAlphabetComboModel>();  
 	    reducedAlphabetCombo.setFieldLabel(MainController.CONSTANTS.parameters_reduced_alphabet());
 	    reducedAlphabetCombo.setWidth(150);  
 	    reducedAlphabetCombo.setStore(reducedAlphabetValues);  
 	    reducedAlphabetCombo.setTypeAhead(true);  
 	    reducedAlphabetCombo.setTriggerAction(TriggerAction.ALL);  
+	    reducedAlphabetCombo.setDisplayField("reducedAlphabet");
+	    reducedAlphabetCombo.setEditable(false);
 	    entropyFieldSet.add(reducedAlphabetCombo, formData); 
 	    
 	    this.add(entropyFieldSet);
@@ -68,16 +82,17 @@ public class OptionsInputPanel extends FieldSet
 	    
 	    
 	    FormLayout kaksFieldSetLayout = new FormLayout();  
-	    kaksFieldSetLayout.setLabelWidth(150); 
+	    kaksFieldSetLayout.setLabelWidth(200); 
 	    
 	    FieldSet kaksFieldSet = new FieldSet();  
 	    kaksFieldSet.setHeading(MainController.CONSTANTS.parameters_kaks()); 
 	    kaksFieldSet.setCheckboxToggle(true);
 	    kaksFieldSet.setLayout(kaksFieldSetLayout);
 	    
-	    selecton = new TextField<String>();  
+	    selecton = new NumberField();  
 	    selecton.setFieldLabel(MainController.CONSTANTS.parameters_selecton());  
 	    selecton.setAllowBlank(false);  
+	    selecton.setFormat(NumberFormat.getDecimalFormat());
 	    kaksFieldSet.add(selecton, formData);  
 	    
 	    this.add(kaksFieldSet);
@@ -87,15 +102,16 @@ public class OptionsInputPanel extends FieldSet
 	    
 	    
 	    FormLayout allignmentsParametersFieldSetLayout = new FormLayout();  
-	    allignmentsParametersFieldSetLayout.setLabelWidth(150); 
+	    allignmentsParametersFieldSetLayout.setLabelWidth(200); 
 	    
 	    FieldSet allignmentsParametersFieldSet = new FieldSet();  
 	    allignmentsParametersFieldSet.setHeading(MainController.CONSTANTS.parameters_allignment()); 
 	    allignmentsParametersFieldSet.setLayout(allignmentsParametersFieldSetLayout);
 	    
-	    identityCutOff = new TextField<String>();  
+	    identityCutOff = new NumberField();  
 	    identityCutOff.setFieldLabel(MainController.CONSTANTS.parameters_identity_cutoff());  
 	    identityCutOff.setAllowBlank(false);  
+	    identityCutOff.setFormat(NumberFormat.getDecimalFormat());
 	    allignmentsParametersFieldSet.add(identityCutOff, formData); 
 	    
 	    useTCoffeeYes = new Radio();  
@@ -111,16 +127,17 @@ public class OptionsInputPanel extends FieldSet
 	    useTCoffee.add(useTCoffeeNo);  
 	    allignmentsParametersFieldSet.add(useTCoffee, formData); 
 	    
-	    maxNumSequences = new TextField<String>();  
-	    maxNumSequences.setFieldLabel(MainController.CONSTANTS.parameters_max_num_sequences());  
-	    maxNumSequences.setAllowBlank(false);  
-	    allignmentsParametersFieldSet.add(maxNumSequences, formData); 
+	    maxNrOfSequences = new NumberField();  
+	    maxNrOfSequences.setFieldLabel(MainController.CONSTANTS.parameters_max_num_sequences());  
+	    maxNrOfSequences.setAllowBlank(false);  
+	    maxNrOfSequences.setName("maxNrOfSequences");
+	    allignmentsParametersFieldSet.add(maxNrOfSequences, formData); 
 	    
 	    this.add(allignmentsParametersFieldSet);  
 	    
 	    
 	    FormLayout othersParametersFieldSetLayout = new FormLayout();  
-	    othersParametersFieldSetLayout.setLabelWidth(150); 
+	    othersParametersFieldSetLayout.setLabelWidth(200); 
 	    
 	    FieldSet othersParametersFieldSet = new FieldSet();  
 	    othersParametersFieldSet.setHeading(MainController.CONSTANTS.parameters_others()); 
@@ -139,7 +156,7 @@ public class OptionsInputPanel extends FieldSet
 	    usePisa.add(usePisaNo);  
 	    othersParametersFieldSet.add(usePisa, formData);  
 	    
-	    asaCalcParam = new TextField<String>();  
+	    asaCalcParam = new NumberField();  
 	    asaCalcParam.setFieldLabel(MainController.CONSTANTS.parameters_asa_calc());  
 	    asaCalcParam.setAllowBlank(false);  
 	    othersParametersFieldSet.add(asaCalcParam, formData); 
@@ -191,9 +208,51 @@ public class OptionsInputPanel extends FieldSet
 			useTCoffeeNo.setValue(true);
 		}
 		
-		asaCalcParam.setValue(String.valueOf(defaultParameters.getAsaCalc()));
-		identityCutOff.setValue(String.valueOf(defaultParameters.getIdentityCutoff()));
-		selecton.setValue(String.valueOf(defaultParameters.getSelecton()));
-		maxNumSequences.setValue(String.valueOf(defaultParameters.getMaxNrOfSequences()));
+		asaCalcParam.setValue(defaultParameters.getAsaCalc());
+		identityCutOff.setValue(defaultParameters.getIdentityCutoff());
+		selecton.setValue(defaultParameters.getSelecton());
+		maxNrOfSequences.setValue(defaultParameters.getMaxNrOfSequences());
+		
+		ReducedAlphabetComboModel defaultValueModel = new ReducedAlphabetComboModel(defaultParameters.getReducedAlphabet());
+		reducedAlphabetCombo.setValue(defaultValueModel);
+	}
+	
+	public InputParameters getCurrentInputParameters()
+	{
+		InputParameters currentInputParameters = new InputParameters();
+		currentInputParameters.setAsaCalc(asaCalcParam.getValue().intValue());
+		currentInputParameters.setIdentityCutoff(identityCutOff.getValue().floatValue());
+		currentInputParameters.setMaxNrOfSequences(maxNrOfSequences.getValue().intValue());
+		currentInputParameters.setReducedAlphabet(reducedAlphabetCombo.getValue().getReducedAlphabet());
+		currentInputParameters.setSelecton(selecton.getValue().floatValue());
+		
+		if(useNAccessYes.getValue() == true)
+		{
+			currentInputParameters.setUseNACCESS(true);
+		}
+		else
+		{
+			currentInputParameters.setUseNACCESS(false);
+		}
+		
+		if(usePisaYes.getValue() == true)
+		{
+			currentInputParameters.setUsePISA(true);
+		}
+		else
+		{
+			currentInputParameters.setUsePISA(false);
+		}
+		
+		if(useTCoffeeYes.getValue() == true)
+		{
+			currentInputParameters.setUseTCoffee(true);
+		}
+		else
+		{
+			currentInputParameters.setUseTCoffee(false);
+		}
+		
+		return currentInputParameters;
 	}
 }

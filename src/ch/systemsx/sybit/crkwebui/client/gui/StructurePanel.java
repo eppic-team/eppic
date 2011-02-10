@@ -43,13 +43,13 @@ public class StructurePanel extends FormPanel
 		for(int j=0; j<100; j++)
 		{
 			InterfacesModel interfacesModel = new InterfacesModel();
-			interfacesModel.set("seq", j);
-			interfacesModel.set("res", j);
-			interfacesModel.set("asa", j);
-			interfacesModel.set("bsa", j);
-			interfacesModel.set("%bsa", j);
-			interfacesModel.set("entropy", j);
-			interfacesModel.set("kaks", j);
+			interfacesModel.set("seq", j); // residue number
+			interfacesModel.set("res", j); // residue type
+			interfacesModel.set("asa", j); // ASA
+			interfacesModel.set("bsa", j); // BSA
+			interfacesModel.set("%bsa", j);// % BSA
+			interfacesModel.set("entropy", j); //entropy
+			interfacesModel.set("kaks", j); //KaKs
 			
 			data.add(interfacesModel);
 		}

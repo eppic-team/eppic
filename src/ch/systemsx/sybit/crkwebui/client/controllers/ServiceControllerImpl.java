@@ -8,8 +8,10 @@ import ch.systemsx.sybit.crkwebui.client.callbacks.GetResultsDataCallback;
 import ch.systemsx.sybit.crkwebui.client.callbacks.GetSettingsCallback;
 import ch.systemsx.sybit.crkwebui.client.callbacks.GetStatusDataCallback;
 import ch.systemsx.sybit.crkwebui.client.callbacks.KillJobCallback;
+import ch.systemsx.sybit.crkwebui.client.callbacks.RunJobCallback;
 import ch.systemsx.sybit.crkwebui.client.callbacks.TestCallback;
 import ch.systemsx.sybit.crkwebui.client.callbacks.UntieJobsFromSessionCallback;
+import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
 
 import com.google.gwt.core.client.GWT;
 
@@ -74,5 +76,10 @@ public class ServiceControllerImpl implements ServiceController
 	public void loadSettings()
 	{
 		crkWebService.getSettings(new GetSettingsCallback(mainController));
+	}
+
+	public void runJob(RunJobData runJobData) 
+	{
+		crkWebService.runJob(runJobData, new RunJobCallback(mainController));
 	}
 }

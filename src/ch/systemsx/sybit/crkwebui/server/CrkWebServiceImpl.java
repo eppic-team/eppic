@@ -18,9 +18,10 @@ import javax.servlet.ServletException;
 import model.PDBScoreItem;
 import model.PdbScore;
 import ch.systemsx.sybit.crkwebui.client.CrkWebService;
-import ch.systemsx.sybit.crkwebui.shared.FieldVerifier;
+import ch.systemsx.sybit.crkwebui.server.data.EmailData;
 import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
 import ch.systemsx.sybit.crkwebui.shared.model.InputParameters;
+import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
 import ch.systemsx.sybit.crkwebui.shared.model.StatusData;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
@@ -36,10 +37,14 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements
 
 	private Properties properties;
 	
+	private EmailData emailData;
+	
 	private String generalTmpDirectoryName;
 	private String generalDestinationDirectoryName;
 	
 	private String dataSource;
+	
+	private CrkThreadGroup runInstances;
 	
 	public void init(ServletConfig config) throws ServletException 
 	{
@@ -76,28 +81,36 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements
 			throw new ServletException(generalDestinationDirectoryName + " is not a directory");
 		}
 		
+		emailData = new EmailData();
+		emailData.setEmailSender(properties.getProperty("email_username", ""));
+		emailData.setEmailSender(properties.getProperty("email_password", ""));
+		
+		runInstances = new CrkThreadGroup("instances");
+		getServletContext().setAttribute("instances", runInstances);
+		
 		dataSource = properties.getProperty("data_source");
 		DBUtils.setDataSource(dataSource);
 	}
 	
 	public String greetServer(String input) throws IllegalArgumentException {
-		// Verify that the input is valid. 
-		if (!FieldVerifier.isValidName(input)) {
-			// If the input is not valid, throw an IllegalArgumentException back to
-			// the client.
-			throw new IllegalArgumentException(
-					"Name must be at least 4 characters long");
-		}
-
-		String serverInfo = getServletContext().getServerInfo();
-		String userAgent = getThreadLocalRequest().getHeader("User-Agent");
-
-		// Escape data from the client to avoid cross-site script vulnerabilities.
-		input = escapeHtml(input);
-		userAgent = escapeHtml(userAgent);
-
-		return "Hello, " + input + "!<br><br>I am running " + serverInfo
-				+ ".<br><br>It looks like you are using:<br>" + userAgent;
+//		// Verify that the input is valid. 
+//		if (!FieldVerifier.isValidName(input)) {
+//			// If the input is not valid, throw an IllegalArgumentException back to
+//			// the client.
+//			throw new IllegalArgumentException(
+//					"Name must be at least 4 characters long");
+//		}
+//
+//		String serverInfo = getServletContext().getServerInfo();
+//		String userAgent = getThreadLocalRequest().getHeader("User-Agent");
+//
+//		// Escape data from the client to avoid cross-site script vulnerabilities.
+//		input = escapeHtml(input);
+//		userAgent = escapeHtml(userAgent);
+//
+//		return "Hello, " + input + "!<br><br>I am running " + serverInfo
+//				+ ".<br><br>It looks like you are using:<br>" + userAgent;
+		return "";
 	}
 
 	/**
@@ -588,6 +601,51 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements
 		
 		settings.setDefaultParametersValues(defaultInputParameters);
 		
+		String reducedAlphabetList = defaultInputParametersProperties.getProperty("reduced_alphabet_list");
+		String[] reducedAlphabetValues = reducedAlphabetList.split(",");
+		
+		List<Integer> reducedAlphabetConverted = new ArrayList<Integer>();
+		for(String value : reducedAlphabetValues)
+		{
+			reducedAlphabetConverted.add(Integer.parseInt(value));
+		}
+		
+		settings.setReducedAlphabetList(reducedAlphabetConverted);
+		
 		return settings;
+	}
+
+	@Override
+	public boolean runJob(RunJobData runJobData) 
+	{
+		boolean jobStarted = false;
+		
+		if(runJobData != null)
+		{
+			emailData.setEmailRecipient(runJobData.getEmailAddress());
+			
+			String localDestinationDirName = generalDestinationDirectoryName + "/" + runJobData.getJobId();
+			
+			EmailSender emailSender = new EmailSender(emailData);
+			
+			String errorMessage = DBUtils.insertNewJob(runJobData.getJobId(), 
+													   getThreadLocalRequest().getSession().getId(),
+													   emailData.getEmailRecipient(),
+													   runJobData.getFileName());
+			
+			CrkRunner crkRunner = new CrkRunner(emailSender, 
+												runJobData.getFileName(), 
+												"resultPath", 
+												localDestinationDirName,
+												runJobData.getJobId());
+	
+			Thread crkRunnerThread = new Thread(runInstances, crkRunner, runJobData.getJobId());
+			
+			crkRunnerThread.start();
+			
+			jobStarted = true;
+		}
+		
+		return jobStarted;
 	}
 }

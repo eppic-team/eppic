@@ -1,5 +1,7 @@
 package ch.systemsx.sybit.crkwebui.client.controllers;
 
+import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
+
 
 public interface ServiceController
 {
@@ -18,5 +20,7 @@ public interface ServiceController
 	public abstract void untieJobsFromSession();
 	
 	public abstract void loadSettings();
+
+	public abstract void runJob(RunJobData runJobData);
 
 }

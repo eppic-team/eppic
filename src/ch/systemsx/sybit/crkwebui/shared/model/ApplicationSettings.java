@@ -1,6 +1,7 @@
 package ch.systemsx.sybit.crkwebui.shared.model;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Map;
 
 public class ApplicationSettings implements Serializable
@@ -17,6 +18,8 @@ public class ApplicationSettings implements Serializable
 	private Map<String, String> gridProperties;
 	
 	private InputParameters defaultParametersValues;
+	
+	private List<Integer> reducedAlphabetList;
 
 	public void setScoresTypes(String[] scoresTypes) {
 		this.scoresTypes = scoresTypes;
@@ -40,5 +43,13 @@ public class ApplicationSettings implements Serializable
 
 	public InputParameters getDefaultParametersValues() {
 		return defaultParametersValues;
+	}
+
+	public void setReducedAlphabetList(List<Integer> reducedAlphabetList) {
+		this.reducedAlphabetList = reducedAlphabetList;
+	}
+
+	public List<Integer> getReducedAlphabetList() {
+		return reducedAlphabetList;
 	}
 }

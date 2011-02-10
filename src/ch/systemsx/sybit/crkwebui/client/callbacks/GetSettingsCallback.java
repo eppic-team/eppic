@@ -29,6 +29,7 @@ public class GetSettingsCallback implements AsyncCallback
 		{
 			ApplicationSettings settings  = (ApplicationSettings) result;
 			mainController.setSettings(settings);
+			mainController.runAutoRefresh();
 			History.fireCurrentHistoryState();
 		}
 		else

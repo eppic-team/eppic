@@ -12,18 +12,15 @@ import crk.CRKMain;
 public class CrkRunner implements Runnable
 {
 	private EmailSender emailSender;
-	private EmailData emailData;
 	private String fileName;
 	private String resultPath;
 	private String destinationDirectory;
-	private String sessionId;
 	private String generatedDirectoryName;
 	
-	public CrkRunner(EmailData emailData,
+	public CrkRunner(EmailSender emailSender,
 					 String fileName,
 					 String resultPath,
 					 String destinationDirectory,
-					 String sessionId,
 					 String generatedDirectoryName)
 	{
 		this.fileName = fileName;
@@ -31,9 +28,7 @@ public class CrkRunner implements Runnable
 		this.destinationDirectory = destinationDirectory;
 		this.generatedDirectoryName = generatedDirectoryName;
 		
-		emailSender = new EmailSender(emailData);
-		this.emailData = emailData;
-		this.sessionId = sessionId;
+		this.emailSender = emailSender;
 	}
 	
 	public void run()
@@ -47,10 +42,7 @@ public class CrkRunner implements Runnable
 			File runFile = new File(destinationDirectory + "/crkrun");
 			runFile.createNewFile();
 			
-			String errorMessage = DBUtils.insertNewJob(generatedDirectoryName, 
-													   sessionId,
-													   emailData.getEmailRecipient(),
-													   fileName);
+			String errorMessage = null;
 			
 			if(errorMessage == null)
 			{
@@ -64,42 +56,42 @@ public class CrkRunner implements Runnable
 				bufferedOutputStream.close();
 				outputStream.close();
 				
-				PrintStream logStream = new PrintStream(logFile);
-				CRKMain crkMain = new CRKMain(logStream);
-				crkMain.setDefaults();
-
-				crkMain.getCRKParams().setPdbCode(destinationDirectory + "/" + fileName);
-				crkMain.getCRKParams().setOutDir(new File(destinationDirectory));
-				
-				// turn off jaligner logging (we only use NeedlemanWunschGotoh from that package)
-				// (for some reason this doesn't work if condensated into one line, it seems that one needs to instantiate the logger and then call setLevel)
-				// (and even weirder, for some reason it doesn't work if you put the code in its own separate method!)
-				java.util.logging.Logger jalLogger = java.util.logging.Logger.getLogger("NeedlemanWunschGotoh");
-				jalLogger.setLevel(java.util.logging.Level.OFF);
-				
-				crkMain.setUpLogging();
-
-				crkMain.loadConfigFile();
-
-				// 0 load pdb
-				crkMain.doLoadPdb();
-
-				// 1 finding interfaces
-				if (crkMain.getCRKParams().getInterfSerFile()!=null) {
-					crkMain.doLoadInterfacesFromFile();
-				} else {
-					crkMain.doFindInterfaces();
-				}
-
-				// 2 finding evolutionary context
-				if (crkMain.getCRKParams().getChainEvContextSerFile()!=null) {
-					crkMain.doLoadEvolContextFromFile();
-				} else {
-					crkMain.doFindEvolContext();
-				}
-
-				// 3 scoring
-				crkMain.doScoring();
+//				PrintStream logStream = new PrintStream(logFile);
+//				CRKMain crkMain = new CRKMain(logStream);
+//				crkMain.setDefaults();
+//
+//				crkMain.getCRKParams().setPdbCode(destinationDirectory + "/" + fileName);
+//				crkMain.getCRKParams().setOutDir(new File(destinationDirectory));
+//				
+//				// turn off jaligner logging (we only use NeedlemanWunschGotoh from that package)
+//				// (for some reason this doesn't work if condensated into one line, it seems that one needs to instantiate the logger and then call setLevel)
+//				// (and even weirder, for some reason it doesn't work if you put the code in its own separate method!)
+//				java.util.logging.Logger jalLogger = java.util.logging.Logger.getLogger("NeedlemanWunschGotoh");
+//				jalLogger.setLevel(java.util.logging.Level.OFF);
+//				
+//				crkMain.setUpLogging();
+//
+//				crkMain.loadConfigFile();
+//
+//				// 0 load pdb
+//				crkMain.doLoadPdb();
+//
+//				// 1 finding interfaces
+//				if (crkMain.getCRKParams().getInterfSerFile()!=null) {
+//					crkMain.doLoadInterfacesFromFile();
+//				} else {
+//					crkMain.doFindInterfaces();
+//				}
+//
+//				// 2 finding evolutionary context
+//				if (crkMain.getCRKParams().getChainEvContextSerFile()!=null) {
+//					crkMain.doLoadEvolContextFromFile();
+//				} else {
+//					crkMain.doFindEvolContext();
+//				}
+//
+//				// 3 scoring
+//				crkMain.doScoring();
 				
 				errorMessage = DBUtils.updateStatusOfJob(generatedDirectoryName, "Finished");
 				
