@@ -1,0 +1,110 @@
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   <title>Jmol Applet Documentation</title><meta name="generator" content="DocBook XSL Stylesheets V1.75.2"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="book" title="Jmol Applet Documentation"><div class="titlepage"><div><div><h1 class="title"><a name="jmol-applet-guide"></a>Jmol Applet Documentation</h1></div></div><hr></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="chapter"><a href="#Introduction">1. Introduction</a></span></dt><dt><span class="chapter"><a href="#SupportedBrowsers">2. Supported Browsers</a></span></dt><dd><dl><dt><span class="section"><a href="#TestingResults">Testing results</a></span></dt><dt><span class="section"><a href="#XHTMLSupport">XHTML support</a></span></dt></dl></dd><dt><span class="chapter"><a href="#HardwareOSRequirements">3. Hardware and OS Requirements</a></span></dt><dt><span class="chapter"><a href="#WebServerConfiguration">4. Web Server configuration for the JmolApplet</a></span></dt><dt><span class="chapter"><a href="#AppletUsage">5. Jmol Applet Usage</a></span></dt></dl></div><div class="chapter" title="Chapter&nbsp;1.&nbsp;Introduction"><div class="titlepage"><div><div><h2 class="title"><a name="Introduction"></a>Chapter&nbsp;1.&nbsp;Introduction</h2></div></div></div><p>
+    The Jmol Applet allows the 3D display of molecules within a web page.
+  </p><p>
+    With the exception of a few wrapper classes, the Jmol Applet code is
+    shared with the Jmol Application.
+  </p></div><div class="chapter" title="Chapter&nbsp;2.&nbsp;Supported Browsers"><div class="titlepage"><div><div><h2 class="title"><a name="SupportedBrowsers"></a>Chapter&nbsp;2.&nbsp;Supported Browsers</h2></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="section"><a href="#TestingResults">Testing results</a></span></dt><dt><span class="section"><a href="#XHTMLSupport">XHTML support</a></span></dt></dl></div><p>
+    The applet is tested and working with Internet Explorer, Netscape,
+    Opera, Mozilla (and derivatives) and Konqueror on various platforms.
+    Test results are given below. But be advised that this table
+    (like most documentation) is often out of date. 
+  </p><p>
+    If you find problems with the browser/operating system/jvm combination
+    of your choice, please send an email to jmol-users@lists.sf.net, stating
+    the exact error (most browsers have a Java Console), and the versions
+    of the browser, the operating system, and the java virtual machine
+    that is used.
+  </p><div class="section" title="Testing results"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="TestingResults"></a>Testing results</h2></div></div></div><p>
+      The JmolApplet has been tested successfully with the following system
+      configurations:
+    </p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>
+          Win32 (98/ME/2K/XP)
+        </p><div class="itemizedlist"><ul class="itemizedlist" type="circle"><li class="listitem"><p>
+              Microsoft Internet Explorer with Microsoft JVM
+            </p></li><li class="listitem"><p>
+              Microsoft Internet Explorer with Sun Java Plugin &gt;= 1.4
+            </p></li><li class="listitem"><p>
+              Netscape 4.7/4.8 <span class="emphasis"><em>(slow performance)</em></span>
+            </p></li><li class="listitem"><p>
+              Netscape 7 with Sun Java Plugin &gt;= 1.4
+            </p></li><li class="listitem"><p>
+              Mozilla with Sun Java Plugin &gt;= 1.4
+            </p></li><li class="listitem"><p>
+              Firefox 1.0 with Sun Java Plugin &gt;= 1.4
+            </p></li><li class="listitem"><p>
+              Opera 7.5.4 with Sun Java Plugin &gt;= 1.4
+            </p></li></ul></div></li><li class="listitem"><p>
+          Mac OS X 10.3.3 or greater
+        </p><p>
+          Mac OS X prior to 10.3.3 did not support LiveConnect
+          communications between JavaScript and Java
+        </p><div class="itemizedlist"><ul class="itemizedlist" type="circle"><li class="listitem"><p>
+              Safari 1.2 (v125)
+            </p><p>
+              Previous versions of OSX &amp; Safari have significant problems.
+              Even subsequent versions have problems. Lets hope that
+              Apple can keep things stable.
+            </p></li><li class="listitem"><p>
+              Netscape 7.2 with javaplugin.sourceforge.net installed
+            </p></li><li class="listitem"><p>
+              Mozilla 1.7.3 with javaplugin.sourceforge.net installed
+            </p></li><li class="listitem"><p>
+              Firefox 1.0 with javaplugin.sourceforge.net installed
+            </p></li><li class="listitem"><p>
+              Opera 7.5.4
+            </p><p>
+              all versions of Opera OSX up through 7.5.4 are
+              completely broken
+            </p></li></ul></div></li><li class="listitem"><p>
+          Linux/Unix
+        </p><div class="itemizedlist"><ul class="itemizedlist" type="circle"><li class="listitem"><p>
+              Mozilla 1.6 + Sun Java &gt;= 1.4
+            </p></li><li class="listitem"><p>
+              Firefox 1.0 + Sun Java &gt;= 1.4
+            </p></li><li class="listitem"><p>
+              Konqueror 3.3
+            </p><p>
+              all versions of Konqueror up through 3.3 are broken
+            </p></li></ul></div></li><li class="listitem"><p>
+          Mac OS 9
+        </p><div class="itemizedlist"><ul class="itemizedlist" type="circle"><li class="listitem"><p>
+              Netscape 4.7* <span class="emphasis"><em>marginal performance with limited
+              functionality</em></span>
+            </p></li></ul></div></li></ul></div></div><div class="section" title="XHTML support"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="XHTMLSupport"></a>XHTML support</h2></div></div></div><p>
+      It is possible to use the JmolApplet within an XML/XHTML environment. This is entirely irrelevant for most people's purposes - if you don't know that you need this capability, then you don't.
+    </p><p> 
+      It requires a browser capable of dealing properly with XHTML documents. At the time of writing, this was limited solely to recent versions of Mozilla-based browsers and of Opera. Note in particular that Internet Explorer will not support this mode of operation within the foreseeable future. It also requires that your documents validate entirely correctly against the appropriate schemata.
+    </p><p>
+      In addition, the standard Jmol.js Javascript library will not work under properly compliant XML browsers. An alternative, largely similar, but entirely unsupported library is available ... insert address here ...
+    </p><p>
+      That all said, the XHTML features of JmolApplet have been successfully tested on the following OS/browser/JVM combinations.
+    </p></div></div><div class="chapter" title="Chapter&nbsp;3.&nbsp;Hardware and OS Requirements"><div class="titlepage"><div><div><h2 class="title"><a name="HardwareOSRequirements"></a>Chapter&nbsp;3.&nbsp;Hardware and OS Requirements</h2></div></div></div><p>
+    We recommend a machine with a 600 Mhz CPU and 256 Mb of RAM. This
+    should cover almost every machine made this century. 
+  </p><p>
+    If you have older CPU with a newer/upgraded operating system,
+    (like Mac OSX or WinXP) then we <span class="emphasis"><em>strongly</em></span> recommend
+    that you have at least 256 Mb of RAM ... more is better.
+  </p><p>
+    <span class="emphasis"><em>No specialized video hardware is required.</em></span>
+  </p></div><div class="chapter" title="Chapter&nbsp;4.&nbsp;Web Server configuration for the JmolApplet"><div class="titlepage"><div><div><h2 class="title"><a name="WebServerConfiguration"></a>Chapter&nbsp;4.&nbsp;Web Server configuration for the JmolApplet</h2></div></div></div><p>
+    The JmolApplet is configured on the web server just like any other
+    Java applet.
+  </p><p>
+    The JmolApplet.jar and Jmol.js files are placed in a directory
+    on your web server.
+    We advise placing them in a sibling directory or subdirectory of
+    your .html pages ... something like <span class="command"><strong>../jmol</strong></span>
+    or <span class="command"><strong>./jmol</strong></span>
+  </p><p>
+    All the java classes needed by the applet are contained in the single
+    JmolApplet.jar file. 
+  </p><p>
+    The applet runs as an unsigned/untrusted applet. Therefore, no additional
+    steps are needed for end-user verification of applet authenticity.
+  </p></div><div class="chapter" title="Chapter&nbsp;5.&nbsp;Jmol Applet Usage"><div class="titlepage"><div><div><h2 class="title"><a name="AppletUsage"></a>Chapter&nbsp;5.&nbsp;Jmol Applet Usage</h2></div></div></div><p>
+    Use the Jmol.js JavaScript library as documented
+    in <a class="ulink" href="http://www.jmol.org/jslibrary" target="_top">http://www.jmol.org/jslibrary</a>
+  </p></div></div></body></html>

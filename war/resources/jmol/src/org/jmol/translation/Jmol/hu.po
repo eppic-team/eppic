@@ -1,0 +1,1631 @@
+# Hungarian translation of the Jmol application
+# Copyright (C) 2005 by the Jmol Development Team
+#
+# This file is distributed under the same license as the Jmol package.
+# Zoltán Zörgő <zoltan.zorgo@gmail.com>, 2008.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Jmol 11.7.x\n"
+"Report-Msgid-Bugs-To: jmol-developers@lists.sourceforge.net\n"
+"POT-Creation-Date: 2010-08-04 19:52+0200\n"
+"PO-Revision-Date: 2011-01-14 15:20+0000\n"
+"Last-Translator: Krasznecz Zoltán <krasznecz.zoltan@gmail.com>\n"
+"Language-Team: Hungarian <Jmol-developers@lists.sf.net>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Launchpad-Export-Date: 2011-01-15 13:08+0000\n"
+"X-Generator: Launchpad (build 12200)\n"
+"X-Poedit-Country: HUNGARY\n"
+"X-Poedit-Language: Hungarian\n"
+"X-Poedit-SourceCharset: utf-8\n"
+
+#: org/openscience/jmol/app/JmolApp.java:102
+#: org/openscience/jmol/app/webexport/WebMaker.java:66
+msgid "Error starting Jmol: the property 'user.home' is not defined."
+msgstr ""
+"Hiba a Jmol indítása közben: a 'user.home' tulajdonság nincs definiálva"
+
+#: org/openscience/jmol/app/JmolApp.java:139
+msgid "transparent background"
+msgstr "áttetsző háttér"
+
+#: org/openscience/jmol/app/JmolApp.java:140
+msgid "give this help page"
+msgstr "ezen sAogólap megadása"
+
+#: org/openscience/jmol/app/JmolApp.java:142
+msgid "no display (and also exit when done)"
+msgstr "nincs megjelenítés (és kilépés ha vége)"
+
+#: org/openscience/jmol/app/JmolApp.java:144
+msgid "check script syntax only - no file loading"
+msgstr "csak a parancsfájl szintaxisát ellenőrizze - nincs fájlbetöltés"
+
+#: org/openscience/jmol/app/JmolApp.java:146
+msgid "check script syntax only - with file loading"
+msgstr "csak a parancsfájl szintaxisát ellenőrizze - fájlbetöltéssel"
+
+#: org/openscience/jmol/app/JmolApp.java:147
+msgid "debug"
+msgstr "nyomkövetés"
+
+#: org/openscience/jmol/app/JmolApp.java:148
+msgid "silent startup operation"
+msgstr "csendes indítási művelet"
+
+#: org/openscience/jmol/app/JmolApp.java:150
+msgid "list commands during script execution"
+msgstr "parancsok listázása végrehajtás közben"
+
+#: org/openscience/jmol/app/JmolApp.java:152
+msgid "start with no splash screen"
+msgstr "indításkor ne legyen kezdőkép"
+
+#: org/openscience/jmol/app/JmolApp.java:154
+msgid "no console -- all output to sysout"
+msgstr "nincs konzol - mindent a szabványos kimenetre"
+
+#: org/openscience/jmol/app/JmolApp.java:156
+msgid "send only output from print messages to console (implies -i)"
+msgstr ""
+
+#: org/openscience/jmol/app/JmolApp.java:158
+msgid "independent command thread"
+msgstr ""
+
+#: org/openscience/jmol/app/JmolApp.java:160
+msgid "exit after script (implicit with -n)"
+msgstr "kilépés végrehajtás után (alapértelmezett -n esetén)"
+
+#: org/openscience/jmol/app/JmolApp.java:164
+msgid "script file to execute or '-' for System.in"
+msgstr ""
+
+#: org/openscience/jmol/app/JmolApp.java:170
+msgid "use multitouch interface (requires \"sparshui\" parameter"
+msgstr ""
+
+#: org/openscience/jmol/app/JmolApp.java:177
+msgid "Jmol script to execute BEFORE -s option"
+msgstr "Ezt a Jmol parancsfájlt hajtsa végre a -s kapcsoló ELŐTT"
+
+#: org/openscience/jmol/app/JmolApp.java:183
+msgid "Jmol script to execute AFTER -s option"
+msgstr "Ezt a Jmol parancsfájlt hajtsa végre a -s kapcsoló UTÁN"
+
+#: org/openscience/jmol/app/JmolApp.java:192
+msgid "property=value"
+msgstr "tulajdonság=érték"
+
+#: org/openscience/jmol/app/JmolApp.java:195
+msgid "supported options are given below"
+msgstr "a támogatott lehetőségeket lásd alább"
+
+#: org/openscience/jmol/app/JmolApp.java:201
+#, java-format
+msgid "window width x height, e.g. {0}"
+msgstr "ablak szélessés x magasság (pl.: {0})"
+
+#: org/openscience/jmol/app/JmolApp.java:211
+msgid ""
+"JPG image quality (1-100; default 75) or PNG image compression (0-9; default "
+"2, maximum compression 9)"
+msgstr ""
+"JPG képminőség (1-100, alapértelmezés: 75), vagy PNG tömörítési arány (0-9, "
+"alapértelmezés: 2)"
+
+#: org/openscience/jmol/app/JmolApp.java:216
+#, java-format
+msgid "{0} or {1}:filename"
+msgstr "{0} vagy {1} :fájlnév"
+
+#: org/openscience/jmol/app/JmolApp.java:230
+msgid "For example:"
+msgstr "Például:"
+
+#: org/openscience/jmol/app/JmolApp.java:236
+msgid ""
+"The -D options are as follows (defaults in parenthesis) and must be called "
+"preceding '-jar Jmol.jar':"
+msgstr ""
+
+#: org/openscience/jmol/app/JmolApp.java:466
+msgid "Executing script 1..."
+msgstr "Első parancsfájl futtatása..."
+
+#: org/openscience/jmol/app/JmolApp.java:476
+msgid "Executing script file..."
+msgstr "Parancsfájl futtatása..."
+
+#: org/openscience/jmol/app/JmolApp.java:497
+msgid "Executing script 2..."
+msgstr "Második parancsfájl futtatása..."
+
+#: org/openscience/jmol/app/jmolpanel/AboutDialog.java:57
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:180
+msgid "About Jmol"
+msgstr "A programról..."
+
+#: org/openscience/jmol/app/jmolpanel/AboutDialog.java:67
+#: org/openscience/jmol/app/jmolpanel/HelpDialog.java:74
+#: org/openscience/jmol/app/jmolpanel/WhatsNewDialog.java:68
+#, java-format
+msgid "Unable to find url \"{0}\"."
+msgstr "Nem található a \"{0}\" webcím."
+
+#: org/openscience/jmol/app/jmolpanel/AboutDialog.java:95
+#: org/openscience/jmol/app/jmolpanel/HelpDialog.java:102
+#: org/openscience/jmol/app/jmolpanel/PreferencesDialog.java:177
+#: org/openscience/jmol/app/jmolpanel/WhatsNewDialog.java:96
+msgid "OK"
+msgstr "OK"
+
+#: org/openscience/jmol/app/jmolpanel/AppConsole.java:113
+msgid "Editor"
+msgstr "Szerkesztő"
+
+#: org/openscience/jmol/app/jmolpanel/AppConsole.java:114
+msgid "Check"
+msgstr "Ellenőrzés"
+
+#: org/openscience/jmol/app/jmolpanel/AppConsole.java:115
+msgid "Top"
+msgstr "Fent"
+
+#: org/openscience/jmol/app/jmolpanel/AppConsole.java:116
+msgid "Step"
+msgstr "Lépés"
+
+#: org/openscience/jmol/app/jmolpanel/AppConsole.java:123
+msgid "Variables"
+msgstr "Változók"
+
+#: org/openscience/jmol/app/jmolpanel/AppConsole.java:124
+#: org/openscience/jmol/app/jmolpanel/JmolPanel.java:296
+msgid "Clear"
+msgstr "őrít"
+
+#: org/openscience/jmol/app/jmolpanel/AppConsole.java:125
+msgid "Halt"
+msgstr "Leállít"
+
+#: org/openscience/jmol/app/jmolpanel/AppConsole.java:127
+msgid "History"
+msgstr "Előzmények"
+
+#: org/openscience/jmol/app/jmolpanel/AppConsole.java:128
+msgid "State"
+msgstr "Státus"
+
+#: org/openscience/jmol/app/jmolpanel/AppConsole.java:130
+msgid "Help"
+msgstr "Súgó"
+
+#: org/openscience/jmol/app/jmolpanel/AppConsole.java:131
+msgid "Close"
+msgstr "Bezár"
+
+#: org/openscience/jmol/app/jmolpanel/AppConsole.java:132
+msgid "Undo"
+msgstr "Visszavonás"
+
+#: org/openscience/jmol/app/jmolpanel/AppConsole.java:133
+msgid "Redo"
+msgstr "őjra"
+
+#: org/openscience/jmol/app/jmolpanel/AtomSetChooser.java:164
+msgid "AtomSetChooser"
+msgstr "AtomCsoportVálasztó"
+
+#: org/openscience/jmol/app/jmolpanel/AtomSetChooser.java:168
+msgid "No AtomSets"
+msgstr "Nincs atomcsoport"
+
+#: org/openscience/jmol/app/jmolpanel/AtomSetChooser.java:197
+msgid "Properties"
+msgstr "Tulkajdonságok"
+
+#: org/openscience/jmol/app/jmolpanel/AtomSetChooser.java:205
+msgid "Atom Set Collection"
+msgstr "Atomcsoport gyűjtemény"
+
+#: org/openscience/jmol/app/jmolpanel/AtomSetChooser.java:226
+msgid "Collection"
+msgstr "Gyűjtemény"
+
+#: org/openscience/jmol/app/jmolpanel/AtomSetChooser.java:231
+msgid "Info"
+msgstr "Információk"
+
+#: org/openscience/jmol/app/jmolpanel/AtomSetChooser.java:238
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:176
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:459
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:608
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:629
+msgid "Select"
+msgstr "Kiválasztás"
+
+#: org/openscience/jmol/app/jmolpanel/AtomSetChooser.java:253
+msgid "Repeat"
+msgstr "Ismétlés"
+
+#: org/openscience/jmol/app/jmolpanel/AtomSetChooser.java:265
+msgid "FPS"
+msgstr "FPS"
+
+#: org/openscience/jmol/app/jmolpanel/AtomSetChooser.java:281
+msgid "Vector"
+msgstr "Vektor"
+
+#: org/openscience/jmol/app/jmolpanel/AtomSetChooser.java:288
+msgid "Radius"
+msgstr "Sugár"
+
+#: org/openscience/jmol/app/jmolpanel/AtomSetChooser.java:301
+msgid "Scale"
+msgstr "Méretarány"
+
+#: org/openscience/jmol/app/jmolpanel/AtomSetChooser.java:315
+msgid "Amplitude"
+msgstr "AmplitAodó"
+
+#: org/openscience/jmol/app/jmolpanel/AtomSetChooser.java:325
+msgid "Period"
+msgstr "Periódus"
+
+#: org/openscience/jmol/app/jmolpanel/AtomSetChooser.java:354
+msgid "Controller"
+msgstr "Vezérlő"
+
+#: org/openscience/jmol/app/jmolpanel/AtomSetChooser.java:362
+msgid "Go to first atom set in the collection"
+msgstr ""
+
+#: org/openscience/jmol/app/jmolpanel/AtomSetChooser.java:363
+msgid "Go to previous atom set in the collection"
+msgstr ""
+
+#: org/openscience/jmol/app/jmolpanel/AtomSetChooser.java:364
+msgid "Play the whole collection of atom sets"
+msgstr ""
+
+#: org/openscience/jmol/app/jmolpanel/AtomSetChooser.java:365
+#: org/openscience/jmol/app/jmolpanel/AtomSetChooser.java:374
+msgid "Pause playing"
+msgstr "Leállítás"
+
+#: org/openscience/jmol/app/jmolpanel/AtomSetChooser.java:366
+msgid "Go to next atom set in the collection"
+msgstr ""
+
+#: org/openscience/jmol/app/jmolpanel/AtomSetChooser.java:367
+msgid "Jump to last atom set in the collection"
+msgstr ""
+
+#: org/openscience/jmol/app/jmolpanel/AtomSetChooser.java:371
+msgid "Go to first vector in the collection"
+msgstr ""
+
+#: org/openscience/jmol/app/jmolpanel/AtomSetChooser.java:372
+msgid "Go to previous vector in the collection"
+msgstr ""
+
+#: org/openscience/jmol/app/jmolpanel/AtomSetChooser.java:373
+msgid "Play the whole collection of vectors"
+msgstr ""
+
+#: org/openscience/jmol/app/jmolpanel/AtomSetChooser.java:375
+msgid "Go to next vector in the collection"
+msgstr ""
+
+#: org/openscience/jmol/app/jmolpanel/AtomSetChooser.java:376
+msgid "Jump to last vector in the collection"
+msgstr ""
+
+#: org/openscience/jmol/app/jmolpanel/ConsoleTextArea.java:87
+#, java-format
+msgid "Error reading from BufferedReader: {0}"
+msgstr "Hiba a {0} BufferedReader olvasása közben"
+
+#: org/openscience/jmol/app/jmolpanel/DisplayPanel.java:206
+msgid "Delete atoms"
+msgstr "Atomok törlése"
+
+#: org/openscience/jmol/app/jmolpanel/GaussianDialog.java:187
+msgid "Export Gaussian Input File"
+msgstr "Gaussian Input File exportálás"
+
+#: org/openscience/jmol/app/jmolpanel/GaussianDialog.java:194
+msgid "Basic"
+msgstr "Alap"
+
+#: org/openscience/jmol/app/jmolpanel/GaussianDialog.java:196
+msgid "Advanced"
+msgstr "Fejlett"
+
+#: org/openscience/jmol/app/jmolpanel/GaussianDialog.java:224
+msgid "Checkpoint File: "
+msgstr "Ellenőrző fájl: "
+
+#: org/openscience/jmol/app/jmolpanel/GaussianDialog.java:229
+msgid "Amount of Memory:"
+msgstr "A memória mérete:"
+
+#: org/openscience/jmol/app/jmolpanel/GaussianDialog.java:235
+msgid "Number of Processors:"
+msgstr "Processzorok száma:"
+
+#: org/openscience/jmol/app/jmolpanel/GaussianDialog.java:248
+msgid "Route"
+msgstr "Útvonal"
+
+#: org/openscience/jmol/app/jmolpanel/GaussianDialog.java:254
+msgid "Method: "
+msgstr "Módszer: "
+
+#: org/openscience/jmol/app/jmolpanel/GaussianDialog.java:261
+msgid "Basis Set: "
+msgstr "Bázis halmaz: "
+
+#: org/openscience/jmol/app/jmolpanel/GaussianDialog.java:269
+msgid "Density Fitting Basis Set (DFT Only): "
+msgstr "Sűrűségilleszkedési bázis halmaz (csak DFT) "
+
+#: org/openscience/jmol/app/jmolpanel/GaussianDialog.java:275
+msgid "Job Options: "
+msgstr "Munkafolyamat beállításai "
+
+#: org/openscience/jmol/app/jmolpanel/GaussianDialog.java:288
+msgid "Molecular Properties"
+msgstr "Molekuláris tulkajdonságok"
+
+#: org/openscience/jmol/app/jmolpanel/GaussianDialog.java:294
+msgid "Total Charge: "
+msgstr "Teljes töltés: "
+
+#: org/openscience/jmol/app/jmolpanel/GaussianDialog.java:301
+msgid "Multiplicity: "
+msgstr "Számosság: "
+
+#: org/openscience/jmol/app/jmolpanel/GaussianDialog.java:308
+msgid "Selection: "
+msgstr "Kiválasztás: "
+
+#: org/openscience/jmol/app/jmolpanel/GaussianDialog.java:343
+msgid "Gaussian Input File Name"
+msgstr "Gaussian Input File fájl neve"
+
+#: org/openscience/jmol/app/jmolpanel/GaussianDialog.java:349
+msgid "File..."
+msgstr "&Fájl..."
+
+#: org/openscience/jmol/app/jmolpanel/GaussianDialog.java:360
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:759
+msgid "Save"
+msgstr "Mentés"
+
+#: org/openscience/jmol/app/jmolpanel/GaussianDialog.java:364
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:501
+#: org/openscience/jmol/app/jmolpanel/PreferencesDialog.java:169
+#: org/openscience/jmol/app/jmolpanel/RecentFilesDialog.java:70
+msgid "Cancel"
+msgstr "Mégsem"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:49
+msgid "&Macros"
+msgstr "&Makrók"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:50
+msgid "&File"
+msgstr "&Fájl"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:51
+msgid "&New"
+msgstr "Új"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:52
+msgid "&Open"
+msgstr "&Megnyitás"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:53
+msgid "Open a file."
+msgstr "Fájl megnyitása"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:54
+msgid "Open &URL"
+msgstr "Web&cím megnyitása"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:55
+msgid "Scrip&t Editor..."
+msgstr "Scrip&t Szerkesztő..."
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:56
+msgid "Conso&le..."
+msgstr ""
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:57
+msgid "Jmol Java &Console"
+msgstr "Jmol Java konzol"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:58
+msgid "AtomSet&Chooser..."
+msgstr "AtomCsoportVálasztó..."
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:59
+msgid "&Save As..."
+msgstr "Mentés más&ként..."
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:60
+msgid "&Export"
+msgstr "&Exportálás"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:61
+msgid "Export &Image..."
+msgstr "Kép &exportálása"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:62
+msgid "Save current view as an image."
+msgstr "Aktuális nézet mentése képként"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:63
+msgid "Export to &Web Page..."
+msgstr "Exportálás &Weboldalra"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:64
+msgid "Export one or more views to a web page."
+msgstr "Egy vagy több nézet esportálása egy weboldalra"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:65
+msgid "Render in POV-&Ray..."
+msgstr "Renderelés POV-Ray-ben"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:66
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:114
+msgid "Render in POV-Ray"
+msgstr "Renderelés POV-Ray-ben"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:67
+msgid "Write &State..."
+msgstr "Állapot kiírása..."
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:68
+msgid "Save current view as a Jmol state script."
+msgstr "Aktuális nézet mentése Jmol állapotfájlként"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:69
+msgid "&Print..."
+msgstr "&Nyomtatás"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:70
+msgid "Print view."
+msgstr "Nyomtatási nézet."
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:71
+msgid "&Close"
+msgstr "Bezár"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:72
+msgid "E&xit"
+msgstr "K&ilépés"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:73
+msgid "Recent &Files..."
+msgstr "Legutóbbi fájlok..."
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:74
+msgid "&Edit"
+msgstr "&Szerkesztés"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:76
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:82
+msgid "Select &All"
+msgstr "Mindent kijelöl"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:77
+msgid "Deselect All"
+msgstr "Kijelölés törlése"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:78
+msgid "Copy &Image"
+msgstr "Kép másolása"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:79
+msgid "Copy Script"
+msgstr "Parancsfájl másolása"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:80
+msgid "Pr&eferences..."
+msgstr "&Beállítások..."
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:81
+msgid "&Paste"
+msgstr "&Beillesztés"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:83
+msgid "&Select"
+msgstr "Kiválasztás"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:84
+msgid "&All"
+msgstr "Mind"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:85
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:98
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:104
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:110
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:117
+msgid "&None"
+msgstr "Egyik sem"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:86
+msgid "Hydrogen"
+msgstr "Hidrogén"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:87
+msgid "Carbon"
+msgstr "Szén"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:88
+msgid "Nitrogen"
+msgstr "Stickstoff"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:89
+msgid "Oxygen"
+msgstr "Oxigén"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:90
+msgid "Phosphorus"
+msgstr "Foszfor"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:91
+msgid "Sulfur"
+msgstr "Kén"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:92
+msgid "Amino"
+msgstr "Aminósav"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:93
+msgid "Nucleic"
+msgstr "Nukleid"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:94
+msgid "Water"
+msgstr "Víz"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:95
+msgid "Hetero"
+msgstr "Hetero"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:96
+msgid "&Display"
+msgstr "Me&gjelenítés"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:97
+msgid "&Atom"
+msgstr "Atom"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:99
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:100
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:101
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:102
+#, java-format
+msgid "{0}% van der Waals"
+msgstr "{0}% van der Waals"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:103
+msgid "&Bond"
+msgstr "Kötés"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:105
+msgid "&Wireframe"
+msgstr "Rácsvonalas"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:106
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:107
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:108
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:120
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:121
+#, java-format
+msgid "{0} Å"
+msgstr "{0} Å"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:109
+msgid "&Label"
+msgstr "Felirat"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:111
+msgid "&Symbol"
+msgstr "Szimbólum"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:112
+msgid "&Name"
+msgstr "Név"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:113
+msgid "&Number"
+msgstr "Sorszám"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:114
+msgid "&Centered"
+msgstr "Középre"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:115
+msgid "&Upper right"
+msgstr "Jobb-felső sarok"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:116
+msgid "&Vector"
+msgstr "&Vektorok"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:118
+msgid "&On"
+msgstr "Be"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:119
+#, java-format
+msgid "{0} pixels"
+msgstr "{0} képpont"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:122
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:123
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:124
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:125
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:126
+#, java-format
+msgid "Scale {0}"
+msgstr "Arány: {0}"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:127
+msgid "&Zoom"
+msgstr "Nagyítás"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:128
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:129
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:130
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:131
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:132
+#, java-format
+msgid "{0}%"
+msgstr "{0}%"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:133
+msgid "&Perspective Depth"
+msgstr "Perspektivikus vetítés"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:134
+msgid "A&xes"
+msgstr "Tengelyek"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:135
+msgid "B&ounding Box"
+msgstr "Befoglaló doboz"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:136
+msgid "&Hydrogens"
+msgstr "&Hidrogénatomok"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:137
+msgid "V&ectors"
+msgstr "Vektorok"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:138
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:150
+msgid "&Measurements"
+msgstr "&Méretezések"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:139
+msgid "Resi&ze"
+msgstr ""
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:140
+msgid "&View"
+msgstr "&Nézet"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:141
+msgid "&Front"
+msgstr "Elöl"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:142
+msgid "&Top"
+msgstr "Felül"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:143
+msgid "&Bottom"
+msgstr "Alul"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:144
+msgid "&Right"
+msgstr "Jobb"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:145
+msgid "&Left"
+msgstr "Bal"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:146
+msgid "Tr&ansform..."
+msgstr "A&talakítás..."
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:147
+msgid "Define &Center"
+msgstr "Középpont megadása"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:148
+msgid "&Tools"
+msgstr "&Eszközök"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:149
+msgid "&Gaussian..."
+msgstr "&Gaussian"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:151
+msgid "Distance &Units"
+msgstr "Távolság mértékegysége"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:152
+msgid "&Nanometers 1E-9"
+msgstr "Nanométer 1E-9"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:153
+msgid "&Angstroms 1E-10"
+msgstr "Angstrom 1E-10"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:154
+msgid "&Picometers 1E-12"
+msgstr "Pikométer 1E-12"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:155
+msgid "&Animate..."
+msgstr "Animálás..."
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:156
+msgid "&Vibrate..."
+msgstr "Vibráció..."
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:157
+msgid "&Graph..."
+msgstr "&Grafikon..."
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:158
+msgid "Calculate chemical &shifts..."
+msgstr "Vegyi eltolódások számítása..."
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:159
+msgid "&Crystal Properties"
+msgstr "&Kristálytulajdonságok"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:160
+msgid "&Once"
+msgstr "Egyszer"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:161
+msgid "&Loop"
+msgstr "Ismétlés"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:162
+msgid "P&alindrome"
+msgstr "Oda-vissza"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:163
+msgid "&Stop animation"
+msgstr "Animáció leállítása"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:164
+msgid "&Rewind to first frame"
+msgstr "Vissza az első kockára"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:165
+msgid "Rewind to first frame"
+msgstr "Vissza az első kockára"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:166
+msgid "Go to &next frame"
+msgstr "Ugrás a következő kockára"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:167
+msgid "Go to next frame"
+msgstr "Ugrás a következő kockára"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:168
+msgid "Go to &previous frame"
+msgstr "Ugrás az előző kockára"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:169
+msgid "Go to previous frame"
+msgstr "Ugrás az előző kockára"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:170
+msgid "All &frames"
+msgstr ""
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:171
+msgid "All frames"
+msgstr ""
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:172
+msgid "Go to &last frame"
+msgstr "Ugrás a következő kockára"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:173
+msgid "Go to last frame"
+msgstr "Ugrás az utolsó kockára"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:174
+msgid "Start &vibration"
+msgstr "Vibráció indítása"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:175
+msgid "&Stop vibration"
+msgstr "Vibráció megállítása"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:176
+msgid "&First frequency"
+msgstr "Első frekvencia"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:177
+msgid "&Next frequency"
+msgstr "Következp frekvencia"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:178
+msgid "&Previous frequency"
+msgstr "Előző frekvencia"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:179
+msgid "&Help"
+msgstr "&SAogó"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:181
+msgid "User Guide"
+msgstr "Felhasználói kézikönyv"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:182
+msgid "What's New"
+msgstr "őjdonságok"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:183
+msgid "Hydrogens"
+msgstr "Hodrogénatomok"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:184
+#: org/openscience/jmol/app/jmolpanel/MeasurementTable.java:66
+msgid "Measurements"
+msgstr "Méretezések"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:185
+msgid "Perspective Depth"
+msgstr "Perspektivikus vetítés"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:186
+msgid "Axes"
+msgstr "Tengelyek"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:187
+msgid "Bounding Box"
+msgstr "Befoglaló doboz"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:189
+msgid "RasMol/Chime compatible axes orientation/rotations"
+msgstr "RasMol/Chime kompatibilis tengelyigazítás és -forgatás"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:191
+msgid "File Preview (requires restarting Jmol)"
+msgstr "Fájl előnézet (a program ujraindítását igényli)"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:193
+msgid "Clear console button (requires restarting Jmol)"
+msgstr "Konzol gomb alaphelyzetbe állítása (Jmol újraindítás szükséges)"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:194
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:195
+msgid "Use Atom Color"
+msgstr "Atomszínek használata"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:196
+msgid "Rotate molecule."
+msgstr "Molekula forgatása"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:198
+msgid "Select a set of atoms using SHIFT-LEFT-DRAG."
+msgstr ""
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:200
+msgid "Click atoms to measure distances"
+msgstr "Kattintson az atomokra a távolság méréséhez"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:201
+msgid "Return molecule to home position."
+msgstr "Molekula alaphelyzetbe állítása"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:202
+msgid "Open the model kit."
+msgstr ""
+
+#: org/openscience/jmol/app/jmolpanel/HelpDialog.java:64
+msgid "Jmol Help"
+msgstr "Jmol sAogó"
+
+#: org/openscience/jmol/app/jmolpanel/JmolPanel.java:125
+msgid "Initializing 3D display..."
+msgstr "3D kijelzés inicializálása..."
+
+#: org/openscience/jmol/app/jmolpanel/JmolPanel.java:157
+msgid "Initializing Preferences..."
+msgstr "Beállítások inicializálása"
+
+#: org/openscience/jmol/app/jmolpanel/JmolPanel.java:159
+msgid "Initializing Recent Files..."
+msgstr "Utóbbi fájlok listájának inicializálása..."
+
+#: org/openscience/jmol/app/jmolpanel/JmolPanel.java:161
+msgid "Initializing Script Window..."
+msgstr "Parancsablak inicializálása..."
+
+#: org/openscience/jmol/app/jmolpanel/JmolPanel.java:184
+msgid "Building Command Hooks..."
+msgstr "Parancs-hurkok felépítése..."
+
+#: org/openscience/jmol/app/jmolpanel/JmolPanel.java:195
+msgid "Building Menubar..."
+msgstr "MenA1rendszer felépítése..."
+
+#: org/openscience/jmol/app/jmolpanel/JmolPanel.java:213
+msgid "Starting display..."
+msgstr "Kijelző indítása..."
+
+#: org/openscience/jmol/app/jmolpanel/JmolPanel.java:257
+msgid "Setting up Drag-and-Drop..."
+msgstr "HAozd-és-dobd lehetőségek beállítása..."
+
+#: org/openscience/jmol/app/jmolpanel/JmolPanel.java:259
+msgid "Launching main frame..."
+msgstr "Főkeret indítása..."
+
+#: org/openscience/jmol/app/jmolpanel/JmolPanel.java:288
+#: org/openscience/jmol/app/webexport/Widgets.java:207
+msgid "Jmol Console"
+msgstr "Jmol Konzol"
+
+#: org/openscience/jmol/app/jmolpanel/JmolPanel.java:310
+msgid "Could not create ConsoleTextArea: "
+msgstr "Konzol szövegterA1lete nem hozható létre: "
+
+#: org/openscience/jmol/app/jmolpanel/JmolPanel.java:327
+msgid "Creating main window..."
+msgstr "Főablak létrehozása..."
+
+#: org/openscience/jmol/app/jmolpanel/JmolPanel.java:328
+msgid "Initializing Swing..."
+msgstr "Swing inicializálása..."
+
+#: org/openscience/jmol/app/jmolpanel/JmolPanel.java:340
+msgid "Initializing Jmol..."
+msgstr "Jmol inicializálása..."
+
+#: org/openscience/jmol/app/jmolpanel/JmolPanel.java:452
+msgid "Closing Jmol..."
+msgstr "Jmol bezárása..."
+
+#: org/openscience/jmol/app/jmolpanel/JmolPanel.java:1077
+msgid "Open URL"
+msgstr "Webcím megnyitása"
+
+#: org/openscience/jmol/app/jmolpanel/JmolPanel.java:1078
+msgid "Enter URL of molecular model"
+msgstr "Adja meg a molekuláris modell webcímét"
+
+#: org/openscience/jmol/app/jmolpanel/JmolPanel.java:1252
+msgid "IO Exception:"
+msgstr "IO-hiba:"
+
+#: org/openscience/jmol/app/jmolpanel/JmolPanel.java:1345
+msgid "width height?"
+msgstr ""
+
+#: org/openscience/jmol/app/jmolpanel/MeasurementTable.java:124
+msgid "Delete"
+msgstr "Töröl"
+
+#: org/openscience/jmol/app/jmolpanel/MeasurementTable.java:133
+msgid "DeleteAll"
+msgstr "Mindent töröl"
+
+#: org/openscience/jmol/app/jmolpanel/MeasurementTable.java:151
+msgid "Dismiss"
+msgstr "Bezár"
+
+#: org/openscience/jmol/app/jmolpanel/MeasurementTable.java:201
+msgid "Value"
+msgstr "őrték"
+
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:152
+msgid "Conversion from Jmol to POV-Ray"
+msgstr "Átalakítás Jmol-ből POV-Ray-ba"
+
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:156
+msgid "File Name:"
+msgstr "Fájlnév::"
+
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:158
+msgid ""
+"'caffeine.pov' -> 'caffeine.pov', 'caffeine.pov.ini', 'caffeine.pov.spt'"
+msgstr ""
+"'caffeine.pov' -> 'caffeine.pov', 'caffeine.pov.ini', 'caffeine.pov.spt'"
+
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:168
+msgid "Working Directory"
+msgstr "Munkamappa"
+
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:170
+msgid "Where the .pov files will be saved"
+msgstr "Ahova a .pov fájlok mentésre kerA1lnek"
+
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:190
+msgid "POV-Ray Runtime Options"
+msgstr "POV-Ray futéásidejű paraméterei"
+
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:195
+msgid "Run POV-Ray directly"
+msgstr "POV-Ray közvetlen futtatása"
+
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:197
+msgid "Launch POV-Ray from within Jmol"
+msgstr "POV-Ray indítása Jmol-ból"
+
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:242
+msgid "Display While Rendering"
+msgstr "Renderelés közbeni megjelenítés"
+
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:244
+msgid "Should POV-Ray attempt to display while rendering?"
+msgstr "Próbáljon a POV-Ray renderelés közben megjeleníteni?"
+
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:267
+msgid "width:"
+msgstr "Szélesség:"
+
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:269
+msgid "Image width"
+msgstr "Kép szélessége"
+
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:284
+#: org/openscience/jmol/app/webexport/PopInJmol.java:73
+msgid "height:"
+msgstr "Magasság:"
+
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:286
+msgid "Image height"
+msgstr "Kép magassága"
+
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:303
+msgid "Fixed ratio : "
+msgstr "Rögzített méretarány: "
+
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:305
+msgid "Use a fixed ratio for width:height"
+msgstr "Rögzített szélesség/magasség méretarány használata"
+
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:316
+msgid "User defined"
+msgstr "Felhasználói"
+
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:318
+msgid "Keep ratio of Jmol window"
+msgstr "A Jmol ablak méretarányának megtartása"
+
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:358
+msgid "N - PNG"
+msgstr "N - PNG"
+
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:361
+msgid "P - PPM"
+msgstr "P - PPM"
+
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:364
+msgid "C - Compressed Targa-24"
+msgstr "C - tömörített Targa-24"
+
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:367
+msgid "T - Uncompressed Targa-24"
+msgstr "T - tömörítettlen Targa-24"
+
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:383
+msgid "Alpha transparency"
+msgstr "Alpha-áttetszőség"
+
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:385
+msgid "Output Alpha transparency data"
+msgstr "Attetszőségi adatok kiírása"
+
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:398
+msgid "Mosaic preview"
+msgstr "Mozaik előnézet"
+
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:400
+msgid "Render the image in several passes"
+msgstr "Renderelés több lépésben"
+
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:410
+msgid "Start size : "
+msgstr "Kezdeti méret: "
+
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:412
+msgid "Initial size of the tiles"
+msgstr "A darabok eredeti mérete"
+
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:428
+msgid "End size : "
+msgstr "Végső méret: "
+
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:430
+msgid "Final size of the tiles"
+msgstr "A darabok végső mérete"
+
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:451
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:453
+msgid "Location of the POV-Ray Executable"
+msgstr "A POV-Ray renderelő program teljes elérési Aotja a fájlrendszeren"
+
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:490
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:757
+msgid "Go!"
+msgstr "Indíts!"
+
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:492
+msgid "Save file and possibly launch POV-Ray"
+msgstr "Fájl mentése és POV-Ray indításának megkisérlése"
+
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:503
+msgid "Cancel this dialog without saving"
+msgstr "A panel mentés nélkA1li bezárása"
+
+#: org/openscience/jmol/app/jmolpanel/PreferencesDialog.java:137
+msgid "Preferences"
+msgstr "Beállítások"
+
+#: org/openscience/jmol/app/jmolpanel/PreferencesDialog.java:154
+msgid "Display"
+msgstr "Megjelenítés"
+
+#: org/openscience/jmol/app/jmolpanel/PreferencesDialog.java:155
+msgid "Atoms"
+msgstr "Atomok"
+
+#: org/openscience/jmol/app/jmolpanel/PreferencesDialog.java:156
+msgid "Bonds"
+msgstr "Kötések"
+
+#: org/openscience/jmol/app/jmolpanel/PreferencesDialog.java:161
+msgid "Jmol Defaults"
+msgstr "Jmol alapértelmezés"
+
+#: org/openscience/jmol/app/jmolpanel/PreferencesDialog.java:165
+msgid "RasMol Defaults"
+msgstr "RasMol alapértelmezés"
+
+#: org/openscience/jmol/app/jmolpanel/PreferencesDialog.java:173
+msgid "Apply"
+msgstr "Alkalmaz"
+
+#: org/openscience/jmol/app/jmolpanel/PreferencesDialog.java:201
+msgid "Show All"
+msgstr "Mindent mutat"
+
+#: org/openscience/jmol/app/jmolpanel/PreferencesDialog.java:300
+msgid "Default atom size"
+msgstr "Alapértelmezett atomméret"
+
+#: org/openscience/jmol/app/jmolpanel/PreferencesDialog.java:301
+msgid "(percentage of vanDerWaals radius)"
+msgstr "(a van der Waals sugár százalékos aránya)"
+
+#: org/openscience/jmol/app/jmolpanel/PreferencesDialog.java:354
+msgid "Compute Bonds"
+msgstr "Kötések kiszámítása"
+
+#: org/openscience/jmol/app/jmolpanel/PreferencesDialog.java:356
+msgid "Automatically"
+msgstr "Automatikusan"
+
+#: org/openscience/jmol/app/jmolpanel/PreferencesDialog.java:357
+msgid "Don't Compute Bonds"
+msgstr "Ne számítsa ki a kötéseket"
+
+#: org/openscience/jmol/app/jmolpanel/PreferencesDialog.java:387
+msgid "Default Bond Radius"
+msgstr "Alapértelmezett kötési távolság"
+
+#: org/openscience/jmol/app/jmolpanel/PreferencesDialog.java:388
+#: org/openscience/jmol/app/jmolpanel/PreferencesDialog.java:426
+#: org/openscience/jmol/app/jmolpanel/PreferencesDialog.java:477
+msgid "(Angstroms)"
+msgstr "(őngström-ben)"
+
+#: org/openscience/jmol/app/jmolpanel/PreferencesDialog.java:425
+msgid "Bond Tolerance - sum of two covalent radii + this value"
+msgstr "Kötési tolerancia - a két kovalens sugár összege + ez az érték"
+
+#: org/openscience/jmol/app/jmolpanel/PreferencesDialog.java:476
+msgid "Minimum Bonding Distance"
+msgstr "Minimális kötési távolság"
+
+#: org/openscience/jmol/app/jmolpanel/RecentFilesDialog.java:61
+msgid "Recent Files"
+msgstr "Legutóbb használt fájlok"
+
+#: org/openscience/jmol/app/jmolpanel/RecentFilesDialog.java:66
+msgid "Open"
+msgstr "Megnyitás"
+
+#: org/openscience/jmol/app/jmolpanel/Splash.java:46
+msgid "Loading..."
+msgstr "Betöltés..."
+
+#: org/openscience/jmol/app/jmolpanel/WhatsNewDialog.java:57
+msgid "What's New in Jmol"
+msgstr "őjdonságok a Jmol-ban"
+
+#: org/openscience/jmol/app/webexport/JmolInstance.java:81
+msgid "Attempt to make scratch directory failed."
+msgstr "Átmeneti mappa létrehozása sikertelen"
+
+#: org/openscience/jmol/app/webexport/LogPanel.java:56
+msgid "Log and Error Messages:"
+msgstr "Napló és hibaüzenetek:"
+
+#: org/openscience/jmol/app/webexport/LogPanel.java:64
+msgid "Messages (see Log tab for full history):"
+msgstr "Üzenetek (a Napló fül minden előzményt mutat)"
+
+#: org/openscience/jmol/app/webexport/PopInJmol.java:46
+msgid "These names will be used as filenames for the applets"
+msgstr "Ezeket a neveket fogja a kisalkalmazások fájnneveként használni"
+
+#: org/openscience/jmol/app/webexport/PopInJmol.java:71
+msgid "Applet width:"
+msgstr "Kisalkalmazás szélessége:"
+
+#: org/openscience/jmol/app/webexport/PopInJmol.java:104
+#, java-format
+msgid "insert a caption for {0} here."
+msgstr "adja meg a {0} címkéjét."
+
+#: org/openscience/jmol/app/webexport/PopInJmol.java:107
+#, java-format
+msgid "insert a note for {0} here."
+msgstr "adja mega a {0} leírását."
+
+#: org/openscience/jmol/app/webexport/ScriptButtons.java:44
+msgid "These names will be used for button labels"
+msgstr "Ezeket a neveket gombfeliratoknak fogja használni"
+
+#: org/openscience/jmol/app/webexport/ScriptButtons.java:56
+msgid "% of window for applet width:"
+msgstr "A kisalkalmazás az ablakszélesség ennyi százalékában:"
+
+#: org/openscience/jmol/app/webexport/WebExport.java:82
+#: org/openscience/jmol/app/webexport/WebExport.java:196
+#: org/openscience/jmol/app/webexport/WebExport.java:266
+msgid "Jmol Web Page Maker"
+msgstr "Jmol Weboldalkészítő"
+
+#: org/openscience/jmol/app/webexport/WebExport.java:105
+msgid "Couldn't find file: {0}"
+msgstr "Nem található a {0} fájl"
+
+#: org/openscience/jmol/app/webexport/WebExport.java:124
+msgid "Introduction"
+msgstr "Bevezetés"
+
+#: org/openscience/jmol/app/webexport/WebExport.java:134
+msgid "Pop-In Jmol"
+msgstr "Beugró Jmol"
+
+#: org/openscience/jmol/app/webexport/WebExport.java:135
+msgid "ScriptButton Jmol"
+msgstr "ParancsfájlGob Jmol"
+
+#: org/openscience/jmol/app/webexport/WebExport.java:152
+msgid "Log"
+msgstr "Napló"
+
+#: org/openscience/jmol/app/webexport/WebExport.java:167
+#, java-format
+msgid ""
+"Page skeleton and JavaScript generated by export to web function using {0} "
+"on {1}."
+msgstr ""
+"A lap vázát és a JavaScript-et Page skeleton and JavaScript generated by "
+"export to web function using {0} on {1}."
+
+#: org/openscience/jmol/app/webexport/WebExport.java:349
+#, java-format
+msgid ""
+"To get a 3-D model you can manipulate, click {0}here{1}. Download time may "
+"be significant the first time the applet is loaded."
+msgstr ""
+"Hogy egy manipulálható 3D modellt kapjon {0}-klikkeljen {1}-re. A letöltési "
+"idő nagy lehet az első betöltéskor."
+
+#: org/openscience/jmol/app/webexport/WebExport.java:351
+msgid "Insert the page TITLE here."
+msgstr "Adjon egy CÍMET a lapnak."
+
+#: org/openscience/jmol/app/webexport/WebExport.java:352
+msgid "Insert the page INTRODUCTION here."
+msgstr "Adjon meg egy ISMERTETŐT a lapnak."
+
+#: org/openscience/jmol/app/webexport/WebExport.java:354
+#, java-format
+msgid "Insert a caption for {0} here."
+msgstr "Adjon meg egy feliratot {0} számára"
+
+#: org/openscience/jmol/app/webexport/WebExport.java:355
+#, java-format
+msgid ""
+"Insert additional explanatory text here. Long text will wrap around Jmol "
+"model {0}."
+msgstr ""
+
+#: org/openscience/jmol/app/webexport/WebExport.java:357
+msgid "Insert your TITLE and INTRODUCTION here."
+msgstr "Adjon meg CÍMET és ISMTERTETŐT itt."
+
+#: org/openscience/jmol/app/webexport/WebExport.java:359
+#, java-format
+msgid ""
+"The button {0} will appear in the box below.  Insert information for {0} "
+"here and below."
+msgstr ""
+"A {0} gomb fog az alábbi dobozban megjelenni. Adjon meg információkat a {0}-"
+"hoz itt és alább is."
+
+#: org/openscience/jmol/app/webexport/WebExport.java:360
+#, java-format
+msgid "Insert more information for {0} here."
+msgstr "Adjon meg még több információt {0}-hoz."
+
+#: org/openscience/jmol/app/webexport/WebPanel.java:151
+msgid "A web page containing Jmol applets"
+msgstr "Egy weboldal, mely Jmol JAVA kisalkalmazást tartalmaz"
+
+#: org/openscience/jmol/app/webexport/WebPanel.java:176
+msgid "click and drag to reorder"
+msgstr ""
+
+#: org/openscience/jmol/app/webexport/WebPanel.java:181
+msgid "Add Present Jmol State as Instance..."
+msgstr "A jelenlegi Jmol állapot hozzáadása példányként"
+
+#: org/openscience/jmol/app/webexport/WebPanel.java:188
+msgid "Delete Selected"
+msgstr "Jelöltek törlése"
+
+#: org/openscience/jmol/app/webexport/WebPanel.java:220
+msgid "Jmol Instances:"
+msgstr "Jmol példányok:"
+
+#: org/openscience/jmol/app/webexport/WebPanel.java:226
+msgid "Select widgets:"
+msgstr ""
+
+#: org/openscience/jmol/app/webexport/WebPanel.java:323
+msgid "Help/Instructions"
+msgstr "Súgó/Ismertető"
+
+#: org/openscience/jmol/app/webexport/WebPanel.java:330
+#: org/openscience/jmol/app/webexport/WebPanel.java:338
+msgid "Cartoon of Page"
+msgstr "A lap vázlata"
+
+#: org/openscience/jmol/app/webexport/WebPanel.java:344
+msgid "Save HTML as..."
+msgstr "HTML mentés más&ként..."
+
+#: org/openscience/jmol/app/webexport/WebPanel.java:354
+msgid "Relative server path to jar files:"
+msgstr "A jar fájlok relatív szerveroldali elérési útja"
+
+#: org/openscience/jmol/app/webexport/WebPanel.java:360
+msgid "Relative local path to jar files:"
+msgstr "A jar fájlok relatív helyi fájlrendszeri útja"
+
+#: org/openscience/jmol/app/webexport/WebPanel.java:366
+msgid "Author (your name):"
+msgstr "Szerző (az Ön neve)"
+
+#: org/openscience/jmol/app/webexport/WebPanel.java:373
+msgid "Browser window title for this web page:"
+msgstr "A böngészőablak címsorában megjelenítndő cím:"
+
+#: org/openscience/jmol/app/webexport/WebPanel.java:459
+msgid "Give the occurrence of Jmol a name:"
+msgstr "Adjon a Jmol megjelenésének egy nevet:"
+
+#: org/openscience/jmol/app/webexport/WebPanel.java:475
+msgid "Error creating new instance containing script(s) and image."
+msgstr "Nem sikerült létrehozni az új példányt parancsfájlokkal és képekkel."
+
+#: org/openscience/jmol/app/webexport/WebPanel.java:486
+#, java-format
+msgid "added Instance {0}"
+msgstr "a {0} példány hozzáadva"
+
+#: org/openscience/jmol/app/webexport/WebPanel.java:489
+#, java-format
+msgid "updated Instance {0}"
+msgstr "a {0} példány frissítve"
+
+#: org/openscience/jmol/app/webexport/WebPanel.java:526
+msgid "Select a directory to create or an HTML file to save"
+msgstr "Válassza ki a mappát, ahol a HTML fájlok létrejöjjenek"
+
+#: org/openscience/jmol/app/webexport/WebPanel.java:544
+#, java-format
+msgid "file {0} created"
+msgstr ""
+
+#: org/openscience/jmol/app/webexport/WebPanel.java:546
+msgid "Call to FileWriter unsuccessful."
+msgstr "FileWriter hívása sikertelen."
+
+#: org/openscience/jmol/app/webexport/WebPanel.java:621
+#, java-format
+msgid "Using directory {0}"
+msgstr "{0} mappa használata"
+
+#: org/openscience/jmol/app/webexport/WebPanel.java:622
+#: org/openscience/jmol/app/webexport/WebPanel.java:631
+#: org/openscience/jmol/app/webexport/WebPanel.java:653
+#: org/openscience/jmol/app/webexport/WebPanel.java:667
+#: org/openscience/jmol/app/webexport/WebPanel.java:694
+#, java-format
+msgid "adding {0}"
+msgstr ""
+
+#: org/openscience/jmol/app/webexport/WebPanel.java:682
+#, java-format
+msgid "Unable to load resource {0}"
+msgstr ""
+
+#: org/openscience/jmol/app/webexport/WebPanel.java:734
+msgid "Based on template by A. Herr&#x00E1;ez as modified by J. Gutow"
+msgstr "A mintát A. Herr&#x00E1;ez készítette és by J. Gutow módosította"
+
+#: org/openscience/jmol/app/webexport/WebPanel.java:737
+#, java-format
+msgid "creating {0}"
+msgstr "{0} létrehozása"
+
+#: org/openscience/jmol/app/webexport/WebPanel.java:771
+#, java-format
+msgid ""
+"Could not find or open:\n"
+"{0}"
+msgstr ""
+"Nem található vagy nyitható:\n"
+"{0}"
+
+#: org/openscience/jmol/app/webexport/WebPanel.java:774
+#, java-format
+msgid ""
+"copying\n"
+"{0}\n"
+"         to"
+msgstr ""
+"másolás...\n"
+"{0}\n"
+"         ide"
+
+#: org/openscience/jmol/app/webexport/WebPanel.java:781
+msgid "compressing large data file to"
+msgstr "nagy adatfájl tömörítése"
+
+#: org/openscience/jmol/app/webexport/Widgets.java:60
+msgid "Spin on/off"
+msgstr ""
+
+#: org/openscience/jmol/app/webexport/Widgets.java:75
+msgid "enable/disable spin"
+msgstr ""
+
+#: org/openscience/jmol/app/webexport/Widgets.java:77
+msgid "Spin on"
+msgstr ""
+
+#: org/openscience/jmol/app/webexport/Widgets.java:83
+msgid "Background Color"
+msgstr ""
+
+#: org/openscience/jmol/app/webexport/Widgets.java:98
+msgid "background color:"
+msgstr ""
+
+#: org/openscience/jmol/app/webexport/Widgets.java:111
+msgid "Stereo Viewing"
+msgstr ""
+
+#: org/openscience/jmol/app/webexport/Widgets.java:125
+msgid "select stereo type"
+msgstr ""
+
+#: org/openscience/jmol/app/webexport/Widgets.java:129
+msgid "Stereo Off"
+msgstr ""
+
+#: org/openscience/jmol/app/webexport/Widgets.java:130
+msgid "Red/Blue"
+msgstr ""
+
+#: org/openscience/jmol/app/webexport/Widgets.java:132
+msgid "Red/Cyan"
+msgstr ""
+
+#: org/openscience/jmol/app/webexport/Widgets.java:134
+msgid "Red/Green"
+msgstr ""
+
+#: org/openscience/jmol/app/webexport/Widgets.java:141
+msgid "Animation Control"
+msgstr ""
+
+#: org/openscience/jmol/app/webexport/Widgets.java:165
+msgid "Animation"
+msgstr ""
+
+#: org/openscience/jmol/app/webexport/Widgets.java:166
+msgid "First Frame"
+msgstr ""
+
+#: org/openscience/jmol/app/webexport/Widgets.java:168
+msgid "Previous Frame"
+msgstr ""
+
+#: org/openscience/jmol/app/webexport/Widgets.java:170
+msgid "Play"
+msgstr ""
+
+#: org/openscience/jmol/app/webexport/Widgets.java:172
+msgid "Next Frame"
+msgstr ""
+
+#: org/openscience/jmol/app/webexport/Widgets.java:174
+msgid "Pause"
+msgstr ""
+
+#: org/openscience/jmol/app/webexport/Widgets.java:176
+msgid "Last Frame"
+msgstr ""
+
+#: org/openscience/jmol/app/webexport/Widgets.java:178
+msgid "Mode:"
+msgstr ""
+
+#: org/openscience/jmol/app/webexport/Widgets.java:179
+msgid "Loop"
+msgstr ""
+
+#: org/openscience/jmol/app/webexport/Widgets.java:181
+msgid "Palindrome"
+msgstr ""
+
+#: org/openscience/jmol/app/webexport/Widgets.java:183
+msgid "Play Once"
+msgstr ""
+
+#: org/openscience/jmol/app/webexport/Widgets.java:192
+msgid "Open Console Button"
+msgstr ""
+
+#: org/openscience/jmol/app/webexport/Widgets.java:205
+msgid "launch Jmol console"
+msgstr ""
+
+#: org/openscience/jmol/app/webexport/Widgets.java:212
+msgid "Download view"
+msgstr ""
+
+#: org/openscience/jmol/app/webexport/Widgets.java:227
+msgid "unimplemented"
+msgstr ""

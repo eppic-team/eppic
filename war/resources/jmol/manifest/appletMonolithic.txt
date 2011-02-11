@@ -1,0 +1,7 @@
+Main-Class: JmolApplet
+Sealed: true
+
+Name: org/jmol/api/
+Sealed: false
+
+
