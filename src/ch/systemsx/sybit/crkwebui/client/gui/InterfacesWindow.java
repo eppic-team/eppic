@@ -1,25 +1,27 @@
 package ch.systemsx.sybit.crkwebui.client.gui;
 
-import model.PdbScore;
+import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 
 import com.extjs.gxt.ui.client.widget.Dialog;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 
-public class InterfacesWindow extends Dialog 
-{
+public class InterfacesWindow extends Dialog {
 	private InterfacesPanel interfacesPanel;
-	
-	public InterfacesWindow(PdbScore resultsData)
-	{
-		this.setSize(1000, 800);  
-		this.setPlain(true);  
-		this.setModal(true);  
-		this.setBlinkModal(true);  
-		this.setHeading("Interfaces");  
+
+	public InterfacesWindow(MainController mainController) {
+		this.setSize(1400, 800);
+		this.setPlain(true);
+		this.setModal(true);
+		this.setBlinkModal(true);
+		this.setHeading("Interfaces");
 		this.setLayout(new FitLayout());
 		this.setHideOnButtonClick(true);
-		
-		interfacesPanel = new InterfacesPanel(resultsData);
+
+		interfacesPanel = new InterfacesPanel(mainController);
 		this.add(interfacesPanel);
+	}
+
+	public InterfacesPanel getInterfacesPanel() {
+		return interfacesPanel;
 	}
 }

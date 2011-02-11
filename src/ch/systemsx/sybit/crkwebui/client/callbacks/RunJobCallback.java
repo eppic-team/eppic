@@ -1,18 +1,21 @@
 package ch.systemsx.sybit.crkwebui.client.callbacks;
 
-import com.google.gwt.user.client.rpc.AsyncCallback;
-
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
+
+import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public class RunJobCallback implements AsyncCallback 
 {
 	private MainController mainController;
-	
-	public RunJobCallback(MainController mainController)
+	private String jobId;
+
+	public RunJobCallback(MainController mainController,
+						  String selectedId) 
 	{
 		this.mainController = mainController;
+		this.jobId = selectedId;
 	}
-	
+
 	@Override
 	public void onFailure(Throwable caught) 
 	{
@@ -23,15 +26,6 @@ public class RunJobCallback implements AsyncCallback
 	public void onSuccess(Object result) 
 	{
 		mainController.getJobsForCurrentSession();
-//		if((result != null) && (result instanceof String))
-//		{
-//			String resultInfo = (String)result;
-//			mainController.showError(resultInfo);
-//			mainController.getJobsForCurrentSession();
-//		}
-//		else
-//		{
-//			mainController.showError("Error during getting data from server");
-//		}
+		mainController.displayResults(jobId);
 	}
 }

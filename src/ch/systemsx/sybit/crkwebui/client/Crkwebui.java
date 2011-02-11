@@ -13,10 +13,9 @@ import com.google.gwt.user.client.Window.ClosingEvent;
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
  */
-public class Crkwebui implements EntryPoint, ValueChangeHandler<String>
-{
+public class Crkwebui implements EntryPoint, ValueChangeHandler<String> {
 	private MainController mainController;
-	
+
 	private Viewport viewport;
 
 	/**
@@ -25,23 +24,20 @@ public class Crkwebui implements EntryPoint, ValueChangeHandler<String>
 	public void onModuleLoad() 
 	{
 		mainController = new MainController(viewport);
-		
-	    History.addValueChangeHandler(this);
-	    
-	    //TODO: CHECK in IE
-	    Window.addWindowClosingHandler(new Window.ClosingHandler() 
-	    {
+
+		History.addValueChangeHandler(this);
+
+		// TODO: CHECK in IE
+		Window.addWindowClosingHandler(new Window.ClosingHandler() 
+		{
 			public void onWindowClosing(ClosingEvent event) 
 			{
-//				mainController.untieJobsFromSession();
+				// mainController.untieJobsFromSession();
 			}
 		});
-	    
-	    mainController.loadSettings();
-	    
-	    // Now that we've setup our listener, fire the initial history state.
-	}
 
+		mainController.loadSettings();
+	}
 
 	@Override
 	public void onValueChange(ValueChangeEvent<String> event) 

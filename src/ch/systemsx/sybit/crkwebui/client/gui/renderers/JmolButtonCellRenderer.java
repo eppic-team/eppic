@@ -16,12 +16,14 @@ import com.extjs.gxt.ui.client.widget.grid.ColumnData;
 import com.extjs.gxt.ui.client.widget.grid.Grid;
 import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
 
-public class DetailsButtonCellRenderer implements GridCellRenderer<BeanModel> {
+public class JmolButtonCellRenderer implements GridCellRenderer<BeanModel> 
+{
 	private MainController mainController;
 
 	private boolean init;
 
-	public DetailsButtonCellRenderer(MainController mainController) {
+	public JmolButtonCellRenderer(MainController mainController) 
+	{
 		this.mainController = mainController;
 	}
 
@@ -33,7 +35,8 @@ public class DetailsButtonCellRenderer implements GridCellRenderer<BeanModel> {
 			grid.addListener(Events.ColumnResize,
 					new Listener<GridEvent<BeanModel>>() {
 
-						public void handleEvent(GridEvent<BeanModel> be) {
+						public void handleEvent(GridEvent<BeanModel> be) 
+						{
 							for (int i = 0; i < be.getGrid().getStore()
 									.getCount(); i++) {
 								if (be.getGrid().getView()
@@ -49,24 +52,17 @@ public class DetailsButtonCellRenderer implements GridCellRenderer<BeanModel> {
 					});
 		}
 
-		Button detailsButton = new Button("Details",
-				new SelectionListener<ButtonEvent>() {
+		Button detailsButton = new Button("3D",
+			new SelectionListener<ButtonEvent>() 
+			{
+				@Override
+				public void componentSelected(ButtonEvent ce) 
+				{
+					 mainController.showJmolViewer(String.valueOf(model.get("id")));
+				}
+			});
 
-					@Override
-					public void componentSelected(ButtonEvent ce) {
-						OverviewPanel overViewPanel = (OverviewPanel) mainController
-								.getMainViewPort().getDisplayPanel()
-								.getWidget(0);
-						overViewPanel.updateScoresPanel(rowIndex);
-
-						mainController.getInterfaceResidues(mainController
-								.getPdbScoreItem().getJobId(), (Integer) model
-								.get("id"));
-					}
-				});
-
-		detailsButton
-				.setWidth(grid.getColumnModel().getColumnWidth(colIndex) - 10);
+		detailsButton.setWidth(grid.getColumnModel().getColumnWidth(colIndex) - 10);
 		detailsButton.setToolTip("Show interfaces details");
 
 		return detailsButton;

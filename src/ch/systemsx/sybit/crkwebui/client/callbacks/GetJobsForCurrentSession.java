@@ -3,7 +3,7 @@ package ch.systemsx.sybit.crkwebui.client.callbacks;
 import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
-import ch.systemsx.sybit.crkwebui.shared.model.StatusData;
+import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
@@ -19,7 +19,7 @@ public class GetJobsForCurrentSession implements AsyncCallback
 	@Override
 	public void onFailure(Throwable caught) 
 	{
-		mainController.showError("Error during getting results data from server");
+		mainController.showError("Error during getting current jobs from server. " + caught.getMessage());
 	}
 
 	@Override
@@ -27,12 +27,12 @@ public class GetJobsForCurrentSession implements AsyncCallback
 	{
 		if(result != null)
 		{
-			List<StatusData> myJobs = (List<StatusData>)result;
+			List<ProcessingInProgressData> myJobs = (List<ProcessingInProgressData>)result;
 			mainController.setJobs(myJobs);
 		}
 		else
 		{
-			mainController.showError("Error during getting results from server");
+			mainController.showError("Error during getting current jobs from server");
 		}
 	}
 }

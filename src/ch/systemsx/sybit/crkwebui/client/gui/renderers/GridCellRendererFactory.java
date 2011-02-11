@@ -5,25 +5,21 @@ import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 import com.extjs.gxt.ui.client.data.BeanModel;
 import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
 
-public class GridCellRendererFactory 
-{
-	public static GridCellRenderer<BeanModel> createGridCellRenderer(String rendererName,
-																	 MainController mainController)
-	{
+public class GridCellRendererFactory {
+	public static GridCellRenderer<BeanModel> createGridCellRenderer(
+			String rendererName, MainController mainController) {
 		GridCellRenderer<BeanModel> renderer = new DefaultCellRenderer();
-		
-		if(rendererName !=  null)
-		{
-			if(rendererName.equals("details"))
-			{
+
+		if (rendererName != null) {
+			if (rendererName.equals("details")) {
 				renderer = new DetailsButtonCellRenderer(mainController);
-			}
-			else if(rendererName.equals("methods"))
-			{
+			} else if (rendererName.equals("methods")) {
 				renderer = new MethodCellRenderer(mainController);
+			} else if (rendererName.equals("residues_methods")) {
+				// renderer = new ResiduesMethodsCellRenderer(mainController);
 			}
 		}
-		
+
 		return renderer;
 	}
 }

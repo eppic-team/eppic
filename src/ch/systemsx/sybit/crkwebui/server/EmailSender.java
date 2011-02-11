@@ -13,7 +13,7 @@ import javax.mail.internet.MimeMessage;
 
 import ch.systemsx.sybit.crkwebui.server.data.EmailData;
 
-public class EmailSender
+public class EmailSender 
 {
 	private EmailData emailData;
 
@@ -21,50 +21,53 @@ public class EmailSender
 	{
 		this.emailData = emailData;
 	}
-	
-	public void send(
-					 String subject,
-					 String text)
+
+	public void send(String subject, String text) 
 	{
-		if((emailData.getEmailRecipient() != null) &&
-		   (!emailData.getEmailRecipient().equals("")))
+		if ((emailData.getEmailRecipient() != null)
+				&& (!emailData.getEmailRecipient().equals(""))) 
 		{
 			Properties props = new Properties();
-			props.put("mail.smtp.host", "mail.psi.ch");
-			props.put("mail.smtp.port", "25");
-			
+			props.put("mail.smtp.host", emailData.getHost());
+			props.put("mail.smtp.port", emailData.getPort());
+
 			Session session = Session.getDefaultInstance(props);
 			Message simpleMessage = new MimeMessage(session);
-			
+
 			InternetAddress fromAddress = null;
 			InternetAddress toAddress = null;
+			
 			try 
 			{
 				fromAddress = new InternetAddress(emailData.getEmailSender());
 				toAddress = new InternetAddress(emailData.getEmailRecipient());
-			} catch (AddressException e) {
-				// TODO Auto-generated catch block
+			}
+			catch (AddressException e) 
+			{
 				e.printStackTrace();
 			}
-			
-			try {
+
+			try 
+			{
 				simpleMessage.setFrom(fromAddress);
 				simpleMessage.setRecipient(RecipientType.TO, toAddress);
 				simpleMessage.setSubject(subject);
 				simpleMessage.setText(text);
 				simpleMessage.saveChanges();
-				
+
 				Transport transport = session.getTransport("smtp");
-				transport.connect(props.getProperty("mail.smtp.host"), emailData.getEmailSender(), "");
-				transport.sendMessage(simpleMessage, simpleMessage.getAllRecipients());
+				transport.connect(props.getProperty("mail.smtp.host"),
+						emailData.getEmailSender(), "");
+				transport.sendMessage(simpleMessage,
+						simpleMessage.getAllRecipients());
 				transport.close();
-	
-				Transport.send(simpleMessage);			
-			} catch (MessagingException e) {
-				// TODO Auto-generated catch block
+
+				Transport.send(simpleMessage);
+			}
+			catch (MessagingException e) 
+			{
 				e.printStackTrace();
-				System.out.println(e.getLocalizedMessage());
-			}		
+			}
 		}
 	}
 }

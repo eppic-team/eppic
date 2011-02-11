@@ -4,21 +4,20 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
-public class ApplicationSettings implements Serializable
-{
+public class ApplicationSettings implements Serializable {
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	
+
 	// supported scoring methods
 	private String[] scoresTypes;
-	
+
 	// grid settings - column specification
 	private Map<String, String> gridProperties;
-	
+
 	private InputParameters defaultParametersValues;
-	
+
 	private List<Integer> reducedAlphabetList;
 
 	public void setScoresTypes(String[] scoresTypes) {
@@ -37,7 +36,8 @@ public class ApplicationSettings implements Serializable
 		return gridProperties;
 	}
 
-	public void setDefaultParametersValues(InputParameters defaultParametersValues) {
+	public void setDefaultParametersValues(
+			InputParameters defaultParametersValues) {
 		this.defaultParametersValues = defaultParametersValues;
 	}
 
