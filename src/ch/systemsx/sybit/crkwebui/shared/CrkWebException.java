@@ -1,7 +1,13 @@
 package ch.systemsx.sybit.crkwebui.shared;
 
-public class CrkWebException extends Exception
+import java.io.Serializable;
+
+public class CrkWebException extends Exception implements Serializable
 {
+	public CrkWebException()
+	{
+		
+	}
 
 	public CrkWebException(Throwable e)
 	{

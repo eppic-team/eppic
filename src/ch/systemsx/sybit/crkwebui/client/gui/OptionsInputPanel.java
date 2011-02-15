@@ -36,11 +36,13 @@ public class OptionsInputPanel extends FieldSet
 	private Radio useNAccessYes;
 	private Radio useNAccessNo;
 	private RadioGroup useNAccess;
-	private FieldSet kaksFieldSet;
-	private FieldSet entropyFieldSet;
+	private FieldSet[] methodsFieldsets;
+//	private FieldSet kaksFieldSet;
+//	private FieldSet entropyFieldSet;
 
 	public OptionsInputPanel(InputParameters defaultInputParameters,
-			List<Integer> reducedAlphabetDefaultList) 
+							 List<Integer> reducedAlphabetDefaultList,
+							 String[] supportedMethods) 
 	{
 		this.setHeading(MainController.CONSTANTS.input_advanced());
 		this.setCollapsible(true);
@@ -52,54 +54,55 @@ public class OptionsInputPanel extends FieldSet
 		layout.setLabelWidth(200);
 		this.setLayout(layout);
 
-		FormLayout entropySetLayout = new FormLayout();
-		entropySetLayout.setLabelWidth(200);
+		methodsFieldsets = new FieldSet[supportedMethods.length];
+		
+		for(int i=0; i<supportedMethods.length; i++)
+		{
+			FormLayout fieldSetLayout = new FormLayout();
+			fieldSetLayout.setLabelWidth(200);
 
-		entropyFieldSet = new FieldSet();
-		entropyFieldSet.setHeading(MainController.CONSTANTS
-				.parameters_entropy());
-		entropyFieldSet.setCheckboxToggle(true);
-		entropyFieldSet.setExpanded(true);
-		entropyFieldSet.setLayout(entropySetLayout);
+			methodsFieldsets[i] = new FieldSet();
+			methodsFieldsets[i].setCheckboxToggle(true);
+			methodsFieldsets[i].setExpanded(false);
+			methodsFieldsets[i].setLayout(fieldSetLayout);
+			
+			if(supportedMethods[i].equals("Entropy"))
+			{
+				methodsFieldsets[i].setHeading(MainController.CONSTANTS
+						.parameters_entropy());
+				
+				reducedAlphabetValues = new ListStore<ReducedAlphabetComboModel>();
 
-		reducedAlphabetValues = new ListStore<ReducedAlphabetComboModel>();
+				for (Integer value : reducedAlphabetDefaultList) {
+					ReducedAlphabetComboModel model = new ReducedAlphabetComboModel(
+							value);
+					reducedAlphabetValues.add(model);
+				}
 
-		for (Integer value : reducedAlphabetDefaultList) {
-			ReducedAlphabetComboModel model = new ReducedAlphabetComboModel(
-					value);
-			reducedAlphabetValues.add(model);
+				reducedAlphabetCombo = new ComboBox<ReducedAlphabetComboModel>();
+				reducedAlphabetCombo.setFieldLabel(MainController.CONSTANTS
+						.parameters_reduced_alphabet());
+				reducedAlphabetCombo.setWidth(150);
+				reducedAlphabetCombo.setStore(reducedAlphabetValues);
+				reducedAlphabetCombo.setTypeAhead(true);
+				reducedAlphabetCombo.setTriggerAction(TriggerAction.ALL);
+				reducedAlphabetCombo.setDisplayField("reducedAlphabet");
+				reducedAlphabetCombo.setEditable(false);
+				methodsFieldsets[i].add(reducedAlphabetCombo, formData);
+			}
+			else if(supportedMethods[i].equals("Kaks"))
+			{
+				methodsFieldsets[i].setHeading(MainController.CONSTANTS.parameters_kaks());
+				
+				selecton = new NumberField();
+				selecton.setFieldLabel(MainController.CONSTANTS.parameters_selecton());
+				selecton.setAllowBlank(false);
+				selecton.setFormat(NumberFormat.getDecimalFormat());
+				methodsFieldsets[i].add(selecton, formData);
+			}
+			
+			this.add(methodsFieldsets[i]);
 		}
-
-		reducedAlphabetCombo = new ComboBox<ReducedAlphabetComboModel>();
-		reducedAlphabetCombo.setFieldLabel(MainController.CONSTANTS
-				.parameters_reduced_alphabet());
-		reducedAlphabetCombo.setWidth(150);
-		reducedAlphabetCombo.setStore(reducedAlphabetValues);
-		reducedAlphabetCombo.setTypeAhead(true);
-		reducedAlphabetCombo.setTriggerAction(TriggerAction.ALL);
-		reducedAlphabetCombo.setDisplayField("reducedAlphabet");
-		reducedAlphabetCombo.setEditable(false);
-		entropyFieldSet.add(reducedAlphabetCombo, formData);
-
-		this.add(entropyFieldSet);
-
-		FormLayout kaksFieldSetLayout = new FormLayout();
-		kaksFieldSetLayout.setLabelWidth(200);
-
-		kaksFieldSet = new FieldSet();
-		kaksFieldSet.setHeading(MainController.CONSTANTS.parameters_kaks());
-		kaksFieldSet.setCheckboxToggle(true);
-		kaksFieldSet.setExpanded(false);
-		kaksFieldSet.setLayout(kaksFieldSetLayout);
-
-		selecton = new NumberField();
-		selecton.setFieldLabel(MainController.CONSTANTS.parameters_selecton());
-		selecton.setAllowBlank(false);
-		selecton.setFormat(NumberFormat.getDecimalFormat());
-		kaksFieldSet.add(selecton, formData);
-
-		this.add(kaksFieldSet);
-
 		
 		FormLayout allignmentsParametersFieldSetLayout = new FormLayout();
 		allignmentsParametersFieldSetLayout.setLabelWidth(200);
@@ -220,13 +223,12 @@ public class OptionsInputPanel extends FieldSet
 		{
 			for(String method : defaultMethods)
 			{
-				if(method.equals("Kaks"))
+				for(FieldSet fieldSet : methodsFieldsets)
 				{
-					kaksFieldSet.setExpanded(true);
-				}
-				else if(method.equals("Entropy"))
-				{
-					entropyFieldSet.setExpanded(true);
+					if(fieldSet.getHeading().equals(method))
+					{
+						fieldSet.setExpanded(true);
+					}
 				}
 			}
 		}
@@ -262,13 +264,13 @@ public class OptionsInputPanel extends FieldSet
 		}
 		
 		List<String> selectedMethods = new ArrayList<String>();
-		if(kaksFieldSet.isExpanded())
+		
+		for(FieldSet fieldSet : methodsFieldsets)
 		{
-			selectedMethods.add("Kaks");
-		}
-		else if(entropyFieldSet.isExpanded())
-		{
-			selectedMethods.add("Entropy");
+			if(fieldSet.isExpanded())
+			{
+				selectedMethods.add(fieldSet.getHeading());
+			}
 		}
 		
 		String[] selectedMethodsArray = new String[selectedMethods.size()];
