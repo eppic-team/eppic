@@ -11,13 +11,16 @@ import java.util.List;
 
 import javax.naming.NamingException;
 
+import ch.systemsx.sybit.crkwebui.shared.CrkWebException;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
 
 //TODO will be changed to use datasource
-public class DBUtils {
+public class DBUtils 
+{
 	private static String dataSource;
 
-	public static void setDataSource(String selectedDataSource) {
+	public static void setDataSource(String selectedDataSource)
+	{
 		dataSource = selectedDataSource;
 	}
 
@@ -44,13 +47,13 @@ public class DBUtils {
 	// }
 
 	public static Connection getConnection() throws NamingException,
-			SQLException {
+			SQLException 
+	{
 		Connection connection = null;
 
 		try {
 			Class.forName("com.mysql.jdbc.Driver");
 		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -59,10 +62,9 @@ public class DBUtils {
 		return connection;
 	}
 
-	public static String insertNewJob(String jobId, String sessionId,
-			String email, String input) {
-		String errorMessage = null;
-
+	public static void insertNewJob(String jobId, String sessionId,
+			String email, String input)  throws CrkWebException 
+	{
 		Connection connection = null;
 		PreparedStatement statement = null;
 
@@ -87,10 +89,10 @@ public class DBUtils {
 			}
 		} catch (NamingException e) {
 			e.printStackTrace();
-			errorMessage = e.getMessage();
+			throw new CrkWebException(e);
 		} catch (SQLException e) {
 			e.printStackTrace();
-			errorMessage = e.getMessage();
+			throw new CrkWebException(e);
 		} finally {
 			if (statement != null) {
 				try {
@@ -110,11 +112,10 @@ public class DBUtils {
 				}
 			}
 		}
-
-		return errorMessage;
 	}
 
-	public static List<ProcessingInProgressData> getJobsForCurrentSession(String sessionId) {
+	public static List<ProcessingInProgressData> getJobsForCurrentSession(String sessionId) throws CrkWebException
+	{
 		List<ProcessingInProgressData> statusData = null;
 
 		Connection connection = null;
@@ -152,8 +153,10 @@ public class DBUtils {
 			}
 		} catch (NamingException e) {
 			e.printStackTrace();
+			throw new CrkWebException(e);
 		} catch (SQLException e) {
 			e.printStackTrace();
+			throw new CrkWebException(e);
 		} finally {
 			if (statement != null) {
 				try {
@@ -175,9 +178,8 @@ public class DBUtils {
 		return statusData;
 	}
 
-	public static String untieJobsFromSession(String sessionId) {
-		String errorMessage = null;
-
+	public static void untieJobsFromSession(String sessionId) throws CrkWebException 
+	{
 		Connection connection = null;
 		PreparedStatement statement = null;
 
@@ -196,13 +198,11 @@ public class DBUtils {
 				}
 			}
 		} catch (NamingException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
-			errorMessage = e.getMessage();
+			throw new CrkWebException(e);
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
-			errorMessage = e.getMessage();
+			throw new CrkWebException(e);
 		} finally {
 			if (statement != null) {
 				try {
@@ -222,13 +222,10 @@ public class DBUtils {
 				}
 			}
 		}
-
-		return errorMessage;
 	}
 
-	public static String updateStatusOfJob(String jobId, String status) {
-		String errorMessage = null;
-
+	public static void updateStatusOfJob(String jobId, String status) throws CrkWebException 
+	{
 		Connection connection = null;
 		PreparedStatement statement = null;
 
@@ -248,11 +245,11 @@ public class DBUtils {
 				}
 			}
 		} catch (NamingException e) {
-			errorMessage = e.getMessage();
 			e.printStackTrace();
+			throw new CrkWebException(e);
 		} catch (SQLException e) {
-			errorMessage = e.getMessage();
 			e.printStackTrace();
+			throw new CrkWebException(e);
 		} finally {
 			if (statement != null) {
 				try {
@@ -270,11 +267,10 @@ public class DBUtils {
 				}
 			}
 		}
-
-		return errorMessage;
 	}
 
-	public static String getStatusForJob(String jobId) {
+	public static String getStatusForJob(String jobId) throws CrkWebException 
+	{
 		String status = "nonexisting";
 
 		Connection connection = null;
@@ -295,20 +291,21 @@ public class DBUtils {
 					results = statement.executeQuery(query);
 				}
 
-				if (results != null) {
-					int i = 0;
+				if (results != null) 
+				{
 
 					while (results.next()) {
 						status = results.getString(1);
-						i++;
 					}
 				}
 
 			}
 		} catch (NamingException e) {
 			e.printStackTrace();
+			throw new CrkWebException(e);
 		} catch (SQLException e) {
 			e.printStackTrace();
+			throw new CrkWebException(e);
 		} finally {
 			if (statement != null) {
 				try {
@@ -330,6 +327,73 @@ public class DBUtils {
 		}
 
 		return status;
+	}
+	
+	public static int getNrOfJobsForSessionId(String sessionId) throws CrkWebException
+	{
+		int nrOfJobsForSessionId = 0;
+		
+		Connection connection = null;
+		Statement statement = null;
+
+		try 
+		{
+			connection = getConnection();
+
+			if (connection != null) {
+				String query = String.format(
+						"SELECT count(jobId) FROM Jobs WHERE sessionId=\"%s\"", sessionId);
+
+				statement = connection.createStatement();
+
+				ResultSet results = null;
+
+				if (statement != null) {
+					results = statement.executeQuery(query);
+				}
+
+				if (results != null) 
+				{
+					while (results.next())
+					{
+						nrOfJobsForSessionId = results.getInt(1);
+					}
+				}
+
+			}
+		}
+		catch (NamingException e) 
+		{
+			e.printStackTrace();
+			throw new CrkWebException(e);
+		}
+		catch (SQLException e) 
+		{
+			e.printStackTrace();
+			throw new CrkWebException(e);
+		} 
+		finally 
+		{
+			if (statement != null) {
+				try {
+					statement.close();
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+
+			if (connection != null) {
+				try {
+					connection.close();
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+
+		return nrOfJobsForSessionId;
 	}
 
 }

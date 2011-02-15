@@ -1,15 +1,14 @@
 package ch.systemsx.sybit.crkwebui.client;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 
 import model.InterfaceResidueItem;
-import model.PDBScoreItem;
 import model.ProcessingData;
+import ch.systemsx.sybit.crkwebui.shared.CrkWebException;
 import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
-import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
+import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
@@ -25,15 +24,15 @@ public interface CrkWebService extends RemoteService {
 
 	public ProcessingData getResultsOfProcessing(String id) throws Exception;
 
-	public String killJob(String id);
+	public String killJob(String id) throws CrkWebException;
 
-	public List<ProcessingInProgressData> getJobsForCurrentSession();
+	public List<ProcessingInProgressData> getJobsForCurrentSession() throws CrkWebException;
 
-	public String untieJobsFromSession();
+	public void untieJobsFromSession() throws CrkWebException;
 
 	public ApplicationSettings getSettings() throws Exception;
 
-	public void runJob(RunJobData runJobData);
+	public void runJob(RunJobData runJobData) throws CrkWebException;
 
 	public HashMap<Integer, List<InterfaceResidueItem>> getInterfaceResidues(
 			String jobId, int interfaceId);

@@ -9,14 +9,15 @@ public class MyJobsModel extends BaseModel {
 
 	}
 
-	public MyJobsModel(String jobId, String status, String input) {
-		set("jobId", jobId);
+	public MyJobsModel(String inputData, String status, String input) 
+	{
+		set("jobid", inputData);
 		set("status", status);
 		set("input", input);
 	}
 
-	public String getJobId() {
-		return (String) get("jobId");
+	public String getJobid() {
+		return (String) get("jobid");
 	}
 
 	public String getStatus() {

@@ -14,6 +14,8 @@
   <!-- Other module inherits                                      -->
   
   <inherits name='model'/>
+  
+  <inherits name="com.google.gwt.http.HTTP"/>
 
   <!-- Specify the app entry point class.                         -->
   <entry-point class='ch.systemsx.sybit.crkwebui.client.Crkwebui'/>

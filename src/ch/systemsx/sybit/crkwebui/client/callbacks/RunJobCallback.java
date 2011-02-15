@@ -10,10 +10,10 @@ public class RunJobCallback implements AsyncCallback
 	private String jobId;
 
 	public RunJobCallback(MainController mainController,
-						  String selectedId) 
+						  String jobId) 
 	{
 		this.mainController = mainController;
-		this.jobId = selectedId;
+		this.jobId = jobId;
 	}
 
 	@Override
@@ -26,6 +26,7 @@ public class RunJobCallback implements AsyncCallback
 	public void onSuccess(Object result) 
 	{
 		mainController.getJobsForCurrentSession();
-		mainController.displayResults(jobId);
+		mainController.setSelectedJobId(jobId);
+		mainController.displayResults();
 	}
 }

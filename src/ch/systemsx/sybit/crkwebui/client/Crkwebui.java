@@ -13,7 +13,8 @@ import com.google.gwt.user.client.Window.ClosingEvent;
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
  */
-public class Crkwebui implements EntryPoint, ValueChangeHandler<String> {
+public class Crkwebui implements EntryPoint, ValueChangeHandler<String> 
+{
 	private MainController mainController;
 
 	private Viewport viewport;

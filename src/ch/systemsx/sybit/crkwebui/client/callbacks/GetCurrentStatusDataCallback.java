@@ -6,16 +6,14 @@ import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
-public class GetResultsOfProcessingCallback implements AsyncCallback
+public class GetCurrentStatusDataCallback implements AsyncCallback 
 {
 	private MainController mainController;
-	private String selectedId;
 
-	public GetResultsOfProcessingCallback(MainController mainController,
+	public GetCurrentStatusDataCallback(MainController mainController,
 			String selectedId) 
 	{
 		this.mainController = mainController;
-		this.selectedId = selectedId;
 	}
 
 	@Override
@@ -35,12 +33,12 @@ public class GetResultsOfProcessingCallback implements AsyncCallback
 			if(result instanceof ProcessingInProgressData)
 			{
 				ProcessingInProgressData statusData = (ProcessingInProgressData) result;
-				mainController.displayStatusView(statusData);
+				mainController.refreshStatusView(statusData);
 			}
 			else if(result instanceof PDBScoreItem)
 			{
 				PDBScoreItem resultsData = (PDBScoreItem) result;
-				resultsData.setJobId(selectedId);
+				resultsData.setJobId(mainController.getSelectedJobId());
 				mainController.setPDBScoreItem(resultsData);
 				mainController.displayResultView(resultsData);
 			}
@@ -52,7 +50,7 @@ public class GetResultsOfProcessingCallback implements AsyncCallback
 		}
 		else
 		{
-			mainController.showMessage("Info", "id=" + selectedId + " not found on the server");
+			mainController.showMessage("Info", "id=" + mainController.getSelectedJobId() + " not found on the server");
 			mainController.getMainViewPort().getCenterPanel().removeAll();
 		}
 	}

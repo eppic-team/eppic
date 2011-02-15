@@ -18,7 +18,8 @@ import javax.servlet.http.HttpServletResponse;
  * @author srebniak_a
  * 
  */
-public class FileDownloadServlet extends FileBaseServlet {
+public class FileDownloadServlet extends FileBaseServlet 
+{
 	/**
 	 * 
 	 */
@@ -38,80 +39,101 @@ public class FileDownloadServlet extends FileBaseServlet {
 	protected void doGet(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException 
 	{
-		String selectedId = request.getParameter("id");
+		final String type = request.getParameter("type");
+		final String jobId = request.getParameter("id");
+		final String interfaceId = request.getParameter("interface");
 
 		ServletOutputStream output = response.getOutputStream();
 
-		if ((selectedId != null) && (selectedId.length() != 0)) {
-
-			File resultFileDirectory = new File(
-					properties.getProperty("destination_path") + "/"
-							+ selectedId);
-
-			if (resultFileDirectory.exists()
-					&& resultFileDirectory.isDirectory()) {
-				String[] directoryContent = resultFileDirectory
-						.list(new FilenameFilter() {
-
-							public boolean accept(File dir, String name) {
-								if (name.endsWith(".zip")) {
-									return true;
-								} else {
-									return false;
-								}
-							}
-						});
-
-				if (directoryContent != null && directoryContent.length > 0) {
-					File resultFile = new File(resultFileDirectory + "/"
-							+ directoryContent[0]);
-
-					if (resultFile.exists()) {
-						response.setContentType("application/txt");
-						response.setContentLength((int) resultFile.length());
-						response.setHeader("Content-Disposition",
-								"attachment; filename*=\"utf-8''" + resultFile
-										+ "");
-
-						byte[] buffer = new byte[1024];
-						DataInputStream in = new DataInputStream(
-								new FileInputStream(resultFile));
-
-						int length;
-
-						while ((in != null)
-								&& ((length = in.read(buffer)) != -1)) {
-							output.write(buffer, 0, length);
-						}
-
-						in.close();
-						output.flush();
-						output.close();
-					} 
-					else 
-					{
-						response.sendError(
-								HttpServletResponse.SC_NOT_FOUND,
-								messages.getProperty("fileDownloadResultFileNofFound"));
-					}
-				} 
-				else 
+		if ((type != null) && (type.length() != 0))
+		{
+			if ((jobId != null) && (jobId.length() != 0)) 
+			{
+	
+				if((type.equals("interface")) && 
+				   ((interfaceId == null) ||
+				    (interfaceId.equals(""))))
+			    {
+					response.sendError(HttpServletResponse.SC_NOT_FOUND, "No interface specified");
+			    }
+				else
 				{
-					response.sendError(
-							HttpServletResponse.SC_NOT_FOUND,
-							messages.getProperty("fileDownloadResultFileNofFound"));
+					File resultFileDirectory = new File(
+							properties.getProperty("destination_path") + "/"
+									+ jobId);
+		
+					if (resultFileDirectory.exists()
+							&& resultFileDirectory.isDirectory()) {
+						String[] directoryContent = resultFileDirectory
+								.list(new FilenameFilter() {
+		
+									public boolean accept(File dir, String name) {
+										if (name.endsWith(FileNameGenerator.generateFileNameToDownload(type, jobId, interfaceId))) {
+											return true;
+										} else {
+											return false;
+										}
+									}
+								});
+		
+						if (directoryContent != null && directoryContent.length > 0) {
+							File resultFile = new File(resultFileDirectory + "/"
+									+ directoryContent[0]);
+		
+							if (resultFile.exists()) 
+							{
+								response.setContentType("application/txt");
+								response.setContentLength((int) resultFile.length());
+								response.setHeader("Content-Disposition",
+										"attachment; filename*=\"utf-8''" + resultFile
+												+ "");
+		
+								byte[] buffer = new byte[1024];
+								DataInputStream in = new DataInputStream(
+										new FileInputStream(resultFile));
+		
+								int length;
+		
+								while ((in != null)
+										&& ((length = in.read(buffer)) != -1)) {
+									output.write(buffer, 0, length);
+								}
+		
+								in.close();
+								output.flush();
+								output.close();
+							} 
+							else 
+							{
+								response.sendError(
+										HttpServletResponse.SC_NOT_FOUND,
+										messages.getProperty("fileDownloadResultFileNofFound"));
+							}
+						} 
+						else 
+						{
+							response.sendError(
+									HttpServletResponse.SC_NOT_FOUND,
+									messages.getProperty("fileDownloadResultFileNofFound"));
+						}
+					}
+					else
+					{
+						response.sendError(HttpServletResponse.SC_NOT_FOUND, messages
+								.getProperty("fileDownloadResultDirectoryNotFound"));
+					}
 				}
-			}
+			} 
 			else
 			{
-				response.sendError(HttpServletResponse.SC_NOT_FOUND, messages
-						.getProperty("fileDownloadResultDirectoryNotFound"));
+				response.sendError(HttpServletResponse.SC_NOT_FOUND,
+						messages.getProperty("fileDownloadResultIdNotSpecified"));
 			}
-		} 
+		}
 		else
 		{
 			response.sendError(HttpServletResponse.SC_NOT_FOUND,
-					messages.getProperty("fileDownloadResultIdNotSpecified"));
+					"Type of the file not specified");
 		}
 	}
 }

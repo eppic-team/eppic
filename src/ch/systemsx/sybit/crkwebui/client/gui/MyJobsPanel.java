@@ -8,11 +8,13 @@ import ch.systemsx.sybit.crkwebui.client.model.MyJobsModel;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
 
 import com.extjs.gxt.ui.client.event.ButtonEvent;
+import com.extjs.gxt.ui.client.event.Events;
+import com.extjs.gxt.ui.client.event.GridEvent;
 import com.extjs.gxt.ui.client.event.IconButtonEvent;
+import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.event.SelectionListener;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
-import com.extjs.gxt.ui.client.widget.MessageBox;
 import com.extjs.gxt.ui.client.widget.button.Button;
 import com.extjs.gxt.ui.client.widget.button.ToolButton;
 import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
@@ -25,7 +27,8 @@ import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.ui.Hyperlink;
 
-public class MyJobsPanel extends ContentPanel {
+public class MyJobsPanel extends ContentPanel 
+{
 	private MainController mainController;
 
 	private Grid<MyJobsModel> myJobsGrid;
@@ -33,18 +36,19 @@ public class MyJobsPanel extends ContentPanel {
 	private ColumnModel myJobsColumnModel;
 
 	private Button addNew;
-	private Button killJob;
 
-	public MyJobsPanel(final MainController mainController) {
+	public MyJobsPanel(final MainController mainController) 
+	{
 		this.mainController = mainController;
 		this.setLayout(new FitLayout());
-		this.setHeading("My Jobs");
+		this.setHeading(MainController.CONSTANTS.myjobs_panel_head());
 
 		ToolBar toolBar = new ToolBar();
 
-		addNew = new Button("New", new SelectionListener<ButtonEvent>() {
+		addNew = new Button(MainController.CONSTANTS.myjobs_panel_new_button(), new SelectionListener<ButtonEvent>() {
 
-			public void componentSelected(ButtonEvent ce) {
+			public void componentSelected(ButtonEvent ce) 
+			{
 				History.newItem("");
 				mainController.displayInputView();
 			}
@@ -52,27 +56,13 @@ public class MyJobsPanel extends ContentPanel {
 
 		toolBar.add(addNew);
 
-		killJob = new Button("Stop", new SelectionListener<ButtonEvent>() {
-
-			public void componentSelected(ButtonEvent ce) {
-				MyJobsModel selectedItem = myJobsGrid.getSelectionModel()
-						.getSelectedItem();
-
-				if (selectedItem != null) {
-					mainController.killJob(selectedItem.getJobId());
-				} else {
-					MessageBox.alert("Stopping job",
-							"No job selected from the list", null);
-				}
-			}
-		});
-
-		toolBar.add(killJob);
-
 		Button test = new Button("Test", new SelectionListener<ButtonEvent>() {
 
-			public void componentSelected(ButtonEvent ce) {
-//				openJmol("");
+			public void componentSelected(ButtonEvent ce) 
+			{
+//				RecaptchaPanel w = new RecaptchaPanel("	6Lf9hcESAAAAAEuvcd6IjqSXW3p51Kg22JWhR3vT ");
+//				((LayoutContainer) mainController.getMainViewPort().getDisplayPanel().getWidget(0)).add(w);
+//				mainController.getMainViewPort().getDisplayPanel().layout();
 			}
 		});
 
@@ -84,14 +74,15 @@ public class MyJobsPanel extends ContentPanel {
 				new ToolButton("x-tool-gear",
 						new SelectionListener<IconButtonEvent>() {
 
-							public void componentSelected(IconButtonEvent ce) {
+							public void componentSelected(IconButtonEvent ce)
+							{
 								mainController.getJobsForCurrentSession();
 							}
 
 						}));
 
-		GridCellRenderer<MyJobsModel> jobRenderer = new GridCellRenderer<MyJobsModel>() {
-
+		GridCellRenderer<MyJobsModel> jobRenderer = new GridCellRenderer<MyJobsModel>() 
+		{
 			@Override
 			public Object render(MyJobsModel model, String property,
 					ColumnData config, int rowIndex, int colIndex,
@@ -104,7 +95,8 @@ public class MyJobsPanel extends ContentPanel {
 			}
 		};
 
-		GridCellRenderer<MyJobsModel> statusRenderer = new GridCellRenderer<MyJobsModel>() {
+		GridCellRenderer<MyJobsModel> statusRenderer = new GridCellRenderer<MyJobsModel>()
+		{
 
 			@Override
 			public Object render(MyJobsModel model, String property,
@@ -134,9 +126,9 @@ public class MyJobsPanel extends ContentPanel {
 		List<ColumnConfig> configs = new ArrayList<ColumnConfig>();
 
 		ColumnConfig column = new ColumnConfig();
-		column.setId("jobId");
-		column.setHeader("Job ID");
-		column.setDataIndex("jobId");
+		column.setId("input");
+		column.setHeader(MainController.CONSTANTS.myjobs_grid_input());
+		column.setDataIndex("input");
 		column.setWidth(100);
 		column.setRowHeader(true);
 		column.setRenderer(jobRenderer);
@@ -144,7 +136,7 @@ public class MyJobsPanel extends ContentPanel {
 
 		column = new ColumnConfig();
 		column.setId("status");
-		column.setHeader("Status");
+		column.setHeader(MainController.CONSTANTS.myjobs_grid_status());
 		column.setDataIndex("status");
 		column.setWidth(80);
 		column.setRowHeader(true);
@@ -156,26 +148,41 @@ public class MyJobsPanel extends ContentPanel {
 
 		myJobsGrid = new Grid<MyJobsModel>(myJobsStore, myJobsColumnModel);
 		myJobsGrid.setStyleAttribute("borderTop", "none");
-		myJobsGrid.setAutoExpandColumn("jobId");
+		myJobsGrid.setAutoExpandColumn("input");
 		myJobsGrid.setBorders(false);
 		myJobsGrid.setStripeRows(true);
 		myJobsGrid.setColumnLines(true);
 		myJobsGrid.setColumnReordering(true);
 		myJobsGrid.setAutoHeight(true);
 		myJobsGrid.setAutoWidth(true);
+		
+		myJobsGrid.addListener(Events.CellClick, new Listener<GridEvent>()
+		{
+			@Override
+			public void handleEvent(GridEvent be) 
+			{
+				History.newItem("id/" + myJobsStore.getAt(be.getRowIndex()).getJobid());
+			}
+		});
 
 		this.add(myJobsGrid);
 	}
 
-	public void setJobs(List<ProcessingInProgressData> jobs) {
+	public void setJobs(List<ProcessingInProgressData> jobs) 
+	{
 		myJobsStore.removeAll();
 
 		List<MyJobsModel> data = new ArrayList<MyJobsModel>();
 
-		for (ProcessingInProgressData statusData : jobs) {
-			MyJobsModel myJobsModel = new MyJobsModel(statusData.getJobId(),
-					statusData.getStatus(), statusData.getInput());
-			data.add(myJobsModel);
+		if(jobs != null)
+		{
+			for (ProcessingInProgressData statusData : jobs)
+			{
+				MyJobsModel myJobsModel = new MyJobsModel(statusData.getJobId(),
+														  statusData.getStatus(),
+														  statusData.getInput());
+				data.add(myJobsModel);
+			}
 		}
 
 		myJobsStore.add(data);

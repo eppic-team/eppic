@@ -4,28 +4,32 @@ import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
-public class KillJobCallback implements AsyncCallback {
+public class KillJobCallback implements AsyncCallback 
+{
 	private MainController mainController;
-	private String selectedId;
 
-	public KillJobCallback(MainController mainController, String selectedId) {
+	public KillJobCallback(MainController mainController) {
 		this.mainController = mainController;
-		this.selectedId = selectedId;
 	}
 
 	@Override
 	public void onFailure(Throwable caught) {
-		mainController.showError("Error during getting data from server");
+		mainController.showError("Error during getting data from server: " + caught.getMessage());
 	}
 
 	@Override
-	public void onSuccess(Object result) {
-		if ((result != null) && (result instanceof String)) {
+	public void onSuccess(Object result) 
+	{
+		if ((result != null) && (result instanceof String)) 
+		{
 			String resultInfo = (String) result;
-			mainController.showError(resultInfo);
+			mainController.showMessage("Job stopping",resultInfo);
 			mainController.getJobsForCurrentSession();
-		} else {
-			mainController.showError("Error during getting data from server");
+			mainController.getCurrentStatusData();
+		} 
+		else 
+		{
+			mainController.showError("Error during stopping the job " + mainController.getSelectedJobId());
 		}
 	}
 

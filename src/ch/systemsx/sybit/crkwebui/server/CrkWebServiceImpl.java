@@ -22,10 +22,11 @@ import model.PdbScore;
 import model.ProcessingData;
 import ch.systemsx.sybit.crkwebui.client.CrkWebService;
 import ch.systemsx.sybit.crkwebui.server.data.EmailData;
+import ch.systemsx.sybit.crkwebui.shared.CrkWebException;
 import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
 import ch.systemsx.sybit.crkwebui.shared.model.InputParameters;
-import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
+import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
@@ -35,9 +36,8 @@ import crk.InterfaceEvolContextList;
  * The server side implementation of the RPC service.
  */
 @SuppressWarnings("serial")
-public class CrkWebServiceImpl extends RemoteServiceServlet implements
-		CrkWebService {
-
+public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebService 
+{
 	// general server settings
 	private Properties properties;
 
@@ -224,6 +224,12 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements
 		float selecton = Float
 				.parseFloat((String) defaultInputParametersProperties
 						.get("selecton"));
+		
+		String defaultMethodsList = defaultInputParametersProperties
+			.getProperty("methods");
+		String[] defaultMethodsValues = defaultMethodsList.split(",");
+		
+		defaultInputParameters.setMethods(defaultMethodsValues);
 
 		defaultInputParameters.setUseTCoffee(useTcoffee);
 		defaultInputParameters.setUsePISA(usePisa);
@@ -251,6 +257,9 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements
 	
 			settings.setReducedAlphabetList(reducedAlphabetConverted);
 		}
+		
+		int nrOfJobsForSession = DBUtils.getNrOfJobsForSessionId(getThreadLocalRequest().getSession().getId());
+		settings.setNrOfJobsForSession(nrOfJobsForSession);
 
 		return settings;
 	}
@@ -260,13 +269,20 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements
 	{
 		String status = DBUtils.getStatusForJob(id);
 
-		if(status.equals("Finished")) 
+		if(status != null)
 		{
-			return getResultData(id);
+			if(status.equals("Finished")) 
+			{
+				return getResultData(id);
+			}
+			else 
+			{
+				return getStatusData(id);
+			}
 		}
-		else 
+		else
 		{
-			return getStatusData(id);
+			return null;
 		}
 	}
 
@@ -331,7 +347,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements
 		if ((id != null) && (id.length() != 0)) 
 		{
 			File resultFileDirectory = new File(
-					properties.getProperty("destination_path") + "/" + id);
+					generalDestinationDirectoryName + "/" + id);
 
 			if (resultFileDirectory.exists()
 					&& resultFileDirectory.isDirectory())
@@ -435,7 +451,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements
 	}
 	
 	@Override
-	public void runJob(RunJobData runJobData) 
+	public void runJob(RunJobData runJobData) throws CrkWebException 
 	{
 		if (runJobData != null) 
 		{
@@ -451,7 +467,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements
 
 			CrkRunner crkRunner = new CrkRunner(emailSender,
 					runJobData.getFileName(), 
-					"resultPath",
+					"http://127.0.0.1:8888/Crkwebui.html#id=" + runJobData.getJobId(),
 					localDestinationDirName, 
 					runJobData.getJobId());
 
@@ -464,50 +480,46 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements
 	}
 
 	@Override
-	public String killJob(String id)
+	public String killJob(String jobId) throws CrkWebException 
 	{
 		String result = null;
 
-		Object runInstancesAttribute = getServletContext().getAttribute(
-				"instances");
+		Thread[] activeInstances = new Thread[runInstances.activeCount()];
 
-		if (runInstancesAttribute != null) {
-			CrkThreadGroup runningInstances = (CrkThreadGroup) runInstancesAttribute;
+		runInstances.enumerate(activeInstances);
 
-			Thread[] activeInstances = new Thread[runningInstances
-					.activeCount()];
+		if (activeInstances != null)
+		{
+			int i = 0;
+			boolean wasFound = false;
 
-			runningInstances.enumerate(activeInstances);
+			while ((i < activeInstances.length) && (!wasFound)) 
+			{
+				if (activeInstances[i].getName().equals(jobId)) 
+				{
+					activeInstances[i].interrupt();
+					wasFound = true;
+					result = "Job " + jobId + " stopped";
 
-			if (activeInstances != null) {
-				int i = 0;
-				boolean wasFound = false;
-
-				while ((i < activeInstances.length) && (!wasFound)) {
-					if (activeInstances[i].getName().equals(id)) {
-						activeInstances[i].interrupt();
-						wasFound = true;
-						result = "Job " + id + " stopped";
-
-						File killFile = new File(
-								generalDestinationDirectoryName + "/" + id
-										+ "/crkkilled");
-						try {
-							killFile.createNewFile();
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
-
-						String errorDuringUpdaingInDB = DBUtils
-								.updateStatusOfJob(id, "Stopped");
+					File killFile = new File(
+							generalDestinationDirectoryName + "/" + jobId
+									+ "/crkkilled");
+					try 
+					{
+						killFile.createNewFile();
+					} catch (IOException e) {
+						e.printStackTrace();
 					}
 
-					i++;
+					DBUtils.updateStatusOfJob(jobId, "Stopped");
 				}
 
-				if (!wasFound) {
-					result = "No job " + id + " or can not be stopped";
-				}
+				i++;
+			}
+
+			if (!wasFound) 
+			{
+				result = "No job " + jobId + " or can not be stopped";
 			}
 		}
 
@@ -517,65 +529,6 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements
 	
 
 	public String test(String test) {
-		// StatusData[] statusDataArray = null;
-		//
-		// Connection connection;
-		//
-		// try
-		// {
-		// connection = DatabaseConnector.getConnection(dataSource);
-		//
-		// if(connection != null)
-		// {
-		// String sessionId = getThreadLocalRequest().getSession().getId();
-		//
-		// String query =
-		// String.format("SELECT jobId, status FROM Jobs WHERE sessionId=\"%s\"",
-		// sessionId);
-		//
-		// Statement statement = connection.createStatement();
-		//
-		// ResultSet results = null;
-		//
-		// if(statement != null)
-		// {
-		// results = statement.executeQuery(query);
-		// }
-		//
-		// if(results != null)
-		// {
-		// int nrOfElements = results.getFetchSize();
-		//
-		// statusDataArray = new StatusData[nrOfElements];
-		//
-		// int i = 0;
-		//
-		// while(results.next())
-		// {
-		// StatusData statusDataItem = new StatusData();
-		// statusDataItem.setJobId(results.getString(0));
-		// statusDataItem.setStatus(results.getString(1));
-		//
-		// statusDataArray[i] = statusDataItem;
-		// i++;
-		// }
-		// }
-		//
-		// }
-		// }
-		// catch (NamingException e)
-		// {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
-		// catch (SQLException e)
-		// {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
-		//
-		// return "";
-
 		return getThreadLocalRequest().getSession().getId();
 	}
 
@@ -600,16 +553,16 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements
 	}
 
 	@Override
-	public List<ProcessingInProgressData> getJobsForCurrentSession() 
+	public List<ProcessingInProgressData> getJobsForCurrentSession() throws CrkWebException 
 	{
 		String sessionId = getThreadLocalRequest().getSession().getId();
 		return DBUtils.getJobsForCurrentSession(sessionId);
 	}
 
 	@Override
-	public String untieJobsFromSession() 
+	public void untieJobsFromSession() throws CrkWebException 
 	{
 		String sessionId = getThreadLocalRequest().getSession().getId();
-		return DBUtils.untieJobsFromSession(sessionId);
+		DBUtils.untieJobsFromSession(sessionId);
 	}
 }

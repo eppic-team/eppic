@@ -5,7 +5,7 @@ import java.util.List;
 
 import model.InterfaceResidueItem;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
-import ch.systemsx.sybit.crkwebui.client.gui.InterfacesWindow;
+import ch.systemsx.sybit.crkwebui.client.gui.InterfacesResiduesWindow;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
@@ -31,22 +31,21 @@ public class GetInterfaceResiduesCallback implements AsyncCallback
 		{
 			HashMap<String, List<InterfaceResidueItem>> structures = (HashMap<String, List<InterfaceResidueItem>>) result;
 
-			InterfacesWindow interfacesWindow = new InterfacesWindow(
-					mainController);
+			InterfacesResiduesWindow interfacesResiduesWindow = new InterfacesResiduesWindow(mainController);
 			
 			if(structures.containsKey(1))
 			{
-				interfacesWindow.getInterfacesPanel().getFirstStructurePanel()
+				interfacesResiduesWindow.getInterfacesResiduesPanel().getFirstStructurePanel()
 						.fillResiduesGrid(structures.get(1));
 			}
 			
 			if(structures.containsKey(2))
 			{
-				interfacesWindow.getInterfacesPanel().getSecondStructurePanel()
+				interfacesResiduesWindow.getInterfacesResiduesPanel().getSecondStructurePanel()
 						.fillResiduesGrid(structures.get(2));
 			}
 			
-			interfacesWindow.setVisible(true);
+			interfacesResiduesWindow.setVisible(true);
 		}
 		else 
 		{

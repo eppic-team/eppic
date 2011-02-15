@@ -2,7 +2,12 @@ package ch.systemsx.sybit.crkwebui.shared.model;
 
 import java.io.Serializable;
 
-public class RunJobData implements Serializable {
+public class RunJobData implements Serializable 
+{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private InputParameters inputParameters;
 	private String emailAddress;
 	private String fileName;

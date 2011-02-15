@@ -21,7 +21,8 @@ import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
 import com.extjs.gxt.ui.client.widget.grid.HeaderGroupConfig;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 
-public class StructurePanel extends FormPanel {
+public class ResiduesPanel extends FormPanel
+{
 	private List<ColumnConfig> residuesConfigs;
 	private ListStore<BeanModel> residuesStore;
 	private ColumnModel residuesColumnModel;
@@ -29,7 +30,7 @@ public class StructurePanel extends FormPanel {
 
 	private MainController mainController;
 
-	public StructurePanel(String header, MainController mainController) {
+	public ResiduesPanel(String header, MainController mainController) {
 		this.mainController = mainController;
 		this.setBodyBorder(false);
 		this.setBorders(false);

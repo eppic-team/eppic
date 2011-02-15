@@ -4,121 +4,100 @@ import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
 
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
+import com.extjs.gxt.ui.client.event.ButtonEvent;
+import com.extjs.gxt.ui.client.event.SelectionListener;
+import com.extjs.gxt.ui.client.widget.button.Button;
 import com.extjs.gxt.ui.client.widget.form.FormPanel;
 import com.extjs.gxt.ui.client.widget.form.TextArea;
 import com.extjs.gxt.ui.client.widget.form.TextField;
 import com.extjs.gxt.ui.client.widget.layout.FormData;
+import com.extjs.gxt.ui.client.widget.layout.VBoxLayout;
+import com.extjs.gxt.ui.client.widget.layout.VBoxLayout.VBoxLayoutAlign;
 
-public class StatusPanel extends FormPanel {
-	private MainController mainController;
-
+public class StatusPanel extends DisplayPanel 
+{
+	private FormPanel formPanel;
+	
 	private TextField<String> jobId;
 	private TextField<String> status;
 	private TextArea log;
-
-	public StatusPanel(MainController mainController) {
-		this.mainController = mainController;
-
+	
+	private Button killJob;
+	
+	public StatusPanel(MainController mainController) 
+	{
+		super(mainController);
 		init();
 	}
 
-	public void init() {
-		this.getHeader().setVisible(false);
+	public void init() 
+	{
+		VBoxLayout vBoxLayout = new VBoxLayout();
+		vBoxLayout.setVBoxLayoutAlign(VBoxLayoutAlign.CENTER);
+		this.setLayout(vBoxLayout);
 		this.setBorders(false);
 		this.setBodyBorder(false);
-		this.setButtonAlign(HorizontalAlignment.CENTER);
-		this.setWidth(700);
+		this.getHeader().setVisible(false);
+		
+		formPanel = new FormPanel();
+		formPanel.getHeader().setVisible(false);
+		formPanel.setBorders(true);
+		formPanel.setBodyBorder(false);
+		formPanel.setButtonAlign(HorizontalAlignment.CENTER);
+		formPanel.setWidth(700);
 
 		jobId = new TextField<String>();
-		jobId.setFieldLabel("Job Id");
+		jobId.setFieldLabel(MainController.CONSTANTS.status_panel_jobId());
 		jobId.setReadOnly(true);
-		this.add(jobId, new FormData("100%"));
+		formPanel.add(jobId, new FormData("100%"));
 
 		status = new TextField<String>();
-		status.setFieldLabel("Status");
+		status.setFieldLabel(MainController.CONSTANTS.status_panel_status());
 		status.setReadOnly(true);
-		this.add(status, new FormData("100%"));
+		formPanel.add(status, new FormData("100%"));
 
 		log = new TextArea();
-		log.setFieldLabel("Log");
+		log.setFieldLabel(MainController.CONSTANTS.status_panel_log());
 		log.setHeight(400);
 
-		this.add(log, new FormData("100%"));
+		formPanel.add(log, new FormData("100%"));
+		
+		killJob = new Button(MainController.CONSTANTS.status_panel_stop(), new SelectionListener<ButtonEvent>() {
+
+			public void componentSelected(ButtonEvent ce) 
+			{
+				mainController.killJob(jobId.getValue());
+			}
+		});
+		
+		formPanel.setButtonAlign(HorizontalAlignment.RIGHT);
+		killJob.setVisible(false);
+		formPanel.addButton(killJob);
+		
+		this.add(formPanel);
+
 	}
 
-	public void fillData(ProcessingInProgressData statusData) {
+	public void fillData(ProcessingInProgressData statusData) 
+	{
 		log.setValue(statusData.getLog());
 		status.setValue(String.valueOf(statusData.getStatus()));
 		jobId.setValue(statusData.getJobId());
+		
+		if((status.getValue() != null) && (status.getValue().equals("Running")))
+		{
+			killJob.setVisible(true);
+		}
+		else
+		{
+			killJob.setVisible(false);
+		}
 	}
 
-	public void cleanData() {
+	public void cleanData() 
+	{
 		log.setValue("");
 		status.setValue("");
 		jobId.setValue("");
 	}
-
-	// private Label jobId;
-	// private Label status;
-	// private TextArea log;
-	// private Button killJobButton;
-	//
-	// public StatusPanel(final MainController mainController)
-	// {
-	// this.mainController = mainController;
-	//
-	// FlexTable layout = new FlexTable();
-	// layout.setCellSpacing(6);
-	// layout.setWidth("1000px");
-	// FlexCellFormatter cellFormatter = layout.getFlexCellFormatter();
-	//
-	// // Add a title to the form
-	// layout.setHTML(0, 0, "CRK - status");
-	// cellFormatter.setColSpan(0, 0, 2);
-	// cellFormatter.setHorizontalAlignment(
-	// 0, 0, HasHorizontalAlignment.ALIGN_CENTER);
-	//
-	// layout.setHTML(1, 0, "Job Id");
-	// jobId = new Label();
-	// layout.setWidget(1, 1, jobId);
-	//
-	// layout.setHTML(2, 0, "Status");
-	// status = new Label();
-	// layout.setWidget(2, 1, status);
-	//
-	// layout.setHTML(3, 0, "Log");
-	// log = new TextArea();
-	// log.setWidth("450");
-	// log.setHeight("300");
-	// layout.setWidget(3, 1, log);
-	//
-	// killJobButton = new Button("Kill", new ClickHandler()
-	// {
-	// @Override
-	// public void onClick(ClickEvent event)
-	// {
-	// mainController.killJob(jobId.getText());
-	// }
-	// });
-	// layout.setWidget(4, 0, killJobButton);
-	// cellFormatter.setColSpan(4, 0, 2);
-	// cellFormatter.setHorizontalAlignment(
-	// 4, 0, HasHorizontalAlignment.ALIGN_CENTER);
-	//
-	// this.add(layout);
-	// }
-	//
-	// public void fillData(StatusData statusData)
-	// {
-	// log.setText(statusData.getLog());
-	// status.setText(String.valueOf(statusData.getStatus()));
-	// jobId.setText(statusData.getJobId());
-	// }
-	//
-	// public void cleanPanelData()
-	// {
-	// log.setText("");
-	// status.setText("");
-	// jobId.setText("");
-	// }
 }

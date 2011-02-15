@@ -9,20 +9,21 @@ import com.extjs.gxt.ui.client.widget.layout.FormData;
 import com.extjs.gxt.ui.client.widget.layout.RowData;
 import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 
-public class InterfacesPanel extends FormPanel {
-	private StructurePanel firstStructure;
-	private StructurePanel secondStructure;
+public class InterfacesResiduesPanel extends FormPanel 
+{
+	private ResiduesPanel firstStructure;
+	private ResiduesPanel secondStructure;
 
-	public InterfacesPanel(MainController mainController) {
-		FormData formData = new FormData("100%");
+	public InterfacesResiduesPanel(MainController mainController)
+	{
 		// infoPanel.setFrame(true);
 		this.getHeader().setVisible(false);
 		this.setBodyBorder(false);
 		this.setBorders(false);
 		this.setLayout(new RowLayout(Orientation.HORIZONTAL));
 
-		firstStructure = new StructurePanel("Structure 1", mainController);
-		secondStructure = new StructurePanel("Structure 2", mainController);
+		firstStructure = new ResiduesPanel(MainController.CONSTANTS.interfaces_residues_panel_first_structure(), mainController);
+		secondStructure = new ResiduesPanel(MainController.CONSTANTS.interfaces_residues_panel_second_structure(), mainController);
 
 		this.add(firstStructure, new RowData(0.45, 1, new Margins(0)));
 
@@ -35,11 +36,11 @@ public class InterfacesPanel extends FormPanel {
 		this.add(secondStructure, new RowData(0.45, 1, new Margins(0)));
 	}
 
-	public StructurePanel getFirstStructurePanel() {
+	public ResiduesPanel getFirstStructurePanel() {
 		return firstStructure;
 	}
 
-	public StructurePanel getSecondStructurePanel() {
+	public ResiduesPanel getSecondStructurePanel() {
 		return secondStructure;
 	}
 }

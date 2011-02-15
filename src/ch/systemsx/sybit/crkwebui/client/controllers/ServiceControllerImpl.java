@@ -2,9 +2,10 @@ package ch.systemsx.sybit.crkwebui.client.controllers;
 
 import ch.systemsx.sybit.crkwebui.client.CrkWebService;
 import ch.systemsx.sybit.crkwebui.client.CrkWebServiceAsync;
-import ch.systemsx.sybit.crkwebui.client.callbacks.GetResultsOfProcessingCallback;
+import ch.systemsx.sybit.crkwebui.client.callbacks.GetCurrentStatusDataCallback;
 import ch.systemsx.sybit.crkwebui.client.callbacks.GetInterfaceResiduesCallback;
 import ch.systemsx.sybit.crkwebui.client.callbacks.GetJobsForCurrentSession;
+import ch.systemsx.sybit.crkwebui.client.callbacks.GetResultsOfProcessingCallback;
 import ch.systemsx.sybit.crkwebui.client.callbacks.GetSettingsCallback;
 import ch.systemsx.sybit.crkwebui.client.callbacks.KillJobCallback;
 import ch.systemsx.sybit.crkwebui.client.callbacks.RunJobCallback;
@@ -63,13 +64,19 @@ public class ServiceControllerImpl implements ServiceController {
 	}
 
 	public void killJob(String selectedId) {
-		crkWebService.killJob(selectedId, new KillJobCallback(mainController,
-				selectedId));
+		crkWebService.killJob(selectedId, new KillJobCallback(mainController));
 	}
 
 	public void untieJobsFromSession() {
 		crkWebService.untieJobsFromSession(new UntieJobsFromSessionCallback(
 				mainController));
+	}
+
+	@Override
+	public void getCurrentStatusData(String jobId) 
+	{
+		crkWebService.getResultsOfProcessing(jobId,
+				new GetCurrentStatusDataCallback(mainController, jobId));
 	}
 
 }

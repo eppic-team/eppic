@@ -35,12 +35,9 @@ public class ScoresPanel extends FormPanel {
 	private ColumnModel scoresColumnModel;
 	private Grid<BeanModel> scoresGrid;
 
-	private PDBScoreItem resultsData;
-
-	public ScoresPanel(PDBScoreItem resultsData, MainController mainController) {
+	public ScoresPanel(PDBScoreItem resultsData, MainController mainController) 
+	{
 		this.mainController = mainController;
-		FormData formData = new FormData("100%");
-		// infoPanel.setFrame(true);
 		this.getHeader().setVisible(false);
 		this.setBodyBorder(false);
 		this.setBorders(false);

@@ -6,6 +6,8 @@ public class CrkThreadGroup extends ThreadGroup {
 		super(name);
 	}
 
-	public void uncaughtException(Thread t, Throwable e) {
+	public void uncaughtException(Thread t, Throwable e) 
+	{
+		
 	}
 }

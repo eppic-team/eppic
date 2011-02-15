@@ -8,16 +8,18 @@ import com.extjs.gxt.ui.client.widget.Viewport;
 import com.extjs.gxt.ui.client.widget.layout.BorderLayout;
 import com.extjs.gxt.ui.client.widget.layout.BorderLayoutData;
 
-public class MainViewPort extends Viewport {
+public class MainViewPort extends Viewport 
+{
 	private MyJobsPanel myJobsPanel;
 
-	private DisplayPanel displayPanel;
+	private CenterPanel centerPanel;
 
 	private TopPanel topPanel;
 
 	private MainController mainController;
 
-	public MainViewPort(MainController mainController) {
+	public MainViewPort(MainController mainController) 
+	{
 		this.mainController = mainController;
 
 		BorderLayout layout = new BorderLayout();
@@ -42,23 +44,23 @@ public class MainViewPort extends Viewport {
 		centerData.setSplit(true);
 		centerData.setMargins(new Margins(0));
 
-		displayPanel = new DisplayPanel(mainController);
-		this.add(displayPanel, centerData);
+		centerPanel = new CenterPanel(mainController);
+		this.add(centerPanel, centerData);
 
 		BorderLayoutData northData = new BorderLayoutData(LayoutRegion.NORTH,
 				10);
 		northData.setMargins(new Margins(0, 0, 5, 0));
 
-		topPanel = new TopPanel(mainController);
-		topPanel.getHeader().setVisible(false);
-		this.add(topPanel, northData);
+//		topPanel = new TopPanel(mainController);
+//		topPanel.getHeader().setVisible(false);
+//		this.add(topPanel, northData);
 	}
 
 	public MyJobsPanel getMyJobsPanel() {
 		return myJobsPanel;
 	}
 
-	public DisplayPanel getDisplayPanel() {
-		return displayPanel;
+	public CenterPanel getCenterPanel() {
+		return centerPanel;
 	}
 }

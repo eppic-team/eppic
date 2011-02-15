@@ -19,6 +19,8 @@ public class ApplicationSettings implements Serializable {
 	private InputParameters defaultParametersValues;
 
 	private List<Integer> reducedAlphabetList;
+	
+	private int nrOfJobsForSession;
 
 	public void setScoresTypes(String[] scoresTypes) {
 		this.scoresTypes = scoresTypes;
@@ -51,5 +53,13 @@ public class ApplicationSettings implements Serializable {
 
 	public List<Integer> getReducedAlphabetList() {
 		return reducedAlphabetList;
+	}
+
+	public void setNrOfJobsForSession(int nrOfJobsForSession) {
+		this.nrOfJobsForSession = nrOfJobsForSession;
+	}
+
+	public int getNrOfJobsForSession() {
+		return nrOfJobsForSession;
 	}
 }

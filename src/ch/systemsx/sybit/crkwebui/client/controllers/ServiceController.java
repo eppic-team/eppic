@@ -19,4 +19,6 @@ public interface ServiceController {
 
 	public abstract void getInterfaceResidues(String jobId, int interfaceId);
 
+	public abstract void getCurrentStatusData(String jobId);
+
 }

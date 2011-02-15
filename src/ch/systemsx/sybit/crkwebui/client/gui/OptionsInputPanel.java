@@ -1,5 +1,6 @@
 package ch.systemsx.sybit.crkwebui.client.gui;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
@@ -17,7 +18,8 @@ import com.extjs.gxt.ui.client.widget.layout.FormData;
 import com.extjs.gxt.ui.client.widget.layout.FormLayout;
 import com.google.gwt.i18n.client.NumberFormat;
 
-public class OptionsInputPanel extends FieldSet {
+public class OptionsInputPanel extends FieldSet 
+{
 	private FormData formData;
 	private ListStore<ReducedAlphabetComboModel> reducedAlphabetValues;
 	private ComboBox<ReducedAlphabetComboModel> reducedAlphabetCombo;
@@ -34,9 +36,12 @@ public class OptionsInputPanel extends FieldSet {
 	private Radio useNAccessYes;
 	private Radio useNAccessNo;
 	private RadioGroup useNAccess;
+	private FieldSet kaksFieldSet;
+	private FieldSet entropyFieldSet;
 
 	public OptionsInputPanel(InputParameters defaultInputParameters,
-			List<Integer> reducedAlphabetDefaultList) {
+			List<Integer> reducedAlphabetDefaultList) 
+	{
 		this.setHeading(MainController.CONSTANTS.input_advanced());
 		this.setCollapsible(true);
 		this.setBorders(false);
@@ -50,10 +55,11 @@ public class OptionsInputPanel extends FieldSet {
 		FormLayout entropySetLayout = new FormLayout();
 		entropySetLayout.setLabelWidth(200);
 
-		FieldSet entropyFieldSet = new FieldSet();
+		entropyFieldSet = new FieldSet();
 		entropyFieldSet.setHeading(MainController.CONSTANTS
 				.parameters_entropy());
 		entropyFieldSet.setCheckboxToggle(true);
+		entropyFieldSet.setExpanded(true);
 		entropyFieldSet.setLayout(entropySetLayout);
 
 		reducedAlphabetValues = new ListStore<ReducedAlphabetComboModel>();
@@ -80,9 +86,10 @@ public class OptionsInputPanel extends FieldSet {
 		FormLayout kaksFieldSetLayout = new FormLayout();
 		kaksFieldSetLayout.setLabelWidth(200);
 
-		FieldSet kaksFieldSet = new FieldSet();
+		kaksFieldSet = new FieldSet();
 		kaksFieldSet.setHeading(MainController.CONSTANTS.parameters_kaks());
 		kaksFieldSet.setCheckboxToggle(true);
+		kaksFieldSet.setExpanded(false);
 		kaksFieldSet.setLayout(kaksFieldSetLayout);
 
 		selecton = new NumberField();
@@ -93,8 +100,7 @@ public class OptionsInputPanel extends FieldSet {
 
 		this.add(kaksFieldSet);
 
-		// this.add(methodsFieldSet);
-
+		
 		FormLayout allignmentsParametersFieldSetLayout = new FormLayout();
 		allignmentsParametersFieldSetLayout.setLabelWidth(200);
 
@@ -207,6 +213,23 @@ public class OptionsInputPanel extends FieldSet {
 		ReducedAlphabetComboModel defaultValueModel = new ReducedAlphabetComboModel(
 				defaultParameters.getReducedAlphabet());
 		reducedAlphabetCombo.setValue(defaultValueModel);
+		
+		String[] defaultMethods = defaultParameters.getMethods();
+		
+		if(defaultMethods != null)
+		{
+			for(String method : defaultMethods)
+			{
+				if(method.equals("Kaks"))
+				{
+					kaksFieldSet.setExpanded(true);
+				}
+				else if(method.equals("Entropy"))
+				{
+					entropyFieldSet.setExpanded(true);
+				}
+			}
+		}
 	}
 
 	public InputParameters getCurrentInputParameters() {
@@ -237,6 +260,24 @@ public class OptionsInputPanel extends FieldSet {
 		} else {
 			currentInputParameters.setUseTCoffee(false);
 		}
+		
+		List<String> selectedMethods = new ArrayList<String>();
+		if(kaksFieldSet.isExpanded())
+		{
+			selectedMethods.add("Kaks");
+		}
+		else if(entropyFieldSet.isExpanded())
+		{
+			selectedMethods.add("Entropy");
+		}
+		
+		String[] selectedMethodsArray = new String[selectedMethods.size()];
+		for(int i=0; i<selectedMethods.size(); i++)
+		{
+			selectedMethodsArray[i] = selectedMethods.get(i);
+		}
+			
+		currentInputParameters.setMethods(selectedMethodsArray);
 
 		return currentInputParameters;
 	}

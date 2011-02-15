@@ -6,7 +6,8 @@ import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
-public class GetSettingsCallback implements AsyncCallback {
+public class GetSettingsCallback implements AsyncCallback 
+{
 	private MainController mainController;
 
 	public GetSettingsCallback(MainController mainController) {
@@ -26,6 +27,7 @@ public class GetSettingsCallback implements AsyncCallback {
 		{
 			ApplicationSettings settings = (ApplicationSettings) result;
 			mainController.setSettings(settings);
+			mainController.setNrOfSubmissions(settings.getNrOfJobsForSession());
 			mainController.runMyJobsAutoRefresh();
 			History.fireCurrentHistoryState();
 		}

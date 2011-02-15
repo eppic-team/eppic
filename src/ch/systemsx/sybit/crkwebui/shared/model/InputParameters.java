@@ -1,10 +1,15 @@
 package ch.systemsx.sybit.crkwebui.shared.model;
 
 import java.io.Serializable;
-import java.util.List;
 
-public class InputParameters implements Serializable {
-	private List<String> methods;
+public class InputParameters implements Serializable 
+{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	private String[] methods;
 
 	private boolean useTCoffee;
 	private boolean usePISA;
@@ -21,11 +26,11 @@ public class InputParameters implements Serializable {
 
 	}
 
-	public List<String> getMethods() {
+	public String[] getMethods() {
 		return methods;
 	}
 
-	public void setMethods(List<String> methods) {
+	public void setMethods(String[] methods) {
 		this.methods = methods;
 	}
 

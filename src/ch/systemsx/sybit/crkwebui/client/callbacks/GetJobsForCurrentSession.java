@@ -32,7 +32,7 @@ public class GetJobsForCurrentSession implements AsyncCallback
 		}
 		else
 		{
-			mainController.showError("Error during getting current jobs from server");
+			mainController.showError("Error during getting current jobs for current session");
 		}
 	}
 }

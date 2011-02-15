@@ -5,27 +5,28 @@ import java.util.List;
 import model.PDBScoreItem;
 import ch.systemsx.sybit.crkwebui.client.gui.InputDataPanel;
 import ch.systemsx.sybit.crkwebui.client.gui.MainViewPort;
-import ch.systemsx.sybit.crkwebui.client.gui.OverviewPanel;
+import ch.systemsx.sybit.crkwebui.client.gui.ResultsPanel;
 import ch.systemsx.sybit.crkwebui.client.gui.StatusPanel;
 import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
-import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
+import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
 
-import com.extjs.gxt.ui.client.widget.Info;
 import com.extjs.gxt.ui.client.widget.MessageBox;
 import com.extjs.gxt.ui.client.widget.Viewport;
-import com.extjs.gxt.ui.client.widget.form.FormPanel;
-import com.extjs.gxt.ui.client.widget.layout.FitLayout;
-import com.extjs.gxt.ui.client.widget.layout.VBoxLayout;
-import com.extjs.gxt.ui.client.widget.layout.VBoxLayout.VBoxLayoutAlign;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.http.client.Request;
+import com.google.gwt.http.client.RequestBuilder;
+import com.google.gwt.http.client.RequestCallback;
+import com.google.gwt.http.client.RequestException;
+import com.google.gwt.http.client.Response;
+import com.google.gwt.http.client.URL;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.RootPanel;
 
-public class MainController {
-	public static final AppProperties CONSTANTS = (AppProperties) GWT
-			.create(AppProperties.class);
+public class MainController 
+{
+	public static final AppProperties CONSTANTS = (AppProperties) GWT.create(AppProperties.class);
 
 	private MainViewPort mainViewPort;
 
@@ -38,6 +39,12 @@ public class MainController {
 	private String selectedJobId;
 
 	private Timer autoRefreshMyJobs;
+	
+	private boolean doStatusPanelRefreshing = false;
+	
+	private int nrOfSubmissions = 0;
+	
+	private String selectedViewer = "Jmol";
 
 	public MainController(Viewport viewport) 
 	{
@@ -58,9 +65,10 @@ public class MainController {
 
 	public void displayView(String token)
 	{
-		if ((token != null) && (token.length() > 3) && (token.startsWith("id"))) {
-			String selectedId = token.substring(3);
-			displayResults(selectedId);
+		if ((token != null) && (token.length() > 3) && (token.startsWith("id"))) 
+		{
+			selectedJobId = token.substring(3);
+			displayResults();
 		}
 		// else if((token != null) &&
 		// (token.length() > 10) &&
@@ -70,86 +78,63 @@ public class MainController {
 		// String selectedId = token.substring(token.indexOf("/") + 1);
 		// displayResults(selectedId);
 		// }
-		else {
+		else
+		{
+			selectedJobId = "";
 			displayInputView();
 		}
 	}
 
 	public void displayInputView()
 	{
-		mainViewPort.getDisplayPanel().removeAll();
-
-		VBoxLayout vBoxLayout = new VBoxLayout();
-		vBoxLayout.setVBoxLayoutAlign(VBoxLayoutAlign.CENTER);
-		FormPanel inputDataPanelWrapper = new FormPanel();
-		inputDataPanelWrapper.setLayout(vBoxLayout);
-		inputDataPanelWrapper.setBorders(false);
-		inputDataPanelWrapper.setBodyBorder(false);
-		inputDataPanelWrapper.getHeader().setVisible(false);
-
-		// mainViewPort.getDisplayPanel().setLayout(vBoxLayout);
+		doStatusPanelRefreshing = false;
 
 		InputDataPanel inputDataPanel = new InputDataPanel(this);
-
-		inputDataPanelWrapper.add(inputDataPanel);
-		mainViewPort.getDisplayPanel().add(inputDataPanelWrapper);
-		mainViewPort.getDisplayPanel().layout();
-		// mainPanel.getDisplayPanel().setCellHorizontalAlignment(inputDataPanel,
-		// HasHorizontalAlignment.ALIGN_CENTER);
+		mainViewPort.getCenterPanel().setDisplayPanel(inputDataPanel);
 	}
 
-	public void displayResults(String selectedId)
+	public void displayResults()
 	{
-		serviceController.getResultsOfProcessing(selectedId);
+		serviceController.getResultsOfProcessing(selectedJobId);
 	}
 
 	public void displayResultView(PDBScoreItem resultData) 
 	{
-		mainViewPort.getDisplayPanel().removeAll();
-
-		mainViewPort.getDisplayPanel().setLayout(new FitLayout());
-
-		OverviewPanel overViewPanel = new OverviewPanel(this, resultData);
-		overViewPanel.setResults(resultData);
-		mainViewPort.getDisplayPanel().add(overViewPanel);
-		mainViewPort.getDisplayPanel().layout();
+		doStatusPanelRefreshing = false;
+		
+		ResultsPanel resultsPanel = new ResultsPanel(this, resultData);
+		resultsPanel.setResults(resultData);
+		mainViewPort.getCenterPanel().setDisplayPanel(resultsPanel);
 	}
 
 	public void displayStatusView(ProcessingInProgressData statusData) 
 	{
-		mainViewPort.getDisplayPanel().removeAll();
-
-		VBoxLayout vBoxLayout = new VBoxLayout();
-		vBoxLayout.setVBoxLayoutAlign(VBoxLayoutAlign.CENTER);
-		FormPanel statusPanelWrapper = new FormPanel();
-		statusPanelWrapper.setLayout(vBoxLayout);
-		statusPanelWrapper.setBorders(false);
-		statusPanelWrapper.setBodyBorder(false);
-		statusPanelWrapper.getHeader().setVisible(false);
-
 		StatusPanel statusPanel = new StatusPanel(this);
+		mainViewPort.getCenterPanel().setDisplayPanel(statusPanel);
+		
 		statusPanel.fillData(statusData);
-
-		statusPanelWrapper.add(statusPanel);
-
-		mainViewPort.getDisplayPanel().add(statusPanelWrapper);
-		mainViewPort.getDisplayPanel().layout();
+		
+		if((statusData.getStatus() != null) && (statusData.getStatus().equals("Running")))
+		{
+			doStatusPanelRefreshing = true;
+		}
+		else
+		{
+			doStatusPanelRefreshing = false;
+		}
 	}
-
-	public void showError(String errorMessage) {
-		Window.alert(errorMessage);
-	}
-
-	public void killJob(String selectedId) {
-		serviceController.killJob(selectedId);
+	
+	public void getCurrentStatusData()
+	{
+		serviceController.getCurrentStatusData(selectedJobId);
 	}
 
 	public void getJobsForCurrentSession() {
 		serviceController.getJobsForCurrentSession();
 	}
 
-	public void getInterfaceResidues(String jobId, int interfaceId) {
-		serviceController.getInterfaceResidues(jobId, interfaceId);
+	public void getInterfaceResidues(int interfaceId) {
+		serviceController.getInterfaceResidues(selectedJobId, interfaceId);
 	}
 
 	public void setJobs(List<ProcessingInProgressData> statusData) {
@@ -183,44 +168,134 @@ public class MainController {
 	public void runJob(RunJobData runJobData) {
 		serviceController.runJob(runJobData);
 	}
+	
+	public void killJob(String selectedId) {
+		serviceController.killJob(selectedId);
+	}
 
 	public void runMyJobsAutoRefresh() 
 	{
 		getJobsForCurrentSession();
-
+		
 		autoRefreshMyJobs = new Timer() 
 		{
 			public void run() 
 			{
 				getJobsForCurrentSession();
+				
+				if((doStatusPanelRefreshing) && 
+					(selectedJobId != null) && 
+					(!selectedJobId.equals("")))
+				{
+					getCurrentStatusData();
+				}
 			}
 		};
 
 		autoRefreshMyJobs.scheduleRepeating(10000);
 	}
 
-	public void showJmolViewer(String interfaceNr) 
-	{
-		openJmol(interfaceNr);
-	}
-	
-	public native void openJmol(String intefaceNr) /*-{
-		var jmolWindow = window.open("", "Jmol");
-		$wnd.jmolInitialize("resources/jmol");
-		$wnd.jmolSetDocument(jmolWindow.document);
-		$wnd.jmolApplet(900,'load http://localhost/crk/' . selectedJobId . '/' . pdb1aor.pdb');
-	}-*/;
-	
-	public void showMessage(String title, String message)
-	{
-		MessageBox.info(title, message, null);
-	}
-	
 	public String getSelectedJobId() {
 		return selectedJobId;
 	}
 
 	public void setSelectedJobId(String selectedJobId) {
 		this.selectedJobId = selectedJobId;
+	}
+
+	public void refreshStatusView(ProcessingInProgressData statusData) 
+	{
+		if(mainViewPort.getCenterPanel().getDisplayPanel() instanceof StatusPanel)
+		{
+			StatusPanel statusPanel = (StatusPanel)mainViewPort.getCenterPanel().getDisplayPanel();
+			statusPanel.fillData(statusData);
+			mainViewPort.getCenterPanel().layout();
+		}
+	}
+	
+	public void setNrOfSubmissions(int nrOfSubmissions)
+	{
+		this.nrOfSubmissions = nrOfSubmissions;
+	}
+	
+	public int getNrOfSubmissions()
+	{
+		return nrOfSubmissions;
+	}
+
+	public void setSelectedViewer(String selectedViewer)
+	{
+		this.selectedViewer = selectedViewer;
+	}
+	
+	public void runViewer(String interfaceId) 
+	{
+		if(selectedViewer.equals("Jmol"))
+		{
+			showJmolViewer(interfaceId);
+		}
+		else if(selectedViewer.equals("Local"))
+		{
+			downloadFileFromServer("interface", interfaceId);
+		}
+		else
+		{
+			showError("No viewer selected");
+		}
+	}
+	
+	public void showJmolViewer(String interfaceNr) 
+	{
+		String url = GWT.getModuleBaseURL() + "/crkresults/";
+		openJmol(url, interfaceNr, selectedJobId);
+	}
+	
+	public native void openJmol(String url, String interfaceNr, String selectedJob) /*-{
+		var jmolWindow = window.open(selectedJob + "-" + interfaceNr, "Jmol");
+		$wnd.jmolInitialize("resources/jmol");
+		$wnd.jmolSetDocument(jmolWindow.document);
+		$wnd.jmolApplet(900,'load ' + url + selectedJob + "/null." + interfaceNr + '.rimcore.pdb');
+	}-*/;
+	
+	public void downloadFileFromServer(String type, String id)
+	{
+		String fileDownloadServletUrl = GWT.getModuleBaseURL() + "/crkresults";
+		RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, URL.encode(fileDownloadServletUrl));
+
+		try 
+		{
+			Request request = builder.sendRequest(null, new RequestCallback() 
+			{
+				public void onError(Request request, Throwable exception) 
+		    	{
+					showError("Error during downloading file from server: " + exception.getMessage());
+		    	}
+
+		    	public void onResponseReceived(Request request, Response response) 
+		    	{
+		    		if (200 == response.getStatusCode()) 
+		    		{
+
+		    		}
+		    		else
+		    		{
+		    			showError("Could not download file from server: " + response.getStatusText());
+		    		}
+		    	}
+			});
+		} 
+		catch (RequestException e) 
+		{
+			showError("Error during downloading file from server: " + e.getMessage());
+		}
+	}
+	
+	public void showError(String errorMessage) {
+		Window.alert(errorMessage);
+	}
+	
+	public void showMessage(String title, String message)
+	{
+		MessageBox.info(title, message, null);
 	}
 }

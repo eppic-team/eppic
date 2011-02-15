@@ -1,7 +1,7 @@
 package ch.systemsx.sybit.crkwebui.client.gui.renderers;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
-import ch.systemsx.sybit.crkwebui.client.gui.OverviewPanel;
+import ch.systemsx.sybit.crkwebui.client.gui.ResultsPanel;
 
 import com.extjs.gxt.ui.client.data.BeanModel;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
@@ -16,7 +16,8 @@ import com.extjs.gxt.ui.client.widget.grid.ColumnData;
 import com.extjs.gxt.ui.client.widget.grid.Grid;
 import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
 
-public class DetailsButtonCellRenderer implements GridCellRenderer<BeanModel> {
+public class DetailsButtonCellRenderer implements GridCellRenderer<BeanModel> 
+{
 	private MainController mainController;
 
 	private boolean init;
@@ -27,7 +28,8 @@ public class DetailsButtonCellRenderer implements GridCellRenderer<BeanModel> {
 
 	public Object render(final BeanModel model, String property,
 			ColumnData config, final int rowIndex, final int colIndex,
-			ListStore<BeanModel> store, Grid<BeanModel> grid) {
+			ListStore<BeanModel> store, Grid<BeanModel> grid) 
+	{
 		if (!init) {
 			init = true;
 			grid.addListener(Events.ColumnResize,
@@ -49,25 +51,24 @@ public class DetailsButtonCellRenderer implements GridCellRenderer<BeanModel> {
 					});
 		}
 
-		Button detailsButton = new Button("Details",
+		Button detailsButton = new Button(MainController.CONSTANTS.results_grid_details_button(),
 				new SelectionListener<ButtonEvent>() {
 
 					@Override
-					public void componentSelected(ButtonEvent ce) {
-						OverviewPanel overViewPanel = (OverviewPanel) mainController
-								.getMainViewPort().getDisplayPanel()
-								.getWidget(0);
-						overViewPanel.updateScoresPanel(rowIndex);
-
-						mainController.getInterfaceResidues(mainController
-								.getPdbScoreItem().getJobId(), (Integer) model
-								.get("id"));
+					public void componentSelected(ButtonEvent ce) 
+					{
+						if(mainController.getMainViewPort().getCenterPanel().getDisplayPanel() instanceof ResultsPanel)
+						{
+							ResultsPanel resultsPanel = (ResultsPanel)mainController.getMainViewPort().getCenterPanel().getDisplayPanel();
+							resultsPanel.updateScoresPanel((Integer)resultsPanel.getResultsStore().getAt(rowIndex).get("id"));
+							mainController.getInterfaceResidues((Integer)model.get("id"));
+						}
 					}
 				});
 
 		detailsButton
 				.setWidth(grid.getColumnModel().getColumnWidth(colIndex) - 10);
-		detailsButton.setToolTip("Show interfaces details");
+		detailsButton.setToolTip(MainController.CONSTANTS.results_grid_details_button_tooltip());
 
 		return detailsButton;
 	}

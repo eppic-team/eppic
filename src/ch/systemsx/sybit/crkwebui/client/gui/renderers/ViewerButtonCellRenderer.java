@@ -1,7 +1,6 @@
 package ch.systemsx.sybit.crkwebui.client.gui.renderers;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
-import ch.systemsx.sybit.crkwebui.client.gui.OverviewPanel;
 
 import com.extjs.gxt.ui.client.data.BeanModel;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
@@ -16,13 +15,13 @@ import com.extjs.gxt.ui.client.widget.grid.ColumnData;
 import com.extjs.gxt.ui.client.widget.grid.Grid;
 import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
 
-public class JmolButtonCellRenderer implements GridCellRenderer<BeanModel> 
+public class ViewerButtonCellRenderer implements GridCellRenderer<BeanModel> 
 {
 	private MainController mainController;
 
 	private boolean init;
 
-	public JmolButtonCellRenderer(MainController mainController) 
+	public ViewerButtonCellRenderer(MainController mainController) 
 	{
 		this.mainController = mainController;
 	}
@@ -52,18 +51,18 @@ public class JmolButtonCellRenderer implements GridCellRenderer<BeanModel>
 					});
 		}
 
-		Button detailsButton = new Button("3D",
+		Button detailsButton = new Button(MainController.CONSTANTS.results_grid_viewer_button(),
 			new SelectionListener<ButtonEvent>() 
 			{
 				@Override
 				public void componentSelected(ButtonEvent ce) 
 				{
-					 mainController.showJmolViewer(String.valueOf(model.get("id")));
+					mainController.runViewer(String.valueOf(model.get("id")));
 				}
 			});
 
 		detailsButton.setWidth(grid.getColumnModel().getColumnWidth(colIndex) - 10);
-		detailsButton.setToolTip("Show interfaces details");
+		detailsButton.setToolTip(MainController.CONSTANTS.results_grid_viewer_button_tooltip());
 
 		return detailsButton;
 	}

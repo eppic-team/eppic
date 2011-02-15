@@ -1,6 +1,7 @@
 package ch.systemsx.sybit.crkwebui.client.gui;
 
 import model.PDBScoreItem;
+import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 
 import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.util.Padding;
@@ -16,10 +17,10 @@ import com.extjs.gxt.ui.client.widget.layout.VBoxLayoutData;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.ui.HTML;
 
-public class InfoPanel extends FormPanel {
-	public InfoPanel(PDBScoreItem resultsData) {
-		FormData formData = new FormData("100%");
-		// infoPanel.setFrame(true);
+public class InfoPanel extends FormPanel 
+{
+	public InfoPanel(PDBScoreItem resultsData) 
+	{
 		this.getHeader().setVisible(false);
 		this.setBodyBorder(false);
 		this.setBorders(false);
@@ -35,21 +36,18 @@ public class InfoPanel extends FormPanel {
 		vBoxLayoutData.setFlex(1);
 
 		LayoutContainer left = new LayoutContainer();
-		left.setHeight(80);
+		left.setHeight(65);
 		left.setStyleAttribute("paddingRight", "10px");
 
 		left.setLayout(vBoxLayout);
 
-		Label label = new Label("PDB identifier: " + resultsData.getPdbName());
+		Label label = new Label(MainController.CONSTANTS.info_panel_pdb_identifier() + ": " + resultsData.getPdbName());
 		left.add(label, vBoxLayoutData);
-
-		label = new Label("Score method:");
+		
+		label = new Label(MainController.CONSTANTS.info_panel_total_core_size_xtal_call_cutoff() + ": ");
 		left.add(label, vBoxLayoutData);
-
-		label = new Label("Score type: ");
-		left.add(label, vBoxLayoutData);
-
-		label = new Label("Total core size xtal-call cutoff: ");
+		
+		label = new Label(MainController.CONSTANTS.info_panel_min_number_homologs_required() + ": ");
 		left.add(label, vBoxLayoutData);
 
 		vBoxLayout = new VBoxLayout();
@@ -61,21 +59,18 @@ public class InfoPanel extends FormPanel {
 		LayoutContainer center = new LayoutContainer();
 		center.setStyleAttribute("paddingRight", "10px");
 		center.setStyleAttribute("paddingLeft", "10px");
-		center.setHeight(80);
+		center.setHeight(65);
 		center.setLayout(vBoxLayout);
 
-		label = new Label("Min number homologs required: ");
+		label = new Label(MainController.CONSTANTS.info_panel_sequence_identity_cutoff() + ": " + resultsData.getIdCutoff());
+		center.add(label, vBoxLayoutData);
+		
+		label = new Label(MainController.CONSTANTS.info_panel_query_coverage_cutoff() + ": " + resultsData.getQueryCovCutoff());
 		center.add(label, vBoxLayoutData);
 
-		label = new Label("Sequence identity cutoff:");
+		label = new Label(MainController.CONSTANTS.info_panel_per_member_core_size_xtal_call_cutoff() + ": " + resultsData.getXtalCutoff());
 		center.add(label, vBoxLayoutData);
-
-		label = new Label("Query coverage cutoff: ");
-		center.add(label, vBoxLayoutData);
-
-		label = new Label("Per-member core size xtal-call cutoff: ");
-		center.add(label, vBoxLayoutData);
-
+		
 		vBoxLayout = new VBoxLayout();
 		vBoxLayout.setPadding(new Padding(5));
 		vBoxLayout.setVBoxLayoutAlign(VBoxLayoutAlign.LEFT);
@@ -86,24 +81,23 @@ public class InfoPanel extends FormPanel {
 		right.setStyleAttribute("paddingLeft", "10px");
 		right.setHeight(80);
 		right.setLayout(vBoxLayout);
-
-		label = new Label("Max num sequences used: ");
+		
+		label = new Label(MainController.CONSTANTS.info_panel_max_num_sequences_used() + ": ");
 		right.add(label, vBoxLayoutData);
 
-		label = new Label("Bio-call cutoff: " + resultsData.getBioCutoff());
+		label = new Label(MainController.CONSTANTS.info_panel_bio_call_cutoff() + ": " + resultsData.getBioCutoff());
 		right.add(label, vBoxLayoutData);
 
 		HTML html = new HTML();
-		html.setHTML("Xtal-call cutoff: <b>" + resultsData.getXtalCutoff()
-				+ "</b>");
+		html.setHTML(MainController.CONSTANTS.info_panel_xtal_call_cutoff() + ": <b>" + resultsData.getXtalCutoff() + "</b>");
 		right.add(html, vBoxLayoutData);
-
+		
 		HTML downloadResultsLink = new HTML();
 		downloadResultsLink.setHTML("<a href=" + GWT.getModuleBaseURL()
-				+ "fileDownload?id=" + resultsData.getJobId()
-				+ ">Download results</a>");
+				+ "fileDownload?type=zip&id=" + resultsData.getJobId()
+				+ ">" + MainController.CONSTANTS.info_panel_download_results_link() + "</a>");
 		right.add(downloadResultsLink);
-
+		
 		main.add(left, new ColumnData(.33));
 		main.add(center, new ColumnData(.33));
 		main.add(right, new ColumnData(.33));
