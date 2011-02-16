@@ -10,6 +10,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import ch.systemsx.sybit.crkwebui.shared.CrkWebException;
+import ch.systemsx.sybit.crkwebui.shared.model.InputParameters;
 import crk.CRKMain;
 
 public class CrkRunner implements Runnable 
@@ -19,10 +20,13 @@ public class CrkRunner implements Runnable
 	private String resultPath;
 	private String destinationDirectoryName;
 	private String generatedDirectoryName;
+	private InputParameters inputParameters;
 
 	public CrkRunner(EmailSender emailSender, String fileName,
 			String resultPath, String destinationDirectory,
-			String generatedDirectoryName) {
+			String generatedDirectoryName,
+			InputParameters inputParameters) {
+		this.inputParameters = inputParameters;
 		this.fileName = fileName;
 		this.resultPath = resultPath;
 		this.destinationDirectoryName = destinationDirectory;
@@ -63,6 +67,28 @@ public class CrkRunner implements Runnable
 					destinationDirectoryName + "/" + fileName);
 			crkMain.getCRKParams()
 					.setOutDir(new File(destinationDirectoryName));
+			
+			crkMain.getCRKParams().setMaxNumSeqsSelecton(inputParameters.getMaxNrOfSequences());
+			crkMain.getCRKParams().setSelectonEpsilon(inputParameters.getSelecton());
+			crkMain.getCRKParams().setUsePisa(inputParameters.isUsePISA());
+			crkMain.getCRKParams().setUseNaccess(inputParameters.isUseNACCESS());
+			crkMain.getCRKParams().setUseTcoffeeVeryFastMode(inputParameters.isUseTCoffee());
+			crkMain.getCRKParams().setIdCutoff(inputParameters.getIdentityCutoff());
+			crkMain.getCRKParams().setReducedAlphabet(inputParameters.getReducedAlphabet());
+			crkMain.getCRKParams().setnSpherePointsASAcalc(inputParameters.getAsaCalc());
+			
+			if(inputParameters.getMethods() != null)
+			{
+				for(String method : inputParameters.getMethods())
+				{
+					if(method.equals("KaKs"))
+					{
+						crkMain.getCRKParams().setDoScoreCRK(true);
+					}
+				}
+			}
+			
+			crkMain.getCRKParams().checkCommandLineInput();
 
 			// turn off jaligner logging (we only use NeedlemanWunschGotoh
 			// from that package)

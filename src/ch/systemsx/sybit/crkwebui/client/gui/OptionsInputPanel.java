@@ -37,8 +37,6 @@ public class OptionsInputPanel extends FieldSet
 	private Radio useNAccessNo;
 	private RadioGroup useNAccess;
 	private FieldSet[] methodsFieldsets;
-//	private FieldSet kaksFieldSet;
-//	private FieldSet entropyFieldSet;
 
 	public OptionsInputPanel(InputParameters defaultInputParameters,
 							 List<Integer> reducedAlphabetDefaultList,
@@ -98,6 +96,8 @@ public class OptionsInputPanel extends FieldSet
 				selecton.setFieldLabel(MainController.CONSTANTS.parameters_selecton());
 				selecton.setAllowBlank(false);
 				selecton.setFormat(NumberFormat.getDecimalFormat());
+				selecton.setMinValue(0);
+				selecton.setMaxValue(1);
 				methodsFieldsets[i].add(selecton, formData);
 			}
 			
@@ -118,6 +118,8 @@ public class OptionsInputPanel extends FieldSet
 				.parameters_identity_cutoff());
 		identityCutOff.setAllowBlank(false);
 		identityCutOff.setFormat(NumberFormat.getDecimalFormat());
+		identityCutOff.setMinValue(0);
+		identityCutOff.setMaxValue(1);
 		allignmentsParametersFieldSet.add(identityCutOff, formData);
 
 		useTCoffeeYes = new Radio();
@@ -138,6 +140,8 @@ public class OptionsInputPanel extends FieldSet
 		maxNrOfSequences.setFieldLabel(MainController.CONSTANTS
 				.parameters_max_num_sequences());
 		maxNrOfSequences.setAllowBlank(false);
+		maxNrOfSequences.setAllowNegative(false);
+		maxNrOfSequences.setPropertyEditorType(Integer.class);
 		maxNrOfSequences.setName("maxNrOfSequences");
 		allignmentsParametersFieldSet.add(maxNrOfSequences, formData);
 
@@ -168,6 +172,8 @@ public class OptionsInputPanel extends FieldSet
 		asaCalcParam.setFieldLabel(MainController.CONSTANTS
 				.parameters_asa_calc());
 		asaCalcParam.setAllowBlank(false);
+		asaCalcParam.setAllowNegative(false);
+		asaCalcParam.setPropertyEditorType(Integer.class);
 		othersParametersFieldSet.add(asaCalcParam, formData);
 
 		useNAccessYes = new Radio();

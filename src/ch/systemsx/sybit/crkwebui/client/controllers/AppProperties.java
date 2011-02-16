@@ -54,4 +54,9 @@ public interface AppProperties extends Constants
 	String interfaces_residues_window();
 	String interfaces_residues_panel_first_structure();
 	String interfaces_residues_panel_second_structure();
+	
+	String scores_panel_column_weighted();
+	String scores_panel_column_unweighted();
+	String scores_panel_column_structure1();
+	String scores_panel_column_structure2();
 }

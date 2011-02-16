@@ -20,12 +20,18 @@ import com.extjs.gxt.ui.client.widget.layout.FormLayout;
 import com.extjs.gxt.ui.client.widget.layout.VBoxLayout;
 import com.extjs.gxt.ui.client.widget.layout.VBoxLayout.VBoxLayoutAlign;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.user.client.Window;
 
 public class InputDataPanel extends DisplayPanel
 {
 	private RecaptchaPanel recaptchaPanel;
 	
 	private FormPanel formPanel;
+	
+	private FileUploadField file;
+	private TextField<String> emailTextField;
+	
+	private OptionsInputPanel optionsInputPanel; 
 
 	public InputDataPanel(MainController mainController) 
 	{
@@ -44,8 +50,6 @@ public class InputDataPanel extends DisplayPanel
 		
 		formPanel = new FormPanel();
 
-		// this.setHeading("File Upload");
-		// this.setFrame(true);
 		formPanel.getHeader().setVisible(false);
 		formPanel.setBorders(true);
 		formPanel.setBodyBorder(false);
@@ -63,18 +67,18 @@ public class InputDataPanel extends DisplayPanel
 		generalFieldSet.setBorders(false);
 		generalFieldSet.setLayout(layout);
 
-		final TextField<String> emailTextField = new TextField<String>();
-		emailTextField.setName("email");
-		emailTextField.setFieldLabel(MainController.CONSTANTS.input_email());
-		emailTextField.setValidator(new EmailFieldValidator());
-		generalFieldSet.add(emailTextField);
-
-		final FileUploadField file = new FileUploadField();
+		file = new FileUploadField();
 		file.setWidth(200);
 		file.setAllowBlank(false);
 		file.setName("uploadFormElement");
 		file.setFieldLabel(MainController.CONSTANTS.input_file());
 		generalFieldSet.add(file);
+		
+		emailTextField = new TextField<String>();
+		emailTextField.setName("email");
+		emailTextField.setFieldLabel(MainController.CONSTANTS.input_email());
+		emailTextField.setValidator(new EmailFieldValidator());
+		generalFieldSet.add(emailTextField);
 
 		FormPanel breakPanel = new FormPanel();
 		breakPanel.getHeader().setVisible(false);
@@ -82,32 +86,33 @@ public class InputDataPanel extends DisplayPanel
 		breakPanel.setBorders(false);
 		generalFieldSet.add(breakPanel);
 
-		final OptionsInputPanel optionsInputPanel = new OptionsInputPanel(
+		optionsInputPanel = new OptionsInputPanel(
 				mainController.getSettings().getDefaultParametersValues(),
 				mainController.getSettings().getReducedAlphabetList(),
 				mainController.getSettings().getScoresTypes());
 		generalFieldSet.add(optionsInputPanel);
 		optionsInputPanel.collapse();
 
-		// HiddenField<InputParameters> selectedParameters = new
-		// HiddenField<InputParameters>();
-		// selectedParameters.setName("crkparameters");
-		// selectedParameters.setValue(optionsInputPanel.getCurrentInputParameters());
-		// generalFieldSet.add(selectedParameters);
 		formPanel.addListener(Events.Submit, new Listener<FormEvent>()
 		{
 			public void handleEvent(FormEvent formEvent)
 			{
 				mainController.setNrOfSubmissions(mainController.getNrOfSubmissions() + 1);
-				// TODO do checking
+				
 				String jobId = formEvent.getResultHtml();
-				jobId = jobId.replace("<pre>", "");
-				jobId = jobId.replace("</pre>", "");
-				jobId = jobId.replaceFirst("\n", "");
+				jobId = jobId.replaceAll("\n", "");
 
 				RunJobData runJobData = new RunJobData();
 				runJobData.setEmailAddress(emailTextField.getValue());
-				runJobData.setFileName(file.getValue());
+				
+				String fileName = file.getValue();
+				
+				if(fileName.startsWith("C:\\fakepath\\"))
+				{
+					fileName = fileName.substring(12);
+				}
+				
+				runJobData.setFileName(fileName);
 				runJobData.setJobId(jobId);
 				runJobData.setInputParameters(optionsInputPanel
 						.getCurrentInputParameters());
@@ -147,14 +152,17 @@ public class InputDataPanel extends DisplayPanel
 
 		formPanel.addButton(submitButton);
 
-		recaptchaPanel = new RecaptchaPanel("6Lf9hcESAAAAAEuvcd6IjqSXW3p51Kg22JWhR3vT");
-		
-		if(mainController.getNrOfSubmissions() < 2)
+		if(mainController.getSettings().isUseCaptcha())
 		{
-			recaptchaPanel.setVisible(false);
+			recaptchaPanel = new RecaptchaPanel(mainController.getSettings().getCaptchaPublicKey());
+			
+			if(mainController.getNrOfSubmissions() < mainController.getSettings().getNrOfAllowedSubmissionsWithoutCaptcha())
+			{
+				recaptchaPanel.setVisible(false);
+			}
+			
+			generalFieldSet.add(recaptchaPanel);
 		}
-		
-		generalFieldSet.add(recaptchaPanel);
 		
 		formPanel.add(generalFieldSet);
 		

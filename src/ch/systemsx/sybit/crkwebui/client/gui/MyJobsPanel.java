@@ -90,7 +90,7 @@ public class MyJobsPanel extends ContentPanel
 				String input = (String) model.get("input");
 				String jobId = (String) model.get(property);
 
-				Hyperlink link = new Hyperlink(input, "id/" + jobId);
+				Hyperlink link = new Hyperlink(input, "id/" + myJobsStore.getAt(rowIndex).getJobid());
 				return link;
 			}
 		};

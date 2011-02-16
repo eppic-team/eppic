@@ -11,7 +11,9 @@ public class InterfacesResiduesWindow extends Dialog
 
 	public InterfacesResiduesWindow(MainController mainController) 
 	{
-		this.setSize(1400, 800);
+		int width = (int) (mainController.getWindowWidth() * 0.5);
+		int height = (int) (mainController.getWindowHeight() * 0.75);
+		this.setSize(width, height);
 		this.setPlain(true);
 		this.setModal(true);
 		this.setBlinkModal(true);

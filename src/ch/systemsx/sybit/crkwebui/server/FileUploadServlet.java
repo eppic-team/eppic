@@ -41,6 +41,7 @@ public class FileUploadServlet extends FileBaseServlet {
 	private boolean useCaptcha;
 	private String captchaPublicKey;
 	private String captchaPrivateKey;
+	private int nrOfAllowedSubmissionsWithoutCaptcha = 1;
 
 	/**
 	 * Read properties file
@@ -73,6 +74,7 @@ public class FileUploadServlet extends FileBaseServlet {
 		useCaptcha = Boolean.parseBoolean(properties.getProperty("use_captcha"));
 		captchaPublicKey = properties.getProperty("captcha_public_key");
 		captchaPrivateKey = properties.getProperty("captcha_private_key");
+		nrOfAllowedSubmissionsWithoutCaptcha = Integer.parseInt(properties.getProperty("nr_of_allowed_submissions_without_captcha"));
 	}
 
 	protected void doPost(HttpServletRequest request,
@@ -117,7 +119,7 @@ public class FileUploadServlet extends FileBaseServlet {
 			localDestinationDir.mkdir();
 
 			PrintWriter out = response.getWriter();
-			response.setContentType("text/plain");
+			response.setContentType("text/html");
 
 			DiskFileItemFactory fileItemFactory = new DiskFileItemFactory();
 
@@ -149,7 +151,7 @@ public class FileUploadServlet extends FileBaseServlet {
 				{
 					if(item.isFormField())
 					{
-						if((useCaptcha) && (nrOfSubmittedJobs > 2))
+						if((useCaptcha) && (nrOfSubmittedJobs > nrOfAllowedSubmissionsWithoutCaptcha))
 						{
 							if(item.getFieldName() != null)
 							{
@@ -170,7 +172,7 @@ public class FileUploadServlet extends FileBaseServlet {
 					}
 				}
 				
-				if((useCaptcha) && (nrOfSubmittedJobs > 2))
+				if((useCaptcha) && (nrOfSubmittedJobs > nrOfAllowedSubmissionsWithoutCaptcha))
 				{
 					if((captchaResponse == null) || (challenge == null))
 					{
@@ -194,7 +196,7 @@ public class FileUploadServlet extends FileBaseServlet {
 				}
 				else
 				{
-					response.sendError(HttpServletResponse.SC_EXPECTATION_FAILED,
+					response.sendError(HttpServletResponse.SC_FORBIDDEN,
 					"Verification failed. Try again");
 				}
 

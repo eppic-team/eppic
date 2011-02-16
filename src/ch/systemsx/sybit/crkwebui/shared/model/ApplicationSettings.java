@@ -21,6 +21,26 @@ public class ApplicationSettings implements Serializable {
 	private List<Integer> reducedAlphabetList;
 	
 	private int nrOfJobsForSession;
+	
+	private boolean useCaptcha;
+	private String captchaPublicKey;
+	private int nrOfAllowedSubmissionsWithoutCaptcha;
+
+	public boolean isUseCaptcha() {
+		return useCaptcha;
+	}
+
+	public void setUseCaptcha(boolean useCaptcha) {
+		this.useCaptcha = useCaptcha;
+	}
+
+	public String getCaptchaPublicKey() {
+		return captchaPublicKey;
+	}
+
+	public void setCaptchaPublicKey(String captchaPublicKey) {
+		this.captchaPublicKey = captchaPublicKey;
+	}
 
 	public void setScoresTypes(String[] scoresTypes) {
 		this.scoresTypes = scoresTypes;
@@ -61,5 +81,14 @@ public class ApplicationSettings implements Serializable {
 
 	public int getNrOfJobsForSession() {
 		return nrOfJobsForSession;
+	}
+
+	public void setNrOfAllowedSubmissionsWithoutCaptcha(
+			int nrOfAllowedSubmissionsWithoutCaptcha) {
+		this.nrOfAllowedSubmissionsWithoutCaptcha = nrOfAllowedSubmissionsWithoutCaptcha;
+	}
+
+	public int getNrOfAllowedSubmissionsWithoutCaptcha() {
+		return nrOfAllowedSubmissionsWithoutCaptcha;
 	}
 }

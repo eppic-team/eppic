@@ -13,13 +13,18 @@ import com.extjs.gxt.ui.client.data.BeanModel;
 import com.extjs.gxt.ui.client.data.BeanModelFactory;
 import com.extjs.gxt.ui.client.data.BeanModelLookup;
 import com.extjs.gxt.ui.client.store.ListStore;
+import com.extjs.gxt.ui.client.store.Store;
+import com.extjs.gxt.ui.client.store.StoreFilter;
 import com.extjs.gxt.ui.client.widget.form.FormPanel;
+import com.extjs.gxt.ui.client.widget.form.StoreFilterField;
 import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
 import com.extjs.gxt.ui.client.widget.grid.ColumnModel;
 import com.extjs.gxt.ui.client.widget.grid.Grid;
 import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
 import com.extjs.gxt.ui.client.widget.grid.HeaderGroupConfig;
+import com.extjs.gxt.ui.client.widget.grid.filters.Filter;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
+import com.google.gwt.user.client.Window;
 
 public class ResiduesPanel extends FormPanel
 {
@@ -29,8 +34,11 @@ public class ResiduesPanel extends FormPanel
 	private Grid<BeanModel> residuesGrid;
 
 	private MainController mainController;
-
-	public ResiduesPanel(String header, MainController mainController) {
+	
+	public ResiduesPanel(final InterfacesResiduesPanel parentPanel,
+						 String header, 
+						 MainController mainController) 
+	{
 		this.mainController = mainController;
 		this.setBodyBorder(false);
 		this.setBorders(false);
@@ -41,25 +49,28 @@ public class ResiduesPanel extends FormPanel
 		residuesConfigs = createColumnConfig();
 
 		residuesStore = new ListStore<BeanModel>();
-
-		// List<InterfacesModel> data = new ArrayList<InterfacesModel>();
-		//
-		// for(int j=0; j<100; j++)
-		// {
-		// InterfacesModel interfacesModel = new InterfacesModel();
-		// interfacesModel.set("seq", j); // residue number
-		// interfacesModel.set("res", j); // residue type
-		// interfacesModel.set("asa", j); // ASA
-		// interfacesModel.set("bsa", j); // BSA
-		// interfacesModel.set("%bsa", j);// % BSA
-		// interfacesModel.set("entropy", j); //entropy
-		// interfacesModel.set("kaks", j); //KaKs
-		//
-		// data.add(interfacesModel);
-		// }
-		//
-		// residuesStore.add(data);
-
+		
+		residuesStore.addFilter(new StoreFilter<BeanModel>() {
+			
+			@Override
+			public boolean select(Store<BeanModel> store,
+								  BeanModel parent,
+								  BeanModel item, 
+								  String property) 
+			{
+				if(parentPanel.isShowAll())
+				{
+					return true;
+				}
+				else if(item.get(property).equals("ABC"))
+				{
+					return false;
+				}
+				
+				return true;
+			}
+		});
+		
 		residuesColumnModel = new ColumnModel(residuesConfigs);
 
 		residuesColumnModel.addHeaderGroup(0, 0, new HeaderGroupConfig(header,
@@ -70,7 +81,6 @@ public class ResiduesPanel extends FormPanel
 		residuesGrid.setStripeRows(true);
 		residuesGrid.setColumnLines(true);
 		residuesGrid.getView().setForceFit(true);
-		// interfacesGrid.setAutoHeight(true);
 
 		this.add(residuesGrid);
 
@@ -197,58 +207,6 @@ public class ResiduesPanel extends FormPanel
 
 		return configs;
 
-		// List<ColumnConfig> configs = new ArrayList<ColumnConfig>();
-		//
-		// ColumnConfig column = new ColumnConfig();
-		// column.setId("seq");
-		// column.setHeader("seq");
-		// column.setWidth(75);
-		// column.setAlignment(HorizontalAlignment.CENTER);
-		// configs.add(column);
-		//
-		// column = new ColumnConfig();
-		// column.setId("res");
-		// column.setHeader("res");
-		// column.setWidth(75);
-		// column.setAlignment(HorizontalAlignment.CENTER);
-		// configs.add(column);
-		//
-		// column = new ColumnConfig();
-		// column.setId("asa");
-		// column.setHeader("asa");
-		// column.setWidth(75);
-		// column.setAlignment(HorizontalAlignment.CENTER);
-		// configs.add(column);
-		//
-		// column = new ColumnConfig();
-		// column.setId("bsa");
-		// column.setHeader("bsa");
-		// column.setWidth(75);
-		// column.setAlignment(HorizontalAlignment.CENTER);
-		// configs.add(column);
-		//
-		// column = new ColumnConfig();
-		// column.setId("%bsa");
-		// column.setHeader("%bsa");
-		// column.setWidth(75);
-		// column.setAlignment(HorizontalAlignment.CENTER);
-		// configs.add(column);
-		//
-		// column = new ColumnConfig();
-		// column.setId("entropy");
-		// column.setHeader("entropy");
-		// column.setWidth(75);
-		// column.setAlignment(HorizontalAlignment.CENTER);
-		// configs.add(column);
-		//
-		// column = new ColumnConfig();
-		// column.setId("kaks");
-		// column.setHeader("kaks");
-		// column.setWidth(75);
-		// column.setAlignment(HorizontalAlignment.CENTER);
-		// configs.add(column);
-		//
-		// return configs;
 	}
 
 	public void fillResiduesGrid(List<InterfaceResidueItem> residueValues) {
@@ -278,5 +236,10 @@ public class ResiduesPanel extends FormPanel
 
 		residuesStore.add(data);
 		residuesGrid.reconfigure(residuesStore, residuesColumnModel);
+	}
+	
+	public void applyFilter()
+	{
+		residuesStore.applyFilters("residueType");
 	}
 }

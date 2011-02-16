@@ -260,7 +260,15 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 		
 		int nrOfJobsForSession = DBUtils.getNrOfJobsForSessionId(getThreadLocalRequest().getSession().getId());
 		settings.setNrOfJobsForSession(nrOfJobsForSession);
-
+		
+		boolean useCaptcha = Boolean.parseBoolean(properties.getProperty("use_captcha"));
+		String captchaPublicKey = properties.getProperty("captcha_public_key");
+		int nrOfAllowedSubmissionsWithoutCaptcha = Integer.parseInt(properties.getProperty("nr_of_allowed_submissions_without_captcha"));
+		
+		settings.setCaptchaPublicKey(captchaPublicKey);
+		settings.setUseCaptcha(useCaptcha);
+		settings.setNrOfAllowedSubmissionsWithoutCaptcha(nrOfAllowedSubmissionsWithoutCaptcha);
+		
 		return settings;
 	}
 
@@ -469,7 +477,8 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 					runJobData.getFileName(), 
 					"http://127.0.0.1:8888/Crkwebui.html#id=" + runJobData.getJobId(),
 					localDestinationDirName, 
-					runJobData.getJobId());
+					runJobData.getJobId(),
+					runJobData.getInputParameters());
 
 			Thread crkRunnerThread = new Thread(runInstances, 
 					crkRunner,

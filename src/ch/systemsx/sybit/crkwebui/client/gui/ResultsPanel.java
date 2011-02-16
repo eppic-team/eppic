@@ -33,6 +33,7 @@ import com.extjs.gxt.ui.client.widget.layout.RowData;
 import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 import com.extjs.gxt.ui.client.widget.layout.VBoxLayout;
 import com.extjs.gxt.ui.client.widget.layout.VBoxLayout.VBoxLayoutAlign;
+import com.google.gwt.user.client.Cookies;
 
 public class ResultsPanel extends DisplayPanel 
 {
@@ -40,18 +41,14 @@ public class ResultsPanel extends DisplayPanel
 	private ListStore<BeanModel> resultsStore;
 	private ColumnModel resultsColumnModel;
 	private Grid<BeanModel> resultsGrid;
-	private GridCellRenderer<BeanModel> methodRenderer;
-	// private GridCellRenderer<BeanModel> detailsButtonRenderer;
 
 	private PDBScoreItem resultsData;
 
 	private InfoPanel infoPanel;
 	private SimpleComboBox<String> viewerTypeComboBox;
 	private ScoresPanel scoresPanel;
-	private FormPanel scoresPanelWrapper;
+	private FormPanel scoresPanelLocation;
 	
-	private int row = -1;
-
 	public ResultsPanel(MainController mainController,
 						final PDBScoreItem resultsData) 
 	{
@@ -80,13 +77,6 @@ public class ResultsPanel extends DisplayPanel
 		resultsGrid.setStripeRows(true);
 		resultsGrid.setColumnLines(true);
 		
-		scoresPanelWrapper = new FormPanel();
-		scoresPanelWrapper.setLayout(new FitLayout());
-		scoresPanelWrapper.setBodyBorder(false);
-		scoresPanelWrapper.setBorders(false);
-		scoresPanelWrapper.getHeader().setVisible(false);
-		scoresPanelWrapper.setPadding(0);
-
 		Listener<GridEvent> resultsGridListener = new Listener<GridEvent>() 
 		{
 			@Override
@@ -106,22 +96,26 @@ public class ResultsPanel extends DisplayPanel
 		breakPanel.getHeader().setVisible(false);
 		this.add(breakPanel, new RowData(1, 0.05, new Margins(0)));
 
-		// scoresPanel.setVisible(false);
-		this.add(scoresPanelWrapper, new RowData(1, 0.3, new Margins(0)));
+		scoresPanelLocation = new FormPanel();
+		scoresPanelLocation.setLayout(new FitLayout());
+		scoresPanelLocation.setBodyBorder(false);
+		scoresPanelLocation.setBorders(false);
+		scoresPanelLocation.getHeader().setVisible(false);
+		scoresPanelLocation.setPadding(0);
+		
+		this.add(scoresPanelLocation, new RowData(1, 0.3, new Margins(0)));
 	}
 
-	public void updateScoresPanel(int selectedRow) {
-		// int interfaceId = selectedRow + 1;
-		// History.newItem("interface" + interfaceId + "/" +
-		// resultsData.getJobId());
-
-		if (scoresPanel == null) {
+	public void updateScoresPanel(int selectedInterface) 
+	{
+		if (scoresPanel == null) 
+		{
 			createScoresPanel();
-			scoresPanelWrapper.add(scoresPanel);
-			scoresPanelWrapper.layout();
+			scoresPanelLocation.add(scoresPanel);
+			scoresPanelLocation.layout();
 		}
 
-		scoresPanel.fillResultsGrid(resultsData, selectedRow);
+		scoresPanel.fillGrid(resultsData, selectedInterface);
 	}
 
 	private List<ColumnConfig> createColumnConfig() {
@@ -131,13 +125,6 @@ public class ResultsPanel extends DisplayPanel
 				InterfaceItem.class);
 		BeanModel model = beanModelFactory.createModel(new InterfaceItem());
 
-		// String list = "";
-		//
-		// for(int i=0; i<model.getPropertyNames().size(); i++)
-		// {
-		// list = list + "," + model.getProperties().values().;
-		// }
-		//
 		String columnOrder = mainController.getSettings().getGridProperties()
 				.get("results_columns");
 
@@ -207,6 +194,17 @@ public class ResultsPanel extends DisplayPanel
 				if (customHeader != null) {
 					header = customHeader;
 				}
+				
+				boolean isResizable = true;
+
+				String customIsResizable = mainController.getSettings()
+						.getGridProperties()
+						.get("results_" + columnName + "_resizable");
+				if (customIsResizable != null) {
+					if (!customIsResizable.equals("yes")) {
+						isResizable = false;
+					}
+				}
 
 				if (columnName.equals("METHODS")) {
 					for (String method : mainController.getSettings()
@@ -217,6 +215,8 @@ public class ResultsPanel extends DisplayPanel
 						column.setWidth(columnWidth);
 						column.setAlignment(HorizontalAlignment.CENTER);
 						column.setHidden(!displayColumn);
+						column.setFixed(!isResizable);
+						column.setResizable(isResizable);
 
 						if (renderer != null) {
 							column.setRenderer(renderer);
@@ -230,8 +230,9 @@ public class ResultsPanel extends DisplayPanel
 					column.setHeader(header);
 					column.setWidth(columnWidth);
 					column.setAlignment(HorizontalAlignment.CENTER);
-
 					column.setHidden(!displayColumn);
+					column.setFixed(!isResizable);
+					column.setResizable(isResizable);
 
 					if (renderer != null) {
 						column.setRenderer(renderer);
@@ -242,79 +243,6 @@ public class ResultsPanel extends DisplayPanel
 			}
 		}
 
-		// column.setId("id");
-		// column.setHeader("id");
-		// column.setWidth(50);
-		// column.setAlignment(HorizontalAlignment.CENTER);
-		// configs.add(column);
-		//
-		// column = new ColumnConfig();
-		// column.setId("interface");
-		// column.setHeader("Interface");
-		// column.setWidth(100);
-		// column.setAlignment(HorizontalAlignment.CENTER);
-		// configs.add(column);
-		//
-		// column = new ColumnConfig();
-		// column.setId("area");
-		// column.setHeader("Area");
-		// column.setWidth(100);
-		// column.setAlignment(HorizontalAlignment.CENTER);
-		// configs.add(column);
-		//
-		// column = new ColumnConfig();
-		// column.setId("size1");
-		// column.setHeader("Size 1");
-		// column.setWidth(75);
-		// column.setAlignment(HorizontalAlignment.CENTER);
-		// configs.add(column);
-		//
-		// column = new ColumnConfig();
-		// column.setId("size2");
-		// column.setHeader("Size 2");
-		// column.setWidth(75);
-		// column.setAlignment(HorizontalAlignment.CENTER);
-		// configs.add(column);
-		//
-		// column = new ColumnConfig();
-		// column.setId("n1");
-		// column.setHeader("n1");
-		// column.setWidth(75);
-		// column.setAlignment(HorizontalAlignment.CENTER);
-		// configs.add(column);
-		//
-		// column = new ColumnConfig();
-		// column.setId("n2");
-		// column.setHeader("n2");
-		// column.setWidth(75);
-		// column.setAlignment(HorizontalAlignment.CENTER);
-		// configs.add(column);
-		//
-		// for(String method : mainController.getSettings().getScoresTypes())
-		// {
-		// column = new ColumnConfig();
-		// column.setId(method);
-		// column.setHeader(method);
-		// column.setWidth(75);
-		// column.setAlignment(HorizontalAlignment.CENTER);
-		// configs.add(column);
-		// }
-		//
-		// column = new ColumnConfig();
-		// column.setId("final");
-		// column.setHeader("Final");
-		// column.setWidth(75);
-		// column.setAlignment(HorizontalAlignment.CENTER);
-		// configs.add(column);
-		//
-		// column = new ColumnConfig();
-		// column.setId("details");
-		// column.setHeader("");
-		// column.setWidth(50);
-		// column.setRenderer(detailsButtonRenderer);
-		// column.setAlignment(HorizontalAlignment.CENTER);
-		// configs.add(column);
-
 		return configs;
 	}
 
@@ -322,22 +250,25 @@ public class ResultsPanel extends DisplayPanel
 		fillResultsGrid(resultsData);
 	}
 
-	public void fillResultsGrid(PDBScoreItem resultsData) {
+	public void fillResultsGrid(PDBScoreItem resultsData) 
+	{
 		resultsStore.removeAll();
 
 		List<BeanModel> data = new ArrayList<BeanModel>();
 
 		List<InterfaceItem> interfaceItems = resultsData.getInterfaceItems();
 
-		if (interfaceItems != null) {
+		if (interfaceItems != null) 
+		{
 			for (InterfaceItem interfaceItem : interfaceItems) {
 
 				BeanModelFactory beanModelFactory = BeanModelLookup.get()
 						.getFactory(InterfaceItem.class);
 				BeanModel model = beanModelFactory.createModel(interfaceItem);
 
-				for (String method : mainController.getSettings()
-						.getScoresTypes()) {
+				for (String method : mainController.getSettings().getScoresTypes()) 
+				{
+					
 					// /TODO
 					InterfaceScoreItemKey interfaceScoreItemKey = new InterfaceScoreItemKey();
 					interfaceScoreItemKey.setInterfaceId(interfaceItem.getId());
@@ -378,16 +309,16 @@ public class ResultsPanel extends DisplayPanel
 	
 	private void createViewerTypePanel() 
 	{
-		FormPanel viewerTypePanelWrapper = new FormPanel();
-		viewerTypePanelWrapper.getHeader().setVisible(false);
-		viewerTypePanelWrapper.setBorders(false);
-		viewerTypePanelWrapper.setBodyBorder(false);
-		viewerTypePanelWrapper.setPadding(0);
+		FormPanel viewerTypePanelLocation = new FormPanel();
+		viewerTypePanelLocation.getHeader().setVisible(false);
+		viewerTypePanelLocation.setBorders(false);
+		viewerTypePanelLocation.setBodyBorder(false);
+		viewerTypePanelLocation.setPadding(0);
 		
 		VBoxLayout vBoxLayout = new VBoxLayout();
 		vBoxLayout.setVBoxLayoutAlign(VBoxLayoutAlign.RIGHT);
 		
-		viewerTypePanelWrapper.setLayout(vBoxLayout);
+		viewerTypePanelLocation.setLayout(vBoxLayout);
 		
 		FormPanel viewerTypePanel = new FormPanel();
 		viewerTypePanel.getHeader().setVisible(false);
@@ -403,29 +334,35 @@ public class ResultsPanel extends DisplayPanel
 		viewerTypeComboBox.setWidth(100);  
 		viewerTypeComboBox.add("Local");  
 		viewerTypeComboBox.add("Jmol");  
-		viewerTypeComboBox.setSimpleValue("Jmol");  
+		
+		String viewerCookie = Cookies.getCookie("crkviewer");
+		if(viewerCookie != null)
+		{
+			viewerTypeComboBox.setSimpleValue(viewerCookie);
+		}
+		else
+		{
+			viewerTypeComboBox.setSimpleValue("Jmol");
+		}
+		
 		viewerTypeComboBox.setFieldLabel("View mode");
-		viewerTypeComboBox.addListener(Events.Change, new Listener<FieldEvent>() {  
+		viewerTypeComboBox.addListener(Events.Change, new Listener<FieldEvent>() 
+		{  
 			public void handleEvent(FieldEvent be) 
 			{
-//				boolean cell = type.getSimpleValue().equals("Cell");  
-//				grid.getSelectionModel().deselectAll();  
-//				if (cell) {  
-//					grid.setSelectionModel(new CellSelectionModel<Stock>());  
-//				} else {  
-//					grid.setSelectionModel(new GridSelectionModel<Stock>());  
-//				}  
+				Cookies.setCookie("crkviewer", viewerTypeComboBox.getValue().getValue());
+				mainController.setSelectedViewer(viewerTypeComboBox.getValue().getValue());
 			}  
 		});  
 		
 		viewerTypePanel.add(viewerTypeComboBox);
-		viewerTypePanelWrapper.add(viewerTypePanel);
-		this.add(viewerTypePanelWrapper, new RowData(1, 0.05, new Margins(0)));
+		viewerTypePanelLocation.add(viewerTypePanel);
+		this.add(viewerTypePanelLocation, new RowData(1, 0.05, new Margins(0)));
 	}
 	
-	private void createScoresPanel() {
+	private void createScoresPanel() 
+	{
 		scoresPanel = new ScoresPanel(resultsData, mainController);
-		// this.add(scoresPanel, new RowData(1, 0.3, new Margins(0)));
 	}
 	
 	public ListStore<BeanModel> getResultsStore()

@@ -54,7 +54,7 @@ public class FileDownloadServlet extends FileBaseServlet
 				   ((interfaceId == null) ||
 				    (interfaceId.equals(""))))
 			    {
-					response.sendError(HttpServletResponse.SC_NOT_FOUND, "No interface specified");
+					response.sendError(HttpServletResponse.SC_BAD_REQUEST, "No interface specified");
 			    }
 				else
 				{
@@ -126,13 +126,13 @@ public class FileDownloadServlet extends FileBaseServlet
 			} 
 			else
 			{
-				response.sendError(HttpServletResponse.SC_NOT_FOUND,
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST,
 						messages.getProperty("fileDownloadResultIdNotSpecified"));
 			}
 		}
 		else
 		{
-			response.sendError(HttpServletResponse.SC_NOT_FOUND,
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST,
 					"Type of the file not specified");
 		}
 	}

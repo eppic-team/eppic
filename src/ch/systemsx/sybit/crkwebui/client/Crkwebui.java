@@ -28,14 +28,14 @@ public class Crkwebui implements EntryPoint, ValueChangeHandler<String>
 
 		History.addValueChangeHandler(this);
 
-		// TODO: CHECK in IE
-		Window.addWindowClosingHandler(new Window.ClosingHandler() 
-		{
-			public void onWindowClosing(ClosingEvent event) 
-			{
-				// mainController.untieJobsFromSession();
-			}
-		});
+//		// TODO: CHECK in IE
+//		Window.addWindowClosingHandler(new Window.ClosingHandler() 
+//		{
+//			public void onWindowClosing(ClosingEvent event) 
+//			{
+//				 mainController.untieJobsFromSession();
+//			}
+//		});
 
 		mainController.loadSettings();
 	}

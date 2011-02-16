@@ -27,8 +27,11 @@ import com.google.gwt.user.client.ui.RootPanel;
 public class MainController 
 {
 	public static final AppProperties CONSTANTS = (AppProperties) GWT.create(AppProperties.class);
-
+	
 	private MainViewPort mainViewPort;
+	
+	private int windowWidth = Window.getClientWidth();
+	private int windowHeight = Window.getClientHeight();
 
 	private ServiceController serviceController;
 
@@ -246,48 +249,65 @@ public class MainController
 	
 	public void showJmolViewer(String interfaceNr) 
 	{
-		String url = GWT.getModuleBaseURL() + "/crkresults/";
-		openJmol(url, interfaceNr, selectedJobId);
+		String url = GWT.getModuleBaseURL() + "crkresults/";
+		
+		int size = windowHeight;
+		if(size > windowWidth)
+		{
+			size = windowWidth;
+		}
+		
+		openJmol(url, 
+				 interfaceNr, 
+				 selectedJobId,
+				 pdbScoreItem.getPdbName(),
+				 size);
 	}
 	
-	public native void openJmol(String url, String interfaceNr, String selectedJob) /*-{
-		var jmolWindow = window.open(selectedJob + "-" + interfaceNr, "Jmol");
+	public native void openJmol(String url, 
+								String interfaceNr, 
+								String selectedJob,
+								String filename,
+								int size) /*-{
+		var jmolWindow = window.open(selectedJob + "-" + interfaceNr, "Jmol", "status=yes,width=" + size + ",height=" + size);
 		$wnd.jmolInitialize("resources/jmol");
 		$wnd.jmolSetDocument(jmolWindow.document);
-		$wnd.jmolApplet(900,'load ' + url + selectedJob + "/null." + interfaceNr + '.rimcore.pdb');
+		$wnd.jmolApplet(size - 20,'load ' + url + selectedJob + "/" + filename + "." + interfaceNr + '.rimcore.pdb');
 	}-*/;
 	
-	public void downloadFileFromServer(String type, String id)
+	public void downloadFileFromServer(String type, String interfaceId)
 	{
-		String fileDownloadServletUrl = GWT.getModuleBaseURL() + "/crkresults";
-		RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, URL.encode(fileDownloadServletUrl));
-
-		try 
-		{
-			Request request = builder.sendRequest(null, new RequestCallback() 
-			{
-				public void onError(Request request, Throwable exception) 
-		    	{
-					showError("Error during downloading file from server: " + exception.getMessage());
-		    	}
-
-		    	public void onResponseReceived(Request request, Response response) 
-		    	{
-		    		if (200 == response.getStatusCode()) 
-		    		{
-
-		    		}
-		    		else
-		    		{
-		    			showError("Could not download file from server: " + response.getStatusText());
-		    		}
-		    	}
-			});
-		} 
-		catch (RequestException e) 
-		{
-			showError("Error during downloading file from server: " + e.getMessage());
-		}
+		String fileDownloadServletUrl = GWT.getModuleBaseURL() + "fileDownload";
+		fileDownloadServletUrl += "?type=" + type + "&id=" + selectedJobId + "&interface=" + interfaceId;
+		Window.open(fileDownloadServletUrl, "", "");
+//		RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, URL.encode(fileDownloadServletUrl));
+//
+//		try 
+//		{
+//			Request request = builder.sendRequest(null, new RequestCallback() 
+//			{
+//				public void onError(Request request, Throwable exception) 
+//		    	{
+//					showError("Error during downloading file from server: " + exception.getMessage());
+//		    	}
+//
+//		    	public void onResponseReceived(Request request, Response response) 
+//		    	{
+//		    		if (200 == response.getStatusCode()) 
+//		    		{
+//		    			Window.alert(response.getText());
+//		    		}
+//		    		else
+//		    		{
+//		    			showError("Could not download file from server: " + response.getStatusText());
+//		    		}
+//		    	}
+//			});
+//		} 
+//		catch (RequestException e) 
+//		{
+//			showError("Error during downloading file from server: " + e.getMessage());
+//		}
 	}
 	
 	public void showError(String errorMessage) {
@@ -297,5 +317,21 @@ public class MainController
 	public void showMessage(String title, String message)
 	{
 		MessageBox.info(title, message, null);
+	}
+	
+	public int getWindowWidth() {
+		return windowWidth;
+	}
+
+	public void setWindowWidth(int windowWidth) {
+		this.windowWidth = windowWidth;
+	}
+
+	public int getWindowHeight() {
+		return windowHeight;
+	}
+
+	public void setWindowHeight(int windowHeight) {
+		this.windowHeight = windowHeight;
 	}
 }
