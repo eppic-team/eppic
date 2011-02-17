@@ -29,6 +29,7 @@ import owl.core.structure.PdbAsymUnit;
 import owl.core.structure.PdbLoadError;
 import owl.core.structure.SpaceGroup;
 import owl.core.util.FileFormatError;
+import owl.core.util.Goodies;
 
 public class CRKMain {
 	
@@ -286,7 +287,7 @@ public class CRKMain {
 		try {
 			progressLogPS.println("Loading interfaces enumeration from file "+params.getInterfSerFile());
 			LOGGER.info("Loading interfaces enumeration from file "+params.getInterfSerFile());
-			interfaces = ChainInterfaceList.readFromFile(params.getInterfSerFile());
+			interfaces = (ChainInterfaceList)Goodies.readFromFile(params.getInterfSerFile());
 		} catch (ClassNotFoundException e) {
 			throw new CRKException(e,"Couldn't load interface enumeration binary file: "+e.getMessage(),true);
 		} catch (IOException e) {
@@ -373,7 +374,7 @@ public class CRKMain {
 		}
 
 		try {
-			interfaces.serialize(params.getOutputFile(".interfaces.dat"));
+			Goodies.serialize(params.getOutputFile(".interfaces.dat"),interfaces);
 		} catch (IOException e) {
 			throw new CRKException(e,"Couldn't write serialized ChainInterfaceList object to file: "+e.getMessage(),false);
 		}
@@ -397,7 +398,7 @@ public class CRKMain {
 		try {
 			progressLogPS.println("Loading chain evolutionary scores from file "+params.getChainEvContextSerFile());
 			LOGGER.info("Loading chain evolutionary scores from file "+params.getChainEvContextSerFile());
-			cecs = ChainEvolContextList.readFromFile(params.getChainEvContextSerFile());
+			cecs = (ChainEvolContextList)Goodies.readFromFile(params.getChainEvContextSerFile());
 		} catch (ClassNotFoundException e) {
 			throw new CRKException(e,"Couldn't load interface enumeration binary file: "+e.getMessage(),true);
 		} catch(IOException e) {
@@ -574,7 +575,7 @@ public class CRKMain {
 		}
 		
 		try {
-			this.cecs.serialize(params.getOutputFile(".chainevolcontext.dat"));
+			Goodies.serialize(params.getOutputFile(".chainevolcontext.dat"),cecs);
 		} catch (IOException e) {
 			throw new CRKException(e,"Couldn't write serialized ChainEvolContextList object to file: "+e.getMessage(),false);
 		}
@@ -604,8 +605,8 @@ public class CRKMain {
 				iecList.scoreEntropy(true);
 				iecList.printScoresTable(progressLogPS, params.getEntrCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getEntrCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
 				iecList.printScoresTable(scoreEntrPS, params.getEntrCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getEntrCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
-				iecList.writeScoresPDBFiles(params.getOutDir(), params.getBaseName(), ENTROPIES_FILE_SUFFIX+".pdb");
-				iecList.writeRimCorePDBFiles(params.getOutDir(), params.getBaseName(), ".rimcore.pdb");
+				iecList.writeScoresPDBFiles(params,ENTROPIES_FILE_SUFFIX+".pdb");
+				iecList.writeRimCorePDBFiles(params, ".rimcore.pdb");
 				scoreEntrPS.close();
 			}
 		} catch (IOException e) {
@@ -627,14 +628,21 @@ public class CRKMain {
 					iecList.scoreKaKs(true);
 					iecList.printScoresTable(progressLogPS,  params.getKaksCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getKaksCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
 					iecList.printScoresTable(scoreKaksPS,  params.getKaksCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getKaksCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
-					iecList.writeScoresPDBFiles(params.getOutDir(), params.getBaseName(), KAKS_FILE_SUFFIX+".pdb");
-					iecList.writeRimCorePDBFiles(params.getOutDir(), params.getBaseName(), ".rimcore.pdb");
+					iecList.writeScoresPDBFiles(params, KAKS_FILE_SUFFIX+".pdb");
+					iecList.writeRimCorePDBFiles(params, ".rimcore.pdb");
 					scoreKaksPS.close();
 				}
 			}
 		} catch (IOException e) {
 			throw new CRKException(e,"Couldn't write final interface Ka/Ks scores or related PDB files. "+e.getMessage(),true);
 		}
+		try {
+			// we only write one of this (does not depende on call cutoff and contains both entropies+kaks)
+			iecList.writeResidueDetailsFiles(params, "resDetails.dat");
+		} catch (IOException e) {
+			throw new CRKException(e,"Couldn't write score residue details serialized file. "+e.getMessage(),false);
+		}
+
 		
 	}
 	

@@ -14,6 +14,10 @@ public class InterfaceResidueMethodItem implements Serializable
 	{
 		
 	}
+	
+	public InterfaceResidueMethodItem(float score) {
+		this.score = score;
+	}
 
 	public void setScore(float score) {
 		this.score = score;

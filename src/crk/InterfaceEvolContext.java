@@ -1,25 +1,27 @@
 package crk;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.PrintStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeMap;
+
+import model.InterfaceResidueItem;
+import model.InterfaceResidueMethodItem;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import owl.core.structure.AminoAcid;
 import owl.core.structure.ChainInterface;
 import owl.core.structure.InterfaceRimCore;
 import owl.core.structure.Pdb;
 import owl.core.structure.Residue;
+import owl.core.util.Goodies;
 
 public class InterfaceEvolContext implements Serializable {
 
@@ -241,6 +243,77 @@ public class InterfaceEvolContext implements Serializable {
 			
 			this.interf.writeToPdbFile(file);
 		}
+	}
+	
+	public void writeResidueDetailsFile(File file, boolean includeKaks) throws IOException {
+		List<InterfaceResidueItem> partner1 = new ArrayList<InterfaceResidueItem>();
+		List<InterfaceResidueItem> partner2 = new ArrayList<InterfaceResidueItem>();
+		HashMap<Integer, List<InterfaceResidueItem>> map = new HashMap<Integer, List<InterfaceResidueItem>>();
+		map.put(1, partner1);
+		map.put(2, partner2);
+		if (interf.isFirstProtein() && interf.isSecondProtein()) {
+			Pdb firstMol = interf.getFirstMolecule();
+			InterfaceRimCore rimCore = interf.getFirstRimCores()[0]; // for the web interface output we want only cutoff value (first: 0)
+			List<Double> entropies = chains.get(FIRST).getConservationScores(ScoringType.ENTROPY);
+			List<Double> kaksRatios = null;
+			if (includeKaks)
+				kaksRatios = chains.get(FIRST).getConservationScores(ScoringType.KAKS);
+			for (int resser:firstMol.getAllSortedResSerials()) {
+				String resType = AminoAcid.one2three(firstMol.getSequence().charAt(resser-1));
+				float asa = -1;
+				float bsa = -1;
+				int assignment = -1;
+				if (firstMol.containsResidue(resser)) {
+					Residue residue = firstMol.getResidue(resser);
+					asa = (float) residue.getAsa();
+					bsa = (float) residue.getBsa();
+					if (rimCore.getRimResidues().contains(residue)) assignment = InterfaceResidueItem.RIM;
+					else if (rimCore.getCoreResidues().contains(residue)) assignment = InterfaceResidueItem.CORE;
+				}
+				if (asa>0) assignment = InterfaceResidueItem.SURFACE;
+				float entropy = (float) entropies.get(chains.get(FIRST).getQueryUniprotPosForPDBPos(resser)).doubleValue();
+				float kaks = -1;
+				if (includeKaks)
+					kaks = (float)kaksRatios.get(chains.get(FIRST).getQueryUniprotPosForPDBPos(resser)).doubleValue();
+				InterfaceResidueItem iri = new InterfaceResidueItem(resser,resType,asa,bsa,bsa/asa,assignment);
+				Map<String,InterfaceResidueMethodItem> scores = new HashMap<String, InterfaceResidueMethodItem>();
+				scores.put("entropy",new InterfaceResidueMethodItem(entropy));
+				if (includeKaks) scores.put("kaks", new InterfaceResidueMethodItem(kaks));
+				iri.setInterfaceResidueMethodItems(scores);
+				partner1.add(iri);
+			}
+			Pdb secondMol = interf.getFirstMolecule();
+			rimCore = interf.getSecondRimCores()[0];
+			entropies = chains.get(SECOND).getConservationScores(ScoringType.ENTROPY);
+			if (includeKaks) 
+				kaksRatios = chains.get(SECOND).getConservationScores(ScoringType.KAKS);
+			for (int resser:secondMol.getAllSortedResSerials()) {
+				String resType = AminoAcid.one2three(secondMol.getSequence().charAt(resser-1));
+				float asa = -1;
+				float bsa = -1;
+				int assignment = -1;
+				if (secondMol.containsResidue(resser)) {
+					Residue residue = secondMol.getResidue(resser);
+					asa = (float) residue.getAsa();
+					bsa = (float) residue.getBsa();
+					if (rimCore.getRimResidues().contains(residue)) assignment = InterfaceResidueItem.RIM;
+					else if (rimCore.getCoreResidues().contains(residue)) assignment = InterfaceResidueItem.CORE;
+				}
+				if (asa>0) assignment = InterfaceResidueItem.SURFACE;
+				float entropy = (float) entropies.get(chains.get(SECOND).getQueryUniprotPosForPDBPos(resser)).doubleValue();
+				float kaks = -1;
+				if (includeKaks)
+					kaks = (float) kaksRatios.get(chains.get(SECOND).getQueryUniprotPosForPDBPos(resser)).doubleValue();
+				InterfaceResidueItem iri = new InterfaceResidueItem(resser,resType,asa,bsa,bsa/asa,assignment);
+				Map<String,InterfaceResidueMethodItem> scores = new HashMap<String, InterfaceResidueMethodItem>();
+				scores.put("entropy",new InterfaceResidueMethodItem(entropy));
+				if (includeKaks)
+					scores.put("kaks", new InterfaceResidueMethodItem(kaks));
+				iri.setInterfaceResidueMethodItems(scores);
+				partner2.add(iri);
+			}
+		}
+		Goodies.serialize(file, map);
 	}
 	
 	/**
@@ -729,23 +802,6 @@ public class InterfaceEvolContext implements Serializable {
 			printScores(ps, i, calls);
 			ps.println();
 		}
-	}
-	
-	public void serialize(File serializedFile) throws IOException {
-		FileOutputStream fileOut = new FileOutputStream(serializedFile);
-		ObjectOutputStream out = new ObjectOutputStream(fileOut);
-		out.writeObject(this);
-		out.close();
-		fileOut.close();
-	}
-
-	public static InterfaceEvolContext readFromFile(File serialized) throws IOException, ClassNotFoundException {
-		FileInputStream fileIn = new FileInputStream(serialized);
-		ObjectInputStream in = new ObjectInputStream(fileIn);
-		InterfaceEvolContext interfSc = (InterfaceEvolContext) in.readObject();
-		in.close();
-		fileIn.close();
-		return interfSc;
 	}
 	
 }

@@ -1,7 +1,6 @@
 package model;
 
 import java.io.Serializable;
-import java.util.List;
 import java.util.Map;
 
 public class InterfaceResidueItem implements Serializable
@@ -12,11 +11,16 @@ public class InterfaceResidueItem implements Serializable
 	 */
 	private static final long serialVersionUID = 1L;
 	
+	public static final int SURFACE = 0;
+	public static final int RIM = 1;
+	public static final int CORE = 2;
+	
 	private int residueNumber;
 	private String residueType;
 	private float asa;
 	private float bsa;
 	private float bsaPercentage;
+	private int assignment; // one of the constants above: SURFACE, RIM, CORE
 	
 	private Map<String,InterfaceResidueMethodItem> interfaceResidueMethodItems;
 	
@@ -27,6 +31,15 @@ public class InterfaceResidueItem implements Serializable
 	// % BSA
 	//entropy
 	//KaKs
+	
+	public InterfaceResidueItem(int residueNumber, String residueType, float asa, float bsa, float bsaPercentage, int assignment) {
+		this.residueNumber = residueNumber;
+		this.residueType = residueType;
+		this.asa = asa;
+		this.bsa = bsa;
+		this.bsaPercentage = bsaPercentage;
+		this.assignment = assignment;
+	}
 	
 	public InterfaceResidueItem()
 	{
@@ -73,6 +86,14 @@ public class InterfaceResidueItem implements Serializable
 		this.bsaPercentage = bsaPercentage;
 	}
 
+	public int getAssignment() {
+		return this.assignment;
+	}
+	
+	public void setAssignment(int assignment) {
+		this.assignment = assignment;
+	}
+	
 	public Map<String,InterfaceResidueMethodItem> getInterfaceResidueMethodItems() {
 		return interfaceResidueMethodItems;
 	}
