@@ -270,7 +270,7 @@ public class InterfaceEvolContext implements Serializable {
 					if (rimCore.getRimResidues().contains(residue)) assignment = InterfaceResidueItem.RIM;
 					else if (rimCore.getCoreResidues().contains(residue)) assignment = InterfaceResidueItem.CORE;
 				}
-				if (asa>0) assignment = InterfaceResidueItem.SURFACE;
+				if (assignment==-1 && asa>0) assignment = InterfaceResidueItem.SURFACE;
 				float entropy = (float) entropies.get(chains.get(FIRST).getQueryUniprotPosForPDBPos(resser)).doubleValue();
 				float kaks = -1;
 				if (includeKaks)
@@ -282,7 +282,7 @@ public class InterfaceEvolContext implements Serializable {
 				iri.setInterfaceResidueMethodItems(scores);
 				partner1.add(iri);
 			}
-			Pdb secondMol = interf.getFirstMolecule();
+			Pdb secondMol = interf.getSecondMolecule();
 			rimCore = interf.getSecondRimCores()[0];
 			entropies = chains.get(SECOND).getConservationScores(ScoringType.ENTROPY);
 			if (includeKaks) 
@@ -299,7 +299,7 @@ public class InterfaceEvolContext implements Serializable {
 					if (rimCore.getRimResidues().contains(residue)) assignment = InterfaceResidueItem.RIM;
 					else if (rimCore.getCoreResidues().contains(residue)) assignment = InterfaceResidueItem.CORE;
 				}
-				if (asa>0) assignment = InterfaceResidueItem.SURFACE;
+				if (assignment==-1 && asa>0) assignment = InterfaceResidueItem.SURFACE;
 				float entropy = (float) entropies.get(chains.get(SECOND).getQueryUniprotPosForPDBPos(resser)).doubleValue();
 				float kaks = -1;
 				if (includeKaks)
