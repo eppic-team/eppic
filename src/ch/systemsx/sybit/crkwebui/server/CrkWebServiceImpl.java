@@ -3,9 +3,12 @@ package ch.systemsx.sybit.crkwebui.server;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -269,6 +272,9 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 		settings.setUseCaptcha(useCaptcha);
 		settings.setNrOfAllowedSubmissionsWithoutCaptcha(nrOfAllowedSubmissionsWithoutCaptcha);
 		
+		String resultsLocation = properties.getProperty("results_location");
+		settings.setResultsLocation(resultsLocation);
+		
 		return settings;
 	}
 
@@ -381,7 +387,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 					for (int i = 0; i < directoryContent.length; i++)
 					{
 						File resultFile = new File(resultFileDirectory + "/"
-								+ directoryContent[0]);
+								+ directoryContent[i]);
 
 						if (resultFile.exists()) 
 						{
@@ -389,26 +395,27 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 								PdbScore[] pdbScoresForMethod = InterfaceEvolContextList
 										.parseScoresFile(resultFile);
 								pdbScores.add(pdbScoresForMethod);
-							} catch (Exception e) {
-
+							} 
+							catch (Exception e) {
+								
 							}
 						}
 					}
 
 					if (pdbScores.size() > 0) 
 					{
-						allPdbScores = pdbScores.get(0);
-
 						int totalLength = 0;
 
 						for (PdbScore[] array : pdbScores) 
 						{
 							totalLength += array.length;
 						}
+						
+						allPdbScores = new PdbScore[totalLength];
 
-						int offset = pdbScores.get(0).length;
+						int offset = 0;
 
-						for (int i = 1; i < pdbScores.size(); i++) 
+						for (int i = 0; i < pdbScores.size(); i++) 
 						{
 							System.arraycopy(pdbScores.get(i), 0, allPdbScores,
 									offset, pdbScores.get(i).length);
@@ -426,36 +433,73 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 	}
 	
 	public HashMap<Integer, List<InterfaceResidueItem>> getInterfaceResidues(
-			String jobId, int interfaceId) 
+			String jobId, final int interfaceId) throws CrkWebException
 	{
-		HashMap<Integer, List<InterfaceResidueItem>> structures = new HashMap<Integer, List<InterfaceResidueItem>>();
-
-		for (int j = 1; j < 3; j++)
+		HashMap<Integer, List<InterfaceResidueItem>> structures = null;
+		
+		if ((jobId != null) && (jobId.length() != 0)) 
 		{
-			List<InterfaceResidueItem> residueItems = new ArrayList<InterfaceResidueItem>();
+			File resultFileDirectory = new File(
+					generalDestinationDirectoryName + "/" + jobId);
+			
+			String[] directoryContent = resultFileDirectory.list(new FilenameFilter() {
 
-			for (int i = 0; i < 2; i++) 
+				public boolean accept(File dir, String name) {
+					if (name.endsWith("." + interfaceId + ".resDetails.dat")) {
+						return true;
+					} else {
+						return false;
+					}
+				}
+			});
+
+			if (directoryContent != null && directoryContent.length > 0)
 			{
-				InterfaceResidueItem residueItem = new InterfaceResidueItem();
-				residueItem.setAsa(20);
-				residueItem.setResidueType("ABC");
-
-				Map<String, InterfaceResidueMethodItem> residueMethodItems = new HashMap<String, InterfaceResidueMethodItem>();
-
-				InterfaceResidueMethodItem residueMethodItem = new InterfaceResidueMethodItem();
-				residueMethodItem.setScore(30);
-
-				residueMethodItems.put("Entropy", residueMethodItem);
-
-				residueItem.setInterfaceResidueMethodItems(residueMethodItems);
-
-				residueItems.add(residueItem);
+				try
+				{
+					FileInputStream file = new FileInputStream(generalDestinationDirectoryName + "/" + jobId + "/" + directoryContent[0]);
+					ObjectInputStream in = new ObjectInputStream(file);
+					Object object = in.readObject();
+					structures = (HashMap<Integer, List<InterfaceResidueItem>>) object;
+					in.close();
+					file.close();
+				}
+				catch(Exception e)
+				{
+					throw new CrkWebException(e);
+				}
 			}
-
-			structures.put(j, residueItems);
 		}
-
+		
 		return structures;
+		
+//		HashMap<Integer, List<InterfaceResidueItem>> structures = new HashMap<Integer, List<InterfaceResidueItem>>();
+//		for (int j = 1; j < 3; j++)
+//		{
+//			List<InterfaceResidueItem> residueItems = new ArrayList<InterfaceResidueItem>();
+//
+//			for (int i = 0; i < 2; i++) 
+//			{
+//				InterfaceResidueItem residueItem = new InterfaceResidueItem();
+//				residueItem.setAsa(20);
+//				residueItem.setResidueType("ABC");
+//
+//				Map<String, InterfaceResidueMethodItem> residueMethodItems = new HashMap<String, InterfaceResidueMethodItem>();
+//
+//				InterfaceResidueMethodItem residueMethodItem = new InterfaceResidueMethodItem();
+//				residueMethodItem.setScore(30);
+//
+//				residueMethodItems.put("Entropy", residueMethodItem);
+//
+//				residueItem.setInterfaceResidueMethodItems(residueMethodItems);
+//
+//				residueItems.add(residueItem);
+//			}
+//
+//			structures.put(j, residueItems);
+//		}
+//
+//		return structures;
 	}
 	
 	@Override
@@ -473,9 +517,11 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 					getThreadLocalRequest().getSession().getId(),
 					emailData.getEmailRecipient(), runJobData.getFileName());
 
+			String serverHost = properties.getProperty("server_host_page");
+			
 			CrkRunner crkRunner = new CrkRunner(emailSender,
 					runJobData.getFileName(), 
-					"http://127.0.0.1:8888/Crkwebui.html#id=" + runJobData.getJobId(),
+					serverHost + "#id=" + runJobData.getJobId(),
 					localDestinationDirName, 
 					runJobData.getJobId(),
 					runJobData.getInputParameters());

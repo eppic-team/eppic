@@ -29,8 +29,6 @@ public class InterfacesResiduesPanel extends FormPanel
 
 	private SimpleComboBox<String> residuesFilterComboBox;
 	
-	private boolean showAll;
-
 	public InterfacesResiduesPanel(MainController mainController)
 	{
 		// infoPanel.setFrame(true);
@@ -39,11 +37,11 @@ public class InterfacesResiduesPanel extends FormPanel
 		this.setBorders(false);
 		this.setLayout(new RowLayout(Orientation.HORIZONTAL));
 
-		firstStructure = new ResiduesPanel(this,
+		firstStructure = new ResiduesPanel(
 										   MainController.CONSTANTS.interfaces_residues_panel_first_structure(), 
 										   mainController);
 		
-		secondStructure = new ResiduesPanel(this,
+		secondStructure = new ResiduesPanel(
 											MainController.CONSTANTS.interfaces_residues_panel_second_structure(),
 											mainController);
 
@@ -67,24 +65,22 @@ public class InterfacesResiduesPanel extends FormPanel
 		residuesFilterComboBox.setWidth(100);  
 		residuesFilterComboBox.add("All");  
 		residuesFilterComboBox.add("Rim/Core");  
-		residuesFilterComboBox.setSimpleValue("All");
+		residuesFilterComboBox.setSimpleValue("Rim/Core");
 		
 		residuesFilterComboBox.setFieldLabel("Residues");
 		residuesFilterComboBox.addListener(Events.Change, new Listener<FieldEvent>() 
 		{  
 			public void handleEvent(FieldEvent be) 
 			{
-				if(residuesFilterComboBox.getValue().getValue().equals("All"))
+				boolean showAll = true;
+				
+				if(!residuesFilterComboBox.getValue().getValue().equals("All"))
 				{
-					setShowAll(true);
-				}
-				else
-				{
-					setShowAll(false);
+					showAll = false;
 				}
 				
-				firstStructure.applyFilter();
-				secondStructure.applyFilter();
+				firstStructure.applyFilter(showAll);
+				secondStructure.applyFilter(showAll);
 			}  
 		}); 
 		
@@ -103,11 +99,4 @@ public class InterfacesResiduesPanel extends FormPanel
 		return secondStructure;
 	}
 
-	public void setShowAll(boolean showAll) {
-		this.showAll = showAll;
-	}
-
-	public boolean isShowAll() {
-		return showAll;
-	}
 }

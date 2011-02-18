@@ -26,6 +26,7 @@ import com.extjs.gxt.ui.client.widget.grid.GroupingView;
 import com.extjs.gxt.ui.client.widget.grid.HeaderGroupConfig;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 import com.extjs.gxt.ui.client.widget.layout.FormData;
+import com.google.gwt.user.client.Window;
 
 public class ScoresPanel extends FormPanel 
 {
@@ -102,6 +103,7 @@ public class ScoresPanel extends FormPanel
 		for (InterfaceScoreItemKey key : resultsData.getInterfaceScores()
 				.keySet()) {
 			if (key.getInterfaceId() == selectedInterface) {
+				
 				InterfaceScoreItem interfaceScoreItem = resultsData
 						.getInterfaceScores().get(key);
 
@@ -111,6 +113,7 @@ public class ScoresPanel extends FormPanel
 							.getFactory(InterfaceScoreItem.class);
 					BeanModel scoresModel = beanModelFactory
 							.createModel(interfaceScoreItem);
+					
 					// ScoresModel scoresModel = new ScoresModel("");
 					// scoresModel.set("unweightedrim1",
 					// interfaceScoreItem.getUnweightedRim1Scores());
@@ -147,11 +150,11 @@ public class ScoresPanel extends FormPanel
 
 					data.add(scoresModel);
 				}
-
-				scoresStore.add(data);
-				scoresGrid.reconfigure(scoresStore, scoresColumnModel);
 			}
 		}
+		
+		scoresStore.add(data);
+		scoresGrid.reconfigure(scoresStore, scoresColumnModel);
 	}
 
 	private List<ColumnConfig> createColumnConfig() {

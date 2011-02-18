@@ -15,7 +15,7 @@ public class FileNameGenerator
 		}
 		else if(type.equals("interfaces"))
 		{
-			pattern = interfaceId + ".rimcore.pdb";
+			pattern = "." + interfaceId + ".rimcore.pdb";
 		}
 		
 		return pattern;

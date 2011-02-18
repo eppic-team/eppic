@@ -41,13 +41,14 @@ public class InfoPanel extends FormPanel
 
 		left.setLayout(vBoxLayout);
 
-		Label label = new Label(MainController.CONSTANTS.info_panel_pdb_identifier() + ": " + resultsData.getPdbName());
+		HTML html = new HTML();
+		html.setHTML(MainController.CONSTANTS.info_panel_pdb_identifier() + ": <b>" + resultsData.getPdbName() + "</b>");
+		left.add(html, vBoxLayoutData);
+		
+		Label label = new Label(MainController.CONSTANTS.info_panel_total_core_size_xtal_call_cutoff() + ": " + resultsData.getMinCoreSize());
 		left.add(label, vBoxLayoutData);
 		
-		label = new Label(MainController.CONSTANTS.info_panel_total_core_size_xtal_call_cutoff() + ": ");
-		left.add(label, vBoxLayoutData);
-		
-		label = new Label(MainController.CONSTANTS.info_panel_min_number_homologs_required() + ": ");
+		label = new Label(MainController.CONSTANTS.info_panel_min_number_homologs_required() + ": " + resultsData.getHomologsCutoff());
 		left.add(label, vBoxLayoutData);
 
 		vBoxLayout = new VBoxLayout();
@@ -68,7 +69,7 @@ public class InfoPanel extends FormPanel
 		label = new Label(MainController.CONSTANTS.info_panel_query_coverage_cutoff() + ": " + resultsData.getQueryCovCutoff());
 		center.add(label, vBoxLayoutData);
 
-		label = new Label(MainController.CONSTANTS.info_panel_per_member_core_size_xtal_call_cutoff() + ": " + resultsData.getXtalCutoff());
+		label = new Label(MainController.CONSTANTS.info_panel_per_member_core_size_xtal_call_cutoff() + ": " + resultsData.getMinMemberCoreSize());
 		center.add(label, vBoxLayoutData);
 		
 		vBoxLayout = new VBoxLayout();
@@ -82,15 +83,14 @@ public class InfoPanel extends FormPanel
 		right.setHeight(80);
 		right.setLayout(vBoxLayout);
 		
-		label = new Label(MainController.CONSTANTS.info_panel_max_num_sequences_used() + ": ");
+		label = new Label(MainController.CONSTANTS.info_panel_max_num_sequences_used() + ": " + resultsData.getMaxNumSeqsCutoff());
 		right.add(label, vBoxLayoutData);
 
 		label = new Label(MainController.CONSTANTS.info_panel_bio_call_cutoff() + ": " + resultsData.getBioCutoff());
 		right.add(label, vBoxLayoutData);
 
-		HTML html = new HTML();
-		html.setHTML(MainController.CONSTANTS.info_panel_xtal_call_cutoff() + ": <b>" + resultsData.getXtalCutoff() + "</b>");
-		right.add(html, vBoxLayoutData);
+		label = new Label(MainController.CONSTANTS.info_panel_xtal_call_cutoff() + ": " + resultsData.getXtalCutoff());
+		right.add(label, vBoxLayoutData);
 		
 		HTML downloadResultsLink = new HTML();
 		downloadResultsLink.setHTML("<a href=" + GWT.getModuleBaseURL()

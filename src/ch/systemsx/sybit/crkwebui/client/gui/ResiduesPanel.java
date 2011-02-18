@@ -9,9 +9,13 @@ import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 import ch.systemsx.sybit.crkwebui.client.gui.renderers.GridCellRendererFactory;
 
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
+import com.extjs.gxt.ui.client.data.BasePagingLoader;
 import com.extjs.gxt.ui.client.data.BeanModel;
 import com.extjs.gxt.ui.client.data.BeanModelFactory;
 import com.extjs.gxt.ui.client.data.BeanModelLookup;
+import com.extjs.gxt.ui.client.data.ModelData;
+import com.extjs.gxt.ui.client.data.PagingLoader;
+import com.extjs.gxt.ui.client.data.PagingModelMemoryProxy;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.store.Store;
 import com.extjs.gxt.ui.client.store.StoreFilter;
@@ -21,9 +25,16 @@ import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
 import com.extjs.gxt.ui.client.widget.grid.ColumnModel;
 import com.extjs.gxt.ui.client.widget.grid.Grid;
 import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
+import com.extjs.gxt.ui.client.widget.grid.GridViewConfig;
 import com.extjs.gxt.ui.client.widget.grid.HeaderGroupConfig;
+import com.extjs.gxt.ui.client.widget.grid.LiveGridView;
 import com.extjs.gxt.ui.client.widget.grid.filters.Filter;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
+import com.extjs.gxt.ui.client.widget.table.NumberCellRenderer;
+import com.extjs.gxt.ui.client.widget.toolbar.LiveToolItem;
+import com.extjs.gxt.ui.client.widget.toolbar.PagingToolBar;
+import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
+import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.Window;
 
 public class ResiduesPanel extends FormPanel
@@ -32,10 +43,16 @@ public class ResiduesPanel extends FormPanel
 	private ListStore<BeanModel> residuesStore;
 	private ColumnModel residuesColumnModel;
 	private Grid<BeanModel> residuesGrid;
+	
+	private PagingModelMemoryProxy proxy;
+	private PagingLoader loader;
 
 	private MainController mainController;
 	
-	public ResiduesPanel(final InterfacesResiduesPanel parentPanel,
+	private List<BeanModel> data;
+	private boolean isShowAll;
+	
+	public ResiduesPanel(
 						 String header, 
 						 MainController mainController) 
 	{
@@ -48,7 +65,11 @@ public class ResiduesPanel extends FormPanel
 
 		residuesConfigs = createColumnConfig();
 
-		residuesStore = new ListStore<BeanModel>();
+		proxy = new PagingModelMemoryProxy(null); 
+		loader = new BasePagingLoader(proxy);  
+		loader.setRemoteSort(true);
+		   
+		residuesStore = new ListStore<BeanModel>(loader);
 		
 		residuesStore.addFilter(new StoreFilter<BeanModel>() {
 			
@@ -58,16 +79,17 @@ public class ResiduesPanel extends FormPanel
 								  BeanModel item, 
 								  String property) 
 			{
-				if(parentPanel.isShowAll())
+				if(isShowAll)
 				{
 					return true;
 				}
-				else if(item.get(property).equals("ABC"))
+				else if(((Integer)item.get("assignment") == InterfaceResidueItem.CORE) || 
+						((Integer)item.get("assignment") == InterfaceResidueItem.RIM))
 				{
-					return false;
+					return true;
 				}
 				
-				return true;
+				return false;
 			}
 		});
 		
@@ -81,11 +103,40 @@ public class ResiduesPanel extends FormPanel
 		residuesGrid.setStripeRows(true);
 		residuesGrid.setColumnLines(true);
 		residuesGrid.getView().setForceFit(true);
+		residuesGrid.setLoadMask(true);
+		
+		residuesGrid.getView().setViewConfig(new GridViewConfig(){
+			@Override
+			public String getRowStyle(ModelData model, int rowIndex,
+					ListStore<ModelData> ds) {
+				if (model != null)
+				{
+					if ((Integer)model.get("assignment") == InterfaceResidueItem.SURFACE)
+					{
+						return "surface";
+					}
+					else if((Integer)model.get("assignment") == InterfaceResidueItem.CORE)
+					{
+						return "core";
+					}
+					else if((Integer)model.get("assignment") == InterfaceResidueItem.RIM)
+					{
+						return "rim";
+					}
+				}
+				
+				return "";
+			}
+		});
 
 		this.add(residuesGrid);
-
+		
+		PagingToolBar toolBar = new PagingToolBar(20);
+		toolBar.bind(loader);
+		this.setBottomComponent(toolBar);
+		
 	}
-
+	
 	private List<ColumnConfig> createColumnConfig() {
 		List<ColumnConfig> configs = new ArrayList<ColumnConfig>();
 
@@ -212,7 +263,7 @@ public class ResiduesPanel extends FormPanel
 	public void fillResiduesGrid(List<InterfaceResidueItem> residueValues) {
 		residuesStore.removeAll();
 
-		List<BeanModel> data = new ArrayList<BeanModel>();
+		data = new ArrayList<BeanModel>();
 
 		if (residueValues != null) {
 			for (InterfaceResidueItem residueValue : residueValues) {
@@ -222,10 +273,22 @@ public class ResiduesPanel extends FormPanel
 
 				for (String method : mainController.getSettings()
 						.getScoresTypes()) {
+					
+					String processedMethod = method;
+					if(method.equals("Entropy"))
+					{
+						processedMethod = "entropy";
+					}
+					else if(method.equals("Kaks"))
+					{
+						processedMethod = "KaKs ratio";
+					}
+					
+					
 					if (residueValue.getInterfaceResidueMethodItems()
-							.containsKey(method)) {
+							.containsKey(processedMethod)) {
 						model.set(method, residueValue
-								.getInterfaceResidueMethodItems().get(method)
+								.getInterfaceResidueMethodItems().get(processedMethod)
 								.getScore());
 					}
 				}
@@ -234,12 +297,33 @@ public class ResiduesPanel extends FormPanel
 			}
 		}
 
-		residuesStore.add(data);
-		residuesGrid.reconfigure(residuesStore, residuesColumnModel);
+		proxy.setData(data);
+//		residuesStore.add(data);
+		
+//		residuesStore.
+		
+//		residuesStore.applyFilters("residueType");
+//		residuesGrid.reconfigure(residuesStore, residuesColumnModel);
 	}
 	
-	public void applyFilter()
+	public void applyFilter(boolean isShowAll)
 	{
-		residuesStore.applyFilters("residueType");
+//		residuesStore.applyFilters("residueType");
+//		loader.load(0, 20);
+		
+		this.isShowAll = isShowAll;
+		
+		List<BeanModel> dataToSet = new ArrayList<BeanModel>();
+		for(BeanModel item : data)
+		{
+			if((isShowAll) ||
+				(((Integer)item.get("assignment") == InterfaceResidueItem.CORE) || 
+				((Integer)item.get("assignment") == InterfaceResidueItem.RIM)))
+			{
+				dataToSet.add(item);
+			}
+		}
+		proxy.setData(dataToSet);
+		loader.load(0, 20);
 	}
 }

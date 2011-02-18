@@ -56,17 +56,17 @@ public class MyJobsPanel extends ContentPanel
 
 		toolBar.add(addNew);
 
-		Button test = new Button("Test", new SelectionListener<ButtonEvent>() {
-
-			public void componentSelected(ButtonEvent ce) 
-			{
-//				RecaptchaPanel w = new RecaptchaPanel("	6Lf9hcESAAAAAEuvcd6IjqSXW3p51Kg22JWhR3vT ");
-//				((LayoutContainer) mainController.getMainViewPort().getDisplayPanel().getWidget(0)).add(w);
-//				mainController.getMainViewPort().getDisplayPanel().layout();
-			}
-		});
-
-		toolBar.add(test);
+//		Button test = new Button("Test", new SelectionListener<ButtonEvent>() {
+//
+//			public void componentSelected(ButtonEvent ce) 
+//			{
+////				RecaptchaPanel w = new RecaptchaPanel("	6Lf9hcESAAAAAEuvcd6IjqSXW3p51Kg22JWhR3vT ");
+////				((LayoutContainer) mainController.getMainViewPort().getDisplayPanel().getWidget(0)).add(w);
+////				mainController.getMainViewPort().getDisplayPanel().layout();
+//			}
+//		});
+//
+//		toolBar.add(test);
 
 		this.setTopComponent(toolBar);
 

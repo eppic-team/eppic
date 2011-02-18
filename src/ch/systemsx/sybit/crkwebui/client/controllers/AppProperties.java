@@ -7,6 +7,9 @@ public interface AppProperties extends Constants
 	String login();
 	String yes();
 	String no();
+	String option_true();
+	String option_false();
+	
 	String input_email();
 	String input_file();
 	String input_advanced();
@@ -24,6 +27,12 @@ public interface AppProperties extends Constants
 	String parameters_use_pisa();
 	String parameters_asa_calc();
 	String parameters_use_naccess();
+	String parameters_use_tcoffee_hint();
+	String parameters_use_tcoffee_fast();
+	String parameters_use_tcoffee_normal();
+	String parameters_max_num_sequences_hint();
+	String parameters_asa_calc_hint();
+	String parameters_use_naccess_hint();
 	
 	String status_panel_jobId();
 	String status_panel_log();

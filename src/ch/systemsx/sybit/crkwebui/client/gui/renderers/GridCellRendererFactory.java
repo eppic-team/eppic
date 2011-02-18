@@ -15,8 +15,8 @@ public class GridCellRendererFactory {
 				renderer = new DetailsButtonCellRenderer(mainController);
 			} else if (rendererName.equals("methods")) {
 				renderer = new MethodCellRenderer(mainController);
-			} else if (rendererName.equals("residues_methods")) {
-				// renderer = new ResiduesMethodsCellRenderer(mainController);
+			} else if (rendererName.equals("number")) {
+				 renderer = new NumberRenderer();
 			} else if (rendererName.equals("viewer")) {
 				 renderer = new ViewerButtonCellRenderer(mainController);
 			}

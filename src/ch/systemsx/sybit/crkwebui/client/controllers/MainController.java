@@ -4,6 +4,7 @@ import java.util.List;
 
 import model.PDBScoreItem;
 import ch.systemsx.sybit.crkwebui.client.gui.InputDataPanel;
+import ch.systemsx.sybit.crkwebui.client.gui.InterfacesResiduesWindow;
 import ch.systemsx.sybit.crkwebui.client.gui.MainViewPort;
 import ch.systemsx.sybit.crkwebui.client.gui.ResultsPanel;
 import ch.systemsx.sybit.crkwebui.client.gui.StatusPanel;
@@ -48,11 +49,20 @@ public class MainController
 	private int nrOfSubmissions = 0;
 	
 	private String selectedViewer = "Jmol";
+	
+	private InterfacesResiduesWindow interfacesResiduesWindow;
+	
+	public InterfacesResiduesWindow getInterfacesResiduesWindow() {
+		return interfacesResiduesWindow;
+	}
+
+	public void setInterfacesResiduesWindow(
+			InterfacesResiduesWindow interfacesResiduesWindow) {
+		this.interfacesResiduesWindow = interfacesResiduesWindow;
+	}
 
 	public MainController(Viewport viewport) 
 	{
-		mainViewPort = new MainViewPort(this);
-		RootPanel.get().add(mainViewPort);
 		this.serviceController = new ServiceControllerImpl(this);
 	}
 
@@ -136,7 +146,11 @@ public class MainController
 		serviceController.getJobsForCurrentSession();
 	}
 
-	public void getInterfaceResidues(int interfaceId) {
+	public void getInterfaceResidues(int interfaceId) 
+	{
+		interfacesResiduesWindow = new InterfacesResiduesWindow(this);
+		interfacesResiduesWindow.setVisible(true);
+		
 		serviceController.getInterfaceResidues(selectedJobId, interfaceId);
 	}
 
@@ -249,7 +263,8 @@ public class MainController
 	
 	public void showJmolViewer(String interfaceNr) 
 	{
-		String url = GWT.getModuleBaseURL() + "crkresults/";
+//		String url = GWT.getModuleBaseURL() + "crkresults/";
+		String url = settings.getResultsLocation();
 		
 		int size = windowHeight;
 		if(size > windowWidth)
@@ -334,4 +349,11 @@ public class MainController
 	public void setWindowHeight(int windowHeight) {
 		this.windowHeight = windowHeight;
 	}
+	
+	public void setMainView()
+	{
+		mainViewPort = new MainViewPort(this);
+		RootPanel.get().add(mainViewPort);
+	}
+	
 }

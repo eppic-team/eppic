@@ -31,21 +31,19 @@ public class GetInterfaceResiduesCallback implements AsyncCallback
 		{
 			HashMap<String, List<InterfaceResidueItem>> structures = (HashMap<String, List<InterfaceResidueItem>>) result;
 
-			InterfacesResiduesWindow interfacesResiduesWindow = new InterfacesResiduesWindow(mainController);
-			
 			if(structures.containsKey(1))
 			{
-				interfacesResiduesWindow.getInterfacesResiduesPanel().getFirstStructurePanel()
+				mainController.getInterfacesResiduesWindow().getInterfacesResiduesPanel().getFirstStructurePanel()
 						.fillResiduesGrid(structures.get(1));
+				mainController.getInterfacesResiduesWindow().getInterfacesResiduesPanel().getFirstStructurePanel().applyFilter(false);
 			}
 			
 			if(structures.containsKey(2))
 			{
-				interfacesResiduesWindow.getInterfacesResiduesPanel().getSecondStructurePanel()
+				mainController.getInterfacesResiduesWindow().getInterfacesResiduesPanel().getSecondStructurePanel()
 						.fillResiduesGrid(structures.get(2));
+				mainController.getInterfacesResiduesWindow().getInterfacesResiduesPanel().getSecondStructurePanel().applyFilter(false);
 			}
-			
-			interfacesResiduesWindow.setVisible(true);
 		}
 		else 
 		{

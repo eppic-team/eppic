@@ -25,6 +25,8 @@ public class ApplicationSettings implements Serializable {
 	private boolean useCaptcha;
 	private String captchaPublicKey;
 	private int nrOfAllowedSubmissionsWithoutCaptcha;
+	
+	private String resultsLocation;
 
 	public boolean isUseCaptcha() {
 		return useCaptcha;
@@ -90,5 +92,13 @@ public class ApplicationSettings implements Serializable {
 
 	public int getNrOfAllowedSubmissionsWithoutCaptcha() {
 		return nrOfAllowedSubmissionsWithoutCaptcha;
+	}
+	
+	public String getResultsLocation() {
+		return resultsLocation;
+	}
+
+	public void setResultsLocation(String resultsLocation) {
+		this.resultsLocation = resultsLocation;
 	}
 }

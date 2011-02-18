@@ -2,6 +2,7 @@ package ch.systemsx.sybit.crkwebui.client.callbacks;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 
+import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public class RunJobCallback implements AsyncCallback 
@@ -28,5 +29,6 @@ public class RunJobCallback implements AsyncCallback
 		mainController.getJobsForCurrentSession();
 		mainController.setSelectedJobId(jobId);
 		mainController.displayResults();
+		History.newItem("id/" + jobId);
 	}
 }

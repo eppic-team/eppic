@@ -7,7 +7,14 @@ import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 import ch.systemsx.sybit.crkwebui.client.model.ReducedAlphabetComboModel;
 import ch.systemsx.sybit.crkwebui.shared.model.InputParameters;
 
+import com.extjs.gxt.ui.client.core.El;
+import com.extjs.gxt.ui.client.core.XDOM;
+import com.extjs.gxt.ui.client.event.ComponentEvent;
+import com.extjs.gxt.ui.client.event.Events;
+import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.store.ListStore;
+import com.extjs.gxt.ui.client.widget.Component;
+import com.extjs.gxt.ui.client.widget.ComponentPlugin;
 import com.extjs.gxt.ui.client.widget.form.ComboBox;
 import com.extjs.gxt.ui.client.widget.form.ComboBox.TriggerAction;
 import com.extjs.gxt.ui.client.widget.form.FieldSet;
@@ -16,6 +23,7 @@ import com.extjs.gxt.ui.client.widget.form.Radio;
 import com.extjs.gxt.ui.client.widget.form.RadioGroup;
 import com.extjs.gxt.ui.client.widget.layout.FormData;
 import com.extjs.gxt.ui.client.widget.layout.FormLayout;
+import com.extjs.gxt.ui.client.widget.tips.ToolTipConfig;
 import com.google.gwt.i18n.client.NumberFormat;
 
 public class OptionsInputPanel extends FieldSet 
@@ -25,8 +33,8 @@ public class OptionsInputPanel extends FieldSet
 	private ComboBox<ReducedAlphabetComboModel> reducedAlphabetCombo;
 	private NumberField selecton;
 	private NumberField identityCutOff;
-	private Radio useTCoffeeYes;
-	private Radio useTCoffeeNo;
+	private Radio useTCoffeeFast;
+	private Radio useTCoffeeNormal;
 	private RadioGroup useTCoffee;
 	private NumberField maxNrOfSequences;
 	private Radio usePisaYes;
@@ -51,6 +59,20 @@ public class OptionsInputPanel extends FieldSet
 		FormLayout layout = new FormLayout();
 		layout.setLabelWidth(200);
 		this.setLayout(layout);
+		
+//		ComponentPlugin plugin = new ComponentPlugin()
+//		{
+//			public void init(Component component) 
+//			{
+//				component.addListener(Events.Render, new Listener<ComponentEvent>() 
+//				{
+//					public void handleEvent(ComponentEvent be) {
+//						El elem = be.getComponent().el().findParent(".x-form-element", 3);
+//						elem.appendChild(XDOM.create("<div style='color: #615f5f;padding: 1 0 2 0px;'>" + be.getComponent().getData("hint") + "</div>"));
+//					}
+//				});
+//			}
+//		};
 
 		methodsFieldsets = new FieldSet[supportedMethods.length];
 		
@@ -122,18 +144,20 @@ public class OptionsInputPanel extends FieldSet
 		identityCutOff.setMaxValue(1);
 		allignmentsParametersFieldSet.add(identityCutOff, formData);
 
-		useTCoffeeYes = new Radio();
-		useTCoffeeYes.setBoxLabel(MainController.CONSTANTS.yes());
-		useTCoffeeYes.setValue(true);
+		useTCoffeeFast = new Radio();
+		useTCoffeeFast.setBoxLabel(MainController.CONSTANTS.parameters_use_tcoffee_fast());
+		useTCoffeeFast.setValue(true);
 
-		useTCoffeeNo = new Radio();
-		useTCoffeeNo.setBoxLabel(MainController.CONSTANTS.no());
+		useTCoffeeNormal = new Radio();
+		useTCoffeeNormal.setBoxLabel(MainController.CONSTANTS.parameters_use_tcoffee_normal());
 
 		useTCoffee = new RadioGroup();
 		useTCoffee.setFieldLabel(MainController.CONSTANTS
 				.parameters_use_tcoffee());
-		useTCoffee.add(useTCoffeeYes);
-		useTCoffee.add(useTCoffeeNo);
+		useTCoffee.add(useTCoffeeFast);
+		useTCoffee.add(useTCoffeeNormal);
+//		useTCoffee.addPlugin(plugin);
+		useTCoffee.setData("hint", MainController.CONSTANTS.parameters_use_tcoffee_hint());
 		allignmentsParametersFieldSet.add(useTCoffee, formData);
 
 		maxNrOfSequences = new NumberField();
@@ -143,6 +167,8 @@ public class OptionsInputPanel extends FieldSet
 		maxNrOfSequences.setAllowNegative(false);
 		maxNrOfSequences.setPropertyEditorType(Integer.class);
 		maxNrOfSequences.setName("maxNrOfSequences");
+//		maxNrOfSequences.addPlugin(plugin);
+		maxNrOfSequences.setData("hint", MainController.CONSTANTS.parameters_max_num_sequences_hint());
 		allignmentsParametersFieldSet.add(maxNrOfSequences, formData);
 
 		this.add(allignmentsParametersFieldSet);
@@ -174,6 +200,8 @@ public class OptionsInputPanel extends FieldSet
 		asaCalcParam.setAllowBlank(false);
 		asaCalcParam.setAllowNegative(false);
 		asaCalcParam.setPropertyEditorType(Integer.class);
+//		asaCalcParam.addPlugin(plugin);
+		asaCalcParam.setData("hint", MainController.CONSTANTS.parameters_asa_calc_hint());
 		othersParametersFieldSet.add(asaCalcParam, formData);
 
 		useNAccessYes = new Radio();
@@ -188,6 +216,8 @@ public class OptionsInputPanel extends FieldSet
 				.parameters_use_naccess());
 		useNAccess.add(useNAccessYes);
 		useNAccess.add(useNAccessNo);
+//		useNAccess.addPlugin(plugin);
+		useNAccess.setData("hint", MainController.CONSTANTS.parameters_use_naccess_hint());
 		othersParametersFieldSet.add(useNAccess, formData);
 
 		this.add(othersParametersFieldSet);
@@ -209,9 +239,9 @@ public class OptionsInputPanel extends FieldSet
 		}
 
 		if (defaultParameters.isUseTCoffee() == true) {
-			useTCoffeeYes.setValue(true);
+			useTCoffeeFast.setValue(true);
 		} else {
-			useTCoffeeNo.setValue(true);
+			useTCoffeeNormal.setValue(true);
 		}
 
 		asaCalcParam.setValue(defaultParameters.getAsaCalc());
@@ -263,7 +293,7 @@ public class OptionsInputPanel extends FieldSet
 			currentInputParameters.setUsePISA(false);
 		}
 
-		if (useTCoffeeYes.getValue() == true) {
+		if (useTCoffeeFast.getValue() == true) {
 			currentInputParameters.setUseTCoffee(true);
 		} else {
 			currentInputParameters.setUseTCoffee(false);
