@@ -76,17 +76,29 @@ public class FileDownloadServlet extends FileBaseServlet
 									}
 								});
 		
-						if (directoryContent != null && directoryContent.length > 0) {
+						if (directoryContent != null && directoryContent.length > 0) 
+						{
 							File resultFile = new File(resultFileDirectory + "/"
 									+ directoryContent[0]);
 		
 							if (resultFile.exists()) 
 							{
-								response.setContentType("application/txt");
+								if(directoryContent[0].endsWith(".pdb"))
+								{
+									response.setContentType("chemical/x-pdb");
+								}
+								else if(directoryContent[0].endsWith(".zip"))
+								{
+									response.setContentType("application/zip");
+								}
+								else
+								{
+									response.setContentType("application/octet-stream");
+								}
+								
 								response.setContentLength((int) resultFile.length());
 								response.setHeader("Content-Disposition",
-										"attachment; filename*=\"utf-8''" + resultFile
-												+ "");
+										"attachment; filename=\"" + jobId + "." + directoryContent[0] + "\"");
 		
 								byte[] buffer = new byte[1024];
 								DataInputStream in = new DataInputStream(

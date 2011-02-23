@@ -29,7 +29,9 @@ public class InterfacesResiduesPanel extends FormPanel
 
 	private SimpleComboBox<String> residuesFilterComboBox;
 	
-	public InterfacesResiduesPanel(MainController mainController)
+	public InterfacesResiduesPanel(MainController mainController,
+								   int width,
+								   int height)
 	{
 		// infoPanel.setFrame(true);
 		this.getHeader().setVisible(false);
@@ -39,21 +41,25 @@ public class InterfacesResiduesPanel extends FormPanel
 
 		firstStructure = new ResiduesPanel(
 										   MainController.CONSTANTS.interfaces_residues_panel_first_structure(), 
-										   mainController);
+										   mainController,
+										   width,
+										   height);
 		
 		secondStructure = new ResiduesPanel(
 											MainController.CONSTANTS.interfaces_residues_panel_second_structure(),
-											mainController);
+											mainController,
+										    width,
+											height);
 
-		this.add(firstStructure, new RowData(0.45, 1, new Margins(0)));
+		this.add(firstStructure, new RowData(0.48, 1, new Margins(0)));
 
 		FormPanel breakPanel = new FormPanel();
 		breakPanel.setBodyBorder(false);
 		breakPanel.setBorders(false);
 		breakPanel.getHeader().setVisible(false);
-		this.add(breakPanel, new RowData(0.1, 1, new Margins(0)));
+		this.add(breakPanel, new RowData(0.04, 1, new Margins(0)));
 
-		this.add(secondStructure, new RowData(0.45, 1, new Margins(0)));
+		this.add(secondStructure, new RowData(0.48, 1, new Margins(0)));
 		
 		toolbar = new ToolBar();  
 		
@@ -97,6 +103,11 @@ public class InterfacesResiduesPanel extends FormPanel
 
 	public ResiduesPanel getSecondStructurePanel() {
 		return secondStructure;
+	}
+	
+	public void cleanData()
+	{
+		residuesFilterComboBox.setSimpleValue("Rim/Core");
 	}
 
 }

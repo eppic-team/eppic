@@ -21,6 +21,8 @@ import com.extjs.gxt.ui.client.event.GridEvent;
 import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.util.Margins;
+import com.extjs.gxt.ui.client.widget.ContentPanel;
+import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.form.ComboBox.TriggerAction;
 import com.extjs.gxt.ui.client.widget.form.FormPanel;
 import com.extjs.gxt.ui.client.widget.form.SimpleComboBox;
@@ -47,7 +49,7 @@ public class ResultsPanel extends DisplayPanel
 	private InfoPanel infoPanel;
 	private SimpleComboBox<String> viewerTypeComboBox;
 	private ScoresPanel scoresPanel;
-	private FormPanel scoresPanelLocation;
+	private LayoutContainer scoresPanelLocation;
 	
 	public ResultsPanel(MainController mainController,
 						final PDBScoreItem resultsData) 
@@ -55,10 +57,11 @@ public class ResultsPanel extends DisplayPanel
 		super(mainController);
 		this.resultsData = resultsData;
 		this.setBorders(true);
-		this.setBodyBorder(false);
-		this.getHeader().setVisible(false);
+//		this.setBodyBorder(false);
+//		this.getHeader().setVisible(false);
 		this.setLayout(new RowLayout(Orientation.VERTICAL));
-		this.setPadding(10);
+//		this.setPadding(10);
+		this.setStyleAttribute("padding", "10px");
 
 		createInfoPanel();
 		
@@ -85,9 +88,13 @@ public class ResultsPanel extends DisplayPanel
 				updateScoresPanel((Integer)resultsStore.getAt(be.getRowIndex()).get("id"));
 			}
 		};
+		
 		resultsGrid.addListener(Events.CellClick, resultsGridListener);
 		
-		this.add(resultsGrid, new RowData(1, 0.6, new Margins(0)));
+		LayoutContainer resultsGridContainer = new LayoutContainer();
+		resultsGridContainer.setLayout(new FitLayout());
+		resultsGridContainer.add(resultsGrid);
+		this.add(resultsGridContainer, new RowData(1, 0.55, new Margins(0)));
 
 		FormPanel breakPanel = new FormPanel();
 		breakPanel.setBorders(false);
@@ -96,14 +103,14 @@ public class ResultsPanel extends DisplayPanel
 		breakPanel.getHeader().setVisible(false);
 		this.add(breakPanel, new RowData(1, 0.05, new Margins(0)));
 
-		scoresPanelLocation = new FormPanel();
+		scoresPanelLocation = new LayoutContainer();
 		scoresPanelLocation.setLayout(new FitLayout());
-		scoresPanelLocation.setBodyBorder(false);
+//		scoresPanelLocation.setBodyBorder(false);
 		scoresPanelLocation.setBorders(false);
-		scoresPanelLocation.getHeader().setVisible(false);
-		scoresPanelLocation.setPadding(0);
+//		scoresPanelLocation.getHeader().setVisible(false);
+//		scoresPanelLocation.setPadding(0);
 		
-		this.add(scoresPanelLocation, new RowData(1, 0.3, new Margins(0)));
+		this.add(scoresPanelLocation, new RowData(1, 0.40, new Margins(0)));
 	}
 
 	public void updateScoresPanel(int selectedInterface) 
@@ -309,11 +316,11 @@ public class ResultsPanel extends DisplayPanel
 	
 	private void createViewerTypePanel() 
 	{
-		FormPanel viewerTypePanelLocation = new FormPanel();
-		viewerTypePanelLocation.getHeader().setVisible(false);
+		LayoutContainer viewerTypePanelLocation = new LayoutContainer();
+//		viewerTypePanelLocation.getHeader().setVisible(false);
 		viewerTypePanelLocation.setBorders(false);
-		viewerTypePanelLocation.setBodyBorder(false);
-		viewerTypePanelLocation.setPadding(0);
+//		viewerTypePanelLocation.setBodyBorder(false);
+//		viewerTypePanelLocation.setPadding(0);
 		
 		VBoxLayout vBoxLayout = new VBoxLayout();
 		vBoxLayout.setVBoxLayoutAlign(VBoxLayoutAlign.RIGHT);
@@ -345,6 +352,8 @@ public class ResultsPanel extends DisplayPanel
 			viewerTypeComboBox.setSimpleValue("Jmol");
 		}
 		
+		mainController.setSelectedViewer(viewerTypeComboBox.getValue().getValue());
+		
 		viewerTypeComboBox.setFieldLabel("View mode");
 		viewerTypeComboBox.addListener(Events.Change, new Listener<FieldEvent>() 
 		{  
@@ -357,7 +366,7 @@ public class ResultsPanel extends DisplayPanel
 		
 		viewerTypePanel.add(viewerTypeComboBox);
 		viewerTypePanelLocation.add(viewerTypePanel);
-		this.add(viewerTypePanelLocation, new RowData(1, 0.05, new Margins(0)));
+		this.add(viewerTypePanelLocation, new RowData(1, 40, new Margins(0)));
 	}
 	
 	private void createScoresPanel() 

@@ -27,6 +27,8 @@ public class GetInterfaceResiduesCallback implements AsyncCallback
 	@Override
 	public void onSuccess(Object result) 
 	{
+		mainController.showWaiting("Loading");
+		
 		if ((result != null) && (result instanceof HashMap)) 
 		{
 			HashMap<String, List<InterfaceResidueItem>> structures = (HashMap<String, List<InterfaceResidueItem>>) result;
@@ -49,5 +51,7 @@ public class GetInterfaceResiduesCallback implements AsyncCallback
 		{
 			mainController.showError("Error during getting residues from server");
 		}
+		
+		mainController.hideWaiting();
 	}
 }

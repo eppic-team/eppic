@@ -24,7 +24,9 @@ import com.extjs.gxt.ui.client.widget.grid.Grid;
 import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.History;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Hyperlink;
 
 public class MyJobsPanel extends ContentPanel 
@@ -63,6 +65,10 @@ public class MyJobsPanel extends ContentPanel
 ////				RecaptchaPanel w = new RecaptchaPanel("	6Lf9hcESAAAAAEuvcd6IjqSXW3p51Kg22JWhR3vT ");
 ////				((LayoutContainer) mainController.getMainViewPort().getDisplayPanel().getWidget(0)).add(w);
 ////				mainController.getMainViewPort().getDisplayPanel().layout();
+//			
+//				mainController.showLoading();
+////				Window.alert(GWT.getHostPageBaseURL());
+////				Window.alert(String.valueOf(mainController.getInterfacesResiduesWindow().getInterfacesResiduesPanel().getFirstStructurePanel().getResiduesGrid().getHeight()));
 //			}
 //		});
 //
@@ -88,6 +94,11 @@ public class MyJobsPanel extends ContentPanel
 					ColumnData config, int rowIndex, int colIndex,
 					ListStore<MyJobsModel> store, Grid<MyJobsModel> grid) {
 				String input = (String) model.get("input");
+				if(input.contains("."))
+				{
+					input = input.substring(0, input.indexOf("."));
+				}
+				
 				String jobId = (String) model.get(property);
 
 				Hyperlink link = new Hyperlink(input, "id/" + myJobsStore.getAt(rowIndex).getJobid());

@@ -269,7 +269,8 @@ public class DBUtils
 		}
 	}
 
-	public static String getStatusForJob(String jobId) throws CrkWebException 
+	public static String getStatusForJob(String jobId,
+										 String sessionId) throws CrkWebException 
 	{
 		String status = "nonexisting";
 
@@ -293,8 +294,8 @@ public class DBUtils
 
 				if (results != null) 
 				{
-
-					while (results.next()) {
+					while (results.next()) 
+					{
 						status = results.getString(1);
 					}
 				}
@@ -324,6 +325,11 @@ public class DBUtils
 					e.printStackTrace();
 				}
 			}
+		}
+		
+		if(!status.equals("nonexisting"))
+		{
+			updateSessionIdForSelectedJob(sessionId, jobId);
 		}
 
 		return status;
@@ -394,6 +400,54 @@ public class DBUtils
 		}
 
 		return nrOfJobsForSessionId;
+	}
+	
+	public static void updateSessionIdForSelectedJob(String sessionId,
+											  String jobId) throws CrkWebException
+	{
+		Connection connection = null;
+		PreparedStatement statement = null;
+
+		try {
+			connection = getConnection();
+
+			if (connection != null) 
+			{
+				String query = "UPDATE Jobs SET sessionId=? WHERE jobId=?";
+
+				statement = connection.prepareStatement(query);
+
+				if (statement != null) 
+				{
+					statement.setString(1, sessionId);
+					statement.setString(2, jobId);
+
+					statement.executeUpdate();
+				}
+			}
+		} catch (NamingException e) {
+			e.printStackTrace();
+			throw new CrkWebException(e);
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw new CrkWebException(e);
+		} finally {
+			if (statement != null) {
+				try {
+					statement.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+
+			if (connection != null) {
+				try {
+					connection.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 
 }

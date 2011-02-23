@@ -19,6 +19,7 @@ import com.extjs.gxt.ui.client.data.PagingModelMemoryProxy;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.store.Store;
 import com.extjs.gxt.ui.client.store.StoreFilter;
+import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.form.FormPanel;
 import com.extjs.gxt.ui.client.widget.form.StoreFilterField;
 import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
@@ -37,7 +38,7 @@ import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.Window;
 
-public class ResiduesPanel extends FormPanel
+public class ResiduesPanel extends ContentPanel
 {
 	private List<ColumnConfig> residuesConfigs;
 	private ListStore<BeanModel> residuesStore;
@@ -52,19 +53,27 @@ public class ResiduesPanel extends FormPanel
 	private List<BeanModel> data;
 	private boolean isShowAll;
 	
+	private int nrOfRows = 20;
+	
+	private PagingToolBar pagingToolbar;
+	
 	public ResiduesPanel(
 						 String header, 
-						 MainController mainController) 
+						 MainController mainController,
+						 int width,
+						 int height) 
 	{
 		this.mainController = mainController;
 		this.setBodyBorder(false);
 		this.setBorders(false);
 		this.setLayout(new FitLayout());
-		this.setPadding(0);
+//		this.setPadding(0);
 		this.getHeader().setVisible(false);
 
 		residuesConfigs = createColumnConfig();
 
+		nrOfRows = (height - 190)/22; 
+		
 		proxy = new PagingModelMemoryProxy(null); 
 		loader = new BasePagingLoader(proxy);  
 		loader.setRemoteSort(true);
@@ -103,7 +112,6 @@ public class ResiduesPanel extends FormPanel
 		residuesGrid.setStripeRows(true);
 		residuesGrid.setColumnLines(true);
 		residuesGrid.getView().setForceFit(true);
-		residuesGrid.setLoadMask(true);
 		
 		residuesGrid.getView().setViewConfig(new GridViewConfig(){
 			@Override
@@ -131,10 +139,9 @@ public class ResiduesPanel extends FormPanel
 
 		this.add(residuesGrid);
 		
-		PagingToolBar toolBar = new PagingToolBar(20);
-		toolBar.bind(loader);
-		this.setBottomComponent(toolBar);
-		
+		pagingToolbar = new PagingToolBar(nrOfRows);
+		pagingToolbar.bind(loader);
+		this.setBottomComponent(pagingToolbar);
 	}
 	
 	private List<ColumnConfig> createColumnConfig() {
@@ -260,7 +267,8 @@ public class ResiduesPanel extends FormPanel
 
 	}
 
-	public void fillResiduesGrid(List<InterfaceResidueItem> residueValues) {
+	public void fillResiduesGrid(List<InterfaceResidueItem> residueValues) 
+	{
 		residuesStore.removeAll();
 
 		data = new ArrayList<BeanModel>();
@@ -281,7 +289,7 @@ public class ResiduesPanel extends FormPanel
 					}
 					else if(method.equals("Kaks"))
 					{
-						processedMethod = "KaKs ratio";
+						processedMethod = "kaks";
 					}
 					
 					
@@ -324,6 +332,11 @@ public class ResiduesPanel extends FormPanel
 			}
 		}
 		proxy.setData(dataToSet);
-		loader.load(0, 20);
+		loader.load(0, nrOfRows);
+	}
+	
+	public void cleanResiduesGrid()
+	{
+		residuesStore.removeAll();
 	}
 }

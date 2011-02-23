@@ -15,6 +15,8 @@ import com.extjs.gxt.ui.client.widget.button.Button;
 import com.extjs.gxt.ui.client.widget.form.FieldSet;
 import com.extjs.gxt.ui.client.widget.form.FileUploadField;
 import com.extjs.gxt.ui.client.widget.form.FormPanel;
+import com.extjs.gxt.ui.client.widget.form.FormPanel.Encoding;
+import com.extjs.gxt.ui.client.widget.form.FormPanel.Method;
 import com.extjs.gxt.ui.client.widget.form.TextField;
 import com.extjs.gxt.ui.client.widget.layout.FormLayout;
 import com.extjs.gxt.ui.client.widget.layout.VBoxLayout;
@@ -101,6 +103,7 @@ public class InputDataPanel extends DisplayPanel
 				
 				String jobId = formEvent.getResultHtml();
 				jobId = jobId.replaceAll("\n", "");
+				jobId = jobId.trim();
 
 				RunJobData runJobData = new RunJobData();
 				runJobData.setEmailAddress(emailTextField.getValue());
@@ -111,12 +114,17 @@ public class InputDataPanel extends DisplayPanel
 				{
 					fileName = fileName.substring(12);
 				}
+				else if(fileName.contains("\\"))
+				{
+					fileName = fileName.substring(fileName.lastIndexOf("\\") + 1);
+				}
 				
 				runJobData.setFileName(fileName);
 				runJobData.setJobId(jobId);
 				runJobData.setInputParameters(optionsInputPanel
 						.getCurrentInputParameters());
 
+				mainController.hideWaiting();
 				mainController.runJob(runJobData);
 			}
 		});
@@ -141,6 +149,7 @@ public class InputDataPanel extends DisplayPanel
 				
 				if (formPanel.isValid())
 				{
+					mainController.showWaiting("Submitting");
 					formPanel.submit();
 				}
 				else

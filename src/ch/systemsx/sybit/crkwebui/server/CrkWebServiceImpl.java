@@ -35,6 +35,7 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 import crk.InterfaceEvolContextList;
 
+
 /**
  * The server side implementation of the RPC service.
  */
@@ -281,7 +282,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 	@Override
 	public ProcessingData getResultsOfProcessing(String id) throws Exception 
 	{
-		String status = DBUtils.getStatusForJob(id);
+		String status = DBUtils.getStatusForJob(id, getThreadLocalRequest().getSession().getId());
 
 		if(status != null)
 		{
@@ -291,7 +292,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 			}
 			else 
 			{
-				return getStatusData(id);
+				return getStatusData(id, status);
 			}
 		}
 		else
@@ -300,7 +301,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 		}
 	}
 
-	private ProcessingInProgressData getStatusData(String id) throws Exception 
+	private ProcessingInProgressData getStatusData(String id, String status) throws CrkWebException 
 	{
 		ProcessingInProgressData statusData = null;
 
@@ -314,7 +315,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 	
 				statusData.setJobId(id);
 	
-				statusData.setStatus(DBUtils.getStatusForJob(id));
+				statusData.setStatus(status);
 	
 				if (checkIfFileExist(dataDirectory + "/crklog")) 
 				{
@@ -345,7 +346,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 					} 
 					catch (Exception e) 
 					{
-						throw new Exception("Error during connecting to log file: " + e.getMessage());
+						throw new CrkWebException(e);
 					}
 				}
 			}
@@ -539,9 +540,17 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 	{
 		String result = null;
 
-		Thread[] activeInstances = new Thread[runInstances.activeCount()];
+		int estimatedNrOfCurrentThreads = runInstances.activeCount();
+		Thread[] activeInstances = new Thread[estimatedNrOfCurrentThreads];
 
-		runInstances.enumerate(activeInstances);
+		int nrOfCurrentThreads = runInstances.enumerate(activeInstances);
+		
+		while(nrOfCurrentThreads > estimatedNrOfCurrentThreads)
+		{
+			estimatedNrOfCurrentThreads = nrOfCurrentThreads;
+			activeInstances = new Thread[nrOfCurrentThreads];
+			nrOfCurrentThreads = runInstances.enumerate(activeInstances);
+		}
 
 		if (activeInstances != null)
 		{
@@ -550,9 +559,13 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 
 			while ((i < activeInstances.length) && (!wasFound)) 
 			{
-				if (activeInstances[i].getName().equals(jobId)) 
+				if ((activeInstances[i] != null) && (activeInstances[i].getName().equals(jobId))) 
 				{
-					activeInstances[i].interrupt();
+					if(!activeInstances[i].isInterrupted())
+					{
+						activeInstances[i].interrupt();
+					}
+					
 					wasFound = true;
 					result = "Job " + jobId + " stopped";
 
@@ -619,5 +632,41 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 	{
 		String sessionId = getThreadLocalRequest().getSession().getId();
 		DBUtils.untieJobsFromSession(sessionId);
+	}
+	
+	@Override
+	public void destroy()
+	{
+		super.destroy();
+		
+		int estimatedNrOfCurrentThreads = runInstances.activeCount();
+		Thread[] activeInstances = new Thread[estimatedNrOfCurrentThreads];
+
+		int nrOfCurrentThreads = runInstances.enumerate(activeInstances);
+		
+		while(nrOfCurrentThreads > estimatedNrOfCurrentThreads)
+		{
+			estimatedNrOfCurrentThreads = nrOfCurrentThreads;
+			activeInstances = new Thread[nrOfCurrentThreads];
+			nrOfCurrentThreads = runInstances.enumerate(activeInstances);
+		}
+		
+		for(Thread activeThread : activeInstances)
+		{
+			if((activeThread != null) && (!activeThread.isInterrupted()))
+			{
+				try 
+				{
+					DBUtils.updateStatusOfJob(activeThread.getName(), "Stopped");
+				}
+				catch (CrkWebException e) 
+				{
+					e.printStackTrace();
+				}
+//				activeThread.interrupt();
+			}
+		}
+		
+		runInstances.destroy();
 	}
 }

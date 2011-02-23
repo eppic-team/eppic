@@ -186,12 +186,19 @@ public class FileUploadServlet extends FileBaseServlet {
 				
 				if(isVerified)
 				{
+					String fileName = fileToUpload.getName();
+					
+					if(fileName.contains("\\"))
+					{
+						fileName = fileName.substring(fileName.lastIndexOf("\\") + 1);
+					}
+					
 					File file = new File(localDestinationDir,
-							fileToUpload.getName());
+							fileName);
 					fileToUpload.write(file);
 
 					File processingFile = new File(localDestinationDir
-							+ "/" + fileToUpload.getName());
+							+ "/" + fileName);
 					processingFile.createNewFile();
 				}
 				else

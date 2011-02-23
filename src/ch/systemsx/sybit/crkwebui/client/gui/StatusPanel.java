@@ -36,8 +36,8 @@ public class StatusPanel extends DisplayPanel
 		vBoxLayout.setVBoxLayoutAlign(VBoxLayoutAlign.CENTER);
 		this.setLayout(vBoxLayout);
 		this.setBorders(false);
-		this.setBodyBorder(false);
-		this.getHeader().setVisible(false);
+//		this.setBodyBorder(false);
+//		this.getHeader().setVisible(false);
 		
 		formPanel = new FormPanel();
 		formPanel.getHeader().setVisible(false);

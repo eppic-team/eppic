@@ -49,6 +49,8 @@ public class GetResultsOfProcessingCallback implements AsyncCallback
 				mainController.showError("Error during getting results of processing from server" + result.getClass());
 				mainController.getMainViewPort().getCenterPanel().removeAll();
 			}
+			
+			mainController.getJobsForCurrentSession();
 		}
 		else
 		{

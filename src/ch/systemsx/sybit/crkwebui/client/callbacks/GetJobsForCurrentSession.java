@@ -20,6 +20,7 @@ public class GetJobsForCurrentSession implements AsyncCallback
 	public void onFailure(Throwable caught) 
 	{
 		mainController.showError("Error during getting current jobs from server. " + caught.getMessage());
+		mainController.stopMyJobsAutoRefresh();
 	}
 
 	@Override

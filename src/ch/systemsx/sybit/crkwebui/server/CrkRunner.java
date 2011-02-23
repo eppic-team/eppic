@@ -12,6 +12,7 @@ import java.util.zip.ZipOutputStream;
 
 import ch.systemsx.sybit.crkwebui.shared.CrkWebException;
 import ch.systemsx.sybit.crkwebui.shared.model.InputParameters;
+import crk.CRKException;
 import crk.CRKMain;
 
 public class CrkRunner implements Runnable 
@@ -22,6 +23,7 @@ public class CrkRunner implements Runnable
 	private String destinationDirectoryName;
 	private String generatedDirectoryName;
 	private InputParameters inputParameters;
+	private File logFile;
 
 	public CrkRunner(EmailSender emailSender, String fileName,
 			String resultPath, String destinationDirectory,
@@ -41,9 +43,23 @@ public class CrkRunner implements Runnable
 				+ " job submitted. To see the status of the processing please go to: "
 				+ resultPath;
 
+		try
+		{
+			FileOutputStream outputStream = new FileOutputStream("/tmp/out1");
+			BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(
+					outputStream);
+			bufferedOutputStream.write(destinationDirectoryName.getBytes());
+			bufferedOutputStream.close();
+			outputStream.close();
+		}
+		catch(Exception ex)
+		{
+			
+		}
+		
 		// generatuin of this file should be moved to crk or check
 		// whether file is not locked
-		File logFile = new File(destinationDirectoryName + "/crklog");
+		logFile = new File(destinationDirectoryName + "/crklog");
 		
 		try 
 		{
@@ -77,6 +93,7 @@ public class CrkRunner implements Runnable
 			crkMain.getCRKParams().setIdCutoff(inputParameters.getIdentityCutoff());
 			crkMain.getCRKParams().setReducedAlphabet(inputParameters.getReducedAlphabet());
 			crkMain.getCRKParams().setnSpherePointsASAcalc(inputParameters.getAsaCalc());
+			crkMain.getCRKParams().setNumThreads(1);
 			
 			if(inputParameters.getMethods() != null)
 			{
@@ -126,6 +143,7 @@ public class CrkRunner implements Runnable
 			// 3 scoring
 			crkMain.doScoring();
 			
+			Thread.sleep(20000);
 			
 			File destinationDirectory = new File(destinationDirectoryName);
 			String[] directoryContent = destinationDirectory.list();
@@ -180,47 +198,57 @@ public class CrkRunner implements Runnable
 
 			runFile.delete();
 		} 
-		catch (Exception e) 
+		catch(CRKException e)
 		{
-			message = fileName + " - error during processing the data.\n\n" + e.getMessage();
-			
-			try
-			{
-				FileOutputStream outputStream = new FileOutputStream(logFile, true);
-				BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(
-						outputStream);
-				bufferedOutputStream.write(message.getBytes());
-				bufferedOutputStream.close();
-				outputStream.close();
-			}
-			catch(Exception ex)
-			{
-				
-			}
-			
-			try 
-			{
-				DBUtils.updateStatusOfJob(generatedDirectoryName, "Error");
-			} 
-			catch (CrkWebException e2) 
-			{
-				e2.printStackTrace();
-			}
-
-			File errorFile = new File(destinationDirectoryName + "/crkerr");
-
-			try 
-			{
-				errorFile.createNewFile();
-			}
-			catch (IOException e1) 
-			{
-				e1.printStackTrace();
-			}
-
-			emailSender.send("Crk: " + fileName + " error during processing",
-					message);
+			handleException(e.getMessage());
+		}
+		catch (Throwable e) 
+		{
+			e.printStackTrace();
+			handleException(e.getMessage());
 		}
 
+	}
+	
+	private void handleException(String errorMessage)
+	{
+		String message = fileName + " - error during processing the data.\n\n" + errorMessage;
+		
+		try
+		{
+			FileOutputStream outputStream = new FileOutputStream(logFile, true);
+			BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(
+					outputStream);
+			bufferedOutputStream.write(message.getBytes());
+			bufferedOutputStream.close();
+			outputStream.close();
+		}
+		catch(Exception ex)
+		{
+			
+		}
+		
+		try 
+		{
+			DBUtils.updateStatusOfJob(generatedDirectoryName, "Error");
+		} 
+		catch (CrkWebException e2) 
+		{
+			e2.printStackTrace();
+		}
+
+		File errorFile = new File(destinationDirectoryName + "/crkerr");
+
+		try 
+		{
+			errorFile.createNewFile();
+		}
+		catch (IOException e1) 
+		{
+			e1.printStackTrace();
+		}
+
+		emailSender.send("Crk: " + fileName + " error during processing",
+				message);
 	}
 }

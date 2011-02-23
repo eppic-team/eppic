@@ -51,6 +51,8 @@ public class MainController
 	private String selectedViewer = "Jmol";
 	
 	private InterfacesResiduesWindow interfacesResiduesWindow;
+	private MessageBox waitingMessageBox;
+	private Timer loadingTimer;
 	
 	public InterfacesResiduesWindow getInterfacesResiduesWindow() {
 		return interfacesResiduesWindow;
@@ -148,7 +150,17 @@ public class MainController
 
 	public void getInterfaceResidues(int interfaceId) 
 	{
-		interfacesResiduesWindow = new InterfacesResiduesWindow(this);
+		if(interfacesResiduesWindow == null)
+		{
+			interfacesResiduesWindow = new InterfacesResiduesWindow(this);
+		}
+		else
+		{
+			interfacesResiduesWindow.getInterfacesResiduesPanel().cleanData();
+			interfacesResiduesWindow.getInterfacesResiduesPanel().getFirstStructurePanel().cleanResiduesGrid();
+			interfacesResiduesWindow.getInterfacesResiduesPanel().getSecondStructurePanel().cleanResiduesGrid();
+		}
+		
 		interfacesResiduesWindow.setVisible(true);
 		
 		serviceController.getInterfaceResidues(selectedJobId, interfaceId);
@@ -264,7 +276,11 @@ public class MainController
 	public void showJmolViewer(String interfaceNr) 
 	{
 //		String url = GWT.getModuleBaseURL() + "crkresults/";
-		String url = settings.getResultsLocation();
+		String url = GWT.getHostPageBaseURL() + settings.getResultsLocation();
+		if(!url.endsWith("/"))
+		{
+			url += "/";
+		}
 		
 		int size = windowHeight;
 		if(size > windowWidth)
@@ -284,7 +300,7 @@ public class MainController
 								String selectedJob,
 								String filename,
 								int size) /*-{
-		var jmolWindow = window.open(selectedJob + "-" + interfaceNr, "Jmol", "status=yes,width=" + size + ",height=" + size);
+		var jmolWindow = window.open("", "Jmol", "status=yes,width=" + size + ",height=" + size);
 		$wnd.jmolInitialize("resources/jmol");
 		$wnd.jmolSetDocument(jmolWindow.document);
 		$wnd.jmolApplet(size - 20,'load ' + url + selectedJob + "/" + filename + "." + interfaceNr + '.rimcore.pdb');
@@ -355,5 +371,38 @@ public class MainController
 		mainViewPort = new MainViewPort(this);
 		RootPanel.get().add(mainViewPort);
 	}
+	
+	public void stopMyJobsAutoRefresh()
+	{
+		autoRefreshMyJobs.cancel();
+	}
+	
+	public void showWaiting(String text)
+	{
+		waitingMessageBox = MessageBox.wait(text,  
+				text + ", please wait...", 
+				text + "...");  
+		waitingMessageBox.show();
+	}
+	
+	public void hideWaiting()
+	{
+		waitingMessageBox.close(); 
+	}
+	
+//	buttonBar.add(new Button("Wait", new SelectionListener<ButtonEvent>() {  
+//	      public void componentSelected(ButtonEvent ce) {  
+//	        final MessageBox box = MessageBox.wait("Progress",  
+//	            "Saving your data, please wait...", "Saving...");  
+//	        Timer t = new Timer() {  
+//	          @Override  
+//	          public void run() {  
+//	            Info.display("Message", "Your fake data was saved", "");  
+//	            box.close();  
+//	          }  
+//	        };  
+//	        t.schedule(5000);  
+//	      }  
+//	    }));  
 	
 }
