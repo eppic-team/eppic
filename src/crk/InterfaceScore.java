@@ -6,6 +6,11 @@ import java.util.Arrays;
 
 public class InterfaceScore implements Serializable{
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	private PdbScore parent;
 	
 	private int id;

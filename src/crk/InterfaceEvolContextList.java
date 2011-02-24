@@ -2,12 +2,8 @@ package crk;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.PrintStream;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -432,21 +428,4 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 		return pdbScs;
 	}
 	
-	public void serialize(File serializedFile) throws IOException {
-		FileOutputStream fileOut = new FileOutputStream(serializedFile);
-		ObjectOutputStream out = new ObjectOutputStream(fileOut);
-		out.writeObject(this);
-		out.close();
-		fileOut.close();
-	}
-
-	public static InterfaceEvolContextList readFromFile(File serialized) throws IOException, ClassNotFoundException {
-		FileInputStream fileIn = new FileInputStream(serialized);
-		ObjectInputStream in = new ObjectInputStream(fileIn);
-		InterfaceEvolContextList interfSc = (InterfaceEvolContextList) in.readObject();
-		in.close();
-		fileIn.close();
-		return interfSc;
-	}
-
 }

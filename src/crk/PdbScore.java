@@ -6,6 +6,11 @@ import java.util.TreeMap;
 
 public class PdbScore implements Serializable {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	
 	private String pdbName;
 	private ScoringType scoType;
 	private boolean isScoreWeighted;
@@ -160,18 +165,6 @@ public class PdbScore implements Serializable {
 	public Map<Integer,InterfaceScore> getInterfaceScoreMap()
 	{
 		return interfScores;
-	}
-	
-	private String jobId;
-	
-	public String getJobId()
-	{
-		return jobId;
-	}
-	
-	public void setJobId(String jobId)
-	{
-		this.jobId = jobId;
 	}
 	
 }
