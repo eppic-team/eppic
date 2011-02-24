@@ -21,10 +21,10 @@ public class GetResultsOfProcessingCallback implements AsyncCallback
 	@Override
 	public void onFailure(Throwable caught) 
 	{
-		String errorText = "Error during getting results of processing from server\n";
-		errorText += caught.getMessage() + "\n";
+		String errorText = "Error during getting results of processing from server " + caught.getMessage();
 		
-		mainController.showError(errorText);
+		mainController.updateStatusLabel(errorText, true);
+//		mainController.showError(errorText);
 	}
 
 	@Override
@@ -46,7 +46,8 @@ public class GetResultsOfProcessingCallback implements AsyncCallback
 			}
 			else
 			{
-				mainController.showError("Error during getting results of processing from server" + result.getClass());
+				mainController.updateStatusLabel("Error during getting results of processing from server - incorrect type " + result.getClass(), true);
+//				mainController.showError("Error during getting results of processing from server" + result.getClass());
 				mainController.getMainViewPort().getCenterPanel().removeAll();
 			}
 			
@@ -54,7 +55,7 @@ public class GetResultsOfProcessingCallback implements AsyncCallback
 		}
 		else
 		{
-			mainController.showMessage("Info", "id=" + selectedId + " not found on the server");
+			mainController.showMessage("Job Not Found", "Id=" + selectedId + " not found on the server");
 			mainController.getMainViewPort().getCenterPanel().removeAll();
 		}
 	}

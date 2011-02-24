@@ -20,7 +20,8 @@ public class RunJobCallback implements AsyncCallback
 	@Override
 	public void onFailure(Throwable caught) 
 	{
-		mainController.showError("Error during getting data from server");
+		mainController.updateStatusLabel("Error during getting run job data from server", true);
+//		mainController.showError("Error during getting run job data from server");
 	}
 
 	@Override
@@ -28,7 +29,7 @@ public class RunJobCallback implements AsyncCallback
 	{
 		mainController.getJobsForCurrentSession();
 		mainController.setSelectedJobId(jobId);
-		mainController.displayResults();
+//		mainController.displayResults();
 		History.newItem("id/" + jobId);
 	}
 }

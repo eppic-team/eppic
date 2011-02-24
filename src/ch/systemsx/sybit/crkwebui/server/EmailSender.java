@@ -55,14 +55,14 @@ public class EmailSender
 				simpleMessage.setText(text);
 				simpleMessage.saveChanges();
 
-//				Transport transport = session.getTransport("smtp");
-//				transport.connect(props.getProperty("mail.smtp.host"),
-//						emailData.getEmailSender(), "");
-//				transport.sendMessage(simpleMessage,
-//						simpleMessage.getAllRecipients());
-//				transport.close();
+				Transport transport = session.getTransport("smtp");
+				transport.connect(props.getProperty("mail.smtp.host"),
+						emailData.getEmailSender(), "");
+				transport.sendMessage(simpleMessage,
+						simpleMessage.getAllRecipients());
+				transport.close();
 
-				Transport.send(simpleMessage);
+//				Transport.send(simpleMessage);
 			}
 			catch (MessagingException e) 
 			{

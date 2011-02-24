@@ -66,7 +66,6 @@ public class MyJobsPanel extends ContentPanel
 ////				((LayoutContainer) mainController.getMainViewPort().getDisplayPanel().getWidget(0)).add(w);
 ////				mainController.getMainViewPort().getDisplayPanel().layout();
 //			
-//				mainController.showLoading();
 ////				Window.alert(GWT.getHostPageBaseURL());
 ////				Window.alert(String.valueOf(mainController.getInterfacesResiduesWindow().getInterfacesResiduesPanel().getFirstStructurePanel().getResiduesGrid().getHeight()));
 //			}

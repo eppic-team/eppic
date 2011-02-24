@@ -21,10 +21,10 @@ import javax.servlet.ServletException;
 import model.InterfaceResidueItem;
 import model.InterfaceResidueMethodItem;
 import model.PDBScoreItem;
-import model.PdbScore;
 import model.ProcessingData;
 import ch.systemsx.sybit.crkwebui.client.CrkWebService;
 import ch.systemsx.sybit.crkwebui.server.data.EmailData;
+import ch.systemsx.sybit.crkwebui.server.util.PDBModelConverter;
 import ch.systemsx.sybit.crkwebui.shared.CrkWebException;
 import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
 import ch.systemsx.sybit.crkwebui.shared.model.InputParameters;
@@ -34,6 +34,7 @@ import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 import crk.InterfaceEvolContextList;
+import crk.PdbScore;
 
 
 /**
@@ -44,8 +45,6 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 {
 	// general server settings
 	private Properties properties;
-
-	private EmailData emailData;
 
 	private String generalTmpDirectoryName;
 	private String generalDestinationDirectoryName;
@@ -91,12 +90,6 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 		{
 			throw new ServletException(generalDestinationDirectoryName + " is not a directory");
 		}
-
-		emailData = new EmailData();
-		emailData.setEmailSender(properties.getProperty("email_username", ""));
-		emailData.setEmailSenderPassword(properties.getProperty("email_password", ""));
-		emailData.setHost(properties.getProperty("email_host"));
-		emailData.setPort(properties.getProperty("email_port"));
 
 		runInstances = new CrkThreadGroup("instances");
 		getServletContext().setAttribute("instances", runInstances);
@@ -424,7 +417,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 						}
 					}
 
-					resultsData = PDBScoreItem.createPDBScoreItem(allPdbScores);
+					resultsData = PDBModelConverter.createPDBScoreItem(allPdbScores);
 
 				}
 			}
@@ -508,6 +501,11 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 	{
 		if (runJobData != null) 
 		{
+			EmailData emailData = new EmailData();
+			emailData.setEmailSender(properties.getProperty("email_username", ""));
+			emailData.setEmailSenderPassword(properties.getProperty("email_password", ""));
+			emailData.setHost(properties.getProperty("email_host"));
+			emailData.setPort(properties.getProperty("email_port"));
 			emailData.setEmailRecipient(runJobData.getEmailAddress());
 
 			String localDestinationDirName = generalDestinationDirectoryName + "/" + runJobData.getJobId();
@@ -663,10 +661,11 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 				{
 					e.printStackTrace();
 				}
-//				activeThread.interrupt();
+				
+				activeThread.interrupt();
 			}
 		}
 		
-		runInstances.destroy();
+//		runInstances.destroy();
 	}
 }

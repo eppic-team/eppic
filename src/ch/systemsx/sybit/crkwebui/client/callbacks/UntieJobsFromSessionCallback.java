@@ -16,7 +16,8 @@ public class UntieJobsFromSessionCallback implements AsyncCallback
 	@Override
 	public void onFailure(Throwable caught) 
 	{
-		mainController.showError("Error during getting data from server");
+		mainController.updateStatusLabel("Error during closing session", true);
+//		mainController.showError("Error during getting data from server");
 	}
 
 	@Override
@@ -24,7 +25,8 @@ public class UntieJobsFromSessionCallback implements AsyncCallback
 	{
 		if((result != null) && (result instanceof String))
 		{
-			mainController.showError("Error during cleaning data: " + (String)result);
+			mainController.updateStatusLabel("Error during cleaning data: " + (String)result, true);
+//			mainController.showError("Error during cleaning data: " + (String)result);
 		}
 		else
 		{

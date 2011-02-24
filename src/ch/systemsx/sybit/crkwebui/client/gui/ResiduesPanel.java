@@ -131,6 +131,10 @@ public class ResiduesPanel extends ContentPanel
 					{
 						return "rim";
 					}
+					else
+					{
+						return "other";
+					}
 				}
 				
 				return "";

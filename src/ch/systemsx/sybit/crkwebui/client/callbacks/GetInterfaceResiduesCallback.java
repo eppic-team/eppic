@@ -21,7 +21,8 @@ public class GetInterfaceResiduesCallback implements AsyncCallback
 	@Override
 	public void onFailure(Throwable caught) 
 	{
-		mainController.showError("Error during getting residues data from server" + caught.getMessage());
+		mainController.updateStatusLabel("Error during getting residues data from server" + caught.getMessage(), true);
+//		mainController.showError("Error during getting residues data from server" + caught.getMessage());
 	}
 
 	@Override
@@ -35,21 +36,22 @@ public class GetInterfaceResiduesCallback implements AsyncCallback
 
 			if(structures.containsKey(1))
 			{
-				mainController.getInterfacesResiduesWindow().getInterfacesResiduesPanel().getFirstStructurePanel()
+				mainController.getMainViewPort().getInterfacesResiduesWindow().getInterfacesResiduesPanel().getFirstStructurePanel()
 						.fillResiduesGrid(structures.get(1));
-				mainController.getInterfacesResiduesWindow().getInterfacesResiduesPanel().getFirstStructurePanel().applyFilter(false);
+				mainController.getMainViewPort().getInterfacesResiduesWindow().getInterfacesResiduesPanel().getFirstStructurePanel().applyFilter(false);
 			}
 			
 			if(structures.containsKey(2))
 			{
-				mainController.getInterfacesResiduesWindow().getInterfacesResiduesPanel().getSecondStructurePanel()
+				mainController.getMainViewPort().getInterfacesResiduesWindow().getInterfacesResiduesPanel().getSecondStructurePanel()
 						.fillResiduesGrid(structures.get(2));
-				mainController.getInterfacesResiduesWindow().getInterfacesResiduesPanel().getSecondStructurePanel().applyFilter(false);
+				mainController.getMainViewPort().getInterfacesResiduesWindow().getInterfacesResiduesPanel().getSecondStructurePanel().applyFilter(false);
 			}
 		}
 		else 
 		{
-			mainController.showError("Error during getting residues from server");
+			mainController.updateStatusLabel("Error during getting residues from server - incorrect result type", true);
+//			mainController.showError("Error during getting residues from server");
 		}
 		
 		mainController.hideWaiting();

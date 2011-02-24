@@ -13,8 +13,10 @@ public class KillJobCallback implements AsyncCallback
 	}
 
 	@Override
-	public void onFailure(Throwable caught) {
-		mainController.showError("Error during getting data from server: " + caught.getMessage());
+	public void onFailure(Throwable caught) 
+	{
+		mainController.updateStatusLabel("Error during stopping the job: " + caught.getMessage(), true);
+//		mainController.showError("Error during getting data from server: " + caught.getMessage());
 	}
 
 	@Override
@@ -29,7 +31,8 @@ public class KillJobCallback implements AsyncCallback
 		} 
 		else 
 		{
-			mainController.showError("Error during stopping the job " + mainController.getSelectedJobId());
+			mainController.updateStatusLabel("Error during stopping the job " + mainController.getSelectedJobId(), true);
+//			mainController.showError("Error during stopping the job " + mainController.getSelectedJobId());
 		}
 	}
 

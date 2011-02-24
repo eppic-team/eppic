@@ -50,19 +50,8 @@ public class MainController
 	
 	private String selectedViewer = "Jmol";
 	
-	private InterfacesResiduesWindow interfacesResiduesWindow;
-	private MessageBox waitingMessageBox;
 	private Timer loadingTimer;
 	
-	public InterfacesResiduesWindow getInterfacesResiduesWindow() {
-		return interfacesResiduesWindow;
-	}
-
-	public void setInterfacesResiduesWindow(
-			InterfacesResiduesWindow interfacesResiduesWindow) {
-		this.interfacesResiduesWindow = interfacesResiduesWindow;
-	}
-
 	public MainController(Viewport viewport) 
 	{
 		this.serviceController = new ServiceControllerImpl(this);
@@ -137,6 +126,8 @@ public class MainController
 		{
 			doStatusPanelRefreshing = false;
 		}
+		
+		mainViewPort.getCenterPanel().layout();
 	}
 	
 	public void getCurrentStatusData()
@@ -150,18 +141,7 @@ public class MainController
 
 	public void getInterfaceResidues(int interfaceId) 
 	{
-		if(interfacesResiduesWindow == null)
-		{
-			interfacesResiduesWindow = new InterfacesResiduesWindow(this);
-		}
-		else
-		{
-			interfacesResiduesWindow.getInterfacesResiduesPanel().cleanData();
-			interfacesResiduesWindow.getInterfacesResiduesPanel().getFirstStructurePanel().cleanResiduesGrid();
-			interfacesResiduesWindow.getInterfacesResiduesPanel().getSecondStructurePanel().cleanResiduesGrid();
-		}
-		
-		interfacesResiduesWindow.setVisible(true);
+		mainViewPort.displayInterfacesWindow();
 		
 		serviceController.getInterfaceResidues(selectedJobId, interfaceId);
 	}
@@ -295,15 +275,21 @@ public class MainController
 				 size);
 	}
 	
+	/*
+	 * height and width should be set always - otherwise firefox is opening new tab ( and not window )
+	 */
 	public native void openJmol(String url, 
 								String interfaceNr, 
 								String selectedJob,
 								String filename,
 								int size) /*-{
 		var jmolWindow = window.open("", "Jmol", "status=yes,width=" + size + ",height=" + size);
+		jmolWindow.document.open();
 		$wnd.jmolInitialize("resources/jmol");
+		$wnd.jmolSetCallback("language", "en");
 		$wnd.jmolSetDocument(jmolWindow.document);
 		$wnd.jmolApplet(size - 20,'load ' + url + selectedJob + "/" + filename + "." + interfaceNr + '.rimcore.pdb');
+		jmolWindow.document.close();
 	}-*/;
 	
 	public void downloadFileFromServer(String type, String interfaceId)
@@ -342,12 +328,15 @@ public class MainController
 	}
 	
 	public void showError(String errorMessage) {
+//		mainViewPort.showError(errorMessage);
 		Window.alert(errorMessage);
 	}
 	
 	public void showMessage(String title, String message)
 	{
-		MessageBox.info(title, message, null);
+		MessageBox infoMessageBox = MessageBox.info(title, message, null);
+		infoMessageBox.setMinWidth(300);
+		infoMessageBox.setMaxWidth(windowWidth);
 	}
 	
 	public int getWindowWidth() {
@@ -379,15 +368,22 @@ public class MainController
 	
 	public void showWaiting(String text)
 	{
-		waitingMessageBox = MessageBox.wait(text,  
-				text + ", please wait...", 
-				text + "...");  
-		waitingMessageBox.show();
+		mainViewPort.showWaiting(text);
 	}
 	
 	public void hideWaiting()
 	{
-		waitingMessageBox.close(); 
+		mainViewPort.hideWaiting();
+	}
+	
+	public void updateStatusLabel(String message, boolean isError)
+	{
+		mainViewPort.getBottomPanel().updateStatusMessage(message, isError);
+		
+//		if(isError)
+//		{
+//			mainViewPort.showError(message);
+//		}
 	}
 	
 //	buttonBar.add(new Button("Wait", new SelectionListener<ButtonEvent>() {  
