@@ -1,9 +1,10 @@
 package crk;
 
+import java.io.Serializable;
 import java.util.Arrays;
 
 
-public class InterfaceScore {
+public class InterfaceScore implements Serializable{
 
 	private PdbScore parent;
 	
@@ -18,11 +19,17 @@ public class InterfaceScore {
 	private int[] coreSize2;
 	private double[] rim1Scores;
 	private double[] core1Scores;
+	private double[] ratio1Scores;
 	private double[] rim2Scores;
 	private double[] core2Scores;
+	private double[] ratio2Scores;
 	private double[] finalScores; 					// final scores (average of ratios of both sides), one per bsaToAsaCutoff
 	private CallType[] calls;
 	
+	public InterfaceScore()
+	{
+		
+	}
 	
 	public InterfaceScore(PdbScore parent) {
 		this.parent = parent;
@@ -148,6 +155,22 @@ public class InterfaceScore {
 		return parent;
 	}
 	
+	public double[] getRatio1Scores() {
+		return ratio1Scores;
+	}
+
+	public void setRatio1Scores(double[] ratio1Scores) {
+		this.ratio1Scores = ratio1Scores;
+	}
+
+	public double[] getRatio2Scores() {
+		return ratio2Scores;
+	}
+
+	public void setRatio2Scores(double[] ratio2Scores) {
+		this.ratio2Scores = ratio2Scores;
+	}
+
 	/**
 	 * Gets the prediction call for this interface by using the interface zooming protocol
 	 * with the calculated data, i.e. bsaToAsa soft cutoff will be the highest of the calculated

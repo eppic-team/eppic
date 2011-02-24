@@ -1,6 +1,9 @@
 package crk;
 
-public enum ScoringType {
+import java.io.Serializable;
+
+public enum ScoringType implements Serializable
+{
 	ENTROPY("entropy"), KAKS("KaKs ratio");
 	
 	private String name;

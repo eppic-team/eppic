@@ -1,21 +1,22 @@
 package crk;
 
+import java.io.Serializable;
 import java.util.Map;
 import java.util.TreeMap;
 
-public class PdbScore {
+public class PdbScore implements Serializable {
 
 	private String pdbName;
 	private ScoringType scoType;
 	private boolean isScoreWeighted;
 	private double bioCutoff;
 	private double xtalCutoff;
-	private int homologsCutoff;
-	private int minCoreSize;
-	private int minMemberCoreSize;
-	private double idCutoff;
+	private int homologsCutoff; // min number homologs required
+	private int minCoreSize; // total core size xtal-call cutoff
+	private int minMemberCoreSize; // per-member core size xtal-call cutoff
+	private double idCutoff; // sequence identity cutoff
 	private double queryCovCutoff;
-	private int maxNumSeqsCutoff;
+	private int maxNumSeqsCutoff; // max num sequences used
 	private double[] bsaToAsaCutoffs;
 	private double bsaToAsaSoftCutoff;
 	private double bsaToAsaRelaxStep;
@@ -154,6 +155,23 @@ public class PdbScore {
 
 	public InterfaceScore getInterfScore(int id) {
 		return this.interfScores.get(id);
+	}
+	
+	public Map<Integer,InterfaceScore> getInterfaceScoreMap()
+	{
+		return interfScores;
+	}
+	
+	private String jobId;
+	
+	public String getJobId()
+	{
+		return jobId;
+	}
+	
+	public void setJobId(String jobId)
+	{
+		this.jobId = jobId;
 	}
 	
 }

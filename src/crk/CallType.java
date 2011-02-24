@@ -1,6 +1,8 @@
 package crk;
 
-public enum CallType {
+import java.io.Serializable;
+
+public enum CallType implements Serializable{
 
 	BIO           (0, "bio",    "Biological interface"),
 	CRYSTAL       (1, "xtal",   "Crystal interface"), 
