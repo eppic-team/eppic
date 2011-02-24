@@ -2,8 +2,12 @@ package crk;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.PrintStream;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -11,7 +15,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 
 import owl.core.structure.ChainInterface;
 import owl.core.structure.ChainInterfaceList;
@@ -260,8 +263,10 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 		int[] sizes2 = null;
 		double[] core1Scs = null;
 		double[] rim1Scs = null;
+		double[] rat1Scs = null;
 		double[] core2Scs = null;
 		double[] rim2Scs = null;
+		double[] rat2Scs = null;
 		double[] finalScs = null;
 		CallType[] calls = null;
 		int bsaToAsaCoInd = 0;
@@ -353,8 +358,10 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 					sizes2 = new int[pdbScs[i-1].getBsaToAsaCutoffs().length];
 					core1Scs = new double[pdbScs[i-1].getBsaToAsaCutoffs().length];
 					rim1Scs = new double[pdbScs[i-1].getBsaToAsaCutoffs().length];
+					rat1Scs = new double[pdbScs[i-1].getBsaToAsaCutoffs().length];
 					core2Scs = new double[pdbScs[i-1].getBsaToAsaCutoffs().length];
 					rim2Scs = new double[pdbScs[i-1].getBsaToAsaCutoffs().length];
+					rat2Scs = new double[pdbScs[i-1].getBsaToAsaCutoffs().length];
 					calls = new CallType[pdbScs[i-1].getBsaToAsaCutoffs().length];
 					finalScs = new double[pdbScs[i-1].getBsaToAsaCutoffs().length];
 					bsaToAsaCoInd = 0;
@@ -379,10 +386,10 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 					int numHoms2 = Integer.parseInt(m.group(9).trim());
 					core1Scs[bsaToAsaCoInd] = Double.parseDouble(m.group(10).trim());
 					rim1Scs[bsaToAsaCoInd] = Double.parseDouble(m.group(11).trim());
-					// we skip 12 (ratio1)
+					rat1Scs[bsaToAsaCoInd] = Double.parseDouble(m.group(12).trim());
 					core2Scs[bsaToAsaCoInd] = Double.parseDouble(m.group(13).trim());
 					rim2Scs[bsaToAsaCoInd] = Double.parseDouble(m.group(14).trim());
-					// we skip 15 (ratio2)
+					rat2Scs[bsaToAsaCoInd] = Double.parseDouble(m.group(15).trim());
 					calls[bsaToAsaCoInd] = CallType.getByName(m.group(16).trim());
 					finalScs[bsaToAsaCoInd] = Double.parseDouble(m.group(17).trim());
 					
@@ -393,8 +400,10 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 					isc.setCoreSize2(sizes2);
 					isc.setCore1Scores(core1Scs);
 					isc.setRim1Scores(rim1Scs);
+					isc.setRatio1Scores(rat1Scs);
 					isc.setCore2Scores(core2Scs);
 					isc.setRim2Scores(rim2Scs);
+					isc.setRatio2Scores(rat2Scs);
 					isc.setFinalScores(finalScs);
 					isc.setCalls(calls);
 
@@ -423,5 +432,21 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 		return pdbScs;
 	}
 	
+	public void serialize(File serializedFile) throws IOException {
+		FileOutputStream fileOut = new FileOutputStream(serializedFile);
+		ObjectOutputStream out = new ObjectOutputStream(fileOut);
+		out.writeObject(this);
+		out.close();
+		fileOut.close();
+	}
+
+	public static InterfaceEvolContextList readFromFile(File serialized) throws IOException, ClassNotFoundException {
+		FileInputStream fileIn = new FileInputStream(serialized);
+		ObjectInputStream in = new ObjectInputStream(fileIn);
+		InterfaceEvolContextList interfSc = (InterfaceEvolContextList) in.readObject();
+		in.close();
+		fileIn.close();
+		return interfSc;
+	}
 
 }
