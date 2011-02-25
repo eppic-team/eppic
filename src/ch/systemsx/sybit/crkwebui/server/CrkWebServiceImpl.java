@@ -3,12 +3,10 @@ package ch.systemsx.sybit.crkwebui.server;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -19,7 +17,6 @@ import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 
 import model.InterfaceResidueItem;
-import model.InterfaceResidueMethodItem;
 import model.PDBScoreItem;
 import model.ProcessingData;
 import ch.systemsx.sybit.crkwebui.client.CrkWebService;
@@ -320,9 +317,9 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 						BufferedInputStream bufferedInputStream = new BufferedInputStream(
 								inputStream);
 	
-						byte[] buffer = new byte[inputStream.available()];
+						byte[] buffer = new byte[1024];
 	
-						int length;
+						int length = 0;
 	
 						StringBuffer log = new StringBuffer();
 	
@@ -339,6 +336,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 					} 
 					catch (Exception e) 
 					{
+						e.printStackTrace();
 						throw new CrkWebException(e);
 					}
 				}
@@ -529,6 +527,17 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 					crkRunner,
 					runJobData.getJobId());
 
+			File logFile = new File(localDestinationDirName + "/crklog");
+			
+			try 
+			{
+				logFile.createNewFile();
+			}
+			catch(IOException e)
+			{
+				e.printStackTrace();
+			}
+				
 			crkRunnerThread.start();
 		}
 	}

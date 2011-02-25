@@ -21,7 +21,7 @@ public class GetInterfaceResiduesCallback implements AsyncCallback
 	@Override
 	public void onFailure(Throwable caught) 
 	{
-		mainController.updateStatusLabel("Error during getting residues data from server" + caught.getMessage(), true);
+		mainController.updateStatusLabel("Error during getting residues data from server", true);
 //		mainController.showError("Error during getting residues data from server" + caught.getMessage());
 	}
 

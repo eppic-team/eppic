@@ -143,8 +143,6 @@ public class CrkRunner implements Runnable
 			// 3 scoring
 			crkMain.doScoring();
 			
-			Thread.sleep(20000);
-			
 			File destinationDirectory = new File(destinationDirectoryName);
 			String[] directoryContent = destinationDirectory.list();
 		    

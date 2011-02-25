@@ -46,7 +46,7 @@ public class GetResultsOfProcessingCallback implements AsyncCallback
 			}
 			else
 			{
-				mainController.updateStatusLabel("Error during getting results of processing from server - incorrect type " + result.getClass(), true);
+				mainController.updateStatusLabel("Error during getting results of processing from server - incorrect type ", true);
 //				mainController.showError("Error during getting results of processing from server" + result.getClass());
 				mainController.getMainViewPort().getCenterPanel().removeAll();
 			}

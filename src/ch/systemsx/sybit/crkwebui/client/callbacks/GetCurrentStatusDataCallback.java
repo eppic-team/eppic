@@ -19,7 +19,7 @@ public class GetCurrentStatusDataCallback implements AsyncCallback
 	@Override
 	public void onFailure(Throwable caught) 
 	{
-		String errorText = "Error during getting results of processing from server " + caught.getMessage();
+		String errorText = "Error during getting results of processing from server ";// + caught.getMessage();
 		
 //		mainController.showError(errorText);
 		mainController.updateStatusLabel(errorText, true);

@@ -283,13 +283,11 @@ public class MainController
 								String selectedJob,
 								String filename,
 								int size) /*-{
-		var jmolWindow = window.open("", "Jmol", "status=yes,width=" + size + ",height=" + size);
-		jmolWindow.document.open();
+		var jmolwindow = window.open("", "Jmol", "status=yes,width=" + size + ",height=" + size);
 		$wnd.jmolInitialize("resources/jmol");
 		$wnd.jmolSetCallback("language", "en");
-		$wnd.jmolSetDocument(jmolWindow.document);
+		$wnd.jmolSetDocument(jmolwindow.document);
 		$wnd.jmolApplet(size - 20,'load ' + url + selectedJob + "/" + filename + "." + interfaceNr + '.rimcore.pdb');
-		jmolWindow.document.close();
 	}-*/;
 	
 	public void downloadFileFromServer(String type, String interfaceId)

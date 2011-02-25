@@ -17,7 +17,7 @@ public class GetSettingsCallback implements AsyncCallback
 	@Override
 	public void onFailure(Throwable caught) 
 	{
-		mainController.updateStatusLabel("Error during loading settings. " + caught.getMessage(), true);
+		mainController.updateStatusLabel("Error during loading settings. ", true);
 //		mainController.showError("Error during loading settings. " + caught.getMessage());
 	}
 

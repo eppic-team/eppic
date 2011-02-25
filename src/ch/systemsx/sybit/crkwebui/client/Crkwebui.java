@@ -4,10 +4,13 @@ import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 
 import com.extjs.gxt.ui.client.widget.Viewport;
 import com.google.gwt.core.client.EntryPoint;
+import com.google.gwt.event.logical.shared.ResizeEvent;
+import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.WindowResizeListener;
 import com.google.gwt.user.client.Window.ClosingEvent;
 
 /**
@@ -36,6 +39,16 @@ public class Crkwebui implements EntryPoint, ValueChangeHandler<String>
 //				 mainController.untieJobsFromSession();
 //			}
 //		});
+		
+		Window.addResizeHandler(new ResizeHandler() {
+			
+			@Override
+			public void onResize(ResizeEvent event)
+			{
+				mainController.setWindowHeight(event.getHeight());
+				mainController.setWindowWidth(event.getWidth());
+			}
+		});
 
 		mainController.loadSettings();
 	}

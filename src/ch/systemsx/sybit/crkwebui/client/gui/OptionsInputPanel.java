@@ -7,6 +7,7 @@ import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 import ch.systemsx.sybit.crkwebui.client.model.ReducedAlphabetComboModel;
 import ch.systemsx.sybit.crkwebui.shared.model.InputParameters;
 
+import com.extjs.gxt.ui.client.Style.Scroll;
 import com.extjs.gxt.ui.client.core.El;
 import com.extjs.gxt.ui.client.core.XDOM;
 import com.extjs.gxt.ui.client.event.ComponentEvent;
@@ -15,6 +16,7 @@ import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.widget.Component;
 import com.extjs.gxt.ui.client.widget.ComponentPlugin;
+import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.form.ComboBox;
 import com.extjs.gxt.ui.client.widget.form.ComboBox.TriggerAction;
 import com.extjs.gxt.ui.client.widget.form.FieldSet;
@@ -25,6 +27,7 @@ import com.extjs.gxt.ui.client.widget.layout.FormData;
 import com.extjs.gxt.ui.client.widget.layout.FormLayout;
 import com.extjs.gxt.ui.client.widget.tips.ToolTipConfig;
 import com.google.gwt.i18n.client.NumberFormat;
+import com.google.gwt.user.client.Window;
 
 public class OptionsInputPanel extends FieldSet 
 {
@@ -48,7 +51,8 @@ public class OptionsInputPanel extends FieldSet
 
 	public OptionsInputPanel(InputParameters defaultInputParameters,
 							 List<Integer> reducedAlphabetDefaultList,
-							 String[] supportedMethods) 
+							 String[] supportedMethods,
+							 int windowHeight) 
 	{
 		this.setHeading(MainController.CONSTANTS.input_advanced());
 		this.setCollapsible(true);
@@ -59,6 +63,19 @@ public class OptionsInputPanel extends FieldSet
 		FormLayout layout = new FormLayout();
 		layout.setLabelWidth(200);
 		this.setLayout(layout);
+		
+		int height = 400;
+		windowHeight = Window.getClientHeight();
+		
+		if(height > windowHeight * 0.4)
+		{
+			height = (int) (windowHeight * 0.4);
+		}
+		
+		LayoutContainer scrollContainer = new LayoutContainer();
+		scrollContainer.setScrollMode(Scroll.AUTO);
+		scrollContainer.setHeight(height);
+		scrollContainer.setStyleAttribute("padding-right", "5px");
 		
 //		ComponentPlugin plugin = new ComponentPlugin()
 //		{
@@ -123,7 +140,7 @@ public class OptionsInputPanel extends FieldSet
 				methodsFieldsets[i].add(selecton, formData);
 			}
 			
-			this.add(methodsFieldsets[i]);
+			scrollContainer.add(methodsFieldsets[i]);
 		}
 		
 		FormLayout allignmentsParametersFieldSetLayout = new FormLayout();
@@ -171,7 +188,7 @@ public class OptionsInputPanel extends FieldSet
 		maxNrOfSequences.setData("hint", MainController.CONSTANTS.parameters_max_num_sequences_hint());
 		allignmentsParametersFieldSet.add(maxNrOfSequences, formData);
 
-		this.add(allignmentsParametersFieldSet);
+		scrollContainer.add(allignmentsParametersFieldSet);
 
 		FormLayout othersParametersFieldSetLayout = new FormLayout();
 		othersParametersFieldSetLayout.setLabelWidth(200);
@@ -220,7 +237,8 @@ public class OptionsInputPanel extends FieldSet
 		useNAccess.setData("hint", MainController.CONSTANTS.parameters_use_naccess_hint());
 		othersParametersFieldSet.add(useNAccess, formData);
 
-		this.add(othersParametersFieldSet);
+		scrollContainer.add(othersParametersFieldSet);
+		this.add(scrollContainer);
 
 		fillDefaultValues(defaultInputParameters);
 	}

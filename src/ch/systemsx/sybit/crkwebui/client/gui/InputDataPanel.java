@@ -5,6 +5,7 @@ import ch.systemsx.sybit.crkwebui.client.gui.validators.EmailFieldValidator;
 import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
 
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
+import com.extjs.gxt.ui.client.Style.Scroll;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
 import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.FormEvent;
@@ -22,7 +23,6 @@ import com.extjs.gxt.ui.client.widget.layout.FormLayout;
 import com.extjs.gxt.ui.client.widget.layout.VBoxLayout;
 import com.extjs.gxt.ui.client.widget.layout.VBoxLayout.VBoxLayoutAlign;
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.user.client.Window;
 
 public class InputDataPanel extends DisplayPanel
 {
@@ -80,6 +80,7 @@ public class InputDataPanel extends DisplayPanel
 		emailTextField.setName("email");
 		emailTextField.setFieldLabel(MainController.CONSTANTS.input_email());
 		emailTextField.setValidator(new EmailFieldValidator());
+//		emailTextField.setStyleAttribute("padding", "30px");
 		generalFieldSet.add(emailTextField);
 
 		FormPanel breakPanel = new FormPanel();
@@ -91,7 +92,8 @@ public class InputDataPanel extends DisplayPanel
 		optionsInputPanel = new OptionsInputPanel(
 				mainController.getSettings().getDefaultParametersValues(),
 				mainController.getSettings().getReducedAlphabetList(),
-				mainController.getSettings().getScoresTypes());
+				mainController.getSettings().getScoresTypes(),
+				mainController.getWindowHeight());
 		generalFieldSet.add(optionsInputPanel);
 		optionsInputPanel.collapse();
 

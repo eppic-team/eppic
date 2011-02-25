@@ -15,7 +15,7 @@ public class KillJobCallback implements AsyncCallback
 	@Override
 	public void onFailure(Throwable caught) 
 	{
-		mainController.updateStatusLabel("Error during stopping the job: " + caught.getMessage(), true);
+		mainController.updateStatusLabel("Error during stopping the job: ", true);
 //		mainController.showError("Error during getting data from server: " + caught.getMessage());
 	}
 
