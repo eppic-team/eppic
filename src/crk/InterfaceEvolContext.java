@@ -256,7 +256,7 @@ public class InterfaceEvolContext implements Serializable {
 			InterfaceRimCore rimCore = interf.getFirstRimCores()[0]; // for the web interface output we want only cutoff value (first: 0)
 			List<Double> entropies = chains.get(FIRST).getConservationScores(ScoringType.ENTROPY);
 			List<Double> kaksRatios = null;
-			if (includeKaks)
+			if (includeKaks && canDoCRK())
 				kaksRatios = chains.get(FIRST).getConservationScores(ScoringType.KAKS);
 			for (int resser:firstMol.getAllSortedResSerials()) {
 				String resType = AminoAcid.one2three(firstMol.getSequence().charAt(resser-1));
@@ -273,19 +273,19 @@ public class InterfaceEvolContext implements Serializable {
 				if (assignment==-1 && asa>0) assignment = InterfaceResidueItem.SURFACE;
 				float entropy = (float) entropies.get(chains.get(FIRST).getQueryUniprotPosForPDBPos(resser)).doubleValue();
 				float kaks = -1;
-				if (includeKaks)
+				if (includeKaks && canDoCRK())
 					kaks = (float)kaksRatios.get(chains.get(FIRST).getQueryUniprotPosForPDBPos(resser)).doubleValue();
 				InterfaceResidueItem iri = new InterfaceResidueItem(resser,resType,asa,bsa,bsa/asa,assignment);
 				Map<String,InterfaceResidueMethodItem> scores = new HashMap<String, InterfaceResidueMethodItem>();
 				scores.put("entropy",new InterfaceResidueMethodItem(entropy));
-				if (includeKaks) scores.put("kaks", new InterfaceResidueMethodItem(kaks));
+				if (includeKaks && canDoCRK()) scores.put("kaks", new InterfaceResidueMethodItem(kaks));
 				iri.setInterfaceResidueMethodItems(scores);
 				partner1.add(iri);
 			}
 			Pdb secondMol = interf.getSecondMolecule();
 			rimCore = interf.getSecondRimCores()[0];
 			entropies = chains.get(SECOND).getConservationScores(ScoringType.ENTROPY);
-			if (includeKaks) 
+			if (includeKaks && canDoCRK()) 
 				kaksRatios = chains.get(SECOND).getConservationScores(ScoringType.KAKS);
 			for (int resser:secondMol.getAllSortedResSerials()) {
 				String resType = AminoAcid.one2three(secondMol.getSequence().charAt(resser-1));
@@ -302,12 +302,12 @@ public class InterfaceEvolContext implements Serializable {
 				if (assignment==-1 && asa>0) assignment = InterfaceResidueItem.SURFACE;
 				float entropy = (float) entropies.get(chains.get(SECOND).getQueryUniprotPosForPDBPos(resser)).doubleValue();
 				float kaks = -1;
-				if (includeKaks)
+				if (includeKaks && canDoCRK())
 					kaks = (float) kaksRatios.get(chains.get(SECOND).getQueryUniprotPosForPDBPos(resser)).doubleValue();
 				InterfaceResidueItem iri = new InterfaceResidueItem(resser,resType,asa,bsa,bsa/asa,assignment);
 				Map<String,InterfaceResidueMethodItem> scores = new HashMap<String, InterfaceResidueMethodItem>();
 				scores.put("entropy",new InterfaceResidueMethodItem(entropy));
-				if (includeKaks)
+				if (includeKaks && canDoCRK())
 					scores.put("kaks", new InterfaceResidueMethodItem(kaks));
 				iri.setInterfaceResidueMethodItems(scores);
 				partner2.add(iri);
