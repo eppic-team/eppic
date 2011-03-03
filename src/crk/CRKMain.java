@@ -26,9 +26,9 @@ import owl.core.sequence.UniprotVerMisMatchException;
 import owl.core.structure.ChainInterface;
 import owl.core.structure.ChainInterfaceList;
 import owl.core.structure.PdbAsymUnit;
-import owl.core.structure.PdbLoadError;
+import owl.core.structure.PdbLoadException;
 import owl.core.structure.SpaceGroup;
-import owl.core.util.FileFormatError;
+import owl.core.util.FileFormatException;
 import owl.core.util.Goodies;
 
 public class CRKMain {
@@ -270,9 +270,9 @@ public class CRKMain {
 				cifFile = params.getInFile();
 			}
 			pdb = new PdbAsymUnit(cifFile);
-		} catch (FileFormatError e) {
+		} catch (FileFormatException e) {
 			throw new CRKException(e,"File format error: "+e.getMessage(),true);
-		} catch (PdbLoadError e) {
+		} catch (PdbLoadException e) {
 			throw new CRKException(e,"Couldn't load file "+cifFile+". Error: "+e.getMessage(),true);
 		} catch (IOException e) {
 			throw new CRKException(e,"Problems reading PDB data from "+cifFile+". Error: "+e.getMessage(),true);

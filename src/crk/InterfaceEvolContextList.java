@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
 
 import owl.core.structure.ChainInterface;
 import owl.core.structure.ChainInterfaceList;
-import owl.core.util.FileFormatError;
+import owl.core.util.FileFormatException;
 
 public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>, Serializable {
 
@@ -245,7 +245,7 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 		ps.println();
 	}
 	
-	public static PdbScore[] parseScoresFile(File scoresFile) throws IOException, FileFormatError {
+	public static PdbScore[] parseScoresFile(File scoresFile) throws IOException, FileFormatException {
 		PdbScore[] pdbScs = new PdbScore[2];
 		pdbScs[0] = new PdbScore();
 		pdbScs[1] = new PdbScore();
@@ -281,10 +281,10 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 				if (m.matches()) {
 					String val = m.group(1).trim();
 					if (val.equals("unweighted")) {
-						if (i!=0) throw new FileFormatError("CRK scores file "+scoresFile+" must have unweighted scores in first position"); 
+						if (i!=0) throw new FileFormatException("CRK scores file "+scoresFile+" must have unweighted scores in first position"); 
 						pdbScs[i].setScoreWeighted(false);
 					} else if (val.equals("weighted")){
-						if (i!=1) throw new FileFormatError("CRK scores file "+scoresFile+" must have unweighted scores in first position");
+						if (i!=1) throw new FileFormatException("CRK scores file "+scoresFile+" must have unweighted scores in first position");
 						pdbScs[i].setScoreWeighted(true);
 					}
 				}

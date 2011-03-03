@@ -18,9 +18,9 @@ import owl.core.structure.Asa;
 import owl.core.structure.ChainInterface;
 import owl.core.structure.ChainInterfaceList;
 import owl.core.structure.PdbAsymUnit;
-import owl.core.structure.PdbLoadError;
+import owl.core.structure.PdbLoadException;
 import owl.core.structure.SpaceGroup;
-import owl.core.util.FileFormatError;
+import owl.core.util.FileFormatException;
 
 /**
  * Script to print side by side a comparison of the interfaces calculated 
@@ -95,10 +95,10 @@ public class CompToPisaInterf {
 			} catch (IOException e) {
 				System.err.println("Problems reading cif file for "+pdbCode+". Error: "+e.getMessage());
 				continue;
-			} catch (PdbLoadError e) {
+			} catch (PdbLoadException e) {
 				System.err.println("PDB load error, cause: "+e.getMessage());
 				continue;
-			} catch (FileFormatError e) {
+			} catch (FileFormatException e) {
 				System.err.println("File format error: "+e.getMessage());
 				continue;
 			}

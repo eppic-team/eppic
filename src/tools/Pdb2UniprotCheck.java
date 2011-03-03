@@ -19,7 +19,7 @@ import owl.core.sequence.Sequence;
 import owl.core.sequence.alignment.PairwiseSequenceAlignment;
 import owl.core.structure.Pdb;
 import owl.core.structure.PdbCodeNotFoundException;
-import owl.core.structure.PdbLoadError;
+import owl.core.structure.PdbLoadException;
 import owl.core.structure.PdbasePdb;
 import owl.core.util.MySQLConnection;
 
@@ -122,7 +122,7 @@ public class Pdb2UniprotCheck {
 					noHitsCount++;
 				}
 				continue;
-			} catch (PdbLoadError e) {
+			} catch (PdbLoadException e) {
 				System.err.println(e.getMessage());
 			}
 		}

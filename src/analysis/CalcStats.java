@@ -16,7 +16,7 @@ import crk.InterfaceEvolContextList;
 import crk.InterfaceScore;
 import crk.PdbScore;
 
-import owl.core.util.FileFormatError;
+import owl.core.util.FileFormatException;
 import owl.core.util.RegexFileFilter;
 
 public class CalcStats {
@@ -133,7 +133,7 @@ public class CalcStats {
 		
 	}
 	
-	private static List<List<InterfaceScore>> parseFiles(TreeMap<String,List<Integer>> toAnalyse, File dir, String regexSuffix) throws IOException, FileFormatError {
+	private static List<List<InterfaceScore>> parseFiles(TreeMap<String,List<Integer>> toAnalyse, File dir, String regexSuffix) throws IOException, FileFormatException {
 		
 		List<List<InterfaceScore>> lists = new ArrayList<List<InterfaceScore>>();
 		lists.add(new ArrayList<InterfaceScore>()); // here we store non-weighted scores

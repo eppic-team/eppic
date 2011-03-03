@@ -14,9 +14,9 @@ import java.util.regex.Pattern;
 import owl.core.structure.ChainInterface;
 import owl.core.structure.ChainInterfaceList;
 import owl.core.structure.PdbAsymUnit;
-import owl.core.structure.PdbLoadError;
+import owl.core.structure.PdbLoadException;
 import owl.core.structure.SpaceGroup;
-import owl.core.util.FileFormatError;
+import owl.core.util.FileFormatException;
 
 public class InterfaceSorter {
 
@@ -97,13 +97,13 @@ public class InterfaceSorter {
 			PdbAsymUnit pdb = null;
 			try {
 				pdb = new PdbAsymUnit(cifFile);
-			} catch (PdbLoadError e) {
+			} catch (PdbLoadException e) {
 				System.out.println("\nError. Couldn't load cif file "+cifFile+". Error: "+e.getMessage());
 				continue;
 			} catch (IOException e) {
 				System.out.println("\nError. Couldn't load cif file "+cifFile+". Error: "+e.getMessage());
 				continue;
-			} catch (FileFormatError e) {
+			} catch (FileFormatException e) {
 				System.out.println("\nError. Couldn't load cif file "+cifFile+". Error: "+e.getMessage());
 				continue;
 			}
