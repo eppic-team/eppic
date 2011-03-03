@@ -48,9 +48,6 @@ public class ChainEvolContext implements Serializable {
 	private static final boolean BLAST_NO_FILTERING = true;
 	private static final boolean DEBUG = false;
 	
-	private static final double PDB2UNIPROT_ID_THRESHOLD = 95.0;
-	private static final double PDB2UNIPROT_QCOVERAGE_THRESHOLD = 0.85;
-
 	
 	// members 
 	private String representativeChain;		// the pdb chain code of the representative chain
@@ -84,7 +81,7 @@ public class ChainEvolContext implements Serializable {
 	 * @throws IOException
 	 * @throws BlastError
 	 */
-	public void retrieveQueryData(String siftsLocation, File emblCDScache, String blastBinDir, String blastDbDir, String blastDb, int blastNumThreads, boolean retrieveCDS) 
+	public void retrieveQueryData(String siftsLocation, File emblCDScache, String blastBinDir, String blastDbDir, String blastDb, int blastNumThreads, boolean retrieveCDS, double pdb2uniprotIdThreshold, double pdb2uniprotQcovThreshold) 
 	throws IOException, BlastError {
 		
 		// two possible cases: 
@@ -113,12 +110,12 @@ public class ChainEvolContext implements Serializable {
 			} catch (NoMatchFoundException e) {
 				LOGGER.warn("No SIFTS mapping could be found for "+pdbCode+representativeChain);
 				LOGGER.info("Trying blasting to find one.");
-				query = findUniprotMapping(blastBinDir, blastDbDir, blastDb, blastNumThreads);
+				query = findUniprotMapping(blastBinDir, blastDbDir, blastDb, blastNumThreads, pdb2uniprotIdThreshold, pdb2uniprotQcovThreshold);
 			}
 		// 2) PDB code not known and so SiftsFeatures have to be found by blasting, aligning etc.
 		} else {
 			LOGGER.info("No PDB code available. Can't use SIFTS. Blasting to find the query's Uniprot mapping.");
-			query = findUniprotMapping(blastBinDir, blastDbDir, blastDb, blastNumThreads);
+			query = findUniprotMapping(blastBinDir, blastDbDir, blastDb, blastNumThreads, pdb2uniprotIdThreshold, pdb2uniprotQcovThreshold);
 		}
 		
 		LOGGER.info("Uniprot id for the query "+pdbCode+representativeChain+": "+query.getUniId());
@@ -436,7 +433,7 @@ public class ChainEvolContext implements Serializable {
 		return this.getPDBPosForQueryUniprotPos(uniprotPos);
 	}
 	
-	private UniprotEntry findUniprotMapping(String blastBinDir, String blastDbDir, String blastDb, int blastNumThreads) throws IOException, BlastError {
+	private UniprotEntry findUniprotMapping(String blastBinDir, String blastDbDir, String blastDb, int blastNumThreads, double pdb2uniprotIdThreshold, double pdb2uniprotQcovThreshold) throws IOException, BlastError {
 		
 		File outBlast = File.createTempFile(BLAST_BASENAME,BLASTOUT_SUFFIX);
 		File inputSeqFile = File.createTempFile(BLAST_BASENAME,FASTA_SUFFIX);
@@ -465,7 +462,7 @@ public class ChainEvolContext implements Serializable {
 
 		UniprotEntry uniprotMapping = null;
 		BlastHit best = blastList.getBestHit(); // if null then list was empty, no hits at all
-		if (best!=null && best.getTotalPercentIdentity()>PDB2UNIPROT_ID_THRESHOLD && best.getQueryCoverage()>PDB2UNIPROT_QCOVERAGE_THRESHOLD) {
+		if (best!=null && (best.getTotalPercentIdentity()/100.0)>pdb2uniprotIdThreshold && best.getQueryCoverage()>pdb2uniprotQcovThreshold) {
 			
 			String sid = best.getSubjectId();
 			Matcher m = Sequence.DEFLINE_PRIM_ACCESSION_REGEX.matcher(sid);

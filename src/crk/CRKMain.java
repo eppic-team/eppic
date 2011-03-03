@@ -70,6 +70,9 @@ public class CRKMain {
 	private static final double   DEF_QUERY_COVERAGE_CUTOFF = 0.85;
 	private static final int      DEF_MIN_HOMOLOGS_CUTOFF = 10;
 	private static final double   DEF_MIN_INTERF_AREA_REPORTING = 300;
+	// default pdb2uniprot mapping blast thresholds
+	private static final double   DEF_PDB2UNIPROT_ID_THRESHOLD = 0.95;
+	private static final double   DEF_PDB2UNIPROT_QCOV_THRESHOLD = 0.85;
 		
 	// default cache dirs
 	private static final String   DEF_EMBL_CDS_CACHE_DIR = null;
@@ -125,6 +128,9 @@ public class CRKMain {
 	private static double   QUERY_COVERAGE_CUTOFF;
 	private static int      MIN_HOMOLOGS_CUTOFF;
 	private static double   MIN_INTERF_AREA_REPORTING; 
+	
+	private static double   PDB2UNIPROT_ID_THRESHOLD;
+	private static double   PDB2UNIPROT_QCOV_THRESHOLD;
 			
 	private static String   EMBL_CDS_CACHE_DIR;
 	private static String   BLAST_CACHE_DIR;
@@ -446,7 +452,7 @@ public class CRKMain {
 			}
 			progressLogPS.println("Finding query's uniprot mapping (through SIFTS or blasting)");
 			try {
-				chainEvCont.retrieveQueryData(SIFTS_FILE, emblQueryCacheFile, BLAST_BIN_DIR, BLAST_DB_DIR, BLAST_DB, params.getNumThreads(),params.isDoScoreCRK());
+				chainEvCont.retrieveQueryData(SIFTS_FILE, emblQueryCacheFile, BLAST_BIN_DIR, BLAST_DB_DIR, BLAST_DB, params.getNumThreads(),params.isDoScoreCRK(),PDB2UNIPROT_ID_THRESHOLD,PDB2UNIPROT_QCOV_THRESHOLD);
 			} catch (BlastError e) {
 				throw new CRKException(e,"Couldn't run blast to retrieve query's uniprot mapping: "+e.getMessage(),true);
 			}  catch (IOException e) {
@@ -757,7 +763,10 @@ public class CRKMain {
 
 			QUERY_COVERAGE_CUTOFF = Double.parseDouble(p.getProperty("QUERY_COVERAGE_CUTOFF", new Double(DEF_QUERY_COVERAGE_CUTOFF).toString()));
 			MIN_HOMOLOGS_CUTOFF = Integer.parseInt(p.getProperty("MIN_HOMOLOGS_CUTOFF", new Integer(DEF_MIN_HOMOLOGS_CUTOFF).toString()));
-			MIN_INTERF_AREA_REPORTING = Double.parseDouble(p.getProperty("MIN_INTERF_AREA_REPORTING", new Double(DEF_MIN_INTERF_AREA_REPORTING).toString())); 
+			MIN_INTERF_AREA_REPORTING = Double.parseDouble(p.getProperty("MIN_INTERF_AREA_REPORTING", new Double(DEF_MIN_INTERF_AREA_REPORTING).toString()));
+			
+			PDB2UNIPROT_ID_THRESHOLD = Double.parseDouble(p.getProperty("PDB2UNIPROT_ID_THRESHOLD", new Double(DEF_PDB2UNIPROT_ID_THRESHOLD).toString()));
+			PDB2UNIPROT_QCOV_THRESHOLD = Double.parseDouble(p.getProperty("PDB2UNIPROT_QCOV_THRESHOLD", new Double(DEF_PDB2UNIPROT_QCOV_THRESHOLD).toString()));
 					
 			EMBL_CDS_CACHE_DIR  = p.getProperty("EMBL_CDS_CACHE_DIR", DEF_EMBL_CDS_CACHE_DIR);
 			BLAST_CACHE_DIR     = p.getProperty("BLAST_CACHE_DIR", DEF_BLAST_CACHE_DIR);
