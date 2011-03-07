@@ -2,6 +2,7 @@ package ch.systemsx.sybit.crkwebui.client.gui;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 import ch.systemsx.sybit.crkwebui.client.gui.validators.EmailFieldValidator;
+import ch.systemsx.sybit.crkwebui.client.gui.validators.PdbCodeFieldValidator;
 import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
 
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
@@ -127,6 +128,7 @@ public class InputDataPanel extends DisplayPanel
 		pdbCodeField = new TextField<String>();
 		pdbCodeField.setName("code");
 		pdbCodeField.setFieldLabel("PDB Code");
+		pdbCodeField.setValidator(new PdbCodeFieldValidator());
 //		emailTextField.setStyleAttribute("padding", "30px");
 		generalFieldSet.add(pdbCodeField);
 		
