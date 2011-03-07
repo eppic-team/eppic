@@ -3,6 +3,7 @@ package ch.systemsx.sybit.crkwebui.client.gui;
 import model.PDBScoreItem;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 
+import com.extjs.gxt.ui.client.Style.Scroll;
 import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.util.Padding;
 import com.extjs.gxt.ui.client.widget.Label;
@@ -19,6 +20,17 @@ import com.google.gwt.user.client.ui.HTML;
 
 public class InfoPanel extends FormPanel 
 {
+	private HTML pdbIdentifier;
+	private Label totalCoreSizeXtalCallCutoff;
+	private Label infoPanelMinNumberHomologsRequired;
+	private Label infoPanelSequenceIdentityCutoff;
+	private Label infoPanelQueryCoverageCutoff;
+	private Label infoPanelPerMemberCoreSizeXtalCallCutoff;
+	private Label infoPanelMaxNumSequencesUsed;
+	private Label infoPanelBioCallCutoff;
+	private Label infoPanelXtalCallCutoff;
+	private HTML downloadResultsLink;
+	
 	public InfoPanel(PDBScoreItem resultsData) 
 	{
 		this.getHeader().setVisible(false);
@@ -36,16 +48,17 @@ public class InfoPanel extends FormPanel
 		left.setHeight(65);
 		left.setStyleAttribute("paddingRight", "10px");
 		left.setLayout(vBoxLayout);
+		left.setScrollMode(Scroll.AUTO);
 
-		HTML html = new HTML();
-		html.setHTML(MainController.CONSTANTS.info_panel_pdb_identifier() + ": <b>" + resultsData.getPdbName() + "</b>");
-		left.add(html);
+		pdbIdentifier = new HTML();
+		pdbIdentifier.setHTML(MainController.CONSTANTS.info_panel_pdb_identifier() + ": <b>" + resultsData.getPdbName() + "</b>");
+		left.add(pdbIdentifier);
 		
-		Label label = new Label(MainController.CONSTANTS.info_panel_total_core_size_xtal_call_cutoff() + ": " + resultsData.getMinCoreSize());
-		left.add(label);
+		totalCoreSizeXtalCallCutoff = new Label(MainController.CONSTANTS.info_panel_total_core_size_xtal_call_cutoff() + ": " + resultsData.getMinCoreSize());
+		left.add(totalCoreSizeXtalCallCutoff);
 		
-		label = new Label(MainController.CONSTANTS.info_panel_min_number_homologs_required() + ": " + resultsData.getHomologsCutoff());
-		left.add(label);
+		infoPanelMinNumberHomologsRequired = new Label(MainController.CONSTANTS.info_panel_min_number_homologs_required() + ": " + resultsData.getHomologsCutoff());
+		left.add(infoPanelMinNumberHomologsRequired);
 
 		vBoxLayout = new VBoxLayout();
 		vBoxLayout.setPadding(new Padding(5));
@@ -58,15 +71,16 @@ public class InfoPanel extends FormPanel
 		center.setStyleAttribute("paddingLeft", "10px");
 		center.setHeight(65);
 		center.setLayout(vBoxLayout);
+		center.setScrollMode(Scroll.AUTO);
 
-		label = new Label(MainController.CONSTANTS.info_panel_sequence_identity_cutoff() + ": " + resultsData.getIdCutoff());
-		center.add(label);
+		infoPanelSequenceIdentityCutoff = new Label(MainController.CONSTANTS.info_panel_sequence_identity_cutoff() + ": " + resultsData.getIdCutoff());
+		center.add(infoPanelSequenceIdentityCutoff);
 		
-		label = new Label(MainController.CONSTANTS.info_panel_query_coverage_cutoff() + ": " + resultsData.getQueryCovCutoff());
-		center.add(label);
+		infoPanelQueryCoverageCutoff = new Label(MainController.CONSTANTS.info_panel_query_coverage_cutoff() + ": " + resultsData.getQueryCovCutoff());
+		center.add(infoPanelQueryCoverageCutoff);
 
-		label = new Label(MainController.CONSTANTS.info_panel_per_member_core_size_xtal_call_cutoff() + ": " + resultsData.getMinMemberCoreSize());
-		center.add(label);
+		infoPanelPerMemberCoreSizeXtalCallCutoff = new Label(MainController.CONSTANTS.info_panel_per_member_core_size_xtal_call_cutoff() + ": " + resultsData.getMinMemberCoreSize());
+		center.add(infoPanelPerMemberCoreSizeXtalCallCutoff);
 		
 		vBoxLayout = new VBoxLayout();
 		vBoxLayout.setPadding(new Padding(5));
@@ -78,17 +92,18 @@ public class InfoPanel extends FormPanel
 		right.setStyleAttribute("paddingLeft", "10px");
 		right.setHeight(80);
 		right.setLayout(vBoxLayout);
+		right.setScrollMode(Scroll.AUTO);
 		
-		label = new Label(MainController.CONSTANTS.info_panel_max_num_sequences_used() + ": " + resultsData.getMaxNumSeqsCutoff());
-		right.add(label);
+		infoPanelMaxNumSequencesUsed = new Label(MainController.CONSTANTS.info_panel_max_num_sequences_used() + ": " + resultsData.getMaxNumSeqsCutoff());
+		right.add(infoPanelMaxNumSequencesUsed);
 
-		label = new Label(MainController.CONSTANTS.info_panel_bio_call_cutoff() + ": " + resultsData.getBioCutoff());
-		right.add(label);
+		infoPanelBioCallCutoff = new Label(MainController.CONSTANTS.info_panel_bio_call_cutoff() + ": " + resultsData.getBioCutoff());
+		right.add(infoPanelBioCallCutoff);
 
-		label = new Label(MainController.CONSTANTS.info_panel_xtal_call_cutoff() + ": " + resultsData.getXtalCutoff());
-		right.add(label);
+		infoPanelXtalCallCutoff = new Label(MainController.CONSTANTS.info_panel_xtal_call_cutoff() + ": " + resultsData.getXtalCutoff());
+		right.add(infoPanelXtalCallCutoff);
 		
-		HTML downloadResultsLink = new HTML();
+		downloadResultsLink = new HTML();
 		downloadResultsLink.setHTML("<a href=" + GWT.getModuleBaseURL()
 				+ "fileDownload?type=zip&id=" + resultsData.getJobId()
 				+ ">" + MainController.CONSTANTS.info_panel_download_results_link() + "</a>");
@@ -99,5 +114,21 @@ public class InfoPanel extends FormPanel
 		this.add(right, new ColumnData(.33));
 
 //		this.add(main);
+	}
+
+	public void fillInfoPanel(PDBScoreItem resultsData) 
+	{
+		pdbIdentifier.setHTML(MainController.CONSTANTS.info_panel_pdb_identifier() + ": <b>" + resultsData.getPdbName() + "</b>");
+		totalCoreSizeXtalCallCutoff.setText(MainController.CONSTANTS.info_panel_total_core_size_xtal_call_cutoff() + ": " + resultsData.getMinCoreSize());
+		infoPanelMinNumberHomologsRequired.setText(MainController.CONSTANTS.info_panel_min_number_homologs_required() + ": " + resultsData.getHomologsCutoff());
+		infoPanelSequenceIdentityCutoff.setText(MainController.CONSTANTS.info_panel_sequence_identity_cutoff() + ": " + resultsData.getIdCutoff());
+		infoPanelQueryCoverageCutoff.setText(MainController.CONSTANTS.info_panel_query_coverage_cutoff() + ": " + resultsData.getQueryCovCutoff());
+		infoPanelPerMemberCoreSizeXtalCallCutoff.setText(MainController.CONSTANTS.info_panel_per_member_core_size_xtal_call_cutoff() + ": " + resultsData.getMinMemberCoreSize());
+		infoPanelMaxNumSequencesUsed.setText(MainController.CONSTANTS.info_panel_max_num_sequences_used() + ": " + resultsData.getMaxNumSeqsCutoff());
+		infoPanelBioCallCutoff.setText(MainController.CONSTANTS.info_panel_bio_call_cutoff() + ": " + resultsData.getBioCutoff());
+		infoPanelXtalCallCutoff.setText(MainController.CONSTANTS.info_panel_xtal_call_cutoff() + ": " + resultsData.getXtalCutoff());
+		downloadResultsLink.setHTML("<a href=" + GWT.getModuleBaseURL()
+				+ "fileDownload?type=zip&id=" + resultsData.getJobId()
+				+ ">" + MainController.CONSTANTS.info_panel_download_results_link() + "</a>");
 	}
 }

@@ -4,13 +4,19 @@ import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
 
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
+import com.extjs.gxt.ui.client.Style.Orientation;
+import com.extjs.gxt.ui.client.Style.Scroll;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
 import com.extjs.gxt.ui.client.event.SelectionListener;
+import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.button.Button;
 import com.extjs.gxt.ui.client.widget.form.FormPanel;
 import com.extjs.gxt.ui.client.widget.form.TextArea;
 import com.extjs.gxt.ui.client.widget.form.TextField;
+import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 import com.extjs.gxt.ui.client.widget.layout.FormData;
+import com.extjs.gxt.ui.client.widget.layout.RowData;
+import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 import com.extjs.gxt.ui.client.widget.layout.VBoxLayout;
 import com.extjs.gxt.ui.client.widget.layout.VBoxLayout.VBoxLayoutAlign;
 
@@ -32,35 +38,35 @@ public class StatusPanel extends DisplayPanel
 
 	public void init() 
 	{
-		VBoxLayout vBoxLayout = new VBoxLayout();
-		vBoxLayout.setVBoxLayoutAlign(VBoxLayoutAlign.CENTER);
-		this.setLayout(vBoxLayout);
-		this.setBorders(false);
-//		this.setBodyBorder(false);
-//		this.getHeader().setVisible(false);
+//		VBoxLayout vBoxLayout = new VBoxLayout();
+//		vBoxLayout.setVBoxLayoutAlign(VBoxLayoutAlign.CENTER);
+//		this.setLayout(vBoxLayout);
+//		this.setBorders(false);
+		this.setLayout(new FitLayout());
+		this.setBorders(true);
 		
 		formPanel = new FormPanel();
 		formPanel.getHeader().setVisible(false);
-		formPanel.setBorders(true);
 		formPanel.setBodyBorder(false);
 		formPanel.setButtonAlign(HorizontalAlignment.CENTER);
-		formPanel.setWidth(700);
+		formPanel.setScrollMode(Scroll.AUTOY);
+		formPanel.setHeight(mainController.getWindowHeight() - 100);
 
 		jobId = new TextField<String>();
 		jobId.setFieldLabel(MainController.CONSTANTS.status_panel_jobId());
 		jobId.setReadOnly(true);
-		formPanel.add(jobId, new FormData("100%"));
+		formPanel.add(jobId, new FormData("95%"));
 
 		status = new TextField<String>();
 		status.setFieldLabel(MainController.CONSTANTS.status_panel_status());
 		status.setReadOnly(true);
-		formPanel.add(status, new FormData("100%"));
+		formPanel.add(status, new FormData("95%"));
 
 		log = new TextArea();
 		log.setFieldLabel(MainController.CONSTANTS.status_panel_log());
-		log.setHeight(400);
+//		log.setHeight(400);
 
-		formPanel.add(log, new FormData("100%"));
+		formPanel.add(log, new FormData("95% -60"));
 		
 		killJob = new Button(MainController.CONSTANTS.status_panel_stop(), new SelectionListener<ButtonEvent>() {
 
@@ -70,8 +76,8 @@ public class StatusPanel extends DisplayPanel
 			}
 		});
 		
-		formPanel.setButtonAlign(HorizontalAlignment.RIGHT);
-		killJob.setVisible(false);
+		formPanel.setButtonAlign(HorizontalAlignment.CENTER);
+//		killJob.setVisible(false);
 		formPanel.addButton(killJob);
 		
 		this.add(formPanel);

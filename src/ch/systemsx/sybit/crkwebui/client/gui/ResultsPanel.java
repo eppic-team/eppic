@@ -12,6 +12,7 @@ import ch.systemsx.sybit.crkwebui.client.gui.renderers.GridCellRendererFactory;
 
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.Style.Orientation;
+import com.extjs.gxt.ui.client.Style.Scroll;
 import com.extjs.gxt.ui.client.data.BeanModel;
 import com.extjs.gxt.ui.client.data.BeanModelFactory;
 import com.extjs.gxt.ui.client.data.BeanModelLookup;
@@ -21,7 +22,6 @@ import com.extjs.gxt.ui.client.event.GridEvent;
 import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.util.Margins;
-import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.form.ComboBox.TriggerAction;
 import com.extjs.gxt.ui.client.widget.form.FormPanel;
@@ -43,6 +43,8 @@ public class ResultsPanel extends DisplayPanel
 	private ListStore<BeanModel> resultsStore;
 	private ColumnModel resultsColumnModel;
 	private Grid<BeanModel> resultsGrid;
+	private int resultsGridWidthOfAllColumns = 0;
+	private List<Integer> initialColumnWidth;
 
 	private PDBScoreItem resultsData;
 
@@ -75,7 +77,9 @@ public class ResultsPanel extends DisplayPanel
 
 		resultsGrid = new Grid<BeanModel>(resultsStore, resultsColumnModel);
 		// resultsGrid.setStyleAttribute("borderTop", "none");
-		resultsGrid.getView().setForceFit(true);
+		
+		resultsGrid.getView().setForceFit(false);
+		
 		resultsGrid.setBorders(true);
 		resultsGrid.setStripeRows(true);
 		resultsGrid.setColumnLines(true);
@@ -113,6 +117,10 @@ public class ResultsPanel extends DisplayPanel
 		this.add(scoresPanelLocation, new RowData(1, 0.40, new Margins(0)));
 	}
 
+	public int getResultsGridWidthOfAllColumns() {
+		return resultsGridWidthOfAllColumns;
+	}
+
 	public void updateScoresPanel(int selectedInterface) 
 	{
 		if (scoresPanel == null) 
@@ -123,6 +131,7 @@ public class ResultsPanel extends DisplayPanel
 		}
 
 		scoresPanel.fillGrid(resultsData, selectedInterface);
+		scoresPanel.setVisible(true);
 	}
 
 	private List<ColumnConfig> createColumnConfig() {
@@ -152,7 +161,14 @@ public class ResultsPanel extends DisplayPanel
 		} else {
 			columns = columnOrder.split(",");
 		}
+		
+		if(columns != null)
+		{
+			initialColumnWidth = new ArrayList<Integer>();
+		}
 
+		int i=0;
+		
 		for (String columnName : columns) {
 			boolean addColumn = true;
 
@@ -183,7 +199,7 @@ public class ResultsPanel extends DisplayPanel
 				if (customColumnWidth != null) {
 					columnWidth = Integer.parseInt(customColumnWidth);
 				}
-
+				
 				String customRenderer = mainController.getSettings()
 						.getGridProperties()
 						.get("results_" + columnName + "_renderer");
@@ -229,6 +245,9 @@ public class ResultsPanel extends DisplayPanel
 							column.setRenderer(renderer);
 						}
 
+						resultsGridWidthOfAllColumns += columnWidth;
+						initialColumnWidth.add(columnWidth);
+						
 						configs.add(column);
 					}
 				} else {
@@ -245,9 +264,14 @@ public class ResultsPanel extends DisplayPanel
 						column.setRenderer(renderer);
 					}
 
+					resultsGridWidthOfAllColumns += columnWidth;
+					initialColumnWidth.add(columnWidth);
+					
 					configs.add(column);
 				}
 			}
+			
+			i++;
 		}
 
 		return configs;
@@ -382,5 +406,43 @@ public class ResultsPanel extends DisplayPanel
 	public String getCurrentViewType()
 	{
 		return viewerTypeComboBox.getValue().getValue();
+	}
+	
+	public void fillResultsPanel(PDBScoreItem resultsData)
+	{
+		if(scoresPanel != null)
+		{
+			scoresPanel.setVisible(false);
+		}
+		
+		fillResultsGrid(resultsData);
+		
+		infoPanel.fillInfoPanel(resultsData);
+	}
+
+	public void resizeGrid() 
+	{
+		if(resultsGridWidthOfAllColumns < mainController.getWindowWidth() - 225)
+		{
+			resultsGrid.getView().setForceFit(true);
+		}
+		else
+		{
+			resultsGrid.getView().setForceFit(false);
+			
+			int nrOfColumn = resultsGrid.getColumnModel().getColumnCount();
+			
+			for(int i=0; i<nrOfColumn; i++)
+			{
+				resultsGrid.getColumnModel().getColumn(i).setWidth(initialColumnWidth.get(i));
+			}
+		}
+		
+		resultsGrid.getView().refresh(true);
+		resultsGrid.getView().layout();
+		resultsGrid.recalculate();
+		resultsGrid.repaint();
+		
+		this.layout();
 	}
 }

@@ -1,6 +1,8 @@
 package ch.systemsx.sybit.crkwebui.client;
 
+import junit.textui.ResultPrinter;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
+import ch.systemsx.sybit.crkwebui.client.gui.ResultsPanel;
 
 import com.extjs.gxt.ui.client.widget.Viewport;
 import com.google.gwt.core.client.EntryPoint;
@@ -47,6 +49,14 @@ public class Crkwebui implements EntryPoint, ValueChangeHandler<String>
 			{
 				mainController.setWindowHeight(event.getHeight());
 				mainController.setWindowWidth(event.getWidth());
+				
+				if((mainController.getMainViewPort() != null) &&
+				   (mainController.getMainViewPort().getCenterPanel() != null) &&
+				   (mainController.getMainViewPort().getCenterPanel().getDisplayPanel() != null) &&
+				   (mainController.getMainViewPort().getCenterPanel().getDisplayPanel() instanceof ResultsPanel))
+				{
+					((ResultsPanel)mainController.getMainViewPort().getCenterPanel().getDisplayPanel()).resizeGrid();
+				}
 			}
 		});
 

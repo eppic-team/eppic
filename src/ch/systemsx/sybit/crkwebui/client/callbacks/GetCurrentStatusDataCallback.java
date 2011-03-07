@@ -47,12 +47,14 @@ public class GetCurrentStatusDataCallback implements AsyncCallback
 				mainController.updateStatusLabel("Error during getting results of processing from server " + result.getClass(), true);
 //				mainController.showError("Error during getting results of processing from server" + result.getClass());
 				mainController.getMainViewPort().getCenterPanel().removeAll();
+				mainController.getMainViewPort().getCenterPanel().setDisplayPanel(null);
 			}
 		}
 		else
 		{
 			mainController.showMessage("Info", "id=" + mainController.getSelectedJobId() + " not found on the server");
 			mainController.getMainViewPort().getCenterPanel().removeAll();
+			mainController.getMainViewPort().getCenterPanel().setDisplayPanel(null);
 		}
 	}
 

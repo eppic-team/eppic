@@ -106,17 +106,41 @@ public class MainController
 	{
 		doStatusPanelRefreshing = false;
 		
-		ResultsPanel resultsPanel = new ResultsPanel(this, resultData);
-		resultsPanel.setResults(resultData);
-		mainViewPort.getCenterPanel().setDisplayPanel(resultsPanel);
+		if((mainViewPort.getCenterPanel().getDisplayPanel() != null) &&
+		   (mainViewPort.getCenterPanel().getDisplayPanel() instanceof ResultsPanel))
+		{
+			ResultsPanel resultsPanel = (ResultsPanel)mainViewPort.getCenterPanel().getDisplayPanel();
+			resultsPanel.fillResultsPanel(resultData);
+			resultsPanel.layout();
+		}
+		else
+		{
+			ResultsPanel resultsPanel = new ResultsPanel(this, resultData);
+			resultsPanel.setResults(resultData);
+			mainViewPort.getCenterPanel().setDisplayPanel(resultsPanel);
+			resultsPanel.resizeGrid();
+		}
 	}
 
 	public void displayStatusView(ProcessingInProgressData statusData) 
 	{
-		StatusPanel statusPanel = new StatusPanel(this);
-		mainViewPort.getCenterPanel().setDisplayPanel(statusPanel);
+		StatusPanel statusPanel = null;
 		
-		statusPanel.fillData(statusData);
+		if(mainViewPort.getCenterPanel().getDisplayPanel() instanceof StatusPanel)
+		{
+			statusPanel = (StatusPanel)mainViewPort.getCenterPanel().getDisplayPanel();
+			statusPanel.cleanData();
+		}
+		else
+		{
+			statusPanel = new StatusPanel(this);
+			mainViewPort.getCenterPanel().setDisplayPanel(statusPanel);
+		}
+		
+		if(statusPanel != null)
+		{
+			statusPanel.fillData(statusData);
+		}
 		
 		if((statusData.getStatus() != null) && (statusData.getStatus().equals("Running")))
 		{
@@ -292,7 +316,7 @@ public class MainController
 		$wnd.jmolInitialize("resources/jmol");
 		$wnd.jmolSetCallback("language", "en");
 		$wnd.jmolSetDocument(jmolwindow.document);
-		$wnd.jmolApplet(size - 20,"cartoon on" + 'load ' + url + selectedJob + "/" + filename + "." + interfaceNr + '.rimcore.pdb');
+		$wnd.jmolApplet(size - 20,"cartoon on; " + 'load ' + url + selectedJob + "/" + filename + "." + interfaceNr + '.rimcore.pdb');
 	}-*/;
 	
 	public void downloadFileFromServer(String type, String interfaceId)

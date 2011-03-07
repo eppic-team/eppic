@@ -11,10 +11,13 @@ import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 import ch.systemsx.sybit.crkwebui.client.gui.renderers.GridCellRendererFactory;
 
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
+import com.extjs.gxt.ui.client.Style.Orientation;
 import com.extjs.gxt.ui.client.data.BeanModel;
 import com.extjs.gxt.ui.client.data.BeanModelFactory;
 import com.extjs.gxt.ui.client.data.BeanModelLookup;
 import com.extjs.gxt.ui.client.store.GroupingStore;
+import com.extjs.gxt.ui.client.util.Margins;
+import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.form.FormPanel;
 import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
 import com.extjs.gxt.ui.client.widget.grid.ColumnModel;
@@ -26,9 +29,11 @@ import com.extjs.gxt.ui.client.widget.grid.GroupingView;
 import com.extjs.gxt.ui.client.widget.grid.HeaderGroupConfig;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 import com.extjs.gxt.ui.client.widget.layout.FormData;
+import com.extjs.gxt.ui.client.widget.layout.RowData;
+import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 import com.google.gwt.user.client.Window;
 
-public class ScoresPanel extends FormPanel 
+public class ScoresPanel extends LayoutContainer 
 {
 	private MainController mainController;
 
@@ -40,11 +45,13 @@ public class ScoresPanel extends FormPanel
 	public ScoresPanel(PDBScoreItem resultsData, MainController mainController) 
 	{
 		this.mainController = mainController;
-		this.getHeader().setVisible(false);
-		this.setBodyBorder(false);
-		this.setBorders(false);
-		this.setLayout(new FitLayout());
-		this.setPadding(0);
+//		this.getHeader().setVisible(false);
+//		this.setBodyBorder(false);
+//		this.setBorders(false);
+//		this.setLayout(new RowLayout());
+//		this.setLayout(new FitLayout());
+//		this.setPadding(0);
+		this.setLayout(new RowLayout(Orientation.VERTICAL));
 
 		scoresConfigs = createColumnConfig();
 
@@ -90,7 +97,7 @@ public class ScoresPanel extends FormPanel
 
 		scoresGrid.setView(view);
 
-		this.add(scoresGrid);
+		this.add(scoresGrid, new RowData(1, 1, new Margins(0)));
 
 	}
 

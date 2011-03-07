@@ -27,8 +27,8 @@ public class RunJobCallback implements AsyncCallback
 		if ((result != null) && (result instanceof String)) 
 		{
 			String jobId = (String) result;
-			mainController.getJobsForCurrentSession();
 			mainController.setSelectedJobId(jobId);
+			mainController.getJobsForCurrentSession();
 //			mainController.displayResults();
 			History.newItem("id/" + jobId);
 		} 

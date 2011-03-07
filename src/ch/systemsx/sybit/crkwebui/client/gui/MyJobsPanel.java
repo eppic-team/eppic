@@ -7,6 +7,8 @@ import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 import ch.systemsx.sybit.crkwebui.client.model.MyJobsModel;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
 
+import com.extjs.gxt.ui.client.Style.Orientation;
+import com.extjs.gxt.ui.client.Style.Scroll;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
 import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.GridEvent;
@@ -14,6 +16,7 @@ import com.extjs.gxt.ui.client.event.IconButtonEvent;
 import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.event.SelectionListener;
 import com.extjs.gxt.ui.client.store.ListStore;
+import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.button.Button;
 import com.extjs.gxt.ui.client.widget.button.ToolButton;
@@ -23,6 +26,8 @@ import com.extjs.gxt.ui.client.widget.grid.ColumnModel;
 import com.extjs.gxt.ui.client.widget.grid.Grid;
 import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
+import com.extjs.gxt.ui.client.widget.layout.RowData;
+import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.History;
@@ -42,7 +47,8 @@ public class MyJobsPanel extends ContentPanel
 	public MyJobsPanel(final MainController mainController) 
 	{
 		this.mainController = mainController;
-		this.setLayout(new FitLayout());
+		this.setLayout(new RowLayout(Orientation.VERTICAL));
+		this.setScrollMode(Scroll.AUTO);
 		this.setHeading(MainController.CONSTANTS.myjobs_panel_head());
 
 		ToolBar toolBar = new ToolBar();
@@ -175,11 +181,13 @@ public class MyJobsPanel extends ContentPanel
 			}
 		});
 
-		this.add(myJobsGrid);
+		this.add(myJobsGrid, new RowData(1, 1, new Margins(0)));
 	}
 
 	public void setJobs(List<ProcessingInProgressData> jobs) 
 	{
+		MyJobsModel itemToSelect = null;
+		
 		myJobsStore.removeAll();
 
 		List<MyJobsModel> data = new ArrayList<MyJobsModel>();
@@ -191,11 +199,23 @@ public class MyJobsPanel extends ContentPanel
 				MyJobsModel myJobsModel = new MyJobsModel(statusData.getJobId(),
 														  statusData.getStatus(),
 														  statusData.getInput());
+				
+				if(statusData.getJobId().equals(mainController.getSelectedJobId()))
+				{
+					itemToSelect = myJobsModel;
+				}
+				
 				data.add(myJobsModel);
 			}
 		}
 
 		myJobsStore.add(data);
 		myJobsGrid.reconfigure(myJobsStore, myJobsColumnModel);
+		
+		if((mainController.getSelectedJobId() != null) &&
+			(myJobsGrid.getStore().getCount() > 0))
+		{
+			myJobsGrid.getSelectionModel().select(itemToSelect, false);
+		}
 	}
 }

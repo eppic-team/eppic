@@ -49,6 +49,7 @@ public class GetResultsOfProcessingCallback implements AsyncCallback
 				mainController.updateStatusLabel("Error during getting results of processing from server - incorrect type ", true);
 //				mainController.showError("Error during getting results of processing from server" + result.getClass());
 				mainController.getMainViewPort().getCenterPanel().removeAll();
+				mainController.getMainViewPort().getCenterPanel().setDisplayPanel(null);
 			}
 			
 			mainController.getJobsForCurrentSession();
@@ -57,6 +58,7 @@ public class GetResultsOfProcessingCallback implements AsyncCallback
 		{
 			mainController.showMessage("Job Not Found", "Id=" + selectedId + " not found on the server");
 			mainController.getMainViewPort().getCenterPanel().removeAll();
+			mainController.getMainViewPort().getCenterPanel().setDisplayPanel(null);
 		}
 	}
 
