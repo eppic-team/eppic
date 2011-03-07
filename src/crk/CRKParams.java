@@ -197,16 +197,14 @@ public class CRKParams {
 		}
 	}
 
-	public void checkCommandLineInput() {
+	public void checkCommandLineInput() throws CRKException {
 		
 		if (pdbCode==null) {
-			System.err.println("Missing argument -i");
-			System.exit(1);
+			throw new CRKException(null, "Missing argument -i", true);
 		}
 		
 		if (inFile!=null && !inFile.exists()){
-			System.err.println("Given file "+inFile+" does not exist!");
-			System.exit(1);
+			throw new CRKException(null, "Given file "+inFile+" does not exist!", true);
 		}
 		
 		if (baseName==null) {
@@ -217,13 +215,11 @@ public class CRKParams {
 		}
 		
 		if (!AminoAcid.isValidNumGroupsReducedAlphabet(reducedAlphabet)) {
-			System.err.println("Invalid number of amino acid groups specified ("+reducedAlphabet+")");
-			System.exit(1);
+			throw new CRKException(null, "Invalid number of amino acid groups specified ("+reducedAlphabet+")", true);
 		}
 		
 		if (usePisa && inFile!=null) {
-			System.err.println("Can only get PISA interface enumeration for a PDB code. Can't use '-p' if the PDB given is a file");
-			System.exit(1);
+			throw new CRKException(null, "Can only get PISA interface enumeration for a PDB code. Can't use '-p' if the PDB given is a file", true);
 		}
 
 

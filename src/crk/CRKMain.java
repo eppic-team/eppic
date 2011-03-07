@@ -162,7 +162,7 @@ public class CRKMain {
 		
 	}
 	
-	public void parseCommandLine(String[] args) {
+	public void parseCommandLine(String[] args) throws CRKException {
 		String defCACutoffsStr = String.format("%4.2f",DEF_CA_CUTOFFS[0]);
 		for (int i=1;i<DEF_CA_CUTOFFS.length;i++) {
 			defCACutoffsStr += String.format(",%4.2f",DEF_CA_CUTOFFS[i]);
@@ -677,19 +677,19 @@ public class CRKMain {
 		CRKMain crkMain = new CRKMain(System.out);
 
 		crkMain.setDefaults();
-		crkMain.parseCommandLine(args);
 		
-		// turn off jaligner logging (we only use NeedlemanWunschGotoh from that package)
-		// (for some reason this doesn't work if condensated into one line, it seems that one needs to instantiate the logger and then call setLevel)
-		// (and even weirder, for some reason it doesn't work if you put the code in its own separate method!)
-		java.util.logging.Logger jalLogger = java.util.logging.Logger.getLogger("NeedlemanWunschGotoh");
-		jalLogger.setLevel(java.util.logging.Level.OFF);
-		
-		crkMain.setUpLogging();
-
-		crkMain.loadConfigFile();
-
 		try {
+			crkMain.parseCommandLine(args);
+		
+			// turn off jaligner logging (we only use NeedlemanWunschGotoh from that package)
+			// (for some reason this doesn't work if condensated into one line, it seems that one needs to instantiate the logger and then call setLevel)
+			// (and even weirder, for some reason it doesn't work if you put the code in its own separate method!)
+			java.util.logging.Logger jalLogger = java.util.logging.Logger.getLogger("NeedlemanWunschGotoh");
+			jalLogger.setLevel(java.util.logging.Level.OFF);
+
+			crkMain.setUpLogging();
+
+			crkMain.loadConfigFile();
 
 			// 0 load pdb
 			crkMain.doLoadPdb();
