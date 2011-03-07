@@ -430,5 +430,9 @@ public class CRKParams {
 	public void setChainEvContextSerFile(File chainEvContextSerFile) {
 		this.chainEvContextSerFile = chainEvContextSerFile;
 	}
+
+	public void setInFile(File inFile) {
+		this.inFile = inFile;
+	}
 	
 }
