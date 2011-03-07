@@ -780,10 +780,10 @@ public class InterfaceEvolContext implements Serializable {
 	
 	private void printScores(PrintStream ps, int i, CallType[] calls) {
 		ps.printf("%5.2f\t%5.2f\t%5.2f",
-				this.getCoreScore(0)[i], this.getRimScore(0)[i], this.getCoreScore(0)[i]/this.getRimScore(0)[i]);
+				this.getCoreScore(FIRST)[i], this.getRimScore(FIRST)[i], this.getCoreScore(FIRST)[i]/this.getRimScore(FIRST)[i]);
 		ps.print("\t");
 		ps.printf("%5.2f\t%5.2f\t%5.2f",
-				this.getCoreScore(1)[i], this.getRimScore(1)[i], this.getCoreScore(1)[i]/this.getRimScore(1)[i]);
+				this.getCoreScore(SECOND)[i], this.getRimScore(SECOND)[i], this.getCoreScore(SECOND)[i]/this.getRimScore(SECOND)[i]);
 		ps.print("\t");
 		// call type, score, voters
 		ps.printf("%6s\t%5.2f", calls[i].getName(),	this.getFinalScores()[i]);
