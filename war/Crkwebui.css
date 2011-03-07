@@ -32,3 +32,20 @@ h1 {
 #closeButton {
   margin: 15px 6px 6px;
 }
+
+
+.rim.x-grid3-row {
+ background-color:#bedeff;
+}
+
+.core.x-grid3-row {
+ background-color:#ff7979;
+}
+
+.surface.x-grid3-row {
+ background-color:#EDEDED;
+}
+
+.other.x-grid3-row {
+ background-color: white;
+}

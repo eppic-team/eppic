@@ -60,7 +60,7 @@ public class ServiceControllerImpl implements ServiceController {
 	}
 	
 	public void runJob(RunJobData runJobData) {
-		crkWebService.runJob(runJobData, new RunJobCallback(mainController, runJobData.getJobId()));
+		crkWebService.runJob(runJobData, new RunJobCallback(mainController));
 	}
 
 	public void killJob(String selectedId) {

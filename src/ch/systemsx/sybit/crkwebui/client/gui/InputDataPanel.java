@@ -6,16 +6,21 @@ import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
 
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.Style.Scroll;
+import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
+import com.extjs.gxt.ui.client.event.EventType;
 import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.FormEvent;
 import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.event.SelectionListener;
+import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.MessageBox;
 import com.extjs.gxt.ui.client.widget.button.Button;
 import com.extjs.gxt.ui.client.widget.form.FieldSet;
 import com.extjs.gxt.ui.client.widget.form.FileUploadField;
 import com.extjs.gxt.ui.client.widget.form.FormPanel;
+import com.extjs.gxt.ui.client.widget.form.Radio;
+import com.extjs.gxt.ui.client.widget.form.RadioGroup;
 import com.extjs.gxt.ui.client.widget.form.FormPanel.Encoding;
 import com.extjs.gxt.ui.client.widget.form.FormPanel.Method;
 import com.extjs.gxt.ui.client.widget.form.TextField;
@@ -30,7 +35,12 @@ public class InputDataPanel extends DisplayPanel
 	
 	private FormPanel formPanel;
 	
+	private RadioGroup inputRadioGroup;
+	private Radio pdbCodeRadio;
+	private Radio pdbCodeFile;
+	
 	private FileUploadField file;
+	private TextField<String> pdbCodeField;
 	private TextField<String> emailTextField;
 	
 	private OptionsInputPanel optionsInputPanel; 
@@ -69,12 +79,56 @@ public class InputDataPanel extends DisplayPanel
 		generalFieldSet.setBorders(false);
 		generalFieldSet.setLayout(layout);
 
+		pdbCodeRadio = new Radio();  
+		pdbCodeRadio.setBoxLabel("PDB Code");  
+		pdbCodeRadio.setValue(true);  
+	  
+	    pdbCodeFile = new Radio();  
+	    pdbCodeFile.setBoxLabel("Upload file");  
+	  
+	    inputRadioGroup = new RadioGroup();  
+	    inputRadioGroup.setFieldLabel("Input type");  
+	    inputRadioGroup.add(pdbCodeRadio);  
+	    inputRadioGroup.add(pdbCodeFile);  
+	    inputRadioGroup.addListener(Events.Change, new Listener<BaseEvent>(){
+	        public void handleEvent(BaseEvent be) 
+	        {
+	        	String selectedType = inputRadioGroup.getValue().getBoxLabel();
+	        	
+	        	if(selectedType.equals("PDB Code"))
+	        	{
+	        		file.setVisible(false);
+	        		file.setAllowBlank(true);
+	        		pdbCodeField.setVisible(true);
+	        		pdbCodeField.setAllowBlank(false);
+	        	}
+	        	else if(selectedType.equals("Upload file"))
+	        	{
+	        		file.setVisible(true);
+	        		file.setAllowBlank(false);
+	        		pdbCodeField.setVisible(false);
+	        		pdbCodeField.setAllowBlank(true);
+	        	}
+	        	
+	        	formPanel.layout();
+	        }
+	    });
+	    
+	    generalFieldSet.add(inputRadioGroup); 
+	    
 		file = new FileUploadField();
 		file.setWidth(200);
-		file.setAllowBlank(false);
+		file.setAllowBlank(true);
 		file.setName("uploadFormElement");
 		file.setFieldLabel(MainController.CONSTANTS.input_file());
+		file.setVisible(false);
 		generalFieldSet.add(file);
+		
+		pdbCodeField = new TextField<String>();
+		pdbCodeField.setName("code");
+		pdbCodeField.setFieldLabel("PDB Code");
+//		emailTextField.setStyleAttribute("padding", "30px");
+		generalFieldSet.add(pdbCodeField);
 		
 		emailTextField = new TextField<String>();
 		emailTextField.setName("email");
@@ -101,33 +155,12 @@ public class InputDataPanel extends DisplayPanel
 		{
 			public void handleEvent(FormEvent formEvent)
 			{
-				mainController.setNrOfSubmissions(mainController.getNrOfSubmissions() + 1);
-				
 				String jobId = formEvent.getResultHtml();
+				
 				jobId = jobId.replaceAll("\n", "");
 				jobId = jobId.trim();
-
-				RunJobData runJobData = new RunJobData();
-				runJobData.setEmailAddress(emailTextField.getValue());
 				
-				String fileName = file.getValue();
-				
-				if(fileName.startsWith("C:\\fakepath\\"))
-				{
-					fileName = fileName.substring(12);
-				}
-				else if(fileName.contains("\\"))
-				{
-					fileName = fileName.substring(fileName.lastIndexOf("\\") + 1);
-				}
-				
-				runJobData.setFileName(fileName);
-				runJobData.setJobId(jobId);
-				runJobData.setInputParameters(optionsInputPanel
-						.getCurrentInputParameters());
-
-				mainController.hideWaiting();
-				mainController.runJob(runJobData);
+				runJob(jobId);
 			}
 		});
 
@@ -148,11 +181,18 @@ public class InputDataPanel extends DisplayPanel
 		submitButton.addSelectionListener(new SelectionListener<ButtonEvent>() {
 			public void componentSelected(ButtonEvent ce) 
 			{
-				
 				if (formPanel.isValid())
 				{
 					mainController.showWaiting("Submitting");
-					formPanel.submit();
+					
+					if(pdbCodeFile.getValue())
+					{
+						formPanel.submit();
+					}
+					else
+					{
+						runJob(null);
+					}
 				}
 				else
 				{
@@ -183,5 +223,41 @@ public class InputDataPanel extends DisplayPanel
 	public RecaptchaPanel getRecaptchaPanel()
 	{
 		return recaptchaPanel;
+	}
+	
+	private void runJob(String jobId)
+	{
+		mainController.setNrOfSubmissions(mainController.getNrOfSubmissions() + 1);
+		
+		RunJobData runJobData = new RunJobData();
+		runJobData.setEmailAddress(emailTextField.getValue());
+		
+		String fileName = null;
+		
+		if(pdbCodeFile.getValue())
+		{
+			fileName = file.getValue();
+			
+			if(fileName.startsWith("C:\\fakepath\\"))
+			{
+				fileName = fileName.substring(12);
+			}
+			else if(fileName.contains("\\"))
+			{
+				fileName = fileName.substring(fileName.lastIndexOf("\\") + 1);
+			}
+		}
+		else
+		{
+			fileName = pdbCodeField.getValue();
+		}
+		
+		runJobData.setFileName(fileName);
+		runJobData.setJobId(jobId);
+		runJobData.setInputParameters(optionsInputPanel
+				.getCurrentInputParameters());
+
+		mainController.hideWaiting();
+		mainController.runJob(runJobData);
 	}
 }

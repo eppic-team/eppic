@@ -80,10 +80,14 @@ public class CrkRunner implements Runnable
 			CRKMain crkMain = new CRKMain(logStream);
 			crkMain.setDefaults();
 
-			crkMain.getCRKParams().setPdbCode(
-					destinationDirectoryName + "/" + fileName);
+			crkMain.getCRKParams().setPdbCode(fileName);
 			crkMain.getCRKParams()
 					.setOutDir(new File(destinationDirectoryName));
+			
+			if(crkMain.getCRKParams().isInputAFile())
+			{
+				crkMain.getCRKParams().setInFile(new File(destinationDirectoryName + "/" + fileName));
+			}
 			
 			crkMain.getCRKParams().setMaxNumSeqsSelecton(inputParameters.getMaxNrOfSequences());
 			crkMain.getCRKParams().setSelectonEpsilon(inputParameters.getSelecton());

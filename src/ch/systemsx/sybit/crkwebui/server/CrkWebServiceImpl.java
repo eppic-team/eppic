@@ -1,8 +1,10 @@
 package ch.systemsx.sybit.crkwebui.server;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,6 +17,8 @@ import java.util.Properties;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
+
+import org.apache.commons.lang.RandomStringUtils;
 
 import model.InterfaceResidueItem;
 import model.PDBScoreItem;
@@ -313,25 +317,42 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 					{
 						File logFile = new File(dataDirectory + "/crklog");
 	
-						FileInputStream inputStream = new FileInputStream(logFile);
-						BufferedInputStream bufferedInputStream = new BufferedInputStream(
-								inputStream);
-	
-						byte[] buffer = new byte[1024];
-	
-						int length = 0;
-	
+//						FileInputStream inputStream = new FileInputStream(logFile);
+//						BufferedInputStream bufferedInputStream = new BufferedInputStream(
+//								inputStream);
+//						
+//	
+//						byte[] buffer = new byte[1024];
+//						
+//						int length = 0;
+//	
+//						StringBuffer log = new StringBuffer();
+//	
+//						while ((bufferedInputStream != null)
+//								&& ((length = bufferedInputStream.read(buffer)) != -1)) 
+//						{
+//							log.append(new String(buffer));
+//						}
+//	
+//						bufferedInputStream.close();
+//						inputStream.close();
+						
 						StringBuffer log = new StringBuffer();
+						
+						FileReader inputStream = new FileReader(logFile);
+				        BufferedReader bufferedInputStream = new BufferedReader(inputStream);
+				        
+				        String line = "";
+				        
+				        while ((line = bufferedInputStream.readLine()) != null)
+				        {
+				        	log.append(line + "\n");
+				        }
+
+				        bufferedInputStream.close();
+				        inputStream.close();
 	
-						while ((bufferedInputStream != null)
-								&& ((length = bufferedInputStream.read(buffer)) != -1)) 
-						{
-							log.append(new String(buffer));
-						}
-	
-						bufferedInputStream.close();
-						inputStream.close();
-	
+				        
 						statusData.setLog(log.toString());
 					} 
 					catch (Exception e) 
@@ -495,10 +516,35 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 	}
 	
 	@Override
-	public void runJob(RunJobData runJobData) throws CrkWebException 
+	public String runJob(RunJobData runJobData) throws CrkWebException 
 	{
 		if (runJobData != null) 
 		{
+			if(runJobData.getJobId() == null)
+			{
+				String randomDirectoryName = null;
+				boolean isDirectorySet = false;
+
+				while (!isDirectorySet) 
+				{
+					randomDirectoryName = RandomStringUtils.randomAlphanumeric(30);
+
+					File randomDirectory = new File(randomDirectoryName);
+
+					if (!randomDirectory.exists()) 
+					{
+						isDirectorySet = true;
+					}
+				}
+
+				String localDestinationDirName = generalDestinationDirectoryName
+						+ "/" + randomDirectoryName;
+				File localDestinationDir = new File(localDestinationDirName);
+				localDestinationDir.mkdir();
+				
+				runJobData.setJobId(randomDirectoryName);
+			}
+			
 			EmailData emailData = new EmailData();
 			emailData.setEmailSender(properties.getProperty("email_username", ""));
 			emailData.setEmailSenderPassword(properties.getProperty("email_password", ""));
@@ -539,7 +585,11 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 			}
 				
 			crkRunnerThread.start();
+			
+			return runJobData.getJobId();
 		}
+		
+		return null;
 	}
 
 	@Override

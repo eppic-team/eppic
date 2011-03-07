@@ -2,12 +2,10 @@ package ch.systemsx.sybit.crkwebui.client.gui;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 
-import com.extjs.gxt.ui.client.event.ButtonEvent;
-import com.extjs.gxt.ui.client.event.SelectionListener;
+import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.Dialog;
-import com.extjs.gxt.ui.client.widget.button.Button;
-import com.extjs.gxt.ui.client.widget.layout.FitLayout;
-import com.google.gwt.user.client.Window;
+import com.extjs.gxt.ui.client.widget.layout.RowData;
+import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 
 public class InterfacesResiduesWindow extends Dialog 
 {
@@ -26,6 +24,11 @@ public class InterfacesResiduesWindow extends Dialog
 		if(height > mainController.getWindowHeight() - 50)
 		{
 			height = mainController.getWindowHeight() - 50;
+			
+			if(height <= 0)
+			{
+				height = 1;
+			}
 		}
 		
 		this.setSize(width, height);
@@ -33,13 +36,15 @@ public class InterfacesResiduesWindow extends Dialog
 		this.setModal(true);
 		this.setBlinkModal(true);
 		this.setHeading(MainController.CONSTANTS.interfaces_residues_window());
-		this.setLayout(new FitLayout());
+		this.setLayout(new RowLayout());
 		this.setHideOnButtonClick(true);
 
 		interfacesResiduesPanel = new InterfacesResiduesPanel(mainController,
 															  width,
-															  height);
-		this.add(interfacesResiduesPanel);
+															  height - 200);
+		this.add(interfacesResiduesPanel, new RowData(1, 1, new Margins(0)));
+		
+		this.add(new LegendPanel(), new RowData(1, 30, new Margins(0)));
 	}
 
 	public InterfacesResiduesPanel getInterfacesResiduesPanel() {

@@ -256,11 +256,16 @@ public class MainController
 	public void showJmolViewer(String interfaceNr) 
 	{
 //		String url = GWT.getModuleBaseURL() + "crkresults/";
-		String url = GWT.getHostPageBaseURL() + settings.getResultsLocation();
-		if(!url.endsWith("/"))
-		{
-			url += "/";
-		}
+//		String url = GWT.getHostPageBaseURL() + settings.getResultsLocation();
+//		
+//		if(!url.endsWith("/"))
+//		{
+//			url += "/";
+//		}
+//		
+//		Window.alert(url);
+		
+		String url = settings.getResultsLocation();
 		
 		int size = windowHeight;
 		if(size > windowWidth)
@@ -287,7 +292,7 @@ public class MainController
 		$wnd.jmolInitialize("resources/jmol");
 		$wnd.jmolSetCallback("language", "en");
 		$wnd.jmolSetDocument(jmolwindow.document);
-		$wnd.jmolApplet(size - 20,'load ' + url + selectedJob + "/" + filename + "." + interfaceNr + '.rimcore.pdb');
+		$wnd.jmolApplet(size - 20,"cartoon on" + 'load ' + url + selectedJob + "/" + filename + "." + interfaceNr + '.rimcore.pdb');
 	}-*/;
 	
 	public void downloadFileFromServer(String type, String interfaceId)

@@ -8,13 +8,10 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 public class RunJobCallback implements AsyncCallback 
 {
 	private MainController mainController;
-	private String jobId;
 
-	public RunJobCallback(MainController mainController,
-						  String jobId) 
+	public RunJobCallback(MainController mainController) 
 	{
 		this.mainController = mainController;
-		this.jobId = jobId;
 	}
 
 	@Override
@@ -27,9 +24,18 @@ public class RunJobCallback implements AsyncCallback
 	@Override
 	public void onSuccess(Object result) 
 	{
-		mainController.getJobsForCurrentSession();
-		mainController.setSelectedJobId(jobId);
-//		mainController.displayResults();
-		History.newItem("id/" + jobId);
+		if ((result != null) && (result instanceof String)) 
+		{
+			String jobId = (String) result;
+			mainController.getJobsForCurrentSession();
+			mainController.setSelectedJobId(jobId);
+//			mainController.displayResults();
+			History.newItem("id/" + jobId);
+		} 
+		else 
+		{
+			mainController.updateStatusLabel("Error during running the job" , true);
+//			mainController.showError("Error during stopping the job " + mainController.getSelectedJobId());
+		}
 	}
 }

@@ -32,7 +32,7 @@ public interface CrkWebService extends RemoteService {
 
 	public ApplicationSettings getSettings() throws Exception;
 
-	public void runJob(RunJobData runJobData) throws CrkWebException;
+	public String runJob(RunJobData runJobData) throws CrkWebException;
 
 	public HashMap<Integer, List<InterfaceResidueItem>> getInterfaceResidues(
 			String jobId, int interfaceId) throws Exception;
