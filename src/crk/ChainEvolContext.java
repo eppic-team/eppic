@@ -17,7 +17,7 @@ import org.xml.sax.SAXException;
 import owl.core.connections.NoMatchFoundException;
 import owl.core.connections.SiftsConnection;
 import owl.core.features.SiftsFeature;
-import owl.core.runners.TcoffeeError;
+import owl.core.runners.TcoffeeException;
 import owl.core.runners.blast.BlastError;
 import owl.core.runners.blast.BlastHit;
 import owl.core.runners.blast.BlastHitList;
@@ -189,7 +189,7 @@ public class ChainEvolContext implements Serializable {
 
 	}
 
-	public void align(File tcoffeeBin, boolean tcoffeeVeryFastMode) throws IOException, TcoffeeError{
+	public void align(File tcoffeeBin, boolean tcoffeeVeryFastMode) throws IOException, TcoffeeException{
 		// 3) alignment of the protein sequences using tcoffee
 		homologs.computeTcoffeeAlignment(tcoffeeBin, tcoffeeVeryFastMode);
 	}

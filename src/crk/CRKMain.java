@@ -20,7 +20,7 @@ import org.apache.log4j.PatternLayout;
 import org.xml.sax.SAXException;
 
 import owl.core.connections.pisa.PisaConnection;
-import owl.core.runners.TcoffeeError;
+import owl.core.runners.TcoffeeException;
 import owl.core.runners.blast.BlastError;
 import owl.core.sequence.UniprotVerMisMatchException;
 import owl.core.structure.ChainInterface;
@@ -514,7 +514,7 @@ public class CRKMain {
 			progressLogPS.println("Aligning protein sequences with t_coffee...");
 			try {
 				chainEvCont.align(TCOFFEE_BIN, params.isUseTcoffeeVeryFastMode());
-			} catch (TcoffeeError e) {
+			} catch (TcoffeeException e) {
 				throw new CRKException(e, "Couldn't run t_coffee to align protein sequences: "+e.getMessage(), true);
 			} catch (IOException e) {
 				throw new CRKException(e, "Problems while running t_coffee to align protein sequences: "+e.getMessage(),true);
