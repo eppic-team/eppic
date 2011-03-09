@@ -223,7 +223,9 @@ public class CRKMain {
 		"  [-I <file>]  :  binary file containing the interface enumeration output of a previous \n" +
 		"                  run of CRK\n" +
 		"  [-C <file>]  :  binary file containing the evolutionary scores for a particular \n" +
-		"                  sequence output of a previous run of CRK\n\n";
+		"                  sequence output of a previous run of CRK\n" +
+		"  [-l]         :  if specified thumbnail images will be generated for each interface \n" +
+		"                  (requires pymol)\n\n";
 		
 		params.parseCommandLine(args, PROGRAM_NAME, help);
 		params.checkCommandLineInput();
