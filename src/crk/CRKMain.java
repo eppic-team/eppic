@@ -21,7 +21,7 @@ import org.xml.sax.SAXException;
 
 import owl.core.connections.pisa.PisaConnection;
 import owl.core.runners.TcoffeeException;
-import owl.core.runners.blast.BlastError;
+import owl.core.runners.blast.BlastException;
 import owl.core.sequence.UniprotVerMisMatchException;
 import owl.core.structure.ChainInterface;
 import owl.core.structure.ChainInterfaceList;
@@ -453,10 +453,12 @@ public class CRKMain {
 			progressLogPS.println("Finding query's uniprot mapping (through SIFTS or blasting)");
 			try {
 				chainEvCont.retrieveQueryData(SIFTS_FILE, emblQueryCacheFile, BLAST_BIN_DIR, BLAST_DB_DIR, BLAST_DB, params.getNumThreads(),params.isDoScoreCRK(),PDB2UNIPROT_ID_THRESHOLD,PDB2UNIPROT_QCOV_THRESHOLD);
-			} catch (BlastError e) {
+			} catch (BlastException e) {
 				throw new CRKException(e,"Couldn't run blast to retrieve query's uniprot mapping: "+e.getMessage(),true);
-			}  catch (IOException e) {
+			} catch (IOException e) {
 				throw new CRKException(e,"Problems while retrieving query data: "+e.getMessage(),true);
+			} catch (InterruptedException e) {
+				throw new CRKException(e,"Thread interrupted while running blast for retrieving query data: "+e.getMessage(),true);
 			}
 			if (params.isDoScoreCRK() && chainEvCont.getQueryRepCDS()==null) {
 				// note calling chainEvCont.canDoCRK() will also check for this condition (here we only want to log it once)
@@ -474,10 +476,12 @@ public class CRKMain {
 				LOGGER.info("Uniprot version used: "+chainEvCont.getUniprotVer());
 			} catch (UniprotVerMisMatchException e) {
 				throw new CRKException(e, "Mismatch of Uniprot versions! "+e.getMessage(), true);
-			} catch (BlastError e) {
+			} catch (BlastException e) {
 				throw new CRKException(e,"Couldn't run blast to retrieve homologs: "+e.getMessage() ,true);
 			} catch (IOException e) {
 				throw new CRKException(e,"Problem while blasting for sequence homologs: "+e.getMessage(),true);
+			} catch (InterruptedException e) {
+				throw new CRKException(e,"Thread interrupted while blasting for sequence homologs: "+e.getMessage(),true);
 			}
 
 			progressLogPS.println("Retrieving UniprotKB data and EMBL CDS sequences");
@@ -518,6 +522,8 @@ public class CRKMain {
 				throw new CRKException(e, "Couldn't run t_coffee to align protein sequences: "+e.getMessage(), true);
 			} catch (IOException e) {
 				throw new CRKException(e, "Problems while running t_coffee to align protein sequences: "+e.getMessage(),true);
+			} catch (InterruptedException e) {
+				throw new CRKException(e, "Thread interrupted while running t_coffee to align protein sequences: "+e.getMessage(),true);
 			}
 
 			File outFile = null;
@@ -559,6 +565,8 @@ public class CRKMain {
 						params.getSelectonEpsilon());
 				} catch (IOException e) {
 					throw new CRKException(e, "Problems while running selecton: "+e.getMessage(), true);
+				} catch (InterruptedException e) {
+					throw new CRKException(e, "Thread interrupted while running selecton: "+e.getMessage(), true);
 				}
 			}
 

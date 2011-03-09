@@ -18,7 +18,7 @@ import owl.core.connections.NoMatchFoundException;
 import owl.core.connections.SiftsConnection;
 import owl.core.features.SiftsFeature;
 import owl.core.runners.TcoffeeException;
-import owl.core.runners.blast.BlastError;
+import owl.core.runners.blast.BlastException;
 import owl.core.runners.blast.BlastHit;
 import owl.core.runners.blast.BlastHitList;
 import owl.core.runners.blast.BlastRunner;
@@ -79,10 +79,11 @@ public class ChainEvolContext implements Serializable {
 	 * @param blastNumThreads
 	 * @param retrieveCDS whether to retrieve CDSs or not
 	 * @throws IOException
-	 * @throws BlastError
+	 * @throws BlastException
+	 * @throws InterruptedException
 	 */
 	public void retrieveQueryData(String siftsLocation, File emblCDScache, String blastBinDir, String blastDbDir, String blastDb, int blastNumThreads, boolean retrieveCDS, double pdb2uniprotIdThreshold, double pdb2uniprotQcovThreshold) 
-	throws IOException, BlastError {
+	throws IOException, BlastException, InterruptedException {
 		
 		// two possible cases: 
 		// 1) PDB code known and so SiftsFeatures can be taken from SiftsConnection
@@ -150,7 +151,7 @@ public class ChainEvolContext implements Serializable {
 	}
 	
 	public void retrieveHomologs(String blastBinDir, String blastDbDir, String blastDb, int blastNumThreads, double idCutoff, double queryCovCutoff, File blastCache) 
-	throws IOException, BlastError, UniprotVerMisMatchException {
+	throws IOException, BlastException, UniprotVerMisMatchException, InterruptedException {
 		homologs = new UniprotHomologList(query);
 		
 		homologs.searchWithBlast(blastBinDir, blastDbDir, blastDb, blastNumThreads, blastCache);
@@ -189,7 +190,7 @@ public class ChainEvolContext implements Serializable {
 
 	}
 
-	public void align(File tcoffeeBin, boolean tcoffeeVeryFastMode) throws IOException, TcoffeeException{
+	public void align(File tcoffeeBin, boolean tcoffeeVeryFastMode) throws IOException, TcoffeeException, InterruptedException{
 		// 3) alignment of the protein sequences using tcoffee
 		homologs.computeTcoffeeAlignment(tcoffeeBin, tcoffeeVeryFastMode);
 	}
@@ -247,9 +248,10 @@ public class ChainEvolContext implements Serializable {
 	 * @param globalResultsFile
 	 * @param epsilon
 	 * @throws IOException
+	 * @throws InterruptedException
 	 */
 	public void computeKaKsRatiosSelecton(File selectonBin, File resultsFile, File logFile, File treeFile, File globalResultsFile, double epsilon) 
-	throws IOException {
+	throws IOException, InterruptedException {
 		homologs.computeKaKsRatiosSelecton(selectonBin, resultsFile, logFile, treeFile, globalResultsFile, epsilon);
 	}	
 	
@@ -433,7 +435,7 @@ public class ChainEvolContext implements Serializable {
 		return this.getPDBPosForQueryUniprotPos(uniprotPos);
 	}
 	
-	private UniprotEntry findUniprotMapping(String blastBinDir, String blastDbDir, String blastDb, int blastNumThreads, double pdb2uniprotIdThreshold, double pdb2uniprotQcovThreshold) throws IOException, BlastError {
+	private UniprotEntry findUniprotMapping(String blastBinDir, String blastDbDir, String blastDb, int blastNumThreads, double pdb2uniprotIdThreshold, double pdb2uniprotQcovThreshold) throws IOException, BlastException, InterruptedException {
 		
 		File outBlast = File.createTempFile(BLAST_BASENAME,BLASTOUT_SUFFIX);
 		File inputSeqFile = File.createTempFile(BLAST_BASENAME,FASTA_SUFFIX);
