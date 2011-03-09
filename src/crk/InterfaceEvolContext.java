@@ -16,10 +16,12 @@ import model.InterfaceResidueMethodItem;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import owl.core.runners.PymolRunner;
 import owl.core.structure.AminoAcid;
 import owl.core.structure.ChainInterface;
 import owl.core.structure.InterfaceRimCore;
 import owl.core.structure.Pdb;
+import owl.core.structure.PdbLoadException;
 import owl.core.structure.Residue;
 import owl.core.util.Goodies;
 
@@ -36,6 +38,11 @@ public class InterfaceEvolContext implements Serializable {
 	public static final boolean RIMCORE = false;
 	
 	private static final double MAX_ALLOWED_UNREL_RES = 0.05; // 5% maximum allowed unreliable residues for core or rim
+	
+	private static final String TN_STYLE = "cartoon";
+	private static final String TN_BG_COLOR = "white";
+	private static final int[] TN_HEIGHTS = {150,300};
+	private static final int[] TN_WIDTHS = {150,300};
 	
 	private ChainInterface interf;
 	private List<ChainEvolContext> chains;  // At the moment strictly 2 members (matching the 2 partners of interf). 
@@ -243,6 +250,16 @@ public class InterfaceEvolContext implements Serializable {
 			
 			this.interf.writeToPdbFile(file);
 		}
+	}
+	
+	public void generateThumbnails(File pymolExe, File pdbFile) throws IOException, InterruptedException, PdbLoadException {
+		PymolRunner pr = new PymolRunner(pymolExe);
+		String base = pdbFile.getName().substring(0,pdbFile.getName().lastIndexOf(".rimcore.pdb"));
+		File[] pngFiles = new File[TN_HEIGHTS.length];
+		for (int i=0;i<TN_HEIGHTS.length;i++) {
+			pngFiles[i] = new File(pdbFile.getParent(),base+"."+TN_WIDTHS[i]+"x"+TN_HEIGHTS[i]+".png");
+		}
+		pr.generatePng(pdbFile, pngFiles, TN_STYLE, TN_BG_COLOR, TN_HEIGHTS, TN_WIDTHS);
 	}
 	
 	public void writeResidueDetailsFile(File file, boolean includeKaks) throws IOException {

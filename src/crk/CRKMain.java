@@ -66,6 +66,9 @@ public class CRKMain {
 	// default naccess location
 	private static final File     DEF_NACCESS_EXE = new File("/usr/bin/naccess");
 	
+	// default pymol exec
+	private static final File	  DEF_PYMOL_EXE = new File("/usr/bin/pymol");
+	
 	// default crk cutoffs
 	private static final double   DEF_QUERY_COVERAGE_CUTOFF = 0.85;
 	private static final int      DEF_MIN_HOMOLOGS_CUTOFF = 10;
@@ -124,6 +127,8 @@ public class CRKMain {
 	private static File     SELECTON_BIN;
 
 	private static File     NACCESS_EXE;
+	
+	private static File		PYMOL_EXE;
 	
 	private static double   QUERY_COVERAGE_CUTOFF;
 	private static int      MIN_HOMOLOGS_CUTOFF;
@@ -621,10 +626,17 @@ public class CRKMain {
 				iecList.printScoresTable(scoreEntrPS, params.getEntrCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getEntrCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
 				iecList.writeScoresPDBFiles(params,ENTROPIES_FILE_SUFFIX+".pdb");
 				iecList.writeRimCorePDBFiles(params, ".rimcore.pdb");
+				if (params.isGenerateThumbnails()) {
+					iecList.generateThumbnails(PYMOL_EXE,params,".rimcore.pdb");
+				}
 				scoreEntrPS.close();
 			}
 		} catch (IOException e) {
 			throw new CRKException(e, "Couldn't write final interface entropy scores or related PDB files. "+e.getMessage(),true);
+		} catch (PdbLoadException e) {
+			throw new CRKException(e, "Couldn't generate thumbnails, problem in reading PDB file: "+e.getMessage(),false);
+		} catch (InterruptedException e) {
+			throw new CRKException(e, "Couldn't generate thumbnails, pymol thread interrupted: "+e.getMessage(),false);
 		}
 		try {
 			// ka/ks scoring
@@ -674,7 +686,8 @@ public class CRKMain {
 				DEF_NSPHEREPOINTS_ASA_CALC,
 				DEF_GRAY_ZONE_WIDTH,
 				entrCallCutoff,kaksCallCutoff,
-				null,null);
+				null,null,
+				false);
 	}
 	
 	/**
@@ -768,6 +781,8 @@ public class CRKMain {
 			SELECTON_BIN 		= new File(p.getProperty("SELECTON_BIN", DEF_SELECTON_BIN.toString()));
 			
 			NACCESS_EXE         = new File(p.getProperty("NACCESS_EXE", DEF_NACCESS_EXE.toString()));
+			
+			PYMOL_EXE			= new File(p.getProperty("PYMOL_EXE", DEF_PYMOL_EXE.toString()));
 
 			QUERY_COVERAGE_CUTOFF = Double.parseDouble(p.getProperty("QUERY_COVERAGE_CUTOFF", new Double(DEF_QUERY_COVERAGE_CUTOFF).toString()));
 			MIN_HOMOLOGS_CUTOFF = Integer.parseInt(p.getProperty("MIN_HOMOLOGS_CUTOFF", new Integer(DEF_MIN_HOMOLOGS_CUTOFF).toString()));

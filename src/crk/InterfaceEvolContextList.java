@@ -14,6 +14,7 @@ import java.util.regex.Pattern;
 
 import owl.core.structure.ChainInterface;
 import owl.core.structure.ChainInterfaceList;
+import owl.core.structure.PdbLoadException;
 import owl.core.util.FileFormatException;
 
 public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>, Serializable {
@@ -172,6 +173,15 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 			}
 		}
 	}	
+	
+	public void generateThumbnails(File pymolExe, CRKParams params, String suffix) throws IOException, InterruptedException, PdbLoadException {
+		for (InterfaceEvolContext iec:this) {
+			if (iec.getInterface().getInterfaceArea()>minInterfAreaReporting) {
+				File pdbFile = params.getOutputFile("."+iec.getInterface().getId()+suffix);
+				iec.generateThumbnails(pymolExe,pdbFile);
+			}
+		}		
+	}
 	
 	public void writeResidueDetailsFiles(CRKParams params, String suffix) throws IOException {
 		for (InterfaceEvolContext iec:this) {

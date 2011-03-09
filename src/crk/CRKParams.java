@@ -50,6 +50,8 @@ public class CRKParams {
 	private File interfSerFile;
 	private File chainEvContextSerFile;
 	
+	private boolean generateThumbnails;
+	
 	// some other fields
 	private File inFile;
 	private String jobName;
@@ -67,7 +69,8 @@ public class CRKParams {
 			int nSpherePointsASAcalc,
 			double grayZoneWidth,
 			double[] entrCallCutoff, double[] kaksCallCutoff,
-			File interfSerFile, File chainEvContextSerFile) {
+			File interfSerFile, File chainEvContextSerFile,
+			boolean generateThumbnails) {
 		
 		this.pdbCode = pdbCode;
 		this.doScoreCRK = doScoreCRK;
@@ -94,12 +97,13 @@ public class CRKParams {
 		this.kaksCallCutoffs = kaksCallCutoff;
 		this.interfSerFile = interfSerFile;
 		this.chainEvContextSerFile = chainEvContextSerFile;
+		this.generateThumbnails = generateThumbnails;
 	}
 	
 	public void parseCommandLine(String[] args, String programName, String help) {
 	
 
-		Getopt g = new Getopt(programName, args, "i:kd:a:b:o:r:tc:zZ:m:M:x:X:g:e:q:pnA:I:C:h?");
+		Getopt g = new Getopt(programName, args, "i:kd:a:b:o:r:tc:zZ:m:M:x:X:g:e:q:pnA:I:C:lh?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
@@ -187,6 +191,9 @@ public class CRKParams {
 				break;
 			case 'C':
 				chainEvContextSerFile = new File(g.getOptarg());
+				break;
+			case 'l':
+				generateThumbnails = true;
 				break;
 			case 'h':
 			case '?':
@@ -429,6 +436,10 @@ public class CRKParams {
 
 	public void setInFile(File inFile) {
 		this.inFile = inFile;
+	}
+	
+	public boolean isGenerateThumbnails() {
+		return generateThumbnails;
 	}
 	
 }
