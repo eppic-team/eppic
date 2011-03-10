@@ -95,9 +95,11 @@ public class MainViewPort extends Viewport
 	
 	public void displayInterfacesWindow() 
 	{
-		if(interfacesResiduesWindow == null)
+		if((interfacesResiduesWindow == null) ||
+		   (mainController.isResizeInterfacesWindow()))
 		{
 			interfacesResiduesWindow = new InterfacesResiduesWindow(mainController);
+			mainController.setResizeInterfacesWindow(false);
 		}
 		else
 		{

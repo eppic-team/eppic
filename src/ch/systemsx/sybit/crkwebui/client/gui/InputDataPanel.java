@@ -6,6 +6,7 @@ import ch.systemsx.sybit.crkwebui.client.gui.validators.PdbCodeFieldValidator;
 import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
 
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
+import com.extjs.gxt.ui.client.Style.Orientation;
 import com.extjs.gxt.ui.client.Style.Scroll;
 import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
@@ -14,6 +15,7 @@ import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.FormEvent;
 import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.event.SelectionListener;
+import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.MessageBox;
 import com.extjs.gxt.ui.client.widget.button.Button;
@@ -25,7 +27,10 @@ import com.extjs.gxt.ui.client.widget.form.RadioGroup;
 import com.extjs.gxt.ui.client.widget.form.FormPanel.Encoding;
 import com.extjs.gxt.ui.client.widget.form.FormPanel.Method;
 import com.extjs.gxt.ui.client.widget.form.TextField;
+import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 import com.extjs.gxt.ui.client.widget.layout.FormLayout;
+import com.extjs.gxt.ui.client.widget.layout.RowData;
+import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 import com.extjs.gxt.ui.client.widget.layout.VBoxLayout;
 import com.extjs.gxt.ui.client.widget.layout.VBoxLayout.VBoxLayoutAlign;
 import com.google.gwt.core.client.GWT;
@@ -54,10 +59,9 @@ public class InputDataPanel extends DisplayPanel
 
 	public void init() 
 	{
-		VBoxLayout vBoxLayout = new VBoxLayout();
-		vBoxLayout.setVBoxLayoutAlign(VBoxLayoutAlign.CENTER);
-		this.setLayout(vBoxLayout);
+		this.setLayout(new RowLayout(Orientation.HORIZONTAL));
 		this.setBorders(false);
+		this.setScrollMode(Scroll.AUTO);
 //		this.setBodyBorder(false);
 //		this.getHeader().setVisible(false);
 		
@@ -71,6 +75,7 @@ public class InputDataPanel extends DisplayPanel
 		formPanel.setMethod(Method.POST);
 		formPanel.setButtonAlign(HorizontalAlignment.CENTER);
 		formPanel.setWidth(500);
+		formPanel.setAutoHeight(true);
 		formPanel.setPadding(20);
 
 		FormLayout layout = new FormLayout();
@@ -219,7 +224,9 @@ public class InputDataPanel extends DisplayPanel
 		
 		formPanel.add(generalFieldSet);
 		
-		this.add(formPanel);
+		//fix for chrome - otherwise unnecessary scrollbars visible
+		this.add(new LayoutContainer(), new RowData(0.5, -1, new Margins(0)));
+		this.add(formPanel, new RowData(-1, -1, new Margins(0)));
 	}
 	
 	public RecaptchaPanel getRecaptchaPanel()

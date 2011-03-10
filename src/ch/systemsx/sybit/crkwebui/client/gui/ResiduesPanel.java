@@ -72,7 +72,7 @@ public class ResiduesPanel extends ContentPanel
 
 		residuesConfigs = createColumnConfig();
 
-		nrOfRows = (height - 190)/22; 
+		nrOfRows = (height)/22; 
 		
 		proxy = new PagingModelMemoryProxy(null); 
 		loader = new BasePagingLoader(proxy);  

@@ -41,6 +41,8 @@ public class ScoresPanel extends LayoutContainer
 	private GroupingStore<BeanModel> scoresStore;
 	private ColumnModel scoresColumnModel;
 	private Grid<BeanModel> scoresGrid;
+	private int scoresGridWidthOfAllColumns = 0;
+	private List<Integer> initialColumnWidth;
 
 	public ScoresPanel(PDBScoreItem resultsData, MainController mainController) 
 	{
@@ -84,7 +86,7 @@ public class ScoresPanel extends LayoutContainer
 
 		GroupingView view = new GroupingView();
 		view.setShowGroupedColumn(false);
-		view.setForceFit(true);
+		view.setForceFit(false);
 		view.setGroupRenderer(new GridGroupRenderer() {
 			public String render(GroupColumnData data) {
 				String f = scoresColumnModel.getColumnById(data.field)
@@ -192,6 +194,10 @@ public class ScoresPanel extends LayoutContainer
 		} else {
 			columns = columnOrder.split(",");
 		}
+		
+		if (columns != null) {
+			initialColumnWidth = new ArrayList<Integer>();
+		}
 
 		for (String columnName : columns) {
 			boolean addColumn = true;
@@ -223,6 +229,9 @@ public class ScoresPanel extends LayoutContainer
 				if (customColumnWidth != null) {
 					columnWidth = Integer.parseInt(customColumnWidth);
 				}
+				
+				scoresGridWidthOfAllColumns += columnWidth;
+				initialColumnWidth.add(columnWidth);
 
 				String customRenderer = mainController.getSettings()
 						.getGridProperties()
@@ -259,5 +268,31 @@ public class ScoresPanel extends LayoutContainer
 		}
 
 		return configs;
+	}
+	
+	public void resizeGrid() {
+		if (scoresGridWidthOfAllColumns < mainController.getWindowWidth() - 225) {
+			scoresGrid.getView().setForceFit(true);
+		} else {
+			scoresGrid.getView().setForceFit(false);
+
+			int nrOfColumn = scoresGrid.getColumnModel().getColumnCount();
+
+			for (int i = 0; i < nrOfColumn; i++) {
+				scoresGrid.getColumnModel().getColumn(i)
+						.setWidth(initialColumnWidth.get(i));
+			}
+		}
+
+		scoresGrid.getView().refresh(true);
+		scoresGrid.getView().layout();
+		scoresGrid.recalculate();
+		scoresGrid.repaint();
+
+		this.layout();
+	}
+	
+	public int getScoresGridWidthOfAllColumns() {
+		return scoresGridWidthOfAllColumns;
 	}
 }

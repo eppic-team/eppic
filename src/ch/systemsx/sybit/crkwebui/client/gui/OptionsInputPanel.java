@@ -72,11 +72,6 @@ public class OptionsInputPanel extends FieldSet
 			height = (int) (windowHeight * 0.4);
 		}
 		
-		LayoutContainer scrollContainer = new LayoutContainer();
-		scrollContainer.setScrollMode(Scroll.AUTO);
-		scrollContainer.setHeight(height);
-		scrollContainer.setStyleAttribute("padding-right", "5px");
-		
 //		ComponentPlugin plugin = new ComponentPlugin()
 //		{
 //			public void init(Component component) 
@@ -140,7 +135,7 @@ public class OptionsInputPanel extends FieldSet
 				methodsFieldsets[i].add(selecton, formData);
 			}
 			
-			scrollContainer.add(methodsFieldsets[i]);
+			this.add(methodsFieldsets[i]);
 		}
 		
 		FormLayout allignmentsParametersFieldSetLayout = new FormLayout();
@@ -188,7 +183,7 @@ public class OptionsInputPanel extends FieldSet
 		maxNrOfSequences.setData("hint", MainController.CONSTANTS.parameters_max_num_sequences_hint());
 		allignmentsParametersFieldSet.add(maxNrOfSequences, formData);
 
-		scrollContainer.add(allignmentsParametersFieldSet);
+		this.add(allignmentsParametersFieldSet);
 
 		FormLayout othersParametersFieldSetLayout = new FormLayout();
 		othersParametersFieldSetLayout.setLabelWidth(200);
@@ -237,8 +232,7 @@ public class OptionsInputPanel extends FieldSet
 		useNAccess.setData("hint", MainController.CONSTANTS.parameters_use_naccess_hint());
 		othersParametersFieldSet.add(useNAccess, formData);
 
-		scrollContainer.add(othersParametersFieldSet);
-		this.add(scrollContainer);
+		this.add(othersParametersFieldSet);
 
 		fillDefaultValues(defaultInputParameters);
 	}

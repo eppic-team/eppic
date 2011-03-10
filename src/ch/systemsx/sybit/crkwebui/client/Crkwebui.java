@@ -56,7 +56,15 @@ public class Crkwebui implements EntryPoint, ValueChangeHandler<String>
 				   (mainController.getMainViewPort().getCenterPanel().getDisplayPanel() instanceof ResultsPanel))
 				{
 					((ResultsPanel)mainController.getMainViewPort().getCenterPanel().getDisplayPanel()).resizeGrid();
+					
+					if((((ResultsPanel)mainController.getMainViewPort().getCenterPanel().getDisplayPanel()).getScoresPanel() != null) &&
+					   ((ResultsPanel)mainController.getMainViewPort().getCenterPanel().getDisplayPanel()).getScoresPanel().isVisible())
+				   {
+						((ResultsPanel)mainController.getMainViewPort().getCenterPanel().getDisplayPanel()).resizeScoresGrid();
+				   }
 				}
+				
+				mainController.setResizeInterfacesWindow(true);
 			}
 		});
 

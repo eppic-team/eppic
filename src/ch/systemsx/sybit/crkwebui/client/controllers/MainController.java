@@ -51,6 +51,8 @@ public class MainController
 	private String selectedViewer = "Jmol";
 	
 	private Timer loadingTimer;
+
+	private boolean resizeInterfacesWindow;
 	
 	public MainController(Viewport viewport) 
 	{
@@ -316,7 +318,7 @@ public class MainController
 		$wnd.jmolInitialize("resources/jmol");
 		$wnd.jmolSetCallback("language", "en");
 		$wnd.jmolSetDocument(jmolwindow.document);
-		$wnd.jmolApplet(size - 20,"cartoon on; " + 'load ' + url + selectedJob + "/" + filename + "." + interfaceNr + '.rimcore.pdb');
+		$wnd.jmolApplet(size - 20, 'load ' + url + selectedJob + "/" + filename + "." + interfaceNr + '.rimcore.pdb; cartoon on; wireframe off; spacefill off;');
 	}-*/;
 	
 	public void downloadFileFromServer(String type, String interfaceId)
@@ -411,6 +413,16 @@ public class MainController
 //		{
 //			mainViewPort.showError(message);
 //		}
+	}
+
+	public void setResizeInterfacesWindow(boolean resizeInterfacesWindow) 
+	{
+		this.resizeInterfacesWindow = resizeInterfacesWindow;
+	}
+	
+	public boolean isResizeInterfacesWindow()
+	{
+		return resizeInterfacesWindow;
 	}
 	
 //	buttonBar.add(new Button("Wait", new SelectionListener<ButtonEvent>() {  

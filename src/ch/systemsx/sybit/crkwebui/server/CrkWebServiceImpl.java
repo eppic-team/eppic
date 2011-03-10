@@ -1,6 +1,5 @@
 package ch.systemsx.sybit.crkwebui.server;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -54,6 +53,8 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 
 	// list of running  threads
 	private CrkThreadGroup runInstances;
+	
+	private String crkApplicationLocation;
 
 	public void init(ServletConfig config) throws ServletException 
 	{
@@ -90,6 +91,13 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 		if (!destinationDir.isDirectory()) 
 		{
 			throw new ServletException(generalDestinationDirectoryName + " is not a directory");
+		}
+		
+		crkApplicationLocation = properties.getProperty("crk_jar");
+
+		if (crkApplicationLocation == null) 
+		{
+			throw new ServletException("Location of crk application not specified");
 		}
 
 		runInstances = new CrkThreadGroup("instances");
@@ -567,7 +575,8 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 					serverHost + "#id=" + runJobData.getJobId(),
 					localDestinationDirName, 
 					runJobData.getJobId(),
-					runJobData.getInputParameters());
+					runJobData.getInputParameters(),
+					crkApplicationLocation);
 
 			Thread crkRunnerThread = new Thread(runInstances, 
 					crkRunner,
