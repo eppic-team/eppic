@@ -238,9 +238,7 @@ public class CRKParams {
 			} catch (FileNotFoundException e) {
 				throw new CRKException(e, "Specified log file can not be written to: "+e.getMessage(), true);
 			}
-		} else {
-			progressLog = System.out;
-		}
+		} 
 		
 		if (!AminoAcid.isValidNumGroupsReducedAlphabet(reducedAlphabet)) {
 			throw new CRKException(null, "Invalid number of amino acid groups specified ("+reducedAlphabet+")", true);
