@@ -207,9 +207,12 @@ public class CRKParams {
 				progressLogFile = new File(g.getOptarg());
 				break;
 			case 'h':
-			case '?':
 				System.out.println(help);
 				System.exit(0);
+				break;
+			case '?':
+				System.err.println(help);
+				System.exit(1);
 				break; // getopt() already printed an error
 			}
 		}
