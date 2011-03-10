@@ -3,6 +3,8 @@ package crk;
 import gnu.getopt.Getopt;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintStream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -52,6 +54,10 @@ public class CRKParams {
 	
 	private boolean generateThumbnails;
 	
+	private File progressLogFile;
+	private PrintStream progressLog;
+	
+	
 	// some other fields
 	private File inFile;
 	private String jobName;
@@ -70,7 +76,8 @@ public class CRKParams {
 			double grayZoneWidth,
 			double[] entrCallCutoff, double[] kaksCallCutoff,
 			File interfSerFile, File chainEvContextSerFile,
-			boolean generateThumbnails) {
+			boolean generateThumbnails,
+			PrintStream progressLog) {
 		
 		this.pdbCode = pdbCode;
 		this.doScoreCRK = doScoreCRK;
@@ -98,12 +105,13 @@ public class CRKParams {
 		this.interfSerFile = interfSerFile;
 		this.chainEvContextSerFile = chainEvContextSerFile;
 		this.generateThumbnails = generateThumbnails;
+		this.progressLog = progressLog;
 	}
 	
 	public void parseCommandLine(String[] args, String programName, String help) {
 	
 
-		Getopt g = new Getopt(programName, args, "i:kd:a:b:o:r:tc:zZ:m:M:x:X:g:e:q:pnA:I:C:lh?");
+		Getopt g = new Getopt(programName, args, "i:kd:a:b:o:r:tc:zZ:m:M:x:X:g:e:q:pnA:I:C:lL:h?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
@@ -195,6 +203,9 @@ public class CRKParams {
 			case 'l':
 				generateThumbnails = true;
 				break;
+			case 'L':
+				progressLogFile = new File(g.getOptarg());
+				break;
 			case 'h':
 			case '?':
 				System.out.println(help);
@@ -219,6 +230,16 @@ public class CRKParams {
 			if (inFile!=null) {
 				baseName = inFile.getName().substring(0, inFile.getName().lastIndexOf('.'));
 			}
+		}
+		
+		if (progressLogFile!=null) {
+			try {
+				progressLog = new PrintStream(progressLogFile);
+			} catch (FileNotFoundException e) {
+				throw new CRKException(e, "Specified log file can not be written to: "+e.getMessage(), true);
+			}
+		} else {
+			progressLog = System.out;
 		}
 		
 		if (!AminoAcid.isValidNumGroupsReducedAlphabet(reducedAlphabet)) {
@@ -440,6 +461,10 @@ public class CRKParams {
 	
 	public boolean isGenerateThumbnails() {
 		return generateThumbnails;
+	}
+	
+	public PrintStream getProgressLog() {
+		return progressLog;
 	}
 	
 }

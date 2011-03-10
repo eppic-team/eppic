@@ -160,10 +160,8 @@ public class CRKMain {
 	private ChainEvolContextList cecs;
 	private InterfaceEvolContextList iecList;
 		
-	private PrintStream progressLogPS;
+	public CRKMain() {
 
-	public CRKMain(PrintStream progressLogPS) {
-		this.progressLogPS = progressLogPS;
 		
 	}
 	
@@ -225,7 +223,9 @@ public class CRKMain {
 		"  [-C <file>]  :  binary file containing the evolutionary scores for a particular \n" +
 		"                  sequence output of a previous run of CRK\n" +
 		"  [-l]         :  if specified thumbnail images will be generated for each interface \n" +
-		"                  (requires pymol)\n\n";
+		"                  (requires pymol)\n" +
+		"  [-L <file>]  :  a file where progress log will be written to. Default: progress log " +
+		"                  written to std output\n\n";
 		
 		params.parseCommandLine(args, PROGRAM_NAME, help);
 		params.checkCommandLineInput();
@@ -298,7 +298,7 @@ public class CRKMain {
 	
 	public void doLoadInterfacesFromFile() throws CRKException {
 		try {
-			progressLogPS.println("Loading interfaces enumeration from file "+params.getInterfSerFile());
+			params.getProgressLog().println("Loading interfaces enumeration from file "+params.getInterfSerFile());
 			LOGGER.info("Loading interfaces enumeration from file "+params.getInterfSerFile());
 			interfaces = (ChainInterfaceList)Goodies.readFromFile(params.getInterfSerFile());
 		} catch (ClassNotFoundException e) {
@@ -325,7 +325,7 @@ public class CRKMain {
 	public void doFindInterfaces() throws CRKException {
 
 		if (params.isUsePisa()) {
-			progressLogPS.println("Getting PISA interfaces...");
+			params.getProgressLog().println("Getting PISA interfaces...");
 			LOGGER.info("Interfaces from PISA.");
 			PisaConnection pc = new PisaConnection(PISA_INTERFACES_URL, null, null);
 			List<String> pdbCodes = new ArrayList<String>();
@@ -338,7 +338,7 @@ public class CRKMain {
 				throw new CRKException(e,"Error while retrieving PISA xml file: "+e.getMessage(),true);
 			}
 		} else {
-			progressLogPS.println("Calculating possible interfaces...");
+			params.getProgressLog().println("Calculating possible interfaces...");
 			try {
 				if (params.isUseNaccess()) {
 					interfaces = pdb.getAllInterfaces(INTERFACE_DIST_CUTOFF, NACCESS_EXE, 0, 0);
@@ -352,7 +352,7 @@ public class CRKMain {
 			}
 		}
 
-		progressLogPS.println("Done");
+		params.getProgressLog().println("Done");
 
 
 		// checking for clashes
@@ -409,7 +409,7 @@ public class CRKMain {
 		LOGGER.info(msg);
 		
 		try {
-			progressLogPS.println("Loading chain evolutionary scores from file "+params.getChainEvContextSerFile());
+			params.getProgressLog().println("Loading chain evolutionary scores from file "+params.getChainEvContextSerFile());
 			LOGGER.info("Loading chain evolutionary scores from file "+params.getChainEvContextSerFile());
 			cecs = (ChainEvolContextList)Goodies.readFromFile(params.getChainEvContextSerFile());
 		} catch (ClassNotFoundException e) {
@@ -457,7 +457,7 @@ public class CRKMain {
 			if (EMBL_CDS_CACHE_DIR!=null) {
 				emblQueryCacheFile = new File(EMBL_CDS_CACHE_DIR,params.getBaseName()+"."+chainEvCont.getRepresentativeChainCode()+".query.emblcds.fa");
 			}
-			progressLogPS.println("Finding query's uniprot mapping (through SIFTS or blasting)");
+			params.getProgressLog().println("Finding query's uniprot mapping (through SIFTS or blasting)");
 			try {
 				chainEvCont.retrieveQueryData(SIFTS_FILE, emblQueryCacheFile, BLAST_BIN_DIR, BLAST_DB_DIR, BLAST_DB, params.getNumThreads(),params.isDoScoreCRK(),PDB2UNIPROT_ID_THRESHOLD,PDB2UNIPROT_QCOV_THRESHOLD);
 			} catch (BlastException e) {
@@ -473,7 +473,7 @@ public class CRKMain {
 			}
 
 			// b) getting the homologs and sequence data 
-			progressLogPS.println("Blasting for homologues...");
+			params.getProgressLog().println("Blasting for homologues...");
 			File blastCacheFile = null;
 			if (BLAST_CACHE_DIR!=null) {
 				blastCacheFile = new File(BLAST_CACHE_DIR,params.getBaseName()+"."+chainEvCont.getRepresentativeChainCode()+".blast.xml"); 
@@ -491,7 +491,7 @@ public class CRKMain {
 				throw new CRKException(e,"Thread interrupted while blasting for sequence homologs: "+e.getMessage(),true);
 			}
 
-			progressLogPS.println("Retrieving UniprotKB data and EMBL CDS sequences");
+			params.getProgressLog().println("Retrieving UniprotKB data and EMBL CDS sequences");
 			File emblHomsCacheFile = null;
 			if (EMBL_CDS_CACHE_DIR!=null) {
 				emblHomsCacheFile = new File(EMBL_CDS_CACHE_DIR,params.getBaseName()+"."+chainEvCont.getRepresentativeChainCode()+".homologs.emblcds.fa");
@@ -522,7 +522,7 @@ public class CRKMain {
 			}
 
 			// c) align
-			progressLogPS.println("Aligning protein sequences with t_coffee...");
+			params.getProgressLog().println("Aligning protein sequences with t_coffee...");
 			try {
 				chainEvCont.align(TCOFFEE_BIN, params.isUseTcoffeeVeryFastMode());
 			} catch (TcoffeeException e) {
@@ -562,7 +562,7 @@ public class CRKMain {
 
 			// e) compute ka/ks ratios
 			if (params.isDoScoreCRK() && chainEvCont.canDoCRK()) {
-				progressLogPS.println("Running selecton (this will take long)...");
+				params.getProgressLog().println("Running selecton (this will take long)...");
 				try {
 				chainEvCont.computeKaKsRatiosSelecton(SELECTON_BIN, 
 						params.getOutputFile("."+chainEvCont.getRepresentativeChainCode()+".selecton.res"),
@@ -606,7 +606,7 @@ public class CRKMain {
 	public void doScoring() throws CRKException {
 		if (interfaces.getNumInterfacesAboveArea(MIN_INTERF_AREA_REPORTING)==0) return;
 		
-		progressLogPS.println("Scores:");
+		params.getProgressLog().println("Scores:");
 		
 		iecList = new InterfaceEvolContextList(params.getJobName(), MIN_HOMOLOGS_CUTOFF, params.getMinNumResCA(), params.getMinNumResMemberCA(), 
 				params.getIdCutoff(), QUERY_COVERAGE_CUTOFF, params.getMaxNumSeqsSelecton(), MIN_INTERF_AREA_REPORTING);
@@ -620,11 +620,11 @@ public class CRKMain {
 				PrintStream scoreEntrPS = new PrintStream(params.getOutputFile(ENTROPIES_FILE_SUFFIX+".scores"+suffix));
 				// entropy nw
 				iecList.scoreEntropy(false);
-				iecList.printScoresTable(progressLogPS, params.getEntrCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getEntrCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
+				iecList.printScoresTable(params.getProgressLog(), params.getEntrCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getEntrCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
 				iecList.printScoresTable(scoreEntrPS, params.getEntrCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getEntrCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
 				// entropy w
 				iecList.scoreEntropy(true);
-				iecList.printScoresTable(progressLogPS, params.getEntrCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getEntrCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
+				iecList.printScoresTable(params.getProgressLog(), params.getEntrCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getEntrCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
 				iecList.printScoresTable(scoreEntrPS, params.getEntrCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getEntrCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
 				iecList.writeScoresPDBFiles(params,ENTROPIES_FILE_SUFFIX+".pdb");
 				iecList.writeRimCorePDBFiles(params, ".rimcore.pdb");
@@ -650,11 +650,11 @@ public class CRKMain {
 					PrintStream scoreKaksPS = new PrintStream(params.getOutputFile(KAKS_FILE_SUFFIX+".scores"+suffix));
 					// kaks nw
 					iecList.scoreKaKs(false);
-					iecList.printScoresTable(progressLogPS,  params.getKaksCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getKaksCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
+					iecList.printScoresTable(params.getProgressLog(),  params.getKaksCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getKaksCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
 					iecList.printScoresTable(scoreKaksPS,  params.getKaksCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getKaksCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
 					// kaks w
 					iecList.scoreKaKs(true);
-					iecList.printScoresTable(progressLogPS,  params.getKaksCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getKaksCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
+					iecList.printScoresTable(params.getProgressLog(),  params.getKaksCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getKaksCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
 					iecList.printScoresTable(scoreKaksPS,  params.getKaksCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getKaksCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
 					iecList.writeScoresPDBFiles(params, KAKS_FILE_SUFFIX+".pdb");
 					iecList.writeRimCorePDBFiles(params, ".rimcore.pdb");
@@ -689,7 +689,8 @@ public class CRKMain {
 				DEF_GRAY_ZONE_WIDTH,
 				entrCallCutoff,kaksCallCutoff,
 				null,null,
-				false);
+				false,
+				System.out);
 	}
 	
 	/**
@@ -697,7 +698,7 @@ public class CRKMain {
 	 */
 	public static void main(String[] args) {
 		
-		CRKMain crkMain = new CRKMain(System.out);
+		CRKMain crkMain = new CRKMain();
 
 		crkMain.setDefaults();
 		
