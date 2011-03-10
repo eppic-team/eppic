@@ -224,7 +224,7 @@ public class CRKMain {
 		"                  sequence output of a previous run of CRK\n" +
 		"  [-l]         :  if specified thumbnail images will be generated for each interface \n" +
 		"                  (requires pymol)\n" +
-		"  [-L <file>]  :  a file where progress log will be written to. Default: progress log " +
+		"  [-L <file>]  :  a file where progress log will be written to. Default: progress log \n" +
 		"                  written to std output\n\n";
 		
 		params.parseCommandLine(args, PROGRAM_NAME, help);
