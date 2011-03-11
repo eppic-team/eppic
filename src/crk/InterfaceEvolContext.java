@@ -41,8 +41,8 @@ public class InterfaceEvolContext implements Serializable {
 	
 	private static final String TN_STYLE = "cartoon";
 	private static final String TN_BG_COLOR = "white";
-	private static final int[] TN_HEIGHTS = {150,300};
-	private static final int[] TN_WIDTHS = {150,300};
+	private static final int[] TN_HEIGHTS = {75,300};
+	private static final int[] TN_WIDTHS = {75,300};
 	
 	private ChainInterface interf;
 	private List<ChainEvolContext> chains;  // At the moment strictly 2 members (matching the 2 partners of interf). 
