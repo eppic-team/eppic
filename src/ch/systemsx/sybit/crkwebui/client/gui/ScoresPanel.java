@@ -270,10 +270,24 @@ public class ScoresPanel extends LayoutContainer
 		return configs;
 	}
 	
-	public void resizeGrid() {
-		if (scoresGridWidthOfAllColumns < mainController.getWindowWidth() - 225) {
+	public void resizeGrid() 
+	{
+		int limit = 25;
+		if(mainController.getMainViewPort().getMyJobsPanel().isExpanded())
+		{
+			limit += mainController.getMainViewPort().getMyJobsPanel().getWidth();
+		}
+		else
+		{
+			limit += 25;
+		}
+		
+		if (scoresGridWidthOfAllColumns < mainController.getWindowWidth() - limit) 
+		{
 			scoresGrid.getView().setForceFit(true);
-		} else {
+		} 
+		else 
+		{
 			scoresGrid.getView().setForceFit(false);
 
 			int nrOfColumn = scoresGrid.getColumnModel().getColumnCount();

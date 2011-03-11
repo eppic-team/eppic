@@ -27,6 +27,7 @@ import com.extjs.gxt.ui.client.widget.form.ComboBox.TriggerAction;
 import com.extjs.gxt.ui.client.widget.form.FormPanel;
 import com.extjs.gxt.ui.client.widget.form.SimpleComboBox;
 import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
+import com.extjs.gxt.ui.client.widget.grid.ColumnData;
 import com.extjs.gxt.ui.client.widget.grid.ColumnModel;
 import com.extjs.gxt.ui.client.widget.grid.Grid;
 import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
@@ -36,6 +37,7 @@ import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 import com.extjs.gxt.ui.client.widget.layout.VBoxLayout;
 import com.extjs.gxt.ui.client.widget.layout.VBoxLayout.VBoxLayoutAlign;
 import com.google.gwt.user.client.Cookies;
+import com.google.gwt.user.client.Window;
 
 public class ResultsPanel extends DisplayPanel {
 	private List<ColumnConfig> resultsConfigs;
@@ -119,13 +121,15 @@ public class ResultsPanel extends DisplayPanel {
 	}
 
 	public void updateScoresPanel(int selectedInterface) {
-		if (scoresPanel == null) {
+		if (scoresPanel == null) 
+		{
 			createScoresPanel();
 			scoresPanelLocation.add(scoresPanel);
 			scoresPanelLocation.layout();
 		}
 
 		scoresPanel.fillGrid(resultsData, selectedInterface);
+		scoresPanel.resizeGrid();
 		scoresPanel.setVisible(true);
 	}
 
@@ -161,6 +165,33 @@ public class ResultsPanel extends DisplayPanel {
 			initialColumnWidth = new ArrayList<Integer>();
 		}
 
+		
+		
+		ColumnConfig columnt = new ColumnConfig();
+		columnt.setId("thumbnail");
+		columnt.setHeader("");
+		columnt.setWidth(100);
+		columnt.setAlignment(HorizontalAlignment.CENTER);
+		columnt.setRenderer(new GridCellRenderer<BeanModel>() {
+
+				public Object render(BeanModel model, String property,
+						ColumnData config, int rowIndex, int colIndex,
+						ListStore<BeanModel> store, Grid<BeanModel> grid) 
+				{
+					String url = mainController.getSettings().getResultsLocation() + "mol.png";
+//					return "<img src=\"" + url + "\"/>";
+					return "<img src=\"http://localhost:8080/files1/mol.png\" width=75 height=75/>";
+				}
+				
+		});
+
+		resultsGridWidthOfAllColumns += 100;
+		initialColumnWidth.add(100);
+
+		configs.add(columnt);
+		
+		
+		
 		int i = 0;
 
 		for (String columnName : columns) {
@@ -267,7 +298,7 @@ public class ResultsPanel extends DisplayPanel {
 
 			i++;
 		}
-
+		
 		return configs;
 	}
 
@@ -406,10 +437,24 @@ public class ResultsPanel extends DisplayPanel {
 		infoPanel.fillInfoPanel(resultsData);
 	}
 
-	public void resizeGrid() {
-		if (resultsGridWidthOfAllColumns < mainController.getWindowWidth() - 225) {
+	public void resizeGrid() 
+	{
+		int limit = 25;
+		if(mainController.getMainViewPort().getMyJobsPanel().isExpanded())
+		{
+			limit += mainController.getMainViewPort().getMyJobsPanel().getWidth();
+		}
+		else
+		{
+			limit += 25;
+		}
+		
+		if (resultsGridWidthOfAllColumns < mainController.getWindowWidth() - limit) 
+		{
 			resultsGrid.getView().setForceFit(true);
-		} else {
+		}
+		else 
+		{
 			resultsGrid.getView().setForceFit(false);
 
 			int nrOfColumn = resultsGrid.getColumnModel().getColumnCount();

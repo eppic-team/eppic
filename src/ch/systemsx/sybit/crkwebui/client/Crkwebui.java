@@ -1,6 +1,5 @@
 package ch.systemsx.sybit.crkwebui.client;
 
-import junit.textui.ResultPrinter;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 import ch.systemsx.sybit.crkwebui.client.gui.ResultsPanel;
 
