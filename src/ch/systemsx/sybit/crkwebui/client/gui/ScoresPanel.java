@@ -18,7 +18,6 @@ import com.extjs.gxt.ui.client.data.BeanModelLookup;
 import com.extjs.gxt.ui.client.store.GroupingStore;
 import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
-import com.extjs.gxt.ui.client.widget.form.FormPanel;
 import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
 import com.extjs.gxt.ui.client.widget.grid.ColumnModel;
 import com.extjs.gxt.ui.client.widget.grid.Grid;
@@ -27,11 +26,8 @@ import com.extjs.gxt.ui.client.widget.grid.GridGroupRenderer;
 import com.extjs.gxt.ui.client.widget.grid.GroupColumnData;
 import com.extjs.gxt.ui.client.widget.grid.GroupingView;
 import com.extjs.gxt.ui.client.widget.grid.HeaderGroupConfig;
-import com.extjs.gxt.ui.client.widget.layout.FitLayout;
-import com.extjs.gxt.ui.client.widget.layout.FormData;
 import com.extjs.gxt.ui.client.widget.layout.RowData;
 import com.extjs.gxt.ui.client.widget.layout.RowLayout;
-import com.google.gwt.user.client.Window;
 
 public class ScoresPanel extends LayoutContainer 
 {
@@ -41,7 +37,6 @@ public class ScoresPanel extends LayoutContainer
 	private GroupingStore<BeanModel> scoresStore;
 	private ColumnModel scoresColumnModel;
 	private Grid<BeanModel> scoresGrid;
-	private int scoresGridWidthOfAllColumns = 0;
 	private List<Integer> initialColumnWidth;
 
 	public ScoresPanel(PDBScoreItem resultsData, MainController mainController) 
@@ -230,7 +225,6 @@ public class ScoresPanel extends LayoutContainer
 					columnWidth = Integer.parseInt(customColumnWidth);
 				}
 				
-				scoresGridWidthOfAllColumns += columnWidth;
 				initialColumnWidth.add(columnWidth);
 
 				String customRenderer = mainController.getSettings()
@@ -282,7 +276,17 @@ public class ScoresPanel extends LayoutContainer
 			limit += 25;
 		}
 		
-		if (scoresGridWidthOfAllColumns < mainController.getWindowWidth() - limit) 
+		int scoresGridWidthOfAllVisibleColumns = 0;
+		
+		for(int i=0; i<scoresGrid.getColumnModel().getColumnCount(); i++)
+		{
+			if(!scoresGrid.getColumnModel().getColumn(i).isHidden())
+			{
+				scoresGridWidthOfAllVisibleColumns += initialColumnWidth.get(i);
+			}
+		}
+		
+		if (scoresGridWidthOfAllVisibleColumns < mainController.getWindowWidth() - limit) 
 		{
 			scoresGrid.getView().setForceFit(true);
 		} 
@@ -304,9 +308,5 @@ public class ScoresPanel extends LayoutContainer
 		scoresGrid.repaint();
 
 		this.layout();
-	}
-	
-	public int getScoresGridWidthOfAllColumns() {
-		return scoresGridWidthOfAllColumns;
 	}
 }

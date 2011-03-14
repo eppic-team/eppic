@@ -35,7 +35,7 @@ public class MainViewPort extends Viewport
 
 		this.setLayout(layout);
 
-		BorderLayoutData westData = new BorderLayoutData(LayoutRegion.WEST, 200);
+		BorderLayoutData westData = new BorderLayoutData(LayoutRegion.WEST, 180);
 		westData.setCollapsible(true);
 		westData.setFloatable(true);
 		westData.setSplit(true);
@@ -63,7 +63,7 @@ public class MainViewPort extends Viewport
 //		this.add(topPanel, northData);
 		
 		BorderLayoutData southData = new BorderLayoutData(LayoutRegion.SOUTH,
-				20);
+				15);
 		southData.setMargins(new Margins(5, 0, 0, 0));
 		
 		bottomPanel = new BottomPanel(mainController);

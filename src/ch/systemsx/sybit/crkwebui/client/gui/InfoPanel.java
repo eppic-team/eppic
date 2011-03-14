@@ -3,36 +3,21 @@ package ch.systemsx.sybit.crkwebui.client.gui;
 import model.PDBScoreItem;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 
-import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
-import com.extjs.gxt.ui.client.Style.Orientation;
 import com.extjs.gxt.ui.client.Style.Scroll;
-import com.extjs.gxt.ui.client.Style.VerticalAlignment;
-import com.extjs.gxt.ui.client.util.Margins;
-import com.extjs.gxt.ui.client.util.Padding;
 import com.extjs.gxt.ui.client.widget.Label;
-import com.extjs.gxt.ui.client.widget.LayoutContainer;
+import com.extjs.gxt.ui.client.widget.form.FieldSet;
 import com.extjs.gxt.ui.client.widget.form.FormPanel;
-import com.extjs.gxt.ui.client.widget.layout.ColumnData;
-import com.extjs.gxt.ui.client.widget.layout.ColumnLayout;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 import com.extjs.gxt.ui.client.widget.layout.FormData;
 import com.extjs.gxt.ui.client.widget.layout.FormLayout;
-import com.extjs.gxt.ui.client.widget.layout.RowData;
-import com.extjs.gxt.ui.client.widget.layout.RowLayout;
-import com.extjs.gxt.ui.client.widget.layout.VBoxLayout;
-import com.extjs.gxt.ui.client.widget.layout.VBoxLayout.VBoxLayoutAlign;
-import com.extjs.gxt.ui.client.widget.layout.VBoxLayoutData;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.ui.FlexTable;
-import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
-import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentConstant;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 
 public class InfoPanel extends FormPanel 
 {
-	private HTML pdbIdentifier;
 	private Label totalCoreSizeXtalCallCutoff;
 	private Label infoPanelMinNumberHomologsRequired;
 	private Label infoPanelSequenceIdentityCutoff;
@@ -45,15 +30,24 @@ public class InfoPanel extends FormPanel
 	
 	public InfoPanel(PDBScoreItem resultsData) 
 	{
-//		this.setLayout(new RowLayout(Orientation.HORIZONTAL));
-		this.setScrollMode(Scroll.AUTO);
-		this.setHeight(80);
+		this.setHeight(60);
+		this.getHeader().setVisible(false);
+		this.setBodyBorder(false);
+		this.setBorders(true);
+//		this.setLayout(new FitLayout());
 		this.setLayout(new FormLayout());
+		this.setPadding(10);
+		this.setStyleAttribute("border-color", "#BCBCBC");
+		
+		FieldSet fieldSet = new FieldSet();
+		fieldSet.setScrollMode(Scroll.AUTO);
+		fieldSet.setLayout(new FormLayout());
+		fieldSet.setHeading("Parameters");  
+	    fieldSet.setHeight("60");
 		
 		FlexTable flexTable = new FlexTable();
-		flexTable.setHeight("80");
 		
-		int nrOfRows = 4;
+		int nrOfRows = 3;
 		int nrOfColumns = 3;
 		
 		for(int i=0; i < nrOfColumns; i++)
@@ -65,57 +59,50 @@ public class InfoPanel extends FormPanel
 			}
 		}
 		
-		pdbIdentifier = new HTML();
-		pdbIdentifier.setHTML(MainController.CONSTANTS.info_panel_pdb_identifier() + ": <b>" + resultsData.getPdbName() + "</b>");
-		flexTable.setWidget(0, 0, pdbIdentifier);
-		
 		totalCoreSizeXtalCallCutoff = new Label(MainController.CONSTANTS.info_panel_total_core_size_xtal_call_cutoff() + ": " + resultsData.getMinCoreSize());
 		totalCoreSizeXtalCallCutoff.setStyleAttribute("white-space", "nowrap");
-		flexTable.setWidget(1, 0, totalCoreSizeXtalCallCutoff);
+		flexTable.setWidget(0, 0, totalCoreSizeXtalCallCutoff);
 		
 		infoPanelMinNumberHomologsRequired = new Label(MainController.CONSTANTS.info_panel_min_number_homologs_required() + ": " + resultsData.getHomologsCutoff());
 		infoPanelMinNumberHomologsRequired.setStyleAttribute("white-space", "nowrap");
-		flexTable.setWidget(2, 0, infoPanelMinNumberHomologsRequired);
+		flexTable.setWidget(1, 0, infoPanelMinNumberHomologsRequired);
 		
 		infoPanelSequenceIdentityCutoff = new Label(MainController.CONSTANTS.info_panel_sequence_identity_cutoff() + ": " + resultsData.getIdCutoff());
 		infoPanelSequenceIdentityCutoff.setStyleAttribute("white-space", "nowrap");
-		flexTable.setWidget(0, 1, infoPanelSequenceIdentityCutoff);
+		flexTable.setWidget(2, 0, infoPanelSequenceIdentityCutoff);
 		
 		infoPanelQueryCoverageCutoff = new Label(MainController.CONSTANTS.info_panel_query_coverage_cutoff() + ": " + resultsData.getQueryCovCutoff());
 		infoPanelQueryCoverageCutoff.setStyleAttribute("white-space", "nowrap");
-		flexTable.setWidget(1, 1, infoPanelQueryCoverageCutoff);
+		flexTable.setWidget(0, 1, infoPanelQueryCoverageCutoff);
 		
 		infoPanelPerMemberCoreSizeXtalCallCutoff = new Label(MainController.CONSTANTS.info_panel_per_member_core_size_xtal_call_cutoff() + ": " + resultsData.getMinMemberCoreSize());
 		infoPanelPerMemberCoreSizeXtalCallCutoff.setStyleAttribute("white-space", "nowrap");
-		flexTable.setWidget(2, 1, infoPanelPerMemberCoreSizeXtalCallCutoff);
+		flexTable.setWidget(1, 1, infoPanelPerMemberCoreSizeXtalCallCutoff);
 		
 		infoPanelMaxNumSequencesUsed = new Label(MainController.CONSTANTS.info_panel_max_num_sequences_used() + ": " + resultsData.getMaxNumSeqsCutoff());
 		infoPanelMaxNumSequencesUsed.setStyleAttribute("white-space", "nowrap");
-		flexTable.setWidget(0, 2, infoPanelMaxNumSequencesUsed);
+		flexTable.setWidget(2, 1, infoPanelMaxNumSequencesUsed);
 		
 		infoPanelBioCallCutoff = new Label(MainController.CONSTANTS.info_panel_bio_call_cutoff() + ": " + resultsData.getBioCutoff());
 		infoPanelBioCallCutoff.setStyleAttribute("white-space", "nowrap");
-		flexTable.setWidget(1, 2, infoPanelBioCallCutoff);
+		flexTable.setWidget(0, 2, infoPanelBioCallCutoff);
 		
 		infoPanelXtalCallCutoff = new Label(MainController.CONSTANTS.info_panel_xtal_call_cutoff() + ": " + resultsData.getXtalCutoff());
 		infoPanelXtalCallCutoff.setStyleAttribute("white-space", "nowrap");
-		flexTable.setWidget(2, 2, infoPanelXtalCallCutoff);
+		flexTable.setWidget(1, 2, infoPanelXtalCallCutoff);
 		
 		downloadResultsLink = new HTML();
 		downloadResultsLink.setHTML("<a href=" + GWT.getModuleBaseURL()
 				+ "fileDownload?type=zip&id=" + resultsData.getJobId()
 				+ ">" + MainController.CONSTANTS.info_panel_download_results_link() + "</a>");
-		flexTable.setWidget(3, 2, downloadResultsLink);
+		flexTable.setWidget(2, 2, downloadResultsLink);
 
-//		this.add(new LayoutContainer(), new RowData(-1, -1, new Margins(0)));
-		
 		// formdata -20 - fix for chrome - otherwise unnecessary scroll bar
+//		fieldSet.add(flexTable, new FormData("-20 100%"));
+//		this.add(fieldSet);
+		
 		this.add(flexTable, new FormData("-20 100%"));
 		
-		this.getHeader().setVisible(false);
-		this.setBodyBorder(false);
-		this.setBorders(false);
-		this.setPadding(0);
 //		this.setScrollMode(Scroll.ALWAYS);
 //
 //		VBoxLayout vBoxLayout = new VBoxLayout();
@@ -198,7 +185,6 @@ public class InfoPanel extends FormPanel
 
 	public void fillInfoPanel(PDBScoreItem resultsData) 
 	{
-		pdbIdentifier.setHTML(MainController.CONSTANTS.info_panel_pdb_identifier() + ": <b>" + resultsData.getPdbName() + "</b>");
 		totalCoreSizeXtalCallCutoff.setText(MainController.CONSTANTS.info_panel_total_core_size_xtal_call_cutoff() + ": " + resultsData.getMinCoreSize());
 		infoPanelMinNumberHomologsRequired.setText(MainController.CONSTANTS.info_panel_min_number_homologs_required() + ": " + resultsData.getHomologsCutoff());
 		infoPanelSequenceIdentityCutoff.setText(MainController.CONSTANTS.info_panel_sequence_identity_cutoff() + ": " + resultsData.getIdCutoff());

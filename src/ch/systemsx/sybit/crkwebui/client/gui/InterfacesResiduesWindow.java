@@ -14,7 +14,7 @@ public class InterfacesResiduesWindow extends Dialog
 	public InterfacesResiduesWindow(final MainController mainController) 
 	{
 		int width = 1000;
-		int height = 630;
+		int height = 660;
 		
 		if(width > mainController.getWindowWidth())
 		{
@@ -39,6 +39,10 @@ public class InterfacesResiduesWindow extends Dialog
 		this.setLayout(new RowLayout());
 		this.setHideOnButtonClick(true);
 
+		// adjust to 22 height rows
+		height = (height - 220) / 22;
+		height = height * 22 + 220;
+		
 		interfacesResiduesPanel = new InterfacesResiduesPanel(mainController,
 															  width,
 															  height - 220);

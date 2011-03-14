@@ -25,13 +25,10 @@ import com.extjs.gxt.ui.client.widget.grid.ColumnData;
 import com.extjs.gxt.ui.client.widget.grid.ColumnModel;
 import com.extjs.gxt.ui.client.widget.grid.Grid;
 import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
-import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 import com.extjs.gxt.ui.client.widget.layout.RowData;
 import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.History;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Hyperlink;
 
 public class MyJobsPanel extends ContentPanel 
@@ -145,7 +142,7 @@ public class MyJobsPanel extends ContentPanel
 		column.setId("input");
 		column.setHeader(MainController.CONSTANTS.myjobs_grid_input());
 		column.setDataIndex("input");
-		column.setWidth(100);
+		column.setWidth(90);
 		column.setRowHeader(true);
 		column.setRenderer(jobRenderer);
 		configs.add(column);
@@ -154,7 +151,7 @@ public class MyJobsPanel extends ContentPanel
 		column.setId("status");
 		column.setHeader(MainController.CONSTANTS.myjobs_grid_status());
 		column.setDataIndex("status");
-		column.setWidth(80);
+		column.setWidth(90);
 		column.setRowHeader(true);
 		column.setRenderer(statusRenderer);
 		configs.add(column);

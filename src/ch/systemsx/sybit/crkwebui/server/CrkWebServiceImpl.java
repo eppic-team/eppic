@@ -17,11 +17,12 @@ import java.util.Properties;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 
-import org.apache.commons.lang.RandomStringUtils;
-
 import model.InterfaceResidueItem;
 import model.PDBScoreItem;
 import model.ProcessingData;
+
+import org.apache.commons.lang.RandomStringUtils;
+
 import ch.systemsx.sybit.crkwebui.client.CrkWebService;
 import ch.systemsx.sybit.crkwebui.server.data.EmailData;
 import ch.systemsx.sybit.crkwebui.server.util.PDBModelConverter;

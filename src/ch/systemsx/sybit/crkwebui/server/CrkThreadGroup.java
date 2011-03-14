@@ -1,6 +1,5 @@
 package ch.systemsx.sybit.crkwebui.server;
 
-import ch.systemsx.sybit.crkwebui.shared.CrkWebException;
 
 public class CrkThreadGroup extends ThreadGroup 
 {

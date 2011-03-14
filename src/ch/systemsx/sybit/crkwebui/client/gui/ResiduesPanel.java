@@ -20,23 +20,14 @@ import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.store.Store;
 import com.extjs.gxt.ui.client.store.StoreFilter;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
-import com.extjs.gxt.ui.client.widget.form.FormPanel;
-import com.extjs.gxt.ui.client.widget.form.StoreFilterField;
 import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
 import com.extjs.gxt.ui.client.widget.grid.ColumnModel;
 import com.extjs.gxt.ui.client.widget.grid.Grid;
 import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
 import com.extjs.gxt.ui.client.widget.grid.GridViewConfig;
 import com.extjs.gxt.ui.client.widget.grid.HeaderGroupConfig;
-import com.extjs.gxt.ui.client.widget.grid.LiveGridView;
-import com.extjs.gxt.ui.client.widget.grid.filters.Filter;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
-import com.extjs.gxt.ui.client.widget.table.NumberCellRenderer;
-import com.extjs.gxt.ui.client.widget.toolbar.LiveToolItem;
 import com.extjs.gxt.ui.client.widget.toolbar.PagingToolBar;
-import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
-import com.google.gwt.i18n.client.NumberFormat;
-import com.google.gwt.user.client.Window;
 
 public class ResiduesPanel extends ContentPanel
 {
@@ -44,6 +35,8 @@ public class ResiduesPanel extends ContentPanel
 	private ListStore<BeanModel> residuesStore;
 	private ColumnModel residuesColumnModel;
 	private Grid<BeanModel> residuesGrid;
+	private int residuesGridWidthOfAllColumns = 0;
+	private List<Integer> initialColumnWidth;
 	
 	private PagingModelMemoryProxy proxy;
 	private PagingLoader loader;

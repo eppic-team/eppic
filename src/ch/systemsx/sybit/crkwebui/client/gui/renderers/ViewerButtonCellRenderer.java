@@ -51,7 +51,7 @@ public class ViewerButtonCellRenderer implements GridCellRenderer<BeanModel>
 					});
 		}
 
-		Button detailsButton = new Button(MainController.CONSTANTS.results_grid_viewer_button(),
+		Button viewerButton = new Button(MainController.CONSTANTS.results_grid_viewer_button(),
 			new SelectionListener<ButtonEvent>() 
 			{
 				@Override
@@ -61,10 +61,10 @@ public class ViewerButtonCellRenderer implements GridCellRenderer<BeanModel>
 				}
 			});
 
-		detailsButton.setWidth(grid.getColumnModel().getColumnWidth(colIndex) - 10);
-		detailsButton.setToolTip(MainController.CONSTANTS.results_grid_viewer_button_tooltip());
+		viewerButton.setWidth(grid.getColumnModel().getColumnWidth(colIndex) - 10);
+		viewerButton.setToolTip(MainController.CONSTANTS.results_grid_viewer_button_tooltip());
 
-		return detailsButton;
+		return viewerButton;
 	}
 
 }

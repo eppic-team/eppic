@@ -5,7 +5,6 @@ import java.util.List;
 
 import model.InterfaceResidueItem;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
-import ch.systemsx.sybit.crkwebui.client.gui.InterfacesResiduesWindow;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 

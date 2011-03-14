@@ -1,14 +1,10 @@
 package ch.systemsx.sybit.crkwebui.server;
 
 import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.ZipEntry;
@@ -16,8 +12,6 @@ import java.util.zip.ZipOutputStream;
 
 import ch.systemsx.sybit.crkwebui.shared.CrkWebException;
 import ch.systemsx.sybit.crkwebui.shared.model.InputParameters;
-import crk.CRKException;
-import crk.CRKMain;
 
 public class CrkRunner implements Runnable 
 {
@@ -153,6 +147,10 @@ public class CrkRunner implements Runnable
 					}
 				}
 			}
+			
+			command.add("-L");
+			command.add(destinationDirectoryName + "/crklog");
+			command.add("-l");
 			
 			
 			// using ProcessBuilder to spawn an process
