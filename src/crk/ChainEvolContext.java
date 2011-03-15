@@ -32,7 +32,7 @@ import owl.core.sequence.UniprotVerMisMatchException;
 import owl.core.sequence.alignment.MultipleSequenceAlignment;
 import owl.core.sequence.alignment.PairwiseSequenceAlignment;
 import owl.core.sequence.alignment.PairwiseSequenceAlignment.PairwiseSequenceAlignmentException;
-import owl.core.structure.Pdb;
+import owl.core.structure.PdbAsymUnit;
 
 public class ChainEvolContext implements Serializable {
 	
@@ -88,7 +88,7 @@ public class ChainEvolContext implements Serializable {
 		// two possible cases: 
 		// 1) PDB code known and so SiftsFeatures can be taken from SiftsConnection
 		Collection<SiftsFeature> mappings = null;
-		if (!pdbCode.equals(Pdb.NO_PDB_CODE)) {
+		if (!pdbCode.equals(PdbAsymUnit.NO_PDB_CODE)) {
 			SiftsConnection siftsConn = new SiftsConnection(siftsLocation);
 			try {
 				mappings = siftsConn.getMappings(pdbCode, representativeChain);
