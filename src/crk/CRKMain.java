@@ -620,10 +620,14 @@ public class CRKMain {
 				PrintStream scoreEntrPS = new PrintStream(params.getOutputFile(ENTROPIES_FILE_SUFFIX+".scores"+suffix));
 				// entropy nw
 				iecList.scoreEntropy(false);
+				PdbScore entScNW = iecList.getPdbScoreObject();
+				Goodies.serialize(params.getOutputFile(ENTROPIES_FILE_SUFFIX+".scores.nw.dat"+suffix), entScNW);
 				iecList.printScoresTable(params.getProgressLog(), params.getEntrCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getEntrCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
 				iecList.printScoresTable(scoreEntrPS, params.getEntrCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getEntrCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
 				// entropy w
 				iecList.scoreEntropy(true);
+				PdbScore entScW = iecList.getPdbScoreObject();
+				Goodies.serialize(params.getOutputFile(ENTROPIES_FILE_SUFFIX+".scores.w.dat"+suffix), entScW);
 				iecList.printScoresTable(params.getProgressLog(), params.getEntrCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getEntrCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
 				iecList.printScoresTable(scoreEntrPS, params.getEntrCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getEntrCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
 				iecList.writeScoresPDBFiles(params,ENTROPIES_FILE_SUFFIX+".pdb");
@@ -650,10 +654,14 @@ public class CRKMain {
 					PrintStream scoreKaksPS = new PrintStream(params.getOutputFile(KAKS_FILE_SUFFIX+".scores"+suffix));
 					// kaks nw
 					iecList.scoreKaKs(false);
+					PdbScore kaksScNW = iecList.getPdbScoreObject();
+					Goodies.serialize(params.getOutputFile(KAKS_FILE_SUFFIX+".scores.nw.dat"+suffix), kaksScNW);
 					iecList.printScoresTable(params.getProgressLog(),  params.getKaksCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getKaksCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
 					iecList.printScoresTable(scoreKaksPS,  params.getKaksCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getKaksCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
 					// kaks w
 					iecList.scoreKaKs(true);
+					PdbScore kaksScW = iecList.getPdbScoreObject();
+					Goodies.serialize(params.getOutputFile(KAKS_FILE_SUFFIX+".scores.w.dat"+suffix), kaksScW);
 					iecList.printScoresTable(params.getProgressLog(),  params.getKaksCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getKaksCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
 					iecList.printScoresTable(scoreKaksPS,  params.getKaksCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getKaksCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
 					iecList.writeScoresPDBFiles(params, KAKS_FILE_SUFFIX+".pdb");

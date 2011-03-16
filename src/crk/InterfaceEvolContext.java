@@ -31,8 +31,8 @@ public class InterfaceEvolContext implements Serializable {
 
 	private static final Log LOGGER = LogFactory.getLog(InterfaceEvolContext.class);
 
-	private static final int FIRST  = 0;
-	private static final int SECOND = 1;
+	protected static final int FIRST  = 0;
+	protected static final int SECOND = 1;
 
 	public static final boolean SCORES  = true;
 	public static final boolean RIMCORE = false;
@@ -61,8 +61,8 @@ public class InterfaceEvolContext implements Serializable {
 	// cached values of scoring (filled upon call of score methods and getCalls)
 	private ScoringType lastScoType; // the type of the last scoring run (either kaks or entropy)
 	//private boolean lastScoWeighted; // whether last scoring run was weighted or not
-	
 
+	private CallType[] lastCalls; // cached result of the last call to getCalls(bioCutoff, xtalCutoff, homologsCutoff, minCoreSize, minMemberCoreSize)
 	
 	public InterfaceEvolContext(ChainInterface interf, List<ChainEvolContext> chains) {
 		this.interf = interf;
@@ -72,6 +72,18 @@ public class InterfaceEvolContext implements Serializable {
 
 	public ChainInterface getInterface() {
 		return interf;
+	}
+	
+	public ChainEvolContext getFirstChainEvolContext() {
+		return chains.get(FIRST);
+	}
+	
+	public ChainEvolContext getSecondChainEvolContext() {
+		return chains.get(SECOND);
+	}
+	
+	protected CallType[] getLastCalls() {
+		return this.lastCalls;
 	}
 	
 	/**
@@ -555,7 +567,7 @@ public class InterfaceEvolContext implements Serializable {
 		//this.minCoreSize = minCoreSize;
 		//this.minMemberCoreSize = minMemberCoreSize;
 		
-		CallType[] calls = new CallType[this.interf.getNumBsaToAsaCutoffs()];
+		lastCalls = new CallType[this.interf.getNumBsaToAsaCutoffs()];
 		finalScores = new double[this.interf.getNumBsaToAsaCutoffs()];
 		
 		// the votes with voters (no anonymous vote here!)
@@ -602,20 +614,20 @@ public class InterfaceEvolContext implements Serializable {
 
 			if (countNoPredict==chains.size()) {
 				finalScores[i] = Double.NaN;
-				calls[i]=CallType.NO_PREDICTION;
+				lastCalls[i]=CallType.NO_PREDICTION;
 			} else if (countBio>countXtal) {
 				//TODO check the discrepancies among the different voters. The variance could be a measure of the confidence of the call
 				//TODO need to do a study about the correlation of scores in members of the same interface
 				//TODO it might be the case that there is good agreement and bad agreement would indicate things like a bio-mimicking crystal interface
 				finalScores[i] = getAvrgRatio(bioCalls.get(i),i);
-				calls[i] = CallType.BIO;
+				lastCalls[i] = CallType.BIO;
 			} else if (countXtal>countBio) {
 				finalScores[i] = getAvrgRatio(xtalCalls.get(i),i);
-				calls[i] = CallType.CRYSTAL;
+				lastCalls[i] = CallType.CRYSTAL;
 			} else if (countGray>countBio+countXtal) {
 				// we use as final score the average of all gray member scores
 				finalScores[i] = getAvrgRatio(grayCalls.get(i),i);
-				calls[i] = CallType.GRAY;
+				lastCalls[i] = CallType.GRAY;
 			} else if (countBio==countXtal) {
 				//TODO we are taking simply the average, is this the best solution?
 				// weighting is not done here, scores are calculated either weighted/non-weighted before
@@ -626,19 +638,19 @@ public class InterfaceEvolContext implements Serializable {
 
 				// first we check that the sum of core sizes is above the cutoff (if not we call xtal directly)
 				if (!hasEnoughCore(indices,i,minCoreSize)) {
-					calls[i] = CallType.CRYSTAL;
+					lastCalls[i] = CallType.CRYSTAL;
 				} else {
 					if (finalScores[i]<bioCutoff) {
-						calls[i] = CallType.BIO;
+						lastCalls[i] = CallType.BIO;
 					} else if (finalScores[i]>xtalCutoff) {
-						calls[i] = CallType.CRYSTAL;
+						lastCalls[i] = CallType.CRYSTAL;
 					} else {
-						calls[i] = CallType.GRAY;
+						lastCalls[i] = CallType.GRAY;
 					}
 				}
 			}
 		}
-		return calls;
+		return lastCalls;
 	}	
 
 	/**

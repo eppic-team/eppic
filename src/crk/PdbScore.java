@@ -12,6 +12,7 @@ public class PdbScore implements Serializable {
 	private static final long serialVersionUID = 1L;
 	
 	private String pdbName;
+	private String pdbTitle;
 	private ScoringType scoType;
 	private boolean isScoreWeighted;
 	private double bioCutoff;
@@ -44,6 +45,14 @@ public class PdbScore implements Serializable {
 
 	public void setPdbName(String pdbName) {
 		this.pdbName = pdbName;
+	}
+	
+	public String getPdbTitle() {
+		return pdbTitle;
+	}
+	
+	public void setPdbTitle(String pdbTitle) {
+		this.pdbTitle = pdbTitle;
 	}
 
 	public ScoringType getScoType() {

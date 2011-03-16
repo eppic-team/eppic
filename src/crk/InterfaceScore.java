@@ -14,12 +14,14 @@ public class InterfaceScore implements Serializable{
 	private PdbScore parent;
 	
 	private int id;
+	private String operator;
 	private double interfArea;
 	private String firstChainId;
 	private String secondChainId;
 	private int numHomologs1;
 	private int numHomologs2;
 
+	// arrays contain data for each of the bsaToAsaCutoffs
 	private int[] coreSize1;
 	private int[] coreSize2;
 	private double[] rim1Scores;
@@ -42,6 +44,14 @@ public class InterfaceScore implements Serializable{
 
 	public int getId() {
 		return id;
+	}
+	
+	public String getOperator() {
+		return operator;
+	}
+	
+	public void setOperator(String operator) {
+		this.operator = operator;
 	}
 
 	public void setId(int id) {
