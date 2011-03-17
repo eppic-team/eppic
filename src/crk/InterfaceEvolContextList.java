@@ -276,8 +276,8 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 		pdbSc.setZoomUsed(list.get(0).getInterface().isRimAndCoreZoomed());
 		for (InterfaceEvolContext iec:this) {
 			InterfaceScore isc = new InterfaceScore(pdbSc);
-			pdbSc.addInterfScore(isc);
 			isc.setId(iec.getInterface().getId());
+			pdbSc.addInterfScore(isc);
 			isc.setOperator(SpaceGroup.getAlgebraicFromMatrix(iec.getInterface().getSecondTransf()));
 			isc.setFirstChainId(iec.getInterface().getFirstMolecule().getPdbChainCode());
 			isc.setSecondChainId(iec.getInterface().getSecondMolecule().getPdbChainCode());

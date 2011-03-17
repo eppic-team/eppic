@@ -28,7 +28,7 @@ public class PdbScore implements Serializable {
 	private double bsaToAsaRelaxStep;
 	private boolean zoomUsed;
 
-	private Map<Integer,InterfaceScore> interfScores; // strictly 2 members: non-weighted (0), weighted (1)
+	private Map<Integer,InterfaceScore> interfScores; 
 	
 	
 	public PdbScore() {
