@@ -28,6 +28,7 @@ public class PDBScoreItem implements Serializable, ProcessingData
 	private double bsaToAsaSoftCutoff;
 	private double bsaToAsaRelaxStep;
 	private boolean zoomUsed;
+	private String title;
 
 	private List<InterfaceItem> interfaceItems;
 	
@@ -183,5 +184,13 @@ public class PDBScoreItem implements Serializable, ProcessingData
 	
 	public void addInterfaceScoreItem(InterfaceScoreItemKey interfaceScoreItemKey, InterfaceScoreItem interfaceScoreItem) {
 		this.interfaceScores.put(interfaceScoreItemKey, interfaceScoreItem);
+	}
+
+	public void setTitle(String title) {
+		this.title = title;
+	}
+
+	public String getTitle() {
+		return title;
 	}
 }

@@ -17,6 +17,7 @@ public class InterfaceItem implements Serializable
 	private int size1;
 	private int size2;
 	private String finalCall;
+	private String operator;
 	
 //	private List<InterfaceStructureItem> interfaceStructures;
 
@@ -100,6 +101,14 @@ public class InterfaceItem implements Serializable
 
 	public String getFinalCall() {
 		return finalCall;
+	}
+
+	public void setOperator(String operator) {
+		this.operator = operator;
+	}
+
+	public String getOperator() {
+		return operator;
 	}
 	
 }
