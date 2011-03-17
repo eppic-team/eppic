@@ -1,5 +1,10 @@
 package ch.systemsx.sybit.crkwebui.shared;
 
+/**
+ * The verifier of the email names
+ * @author srebniak_a
+ *
+ */
 public class EmailFieldVerifier 
 {
 	private static String emailPattern = "^(\\w+)([-+.][\\w]+)*@(\\w[-\\w]*\\.){1,5}([A-Za-z]){2,4}$";

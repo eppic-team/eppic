@@ -11,6 +11,11 @@ import com.extjs.gxt.ui.client.widget.layout.VBoxLayout;
 import com.extjs.gxt.ui.client.widget.layout.VBoxLayout.VBoxLayoutAlign;
 import com.google.gwt.user.client.ui.HTML;
 
+/**
+ * This is the bottom panel containing status label and contact information
+ * @author srebniak_a
+ *
+ */
 public class BottomPanel extends LayoutContainer 
 {
 	private MainController mainController;
@@ -35,7 +40,11 @@ public class BottomPanel extends LayoutContainer
 		
 		contactContainer.setLayout(vBoxLayout);
 		
-		contactLink = new HTML("<a href=\"http://www.psi.ch\">Contact</a>");
+		contactLink = new HTML("<a href=\"" + 
+								MainController.CONSTANTS.bottom_panel_contact_link() +
+								"\">" + 
+								MainController.CONSTANTS.bottom_panel_contact_link_label() + 
+								"</a>");
 		
 		contactContainer.add(contactLink);
 		this.add(contactContainer, new RowData(0.2, 1, new Margins(0)));

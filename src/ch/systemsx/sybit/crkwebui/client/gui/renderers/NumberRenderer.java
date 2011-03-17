@@ -8,6 +8,11 @@ import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
 import com.extjs.gxt.ui.client.widget.table.NumberCellRenderer;
 import com.google.gwt.i18n.client.NumberFormat;
 
+/**
+ * This renderer is used to display formatted numerical values
+ * @author srebniak_a
+ *
+ */
 public class NumberRenderer implements GridCellRenderer<BeanModel> 
 {
 	private NumberFormat number = NumberFormat.getFormat("0.00");  

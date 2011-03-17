@@ -14,6 +14,8 @@ import com.google.gwt.user.client.Window;
 
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
+ * 
+ * @author srebniak_a
  */
 public class Crkwebui implements EntryPoint, ValueChangeHandler<String> 
 {

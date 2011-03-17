@@ -4,6 +4,11 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Settings stored on the server side and transfered to the client during initialization
+ * @author srebniak_a
+ *
+ */
 public class ApplicationSettings implements Serializable {
 	/**
 	 * 

@@ -2,10 +2,17 @@ package ch.systemsx.sybit.crkwebui.client.gui;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 
+import com.extjs.gxt.ui.client.event.Events;
+import com.extjs.gxt.ui.client.event.GridEvent;
+import com.extjs.gxt.ui.client.event.Listener;
+import com.extjs.gxt.ui.client.event.WindowEvent;
+import com.extjs.gxt.ui.client.event.WindowListener;
 import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.Dialog;
 import com.extjs.gxt.ui.client.widget.layout.RowData;
 import com.extjs.gxt.ui.client.widget.layout.RowLayout;
+import com.gargoylesoftware.htmlunit.javascript.host.Event;
+import com.google.gwt.user.client.Window;
 
 public class InterfacesResiduesWindow extends Dialog 
 {
@@ -49,6 +56,17 @@ public class InterfacesResiduesWindow extends Dialog
 		this.add(interfacesResiduesPanel, new RowData(1, 1, new Margins(0)));
 		
 		this.add(new LegendPanel(), new RowData(1, 30, new Margins(0)));
+		
+		Listener<WindowEvent> resizeWindowListener = new Listener<WindowEvent>() {
+
+			@Override
+			public void handleEvent(WindowEvent be) 
+			{
+				interfacesResiduesPanel.resizeResiduesPanels();
+			}
+		};
+		this.addListener(Events.Resize, resizeWindowListener);
+		
 	}
 
 	public InterfacesResiduesPanel getInterfacesResiduesPanel() {

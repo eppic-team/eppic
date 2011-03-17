@@ -6,6 +6,11 @@ import com.extjs.gxt.ui.client.widget.grid.ColumnData;
 import com.extjs.gxt.ui.client.widget.grid.Grid;
 import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
 
+/**
+ * Default cell renderer
+ * @author srebniak_a
+ *
+ */
 public class DefaultCellRenderer implements GridCellRenderer<BeanModel> {
 
 	@Override

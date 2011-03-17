@@ -16,6 +16,11 @@ import com.extjs.gxt.ui.client.widget.grid.ColumnData;
 import com.extjs.gxt.ui.client.widget.grid.Grid;
 import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
 
+/**
+ * This renderer is used to display details button which shows the residues
+ * @author srebniak_a
+ *
+ */
 public class DetailsButtonCellRenderer implements GridCellRenderer<BeanModel> 
 {
 	private MainController mainController;
@@ -61,6 +66,7 @@ public class DetailsButtonCellRenderer implements GridCellRenderer<BeanModel>
 						{
 							ResultsPanel resultsPanel = (ResultsPanel)mainController.getMainViewPort().getCenterPanel().getDisplayPanel();
 							resultsPanel.updateScoresPanel((Integer)resultsPanel.getResultsStore().getAt(rowIndex).get("id"));
+							resultsPanel.getResultsGrid().getSelectionModel().select(rowIndex, false);
 							mainController.getInterfaceResidues((Integer)model.get("id"));
 						}
 					}

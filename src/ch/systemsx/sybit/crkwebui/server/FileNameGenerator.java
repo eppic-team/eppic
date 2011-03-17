@@ -1,5 +1,10 @@
 package ch.systemsx.sybit.crkwebui.server;
 
+/**
+ * 
+ * @author srebniak_a
+ *
+ */
 public class FileNameGenerator 
 {
 

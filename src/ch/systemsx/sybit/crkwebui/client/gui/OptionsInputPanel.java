@@ -19,6 +19,11 @@ import com.extjs.gxt.ui.client.widget.layout.FormLayout;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.Window;
 
+/**
+ * This panel is used to display advanced parameters which can be selected by the user
+ * @author srebniak_a
+ *
+ */
 public class OptionsInputPanel extends FieldSet 
 {
 	private FormData formData;

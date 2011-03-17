@@ -42,9 +42,15 @@ import com.extjs.gxt.ui.client.widget.toolbar.LabelToolItem;
 import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
 import com.google.gwt.user.client.Cookies;
 
+/**
+ * This panel is used to display the results of the calculations
+ * @author srebniak_a
+ *
+ */
 public class ResultsPanel extends DisplayPanel 
 {
 	private Label pdbIdentifier;
+	private Label pdbTitle;
 	private ContentPanel resultsGridContainer;
 	private List<ColumnConfig> resultsConfigs;
 	private ListStore<BeanModel> resultsStore;
@@ -71,7 +77,7 @@ public class ResultsPanel extends DisplayPanel
 		this.setStyleAttribute("padding", "10px");
 
 		pdbIdentifier = new Label(MainController.CONSTANTS.info_panel_pdb_identifier() + ": " + resultsData.getPdbName());
-		pdbIdentifier.setStyleAttribute("font", "bold 16px Arial !important;");
+		pdbIdentifier.addStyleName("pdb-identifier-label");
 		this.add(pdbIdentifier);
 		
 		FormPanel breakPanel = new FormPanel();
@@ -81,7 +87,9 @@ public class ResultsPanel extends DisplayPanel
 		breakPanel.getHeader().setVisible(false);
 		this.add(breakPanel, new RowData(1, 1.1, new Margins(0)));
 		
-		this.add(new Label(" (This is structure title - to be filled)"));
+		pdbTitle = new Label(resultsData.getTitle());
+		pdbTitle.addStyleName("crk-default-label");
+		this.add(pdbTitle);
 		
 		breakPanel = new FormPanel();
 		breakPanel.setBorders(false);
@@ -202,42 +210,6 @@ public class ResultsPanel extends DisplayPanel
 			initialColumnWidth = new ArrayList<Integer>();
 		}
 
-		
-		
-		ColumnConfig columnt = new ColumnConfig();
-		columnt.setId("thumbnail");
-		columnt.setHeader("");
-		columnt.setWidth(60);
-		columnt.setAlignment(HorizontalAlignment.CENTER);
-		columnt.setRenderer(new GridCellRenderer<BeanModel>() {
-
-				public Object render(BeanModel model, String property,
-						ColumnData config, int rowIndex, int colIndex,
-						ListStore<BeanModel> store, Grid<BeanModel> grid) 
-				{
-					String url = mainController.getSettings().getResultsLocation();
-					
-					return "<img src=\"" + 
-							url + 
-							mainController.getSelectedJobId() + 
-							"/" +
-							mainController.getPdbScoreItem().getPdbName() +
-							"." +
-							model.get("id") +
-							".150x150.png" +
-							"\"/>";
-					
-//					return "<img src=\"http://localhost:8080/files1/mol.png\" width=50 height=50/>";
-				}
-				
-		});
-
-		initialColumnWidth.add(60);
-
-		configs.add(columnt);
-		
-		
-		
 		int i = 0;
 
 		for (String columnName : columns) {
@@ -445,7 +417,8 @@ public class ResultsPanel extends DisplayPanel
 		mainController.setSelectedViewer(viewerTypeComboBox.getValue()
 				.getValue());
 
-		viewerTypeComboBox.setFieldLabel("View mode");
+		viewerTypeComboBox.setFieldLabel(MainController.CONSTANTS.results_grid_viewer_combo_label());
+		viewerTypeComboBox.setLabelStyle("crk-default-label");
 		viewerTypeComboBox.addListener(Events.Change,
 				new Listener<FieldEvent>() {
 					public void handleEvent(FieldEvent be) {
@@ -483,6 +456,7 @@ public class ResultsPanel extends DisplayPanel
 		infoPanel.fillInfoPanel(resultsData);
 		
 		pdbIdentifier.setText(MainController.CONSTANTS.info_panel_pdb_identifier() + ": " + resultsData.getPdbName());
+		pdbTitle.setText(resultsData.getTitle());
 	}
 
 	public void resizeGrid() 
@@ -545,43 +519,48 @@ public class ResultsPanel extends DisplayPanel
 		scoresPanel.resizeGrid();
 	}
 	
-	private void createResultsGridContainerToolbar()
+//	private void createResultsGridContainerToolbar()
+//	{
+//		ToolBar resultsGridContainerToolbar = new ToolBar();
+//		
+//		viewerTypeComboBox = new SimpleComboBox<String>();
+//		viewerTypeComboBox.setId("viewercombo");
+//		viewerTypeComboBox.setTriggerAction(TriggerAction.ALL);
+//		viewerTypeComboBox.setEditable(false);
+//		viewerTypeComboBox.setFireChangeEventOnSetValue(true);
+//		viewerTypeComboBox.setWidth(100);
+//		viewerTypeComboBox.add("Local");
+//		viewerTypeComboBox.add("Jmol");
+//
+//		String viewerCookie = Cookies.getCookie("crkviewer");
+//		if (viewerCookie != null) {
+//			viewerTypeComboBox.setSimpleValue(viewerCookie);
+//		} else {
+//			viewerTypeComboBox.setSimpleValue("Jmol");
+//		}
+//
+//		mainController.setSelectedViewer(viewerTypeComboBox.getValue()
+//				.getValue());
+//
+//		viewerTypeComboBox.setFieldLabel("View mode");
+//		viewerTypeComboBox.addListener(Events.Change,
+//				new Listener<FieldEvent>() {
+//					public void handleEvent(FieldEvent be) {
+//						Cookies.setCookie("crkviewer", viewerTypeComboBox
+//								.getValue().getValue());
+//						mainController.setSelectedViewer(viewerTypeComboBox
+//								.getValue().getValue());
+//					}
+//				});
+//
+//		resultsGridContainerToolbar.add(new FillToolItem());
+//		resultsGridContainerToolbar.add(new LabelToolItem("3D Viewer: "));  
+//		resultsGridContainerToolbar.add(viewerTypeComboBox);
+//		resultsGridContainer.setTopComponent(resultsGridContainerToolbar);
+//	}
+	
+	public Grid<BeanModel> getResultsGrid()
 	{
-		ToolBar resultsGridContainerToolbar = new ToolBar();
-		
-		viewerTypeComboBox = new SimpleComboBox<String>();
-		viewerTypeComboBox.setId("viewercombo");
-		viewerTypeComboBox.setTriggerAction(TriggerAction.ALL);
-		viewerTypeComboBox.setEditable(false);
-		viewerTypeComboBox.setFireChangeEventOnSetValue(true);
-		viewerTypeComboBox.setWidth(100);
-		viewerTypeComboBox.add("Local");
-		viewerTypeComboBox.add("Jmol");
-
-		String viewerCookie = Cookies.getCookie("crkviewer");
-		if (viewerCookie != null) {
-			viewerTypeComboBox.setSimpleValue(viewerCookie);
-		} else {
-			viewerTypeComboBox.setSimpleValue("Jmol");
-		}
-
-		mainController.setSelectedViewer(viewerTypeComboBox.getValue()
-				.getValue());
-
-		viewerTypeComboBox.setFieldLabel("View mode");
-		viewerTypeComboBox.addListener(Events.Change,
-				new Listener<FieldEvent>() {
-					public void handleEvent(FieldEvent be) {
-						Cookies.setCookie("crkviewer", viewerTypeComboBox
-								.getValue().getValue());
-						mainController.setSelectedViewer(viewerTypeComboBox
-								.getValue().getValue());
-					}
-				});
-
-		resultsGridContainerToolbar.add(new FillToolItem());
-		resultsGridContainerToolbar.add(new LabelToolItem("3D Viewer: "));  
-		resultsGridContainerToolbar.add(viewerTypeComboBox);
-		resultsGridContainer.setTopComponent(resultsGridContainerToolbar);
+		return resultsGrid;
 	}
 }

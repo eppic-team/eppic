@@ -30,7 +30,13 @@ import com.extjs.gxt.ui.client.widget.layout.FormLayout;
 import com.extjs.gxt.ui.client.widget.layout.RowData;
 import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.user.client.Window;
 
+/**
+ * The panel used to submit new job
+ * @author srebniak_a
+ *
+ */
 public class InputDataPanel extends DisplayPanel
 {
 	private RecaptchaPanel recaptchaPanel;
@@ -82,14 +88,14 @@ public class InputDataPanel extends DisplayPanel
 		generalFieldSet.setLayout(layout);
 
 		pdbCodeRadio = new Radio();  
-		pdbCodeRadio.setBoxLabel("PDB Code");  
+		pdbCodeRadio.setBoxLabel(MainController.CONSTANTS.input_pdb_code_radio());  
 		pdbCodeRadio.setValue(true);  
 	  
 	    pdbCodeFile = new Radio();  
-	    pdbCodeFile.setBoxLabel("Upload file");  
+	    pdbCodeFile.setBoxLabel(MainController.CONSTANTS.input_upload_file_radio());  
 	  
 	    inputRadioGroup = new RadioGroup();  
-	    inputRadioGroup.setFieldLabel("Input type");  
+	    inputRadioGroup.setFieldLabel(MainController.CONSTANTS.input_pdb_input_type());  
 	    inputRadioGroup.add(pdbCodeRadio);  
 	    inputRadioGroup.add(pdbCodeFile);  
 	    inputRadioGroup.addListener(Events.Change, new Listener<BaseEvent>(){
@@ -97,14 +103,14 @@ public class InputDataPanel extends DisplayPanel
 	        {
 	        	String selectedType = inputRadioGroup.getValue().getBoxLabel();
 	        	
-	        	if(selectedType.equals("PDB Code"))
+	        	if(selectedType.equals(MainController.CONSTANTS.input_pdb_code_radio()))
 	        	{
 	        		file.setVisible(false);
 	        		file.setAllowBlank(true);
 	        		pdbCodeField.setVisible(true);
 	        		pdbCodeField.setAllowBlank(false);
 	        	}
-	        	else if(selectedType.equals("Upload file"))
+	        	else if(selectedType.equals(MainController.CONSTANTS.input_upload_file_radio()))
 	        	{
 	        		file.setVisible(true);
 	        		file.setAllowBlank(false);
@@ -158,12 +164,28 @@ public class InputDataPanel extends DisplayPanel
 		{
 			public void handleEvent(FormEvent formEvent)
 			{
-				String jobId = formEvent.getResultHtml();
+				String result = formEvent.getResultHtml();
 				
-				jobId = jobId.replaceAll("\n", "");
-				jobId = jobId.trim();
-				
-				runJob(jobId);
+				if((result != null) && (result.startsWith("crkupres:")))
+				{
+					result = result.replaceAll("\n", "");
+					result = result.trim();
+					result = result.substring(9);
+					runJob(result);
+				}
+				else if((result != null) && (result.startsWith("err:")))
+				{
+					result = result.replaceAll("\n", "");
+					result = result.trim();
+					result = result.substring(4);
+					mainController.showError(result);
+					mainController.hideWaiting();
+				}
+				else
+				{
+					mainController.showError("Error during submitting the file. Please try later.");
+					mainController.hideWaiting();
+				}
 			}
 		});
 

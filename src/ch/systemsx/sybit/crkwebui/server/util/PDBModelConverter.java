@@ -1,11 +1,19 @@
 package ch.systemsx.sybit.crkwebui.server.util;
 
+import java.util.Map;
+
 import model.InterfaceItem;
 import model.InterfaceScoreItem;
 import model.InterfaceScoreItemKey;
 import model.PDBScoreItem;
+import crk.InterfaceScore;
 import crk.PdbScore;
 
+/**
+ * This class is used to convert crk pdb item into crkweb
+ * @author srebniak_a
+ *
+ */
 public class PDBModelConverter 
 {
 	public static PDBScoreItem createPDBScoreItem(PdbScore[] pdbScore)
@@ -29,6 +37,7 @@ public class PDBModelConverter
 			pdbScoreItem.setScoreWeighted(pdbScore[0].isScoreWeighted());
 			pdbScoreItem.setXtalCutoff(pdbScore[0].getXtalCutoff());
 			pdbScoreItem.setZoomUsed(pdbScore[0].isZoomUsed());
+			pdbScoreItem.setTitle(pdbScore[0].getPdbTitle());
 			
 			int nrOfInterface = pdbScore[0].getInterfaceScoreMap().size();
 			
@@ -38,6 +47,7 @@ public class PDBModelConverter
 				{
 					InterfaceItem interfaceItem = new InterfaceItem();
 					interfaceItem.setId(i);
+					
 					interfaceItem.setArea(pdbScore[0].getInterfaceScoreMap().get(i).getInterfArea());
 					interfaceItem.setName(pdbScore[0].getInterfaceScoreMap().get(i).getFirstChainId() + "+" + 
 										  pdbScore[0].getInterfaceScoreMap().get(i).getSecondChainId());
@@ -45,6 +55,7 @@ public class PDBModelConverter
 					interfaceItem.setSize2(pdbScore[0].getInterfaceScoreMap().get(i).getCoreSize2()[0]);
 					interfaceItem.setNumHomologs1(pdbScore[0].getInterfaceScoreMap().get(i).getNumHomologs1());
 					interfaceItem.setNumHomologs2(pdbScore[0].getInterfaceScoreMap().get(i).getNumHomologs2());
+					interfaceItem.setOperator(pdbScore[0].getInterfaceScoreMap().get(i).getOperator());
 					pdbScoreItem.addInterfaceItem(interfaceItem);
 					
 					int j=0;

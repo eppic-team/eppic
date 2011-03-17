@@ -29,13 +29,17 @@ import com.extjs.gxt.ui.client.widget.grid.HeaderGroupConfig;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 import com.extjs.gxt.ui.client.widget.toolbar.PagingToolBar;
 
+/**
+ * This panel is used to display the residues for one structure
+ * @author srebniak_a
+ *
+ */
 public class ResiduesPanel extends ContentPanel
 {
 	private List<ColumnConfig> residuesConfigs;
 	private ListStore<BeanModel> residuesStore;
 	private ColumnModel residuesColumnModel;
 	private Grid<BeanModel> residuesGrid;
-	private int residuesGridWidthOfAllColumns = 0;
 	private List<Integer> initialColumnWidth;
 	
 	private PagingModelMemoryProxy proxy;
@@ -104,7 +108,7 @@ public class ResiduesPanel extends ContentPanel
 		residuesGrid.setBorders(true);
 		residuesGrid.setStripeRows(true);
 		residuesGrid.setColumnLines(true);
-		residuesGrid.getView().setForceFit(true);
+//		residuesGrid.getView().setForceFit(true);
 		
 		residuesGrid.getView().setViewConfig(new GridViewConfig(){
 			@Override
@@ -176,6 +180,10 @@ public class ResiduesPanel extends ContentPanel
 		} else {
 			columns = columnOrder.split(",");
 		}
+		
+		if (columns != null) {
+			initialColumnWidth = new ArrayList<Integer>();
+		}
 
 		for (String columnName : columns) {
 			boolean addColumn = true;
@@ -207,7 +215,7 @@ public class ResiduesPanel extends ContentPanel
 				if (customColumnWidth != null) {
 					columnWidth = Integer.parseInt(customColumnWidth);
 				}
-
+				
 				String customRenderer = mainController.getSettings()
 						.getGridProperties()
 						.get("residues_" + columnName + "_renderer");
@@ -233,6 +241,7 @@ public class ResiduesPanel extends ContentPanel
 						column.setId(method);
 						column.setHeader(method);
 						column.setWidth(columnWidth);
+						initialColumnWidth.add(columnWidth);
 						column.setAlignment(HorizontalAlignment.CENTER);
 						column.setHidden(!displayColumn);
 
@@ -247,6 +256,7 @@ public class ResiduesPanel extends ContentPanel
 					column.setId(columnName);
 					column.setHeader(header);
 					column.setWidth(columnWidth);
+					initialColumnWidth.add(columnWidth);
 					column.setAlignment(HorizontalAlignment.CENTER);
 
 					column.setHidden(!displayColumn);
@@ -335,5 +345,41 @@ public class ResiduesPanel extends ContentPanel
 	public void cleanResiduesGrid()
 	{
 		residuesStore.removeAll();
+	}
+	
+	public void resizeGrid() 
+	{
+		int scoresGridWidthOfAllVisibleColumns = 0;
+		
+		for(int i=0; i<residuesGrid.getColumnModel().getColumnCount(); i++)
+		{
+			if(!residuesGrid.getColumnModel().getColumn(i).isHidden())
+			{
+				scoresGridWidthOfAllVisibleColumns += initialColumnWidth.get(i);
+			}
+		}
+		
+		if (scoresGridWidthOfAllVisibleColumns < ((mainController.getMainViewPort().getInterfacesResiduesWindow().getInterfacesResiduesPanel().getWidth() - 20) * 0.48)) 
+		{
+			residuesGrid.getView().setForceFit(true);
+		} 
+		else 
+		{
+			residuesGrid.getView().setForceFit(false);
+
+			int nrOfColumn = residuesGrid.getColumnModel().getColumnCount();
+
+			for (int i = 0; i < nrOfColumn; i++) {
+				residuesGrid.getColumnModel().getColumn(i)
+						.setWidth(initialColumnWidth.get(i));
+			}
+		}
+
+		residuesGrid.getView().refresh(true);
+		residuesGrid.getView().layout();
+		residuesGrid.recalculate();
+		residuesGrid.repaint();
+
+		this.layout();
 	}
 }

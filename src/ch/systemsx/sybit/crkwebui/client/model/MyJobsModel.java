@@ -2,6 +2,11 @@ package ch.systemsx.sybit.crkwebui.client.model;
 
 import com.extjs.gxt.ui.client.data.BaseModel;
 
+/**
+ * Data model for jobs grid
+ * @author srebniak_a
+ *
+ */
 public class MyJobsModel extends BaseModel {
 	private static final long serialVersionUID = 1L;
 

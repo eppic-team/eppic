@@ -15,6 +15,11 @@ import com.extjs.gxt.ui.client.widget.grid.ColumnData;
 import com.extjs.gxt.ui.client.widget.grid.Grid;
 import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
 
+/**
+ * This renderer is used to display view button used to open viewer
+ * @author srebniak_a
+ *
+ */
 public class ViewerButtonCellRenderer implements GridCellRenderer<BeanModel> 
 {
 	private MainController mainController;

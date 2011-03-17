@@ -16,6 +16,11 @@ import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 
+/**
+ * The panel containing parameters values and download link
+ * @author srebniak_a
+ *
+ */
 public class InfoPanel extends FormPanel 
 {
 	private Label totalCoreSizeXtalCallCutoff;
@@ -36,14 +41,6 @@ public class InfoPanel extends FormPanel
 		this.setBorders(true);
 //		this.setLayout(new FitLayout());
 		this.setLayout(new FormLayout());
-		this.setPadding(10);
-		this.setStyleAttribute("border-color", "#BCBCBC");
-		
-		FieldSet fieldSet = new FieldSet();
-		fieldSet.setScrollMode(Scroll.AUTO);
-		fieldSet.setLayout(new FormLayout());
-		fieldSet.setHeading("Parameters");  
-	    fieldSet.setHeight("60");
 		
 		FlexTable flexTable = new FlexTable();
 		
@@ -60,38 +57,39 @@ public class InfoPanel extends FormPanel
 		}
 		
 		totalCoreSizeXtalCallCutoff = new Label(MainController.CONSTANTS.info_panel_total_core_size_xtal_call_cutoff() + ": " + resultsData.getMinCoreSize());
-		totalCoreSizeXtalCallCutoff.setStyleAttribute("white-space", "nowrap");
+		totalCoreSizeXtalCallCutoff.addStyleName("crk-default-label");
 		flexTable.setWidget(0, 0, totalCoreSizeXtalCallCutoff);
 		
 		infoPanelMinNumberHomologsRequired = new Label(MainController.CONSTANTS.info_panel_min_number_homologs_required() + ": " + resultsData.getHomologsCutoff());
-		infoPanelMinNumberHomologsRequired.setStyleAttribute("white-space", "nowrap");
+		infoPanelMinNumberHomologsRequired.addStyleName("crk-default-label");
 		flexTable.setWidget(1, 0, infoPanelMinNumberHomologsRequired);
 		
 		infoPanelSequenceIdentityCutoff = new Label(MainController.CONSTANTS.info_panel_sequence_identity_cutoff() + ": " + resultsData.getIdCutoff());
-		infoPanelSequenceIdentityCutoff.setStyleAttribute("white-space", "nowrap");
+		infoPanelSequenceIdentityCutoff.addStyleName("crk-default-label");
 		flexTable.setWidget(2, 0, infoPanelSequenceIdentityCutoff);
 		
 		infoPanelQueryCoverageCutoff = new Label(MainController.CONSTANTS.info_panel_query_coverage_cutoff() + ": " + resultsData.getQueryCovCutoff());
-		infoPanelQueryCoverageCutoff.setStyleAttribute("white-space", "nowrap");
+		infoPanelQueryCoverageCutoff.addStyleName("crk-default-label");
 		flexTable.setWidget(0, 1, infoPanelQueryCoverageCutoff);
 		
 		infoPanelPerMemberCoreSizeXtalCallCutoff = new Label(MainController.CONSTANTS.info_panel_per_member_core_size_xtal_call_cutoff() + ": " + resultsData.getMinMemberCoreSize());
-		infoPanelPerMemberCoreSizeXtalCallCutoff.setStyleAttribute("white-space", "nowrap");
+		infoPanelPerMemberCoreSizeXtalCallCutoff.addStyleName("crk-default-label");
 		flexTable.setWidget(1, 1, infoPanelPerMemberCoreSizeXtalCallCutoff);
 		
 		infoPanelMaxNumSequencesUsed = new Label(MainController.CONSTANTS.info_panel_max_num_sequences_used() + ": " + resultsData.getMaxNumSeqsCutoff());
-		infoPanelMaxNumSequencesUsed.setStyleAttribute("white-space", "nowrap");
+		infoPanelMaxNumSequencesUsed.addStyleName("crk-default-label");
 		flexTable.setWidget(2, 1, infoPanelMaxNumSequencesUsed);
 		
 		infoPanelBioCallCutoff = new Label(MainController.CONSTANTS.info_panel_bio_call_cutoff() + ": " + resultsData.getBioCutoff());
-		infoPanelBioCallCutoff.setStyleAttribute("white-space", "nowrap");
+		infoPanelBioCallCutoff.addStyleName("crk-default-label");
 		flexTable.setWidget(0, 2, infoPanelBioCallCutoff);
 		
 		infoPanelXtalCallCutoff = new Label(MainController.CONSTANTS.info_panel_xtal_call_cutoff() + ": " + resultsData.getXtalCutoff());
-		infoPanelXtalCallCutoff.setStyleAttribute("white-space", "nowrap");
+		infoPanelXtalCallCutoff.addStyleName("crk-default-label");
 		flexTable.setWidget(1, 2, infoPanelXtalCallCutoff);
 		
 		downloadResultsLink = new HTML();
+		downloadResultsLink.addStyleName("crk-default-label");
 		downloadResultsLink.setHTML("<a href=" + GWT.getModuleBaseURL()
 				+ "fileDownload?type=zip&id=" + resultsData.getJobId()
 				+ ">" + MainController.CONSTANTS.info_panel_download_results_link() + "</a>");

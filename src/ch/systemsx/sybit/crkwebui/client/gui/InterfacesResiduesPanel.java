@@ -43,7 +43,7 @@ public class InterfacesResiduesPanel extends FormPanel
 		secondStructure = new ResiduesPanel(
 											MainController.CONSTANTS.interfaces_residues_panel_second_structure(),
 											mainController,
-										    width,
+											width,
 											height);
 
 		this.add(firstStructure, new RowData(0.48, 1, new Margins(0)));
@@ -103,6 +103,12 @@ public class InterfacesResiduesPanel extends FormPanel
 	public void cleanData()
 	{
 		residuesFilterComboBox.setSimpleValue("Rim/Core");
+	}
+
+	public void resizeResiduesPanels() 
+	{
+		firstStructure.resizeGrid();
+		secondStructure.resizeGrid();
 	}
 
 }

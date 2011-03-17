@@ -14,6 +14,11 @@ import com.extjs.gxt.ui.client.widget.form.TextField;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 import com.extjs.gxt.ui.client.widget.layout.FormData;
 
+/**
+ * This panel is used to display status of the submitted job
+ * @author srebniak_a
+ *
+ */
 public class StatusPanel extends DisplayPanel 
 {
 	private FormPanel formPanel;

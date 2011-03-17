@@ -5,6 +5,11 @@ import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 
+/**
+ * This is the main center panel
+ * @author srebniak_a
+ *
+ */
 public class CenterPanel extends LayoutContainer 
 {
 	protected MainController mainController;

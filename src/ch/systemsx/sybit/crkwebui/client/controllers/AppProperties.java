@@ -2,6 +2,11 @@ package ch.systemsx.sybit.crkwebui.client.controllers;
 
 import com.google.gwt.i18n.client.Constants;
 
+/**
+ * Client side properties
+ * @author srebniak_a
+ *
+ */
 public interface AppProperties extends Constants 
 {
 	String login();
@@ -14,6 +19,9 @@ public interface AppProperties extends Constants
 	String input_file();
 	String input_advanced();
 	String input_submit();
+	String input_upload_file_radio();
+	String input_pdb_code_radio();
+	String input_pdb_input_type();
 
 	String parameters_entropy();
 	String parameters_kaks();
@@ -59,6 +67,7 @@ public interface AppProperties extends Constants
 	String results_grid_details_button_tooltip();
 	String results_grid_viewer_button();
 	String results_grid_viewer_button_tooltip();
+	String results_grid_viewer_combo_label();
 	
 	String interfaces_residues_window();
 	String interfaces_residues_panel_first_structure();
@@ -68,4 +77,7 @@ public interface AppProperties extends Constants
 	String scores_panel_column_unweighted();
 	String scores_panel_column_structure1();
 	String scores_panel_column_structure2();
+	
+	String bottom_panel_contact_link();
+	String bottom_panel_contact_link_label();
 }

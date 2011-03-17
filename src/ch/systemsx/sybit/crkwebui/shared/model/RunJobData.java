@@ -2,6 +2,11 @@ package ch.systemsx.sybit.crkwebui.shared.model;
 
 import java.io.Serializable;
 
+/**
+ * This class is used to transfer information necessary to run the job
+ * @author srebniak_a
+ *
+ */
 public class RunJobData implements Serializable 
 {
 	/**

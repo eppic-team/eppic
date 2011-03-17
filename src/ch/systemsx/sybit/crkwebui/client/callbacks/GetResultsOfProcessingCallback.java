@@ -6,6 +6,11 @@ import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
+/**
+ * This is the callback used to handle the response from the server
+ * @author srebniak_a
+ *
+ */
 public class GetResultsOfProcessingCallback implements AsyncCallback
 {
 	private MainController mainController;

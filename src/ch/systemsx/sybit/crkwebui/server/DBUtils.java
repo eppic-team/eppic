@@ -14,6 +14,11 @@ import javax.naming.NamingException;
 import ch.systemsx.sybit.crkwebui.shared.CrkWebException;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
 
+/**
+ * This class is used to execute sql queries
+ * @author srebniak_a
+ *
+ */
 //TODO will be changed to use datasource
 public class DBUtils 
 {

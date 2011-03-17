@@ -40,6 +40,8 @@ import crk.PdbScore;
 
 /**
  * The server side implementation of the RPC service.
+ * 
+ * @author srebniak_a
  */
 @SuppressWarnings("serial")
 public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebService 
@@ -376,6 +378,148 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 		return statusData;
 	}
 	
+//	private PDBScoreItem getResultData(String id) 
+//	{
+//		PDBScoreItem resultsData = null;
+//
+//		if ((id != null) && (id.length() != 0)) 
+//		{
+//			File resultFileDirectory = new File(
+//					generalDestinationDirectoryName + "/" + id);
+//
+//			if (resultFileDirectory.exists()
+//					&& resultFileDirectory.isDirectory())
+//			{
+//				String[] directoryContent = resultFileDirectory
+//						.list(new FilenameFilter() {
+//
+//							public boolean accept(File dir, String name) {
+//								if (name.endsWith(".scores")) {
+//									return true;
+//								} else {
+//									return false;
+//								}
+//							}
+//						});
+//
+//				if (directoryContent != null && directoryContent.length > 0) 
+//				{
+//					PdbScore[] allPdbScores = null;
+//
+//					List<PdbScore[]> pdbScores = new ArrayList<PdbScore[]>();
+//
+//					for (int i = 0; i < directoryContent.length; i++)
+//					{
+//						File resultFile = new File(resultFileDirectory + "/"
+//								+ directoryContent[i]);
+//
+//						if (resultFile.exists()) 
+//						{
+//							try {
+//								PdbScore[] pdbScoresForMethod = InterfaceEvolContextList
+//										.parseScoresFile(resultFile);
+//								pdbScores.add(pdbScoresForMethod);
+//							} 
+//							catch (Exception e) {
+//								
+//							}
+//						}
+//					}
+//
+//					if (pdbScores.size() > 0) 
+//					{
+//						int totalLength = 0;
+//
+//						for (PdbScore[] array : pdbScores) 
+//						{
+//							totalLength += array.length;
+//						}
+//						
+//						allPdbScores = new PdbScore[totalLength];
+//
+//						int offset = 0;
+//
+//						for (int i = 0; i < pdbScores.size(); i++) 
+//						{
+//							System.arraycopy(pdbScores.get(i), 0, allPdbScores,
+//									offset, pdbScores.get(i).length);
+//							offset += pdbScores.get(i).length;
+//						}
+//					}
+//
+//					resultsData = PDBModelConverter.createPDBScoreItem(allPdbScores);
+//
+//				}
+//			}
+//		}
+//
+//		return resultsData;
+//	}
+	
+//	private PDBScoreItem getResultData(String id) throws CrkWebException 
+//	{
+//		PDBScoreItem resultsData = null;
+//
+//		if ((id != null) && (id.length() != 0)) 
+//		{
+//			File resultFileDirectory = new File(
+//					generalDestinationDirectoryName + "/" + id);
+//
+//			if (resultFileDirectory.exists()
+//					&& resultFileDirectory.isDirectory())
+//			{
+//				String[] directoryContent = resultFileDirectory
+//						.list(new FilenameFilter() {
+//
+//							public boolean accept(File dir, String name) {
+//								if (name.endsWith(".scores.dat")) {
+//									return true;
+//								} else {
+//									return false;
+//								}
+//							}
+//						});
+//
+//				if (directoryContent != null && directoryContent.length > 0) 
+//				{
+//					PdbScore[] allPdbScores =  new PdbScore[directoryContent.length];
+//
+//					for (int i = 0; i < directoryContent.length; i++)
+//					{
+//						File resultFile = new File(resultFileDirectory + "/"
+//								+ directoryContent[i]);
+//
+//						if (resultFile.exists()) 
+//						{
+//							try 
+//							{
+//								FileInputStream fileInputStream = new FileInputStream(resultFile);
+//								ObjectInputStream inputStream = new ObjectInputStream(fileInputStream);
+//								PdbScore deserializedPdbScore = (PdbScore)inputStream.readObject();
+//								allPdbScores[i] = deserializedPdbScore;
+//								inputStream.close();
+//								fileInputStream.close();
+//								
+////								PdbScore[] pdbScoresForMethod = InterfaceEvolContextList
+////								.parseScoresFile(resultFile);
+////								pdbScores.add(pdbScoresForMethod);
+//							} 
+//							catch (Exception e) 
+//							{
+//								throw new CrkWebException(e);
+//							}
+//						}
+//					}
+//
+//					resultsData = PDBModelConverter.createPDBScoreItem(allPdbScores);
+//
+//				}
+//			}
+//		}
+//
+//		return resultsData;
+//	}
+	
 	private PDBScoreItem getResultData(String id) 
 	{
 		PDBScoreItem resultsData = null;
@@ -392,7 +536,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 						.list(new FilenameFilter() {
 
 							public boolean accept(File dir, String name) {
-								if (name.endsWith(".scores")) {
+								if (name.endsWith(".scores.dat")) {
 									return true;
 								} else {
 									return false;
@@ -414,11 +558,15 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 						if (resultFile.exists()) 
 						{
 							try {
-								PdbScore[] pdbScoresForMethod = InterfaceEvolContextList
-										.parseScoresFile(resultFile);
-								pdbScores.add(pdbScoresForMethod);
+								FileInputStream fileInputStream = new FileInputStream(resultFile);
+								ObjectInputStream inputStream = new ObjectInputStream(fileInputStream);
+								PdbScore[] deserializedPdbScore = (PdbScore[])inputStream.readObject();
+								pdbScores.add(deserializedPdbScore);
+								inputStream.close();
+								fileInputStream.close();
 							} 
-							catch (Exception e) {
+							catch (Exception e)
+							{
 								
 							}
 						}

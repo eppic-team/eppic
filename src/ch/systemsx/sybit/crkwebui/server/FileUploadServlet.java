@@ -92,6 +92,8 @@ public class FileUploadServlet extends FileBaseServlet {
 		
 		sessionJobsMap.put(currentSessionId, nrOfSubmittedJobs);
 		
+		PrintWriter out = response.getWriter();
+		
 		if (ServletFileUpload.isMultipartContent(request)) 
 		{
 			String randomDirectoryName = null;
@@ -118,7 +120,6 @@ public class FileUploadServlet extends FileBaseServlet {
 			File localDestinationDir = new File(localDestinationDirName);
 			localDestinationDir.mkdir();
 
-			PrintWriter out = response.getWriter();
 			response.setContentType("text/html");
 
 			DiskFileItemFactory fileItemFactory = new DiskFileItemFactory();
@@ -207,25 +208,30 @@ public class FileUploadServlet extends FileBaseServlet {
 					"Verification failed. Try again");
 				}
 
-				out.println(randomDirectoryName);
-				out.close();
+				out.println("crkupres:" + randomDirectoryName);
+				
 			} 
 			catch (FileUploadException ex)
 			{
-				response.sendError(HttpServletResponse.SC_EXPECTATION_FAILED,
-						"Error during uploading the file." + ex.getMessage());
+				out.println("err:" + "Error during uploading the file." + ex.getMessage());
+//				response.sendError(HttpServletResponse.SC_EXPECTATION_FAILED,
+//						"Error during uploading the file." + ex.getMessage());
 			}
 			catch (Exception ex) 
 			{
-				response.sendError(HttpServletResponse.SC_EXPECTATION_FAILED,
-						"Error encountered while uploading file" + ex.getMessage());
+				out.println("err:" + "Error encountered while uploading file" + ex.getMessage());
+//				response.sendError(HttpServletResponse.SC_EXPECTATION_FAILED,
+//						"Error encountered while uploading file" + ex.getMessage());
 			}
 		}
 		else 
 		{
-			response.sendError(HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE,
-					"Request contents type is not supported by the servlet.");
+			out.println("err:" + "Error encountered while uploading file" + "Request contents type is not supported by the servlet.");
+//			response.sendError(HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE,
+//					"Request contents type is not supported by the servlet.");
 		}
+		
+		out.close();
 	}
 
 	private boolean verifyChallenge(String challenge, String response, String remoteAddress) 

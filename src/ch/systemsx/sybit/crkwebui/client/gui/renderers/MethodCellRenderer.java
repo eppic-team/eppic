@@ -8,6 +8,11 @@ import com.extjs.gxt.ui.client.widget.grid.ColumnData;
 import com.extjs.gxt.ui.client.widget.grid.Grid;
 import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
 
+/**
+ * This model is used to style the results of calculations for each of the method
+ * @author srebniak_a
+ *
+ */
 public class MethodCellRenderer implements GridCellRenderer<BeanModel> 
 {
 	private MainController mainController;

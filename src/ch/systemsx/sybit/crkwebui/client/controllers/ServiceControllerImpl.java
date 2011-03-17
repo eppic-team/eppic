@@ -15,6 +15,11 @@ import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
 
 import com.google.gwt.core.client.GWT;
 
+/**
+ * 
+ * @author srebniak_a
+ *
+ */
 public class ServiceControllerImpl implements ServiceController {
 	/**
 	 * The message displayed to the user when the server cannot be reached or

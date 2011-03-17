@@ -31,6 +31,11 @@ import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.ui.Hyperlink;
 
+/**
+ * This panel is used to display the list of all jobs connected to the current session
+ * @author srebniak_a
+ *
+ */
 public class MyJobsPanel extends ContentPanel 
 {
 	private MainController mainController;

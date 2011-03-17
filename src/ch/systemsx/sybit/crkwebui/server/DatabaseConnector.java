@@ -6,6 +6,11 @@ import java.sql.SQLException;
 
 import javax.naming.NamingException;
 
+/**
+ * Database connector
+ * @author srebniak_a
+ *
+ */
 public class DatabaseConnector 
 {
 	private static String dataSource;

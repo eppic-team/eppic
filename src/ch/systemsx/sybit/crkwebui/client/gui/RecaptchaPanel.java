@@ -4,6 +4,11 @@ import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.layout.CenterLayout;
 import com.google.gwt.user.client.ui.HTML;
 
+/**
+ * This panel is used to display captcha - depending on the settings on the server side
+ * @author srebniak_a
+ *
+ */
 public class RecaptchaPanel extends ContentPanel 
 {
 	private HTML captchaDiv;

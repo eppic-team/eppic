@@ -5,6 +5,11 @@ import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 import com.extjs.gxt.ui.client.data.BeanModel;
 import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
 
+/**
+ * This factory is used to select correct renderer for each of the column in the grid
+ * @author srebniak_a
+ *
+ */
 public class GridCellRendererFactory {
 	public static GridCellRenderer<BeanModel> createGridCellRenderer(
 			String rendererName, MainController mainController) {
@@ -19,6 +24,8 @@ public class GridCellRendererFactory {
 				 renderer = new NumberRenderer();
 			} else if (rendererName.equals("viewer")) {
 				 renderer = new ViewerButtonCellRenderer(mainController);
+			} else if (rendererName.equals("thumbnail")) {
+				 renderer = new ThumbnailCellRenderer(mainController);
 			}
 		}
 

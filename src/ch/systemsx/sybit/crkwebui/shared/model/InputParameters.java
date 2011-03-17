@@ -2,6 +2,11 @@ package ch.systemsx.sybit.crkwebui.shared.model;
 
 import java.io.Serializable;
 
+/**
+ * This class is used to transfer parameters selected by the user
+ * @author srebniak_a
+ *
+ */
 public class InputParameters implements Serializable 
 {
 	/**

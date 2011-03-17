@@ -15,6 +15,8 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
 /**
  * The client side stub for the RPC service.
+ * 
+ * @author srebniak_a
  */
 @RemoteServiceRelativePath("crk")
 public interface CrkWebService extends RemoteService {

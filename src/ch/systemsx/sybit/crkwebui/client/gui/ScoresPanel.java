@@ -29,6 +29,11 @@ import com.extjs.gxt.ui.client.widget.grid.HeaderGroupConfig;
 import com.extjs.gxt.ui.client.widget.layout.RowData;
 import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 
+/**
+ * This panel is used to display the detailed information about calculated scores
+ * @author srebniak_a
+ *
+ */
 public class ScoresPanel extends LayoutContainer 
 {
 	private MainController mainController;

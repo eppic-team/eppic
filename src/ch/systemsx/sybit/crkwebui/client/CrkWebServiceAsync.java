@@ -7,6 +7,8 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 
 /**
  * The async counterpart of <code>CrkWebService</code>.
+ * 
+ * @author srebniak_a
  */
 public interface CrkWebServiceAsync {
 	public void test(String test, AsyncCallback callback);

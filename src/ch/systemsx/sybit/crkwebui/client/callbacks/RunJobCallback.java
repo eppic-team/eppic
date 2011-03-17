@@ -5,6 +5,11 @@ import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
+/**
+ * This is the callback to handle response when trying to run new job
+ * @author srebniak_a
+ *
+ */
 public class RunJobCallback implements AsyncCallback 
 {
 	private MainController mainController;

@@ -13,6 +13,11 @@ import javax.mail.internet.MimeMessage;
 
 import ch.systemsx.sybit.crkwebui.server.data.EmailData;
 
+/**
+ * This class is used to send emails
+ * @author srebniak_a
+ *
+ */
 public class EmailSender 
 {
 	private EmailData emailData;

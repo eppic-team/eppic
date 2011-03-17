@@ -1,5 +1,6 @@
 package ch.systemsx.sybit.crkwebui.shared;
 
+
 public class PdbCodeVerifier {
 
 	private static String PDBCODE_PATTERN = "\\d\\w\\w\\w";

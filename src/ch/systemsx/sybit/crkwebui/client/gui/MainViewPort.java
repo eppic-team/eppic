@@ -9,6 +9,11 @@ import com.extjs.gxt.ui.client.widget.Viewport;
 import com.extjs.gxt.ui.client.widget.layout.BorderLayout;
 import com.extjs.gxt.ui.client.widget.layout.BorderLayoutData;
 
+/**
+ * Main view of the application
+ * @author srebniak_a
+ *
+ */
 public class MainViewPort extends Viewport 
 {
 	private MyJobsPanel myJobsPanel;
@@ -63,7 +68,7 @@ public class MainViewPort extends Viewport
 //		this.add(topPanel, northData);
 		
 		BorderLayoutData southData = new BorderLayoutData(LayoutRegion.SOUTH,
-				15);
+				20);
 		southData.setMargins(new Margins(5, 0, 0, 0));
 		
 		bottomPanel = new BottomPanel(mainController);

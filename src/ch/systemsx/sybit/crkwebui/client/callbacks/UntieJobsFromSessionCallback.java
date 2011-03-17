@@ -4,6 +4,11 @@ import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
+/**
+ * This is the callback used to handle response when closing connection with the server
+ * @author srebniak_a
+ *
+ */
 public class UntieJobsFromSessionCallback implements AsyncCallback 
 {
 	private MainController mainController;

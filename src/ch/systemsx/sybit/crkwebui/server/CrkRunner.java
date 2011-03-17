@@ -13,6 +13,11 @@ import java.util.zip.ZipOutputStream;
 import ch.systemsx.sybit.crkwebui.shared.CrkWebException;
 import ch.systemsx.sybit.crkwebui.shared.model.InputParameters;
 
+/**
+ * This class is used to start crk application
+ * @author srebniak_a
+ *
+ */
 public class CrkRunner implements Runnable 
 {
 	private EmailSender emailSender;
@@ -51,20 +56,6 @@ public class CrkRunner implements Runnable
 				+ " job submitted. To see the status of the processing please go to: "
 				+ resultPath;
 
-		try
-		{
-			FileOutputStream outputStream = new FileOutputStream("/tmp/out1");
-			BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(
-					outputStream);
-			bufferedOutputStream.write(destinationDirectoryName.getBytes());
-			bufferedOutputStream.close();
-			outputStream.close();
-		}
-		catch(Exception ex)
-		{
-			
-		}
-		
 		// generatuin of this file should be moved to crk or check
 		// whether file is not locked
 		logFile = new File(destinationDirectoryName + "/crklog");
@@ -359,7 +350,7 @@ public class CrkRunner implements Runnable
 		}
 
 		emailSender.send("Crk: " + fileName + " error during processing",
-				message);
+				message + "\n\n" + resultPath);
 	}
 	
 	public synchronized boolean isWaiting()

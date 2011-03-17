@@ -8,6 +8,11 @@ import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
+/**
+ * This is the callback used to handle the response from the server when trying to retrieve residues data
+ * @author srebniak_a
+ *
+ */
 public class GetInterfaceResiduesCallback implements AsyncCallback 
 {
 	private MainController mainController;

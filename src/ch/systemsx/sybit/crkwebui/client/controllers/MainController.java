@@ -18,6 +18,11 @@ import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.RootPanel;
 
+/**
+ * This is the main application controller
+ * @author srebniak_a
+ *
+ */
 public class MainController 
 {
 	public static final AppProperties CONSTANTS = (AppProperties) GWT.create(AppProperties.class);
@@ -400,7 +405,14 @@ public class MainController
 	
 	public void updateStatusLabel(String message, boolean isError)
 	{
-		mainViewPort.getBottomPanel().updateStatusMessage(message, isError);
+		if(mainViewPort != null)
+		{
+			mainViewPort.getBottomPanel().updateStatusMessage(message, isError);
+		}
+		else
+		{
+			showError(message);
+		}
 		
 //		if(isError)
 //		{
