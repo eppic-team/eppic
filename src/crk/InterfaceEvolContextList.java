@@ -275,38 +275,40 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 		pdbSc.setBsaToAsaRelaxStep(list.get(0).getInterface().getBsaToAsaRelaxStep());
 		pdbSc.setZoomUsed(list.get(0).getInterface().isRimAndCoreZoomed());
 		for (InterfaceEvolContext iec:this) {
-			InterfaceScore isc = new InterfaceScore(pdbSc);
-			isc.setId(iec.getInterface().getId());
-			pdbSc.addInterfScore(isc);
-			isc.setOperator(SpaceGroup.getAlgebraicFromMatrix(iec.getInterface().getSecondTransf()));
-			isc.setFirstChainId(iec.getInterface().getFirstMolecule().getPdbChainCode());
-			isc.setSecondChainId(iec.getInterface().getSecondMolecule().getPdbChainCode());
-			isc.setInterfArea(iec.getInterface().getInterfaceArea());
-			isc.setNumHomologs1(iec.getFirstChainEvolContext().getNumHomologs());
-			isc.setNumHomologs2(iec.getSecondChainEvolContext().getNumHomologs());
-			
-			int numBsaToAsaCutoffs = pdbSc.getBsaToAsaCutoffs().length;
-			int[] sizes1 = new int[numBsaToAsaCutoffs];
-			int[] sizes2 = new int[numBsaToAsaCutoffs];
-			double[] rat1Scs = new double[numBsaToAsaCutoffs];
-			double[] rat2Scs = new double[numBsaToAsaCutoffs];
+			if (iec.getInterface().getInterfaceArea()>minInterfAreaReporting) { 
+				InterfaceScore isc = new InterfaceScore(pdbSc);
+				isc.setId(iec.getInterface().getId());
+				pdbSc.addInterfScore(isc);
+				isc.setOperator(SpaceGroup.getAlgebraicFromMatrix(iec.getInterface().getSecondTransf()));
+				isc.setFirstChainId(iec.getInterface().getFirstMolecule().getPdbChainCode());
+				isc.setSecondChainId(iec.getInterface().getSecondMolecule().getPdbChainCode());
+				isc.setInterfArea(iec.getInterface().getInterfaceArea());
+				isc.setNumHomologs1(iec.getFirstChainEvolContext().getNumHomologs());
+				isc.setNumHomologs2(iec.getSecondChainEvolContext().getNumHomologs());
 
-			for (int i=0;i<numBsaToAsaCutoffs;i++) {
-				sizes1[i] = iec.getInterface().getFirstRimCores()[i].getCoreSize();
-				sizes2[i] = iec.getInterface().getSecondRimCores()[i].getCoreSize();
-				rat1Scs[i] = iec.getCoreScore(InterfaceEvolContext.FIRST)[i]/iec.getRimScore(InterfaceEvolContext.FIRST)[i];
-				rat2Scs[i] = iec.getCoreScore(InterfaceEvolContext.SECOND)[i]/iec.getRimScore(InterfaceEvolContext.SECOND)[i];
+				int numBsaToAsaCutoffs = pdbSc.getBsaToAsaCutoffs().length;
+				int[] sizes1 = new int[numBsaToAsaCutoffs];
+				int[] sizes2 = new int[numBsaToAsaCutoffs];
+				double[] rat1Scs = new double[numBsaToAsaCutoffs];
+				double[] rat2Scs = new double[numBsaToAsaCutoffs];
+
+				for (int i=0;i<numBsaToAsaCutoffs;i++) {
+					sizes1[i] = iec.getInterface().getFirstRimCores()[i].getCoreSize();
+					sizes2[i] = iec.getInterface().getSecondRimCores()[i].getCoreSize();
+					rat1Scs[i] = iec.getCoreScore(InterfaceEvolContext.FIRST)[i]/iec.getRimScore(InterfaceEvolContext.FIRST)[i];
+					rat2Scs[i] = iec.getCoreScore(InterfaceEvolContext.SECOND)[i]/iec.getRimScore(InterfaceEvolContext.SECOND)[i];
+				}
+				isc.setCoreSize1(sizes1);
+				isc.setCoreSize2(sizes2);
+				isc.setCore1Scores(iec.getCoreScore(InterfaceEvolContext.FIRST));
+				isc.setRim1Scores(iec.getRimScore(InterfaceEvolContext.FIRST));
+				isc.setRatio1Scores(rat1Scs);
+				isc.setCore2Scores(iec.getCoreScore(InterfaceEvolContext.SECOND));
+				isc.setRim2Scores(iec.getRimScore(InterfaceEvolContext.SECOND));
+				isc.setRatio2Scores(rat2Scs);
+				isc.setFinalScores(iec.getFinalScores());
+				isc.setCalls(iec.getLastCalls());
 			}
-			isc.setCoreSize1(sizes1);
-			isc.setCoreSize2(sizes2);
-			isc.setCore1Scores(iec.getCoreScore(InterfaceEvolContext.FIRST));
-			isc.setRim1Scores(iec.getRimScore(InterfaceEvolContext.FIRST));
-			isc.setRatio1Scores(rat1Scs);
-			isc.setCore2Scores(iec.getCoreScore(InterfaceEvolContext.SECOND));
-			isc.setRim2Scores(iec.getRimScore(InterfaceEvolContext.SECOND));
-			isc.setRatio2Scores(rat2Scs);
-			isc.setFinalScores(iec.getFinalScores());
-			isc.setCalls(iec.getLastCalls());
 		}
 		return pdbSc;
 	}

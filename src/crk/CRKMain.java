@@ -620,18 +620,19 @@ public class CRKMain {
 				PrintStream scoreEntrPS = new PrintStream(params.getOutputFile(ENTROPIES_FILE_SUFFIX+".scores"+suffix));
 				// entropy nw
 				iecList.scoreEntropy(false);
-				PdbScore[] entSc = new PdbScore[2];
-				entSc[0] = iecList.getPdbScoreObject();
 				iecList.printScoresTable(params.getProgressLog(), params.getEntrCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getEntrCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
 				iecList.printScoresTable(scoreEntrPS, params.getEntrCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getEntrCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
+				PdbScore[] entSc = new PdbScore[2];
+				entSc[0] = iecList.getPdbScoreObject();
 				// entropy w
 				iecList.scoreEntropy(true);
-				entSc[1] = iecList.getPdbScoreObject();
-				Goodies.serialize(params.getOutputFile(ENTROPIES_FILE_SUFFIX+".scores.dat"+suffix), entSc);
 				iecList.printScoresTable(params.getProgressLog(), params.getEntrCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getEntrCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
 				iecList.printScoresTable(scoreEntrPS, params.getEntrCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getEntrCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
 				iecList.writeScoresPDBFiles(params,ENTROPIES_FILE_SUFFIX+".pdb");
 				iecList.writeRimCorePDBFiles(params, ".rimcore.pdb");
+				entSc[1] = iecList.getPdbScoreObject();
+				Goodies.serialize(params.getOutputFile(ENTROPIES_FILE_SUFFIX+".scores.dat"+suffix), entSc);
+
 				if (params.isGenerateThumbnails()) {
 					iecList.generateThumbnails(PYMOL_EXE,params,".rimcore.pdb");
 				}
@@ -654,18 +655,18 @@ public class CRKMain {
 					PrintStream scoreKaksPS = new PrintStream(params.getOutputFile(KAKS_FILE_SUFFIX+".scores"+suffix));
 					// kaks nw
 					iecList.scoreKaKs(false);
-					PdbScore[] kaksSc = new PdbScore[2];
-					kaksSc[0] = iecList.getPdbScoreObject();
 					iecList.printScoresTable(params.getProgressLog(),  params.getKaksCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getKaksCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
 					iecList.printScoresTable(scoreKaksPS,  params.getKaksCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getKaksCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
+					PdbScore[] kaksSc = new PdbScore[2];
+					kaksSc[0] = iecList.getPdbScoreObject();
 					// kaks w
 					iecList.scoreKaKs(true);
-					kaksSc[1] = iecList.getPdbScoreObject();
-					Goodies.serialize(params.getOutputFile(KAKS_FILE_SUFFIX+".scores.dat"+suffix), kaksSc);
 					iecList.printScoresTable(params.getProgressLog(),  params.getKaksCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getKaksCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
 					iecList.printScoresTable(scoreKaksPS,  params.getKaksCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getKaksCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
 					iecList.writeScoresPDBFiles(params, KAKS_FILE_SUFFIX+".pdb");
 					iecList.writeRimCorePDBFiles(params, ".rimcore.pdb");
+					kaksSc[1] = iecList.getPdbScoreObject();
+					Goodies.serialize(params.getOutputFile(KAKS_FILE_SUFFIX+".scores.dat"+suffix), kaksSc);
 					scoreKaksPS.close();
 				}
 			}
