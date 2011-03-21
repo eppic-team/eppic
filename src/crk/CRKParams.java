@@ -293,7 +293,7 @@ public class CRKParams {
 		if (m.matches()) {
 			inFile = null;
 		}
-		this.pdbCode = pdbCode;
+		this.pdbCode = pdbCode.toLowerCase();
 	}
 	
 	public boolean isDoScoreCRK() {
