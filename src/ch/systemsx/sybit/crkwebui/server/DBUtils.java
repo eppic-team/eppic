@@ -64,8 +64,11 @@ public class DBUtils
 		return connection;
 	}
 
-	public static void insertNewJob(String jobId, String sessionId,
-			String email, String input)  throws CrkWebException 
+	public static void insertNewJob(String jobId, 
+									String sessionId,
+									String email, 
+									String input,
+									String ip)  throws CrkWebException 
 	{
 		Connection connection = null;
 		PreparedStatement statement = null;
@@ -83,7 +86,7 @@ public class DBUtils
 					statement.setString(2, sessionId);
 					statement.setString(3, "Running");
 					statement.setString(4, email);
-					statement.setString(5, "");
+					statement.setString(5, ip);
 					statement.setString(6, input);
 
 					statement.executeUpdate();

@@ -3,7 +3,6 @@ package ch.systemsx.sybit.crkwebui.server;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.HashMap;
 import java.util.List;
 
 import javax.servlet.ServletConfig;
@@ -173,9 +172,9 @@ public class FileUploadServlet extends FileBaseServlet {
 							fileName);
 					fileToUpload.write(file);
 
-					File processingFile = new File(localDestinationDir
-							+ "/" + fileName);
-					processingFile.createNewFile();
+//					File processingFile = new File(localDestinationDir
+//							+ "/" + fileName);
+//					processingFile.createNewFile();
 				}
 				else
 				{

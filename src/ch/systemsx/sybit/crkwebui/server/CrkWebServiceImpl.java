@@ -20,9 +20,6 @@ import javax.servlet.ServletException;
 import model.InterfaceResidueItem;
 import model.PDBScoreItem;
 import model.ProcessingData;
-
-import org.apache.commons.lang.RandomStringUtils;
-
 import ch.systemsx.sybit.crkwebui.client.CrkWebService;
 import ch.systemsx.sybit.crkwebui.server.data.EmailData;
 import ch.systemsx.sybit.crkwebui.server.util.PDBModelConverter;
@@ -63,7 +60,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 	public void init(ServletConfig config) throws ServletException 
 	{
 		super.init(config);
-
+		
 		InputStream propertiesStream = getServletContext()
 				.getResourceAsStream(
 						"/WEB-INF/classes/ch/systemsx/sybit/crkwebui/server/server.properties");
@@ -314,8 +311,10 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 			EmailSender emailSender = new EmailSender(emailData);
 
 			DBUtils.insertNewJob(runJobData.getJobId(),
-					getThreadLocalRequest().getSession().getId(),
-					emailData.getEmailRecipient(), runJobData.getInput());
+								 getThreadLocalRequest().getSession().getId(),
+								 emailData.getEmailRecipient(), 
+								 runJobData.getInput(),
+								 getThreadLocalRequest().getRemoteAddr());
 
 			String serverHost = properties.getProperty("server_host_page");
 			
