@@ -21,7 +21,6 @@ public class MainViewPort extends Viewport
 	private CenterPanel centerPanel;
 
 	private TopPanel topPanel;
-	
 	private BottomPanel bottomPanel;
 	
 	private InterfacesResiduesWindow interfacesResiduesWindow;
@@ -35,10 +34,8 @@ public class MainViewPort extends Viewport
 		this.mainController = mainController;
 
 		BorderLayout layout = new BorderLayout();
-		setLayout(layout);
-		setStyleAttribute("padding", "10px");
-
 		this.setLayout(layout);
+		this.setStyleAttribute("padding", "10px");
 
 		BorderLayoutData westData = new BorderLayoutData(LayoutRegion.WEST, 180);
 		westData.setCollapsible(true);
@@ -71,8 +68,7 @@ public class MainViewPort extends Viewport
 				20);
 		southData.setMargins(new Margins(5, 0, 0, 0));
 		
-		bottomPanel = new BottomPanel(mainController);
-//		bottomPanel.getHeader().setVisible(false);
+		bottomPanel = new BottomPanel();
 		this.add(bottomPanel, southData);
 	}
 
@@ -118,9 +114,9 @@ public class MainViewPort extends Viewport
 	
 	public void showWaiting(String text)
 	{
-		waitingMessageBox = MessageBox.wait(text,  
-				text + ", please wait...", 
-				text + "...");  
+		waitingMessageBox = MessageBox.wait(MainController.CONSTANTS.waiting_message_box_header(),  
+											text + ", " + MainController.CONSTANTS.waiting_message_box_info() + "...", 
+											text + "...");  
 		waitingMessageBox.show();
 	}
 	
@@ -134,7 +130,7 @@ public class MainViewPort extends Viewport
 		if((errorMessageBox == null) ||
 		   (!errorMessageBox.isVisible()))
 		{
-			errorMessageBox = MessageBox.alert("Error", message, null);
+			errorMessageBox = MessageBox.alert(MainController.CONSTANTS.error_message_box_header(), message, null);
 			errorMessageBox.setMinWidth(300);
 			errorMessageBox.setMaxWidth(mainController.getWindowWidth());
 			errorMessageBox.show();

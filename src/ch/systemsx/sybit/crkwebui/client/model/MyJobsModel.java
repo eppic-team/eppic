@@ -7,7 +7,8 @@ import com.extjs.gxt.ui.client.data.BaseModel;
  * @author srebniak_a
  *
  */
-public class MyJobsModel extends BaseModel {
+public class MyJobsModel extends BaseModel 
+{
 	private static final long serialVersionUID = 1L;
 
 	public MyJobsModel() {

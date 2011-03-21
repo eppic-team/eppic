@@ -22,7 +22,7 @@ public class RunJobCallback implements AsyncCallback
 	@Override
 	public void onFailure(Throwable caught) 
 	{
-		mainController.updateStatusLabel("Error during getting run job data from server", true);
+		mainController.updateStatusLabel(MainController.CONSTANTS.callback_run_job_error(), true);
 //		mainController.showError("Error during getting run job data from server");
 	}
 
@@ -39,7 +39,7 @@ public class RunJobCallback implements AsyncCallback
 		} 
 		else 
 		{
-			mainController.updateStatusLabel("Error during running the job" , true);
+			mainController.updateStatusLabel(MainController.CONSTANTS.callback_run_job_error() + " - incorrect type" , true);
 //			mainController.showError("Error during stopping the job " + mainController.getSelectedJobId());
 		}
 	}

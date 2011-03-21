@@ -26,7 +26,8 @@ public class MethodCellRenderer implements GridCellRenderer<BeanModel>
 			ListStore<BeanModel> store, Grid<BeanModel> grid) {
 		String value = (String) model.get(property);
 
-		if (value != null) {
+		if (value != null) 
+		{
 			String color = "black";
 
 			if (value.equals("bio")) {

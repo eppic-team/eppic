@@ -26,7 +26,7 @@ public class GetResultsOfProcessingCallback implements AsyncCallback
 	@Override
 	public void onFailure(Throwable caught) 
 	{
-		String errorText = "Error during getting results of processing from server " + caught.getMessage();
+		String errorText = MainController.CONSTANTS.callback_get_results_of_processing_error() + " " + caught.getMessage();
 		
 		mainController.updateStatusLabel(errorText, true);
 //		mainController.showError(errorText);
@@ -45,13 +45,12 @@ public class GetResultsOfProcessingCallback implements AsyncCallback
 			else if(result instanceof PDBScoreItem)
 			{
 				PDBScoreItem resultsData = (PDBScoreItem) result;
-				resultsData.setJobId(selectedId);
 				mainController.setPDBScoreItem(resultsData);
 				mainController.displayResultView(resultsData);
 			}
 			else
 			{
-				mainController.updateStatusLabel("Error during getting results of processing from server - incorrect type ", true);
+				mainController.updateStatusLabel(MainController.CONSTANTS.callback_get_results_of_processing_error() + " - incorrect type ", true);
 //				mainController.showError("Error during getting results of processing from server" + result.getClass());
 				mainController.getMainViewPort().getCenterPanel().removeAll();
 				mainController.getMainViewPort().getCenterPanel().setDisplayPanel(null);
@@ -61,7 +60,7 @@ public class GetResultsOfProcessingCallback implements AsyncCallback
 		}
 		else
 		{
-			mainController.showMessage("Job Not Found", "Id=" + selectedId + " not found on the server");
+			mainController.showMessage(MainController.CONSTANTS.callback_job_not_found_error(), "Id=" + selectedId + " not found on the server");
 			mainController.getMainViewPort().getCenterPanel().removeAll();
 			mainController.getMainViewPort().getCenterPanel().setDisplayPanel(null);
 		}

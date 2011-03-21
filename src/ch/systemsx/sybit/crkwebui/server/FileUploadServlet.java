@@ -18,7 +18,8 @@ import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.apache.commons.lang.RandomStringUtils;
+
+import ch.systemsx.sybit.crkwebui.server.util.RandomDirectoryNameGenerator;
 
 /**
  * Servlet used to upload documents by the users to server
@@ -34,9 +35,6 @@ public class FileUploadServlet extends FileBaseServlet {
 
 	private String generalTmpDirectoryName;
 	private String generalDestinationDirectoryName;
-	
-	//TODO clean it when session expired
-	private HashMap<String, Integer> sessionJobsMap; 
 	
 	private boolean useCaptcha;
 	private String captchaPublicKey;
@@ -69,8 +67,6 @@ public class FileUploadServlet extends FileBaseServlet {
 					+ " is not a directory");
 		}
 		
-		sessionJobsMap = new HashMap<String, Integer>();
-		
 		useCaptcha = Boolean.parseBoolean(properties.getProperty("use_captcha"));
 		captchaPublicKey = properties.getProperty("captcha_public_key");
 		captchaPrivateKey = properties.getProperty("captcha_private_key");
@@ -82,34 +78,13 @@ public class FileUploadServlet extends FileBaseServlet {
 	{
 		String currentSessionId = request.getSession().getId();
 		
-		int nrOfSubmittedJobs = 1;
-		
-		if(sessionJobsMap.containsKey(currentSessionId))
-		{
-			nrOfSubmittedJobs = sessionJobsMap.get(currentSessionId).intValue();
-			nrOfSubmittedJobs++;
-		}
-		
-		sessionJobsMap.put(currentSessionId, nrOfSubmittedJobs);
-		
 		PrintWriter out = response.getWriter();
+		
+		int nrOfSubmittedJobs = 0;
 		
 		if (ServletFileUpload.isMultipartContent(request)) 
 		{
-			String randomDirectoryName = null;
-			boolean isDirectorySet = false;
-
-			while (!isDirectorySet) 
-			{
-				randomDirectoryName = RandomStringUtils.randomAlphanumeric(30);
-
-				File randomDirectory = new File(randomDirectoryName);
-
-				if (!randomDirectory.exists()) 
-				{
-					isDirectorySet = true;
-				}
-			}
+			String randomDirectoryName = RandomDirectoryNameGenerator.generateRandomDirectoryName(generalDestinationDirectoryName);
 
 			File localTmpDir = new File(generalTmpDirectoryName + "/"
 					+ randomDirectoryName);

@@ -21,33 +21,22 @@ public class ApplicationSettings implements Serializable {
 	// grid settings - column specification
 	private Map<String, String> gridProperties;
 
+	// input parameters
 	private InputParameters defaultParametersValues;
 
+	// available values for reduced alphabet
 	private List<Integer> reducedAlphabetList;
 	
+	// *********************************************
+	// * Settings for captcha
+	// *********************************************
 	private int nrOfJobsForSession;
-	
 	private boolean useCaptcha;
 	private String captchaPublicKey;
 	private int nrOfAllowedSubmissionsWithoutCaptcha;
+	// *********************************************
 	
 	private String resultsLocation;
-
-	public boolean isUseCaptcha() {
-		return useCaptcha;
-	}
-
-	public void setUseCaptcha(boolean useCaptcha) {
-		this.useCaptcha = useCaptcha;
-	}
-
-	public String getCaptchaPublicKey() {
-		return captchaPublicKey;
-	}
-
-	public void setCaptchaPublicKey(String captchaPublicKey) {
-		this.captchaPublicKey = captchaPublicKey;
-	}
 
 	public void setScoresTypes(String[] scoresTypes) {
 		this.scoresTypes = scoresTypes;
@@ -90,6 +79,30 @@ public class ApplicationSettings implements Serializable {
 		return nrOfJobsForSession;
 	}
 
+	public String getResultsLocation() {
+		return resultsLocation;
+	}
+
+	public void setResultsLocation(String resultsLocation) {
+		this.resultsLocation = resultsLocation;
+	}
+	
+	public boolean isUseCaptcha() {
+		return useCaptcha;
+	}
+
+	public void setUseCaptcha(boolean useCaptcha) {
+		this.useCaptcha = useCaptcha;
+	}
+
+	public String getCaptchaPublicKey() {
+		return captchaPublicKey;
+	}
+
+	public void setCaptchaPublicKey(String captchaPublicKey) {
+		this.captchaPublicKey = captchaPublicKey;
+	}
+	
 	public void setNrOfAllowedSubmissionsWithoutCaptcha(
 			int nrOfAllowedSubmissionsWithoutCaptcha) {
 		this.nrOfAllowedSubmissionsWithoutCaptcha = nrOfAllowedSubmissionsWithoutCaptcha;
@@ -97,13 +110,5 @@ public class ApplicationSettings implements Serializable {
 
 	public int getNrOfAllowedSubmissionsWithoutCaptcha() {
 		return nrOfAllowedSubmissionsWithoutCaptcha;
-	}
-	
-	public String getResultsLocation() {
-		return resultsLocation;
-	}
-
-	public void setResultsLocation(String resultsLocation) {
-		this.resultsLocation = resultsLocation;
 	}
 }

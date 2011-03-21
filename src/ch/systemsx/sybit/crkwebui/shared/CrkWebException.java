@@ -18,4 +18,9 @@ public class CrkWebException extends Exception implements Serializable
 	{
 		super(e);
 	}
+	
+	public CrkWebException(String message)
+	{
+		super(message);
+	}
 }

@@ -7,9 +7,9 @@ import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.FieldEvent;
 import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.util.Margins;
-import com.extjs.gxt.ui.client.widget.form.ComboBox.TriggerAction;
 import com.extjs.gxt.ui.client.widget.form.FormPanel;
 import com.extjs.gxt.ui.client.widget.form.SimpleComboBox;
+import com.extjs.gxt.ui.client.widget.form.ComboBox.TriggerAction;
 import com.extjs.gxt.ui.client.widget.layout.RowData;
 import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 import com.extjs.gxt.ui.client.widget.toolbar.FillToolItem;
@@ -92,14 +92,6 @@ public class InterfacesResiduesPanel extends FormPanel
 		this.setTopComponent(toolbar);
 	}
 
-	public ResiduesPanel getFirstStructurePanel() {
-		return firstStructure;
-	}
-
-	public ResiduesPanel getSecondStructurePanel() {
-		return secondStructure;
-	}
-	
 	public void cleanData()
 	{
 		residuesFilterComboBox.setSimpleValue("Rim/Core");
@@ -109,6 +101,16 @@ public class InterfacesResiduesPanel extends FormPanel
 	{
 		firstStructure.resizeGrid();
 		secondStructure.resizeGrid();
+	}
+	
+	public ResiduesPanel getFirstStructurePanel() 
+	{
+		return firstStructure;
+	}
+
+	public ResiduesPanel getSecondStructurePanel() 
+	{
+		return secondStructure;
 	}
 
 }

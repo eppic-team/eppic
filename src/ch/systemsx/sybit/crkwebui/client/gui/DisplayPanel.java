@@ -17,14 +17,7 @@ public class DisplayPanel extends LayoutContainer
 	public DisplayPanel(MainController mainController)
 	{
 		this.mainController = mainController;
-//		this.getHeader().setVisible(false);
 		this.setBorders(false);
-//		this.setBodyBorder(false);
-//		this.setPadding(0);
-		
-//		VBoxLayout vBoxLayout = new VBoxLayout();
-//		vBoxLayout.setVBoxLayoutAlign(VBoxLayoutAlign.CENTER);
-		
 		this.setLayout(new FitLayout());
 	}
 }

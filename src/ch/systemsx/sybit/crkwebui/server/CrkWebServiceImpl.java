@@ -26,15 +26,16 @@ import org.apache.commons.lang.RandomStringUtils;
 import ch.systemsx.sybit.crkwebui.client.CrkWebService;
 import ch.systemsx.sybit.crkwebui.server.data.EmailData;
 import ch.systemsx.sybit.crkwebui.server.util.PDBModelConverter;
+import ch.systemsx.sybit.crkwebui.server.util.RandomDirectoryNameGenerator;
 import ch.systemsx.sybit.crkwebui.shared.CrkWebException;
 import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
 import ch.systemsx.sybit.crkwebui.shared.model.InputParameters;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
 import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
+import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
-import crk.InterfaceEvolContextList;
 import crk.PdbScore;
 
 
@@ -110,28 +111,28 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 		DBUtils.setDataSource(dataSource);
 	}
 
-	public String greetServer(String input) throws IllegalArgumentException {
-		// // Verify that the input is valid.
-		// if (!FieldVerifier.isValidName(input)) {
-		// // If the input is not valid, throw an IllegalArgumentException back
-		// to
-		// // the client.
-		// throw new IllegalArgumentException(
-		// "Name must be at least 4 characters long");
-		// }
-		//
-		// String serverInfo = getServletContext().getServerInfo();
-		// String userAgent = getThreadLocalRequest().getHeader("User-Agent");
-		//
-		// // Escape data from the client to avoid cross-site script
-		// vulnerabilities.
-		// input = escapeHtml(input);
-		// userAgent = escapeHtml(userAgent);
-		//
-		// return "Hello, " + input + "!<br><br>I am running " + serverInfo
-		// + ".<br><br>It looks like you are using:<br>" + userAgent;
-		return "";
-	}
+//	public String greetServer(String input) throws IllegalArgumentException {
+//		// // Verify that the input is valid.
+//		// if (!FieldVerifier.isValidName(input)) {
+//		// // If the input is not valid, throw an IllegalArgumentException back
+//		// to
+//		// // the client.
+//		// throw new IllegalArgumentException(
+//		// "Name must be at least 4 characters long");
+//		// }
+//		//
+//		// String serverInfo = getServletContext().getServerInfo();
+//		// String userAgent = getThreadLocalRequest().getHeader("User-Agent");
+//		//
+//		// // Escape data from the client to avoid cross-site script
+//		// vulnerabilities.
+//		// input = escapeHtml(input);
+//		// userAgent = escapeHtml(userAgent);
+//		//
+//		// return "Hello, " + input + "!<br><br>I am running " + serverInfo
+//		// + ".<br><br>It looks like you are using:<br>" + userAgent;
+//		return "";
+//	}
 
 	/**
 	 * Escape an html string. Escaping data received from the client helps to
@@ -150,7 +151,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 	}
 	
 	@Override
-	public ApplicationSettings getSettings() throws Exception 
+	public ApplicationSettings loadSettings() throws CrkWebException 
 	{
 		ApplicationSettings settings = new ApplicationSettings();
 
@@ -166,7 +167,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 		}
 		catch(IOException e)
 		{
-			throw new Exception("Error during loading grid settings: " + e.getMessage());
+			throw new CrkWebException(e);
 		}
 
 		Map<String, String> gridPropetiesMap = new HashMap<String, String>();
@@ -186,7 +187,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 		}
 		else
 		{
-			throw new Exception("Scoring methods not set");
+			throw new CrkWebException("Scoring methods not set");
 		}
 
 		// default input parameters values
@@ -202,7 +203,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 		}
 		catch (IOException e) 
 		{
-			throw new Exception("Error during reading default values of input parameters");
+			throw new CrkWebException("Error during reading default values of input parameters");
 		}
 
 		InputParameters defaultInputParameters = new InputParameters();
@@ -283,21 +284,85 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 		
 		return settings;
 	}
-
+	
 	@Override
-	public ProcessingData getResultsOfProcessing(String id) throws Exception 
+	public String runJob(RunJobData runJobData) throws CrkWebException 
 	{
-		String status = DBUtils.getStatusForJob(id, getThreadLocalRequest().getSession().getId());
+		if (runJobData != null) 
+		{
+			if(runJobData.getJobId() == null)
+			{
+				String randomDirectoryName = RandomDirectoryNameGenerator.generateRandomDirectoryName(generalDestinationDirectoryName);
+
+				String localDestinationDirName = generalDestinationDirectoryName
+						+ "/" + randomDirectoryName;
+				File localDestinationDir = new File(localDestinationDirName);
+				localDestinationDir.mkdir();
+				
+				runJobData.setJobId(randomDirectoryName);
+			}
+			
+			EmailData emailData = new EmailData();
+			emailData.setEmailSender(properties.getProperty("email_username", ""));
+			emailData.setEmailSenderPassword(properties.getProperty("email_password", ""));
+			emailData.setHost(properties.getProperty("email_host"));
+			emailData.setPort(properties.getProperty("email_port"));
+			emailData.setEmailRecipient(runJobData.getEmailAddress());
+
+			String localDestinationDirName = generalDestinationDirectoryName + "/" + runJobData.getJobId();
+
+			EmailSender emailSender = new EmailSender(emailData);
+
+			DBUtils.insertNewJob(runJobData.getJobId(),
+					getThreadLocalRequest().getSession().getId(),
+					emailData.getEmailRecipient(), runJobData.getInput());
+
+			String serverHost = properties.getProperty("server_host_page");
+			
+			CrkRunner crkRunner = new CrkRunner(emailSender,
+					runJobData.getInput(), 
+					serverHost + "#id=" + runJobData.getJobId(),
+					localDestinationDirName, 
+					runJobData.getJobId(),
+					runJobData.getInputParameters(),
+					crkApplicationLocation);
+
+			Thread crkRunnerThread = new Thread(runInstances, 
+					crkRunner,
+					runJobData.getJobId());
+
+			File logFile = new File(localDestinationDirName + "/crklog");
+			
+			try 
+			{
+				logFile.createNewFile();
+			}
+			catch(IOException e)
+			{
+				e.printStackTrace();
+			}
+				
+			crkRunnerThread.start();
+			
+			return runJobData.getJobId();
+		}
+		
+		return null;
+	}
+
+	public ProcessingData getResultsOfProcessing(String jobId) throws CrkWebException 
+	{
+		String status = DBUtils.getStatusForJob(jobId, getThreadLocalRequest().getSession().getId());
 
 		if(status != null)
 		{
-			if(status.equals("Finished")) 
+			if(status.equals(StatusOfJob.FINISHED)) 
 			{
-				return getResultData(id);
+				return getResultData(jobId);
 			}
 			else 
 			{
-				return getStatusData(id, status);
+				return getStatusData(jobId, status);
 			}
 		}
 		else
@@ -306,19 +371,19 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 		}
 	}
 
-	private ProcessingInProgressData getStatusData(String id, String status) throws CrkWebException 
+	private ProcessingInProgressData getStatusData(String jobId, String status) throws CrkWebException 
 	{
 		ProcessingInProgressData statusData = null;
 
-		if((id != null) && (!id.equals("")))
+		if((jobId != null) && (!jobId.equals("")))
 		{
-			String dataDirectory = generalDestinationDirectoryName + "/" + id;
+			String dataDirectory = generalDestinationDirectoryName + "/" + jobId;
 	
 			if (checkIfDirectoryExist(dataDirectory)) 
 			{
 				statusData = new ProcessingInProgressData();
 	
-				statusData.setJobId(id);
+				statusData.setJobId(jobId);
 	
 				statusData.setStatus(status);
 	
@@ -328,26 +393,6 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 					{
 						File logFile = new File(dataDirectory + "/crklog");
 	
-//						FileInputStream inputStream = new FileInputStream(logFile);
-//						BufferedInputStream bufferedInputStream = new BufferedInputStream(
-//								inputStream);
-//						
-//	
-//						byte[] buffer = new byte[1024];
-//						
-//						int length = 0;
-//	
-//						StringBuffer log = new StringBuffer();
-//	
-//						while ((bufferedInputStream != null)
-//								&& ((length = bufferedInputStream.read(buffer)) != -1)) 
-//						{
-//							log.append(new String(buffer));
-//						}
-//	
-//						bufferedInputStream.close();
-//						inputStream.close();
-						
 						StringBuffer log = new StringBuffer();
 						
 						FileReader inputStream = new FileReader(logFile);
@@ -362,7 +407,6 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 
 				        bufferedInputStream.close();
 				        inputStream.close();
-	
 				        
 						statusData.setLog(log.toString());
 					} 
@@ -378,156 +422,14 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 		return statusData;
 	}
 	
-//	private PDBScoreItem getResultData(String id) 
-//	{
-//		PDBScoreItem resultsData = null;
-//
-//		if ((id != null) && (id.length() != 0)) 
-//		{
-//			File resultFileDirectory = new File(
-//					generalDestinationDirectoryName + "/" + id);
-//
-//			if (resultFileDirectory.exists()
-//					&& resultFileDirectory.isDirectory())
-//			{
-//				String[] directoryContent = resultFileDirectory
-//						.list(new FilenameFilter() {
-//
-//							public boolean accept(File dir, String name) {
-//								if (name.endsWith(".scores")) {
-//									return true;
-//								} else {
-//									return false;
-//								}
-//							}
-//						});
-//
-//				if (directoryContent != null && directoryContent.length > 0) 
-//				{
-//					PdbScore[] allPdbScores = null;
-//
-//					List<PdbScore[]> pdbScores = new ArrayList<PdbScore[]>();
-//
-//					for (int i = 0; i < directoryContent.length; i++)
-//					{
-//						File resultFile = new File(resultFileDirectory + "/"
-//								+ directoryContent[i]);
-//
-//						if (resultFile.exists()) 
-//						{
-//							try {
-//								PdbScore[] pdbScoresForMethod = InterfaceEvolContextList
-//										.parseScoresFile(resultFile);
-//								pdbScores.add(pdbScoresForMethod);
-//							} 
-//							catch (Exception e) {
-//								
-//							}
-//						}
-//					}
-//
-//					if (pdbScores.size() > 0) 
-//					{
-//						int totalLength = 0;
-//
-//						for (PdbScore[] array : pdbScores) 
-//						{
-//							totalLength += array.length;
-//						}
-//						
-//						allPdbScores = new PdbScore[totalLength];
-//
-//						int offset = 0;
-//
-//						for (int i = 0; i < pdbScores.size(); i++) 
-//						{
-//							System.arraycopy(pdbScores.get(i), 0, allPdbScores,
-//									offset, pdbScores.get(i).length);
-//							offset += pdbScores.get(i).length;
-//						}
-//					}
-//
-//					resultsData = PDBModelConverter.createPDBScoreItem(allPdbScores);
-//
-//				}
-//			}
-//		}
-//
-//		return resultsData;
-//	}
-	
-//	private PDBScoreItem getResultData(String id) throws CrkWebException 
-//	{
-//		PDBScoreItem resultsData = null;
-//
-//		if ((id != null) && (id.length() != 0)) 
-//		{
-//			File resultFileDirectory = new File(
-//					generalDestinationDirectoryName + "/" + id);
-//
-//			if (resultFileDirectory.exists()
-//					&& resultFileDirectory.isDirectory())
-//			{
-//				String[] directoryContent = resultFileDirectory
-//						.list(new FilenameFilter() {
-//
-//							public boolean accept(File dir, String name) {
-//								if (name.endsWith(".scores.dat")) {
-//									return true;
-//								} else {
-//									return false;
-//								}
-//							}
-//						});
-//
-//				if (directoryContent != null && directoryContent.length > 0) 
-//				{
-//					PdbScore[] allPdbScores =  new PdbScore[directoryContent.length];
-//
-//					for (int i = 0; i < directoryContent.length; i++)
-//					{
-//						File resultFile = new File(resultFileDirectory + "/"
-//								+ directoryContent[i]);
-//
-//						if (resultFile.exists()) 
-//						{
-//							try 
-//							{
-//								FileInputStream fileInputStream = new FileInputStream(resultFile);
-//								ObjectInputStream inputStream = new ObjectInputStream(fileInputStream);
-//								PdbScore deserializedPdbScore = (PdbScore)inputStream.readObject();
-//								allPdbScores[i] = deserializedPdbScore;
-//								inputStream.close();
-//								fileInputStream.close();
-//								
-////								PdbScore[] pdbScoresForMethod = InterfaceEvolContextList
-////								.parseScoresFile(resultFile);
-////								pdbScores.add(pdbScoresForMethod);
-//							} 
-//							catch (Exception e) 
-//							{
-//								throw new CrkWebException(e);
-//							}
-//						}
-//					}
-//
-//					resultsData = PDBModelConverter.createPDBScoreItem(allPdbScores);
-//
-//				}
-//			}
-//		}
-//
-//		return resultsData;
-//	}
-	
-	private PDBScoreItem getResultData(String id) 
+	private PDBScoreItem getResultData(String jobId) 
 	{
 		PDBScoreItem resultsData = null;
 
-		if ((id != null) && (id.length() != 0)) 
+		if ((jobId != null) && (jobId.length() != 0)) 
 		{
 			File resultFileDirectory = new File(
-					generalDestinationDirectoryName + "/" + id);
+					generalDestinationDirectoryName + "/" + jobId);
 
 			if (resultFileDirectory.exists()
 					&& resultFileDirectory.isDirectory())
@@ -594,6 +496,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 					}
 
 					resultsData = PDBModelConverter.createPDBScoreItem(allPdbScores);
+					resultsData.setJobId(jobId);
 
 				}
 			}
@@ -642,114 +545,15 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 		}
 		
 		return structures;
-		
-//		HashMap<Integer, List<InterfaceResidueItem>> structures = new HashMap<Integer, List<InterfaceResidueItem>>();
-//		for (int j = 1; j < 3; j++)
-//		{
-//			List<InterfaceResidueItem> residueItems = new ArrayList<InterfaceResidueItem>();
-//
-//			for (int i = 0; i < 2; i++) 
-//			{
-//				InterfaceResidueItem residueItem = new InterfaceResidueItem();
-//				residueItem.setAsa(20);
-//				residueItem.setResidueType("ABC");
-//
-//				Map<String, InterfaceResidueMethodItem> residueMethodItems = new HashMap<String, InterfaceResidueMethodItem>();
-//
-//				InterfaceResidueMethodItem residueMethodItem = new InterfaceResidueMethodItem();
-//				residueMethodItem.setScore(30);
-//
-//				residueMethodItems.put("Entropy", residueMethodItem);
-//
-//				residueItem.setInterfaceResidueMethodItems(residueMethodItems);
-//
-//				residueItems.add(residueItem);
-//			}
-//
-//			structures.put(j, residueItems);
-//		}
-//
-//		return structures;
 	}
 	
 	@Override
-	public String runJob(RunJobData runJobData) throws CrkWebException 
+	public List<ProcessingInProgressData> getJobsForCurrentSession() throws CrkWebException 
 	{
-		if (runJobData != null) 
-		{
-			if(runJobData.getJobId() == null)
-			{
-				String randomDirectoryName = null;
-				boolean isDirectorySet = false;
-
-				while (!isDirectorySet) 
-				{
-					randomDirectoryName = RandomStringUtils.randomAlphanumeric(30);
-
-					File randomDirectory = new File(randomDirectoryName);
-
-					if (!randomDirectory.exists()) 
-					{
-						isDirectorySet = true;
-					}
-				}
-
-				String localDestinationDirName = generalDestinationDirectoryName
-						+ "/" + randomDirectoryName;
-				File localDestinationDir = new File(localDestinationDirName);
-				localDestinationDir.mkdir();
-				
-				runJobData.setJobId(randomDirectoryName);
-			}
-			
-			EmailData emailData = new EmailData();
-			emailData.setEmailSender(properties.getProperty("email_username", ""));
-			emailData.setEmailSenderPassword(properties.getProperty("email_password", ""));
-			emailData.setHost(properties.getProperty("email_host"));
-			emailData.setPort(properties.getProperty("email_port"));
-			emailData.setEmailRecipient(runJobData.getEmailAddress());
-
-			String localDestinationDirName = generalDestinationDirectoryName + "/" + runJobData.getJobId();
-
-			EmailSender emailSender = new EmailSender(emailData);
-
-			DBUtils.insertNewJob(runJobData.getJobId(),
-					getThreadLocalRequest().getSession().getId(),
-					emailData.getEmailRecipient(), runJobData.getFileName());
-
-			String serverHost = properties.getProperty("server_host_page");
-			
-			CrkRunner crkRunner = new CrkRunner(emailSender,
-					runJobData.getFileName(), 
-					serverHost + "#id=" + runJobData.getJobId(),
-					localDestinationDirName, 
-					runJobData.getJobId(),
-					runJobData.getInputParameters(),
-					crkApplicationLocation);
-
-			Thread crkRunnerThread = new Thread(runInstances, 
-					crkRunner,
-					runJobData.getJobId());
-
-			File logFile = new File(localDestinationDirName + "/crklog");
-			
-			try 
-			{
-				logFile.createNewFile();
-			}
-			catch(IOException e)
-			{
-				e.printStackTrace();
-			}
-				
-			crkRunnerThread.start();
-			
-			return runJobData.getJobId();
-		}
-		
-		return null;
+		String sessionId = getThreadLocalRequest().getSession().getId();
+		return DBUtils.getJobsForCurrentSession(sessionId);
 	}
-
+	
 	@Override
 	public String killJob(String jobId) throws CrkWebException 
 	{
@@ -794,7 +598,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 						e.printStackTrace();
 					}
 
-					DBUtils.updateStatusOfJob(jobId, "Stopped");
+					DBUtils.updateStatusOfJob(jobId, StatusOfJob.STOPPED);
 				}
 
 				i++;
@@ -808,12 +612,19 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 
 		return result;
 	}
+	
+	@Override
+	public void untieJobsFromSession() throws CrkWebException 
+	{
+		String sessionId = getThreadLocalRequest().getSession().getId();
+		DBUtils.untieJobsFromSession(sessionId);
+	}
 
 	
 
-	public String test(String test) {
-		return getThreadLocalRequest().getSession().getId();
-	}
+//	public String test(String test) {
+//		return getThreadLocalRequest().getSession().getId();
+//	}
 
 	private boolean checkIfDirectoryExist(String directoryName) {
 		File directory = new File(directoryName);
@@ -835,20 +646,6 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 		}
 	}
 
-	@Override
-	public List<ProcessingInProgressData> getJobsForCurrentSession() throws CrkWebException 
-	{
-		String sessionId = getThreadLocalRequest().getSession().getId();
-		return DBUtils.getJobsForCurrentSession(sessionId);
-	}
-
-	@Override
-	public void untieJobsFromSession() throws CrkWebException 
-	{
-		String sessionId = getThreadLocalRequest().getSession().getId();
-		DBUtils.untieJobsFromSession(sessionId);
-	}
-	
 	@Override
 	public void destroy()
 	{

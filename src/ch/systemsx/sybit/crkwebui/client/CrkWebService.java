@@ -19,24 +19,60 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
  * @author srebniak_a
  */
 @RemoteServiceRelativePath("crk")
-public interface CrkWebService extends RemoteService {
-	public String greetServer(String name) throws IllegalArgumentException;
+public interface CrkWebService extends RemoteService
+{
+	/**
+	 * Load initial setttings
+	 * @return initial setttings
+	 * @throws CrkWebException
+	 */
+	public ApplicationSettings loadSettings() throws CrkWebException;
 
-	public String test(String test);
-
-	public ProcessingData getResultsOfProcessing(String id) throws Exception;
-
-	public String killJob(String id) throws CrkWebException;
-
+	/**
+	 * Submit the job to the server
+	 * @param runJobData input parameters
+	 * @return results of job submission
+	 * @throws CrkWebException
+	 */
+	public String runJob(RunJobData runJobData) throws CrkWebException;
+	
+	/**
+	 * Retrieve results of processing for selected job id - the results type depends on the status of the job on the server
+	 * @param jobId identitifier of the job
+	 * @return status data for the selected job
+	 * @throws CrkWebException
+	 */
+	public ProcessingData getResultsOfProcessing(String jobId) throws CrkWebException;
+	
+	/**
+	 * Retrieve list of all jobs for current session id
+	 * @return list of jobs attached to the current session
+	 * @throws CrkWebException
+	 */
 	public List<ProcessingInProgressData> getJobsForCurrentSession() throws CrkWebException;
 
-	public void untieJobsFromSession() throws CrkWebException;
-
-	public ApplicationSettings getSettings() throws Exception;
-
-	public String runJob(RunJobData runJobData) throws CrkWebException;
-
+	/**
+	 * Retrieve residues information for selected interface
+	 * @param jobId selected job id
+	 * @param interfaceId selected interface id
+	 * @return residues information
+	 * @throws CrkWebException
+	 */
 	public HashMap<Integer, List<InterfaceResidueItem>> getInterfaceResidues(
-			String jobId, int interfaceId) throws Exception;
+			String jobId, int interfaceId) throws CrkWebException;
+	
+	/**
+	 * Stop the processing of the selected job
+	 * @param jobId selected job id which is supposed to be stopped on the server
+	 * @return results of job stopping
+	 * @throws CrkWebException
+	 */
+	public String killJob(String jobId) throws CrkWebException;
+	
+	/**
+	 * Untie all the jobs which are attached to the current session
+	 * @throws CrkWebException
+	 */
+	public void untieJobsFromSession() throws CrkWebException;
 
 }

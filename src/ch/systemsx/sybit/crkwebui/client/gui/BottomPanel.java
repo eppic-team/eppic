@@ -18,15 +18,11 @@ import com.google.gwt.user.client.ui.HTML;
  */
 public class BottomPanel extends LayoutContainer 
 {
-	private MainController mainController;
-	
 	private HTML status;
-	
 	private HTML contactLink;
 
-	public BottomPanel(MainController mainController) 
+	public BottomPanel() 
 	{
-		this.mainController = mainController;
 		this.setLayout(new RowLayout(Orientation.HORIZONTAL));
 		
 	    status = new HTML();  
@@ -48,10 +44,6 @@ public class BottomPanel extends LayoutContainer
 		
 		contactContainer.add(contactLink);
 		this.add(contactContainer, new RowData(0.2, 1, new Margins(0)));
-//	    this.setBorders(true);
-//	    mainToolbar.add(new FillToolItem());  
-	  
-//	    this.setBottomComponent(mainToolbar);  
 	}
 	
 	public void updateStatusMessage(String message, boolean isError)
@@ -65,7 +57,14 @@ public class BottomPanel extends LayoutContainer
 			color = "red; font-weight: bold";
 		}
 		
-		messageText += color + "\">" + "Status: " + message + "</span>";
+		messageText += color + "\">" + "Status: " + message;
+		
+		if(isError)
+		{
+			messageText += MainController.CONSTANTS.bottom_panel_status_error_refresh_page();
+		}
+		
+		messageText += "</span>";
 		
 		status.setHTML(messageText);
 	}

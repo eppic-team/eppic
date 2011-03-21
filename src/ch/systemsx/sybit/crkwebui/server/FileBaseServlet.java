@@ -23,7 +23,8 @@ public class FileBaseServlet extends HttpServlet {
 	protected Properties properties;
 	protected Properties messages;
 
-	public void init(ServletConfig config) throws ServletException {
+	public void init(ServletConfig config) throws ServletException 
+	{
 		super.init(config);
 
 		InputStream propertiesStream = getServletContext()
@@ -32,9 +33,12 @@ public class FileBaseServlet extends HttpServlet {
 
 		properties = new Properties();
 
-		try {
+		try 
+		{
 			properties.load(propertiesStream);
-		} catch (IOException e) {
+		}
+		catch (IOException e) 
+		{
 			e.printStackTrace();
 			throw new ServletException("Properties file can not be read");
 		}

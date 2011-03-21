@@ -21,16 +21,15 @@ import com.extjs.gxt.ui.client.widget.button.Button;
 import com.extjs.gxt.ui.client.widget.form.FieldSet;
 import com.extjs.gxt.ui.client.widget.form.FileUploadField;
 import com.extjs.gxt.ui.client.widget.form.FormPanel;
-import com.extjs.gxt.ui.client.widget.form.FormPanel.Encoding;
-import com.extjs.gxt.ui.client.widget.form.FormPanel.Method;
 import com.extjs.gxt.ui.client.widget.form.Radio;
 import com.extjs.gxt.ui.client.widget.form.RadioGroup;
 import com.extjs.gxt.ui.client.widget.form.TextField;
+import com.extjs.gxt.ui.client.widget.form.FormPanel.Encoding;
+import com.extjs.gxt.ui.client.widget.form.FormPanel.Method;
 import com.extjs.gxt.ui.client.widget.layout.FormLayout;
 import com.extjs.gxt.ui.client.widget.layout.RowData;
 import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.user.client.Window;
 
 /**
  * The panel used to submit new job
@@ -64,8 +63,6 @@ public class InputDataPanel extends DisplayPanel
 		this.setLayout(new RowLayout(Orientation.HORIZONTAL));
 		this.setBorders(false);
 		this.setScrollMode(Scroll.AUTO);
-//		this.setBodyBorder(false);
-//		this.getHeader().setVisible(false);
 		
 		formPanel = new FormPanel();
 
@@ -134,7 +131,7 @@ public class InputDataPanel extends DisplayPanel
 		
 		pdbCodeField = new TextField<String>();
 		pdbCodeField.setName("code");
-		pdbCodeField.setFieldLabel("PDB Code");
+		pdbCodeField.setFieldLabel(MainController.CONSTANTS.input_pdb_code_radio());
 		pdbCodeField.setValidator(new PdbCodeFieldValidator());
 //		emailTextField.setStyleAttribute("padding", "30px");
 		generalFieldSet.add(pdbCodeField);
@@ -183,16 +180,18 @@ public class InputDataPanel extends DisplayPanel
 				}
 				else
 				{
-					mainController.showError("Error during submitting the file. Please try later.");
+					mainController.showError(MainController.CONSTANTS.input_submit_error());
 					mainController.hideWaiting();
 				}
 			}
 		});
 
-		Button resetButton = new Button("Reset");
+		Button resetButton = new Button(MainController.CONSTANTS.input_reset());
 		resetButton.addSelectionListener(new SelectionListener<ButtonEvent>() {
-			public void componentSelected(ButtonEvent ce) {
+			public void componentSelected(ButtonEvent ce) 
+			{
 				emailTextField.setValue("");
+				pdbCodeField.setValue("");
 				file.setValue("");
 				optionsInputPanel.fillDefaultValues(mainController
 						.getSettings().getDefaultParametersValues());
@@ -208,7 +207,7 @@ public class InputDataPanel extends DisplayPanel
 			{
 				if (formPanel.isValid())
 				{
-					mainController.showWaiting("Submitting");
+					mainController.showWaiting(MainController.CONSTANTS.input_submit_waiting_message());
 					
 					if(pdbCodeFile.getValue())
 					{
@@ -221,7 +220,9 @@ public class InputDataPanel extends DisplayPanel
 				}
 				else
 				{
-					MessageBox.info("Action", "Can not upload file - form contains incorrect values", null);
+					MessageBox.info(MainController.CONSTANTS.input_submit_form_invalid_header(),
+									MainController.CONSTANTS.input_submit_form_invalid_message(),
+									null);
 				}
 			}
 		});
@@ -279,7 +280,7 @@ public class InputDataPanel extends DisplayPanel
 			fileName = pdbCodeField.getValue();
 		}
 		
-		runJobData.setFileName(fileName);
+		runJobData.setInput(fileName);
 		runJobData.setJobId(jobId);
 		runJobData.setInputParameters(optionsInputPanel
 				.getCurrentInputParameters());

@@ -1,12 +1,9 @@
 package ch.systemsx.sybit.crkwebui.server.util;
 
-import java.util.Map;
-
 import model.InterfaceItem;
 import model.InterfaceScoreItem;
 import model.InterfaceScoreItemKey;
 import model.PDBScoreItem;
-import crk.InterfaceScore;
 import crk.PdbScore;
 
 /**

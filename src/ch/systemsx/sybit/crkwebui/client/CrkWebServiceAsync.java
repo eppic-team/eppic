@@ -1,6 +1,12 @@
 package ch.systemsx.sybit.crkwebui.client;
 
+import java.util.HashMap;
+import java.util.List;
+
+import model.InterfaceResidueItem;
+import model.ProcessingData;
 import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
+import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
 import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -10,25 +16,21 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
  * 
  * @author srebniak_a
  */
-public interface CrkWebServiceAsync {
-	public void test(String test, AsyncCallback callback);
+public interface CrkWebServiceAsync 
+{
+	public void loadSettings(AsyncCallback<ApplicationSettings> callback);
 
-	public void greetServer(String input, AsyncCallback<String> callback)
-			throws IllegalArgumentException;
+	public void runJob(RunJobData runJobData, AsyncCallback<String> callback);
+	
+	public void getResultsOfProcessing(String jobId, AsyncCallback<ProcessingData> callback);
+	
+	public void getJobsForCurrentSession(AsyncCallback<List<ProcessingInProgressData>> callback);
+	
+	public void getInterfaceResidues(String jobId, 
+									 int interfaceId,
+									 AsyncCallback<HashMap<Integer, List<InterfaceResidueItem>>> callback);
 
-	public void getResultsOfProcessing(String id, AsyncCallback callback);
-
-	public void killJob(String id, AsyncCallback callback);
-
-	public void getJobsForCurrentSession(AsyncCallback callback);
+	public void killJob(String jobId, AsyncCallback<String> callback);
 
 	public void untieJobsFromSession(AsyncCallback callback);
-
-	public void getSettings(AsyncCallback<ApplicationSettings> callback);
-
-	public void runJob(RunJobData runJobData, AsyncCallback callback);
-
-	public void getInterfaceResidues(String jobId, int interfaceId,
-			AsyncCallback callback);
-
 }

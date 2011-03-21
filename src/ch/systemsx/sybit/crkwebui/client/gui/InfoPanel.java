@@ -3,11 +3,8 @@ package ch.systemsx.sybit.crkwebui.client.gui;
 import model.PDBScoreItem;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 
-import com.extjs.gxt.ui.client.Style.Scroll;
 import com.extjs.gxt.ui.client.widget.Label;
-import com.extjs.gxt.ui.client.widget.form.FieldSet;
 import com.extjs.gxt.ui.client.widget.form.FormPanel;
-import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 import com.extjs.gxt.ui.client.widget.layout.FormData;
 import com.extjs.gxt.ui.client.widget.layout.FormLayout;
 import com.google.gwt.core.client.GWT;
@@ -39,7 +36,6 @@ public class InfoPanel extends FormPanel
 		this.getHeader().setVisible(false);
 		this.setBodyBorder(false);
 		this.setBorders(true);
-//		this.setLayout(new FitLayout());
 		this.setLayout(new FormLayout());
 		
 		FlexTable flexTable = new FlexTable();
@@ -95,10 +91,10 @@ public class InfoPanel extends FormPanel
 				+ ">" + MainController.CONSTANTS.info_panel_download_results_link() + "</a>");
 		flexTable.setWidget(2, 2, downloadResultsLink);
 
-		// formdata -20 - fix for chrome - otherwise unnecessary scroll bar
 //		fieldSet.add(flexTable, new FormData("-20 100%"));
 //		this.add(fieldSet);
 		
+		// formdata -20 - fix for chrome - otherwise unnecessary scroll bar
 		this.add(flexTable, new FormData("-20 100%"));
 		
 //		this.setScrollMode(Scroll.ALWAYS);

@@ -54,7 +54,7 @@ public class FileDownloadServlet extends FileBaseServlet
 				   ((interfaceId == null) ||
 				    (interfaceId.equals(""))))
 			    {
-					response.sendError(HttpServletResponse.SC_BAD_REQUEST, "No interface specified");
+					response.sendError(HttpServletResponse.SC_BAD_REQUEST, messages.getProperty("fileDownloadResultNoInterfaceSpecified"));
 			    }
 				else
 				{
@@ -76,7 +76,7 @@ public class FileDownloadServlet extends FileBaseServlet
 									}
 								});
 		
-						if (directoryContent != null && directoryContent.length > 0) 
+						if ((directoryContent != null) && (directoryContent.length > 0)) 
 						{
 							File resultFile = new File(resultFileDirectory + "/"
 									+ directoryContent[0]);
@@ -107,7 +107,8 @@ public class FileDownloadServlet extends FileBaseServlet
 								int length;
 		
 								while ((in != null)
-										&& ((length = in.read(buffer)) != -1)) {
+										&& ((length = in.read(buffer)) != -1)) 
+								{
 									output.write(buffer, 0, length);
 								}
 		
@@ -145,7 +146,7 @@ public class FileDownloadServlet extends FileBaseServlet
 		else
 		{
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST,
-					"Type of the file not specified");
+					messages.getProperty("fileDownloadResultTypeNotSpecified"));
 		}
 	}
 }

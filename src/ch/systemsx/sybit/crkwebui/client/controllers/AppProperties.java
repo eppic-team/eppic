@@ -19,6 +19,11 @@ public interface AppProperties extends Constants
 	String input_file();
 	String input_advanced();
 	String input_submit();
+	String input_submit_error();
+	String input_submit_waiting_message();
+	String input_submit_form_invalid_header();
+	String input_submit_form_invalid_message();
+	String input_reset();
 	String input_upload_file_radio();
 	String input_pdb_code_radio();
 	String input_pdb_input_type();
@@ -68,6 +73,7 @@ public interface AppProperties extends Constants
 	String results_grid_viewer_button();
 	String results_grid_viewer_button_tooltip();
 	String results_grid_viewer_combo_label();
+	String results_grid_show_thumbnails();
 	
 	String interfaces_residues_window();
 	String interfaces_residues_panel_first_structure();
@@ -80,4 +86,19 @@ public interface AppProperties extends Constants
 	
 	String bottom_panel_contact_link();
 	String bottom_panel_contact_link_label();
+	String bottom_panel_status_error_refresh_page();
+	
+	String error_message_box_header();
+	String waiting_message_box_header();
+	String waiting_message_box_info();
+	
+	String callback_get_current_status_data();
+	String callback_get_interface_residues_error();
+	String callback_get_jobs_for_current_session_error();
+	String callback_get_results_of_processing_error();
+	String callback_get_settings_error();
+	String callback_kill_job_error();
+	String callback_run_job_error();
+	String callback_untie_jobs_from_session_error();
+	String callback_job_not_found_error();
 }

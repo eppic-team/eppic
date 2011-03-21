@@ -10,6 +10,7 @@ import ch.systemsx.sybit.crkwebui.client.gui.StatusPanel;
 import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
 import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
+import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
 
 import com.extjs.gxt.ui.client.widget.MessageBox;
 import com.extjs.gxt.ui.client.widget.Viewport;
@@ -48,8 +49,6 @@ public class MainController
 	
 	private String selectedViewer = "Jmol";
 	
-	private Timer loadingTimer;
-
 	private boolean resizeInterfacesWindow;
 	
 	public MainController(Viewport viewport) 
@@ -57,11 +56,6 @@ public class MainController
 		this.serviceController = new ServiceControllerImpl(this);
 	}
 
-	public void test(String testValue) 
-	{
-		serviceController.test(testValue);
-	}
-	
 	public void loadSettings() 
 	{
 		serviceController.loadSettings();
@@ -115,8 +109,8 @@ public class MainController
 		}
 		else
 		{
-			ResultsPanel resultsPanel = new ResultsPanel(this, resultData);
-			resultsPanel.setResults(resultData);
+			ResultsPanel resultsPanel = new ResultsPanel(this);
+			resultsPanel.fillResultsGrid(resultData);
 			mainViewPort.getCenterPanel().setDisplayPanel(resultsPanel);
 			resultsPanel.resizeGrid();
 		}
@@ -142,7 +136,7 @@ public class MainController
 			statusPanel.fillData(statusData);
 		}
 		
-		if((statusData.getStatus() != null) && (statusData.getStatus().equals("Running")))
+		if((statusData.getStatus() != null) && (statusData.getStatus().equals(StatusOfJob.RUNNING)))
 		{
 			doStatusPanelRefreshing = true;
 		}
@@ -366,6 +360,16 @@ public class MainController
 		infoMessageBox.setMaxWidth(windowWidth);
 	}
 	
+	public void showWaiting(String text)
+	{
+		mainViewPort.showWaiting(text);
+	}
+	
+	public void hideWaiting()
+	{
+		mainViewPort.hideWaiting();
+	}
+	
 	public int getWindowWidth() {
 		return windowWidth;
 	}
@@ -393,19 +397,9 @@ public class MainController
 		autoRefreshMyJobs.cancel();
 	}
 	
-	public void showWaiting(String text)
-	{
-		mainViewPort.showWaiting(text);
-	}
-	
-	public void hideWaiting()
-	{
-		mainViewPort.hideWaiting();
-	}
-	
 	public void updateStatusLabel(String message, boolean isError)
 	{
-		if(mainViewPort != null)
+		if((mainViewPort != null) && (mainViewPort.getBottomPanel() != null))
 		{
 			mainViewPort.getBottomPanel().updateStatusMessage(message, isError);
 		}

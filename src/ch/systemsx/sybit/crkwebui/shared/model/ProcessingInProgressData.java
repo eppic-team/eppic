@@ -16,9 +16,16 @@ public class ProcessingInProgressData implements Serializable, ProcessingData
 	 */
 	private static final long serialVersionUID = 1L;
 
+	// identitifier of the job
 	private String jobId;
+	
+	// current status of the job
 	private String status;
+	
+	// output of the job processing
 	private String log;
+	
+	// pdb code or name of the file submitted
 	private String input;
 
 	public String getJobId() {

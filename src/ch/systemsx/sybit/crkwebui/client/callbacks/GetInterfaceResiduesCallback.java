@@ -25,7 +25,7 @@ public class GetInterfaceResiduesCallback implements AsyncCallback
 	@Override
 	public void onFailure(Throwable caught) 
 	{
-		mainController.updateStatusLabel("Error during getting residues data from server", true);
+		mainController.updateStatusLabel(MainController.CONSTANTS.callback_get_interface_residues_error(), true);
 //		mainController.showError("Error during getting residues data from server" + caught.getMessage());
 	}
 
@@ -51,10 +51,12 @@ public class GetInterfaceResiduesCallback implements AsyncCallback
 						.fillResiduesGrid(structures.get(2));
 				mainController.getMainViewPort().getInterfacesResiduesWindow().getInterfacesResiduesPanel().getSecondStructurePanel().applyFilter(false);
 			}
+			
+			mainController.getMainViewPort().getInterfacesResiduesWindow().getInterfacesResiduesPanel().resizeResiduesPanels();
 		}
 		else 
 		{
-			mainController.updateStatusLabel("Error during getting residues from server - incorrect result type", true);
+			mainController.updateStatusLabel(MainController.CONSTANTS.callback_get_interface_residues_error() + " - incorrect result type", true);
 //			mainController.showError("Error during getting residues from server");
 		}
 		

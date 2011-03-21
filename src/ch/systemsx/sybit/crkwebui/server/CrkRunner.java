@@ -12,6 +12,7 @@ import java.util.zip.ZipOutputStream;
 
 import ch.systemsx.sybit.crkwebui.shared.CrkWebException;
 import ch.systemsx.sybit.crkwebui.shared.model.InputParameters;
+import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
 
 /**
  * This class is used to start crk application
@@ -21,7 +22,7 @@ import ch.systemsx.sybit.crkwebui.shared.model.InputParameters;
 public class CrkRunner implements Runnable 
 {
 	private EmailSender emailSender;
-	private String fileName;
+	private String input;
 	private String resultPath;
 	private String destinationDirectoryName;
 	private String generatedDirectoryName;
@@ -29,11 +30,11 @@ public class CrkRunner implements Runnable
 	private File logFile;
 	private String crkApplicationLocation;
 	
-	private boolean isWaiting;
+//	private boolean isWaiting;
 	
 	public CrkRunner(
 					 EmailSender emailSender, 
-					 String fileName,
+					 String input,
 					 String resultPath,
 					 String destinationDirectory,
 					 String generatedDirectoryName,
@@ -41,7 +42,7 @@ public class CrkRunner implements Runnable
 					 String crkApplicationLocation)
 	{
 		this.inputParameters = inputParameters;
-		this.fileName = fileName;
+		this.input = input;
 		this.resultPath = resultPath;
 		this.destinationDirectoryName = destinationDirectory;
 		this.generatedDirectoryName = generatedDirectoryName;
@@ -52,17 +53,15 @@ public class CrkRunner implements Runnable
 
 	public void run() 
 	{
-		String message = fileName
+		String message = input
 				+ " job submitted. To see the status of the processing please go to: "
 				+ resultPath;
 
-		// generatuin of this file should be moved to crk or check
-		// whether file is not locked
 		logFile = new File(destinationDirectoryName + "/crklog");
 		
 		try 
 		{
-			emailSender.send("Crk: " + fileName + " submitted", message);
+			emailSender.send("Crk: " + input + " submitted", message);
 
 			File runFile = new File(destinationDirectoryName + "/crkrun");
 			runFile.createNewFile();
@@ -96,7 +95,7 @@ public class CrkRunner implements Runnable
 			command.add("-jar");
 			command.add(crkApplicationLocation);
 			command.add("-i");
-			command.add(fileName);
+			command.add(input);
 			command.add("-o");
 			command.add(destinationDirectoryName);
 			command.add("-q");
@@ -166,7 +165,7 @@ public class CrkRunner implements Runnable
 			
 			if(exitValue != 0)
 			{
-				throw new CrkWebException(new Exception("Error during calculations"));
+				throw new CrkWebException("Error during calculations");
 			}
 			
 //			PrintStream logStream = new PrintStream(logFile);
@@ -247,7 +246,7 @@ public class CrkRunner implements Runnable
 		    
 		    byte[] buffer = new byte[1024];
 		    
-	        String generatedZip = destinationDirectoryName + "/" + fileName + ".zip";
+	        String generatedZip = destinationDirectoryName + "/" + input + ".zip";
 	        ZipOutputStream out = new ZipOutputStream(new FileOutputStream(generatedZip));
 	    
 	        if(directoryContent != null)
@@ -277,7 +276,7 @@ public class CrkRunner implements Runnable
 	        
 	        out.close();
 			
-			DBUtils.updateStatusOfJob(generatedDirectoryName, "Finished");
+			DBUtils.updateStatusOfJob(generatedDirectoryName, StatusOfJob.FINISHED);
 
 			outputStream = new FileOutputStream(logFile, true);
 			bufferedOutputStream = new BufferedOutputStream(
@@ -287,10 +286,10 @@ public class CrkRunner implements Runnable
 			bufferedOutputStream.close();
 			outputStream.close();
 
-			message = fileName
+			message = input
 					+ " processing finished. To see the status of the processing please go to: "
 					+ resultPath;
-			emailSender.send("Crk: " + fileName
+			emailSender.send("Crk: " + input
 					+ " processing finished", message);
 
 			runFile.delete();
@@ -313,7 +312,7 @@ public class CrkRunner implements Runnable
 	
 	private void handleException(String errorMessage)
 	{
-		String message = fileName + " - error during processing the data.\n\n" + errorMessage;
+		String message = input + " - error during processing the data.\n\n" + errorMessage;
 		
 		try
 		{
@@ -331,7 +330,7 @@ public class CrkRunner implements Runnable
 		
 		try 
 		{
-			DBUtils.updateStatusOfJob(generatedDirectoryName, "Error");
+			DBUtils.updateStatusOfJob(generatedDirectoryName, StatusOfJob.ERROR);
 		} 
 		catch (CrkWebException e2) 
 		{
@@ -349,17 +348,17 @@ public class CrkRunner implements Runnable
 			e1.printStackTrace();
 		}
 
-		emailSender.send("Crk: " + fileName + " error during processing",
+		emailSender.send("Crk: " + input + " error during processing",
 				message + "\n\n" + resultPath);
 	}
 	
-	public synchronized boolean isWaiting()
-	{
-		return isWaiting;
-	}
-	
-	public synchronized void setIsWaiting(boolean isWaiting)
-	{
-		this.isWaiting = isWaiting;
-	}
+//	public synchronized boolean isWaiting()
+//	{
+//		return isWaiting;
+//	}
+//	
+//	public synchronized void setIsWaiting(boolean isWaiting)
+//	{
+//		this.isWaiting = isWaiting;
+//	}
 }

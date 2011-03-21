@@ -9,7 +9,6 @@ import ch.systemsx.sybit.crkwebui.client.callbacks.GetResultsOfProcessingCallbac
 import ch.systemsx.sybit.crkwebui.client.callbacks.GetSettingsCallback;
 import ch.systemsx.sybit.crkwebui.client.callbacks.KillJobCallback;
 import ch.systemsx.sybit.crkwebui.client.callbacks.RunJobCallback;
-import ch.systemsx.sybit.crkwebui.client.callbacks.TestCallback;
 import ch.systemsx.sybit.crkwebui.client.callbacks.UntieJobsFromSessionCallback;
 import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
 
@@ -20,7 +19,8 @@ import com.google.gwt.core.client.GWT;
  * @author srebniak_a
  *
  */
-public class ServiceControllerImpl implements ServiceController {
+public class ServiceControllerImpl implements ServiceController 
+{
 	/**
 	 * The message displayed to the user when the server cannot be reached or
 	 * returns an error.
@@ -41,18 +41,15 @@ public class ServiceControllerImpl implements ServiceController {
 		this.mainController = mainController;
 	}
 
-	public void test(String testValue) {
-		crkWebService.test(testValue, new TestCallback(mainController));
-	}
-	
 	public void loadSettings() {
-		crkWebService.getSettings(new GetSettingsCallback(mainController));
+		crkWebService.loadSettings(new GetSettingsCallback(mainController));
 	}
 
-	public void getResultsOfProcessing(String selectedId) {
-		crkWebService.getResultsOfProcessing(selectedId,
-				new GetResultsOfProcessingCallback(mainController, selectedId));
+	public void getResultsOfProcessing(String jobId) {
+		crkWebService.getResultsOfProcessing(jobId,
+				new GetResultsOfProcessingCallback(mainController, jobId));
 	}
+	
 	
 	public void getInterfaceResidues(String jobId, int interfaceId) {
 		crkWebService.getInterfaceResidues(jobId, interfaceId,
@@ -68,20 +65,18 @@ public class ServiceControllerImpl implements ServiceController {
 		crkWebService.runJob(runJobData, new RunJobCallback(mainController));
 	}
 
-	public void killJob(String selectedId) {
-		crkWebService.killJob(selectedId, new KillJobCallback(mainController));
+	public void killJob(String jobId) {
+		crkWebService.killJob(jobId, new KillJobCallback(mainController));
 	}
 
 	public void untieJobsFromSession() {
 		crkWebService.untieJobsFromSession(new UntieJobsFromSessionCallback(
 				mainController));
 	}
-
-	@Override
+	
 	public void getCurrentStatusData(String jobId) 
 	{
 		crkWebService.getResultsOfProcessing(jobId,
 				new GetCurrentStatusDataCallback(mainController, jobId));
 	}
-
 }

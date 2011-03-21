@@ -7,7 +7,8 @@ import com.extjs.gxt.ui.client.data.BaseModel;
  * @author srebniak_a
  *
  */
-public class ReducedAlphabetComboModel extends BaseModel {
+public class ReducedAlphabetComboModel extends BaseModel 
+{
 	public ReducedAlphabetComboModel(Integer reducedAlphabet) {
 		set("reducedAlphabet", reducedAlphabet);
 	}

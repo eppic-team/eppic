@@ -24,8 +24,7 @@ public class GetCurrentStatusDataCallback implements AsyncCallback
 	@Override
 	public void onFailure(Throwable caught) 
 	{
-		String errorText = "Error during getting results of processing from server ";// + caught.getMessage();
-		
+		String errorText = MainController.CONSTANTS.callback_get_current_status_data();// + caught.getMessage();
 //		mainController.showError(errorText);
 		mainController.updateStatusLabel(errorText, true);
 	}
@@ -43,13 +42,12 @@ public class GetCurrentStatusDataCallback implements AsyncCallback
 			else if(result instanceof PDBScoreItem)
 			{
 				PDBScoreItem resultsData = (PDBScoreItem) result;
-				resultsData.setJobId(mainController.getSelectedJobId());
 				mainController.setPDBScoreItem(resultsData);
 				mainController.displayResultView(resultsData);
 			}
 			else
 			{
-				mainController.updateStatusLabel("Error during getting results of processing from server " + result.getClass(), true);
+				mainController.updateStatusLabel(MainController.CONSTANTS.callback_get_current_status_data() + " " + result.getClass(), true);
 //				mainController.showError("Error during getting results of processing from server" + result.getClass());
 				mainController.getMainViewPort().getCenterPanel().removeAll();
 				mainController.getMainViewPort().getCenterPanel().setDisplayPanel(null);
@@ -57,7 +55,7 @@ public class GetCurrentStatusDataCallback implements AsyncCallback
 		}
 		else
 		{
-			mainController.showMessage("Info", "id=" + mainController.getSelectedJobId() + " not found on the server");
+			mainController.showMessage(MainController.CONSTANTS.callback_job_not_found_error(), "Job with id=" + mainController.getSelectedJobId() + " not found on the server");
 			mainController.getMainViewPort().getCenterPanel().removeAll();
 			mainController.getMainViewPort().getCenterPanel().setDisplayPanel(null);
 		}

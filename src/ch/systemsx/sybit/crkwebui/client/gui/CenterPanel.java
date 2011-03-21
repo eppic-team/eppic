@@ -19,10 +19,7 @@ public class CenterPanel extends LayoutContainer
 	public CenterPanel(MainController mainController)
 	{
 		this.mainController = mainController;
-//		this.getHeader().setVisible(false);
 		this.setBorders(false);
-//		this.setBodyBorder(false);
-//		this.setPadding(0);
 		this.setLayout(new FitLayout());
 		
 		displayPanel = new DisplayPanel(mainController);

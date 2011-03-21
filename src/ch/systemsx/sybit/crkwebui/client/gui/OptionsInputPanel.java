@@ -9,11 +9,11 @@ import ch.systemsx.sybit.crkwebui.shared.model.InputParameters;
 
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.widget.form.ComboBox;
-import com.extjs.gxt.ui.client.widget.form.ComboBox.TriggerAction;
 import com.extjs.gxt.ui.client.widget.form.FieldSet;
 import com.extjs.gxt.ui.client.widget.form.NumberField;
 import com.extjs.gxt.ui.client.widget.form.Radio;
 import com.extjs.gxt.ui.client.widget.form.RadioGroup;
+import com.extjs.gxt.ui.client.widget.form.ComboBox.TriggerAction;
 import com.extjs.gxt.ui.client.widget.layout.FormData;
 import com.extjs.gxt.ui.client.widget.layout.FormLayout;
 import com.google.gwt.i18n.client.NumberFormat;
@@ -100,7 +100,8 @@ public class OptionsInputPanel extends FieldSet
 				
 				reducedAlphabetValues = new ListStore<ReducedAlphabetComboModel>();
 
-				for (Integer value : reducedAlphabetDefaultList) {
+				for (Integer value : reducedAlphabetDefaultList)
+				{
 					ReducedAlphabetComboModel model = new ReducedAlphabetComboModel(
 							value);
 					reducedAlphabetValues.add(model);
@@ -232,7 +233,8 @@ public class OptionsInputPanel extends FieldSet
 		fillDefaultValues(defaultInputParameters);
 	}
 
-	public void fillDefaultValues(InputParameters defaultParameters) {
+	public void fillDefaultValues(InputParameters defaultParameters) 
+	{
 		if (defaultParameters.isUseNACCESS() == true) {
 			useNAccessYes.setValue(true);
 		} else {
@@ -277,7 +279,8 @@ public class OptionsInputPanel extends FieldSet
 		}
 	}
 
-	public InputParameters getCurrentInputParameters() {
+	public InputParameters getCurrentInputParameters() 
+	{
 		InputParameters currentInputParameters = new InputParameters();
 		currentInputParameters.setAsaCalc(asaCalcParam.getValue().intValue());
 		currentInputParameters.setIdentityCutoff(identityCutOff.getValue()

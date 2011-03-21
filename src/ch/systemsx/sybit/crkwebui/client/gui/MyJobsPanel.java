@@ -6,20 +6,19 @@ import java.util.List;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 import ch.systemsx.sybit.crkwebui.client.model.MyJobsModel;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
+import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
 
 import com.extjs.gxt.ui.client.Style.Orientation;
 import com.extjs.gxt.ui.client.Style.Scroll;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
 import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.GridEvent;
-import com.extjs.gxt.ui.client.event.IconButtonEvent;
 import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.event.SelectionListener;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.button.Button;
-import com.extjs.gxt.ui.client.widget.button.ToolButton;
 import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
 import com.extjs.gxt.ui.client.widget.grid.ColumnData;
 import com.extjs.gxt.ui.client.widget.grid.ColumnModel;
@@ -27,6 +26,7 @@ import com.extjs.gxt.ui.client.widget.grid.Grid;
 import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
 import com.extjs.gxt.ui.client.widget.layout.RowData;
 import com.extjs.gxt.ui.client.widget.layout.RowLayout;
+import com.extjs.gxt.ui.client.widget.tips.ToolTipConfig;
 import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.ui.Hyperlink;
@@ -66,33 +66,32 @@ public class MyJobsPanel extends ContentPanel
 
 		toolBar.add(addNew);
 
-//		Button test = new Button("Test", new SelectionListener<ButtonEvent>() {
-//
-//			public void componentSelected(ButtonEvent ce) 
-//			{
-////				RecaptchaPanel w = new RecaptchaPanel("	6Lf9hcESAAAAAEuvcd6IjqSXW3p51Kg22JWhR3vT ");
-////				((LayoutContainer) mainController.getMainViewPort().getDisplayPanel().getWidget(0)).add(w);
-////				mainController.getMainViewPort().getDisplayPanel().layout();
-//			
-////				Window.alert(GWT.getHostPageBaseURL());
-////				Window.alert(String.valueOf(mainController.getInterfacesResiduesWindow().getInterfacesResiduesPanel().getFirstStructurePanel().getResiduesGrid().getHeight()));
-//			}
-//		});
-//
-//		toolBar.add(test);
+		Button test = new Button("Test", new SelectionListener<ButtonEvent>() {
+
+			public void componentSelected(ButtonEvent ce) 
+			{
+				
+			}
+		});
+		ToolTipConfig toolTipConfig = new ToolTipConfig();
+		toolTipConfig.setShowDelay(0);
+		toolTipConfig.setText("This is tooltip");
+		test.setToolTip(toolTipConfig);
+
+		toolBar.add(test);
 
 		this.setTopComponent(toolBar);
 
-		this.getHeader().addTool(
-				new ToolButton("x-tool-gear",
-						new SelectionListener<IconButtonEvent>() {
-
-							public void componentSelected(IconButtonEvent ce)
-							{
-								mainController.getJobsForCurrentSession();
-							}
-
-						}));
+//		this.getHeader().addTool(
+//				new ToolButton("x-tool-gear",
+//						new SelectionListener<IconButtonEvent>() {
+//
+//							public void componentSelected(IconButtonEvent ce)
+//							{
+//								mainController.getJobsForCurrentSession();
+//							}
+//
+//						}));
 
 		GridCellRenderer<MyJobsModel> jobRenderer = new GridCellRenderer<MyJobsModel>() 
 		{
@@ -106,8 +105,6 @@ public class MyJobsPanel extends ContentPanel
 					input = input.substring(0, input.indexOf("."));
 				}
 				
-				String jobId = (String) model.get(property);
-
 				Hyperlink link = new Hyperlink(input, "id/" + myJobsStore.getAt(rowIndex).getJobid());
 				return link;
 			}
@@ -125,9 +122,9 @@ public class MyJobsPanel extends ContentPanel
 
 				if (value == null) {
 					return value;
-				} else if (value.equals("Error")) {
+				} else if (value.equals(StatusOfJob.ERROR)) {
 					color = "red";
-				} else if (value.equals("Finished")) {
+				} else if (value.equals(StatusOfJob.FINISHED)) {
 					color = "green";
 				} else {
 					return value;

@@ -13,9 +13,17 @@ public class RunJobData implements Serializable
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+	
+	// parameters which will be used for calculations
 	private InputParameters inputParameters;
+
+	// user email adress
 	private String emailAddress;
-	private String fileName;
+	
+	// selected input data - pdb code or name of the file
+	private String input;
+	
+	// identifier of the job if previously known(null when using pdb code, set when uploading the file)
 	private String jobId;
 
 	public InputParameters getInputParameters() {
@@ -34,12 +42,12 @@ public class RunJobData implements Serializable
 		this.emailAddress = emailAddress;
 	}
 
-	public String getFileName() {
-		return fileName;
+	public String getInput() {
+		return input;
 	}
 
-	public void setFileName(String fileName) {
-		this.fileName = fileName;
+	public void setInput(String input) {
+		this.input = input;
 	}
 
 	public void setJobId(String jobId) {

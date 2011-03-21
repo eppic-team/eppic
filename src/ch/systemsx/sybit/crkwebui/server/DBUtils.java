@@ -13,6 +13,7 @@ import javax.naming.NamingException;
 
 import ch.systemsx.sybit.crkwebui.shared.CrkWebException;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
+import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
 
 /**
  * This class is used to execute sql queries
@@ -52,15 +53,11 @@ public class DBUtils
 	// }
 
 	public static Connection getConnection() throws NamingException,
-			SQLException 
+			SQLException, ClassNotFoundException 
 	{
 		Connection connection = null;
 
-		try {
-			Class.forName("com.mysql.jdbc.Driver");
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-		}
+		Class.forName("com.mysql.jdbc.Driver");
 
 		connection = DriverManager.getConnection(dataSource);
 
@@ -92,6 +89,9 @@ public class DBUtils
 					statement.executeUpdate();
 				}
 			}
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+			throw new CrkWebException(e);
 		} catch (NamingException e) {
 			e.printStackTrace();
 			throw new CrkWebException(e);
@@ -156,6 +156,9 @@ public class DBUtils
 				}
 
 			}
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+			throw new CrkWebException(e);
 		} catch (NamingException e) {
 			e.printStackTrace();
 			throw new CrkWebException(e);
@@ -202,6 +205,9 @@ public class DBUtils
 					statement.executeUpdate();
 				}
 			}
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+			throw new CrkWebException(e);
 		} catch (NamingException e) {
 			e.printStackTrace();
 			throw new CrkWebException(e);
@@ -249,6 +255,9 @@ public class DBUtils
 					statement.executeUpdate();
 				}
 			}
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+			throw new CrkWebException(e);
 		} catch (NamingException e) {
 			e.printStackTrace();
 			throw new CrkWebException(e);
@@ -277,7 +286,7 @@ public class DBUtils
 	public static String getStatusForJob(String jobId,
 										 String sessionId) throws CrkWebException 
 	{
-		String status = "nonexisting";
+		String status = StatusOfJob.NONEXISTING;
 
 		Connection connection = null;
 		Statement statement = null;
@@ -306,6 +315,9 @@ public class DBUtils
 				}
 
 			}
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+			throw new CrkWebException(e);
 		} catch (NamingException e) {
 			e.printStackTrace();
 			throw new CrkWebException(e);
@@ -372,6 +384,9 @@ public class DBUtils
 				}
 
 			}
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+			throw new CrkWebException(e);
 		}
 		catch (NamingException e) 
 		{
@@ -430,6 +445,9 @@ public class DBUtils
 					statement.executeUpdate();
 				}
 			}
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+			throw new CrkWebException(e);
 		} catch (NamingException e) {
 			e.printStackTrace();
 			throw new CrkWebException(e);

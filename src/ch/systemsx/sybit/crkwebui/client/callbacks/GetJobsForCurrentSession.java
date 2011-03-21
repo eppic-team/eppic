@@ -24,7 +24,7 @@ public class GetJobsForCurrentSession implements AsyncCallback
 	@Override
 	public void onFailure(Throwable caught) 
 	{
-		mainController.updateStatusLabel("Error during getting current jobs from server. ", true);
+		mainController.updateStatusLabel(MainController.CONSTANTS.callback_get_jobs_for_current_session_error(), true);
 //		mainController.showError("Error during getting current jobs from server. " + caught.getMessage());
 		mainController.stopMyJobsAutoRefresh();
 	}
@@ -39,7 +39,7 @@ public class GetJobsForCurrentSession implements AsyncCallback
 		}
 		else
 		{
-			mainController.updateStatusLabel("Error during getting current jobs for current session - incorrect type", true);
+			mainController.updateStatusLabel(MainController.CONSTANTS.callback_get_jobs_for_current_session_error() + " - incorrect type", true);
 //			mainController.showError("Error during getting current jobs for current session");
 		}
 	}

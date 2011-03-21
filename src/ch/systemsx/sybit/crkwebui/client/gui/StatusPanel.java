@@ -2,6 +2,7 @@ package ch.systemsx.sybit.crkwebui.client.gui;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
+import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
 
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.Style.Scroll;
@@ -37,10 +38,6 @@ public class StatusPanel extends DisplayPanel
 
 	public void init() 
 	{
-//		VBoxLayout vBoxLayout = new VBoxLayout();
-//		vBoxLayout.setVBoxLayoutAlign(VBoxLayoutAlign.CENTER);
-//		this.setLayout(vBoxLayout);
-//		this.setBorders(false);
 		this.setLayout(new FitLayout());
 		this.setBorders(true);
 		
@@ -63,7 +60,6 @@ public class StatusPanel extends DisplayPanel
 
 		log = new TextArea();
 		log.setFieldLabel(MainController.CONSTANTS.status_panel_log());
-//		log.setHeight(400);
 
 		formPanel.add(log, new FormData("95% -60"));
 		
@@ -75,7 +71,6 @@ public class StatusPanel extends DisplayPanel
 			}
 		});
 		
-		formPanel.setButtonAlign(HorizontalAlignment.CENTER);
 //		killJob.setVisible(false);
 		formPanel.addButton(killJob);
 		
@@ -89,7 +84,7 @@ public class StatusPanel extends DisplayPanel
 		status.setValue(String.valueOf(statusData.getStatus()));
 		jobId.setValue(statusData.getJobId());
 		
-		if((status.getValue() != null) && (status.getValue().equals("Running")))
+		if((status.getValue() != null) && (status.getValue().equals(StatusOfJob.RUNNING)))
 		{
 			killJob.setVisible(true);
 		}

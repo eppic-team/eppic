@@ -24,11 +24,11 @@ import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.Label;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
-import com.extjs.gxt.ui.client.widget.form.ComboBox.TriggerAction;
+import com.extjs.gxt.ui.client.widget.form.CheckBox;
 import com.extjs.gxt.ui.client.widget.form.FormPanel;
 import com.extjs.gxt.ui.client.widget.form.SimpleComboBox;
+import com.extjs.gxt.ui.client.widget.form.ComboBox.TriggerAction;
 import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
-import com.extjs.gxt.ui.client.widget.grid.ColumnData;
 import com.extjs.gxt.ui.client.widget.grid.ColumnModel;
 import com.extjs.gxt.ui.client.widget.grid.Grid;
 import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
@@ -51,32 +51,38 @@ public class ResultsPanel extends DisplayPanel
 {
 	private Label pdbIdentifier;
 	private Label pdbTitle;
+	
+	private InfoPanel infoPanel;
+	
+	private CheckBox showThumbnailCheckBox;
+	private SimpleComboBox<String> viewerTypeComboBox;
+	
+	// ***************************************
+	// * Results grid
+	// ***************************************
 	private ContentPanel resultsGridContainer;
+	private Grid<BeanModel> resultsGrid;
 	private List<ColumnConfig> resultsConfigs;
 	private ListStore<BeanModel> resultsStore;
 	private ColumnModel resultsColumnModel;
-	private Grid<BeanModel> resultsGrid;
 	private List<Integer> initialColumnWidth;
+	// ***************************************
 
-	private PDBScoreItem resultsData;
-
-	private InfoPanel infoPanel;
-	private SimpleComboBox<String> viewerTypeComboBox;
-	private ScoresPanel scoresPanel;
+	// ***************************************
+	// * Scores grid
+	// ***************************************
 	private LayoutContainer scoresPanelLocation;
+	private ScoresPanel scoresPanel;
+	// ***************************************
 
-	public ResultsPanel(MainController mainController,
-			final PDBScoreItem resultsData) {
+	public ResultsPanel(MainController mainController)
+	{
 		super(mainController);
-		this.resultsData = resultsData;
 		this.setBorders(true);
-		// this.setBodyBorder(false);
-		// this.getHeader().setVisible(false);
 		this.setLayout(new RowLayout(Orientation.VERTICAL));
-		// this.setPadding(10);
 		this.setStyleAttribute("padding", "10px");
 
-		pdbIdentifier = new Label(MainController.CONSTANTS.info_panel_pdb_identifier() + ": " + resultsData.getPdbName());
+		pdbIdentifier = new Label(MainController.CONSTANTS.info_panel_pdb_identifier() + ": " + mainController.getPdbScoreItem().getPdbName());
 		pdbIdentifier.addStyleName("pdb-identifier-label");
 		this.add(pdbIdentifier);
 		
@@ -87,7 +93,7 @@ public class ResultsPanel extends DisplayPanel
 		breakPanel.getHeader().setVisible(false);
 		this.add(breakPanel, new RowData(1, 1.1, new Margins(0)));
 		
-		pdbTitle = new Label(resultsData.getTitle());
+		pdbTitle = new Label(mainController.getPdbScoreItem().getTitle());
 		pdbTitle.addStyleName("crk-default-label");
 		this.add(pdbTitle);
 		
@@ -110,6 +116,17 @@ public class ResultsPanel extends DisplayPanel
 		this.add(breakPanel, new RowData(1, 5, new Margins(0)));
 		
 		resultsConfigs = createColumnConfig();
+		
+		if(!showThumbnailCheckBox.getValue())
+		{
+			for(ColumnConfig column : resultsConfigs)
+			{
+				if(column.getId().equals("thumbnail"))
+				{
+					column.setHidden(true);
+				}
+			}
+		}
 
 		resultsStore = new ListStore<BeanModel>();
 
@@ -140,6 +157,7 @@ public class ResultsPanel extends DisplayPanel
 		resultsGridContainer.setBodyBorder(false);
 		resultsGridContainer.setLayout(new FitLayout());
 		resultsGridContainer.add(resultsGrid);
+		
 		this.add(resultsGridContainer, new RowData(1, 0.55, new Margins(0)));
 		
 //		createResultsGridContainerToolbar();
@@ -153,19 +171,13 @@ public class ResultsPanel extends DisplayPanel
 
 		scoresPanelLocation = new LayoutContainer();
 		scoresPanelLocation.setLayout(new FitLayout());
-		// scoresPanelLocation.setBodyBorder(false);
 		scoresPanelLocation.setBorders(false);
-		// scoresPanelLocation.getHeader().setVisible(false);
-		// scoresPanelLocation.setPadding(0);
 
 		this.add(scoresPanelLocation, new RowData(1, 0.45, new Margins(0)));
 	}
 
-//	public int getResultsGridWidthOfAllColumns() {
-//		return resultsGridWidthOfAllColumns;
-//	}
-
-	public void updateScoresPanel(int selectedInterface) {
+	public void updateScoresPanel(int selectedInterface)
+	{
 		if (scoresPanel == null) 
 		{
 			createScoresPanel();
@@ -173,12 +185,13 @@ public class ResultsPanel extends DisplayPanel
 			scoresPanelLocation.layout();
 		}
 
-		scoresPanel.fillGrid(resultsData, selectedInterface);
+		scoresPanel.fillGrid(mainController.getPdbScoreItem(), selectedInterface);
 		scoresPanel.resizeGrid();
 		scoresPanel.setVisible(true);
 	}
 
-	private List<ColumnConfig> createColumnConfig() {
+	private List<ColumnConfig> createColumnConfig() 
+	{
 		List<ColumnConfig> configs = new ArrayList<ColumnConfig>();
 
 		BeanModelFactory beanModelFactory = BeanModelLookup.get().getFactory(
@@ -210,20 +223,18 @@ public class ResultsPanel extends DisplayPanel
 			initialColumnWidth = new ArrayList<Integer>();
 		}
 
-		int i = 0;
-
 		for (String columnName : columns) {
 			boolean addColumn = true;
 
 			String customAdd = mainController.getSettings().getGridProperties()
 					.get("results_" + columnName + "_add");
-			if (customAdd != null) {
-				if (!customAdd.equals("yes")) {
-					addColumn = false;
-				}
+			if ((customAdd != null) && (!customAdd.equals("yes")))
+			{
+				addColumn = false;
 			}
 
-			if (addColumn) {
+			if (addColumn) 
+			{
 				boolean displayColumn = true;
 
 				String customVisibility = mainController.getSettings()
@@ -312,81 +323,66 @@ public class ResultsPanel extends DisplayPanel
 				}
 			}
 
-			i++;
 		}
 		
 		return configs;
 	}
 
-	public void setResults(PDBScoreItem resultsData) {
-		fillResultsGrid(resultsData);
-	}
-
-	public void fillResultsGrid(PDBScoreItem resultsData) {
-		resultsStore.removeAll();
-
-		List<BeanModel> data = new ArrayList<BeanModel>();
-
-		List<InterfaceItem> interfaceItems = resultsData.getInterfaceItems();
-
-		if (interfaceItems != null) {
-			for (InterfaceItem interfaceItem : interfaceItems) {
-
-				BeanModelFactory beanModelFactory = BeanModelLookup.get()
-						.getFactory(InterfaceItem.class);
-				BeanModel model = beanModelFactory.createModel(interfaceItem);
-
-				for (String method : mainController.getSettings()
-						.getScoresTypes()) {
-
-					// /TODO
-					InterfaceScoreItemKey interfaceScoreItemKey = new InterfaceScoreItemKey();
-					interfaceScoreItemKey.setInterfaceId(interfaceItem.getId());
-					interfaceScoreItemKey.setMethod(method);
-
-					for (InterfaceScoreItemKey k : mainController
-							.getPdbScoreItem().getInterfaceScores().keySet()) {
-						if (interfaceScoreItemKey.equals(k)) {
-							model.set(method, mainController.getPdbScoreItem()
-									.getInterfaceScores().get(k).getCall());
-						}
-					}
-
-				}
-				// Window.alert(String.valueOf(interfaceItem));
-				// ResultsModel resultsModel = new ResultsModel("");
-				// resultsModel.set("id", interfaceItem.getId());
-				// resultsModel.set("interface", interfaceItem.getName());
-				// resultsModel.set("area", interfaceItem.getArea());
-				// resultsModel.set("size1", interfaceItem.getSize1());
-				// resultsModel.set("size2", interfaceItem.getSize2());
-				// resultsModel.set("n1", interfaceItem.getNumHomologs1());
-				// resultsModel.set("n2", interfaceItem.getNumHomologs2());
-				// resultsModel.set("entropy", "Bio");
-
-				data.add(model);
-			}
-		}
-
-		resultsStore.add(data);
-		resultsGrid.reconfigure(resultsStore, resultsColumnModel);
-	}
-
-	private void createInfoPanel() {
-		infoPanel = new InfoPanel(resultsData);
+	private void createInfoPanel()
+	{
+		infoPanel = new InfoPanel(mainController.getPdbScoreItem());
 		this.add(infoPanel, new RowData(1, 75, new Margins(0)));
-//		this.add(infoPanel, new RowData(1, 105, new Margins(0)));
 	}
 
-	private void createViewerTypePanel() {
-		LayoutContainer viewerTypePanelLocation = new LayoutContainer();
-		// viewerTypePanelLocation.getHeader().setVisible(false);
-		viewerTypePanelLocation.setBorders(false);
-		// viewerTypePanelLocation.setBodyBorder(false);
-		// viewerTypePanelLocation.setPadding(0);
-		viewerTypePanelLocation.setStyleAttribute("padding-top", "10px");
-
+	private void createViewerTypePanel() 
+	{
+		LayoutContainer optionsLocation = new LayoutContainer();
+		optionsLocation.setLayout(new RowLayout(Orientation.HORIZONTAL));
+		optionsLocation.setStyleAttribute("padding-top", "10px");
+		
+		LayoutContainer showThumbnailPanelLocation = new LayoutContainer();
+		showThumbnailPanelLocation.setBorders(false);
+		
 		VBoxLayout vBoxLayout = new VBoxLayout();
+		vBoxLayout.setVBoxLayoutAlign(VBoxLayoutAlign.LEFT);
+		showThumbnailPanelLocation.setLayout(vBoxLayout);
+		
+		showThumbnailCheckBox = new CheckBox();
+		showThumbnailCheckBox.setBoxLabel(MainController.CONSTANTS.results_grid_show_thumbnails());
+		displayThumbnails();
+		showThumbnailCheckBox.addListener(Events.Change, new Listener<FieldEvent>() {
+
+			@Override
+			public void handleEvent(FieldEvent event)
+			{
+				Cookies.setCookie("crkthumbnail", String.valueOf(showThumbnailCheckBox.getValue()));
+				
+				for(ColumnConfig column : resultsGrid.getColumnModel().getColumns())
+				{
+					if(column.getId().equals("thumbnail"))
+					{
+						if(showThumbnailCheckBox.getValue())
+						{
+							column.setHidden(false);
+						}
+						else
+						{
+							column.setHidden(true);
+						}
+						
+						resizeGrid();
+					}
+				}
+			}
+			
+		});
+		
+		showThumbnailPanelLocation.add(showThumbnailCheckBox);
+		
+		LayoutContainer viewerTypePanelLocation = new LayoutContainer();
+		viewerTypePanelLocation.setBorders(false);
+
+		vBoxLayout = new VBoxLayout();
 		vBoxLayout.setVBoxLayoutAlign(VBoxLayoutAlign.RIGHT);
 
 		viewerTypePanelLocation.setLayout(vBoxLayout);
@@ -431,23 +427,20 @@ public class ResultsPanel extends DisplayPanel
 
 		viewerTypePanel.add(viewerTypeComboBox);
 		viewerTypePanelLocation.add(viewerTypePanel);
-		this.add(viewerTypePanelLocation, new RowData(1, 35, new Margins(0)));
+		optionsLocation.add(showThumbnailPanelLocation, new RowData(0.5, 1, new Margins(0)));
+		optionsLocation.add(viewerTypePanelLocation, new RowData(0.5, 1, new Margins(0)));
+		this.add(optionsLocation, new RowData(1, 35, new Margins(0)));
 	}
 
-	private void createScoresPanel() {
-		scoresPanel = new ScoresPanel(resultsData, mainController);
+	private void createScoresPanel() 
+	{
+		scoresPanel = new ScoresPanel(mainController);
 	}
 
-	public ListStore<BeanModel> getResultsStore() {
-		return resultsStore;
-	}
-
-	public String getCurrentViewType() {
-		return viewerTypeComboBox.getValue().getValue();
-	}
-
-	public void fillResultsPanel(PDBScoreItem resultsData) {
-		if (scoresPanel != null) {
+	public void fillResultsPanel(PDBScoreItem resultsData) 
+	{
+		if (scoresPanel != null)
+		{
 			scoresPanel.setVisible(false);
 		}
 
@@ -457,6 +450,57 @@ public class ResultsPanel extends DisplayPanel
 		
 		pdbIdentifier.setText(MainController.CONSTANTS.info_panel_pdb_identifier() + ": " + resultsData.getPdbName());
 		pdbTitle.setText(resultsData.getTitle());
+	}
+	
+	public void fillResultsGrid(PDBScoreItem resultsData)
+	{
+		resultsStore.removeAll();
+
+		List<BeanModel> data = new ArrayList<BeanModel>();
+
+		List<InterfaceItem> interfaceItems = resultsData.getInterfaceItems();
+
+		if (interfaceItems != null)
+		{
+			for (InterfaceItem interfaceItem : interfaceItems) {
+
+				BeanModelFactory beanModelFactory = BeanModelLookup.get()
+						.getFactory(InterfaceItem.class);
+				BeanModel model = beanModelFactory.createModel(interfaceItem);
+
+				for (String method : mainController.getSettings().getScoresTypes())
+				{
+					// /TODO
+					InterfaceScoreItemKey interfaceScoreItemKey = new InterfaceScoreItemKey();
+					interfaceScoreItemKey.setInterfaceId(interfaceItem.getId());
+					interfaceScoreItemKey.setMethod(method);
+
+					for (InterfaceScoreItemKey k : mainController
+							.getPdbScoreItem().getInterfaceScores().keySet()) {
+						if (interfaceScoreItemKey.equals(k)) {
+							model.set(method, mainController.getPdbScoreItem()
+									.getInterfaceScores().get(k).getCall());
+						}
+					}
+
+				}
+				// Window.alert(String.valueOf(interfaceItem));
+				// ResultsModel resultsModel = new ResultsModel("");
+				// resultsModel.set("id", interfaceItem.getId());
+				// resultsModel.set("interface", interfaceItem.getName());
+				// resultsModel.set("area", interfaceItem.getArea());
+				// resultsModel.set("size1", interfaceItem.getSize1());
+				// resultsModel.set("size2", interfaceItem.getSize2());
+				// resultsModel.set("n1", interfaceItem.getNumHomologs1());
+				// resultsModel.set("n2", interfaceItem.getNumHomologs2());
+				// resultsModel.set("entropy", "Bio");
+
+				data.add(model);
+			}
+		}
+
+		resultsStore.add(data);
+		resultsGrid.reconfigure(resultsStore, resultsColumnModel);
 	}
 
 	public void resizeGrid() 
@@ -505,7 +549,31 @@ public class ResultsPanel extends DisplayPanel
 		this.layout();
 	}
 
-	public InfoPanel getInfoPanel() {
+	public void resizeScoresGrid() 
+	{
+		scoresPanel.resizeGrid();
+	}
+	
+	public void displayThumbnails()
+	{
+		String thumbnailCookie = Cookies.getCookie("crkthumbnail");
+		if(thumbnailCookie == null)
+		{
+			thumbnailCookie = "true";
+		}
+		
+		if (thumbnailCookie.equals("true"))
+		{
+			showThumbnailCheckBox.setValue(true);
+		} 
+		else
+		{
+			showThumbnailCheckBox.setValue(false);
+		}
+	}
+	
+	public InfoPanel getInfoPanel() 
+	{
 		return infoPanel;
 	}
 	
@@ -513,15 +581,62 @@ public class ResultsPanel extends DisplayPanel
 	{
 		return scoresPanel;
 	}
-
-	public void resizeScoresGrid() 
+	
+	public Grid<BeanModel> getResultsGrid()
 	{
-		scoresPanel.resizeGrid();
+		return resultsGrid;
+	}
+	
+	public ListStore<BeanModel> getResultsStore() 
+	{
+		return resultsStore;
+	}
+	
+	public String getCurrentViewType() 
+	{
+		return viewerTypeComboBox.getValue().getValue();
 	}
 	
 //	private void createResultsGridContainerToolbar()
 //	{
 //		ToolBar resultsGridContainerToolbar = new ToolBar();
+//		
+//		showThumbnailCheckBox = new CheckBox();
+//		showThumbnailCheckBox.setBoxLabel("Show thumbnails");
+//		String thumbnailCookie = Cookies.getCookie("crkthumbnail");
+//		if ((thumbnailCookie != null) && (thumbnailCookie.equals("yes"))) 
+//		{
+//			showThumbnailCheckBox.setValue(true);
+//		} 
+//		else
+//		{
+//			showThumbnailCheckBox.setValue(false);
+//		}
+//		
+//		showThumbnailCheckBox.addListener(Events.Change, new Listener<FieldEvent>() {
+//
+//			@Override
+//			public void handleEvent(FieldEvent event)
+//			{
+//				Cookies.setCookie("crkthumbnail", String.valueOf(showThumbnailCheckBox.getValue()));
+//				
+//				for(ColumnConfig column : resultsColumnModel.getColumns())
+//				{
+//					if(column.getId().equals("thumbnail"))
+//					{
+//						if(showThumbnailCheckBox.getValue())
+//						{
+//							column.setHidden(true);
+//						}
+//						else
+//						{
+//							column.setHidden(false);
+//						}
+//					}
+//				}
+//			}
+//			
+//		});
 //		
 //		viewerTypeComboBox = new SimpleComboBox<String>();
 //		viewerTypeComboBox.setId("viewercombo");
@@ -553,14 +668,10 @@ public class ResultsPanel extends DisplayPanel
 //					}
 //				});
 //
+//		resultsGridContainerToolbar.add(showThumbnailCheckBox);
 //		resultsGridContainerToolbar.add(new FillToolItem());
 //		resultsGridContainerToolbar.add(new LabelToolItem("3D Viewer: "));  
 //		resultsGridContainerToolbar.add(viewerTypeComboBox);
 //		resultsGridContainer.setTopComponent(resultsGridContainerToolbar);
 //	}
-	
-	public Grid<BeanModel> getResultsGrid()
-	{
-		return resultsGrid;
-	}
 }

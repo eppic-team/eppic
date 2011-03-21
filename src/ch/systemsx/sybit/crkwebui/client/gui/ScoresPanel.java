@@ -38,21 +38,15 @@ public class ScoresPanel extends LayoutContainer
 {
 	private MainController mainController;
 
+	private Grid<BeanModel> scoresGrid;
 	private List<ColumnConfig> scoresConfigs;
 	private GroupingStore<BeanModel> scoresStore;
 	private ColumnModel scoresColumnModel;
-	private Grid<BeanModel> scoresGrid;
 	private List<Integer> initialColumnWidth;
 
-	public ScoresPanel(PDBScoreItem resultsData, MainController mainController) 
+	public ScoresPanel(MainController mainController) 
 	{
 		this.mainController = mainController;
-//		this.getHeader().setVisible(false);
-//		this.setBodyBorder(false);
-//		this.setBorders(false);
-//		this.setLayout(new RowLayout());
-//		this.setLayout(new FitLayout());
-//		this.setPadding(0);
 		this.setLayout(new RowLayout(Orientation.VERTICAL));
 
 		scoresConfigs = createColumnConfig();
@@ -103,7 +97,8 @@ public class ScoresPanel extends LayoutContainer
 
 	}
 
-	public void fillGrid(PDBScoreItem resultsData, int selectedInterface) {
+	public void fillGrid(PDBScoreItem resultsData, int selectedInterface) 
+	{
 		scoresStore.removeAll();
 
 		List<BeanModel> data = new ArrayList<BeanModel>();
