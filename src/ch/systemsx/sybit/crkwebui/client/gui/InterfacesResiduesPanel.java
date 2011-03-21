@@ -64,18 +64,18 @@ public class InterfacesResiduesPanel extends FormPanel
 		residuesFilterComboBox.setEditable(false);  
 		residuesFilterComboBox.setFireChangeEventOnSetValue(true);  
 		residuesFilterComboBox.setWidth(100);  
-		residuesFilterComboBox.add("All");  
-		residuesFilterComboBox.add("Rim/Core");  
-		residuesFilterComboBox.setSimpleValue("Rim/Core");
+		residuesFilterComboBox.add(MainController.CONSTANTS.interfaces_residues_combo_all());  
+		residuesFilterComboBox.add(MainController.CONSTANTS.interfaces_residues_combo_rimcore());  
+		residuesFilterComboBox.setSimpleValue(MainController.CONSTANTS.interfaces_residues_combo_rimcore());
 		
-		residuesFilterComboBox.setFieldLabel("Residues");
+		residuesFilterComboBox.setFieldLabel(MainController.CONSTANTS.interfaces_residues_combo_title());
 		residuesFilterComboBox.addListener(Events.Change, new Listener<FieldEvent>() 
 		{  
 			public void handleEvent(FieldEvent be) 
 			{
 				boolean showAll = true;
 				
-				if(!residuesFilterComboBox.getValue().getValue().equals("All"))
+				if(!residuesFilterComboBox.getValue().getValue().equals(MainController.CONSTANTS.interfaces_residues_combo_all()))
 				{
 					showAll = false;
 				}
@@ -94,7 +94,7 @@ public class InterfacesResiduesPanel extends FormPanel
 
 	public void cleanData()
 	{
-		residuesFilterComboBox.setSimpleValue("Rim/Core");
+		residuesFilterComboBox.setSimpleValue(MainController.CONSTANTS.interfaces_residues_combo_rimcore());
 	}
 
 	public void resizeResiduesPanels() 

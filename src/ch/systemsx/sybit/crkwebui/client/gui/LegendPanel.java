@@ -1,5 +1,7 @@
 package ch.systemsx.sybit.crkwebui.client.gui;
 
+import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
+
 import com.extjs.gxt.ui.client.Style.Orientation;
 import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.Label;
@@ -33,10 +35,10 @@ public class LegendPanel extends LayoutContainer
 		legendContainer.setHeight(30);
 		legendContainer.setWidth(500);
 
-		String typesString = "Rim,Core,Totally buried,Others";
+		String typesString = MainController.CONSTANTS.legend_panel_names();
 		String[] types = typesString.split(",");
 		
-		String colorsString = "#bedeff,#ff7979,#EDEDED,white";
+		String colorsString = MainController.CONSTANTS.legend_panel_styles();
 		String[] colors = colorsString.split(",");
 		
 		for(int i=0; i<types.length; i++)
@@ -50,7 +52,7 @@ public class LegendPanel extends LayoutContainer
 				
 			    LayoutContainer rimTypePanel = new LayoutContainer();
 				rimTypePanel.setBorders(true);
-				rimTypePanel.setStyleAttribute("background", colors[i]);
+				rimTypePanel.addStyleName(colors[i]);
 				rimTypePanel.setWidth(20);
 				rimTypePanel.setHeight(20);
 				

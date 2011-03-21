@@ -47,7 +47,7 @@ public class MainController
 	
 	private int nrOfSubmissions = 0;
 	
-	private String selectedViewer = "Jmol";
+	private String selectedViewer = MainController.CONSTANTS.viewer_jmol();
 	
 	private boolean resizeInterfacesWindow;
 	
@@ -257,11 +257,11 @@ public class MainController
 	
 	public void runViewer(String interfaceId) 
 	{
-		if(selectedViewer.equals("Jmol"))
+		if(selectedViewer.equals(MainController.CONSTANTS.viewer_jmol()))
 		{
 			showJmolViewer(interfaceId);
 		}
-		else if(selectedViewer.equals("Local"))
+		else if(selectedViewer.equals(MainController.CONSTANTS.viewer_local()))
 		{
 			downloadFileFromServer("interface", interfaceId);
 		}
@@ -306,7 +306,8 @@ public class MainController
 								String selectedJob,
 								String filename,
 								int size) /*-{
-		var jmolwindow = window.open("", "Jmol", "status=yes,width=" + size + ",height=" + size);
+		var jmolwindow = window.open("", "Jmol", "status=no,width=" + size + ",height=" + size);
+		jmolwindow.document.body.innerHTML = "";
 		$wnd.jmolInitialize("resources/jmol");
 		$wnd.jmolSetCallback("language", "en");
 		$wnd.jmolSetDocument(jmolwindow.document);
@@ -348,9 +349,16 @@ public class MainController
 //		}
 	}
 	
-	public void showError(String errorMessage) {
-//		mainViewPort.showError(errorMessage);
-		Window.alert(errorMessage);
+	public void showError(String errorMessage) 
+	{
+		if(mainViewPort != null)
+		{
+			mainViewPort.showError(errorMessage);
+		}
+		else
+		{
+			Window.alert(errorMessage);
+		}
 	}
 	
 	public void showMessage(String title, String message)

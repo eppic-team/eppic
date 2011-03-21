@@ -9,6 +9,7 @@ import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 import ch.systemsx.sybit.crkwebui.client.gui.renderers.GridCellRendererFactory;
 
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
+import com.extjs.gxt.ui.client.Style.Scroll;
 import com.extjs.gxt.ui.client.data.BasePagingLoader;
 import com.extjs.gxt.ui.client.data.BeanModel;
 import com.extjs.gxt.ui.client.data.BeanModelFactory;
@@ -64,13 +65,11 @@ public class ResiduesPanel extends ContentPanel
 		this.setBodyBorder(false);
 		this.setBorders(false);
 		this.setLayout(new FitLayout());
-//		this.setPadding(0);
 		this.getHeader().setVisible(false);
+		this.setScrollMode(Scroll.AUTO);
 
 		residuesConfigs = createColumnConfig();
 
-		nrOfRows = (height)/22; 
-		
 		proxy = new PagingModelMemoryProxy(null); 
 		loader = new BasePagingLoader(proxy);  
 		loader.setRemoteSort(true);
@@ -105,10 +104,10 @@ public class ResiduesPanel extends ContentPanel
 				1, residuesColumnModel.getColumnCount()));
 
 		residuesGrid = new Grid<BeanModel>(residuesStore, residuesColumnModel);
-		residuesGrid.setBorders(true);
+		residuesGrid.setBorders(false);
 		residuesGrid.setStripeRows(true);
 		residuesGrid.setColumnLines(true);
-//		residuesGrid.getView().setForceFit(true);
+		residuesGrid.getView().setForceFit(true);
 		
 		residuesGrid.getView().setViewConfig(new GridViewConfig(){
 			@Override
@@ -139,6 +138,15 @@ public class ResiduesPanel extends ContentPanel
 		});
 
 		this.add(residuesGrid);
+		
+//		boolean isForceFit = checkIfForceFit(calculateWidthOfVisibleColumns());
+		
+		nrOfRows = (height)/22;
+		
+//		if(!isForceFit)
+//		{
+//			nrOfRows -= 1;
+//		}
 		
 		pagingToolbar = new PagingToolBar(nrOfRows);
 		pagingToolbar.bind(loader);
@@ -349,6 +357,46 @@ public class ResiduesPanel extends ContentPanel
 	
 	public void resizeGrid() 
 	{
+		int scoresGridWidthOfAllVisibleColumns = calculateWidthOfVisibleColumns();
+		
+		if (checkIfForceFit(scoresGridWidthOfAllVisibleColumns, 
+							(int)((mainController.getMainViewPort().getInterfacesResiduesWindow().getInterfacesResiduesPanel().getWidth() - 20) * 0.48))) 
+		{
+			this.setScrollMode(Scroll.AUTOY);
+			residuesGrid.setAutoHeight(true);
+		} 
+		else 
+		{
+			this.setScrollMode(Scroll.AUTO);
+			residuesGrid.setWidth(scoresGridWidthOfAllVisibleColumns);
+			residuesGrid.setAutoHeight(true);
+			
+			int nrOfColumn = residuesGrid.getColumnModel().getColumnCount();
+
+			for (int i = 0; i < nrOfColumn; i++) {
+				residuesGrid.getColumnModel().getColumn(i)
+						.setWidth(initialColumnWidth.get(i));
+			}
+		}
+		
+		this.layout();
+	}
+	
+	private boolean checkIfForceFit(int scoresGridWidthOfAllVisibleColumns,
+									int width)
+	{
+		if(scoresGridWidthOfAllVisibleColumns < width)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	
+	private int calculateWidthOfVisibleColumns()
+	{
 		int scoresGridWidthOfAllVisibleColumns = 0;
 		
 		for(int i=0; i<residuesGrid.getColumnModel().getColumnCount(); i++)
@@ -359,27 +407,6 @@ public class ResiduesPanel extends ContentPanel
 			}
 		}
 		
-		if (scoresGridWidthOfAllVisibleColumns < ((mainController.getMainViewPort().getInterfacesResiduesWindow().getInterfacesResiduesPanel().getWidth() - 20) * 0.48)) 
-		{
-			residuesGrid.getView().setForceFit(true);
-		} 
-		else 
-		{
-			residuesGrid.getView().setForceFit(false);
-
-			int nrOfColumn = residuesGrid.getColumnModel().getColumnCount();
-
-			for (int i = 0; i < nrOfColumn; i++) {
-				residuesGrid.getColumnModel().getColumn(i)
-						.setWidth(initialColumnWidth.get(i));
-			}
-		}
-
-		residuesGrid.getView().refresh(true);
-		residuesGrid.getView().layout();
-		residuesGrid.recalculate();
-		residuesGrid.repaint();
-
-		this.layout();
+		return scoresGridWidthOfAllVisibleColumns;
 	}
 }

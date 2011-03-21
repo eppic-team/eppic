@@ -78,6 +78,9 @@ public interface AppProperties extends Constants
 	String interfaces_residues_window();
 	String interfaces_residues_panel_first_structure();
 	String interfaces_residues_panel_second_structure();
+	String interfaces_residues_combo_all();
+	String interfaces_residues_combo_rimcore();
+	String interfaces_residues_combo_title();
 	
 	String scores_panel_column_weighted();
 	String scores_panel_column_unweighted();
@@ -101,4 +104,11 @@ public interface AppProperties extends Constants
 	String callback_run_job_error();
 	String callback_untie_jobs_from_session_error();
 	String callback_job_not_found_error();
+	
+	String legend_panel_names();
+	String legend_panel_styles();
+	
+	String viewer_jmol();
+	String viewer_local();
+	
 }

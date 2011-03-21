@@ -70,7 +70,6 @@ public class MyJobsPanel extends ContentPanel
 
 			public void componentSelected(ButtonEvent ce) 
 			{
-				
 			}
 		});
 		ToolTipConfig toolTipConfig = new ToolTipConfig();

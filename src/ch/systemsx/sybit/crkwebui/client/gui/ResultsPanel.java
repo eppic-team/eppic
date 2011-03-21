@@ -37,9 +37,6 @@ import com.extjs.gxt.ui.client.widget.layout.RowData;
 import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 import com.extjs.gxt.ui.client.widget.layout.VBoxLayout;
 import com.extjs.gxt.ui.client.widget.layout.VBoxLayout.VBoxLayoutAlign;
-import com.extjs.gxt.ui.client.widget.toolbar.FillToolItem;
-import com.extjs.gxt.ui.client.widget.toolbar.LabelToolItem;
-import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
 import com.google.gwt.user.client.Cookies;
 
 /**
@@ -400,14 +397,14 @@ public class ResultsPanel extends DisplayPanel
 		viewerTypeComboBox.setEditable(false);
 		viewerTypeComboBox.setFireChangeEventOnSetValue(true);
 		viewerTypeComboBox.setWidth(100);
-		viewerTypeComboBox.add("Local");
-		viewerTypeComboBox.add("Jmol");
+		viewerTypeComboBox.add(MainController.CONSTANTS.viewer_local());
+		viewerTypeComboBox.add(MainController.CONSTANTS.viewer_jmol());
 
 		String viewerCookie = Cookies.getCookie("crkviewer");
 		if (viewerCookie != null) {
 			viewerTypeComboBox.setSimpleValue(viewerCookie);
 		} else {
-			viewerTypeComboBox.setSimpleValue("Jmol");
+			viewerTypeComboBox.setSimpleValue(MainController.CONSTANTS.viewer_jmol());
 		}
 
 		mainController.setSelectedViewer(viewerTypeComboBox.getValue()
