@@ -15,12 +15,11 @@ import owl.core.runners.blast.BlastHit;
 import owl.core.runners.blast.BlastHitList;
 import owl.core.runners.blast.BlastRunner;
 import owl.core.runners.blast.BlastXMLParser;
-import owl.core.sequence.Sequence;
 import owl.core.sequence.alignment.PairwiseSequenceAlignment;
-import owl.core.structure.Pdb;
+import owl.core.structure.PdbChain;
+import owl.core.structure.PdbAsymUnit;
 import owl.core.structure.PdbCodeNotFoundException;
 import owl.core.structure.PdbLoadException;
-import owl.core.structure.PdbasePdb;
 import owl.core.util.MySQLConnection;
 
 public class Pdb2UniprotCheck {
@@ -69,18 +68,21 @@ public class Pdb2UniprotCheck {
 			if (line.startsWith("IDs")) continue;
 			String pdbCode = line.split("\\s+")[0].substring(0,4).toLowerCase();
 			String pdbChainCode = line.split("\\s+")[0].substring(4,5);
-			Pdb pdb = null;
+			
+			PdbChain pdb = null;
 			try {
-				pdb = new PdbasePdb(pdbCode, PDBASE_DB, conn);
-				pdb.load(pdbChainCode);
+				PdbAsymUnit fullpdb = new PdbAsymUnit(pdbCode,conn,PDBASE_DB);
+				pdb = fullpdb.getChain(pdbChainCode);
 				if (pdb.getFullLength()<SHORT_SEQ_CUTOFF) continue; //we don't even consider very short chains, they are usually pathological cases
 				totalChains++;
 				Collection<SiftsFeature> mappings = siftsConn.getMappings(pdbCode, pdbChainCode);
 				//System.out.println(pdbCode+pdbChainCode+" "+mappings.size());
-				for (SiftsFeature mapping:mappings) {
+				for (@SuppressWarnings("unused") SiftsFeature mapping:mappings) {
 					// this will throw exceptions InvalidFeatureCoordinates or OverlappingFeature
 					// it just should not happen. If it does it's a test failure (that's why we throw the exceptions)
-					pdb.addFeature(mapping); 
+					// TODO At the moment I disabled this since we have dropped the feature implementation in PdbChain class (it wasn't working anyway)
+					// TODO Needs to rewrite this whole program if I ever need it again!!!
+					//pdb.addFeature(mapping); 
 				}
 
 //				Collection<Feature> fs = pdb.getFeaturesOfType(FeatureType.SIFTS);
@@ -136,13 +138,13 @@ public class Pdb2UniprotCheck {
 		
 	}
 	
-	private static BlastHitList blastIt(Pdb pdb) throws Exception {
+	private static BlastHitList blastIt(PdbChain pdb) throws Exception {
 		System.out.println("Blasting...");
 		File outBlast = File.createTempFile(BLAST_BASENAME,BLASTOUT_SUFFIX);
 		File inputSeqFile = File.createTempFile(BLAST_BASENAME,FASTA_SUFFIX);
 		outBlast.deleteOnExit();
 		inputSeqFile.deleteOnExit();
-		new Sequence(pdb.getPdbCode()+pdb.getPdbChainCode(),pdb.getSequence()).writeToFastaFile(inputSeqFile);
+		pdb.getSequence().writeToFastaFile(inputSeqFile);
 		BlastRunner blastRunner = new BlastRunner(BLAST_BIN_DIR, BLAST_DB_DIR);
 		blastRunner.runBlastp(inputSeqFile, BLAST_DB, outBlast, BLAST_OUTPUT_TYPE, BLAST_NO_FILTERING, DEFAULT_BLAST_NUMTHREADS);
 		

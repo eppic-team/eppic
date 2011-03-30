@@ -259,7 +259,7 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 	public PdbScore getPdbScoreObject() {
 		PdbScore pdbSc = new PdbScore();
 		pdbSc.setPdbName(pdbName);
-		pdbSc.setPdbTitle(list.get(0).getInterface().getFirstMolecule().getTitle());
+		pdbSc.setPdbTitle(list.get(0).getInterface().getFirstMolecule().getParent().getTitle());
 		pdbSc.setScoType(scoType);
 		pdbSc.setScoreWeighted(isScoreWeighted);
 		pdbSc.setHomologsCutoff(homologsCutoff);

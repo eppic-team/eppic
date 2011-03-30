@@ -20,7 +20,7 @@ import owl.core.runners.PymolRunner;
 import owl.core.structure.AminoAcid;
 import owl.core.structure.ChainInterface;
 import owl.core.structure.InterfaceRimCore;
-import owl.core.structure.Pdb;
+import owl.core.structure.PdbChain;
 import owl.core.structure.PdbLoadException;
 import owl.core.structure.Residue;
 import owl.core.util.Goodies;
@@ -281,14 +281,14 @@ public class InterfaceEvolContext implements Serializable {
 		map.put(1, partner1);
 		map.put(2, partner2);
 		if (interf.isFirstProtein() && interf.isSecondProtein()) {
-			Pdb firstMol = interf.getFirstMolecule();
+			PdbChain firstMol = interf.getFirstMolecule();
 			InterfaceRimCore rimCore = interf.getFirstRimCores()[0]; // for the web interface output we want only cutoff value (first: 0)
 			List<Double> entropies = chains.get(FIRST).getConservationScores(ScoringType.ENTROPY);
 			List<Double> kaksRatios = null;
 			if (includeKaks && canDoCRK())
 				kaksRatios = chains.get(FIRST).getConservationScores(ScoringType.KAKS);
 			for (int resser:firstMol.getAllSortedResSerials()) {
-				String resType = AminoAcid.one2three(firstMol.getSequence().charAt(resser-1));
+				String resType = AminoAcid.one2three(firstMol.getSequence().getSeq().charAt(resser-1));
 				float asa = -1;
 				float bsa = -1;
 				int assignment = -1;
@@ -311,13 +311,13 @@ public class InterfaceEvolContext implements Serializable {
 				iri.setInterfaceResidueMethodItems(scores);
 				partner1.add(iri);
 			}
-			Pdb secondMol = interf.getSecondMolecule();
+			PdbChain secondMol = interf.getSecondMolecule();
 			rimCore = interf.getSecondRimCores()[0];
 			entropies = chains.get(SECOND).getConservationScores(ScoringType.ENTROPY);
 			if (includeKaks && canDoCRK()) 
 				kaksRatios = chains.get(SECOND).getConservationScores(ScoringType.KAKS);
 			for (int resser:secondMol.getAllSortedResSerials()) {
-				String resType = AminoAcid.one2three(secondMol.getSequence().charAt(resser-1));
+				String resType = AminoAcid.one2three(secondMol.getSequence().getSeq().charAt(resser-1));
 				float asa = -1;
 				float bsa = -1;
 				int assignment = -1;
@@ -353,7 +353,7 @@ public class InterfaceEvolContext implements Serializable {
 	 */
 	private void setConservationScoresAsBfactors(int molecId, ScoringType scoType) {
 		List<Double> conservationScores = null;
-		Pdb pdb = null;
+		PdbChain pdb = null;
 		if (molecId==FIRST) {
 			pdb = interf.getFirstMolecule();
 			conservationScores = chains.get(FIRST).getConservationScores(scoType);
@@ -380,7 +380,7 @@ public class InterfaceEvolContext implements Serializable {
 	private void setRimCoreAsBfactors(int molecId) {
 		HashMap<Integer,Double> rimcoreVals = new HashMap<Integer, Double>();
 		InterfaceRimCore rimCore = null;
-		Pdb pdb = null;
+		PdbChain pdb = null;
 		if (molecId==FIRST) {
 			pdb = interf.getFirstMolecule();
 			rimCore = this.interf.getFirstRimCores()[0];

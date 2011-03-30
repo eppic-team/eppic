@@ -6,8 +6,8 @@ import java.util.Collections;
 import java.util.List;
 
 import owl.core.structure.Atom;
-import owl.core.structure.Pdb;
-import owl.core.structure.PdbfilePdb;
+import owl.core.structure.PdbChain;
+import owl.core.structure.PdbAsymUnit;
 
 
 public class RescaleBfactors {
@@ -27,18 +27,12 @@ public class RescaleBfactors {
 		File file = new File(args[0]);
 		File outfile = new File(args[1]);
 		
-		String[] chains = new PdbfilePdb(file.getAbsolutePath()).getChains();
-		
-		Pdb[] pdbs = new Pdb[chains.length];
-		for (int i=0;i<chains.length;i++) {
-			pdbs[i] = new PdbfilePdb(file.getAbsolutePath());
-			pdbs[i].load(chains[i]);
-		}
+		PdbAsymUnit pdb = new PdbAsymUnit(file);
 		
 		List<Double> bfactors = new ArrayList<Double>();
 		
-		for (Pdb pdb:pdbs) {
-			bfactors.addAll(getBfactors(pdb));
+		for (PdbChain chain:pdb.getAllChains()) {
+			bfactors.addAll(getBfactors(chain));
 		}
 		
 		double maxBfactor = Collections.max(bfactors);
@@ -48,14 +42,14 @@ public class RescaleBfactors {
 		double offset = MIN_BFACTOR - minBfactor*scale;
 		
 		PrintStream ps = new PrintStream(outfile);
-		for (Pdb pdb:pdbs) {
-			scaleBfactors(pdb, scale, offset);
-			pdb.writeAtomLines(ps);
+		for (PdbChain chain:pdb) {
+			scaleBfactors(chain, scale, offset);
+			chain.writeAtomLines(ps);
 		}
 		ps.close();
 	}
 	
-	private static List<Double> getBfactors(Pdb pdb) {
+	private static List<Double> getBfactors(PdbChain pdb) {
 		List<Double> bfactors = new ArrayList<Double>();
 		for (int atomser:pdb.getAllAtomSerials()) {
 			bfactors.add(pdb.getAtom(atomser).getBfactor());
@@ -63,7 +57,7 @@ public class RescaleBfactors {
 		return bfactors;
 	}
 
-	private static void scaleBfactors(Pdb pdb, double scale, double offset) {
+	private static void scaleBfactors(PdbChain pdb, double scale, double offset) {
 		for (int atomser:pdb.getAllAtomSerials()) {
 			Atom atom = pdb.getAtom(atomser);
 			atom.setBfactor(atom.getBfactor()*scale+offset);

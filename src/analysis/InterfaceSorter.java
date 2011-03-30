@@ -133,7 +133,9 @@ public class InterfaceSorter {
 			int clashes = firstInterf.getAICGraph().getNumClashes(CLASHDISTANCE);
 			
 			firstInterfaces.add(new InterfaceSorter().new SimpleInterface(pdbCode, area, op, pdbChainCode1, pdbChainCode2, clashes,
-					firstInterf.getFirstMolecule().getResolution(),firstInterf.getFirstMolecule().getRfree(),firstInterf.getFirstMolecule().getRsym()));
+					firstInterf.getFirstMolecule().getParent().getResolution(),
+					firstInterf.getFirstMolecule().getParent().getRfree(),
+					firstInterf.getFirstMolecule().getParent().getRsym()));
 		}
 		System.out.println();
 		

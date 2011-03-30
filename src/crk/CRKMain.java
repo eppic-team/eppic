@@ -442,14 +442,14 @@ public class CRKMain {
 
 		for (String representativeChain:pdb.getAllRepChains()) {
 			
-			Matcher nonprotMatcher = NONPROT_PATTERN.matcher(pdb.getChain(representativeChain).getSequence());
+			Matcher nonprotMatcher = NONPROT_PATTERN.matcher(pdb.getChain(representativeChain).getSequence().getSeq());
 			if (nonprotMatcher.matches()) {
 				LOGGER.warn("Representative chain "+representativeChain+" does not seem to be a protein chain. Won't analyse it.");
 				continue;
 			}
 
 			cecs.addChainEvolContext(representativeChain,pdb.getSeqIdenticalGroup(representativeChain),
-					new ChainEvolContext(pdb.getChain(representativeChain).getSequence(), representativeChain, pdb.getPdbCode(), params.getJobName()));
+					new ChainEvolContext(pdb.getChain(representativeChain).getSequence().getSeq(), representativeChain, pdb.getPdbCode(), params.getJobName()));
 		}
 		// a) getting the uniprot ids corresponding to the query (the pdb sequence)
 		for (ChainEvolContext chainEvCont:cecs.getAllChainEvolContext()) {
