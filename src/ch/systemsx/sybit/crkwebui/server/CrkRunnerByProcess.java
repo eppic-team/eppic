@@ -10,12 +10,6 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import org.ggf.drmaa.DrmaaException;
-import org.ggf.drmaa.JobInfo;
-import org.ggf.drmaa.JobTemplate;
-import org.ggf.drmaa.Session;
-import org.ggf.drmaa.SessionFactory;
-
 import ch.systemsx.sybit.crkwebui.shared.CrkWebException;
 import ch.systemsx.sybit.crkwebui.shared.model.InputParameters;
 import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
@@ -25,7 +19,7 @@ import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
  * @author srebniak_a
  *
  */
-public class CrkRunner implements Runnable 
+public class CrkRunnerByProcess implements Runnable 
 {
 	private EmailSender emailSender;
 	private String input;
@@ -36,20 +30,16 @@ public class CrkRunner implements Runnable
 	private File logFile;
 	private String crkApplicationLocation;
 	
-	private Session sgeSession;
-	private String submissionId; 
-	
 //	private boolean isWaiting;
 	
-	public CrkRunner(
+	public CrkRunnerByProcess(
 					 EmailSender emailSender, 
 					 String input,
 					 String resultPath,
 					 String destinationDirectory,
 					 String generatedDirectoryName,
 					 InputParameters inputParameters,
-					 String crkApplicationLocation,
-					 Session sgeSession)
+					 String crkApplicationLocation)
 	{
 		this.inputParameters = inputParameters;
 		this.input = input;
@@ -59,14 +49,10 @@ public class CrkRunner implements Runnable
 		this.crkApplicationLocation = crkApplicationLocation;
 
 		this.emailSender = emailSender;
-		
-		this.sgeSession = sgeSession;
 	}
 
 	public void run() 
 	{
-		submissionId = null;
-		
 		String message = input
 				+ " job submitted. To see the status of the processing please go to: "
 				+ resultPath;
@@ -105,7 +91,7 @@ public class CrkRunner implements Runnable
 //			}
 
 			List<String> command = new ArrayList<String>();
-//			command.add("java");
+			command.add("java");
 			command.add("-jar");
 			command.add(crkApplicationLocation);
 			command.add("-i");
@@ -157,64 +143,30 @@ public class CrkRunner implements Runnable
 			command.add("-l");
 			
 			
-//			// using ProcessBuilder to spawn an process
-//			ProcessBuilder processBuilder = new ProcessBuilder(command);
-//			processBuilder.redirectErrorStream(true);
-//
-//			Process crkProcess = processBuilder.start();
-//			
-////			BufferedReader br = new BufferedReader( new InputStreamReader( crkProcess.getErrorStream() ));
-////            
-////			StringBuffer errorLog = new StringBuffer();
-////			
-////			String line;
-////            while ( ( line = br.readLine() ) != null )
-////            {
-////            	errorLog.append(line);
-////            }
-////            
-////            br.close();
+			// using ProcessBuilder to spawn an process
+			ProcessBuilder processBuilder = new ProcessBuilder(command);
+			processBuilder.redirectErrorStream(true);
+
+			Process crkProcess = processBuilder.start();
+			
+//			BufferedReader br = new BufferedReader( new InputStreamReader( crkProcess.getErrorStream() ));
 //            
-//			int exitValue = crkProcess.waitFor();
+//			StringBuffer errorLog = new StringBuffer();
 //			
-//			if(exitValue != 0)
-//			{
-//				throw new CrkWebException("Error during calculations");
-//			}
+//			String line;
+//            while ( ( line = br.readLine() ) != null )
+//            {
+//            	errorLog.append(line);
+//            }
+//            
+//            br.close();
+            
+			int exitValue = crkProcess.waitFor();
 			
-			
-//			SessionFactory factory = SessionFactory.getFactory();
-//			sgeSession = factory.getSession();
-//
-//			sgeSession.init("");
-			JobTemplate jt = sgeSession.createJobTemplate();
-			jt.setRemoteCommand("java");
-	      	jt.setArgs(command);
-
-	      	submissionId = sgeSession.runJob(jt);
-
-	      	sgeSession.deleteJobTemplate(jt);
-
-//	      	while((sgeSession.getJobProgramStatus(submissionId) != Session.DONE) && 
-//	      		  (sgeSession.getJobProgramStatus(submissionId) != Session.FAILED))
-//	      	{
-//	      		
-//	      	}
-//	      	
-//	      	if(sgeSession.getJobProgramStatus(submissionId) == Session.FAILED)
-//	      	{
-//	      		throw new CrkWebException("Error during calculations");
-//	      	}
-	      	
-	      	JobInfo info = sgeSession.wait(submissionId, Session.TIMEOUT_WAIT_FOREVER);
-
-	      	if(info.getExitStatus () != 0)
-	      	{
-	      		throw new CrkWebException("Error during calculations: " + info.getExitStatus());
-	      	}
-
-//	      	sgeSession.exit();
-			   
+			if(exitValue != 0)
+			{
+				throw new CrkWebException("Error during calculations");
+			}
 			
 //			PrintStream logStream = new PrintStream(logFile);
 //			
@@ -348,11 +300,8 @@ public class CrkRunner implements Runnable
 //		}
 		catch (Throwable e) 
 		{
-			if(!isInterrupted)
-			{
-				e.printStackTrace();
-				handleException(e.getMessage());
-			}
+			e.printStackTrace();
+			handleException(e.getMessage());
 		}
 //		finally
 //		{
@@ -402,25 +351,6 @@ public class CrkRunner implements Runnable
 		emailSender.send("Crk: " + input + " error during processing",
 				message + "\n\n" + resultPath);
 	}
-	
-	public void stopJob()
-	{
-		isInterrupted = true;
-		
-		try 
-		{
-			if((submissionId != null) && (sgeSession.getJobProgramStatus(submissionId) != Session.FAILED))
-			{
-				sgeSession.control(submissionId, Session.TERMINATE);
-			}
-		} 
-		catch (Throwable t) 
-		{
-			
-		}
-	}
-	
-	private boolean isInterrupted;
 	
 //	public synchronized boolean isWaiting()
 //	{

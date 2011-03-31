@@ -17,6 +17,10 @@ import java.util.Properties;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 
+import org.ggf.drmaa.DrmaaException;
+import org.ggf.drmaa.Session;
+import org.ggf.drmaa.SessionFactory;
+
 import model.InterfaceResidueItem;
 import model.PDBScoreItem;
 import model.ProcessingData;
@@ -56,6 +60,9 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 	private CrkThreadGroup runInstances;
 	
 	private String crkApplicationLocation;
+	
+	private SessionFactory sgeFactory;
+	private Session sgeSession;
 
 	public void init(ServletConfig config) throws ServletException 
 	{
@@ -106,6 +113,17 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 
 		dataSource = properties.getProperty("data_source");
 		DBUtils.setDataSource(dataSource);
+		
+		sgeFactory = SessionFactory.getFactory();
+		sgeSession = sgeFactory.getSession();
+		try 
+		{
+			sgeSession.init("");
+		} 
+		catch (DrmaaException e) 
+		{
+			e.printStackTrace();
+		}
 	}
 
 //	public String greetServer(String input) throws IllegalArgumentException {
@@ -324,9 +342,10 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 					localDestinationDirName, 
 					runJobData.getJobId(),
 					runJobData.getInputParameters(),
-					crkApplicationLocation);
+					crkApplicationLocation,
+					sgeSession);
 
-			Thread crkRunnerThread = new Thread(runInstances, 
+			CrkThread crkRunnerThread = new CrkThread(runInstances, 
 					crkRunner,
 					runJobData.getJobId());
 
@@ -581,7 +600,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 				{
 					if(!activeInstances[i].isInterrupted())
 					{
-						activeInstances[i].interrupt();
+						((CrkThread)activeInstances[i]).interrupt();
 					}
 					
 					wasFound = true;
@@ -677,6 +696,15 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 				
 				activeThread.interrupt();
 			}
+		}
+		
+		try 
+		{
+			sgeSession.exit();
+		} 
+		catch (DrmaaException e) 
+		{
+			e.printStackTrace();
 		}
 		
 //		runInstances.destroy();
