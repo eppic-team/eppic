@@ -34,7 +34,6 @@ public class InterfacesResiduesWindow extends Dialog
 			}
 		}
 		
-		this.setSize(width, height);
 		this.setPlain(true);
 		this.setModal(true);
 		this.setBlinkModal(true);
@@ -45,6 +44,7 @@ public class InterfacesResiduesWindow extends Dialog
 		// adjust to 22 height rows
 		height = (height - 220) / 22;
 		height = height * 22 + 220;
+		this.setSize(width, height);
 		
 		interfacesResiduesPanel = new InterfacesResiduesPanel(mainController,
 															  width,
