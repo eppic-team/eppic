@@ -14,18 +14,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceException;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
+
+import model.InterfaceResidueItem;
+import model.PDBScoreItem;
+import model.ProcessingData;
 
 import org.ggf.drmaa.DrmaaException;
 import org.ggf.drmaa.Session;
 import org.ggf.drmaa.SessionFactory;
 
-import model.InterfaceResidueItem;
-import model.PDBScoreItem;
-import model.ProcessingData;
 import ch.systemsx.sybit.crkwebui.client.CrkWebService;
 import ch.systemsx.sybit.crkwebui.server.data.EmailData;
+import ch.systemsx.sybit.crkwebui.server.db.model.JobDAO;
 import ch.systemsx.sybit.crkwebui.server.util.PDBModelConverter;
 import ch.systemsx.sybit.crkwebui.server.util.RandomDirectoryNameGenerator;
 import ch.systemsx.sybit.crkwebui.shared.CrkWebException;
@@ -45,6 +49,7 @@ import crk.PdbScore;
  * 
  * @author srebniak_a
  */
+@PersistenceContext(name="crkjpa", unitName="crkjpa")
 @SuppressWarnings("serial")
 public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebService 
 {
@@ -112,7 +117,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 		getServletContext().setAttribute("instances", runInstances);
 
 		dataSource = properties.getProperty("data_source");
-		DBUtils.setDataSource(dataSource);
+//		DBUtils.setDataSource(dataSource);
 		
 		sgeFactory = SessionFactory.getFactory();
 		sgeSession = sgeFactory.getSession();
@@ -124,6 +129,38 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 		{
 			e.printStackTrace();
 		}
+		
+//		**********************
+//		* Hibernate pure
+//		**********************
+//		try {
+//			org.hibernate.classic.Session hibernateSession = HibernateUtil.getSessionFactory().getCurrentSession();
+//			
+//            // Begin unit of work
+//			hibernateSession.beginTransaction();
+//			
+//			Job job = (Job)hibernateSession.get(Job.class, "1");
+//			System.out.println(job.getJobId());
+//            
+//            // Process request and render page...
+//
+//            // End unit of work
+//			hibernateSession.getTransaction().commit();
+//        }
+//        catch (Exception ex) {
+//            HibernateUtil.getSessionFactory().getCurrentSession().getTransaction().rollback();
+//            if ( ServletException.class.isInstance( ex ) ) {
+////                throw ( ServletException ) ex;
+//            }
+//            else {
+////                throw new ServletException( ex );
+//            }
+//        }
+		
+//		***********************
+//		* Hibernate JPA
+//		***********************
+		
 	}
 
 //	public String greetServer(String input) throws IllegalArgumentException {
@@ -283,7 +320,9 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 			settings.setReducedAlphabetList(reducedAlphabetConverted);
 		}
 		
-		int nrOfJobsForSession = DBUtils.getNrOfJobsForSessionId(getThreadLocalRequest().getSession().getId());
+		JobDAO jobDAO = new JobDAO();
+		int nrOfJobsForSession = jobDAO.getNrOfJobsForSessionId(getThreadLocalRequest().getSession().getId()).intValue();
+//		int nrOfJobsForSession = DBUtils.getNrOfJobsForSessionId(getThreadLocalRequest().getSession().getId());
 		settings.setNrOfJobsForSession(nrOfJobsForSession);
 		
 		boolean useCaptcha = Boolean.parseBoolean(properties.getProperty("use_captcha"));
@@ -328,11 +367,17 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 
 			EmailSender emailSender = new EmailSender(emailData);
 
-			DBUtils.insertNewJob(runJobData.getJobId(),
-								 getThreadLocalRequest().getSession().getId(),
-								 emailData.getEmailRecipient(), 
-								 runJobData.getInput(),
-								 getThreadLocalRequest().getRemoteAddr());
+			JobDAO jobDAO = new JobDAO();
+			jobDAO.insertNewJob(runJobData.getJobId(),
+								getThreadLocalRequest().getSession().getId(),
+								emailData.getEmailRecipient(), 
+								runJobData.getInput(),
+								getThreadLocalRequest().getRemoteAddr());
+//			DBUtils.insertNewJob(runJobData.getJobId(),
+//								 getThreadLocalRequest().getSession().getId(),
+//								 emailData.getEmailRecipient(), 
+//								 runJobData.getInput(),
+//								 getThreadLocalRequest().getRemoteAddr());
 
 			String serverHost = properties.getProperty("server_host_page");
 			
@@ -370,7 +415,29 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 
 	public ProcessingData getResultsOfProcessing(String jobId) throws CrkWebException 
 	{
-		String status = DBUtils.getStatusForJob(jobId, getThreadLocalRequest().getSession().getId());
+		JobDAO jobDAO = new JobDAO();
+		
+		String status = null;
+		
+		try
+		{
+			status = jobDAO.getStatusForJob(jobId);
+		}
+		catch(PersistenceException e)
+		{
+			
+		}
+		
+		if(status == null)
+		{
+			status = StatusOfJob.NONEXISTING;
+		}
+		else
+		{
+			jobDAO.updateSessionIdForSelectedJob(getThreadLocalRequest().getSession().getId(), jobId);
+		}
+		
+//		String status = DBUtils.getStatusForJob(jobId, getThreadLocalRequest().getSession().getId());
 
 		if(status != null)
 		{
@@ -569,7 +636,9 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 	public List<ProcessingInProgressData> getJobsForCurrentSession() throws CrkWebException 
 	{
 		String sessionId = getThreadLocalRequest().getSession().getId();
-		return DBUtils.getJobsForCurrentSession(sessionId);
+		JobDAO jobDAO = new JobDAO();
+		return jobDAO.getJobsForSession(sessionId);
+//		return DBUtils.getJobsForCurrentSession(sessionId);
 	}
 	
 	@Override
@@ -616,7 +685,9 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 						e.printStackTrace();
 					}
 
-					DBUtils.updateStatusOfJob(jobId, StatusOfJob.STOPPED);
+					JobDAO jobDAO = new JobDAO();
+					jobDAO.updateStatusOfJob(jobId, StatusOfJob.STOPPED);
+//					DBUtils.updateStatusOfJob(jobId, StatusOfJob.STOPPED);
 				}
 
 				i++;
@@ -635,7 +706,9 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 	public void untieJobsFromSession() throws CrkWebException 
 	{
 		String sessionId = getThreadLocalRequest().getSession().getId();
-		DBUtils.untieJobsFromSession(sessionId);
+		JobDAO jobDAO = new JobDAO();
+		jobDAO.untieJobsFromSession(sessionId);
+//		DBUtils.untieJobsFromSession(sessionId);
 	}
 
 	
@@ -687,7 +760,9 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 			{
 				try 
 				{
-					DBUtils.updateStatusOfJob(activeThread.getName(), "Stopped");
+					JobDAO jobDAO = new JobDAO();
+					jobDAO.updateStatusOfJob(activeThread.getName(), StatusOfJob.STOPPED);
+//					DBUtils.updateStatusOfJob(activeThread.getName(), "Stopped");
 				}
 				catch (CrkWebException e) 
 				{

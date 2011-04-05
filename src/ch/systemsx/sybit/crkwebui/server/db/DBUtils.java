@@ -1,4 +1,4 @@
-package ch.systemsx.sybit.crkwebui.server;
+package ch.systemsx.sybit.crkwebui.server.db;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

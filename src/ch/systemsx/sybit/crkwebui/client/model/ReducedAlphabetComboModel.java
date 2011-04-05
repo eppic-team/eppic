@@ -9,6 +9,11 @@ import com.extjs.gxt.ui.client.data.BaseModel;
  */
 public class ReducedAlphabetComboModel extends BaseModel 
 {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	public ReducedAlphabetComboModel(Integer reducedAlphabet) {
 		set("reducedAlphabet", reducedAlphabet);
 	}

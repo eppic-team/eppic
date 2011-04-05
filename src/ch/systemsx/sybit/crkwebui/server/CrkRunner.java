@@ -10,12 +10,11 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import org.ggf.drmaa.DrmaaException;
 import org.ggf.drmaa.JobInfo;
 import org.ggf.drmaa.JobTemplate;
 import org.ggf.drmaa.Session;
-import org.ggf.drmaa.SessionFactory;
 
+import ch.systemsx.sybit.crkwebui.server.db.model.JobDAO;
 import ch.systemsx.sybit.crkwebui.shared.CrkWebException;
 import ch.systemsx.sybit.crkwebui.shared.model.InputParameters;
 import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
@@ -187,13 +186,13 @@ public class CrkRunner implements Runnable
 //			sgeSession = factory.getSession();
 //
 //			sgeSession.init("");
-			JobTemplate jt = sgeSession.createJobTemplate();
-			jt.setRemoteCommand("java");
-	      	jt.setArgs(command);
+			JobTemplate jobTemplate = sgeSession.createJobTemplate();
+			jobTemplate.setRemoteCommand("java");
+			jobTemplate.setArgs(command);
 
-	      	submissionId = sgeSession.runJob(jt);
+	      	submissionId = sgeSession.runJob(jobTemplate);
 
-	      	sgeSession.deleteJobTemplate(jt);
+	      	sgeSession.deleteJobTemplate(jobTemplate);
 
 //	      	while((sgeSession.getJobProgramStatus(submissionId) != Session.DONE) && 
 //	      		  (sgeSession.getJobProgramStatus(submissionId) != Session.FAILED))
@@ -324,7 +323,9 @@ public class CrkRunner implements Runnable
 	        
 	        out.close();
 			
-			DBUtils.updateStatusOfJob(generatedDirectoryName, StatusOfJob.FINISHED);
+	        JobDAO jobDao = new JobDAO();
+	        jobDao.updateStatusOfJob(generatedDirectoryName, StatusOfJob.FINISHED);
+//			DBUtils.updateStatusOfJob(generatedDirectoryName, StatusOfJob.FINISHED);
 
 			outputStream = new FileOutputStream(logFile, true);
 			bufferedOutputStream = new BufferedOutputStream(
@@ -381,7 +382,9 @@ public class CrkRunner implements Runnable
 		
 		try 
 		{
-			DBUtils.updateStatusOfJob(generatedDirectoryName, StatusOfJob.ERROR);
+			JobDAO jobDao = new JobDAO();
+			jobDao.updateStatusOfJob(generatedDirectoryName, StatusOfJob.ERROR);
+//			DBUtils.updateStatusOfJob(generatedDirectoryName, StatusOfJob.ERROR);
 		} 
 		catch (CrkWebException e2) 
 		{

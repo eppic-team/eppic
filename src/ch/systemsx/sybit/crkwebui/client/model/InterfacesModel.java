@@ -9,4 +9,9 @@ import com.extjs.gxt.ui.client.data.BaseModel;
  */
 public class InterfacesModel extends BaseModel {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 }
