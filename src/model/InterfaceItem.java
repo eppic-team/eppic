@@ -1,6 +1,7 @@
 package model;
 
 import java.io.Serializable;
+import java.util.List;
 
 public class InterfaceItem implements Serializable 
 {
@@ -17,7 +18,9 @@ public class InterfaceItem implements Serializable
 	private int size1;
 	private int size2;
 	private String finalCall;
-	private String operator;
+	private String operator; 
+	
+	private List<String> warnings;
 	
 //	private List<InterfaceStructureItem> interfaceStructures;
 
@@ -109,6 +112,14 @@ public class InterfaceItem implements Serializable
 
 	public String getOperator() {
 		return operator;
+	}
+	
+	public List<String> getWarnings() {
+		return warnings;
+	}
+	
+	public void setWarnings(List<String> warnings) {
+		this.warnings = warnings;
 	}
 	
 }
