@@ -61,7 +61,7 @@ public class BottomPanel extends LayoutContainer
 		
 		if(isError)
 		{
-			messageText += MainController.CONSTANTS.bottom_panel_status_error_refresh_page();
+			messageText += " - " + MainController.CONSTANTS.bottom_panel_status_error_refresh_page();
 		}
 		
 		messageText += "</span>";

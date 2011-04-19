@@ -171,6 +171,7 @@ public class ResultsPanel extends DisplayPanel
 		scoresPanelLocation.setBorders(false);
 
 		this.add(scoresPanelLocation, new RowData(1, 0.45, new Margins(0)));
+		
 	}
 
 	public void updateScoresPanel(int selectedInterface)
@@ -268,7 +269,7 @@ public class ResultsPanel extends DisplayPanel
 				if (customHeader != null) {
 					header = customHeader;
 				}
-
+				
 				boolean isResizable = true;
 
 				String customIsResizable = mainController.getSettings()
@@ -279,6 +280,10 @@ public class ResultsPanel extends DisplayPanel
 						isResizable = false;
 					}
 				}
+				
+				String tootlip = mainController.getSettings()
+						.getGridProperties()
+						.get("results_" + columnName + "_tooltip");
 
 				if (columnName.equals("METHODS")) {
 					for (String method : mainController.getSettings()
@@ -294,6 +299,10 @@ public class ResultsPanel extends DisplayPanel
 
 						if (renderer != null) {
 							column.setRenderer(renderer);
+						}
+						
+						if (tootlip != null) {
+							column.setToolTip(tootlip);
 						}
 
 						initialColumnWidth.add(columnWidth);
@@ -312,6 +321,10 @@ public class ResultsPanel extends DisplayPanel
 
 					if (renderer != null) {
 						column.setRenderer(renderer);
+					}
+					
+					if (tootlip != null) {
+						column.setToolTip(tootlip);
 					}
 
 					initialColumnWidth.add(columnWidth);

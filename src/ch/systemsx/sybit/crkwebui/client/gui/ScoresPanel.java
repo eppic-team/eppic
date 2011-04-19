@@ -244,6 +244,10 @@ public class ScoresPanel extends LayoutContainer
 				if (customHeader != null) {
 					header = customHeader;
 				}
+				
+				String tootlip = mainController.getSettings()
+						.getGridProperties()
+						.get("scores_" + columnName + "_tooltip");
 
 				ColumnConfig column = new ColumnConfig();
 				column.setId(columnName);
@@ -255,6 +259,10 @@ public class ScoresPanel extends LayoutContainer
 
 				if (renderer != null) {
 					column.setRenderer(renderer);
+				}
+				
+				if (tootlip != null) {
+					column.setToolTip(tootlip);
 				}
 
 				configs.add(column);

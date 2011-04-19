@@ -23,7 +23,6 @@ import model.InterfaceResidueItem;
 import model.PDBScoreItem;
 import model.ProcessingData;
 
-import org.ggf.drmaa.DrmaaException;
 import org.ggf.drmaa.Session;
 import org.ggf.drmaa.SessionFactory;
 
@@ -121,11 +120,12 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 		
 		sgeFactory = SessionFactory.getFactory();
 		sgeSession = sgeFactory.getSession();
+		
 		try 
 		{
 			sgeSession.init("");
 		} 
-		catch (DrmaaException e) 
+		catch (Throwable e) 
 		{
 			e.printStackTrace();
 		}
@@ -777,7 +777,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 		{
 			sgeSession.exit();
 		} 
-		catch (DrmaaException e) 
+		catch (Throwable e) 
 		{
 			e.printStackTrace();
 		}

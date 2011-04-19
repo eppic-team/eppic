@@ -349,6 +349,8 @@ public class CrkRunner implements Runnable
 //		}
 		catch (Throwable e) 
 		{
+			e.printStackTrace();
+			
 			if(!isInterrupted)
 			{
 				e.printStackTrace();

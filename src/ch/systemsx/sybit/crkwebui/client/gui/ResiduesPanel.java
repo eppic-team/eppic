@@ -241,6 +241,10 @@ public class ResiduesPanel extends ContentPanel
 				if (customHeader != null) {
 					header = customHeader;
 				}
+				
+				String tootlip = mainController.getSettings()
+						.getGridProperties()
+						.get("residues_" + columnName + "_tooltip");
 
 				if (columnName.equals("METHODS")) {
 					for (String method : mainController.getSettings()
@@ -255,6 +259,10 @@ public class ResiduesPanel extends ContentPanel
 
 						if (renderer != null) {
 							column.setRenderer(renderer);
+						}
+						
+						if (tootlip != null) {
+							column.setToolTip(tootlip);
 						}
 
 						configs.add(column);
@@ -271,6 +279,10 @@ public class ResiduesPanel extends ContentPanel
 
 					if (renderer != null) {
 						column.setRenderer(renderer);
+					}
+					
+					if (tootlip != null) {
+						column.setToolTip(tootlip);
 					}
 
 					configs.add(column);
