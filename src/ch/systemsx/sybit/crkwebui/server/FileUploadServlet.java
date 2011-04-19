@@ -75,7 +75,7 @@ public class FileUploadServlet extends FileBaseServlet {
 	protected void doPost(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException 
 	{
-		String currentSessionId = request.getSession().getId();
+//		String currentSessionId = request.getSession().getId();
 		
 		PrintWriter out = response.getWriter();
 		

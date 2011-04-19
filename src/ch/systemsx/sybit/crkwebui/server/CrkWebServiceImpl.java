@@ -23,6 +23,7 @@ import model.InterfaceResidueItem;
 import model.PDBScoreItem;
 import model.ProcessingData;
 
+import org.ggf.drmaa.DrmaaException;
 import org.ggf.drmaa.Session;
 import org.ggf.drmaa.SessionFactory;
 
@@ -58,7 +59,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 	private String generalTmpDirectoryName;
 	private String generalDestinationDirectoryName;
 
-	private String dataSource;
+//	private String dataSource;
 
 	// list of running  threads
 	private CrkThreadGroup runInstances;
@@ -115,20 +116,19 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 		runInstances = new CrkThreadGroup("instances");
 		getServletContext().setAttribute("instances", runInstances);
 
-		dataSource = properties.getProperty("data_source");
+//		dataSource = properties.getProperty("data_source");
 //		DBUtils.setDataSource(dataSource);
-		
-		sgeFactory = SessionFactory.getFactory();
-		sgeSession = sgeFactory.getSession();
-		
-		try 
-		{
-			sgeSession.init("");
-		} 
-		catch (Throwable e) 
-		{
-			e.printStackTrace();
-		}
+//		
+//		sgeFactory = SessionFactory.getFactory();
+//		sgeSession = sgeFactory.getSession();
+//		try 
+//		{
+//			sgeSession.init("");
+//		} 
+//		catch (DrmaaException e) 
+//		{
+//			e.printStackTrace();
+//		}
 		
 //		**********************
 //		* Hibernate pure
@@ -777,7 +777,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 		{
 			sgeSession.exit();
 		} 
-		catch (Throwable e) 
+		catch (DrmaaException e) 
 		{
 			e.printStackTrace();
 		}
