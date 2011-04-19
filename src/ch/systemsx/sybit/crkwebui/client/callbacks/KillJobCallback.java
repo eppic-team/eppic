@@ -9,7 +9,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
  * @author srebniak_a
  *
  */
-public class KillJobCallback implements AsyncCallback 
+public class KillJobCallback implements AsyncCallback<String> 
 {
 	private MainController mainController;
 
@@ -25,12 +25,11 @@ public class KillJobCallback implements AsyncCallback
 	}
 
 	@Override
-	public void onSuccess(Object result) 
+	public void onSuccess(String result) 
 	{
-		if ((result != null) && (result instanceof String)) 
+		if (result != null)
 		{
-			String resultInfo = (String) result;
-			mainController.showMessage("Job stopping", resultInfo);
+			mainController.showMessage("Job stopping", result);
 			mainController.getJobsForCurrentSession();
 			mainController.getCurrentStatusData();
 		} 

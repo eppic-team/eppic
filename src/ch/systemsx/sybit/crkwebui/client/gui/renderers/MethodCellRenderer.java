@@ -1,7 +1,5 @@
 package ch.systemsx.sybit.crkwebui.client.gui.renderers;
 
-import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
-
 import com.extjs.gxt.ui.client.data.BeanModel;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.widget.grid.ColumnData;
@@ -15,10 +13,9 @@ import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
  */
 public class MethodCellRenderer implements GridCellRenderer<BeanModel> 
 {
-	private MainController mainController;
-
-	public MethodCellRenderer(MainController mainController) {
-		this.mainController = mainController;
+	public MethodCellRenderer() 
+	{
+		
 	}
 
 	public Object render(final BeanModel model, String property,

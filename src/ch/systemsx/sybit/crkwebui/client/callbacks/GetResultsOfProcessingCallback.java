@@ -1,6 +1,7 @@
 package ch.systemsx.sybit.crkwebui.client.callbacks;
 
 import model.PDBScoreItem;
+import model.ProcessingData;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
 
@@ -11,7 +12,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
  * @author srebniak_a
  *
  */
-public class GetResultsOfProcessingCallback implements AsyncCallback
+public class GetResultsOfProcessingCallback implements AsyncCallback<ProcessingData>
 {
 	private MainController mainController;
 	private String selectedId;
@@ -33,7 +34,7 @@ public class GetResultsOfProcessingCallback implements AsyncCallback
 	}
 
 	@Override
-	public void onSuccess(Object result) 
+	public void onSuccess(ProcessingData result) 
 	{
 		if(result != null)
 		{

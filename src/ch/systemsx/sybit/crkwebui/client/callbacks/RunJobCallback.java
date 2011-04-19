@@ -10,7 +10,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
  * @author srebniak_a
  *
  */
-public class RunJobCallback implements AsyncCallback 
+public class RunJobCallback implements AsyncCallback<String> 
 {
 	private MainController mainController;
 
@@ -27,11 +27,11 @@ public class RunJobCallback implements AsyncCallback
 	}
 
 	@Override
-	public void onSuccess(Object result) 
+	public void onSuccess(String result) 
 	{
-		if ((result != null) && (result instanceof String)) 
+		if(result != null) 
 		{
-			String jobId = (String) result;
+			String jobId = result;
 			mainController.setSelectedJobId(jobId);
 			mainController.getJobsForCurrentSession();
 //			mainController.displayResults();

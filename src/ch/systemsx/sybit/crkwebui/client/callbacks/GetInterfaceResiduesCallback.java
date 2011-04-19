@@ -13,7 +13,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
  * @author srebniak_a
  *
  */
-public class GetInterfaceResiduesCallback implements AsyncCallback 
+public class GetInterfaceResiduesCallback implements AsyncCallback<HashMap<Integer, List<InterfaceResidueItem>>>
 {
 	private MainController mainController;
 
@@ -30,25 +30,23 @@ public class GetInterfaceResiduesCallback implements AsyncCallback
 	}
 
 	@Override
-	public void onSuccess(Object result) 
+	public void onSuccess(HashMap<Integer, List<InterfaceResidueItem>> result) 
 	{
 		mainController.showWaiting("Loading");
 		
-		if ((result != null) && (result instanceof HashMap)) 
+		if (result != null)
 		{
-			HashMap<String, List<InterfaceResidueItem>> structures = (HashMap<String, List<InterfaceResidueItem>>) result;
-
-			if(structures.containsKey(1))
+			if(result.containsKey(1))
 			{
 				mainController.getMainViewPort().getInterfacesResiduesWindow().getInterfacesResiduesPanel().getFirstStructurePanel()
-						.fillResiduesGrid(structures.get(1));
+						.fillResiduesGrid(result.get(1));
 				mainController.getMainViewPort().getInterfacesResiduesWindow().getInterfacesResiduesPanel().getFirstStructurePanel().applyFilter(false);
 			}
 			
-			if(structures.containsKey(2))
+			if(result.containsKey(2))
 			{
 				mainController.getMainViewPort().getInterfacesResiduesWindow().getInterfacesResiduesPanel().getSecondStructurePanel()
-						.fillResiduesGrid(structures.get(2));
+						.fillResiduesGrid(result.get(2));
 				mainController.getMainViewPort().getInterfacesResiduesWindow().getInterfacesResiduesPanel().getSecondStructurePanel().applyFilter(false);
 			}
 			

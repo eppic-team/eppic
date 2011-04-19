@@ -12,7 +12,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
  * @author srebniak_a
  *
  */
-public class GetJobsForCurrentSession implements AsyncCallback 
+public class GetJobsForCurrentSession implements AsyncCallback<List<ProcessingInProgressData>> 
 {
 	private MainController mainController;
 	
@@ -30,12 +30,11 @@ public class GetJobsForCurrentSession implements AsyncCallback
 	}
 
 	@Override
-	public void onSuccess(Object result) 
+	public void onSuccess(List<ProcessingInProgressData> result) 
 	{
 		if(result != null)
 		{
-			List<ProcessingInProgressData> myJobs = (List<ProcessingInProgressData>)result;
-			mainController.setJobs(myJobs);
+			mainController.setJobs(result);
 		}
 		else
 		{

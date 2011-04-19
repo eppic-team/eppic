@@ -20,7 +20,7 @@ public class MainViewPort extends Viewport
 
 	private CenterPanel centerPanel;
 
-	private TopPanel topPanel;
+//	private TopPanel topPanel;
 	private BottomPanel bottomPanel;
 	
 	private InterfacesResiduesWindow interfacesResiduesWindow;

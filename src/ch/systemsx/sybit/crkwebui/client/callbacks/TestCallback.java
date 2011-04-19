@@ -5,7 +5,7 @@ import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
-public class TestCallback implements AsyncCallback 
+public class TestCallback implements AsyncCallback<String>
 {
 	private MainController mainController;
 	
@@ -21,9 +21,9 @@ public class TestCallback implements AsyncCallback
 	}
 
 	@Override
-	public void onSuccess(Object result) 
+	public void onSuccess(String result) 
 	{
-		if((result != null) && (result instanceof String))
+		if(result != null)
 		{
 			String resultData = (String)result;
 			Window.alert(resultData);

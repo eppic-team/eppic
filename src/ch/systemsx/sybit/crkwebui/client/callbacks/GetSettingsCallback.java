@@ -11,7 +11,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
  * @author srebniak_a
  *
  */
-public class GetSettingsCallback implements AsyncCallback 
+public class GetSettingsCallback implements AsyncCallback<ApplicationSettings>
 {
 	private MainController mainController;
 
@@ -27,13 +27,12 @@ public class GetSettingsCallback implements AsyncCallback
 	}
 
 	@Override
-	public void onSuccess(Object result)
+	public void onSuccess(ApplicationSettings result)
 	{
-		if ((result != null) && (result instanceof ApplicationSettings)) 
+		if (result != null)
 		{
-			ApplicationSettings settings = (ApplicationSettings) result;
-			mainController.setSettings(settings);
-			mainController.setNrOfSubmissions(settings.getNrOfJobsForSession());
+			mainController.setSettings(result);
+			mainController.setNrOfSubmissions(result.getNrOfJobsForSession());
 			mainController.setMainView();
 			mainController.runMyJobsAutoRefresh();
 			History.fireCurrentHistoryState();

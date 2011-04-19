@@ -32,5 +32,5 @@ public interface CrkWebServiceAsync
 
 	public void killJob(String jobId, AsyncCallback<String> callback);
 
-	public void untieJobsFromSession(AsyncCallback callback);
+	public void untieJobsFromSession(AsyncCallback<Void> callback);
 }

@@ -9,7 +9,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
  * @author srebniak_a
  *
  */
-public class UntieJobsFromSessionCallback implements AsyncCallback 
+public class UntieJobsFromSessionCallback implements AsyncCallback<Void> 
 {
 	private MainController mainController;
 	
@@ -26,7 +26,7 @@ public class UntieJobsFromSessionCallback implements AsyncCallback
 	}
 
 	@Override
-	public void onSuccess(Object result) 
+	public void onSuccess(Void result) 
 	{
 //		if((result != null) && (result instanceof String))
 //		{
