@@ -50,6 +50,8 @@ public class MainController
 	private String selectedViewer = MainController.CONSTANTS.viewer_jmol();
 	
 	private boolean resizeInterfacesWindow;
+
+	private boolean isJobsListFirstTimeLoaded = true;
 	
 	public MainController(Viewport viewport) 
 	{
@@ -159,7 +161,7 @@ public class MainController
 
 	public void getInterfaceResidues(int interfaceId) 
 	{
-		mainViewPort.displayInterfacesWindow();
+		mainViewPort.displayInterfacesWindow(MainController.CONSTANTS.interfaces_residues_window_title() + " " + interfaceId);
 		
 		serviceController.getInterfaceResidues(selectedJobId, interfaceId);
 	}
@@ -431,6 +433,14 @@ public class MainController
 	{
 		return resizeInterfacesWindow;
 	}
+
+	public boolean isJobsListFirstTimeLoaded() {
+		return isJobsListFirstTimeLoaded;
+	}
+
+	public void setJobsListFirstTimeLoaded(boolean isJobsListFirstTimeLoaded) {
+		this.isJobsListFirstTimeLoaded = isJobsListFirstTimeLoaded;
+	}
 	
 //	buttonBar.add(new Button("Wait", new SelectionListener<ButtonEvent>() {  
 //	      public void componentSelected(ButtonEvent ce) {  
@@ -446,5 +456,9 @@ public class MainController
 //	        t.schedule(5000);  
 //	      }  
 //	    }));  
+	
+	public native static String getUserAgent() /*-{
+		return navigator.userAgent.toLowerCase();
+	}-*/;
 	
 }

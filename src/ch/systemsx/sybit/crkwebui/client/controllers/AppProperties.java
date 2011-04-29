@@ -75,7 +75,7 @@ public interface AppProperties extends Constants
 	String results_grid_viewer_combo_label();
 	String results_grid_show_thumbnails();
 	
-	String interfaces_residues_window();
+	String interfaces_residues_window_title();
 	String interfaces_residues_panel_first_structure();
 	String interfaces_residues_panel_second_structure();
 	String interfaces_residues_combo_all();
