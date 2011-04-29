@@ -49,7 +49,7 @@ public class ViewerButtonCellRenderer implements GridCellRenderer<BeanModel>
 												.getWidget(i, be.getColIndex()) instanceof BoxComponent) {
 									((BoxComponent) be.getGrid().getView()
 											.getWidget(i, be.getColIndex()))
-											.setWidth(be.getWidth() - 10);
+											.setWidth(be.getWidth() - 15);
 								}
 							}
 						}
@@ -66,7 +66,7 @@ public class ViewerButtonCellRenderer implements GridCellRenderer<BeanModel>
 				}
 			});
 
-		viewerButton.setWidth(grid.getColumnModel().getColumnWidth(colIndex) - 10);
+		viewerButton.setWidth(grid.getColumnModel().getColumnWidth(colIndex) - 15);
 		viewerButton.setToolTip(MainController.CONSTANTS.results_grid_viewer_button_tooltip());
 
 		return viewerButton;

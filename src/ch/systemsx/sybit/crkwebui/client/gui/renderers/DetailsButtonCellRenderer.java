@@ -14,14 +14,13 @@ import com.extjs.gxt.ui.client.widget.BoxComponent;
 import com.extjs.gxt.ui.client.widget.button.Button;
 import com.extjs.gxt.ui.client.widget.grid.ColumnData;
 import com.extjs.gxt.ui.client.widget.grid.Grid;
-import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
 
 /**
  * This renderer is used to display details button which shows the residues
  * @author srebniak_a
  *
  */
-public class DetailsButtonCellRenderer implements GridCellRenderer<BeanModel> 
+public class DetailsButtonCellRenderer extends DefaultCellRenderer 
 {
 	private MainController mainController;
 
@@ -49,7 +48,7 @@ public class DetailsButtonCellRenderer implements GridCellRenderer<BeanModel>
 												.getWidget(i, be.getColIndex()) instanceof BoxComponent) {
 									((BoxComponent) be.getGrid().getView()
 											.getWidget(i, be.getColIndex()))
-											.setWidth(be.getWidth() - 10);
+											.setWidth(be.getWidth() - 15);
 								}
 							}
 						}
@@ -73,7 +72,7 @@ public class DetailsButtonCellRenderer implements GridCellRenderer<BeanModel>
 				});
 
 		detailsButton
-				.setWidth(grid.getColumnModel().getColumnWidth(colIndex) - 10);
+				.setWidth(grid.getColumnModel().getColumnWidth(colIndex) - 15);
 		detailsButton.setToolTip(MainController.CONSTANTS.results_grid_details_button_tooltip());
 
 		return detailsButton;
