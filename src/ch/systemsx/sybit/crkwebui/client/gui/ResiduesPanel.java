@@ -150,6 +150,7 @@ public class ResiduesPanel extends ContentPanel
 		
 		pagingToolbar = new PagingToolBar(nrOfRows);
 		pagingToolbar.bind(loader);
+		
 		this.setBottomComponent(pagingToolbar);
 	}
 	
@@ -420,5 +421,10 @@ public class ResiduesPanel extends ContentPanel
 		}
 		
 		return scoresGridWidthOfAllVisibleColumns;
+	}
+	
+	public PagingToolBar getResiduesGridPagingToolbar()
+	{
+		return pagingToolbar;
 	}
 }

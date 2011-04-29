@@ -8,15 +8,16 @@ import ch.systemsx.sybit.crkwebui.client.model.MyJobsModel;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
 import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
 
-import com.extjs.gxt.ui.client.Style.Orientation;
 import com.extjs.gxt.ui.client.Style.Scroll;
+import com.extjs.gxt.ui.client.Style.SelectionMode;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
 import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.GridEvent;
 import com.extjs.gxt.ui.client.event.Listener;
+import com.extjs.gxt.ui.client.event.SelectionChangedEvent;
+import com.extjs.gxt.ui.client.event.SelectionChangedListener;
 import com.extjs.gxt.ui.client.event.SelectionListener;
 import com.extjs.gxt.ui.client.store.ListStore;
-import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.button.Button;
 import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
@@ -24,8 +25,7 @@ import com.extjs.gxt.ui.client.widget.grid.ColumnData;
 import com.extjs.gxt.ui.client.widget.grid.ColumnModel;
 import com.extjs.gxt.ui.client.widget.grid.Grid;
 import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
-import com.extjs.gxt.ui.client.widget.layout.RowData;
-import com.extjs.gxt.ui.client.widget.layout.RowLayout;
+import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 import com.extjs.gxt.ui.client.widget.tips.ToolTipConfig;
 import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
 import com.google.gwt.user.client.History;
@@ -49,8 +49,9 @@ public class MyJobsPanel extends ContentPanel
 	public MyJobsPanel(final MainController mainController) 
 	{
 		this.mainController = mainController;
-		this.setLayout(new RowLayout(Orientation.VERTICAL));
-		this.setScrollMode(Scroll.AUTO);
+//		this.setLayout(new RowLayout(Orientation.VERTICAL));
+		this.setLayout(new FitLayout());
+		this.setScrollMode(Scroll.NONE);
 		this.setHeading(MainController.CONSTANTS.myjobs_panel_head());
 
 		ToolBar toolBar = new ToolBar();
@@ -167,8 +168,8 @@ public class MyJobsPanel extends ContentPanel
 		myJobsGrid.setStripeRows(true);
 		myJobsGrid.setColumnLines(true);
 		myJobsGrid.setColumnReordering(true);
-		myJobsGrid.setAutoHeight(true);
-		myJobsGrid.setAutoWidth(true);
+//		myJobsGrid.setAutoHeight(true);
+//		myJobsGrid.setAutoWidth(true);
 		
 		myJobsGrid.addListener(Events.CellClick, new Listener<GridEvent>()
 		{
@@ -178,20 +179,35 @@ public class MyJobsPanel extends ContentPanel
 				History.newItem("id/" + myJobsStore.getAt(be.getRowIndex()).getJobid());
 			}
 		});
-
-		this.add(myJobsGrid, new RowData(1, 1, new Margins(0)));
+		
+		myJobsGrid.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+		myJobsGrid.getSelectionModel().addSelectionChangedListener(new SelectionChangedListener<MyJobsModel>() 
+		{
+			@Override
+			public void selectionChanged(SelectionChangedEvent<MyJobsModel> se) 
+			{
+				if(se.getSelectedItem() != null)
+				{
+					History.newItem("id/" + se.getSelectedItem().getJobid());
+				}
+			}
+		});
+		
+//		this.add(myJobsGrid, new RowData(1, 1, new Margins(0)));
+		this.add(myJobsGrid);
 	}
 
 	public void setJobs(List<ProcessingInProgressData> jobs) 
 	{
 		MyJobsModel itemToSelect = null;
+		int itemToSelectIndex = 0;
 		
-		myJobsStore.removeAll();
-
 		List<MyJobsModel> data = new ArrayList<MyJobsModel>();
 
 		if(jobs != null)
 		{
+			int i = 0;
+			
 			for (ProcessingInProgressData statusData : jobs)
 			{
 				MyJobsModel myJobsModel = new MyJobsModel(statusData.getJobId(),
@@ -201,19 +217,45 @@ public class MyJobsPanel extends ContentPanel
 				if(statusData.getJobId().equals(mainController.getSelectedJobId()))
 				{
 					itemToSelect = myJobsModel;
+					itemToSelectIndex = i; 
 				}
 				
-				data.add(myJobsModel);
+//				data.add(myJobsModel);
+				
+				MyJobsModel existingModel = myJobsStore.findModel("jobid", statusData.getJobId());
+				
+				if(existingModel != null)
+				{
+					existingModel.set("status", statusData.getStatus());
+					existingModel.set("input", statusData.getInput());
+					myJobsStore.update(existingModel);
+				}
+				else
+				{
+					myJobsStore.add(myJobsModel);
+				}
+				
+				i++;
 			}
 		}
 
-		myJobsStore.add(data);
-		myJobsGrid.reconfigure(myJobsStore, myJobsColumnModel);
+		myJobsStore.commitChanges();
+		
+//		myJobsStore.removeAll();
+//		myJobsStore.add(data);
+//		myJobsGrid.reconfigure(myJobsStore, myJobsColumnModel);
+//		myJobsGrid.getView().refresh(false);
 		
 		if((mainController.getSelectedJobId() != null) &&
 			(myJobsGrid.getStore().getCount() > 0))
 		{
 			myJobsGrid.getSelectionModel().select(itemToSelect, false);
+			
+			if(mainController.isJobsListFirstTimeLoaded())
+			{
+				myJobsGrid.getView().focusRow(itemToSelectIndex);
+				mainController.setJobsListFirstTimeLoaded(false);
+			}
 		}
 	}
 }

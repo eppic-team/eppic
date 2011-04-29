@@ -94,16 +94,17 @@ public class MainViewPort extends Viewport
 		this.interfacesResiduesWindow = interfacesResiduesWindow;
 	}
 	
-	public void displayInterfacesWindow() 
+	public void displayInterfacesWindow(String title) 
 	{
 		if((interfacesResiduesWindow == null) ||
 		   (mainController.isResizeInterfacesWindow()))
 		{
-			interfacesResiduesWindow = new InterfacesResiduesWindow(mainController);
+			interfacesResiduesWindow = new InterfacesResiduesWindow(mainController, title);
 			mainController.setResizeInterfacesWindow(false);
 		}
 		else
 		{
+			interfacesResiduesWindow.setTitle(title);
 			interfacesResiduesWindow.getInterfacesResiduesPanel().cleanData();
 			interfacesResiduesWindow.getInterfacesResiduesPanel().getFirstStructurePanel().cleanResiduesGrid();
 			interfacesResiduesWindow.getInterfacesResiduesPanel().getSecondStructurePanel().cleanResiduesGrid();

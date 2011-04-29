@@ -12,6 +12,8 @@ import ch.systemsx.sybit.crkwebui.client.gui.renderers.GridCellRendererFactory;
 
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.Style.Orientation;
+import com.extjs.gxt.ui.client.Style.Scroll;
+import com.extjs.gxt.ui.client.Style.SelectionMode;
 import com.extjs.gxt.ui.client.data.BeanModel;
 import com.extjs.gxt.ui.client.data.BeanModelFactory;
 import com.extjs.gxt.ui.client.data.BeanModelLookup;
@@ -19,6 +21,8 @@ import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.FieldEvent;
 import com.extjs.gxt.ui.client.event.GridEvent;
 import com.extjs.gxt.ui.client.event.Listener;
+import com.extjs.gxt.ui.client.event.SelectionChangedEvent;
+import com.extjs.gxt.ui.client.event.SelectionChangedListener;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
@@ -140,19 +144,33 @@ public class ResultsPanel extends DisplayPanel
 
 		Listener<GridEvent> resultsGridListener = new Listener<GridEvent>() {
 			@Override
-			public void handleEvent(GridEvent be) {
-				updateScoresPanel((Integer) resultsStore
-						.getAt(be.getRowIndex()).get("id"));
+			public void handleEvent(GridEvent event) 
+			{
+				updateScoresPanel((Integer) resultsStore.getAt(event.getRowIndex()).get("id"));
 			}
 		};
-
-		resultsGrid.addListener(Events.CellClick, resultsGridListener);
+		
+		resultsGrid.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+		resultsGrid.getSelectionModel().addSelectionChangedListener(new SelectionChangedListener<BeanModel>() 
+		{
+			@Override
+			public void selectionChanged(SelectionChangedEvent<BeanModel> se) 
+			{
+				updateScoresPanel((Integer) resultsGrid.getSelectionModel().getSelectedItem().get("id"));
+			}
+			
+		});
+		
+//		resultsGrid.addListener(Events.CellClick, resultsGridListener);
+		resultsGrid.setContextMenu(new ResultsPanelContextMenu(mainController));
+		resultsGrid.disableTextSelection(false);
 
 		resultsGridContainer = new ContentPanel();
 		resultsGridContainer.getHeader().setVisible(false);
 		resultsGridContainer.setBorders(true);
 		resultsGridContainer.setBodyBorder(false);
 		resultsGridContainer.setLayout(new FitLayout());
+		resultsGridContainer.setScrollMode(Scroll.AUTO);
 		resultsGridContainer.add(resultsGrid);
 		
 		this.add(resultsGridContainer, new RowData(1, 0.55, new Margins(0)));
@@ -169,9 +187,8 @@ public class ResultsPanel extends DisplayPanel
 		scoresPanelLocation = new LayoutContainer();
 		scoresPanelLocation.setLayout(new FitLayout());
 		scoresPanelLocation.setBorders(false);
-
-		this.add(scoresPanelLocation, new RowData(1, 0.45, new Margins(0)));
 		
+		this.add(scoresPanelLocation, new RowData(1, 0.45, new Margins(0)));
 	}
 
 	public void updateScoresPanel(int selectedInterface)
@@ -294,7 +311,13 @@ public class ResultsPanel extends DisplayPanel
 						column.setWidth(columnWidth);
 						column.setAlignment(HorizontalAlignment.CENTER);
 						column.setHidden(!displayColumn);
-						column.setFixed(!isResizable);
+						
+						// for chrome there is difference in location between header and content of the column
+						if(!MainController.getUserAgent().contains("chrome"))
+						{
+							column.setFixed(!isResizable);
+						}
+						
 						column.setResizable(isResizable);
 
 						if (renderer != null) {
@@ -316,7 +339,12 @@ public class ResultsPanel extends DisplayPanel
 					column.setWidth(columnWidth);
 					column.setAlignment(HorizontalAlignment.CENTER);
 					column.setHidden(!displayColumn);
-					column.setFixed(!isResizable);
+					
+					if(!MainController.getUserAgent().contains("chrome"))
+					{
+						column.setFixed(!isResizable);
+					}
+					
 					column.setResizable(isResizable);
 
 					if (renderer != null) {
@@ -538,6 +566,8 @@ public class ResultsPanel extends DisplayPanel
 		if (resultsGridWidthOfAllVisibleColumns < mainController.getWindowWidth() - limit) 
 		{
 			resultsGrid.getView().setForceFit(true);
+			
+			resultsGridContainer.setScrollMode(Scroll.AUTOY);
 		}
 		else 
 		{
@@ -549,11 +579,12 @@ public class ResultsPanel extends DisplayPanel
 				resultsGrid.getColumnModel().getColumn(i)
 						.setWidth(initialColumnWidth.get(i));
 			}
+			
+			resultsGridContainer.setScrollMode(Scroll.AUTO);
 		}
 
 		resultsGrid.getView().refresh(true);
 		resultsGrid.getView().layout();
-		resultsGrid.recalculate();
 		resultsGrid.repaint();
 
 		this.layout();

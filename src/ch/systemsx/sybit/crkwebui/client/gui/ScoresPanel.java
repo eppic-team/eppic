@@ -77,6 +77,7 @@ public class ScoresPanel extends LayoutContainer
 		scoresGrid.setBorders(true);
 		scoresGrid.setStripeRows(true);
 		scoresGrid.setColumnLines(true);
+		scoresGrid.disableTextSelection(false);
 
 		GroupingView view = new GroupingView();
 		view.setShowGroupedColumn(false);
@@ -312,7 +313,6 @@ public class ScoresPanel extends LayoutContainer
 
 		scoresGrid.getView().refresh(true);
 		scoresGrid.getView().layout();
-		scoresGrid.recalculate();
 		scoresGrid.repaint();
 
 		this.layout();

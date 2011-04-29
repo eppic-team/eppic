@@ -2,9 +2,11 @@ package ch.systemsx.sybit.crkwebui.client.gui;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 
+import com.extjs.gxt.ui.client.event.ComponentEvent;
 import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.event.WindowEvent;
+import com.extjs.gxt.ui.client.util.KeyNav;
 import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.Dialog;
 import com.extjs.gxt.ui.client.widget.layout.RowData;
@@ -14,7 +16,8 @@ public class InterfacesResiduesWindow extends Dialog
 {
 	private InterfacesResiduesPanel interfacesResiduesPanel;
 
-	public InterfacesResiduesWindow(final MainController mainController) 
+	public InterfacesResiduesWindow(final MainController mainController,
+									String title) 
 	{
 		int width = 1200;
 		int height = 660;
@@ -37,9 +40,9 @@ public class InterfacesResiduesWindow extends Dialog
 		this.setPlain(true);
 		this.setModal(true);
 		this.setBlinkModal(true);
-		this.setHeading(MainController.CONSTANTS.interfaces_residues_window());
 		this.setLayout(new RowLayout());
 		this.setHideOnButtonClick(true);
+		this.setHeading(title);
 
 		// adjust to 22 height rows
 		height = (height - 220) / 22;
@@ -63,6 +66,23 @@ public class InterfacesResiduesWindow extends Dialog
 		};
 		
 		this.addListener(Events.Resize, resizeWindowListener);
+		
+		new KeyNav<ComponentEvent>(this)
+		{
+			@Override
+            public void onPageDown(ComponentEvent ce) 
+			{
+				interfacesResiduesPanel.getFirstStructurePanel().getResiduesGridPagingToolbar().next();
+				interfacesResiduesPanel.getSecondStructurePanel().getResiduesGridPagingToolbar().next();
+            }
+			
+			@Override
+            public void onPageUp(ComponentEvent ce) 
+			{
+				interfacesResiduesPanel.getFirstStructurePanel().getResiduesGridPagingToolbar().previous();
+				interfacesResiduesPanel.getSecondStructurePanel().getResiduesGridPagingToolbar().previous();
+            }
+		};
 		
 	}
 
