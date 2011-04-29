@@ -29,7 +29,7 @@ public class FileBaseServlet extends HttpServlet {
 
 		InputStream propertiesStream = getServletContext()
 				.getResourceAsStream(
-						"/WEB-INF/classes/ch/systemsx/sybit/crkwebui/server/server.properties");
+						"/WEB-INF/classes/META-INF/server.properties");
 
 		properties = new Properties();
 
@@ -45,7 +45,7 @@ public class FileBaseServlet extends HttpServlet {
 
 		InputStream messagesStream = getServletContext()
 				.getResourceAsStream(
-						"/WEB-INF/classes/ch/systemsx/sybit/crkwebui/server/constants.properties");
+						"/WEB-INF/classes/META-INF/constants.properties");
 
 		messages = new Properties();
 

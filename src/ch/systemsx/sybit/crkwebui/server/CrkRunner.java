@@ -38,6 +38,7 @@ public class CrkRunner implements Runnable
 	private Session sgeSession;
 	private String submissionId; 
 	
+	private boolean wasFileUploaded;
 //	private boolean isWaiting;
 	
 	public CrkRunner(
@@ -48,7 +49,8 @@ public class CrkRunner implements Runnable
 					 String generatedDirectoryName,
 					 InputParameters inputParameters,
 					 String crkApplicationLocation,
-					 Session sgeSession)
+					 Session sgeSession,
+					 boolean wasFileUploaded)
 	{
 		this.inputParameters = inputParameters;
 		this.input = input;
@@ -60,6 +62,8 @@ public class CrkRunner implements Runnable
 		this.emailSender = emailSender;
 		
 		this.sgeSession = sgeSession;
+		
+		this.wasFileUploaded = wasFileUploaded;
 	}
 
 	public void run() 
@@ -108,7 +112,15 @@ public class CrkRunner implements Runnable
 			command.add("-jar");
 			command.add(crkApplicationLocation);
 			command.add("-i");
-			command.add(input);
+			
+			String inputLocation = input;
+			
+			if(wasFileUploaded)
+			{
+				inputLocation = destinationDirectoryName + "/" + input;
+			}
+			
+			command.add(inputLocation);
 			command.add("-o");
 			command.add(destinationDirectoryName);
 			command.add("-q");
@@ -186,6 +198,7 @@ public class CrkRunner implements Runnable
 //			sgeSession = factory.getSession();
 //
 //			sgeSession.init("");
+			
 			JobTemplate jobTemplate = sgeSession.createJobTemplate();
 			jobTemplate.setRemoteCommand("java");
 			jobTemplate.setArgs(command);

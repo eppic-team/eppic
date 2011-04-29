@@ -68,6 +68,8 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 	
 	private SessionFactory sgeFactory;
 	private Session sgeSession;
+	
+	private String protocol = "http";
 
 	public void init(ServletConfig config) throws ServletException 
 	{
@@ -75,7 +77,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 		
 		InputStream propertiesStream = getServletContext()
 				.getResourceAsStream(
-						"/WEB-INF/classes/ch/systemsx/sybit/crkwebui/server/server.properties");
+						"/WEB-INF/classes/META-INF/server.properties");
 
 		properties = new Properties();
 
@@ -115,7 +117,12 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 
 		runInstances = new CrkThreadGroup("instances");
 		getServletContext().setAttribute("instances", runInstances);
-
+		
+		if(properties.getProperty("protocol") != null)
+		{
+			protocol = properties.getProperty("protocol");
+		}
+		
 //		dataSource = properties.getProperty("data_source");
 //		DBUtils.setDataSource(dataSource);
 //		
@@ -209,7 +216,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 
 		InputStream propertiesStream = getServletContext()
 				.getResourceAsStream(
-						"/WEB-INF/classes/ch/systemsx/sybit/crkwebui/server/grid.properties");
+						"/WEB-INF/classes/META-INF/grid.properties");
 
 		Properties gridProperties = new Properties();
 		
@@ -245,7 +252,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 		// default input parameters values
 		InputStream defaultInputParametersStream = getServletContext()
 				.getResourceAsStream(
-						"/WEB-INF/classes/ch/systemsx/sybit/crkwebui/server/input_default_parameters.properties");
+						"/WEB-INF/classes/META-INF/input_default_parameters.properties");
 
 		Properties defaultInputParametersProperties = new Properties();
 
@@ -333,8 +340,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 		settings.setUseCaptcha(useCaptcha);
 		settings.setNrOfAllowedSubmissionsWithoutCaptcha(nrOfAllowedSubmissionsWithoutCaptcha);
 		
-		String resultsLocation = properties.getProperty("results_location");
-		settings.setResultsLocation(resultsLocation);
+		settings.setResultsLocation(properties.getProperty("results_location"));
 		
 		return settings;
 	}
@@ -344,6 +350,8 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 	{
 		if (runJobData != null) 
 		{
+			boolean wasFileUploaded = true;
+			
 			if(runJobData.getJobId() == null)
 			{
 				String randomDirectoryName = RandomDirectoryNameGenerator.generateRandomDirectoryName(generalDestinationDirectoryName);
@@ -354,6 +362,8 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 				localDestinationDir.mkdir();
 				
 				runJobData.setJobId(randomDirectoryName);
+				
+				wasFileUploaded = false;
 			}
 			
 			EmailData emailData = new EmailData();
@@ -379,16 +389,20 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 //								 runJobData.getInput(),
 //								 getThreadLocalRequest().getRemoteAddr());
 
-			String serverHost = properties.getProperty("server_host_page");
+			String serverName = getThreadLocalRequest().getServerName();
+			int serverPort = getThreadLocalRequest().getServerPort();
+			
+			String resultsLocation = properties.getProperty(protocol + "://" + serverName + ":" + serverPort + "/crkwebui/Crkwebui.html");
 			
 			CrkRunner crkRunner = new CrkRunner(emailSender,
 					runJobData.getInput(), 
-					serverHost + "#id=" + runJobData.getJobId(),
+					resultsLocation + "#id=" + runJobData.getJobId(),
 					localDestinationDirName, 
 					runJobData.getJobId(),
 					runJobData.getInputParameters(),
 					crkApplicationLocation,
-					sgeSession);
+					sgeSession,
+					wasFileUploaded);
 
 			CrkThread crkRunnerThread = new CrkThread(runInstances, 
 					crkRunner,
