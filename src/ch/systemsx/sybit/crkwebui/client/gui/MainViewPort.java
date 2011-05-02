@@ -111,6 +111,10 @@ public class MainViewPort extends Viewport
 		}
 		
 		interfacesResiduesWindow.setVisible(true);
+		
+		//called beacuse of the bug in GXT 2.2.3
+		// http://www.sencha.com/forum/showthread.php?126888-Problems-with-RowLayout
+		interfacesResiduesWindow.layout(true);
 	}
 	
 	public void showWaiting(String text)
