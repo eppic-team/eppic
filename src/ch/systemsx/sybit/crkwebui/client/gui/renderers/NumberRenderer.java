@@ -6,11 +6,8 @@ import com.extjs.gxt.ui.client.widget.grid.ColumnData;
 import com.extjs.gxt.ui.client.widget.grid.Grid;
 import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
 import com.extjs.gxt.ui.client.widget.table.NumberCellRenderer;
-import com.extjs.gxt.ui.client.widget.tips.ToolTip;
-import com.extjs.gxt.ui.client.widget.tips.ToolTipConfig;
+import com.extjs.gxt.ui.client.widget.tips.QuickTip;
 import com.google.gwt.i18n.client.NumberFormat;
-import com.google.gwt.user.client.Command;
-import com.google.gwt.user.client.DeferredCommand;
 
 /**
  * This renderer is used to display formatted numerical values
@@ -30,6 +27,10 @@ public class NumberRenderer implements GridCellRenderer<BeanModel>
 						 ListStore<BeanModel> store, 
 						 final Grid<BeanModel> grid) 
 	{
+//		QuickTip quickTip = new QuickTip(grid);
+//		quickTip.disable();
+//		quickTip.initTarget(grid);
+//		
 		return numberRenderer.render(null, property, model.get(property));  
 	}
 }

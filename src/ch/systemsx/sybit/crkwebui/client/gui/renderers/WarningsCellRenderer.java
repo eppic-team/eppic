@@ -13,8 +13,15 @@ import com.extjs.gxt.ui.client.widget.grid.ColumnData;
 import com.extjs.gxt.ui.client.widget.grid.Grid;
 import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
 import com.extjs.gxt.ui.client.widget.tips.QuickTip;
+import com.extjs.gxt.ui.client.widget.tips.ToolTip;
 import com.extjs.gxt.ui.client.widget.tips.ToolTipConfig;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.MouseOutEvent;
+import com.google.gwt.event.dom.client.MouseOutHandler;
+import com.google.gwt.event.dom.client.MouseOverEvent;
+import com.google.gwt.event.dom.client.MouseOverHandler;
 import com.google.gwt.user.client.ui.Image;
 
 /**
@@ -25,9 +32,12 @@ import com.google.gwt.user.client.ui.Image;
 public class WarningsCellRenderer implements GridCellRenderer<BeanModel> 
 {
 	private MainController mainController;
+	
+	private ToolTip toolTip;
+	private boolean refreshTooltip = true;
 
 	public WarningsCellRenderer(MainController mainController) 
-	{
+	{                                
 		this.mainController = mainController;
 	}
 
@@ -35,37 +45,65 @@ public class WarningsCellRenderer implements GridCellRenderer<BeanModel>
 			ColumnData config, final int rowIndex, final int colIndex,
 			ListStore<BeanModel> store, Grid<BeanModel> grid) 
 	{
+		String source = "resources/images/gxt/icons/warning_icon.PNG";
 		
-		ContentPanel warningPanel = new ContentPanel();
-		warningPanel.getHeader().setVisible(false);
-		warningPanel.setBodyBorder(false);
-		warningPanel.setBorders(false);
-		warningPanel.setWidth(20);
-		warningPanel.setHeight(20);
+		final Image image  = new Image(source);
+		image.addMouseOverHandler(new MouseOverHandler() {
+			
+			@Override
+			public void onMouseOver(MouseOverEvent event)
+			{
+				if((toolTip != null) && (refreshTooltip))
+				{
+					toolTip.disable();
+				}
+				
+				if(refreshTooltip)
+				{
+					List<String> warnings = (List<String>)model.get("warnings");
+					
+					ToolTipConfig toolTipConfig = new ToolTipConfig();  
+					toolTipConfig.setTitle(MainController.CONSTANTS.results_grid_warnings_tooltip_title());  
+					toolTipConfig.setMouseOffset(new int[] {0, 0});  
+					toolTipConfig.setTemplate(new Template(generateWarningsTemplate(warnings)));  
+					toolTipConfig.setMaxWidth(mainController.getWindowWidth());
+					toolTipConfig.setShowDelay(100);
+					toolTipConfig.setDismissDelay(0);
+					
+					toolTip = new ToolTip(null, toolTipConfig);
+					toolTip.showAt(image.getAbsoluteLeft() + image.getOffsetWidth(), 
+								   image.getAbsoluteTop() + image.getOffsetWidth());
+					refreshTooltip = false;
+				}
+				
+				
+			}
+		});
 		
-		if(model.get("warnings") != null)
+		image.addMouseOutHandler(new MouseOutHandler() 
 		{
-//			warningPanel.setStyleAttribute("background", "white url(resources/images/gxt/icons/warning_icon.png) no-repeat;");
-//			warningPanel.setStyleAttribute("background", "url(http://localhost/warning_icon.png) no-repeat;");
-			
-			List<String> warnings = (List<String>)model.get("warnings");
-			
-			ToolTipConfig toolTipConfig = new ToolTipConfig();  
-			toolTipConfig.setTitle("Warnings");  
-			toolTipConfig.setMouseOffset(new int[] {0, 0});  
-			toolTipConfig.setAnchor("left");  
-			toolTipConfig.setTemplate(new Template(generateWarningsTemplate(warnings)));  
-			toolTipConfig.setMaxWidth(mainController.getWindowWidth());
-			toolTipConfig.setShowDelay(100);
-			toolTipConfig.setDismissDelay(0);
-			
-			warningPanel.setToolTip(toolTipConfig); 
-		}
+			@Override
+			public void onMouseOut(MouseOutEvent event) 
+			{
+				if(toolTip != null)
+				{
+					toolTip.disable();
+				}
+				
+				refreshTooltip = true;
+			}
+		});
 		
+		image.addClickHandler(new ClickHandler() 
+		{
+			@Override
+			public void onClick(ClickEvent event)
+			{
+				mainController.runViewer(String.valueOf(model.get("id")));
+			}
+		});
 		
-		warningPanel.add(IconHelper.createPath("resources/images/gxt/icons/warning_icon.PNG", 20, 20).createImage());
-		
-		return warningPanel;
+		return image;
 	}
 	
 	private String generateWarningsTemplate(List<String> warnings)
