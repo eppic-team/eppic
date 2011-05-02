@@ -3,6 +3,9 @@ package ch.systemsx.sybit.crkwebui.client.gui;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 
 import com.extjs.gxt.ui.client.Style.LayoutRegion;
+import com.extjs.gxt.ui.client.event.BorderLayoutEvent;
+import com.extjs.gxt.ui.client.event.Events;
+import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.MessageBox;
 import com.extjs.gxt.ui.client.widget.Viewport;
@@ -29,13 +32,35 @@ public class MainViewPort extends Viewport
 
 	private MainController mainController;
 
-	public MainViewPort(MainController mainController) 
+	public MainViewPort(final MainController mainController) 
 	{
 		this.mainController = mainController;
 
 		BorderLayout layout = new BorderLayout();
 		this.setLayout(layout);
 		this.setStyleAttribute("padding", "10px");
+		
+		layout.addListener(Events.Collapse, new Listener<BorderLayoutEvent>()
+		{
+			public void handleEvent(BorderLayoutEvent be) 
+			{
+				if(be.getPanel() instanceof MyJobsPanel)
+				{
+					mainController.resizeResultsGrid();
+				}
+			}
+		});
+		
+		layout.addListener(Events.Expand, new Listener<BorderLayoutEvent>()
+		{
+			public void handleEvent(BorderLayoutEvent be) 
+			{
+				if(be.getPanel() instanceof MyJobsPanel)
+				{
+					mainController.resizeResultsGrid();
+				}
+			}
+		});
 
 		BorderLayoutData westData = new BorderLayoutData(LayoutRegion.WEST, 180);
 		westData.setCollapsible(true);
