@@ -164,6 +164,7 @@ public class ResultsPanel extends DisplayPanel
 //		resultsGrid.addListener(Events.CellClick, resultsGridListener);
 		resultsGrid.setContextMenu(new ResultsPanelContextMenu(mainController));
 		resultsGrid.disableTextSelection(false);
+		fillResultsGrid(mainController.getPdbScoreItem());
 
 		resultsGridContainer = new ContentPanel();
 		resultsGridContainer.getHeader().setVisible(false);
