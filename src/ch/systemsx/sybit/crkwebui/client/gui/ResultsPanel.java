@@ -37,11 +37,13 @@ import com.extjs.gxt.ui.client.widget.grid.ColumnModel;
 import com.extjs.gxt.ui.client.widget.grid.Grid;
 import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
+import com.extjs.gxt.ui.client.widget.layout.FlowLayout;
 import com.extjs.gxt.ui.client.widget.layout.RowData;
 import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 import com.extjs.gxt.ui.client.widget.layout.VBoxLayout;
 import com.extjs.gxt.ui.client.widget.layout.VBoxLayout.VBoxLayoutAlign;
 import com.google.gwt.user.client.Cookies;
+import com.google.gwt.user.client.Window;
 
 /**
  * This panel is used to display the results of the calculations
@@ -136,7 +138,7 @@ public class ResultsPanel extends DisplayPanel
 		resultsGrid = new Grid<BeanModel>(resultsStore, resultsColumnModel);
 		// resultsGrid.setStyleAttribute("borderTop", "none");
 
-		resultsGrid.getView().setForceFit(false);
+		resultsGrid.getView().setForceFit(true);
 
 		resultsGrid.setBorders(false);
 		resultsGrid.setStripeRows(true);
@@ -164,13 +166,14 @@ public class ResultsPanel extends DisplayPanel
 //		resultsGrid.addListener(Events.CellClick, resultsGridListener);
 		resultsGrid.setContextMenu(new ResultsPanelContextMenu(mainController));
 		resultsGrid.disableTextSelection(false);
+		resultsGrid.setAutoHeight(true);
 		fillResultsGrid(mainController.getPdbScoreItem());
 
 		resultsGridContainer = new ContentPanel();
 		resultsGridContainer.getHeader().setVisible(false);
 		resultsGridContainer.setBorders(true);
 		resultsGridContainer.setBodyBorder(false);
-		resultsGridContainer.setLayout(new FitLayout());
+		resultsGridContainer.setLayout(new FlowLayout());
 		resultsGridContainer.setScrollMode(Scroll.AUTO);
 		resultsGridContainer.add(resultsGrid);
 		
@@ -544,7 +547,7 @@ public class ResultsPanel extends DisplayPanel
 
 	public void resizeGrid() 
 	{
-		int limit = 25;
+		int limit = 45;
 		if(mainController.getMainViewPort().getMyJobsPanel().isExpanded())
 		{
 			limit += mainController.getMainViewPort().getMyJobsPanel().getWidth();
@@ -566,21 +569,23 @@ public class ResultsPanel extends DisplayPanel
 		
 		if (resultsGridWidthOfAllVisibleColumns < mainController.getWindowWidth() - limit) 
 		{
+			resultsGrid.setWidth(mainController.getWindowWidth() - limit);
 			resultsGrid.getView().setForceFit(true);
-			
 			resultsGridContainer.setScrollMode(Scroll.AUTOY);
 		}
 		else 
 		{
-			resultsGrid.getView().setForceFit(false);
+			resultsGrid.setWidth(resultsGridWidthOfAllVisibleColumns);
 
 			int nrOfColumn = resultsGrid.getColumnModel().getColumnCount();
-
+			
 			for (int i = 0; i < nrOfColumn; i++) {
 				resultsGrid.getColumnModel().getColumn(i)
 						.setWidth(initialColumnWidth.get(i));
+				
 			}
 			
+			resultsGrid.getView().setForceFit(true);
 			resultsGridContainer.setScrollMode(Scroll.AUTO);
 		}
 
