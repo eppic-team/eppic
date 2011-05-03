@@ -1,8 +1,10 @@
 package ch.systemsx.sybit.crkwebui.client.gui;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import model.InterfaceItem;
 import model.InterfaceScoreItemKey;
@@ -12,7 +14,6 @@ import ch.systemsx.sybit.crkwebui.client.gui.renderers.GridCellRendererFactory;
 
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.Style.Orientation;
-import com.extjs.gxt.ui.client.Style.Scroll;
 import com.extjs.gxt.ui.client.Style.SelectionMode;
 import com.extjs.gxt.ui.client.data.BeanModel;
 import com.extjs.gxt.ui.client.data.BeanModelFactory;
@@ -37,13 +38,11 @@ import com.extjs.gxt.ui.client.widget.grid.ColumnModel;
 import com.extjs.gxt.ui.client.widget.grid.Grid;
 import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
-import com.extjs.gxt.ui.client.widget.layout.FlowLayout;
 import com.extjs.gxt.ui.client.widget.layout.RowData;
 import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 import com.extjs.gxt.ui.client.widget.layout.VBoxLayout;
 import com.extjs.gxt.ui.client.widget.layout.VBoxLayout.VBoxLayoutAlign;
 import com.google.gwt.user.client.Cookies;
-import com.google.gwt.user.client.Window;
 
 /**
  * This panel is used to display the results of the calculations
@@ -68,7 +67,7 @@ public class ResultsPanel extends DisplayPanel
 	private List<ColumnConfig> resultsConfigs;
 	private ListStore<BeanModel> resultsStore;
 	private ColumnModel resultsColumnModel;
-	private List<Integer> initialColumnWidth;
+	private Map<String, Integer> initialColumnWidth;
 	// ***************************************
 
 	// ***************************************
@@ -138,11 +137,12 @@ public class ResultsPanel extends DisplayPanel
 		resultsGrid = new Grid<BeanModel>(resultsStore, resultsColumnModel);
 		// resultsGrid.setStyleAttribute("borderTop", "none");
 
-		resultsGrid.getView().setForceFit(true);
+		resultsGrid.getView().setForceFit(false);
 
 		resultsGrid.setBorders(false);
 		resultsGrid.setStripeRows(true);
 		resultsGrid.setColumnLines(true);
+		resultsGrid.setColumnReordering(true);
 
 		Listener<GridEvent> resultsGridListener = new Listener<GridEvent>() {
 			@Override
@@ -158,7 +158,10 @@ public class ResultsPanel extends DisplayPanel
 			@Override
 			public void selectionChanged(SelectionChangedEvent<BeanModel> se) 
 			{
-				updateScoresPanel((Integer) resultsGrid.getSelectionModel().getSelectedItem().get("id"));
+				if(resultsGrid.getSelectionModel().getSelectedItem() != null)
+				{
+					updateScoresPanel((Integer) resultsGrid.getSelectionModel().getSelectedItem().get("id"));
+				}
 			}
 			
 		});
@@ -166,15 +169,15 @@ public class ResultsPanel extends DisplayPanel
 //		resultsGrid.addListener(Events.CellClick, resultsGridListener);
 		resultsGrid.setContextMenu(new ResultsPanelContextMenu(mainController));
 		resultsGrid.disableTextSelection(false);
-		resultsGrid.setAutoHeight(true);
+//		resultsGrid.setAutoHeight(true);
 		fillResultsGrid(mainController.getPdbScoreItem());
 
 		resultsGridContainer = new ContentPanel();
 		resultsGridContainer.getHeader().setVisible(false);
 		resultsGridContainer.setBorders(true);
 		resultsGridContainer.setBodyBorder(false);
-		resultsGridContainer.setLayout(new FlowLayout());
-		resultsGridContainer.setScrollMode(Scroll.AUTO);
+		resultsGridContainer.setLayout(new FitLayout());
+//		resultsGridContainer.setScrollMode(Scroll.AUTO);
 		resultsGridContainer.add(resultsGrid);
 		
 		this.add(resultsGridContainer, new RowData(1, 0.55, new Margins(0)));
@@ -239,7 +242,7 @@ public class ResultsPanel extends DisplayPanel
 		}
 
 		if (columns != null) {
-			initialColumnWidth = new ArrayList<Integer>();
+			initialColumnWidth = new HashMap<String, Integer>();
 		}
 
 		for (String columnName : columns) {
@@ -316,12 +319,6 @@ public class ResultsPanel extends DisplayPanel
 						column.setAlignment(HorizontalAlignment.CENTER);
 						column.setHidden(!displayColumn);
 						
-						// for chrome there is difference in location between header and content of the column
-						if(!MainController.getUserAgent().contains("chrome"))
-						{
-							column.setFixed(!isResizable);
-						}
-						
 						column.setResizable(isResizable);
 
 						if (renderer != null) {
@@ -332,7 +329,7 @@ public class ResultsPanel extends DisplayPanel
 							column.setToolTip(tootlip);
 						}
 
-						initialColumnWidth.add(columnWidth);
+						initialColumnWidth.put(method, columnWidth);
 
 						configs.add(column);
 					}
@@ -344,11 +341,6 @@ public class ResultsPanel extends DisplayPanel
 					column.setAlignment(HorizontalAlignment.CENTER);
 					column.setHidden(!displayColumn);
 					
-					if(!MainController.getUserAgent().contains("chrome"))
-					{
-						column.setFixed(!isResizable);
-					}
-					
 					column.setResizable(isResizable);
 
 					if (renderer != null) {
@@ -359,7 +351,7 @@ public class ResultsPanel extends DisplayPanel
 						column.setToolTip(tootlip);
 					}
 
-					initialColumnWidth.add(columnWidth);
+					initialColumnWidth.put(columnName, columnWidth);
 
 					configs.add(column);
 				}
@@ -563,35 +555,41 @@ public class ResultsPanel extends DisplayPanel
 		{
 			if(!resultsGrid.getColumnModel().getColumn(i).isHidden())
 			{
-				resultsGridWidthOfAllVisibleColumns += initialColumnWidth.get(i);
+				resultsGridWidthOfAllVisibleColumns += initialColumnWidth.get(resultsGrid.getColumnModel().getColumn(i).getId());
 			}
 		}
 		
 		if (resultsGridWidthOfAllVisibleColumns < mainController.getWindowWidth() - limit) 
 		{
-			resultsGrid.setWidth(mainController.getWindowWidth() - limit);
-			resultsGrid.getView().setForceFit(true);
-			resultsGridContainer.setScrollMode(Scroll.AUTOY);
-		}
-		else 
-		{
-			resultsGrid.setWidth(resultsGridWidthOfAllVisibleColumns);
-
+			int maxWidth = mainController.getWindowWidth() - limit - 20;
+			float multiplier = (float)maxWidth / resultsGridWidthOfAllVisibleColumns;
+			
 			int nrOfColumn = resultsGrid.getColumnModel().getColumnCount();
 			
+			for (int i = 0; i < nrOfColumn; i++) 
+			{
+				resultsGrid.getColumnModel().setColumnWidth(i, (int)(initialColumnWidth.get(resultsGrid.getColumnModel().getColumn(i).getId()) * multiplier), true);
+//				resultsGrid.getColumnModel().getColumn(i)
+//						.setWidth((int)(initialColumnWidth.get(i) * multiplier));
+			}
+		} 
+		else 
+		{
+			int nrOfColumn = resultsGrid.getColumnModel().getColumnCount();
+
 			for (int i = 0; i < nrOfColumn; i++) {
 				resultsGrid.getColumnModel().getColumn(i)
-						.setWidth(initialColumnWidth.get(i));
-				
+						.setWidth(initialColumnWidth.get(resultsGrid.getColumnModel().getColumn(i).getId()));
 			}
-			
-			resultsGrid.getView().setForceFit(true);
-			resultsGridContainer.setScrollMode(Scroll.AUTO);
 		}
 
+		
+//		resultsGrid.reconfigure(resultsStore, resultsColumnModel);
 		resultsGrid.getView().refresh(true);
 		resultsGrid.getView().layout();
 		resultsGrid.repaint();
+		
+		resultsGrid.getView().getHeader().refresh();
 
 		this.layout();
 	}
