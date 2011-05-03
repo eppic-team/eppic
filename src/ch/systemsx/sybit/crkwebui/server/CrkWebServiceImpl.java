@@ -126,16 +126,16 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 //		dataSource = properties.getProperty("data_source");
 //		DBUtils.setDataSource(dataSource);
 //		
-//		sgeFactory = SessionFactory.getFactory();
-//		sgeSession = sgeFactory.getSession();
-//		try 
-//		{
-//			sgeSession.init("");
-//		} 
-//		catch (DrmaaException e) 
-//		{
-//			e.printStackTrace();
-//		}
+		sgeFactory = SessionFactory.getFactory();
+		sgeSession = sgeFactory.getSession();
+		try 
+		{
+			sgeSession.init("");
+		} 
+		catch (DrmaaException e) 
+		{
+			e.printStackTrace();
+		}
 		
 //		**********************
 //		* Hibernate pure
@@ -392,7 +392,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 			String serverName = getThreadLocalRequest().getServerName();
 			int serverPort = getThreadLocalRequest().getServerPort();
 			
-			String resultsLocation = properties.getProperty(protocol + "://" + serverName + ":" + serverPort + "/crkwebui/Crkwebui.html");
+			String resultsLocation = protocol + "://" + serverName + ":" + serverPort + "/crkwebui/Crkwebui.html";
 			
 			CrkRunner crkRunner = new CrkRunner(emailSender,
 					runJobData.getInput(), 
