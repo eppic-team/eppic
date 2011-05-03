@@ -7,15 +7,11 @@ import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 import com.extjs.gxt.ui.client.core.Template;
 import com.extjs.gxt.ui.client.data.BeanModel;
 import com.extjs.gxt.ui.client.store.ListStore;
-import com.extjs.gxt.ui.client.util.IconHelper;
-import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.grid.ColumnData;
 import com.extjs.gxt.ui.client.widget.grid.Grid;
 import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
-import com.extjs.gxt.ui.client.widget.tips.QuickTip;
 import com.extjs.gxt.ui.client.widget.tips.ToolTip;
 import com.extjs.gxt.ui.client.widget.tips.ToolTipConfig;
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.MouseOutEvent;
@@ -72,7 +68,7 @@ public class WarningsCellRenderer implements GridCellRenderer<BeanModel>
 					
 					toolTip = new ToolTip(null, toolTipConfig);
 					toolTip.showAt(image.getAbsoluteLeft() + image.getOffsetWidth(), 
-								   image.getAbsoluteTop() + image.getOffsetWidth());
+								   image.getAbsoluteTop() + image.getOffsetWidth() + 5);
 					refreshTooltip = false;
 				}
 				

@@ -6,7 +6,6 @@ import com.extjs.gxt.ui.client.widget.grid.ColumnData;
 import com.extjs.gxt.ui.client.widget.grid.Grid;
 import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
 import com.extjs.gxt.ui.client.widget.table.NumberCellRenderer;
-import com.extjs.gxt.ui.client.widget.tips.QuickTip;
 import com.google.gwt.i18n.client.NumberFormat;
 
 /**
