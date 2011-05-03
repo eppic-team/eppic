@@ -107,6 +107,9 @@ public class ResiduesPanel extends ContentPanel
 		residuesGrid.setBorders(false);
 		residuesGrid.setStripeRows(true);
 		residuesGrid.setColumnLines(true);
+		
+		residuesGrid.disableTextSelection(false);
+		
 		residuesGrid.getView().setForceFit(true);
 		
 		residuesGrid.getView().setViewConfig(new GridViewConfig(){
@@ -136,7 +139,7 @@ public class ResiduesPanel extends ContentPanel
 				return "";
 			}
 		});
-
+		
 		this.add(residuesGrid);
 		
 //		boolean isForceFit = checkIfForceFit(calculateWidthOfVisibleColumns());
@@ -426,5 +429,10 @@ public class ResiduesPanel extends ContentPanel
 	public PagingToolBar getResiduesGridPagingToolbar()
 	{
 		return pagingToolbar;
+	}
+
+	public Grid<BeanModel> getResiduesGrid() 
+	{
+		return residuesGrid;
 	}
 }

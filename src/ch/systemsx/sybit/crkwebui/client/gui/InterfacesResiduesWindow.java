@@ -72,18 +72,21 @@ public class InterfacesResiduesWindow extends Dialog
 			@Override
             public void onPageDown(ComponentEvent ce) 
 			{
-				interfacesResiduesPanel.getFirstStructurePanel().getResiduesGridPagingToolbar().next();
-				interfacesResiduesPanel.getSecondStructurePanel().getResiduesGridPagingToolbar().next();
+				interfacesResiduesPanel.getFirstStructurePanel().getResiduesGridPagingToolbar().setActivePage(
+						interfacesResiduesPanel.getFirstStructurePanel().getResiduesGridPagingToolbar().getActivePage() + 1);
+				interfacesResiduesPanel.getSecondStructurePanel().getResiduesGridPagingToolbar().setActivePage(
+						interfacesResiduesPanel.getSecondStructurePanel().getResiduesGridPagingToolbar().getActivePage() + 1);
             }
 			
 			@Override
             public void onPageUp(ComponentEvent ce) 
 			{
-				interfacesResiduesPanel.getFirstStructurePanel().getResiduesGridPagingToolbar().previous();
-				interfacesResiduesPanel.getSecondStructurePanel().getResiduesGridPagingToolbar().previous();
+				interfacesResiduesPanel.getFirstStructurePanel().getResiduesGridPagingToolbar().setActivePage(
+						interfacesResiduesPanel.getFirstStructurePanel().getResiduesGridPagingToolbar().getActivePage() - 1);
+				interfacesResiduesPanel.getSecondStructurePanel().getResiduesGridPagingToolbar().setActivePage(
+						interfacesResiduesPanel.getSecondStructurePanel().getResiduesGridPagingToolbar().getActivePage() - 1);
             }
 		};
-		
 	}
 
 	public InterfacesResiduesPanel getInterfacesResiduesPanel() {

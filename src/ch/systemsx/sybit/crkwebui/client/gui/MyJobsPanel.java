@@ -26,7 +26,6 @@ import com.extjs.gxt.ui.client.widget.grid.ColumnModel;
 import com.extjs.gxt.ui.client.widget.grid.Grid;
 import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
-import com.extjs.gxt.ui.client.widget.tips.ToolTipConfig;
 import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.ui.Hyperlink;
@@ -67,18 +66,18 @@ public class MyJobsPanel extends ContentPanel
 
 		toolBar.add(addNew);
 
-		Button test = new Button("Test", new SelectionListener<ButtonEvent>() {
-
-			public void componentSelected(ButtonEvent ce) 
-			{
-			}
-		});
-		ToolTipConfig toolTipConfig = new ToolTipConfig();
-		toolTipConfig.setShowDelay(0);
-		toolTipConfig.setText("This is tooltip");
-		test.setToolTip(toolTipConfig);
-
-		toolBar.add(test);
+//		Button test = new Button("Test", new SelectionListener<ButtonEvent>() {
+//
+//			public void componentSelected(ButtonEvent ce) 
+//			{
+//			}
+//		});
+//		ToolTipConfig toolTipConfig = new ToolTipConfig();
+//		toolTipConfig.setShowDelay(0);
+//		toolTipConfig.setText("This is tooltip");
+//		test.setToolTip(toolTipConfig);
+//
+//		toolBar.add(test);
 
 		this.setTopComponent(toolBar);
 
@@ -244,7 +243,7 @@ public class MyJobsPanel extends ContentPanel
 //		myJobsStore.removeAll();
 //		myJobsStore.add(data);
 //		myJobsGrid.reconfigure(myJobsStore, myJobsColumnModel);
-//		myJobsGrid.getView().refresh(false);
+		myJobsGrid.getView().refresh(false);
 		
 		if((mainController.getSelectedJobId() != null) &&
 			(myJobsGrid.getStore().getCount() > 0))

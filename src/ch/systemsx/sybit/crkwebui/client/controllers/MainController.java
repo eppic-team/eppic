@@ -461,4 +461,16 @@ public class MainController
 		return navigator.userAgent.toLowerCase();
 	}-*/;
 	
+	public void resizeResultsGrid()
+    {
+		if((mainViewPort != null) &&
+           (mainViewPort.getCenterPanel() != null) &&
+           (mainViewPort.getCenterPanel().getDisplayPanel() != null) &&
+           (mainViewPort.getCenterPanel().getDisplayPanel() instanceof ResultsPanel))
+           {
+		    	((ResultsPanel)mainViewPort.getCenterPanel().getDisplayPanel()).resizeGrid();
+           }
+    }
+
+	
 }
