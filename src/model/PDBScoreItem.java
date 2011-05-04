@@ -36,7 +36,7 @@ public class PDBScoreItem implements Serializable, ProcessingData
 	
 	public PDBScoreItem() 
 	{
-		interfaceScores = new HashMap();
+		interfaceScores = new HashMap<InterfaceScoreItemKey, InterfaceScoreItem>();
 		interfaceItems = new ArrayList<InterfaceItem>();
 	}
 	
