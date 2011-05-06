@@ -18,6 +18,7 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 
+import ch.systemsx.sybit.crkwebui.server.util.IPVerifier;
 import ch.systemsx.sybit.crkwebui.server.util.RandomDirectoryNameGenerator;
 
 /**
@@ -39,6 +40,11 @@ public class FileUploadServlet extends FileBaseServlet {
 	private String captchaPublicKey;
 	private String captchaPrivateKey;
 	private int nrOfAllowedSubmissionsWithoutCaptcha = 1;
+	
+	private boolean doIPBasedVerification;
+	private int defaultNrOfAllowedSubmissionsForIP;
+	
+	private int maxFileUploadSize;
 
 	/**
 	 * Read properties file
@@ -70,6 +76,11 @@ public class FileUploadServlet extends FileBaseServlet {
 		captchaPublicKey = properties.getProperty("captcha_public_key");
 		captchaPrivateKey = properties.getProperty("captcha_private_key");
 		nrOfAllowedSubmissionsWithoutCaptcha = Integer.parseInt(properties.getProperty("nr_of_allowed_submissions_without_captcha"));
+		
+		doIPBasedVerification = Boolean.parseBoolean(properties.getProperty("limit_access_by_ip","false"));
+		defaultNrOfAllowedSubmissionsForIP = Integer.parseInt(properties.getProperty("nr_of_allowed_submissions_for_ip","100"));
+		
+		maxFileUploadSize = Integer.parseInt(properties.getProperty("max_file_upload_size", "10"));
 	}
 
 	protected void doPost(HttpServletRequest request,
@@ -100,7 +111,7 @@ public class FileUploadServlet extends FileBaseServlet {
 
 			// Set the size threshold, above which content will be stored on
 			// disk.
-			fileItemFactory.setSizeThreshold(1 * 1024 * 1024); // 1 MB
+			fileItemFactory.setSizeThreshold(maxFileUploadSize * 1024 * 1024); // 1 MB
 
 			// Set the temporary directory to store the uploaded files of size
 			// above threshold.
@@ -108,6 +119,8 @@ public class FileUploadServlet extends FileBaseServlet {
 
 			ServletFileUpload uploadHandler = new ServletFileUpload(
 					fileItemFactory);
+			
+			uploadHandler.setFileSizeMax(maxFileUploadSize * 1024 * 1024);
 
 			try 
 			{
@@ -116,7 +129,7 @@ public class FileUploadServlet extends FileBaseServlet {
 				 */
 				List<FileItem> items = uploadHandler.parseRequest(request);
 				
-				boolean isVerified = true;
+				String verificationError = null;
 				String captchaResponse = null;
 				String challenge = null;
 				
@@ -151,15 +164,20 @@ public class FileUploadServlet extends FileBaseServlet {
 				{
 					if((captchaResponse == null) || (challenge == null))
 					{
-						isVerified = false;
+						verificationError = "Captcha verification failed";
 					}
 					else
 					{
-						isVerified = verifyChallenge(challenge, captchaResponse, request.getRemoteAddr());
+						verificationError = verifyChallenge(challenge, captchaResponse, request.getRemoteAddr());
 					}
 				}
 				
-				if(isVerified)
+				if((doIPBasedVerification) && (verificationError == null))
+				{
+					verificationError = IPVerifier.checkIfCanBeSubmitted(request.getRemoteAddr(), defaultNrOfAllowedSubmissionsForIP);
+				}
+				
+				if(verificationError == null)
 				{
 					String fileName = fileToUpload.getName();
 					
@@ -175,14 +193,14 @@ public class FileUploadServlet extends FileBaseServlet {
 //					File processingFile = new File(localDestinationDir
 //							+ "/" + fileName);
 //					processingFile.createNewFile();
+					
+					out.println("crkupres:" + randomDirectoryName);
 				}
 				else
 				{
-					response.sendError(HttpServletResponse.SC_FORBIDDEN,
-					"Verification failed. Try again");
+					out.println("err:" + "Verification failed - " + verificationError);
+//					response.sendError(HttpServletResponse.SC_FORBIDDEN, "Verification failed - " + verificationError);
 				}
-
-				out.println("crkupres:" + randomDirectoryName);
 				
 			} 
 			catch (FileUploadException ex)
@@ -208,17 +226,26 @@ public class FileUploadServlet extends FileBaseServlet {
 		out.close();
 	}
 
-	private boolean verifyChallenge(String challenge, String response, String remoteAddress) 
+	private String verifyChallenge(String challenge, String response, String remoteAddress) 
 	{
+		String result = null;
+		
 		if(response == null)
 		{
-			return false;
+			result = "Captcha verification not possible";
 		}
 		else
 		{
 			ReCaptcha r = ReCaptchaFactory.newReCaptcha(captchaPublicKey, captchaPrivateKey, true);
-			return r.checkAnswer(remoteAddress, challenge, response).isValid();
+			boolean verificationResult = r.checkAnswer(remoteAddress, challenge, response).isValid();
+			
+			if(!verificationResult)
+			{
+				result = "Captcha verification failed - incorrect value provided";
+			}
 		}
+		
+		return result;
 	}
 
 }

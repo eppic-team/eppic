@@ -297,7 +297,8 @@ public class MainController
 				 interfaceNr, 
 				 selectedJobId,
 				 pdbScoreItem.getPdbName(),
-				 size);
+				 size,
+				 settings.getJmolScript());
 	}
 	
 	/*
@@ -307,13 +308,14 @@ public class MainController
 								String interfaceNr, 
 								String selectedJob,
 								String filename,
-								int size) /*-{
+								int size,
+								String jmolScript) /*-{
 		var jmolwindow = window.open("", "Jmol", "status=no,width=" + size + ",height=" + size);
 		jmolwindow.document.body.innerHTML = "";
 		$wnd.jmolInitialize("resources/jmol");
 		$wnd.jmolSetCallback("language", "en");
 		$wnd.jmolSetDocument(jmolwindow.document);
-		$wnd.jmolApplet(size - 20, 'load ' + url + selectedJob + "/" + filename + "." + interfaceNr + '.rimcore.pdb; cartoon on; wireframe off; spacefill off;');
+		$wnd.jmolApplet(size - 20, 'load ' + url + selectedJob + "/" + filename + "." + interfaceNr + '.rimcore.pdb;' + jmolScript);
 	}-*/;
 	
 	public void downloadFileFromServer(String type, String interfaceId)

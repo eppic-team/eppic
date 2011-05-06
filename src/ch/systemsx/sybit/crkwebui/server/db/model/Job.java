@@ -1,12 +1,15 @@
 package ch.systemsx.sybit.crkwebui.server.db.model;
 
 import java.io.Serializable;
+import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 @Entity
 @Table(name="Jobs")
@@ -23,6 +26,9 @@ public class Job implements Serializable
 	private String email;
 	private String ip;
 	private String input;
+	
+	@Temporal(TemporalType.TIMESTAMP)
+	private Date submissionDate;
 	
 	@Id
 	@GeneratedValue
@@ -81,5 +87,13 @@ public class Job implements Serializable
 
 	public void setInput(String input) {
 		this.input = input;
+	}
+
+	public void setSubmissionDate(Date submissionDate) {
+		this.submissionDate = submissionDate;
+	}
+
+	public Date getSubmissionDate() {
+		return submissionDate;
 	}
 }

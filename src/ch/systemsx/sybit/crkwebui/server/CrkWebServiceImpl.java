@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +31,8 @@ import org.ggf.drmaa.SessionFactory;
 import ch.systemsx.sybit.crkwebui.client.CrkWebService;
 import ch.systemsx.sybit.crkwebui.server.data.EmailData;
 import ch.systemsx.sybit.crkwebui.server.db.model.JobDAO;
+import ch.systemsx.sybit.crkwebui.server.db.model.JobDAOImpl;
+import ch.systemsx.sybit.crkwebui.server.util.IPVerifier;
 import ch.systemsx.sybit.crkwebui.server.util.PDBModelConverter;
 import ch.systemsx.sybit.crkwebui.server.util.RandomDirectoryNameGenerator;
 import ch.systemsx.sybit.crkwebui.shared.CrkWebException;
@@ -70,6 +73,9 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 	private Session sgeSession;
 	
 	private String protocol = "http";
+	
+	private boolean doIPBasedVerification;
+	private int defaultNrOfAllowedSubmissionsForIP;
 
 	public void init(ServletConfig config) throws ServletException 
 	{
@@ -123,19 +129,22 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 			protocol = properties.getProperty("protocol");
 		}
 		
+		doIPBasedVerification = Boolean.parseBoolean(properties.getProperty("limit_access_by_ip","false"));
+		defaultNrOfAllowedSubmissionsForIP = Integer.parseInt(properties.getProperty("nr_of_allowed_submissions_for_ip","100"));
+		
 //		dataSource = properties.getProperty("data_source");
 //		DBUtils.setDataSource(dataSource);
 //		
-		sgeFactory = SessionFactory.getFactory();
-		sgeSession = sgeFactory.getSession();
-		try 
-		{
-			sgeSession.init("");
-		} 
-		catch (DrmaaException e) 
-		{
-			e.printStackTrace();
-		}
+//		sgeFactory = SessionFactory.getFactory();
+//		sgeSession = sgeFactory.getSession();
+//		try 
+//		{
+//			sgeSession.init("");
+//		} 
+//		catch (DrmaaException e) 
+//		{
+//			e.printStackTrace();
+//		}
 		
 //		**********************
 //		* Hibernate pure
@@ -327,7 +336,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 			settings.setReducedAlphabetList(reducedAlphabetConverted);
 		}
 		
-		JobDAO jobDAO = new JobDAO();
+		JobDAO jobDAO = new JobDAOImpl();
 		int nrOfJobsForSession = jobDAO.getNrOfJobsForSessionId(getThreadLocalRequest().getSession().getId()).intValue();
 //		int nrOfJobsForSession = DBUtils.getNrOfJobsForSessionId(getThreadLocalRequest().getSession().getId());
 		settings.setNrOfJobsForSession(nrOfJobsForSession);
@@ -341,6 +350,8 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 		settings.setNrOfAllowedSubmissionsWithoutCaptcha(nrOfAllowedSubmissionsWithoutCaptcha);
 		
 		settings.setResultsLocation(properties.getProperty("results_location"));
+		
+		settings.setJmolScript(properties.getProperty("jmol_script",""));
 		
 		return settings;
 	}
@@ -366,6 +377,17 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 				wasFileUploaded = false;
 			}
 			
+			if(doIPBasedVerification)
+			{
+				String verificationError = IPVerifier.checkIfCanBeSubmitted(getThreadLocalRequest().getRemoteAddr(), 
+																			defaultNrOfAllowedSubmissionsForIP);
+				
+				if(verificationError !=  null)
+				{
+					throw new CrkWebException(verificationError);
+				}
+			}
+			
 			EmailData emailData = new EmailData();
 			emailData.setEmailSender(properties.getProperty("email_username", ""));
 			emailData.setEmailSenderPassword(properties.getProperty("email_password", ""));
@@ -377,12 +399,15 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 
 			EmailSender emailSender = new EmailSender(emailData);
 
-			JobDAO jobDAO = new JobDAO();
+			Date currentDate = new Date();
+			
+			JobDAO jobDAO = new JobDAOImpl();
 			jobDAO.insertNewJob(runJobData.getJobId(),
 								getThreadLocalRequest().getSession().getId(),
 								emailData.getEmailRecipient(), 
 								runJobData.getInput(),
-								getThreadLocalRequest().getRemoteAddr());
+								getThreadLocalRequest().getRemoteAddr(),
+								currentDate);
 //			DBUtils.insertNewJob(runJobData.getJobId(),
 //								 getThreadLocalRequest().getSession().getId(),
 //								 emailData.getEmailRecipient(), 
@@ -429,7 +454,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 
 	public ProcessingData getResultsOfProcessing(String jobId) throws CrkWebException 
 	{
-		JobDAO jobDAO = new JobDAO();
+		JobDAO jobDAO = new JobDAOImpl();
 		
 		String status = null;
 		
@@ -650,7 +675,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 	public List<ProcessingInProgressData> getJobsForCurrentSession() throws CrkWebException 
 	{
 		String sessionId = getThreadLocalRequest().getSession().getId();
-		JobDAO jobDAO = new JobDAO();
+		JobDAO jobDAO = new JobDAOImpl();
 		return jobDAO.getJobsForSession(sessionId);
 //		return DBUtils.getJobsForCurrentSession(sessionId);
 	}
@@ -699,7 +724,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 						e.printStackTrace();
 					}
 
-					JobDAO jobDAO = new JobDAO();
+					JobDAO jobDAO = new JobDAOImpl();
 					jobDAO.updateStatusOfJob(jobId, StatusOfJob.STOPPED);
 //					DBUtils.updateStatusOfJob(jobId, StatusOfJob.STOPPED);
 				}
@@ -720,7 +745,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 	public void untieJobsFromSession() throws CrkWebException 
 	{
 		String sessionId = getThreadLocalRequest().getSession().getId();
-		JobDAO jobDAO = new JobDAO();
+		JobDAO jobDAO = new JobDAOImpl();
 		jobDAO.untieJobsFromSession(sessionId);
 //		DBUtils.untieJobsFromSession(sessionId);
 	}
@@ -774,7 +799,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 			{
 				try 
 				{
-					JobDAO jobDAO = new JobDAO();
+					JobDAO jobDAO = new JobDAOImpl();
 					jobDAO.updateStatusOfJob(activeThread.getName(), StatusOfJob.STOPPED);
 //					DBUtils.updateStatusOfJob(activeThread.getName(), "Stopped");
 				}

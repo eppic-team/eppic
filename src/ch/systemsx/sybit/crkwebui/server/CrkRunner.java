@@ -15,6 +15,7 @@ import org.ggf.drmaa.JobTemplate;
 import org.ggf.drmaa.Session;
 
 import ch.systemsx.sybit.crkwebui.server.db.model.JobDAO;
+import ch.systemsx.sybit.crkwebui.server.db.model.JobDAOImpl;
 import ch.systemsx.sybit.crkwebui.shared.CrkWebException;
 import ch.systemsx.sybit.crkwebui.shared.model.InputParameters;
 import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
@@ -336,7 +337,7 @@ public class CrkRunner implements Runnable
 	        
 	        out.close();
 			
-	        JobDAO jobDao = new JobDAO();
+	        JobDAO jobDao = new JobDAOImpl();
 	        jobDao.updateStatusOfJob(generatedDirectoryName, StatusOfJob.FINISHED);
 //			DBUtils.updateStatusOfJob(generatedDirectoryName, StatusOfJob.FINISHED);
 
@@ -366,7 +367,6 @@ public class CrkRunner implements Runnable
 			
 			if(!isInterrupted)
 			{
-				e.printStackTrace();
 				handleException(e.getMessage());
 			}
 		}
@@ -397,13 +397,13 @@ public class CrkRunner implements Runnable
 		
 		try 
 		{
-			JobDAO jobDao = new JobDAO();
+			JobDAO jobDao = new JobDAOImpl();
 			jobDao.updateStatusOfJob(generatedDirectoryName, StatusOfJob.ERROR);
 //			DBUtils.updateStatusOfJob(generatedDirectoryName, StatusOfJob.ERROR);
 		} 
-		catch (CrkWebException e2) 
+		catch (CrkWebException e) 
 		{
-			e2.printStackTrace();
+			e.printStackTrace();
 		}
 
 		File errorFile = new File(destinationDirectoryName + "/crkerr");
@@ -412,9 +412,9 @@ public class CrkRunner implements Runnable
 		{
 			errorFile.createNewFile();
 		}
-		catch (IOException e1) 
+		catch (IOException e) 
 		{
-			e1.printStackTrace();
+			e.printStackTrace();
 		}
 
 		emailSender.send("Crk: " + input + " error during processing",

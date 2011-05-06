@@ -22,7 +22,8 @@ public class RunJobCallback implements AsyncCallback<String>
 	@Override
 	public void onFailure(Throwable caught) 
 	{
-		mainController.updateStatusLabel(MainController.CONSTANTS.callback_run_job_error(), true);
+		mainController.showError("Error during running job: " + caught.getMessage());
+//		mainController.updateStatusLabel(MainController.CONSTANTS.callback_run_job_error(), true);
 //		mainController.showError("Error during getting run job data from server");
 	}
 
