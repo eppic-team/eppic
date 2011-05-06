@@ -300,10 +300,12 @@ public class InterfaceEvolContext implements Serializable {
 					else if (rimCore.getCoreResidues().contains(residue)) assignment = InterfaceResidueItem.CORE;
 				}
 				if (assignment==-1 && asa>0) assignment = InterfaceResidueItem.SURFACE;
-				float entropy = (float) entropies.get(chains.get(FIRST).getQueryUniprotPosForPDBPos(resser)).doubleValue();
+				int queryUniprotPos = chains.get(FIRST).getQueryUniprotPosForPDBPos(resser);
+				float entropy = -1;
+				if (queryUniprotPos!=-1) entropy = (float) entropies.get(queryUniprotPos).doubleValue();
 				float kaks = -1;
 				if (includeKaks && canDoCRK())
-					kaks = (float)kaksRatios.get(chains.get(FIRST).getQueryUniprotPosForPDBPos(resser)).doubleValue();
+					kaks = (float)kaksRatios.get(queryUniprotPos).doubleValue();
 				InterfaceResidueItem iri = new InterfaceResidueItem(resser,resType,asa,bsa,bsa/asa,assignment);
 				Map<String,InterfaceResidueMethodItem> scores = new HashMap<String, InterfaceResidueMethodItem>();
 				scores.put("entropy",new InterfaceResidueMethodItem(entropy));
@@ -329,10 +331,12 @@ public class InterfaceEvolContext implements Serializable {
 					else if (rimCore.getCoreResidues().contains(residue)) assignment = InterfaceResidueItem.CORE;
 				}
 				if (assignment==-1 && asa>0) assignment = InterfaceResidueItem.SURFACE;
-				float entropy = (float) entropies.get(chains.get(SECOND).getQueryUniprotPosForPDBPos(resser)).doubleValue();
+				int queryUniprotPos = chains.get(SECOND).getQueryUniprotPosForPDBPos(resser);
+				float entropy = -1;
+				if (queryUniprotPos!=-1) entropy = (float) entropies.get(queryUniprotPos).doubleValue();
 				float kaks = -1;
 				if (includeKaks && canDoCRK())
-					kaks = (float) kaksRatios.get(chains.get(SECOND).getQueryUniprotPosForPDBPos(resser)).doubleValue();
+					kaks = (float) kaksRatios.get(queryUniprotPos).doubleValue();
 				InterfaceResidueItem iri = new InterfaceResidueItem(resser,resType,asa,bsa,bsa/asa,assignment);
 				Map<String,InterfaceResidueMethodItem> scores = new HashMap<String, InterfaceResidueMethodItem>();
 				scores.put("entropy",new InterfaceResidueMethodItem(entropy));
