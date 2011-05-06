@@ -368,7 +368,10 @@ public class CRKMain {
 						") Clashes: "+clashyInterf.getNumClashes(INTERCHAIN_ATOM_CLASH_DISTANCE));
 			}
 			msg+=("\nThis is most likely an error in the structure. If you think the structure is correct, please report a bug.");
-			throw new CRKException(null, msg, true);
+			// we used to throw a fatal exception and exit here, but we decided to simply warn and go ahead 
+			LOGGER.warn(msg);
+			System.err.println(msg);
+			//throw new CRKException(null, msg, true);
 		}
 		if (params.isZooming()) {
 			interfaces.calcRimAndCores(params.getBsaToAsaSoftCutoff(), params.getBsaToAsaHardCutoff(), params.getRelaxationStep(), params.getMinNumResCA());
