@@ -346,6 +346,7 @@ public class InterfaceEvolContext implements Serializable {
 				partner2.add(iri);
 			}
 		}
+		
 		Goodies.serialize(file, map);
 	}
 	
