@@ -304,7 +304,7 @@ public class InterfaceEvolContext implements Serializable {
 				float entropy = -1;
 				if (queryUniprotPos!=-1) entropy = (float) entropies.get(queryUniprotPos).doubleValue();
 				float kaks = -1;
-				if (includeKaks && canDoCRK())
+				if (includeKaks && canDoCRK() && queryUniprotPos!=-1)
 					kaks = (float)kaksRatios.get(queryUniprotPos).doubleValue();
 				InterfaceResidueItem iri = new InterfaceResidueItem(resser,resType,asa,bsa,bsa/asa,assignment);
 				Map<String,InterfaceResidueMethodItem> scores = new HashMap<String, InterfaceResidueMethodItem>();
@@ -335,7 +335,7 @@ public class InterfaceEvolContext implements Serializable {
 				float entropy = -1;
 				if (queryUniprotPos!=-1) entropy = (float) entropies.get(queryUniprotPos).doubleValue();
 				float kaks = -1;
-				if (includeKaks && canDoCRK())
+				if (includeKaks && canDoCRK() && queryUniprotPos!=-1)
 					kaks = (float) kaksRatios.get(queryUniprotPos).doubleValue();
 				InterfaceResidueItem iri = new InterfaceResidueItem(resser,resType,asa,bsa,bsa/asa,assignment);
 				Map<String,InterfaceResidueMethodItem> scores = new HashMap<String, InterfaceResidueMethodItem>();
