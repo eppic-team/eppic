@@ -13,7 +13,9 @@ public class RandomDirectoryNameGenerator
 
 		while (!isDirectorySet) 
 		{
-			randomDirectoryName = RandomStringUtils.randomAlphanumeric(30);
+			// job name can not start from number for drmaa
+			randomDirectoryName = RandomStringUtils.randomAlphabetic(1) + 
+								  RandomStringUtils.randomAlphanumeric(29);
 
 			File randomDirectory = new File(generalDestinationDirectoryName + "/" + randomDirectoryName);
 

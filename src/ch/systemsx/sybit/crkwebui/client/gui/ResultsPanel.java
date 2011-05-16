@@ -589,9 +589,9 @@ public class ResultsPanel extends DisplayPanel
 		resultsGrid.getView().layout();
 		resultsGrid.repaint();
 		
-		resultsGrid.getView().getHeader().refresh();
-
 		this.layout();
+		
+		resultsGrid.getView().getHeader().refresh();
 	}
 
 	public void resizeScoresGrid() 

@@ -134,18 +134,18 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 		
 //		dataSource = properties.getProperty("data_source");
 //		DBUtils.setDataSource(dataSource);
-//		
-//		sgeFactory = SessionFactory.getFactory();
-//		sgeSession = sgeFactory.getSession();
-//		try 
-//		{
-//			sgeSession.init("");
-//		} 
-//		catch (DrmaaException e) 
-//		{
-//			e.printStackTrace();
-//		}
 		
+		sgeFactory = SessionFactory.getFactory();
+		sgeSession = sgeFactory.getSession();
+		try 
+		{
+			sgeSession.init("");
+		} 
+		catch (DrmaaException e) 
+		{
+			e.printStackTrace();
+		}
+//		
 //		**********************
 //		* Hibernate pure
 //		**********************

@@ -80,7 +80,10 @@ public class StatusPanel extends DisplayPanel
 
 	public void fillData(ProcessingInProgressData statusData) 
 	{
+		int scrollBefore = log.getElement().getFirstChildElement().getScrollTop();
 		log.setValue(statusData.getLog());
+		log.getElement().getFirstChildElement().setScrollTop(scrollBefore);
+		
 		status.setValue(String.valueOf(statusData.getStatus()));
 		jobId.setValue(statusData.getJobId());
 		

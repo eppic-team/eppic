@@ -28,6 +28,7 @@ import com.extjs.gxt.ui.client.widget.grid.GroupingView;
 import com.extjs.gxt.ui.client.widget.grid.HeaderGroupConfig;
 import com.extjs.gxt.ui.client.widget.layout.RowData;
 import com.extjs.gxt.ui.client.widget.layout.RowLayout;
+import com.google.gwt.user.client.Window;
 
 /**
  * This panel is used to display the detailed information about calculated scores
@@ -43,6 +44,9 @@ public class ScoresPanel extends LayoutContainer
 	private GroupingStore<BeanModel> scoresStore;
 	private ColumnModel scoresColumnModel;
 	private List<Integer> initialColumnWidth;
+	
+	private boolean wasDisplayed;
+	private String initialGroupBy;
 
 	public ScoresPanel(MainController mainController) 
 	{
@@ -52,7 +56,8 @@ public class ScoresPanel extends LayoutContainer
 		scoresConfigs = createColumnConfig();
 
 		scoresStore = new GroupingStore<BeanModel>();
-		scoresStore.groupBy("method");
+		initialGroupBy = "method";
+		scoresStore.groupBy(initialGroupBy);
 
 		scoresColumnModel = new ColumnModel(scoresConfigs);
 
@@ -275,7 +280,7 @@ public class ScoresPanel extends LayoutContainer
 	
 	public void resizeGrid() 
 	{
-		int limit = 25;
+		int limit = 45;
 		if(mainController.getMainViewPort().getMyJobsPanel().isExpanded())
 		{
 			limit += mainController.getMainViewPort().getMyJobsPanel().getWidth();
@@ -289,7 +294,10 @@ public class ScoresPanel extends LayoutContainer
 		
 		for(int i=0; i<scoresGrid.getColumnModel().getColumnCount(); i++)
 		{
-			if(!scoresGrid.getColumnModel().getColumn(i).isHidden())
+			if((!scoresGrid.getColumnModel().getColumn(i).isHidden()) &&
+			   ((wasDisplayed) ||
+			    (!wasDisplayed) &&
+			    (!scoresGrid.getColumnModel().getColumn(i).getId().equals(initialGroupBy))))
 			{
 				scoresGridWidthOfAllVisibleColumns += initialColumnWidth.get(i);
 			}
@@ -316,5 +324,7 @@ public class ScoresPanel extends LayoutContainer
 		scoresGrid.repaint();
 
 		this.layout();
+		
+		wasDisplayed = true;
 	}
 }

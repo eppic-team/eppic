@@ -31,7 +31,7 @@ public class CrkRunner implements Runnable
 	private String input;
 	private String resultPath;
 	private String destinationDirectoryName;
-	private String generatedDirectoryName;
+	private String jobId;
 	private InputParameters inputParameters;
 	private File logFile;
 	private String crkApplicationLocation;
@@ -47,7 +47,7 @@ public class CrkRunner implements Runnable
 					 String input,
 					 String resultPath,
 					 String destinationDirectory,
-					 String generatedDirectoryName,
+					 String jobId,
 					 InputParameters inputParameters,
 					 String crkApplicationLocation,
 					 Session sgeSession,
@@ -57,7 +57,7 @@ public class CrkRunner implements Runnable
 		this.input = input;
 		this.resultPath = resultPath;
 		this.destinationDirectoryName = destinationDirectory;
-		this.generatedDirectoryName = generatedDirectoryName;
+		this.jobId = jobId;
 		this.crkApplicationLocation = crkApplicationLocation;
 
 		this.emailSender = emailSender;
@@ -80,7 +80,7 @@ public class CrkRunner implements Runnable
 		try 
 		{
 			emailSender.send("Crk: " + input + " submitted", message);
-
+			
 			File runFile = new File(destinationDirectoryName + "/crkrun");
 			runFile.createNewFile();
 
@@ -203,6 +203,9 @@ public class CrkRunner implements Runnable
 			JobTemplate jobTemplate = sgeSession.createJobTemplate();
 			jobTemplate.setRemoteCommand("java");
 			jobTemplate.setArgs(command);
+			jobTemplate.setJobName(jobId);
+			jobTemplate.setErrorPath(":" + destinationDirectoryName);
+			jobTemplate.setOutputPath(":" + destinationDirectoryName);
 
 	      	submissionId = sgeSession.runJob(jobTemplate);
 
@@ -338,7 +341,7 @@ public class CrkRunner implements Runnable
 	        out.close();
 			
 	        JobDAO jobDao = new JobDAOImpl();
-	        jobDao.updateStatusOfJob(generatedDirectoryName, StatusOfJob.FINISHED);
+	        jobDao.updateStatusOfJob(jobId, StatusOfJob.FINISHED);
 //			DBUtils.updateStatusOfJob(generatedDirectoryName, StatusOfJob.FINISHED);
 
 			outputStream = new FileOutputStream(logFile, true);
@@ -398,7 +401,7 @@ public class CrkRunner implements Runnable
 		try 
 		{
 			JobDAO jobDao = new JobDAOImpl();
-			jobDao.updateStatusOfJob(generatedDirectoryName, StatusOfJob.ERROR);
+			jobDao.updateStatusOfJob(jobId, StatusOfJob.ERROR);
 //			DBUtils.updateStatusOfJob(generatedDirectoryName, StatusOfJob.ERROR);
 		} 
 		catch (CrkWebException e) 
