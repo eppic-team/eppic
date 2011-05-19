@@ -8,6 +8,7 @@ import java.util.List;
 import owl.core.structure.Atom;
 import owl.core.structure.PdbChain;
 import owl.core.structure.PdbAsymUnit;
+import owl.core.structure.Residue;
 
 
 public class RescaleBfactors {
@@ -42,7 +43,7 @@ public class RescaleBfactors {
 		double offset = MIN_BFACTOR - minBfactor*scale;
 		
 		PrintStream ps = new PrintStream(outfile);
-		for (PdbChain chain:pdb) {
+		for (PdbChain chain:pdb.getAllChains()) {
 			scaleBfactors(chain, scale, offset);
 			chain.writeAtomLines(ps);
 		}
@@ -51,16 +52,19 @@ public class RescaleBfactors {
 	
 	private static List<Double> getBfactors(PdbChain pdb) {
 		List<Double> bfactors = new ArrayList<Double>();
-		for (int atomser:pdb.getAllAtomSerials()) {
-			bfactors.add(pdb.getAtom(atomser).getBfactor());
+		for (Residue residue:pdb) {
+			for (Atom atom:residue) {
+				bfactors.add(atom.getBfactor());
+			}
 		}
 		return bfactors;
 	}
 
 	private static void scaleBfactors(PdbChain pdb, double scale, double offset) {
-		for (int atomser:pdb.getAllAtomSerials()) {
-			Atom atom = pdb.getAtom(atomser);
-			atom.setBfactor(atom.getBfactor()*scale+offset);
+		for (Residue residue:pdb) {
+			for (Atom atom:residue) {
+				atom.setBfactor(atom.getBfactor()*scale+offset);
+			}
 		}
 	}
 	

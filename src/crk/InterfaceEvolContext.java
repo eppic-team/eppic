@@ -17,12 +17,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import owl.core.runners.PymolRunner;
-import owl.core.structure.AminoAcid;
 import owl.core.structure.ChainInterface;
 import owl.core.structure.InterfaceRimCore;
 import owl.core.structure.PdbChain;
 import owl.core.structure.PdbLoadException;
 import owl.core.structure.Residue;
+import owl.core.structure.AaResidue;
 import owl.core.util.Goodies;
 
 public class InterfaceEvolContext implements Serializable {
@@ -152,9 +152,9 @@ public class InterfaceEvolContext implements Serializable {
 
 	}
 		
-	private List<Residue> checkResiduesForPDBReliability(List<Residue> residues, ChainEvolContext chain) {
-		List<Residue> unreliableResidues = new ArrayList<Residue>();
-		for (Residue res:residues){
+	private List<AaResidue> checkResiduesForPDBReliability(List<AaResidue> residues, ChainEvolContext chain) {
+		List<AaResidue> unreliableResidues = new ArrayList<AaResidue>();
+		for (AaResidue res:residues){
 			int resSer = res.getSerial(); // used to be: chain.getResSerFromPdbResSer(pdbChainCode, res.getPdbSerial()); pdbChainCode was passed
 			if (resSer!=-1 && !chain.isPdbSeqPositionMatchingUniprot(resSer)) {
 				unreliableResidues.add(res);
@@ -174,9 +174,9 @@ public class InterfaceEvolContext implements Serializable {
 		return unreliableResidues;
 	}
 	
-	private List<Residue> checkResiduesForCDSReliability(List<Residue> residues, ChainEvolContext chain) {
-		List<Residue> unreliableResidues = new ArrayList<Residue>();
-		for (Residue res:residues){
+	private List<AaResidue> checkResiduesForCDSReliability(List<AaResidue> residues, ChainEvolContext chain) {
+		List<AaResidue> unreliableResidues = new ArrayList<AaResidue>();
+		for (AaResidue res:residues){
 			int resSer = res.getSerial(); // used to be: chain.getResSerFromPdbResSer(pdbChainCode, res.getPdbSerial()); pdbChainCode was passed
 			if (resSer!=-1 && !chain.isPdbSeqPositionReliable(resSer)) {
 				unreliableResidues.add(res);
@@ -196,7 +196,7 @@ public class InterfaceEvolContext implements Serializable {
 		return unreliableResidues;
 	}
 	
-	private double calcScore(List<Residue> residues, int molecId, ScoringType scoType, boolean weighted) {
+	private double calcScore(List<AaResidue> residues, int molecId, ScoringType scoType, boolean weighted) {
 		ChainEvolContext chain = null;
 		if (molecId==FIRST) {
 			chain = chains.get(FIRST);
@@ -206,7 +206,7 @@ public class InterfaceEvolContext implements Serializable {
 		double totalScore = 0.0;
 		double totalWeight = 0.0;
 		List<Double> conservScores = chain.getConservationScores(scoType);
-		for (Residue res:residues){
+		for (AaResidue res:residues){
 			int resSer = res.getSerial(); // used to be: chain.getResSerFromPdbResSer(pdbChainCode, res.getPdbSerial());
 
 			if (resSer!=-1) {
@@ -287,26 +287,27 @@ public class InterfaceEvolContext implements Serializable {
 			List<Double> kaksRatios = null;
 			if (includeKaks && canDoCRK())
 				kaksRatios = chains.get(FIRST).getConservationScores(ScoringType.KAKS);
-			for (int resser:firstMol.getAllSortedResSerials()) {
-				String resType = AminoAcid.one2three(firstMol.getSequence().getSeq().charAt(resser-1));
-				float asa = -1;
-				float bsa = -1;
+			for (Residue residue:firstMol) {
+				String resType = residue.getLongCode();
 				int assignment = -1;
-				if (firstMol.containsResidue(resser)) {
-					Residue residue = firstMol.getResidue(resser);
-					asa = (float) residue.getAsa();
-					bsa = (float) residue.getBsa();
-					if (rimCore.getRimResidues().contains(residue)) assignment = InterfaceResidueItem.RIM;
-					else if (rimCore.getCoreResidues().contains(residue)) assignment = InterfaceResidueItem.CORE;
-				}
+				float asa = (float) residue.getAsa();
+				float bsa = (float) residue.getBsa();
+				if (rimCore.getRimResidues().contains(residue)) assignment = InterfaceResidueItem.RIM;
+				else if (rimCore.getCoreResidues().contains(residue)) assignment = InterfaceResidueItem.CORE;
+
 				if (assignment==-1 && asa>0) assignment = InterfaceResidueItem.SURFACE;
-				int queryUniprotPos = chains.get(FIRST).getQueryUniprotPosForPDBPos(resser);
+
+				int queryUniprotPos = chains.get(FIRST).getQueryUniprotPosForPDBPos(residue.getSerial());
+				
 				float entropy = -1;
-				if (queryUniprotPos!=-1) entropy = (float) entropies.get(queryUniprotPos).doubleValue();
+				if (residue instanceof AaResidue) {	
+					if (queryUniprotPos!=-1) entropy = (float) entropies.get(queryUniprotPos).doubleValue();
+				}
 				float kaks = -1;
-				if (includeKaks && canDoCRK() && queryUniprotPos!=-1)
+				if (includeKaks && canDoCRK() && (residue instanceof AaResidue) && queryUniprotPos!=-1)
 					kaks = (float)kaksRatios.get(queryUniprotPos).doubleValue();
-				InterfaceResidueItem iri = new InterfaceResidueItem(resser,resType,asa,bsa,bsa/asa,assignment);
+				InterfaceResidueItem iri = new InterfaceResidueItem(residue.getSerial(),resType,asa,bsa,bsa/asa,assignment);
+
 				Map<String,InterfaceResidueMethodItem> scores = new HashMap<String, InterfaceResidueMethodItem>();
 				scores.put("entropy",new InterfaceResidueMethodItem(entropy));
 				if (includeKaks && canDoCRK()) scores.put("kaks", new InterfaceResidueMethodItem(kaks));
@@ -318,26 +319,24 @@ public class InterfaceEvolContext implements Serializable {
 			entropies = chains.get(SECOND).getConservationScores(ScoringType.ENTROPY);
 			if (includeKaks && canDoCRK()) 
 				kaksRatios = chains.get(SECOND).getConservationScores(ScoringType.KAKS);
-			for (int resser:secondMol.getAllSortedResSerials()) {
-				String resType = AminoAcid.one2three(secondMol.getSequence().getSeq().charAt(resser-1));
-				float asa = -1;
-				float bsa = -1;
+			for (Residue residue:secondMol) {
+				String resType = residue.getLongCode();
 				int assignment = -1;
-				if (secondMol.containsResidue(resser)) {
-					Residue residue = secondMol.getResidue(resser);
-					asa = (float) residue.getAsa();
-					bsa = (float) residue.getBsa();
-					if (rimCore.getRimResidues().contains(residue)) assignment = InterfaceResidueItem.RIM;
-					else if (rimCore.getCoreResidues().contains(residue)) assignment = InterfaceResidueItem.CORE;
-				}
+				float asa = (float) residue.getAsa();
+				float bsa = (float) residue.getBsa();
+				if (rimCore.getRimResidues().contains(residue)) assignment = InterfaceResidueItem.RIM;
+				else if (rimCore.getCoreResidues().contains(residue)) assignment = InterfaceResidueItem.CORE;
+				
 				if (assignment==-1 && asa>0) assignment = InterfaceResidueItem.SURFACE;
-				int queryUniprotPos = chains.get(SECOND).getQueryUniprotPosForPDBPos(resser);
+				int queryUniprotPos = chains.get(SECOND).getQueryUniprotPosForPDBPos(residue.getSerial());
 				float entropy = -1;
-				if (queryUniprotPos!=-1) entropy = (float) entropies.get(queryUniprotPos).doubleValue();
+				if (residue instanceof AaResidue) {
+					if (queryUniprotPos!=-1) entropy = (float) entropies.get(queryUniprotPos).doubleValue();
+				}
 				float kaks = -1;
-				if (includeKaks && canDoCRK() && queryUniprotPos!=-1)
+				if (includeKaks && canDoCRK() && (residue instanceof AaResidue) && queryUniprotPos!=-1)
 					kaks = (float) kaksRatios.get(queryUniprotPos).doubleValue();
-				InterfaceResidueItem iri = new InterfaceResidueItem(resser,resType,asa,bsa,bsa/asa,assignment);
+				InterfaceResidueItem iri = new InterfaceResidueItem(residue.getSerial(),resType,asa,bsa,bsa/asa,assignment);
 				Map<String,InterfaceResidueMethodItem> scores = new HashMap<String, InterfaceResidueMethodItem>();
 				scores.put("entropy",new InterfaceResidueMethodItem(entropy));
 				if (includeKaks && canDoCRK())
@@ -368,7 +367,9 @@ public class InterfaceEvolContext implements Serializable {
 		}
 		
 		HashMap<Integer,Double> map = new HashMap<Integer, Double>();
-		for (int resser:pdb.getAllSortedResSerials()){
+		for (Residue residue:pdb) {
+			if (!(residue instanceof AaResidue)) continue;
+			int resser = residue.getSerial();
 			int queryPos = -2;
 			if (scoType==ScoringType.ENTROPY) {
 				queryPos = chains.get(molecId).getQueryUniprotPosForPDBPos(resser); 
@@ -394,15 +395,15 @@ public class InterfaceEvolContext implements Serializable {
 			rimCore = this.interf.getSecondRimCores()[0];
 		}
 		// first we assign all residues same color (50 hopefully gives a yellowish one)
-		for (int resser:pdb.getAllSortedResSerials()) {
-			rimcoreVals.put(resser,50.0);
+		for (Residue residue:pdb) {
+			rimcoreVals.put(residue.getSerial(),50.0);
 		}
 		// core residues : 1 for a blue
-		for (Residue res:rimCore.getCoreResidues()) {
+		for (AaResidue res:rimCore.getCoreResidues()) {
 			rimcoreVals.put(res.getSerial(), 1.0);
 		}
 		// rim residues: 200 for a red  
-		for (Residue res:rimCore.getRimResidues()) {
+		for (AaResidue res:rimCore.getRimResidues()) {
 			rimcoreVals.put(res.getSerial(), 200.0);
 		}
 		pdb.setBFactorsPerResidue(rimcoreVals);
@@ -456,7 +457,7 @@ public class InterfaceEvolContext implements Serializable {
 
 		int[] counts = new int[this.interf.getNumBsaToAsaCutoffs()];
 		for (int i=0;i<this.interf.getNumBsaToAsaCutoffs();i++) {
-			List<Residue> unreliableCoreResidues = new ArrayList<Residue>(); 
+			List<AaResidue> unreliableCoreResidues = new ArrayList<AaResidue>(); 
 			unreliableCoreResidues.addAll(checkResiduesForPDBReliability(rimCores[i].getCoreResidues(), chains.get(molecId)));
 			if (lastScoType==ScoringType.KAKS) {
 				unreliableCoreResidues.addAll(checkResiduesForCDSReliability(rimCores[i].getCoreResidues(), chains.get(molecId)));
@@ -475,7 +476,7 @@ public class InterfaceEvolContext implements Serializable {
 		}
 		int[] counts = new int[this.interf.getNumBsaToAsaCutoffs()];
 		for (int i=0;i<this.interf.getNumBsaToAsaCutoffs();i++) {
-			List<Residue> unreliableRimResidues = new ArrayList<Residue>();
+			List<AaResidue> unreliableRimResidues = new ArrayList<AaResidue>();
 			
 			unreliableRimResidues.addAll(checkResiduesForPDBReliability(rimCores[i].getRimResidues(), chains.get(molecId)));
 			if (lastScoType==ScoringType.KAKS) {
