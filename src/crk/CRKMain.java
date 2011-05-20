@@ -15,6 +15,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -227,7 +228,8 @@ public class CRKMain {
 		"  [-l]         :  if specified thumbnail images will be generated for each interface \n" +
 		"                  (requires pymol)\n" +
 		"  [-L <file>]  :  a file where progress log will be written to. Default: progress log \n" +
-		"                  written to std output\n\n";
+		"                  written to std output\n" +
+		"  [-u]         :  debug, if specified debug output will be also shown on standard output\n\n";
 		
 		params.parseCommandLine(args, PROGRAM_NAME, help);
 		params.checkCommandLineInput();
@@ -238,7 +240,16 @@ public class CRKMain {
 		
 		// setting up the file logger for log4j
 		try {
-			ROOTLOGGER.addAppender(new FileAppender(new PatternLayout("%d{ABSOLUTE} %5p - %m%n"),params.getOutDir()+"/"+params.getBaseName()+".log",false));
+			FileAppender fullLogAppender = new FileAppender(new PatternLayout("%d{ABSOLUTE} %5p - %m%n"),params.getOutDir()+"/"+params.getBaseName()+".log",false);
+			fullLogAppender.setThreshold(Level.INFO);
+			ConsoleAppender errorAppender = new ConsoleAppender(new PatternLayout("%5p - %m%n"),ConsoleAppender.SYSTEM_ERR);
+			errorAppender.setThreshold(Level.ERROR);
+			ConsoleAppender outAppender = new ConsoleAppender(new PatternLayout("%d{ABSOLUTE} %5p - %m%n"),ConsoleAppender.SYSTEM_OUT);
+			outAppender.setThreshold(Level.DEBUG);
+			ROOTLOGGER.addAppender(fullLogAppender);
+			ROOTLOGGER.addAppender(errorAppender);
+			if (params.getDebug())
+				ROOTLOGGER.addAppender(outAppender);
 		} catch (IOException e) {
 			System.err.println("Couldn't open log file "+params.getOutDir()+"/"+params.getBaseName()+".log"+" for writing.");
 			System.err.println(e.getMessage());
@@ -262,7 +273,7 @@ public class CRKMain {
 				applyUserProperties(loadConfigFile(userConfigFile.getAbsolutePath()));
 			}
 		} catch (IOException e) {
-			System.err.println("Error while reading from config file " + userConfigFile + ": " + e.getMessage());
+			LOGGER.fatal("Error while reading from config file " + userConfigFile + ": " + e.getMessage());
 			System.exit(1);
 		}
 
@@ -611,8 +622,6 @@ public class CRKMain {
 	public void doScoring() throws CRKException {
 		if (interfaces.getNumInterfacesAboveArea(MIN_INTERF_AREA_REPORTING)==0) return;
 		
-		params.getProgressLog().println("Scores:");
-		
 		iecList = new InterfaceEvolContextList(params.getJobName(), MIN_HOMOLOGS_CUTOFF, params.getMinNumResCA(), params.getMinNumResMemberCA(), 
 				params.getIdCutoff(), QUERY_COVERAGE_CUTOFF, params.getMaxNumSeqsSelecton(), MIN_INTERF_AREA_REPORTING);
 		iecList.addAll(interfaces,cecs);
@@ -625,14 +634,14 @@ public class CRKMain {
 				PrintStream scoreEntrPS = new PrintStream(params.getOutputFile(ENTROPIES_FILE_SUFFIX+".scores"+suffix));
 				// entropy nw
 				iecList.scoreEntropy(false);
-				iecList.printScoresTable(params.getProgressLog(), params.getEntrCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getEntrCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
-				iecList.printScoresTable(scoreEntrPS, params.getEntrCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getEntrCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
+				//iecList.printScoresTable(params.getProgressLog(), params.getEntrCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getEntrCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
+				//iecList.printScoresTable(scoreEntrPS, params.getEntrCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getEntrCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
 				PdbScore[] entSc = new PdbScore[2];
 				entSc[0] = iecList.getPdbScoreObject();
 				// entropy w
 				iecList.scoreEntropy(true);
-				iecList.printScoresTable(params.getProgressLog(), params.getEntrCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getEntrCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
-				iecList.printScoresTable(scoreEntrPS, params.getEntrCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getEntrCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
+				//iecList.printScoresTable(params.getProgressLog(), params.getEntrCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getEntrCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
+				//iecList.printScoresTable(scoreEntrPS, params.getEntrCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getEntrCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
 				iecList.writeScoresPDBFiles(params,ENTROPIES_FILE_SUFFIX+".pdb");
 				iecList.writeRimCorePDBFiles(params, ".rimcore.pdb");
 				entSc[1] = iecList.getPdbScoreObject();
@@ -685,7 +694,7 @@ public class CRKMain {
 			throw new CRKException(e,"Couldn't write score residue details serialized file. "+e.getMessage(),false);
 		}
 
-		
+		params.getProgressLog().println("Done scoring");
 	}
 	
 	public void setDefaults() {
@@ -704,7 +713,8 @@ public class CRKMain {
 				entrCallCutoff,kaksCallCutoff,
 				null,null,
 				false,
-				System.out);
+				System.out,
+				false);
 	}
 	
 	/**
@@ -732,7 +742,7 @@ public class CRKMain {
 			try {
 				LOGGER.info("Running in host "+InetAddress.getLocalHost().getHostName());
 			} catch (UnknownHostException e) {
-				LOGGER.warn("Could not determin in what host we are running.");
+				LOGGER.warn("Could not determine host where we are running.");
 			}
 			
 			// 0 load pdb

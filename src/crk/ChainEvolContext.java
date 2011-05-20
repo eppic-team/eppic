@@ -458,7 +458,6 @@ public class ChainEvolContext implements Serializable {
 		} catch (SAXException e) {
 			// if this happens it means that blast doesn't format correctly its XML, i.e. has a bug
 			LOGGER.fatal("Unexpected error: "+e.getMessage());
-			System.err.println("Unexpected error: "+e.getMessage());
 			System.exit(1);
 		}
 

@@ -57,6 +57,8 @@ public class CRKParams {
 	private File progressLogFile;
 	private PrintStream progressLog;
 	
+	private boolean debug;
+	
 	
 	// some other fields
 	private File inFile;
@@ -77,7 +79,8 @@ public class CRKParams {
 			double[] entrCallCutoff, double[] kaksCallCutoff,
 			File interfSerFile, File chainEvContextSerFile,
 			boolean generateThumbnails,
-			PrintStream progressLog) {
+			PrintStream progressLog,
+			boolean debug) {
 		
 		this.pdbCode = pdbCode;
 		this.doScoreCRK = doScoreCRK;
@@ -106,12 +109,13 @@ public class CRKParams {
 		this.chainEvContextSerFile = chainEvContextSerFile;
 		this.generateThumbnails = generateThumbnails;
 		this.progressLog = progressLog;
+		this.debug = debug;
 	}
 	
 	public void parseCommandLine(String[] args, String programName, String help) {
 	
 
-		Getopt g = new Getopt(programName, args, "i:kd:a:b:o:r:tc:zZ:m:M:x:X:g:e:q:pnA:I:C:lL:h?");
+		Getopt g = new Getopt(programName, args, "i:kd:a:b:o:r:tc:zZ:m:M:x:X:g:e:q:pnA:I:C:lL:uh?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
@@ -205,6 +209,9 @@ public class CRKParams {
 				break;
 			case 'L':
 				progressLogFile = new File(g.getOptarg());
+				break;
+			case 'u':
+				debug = true;
 				break;
 			case 'h':
 				System.out.println(help);
@@ -466,6 +473,10 @@ public class CRKParams {
 	
 	public PrintStream getProgressLog() {
 		return progressLog;
+	}
+	
+	public boolean getDebug() {
+		return debug;
 	}
 	
 }
