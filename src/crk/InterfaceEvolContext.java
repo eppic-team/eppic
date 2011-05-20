@@ -169,12 +169,12 @@ public class InterfaceEvolContext implements Serializable {
 		if (!unreliableResidues.isEmpty()) {
 			String msg = "Interface residue serials ";
 			for (int i=0;i<unreliableResidues.size();i++) {
-				msg+=unreliableResidues.get(i).getAaType().getThreeLetterCode()+unreliableResidues.get(i).getPdbSerial();
+				msg+=unreliableResidues.get(i).getPdbChainCode()+" "+unreliableResidues.get(i).getAaType().getThreeLetterCode()+unreliableResidues.get(i).getPdbSerial();
 				if (i!=unreliableResidues.size()-1) {
 					msg+=",";
 				}
 			}
-			msg+=" can't be evaluated because of PDB SEQRES not matching the Uniprot sequence at those positions.";
+			msg+=" are not reliable because of PDB SEQRES not matching the Uniprot sequence at those positions.";
 			LOGGER.warn(msg);
 			warnings.add(msg);
 		}
@@ -192,12 +192,12 @@ public class InterfaceEvolContext implements Serializable {
 		if (!unreliableResidues.isEmpty()) {
 			String msg = "Interface residue serials ";
 			for (int i=0;i<unreliableResidues.size();i++) {
-				msg+=unreliableResidues.get(i).getAaType().getThreeLetterCode()+unreliableResidues.get(i).getPdbSerial();
+				msg+=unreliableResidues.get(i).getPdbChainCode()+" "+unreliableResidues.get(i).getAaType().getThreeLetterCode()+unreliableResidues.get(i).getPdbSerial();
 				if (i!=unreliableResidues.size()-1) {
 					msg+=(",");
 				}
 			}
-			msg+=" can't be evaluated because of unreliable CDS sequence information.";		
+			msg+=" are not reliable because of inaccurate CDS sequence information.";		
 			LOGGER.warn(msg);
 			warnings.add(msg);
 		}
@@ -557,6 +557,7 @@ public class InterfaceEvolContext implements Serializable {
 				String msg ="Interface "+this.interf.getId()+", member "+memberSerial+" calls NOPRED because there are not enough reliable rim residues ("+
 					countsRelRimRes[i]+" unreliable residues out of "+rimCores[i].getRimSize()+" residues in rim)"; 
 				LOGGER.info(msg);
+				warnings.add(msg);
 				calls[i] = CallType.NO_PREDICTION;
 			}
 			else {
