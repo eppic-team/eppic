@@ -64,10 +64,12 @@ public class InterfaceEvolContext implements Serializable {
 
 	private CallType[] lastCalls; // cached result of the last call to getCalls(bioCutoff, xtalCutoff, homologsCutoff, minCoreSize, minMemberCoreSize)
 	
+	private List<String> warnings;
+	
 	public InterfaceEvolContext(ChainInterface interf, List<ChainEvolContext> chains) {
 		this.interf = interf;
 		this.chains = chains;
-		
+		this.warnings = new ArrayList<String>();
 	}
 
 	public ChainInterface getInterface() {
@@ -84,6 +86,10 @@ public class InterfaceEvolContext implements Serializable {
 	
 	protected CallType[] getLastCalls() {
 		return this.lastCalls;
+	}
+	
+	public List<String> getWarnings() {
+		return this.warnings;
 	}
 	
 	/**
@@ -170,6 +176,7 @@ public class InterfaceEvolContext implements Serializable {
 			}
 			msg+=" can't be evaluated because of PDB SEQRES not matching the Uniprot sequence at those positions.";
 			LOGGER.warn(msg);
+			warnings.add(msg);
 		}
 		return unreliableResidues;
 	}
@@ -192,6 +199,7 @@ public class InterfaceEvolContext implements Serializable {
 			}
 			msg+=" can't be evaluated because of unreliable CDS sequence information.";		
 			LOGGER.warn(msg);
+			warnings.add(msg);
 		}
 		return unreliableResidues;
 	}
@@ -227,8 +235,10 @@ public class InterfaceEvolContext implements Serializable {
 					
 				}
 			} else {
-				LOGGER.warn("Can't map PISA pdb residue serial "+res.getPdbSerial()+" (res type: "+res.getAaType().getThreeLetterCode()+", PISA serial: "+res.getSerial()+")");
-				LOGGER.warn("The residue will not be used for scoring");
+				String msg = "Can't map PISA pdb residue serial "+res.getPdbSerial()+" (res type: "+res.getAaType().getThreeLetterCode()+", PISA serial: "+res.getSerial()+")";
+				msg+=" The residue will not be used for scoring";
+				LOGGER.warn(msg);
+				warnings.add(msg);
 			}
 		}
 		return totalScore/totalWeight;
@@ -507,9 +517,13 @@ public class InterfaceEvolContext implements Serializable {
 		}
 		// we first log just once if we have NOPREDs due to molec not being protein or not enough homologs
 		if (!isProtein(molecId)) {
-			LOGGER.info("Interface "+this.interf.getId()+", member "+memberSerial+" calls NOPRED because it is not a protein");
+			String msg = "Interface "+this.interf.getId()+", member "+memberSerial+" calls NOPRED because it is not a protein"; 
+			LOGGER.info(msg);
+			warnings.add(msg);
 		} else if (!hasEnoughHomologs(molecId, homologsCutoff)) {
-			LOGGER.info("Interface "+this.interf.getId()+", member "+memberSerial+" calls NOPRED because there are not enough homologs to evaluate conservation scores");
+			String msg = "Interface "+this.interf.getId()+", member "+memberSerial+" calls NOPRED because there are not enough homologs to evaluate conservation scores";
+			LOGGER.info(msg);
+			warnings.add(msg);
 		}
 
 		
@@ -533,13 +547,16 @@ public class InterfaceEvolContext implements Serializable {
 				calls[i] = CallType.NO_PREDICTION;
 			}
 			else if (((double)countsRelCoreRes[i]/(double)rimCores[i].getCoreSize())>MAX_ALLOWED_UNREL_RES) {
-				LOGGER.info("Interface "+this.interf.getId()+", member "+memberSerial+" calls NOPRED because there are not enough reliable core residues ("+
-						countsRelCoreRes[i]+" unreliable residues out of "+rimCores[i].getCoreSize()+" residues in core)");
+				String msg = "Interface "+this.interf.getId()+", member "+memberSerial+" calls NOPRED because there are not enough reliable core residues ("+
+					countsRelCoreRes[i]+" unreliable residues out of "+rimCores[i].getCoreSize()+" residues in core)";
+				LOGGER.info(msg);
 				calls[i] = CallType.NO_PREDICTION;
+				warnings.add(msg);
 			}
 			else if (((double)countsRelRimRes[i]/(double)rimCores[i].getRimSize())>MAX_ALLOWED_UNREL_RES) {
-				LOGGER.info("Interface "+this.interf.getId()+", member "+memberSerial+" calls NOPRED because there are not enough reliable rim residues ("+
-						countsRelRimRes[i]+" unreliable residues out of "+rimCores[i].getRimSize()+" residues in rim)");
+				String msg ="Interface "+this.interf.getId()+", member "+memberSerial+" calls NOPRED because there are not enough reliable rim residues ("+
+					countsRelRimRes[i]+" unreliable residues out of "+rimCores[i].getRimSize()+" residues in rim)"; 
+				LOGGER.info(msg);
 				calls[i] = CallType.NO_PREDICTION;
 			}
 			else {

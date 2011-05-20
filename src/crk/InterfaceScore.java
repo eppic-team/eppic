@@ -1,7 +1,7 @@
 package crk;
 
 import java.io.Serializable;
-import java.util.ArrayList;
+//import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -224,9 +224,9 @@ public class InterfaceScore implements Serializable{
 	}
 
 	public List<String> getWarnings() {
-		warnings = new ArrayList<String>();
-		warnings.add("Really really really really dangerous warning 1");
-		warnings.add("Really really really really dangerous warning 2");
+		//warnings = new ArrayList<String>();
+		//warnings.add("Really really really really dangerous warning 1");
+		//warnings.add("Really really really really dangerous warning 2");
 		return warnings;
 
 	}
