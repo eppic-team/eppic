@@ -35,6 +35,7 @@ public class PDBModelConverter
 			pdbScoreItem.setXtalCutoff(pdbScore[0].getXtalCutoff());
 			pdbScoreItem.setZoomUsed(pdbScore[0].isZoomUsed());
 			pdbScoreItem.setTitle(pdbScore[0].getPdbTitle());
+			pdbScoreItem.setNumHomologsStrings(pdbScore[0].getNumHomologsStrings());
 			
 			int nrOfInterface = pdbScore[0].getInterfaceScoreMap().size();
 			
