@@ -354,10 +354,10 @@ public class CRKMain {
 			params.getProgressLog().println("Calculating possible interfaces...");
 			try {
 				if (params.isUseNaccess()) {
-					interfaces = pdb.getAllInterfaces(INTERFACE_DIST_CUTOFF, NACCESS_EXE, 0, 0, false);
+					interfaces = pdb.getAllInterfaces(INTERFACE_DIST_CUTOFF, NACCESS_EXE, 0, 0, true);
 					LOGGER.info("Interfaces calculated with NACCESS.");
 				} else {
-					interfaces = pdb.getAllInterfaces(INTERFACE_DIST_CUTOFF, null, params.getnSpherePointsASAcalc(), params.getNumThreads(), false);
+					interfaces = pdb.getAllInterfaces(INTERFACE_DIST_CUTOFF, null, params.getnSpherePointsASAcalc(), params.getNumThreads(), true);
 					LOGGER.info("Interfaces calculated with "+params.getnSpherePointsASAcalc()+" sphere points.");
 				}
 			} catch (IOException e) {
@@ -630,9 +630,6 @@ public class CRKMain {
 				//iecList.printScoresTable(params.getProgressLog(), params.getEntrCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getEntrCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
 				iecList.printScoresTable(scoreEntrPS, params.getEntrCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getEntrCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
 				PdbScore[] entSc = new PdbScore[2];
-				for (String numHomsStr:iecList.getNumHomologsStrings()) {
-					LOGGER.info(numHomsStr);
-				}
 				entSc[0] = iecList.getPdbScoreObject();
 				// entropy w
 				iecList.scoreEntropy(true);
