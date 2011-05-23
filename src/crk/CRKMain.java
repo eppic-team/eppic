@@ -409,9 +409,7 @@ public class CRKMain {
 		}
 	}
 	
-	public void doLoadEvolContextFromFile() throws CRKException {
-		if (interfaces.getNumInterfacesAboveArea(MIN_INTERF_AREA_REPORTING)==0) return;
-		
+	private void findUniqueChains() {
 		String msg = "Unique sequences for "+params.getJobName()+":";
 		int i = 1;
 		for (String representativeChain:pdb.getAllRepChains()) {
@@ -423,6 +421,12 @@ public class CRKMain {
 			i++;
 		}
 		LOGGER.info(msg);
+	}
+	
+	public void doLoadEvolContextFromFile() throws CRKException {
+		if (interfaces.getNumInterfacesAboveArea(MIN_INTERF_AREA_REPORTING)==0) return;
+		
+		findUniqueChains();
 		
 		try {
 			params.getProgressLog().println("Loading chain evolutionary scores from file "+params.getChainEvContextSerFile());
@@ -440,19 +444,7 @@ public class CRKMain {
 	public void doFindEvolContext() throws CRKException {
 		if (interfaces.getNumInterfacesAboveArea(MIN_INTERF_AREA_REPORTING)==0) return;
 		
-		String msg = "Unique sequences for "+params.getJobName()+":";
-		int i = 1;
-		for (String representativeChain:pdb.getAllRepChains()) {
-			List<String> entity = pdb.getSeqIdenticalGroup(representativeChain);
-			msg+=" "+i+":";
-			for (String chain:entity) {
-				msg+=" "+chain;
-			}
-			i++;
-		}
-		LOGGER.info(msg);
-		
-		
+		findUniqueChains();
 		
 		cecs = new ChainEvolContextList();
 
@@ -635,13 +627,13 @@ public class CRKMain {
 				// entropy nw
 				iecList.scoreEntropy(false);
 				//iecList.printScoresTable(params.getProgressLog(), params.getEntrCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getEntrCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
-				//iecList.printScoresTable(scoreEntrPS, params.getEntrCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getEntrCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
+				iecList.printScoresTable(scoreEntrPS, params.getEntrCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getEntrCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
 				PdbScore[] entSc = new PdbScore[2];
 				entSc[0] = iecList.getPdbScoreObject();
 				// entropy w
 				iecList.scoreEntropy(true);
 				//iecList.printScoresTable(params.getProgressLog(), params.getEntrCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getEntrCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
-				//iecList.printScoresTable(scoreEntrPS, params.getEntrCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getEntrCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
+				iecList.printScoresTable(scoreEntrPS, params.getEntrCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getEntrCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
 				iecList.writeScoresPDBFiles(params,ENTROPIES_FILE_SUFFIX+".pdb");
 				iecList.writeRimCorePDBFiles(params, ".rimcore.pdb");
 				entSc[1] = iecList.getPdbScoreObject();
