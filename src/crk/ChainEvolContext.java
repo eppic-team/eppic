@@ -54,6 +54,7 @@ public class ChainEvolContext implements Serializable {
 	private String pdbCode; 		 		// the pdb code (if no pdb code then Pdb.NO_PDB_CODE)
 	private String sequence;
 	private String pdbName;					// a name to identify the PDB, will be the pdbCode if a PDB entry or the file name without extension if from file
+	private String seqIdenticalChainsStr;	// a string of the form A(B,C,D,E) containing all represented sequence identical chains
 	
 	private UniprotEntry query;							// the uniprot id, seq, cds corresponding to this chain's sequence
 	private PairwiseSequenceAlignment alnPdb2Uniprot; 	// the alignment between the pdb sequence and the uniprot sequence (query)
@@ -509,5 +510,21 @@ public class ChainEvolContext implements Serializable {
 	
 	public String getUniprotVer() {
 		return this.homologs.getUniprotVer();
+	}
+	
+	/**
+	 * Sets the sequence-identical chains string for this ChainEvolContext
+	 * @param seqIdenticalChainsStr
+	 */
+	public void setSeqIdenticalChainsStr(String seqIdenticalChainsStr) {
+		this.seqIdenticalChainsStr = seqIdenticalChainsStr;
+	}
+	
+	/**
+	 * Returns the sequence-identical chains string for this ChainEvolContext
+	 * @return
+	 */
+	public String getSeqIndenticalChainStr() {
+		return seqIdenticalChainsStr;
 	}
 }

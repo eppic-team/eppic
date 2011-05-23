@@ -1,6 +1,7 @@
 package crk;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -27,6 +28,7 @@ public class PdbScore implements Serializable {
 	private double bsaToAsaSoftCutoff;
 	private double bsaToAsaRelaxStep;
 	private boolean zoomUsed;
+	private List<String> numHomologsStrings;
 
 	private Map<Integer,InterfaceScore> interfScores; 
 	
@@ -167,6 +169,14 @@ public class PdbScore implements Serializable {
 		this.zoomUsed = zoomUsed;
 	}
 
+	public List<String> getNumHomologsStrings() {
+		return this.numHomologsStrings;
+	}
+	
+	public void setNumHomologsStrings(List<String> numHomologsStrings) {
+		this.numHomologsStrings = numHomologsStrings;
+	}
+	
 	public InterfaceScore getInterfScore(int id) {
 		return this.interfScores.get(id);
 	}

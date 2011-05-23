@@ -29,6 +29,8 @@ public class PDBScoreItem implements Serializable, ProcessingData
 	private double bsaToAsaRelaxStep;
 	private boolean zoomUsed;
 	private String title;
+	
+	private List<String> numHomologsStrings;
 
 	private List<InterfaceItem> interfaceItems;
 	
@@ -174,6 +176,14 @@ public class PDBScoreItem implements Serializable, ProcessingData
 		this.interfaceItems.add(interfaceItem);
 	}
 
+	public void setNumHomologsStrings(List<String> numHomologsStrings) {
+		this.numHomologsStrings = numHomologsStrings;
+	}
+	
+	public List<String> getNumHomologsStrings() {
+		return this.numHomologsStrings;
+	}
+	
 	public void setInterfaceScores(Map<InterfaceScoreItemKey, InterfaceScoreItem> interfaceScores) {
 		this.interfaceScores = interfaceScores;
 	}

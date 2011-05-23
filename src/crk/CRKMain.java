@@ -461,6 +461,7 @@ public class CRKMain {
 		}
 		// a) getting the uniprot ids corresponding to the query (the pdb sequence)
 		for (ChainEvolContext chainEvCont:cecs.getAllChainEvolContext()) {
+			chainEvCont.setSeqIdenticalChainsStr(pdb.getSeqIdenticalGroupString(chainEvCont.getRepresentativeChainCode()));
 			File emblQueryCacheFile = null;
 			if (EMBL_CDS_CACHE_DIR!=null) {
 				emblQueryCacheFile = new File(EMBL_CDS_CACHE_DIR,params.getBaseName()+"."+chainEvCont.getRepresentativeChainCode()+".query.emblcds.fa");
@@ -629,6 +630,9 @@ public class CRKMain {
 				//iecList.printScoresTable(params.getProgressLog(), params.getEntrCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getEntrCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
 				iecList.printScoresTable(scoreEntrPS, params.getEntrCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getEntrCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
 				PdbScore[] entSc = new PdbScore[2];
+				for (String numHomsStr:iecList.getNumHomologsStrings()) {
+					LOGGER.info(numHomsStr);
+				}
 				entSc[0] = iecList.getPdbScoreObject();
 				// entropy w
 				iecList.scoreEntropy(true);

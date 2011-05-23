@@ -9,6 +9,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -256,6 +257,29 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 		ps.println();
 	}
 	
+	public List<String> getNumHomologsStrings() {
+		TreeSet<String> set = new TreeSet<String>(); 
+		for (InterfaceEvolContext iec:this) {
+			int numHomologs = -1;
+			if (scoType==ScoringType.ENTROPY) {
+				numHomologs = iec.getFirstChainEvolContext().getNumHomologs();
+			} else if (scoType==ScoringType.KAKS) {
+				numHomologs = iec.getFirstChainEvolContext().getNumHomologsWithValidCDS();
+			}
+			set.add(iec.getFirstChainEvolContext().getSeqIndenticalChainStr()+": "+numHomologs);
+			numHomologs = -1;
+			if (scoType==ScoringType.ENTROPY) {
+				numHomologs = iec.getSecondChainEvolContext().getNumHomologs();
+			} else if (scoType==ScoringType.KAKS) {
+				numHomologs = iec.getSecondChainEvolContext().getNumHomologsWithValidCDS();
+			}
+			set.add(iec.getSecondChainEvolContext().getSeqIndenticalChainStr()+": "+numHomologs);
+		}
+		List<String> list = new ArrayList<String>();
+		list.addAll(set);
+		return list;
+	}
+	
 	public PdbScore getPdbScoreObject() {
 		PdbScore pdbSc = new PdbScore();
 		pdbSc.setPdbName(pdbName);
@@ -274,6 +298,7 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 		pdbSc.setBsaToAsaSoftCutoff(list.get(0).getInterface().getBsaToAsaSoftCutoff());
 		pdbSc.setBsaToAsaRelaxStep(list.get(0).getInterface().getBsaToAsaRelaxStep());
 		pdbSc.setZoomUsed(list.get(0).getInterface().isRimAndCoreZoomed());
+		pdbSc.setNumHomologsStrings(getNumHomologsStrings());
 		for (InterfaceEvolContext iec:this) {
 			if (iec.getInterface().getInterfaceArea()>minInterfAreaReporting) { 
 				InterfaceScore isc = new InterfaceScore(pdbSc);
