@@ -281,6 +281,7 @@ public class CRKMain {
 
 	public void doLoadPdb() throws CRKException {
 
+		params.getProgressLog().println("Loading PDB data");
 		pdb = null;
 		File cifFile = null; // if given a pdb code in command line we will store the cif file here
 		try {
