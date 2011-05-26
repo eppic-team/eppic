@@ -355,10 +355,10 @@ public class CRKMain {
 			params.getProgressLog().println("Calculating possible interfaces...");
 			try {
 				if (params.isUseNaccess()) {
-					interfaces = pdb.getAllInterfaces(INTERFACE_DIST_CUTOFF, NACCESS_EXE, 0, 0, true);
+					interfaces = pdb.getAllInterfaces(INTERFACE_DIST_CUTOFF, NACCESS_EXE, 0, 0, true, false);
 					LOGGER.info("Interfaces calculated with NACCESS.");
 				} else {
-					interfaces = pdb.getAllInterfaces(INTERFACE_DIST_CUTOFF, null, params.getnSpherePointsASAcalc(), params.getNumThreads(), true);
+					interfaces = pdb.getAllInterfaces(INTERFACE_DIST_CUTOFF, null, params.getnSpherePointsASAcalc(), params.getNumThreads(), true, false);
 					LOGGER.info("Interfaces calculated with "+params.getnSpherePointsASAcalc()+" sphere points.");
 				}
 			} catch (IOException e) {
@@ -682,7 +682,7 @@ public class CRKMain {
 			throw new CRKException(e,"Couldn't write final interface Ka/Ks scores or related PDB files. "+e.getMessage(),true);
 		}
 		try {
-			// we only write one of this (does not depende on call cutoff and contains both entropies+kaks)
+			// we only write one of this (does not depend on call cutoff and contains both entropies+kaks)
 			iecList.writeResidueDetailsFiles(params, "resDetails.dat");
 		} catch (IOException e) {
 			throw new CRKException(e,"Couldn't write score residue details serialized file. "+e.getMessage(),false);

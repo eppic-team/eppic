@@ -18,6 +18,7 @@ import owl.core.structure.Asa;
 import owl.core.structure.ChainInterface;
 import owl.core.structure.ChainInterfaceList;
 import owl.core.structure.PdbAsymUnit;
+import owl.core.structure.PdbChain;
 import owl.core.structure.PdbLoadException;
 import owl.core.structure.SpaceGroup;
 import owl.core.util.FileFormatException;
@@ -112,27 +113,37 @@ public class CompToPisaInterf {
 			
 			ChainInterfaceList interfaces = null;
 			try {
-				interfaces = pdb.getAllInterfaces(CUTOFF, null, Asa.DEFAULT_N_SPHERE_POINTS, NTHREADS, false);
+				interfaces = pdb.getAllInterfaces(CUTOFF, null, Asa.DEFAULT_N_SPHERE_POINTS, NTHREADS, true, true);
 			} catch (IOException e) {
 				// do nothing. Won't happen here as we don't use naccess
 			}
 
-			System.out.print("Number of interfaces: ours "+interfaces.size()+", pisa "+pisaInterfaces.getNumProtProtInterfaces());
-			if (pisaInterfaces.getNumProtProtInterfaces()!=interfaces.size()) {
+			System.out.print("Number of interfaces: ours "+interfaces.size()+", pisa "+pisaInterfaces.getNumInterfaces());
+			if (pisaInterfaces.getNumInterfaces()!=interfaces.size()) {
 				System.out.print("\t disagreement");
 			}
 			System.out.println();
-
+			for (PdbChain chain:pdb.getAllChains()) {
+				System.out.print(chain.getChainCode()+": "+chain.getPdbChainCode());
+				if (chain.isNonPolyChain()) {
+					System.out.print("("+chain.getFirstResidue().getLongCode()+"-"+chain.getFirstResidue().getSerial()+")");
+				}
+				System.out.print(", ");
+			}
+			System.out.println();
+			
 			for (int i=0;i<Math.max(interfaces.size(), pisaInterfaces.size());i++) {
 				if (i<pisaInterfaces.size()) {
 					ChainInterface pisaInterf = pisaInterfaces.get(i);
-					System.out.printf("%2d\t%8.2f\t%20s\t%20s",i+1,pisaInterf.getInterfaceArea(),pisaInterf.getName(),SpaceGroup.getAlgebraicFromMatrix(pisaInterf.getSecondTransf()));
+					String name = pisaInterf.getFirstMolecule().getChainCode()+"+"+pisaInterf.getSecondMolecule().getChainCode();
+					System.out.printf("%2d\t%8.2f\t%20s\t%20s",i+1,pisaInterf.getInterfaceArea(),name,SpaceGroup.getAlgebraicFromMatrix(pisaInterf.getSecondTransf()));
 				} else {
 					System.out.printf("%2s\t%8s\t%20s\t%20s","","","","");
 				}
 				if (i<interfaces.size()) {
 					ChainInterface ourInterf = interfaces.get(i);
-					System.out.printf("\t%8.2f\t%20s\t%20s\n",ourInterf.getInterfaceArea(),ourInterf.getName(),SpaceGroup.getAlgebraicFromMatrix(ourInterf.getSecondTransf()));
+					String name = ourInterf.getFirstMolecule().getChainCode()+"+"+ourInterf.getSecondMolecule().getChainCode();
+					System.out.printf("\t%8.2f\t%20s\t%20s\n",ourInterf.getInterfaceArea(),name,SpaceGroup.getAlgebraicFromMatrix(ourInterf.getSecondTransf()));
 				} else {
 					System.out.printf("\t%8s\t%20s\t%20s\n","","","");
 				}
