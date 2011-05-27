@@ -43,11 +43,11 @@ h1 {
 }
 
 .surface.x-grid3-row,.surface {
-	background-color:#EDEDED;
+	background-color:white;
 }
 
-.other.x-grid3-row,.other {
-	background-color: white;
+.buried.x-grid3-row,.buried {
+	background-color:#CDCDCD;
 }
 
 .x-grid3-row td.x-grid3-cell,.x-grid3-summary-row td.x-grid3-cell {
