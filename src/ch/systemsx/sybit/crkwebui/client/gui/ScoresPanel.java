@@ -17,6 +17,9 @@ import com.extjs.gxt.ui.client.Style.Orientation;
 import com.extjs.gxt.ui.client.data.BeanModel;
 import com.extjs.gxt.ui.client.data.BeanModelFactory;
 import com.extjs.gxt.ui.client.data.BeanModelLookup;
+import com.extjs.gxt.ui.client.event.BaseEvent;
+import com.extjs.gxt.ui.client.event.Events;
+import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.store.GroupingStore;
 import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
@@ -50,7 +53,7 @@ public class ScoresPanel extends LayoutContainer
 	private boolean wasDisplayed;
 	private String initialGroupBy;
 
-	public ScoresPanel(MainController mainController) 
+	public ScoresPanel(final MainController mainController) 
 	{
 		this.mainController = mainController;
 		this.setLayout(new RowLayout(Orientation.VERTICAL));
@@ -100,6 +103,27 @@ public class ScoresPanel extends LayoutContainer
 		});
 
 		scoresGrid.setView(view);
+		
+		scoresGrid.addListener(Events.ColumnResize, new Listener<BaseEvent>(){
+			@Override
+			public void handleEvent(BaseEvent be) {
+				((ResultsPanel)(mainController.getMainViewPort().getCenterPanel().getDisplayPanel())).getScoresPanel().resizeGrid();
+			}
+		});
+		
+		scoresGrid.addListener(Events.ColumnMove, new Listener<BaseEvent>(){
+			@Override
+			public void handleEvent(BaseEvent be) {
+				((ResultsPanel)(mainController.getMainViewPort().getCenterPanel().getDisplayPanel())).getScoresPanel().resizeGrid();
+			}
+		});
+		
+		scoresGrid.addListener(Events.ContextMenu, new Listener<BaseEvent>(){
+			@Override
+			public void handleEvent(BaseEvent be) {
+				((ResultsPanel)(mainController.getMainViewPort().getCenterPanel().getDisplayPanel())).getScoresPanel().resizeGrid();
+			}
+		});
 
 		this.add(scoresGrid, new RowData(1, 1, new Margins(0)));
 
@@ -282,7 +306,7 @@ public class ScoresPanel extends LayoutContainer
 	
 	public void resizeGrid() 
 	{
-		int limit = 30;
+		int limit = 50;
 		if(mainController.getMainViewPort().getMyJobsPanel().isExpanded())
 		{
 			limit += mainController.getMainViewPort().getMyJobsPanel().getWidth();
@@ -329,11 +353,18 @@ public class ScoresPanel extends LayoutContainer
 			}
 		}
 
+//		scoresGrid.setWidth(mainController.getWindowWidth() - limit);
+		
 		scoresGrid.getView().refresh(true);
 		scoresGrid.getView().layout();
 		scoresGrid.repaint();
 
 		this.layout();
+		
+		if(scoresGrid.getView().getHeader() != null)
+		{
+			scoresGrid.getView().getHeader().refresh();
+		}
 		
 		wasDisplayed = true;
 	}

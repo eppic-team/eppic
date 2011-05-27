@@ -46,6 +46,7 @@ public class ThumbnailCellRenderer implements GridCellRenderer<BeanModel>
 						"." +
 						model.get("id") +
 						".75x75.png";
+//		String source = "http://localhost/3pi9.10.75x75.png";
 		
 		final Image image  = new Image(source);
 		image.addMouseOverHandler(new MouseOverHandler() {

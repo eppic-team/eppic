@@ -19,7 +19,7 @@ public class GridCellRendererFactory {
 			if (rendererName.equals("details")) {
 				renderer = new DetailsButtonCellRenderer(mainController);
 			} else if (rendererName.equals("methods")) {
-				renderer = new MethodCellRenderer();
+				renderer = new MethodCellRenderer(mainController);
 			} else if (rendererName.equals("number")) {
 				 renderer = new NumberRenderer();
 			} else if (rendererName.equals("viewer")) {
@@ -28,6 +28,8 @@ public class GridCellRendererFactory {
 				 renderer = new ThumbnailCellRenderer(mainController);
 			} else if (rendererName.equals("warnings")) {
 				 renderer = new WarningsCellRenderer(mainController);
+			} else if (rendererName.equals("size")) {
+				renderer = new SizeCellRenderer(mainController);
 			}
 		}
 

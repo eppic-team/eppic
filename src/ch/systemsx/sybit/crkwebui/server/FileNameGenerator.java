@@ -18,7 +18,7 @@ public class FileNameGenerator
 		{
 			pattern = ".zip";
 		}
-		else if(type.equals("interfaces"))
+		else if(type.equals("interface"))
 		{
 			pattern = "." + interfaceId + ".rimcore.pdb";
 		}

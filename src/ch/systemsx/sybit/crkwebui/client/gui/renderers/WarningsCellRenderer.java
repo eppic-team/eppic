@@ -64,16 +64,13 @@ public class WarningsCellRenderer implements GridCellRenderer<BeanModel>
 						toolTipConfig.setMouseOffset(new int[] {0, 0});  
 						toolTipConfig.setTemplate(new Template(generateWarningsTemplate(warnings)));  
 						
-						int warningColumnWidth = ((ResultsPanel)mainController.getMainViewPort().getCenterPanel().getDisplayPanel()).getResultsGrid()
-						  .getColumnModel().getColumnById("warnings").getWidth();
-						
 						int width = 500;
 						if(width > mainController.getWindowWidth())
 						{
-							width = mainController.getWindowWidth() - 35 - (warningColumnWidth - image.getWidth())/2 - image.getWidth();
+							width = image.getAbsoluteLeft();
 						}
 						
-						int toolTipXPosition = mainController.getWindowWidth() - width - 35 - (warningColumnWidth - image.getWidth())/2 - image.getWidth();
+						int toolTipXPosition = image.getAbsoluteLeft() - width;
 						
 						toolTipConfig.setMinWidth(width);
 						toolTipConfig.setMaxWidth(width);
@@ -128,7 +125,4 @@ public class WarningsCellRenderer implements GridCellRenderer<BeanModel>
 		
 		return warningsList;
 	}
-	
-	
-
 }
