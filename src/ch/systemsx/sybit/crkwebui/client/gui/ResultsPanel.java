@@ -539,7 +539,7 @@ public class ResultsPanel extends DisplayPanel
 
 	public void resizeGrid() 
 	{
-		int limit = 45;
+		int limit = 30;
 		if(mainController.getMainViewPort().getMyJobsPanel().isExpanded())
 		{
 			limit += mainController.getMainViewPort().getMyJobsPanel().getWidth();

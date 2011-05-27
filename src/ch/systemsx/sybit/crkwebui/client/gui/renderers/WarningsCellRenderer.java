@@ -3,6 +3,7 @@ package ch.systemsx.sybit.crkwebui.client.gui.renderers;
 import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
+import ch.systemsx.sybit.crkwebui.client.gui.ResultsPanel;
 
 import com.extjs.gxt.ui.client.core.Template;
 import com.extjs.gxt.ui.client.data.BeanModel;
@@ -12,8 +13,6 @@ import com.extjs.gxt.ui.client.widget.grid.Grid;
 import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
 import com.extjs.gxt.ui.client.widget.tips.ToolTip;
 import com.extjs.gxt.ui.client.widget.tips.ToolTipConfig;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.MouseOutEvent;
 import com.google.gwt.event.dom.client.MouseOutHandler;
 import com.google.gwt.event.dom.client.MouseOverEvent;
@@ -41,74 +40,88 @@ public class WarningsCellRenderer implements GridCellRenderer<BeanModel>
 			ColumnData config, final int rowIndex, final int colIndex,
 			ListStore<BeanModel> store, Grid<BeanModel> grid) 
 	{
-		String source = "resources/images/gxt/icons/warning_icon.PNG";
+		final List<String> warnings = (List<String>)model.get("warnings");
 		
-		final Image image  = new Image(source);
-		image.addMouseOverHandler(new MouseOverHandler() {
+		if((warnings != null) && (warnings.size() > 0))
+		{
+			String source = "resources/images/gxt/icons/warning_icon.PNG";
 			
-			@Override
-			public void onMouseOver(MouseOverEvent event)
-			{
-				if((toolTip != null) && (refreshTooltip))
-				{
-					toolTip.disable();
-				}
+			final Image image  = new Image(source);
+			image.addMouseOverHandler(new MouseOverHandler() {
 				
-				if(refreshTooltip)
+				@Override
+				public void onMouseOver(MouseOverEvent event)
 				{
-					List<String> warnings = (List<String>)model.get("warnings");
+					if((toolTip != null) && (refreshTooltip))
+					{
+						toolTip.disable();
+					}
 					
-					ToolTipConfig toolTipConfig = new ToolTipConfig();  
-					toolTipConfig.setTitle(MainController.CONSTANTS.results_grid_warnings_tooltip_title());  
-					toolTipConfig.setMouseOffset(new int[] {0, 0});  
-					toolTipConfig.setTemplate(new Template(generateWarningsTemplate(warnings)));  
-					toolTipConfig.setMaxWidth(mainController.getWindowWidth());
-					toolTipConfig.setShowDelay(100);
-					toolTipConfig.setDismissDelay(0);
-					
-					toolTip = new ToolTip(null, toolTipConfig);
-					toolTip.showAt(image.getAbsoluteLeft() + image.getOffsetWidth(), 
-								   image.getAbsoluteTop() + image.getOffsetWidth() + 5);
-					refreshTooltip = false;
+					if(refreshTooltip)
+					{
+						ToolTipConfig toolTipConfig = new ToolTipConfig();  
+						toolTipConfig.setTitle(MainController.CONSTANTS.results_grid_warnings_tooltip_title());  
+						toolTipConfig.setMouseOffset(new int[] {0, 0});  
+						toolTipConfig.setTemplate(new Template(generateWarningsTemplate(warnings)));  
+						
+						int warningColumnWidth = ((ResultsPanel)mainController.getMainViewPort().getCenterPanel().getDisplayPanel()).getResultsGrid()
+						  .getColumnModel().getColumnById("warnings").getWidth();
+						
+						int width = 500;
+						if(width > mainController.getWindowWidth())
+						{
+							width = mainController.getWindowWidth() - 35 - (warningColumnWidth - image.getWidth())/2 - image.getWidth();
+						}
+						
+						int toolTipXPosition = mainController.getWindowWidth() - width - 35 - (warningColumnWidth - image.getWidth())/2 - image.getWidth();
+						
+						toolTipConfig.setMinWidth(width);
+						toolTipConfig.setMaxWidth(width);
+						toolTipConfig.setShowDelay(100);
+						toolTipConfig.setDismissDelay(0);
+						
+						toolTip = new ToolTip(null, toolTipConfig);
+						
+						toolTip.showAt(toolTipXPosition, 
+									   image.getAbsoluteTop() + image.getOffsetWidth() + 5);
+						refreshTooltip = false;
+					}
 				}
-				
-				
-			}
-		});
-		
-		image.addMouseOutHandler(new MouseOutHandler() 
-		{
-			@Override
-			public void onMouseOut(MouseOutEvent event) 
+			});
+			
+			image.addMouseOutHandler(new MouseOutHandler() 
 			{
-				if(toolTip != null)
+				@Override
+				public void onMouseOut(MouseOutEvent event) 
 				{
-					toolTip.disable();
+					if(toolTip != null)
+					{
+						toolTip.disable();
+					}
+					
+					refreshTooltip = true;
 				}
-				
-				refreshTooltip = true;
-			}
-		});
-		
-		image.addClickHandler(new ClickHandler() 
+			});
+			
+			return image;
+		}
+		else
 		{
-			@Override
-			public void onClick(ClickEvent event)
-			{
-				mainController.runViewer(String.valueOf(model.get("id")));
-			}
-		});
+			return "";
+		}
 		
-		return image;
 	}
 	
 	private String generateWarningsTemplate(List<String> warnings)
 	{
-		String warningsList = "<div><ul style=\"list-style: disc; margin: 0px 0px 0px 15px\">";
+		String warningsList = "<div><ul style=\"list-style: disc; margin: 0px 0px 0px 15px;\">";
 		
 		for(String warning : warnings)
 		{
-			warningsList += "<li>" + warning + "</li>";
+			if(!warning.equals(""))
+			{
+				warningsList += "<li>" + warning + "</li>";
+			}
 		}
 			
 		warningsList += "</ul></div>";

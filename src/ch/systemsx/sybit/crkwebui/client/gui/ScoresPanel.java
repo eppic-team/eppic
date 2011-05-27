@@ -1,8 +1,10 @@
 package ch.systemsx.sybit.crkwebui.client.gui;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import model.InterfaceScoreItem;
 import model.InterfaceScoreItemKey;
@@ -43,7 +45,7 @@ public class ScoresPanel extends LayoutContainer
 	private List<ColumnConfig> scoresConfigs;
 	private GroupingStore<BeanModel> scoresStore;
 	private ColumnModel scoresColumnModel;
-	private List<Integer> initialColumnWidth;
+	private Map<String, Integer> initialColumnWidth;
 	
 	private boolean wasDisplayed;
 	private String initialGroupBy;
@@ -197,7 +199,7 @@ public class ScoresPanel extends LayoutContainer
 		}
 		
 		if (columns != null) {
-			initialColumnWidth = new ArrayList<Integer>();
+			initialColumnWidth = new HashMap<String, Integer>();
 		}
 
 		for (String columnName : columns) {
@@ -231,7 +233,7 @@ public class ScoresPanel extends LayoutContainer
 					columnWidth = Integer.parseInt(customColumnWidth);
 				}
 				
-				initialColumnWidth.add(columnWidth);
+				initialColumnWidth.put(columnName, columnWidth);
 
 				String customRenderer = mainController.getSettings()
 						.getGridProperties()
@@ -280,7 +282,7 @@ public class ScoresPanel extends LayoutContainer
 	
 	public void resizeGrid() 
 	{
-		int limit = 45;
+		int limit = 30;
 		if(mainController.getMainViewPort().getMyJobsPanel().isExpanded())
 		{
 			limit += mainController.getMainViewPort().getMyJobsPanel().getWidth();
@@ -299,23 +301,31 @@ public class ScoresPanel extends LayoutContainer
 			    (!wasDisplayed) &&
 			    (!scoresGrid.getColumnModel().getColumn(i).getId().equals(initialGroupBy))))
 			{
-				scoresGridWidthOfAllVisibleColumns += initialColumnWidth.get(i);
+				scoresGridWidthOfAllVisibleColumns += initialColumnWidth.get(scoresGrid.getColumnModel().getColumn(i).getId());
 			}
 		}
 		
 		if (scoresGridWidthOfAllVisibleColumns < mainController.getWindowWidth() - limit) 
 		{
-			scoresGrid.getView().setForceFit(true);
+			int maxWidth = mainController.getWindowWidth() - limit - 20;
+			float multiplier = (float)maxWidth / scoresGridWidthOfAllVisibleColumns;
+			
+			int nrOfColumn = scoresGrid.getColumnModel().getColumnCount();
+			
+			for (int i = 0; i < nrOfColumn; i++) 
+			{
+				scoresGrid.getColumnModel().setColumnWidth(i, (int)(initialColumnWidth.get(scoresGrid.getColumnModel().getColumn(i).getId()) * multiplier), true);
+//				resultsGrid.getColumnModel().getColumn(i)
+//						.setWidth((int)(initialColumnWidth.get(i) * multiplier));
+			}
 		} 
 		else 
 		{
-			scoresGrid.getView().setForceFit(false);
-
 			int nrOfColumn = scoresGrid.getColumnModel().getColumnCount();
 
 			for (int i = 0; i < nrOfColumn; i++) {
 				scoresGrid.getColumnModel().getColumn(i)
-						.setWidth(initialColumnWidth.get(i));
+						.setWidth(initialColumnWidth.get(scoresGrid.getColumnModel().getColumn(i).getId()));
 			}
 		}
 

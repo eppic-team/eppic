@@ -132,7 +132,7 @@ public class ResiduesPanel extends ContentPanel
 					}
 					else
 					{
-						return "other";
+						return "buried";
 					}
 				}
 				

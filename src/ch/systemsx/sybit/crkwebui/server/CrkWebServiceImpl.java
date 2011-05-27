@@ -145,7 +145,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 		{
 			e.printStackTrace();
 		}
-//		
+		
 //		**********************
 //		* Hibernate pure
 //		**********************
@@ -546,7 +546,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 		return statusData;
 	}
 	
-	private PDBScoreItem getResultData(String jobId) 
+	private PDBScoreItem getResultData(String jobId) throws CrkWebException 
 	{
 		PDBScoreItem resultsData = null;
 
