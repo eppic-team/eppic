@@ -55,8 +55,7 @@ public class MethodCellRenderer implements GridCellRenderer<BeanModel>
 			}
 			else
 			{
-				final List<String> warnings = new ArrayList<String>();
-				warnings.add("This is the reason why nopred");
+				final List<String> warnings = (List<String>)model.get("nopredWarnings");
 				
 				final Label nopredLabel = new Label(value);
 				

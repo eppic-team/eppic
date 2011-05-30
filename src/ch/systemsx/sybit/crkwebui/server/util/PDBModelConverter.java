@@ -58,6 +58,7 @@ public class PDBModelConverter
 						interfaceItem.setNumHomologs2(pdbScore[0].getInterfaceScoreMap().get(i).getNumHomologs2());
 						interfaceItem.setOperator(pdbScore[0].getInterfaceScoreMap().get(i).getOperator());
 						interfaceItem.setWarnings(pdbScore[0].getInterfaceScoreMap().get(i).getWarnings());
+						interfaceItem.setNopredWarnings(pdbScore[0].getInterfaceScoreMap().get(i).getNopredWarnings());
 						pdbScoreItem.addInterfaceItem(interfaceItem);
 						
 						int j=0;
