@@ -311,6 +311,7 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 				isc.setNumHomologs1(iec.getFirstChainEvolContext().getNumHomologs());
 				isc.setNumHomologs2(iec.getSecondChainEvolContext().getNumHomologs());
 				isc.setWarnings(iec.getWarnings());
+				isc.setNopredWarnings(iec.getNopredWarnings());
 
 				int numBsaToAsaCutoffs = pdbSc.getBsaToAsaCutoffs().length;
 				int[] sizes1 = new int[numBsaToAsaCutoffs];

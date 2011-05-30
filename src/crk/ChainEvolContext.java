@@ -480,6 +480,8 @@ public class ChainEvolContext implements Serializable {
 			if (best!=null) {
 				LOGGER.error("Best match was "+best.getSubjectId()+", with "+
 						String.format("%5.2f%% id and %4.2f coverage",best.getTotalPercentIdentity(),best.getQueryCoverage()));
+				LOGGER.error("Alignment: ");
+				LOGGER.error(best.getMaxScoringHsp().getAlignment().getFastaString(null, true));
 			}
 			System.exit(1);
 		}

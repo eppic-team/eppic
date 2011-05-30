@@ -16,7 +16,10 @@ import model.InterfaceResidueMethodItem;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import edu.uci.ics.jung.graph.util.Pair;
+
 import owl.core.runners.PymolRunner;
+import owl.core.structure.Atom;
 import owl.core.structure.ChainInterface;
 import owl.core.structure.InterfaceRimCore;
 import owl.core.structure.PdbChain;
@@ -65,11 +68,13 @@ public class InterfaceEvolContext implements Serializable {
 	private CallType[] lastCalls; // cached result of the last call to getCalls(bioCutoff, xtalCutoff, homologsCutoff, minCoreSize, minMemberCoreSize)
 	
 	private List<String> warnings;
+	private List<String> nopredWarnings;
 	
 	public InterfaceEvolContext(ChainInterface interf, List<ChainEvolContext> chains) {
 		this.interf = interf;
 		this.chains = chains;
 		this.warnings = new ArrayList<String>();
+		this.nopredWarnings = new ArrayList<String>();
 	}
 
 	public ChainInterface getInterface() {
@@ -92,6 +97,10 @@ public class InterfaceEvolContext implements Serializable {
 		return this.warnings;
 	}
 	
+	public List<String> getNopredWarnings() {
+		return this.nopredWarnings;
+	}
+	
 	/**
 	 * Calculates the entropy scores for this interface.
 	 * Subsequently use {@link #getCalls(double, double, int, int, int)} and {@link #getFinalScores()}
@@ -99,6 +108,9 @@ public class InterfaceEvolContext implements Serializable {
 	 * @param weighted
 	 */
 	public void scoreEntropy(boolean weighted) {
+		checkDisulfideBonds();
+		checkForPeptides(FIRST);
+		checkForPeptides(SECOND);
 		scoreInterface(weighted, ScoringType.ENTROPY);
 		lastScoType = ScoringType.ENTROPY;
 		//lastScoWeighted = weighted;
@@ -522,14 +534,12 @@ public class InterfaceEvolContext implements Serializable {
 			rimCores = this.interf.getSecondRimCores();
 		}
 		// we first log just once if we have NOPREDs due to molec not being protein or not enough homologs
-		if (!isProtein(molecId)) {
-			String msg = "Interface "+this.interf.getId()+", member "+memberSerial+" calls NOPRED because it is not a protein"; 
-			LOGGER.info(msg);
-			warnings.add(msg);
+		if (!isProtein(molecId)) { 
+			LOGGER.info("Interface "+this.interf.getId()+", member "+memberSerial+" calls NOPRED because it is not a protein");
+			warnings.add("Interface member "+memberSerial+" calls NOPRED because it is not a protein");
 		} else if (!hasEnoughHomologs(molecId, homologsCutoff)) {
-			String msg = "Interface "+this.interf.getId()+", member "+memberSerial+" calls NOPRED because there are not enough homologs to evaluate conservation scores";
-			LOGGER.info(msg);
-			warnings.add(msg);
+			LOGGER.info("Interface "+this.interf.getId()+", member "+memberSerial+" calls NOPRED because there are not enough homologs to evaluate conservation scores");
+			warnings.add("Interface member "+memberSerial+" calls NOPRED because there are not enough homologs to evaluate conservation scores");
 		}
 
 		
@@ -553,17 +563,18 @@ public class InterfaceEvolContext implements Serializable {
 				calls[i] = CallType.NO_PREDICTION;
 			}
 			else if (((double)countsRelCoreRes[i]/(double)rimCores[i].getCoreSize())>MAX_ALLOWED_UNREL_RES) {
-				String msg = "Interface "+this.interf.getId()+", member "+memberSerial+" calls NOPRED because there are not enough reliable core residues ("+
-					countsRelCoreRes[i]+" unreliable residues out of "+rimCores[i].getCoreSize()+" residues in core)";
-				LOGGER.info(msg);
+				LOGGER.info("Interface "+this.interf.getId()+", member "+memberSerial+" calls NOPRED because there are not enough reliable core residues ("+
+						countsRelCoreRes[i]+" unreliable residues out of "+rimCores[i].getCoreSize()+" residues in core)");
+				warnings.add("Interface member "+memberSerial+" calls NOPRED because there are not enough reliable core residues: "+
+						countsRelCoreRes[i]+" unreliable out of "+rimCores[i].getCoreSize()+" in core");
+
 				calls[i] = CallType.NO_PREDICTION;
-				warnings.add(msg);
 			}
 			else if (((double)countsRelRimRes[i]/(double)rimCores[i].getRimSize())>MAX_ALLOWED_UNREL_RES) {
-				String msg ="Interface "+this.interf.getId()+", member "+memberSerial+" calls NOPRED because there are not enough reliable rim residues ("+
-					countsRelRimRes[i]+" unreliable residues out of "+rimCores[i].getRimSize()+" residues in rim)"; 
-				LOGGER.info(msg);
-				warnings.add(msg);
+				LOGGER.info("Interface "+this.interf.getId()+", member "+memberSerial+" calls NOPRED because there are not enough reliable rim residues ("+
+						countsRelRimRes[i]+" unreliable residues out of "+rimCores[i].getRimSize()+" residues in rim)");
+				warnings.add("Interface member "+memberSerial+" calls NOPRED because there are not enough reliable rim residues: "+
+						countsRelRimRes[i]+" unreliable out of "+rimCores[i].getRimSize()+" in rim");
 				calls[i] = CallType.NO_PREDICTION;
 			}
 			else {
@@ -645,6 +656,7 @@ public class InterfaceEvolContext implements Serializable {
 			if (countNoPredict==chains.size()) {
 				finalScores[i] = Double.NaN;
 				lastCalls[i]=CallType.NO_PREDICTION;
+				nopredWarnings.add("Both interface members called NOPRED");
 			} else if (countBio>countXtal) {
 				//TODO check the discrepancies among the different voters. The variance could be a measure of the confidence of the call
 				//TODO need to do a study about the correlation of scores in members of the same interface
@@ -863,4 +875,43 @@ public class InterfaceEvolContext implements Serializable {
 		}
 	}
 	
+	private void checkDisulfideBonds() {
+		List<Pair<Atom>> disulfPairs = interf.getAICGraph().getDisulfidePairs();
+		if (!disulfPairs.isEmpty()) {
+			String msgToLog = "Disulfide bridges present in interface "+interf.getId()+". ";
+			String msgToWarn = "Disulfide bridges present. ";
+			for (Pair<Atom> pair:disulfPairs) {
+				String msg ="Between CYS residues: "
+						+pair.getFirst().getParentResSerial()+" ("+interf.getFirstMolecule().getPdbChainCode()+") and "
+						+pair.getSecond().getParentResSerial()+" ("+interf.getSecondMolecule().getPdbChainCode()+"). ";
+				msgToLog+=msg;
+				msgToWarn+=msg;
+			}
+			LOGGER.info(msgToLog);
+			warnings.add(msgToWarn);
+		}
+	}
+	
+	private void checkForPeptides(int molecId) {
+		// We only warn if they are peptides
+		// In most cases our predictions for peptides will be bad because not only the peptide but also the protein partner
+		// will have too small an interface core and we'd call crystal based on core size
+		// But still for some cases (e.g. 3bfw) the prediction is correct (the core size is big enough) 
+		PdbChain molec = null;
+		if (molecId==FIRST) {
+			molec = interf.getFirstMolecule();
+		} else if (molecId==SECOND) {
+			molec = interf.getSecondMolecule();
+		}
+		if (molec.getFullLength()<=CRKMain.PEPTIDE_LENGTH_CUTOFF) {
+			double bsa = interf.getInterfaceArea();
+			String msg = "Ratio of interface area to ASA: "+
+					String.format("%4.2f", bsa/molec.getASA())+". "+
+					"Ratio of buried residues to total residues: "+
+					String.format("%4.2f",(double)molec.getNumResiduesWithBsaAbove(0)/(double)molec.getObsLength());
+			LOGGER.info("Chain "+molec.getPdbChainCode()+" of interface "+interf.getId()+" is a peptide. "+msg);
+			warnings.add("Chain "+molec.getPdbChainCode()+" is a peptide. Prediction might be wrong");
+		}
+
+	}
 }

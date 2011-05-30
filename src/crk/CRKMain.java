@@ -43,6 +43,7 @@ public class CRKMain {
 	private static final String   KAKS_FILE_SUFFIX = ".kaks";
 	private static final Pattern  NONPROT_PATTERN = Pattern.compile("^X+$");
 	private static final double   INTERFACE_DIST_CUTOFF = 5.9;
+	protected static final int	  PEPTIDE_LENGTH_CUTOFF = 20; // shorter chains will be considered peptides
 	
 	// DEFAULTS FOR CONFIG FILE ASSIGNABLE CONSTANTS
 	// defaults for pdb data location
