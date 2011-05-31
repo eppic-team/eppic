@@ -880,10 +880,10 @@ public class InterfaceEvolContext implements Serializable {
 		if (!disulfPairs.isEmpty()) {
 			String msgToLog = "Disulfide bridges present in interface "+interf.getId()+". ";
 			String msgToWarn = "Disulfide bridges present. ";
-			for (Pair<Atom> pair:disulfPairs) {
-				String msg ="Between CYS residues: "
-						+pair.getFirst().getParentResSerial()+" ("+interf.getFirstMolecule().getPdbChainCode()+") and "
-						+pair.getSecond().getParentResSerial()+" ("+interf.getSecondMolecule().getPdbChainCode()+"). ";
+			String msg ="Between CYS residues: ";
+			for (Pair<Atom> pair:disulfPairs) {		
+				msg+=pair.getFirst().getParentResSerial()+" ("+interf.getFirstMolecule().getPdbChainCode()+") and "
+					+pair.getSecond().getParentResSerial()+" ("+interf.getSecondMolecule().getPdbChainCode()+"). ";
 				msgToLog+=msg;
 				msgToWarn+=msg;
 			}
