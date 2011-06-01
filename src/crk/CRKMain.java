@@ -250,7 +250,7 @@ public class CRKMain {
 			ROOTLOGGER.addAppender(fullLogAppender);
 			ROOTLOGGER.addAppender(errorAppender);
 			if (params.getProgressLogFile()!=null) {
-				FileAppender fileErrorAppender = new FileAppender(new PatternLayout("%5p - %m%n"),params.getProgressLogFile().getAbsolutePath(),false);
+				FileAppender fileErrorAppender = new FileAppender(new PatternLayout("%5p - %m%n"),params.getProgressLogFile().getAbsolutePath(),true);
 				fileErrorAppender.setThreshold(Level.ERROR);
 				ROOTLOGGER.addAppender(fileErrorAppender);
 			}
