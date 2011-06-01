@@ -249,6 +249,11 @@ public class CRKMain {
 			outAppender.setThreshold(Level.DEBUG);
 			ROOTLOGGER.addAppender(fullLogAppender);
 			ROOTLOGGER.addAppender(errorAppender);
+			if (params.getProgressLogFile()!=null) {
+				FileAppender fileErrorAppender = new FileAppender(new PatternLayout("%5p - %m%n"),params.getProgressLogFile().getAbsolutePath(),false);
+				fileErrorAppender.setThreshold(Level.ERROR);
+				ROOTLOGGER.addAppender(fileErrorAppender);
+			}
 			if (params.getDebug())
 				ROOTLOGGER.addAppender(outAppender);
 		} catch (IOException e) {

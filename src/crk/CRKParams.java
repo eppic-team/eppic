@@ -475,6 +475,10 @@ public class CRKParams {
 		return progressLog;
 	}
 	
+	public File getProgressLogFile() {
+		return progressLogFile;
+	}
+	
 	public boolean getDebug() {
 		return debug;
 	}
