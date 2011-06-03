@@ -321,7 +321,7 @@ public class InterfaceEvolContext implements Serializable {
 
 				int queryUniprotPos = -1;
 				if (!firstMol.isNonPolyChain() && firstMol.getSequence().isProtein()) 
-					chains.get(FIRST).getQueryUniprotPosForPDBPos(residue.getSerial());
+					queryUniprotPos = chains.get(FIRST).getQueryUniprotPosForPDBPos(residue.getSerial());
 				
 				float entropy = -1;
 				if (residue instanceof AaResidue) {	
@@ -355,7 +355,7 @@ public class InterfaceEvolContext implements Serializable {
 				
 				int queryUniprotPos = -1;
 				if (!secondMol.isNonPolyChain() && secondMol.getSequence().isProtein()) 
-					chains.get(SECOND).getQueryUniprotPosForPDBPos(residue.getSerial());
+					queryUniprotPos = chains.get(SECOND).getQueryUniprotPosForPDBPos(residue.getSerial());
 				
 				float entropy = -1;
 				if (residue instanceof AaResidue) {
