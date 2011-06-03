@@ -60,6 +60,7 @@ public class StatusPanel extends DisplayPanel
 
 		log = new TextArea();
 		log.setFieldLabel(MainController.CONSTANTS.status_panel_log());
+		log.setReadOnly(true);
 
 		formPanel.add(log, new FormData("95% -60"));
 		

@@ -47,6 +47,7 @@ public class MainViewPort extends Viewport
 				if(be.getPanel() instanceof MyJobsPanel)
 				{
 					mainController.resizeResultsGrid();
+					mainController.resizeScoresGrid();
 				}
 			}
 		});
@@ -58,6 +59,7 @@ public class MainViewPort extends Viewport
 				if(be.getPanel() instanceof MyJobsPanel)
 				{
 					mainController.resizeResultsGrid();
+					mainController.resizeScoresGrid();
 				}
 			}
 		});
@@ -93,7 +95,7 @@ public class MainViewPort extends Viewport
 				20);
 		southData.setMargins(new Margins(5, 0, 0, 0));
 		
-		bottomPanel = new BottomPanel();
+		bottomPanel = new BottomPanel(mainController);
 		this.add(bottomPanel, southData);
 	}
 

@@ -471,6 +471,16 @@ public class MainController
            (mainViewPort.getCenterPanel().getDisplayPanel() instanceof ResultsPanel))
            {
 		    	((ResultsPanel)mainViewPort.getCenterPanel().getDisplayPanel()).resizeGrid();
+           }
+    }
+	
+	public void resizeScoresGrid()
+    {
+		if((mainViewPort != null) &&
+           (mainViewPort.getCenterPanel() != null) &&
+           (mainViewPort.getCenterPanel().getDisplayPanel() != null) &&
+           (mainViewPort.getCenterPanel().getDisplayPanel() instanceof ResultsPanel))
+           {
 		    	((ResultsPanel)mainViewPort.getCenterPanel().getDisplayPanel()).resizeScoresGrid();
            }
     }

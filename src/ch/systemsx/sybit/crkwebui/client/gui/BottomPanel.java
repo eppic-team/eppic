@@ -21,7 +21,7 @@ public class BottomPanel extends LayoutContainer
 	private HTML status;
 	private HTML contactLink;
 
-	public BottomPanel() 
+	public BottomPanel(final MainController mainController) 
 	{
 		this.setLayout(new RowLayout(Orientation.HORIZONTAL));
 		

@@ -33,7 +33,6 @@ import com.extjs.gxt.ui.client.widget.grid.GroupingView;
 import com.extjs.gxt.ui.client.widget.grid.HeaderGroupConfig;
 import com.extjs.gxt.ui.client.widget.layout.RowData;
 import com.extjs.gxt.ui.client.widget.layout.RowLayout;
-import com.google.gwt.user.client.Window;
 
 /**
  * This panel is used to display the detailed information about calculated scores
@@ -107,21 +106,21 @@ public class ScoresPanel extends LayoutContainer
 		scoresGrid.addListener(Events.ColumnResize, new Listener<BaseEvent>(){
 			@Override
 			public void handleEvent(BaseEvent be) {
-				((ResultsPanel)(mainController.getMainViewPort().getCenterPanel().getDisplayPanel())).getScoresPanel().resizeGrid();
+				mainController.resizeScoresGrid();
 			}
 		});
 		
 		scoresGrid.addListener(Events.ColumnMove, new Listener<BaseEvent>(){
 			@Override
 			public void handleEvent(BaseEvent be) {
-				((ResultsPanel)(mainController.getMainViewPort().getCenterPanel().getDisplayPanel())).getScoresPanel().resizeGrid();
+				mainController.resizeScoresGrid();
 			}
 		});
 		
 		scoresGrid.addListener(Events.ContextMenu, new Listener<BaseEvent>(){
 			@Override
 			public void handleEvent(BaseEvent be) {
-				((ResultsPanel)(mainController.getMainViewPort().getCenterPanel().getDisplayPanel())).getScoresPanel().resizeGrid();
+				mainController.resizeScoresGrid();
 			}
 		});
 
@@ -307,6 +306,7 @@ public class ScoresPanel extends LayoutContainer
 	public void resizeGrid() 
 	{
 		int limit = 50;
+		
 		if(mainController.getMainViewPort().getMyJobsPanel().isExpanded())
 		{
 			limit += mainController.getMainViewPort().getMyJobsPanel().getWidth();
@@ -329,36 +329,29 @@ public class ScoresPanel extends LayoutContainer
 			}
 		}
 		
+		int nrOfColumn = scoresGrid.getColumnModel().getColumnCount();
+		
 		if (scoresGridWidthOfAllVisibleColumns < mainController.getWindowWidth() - limit) 
 		{
 			int maxWidth = mainController.getWindowWidth() - limit - 20;
 			float multiplier = (float)maxWidth / scoresGridWidthOfAllVisibleColumns;
 			
-			int nrOfColumn = scoresGrid.getColumnModel().getColumnCount();
-			
 			for (int i = 0; i < nrOfColumn; i++) 
 			{
 				scoresGrid.getColumnModel().setColumnWidth(i, (int)(initialColumnWidth.get(scoresGrid.getColumnModel().getColumn(i).getId()) * multiplier), true);
-//				resultsGrid.getColumnModel().getColumn(i)
-//						.setWidth((int)(initialColumnWidth.get(i) * multiplier));
 			}
 		} 
 		else 
 		{
-			int nrOfColumn = scoresGrid.getColumnModel().getColumnCount();
-
 			for (int i = 0; i < nrOfColumn; i++) {
 				scoresGrid.getColumnModel().getColumn(i)
 						.setWidth(initialColumnWidth.get(scoresGrid.getColumnModel().getColumn(i).getId()));
 			}
 		}
 
-//		scoresGrid.setWidth(mainController.getWindowWidth() - limit);
-		
 		scoresGrid.getView().refresh(true);
 		scoresGrid.getView().layout();
 		scoresGrid.repaint();
-
 		this.layout();
 		
 		if(scoresGrid.getView().getHeader() != null)

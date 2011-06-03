@@ -52,6 +52,7 @@ public class InterfacesResiduesWindow extends Dialog
 		interfacesResiduesPanel = new InterfacesResiduesPanel(mainController,
 															  width,
 															  height - 220);
+		
 		this.add(interfacesResiduesPanel, new RowData(1, 1, new Margins(0)));
 		
 		this.add(new LegendPanel(), new RowData(1, 30, new Margins(0)));

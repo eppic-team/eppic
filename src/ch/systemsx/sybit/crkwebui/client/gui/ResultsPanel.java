@@ -176,21 +176,21 @@ public class ResultsPanel extends DisplayPanel
 		resultsGrid.addListener(Events.ColumnResize, new Listener<BaseEvent>(){
 			@Override
 			public void handleEvent(BaseEvent be) {
-				((ResultsPanel)(mainController.getMainViewPort().getCenterPanel().getDisplayPanel())).getScoresPanel().resizeGrid();
+				mainController.resizeResultsGrid();
 			}
 		});
 		
 		resultsGrid.addListener(Events.ColumnMove, new Listener<BaseEvent>(){
 			@Override
 			public void handleEvent(BaseEvent be) {
-				((ResultsPanel)(mainController.getMainViewPort().getCenterPanel().getDisplayPanel())).getScoresPanel().resizeGrid();
+				mainController.resizeResultsGrid();
 			}
 		});
 		
 		resultsGrid.addListener(Events.ContextMenu, new Listener<BaseEvent>(){
 			@Override
 			public void handleEvent(BaseEvent be) {
-				((ResultsPanel)(mainController.getMainViewPort().getCenterPanel().getDisplayPanel())).getScoresPanel().resizeGrid();
+				mainController.resizeResultsGrid();
 			}
 		});
 
@@ -225,10 +225,9 @@ public class ResultsPanel extends DisplayPanel
 		if (scoresPanel == null) 
 		{
 			createScoresPanel();
+			scoresPanelLocation.add(scoresPanel);
+			scoresPanelLocation.layout();
 		}
-
-		scoresPanelLocation.add(scoresPanel);
-		scoresPanelLocation.layout();
 		
 		scoresPanel.fillGrid(mainController.getPdbScoreItem(), selectedInterface);
 		scoresPanel.resizeGrid();

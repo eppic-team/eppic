@@ -46,8 +46,7 @@ public class OptionsInputPanel extends FieldSet
 
 	public OptionsInputPanel(InputParameters defaultInputParameters,
 							 List<Integer> reducedAlphabetDefaultList,
-							 String[] supportedMethods,
-							 int windowHeight) 
+							 String[] supportedMethods) 
 	{
 		this.setHeading(MainController.CONSTANTS.input_advanced());
 		this.setCollapsible(true);
@@ -60,11 +59,10 @@ public class OptionsInputPanel extends FieldSet
 		this.setLayout(layout);
 		
 		int height = 400;
-		windowHeight = Window.getClientHeight();
 		
-		if(height > windowHeight * 0.4)
+		if(height > Window.getClientHeight() * 0.4)
 		{
-			height = (int) (windowHeight * 0.4);
+			height = (int) (Window.getClientHeight() * 0.4);
 		}
 		
 //		ComponentPlugin plugin = new ComponentPlugin()

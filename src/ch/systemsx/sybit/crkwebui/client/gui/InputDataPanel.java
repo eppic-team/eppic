@@ -152,8 +152,8 @@ public class InputDataPanel extends DisplayPanel
 		optionsInputPanel = new OptionsInputPanel(
 				mainController.getSettings().getDefaultParametersValues(),
 				mainController.getSettings().getReducedAlphabetList(),
-				mainController.getSettings().getScoresTypes(),
-				mainController.getWindowHeight());
+				mainController.getSettings().getScoresTypes());
+		
 		generalFieldSet.add(optionsInputPanel);
 		optionsInputPanel.collapse();
 

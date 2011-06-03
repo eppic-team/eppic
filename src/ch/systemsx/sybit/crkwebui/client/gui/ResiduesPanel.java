@@ -142,14 +142,7 @@ public class ResiduesPanel extends ContentPanel
 		
 		this.add(residuesGrid);
 		
-//		boolean isForceFit = checkIfForceFit(calculateWidthOfVisibleColumns());
-		
 		nrOfRows = (height)/22;
-		
-//		if(!isForceFit)
-//		{
-//			nrOfRows -= 1;
-//		}
 		
 		pagingToolbar = new PagingToolBar(nrOfRows);
 		pagingToolbar.bind(loader);
@@ -165,13 +158,6 @@ public class ResiduesPanel extends ContentPanel
 		BeanModel model = beanModelFactory
 				.createModel(new InterfaceResidueItem());
 
-		// String list = "";
-		//
-		// for(int i=0; i<model.getPropertyNames().size(); i++)
-		// {
-		// list = list + "," + model.getProperties().values().;
-		// }
-		//
 		String columnOrder = mainController.getSettings().getGridProperties()
 				.get("residues_columns");
 

@@ -168,7 +168,8 @@ public class MyJobsPanel extends ContentPanel
 		myJobsGrid.setColumnLines(true);
 		myJobsGrid.setColumnReordering(true);
 //		myJobsGrid.setAutoHeight(true);
-//		myJobsGrid.setAutoWidth(true);
+		myJobsGrid.setAutoWidth(true);
+		myJobsGrid.getView().setForceFit(true);
 		
 		myJobsGrid.addListener(Events.CellClick, new Listener<GridEvent>()
 		{
