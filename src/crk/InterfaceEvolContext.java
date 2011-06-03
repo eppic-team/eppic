@@ -181,7 +181,7 @@ public class InterfaceEvolContext implements Serializable {
 		if (!unreliableResidues.isEmpty()) {
 			String msg = "Interface residue serials ";
 			for (int i=0;i<unreliableResidues.size();i++) {
-				msg+=unreliableResidues.get(i).getPdbChainCode()+" "+unreliableResidues.get(i).getAaType().getThreeLetterCode()+unreliableResidues.get(i).getPdbSerial();
+				msg+=unreliableResidues.get(i).getPdbChainCode()+" "+unreliableResidues.get(i).getAaType().getThreeLetterCode()+unreliableResidues.get(i).getSerial();
 				if (i!=unreliableResidues.size()-1) {
 					msg+=",";
 				}
@@ -204,7 +204,7 @@ public class InterfaceEvolContext implements Serializable {
 		if (!unreliableResidues.isEmpty()) {
 			String msg = "Interface residue serials ";
 			for (int i=0;i<unreliableResidues.size();i++) {
-				msg+=unreliableResidues.get(i).getPdbChainCode()+" "+unreliableResidues.get(i).getAaType().getThreeLetterCode()+unreliableResidues.get(i).getPdbSerial();
+				msg+=unreliableResidues.get(i).getPdbChainCode()+" "+unreliableResidues.get(i).getAaType().getThreeLetterCode()+unreliableResidues.get(i).getSerial();
 				if (i!=unreliableResidues.size()-1) {
 					msg+=(",");
 				}
