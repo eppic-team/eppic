@@ -669,13 +669,13 @@ public class CRKMain {
 					PrintStream scoreKaksPS = new PrintStream(params.getOutputFile(KAKS_FILE_SUFFIX+".scores"+suffix));
 					// kaks nw
 					iecList.scoreKaKs(false);
-					iecList.printScoresTable(params.getProgressLog(),  params.getKaksCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getKaksCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
+					//iecList.printScoresTable(params.getProgressLog(),  params.getKaksCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getKaksCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
 					iecList.printScoresTable(scoreKaksPS,  params.getKaksCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getKaksCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
 					PdbScore[] kaksSc = new PdbScore[2];
 					kaksSc[0] = iecList.getPdbScoreObject();
 					// kaks w
 					iecList.scoreKaKs(true);
-					iecList.printScoresTable(params.getProgressLog(),  params.getKaksCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getKaksCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
+					//iecList.printScoresTable(params.getProgressLog(),  params.getKaksCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getKaksCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
 					iecList.printScoresTable(scoreKaksPS,  params.getKaksCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getKaksCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
 					iecList.writeScoresPDBFiles(params, KAKS_FILE_SUFFIX+".pdb");
 					iecList.writeRimCorePDBFiles(params, ".rimcore.pdb");
