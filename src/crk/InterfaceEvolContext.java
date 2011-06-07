@@ -582,7 +582,9 @@ public class InterfaceEvolContext implements Serializable {
 					calls[i] = CallType.BIO;
 				} else if (ratios[i]>xtalCutoff) {
 					calls[i] = CallType.CRYSTAL;
-				} else {
+				} else if (Double.isNaN(ratios[i])) {
+					calls[i] = CallType.NO_PREDICTION;
+ 				} else {
 					calls[i] = CallType.GRAY;
 				}
 			}
@@ -654,7 +656,7 @@ public class InterfaceEvolContext implements Serializable {
 			//int validVotes = countBio+countXtal+countGray;
 
 			if (countNoPredict==chains.size()) {
-				finalScores[i] = Double.NaN;
+				finalScores[i] = getAvrgRatio(noPredictCalls.get(i),i);
 				lastCalls[i]=CallType.NO_PREDICTION;
 				nopredWarnings.add("Both interface members called NOPRED");
 			} else if (countBio>countXtal) {
@@ -686,6 +688,9 @@ public class InterfaceEvolContext implements Serializable {
 						lastCalls[i] = CallType.BIO;
 					} else if (finalScores[i]>xtalCutoff) {
 						lastCalls[i] = CallType.CRYSTAL;
+					} else if (Double.isNaN(finalScores[i])) {
+						lastCalls[i] = CallType.NO_PREDICTION;
+						nopredWarnings.add("Evolutionary score is NaN");
 					} else {
 						lastCalls[i] = CallType.GRAY;
 					}
