@@ -58,6 +58,7 @@ public class CalcStats {
 				break;
 			case 'X':
 				xtalDir = new File(g.getOptarg());
+				break;
 			case 'b':
 				bioList = new File(g.getOptarg());
 				break;
@@ -83,7 +84,7 @@ public class CalcStats {
 			System.exit(1);
 		}
 		
-		// read the list file containing the interfaces to analyse (known to be bio or xtal depending on -t)
+		// read the list files containing the interfaces to analyse
 		TreeMap<String,List<Integer>> bioToAnalyse = readListFile(bioList);
 		TreeMap<String,List<Integer>> xtalToAnalyse = readListFile(xtalList);
 		int total = 0;
@@ -241,7 +242,19 @@ public class CalcStats {
 		return counts;
 	}
 	
-	private static TreeMap<String,List<Integer>> readListFile(File list) throws IOException {
+	/**
+	 * Reads a list file containing pdb codes and interface ids one per line and tab/space separated,
+	 * e.g. 
+	 *  1bxy 1
+	 *  1bxy 2
+	 *  2bxy 1
+	 *  ...
+	 * If only a pdb code is given without an id then a 1 is assumed.
+	 * @param list
+	 * @return a map of pdb codes to list of interface ids 
+	 * @throws IOException
+	 */
+	public static TreeMap<String,List<Integer>> readListFile(File list) throws IOException {
 		TreeMap<String,List<Integer>> map = new TreeMap<String, List<Integer>>();
 		BufferedReader br = new BufferedReader(new FileReader(list));
 		String line;
@@ -249,7 +262,10 @@ public class CalcStats {
 			if (line.startsWith("#")) continue;
 			String[] fields = line.trim().split("\\s+");
 			String pdbId = fields[0];
-			int interf = Integer.parseInt(fields[1]);
+			int interf = 1;
+			if (fields.length>1) {
+				interf = Integer.parseInt(fields[1]);
+			}
 			if (map.containsKey(pdbId)) {
 				map.get(pdbId).add(interf);
 			} else {

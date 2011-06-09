@@ -1,8 +1,15 @@
 package analysis;
 
+import gnu.getopt.Getopt;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 
 import crk.CallType;
 import crk.ChainEvolContext;
@@ -16,16 +23,14 @@ import owl.core.structure.ChainInterfaceList;
 //import owl.core.structure.InterfaceRimCore;
 //import owl.core.structure.Residue;
 import owl.core.util.Goodies;
-import owl.core.util.RegexFileFilter;
 
 /**
- * Script to go through output files of crk (*.interfaces.dat) in a given directory
- * and predict the bio/xtal character of interfaces based on core size alone. 
- * Outputs statistics of prediction: accuracy TP, FN
- * This script assumes that we are analysing a set of xtal interfaces thus all output (TP, FN etc)
- * follows that assumption. 
- * For predicted bio interfaces we also output entropy/kaks evolutionary scores and calls
- * read from *.chainevolcontext.dat files in same directory 
+ * Script to go through output files of crk (*.interfaces.dat) in given directories 
+ * (one for a bio set, one for a xtal set) and predict the bio/xtal character of 
+ * interfaces based on core size alone. 
+ * Outputs statistics of prediction (accuracy, TP, FN) first bio, then xtal, then global
+ * We also output entropy/kaks evolutionary scores and calls read from *.chainevolcontext.dat 
+ * files in same directories
  * 
  * @author duarte_j
  *
@@ -35,85 +40,156 @@ public class CoreSizePredictor {
 	private static final double[] BSATOASA_CUTOFFS = {0.95};
 	private static final int MIN_NUMBER_CORE_RESIDUES_FOR_BIO = 7;
 	
-	private static final int MINIMUM_INTERF_AREA_TO_REPORT = 1000;
+	//private static final int MINIMUM_INTERF_AREA_TO_REPORT = 1000;
 	private static final int MIN_NUM_HOMOLOGS = 10;
 	private static final double BIO_CUTOFF = 0.84;
 	private static final double XTAL_CUTOFF = 0.86;
 	
+	private static final String PROGRAM_NAME = "CoreSizePredictor";
 	
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) throws Exception {
-			
-		File dir = new File(args[0]);
-		File[] interffiles = dir.listFiles(new RegexFileFilter(".*\\.interfaces.dat"));
 		
-		int[] globalStats = new int[2];
-		for (File file:interffiles) {
-			
-			int[] stats = predict(file);
-			globalStats[0]+=stats[0];
-			globalStats[1]+=stats[1];
+		
+		File bioDir    = null;
+		File xtalDir   = null;
+		File bioList   = null;
+		File xtalList  = null;
+		
+		String help = "Usage: \n" +
+		PROGRAM_NAME+"\n" +
+		"   -B         :  input dir containing the interfaces given with -b\n" +
+		"   -X         :  input dir containing the interfaces given with -x\n"+
+		"   -b         :  list file containing all the pdbIds + interface serials to \n" +
+		"                 analyse that are known to be true bio contacts\n" +
+		"   -x         :  list file containing all the pdbIds + interface serials to \n" +
+		"                 analyse that are known to be true xtal contacts\n\n";
+
+		Getopt g = new Getopt(PROGRAM_NAME, args, "B:X:b:x:h?");
+		int c;
+		while ((c = g.getopt()) != -1) {
+			switch(c){
+			case 'B':
+				bioDir = new File(g.getOptarg());
+				break;
+			case 'X':
+				xtalDir = new File(g.getOptarg());
+				break;
+			case 'b':
+				bioList = new File(g.getOptarg());
+				break;
+			case 'x':
+				xtalList = new File(g.getOptarg());
+				break;
+			case 'h':
+			case '?':
+				System.out.println(help);
+				System.exit(0);
+				break; // getopt() already printed an error
+			}
 		}
-		double accuracy = (double)globalStats[0]/((double)(globalStats[0]+globalStats[1]));
-		System.out.println("Total: "+(globalStats[0]+globalStats[1])+", TP: "+globalStats[0]+", FN: "+globalStats[1]);
-		System.out.printf("Accuracy: %4.2f\n",accuracy);
+		
+		if (bioDir==null && xtalDir==null) {
+			System.err.println("Must specify either a bio list/dir or xtal list/dir");
+			System.exit(1);
+		}
+		if ((bioDir==null && bioList!=null)|| (bioDir!=null && bioList==null)) {
+			System.err.println("Must specify both a bio dir and a bio list");
+			System.exit(1);
+		}
+		if ((xtalDir==null && xtalList!=null)|| (xtalDir!=null && xtalList==null)) {
+			System.err.println("Must specify both a xtal dir and a xtal list");
+			System.exit(1);	
+		}
+		
+		int total = 0;
+		int[] xtalStats = new int[2];
+		int[] bioStats = new int[2];
+		if (bioDir!=null) {
+			TreeMap<String,List<Integer>> bioToAnalyse = CalcStats.readListFile(bioList);
+			for (List<Integer> vals:bioToAnalyse.values()) {
+				total+=vals.size();
+			}
+			Map<String,File> bioFiles = getListInterfDatFiles(bioDir, bioToAnalyse.keySet());
+			bioStats = analyse(bioToAnalyse,bioFiles,CallType.BIO);
+		}
+		
+		if (xtalDir!=null) {
+			TreeMap<String,List<Integer>> xtalToAnalyse = CalcStats.readListFile(xtalList);
+			for (List<Integer> vals:xtalToAnalyse.values()) {
+				total+=vals.size();
+			}
+			Map<String,File> xtalFiles = getListInterfDatFiles(xtalDir, xtalToAnalyse.keySet());
+			xtalStats = analyse(xtalToAnalyse,xtalFiles,CallType.CRYSTAL);
+		}
+		
+		int[] globalStats = {bioStats[0]+xtalStats[0],bioStats[1]+xtalStats[1]};
+
+		if (bioDir!=null) {
+			System.out.println("Bio set: ");
+			printStats(bioStats);
+		}
+		if (xtalDir!=null) {
+			System.out.println("Xtal set: ");
+			printStats(xtalStats);
+		}
+
+		System.out.println("Global: ");
+		printStats(globalStats);
 	}
 	
-	
-	private static int[] predict(File file) throws IOException, ClassNotFoundException {
-		String pdbCode = file.getName().substring(0, 4);
-		System.out.println(pdbCode);
-		
+	private static int[] analyse(TreeMap<String,List<Integer>> toAnalyse, Map<String,File> files, CallType truth) throws IOException, ClassNotFoundException{
 		int[] stats = new int[2]; // tp, fn
-		
-		ChainInterfaceList interfaces = (ChainInterfaceList)Goodies.readFromFile(file);
+		for (String pdbCode:toAnalyse.keySet()) {
+			if (!files.containsKey(pdbCode)) continue;
+			ChainInterfaceList interfaces = (ChainInterfaceList)Goodies.readFromFile(files.get(pdbCode));
+			for (int id:toAnalyse.get(pdbCode)) {
+				ChainInterface interf = interfaces.get(id-1);
+				interf.calcRimAndCore(BSATOASA_CUTOFFS);
+				int size1 = interf.getFirstRimCores()[0].getCoreSize();
+				int size2 = interf.getSecondRimCores()[0].getCoreSize();
+				int size = size1+size2;				
 
-		for (ChainInterface interf:interfaces) {
-			
-			if (interf.getId()>1 && interf.getInterfaceArea()<MINIMUM_INTERF_AREA_TO_REPORT) continue; 
-			
-			interf.calcRimAndCore(BSATOASA_CUTOFFS);
-			int size1 = interf.getFirstRimCores()[0].getCoreSize();
-			int size2 = interf.getSecondRimCores()[0].getCoreSize();
-			int size = size1+size2;
-			
-			
-			String callStr = "";
-			
-			String predictStr = null;
-			if (size<MIN_NUMBER_CORE_RESIDUES_FOR_BIO) {
-				stats[0]++;
-				predictStr = "xtal";
-			} else {
-				stats[1]++;
-				predictStr = "bio ";
+				String predictStr = null;
 				
+				if (size<MIN_NUMBER_CORE_RESIDUES_FOR_BIO) {
+					if (truth==CallType.CRYSTAL) stats[0]++;
+					else if (truth==CallType.BIO) stats[1]++;
+					predictStr = CallType.CRYSTAL.getName();
+				} else {
+					if (truth==CallType.CRYSTAL)  stats[1]++;
+					else if (truth==CallType.BIO) stats[0]++;
+					predictStr = CallType.BIO.getName();
+				}
 				
-				// in this case we go and see what we would predict with evolutionary scores
-				File chainevolfile = new File(file.getParent(),pdbCode+".chainevolcontext.dat");
-				callStr = getEvolCall(chainevolfile,interf);
-				
-				
+				File chainevolfile = new File(files.get(pdbCode).getParent(),pdbCode+".chainevolcontext.dat");
+				String callStr = getEvolCall(chainevolfile,interf);
+
+				System.out.println(pdbCode+" "+id);
+				System.out.printf("%2d %2d %4s -- %s\n",size1,size2,predictStr,callStr);
+
 			}
-			
-			// to output glycine warnings
-//			int numGly1 = countGlycines(interf.getFirstRimCores()[0]);
-//			int numGly2 = countGlycines(interf.getSecondRimCores()[0]);
-//			String glywarn = "";
-//			if ((numGly1+numGly2)>((double)size/4.0)) {
-//				glywarn = " ("+numGly1+","+numGly2+")";
-//			}
-			
-			System.out.printf("%2d %2d %s %s\n",interf.getFirstRimCores()[0].getCoreSize(),interf.getSecondRimCores()[0].getCoreSize(),
-					predictStr,callStr);
-			
-			
 		}
 		return stats;
 	}
+	
+	private static Map<String,File> getListInterfDatFiles(File dir, Set<String> pdbCodes) {
+		Map<String,File> files = new HashMap<String,File>();
+		for (String pdbCode:pdbCodes) {
+			File interfFile = new File(dir,pdbCode+".interfaces.dat");
+			if (interfFile.exists()) files.put(pdbCode,interfFile);
+		}
+		return files;
+	}
 
+	private static void printStats(int[] stats) {
+		double accuracy = (double)stats[0]/((double)(stats[0]+stats[1]));
+		System.out.println("Total: "+(stats[0]+stats[1])+", TP: "+stats[0]+", FN: "+stats[1]);
+		System.out.printf("Accuracy: %4.2f\n",accuracy);
+	}
+	
 //	private static int countGlycines(InterfaceRimCore rimcore) {
 //		int count = 0;
 //		for (Residue res:rimcore.getCoreResidues()) {
