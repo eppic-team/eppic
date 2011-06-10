@@ -361,10 +361,10 @@ public class CRKMain {
 			params.getProgressLog().println("Calculating possible interfaces...");
 			try {
 				if (params.isUseNaccess()) {
-					interfaces = pdb.getAllInterfaces(INTERFACE_DIST_CUTOFF, NACCESS_EXE, 0, 0, true, false);
+					interfaces = pdb.getAllInterfaces(INTERFACE_DIST_CUTOFF, NACCESS_EXE, 0, 0, true, false, false);
 					LOGGER.info("Interfaces calculated with NACCESS.");
 				} else {
-					interfaces = pdb.getAllInterfaces(INTERFACE_DIST_CUTOFF, null, params.getnSpherePointsASAcalc(), params.getNumThreads(), true, false);
+					interfaces = pdb.getAllInterfaces(INTERFACE_DIST_CUTOFF, null, params.getnSpherePointsASAcalc(), params.getNumThreads(), true, false, false);
 					LOGGER.info("Interfaces calculated with "+params.getnSpherePointsASAcalc()+" sphere points.");
 				}
 			} catch (IOException e) {

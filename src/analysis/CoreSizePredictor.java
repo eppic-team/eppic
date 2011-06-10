@@ -37,8 +37,8 @@ import owl.core.util.Goodies;
  */
 public class CoreSizePredictor {
 
-	private static final double[] BSATOASA_CUTOFFS = {0.95};
-	private static final int MIN_NUMBER_CORE_RESIDUES_FOR_BIO = 7;
+	private static final double[] DEF_CA_CUTOFF = {0.95};
+	private static final int DEF_MIN_NUMBER_CORE_RESIDUES_FOR_BIO = 7;
 	
 	//private static final int MINIMUM_INTERF_AREA_TO_REPORT = 1000;
 	private static final int MIN_NUM_HOMOLOGS = 10;
@@ -46,6 +46,9 @@ public class CoreSizePredictor {
 	private static final double XTAL_CUTOFF = 0.86;
 	
 	private static final String PROGRAM_NAME = "CoreSizePredictor";
+	
+	private static int minNumberCoreResForBio = DEF_MIN_NUMBER_CORE_RESIDUES_FOR_BIO;
+	private static double[] caCutoff = DEF_CA_CUTOFF;
 	
 	/**
 	 * @param args
@@ -65,9 +68,11 @@ public class CoreSizePredictor {
 		"   -b         :  list file containing all the pdbIds + interface serials to \n" +
 		"                 analyse that are known to be true bio contacts\n" +
 		"   -x         :  list file containing all the pdbIds + interface serials to \n" +
-		"                 analyse that are known to be true xtal contacts\n\n";
+		"                 analyse that are known to be true xtal contacts\n" +
+		"   [-m]       :  minimum number of core residues to call bio, below this we call xtal\n" +
+		"   [-c]       :  core assignment cutoff. Default: "+String.format("%3.2f", DEF_CA_CUTOFF[0])+"\n";
 
-		Getopt g = new Getopt(PROGRAM_NAME, args, "B:X:b:x:h?");
+		Getopt g = new Getopt(PROGRAM_NAME, args, "B:X:b:x:m:c:h?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
@@ -82,6 +87,12 @@ public class CoreSizePredictor {
 				break;
 			case 'x':
 				xtalList = new File(g.getOptarg());
+				break;
+			case 'm':
+				minNumberCoreResForBio = Integer.parseInt(g.getOptarg());
+				break;
+			case 'c':
+				caCutoff[0] = Double.parseDouble(g.getOptarg());
 				break;
 			case 'h':
 			case '?':
@@ -147,14 +158,16 @@ public class CoreSizePredictor {
 			ChainInterfaceList interfaces = (ChainInterfaceList)Goodies.readFromFile(files.get(pdbCode));
 			for (int id:toAnalyse.get(pdbCode)) {
 				ChainInterface interf = interfaces.get(id-1);
-				interf.calcRimAndCore(BSATOASA_CUTOFFS);
+				interf.calcRimAndCore(caCutoff);
 				int size1 = interf.getFirstRimCores()[0].getCoreSize();
 				int size2 = interf.getSecondRimCores()[0].getCoreSize();
 				int size = size1+size2;				
-
+				double area = interf.getInterfaceArea();
+				int disulfides = interf.getAICGraph().getDisulfidePairs().size();
+				
 				String predictStr = null;
 				
-				if (size<MIN_NUMBER_CORE_RESIDUES_FOR_BIO) {
+				if (size<minNumberCoreResForBio) {
 					if (truth==CallType.CRYSTAL) stats[0]++;
 					else if (truth==CallType.BIO) stats[1]++;
 					predictStr = CallType.CRYSTAL.getName();
@@ -168,7 +181,7 @@ public class CoreSizePredictor {
 				String callStr = getEvolCall(chainevolfile,interf);
 
 				System.out.println(pdbCode+" "+id);
-				System.out.printf("%2d %2d %4s -- %s\n",size1,size2,predictStr,callStr);
+				System.out.printf("%2d %2d %7.2f %5.1f %4d %4s -- %s\n",size1,size2,area,area/(double)size,disulfides,predictStr,callStr);
 
 			}
 		}
