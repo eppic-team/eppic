@@ -54,6 +54,55 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 		double area = interf.getInterfaceArea();
 		List<Pair<Atom>> interactingPairs = getNonpolyInteractingPairs();
 		
+		// CALL
+		if (interf.getAICGraph().hasDisulfideBridges()) {
+			callReason = interf.getAICGraph().getDisulfidePairs().size()+" disulfide bridges present.";
+			callReason += " Between CYS residues: ";
+			for (Pair<Atom> pair:interf.getAICGraph().getDisulfidePairs()) {		
+				callReason+=
+					pair.getFirst().getParentResidue().getParent().getPdbChainCode()+"-"+
+					pair.getFirst().getParentResSerial()+" and "+
+					pair.getSecond().getParentResidue().getParent().getPdbChainCode()+"-"+
+					pair.getSecond().getParentResSerial();
+			}
+
+			call = CallType.BIO;
+		}
+		else if (area>MAX_AREA_XTALCALL) {
+			callReason = "Area above hard limit "+String.format("%4.0f", MAX_AREA_XTALCALL);
+			call = CallType.BIO;
+		}
+		else if (area<MIN_ARE_BIOCALL) {
+			callReason = "Area below hard limit "+String.format("%4.0f", MIN_ARE_BIOCALL);
+			call = CallType.CRYSTAL;
+		}
+		// check for electrostatic interactions with metal ions in interfaces, e.g. 2o3b (interface is small but strong because of the Mg2+)
+		// see also counter-example 1s1q interface 4: mediated by a Cu but it's a crystallization artifact. In this case area is very small and falls under hard limit above
+		// another counter-example: 2vis interfaces 5 and 8. Also very small area both
+		else if (!interactingPairs.isEmpty()) {
+			callReason = "Close interactions mediated by a non-polymer chain exist in interface. Between : ";
+			for (int i=0;i<interactingPairs.size();i++) {
+				Pair<Atom> pair = interactingPairs.get(i);
+				// first atom is always from nonpoly chain, second atom from either poly chain of interface
+				callReason+=pair.getFirst().getParentResSerial()+"-"+
+							pair.getFirst().getCode()+ " and "+
+							pair.getSecond().getParentResidue().getParent().getPdbChainCode()+"-"+
+							pair.getSecond().getParentResSerial()+pair.getSecond().getParentResidue().getLongCode()+"-"+
+							pair.getSecond().getCode()+
+							" ("+String.format("%3.1f",pair.getFirst().getCoords().distance(pair.getSecond().getCoords()))+")";
+				if (i!=interactingPairs.size()-1) callReason+=", ";
+			}
+			call = CallType.BIO;
+		}
+		else if (size<minCoreSizeForBio) {
+			callReason = "Total core size "+size+" below cutoff ("+minCoreSizeForBio+")";
+			call = CallType.CRYSTAL;
+		} 
+		else {
+			callReason = "Total core size "+size+" above cutoff ("+minCoreSizeForBio+")";
+			call = CallType.BIO;
+		}
+		
 		// WARNINGS
 		// 1) clashes
 		if (interf.hasClashes()) {
@@ -95,56 +144,26 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 			warnings.add(warning);
 			LOGGER.warn("Interface "+interf.getId()+" has closely interacting atoms: "+warning);
 		}
-		// 3) checking whether either first or second member of interface are peptides
+		// 4) checking whether either first or second member of interface are peptides
 		checkForPeptides(FIRST);
 		checkForPeptides(SECOND);
-		
-		// CALL
-		if (interf.getAICGraph().hasDisulfideBridges()) {
-			callReason = interf.getAICGraph().getDisulfidePairs().size()+" disulfide bridges present.";
-			callReason += " Between CYS residues: ";
-			for (Pair<Atom> pair:interf.getAICGraph().getDisulfidePairs()) {		
-				callReason+=
-					pair.getFirst().getParentResidue().getParent().getPdbChainCode()+"-"+
-					pair.getFirst().getParentResSerial()+" and "+
-					pair.getSecond().getParentResidue().getParent().getPdbChainCode()+"-"+
-					pair.getSecond().getParentResSerial();
-			}
-
-			call = CallType.BIO;
-		}
-		else if (area>MAX_AREA_XTALCALL) {
-			callReason = "Area above hard limit "+String.format("%4.0f", MAX_AREA_XTALCALL);
-			call = CallType.BIO;
-		}
-		else if (area<MIN_ARE_BIOCALL) {
-			callReason = "Area below hard limit "+String.format("%4.0f", MIN_ARE_BIOCALL);
-			call = CallType.CRYSTAL;
-		}
-		// check for electrostatic interactions with metal ions in interfaces, e.g. 2o3b (interface is small but strong because of the Mg2+)
-		// see also counter-example 1s1q interface 4: mediated by a Cu but it's a crystallization artifact. In this case area is very small and falls under hard limit above
-		else if (!interactingPairs.isEmpty()) {
-			callReason = "Close interactions mediated by a non-polymer chain exist in interface. Between : ";
+		// 5) if interactions mediated by a non-polymer are found we warn (sometimes this will be also a callReason, see above) 
+		if (!interactingPairs.isEmpty()) {
+			String warning = "Close interactions mediated by a non-polymer chain exist in interface. Between : ";
 			for (int i=0;i<interactingPairs.size();i++) {
 				Pair<Atom> pair = interactingPairs.get(i);
 				// first atom is always from nonpoly chain, second atom from either poly chain of interface
-				callReason+=pair.getFirst().getParentResSerial()+"-"+
+				warning+=pair.getFirst().getParentResSerial()+"-"+
 							pair.getFirst().getCode()+ " and "+
 							pair.getSecond().getParentResidue().getParent().getPdbChainCode()+"-"+
 							pair.getSecond().getParentResSerial()+pair.getSecond().getParentResidue().getLongCode()+"-"+
 							pair.getSecond().getCode()+
 							" ("+String.format("%3.1f",pair.getFirst().getCoords().distance(pair.getSecond().getCoords()))+")";
-				if (i!=interactingPairs.size()-1) callReason+=", ";
+				if (i!=interactingPairs.size()-1) warning+=", ";
 			}
-			call = CallType.BIO;
-		}
-		else if (size<minCoreSizeForBio) {
-			callReason = "Total core size "+size+" below cutoff ("+minCoreSizeForBio+")";
-			call = CallType.CRYSTAL;
-		} 
-		else {
-			callReason = "Total core size "+size+" above cutoff ("+minCoreSizeForBio+")";
-			call = CallType.BIO;
+
+			warnings.add(warning);
+			LOGGER.warn("Interface "+interf.getId()+": "+warning);
 		}
 		
 		return call;
