@@ -24,7 +24,8 @@ import owl.core.structure.graphs.AICGraph;
 
 public class GeometryPredictor implements InterfaceTypePredictor {
 
-	private static final double MAX_AREA_XTALCALL = 2000;
+	private static final double MAX_AREA_XTALCALL = 2000; // aka "duarte" limit
+	private static final double MIN_ARE_BIOCALL = 500;    // we are introducing a lower limit 
 	private static final double INTERF_DIST_CUTOFF = 5.9;
 	
 	private static final int FIRST = 0;
@@ -116,7 +117,12 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 			callReason = "Area above hard limit "+String.format("%4.0f", MAX_AREA_XTALCALL);
 			call = CallType.BIO;
 		}
+		else if (area<MIN_ARE_BIOCALL) {
+			callReason = "Area below hard limit "+String.format("%4.0f", MIN_ARE_BIOCALL);
+			call = CallType.CRYSTAL;
+		}
 		// check for electrostatic interactions with metal ions in interfaces, e.g. 2o3b (interface is small but strong because of the Mg2+)
+		// see also counter-example 1s1q interface 4: mediated by a Cu but it's a crystallization artifact. In this case area is very small and falls under hard limit above
 		else if (!interactingPairs.isEmpty()) {
 			callReason = "Close interactions mediated by a non-polymer chain exist in interface. Between : ";
 			for (int i=0;i<interactingPairs.size();i++) {
