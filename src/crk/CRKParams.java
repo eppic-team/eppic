@@ -16,6 +16,7 @@ public class CRKParams {
 	
 	// the parameters
 	private String pdbCode;
+	private boolean doScoreEntropies;
 	private boolean doScoreCRK;
 	private double idCutoff;
 	private String baseName;
@@ -30,7 +31,7 @@ public class CRKParams {
 	private double bsaToAsaHardCutoff;
 	private double relaxationStep;
 	
-	private double[] cutoffsCA;
+	private double cutoffCA;
 	
 	private int      minNumResCA;
 	private int      minNumResMemberCA; 
@@ -46,8 +47,8 @@ public class CRKParams {
 	private int nSpherePointsASAcalc;
 
 	private double grayZoneWidth;
-	private double[] entrCallCutoffs;
-	private double[] kaksCallCutoffs;
+	private double entrCallCutoff;
+	private double kaksCallCutoff;
 	
 	private File interfSerFile;
 	private File chainEvContextSerFile;
@@ -68,21 +69,22 @@ public class CRKParams {
 		
 	}
 	
-	public CRKParams(String pdbCode, boolean doScoreCRK, double idCutoff, String baseName, File outDir, int numThreads, int reducedAlphabet,boolean useTcoffeeVeryFastMode,
+	public CRKParams(String pdbCode, boolean doScoreEntropies, boolean doScoreCRK, double idCutoff, String baseName, File outDir, int numThreads, int reducedAlphabet,boolean useTcoffeeVeryFastMode,
 			boolean zooming, double bsaToAsaSoftCutoff, double bsaToAsaHardCutoff, double relaxationStep,
-			double[] cutoffsCA, 
+			double cutoffCA, 
 			int minNumResCA, int minNumResMemberCA,
 			double selectonEpsilon, int maxNumSeqsSelecton,
 			boolean usePisa, boolean useNaccess,
 			int nSpherePointsASAcalc,
 			double grayZoneWidth,
-			double[] entrCallCutoff, double[] kaksCallCutoff,
+			double entrCallCutoff, double kaksCallCutoff,
 			File interfSerFile, File chainEvContextSerFile,
 			boolean generateThumbnails,
 			PrintStream progressLog,
 			boolean debug) {
 		
 		this.pdbCode = pdbCode;
+		this.doScoreEntropies = doScoreEntropies;
 		this.doScoreCRK = doScoreCRK;
 		this.idCutoff = idCutoff;
 		this.baseName = baseName;
@@ -94,7 +96,7 @@ public class CRKParams {
 		this.bsaToAsaSoftCutoff = bsaToAsaSoftCutoff;
 		this.bsaToAsaHardCutoff = bsaToAsaHardCutoff;
 		this.relaxationStep = relaxationStep;
-		this.cutoffsCA = cutoffsCA;
+		this.cutoffCA = cutoffCA;
 		this.minNumResCA = minNumResCA;
 		this.minNumResMemberCA = minNumResMemberCA;
 		this.selectonEpsilon = selectonEpsilon;
@@ -103,8 +105,8 @@ public class CRKParams {
 		this.useNaccess = useNaccess;
 		this.nSpherePointsASAcalc = nSpherePointsASAcalc;
 		this.grayZoneWidth = grayZoneWidth;
-		this.entrCallCutoffs = entrCallCutoff;
-		this.kaksCallCutoffs = kaksCallCutoff;
+		this.entrCallCutoff = entrCallCutoff;
+		this.kaksCallCutoff = kaksCallCutoff;
 		this.interfSerFile = interfSerFile;
 		this.chainEvContextSerFile = chainEvContextSerFile;
 		this.generateThumbnails = generateThumbnails;
@@ -115,12 +117,15 @@ public class CRKParams {
 	public void parseCommandLine(String[] args, String programName, String help) {
 	
 
-		Getopt g = new Getopt(programName, args, "i:kd:a:b:o:r:tc:zZ:m:M:x:X:g:e:q:pnA:I:C:lL:uh?");
+		Getopt g = new Getopt(programName, args, "i:skd:a:b:o:r:tc:zZ:m:M:x:X:g:e:q:pnA:I:C:lL:uh?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
 			case 'i':
 				setPdbCode(g.getOptarg());
+				break;
+			case 's':
+				doScoreEntropies = true;
 				break;
 			case 'k':
 				doScoreCRK = true;
@@ -144,18 +149,14 @@ public class CRKParams {
 				useTcoffeeVeryFastMode = false;
 				break;
 			case 'c':
-				String[] ctokens = g.getOptarg().split(",");
-				cutoffsCA = new double[ctokens.length];
-				for (int i=0;i<ctokens.length;i++) {
-					cutoffsCA[i] = Double.parseDouble(ctokens[i]);
-				}
+				cutoffCA = Double.parseDouble(g.getOptarg());
 				break;
 			case 'z':
 				zooming = true;
 				break;
 			case 'Z':
 				String[] ztokens = g.getOptarg().split(",");
-				cutoffsCA = new double[ztokens.length];
+				//cutoffsCA = new double[ztokens.length];
 				bsaToAsaSoftCutoff = Double.parseDouble(ztokens[0]);
 				bsaToAsaHardCutoff = Double.parseDouble(ztokens[1]);
 				relaxationStep = Double.parseDouble(ztokens[2]);
@@ -167,18 +168,10 @@ public class CRKParams {
 				minNumResMemberCA = Integer.parseInt(g.getOptarg());
 				break;
 			case 'x':
-				String[] xtokens = g.getOptarg().split(",");
-				entrCallCutoffs = new double[xtokens.length];
-				for (int i=0;i<xtokens.length;i++){
-					entrCallCutoffs[i] = Double.parseDouble(xtokens[i]);
-				}
+				entrCallCutoff = Double.parseDouble(g.getOptarg());
 				break;
 			case 'X':
-				String[] Xtokens = g.getOptarg().split(",");
-				kaksCallCutoffs = new double[Xtokens.length];
-				for (int i=0;i<Xtokens.length;i++){
-					kaksCallCutoffs[i] = Double.parseDouble(Xtokens[i]);
-				}				
+				kaksCallCutoff = Double.parseDouble(g.getOptarg());
 				break;
 			case 'g':
 				grayZoneWidth = Double.parseDouble(g.getOptarg());
@@ -303,6 +296,9 @@ public class CRKParams {
 		this.pdbCode = pdbCode.toLowerCase();
 	}
 	
+	public boolean isDoScoreEntropies() {
+		return doScoreEntropies;
+	}
 	public boolean isDoScoreCRK() {
 		return doScoreCRK;
 	}
@@ -369,11 +365,11 @@ public class CRKParams {
 	public void setRelaxationStep(double relaxationStep) {
 		this.relaxationStep = relaxationStep;
 	}
-	public double[] getCutoffsCA() {
-		return cutoffsCA;
+	public double getCutoffCA() {
+		return cutoffCA;
 	}
-	public void setCutoffsCA(double[] cutoffsCA) {
-		this.cutoffsCA = cutoffsCA;
+	public void setCutoffCA(double cutoffCA) {
+		this.cutoffCA = cutoffCA;
 	}
 	public int getMinNumResCA() {
 		return minNumResCA;
@@ -424,23 +420,20 @@ public class CRKParams {
 		this.grayZoneWidth = grayZoneWidth;
 	}
 	
-	public double[] getEntrCallCutoffs() {
-		return entrCallCutoffs;
+	public double getEntrCallCutoff() {
+		return entrCallCutoff;
 	}
-	public double getEntrCallCutoff(int i) {
-		return entrCallCutoffs[i];
+
+	public void setEntrCallCutoff(double entrCallCutoff) {
+		this.entrCallCutoff = entrCallCutoff;
 	}
-	public void setEntrCallCutoffs(double[] entrCallCutoffs) {
-		this.entrCallCutoffs = entrCallCutoffs;
+	
+	public double getKaksCallCutoff() {
+		return kaksCallCutoff;
 	}
-	public double[] getKaksCallCutoffs() {
-		return kaksCallCutoffs;
-	}
-	public double getKaksCallCutoff(int i) {
-		return kaksCallCutoffs[i];
-	}
-	public void setKaksCallCutoffs(double[] kaksCallCutoffs) {
-		this.kaksCallCutoffs = kaksCallCutoffs;
+
+	public void setKaksCallCutoffs(double kaksCallCutoff) {
+		this.kaksCallCutoff = kaksCallCutoff;
 	}
 
 

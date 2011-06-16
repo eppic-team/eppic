@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 
 import model.InterfaceResidueItem;
 import model.InterfaceResidueMethodItem;
@@ -16,19 +15,14 @@ import model.InterfaceResidueMethodItem;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import edu.uci.ics.jung.graph.util.Pair;
-
-import owl.core.runners.PymolRunner;
-import owl.core.structure.Atom;
 import owl.core.structure.ChainInterface;
 import owl.core.structure.InterfaceRimCore;
 import owl.core.structure.PdbChain;
-import owl.core.structure.PdbLoadException;
 import owl.core.structure.Residue;
 import owl.core.structure.AaResidue;
 import owl.core.util.Goodies;
 
-public class InterfaceEvolContext implements Serializable {
+public class InterfaceEvolContext implements Serializable, InterfaceTypePredictor {
 
 	private static final long serialVersionUID = 1L;
 
@@ -37,44 +31,38 @@ public class InterfaceEvolContext implements Serializable {
 	protected static final int FIRST  = 0;
 	protected static final int SECOND = 1;
 
-	public static final boolean SCORES  = true;
-	public static final boolean RIMCORE = false;
-	
 	private static final double MAX_ALLOWED_UNREL_RES = 0.05; // 5% maximum allowed unreliable residues for core or rim
 	
-	private static final String TN_STYLE = "cartoon";
-	private static final String TN_BG_COLOR = "white";
-	private static final int[] TN_HEIGHTS = {75};
-	private static final int[] TN_WIDTHS = {75};
-	
 	private ChainInterface interf;
-	private List<ChainEvolContext> chains;  // At the moment strictly 2 members (matching the 2 partners of interf). 
+	private ChainEvolContext[] chains;  // At the moment strictly 2 members (matching the 2 partners of interf). Use FIRST and SECOND constants above 
 											// If either of the 2 molecules is not a protein then it's null.
 	
 	// the cache scoring values, these are filled upon call of scoreInterface
-	private TreeMap<Integer,double[]> rimScores;	// cache of the last run scoreEntropy/scoreKaKs (strictly 2 members, 0 FIRST, 1 SECOND, use constants above)
-	private TreeMap<Integer,double[]> coreScores;
-	private double[] finalScores; // cache of the last run final scores (average of ratios of both sides), one per bsaToAsaCutoff (filled by getCalls)
+	private double[] rimScores;	// cache of the last run scoreEntropy/scoreKaKs (strictly 2 members, 0 FIRST, 1 SECOND, use constants above)
+	private double[] coreScores;
+	private double finalScore; // cache of the last run final score (average of ratios of both sides) (filled by getCall)
 	
-	private TreeMap<Integer,ArrayList<Integer>> bioCalls; // cache of the votes for each bsaToAsaCutoff (bsaToAsaCutoff index to lists of interface member indices)
-	private TreeMap<Integer,ArrayList<Integer>> xtalCalls;
-	private TreeMap<Integer,ArrayList<Integer>> grayCalls;
-	private TreeMap<Integer,ArrayList<Integer>> noPredictCalls;
+	// cached values of scoring (filled upon call of score methods and getCall)
+	private ArrayList<Integer> bioCalls; // cache of the votes (lists of interface member indices)
+	private ArrayList<Integer> xtalCalls;
+	private ArrayList<Integer> grayCalls;
+	private ArrayList<Integer> noPredictCalls;
 	
-	// cached values of scoring (filled upon call of score methods and getCalls)
-	private ScoringType lastScoType; // the type of the last scoring run (either kaks or entropy)
-	//private boolean lastScoWeighted; // whether last scoring run was weighted or not
-
-	private CallType[] lastCalls; // cached result of the last call to getCalls(bioCutoff, xtalCutoff, homologsCutoff, minCoreSize, minMemberCoreSize)
-	
+	private CallType call; // cached result of the last call to getCall(bioCutoff, xtalCutoff, homologsCutoff, minCoreSize, minMemberCoreSize)
+	private ScoringType scoringType; // the type of the last scoring run (either kaks or entropy)
+	private String callReason;
 	private List<String> warnings;
-	private List<String> nopredWarnings;
 	
-	public InterfaceEvolContext(ChainInterface interf, List<ChainEvolContext> chains) {
+	private double bioCutoff;
+	private double xtalCutoff;
+	private int homologsCutoff;
+	
+	
+	
+	public InterfaceEvolContext(ChainInterface interf, ChainEvolContext[] chains) {
 		this.interf = interf;
 		this.chains = chains;
 		this.warnings = new ArrayList<String>();
-		this.nopredWarnings = new ArrayList<String>();
 	}
 
 	public ChainInterface getInterface() {
@@ -82,23 +70,23 @@ public class InterfaceEvolContext implements Serializable {
 	}
 	
 	public ChainEvolContext getFirstChainEvolContext() {
-		return chains.get(FIRST);
+		return chains[FIRST];
 	}
 	
 	public ChainEvolContext getSecondChainEvolContext() {
-		return chains.get(SECOND);
+		return chains[SECOND];
 	}
 	
-	protected CallType[] getLastCalls() {
-		return this.lastCalls;
+	public void setBioCutoff(double bioCutoff) {
+		this.bioCutoff = bioCutoff;
 	}
 	
-	public List<String> getWarnings() {
-		return this.warnings;
+	public void setXtalCutoff(double xtalCutoff) {
+		this.xtalCutoff = xtalCutoff;
 	}
 	
-	public List<String> getNopredWarnings() {
-		return this.nopredWarnings;
+	public void setHomologsCutoff(int homologsCutoff) {
+		this.homologsCutoff = homologsCutoff;
 	}
 	
 	/**
@@ -108,11 +96,8 @@ public class InterfaceEvolContext implements Serializable {
 	 * @param weighted
 	 */
 	public void scoreEntropy(boolean weighted) {
-		checkDisulfideBonds();
-		checkForPeptides(FIRST);
-		checkForPeptides(SECOND);
 		scoreInterface(weighted, ScoringType.ENTROPY);
-		lastScoType = ScoringType.ENTROPY;
+		scoringType = ScoringType.ENTROPY;
 		//lastScoWeighted = weighted;
 	}
 	
@@ -124,55 +109,38 @@ public class InterfaceEvolContext implements Serializable {
 	 */
 	public void scoreKaKs(boolean weighted) {
 		scoreInterface(weighted, ScoringType.KAKS);
-		lastScoType = ScoringType.KAKS;
+		scoringType = ScoringType.KAKS;
 		//lastScoWeighted = weighted;
 	}
 
 	private void scoreInterface(boolean weighted, ScoringType scoType) {
 		
-		rimScores = new TreeMap<Integer, double[]>();
-		coreScores = new TreeMap<Integer, double[]>();
+		rimScores = new double[2];
+		coreScores = new double[2];
 
-		double[] rimScores1 = new double[this.interf.getNumBsaToAsaCutoffs()]; 
-		double[] coreScores1 = new double[this.interf.getNumBsaToAsaCutoffs()];
 		if (this.interf.isFirstProtein()) {
-			InterfaceRimCore[] rimCores = this.interf.getFirstRimCores();
-			for (int i=0;i<this.interf.getNumBsaToAsaCutoffs();i++){
-				rimScores1[i]  = calcScore(rimCores[i].getRimResidues(), FIRST, scoType, weighted);
-				coreScores1[i] = calcScore(rimCores[i].getCoreResidues(),FIRST, scoType, weighted);
-			}
+			InterfaceRimCore rimCore = this.interf.getFirstRimCore();
+			rimScores[FIRST]  = calcScore(rimCore.getRimResidues(), FIRST, scoType, weighted);
+			coreScores[FIRST] = calcScore(rimCore.getCoreResidues(),FIRST, scoType, weighted);
 		} else {
-			for (int i=0;i<this.interf.getNumBsaToAsaCutoffs();i++){
-				rimScores1[i] = Double.NaN;
-				coreScores1[i] = Double.NaN;
-			}
+			rimScores[FIRST] = Double.NaN;
+			coreScores[FIRST] = Double.NaN;
 		}
-		rimScores.put(FIRST,rimScores1);
-		coreScores.put(FIRST,coreScores1);
-
-		double[] rimScores2 = new double[this.interf.getNumBsaToAsaCutoffs()]; 
-		double[] coreScores2 = new double[this.interf.getNumBsaToAsaCutoffs()];
 
 		if (this.interf.isSecondProtein()) {
-			InterfaceRimCore[] rimCores = this.interf.getSecondRimCores();
-			for (int i=0;i<this.interf.getNumBsaToAsaCutoffs();i++){
-				rimScores2[i]  = calcScore(rimCores[i].getRimResidues(), SECOND, scoType, weighted);
-				coreScores2[i] = calcScore(rimCores[i].getCoreResidues(),SECOND, scoType, weighted);
-			}
+			InterfaceRimCore rimCore = this.interf.getSecondRimCore();
+			rimScores[SECOND]  = calcScore(rimCore.getRimResidues(), SECOND, scoType, weighted);
+			coreScores[SECOND] = calcScore(rimCore.getCoreResidues(),SECOND, scoType, weighted);
 		} else {
-			for (int i=0;i<this.interf.getNumBsaToAsaCutoffs();i++){
-				rimScores2[i] = Double.NaN;
-				coreScores2[i] = Double.NaN;
-			}
+			rimScores[SECOND] = Double.NaN;
+			coreScores[SECOND] = Double.NaN;
 		}
-		rimScores.put(SECOND,rimScores2);
-		coreScores.put(SECOND,coreScores2);
 
 	}
 		
-	private List<AaResidue> checkResiduesForPDBReliability(List<AaResidue> residues, ChainEvolContext chain) {
-		List<AaResidue> unreliableResidues = new ArrayList<AaResidue>();
-		for (AaResidue res:residues){
+	private List<Residue> checkResiduesForPDBReliability(List<Residue> residues, ChainEvolContext chain) {
+		List<Residue> unreliableResidues = new ArrayList<Residue>();
+		for (Residue res:residues){
 			int resSer = res.getSerial(); // used to be: chain.getResSerFromPdbResSer(pdbChainCode, res.getPdbSerial()); pdbChainCode was passed
 			if (resSer!=-1 && !chain.isPdbSeqPositionMatchingUniprot(resSer)) {
 				unreliableResidues.add(res);
@@ -181,7 +149,7 @@ public class InterfaceEvolContext implements Serializable {
 		if (!unreliableResidues.isEmpty()) {
 			String msg = "Interface residue serials ";
 			for (int i=0;i<unreliableResidues.size();i++) {
-				msg+=unreliableResidues.get(i).getPdbChainCode()+" "+unreliableResidues.get(i).getAaType().getThreeLetterCode()+unreliableResidues.get(i).getSerial();
+				msg+=unreliableResidues.get(i).getParent().getPdbChainCode()+" "+unreliableResidues.get(i).getLongCode()+unreliableResidues.get(i).getSerial();
 				if (i!=unreliableResidues.size()-1) {
 					msg+=",";
 				}
@@ -193,9 +161,9 @@ public class InterfaceEvolContext implements Serializable {
 		return unreliableResidues;
 	}
 	
-	private List<AaResidue> checkResiduesForCDSReliability(List<AaResidue> residues, ChainEvolContext chain) {
-		List<AaResidue> unreliableResidues = new ArrayList<AaResidue>();
-		for (AaResidue res:residues){
+	private List<Residue> checkResiduesForCDSReliability(List<Residue> residues, ChainEvolContext chain) {
+		List<Residue> unreliableResidues = new ArrayList<Residue>();
+		for (Residue res:residues){
 			int resSer = res.getSerial(); // used to be: chain.getResSerFromPdbResSer(pdbChainCode, res.getPdbSerial()); pdbChainCode was passed
 			if (resSer!=-1 && !chain.isPdbSeqPositionReliable(resSer)) {
 				unreliableResidues.add(res);
@@ -204,7 +172,7 @@ public class InterfaceEvolContext implements Serializable {
 		if (!unreliableResidues.isEmpty()) {
 			String msg = "Interface residue serials ";
 			for (int i=0;i<unreliableResidues.size();i++) {
-				msg+=unreliableResidues.get(i).getPdbChainCode()+" "+unreliableResidues.get(i).getAaType().getThreeLetterCode()+unreliableResidues.get(i).getSerial();
+				msg+=unreliableResidues.get(i).getParent().getPdbChainCode()+" "+unreliableResidues.get(i).getLongCode()+unreliableResidues.get(i).getSerial();
 				if (i!=unreliableResidues.size()-1) {
 					msg+=(",");
 				}
@@ -216,17 +184,17 @@ public class InterfaceEvolContext implements Serializable {
 		return unreliableResidues;
 	}
 	
-	private double calcScore(List<AaResidue> residues, int molecId, ScoringType scoType, boolean weighted) {
+	private double calcScore(List<Residue> residues, int molecId, ScoringType scoType, boolean weighted) {
 		ChainEvolContext chain = null;
 		if (molecId==FIRST) {
-			chain = chains.get(FIRST);
+			chain = chains[FIRST];
 		} else if (molecId == SECOND) {
-			chain = chains.get(SECOND);
+			chain = chains[SECOND];
 		}
 		double totalScore = 0.0;
 		double totalWeight = 0.0;
 		List<Double> conservScores = chain.getConservationScores(scoType);
-		for (AaResidue res:residues){
+		for (Residue res:residues){
 			int resSer = res.getSerial(); // used to be: chain.getResSerFromPdbResSer(pdbChainCode, res.getPdbSerial());
 
 			if (resSer!=-1) {
@@ -247,7 +215,7 @@ public class InterfaceEvolContext implements Serializable {
 					
 				}
 			} else {
-				String msg = "Can't map PISA pdb residue serial "+res.getPdbSerial()+" (res type: "+res.getAaType().getThreeLetterCode()+", PISA serial: "+res.getSerial()+")";
+				String msg = "Can't map PISA pdb residue serial "+res.getPdbSerial()+" (res type: "+res.getLongCode()+", PISA serial: "+res.getSerial()+")";
 				msg+=" The residue will not be used for scoring";
 				LOGGER.warn(msg);
 				warnings.add(msg);
@@ -258,42 +226,22 @@ public class InterfaceEvolContext implements Serializable {
 	
 	/**
 	 * Writes out a PDB file with the 2 chains of this interface with evolutionary scores 
-	 * or rim core residues as b-factors. We use pdb chain codes, not cif.
+	 * as b-factors. 
 	 * In order for the file to be handled properly by molecular viewers whenever the two
 	 * chains have the same code we rename the second one to the next letter in alphabet.
 	 * PDB chain codes are used for the output, not cif codes.  
-	 * In the case of writing rim/core residues we choose the rim/core residues corresponding 
-	 * to the first CA cutoff only. 
 	 * @param file
-	 * @param valuesToWrite if {@link #SCORES} evolutionary scores are written as b-factors,
-	 * if {@link #RIMCORE} rim/core residues are written as b-factors (3 different values: 
-	 * rim, score and all other residues)
 	 * @throws IOException
 	 */
-	public void writePdbFile(File file, boolean valuesToWrite) throws IOException {
+	public void writePdbFile(File file) throws IOException {
 
 		if (interf.isFirstProtein() && interf.isSecondProtein()) {
 
-			if (valuesToWrite) {
-				setConservationScoresAsBfactors(FIRST,lastScoType);
-				setConservationScoresAsBfactors(SECOND,lastScoType);
-			} else {
-				setRimCoreAsBfactors(FIRST);
-				setRimCoreAsBfactors(SECOND);
-			}
+			setConservationScoresAsBfactors(FIRST,scoringType);
+			setConservationScoresAsBfactors(SECOND,scoringType);
 			
 			this.interf.writeToPdbFile(file);
 		}
-	}
-	
-	public void generateThumbnails(File pymolExe, File pdbFile) throws IOException, InterruptedException, PdbLoadException {
-		PymolRunner pr = new PymolRunner(pymolExe);
-		String base = pdbFile.getName().substring(0,pdbFile.getName().lastIndexOf(".rimcore.pdb"));
-		File[] pngFiles = new File[TN_HEIGHTS.length];
-		for (int i=0;i<TN_HEIGHTS.length;i++) {
-			pngFiles[i] = new File(pdbFile.getParent(),base+"."+TN_WIDTHS[i]+"x"+TN_HEIGHTS[i]+".png");
-		}
-		pr.generatePng(pdbFile, pngFiles, TN_STYLE, TN_BG_COLOR, TN_HEIGHTS, TN_WIDTHS);
 	}
 	
 	public void writeResidueDetailsFile(File file, boolean includeKaks) throws IOException {
@@ -304,11 +252,11 @@ public class InterfaceEvolContext implements Serializable {
 		map.put(2, partner2);
 		if (interf.isFirstProtein() && interf.isSecondProtein()) {
 			PdbChain firstMol = interf.getFirstMolecule();
-			InterfaceRimCore rimCore = interf.getFirstRimCores()[0]; // for the web interface output we want only cutoff value (first: 0)
-			List<Double> entropies = chains.get(FIRST).getConservationScores(ScoringType.ENTROPY);
+			InterfaceRimCore rimCore = interf.getFirstRimCore(); 
+			List<Double> entropies = chains[FIRST].getConservationScores(ScoringType.ENTROPY);
 			List<Double> kaksRatios = null;
 			if (includeKaks && canDoCRK())
-				kaksRatios = chains.get(FIRST).getConservationScores(ScoringType.KAKS);
+				kaksRatios = chains[FIRST].getConservationScores(ScoringType.KAKS);
 			for (Residue residue:firstMol) {
 				String resType = residue.getLongCode();
 				int assignment = -1;
@@ -321,7 +269,7 @@ public class InterfaceEvolContext implements Serializable {
 
 				int queryUniprotPos = -1;
 				if (!firstMol.isNonPolyChain() && firstMol.getSequence().isProtein()) 
-					queryUniprotPos = chains.get(FIRST).getQueryUniprotPosForPDBPos(residue.getSerial());
+					queryUniprotPos = chains[FIRST].getQueryUniprotPosForPDBPos(residue.getSerial());
 				
 				float entropy = -1;
 				if (residue instanceof AaResidue) {	
@@ -339,10 +287,10 @@ public class InterfaceEvolContext implements Serializable {
 				partner1.add(iri);
 			}
 			PdbChain secondMol = interf.getSecondMolecule();
-			rimCore = interf.getSecondRimCores()[0];
-			entropies = chains.get(SECOND).getConservationScores(ScoringType.ENTROPY);
+			rimCore = interf.getSecondRimCore();
+			entropies = chains[SECOND].getConservationScores(ScoringType.ENTROPY);
 			if (includeKaks && canDoCRK()) 
-				kaksRatios = chains.get(SECOND).getConservationScores(ScoringType.KAKS);
+				kaksRatios = chains[SECOND].getConservationScores(ScoringType.KAKS);
 			for (Residue residue:secondMol) {
 				String resType = residue.getLongCode();
 				int assignment = -1;
@@ -355,7 +303,7 @@ public class InterfaceEvolContext implements Serializable {
 				
 				int queryUniprotPos = -1;
 				if (!secondMol.isNonPolyChain() && secondMol.getSequence().isProtein()) 
-					queryUniprotPos = chains.get(SECOND).getQueryUniprotPosForPDBPos(residue.getSerial());
+					queryUniprotPos = chains[SECOND].getQueryUniprotPosForPDBPos(residue.getSerial());
 				
 				float entropy = -1;
 				if (residue instanceof AaResidue) {
@@ -388,10 +336,10 @@ public class InterfaceEvolContext implements Serializable {
 		PdbChain pdb = null;
 		if (molecId==FIRST) {
 			pdb = interf.getFirstMolecule();
-			conservationScores = chains.get(FIRST).getConservationScores(scoType);
+			conservationScores = chains[FIRST].getConservationScores(scoType);
 		} else if (molecId==SECOND) {
 			pdb = interf.getSecondMolecule();
-			conservationScores = chains.get(SECOND).getConservationScores(scoType);
+			conservationScores = chains[SECOND].getConservationScores(scoType);
 		}
 		
 		HashMap<Integer,Double> map = new HashMap<Integer, Double>();
@@ -400,9 +348,9 @@ public class InterfaceEvolContext implements Serializable {
 			int resser = residue.getSerial();
 			int queryPos = -2;
 			if (scoType==ScoringType.ENTROPY) {
-				queryPos = chains.get(molecId).getQueryUniprotPosForPDBPos(resser); 
+				queryPos = chains[molecId].getQueryUniprotPosForPDBPos(resser); 
 			} else if (scoType==ScoringType.KAKS) {
-				queryPos = chains.get(molecId).getQueryCDSPosForPDBPos(resser);
+				queryPos = chains[molecId].getQueryCDSPosForPDBPos(resser);
 			}
 			if (queryPos!=-1) {   
 				map.put(resser, conservationScores.get(queryPos));	
@@ -411,42 +359,14 @@ public class InterfaceEvolContext implements Serializable {
 		pdb.setBFactorsPerResidue(map);		
 	}
 	
-	private void setRimCoreAsBfactors(int molecId) {
-		HashMap<Integer,Double> rimcoreVals = new HashMap<Integer, Double>();
-		InterfaceRimCore rimCore = null;
-		PdbChain pdb = null;
-		if (molecId==FIRST) {
-			pdb = interf.getFirstMolecule();
-			rimCore = this.interf.getFirstRimCores()[0];
-		} else if (molecId==SECOND) {
-			pdb = interf.getSecondMolecule();
-			rimCore = this.interf.getSecondRimCores()[0];
-		}
-		// first we assign all residues same color (50 hopefully gives a yellowish one)
-		for (Residue residue:pdb) {
-			rimcoreVals.put(residue.getSerial(),50.0);
-		}
-		// core residues : 1 for a blue
-		for (AaResidue res:rimCore.getCoreResidues()) {
-			rimcoreVals.put(res.getSerial(), 1.0);
-		}
-		// rim residues: 200 for a red  
-		for (AaResidue res:rimCore.getRimResidues()) {
-			rimcoreVals.put(res.getSerial(), 200.0);
-		}
-		pdb.setBFactorsPerResidue(rimcoreVals);
-	}
-	
-	private double[] getScoreRatios(int molecId) {
-		double[] ratios = new double[this.interf.getNumBsaToAsaCutoffs()];
-		for (int i=0;i<this.interf.getNumBsaToAsaCutoffs();i++) {
-			ratios[i] = coreScores.get(molecId)[i]/rimScores.get(molecId)[i];
-		}
-		return ratios;
+	private double getScoreRatio(int molecId) {
+		double ratio = coreScores[molecId]/rimScores[molecId];
+
+		return ratio;
 	}
 	
 	private boolean hasEnoughHomologs(int molecId, int homologsCutoff){
-		return this.chains.get(molecId).getNumHomologs()>=homologsCutoff;
+		return this.chains[molecId].getNumHomologs()>=homologsCutoff;
 	}
 
 	private boolean isProtein(int molecId) {
@@ -459,333 +379,228 @@ public class InterfaceEvolContext implements Serializable {
 		}
 	}
 	
-	private boolean[] hasEnoughCore(int molecId, int minMemberCoreSize) {
-
-		InterfaceRimCore[] rimCores = null;
+	private int countUnreliableCoreRes(int molecId) {
+		InterfaceRimCore rimCore = null;
 		if (molecId==FIRST) {
-			rimCores = this.interf.getFirstRimCores();
+			rimCore = this.interf.getFirstRimCore();
 		} else if (molecId==SECOND) {
-			rimCores = this.interf.getSecondRimCores();
+			rimCore = this.interf.getSecondRimCore();
 		}
 
-		boolean[] bs = new boolean[this.interf.getNumBsaToAsaCutoffs()];
-		for (int i=0;i<this.interf.getNumBsaToAsaCutoffs();i++) {
-			bs[i] = rimCores[i].getCoreSize()>=minMemberCoreSize;
-		}
-		return bs;
-	}
+		int count = 0;
 
-	private int[] countReliableCoreRes(int molecId) {
-		InterfaceRimCore[] rimCores = null;
-		if (molecId==FIRST) {
-			rimCores = this.interf.getFirstRimCores();
-		} else if (molecId==SECOND) {
-			rimCores = this.interf.getSecondRimCores();
+		List<Residue> unreliableCoreResidues = new ArrayList<Residue>(); 
+		unreliableCoreResidues.addAll(checkResiduesForPDBReliability(rimCore.getCoreResidues(), chains[molecId]));
+		if (scoringType==ScoringType.KAKS) {
+			unreliableCoreResidues.addAll(checkResiduesForCDSReliability(rimCore.getCoreResidues(), chains[molecId]));
 		}
-
-		int[] counts = new int[this.interf.getNumBsaToAsaCutoffs()];
-		for (int i=0;i<this.interf.getNumBsaToAsaCutoffs();i++) {
-			List<AaResidue> unreliableCoreResidues = new ArrayList<AaResidue>(); 
-			unreliableCoreResidues.addAll(checkResiduesForPDBReliability(rimCores[i].getCoreResidues(), chains.get(molecId)));
-			if (lastScoType==ScoringType.KAKS) {
-				unreliableCoreResidues.addAll(checkResiduesForCDSReliability(rimCores[i].getCoreResidues(), chains.get(molecId)));
-			}
-			counts[i] = unreliableCoreResidues.size();
-		}
-		return counts;
+		count = unreliableCoreResidues.size();
+		return count;
 	}
 	
-	private int[] countReliableRimRes(int molecId) {
-		InterfaceRimCore[] rimCores = null;
+	private int countUnreliableRimRes(int molecId) {
+		InterfaceRimCore rimCore = null;
 		if (molecId==FIRST) {
-			rimCores = this.interf.getFirstRimCores();
+			rimCore = this.interf.getFirstRimCore();
 		} else if (molecId==SECOND) {
-			rimCores = this.interf.getSecondRimCores();
+			rimCore = this.interf.getSecondRimCore();
 		}
-		int[] counts = new int[this.interf.getNumBsaToAsaCutoffs()];
-		for (int i=0;i<this.interf.getNumBsaToAsaCutoffs();i++) {
-			List<AaResidue> unreliableRimResidues = new ArrayList<AaResidue>();
-			
-			unreliableRimResidues.addAll(checkResiduesForPDBReliability(rimCores[i].getRimResidues(), chains.get(molecId)));
-			if (lastScoType==ScoringType.KAKS) {
-				unreliableRimResidues.addAll(checkResiduesForCDSReliability(rimCores[i].getRimResidues(), chains.get(molecId)));
-			}
-			counts[i]=unreliableRimResidues.size();
+		int count = 0;
+
+		List<Residue> unreliableRimResidues = new ArrayList<Residue>();
+
+		unreliableRimResidues.addAll(checkResiduesForPDBReliability(rimCore.getRimResidues(), chains[molecId]));
+		if (scoringType==ScoringType.KAKS) {
+			unreliableRimResidues.addAll(checkResiduesForCDSReliability(rimCore.getRimResidues(), chains[molecId]));
 		}
-		return counts;
+		count=unreliableRimResidues.size();
+
+		return count;
 	}
 
 	/**
 	 * Gets the interface partners prediction calls.
 	 * @param molecId
-	 * @param bioCutoff
-	 * @param xtalCutoff
-	 * @param homologsCutoff
-	 * @param minMemberCoreSize
 	 * @return
 	 */
-	private CallType[] getMemberCalls(int molecId, double bioCutoff, double xtalCutoff, int homologsCutoff, int minMemberCoreSize) {
-		CallType[] calls = new CallType[this.interf.getNumBsaToAsaCutoffs()];
+	private CallType getMemberCall(int molecId) {
+		
 		int memberSerial = molecId+1;
-		InterfaceRimCore[] rimCores = null;
+		InterfaceRimCore rimCore = null;
 		if (molecId==FIRST) {
-			rimCores = this.interf.getFirstRimCores();
+			rimCore = this.interf.getFirstRimCore();
 		} else if (molecId==SECOND) {
-			rimCores = this.interf.getSecondRimCores();
+			rimCore = this.interf.getSecondRimCore();
 		}
-		// we first log just once if we have NOPREDs due to molec not being protein or not enough homologs
-		if (!isProtein(molecId)) { 
+		
+		int countsUnrelCoreRes = countUnreliableCoreRes(molecId);
+		int countsUnrelRimRes = countUnreliableRimRes(molecId);
+		double ratio = this.getScoreRatio(molecId);
+		
+		CallType call = null;
+
+		if (!isProtein(molecId)) {
 			LOGGER.info("Interface "+this.interf.getId()+", member "+memberSerial+" calls NOPRED because it is not a protein");
 			warnings.add("Interface member "+memberSerial+" calls NOPRED because it is not a protein");
-		} else if (!hasEnoughHomologs(molecId, homologsCutoff)) {
-			LOGGER.info("Interface "+this.interf.getId()+", member "+memberSerial+" calls NOPRED because there are not enough homologs to evaluate conservation scores");
-			warnings.add("Interface member "+memberSerial+" calls NOPRED because there are not enough homologs to evaluate conservation scores");
+			call = CallType.NO_PREDICTION;
+		}
+		else if (!hasEnoughHomologs(molecId,homologsCutoff)) {
+			LOGGER.info("Interface "+this.interf.getId()+", member "+memberSerial+" calls NOPRED because there are not enough homologs to calculate evolutionary scores");
+			warnings.add("Interface member "+memberSerial+" calls NOPRED because there are not enough homologs to calculate evolutionary scores");
+			call = CallType.NO_PREDICTION;
+		}
+		else if (((double)countsUnrelCoreRes/(double)rimCore.getCoreSize())>MAX_ALLOWED_UNREL_RES) {
+			LOGGER.info("Interface "+this.interf.getId()+", member "+memberSerial+" calls NOPRED because there are not enough reliable core residues ("+
+					countsUnrelCoreRes+" unreliable residues out of "+rimCore.getCoreSize()+" residues in core)");
+			warnings.add("Interface member "+memberSerial+" calls NOPRED because there are not enough reliable core residues: "+
+					countsUnrelCoreRes+" unreliable out of "+rimCore.getCoreSize()+" in core");
+
+			call = CallType.NO_PREDICTION;
+		}
+		else if (((double)countsUnrelRimRes/(double)rimCore.getRimSize())>MAX_ALLOWED_UNREL_RES) {
+			LOGGER.info("Interface "+this.interf.getId()+", member "+memberSerial+" calls NOPRED because there are not enough reliable rim residues ("+
+					countsUnrelRimRes+" unreliable residues out of "+rimCore.getRimSize()+" residues in rim)");
+			warnings.add("Interface member "+memberSerial+" calls NOPRED because there are not enough reliable rim residues: "+
+					countsUnrelRimRes+" unreliable out of "+rimCore.getRimSize()+" in rim");
+			call = CallType.NO_PREDICTION;
+		}
+		else {
+			if (ratio<bioCutoff) {
+				call = CallType.BIO;
+			} else if (ratio>xtalCutoff) {
+				call = CallType.CRYSTAL;
+			} else if (Double.isNaN(ratio)) {
+				warnings.add("Interface member "+memberSerial+" calls NOPRED because score is NaN");
+				call = CallType.NO_PREDICTION;
+			} else {
+				call = CallType.GRAY;
+			}
 		}
 
 		
-		// and then assign the calls for all bsaToAsaCutoffs
-		boolean[] enoughCore = hasEnoughCore(molecId, minMemberCoreSize);
-		int[] countsRelCoreRes = countReliableCoreRes(molecId);
-		int[] countsRelRimRes = countReliableRimRes(molecId);
-
-
-		double[] ratios = this.getScoreRatios(molecId);
-
-		for (int i=0;i<this.interf.getNumBsaToAsaCutoffs();i++) {
-			if (!isProtein(molecId)) {
-				calls[i] = CallType.NO_PREDICTION;
-			}
-			else if (!enoughCore[i]) {
-				LOGGER.info("Interface "+this.interf.getId()+", member "+memberSerial+" calls XTAL because core is too small ("+rimCores[i].getCoreSize()+" residues)");
-				calls[i] = CallType.CRYSTAL;
-			}			
-			else if (!hasEnoughHomologs(molecId,homologsCutoff)) {
-				calls[i] = CallType.NO_PREDICTION;
-			}
-			else if (((double)countsRelCoreRes[i]/(double)rimCores[i].getCoreSize())>MAX_ALLOWED_UNREL_RES) {
-				LOGGER.info("Interface "+this.interf.getId()+", member "+memberSerial+" calls NOPRED because there are not enough reliable core residues ("+
-						countsRelCoreRes[i]+" unreliable residues out of "+rimCores[i].getCoreSize()+" residues in core)");
-				warnings.add("Interface member "+memberSerial+" calls NOPRED because there are not enough reliable core residues: "+
-						countsRelCoreRes[i]+" unreliable out of "+rimCores[i].getCoreSize()+" in core");
-
-				calls[i] = CallType.NO_PREDICTION;
-			}
-			else if (((double)countsRelRimRes[i]/(double)rimCores[i].getRimSize())>MAX_ALLOWED_UNREL_RES) {
-				LOGGER.info("Interface "+this.interf.getId()+", member "+memberSerial+" calls NOPRED because there are not enough reliable rim residues ("+
-						countsRelRimRes[i]+" unreliable residues out of "+rimCores[i].getRimSize()+" residues in rim)");
-				warnings.add("Interface member "+memberSerial+" calls NOPRED because there are not enough reliable rim residues: "+
-						countsRelRimRes[i]+" unreliable out of "+rimCores[i].getRimSize()+" in rim");
-				calls[i] = CallType.NO_PREDICTION;
-			}
-			else {
-				if (ratios[i]<bioCutoff) {
-					calls[i] = CallType.BIO;
-				} else if (ratios[i]>xtalCutoff) {
-					calls[i] = CallType.CRYSTAL;
-				} else if (Double.isNaN(ratios[i])) {
-					calls[i] = CallType.NO_PREDICTION;
- 				} else {
-					calls[i] = CallType.GRAY;
-				}
-			}
-
-		}
-		return calls;
+		return call;
 	}
 
-	/**
-	 * Gets the prediction calls for this interface. See the {@link CallType} enum for 
-	 * the possible prediction calls.
-	 * @param bioCutoff
-	 * @param xtalCutoff
-	 * @param homologsCutoff
-	 * @param minCoreSize
-	 * @param minMemberCoreSize
-	 * @return
-	 */
-	public CallType[] getCalls(double bioCutoff, double xtalCutoff, int homologsCutoff, int minCoreSize, int minMemberCoreSize) {
-		//this.bioCutoff = bioCutoff;
-		//this.xtalCutoff = xtalCutoff;
-		//this.homologsCutoff = homologsCutoff;
-		//this.minCoreSize = minCoreSize;
-		//this.minMemberCoreSize = minMemberCoreSize;
-		
-		lastCalls = new CallType[this.interf.getNumBsaToAsaCutoffs()];
-		finalScores = new double[this.interf.getNumBsaToAsaCutoffs()];
+	@Override
+	public CallType getCall() {
+
+		if (call!=null) return call;
 		
 		// the votes with voters (no anonymous vote here!)
-		bioCalls = new TreeMap<Integer,ArrayList<Integer>>();
-		xtalCalls = new TreeMap<Integer,ArrayList<Integer>>();
-		grayCalls = new TreeMap<Integer,ArrayList<Integer>>();
-		noPredictCalls = new TreeMap<Integer,ArrayList<Integer>>();
+		bioCalls = new ArrayList<Integer>();
+		xtalCalls = new ArrayList<Integer>();
+		grayCalls = new ArrayList<Integer>();
+		noPredictCalls = new ArrayList<Integer>();
 
-		for (int i=0;i<this.interf.getNumBsaToAsaCutoffs();i++) {
-			ArrayList<Integer> bios = new ArrayList<Integer>();
-			ArrayList<Integer> xtals = new ArrayList<Integer>();
-			ArrayList<Integer> grays = new ArrayList<Integer>();
-			ArrayList<Integer> nopreds = new ArrayList<Integer>();
-			for (int k=0;k<chains.size();k++) {
-				CallType[] memberCalls = getMemberCalls(k,bioCutoff, xtalCutoff, homologsCutoff, minMemberCoreSize);
-				bioCalls.put(i,bios);
-				xtalCalls.put(i,xtals);
-				grayCalls.put(i,grays);
-				noPredictCalls.put(i, nopreds);
-				// cast your votes!
-				if (memberCalls[i] == CallType.BIO) {
-					bios.add(k);
-				}
-				else if (memberCalls[i] == CallType.CRYSTAL) {
-					xtals.add(k);
-				}
-				else if (memberCalls[i] == CallType.GRAY) {
-					grays.add(k);
-				}
-				else if (memberCalls[i] == CallType.NO_PREDICTION) {
-					nopreds.add(k);
-				}
+		for (int k=0;k<chains.length;k++) {
+			CallType memberCall = getMemberCall(k);
+			// cast your votes!
+			if (memberCall == CallType.BIO) {
+				bioCalls.add(k);
+			}
+			else if (memberCall == CallType.CRYSTAL) {
+				xtalCalls.add(k);
+			}
+			else if (memberCall == CallType.GRAY) {
+				grayCalls.add(k);
+			}
+			else if (memberCall == CallType.NO_PREDICTION) {
+				noPredictCalls.add(k);
 			}
 		}
 		
-		for (int i=0;i<this.interf.getNumBsaToAsaCutoffs();i++) {
-			int countBio = bioCalls.get(i).size();
-			int countXtal = xtalCalls.get(i).size();
-			int countGray = grayCalls.get(i).size();
-			int countNoPredict = noPredictCalls.get(i).size();
+		int countBio = bioCalls.size();
+		int countXtal = xtalCalls.size();
+		int countGray = grayCalls.size();
+		int countNoPredict = noPredictCalls.size();
 
-			// decision time!
-			//int validVotes = countBio+countXtal+countGray;
-
-			if (countNoPredict==chains.size()) {
-				finalScores[i] = getAvrgRatio(noPredictCalls.get(i),i);
-				lastCalls[i]=CallType.NO_PREDICTION;
-				nopredWarnings.add("Both interface members called NOPRED");
-			} else if (countBio>countXtal) {
-				//TODO check the discrepancies among the different voters. The variance could be a measure of the confidence of the call
-				//TODO need to do a study about the correlation of scores in members of the same interface
-				//TODO it might be the case that there is good agreement and bad agreement would indicate things like a bio-mimicking crystal interface
-				finalScores[i] = getAvrgRatio(bioCalls.get(i),i);
-				lastCalls[i] = CallType.BIO;
-			} else if (countXtal>countBio) {
-				finalScores[i] = getAvrgRatio(xtalCalls.get(i),i);
-				lastCalls[i] = CallType.CRYSTAL;
-			} else if (countGray>countBio+countXtal) {
-				// we use as final score the average of all gray member scores
-				finalScores[i] = getAvrgRatio(grayCalls.get(i),i);
-				lastCalls[i] = CallType.GRAY;
-			} else if (countBio==countXtal) {
-				//TODO we are taking simply the average, is this the best solution?
-				// weighting is not done here, scores are calculated either weighted/non-weighted before
-				List<Integer> indices = new ArrayList<Integer>();
-				indices.addAll(bioCalls.get(i));
-				indices.addAll(xtalCalls.get(i));
-				finalScores[i] = getAvrgRatio(indices,i);
-
-				// first we check that the sum of core sizes is above the cutoff (if not we call xtal directly)
-				if (!hasEnoughCore(indices,i,minCoreSize)) {
-					lastCalls[i] = CallType.CRYSTAL;
-				} else {
-					if (finalScores[i]<bioCutoff) {
-						lastCalls[i] = CallType.BIO;
-					} else if (finalScores[i]>xtalCutoff) {
-						lastCalls[i] = CallType.CRYSTAL;
-					} else if (Double.isNaN(finalScores[i])) {
-						lastCalls[i] = CallType.NO_PREDICTION;
-						nopredWarnings.add("Evolutionary score is NaN");
-					} else {
-						lastCalls[i] = CallType.GRAY;
-					}
-				}
+		// decision time!
+		if (countNoPredict==chains.length) {
+			finalScore = getAvrgRatio(noPredictCalls);
+			call = CallType.NO_PREDICTION;
+			callReason = "Both interface members called NOPRED";
+		} else if (countBio>countXtal) {
+			//TODO check the discrepancies among the different voters. The variance could be a measure of the confidence of the call
+			//TODO need to do a study about the correlation of scores in members of the same interface
+			//TODO it might be the case that there is good agreement and bad agreement would indicate things like a bio-mimicking crystal interface
+			finalScore = getAvrgRatio(bioCalls);
+			call = CallType.BIO;
+			callReason = "Majority BIO votes";
+		} else if (countXtal>countBio) {
+			finalScore = getAvrgRatio(xtalCalls);
+			call = CallType.CRYSTAL;
+			callReason = "Majority XTAL votes";
+		} else if (countGray>countBio+countXtal) {
+			// we use as final score the average of all gray member scores
+			finalScore = getAvrgRatio(grayCalls);
+			call = CallType.GRAY;
+			callReason = "Majority GRAY votes";
+		} else if (countBio==countXtal) {
+			//TODO we are taking simply the average, is this the best solution?
+			// weighting is not done here, scores are calculated either weighted/non-weighted before
+			List<Integer> indices = new ArrayList<Integer>();
+			indices.addAll(bioCalls);
+			indices.addAll(xtalCalls);
+			finalScore = getAvrgRatio(indices);
+			callReason = "Interface member "+(bioCalls.get(0)+1)+" called BIO and member "+(xtalCalls.get(0)+1)+" called XTAL. ";
+			if (finalScore<bioCutoff) {
+				call = CallType.BIO;
+				callReason += "Average score is below BIO cutoff ("+String.format("%4.2f", bioCutoff)+")";
+			} else if (finalScore>xtalCutoff) {
+				call = CallType.CRYSTAL;
+				callReason += "Average score is above XTAL cutoff ("+String.format("%4.2f", xtalCutoff)+")";
+			} else if (Double.isNaN(finalScore)) {
+				call = CallType.NO_PREDICTION;
+				callReason += "Average score is NaN";
+			} else {
+				call = CallType.GRAY;
+				callReason += "Average score is in gray area (between BIO cutoff "+String.format("%4.2f", bioCutoff)+" and XTAL cutoff "+String.format("%4.2f", xtalCutoff)+")";
 			}
 		}
-		return lastCalls;
+		return call;
 	}	
 
+	@Override
+	public String getCallReason() {
+		return callReason;
+	}
+	
+	@Override
+	public List<String> getWarnings() {
+		return this.warnings;
+	}
+	
 	/**
 	 * Gets the average core to rim ratio for the list of given indices of members.
 	 * @param a list of indices of the memberScores List
 	 * @return
 	 */
-	private double getAvrgRatio(List<Integer> indices, int i) {
+	private double getAvrgRatio(List<Integer> indices) {
 		double sum = 0.0;
 		for (int ind:indices) {
-			sum+=coreScores.get(ind)[i]/rimScores.get(ind)[i];				
+			sum+=coreScores[ind]/rimScores[ind];				
 		}
 		return sum/(double)indices.size();
 	}
-	
-	/**
-	 * Tells whether the sum of core sizes of given indices of members is above the 
-	 * minCoreSize cut-off.
-	 * @param indices
-	 * @return
-	 */
-	private boolean hasEnoughCore(List<Integer> indices, int i, int minCoreSize) {
-		int size = getSumCoreSize(indices,i);
-		if (size<minCoreSize) {
-			return false;
-		}
-		return true;
-	}
-	
-	/**
-	 * Gets the sum of the core sizes of given indices of members 
-	 * @param indices
-	 * @return
-	 */
-	private int getSumCoreSize(List<Integer> indices, int i) {
-		int size = 0;
-		for (int ind:indices) {
-			if (ind==FIRST) {
-				size+=this.interf.getFirstRimCores()[i].getCoreSize();
-			} else if (ind==SECOND) {
-				size+=this.interf.getSecondRimCores()[i].getCoreSize();
-			}
-		}
-		return size;
-	}
 
 	/**
-	 * Gets the final scores (as many as bsaToAsaCutoffs used) computed upon last 
-	 * call of {@link #getCalls(double, double, int, int, int)}
-	 * Final scores are the scores computed from both members of the interface.
+	 * Gets the final score computed upon last 
+	 * call of {@link #getCall(double, double, int, int, int)}
+	 * Final score is the score computed from both members of the interface.
 	 * @return
 	 */
-	public double[] getFinalScores() {
-		return finalScores;
+	public double getFinalScore() {
+		return finalScore;
 	}
 	
-	public double[] getRimScore(int molecId) {
-		return rimScores.get(molecId);
+	public double getRimScore(int molecId) {
+		return rimScores[molecId];
 	}
 	
-	public double[] getCoreScore(int molecId) {
-		return coreScores.get(molecId);
+	public double getCoreScore(int molecId) {
+		return coreScores[molecId];
 	}
 	
-	//public boolean isLastScoWeighted() {
-	//	return lastScoWeighted;
-	//}
-
-	//public double getBioCutoff() {
-	//	return bioCutoff;
-	//}
-
-	//public double getXtalCutoff() {
-	//	return xtalCutoff;
-	//}
-
-	//public int getHomologsCutoff() {
-	//	return homologsCutoff;
-	//}
-
-	//public int getMinCoreSize() {
-	//	return minCoreSize;
-	//}
-
-	//public int getMinMemberCoreSize() {
-	//	return minMemberCoreSize;
-	//}
-
 	/**
 	 * Tells whether CRK analysis (ka/ks ratio) is possible for this interface.
 	 * It will not be possible when there is no sufficient data from either chain.
@@ -793,25 +608,25 @@ public class InterfaceEvolContext implements Serializable {
 	 */
 	public boolean canDoCRK() {
 		boolean canDoCRK = true;
-		if ((this.interf.isFirstProtein() && !chains.get(FIRST).canDoCRK()) || 
-			(this.interf.isSecondProtein() && !chains.get(SECOND).canDoCRK()) ) {
+		if ((this.interf.isFirstProtein() && !chains[FIRST].canDoCRK()) || 
+			(this.interf.isSecondProtein() && !chains[SECOND].canDoCRK()) ) {
 			canDoCRK = false;
 		}
 		return canDoCRK;
 	}
 	
-	private String getVotersString(int i) {
+	private String getVotersString() {
 		String finalStr = "";
 		for (CallType callType: CallType.values()) {
 			List<Integer> calls = null;
 			if (callType==CallType.BIO) {
-				calls = bioCalls.get(i);
+				calls = bioCalls;
 			} else if (callType==CallType.CRYSTAL) {
-				calls = xtalCalls.get(i);
+				calls = xtalCalls;
 			} else if (callType==CallType.GRAY) {
-				calls = grayCalls.get(i);
+				calls = grayCalls;
 			} else if (callType==CallType.NO_PREDICTION) {
-				calls = noPredictCalls.get(i);
+				calls = noPredictCalls;
 			}
 			String callsStr = "";
 			for (int ind=0;ind<calls.size();ind++) {
@@ -823,100 +638,58 @@ public class InterfaceEvolContext implements Serializable {
 		return finalStr;
 	}
 	
-	private void printRimCoreInfo(PrintStream ps, int i, boolean printInterfDesc) {
-		ChainInterface pi = this.getInterface();
-		if (printInterfDesc) {
-			ps.printf("%15s\t%6.1f",
-				pi.getId()+"("+pi.getFirstMolecule().getPdbChainCode()+"+"+pi.getSecondMolecule().getPdbChainCode()+")",
-				pi.getInterfaceArea());
-		} else {
-			ps.printf("%15s\t%6s","","");
-		}
-		boolean isProt1 = this.getInterface().isFirstProtein();
-		boolean isProt2 = this.getInterface().isSecondProtein();
-		ps.printf("%5d\t%5d\t%5.2f", (!isProt1)?0:pi.getFirstRimCores()[i].getCoreSize(),
-									 (!isProt2)?0:pi.getSecondRimCores()[i].getCoreSize(),
-									 this.getInterface().getBsaToAsaCutoffs()[i]);
-		ps.print("\t");
-
-	}
-	
 	private void printHomologsInfo(PrintStream ps) {
 		int numHoms1 = -1;
 		int numHoms2 = -1;
-		if (lastScoType==ScoringType.ENTROPY) {
-			if (isProtein(FIRST)) numHoms1 = chains.get(FIRST).getNumHomologs();
-			if (isProtein(SECOND)) numHoms2 = chains.get(SECOND).getNumHomologs();
-		} else if (lastScoType==ScoringType.KAKS) {
-			if (isProtein(FIRST)) numHoms1 = chains.get(FIRST).getNumHomologsWithValidCDS();
-			if (isProtein(SECOND)) numHoms2 = chains.get(SECOND).getNumHomologsWithValidCDS();
+		if (scoringType==ScoringType.ENTROPY) {
+			if (isProtein(FIRST)) numHoms1 = chains[FIRST].getNumHomologs();
+			if (isProtein(SECOND)) numHoms2 = chains[SECOND].getNumHomologs();
+		} else if (scoringType==ScoringType.KAKS) {
+			if (isProtein(FIRST)) numHoms1 = chains[FIRST].getNumHomologsWithValidCDS();
+			if (isProtein(SECOND)) numHoms2 = chains[SECOND].getNumHomologsWithValidCDS();
 		}
 		ps.printf("%2d\t%2d\t",numHoms1,numHoms2);
 	}
 	
-	private void printScores(PrintStream ps, int i, CallType[] calls) {
+	private void printScores(PrintStream ps, CallType call) {
 		ps.printf("%5.2f\t%5.2f\t%5.2f",
-				this.getCoreScore(FIRST)[i], this.getRimScore(FIRST)[i], this.getCoreScore(FIRST)[i]/this.getRimScore(FIRST)[i]);
+				this.getCoreScore(FIRST), this.getRimScore(FIRST), this.getCoreScore(FIRST)/this.getRimScore(FIRST));
 		ps.print("\t");
 		ps.printf("%5.2f\t%5.2f\t%5.2f",
-				this.getCoreScore(SECOND)[i], this.getRimScore(SECOND)[i], this.getCoreScore(SECOND)[i]/this.getRimScore(SECOND)[i]);
+				this.getCoreScore(SECOND), this.getRimScore(SECOND), this.getCoreScore(SECOND)/this.getRimScore(SECOND));
 		ps.print("\t");
 		// call type, score, voters
-		ps.printf("%6s\t%5.2f", calls[i].getName(),	this.getFinalScores()[i]);
-		ps.print(this.getVotersString(i));
+		ps.printf("%6s\t%5.2f", call.getName(),	this.getFinalScore());
+		ps.print(this.getVotersString());
+		ps.print("\t"+callReason);
 	}
 	
-	public void printScoresTable(PrintStream ps, double bioCutoff, double xtalCutoff, int homologsCutoff, int minCoreSize, int minMemberCoreSize) {
-		CallType[] calls = getCalls(bioCutoff, xtalCutoff, homologsCutoff, minCoreSize, minMemberCoreSize);
-		for (int i=0;i<interf.getBsaToAsaCutoffs().length;i++) {
-			if (i==0) {
-				printRimCoreInfo(ps, i, true);
-			} else {
-				printRimCoreInfo(ps, i, false);
+	public void printScoresLine(PrintStream ps) {
+		CallType call = getCall();
+		getInterface().printRimCoreInfo(ps);
+		printHomologsInfo(ps);
+		printScores(ps, call);
+		ps.println();
+		if (!warnings.isEmpty()){
+			ps.println("  Warnings: ");
+			for (String warning:getWarnings()) {
+				ps.println("     "+warning);
 			}
-			printHomologsInfo(ps);
-			printScores(ps, i, calls);
-			ps.println();
 		}
 	}
 	
-	private void checkDisulfideBonds() {
-		List<Pair<Atom>> disulfPairs = interf.getAICGraph().getDisulfidePairs();
-		if (!disulfPairs.isEmpty()) {
-			String msgToLog = "Disulfide bridges present in interface "+interf.getId()+". ";
-			String msgToWarn = "Disulfide bridges present. ";
-			String msg ="Between CYS residues: ";
-			for (Pair<Atom> pair:disulfPairs) {		
-				msg+=pair.getFirst().getParentResSerial()+" ("+interf.getFirstMolecule().getPdbChainCode()+") and "
-					+pair.getSecond().getParentResSerial()+" ("+interf.getSecondMolecule().getPdbChainCode()+"). ";
-				msgToLog+=msg;
-				msgToWarn+=msg;
-			}
-			LOGGER.info(msgToLog);
-			warnings.add(msgToWarn);
-		}
+	public void resetCall() {
+		this.call = null;
+		this.scoringType = null;
+		this.warnings = new ArrayList<String>();
+		this.callReason = null;
+		this.bioCalls = new ArrayList<Integer>();
+		this.xtalCalls = new ArrayList<Integer>();
+		this.grayCalls = new ArrayList<Integer>();
+		this.noPredictCalls = new ArrayList<Integer>();
+		this.rimScores = null;
+		this.coreScores = null;
+		this.finalScore = -1;
 	}
 	
-	private void checkForPeptides(int molecId) {
-		// We only warn if they are peptides
-		// In most cases our predictions for peptides will be bad because not only the peptide but also the protein partner
-		// will have too small an interface core and we'd call crystal based on core size
-		// But still for some cases (e.g. 3bfw) the prediction is correct (the core size is big enough) 
-		PdbChain molec = null;
-		if (molecId==FIRST) {
-			molec = interf.getFirstMolecule();
-		} else if (molecId==SECOND) {
-			molec = interf.getSecondMolecule();
-		}
-		if (molec.getFullLength()<=CRKMain.PEPTIDE_LENGTH_CUTOFF) {
-			double bsa = interf.getInterfaceArea();
-			String msg = "Ratio of interface area to ASA: "+
-					String.format("%4.2f", bsa/molec.getASA())+". "+
-					"Ratio of buried residues to total residues: "+
-					String.format("%4.2f",(double)molec.getNumResiduesWithBsaAbove(0)/(double)molec.getObsLength());
-			LOGGER.info("Chain "+molec.getPdbChainCode()+" of interface "+interf.getId()+" is a peptide. "+msg);
-			warnings.add("Chain "+molec.getPdbChainCode()+" is a peptide. Prediction might be wrong");
-		}
-
-	}
 }

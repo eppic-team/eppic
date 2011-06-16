@@ -4,7 +4,6 @@ import gnu.getopt.Getopt;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,14 +13,11 @@ import java.util.TreeMap;
 import crk.CallType;
 import crk.ChainEvolContext;
 import crk.ChainEvolContextList;
+import crk.GeometryPredictor;
 import crk.InterfaceEvolContext;
 
-//import owl.core.structure.AaResidue;
-//import owl.core.structure.AminoAcid;
 import owl.core.structure.ChainInterface;
 import owl.core.structure.ChainInterfaceList;
-//import owl.core.structure.InterfaceRimCore;
-//import owl.core.structure.Residue;
 import owl.core.util.Goodies;
 
 /**
@@ -37,7 +33,7 @@ import owl.core.util.Goodies;
  */
 public class CoreSizePredictor {
 
-	private static final double[] DEF_CA_CUTOFF = {0.95};
+	private static final double DEF_CA_CUTOFF = 0.95;
 	private static final int DEF_MIN_NUMBER_CORE_RESIDUES_FOR_BIO = 7;
 	
 	//private static final int MINIMUM_INTERF_AREA_TO_REPORT = 1000;
@@ -48,7 +44,7 @@ public class CoreSizePredictor {
 	private static final String PROGRAM_NAME = "CoreSizePredictor";
 	
 	private static int minNumberCoreResForBio = DEF_MIN_NUMBER_CORE_RESIDUES_FOR_BIO;
-	private static double[] caCutoff = DEF_CA_CUTOFF;
+	private static double caCutoff = DEF_CA_CUTOFF;
 	
 	/**
 	 * @param args
@@ -70,7 +66,7 @@ public class CoreSizePredictor {
 		"   -x         :  list file containing all the pdbIds + interface serials to \n" +
 		"                 analyse that are known to be true xtal contacts\n" +
 		"   [-m]       :  minimum number of core residues to call bio, below this we call xtal\n" +
-		"   [-c]       :  core assignment cutoff. Default: "+String.format("%3.2f", DEF_CA_CUTOFF[0])+"\n";
+		"   [-c]       :  core assignment cutoff. Default: "+String.format("%3.2f", DEF_CA_CUTOFF)+"\n";
 
 		Getopt g = new Getopt(PROGRAM_NAME, args, "B:X:b:x:m:c:h?");
 		int c;
@@ -92,7 +88,7 @@ public class CoreSizePredictor {
 				minNumberCoreResForBio = Integer.parseInt(g.getOptarg());
 				break;
 			case 'c':
-				caCutoff[0] = Double.parseDouble(g.getOptarg());
+				caCutoff = Double.parseDouble(g.getOptarg());
 				break;
 			case 'h':
 			case '?':
@@ -119,7 +115,7 @@ public class CoreSizePredictor {
 		int[] xtalStats = new int[2];
 		int[] bioStats = new int[2];
 		if (bioDir!=null) {
-			TreeMap<String,List<Integer>> bioToAnalyse = CalcStats.readListFile(bioList);
+			TreeMap<String,List<Integer>> bioToAnalyse = Utils.readListFile(bioList);
 			for (List<Integer> vals:bioToAnalyse.values()) {
 				total+=vals.size();
 			}
@@ -128,7 +124,7 @@ public class CoreSizePredictor {
 		}
 		
 		if (xtalDir!=null) {
-			TreeMap<String,List<Integer>> xtalToAnalyse = CalcStats.readListFile(xtalList);
+			TreeMap<String,List<Integer>> xtalToAnalyse = Utils.readListFile(xtalList);
 			for (List<Integer> vals:xtalToAnalyse.values()) {
 				total+=vals.size();
 			}
@@ -158,30 +154,34 @@ public class CoreSizePredictor {
 			ChainInterfaceList interfaces = (ChainInterfaceList)Goodies.readFromFile(files.get(pdbCode));
 			for (int id:toAnalyse.get(pdbCode)) {
 				ChainInterface interf = interfaces.get(id-1);
+				GeometryPredictor gp = new GeometryPredictor(interf);
+				gp.setBsaToAsaCutoff(caCutoff);
+				gp.setMinCoreSizeForBio(minNumberCoreResForBio);
+				
 				interf.calcRimAndCore(caCutoff);
-				int size1 = interf.getFirstRimCores()[0].getCoreSize();
-				int size2 = interf.getSecondRimCores()[0].getCoreSize();
+				int size1 = interf.getFirstRimCore().getCoreSize();
+				int size2 = interf.getSecondRimCore().getCoreSize();
 				int size = size1+size2;				
 				double area = interf.getInterfaceArea();
 				int disulfides = interf.getAICGraph().getDisulfidePairs().size();
 				
-				String predictStr = null;
-				
-				if (size<minNumberCoreResForBio) {
-					if (truth==CallType.CRYSTAL) stats[0]++;
-					else if (truth==CallType.BIO) stats[1]++;
-					predictStr = CallType.CRYSTAL.getName();
-				} else {
-					if (truth==CallType.CRYSTAL)  stats[1]++;
-					else if (truth==CallType.BIO) stats[0]++;
-					predictStr = CallType.BIO.getName();
-				}
+				CallType call = gp.getCall();
+
+				if (truth==call) stats[0]++;
+				else stats[1]++;
 				
 				File chainevolfile = new File(files.get(pdbCode).getParent(),pdbCode+".chainevolcontext.dat");
-				String callStr = getEvolCall(chainevolfile,interf);
+				String evolCallStr = getEvolCall(chainevolfile,interf);
 
 				System.out.println(pdbCode+" "+id);
-				System.out.printf("%2d %2d %7.2f %5.1f %4d %4s -- %s\n",size1,size2,area,area/(double)size,disulfides,predictStr,callStr);
+				System.out.printf("%2d %2d %7.2f %5.1f %4d %4s -- %s\n",size1,size2,area,area/(double)size,disulfides,call.getName(),evolCallStr);
+				System.out.println(        "      call reason:   "+gp.getCallReason());
+				if (!gp.getWarnings().isEmpty()) {
+					System.out.println(    "      call warnings: ");
+					for (String warning:gp.getWarnings()) {
+						System.out.println("                     "+warning);
+					}
+				}
 
 			}
 		}
@@ -203,40 +203,42 @@ public class CoreSizePredictor {
 		System.out.printf("Accuracy: %4.2f\n",accuracy);
 	}
 	
-//	private static int countGlycines(InterfaceRimCore rimcore) {
-//		int count = 0;
-//		for (Residue res:rimcore.getCoreResidues()) {
-//			if (res instanceof AaResidue && (((AaResidue)res).getAaType()==AminoAcid.GLY)) {
-//				count++;
-//			}
-//		}
-//		return count;
-//	}
-	
 	private static String getEvolCall(File chainevolfile, ChainInterface interf) throws IOException, ClassNotFoundException {
 		if (!chainevolfile.exists()) return "No evol score calculated";
 		
 		ChainEvolContextList cecs = (ChainEvolContextList)Goodies.readFromFile(chainevolfile);
-		ArrayList<ChainEvolContext> chainsEvCs = new ArrayList<ChainEvolContext>();
-		chainsEvCs.add(cecs.getChainEvolContext(interf.getFirstMolecule().getPdbChainCode()));
-		chainsEvCs.add(cecs.getChainEvolContext(interf.getSecondMolecule().getPdbChainCode()));
+		ChainEvolContext[] chainsEvCs = new ChainEvolContext[2];
+		chainsEvCs[0] = cecs.getChainEvolContext(interf.getFirstMolecule().getPdbChainCode());
+		chainsEvCs[1] = cecs.getChainEvolContext(interf.getSecondMolecule().getPdbChainCode());
 		InterfaceEvolContext iec = new InterfaceEvolContext(interf, chainsEvCs);
 		
 		iec.scoreEntropy(false);
-		CallType entCall = iec.getCalls(BIO_CUTOFF, XTAL_CUTOFF, MIN_NUM_HOMOLOGS, 6, 3)[0];
-		String entCallStr = entCall.getName() +"("+String.format("%4.2f", iec.getFinalScores()[0])+")";
+		iec.setBioCutoff(BIO_CUTOFF);
+		iec.setXtalCutoff(XTAL_CUTOFF);
+		iec.setHomologsCutoff(MIN_NUM_HOMOLOGS);
+		CallType entCall = iec.getCall();
+		String entCallStr = entCall.getName() +"("+String.format("%4.2f", iec.getFinalScore())+")";
 		iec.scoreEntropy(true);
-		entCall = iec.getCalls(BIO_CUTOFF, XTAL_CUTOFF, MIN_NUM_HOMOLOGS, 6, 3)[0];
-		entCallStr += " "+entCall.getName() +"("+String.format("%4.2f", iec.getFinalScores()[0])+")";
+		iec.setBioCutoff(BIO_CUTOFF);
+		iec.setXtalCutoff(XTAL_CUTOFF);
+		iec.setHomologsCutoff(MIN_NUM_HOMOLOGS);		
+		entCall = iec.getCall();
+		entCallStr += " "+entCall.getName() +"("+String.format("%4.2f", iec.getFinalScore())+")";
 		
 		String kaksCallStr = CallType.NO_PREDICTION.getName()+" (can't do kaks)";
 		if (iec.canDoCRK()) {
 			iec.scoreKaKs(false);
-			CallType kaksCall = iec.getCalls(BIO_CUTOFF, XTAL_CUTOFF, MIN_NUM_HOMOLOGS, 6, 3)[0];
-			kaksCallStr = kaksCall.getName()+"("+String.format("%4.2f", iec.getFinalScores()[0])+")";
+			iec.setBioCutoff(BIO_CUTOFF);
+			iec.setXtalCutoff(XTAL_CUTOFF);
+			iec.setHomologsCutoff(MIN_NUM_HOMOLOGS);
+			CallType kaksCall = iec.getCall();
+			kaksCallStr = kaksCall.getName()+"("+String.format("%4.2f", iec.getFinalScore())+")";
 			iec.scoreKaKs(true);
-			kaksCall = iec.getCalls(BIO_CUTOFF, XTAL_CUTOFF, MIN_NUM_HOMOLOGS, 6, 3)[0];
-			kaksCallStr += " "+kaksCall.getName()+"("+String.format("%4.2f", iec.getFinalScores()[0])+")";
+			iec.setBioCutoff(BIO_CUTOFF);
+			iec.setXtalCutoff(XTAL_CUTOFF);
+			iec.setHomologsCutoff(MIN_NUM_HOMOLOGS);
+			kaksCall = iec.getCall();
+			kaksCallStr += " "+kaksCall.getName()+"("+String.format("%4.2f", iec.getFinalScore())+")";
 		}
 		
 		String callStr = entCallStr+" "+kaksCallStr;
@@ -245,4 +247,5 @@ public class CoreSizePredictor {
 			
 		return callStr;
 	}
+	
 }

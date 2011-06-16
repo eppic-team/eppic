@@ -30,7 +30,6 @@ public class InterfaceSorter {
 	private static final int NSPHEREPOINTS =9600;
 	private static final int NTHREADS = Runtime.getRuntime().availableProcessors();
 	private static final double CUTOFF = 5.9; 
-	private static final double CLASHDISTANCE = 1.5;
 
 	
 	private class SimpleInterface implements Comparable<SimpleInterface>{
@@ -130,7 +129,7 @@ public class InterfaceSorter {
 			String pdbChainCode2 = firstInterf.getSecondMolecule().getPdbChainCode();
 			String op = SpaceGroup.getAlgebraicFromMatrix(firstInterf.getSecondTransf());
 			double area = firstInterf.getInterfaceArea();
-			int clashes = firstInterf.getAICGraph().getNumClashes(CLASHDISTANCE);
+			int clashes = firstInterf.getAICGraph().getNumClashes();
 			
 			firstInterfaces.add(new InterfaceSorter().new SimpleInterface(pdbCode, area, op, pdbChainCode1, pdbChainCode2, clashes,
 					firstInterf.getFirstMolecule().getParent().getResolution(),

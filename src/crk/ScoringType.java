@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 public enum ScoringType implements Serializable
 {
-	ENTROPY("entropy"), KAKS("KaKs ratio");
+	GEOMETRY("geometry"), ENTROPY("entropy"), KAKS("KaKs ratio");
 	
 	private String name;
 	private ScoringType(String name) {
@@ -20,6 +20,8 @@ public enum ScoringType implements Serializable
 			return ScoringType.ENTROPY;
 		} else if (name.equals("KaKs ratio")) {
 			return ScoringType.KAKS;
+		} else if (name.equals("geometry")) {
+			return ScoringType.GEOMETRY;
 		} else {
 			return null;
 		}

@@ -24,7 +24,7 @@ public class PDBScoreItem implements Serializable, ProcessingData
 	private double idCutoff;
 	private double queryCovCutoff;
 	private int maxNumSeqsCutoff;
-	private double[] bsaToAsaCutoffs;
+	private double bsaToAsaCutoff;
 	private double bsaToAsaSoftCutoff;
 	private double bsaToAsaRelaxStep;
 	private boolean zoomUsed;
@@ -122,12 +122,12 @@ public class PDBScoreItem implements Serializable, ProcessingData
 		this.maxNumSeqsCutoff = maxNumSeqsCutoff;
 	}
 
-	public double[] getBsaToAsaCutoffs() {
-		return bsaToAsaCutoffs;
+	public double getBsaToAsaCutoff() {
+		return bsaToAsaCutoff;
 	}
 	
-	public void setBsaToAsaCutoffs(double[] bsaToAsaCutoffs) {
-		this.bsaToAsaCutoffs = bsaToAsaCutoffs;
+	public void setBsaToAsaCutoff(double bsaToAsaCutoff) {
+		this.bsaToAsaCutoff = bsaToAsaCutoff;
 	}
 
 	public double getBsaToAsaSoftCutoff() {

@@ -21,7 +21,7 @@ public class InterfaceItem implements Serializable
 	private String operator; 
 	
 	private List<String> warnings;
-	private List<String> nopredWarnings;
+	private String callReason;
 	
 //	private List<InterfaceStructureItem> interfaceStructures;
 
@@ -123,12 +123,12 @@ public class InterfaceItem implements Serializable
 		this.warnings = warnings;
 	}
 
-	public List<String> getNopredWarnings() {
-		return nopredWarnings;
+	public String getCallReason() {
+		return callReason;
 	}
 	
-	public void setNopredWarnings(List<String> nopredWarnings) {
-		this.nopredWarnings = nopredWarnings;
+	public void setCallReason(String callReason) {
+		this.callReason = callReason;
 	}
 
 }

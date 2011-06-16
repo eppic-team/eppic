@@ -1,8 +1,6 @@
 package crk;
 
 import java.io.Serializable;
-//import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 
@@ -24,19 +22,18 @@ public class InterfaceScore implements Serializable{
 	private int numHomologs2;
 	
 	private List<String> warnings;
-	private List<String> nopredWarnings;
+	private String callReason;
 
-	// arrays contain data for each of the bsaToAsaCutoffs
-	private int[] coreSize1;
-	private int[] coreSize2;
-	private double[] rim1Scores;
-	private double[] core1Scores;
-	private double[] ratio1Scores;
-	private double[] rim2Scores;
-	private double[] core2Scores;
-	private double[] ratio2Scores;
-	private double[] finalScores; 					// final scores (average of ratios of both sides), one per bsaToAsaCutoff
-	private CallType[] calls;
+	private int coreSize1;
+	private int coreSize2;
+	private double rim1Score;
+	private double core1Score;
+	private double ratio1Score;
+	private double rim2Score;
+	private double core2Score;
+	private double ratio2Score;
+	private double finalScore; 					// final score (average of ratios of both sides)
+	private CallType call;
 	
 	public InterfaceScore()
 	{
@@ -103,142 +100,104 @@ public class InterfaceScore implements Serializable{
 		this.numHomologs2 = numHomologs2;
 	}
 
-	public double[] getRim1Scores() {
-		return rim1Scores;
+	public double getRim1Score() {
+		return rim1Score;
 	}
 
-	public void setRim1Scores(double[] rim1Scores) {
-		this.rim1Scores = rim1Scores;
+	public void setRim1Score(double rim1Score) {
+		this.rim1Score = rim1Score;
 	}
 
-	public double[] getCore1Scores() {
-		return core1Scores;
+	public double getCore1Score() {
+		return core1Score;
 	}
 
-	public void setCore1Scores(double[] core1Scores) {
-		this.core1Scores = core1Scores;
+	public void setCore1Score(double core1Score) {
+		this.core1Score = core1Score;
 	}
 
-	public double[] getRim2Scores() {
-		return rim2Scores;
+	public double getRim2Score() {
+		return rim2Score;
 	}
 
-	public void setRim2Scores(double[] rim2Scores) {
-		this.rim2Scores = rim2Scores;
+	public void setRim2Score(double rim2Score) {
+		this.rim2Score = rim2Score;
 	}
 
-	public double[] getCore2Scores() {
-		return core2Scores;
+	public double getCore2Score() {
+		return core2Score;
 	}
 
-	public void setCore2Scores(double[] core2Scores) {
-		this.core2Scores = core2Scores;
+	public void setCore2Score(double core2Score) {
+		this.core2Score = core2Score;
 	}
 
-	public double[] getFinalScores() {
-		return finalScores;
+	public double getFinalScore() {
+		return finalScore;
 	}
 
-	public void setFinalScores(double[] finalScores) {
-		this.finalScores = finalScores;
+	public void setFinalScore(double finalScore) {
+		this.finalScore = finalScore;
 	}
 
-	public int[] getCoreSize1() {
+	public int getCoreSize1() {
 		return coreSize1;
 	}
 
-	public void setCoreSize1(int[] coreSize1) {
+	public void setCoreSize1(int coreSize1) {
 		this.coreSize1 = coreSize1;
 	}
 
-	public int[] getCoreSize2() {
+	public int getCoreSize2() {
 		return coreSize2;
 	}
 
-	public void setCoreSize2(int[] coreSize2) {
+	public void setCoreSize2(int coreSize2) {
 		this.coreSize2 = coreSize2;
 	}
 
-	public CallType[] getCalls() {
-		return calls;
+	public CallType getCall() {
+		return call;
 	}
 
-	public void setCalls(CallType[] calls) {
-		this.calls = calls;
-	}
-	
-	public int getNumBsaToAsaCutoffs() {
-		return coreSize1.length;
+	public void setCall(CallType call) {
+		this.call = call;
 	}
 	
 	public PdbScore getParent() {
 		return parent;
 	}
 	
-	public double[] getRatio1Scores() {
-		return ratio1Scores;
+	public double getRatio1Score() {
+		return ratio1Score;
 	}
 
-	public void setRatio1Scores(double[] ratio1Scores) {
-		this.ratio1Scores = ratio1Scores;
+	public void setRatio1Score(double ratio1Score) {
+		this.ratio1Score = ratio1Score;
 	}
 
-	public double[] getRatio2Scores() {
-		return ratio2Scores;
+	public double getRatio2Score() {
+		return ratio2Score;
 	}
 
-	public void setRatio2Scores(double[] ratio2Scores) {
-		this.ratio2Scores = ratio2Scores;
-	}
-
-	/**
-	 * Gets the prediction call for this interface by using the interface zooming protocol
-	 * with the calculated data, i.e. bsaToAsa soft cutoff will be the highest of the calculated
-	 * cutoffs and hard the given minIndex. The bsaToAsa cutoffs are asummed to be ordered ascending.
-	 * @return
-	 * @param minIndex the minimum index of the bsaToAsa cutoffs array to be taken as the hard
-	 * cutoff
-	 * @throws IllegalArgumentException if the bsaToAsa cutoffs are not in ascending order
-	 */
-	public CallType getZoomingCall(int minIndex) {
-		
-		double[] bsaToAsaCutoffs = parent.getBsaToAsaCutoffs();
-		double[] toSort = Arrays.copyOf(bsaToAsaCutoffs, bsaToAsaCutoffs.length);
-		Arrays.sort(toSort);
-		if (toSort[0]!=bsaToAsaCutoffs[0]) {
-			throw new IllegalArgumentException("Core assignment cutoffs are not in ascending order.");
-		}
-
-		int i = 0;
-		for (i=bsaToAsaCutoffs.length-1;i>=minIndex;i--) {
-			if ((coreSize1[i]+coreSize2[i])>=parent.getMinCoreSize()) {
-				break;
-			}
-		}
-		if (i==minIndex-1) {
-			// core it's never above minimum required core size, we return the minIndex cut-off (hard-cutoff) call
-			return calls[minIndex];
-		} else {
-			return calls[i];
-		}
-
+	public void setRatio2Score(double ratio2Score) {
+		this.ratio2Score = ratio2Score;
 	}
 
 	public List<String> getWarnings() {
 		return warnings;
-
 	}
 
 	public void setWarnings(List<String> warnings) {
 		this.warnings = warnings;
 	}
 	
-	public List<String> getNopredWarnings() {
-		return this.nopredWarnings;
+	public String getCallReason() {
+		return this.callReason;
 	}
 	
-	public void setNopredWarnings(List<String> nopredWarnings) {
-		this.nopredWarnings = nopredWarnings;
+	public void setCallReason(String callReason) {
+		this.callReason = callReason;
 	}
 	
 }

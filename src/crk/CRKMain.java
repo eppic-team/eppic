@@ -31,6 +31,7 @@ import owl.core.structure.ChainInterfaceList;
 import owl.core.structure.PdbAsymUnit;
 import owl.core.structure.PdbLoadException;
 import owl.core.structure.SpaceGroup;
+import owl.core.structure.graphs.AICGraph;
 import owl.core.util.FileFormatException;
 import owl.core.util.Goodies;
 
@@ -39,10 +40,11 @@ public class CRKMain {
 	// CONSTANTS
 	private static final String   PROGRAM_NAME = "crk";
 	private static final String   CONFIG_FILE_NAME = ".crk.conf";
+	private static final String   GEOMETRY_FILE_SUFFIX = ".geometry";
 	private static final String   ENTROPIES_FILE_SUFFIX = ".entropies";
 	private static final String   KAKS_FILE_SUFFIX = ".kaks";
 	private static final Pattern  NONPROT_PATTERN = Pattern.compile("^X+$");
-	private static final double   INTERFACE_DIST_CUTOFF = 5.9;
+	protected static final double INTERFACE_DIST_CUTOFF = 5.9;
 	protected static final int	  PEPTIDE_LENGTH_CUTOFF = 20; // shorter chains will be considered peptides
 	
 	// DEFAULTS FOR CONFIG FILE ASSIGNABLE CONSTANTS
@@ -85,9 +87,6 @@ public class CRKMain {
 	private static final String   DEF_EMBL_CDS_CACHE_DIR = null;
 	private static final String   DEF_BLAST_CACHE_DIR = null;
 	
-	// default clash distance: in theory, a disulfide bond distance (2.05) is the minimum distance we could reasonably expect
-	private static final double   DEF_INTERCHAIN_ATOM_CLASH_DISTANCE = 1.5; 
-	
 	// DEFAULTS FOR COMMAND LINE PARAMETERS
 	private static final double   DEF_IDENTITY_CUTOFF = 0.6;
 
@@ -98,14 +97,14 @@ public class CRKMain {
 
 	// default cutoffs for the final bio/xtal call
 	private static final double   DEF_GRAY_ZONE_WIDTH = 0.01;
-	private static final double   DEF_ENTR_CALL_CUTOFF = 1.00;
+	private static final double   DEF_ENTR_CALL_CUTOFF = 0.85;
 	private static final double   DEF_KAKS_CALL_CUTOFF = 0.85;
 	
 	// default crk core assignment thresholds
 	private static final double   DEF_SOFT_CUTOFF_CA = 0.95;
 	private static final double   DEF_HARD_CUTOFF_CA = 0.82;
 	private static final double   DEF_RELAX_STEP_CA = 0.01;	
-	private static final double[] DEF_CA_CUTOFFS = {0.85};
+	private static final double   DEF_CA_CUTOFF = 0.95;
 	private static final int      DEF_MIN_NUM_RES_CA = 6;
 	private static final int      DEF_MIN_NUM_RES_MEMBER_CA = 3; 
 
@@ -144,8 +143,6 @@ public class CRKMain {
 	private static String   EMBL_CDS_CACHE_DIR;
 	private static String   BLAST_CACHE_DIR;
 	
-	private static double   INTERCHAIN_ATOM_CLASH_DISTANCE;
-
 	// and finally the ones with no defaults
 	private static String   BLAST_DB_DIR; // no default
 	private static String   BLAST_DB;     // no default
@@ -170,16 +167,13 @@ public class CRKMain {
 	}
 	
 	public void parseCommandLine(String[] args) throws CRKException {
-		String defCACutoffsStr = String.format("%4.2f",DEF_CA_CUTOFFS[0]);
-		for (int i=1;i<DEF_CA_CUTOFFS.length;i++) {
-			defCACutoffsStr += String.format(",%4.2f",DEF_CA_CUTOFFS[i]);
-		}
 		
 		String help = "Usage: \n" +
 		PROGRAM_NAME+"\n" +
 		"   -i          :  input PDB code or PDB file or mmCIF file\n" +
-		"  [-k]         :  score based on ka/ks ratios as well as on entropies. Much \n" +
-		"                  slower, requires running of the selecton external program\n" +
+		"  [-s]         :  score based on entropies \n"+
+		"  [-k]         :  score based on ka/ks ratios. Slower than entropies, \n" +
+		"                  requires running of the selecton external program\n" +
 		"  [-d <float>] :  sequence identity cut-off, homologs below this threshold won't\n" +
 		"                  be considered, default: "+String.format("%3.1f",DEF_IDENTITY_CUTOFF)+"\n"+
 		"  [-a <int>]   :  number of threads for blast and ASA calculation. Default: "+DEF_NUMTHREADS+"\n"+
@@ -192,7 +186,7 @@ public class CRKMain {
 		"  [-t]         :  if specified t_coffee will be run in normal mode instead of very\n" +
 		"                  fast mode\n" +
 		"  [-c <floats>]:  comma separated list of BSA cutoffs for core assignment. Default: \n"+
-		"                  "+defCACutoffsStr+"\n" +
+		"                  "+String.format("%4.2f",DEF_CA_CUTOFF)+"\n" +
 		"  [-z]         :  use zooming for core assignment\n"+
 		"  [-Z <floats>]:  set parameters for zooming (only used if -z specified). Specify 3 \n" +
 		"                  comma separated values: soft BSA cutoff, hard BSA cutoff and \n" +
@@ -203,9 +197,9 @@ public class CRKMain {
 		"  [-M <int>]   :  cutoff for number of interface member core residues, if still \n" +
 		"                  below this value after applying hard cutoff then the interface \n" +
 		"                  member is not scored and considered a crystal contact. Default: "+DEF_MIN_NUM_RES_MEMBER_CA+"\n" +
-		"  [-x <floats>]:  comma separated list of entropy score cutoffs for calling BIO/XTAL.\n" +
+		"  [-x <float>]:   entropy score cutoff for calling BIO/XTAL.\n" +
 		"                  Default: " + String.format("%4.2f",DEF_ENTR_CALL_CUTOFF)+"\n"+
-		"  [-X <floats>]:  comma separated list of ka/ks score cutoffs for calling BIO/XTAL.\n"+
+		"  [-X <float>]:   ka/ks score cutoff for calling BIO/XTAL.\n"+
 		"                  Default: " + String.format("%4.2f",DEF_KAKS_CALL_CUTOFF)+"\n"+
 		"  [-g <float>] :  a margin to be added around the score cutoffs for calling BIO/XTAL\n" +
 		"                  defining an undetermined (gray) prediction zone. Default: "+String.format("%4.2f",DEF_GRAY_ZONE_WIDTH)+"\n"+
@@ -334,7 +328,7 @@ public class CRKMain {
 		if (params.isZooming()) {
 			interfaces.calcRimAndCores(params.getBsaToAsaSoftCutoff(), params.getBsaToAsaHardCutoff(), params.getRelaxationStep(), params.getMinNumResCA());
 		} else {
-			interfaces.calcRimAndCores(params.getCutoffsCA());
+			interfaces.calcRimAndCores(params.getCutoffCA());
 		}
 		
 		if (interfaces.getNumInterfacesAboveArea(MIN_INTERF_AREA_REPORTING)==0) {
@@ -376,14 +370,14 @@ public class CRKMain {
 
 
 		// checking for clashes
-		if (!params.isUsePisa() && interfaces.hasInterfacesWithClashes(INTERCHAIN_ATOM_CLASH_DISTANCE)) {
-			String msg = "Clashes found in some of the interfaces (atoms distance below "+INTERCHAIN_ATOM_CLASH_DISTANCE+"):";
-			List<ChainInterface> clashyInterfs = interfaces.getInterfacesWithClashes(INTERCHAIN_ATOM_CLASH_DISTANCE);
+		if (!params.isUsePisa() && interfaces.hasInterfacesWithClashes()) {
+			String msg = "Clashes found in some of the interfaces (atoms distance below "+AICGraph.CLASH_DISTANCE+"):";
+			List<ChainInterface> clashyInterfs = interfaces.getInterfacesWithClashes();
 			for (ChainInterface clashyInterf:clashyInterfs) {
 				msg+=("\nInterface: "+clashyInterf.getFirstMolecule().getPdbChainCode()+"+"
 						+clashyInterf.getSecondMolecule().getPdbChainCode()+" ("+
 						SpaceGroup.getAlgebraicFromMatrix(clashyInterf.getSecondTransf())+
-						") Clashes: "+clashyInterf.getNumClashes(INTERCHAIN_ATOM_CLASH_DISTANCE));
+						") Clashes: "+clashyInterf.getNumClashes());
 			}
 			msg+=("\nThis is most likely an error in the structure. If you think the structure is correct, please report a bug.");
 			// we used to throw a fatal exception and exit here, but we decided to simply warn and go ahead 
@@ -394,9 +388,8 @@ public class CRKMain {
 		if (params.isZooming()) {
 			interfaces.calcRimAndCores(params.getBsaToAsaSoftCutoff(), params.getBsaToAsaHardCutoff(), params.getRelaxationStep(), params.getMinNumResCA());
 		} else {
-			interfaces.calcRimAndCores(params.getCutoffsCA());
+			interfaces.calcRimAndCores(params.getCutoffCA());
 		}
-
 
 		try {
 			PrintStream interfLogPS = new PrintStream(params.getOutputFile(".interfaces"));
@@ -414,6 +407,31 @@ public class CRKMain {
 		} catch (IOException e) {
 			throw new CRKException(e,"Couldn't write serialized ChainInterfaceList object to file: "+e.getMessage(),false);
 		}
+		
+		try {
+			PrintStream scoreGeomPS = new PrintStream(params.getOutputFile(GEOMETRY_FILE_SUFFIX+".scores"));
+			GeometryPredictor.printScoringHeaders(scoreGeomPS);
+			for (ChainInterface interf:interfaces) {
+				GeometryPredictor gp = new GeometryPredictor(interf);
+				gp.setBsaToAsaCutoff(params.getCutoffCA());
+				gp.setMinCoreSizeForBio(params.getMinNumResCA());
+				gp.printScores(scoreGeomPS);
+				gp.writePdbFile(params.getOutputFile("."+interf.getId()+".rimcore.pdb"));
+				if (params.isGenerateThumbnails()) {
+					interf.generateThumbnails(PYMOL_EXE,params.getOutputFile("."+interf.getId()+".rimcore.pdb"),
+							params.getBaseName()+"."+interf.getId());
+				}
+			}
+			scoreGeomPS.close();
+		} catch (IOException e) {
+			throw new CRKException(e, "Couldn't write interface geometry scores or related PDB files. "+e.getMessage(),true);
+		} catch (PdbLoadException e) {
+			throw new CRKException(e, "Couldn't generate thumbnails, problem in reading PDB file: "+e.getMessage(),false);
+		} catch (InterruptedException e) {
+			throw new CRKException(e, "Couldn't generate thumbnails, pymol thread interrupted: "+e.getMessage(),false);
+		}
+
+		
 	}
 	
 	private void findUniqueChains() {
@@ -619,73 +637,57 @@ public class CRKMain {
 		
 	}
 	
-	public void doScoring() throws CRKException {
+	public void doEvolScoring() throws CRKException {
 		if (interfaces.getNumInterfacesAboveArea(MIN_INTERF_AREA_REPORTING)==0) return;
 		
-		iecList = new InterfaceEvolContextList(params.getJobName(), MIN_HOMOLOGS_CUTOFF, params.getMinNumResCA(), params.getMinNumResMemberCA(), 
+		iecList = new InterfaceEvolContextList(params.getJobName(), MIN_HOMOLOGS_CUTOFF,  
 				params.getIdCutoff(), QUERY_COVERAGE_CUTOFF, params.getMaxNumSeqsSelecton(), MIN_INTERF_AREA_REPORTING);
 		iecList.addAll(interfaces,cecs);
 		
-		try {
-			for (int callCutoffIdx=0;callCutoffIdx<params.getEntrCallCutoffs().length;callCutoffIdx++) {
-				String suffix = null;
-				if (params.getEntrCallCutoffs().length==1) suffix="";
-				else suffix="."+Integer.toString(callCutoffIdx+1);
-				PrintStream scoreEntrPS = new PrintStream(params.getOutputFile(ENTROPIES_FILE_SUFFIX+".scores"+suffix));
+		if (params.isDoScoreEntropies()) {
+			try {
+				PrintStream scoreEntrPS = new PrintStream(params.getOutputFile(ENTROPIES_FILE_SUFFIX+".scores"));
 				// entropy nw
 				iecList.scoreEntropy(false);
-				//iecList.printScoresTable(params.getProgressLog(), params.getEntrCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getEntrCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
-				iecList.printScoresTable(scoreEntrPS, params.getEntrCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getEntrCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
+				iecList.printScoresTable(scoreEntrPS, params.getEntrCallCutoff()-params.getGrayZoneWidth(), params.getEntrCallCutoff()+params.getGrayZoneWidth());
 				PdbScore[] entSc = new PdbScore[2];
 				entSc[0] = iecList.getPdbScoreObject();
+				iecList.resetCalls();
 				// entropy w
 				iecList.scoreEntropy(true);
-				//iecList.printScoresTable(params.getProgressLog(), params.getEntrCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getEntrCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
-				iecList.printScoresTable(scoreEntrPS, params.getEntrCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getEntrCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
+				iecList.printScoresTable(scoreEntrPS, params.getEntrCallCutoff()-params.getGrayZoneWidth(), params.getEntrCallCutoff()+params.getGrayZoneWidth());
 				iecList.writeScoresPDBFiles(params,ENTROPIES_FILE_SUFFIX+".pdb");
-				iecList.writeRimCorePDBFiles(params, ".rimcore.pdb");
 				entSc[1] = iecList.getPdbScoreObject();
-				Goodies.serialize(params.getOutputFile(ENTROPIES_FILE_SUFFIX+".scores.dat"+suffix), entSc);
-
-				if (params.isGenerateThumbnails()) {
-					iecList.generateThumbnails(PYMOL_EXE,params,".rimcore.pdb");
-				}
+				Goodies.serialize(params.getOutputFile(ENTROPIES_FILE_SUFFIX+".scores.dat"), entSc);
 				scoreEntrPS.close();
-			}
-		} catch (IOException e) {
-			throw new CRKException(e, "Couldn't write final interface entropy scores or related PDB files. "+e.getMessage(),true);
-		} catch (PdbLoadException e) {
-			throw new CRKException(e, "Couldn't generate thumbnails, problem in reading PDB file: "+e.getMessage(),false);
-		} catch (InterruptedException e) {
-			throw new CRKException(e, "Couldn't generate thumbnails, pymol thread interrupted: "+e.getMessage(),false);
+				iecList.resetCalls();
+
+			} catch (IOException e) {
+				throw new CRKException(e, "Couldn't write final interface entropy scores or related PDB files. "+e.getMessage(),true);
+			} 
 		}
-		try {
-			// ka/ks scoring
-			if (params.isDoScoreCRK()) {
-				for (int callCutoffIdx=0;callCutoffIdx<params.getKaksCallCutoffs().length;callCutoffIdx++) {
-					String suffix = null;
-					if (params.getKaksCallCutoffs().length==1) suffix="";
-					else suffix="."+Integer.toString(callCutoffIdx+1);
-					PrintStream scoreKaksPS = new PrintStream(params.getOutputFile(KAKS_FILE_SUFFIX+".scores"+suffix));
-					// kaks nw
-					iecList.scoreKaKs(false);
-					//iecList.printScoresTable(params.getProgressLog(),  params.getKaksCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getKaksCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
-					iecList.printScoresTable(scoreKaksPS,  params.getKaksCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getKaksCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
-					PdbScore[] kaksSc = new PdbScore[2];
-					kaksSc[0] = iecList.getPdbScoreObject();
-					// kaks w
-					iecList.scoreKaKs(true);
-					//iecList.printScoresTable(params.getProgressLog(),  params.getKaksCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getKaksCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
-					iecList.printScoresTable(scoreKaksPS,  params.getKaksCallCutoff(callCutoffIdx)-params.getGrayZoneWidth(), params.getKaksCallCutoff(callCutoffIdx)+params.getGrayZoneWidth());
-					iecList.writeScoresPDBFiles(params, KAKS_FILE_SUFFIX+".pdb");
-					iecList.writeRimCorePDBFiles(params, ".rimcore.pdb");
-					kaksSc[1] = iecList.getPdbScoreObject();
-					Goodies.serialize(params.getOutputFile(KAKS_FILE_SUFFIX+".scores.dat"+suffix), kaksSc);
-					scoreKaksPS.close();
-				}
+		if (params.isDoScoreCRK()) {
+			try {
+				// ka/ks scoring			
+				PrintStream scoreKaksPS = new PrintStream(params.getOutputFile(KAKS_FILE_SUFFIX+".scores"));
+				// kaks nw
+				iecList.scoreKaKs(false);
+				iecList.printScoresTable(scoreKaksPS,  params.getKaksCallCutoff()-params.getGrayZoneWidth(), params.getKaksCallCutoff()+params.getGrayZoneWidth());
+				PdbScore[] kaksSc = new PdbScore[2];
+				kaksSc[0] = iecList.getPdbScoreObject();
+				iecList.resetCalls();
+				// kaks w
+				iecList.scoreKaKs(true);
+				iecList.printScoresTable(scoreKaksPS,  params.getKaksCallCutoff()-params.getGrayZoneWidth(), params.getKaksCallCutoff()+params.getGrayZoneWidth());
+				iecList.writeScoresPDBFiles(params, KAKS_FILE_SUFFIX+".pdb");
+				kaksSc[1] = iecList.getPdbScoreObject();
+				Goodies.serialize(params.getOutputFile(KAKS_FILE_SUFFIX+".scores.dat"), kaksSc);
+				scoreKaksPS.close();
+				iecList.resetCalls();
+
+			} catch (IOException e) {
+				throw new CRKException(e,"Couldn't write final interface Ka/Ks scores or related PDB files. "+e.getMessage(),true);
 			}
-		} catch (IOException e) {
-			throw new CRKException(e,"Couldn't write final interface Ka/Ks scores or related PDB files. "+e.getMessage(),true);
 		}
 		try {
 			// we only write one of this (does not depend on call cutoff and contains both entropies+kaks)
@@ -698,19 +700,17 @@ public class CRKMain {
 	}
 	
 	public void setDefaults() {
-		double[] entrCallCutoff = {DEF_ENTR_CALL_CUTOFF};
-		double[] kaksCallCutoff  = {DEF_KAKS_CALL_CUTOFF};
-		this.params = new CRKParams(null, false, DEF_IDENTITY_CUTOFF,null,new File("."),
+		this.params = new CRKParams(null, false, false, DEF_IDENTITY_CUTOFF,null,new File("."),
 				DEF_NUMTHREADS,
 				DEF_ENTROPY_ALPHABET,DEF_USE_TCOFFEE_VERYFAST_MODE,
 				false,DEF_SOFT_CUTOFF_CA,DEF_HARD_CUTOFF_CA, DEF_RELAX_STEP_CA, 
-				DEF_CA_CUTOFFS,
+				DEF_CA_CUTOFF,
 				DEF_MIN_NUM_RES_CA, DEF_MIN_NUM_RES_MEMBER_CA,
 				DEF_SELECTON_EPSILON, DEF_MAX_NUM_SEQUENCES_SELECTON,
 				false, false,
 				DEF_NSPHEREPOINTS_ASA_CALC,
 				DEF_GRAY_ZONE_WIDTH,
-				entrCallCutoff,kaksCallCutoff,
+				DEF_ENTR_CALL_CUTOFF,DEF_KAKS_CALL_CUTOFF,
 				null,null,
 				false,
 				System.out,
@@ -755,6 +755,9 @@ public class CRKMain {
 				crkMain.doFindInterfaces();
 			}
 
+			if (!crkMain.params.isDoScoreEntropies() && !crkMain.params.isDoScoreCRK()) 
+				System.exit(0);
+				
 			// 2 finding evolutionary context
 			if (crkMain.params.getChainEvContextSerFile()!=null) {
 				crkMain.doLoadEvolContextFromFile();
@@ -763,7 +766,7 @@ public class CRKMain {
 			}
 
 			// 3 scoring
-			crkMain.doScoring();
+			crkMain.doEvolScoring();
 
 		} catch (CRKException e) {
 			e.log(LOGGER);
@@ -827,8 +830,6 @@ public class CRKMain {
 			EMBL_CDS_CACHE_DIR  = p.getProperty("EMBL_CDS_CACHE_DIR", DEF_EMBL_CDS_CACHE_DIR);
 			BLAST_CACHE_DIR     = p.getProperty("BLAST_CACHE_DIR", DEF_BLAST_CACHE_DIR);
 
-			INTERCHAIN_ATOM_CLASH_DISTANCE = Double.parseDouble(p.getProperty("INTERCHAIN_ATOM_CLASH_DISTANCE", new Double(DEF_INTERCHAIN_ATOM_CLASH_DISTANCE).toString()));
-			
 		} catch (NumberFormatException e) {
 			System.err.println("A numerical value in the config file was incorrectly specified: "+e.getMessage()+".\n" +
 					"Please check the config file.");

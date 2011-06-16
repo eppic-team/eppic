@@ -24,7 +24,7 @@ public class PdbScore implements Serializable {
 	private double idCutoff; // sequence identity cutoff
 	private double queryCovCutoff;
 	private int maxNumSeqsCutoff; // max num sequences used
-	private double[] bsaToAsaCutoffs;
+	private double bsaToAsaCutoff;
 	private double bsaToAsaSoftCutoff;
 	private double bsaToAsaRelaxStep;
 	private boolean zoomUsed;
@@ -137,12 +137,12 @@ public class PdbScore implements Serializable {
 		this.maxNumSeqsCutoff = maxNumSeqsCutoff;
 	}
 
-	public double[] getBsaToAsaCutoffs() {
-		return bsaToAsaCutoffs;
+	public double getBsaToAsaCutoff() {
+		return bsaToAsaCutoff;
 	}
 	
-	public void setBsaToAsaCutoffs(double[] bsaToAsaCutoffs) {
-		this.bsaToAsaCutoffs = bsaToAsaCutoffs;
+	public void setBsaToAsaCutoff(double bsaToAsaCutoff) {
+		this.bsaToAsaCutoff = bsaToAsaCutoff;
 	}
 
 	public double getBsaToAsaSoftCutoff() {
