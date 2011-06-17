@@ -57,6 +57,8 @@ public class InterfaceEvolContext implements Serializable, InterfaceTypePredicto
 	private double xtalCutoff;
 	private int homologsCutoff;
 	
+	private boolean isScoreWeighted;
+	
 	
 	
 	public InterfaceEvolContext(ChainInterface interf, ChainEvolContext[] chains) {
@@ -98,7 +100,7 @@ public class InterfaceEvolContext implements Serializable, InterfaceTypePredicto
 	public void scoreEntropy(boolean weighted) {
 		scoreInterface(weighted, ScoringType.ENTROPY);
 		scoringType = ScoringType.ENTROPY;
-		//lastScoWeighted = weighted;
+		isScoreWeighted = weighted;
 	}
 	
 	/**
@@ -110,7 +112,7 @@ public class InterfaceEvolContext implements Serializable, InterfaceTypePredicto
 	public void scoreKaKs(boolean weighted) {
 		scoreInterface(weighted, ScoringType.KAKS);
 		scoringType = ScoringType.KAKS;
-		//lastScoWeighted = weighted;
+		isScoreWeighted = weighted;
 	}
 
 	private void scoreInterface(boolean weighted, ScoringType scoType) {
@@ -570,6 +572,10 @@ public class InterfaceEvolContext implements Serializable, InterfaceTypePredicto
 		return this.warnings;
 	}
 	
+	public ScoringType getScoringType() {
+		return this.scoringType;
+	}
+	
 	/**
 	 * Gets the average core to rim ratio for the list of given indices of members.
 	 * @param a list of indices of the memberScores List
@@ -599,6 +605,10 @@ public class InterfaceEvolContext implements Serializable, InterfaceTypePredicto
 	
 	public double getCoreScore(int molecId) {
 		return coreScores[molecId];
+	}
+	
+	public boolean isScoreWeighted() {
+		return this.isScoreWeighted;
 	}
 	
 	/**
@@ -690,6 +700,7 @@ public class InterfaceEvolContext implements Serializable, InterfaceTypePredicto
 		this.rimScores = null;
 		this.coreScores = null;
 		this.finalScore = -1;
+		this.isScoreWeighted = false;
 	}
 	
 }

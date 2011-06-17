@@ -3,16 +3,91 @@ package crk;
 import gnu.getopt.Getopt;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintStream;
+import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import owl.core.structure.AminoAcid;
 
 public class CRKParams {
-
+	
+	// CONSTANTS
+	private static final String   PROGRAM_NAME = "crk";
 	private static final Pattern  PDBCODE_PATTERN = Pattern.compile("^\\d\\w\\w\\w$");
+	
+	// DEFAULTS FOR COMMAND LINE PARAMETERS
+	private static final double   DEF_IDENTITY_CUTOFF = 0.6;
+
+	private static final int      DEF_NUMTHREADS = Runtime.getRuntime().availableProcessors();
+	
+	// default entropy calculation default
+	private static final int      DEF_ENTROPY_ALPHABET = 10;
+
+	// default cutoffs for the final bio/xtal call
+	private static final double   DEF_GRAY_ZONE_WIDTH = 0.01;
+	private static final double   DEF_ENTR_CALL_CUTOFF = 0.85;
+	private static final double   DEF_KAKS_CALL_CUTOFF = 0.85;
+	
+	// default crk core assignment thresholds
+	private static final double   DEF_SOFT_CUTOFF_CA = 0.95;
+	private static final double   DEF_HARD_CUTOFF_CA = 0.82;
+	private static final double   DEF_RELAX_STEP_CA = 0.01;	
+	private static final double   DEF_CA_CUTOFF = 0.95;
+	private static final int      DEF_MIN_NUM_RES_CA = 6;
+	private static final int      DEF_MIN_NUM_RES_MEMBER_CA = 3; 
+
+	private static final boolean  DEF_USE_TCOFFEE_VERYFAST_MODE = true;
+	
+	private static final int      DEF_MAX_NUM_SEQUENCES_SELECTON = 60;
+	
+	private static final int      DEF_NSPHEREPOINTS_ASA_CALC = 9600;
+	
+	// DEFAULTS FOR CONFIG FILE ASSIGNABLE CONSTANTS
+	// defaults for pdb data location
+	private static final String   DEF_LOCAL_CIF_DIR = "/pdbdata/pdb/data/structures/all/mmCIF";
+	private static final String   DEF_PDB_FTP_CIF_URL = "ftp://ftp.wwpdb.org/pub/pdb/data/structures/all/mmCIF/";
+	private static final boolean  DEF_USE_ONLINE_PDB = false;
+
+	// defaults for pisa locations
+	private static final String   DEF_PISA_INTERFACES_URL = "http://www.ebi.ac.uk/msd-srv/pisa/cgi-bin/interfaces.pisa?";
+
+	// default sifts file location
+	private static final String   DEF_SIFTS_FILE = "ftp://ftp.ebi.ac.uk/pub/databases/msd/sifts/text/pdb_chain_uniprot.lst";	
+	
+	// default blast settings
+	private static final String   DEF_BLAST_BIN_DIR = "/usr/bin";
+	
+	// default tcoffee settings
+	private static final File     DEF_TCOFFE_BIN = new File("/usr/bin/t_coffee");
+
+	// default selecton stuff
+	private static final File     DEF_SELECTON_BIN = new File("/usr/bin/selecton");
+	private static final double	  DEF_SELECTON_EPSILON = 0.1;
+
+	// default naccess location
+	private static final File     DEF_NACCESS_EXE = new File("/usr/bin/naccess");
+	
+	// default pymol exec
+	private static final File	  DEF_PYMOL_EXE = new File("/usr/bin/pymol");
+	
+	// default crk cutoffs
+	private static final double   DEF_QUERY_COVERAGE_CUTOFF = 0.85;
+	private static final int      DEF_MIN_HOMOLOGS_CUTOFF = 10;
+	private static final double   DEF_MIN_INTERF_AREA_REPORTING = 300;
+	// default pdb2uniprot mapping blast thresholds
+	private static final double   DEF_PDB2UNIPROT_ID_THRESHOLD = 0.95;
+	private static final double   DEF_PDB2UNIPROT_QCOV_THRESHOLD = 0.85;
+		
+	// default cache dirs
+	private static final String   DEF_EMBL_CDS_CACHE_DIR = null;
+	private static final String   DEF_BLAST_CACHE_DIR = null;
+	
+	
+	// FIELDS
 	
 	// the parameters
 	private String pdbCode;
@@ -65,53 +140,77 @@ public class CRKParams {
 	private File inFile;
 	private String jobName;
 	
+	// fields assignable from config file
+	private String   localCifDir;
+	private String   pdbFtpCifUrl;
+	private boolean  useOnlinePdb;
+	
+	private String   pisaInterfacesUrl;
+	
+	private String   siftsFile;
+	
+	private String   blastBinDir;
+	
+	private File     tcoffeeBin;
+	
+	private File     selectonBin;
+
+	private File     naccessExe;
+	
+	private File	 pymolExe;
+	
+	private double   queryCoverageCutoff;
+	private int      minHomologsCutoff;
+	private double   minInterfAreaReporting; 
+	
+	private double   pdb2uniprotIdThreshold;
+	private double   pdb2uniprotQcovThreshold;
+			
+	private String   emblCdsCacheDir;
+	private String   blastCacheDir;
+	
+	// and finally the ones with no defaults
+	private String   blastDbDir; // no default
+	private String   blastDb;    // no default
+	
+	/**
+	 * 
+	 */
 	public CRKParams() {
-		
+		setDefaults();
 	}
 	
-	public CRKParams(String pdbCode, boolean doScoreEntropies, boolean doScoreCRK, double idCutoff, String baseName, File outDir, int numThreads, int reducedAlphabet,boolean useTcoffeeVeryFastMode,
-			boolean zooming, double bsaToAsaSoftCutoff, double bsaToAsaHardCutoff, double relaxationStep,
-			double cutoffCA, 
-			int minNumResCA, int minNumResMemberCA,
-			double selectonEpsilon, int maxNumSeqsSelecton,
-			boolean usePisa, boolean useNaccess,
-			int nSpherePointsASAcalc,
-			double grayZoneWidth,
-			double entrCallCutoff, double kaksCallCutoff,
-			File interfSerFile, File chainEvContextSerFile,
-			boolean generateThumbnails,
-			PrintStream progressLog,
-			boolean debug) {
+	private void setDefaults() {
 		
-		this.pdbCode = pdbCode;
-		this.doScoreEntropies = doScoreEntropies;
-		this.doScoreCRK = doScoreCRK;
-		this.idCutoff = idCutoff;
-		this.baseName = baseName;
-		this.outDir = outDir;
-		this.numThreads = numThreads;
-		this.reducedAlphabet = reducedAlphabet;
-		this.useTcoffeeVeryFastMode = useTcoffeeVeryFastMode;
-		this.zooming = zooming;
-		this.bsaToAsaSoftCutoff = bsaToAsaSoftCutoff;
-		this.bsaToAsaHardCutoff = bsaToAsaHardCutoff;
-		this.relaxationStep = relaxationStep;
-		this.cutoffCA = cutoffCA;
-		this.minNumResCA = minNumResCA;
-		this.minNumResMemberCA = minNumResMemberCA;
-		this.selectonEpsilon = selectonEpsilon;
-		this.maxNumSeqsSelecton = maxNumSeqsSelecton;
-		this.usePisa = usePisa;
-		this.useNaccess = useNaccess;
-		this.nSpherePointsASAcalc = nSpherePointsASAcalc;
-		this.grayZoneWidth = grayZoneWidth;
-		this.entrCallCutoff = entrCallCutoff;
-		this.kaksCallCutoff = kaksCallCutoff;
-		this.interfSerFile = interfSerFile;
-		this.chainEvContextSerFile = chainEvContextSerFile;
-		this.generateThumbnails = generateThumbnails;
-		this.progressLog = progressLog;
-		this.debug = debug;
+		this.pdbCode = null;
+		this.doScoreEntropies = false;
+		this.doScoreCRK = false;
+		this.idCutoff = DEF_IDENTITY_CUTOFF;
+		this.baseName = null;
+		this.outDir = new File(".");
+		this.numThreads = DEF_NUMTHREADS;
+		this.reducedAlphabet = DEF_ENTROPY_ALPHABET;
+		this.useTcoffeeVeryFastMode = DEF_USE_TCOFFEE_VERYFAST_MODE;
+		this.zooming = false;
+		this.bsaToAsaSoftCutoff = DEF_SOFT_CUTOFF_CA;
+		this.bsaToAsaHardCutoff = DEF_HARD_CUTOFF_CA;
+		this.relaxationStep = DEF_RELAX_STEP_CA;
+		this.cutoffCA = DEF_CA_CUTOFF;
+		this.minNumResCA = DEF_MIN_NUM_RES_CA;
+		this.minNumResMemberCA = DEF_MIN_NUM_RES_MEMBER_CA;
+		this.selectonEpsilon = DEF_SELECTON_EPSILON;
+		this.maxNumSeqsSelecton = DEF_MAX_NUM_SEQUENCES_SELECTON;
+		this.usePisa = false;
+		this.useNaccess = false;
+		this.nSpherePointsASAcalc = DEF_NSPHEREPOINTS_ASA_CALC;
+		this.grayZoneWidth = DEF_GRAY_ZONE_WIDTH;
+		this.entrCallCutoff = DEF_ENTR_CALL_CUTOFF;
+		this.kaksCallCutoff = DEF_KAKS_CALL_CUTOFF;
+		this.interfSerFile = null;
+		this.chainEvContextSerFile = null;
+		this.generateThumbnails = false;
+		this.progressLog = System.out;
+		this.debug = false;
 	}
 	
 	public void parseCommandLine(String[] args, String programName, String help) {
@@ -216,6 +315,71 @@ public class CRKParams {
 				break; // getopt() already printed an error
 			}
 		}
+	}
+	
+	public void parseCommandLine(String[] args) throws CRKException {
+		
+		String help = "Usage: \n" +
+		PROGRAM_NAME+"\n" +
+		"   -i          :  input PDB code or PDB file or mmCIF file\n" +
+		"  [-s]         :  score based on entropies \n"+
+		"  [-k]         :  score based on ka/ks ratios. Slower than entropies, \n" +
+		"                  requires running of the selecton external program\n" +
+		"  [-d <float>] :  sequence identity cut-off, homologs below this threshold won't\n" +
+		"                  be considered, default: "+String.format("%3.1f",DEF_IDENTITY_CUTOFF)+"\n"+
+		"  [-a <int>]   :  number of threads for blast and ASA calculation. Default: "+DEF_NUMTHREADS+"\n"+
+		"  [-b <str>]   :  basename for output files. Default: PDB code \n"+
+		"  [-o <dir>]   :  output dir, where output files will be written. Default: current\n" +
+		"                  dir \n" +
+		"  [-r <int>]   :  specify the number of groups of aminoacids (reduced alphabet) to\n" +
+		"                  be used for entropy calculations.\n" +
+		"                  Valid values are 2, 4, 6, 8, 10, 15 and 20. Default: "+DEF_ENTROPY_ALPHABET+"\n" +
+		"  [-t]         :  if specified t_coffee will be run in normal mode instead of very\n" +
+		"                  fast mode\n" +
+		"  [-c <floats>]:  comma separated list of BSA cutoffs for core assignment. Default: \n"+
+		"                  "+String.format("%4.2f",DEF_CA_CUTOFF)+"\n" +
+		"  [-z]         :  use zooming for core assignment\n"+
+		"  [-Z <floats>]:  set parameters for zooming (only used if -z specified). Specify 3 \n" +
+		"                  comma separated values: soft BSA cutoff, hard BSA cutoff and \n" +
+		"                  relaxation step. Default: "+DEF_SOFT_CUTOFF_CA+","+DEF_HARD_CUTOFF_CA+","+DEF_RELAX_STEP_CA+"\n"+
+		"  [-m <int>]   :  cutoff for number of interface core residues, if still below \n" +
+		"                  this value after applying hard cutoff then the interface is not\n" +
+		"                  scored and considered a crystal contact. Default "+DEF_MIN_NUM_RES_CA+"\n" +
+		"  [-M <int>]   :  cutoff for number of interface member core residues, if still \n" +
+		"                  below this value after applying hard cutoff then the interface \n" +
+		"                  member is not scored and considered a crystal contact. Default: "+DEF_MIN_NUM_RES_MEMBER_CA+"\n" +
+		"  [-x <float>]:   entropy score cutoff for calling BIO/XTAL.\n" +
+		"                  Default: " + String.format("%4.2f",DEF_ENTR_CALL_CUTOFF)+"\n"+
+		"  [-X <float>]:   ka/ks score cutoff for calling BIO/XTAL.\n"+
+		"                  Default: " + String.format("%4.2f",DEF_KAKS_CALL_CUTOFF)+"\n"+
+		"  [-g <float>] :  a margin to be added around the score cutoffs for calling BIO/XTAL\n" +
+		"                  defining an undetermined (gray) prediction zone. Default: "+String.format("%4.2f",DEF_GRAY_ZONE_WIDTH)+"\n"+
+		"  [-e <float>] :  epsilon value for selecton. Default "+String.format("%4.2f",DEF_SELECTON_EPSILON)+"\n" +
+		"  [-q <int>]   :  maximum number of sequences to keep for calculation of conservation \n" +
+		"                  scores. Default: "+DEF_MAX_NUM_SEQUENCES_SELECTON+". This is especially important when using \n" +
+		"                  the -k option, with too many sequences, selecton will run too long\n" +
+		"                  (and inaccurately because of ks saturation)\n" +
+		"  [-p]         :  use PISA interface enumeration (will be downloaded from web) \n" +
+		"                  instead of ours (only possible for existing PDB entries).\n" +
+		"  [-n]         :  use NACCESS for ASA/BSA calculations, otherwise area calculations \n" +
+		"                  done with the internal rolling ball algorithm implementation \n" +
+		"                  (multi-threaded using number of CPUs specified in -a)\n" +
+		"  [-A <int>]   :  number of sphere points for ASA calculation, this parameter controls\n" +
+		"                  the accuracy of the ASA calculations, the bigger the more accurate \n" +
+		"                  (and slower). Default: "+DEF_NSPHEREPOINTS_ASA_CALC+"\n" +
+		"  [-I <file>]  :  binary file containing the interface enumeration output of a previous \n" +
+		"                  run of CRK\n" +
+		"  [-C <file>]  :  binary file containing the evolutionary scores for a particular \n" +
+		"                  sequence output of a previous run of CRK\n" +
+		"  [-l]         :  if specified thumbnail images will be generated for each interface \n" +
+		"                  (requires pymol)\n" +
+		"  [-L <file>]  :  a file where progress log will be written to. Default: progress log \n" +
+		"                  written to std output\n" +
+		"  [-u]         :  debug, if specified debug output will be also shown on standard output\n\n";
+		
+		parseCommandLine(args, PROGRAM_NAME, help);
+		checkCommandLineInput();
+
 	}
 
 	public void checkCommandLineInput() throws CRKException {
@@ -475,5 +639,126 @@ public class CRKParams {
 	public boolean getDebug() {
 		return debug;
 	}
+
+	public void readConfigFile(File file) throws FileNotFoundException, IOException { 
+		Properties p = new Properties();
+		p.load(new FileInputStream(file));
+
+		try {
+			// variables without defaults
+			blastDbDir    	= p.getProperty("BLAST_DB_DIR");
+			blastDb        	= p.getProperty("BLAST_DB");
+
+			localCifDir   	= p.getProperty("LOCAL_CIF_DIR", DEF_LOCAL_CIF_DIR);
+			pdbFtpCifUrl 	= p.getProperty("PDB_FTP_URL", DEF_PDB_FTP_CIF_URL);
+			useOnlinePdb  	= Boolean.parseBoolean(p.getProperty("USE_ONLINE_PDB", new Boolean(DEF_USE_ONLINE_PDB).toString()));
+			
+			pisaInterfacesUrl = p.getProperty("PISA_INTERFACES_URL", DEF_PISA_INTERFACES_URL);
+			
+			siftsFile       = p.getProperty("SIFTS_FILE", DEF_SIFTS_FILE);
+			
+			blastBinDir     = p.getProperty("BLAST_BIN_DIR", DEF_BLAST_BIN_DIR);
+			
+			tcoffeeBin 		= new File(p.getProperty("TCOFFEE_BIN", DEF_TCOFFE_BIN.toString()));
+			
+			selectonBin 	= new File(p.getProperty("SELECTON_BIN", DEF_SELECTON_BIN.toString()));
+			
+			naccessExe      = new File(p.getProperty("NACCESS_EXE", DEF_NACCESS_EXE.toString()));
+			
+			pymolExe		= new File(p.getProperty("PYMOL_EXE", DEF_PYMOL_EXE.toString()));
+
+			queryCoverageCutoff = Double.parseDouble(p.getProperty("QUERY_COVERAGE_CUTOFF", new Double(DEF_QUERY_COVERAGE_CUTOFF).toString()));
+			minHomologsCutoff = Integer.parseInt(p.getProperty("MIN_HOMOLOGS_CUTOFF", new Integer(DEF_MIN_HOMOLOGS_CUTOFF).toString()));
+			minInterfAreaReporting = Double.parseDouble(p.getProperty("MIN_INTERF_AREA_REPORTING", new Double(DEF_MIN_INTERF_AREA_REPORTING).toString()));
+			
+			pdb2uniprotIdThreshold = Double.parseDouble(p.getProperty("PDB2UNIPROT_ID_THRESHOLD", new Double(DEF_PDB2UNIPROT_ID_THRESHOLD).toString()));
+			pdb2uniprotQcovThreshold = Double.parseDouble(p.getProperty("PDB2UNIPROT_QCOV_THRESHOLD", new Double(DEF_PDB2UNIPROT_QCOV_THRESHOLD).toString()));
+					
+			emblCdsCacheDir  = p.getProperty("EMBL_CDS_CACHE_DIR", DEF_EMBL_CDS_CACHE_DIR);
+			blastCacheDir    = p.getProperty("BLAST_CACHE_DIR", DEF_BLAST_CACHE_DIR);
+
+		} catch (NumberFormatException e) {
+			System.err.println("A numerical value in the config file was incorrectly specified: "+e.getMessage()+".\n" +
+					"Please check the config file.");
+			System.exit(1);
+		}
+	}
+
+	public String getLocalCifDir() {
+		return localCifDir;
+	}
+
+	public String getPdbFtpCifUrl() {
+		return pdbFtpCifUrl;
+	}
+
+	public boolean isUseOnlinePdb() {
+		return useOnlinePdb;
+	}
+
+	public String getPisaInterfacesUrl() {
+		return pisaInterfacesUrl;
+	}
+
+	public String getSiftsFile() {
+		return siftsFile;
+	}
+
+	public String getBlastBinDir() {
+		return blastBinDir;
+	}
+
+	public File getTcoffeeBin() {
+		return tcoffeeBin;
+	}
+
+	public File getSelectonBin() {
+		return selectonBin;
+	}
+
+	public File getNaccessExe() {
+		return naccessExe;
+	}
+
+	public File getPymolExe() {
+		return pymolExe;
+	}
+
+	public double getQueryCoverageCutoff() {
+		return queryCoverageCutoff;
+	}
+
+	public int getMinHomologsCutoff() {
+		return minHomologsCutoff;
+	}
+
+	public double getMinInterfAreaReporting() {
+		return minInterfAreaReporting;
+	}
+
+	public double getPdb2uniprotIdThreshold() {
+		return pdb2uniprotIdThreshold;
+	}
+
+	public double getPdb2uniprotQcovThreshold() {
+		return pdb2uniprotQcovThreshold;
+	}
+
+	public String getEmblCdsCacheDir() {
+		return emblCdsCacheDir;
+	}
+
+	public String getBlastCacheDir() {
+		return blastCacheDir;
+	}
+
+	public String getBlastDbDir() {
+		return blastDbDir;
+	}
+
+	public String getBlastDb() {
+		return blastDb;
+	}
 	
+
 }

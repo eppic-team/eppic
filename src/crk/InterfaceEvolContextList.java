@@ -10,7 +10,6 @@ import java.util.TreeSet;
 
 import owl.core.structure.ChainInterface;
 import owl.core.structure.ChainInterfaceList;
-import owl.core.structure.SpaceGroup;
 
 public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>, Serializable {
 
@@ -43,6 +42,14 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 	
 	public InterfaceEvolContextList(){
 		list = new ArrayList<InterfaceEvolContext>();		
+	}
+	
+	public int size() {
+		return list.size();
+	}
+	
+	public InterfaceEvolContext get(int i){
+		return this.list.get(i);
 	}
 	
 	public InterfaceEvolContextList(String pdbName, int homologsCutoff,  
@@ -223,58 +230,6 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 		List<String> list = new ArrayList<String>();
 		list.addAll(set);
 		return list;
-	}
-	
-	public PdbScore getPdbScoreObject() {
-		PdbScore pdbSc = new PdbScore();
-		pdbSc.setPdbName(pdbName);
-		pdbSc.setPdbTitle(list.get(0).getInterface().getFirstMolecule().getParent().getTitle());
-		pdbSc.setScoType(scoType);
-		pdbSc.setScoreWeighted(isScoreWeighted);
-		pdbSc.setHomologsCutoff(homologsCutoff);
-		pdbSc.setIdCutoff(idCutoff);
-		pdbSc.setQueryCovCutoff(queryCovCutoff);
-		pdbSc.setMaxNumSeqsCutoff(maxNumSeqsCutoff);
-		pdbSc.setBioCutoff(bioCutoff);
-		pdbSc.setXtalCutoff(xtalCutoff);
-		pdbSc.setBsaToAsaCutoff(list.get(0).getInterface().getBsaToAsaCutoff());
-		pdbSc.setBsaToAsaSoftCutoff(list.get(0).getInterface().getBsaToAsaSoftCutoff());
-		pdbSc.setBsaToAsaRelaxStep(list.get(0).getInterface().getBsaToAsaRelaxStep());
-		pdbSc.setZoomUsed(list.get(0).getInterface().isRimAndCoreZoomed());
-		pdbSc.setNumHomologsStrings(getNumHomologsStrings());
-		for (InterfaceEvolContext iec:this) {
-			if (iec.getInterface().getInterfaceArea()>minInterfAreaReporting) { 
-				InterfaceScore isc = new InterfaceScore(pdbSc);
-				isc.setId(iec.getInterface().getId());
-				pdbSc.addInterfScore(isc);
-				isc.setOperator(SpaceGroup.getAlgebraicFromMatrix(iec.getInterface().getSecondTransf()));
-				isc.setFirstChainId(iec.getInterface().getFirstMolecule().getPdbChainCode());
-				isc.setSecondChainId(iec.getInterface().getSecondMolecule().getPdbChainCode());
-				isc.setInterfArea(iec.getInterface().getInterfaceArea());
-				isc.setNumHomologs1(iec.getFirstChainEvolContext().getNumHomologs());
-				isc.setNumHomologs2(iec.getSecondChainEvolContext().getNumHomologs());
-				isc.setWarnings(iec.getWarnings());
-				isc.setCallReason(iec.getCallReason());
-
-				
-				int size1 = iec.getInterface().getFirstRimCore().getCoreSize();
-				int size2 = iec.getInterface().getSecondRimCore().getCoreSize();
-				double rat1Sc = iec.getCoreScore(InterfaceEvolContext.FIRST)/iec.getRimScore(InterfaceEvolContext.FIRST);
-				double rat2Sc = iec.getCoreScore(InterfaceEvolContext.SECOND)/iec.getRimScore(InterfaceEvolContext.SECOND);
-				
-				isc.setCoreSize1(size1);
-				isc.setCoreSize2(size2);
-				isc.setCore1Score(iec.getCoreScore(InterfaceEvolContext.FIRST));
-				isc.setRim1Score(iec.getRimScore(InterfaceEvolContext.FIRST));
-				isc.setRatio1Score(rat1Sc);
-				isc.setCore2Score(iec.getCoreScore(InterfaceEvolContext.SECOND));
-				isc.setRim2Score(iec.getRimScore(InterfaceEvolContext.SECOND));
-				isc.setRatio2Score(rat2Sc);
-				isc.setFinalScore(iec.getFinalScore());
-				isc.setCall(iec.getCall());
-			}
-		}
-		return pdbSc;
 	}
 	
 	

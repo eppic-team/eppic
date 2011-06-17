@@ -28,6 +28,7 @@ public class InterfaceScoreItem implements Serializable
 	private double unweightedFinalScores; 
 	
 	private String call;
+	private String callReason;
 	
 	public InterfaceScoreItem()
 	{
@@ -149,4 +150,13 @@ public class InterfaceScoreItem implements Serializable
 	public String getCall() {
 		return call;
 	}
+	
+	public String getCallReason() {
+		return callReason;
+	}
+	
+	public void setCallReason(String callReason) {
+		this.callReason = callReason;
+	}
+
 }

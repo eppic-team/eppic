@@ -2,9 +2,7 @@ package model;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 
 public class PDBScoreItem implements Serializable, ProcessingData
@@ -15,7 +13,6 @@ public class PDBScoreItem implements Serializable, ProcessingData
 	private static final long serialVersionUID = 1L;
 	private String jobId;
 	private String pdbName;
-	private boolean isScoreWeighted;
 	private double bioCutoff;
 	private double xtalCutoff;
 	private int homologsCutoff;
@@ -34,11 +31,10 @@ public class PDBScoreItem implements Serializable, ProcessingData
 
 	private List<InterfaceItem> interfaceItems;
 	
-	private Map<InterfaceScoreItemKey, InterfaceScoreItem> interfaceScores;
+	
 	
 	public PDBScoreItem() 
 	{
-		interfaceScores = new HashMap<InterfaceScoreItemKey, InterfaceScoreItem>();
 		interfaceItems = new ArrayList<InterfaceItem>();
 	}
 	
@@ -48,14 +44,6 @@ public class PDBScoreItem implements Serializable, ProcessingData
 
 	public void setPdbName(String pdbName) {
 		this.pdbName = pdbName;
-	}
-
-	public boolean isScoreWeighted() {
-		return isScoreWeighted;
-	}
-
-	public void setScoreWeighted(boolean isScoreWeighted) {
-		this.isScoreWeighted = isScoreWeighted;
 	}
 
 	public double getBioCutoff() {
@@ -175,6 +163,10 @@ public class PDBScoreItem implements Serializable, ProcessingData
 	public void addInterfaceItem(InterfaceItem interfaceItem) {
 		this.interfaceItems.add(interfaceItem);
 	}
+	
+	public InterfaceItem getInterfaceItem(int i) {
+		return this.interfaceItems.get(i);
+	}
 
 	public void setNumHomologsStrings(List<String> numHomologsStrings) {
 		this.numHomologsStrings = numHomologsStrings;
@@ -182,18 +174,6 @@ public class PDBScoreItem implements Serializable, ProcessingData
 	
 	public List<String> getNumHomologsStrings() {
 		return this.numHomologsStrings;
-	}
-	
-	public void setInterfaceScores(Map<InterfaceScoreItemKey, InterfaceScoreItem> interfaceScores) {
-		this.interfaceScores = interfaceScores;
-	}
-
-	public Map<InterfaceScoreItemKey, InterfaceScoreItem> getInterfaceScores() {
-		return interfaceScores;
-	}
-	
-	public void addInterfaceScoreItem(InterfaceScoreItemKey interfaceScoreItemKey, InterfaceScoreItem interfaceScoreItem) {
-		this.interfaceScores.put(interfaceScoreItemKey, interfaceScoreItem);
 	}
 
 	public void setTitle(String title) {

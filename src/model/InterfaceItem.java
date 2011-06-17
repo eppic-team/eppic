@@ -1,6 +1,7 @@
 package model;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 public class InterfaceItem implements Serializable 
@@ -13,21 +14,20 @@ public class InterfaceItem implements Serializable
 	private int id;
 	private double area;
 	private String name;
-	private int numHomologs1;
-	private int numHomologs2;
 	private int size1;
 	private int size2;
 	private String finalCall;
 	private String operator; 
 	
 	private List<String> warnings;
-	private String callReason;
+	
+	private List<InterfaceScoreItem> interfaceScores;
 	
 //	private List<InterfaceStructureItem> interfaceStructures;
 
 	public InterfaceItem()
 	{
-		
+		interfaceScores = new ArrayList<InterfaceScoreItem>();
 	}
 	
 	public InterfaceItem(PDBScoreItem pdbScoreItem)
@@ -41,22 +41,6 @@ public class InterfaceItem implements Serializable
 
 	public void setId(int id) {
 		this.id = id;
-	}
-
-	public int getNumHomologs1() {
-		return numHomologs1;
-	}
-
-	public void setNumHomologs1(int numHomologs1) {
-		this.numHomologs1 = numHomologs1;
-	}
-
-	public int getNumHomologs2() {
-		return numHomologs2;
-	}
-
-	public void setNumHomologs2(int numHomologs2) {
-		this.numHomologs2 = numHomologs2;
 	}
 
 	public double getArea() {
@@ -123,12 +107,15 @@ public class InterfaceItem implements Serializable
 		this.warnings = warnings;
 	}
 
-	public String getCallReason() {
-		return callReason;
-	}
-	
-	public void setCallReason(String callReason) {
-		this.callReason = callReason;
+	public List<InterfaceScoreItem> getInterfaceScores() {
+		return this.interfaceScores;
 	}
 
+	public void setInterfaceScores(List<InterfaceScoreItem> interfaceScores) {
+		this.interfaceScores = interfaceScores;	
+	}
+	
+	public void addInterfaceScore(InterfaceScoreItem interfaceScore) {
+		this.interfaceScores.add(interfaceScore);
+	}
 }
