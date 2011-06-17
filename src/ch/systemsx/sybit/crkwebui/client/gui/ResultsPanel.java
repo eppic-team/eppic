@@ -498,6 +498,7 @@ public class ResultsPanel extends DisplayPanel
 		if (scoresPanel != null)
 		{
 			scoresPanelLocation.removeAll();
+			scoresPanel = null;
 		}
 
 		fillResultsGrid(resultsData);
