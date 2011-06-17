@@ -7,6 +7,9 @@ import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 import ch.systemsx.sybit.crkwebui.client.model.ReducedAlphabetComboModel;
 import ch.systemsx.sybit.crkwebui.shared.model.InputParameters;
 
+import com.extjs.gxt.ui.client.event.Events;
+import com.extjs.gxt.ui.client.event.FieldSetEvent;
+import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.widget.form.ComboBox;
 import com.extjs.gxt.ui.client.widget.form.ComboBox.TriggerAction;
@@ -115,6 +118,34 @@ public class OptionsInputPanel extends FieldSet
 				reducedAlphabetCombo.setDisplayField("reducedAlphabet");
 				reducedAlphabetCombo.setEditable(false);
 				methodsFieldsets[i].add(reducedAlphabetCombo, formData);
+				
+				methodsFieldsets[i].addListener(Events.Collapse, new Listener<FieldSetEvent>() 
+				{
+					public void handleEvent(FieldSetEvent be) 
+					{
+						for(FieldSet fieldSet : methodsFieldsets)
+						{
+							if(fieldSet.getHeading().equals("KaKs"))
+							{
+								fieldSet.setExpanded(false);
+							}
+						}
+					}
+				});
+					
+				methodsFieldsets[i].addListener(Events.Expand, new Listener<FieldSetEvent>() 
+				{
+					public void handleEvent(FieldSetEvent be) 
+					{
+						for(FieldSet fieldSet : methodsFieldsets)
+						{
+							if(fieldSet.getHeading().equals("Geometry"))
+							{
+								fieldSet.setExpanded(true);
+							}
+						}
+					}
+				});
 			}
 			else if(supportedMethods[i].equals("Kaks"))
 			{
@@ -127,6 +158,39 @@ public class OptionsInputPanel extends FieldSet
 				selecton.setMinValue(0);
 				selecton.setMaxValue(1);
 				methodsFieldsets[i].add(selecton, formData);
+				
+				methodsFieldsets[i].addListener(Events.Expand, new Listener<FieldSetEvent>() 
+				{
+					public void handleEvent(FieldSetEvent be) 
+					{
+						for(FieldSet fieldSet : methodsFieldsets)
+						{
+							if(fieldSet.getHeading().equals("Entropy"))
+							{
+								fieldSet.setExpanded(true);
+							}
+						}
+					}
+				});
+			}
+			else if(supportedMethods[i].equals("Geometry"))
+			{
+				methodsFieldsets[i].setHeading(MainController.CONSTANTS
+						.parameters_geometry());
+				
+				methodsFieldsets[i].addListener(Events.Collapse, new Listener<FieldSetEvent>() 
+				{
+					public void handleEvent(FieldSetEvent be) 
+					{
+						for(FieldSet fieldSet : methodsFieldsets)
+						{
+							if(fieldSet.getHeading().equals("Entropy"))
+							{
+								fieldSet.setExpanded(false);
+							}
+						}
+					}
+				});
 			}
 			
 			this.add(methodsFieldsets[i]);
@@ -326,5 +390,20 @@ public class OptionsInputPanel extends FieldSet
 		currentInputParameters.setMethods(selectedMethodsArray);
 
 		return currentInputParameters;
+	}
+	
+	public boolean checkIfAnyMethodSelected()
+	{
+		boolean isAnyMethodSelected = false;
+		
+		for(FieldSet fieldSet : methodsFieldsets)
+		{
+			if(fieldSet.isExpanded())
+			{
+				isAnyMethodSelected = true;
+			}
+		}
+		
+		return isAnyMethodSelected;
 	}
 }

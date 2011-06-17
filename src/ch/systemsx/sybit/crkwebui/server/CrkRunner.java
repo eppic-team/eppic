@@ -161,6 +161,10 @@ public class CrkRunner implements Runnable
 					{
 						command.add("-k");
 					}
+					else if(method.equals("Entropy"))
+					{
+						command.add("-s");
+					}
 				}
 			}
 			
@@ -224,7 +228,7 @@ public class CrkRunner implements Runnable
 	      	
 	      	JobInfo info = sgeSession.wait(submissionId, Session.TIMEOUT_WAIT_FOREVER);
 
-	      	if(info.getExitStatus () != 0)
+	      	if(info.getExitStatus() != 0)
 	      	{
 	      		throw new CrkWebException("Error during calculations: " + info.getExitStatus());
 	      	}

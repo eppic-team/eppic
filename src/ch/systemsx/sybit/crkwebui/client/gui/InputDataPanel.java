@@ -205,7 +205,13 @@ public class InputDataPanel extends DisplayPanel
 		submitButton.addSelectionListener(new SelectionListener<ButtonEvent>() {
 			public void componentSelected(ButtonEvent ce) 
 			{
-				if (formPanel.isValid())
+				if(!optionsInputPanel.checkIfAnyMethodSelected())
+				{
+					MessageBox.info(MainController.CONSTANTS.input_submit_form_invalid_header(),
+									MainController.CONSTANTS.input_submit_form_no_methods_selected(),
+									null);
+				}
+				else if (formPanel.isValid())
 				{
 					mainController.showWaiting(MainController.CONSTANTS.input_submit_waiting_message());
 					

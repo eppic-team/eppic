@@ -23,6 +23,7 @@ public interface AppProperties extends Constants
 	String input_submit_waiting_message();
 	String input_submit_form_invalid_header();
 	String input_submit_form_invalid_message();
+	String input_submit_form_no_methods_selected();
 	String input_reset();
 	String input_upload_file_radio();
 	String input_pdb_code_radio();
@@ -30,6 +31,7 @@ public interface AppProperties extends Constants
 
 	String parameters_entropy();
 	String parameters_kaks();
+	String parameters_geometry();
 	String parameters_reduced_alphabet();
 	String parameters_selecton();
 	String parameters_allignment();
@@ -112,5 +114,4 @@ public interface AppProperties extends Constants
 	
 	String viewer_jmol();
 	String viewer_local();
-	
 }
