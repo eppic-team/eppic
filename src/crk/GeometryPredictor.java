@@ -333,4 +333,7 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 
 	}
 
+	public ChainInterface getInterface() {
+		return this.interf;
+	}
 }

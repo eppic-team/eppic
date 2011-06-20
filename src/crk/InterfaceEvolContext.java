@@ -7,10 +7,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
-import model.InterfaceResidueItem;
-import model.InterfaceResidueMethodItem;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -20,7 +16,6 @@ import owl.core.structure.InterfaceRimCore;
 import owl.core.structure.PdbChain;
 import owl.core.structure.Residue;
 import owl.core.structure.AaResidue;
-import owl.core.util.Goodies;
 
 public class InterfaceEvolContext implements Serializable, InterfaceTypePredictor {
 
@@ -244,87 +239,6 @@ public class InterfaceEvolContext implements Serializable, InterfaceTypePredicto
 			
 			this.interf.writeToPdbFile(file);
 		}
-	}
-	
-	public void writeResidueDetailsFile(File file, boolean includeKaks) throws IOException {
-		List<InterfaceResidueItem> partner1 = new ArrayList<InterfaceResidueItem>();
-		List<InterfaceResidueItem> partner2 = new ArrayList<InterfaceResidueItem>();
-		HashMap<Integer, List<InterfaceResidueItem>> map = new HashMap<Integer, List<InterfaceResidueItem>>();
-		map.put(1, partner1);
-		map.put(2, partner2);
-		if (interf.isFirstProtein() && interf.isSecondProtein()) {
-			PdbChain firstMol = interf.getFirstMolecule();
-			InterfaceRimCore rimCore = interf.getFirstRimCore(); 
-			List<Double> entropies = chains[FIRST].getConservationScores(ScoringType.ENTROPY);
-			List<Double> kaksRatios = null;
-			if (includeKaks && canDoCRK())
-				kaksRatios = chains[FIRST].getConservationScores(ScoringType.KAKS);
-			for (Residue residue:firstMol) {
-				String resType = residue.getLongCode();
-				int assignment = -1;
-				float asa = (float) residue.getAsa();
-				float bsa = (float) residue.getBsa();
-				if (rimCore.getRimResidues().contains(residue)) assignment = InterfaceResidueItem.RIM;
-				else if (rimCore.getCoreResidues().contains(residue)) assignment = InterfaceResidueItem.CORE;
-
-				if (assignment==-1 && asa>0) assignment = InterfaceResidueItem.SURFACE;
-
-				int queryUniprotPos = -1;
-				if (!firstMol.isNonPolyChain() && firstMol.getSequence().isProtein()) 
-					queryUniprotPos = chains[FIRST].getQueryUniprotPosForPDBPos(residue.getSerial());
-				
-				float entropy = -1;
-				if (residue instanceof AaResidue) {	
-					if (queryUniprotPos!=-1) entropy = (float) entropies.get(queryUniprotPos).doubleValue();
-				}
-				float kaks = -1;
-				if (includeKaks && canDoCRK() && (residue instanceof AaResidue) && queryUniprotPos!=-1)
-					kaks = (float)kaksRatios.get(queryUniprotPos).doubleValue();
-				InterfaceResidueItem iri = new InterfaceResidueItem(residue.getSerial(),resType,asa,bsa,bsa/asa,assignment);
-
-				Map<String,InterfaceResidueMethodItem> scores = new HashMap<String, InterfaceResidueMethodItem>();
-				scores.put("entropy",new InterfaceResidueMethodItem(entropy));
-				if (includeKaks && canDoCRK()) scores.put("kaks", new InterfaceResidueMethodItem(kaks));
-				iri.setInterfaceResidueMethodItems(scores);
-				partner1.add(iri);
-			}
-			PdbChain secondMol = interf.getSecondMolecule();
-			rimCore = interf.getSecondRimCore();
-			entropies = chains[SECOND].getConservationScores(ScoringType.ENTROPY);
-			if (includeKaks && canDoCRK()) 
-				kaksRatios = chains[SECOND].getConservationScores(ScoringType.KAKS);
-			for (Residue residue:secondMol) {
-				String resType = residue.getLongCode();
-				int assignment = -1;
-				float asa = (float) residue.getAsa();
-				float bsa = (float) residue.getBsa();
-				if (rimCore.getRimResidues().contains(residue)) assignment = InterfaceResidueItem.RIM;
-				else if (rimCore.getCoreResidues().contains(residue)) assignment = InterfaceResidueItem.CORE;
-				
-				if (assignment==-1 && asa>0) assignment = InterfaceResidueItem.SURFACE;
-				
-				int queryUniprotPos = -1;
-				if (!secondMol.isNonPolyChain() && secondMol.getSequence().isProtein()) 
-					queryUniprotPos = chains[SECOND].getQueryUniprotPosForPDBPos(residue.getSerial());
-				
-				float entropy = -1;
-				if (residue instanceof AaResidue) {
-					if (queryUniprotPos!=-1) entropy = (float) entropies.get(queryUniprotPos).doubleValue();
-				}
-				float kaks = -1;
-				if (includeKaks && canDoCRK() && (residue instanceof AaResidue) && queryUniprotPos!=-1)
-					kaks = (float) kaksRatios.get(queryUniprotPos).doubleValue();
-				InterfaceResidueItem iri = new InterfaceResidueItem(residue.getSerial(),resType,asa,bsa,bsa/asa,assignment);
-				Map<String,InterfaceResidueMethodItem> scores = new HashMap<String, InterfaceResidueMethodItem>();
-				scores.put("entropy",new InterfaceResidueMethodItem(entropy));
-				if (includeKaks && canDoCRK())
-					scores.put("kaks", new InterfaceResidueMethodItem(kaks));
-				iri.setInterfaceResidueMethodItems(scores);
-				partner2.add(iri);
-			}
-		}
-		
-		Goodies.serialize(file, map);
 	}
 	
 	/**

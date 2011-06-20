@@ -141,14 +141,6 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 		}
 	}
 	
-	public void writeResidueDetailsFiles(CRKParams params, String suffix) throws IOException {
-		for (InterfaceEvolContext iec:this) {
-			if (iec.getInterface().getInterfaceArea()>minInterfAreaReporting) {
-				iec.writeResidueDetailsFile(params.getOutputFile("."+iec.getInterface().getId()+"."+suffix),params.isDoScoreCRK());
-			}
-		}
-	}
-	
 	public double getBioCutoff() {
 		return bioCutoff;
 	}

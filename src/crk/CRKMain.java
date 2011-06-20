@@ -532,12 +532,6 @@ public class CRKMain {
 				throw new CRKException(e,"Couldn't write final interface Ka/Ks scores or related PDB files. "+e.getMessage(),true);
 			}
 		}
-		try {
-			// we only write one of this (does not depend on call cutoff and contains both entropies+kaks)
-			iecList.writeResidueDetailsFiles(params, "resDetails.dat");
-		} catch (IOException e) {
-			throw new CRKException(e,"Couldn't write score residue details serialized file. "+e.getMessage(),false);
-		}
 
 		params.getProgressLog().println("Done scoring");
 	}
@@ -591,7 +585,9 @@ public class CRKMain {
 			}
 			
 			// writing out the serialized file for web ui
-			crkMain.wuiAdaptor.writeToFile(crkMain.params.getOutputFile(".webui.dat"));
+			crkMain.wuiAdaptor.writePdbScoreItemFile(crkMain.params.getOutputFile(".webui.dat"));
+			crkMain.wuiAdaptor.writeResidueDetailsFiles(crkMain.params.isDoScoreEntropies(),crkMain.params.isDoScoreCRK(),"resDetails.dat");
+
 
 		} catch (CRKException e) {
 			e.log(LOGGER);
