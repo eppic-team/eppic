@@ -93,8 +93,6 @@ public class WebUIDataAdaptor {
 		for (int i=0;i<iecl.size();i++) {
 			InterfaceEvolContext iec = iecl.get(i);
 			InterfaceItem ii = pdbScoreItem.getInterfaceItem(i);
-			InterfaceScoreItem isi = new InterfaceScoreItem();
-
 
 			String method = null;
 			if (iec.getScoringType().getName().equals("entropy")) {
@@ -104,12 +102,16 @@ public class WebUIDataAdaptor {
 			}
 
 			boolean append = false;
+			InterfaceScoreItem isi = null;
 			for (InterfaceScoreItem existing: ii.getInterfaceScores()){
 				if (existing.getMethod().equals(method)) { //if we already have the method in, then this is simply the second part of it (weighted scores)
 					append = true;
+					isi = existing;
 				}
 			}
+			
 			if (!append) {
+				isi = new InterfaceScoreItem();
 				ii.addInterfaceScore(isi);
 				isi.setId(iec.getInterface().getId());
 				isi.setMethod(method);
@@ -121,7 +123,7 @@ public class WebUIDataAdaptor {
 				isi.setCallReason(iec.getCallReason());
 				ii.getWarnings().addAll(iec.getWarnings());
 
-			}
+			} 
 			
 
 			double rat1Sc = iec.getCoreScore(InterfaceEvolContext.FIRST)/iec.getRimScore(InterfaceEvolContext.FIRST);
