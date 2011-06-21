@@ -336,8 +336,7 @@ public class CRKParams {
 		"                  Valid values are 2, 4, 6, 8, 10, 15 and 20. Default: "+DEF_ENTROPY_ALPHABET+"\n" +
 		"  [-t]         :  if specified t_coffee will be run in normal mode instead of very\n" +
 		"                  fast mode\n" +
-		"  [-c <floats>]:  comma separated list of BSA cutoffs for core assignment. Default: \n"+
-		"                  "+String.format("%4.2f",DEF_CA_CUTOFF)+"\n" +
+		"  [-c <float>] :  the BSA cutoff for core assignment. Default: "+String.format("%4.2f",DEF_CA_CUTOFF)+"\n" +
 		"  [-z]         :  use zooming for core assignment\n"+
 		"  [-Z <floats>]:  set parameters for zooming (only used if -z specified). Specify 3 \n" +
 		"                  comma separated values: soft BSA cutoff, hard BSA cutoff and \n" +
