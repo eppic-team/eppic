@@ -1,15 +1,11 @@
 package analysis;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import owl.core.structure.ChainInterface;
 import owl.core.structure.ChainInterfaceList;
@@ -21,8 +17,6 @@ import owl.core.util.FileFormatException;
 public class InterfaceSorter {
 
 	private static final String   LOCAL_CIF_DIR = "/nfs/data/dbs/pdb/data/structures/all/mmCIF";
-	
-	private static final Pattern PDBCODE_REGEX = Pattern.compile("^\\d\\w\\w\\w$");
 	
 	private static final String BASENAME = "interf_sort";
 	private static final String TMPDIR = System.getProperty("java.io.tmpdir");
@@ -64,7 +58,7 @@ public class InterfaceSorter {
 	}
 	
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 
 		int numThreads = NTHREADS;
 		
@@ -79,7 +73,8 @@ public class InterfaceSorter {
 		}
 		
 		
-		List<String> pdbCodes = readListFile(listFile);
+		List<String> pdbCodes = new ArrayList<String>(); 
+		pdbCodes.addAll(Utils.readListFile(listFile).keySet());
 		
 		List<SimpleInterface> firstInterfaces = new ArrayList<SimpleInterface>();
 		
@@ -157,27 +152,5 @@ public class InterfaceSorter {
 		}
 		
 	}
-
-	private static List<String> readListFile(File listFile) {
-		List<String> pdbCodes = new ArrayList<String>();
-		try {
-			BufferedReader br = new BufferedReader(new FileReader(listFile));
-			String line;
-			while ((line=br.readLine())!=null) {
-				if (line.startsWith("#")) continue;
-				Matcher m = PDBCODE_REGEX.matcher(line);
-				if (m.matches()) {
-					pdbCodes.add(line.toLowerCase());
-				}
-			}
-			br.close();
-		} catch (IOException e) {
-			System.err.println("Couldn't read list file "+listFile);
-			System.exit(1);
-		}
-		return pdbCodes;
-	}
-	
-	
 	
 }

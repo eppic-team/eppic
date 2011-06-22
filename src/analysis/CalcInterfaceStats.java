@@ -1,15 +1,10 @@
 package analysis;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import owl.core.structure.ChainInterface;
 import owl.core.structure.ChainInterfaceList;
@@ -30,8 +25,6 @@ import owl.core.util.FileFormatException;
 public class CalcInterfaceStats extends Thread {
 
 	private static final String   LOCAL_CIF_DIR = "/afs/psi.ch/project/bioinfo2/kaks/jose/coresize_v_area/cifgzfiles";
-	
-	private static final Pattern PDBCODE_REGEX = Pattern.compile("^\\d\\w\\w\\w$");
 	
 	private static final double CA_CUTOFF = 0.95;
 	
@@ -150,7 +143,7 @@ public class CalcInterfaceStats extends Thread {
 	
 	
 	
-	public static void main(String[] args) throws FileNotFoundException, InterruptedException {
+	public static void main(String[] args) throws InterruptedException, IOException {
 
 		int numThreads = NTHREADS;
 		
@@ -164,8 +157,8 @@ public class CalcInterfaceStats extends Thread {
 			numThreads = Integer.parseInt(args[2]);
 		}
 		
-		
-		List<String> pdbCodes = readListFile(listFile);
+		List<String> pdbCodes = new ArrayList<String>(); 
+		pdbCodes.addAll(Utils.readListFile(listFile).keySet());
 		
 		System.out.println("Calculating interfaces...");
 		
@@ -242,28 +235,6 @@ public class CalcInterfaceStats extends Thread {
 		}
 		return lists;
 	}
-
-	private static List<String> readListFile(File listFile) {
-		List<String> pdbCodes = new ArrayList<String>();
-		try {
-			BufferedReader br = new BufferedReader(new FileReader(listFile));
-			String line;
-			while ((line=br.readLine())!=null) {
-				if (line.startsWith("#")) continue;
-				Matcher m = PDBCODE_REGEX.matcher(line);
-				if (m.matches()) {
-					pdbCodes.add(line.toLowerCase());
-				}
-			}
-			br.close();
-		} catch (IOException e) {
-			System.err.println("Couldn't read list file "+listFile);
-			System.exit(1);
-		}
-		return pdbCodes;
-	}
-
-
 	
 	
 	
