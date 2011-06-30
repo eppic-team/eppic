@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import model.InterfaceItem;
+import model.InterfaceScoreItem;
 import model.InterfaceScoreItemKey;
 import model.PDBScoreItem;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
@@ -535,19 +536,13 @@ public class ResultsPanel extends DisplayPanel
 
 				for (String method : mainController.getSettings().getScoresTypes())
 				{
-					// /TODO
-					InterfaceScoreItemKey interfaceScoreItemKey = new InterfaceScoreItemKey();
-					interfaceScoreItemKey.setInterfaceId(interfaceItem.getId());
-					interfaceScoreItemKey.setMethod(method);
-
-					for (InterfaceScoreItemKey k : mainController
-							.getPdbScoreItem().getInterfaceScores().keySet()) {
-						if (interfaceScoreItemKey.equals(k)) {
-							model.set(method, mainController.getPdbScoreItem()
-									.getInterfaceScores().get(k).getCall());
+					for(InterfaceScoreItem interfaceScoreItem : interfaceItem.getInterfaceScores())
+					{
+						if(interfaceScoreItem.getMethod().equals(method))
+						{
+							model.set(method, interfaceScoreItem.getCall());
 						}
 					}
-
 				}
 				// Window.alert(String.valueOf(interfaceItem));
 				// ResultsModel resultsModel = new ResultsModel("");

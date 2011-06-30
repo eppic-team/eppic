@@ -1,5 +1,9 @@
 package ch.systemsx.sybit.crkwebui.client.gui.renderers;
 
+import java.util.List;
+
+import model.InterfaceItem;
+import model.InterfaceScoreItem;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 
 import com.extjs.gxt.ui.client.data.BeanModel;
@@ -50,14 +54,35 @@ public class MethodCellRenderer implements GridCellRenderer<BeanModel>
 				color = "red";
 			}
 			
-			final String callReason = (String)model.get("callReason");
-			
 			final Label callReasonLabel = new Label(value);
+			String text = null;
 			
 			callReasonLabel.setStyleAttribute("color", color);
-			
-			callReasonLabel.addListener(Events.OnMouseOver, new Listener<BaseEvent>() {
 
+			int interfaceId = Integer.parseInt(String.valueOf(model.get("id")));
+			
+			InterfaceItem interfaceItem = mainController.getPdbScoreItem().getInterfaceItem(interfaceId - 1);
+			
+			if(interfaceItem != null)
+			{
+				List<InterfaceScoreItem> interfaceScoreItemList = interfaceItem.getInterfaceScores();
+				
+				if(interfaceScoreItemList != null)
+				{
+					for(InterfaceScoreItem interfaceScoreItem : interfaceScoreItemList)
+					{
+						if(interfaceScoreItem.getMethod().equals(property))
+						{
+							text = interfaceScoreItem.getCallReason();
+						}
+					}
+				}
+			}
+			
+			final String callReasonText = text;
+			
+			callReasonLabel.addListener(Events.OnMouseOver, new Listener<BaseEvent>()
+			{
 				@Override
 				public void handleEvent(BaseEvent be) 
 				{
@@ -70,7 +95,7 @@ public class MethodCellRenderer implements GridCellRenderer<BeanModel>
 					{
 						ToolTipConfig toolTipConfig = new ToolTipConfig();  
 						toolTipConfig.setMouseOffset(new int[] {0, 0});  
-						toolTipConfig.setText(callReason);  
+						toolTipConfig.setText(callReasonText);  
 						
 						int width = 500;
 						if(width > mainController.getWindowWidth())
@@ -80,7 +105,7 @@ public class MethodCellRenderer implements GridCellRenderer<BeanModel>
 						
 						int toolTipXPosition = callReasonLabel.getAbsoluteLeft() + callReasonLabel.getWidth() + 5;
 						
-//						toolTipConfig.setMinWidth(width);
+//							toolTipConfig.setMinWidth(width);
 						toolTipConfig.setMaxWidth(width);
 						toolTipConfig.setShowDelay(100);
 						toolTipConfig.setDismissDelay(0);
@@ -92,10 +117,10 @@ public class MethodCellRenderer implements GridCellRenderer<BeanModel>
 						refreshTooltip = false;
 					}
 				}
-				
 			});
-			
-			callReasonLabel.addListener(Events.OnMouseOut, new Listener<BaseEvent>() {
+		
+			callReasonLabel.addListener(Events.OnMouseOut, new Listener<BaseEvent>()
+			{
 				@Override
 				public void handleEvent(BaseEvent be) 
 				{
@@ -107,7 +132,6 @@ public class MethodCellRenderer implements GridCellRenderer<BeanModel>
 					refreshTooltip = true;
 				}
 			});
-			
 			
 			return callReasonLabel;
 		}

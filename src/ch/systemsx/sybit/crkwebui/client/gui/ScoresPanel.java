@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import model.InterfaceItem;
 import model.InterfaceScoreItem;
 import model.InterfaceScoreItemKey;
 import model.PDBScoreItem;
@@ -134,57 +135,55 @@ public class ScoresPanel extends LayoutContainer
 
 		List<BeanModel> data = new ArrayList<BeanModel>();
 
-		//TODO
-		for (InterfaceScoreItemKey key : resultsData.getInterfaceScores()
-				.keySet()) {
-			if (key.getInterfaceId() == selectedInterface) {
+		InterfaceItem interfaceItem = resultsData.getInterfaceItem(selectedInterface - 1);
+		
+		if(interfaceItem != null)
+		{
+			List<InterfaceScoreItem> interfaceScoresItemsList = interfaceItem.getInterfaceScores();
+			
+			//TODO
+			for (InterfaceScoreItem interfaceScoreItem : interfaceScoresItemsList)
+			{
+				BeanModelFactory beanModelFactory = BeanModelLookup.get()
+						.getFactory(InterfaceScoreItem.class);
+				BeanModel scoresModel = beanModelFactory
+						.createModel(interfaceScoreItem);
 				
-				InterfaceScoreItem interfaceScoreItem = resultsData
-						.getInterfaceScores().get(key);
+				// ScoresModel scoresModel = new ScoresModel("");
+				// scoresModel.set("unweightedrim1",
+				// interfaceScoreItem.getUnweightedRim1Scores());
+				// scoresModel.set("weightedrim1",
+				// interfaceScoreItem.getWeightedRim1Scores());
+				// scoresModel.set("unweightedcore1",
+				// interfaceScoreItem.getUnweightedCore1Scores());
+				// scoresModel.set("weightedcore1",
+				// interfaceScoreItem.getWeightedCore1Scores());
+				// scoresModel.set("unweightedrim2",
+				// interfaceScoreItem.getUnweightedRim2Scores());
+				// scoresModel.set("weightedrim2",
+				// interfaceScoreItem.getWeightedRim2Scores());
+				// scoresModel.set("unweightedcore2",
+				// interfaceScoreItem.getUnweightedCore2Scores());
+				// scoresModel.set("weightedcore2",
+				// interfaceScoreItem.getWeightedCore2Scores());
+				// scoresModel.set("unweightedscore",
+				// interfaceScoreItem.getUnweightedFinalScores());
+				// scoresModel.set("weightedscore",
+				// interfaceScoreItem.getWeightedFinalScores());
+				//
+				// scoresModel.set("weightedrat1",
+				// interfaceScoreItem.getWeightedRatio1Scores());
+				// scoresModel.set("unweightedrat1",
+				// interfaceScoreItem.getUnweightedRatio1Scores());
+				// scoresModel.set("weightedrat2",
+				// interfaceScoreItem.getWeightedRatio2Scores());
+				// scoresModel.set("unweightedrat2",
+				// interfaceScoreItem.getUnweightedRatio2Scores());
+				//
+				// scoresModel.set("method",
+				// interfaceScoreItem.getMethod());
 
-				if (interfaceScoreItem != null)
-				{
-					BeanModelFactory beanModelFactory = BeanModelLookup.get()
-							.getFactory(InterfaceScoreItem.class);
-					BeanModel scoresModel = beanModelFactory
-							.createModel(interfaceScoreItem);
-					
-					// ScoresModel scoresModel = new ScoresModel("");
-					// scoresModel.set("unweightedrim1",
-					// interfaceScoreItem.getUnweightedRim1Scores());
-					// scoresModel.set("weightedrim1",
-					// interfaceScoreItem.getWeightedRim1Scores());
-					// scoresModel.set("unweightedcore1",
-					// interfaceScoreItem.getUnweightedCore1Scores());
-					// scoresModel.set("weightedcore1",
-					// interfaceScoreItem.getWeightedCore1Scores());
-					// scoresModel.set("unweightedrim2",
-					// interfaceScoreItem.getUnweightedRim2Scores());
-					// scoresModel.set("weightedrim2",
-					// interfaceScoreItem.getWeightedRim2Scores());
-					// scoresModel.set("unweightedcore2",
-					// interfaceScoreItem.getUnweightedCore2Scores());
-					// scoresModel.set("weightedcore2",
-					// interfaceScoreItem.getWeightedCore2Scores());
-					// scoresModel.set("unweightedscore",
-					// interfaceScoreItem.getUnweightedFinalScores());
-					// scoresModel.set("weightedscore",
-					// interfaceScoreItem.getWeightedFinalScores());
-					//
-					// scoresModel.set("weightedrat1",
-					// interfaceScoreItem.getWeightedRatio1Scores());
-					// scoresModel.set("unweightedrat1",
-					// interfaceScoreItem.getUnweightedRatio1Scores());
-					// scoresModel.set("weightedrat2",
-					// interfaceScoreItem.getWeightedRatio2Scores());
-					// scoresModel.set("unweightedrat2",
-					// interfaceScoreItem.getUnweightedRatio2Scores());
-					//
-					// scoresModel.set("method",
-					// interfaceScoreItem.getMethod());
-
-					data.add(scoresModel);
-				}
+				data.add(scoresModel);
 			}
 		}
 		
