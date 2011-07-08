@@ -32,7 +32,7 @@ public class Utils {
 		while ((line=br.readLine())!=null){
 			if (line.startsWith("#")) continue;
 			String[] fields = line.trim().split("\\s+");
-			String pdbId = fields[0];
+			String pdbId = fields[0].toLowerCase();
 			
 			List<Integer> interfaces = new ArrayList<Integer>();
 
@@ -56,5 +56,26 @@ public class Utils {
 	
 	public static ChainEvolContextList readChainEvolContextList(File file) throws IOException, ClassNotFoundException {
 		return (ChainEvolContextList)Goodies.readFromFile(file);
+	}
+	
+	/**
+	 * Produces a file list prepending given directory to each combination of pdbCode+interface ids
+	 * present in given list file (format is as in {@link #readListFile(File)})
+	 * @param dir
+	 * @param list
+	 * @param suffix
+	 * @throws IOException
+	 */
+	public static void produceFileList(File dir, File list, String suffix) throws IOException {
+		TreeMap<String,List<Integer>> map = readListFile(list);
+		for (String pdbCode:map.keySet()) {
+			for (int id:map.get(pdbCode)) {
+				System.out.println(new File(dir,pdbCode+"."+id+"."+suffix+".pdb"));
+			}
+		}
+	}
+	
+	public static void main(String[] args) throws Exception {
+		produceFileList(new File(args[0]),new File(args[1]),args[2]);
 	}
 }
