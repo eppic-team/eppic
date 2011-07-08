@@ -143,6 +143,9 @@ public class CRKMain {
 			throw new CRKException(null, "No crystal information found in source "+params.getPdbCode(), true);
 		}
 		
+		// we strip the H atoms: surface calculations should not have them (otherwise comparisons of structures with/without H arn't good)
+		pdb.removeHatoms();
+		
 		// for the webui
 		wuiAdaptor = new WebUIDataAdaptor();
 		wuiAdaptor.setParams(params);

@@ -118,19 +118,21 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 			LOGGER.warn("Interface "+interf.getId()+" has clashes: "+warning);
 		} 
 		// if no clashes then we report on any other kind of short distances
-		// 2) hydrogen bonds
-		else if (interf.getAICGraph().hasHbonds()) {
-			List<Pair<Atom>> pairs = interf.getAICGraph().getHbondPairs();
-			String warning = pairs.size()+" Hydrogen bonds: ";
-			for (int i=0;i<pairs.size();i++) {
-				Pair<Atom> pair = pairs.get(i);
-				warning +=  getPairInteractionString(pair);
-				if (i!=pairs.size()-1) warning+=", ";
-			}
-			
-			warnings.add(warning);
-			LOGGER.warn("Interface "+interf.getId()+" has Hydrogen bonds: "+warning);			
-		}
+		// 2) hydrogen bonds -- commented out for now: 
+		// our algorithm for finding them was depending on H atoms (which was bad anyway, because it was
+		// ignoring H bonds in structures without H) and we now remove all Hs, in order to be consistent in surface calc, AICgraphs etc 
+//		else if (interf.getAICGraph().hasHbonds()) {
+//			List<Pair<Atom>> pairs = interf.getAICGraph().getHbondPairs();
+//			String warning = pairs.size()+" Hydrogen bonds: ";
+//			for (int i=0;i<pairs.size();i++) {
+//				Pair<Atom> pair = pairs.get(i);
+//				warning +=  getPairInteractionString(pair);
+//				if (i!=pairs.size()-1) warning+=", ";
+//			}
+//			
+//			warnings.add(warning);
+//			LOGGER.warn("Interface "+interf.getId()+" has Hydrogen bonds: "+warning);			
+//		}
 		// 3) any other kind of close interaction
 		else if (interf.getAICGraph().hasCloselyInteractingPairs()) {
 			List<Pair<Atom>> pairs = interf.getAICGraph().getCloselyInteractingPairs();
