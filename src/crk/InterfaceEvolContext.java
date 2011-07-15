@@ -27,6 +27,7 @@ public class InterfaceEvolContext implements Serializable, InterfaceTypePredicto
 	protected static final int SECOND = 1;
 
 	private static final double MAX_ALLOWED_UNREL_RES = 0.05; // 5% maximum allowed unreliable residues for core or rim
+	private static final int MIN_NUMBER_CORE_RESIDUES_EVOL_SCORE = 6;
 	
 	private ChainInterface interf;
 	private ChainEvolContext[] chains;  // At the moment strictly 2 members (matching the 2 partners of interf). Use FIRST and SECOND constants above 
@@ -431,7 +432,11 @@ public class InterfaceEvolContext implements Serializable, InterfaceTypePredicto
 		int countNoPredict = noPredictCalls.size();
 
 		// decision time!
-		if (countNoPredict==chains.length) {
+		if ((interf.getFirstRimCore().getCoreSize()+interf.getSecondRimCore().getCoreSize())<MIN_NUMBER_CORE_RESIDUES_EVOL_SCORE) {
+			finalScore = Double.NaN;
+			call = CallType.NO_PREDICTION;
+			callReason = "Not enough core residues to calculate evolutionary score";
+		} else if (countNoPredict==chains.length) {
 			finalScore = getAvrgRatio(noPredictCalls);
 			call = CallType.NO_PREDICTION;
 			callReason = "Both interface members called NOPRED";
