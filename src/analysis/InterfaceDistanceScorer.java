@@ -33,8 +33,8 @@ import owl.core.util.MySQLConnection;
 public class InterfaceDistanceScorer {
 
 	
-	private static final int TOO_FEW_COUNTS_THRESHOLD = 10;
-	private static final double TOO_FEW_COUNTS_SCORE = 0.0;
+	//private static final int TOO_FEW_COUNTS_THRESHOLD = 10;
+	//private static final double TOO_FEW_COUNTS_SCORE = 0.0;
 	
 	private static final int NUM_ATOM_TYPES = 167;
 
@@ -176,26 +176,49 @@ public class InterfaceDistanceScorer {
 	 * Whenever the pair count of a certain pair is below the threshold ({@value #TOO_FEW_COUNTS_THRESHOLD}
 	 * the score assigned for that pair is {@value #TOO_FEW_COUNTS_SCORE}
 	 */
+//	public void calcScoringMat() {
+//		countTotals();
+//		this.scoringMat = new double[NUM_ATOM_TYPES][NUM_ATOM_TYPES][distanceBins.length];
+//		double logof2 = Math.log(2);
+//		for(int i=0;i<scoringMat.length;i++) {
+//			for(int j=i;j<scoringMat[i].length;j++) {
+//				for (int k=0;k<distanceBins.length;k++) {
+//					if (pairCounts[i][j][k]<TOO_FEW_COUNTS_THRESHOLD) { // When counts are too small, we can't get significant statistics for them
+//						scoringMat[i][j][k] = TOO_FEW_COUNTS_SCORE;     // We use a score of 0 in this case, i.e. no information
+//					} else {
+//						scoringMat[i][j][k] = 
+//							Math.log(
+//									((double)pairCounts[i][j][k]/(double)sumOverDistanceBins[i][j])/
+//									((double)sumOverPairTypes[k]/(double)totalPairsCount)
+//							)/logof2; // we explicitely cast every int/long to double to avoid overflows, java doesn't check for them!
+//					}
+//				}
+//			}
+//		}
+//	}	
+	
+	/**
+	 * Computes the scoring matrix from the counts arrays. The score is log2(p_obs/p_exp)
+	 * Whenever the pair count of a certain pair is below the threshold ({@value #TOO_FEW_COUNTS_THRESHOLD}
+	 * the score assigned for that pair is {@value #TOO_FEW_COUNTS_SCORE}
+	 * Using Ponstingl 2000 (which is Sippl 1990) scoring
+	 */
 	public void calcScoringMat() {
 		countTotals();
 		this.scoringMat = new double[NUM_ATOM_TYPES][NUM_ATOM_TYPES][distanceBins.length];
-		double logof2 = Math.log(2);
+		double sigma = 0.02;
 		for(int i=0;i<scoringMat.length;i++) {
 			for(int j=i;j<scoringMat[i].length;j++) {
 				for (int k=0;k<distanceBins.length;k++) {
-					if (pairCounts[i][j][k]<TOO_FEW_COUNTS_THRESHOLD) { // When counts are too small, we can't get significant statistics for them
-						scoringMat[i][j][k] = TOO_FEW_COUNTS_SCORE;     // We use a score of 0 in this case, i.e. no information
-					} else {
-						scoringMat[i][j][k] = 
-							Math.log(
-									((double)pairCounts[i][j][k]/(double)sumOverDistanceBins[i][j])/
-									((double)sumOverPairTypes[k]/(double)totalPairsCount)
-							)/logof2; // we explicitely cast every int/long to double to avoid overflows, java doesn't check for them!
-					}
+					// we explicitely cast every int/long to double to avoid overflows, java doesn't check for them!
+					scoringMat[i][j][k] = 
+							Math.log(1+sigma*(double)sumOverDistanceBins[i][j]) -
+							Math.log(1+sigma*(double)sumOverDistanceBins[i][j]*((double)pairCounts[i][j][k]/(double)sumOverPairTypes[k]));
+					// following Sippl 1990 and Ponstingl 2000
 				}
 			}
 		}
-	}	
+	}
 	
 	public String getTypeFromIndex(int i) {
 		return indices2types.get(i);
@@ -247,7 +270,7 @@ public class InterfaceDistanceScorer {
 
 	private double scoreIt(AICGraph graph) {
 		double totalScore = 0;
-		int edgeCount = 0;
+		//int edgeCount = 0;
 		for (AICGEdge edge:graph.getEdges()) {
 			Atom inode = graph.getEndpoints(edge).getFirst();
 			Atom jnode = graph.getEndpoints(edge).getSecond();
@@ -256,7 +279,7 @@ public class InterfaceDistanceScorer {
 			if (!(inode.getParentResidue() instanceof AaResidue) || 
 				!(jnode.getParentResidue() instanceof AaResidue)) continue;
 
-			edgeCount++;
+			//edgeCount++;
 			int i = types2indices.get(inode.getParentResidue().getLongCode()+inode.getCode());
 			int j = types2indices.get(jnode.getParentResidue().getLongCode()+jnode.getCode());
 			int k = getDistanceBin(edge.getDistance());
@@ -266,8 +289,8 @@ public class InterfaceDistanceScorer {
 				totalScore+=scoringMat[j][i][k];
 			}
 		}
-
-		return totalScore/(double)edgeCount;
+		// we follow here Ponstingl 2000 where they seem not to normalise (and thus scores are VERY correlated to interface area, so quite useless)
+		return totalScore; // /(double)edgeCount;
 	}
 
 	public void writeCountsToFile (File file) throws FileNotFoundException {
@@ -443,9 +466,7 @@ public class InterfaceDistanceScorer {
 			"    list in -l.\n" +
 			"Options:\n" +
 			"  -o <file>     : file to write the counts matrix to\n" +
-			"  -l <file>     : in a) file with list of pdbCodes+pdbChainCodes to use as training set \n" +
-			"                  the scoring matrix.\n" +
-			"                  in b) file with list of pdb files to score\n" +
+			"  -l <file>     : file with list of pdb files to score (a) or to generate counts from (b)\n" +
 			"  -c <file>     : file to read counts from \n";
 			File listFile = null;
 			File outFile = null;
