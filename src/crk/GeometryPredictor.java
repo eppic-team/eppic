@@ -54,6 +54,9 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 		double area = interf.getInterfaceArea();
 		List<Pair<Atom>> interactingPairs = getNonpolyInteractingPairs();
 		
+		// this will happen when we read from PISA, beware that the cutoff is similar to PISA's but not necessarily the same
+		if (interf.getAICGraph()==null) interf.calcAICGraph(INTERF_DIST_CUTOFF);
+		
 		// CALL
 		if (interf.getAICGraph().hasDisulfideBridges()) {
 			callReason = interf.getAICGraph().getDisulfidePairs().size()+" disulfide bridges present.";
