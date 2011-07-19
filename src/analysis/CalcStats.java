@@ -54,6 +54,7 @@ public class CalcStats {
 	
 	private static double[] bioCallCutoffs = {DEFBIOCALLCUTOFF};
 	private static double[] caCutoffs = {DEFCACUTOFF};
+	private static double[] caCutoffsEvol = {DEFCACUTOFF};
 	private static int[] minNumberCoreResForBios = {DEFMINNUMBERCORERESFORBIO};
 
 	/**
@@ -72,12 +73,14 @@ public class CalcStats {
 		"                 analyse that are known to be true xtal contacts\n" +
 		"   [-t]       :  evolutionary score cutoffs to call bio/xtal, comma separated. If omitted\n" +
 		"                 then only one used: "+String.format("%4.2f",DEFBIOCALLCUTOFF)+"\n" +
-		"   [-c]       :  core assignment cutoffs, comma separated. If omitted\n" +
-		"                 then only one used: "+String.format("%4.2f",DEFCACUTOFF)+"\n" +
+		"   [-c]       :  core assignment cutoffs for geometry scoring, comma separated. If " +
+		"                 omitted then only one used: "+String.format("%4.2f",DEFCACUTOFF)+"\n" +
+	    "   [-C]       :  core assignment cutoffs for evolutionary scoring, comma separated. If\n" +
+	    "                 omitted then only one used: "+String.format("%4.2f",DEFCACUTOFF)+"\n" +
 		"   [-m]       :  minimum number of core residues for calling bio, comma separated.\n" +
 		"                 If omitted only one used: "+DEFMINNUMBERCORERESFORBIO+"\n\n";
 
-		Getopt g = new Getopt(PROGRAM_NAME, args, "B:X:b:x:t:c:m:h?");
+		Getopt g = new Getopt(PROGRAM_NAME, args, "B:X:b:x:t:c:C:m:h?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
@@ -107,6 +110,13 @@ public class CalcStats {
 					caCutoffs[i] = Double.parseDouble(tokens[i]);
 				}				
 				break;
+			case 'C':
+				tokens = g.getOptarg().split(",");
+				caCutoffsEvol = new double[tokens.length];
+				for (int i=0;i<tokens.length;i++) {
+					caCutoffsEvol[i] = Double.parseDouble(tokens[i]);
+				}				
+				break;				
 			case 'm':
 				tokens = g.getOptarg().split(",");
 				minNumberCoreResForBios = new int[tokens.length];
@@ -246,8 +256,8 @@ public class CalcStats {
 		
 		ArrayList<PredictionStatsSet> list = new ArrayList<PredictionStatsSet>();
 		// the 3 outer indices correspond to the 3 parameters scoType, weighted, zoomed (each can have 2 values)
-		int[][][][][] countBios = new int[caCutoffs.length][bioCallCutoffs.length][2][2][2];
-		int[][][][][] countXtals = new int[caCutoffs.length][bioCallCutoffs.length][2][2][2];
+		int[][][][][] countBios = new int[caCutoffsEvol.length][bioCallCutoffs.length][2][2][2];
+		int[][][][][] countXtals = new int[caCutoffsEvol.length][bioCallCutoffs.length][2][2][2];
 		
 		for (String pdbCode:toAnalyse.keySet()) {
 			File chainevolcontextdatFile = new File(dir,pdbCode+".chainevolcontext.dat");
@@ -258,7 +268,7 @@ public class CalcStats {
 			ChainEvolContextList cecl = Utils.readChainEvolContextList(chainevolcontextdatFile);
 			for (int id:toAnalyse.get(pdbCode)) {
 
-				for (int i=0;i<caCutoffs.length;i++) {
+				for (int i=0;i<caCutoffsEvol.length;i++) {
 					for (int k=0;k<bioCallCutoffs.length;k++) {
 
 						ChainInterface interf = cil.get(id-1);
@@ -285,7 +295,7 @@ public class CalcStats {
 			}
 		}
 		
-		for (int i=0;i<caCutoffs.length;i++) {
+		for (int i=0;i<caCutoffsEvol.length;i++) {
 			for (int k=0;k<bioCallCutoffs.length;k++) {
 				if (i==0) {
 					// we only do zoom predictions once per bioCallCutoff
@@ -299,13 +309,13 @@ public class CalcStats {
 							-1,-1,bioCallCutoffs[k],countBios[i][k][1][1][1],countXtals[i][k][1][1][1],total));
 				}
 				list.add(new PredictionStatsSet(dir.getName(),truth,ScoringType.ENTROPY, false, false,
-						caCutoffs[i],-1,bioCallCutoffs[k],countBios[i][k][0][0][0],countXtals[i][k][0][0][0],total));
+						caCutoffsEvol[i],-1,bioCallCutoffs[k],countBios[i][k][0][0][0],countXtals[i][k][0][0][0],total));
 				list.add(new PredictionStatsSet(dir.getName(),truth,ScoringType.ENTROPY, true, false,
-						caCutoffs[i],-1,bioCallCutoffs[k],countBios[i][k][0][1][0],countXtals[i][k][0][1][0],total));
+						caCutoffsEvol[i],-1,bioCallCutoffs[k],countBios[i][k][0][1][0],countXtals[i][k][0][1][0],total));
 				list.add(new PredictionStatsSet(dir.getName(),truth,ScoringType.KAKS, false, false,
-						caCutoffs[i],-1,bioCallCutoffs[k],countBios[i][k][1][0][0],countXtals[i][k][1][0][0],total));
+						caCutoffsEvol[i],-1,bioCallCutoffs[k],countBios[i][k][1][0][0],countXtals[i][k][1][0][0],total));
 				list.add(new PredictionStatsSet(dir.getName(),truth,ScoringType.KAKS, true, false,
-						caCutoffs[i],-1,bioCallCutoffs[k],countBios[i][k][1][1][0],countXtals[i][k][1][1][0],total));
+						caCutoffsEvol[i],-1,bioCallCutoffs[k],countBios[i][k][1][1][0],countXtals[i][k][1][1][0],total));
 			}
 		}
 		return list;
@@ -320,7 +330,7 @@ public class CalcStats {
 		if (zoomed) {
 			interf.calcRimAndCore(CA_SOFT_CUTOFF_ZOOMING, CA_HARD_CUTOFF_ZOOMING, CA_RELAX_STEP_ZOOMING, MIN_NUMBER_CORE_RESIDUES_ZOOMING);
 		} else {
-			interf.calcRimAndCore(caCutoffs[i]);
+			interf.calcRimAndCore(caCutoffsEvol[i]);
 		}
 
 
