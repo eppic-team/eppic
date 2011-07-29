@@ -250,10 +250,9 @@ public class CRKMain {
 			throw new CRKException(e,"Couldn't write serialized ChainInterfaceList object to file: "+e.getMessage(),false);
 		}
 		
-		// for the webui
-		wuiAdaptor.setInterfaces(interfaces);
-
-		
+	}
+	
+	private void doGeomScoring() throws CRKException {
 		try {
 			List<GeometryPredictor> gps = new ArrayList<GeometryPredictor>();
 			PrintStream scoreGeomPS = new PrintStream(params.getOutputFile(GEOMETRY_FILE_SUFFIX+".scores"));
@@ -271,6 +270,8 @@ public class CRKMain {
 				}
 			}
 			scoreGeomPS.close();
+			// for the webui
+			wuiAdaptor.setInterfaces(interfaces);
 			wuiAdaptor.setGeometryScores(gps);
 		} catch (IOException e) {
 			throw new CRKException(e, "Couldn't write interface geometry scores or related PDB files. "+e.getMessage(),true);
@@ -279,7 +280,6 @@ public class CRKMain {
 		} catch (InterruptedException e) {
 			throw new CRKException(e, "Couldn't generate thumbnails, pymol thread interrupted: "+e.getMessage(),false);
 		}
-
 
 	}
 	
@@ -573,7 +573,8 @@ public class CRKMain {
 			} else {
 				crkMain.doFindInterfaces();
 			}
-
+			crkMain.doGeomScoring();
+			
 			if (crkMain.params.isDoScoreEntropies()) {
 				// 2 finding evolutionary context
 				if (crkMain.params.getChainEvContextSerFile()!=null) {
