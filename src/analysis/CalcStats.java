@@ -218,7 +218,7 @@ public class CalcStats {
 
 				for (int i=0;i<caCutoffs.length;i++) {
 					for (int j=0;j<minNumberCoreResForBios.length;j++) {
-						ChainInterface interf = interfaces.get(id-1);
+						ChainInterface interf = interfaces.get(id);
 						GeometryPredictor gp = new GeometryPredictor(interf);
 						gp.setBsaToAsaCutoff(caCutoffs[i]);
 						gp.setMinCoreSizeForBio(minNumberCoreResForBios[j]);
@@ -271,7 +271,7 @@ public class CalcStats {
 				for (int i=0;i<caCutoffsEvol.length;i++) {
 					for (int k=0;k<bioCallCutoffs.length;k++) {
 
-						ChainInterface interf = cil.get(id-1);
+						ChainInterface interf = cil.get(id);
 
 						ChainEvolContext[] chainsEvCs = new ChainEvolContext[2];
 						chainsEvCs[0] = cecl.getChainEvolContext(interf.getFirstMolecule().getPdbChainCode());

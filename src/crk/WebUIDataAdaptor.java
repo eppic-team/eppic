@@ -160,7 +160,7 @@ public class WebUIDataAdaptor {
 	public void writeResidueDetailsFiles(boolean includeEntropy, boolean includeKaks, String suffix) throws CRKException {
 		try {
 			for (int i=0;i<interfaces.size();i++) {
-				ChainInterface interf = interfaces.get(i);
+				ChainInterface interf = interfaces.get(i+1);
 				File file = params.getOutputFile("."+interf.getId()+"."+suffix);
 				if (!includeEntropy && !includeKaks) {
 					writeResidueDetailsFile(i,file);
@@ -260,7 +260,7 @@ public class WebUIDataAdaptor {
 	}
 	
 	private void writeResidueDetailsFile(int i,File file) throws IOException {
-		ChainInterface interf = interfaces.get(i);
+		ChainInterface interf = interfaces.get(i+1);
 
 		List<InterfaceResidueItem> partner1 = new ArrayList<InterfaceResidueItem>();
 		List<InterfaceResidueItem> partner2 = new ArrayList<InterfaceResidueItem>();

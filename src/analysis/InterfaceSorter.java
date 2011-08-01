@@ -117,7 +117,7 @@ public class InterfaceSorter {
 				System.out.println("\nEmpty interface list!");
 				continue;
 			}
-			ChainInterface firstInterf = interfList.get(0);
+			ChainInterface firstInterf = interfList.get(1);
 			
 			
 			String pdbChainCode1 = firstInterf.getFirstMolecule().getPdbChainCode();

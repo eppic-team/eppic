@@ -529,4 +529,8 @@ public class ChainEvolContext implements Serializable {
 	public String getSeqIndenticalChainStr() {
 		return seqIdenticalChainsStr;
 	}
+	
+	public UniprotEntry getQuery() {
+		return query;
+	}
 }

@@ -163,7 +163,7 @@ public class CRKMain {
 			throw new CRKException(e,"Couldn't load interface enumeration binary file: "+e.getMessage(),true);
 		}
 		
-		if (!pdb.getPdbCode().equals(interfaces.get(0).getFirstMolecule().getPdbCode())) {
+		if (!pdb.getPdbCode().equals(interfaces.get(1).getFirstMolecule().getPdbCode())) {
 			throw new CRKException(null,"PDB codes of given PDB entry/file and given interface enumeration binary file don't match.",true);
 		}
 		
