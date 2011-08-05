@@ -11,6 +11,7 @@ public class PDBScoreItem implements Serializable, ProcessingData
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+	
 	private String jobId;
 	private String pdbName;
 	private double bioCutoff;
@@ -30,8 +31,6 @@ public class PDBScoreItem implements Serializable, ProcessingData
 	private List<String> numHomologsStrings;
 
 	private List<InterfaceItem> interfaceItems;
-	
-	
 	
 	public PDBScoreItem() 
 	{

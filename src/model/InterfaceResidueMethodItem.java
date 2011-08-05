@@ -8,15 +8,20 @@ public class InterfaceResidueMethodItem implements Serializable
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+	
+	private String method;
 	private float score;
+	
+	private InterfaceResidueItem interfaceResidueItem;
 	
 	public InterfaceResidueMethodItem()
 	{
 		
 	}
 	
-	public InterfaceResidueMethodItem(float score) {
+	public InterfaceResidueMethodItem(float score, String method) {
 		this.score = score;
+		this.method = method;
 	}
 
 	public void setScore(float score) {
@@ -25,5 +30,21 @@ public class InterfaceResidueMethodItem implements Serializable
 
 	public float getScore() {
 		return score;
+	}
+
+	public void setMethod(String method) {
+		this.method = method;
+	}
+
+	public String getMethod() {
+		return method;
+	}
+
+	public void setInterfaceResidueItem(InterfaceResidueItem interfaceResidueItem) {
+		this.interfaceResidueItem = interfaceResidueItem;
+	}
+
+	public InterfaceResidueItem getInterfaceResidueItem() {
+		return interfaceResidueItem;
 	}
 }

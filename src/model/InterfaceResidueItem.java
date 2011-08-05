@@ -1,6 +1,7 @@
 package model;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Map;
 
 public class InterfaceResidueItem implements Serializable
@@ -15,6 +16,7 @@ public class InterfaceResidueItem implements Serializable
 	public static final int RIM = 1;
 	public static final int CORE = 2;
 	
+	private int structure;
 	private int residueNumber;
 	private String residueType;
 	private float asa;
@@ -22,8 +24,9 @@ public class InterfaceResidueItem implements Serializable
 	private float bsaPercentage;
 	private int assignment; // one of the constants above: SURFACE, RIM, CORE
 	
-	private Map<String,InterfaceResidueMethodItem> interfaceResidueMethodItems;
-	
+	private List<InterfaceResidueMethodItem> interfaceResidueMethodItems;
+
+	private InterfaceItem interfaceItem;
 	// residue number
 	// residue type
 	// ASA
@@ -94,17 +97,29 @@ public class InterfaceResidueItem implements Serializable
 		this.assignment = assignment;
 	}
 	
-	public Map<String,InterfaceResidueMethodItem> getInterfaceResidueMethodItems() {
+	public List<InterfaceResidueMethodItem> getInterfaceResidueMethodItems() {
 		return interfaceResidueMethodItems;
 	}
 
 	public void setInterfaceResidueMethodItems(
-			Map<String,InterfaceResidueMethodItem> interfaceResidueMethodItems) {
+			List<InterfaceResidueMethodItem> interfaceResidueMethodItems) {
 		this.interfaceResidueMethodItems = interfaceResidueMethodItems;
 	}
 
-	public static long getSerialversionuid() {
-		return serialVersionUID;
+	public void setStructure(int structure) {
+		this.structure = structure;
+	}
+
+	public int getStructure() {
+		return structure;
+	}
+
+	public void setInterfaceItem(InterfaceItem interfaceItem) {
+		this.interfaceItem = interfaceItem;
+	}
+
+	public InterfaceItem getInterfaceItem() {
+		return interfaceItem;
 	}
 
 }

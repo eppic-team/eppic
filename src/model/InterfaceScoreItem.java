@@ -30,6 +30,8 @@ public class InterfaceScoreItem implements Serializable
 	private String call;
 	private String callReason;
 	
+	private InterfaceItem interfaceItem;
+	
 	public InterfaceScoreItem()
 	{
 		
@@ -157,6 +159,14 @@ public class InterfaceScoreItem implements Serializable
 	
 	public void setCallReason(String callReason) {
 		this.callReason = callReason;
+	}
+
+	public void setInterfaceItem(InterfaceItem interfaceItem) {
+		this.interfaceItem = interfaceItem;
+	}
+
+	public InterfaceItem getInterfaceItem() {
+		return interfaceItem;
 	}
 
 }

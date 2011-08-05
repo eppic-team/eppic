@@ -18,23 +18,18 @@ public class InterfaceItem implements Serializable
 	private int size2;
 	private String finalCall;
 	private String operator; 
-	
 	private List<String> warnings;
 	
 	private List<InterfaceScoreItem> interfaceScores;
+	private List<InterfaceResidueItem> interfaceResidues;
 	
-//	private List<InterfaceStructureItem> interfaceStructures;
+	private PDBScoreItem pdbScoreItem;
 
 	public InterfaceItem()
 	{
 		interfaceScores = new ArrayList<InterfaceScoreItem>();
 	}
 	
-	public InterfaceItem(PDBScoreItem pdbScoreItem)
-	{
-//		this.setPdbScoreItem(pdbScoreItem);
-	}
-
 	public int getId() {
 		return id;
 	}
@@ -117,5 +112,29 @@ public class InterfaceItem implements Serializable
 	
 	public void addInterfaceScore(InterfaceScoreItem interfaceScore) {
 		this.interfaceScores.add(interfaceScore);
+	}
+
+	public void setInterfaceStructures(List<InterfaceResidueItem> interfaceResidues) {
+		this.interfaceResidues = interfaceResidues;
+	}
+
+	public List<InterfaceResidueItem> getInterfaceStructures() {
+		return interfaceResidues;
+	}
+
+	public void setPdbScoreItem(PDBScoreItem pdbScoreItem) {
+		this.pdbScoreItem = pdbScoreItem;
+	}
+
+	public PDBScoreItem getPdbScoreItem() {
+		return pdbScoreItem;
+	}
+
+	public List<InterfaceResidueItem> getInterfaceResidues() {
+		return interfaceResidues;
+	}
+
+	public void setInterfaceResidues(List<InterfaceResidueItem> interfaceResidues) {
+		this.interfaceResidues = interfaceResidues;
 	}
 }
