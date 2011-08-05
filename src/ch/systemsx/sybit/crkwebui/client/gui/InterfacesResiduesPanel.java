@@ -33,21 +33,26 @@ public class InterfacesResiduesPanel extends FormPanel
 		this.setBodyBorder(false);
 		this.setBorders(false);
 		this.setLayout(new RowLayout(Orientation.HORIZONTAL));
-
+		
+//		LayoutContainer l = new LayoutContainer();
+//		l.setLayout(new RowLayout(Orientation.HORIZONTAL));
+		
 		firstStructure = new ResiduesPanel(
 										   MainController.CONSTANTS.interfaces_residues_panel_first_structure(), 
 										   mainController,
 										   width,
-										   height);
+										   height,
+										   1);
 		
 		secondStructure = new ResiduesPanel(
 											MainController.CONSTANTS.interfaces_residues_panel_second_structure(),
 											mainController,
 											width,
-											height);
+											height,
+											2);
 
 		this.add(firstStructure, new RowData(0.48, 1, new Margins(0)));
-
+		
 		FormPanel breakPanel = new FormPanel();
 		breakPanel.setBodyBorder(false);
 		breakPanel.setBorders(false);
@@ -55,6 +60,27 @@ public class InterfacesResiduesPanel extends FormPanel
 		this.add(breakPanel, new RowData(0.04, 1, new Margins(0)));
 
 		this.add(secondStructure, new RowData(0.48, 1, new Margins(0)));
+		
+//		LayoutContainer summaryPanel = new LayoutContainer();
+//		summaryPanel.setLayout(new RowLayout(Orientation.HORIZONTAL));
+//		
+//		summaryPanel.add(new ResiduesSummaryPanel("", mainController, width, height, 1), new RowData(0.48, 1, new Margins(0)));
+//		FormPanel summaryPanelBreak = new FormPanel();
+//		summaryPanelBreak.setBodyBorder(false);
+//		summaryPanelBreak.setBorders(false);
+//		summaryPanelBreak.getHeader().setVisible(false);
+//		summaryPanel.add(summaryPanelBreak, new RowData(0.04, 1, new Margins(0)));
+//		summaryPanel.add(new ResiduesSummaryPanel("", mainController, width, height, 2), new RowData(0.48, 1, new Margins(0)));
+//		
+//		this.add(l, new RowData(1, 1, new Margins(0)));
+//		
+//		FormPanel generalPanelBreak = new FormPanel();
+//		generalPanelBreak.setBodyBorder(false);
+//		generalPanelBreak.setBorders(false);
+//		generalPanelBreak.getHeader().setVisible(false);
+//		
+//		this.add(generalPanelBreak, new RowData(1, 20, new Margins(0)));
+//		this.add(summaryPanel, new RowData(1, 65, new Margins(0)));
 		
 		toolbar = new ToolBar();  
 		

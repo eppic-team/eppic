@@ -161,7 +161,7 @@ public class MainController
 
 	public void getInterfaceResidues(int interfaceId) 
 	{
-		mainViewPort.displayInterfacesWindow(MainController.CONSTANTS.interfaces_residues_window_title() + " " + interfaceId);
+		mainViewPort.displayInterfacesWindow(interfaceId);
 		
 		serviceController.getInterfaceResidues(selectedJobId, interfaceId);
 	}
@@ -476,13 +476,13 @@ public class MainController
 	
 	public void resizeScoresGrid()
     {
-		if((mainViewPort != null) &&
-           (mainViewPort.getCenterPanel() != null) &&
-           (mainViewPort.getCenterPanel().getDisplayPanel() != null) &&
-           (mainViewPort.getCenterPanel().getDisplayPanel() instanceof ResultsPanel))
-           {
-		    	((ResultsPanel)mainViewPort.getCenterPanel().getDisplayPanel()).resizeScoresGrid();
-           }
+//		if((mainViewPort != null) &&
+//           (mainViewPort.getCenterPanel() != null) &&
+//           (mainViewPort.getCenterPanel().getDisplayPanel() != null) &&
+//           (mainViewPort.getCenterPanel().getDisplayPanel() instanceof ResultsPanel))
+//           {
+//		    	((ResultsPanel)mainViewPort.getCenterPanel().getDisplayPanel()).resizeScoresGrid();
+//           }
     }
 
 	

@@ -85,6 +85,9 @@ public interface AppProperties extends Constants
 	String interfaces_residues_combo_all();
 	String interfaces_residues_combo_rimcore();
 	String interfaces_residues_combo_title();
+	String interfaces_residues_aggergation_total_cores();
+	String interfaces_residues_aggergation_total_rims();
+	String interfaces_residues_aggergation_ratios();
 	
 	String scores_panel_column_weighted();
 	String scores_panel_column_unweighted();

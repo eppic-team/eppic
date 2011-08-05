@@ -15,9 +15,11 @@ import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 public class InterfacesResiduesWindow extends Dialog 
 {
 	private InterfacesResiduesPanel interfacesResiduesPanel;
+	
+	private int selectedInterface;
 
 	public InterfacesResiduesWindow(final MainController mainController,
-									String title) 
+									int selectedInterface) 
 	{
 		int width = 1200;
 		int height = 660;
@@ -42,11 +44,12 @@ public class InterfacesResiduesWindow extends Dialog
 		this.setBlinkModal(true);
 		this.setLayout(new RowLayout());
 		this.setHideOnButtonClick(true);
-		this.setHeading(title);
+		this.setSelectedInterface(selectedInterface);
+		this.setHeading(MainController.CONSTANTS.interfaces_residues_window_title() + " " + selectedInterface);
 
 		// adjust to 22 height rows
 		height = (height - 220) / 22;
-		height = height * 22 + 222;
+		height = height * 22 + 220;
 		this.setSize(width, height);
 		
 		interfacesResiduesPanel = new InterfacesResiduesPanel(mainController,
@@ -92,5 +95,16 @@ public class InterfacesResiduesWindow extends Dialog
 
 	public InterfacesResiduesPanel getInterfacesResiduesPanel() {
 		return interfacesResiduesPanel;
+	}
+	
+	public void setSelectedInterface(int selectedInterface)
+	{
+		this.selectedInterface = selectedInterface;
+		this.setHeading(MainController.CONSTANTS.interfaces_residues_window_title() + " " + selectedInterface);
+	}
+	
+	public int getSelectedInterface()
+	{
+		return selectedInterface;
 	}
 }

@@ -8,24 +8,19 @@ import java.util.Map;
 
 import model.InterfaceItem;
 import model.InterfaceScoreItem;
-import model.InterfaceScoreItemKey;
 import model.PDBScoreItem;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 import ch.systemsx.sybit.crkwebui.client.gui.renderers.GridCellRendererFactory;
 
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.Style.Orientation;
-import com.extjs.gxt.ui.client.Style.SelectionMode;
 import com.extjs.gxt.ui.client.data.BeanModel;
 import com.extjs.gxt.ui.client.data.BeanModelFactory;
 import com.extjs.gxt.ui.client.data.BeanModelLookup;
 import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.FieldEvent;
-import com.extjs.gxt.ui.client.event.GridEvent;
 import com.extjs.gxt.ui.client.event.Listener;
-import com.extjs.gxt.ui.client.event.SelectionChangedEvent;
-import com.extjs.gxt.ui.client.event.SelectionChangedListener;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
@@ -75,8 +70,8 @@ public class ResultsPanel extends DisplayPanel
 	// ***************************************
 	// * Scores grid
 	// ***************************************
-	private LayoutContainer scoresPanelLocation;
-	private ScoresPanel scoresPanel;
+//	private LayoutContainer scoresPanelLocation;
+//	private ScoresPanel scoresPanel;
 	// ***************************************
 
 	public ResultsPanel(final MainController mainController)
@@ -146,27 +141,27 @@ public class ResultsPanel extends DisplayPanel
 		resultsGrid.setColumnLines(true);
 		resultsGrid.setColumnReordering(true);
 
-		Listener<GridEvent> resultsGridListener = new Listener<GridEvent>() {
-			@Override
-			public void handleEvent(GridEvent event) 
-			{
-				updateScoresPanel((Integer) resultsStore.getAt(event.getRowIndex()).get("id"));
-			}
-		};
-		
-		resultsGrid.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-		resultsGrid.getSelectionModel().addSelectionChangedListener(new SelectionChangedListener<BeanModel>() 
-		{
-			@Override
-			public void selectionChanged(SelectionChangedEvent<BeanModel> se) 
-			{
-				if(resultsGrid.getSelectionModel().getSelectedItem() != null)
-				{
-					updateScoresPanel((Integer) resultsGrid.getSelectionModel().getSelectedItem().get("id"));
-				}
-			}
-			
-		});
+//		Listener<GridEvent> resultsGridListener = new Listener<GridEvent>() {
+//			@Override
+//			public void handleEvent(GridEvent event) 
+//			{
+//				updateScoresPanel((Integer) resultsStore.getAt(event.getRowIndex()).get("id"));
+//			}
+//		};
+//		
+//		resultsGrid.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+//		resultsGrid.getSelectionModel().addSelectionChangedListener(new SelectionChangedListener<BeanModel>() 
+//		{
+//			@Override
+//			public void selectionChanged(SelectionChangedEvent<BeanModel> se) 
+//			{
+//				if(resultsGrid.getSelectionModel().getSelectedItem() != null)
+//				{
+//					updateScoresPanel((Integer) resultsGrid.getSelectionModel().getSelectedItem().get("id"));
+//				}
+//			}
+//			
+//		});
 		
 //		resultsGrid.addListener(Events.CellClick, resultsGridListener);
 		resultsGrid.setContextMenu(new ResultsPanelContextMenu(mainController));
@@ -174,19 +169,19 @@ public class ResultsPanel extends DisplayPanel
 //		resultsGrid.setAutoHeight(true);
 		fillResultsGrid(mainController.getPdbScoreItem());
 		
-		resultsGrid.addListener(Events.ColumnResize, new Listener<BaseEvent>(){
-			@Override
-			public void handleEvent(BaseEvent be) {
-				mainController.resizeResultsGrid();
-			}
-		});
-		
-		resultsGrid.addListener(Events.ColumnMove, new Listener<BaseEvent>(){
-			@Override
-			public void handleEvent(BaseEvent be) {
-				mainController.resizeResultsGrid();
-			}
-		});
+//		resultsGrid.addListener(Events.ColumnResize, new Listener<BaseEvent>(){
+//			@Override
+//			public void handleEvent(BaseEvent be) {
+//				mainController.resizeResultsGrid();
+//			}
+//		});
+//		
+//		resultsGrid.addListener(Events.ColumnMove, new Listener<BaseEvent>(){
+//			@Override
+//			public void handleEvent(BaseEvent be) {
+//				mainController.resizeResultsGrid();
+//			}
+//		});
 		
 		resultsGrid.addListener(Events.ContextMenu, new Listener<BaseEvent>(){
 			@Override
@@ -203,37 +198,37 @@ public class ResultsPanel extends DisplayPanel
 //		resultsGridContainer.setScrollMode(Scroll.AUTO);
 		resultsGridContainer.add(resultsGrid);
 		
-		this.add(resultsGridContainer, new RowData(1, 0.55, new Margins(0)));
+		this.add(resultsGridContainer, new RowData(1, 1, new Margins(0)));
 		
 //		createResultsGridContainerToolbar();
 
-		breakPanel = new FormPanel();
-		breakPanel.setBorders(false);
-		breakPanel.setBodyBorder(false);
-		breakPanel.setPadding(0);
-		breakPanel.getHeader().setVisible(false);
-		this.add(breakPanel, new RowData(1, 10, new Margins(0)));
-
-		scoresPanelLocation = new LayoutContainer();
-		scoresPanelLocation.setLayout(new FitLayout());
-		scoresPanelLocation.setBorders(false);
-		
-		this.add(scoresPanelLocation, new RowData(1, 0.45, new Margins(0)));
+//		breakPanel = new FormPanel();
+//		breakPanel.setBorders(false);
+//		breakPanel.setBodyBorder(false);
+//		breakPanel.setPadding(0);
+//		breakPanel.getHeader().setVisible(false);
+//		this.add(breakPanel, new RowData(1, 10, new Margins(0)));
+//
+//		scoresPanelLocation = new LayoutContainer();
+//		scoresPanelLocation.setLayout(new FitLayout());
+//		scoresPanelLocation.setBorders(false);
+//		
+//		this.add(scoresPanelLocation, new RowData(1, 0.45, new Margins(0)));
 	}
 
-	public void updateScoresPanel(int selectedInterface)
-	{
-		if (scoresPanel == null) 
-		{
-			createScoresPanel();
-			scoresPanelLocation.add(scoresPanel);
-			scoresPanelLocation.layout();
-		}
-		
-		scoresPanel.fillGrid(mainController.getPdbScoreItem(), selectedInterface);
-		scoresPanel.resizeGrid();
-		scoresPanel.setVisible(true);
-	}
+//	public void updateScoresPanel(int selectedInterface)
+//	{
+//		if (scoresPanel == null) 
+//		{
+//			createScoresPanel();
+//			scoresPanelLocation.add(scoresPanel);
+//			scoresPanelLocation.layout();
+//		}
+//		
+//		scoresPanel.fillGrid(mainController.getPdbScoreItem(), selectedInterface);
+//		scoresPanel.resizeGrid();
+//		scoresPanel.setVisible(true);
+//	}
 
 	private List<ColumnConfig> createColumnConfig() 
 	{
@@ -489,18 +484,18 @@ public class ResultsPanel extends DisplayPanel
 		this.add(optionsLocation, new RowData(1, 35, new Margins(0)));
 	}
 
-	private void createScoresPanel() 
-	{
-		scoresPanel = new ScoresPanel(mainController);
-	}
+//	private void createScoresPanel() 
+//	{
+//		scoresPanel = new ScoresPanel(mainController);
+//	}
 
 	public void fillResultsPanel(PDBScoreItem resultsData) 
 	{
-		if (scoresPanel != null)
-		{
-			scoresPanelLocation.removeAll();
-			scoresPanel = null;
-		}
+//		if (scoresPanel != null)
+//		{
+//			scoresPanelLocation.removeAll();
+//			scoresPanel = null;
+//		}
 
 		fillResultsGrid(resultsData);
 
@@ -639,13 +634,13 @@ public class ResultsPanel extends DisplayPanel
 		}
 	}
 
-	public void resizeScoresGrid() 
-	{
-		if(scoresPanel != null)
-		{
-			scoresPanel.resizeGrid();
-		}
-	}
+//	public void resizeScoresGrid() 
+//	{
+//		if(scoresPanel != null)
+//		{
+//			scoresPanel.resizeGrid();
+//		}
+//	}
 	
 	public void displayThumbnails()
 	{
@@ -670,10 +665,10 @@ public class ResultsPanel extends DisplayPanel
 		return infoPanel;
 	}
 	
-	public ScoresPanel getScoresPanel()
-	{
-		return scoresPanel;
-	}
+//	public ScoresPanel getScoresPanel()
+//	{
+//		return scoresPanel;
+//	}
 	
 	public Grid<BeanModel> getResultsGrid()
 	{
