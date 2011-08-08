@@ -5,7 +5,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+
+import model.InterfaceItem;
+import model.InterfaceResidueItem;
+import model.InterfaceResidueMethodItem;
+import model.InterfaceScoreItem;
+import model.PDBScoreItem;
 
 import owl.core.structure.AaResidue;
 import owl.core.structure.ChainInterface;
@@ -16,11 +21,6 @@ import owl.core.structure.Residue;
 import owl.core.structure.SpaceGroup;
 import owl.core.util.Goodies;
 
-import model.InterfaceItem;
-import model.InterfaceResidueItem;
-import model.InterfaceResidueMethodItem;
-import model.InterfaceScoreItem;
-import model.PDBScoreItem;
 
 public class WebUIDataAdaptor {
 
@@ -215,9 +215,9 @@ public class WebUIDataAdaptor {
 					kaks = (float)kaksRatios.get(queryUniprotPos).doubleValue();
 				InterfaceResidueItem iri = new InterfaceResidueItem(residue.getSerial(),resType,asa,bsa,bsa/asa,assignment);
 
-				Map<String,InterfaceResidueMethodItem> scores = new HashMap<String, InterfaceResidueMethodItem>();
-				scores.put("entropy",new InterfaceResidueMethodItem(entropy));
-				if (includeKaks && iec.canDoCRK()) scores.put("kaks", new InterfaceResidueMethodItem(kaks));
+				List<InterfaceResidueMethodItem> scores = new ArrayList<InterfaceResidueMethodItem>();
+				scores.add(new InterfaceResidueMethodItem(entropy, "entropy"));
+				if (includeKaks && iec.canDoCRK()) scores.add(new InterfaceResidueMethodItem(kaks, "kaks"));
 				iri.setInterfaceResidueMethodItems(scores);
 				partner1.add(iri);
 			}
@@ -248,10 +248,10 @@ public class WebUIDataAdaptor {
 				if (includeKaks && iec.canDoCRK() && (residue instanceof AaResidue) && queryUniprotPos!=-1)
 					kaks = (float) kaksRatios.get(queryUniprotPos).doubleValue();
 				InterfaceResidueItem iri = new InterfaceResidueItem(residue.getSerial(),resType,asa,bsa,bsa/asa,assignment);
-				Map<String,InterfaceResidueMethodItem> scores = new HashMap<String, InterfaceResidueMethodItem>();
-				scores.put("entropy",new InterfaceResidueMethodItem(entropy));
+				List<InterfaceResidueMethodItem> scores = new ArrayList<InterfaceResidueMethodItem>();
+				scores.add(new InterfaceResidueMethodItem(entropy, "entropy"));
 				if (includeKaks && iec.canDoCRK())
-					scores.put("kaks", new InterfaceResidueMethodItem(kaks));
+					scores.add(new InterfaceResidueMethodItem(kaks, "kaks"));
 				iri.setInterfaceResidueMethodItems(scores);
 				partner2.add(iri);
 			}
@@ -282,8 +282,8 @@ public class WebUIDataAdaptor {
 
 				InterfaceResidueItem iri = new InterfaceResidueItem(residue.getSerial(),resType,asa,bsa,bsa/asa,assignment);
 
-				Map<String,InterfaceResidueMethodItem> scores = new HashMap<String, InterfaceResidueMethodItem>();
-				scores.put("geometry",new InterfaceResidueMethodItem(0));
+				List<InterfaceResidueMethodItem> scores = new ArrayList<InterfaceResidueMethodItem>();
+				scores.add(new InterfaceResidueMethodItem(0, "geometry"));
 				iri.setInterfaceResidueMethodItems(scores);
 				partner1.add(iri);
 			}
@@ -300,8 +300,8 @@ public class WebUIDataAdaptor {
 				if (assignment==-1 && asa>0) assignment = InterfaceResidueItem.SURFACE;
 
 				InterfaceResidueItem iri = new InterfaceResidueItem(residue.getSerial(),resType,asa,bsa,bsa/asa,assignment);
-				Map<String,InterfaceResidueMethodItem> scores = new HashMap<String, InterfaceResidueMethodItem>();
-				scores.put("geometry",new InterfaceResidueMethodItem(0));
+				List<InterfaceResidueMethodItem> scores = new ArrayList<InterfaceResidueMethodItem>();
+				scores.add(new InterfaceResidueMethodItem(0, "geometry"));
 				iri.setInterfaceResidueMethodItems(scores);
 				partner2.add(iri);
 			}
