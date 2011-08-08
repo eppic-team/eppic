@@ -1,11 +1,5 @@
 package ch.systemsx.sybit.crkwebui.server.util;
 
-import ch.systemsx.sybit.crkwebui.shared.CrkWebException;
-import model.InterfaceItem;
-import model.InterfaceScoreItem;
-import model.InterfaceScoreItemKey;
-import model.PDBScoreItem;
-//import crk.PdbScore;
 
 /**
  * This class is used to convert crk pdb item into crkweb
