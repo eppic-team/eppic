@@ -7,8 +7,8 @@
      	An ant script to build crk into a single crk.jar file in subdir build/jar
      	The jar file contains all external jar dependencies repacked into it and it's executable.
      	Use "default" target to clean and build the jar  
-     	Make sure to define the variables "version" and "owl.jar.location"
-     	e.g. -Dversion=1.1 -Dowl.jar.location=../owl/build/jar
+     	Make sure to define the variable "owl.jar.location"
+     	e.g. -Dowl.jar.location=../owl/build/jar
                    
      duarte_j                                                                
      ====================================================================== -->
@@ -19,7 +19,6 @@
 	
 	<!-- CHANGE THESE VALUES OR PASS IN ANT COMMAND WITH -Dname=value -->
 	
-	<property name="version" value="1.1.1"/>
 	<property name="owl.jar.location" value="../owl/build/jar"/>
 	
 	<!-- ============================================================ -->
@@ -74,7 +73,6 @@
 			<manifest>
 				<attribute name="Main-class" value="${main-class}"/>
 				<section name="${ant.project.name}"></section>
-				<attribute name="Specification-Version" value="${version}"/>
 			</manifest>
 			
 		</jar>
