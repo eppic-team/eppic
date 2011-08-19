@@ -55,6 +55,10 @@ public class WebUIDataAdaptor {
 		pdbScoreItem.setTitle(title);
 	}
 	
+	public void setSpaceGroup(SpaceGroup sg) {
+		pdbScoreItem.setSpaceGroup(sg.getShortSymbol());
+	}
+	
 	public void setInterfaces(ChainInterfaceList interfaces) {
 		this.interfaces = interfaces;
 		for (ChainInterface interf:interfaces) {
@@ -66,6 +70,12 @@ public class WebUIDataAdaptor {
 			ii.setSize1(interf.getFirstRimCore().getCoreSize());
 			ii.setSize2(interf.getSecondRimCore().getCoreSize());
 			ii.setWarnings(new ArrayList<String>()); // we then need to add warnings from each method as we add the scores from each method
+			
+			ii.setAsa1(interf.getFirstMolecule().getASA());
+			ii.setAsa1(interf.getSecondMolecule().getASA());
+			ii.setAsa1(interf.getFirstMolecule().getBSA());
+			ii.setAsa1(interf.getSecondMolecule().getBSA());
+			
 			pdbScoreItem.addInterfaceItem(ii);
 		}
 

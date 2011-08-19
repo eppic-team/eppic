@@ -27,6 +27,7 @@ public class PDBScoreItem implements Serializable, ProcessingData
 	private double bsaToAsaRelaxStep;
 	private boolean zoomUsed;
 	private String title;
+	private String spaceGroup;
 	
 	private List<String> numHomologsStrings;
 
@@ -181,5 +182,13 @@ public class PDBScoreItem implements Serializable, ProcessingData
 
 	public String getTitle() {
 		return title;
+	}
+	
+	public String getSpaceGroup() {
+		return spaceGroup;
+	}
+	
+	public void setSpaceGroup(String spaceGroup) {
+		this.spaceGroup = spaceGroup;
 	}
 }

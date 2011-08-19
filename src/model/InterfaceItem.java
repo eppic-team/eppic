@@ -16,6 +16,10 @@ public class InterfaceItem implements Serializable
 	private String name;
 	private int size1;
 	private int size2;
+	private double asa1;
+	private double asa2;
+	private double bsa1;
+	private double bsa2;
 	private String finalCall;
 	private String operator; 
 	private List<String> warnings;
@@ -136,5 +140,37 @@ public class InterfaceItem implements Serializable
 
 	public void setInterfaceResidues(List<InterfaceResidueItem> interfaceResidues) {
 		this.interfaceResidues = interfaceResidues;
+	}
+
+	public double getAsa1() {
+		return asa1;
+	}
+
+	public void setAsa1(double asa1) {
+		this.asa1 = asa1;
+	}
+
+	public double getAsa2() {
+		return asa2;
+	}
+
+	public void setAsa2(double asa2) {
+		this.asa2 = asa2;
+	}
+
+	public double getBsa1() {
+		return bsa1;
+	}
+
+	public void setBsa1(double bsa1) {
+		this.bsa1 = bsa1;
+	}
+
+	public double getBsa2() {
+		return bsa2;
+	}
+
+	public void setBsa2(double bsa2) {
+		this.bsa2 = bsa2;
 	}
 }
