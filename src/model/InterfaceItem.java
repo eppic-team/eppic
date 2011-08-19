@@ -16,10 +16,14 @@ public class InterfaceItem implements Serializable
 	private String name;
 	private int size1;
 	private int size2;
-	private double asa1;
-	private double asa2;
-	private double bsa1;
-	private double bsa2;
+	private double asaC1;
+	private double asaC2;
+	private double bsaC1;
+	private double bsaC2;
+	private double asaR1;
+	private double asaR2;
+	private double bsaR1;
+	private double bsaR2;
 	private String finalCall;
 	private String operator; 
 	private List<String> warnings;
@@ -142,35 +146,68 @@ public class InterfaceItem implements Serializable
 		this.interfaceResidues = interfaceResidues;
 	}
 
-	public double getAsa1() {
-		return asa1;
+	public double getAsaC1() {
+		return asaC1;
 	}
 
-	public void setAsa1(double asa1) {
-		this.asa1 = asa1;
+	public void setAsaC1(double asaC1) {
+		this.asaC1 = asaC1;
 	}
 
-	public double getAsa2() {
-		return asa2;
+	public double getAsaC2() {
+		return asaC2;
 	}
 
-	public void setAsa2(double asa2) {
-		this.asa2 = asa2;
+	public void setAsaC2(double asaC2) {
+		this.asaC2 = asaC2;
 	}
 
-	public double getBsa1() {
-		return bsa1;
+	public double getBsaC1() {
+		return bsaC1;
 	}
 
-	public void setBsa1(double bsa1) {
-		this.bsa1 = bsa1;
+	public void setBsaC1(double bsaC1) {
+		this.bsaC1 = bsaC1;
 	}
 
-	public double getBsa2() {
-		return bsa2;
+	public double getBsaC2() {
+		return bsaC2;
 	}
 
-	public void setBsa2(double bsa2) {
-		this.bsa2 = bsa2;
+	public void setBsaC2(double bsaC2) {
+		this.bsaC2 = bsaC2;
 	}
+
+	public double getAsaR1() {
+		return asaR1;
+	}
+
+	public void setAsaR1(double asaR1) {
+		this.asaR1 = asaR1;
+	}
+
+	public double getAsaR2() {
+		return asaR2;
+	}
+
+	public void setAsaR2(double asaR2) {
+		this.asaR2 = asaR2;
+	}
+
+	public double getBsaR1() {
+		return bsaR1;
+	}
+
+	public void setBsaR1(double bsaR1) {
+		this.bsaR1 = bsaR1;
+	}
+
+	public double getBsaR2() {
+		return bsaR2;
+	}
+
+	public void setBsaR2(double bsaR2) {
+		this.bsaR2 = bsaR2;
+	}
+
 }

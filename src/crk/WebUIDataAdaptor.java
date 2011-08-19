@@ -71,10 +71,14 @@ public class WebUIDataAdaptor {
 			ii.setSize2(interf.getSecondRimCore().getCoreSize());
 			ii.setWarnings(new ArrayList<String>()); // we then need to add warnings from each method as we add the scores from each method
 			
-			ii.setAsa1(interf.getFirstMolecule().getASA());
-			ii.setAsa1(interf.getSecondMolecule().getASA());
-			ii.setAsa1(interf.getFirstMolecule().getBSA());
-			ii.setAsa1(interf.getSecondMolecule().getBSA());
+			ii.setAsaC1(interf.getFirstRimCore().getAsaCore());
+			ii.setAsaR1(interf.getFirstRimCore().getAsaRim());
+			ii.setBsaC1(interf.getFirstRimCore().getBsaCore());
+			ii.setBsaR1(interf.getFirstRimCore().getBsaRim());
+			ii.setAsaC2(interf.getSecondRimCore().getAsaCore());
+			ii.setAsaR2(interf.getSecondRimCore().getAsaRim());
+			ii.setBsaC2(interf.getSecondRimCore().getBsaCore());
+			ii.setBsaR2(interf.getSecondRimCore().getBsaRim());
 			
 			pdbScoreItem.addInterfaceItem(ii);
 		}
