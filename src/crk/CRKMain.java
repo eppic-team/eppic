@@ -254,18 +254,7 @@ public class CRKMain {
 		
 	}
 	
-	private void doGeomScoring() throws CRKException {
-		PymolRunner pr = null;
-		if (params.isGenerateThumbnails()) {
-			try {
-				pr = new PymolRunner(params.getPymolExe());
-				pr.readColorsFromPropertiesFile(CRKParams.COLORS_PROPERTIES_IS);
-				
-			} catch (IOException e) {
-				LOGGER.error("Couldn't read colors file. Won't generate thumbnails or pse files");
-				pr = null;
-			}
-		}
+	public void doGeomScoring() throws CRKException {
 
 		try {
 			List<GeometryPredictor> gps = new ArrayList<GeometryPredictor>();
@@ -278,26 +267,43 @@ public class CRKMain {
 				gp.setMinCoreSizeForBio(params.getMinNumResCA());
 				gp.printScores(scoreGeomPS);
 				gp.writePdbFile(params.getOutputFile("."+interf.getId()+".rimcore.pdb"));
-				if (params.isGenerateThumbnails() && pr!=null) {
-					pr.generateThumbnails(interf,
-							params.getOutputFile("."+interf.getId()+".rimcore.pdb"),
-							params.getBaseName()+"."+interf.getId());
-					pr.generateInterfPse(interf, 
-							params.getOutputFile("."+interf.getId()+".rimcore.pdb"), 
-							params.getOutputFile("."+interf.getId()+".pse"),
-							params.getOutputFile("."+interf.getId()+".pml"));
-				}
 			}
 			scoreGeomPS.close();
 			// for the webui
 			wuiAdaptor.setInterfaces(interfaces);
 			wuiAdaptor.setGeometryScores(gps);
 		} catch (IOException e) {
-			throw new CRKException(e, "Couldn't write interface geometry scores or related pdb, pse or pml files. "+e.getMessage(),true);
-		} catch (InterruptedException e) {
-			throw new CRKException(e, "Couldn't generate thumbnails, pymol thread interrupted: "+e.getMessage(),false);
+			throw new CRKException(e, "Couldn't write interface geometry scores or related pdb files. "+e.getMessage(),true);
 		}
-
+	}
+	
+	public void doWritePymolFiles() throws CRKException {
+		PymolRunner pr = null;
+		if (params.isGenerateThumbnails()) {
+			try {
+				pr = new PymolRunner(params.getPymolExe());
+				pr.readColorsFromPropertiesFile(CRKParams.COLORS_PROPERTIES_IS);
+				
+			} catch (IOException e) {
+				LOGGER.error("Couldn't read colors file. Won't generate thumbnails or pse/pml files");
+				pr = null;
+			}
+		}
+		if (params.isGenerateThumbnails() && pr!=null) {
+			try {
+				for (ChainInterface interf:interfaces) {
+					pr.generateInterfPngPsePml(interf, 
+							params.getOutputFile("."+interf.getId()+".rimcore.pdb"), 
+							params.getOutputFile("."+interf.getId()+".pse"),
+							params.getOutputFile("."+interf.getId()+".pml"),
+							params.getBaseName()+"."+interf.getId());
+				}
+			} catch (IOException e) {
+				throw new CRKException(e, "Couldn't write thumbnails or pymol pse/pml files. "+e.getMessage(),true);
+			} catch (InterruptedException e) {
+				throw new CRKException(e, "Couldn't generate thumbnails or pse/pml files, pymol thread interrupted: "+e.getMessage(),false);
+			}
+		}
 	}
 	
 	private void findUniqueChains() {
@@ -603,6 +609,8 @@ public class CRKMain {
 				// 3 scoring
 				crkMain.doEvolScoring();
 			}
+			
+			crkMain.doWritePymolFiles();
 			
 			// writing out the serialized file for web ui
 			crkMain.wuiAdaptor.writePdbScoreItemFile(crkMain.params.getOutputFile(".webui.dat"));
