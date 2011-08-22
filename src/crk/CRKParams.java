@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.Properties;
 import java.util.regex.Matcher;
@@ -18,6 +19,7 @@ public class CRKParams {
 	// CONSTANTS
 	private static final String   PROGRAM_NAME = "crk";
 	private static final Pattern  PDBCODE_PATTERN = Pattern.compile("^\\d\\w\\w\\w$");
+	protected static final InputStream COLORS_PROPERTIES_IS = CRKParams.class.getResourceAsStream("/resources/chain_colors.dat");
 	
 	// DEFAULTS FOR COMMAND LINE PARAMETERS
 	private static final double   DEF_IDENTITY_CUTOFF = 0.6;

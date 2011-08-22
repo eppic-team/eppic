@@ -21,6 +21,7 @@ import org.apache.log4j.PatternLayout;
 import org.xml.sax.SAXException;
 
 import owl.core.connections.pisa.PisaConnection;
+import owl.core.runners.PymolRunner;
 import owl.core.runners.TcoffeeException;
 import owl.core.runners.blast.BlastException;
 import owl.core.sequence.UniprotVerMisMatchException;
@@ -254,6 +255,18 @@ public class CRKMain {
 	}
 	
 	private void doGeomScoring() throws CRKException {
+		PymolRunner pr = null;
+		if (params.isGenerateThumbnails()) {
+			try {
+				pr = new PymolRunner(params.getPymolExe());
+				pr.readColorsFromPropertiesFile(CRKParams.COLORS_PROPERTIES_IS);
+				
+			} catch (IOException e) {
+				LOGGER.error("Couldn't read colors file. Won't generate thumbnails or pse files");
+				pr = null;
+			}
+		}
+
 		try {
 			List<GeometryPredictor> gps = new ArrayList<GeometryPredictor>();
 			PrintStream scoreGeomPS = new PrintStream(params.getOutputFile(GEOMETRY_FILE_SUFFIX+".scores"));
@@ -265,9 +278,14 @@ public class CRKMain {
 				gp.setMinCoreSizeForBio(params.getMinNumResCA());
 				gp.printScores(scoreGeomPS);
 				gp.writePdbFile(params.getOutputFile("."+interf.getId()+".rimcore.pdb"));
-				if (params.isGenerateThumbnails()) {
-					interf.generateThumbnails(params.getPymolExe(),params.getOutputFile("."+interf.getId()+".rimcore.pdb"),
+				if (params.isGenerateThumbnails() && pr!=null) {
+					pr.generateThumbnails(interf,
+							params.getOutputFile("."+interf.getId()+".rimcore.pdb"),
 							params.getBaseName()+"."+interf.getId());
+					pr.generateInterfPse(interf, 
+							params.getOutputFile("."+interf.getId()+".rimcore.pdb"), 
+							params.getOutputFile("."+interf.getId()+".pse"),
+							params.getOutputFile("."+interf.getId()+".pml"));
 				}
 			}
 			scoreGeomPS.close();
@@ -275,9 +293,7 @@ public class CRKMain {
 			wuiAdaptor.setInterfaces(interfaces);
 			wuiAdaptor.setGeometryScores(gps);
 		} catch (IOException e) {
-			throw new CRKException(e, "Couldn't write interface geometry scores or related PDB files. "+e.getMessage(),true);
-		} catch (PdbLoadException e) {
-			throw new CRKException(e, "Couldn't generate thumbnails, problem in reading PDB file: "+e.getMessage(),false);
+			throw new CRKException(e, "Couldn't write interface geometry scores or related pdb, pse or pml files. "+e.getMessage(),true);
 		} catch (InterruptedException e) {
 			throw new CRKException(e, "Couldn't generate thumbnails, pymol thread interrupted: "+e.getMessage(),false);
 		}

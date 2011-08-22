@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -220,8 +219,7 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 	}
 	
 	/**
-	 * Writes out a PDB file with the 2 chains of this interface with rim core residues 
-	 * as b-factors. 
+	 * Writes out a PDB file with the 2 chains of this interface
 	 * In order for the file to be handled properly by molecular viewers whenever the two
 	 * chains have the same code we rename the second one to the next letter in alphabet.
 	 * PDB chain codes are used for the output, not cif codes.  
@@ -231,8 +229,6 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 	public void writePdbFile(File file) throws IOException {
  
 		if (interf.isFirstProtein() && interf.isSecondProtein()) {
-			setRimCoreAsBfactors(FIRST);
-			setRimCoreAsBfactors(SECOND);
 			this.interf.writeToPdbFile(file);
 		}
 	}
@@ -243,32 +239,6 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 	
 	public void setMinCoreSizeForBio(int minCoreSizeForBio) {
 		this.minCoreSizeForBio = minCoreSizeForBio;
-	}
-	
-	private void setRimCoreAsBfactors(int molecId) {
-		HashMap<Integer,Double> rimcoreVals = new HashMap<Integer, Double>();
-		InterfaceRimCore rimCore = null;
-		PdbChain pdb = null;
-		if (molecId==FIRST) {
-			pdb = interf.getFirstMolecule();
-			rimCore = this.interf.getFirstRimCore();
-		} else if (molecId==SECOND) {
-			pdb = interf.getSecondMolecule();
-			rimCore = this.interf.getSecondRimCore();
-		}
-		// first we assign all residues same color (50 hopefully gives a yellowish one)
-		for (Residue residue:pdb) {
-			rimcoreVals.put(residue.getSerial(),50.0);
-		}
-		// core residues : 1 for a blue
-		for (Residue res:rimCore.getCoreResidues()) {
-			rimcoreVals.put(res.getSerial(), 1.0);
-		}
-		// rim residues: 200 for a red  
-		for (Residue res:rimCore.getRimResidues()) {
-			rimcoreVals.put(res.getSerial(), 200.0);
-		}
-		pdb.setBFactorsPerResidue(rimcoreVals);
 	}
 	
 	public int countGlycines(InterfaceRimCore rimcore) {
