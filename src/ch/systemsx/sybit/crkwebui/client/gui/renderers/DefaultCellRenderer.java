@@ -1,6 +1,8 @@
 package ch.systemsx.sybit.crkwebui.client.gui.renderers;
 
-import com.extjs.gxt.ui.client.data.BeanModel;
+import ch.systemsx.sybit.crkwebui.client.model.InterfaceItemModel;
+
+import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.widget.grid.ColumnData;
 import com.extjs.gxt.ui.client.widget.grid.Grid;
@@ -11,12 +13,12 @@ import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
  * @author srebniak_a
  *
  */
-public class DefaultCellRenderer implements GridCellRenderer<BeanModel> {
+public class DefaultCellRenderer implements GridCellRenderer<BaseModel> {
 
 	@Override
-	public Object render(BeanModel model, String property, ColumnData config,
-			int rowIndex, int colIndex, ListStore<BeanModel> store,
-			Grid<BeanModel> grid) {
+	public Object render(BaseModel model, String property, ColumnData config,
+			int rowIndex, int colIndex, ListStore<BaseModel> store,
+			Grid<BaseModel> grid) {
 		return model.get(property);
 	}
 

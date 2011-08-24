@@ -6,7 +6,7 @@ import model.InterfaceItem;
 import model.InterfaceScoreItem;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 
-import com.extjs.gxt.ui.client.data.BeanModel;
+import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.Listener;
@@ -23,7 +23,7 @@ import com.extjs.gxt.ui.client.widget.tips.ToolTipConfig;
  * @author srebniak_a
  *
  */
-public class MethodCellRenderer implements GridCellRenderer<BeanModel> 
+public class MethodCellRenderer implements GridCellRenderer<BaseModel> 
 {
 	private MainController mainController;
 	
@@ -35,9 +35,9 @@ public class MethodCellRenderer implements GridCellRenderer<BeanModel>
 		this.mainController = mainController;
 	}
 
-	public Object render(final BeanModel model, final String property,
+	public Object render(final BaseModel model, final String property,
 			ColumnData config, final int rowIndex, final int colIndex,
-			ListStore<BeanModel> store, final Grid<BeanModel> grid) {
+			ListStore<BaseModel> store, final Grid<BaseModel> grid) {
 		
 		String value = (String) model.get(property);
 
@@ -59,7 +59,7 @@ public class MethodCellRenderer implements GridCellRenderer<BeanModel>
 			
 			callReasonLabel.setStyleAttribute("color", color);
 
-			int interfaceId = Integer.parseInt(String.valueOf(model.get("id")));
+			int interfaceId = model.get("id");
 			
 			InterfaceItem interfaceItem = mainController.getPdbScoreItem().getInterfaceItem(interfaceId - 1);
 			

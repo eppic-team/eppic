@@ -7,6 +7,7 @@ import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.FieldEvent;
 import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.util.Margins;
+import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.form.ComboBox.TriggerAction;
 import com.extjs.gxt.ui.client.widget.form.FormPanel;
 import com.extjs.gxt.ui.client.widget.form.SimpleComboBox;
@@ -20,67 +21,89 @@ public class InterfacesResiduesPanel extends FormPanel
 	private ResiduesPanel firstStructure;
 	private ResiduesPanel secondStructure;
 	
+	private ResiduesSummaryPanel firstStructureSummary;
+	private ResiduesSummaryPanel secondStructureSummary;
+	
 	private ToolBar toolbar;
 
 	private SimpleComboBox<String> residuesFilterComboBox;
 	
 	public InterfacesResiduesPanel(MainController mainController,
 								   int width,
-								   int height)
+								   int height,
+								   int selectedInterface)
 	{
 		// infoPanel.setFrame(true);
 		this.getHeader().setVisible(false);
 		this.setBodyBorder(false);
 		this.setBorders(false);
-		this.setLayout(new RowLayout(Orientation.HORIZONTAL));
+		this.setLayout(new RowLayout(Orientation.VERTICAL));
 		
-//		LayoutContainer l = new LayoutContainer();
-//		l.setLayout(new RowLayout(Orientation.HORIZONTAL));
+		LayoutContainer residuesLayoutContainer = new LayoutContainer();
+		residuesLayoutContainer.setLayout(new RowLayout(Orientation.HORIZONTAL));
+		
+		String interfaceName = mainController.getPdbScoreItem().getInterfaceItem(selectedInterface - 1).getName();
+		
+		String firstStructureName = "";
+		String secondStructureName = "";
+		
+		if((interfaceName !=  null) && (interfaceName.contains("+")))
+		{
+			firstStructureName = interfaceName.substring(0, interfaceName.indexOf("+"));
+			
+			if(interfaceName.indexOf("+") < interfaceName.length() - 1)
+			{
+				secondStructureName = interfaceName.substring(interfaceName.indexOf("+") + 1);
+			}
+		}
 		
 		firstStructure = new ResiduesPanel(
-										   MainController.CONSTANTS.interfaces_residues_panel_first_structure(), 
+										   MainController.CONSTANTS.interfaces_residues_panel_first_structure() + firstStructureName, 
 										   mainController,
 										   width,
-										   height,
+										   height - 90,
 										   1);
 		
 		secondStructure = new ResiduesPanel(
-											MainController.CONSTANTS.interfaces_residues_panel_second_structure(),
+											MainController.CONSTANTS.interfaces_residues_panel_second_structure() + secondStructureName,
 											mainController,
 											width,
-											height,
+											height - 90,
 											2);
 
-		this.add(firstStructure, new RowData(0.48, 1, new Margins(0)));
+		residuesLayoutContainer.add(firstStructure, new RowData(0.48, 1, new Margins(0)));
 		
 		FormPanel breakPanel = new FormPanel();
 		breakPanel.setBodyBorder(false);
 		breakPanel.setBorders(false);
 		breakPanel.getHeader().setVisible(false);
-		this.add(breakPanel, new RowData(0.04, 1, new Margins(0)));
+		residuesLayoutContainer.add(breakPanel, new RowData(0.04, 1, new Margins(0)));
 
-		this.add(secondStructure, new RowData(0.48, 1, new Margins(0)));
+		residuesLayoutContainer.add(secondStructure, new RowData(0.48, 1, new Margins(0)));
 		
-//		LayoutContainer summaryPanel = new LayoutContainer();
-//		summaryPanel.setLayout(new RowLayout(Orientation.HORIZONTAL));
-//		
-//		summaryPanel.add(new ResiduesSummaryPanel("", mainController, width, height, 1), new RowData(0.48, 1, new Margins(0)));
-//		FormPanel summaryPanelBreak = new FormPanel();
-//		summaryPanelBreak.setBodyBorder(false);
-//		summaryPanelBreak.setBorders(false);
-//		summaryPanelBreak.getHeader().setVisible(false);
-//		summaryPanel.add(summaryPanelBreak, new RowData(0.04, 1, new Margins(0)));
-//		summaryPanel.add(new ResiduesSummaryPanel("", mainController, width, height, 2), new RowData(0.48, 1, new Margins(0)));
-//		
-//		this.add(l, new RowData(1, 1, new Margins(0)));
-//		
-//		FormPanel generalPanelBreak = new FormPanel();
-//		generalPanelBreak.setBodyBorder(false);
-//		generalPanelBreak.setBorders(false);
-//		generalPanelBreak.getHeader().setVisible(false);
-//		
-//		this.add(generalPanelBreak, new RowData(1, 20, new Margins(0)));
-//		this.add(summaryPanel, new RowData(1, 65, new Margins(0)));
+		LayoutContainer summaryPanel = new LayoutContainer();
+		summaryPanel.setLayout(new RowLayout(Orientation.HORIZONTAL));
+		
+		firstStructureSummary = new ResiduesSummaryPanel("", mainController, width, 1);
+		secondStructureSummary = new ResiduesSummaryPanel("", mainController, width, 2);
+		
+		summaryPanel.add(firstStructureSummary, new RowData(0.48, 1, new Margins(0)));
+		FormPanel summaryPanelBreak = new FormPanel();
+		summaryPanelBreak.setBodyBorder(false);
+		summaryPanelBreak.setBorders(false);
+		summaryPanelBreak.getHeader().setVisible(false);
+		summaryPanel.add(summaryPanelBreak, new RowData(0.04, 1, new Margins(0)));
+		summaryPanel.add(secondStructureSummary, new RowData(0.48, 1, new Margins(0)));
+		
+		this.add(residuesLayoutContainer, new RowData(1, 1, new Margins(0, 0, 0, 0)));
+		
+		FormPanel generalPanelBreak = new FormPanel();
+		generalPanelBreak.setBodyBorder(false);
+		generalPanelBreak.setBorders(false);
+		generalPanelBreak.getHeader().setVisible(false);
+		
+		this.add(generalPanelBreak, new RowData(1, 20, new Margins(0)));
+		this.add(summaryPanel, new RowData(1, 70, new Margins(0)));
 		
 		toolbar = new ToolBar();  
 		
@@ -127,6 +150,8 @@ public class InterfacesResiduesPanel extends FormPanel
 	{
 		firstStructure.resizeGrid();
 		secondStructure.resizeGrid();
+		firstStructureSummary.resizeGrid();
+		secondStructureSummary.resizeGrid();
 	}
 	
 	public ResiduesPanel getFirstStructurePanel() 
@@ -137,6 +162,16 @@ public class InterfacesResiduesPanel extends FormPanel
 	public ResiduesPanel getSecondStructurePanel() 
 	{
 		return secondStructure;
+	}
+	
+	public ResiduesSummaryPanel getFirstStructurePanelSummary() 
+	{
+		return firstStructureSummary;
+	}
+
+	public ResiduesSummaryPanel getSecondStructurePanelSummary() 
+	{
+		return secondStructureSummary;
 	}
 
 }

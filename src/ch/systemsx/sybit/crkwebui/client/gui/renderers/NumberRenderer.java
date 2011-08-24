@@ -1,6 +1,6 @@
 package ch.systemsx.sybit.crkwebui.client.gui.renderers;
 
-import com.extjs.gxt.ui.client.data.BeanModel;
+import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.widget.grid.ColumnData;
 import com.extjs.gxt.ui.client.widget.grid.Grid;
@@ -13,18 +13,18 @@ import com.google.gwt.i18n.client.NumberFormat;
  * @author srebniak_a
  *
  */
-public class NumberRenderer implements GridCellRenderer<BeanModel> 
+public class NumberRenderer implements GridCellRenderer<BaseModel> 
 {
 	private NumberFormat number = NumberFormat.getFormat("0.00");  
-	private NumberCellRenderer<Grid<BeanModel>> numberRenderer = new NumberCellRenderer<Grid<BeanModel>>(number);  
+	private NumberCellRenderer<Grid<BaseModel>> numberRenderer = new NumberCellRenderer<Grid<BaseModel>>(number);  
 	
-	public Object render(final BeanModel model, 
+	public Object render(final BaseModel model, 
 						 String property,
 						 ColumnData config, 
 						 final int rowIndex, 
 						 final int colIndex,
-						 ListStore<BeanModel> store, 
-						 final Grid<BeanModel> grid) 
+						 ListStore<BaseModel> store, 
+						 final Grid<BaseModel> grid) 
 	{
 //		QuickTip quickTip = new QuickTip(grid);
 //		quickTip.disable();

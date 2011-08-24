@@ -2,7 +2,7 @@ package ch.systemsx.sybit.crkwebui.client.gui.renderers;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 
-import com.extjs.gxt.ui.client.data.BeanModel;
+import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.widget.grid.ColumnData;
 import com.extjs.gxt.ui.client.widget.grid.Grid;
@@ -13,7 +13,7 @@ import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
  * @author srebniak_a
  *
  */
-public class SizeCellRenderer implements GridCellRenderer<BeanModel> 
+public class SizeCellRenderer implements GridCellRenderer<BaseModel> 
 {
 	private MainController mainController;
 	
@@ -22,9 +22,9 @@ public class SizeCellRenderer implements GridCellRenderer<BeanModel>
 		this.mainController = mainController;
 	}
 
-	public Object render(final BeanModel model, String property,
+	public Object render(final BaseModel model, String property,
 			ColumnData config, final int rowIndex, final int colIndex,
-			ListStore<BeanModel> store, Grid<BeanModel> grid) {
+			ListStore<BaseModel> store, Grid<BaseModel> grid) {
 		
 		int value = model.get(property);
 		

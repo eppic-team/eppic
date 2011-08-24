@@ -41,6 +41,7 @@ public class GetInterfaceResiduesCallback implements AsyncCallback<HashMap<Integ
 				mainController.getMainViewPort().getInterfacesResiduesWindow().getInterfacesResiduesPanel().getFirstStructurePanel()
 						.fillResiduesGrid(result.get(1));
 				mainController.getMainViewPort().getInterfacesResiduesWindow().getInterfacesResiduesPanel().getFirstStructurePanel().applyFilter(false);
+				mainController.getMainViewPort().getInterfacesResiduesWindow().getInterfacesResiduesPanel().getFirstStructurePanelSummary().fillResiduesGrid();
 			}
 			
 			if(result.containsKey(2))
@@ -48,6 +49,7 @@ public class GetInterfaceResiduesCallback implements AsyncCallback<HashMap<Integ
 				mainController.getMainViewPort().getInterfacesResiduesWindow().getInterfacesResiduesPanel().getSecondStructurePanel()
 						.fillResiduesGrid(result.get(2));
 				mainController.getMainViewPort().getInterfacesResiduesWindow().getInterfacesResiduesPanel().getSecondStructurePanel().applyFilter(false);
+				mainController.getMainViewPort().getInterfacesResiduesWindow().getInterfacesResiduesPanel().getSecondStructurePanelSummary().fillResiduesGrid();
 			}
 			
 			mainController.getMainViewPort().getInterfacesResiduesWindow().getInterfacesResiduesPanel().resizeResiduesPanels();

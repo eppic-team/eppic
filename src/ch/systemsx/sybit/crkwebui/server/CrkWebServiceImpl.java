@@ -33,7 +33,6 @@ import ch.systemsx.sybit.crkwebui.server.data.EmailData;
 import ch.systemsx.sybit.crkwebui.server.db.model.JobDAO;
 import ch.systemsx.sybit.crkwebui.server.db.model.JobDAOImpl;
 import ch.systemsx.sybit.crkwebui.server.util.IPVerifier;
-import ch.systemsx.sybit.crkwebui.server.util.PDBModelConverter;
 import ch.systemsx.sybit.crkwebui.server.util.RandomDirectoryNameGenerator;
 import ch.systemsx.sybit.crkwebui.shared.CrkWebException;
 import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;

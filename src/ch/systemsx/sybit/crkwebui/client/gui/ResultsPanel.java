@@ -11,12 +11,11 @@ import model.InterfaceScoreItem;
 import model.PDBScoreItem;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 import ch.systemsx.sybit.crkwebui.client.gui.renderers.GridCellRendererFactory;
+import ch.systemsx.sybit.crkwebui.client.model.InterfaceItemModel;
 
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.Style.Orientation;
-import com.extjs.gxt.ui.client.data.BeanModel;
-import com.extjs.gxt.ui.client.data.BeanModelFactory;
-import com.extjs.gxt.ui.client.data.BeanModelLookup;
+import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.FieldEvent;
@@ -60,9 +59,9 @@ public class ResultsPanel extends DisplayPanel
 	// * Results grid
 	// ***************************************
 	private ContentPanel resultsGridContainer;
-	private Grid<BeanModel> resultsGrid;
+	private Grid<InterfaceItemModel> resultsGrid;
 	private List<ColumnConfig> resultsConfigs;
-	private ListStore<BeanModel> resultsStore;
+	private ListStore<InterfaceItemModel> resultsStore;
 	private ColumnModel resultsColumnModel;
 	private Map<String, Integer> initialColumnWidth;
 	// ***************************************
@@ -81,7 +80,13 @@ public class ResultsPanel extends DisplayPanel
 		this.setLayout(new RowLayout(Orientation.VERTICAL));
 		this.setStyleAttribute("padding", "10px");
 
-		pdbIdentifier = new Label(MainController.CONSTANTS.info_panel_pdb_identifier() + ": " + mainController.getPdbScoreItem().getPdbName());
+		pdbIdentifier = new Label(MainController.CONSTANTS.info_panel_pdb_identifier() + 
+								  ": " + 
+								  mainController.getPdbScoreItem().getPdbName() +
+								  " (" +
+								  mainController.getPdbScoreItem().getSpaceGroup() +
+								  ")");
+		
 		pdbIdentifier.addStyleName("pdb-identifier-label");
 		this.add(pdbIdentifier);
 		
@@ -127,11 +132,11 @@ public class ResultsPanel extends DisplayPanel
 			}
 		}
 
-		resultsStore = new ListStore<BeanModel>();
+		resultsStore = new ListStore<InterfaceItemModel>();
 
 		resultsColumnModel = new ColumnModel(resultsConfigs);
 
-		resultsGrid = new Grid<BeanModel>(resultsStore, resultsColumnModel);
+		resultsGrid = new Grid<InterfaceItemModel>(resultsStore, resultsColumnModel);
 		// resultsGrid.setStyleAttribute("borderTop", "none");
 
 		resultsGrid.getView().setForceFit(false);
@@ -234,9 +239,7 @@ public class ResultsPanel extends DisplayPanel
 	{
 		List<ColumnConfig> configs = new ArrayList<ColumnConfig>();
 
-		BeanModelFactory beanModelFactory = BeanModelLookup.get().getFactory(
-				InterfaceItem.class);
-		BeanModel model = beanModelFactory.createModel(new InterfaceItem());
+		InterfaceItemModel model = new InterfaceItemModel();
 
 		String columnOrder = mainController.getSettings().getGridProperties()
 				.get("results_columns");
@@ -298,7 +301,7 @@ public class ResultsPanel extends DisplayPanel
 						.getGridProperties()
 						.get("results_" + columnName + "_renderer");
 
-				GridCellRenderer<BeanModel> renderer = null;
+				GridCellRenderer<BaseModel> renderer = null;
 				if ((customRenderer != null) && (!customRenderer.equals(""))) {
 					renderer = GridCellRendererFactory.createGridCellRenderer(
 							customRenderer, mainController);
@@ -511,7 +514,7 @@ public class ResultsPanel extends DisplayPanel
 		
 		resultsStore.removeAll();
 
-		List<BeanModel> data = new ArrayList<BeanModel>();
+		List<InterfaceItemModel> data = new ArrayList<InterfaceItemModel>();
 
 		List<InterfaceItem> interfaceItems = resultsData.getInterfaceItems();
 
@@ -525,9 +528,7 @@ public class ResultsPanel extends DisplayPanel
 					hideWarnings = false;
 			    }
 				
-				BeanModelFactory beanModelFactory = BeanModelLookup.get()
-						.getFactory(InterfaceItem.class);
-				BeanModel model = beanModelFactory.createModel(interfaceItem);
+				InterfaceItemModel model = new InterfaceItemModel();
 
 				for (String method : mainController.getSettings().getScoresTypes())
 				{
@@ -539,16 +540,17 @@ public class ResultsPanel extends DisplayPanel
 						}
 					}
 				}
+				
 				// Window.alert(String.valueOf(interfaceItem));
 				// ResultsModel resultsModel = new ResultsModel("");
-				// resultsModel.set("id", interfaceItem.getId());
-				// resultsModel.set("interface", interfaceItem.getName());
-				// resultsModel.set("area", interfaceItem.getArea());
-				// resultsModel.set("size1", interfaceItem.getSize1());
-				// resultsModel.set("size2", interfaceItem.getSize2());
-				// resultsModel.set("n1", interfaceItem.getNumHomologs1());
-				// resultsModel.set("n2", interfaceItem.getNumHomologs2());
-				// resultsModel.set("entropy", "Bio");
+				model.setId(interfaceItem.getId());
+				model.setName(interfaceItem.getName());
+				model.setArea(interfaceItem.getArea());
+				model.setSize1(interfaceItem.getSize1());
+				model.setSize2(interfaceItem.getSize2());
+				model.setFinalCall(interfaceItem.getFinalCall());
+				model.setOperator(interfaceItem.getOperator());
+				model.setWarnings(interfaceItem.getWarnings());
 
 				data.add(model);
 			}
@@ -670,12 +672,12 @@ public class ResultsPanel extends DisplayPanel
 //		return scoresPanel;
 //	}
 	
-	public Grid<BeanModel> getResultsGrid()
+	public Grid<InterfaceItemModel> getResultsGrid()
 	{
 		return resultsGrid;
 	}
 	
-	public ListStore<BeanModel> getResultsStore() 
+	public ListStore<InterfaceItemModel> getResultsStore() 
 	{
 		return resultsStore;
 	}

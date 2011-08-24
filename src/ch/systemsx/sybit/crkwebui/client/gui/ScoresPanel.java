@@ -14,6 +14,7 @@ import ch.systemsx.sybit.crkwebui.client.gui.renderers.GridCellRendererFactory;
 
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.Style.Orientation;
+import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.data.BeanModel;
 import com.extjs.gxt.ui.client.data.BeanModelFactory;
 import com.extjs.gxt.ui.client.data.BeanModelLookup;
@@ -260,7 +261,7 @@ public class ScoresPanel extends LayoutContainer
 						.getGridProperties()
 						.get("scores_" + columnName + "_renderer");
 
-				GridCellRenderer<BeanModel> renderer = null;
+				GridCellRenderer<BaseModel> renderer = null;
 				if ((customRenderer != null) && (!customRenderer.equals(""))) {
 					renderer = GridCellRendererFactory.createGridCellRenderer(
 							customRenderer, mainController);

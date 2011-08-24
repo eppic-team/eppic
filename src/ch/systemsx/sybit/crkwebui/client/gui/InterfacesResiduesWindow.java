@@ -40,7 +40,7 @@ public class InterfacesResiduesWindow extends Dialog
 		}
 		
 		this.setPlain(true);
-		this.setModal(true);
+		this.setModal(false);
 		this.setBlinkModal(true);
 		this.setLayout(new RowLayout());
 		this.setHideOnButtonClick(true);
@@ -54,7 +54,8 @@ public class InterfacesResiduesWindow extends Dialog
 		
 		interfacesResiduesPanel = new InterfacesResiduesPanel(mainController,
 															  width,
-															  height - 220);
+															  height - 220,
+															  selectedInterface);
 		
 		this.add(interfacesResiduesPanel, new RowData(1, 1, new Margins(0)));
 		

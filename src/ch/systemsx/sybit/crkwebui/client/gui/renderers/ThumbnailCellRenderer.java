@@ -2,7 +2,7 @@ package ch.systemsx.sybit.crkwebui.client.gui.renderers;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 
-import com.extjs.gxt.ui.client.data.BeanModel;
+import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.widget.grid.ColumnData;
 import com.extjs.gxt.ui.client.widget.grid.Grid;
@@ -22,7 +22,7 @@ import com.google.gwt.user.client.ui.Image;
  * @author srebniak_a
  *
  */
-public class ThumbnailCellRenderer implements GridCellRenderer<BeanModel> 
+public class ThumbnailCellRenderer implements GridCellRenderer<BaseModel> 
 {
 	private MainController mainController;
 	
@@ -33,9 +33,9 @@ public class ThumbnailCellRenderer implements GridCellRenderer<BeanModel>
 		this.mainController = mainController;
 	}
 	
-	public Object render(final BeanModel model, String property,
+	public Object render(final BaseModel model, String property,
 			ColumnData config, int rowIndex, int colIndex,
-			ListStore<BeanModel> store, final Grid<BeanModel> grid) 
+			ListStore<BaseModel> store, final Grid<BaseModel> grid) 
 	{
 		String url = mainController.getSettings().getResultsLocation();
 		

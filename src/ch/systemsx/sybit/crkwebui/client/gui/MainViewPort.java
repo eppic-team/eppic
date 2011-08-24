@@ -135,6 +135,8 @@ public class MainViewPort extends Viewport
 			interfacesResiduesWindow.getInterfacesResiduesPanel().cleanData();
 			interfacesResiduesWindow.getInterfacesResiduesPanel().getFirstStructurePanel().cleanResiduesGrid();
 			interfacesResiduesWindow.getInterfacesResiduesPanel().getSecondStructurePanel().cleanResiduesGrid();
+			interfacesResiduesWindow.getInterfacesResiduesPanel().getFirstStructurePanelSummary().cleanResiduesGrid();
+			interfacesResiduesWindow.getInterfacesResiduesPanel().getSecondStructurePanelSummary().cleanResiduesGrid();
 		}
 		
 		interfacesResiduesWindow.setVisible(true);

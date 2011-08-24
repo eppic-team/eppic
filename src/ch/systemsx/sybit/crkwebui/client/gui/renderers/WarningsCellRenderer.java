@@ -3,9 +3,8 @@ package ch.systemsx.sybit.crkwebui.client.gui.renderers;
 import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
-
 import com.extjs.gxt.ui.client.core.Template;
-import com.extjs.gxt.ui.client.data.BeanModel;
+import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.widget.grid.ColumnData;
 import com.extjs.gxt.ui.client.widget.grid.Grid;
@@ -23,7 +22,7 @@ import com.google.gwt.user.client.ui.Image;
  * @author srebniak_a
  *
  */
-public class WarningsCellRenderer implements GridCellRenderer<BeanModel> 
+public class WarningsCellRenderer implements GridCellRenderer<BaseModel> 
 {
 	private MainController mainController;
 	
@@ -35,9 +34,9 @@ public class WarningsCellRenderer implements GridCellRenderer<BeanModel>
 		this.mainController = mainController;
 	}
 
-	public Object render(final BeanModel model, String property,
+	public Object render(final BaseModel model, String property,
 			ColumnData config, final int rowIndex, final int colIndex,
-			ListStore<BeanModel> store, Grid<BeanModel> grid) 
+			ListStore<BaseModel> store, Grid<BaseModel> grid) 
 	{
 		final List<String> warnings = (List<String>)model.get("warnings");
 		

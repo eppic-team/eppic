@@ -3,7 +3,7 @@ package ch.systemsx.sybit.crkwebui.client.gui.renderers;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 import ch.systemsx.sybit.crkwebui.client.gui.ResultsPanel;
 
-import com.extjs.gxt.ui.client.data.BeanModel;
+import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
 import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.GridEvent;
@@ -30,16 +30,16 @@ public class DetailsButtonCellRenderer extends DefaultCellRenderer
 		this.mainController = mainController;
 	}
 
-	public Object render(final BeanModel model, String property,
+	public Object render(final BaseModel model, String property,
 			ColumnData config, final int rowIndex, final int colIndex,
-			ListStore<BeanModel> store, Grid<BeanModel> grid) 
+			ListStore<BaseModel> store, Grid<BaseModel> grid) 
 	{
 		if (!init) {
 			init = true;
 			grid.addListener(Events.ColumnResize,
-					new Listener<GridEvent<BeanModel>>() {
+					new Listener<GridEvent<BaseModel>>() {
 
-						public void handleEvent(GridEvent<BeanModel> be) {
+						public void handleEvent(GridEvent<BaseModel> be) {
 							for (int i = 0; i < be.getGrid().getStore()
 									.getCount(); i++) {
 								if (be.getGrid().getView()
