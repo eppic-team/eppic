@@ -11,7 +11,6 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import crk.CallType;
-import crk.ChainEvolContext;
 import crk.ChainEvolContextList;
 import crk.GeometryPredictor;
 import crk.InterfaceEvolContext;
@@ -207,10 +206,7 @@ public class CoreSizePredictor {
 		if (!chainevolfile.exists()) return "No evol score calculated";
 		
 		ChainEvolContextList cecs = (ChainEvolContextList)Goodies.readFromFile(chainevolfile);
-		ChainEvolContext[] chainsEvCs = new ChainEvolContext[2];
-		chainsEvCs[0] = cecs.getChainEvolContext(interf.getFirstMolecule().getPdbChainCode());
-		chainsEvCs[1] = cecs.getChainEvolContext(interf.getSecondMolecule().getPdbChainCode());
-		InterfaceEvolContext iec = new InterfaceEvolContext(interf, chainsEvCs);
+		InterfaceEvolContext iec = new InterfaceEvolContext(interf, cecs);
 		
 		iec.scoreEntropy(false);
 		iec.setBioCutoff(BIO_CUTOFF);
