@@ -8,8 +8,6 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -41,7 +39,6 @@ public class CRKMain {
 	private static final String   GEOMETRY_FILE_SUFFIX = ".geometry";
 	private static final String   ENTROPIES_FILE_SUFFIX = ".entropies";
 	private static final String   KAKS_FILE_SUFFIX = ".kaks";
-	private static final Pattern  NONPROT_PATTERN = Pattern.compile("^X+$");
 	protected static final double INTERFACE_DIST_CUTOFF = 5.9;
 	protected static final int	  PEPTIDE_LENGTH_CUTOFF = 20; // shorter chains will be considered peptides
 	
@@ -343,22 +340,10 @@ public class CRKMain {
 		
 		findUniqueChains();
 		
-		cecs = new ChainEvolContextList();
+		cecs = new ChainEvolContextList(pdb,params.getJobName());
 
-		for (String representativeChain:pdb.getAllRepChains()) {
-			
-			Matcher nonprotMatcher = NONPROT_PATTERN.matcher(pdb.getChain(representativeChain).getSequence().getSeq());
-			if (nonprotMatcher.matches()) {
-				LOGGER.warn("Representative chain "+representativeChain+" does not seem to be a protein chain. Won't analyse it.");
-				continue;
-			}
-
-			cecs.addChainEvolContext(representativeChain,pdb.getSeqIdenticalGroup(representativeChain),
-					new ChainEvolContext(pdb.getChain(representativeChain).getSequence().getSeq(), representativeChain, pdb.getPdbCode(), params.getJobName()));
-		}
 		// a) getting the uniprot ids corresponding to the query (the pdb sequence)
 		for (ChainEvolContext chainEvCont:cecs.getAllChainEvolContext()) {
-			chainEvCont.setSeqIdenticalChainsStr(pdb.getSeqIdenticalGroupString(chainEvCont.getRepresentativeChainCode()));
 			File emblQueryCacheFile = null;
 			if (params.getEmblCdsCacheDir()!=null) {
 				emblQueryCacheFile = new File(params.getEmblCdsCacheDir(),params.getBaseName()+"."+chainEvCont.getRepresentativeChainCode()+".query.emblcds.fa");

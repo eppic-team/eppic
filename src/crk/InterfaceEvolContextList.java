@@ -6,7 +6,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.TreeSet;
 
 import owl.core.structure.ChainInterface;
 import owl.core.structure.ChainInterfaceList;
@@ -78,10 +77,7 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 	public void addAll(ChainInterfaceList interfaces, ChainEvolContextList cecs) {
 		for (ChainInterface pi:interfaces) {
 			if (pi.isProtein()) {
-				ChainEvolContext[] chainsEvCs = new ChainEvolContext[2];
-				chainsEvCs[0] = cecs.getChainEvolContext(pi.getFirstMolecule().getPdbChainCode());
-				chainsEvCs[1] = cecs.getChainEvolContext(pi.getSecondMolecule().getPdbChainCode());
-				InterfaceEvolContext iec = new InterfaceEvolContext(pi, chainsEvCs);
+				InterfaceEvolContext iec = new InterfaceEvolContext(pi, cecs);
 				this.add(iec);
 			}
 		}
@@ -202,26 +198,7 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 	}
 	
 	public List<String> getNumHomologsStrings() {
-		TreeSet<String> set = new TreeSet<String>(); 
-		for (InterfaceEvolContext iec:this) {
-			int numHomologs = -1;
-			if (scoType==ScoringType.ENTROPY) {
-				numHomologs = iec.getFirstChainEvolContext().getNumHomologs();
-			} else if (scoType==ScoringType.KAKS) {
-				numHomologs = iec.getFirstChainEvolContext().getNumHomologsWithValidCDS();
-			}
-			set.add(iec.getFirstChainEvolContext().getSeqIndenticalChainStr()+": "+numHomologs);
-			numHomologs = -1;
-			if (scoType==ScoringType.ENTROPY) {
-				numHomologs = iec.getSecondChainEvolContext().getNumHomologs();
-			} else if (scoType==ScoringType.KAKS) {
-				numHomologs = iec.getSecondChainEvolContext().getNumHomologsWithValidCDS();
-			}
-			set.add(iec.getSecondChainEvolContext().getSeqIndenticalChainStr()+": "+numHomologs);
-		}
-		List<String> list = new ArrayList<String>();
-		list.addAll(set);
-		return list;
+		return this.get(0).getChainEvolContextList().getNumHomologsStrings(scoType);
 	}
 	
 	

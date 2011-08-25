@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.TreeMap;
 
 import crk.CallType;
-import crk.ChainEvolContext;
 import crk.ChainEvolContextList;
 import crk.GeometryPredictor;
 import crk.InterfaceEvolContext;
@@ -273,10 +272,7 @@ public class CalcStats {
 
 						ChainInterface interf = cil.get(id);
 
-						ChainEvolContext[] chainsEvCs = new ChainEvolContext[2];
-						chainsEvCs[0] = cecl.getChainEvolContext(interf.getFirstMolecule().getPdbChainCode());
-						chainsEvCs[1] = cecl.getChainEvolContext(interf.getSecondMolecule().getPdbChainCode());
-						InterfaceEvolContext iec = new InterfaceEvolContext(interf, chainsEvCs);
+						InterfaceEvolContext iec = new InterfaceEvolContext(interf, cecl);
 
 						if (i==0) {
 							// we only do zoom predictions once per bioCallCutoff

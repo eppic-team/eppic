@@ -30,8 +30,8 @@ public class InterfaceEvolContext implements Serializable, InterfaceTypePredicto
 	private static final int MIN_NUMBER_CORE_RESIDUES_EVOL_SCORE = 6;
 	
 	private ChainInterface interf;
-	private ChainEvolContext[] chains;  // At the moment strictly 2 members (matching the 2 partners of interf). Use FIRST and SECOND constants above 
-											// If either of the 2 molecules is not a protein then it's null.
+
+	private ChainEvolContextList cecs;
 	
 	// the cache scoring values, these are filled upon call of scoreInterface
 	private double[] rimScores;	// cache of the last run scoreEntropy/scoreKaKs (strictly 2 members, 0 FIRST, 1 SECOND, use constants above)
@@ -57,9 +57,9 @@ public class InterfaceEvolContext implements Serializable, InterfaceTypePredicto
 	
 	
 	
-	public InterfaceEvolContext(ChainInterface interf, ChainEvolContext[] chains) {
+	public InterfaceEvolContext(ChainInterface interf, ChainEvolContextList cecs) {
 		this.interf = interf;
-		this.chains = chains;
+		this.cecs = cecs;
 		this.warnings = new ArrayList<String>();
 	}
 
@@ -68,11 +68,21 @@ public class InterfaceEvolContext implements Serializable, InterfaceTypePredicto
 	}
 	
 	public ChainEvolContext getFirstChainEvolContext() {
-		return chains[FIRST];
+		return cecs.getChainEvolContext(interf.getFirstMolecule().getPdbChainCode());
 	}
 	
 	public ChainEvolContext getSecondChainEvolContext() {
-		return chains[SECOND];
+		return cecs.getChainEvolContext(interf.getSecondMolecule().getPdbChainCode());
+	}
+	
+	public ChainEvolContext getChainEvolContext(int molecId) {
+		if (molecId==FIRST) return getFirstChainEvolContext();
+		if (molecId==SECOND) return getSecondChainEvolContext();
+		return null;
+	}
+	
+	public ChainEvolContextList getChainEvolContextList() {
+		return cecs;
 	}
 	
 	public void setBioCutoff(double bioCutoff) {
@@ -183,12 +193,8 @@ public class InterfaceEvolContext implements Serializable, InterfaceTypePredicto
 	}
 	
 	private double calcScore(List<Residue> residues, int molecId, ScoringType scoType, boolean weighted) {
-		ChainEvolContext chain = null;
-		if (molecId==FIRST) {
-			chain = chains[FIRST];
-		} else if (molecId == SECOND) {
-			chain = chains[SECOND];
-		}
+		ChainEvolContext chain = getChainEvolContext(molecId);
+
 		double totalScore = 0.0;
 		double totalWeight = 0.0;
 		List<Double> conservScores = chain.getConservationScores(scoType);
@@ -253,11 +259,10 @@ public class InterfaceEvolContext implements Serializable, InterfaceTypePredicto
 		PdbChain pdb = null;
 		if (molecId==FIRST) {
 			pdb = interf.getFirstMolecule();
-			conservationScores = chains[FIRST].getConservationScores(scoType);
 		} else if (molecId==SECOND) {
 			pdb = interf.getSecondMolecule();
-			conservationScores = chains[SECOND].getConservationScores(scoType);
 		}
+		conservationScores = getChainEvolContext(molecId).getConservationScores(scoType);
 		
 		HashMap<Integer,Double> map = new HashMap<Integer, Double>();
 		for (Residue residue:pdb) {
@@ -265,9 +270,9 @@ public class InterfaceEvolContext implements Serializable, InterfaceTypePredicto
 			int resser = residue.getSerial();
 			int queryPos = -2;
 			if (scoType==ScoringType.ENTROPY) {
-				queryPos = chains[molecId].getQueryUniprotPosForPDBPos(resser); 
+				queryPos = getChainEvolContext(molecId).getQueryUniprotPosForPDBPos(resser); 
 			} else if (scoType==ScoringType.KAKS) {
-				queryPos = chains[molecId].getQueryCDSPosForPDBPos(resser);
+				queryPos = getChainEvolContext(molecId).getQueryCDSPosForPDBPos(resser);
 			}
 			if (queryPos!=-1) {   
 				map.put(resser, conservationScores.get(queryPos));	
@@ -283,7 +288,7 @@ public class InterfaceEvolContext implements Serializable, InterfaceTypePredicto
 	}
 	
 	private boolean hasEnoughHomologs(int molecId, int homologsCutoff){
-		return this.chains[molecId].getNumHomologs()>=homologsCutoff;
+		return this.getChainEvolContext(molecId).getNumHomologs()>=homologsCutoff;
 	}
 
 	private boolean isProtein(int molecId) {
@@ -307,9 +312,9 @@ public class InterfaceEvolContext implements Serializable, InterfaceTypePredicto
 		int count = 0;
 
 		List<Residue> unreliableCoreResidues = new ArrayList<Residue>(); 
-		unreliableCoreResidues.addAll(checkResiduesForPDBReliability(rimCore.getCoreResidues(), chains[molecId]));
+		unreliableCoreResidues.addAll(checkResiduesForPDBReliability(rimCore.getCoreResidues(), getChainEvolContext(molecId)));
 		if (scoringType==ScoringType.KAKS) {
-			unreliableCoreResidues.addAll(checkResiduesForCDSReliability(rimCore.getCoreResidues(), chains[molecId]));
+			unreliableCoreResidues.addAll(checkResiduesForCDSReliability(rimCore.getCoreResidues(), getChainEvolContext(molecId)));
 		}
 		count = unreliableCoreResidues.size();
 		return count;
@@ -326,9 +331,9 @@ public class InterfaceEvolContext implements Serializable, InterfaceTypePredicto
 
 		List<Residue> unreliableRimResidues = new ArrayList<Residue>();
 
-		unreliableRimResidues.addAll(checkResiduesForPDBReliability(rimCore.getRimResidues(), chains[molecId]));
+		unreliableRimResidues.addAll(checkResiduesForPDBReliability(rimCore.getRimResidues(), getChainEvolContext(molecId)));
 		if (scoringType==ScoringType.KAKS) {
-			unreliableRimResidues.addAll(checkResiduesForCDSReliability(rimCore.getRimResidues(), chains[molecId]));
+			unreliableRimResidues.addAll(checkResiduesForCDSReliability(rimCore.getRimResidues(), getChainEvolContext(molecId)));
 		}
 		count=unreliableRimResidues.size();
 
@@ -409,7 +414,7 @@ public class InterfaceEvolContext implements Serializable, InterfaceTypePredicto
 		grayCalls = new ArrayList<Integer>();
 		noPredictCalls = new ArrayList<Integer>();
 
-		for (int k=0;k<chains.length;k++) {
+		for (int k=0;k<2;k++) {
 			CallType memberCall = getMemberCall(k);
 			// cast your votes!
 			if (memberCall == CallType.BIO) {
@@ -436,7 +441,7 @@ public class InterfaceEvolContext implements Serializable, InterfaceTypePredicto
 			finalScore = Double.NaN;
 			call = CallType.NO_PREDICTION;
 			callReason = "Not enough core residues to calculate evolutionary score";
-		} else if (countNoPredict==chains.length) {
+		} else if (countNoPredict==2) {
 			finalScore = getAvrgRatio(noPredictCalls);
 			call = CallType.NO_PREDICTION;
 			callReason = "Both interface members called NOPRED";
@@ -537,8 +542,8 @@ public class InterfaceEvolContext implements Serializable, InterfaceTypePredicto
 	 */
 	public boolean canDoCRK() {
 		boolean canDoCRK = true;
-		if ((this.interf.isFirstProtein() && !chains[FIRST].canDoCRK()) || 
-			(this.interf.isSecondProtein() && !chains[SECOND].canDoCRK()) ) {
+		if ((this.interf.isFirstProtein() && !getFirstChainEvolContext().canDoCRK()) || 
+			(this.interf.isSecondProtein() && !getSecondChainEvolContext().canDoCRK()) ) {
 			canDoCRK = false;
 		}
 		return canDoCRK;
@@ -571,11 +576,11 @@ public class InterfaceEvolContext implements Serializable, InterfaceTypePredicto
 		int numHoms1 = -1;
 		int numHoms2 = -1;
 		if (scoringType==ScoringType.ENTROPY) {
-			if (isProtein(FIRST)) numHoms1 = chains[FIRST].getNumHomologs();
-			if (isProtein(SECOND)) numHoms2 = chains[SECOND].getNumHomologs();
+			if (isProtein(FIRST)) numHoms1 = getFirstChainEvolContext().getNumHomologs();
+			if (isProtein(SECOND)) numHoms2 = getSecondChainEvolContext().getNumHomologs();
 		} else if (scoringType==ScoringType.KAKS) {
-			if (isProtein(FIRST)) numHoms1 = chains[FIRST].getNumHomologsWithValidCDS();
-			if (isProtein(SECOND)) numHoms2 = chains[SECOND].getNumHomologsWithValidCDS();
+			if (isProtein(FIRST)) numHoms1 = getFirstChainEvolContext().getNumHomologsWithValidCDS();
+			if (isProtein(SECOND)) numHoms2 = getSecondChainEvolContext().getNumHomologsWithValidCDS();
 		}
 		ps.printf("%2d\t%2d\t",numHoms1,numHoms2);
 	}

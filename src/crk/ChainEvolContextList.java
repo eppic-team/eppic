@@ -1,30 +1,53 @@
 package crk;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.TreeMap;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import owl.core.structure.PdbAsymUnit;
+import owl.core.structure.PdbChain;
 
 
 public class ChainEvolContextList implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	private TreeMap<String, ChainEvolContext> cecs; // one per representative chain
-	private HashMap<String,String> allchains2representative; // pdb chain codes to pdb chain codes of representative chain
+	private static final Log LOGGER = LogFactory.getLog(ChainEvolContextList.class);
 	
-	public ChainEvolContextList() {
+	private TreeMap<String, ChainEvolContext> cecs; // one per representative chain
+	private HashMap<String,String> chain2repChain; // pdb chain codes to pdb chain codes of representative chain
+	
+	private String pdbName;
+	
+	public ChainEvolContextList(PdbAsymUnit pdb, String pdbName) {
 		this.cecs = new TreeMap<String, ChainEvolContext>();
-		this.allchains2representative = new HashMap<String, String>();
+		this.chain2repChain = pdb.getChain2repChainMap();
+		this.pdbName = pdbName;
+		
+		for (String representativeChain:pdb.getAllRepChains()) {
+						
+			PdbChain chain = pdb.getChain(representativeChain);
+			
+			if (!chain.getSequence().isProtein()) {
+				LOGGER.warn("Representative chain "+representativeChain+" does not seem to be a protein chain. Won't analyse it.");
+				continue;
+			}
+
+			ChainEvolContext cec = new ChainEvolContext(chain.getSequence().getSeq(), representativeChain, pdb.getPdbCode(), pdbName);
+			cec.setSeqIdenticalChainsStr(pdb.getSeqIdenticalGroupString(representativeChain));
+			
+			cecs.put(representativeChain, cec);
+		}
 	}
 	
-	public void addChainEvolContext(String representativeChain, List<String> chains, ChainEvolContext cec) {
+	public void addChainEvolContext(String representativeChain, ChainEvolContext cec) {
 		this.cecs.put(representativeChain, cec);
-		this.allchains2representative.put(representativeChain,representativeChain);
-		for (String chain:chains) {
-			this.allchains2representative.put(chain,representativeChain);
-		}
 	}
 	
 	/**
@@ -34,7 +57,7 @@ public class ChainEvolContextList implements Serializable {
 	 * @return
 	 */
 	public ChainEvolContext getChainEvolContext(String pdbChainCode) {
-		return cecs.get(allchains2representative.get(pdbChainCode));
+		return cecs.get(chain2repChain.get(pdbChainCode));
 	}
 	
 	/**
@@ -43,6 +66,29 @@ public class ChainEvolContextList implements Serializable {
 	 */
 	public Collection<ChainEvolContext> getAllChainEvolContext() {
 		return cecs.values();
+	}
+	
+	public String getPdbName() {
+		return pdbName;
+	}
+	
+	public void setPdbName(String pdbName) {
+		this.pdbName = pdbName;
+	}
+	
+	public List<String> getNumHomologsStrings(ScoringType scoType) {
+		List<String> list = new ArrayList<String>(); 
+		for (String repChain:cecs.keySet()) {
+			ChainEvolContext cec = cecs.get(repChain);
+			int numHomologs = -1;
+			if (scoType==ScoringType.ENTROPY) {
+				numHomologs = cec.getNumHomologs();
+			} else if (scoType==ScoringType.KAKS) {
+				numHomologs = cec.getNumHomologsWithValidCDS();
+			}
+			list.add(cec.getSeqIndenticalChainStr()+": "+numHomologs);
+		}
+		return list;
 	}
 	
 }
