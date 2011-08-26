@@ -19,7 +19,6 @@ public class EvolRimCorePredictor implements InterfaceTypePredictor {
 	protected static final int FIRST  = 0;
 	protected static final int SECOND = 1;
 	
-	private static final double MAX_ALLOWED_UNREL_RES = 0.05; // 5% maximum allowed unreliable residues for core or rim
 	private static final int MIN_NUMBER_CORE_RESIDUES_EVOL_SCORE = 6;
 
 	private static final Log LOGGER = LogFactory.getLog(EvolRimCorePredictor.class);
@@ -48,11 +47,26 @@ public class EvolRimCorePredictor implements InterfaceTypePredictor {
 	private ScoringType scoringType; // the type of the last scoring run (either kaks or entropy)
 	private boolean isScoreWeighted; // whether last scoring run was weighted/unweighted
 
-
+	private EvolRimCoreMemberPredictor member1Pred;
+	private EvolRimCoreMemberPredictor member2Pred;
 	
 	public EvolRimCorePredictor(InterfaceEvolContext iec) {
 		this.iec = iec;
 		this.warnings = new ArrayList<String>();
+		this.member1Pred = new EvolRimCoreMemberPredictor(this, FIRST);
+		this.member2Pred = new EvolRimCoreMemberPredictor(this, SECOND);
+	}
+	
+	protected InterfaceEvolContext getInterfaceEvolContext() {
+		return iec;
+	}
+	
+	protected double getBioCutoff() {
+		return bioCutoff;
+	}
+	
+	protected double getXtalCutoff() {
+		return xtalCutoff;
 	}
 	
 	@Override
@@ -65,57 +79,69 @@ public class EvolRimCorePredictor implements InterfaceTypePredictor {
 		xtalCalls = new ArrayList<Integer>();
 		grayCalls = new ArrayList<Integer>();
 		noPredictCalls = new ArrayList<Integer>();
-		
-		if ((iec.getFirstRimCore().getCoreSize()+iec.getSecondRimCore().getCoreSize())<MIN_NUMBER_CORE_RESIDUES_EVOL_SCORE) {
-			finalScore = Double.NaN;
-			call = CallType.NO_PREDICTION;
-			callReason = "Not enough core residues to calculate evolutionary score";
-			return call;
-		}
 
-		for (int k=0;k<2;k++) {
-			CallType memberCall = getMemberCall(k);
-			// cast your votes!
-			if (memberCall == CallType.BIO) {
-				bioCalls.add(k);
-			}
-			else if (memberCall == CallType.CRYSTAL) {
-				xtalCalls.add(k);
-			}
-			else if (memberCall == CallType.GRAY) {
-				grayCalls.add(k);
-			}
-			else if (memberCall == CallType.NO_PREDICTION) {
-				noPredictCalls.add(k);
-			}
+		// cast your votes!
+		CallType member1Call = member1Pred.getCall();
+		CallType member2Call = member2Pred.getCall();
+		
+		// member1
+		if (member1Call == CallType.BIO) {
+			bioCalls.add(FIRST);
+		}
+		else if (member1Call == CallType.CRYSTAL) {
+			xtalCalls.add(FIRST);
+		}
+		else if (member1Call == CallType.GRAY) {
+			grayCalls.add(FIRST);
+		}
+		else if (member1Call == CallType.NO_PREDICTION) {
+			noPredictCalls.add(FIRST);
+		}
+		//member2
+		if (member2Call == CallType.BIO) {
+			bioCalls.add(SECOND);
+		}
+		else if (member2Call == CallType.CRYSTAL) {
+			xtalCalls.add(SECOND);
+		}
+		else if (member2Call == CallType.GRAY) {
+			grayCalls.add(SECOND);
+		}
+		else if (member2Call == CallType.NO_PREDICTION) {
+			noPredictCalls.add(SECOND);
 		}
 		
+
+		// decision time!
 		int countBio = bioCalls.size();
 		int countXtal = xtalCalls.size();
 		int countGray = grayCalls.size();
 		int countNoPredict = noPredictCalls.size();
 
-		// decision time!
-		if (countNoPredict==2) {
+		if ((iec.getFirstRimCore().getCoreSize()+iec.getSecondRimCore().getCoreSize())<MIN_NUMBER_CORE_RESIDUES_EVOL_SCORE) {
+			finalScore = Double.NaN;
+			call = CallType.NO_PREDICTION;
+			callReason = "Not enough core residues to calculate evolutionary score (at least "+MIN_NUMBER_CORE_RESIDUES_EVOL_SCORE+" needed)";
+		} else if (countNoPredict==2) {
 			finalScore = getAvrgRatio(noPredictCalls);
 			call = CallType.NO_PREDICTION;
-			callReason = "Both interface members called NOPRED";
+			callReason = member1Pred.getCallReason()+"\n"+member2Pred.getCallReason();
 		} else if (countBio>countXtal) {
 			//TODO check the discrepancies among the different voters. The variance could be a measure of the confidence of the call
 			//TODO need to do a study about the correlation of scores in members of the same interface
 			//TODO it might be the case that there is good agreement and bad agreement would indicate things like a bio-mimicking crystal interface
 			finalScore = getAvrgRatio(bioCalls);
 			call = CallType.BIO;
-			callReason = "Majority BIO votes";
+			callReason = member1Pred.getCallReason()+"\n"+member2Pred.getCallReason();
 		} else if (countXtal>countBio) {
 			finalScore = getAvrgRatio(xtalCalls);
 			call = CallType.CRYSTAL;
-			callReason = "Majority XTAL votes";
+			callReason = member1Pred.getCallReason()+"\n"+member2Pred.getCallReason();
 		} else if (countGray>countBio+countXtal) {
 			// we use as final score the average of all gray member scores
 			finalScore = getAvrgRatio(grayCalls);
 			call = CallType.GRAY;
-			callReason = "Majority GRAY votes";
+			callReason = member1Pred.getCallReason()+"\n"+member2Pred.getCallReason();
 		} else if (countBio==countXtal) {
 			//TODO we are taking simply the average, is this the best solution?
 			// weighting is not done here, scores are calculated either weighted/non-weighted before
@@ -123,19 +149,19 @@ public class EvolRimCorePredictor implements InterfaceTypePredictor {
 			indices.addAll(bioCalls);
 			indices.addAll(xtalCalls);
 			finalScore = getAvrgRatio(indices);
-			callReason = "Interface member "+(bioCalls.get(0)+1)+" called BIO and member "+(xtalCalls.get(0)+1)+" called XTAL. ";
+			callReason = member1Pred.getCallReason()+"\n"+member2Pred.getCallReason();
 			if (finalScore<bioCutoff) {
 				call = CallType.BIO;
-				callReason += "Average score is below BIO cutoff ("+String.format("%4.2f", bioCutoff)+")";
+				callReason += "\nAverage score is below BIO cutoff ("+String.format("%4.2f", bioCutoff)+")";
 			} else if (finalScore>xtalCutoff) {
 				call = CallType.CRYSTAL;
-				callReason += "Average score is above XTAL cutoff ("+String.format("%4.2f", xtalCutoff)+")";
+				callReason += "\nAverage score is above XTAL cutoff ("+String.format("%4.2f", xtalCutoff)+")";
 			} else if (Double.isNaN(finalScore)) {
 				call = CallType.NO_PREDICTION;
-				callReason += "Average score is NaN";
+				callReason += "\nAverage score is NaN";
 			} else {
 				call = CallType.GRAY;
-				callReason += "Average score is in gray area (between BIO cutoff "+String.format("%4.2f", bioCutoff)+" and XTAL cutoff "+String.format("%4.2f", xtalCutoff)+")";
+				callReason += "\nAverage score falls in gray area ("+String.format("%4.2f", bioCutoff)+" - "+String.format("%4.2f", xtalCutoff)+")";
 			}
 		}
 		return call;
@@ -149,66 +175,6 @@ public class EvolRimCorePredictor implements InterfaceTypePredictor {
 	@Override
 	public List<String> getWarnings() {
 		return this.warnings;
-	}
-	
-	/**
-	 * Gets the interface partners prediction calls.
-	 * @param molecId
-	 * @return
-	 */
-	protected CallType getMemberCall(int molecId) {
-		
-		int memberSerial = molecId+1;
-		InterfaceRimCore rimCore = iec.getRimCore(molecId);
-		
-		int countsUnrelCoreRes = getUnreliableCoreRes(molecId, scoringType).size();
-		int countsUnrelRimRes = getUnreliableRimRes(molecId, scoringType).size();
-		
-		
-		double ratio = this.getScoreRatio(molecId);
-		
-		CallType call = null;
-
-		if (!iec.isProtein(molecId)) {
-			LOGGER.info("Interface "+iec.getInterface().getId()+", member "+memberSerial+" calls NOPRED because it is not a protein");
-			warnings.add("Interface member "+memberSerial+" calls NOPRED because it is not a protein");
-			call = CallType.NO_PREDICTION;
-		}
-		else if (!iec.hasEnoughHomologs(molecId)) {
-			LOGGER.info("Interface "+iec.getInterface().getId()+", member "+memberSerial+" calls NOPRED because there are not enough homologs to calculate evolutionary scores");
-			warnings.add("Interface member "+memberSerial+" calls NOPRED because there are not enough homologs to calculate evolutionary scores");
-			call = CallType.NO_PREDICTION;
-		}
-		else if (((double)countsUnrelCoreRes/(double)rimCore.getCoreSize())>MAX_ALLOWED_UNREL_RES) {
-			LOGGER.info("Interface "+iec.getInterface().getId()+", member "+memberSerial+" calls NOPRED because there are not enough reliable core residues ("+
-					countsUnrelCoreRes+" unreliable residues out of "+rimCore.getCoreSize()+" residues in core)");
-			warnings.add("Interface member "+memberSerial+" calls NOPRED because there are not enough reliable core residues: "+
-					countsUnrelCoreRes+" unreliable out of "+rimCore.getCoreSize()+" in core");
-
-			call = CallType.NO_PREDICTION;
-		}
-		else if (((double)countsUnrelRimRes/(double)rimCore.getRimSize())>MAX_ALLOWED_UNREL_RES) {
-			LOGGER.info("Interface "+iec.getInterface().getId()+", member "+memberSerial+" calls NOPRED because there are not enough reliable rim residues ("+
-					countsUnrelRimRes+" unreliable residues out of "+rimCore.getRimSize()+" residues in rim)");
-			warnings.add("Interface member "+memberSerial+" calls NOPRED because there are not enough reliable rim residues: "+
-					countsUnrelRimRes+" unreliable out of "+rimCore.getRimSize()+" in rim");
-			call = CallType.NO_PREDICTION;
-		}
-		else {
-			if (ratio<bioCutoff) {
-				call = CallType.BIO;
-			} else if (ratio>xtalCutoff) {
-				call = CallType.CRYSTAL;
-			} else if (Double.isNaN(ratio)) {
-				warnings.add("Interface member "+memberSerial+" calls NOPRED because score is NaN");
-				call = CallType.NO_PREDICTION;
-			} else {
-				call = CallType.GRAY;
-			}
-		}
-
-		
-		return call;
 	}
 
 	/**
@@ -277,7 +243,7 @@ public class EvolRimCorePredictor implements InterfaceTypePredictor {
 		return sum/(double)indices.size();
 	}
 	
-	private double getScoreRatio(int molecId) {
+	protected double getScoreRatio(int molecId) {
 		double ratio = coreScores[molecId]/rimScores[molecId];
 
 		return ratio;
@@ -425,7 +391,8 @@ public class EvolRimCorePredictor implements InterfaceTypePredictor {
 		// call type, score, voters
 		ps.printf("%6s\t%5.2f", call.getName(),	this.getFinalScore());
 		ps.print(this.getVotersString());
-		ps.print("\t"+callReason);
+		String callReasonForPlainFileOutput = callReason.replace("\n", ", ");
+		ps.print("\t"+callReasonForPlainFileOutput);
 	}
 	
 	public void printScoresLine(PrintStream ps) {
