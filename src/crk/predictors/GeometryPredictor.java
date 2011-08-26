@@ -1,4 +1,4 @@
-package crk;
+package crk.predictors;
 
 import java.io.File;
 import java.io.IOException;
@@ -8,6 +8,9 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import crk.CRKMain;
+import crk.CallType;
 
 import edu.uci.ics.jung.graph.util.Pair;
 

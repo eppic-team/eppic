@@ -88,7 +88,7 @@ public class InterfaceEvolContext implements Serializable {
 	 * @param molecId
 	 * @return
 	 */
-	protected List<Residue> getUnreliableResiduesForPDB(List<Residue> residues, int molecId) {
+	public List<Residue> getUnreliableResiduesForPDB(List<Residue> residues, int molecId) {
 		List<Residue> unreliableResidues = new ArrayList<Residue>();
 		ChainEvolContext chain = getChainEvolContext(molecId);
 		for (Residue res:residues){
@@ -106,7 +106,7 @@ public class InterfaceEvolContext implements Serializable {
 	 * @param molecId
 	 * @return
 	 */
-	protected List<Residue> getUnreliableResiduesForCDS(List<Residue> residues, int molecId) {
+	public List<Residue> getUnreliableResiduesForCDS(List<Residue> residues, int molecId) {
 		List<Residue> unreliableResidues = new ArrayList<Residue>();
 		ChainEvolContext chain = getChainEvolContext(molecId);
 		for (Residue res:residues){
@@ -118,7 +118,7 @@ public class InterfaceEvolContext implements Serializable {
 		return unreliableResidues;
 	}
 	
-	protected String getUnreliableForPdbWarningMsg(List<Residue> unreliableResidues) {
+	public String getUnreliableForPdbWarningMsg(List<Residue> unreliableResidues) {
 		String msg = null;
 		if (!unreliableResidues.isEmpty()) {
 			msg = "Interface residue serials ";
@@ -133,7 +133,7 @@ public class InterfaceEvolContext implements Serializable {
 		return msg;
 	}
 	
-	protected String getUnreliableForCDSWarningMsg(List<Residue> unreliableResidues) {
+	public String getUnreliableForCDSWarningMsg(List<Residue> unreliableResidues) {
 		String msg = null;
 		if (!unreliableResidues.isEmpty()) {
 			msg = "Interface residue serials ";
@@ -148,7 +148,7 @@ public class InterfaceEvolContext implements Serializable {
 		return msg;
 	}
 
-	protected double calcScore(List<Residue> residues, int molecId, ScoringType scoType, boolean weighted) {
+	public double calcScore(List<Residue> residues, int molecId, ScoringType scoType, boolean weighted) {
 		return getChainEvolContext(molecId).calcScoreForResidueSet(residues, scoType, weighted);
 	}
 	
@@ -206,11 +206,11 @@ public class InterfaceEvolContext implements Serializable {
 		pdb.setBFactorsPerResidue(map);		
 	}
 	
-	protected boolean hasEnoughHomologs(int molecId){
+	public boolean hasEnoughHomologs(int molecId){
 		return this.getChainEvolContext(molecId).getNumHomologs()>=homologsCutoff;
 	}
 
-	protected boolean isProtein(int molecId) {
+	public boolean isProtein(int molecId) {
 		if (molecId==FIRST) {
 			return this.interf.isFirstProtein();
 		} else if (molecId==SECOND) {

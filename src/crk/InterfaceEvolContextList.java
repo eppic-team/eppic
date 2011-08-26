@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import crk.predictors.EvolRimCorePredictor;
+
 import owl.core.structure.ChainInterface;
 import owl.core.structure.ChainInterfaceList;
 

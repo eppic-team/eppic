@@ -1,4 +1,4 @@
-package crk;
+package crk.predictors;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -7,11 +7,18 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import crk.CallType;
+import crk.InterfaceEvolContext;
+import crk.ScoringType;
+
 import owl.core.structure.InterfaceRimCore;
 import owl.core.structure.Residue;
 
 public class EvolRimCorePredictor implements InterfaceTypePredictor {
 
+	protected static final int FIRST  = 0;
+	protected static final int SECOND = 1;
+	
 	private static final double MAX_ALLOWED_UNREL_RES = 0.05; // 5% maximum allowed unreliable residues for core or rim
 	private static final int MIN_NUMBER_CORE_RESIDUES_EVOL_SCORE = 6;
 
@@ -235,20 +242,20 @@ public class EvolRimCorePredictor implements InterfaceTypePredictor {
 
 		if (iec.getInterface().isFirstProtein()) {
 			InterfaceRimCore rimCore = iec.getFirstRimCore();
-			rimScores[InterfaceEvolContext.FIRST]  = iec.calcScore(rimCore.getRimResidues(), InterfaceEvolContext.FIRST, scoType, weighted);
-			coreScores[InterfaceEvolContext.FIRST] = iec.calcScore(rimCore.getCoreResidues(),InterfaceEvolContext.FIRST, scoType, weighted);
+			rimScores[FIRST]  = iec.calcScore(rimCore.getRimResidues(), FIRST, scoType, weighted);
+			coreScores[FIRST] = iec.calcScore(rimCore.getCoreResidues(),FIRST, scoType, weighted);
 		} else {
-			rimScores[InterfaceEvolContext.FIRST] = Double.NaN;
-			coreScores[InterfaceEvolContext.FIRST] = Double.NaN;
+			rimScores[FIRST] = Double.NaN;
+			coreScores[FIRST] = Double.NaN;
 		}
 
 		if (iec.getInterface().isSecondProtein()) {
 			InterfaceRimCore rimCore = iec.getSecondRimCore();
-			rimScores[InterfaceEvolContext.SECOND]  = iec.calcScore(rimCore.getRimResidues(), InterfaceEvolContext.SECOND, scoType, weighted);
-			coreScores[InterfaceEvolContext.SECOND] = iec.calcScore(rimCore.getCoreResidues(),InterfaceEvolContext.SECOND, scoType, weighted);
+			rimScores[SECOND]  = iec.calcScore(rimCore.getRimResidues(), SECOND, scoType, weighted);
+			coreScores[SECOND] = iec.calcScore(rimCore.getCoreResidues(),SECOND, scoType, weighted);
 		} else {
-			rimScores[InterfaceEvolContext.SECOND] = Double.NaN;
-			coreScores[InterfaceEvolContext.SECOND] = Double.NaN;
+			rimScores[SECOND] = Double.NaN;
+			coreScores[SECOND] = Double.NaN;
 		}
 
 	}
@@ -399,21 +406,21 @@ public class EvolRimCorePredictor implements InterfaceTypePredictor {
 		int numHoms1 = -1;
 		int numHoms2 = -1;
 		if (scoringType==ScoringType.ENTROPY) {
-			if (iec.isProtein(InterfaceEvolContext.FIRST)) numHoms1 = iec.getFirstChainEvolContext().getNumHomologs();
-			if (iec.isProtein(InterfaceEvolContext.SECOND)) numHoms2 = iec.getSecondChainEvolContext().getNumHomologs();
+			if (iec.isProtein(FIRST)) numHoms1 = iec.getFirstChainEvolContext().getNumHomologs();
+			if (iec.isProtein(SECOND)) numHoms2 = iec.getSecondChainEvolContext().getNumHomologs();
 		} else if (scoringType==ScoringType.KAKS) {
-			if (iec.isProtein(InterfaceEvolContext.FIRST)) numHoms1 = iec.getFirstChainEvolContext().getNumHomologsWithValidCDS();
-			if (iec.isProtein(InterfaceEvolContext.SECOND)) numHoms2 = iec.getSecondChainEvolContext().getNumHomologsWithValidCDS();
+			if (iec.isProtein(FIRST)) numHoms1 = iec.getFirstChainEvolContext().getNumHomologsWithValidCDS();
+			if (iec.isProtein(SECOND)) numHoms2 = iec.getSecondChainEvolContext().getNumHomologsWithValidCDS();
 		}
 		ps.printf("%2d\t%2d\t",numHoms1,numHoms2);
 	}
 	
 	private void printScores(PrintStream ps, CallType call) {
 		ps.printf("%5.2f\t%5.2f\t%5.2f",
-				this.getCoreScore(InterfaceEvolContext.FIRST), this.getRimScore(InterfaceEvolContext.FIRST), this.getCoreScore(InterfaceEvolContext.FIRST)/this.getRimScore(InterfaceEvolContext.FIRST));
+				this.getCoreScore(FIRST), this.getRimScore(FIRST), this.getCoreScore(FIRST)/this.getRimScore(FIRST));
 		ps.print("\t");
 		ps.printf("%5.2f\t%5.2f\t%5.2f",
-				this.getCoreScore(InterfaceEvolContext.SECOND), this.getRimScore(InterfaceEvolContext.SECOND), this.getCoreScore(InterfaceEvolContext.SECOND)/this.getRimScore(InterfaceEvolContext.SECOND));
+				this.getCoreScore(SECOND), this.getRimScore(SECOND), this.getCoreScore(SECOND)/this.getRimScore(SECOND));
 		ps.print("\t");
 		// call type, score, voters
 		ps.printf("%6s\t%5.2f", call.getName(),	this.getFinalScore());

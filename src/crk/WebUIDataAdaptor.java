@@ -6,6 +6,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import crk.predictors.EvolRimCorePredictor;
+import crk.predictors.GeometryPredictor;
+
 import model.InterfaceItem;
 import model.InterfaceResidueItem;
 import model.InterfaceResidueMethodItem;

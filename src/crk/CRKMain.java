@@ -18,6 +18,8 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 import org.xml.sax.SAXException;
 
+import crk.predictors.GeometryPredictor;
+
 import owl.core.connections.pisa.PisaConnection;
 import owl.core.runners.PymolRunner;
 import owl.core.runners.TcoffeeException;
@@ -40,7 +42,7 @@ public class CRKMain {
 	private static final String   ENTROPIES_FILE_SUFFIX = ".entropies";
 	private static final String   KAKS_FILE_SUFFIX = ".kaks";
 	protected static final double INTERFACE_DIST_CUTOFF = 5.9;
-	protected static final int	  PEPTIDE_LENGTH_CUTOFF = 20; // shorter chains will be considered peptides
+	public static final int	      PEPTIDE_LENGTH_CUTOFF = 20; // shorter chains will be considered peptides
 	
 	// THE ROOT LOGGER (log4j)
 	private static final Logger ROOTLOGGER = Logger.getRootLogger();

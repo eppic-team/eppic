@@ -10,10 +10,10 @@ import java.util.TreeMap;
 
 import crk.CallType;
 import crk.ChainEvolContextList;
-import crk.EvolRimCorePredictor;
-import crk.GeometryPredictor;
 import crk.InterfaceEvolContext;
 import crk.ScoringType;
+import crk.predictors.EvolRimCorePredictor;
+import crk.predictors.GeometryPredictor;
 
 import owl.core.structure.ChainInterface;
 import owl.core.structure.ChainInterfaceList;
