@@ -102,18 +102,21 @@ public class WebUIDataAdaptor {
 	
 	public void add(InterfaceEvolContextList iecl) {
 		
-		this.iecl = iecl; // we cached the last one added
+		this.iecl = iecl; // we cache the last one added
 		pdbScoreItem.setNumHomologsStrings(iecl.getNumHomologsStrings());
+		String method = null;
+		if (iecl.getScoringType()==ScoringType.ENTROPY) {
+			method = "Entropy";
+		} else if (iecl.getScoringType()==ScoringType.KAKS) {
+			method = "Kaks";
+		}
+
 		for (int i=0;i<iecl.size();i++) {
 			InterfaceEvolContext iec = iecl.get(i);
+			EvolRimCorePredictor ercp = iecl.getEvolRimCorePredictor(i);
+			
 			InterfaceItem ii = pdbScoreItem.getInterfaceItem(i);
 
-			String method = null;
-			if (iec.getScoringType().getName().equals("entropy")) {
-				method = "Entropy";
-			} else if (iec.getScoringType().getName().equals("KaKs ratio")) {
-				method = "Kaks";
-			}
 
 			boolean append = false;
 			InterfaceScoreItem isi = null;
@@ -132,33 +135,33 @@ public class WebUIDataAdaptor {
 				
 				// TODO notice here we are only getting call, callReason and warnings from first of the 2 added (usually unweighted) 
 				// TODO we still have to decide how to get a call from both weighted/unweighted scores
-				CallType call = iec.getCall();				
+				CallType call = ercp.getCall();	
 				isi.setCall(call.getName());
-				isi.setCallReason(iec.getCallReason());
-				ii.getWarnings().addAll(iec.getWarnings());
+				isi.setCallReason(ercp.getCallReason());
+				ii.getWarnings().addAll(ercp.getWarnings());
 
 			} 
 			
 
-			double rat1Sc = iec.getCoreScore(InterfaceEvolContext.FIRST)/iec.getRimScore(InterfaceEvolContext.FIRST);
-			double rat2Sc = iec.getCoreScore(InterfaceEvolContext.SECOND)/iec.getRimScore(InterfaceEvolContext.SECOND);
+			double rat1Sc = ercp.getCoreScore(InterfaceEvolContext.FIRST)/ercp.getRimScore(InterfaceEvolContext.FIRST);
+			double rat2Sc = ercp.getCoreScore(InterfaceEvolContext.SECOND)/ercp.getRimScore(InterfaceEvolContext.SECOND);
 
-			if (iec.isScoreWeighted()) {
-				isi.setWeightedCore1Scores(iec.getCoreScore(InterfaceEvolContext.FIRST));
-				isi.setWeightedCore2Scores(iec.getCoreScore(InterfaceEvolContext.SECOND));
-				isi.setWeightedRim1Scores(iec.getRimScore(InterfaceEvolContext.FIRST));
-				isi.setWeightedRim2Scores(iec.getRimScore(InterfaceEvolContext.SECOND));
+			if (iecl.isScoreWeighted()) {
+				isi.setWeightedCore1Scores(ercp.getCoreScore(InterfaceEvolContext.FIRST));
+				isi.setWeightedCore2Scores(ercp.getCoreScore(InterfaceEvolContext.SECOND));
+				isi.setWeightedRim1Scores(ercp.getRimScore(InterfaceEvolContext.FIRST));
+				isi.setWeightedRim2Scores(ercp.getRimScore(InterfaceEvolContext.SECOND));
 				isi.setWeightedRatio1Scores(rat1Sc);
 				isi.setWeightedRatio2Scores(rat2Sc);
-				isi.setWeightedFinalScores(iec.getFinalScore());
+				isi.setWeightedFinalScores(ercp.getFinalScore());
 			} else {
-				isi.setUnweightedCore1Scores(iec.getCoreScore(InterfaceEvolContext.FIRST));
-				isi.setUnweightedCore2Scores(iec.getCoreScore(InterfaceEvolContext.SECOND));
-				isi.setUnweightedRim1Scores(iec.getRimScore(InterfaceEvolContext.FIRST));
-				isi.setUnweightedRim2Scores(iec.getRimScore(InterfaceEvolContext.SECOND));
+				isi.setUnweightedCore1Scores(ercp.getCoreScore(InterfaceEvolContext.FIRST));
+				isi.setUnweightedCore2Scores(ercp.getCoreScore(InterfaceEvolContext.SECOND));
+				isi.setUnweightedRim1Scores(ercp.getRimScore(InterfaceEvolContext.FIRST));
+				isi.setUnweightedRim2Scores(ercp.getRimScore(InterfaceEvolContext.SECOND));
 				isi.setUnweightedRatio1Scores(rat1Sc);
 				isi.setUnweightedRatio2Scores(rat2Sc);
-				isi.setUnweightedFinalScores(iec.getFinalScore());				
+				isi.setUnweightedFinalScores(ercp.getFinalScore());				
 			}
 		}
 	}

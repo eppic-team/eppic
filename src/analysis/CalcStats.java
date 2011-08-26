@@ -10,6 +10,7 @@ import java.util.TreeMap;
 
 import crk.CallType;
 import crk.ChainEvolContextList;
+import crk.EvolRimCorePredictor;
 import crk.GeometryPredictor;
 import crk.InterfaceEvolContext;
 import crk.ScoringType;
@@ -329,21 +330,22 @@ public class CalcStats {
 			interf.calcRimAndCore(caCutoffsEvol[i]);
 		}
 
-
+		EvolRimCorePredictor ercp = new EvolRimCorePredictor(iec);
+		
 		if (scoType==ScoringType.ENTROPY) {
-			iec.scoreEntropy(weighted);
+			ercp.scoreEntropy(weighted);
 		} else if (scoType==ScoringType.KAKS) {
-			iec.scoreKaKs(weighted);
+			ercp.scoreKaKs(weighted);
 		}
-		iec.setBioCutoff(bioCallCutoffs[k]);
-		iec.setXtalCutoff(bioCallCutoffs[k]);
+		ercp.setBioCutoff(bioCallCutoffs[k]);
+		ercp.setXtalCutoff(bioCallCutoffs[k]);
 		iec.setHomologsCutoff(MIN_NUM_HOMOLOGS);
 
-		CallType call = iec.getCall();
+		CallType call = ercp.getCall();
 		if (call==CallType.BIO) countBios[i][k][l][m][n]++;
 		else if (call==CallType.CRYSTAL) countXtals[i][k][l][m][n]++;
 		
-		iec.resetCall();
+		ercp.resetCall();
 
 	}
 }

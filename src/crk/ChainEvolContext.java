@@ -33,6 +33,7 @@ import owl.core.sequence.alignment.MultipleSequenceAlignment;
 import owl.core.sequence.alignment.PairwiseSequenceAlignment;
 import owl.core.sequence.alignment.PairwiseSequenceAlignment.PairwiseSequenceAlignmentException;
 import owl.core.structure.PdbAsymUnit;
+import owl.core.structure.Residue;
 
 public class ChainEvolContext implements Serializable {
 	
@@ -262,6 +263,42 @@ public class ChainEvolContext implements Serializable {
 	 */
 	public void computeEntropies(int reducedAlphabet) {
 		homologs.computeEntropies(reducedAlphabet);
+	}
+	
+	/**
+	 * Calculates the evolutionary score for the given list of residues by summing up evolutionary
+	 * scores per residue and averaging (optionally weighted by BSA)
+	 * @param residues
+	 * @param scoType whether the evolutionary score should be entropy or Ka/Ks
+	 * @param weighted whether the scores should be weighted by BSA of each residue
+	 * @return
+	 */
+	public double calcScoreForResidueSet(List<Residue> residues, ScoringType scoType, boolean weighted) {
+		double totalScore = 0.0;
+		double totalWeight = 0.0;
+		List<Double> conservScores = getConservationScores(scoType);
+		for (Residue res:residues){
+			int resSer = res.getSerial(); 
+
+			int queryPos = -2;
+			if (scoType==ScoringType.ENTROPY) {
+				queryPos = getQueryUniprotPosForPDBPos(resSer); 
+			} else if (scoType==ScoringType.KAKS) {
+				queryPos = getQueryCDSPosForPDBPos(resSer);
+			}
+			if (queryPos!=-1) {   
+				double weight = 1.0;
+				if (weighted) {
+					weight = res.getBsa();
+				}
+				totalScore += weight*(conservScores.get(queryPos));
+				totalWeight += weight;
+			} else {
+
+			}
+
+		}
+		return totalScore/totalWeight;
 	}
 	
 	/**

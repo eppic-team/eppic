@@ -27,6 +27,7 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 	
 	
 	private List<InterfaceEvolContext> list;
+	private List<EvolRimCorePredictor> evolRimCorePredictors;
 
 	private String pdbName;
 	private ScoringType scoType;
@@ -41,14 +42,7 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 	
 	public InterfaceEvolContextList(){
 		list = new ArrayList<InterfaceEvolContext>();		
-	}
-	
-	public int size() {
-		return list.size();
-	}
-	
-	public InterfaceEvolContext get(int i){
-		return this.list.get(i);
+		evolRimCorePredictors = new ArrayList<EvolRimCorePredictor>();
 	}
 	
 	public InterfaceEvolContextList(String pdbName, int homologsCutoff,  
@@ -61,10 +55,24 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 		this.minInterfAreaReporting = minInterfAreaReporting;
 		
 		list = new ArrayList<InterfaceEvolContext>();
+		evolRimCorePredictors = new ArrayList<EvolRimCorePredictor>();
+	}
+	
+	public int size() {
+		return list.size();
+	}
+	
+	public InterfaceEvolContext get(int i){
+		return this.list.get(i);
+	}
+	
+	public EvolRimCorePredictor getEvolRimCorePredictor(int i) {
+		return this.evolRimCorePredictors.get(i);
 	}
 	
 	public void add(InterfaceEvolContext iec) {
 		list.add(iec);
+		evolRimCorePredictors.add(new EvolRimCorePredictor(iec));
 	}
 	
 	/**
@@ -93,17 +101,17 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 	public void scoreEntropy(boolean weighted) {
 		this.scoType = ScoringType.ENTROPY;
 		this.isScoreWeighted = weighted;
-		for (InterfaceEvolContext iec:this) {
-			iec.scoreEntropy(weighted);
+		for (int i=0;i<list.size();i++) {
+			evolRimCorePredictors.get(i).scoreEntropy(weighted);
 		}
 	}
 	
 	public void scoreKaKs(boolean weighted) {
 		this.scoType = ScoringType.KAKS;
 		this.isScoreWeighted = weighted;
-		for (InterfaceEvolContext iec:this) {
-			if (iec.canDoCRK()) {
-				iec.scoreKaKs(weighted);
+		for (int i=0;i<list.size();i++) {
+			if (list.get(i).canDoCRK()) {
+				evolRimCorePredictors.get(i).scoreKaKs(weighted);
 			}
 		}		
 	}
@@ -119,12 +127,12 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 		printScoringParams(ps);
 		printScoringHeaders(ps);
 		
-		for (InterfaceEvolContext iec:this) {
-			if (iec.getInterface().getInterfaceArea()>minInterfAreaReporting) {
-				iec.setBioCutoff(bioCutoff);
-				iec.setXtalCutoff(xtalCutoff);
-				iec.setHomologsCutoff(homologsCutoff);
-				iec.printScoresLine(ps);
+		for (int i=0;i<list.size();i++) {
+			if (list.get(i).getInterface().getInterfaceArea()>minInterfAreaReporting) {
+				evolRimCorePredictors.get(i).setBioCutoff(bioCutoff);
+				evolRimCorePredictors.get(i).setXtalCutoff(xtalCutoff);
+				list.get(i).setHomologsCutoff(homologsCutoff);
+				evolRimCorePredictors.get(i).printScoresLine(ps);
 			}
 		}
 	}
@@ -132,7 +140,7 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 	public void writeScoresPDBFiles(CRKParams params, String suffix) throws IOException {
 		for (InterfaceEvolContext iec:this) {
 			if (iec.getInterface().getInterfaceArea()>minInterfAreaReporting) {
-				iec.writePdbFile(params.getOutputFile("."+iec.getInterface().getId()+suffix));
+				iec.writePdbFile(params.getOutputFile("."+iec.getInterface().getId()+suffix),scoType);
 			}
 		}
 	}
@@ -157,8 +165,8 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 	 * Resets to null all calls, callReasons and warnings of all InterfaceEvolContext in this list.
 	 */
 	public void resetCalls() {
-		for (InterfaceEvolContext iec:this) {
-			iec.resetCall();
+		for (int i=0;i<list.size();i++) {
+			evolRimCorePredictors.get(i).resetCall();
 		}
 	}
 
