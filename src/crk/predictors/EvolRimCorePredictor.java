@@ -152,16 +152,17 @@ public class EvolRimCorePredictor implements InterfaceTypePredictor {
 			callReason = member1Pred.getCallReason()+"\n"+member2Pred.getCallReason();
 			if (finalScore<bioCutoff) {
 				call = CallType.BIO;
-				callReason += "\nAverage score is below BIO cutoff ("+String.format("%4.2f", bioCutoff)+")";
+				callReason += "\nAverage score "+String.format("%4.2f", finalScore)+" is below BIO cutoff ("+String.format("%4.2f", bioCutoff)+")";
 			} else if (finalScore>xtalCutoff) {
 				call = CallType.CRYSTAL;
-				callReason += "\nAverage score is above XTAL cutoff ("+String.format("%4.2f", xtalCutoff)+")";
+				callReason += "\nAverage score "+String.format("%4.2f", finalScore)+" is above XTAL cutoff ("+String.format("%4.2f", xtalCutoff)+")";
 			} else if (Double.isNaN(finalScore)) {
 				call = CallType.NO_PREDICTION;
 				callReason += "\nAverage score is NaN";
 			} else {
 				call = CallType.GRAY;
-				callReason += "\nAverage score falls in gray area ("+String.format("%4.2f", bioCutoff)+" - "+String.format("%4.2f", xtalCutoff)+")";
+				callReason += "\nAverage score "+String.format("%4.2f", finalScore)+" falls in gray area ("+
+						String.format("%4.2f", bioCutoff)+" - "+String.format("%4.2f", xtalCutoff)+")";
 			}
 		}
 		return call;
