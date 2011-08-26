@@ -12,6 +12,7 @@ import java.util.TreeMap;
 
 import crk.CallType;
 import crk.ChainEvolContextList;
+import crk.EvolRimCorePredictor;
 import crk.GeometryPredictor;
 import crk.InterfaceEvolContext;
 
@@ -207,34 +208,35 @@ public class CoreSizePredictor {
 		
 		ChainEvolContextList cecs = (ChainEvolContextList)Goodies.readFromFile(chainevolfile);
 		InterfaceEvolContext iec = new InterfaceEvolContext(interf, cecs);
+		EvolRimCorePredictor ercp = new EvolRimCorePredictor(iec);
 		
-		iec.scoreEntropy(false);
-		iec.setBioCutoff(BIO_CUTOFF);
-		iec.setXtalCutoff(XTAL_CUTOFF);
+		ercp.scoreEntropy(false);
+		ercp.setBioCutoff(BIO_CUTOFF);
+		ercp.setXtalCutoff(XTAL_CUTOFF);
 		iec.setHomologsCutoff(MIN_NUM_HOMOLOGS);
-		CallType entCall = iec.getCall();
-		String entCallStr = entCall.getName() +"("+String.format("%4.2f", iec.getFinalScore())+")";
-		iec.scoreEntropy(true);
-		iec.setBioCutoff(BIO_CUTOFF);
-		iec.setXtalCutoff(XTAL_CUTOFF);
+		CallType entCall = ercp.getCall();
+		String entCallStr = entCall.getName() +"("+String.format("%4.2f", ercp.getFinalScore())+")";
+		ercp.scoreEntropy(true);
+		ercp.setBioCutoff(BIO_CUTOFF);
+		ercp.setXtalCutoff(XTAL_CUTOFF);
 		iec.setHomologsCutoff(MIN_NUM_HOMOLOGS);		
-		entCall = iec.getCall();
-		entCallStr += " "+entCall.getName() +"("+String.format("%4.2f", iec.getFinalScore())+")";
+		entCall = ercp.getCall();
+		entCallStr += " "+entCall.getName() +"("+String.format("%4.2f", ercp.getFinalScore())+")";
 		
 		String kaksCallStr = CallType.NO_PREDICTION.getName()+" (can't do kaks)";
 		if (iec.canDoCRK()) {
-			iec.scoreKaKs(false);
-			iec.setBioCutoff(BIO_CUTOFF);
-			iec.setXtalCutoff(XTAL_CUTOFF);
+			ercp.scoreKaKs(false);
+			ercp.setBioCutoff(BIO_CUTOFF);
+			ercp.setXtalCutoff(XTAL_CUTOFF);
 			iec.setHomologsCutoff(MIN_NUM_HOMOLOGS);
-			CallType kaksCall = iec.getCall();
-			kaksCallStr = kaksCall.getName()+"("+String.format("%4.2f", iec.getFinalScore())+")";
-			iec.scoreKaKs(true);
-			iec.setBioCutoff(BIO_CUTOFF);
-			iec.setXtalCutoff(XTAL_CUTOFF);
+			CallType kaksCall = ercp.getCall();
+			kaksCallStr = kaksCall.getName()+"("+String.format("%4.2f", ercp.getFinalScore())+")";
+			ercp.scoreKaKs(true);
+			ercp.setBioCutoff(BIO_CUTOFF);
+			ercp.setXtalCutoff(XTAL_CUTOFF);
 			iec.setHomologsCutoff(MIN_NUM_HOMOLOGS);
-			kaksCall = iec.getCall();
-			kaksCallStr += " "+kaksCall.getName()+"("+String.format("%4.2f", iec.getFinalScore())+")";
+			kaksCall = ercp.getCall();
+			kaksCallStr += " "+kaksCall.getName()+"("+String.format("%4.2f", ercp.getFinalScore())+")";
 		}
 		
 		String callStr = entCallStr+" "+kaksCallStr;
