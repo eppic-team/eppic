@@ -12,8 +12,8 @@ import java.util.TreeMap;
 
 import crk.CallType;
 import crk.ChainEvolContextList;
-import crk.EvolRimCorePredictor;
-import crk.GeometryPredictor;
+import crk.predictors.EvolRimCorePredictor;
+import crk.predictors.GeometryPredictor;
 import crk.InterfaceEvolContext;
 
 import owl.core.structure.ChainInterface;
