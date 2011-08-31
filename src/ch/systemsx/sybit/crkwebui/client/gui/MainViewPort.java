@@ -64,7 +64,7 @@ public class MainViewPort extends Viewport
 			}
 		});
 
-		BorderLayoutData westData = new BorderLayoutData(LayoutRegion.WEST, 180);
+		BorderLayoutData westData = new BorderLayoutData(LayoutRegion.WEST, 220);
 		westData.setCollapsible(true);
 		westData.setFloatable(true);
 		westData.setSplit(true);
@@ -128,18 +128,20 @@ public class MainViewPort extends Viewport
 		{
 			interfacesResiduesWindow = new InterfacesResiduesWindow(mainController, selectedInterface);
 			mainController.setResizeInterfacesWindow(false);
+			interfacesResiduesWindow.setVisible(true);
+			interfacesResiduesWindow.getInterfacesResiduesPanel().resizeResiduesPanels();	
 		}
 		else
 		{
 			interfacesResiduesWindow.setSelectedInterface(selectedInterface);
+			interfacesResiduesWindow.setWindowHeader();
 			interfacesResiduesWindow.getInterfacesResiduesPanel().cleanData();
 			interfacesResiduesWindow.getInterfacesResiduesPanel().getFirstStructurePanel().cleanResiduesGrid();
 			interfacesResiduesWindow.getInterfacesResiduesPanel().getSecondStructurePanel().cleanResiduesGrid();
 			interfacesResiduesWindow.getInterfacesResiduesPanel().getFirstStructurePanelSummary().cleanResiduesGrid();
 			interfacesResiduesWindow.getInterfacesResiduesPanel().getSecondStructurePanelSummary().cleanResiduesGrid();
+			interfacesResiduesWindow.setVisible(true);
 		}
-		
-		interfacesResiduesWindow.setVisible(true);
 		
 		//called beacuse of the bug in GXT 2.2.3
 		// http://www.sencha.com/forum/showthread.php?126888-Problems-with-RowLayout
@@ -156,7 +158,10 @@ public class MainViewPort extends Viewport
 	
 	public void hideWaiting()
 	{
-		waitingMessageBox.close(); 
+		if(waitingMessageBox != null)
+		{
+			waitingMessageBox.close();
+		}
 	}
 	
 	public void showError(String message)

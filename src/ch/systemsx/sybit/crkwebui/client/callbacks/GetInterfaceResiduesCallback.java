@@ -26,7 +26,6 @@ public class GetInterfaceResiduesCallback implements AsyncCallback<HashMap<Integ
 	public void onFailure(Throwable caught) 
 	{
 		mainController.updateStatusLabel(MainController.CONSTANTS.callback_get_interface_residues_error(), true);
-//		mainController.showError("Error during getting residues data from server" + caught.getMessage());
 	}
 
 	@Override
@@ -36,28 +35,11 @@ public class GetInterfaceResiduesCallback implements AsyncCallback<HashMap<Integ
 		
 		if (result != null)
 		{
-			if(result.containsKey(1))
-			{
-				mainController.getMainViewPort().getInterfacesResiduesWindow().getInterfacesResiduesPanel().getFirstStructurePanel()
-						.fillResiduesGrid(result.get(1));
-				mainController.getMainViewPort().getInterfacesResiduesWindow().getInterfacesResiduesPanel().getFirstStructurePanel().applyFilter(false);
-				mainController.getMainViewPort().getInterfacesResiduesWindow().getInterfacesResiduesPanel().getFirstStructurePanelSummary().fillResiduesGrid();
-			}
-			
-			if(result.containsKey(2))
-			{
-				mainController.getMainViewPort().getInterfacesResiduesWindow().getInterfacesResiduesPanel().getSecondStructurePanel()
-						.fillResiduesGrid(result.get(2));
-				mainController.getMainViewPort().getInterfacesResiduesWindow().getInterfacesResiduesPanel().getSecondStructurePanel().applyFilter(false);
-				mainController.getMainViewPort().getInterfacesResiduesWindow().getInterfacesResiduesPanel().getSecondStructurePanelSummary().fillResiduesGrid();
-			}
-			
-			mainController.getMainViewPort().getInterfacesResiduesWindow().getInterfacesResiduesPanel().resizeResiduesPanels();
+			mainController.setInterfacesResiduesWindowData(result);
 		}
 		else 
 		{
 			mainController.updateStatusLabel(MainController.CONSTANTS.callback_get_interface_residues_error() + " - incorrect result type", true);
-//			mainController.showError("Error during getting residues from server");
 		}
 		
 		mainController.hideWaiting();

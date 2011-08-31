@@ -11,18 +11,23 @@ import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.Dialog;
 import com.extjs.gxt.ui.client.widget.layout.RowData;
 import com.extjs.gxt.ui.client.widget.layout.RowLayout;
+import com.google.gwt.i18n.client.NumberFormat;
 
 public class InterfacesResiduesWindow extends Dialog 
 {
 	private InterfacesResiduesPanel interfacesResiduesPanel;
 	
 	private int selectedInterface;
+	
+	private MainController mainController;
 
 	public InterfacesResiduesWindow(final MainController mainController,
 									int selectedInterface) 
 	{
+		this.mainController = mainController;
+		
 		int width = 1200;
-		int height = 660;
+		int height = 665;
 		
 		if(width > mainController.getWindowWidth())
 		{
@@ -45,7 +50,7 @@ public class InterfacesResiduesWindow extends Dialog
 		this.setLayout(new RowLayout());
 		this.setHideOnButtonClick(true);
 		this.setSelectedInterface(selectedInterface);
-		this.setHeading(MainController.CONSTANTS.interfaces_residues_window_title() + " " + selectedInterface);
+		this.setWindowHeader();
 
 		// adjust to 22 height rows
 		height = (height - 220) / 22;
@@ -101,7 +106,14 @@ public class InterfacesResiduesWindow extends Dialog
 	public void setSelectedInterface(int selectedInterface)
 	{
 		this.selectedInterface = selectedInterface;
-		this.setHeading(MainController.CONSTANTS.interfaces_residues_window_title() + " " + selectedInterface);
+	}
+	
+	public void setWindowHeader()
+	{
+		double area = mainController.getPdbScoreItem().getInterfaceItem(selectedInterface - 1).getArea();
+		NumberFormat number = NumberFormat.getFormat("0.00");
+		String formattedArea = number.format(area);
+		this.setHeading(MainController.CONSTANTS.interfaces_residues_window_title() + " " + selectedInterface + " (" + formattedArea + " A<sup>2</sup>)");
 	}
 	
 	public int getSelectedInterface()

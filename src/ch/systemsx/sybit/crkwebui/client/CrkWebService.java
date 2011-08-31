@@ -7,6 +7,7 @@ import model.InterfaceResidueItem;
 import model.ProcessingData;
 import ch.systemsx.sybit.crkwebui.shared.CrkWebException;
 import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
+import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResiduesItemsList;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
 import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
 
@@ -62,12 +63,20 @@ public interface CrkWebService extends RemoteService
 			String jobId, int interfaceId) throws CrkWebException;
 	
 	/**
-	 * Stop the processing of the selected job
-	 * @param jobId selected job id which is supposed to be stopped on the server
-	 * @return results of job stopping
+	 * Killing selected job
+	 * @param jobsToStop id of the job which is going to be removef
+	 * @return result of stopping
 	 * @throws CrkWebException
 	 */
-	public String killJob(String jobId) throws CrkWebException;
+	public String stopJob(String jobToStop) throws CrkWebException;
+	
+	/**
+	 * Untie specified job id with the session of the current user
+	 * @param jobsToDelete job for which session id is to be untied
+	 * @return result of deleting
+	 * @throws CrkWebException
+	 */
+	public String deleteJob(String jobToDelete) throws CrkWebException;
 	
 	/**
 	 * Untie all the jobs which are attached to the current session
@@ -75,4 +84,5 @@ public interface CrkWebService extends RemoteService
 	 */
 	public void untieJobsFromSession() throws CrkWebException;
 
+	public InterfaceResiduesItemsList getAllResidues(String jobId, List<Integer> interfaceIds) throws CrkWebException;
 }

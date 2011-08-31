@@ -1,7 +1,5 @@
 package ch.systemsx.sybit.crkwebui.client.gui.renderers;
 
-import ch.systemsx.sybit.crkwebui.client.model.InterfaceItemModel;
-
 import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.widget.grid.ColumnData;

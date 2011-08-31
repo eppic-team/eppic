@@ -8,12 +8,16 @@ import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.Style.Scroll;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
 import com.extjs.gxt.ui.client.event.SelectionListener;
+import com.extjs.gxt.ui.client.widget.LayoutContainer;
+import com.extjs.gxt.ui.client.widget.ProgressBar;
 import com.extjs.gxt.ui.client.widget.button.Button;
 import com.extjs.gxt.ui.client.widget.form.FormPanel;
 import com.extjs.gxt.ui.client.widget.form.TextArea;
 import com.extjs.gxt.ui.client.widget.form.TextField;
+import com.extjs.gxt.ui.client.widget.layout.CenterLayout;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 import com.extjs.gxt.ui.client.widget.layout.FormData;
+import com.google.gwt.user.client.Timer;
 
 /**
  * This panel is used to display status of the submitted job
@@ -27,6 +31,9 @@ public class StatusPanel extends DisplayPanel
 	private TextField<String> jobId;
 	private TextField<String> status;
 	private TextArea log;
+	private ProgressBar progressBar;
+	
+	private String currentStep = "1/5 Current step";
 	
 	private Button killJob;
 	
@@ -62,17 +69,43 @@ public class StatusPanel extends DisplayPanel
 		log.setFieldLabel(MainController.CONSTANTS.status_panel_log());
 		log.setReadOnly(true);
 
-		formPanel.add(log, new FormData("95% -60"));
+		formPanel.add(log, new FormData("95% -90"));
+
+		LayoutContainer progressBarContainer = new LayoutContainer();
+		progressBarContainer.setLayout(new CenterLayout());
+		progressBarContainer.setHeight(20);
+		progressBar = new ProgressBar();
+		progressBar.setBounds(0, 0, 400, 20);
+		progressBarContainer.add(progressBar);
+		
+		formPanel.add(progressBarContainer, new FormData("100%"));
+		
+		Timer autoRefreshMyJobs = new Timer() 
+		{
+			private float counter = 0;
+			
+			public void run() 
+			{
+				progressBar.updateProgress(counter / 100, currentStep);
+				counter += 10;
+				
+				if(counter > 100)
+				{
+					counter = 0;
+				}
+			}
+		};
+
+		autoRefreshMyJobs.scheduleRepeating(500);
 		
 		killJob = new Button(MainController.CONSTANTS.status_panel_stop(), new SelectionListener<ButtonEvent>() {
 
 			public void componentSelected(ButtonEvent ce) 
 			{
-				mainController.killJob(jobId.getValue());
+				mainController.stopJob(jobId.getValue());
 			}
 		});
 		
-//		killJob.setVisible(false);
 		formPanel.addButton(killJob);
 		
 		this.add(formPanel);
@@ -91,10 +124,12 @@ public class StatusPanel extends DisplayPanel
 		if((status.getValue() != null) && (status.getValue().equals(StatusOfJob.RUNNING)))
 		{
 			killJob.setVisible(true);
+			progressBar.setVisible(true);
 		}
 		else
 		{
 			killJob.setVisible(false);
+			progressBar.setVisible(false);
 		}
 	}
 

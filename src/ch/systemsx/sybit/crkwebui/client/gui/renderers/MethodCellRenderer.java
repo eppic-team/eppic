@@ -74,6 +74,11 @@ public class MethodCellRenderer implements GridCellRenderer<BaseModel>
 						if(interfaceScoreItem.getMethod().equals(property))
 						{
 							text = interfaceScoreItem.getCallReason();
+							
+							if(text != null)
+							{
+								text = text.replaceAll("\n", "<br/>");
+							}
 						}
 					}
 				}
@@ -95,6 +100,7 @@ public class MethodCellRenderer implements GridCellRenderer<BaseModel>
 					{
 						ToolTipConfig toolTipConfig = new ToolTipConfig();  
 						toolTipConfig.setMouseOffset(new int[] {0, 0});  
+						
 						toolTipConfig.setText(callReasonText);  
 						
 						int width = 500;

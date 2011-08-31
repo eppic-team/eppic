@@ -1,7 +1,6 @@
 package ch.systemsx.sybit.crkwebui.client.gui.renderers;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
-import ch.systemsx.sybit.crkwebui.client.model.InterfaceItemModel;
 
 import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
@@ -31,6 +30,12 @@ public class GridCellRendererFactory {
 				 renderer = new WarningsCellRenderer(mainController);
 			} else if (rendererName.equals("size")) {
 				renderer = new SizeCellRenderer(mainController);
+			} else if (rendererName.equals("jobinput")) {
+				renderer = new InputCellRenderer();
+			} else if (rendererName.equals("jobstatus")) {
+				renderer = new JobStatusCellRenderer();
+			} else if (rendererName.equals("deletejob")) {
+				renderer = new DeleteJobCellRenderer(mainController);
 			}
 		}
 

@@ -133,14 +133,12 @@ public class InputDataPanel extends DisplayPanel
 		pdbCodeField.setName("code");
 		pdbCodeField.setFieldLabel(MainController.CONSTANTS.input_pdb_code_radio());
 		pdbCodeField.setValidator(new PdbCodeFieldValidator());
-//		emailTextField.setStyleAttribute("padding", "30px");
 		generalFieldSet.add(pdbCodeField);
 		
 		emailTextField = new TextField<String>();
 		emailTextField.setName("email");
 		emailTextField.setFieldLabel(MainController.CONSTANTS.input_email());
 		emailTextField.setValidator(new EmailFieldValidator());
-//		emailTextField.setStyleAttribute("padding", "30px");
 		generalFieldSet.add(emailTextField);
 
 		FormPanel breakPanel = new FormPanel();
@@ -266,27 +264,27 @@ public class InputDataPanel extends DisplayPanel
 		RunJobData runJobData = new RunJobData();
 		runJobData.setEmailAddress(emailTextField.getValue());
 		
-		String fileName = null;
+		String input = null;
 		
 		if(pdbCodeFile.getValue())
 		{
-			fileName = file.getValue();
+			input = file.getValue();
 			
-			if(fileName.startsWith("C:\\fakepath\\"))
+			if(input.startsWith("C:\\fakepath\\"))
 			{
-				fileName = fileName.substring(12);
+				input = input.substring(12);
 			}
-			else if(fileName.contains("\\"))
+			else if(input.contains("\\"))
 			{
-				fileName = fileName.substring(fileName.lastIndexOf("\\") + 1);
+				input = input.substring(input.lastIndexOf("\\") + 1);
 			}
 		}
 		else
 		{
-			fileName = pdbCodeField.getValue();
+			input = pdbCodeField.getValue();
 		}
 		
-		runJobData.setInput(fileName);
+		runJobData.setInput(input);
 		runJobData.setJobId(jobId);
 		runJobData.setInputParameters(optionsInputPanel
 				.getCurrentInputParameters());

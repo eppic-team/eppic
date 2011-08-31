@@ -1,21 +1,15 @@
 package ch.systemsx.sybit.crkwebui.client.gui;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import model.InterfaceResidueItem;
 import model.InterfaceResidueMethodItem;
-import model.InterfaceScoreItem;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
-import ch.systemsx.sybit.crkwebui.client.gui.renderers.GridCellRendererFactory;
+import ch.systemsx.sybit.crkwebui.client.model.InterfaceItemModel;
 import ch.systemsx.sybit.crkwebui.client.model.InterfaceResidueItemModel;
 
-import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.Style.Scroll;
-import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.data.BasePagingLoader;
 import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.data.PagingLoader;
@@ -27,7 +21,6 @@ import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
 import com.extjs.gxt.ui.client.widget.grid.ColumnModel;
 import com.extjs.gxt.ui.client.widget.grid.Grid;
-import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
 import com.extjs.gxt.ui.client.widget.grid.GridViewConfig;
 import com.extjs.gxt.ui.client.widget.grid.HeaderGroupConfig;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
@@ -69,7 +62,7 @@ public class ResiduesPanel extends ContentPanel
 		this.setBorders(false);
 		this.setLayout(new FitLayout());
 		this.getHeader().setVisible(false);
-		this.setScrollMode(Scroll.AUTO);
+		this.setScrollMode(Scroll.NONE);
 
 		residuesConfigs = createColumnConfig();
 
@@ -153,135 +146,23 @@ public class ResiduesPanel extends ContentPanel
 		this.setBottomComponent(pagingToolbar);
 	}
 	
-	private List<ColumnConfig> createColumnConfig() {
-		List<ColumnConfig> configs = new ArrayList<ColumnConfig>();
+	private List<ColumnConfig> createColumnConfig() 
+	{
+		List<ColumnConfig> configs = GridColumnConfigGenerator.createColumnConfigs(mainController,
+				   "residues",
+				   new InterfaceItemModel());
 
-		InterfaceResidueItemModel model = new InterfaceResidueItemModel();
-
-		String columnOrder = mainController.getSettings().getGridProperties()
-				.get("residues_columns");
-
-		String[] columns = null;
-
-		if (columnOrder == null) {
-			columns = new String[model.getPropertyNames().size()];
-
-			Iterator<String> fieldsIterator = model.getPropertyNames()
-					.iterator();
-
-			int i = 0;
-
-			while (fieldsIterator.hasNext()) {
-				columns[i] = fieldsIterator.next();
-				i++;
+		if(configs != null)
+		{
+			initialColumnWidth = new ArrayList<Integer>();
+			
+			for(ColumnConfig columnConfig : configs)
+			{
+				initialColumnWidth.add(columnConfig.getWidth());
 			}
-		} else {
-			columns = columnOrder.split(",");
 		}
 		
-		if (columns != null) {
-			initialColumnWidth = new ArrayList<Integer>();
-		}
-
-		for (String columnName : columns) {
-			boolean addColumn = true;
-
-			String customAdd = mainController.getSettings().getGridProperties()
-					.get("residues_" + columnName + "_add");
-			if (customAdd != null) {
-				if (!customAdd.equals("yes")) {
-					addColumn = false;
-				}
-			}
-
-			if (addColumn) {
-				boolean displayColumn = true;
-
-				String customVisibility = mainController.getSettings()
-						.getGridProperties()
-						.get("residues_" + columnName + "_visible");
-				if (customVisibility != null) {
-					if (!customVisibility.equals("yes")) {
-						displayColumn = false;
-					}
-				}
-
-				int columnWidth = 75;
-				String customColumnWidth = mainController.getSettings()
-						.getGridProperties()
-						.get("residues_" + columnName + "_width");
-				if (customColumnWidth != null) {
-					columnWidth = Integer.parseInt(customColumnWidth);
-				}
-				
-				String customRenderer = mainController.getSettings()
-						.getGridProperties()
-						.get("residues_" + columnName + "_renderer");
-
-				GridCellRenderer<BaseModel> renderer = null;
-				if ((customRenderer != null) && (!customRenderer.equals(""))) {
-					renderer = GridCellRendererFactory.createGridCellRenderer(
-							customRenderer, mainController);
-				}
-
-				String header = columnName;
-				String customHeader = mainController.getSettings()
-						.getGridProperties()
-						.get("residues_" + columnName + "_header");
-				if (customHeader != null) {
-					header = customHeader;
-				}
-				
-				String tootlip = mainController.getSettings()
-						.getGridProperties()
-						.get("residues_" + columnName + "_tooltip");
-
-				if (columnName.equals("METHODS")) {
-					for (String method : mainController.getSettings()
-							.getScoresTypes()) {
-						ColumnConfig column = new ColumnConfig();
-						column.setId(method);
-						column.setHeader(method);
-						column.setWidth(columnWidth);
-						initialColumnWidth.add(columnWidth);
-						column.setAlignment(HorizontalAlignment.CENTER);
-						column.setHidden(!displayColumn);
-
-						if (renderer != null) {
-							column.setRenderer(renderer);
-						}
-						
-						if (tootlip != null) {
-							column.setToolTip(tootlip);
-						}
-
-						configs.add(column);
-					}
-				} else {
-					ColumnConfig column = new ColumnConfig();
-					column.setId(columnName);
-					column.setHeader(header);
-					column.setWidth(columnWidth);
-					initialColumnWidth.add(columnWidth);
-					column.setAlignment(HorizontalAlignment.CENTER);
-
-					column.setHidden(!displayColumn);
-
-					if (renderer != null) {
-						column.setRenderer(renderer);
-					}
-					
-					if (tootlip != null) {
-						column.setToolTip(tootlip);
-					}
-
-					configs.add(column);
-				}
-			}
-		}
-
 		return configs;
-
 	}
 
 	public void fillResiduesGrid(List<InterfaceResidueItem> residueValues) 
@@ -371,18 +252,22 @@ public class ResiduesPanel extends ContentPanel
 	{
 		int scoresGridWidthOfAllVisibleColumns = calculateWidthOfVisibleColumns();
 		
-		nrOfRows = (int)((mainController.getMainViewPort().getInterfacesResiduesWindow().getHeight() - 310)  / 22);
+		nrOfRows = (int)((mainController.getMainViewPort().getInterfacesResiduesWindow().getHeight() - 330)  / 22);
+		
+		int assignedWidth = (int)((mainController.getMainViewPort().getInterfacesResiduesWindow().getInterfacesResiduesPanel().getWidth() - 20) * 0.48);
 		
 		if (checkIfForceFit(scoresGridWidthOfAllVisibleColumns, 
-							(int)((mainController.getMainViewPort().getInterfacesResiduesWindow().getInterfacesResiduesPanel().getWidth() - 20) * 0.48))) 
+							assignedWidth)) 
 		{
 			this.setScrollMode(Scroll.NONE);
+			this.setWidth(assignedWidth);
 //			residuesGrid.setAutoHeight(true);
 		} 
 		else 
 		{
 			this.setScrollMode(Scroll.AUTOX);
 			residuesGrid.setWidth(scoresGridWidthOfAllVisibleColumns);
+			this.setWidth(scoresGridWidthOfAllVisibleColumns);
 //			residuesGrid.setAutoHeight(true);
 			
 			int nrOfColumn = residuesGrid.getColumnModel().getColumnCount();
@@ -391,8 +276,6 @@ public class ResiduesPanel extends ContentPanel
 				residuesGrid.getColumnModel().getColumn(i)
 						.setWidth(initialColumnWidth.get(i));
 			}
-			
-			nrOfRows--;
 		}
 		
 		pagingToolbar.setPageSize(nrOfRows);

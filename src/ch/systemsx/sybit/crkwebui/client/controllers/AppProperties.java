@@ -1,5 +1,7 @@
 package ch.systemsx.sybit.crkwebui.client.controllers;
 
+import java.util.List;
+
 import com.google.gwt.i18n.client.Constants;
 
 /**
@@ -14,6 +16,12 @@ public interface AppProperties extends Constants
 	String no();
 	String option_true();
 	String option_false();
+	
+	String window_title();
+	String window_title_input();
+	String window_title_processing();
+	String window_title_loading();
+	String window_title_results();
 	
 	String input_email();
 	String input_file();
@@ -67,8 +75,8 @@ public interface AppProperties extends Constants
 	
 	String myjobs_panel_head();
 	String myjobs_panel_new_button();
-	String myjobs_grid_input();
-	String myjobs_grid_status();
+	String myjobs_grid_stop_tooltip();
+	String myjobs_grid_delete_tooltip();
 	
 	String results_grid_details_button();
 	String results_grid_details_button_tooltip();
@@ -108,6 +116,7 @@ public interface AppProperties extends Constants
 	String callback_get_results_of_processing_error();
 	String callback_get_settings_error();
 	String callback_kill_job_error();
+	String callback_delete_job_error();
 	String callback_run_job_error();
 	String callback_untie_jobs_from_session_error();
 	String callback_job_not_found_error();
@@ -117,4 +126,5 @@ public interface AppProperties extends Constants
 	
 	String viewer_jmol();
 	String viewer_local();
+	String viewer_pse();
 }

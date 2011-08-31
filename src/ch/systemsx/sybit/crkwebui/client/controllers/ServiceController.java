@@ -1,5 +1,7 @@
 package ch.systemsx.sybit.crkwebui.client.controllers;
 
+import java.util.List;
+
 import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
 
 /**
@@ -27,7 +29,7 @@ public interface ServiceController
 	public abstract void getResultsOfProcessing(String jobId);
 	
 	/**
-	 * Retrieve list of all jobs for current session id
+	 * Retrieve the status data for the current jobs
 	 * @param jobId job id
 	 */
 	public abstract void getCurrentStatusData(String jobId);
@@ -45,18 +47,21 @@ public interface ServiceController
 	public abstract void getInterfaceResidues(String jobId, int interfaceId);
 	
 	/**
-	 * Stop the processing of the selected job
-	 * @param id selected job id which is supposed to be stopped on the server
+	 * Stop the execution of the specified running job
+	 * @param jobsToStop list of jobs to stop
 	 */
-	public abstract void killJob(String jobId);
+	public abstract void stopJob(String jobToStop);
+	
+	/**
+	 * Untie specified job with the current session id
+	 * @param jobsToStop list of jobs to remove
+	 */
+	public abstract void deleteJob(String jobToDelete);
 
 	/**
 	 * Untie all the jobs which are attached to the current session
 	 */
 	public abstract void untieJobsFromSession();
 
-	
-
-	
-
+	public abstract void getAllResidues(String jobId, List<Integer> interfaceIds);
 }

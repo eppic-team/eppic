@@ -1,14 +1,18 @@
 package ch.systemsx.sybit.crkwebui.client.controllers;
 
+import java.util.List;
+
 import ch.systemsx.sybit.crkwebui.client.CrkWebService;
 import ch.systemsx.sybit.crkwebui.client.CrkWebServiceAsync;
+import ch.systemsx.sybit.crkwebui.client.callbacks.DeleteJobsCallback;
+import ch.systemsx.sybit.crkwebui.client.callbacks.GetAllResiduesCallback;
 import ch.systemsx.sybit.crkwebui.client.callbacks.GetCurrentStatusDataCallback;
 import ch.systemsx.sybit.crkwebui.client.callbacks.GetInterfaceResiduesCallback;
 import ch.systemsx.sybit.crkwebui.client.callbacks.GetJobsForCurrentSession;
 import ch.systemsx.sybit.crkwebui.client.callbacks.GetResultsOfProcessingCallback;
 import ch.systemsx.sybit.crkwebui.client.callbacks.GetSettingsCallback;
-import ch.systemsx.sybit.crkwebui.client.callbacks.KillJobCallback;
 import ch.systemsx.sybit.crkwebui.client.callbacks.RunJobCallback;
+import ch.systemsx.sybit.crkwebui.client.callbacks.StopJobsCallback;
 import ch.systemsx.sybit.crkwebui.client.callbacks.UntieJobsFromSessionCallback;
 import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
 
@@ -65,8 +69,12 @@ public class ServiceControllerImpl implements ServiceController
 		crkWebService.runJob(runJobData, new RunJobCallback(mainController));
 	}
 
-	public void killJob(String jobId) {
-		crkWebService.killJob(jobId, new KillJobCallback(mainController));
+	public void stopJob(String jobToStop) {
+		crkWebService.stopJob(jobToStop, new StopJobsCallback(mainController, jobToStop));
+	}
+	
+	public void deleteJob(String jobToDelete) {
+		crkWebService.deleteJob(jobToDelete, new DeleteJobsCallback(mainController, jobToDelete));
 	}
 
 	public void untieJobsFromSession() {
@@ -78,5 +86,11 @@ public class ServiceControllerImpl implements ServiceController
 	{
 		crkWebService.getResultsOfProcessing(jobId,
 				new GetCurrentStatusDataCallback(mainController, jobId));
+	}
+
+	@Override
+	public void getAllResidues(String jobId, List<Integer> interfaceIds) {
+		crkWebService.getAllResidues(jobId, interfaceIds,
+				new GetAllResiduesCallback(mainController, jobId));
 	}
 }

@@ -61,7 +61,8 @@ public class DetailsButtonCellRenderer extends DefaultCellRenderer
 					@Override
 					public void componentSelected(ButtonEvent ce) 
 					{
-						if(mainController.getMainViewPort().getCenterPanel().getDisplayPanel() instanceof ResultsPanel)
+						if((mainController.getMainViewPort().getCenterPanel().getDisplayPanel() != null) &&
+						   (mainController.getMainViewPort().getCenterPanel().getDisplayPanel() instanceof ResultsPanel))
 						{
 							ResultsPanel resultsPanel = (ResultsPanel)mainController.getMainViewPort().getCenterPanel().getDisplayPanel();
 //							resultsPanel.updateScoresPanel((Integer)resultsPanel.getResultsStore().getAt(rowIndex).get("id"));

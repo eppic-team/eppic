@@ -15,18 +15,19 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 public class GetCurrentStatusDataCallback implements AsyncCallback<ProcessingData>
 {
 	private MainController mainController;
+	private String selectedId;
 
 	public GetCurrentStatusDataCallback(MainController mainController,
 			String selectedId) 
 	{
 		this.mainController = mainController;
+		this.selectedId = selectedId;
 	}
 
 	@Override
 	public void onFailure(Throwable caught) 
 	{
 		String errorText = MainController.CONSTANTS.callback_get_current_status_data();// + caught.getMessage();
-//		mainController.showError(errorText);
 		mainController.updateStatusLabel(errorText, true);
 	}
 
@@ -49,16 +50,13 @@ public class GetCurrentStatusDataCallback implements AsyncCallback<ProcessingDat
 			else
 			{
 				mainController.updateStatusLabel(MainController.CONSTANTS.callback_get_current_status_data() + " " + result.getClass(), true);
-//				mainController.showError("Error during getting results of processing from server" + result.getClass());
-				mainController.getMainViewPort().getCenterPanel().removeAll();
-				mainController.getMainViewPort().getCenterPanel().setDisplayPanel(null);
+				mainController.cleanCenterPanel();
 			}
 		}
 		else
 		{
-			mainController.showMessage(MainController.CONSTANTS.callback_job_not_found_error(), "Job with id=" + mainController.getSelectedJobId() + " not found on the server");
-			mainController.getMainViewPort().getCenterPanel().removeAll();
-			mainController.getMainViewPort().getCenterPanel().setDisplayPanel(null);
+			mainController.showMessage(MainController.CONSTANTS.callback_job_not_found_error(), "Job with id=" + selectedId + " not found on the server");
+			mainController.cleanCenterPanel();
 		}
 	}
 

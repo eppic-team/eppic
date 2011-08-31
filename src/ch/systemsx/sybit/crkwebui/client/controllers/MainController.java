@@ -1,13 +1,16 @@
 package ch.systemsx.sybit.crkwebui.client.controllers;
 
+import java.util.HashMap;
 import java.util.List;
 
+import model.InterfaceResidueItem;
 import model.PDBScoreItem;
 import ch.systemsx.sybit.crkwebui.client.gui.InputDataPanel;
 import ch.systemsx.sybit.crkwebui.client.gui.MainViewPort;
 import ch.systemsx.sybit.crkwebui.client.gui.ResultsPanel;
 import ch.systemsx.sybit.crkwebui.client.gui.StatusPanel;
 import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
+import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResiduesItemsList;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
 import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
 import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
@@ -38,6 +41,7 @@ public class MainController
 	private ApplicationSettings settings;
 
 	private PDBScoreItem pdbScoreItem;
+	private InterfaceResiduesItemsList residuesForInterface;
 
 	private String selectedJobId;
 
@@ -67,19 +71,18 @@ public class MainController
 	{
 		if ((token != null) && (token.length() > 3) && (token.startsWith("id"))) 
 		{
+			Window.setTitle(CONSTANTS.window_title_loading());
 			selectedJobId = token.substring(3);
+			if(residuesForInterface != null)
+			{
+				residuesForInterface.clear();
+				residuesForInterface = null;
+			}
 			displayResults();
 		}
-		// else if((token != null) &&
-		// (token.length() > 10) &&
-		// (token.startsWith("interface")))
-		// {
-		// String selectedInterface = token.substring(9, token.indexOf("/"));
-		// String selectedId = token.substring(token.indexOf("/") + 1);
-		// displayResults(selectedId);
-		// }
 		else
 		{
+			Window.setTitle(CONSTANTS.window_title_input());
 			selectedJobId = "";
 			displayInputView();
 		}
@@ -116,13 +119,16 @@ public class MainController
 			mainViewPort.getCenterPanel().setDisplayPanel(resultsPanel);
 			resultsPanel.resizeGrid();
 		}
+		
+		Window.setTitle(CONSTANTS.window_title_results() + " - " + resultData.getPdbName());
 	}
 
 	public void displayStatusView(ProcessingInProgressData statusData) 
 	{
 		StatusPanel statusPanel = null;
 		
-		if(mainViewPort.getCenterPanel().getDisplayPanel() instanceof StatusPanel)
+		if((mainViewPort.getCenterPanel().getDisplayPanel() != null) &&
+		   (mainViewPort.getCenterPanel().getDisplayPanel() instanceof StatusPanel))
 		{
 			statusPanel = (StatusPanel)mainViewPort.getCenterPanel().getDisplayPanel();
 			statusPanel.cleanData();
@@ -148,6 +154,8 @@ public class MainController
 		}
 		
 		mainViewPort.getCenterPanel().layout();
+		
+		Window.setTitle(CONSTANTS.window_title_processing() + " - " + statusData.getInput());
 	}
 	
 	public void getCurrentStatusData()
@@ -163,7 +171,14 @@ public class MainController
 	{
 		mainViewPort.displayInterfacesWindow(interfaceId);
 		
-		serviceController.getInterfaceResidues(selectedJobId, interfaceId);
+		if(residuesForInterface.containsKey(interfaceId))
+		{
+			setInterfacesResiduesWindowData(residuesForInterface.get(interfaceId));
+		}
+		else
+		{
+			serviceController.getInterfaceResidues(selectedJobId, interfaceId);
+		}
 	}
 
 	public void setJobs(List<ProcessingInProgressData> statusData) {
@@ -172,6 +187,11 @@ public class MainController
 
 	public void untieJobsFromSession() {
 		serviceController.untieJobsFromSession();
+	}
+	
+	public void getAllResidues(String jobId, List<Integer> interfaceIds) 
+	{
+		serviceController.getAllResidues(jobId, interfaceIds);
 	}
 
 	public void setSettings(ApplicationSettings settings) {
@@ -198,8 +218,14 @@ public class MainController
 		serviceController.runJob(runJobData);
 	}
 	
-	public void killJob(String selectedId) {
-		serviceController.killJob(selectedId);
+	public void stopJob(String jobToStop) 
+	{
+		serviceController.stopJob(jobToStop);
+	}
+	
+	public void deleteJob(String jobToStop) 
+	{
+		serviceController.deleteJob(jobToStop);
 	}
 
 	public void runMyJobsAutoRefresh() 
@@ -234,7 +260,8 @@ public class MainController
 
 	public void refreshStatusView(ProcessingInProgressData statusData) 
 	{
-		if(mainViewPort.getCenterPanel().getDisplayPanel() instanceof StatusPanel)
+		if((mainViewPort.getCenterPanel().getDisplayPanel() != null) && 
+		   (mainViewPort.getCenterPanel().getDisplayPanel() instanceof StatusPanel))
 		{
 			StatusPanel statusPanel = (StatusPanel)mainViewPort.getCenterPanel().getDisplayPanel();
 			statusPanel.fillData(statusData);
@@ -266,6 +293,10 @@ public class MainController
 		else if(selectedViewer.equals(MainController.CONSTANTS.viewer_local()))
 		{
 			downloadFileFromServer("interface", interfaceId);
+		}
+		else if(selectedViewer.equals(MainController.CONSTANTS.viewer_pse()))
+		{
+			downloadFileFromServer("pse", interfaceId);
 		}
 		else
 		{
@@ -444,21 +475,6 @@ public class MainController
 		this.isJobsListFirstTimeLoaded = isJobsListFirstTimeLoaded;
 	}
 	
-//	buttonBar.add(new Button("Wait", new SelectionListener<ButtonEvent>() {  
-//	      public void componentSelected(ButtonEvent ce) {  
-//	        final MessageBox box = MessageBox.wait("Progress",  
-//	            "Saving your data, please wait...", "Saving...");  
-//	        Timer t = new Timer() {  
-//	          @Override  
-//	          public void run() {  
-//	            Info.display("Message", "Your fake data was saved", "");  
-//	            box.close();  
-//	          }  
-//	        };  
-//	        t.schedule(5000);  
-//	      }  
-//	    }));  
-	
 	public native static String getUserAgent() /*-{
 		return navigator.userAgent.toLowerCase();
 	}-*/;
@@ -485,5 +501,41 @@ public class MainController
 //           }
     }
 
-	
+	public void cleanCenterPanel() 
+	{
+		mainViewPort.getCenterPanel().removeAll();
+		mainViewPort.getCenterPanel().setDisplayPanel(null);		
+	}
+
+	public void setInterfacesResiduesWindowData(
+			HashMap<Integer, List<InterfaceResidueItem>> result) 
+	{
+		if(result.containsKey(1))
+		{
+			mainViewPort.getInterfacesResiduesWindow().getInterfacesResiduesPanel().getFirstStructurePanelSummary().fillResiduesGrid();
+			mainViewPort.getInterfacesResiduesWindow().getInterfacesResiduesPanel().getFirstStructurePanel()
+					.fillResiduesGrid(result.get(1));
+			mainViewPort.getInterfacesResiduesWindow().getInterfacesResiduesPanel().getFirstStructurePanel().applyFilter(false);
+		}
+		
+		if(result.containsKey(2))
+		{
+			mainViewPort.getInterfacesResiduesWindow().getInterfacesResiduesPanel().getSecondStructurePanelSummary().fillResiduesGrid();
+			mainViewPort.getInterfacesResiduesWindow().getInterfacesResiduesPanel().getSecondStructurePanel()
+					.fillResiduesGrid(result.get(2));
+			mainViewPort.getInterfacesResiduesWindow().getInterfacesResiduesPanel().getSecondStructurePanel().applyFilter(false);
+		}
+		
+//		mainViewPort.getInterfacesResiduesWindow().getInterfacesResiduesPanel().resizeResiduesPanels();		
+	}
+
+	public InterfaceResiduesItemsList getInterfaceResiduesItemsList() 
+	{
+		return residuesForInterface;
+	}
+
+	public void setResiduesForInterface(InterfaceResiduesItemsList residuesForInterface) 
+	{
+		this.residuesForInterface = residuesForInterface;
+	}
 }

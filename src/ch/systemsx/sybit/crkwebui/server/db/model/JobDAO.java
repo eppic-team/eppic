@@ -32,5 +32,9 @@ public interface JobDAO
 	public Long getNrOfJobsForIPDuringLastDay(String ip) throws CrkWebException;
 	
 	public Date getOldestJobSubmissionDateDuringLastDay(String ip) throws CrkWebException;
+
+	public void untieSelectedJobFromSession(String jobToUntie) throws CrkWebException;
+
+	public String getInputForJob(String jobId) throws CrkWebException;
 	
 }

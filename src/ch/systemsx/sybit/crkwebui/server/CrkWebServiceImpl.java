@@ -37,6 +37,7 @@ import ch.systemsx.sybit.crkwebui.server.util.RandomDirectoryNameGenerator;
 import ch.systemsx.sybit.crkwebui.shared.CrkWebException;
 import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
 import ch.systemsx.sybit.crkwebui.shared.model.InputParameters;
+import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResiduesItemsList;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
 import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
 import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
@@ -130,17 +131,17 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 		
 //		dataSource = properties.getProperty("data_source");
 //		DBUtils.setDataSource(dataSource);
-		
-//		sgeFactory = SessionFactory.getFactory();
-//		sgeSession = sgeFactory.getSession();
-//		try 
-//		{
-//			sgeSession.init("");
-//		} 
-//		catch (DrmaaException e) 
-//		{
-//			e.printStackTrace();
-//		}
+//		
+		sgeFactory = SessionFactory.getFactory();
+		sgeSession = sgeFactory.getSession();
+		try 
+		{
+			sgeSession.init("");
+		} 
+		catch (DrmaaException e) 
+		{
+			e.printStackTrace();
+		}
 		
 //		**********************
 //		* Hibernate pure
@@ -493,6 +494,8 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 
 	private ProcessingInProgressData getStatusData(String jobId, String status) throws CrkWebException 
 	{
+		JobDAO jobDAO = new JobDAOImpl();
+			
 		ProcessingInProgressData statusData = null;
 
 		if((jobId != null) && (!jobId.equals("")))
@@ -506,6 +509,8 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 				statusData.setJobId(jobId);
 	
 				statusData.setStatus(status);
+				
+				statusData.setInput(jobDAO.getInputForJob(jobId));
 	
 				if (checkIfFileExist(dataDirectory + "/crklog")) 
 				{
@@ -566,7 +571,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 							}
 						});
 
-				if (directoryContent != null && directoryContent.length > 0) 
+				if ((directoryContent != null) && (directoryContent.length > 0)) 
 				{
 					File resultFile = new File(resultFileDirectory + "/" + directoryContent[0]);
 					
@@ -645,10 +650,10 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 	}
 	
 	@Override
-	public String killJob(String jobId) throws CrkWebException 
+	public String stopJob(String jobToStop) throws CrkWebException 
 	{
 		String result = null;
-
+		
 		int estimatedNrOfCurrentThreads = runInstances.activeCount();
 		Thread[] activeInstances = new Thread[estimatedNrOfCurrentThreads];
 
@@ -668,7 +673,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 
 			while ((i < activeInstances.length) && (!wasFound)) 
 			{
-				if ((activeInstances[i] != null) && (activeInstances[i].getName().equals(jobId))) 
+				if ((activeInstances[i] != null) && (activeInstances[i].getName().equals(jobToStop))) 
 				{
 					if(!activeInstances[i].isInterrupted())
 					{
@@ -676,10 +681,9 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 					}
 					
 					wasFound = true;
-					result = "Job " + jobId + " stopped";
-
+					
 					File killFile = new File(
-							generalDestinationDirectoryName + "/" + jobId
+							generalDestinationDirectoryName + "/" + jobToStop
 									+ "/crkkilled");
 					try 
 					{
@@ -689,8 +693,10 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 					}
 
 					JobDAO jobDAO = new JobDAOImpl();
-					jobDAO.updateStatusOfJob(jobId, StatusOfJob.STOPPED);
-//					DBUtils.updateStatusOfJob(jobId, StatusOfJob.STOPPED);
+					jobDAO.updateStatusOfJob(jobToStop, StatusOfJob.STOPPED);
+	//					DBUtils.updateStatusOfJob(jobId, StatusOfJob.STOPPED);
+					
+					result = "Job: " + jobToStop + " was stopped";
 				}
 
 				i++;
@@ -698,10 +704,19 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 
 			if (!wasFound) 
 			{
-				result = "No job " + jobId + " or can not be stopped";
+				result = "Job: " + jobToStop + " was not stopped";
 			}
 		}
-
+		
+		return result;
+	}
+	
+	public String deleteJob(String jobToDelete) throws CrkWebException
+	{
+		JobDAO jobDAO = new JobDAOImpl();
+		jobDAO.untieSelectedJobFromSession(jobToDelete);
+		
+		String result = "Job: " + jobToDelete + " was removed";
 		return result;
 	}
 	
@@ -786,5 +801,55 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 		}
 		
 //		runInstances.destroy();
+	}
+
+	public InterfaceResiduesItemsList getAllResidues(String jobId, List<Integer> interfaceIds) throws CrkWebException 
+	{
+		InterfaceResiduesItemsList interfaceResiduesItemsList = new InterfaceResiduesItemsList();
+		
+		if(interfaceIds != null)
+		{
+			for(final Integer interfaceId : interfaceIds)
+			{
+				HashMap<Integer, List<InterfaceResidueItem>> structures = null;
+				
+				if ((jobId != null) && (jobId.length() != 0)) 
+				{
+					File resultFileDirectory = new File(
+							generalDestinationDirectoryName + "/" + jobId);
+					
+					String[] directoryContent = resultFileDirectory.list(new FilenameFilter() {
+		
+						public boolean accept(File dir, String name) {
+							if (name.endsWith("." + interfaceId + ".resDetails.dat")) {
+								return true;
+							} else {
+								return false;
+							}
+						}
+					});
+		
+					if (directoryContent != null && directoryContent.length > 0)
+					{
+						try
+						{
+							FileInputStream file = new FileInputStream(generalDestinationDirectoryName + "/" + jobId + "/" + directoryContent[0]);
+							ObjectInputStream in = new ObjectInputStream(file);
+							Object object = in.readObject();
+							structures = (HashMap<Integer, List<InterfaceResidueItem>>) object;
+							interfaceResiduesItemsList.put(interfaceId, structures);
+							in.close();
+							file.close();
+						}
+						catch(Throwable e)
+						{
+							throw new CrkWebException(e);
+						}
+					}
+				}
+			}
+		}
+		
+		return interfaceResiduesItemsList;
 	}
 }

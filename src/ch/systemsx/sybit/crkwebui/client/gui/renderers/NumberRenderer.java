@@ -26,10 +26,6 @@ public class NumberRenderer implements GridCellRenderer<BaseModel>
 						 ListStore<BaseModel> store, 
 						 final Grid<BaseModel> grid) 
 	{
-//		QuickTip quickTip = new QuickTip(grid);
-//		quickTip.disable();
-//		quickTip.initTarget(grid);
-//		
 		return numberRenderer.render(null, property, model.get(property));  
 	}
 }

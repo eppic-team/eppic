@@ -3,6 +3,7 @@ package ch.systemsx.sybit.crkwebui.client.gui.renderers;
 import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
+
 import com.extjs.gxt.ui.client.core.Template;
 import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.store.ListStore;

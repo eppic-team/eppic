@@ -1,5 +1,9 @@
 package ch.systemsx.sybit.crkwebui.client.callbacks;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import model.InterfaceItem;
 import model.PDBScoreItem;
 import model.ProcessingData;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
@@ -28,9 +32,7 @@ public class GetResultsOfProcessingCallback implements AsyncCallback<ProcessingD
 	public void onFailure(Throwable caught) 
 	{
 		String errorText = MainController.CONSTANTS.callback_get_results_of_processing_error() + " " + caught.getMessage();
-		
 		mainController.updateStatusLabel(errorText, true);
-//		mainController.showError(errorText);
 	}
 
 	@Override
@@ -47,14 +49,20 @@ public class GetResultsOfProcessingCallback implements AsyncCallback<ProcessingD
 			{
 				PDBScoreItem resultsData = (PDBScoreItem) result;
 				mainController.setPDBScoreItem(resultsData);
+				
+				List<Integer> interfaceIds = new ArrayList<Integer>();
+				for(InterfaceItem interfaceItem: resultsData.getInterfaceItems())
+				{
+					interfaceIds.add(interfaceItem.getId());
+				}
+				mainController.getAllResidues(resultsData.getJobId(), interfaceIds);
+				
 				mainController.displayResultView(resultsData);
 			}
 			else
 			{
 				mainController.updateStatusLabel(MainController.CONSTANTS.callback_get_results_of_processing_error() + " - incorrect type ", true);
-//				mainController.showError("Error during getting results of processing from server" + result.getClass());
-				mainController.getMainViewPort().getCenterPanel().removeAll();
-				mainController.getMainViewPort().getCenterPanel().setDisplayPanel(null);
+				mainController.cleanCenterPanel();
 			}
 			
 			mainController.getJobsForCurrentSession();
@@ -62,8 +70,7 @@ public class GetResultsOfProcessingCallback implements AsyncCallback<ProcessingD
 		else
 		{
 			mainController.showMessage(MainController.CONSTANTS.callback_job_not_found_error(), "Id=" + selectedId + " not found on the server");
-			mainController.getMainViewPort().getCenterPanel().removeAll();
-			mainController.getMainViewPort().getCenterPanel().setDisplayPanel(null);
+			mainController.cleanCenterPanel();
 		}
 	}
 

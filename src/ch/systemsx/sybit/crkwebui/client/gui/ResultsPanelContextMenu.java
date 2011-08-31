@@ -19,7 +19,8 @@ public class ResultsPanelContextMenu extends Menu
 		{  
 			public void componentSelected(MenuEvent ce) 
 			{  
-				if(mainController.getMainViewPort().getCenterPanel().getDisplayPanel() instanceof ResultsPanel)
+				if((mainController.getMainViewPort().getCenterPanel().getDisplayPanel() != null) &&
+					(mainController.getMainViewPort().getCenterPanel().getDisplayPanel() instanceof ResultsPanel))
 				{
 					ResultsPanel resultsPanel = (ResultsPanel)mainController.getMainViewPort().getCenterPanel().getDisplayPanel();
 					mainController.getInterfaceResidues((Integer) resultsPanel.getResultsGrid().getSelectionModel().getSelectedItem().get("id"));
@@ -34,7 +35,8 @@ public class ResultsPanelContextMenu extends Menu
 		{  
 			public void componentSelected(MenuEvent ce) 
 			{  
-				if(mainController.getMainViewPort().getCenterPanel().getDisplayPanel() instanceof ResultsPanel)
+				if((mainController.getMainViewPort().getCenterPanel().getDisplayPanel() != null) &&
+					(mainController.getMainViewPort().getCenterPanel().getDisplayPanel() instanceof ResultsPanel))
 				{
 					ResultsPanel resultsPanel = (ResultsPanel)mainController.getMainViewPort().getCenterPanel().getDisplayPanel();
 					mainController.runViewer(String.valueOf(resultsPanel.getResultsGrid().getSelectionModel().getSelectedItem().get("id")));

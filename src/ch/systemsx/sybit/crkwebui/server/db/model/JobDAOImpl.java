@@ -407,4 +407,90 @@ public class JobDAOImpl implements JobDAO
 			}
 		}
 	}
+
+	@Override
+	public void untieSelectedJobFromSession(String jobToUntie) throws CrkWebException 
+	{
+		EntityManager entityManager = null;
+		
+		try
+		{
+			entityManager = EntityManagerHandler.getEntityManager();
+			entityManager.getTransaction().begin();
+			Query query = entityManager.createQuery("from Job WHERE jobId=:jobId", Job.class);
+			query.setParameter("jobId", jobToUntie);
+			List<Job> jobs = query.getResultList();
+			
+			if(jobs != null)
+			{
+				for(Job job : jobs)
+				{
+					job.setSessionId(null);
+					entityManager.merge(job);
+					entityManager.flush();
+					entityManager.clear();
+				}
+			}
+			
+			entityManager.flush();
+			entityManager.getTransaction().commit();
+		}
+		catch(Throwable e)
+		{
+			e.printStackTrace();
+			
+			try
+			{
+				entityManager.getTransaction().rollback();
+			}
+			catch(Throwable t)
+			{
+				
+			}
+			
+			throw new CrkWebException(e);
+		}
+		finally
+		{
+			try
+			{
+				entityManager.close();
+			}
+			catch(Throwable t)
+			{
+				
+			}
+		}
+	}
+	
+	public String getInputForJob(String jobId) throws CrkWebException
+	{
+		EntityManager entityManager = null;
+		
+		try
+		{
+			entityManager = EntityManagerHandler.getEntityManager();
+			
+			Query query = entityManager.createQuery("SELECT input FROM Job WHERE jobId = :jobId", String.class);
+			query.setParameter("jobId", jobId);
+			String input = (String)query.getSingleResult();
+			return input;
+		}
+		catch(Throwable e)
+		{
+			e.printStackTrace();
+			throw new CrkWebException(e);
+		}
+		finally
+		{
+			try
+			{
+				entityManager.close();
+			}
+			catch(Throwable t)
+			{
+				
+			}
+		}
+	}
 }

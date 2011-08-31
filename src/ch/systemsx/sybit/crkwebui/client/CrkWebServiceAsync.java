@@ -5,7 +5,9 @@ import java.util.List;
 
 import model.InterfaceResidueItem;
 import model.ProcessingData;
+import ch.systemsx.sybit.crkwebui.client.callbacks.GetAllResiduesCallback;
 import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
+import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResiduesItemsList;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
 import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
 
@@ -29,8 +31,15 @@ public interface CrkWebServiceAsync
 	public void getInterfaceResidues(String jobId, 
 									 int interfaceId,
 									 AsyncCallback<HashMap<Integer, List<InterfaceResidueItem>>> callback);
+	
+	public void stopJob(String jobToStop,
+			AsyncCallback<String> stopJobsCallback);
 
-	public void killJob(String jobId, AsyncCallback<String> callback);
+	public void deleteJob(String jobToDelete,
+						   AsyncCallback<String> deleteJobsCallback);
 
 	public void untieJobsFromSession(AsyncCallback<Void> callback);
+
+	public void getAllResidues(String jobId, List<Integer> interfaceIds,
+			AsyncCallback<InterfaceResiduesItemsList> getAllResiduesCallback);
 }

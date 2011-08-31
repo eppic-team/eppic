@@ -50,7 +50,7 @@ public class FileDownloadServlet extends FileBaseServlet
 			if ((jobId != null) && (jobId.length() != 0)) 
 			{
 	
-				if((type.equals("interface")) && 
+				if(((type.equals("interface") || (type.equals("pse")))) && 
 				   ((interfaceId == null) ||
 				    (interfaceId.equals(""))))
 			    {
