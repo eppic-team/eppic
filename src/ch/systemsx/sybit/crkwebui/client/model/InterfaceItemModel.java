@@ -18,7 +18,15 @@ public class InterfaceItemModel extends BaseModel {
 
 	public InterfaceItemModel()
 	{
-		
+		set("id", "");
+		set("area", "");
+		set("name", "");
+		set("size1", "");
+		set("size2", "");
+		set("finalCall", "");
+		set("operator", "");
+		set("warnings", "");
+		set("METHODS", "");
 	}
 
 	public InterfaceItemModel(int id,

@@ -72,27 +72,27 @@ public class ResiduesPanel extends ContentPanel
 		   
 		residuesStore = new ListStore<InterfaceResidueItemModel>(loader);
 		
-		residuesStore.addFilter(new StoreFilter<InterfaceResidueItemModel>() {
-			
-			@Override
-			public boolean select(Store<InterfaceResidueItemModel> store,
-								  InterfaceResidueItemModel parent,
-								  InterfaceResidueItemModel item, 
-								  String property) 
-			{
-				if(isShowAll)
-				{
-					return true;
-				}
-				else if(((Integer)item.get("assignment") == InterfaceResidueItem.CORE) || 
-						((Integer)item.get("assignment") == InterfaceResidueItem.RIM))
-				{
-					return true;
-				}
-				
-				return false;
-			}
-		});
+//		residuesStore.addFilter(new StoreFilter<InterfaceResidueItemModel>() {
+//			
+//			@Override
+//			public boolean select(Store<InterfaceResidueItemModel> store,
+//								  InterfaceResidueItemModel parent,
+//								  InterfaceResidueItemModel item, 
+//								  String property) 
+//			{
+//				if(isShowAll)
+//				{
+//					return true;
+//				}
+//				else if(((Integer)item.get("assignment") == InterfaceResidueItem.CORE) || 
+//						((Integer)item.get("assignment") == InterfaceResidueItem.RIM))
+//				{
+//					return true;
+//				}
+//				
+//				return false;
+//			}
+//		});
 		
 		residuesColumnModel = new ColumnModel(residuesConfigs);
 		

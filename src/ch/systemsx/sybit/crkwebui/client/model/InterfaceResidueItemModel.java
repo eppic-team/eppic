@@ -11,7 +11,14 @@ public class InterfaceResidueItemModel extends BaseModel
 
 	public InterfaceResidueItemModel()
 	{
-		
+		set("structure", "");
+		set("residueNumber", "");
+		set("residueType", "");
+		set("asa", "");
+		set("bsa", "");
+		set("bsaPercentage", "");
+		set("assignment", "");
+		set("METHODS", "");
 	}
 
 	public InterfaceResidueItemModel( int structure,

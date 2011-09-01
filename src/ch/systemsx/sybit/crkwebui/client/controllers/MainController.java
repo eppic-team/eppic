@@ -73,11 +73,6 @@ public class MainController
 		{
 			Window.setTitle(CONSTANTS.window_title_loading());
 			selectedJobId = token.substring(3);
-			if(residuesForInterface != null)
-			{
-				residuesForInterface.clear();
-				residuesForInterface = null;
-			}
 			displayResults();
 		}
 		else
@@ -171,7 +166,8 @@ public class MainController
 	{
 		mainViewPort.displayInterfacesWindow(interfaceId);
 		
-		if(residuesForInterface.containsKey(interfaceId))
+		if((residuesForInterface != null) &&
+		   (residuesForInterface.containsKey(interfaceId)))
 		{
 			setInterfacesResiduesWindowData(residuesForInterface.get(interfaceId));
 		}
@@ -537,5 +533,14 @@ public class MainController
 	public void setResiduesForInterface(InterfaceResiduesItemsList residuesForInterface) 
 	{
 		this.residuesForInterface = residuesForInterface;
+	}
+	
+	public void cleanResiduesForInterface()
+	{
+		if(residuesForInterface != null)
+		{
+			residuesForInterface.clear();
+			residuesForInterface = null;
+		}
 	}
 }

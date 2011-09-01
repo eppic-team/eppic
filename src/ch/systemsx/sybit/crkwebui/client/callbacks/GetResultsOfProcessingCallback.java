@@ -49,6 +49,8 @@ public class GetResultsOfProcessingCallback implements AsyncCallback<ProcessingD
 			{
 				PDBScoreItem resultsData = (PDBScoreItem) result;
 				mainController.setPDBScoreItem(resultsData);
+				mainController.setSelectedJobId(resultsData.getJobId());
+				mainController.cleanResiduesForInterface();
 				
 				List<Integer> interfaceIds = new ArrayList<Integer>();
 				for(InterfaceItem interfaceItem: resultsData.getInterfaceItems())

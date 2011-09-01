@@ -141,6 +141,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 		catch (DrmaaException e) 
 		{
 			e.printStackTrace();
+			throw new ServletException("Can not initialize sge session");
 		}
 		
 //		**********************
@@ -301,7 +302,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 						.get("selecton"));
 		
 		String defaultMethodsList = defaultInputParametersProperties
-			.getProperty("methods");
+			.getProperty("methods","");
 		String[] defaultMethodsValues = defaultMethodsList.split(",");
 		
 		defaultInputParameters.setMethods(defaultMethodsValues);
@@ -338,7 +339,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 //		int nrOfJobsForSession = DBUtils.getNrOfJobsForSessionId(getThreadLocalRequest().getSession().getId());
 		settings.setNrOfJobsForSession(nrOfJobsForSession);
 		
-		boolean useCaptcha = Boolean.parseBoolean(properties.getProperty("use_captcha"));
+		boolean useCaptcha = Boolean.parseBoolean(properties.getProperty("use_captcha","false"));
 		String captchaPublicKey = properties.getProperty("captcha_public_key");
 		int nrOfAllowedSubmissionsWithoutCaptcha = Integer.parseInt(properties.getProperty("nr_of_allowed_submissions_without_captcha"));
 		
@@ -623,12 +624,12 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 			{
 				try
 				{
-					FileInputStream file = new FileInputStream(generalDestinationDirectoryName + "/" + jobId + "/" + directoryContent[0]);
-					ObjectInputStream in = new ObjectInputStream(file);
-					Object object = in.readObject();
+					FileInputStream fileInputStream = new FileInputStream(generalDestinationDirectoryName + "/" + jobId + "/" + directoryContent[0]);
+					ObjectInputStream inputStream = new ObjectInputStream(fileInputStream);
+					Object object = inputStream.readObject();
 					structures = (HashMap<Integer, List<InterfaceResidueItem>>) object;
-					in.close();
-					file.close();
+					inputStream.close();
+					fileInputStream.close();
 				}
 				catch(Throwable e)
 				{
@@ -833,13 +834,13 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 					{
 						try
 						{
-							FileInputStream file = new FileInputStream(generalDestinationDirectoryName + "/" + jobId + "/" + directoryContent[0]);
-							ObjectInputStream in = new ObjectInputStream(file);
-							Object object = in.readObject();
+							FileInputStream fileInputStream = new FileInputStream(generalDestinationDirectoryName + "/" + jobId + "/" + directoryContent[0]);
+							ObjectInputStream inputStream = new ObjectInputStream(fileInputStream);
+							Object object = inputStream.readObject();
 							structures = (HashMap<Integer, List<InterfaceResidueItem>>) object;
 							interfaceResiduesItemsList.put(interfaceId, structures);
-							in.close();
-							file.close();
+							inputStream.close();
+							fileInputStream.close();
 						}
 						catch(Throwable e)
 						{

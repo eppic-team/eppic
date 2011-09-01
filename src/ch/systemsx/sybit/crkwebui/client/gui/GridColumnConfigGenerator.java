@@ -28,7 +28,7 @@ public class GridColumnConfigGenerator
 
 		if (columnOrder == null) {
 			columns = new String[model.getPropertyNames().size()];
-
+			
 			Iterator<String> fieldsIterator = model.getPropertyNames()
 					.iterator();
 

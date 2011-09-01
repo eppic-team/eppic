@@ -4,6 +4,7 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -309,8 +310,41 @@ public class CrkRunner implements Runnable
 //			// 3 scoring
 //			crkMain.doScoring();
 //			
+	      	final List<String> sufixesToExclude = new ArrayList<String>();
+	      	sufixesToExclude.add(".dat");
+	      	sufixesToExclude.add(".png");
+	      	sufixesToExclude.add(".pml");
+	      	sufixesToExclude.add(".pse");
+	      	
+	      	final List<String> prefixesToExclude = new ArrayList<String>();
+	      	prefixesToExclude.add(jobId + ".");
+	      	prefixesToExclude.add("crklog");
+	      	
+	      	
 			File destinationDirectory = new File(destinationDirectoryName);
-			String[] directoryContent = destinationDirectory.list();
+			String[] directoryContent = destinationDirectory.list(new FilenameFilter() 
+			{
+				public boolean accept(File dir, String name)
+				{
+					for(String sufix : sufixesToExclude)
+					{
+						if (name.endsWith(sufix)) 
+						{
+							return false;
+						}
+					}
+					
+					for(String prefix : prefixesToExclude)
+					{
+						if (name.startsWith(prefix)) 
+						{
+							return false;
+						}
+					}
+					
+					return true;
+				}
+			});
 		    
 		    byte[] buffer = new byte[1024];
 		    
@@ -441,7 +475,7 @@ public class CrkRunner implements Runnable
 		} 
 		catch (Throwable t) 
 		{
-			
+			t.printStackTrace();
 		}
 	}
 	

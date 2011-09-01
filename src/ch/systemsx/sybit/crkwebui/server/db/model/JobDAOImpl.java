@@ -330,6 +330,8 @@ public class JobDAOImpl implements JobDAO
 	{
 		EntityManager entityManager = null;
 		
+		long nrOfJobs = 0;
+		
 		try
 		{
 			entityManager = EntityManagerHandler.getEntityManager();
@@ -341,8 +343,7 @@ public class JobDAOImpl implements JobDAO
 			Query query = entityManager.createQuery("SELECT count(jobId) FROM Job WHERE ip = :ip AND submissionDate > :dayBefore", Long.class);
 			query.setParameter("ip", ip);
 			query.setParameter("dayBefore", dayBeforeTimestamp);
-			Long nrOfJobs = (Long) query.getSingleResult();
-			return nrOfJobs;
+			nrOfJobs = (Long) query.getSingleResult();
 		}
 		catch(Throwable e)
 		{
@@ -360,6 +361,8 @@ public class JobDAOImpl implements JobDAO
 				
 			}
 		}
+		
+		return nrOfJobs;
 	}
 	
 	public Date getOldestJobSubmissionDateDuringLastDay(String ip) throws CrkWebException

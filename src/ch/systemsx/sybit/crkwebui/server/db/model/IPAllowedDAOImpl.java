@@ -13,11 +13,11 @@ public class IPAllowedDAOImpl implements IPAllowedDAO
 	public int getNrOfAllowedSubmissionsForIP(String ip) throws CrkWebException
 	{
 		EntityManager entityManager = null;
+
+		int nrOfAllowedSubmissionsPerIP = 0;
 		
 		try
 		{
-			int nrOfAllowedSubmissionsPerIP = 0;
-			
 			entityManager = EntityManagerHandler.getEntityManager();
 			Query query = entityManager.createQuery("SELECT nrOfAllowedSubmission from IPAllowed WHERE ip = :ip", Integer.class);
 			query.setParameter("ip", ip);
@@ -28,8 +28,6 @@ public class IPAllowedDAOImpl implements IPAllowedDAO
 			{
 				nrOfAllowedSubmissionsPerIP = nrOfAllowedSubmissionsPerIPResult.get(0);
 			}
-			
-			return nrOfAllowedSubmissionsPerIP;
 		}
 		catch(Throwable e)
 		{
@@ -47,5 +45,7 @@ public class IPAllowedDAOImpl implements IPAllowedDAO
 				
 			}
 		}
+		
+		return nrOfAllowedSubmissionsPerIP;
 	}
 }

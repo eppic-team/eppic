@@ -12,7 +12,9 @@ public class MyJobsModel extends BaseModel
 	private static final long serialVersionUID = 1L;
 
 	public MyJobsModel() {
-
+		set("jobid", "");
+		set("status", "");
+		set("input", "");
 	}
 
 	public MyJobsModel(String inputData, String status, String input) 

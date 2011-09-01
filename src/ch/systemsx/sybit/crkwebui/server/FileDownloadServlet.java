@@ -91,6 +91,10 @@ public class FileDownloadServlet extends FileBaseServlet
 								{
 									response.setContentType("application/zip");
 								}
+								else if(directoryContent[0].endsWith(".pse"))
+								{
+									response.setContentType("application/pymol-session");
+								}
 								else
 								{
 									response.setContentType("application/octet-stream");
@@ -99,6 +103,7 @@ public class FileDownloadServlet extends FileBaseServlet
 								response.setContentLength((int) resultFile.length());
 								response.setHeader("Content-Disposition",
 										"attachment; filename=\"" + jobId + "." + directoryContent[0] + "\"");
+//								response.setHeader("Content-Encoding", "gzip");
 		
 								byte[] buffer = new byte[1024];
 								DataInputStream in = new DataInputStream(

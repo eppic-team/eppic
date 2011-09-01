@@ -11,7 +11,11 @@ public class InterfaceResidueSummaryModel extends BaseModel
 
 	public InterfaceResidueSummaryModel()
 	{
-		
+		set("title", "");
+		set("asa", "");
+		set("bsa", "");
+		set("bsaPercentage", "");
+		set("METHODS", "");
 	}
 
 	public InterfaceResidueSummaryModel( String title,
