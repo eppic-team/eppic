@@ -20,6 +20,7 @@ public class CRKParams {
 	private static final String   PROGRAM_NAME = "crk";
 	private static final Pattern  PDBCODE_PATTERN = Pattern.compile("^\\d\\w\\w\\w$");
 	protected static final InputStream COLORS_PROPERTIES_IS = CRKParams.class.getResourceAsStream("/resources/chain_colors.dat");
+	protected static final InputStream PYMOL_COLOR_MAPPINGS_IS = CRKParams.class.getResourceAsStream("/resources/pymol.colors");
 	
 	// DEFAULTS FOR COMMAND LINE PARAMETERS
 	private static final double   DEF_IDENTITY_CUTOFF = 0.6;

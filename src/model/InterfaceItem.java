@@ -28,6 +28,8 @@ public class InterfaceItem implements Serializable
 	private String operator; 
 	private List<String> warnings;
 	
+	private String jmolScript;
+	
 	private List<InterfaceScoreItem> interfaceScores;
 	private List<InterfaceResidueItem> interfaceResidues;
 	
@@ -110,6 +112,14 @@ public class InterfaceItem implements Serializable
 		this.warnings = warnings;
 	}
 
+	public String getJmolScript() {
+		return jmolScript;
+	}
+	
+	public void setJmolScript(String jmolScript) {
+		this.jmolScript = jmolScript;
+	}
+	
 	public List<InterfaceScoreItem> getInterfaceScores() {
 		return this.interfaceScores;
 	}

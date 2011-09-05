@@ -16,6 +16,7 @@ import model.InterfaceScoreItem;
 import model.PDBScoreItem;
 import model.RunParametersItem;
 
+import owl.core.runners.PymolRunner;
 import owl.core.structure.AaResidue;
 import owl.core.structure.ChainInterface;
 import owl.core.structure.ChainInterfaceList;
@@ -85,10 +86,63 @@ public class WebUIDataAdaptor {
 			ii.setAsaR2(interf.getSecondRimCore().getAsaRim());
 			ii.setBsaC2(interf.getSecondRimCore().getBsaCore());
 			ii.setBsaR2(interf.getSecondRimCore().getBsaRim());
-			
+		
 			pdbScoreItem.addInterfaceItem(ii);
 		}
 
+	}
+	
+	public void setJmolScripts(ChainInterfaceList interfaces, PymolRunner pr) {
+		for (int i=0;i<interfaces.size();i++) {
+			System.out.println(createJmolScript(interfaces.get(i+1), pr));
+			pdbScoreItem.getInterfaceItem(i).setJmolScript(createJmolScript(interfaces.get(i+1), pr));
+		}
+	}
+	
+	private String createJmolScript(ChainInterface interf, PymolRunner pr) {
+		char chain1 = interf.getFirstMolecule().getPdbChainCode().charAt(0);
+		char chain2 = interf.getSecondPdbChainCodeForOutput().charAt(0);
+		
+		String color1 = pr.getHexColorCode(pr.getChainColor(chain1, 0, interf.isSymRelated()));
+		String color2 = pr.getHexColorCode(pr.getChainColor(chain2, 1, interf.isSymRelated()));
+		color1 = "[x"+color1.substring(1, color1.length())+"]"; // converting to jmol format
+		color2 = "[x"+color2.substring(1, color2.length())+"]";
+		String colorInterf1 = pr.getHexColorCode(pr.getInterf1Color());
+		String colorInterf2 = pr.getHexColorCode(pr.getInterf2Color());
+		colorInterf1 = "[x"+colorInterf1.substring(1, colorInterf1.length())+"]";
+		colorInterf2 = "[x"+colorInterf2.substring(1, colorInterf2.length())+"]";
+		
+		StringBuffer sb = new StringBuffer();
+		sb.append("cartoon on; wireframe off; spacefill off; set solvent off;");
+		sb.append("select :"+chain1+"; color "+color1+";");
+		sb.append("select :"+chain2+"; color "+color2+";");
+		sb.append(getSelString("core", chain1, interf.getFirstRimCore().getCoreResidues())+";");
+		sb.append(getSelString("core", chain2, interf.getSecondRimCore().getCoreResidues())+";");
+		sb.append(getSelString("rim", chain1, interf.getFirstRimCore().getRimResidues())+";");
+		sb.append(getSelString("rim", chain2, interf.getSecondRimCore().getRimResidues())+";");
+		sb.append("define interface"+chain1+" core"+chain1+" or rim"+chain1+";");
+		sb.append("define interface"+chain2+" core"+chain2+" or rim"+chain2+";");
+		sb.append("define bothinterf interface"+chain1+" or interface"+chain2+";");
+		// surfaces are cool but in jmol they don't display as good as in pymol, especially the transparency effect is quite bad
+		//sb.append("select :"+chain1+"; isosurface surf"+chain1+" solvent;color isosurface gray;color isosurface translucent;");
+		//sb.append("select :"+chain2+"; isosurface surf"+chain2+" solvent;color isosurface gray;color isosurface translucent;");
+		sb.append("select interface"+chain1+";"+"color "+colorInterf1+";wireframe 0.3;");
+		sb.append("select interface"+chain2+";"+"color "+colorInterf2+";wireframe 0.3;");
+		return sb.toString();
+	}
+	
+	private String getResiSelString(List<Residue> list, char chainName) {
+		if (list.isEmpty()) return "0:"+chainName;
+		StringBuffer sb = new StringBuffer();
+		for (int i=0;i<list.size();i++) {
+			sb.append(list.get(i).getSerial()+":"+chainName);
+			if (i!=list.size()-1) sb.append(",");
+		}
+		return sb.toString();
+	}
+
+	private String getSelString(String namePrefix, char chainName, List<Residue> list) {
+		return "define "+namePrefix+chainName+" "+getResiSelString(list,chainName);
 	}
 	
 	public void setGeometryScores(List<GeometryPredictor> gps) {

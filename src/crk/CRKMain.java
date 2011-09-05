@@ -282,6 +282,7 @@ public class CRKMain {
 			try {
 				pr = new PymolRunner(params.getPymolExe());
 				pr.readColorsFromPropertiesFile(CRKParams.COLORS_PROPERTIES_IS);
+				pr.readColorMappingsFromResourceFile(CRKParams.PYMOL_COLOR_MAPPINGS_IS);
 				
 			} catch (IOException e) {
 				LOGGER.error("Couldn't read colors file. Won't generate thumbnails or pse/pml files");
@@ -302,6 +303,7 @@ public class CRKMain {
 			} catch (InterruptedException e) {
 				throw new CRKException(e, "Couldn't generate thumbnails or pse/pml files, pymol thread interrupted: "+e.getMessage(),false);
 			}
+			wuiAdaptor.setJmolScripts(interfaces, pr);
 		}
 	}
 	

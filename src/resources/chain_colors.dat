@@ -25,3 +25,5 @@ X=salmon
 Y=palegreen
 Z=lightorange
 SYMCHAIN=grey
+INTERF1=red
+INTERF2=raspberry
