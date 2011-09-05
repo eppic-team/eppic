@@ -80,13 +80,15 @@ public class ChainEvolContextList implements Serializable {
 		List<String> list = new ArrayList<String>(); 
 		for (String repChain:cecs.keySet()) {
 			ChainEvolContext cec = cecs.get(repChain);
+			String url = cec.getQuery().getUniprotUrl();
+			String id = cec.getQuery().getUniId();
 			int numHomologs = -1;
 			if (scoType==ScoringType.ENTROPY) {
 				numHomologs = cec.getNumHomologs();
 			} else if (scoType==ScoringType.KAKS) {
 				numHomologs = cec.getNumHomologsWithValidCDS();
 			}
-			list.add(cec.getSeqIndenticalChainStr()+": "+numHomologs);
+			list.add(cec.getSeqIndenticalChainStr()+" (<a href=\""+url+"\" target=\"_blank\">"+id+"</a>): "+numHomologs+" homologs");
 		}
 		return list;
 	}

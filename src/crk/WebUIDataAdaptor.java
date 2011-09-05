@@ -94,7 +94,6 @@ public class WebUIDataAdaptor {
 	
 	public void setJmolScripts(ChainInterfaceList interfaces, PymolRunner pr) {
 		for (int i=0;i<interfaces.size();i++) {
-			System.out.println(createJmolScript(interfaces.get(i+1), pr));
 			pdbScoreItem.getInterfaceItem(i).setJmolScript(createJmolScript(interfaces.get(i+1), pr));
 		}
 	}
