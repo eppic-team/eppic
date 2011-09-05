@@ -14,6 +14,7 @@ import model.InterfaceResidueItem;
 import model.InterfaceResidueMethodItem;
 import model.InterfaceScoreItem;
 import model.PDBScoreItem;
+import model.RunParametersItem;
 
 import owl.core.structure.AaResidue;
 import owl.core.structure.ChainInterface;
@@ -42,16 +43,18 @@ public class WebUIDataAdaptor {
 	public void setParams(CRKParams params) {
 		this.params = params;
 		pdbScoreItem.setPdbName(params.getJobName());
-		pdbScoreItem.setHomologsCutoff(params.getMinHomologsCutoff());
-		pdbScoreItem.setIdCutoff(params.getIdCutoff());
-		pdbScoreItem.setQueryCovCutoff(params.getQueryCoverageCutoff());
-		pdbScoreItem.setMaxNumSeqsCutoff(params.getMaxNumSeqsSelecton());
-		pdbScoreItem.setBioCutoff(params.getEntrCallCutoff()-params.getGrayZoneWidth());
-		pdbScoreItem.setXtalCutoff(params.getEntrCallCutoff()+params.getGrayZoneWidth());
-		pdbScoreItem.setBsaToAsaCutoff(params.getCutoffCA());
-		pdbScoreItem.setBsaToAsaSoftCutoff(params.getBsaToAsaSoftCutoff());
-		pdbScoreItem.setBsaToAsaRelaxStep(params.getRelaxationStep());
-		pdbScoreItem.setZoomUsed(params.isZooming());
+		RunParametersItem runParametersItem = new RunParametersItem();
+		runParametersItem.setHomologsCutoff(params.getMinHomologsCutoff());
+		runParametersItem.setIdCutoff(params.getIdCutoff());
+		runParametersItem.setQueryCovCutoff(params.getQueryCoverageCutoff());
+		runParametersItem.setMaxNumSeqsCutoff(params.getMaxNumSeqsSelecton());
+		runParametersItem.setBioCutoff(params.getEntrCallCutoff()-params.getGrayZoneWidth());
+		runParametersItem.setXtalCutoff(params.getEntrCallCutoff()+params.getGrayZoneWidth());
+		runParametersItem.setBsaToAsaCutoff(params.getCutoffCA());
+		runParametersItem.setBsaToAsaSoftCutoff(params.getBsaToAsaSoftCutoff());
+		runParametersItem.setBsaToAsaRelaxStep(params.getRelaxationStep());
+		runParametersItem.setZoomUsed(params.isZooming());
+		pdbScoreItem.setRunParameters(runParametersItem);
 	}
 
 	public void setTitle(String title) {
