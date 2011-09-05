@@ -325,7 +325,7 @@ public class MainController
 				 selectedJobId,
 				 pdbScoreItem.getPdbName(),
 				 size,
-				 settings.getJmolScript());
+				 pdbScoreItem.getInterfaceItem(Integer.parseInt(interfaceNr) - 1).getJmolScript());
 	}
 	
 	/*
