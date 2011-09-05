@@ -1,7 +1,5 @@
 package ch.systemsx.sybit.crkwebui.client.callbacks;
 
-import java.util.List;
-
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;

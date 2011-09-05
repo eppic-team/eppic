@@ -4,6 +4,7 @@ import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 
 import com.extjs.gxt.ui.client.event.MenuEvent;
 import com.extjs.gxt.ui.client.event.SelectionListener;
+import com.extjs.gxt.ui.client.widget.button.Button;
 import com.extjs.gxt.ui.client.widget.menu.Menu;
 import com.extjs.gxt.ui.client.widget.menu.MenuItem;
 
@@ -27,8 +28,8 @@ public class ResultsPanelContextMenu extends Menu
 				}
 			}  
 		});  
-		this.add(detailsItem);  
-		  
+		this.add(detailsItem);
+		
 		MenuItem viewerItem = new MenuItem();  
 		viewerItem.setText(MainController.CONSTANTS.results_grid_viewer_button()); 
 		viewerItem.addSelectionListener(new SelectionListener<MenuEvent>() 

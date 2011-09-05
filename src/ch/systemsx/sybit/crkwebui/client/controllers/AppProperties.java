@@ -1,7 +1,5 @@
 package ch.systemsx.sybit.crkwebui.client.controllers;
 
-import java.util.List;
-
 import com.google.gwt.i18n.client.Constants;
 
 /**
@@ -63,14 +61,7 @@ public interface AppProperties extends Constants
 	String status_panel_stop();
 	
 	String info_panel_pdb_identifier();
-	String info_panel_total_core_size_xtal_call_cutoff();
-	String info_panel_min_number_homologs_required();
-	String info_panel_sequence_identity_cutoff();
-	String info_panel_query_coverage_cutoff();
-	String info_panel_per_member_core_size_xtal_call_cutoff();
-	String info_panel_max_num_sequences_used();
-	String info_panel_bio_call_cutoff();
-	String info_panel_xtal_call_cutoff();
+	String info_panel_input_parameters();
 	String info_panel_download_results_link();
 	
 	String myjobs_panel_head();

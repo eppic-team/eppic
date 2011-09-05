@@ -5,7 +5,6 @@ import java.util.List;
 
 import model.InterfaceResidueItem;
 import model.ProcessingData;
-import ch.systemsx.sybit.crkwebui.client.callbacks.GetAllResiduesCallback;
 import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResiduesItemsList;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;

@@ -8,6 +8,7 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -23,6 +24,7 @@ import javax.servlet.ServletException;
 import model.InterfaceResidueItem;
 import model.PDBScoreItem;
 import model.ProcessingData;
+import model.RunParametersItem;
 
 import org.ggf.drmaa.DrmaaException;
 import org.ggf.drmaa.Session;
@@ -73,7 +75,9 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 	
 	private boolean doIPBasedVerification;
 	private int defaultNrOfAllowedSubmissionsForIP;
-
+	
+	private String[] downloadFileZipExcludeSufixes;
+	
 	public void init(ServletConfig config) throws ServletException 
 	{
 		super.init(config);
@@ -128,6 +132,13 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 		
 		doIPBasedVerification = Boolean.parseBoolean(properties.getProperty("limit_access_by_ip","false"));
 		defaultNrOfAllowedSubmissionsForIP = Integer.parseInt(properties.getProperty("nr_of_allowed_submissions_for_ip","100"));
+		
+		String downloadFileZipExcludeSufixesList = properties.getProperty("download_file_zip_exclude_sufixes", null);
+		
+		if(downloadFileZipExcludeSufixesList != null)
+		{
+			downloadFileZipExcludeSufixes = downloadFileZipExcludeSufixesList.split(",");
+		}
 		
 //		dataSource = properties.getProperty("data_source");
 //		DBUtils.setDataSource(dataSource);
@@ -255,6 +266,37 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 		{
 			throw new CrkWebException("Scoring methods not set");
 		}
+		
+		
+		
+		
+		propertiesStream = getServletContext()
+		.getResourceAsStream(
+				"/WEB-INF/classes/META-INF/run.properties");
+
+		Properties runProperties = new Properties();
+		
+		try
+		{
+			runProperties.load(propertiesStream);
+		}
+		catch(IOException e)
+		{
+			throw new CrkWebException(e);
+		}
+		
+		Map<String, String> runPropetiesMap = new HashMap<String, String>();
+		for (Field field : RunParametersItem.class.getDeclaredFields())
+		{
+			if(runProperties.get(field.getName()) != null)
+			{
+				runPropetiesMap.put(field.getName(), (String) runProperties.get(field.getName()));
+			}
+		}
+		
+		settings.setRunParametersNames(runPropetiesMap);
+		
+		
 
 		// default input parameters values
 		InputStream defaultInputParametersStream = getServletContext()
@@ -425,7 +467,8 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 					runJobData.getInputParameters(),
 					crkApplicationLocation,
 					sgeSession,
-					wasFileUploaded);
+					wasFileUploaded,
+					downloadFileZipExcludeSufixes);
 
 			CrkThread crkRunnerThread = new CrkThread(runInstances, 
 					crkRunner,

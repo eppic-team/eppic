@@ -39,6 +39,8 @@ public class ApplicationSettings implements Serializable {
 	private String jmolScript;
 	
 	private String resultsLocation;
+	
+	private Map<String, String> runParametersNames;
 
 	public void setScoresTypes(String[] scoresTypes) {
 		this.scoresTypes = scoresTypes;
@@ -120,5 +122,13 @@ public class ApplicationSettings implements Serializable {
 
 	public void setJmolScript(String jmolScript) {
 		this.jmolScript = jmolScript;
+	}
+
+	public void setRunParametersNames(Map<String, String> runParametersNames) {
+		this.runParametersNames = runParametersNames;
+	}
+
+	public Map<String, String> getRunParametersNames() {
+		return runParametersNames;
 	}
 }

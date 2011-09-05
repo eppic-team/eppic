@@ -1,9 +1,5 @@
 package ch.systemsx.sybit.crkwebui.client.callbacks;
 
-import java.util.HashMap;
-import java.util.List;
-
-import model.InterfaceResidueItem;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResiduesItemsList;
 

@@ -33,7 +33,7 @@ public class SizeCellRenderer implements GridCellRenderer<BaseModel>
 		
 		int sizeSum = size1 + size2;
 
-		if(sizeSum < mainController.getPdbScoreItem().getMinCoreSize())
+		if(sizeSum < mainController.getPdbScoreItem().getRunParameters().getMinCoreSize())
 		{
 			String color = "red";
 			return "<span style='font-weight: bold;color:" + color + "'>"

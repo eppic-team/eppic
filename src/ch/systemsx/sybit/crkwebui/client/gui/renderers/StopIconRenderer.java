@@ -1,8 +1,5 @@
 package ch.systemsx.sybit.crkwebui.client.gui.renderers;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 
 import com.extjs.gxt.ui.client.data.BaseModel;

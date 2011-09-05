@@ -41,6 +41,7 @@ public class CrkRunner implements Runnable
 	private String submissionId; 
 	
 	private boolean wasFileUploaded;
+	private String[] downloadFileZipExcludeSufixes;
 //	private boolean isWaiting;
 	
 	public CrkRunner(
@@ -52,7 +53,8 @@ public class CrkRunner implements Runnable
 					 InputParameters inputParameters,
 					 String crkApplicationLocation,
 					 Session sgeSession,
-					 boolean wasFileUploaded)
+					 boolean wasFileUploaded,
+					 String[] downloadFileZipExcludeSufixes)
 	{
 		this.inputParameters = inputParameters;
 		this.input = input;
@@ -66,6 +68,7 @@ public class CrkRunner implements Runnable
 		this.sgeSession = sgeSession;
 		
 		this.wasFileUploaded = wasFileUploaded;
+		this.downloadFileZipExcludeSufixes = downloadFileZipExcludeSufixes;
 	}
 
 	public void run() 
@@ -310,11 +313,6 @@ public class CrkRunner implements Runnable
 //			// 3 scoring
 //			crkMain.doScoring();
 //			
-	      	final List<String> sufixesToExclude = new ArrayList<String>();
-	      	sufixesToExclude.add(".dat");
-	      	sufixesToExclude.add(".png");
-	      	sufixesToExclude.add(".pml");
-	      	sufixesToExclude.add(".pse");
 	      	
 	      	final List<String> prefixesToExclude = new ArrayList<String>();
 	      	prefixesToExclude.add(jobId + ".");
@@ -326,11 +324,14 @@ public class CrkRunner implements Runnable
 			{
 				public boolean accept(File dir, String name)
 				{
-					for(String sufix : sufixesToExclude)
+					if(downloadFileZipExcludeSufixes != null)
 					{
-						if (name.endsWith(sufix)) 
+						for(String sufix : downloadFileZipExcludeSufixes)
 						{
-							return false;
+							if (name.endsWith(sufix)) 
+							{
+								return false;
+							}
 						}
 					}
 					

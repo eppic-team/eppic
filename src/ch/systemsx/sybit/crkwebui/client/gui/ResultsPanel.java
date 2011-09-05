@@ -257,51 +257,12 @@ public class ResultsPanel extends DisplayPanel
 		LayoutContainer optionsLocation = new LayoutContainer();
 		optionsLocation.setLayout(new RowLayout(Orientation.HORIZONTAL));
 		optionsLocation.setStyleAttribute("padding-top", "10px");
-		
-		LayoutContainer showThumbnailPanelLocation = new LayoutContainer();
-		showThumbnailPanelLocation.setBorders(false);
-		
-		VBoxLayout vBoxLayout = new VBoxLayout();
-		vBoxLayout.setVBoxLayoutAlign(VBoxLayoutAlign.LEFT);
-		showThumbnailPanelLocation.setLayout(vBoxLayout);
-		
-		showThumbnailCheckBox = new CheckBox();
-		showThumbnailCheckBox.setBoxLabel(MainController.CONSTANTS.results_grid_show_thumbnails());
-		displayThumbnails();
-		showThumbnailCheckBox.addListener(Events.Change, new Listener<FieldEvent>() {
 
-			@Override
-			public void handleEvent(FieldEvent event)
-			{
-				Cookies.setCookie("crkthumbnail", String.valueOf(showThumbnailCheckBox.getValue()));
-				
-				for(ColumnConfig column : resultsGrid.getColumnModel().getColumns())
-				{
-					if(column.getId().equals("thumbnail"))
-					{
-						if(showThumbnailCheckBox.getValue())
-						{
-							column.setHidden(false);
-						}
-						else
-						{
-							column.setHidden(true);
-						}
-						
-						resizeGrid();
-					}
-				}
-			}
-			
-		});
-		
-		showThumbnailPanelLocation.add(showThumbnailCheckBox);
-		
 		LayoutContainer viewerTypePanelLocation = new LayoutContainer();
 		viewerTypePanelLocation.setBorders(false);
 
-		vBoxLayout = new VBoxLayout();
-		vBoxLayout.setVBoxLayoutAlign(VBoxLayoutAlign.RIGHT);
+		VBoxLayout vBoxLayout = new VBoxLayout();
+		vBoxLayout.setVBoxLayoutAlign(VBoxLayoutAlign.LEFT);
 
 		viewerTypePanelLocation.setLayout(vBoxLayout);
 
@@ -346,8 +307,48 @@ public class ResultsPanel extends DisplayPanel
 
 		viewerTypePanel.add(viewerTypeComboBox);
 		viewerTypePanelLocation.add(viewerTypePanel);
-		optionsLocation.add(showThumbnailPanelLocation, new RowData(0.5, 1, new Margins(0)));
+		
+		LayoutContainer showThumbnailPanelLocation = new LayoutContainer();
+		showThumbnailPanelLocation.setBorders(false);
+		
+		vBoxLayout = new VBoxLayout();
+		vBoxLayout.setVBoxLayoutAlign(VBoxLayoutAlign.RIGHT);
+		showThumbnailPanelLocation.setLayout(vBoxLayout);
+		
+		showThumbnailCheckBox = new CheckBox();
+		showThumbnailCheckBox.setBoxLabel(MainController.CONSTANTS.results_grid_show_thumbnails());
+		displayThumbnails();
+		showThumbnailCheckBox.addListener(Events.Change, new Listener<FieldEvent>() {
+
+			@Override
+			public void handleEvent(FieldEvent event)
+			{
+				Cookies.setCookie("crkthumbnail", String.valueOf(showThumbnailCheckBox.getValue()));
+				
+				for(ColumnConfig column : resultsGrid.getColumnModel().getColumns())
+				{
+					if(column.getId().equals("thumbnail"))
+					{
+						if(showThumbnailCheckBox.getValue())
+						{
+							column.setHidden(false);
+						}
+						else
+						{
+							column.setHidden(true);
+						}
+						
+						resizeGrid();
+					}
+				}
+			}
+			
+		});
+		
+		showThumbnailPanelLocation.add(showThumbnailCheckBox);
+
 		optionsLocation.add(viewerTypePanelLocation, new RowData(0.5, 1, new Margins(0)));
+		optionsLocation.add(showThumbnailPanelLocation, new RowData(0.5, 1, new Margins(0)));
 		this.add(optionsLocation, new RowData(1, 35, new Margins(0)));
 	}
 
