@@ -45,30 +45,30 @@ public class InterfacesResiduesPanel extends FormPanel
 		LayoutContainer residuesLayoutContainer = new LayoutContainer();
 		residuesLayoutContainer.setLayout(new RowLayout(Orientation.HORIZONTAL));
 		
-		String interfaceName = mainController.getPdbScoreItem().getInterfaceItem(selectedInterface - 1).getName();
-		
-		String firstStructureName = "";
-		String secondStructureName = "";
-		
-		if((interfaceName !=  null) && (interfaceName.contains("+")))
-		{
-			firstStructureName = interfaceName.substring(0, interfaceName.indexOf("+"));
-			
-			if(interfaceName.indexOf("+") < interfaceName.length() - 1)
-			{
-				secondStructureName = interfaceName.substring(interfaceName.indexOf("+") + 1);
-			}
-		}
+//		String interfaceName = mainController.getPdbScoreItem().getInterfaceItem(selectedInterface - 1).getName();
+//		
+//		String firstStructureName = "";
+//		String secondStructureName = "";
+//		
+//		if((interfaceName !=  null) && (interfaceName.contains("+")))
+//		{
+//			firstStructureName = interfaceName.substring(0, interfaceName.indexOf("+"));
+//			
+//			if(interfaceName.indexOf("+") < interfaceName.length() - 1)
+//			{
+//				secondStructureName = interfaceName.substring(interfaceName.indexOf("+") + 1);
+//			}
+//		}
 		
 		firstStructure = new ResiduesPanel(
-										   MainController.CONSTANTS.interfaces_residues_panel_first_structure() + " (" + firstStructureName + ")", 
+										   MainController.CONSTANTS.interfaces_residues_panel_first_structure(), 
 										   mainController,
 										   width,
 										   height - 90,
 										   1);
 		
 		secondStructure = new ResiduesPanel(
-											MainController.CONSTANTS.interfaces_residues_panel_second_structure() + " (" + secondStructureName + ")",
+											MainController.CONSTANTS.interfaces_residues_panel_second_structure(),
 											mainController,
 											width,
 											height - 90,

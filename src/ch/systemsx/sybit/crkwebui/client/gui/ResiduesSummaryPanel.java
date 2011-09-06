@@ -207,7 +207,7 @@ public class ResiduesSummaryPanel extends ContentPanel
 		
 		for (String method : mainController.getSettings().getScoresTypes()) 
 		{
-			model.set(method, coreMethodValues.get(method)); 
+			model.set(method, rimMethodValues.get(method)); 
 		}
 		
 		interfaceSummaryItems.add(model);
@@ -218,7 +218,7 @@ public class ResiduesSummaryPanel extends ContentPanel
 		
 		for (String method : mainController.getSettings().getScoresTypes()) 
 		{
-			model.set(method, coreMethodValues.get(method)); 
+			model.set(method, ratioMethodValues.get(method)); 
 		}
 		
 		interfaceSummaryItems.add(model);
