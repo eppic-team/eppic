@@ -214,6 +214,19 @@ public class ChainEvolContext implements Serializable {
 	}
 	
 	/**
+	 * Returns the query's PDB SEQRES to uniprot alignment as a nicely formatted
+	 * aligmnent string in several lines with a middle line of matching characters,
+	 * e.g. 
+	 * 1abc    AAAA--BCDEFGICCC
+	 *         ||.|  ||.|||:|||
+	 * QABCD1  AABALCBCJEFGLCCC
+	 * @return
+	 */
+	public String getQueryPdbToUniprotAlnString() {
+		return alnPdb2Uniprot.getFormattedAlignmentString();
+	}
+	
+	/**
 	 * Returns a multiple sequence alignment of all valid CDS sequences from the 
 	 * UniprotHomologList by mapping the CDS to the protein sequences alignment. 
 	 * @return
