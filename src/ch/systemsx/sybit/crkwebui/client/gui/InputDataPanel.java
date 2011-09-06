@@ -10,8 +10,10 @@ import com.extjs.gxt.ui.client.Style.Orientation;
 import com.extjs.gxt.ui.client.Style.Scroll;
 import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
+import com.extjs.gxt.ui.client.event.ComponentEvent;
 import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.FormEvent;
+import com.extjs.gxt.ui.client.event.KeyListener;
 import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.event.SelectionListener;
 import com.extjs.gxt.ui.client.util.Margins;
@@ -30,6 +32,7 @@ import com.extjs.gxt.ui.client.widget.layout.FormLayout;
 import com.extjs.gxt.ui.client.widget.layout.RowData;
 import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.event.dom.client.KeyCodes;
 
 /**
  * The panel used to submit new job
@@ -133,12 +136,30 @@ public class InputDataPanel extends DisplayPanel
 		pdbCodeField.setName("code");
 		pdbCodeField.setFieldLabel(MainController.CONSTANTS.input_pdb_code_radio());
 		pdbCodeField.setValidator(new PdbCodeFieldValidator());
+		pdbCodeField.addKeyListener(new KeyListener(){
+			public void componentKeyPress(ComponentEvent event)
+			{
+				if(event.getKeyCode() == KeyCodes.KEY_ENTER)
+				{
+					submitForm();
+				}
+			}
+		});
 		generalFieldSet.add(pdbCodeField);
 		
 		emailTextField = new TextField<String>();
 		emailTextField.setName("email");
 		emailTextField.setFieldLabel(MainController.CONSTANTS.input_email());
 		emailTextField.setValidator(new EmailFieldValidator());
+		emailTextField.addKeyListener(new KeyListener(){
+			public void componentKeyPress(ComponentEvent event)
+			{
+				if(event.getKeyCode() == KeyCodes.KEY_ENTER)
+				{
+					submitForm();
+				}
+			}
+		});
 		generalFieldSet.add(emailTextField);
 
 		FormPanel breakPanel = new FormPanel();
@@ -203,31 +224,7 @@ public class InputDataPanel extends DisplayPanel
 		submitButton.addSelectionListener(new SelectionListener<ButtonEvent>() {
 			public void componentSelected(ButtonEvent ce) 
 			{
-				if(!optionsInputPanel.checkIfAnyMethodSelected())
-				{
-					MessageBox.info(MainController.CONSTANTS.input_submit_form_invalid_header(),
-									MainController.CONSTANTS.input_submit_form_no_methods_selected(),
-									null);
-				}
-				else if (formPanel.isValid())
-				{
-					mainController.showWaiting(MainController.CONSTANTS.input_submit_waiting_message());
-					
-					if(pdbCodeFile.getValue())
-					{
-						formPanel.submit();
-					}
-					else
-					{
-						runJob(null);
-					}
-				}
-				else
-				{
-					MessageBox.info(MainController.CONSTANTS.input_submit_form_invalid_header(),
-									MainController.CONSTANTS.input_submit_form_invalid_message(),
-									null);
-				}
+				submitForm();
 			}
 		});
 
@@ -291,5 +288,34 @@ public class InputDataPanel extends DisplayPanel
 
 		mainController.hideWaiting();
 		mainController.runJob(runJobData);
+	}
+	
+	public void submitForm()
+	{
+		if(!optionsInputPanel.checkIfAnyMethodSelected())
+		{
+			MessageBox.info(MainController.CONSTANTS.input_submit_form_invalid_header(),
+							MainController.CONSTANTS.input_submit_form_no_methods_selected(),
+							null);
+		}
+		else if (formPanel.isValid())
+		{
+			mainController.showWaiting(MainController.CONSTANTS.input_submit_waiting_message());
+			
+			if(pdbCodeFile.getValue())
+			{
+				formPanel.submit();
+			}
+			else
+			{
+				runJob(null);
+			}
+		}
+		else
+		{
+			MessageBox.info(MainController.CONSTANTS.input_submit_form_invalid_header(),
+							MainController.CONSTANTS.input_submit_form_invalid_message(),
+							null);
+		}
 	}
 }
