@@ -11,7 +11,9 @@ import java.util.TreeMap;
 import crk.CallType;
 import crk.ChainEvolContextList;
 import crk.InterfaceEvolContext;
+import crk.InterfaceEvolContextList;
 import crk.ScoringType;
+import crk.predictors.EvolInterfZPredictor;
 import crk.predictors.EvolRimCorePredictor;
 import crk.predictors.GeometryPredictor;
 
@@ -21,9 +23,10 @@ import owl.core.structure.ChainInterfaceList;
 /**
  * Script to calculate statistics for sets of bio/xtal interfaces
  * It goes over directories (given with -B, -X) and list files (-b, -x), tries to find
- * for each entry a interfaces.dat and a chainevolcontext.dat file and from then calculate 
- * the scores for the parameters given (optionally with -t, -c, -m). Geometry scores and 
- * evolutionary scores (entropy and kaks) are calculated. 
+ * for each entry a interfaces.dat and a chainevolcontext.dat file and from them calculate 
+ * the scores for the parameters given (optionally with -e, -c, -z, -m, -t, -y). 
+ * Geometry scores (parameters -e, -m), evolutionary core/rim ratio scores (entropy and kaks, 
+ * parameters -c, -t) and evolutionary z-scores (parameters -z, -y) 
  * Output is a list of one line per set with info about the set and prediction statistics:
  * total predictions, failed, tp, fn, accuracy, recall.
  * 
@@ -39,8 +42,13 @@ public class CalcStats {
 	private static final int MIN_NUM_HOMOLOGS = 10;
 	
 	private static final double DEFBIOCALLCUTOFF = 0.85;
-	private static final double DEFCACUTOFF = 0.95;
 	private static final int DEFMINNUMBERCORERESFORBIO = 6;
+	private static final double DEFZSCORECUTOFF = -1;
+	
+	private static final double DEFCACUTOFF_FOR_G = 0.95;
+	private static final double DEFCACUTOFF_FOR_Z = 0.70;
+	private static final double DEFCACUTOFF_FOR_CR = 0.70;
+	
 
 	private static File bioDir    = null;
 	private static File xtalDir   = null;
@@ -48,9 +56,12 @@ public class CalcStats {
 	private static File xtalList  = null;
 	
 	private static double[] bioCallCutoffs = {DEFBIOCALLCUTOFF};
-	private static double[] caCutoffs = {DEFCACUTOFF};
-	private static double[] caCutoffsEvol = {DEFCACUTOFF};
 	private static int[] minNumberCoreResForBios = {DEFMINNUMBERCORERESFORBIO};
+	private static double[] zscoreCutoffs = {DEFZSCORECUTOFF};
+	
+	private static double[] caCutoffsG = {DEFCACUTOFF_FOR_G};
+	private static double[] caCutoffsCR = {DEFCACUTOFF_FOR_CR};
+	private static double[] caCutoffsZ = {DEFCACUTOFF_FOR_Z};
 
 	/**
 	 * @param args
@@ -66,16 +77,20 @@ public class CalcStats {
 		"                 analyse that are known to be true bio contacts\n" +
 		"   -x         :  list file containing all the pdbIds + interface serials to \n" +
 		"                 analyse that are known to be true xtal contacts\n" +
-		"   [-t]       :  evolutionary score cutoffs to call bio/xtal, comma separated. If omitted\n" +
-		"                 then only one used: "+String.format("%4.2f",DEFBIOCALLCUTOFF)+"\n" +
-		"   [-c]       :  core assignment cutoffs for geometry scoring, comma separated. If " +
-		"                 omitted then only one used: "+String.format("%4.2f",DEFCACUTOFF)+"\n" +
-	    "   [-C]       :  core assignment cutoffs for evolutionary scoring, comma separated. If\n" +
-	    "                 omitted then only one used: "+String.format("%4.2f",DEFCACUTOFF)+"\n" +
-		"   [-m]       :  minimum number of core residues for calling bio, comma separated.\n" +
-		"                 If omitted only one used: "+DEFMINNUMBERCORERESFORBIO+"\n\n";
+		"   [-e]       :  core assignment cutoffs for geometry scoring, comma separated. If " +
+		"                 omitted then only one used: "+String.format("%4.2f",DEFCACUTOFF_FOR_G)+"\n" +
+	    "   [-c]       :  core assignment cutoffs for evolutionary core/rim scoring, comma separated. " +
+	    "                 If omitted then only one used: "+String.format("%4.2f",DEFCACUTOFF_FOR_CR)+"\n" +
+	    "   [-z]       :  core assignemnt cutoffs for evolutionary z-scoring, comma separated. If \n" +
+	    "                 omitted then only one used: "+String.format("%4.2f", DEFCACUTOFF_FOR_Z)+"\n"+
+		"   [-m]       :  minimum number of core residues for geometry calls: below xtal, equals" +
+		"                 or above bio. Comma separated. If omitted only one used: "+DEFMINNUMBERCORERESFORBIO+"\n" +
+		"   [-t]       :  evolutionary score core/rim ratio cutoffs to call bio/xtal, comma separated. If \n" +
+		"                 omitted then only one used: "+String.format("%4.2f",DEFBIOCALLCUTOFF)+"\n" +
+		"   [-y]       :  z-score cutoff to call bio/xtal, comma separated. If omitted" +
+		"                 then only one used: "+String.format("%4.2f",DEFZSCORECUTOFF)+"\n";
 
-		Getopt g = new Getopt(PROGRAM_NAME, args, "B:X:b:x:t:c:C:m:h?");
+		Getopt g = new Getopt(PROGRAM_NAME, args, "B:X:b:x:e:c:z:m:t:y:h?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
@@ -91,34 +106,48 @@ public class CalcStats {
 			case 'x':
 				xtalList = new File(g.getOptarg());
 				break;
-			case 't':
+			case 'e':
 				String[] tokens = g.getOptarg().split(",");
-				bioCallCutoffs = new double[tokens.length];
+				caCutoffsG = new double[tokens.length];
 				for (int i=0;i<tokens.length;i++) {
-					bioCallCutoffs[i] = Double.parseDouble(tokens[i]);
-				}
+					caCutoffsG[i] = Double.parseDouble(tokens[i]);
+				}				
 				break;
 			case 'c':
 				tokens = g.getOptarg().split(",");
-				caCutoffs = new double[tokens.length];
+				caCutoffsCR = new double[tokens.length];
 				for (int i=0;i<tokens.length;i++) {
-					caCutoffs[i] = Double.parseDouble(tokens[i]);
+					caCutoffsCR[i] = Double.parseDouble(tokens[i]);
 				}				
 				break;
-			case 'C':
+			case 'z':
 				tokens = g.getOptarg().split(",");
-				caCutoffsEvol = new double[tokens.length];
+				caCutoffsZ = new double[tokens.length];
 				for (int i=0;i<tokens.length;i++) {
-					caCutoffsEvol[i] = Double.parseDouble(tokens[i]);
+					caCutoffsZ[i] = Double.parseDouble(tokens[i]);
 				}				
-				break;				
+				break;
 			case 'm':
 				tokens = g.getOptarg().split(",");
 				minNumberCoreResForBios = new int[tokens.length];
 				for (int i=0;i<tokens.length;i++) {
 					minNumberCoreResForBios[i] = Integer.parseInt(tokens[i]);
 				}				
-				break;				
+				break;
+			case 't':
+				tokens = g.getOptarg().split(",");
+				bioCallCutoffs = new double[tokens.length];
+				for (int i=0;i<tokens.length;i++) {
+					bioCallCutoffs[i] = Double.parseDouble(tokens[i]);
+				}
+				break;
+			case 'y':
+				tokens = g.getOptarg().split(",");
+				zscoreCutoffs = new double[tokens.length];
+				for (int i=0;i<tokens.length;i++) {
+					zscoreCutoffs[i] = Double.parseDouble(tokens[i]);
+				}
+				break;
 			case 'h':
 			case '?':
 				System.out.println(help);
@@ -202,8 +231,8 @@ public class CalcStats {
 		}
 		
 		ArrayList<PredictionStatsSet> list = new ArrayList<PredictionStatsSet>();
-		int[][] countBios = new int[caCutoffs.length][minNumberCoreResForBios.length];
-		int[][] countXtals = new int[caCutoffs.length][minNumberCoreResForBios.length];
+		int[][] countBios = new int[caCutoffsG.length][minNumberCoreResForBios.length];
+		int[][] countXtals = new int[caCutoffsG.length][minNumberCoreResForBios.length];
 
 		for (String pdbCode:toAnalyse.keySet()) {
 			File interfdatFile = new File(dir,pdbCode+".interfaces.dat");
@@ -211,14 +240,14 @@ public class CalcStats {
 			ChainInterfaceList interfaces = Utils.readChainInterfaceList(interfdatFile);
 			for (int id:toAnalyse.get(pdbCode)) {
 
-				for (int i=0;i<caCutoffs.length;i++) {
+				for (int i=0;i<caCutoffsG.length;i++) {
 					for (int j=0;j<minNumberCoreResForBios.length;j++) {
 						ChainInterface interf = interfaces.get(id);
 						GeometryPredictor gp = new GeometryPredictor(interf);
-						gp.setBsaToAsaCutoff(caCutoffs[i]);
+						gp.setBsaToAsaCutoff(caCutoffsG[i]);
 						gp.setMinCoreSizeForBio(minNumberCoreResForBios[j]);
 
-						interf.calcRimAndCore(caCutoffs[i]);
+						interf.calcRimAndCore(caCutoffsG[i]);
 						CallType call = gp.getCall();
 
 						if (call==CallType.BIO) countBios[i][j]++;
@@ -229,10 +258,10 @@ public class CalcStats {
 			}
 		}
 
-		for (int i=0;i<caCutoffs.length;i++) {
+		for (int i=0;i<caCutoffsG.length;i++) {
 			for (int j=0;j<minNumberCoreResForBios.length;j++) {
 				list.add(new PredictionStatsSet(dir.getName(),truth,ScoringType.GEOMETRY,false,false,
-						caCutoffs[i],minNumberCoreResForBios[j],-1,countBios[i][j],countXtals[i][j],total));
+						caCutoffsG[i],minNumberCoreResForBios[j],-1,countBios[i][j],countXtals[i][j],total));
 			}
 		}
 		return list;
@@ -250,9 +279,12 @@ public class CalcStats {
 		}
 		
 		ArrayList<PredictionStatsSet> list = new ArrayList<PredictionStatsSet>();
-		// the 2 outer indices correspond to the 2 parameters scoType, weighted (each can have 2 values)
-		int[][][][] countBios = new int[caCutoffsEvol.length][bioCallCutoffs.length][2][2];
-		int[][][][] countXtals = new int[caCutoffsEvol.length][bioCallCutoffs.length][2][2];
+		// counts for core/rim scoring: the 2 outer indices correspond to the 2 parameters scoType, weighted (each can have 2 values)
+		int[][][][] countBiosCR = new int[caCutoffsCR.length][bioCallCutoffs.length][2][2];
+		int[][][][] countXtalsCR = new int[caCutoffsCR.length][bioCallCutoffs.length][2][2];
+		// counts for z-score scoring
+		int[][] countBiosZ = new int[caCutoffsZ.length][zscoreCutoffs.length];
+		int[][] countXtalsZ = new int[caCutoffsZ.length][zscoreCutoffs.length];
 		
 		for (String pdbCode:toAnalyse.keySet()) {
 			File chainevolcontextdatFile = new File(dir,pdbCode+".chainevolcontext.dat");
@@ -261,48 +293,69 @@ public class CalcStats {
 
 			ChainInterfaceList cil = Utils.readChainInterfaceList(interfdatFile);
 			ChainEvolContextList cecl = Utils.readChainEvolContextList(chainevolcontextdatFile);
+			InterfaceEvolContextList iecList = new InterfaceEvolContextList(pdbCode, MIN_NUM_HOMOLOGS,-1, -1, -1, 0);
+			iecList.addAll(cil,cecl);
+			
 			for (int id:toAnalyse.get(pdbCode)) {
 
-				for (int i=0;i<caCutoffsEvol.length;i++) {
+				for (int i=0;i<caCutoffsCR.length;i++) {
 					for (int k=0;k<bioCallCutoffs.length;k++) {
 
 						ChainInterface interf = cil.get(id);
+						InterfaceEvolContext iec = iecList.get(id-1);
+						//InterfaceEvolContext iec = new InterfaceEvolContext(interf, cecl, null);
 
-						InterfaceEvolContext iec = new InterfaceEvolContext(interf, cecl, null);
-
-						doSingleEvolScoring(iec, interf, ScoringType.ENTROPY, false, countBios, countXtals, i, k, 0, 0);
-						doSingleEvolScoring(iec, interf, ScoringType.ENTROPY,  true, countBios, countXtals, i, k, 0, 1);
-						doSingleEvolScoring(iec, interf, ScoringType.KAKS,    false, countBios, countXtals, i, k, 1, 0);
-						doSingleEvolScoring(iec, interf, ScoringType.KAKS,     true, countBios, countXtals, i, k, 1, 1);
+						doSingleEvolCRScoring(iec, interf, ScoringType.ENTROPY, false, countBiosCR, countXtalsCR, i, k, 0, 0);
+						doSingleEvolCRScoring(iec, interf, ScoringType.ENTROPY,  true, countBiosCR, countXtalsCR, i, k, 0, 1);
+						doSingleEvolCRScoring(iec, interf, ScoringType.KAKS,    false, countBiosCR, countXtalsCR, i, k, 1, 0);
+						doSingleEvolCRScoring(iec, interf, ScoringType.KAKS,     true, countBiosCR, countXtalsCR, i, k, 1, 1);
+					}
+				}
+				
+				for (int i=0;i<caCutoffsZ.length;i++) {
+					for (int k=0;k<zscoreCutoffs.length;k++) {
+						ChainInterface interf = cil.get(id);
+						InterfaceEvolContext iec = iecList.get(id-1);
+						//InterfaceEvolContext iec = new InterfaceEvolContext(interf, cecl, null);
+						
+						doSingleEvolZScoring(iec, interf, countBiosZ, countXtalsZ, i, k);
 					}
 				}
 			}
 		}
 		
-		for (int i=0;i<caCutoffsEvol.length;i++) {
+		for (int i=0;i<caCutoffsCR.length;i++) {
 			for (int k=0;k<bioCallCutoffs.length;k++) {
 				
 				list.add(new PredictionStatsSet(dir.getName(),truth,ScoringType.ENTROPY, false, false,
-						caCutoffsEvol[i],-1,bioCallCutoffs[k],countBios[i][k][0][0],countXtals[i][k][0][0],total));
+						caCutoffsCR[i],-1,bioCallCutoffs[k],countBiosCR[i][k][0][0],countXtalsCR[i][k][0][0],total));
 				list.add(new PredictionStatsSet(dir.getName(),truth,ScoringType.ENTROPY, true, false,
-						caCutoffsEvol[i],-1,bioCallCutoffs[k],countBios[i][k][0][1],countXtals[i][k][0][1],total));
+						caCutoffsCR[i],-1,bioCallCutoffs[k],countBiosCR[i][k][0][1],countXtalsCR[i][k][0][1],total));
 				list.add(new PredictionStatsSet(dir.getName(),truth,ScoringType.KAKS, false, false,
-						caCutoffsEvol[i],-1,bioCallCutoffs[k],countBios[i][k][1][0],countXtals[i][k][1][0],total));
+						caCutoffsCR[i],-1,bioCallCutoffs[k],countBiosCR[i][k][1][0],countXtalsCR[i][k][1][0],total));
 				list.add(new PredictionStatsSet(dir.getName(),truth,ScoringType.KAKS, true, false,
-						caCutoffsEvol[i],-1,bioCallCutoffs[k],countBios[i][k][1][1],countXtals[i][k][1][1],total));
+						caCutoffsCR[i],-1,bioCallCutoffs[k],countBiosCR[i][k][1][1],countXtalsCR[i][k][1][1],total));
 			}
 		}
+		
+		for (int i=0;i<caCutoffsZ.length;i++) {
+			for (int k=0;k<zscoreCutoffs.length;k++) {
+				list.add(new PredictionStatsSet(dir.getName(),truth,ScoringType.ZSCORE, false, false,
+						caCutoffsZ[i],-1,zscoreCutoffs[k],countBiosZ[i][k],countXtalsZ[i][k],total));
+			}
+		}
+		
 		return list;
 	}
 	
-	private static void doSingleEvolScoring(InterfaceEvolContext iec, ChainInterface interf, ScoringType scoType, boolean weighted,  
+	private static void doSingleEvolCRScoring(InterfaceEvolContext iec, ChainInterface interf, ScoringType scoType, boolean weighted,  
 			int[][][][] countBios, int[][][][] countXtals, int i, int k, int l, int m) {
 
 		
 		if (scoType==ScoringType.KAKS && !iec.canDoKaks()) return;
 
 		
-		interf.calcRimAndCore(caCutoffsEvol[i]);
+		interf.calcRimAndCore(caCutoffsCR[i]);
 
 		EvolRimCorePredictor ercp = new EvolRimCorePredictor(iec);
 		
@@ -321,5 +374,24 @@ public class CalcStats {
 		
 		ercp.resetCall();
 
+	}
+	
+	private static void doSingleEvolZScoring(InterfaceEvolContext iec, ChainInterface interf, 
+			int[][] countBios, int[][] countXtals, int i, int k) {
+		
+		interf.calcRimAndCore(caCutoffsZ[i]);
+		
+		EvolInterfZPredictor eizp = new EvolInterfZPredictor(iec);
+		
+		eizp.scoreEntropy();
+		eizp.setZscoreCutoff(zscoreCutoffs[k]);
+		iec.setHomologsCutoff(MIN_NUM_HOMOLOGS);
+		
+		CallType call = eizp.getCall();
+		if (call==CallType.BIO) countBios[i][k]++;
+		else if (call==CallType.CRYSTAL) countXtals[i][k]++;
+		
+		eizp.resetCall();
+		
 	}
 }

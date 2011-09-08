@@ -264,8 +264,8 @@ public class InterfaceEvolContext implements Serializable {
 	 */
 	public boolean canDoKaks() {
 		boolean canDoCRK = true;
-		if ((this.interf.isFirstProtein() && !getFirstChainEvolContext().canDoCRK()) || 
-			(this.interf.isSecondProtein() && !getSecondChainEvolContext().canDoCRK()) ) {
+		if ((this.interf.isFirstProtein() && !getFirstChainEvolContext().canDoKaks()) || 
+			(this.interf.isSecondProtein() && !getSecondChainEvolContext().canDoKaks()) ) {
 			canDoCRK = false;
 		}
 		return canDoCRK;

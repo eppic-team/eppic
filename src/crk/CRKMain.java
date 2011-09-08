@@ -395,7 +395,7 @@ public class CRKMain {
 			
 			// check the back-translation of CDS to uniprot
 			// check whether we have a good enough CDS for the chain
-			if (params.isDoScoreKaks() && chainEvCont.canDoCRK()) {
+			if (params.isDoScoreKaks() && chainEvCont.canDoKaks()) {
 				LOGGER.info("Number of homologs with at least one uniprot CDS mapping: "+chainEvCont.getNumHomologsWithCDS());
 				LOGGER.info("Number of homologs with valid CDS: "+chainEvCont.getNumHomologsWithValidCDS());
 			}
@@ -427,7 +427,7 @@ public class CRKMain {
 				outFile = params.getOutputFile("."+chainEvCont.getRepresentativeChainCode()+".aln");
 				chainEvCont.writeAlignmentToFile(outFile);
 				// writing the nucleotides alignment to file
-				if (params.isDoScoreKaks() && chainEvCont.canDoCRK()) {
+				if (params.isDoScoreKaks() && chainEvCont.canDoKaks()) {
 					outFile = params.getOutputFile("."+chainEvCont.getRepresentativeChainCode()+".cds.aln");
 					chainEvCont.writeNucleotideAlignmentToFile(outFile);
 				}
@@ -440,7 +440,7 @@ public class CRKMain {
 			chainEvCont.computeEntropies(params.getReducedAlphabet());
 
 			// e) compute ka/ks ratios
-			if (params.isDoScoreKaks() && chainEvCont.canDoCRK()) {
+			if (params.isDoScoreKaks() && chainEvCont.canDoKaks()) {
 				params.getProgressLog().println("Running selecton (this will take long)...");
 				try {
 				chainEvCont.computeKaKsRatiosSelecton(params.getSelectonBin(), 
@@ -462,7 +462,7 @@ public class CRKMain {
 				PrintStream conservScoLog = new PrintStream(outFile);
 				chainEvCont.printConservationScores(conservScoLog, ScoringType.ENTROPY);
 				conservScoLog.close();
-				if (params.isDoScoreKaks() && chainEvCont.canDoCRK()) {
+				if (params.isDoScoreKaks() && chainEvCont.canDoKaks()) {
 					outFile = params.getOutputFile("."+chainEvCont.getRepresentativeChainCode()+CRKParams.KAKS_FILE_SUFFIX);
 					conservScoLog = new PrintStream(outFile);
 					chainEvCont.printConservationScores(conservScoLog, ScoringType.KAKS);
