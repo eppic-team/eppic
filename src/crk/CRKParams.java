@@ -17,8 +17,23 @@ import owl.core.structure.AminoAcid;
 public class CRKParams {
 	
 	// CONSTANTS
-	private static final String   PROGRAM_NAME = "crk";
-	private static final Pattern  PDBCODE_PATTERN = Pattern.compile("^\\d\\w\\w\\w$");
+	private static final String    PROGRAM_NAME = "crk";
+	private static final Pattern   PDBCODE_PATTERN = Pattern.compile("^\\d\\w\\w\\w$");
+	protected static final String  CONFIG_FILE_NAME = ".crk.conf";
+	protected static final String  GEOMETRY_FILE_SUFFIX = ".geometry";
+	protected static final String  ENTROPIES_FILE_SUFFIX = ".entropies";
+	protected static final String  KAKS_FILE_SUFFIX = ".kaks";
+	protected static final String  ZSCORES_FILE_SUFFIX = ".zscores";
+	public static final double     INTERFACE_DIST_CUTOFF = 5.9;
+	// shorter chains will be considered peptides
+	public static final int	       PEPTIDE_LENGTH_CUTOFF = 20; 
+	// 5% maximum allowed unreliable residues for calling nopred
+	public static final double     MAX_ALLOWED_UNREL_RES = 0.05; 
+	// minimum number of core residues per interface member to calculate evol score (if fewer 
+	// we don't calculate anything becase it would be too unreliable statistically)
+	public static final int        MIN_NUMBER_CORE_RESIDUES_EVOL_SCORE = 4;  
+
+	// PROPERTY FILES
 	protected static final InputStream COLORS_PROPERTIES_IS = CRKParams.class.getResourceAsStream("/resources/chain_colors.dat");
 	protected static final InputStream PYMOL_COLOR_MAPPINGS_IS = CRKParams.class.getResourceAsStream("/resources/pymol.colors");
 	
@@ -27,25 +42,24 @@ public class CRKParams {
 
 	private static final int      DEF_NUMTHREADS = Runtime.getRuntime().availableProcessors();
 	
-	// default entropy calculation default
+	private static final String   DEF_OUT_DIR = ".";
+	
+	// default entropy calculation 
 	private static final int      DEF_ENTROPY_ALPHABET = 10;
 
 	// default cutoffs for the final bio/xtal call
 	private static final double   DEF_GRAY_ZONE_WIDTH = 0.01;
 	private static final double   DEF_ENTR_CALL_CUTOFF = 0.85;
 	private static final double   DEF_KAKS_CALL_CUTOFF = 0.85;
+	private static final double   DEF_ZSCORE_CUTOFF = -1.0;
 	
-	// default crk core assignment thresholds
-	private static final double   DEF_SOFT_CUTOFF_CA = 0.95;
-	private static final double   DEF_HARD_CUTOFF_CA = 0.82;
-	private static final double   DEF_RELAX_STEP_CA = 0.01;	
-	private static final double   DEF_CA_CUTOFF = 0.95;
-	private static final int      DEF_MIN_NUM_RES_CA = 6;
-	private static final int      DEF_MIN_NUM_RES_MEMBER_CA = 3; 
+	// default core assignment thresholds
+	private static final double   DEF_CA_CUTOFF_FOR_GEOM = 0.95;
+	private static final int      DEF_MIN_CORE_SIZE_FOR_BIO = 6;
+	private static final double   DEF_CA_CUTOFF_FOR_RIMCORE = 0.70;
+	private static final double   DEF_CA_CUTOFF_FOR_ZSCORE = 0.70;
 
-	private static final boolean  DEF_USE_TCOFFEE_VERYFAST_MODE = true;
-	
-	private static final int      DEF_MAX_NUM_SEQUENCES_SELECTON = 60;
+	private static final int      DEF_MAX_NUM_SEQUENCES = 60;
 	
 	private static final int      DEF_NSPHEREPOINTS_ASA_CALC = 9600;
 	
@@ -66,6 +80,7 @@ public class CRKParams {
 	
 	// default tcoffee settings
 	private static final File     DEF_TCOFFE_BIN = new File("/usr/bin/t_coffee");
+	private static final boolean  DEF_USE_TCOFFEE_VERY_FAST_MODE = false;
 
 	// default selecton stuff
 	private static final File     DEF_SELECTON_BIN = new File("/usr/bin/selecton");
@@ -95,28 +110,20 @@ public class CRKParams {
 	// the parameters
 	private String pdbCode;
 	private boolean doScoreEntropies;
-	private boolean doScoreCRK;
+	private boolean doScoreKaks;
 	private double idCutoff;
 	private String baseName;
 	private File outDir;
 	private int numThreads;
 	private int reducedAlphabet;
-	private boolean useTcoffeeVeryFastMode;
 	
-	private boolean zooming;
+	private double caCutoffForGeom;
+	private double caCutoffForRimCore;
+	private double caCutoffForZscore;
 	
-	private double bsaToAsaSoftCutoff;
-	private double bsaToAsaHardCutoff;
-	private double relaxationStep;
+	private int    minCoreSizeForBio;
 	
-	private double cutoffCA;
-	
-	private int      minNumResCA;
-	private int      minNumResMemberCA; 
-	
-	private double selectonEpsilon;
-
-	private int maxNumSeqsSelecton;
+	private int maxNumSeqs;
 	
 	private boolean usePisa;
 
@@ -127,6 +134,8 @@ public class CRKParams {
 	private double grayZoneWidth;
 	private double entrCallCutoff;
 	private double kaksCallCutoff;
+	
+	private double zScoreCutoff;
 	
 	private File interfSerFile;
 	private File chainEvContextSerFile;
@@ -155,8 +164,10 @@ public class CRKParams {
 	private String   blastBinDir;
 	
 	private File     tcoffeeBin;
+	private boolean useTcoffeeVeryFastMode;
 	
 	private File     selectonBin;
+	private double   selectonEpsilon;
 
 	private File     naccessExe;
 	
@@ -187,28 +198,24 @@ public class CRKParams {
 		
 		this.pdbCode = null;
 		this.doScoreEntropies = false;
-		this.doScoreCRK = false;
+		this.doScoreKaks = false;
 		this.idCutoff = DEF_IDENTITY_CUTOFF;
 		this.baseName = null;
-		this.outDir = new File(".");
+		this.outDir = new File(DEF_OUT_DIR);
 		this.numThreads = DEF_NUMTHREADS;
 		this.reducedAlphabet = DEF_ENTROPY_ALPHABET;
-		this.useTcoffeeVeryFastMode = DEF_USE_TCOFFEE_VERYFAST_MODE;
-		this.zooming = false;
-		this.bsaToAsaSoftCutoff = DEF_SOFT_CUTOFF_CA;
-		this.bsaToAsaHardCutoff = DEF_HARD_CUTOFF_CA;
-		this.relaxationStep = DEF_RELAX_STEP_CA;
-		this.cutoffCA = DEF_CA_CUTOFF;
-		this.minNumResCA = DEF_MIN_NUM_RES_CA;
-		this.minNumResMemberCA = DEF_MIN_NUM_RES_MEMBER_CA;
-		this.selectonEpsilon = DEF_SELECTON_EPSILON;
-		this.maxNumSeqsSelecton = DEF_MAX_NUM_SEQUENCES_SELECTON;
+		this.caCutoffForGeom = DEF_CA_CUTOFF_FOR_GEOM;
+		this.caCutoffForRimCore = DEF_CA_CUTOFF_FOR_RIMCORE;
+		this.caCutoffForZscore = DEF_CA_CUTOFF_FOR_ZSCORE;
+		this.minCoreSizeForBio = DEF_MIN_CORE_SIZE_FOR_BIO;
+		this.maxNumSeqs = DEF_MAX_NUM_SEQUENCES;
 		this.usePisa = false;
 		this.useNaccess = false;
 		this.nSpherePointsASAcalc = DEF_NSPHEREPOINTS_ASA_CALC;
 		this.grayZoneWidth = DEF_GRAY_ZONE_WIDTH;
 		this.entrCallCutoff = DEF_ENTR_CALL_CUTOFF;
 		this.kaksCallCutoff = DEF_KAKS_CALL_CUTOFF;
+		this.zScoreCutoff = DEF_ZSCORE_CUTOFF;
 		this.interfSerFile = null;
 		this.chainEvContextSerFile = null;
 		this.generateThumbnails = false;
@@ -219,7 +226,7 @@ public class CRKParams {
 	public void parseCommandLine(String[] args, String programName, String help) {
 	
 
-		Getopt g = new Getopt(programName, args, "i:skd:a:b:o:r:tc:zZ:m:M:x:X:g:e:q:pnA:I:C:lL:uh?");
+		Getopt g = new Getopt(programName, args, "i:skd:a:b:o:r:e:c:z:m:x:X:g:y:q:pnA:I:C:lL:uh?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
@@ -230,7 +237,7 @@ public class CRKParams {
 				doScoreEntropies = true;
 				break;
 			case 'k':
-				doScoreCRK = true;
+				doScoreKaks = true;
 				break;				
 			case 'd':
 				idCutoff = Double.parseDouble(g.getOptarg());
@@ -247,27 +254,17 @@ public class CRKParams {
 			case 'r':
 				reducedAlphabet = Integer.parseInt(g.getOptarg()); 
 				break;
-			case 't':
-				useTcoffeeVeryFastMode = false;
+			case 'e':
+				caCutoffForGeom = Double.parseDouble(g.getOptarg());
 				break;
 			case 'c':
-				cutoffCA = Double.parseDouble(g.getOptarg());
-				break;
+				caCutoffForRimCore = Double.parseDouble(g.getOptarg());
+				break;				
 			case 'z':
-				zooming = true;
-				break;
-			case 'Z':
-				String[] ztokens = g.getOptarg().split(",");
-				//cutoffsCA = new double[ztokens.length];
-				bsaToAsaSoftCutoff = Double.parseDouble(ztokens[0]);
-				bsaToAsaHardCutoff = Double.parseDouble(ztokens[1]);
-				relaxationStep = Double.parseDouble(ztokens[2]);
-				break;
+				caCutoffForZscore = Double.parseDouble(g.getOptarg());
+				break;				
 			case 'm':
-				minNumResCA = Integer.parseInt(g.getOptarg());
-				break;
-			case 'M':
-				minNumResMemberCA = Integer.parseInt(g.getOptarg());
+				minCoreSizeForBio = Integer.parseInt(g.getOptarg());
 				break;
 			case 'x':
 				entrCallCutoff = Double.parseDouble(g.getOptarg());
@@ -278,11 +275,11 @@ public class CRKParams {
 			case 'g':
 				grayZoneWidth = Double.parseDouble(g.getOptarg());
 				break;
-			case 'e':
-				selectonEpsilon = Double.parseDouble(g.getOptarg());
-				break;
+			case 'y':
+				zScoreCutoff = Double.parseDouble(g.getOptarg());
+				break;				
 			case 'q':
-				maxNumSeqsSelecton = Integer.parseInt(g.getOptarg());
+				maxNumSeqs = Integer.parseInt(g.getOptarg());
 				break;
 			case 'p':
 				usePisa = true;
@@ -325,7 +322,8 @@ public class CRKParams {
 		String help = "Usage: \n" +
 		PROGRAM_NAME+"\n" +
 		"   -i          :  input PDB code or PDB file or mmCIF file\n" +
-		"  [-s]         :  score based on entropies \n"+
+		"  [-s]         :  score based on entropies. Using the entropy values both a core/rim\n" +
+		"                  score and a core/surface z-score are calculated \n"+
 		"  [-k]         :  score based on ka/ks ratios. Slower than entropies, \n" +
 		"                  requires running of the selecton external program\n" +
 		"  [-d <float>] :  sequence identity cut-off, homologs below this threshold won't\n" +
@@ -337,28 +335,24 @@ public class CRKParams {
 		"  [-r <int>]   :  specify the number of groups of aminoacids (reduced alphabet) to\n" +
 		"                  be used for entropy calculations.\n" +
 		"                  Valid values are 2, 4, 6, 8, 10, 15 and 20. Default: "+DEF_ENTROPY_ALPHABET+"\n" +
-		"  [-t]         :  if specified t_coffee will be run in normal mode instead of very\n" +
-		"                  fast mode\n" +
-		"  [-c <float>] :  the BSA cutoff for core assignment. Default: "+String.format("%4.2f",DEF_CA_CUTOFF)+"\n" +
-		"  [-z]         :  use zooming for core assignment\n"+
-		"  [-Z <floats>]:  set parameters for zooming (only used if -z specified). Specify 3 \n" +
-		"                  comma separated values: soft BSA cutoff, hard BSA cutoff and \n" +
-		"                  relaxation step. Default: "+DEF_SOFT_CUTOFF_CA+","+DEF_HARD_CUTOFF_CA+","+DEF_RELAX_STEP_CA+"\n"+
-		"  [-m <int>]   :  cutoff for number of interface core residues, if still below \n" +
-		"                  this value after applying hard cutoff then the interface is not\n" +
-		"                  scored and considered a crystal contact. Default "+DEF_MIN_NUM_RES_CA+"\n" +
-		"  [-M <int>]   :  cutoff for number of interface member core residues, if still \n" +
-		"                  below this value after applying hard cutoff then the interface \n" +
-		"                  member is not scored and considered a crystal contact. Default: "+DEF_MIN_NUM_RES_MEMBER_CA+"\n" +
+		"  [-e <float>] :  the BSA/ASA cutoff for core assignment in geometry predictor. Default: "+String.format("%4.2f",DEF_CA_CUTOFF_FOR_GEOM)+"\n" +
+		"  [-c <float>] :  the BSA/ASA cutoff for core assignment in rim/core evolutionary \n" +
+		"                  predictor. Default: "+String.format("%4.2f",DEF_CA_CUTOFF_FOR_RIMCORE)+"\n" +
+		"  [-z <float>] :  the BSA/ASA cutoff for core assignment in core vs surface z-score \n" +
+		"                  evolutionary predictor. Default: "+String.format("%4.2f",DEF_CA_CUTOFF_FOR_ZSCORE)+"\n" +
+		"  [-m <int>]   :  geometry scoring cutoff for number of interface core residues, if below \n" +
+		"                  this value the geometry call will be crystal, if equals or higher the \n" +
+		"                  geometry call is bio. Default "+DEF_MIN_CORE_SIZE_FOR_BIO+"\n" +
 		"  [-x <float>]:   entropy score cutoff for calling BIO/XTAL.\n" +
 		"                  Default: " + String.format("%4.2f",DEF_ENTR_CALL_CUTOFF)+"\n"+
 		"  [-X <float>]:   ka/ks score cutoff for calling BIO/XTAL.\n"+
 		"                  Default: " + String.format("%4.2f",DEF_KAKS_CALL_CUTOFF)+"\n"+
 		"  [-g <float>] :  a margin to be added around the score cutoffs for calling BIO/XTAL\n" +
-		"                  defining an undetermined (gray) prediction zone. Default: "+String.format("%4.2f",DEF_GRAY_ZONE_WIDTH)+"\n"+
-		"  [-e <float>] :  epsilon value for selecton. Default "+String.format("%4.2f",DEF_SELECTON_EPSILON)+"\n" +
+		"                  defining an undetermined (gray) prediction zone. Default: "+String.format("%4.2f",DEF_GRAY_ZONE_WIDTH)+"\n"+		
+		"  [-y <float>]:   z-score cutoff to call BIO/XTAL. If below this z-score interface is BIO\n"+
+		"                  Default: " + String.format("%4.2f",DEF_ZSCORE_CUTOFF)+"\n"+
 		"  [-q <int>]   :  maximum number of sequences to keep for calculation of conservation \n" +
-		"                  scores. Default: "+DEF_MAX_NUM_SEQUENCES_SELECTON+". This is especially important when using \n" +
+		"                  scores. Default: "+DEF_MAX_NUM_SEQUENCES+". This is especially important when using \n" +
 		"                  the -k option, with too many sequences, selecton will run too long\n" +
 		"                  (and inaccurately because of ks saturation)\n" +
 		"  [-p]         :  use PISA interface enumeration (will be downloaded from web) \n" +
@@ -465,11 +459,11 @@ public class CRKParams {
 	public boolean isDoScoreEntropies() {
 		return doScoreEntropies;
 	}
-	public boolean isDoScoreCRK() {
-		return doScoreCRK;
+	public boolean isDoScoreKaks() {
+		return doScoreKaks;
 	}
-	public void setDoScoreCRK(boolean doScoreCRK) {
-		this.doScoreCRK = doScoreCRK;
+	public void setDoScoreKaks(boolean doScoreKaks) {
+		this.doScoreKaks = doScoreKaks;
 	}
 	public double getIdCutoff() {
 		return idCutoff;
@@ -507,60 +501,39 @@ public class CRKParams {
 	public void setUseTcoffeeVeryFastMode(boolean useTcoffeeVeryFastMode) {
 		this.useTcoffeeVeryFastMode = useTcoffeeVeryFastMode;
 	}
-	public boolean isZooming() {
-		return zooming;
+
+	public double getCAcutoffForGeom() {
+		return caCutoffForGeom;
 	}
-	public void setZooming(boolean zooming) {
-		this.zooming = zooming;
+	
+	public double getCAcutoffForRimCore(){
+		return caCutoffForRimCore;
 	}
-	public double getBsaToAsaSoftCutoff() {
-		return bsaToAsaSoftCutoff;
+	
+	public double getCAcutoffForZscore() {
+		return caCutoffForZscore;
 	}
-	public void setBsaToAsaSoftCutoff(double bsaToAsaSoftCutoff) {
-		this.bsaToAsaSoftCutoff = bsaToAsaSoftCutoff;
+	
+	public int getMinCoreSizeForBio() {
+		return minCoreSizeForBio;
 	}
-	public double getBsaToAsaHardCutoff() {
-		return bsaToAsaHardCutoff;
-	}
-	public void setBsaToAsaHardCutoff(double bsaToAsaHardCutoff) {
-		this.bsaToAsaHardCutoff = bsaToAsaHardCutoff;
-	}
-	public double getRelaxationStep() {
-		return relaxationStep;
-	}
-	public void setRelaxationStep(double relaxationStep) {
-		this.relaxationStep = relaxationStep;
-	}
-	public double getCutoffCA() {
-		return cutoffCA;
-	}
-	public void setCutoffCA(double cutoffCA) {
-		this.cutoffCA = cutoffCA;
-	}
-	public int getMinNumResCA() {
-		return minNumResCA;
-	}
-	public void setMinNumResCA(int minNumResCA) {
-		this.minNumResCA = minNumResCA;
-	}
-	public int getMinNumResMemberCA() {
-		return minNumResMemberCA;
-	}
-	public void setMinNumResMemberCA(int minNumResMemberCA) {
-		this.minNumResMemberCA = minNumResMemberCA;
-	}
+	
 	public double getSelectonEpsilon() {
 		return selectonEpsilon;
 	}
+	
 	public void setSelectonEpsilon(double selectonEpsilon) {
 		this.selectonEpsilon = selectonEpsilon;
 	}
-	public int getMaxNumSeqsSelecton() {
-		return maxNumSeqsSelecton;
+	
+	public int getMaxNumSeqs() {
+		return maxNumSeqs;
 	}
-	public void setMaxNumSeqsSelecton(int maxNumSeqsSelecton) {
-		this.maxNumSeqsSelecton = maxNumSeqsSelecton;
+	
+	public void setMaxNumSeqs(int maxNumSeqs) {
+		this.maxNumSeqs = maxNumSeqs;
 	}
+	
 	public boolean isUsePisa() {
 		return usePisa;
 	}
@@ -601,7 +574,10 @@ public class CRKParams {
 	public void setKaksCallCutoffs(double kaksCallCutoff) {
 		this.kaksCallCutoff = kaksCallCutoff;
 	}
-
+	
+	public double getZscoreCutoff(){
+		return zScoreCutoff;
+	}
 
 	public File getInterfSerFile() {
 		return interfSerFile;
@@ -663,7 +639,11 @@ public class CRKParams {
 			
 			tcoffeeBin 		= new File(p.getProperty("TCOFFEE_BIN", DEF_TCOFFE_BIN.toString()));
 			
+			useTcoffeeVeryFastMode = Boolean.parseBoolean(p.getProperty("USE_TCOFFEE_VERY_FAST_MODE",new Boolean(DEF_USE_TCOFFEE_VERY_FAST_MODE).toString()));
+			
 			selectonBin 	= new File(p.getProperty("SELECTON_BIN", DEF_SELECTON_BIN.toString()));
+			
+			selectonEpsilon = Double.parseDouble(p.getProperty("SELECTON_EPSILON", new Double(DEF_SELECTON_EPSILON).toString()));
 			
 			naccessExe      = new File(p.getProperty("NACCESS_EXE", DEF_NACCESS_EXE.toString()));
 			

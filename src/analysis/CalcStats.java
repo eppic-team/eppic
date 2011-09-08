@@ -38,11 +38,6 @@ public class CalcStats {
 	
 	private static final int MIN_NUM_HOMOLOGS = 10;
 	
-	private static final double CA_SOFT_CUTOFF_ZOOMING = 0.95;
-	private static final double CA_HARD_CUTOFF_ZOOMING = 0.82;
-	private static final double CA_RELAX_STEP_ZOOMING = 0.01;
-	private static final int MIN_NUMBER_CORE_RESIDUES_ZOOMING = 6;
-	
 	private static final double DEFBIOCALLCUTOFF = 0.85;
 	private static final double DEFCACUTOFF = 0.95;
 	private static final int DEFMINNUMBERCORERESFORBIO = 6;
@@ -255,9 +250,9 @@ public class CalcStats {
 		}
 		
 		ArrayList<PredictionStatsSet> list = new ArrayList<PredictionStatsSet>();
-		// the 3 outer indices correspond to the 3 parameters scoType, weighted, zoomed (each can have 2 values)
-		int[][][][][] countBios = new int[caCutoffsEvol.length][bioCallCutoffs.length][2][2][2];
-		int[][][][][] countXtals = new int[caCutoffsEvol.length][bioCallCutoffs.length][2][2][2];
+		// the 2 outer indices correspond to the 2 parameters scoType, weighted (each can have 2 values)
+		int[][][][] countBios = new int[caCutoffsEvol.length][bioCallCutoffs.length][2][2];
+		int[][][][] countXtals = new int[caCutoffsEvol.length][bioCallCutoffs.length][2][2];
 		
 		for (String pdbCode:toAnalyse.keySet()) {
 			File chainevolcontextdatFile = new File(dir,pdbCode+".chainevolcontext.dat");
@@ -273,20 +268,12 @@ public class CalcStats {
 
 						ChainInterface interf = cil.get(id);
 
-						InterfaceEvolContext iec = new InterfaceEvolContext(interf, cecl);
+						InterfaceEvolContext iec = new InterfaceEvolContext(interf, cecl, null);
 
-						if (i==0) {
-							// we only do zoom predictions once per bioCallCutoff
-							doSingleEvolScoring(iec, interf, ScoringType.ENTROPY, false, true, countBios, countXtals, i, k, 0, 0, 1);
-							doSingleEvolScoring(iec, interf, ScoringType.ENTROPY, true, true, countBios, countXtals, i, k, 0, 1, 1);
-							doSingleEvolScoring(iec, interf, ScoringType.KAKS, false, true, countBios, countXtals, i, k, 1, 0, 1);
-							doSingleEvolScoring(iec, interf, ScoringType.KAKS, true, true, countBios, countXtals, i, k, 1, 1, 1);
-						}
-
-						doSingleEvolScoring(iec, interf, ScoringType.ENTROPY, false, false, countBios, countXtals, i, k, 0, 0, 0);
-						doSingleEvolScoring(iec, interf, ScoringType.ENTROPY,  true, false, countBios, countXtals, i, k, 0, 1, 0);
-						doSingleEvolScoring(iec, interf, ScoringType.KAKS,    false, false, countBios, countXtals, i, k, 1, 0, 0);
-						doSingleEvolScoring(iec, interf, ScoringType.KAKS,     true, false, countBios, countXtals, i, k, 1, 1, 0);
+						doSingleEvolScoring(iec, interf, ScoringType.ENTROPY, false, countBios, countXtals, i, k, 0, 0);
+						doSingleEvolScoring(iec, interf, ScoringType.ENTROPY,  true, countBios, countXtals, i, k, 0, 1);
+						doSingleEvolScoring(iec, interf, ScoringType.KAKS,    false, countBios, countXtals, i, k, 1, 0);
+						doSingleEvolScoring(iec, interf, ScoringType.KAKS,     true, countBios, countXtals, i, k, 1, 1);
 					}
 				}
 			}
@@ -294,41 +281,28 @@ public class CalcStats {
 		
 		for (int i=0;i<caCutoffsEvol.length;i++) {
 			for (int k=0;k<bioCallCutoffs.length;k++) {
-				if (i==0) {
-					// we only do zoom predictions once per bioCallCutoff
-					list.add(new PredictionStatsSet(dir.getName(),truth,ScoringType.ENTROPY, false, true,
-							-1,-1,bioCallCutoffs[k],countBios[i][k][0][0][1],countXtals[i][k][0][0][1],total));
-					list.add(new PredictionStatsSet(dir.getName(),truth,ScoringType.ENTROPY, true, true,
-							-1,-1,bioCallCutoffs[k],countBios[i][k][0][1][1],countXtals[i][k][0][1][1],total));
-					list.add(new PredictionStatsSet(dir.getName(),truth,ScoringType.KAKS, false, true,
-							-1,-1,bioCallCutoffs[k],countBios[i][k][1][0][1],countXtals[i][k][1][0][1],total));
-					list.add(new PredictionStatsSet(dir.getName(),truth,ScoringType.KAKS, true, true,
-							-1,-1,bioCallCutoffs[k],countBios[i][k][1][1][1],countXtals[i][k][1][1][1],total));
-				}
+				
 				list.add(new PredictionStatsSet(dir.getName(),truth,ScoringType.ENTROPY, false, false,
-						caCutoffsEvol[i],-1,bioCallCutoffs[k],countBios[i][k][0][0][0],countXtals[i][k][0][0][0],total));
+						caCutoffsEvol[i],-1,bioCallCutoffs[k],countBios[i][k][0][0],countXtals[i][k][0][0],total));
 				list.add(new PredictionStatsSet(dir.getName(),truth,ScoringType.ENTROPY, true, false,
-						caCutoffsEvol[i],-1,bioCallCutoffs[k],countBios[i][k][0][1][0],countXtals[i][k][0][1][0],total));
+						caCutoffsEvol[i],-1,bioCallCutoffs[k],countBios[i][k][0][1],countXtals[i][k][0][1],total));
 				list.add(new PredictionStatsSet(dir.getName(),truth,ScoringType.KAKS, false, false,
-						caCutoffsEvol[i],-1,bioCallCutoffs[k],countBios[i][k][1][0][0],countXtals[i][k][1][0][0],total));
+						caCutoffsEvol[i],-1,bioCallCutoffs[k],countBios[i][k][1][0],countXtals[i][k][1][0],total));
 				list.add(new PredictionStatsSet(dir.getName(),truth,ScoringType.KAKS, true, false,
-						caCutoffsEvol[i],-1,bioCallCutoffs[k],countBios[i][k][1][1][0],countXtals[i][k][1][1][0],total));
+						caCutoffsEvol[i],-1,bioCallCutoffs[k],countBios[i][k][1][1],countXtals[i][k][1][1],total));
 			}
 		}
 		return list;
 	}
 	
-	private static void doSingleEvolScoring(InterfaceEvolContext iec, ChainInterface interf, ScoringType scoType, boolean weighted, boolean zoomed, 
-			int[][][][][] countBios, int[][][][][] countXtals, int i, int k, int l, int m, int n) {
+	private static void doSingleEvolScoring(InterfaceEvolContext iec, ChainInterface interf, ScoringType scoType, boolean weighted,  
+			int[][][][] countBios, int[][][][] countXtals, int i, int k, int l, int m) {
 
 		
-		if (scoType==ScoringType.KAKS && !iec.canDoCRK()) return;
+		if (scoType==ScoringType.KAKS && !iec.canDoKaks()) return;
 
-		if (zoomed) {
-			interf.calcRimAndCore(CA_SOFT_CUTOFF_ZOOMING, CA_HARD_CUTOFF_ZOOMING, CA_RELAX_STEP_ZOOMING, MIN_NUMBER_CORE_RESIDUES_ZOOMING);
-		} else {
-			interf.calcRimAndCore(caCutoffsEvol[i]);
-		}
+		
+		interf.calcRimAndCore(caCutoffsEvol[i]);
 
 		EvolRimCorePredictor ercp = new EvolRimCorePredictor(iec);
 		
@@ -342,8 +316,8 @@ public class CalcStats {
 		iec.setHomologsCutoff(MIN_NUM_HOMOLOGS);
 
 		CallType call = ercp.getCall();
-		if (call==CallType.BIO) countBios[i][k][l][m][n]++;
-		else if (call==CallType.CRYSTAL) countXtals[i][k][l][m][n]++;
+		if (call==CallType.BIO) countBios[i][k][l][m]++;
+		else if (call==CallType.CRYSTAL) countXtals[i][k][l][m]++;
 		
 		ercp.resetCall();
 

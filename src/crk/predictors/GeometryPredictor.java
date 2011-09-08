@@ -9,7 +9,7 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import crk.CRKMain;
+import crk.CRKParams;
 import crk.CallType;
 
 import edu.uci.ics.jung.graph.util.Pair;
@@ -299,7 +299,7 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 		} else if (molecId==SECOND) {
 			molec = interf.getSecondMolecule();
 		}
-		if (molec.getFullLength()<=CRKMain.PEPTIDE_LENGTH_CUTOFF) {
+		if (molec.getFullLength()<=CRKParams.PEPTIDE_LENGTH_CUTOFF) {
 			double bsa = interf.getInterfaceArea();
 			String msg = "Ratio of interface area to ASA: "+
 					String.format("%4.2f", bsa/molec.getASA())+". "+

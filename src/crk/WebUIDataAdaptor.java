@@ -48,13 +48,10 @@ public class WebUIDataAdaptor {
 		runParametersItem.setHomologsCutoff(params.getMinHomologsCutoff());
 		runParametersItem.setIdCutoff(params.getIdCutoff());
 		runParametersItem.setQueryCovCutoff(params.getQueryCoverageCutoff());
-		runParametersItem.setMaxNumSeqsCutoff(params.getMaxNumSeqsSelecton());
+		runParametersItem.setMaxNumSeqsCutoff(params.getMaxNumSeqs());
 		runParametersItem.setBioCutoff(params.getEntrCallCutoff()-params.getGrayZoneWidth());
 		runParametersItem.setXtalCutoff(params.getEntrCallCutoff()+params.getGrayZoneWidth());
-		runParametersItem.setBsaToAsaCutoff(params.getCutoffCA());
-		runParametersItem.setBsaToAsaSoftCutoff(params.getBsaToAsaSoftCutoff());
-		runParametersItem.setBsaToAsaRelaxStep(params.getRelaxationStep());
-		runParametersItem.setZoomUsed(params.isZooming());
+		runParametersItem.setBsaToAsaCutoff(params.getCAcutoffForGeom());
 		pdbScoreItem.setRunParameters(runParametersItem);
 	}
 
@@ -202,25 +199,22 @@ public class WebUIDataAdaptor {
 			} 
 			
 
-			double rat1Sc = ercp.getCoreScore(InterfaceEvolContext.FIRST)/ercp.getRimScore(InterfaceEvolContext.FIRST);
-			double rat2Sc = ercp.getCoreScore(InterfaceEvolContext.SECOND)/ercp.getRimScore(InterfaceEvolContext.SECOND);
-
 			if (iecl.isScoreWeighted()) {
-				isi.setWeightedCore1Scores(ercp.getCoreScore(InterfaceEvolContext.FIRST));
-				isi.setWeightedCore2Scores(ercp.getCoreScore(InterfaceEvolContext.SECOND));
-				isi.setWeightedRim1Scores(ercp.getRimScore(InterfaceEvolContext.FIRST));
-				isi.setWeightedRim2Scores(ercp.getRimScore(InterfaceEvolContext.SECOND));
-				isi.setWeightedRatio1Scores(rat1Sc);
-				isi.setWeightedRatio2Scores(rat2Sc);
-				isi.setWeightedFinalScores(ercp.getFinalScore());
+				isi.setWeightedCore1Scores(ercp.getMember1Predictor().getCoreScore());
+				isi.setWeightedCore2Scores(ercp.getMember2Predictor().getCoreScore());
+				isi.setWeightedRim1Scores(ercp.getMember1Predictor().getRimScore());
+				isi.setWeightedRim2Scores(ercp.getMember2Predictor().getRimScore());
+				isi.setWeightedRatio1Scores(ercp.getMember1Predictor().getScore());
+				isi.setWeightedRatio2Scores(ercp.getMember2Predictor().getScore());
+				isi.setWeightedFinalScores(ercp.getScore());
 			} else {
-				isi.setUnweightedCore1Scores(ercp.getCoreScore(InterfaceEvolContext.FIRST));
-				isi.setUnweightedCore2Scores(ercp.getCoreScore(InterfaceEvolContext.SECOND));
-				isi.setUnweightedRim1Scores(ercp.getRimScore(InterfaceEvolContext.FIRST));
-				isi.setUnweightedRim2Scores(ercp.getRimScore(InterfaceEvolContext.SECOND));
-				isi.setUnweightedRatio1Scores(rat1Sc);
-				isi.setUnweightedRatio2Scores(rat2Sc);
-				isi.setUnweightedFinalScores(ercp.getFinalScore());				
+				isi.setUnweightedCore1Scores(ercp.getMember1Predictor().getCoreScore());
+				isi.setUnweightedCore2Scores(ercp.getMember2Predictor().getCoreScore());
+				isi.setUnweightedRim1Scores(ercp.getMember1Predictor().getRimScore());
+				isi.setUnweightedRim2Scores(ercp.getMember2Predictor().getRimScore());
+				isi.setUnweightedRatio1Scores(ercp.getMember1Predictor().getScore());
+				isi.setUnweightedRatio2Scores(ercp.getMember2Predictor().getScore());
+				isi.setUnweightedFinalScores(ercp.getScore());				
 			}
 		}
 	}
@@ -266,7 +260,7 @@ public class WebUIDataAdaptor {
 			InterfaceRimCore rimCore = interf.getFirstRimCore(); 
 			List<Double> entropies = firstCec.getConservationScores(ScoringType.ENTROPY);
 			List<Double> kaksRatios = null;
-			if (includeKaks && iec.canDoCRK())
+			if (includeKaks && iec.canDoKaks())
 				kaksRatios = firstCec.getConservationScores(ScoringType.KAKS);
 			for (Residue residue:firstMol) {
 				String resType = residue.getLongCode();
@@ -287,20 +281,20 @@ public class WebUIDataAdaptor {
 					if (queryUniprotPos!=-1) entropy = (float) entropies.get(queryUniprotPos).doubleValue();
 				}
 				float kaks = -1;
-				if (includeKaks && iec.canDoCRK() && (residue instanceof AaResidue) && queryUniprotPos!=-1)
+				if (includeKaks && iec.canDoKaks() && (residue instanceof AaResidue) && queryUniprotPos!=-1)
 					kaks = (float)kaksRatios.get(queryUniprotPos).doubleValue();
 				InterfaceResidueItem iri = new InterfaceResidueItem(residue.getSerial(),resType,asa,bsa,bsa/asa,assignment);
 
 				List<InterfaceResidueMethodItem> scores = new ArrayList<InterfaceResidueMethodItem>();
 				scores.add(new InterfaceResidueMethodItem(entropy, "entropy"));
-				if (includeKaks && iec.canDoCRK()) scores.add(new InterfaceResidueMethodItem(kaks, "kaks"));
+				if (includeKaks && iec.canDoKaks()) scores.add(new InterfaceResidueMethodItem(kaks, "kaks"));
 				iri.setInterfaceResidueMethodItems(scores);
 				partner1.add(iri);
 			}
 			PdbChain secondMol = interf.getSecondMolecule();
 			rimCore = interf.getSecondRimCore();
 			entropies = secondCec.getConservationScores(ScoringType.ENTROPY);
-			if (includeKaks && iec.canDoCRK()) 
+			if (includeKaks && iec.canDoKaks()) 
 				kaksRatios = secondCec.getConservationScores(ScoringType.KAKS);
 			for (Residue residue:secondMol) {
 				String resType = residue.getLongCode();
@@ -321,12 +315,12 @@ public class WebUIDataAdaptor {
 					if (queryUniprotPos!=-1) entropy = (float) entropies.get(queryUniprotPos).doubleValue();
 				}
 				float kaks = -1;
-				if (includeKaks && iec.canDoCRK() && (residue instanceof AaResidue) && queryUniprotPos!=-1)
+				if (includeKaks && iec.canDoKaks() && (residue instanceof AaResidue) && queryUniprotPos!=-1)
 					kaks = (float) kaksRatios.get(queryUniprotPos).doubleValue();
 				InterfaceResidueItem iri = new InterfaceResidueItem(residue.getSerial(),resType,asa,bsa,bsa/asa,assignment);
 				List<InterfaceResidueMethodItem> scores = new ArrayList<InterfaceResidueMethodItem>();
 				scores.add(new InterfaceResidueMethodItem(entropy, "entropy"));
-				if (includeKaks && iec.canDoCRK())
+				if (includeKaks && iec.canDoKaks())
 					scores.add(new InterfaceResidueMethodItem(kaks, "kaks"));
 				iri.setInterfaceResidueMethodItems(scores);
 				partner2.add(iri);

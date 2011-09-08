@@ -19,6 +19,8 @@ public class InterfaceEvolContext implements Serializable {
 
 	protected static final int FIRST  = 0;
 	protected static final int SECOND = 1;
+
+	private InterfaceEvolContextList parent;
 	
 	private ChainInterface interf;
 
@@ -29,9 +31,10 @@ public class InterfaceEvolContext implements Serializable {
 
 	
 	
-	public InterfaceEvolContext(ChainInterface interf, ChainEvolContextList cecs) {
+	public InterfaceEvolContext(ChainInterface interf, ChainEvolContextList cecs, InterfaceEvolContextList parent) {
 		this.interf = interf;
 		this.cecs = cecs;
+		this.parent = parent;
 	}
 
 	public ChainInterface getInterface() {
@@ -68,6 +71,16 @@ public class InterfaceEvolContext implements Serializable {
 			return getSecondRimCore();
 		}
 		return null;
+	}
+	
+	private PdbChain getMolecule(int molecId) {
+		if (molecId==FIRST) {
+			return getInterface().getFirstMolecule();
+		}
+		if (molecId==SECOND) {
+			return getInterface().getSecondMolecule();
+		}
+		return null;		
 	}
 	
 	public ChainEvolContextList getChainEvolContextList() {
@@ -148,8 +161,32 @@ public class InterfaceEvolContext implements Serializable {
 		return msg;
 	}
 
+	/**
+	 * Calculates the evolutionary score for the given list of residues by summing up evolutionary
+	 * scores per residue and averaging (optionally weighted by BSA)
+	 * @param residues
+	 * @param molecId
+	 * @param scoType
+	 * @param weighted
+	 * @return
+	 */
 	public double calcScore(List<Residue> residues, int molecId, ScoringType scoType, boolean weighted) {
 		return getChainEvolContext(molecId).calcScoreForResidueSet(residues, scoType, weighted);
+	}
+	
+	/**
+	 * Returns the distribution of evolutionary scores of random subsets of residues in the surface (not belonging 
+	 * to any interface above minInterfArea) for given pdbChainCode and scoType.
+	 * The result is cached in a map and taken from there upon subsequent call.
+	 * @param molecId the molecule id: either {@link #FIRST} or {@link #SECOND}
+	 * @param minInterfArea the residues considered will be those that are not in interfaces above this area value
+	 * @param numSamples number of samples of size sampleSize to be taken from the surface
+	 * @param sampleSize number of residues in each sample
+	 * @param scoType
+	 * @return
+	 */
+	public double[] getSurfaceScoreDist(int molecId, double minInterfArea, int numSamples, int sampleSize, ScoringType scoType) {		
+		return parent.getSurfaceScoreDist(getMolecule(molecId).getPdbChainCode(), minInterfArea, numSamples, sampleSize, scoType); 
 	}
 	
 	/**
@@ -221,11 +258,11 @@ public class InterfaceEvolContext implements Serializable {
 	}
 
 	/**
-	 * Tells whether CRK analysis (ka/ks ratio) is possible for this interface.
+	 * Tells whether Ka/KS analysis is possible for this interface.
 	 * It will not be possible when there is no sufficient data from either chain.
 	 * @return
 	 */
-	public boolean canDoCRK() {
+	public boolean canDoKaks() {
 		boolean canDoCRK = true;
 		if ((this.interf.isFirstProtein() && !getFirstChainEvolContext().canDoCRK()) || 
 			(this.interf.isSecondProtein() && !getSecondChainEvolContext().canDoCRK()) ) {

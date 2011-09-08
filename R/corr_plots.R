@@ -36,7 +36,7 @@ kaks.all<-d$V6[d$V3!="nopred" & d$V4!="nopred"]
 #kaks.xtal<-d$V6[d$V3=="xtal" & d$V4=="xtal"]
 	
 plot(ent.all,kaks.all,xlim=c(0,3),ylim=c(0,3),xlab="entropy score", ylab="kaks score")
-points(ent.all[ent.all>1 & kaks.all<0.85],kaks.all[ent.all>1 & kaks.all<0.85],col=3)
-points(ent.all[kaks.all>0.85 & ent.all<1],kaks.all[kaks.all>0.85 & ent.all<1],col=2)
-abline(h=0.85,lty=2,col=8)
+points(ent.all[ent.all>1 & kaks.all<1.00],kaks.all[ent.all>1 & kaks.all<1.00],col=3)
+points(ent.all[kaks.all>1.00 & ent.all<1],kaks.all[kaks.all>1.00 & ent.all<1],col=2)
+abline(h=1.00,lty=2,col=8)
 abline(v=1.00,lty=2,col=8)
