@@ -60,7 +60,7 @@ public class WebUIDataAdaptor {
 	}
 	
 	public void setSpaceGroup(SpaceGroup sg) {
-		pdbScoreItem.setSpaceGroup(sg.getShortSymbol());
+		pdbScoreItem.setSpaceGroup(sg==null?"No space group info":sg.getShortSymbol());
 	}
 	
 	public void setInterfaces(ChainInterfaceList interfaces) {

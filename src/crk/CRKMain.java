@@ -132,7 +132,7 @@ public class CRKMain {
 		}
 		
 		if (pdb.getCrystalCell()==null) {
-			throw new CRKException(null, "No crystal information found in source "+params.getPdbCode(), true);
+			LOGGER.warn("No crystal information found in source "+params.getPdbCode()+". Only asymmetric unit interfaces will be calculated.");
 		}
 		
 		// we strip the H atoms: surface calculations should not have them (otherwise comparisons of structures with/without H arn't good)
