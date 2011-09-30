@@ -95,7 +95,6 @@ public class CRKParams {
 	// default crk cutoffs
 	private static final double   DEF_QUERY_COVERAGE_CUTOFF = 0.85;
 	private static final int      DEF_MIN_HOMOLOGS_CUTOFF = 10;
-	private static final double   DEF_MIN_INTERF_AREA_REPORTING = 300;
 	// default pdb2uniprot mapping blast thresholds
 	private static final double   DEF_PDB2UNIPROT_ID_THRESHOLD = 0.95;
 	private static final double   DEF_PDB2UNIPROT_QCOV_THRESHOLD = 0.85;
@@ -175,7 +174,6 @@ public class CRKParams {
 	
 	private double   queryCoverageCutoff;
 	private int      minHomologsCutoff;
-	private double   minInterfAreaReporting; 
 	
 	private double   pdb2uniprotIdThreshold;
 	private double   pdb2uniprotQcovThreshold;
@@ -651,7 +649,6 @@ public class CRKParams {
 
 			queryCoverageCutoff = Double.parseDouble(p.getProperty("QUERY_COVERAGE_CUTOFF", new Double(DEF_QUERY_COVERAGE_CUTOFF).toString()));
 			minHomologsCutoff = Integer.parseInt(p.getProperty("MIN_HOMOLOGS_CUTOFF", new Integer(DEF_MIN_HOMOLOGS_CUTOFF).toString()));
-			minInterfAreaReporting = Double.parseDouble(p.getProperty("MIN_INTERF_AREA_REPORTING", new Double(DEF_MIN_INTERF_AREA_REPORTING).toString()));
 			
 			pdb2uniprotIdThreshold = Double.parseDouble(p.getProperty("PDB2UNIPROT_ID_THRESHOLD", new Double(DEF_PDB2UNIPROT_ID_THRESHOLD).toString()));
 			pdb2uniprotQcovThreshold = Double.parseDouble(p.getProperty("PDB2UNIPROT_QCOV_THRESHOLD", new Double(DEF_PDB2UNIPROT_QCOV_THRESHOLD).toString()));
@@ -712,10 +709,6 @@ public class CRKParams {
 
 	public int getMinHomologsCutoff() {
 		return minHomologsCutoff;
-	}
-
-	public double getMinInterfAreaReporting() {
-		return minInterfAreaReporting;
 	}
 
 	public double getPdb2uniprotIdThreshold() {

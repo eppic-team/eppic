@@ -161,9 +161,6 @@ public class CRKMain {
 			throw new CRKException(null,"PDB codes of given PDB entry/file and given interface enumeration binary file don't match.",true);
 		}
 		
-		if (interfaces.getNumInterfacesAboveArea(params.getMinInterfAreaReporting())==0) {
-			LOGGER.warn(String.format("No interfaces with area above %4.0f. Nothing to score.\n",params.getMinInterfAreaReporting()));			
-		}
 	}
 
 	public void doFindInterfaces() throws CRKException {
@@ -224,9 +221,6 @@ public class CRKMain {
 			interfLogPS.close();
 		} catch(IOException	e) {
 			throw new CRKException(e,"Couldn't log interfaces description to file: "+e.getMessage(),false);
-		}
-		if (interfaces.getNumInterfacesAboveArea(params.getMinInterfAreaReporting())==0) {
-			LOGGER.warn(String.format("No interfaces with area above %4.0f. Nothing to score.\n",params.getMinInterfAreaReporting()));			
 		}
 
 		try {
@@ -306,7 +300,6 @@ public class CRKMain {
 	}
 	
 	public void doLoadEvolContextFromFile() throws CRKException {
-		if (interfaces.getNumInterfacesAboveArea(params.getMinInterfAreaReporting())==0) return;
 		
 		findUniqueChains();
 		
@@ -324,7 +317,6 @@ public class CRKMain {
 	}
 	
 	public void doFindEvolContext() throws CRKException {
-		if (interfaces.getNumInterfacesAboveArea(params.getMinInterfAreaReporting())==0) return;
 		
 		findUniqueChains();
 		
@@ -483,12 +475,11 @@ public class CRKMain {
 	}
 	
 	public void doEvolScoring() throws CRKException {
-		if (interfaces.getNumInterfacesAboveArea(params.getMinInterfAreaReporting())==0) return;
 
 		interfaces.calcRimAndCores(params.getCAcutoffForRimCore());
 		
 		iecList = new InterfaceEvolContextList(params.getJobName(), params.getMinHomologsCutoff(),  
-				params.getIdCutoff(), params.getQueryCoverageCutoff(), params.getMaxNumSeqs(), params.getMinInterfAreaReporting());
+				params.getIdCutoff(), params.getQueryCoverageCutoff(), params.getMaxNumSeqs());
 		iecList.addAll(interfaces,cecs);
 
 		if (params.isDoScoreEntropies()) {

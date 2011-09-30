@@ -48,18 +48,16 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 	private double idCutoff;
 	private double queryCovCutoff;
 	private int maxNumSeqsCutoff;
-	private double minInterfAreaReporting;
 	
 	private double zScoreCutoff;
 	
 	public InterfaceEvolContextList(String pdbName, int homologsCutoff,  
-			double idCutoff, double queryCovCutoff, int maxNumSeqsCutoff, double minInterfAreaReporting) {
+			double idCutoff, double queryCovCutoff, int maxNumSeqsCutoff) {
 		this.pdbName = pdbName;
 		this.homologsCutoff = homologsCutoff;
 		this.idCutoff = idCutoff;
 		this.queryCovCutoff = queryCovCutoff;
 		this.maxNumSeqsCutoff = maxNumSeqsCutoff;
-		this.minInterfAreaReporting = minInterfAreaReporting;
 		
 		list = new ArrayList<InterfaceEvolContext>();
 		evolRimCorePredictors = new ArrayList<EvolRimCorePredictor>();
@@ -147,10 +145,8 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 		printScoringHeaders(ps);
 		
 		for (int i=0;i<list.size();i++) {
-			if (list.get(i).getInterface().getInterfaceArea()>minInterfAreaReporting) {
-				list.get(i).setHomologsCutoff(homologsCutoff);
-				evolRimCorePredictors.get(i).printScoresLine(ps);
-			}
+			list.get(i).setHomologsCutoff(homologsCutoff);
+			evolRimCorePredictors.get(i).printScoresLine(ps);
 		}
 	}
 	
@@ -160,19 +156,15 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 		printZscoringHeaders(ps);
 		
 		for (int i=0;i<list.size();i++) {
-			if (list.get(i).getInterface().getInterfaceArea()>minInterfAreaReporting) {
-				list.get(i).setHomologsCutoff(homologsCutoff);
-				evolInterfZPredictors.get(i).printScoresLine(ps);
-			}
+			list.get(i).setHomologsCutoff(homologsCutoff);
+			evolInterfZPredictors.get(i).printScoresLine(ps);
 		}
 		
 	}
 	
 	public void writeScoresPDBFiles(CRKParams params, String suffix) throws IOException {
 		for (InterfaceEvolContext iec:this) {
-			if (iec.getInterface().getInterfaceArea()>minInterfAreaReporting) {
-				iec.writePdbFile(params.getOutputFile("."+iec.getInterface().getId()+suffix),scoType);
-			}
+			iec.writePdbFile(params.getOutputFile("."+iec.getInterface().getId()+suffix),scoType);
 		}
 	}
 	

@@ -293,7 +293,7 @@ public class CalcStats {
 
 			ChainInterfaceList cil = Utils.readChainInterfaceList(interfdatFile);
 			ChainEvolContextList cecl = Utils.readChainEvolContextList(chainevolcontextdatFile);
-			InterfaceEvolContextList iecList = new InterfaceEvolContextList(pdbCode, MIN_NUM_HOMOLOGS,-1, -1, -1, 0);
+			InterfaceEvolContextList iecList = new InterfaceEvolContextList(pdbCode, MIN_NUM_HOMOLOGS,-1, -1, -1);
 			iecList.addAll(cil,cecl);
 			
 			for (int id:toAnalyse.get(pdbCode)) {
