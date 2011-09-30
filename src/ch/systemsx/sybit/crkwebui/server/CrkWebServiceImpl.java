@@ -641,7 +641,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 							@Override
 							public boolean accept(File dir, String name) 
 							{
-								if(name.toLowerCase().startsWith(jobId + ".e"))
+								if(name.startsWith(jobId + ".e"))
 								{
 									return true;
 								}

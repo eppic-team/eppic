@@ -51,7 +51,7 @@ public class ServiceControllerImpl implements ServiceController
 
 	public void getResultsOfProcessing(String jobId, boolean debug) {
 		crkWebService.getResultsOfProcessing(jobId, debug,
-				new GetResultsOfProcessingCallback(mainController, jobId));
+				new GetResultsOfProcessingCallback(mainController, jobId, debug));
 	}
 	
 	

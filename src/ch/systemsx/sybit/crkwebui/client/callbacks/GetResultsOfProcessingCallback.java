@@ -20,12 +20,15 @@ public class GetResultsOfProcessingCallback implements AsyncCallback<ProcessingD
 {
 	private MainController mainController;
 	private String selectedId;
+	private boolean debug;
 
 	public GetResultsOfProcessingCallback(MainController mainController,
-			String selectedId) 
+			String selectedId,
+			boolean debug) 
 	{
 		this.mainController = mainController;
 		this.selectedId = selectedId;
+		this.debug = debug;
 	}
 
 	@Override
@@ -67,7 +70,10 @@ public class GetResultsOfProcessingCallback implements AsyncCallback<ProcessingD
 				mainController.cleanCenterPanel();
 			}
 			
-			mainController.getJobsForCurrentSession();
+			if(!debug)
+			{
+				mainController.getJobsForCurrentSession();
+			}
 		}
 		else
 		{
