@@ -43,7 +43,7 @@ public interface CrkWebService extends RemoteService
 	 * @return status data for the selected job
 	 * @throws CrkWebException
 	 */
-	public ProcessingData getResultsOfProcessing(String jobId) throws CrkWebException;
+	public ProcessingData getResultsOfProcessing(String jobId, boolean debug) throws CrkWebException;
 	
 	/**
 	 * Retrieve list of all jobs for current session id

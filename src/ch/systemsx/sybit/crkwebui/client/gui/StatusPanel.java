@@ -33,7 +33,7 @@ public class StatusPanel extends DisplayPanel
 	private TextArea log;
 	private ProgressBar progressBar;
 	
-	private String currentStep = "1/5 Current step";
+	private String currentStep = "";
 	
 	private Button killJob;
 	
@@ -120,6 +120,8 @@ public class StatusPanel extends DisplayPanel
 		
 		status.setValue(String.valueOf(statusData.getStatus()));
 		jobId.setValue(statusData.getJobId());
+		
+		currentStep = statusData.getStep();
 		
 		if((status.getValue() != null) && (status.getValue().equals(StatusOfJob.RUNNING)))
 		{

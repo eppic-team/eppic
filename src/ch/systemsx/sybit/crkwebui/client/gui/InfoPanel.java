@@ -98,7 +98,7 @@ public class InfoPanel extends FormPanel
 			}
 		}
 		
-		inputParametersLabel = new Label(MainController.CONSTANTS.info_panel_input_parameters() + " (see details)");
+		inputParametersLabel = new Label("<a href=\"\" onClick=\"return false;\">" + MainController.CONSTANTS.info_panel_input_parameters() + "</a>");
 		inputParametersLabel.addStyleName("crk-default-label");
 		
 		ToolTipConfig toolTipConfig = new ToolTipConfig();  

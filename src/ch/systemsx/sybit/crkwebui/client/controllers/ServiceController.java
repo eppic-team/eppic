@@ -26,13 +26,13 @@ public interface ServiceController
 	 * Retrieve results of processing for selected job id - the results type depends on the status of the job on the server
 	 * @param jobId job id
 	 */
-	public abstract void getResultsOfProcessing(String jobId);
+	public abstract void getResultsOfProcessing(String jobId, boolean debug);
 	
 	/**
 	 * Retrieve the status data for the current jobs
 	 * @param jobId job id
 	 */
-	public abstract void getCurrentStatusData(String jobId);
+	public abstract void getCurrentStatusData(String jobId, boolean debug);
 	
 	/**
 	 * Retrieve list of all jobs for current session id
@@ -50,7 +50,7 @@ public interface ServiceController
 	 * Stop the execution of the specified running job
 	 * @param jobsToStop list of jobs to stop
 	 */
-	public abstract void stopJob(String jobToStop);
+	public abstract void stopJob(String jobToStop, boolean debug);
 	
 	/**
 	 * Untie specified job with the current session id

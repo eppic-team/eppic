@@ -32,6 +32,7 @@ import org.ggf.drmaa.SessionFactory;
 
 import ch.systemsx.sybit.crkwebui.client.CrkWebService;
 import ch.systemsx.sybit.crkwebui.server.data.EmailData;
+import ch.systemsx.sybit.crkwebui.server.data.Step;
 import ch.systemsx.sybit.crkwebui.server.db.model.JobDAO;
 import ch.systemsx.sybit.crkwebui.server.db.model.JobDAOImpl;
 import ch.systemsx.sybit.crkwebui.server.util.IPVerifier;
@@ -77,6 +78,8 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 	private int defaultNrOfAllowedSubmissionsForIP;
 	
 	private String[] downloadFileZipExcludeSufixes;
+	
+	private HashMap<Integer, Step> steps;
 	
 	public void init(ServletConfig config) throws ServletException 
 	{
@@ -140,20 +143,38 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 			downloadFileZipExcludeSufixes = downloadFileZipExcludeSufixesList.split(",");
 		}
 		
+		propertiesStream = getServletContext()
+		.getResourceAsStream(
+				"/WEB-INF/classes/META-INF/steps.properties");
+
+		steps = new HashMap<Integer, Step>();
+		Properties stepProperties = new Properties();
+		
+		try 
+		{
+			stepProperties.load(propertiesStream);
+			prepareSteps(stepProperties);
+		} 
+		catch (IOException e) 
+		{
+			e.printStackTrace();
+			throw new ServletException("Steps properties file can not be read");
+		}
+		
 //		dataSource = properties.getProperty("data_source");
 //		DBUtils.setDataSource(dataSource);
 //		
-		sgeFactory = SessionFactory.getFactory();
-		sgeSession = sgeFactory.getSession();
-		try 
-		{
-			sgeSession.init("");
-		} 
-		catch (DrmaaException e) 
-		{
-			e.printStackTrace();
-			throw new ServletException("Can not initialize sge session");
-		}
+//		sgeFactory = SessionFactory.getFactory();
+//		sgeSession = sgeFactory.getSession();
+//		try 
+//		{
+//			sgeSession.init("");
+//		} 
+//		catch (DrmaaException e) 
+//		{
+//			e.printStackTrace();
+//			throw new ServletException("Can not initialize sge session");
+//		}
 		
 //		**********************
 //		* Hibernate pure
@@ -186,6 +207,48 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 //		* Hibernate JPA
 //		***********************
 		
+	}
+
+	private void prepareSteps(Properties stepProperties) 
+	{
+		int nrOfSteps=1;
+		boolean nextStepFound = true;
+		
+		while((nrOfSteps < stepProperties.size() + 1) && (nextStepFound))
+		{
+			if(!stepProperties.containsKey("step" + nrOfSteps))
+			{
+				nextStepFound = false;
+			}
+			else
+			{
+				nrOfSteps++;
+			}
+		}
+		
+		for(int i=1; i<nrOfSteps; i++)
+		{
+			Step step = new Step();
+			
+			if(stepProperties.containsKey("step" + i + "_filename_suffix"))
+			{
+				step.setSuffix(stepProperties.getProperty("step" + i + "_filename_suffix"));
+			}
+			
+			if(stepProperties.containsKey("step" + i + "_filename_prefix"))
+			{
+				step.setPrefix(stepProperties.getProperty("step" + i + "_filename_prefix"));
+			}
+			
+			if(stepProperties.containsKey("step" + i + "_filename"))
+			{
+				step.setFileName(stepProperties.getProperty("step" + i + "_filename"));
+			}
+			
+			step.setDescription(stepProperties.getProperty("step" + i));
+			
+			steps.put(i, step);
+		}
 	}
 
 //	public String greetServer(String input) throws IllegalArgumentException {
@@ -493,7 +556,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 		return null;
 	}
 
-	public ProcessingData getResultsOfProcessing(String jobId) throws CrkWebException 
+	public ProcessingData getResultsOfProcessing(String jobId, boolean debug) throws CrkWebException 
 	{
 		JobDAO jobDAO = new JobDAOImpl();
 		
@@ -514,7 +577,10 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 		}
 		else
 		{
-			jobDAO.updateSessionIdForSelectedJob(getThreadLocalRequest().getSession().getId(), jobId);
+			if(!debug)
+			{
+				jobDAO.updateSessionIdForSelectedJob(getThreadLocalRequest().getSession().getId(), jobId);
+			}
 		}
 		
 //		String status = DBUtils.getStatusForJob(jobId, getThreadLocalRequest().getSession().getId());
@@ -527,7 +593,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 			}
 			else 
 			{
-				return getStatusData(jobId, status);
+				return getStatusData(jobId, status, debug);
 			}
 		}
 		else
@@ -536,7 +602,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 		}
 	}
 
-	private ProcessingInProgressData getStatusData(String jobId, String status) throws CrkWebException 
+	private ProcessingInProgressData getStatusData(final String jobId, String status, boolean debug) throws CrkWebException 
 	{
 		JobDAO jobDAO = new JobDAOImpl();
 			
@@ -551,19 +617,55 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 				statusData = new ProcessingInProgressData();
 	
 				statusData.setJobId(jobId);
-	
 				statusData.setStatus(status);
-				
 				statusData.setInput(jobDAO.getInputForJob(jobId));
+				statusData.setStep("");
 	
-				if (checkIfFileExist(dataDirectory + "/crklog")) 
+				try 
 				{
-					try 
+					List<File> filesToRead = new ArrayList<File>();
+					
+					if (checkIfFileExist(dataDirectory + "/crklog")) 
 					{
-						File logFile = new File(dataDirectory + "/crklog");
-	
-						StringBuffer log = new StringBuffer();
+						filesToRead.add(new File(dataDirectory + "/crklog"));
+					}
+					
+					if(debug)
+					{
+						File directory = new File(dataDirectory);
 						
+						File[] directoryContent = null;
+						
+						directoryContent = directory.listFiles(new FilenameFilter() {
+							
+							@Override
+							public boolean accept(File dir, String name) 
+							{
+								if(name.toLowerCase().startsWith(jobId + ".e"))
+								{
+									return true;
+								}
+								else
+								{
+									return false;
+								}
+							}
+						});
+						
+						if(directoryContent != null)
+						{
+							for(File fileToInclude : directoryContent)
+							{
+								filesToRead.add(fileToInclude);
+							}
+						}
+					}
+					
+
+					StringBuffer log = new StringBuffer();
+					
+					for(File logFile : filesToRead)
+					{
 						FileReader inputStream = new FileReader(logFile);
 				        BufferedReader bufferedInputStream = new BufferedReader(inputStream);
 				        
@@ -576,19 +678,107 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 
 				        bufferedInputStream.close();
 				        inputStream.close();
-				        
-						statusData.setLog(log.toString());
-					} 
-					catch (Exception e) 
-					{
-						e.printStackTrace();
-						throw new CrkWebException(e);
 					}
+			        
+					statusData.setLog(log.toString());
+					
+					if(status.equals(StatusOfJob.RUNNING))
+					{
+						statusData.setStep(retrieveCurrentStep(jobId));
+					}
+				} 
+				catch (Throwable e) 
+				{
+					e.printStackTrace();
+					throw new CrkWebException(e);
 				}
 			}
 		}
 
 		return statusData;
+	}
+	
+	private String retrieveCurrentStep(final String jobId)
+	{
+		String currentStep = "0/" + steps.size() +" Waiting";
+		
+		boolean stepFound = false;
+		int i = steps.size();
+		
+		String dataDirectory = generalDestinationDirectoryName + "/" + jobId;
+		
+		if (checkIfDirectoryExist(dataDirectory)) 
+		{
+			while((!stepFound) && (i > 0))
+			{
+				File directory = new File(dataDirectory);
+				
+				File[] directoryContent = null;
+				
+				final int stepNumber = i;
+				
+				directoryContent = directory.listFiles(new FilenameFilter() {
+					
+					@Override
+					public boolean accept(File dir, String name) 
+					{
+						if((steps.get(stepNumber).getFileName() != null) &&
+						   (!steps.get(stepNumber).getFileName().equals("")) &&
+						   (name.toLowerCase().equals(steps.get(stepNumber).getFileName())))
+					    {
+							return true;
+					    }
+						else if((steps.get(stepNumber).getPrefix() != null) &&
+						   (!steps.get(stepNumber).getPrefix().equals("")) &&
+						   (steps.get(stepNumber).getSuffix() != null) &&
+						   (!steps.get(stepNumber).getSuffix().equals("")) &&
+						   (name.toLowerCase().startsWith(steps.get(stepNumber).getPrefix())) &&
+						   (name.toLowerCase().endsWith(steps.get(stepNumber).getSuffix())))
+						{
+							return true;
+						}
+						else if((steps.get(stepNumber).getPrefix() != null) &&
+							    (!steps.get(stepNumber).getPrefix().equals("")) &&
+							    (name.toLowerCase().startsWith(steps.get(stepNumber).getPrefix())))
+						{
+							return true;
+						}
+						else if((steps.get(stepNumber).getSuffix() != null) &&
+							    (!steps.get(stepNumber).getSuffix().equals("")) &&
+							    (name.toLowerCase().endsWith(steps.get(stepNumber).getSuffix())))
+						{
+							return true;
+						}
+						else
+						{
+							return false;
+						}
+					}
+				});
+				
+				if((directoryContent != null) && (directoryContent.length > 0))
+				{
+					stepFound = true;
+					
+					if(i < steps.size())
+					{
+						i++;
+					}
+					
+					currentStep = i +
+								  "/" +
+								  steps.size() +
+								  " " +
+								  steps.get(i).getDescription();
+				}
+				else
+				{
+					i--;
+				}
+			}
+		}
+		
+		return currentStep;
 	}
 	
 	private PDBScoreItem getResultData(String jobId) throws CrkWebException 

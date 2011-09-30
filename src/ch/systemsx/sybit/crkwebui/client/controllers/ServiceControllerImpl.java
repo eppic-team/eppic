@@ -49,8 +49,8 @@ public class ServiceControllerImpl implements ServiceController
 		crkWebService.loadSettings(new GetSettingsCallback(mainController));
 	}
 
-	public void getResultsOfProcessing(String jobId) {
-		crkWebService.getResultsOfProcessing(jobId,
+	public void getResultsOfProcessing(String jobId, boolean debug) {
+		crkWebService.getResultsOfProcessing(jobId, debug,
 				new GetResultsOfProcessingCallback(mainController, jobId));
 	}
 	
@@ -69,8 +69,8 @@ public class ServiceControllerImpl implements ServiceController
 		crkWebService.runJob(runJobData, new RunJobCallback(mainController));
 	}
 
-	public void stopJob(String jobToStop) {
-		crkWebService.stopJob(jobToStop, new StopJobsCallback(mainController, jobToStop));
+	public void stopJob(String jobToStop, boolean debug) {
+		crkWebService.stopJob(jobToStop, new StopJobsCallback(mainController, jobToStop, debug));
 	}
 	
 	public void deleteJob(String jobToDelete) {
@@ -82,9 +82,9 @@ public class ServiceControllerImpl implements ServiceController
 				mainController));
 	}
 	
-	public void getCurrentStatusData(String jobId) 
+	public void getCurrentStatusData(String jobId, boolean debug) 
 	{
-		crkWebService.getResultsOfProcessing(jobId,
+		crkWebService.getResultsOfProcessing(jobId, debug,
 				new GetCurrentStatusDataCallback(mainController, jobId));
 	}
 

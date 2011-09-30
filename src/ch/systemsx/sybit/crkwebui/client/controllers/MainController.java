@@ -44,6 +44,7 @@ public class MainController
 	private InterfaceResiduesItemsList residuesForInterface;
 
 	private String selectedJobId;
+	private boolean debug;
 
 	private Timer autoRefreshMyJobs;
 	
@@ -73,7 +74,15 @@ public class MainController
 		{
 			Window.setTitle(CONSTANTS.window_title_loading());
 			selectedJobId = token.substring(3);
-			displayResults();
+			debug = false;
+			displayResults(false);
+		}
+		else if ((token != null) && (token.length() > 4) && (token.startsWith("deb"))) 
+		{
+			Window.setTitle(CONSTANTS.window_title_loading());
+			selectedJobId = token.substring(4);
+			debug = true;
+			displayResults(true);
 		}
 		else
 		{
@@ -91,9 +100,9 @@ public class MainController
 		mainViewPort.getCenterPanel().setDisplayPanel(inputDataPanel);
 	}
 
-	public void displayResults()
+	public void displayResults(boolean debug)
 	{
-		serviceController.getResultsOfProcessing(selectedJobId);
+		serviceController.getResultsOfProcessing(selectedJobId, debug);
 	}
 
 	public void displayResultView(PDBScoreItem resultData) 
@@ -153,9 +162,9 @@ public class MainController
 		Window.setTitle(CONSTANTS.window_title_processing() + " - " + statusData.getInput());
 	}
 	
-	public void getCurrentStatusData()
+	public void getCurrentStatusData(boolean debug)
 	{
-		serviceController.getCurrentStatusData(selectedJobId);
+		serviceController.getCurrentStatusData(selectedJobId, debug);
 	}
 
 	public void getJobsForCurrentSession() {
@@ -216,7 +225,7 @@ public class MainController
 	
 	public void stopJob(String jobToStop) 
 	{
-		serviceController.stopJob(jobToStop);
+		serviceController.stopJob(jobToStop, debug);
 	}
 	
 	public void deleteJob(String jobToStop) 
@@ -238,7 +247,7 @@ public class MainController
 					(selectedJobId != null) && 
 					(!selectedJobId.equals("")))
 				{
-					getCurrentStatusData();
+					getCurrentStatusData(debug);
 				}
 			}
 		};

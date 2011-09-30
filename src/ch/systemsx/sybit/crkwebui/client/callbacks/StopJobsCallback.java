@@ -13,11 +13,15 @@ public class StopJobsCallback implements AsyncCallback<String>
 {
 	private MainController mainController;
 	private String jobToStop;
+	private boolean debug;
 
 	public StopJobsCallback(MainController mainController,
-							String jobToStop) {
+							String jobToStop,
+							boolean debug) 
+	{
 		this.mainController = mainController;
 		this.jobToStop = jobToStop;
+		this.debug = debug;
 	}
 
 	@Override
@@ -36,7 +40,7 @@ public class StopJobsCallback implements AsyncCallback<String>
 			
 			if(jobToStop.equals(mainController.getSelectedJobId()))
 			{
-				mainController.getCurrentStatusData();
+				mainController.getCurrentStatusData(debug);
 			}
 		} 
 		else 

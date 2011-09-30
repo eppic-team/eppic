@@ -27,6 +27,8 @@ public class ProcessingInProgressData implements Serializable, ProcessingData
 	
 	// pdb code or name of the file submitted
 	private String input;
+	
+	private String step;
 
 	public String getJobId() {
 		return jobId;
@@ -58,6 +60,14 @@ public class ProcessingInProgressData implements Serializable, ProcessingData
 
 	public String getInput() {
 		return input;
+	}
+
+	public void setStep(String step) {
+		this.step = step;
+	}
+
+	public String getStep() {
+		return step;
 	}
 
 }

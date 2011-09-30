@@ -13,4 +13,5 @@ public class StatusOfJob implements Serializable
 	public static String FINISHED = "Finished";
 	public static String ERROR = "Error";
 	public static String NONEXISTING = "nonexisting";
+	public static String QUEUING = "queuing";
 }
