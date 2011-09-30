@@ -20,6 +20,7 @@ import crk.ScoringType;
 public class EvolInterfZMemberPredictor implements InterfaceTypePredictor {
 	
 	private static final double  MIN_INTERF_FOR_RES_NOT_IN_INTERFACES = 500;
+	private static final double  NUM_RESIDUES_NOT_IN_INTERFACES_TOLERANCE = 1.20; // we require 20% more residues in surface than required sample size
 	private static final int     NUM_SAMPLES_SCORE_DIST = 100;
 	
 	private static final Log LOGGER = LogFactory.getLog(EvolInterfZMemberPredictor.class);
@@ -64,7 +65,11 @@ public class EvolInterfZMemberPredictor implements InterfaceTypePredictor {
 		}
 		else if (iec.getRimCore(molecId).getCoreSize()<CRKParams.MIN_NUMBER_CORE_RESIDUES_EVOL_SCORE) {
 			call = CallType.NO_PREDICTION;
-			callReason = "Not enough core residues to calculate evolutionary score (at least "+CRKParams.MIN_NUMBER_CORE_RESIDUES_EVOL_SCORE+" needed)";
+			callReason = memberSerial+": not enough core residues to calculate evolutionary score (at least "+CRKParams.MIN_NUMBER_CORE_RESIDUES_EVOL_SCORE+" needed)";
+		} 
+		else if (iec.getNumResiduesNotInInterfaces(molecId, MIN_INTERF_FOR_RES_NOT_IN_INTERFACES)<rimCore.getCoreSize()*NUM_RESIDUES_NOT_IN_INTERFACES_TOLERANCE) {
+			call = CallType.NO_PREDICTION;
+			callReason = memberSerial+": not enough residues in protein surface belonging to no interface, can't calculate the surface score distribution";
 		}
 		else if (((double)countsUnrelCoreRes/(double)rimCore.getCoreSize())>CRKParams.MAX_ALLOWED_UNREL_RES) {
 			call = CallType.NO_PREDICTION;
@@ -151,7 +156,15 @@ public class EvolInterfZMemberPredictor implements InterfaceTypePredictor {
 	
 	private double scoreInterfaceMember(ScoringType scoType) {
 		InterfaceRimCore rimCore = iec.getRimCore(molecId);
+
 		coreScore = iec.calcScore(rimCore.getCoreResidues(),molecId, scoType, false);
+		// we need to check, before trying to sample residues in surface for getting 
+		// the background distribution, whether there are enough residues at all for sampling
+		// it can happen for small proteins that the number of residues in surface is really small (e.g. 3jsd with only 1)
+		if (iec.getNumResiduesNotInInterfaces(molecId, MIN_INTERF_FOR_RES_NOT_IN_INTERFACES)<rimCore.getCoreSize()*NUM_RESIDUES_NOT_IN_INTERFACES_TOLERANCE) {
+			zScore = Double.NaN;
+			return Double.NaN;
+		}
 		double[] surfScoreDist = iec.getSurfaceScoreDist(molecId, MIN_INTERF_FOR_RES_NOT_IN_INTERFACES, NUM_SAMPLES_SCORE_DIST, rimCore.getCoreSize(), scoType);
 		
 		UnivariateStatistic stat = new Mean();		

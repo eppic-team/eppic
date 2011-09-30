@@ -190,6 +190,17 @@ public class InterfaceEvolContext implements Serializable {
 	}
 	
 	/**
+	 * Returns the number of residues that belong to the surface of the protein but 
+	 * are not member of any interface above minInterfArea 
+	 * @param molecId the molecule id: either {@link #FIRST} or {@link #SECOND}
+	 * @param minInterfArea the residues considered will be those that are not in interfaces above this area value
+	 * @return
+	 */
+	public int getNumResiduesNotInInterfaces(int molecId, double minInterfArea) {
+		return parent.getResiduesNotInInterfaces(getMolecule(molecId).getPdbChainCode(), minInterfArea).size();
+	}
+	
+	/**
 	 * Writes out a PDB file with the 2 chains of this interface with evolutionary scores 
 	 * as b-factors. 
 	 * In order for the file to be handled properly by molecular viewers whenever the two
