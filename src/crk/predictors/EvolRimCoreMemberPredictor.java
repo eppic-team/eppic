@@ -63,10 +63,16 @@ public class EvolRimCoreMemberPredictor implements InterfaceTypePredictor {
 			LOGGER.info("Interface "+iec.getInterface().getId()+", member "+memberSerial+" calls NOPRED because there are not enough homologs to calculate evolutionary scores");
 			callReason = memberSerial+": there are only "+iec.getChainEvolContext(molecId).getNumHomologs()+
 					" homologs to calculate evolutionary scores (at least "+iec.getHomologsCutoff()+" required)";
+		} 
+		else if (scoreRatio==-1) {
+			// this happens whenever the value wasn't initialized, in practice it will 
+			// happen when doing Ka/Ks scoring and for some reason (e.g. no CDS match for query) it can't be done 
+			call = CallType.NO_PREDICTION;
+			callReason = memberSerial+": no evol scores calculation could be performed";
 		}
 		else if (iec.getRimCore(molecId).getCoreSize()<CRKParams.MIN_NUMBER_CORE_RESIDUES_EVOL_SCORE) {
 			call = CallType.NO_PREDICTION;
-			callReason = "Not enough core residues to calculate evolutionary score (at least "+CRKParams.MIN_NUMBER_CORE_RESIDUES_EVOL_SCORE+" needed)";
+			callReason = memberSerial+": not enough core residues to calculate evolutionary score (at least "+CRKParams.MIN_NUMBER_CORE_RESIDUES_EVOL_SCORE+" needed)";
 		}
 		else if (((double)countsUnrelCoreRes/(double)rimCore.getCoreSize())>CRKParams.MAX_ALLOWED_UNREL_RES) {
 			call = CallType.NO_PREDICTION;

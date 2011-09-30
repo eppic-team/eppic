@@ -164,7 +164,9 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 	
 	public void writeScoresPDBFiles(CRKParams params, String suffix) throws IOException {
 		for (InterfaceEvolContext iec:this) {
-			iec.writePdbFile(params.getOutputFile("."+iec.getInterface().getId()+suffix),scoType);
+			if (scoType==ScoringType.ENTROPY || (scoType==ScoringType.KAKS && iec.canDoKaks())) {
+				iec.writePdbFile(params.getOutputFile("."+iec.getInterface().getId()+suffix),scoType);
+			}
 		}
 	}
 	

@@ -340,7 +340,7 @@ public class CRKMain {
 			}
 			if (params.isDoScoreKaks() && chainEvCont.getQueryRepCDS()==null) {
 				// note calling chainEvCont.canDoCRK() will also check for this condition (here we only want to log it once)
-				LOGGER.error("No CDS good match for query sequence! can't do CRK analysis on it.");
+				LOGGER.error("No CDS good match for query sequence! can't do Ka/Ks analysis on it.");
 			}
 
 			// b) getting the homologs and sequence data 
