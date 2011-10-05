@@ -130,8 +130,6 @@ public class CrkRunner implements Runnable
 			command.add(destinationDirectoryName);
 			command.add("-q");
 			command.add(String.valueOf(inputParameters.getMaxNrOfSequences()));
-			command.add("-e");
-			command.add(String.valueOf(inputParameters.getSelecton()));
 			
 			if(inputParameters.isUsePISA())
 			{
@@ -142,12 +140,7 @@ public class CrkRunner implements Runnable
 			{
 				command.add("-n");
 			}
-			
-			if(!inputParameters.isUseTCoffee())
-			{
-				command.add("-t");
-			}
-			
+						
 			command.add("-d");
 			command.add(String.valueOf(inputParameters.getIdentityCutoff()));
 			command.add("-r");
