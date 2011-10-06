@@ -122,7 +122,8 @@ public class CRKMain {
 			} else {
 				cifFile = params.getInFile();
 			}
-			pdb = new PdbAsymUnit(cifFile);
+			// we parse PDB files with no X padding if no SEQRES is found. Otherwise matching to uniprot doesn't work in many cases
+			pdb = new PdbAsymUnit(cifFile, PdbAsymUnit.DEFAULT_MODEL, false);
 		} catch (FileFormatException e) {
 			throw new CRKException(e,"File format error: "+e.getMessage(),true);
 		} catch (PdbLoadException e) {
