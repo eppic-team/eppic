@@ -14,6 +14,7 @@ public class RunParametersItem implements Serializable, ProcessingData
 	private double idCutoff;
 	private double queryCovCutoff;
 	private int maxNumSeqsCutoff;
+	private int reducedAlphabet;
 	private int minCoreSizeForBio;
 	private double caCutoffForGeom;
 	private double caCutoffForRimCore;
@@ -28,6 +29,14 @@ public class RunParametersItem implements Serializable, ProcessingData
 	public RunParametersItem() 
 	{
 		
+	}
+	
+	public int getReducedAlphabet() {
+		return reducedAlphabet;
+	}
+	
+	public void setReducedAlphabet(int reducedAlphabet) {
+		this.reducedAlphabet = reducedAlphabet;
 	}
 	
 	public int getHomologsCutoff() {

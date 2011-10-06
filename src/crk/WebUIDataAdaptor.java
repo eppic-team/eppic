@@ -49,6 +49,7 @@ public class WebUIDataAdaptor {
 		runParametersItem.setIdCutoff(params.getIdCutoff());
 		runParametersItem.setQueryCovCutoff(params.getQueryCoverageCutoff());
 		runParametersItem.setMaxNumSeqsCutoff(params.getMaxNumSeqs());
+		runParametersItem.setReducedAlphabet(params.getReducedAlphabet());
 		runParametersItem.setCaCutoffForGeom(params.getCAcutoffForGeom());
 		runParametersItem.setCaCutoffForRimCore(params.getCAcutoffForRimCore());
 		runParametersItem.setCaCutoffForZscore(params.getCAcutoffForZscore());
