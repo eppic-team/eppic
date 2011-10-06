@@ -485,8 +485,7 @@ public class CRKMain {
 		if (params.isDoScoreEntropies()) {
 			try {
 				interfaces.calcRimAndCores(params.getCAcutoffForRimCore());
-				iecList.setBioCutoff(params.getEntrCallCutoff()-params.getGrayZoneWidth());
-				iecList.setXtalCutoff(params.getEntrCallCutoff()+params.getGrayZoneWidth());
+				iecList.setCallCutoff(params.getEntrCallCutoff());
 				iecList.setZscoreCutoff(params.getZscoreCutoff());
 				PrintStream scoreEntrPS = new PrintStream(params.getOutputFile(CRKParams.ENTROPIES_FILE_SUFFIX+".scores"));
 				// entropy nw
@@ -516,8 +515,7 @@ public class CRKMain {
 		if (params.isDoScoreKaks()) {
 			try {
 				interfaces.calcRimAndCores(params.getCAcutoffForRimCore());
-				iecList.setBioCutoff(params.getKaksCallCutoff()-params.getGrayZoneWidth());
-				iecList.setXtalCutoff(params.getKaksCallCutoff()+params.getGrayZoneWidth());
+				iecList.setCallCutoff(params.getKaksCallCutoff());
 				// ka/ks scoring			
 				PrintStream scoreKaksPS = new PrintStream(params.getOutputFile(CRKParams.KAKS_FILE_SUFFIX+".scores"));
 				// kaks nw

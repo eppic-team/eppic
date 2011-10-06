@@ -10,18 +10,18 @@ public class RunParametersItem implements Serializable, ProcessingData
 	 */
 	private static final long serialVersionUID = 1L;
 	
-	private double bioCutoff;
-	private double xtalCutoff;
 	private int homologsCutoff;
-	private int minCoreSize;
-	private int minMemberCoreSize;
 	private double idCutoff;
 	private double queryCovCutoff;
 	private int maxNumSeqsCutoff;
-	private double bsaToAsaCutoff;
-	private double bsaToAsaSoftCutoff;
-	private double bsaToAsaRelaxStep;
-	private boolean zoomUsed;
+	private int minCoreSizeForBio;
+	private double caCutoffForGeom;
+	private double caCutoffForRimCore;
+	private double caCutoffForZscore;
+	private double entrCallCutoff;
+	private double kaksCallCutoff;
+	private double zScoreCutoff; 
+
 	
 	private PDBScoreItem pdbScoreItem;
 	
@@ -30,22 +30,6 @@ public class RunParametersItem implements Serializable, ProcessingData
 		
 	}
 	
-	public double getBioCutoff() {
-		return bioCutoff;
-	}
-
-	public void setBioCutoff(double bioCutoff) {
-		this.bioCutoff = bioCutoff;
-	}
-
-	public double getXtalCutoff() {
-		return xtalCutoff;
-	}
-
-	public void setXtalCutoff(double xtalCutoff) {
-		this.xtalCutoff = xtalCutoff;
-	}
-
 	public int getHomologsCutoff() {
 		return homologsCutoff;
 	}
@@ -54,20 +38,60 @@ public class RunParametersItem implements Serializable, ProcessingData
 		this.homologsCutoff = homologsCutoff;
 	}
 
-	public int getMinCoreSize() {
-		return minCoreSize;
+	public int getMinCoreSizeForBio() {
+		return minCoreSizeForBio;
 	}
 
-	public void setMinCoreSize(int minCoreSize) {
-		this.minCoreSize = minCoreSize;
+	public void setMinCoreSizeForBio(int minCoreSizeForBio) {
+		this.minCoreSizeForBio = minCoreSizeForBio;
 	}
 
-	public int getMinMemberCoreSize() {
-		return minMemberCoreSize;
+	public double getCaCutoffForGeom() {
+		return caCutoffForGeom;
 	}
 
-	public void setMinMemberCoreSize(int minMemberCoreSize) {
-		this.minMemberCoreSize = minMemberCoreSize;
+	public void setCaCutoffForGeom(double caCutoffForGeom) {
+		this.caCutoffForGeom = caCutoffForGeom;
+	}
+
+	public double getCaCutoffForRimCore() {
+		return caCutoffForRimCore;
+	}
+
+	public void setCaCutoffForRimCore(double caCutoffForRimCore) {
+		this.caCutoffForRimCore = caCutoffForRimCore;
+	}
+
+	public double getCaCutoffForZscore() {
+		return caCutoffForZscore;
+	}
+
+	public void setCaCutoffForZscore(double caCutoffForZscore) {
+		this.caCutoffForZscore = caCutoffForZscore;
+	}
+
+	public double getEntrCallCutoff() {
+		return entrCallCutoff;
+	}
+
+	public void setEntrCallCutoff(double entrCallCutoff) {
+		this.entrCallCutoff = entrCallCutoff;
+	}
+
+	public double getKaksCallCutoff() {
+		return kaksCallCutoff;
+	}
+
+	public void setKaksCallCutoff(double kaksCallCutoff) {
+		this.kaksCallCutoff = kaksCallCutoff;
+	}
+
+	public double getzScoreCutoff() {
+		return zScoreCutoff;
+	}
+
+	public void setzScoreCutoff(double zScoreCutoff) {
+		this.zScoreCutoff = zScoreCutoff;
 	}
 
 	public double getIdCutoff() {
@@ -92,38 +116,6 @@ public class RunParametersItem implements Serializable, ProcessingData
 
 	public void setMaxNumSeqsCutoff(int maxNumSeqsCutoff) {
 		this.maxNumSeqsCutoff = maxNumSeqsCutoff;
-	}
-
-	public double getBsaToAsaCutoff() {
-		return bsaToAsaCutoff;
-	}
-	
-	public void setBsaToAsaCutoff(double bsaToAsaCutoff) {
-		this.bsaToAsaCutoff = bsaToAsaCutoff;
-	}
-
-	public double getBsaToAsaSoftCutoff() {
-		return bsaToAsaSoftCutoff;
-	}
-
-	public void setBsaToAsaSoftCutoff(double bsaToAsaSoftCutoff) {
-		this.bsaToAsaSoftCutoff = bsaToAsaSoftCutoff;
-	}
-
-	public double getBsaToAsaRelaxStep() {
-		return bsaToAsaRelaxStep;
-	}
-
-	public void setBsaToAsaRelaxStep(double bsaToAsaRelaxStep) {
-		this.bsaToAsaRelaxStep = bsaToAsaRelaxStep;
-	}
-
-	public boolean isZoomUsed() {
-		return zoomUsed;
-	}
-
-	public void setZoomUsed(boolean zoomUsed) {
-		this.zoomUsed = zoomUsed;
 	}
 
 	public void setPdbScoreItem(PDBScoreItem pdbScoreItem) {

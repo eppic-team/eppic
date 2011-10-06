@@ -27,8 +27,7 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 	private static final String SEQUENCE_ID_HEADER  	= "# Sequence identity cutoff:";
 	private static final String QUERY_COV_HEADER    	= "# Query coverage cutoff:";
 	private static final String MAX_NUM_SEQS_HEADER     = "# Max num sequences used:";
-	private static final String BIO_CALL_HEADER         = "# Bio-call cutoff:";
-	private static final String XTAL_CALL_HEADER        = "# Xtal-call cutoff:";
+	private static final String BIO_XTAL_CALL_HEADER         = "# Bio-xtal rim/core call cutoff:";
 	private static final String ZSCORE_CUTOFF_HEADER    = "# Z-score cutoff:";
 	private static final String BSA_TO_ASA_CUTOFF_HEADER = "# Core assignment cutoff:";
 	
@@ -42,8 +41,7 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 	private String pdbName;
 	private ScoringType scoType;
 	private boolean isScoreWeighted;
-	private double bioCutoff;
-	private double xtalCutoff;
+	private double callCutoff;
 	private int homologsCutoff;
 	private double idCutoff;
 	private double queryCovCutoff;
@@ -170,25 +168,14 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 		}
 	}
 	
-	public double getBioCutoff() {
-		return bioCutoff;
+	public double getCallCutoff() {
+		return callCutoff;
 	}
 	
-	public void setBioCutoff(double bioCutoff) {
-		this.bioCutoff = bioCutoff;
+	public void setCallCutoff(double callCutoff) {
+		this.callCutoff = callCutoff;
 		for (int i=0;i<list.size();i++) {
-			evolRimCorePredictors.get(i).setBioCutoff(bioCutoff);	
-		}
-	}
-
-	public double getXtalCutoff() {
-		return xtalCutoff;
-	}
-	
-	public void setXtalCutoff(double xtalCutoff) {
-		this.xtalCutoff = xtalCutoff;
-		for (int i=0;i<list.size();i++) {
-			evolRimCorePredictors.get(i).setXtalCutoff(xtalCutoff);
+			evolRimCorePredictors.get(i).setCallCutoff(callCutoff);	
 		}
 	}
 
@@ -229,8 +216,7 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 		ps.printf (SEQUENCE_ID_HEADER+" %4.2f\n",idCutoff);
 		ps.printf (QUERY_COV_HEADER+" %4.2f\n",queryCovCutoff);
 		ps.println(MAX_NUM_SEQS_HEADER+" "+maxNumSeqsCutoff);
-		if (!zscore) ps.printf (BIO_CALL_HEADER+"  %4.2f\n",bioCutoff);
-		if (!zscore) ps.printf (XTAL_CALL_HEADER+" %4.2f\n",xtalCutoff);
+		if (!zscore) ps.printf (BIO_XTAL_CALL_HEADER+"  %4.2f\n",callCutoff);
 		if (zscore) ps.printf (ZSCORE_CUTOFF_HEADER+" %5.2f\n",zScoreCutoff);
 		ps.printf (BSA_TO_ASA_CUTOFF_HEADER+" %4.2f\n",list.get(0).getInterface().getBsaToAsaCutoff());
 	}

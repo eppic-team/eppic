@@ -364,8 +364,7 @@ public class CalcStats {
 		} else if (scoType==ScoringType.KAKS) {
 			ercp.scoreKaKs(weighted);
 		}
-		ercp.setBioCutoff(bioCallCutoffs[k]);
-		ercp.setXtalCutoff(bioCallCutoffs[k]);
+		ercp.setCallCutoff(bioCallCutoffs[k]);
 		iec.setHomologsCutoff(MIN_NUM_HOMOLOGS);
 
 		CallType call = ercp.getCall();

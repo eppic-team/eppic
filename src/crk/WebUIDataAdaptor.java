@@ -49,9 +49,13 @@ public class WebUIDataAdaptor {
 		runParametersItem.setIdCutoff(params.getIdCutoff());
 		runParametersItem.setQueryCovCutoff(params.getQueryCoverageCutoff());
 		runParametersItem.setMaxNumSeqsCutoff(params.getMaxNumSeqs());
-		runParametersItem.setBioCutoff(params.getEntrCallCutoff()-params.getGrayZoneWidth());
-		runParametersItem.setXtalCutoff(params.getEntrCallCutoff()+params.getGrayZoneWidth());
-		runParametersItem.setBsaToAsaCutoff(params.getCAcutoffForGeom());
+		runParametersItem.setCaCutoffForGeom(params.getCAcutoffForGeom());
+		runParametersItem.setCaCutoffForRimCore(params.getCAcutoffForRimCore());
+		runParametersItem.setCaCutoffForZscore(params.getCAcutoffForZscore());
+		runParametersItem.setEntrCallCutoff(params.getEntrCallCutoff());
+		runParametersItem.setKaksCallCutoff(params.getKaksCallCutoff());
+		runParametersItem.setzScoreCutoff(params.getZscoreCutoff());
+		runParametersItem.setMinCoreSizeForBio(params.getMinCoreSizeForBio());
 		pdbScoreItem.setRunParameters(runParametersItem);
 	}
 

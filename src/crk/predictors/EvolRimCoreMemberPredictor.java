@@ -26,8 +26,7 @@ public class EvolRimCoreMemberPredictor implements InterfaceTypePredictor {
 	
 	private ScoringType scoringType;
 	
-	private double bioCutoff;
-	private double xtalCutoff;
+	private double callCutoff;
 	
 	private double coreScore;
 	private double rimScore;
@@ -89,22 +88,18 @@ public class EvolRimCoreMemberPredictor implements InterfaceTypePredictor {
 					countsUnrelRimRes+" unreliable out of "+rimCore.getRimSize()+" in rim";
 		}
 		else {
-			if (scoreRatio<bioCutoff) {
+			if (scoreRatio<callCutoff) {
 				call = CallType.BIO;
 				callReason = memberSerial+": score "+
-						String.format("%4.2f",scoreRatio)+" is below BIO cutoff ("+String.format("%4.2f", bioCutoff)+")";
-			} else if (scoreRatio>xtalCutoff) {
+						String.format("%4.2f",scoreRatio)+" is below cutoff ("+String.format("%4.2f", callCutoff)+")";
+			} else if (scoreRatio>callCutoff) {
 				call = CallType.CRYSTAL;
 				callReason = memberSerial+": score "+
-						String.format("%4.2f",scoreRatio)+" is above XTAL cutoff ("+String.format("%4.2f", xtalCutoff)+")";
+						String.format("%4.2f",scoreRatio)+" is above cutoff ("+String.format("%4.2f", callCutoff)+")";
 			} else if (Double.isNaN(scoreRatio)) {
 				call = CallType.NO_PREDICTION;
 				callReason = memberSerial+": score is NaN";
-			} else {
-				call = CallType.GRAY;
-				callReason = memberSerial+": score "+String.format("%4.2f",scoreRatio)+" falls in gray area ("+
-				String.format("%4.2f", bioCutoff)+" - "+String.format("%4.2f", xtalCutoff)+")"; 
-			}
+			} 
 		}
 
 		
@@ -164,12 +159,8 @@ public class EvolRimCoreMemberPredictor implements InterfaceTypePredictor {
 		return rimScore;
 	}
 	
-	public void setBioCutoff(double bioCutoff) {
-		this.bioCutoff = bioCutoff;
-	}
-	
-	public void setXtalCutoff(double xtalCutoff) {
-		this.xtalCutoff = xtalCutoff;
+	public void setCallCutoff(double callCutoff) {
+		this.callCutoff = callCutoff;
 	}
 	
 	/**

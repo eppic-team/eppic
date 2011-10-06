@@ -33,8 +33,7 @@ public class EvolRimCorePredictor implements InterfaceTypePredictor {
 
 	private double score; // cache of the last run final score (average of ratios of both sides) (filled by getCall)
 	
-	private double bioCutoff;
-	private double xtalCutoff;
+	private double callCutoff;
 	
 	private ScoringType scoringType; // the type of the last scoring run (either kaks or entropy)
 	private boolean isScoreWeighted; // whether last scoring run was weighted/unweighted
@@ -128,20 +127,16 @@ public class EvolRimCorePredictor implements InterfaceTypePredictor {
 			//TODO we are taking simply the average, is this the best solution?
 			// weighting is not done here, scores are calculated either weighted/non-weighted before
 			callReason = member1Pred.getCallReason()+"\n"+member2Pred.getCallReason();
-			if (score<bioCutoff) {
+			if (score<callCutoff) {
 				call = CallType.BIO;
-				callReason += "\nAverage score "+String.format("%4.2f", score)+" is below BIO cutoff ("+String.format("%4.2f", bioCutoff)+")";
-			} else if (score>xtalCutoff) {
+				callReason += "\nAverage score "+String.format("%4.2f", score)+" is below cutoff ("+String.format("%4.2f", callCutoff)+")";
+			} else if (score>callCutoff) {
 				call = CallType.CRYSTAL;
-				callReason += "\nAverage score "+String.format("%4.2f", score)+" is above XTAL cutoff ("+String.format("%4.2f", xtalCutoff)+")";
+				callReason += "\nAverage score "+String.format("%4.2f", score)+" is above cutoff ("+String.format("%4.2f", callCutoff)+")";
 			} else if (Double.isNaN(score)) {
 				call = CallType.NO_PREDICTION;
 				callReason += "\nAverage score is NaN";
-			} else {
-				call = CallType.GRAY;
-				callReason += "\nAverage score "+String.format("%4.2f", score)+" falls in gray area ("+
-						String.format("%4.2f", bioCutoff)+" - "+String.format("%4.2f", xtalCutoff)+")";
-			}
+			} 
 		}
 		return call;
 	}	
@@ -198,16 +193,10 @@ public class EvolRimCorePredictor implements InterfaceTypePredictor {
 		return this.isScoreWeighted;
 	}
 	
-	public void setBioCutoff(double bioCutoff) {
-		this.bioCutoff = bioCutoff;
-		this.member1Pred.setBioCutoff(bioCutoff);
-		this.member2Pred.setBioCutoff(bioCutoff);
-	}
-	
-	public void setXtalCutoff(double xtalCutoff) {
-		this.xtalCutoff = xtalCutoff;
-		this.member1Pred.setXtalCutoff(xtalCutoff);
-		this.member2Pred.setXtalCutoff(xtalCutoff);
+	public void setCallCutoff(double callCutoff) {
+		this.callCutoff = callCutoff;
+		this.member1Pred.setCallCutoff(callCutoff);
+		this.member2Pred.setCallCutoff(callCutoff);
 	}
 	
 	private String getVotersString() {

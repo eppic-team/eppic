@@ -48,7 +48,6 @@ public class CRKParams {
 	private static final int      DEF_ENTROPY_ALPHABET = 10;
 
 	// default cutoffs for the final bio/xtal call
-	private static final double   DEF_GRAY_ZONE_WIDTH = 0.01;
 	private static final double   DEF_ENTR_CALL_CUTOFF = 0.85;
 	private static final double   DEF_KAKS_CALL_CUTOFF = 0.85;
 	private static final double   DEF_ZSCORE_CUTOFF = -1.0;
@@ -130,7 +129,6 @@ public class CRKParams {
 	
 	private int nSpherePointsASAcalc;
 
-	private double grayZoneWidth;
 	private double entrCallCutoff;
 	private double kaksCallCutoff;
 	
@@ -210,7 +208,6 @@ public class CRKParams {
 		this.usePisa = false;
 		this.useNaccess = false;
 		this.nSpherePointsASAcalc = DEF_NSPHEREPOINTS_ASA_CALC;
-		this.grayZoneWidth = DEF_GRAY_ZONE_WIDTH;
 		this.entrCallCutoff = DEF_ENTR_CALL_CUTOFF;
 		this.kaksCallCutoff = DEF_KAKS_CALL_CUTOFF;
 		this.zScoreCutoff = DEF_ZSCORE_CUTOFF;
@@ -224,7 +221,7 @@ public class CRKParams {
 	public void parseCommandLine(String[] args, String programName, String help) {
 	
 
-		Getopt g = new Getopt(programName, args, "i:skd:a:b:o:r:e:c:z:m:x:X:g:y:q:pnA:I:C:lL:uh?");
+		Getopt g = new Getopt(programName, args, "i:skd:a:b:o:r:e:c:z:m:x:X:y:q:pnA:I:C:lL:uh?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
@@ -269,9 +266,6 @@ public class CRKParams {
 				break;
 			case 'X':
 				kaksCallCutoff = Double.parseDouble(g.getOptarg());
-				break;
-			case 'g':
-				grayZoneWidth = Double.parseDouble(g.getOptarg());
 				break;
 			case 'y':
 				zScoreCutoff = Double.parseDouble(g.getOptarg());
@@ -345,8 +339,6 @@ public class CRKParams {
 		"                  Default: " + String.format("%4.2f",DEF_ENTR_CALL_CUTOFF)+"\n"+
 		"  [-X <float>]:   ka/ks score cutoff for calling BIO/XTAL.\n"+
 		"                  Default: " + String.format("%4.2f",DEF_KAKS_CALL_CUTOFF)+"\n"+
-		"  [-g <float>] :  a margin to be added around the score cutoffs for calling BIO/XTAL\n" +
-		"                  defining an undetermined (gray) prediction zone. Default: "+String.format("%4.2f",DEF_GRAY_ZONE_WIDTH)+"\n"+		
 		"  [-y <float>]:   z-score cutoff to call BIO/XTAL. If below this z-score interface is BIO\n"+
 		"                  Default: " + String.format("%4.2f",DEF_ZSCORE_CUTOFF)+"\n"+
 		"  [-q <int>]   :  maximum number of sequences to keep for calculation of conservation \n" +
@@ -538,23 +530,21 @@ public class CRKParams {
 	public void setUsePisa(boolean usePisa) {
 		this.usePisa = usePisa;
 	}
+
 	public boolean isUseNaccess() {
 		return useNaccess;
 	}
+
 	public void setUseNaccess(boolean useNaccess) {
 		this.useNaccess = useNaccess;
 	}
+
 	public int getnSpherePointsASAcalc() {
 		return nSpherePointsASAcalc;
 	}
+
 	public void setnSpherePointsASAcalc(int nSpherePointsASAcalc) {
 		this.nSpherePointsASAcalc = nSpherePointsASAcalc;
-	}
-	public double getGrayZoneWidth() {
-		return grayZoneWidth;
-	}
-	public void setGrayZoneWidth(double grayZoneWidth) {
-		this.grayZoneWidth = grayZoneWidth;
 	}
 	
 	public double getEntrCallCutoff() {
