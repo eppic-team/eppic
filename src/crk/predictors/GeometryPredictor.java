@@ -26,8 +26,8 @@ import owl.core.structure.graphs.AICGraph;
 
 public class GeometryPredictor implements InterfaceTypePredictor {
 
-	private static final double MAX_AREA_XTALCALL = 2000; // aka "duarte" limit
-	private static final double MIN_ARE_BIOCALL = 500;    // we are introducing a lower limit 
+	public static final double MAX_AREA_XTALCALL = 2000; // aka "duarte" limit
+	public static final double MIN_AREA_BIOCALL  = 500;  // we are introducing a lower limit 
 	private static final double INTERF_DIST_CUTOFF = 5.9;
 	
 	private static final int FIRST = 0;
@@ -77,8 +77,8 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 			callReason = "Area above hard limit "+String.format("%4.0f", MAX_AREA_XTALCALL);
 			call = CallType.BIO;
 		}
-		else if (area<MIN_ARE_BIOCALL) {
-			callReason = "Area below hard limit "+String.format("%4.0f", MIN_ARE_BIOCALL);
+		else if (area<MIN_AREA_BIOCALL) {
+			callReason = "Area below hard limit "+String.format("%4.0f", MIN_AREA_BIOCALL);
 			call = CallType.CRYSTAL;
 		}
 		// check for electrostatic interactions with metal ions in interfaces, e.g. 2o3b (interface is small but strong because of the Mg2+)

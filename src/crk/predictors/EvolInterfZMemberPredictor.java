@@ -167,10 +167,19 @@ public class EvolInterfZMemberPredictor implements InterfaceTypePredictor {
 		}
 		double[] surfScoreDist = iec.getSurfaceScoreDist(molecId, MIN_INTERF_FOR_RES_NOT_IN_INTERFACES, NUM_SAMPLES_SCORE_DIST, rimCore.getCoreSize(), scoType);
 		
+		
+		LOGGER.info("Sampled "+NUM_SAMPLES_SCORE_DIST+" surface evolutionary scores of size "+rimCore.getCoreSize()+": ");
+		StringBuffer sb = new StringBuffer();
+		for (double sample:surfScoreDist) {
+			sb.append(String.format("%4.2f",sample)+" ");
+		}
+		LOGGER.info(sb.toString());
+		
 		UnivariateStatistic stat = new Mean();		
 		mean = stat.evaluate(surfScoreDist);
 		stat = new StandardDeviation();
 		sd = stat.evaluate(surfScoreDist);
+		LOGGER.info("Mean= "+String.format("%5.2f",mean)+", sd= "+String.format("%5.2f",sd));
 		zScore = (coreScore-mean)/sd;
 		return zScore;
 	}
