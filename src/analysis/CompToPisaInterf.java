@@ -35,8 +35,6 @@ public class CompToPisaInterf {
 	
 	private static final String   LOCAL_CIF_DIR = "/nfs/data/dbs/pdb/data/structures/all/mmCIF";
 
-	private static final String PISA_INTERFACES_URL = "http://www.ebi.ac.uk/msd-srv/pisa/cgi-bin/interfaces.pisa?";
-	
 	private static final double CUTOFF = 5.9;
 	
 	private static final int NTHREADS = Runtime.getRuntime().availableProcessors(); // number of threads for ASA calculation
@@ -69,7 +67,7 @@ public class CompToPisaInterf {
 		pdbCodes.addAll(pdbCodesSet);
 		
 		// getting PISA interfaces
-		PisaConnection pc = new PisaConnection(PISA_INTERFACES_URL, null, null);
+		PisaConnection pc = new PisaConnection();
 		System.out.println("Downloading PISA interfaces");
 		Map<String, PisaInterfaceList> allPisaInterfaces = null;
 		try {

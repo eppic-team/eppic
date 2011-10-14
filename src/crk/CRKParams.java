@@ -68,9 +68,6 @@ public class CRKParams {
 	private static final String   DEF_PDB_FTP_CIF_URL = "ftp://ftp.wwpdb.org/pub/pdb/data/structures/all/mmCIF/";
 	private static final boolean  DEF_USE_ONLINE_PDB = false;
 
-	// defaults for pisa locations
-	private static final String   DEF_PISA_INTERFACES_URL = "http://www.ebi.ac.uk/msd-srv/pisa/cgi-bin/interfaces.pisa?";
-
 	// default sifts file location
 	private static final String   DEF_SIFTS_FILE = "ftp://ftp.ebi.ac.uk/pub/databases/msd/sifts/text/pdb_chain_uniprot.lst";	
 	
@@ -153,8 +150,6 @@ public class CRKParams {
 	private String   localCifDir;
 	private String   pdbFtpCifUrl;
 	private boolean  useOnlinePdb;
-	
-	private String   pisaInterfacesUrl;
 	
 	private String   siftsFile;
 	
@@ -619,8 +614,6 @@ public class CRKParams {
 			pdbFtpCifUrl 	= p.getProperty("PDB_FTP_URL", DEF_PDB_FTP_CIF_URL);
 			useOnlinePdb  	= Boolean.parseBoolean(p.getProperty("USE_ONLINE_PDB", new Boolean(DEF_USE_ONLINE_PDB).toString()));
 			
-			pisaInterfacesUrl = p.getProperty("PISA_INTERFACES_URL", DEF_PISA_INTERFACES_URL);
-			
 			siftsFile       = p.getProperty("SIFTS_FILE", DEF_SIFTS_FILE);
 			
 			blastBinDir     = p.getProperty("BLAST_BIN_DIR", DEF_BLAST_BIN_DIR);
@@ -663,10 +656,6 @@ public class CRKParams {
 
 	public boolean isUseOnlinePdb() {
 		return useOnlinePdb;
-	}
-
-	public String getPisaInterfacesUrl() {
-		return pisaInterfacesUrl;
 	}
 
 	public String getSiftsFile() {

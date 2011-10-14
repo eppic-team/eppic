@@ -169,7 +169,7 @@ public class CRKMain {
 		if (params.isUsePisa()) {
 			params.getProgressLog().println("Getting PISA interfaces...");
 			LOGGER.info("Interfaces from PISA.");
-			PisaConnection pc = new PisaConnection(params.getPisaInterfacesUrl(), null, null);
+			PisaConnection pc = new PisaConnection();
 			List<String> pdbCodes = new ArrayList<String>();
 			pdbCodes.add(pdb.getPdbCode());
 			try {

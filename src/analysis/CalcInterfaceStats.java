@@ -15,7 +15,7 @@ import owl.core.util.FileFormatException;
 
 /**
  * Script to calculate all interfaces of given PDB entries and output a table 
- * with statistics on interface (area, num. core residues, operator) and christallographic
+ * with statistics on interface (area, num. core residues, operator) and crystallographic
  * quality parameters. 
  * Can run multithreaded by splitting the entries list in as many lists as parallel
  * threads specified.
