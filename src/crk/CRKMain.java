@@ -309,9 +309,9 @@ public class CRKMain {
 			LOGGER.info("Loading chain evolutionary scores from file "+params.getChainEvContextSerFile());
 			cecs = (ChainEvolContextList)Goodies.readFromFile(params.getChainEvContextSerFile());
 		} catch (ClassNotFoundException e) {
-			throw new CRKException(e,"Couldn't load interface enumeration binary file: "+e.getMessage(),true);
+			throw new CRKException(e,"Couldn't load interface evolutionary context binary file: "+e.getMessage(),true);
 		} catch(IOException e) {
-			throw new CRKException(e,"Couldn't load interface enumeration binary file: "+e.getMessage(),true);
+			throw new CRKException(e,"Couldn't load interface evolutionary context binary file: "+e.getMessage(),true);
 		}
 
 		// TODO check whether this looks compatible with the interfaces that we have
