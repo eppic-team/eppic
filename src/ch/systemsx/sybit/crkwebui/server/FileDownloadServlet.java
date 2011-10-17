@@ -100,9 +100,23 @@ public class FileDownloadServlet extends FileBaseServlet
 									response.setContentType("application/octet-stream");
 								}
 								
+								
+								String processedFileName = directoryContent[0];
+								
+								if(directoryContent[0].contains("."))
+								{
+									processedFileName = directoryContent[0].substring(0, directoryContent[0].indexOf("."));
+									processedFileName = processedFileName + "-" + jobId + ".";
+									
+									if(directoryContent[0].indexOf(".") + 1 != directoryContent[0].length())
+									{
+										processedFileName = processedFileName + directoryContent[0].substring(directoryContent[0].indexOf(".") + 1);
+									}
+								}
+								
 								response.setContentLength((int) resultFile.length());
 								response.setHeader("Content-Disposition",
-										"attachment; filename=\"" + jobId + "." + directoryContent[0] + "\"");
+										"attachment; filename=\"" + processedFileName + "\"");
 //								response.setHeader("Content-Encoding", "gzip");
 		
 								byte[] buffer = new byte[1024];
