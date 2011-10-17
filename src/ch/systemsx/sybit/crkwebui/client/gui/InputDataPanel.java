@@ -47,7 +47,7 @@ public class InputDataPanel extends DisplayPanel
 	
 	private RadioGroup inputRadioGroup;
 	private Radio pdbCodeRadio;
-	private Radio pdbCodeFile;
+	private Radio pdbFileRadio;
 	
 	private FileUploadField file;
 	private TextField<String> pdbCodeField;
@@ -91,13 +91,13 @@ public class InputDataPanel extends DisplayPanel
 		pdbCodeRadio.setBoxLabel(MainController.CONSTANTS.input_pdb_code_radio());  
 		pdbCodeRadio.setValue(true);  
 	  
-	    pdbCodeFile = new Radio();  
-	    pdbCodeFile.setBoxLabel(MainController.CONSTANTS.input_upload_file_radio());  
+	    pdbFileRadio = new Radio();  
+	    pdbFileRadio.setBoxLabel(MainController.CONSTANTS.input_upload_file_radio());  
 	  
 	    inputRadioGroup = new RadioGroup();  
 	    inputRadioGroup.setFieldLabel(MainController.CONSTANTS.input_pdb_input_type());  
 	    inputRadioGroup.add(pdbCodeRadio);  
-	    inputRadioGroup.add(pdbCodeFile);  
+	    inputRadioGroup.add(pdbFileRadio);  
 	    inputRadioGroup.addListener(Events.Change, new Listener<BaseEvent>(){
 	        public void handleEvent(BaseEvent be) 
 	        {
@@ -136,6 +136,7 @@ public class InputDataPanel extends DisplayPanel
 		pdbCodeField.setName("code");
 		pdbCodeField.setFieldLabel(MainController.CONSTANTS.input_pdb_code_radio());
 		pdbCodeField.setValidator(new PdbCodeFieldValidator());
+		pdbCodeField.setAllowBlank(false);
 		pdbCodeField.addKeyListener(new KeyListener(){
 			public void componentKeyPress(ComponentEvent event)
 			{
@@ -210,8 +211,19 @@ public class InputDataPanel extends DisplayPanel
 			public void componentSelected(ButtonEvent ce) 
 			{
 				emailTextField.setValue("");
+				
+				file.setAllowBlank(true);
+				pdbCodeField.setAllowBlank(true);
 				pdbCodeField.setValue("");
-				file.setValue("");
+				file.reset();
+				
+				file.setVisible(false);
+        		file.setAllowBlank(true);
+        		pdbCodeField.setVisible(true);
+        		pdbCodeField.setAllowBlank(false);
+        		
+        		pdbCodeRadio.setValue(true);
+				
 				optionsInputPanel.fillDefaultValues(mainController
 						.getSettings().getDefaultParametersValues());
 			}
@@ -263,7 +275,7 @@ public class InputDataPanel extends DisplayPanel
 		
 		String input = null;
 		
-		if(pdbCodeFile.getValue())
+		if(pdbFileRadio.getValue())
 		{
 			input = file.getValue();
 			
@@ -302,7 +314,7 @@ public class InputDataPanel extends DisplayPanel
 		{
 			mainController.showWaiting(MainController.CONSTANTS.input_submit_waiting_message());
 			
-			if(pdbCodeFile.getValue())
+			if(pdbFileRadio.getValue())
 			{
 				formPanel.submit();
 			}
