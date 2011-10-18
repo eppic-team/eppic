@@ -50,6 +50,12 @@ h1 {
 	background-color:#CDCDCD;
 }
 
+.summary.x-grid3-row,.summary {
+	border-color: #ddd;
+    background-color: #efefef;
+    background-image: url(../images/default/grid/row-over.gif);
+}
+
 .x-grid3-row td.x-grid3-cell,.x-grid3-summary-row td.x-grid3-cell {
 	vertical-align:middle;
 }
@@ -62,5 +68,11 @@ h1 {
 .pdb-identifier-label {
 	font-size: 16px;
 	font-family: Arial;
+	font-weight: bold;
+}
+
+.aggregation-row-head
+{
+	text-align: left;
 	font-weight: bold;
 }
