@@ -1532,7 +1532,7 @@ fieldset.x-panel-collapsed .x-fieldset-bwrap {
 }
 
 /* make top of checkbox/tools visible in webkit */
-.ext-webkit .x-fieldset-header {
+.ext-webkit .x-fieldset-header, .ext-ie .x-fieldset-header {
   padding-top: 1px;
 }
 
@@ -2964,7 +2964,6 @@ a.x-grid3-hd-btn:hover {
   z-index: 1;
   position: absolute;
   right: 0px;
-  width: 18px;
   overflow-y: scroll;
   overflow-x: hidden;
 }
@@ -3450,6 +3449,10 @@ a.x-grid3-hd-btn:hover {
 	padding: 0 0 0 3px;
 	position: relative;
 	top: -4px;
+}
+
+.ext-ie9 .x-tree3-node-text-widget  {
+  display: block;	
 }
 
 .x-tree3-node-ct {
