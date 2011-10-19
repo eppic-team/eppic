@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import crk.predictors.EvolInterfZPredictor;
 import crk.predictors.EvolRimCorePredictor;
 import crk.predictors.GeometryPredictor;
 
@@ -170,56 +171,89 @@ public class WebUIDataAdaptor {
 			method = "Entropy";
 		} else if (iecl.getScoringType()==ScoringType.KAKS) {
 			method = "Kaks";
+		} else if (iecl.getScoringType()==ScoringType.ZSCORE) {
+			method = "Z-scores";
 		}
 
-		for (int i=0;i<iecl.size();i++) {
-			InterfaceEvolContext iec = iecl.get(i);
-			EvolRimCorePredictor ercp = iecl.getEvolRimCorePredictor(i);
-			
-			InterfaceItem ii = pdbScoreItem.getInterfaceItem(i);
+		if (iecl.getScoringType()==ScoringType.ZSCORE) {
+			for (int i=0;i<iecl.size();i++) {
+				InterfaceEvolContext iec = iecl.get(i);
+				EvolInterfZPredictor ezp = iecl.getEvolInterfZPredictor(i);
+
+				InterfaceItem ii = pdbScoreItem.getInterfaceItem(i);
 
 
-			boolean append = false;
-			InterfaceScoreItem isi = null;
-			for (InterfaceScoreItem existing: ii.getInterfaceScores()){
-				if (existing.getMethod().equals(method)) { //if we already have the method in, then this is simply the second part of it (weighted scores)
-					append = true;
-					isi = existing;
-				}
-			}
-			
-			if (!append) {
-				isi = new InterfaceScoreItem();
+				InterfaceScoreItem isi = new InterfaceScoreItem();
 				ii.addInterfaceScore(isi);
 				isi.setId(iec.getInterface().getId());
 				isi.setMethod(method);
-				
-				// TODO notice here we are only getting call, callReason and warnings from first of the 2 added (usually unweighted) 
-				// TODO we still have to decide how to get a call from both weighted/unweighted scores
-				CallType call = ercp.getCall();	
+
+				CallType call = ezp.getCall();	
 				isi.setCall(call.getName());
-				isi.setCallReason(ercp.getCallReason());
-				ii.getWarnings().addAll(ercp.getWarnings());
+				isi.setCallReason(ezp.getCallReason());
+				ii.getWarnings().addAll(ezp.getWarnings());
+ 
 
-			} 
-			
+				isi.setUnweightedCore1Scores(ezp.getMember1Predictor().getCoreScore());
+				isi.setUnweightedCore2Scores(ezp.getMember2Predictor().getCoreScore());
+				//isi.setUnweightedRim1Scores(ezp.getMember1Predictor().getRimScore());
+				//isi.setUnweightedRim2Scores(ezp.getMember2Predictor().getRimScore());
+				isi.setUnweightedRatio1Scores(ezp.getMember1Predictor().getScore());
+				isi.setUnweightedRatio2Scores(ezp.getMember2Predictor().getScore());
+				isi.setUnweightedFinalScores(ezp.getScore());				
 
-			if (iecl.isScoreWeighted()) {
-				isi.setWeightedCore1Scores(ercp.getMember1Predictor().getCoreScore());
-				isi.setWeightedCore2Scores(ercp.getMember2Predictor().getCoreScore());
-				isi.setWeightedRim1Scores(ercp.getMember1Predictor().getRimScore());
-				isi.setWeightedRim2Scores(ercp.getMember2Predictor().getRimScore());
-				isi.setWeightedRatio1Scores(ercp.getMember1Predictor().getScore());
-				isi.setWeightedRatio2Scores(ercp.getMember2Predictor().getScore());
-				isi.setWeightedFinalScores(ercp.getScore());
-			} else {
-				isi.setUnweightedCore1Scores(ercp.getMember1Predictor().getCoreScore());
-				isi.setUnweightedCore2Scores(ercp.getMember2Predictor().getCoreScore());
-				isi.setUnweightedRim1Scores(ercp.getMember1Predictor().getRimScore());
-				isi.setUnweightedRim2Scores(ercp.getMember2Predictor().getRimScore());
-				isi.setUnweightedRatio1Scores(ercp.getMember1Predictor().getScore());
-				isi.setUnweightedRatio2Scores(ercp.getMember2Predictor().getScore());
-				isi.setUnweightedFinalScores(ercp.getScore());				
+			}
+
+		} else {
+			for (int i=0;i<iecl.size();i++) {
+				InterfaceEvolContext iec = iecl.get(i);
+				EvolRimCorePredictor ercp = iecl.getEvolRimCorePredictor(i);
+
+				InterfaceItem ii = pdbScoreItem.getInterfaceItem(i);
+
+
+				boolean append = false;
+				InterfaceScoreItem isi = null;
+				for (InterfaceScoreItem existing: ii.getInterfaceScores()){
+					if (existing.getMethod().equals(method)) { //if we already have the method in, then this is simply the second part of it (weighted scores)
+						append = true;
+						isi = existing;
+					}
+				}
+
+				if (!append) {
+					isi = new InterfaceScoreItem();
+					ii.addInterfaceScore(isi);
+					isi.setId(iec.getInterface().getId());
+					isi.setMethod(method);
+
+					// TODO notice here we are only getting call, callReason and warnings from first of the 2 added (usually unweighted) 
+					// TODO we still have to decide how to get a call from both weighted/unweighted scores
+					CallType call = ercp.getCall();	
+					isi.setCall(call.getName());
+					isi.setCallReason(ercp.getCallReason());
+					ii.getWarnings().addAll(ercp.getWarnings());
+
+				} 
+
+
+				if (iecl.isScoreWeighted()) {
+					isi.setWeightedCore1Scores(ercp.getMember1Predictor().getCoreScore());
+					isi.setWeightedCore2Scores(ercp.getMember2Predictor().getCoreScore());
+					isi.setWeightedRim1Scores(ercp.getMember1Predictor().getRimScore());
+					isi.setWeightedRim2Scores(ercp.getMember2Predictor().getRimScore());
+					isi.setWeightedRatio1Scores(ercp.getMember1Predictor().getScore());
+					isi.setWeightedRatio2Scores(ercp.getMember2Predictor().getScore());
+					isi.setWeightedFinalScores(ercp.getScore());
+				} else {
+					isi.setUnweightedCore1Scores(ercp.getMember1Predictor().getCoreScore());
+					isi.setUnweightedCore2Scores(ercp.getMember2Predictor().getCoreScore());
+					isi.setUnweightedRim1Scores(ercp.getMember1Predictor().getRimScore());
+					isi.setUnweightedRim2Scores(ercp.getMember2Predictor().getRimScore());
+					isi.setUnweightedRatio1Scores(ercp.getMember1Predictor().getScore());
+					isi.setUnweightedRatio2Scores(ercp.getMember2Predictor().getScore());
+					isi.setUnweightedFinalScores(ercp.getScore());				
+				}
 			}
 		}
 	}

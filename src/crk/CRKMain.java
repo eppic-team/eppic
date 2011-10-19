@@ -506,6 +506,7 @@ public class CRKMain {
 				PrintStream scoreZscorePS = new PrintStream(params.getOutputFile(CRKParams.ZSCORES_FILE_SUFFIX+".scores"));
 				iecList.scoreZscore();
 				iecList.printZscoresTable(scoreZscorePS);
+				wuiAdaptor.add(iecList);
 				iecList.resetCalls();
 				scoreZscorePS.close();
 
