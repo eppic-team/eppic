@@ -15,6 +15,8 @@ public class InterfaceResidueItem implements Serializable
 	public static final int RIM = 1;
 	public static final int CORE = 2;
 	
+	private int uid;
+	
 	private int structure;
 	private int residueNumber;
 	private String residueType;
@@ -121,4 +123,11 @@ public class InterfaceResidueItem implements Serializable
 		return interfaceItem;
 	}
 
+	public void setUid(int uid) {
+		this.uid = uid;
+	}
+
+	public int getUid() {
+		return uid;
+	}
 }

@@ -11,6 +11,8 @@ public class InterfaceItem implements Serializable
 	 */
 	private static final long serialVersionUID = 1L;
 
+	private int uid;
+	
 	private int id;
 	private double area;
 	private String name;
@@ -132,14 +134,6 @@ public class InterfaceItem implements Serializable
 		this.interfaceScores.add(interfaceScore);
 	}
 
-	public void setInterfaceStructures(List<InterfaceResidueItem> interfaceResidues) {
-		this.interfaceResidues = interfaceResidues;
-	}
-
-	public List<InterfaceResidueItem> getInterfaceStructures() {
-		return interfaceResidues;
-	}
-
 	public void setPdbScoreItem(PDBScoreItem pdbScoreItem) {
 		this.pdbScoreItem = pdbScoreItem;
 	}
@@ -220,4 +214,12 @@ public class InterfaceItem implements Serializable
 		this.bsaR2 = bsaR2;
 	}
 
+	
+	public void setUid(int uid) {
+		this.uid = uid;
+	}
+
+	public int getUid() {
+		return uid;
+	}
 }

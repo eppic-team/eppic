@@ -58,6 +58,7 @@ public class WebUIDataAdaptor {
 		runParametersItem.setKaksCallCutoff(params.getKaksCallCutoff());
 		runParametersItem.setzScoreCutoff(params.getZscoreCutoff());
 		runParametersItem.setMinCoreSizeForBio(params.getMinCoreSizeForBio());
+		runParametersItem.setPdbScoreItem(pdbScoreItem);
 		pdbScoreItem.setRunParameters(runParametersItem);
 	}
 
@@ -89,7 +90,8 @@ public class WebUIDataAdaptor {
 			ii.setAsaR2(interf.getSecondRimCore().getAsaRim());
 			ii.setBsaC2(interf.getSecondRimCore().getBsaCore());
 			ii.setBsaR2(interf.getSecondRimCore().getBsaRim());
-		
+			ii.setPdbScoreItem(pdbScoreItem);
+			
 			pdbScoreItem.addInterfaceItem(ii);
 		}
 
@@ -152,6 +154,7 @@ public class WebUIDataAdaptor {
 			InterfaceItem ii = pdbScoreItem.getInterfaceItem(i);
 			InterfaceScoreItem isi = new InterfaceScoreItem();
 			ii.addInterfaceScore(isi);
+			isi.setInterfaceItem(ii);
 			isi.setId(gps.get(i).getInterface().getId());
 			CallType call = gps.get(i).getCall();
 			isi.setCall(call.getName());
@@ -185,6 +188,7 @@ public class WebUIDataAdaptor {
 
 				InterfaceScoreItem isi = new InterfaceScoreItem();
 				ii.addInterfaceScore(isi);
+				isi.setInterfaceItem(ii);
 				isi.setId(iec.getInterface().getId());
 				isi.setMethod(method);
 
@@ -223,6 +227,7 @@ public class WebUIDataAdaptor {
 
 				if (!append) {
 					isi = new InterfaceScoreItem();
+					isi.setInterfaceItem(ii);
 					ii.addInterfaceScore(isi);
 					isi.setId(iec.getInterface().getId());
 					isi.setMethod(method);

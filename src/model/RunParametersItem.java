@@ -3,12 +3,14 @@ package model;
 import java.io.Serializable;
 
 
-public class RunParametersItem implements Serializable, ProcessingData
+public class RunParametersItem implements Serializable
 {
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+	
+	private int uid;
 	
 	private int homologsCutoff;
 	private double idCutoff;
@@ -133,5 +135,13 @@ public class RunParametersItem implements Serializable, ProcessingData
 
 	public PDBScoreItem getPdbScoreItem() {
 		return pdbScoreItem;
+	}
+
+	public void setUid(int uid) {
+		this.uid = uid;
+	}
+
+	public int getUid() {
+		return uid;
 	}
 }
