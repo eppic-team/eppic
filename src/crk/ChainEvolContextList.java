@@ -83,7 +83,7 @@ public class ChainEvolContextList implements Serializable {
 			ChainEvolContext cec = cecs.get(repChain);
 			UniprotEntry uni = cec.getQuery();
 			int numHomologs = -1;
-			if (scoType==ScoringType.ENTROPY) {
+			if (scoType==ScoringType.ENTROPY || scoType==ScoringType.ZSCORE) {
 				numHomologs = cec.getNumHomologs();
 			} else if (scoType==ScoringType.KAKS) {
 				numHomologs = cec.getNumHomologsWithValidCDS();
