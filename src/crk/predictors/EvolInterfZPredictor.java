@@ -55,6 +55,14 @@ public class EvolInterfZPredictor implements InterfaceTypePredictor {
 		return member2Pred;
 	}
 	
+	private boolean canDoFirstEntropyScoring() {
+		return iec.getChainEvolContext(FIRST).hasQueryMatch();
+	}
+
+	private boolean canDoSecondEntropyScoring() {
+		return iec.getChainEvolContext(SECOND).hasQueryMatch();
+	}
+	
 	@Override
 	public CallType getCall() {
 		// the votes with voters (no anonymous vote here!)
@@ -144,6 +152,17 @@ public class EvolInterfZPredictor implements InterfaceTypePredictor {
 	public void scoreEntropy() {
 		member1Pred.scoreEntropy();
 		member2Pred.scoreEntropy();
+		
+		if (canDoFirstEntropyScoring() && canDoSecondEntropyScoring()) {
+			score = (member1Pred.getScore()+member2Pred.getScore())/2;
+		} else if (!canDoFirstEntropyScoring() && !canDoSecondEntropyScoring()) {
+			score = Double.NaN;
+		} else if (canDoFirstEntropyScoring()) {
+			score = member1Pred.getScore();
+		} else if (canDoSecondEntropyScoring()) {
+			score = member2Pred.getScore();
+		}
+		
 		score = (member1Pred.getScore()+member2Pred.getScore())/2;
 		scoringType = ScoringType.ENTROPY;
 	}
@@ -193,7 +212,7 @@ public class EvolInterfZPredictor implements InterfaceTypePredictor {
 				member1Pred.getCoreScore(), member1Pred.getMean(), member1Pred.getSd(), member1Pred.getScore());
 		ps.print("\t");
 		ps.printf("%5.2f\t%5.2f\t%5.2f\t%5.2f",
-				member2Pred.getCoreScore(), member1Pred.getMean(), member1Pred.getSd(), member2Pred.getScore());
+				member2Pred.getCoreScore(), member2Pred.getMean(), member2Pred.getSd(), member2Pred.getScore());
 		ps.print("\t");
 		// call type, score, voters
 		ps.printf("%6s\t%5.2f", call.getName(),	this.getScore());

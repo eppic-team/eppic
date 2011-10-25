@@ -56,6 +56,14 @@ public class EvolRimCorePredictor implements InterfaceTypePredictor {
 		return member2Pred;
 	}
 	
+	private boolean canDoFirstEntropyScoring() {
+		return iec.getChainEvolContext(FIRST).hasQueryMatch();
+	}
+
+	private boolean canDoSecondEntropyScoring() {
+		return iec.getChainEvolContext(SECOND).hasQueryMatch();
+	}
+
 	@Override
 	public CallType getCall() {
 
@@ -111,7 +119,7 @@ public class EvolRimCorePredictor implements InterfaceTypePredictor {
 			call = CallType.NO_PREDICTION;
 			callReason = member1Pred.getCallReason()+"\n"+member2Pred.getCallReason();
 		} else if (countBio>countXtal) {
-			//TODO check the discrepancies among the different voters. The variance could be a measure of the confidence of the call
+			//TODO check the discrepancies among the 2 voters. The variance could be a measure of the confidence of the call
 			//TODO need to do a study about the correlation of scores in members of the same interface
 			//TODO it might be the case that there is good agreement and bad agreement would indicate things like a bio-mimicking crystal interface
 			call = CallType.BIO;
@@ -157,9 +165,19 @@ public class EvolRimCorePredictor implements InterfaceTypePredictor {
 	 * @param weighted
 	 */
 	public void scoreEntropy(boolean weighted) {
+		
 		member1Pred.scoreEntropy(weighted);
 		member2Pred.scoreEntropy(weighted);
-		score = (member1Pred.getScore()+member2Pred.getScore())/2;
+		
+		if (canDoFirstEntropyScoring() && canDoSecondEntropyScoring()) {
+			score = (member1Pred.getScore()+member2Pred.getScore())/2;
+		} else if (!canDoFirstEntropyScoring() && !canDoSecondEntropyScoring()) {
+			score = Double.NaN;
+		} else if (canDoFirstEntropyScoring()) {
+			score = member1Pred.getScore();
+		} else if (canDoSecondEntropyScoring()) {
+			score = member2Pred.getScore();
+		}
 		scoringType = ScoringType.ENTROPY;
 		isScoreWeighted = weighted;
 	}
@@ -170,9 +188,19 @@ public class EvolRimCorePredictor implements InterfaceTypePredictor {
 	 * @param weighted
 	 */
 	public void scoreKaKs(boolean weighted) {
+
 		member1Pred.scoreKaKs(weighted);
 		member2Pred.scoreKaKs(weighted);
-		score = (member1Pred.getScore()+member2Pred.getScore())/2;
+
+		if (canDoFirstEntropyScoring() && canDoSecondEntropyScoring()) {
+			score = (member1Pred.getScore()+member2Pred.getScore())/2;
+		} else if (!canDoFirstEntropyScoring() && !canDoSecondEntropyScoring()) {
+			score = Double.NaN;
+		} else if (canDoFirstEntropyScoring()) {
+			score = member1Pred.getScore();
+		} else if (canDoSecondEntropyScoring()) {
+			score = member2Pred.getScore();
+		}
 		scoringType = ScoringType.KAKS;
 		isScoreWeighted = weighted;
 	}

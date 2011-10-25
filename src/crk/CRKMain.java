@@ -329,7 +329,7 @@ public class CRKMain {
 			if (params.getEmblCdsCacheDir()!=null) {
 				emblQueryCacheFile = new File(params.getEmblCdsCacheDir(),params.getBaseName()+"."+chainEvCont.getRepresentativeChainCode()+".query.emblcds.fa");
 			}
-			params.getProgressLog().println("Finding query's uniprot mapping (through SIFTS or blasting)");
+			params.getProgressLog().println("Finding query's chain "+chainEvCont.getRepresentativeChainCode()+" uniprot mapping through SIFTS or blasting");
 			try {
 				chainEvCont.retrieveQueryData(params.getSiftsFile(), emblQueryCacheFile, params.getBlastBinDir(), params.getBlastDbDir(), params.getBlastDb(), params.getNumThreads(),params.isDoScoreKaks(),params.getPdb2uniprotIdThreshold(),params.getPdb2uniprotQcovThreshold());
 			} catch (BlastException e) {
@@ -344,6 +344,12 @@ public class CRKMain {
 				LOGGER.error("No CDS good match for query sequence! can't do Ka/Ks analysis on it.");
 			}
 
+			if (!chainEvCont.hasQueryMatch()) {
+				// no query uniprot match, we do nothing with this sequence
+				// TODO should we go ahead and blast with the PDB sequence? that would require quite a few changes in the code
+				continue;
+			}
+			
 			// b) getting the homologs and sequence data 
 			params.getProgressLog().println("Blasting for homologues...");
 			File blastCacheFile = null;
@@ -363,7 +369,9 @@ public class CRKMain {
 				throw new CRKException(e,"Thread interrupted while blasting for sequence homologs: "+e.getMessage(),true);
 			}
 
-			params.getProgressLog().println("Retrieving UniprotKB data and EMBL CDS sequences");
+			String msg = "Retrieving UniprotKB data";
+			if (params.isDoScoreKaks()) msg+=" and EMBL CDS sequences";
+			params.getProgressLog().println(msg);
 			File emblHomsCacheFile = null;
 			if (params.getEmblCdsCacheDir()!=null) {
 				emblHomsCacheFile = new File(params.getEmblCdsCacheDir(),params.getBaseName()+"."+chainEvCont.getRepresentativeChainCode()+".homologs.emblcds.fa");
@@ -405,6 +413,7 @@ public class CRKMain {
 				throw new CRKException(e, "Thread interrupted while running t_coffee to align protein sequences: "+e.getMessage(),true);
 			}
 
+
 			File outFile = null;
 			try {
 				// writing homolog sequences to file
@@ -429,6 +438,7 @@ public class CRKMain {
 				LOGGER.error(e.getMessage());
 			}
 
+
 			// d) computing entropies
 			chainEvCont.computeEntropies(params.getReducedAlphabet());
 
@@ -436,7 +446,7 @@ public class CRKMain {
 			if (params.isDoScoreKaks() && chainEvCont.canDoKaks()) {
 				params.getProgressLog().println("Running selecton (this will take long)...");
 				try {
-				chainEvCont.computeKaKsRatiosSelecton(params.getSelectonBin(), 
+					chainEvCont.computeKaKsRatiosSelecton(params.getSelectonBin(), 
 						params.getOutputFile("."+chainEvCont.getRepresentativeChainCode()+".selecton.res"),
 						params.getOutputFile("."+chainEvCont.getRepresentativeChainCode()+".selecton.log"), 
 						params.getOutputFile("."+chainEvCont.getRepresentativeChainCode()+".selecton.tree"),
@@ -590,6 +600,7 @@ public class CRKMain {
 				crkMain.doEvolScoring();
 			}
 			
+			crkMain.params.getProgressLog().println("Writing pymol files");
 			crkMain.doWritePymolFiles();
 			
 			// writing out the serialized file for web ui

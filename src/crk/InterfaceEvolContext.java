@@ -228,6 +228,10 @@ public class InterfaceEvolContext implements Serializable {
 	 * @throws NullPointerException if ka/ks ratios are not calculated yet by calling {@link #computeKaKsRatiosSelecton(File)}
 	 */
 	private void setConservationScoresAsBfactors(int molecId, ScoringType scoType) {
+		
+		// do nothing (i.e. keep original b-factors) if there's no query match for this sequence and thus no evol scores calculated 
+		if (!getChainEvolContext(molecId).hasQueryMatch()) return;
+		
 		List<Double> conservationScores = null;
 		PdbChain pdb = null;
 		if (molecId==FIRST) {

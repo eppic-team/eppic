@@ -40,6 +40,10 @@ public class EvolRimCoreMemberPredictor implements InterfaceTypePredictor {
 		this.warnings = new ArrayList<String>();
 	}
 	
+	private boolean canDoEntropyScoring() {
+		return iec.getChainEvolContext(molecId).hasQueryMatch();
+	}
+	
 	@Override
 	public CallType getCall() {
 		
@@ -47,8 +51,12 @@ public class EvolRimCoreMemberPredictor implements InterfaceTypePredictor {
 		
 		InterfaceRimCore rimCore = iec.getRimCore(molecId);
 		
-		int countsUnrelCoreRes = getUnreliableCoreRes().size();
-		int countsUnrelRimRes = getUnreliableRimRes().size();
+		int countsUnrelCoreRes = -1;
+		int countsUnrelRimRes = -1;
+		if (canDoEntropyScoring()) {
+			countsUnrelCoreRes = getUnreliableCoreRes().size();
+			countsUnrelRimRes = getUnreliableRimRes().size();
+		}
 		
 		call = null;
 
@@ -56,6 +64,10 @@ public class EvolRimCoreMemberPredictor implements InterfaceTypePredictor {
 			call = CallType.NO_PREDICTION;
 			LOGGER.info("Interface "+iec.getInterface().getId()+", member "+memberSerial+" calls NOPRED because it is not a protein");
 			callReason = memberSerial+": is not a protein";
+		}
+		else if (!canDoEntropyScoring()) {
+			call = CallType.NO_PREDICTION;
+			callReason = memberSerial+": no evol scores calculation could be performed (no uniprot query match)";
 		}
 		else if (!iec.hasEnoughHomologs(molecId)) {
 			call = CallType.NO_PREDICTION;
@@ -136,7 +148,11 @@ public class EvolRimCoreMemberPredictor implements InterfaceTypePredictor {
 		scoringType = ScoringType.KAKS;
 	}
 	
-	private void scoreInterfaceMember(boolean weighted, ScoringType scoType) {		
+	private void scoreInterfaceMember(boolean weighted, ScoringType scoType) {	
+		if (!canDoEntropyScoring()) {
+			scoreRatio = Double.NaN;
+			return;
+		}
 		InterfaceRimCore rimCore = iec.getRimCore(molecId);
 		rimScore  = iec.calcScore(rimCore.getRimResidues(), molecId, scoType, weighted);
 		coreScore = iec.calcScore(rimCore.getCoreResidues(),molecId, scoType, weighted);

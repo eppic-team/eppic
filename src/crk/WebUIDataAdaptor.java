@@ -302,7 +302,9 @@ public class WebUIDataAdaptor {
 		if (interf.isFirstProtein() && interf.isSecondProtein()) {
 			PdbChain firstMol = interf.getFirstMolecule();
 			InterfaceRimCore rimCore = interf.getFirstRimCore(); 
-			List<Double> entropies = firstCec.getConservationScores(ScoringType.ENTROPY);
+			List<Double> entropies = null;
+			if (firstCec.hasQueryMatch()) 
+				entropies = firstCec.getConservationScores(ScoringType.ENTROPY);
 			List<Double> kaksRatios = null;
 			if (includeKaks && iec.canDoKaks())
 				kaksRatios = firstCec.getConservationScores(ScoringType.KAKS);
@@ -317,11 +319,11 @@ public class WebUIDataAdaptor {
 				if (assignment==-1 && asa>0) assignment = InterfaceResidueItem.SURFACE;
 
 				int queryUniprotPos = -1;
-				if (!firstMol.isNonPolyChain() && firstMol.getSequence().isProtein()) 
+				if (!firstMol.isNonPolyChain() && firstMol.getSequence().isProtein() && firstCec.hasQueryMatch()) 
 					queryUniprotPos = firstCec.getQueryUniprotPosForPDBPos(residue.getSerial());
 
 				float entropy = -1;
-				if (residue instanceof AaResidue) {	
+				if (entropies!=null && residue instanceof AaResidue) {	
 					if (queryUniprotPos!=-1) entropy = (float) entropies.get(queryUniprotPos).doubleValue();
 				}
 				float kaks = -1;
@@ -337,7 +339,9 @@ public class WebUIDataAdaptor {
 			}
 			PdbChain secondMol = interf.getSecondMolecule();
 			rimCore = interf.getSecondRimCore();
-			entropies = secondCec.getConservationScores(ScoringType.ENTROPY);
+			entropies = null;
+			if (secondCec.hasQueryMatch()) 
+				entropies = secondCec.getConservationScores(ScoringType.ENTROPY);
 			if (includeKaks && iec.canDoKaks()) 
 				kaksRatios = secondCec.getConservationScores(ScoringType.KAKS);
 			for (Residue residue:secondMol) {
@@ -351,11 +355,11 @@ public class WebUIDataAdaptor {
 				if (assignment==-1 && asa>0) assignment = InterfaceResidueItem.SURFACE;
 
 				int queryUniprotPos = -1;
-				if (!secondMol.isNonPolyChain() && secondMol.getSequence().isProtein()) 
+				if (!secondMol.isNonPolyChain() && secondMol.getSequence().isProtein() && secondCec.hasQueryMatch()) 
 					queryUniprotPos = secondCec.getQueryUniprotPosForPDBPos(residue.getSerial());
 
 				float entropy = -1;
-				if (residue instanceof AaResidue) {
+				if (entropies!=null && residue instanceof AaResidue) {
 					if (queryUniprotPos!=-1) entropy = (float) entropies.get(queryUniprotPos).doubleValue();
 				}
 				float kaks = -1;

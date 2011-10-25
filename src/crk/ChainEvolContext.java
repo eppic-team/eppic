@@ -58,6 +58,7 @@ public class ChainEvolContext implements Serializable {
 	private String seqIdenticalChainsStr;	// a string of the form A(B,C,D,E) containing all represented sequence identical chains
 	
 	private UniprotEntry query;							// the uniprot id, seq, cds corresponding to this chain's sequence
+	private boolean hasQueryMatch;						// whether we could find the query's uniprot match or not
 	private PairwiseSequenceAlignment alnPdb2Uniprot; 	// the alignment between the pdb sequence and the uniprot sequence (query)
 	
 	private UniprotHomologList homologs;	// the homologs of this chain's sequence
@@ -68,6 +69,7 @@ public class ChainEvolContext implements Serializable {
 		this.pdbName = pdbName;
 		this.sequence = sequence;
 		this.representativeChain = representativeChain;
+		this.hasQueryMatch = false;
 	}
 	
 	/**
@@ -121,30 +123,35 @@ public class ChainEvolContext implements Serializable {
 			query = findUniprotMapping(blastBinDir, blastDbDir, blastDb, blastNumThreads, pdb2uniprotIdThreshold, pdb2uniprotQcovThreshold);
 		}
 		
-		LOGGER.info("Uniprot id for the query "+pdbCode+representativeChain+": "+query.getUniId());
+		if (query!=null) hasQueryMatch = true;
 		
-		// once we have the identifier we get the data from uniprot
-		try {
-			query.retrieveUniprotKBData();
-		} catch (NoMatchFoundException e) {
-			LOGGER.error("Couldn't find uniprot id "+query.getUniId()+" through Uniprot JAPI. Obsolete?");
-			System.exit(1);
-		}
+		if (hasQueryMatch) {
 
-		if (retrieveCDS) {
-			query.retrieveEmblCdsSeqs(emblCDScache);
-		}
-		
-		
-		// and finally we align the 2 sequences (in case of mapping from SIFTS we rather do this than trusting the SIFTS alignment info)
-		try {
-			alnPdb2Uniprot = new PairwiseSequenceAlignment(sequence, query.getUniprotSeq().getSeq(), pdbCode+representativeChain, query.getUniprotSeq().getName());
-			LOGGER.info("The PDB SEQRES to Uniprot alignmnent:\n"+alnPdb2Uniprot.getFormattedAlignmentString());
-		} catch (PairwiseSequenceAlignmentException e1) {
-			LOGGER.fatal("Problem aligning PDB sequence "+pdbCode+representativeChain+" to its Uniprot match "+query.getUniId());
-			LOGGER.fatal(e1.getMessage());
-			LOGGER.fatal("Can't continue");
-			System.exit(1);
+			LOGGER.info("Uniprot id for the query "+pdbCode+representativeChain+": "+query.getUniId());
+
+			// once we have the identifier we get the data from uniprot
+			try {
+				query.retrieveUniprotKBData();
+			} catch (NoMatchFoundException e) {
+				LOGGER.error("Couldn't find uniprot id "+query.getUniId()+" through Uniprot JAPI. Obsolete?");
+				System.exit(1);
+			}
+
+			if (retrieveCDS) {
+				query.retrieveEmblCdsSeqs(emblCDScache);
+			}
+
+
+			// and finally we align the 2 sequences (in case of mapping from SIFTS we rather do this than trusting the SIFTS alignment info)
+			try {
+				alnPdb2Uniprot = new PairwiseSequenceAlignment(sequence, query.getUniprotSeq().getSeq(), pdbCode+representativeChain, query.getUniprotSeq().getName());
+				LOGGER.info("The PDB SEQRES to Uniprot alignmnent:\n"+alnPdb2Uniprot.getFormattedAlignmentString());
+			} catch (PairwiseSequenceAlignmentException e1) {
+				LOGGER.fatal("Problem aligning PDB sequence "+pdbCode+representativeChain+" to its Uniprot match "+query.getUniId());
+				LOGGER.fatal(e1.getMessage());
+				LOGGER.fatal("Can't continue");
+				System.exit(1);
+			}
 		}
 		// TODO anyway we should do also a sanity check of our alignment against the SIFTS mappings (if we have them) 
 		//if (mappings!=null) {
@@ -371,6 +378,7 @@ public class ChainEvolContext implements Serializable {
 	}
 	
 	public int getNumHomologs() {
+		if (homologs==null) return 0;
 		return homologs.size();
 	}
 	
@@ -383,10 +391,12 @@ public class ChainEvolContext implements Serializable {
 	}
 	
 	public int getNumHomologsWithCDS() {
+		if (homologs==null) return 0;
 		return homologs.getNumHomologsWithCDS();
 	}
 	
 	public int getNumHomologsWithValidCDS() {
+		if (homologs==null) return 0;
 		return homologs.getNumHomologsWithValidCDS();
 	}
 
@@ -526,14 +536,13 @@ public class ChainEvolContext implements Serializable {
 				System.exit(1);
 			}
 		} else {
-			LOGGER.error("No Uniprot match could be found for the query "+pdbName);
+			LOGGER.error("No Uniprot match could be found for the query "+pdbName+representativeChain);
 			if (best!=null) {
 				LOGGER.error("Best match was "+best.getSubjectId()+", with "+
 						String.format("%5.2f%% id and %4.2f coverage",best.getTotalPercentIdentity(),best.getQueryCoverage()));
 				LOGGER.error("Alignment: ");
 				LOGGER.error(best.getMaxScoringHsp().getAlignment().getFastaString(null, true));
 			}
-			System.exit(1);
 		}
 		return uniprotMapping;
 	}
@@ -580,7 +589,19 @@ public class ChainEvolContext implements Serializable {
 		return seqIdenticalChainsStr;
 	}
 	
+	/**
+	 * The uniprot match for the query, use {@link #hasQueryMatch()} to check whether this can be called. 
+	 * @return
+	 */
 	public UniprotEntry getQuery() {
 		return query;
+	}
+	
+	/**
+	 * Whether the query's uniprot match could be found or not.
+	 * @return
+	 */
+	public boolean hasQueryMatch() {
+		return hasQueryMatch;
 	}
 }

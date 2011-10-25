@@ -48,6 +48,10 @@ public class EvolInterfZMemberPredictor implements InterfaceTypePredictor {
 		this.molecId = molecId;
 	}
 	
+	private boolean canDoEntropyScoring() {
+		return iec.getChainEvolContext(molecId).hasQueryMatch();
+	}
+	
 	@Override
 	public CallType getCall() {
 		
@@ -55,9 +59,16 @@ public class EvolInterfZMemberPredictor implements InterfaceTypePredictor {
 		
 		InterfaceRimCore rimCore = iec.getRimCore(molecId);
 		
-		int countsUnrelCoreRes = getUnreliableCoreRes().size();
-		
-		if (!iec.hasEnoughHomologs(molecId)) {
+		int countsUnrelCoreRes = -1;
+		if (canDoEntropyScoring()) {
+			countsUnrelCoreRes = getUnreliableCoreRes().size();
+		}
+
+		if (!canDoEntropyScoring()) {
+			call = CallType.NO_PREDICTION;
+			callReason = memberSerial+": no evol z-scores calculation could be performed (no uniprot query match)";
+		}
+		else if (!iec.hasEnoughHomologs(molecId)) {
 			call = CallType.NO_PREDICTION;
 			LOGGER.info("Interface "+iec.getInterface().getId()+", member "+memberSerial+" calls NOPRED because there are not enough homologs to calculate evolutionary scores");
 			callReason = memberSerial+": there are only "+iec.getChainEvolContext(molecId).getNumHomologs()+
@@ -155,6 +166,10 @@ public class EvolInterfZMemberPredictor implements InterfaceTypePredictor {
 	}
 	
 	private double scoreInterfaceMember(ScoringType scoType) {
+		if (!canDoEntropyScoring()) {
+			zScore = Double.NaN;
+			return zScore;
+		}
 		InterfaceRimCore rimCore = iec.getRimCore(molecId);
 
 		coreScore = iec.calcScore(rimCore.getCoreResidues(),molecId, scoType, false);

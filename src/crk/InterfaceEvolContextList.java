@@ -88,7 +88,7 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 	/**
 	 * Given a ChainInterfaceList with all interfaces of a given PDB and a ChainEvolContextList with
 	 * all evolutionary contexts of chains of that same PDB adds an InterfaceEvolContext (containing a pair
-	 * of ChainEvolContext and a ChainInterface) to this list for each protein-portein interface. 
+	 * of ChainEvolContext and a ChainInterface) to this list for each protein-protein interface. 
 	 * @param interfaces
 	 * @param cecs
 	 */

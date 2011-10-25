@@ -67,7 +67,7 @@ public class CombinedPredictor implements InterfaceTypePredictor {
 		int[] counts = new int[3]; // biocalls, xtalcalls, nopredcalls
 		if (gp.getCall()==CallType.BIO) counts[0]++;
 		else if (gp.getCall()==CallType.CRYSTAL) counts[1]++;
-		else if (gp.getCall()==CallType.NO_PREDICTION) counts[2]++;
+		else if (gp.getCall()==CallType.NO_PREDICTION) counts[2]++; // this can't happen in principle, there's always a geom prediction
 
 		if (rp.getCall()==CallType.BIO) counts[0]++;
 		else if (rp.getCall()==CallType.CRYSTAL) counts[1]++;
