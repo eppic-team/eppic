@@ -606,7 +606,6 @@ public class CRKMain {
 			// writing out the serialized file for web ui
 			if (crkMain.params.isGenerateThumbnails()) {
 				crkMain.wuiAdaptor.writePdbScoreItemFile(crkMain.params.getOutputFile(".webui.dat"));
-				crkMain.wuiAdaptor.writeResidueDetailsFiles(crkMain.params.isDoScoreEntropies(),crkMain.params.isDoScoreKaks(),"resDetails.dat");
 			}
 
 

@@ -3,7 +3,6 @@ package crk;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import crk.predictors.EvolInterfZPredictor;
@@ -30,16 +29,20 @@ import owl.core.util.Goodies;
 
 public class WebUIDataAdaptor {
 
+	private static final int FIRST = 0;
+	private static final int SECOND = 1;
+	
 	private PDBScoreItem pdbScoreItem;
 	
-	private ChainInterfaceList interfaces;
-	private InterfaceEvolContextList iecl;
+//	private ChainInterfaceList interfaces;
+//	private InterfaceEvolContextList iecl;
 	private CRKParams params;
 	
-	
+	private boolean resDetailsAdded;
 	
 	public WebUIDataAdaptor() {
 		pdbScoreItem = new PDBScoreItem();
+		resDetailsAdded = false;
 	}
 	
 	public void setParams(CRKParams params) {
@@ -61,7 +64,7 @@ public class WebUIDataAdaptor {
 		runParametersItem.setPdbScoreItem(pdbScoreItem);
 		pdbScoreItem.setRunParameters(runParametersItem);
 	}
-
+	
 	public void setTitle(String title) {
 		pdbScoreItem.setTitle(title);
 	}
@@ -71,7 +74,7 @@ public class WebUIDataAdaptor {
 	}
 	
 	public void setInterfaces(ChainInterfaceList interfaces) {
-		this.interfaces = interfaces;
+		//this.interfaces = interfaces;
 		for (ChainInterface interf:interfaces) {
 			InterfaceItem ii = new InterfaceItem();
 			ii.setId(interf.getId());
@@ -167,8 +170,19 @@ public class WebUIDataAdaptor {
 	
 	public void add(InterfaceEvolContextList iecl) {
 		
-		this.iecl = iecl; // we cache the last one added
+		//this.iecl = iecl; // we cache the last one added
 		pdbScoreItem.setNumHomologsStrings(iecl.getNumHomologsStrings());
+		
+		// first we add the residue details only once
+		if (!resDetailsAdded) {
+			for (int i=0;i<iecl.size();i++) {
+				InterfaceEvolContext iec = iecl.get(i);
+				InterfaceItem ii = pdbScoreItem.getInterfaceItem(i);
+				addResidueDetails(ii, iec, params.isDoScoreEntropies(), params.isDoScoreKaks());
+			}
+			resDetailsAdded = true;
+		}
+		
 		String method = null;
 		if (iecl.getScoringType()==ScoringType.ENTROPY) {
 			method = "Entropy";
@@ -184,7 +198,6 @@ public class WebUIDataAdaptor {
 				EvolInterfZPredictor ezp = iecl.getEvolInterfZPredictor(i);
 
 				InterfaceItem ii = pdbScoreItem.getInterfaceItem(i);
-
 
 				InterfaceScoreItem isi = new InterfaceScoreItem();
 				ii.addInterfaceScore(isi);
@@ -214,7 +227,6 @@ public class WebUIDataAdaptor {
 				EvolRimCorePredictor ercp = iecl.getEvolRimCorePredictor(i);
 
 				InterfaceItem ii = pdbScoreItem.getInterfaceItem(i);
-
 
 				boolean append = false;
 				InterfaceScoreItem isi = null;
@@ -271,44 +283,39 @@ public class WebUIDataAdaptor {
 		}
 	}
 	
-	public void writeResidueDetailsFiles(boolean includeEntropy, boolean includeKaks, String suffix) throws CRKException {
-		try {
-			for (int i=0;i<interfaces.size();i++) {
-				ChainInterface interf = interfaces.get(i+1);
-				File file = params.getOutputFile("."+interf.getId()+"."+suffix);
-				if (!includeEntropy && !includeKaks) {
-					writeResidueDetailsFile(i,file);
-				} else {
-					writeResidueDetailsFile(i,file, includeKaks);
-				}
-				
-			}
-		} catch (IOException e) {
-			throw new CRKException(e,e.getMessage(),true);
-		}
+	private void addResidueDetails(InterfaceItem ii, InterfaceEvolContext iec, boolean includeEntropy, boolean includeKaks) {
+		
+		List<InterfaceResidueItem> iril = new ArrayList<InterfaceResidueItem>();
+		ii.setInterfaceResidues(iril);
+		
+		addResidueDetailsOfPartner(iril, iec, includeEntropy, includeKaks, 0);
+		addResidueDetailsOfPartner(iril, iec, includeEntropy, includeKaks, 1);
+
 	}
 	
-	
-	private void writeResidueDetailsFile(int i,File file, boolean includeKaks) throws IOException {
-		InterfaceEvolContext iec = iecl.get(i);
+	private void addResidueDetailsOfPartner(List<InterfaceResidueItem> iril, InterfaceEvolContext iec, boolean includeEntropy, boolean includeKaks, int molecId) {
 		ChainInterface interf = iec.getInterface();
-		ChainEvolContext firstCec = iec.getFirstChainEvolContext();
-		ChainEvolContext secondCec = iec.getSecondChainEvolContext();
-		List<InterfaceResidueItem> partner1 = new ArrayList<InterfaceResidueItem>();
-		List<InterfaceResidueItem> partner2 = new ArrayList<InterfaceResidueItem>();
-		HashMap<Integer, List<InterfaceResidueItem>>  resDetailsMap = new HashMap<Integer, List<InterfaceResidueItem>>();
-		resDetailsMap.put(1, partner1);
-		resDetailsMap.put(2, partner2);
-		if (interf.isFirstProtein() && interf.isSecondProtein()) {
-			PdbChain firstMol = interf.getFirstMolecule();
-			InterfaceRimCore rimCore = interf.getFirstRimCore(); 
+		ChainEvolContext cec = iec.getChainEvolContext(molecId);
+		
+		if (interf.isProtein()) {
+			PdbChain mol = null;
+			InterfaceRimCore rimCore = null;
+			if (molecId==FIRST) {
+				mol = interf.getFirstMolecule();
+				rimCore = interf.getFirstRimCore();
+			}
+			else if (molecId==SECOND) {
+				mol = interf.getSecondMolecule();
+				rimCore = interf.getSecondRimCore();
+			}
+			 
 			List<Double> entropies = null;
-			if (firstCec.hasQueryMatch()) 
-				entropies = firstCec.getConservationScores(ScoringType.ENTROPY);
+			if (cec.hasQueryMatch()) 
+				entropies = cec.getConservationScores(ScoringType.ENTROPY);
 			List<Double> kaksRatios = null;
 			if (includeKaks && iec.canDoKaks())
-				kaksRatios = firstCec.getConservationScores(ScoringType.KAKS);
-			for (Residue residue:firstMol) {
+				kaksRatios = cec.getConservationScores(ScoringType.KAKS);
+			for (Residue residue:mol) {
 				String resType = residue.getLongCode();
 				int assignment = -1;
 				float asa = (float) residue.getAsa();
@@ -319,8 +326,8 @@ public class WebUIDataAdaptor {
 				if (assignment==-1 && asa>0) assignment = InterfaceResidueItem.SURFACE;
 
 				int queryUniprotPos = -1;
-				if (!firstMol.isNonPolyChain() && firstMol.getSequence().isProtein() && firstCec.hasQueryMatch()) 
-					queryUniprotPos = firstCec.getQueryUniprotPosForPDBPos(residue.getSerial());
+				if (!mol.isNonPolyChain() && mol.getSequence().isProtein() && cec.hasQueryMatch()) 
+					queryUniprotPos = cec.getQueryUniprotPosForPDBPos(residue.getSerial());
 
 				float entropy = -1;
 				if (entropies!=null && residue instanceof AaResidue) {	
@@ -330,100 +337,16 @@ public class WebUIDataAdaptor {
 				if (includeKaks && iec.canDoKaks() && (residue instanceof AaResidue) && queryUniprotPos!=-1)
 					kaks = (float)kaksRatios.get(queryUniprotPos).doubleValue();
 				InterfaceResidueItem iri = new InterfaceResidueItem(residue.getSerial(),resType,asa,bsa,bsa/asa,assignment);
+				iri.setStructure(molecId+1); // structure ids are 1 and 2 while molecId are 0 and 1
 
 				List<InterfaceResidueMethodItem> scores = new ArrayList<InterfaceResidueMethodItem>();
-				scores.add(new InterfaceResidueMethodItem(entropy, "entropy"));
+				scores.add(new InterfaceResidueMethodItem(0, "geometry"));
+				if (includeEntropy) scores.add(new InterfaceResidueMethodItem(entropy, "entropy"));
 				if (includeKaks && iec.canDoKaks()) scores.add(new InterfaceResidueMethodItem(kaks, "kaks"));
 				iri.setInterfaceResidueMethodItems(scores);
-				partner1.add(iri);
-			}
-			PdbChain secondMol = interf.getSecondMolecule();
-			rimCore = interf.getSecondRimCore();
-			entropies = null;
-			if (secondCec.hasQueryMatch()) 
-				entropies = secondCec.getConservationScores(ScoringType.ENTROPY);
-			if (includeKaks && iec.canDoKaks()) 
-				kaksRatios = secondCec.getConservationScores(ScoringType.KAKS);
-			for (Residue residue:secondMol) {
-				String resType = residue.getLongCode();
-				int assignment = -1;
-				float asa = (float) residue.getAsa();
-				float bsa = (float) residue.getBsa();
-				if (rimCore.getRimResidues().contains(residue)) assignment = InterfaceResidueItem.RIM;
-				else if (rimCore.getCoreResidues().contains(residue)) assignment = InterfaceResidueItem.CORE;
-
-				if (assignment==-1 && asa>0) assignment = InterfaceResidueItem.SURFACE;
-
-				int queryUniprotPos = -1;
-				if (!secondMol.isNonPolyChain() && secondMol.getSequence().isProtein() && secondCec.hasQueryMatch()) 
-					queryUniprotPos = secondCec.getQueryUniprotPosForPDBPos(residue.getSerial());
-
-				float entropy = -1;
-				if (entropies!=null && residue instanceof AaResidue) {
-					if (queryUniprotPos!=-1) entropy = (float) entropies.get(queryUniprotPos).doubleValue();
-				}
-				float kaks = -1;
-				if (includeKaks && iec.canDoKaks() && (residue instanceof AaResidue) && queryUniprotPos!=-1)
-					kaks = (float) kaksRatios.get(queryUniprotPos).doubleValue();
-				InterfaceResidueItem iri = new InterfaceResidueItem(residue.getSerial(),resType,asa,bsa,bsa/asa,assignment);
-				List<InterfaceResidueMethodItem> scores = new ArrayList<InterfaceResidueMethodItem>();
-				scores.add(new InterfaceResidueMethodItem(entropy, "entropy"));
-				if (includeKaks && iec.canDoKaks())
-					scores.add(new InterfaceResidueMethodItem(kaks, "kaks"));
-				iri.setInterfaceResidueMethodItems(scores);
-				partner2.add(iri);
+				iril.add(iri);
 			}
 		}
-		Goodies.serialize(file, resDetailsMap);
 	}
 	
-	private void writeResidueDetailsFile(int i,File file) throws IOException {
-		ChainInterface interf = interfaces.get(i+1);
-
-		List<InterfaceResidueItem> partner1 = new ArrayList<InterfaceResidueItem>();
-		List<InterfaceResidueItem> partner2 = new ArrayList<InterfaceResidueItem>();
-		HashMap<Integer, List<InterfaceResidueItem>>  resDetailsMap = new HashMap<Integer, List<InterfaceResidueItem>>();
-		resDetailsMap.put(1, partner1);
-		resDetailsMap.put(2, partner2);
-		if (interf.isFirstProtein() && interf.isSecondProtein()) {
-			PdbChain firstMol = interf.getFirstMolecule();
-			InterfaceRimCore rimCore = interf.getFirstRimCore(); 
-			for (Residue residue:firstMol) {
-				String resType = residue.getLongCode();
-				int assignment = -1;
-				float asa = (float) residue.getAsa();
-				float bsa = (float) residue.getBsa();
-				if (rimCore.getRimResidues().contains(residue)) assignment = InterfaceResidueItem.RIM;
-				else if (rimCore.getCoreResidues().contains(residue)) assignment = InterfaceResidueItem.CORE;
-
-				if (assignment==-1 && asa>0) assignment = InterfaceResidueItem.SURFACE;
-
-				InterfaceResidueItem iri = new InterfaceResidueItem(residue.getSerial(),resType,asa,bsa,bsa/asa,assignment);
-
-				List<InterfaceResidueMethodItem> scores = new ArrayList<InterfaceResidueMethodItem>();
-				scores.add(new InterfaceResidueMethodItem(0, "geometry"));
-				iri.setInterfaceResidueMethodItems(scores);
-				partner1.add(iri);
-			}
-			PdbChain secondMol = interf.getSecondMolecule();
-			rimCore = interf.getSecondRimCore();
-			for (Residue residue:secondMol) {
-				String resType = residue.getLongCode();
-				int assignment = -1;
-				float asa = (float) residue.getAsa();
-				float bsa = (float) residue.getBsa();
-				if (rimCore.getRimResidues().contains(residue)) assignment = InterfaceResidueItem.RIM;
-				else if (rimCore.getCoreResidues().contains(residue)) assignment = InterfaceResidueItem.CORE;
-
-				if (assignment==-1 && asa>0) assignment = InterfaceResidueItem.SURFACE;
-
-				InterfaceResidueItem iri = new InterfaceResidueItem(residue.getSerial(),resType,asa,bsa,bsa/asa,assignment);
-				List<InterfaceResidueMethodItem> scores = new ArrayList<InterfaceResidueMethodItem>();
-				scores.add(new InterfaceResidueMethodItem(0, "geometry"));
-				iri.setInterfaceResidueMethodItems(scores);
-				partner2.add(iri);
-			}
-		}
-		Goodies.serialize(file, resDetailsMap);
-	}
 }
