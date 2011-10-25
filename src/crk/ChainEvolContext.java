@@ -107,10 +107,12 @@ public class ChainEvolContext implements Serializable {
 						msg+=(uniId+" ");
 					}
 					LOGGER.error(msg);
-					LOGGER.error("Check if the PDB entry is biologically reasonable (likely to be an engineered entry). Won't continue.");
-					System.exit(1);
+					LOGGER.error("Check if the PDB entry is biologically reasonable (likely to be an engineered entry). Won't do evolution analysis on this chain.");
+					// we continue with a null query, i.e. we treat it in the same way as no match
+					query = null;
+				} else {
+					query = new UniprotEntry(uniqUniIds.iterator().next());
 				}
-				query = new UniprotEntry(uniqUniIds.iterator().next());
 
 			} catch (NoMatchFoundException e) {
 				LOGGER.warn("No SIFTS mapping could be found for "+pdbCode+representativeChain);
