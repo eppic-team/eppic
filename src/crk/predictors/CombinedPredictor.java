@@ -26,6 +26,8 @@ public class CombinedPredictor implements InterfaceTypePredictor {
 	
 	@Override
 	public CallType getCall() {
+		
+		// 1st the hard area limits
 		if (iec.getInterface().getInterfaceArea()<GeometryPredictor.MIN_AREA_BIOCALL) {
 			callReason = "Area below hard limit "+String.format("%4.0f", GeometryPredictor.MIN_AREA_BIOCALL);
 			call = CallType.CRYSTAL;
@@ -36,16 +38,24 @@ public class CombinedPredictor implements InterfaceTypePredictor {
 		}
 		else {
 			int[] counts = countCalls();
+			// 2 bio calls
 			if (counts[0]>=2) {
 				callReason = "BIO consensus ("+counts[0]+" votes)";
 				call = CallType.BIO;
 			} 
+			// 2 xtal calls
 			else if (counts[1]>=2) {
 				callReason = "XTAL consensus ("+counts[1]+" votes)";
 				call = CallType.CRYSTAL;
 			}
+			// 2 nopreds (necessarily from the evol methods): we take geometry as the call
 			else if (counts[2]==2) {
-				callReason = gp.getCallReason();
+				callReason = "Prediction purely geometrical (no evolutionary prediction could be made): "+gp.getCallReason();
+				call = gp.getCall();
+			}
+			// 1 nopred (an evol method), 1 xtal, 1 bio
+			else {
+				callReason ="No consensus. Z-score "+zp.getCall().getName()+", core/rim "+rp.getCall().getName()+". Taking geometrical call as final: "+gp.getCallReason();
 				call = gp.getCall();
 			}
 		}

@@ -13,6 +13,7 @@ import crk.ChainEvolContextList;
 import crk.InterfaceEvolContext;
 import crk.InterfaceEvolContextList;
 import crk.ScoringType;
+import crk.predictors.CombinedPredictor;
 import crk.predictors.EvolInterfZPredictor;
 import crk.predictors.EvolRimCorePredictor;
 import crk.predictors.GeometryPredictor;
@@ -41,7 +42,7 @@ public class CalcStats {
 	
 	private static final int MIN_NUM_HOMOLOGS = 10;
 	
-	private static final double DEFBIOCALLCUTOFF = 0.85;
+	private static final double DEFCORERIMCALLCUTOFF = 0.85;
 	private static final int DEFMINNUMBERCORERESFORBIO = 6;
 	private static final double DEFZSCORECUTOFF = -1;
 	
@@ -55,7 +56,7 @@ public class CalcStats {
 	private static File bioList   = null;
 	private static File xtalList  = null;
 	
-	private static double[] bioCallCutoffs = {DEFBIOCALLCUTOFF};
+	private static double[] corerimCallCutoffs = {DEFCORERIMCALLCUTOFF};
 	private static int[] minNumberCoreResForBios = {DEFMINNUMBERCORERESFORBIO};
 	private static double[] zscoreCutoffs = {DEFZSCORECUTOFF};
 	
@@ -63,6 +64,8 @@ public class CalcStats {
 	private static double[] caCutoffsCR = {DEFCACUTOFF_FOR_CR};
 	private static double[] caCutoffsZ = {DEFCACUTOFF_FOR_Z};
 
+	private static boolean doKaks = false;
+	
 	/**
 	 * @param args
 	 */
@@ -77,20 +80,21 @@ public class CalcStats {
 		"                 analyse that are known to be true bio contacts\n" +
 		"   -x         :  list file containing all the pdbIds + interface serials to \n" +
 		"                 analyse that are known to be true xtal contacts\n" +
-		"   [-e]       :  core assignment cutoffs for geometry scoring, comma separated. If " +
+		"   [-e]       :  core assignment cutoffs for geometry scoring, comma separated. If\n" +
 		"                 omitted then only one used: "+String.format("%4.2f",DEFCACUTOFF_FOR_G)+"\n" +
-	    "   [-c]       :  core assignment cutoffs for evolutionary core/rim scoring, comma separated. " +
+	    "   [-c]       :  core assignment cutoffs for evolutionary core/rim scoring, comma separated.\n" +
 	    "                 If omitted then only one used: "+String.format("%4.2f",DEFCACUTOFF_FOR_CR)+"\n" +
 	    "   [-z]       :  core assignemnt cutoffs for evolutionary z-scoring, comma separated. If \n" +
 	    "                 omitted then only one used: "+String.format("%4.2f", DEFCACUTOFF_FOR_Z)+"\n"+
-		"   [-m]       :  minimum number of core residues for geometry calls: below xtal, equals" +
+		"   [-m]       :  minimum number of core residues for geometry calls: below xtal, equals\n" +
 		"                 or above bio. Comma separated. If omitted only one used: "+DEFMINNUMBERCORERESFORBIO+"\n" +
 		"   [-t]       :  evolutionary score core/rim ratio cutoffs to call bio/xtal, comma separated. If \n" +
-		"                 omitted then only one used: "+String.format("%4.2f",DEFBIOCALLCUTOFF)+"\n" +
-		"   [-y]       :  z-score cutoff to call bio/xtal, comma separated. If omitted" +
-		"                 then only one used: "+String.format("%4.2f",DEFZSCORECUTOFF)+"\n";
+		"                 omitted then only one used: "+String.format("%4.2f",DEFCORERIMCALLCUTOFF)+"\n" +
+		"   [-y]       :  z-score cutoff to call bio/xtal, comma separated. If omitted\n" +
+		"                 then only one used: "+String.format("%4.2f",DEFZSCORECUTOFF)+"\n" +
+		"   [-k]       :  whether Ka/Ks stats are displayed. Default: no Ka/Ks stats displayed\n\n";
 
-		Getopt g = new Getopt(PROGRAM_NAME, args, "B:X:b:x:e:c:z:m:t:y:h?");
+		Getopt g = new Getopt(PROGRAM_NAME, args, "B:X:b:x:e:c:z:m:t:y:kh?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
@@ -136,9 +140,9 @@ public class CalcStats {
 				break;
 			case 't':
 				tokens = g.getOptarg().split(",");
-				bioCallCutoffs = new double[tokens.length];
+				corerimCallCutoffs = new double[tokens.length];
 				for (int i=0;i<tokens.length;i++) {
-					bioCallCutoffs[i] = Double.parseDouble(tokens[i]);
+					corerimCallCutoffs[i] = Double.parseDouble(tokens[i]);
 				}
 				break;
 			case 'y':
@@ -147,6 +151,9 @@ public class CalcStats {
 				for (int i=0;i<tokens.length;i++) {
 					zscoreCutoffs[i] = Double.parseDouble(tokens[i]);
 				}
+				break;
+			case 'k':
+				doKaks = true;
 				break;
 			case 'h':
 			case '?':
@@ -280,16 +287,28 @@ public class CalcStats {
 		
 		ArrayList<PredictionStatsSet> list = new ArrayList<PredictionStatsSet>();
 		// counts for core/rim scoring: the 2 outer indices correspond to the 2 parameters scoType, weighted (each can have 2 values)
-		int[][][][] countBiosCR = new int[caCutoffsCR.length][bioCallCutoffs.length][2][2];
-		int[][][][] countXtalsCR = new int[caCutoffsCR.length][bioCallCutoffs.length][2][2];
+		int[][][][] countBiosCR = new int[caCutoffsCR.length][corerimCallCutoffs.length][2][2];
+		int[][][][] countXtalsCR = new int[caCutoffsCR.length][corerimCallCutoffs.length][2][2];
 		// counts for z-score scoring
 		int[][] countBiosZ = new int[caCutoffsZ.length][zscoreCutoffs.length];
 		int[][] countXtalsZ = new int[caCutoffsZ.length][zscoreCutoffs.length];
+		// counts for combined scoring: fixed geom cutoffs, 2 indices for core/rim, 2 indices for z-scoring
+		int[][][][] countBiosComb = new int[caCutoffsCR.length][corerimCallCutoffs.length][caCutoffsZ.length][zscoreCutoffs.length];
+		int[][][][] countXtalsComb = new int[caCutoffsCR.length][corerimCallCutoffs.length][caCutoffsZ.length][zscoreCutoffs.length];
 		
 		for (String pdbCode:toAnalyse.keySet()) {
 			File chainevolcontextdatFile = new File(dir,pdbCode+".chainevolcontext.dat");
 			File interfdatFile = new File(dir,pdbCode+".interfaces.dat");
-			if (!chainevolcontextdatFile.exists() || !interfdatFile.exists()) continue; // failed predictions
+			if (!chainevolcontextdatFile.exists() && !interfdatFile.exists()) {
+				System.err.println("Warning: both chainevolcontext.dat and interf.dat files missing for "+pdbCode);
+				continue; // failed predictions
+			} else if (!chainevolcontextdatFile.exists()) {
+				System.err.println("Warning: chainevolcontext.dat missing but interf.dat file present for "+pdbCode);
+				continue;
+			} else if (!interfdatFile.exists()) {
+				System.err.println("Warning: interf.dat missing but chainevolcontext.dat file present for "+pdbCode);
+				continue;				
+			}
 
 			ChainInterfaceList cil = Utils.readChainInterfaceList(interfdatFile);
 			ChainEvolContextList cecl = Utils.readChainEvolContextList(chainevolcontextdatFile);
@@ -298,43 +317,57 @@ public class CalcStats {
 			
 			for (int id:toAnalyse.get(pdbCode)) {
 
-				for (int i=0;i<caCutoffsCR.length;i++) {
-					for (int k=0;k<bioCallCutoffs.length;k++) {
+				ChainInterface interf = cil.get(id);
+				InterfaceEvolContext iec = iecList.get(id-1);
 
-						ChainInterface interf = cil.get(id);
-						InterfaceEvolContext iec = iecList.get(id-1);
-						//InterfaceEvolContext iec = new InterfaceEvolContext(interf, cecl, null);
+				// evol core/rim scoring
+				for (int i=0;i<caCutoffsCR.length;i++) {
+					for (int k=0;k<corerimCallCutoffs.length;k++) {
 
 						doSingleEvolCRScoring(iec, interf, ScoringType.ENTROPY, false, countBiosCR, countXtalsCR, i, k, 0, 0);
 						doSingleEvolCRScoring(iec, interf, ScoringType.ENTROPY,  true, countBiosCR, countXtalsCR, i, k, 0, 1);
-						doSingleEvolCRScoring(iec, interf, ScoringType.KAKS,    false, countBiosCR, countXtalsCR, i, k, 1, 0);
-						doSingleEvolCRScoring(iec, interf, ScoringType.KAKS,     true, countBiosCR, countXtalsCR, i, k, 1, 1);
+						if (doKaks) {
+							doSingleEvolCRScoring(iec, interf, ScoringType.KAKS,    false, countBiosCR, countXtalsCR, i, k, 1, 0);
+							doSingleEvolCRScoring(iec, interf, ScoringType.KAKS,     true, countBiosCR, countXtalsCR, i, k, 1, 1);
+						}
 					}
 				}
 				
+				// evol z-score scoring
 				for (int i=0;i<caCutoffsZ.length;i++) {
 					for (int k=0;k<zscoreCutoffs.length;k++) {
-						ChainInterface interf = cil.get(id);
-						InterfaceEvolContext iec = iecList.get(id-1);
-						//InterfaceEvolContext iec = new InterfaceEvolContext(interf, cecl, null);
 						
 						doSingleEvolZScoring(iec, interf, countBiosZ, countXtalsZ, i, k);
+					}
+				}
+				
+				// combined scoring
+				for (int i=0;i<caCutoffsCR.length;i++) {
+					for (int k=0;k<corerimCallCutoffs.length;k++) {
+						for (int l=0;l<caCutoffsZ.length;l++) {
+							for (int m=0;m<zscoreCutoffs.length;m++) {
+								doSingleCombinedScoring(iec, interf, countBiosComb, countXtalsComb, i, k, l, m);
+							}
+						}
 					}
 				}
 			}
 		}
 		
+		
 		for (int i=0;i<caCutoffsCR.length;i++) {
-			for (int k=0;k<bioCallCutoffs.length;k++) {
+			for (int k=0;k<corerimCallCutoffs.length;k++) {
 				
 				list.add(new PredictionStatsSet(dir.getName(),truth,ScoringType.ENTROPY, false, false,
-						caCutoffsCR[i],-1,bioCallCutoffs[k],countBiosCR[i][k][0][0],countXtalsCR[i][k][0][0],total));
+						caCutoffsCR[i],-1,corerimCallCutoffs[k],countBiosCR[i][k][0][0],countXtalsCR[i][k][0][0],total));
 				list.add(new PredictionStatsSet(dir.getName(),truth,ScoringType.ENTROPY, true, false,
-						caCutoffsCR[i],-1,bioCallCutoffs[k],countBiosCR[i][k][0][1],countXtalsCR[i][k][0][1],total));
-				list.add(new PredictionStatsSet(dir.getName(),truth,ScoringType.KAKS, false, false,
-						caCutoffsCR[i],-1,bioCallCutoffs[k],countBiosCR[i][k][1][0],countXtalsCR[i][k][1][0],total));
-				list.add(new PredictionStatsSet(dir.getName(),truth,ScoringType.KAKS, true, false,
-						caCutoffsCR[i],-1,bioCallCutoffs[k],countBiosCR[i][k][1][1],countXtalsCR[i][k][1][1],total));
+						caCutoffsCR[i],-1,corerimCallCutoffs[k],countBiosCR[i][k][0][1],countXtalsCR[i][k][0][1],total));
+				if (doKaks) {
+					list.add(new PredictionStatsSet(dir.getName(),truth,ScoringType.KAKS, false, false,
+						caCutoffsCR[i],-1,corerimCallCutoffs[k],countBiosCR[i][k][1][0],countXtalsCR[i][k][1][0],total));
+					list.add(new PredictionStatsSet(dir.getName(),truth,ScoringType.KAKS, true, false,
+						caCutoffsCR[i],-1,corerimCallCutoffs[k],countBiosCR[i][k][1][1],countXtalsCR[i][k][1][1],total));
+				}
 			}
 		}
 		
@@ -342,6 +375,18 @@ public class CalcStats {
 			for (int k=0;k<zscoreCutoffs.length;k++) {
 				list.add(new PredictionStatsSet(dir.getName(),truth,ScoringType.ZSCORE, false, false,
 						caCutoffsZ[i],-1,zscoreCutoffs[k],countBiosZ[i][k],countXtalsZ[i][k],total));
+			}
+		}
+		
+		for (int i=0;i<caCutoffsCR.length;i++) {
+			for (int k=0;k<corerimCallCutoffs.length;k++) {
+				for (int l=0;l<caCutoffsZ.length;l++) {
+					for (int m=0;m<zscoreCutoffs.length;m++) {
+						list.add(new PredictionStatsSet(dir.getName(),truth,ScoringType.COMBINED, false, false,
+								Double.NaN,-1,Double.NaN,countBiosComb[i][k][l][m],countXtalsComb[i][k][l][m],total));
+					
+					}
+				}
 			}
 		}
 		
@@ -364,7 +409,7 @@ public class CalcStats {
 		} else if (scoType==ScoringType.KAKS) {
 			ercp.scoreKaKs(weighted);
 		}
-		ercp.setCallCutoff(bioCallCutoffs[k]);
+		ercp.setCallCutoff(corerimCallCutoffs[k]);
 		iec.setHomologsCutoff(MIN_NUM_HOMOLOGS);
 
 		CallType call = ercp.getCall();
@@ -391,6 +436,43 @@ public class CalcStats {
 		else if (call==CallType.CRYSTAL) countXtals[i][k]++;
 		
 		eizp.resetCall();
+		
+	}
+	
+	private static void doSingleCombinedScoring(InterfaceEvolContext iec, ChainInterface interf, 
+			int[][][][] countBios, int[][][][] countXtals, int i, int k, int l, int m) {
+
+		//interf.calcRimAndCore(caCutoffsG[i]);
+		interf.calcRimAndCore(DEFCACUTOFF_FOR_G);
+		GeometryPredictor gp = new GeometryPredictor(interf);
+		//gp.setBsaToAsaCutoff(caCutoffsG[i]);
+		gp.setBsaToAsaCutoff(DEFCACUTOFF_FOR_G);
+		//gp.setMinCoreSizeForBio(minNumberCoreResForBios[j]);
+		gp.setMinCoreSizeForBio(DEFMINNUMBERCORERESFORBIO);
+		
+		interf.calcRimAndCore(caCutoffsCR[i]);
+		EvolRimCorePredictor ercp = new EvolRimCorePredictor(iec);
+		ercp.scoreEntropy(false);
+		ercp.setCallCutoff(corerimCallCutoffs[k]);
+		iec.setHomologsCutoff(MIN_NUM_HOMOLOGS);
+		
+		interf.calcRimAndCore(caCutoffsZ[l]);
+		EvolInterfZPredictor eizp = new EvolInterfZPredictor(iec);
+		eizp.scoreEntropy();
+		eizp.setZscoreCutoff(zscoreCutoffs[m]);
+		iec.setHomologsCutoff(MIN_NUM_HOMOLOGS);
+		
+		CombinedPredictor cp = new CombinedPredictor(iec, gp, ercp, eizp);
+
+		CallType call = cp.getCall();
+		if (call==CallType.BIO) countBios[i][k][l][m]++;
+		else if (call==CallType.CRYSTAL) countXtals[i][k][l][m]++;
+		else {
+			// do nothing, just a place holder for debugging
+			return;
+		}
+		
+		
 		
 	}
 }
