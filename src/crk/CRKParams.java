@@ -27,8 +27,8 @@ public class CRKParams {
 	public static final double     INTERFACE_DIST_CUTOFF = 5.9;
 	// shorter chains will be considered peptides
 	public static final int	       PEPTIDE_LENGTH_CUTOFF = 20; 
-	// 5% maximum allowed unreliable residues for calling nopred
-	public static final double     MAX_ALLOWED_UNREL_RES = 0.05; 
+	// 10% maximum allowed unreliable residues for calling nopred
+	public static final double     MAX_ALLOWED_UNREL_RES = 0.1; 
 	// minimum number of core residues per interface member to calculate evol score (if fewer 
 	// we don't calculate anything becase it would be too unreliable statistically)
 	public static final int        MIN_NUMBER_CORE_RESIDUES_EVOL_SCORE = 4;  
