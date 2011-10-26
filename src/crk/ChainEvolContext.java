@@ -551,13 +551,15 @@ public class ChainEvolContext implements Serializable {
 
 	/**
 	 * Tells whether Ka/Ks analysis is possible for this chain.
-	 * Ka/Ks analysis will not be possible in 2 cases: no representative CDS for the query
-	 * or when there's no consistency in genetic code types in homologs
+	 * Ka/Ks analysis will not be possible in following cases: 
+	 * - no uniprot query match 
+	 * - no representative CDS for the query 
+	 * - no consistency in genetic code types in homologs
 	 * @return
 	 */
 	public boolean canDoKaks() {
 		boolean canDoKaks = true;
-		if (!this.homologs.hasCDSData() || getQueryRepCDS()==null || !isConsistentGeneticCodeType()) {
+		if (!hasQueryMatch() || !this.homologs.hasCDSData() || getQueryRepCDS()==null || !isConsistentGeneticCodeType()) {
 			canDoKaks = false;
 		}
 		return canDoKaks;
