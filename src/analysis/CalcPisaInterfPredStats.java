@@ -108,10 +108,20 @@ public class CalcPisaInterfPredStats {
 			
 			// we first report about oligomeric prediction
 			System.out.println(pdbCode+"\t"+op.getMmSize());
+
+			if (op.getMmSize()==-1) {
+				// if gray prediction all given interfaces are not predicted
+				for (int interfId:interfList.get(pdbCode)) {
+					System.out.println("  "+interfId+" gray");
+					total++;
+				}
+				continue;
+			}			
 			
-			if (op.getMmSize()<2) {
+			if (op.getMmSize()==1) {
 				// if assembly monomeric all given interfaces are predicted crystal
-				for (int i=0;i<interfList.get(pdbCode).size();i++) {
+				for (int interfId:interfList.get(pdbCode)) {
+					System.out.println("  "+interfId+" xtal");
 					countXtalCalls++;
 					total++;
 				}
