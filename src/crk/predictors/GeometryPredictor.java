@@ -49,6 +49,9 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 	
 	@Override
 	public CallType getCall() {
+		
+		if (call!=null) return call;
+		
 		interf.calcRimAndCore(bsaToAsaCutoff);
 		int size1 = interf.getFirstRimCore().getCoreSize();
 		int size2 = interf.getSecondRimCore().getCoreSize();

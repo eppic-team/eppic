@@ -65,6 +65,9 @@ public class EvolInterfZPredictor implements InterfaceTypePredictor {
 	
 	@Override
 	public CallType getCall() {
+		
+		if (call!=null) return call;
+		
 		// the votes with voters (no anonymous vote here!)
 		bioCalls = new ArrayList<Integer>();
 		xtalCalls = new ArrayList<Integer>();
