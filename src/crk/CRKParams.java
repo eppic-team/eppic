@@ -24,6 +24,7 @@ public class CRKParams {
 	protected static final String  ENTROPIES_FILE_SUFFIX = ".entropies";
 	protected static final String  KAKS_FILE_SUFFIX = ".kaks";
 	protected static final String  ZSCORES_FILE_SUFFIX = ".zscores";
+	protected static final String  COMBINED_FILE_SUFFIX = ".combined";
 	public static final double     INTERFACE_DIST_CUTOFF = 5.9;
 	// shorter chains will be considered peptides
 	public static final int	       PEPTIDE_LENGTH_CUTOFF = 20; 

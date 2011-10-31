@@ -18,6 +18,7 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 import org.xml.sax.SAXException;
 
+import crk.predictors.CombinedPredictor;
 import crk.predictors.GeometryPredictor;
 
 import owl.core.connections.pisa.PisaConnection;
@@ -48,6 +49,7 @@ public class CRKMain {
 	private ChainInterfaceList interfaces;
 	private ChainEvolContextList cecs;
 	private InterfaceEvolContextList iecList;
+	private List<GeometryPredictor> gps;
 	
 	private WebUIDataAdaptor wuiAdaptor;
 		
@@ -235,7 +237,7 @@ public class CRKMain {
 	public void doGeomScoring() throws CRKException {
 
 		try {
-			List<GeometryPredictor> gps = new ArrayList<GeometryPredictor>();
+			gps = new ArrayList<GeometryPredictor>();
 			PrintStream scoreGeomPS = new PrintStream(params.getOutputFile(CRKParams.GEOMETRY_FILE_SUFFIX+".scores"));
 			GeometryPredictor.printScoringHeaders(scoreGeomPS);
 			for (ChainInterface interf:interfaces) {
@@ -551,6 +553,29 @@ public class CRKMain {
 		params.getProgressLog().println("Done scoring");
 	}
 	
+	private void doCombinedScoring() throws CRKException {
+		try {
+		
+		iecList.setCallCutoff(params.getEntrCallCutoff());
+		iecList.setZscoreCutoff(params.getZscoreCutoff());
+		interfaces.calcRimAndCores(params.getCAcutoffForRimCore());
+		iecList.scoreEntropy(false);
+		interfaces.calcRimAndCores(params.getCAcutoffForZscore());
+		iecList.scoreZscore();
+		
+		PrintStream scoreCombPS = new PrintStream(params.getOutputFile(CRKParams.COMBINED_FILE_SUFFIX+".scores"));
+		CombinedPredictor.printScoringHeaders(scoreCombPS);
+		for (int i=0;i<iecList.size();i++) {
+			CombinedPredictor cp = 
+					new CombinedPredictor(iecList.get(i), gps.get(i), iecList.getEvolRimCorePredictor(i), iecList.getEvolInterfZPredictor(i));
+			cp.printScoresLine(scoreCombPS);
+		}
+		scoreCombPS.close();
+		} catch (IOException e) {
+			throw new CRKException(e,"Couldn't write final combined scores file. "+e.getMessage(),true);
+		}
+	}
+	
 	/**
 	 * The main of CRK 
 	 */
@@ -599,6 +624,8 @@ public class CRKMain {
 				// 3 scoring
 				crkMain.doEvolScoring();
 			}
+			
+			crkMain.doCombinedScoring();
 			
 			crkMain.params.getProgressLog().println("Writing pymol files");
 			crkMain.doWritePymolFiles();

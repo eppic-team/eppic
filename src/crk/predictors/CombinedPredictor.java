@@ -1,6 +1,10 @@
 package crk.predictors;
 
+import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.List;
+
+import owl.core.structure.ChainInterface;
 
 import crk.CallType;
 import crk.InterfaceEvolContext;
@@ -22,6 +26,7 @@ public class CombinedPredictor implements InterfaceTypePredictor {
 		this.gp=gp;
 		this.rp=rp;
 		this.zp=zp;
+		this.warnings = new ArrayList<String>();
 	}
 	
 	@Override
@@ -128,4 +133,29 @@ public class CombinedPredictor implements InterfaceTypePredictor {
 
 		return counts;
 	}
+	
+	public static void printScoringHeaders(PrintStream ps) {
+		ps.printf("%15s\t%6s\t","interface","area");
+		ps.printf("%6s\t%6s\t%6s\t%6s\t%6s","geom","c/r","z","call","reason");
+		ps.println();
+		
+	}
+	
+	public void printScoresLine(PrintStream ps) {
+		getCall();// in case it's not calculated yet
+		ChainInterface interf = iec.getInterface();
+		ps.printf("%15s\t%6.1f\t",
+				interf.getId()+"("+interf.getFirstMolecule().getPdbChainCode()+"+"+interf.getSecondMolecule().getPdbChainCode()+")",
+				interf.getInterfaceArea());
+		ps.printf("%6s\t%6s\t%6s\t%6s\t%s", gp.getCall().getName(),rp.getCall().getName(),zp.getCall().getName(),call.getName(),getCallReason());
+		
+		ps.println();
+		if (!warnings.isEmpty()){
+			ps.println("  Warnings: ");
+			for (String warning:getWarnings()) {
+				ps.println("     "+warning);
+			}
+		}
+	}
+	
 }
