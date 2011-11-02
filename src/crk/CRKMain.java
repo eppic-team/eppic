@@ -623,9 +623,12 @@ public class CRKMain {
 
 				// 3 scoring
 				crkMain.doEvolScoring();
+				
+				// 4 combined scoring
+				crkMain.doCombinedScoring();
 			}
 			
-			crkMain.doCombinedScoring();
+			
 			
 			crkMain.params.getProgressLog().println("Writing pymol files");
 			crkMain.doWritePymolFiles();
