@@ -85,7 +85,6 @@ public class PDBScoreDAOImpl implements PDBScoreDAO
 			entityManager = EntityManagerHandler.getEntityManager();
 			entityManager.getTransaction().begin();
 			entityManager.persist(pdbScoreItem);
-			entityManager.flush();
 			entityManager.getTransaction().commit();
 		}
 		catch(Throwable e)

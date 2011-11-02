@@ -56,16 +56,6 @@ public class InterfaceResidueItemDAOImpl implements InterfaceResidueItemDAO
 		catch(Throwable e)
 		{
 			e.printStackTrace();
-			
-			try
-			{
-				entityManager.getTransaction().rollback();
-			}
-			catch(Throwable t)
-			{
-				
-			}
-			
 			throw new CrkWebException(e);
 		}
 		finally
@@ -140,16 +130,6 @@ public class InterfaceResidueItemDAOImpl implements InterfaceResidueItemDAO
 		catch(Throwable e)
 		{
 			e.printStackTrace();
-			
-			try
-			{
-				entityManager.getTransaction().rollback();
-			}
-			catch(Throwable t)
-			{
-				
-			}
-			
 			throw new CrkWebException(e);
 		}
 		finally
