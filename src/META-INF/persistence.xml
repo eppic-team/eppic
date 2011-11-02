@@ -4,7 +4,6 @@
 		<description>Persistence unit for the CRK application</description>
 		<provider>org.hibernate.ejb.HibernatePersistence</provider>
 		
-		<class>ch.systemsx.sybit.crkwebui.server.db.model.Job</class>
 		<class>ch.systemsx.sybit.crkwebui.server.db.model.IPForbidden</class>
 		<class>ch.systemsx.sybit.crkwebui.server.db.model.IPAllowed</class>
 		 
