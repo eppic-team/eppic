@@ -30,6 +30,7 @@ public class InterfaceScoreItem implements Serializable
 	private double unweightedRatio2Scores;
 	private double unweightedFinalScores; 
 	
+	// we only have one call here: the one from the unweighted scores
 	private String call;
 	private String callReason;
 	

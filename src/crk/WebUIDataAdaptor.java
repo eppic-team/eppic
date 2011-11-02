@@ -244,8 +244,8 @@ public class WebUIDataAdaptor {
 					isi.setId(iec.getInterface().getId());
 					isi.setMethod(method);
 
-					// TODO notice here we are only getting call, callReason and warnings from first of the 2 added (usually unweighted) 
-					// TODO we still have to decide how to get a call from both weighted/unweighted scores
+					// NOTE: here we are only getting call, callReason and warnings from first of the 2 added (unweighted) 
+					// thus we are ignoring the weighted calls in the web ui
 					CallType call = ercp.getCall();	
 					isi.setCall(call.getName());
 					isi.setCallReason(ercp.getCallReason());
