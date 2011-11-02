@@ -6,6 +6,7 @@ import java.util.List;
 
 import owl.core.structure.ChainInterface;
 
+import crk.CRKParams;
 import crk.CallType;
 import crk.InterfaceEvolContext;
 
@@ -32,8 +33,19 @@ public class CombinedPredictor implements InterfaceTypePredictor {
 	@Override
 	public CallType getCall() {
 		
-		// 1st the hard area limits
-		if (iec.getInterface().getInterfaceArea()<GeometryPredictor.MIN_AREA_BIOCALL) {
+		
+		// 0 if peptide, we don't use hard area limits
+		// for some cases this works nicely (e.g. 1w9q interface 4)
+		boolean useHardLimits = true;
+		if (iec.getInterface().getFirstMolecule().getFullLength()<=CRKParams.PEPTIDE_LENGTH_CUTOFF || 
+			iec.getInterface().getSecondMolecule().getFullLength()<=CRKParams.PEPTIDE_LENGTH_CUTOFF){
+			useHardLimits = false;
+		}
+		String reasonMsgPrefix = "";
+		if (!useHardLimits) reasonMsgPrefix = "Peptide-protein interface, not checking minimum area hard limit. ";
+		
+		// 1st the hard area limits		
+		if (useHardLimits && iec.getInterface().getInterfaceArea()<GeometryPredictor.MIN_AREA_BIOCALL) {
 			callReason = "Area below hard limit "+String.format("%4.0f", GeometryPredictor.MIN_AREA_BIOCALL);
 			call = CallType.CRYSTAL;
 		} 
@@ -46,17 +58,17 @@ public class CombinedPredictor implements InterfaceTypePredictor {
 			int[] counts = countCalls();
 			// 1) 2 bio calls
 			if (counts[0]>=2) {
-				callReason = "BIO consensus ("+counts[0]+" votes)";
+				callReason = reasonMsgPrefix+"BIO consensus ("+counts[0]+" votes)";
 				call = CallType.BIO;
 			} 
 			// 2) 2 xtal calls
 			else if (counts[1]>=2) {
-				callReason = "XTAL consensus ("+counts[1]+" votes)";
+				callReason = reasonMsgPrefix+"XTAL consensus ("+counts[1]+" votes)";
 				call = CallType.CRYSTAL;
 			}
 			// 3) 2 nopreds (necessarily from the evol methods): we take geometry as the call
 			else if (counts[2]==2) {
-				callReason = "Prediction purely geometrical (no evolutionary prediction could be made): "+gp.getCallReason();
+				callReason = reasonMsgPrefix+"Prediction purely geometrical (no evolutionary prediction could be made): "+gp.getCallReason();
 				call = gp.getCall();
 			}
 			// 4) 1 nopred (an evol method), 1 xtal, 1 bio
@@ -68,7 +80,7 @@ public class CombinedPredictor implements InterfaceTypePredictor {
 				InterfaceTypePredictor validPred = null;
 				if (rp.getCall()!=CallType.NO_PREDICTION) validPred = rp;
 				else validPred = zp;
-				callReason = "No consensus. Z-score "+zp.getCall().getName()+", core/rim "+rp.getCall().getName()+". Taking evol call as final: "+validPred.getCallReason();
+				callReason = reasonMsgPrefix+"No consensus. Z-score "+zp.getCall().getName()+", core/rim "+rp.getCall().getName()+". Taking evol call as final: "+validPred.getCallReason();
 				call = validPred.getCall();
 			}
 //			// STRATEGY 2: trust more evolution when we can
