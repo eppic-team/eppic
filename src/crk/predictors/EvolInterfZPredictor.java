@@ -211,15 +211,13 @@ public class EvolInterfZPredictor implements InterfaceTypePredictor {
 	
 	private void printScores(PrintStream ps, CallType call) {
 		
-		ps.printf("%5.2f\t%5.2f\t%5.2f\t%5.2f",
-				member1Pred.getCoreScore(), member1Pred.getMean(), member1Pred.getSd(), member1Pred.getScore());
-		ps.print("\t");
-		ps.printf("%5.2f\t%5.2f\t%5.2f\t%5.2f",
-				member2Pred.getCoreScore(), member2Pred.getMean(), member2Pred.getSd(), member2Pred.getScore());
-		ps.print("\t");
+		ps.printf("%5.2f\t%5.2f\t%5.2f\t%5.2f\t%6s\t",
+				member1Pred.getCoreScore(), member1Pred.getMean(), member1Pred.getSd(), member1Pred.getScore(), member1Pred.getCall().getName());
+		ps.printf("%5.2f\t%5.2f\t%5.2f\t%5.2f\t%6s\t",
+				member2Pred.getCoreScore(), member2Pred.getMean(), member2Pred.getSd(), member2Pred.getScore(), member2Pred.getCall().getName());
 		// call type, score, voters
 		ps.printf("%6s\t%5.2f", call.getName(),	this.getScore());
-		ps.print(this.getVotersString());
+		//ps.print(this.getVotersString());
 		String callReasonForPlainFileOutput = callReason.replace("\n", ", ");
 		ps.print("\t"+callReasonForPlainFileOutput);
 	}
@@ -237,6 +235,7 @@ public class EvolInterfZPredictor implements InterfaceTypePredictor {
 		ps.printf("%2d\t%2d\t",numHoms1,numHoms2);
 	}
 	
+	@SuppressWarnings("unused")
 	private String getVotersString() {
 		String finalStr = "";
 		for (CallType callType: CallType.values()) {

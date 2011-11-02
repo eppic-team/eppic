@@ -227,6 +227,7 @@ public class EvolRimCorePredictor implements InterfaceTypePredictor {
 		this.member2Pred.setCallCutoff(callCutoff);
 	}
 	
+	@SuppressWarnings("unused")
 	private String getVotersString() {
 		String finalStr = "";
 		for (CallType callType: CallType.values()) {
@@ -264,15 +265,13 @@ public class EvolRimCorePredictor implements InterfaceTypePredictor {
 	}
 	
 	private void printScores(PrintStream ps, CallType call) {
-		ps.printf("%5.2f\t%5.2f\t%5.2f",
-				member1Pred.getCoreScore(), member1Pred.getRimScore(), member1Pred.getScore());
-		ps.print("\t");
-		ps.printf("%5.2f\t%5.2f\t%5.2f",
-				member2Pred.getCoreScore(), member2Pred.getRimScore(), member2Pred.getScore());
-		ps.print("\t");
+		ps.printf("%5.2f\t%5.2f\t%5.2f\t%6s\t",
+				member1Pred.getCoreScore(), member1Pred.getRimScore(), member1Pred.getScore(),member1Pred.getCall().getName());
+		ps.printf("%5.2f\t%5.2f\t%5.2f\t%6s\t",
+				member2Pred.getCoreScore(), member2Pred.getRimScore(), member2Pred.getScore(),member2Pred.getCall().getName());
 		// call type, score, voters
 		ps.printf("%6s\t%5.2f", call.getName(),	this.getScore());
-		ps.print(this.getVotersString());
+		//ps.print(this.getVotersString());
 		String callReasonForPlainFileOutput = callReason.replace("\n", ", ");
 		ps.print("\t"+callReasonForPlainFileOutput);
 	}

@@ -223,15 +223,11 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 	
 	private static void printScoringHeaders(PrintStream ps) {
 		ps.printf("%15s\t%6s\t","interface","area");
-		ps.printf("%5s\t%5s\t%5s","size1", "size2","CA");
-		ps.print("\t");
+		ps.printf("%5s\t%5s\t%5s\t","size1", "size2","CA");
 		ps.printf("%2s\t%2s\t","n1","n2");
-		ps.printf("%5s\t%5s\t%5s","core1","rim1","rat1");
-		ps.print("\t");
-		ps.printf("%5s\t%5s\t%5s","core2","rim2","rat2");
-		ps.print("\t");
-		ps.printf("%6s\t%5s\t%6s\t%6s\t%6s\t%6s",
-				"call","score",CallType.BIO.getName(),CallType.CRYSTAL.getName(),CallType.GRAY.getName(),CallType.NO_PREDICTION.getName());
+		ps.printf("%5s\t%5s\t%5s\t%6s\t","core1","rim1","rat1","call1");
+		ps.printf("%5s\t%5s\t%5s\t%6s\t","core2","rim2","rat2","call2");
+		ps.printf("%6s\t%5s","call","score");
 		ps.println();
 	}
 	
@@ -240,12 +236,9 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 		ps.printf("%5s\t%5s\t%5s","size1", "size2","CA");
 		ps.print("\t");
 		ps.printf("%2s\t%2s\t","n1","n2");
-		ps.printf("%5s\t%5s\t%5s\t%5s","core1","mean","sigma","z1");
-		ps.print("\t");
-		ps.printf("%5s\t%5s\t%5s\t%5s","core2","mean","sigma","z2");
-		ps.print("\t");
-		ps.printf("%6s\t%5s\t%6s\t%6s\t%6s\t%6s",
-				"call","score",CallType.BIO.getName(),CallType.CRYSTAL.getName(),CallType.GRAY.getName(),CallType.NO_PREDICTION.getName());
+		ps.printf("%5s\t%5s\t%5s\t%5s\t%6s\t","core1","mean","sigma","z1","call1");
+		ps.printf("%5s\t%5s\t%5s\t%5s\t%6s\t","core2","mean","sigma","z2","call2");
+		ps.printf("%6s\t%5s","call","score");
 		ps.println();
 		
 	}
