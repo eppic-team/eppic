@@ -259,18 +259,18 @@ public class CRKMain {
 	
 	public void doWritePymolFiles() throws CRKException {
 		PymolRunner pr = null;
-		if (params.isGenerateThumbnails()) {
-			try {
-				pr = new PymolRunner(params.getPymolExe());
-				pr.readColorsFromPropertiesFile(CRKParams.COLORS_PROPERTIES_IS);
-				pr.readColorMappingsFromResourceFile(CRKParams.PYMOL_COLOR_MAPPINGS_IS);
-				
-			} catch (IOException e) {
-				LOGGER.error("Couldn't read colors file. Won't generate thumbnails or pse/pml files");
-				pr = null;
-			}
+		
+		try {
+			pr = new PymolRunner(params.getPymolExe());
+			pr.readColorsFromPropertiesFile(CRKParams.COLORS_PROPERTIES_IS);
+			pr.readColorMappingsFromResourceFile(CRKParams.PYMOL_COLOR_MAPPINGS_IS);
+
+		} catch (IOException e) {
+			LOGGER.error("Couldn't read colors file. Won't generate thumbnails or pse/pml files");
+			pr = null;
 		}
-		if (params.isGenerateThumbnails() && pr!=null) {
+		
+		if (pr!=null) {
 			try {
 				for (ChainInterface interf:interfaces) {
 					pr.generateInterfPngPsePml(interf, 
@@ -629,12 +629,12 @@ public class CRKMain {
 			}
 			
 			
-			
-			crkMain.params.getProgressLog().println("Writing pymol files");
-			crkMain.doWritePymolFiles();
-			
-			// writing out the serialized file for web ui
 			if (crkMain.params.isGenerateThumbnails()) {
+				// 5 writing pymol files
+				crkMain.params.getProgressLog().println("Writing pymol files");
+				crkMain.doWritePymolFiles();
+				
+				// 6 writing out the serialized file for web ui
 				crkMain.wuiAdaptor.writePdbScoreItemFile(crkMain.params.getOutputFile(".webui.dat"));
 			}
 
