@@ -148,6 +148,14 @@ public class MainViewPort extends Viewport
 		interfacesResiduesWindow.layout(true);
 	}
 	
+	public void hideInterfacesWindow()
+	{
+		if(interfacesResiduesWindow != null)
+		{
+			interfacesResiduesWindow.setVisible(false);
+		}
+	}
+	
 	public void showWaiting(String text)
 	{
 		waitingMessageBox = MessageBox.wait(MainController.CONSTANTS.waiting_message_box_header(),  

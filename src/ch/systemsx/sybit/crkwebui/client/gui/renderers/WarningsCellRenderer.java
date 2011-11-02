@@ -3,6 +3,7 @@ package ch.systemsx.sybit.crkwebui.client.gui.renderers;
 import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
+import ch.systemsx.sybit.crkwebui.shared.model.WarningItem;
 
 import com.extjs.gxt.ui.client.core.Template;
 import com.extjs.gxt.ui.client.data.BaseModel;
@@ -39,7 +40,7 @@ public class WarningsCellRenderer implements GridCellRenderer<BaseModel>
 			ColumnData config, final int rowIndex, final int colIndex,
 			ListStore<BaseModel> store, Grid<BaseModel> grid) 
 	{
-		final List<String> warnings = (List<String>)model.get("warnings");
+		final List<WarningItem> warnings = (List<WarningItem>)model.get("warnings");
 		
 		if((warnings != null) && (warnings.size() > 0))
 		{
@@ -108,15 +109,15 @@ public class WarningsCellRenderer implements GridCellRenderer<BaseModel>
 		
 	}
 	
-	private String generateWarningsTemplate(List<String> warnings)
+	private String generateWarningsTemplate(List<WarningItem> warnings)
 	{
 		String warningsList = "<div><ul style=\"list-style: disc; margin: 0px 0px 0px 15px;\">";
 		
-		for(String warning : warnings)
+		for(WarningItem warning : warnings)
 		{
-			if(!warning.equals(""))
+			if(!warning.getText().equals(""))
 			{
-				warningsList += "<li>" + warning + "</li>";
+				warningsList += "<li>" + warning.getText() + "</li>";
 			}
 		}
 			

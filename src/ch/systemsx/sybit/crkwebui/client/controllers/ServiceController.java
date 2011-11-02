@@ -1,7 +1,5 @@
 package ch.systemsx.sybit.crkwebui.client.controllers;
 
-import java.util.List;
-
 import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
 
 /**
@@ -42,9 +40,9 @@ public interface ServiceController
 	/**
 	 * Retrieve residues information for selected interface
 	 * @param jobId selected job id
-	 * @param interfaceId selected interface id
+	 * @param interfaceId selected interface uid
 	 */
-	public abstract void getInterfaceResidues(String jobId, int interfaceId);
+	public abstract void getInterfaceResidues(String jobId, int interfaceUid);
 	
 	/**
 	 * Stop the execution of the specified running job
@@ -63,5 +61,5 @@ public interface ServiceController
 	 */
 	public abstract void untieJobsFromSession();
 
-	public abstract void getAllResidues(String jobId, List<Integer> interfaceIds);
+	public abstract void getAllResidues(String jobId, int pdbScoreUid);
 }

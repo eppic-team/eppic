@@ -2,9 +2,9 @@ package ch.systemsx.sybit.crkwebui.client.gui.renderers;
 
 import java.util.List;
 
-import model.InterfaceItem;
-import model.InterfaceScoreItem;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
+import ch.systemsx.sybit.crkwebui.shared.model.InterfaceItem;
+import ch.systemsx.sybit.crkwebui.shared.model.InterfaceScoreItem;
 
 import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.event.BaseEvent;

@@ -9,6 +9,8 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceException;
 import javax.persistence.Query;
 
+import model.JobDB;
+import model.PDBScoreItemDB;
 import ch.systemsx.sybit.crkwebui.server.db.EntityManagerHandler;
 import ch.systemsx.sybit.crkwebui.shared.CrkWebException;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
@@ -27,7 +29,7 @@ public class JobDAOImpl implements JobDAO
 		
 		try
 		{
-			Job job = new Job();
+			JobDB job = new JobDB();
 			job.setJobId(jobId);
 			job.setEmail(email);
 			job.setSessionId(sessionId);
@@ -80,7 +82,7 @@ public class JobDAOImpl implements JobDAO
 			entityManager.getTransaction().begin();
 			Query query = entityManager.createQuery("from Job WHERE jobId = :jobId");
 			query.setParameter("jobId", jobId);
-			Job job = (Job) query.getSingleResult();
+			JobDB job = (JobDB) query.getSingleResult();
 			
 			if(job != null)
 			{
@@ -129,7 +131,7 @@ public class JobDAOImpl implements JobDAO
 			entityManager.getTransaction().begin();
 			Query query = entityManager.createQuery("from Job WHERE jobId = :jobId");
 			query.setParameter("jobId", jobId);
-			Job job = (Job) query.getSingleResult();
+			JobDB job = (JobDB) query.getSingleResult();
 			job.setStatus(status);
 			entityManager.merge(job);
 			entityManager.flush();
@@ -171,13 +173,13 @@ public class JobDAOImpl implements JobDAO
 		{
 			entityManager = EntityManagerHandler.getEntityManager();
 			entityManager.getTransaction().begin();
-			Query query = entityManager.createQuery("from Job WHERE sessionId = :sessionId", Job.class);
+			Query query = entityManager.createQuery("from Job WHERE sessionId = :sessionId", JobDB.class);
 			query.setParameter("sessionId", sessionId);
-			List<Job> jobs = query.getResultList();
+			List<JobDB> jobs = query.getResultList();
 			
 			if(jobs != null)
 			{
-				for(Job job : jobs)
+				for(JobDB job : jobs)
 				{
 					job.setSessionId(null);
 					entityManager.merge(job);
@@ -224,16 +226,16 @@ public class JobDAOImpl implements JobDAO
 		try
 		{
 			entityManager = EntityManagerHandler.getEntityManager();
-			Query query = entityManager.createQuery("from Job WHERE sessionId = :sessionId", Job.class);
+			Query query = entityManager.createQuery("from Job WHERE sessionId = :sessionId", JobDB.class);
 			query.setParameter("sessionId", sessionId);
-			List<Job> jobs = query.getResultList();
+			List<JobDB> jobs = query.getResultList();
 			 
 			List<ProcessingInProgressData> processingInProgressDataList = null;
 			if(jobs != null)
 			{
 				processingInProgressDataList = new ArrayList<ProcessingInProgressData>();
 				 
-				for(Job job : jobs)
+				for(JobDB job : jobs)
 				{
 					processingInProgressDataList.add(createProcessingInProgressData(job));
 				}
@@ -310,7 +312,7 @@ public class JobDAOImpl implements JobDAO
 		return status;
 	}
 	 
-	public ProcessingInProgressData createProcessingInProgressData(Job job)
+	public ProcessingInProgressData createProcessingInProgressData(JobDB job)
 	{
 		ProcessingInProgressData processingInProgressData = null;
 			 
@@ -420,13 +422,13 @@ public class JobDAOImpl implements JobDAO
 		{
 			entityManager = EntityManagerHandler.getEntityManager();
 			entityManager.getTransaction().begin();
-			Query query = entityManager.createQuery("from Job WHERE jobId=:jobId", Job.class);
+			Query query = entityManager.createQuery("from Job WHERE jobId=:jobId", JobDB.class);
 			query.setParameter("jobId", jobToUntie);
-			List<Job> jobs = query.getResultList();
+			List<JobDB> jobs = query.getResultList();
 			
 			if(jobs != null)
 			{
-				for(Job job : jobs)
+				for(JobDB job : jobs)
 				{
 					job.setSessionId(null);
 					entityManager.merge(job);
@@ -482,6 +484,57 @@ public class JobDAOImpl implements JobDAO
 		catch(Throwable e)
 		{
 			e.printStackTrace();
+			throw new CrkWebException(e);
+		}
+		finally
+		{
+			try
+			{
+				entityManager.close();
+			}
+			catch(Throwable t)
+			{
+				
+			}
+		}
+	}
+
+	public void setPdbScoreItemForJob(String jobId, PDBScoreItemDB pdbScoreItem)
+			throws CrkWebException 
+	{
+		EntityManager entityManager = null;
+		
+		try
+		{
+			entityManager = EntityManagerHandler.getEntityManager();
+			entityManager.getTransaction().begin();
+			Query query = entityManager.createQuery("from Job WHERE jobId=:jobId", JobDB.class);
+			query.setParameter("jobId", jobId);
+			JobDB job = (JobDB)query.getSingleResult();
+			
+			if(job != null)
+			{
+				pdbScoreItem.setJobItem(job);
+				job.setPdbScoreItem(pdbScoreItem);
+				job.setStatus(StatusOfJob.FINISHED);
+				entityManager.merge(job);
+			}
+			
+			entityManager.getTransaction().commit();
+		}
+		catch(Throwable e)
+		{
+			e.printStackTrace();
+			
+			try
+			{
+				entityManager.getTransaction().rollback();
+			}
+			catch(Throwable t)
+			{
+				
+			}
+			
 			throw new CrkWebException(e);
 		}
 		finally

@@ -6,10 +6,13 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+
+import model.PDBScoreItemDB;
 
 import org.ggf.drmaa.JobInfo;
 import org.ggf.drmaa.JobTemplate;
@@ -372,8 +375,47 @@ public class CrkRunner implements Runnable
 	        
 	        out.close();
 			
-	        JobDAO jobDao = new JobDAOImpl();
-	        jobDao.updateStatusOfJob(jobId, StatusOfJob.FINISHED);
+	        
+	        PDBScoreItemDB pdbScoreItem = null;
+			File resultFile = new File(destinationDirectoryName + "/" + input + ".webui.dat");
+			
+			if (resultFile.exists()) 
+			{
+				FileInputStream fileInputStream = null;
+				ObjectInputStream inputStream = null;
+				
+				try 
+				{
+					fileInputStream = new FileInputStream(resultFile);
+					inputStream = new ObjectInputStream(fileInputStream);
+					pdbScoreItem = (PDBScoreItemDB)inputStream.readObject();
+				} 
+				catch (Throwable e)
+				{
+					throw new CrkWebException(e);
+				}
+				finally
+				{
+					if(inputStream != null)
+					{
+						try
+						{
+							inputStream.close();
+						}
+						catch(Throwable t)
+						{
+							t.printStackTrace();
+						}
+					}
+				}
+			}
+			else
+			{
+				throw new CrkWebException("WebUI dat file can not be found");
+			}
+	        
+			JobDAO jobDao = new JobDAOImpl();
+			jobDao.setPdbScoreItemForJob(jobId, pdbScoreItem);
 //			DBUtils.updateStatusOfJob(generatedDirectoryName, StatusOfJob.FINISHED);
 
 			outputStream = new FileOutputStream(logFile, true);

@@ -34,6 +34,13 @@ public class GetSettingsCallback implements AsyncCallback<ApplicationSettings>
 			mainController.setNrOfSubmissions(result.getNrOfJobsForSession());
 			mainController.setMainView();
 			mainController.runMyJobsAutoRefresh();
+			
+			if((result.getNotificationOnStart() != null) &&
+			   (!result.getNotificationOnStart().equals("")))
+			{
+				mainController.updateStatusLabel(result.getNotificationOnStart(), false);
+			}
+			
 			History.fireCurrentHistoryState();
 		}
 		else 

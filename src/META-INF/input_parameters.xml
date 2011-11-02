@@ -1,0 +1,101 @@
+<settings>
+	<supported_methods>
+		<method>
+			<name>Geometry</name>
+			<input_field>true</input_field>
+		</method>
+		<method>
+			<name>Entropy</name>
+			<input_field>true</input_field>
+		</method>
+		<method>
+			<name>Kaks</name>
+			<input_field>true</input_field>
+		</method>
+		<method>
+			<name>Z-scores</name>
+			<input_field>false</input_field>
+		</method>
+	</supported_methods>
+	
+	<input_parameters>
+		<default_methods>
+			<method>Geometry</method>
+			<method>Entropy</method>
+		</default_methods>
+		
+		<default_parameters>
+			<use_tcoffee>true</use_tcoffee>
+			<use_naccess>false</use_naccess>
+			<use_pisa>false</use_pisa>
+			<asa_calc>9600</asa_calc>
+			<max_nr_of_sequences>60</max_nr_of_sequences>
+			<reduced_alphabet>10</reduced_alphabet>
+			<identity_cutoff>0.6</identity_cutoff>
+			<selecton>0.1</selecton>
+		</default_parameters>
+		
+		<reduced_alphabet>
+			<value>2</value>
+			<value>4</value>
+			<value>6</value>
+			<value>8</value>
+			<value>10</value>
+			<value>15</value>
+			<value>20</value>
+		</reduced_alphabet>
+	</input_parameters>
+	
+	<notification>abc</notification>
+	
+	<run_parameters>
+		<parameter>
+			<name>idCutoff</name>
+			<value>Sequence identity cutoff</value>
+		</parameter>
+		<parameter>
+			<name>queryCovCutoff</name>
+			<value>Query coverage cutoff</value>
+		</parameter>
+		<parameter>
+			<name>homologsCutoff</name>
+			<value>Min number homologs required</value>
+		</parameter>
+		<parameter>
+			<name>maxNumSeqsCutoff</name>
+			<value>Max number sequences used</value>
+		</parameter>
+		<parameter>
+			<name>reducedAlphabet</name>
+			<value>Number of aminoacid classes for entropy calculation</value>
+		</parameter>  
+		<parameter>
+			<name>caCutoffForGeom</name>
+			<value>Core assignment BSA/ASA ratio cutoff for geometry</value>
+		</parameter>
+		<parameter>
+			<name>caCutoffForRimCore</name>
+			<value>Core assignment BSA/ASA ratio cutoff for rim/core</value>
+		</parameter>
+		<parameter>
+			<name>caCutoffForZscore</name>
+			<value>Core assignment BSA/ASA ratio cutoff for z-score</value>
+		</parameter>
+		<parameter>
+			<name>minCoreSizeForBio</name>
+			<value>Geometry core size bio-xtal call cutoff</value>
+		</parameter>
+		<parameter>
+			<name>entrCallCutoff</name>
+			<value>Entropy rim/core bio-xtal call cutoff</value>
+		</parameter>
+		<parameter> 
+			<name>kaksCallCutoff</name>
+			<value>KaKs rim/core bio-xtal call cutoff</value>
+		</parameter>
+		<parameter>
+			<name>zScoreCutoff</name>
+			<value>Entropy z-score bio-xtal call cutoff</value>
+		</parameter>
+	</run_parameters>
+</settings>

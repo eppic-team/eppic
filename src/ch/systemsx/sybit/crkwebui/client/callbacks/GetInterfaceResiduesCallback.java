@@ -3,8 +3,8 @@ package ch.systemsx.sybit.crkwebui.client.callbacks;
 import java.util.HashMap;
 import java.util.List;
 
-import model.InterfaceResidueItem;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
+import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResidueItem;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
@@ -16,10 +16,13 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 public class GetInterfaceResiduesCallback implements AsyncCallback<HashMap<Integer, List<InterfaceResidueItem>>>
 {
 	private MainController mainController;
+	private String jobId;
 
-	public GetInterfaceResiduesCallback(MainController mainController) 
+	public GetInterfaceResiduesCallback(MainController mainController,
+										String jobId) 
 	{
 		this.mainController = mainController;
+		this.jobId = jobId;
 	}
 
 	@Override
@@ -35,7 +38,10 @@ public class GetInterfaceResiduesCallback implements AsyncCallback<HashMap<Integ
 		
 		if (result != null)
 		{
-			mainController.setInterfacesResiduesWindowData(result);
+			if(mainController.getSelectedJobId().equals(jobId))
+			{
+				mainController.setInterfacesResiduesWindowData(result);
+			}
 		}
 		else 
 		{

@@ -5,11 +5,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import model.InterfaceItem;
-import model.InterfaceScoreItem;
-import model.PDBScoreItem;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 import ch.systemsx.sybit.crkwebui.client.model.InterfaceItemModel;
+import ch.systemsx.sybit.crkwebui.shared.model.InterfaceItem;
+import ch.systemsx.sybit.crkwebui.shared.model.InterfaceScoreItem;
+import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
+import ch.systemsx.sybit.crkwebui.shared.model.SupportedMethod;
 
 import com.extjs.gxt.ui.client.Style.Orientation;
 import com.extjs.gxt.ui.client.event.BaseEvent;
@@ -400,13 +401,13 @@ public class ResultsPanel extends DisplayPanel
 				
 				InterfaceItemModel model = new InterfaceItemModel();
 
-				for (String method : mainController.getSettings().getScoresTypes())
+				for (SupportedMethod method : mainController.getSettings().getScoresTypes())
 				{
 					for(InterfaceScoreItem interfaceScoreItem : interfaceItem.getInterfaceScores())
 					{
-						if(interfaceScoreItem.getMethod().equals(method))
+						if(interfaceScoreItem.getMethod().equals(method.getName()))
 						{
-							model.set(method, interfaceScoreItem.getCall());
+							model.set(method.getName(), interfaceScoreItem.getCallName());
 						}
 					}
 				}

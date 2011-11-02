@@ -3,11 +3,12 @@ package ch.systemsx.sybit.crkwebui.client.gui;
 import java.util.ArrayList;
 import java.util.List;
 
-import model.InterfaceResidueItem;
-import model.InterfaceResidueMethodItem;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 import ch.systemsx.sybit.crkwebui.client.model.InterfaceItemModel;
 import ch.systemsx.sybit.crkwebui.client.model.InterfaceResidueItemModel;
+import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResidueItem;
+import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResidueMethodItem;
+import ch.systemsx.sybit.crkwebui.shared.model.SupportedMethod;
 
 import com.extjs.gxt.ui.client.Style.Scroll;
 import com.extjs.gxt.ui.client.data.BasePagingLoader;
@@ -173,28 +174,32 @@ public class ResiduesPanel extends ContentPanel
 			for (InterfaceResidueItem residueValue : residueValues) {
 				InterfaceResidueItemModel model = new InterfaceResidueItemModel();
 
-				for (String method : mainController.getSettings()
+				for (SupportedMethod method : mainController.getSettings()
 						.getScoresTypes()) {
 					
-					String processedMethod = method;
-					if(method.equals("Entropy"))
+					String processedMethod = method.getName();
+					if(method.getName().equals("Entropy"))
 					{
 						processedMethod = "entropy";
 					}
-					else if(method.equals("Kaks"))
+					else if(method.getName().equals("Kaks"))
 					{
 						processedMethod = "kaks";
 					}
-					else if(method.equals("Geometry"))
+					else if(method.getName().equals("Geometry"))
 					{
 						processedMethod = "geometry";
+					}
+					else if(method.getName().equals("Z-scores"))
+					{
+						processedMethod = "zscores";
 					}
 					
 					for(InterfaceResidueMethodItem interfaceResidueMethodItem : residueValue.getInterfaceResidueMethodItems())
 					{
 						if(interfaceResidueMethodItem.getMethod().equals(processedMethod))
 						{
-							model.set(method, interfaceResidueMethodItem.getScore());
+							model.set(method.getName(), interfaceResidueMethodItem.getScore());
 						}
 					}
 				}

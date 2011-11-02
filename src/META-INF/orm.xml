@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<entity-mappings xmlns="http://java.sun.com/xml/ns/persistence/orm"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/persistence/orm http://java.sun.com/xml/ns/persistence/orm_2_0.xsd"
+    version="2.0">
+    <description>CRK JPA entities</description>
+    <package>CRK entities</package>
+   
+    <entity class="model.JobDB" name="Job">
+        <table name="JOB"/>
+        <attributes>
+        	<id name="uid">
+                <generated-value strategy="IDENTITY"/>
+            </id>
+            
+        	<basic name="jobId"></basic>
+            <basic name="sessionId"></basic>
+            <basic name="status"></basic>
+            <basic name="email"></basic>
+            <basic name="ip"></basic>
+            <basic name="input"></basic>
+            <basic name="submissionDate">
+            	<temporal>TIMESTAMP</temporal>
+            </basic>
+            
+            <one-to-one name="pdbScoreItem">
+        		<cascade>
+            	    <cascade-all/>  
+            	</cascade> 
+       		</one-to-one>
+        </attributes>
+    </entity>
+   
+	<entity class="model.PDBScoreItemDB" name="PDBScoreItem">
+        <table name="PDBSCORE"/>
+        <attributes>
+            <id name="uid">
+                <generated-value strategy="IDENTITY"/>
+            </id>
+            <basic name="jobId"></basic>
+            <basic name="pdbName"></basic>
+            <basic name="title"></basic>
+            <basic name="spaceGroup"></basic>
+            
+       		<one-to-many name="interfaceItems" mapped-by="pdbScoreItem">  
+            	<cascade>  
+            	    <cascade-all/>  
+            	</cascade>  
+       		</one-to-many>  
+       		
+       		<one-to-many name="numHomologsStrings" mapped-by="pdbScoreItem">  
+            	<cascade>  
+            	    <cascade-all/>  
+            	</cascade>  
+       		</one-to-many>  
+        
+        	<one-to-one name="runParameters">
+        		<cascade>
+            	    <cascade-all/>  
+            	</cascade> 
+       		</one-to-one>
+       		
+       		<one-to-one name="jobItem" mapped-by="pdbScoreItem">  
+            </one-to-one>  
+       		
+       		<!-- element-collection name="numHomologsStrings"-->
+				<!-- collection-table name="NUMHOMOLOGSSTRINGS"-->
+				<!-- /collection-table-->
+			<!-- /element-collection--> 
+        </attributes>
+   </entity>
+   
+   <entity class="model.InterfaceItemDB" name="InterfaceItem">
+        <table name="INTERFACE"/>
+        <entity-listeners>
+        	<entity-listener class="ch.systemsx.sybit.crkwebui.server.db.entitylisteners.InterfaceItemListener">
+        	</entity-listener>
+        </entity-listeners>
+        <attributes>
+            <id name="uid">
+                <generated-value strategy="IDENTITY"/>
+            </id>
+            <basic name="id"></basic>
+            <basic name="area"><column nullable="true"/></basic>
+            <basic name="name"></basic>
+            <basic name="size1"></basic>
+            <basic name="size2"></basic>
+            <basic name="asaC1"><column nullable="true"/></basic>
+            <basic name="asaC2"><column nullable="true"/></basic>
+            <basic name="bsaC1"><column nullable="true"/></basic>
+            <basic name="bsaC2"><column nullable="true"/></basic>
+            <basic name="asaR1"><column nullable="true"/></basic>
+            <basic name="asaR2"><column nullable="true"/></basic>
+            <basic name="bsaR1"><column nullable="true"/></basic>
+            <basic name="bsaR2"><column nullable="true"/></basic>
+            <basic name="finalCall"></basic>
+            <basic name="operator"></basic>
+       		<basic name="jmolScript">
+       			<column column-definition="text"/>
+       		</basic>
+       		
+       		<many-to-one name="pdbScoreItem" >  
+            </many-to-one>  
+            
+       		<one-to-many name="interfaceScores" mapped-by="interfaceItem">
+            	<cascade>  
+            	    <cascade-all/>  
+            	</cascade>  
+       		</one-to-many>  
+       		
+       		<one-to-many name="interfaceResidues" mapped-by="interfaceItem">  
+            	<cascade>  
+            	    <cascade-all/>  
+            	</cascade>  
+       		</one-to-many>
+       		
+       		<one-to-many name="warnings" mapped-by="interfaceItem">  
+            	<cascade>  
+            	    <cascade-all/>  
+            	</cascade>  
+       		</one-to-many>  
+       		
+       		<!-- element-collection name="warnings"-->
+				<!-- collection-table name="WARNINGS"-->
+				<!-- /collection-table-->
+			<!-- /element-collection--> 
+        </attributes>
+   </entity>
+   
+   <entity class="model.InterfaceResidueItemDB" name="InterfaceResidueItem">
+        <table name="INTERFACERESIDUE"/>
+        <entity-listeners>
+        	<entity-listener class="ch.systemsx.sybit.crkwebui.server.db.entitylisteners.InterfaceResidueItemListener">
+        	</entity-listener>
+        </entity-listeners>
+        <attributes>
+            <id name="uid">
+                <generated-value strategy="IDENTITY"/>
+            </id>
+            <basic name="structure"></basic>
+            <basic name="residueNumber"></basic>
+            <basic name="residueType"></basic>
+            <basic name="asa"><column nullable="true"/></basic>
+            <basic name="bsa"><column nullable="true"/></basic>
+            <basic name="bsaPercentage"><column nullable="true"/></basic>
+            <basic name="assignment"></basic>
+       		
+       		<many-to-one name="interfaceItem" >  
+            </many-to-one>  
+            
+       		<one-to-many name="interfaceResidueMethodItems" mapped-by="interfaceResidueItem" >  
+            	<cascade>
+       				<cascade-all/>
+       			</cascade>
+       		</one-to-many>  
+        </attributes>
+   </entity>
+   
+   <entity class="model.InterfaceResidueMethodItemDB" name="InterfaceResidueMethodItem">
+        <table name="INTERFACERESIDUEMETHOD"/>
+        <entity-listeners>
+        	<entity-listener class="ch.systemsx.sybit.crkwebui.server.db.entitylisteners.InterfaceResidueMethodItemListener">
+        	</entity-listener>
+        </entity-listeners>
+        <attributes>
+            <id name="uid">
+                <generated-value strategy="IDENTITY"/>
+            </id>
+            <basic name="method"></basic>
+            <basic name="score"><column nullable="true"/></basic>
+       		
+       		<many-to-one name="interfaceResidueItem" >  
+            </many-to-one>  
+        </attributes>
+   </entity>
+   
+   <entity class="model.InterfaceScoreItemDB" name="InterfaceScoreItem">
+        <table name="INTERFACESCORE"/>
+        <entity-listeners>
+        	<entity-listener class="ch.systemsx.sybit.crkwebui.server.db.entitylisteners.InterfaceScoreItemListener">
+        	</entity-listener>
+        </entity-listeners>
+        <attributes>
+            <id name="uid">
+                <generated-value strategy="IDENTITY"/>
+            </id>
+            <basic name="method"></basic>
+            <basic name="id"></basic>
+            <basic name="weightedRim1Scores"><column nullable="true"/></basic>
+            <basic name="weightedCore1Scores"><column nullable="true"/></basic>
+            <basic name="weightedRatio1Scores"><column nullable="true"/></basic>
+            <basic name="weightedRim2Scores"><column nullable="true"/></basic>
+            <basic name="weightedCore2Scores"><column nullable="true"/></basic>
+            <basic name="weightedRatio2Scores"><column nullable="true"/></basic>
+            <basic name="weightedFinalScores"><column nullable="true"/></basic>
+            <basic name="unweightedRim1Scores"><column nullable="true"/></basic>
+            <basic name="unweightedCore1Scores"><column nullable="true"/></basic>
+            <basic name="unweightedRatio1Scores"><column nullable="true"/></basic>
+            <basic name="unweightedRim2Scores"><column nullable="true"/></basic>
+            <basic name="unweightedCore2Scores"><column nullable="true"/></basic>
+            <basic name="unweightedRatio2Scores"><column nullable="true"/></basic>
+            <basic name="unweightedFinalScores"><column nullable="true"/></basic>
+            <basic name="call"></basic>
+            <basic name="callReason"></basic>
+            
+       		
+       		<many-to-one name="interfaceItem" >  
+            </many-to-one>  
+        </attributes>
+   </entity>
+   
+   <entity class="model.WarningItemDB" name="WarningItem">
+        <table name="WARNING"/>
+        <attributes>
+            <id name="uid">
+                <generated-value strategy="IDENTITY"/>
+            </id>
+            <basic name="text"></basic>
+       		
+       		<many-to-one name="interfaceItem" >  
+            </many-to-one>  
+        </attributes>
+   </entity>
+   
+   <entity class="model.RunParametersItemDB" name="RunParametersItem">
+        <table name="RUNPARAMETERS"/>
+        <attributes>
+        	<id name="uid">
+                <generated-value strategy="IDENTITY"/>
+            </id>
+            
+        	<basic name="homologsCutoff"></basic>
+        	
+            <basic name="idCutoff"></basic>
+            <basic name="queryCovCutoff"></basic>
+            <basic name="maxNumSeqsCutoff"></basic>
+            <basic name="reducedAlphabet"></basic>
+            <basic name="minCoreSizeForBio"></basic>
+            <basic name="caCutoffForGeom"></basic>
+            <basic name="caCutoffForRimCore"></basic>
+            <basic name="caCutoffForZscore"></basic>
+            <basic name="entrCallCutoff"></basic>
+            <basic name="zScoreCutoff"></basic>
+            
+       		<one-to-one name="pdbScoreItem" mapped-by="runParameters">  
+            </one-to-one>  
+        </attributes>
+   </entity>
+   
+   <entity class="model.NumHomologsStringItemDB" name="NumHomologsStringItem">
+        <table name="NUMHOMOLOGSSTRING"/>
+        <attributes>
+            <id name="uid">
+                <generated-value strategy="IDENTITY"/>
+            </id>
+            <basic name="text"></basic>
+       		
+       		<many-to-one name="pdbScoreItem" >  
+            </many-to-one>  
+        </attributes>
+   </entity>
+</entity-mappings>

@@ -3,11 +3,11 @@ package ch.systemsx.sybit.crkwebui.client;
 import java.util.HashMap;
 import java.util.List;
 
-import model.InterfaceResidueItem;
-import model.ProcessingData;
 import ch.systemsx.sybit.crkwebui.shared.CrkWebException;
 import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
+import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResidueItem;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResiduesItemsList;
+import ch.systemsx.sybit.crkwebui.shared.model.ProcessingData;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
 import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
 
@@ -54,17 +54,15 @@ public interface CrkWebService extends RemoteService
 
 	/**
 	 * Retrieve residues information for selected interface
-	 * @param jobId selected job id
-	 * @param interfaceId selected interface id
+	 * @param interfaceUid selected interface uid
 	 * @return residues information
 	 * @throws CrkWebException
 	 */
-	public HashMap<Integer, List<InterfaceResidueItem>> getInterfaceResidues(
-			String jobId, int interfaceId) throws CrkWebException;
+	public HashMap<Integer, List<InterfaceResidueItem>> getInterfaceResidues(int interfaceUid) throws CrkWebException;
 	
 	/**
 	 * Killing selected job
-	 * @param jobsToStop id of the job which is going to be removef
+	 * @param jobsToStop id of the job which is going to be removed
 	 * @return result of stopping
 	 * @throws CrkWebException
 	 */
@@ -84,5 +82,11 @@ public interface CrkWebService extends RemoteService
 	 */
 	public void untieJobsFromSession() throws CrkWebException;
 
-	public InterfaceResiduesItemsList getAllResidues(String jobId, List<Integer> interfaceIds) throws CrkWebException;
+	/**
+	 * Retrieve all the residues for all interfaces for specified job
+	 * @param pdbScoreUid unique id of selected results item
+	 * @return all residues for job
+	 * @throws CrkWebException
+	 */
+	public InterfaceResiduesItemsList getAllResidues(int pdbScoreUid) throws CrkWebException;
 }

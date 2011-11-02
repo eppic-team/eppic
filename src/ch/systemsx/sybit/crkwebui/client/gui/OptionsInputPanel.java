@@ -6,6 +6,7 @@ import java.util.List;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 import ch.systemsx.sybit.crkwebui.client.model.ReducedAlphabetComboModel;
 import ch.systemsx.sybit.crkwebui.shared.model.InputParameters;
+import ch.systemsx.sybit.crkwebui.shared.model.SupportedMethod;
 
 import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.FieldSetEvent;
@@ -49,7 +50,7 @@ public class OptionsInputPanel extends FieldSet
 
 	public OptionsInputPanel(InputParameters defaultInputParameters,
 							 List<Integer> reducedAlphabetDefaultList,
-							 String[] supportedMethods) 
+							 List<SupportedMethod> supportedMethods) 
 	{
 		this.setHeading(MainController.CONSTANTS.input_advanced());
 		this.setCollapsible(true);
@@ -82,9 +83,9 @@ public class OptionsInputPanel extends FieldSet
 //			}
 //		};
 
-		methodsFieldsets = new FieldSet[supportedMethods.length];
+		methodsFieldsets = new FieldSet[supportedMethods.size()];
 		
-		for(int i=0; i<supportedMethods.length; i++)
+		for(int i=0; i<supportedMethods.size(); i++)
 		{
 			FormLayout fieldSetLayout = new FormLayout();
 			fieldSetLayout.setLabelWidth(200);
@@ -94,7 +95,7 @@ public class OptionsInputPanel extends FieldSet
 			methodsFieldsets[i].setExpanded(false);
 			methodsFieldsets[i].setLayout(fieldSetLayout);
 			
-			if(supportedMethods[i].equals("Entropy"))
+			if(supportedMethods.get(i).getName().equals("Entropy"))
 			{
 				methodsFieldsets[i].setHeading(MainController.CONSTANTS
 						.parameters_entropy());
@@ -147,7 +148,7 @@ public class OptionsInputPanel extends FieldSet
 					}
 				});
 			}
-			else if(supportedMethods[i].equals("Kaks"))
+			else if(supportedMethods.get(i).getName().equals("Kaks"))
 			{
 				methodsFieldsets[i].setHeading(MainController.CONSTANTS.parameters_kaks());
 				
@@ -173,7 +174,7 @@ public class OptionsInputPanel extends FieldSet
 					}
 				});
 			}
-			else if(supportedMethods[i].equals("Geometry"))
+			else if(supportedMethods.get(i).getName().equals("Geometry"))
 			{
 				methodsFieldsets[i].setHeading(MainController.CONSTANTS
 						.parameters_geometry());
@@ -193,7 +194,10 @@ public class OptionsInputPanel extends FieldSet
 				});
 			}
 			
-			this.add(methodsFieldsets[i]);
+			if(supportedMethods.get(i).isHasFieldSet())
+			{
+				this.add(methodsFieldsets[i]);
+			}
 		}
 		
 		FormLayout allignmentsParametersFieldSetLayout = new FormLayout();
@@ -324,7 +328,7 @@ public class OptionsInputPanel extends FieldSet
 				defaultParameters.getReducedAlphabet());
 		reducedAlphabetCombo.setValue(defaultValueModel);
 		
-		String[] defaultMethods = defaultParameters.getMethods();
+		List<String> defaultMethods = defaultParameters.getMethods();
 		
 		if(defaultMethods != null)
 		{
@@ -380,14 +384,8 @@ public class OptionsInputPanel extends FieldSet
 				selectedMethods.add(fieldSet.getHeading());
 			}
 		}
-		
-		String[] selectedMethodsArray = new String[selectedMethods.size()];
-		for(int i=0; i<selectedMethods.size(); i++)
-		{
-			selectedMethodsArray[i] = selectedMethods.get(i);
-		}
 			
-		currentInputParameters.setMethods(selectedMethodsArray);
+		currentInputParameters.setMethods(selectedMethods);
 
 		return currentInputParameters;
 	}

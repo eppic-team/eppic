@@ -1,12 +1,8 @@
 package ch.systemsx.sybit.crkwebui.client.callbacks;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import model.InterfaceItem;
-import model.PDBScoreItem;
-import model.ProcessingData;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
+import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
+import ch.systemsx.sybit.crkwebui.shared.model.ProcessingData;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -52,15 +48,10 @@ public class GetResultsOfProcessingCallback implements AsyncCallback<ProcessingD
 			{
 				PDBScoreItem resultsData = (PDBScoreItem) result;
 				mainController.setPDBScoreItem(resultsData);
-				mainController.setSelectedJobId(resultsData.getJobId());
+				mainController.setSelectedJobId(selectedId);
 				mainController.cleanResiduesForInterface();
 				
-				List<Integer> interfaceIds = new ArrayList<Integer>();
-				for(InterfaceItem interfaceItem: resultsData.getInterfaceItems())
-				{
-					interfaceIds.add(interfaceItem.getId());
-				}
-				mainController.getAllResidues(resultsData.getJobId(), interfaceIds);
+				mainController.getAllResidues(selectedId, resultsData.getUid());
 				
 				mainController.displayResultView(resultsData);
 			}

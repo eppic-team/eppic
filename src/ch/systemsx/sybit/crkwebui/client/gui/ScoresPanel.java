@@ -6,11 +6,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import model.InterfaceItem;
-import model.InterfaceScoreItem;
-import model.PDBScoreItem;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 import ch.systemsx.sybit.crkwebui.client.gui.renderers.GridCellRendererFactory;
+import ch.systemsx.sybit.crkwebui.shared.model.InterfaceItem;
+import ch.systemsx.sybit.crkwebui.shared.model.InterfaceScoreItem;
+import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
 
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.Style.Orientation;

@@ -3,6 +3,8 @@ package ch.systemsx.sybit.crkwebui.server.db.model;
 import java.util.Date;
 import java.util.List;
 
+import model.JobDB;
+import model.PDBScoreItemDB;
 import ch.systemsx.sybit.crkwebui.shared.CrkWebException;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
 
@@ -27,7 +29,7 @@ public interface JobDAO
 	
 	public String getStatusForJob(String jobId) throws CrkWebException;
 	 
-	public ProcessingInProgressData createProcessingInProgressData(Job job);
+	public ProcessingInProgressData createProcessingInProgressData(JobDB job);
 	
 	public Long getNrOfJobsForIPDuringLastDay(String ip) throws CrkWebException;
 	
@@ -36,5 +38,7 @@ public interface JobDAO
 	public void untieSelectedJobFromSession(String jobToUntie) throws CrkWebException;
 
 	public String getInputForJob(String jobId) throws CrkWebException;
+
+	public void setPdbScoreItemForJob(String jobId, PDBScoreItemDB pdbScoreItem) throws CrkWebException;
 	
 }

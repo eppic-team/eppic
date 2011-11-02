@@ -1,7 +1,5 @@
 package ch.systemsx.sybit.crkwebui.client.controllers;
 
-import java.util.List;
-
 import ch.systemsx.sybit.crkwebui.client.CrkWebService;
 import ch.systemsx.sybit.crkwebui.client.CrkWebServiceAsync;
 import ch.systemsx.sybit.crkwebui.client.callbacks.DeleteJobsCallback;
@@ -55,9 +53,9 @@ public class ServiceControllerImpl implements ServiceController
 	}
 	
 	
-	public void getInterfaceResidues(String jobId, int interfaceId) {
-		crkWebService.getInterfaceResidues(jobId, interfaceId,
-				new GetInterfaceResiduesCallback(mainController));
+	public void getInterfaceResidues(String jobId, int interfaceUid) {
+		crkWebService.getInterfaceResidues(interfaceUid,
+				new GetInterfaceResiduesCallback(mainController, jobId));
 	}
 	
 	public void getJobsForCurrentSession() {
@@ -89,8 +87,8 @@ public class ServiceControllerImpl implements ServiceController
 	}
 
 	@Override
-	public void getAllResidues(String jobId, List<Integer> interfaceIds) {
-		crkWebService.getAllResidues(jobId, interfaceIds,
+	public void getAllResidues(String jobId, int pdbScoreUid) {
+		crkWebService.getAllResidues(pdbScoreUid,
 				new GetAllResiduesCallback(mainController, jobId));
 	}
 }

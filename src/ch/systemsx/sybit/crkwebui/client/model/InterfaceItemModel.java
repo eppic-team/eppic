@@ -2,6 +2,8 @@ package ch.systemsx.sybit.crkwebui.client.model;
 
 import java.util.List;
 
+import ch.systemsx.sybit.crkwebui.shared.model.WarningItem;
+
 import com.extjs.gxt.ui.client.data.BaseModel;
 
 /**
@@ -36,7 +38,7 @@ public class InterfaceItemModel extends BaseModel {
 							  int size2,
 							  String finalCall,
 							  String operator,
-							  List<String> warnings) 
+							  List<WarningItem> warnings) 
 	{
 		set("id", id);
 		set("area", area);
@@ -105,11 +107,11 @@ public class InterfaceItemModel extends BaseModel {
 		set("operator", operator);
 	}
 	
-	public List<String> getWarnings() {
-		return (List<String>) get("warnings");
+	public List<WarningItem> getWarnings() {
+		return (List<WarningItem>) get("warnings");
 	}
 	
-	public void setWarnings(List<String> warnings) {
+	public void setWarnings(List<WarningItem> warnings) {
 		set("warnings", warnings);
 	}
 	

@@ -4,8 +4,6 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 
-import model.InterfaceResidueItem;
-
 public class InterfaceResiduesItemsList extends HashMap<Integer, HashMap<Integer, List<InterfaceResidueItem>>> implements Serializable 
 {
 	/**

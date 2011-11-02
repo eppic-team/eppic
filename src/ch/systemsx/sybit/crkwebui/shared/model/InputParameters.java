@@ -1,6 +1,8 @@
 package ch.systemsx.sybit.crkwebui.shared.model;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This class is used to transfer parameters selected by the user
@@ -14,7 +16,7 @@ public class InputParameters implements Serializable
 	 */
 	private static final long serialVersionUID = 1L;
 
-	private String[] methods;
+	private List<String> methods;
 
 	private boolean useTCoffee;
 	private boolean usePISA;
@@ -27,15 +29,16 @@ public class InputParameters implements Serializable
 	private float identityCutoff;
 	private float selecton;
 
-	public InputParameters() {
-
+	public InputParameters() 
+	{
+		this.methods = new ArrayList<String>();
 	}
 
-	public String[] getMethods() {
+	public List<String> getMethods() {
 		return methods;
 	}
 
-	public void setMethods(String[] methods) {
+	public void setMethods(List<String> methods) {
 		this.methods = methods;
 	}
 

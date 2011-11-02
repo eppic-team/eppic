@@ -6,6 +6,7 @@ import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 import ch.systemsx.sybit.crkwebui.client.gui.renderers.GridCellRendererFactory;
+import ch.systemsx.sybit.crkwebui.shared.model.SupportedMethod;
 
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.data.BaseModel;
@@ -107,11 +108,11 @@ public class GridColumnConfigGenerator
 						.get(gridName + "_" + columnName + "_tooltip");
 
 				if (columnName.equals("METHODS")) {
-					for (String method : mainController.getSettings()
+					for (SupportedMethod method : mainController.getSettings()
 							.getScoresTypes()) {
 						ColumnConfig column = new ColumnConfig();
-						column.setId(method);
-						column.setHeader(method);
+						column.setId(method.getName());
+						column.setHeader(method.getName());
 						column.setWidth(columnWidth);
 						column.setAlignment(HorizontalAlignment.CENTER);
 						column.setHidden(!displayColumn);

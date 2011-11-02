@@ -5,10 +5,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import model.InterfaceScoreItem;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 import ch.systemsx.sybit.crkwebui.client.model.InterfaceItemModel;
 import ch.systemsx.sybit.crkwebui.client.model.InterfaceResidueSummaryModel;
+import ch.systemsx.sybit.crkwebui.shared.model.InterfaceScoreItem;
+import ch.systemsx.sybit.crkwebui.shared.model.SupportedMethod;
 
 import com.extjs.gxt.ui.client.Style.Scroll;
 import com.extjs.gxt.ui.client.data.ModelData;
@@ -177,9 +178,9 @@ public class ResiduesSummaryPanel extends ContentPanel
 		model.setAsa(asa);
 		model.setBsa(bsa);
 		
-		for (String method : mainController.getSettings().getScoresTypes()) 
+		for (SupportedMethod method : mainController.getSettings().getScoresTypes()) 
 		{
-			model.set(method, coreMethodValues.get(method)); 
+			model.set(method.getName(), coreMethodValues.get(method.getName())); 
 		}
 		
 		interfaceSummaryItems.add(model);
@@ -205,9 +206,9 @@ public class ResiduesSummaryPanel extends ContentPanel
 		model.setAsa(asa);
 		model.setBsa(bsa);
 		
-		for (String method : mainController.getSettings().getScoresTypes()) 
+		for (SupportedMethod method : mainController.getSettings().getScoresTypes()) 
 		{
-			model.set(method, rimMethodValues.get(method)); 
+			model.set(method.getName(), rimMethodValues.get(method.getName())); 
 		}
 		
 		interfaceSummaryItems.add(model);
@@ -216,9 +217,9 @@ public class ResiduesSummaryPanel extends ContentPanel
 		model = new InterfaceResidueSummaryModel();
 		model.setTitle(MainController.CONSTANTS.interfaces_residues_aggergation_ratios());
 		
-		for (String method : mainController.getSettings().getScoresTypes()) 
+		for (SupportedMethod method : mainController.getSettings().getScoresTypes()) 
 		{
-			model.set(method, ratioMethodValues.get(method)); 
+			model.set(method.getName(), ratioMethodValues.get(method.getName())); 
 		}
 		
 		interfaceSummaryItems.add(model);

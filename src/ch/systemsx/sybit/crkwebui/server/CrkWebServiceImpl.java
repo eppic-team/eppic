@@ -7,6 +7,7 @@ import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -16,34 +17,56 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceException;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 
-import model.InterfaceResidueItem;
-import model.PDBScoreItem;
-import model.ProcessingData;
-import model.RunParametersItem;
+import model.InterfaceScoreItemDB;
+import model.PDBScoreItemDB;
 
 import org.ggf.drmaa.DrmaaException;
 import org.ggf.drmaa.Session;
 import org.ggf.drmaa.SessionFactory;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import ch.systemsx.sybit.crkwebui.client.CrkWebService;
 import ch.systemsx.sybit.crkwebui.server.data.EmailData;
 import ch.systemsx.sybit.crkwebui.server.data.Step;
+import ch.systemsx.sybit.crkwebui.server.db.EntityManagerHandler;
+import ch.systemsx.sybit.crkwebui.server.db.model.InterfaceItemDAO;
+import ch.systemsx.sybit.crkwebui.server.db.model.InterfaceItemDAOImpl;
+import ch.systemsx.sybit.crkwebui.server.db.model.InterfaceResidueItemDAO;
+import ch.systemsx.sybit.crkwebui.server.db.model.InterfaceResidueItemDAOImpl;
 import ch.systemsx.sybit.crkwebui.server.db.model.JobDAO;
 import ch.systemsx.sybit.crkwebui.server.db.model.JobDAOImpl;
+import ch.systemsx.sybit.crkwebui.server.db.model.NumHomologsStringsDAO;
+import ch.systemsx.sybit.crkwebui.server.db.model.NumHomologsStringsDAOImpl;
+import ch.systemsx.sybit.crkwebui.server.db.model.PDBScoreDAO;
+import ch.systemsx.sybit.crkwebui.server.db.model.PDBScoreDAOImpl;
 import ch.systemsx.sybit.crkwebui.server.util.IPVerifier;
+import ch.systemsx.sybit.crkwebui.server.util.InputParametersParser;
 import ch.systemsx.sybit.crkwebui.server.util.RandomDirectoryNameGenerator;
 import ch.systemsx.sybit.crkwebui.shared.CrkWebException;
 import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
 import ch.systemsx.sybit.crkwebui.shared.model.InputParameters;
+import ch.systemsx.sybit.crkwebui.shared.model.InterfaceItem;
+import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResidueItem;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResiduesItemsList;
+import ch.systemsx.sybit.crkwebui.shared.model.NumHomologsStringItem;
+import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
+import ch.systemsx.sybit.crkwebui.shared.model.ProcessingData;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
 import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
+import ch.systemsx.sybit.crkwebui.shared.model.RunParametersItem;
 import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
+import ch.systemsx.sybit.crkwebui.shared.model.SupportedMethod;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
@@ -207,6 +230,63 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 //		* Hibernate JPA
 //		***********************
 		
+//		EntityManager entityManager = null;
+//		
+//		try
+//		{
+////			RunParametersItem item = new RunParametersItem();
+////			item.setUid(2);
+////			item.setHomologsCutoff(125);
+//			
+////			ObjectInputStream in = new ObjectInputStream(new FileInputStream("c:/test1.crk"));
+//			ObjectInputStream in = new ObjectInputStream(new FileInputStream("c:/files1/res2/1smt.webui.dat"));
+//			PDBScoreItemDB readitem = (PDBScoreItemDB)in.readObject();
+////			System.out.println(readitem.getInterfaceItems().get(0).getInterfaceResidues().size());
+//			
+//			InterfaceScoreItemDB iitem = readitem.getInterfaceItems().get(0).getInterfaceScores().get(0);
+//			System.out.println("UUN: " + iitem.getUnweightedRatio1Scores());
+//			
+//			entityManager = EntityManagerHandler.getEntityManager();
+//			entityManager.getTransaction().begin();
+//			entityManager.persist(readitem);
+//			entityManager.getTransaction().commit();
+//			entityManager.close();
+//		}
+//		catch(Throwable e)
+//		{
+//			e.printStackTrace();
+//		}
+		
+		
+//		EntityManager entityManager = null;
+//		PDBScoreItem result = null;
+//		
+//		try
+//		{
+//			entityManager = EntityManagerHandler.getEntityManager();
+//			PDBScoreDAO pdbScoreDAO = new PDBScoreDAOImpl();
+//			PDBScoreItem item = pdbScoreDAO.getPDBScore("test1");
+//			System.out.println("NAME: " + item.getPdbName());
+//			
+////			List<NumHomologsStringItem> hom = pdbScoreDAO.get(item.getUid());
+////			System.out.println("ASAC1: " + item.getInterfaceItems().get(0).getAsaC1());
+////			System.out.println("NUMHOMOL: " + hom.get(1).getText());
+//		}
+//		catch(Throwable e)
+//		{
+//			e.printStackTrace();
+//		}
+//		finally
+//		{
+//			try
+//			{
+//				entityManager.close();
+//			}
+//			catch(Throwable t)
+//			{
+//				
+//			}
+//		}
 	}
 
 	private void prepareSteps(Properties stepProperties) 
@@ -293,11 +373,26 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 	@Override
 	public ApplicationSettings loadSettings() throws CrkWebException 
 	{
-		ApplicationSettings settings = new ApplicationSettings();
+		ApplicationSettings settings = null;
 
+		try
+		{
+			// default input parameters values
+			InputStream inputParametersStream = getServletContext()
+					.getResourceAsStream(
+							"/WEB-INF/classes/META-INF/input_parameters.xml");
+			
+			settings = InputParametersParser.prepareApplicationSettings(inputParametersStream);
+		}
+		catch(Throwable t)
+		{
+			t.printStackTrace();
+			throw new CrkWebException("Error during preparing input parameters");
+		}
+		
 		InputStream propertiesStream = getServletContext()
-				.getResourceAsStream(
-						"/WEB-INF/classes/META-INF/grid.properties");
+		.getResourceAsStream(
+				"/WEB-INF/classes/META-INF/grid.properties");
 
 		Properties gridProperties = new Properties();
 		
@@ -309,135 +404,14 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 		{
 			throw new CrkWebException(e);
 		}
-
+		
 		Map<String, String> gridPropetiesMap = new HashMap<String, String>();
 		for (Object key : gridProperties.keySet())
 		{
 			gridPropetiesMap.put((String) key, (String) gridProperties.get(key));
 		}
-
+		
 		settings.setGridProperties(gridPropetiesMap);
-
-		String supportedMethods = gridProperties.getProperty("supported_methods");
-
-		if (supportedMethods != null) 
-		{
-			String[] scoringMethods = supportedMethods.split(",");
-			settings.setScoresTypes(scoringMethods);
-		}
-		else
-		{
-			throw new CrkWebException("Scoring methods not set");
-		}
-		
-		
-		
-		
-		propertiesStream = getServletContext()
-		.getResourceAsStream(
-				"/WEB-INF/classes/META-INF/run.properties");
-
-		Properties runProperties = new Properties();
-		
-		try
-		{
-			runProperties.load(propertiesStream);
-		}
-		catch(IOException e)
-		{
-			throw new CrkWebException(e);
-		}
-		
-		Map<String, String> runPropetiesMap = new HashMap<String, String>();
-		for (Field field : RunParametersItem.class.getDeclaredFields())
-		{
-			if(runProperties.get(field.getName()) != null)
-			{
-				runPropetiesMap.put(field.getName(), (String) runProperties.get(field.getName()));
-			}
-		}
-		
-		settings.setRunParametersNames(runPropetiesMap);
-		
-		
-
-		// default input parameters values
-		InputStream defaultInputParametersStream = getServletContext()
-				.getResourceAsStream(
-						"/WEB-INF/classes/META-INF/input_default_parameters.properties");
-
-		Properties defaultInputParametersProperties = new Properties();
-
-		try 
-		{
-			defaultInputParametersProperties.load(defaultInputParametersStream);
-		}
-		catch (IOException e) 
-		{
-			throw new CrkWebException("Error during reading default values of input parameters");
-		}
-
-		InputParameters defaultInputParameters = new InputParameters();
-
-		boolean useTcoffee = Boolean
-				.parseBoolean((String) defaultInputParametersProperties
-						.get("use_tcoffee"));
-		boolean usePisa = Boolean
-				.parseBoolean((String) defaultInputParametersProperties
-						.get("use_pisa"));
-		boolean useNaccess = Boolean
-				.parseBoolean((String) defaultInputParametersProperties
-						.get("use_naccess"));
-
-		int asaCalc = Integer
-				.parseInt((String) defaultInputParametersProperties
-						.get("asa_calc"));
-		int maxNrOfSequences = Integer
-				.parseInt((String) defaultInputParametersProperties
-						.get("max_nr_of_sequences"));
-		int reducedAlphabet = Integer
-				.parseInt((String) defaultInputParametersProperties
-						.get("reduced_alphabet"));
-
-		float identityCutoff = Float
-				.parseFloat((String) defaultInputParametersProperties
-						.get("identity_cutoff"));
-		float selecton = Float
-				.parseFloat((String) defaultInputParametersProperties
-						.get("selecton"));
-		
-		String defaultMethodsList = defaultInputParametersProperties
-			.getProperty("methods","");
-		String[] defaultMethodsValues = defaultMethodsList.split(",");
-		
-		defaultInputParameters.setMethods(defaultMethodsValues);
-
-		defaultInputParameters.setUseTCoffee(useTcoffee);
-		defaultInputParameters.setUsePISA(usePisa);
-		defaultInputParameters.setUseNACCESS(useNaccess);
-		defaultInputParameters.setAsaCalc(asaCalc);
-		defaultInputParameters.setMaxNrOfSequences(maxNrOfSequences);
-		defaultInputParameters.setReducedAlphabet(reducedAlphabet);
-		defaultInputParameters.setIdentityCutoff(identityCutoff);
-		defaultInputParameters.setSelecton(selecton);
-
-		settings.setDefaultParametersValues(defaultInputParameters);
-
-		String reducedAlphabetList = defaultInputParametersProperties
-				.getProperty("reduced_alphabet_list");
-		
-		if(reducedAlphabetList != null)
-		{
-			String[] reducedAlphabetValues = reducedAlphabetList.split(",");
-	
-			List<Integer> reducedAlphabetConverted = new ArrayList<Integer>();
-			for (String value : reducedAlphabetValues) 
-			{
-				reducedAlphabetConverted.add(Integer.parseInt(value));
-			}
-	
-			settings.setReducedAlphabetList(reducedAlphabetConverted);
-		}
 		
 		JobDAO jobDAO = new JobDAOImpl();
 		int nrOfJobsForSession = jobDAO.getNrOfJobsForSessionId(getThreadLocalRequest().getSession().getId()).intValue();
@@ -669,15 +643,36 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 						FileReader inputStream = new FileReader(logFile);
 				        BufferedReader bufferedInputStream = new BufferedReader(inputStream);
 				        
-				        String line = "";
-				        
-				        while ((line = bufferedInputStream.readLine()) != null)
+				        try
 				        {
-				        	log.append(line + "\n");
+				        	inputStream = new FileReader(logFile);
+					        bufferedInputStream = new BufferedReader(inputStream);
+					        
+					        String line = "";
+					        
+					        while ((line = bufferedInputStream.readLine()) != null)
+					        {
+					        	log.append(line + "\n");
+					        }
 				        }
-
-				        bufferedInputStream.close();
-				        inputStream.close();
+				        catch(Throwable t)
+				        {
+				        	throw t;
+				        }
+				        finally
+				        {
+				        	if(bufferedInputStream != null)
+							{
+								try
+								{
+									bufferedInputStream.close();
+								}
+								catch(Throwable t)
+								{
+									t.printStackTrace();
+								}
+							}
+				        }
 					}
 			        
 					statusData.setLog(log.toString());
@@ -781,95 +776,112 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 		return currentStep;
 	}
 	
+//	private PDBScoreItem getResultData(String jobId) throws CrkWebException 
+//	{
+//		PDBScoreItem resultsData = null;
+//
+//		if ((jobId != null) && (jobId.length() != 0)) 
+//		{
+//			File resultFileDirectory = new File(
+//					generalDestinationDirectoryName + "/" + jobId);
+//
+//			if (resultFileDirectory.exists()
+//					&& resultFileDirectory.isDirectory())
+//			{
+//				String[] directoryContent = resultFileDirectory
+//						.list(new FilenameFilter() {
+//
+//							public boolean accept(File dir, String name) {
+//								if (name.endsWith(".webui.dat")) {
+//									return true;
+//								} else {
+//									return false;
+//								}
+//							}
+//						});
+//
+//				if ((directoryContent != null) && (directoryContent.length > 0)) 
+//				{
+//					File resultFile = new File(resultFileDirectory + "/" + directoryContent[0]);
+//					
+//					if (resultFile.exists()) 
+//					{
+//						FileInputStream fileInputStream = null;
+//						ObjectInputStream inputStream = null;
+//						
+//						try 
+//						{
+//							fileInputStream = new FileInputStream(resultFile);
+//							inputStream = new ObjectInputStream(fileInputStream);
+//							resultsData = (PDBScoreItem)inputStream.readObject();
+//							resultsData.setJobId(jobId);
+//						} 
+//						catch (Throwable e)
+//						{
+//							throw new CrkWebException(e);
+//						}
+//						finally
+//						{
+//							if(inputStream != null)
+//							{
+//								try
+//								{
+//									inputStream.close();
+//								}
+//								catch(Throwable t)
+//								{
+//									t.printStackTrace();
+//								}
+//							}
+//						}
+//					}
+//				}
+//			}
+//		}
+//
+//		return resultsData;
+//	}
+	
 	private PDBScoreItem getResultData(String jobId) throws CrkWebException 
 	{
-		PDBScoreItem resultsData = null;
-
-		if ((jobId != null) && (jobId.length() != 0)) 
-		{
-			File resultFileDirectory = new File(
-					generalDestinationDirectoryName + "/" + jobId);
-
-			if (resultFileDirectory.exists()
-					&& resultFileDirectory.isDirectory())
-			{
-				String[] directoryContent = resultFileDirectory
-						.list(new FilenameFilter() {
-
-							public boolean accept(File dir, String name) {
-								if (name.endsWith(".webui.dat")) {
-									return true;
-								} else {
-									return false;
-								}
-							}
-						});
-
-				if ((directoryContent != null) && (directoryContent.length > 0)) 
-				{
-					File resultFile = new File(resultFileDirectory + "/" + directoryContent[0]);
-					
-					if (resultFile.exists()) 
-					{
-						try 
-						{
-							FileInputStream fileInputStream = new FileInputStream(resultFile);
-							ObjectInputStream inputStream = new ObjectInputStream(fileInputStream);
-							resultsData = (PDBScoreItem)inputStream.readObject();
-							resultsData.setJobId(jobId);
-							inputStream.close();
-							fileInputStream.close();
-						} 
-						catch (Throwable e)
-						{
-							throw new CrkWebException(e);
-						}
-					}
-				}
-			}
-		}
-
-		return resultsData;
+		PDBScoreDAO pdbScoreDAO = new PDBScoreDAOImpl();
+		PDBScoreItem pdbScoreItem = pdbScoreDAO.getPDBScore(jobId);
+		
+		InterfaceItemDAO interfaceItemDAO = new InterfaceItemDAOImpl();
+		List<InterfaceItem> interfaceItems = interfaceItemDAO.getInterfacesWithScores(pdbScoreItem.getUid());
+		pdbScoreItem.setInterfaceItems(interfaceItems);
+		
+		NumHomologsStringsDAO numHomologsStringsDAO = new NumHomologsStringsDAOImpl();
+		List<NumHomologsStringItem> numHomologsStringItems = numHomologsStringsDAO.getNumHomologsStrings(pdbScoreItem.getUid());
+		pdbScoreItem.setNumHomologsStrings(numHomologsStringItems);
+//		
+		return pdbScoreItem;
 	}
 	
-	public HashMap<Integer, List<InterfaceResidueItem>> getInterfaceResidues(
-			String jobId, final int interfaceId) throws CrkWebException
+	public HashMap<Integer, List<InterfaceResidueItem>> getInterfaceResidues(int interfaceUid) throws CrkWebException
 	{
-		HashMap<Integer, List<InterfaceResidueItem>> structures = null;
+		InterfaceResidueItemDAO interfaceResidueItemDAO = new InterfaceResidueItemDAOImpl();
+		List<InterfaceResidueItem> interfaceResidues = interfaceResidueItemDAO.getResiduesForInterface(interfaceUid);
 		
-		if ((jobId != null) && (jobId.length() != 0)) 
+		HashMap<Integer, List<InterfaceResidueItem>> structures = new HashMap<Integer, List<InterfaceResidueItem>>();
+		
+		List<InterfaceResidueItem> firstStructureResidues = new ArrayList<InterfaceResidueItem>();
+		List<InterfaceResidueItem> secondStructureResidues = new ArrayList<InterfaceResidueItem>();
+		
+		for(InterfaceResidueItem interfaceResidueItem : interfaceResidues)
 		{
-			File resultFileDirectory = new File(
-					generalDestinationDirectoryName + "/" + jobId);
-			
-			String[] directoryContent = resultFileDirectory.list(new FilenameFilter() {
-
-				public boolean accept(File dir, String name) {
-					if (name.endsWith("." + interfaceId + ".resDetails.dat")) {
-						return true;
-					} else {
-						return false;
-					}
-				}
-			});
-
-			if (directoryContent != null && directoryContent.length > 0)
+			if(interfaceResidueItem.getStructure() == 1)
 			{
-				try
-				{
-					FileInputStream fileInputStream = new FileInputStream(generalDestinationDirectoryName + "/" + jobId + "/" + directoryContent[0]);
-					ObjectInputStream inputStream = new ObjectInputStream(fileInputStream);
-					Object object = inputStream.readObject();
-					structures = (HashMap<Integer, List<InterfaceResidueItem>>) object;
-					inputStream.close();
-					fileInputStream.close();
-				}
-				catch(Throwable e)
-				{
-					throw new CrkWebException(e);
-				}
+				firstStructureResidues.add(interfaceResidueItem);
+			}
+			else if(interfaceResidueItem.getStructure() == 2)
+			{
+				secondStructureResidues.add(interfaceResidueItem);
 			}
 		}
+		
+		structures.put(1, firstStructureResidues);
+		structures.put(2, secondStructureResidues);
 		
 		return structures;
 	}
@@ -1016,7 +1028,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 					jobDAO.updateStatusOfJob(activeThread.getName(), StatusOfJob.STOPPED);
 //					DBUtils.updateStatusOfJob(activeThread.getName(), "Stopped");
 				}
-				catch (CrkWebException e) 
+				catch(CrkWebException e) 
 				{
 					e.printStackTrace();
 				}
@@ -1037,53 +1049,10 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 //		runInstances.destroy();
 	}
 
-	public InterfaceResiduesItemsList getAllResidues(String jobId, List<Integer> interfaceIds) throws CrkWebException 
+	public InterfaceResiduesItemsList getAllResidues(int pdbScoreId) throws CrkWebException 
 	{
-		InterfaceResiduesItemsList interfaceResiduesItemsList = new InterfaceResiduesItemsList();
-		
-		if(interfaceIds != null)
-		{
-			for(final Integer interfaceId : interfaceIds)
-			{
-				HashMap<Integer, List<InterfaceResidueItem>> structures = null;
-				
-				if ((jobId != null) && (jobId.length() != 0)) 
-				{
-					File resultFileDirectory = new File(
-							generalDestinationDirectoryName + "/" + jobId);
-					
-					String[] directoryContent = resultFileDirectory.list(new FilenameFilter() {
-		
-						public boolean accept(File dir, String name) {
-							if (name.endsWith("." + interfaceId + ".resDetails.dat")) {
-								return true;
-							} else {
-								return false;
-							}
-						}
-					});
-		
-					if (directoryContent != null && directoryContent.length > 0)
-					{
-						try
-						{
-							FileInputStream fileInputStream = new FileInputStream(generalDestinationDirectoryName + "/" + jobId + "/" + directoryContent[0]);
-							ObjectInputStream inputStream = new ObjectInputStream(fileInputStream);
-							Object object = inputStream.readObject();
-							structures = (HashMap<Integer, List<InterfaceResidueItem>>) object;
-							interfaceResiduesItemsList.put(interfaceId, structures);
-							inputStream.close();
-							fileInputStream.close();
-						}
-						catch(Throwable e)
-						{
-							throw new CrkWebException(e);
-						}
-					}
-				}
-			}
-		}
-		
+		InterfaceResidueItemDAO interfaceResidueItemDAO = new InterfaceResidueItemDAOImpl();
+		InterfaceResiduesItemsList interfaceResiduesItemsList = interfaceResidueItemDAO.getResiduesForAllInterfaces(pdbScoreId);
 		return interfaceResiduesItemsList;
 	}
 }

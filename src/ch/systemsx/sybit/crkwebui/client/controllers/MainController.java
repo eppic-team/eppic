@@ -3,14 +3,14 @@ package ch.systemsx.sybit.crkwebui.client.controllers;
 import java.util.HashMap;
 import java.util.List;
 
-import model.InterfaceResidueItem;
-import model.PDBScoreItem;
 import ch.systemsx.sybit.crkwebui.client.gui.InputDataPanel;
 import ch.systemsx.sybit.crkwebui.client.gui.MainViewPort;
 import ch.systemsx.sybit.crkwebui.client.gui.ResultsPanel;
 import ch.systemsx.sybit.crkwebui.client.gui.StatusPanel;
 import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
+import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResidueItem;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResiduesItemsList;
+import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
 import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
 import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
@@ -182,7 +182,7 @@ public class MainController
 		}
 		else
 		{
-			serviceController.getInterfaceResidues(selectedJobId, interfaceId);
+			serviceController.getInterfaceResidues(selectedJobId, pdbScoreItem.getInterfaceItem(interfaceId - 1).getUid());
 		}
 	}
 
@@ -194,9 +194,9 @@ public class MainController
 		serviceController.untieJobsFromSession();
 	}
 	
-	public void getAllResidues(String jobId, List<Integer> interfaceIds) 
+	public void getAllResidues(String jobId, int interfaceUid) 
 	{
-		serviceController.getAllResidues(jobId, interfaceIds);
+		serviceController.getAllResidues(jobId, interfaceUid);
 	}
 
 	public void setSettings(ApplicationSettings settings) {

@@ -1,8 +1,8 @@
 package ch.systemsx.sybit.crkwebui.client.callbacks;
 
-import model.PDBScoreItem;
-import model.ProcessingData;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
+import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
+import ch.systemsx.sybit.crkwebui.shared.model.ProcessingData;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;

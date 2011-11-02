@@ -2,8 +2,6 @@ package ch.systemsx.sybit.crkwebui.shared.model;
 
 import java.io.Serializable;
 
-import model.ProcessingData;
-
 /**
  * This class is used to transfer information necessary to display the status of submitted job
  * @author srebniak_a

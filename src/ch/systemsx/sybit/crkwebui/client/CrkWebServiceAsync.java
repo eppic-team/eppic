@@ -3,10 +3,10 @@ package ch.systemsx.sybit.crkwebui.client;
 import java.util.HashMap;
 import java.util.List;
 
-import model.InterfaceResidueItem;
-import model.ProcessingData;
 import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
+import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResidueItem;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResiduesItemsList;
+import ch.systemsx.sybit.crkwebui.shared.model.ProcessingData;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
 import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
 
@@ -27,8 +27,7 @@ public interface CrkWebServiceAsync
 	
 	public void getJobsForCurrentSession(AsyncCallback<List<ProcessingInProgressData>> callback);
 	
-	public void getInterfaceResidues(String jobId, 
-									 int interfaceId,
+	public void getInterfaceResidues(int interfaceUid,
 									 AsyncCallback<HashMap<Integer, List<InterfaceResidueItem>>> callback);
 	
 	public void stopJob(String jobToStop,
@@ -39,6 +38,6 @@ public interface CrkWebServiceAsync
 
 	public void untieJobsFromSession(AsyncCallback<Void> callback);
 
-	public void getAllResidues(String jobId, List<Integer> interfaceIds,
+	public void getAllResidues(int pdbScoreUid,
 			AsyncCallback<InterfaceResiduesItemsList> getAllResiduesCallback);
 }

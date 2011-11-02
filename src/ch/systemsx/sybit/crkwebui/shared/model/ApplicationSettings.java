@@ -1,6 +1,7 @@
 package ch.systemsx.sybit.crkwebui.shared.model;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -16,7 +17,7 @@ public class ApplicationSettings implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	// supported scoring methods
-	private String[] scoresTypes;
+	private List<SupportedMethod> scoresTypes;
 
 	// grid settings - column specification
 	private Map<String, String> gridProperties;
@@ -41,12 +42,21 @@ public class ApplicationSettings implements Serializable {
 	private String resultsLocation;
 	
 	private Map<String, String> runParametersNames;
+	
+	// information which willbe displayed in the bottom panel when accessing the page - e.g. when the server will not be accessible
+	// this information is loaded by each new access to the server so that it does not require the server to be restarted
+	private String notificationOnStart;
+	
+	public ApplicationSettings()
+	{
+		this.scoresTypes = new ArrayList<SupportedMethod>();
+	}
 
-	public void setScoresTypes(String[] scoresTypes) {
+	public void setScoresTypes(List<SupportedMethod> scoresTypes) {
 		this.scoresTypes = scoresTypes;
 	}
 
-	public String[] getScoresTypes() {
+	public List<SupportedMethod> getScoresTypes() {
 		return scoresTypes;
 	}
 
@@ -130,5 +140,13 @@ public class ApplicationSettings implements Serializable {
 
 	public Map<String, String> getRunParametersNames() {
 		return runParametersNames;
+	}
+
+	public void setNotificationOnStart(String notificationOnStart) {
+		this.notificationOnStart = notificationOnStart;
+	}
+
+	public String getNotificationOnStart() {
+		return notificationOnStart;
 	}
 }

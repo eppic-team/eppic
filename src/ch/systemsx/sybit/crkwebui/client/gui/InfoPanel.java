@@ -4,9 +4,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import model.PDBScoreItem;
-import model.RunParametersItem;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
+import ch.systemsx.sybit.crkwebui.shared.model.NumHomologsStringItem;
+import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
+import ch.systemsx.sybit.crkwebui.shared.model.RunParametersItem;
 
 import com.extjs.gxt.ui.client.Style.Scroll;
 import com.extjs.gxt.ui.client.core.Template;
@@ -66,7 +67,7 @@ public class InfoPanel extends FormPanel
 		int nrOfRows = 3;
 		int nrOfColumns = 4;
 		
-		List<String> homologsStrings = mainController.getPdbScoreItem().getNumHomologsStrings();
+		List<NumHomologsStringItem> homologsStrings = mainController.getPdbScoreItem().getNumHomologsStrings();
 		
 		int limit = 50;
 		
@@ -108,6 +109,7 @@ public class InfoPanel extends FormPanel
 		toolTipConfig.setTemplate(new Template(generateInputParametersTemplate(mainController.getPdbScoreItem())));  
 		toolTipConfig.setCloseable(true); 
 		toolTipConfig.setDismissDelay(0);
+		toolTipConfig.setShowDelay(100);
 		toolTipConfig.setMaxWidth(mainController.getWindowWidth());  
 		inputParametersLabel.setToolTip(toolTipConfig);  
 		
@@ -148,7 +150,7 @@ public class InfoPanel extends FormPanel
 		downloadResultsLink = new HTML();
 		downloadResultsLink.addStyleName("crk-default-label");
 		downloadResultsLink.setHTML("<a href=" + GWT.getModuleBaseURL()
-				+ "fileDownload?type=zip&id=" + mainController.getPdbScoreItem().getJobId()
+				+ "fileDownload?type=zip&id=" + mainController.getSelectedJobId()
 				+ ">" + MainController.CONSTANTS.info_panel_download_results_link() + "</a>");
 		flexTable.setWidget(0, 2, downloadResultsLink);
 		
@@ -156,7 +158,7 @@ public class InfoPanel extends FormPanel
 		{
 			for(int i=0; i<homologsStrings.size(); i++)
 			{
-				Label label = new Label(homologsStrings.get(i));
+				Label label = new Label(homologsStrings.get(i).getText());
 				label.addStyleName("crk-default-label");
 				flexTable.setWidget(i, 3, label);
 			}
