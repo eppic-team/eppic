@@ -3,7 +3,7 @@ package model;
 import java.io.Serializable;
 import java.util.List;
 
-public class InterfaceResidueItem implements Serializable
+public class InterfaceResidueItemDB implements Serializable
 {
 
 	/**
@@ -20,14 +20,14 @@ public class InterfaceResidueItem implements Serializable
 	private int structure;
 	private int residueNumber;
 	private String residueType;
-	private float asa;
-	private float bsa;
-	private float bsaPercentage;
+	private Float asa;
+	private Float bsa;
+	private Float bsaPercentage;
 	private int assignment; // one of the constants above: SURFACE, RIM, CORE
 	
-	private List<InterfaceResidueMethodItem> interfaceResidueMethodItems;
+	private List<InterfaceResidueMethodItemDB> interfaceResidueMethodItems;
 
-	private InterfaceItem interfaceItem;
+	private InterfaceItemDB interfaceItem;
 	// residue number
 	// residue type
 	// ASA
@@ -36,7 +36,7 @@ public class InterfaceResidueItem implements Serializable
 	//entropy
 	//KaKs
 	
-	public InterfaceResidueItem(int residueNumber, String residueType, float asa, float bsa, float bsaPercentage, int assignment) {
+	public InterfaceResidueItemDB(int residueNumber, String residueType, Float asa, Float bsa, Float bsaPercentage, int assignment) {
 		this.residueNumber = residueNumber;
 		this.residueType = residueType;
 		this.asa = asa;
@@ -45,7 +45,7 @@ public class InterfaceResidueItem implements Serializable
 		this.assignment = assignment;
 	}
 	
-	public InterfaceResidueItem()
+	public InterfaceResidueItemDB()
 	{
 		
 	}
@@ -66,27 +66,27 @@ public class InterfaceResidueItem implements Serializable
 		this.residueType = residueType;
 	}
 
-	public float getAsa() {
+	public Float getAsa() {
 		return asa;
 	}
 
-	public void setAsa(float asa) {
+	public void setAsa(Float asa) {
 		this.asa = asa;
 	}
 
-	public float getBsa() {
+	public Float getBsa() {
 		return bsa;
 	}
 
-	public void setBsa(float bsa) {
+	public void setBsa(Float bsa) {
 		this.bsa = bsa;
 	}
 
-	public float getBsaPercentage() {
+	public Float getBsaPercentage() {
 		return bsaPercentage;
 	}
 
-	public void setBsaPercentage(float bsaPercentage) {
+	public void setBsaPercentage(Float bsaPercentage) {
 		this.bsaPercentage = bsaPercentage;
 	}
 
@@ -98,12 +98,12 @@ public class InterfaceResidueItem implements Serializable
 		this.assignment = assignment;
 	}
 	
-	public List<InterfaceResidueMethodItem> getInterfaceResidueMethodItems() {
+	public List<InterfaceResidueMethodItemDB> getInterfaceResidueMethodItems() {
 		return interfaceResidueMethodItems;
 	}
 
 	public void setInterfaceResidueMethodItems(
-			List<InterfaceResidueMethodItem> interfaceResidueMethodItems) {
+			List<InterfaceResidueMethodItemDB> interfaceResidueMethodItems) {
 		this.interfaceResidueMethodItems = interfaceResidueMethodItems;
 	}
 
@@ -115,11 +115,11 @@ public class InterfaceResidueItem implements Serializable
 		return structure;
 	}
 
-	public void setInterfaceItem(InterfaceItem interfaceItem) {
+	public void setInterfaceItem(InterfaceItemDB interfaceItem) {
 		this.interfaceItem = interfaceItem;
 	}
 
-	public InterfaceItem getInterfaceItem() {
+	public InterfaceItemDB getInterfaceItem() {
 		return interfaceItem;
 	}
 

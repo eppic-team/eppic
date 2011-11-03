@@ -2,7 +2,7 @@ package model;
 
 import java.io.Serializable;
 
-public class InterfaceResidueMethodItem implements Serializable
+public class InterfaceResidueMethodItemDB implements Serializable
 {
 	/**
 	 * 
@@ -12,25 +12,25 @@ public class InterfaceResidueMethodItem implements Serializable
 	private int uid;
 	
 	private String method;
-	private float score;
+	private Float score;
 	
-	private InterfaceResidueItem interfaceResidueItem;
+	private InterfaceResidueItemDB interfaceResidueItem;
 	
-	public InterfaceResidueMethodItem()
+	public InterfaceResidueMethodItemDB()
 	{
 		
 	}
 	
-	public InterfaceResidueMethodItem(float score, String method) {
+	public InterfaceResidueMethodItemDB(Float score, String method) {
 		this.score = score;
 		this.method = method;
 	}
 
-	public void setScore(float score) {
+	public void setScore(Float score) {
 		this.score = score;
 	}
 
-	public float getScore() {
+	public Float getScore() {
 		return score;
 	}
 
@@ -42,11 +42,11 @@ public class InterfaceResidueMethodItem implements Serializable
 		return method;
 	}
 
-	public void setInterfaceResidueItem(InterfaceResidueItem interfaceResidueItem) {
+	public void setInterfaceResidueItem(InterfaceResidueItemDB interfaceResidueItem) {
 		this.interfaceResidueItem = interfaceResidueItem;
 	}
 
-	public InterfaceResidueItem getInterfaceResidueItem() {
+	public InterfaceResidueItemDB getInterfaceResidueItem() {
 		return interfaceResidueItem;
 	}
 	

@@ -3,7 +3,7 @@ package model;
 import java.io.Serializable;
 
 
-public class RunParametersItem implements Serializable
+public class RunParametersItemDB implements Serializable
 {
 	/**
 	 * 
@@ -26,9 +26,9 @@ public class RunParametersItem implements Serializable
 	private double zScoreCutoff; 
 
 	
-	private PDBScoreItem pdbScoreItem;
+	private PDBScoreItemDB pdbScoreItem;
 	
-	public RunParametersItem() 
+	public RunParametersItemDB() 
 	{
 		
 	}
@@ -129,11 +129,11 @@ public class RunParametersItem implements Serializable
 		this.maxNumSeqsCutoff = maxNumSeqsCutoff;
 	}
 
-	public void setPdbScoreItem(PDBScoreItem pdbScoreItem) {
+	public void setPdbScoreItem(PDBScoreItemDB pdbScoreItem) {
 		this.pdbScoreItem = pdbScoreItem;
 	}
 
-	public PDBScoreItem getPdbScoreItem() {
+	public PDBScoreItemDB getPdbScoreItem() {
 		return pdbScoreItem;
 	}
 
