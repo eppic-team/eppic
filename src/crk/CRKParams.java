@@ -324,20 +324,21 @@ public class CRKParams {
 		"  [-r <int>]   :  specify the number of groups of aminoacids (reduced alphabet) to\n" +
 		"                  be used for entropy calculations.\n" +
 		"                  Valid values are 2, 4, 6, 8, 10, 15 and 20. Default: "+DEF_ENTROPY_ALPHABET+"\n" +
-		"  [-e <float>] :  the BSA/ASA cutoff for core assignment in geometry predictor. Default: "+String.format("%4.2f",DEF_CA_CUTOFF_FOR_GEOM)+"\n" +
+		"  [-e <float>] :  the BSA/ASA cutoff for core assignment in geometry predictor.\n" +
+		"                  Default: "+String.format("%4.2f",DEF_CA_CUTOFF_FOR_GEOM)+"\n" +
 		"  [-c <float>] :  the BSA/ASA cutoff for core assignment in rim/core evolutionary \n" +
 		"                  predictor. Default: "+String.format("%4.2f",DEF_CA_CUTOFF_FOR_RIMCORE)+"\n" +
 		"  [-z <float>] :  the BSA/ASA cutoff for core assignment in core vs surface z-score \n" +
 		"                  evolutionary predictor. Default: "+String.format("%4.2f",DEF_CA_CUTOFF_FOR_ZSCORE)+"\n" +
-		"  [-m <int>]   :  geometry scoring cutoff for number of interface core residues, if below \n" +
-		"                  this value the geometry call will be crystal, if equals or higher the \n" +
-		"                  geometry call is bio. Default "+DEF_MIN_CORE_SIZE_FOR_BIO+"\n" +
-		"  [-x <float>]:   entropy score cutoff for calling BIO/XTAL.\n" +
+		"  [-m <int>]   :  geometry scoring cutoff for number of interface core residues, if \n" +
+		"                  below this value the geometry call will be crystal, if equals or \n" +
+		"                  higher the geometry call is bio. Default "+DEF_MIN_CORE_SIZE_FOR_BIO+"\n" +
+		"  [-x <float>] :  entropy score cutoff for calling BIO/XTAL.\n" +
 		"                  Default: " + String.format("%4.2f",DEF_ENTR_CALL_CUTOFF)+"\n"+
-		"  [-X <float>]:   ka/ks score cutoff for calling BIO/XTAL.\n"+
+		"  [-X <float>] :  ka/ks score cutoff for calling BIO/XTAL.\n"+
 		"                  Default: " + String.format("%4.2f",DEF_KAKS_CALL_CUTOFF)+"\n"+
-		"  [-y <float>]:   z-score cutoff to call BIO/XTAL. If below this z-score interface is BIO\n"+
-		"                  Default: " + String.format("%4.2f",DEF_ZSCORE_CUTOFF)+"\n"+
+		"  [-y <float>] :  z-score cutoff to call BIO/XTAL. If below this z-score interface \n" +
+		"                  is BIO. Default: " + String.format("%4.2f",DEF_ZSCORE_CUTOFF)+"\n"+
 		"  [-q <int>]   :  maximum number of sequences to keep for calculation of conservation \n" +
 		"                  scores. Default: "+DEF_MAX_NUM_SEQUENCES+". This is especially important when using \n" +
 		"                  the -k option, with too many sequences, selecton will run too long\n" +
@@ -358,7 +359,8 @@ public class CRKParams {
 		"                  (requires pymol)\n" +
 		"  [-L <file>]  :  a file where progress log will be written to. Default: progress log \n" +
 		"                  written to std output\n" +
-		"  [-u]         :  debug, if specified debug output will be also shown on standard output\n\n";
+		"  [-u]         :  debug, if specified debug output will be also shown on standard\n" +
+		"                  output\n\n";
 		
 		parseCommandLine(args, PROGRAM_NAME, help);
 		checkCommandLineInput();
