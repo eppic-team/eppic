@@ -71,8 +71,16 @@ public class WebUIDataAdaptor {
 		pdbScoreItem.setTitle(title);
 	}
 	
+	public void setCrkVersion(String crkVersion) {
+		pdbScoreItem.setCrkVersion(crkVersion);
+	}
+	
 	public void setSpaceGroup(SpaceGroup sg) {
 		pdbScoreItem.setSpaceGroup(sg==null?"No space group info":sg.getShortSymbol());
+	}
+	
+	public void setUniprotVer(String uniprotVer) {
+		pdbScoreItem.setUniprotVer(uniprotVer);
 	}
 	
 	public void setInterfaces(ChainInterfaceList interfaces) {

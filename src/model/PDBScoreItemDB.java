@@ -17,6 +17,8 @@ public class PDBScoreItemDB implements Serializable, ProcessingDataDB
 	private String pdbName;
 	private String title;
 	private String spaceGroup;
+	private String uniprotVer;
+	private String crkVersion;
 	private RunParametersItemDB runParameters;
 	
 	private List<NumHomologsStringItemDB> numHomologsStrings;
@@ -96,6 +98,22 @@ public class PDBScoreItemDB implements Serializable, ProcessingDataDB
 		this.spaceGroup = spaceGroup;
 	}
 
+	public String getUniprotVer() {
+		return uniprotVer;
+	}
+	
+	public void setUniprotVer(String uniprotVer) {
+		this.uniprotVer = uniprotVer;
+	}
+
+	public String getCrkVersion() {
+		return crkVersion;
+	}
+
+	public void setCrkVersion(String crkVersion) {
+		this.crkVersion = crkVersion;
+	}
+	
 	public void setRunParameters(RunParametersItemDB runParameters) {
 		this.runParameters = runParameters;
 	}

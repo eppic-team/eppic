@@ -143,6 +143,7 @@ public class CRKMain {
 		
 		// for the webui
 		wuiAdaptor = new WebUIDataAdaptor();
+		wuiAdaptor.setCrkVersion(CRKParams.PROGRAM_VERSION);
 		wuiAdaptor.setParams(params);
 		wuiAdaptor.setTitle(pdb.getTitle());
 		wuiAdaptor.setSpaceGroup(pdb.getSpaceGroup());
@@ -324,7 +325,7 @@ public class CRKMain {
 		findUniqueChains();
 		
 		cecs = new ChainEvolContextList(pdb,params.getJobName());
-
+		
 		// a) getting the uniprot ids corresponding to the query (the pdb sequence)
 		for (ChainEvolContext chainEvCont:cecs.getAllChainEvolContext()) {
 			File emblQueryCacheFile = null;
@@ -350,7 +351,8 @@ public class CRKMain {
 				// no query uniprot match, we do nothing with this sequence
 				// TODO should we go ahead and blast with the PDB sequence? that would require quite a few changes in the code
 				continue;
-			}
+			} 
+			
 			
 			// b) getting the homologs and sequence data 
 			params.getProgressLog().println("Blasting for homologues...");
@@ -361,6 +363,12 @@ public class CRKMain {
 			try {
 				chainEvCont.retrieveHomologs(params.getBlastBinDir(), params.getBlastDbDir(), params.getBlastDb(), params.getNumThreads(), params.getIdCutoff(), params.getQueryCoverageCutoff(), blastCacheFile);
 				LOGGER.info("Uniprot version used: "+chainEvCont.getUniprotVer());
+				
+				// for web ui uniprot ver will be set only when at least one sequence has uniprot match
+				// it will be redundantly set several times actually, TODO we should do it only once
+				// if not a single sequence has match then it will be null
+				wuiAdaptor.setUniprotVer(chainEvCont.getUniprotVer());
+
 			} catch (UniprotVerMisMatchException e) {
 				throw new CRKException(e, "Mismatch of Uniprot versions! "+e.getMessage(), true);
 			} catch (BlastException e) {

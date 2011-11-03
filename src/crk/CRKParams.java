@@ -18,6 +18,7 @@ public class CRKParams {
 	
 	// CONSTANTS
 	private static final String    PROGRAM_NAME = "crk";
+	public static final String	   PROGRAM_VERSION = "2.0.0-alpha1";
 	private static final Pattern   PDBCODE_PATTERN = Pattern.compile("^\\d\\w\\w\\w$");
 	protected static final String  CONFIG_FILE_NAME = ".crk.conf";
 	protected static final String  GEOMETRY_FILE_SUFFIX = ".geometry";
