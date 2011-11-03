@@ -342,10 +342,6 @@ public class CRKMain {
 			} catch (InterruptedException e) {
 				throw new CRKException(e,"Thread interrupted while running blast for retrieving query data: "+e.getMessage(),true);
 			}
-			if (params.isDoScoreKaks() && chainEvCont.getQueryRepCDS()==null) {
-				// note calling chainEvCont.canDoCRK() will also check for this condition (here we only want to log it once)
-				LOGGER.error("No CDS good match for query sequence! can't do Ka/Ks analysis on it.");
-			}
 
 			if (!chainEvCont.hasQueryMatch()) {
 				// no query uniprot match, we do nothing with this sequence
@@ -353,6 +349,10 @@ public class CRKMain {
 				continue;
 			} 
 			
+			if (params.isDoScoreKaks() && chainEvCont.getQueryRepCDS()==null) {
+				// note calling chainEvCont.canDoCRK() will also check for this condition (here we only want to log it once)
+				LOGGER.error("No CDS good match for query sequence! can't do Ka/Ks analysis on it.");
+			}
 			
 			// b) getting the homologs and sequence data 
 			params.getProgressLog().println("Blasting for homologues...");
