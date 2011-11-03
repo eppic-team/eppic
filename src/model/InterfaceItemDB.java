@@ -27,6 +27,7 @@ public class InterfaceItemDB implements Serializable
 	private Double bsaR1;
 	private Double bsaR2;
 	private String finalCall;
+	private String finalCallReason;
 	private String operator; 
 	private List<WarningItemDB> warnings;
 	
@@ -135,12 +136,20 @@ public class InterfaceItemDB implements Serializable
 		this.size2 = size2;
 	}
 
-	public void setFinalCall(String finalCall) {
+	public void setFinalCallName(String finalCall) {
 		this.finalCall = finalCall;
 	}
 
-	public String getFinalCall() {
+	public String getFinalCallName() {
 		return finalCall;
+	}
+	
+	public void setFinalCallReason(String finalCallReason) {
+		this.finalCallReason = finalCallReason;
+	}
+	
+	public String getFinalCallReason() {
+		return finalCallReason;
 	}
 
 	public void setOperator(String operator) {

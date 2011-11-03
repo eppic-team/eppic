@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import crk.predictors.CombinedPredictor;
 import crk.predictors.EvolInterfZPredictor;
 import crk.predictors.EvolRimCorePredictor;
 import crk.predictors.GeometryPredictor;
@@ -331,6 +332,14 @@ public class WebUIDataAdaptor {
 					isi.setUnweightedFinalScores(ercp.getScore());				
 				}
 			}
+		}
+	}
+	
+	public void setCombinedPredictors(List<CombinedPredictor> cps) {
+		for (int i=0;i<cps.size();i++) {
+			InterfaceItemDB ii = pdbScoreItem.getInterfaceItem(i);
+			ii.setFinalCallName(cps.get(i).getCall().getName());		
+			ii.setFinalCallReason(cps.get(i).getCallReason());
 		}
 	}
 	

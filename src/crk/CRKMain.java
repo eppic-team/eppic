@@ -561,7 +561,7 @@ public class CRKMain {
 		params.getProgressLog().println("Done scoring");
 	}
 	
-	private void doCombinedScoring() throws CRKException {
+	public void doCombinedScoring() throws CRKException {
 		try {
 		
 		iecList.setCallCutoff(params.getEntrCallCutoff());
@@ -571,14 +571,20 @@ public class CRKMain {
 		interfaces.calcRimAndCores(params.getCAcutoffForZscore());
 		iecList.scoreZscore();
 		
+		List<CombinedPredictor> cps = new ArrayList<CombinedPredictor>();
+		
 		PrintStream scoreCombPS = new PrintStream(params.getOutputFile(CRKParams.COMBINED_FILE_SUFFIX+".scores"));
 		CombinedPredictor.printScoringHeaders(scoreCombPS);
 		for (int i=0;i<iecList.size();i++) {
 			CombinedPredictor cp = 
 					new CombinedPredictor(iecList.get(i), gps.get(i), iecList.getEvolRimCorePredictor(i), iecList.getEvolInterfZPredictor(i));
+			cps.add(cp);
 			cp.printScoresLine(scoreCombPS);
 		}
 		scoreCombPS.close();
+		
+		wuiAdaptor.setCombinedPredictors(cps);
+		
 		} catch (IOException e) {
 			throw new CRKException(e,"Couldn't write final combined scores file. "+e.getMessage(),true);
 		}
