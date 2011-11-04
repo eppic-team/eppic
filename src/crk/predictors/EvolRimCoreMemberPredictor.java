@@ -156,7 +156,11 @@ public class EvolRimCoreMemberPredictor implements InterfaceTypePredictor {
 		InterfaceRimCore rimCore = iec.getRimCore(molecId);
 		rimScore  = iec.calcScore(rimCore.getRimResidues(), molecId, scoType, weighted);
 		coreScore = iec.calcScore(rimCore.getCoreResidues(),molecId, scoType, weighted);
-		scoreRatio = coreScore/rimScore;
+		if (rimScore==0) {
+			scoreRatio = CRKParams.SCORERATIO_INFINITY_VALUE;
+		} else {
+			scoreRatio = coreScore/rimScore;
+		}
 	}
 
 	/**
