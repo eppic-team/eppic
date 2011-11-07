@@ -143,7 +143,6 @@ public class CRKMain {
 		
 		// for the webui
 		wuiAdaptor = new WebUIDataAdaptor();
-		wuiAdaptor.setCrkVersion(CRKParams.PROGRAM_VERSION);
 		wuiAdaptor.setParams(params);
 		wuiAdaptor.setTitle(pdb.getTitle());
 		wuiAdaptor.setSpaceGroup(pdb.getSpaceGroup());
@@ -367,7 +366,7 @@ public class CRKMain {
 				// for web ui uniprot ver will be set only when at least one sequence has uniprot match
 				// it will be redundantly set several times actually, TODO we should do it only once
 				// if not a single sequence has match then it will be null
-				wuiAdaptor.setUniprotVer(chainEvCont.getUniprotVer());
+				wuiAdaptor.getRunParametersItem().setUniprotVer(chainEvCont.getUniprotVer());
 
 			} catch (UniprotVerMisMatchException e) {
 				throw new CRKException(e, "Mismatch of Uniprot versions! "+e.getMessage(), true);

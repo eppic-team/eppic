@@ -43,6 +43,8 @@ public class WebUIDataAdaptor {
 	
 	private boolean resDetailsAdded;
 	
+	private RunParametersItemDB runParametersItem;
+	
 	public WebUIDataAdaptor() {
 		pdbScoreItem = new PDBScoreItemDB();
 		resDetailsAdded = false;
@@ -51,7 +53,7 @@ public class WebUIDataAdaptor {
 	public void setParams(CRKParams params) {
 		this.params = params;
 		pdbScoreItem.setPdbName(params.getJobName());
-		RunParametersItemDB runParametersItem = new RunParametersItemDB();
+		runParametersItem = new RunParametersItemDB();
 		runParametersItem.setHomologsCutoff(params.getMinHomologsCutoff());
 		runParametersItem.setIdCutoff(params.getIdCutoff());
 		runParametersItem.setQueryCovCutoff(params.getQueryCoverageCutoff());
@@ -65,6 +67,7 @@ public class WebUIDataAdaptor {
 		runParametersItem.setzScoreCutoff(params.getZscoreCutoff());
 		runParametersItem.setMinCoreSizeForBio(params.getMinCoreSizeForBio());
 		runParametersItem.setPdbScoreItem(pdbScoreItem);
+		runParametersItem.setCrkVersion(CRKParams.PROGRAM_VERSION);
 		pdbScoreItem.setRunParameters(runParametersItem);
 	}
 	
@@ -72,17 +75,17 @@ public class WebUIDataAdaptor {
 		pdbScoreItem.setTitle(title);
 	}
 	
-	public void setCrkVersion(String crkVersion) {
-		pdbScoreItem.setCrkVersion(crkVersion);
-	}
+//	public void setCrkVersion(String crkVersion) {
+//		pdbScoreItem.setCrkVersion(crkVersion);
+//	}
 	
 	public void setSpaceGroup(SpaceGroup sg) {
 		pdbScoreItem.setSpaceGroup(sg==null?"No space group info":sg.getShortSymbol());
 	}
 	
-	public void setUniprotVer(String uniprotVer) {
-		pdbScoreItem.setUniprotVer(uniprotVer);
-	}
+//	public void setUniprotVer(String uniprotVer) {
+//		pdbScoreItem.setUniprotVer(uniprotVer);
+//	}
 	
 	public void setInterfaces(ChainInterfaceList interfaces) {
 		//this.interfaces = interfaces;
@@ -425,6 +428,10 @@ public class WebUIDataAdaptor {
 				iril.add(iri);
 			}
 		}
+	}
+
+	public RunParametersItemDB getRunParametersItem() {
+		return runParametersItem;
 	}
 	
 }

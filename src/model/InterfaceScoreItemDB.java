@@ -38,20 +38,20 @@ public class InterfaceScoreItemDB implements Serializable
 	
 	public InterfaceScoreItemDB()
 	{
-		setUnweightedCore1Scores(0.0);
-		setUnweightedCore2Scores(0.0);
-		setUnweightedRim1Scores(0.0);
-		setUnweightedRim2Scores(0.0);
-		setUnweightedRatio1Scores(0.0);
-		setUnweightedRatio2Scores(0.0);
-		setUnweightedFinalScores(0.0);
-		setWeightedCore1Scores(0.0);
-		setWeightedCore2Scores(0.0);
-		setWeightedRim1Scores(0.0);
-		setWeightedRim2Scores(0.0);
-		setWeightedRatio1Scores(0.0);
-		setWeightedRatio2Scores(0.0);
-		setWeightedFinalScores(0.0);
+//		setUnweightedCore1Scores(0.0);
+//		setUnweightedCore2Scores(0.0);
+//		setUnweightedRim1Scores(0.0);
+//		setUnweightedRim2Scores(0.0);
+//		setUnweightedRatio1Scores(0.0);
+//		setUnweightedRatio2Scores(0.0);
+//		setUnweightedFinalScores(0.0);
+//		setWeightedCore1Scores(0.0);
+//		setWeightedCore2Scores(0.0);
+//		setWeightedRim1Scores(0.0);
+//		setWeightedRim2Scores(0.0);
+//		setWeightedRatio1Scores(0.0);
+//		setWeightedRatio2Scores(0.0);
+//		setWeightedFinalScores(0.0);
 	}
 	
 	public InterfaceScoreItemDB(PDBScoreItemDB pdbScoreItem)

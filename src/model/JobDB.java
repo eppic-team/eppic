@@ -2,6 +2,8 @@ package model;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 public class JobDB implements Serializable
 {
@@ -11,7 +13,6 @@ public class JobDB implements Serializable
 	private static final long serialVersionUID = 1L;
 	private Long uid;
 	private String jobId;
-	private String sessionId;
 	private String status;
 	private String email;
 	private String ip;
@@ -19,6 +20,13 @@ public class JobDB implements Serializable
 	private Date submissionDate;
 	
 	private PDBScoreItemDB pdbScoreItem;
+	
+	private Set<SessionDB> sessions;
+	
+	public JobDB()
+	{
+		this.sessions = new HashSet<SessionDB>();
+	}
 	
 	public Long getUid() {
 		return uid;
@@ -34,14 +42,6 @@ public class JobDB implements Serializable
 	
 	public void setJobId(String jobId) {
 		this.jobId = jobId;
-	}
-
-	public String getSessionId() {
-		return sessionId;
-	}
-
-	public void setSessionId(String sessionId) {
-		this.sessionId = sessionId;
 	}
 
 	public String getStatus() {
@@ -90,5 +90,13 @@ public class JobDB implements Serializable
 
 	public PDBScoreItemDB getPdbScoreItem() {
 		return pdbScoreItem;
+	}
+
+	public void setSessions(Set<SessionDB> sessions) {
+		this.sessions = sessions;
+	}
+
+	public Set<SessionDB> getSessions() {
+		return sessions;
 	}
 }

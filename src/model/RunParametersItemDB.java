@@ -25,6 +25,8 @@ public class RunParametersItemDB implements Serializable
 	private double kaksCallCutoff;
 	private double zScoreCutoff; 
 
+	private String uniprotVer;
+	private String crkVersion;
 	
 	private PDBScoreItemDB pdbScoreItem;
 	
@@ -143,5 +145,21 @@ public class RunParametersItemDB implements Serializable
 
 	public int getUid() {
 		return uid;
+	}
+	
+	public String getUniprotVer() {
+		return uniprotVer;
+	}
+	
+	public void setUniprotVer(String uniprotVer) {
+		this.uniprotVer = uniprotVer;
+	}
+
+	public String getCrkVersion() {
+		return crkVersion;
+	}
+
+	public void setCrkVersion(String crkVersion) {
+		this.crkVersion = crkVersion;
 	}
 }
