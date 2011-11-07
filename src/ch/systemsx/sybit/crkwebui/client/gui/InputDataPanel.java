@@ -291,6 +291,11 @@ public class InputDataPanel extends DisplayPanel
 		else
 		{
 			input = pdbCodeField.getValue();
+			
+			if(input != null)
+			{
+				input = input.toLowerCase();
+			}
 		}
 		
 		runJobData.setInput(input);

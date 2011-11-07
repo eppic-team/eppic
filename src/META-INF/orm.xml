@@ -64,9 +64,15 @@
                 <generated-value strategy="IDENTITY"/>
             </id>
             <basic name="jobId"></basic>
-            <basic name="pdbName"></basic>
-            <basic name="title"></basic>
-            <basic name="spaceGroup"></basic>
+            <basic name="pdbName">
+            	<column column-definition="text"/>
+            </basic>
+            <basic name="title">
+            	<column column-definition="text"/>
+            </basic>
+            <basic name="spaceGroup">
+            	<column length="10"/>
+            </basic>
             
        		<one-to-many name="interfaceItems" mapped-by="pdbScoreItem">  
             	<cascade>  
@@ -108,7 +114,9 @@
             </id>
             <basic name="id"></basic>
             <basic name="area"><column nullable="true"/></basic>
-            <basic name="name"></basic>
+            <basic name="name">
+            	<column length="3"/>
+            </basic>
             <basic name="size1"></basic>
             <basic name="size2"></basic>
             <basic name="asaC1"><column nullable="true"/></basic>
@@ -119,9 +127,15 @@
             <basic name="asaR2"><column nullable="true"/></basic>
             <basic name="bsaR1"><column nullable="true"/></basic>
             <basic name="bsaR2"><column nullable="true"/></basic>
-            <basic name="finalCallName"></basic>
-            <basic name="finalCallReason"></basic>
-            <basic name="operator"></basic>
+            <basic name="finalCallName">
+            	<column length="6"/>
+            </basic>
+            <basic name="finalCallReason">
+            	<column column-definition="text"/>
+            </basic>
+            <basic name="operator">
+            	<column length="25"/>
+            </basic>
        		<basic name="jmolScript">
        			<column column-definition="text"/>
        		</basic>
@@ -166,7 +180,9 @@
             </id>
             <basic name="structure"></basic>
             <basic name="residueNumber"></basic>
-            <basic name="residueType"></basic>
+            <basic name="residueType">
+            	<column length="3"/>
+            </basic>
             <basic name="asa"><column nullable="true"/></basic>
             <basic name="bsa"><column nullable="true"/></basic>
             <basic name="bsaPercentage"><column nullable="true"/></basic>
@@ -193,7 +209,9 @@
             <id name="uid">
                 <generated-value strategy="IDENTITY"/>
             </id>
-            <basic name="method"></basic>
+            <basic name="method">
+            	<column length="15"/>
+            </basic>
             <basic name="score"><column nullable="true"/></basic>
        		
        		<many-to-one name="interfaceResidueItem" >  
@@ -211,7 +229,9 @@
             <id name="uid">
                 <generated-value strategy="IDENTITY"/>
             </id>
-            <basic name="method"></basic>
+            <basic name="method">
+            	<column length="15"/>
+            </basic>
             <basic name="id"></basic>
             <basic name="weightedRim1Scores"><column nullable="true"/></basic>
             <basic name="weightedCore1Scores"><column nullable="true"/></basic>
@@ -227,8 +247,12 @@
             <basic name="unweightedCore2Scores"><column nullable="true"/></basic>
             <basic name="unweightedRatio2Scores"><column nullable="true"/></basic>
             <basic name="unweightedFinalScores"><column nullable="true"/></basic>
-            <basic name="call"></basic>
-            <basic name="callReason"></basic>
+            <basic name="callName">
+            	<column length="6"/>
+            </basic>
+            <basic name="callReason">
+            	<column column-definition="text"/>
+            </basic>
             
        		
        		<many-to-one name="interfaceItem" >  
@@ -242,7 +266,9 @@
             <id name="uid">
                 <generated-value strategy="IDENTITY"/>
             </id>
-            <basic name="text"></basic>
+            <basic name="text">
+            	<column column-definition="text"/>
+            </basic>
        		
        		<many-to-one name="interfaceItem" >  
             </many-to-one>  
@@ -268,8 +294,12 @@
             <basic name="caCutoffForZscore"></basic>
             <basic name="entrCallCutoff"></basic>
             <basic name="zScoreCutoff"></basic>
-            <basic name="uniprotVer"></basic>
-            <basic name="crkVersion"></basic>
+            <basic name="uniprotVer">
+            	<column length="10"/>
+            </basic>
+            <basic name="crkVersion">
+            	<column length="15"/>
+            </basic>
 
        		<one-to-one name="pdbScoreItem" mapped-by="runParameters">  
             </one-to-one>  
@@ -282,7 +312,9 @@
             <id name="uid">
                 <generated-value strategy="IDENTITY"/>
             </id>
-            <basic name="text"></basic>
+            <basic name="text">
+            	<column column-definition="text"/>
+            </basic>
        		
        		<many-to-one name="pdbScoreItem" >  
             </many-to-one>  
