@@ -31,10 +31,6 @@ import model.PDBScoreItemDB;
 import org.ggf.drmaa.DrmaaException;
 import org.ggf.drmaa.Session;
 import org.ggf.drmaa.SessionFactory;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 import ch.systemsx.sybit.crkwebui.client.CrkWebService;
 import ch.systemsx.sybit.crkwebui.server.data.EmailData;
@@ -50,6 +46,8 @@ import ch.systemsx.sybit.crkwebui.server.db.model.NumHomologsStringsDAO;
 import ch.systemsx.sybit.crkwebui.server.db.model.NumHomologsStringsDAOImpl;
 import ch.systemsx.sybit.crkwebui.server.db.model.PDBScoreDAO;
 import ch.systemsx.sybit.crkwebui.server.db.model.PDBScoreDAOImpl;
+import ch.systemsx.sybit.crkwebui.server.db.model.SessionDAO;
+import ch.systemsx.sybit.crkwebui.server.db.model.SessionDAOImpl;
 import ch.systemsx.sybit.crkwebui.server.util.IPVerifier;
 import ch.systemsx.sybit.crkwebui.server.util.InputParametersParser;
 import ch.systemsx.sybit.crkwebui.server.util.RandomDirectoryNameGenerator;
@@ -64,9 +62,7 @@ import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingData;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
 import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
-import ch.systemsx.sybit.crkwebui.shared.model.RunParametersItem;
 import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
-import ch.systemsx.sybit.crkwebui.shared.model.SupportedMethod;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
@@ -239,12 +235,12 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 ////			item.setHomologsCutoff(125);
 //			
 ////			ObjectInputStream in = new ObjectInputStream(new FileInputStream("c:/test1.crk"));
-//			ObjectInputStream in = new ObjectInputStream(new FileInputStream("c:/files1/res2/1smt.webui.dat"));
+////			ObjectInputStream in = new ObjectInputStream(new FileInputStream("c:/files1/res2/1smt.webui.dat"));
+//			ObjectInputStream in = new ObjectInputStream(new FileInputStream("c:/1ton.webui.dat"));
 //			PDBScoreItemDB readitem = (PDBScoreItemDB)in.readObject();
 ////			System.out.println(readitem.getInterfaceItems().get(0).getInterfaceResidues().size());
 //			
 //			InterfaceScoreItemDB iitem = readitem.getInterfaceItems().get(0).getInterfaceScores().get(0);
-//			System.out.println("UUN: " + iitem.getUnweightedRatio1Scores());
 //			
 //			entityManager = EntityManagerHandler.getEntityManager();
 //			entityManager.getTransaction().begin();
@@ -532,12 +528,11 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 
 	public ProcessingData getResultsOfProcessing(String jobId, boolean debug) throws CrkWebException 
 	{
-		JobDAO jobDAO = new JobDAOImpl();
-		
 		String status = null;
 		
 		try
 		{
+			JobDAO jobDAO = new JobDAOImpl();
 			status = jobDAO.getStatusForJob(jobId);
 		}
 		catch(PersistenceException e)
@@ -551,10 +546,8 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 		}
 		else
 		{
-			if(!debug)
-			{
-				jobDAO.updateSessionIdForSelectedJob(getThreadLocalRequest().getSession().getId(), jobId);
-			}
+			SessionDAO sessionDAO = new SessionDAOImpl();
+			sessionDAO.insertSessionForJob(getThreadLocalRequest().getSession().getId(), jobId);
 		}
 		
 //		String status = DBUtils.getStatusForJob(jobId, getThreadLocalRequest().getSession().getId());
@@ -959,8 +952,9 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 	
 	public String deleteJob(String jobToDelete) throws CrkWebException
 	{
+		String sessionId = getThreadLocalRequest().getSession().getId();
 		JobDAO jobDAO = new JobDAOImpl();
-		jobDAO.untieSelectedJobFromSession(jobToDelete);
+		jobDAO.untieSelectedJobFromSession(sessionId, jobToDelete);
 		
 		String result = "Job: " + jobToDelete + " was removed";
 		return result;

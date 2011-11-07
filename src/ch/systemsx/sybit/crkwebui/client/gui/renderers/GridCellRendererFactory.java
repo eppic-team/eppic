@@ -36,6 +36,8 @@ public class GridCellRendererFactory {
 				renderer = new JobStatusCellRenderer();
 			} else if (rendererName.equals("deletejob")) {
 				renderer = new DeleteJobCellRenderer(mainController);
+			} else if (rendererName.equals("finalcall")) {
+				renderer = new FinalCallCellRenderer(mainController);
 			}
 		}
 

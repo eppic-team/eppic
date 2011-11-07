@@ -85,10 +85,9 @@ public class MainViewPort extends Viewport
 
 		BorderLayoutData northData = new BorderLayoutData(LayoutRegion.NORTH,
 				10);
-		northData.setMargins(new Margins(0, 0, 5, 0));
+		northData.setMargins(new Margins(0, 0, 10, 0));
 
 //		topPanel = new TopPanel(mainController);
-//		topPanel.getHeader().setVisible(false);
 //		this.add(topPanel, northData);
 		
 		BorderLayoutData southData = new BorderLayoutData(LayoutRegion.SOUTH,

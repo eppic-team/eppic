@@ -25,7 +25,7 @@ public class InterfaceItemModel extends BaseModel {
 		set("name", "");
 		set("size1", "");
 		set("size2", "");
-		set("finalCall", "");
+		set("finalCallName", "");
 		set("operator", "");
 		set("warnings", "");
 		set("METHODS", "");
@@ -36,7 +36,7 @@ public class InterfaceItemModel extends BaseModel {
 							  String name,
 							  int size1,
 							  int size2,
-							  String finalCall,
+							  String finalCallName,
 							  String operator,
 							  List<WarningItem> warnings) 
 	{
@@ -45,7 +45,7 @@ public class InterfaceItemModel extends BaseModel {
 		set("name", name);
 		set("size1", size1);
 		set("size2", size2);
-		set("finalCall", finalCall);
+		set("finalCallName", finalCallName);
 		set("operator", operator);
 		set("warnings", warnings);
 		set("METHODS", "");
@@ -91,12 +91,12 @@ public class InterfaceItemModel extends BaseModel {
 		set("size2", size2);
 	}
 	
-	public String getFinalCall() {
-		return (String) get("finalCall");
+	public String getFinalCallName() {
+		return (String) get("finalCallName");
 	}
 	
-	public void setFinalCall(String finalCall) {
-		set("finalCall", finalCall);
+	public void setFinalCallName(String finalCallName) {
+		set("finalCallName", finalCallName);
 	}
 	
 	public String getOperator() {

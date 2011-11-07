@@ -114,11 +114,6 @@ public class CrkRunnerByProcess implements Runnable
 				command.add("-n");
 			}
 			
-			if(!inputParameters.isUseTCoffee())
-			{
-				command.add("-t");
-			}
-			
 			command.add("-d");
 			command.add(String.valueOf(inputParameters.getIdentityCutoff()));
 			command.add("-r");

@@ -142,7 +142,6 @@ public class InputParametersParser
 											 InputParameters inputParameters) 
 	{
 		Element defaultInputParameterElement = (Element)defaultInputParametersNodeRoot;
-		inputParameters.setUseTCoffee(Boolean.parseBoolean(defaultInputParameterElement.getElementsByTagName("use_tcoffee").item(0).getFirstChild().getNodeValue()));
 		inputParameters.setUseNACCESS(Boolean.parseBoolean(defaultInputParameterElement.getElementsByTagName("use_naccess").item(0).getFirstChild().getNodeValue()));
 		inputParameters.setUsePISA(Boolean.parseBoolean(defaultInputParameterElement.getElementsByTagName("use_pisa").item(0).getFirstChild().getNodeValue()));
 		inputParameters.setAsaCalc(Integer.parseInt(defaultInputParameterElement.getElementsByTagName("asa_calc").item(0).getFirstChild().getNodeValue()));

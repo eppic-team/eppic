@@ -6,15 +6,35 @@
     <description>CRK JPA entities</description>
     <package>CRK entities</package>
    
+    <entity class="model.SessionDB" name="Session">
+        <table name="Session"/>
+        <attributes>
+        	<id name="uid">
+                <generated-value strategy="IDENTITY"/>
+            </id>
+            
+            <basic name="sessionId"></basic>
+            
+            <many-to-many name="jobs">
+            	<join-table name="SessionJob">
+            		<join-column name="SessionId" referenced-column-name="uid"/>
+            		<inverse-join-column name="JobId" referenced-column-name="uid"/> 
+            	</join-table>
+        		<cascade>
+            	    <cascade-all/>  
+            	</cascade> 
+       		</many-to-many>
+        </attributes>
+    </entity>
+    
     <entity class="model.JobDB" name="Job">
-        <table name="JOB"/>
+        <table name="Job"/>
         <attributes>
         	<id name="uid">
                 <generated-value strategy="IDENTITY"/>
             </id>
             
         	<basic name="jobId"></basic>
-            <basic name="sessionId"></basic>
             <basic name="status"></basic>
             <basic name="email"></basic>
             <basic name="ip"></basic>
@@ -28,11 +48,17 @@
             	    <cascade-all/>  
             	</cascade> 
        		</one-to-one>
+       		
+       		<many-to-many name="sessions" mapped-by="jobs">
+       			<cascade>
+            	    <cascade-all/>  
+            	</cascade> 
+       		</many-to-many>
         </attributes>
     </entity>
    
 	<entity class="model.PDBScoreItemDB" name="PDBScoreItem">
-        <table name="PDBSCORE"/>
+        <table name="PdbScore"/>
         <attributes>
             <id name="uid">
                 <generated-value strategy="IDENTITY"/>
@@ -71,7 +97,7 @@
    </entity>
    
    <entity class="model.InterfaceItemDB" name="InterfaceItem">
-        <table name="INTERFACE"/>
+        <table name="Interface"/>
         <entity-listeners>
         	<entity-listener class="ch.systemsx.sybit.crkwebui.server.db.entitylisteners.InterfaceItemListener">
         	</entity-listener>
@@ -93,7 +119,8 @@
             <basic name="asaR2"><column nullable="true"/></basic>
             <basic name="bsaR1"><column nullable="true"/></basic>
             <basic name="bsaR2"><column nullable="true"/></basic>
-            <basic name="finalCall"></basic>
+            <basic name="finalCallName"></basic>
+            <basic name="finalCallReason"></basic>
             <basic name="operator"></basic>
        		<basic name="jmolScript">
        			<column column-definition="text"/>
@@ -128,7 +155,7 @@
    </entity>
    
    <entity class="model.InterfaceResidueItemDB" name="InterfaceResidueItem">
-        <table name="INTERFACERESIDUE"/>
+        <table name="InterfaceResidue"/>
         <entity-listeners>
         	<entity-listener class="ch.systemsx.sybit.crkwebui.server.db.entitylisteners.InterfaceResidueItemListener">
         	</entity-listener>
@@ -157,7 +184,7 @@
    </entity>
    
    <entity class="model.InterfaceResidueMethodItemDB" name="InterfaceResidueMethodItem">
-        <table name="INTERFACERESIDUEMETHOD"/>
+        <table name="InterfaceResidueMethod"/>
         <entity-listeners>
         	<entity-listener class="ch.systemsx.sybit.crkwebui.server.db.entitylisteners.InterfaceResidueMethodItemListener">
         	</entity-listener>
@@ -175,7 +202,7 @@
    </entity>
    
    <entity class="model.InterfaceScoreItemDB" name="InterfaceScoreItem">
-        <table name="INTERFACESCORE"/>
+        <table name="InterfaceScore"/>
         <entity-listeners>
         	<entity-listener class="ch.systemsx.sybit.crkwebui.server.db.entitylisteners.InterfaceScoreItemListener">
         	</entity-listener>
@@ -210,7 +237,7 @@
    </entity>
    
    <entity class="model.WarningItemDB" name="WarningItem">
-        <table name="WARNING"/>
+        <table name="Warning"/>
         <attributes>
             <id name="uid">
                 <generated-value strategy="IDENTITY"/>
@@ -223,7 +250,7 @@
    </entity>
    
    <entity class="model.RunParametersItemDB" name="RunParametersItem">
-        <table name="RUNPARAMETERS"/>
+        <table name="RunParameters"/>
         <attributes>
         	<id name="uid">
                 <generated-value strategy="IDENTITY"/>
@@ -241,14 +268,16 @@
             <basic name="caCutoffForZscore"></basic>
             <basic name="entrCallCutoff"></basic>
             <basic name="zScoreCutoff"></basic>
-            
+            <basic name="uniprotVer"></basic>
+            <basic name="crkVersion"></basic>
+
        		<one-to-one name="pdbScoreItem" mapped-by="runParameters">  
             </one-to-one>  
         </attributes>
    </entity>
    
    <entity class="model.NumHomologsStringItemDB" name="NumHomologsStringItem">
-        <table name="NUMHOMOLOGSSTRING"/>
+        <table name="NumHomologsString"/>
         <attributes>
             <id name="uid">
                 <generated-value strategy="IDENTITY"/>
@@ -259,4 +288,5 @@
             </many-to-one>  
         </attributes>
    </entity>
+   
 </entity-mappings>

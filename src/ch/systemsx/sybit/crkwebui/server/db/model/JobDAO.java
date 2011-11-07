@@ -17,8 +17,6 @@ public interface JobDAO
 							 String ip,
 							 Date submissionDate) throws CrkWebException;
 	
-	public void updateSessionIdForSelectedJob(String sessionId, String jobId) throws CrkWebException;
-	
 	public void updateStatusOfJob(String jobId, String status) throws CrkWebException;
 	
 	public void untieJobsFromSession(String sessionId) throws CrkWebException;
@@ -35,7 +33,7 @@ public interface JobDAO
 	
 	public Date getOldestJobSubmissionDateDuringLastDay(String ip) throws CrkWebException;
 
-	public void untieSelectedJobFromSession(String jobToUntie) throws CrkWebException;
+	public void untieSelectedJobFromSession(String sessionId, String jobToUntie) throws CrkWebException;
 
 	public String getInputForJob(String jobId) throws CrkWebException;
 

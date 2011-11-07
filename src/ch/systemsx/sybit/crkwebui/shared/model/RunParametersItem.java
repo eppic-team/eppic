@@ -25,6 +25,9 @@ public class RunParametersItem implements Serializable
 	private double entrCallCutoff;
 	private double kaksCallCutoff;
 	private double zScoreCutoff; 
+	
+	private String uniprotVer;
+	private String crkVersion;
 
 	public RunParametersItem() 
 	{
@@ -151,6 +154,24 @@ public class RunParametersItem implements Serializable
 		runParametersItem.setReducedAlphabet(runParametersItemDB.getReducedAlphabet());
 		runParametersItem.setUid(runParametersItemDB.getUid());
 		runParametersItem.setzScoreCutoff(runParametersItemDB.getzScoreCutoff());
+		runParametersItem.setUniprotVer(runParametersItemDB.getUniprotVer());
+		runParametersItem.setCrkVersion(runParametersItemDB.getCrkVersion());
 		return runParametersItem;
+	}
+
+	public String getUniprotVer() {
+		return uniprotVer;
+	}
+
+	public void setUniprotVer(String uniprotVer) {
+		this.uniprotVer = uniprotVer;
+	}
+
+	public String getCrkVersion() {
+		return crkVersion;
+	}
+
+	public void setCrkVersion(String crkVersion) {
+		this.crkVersion = crkVersion;
 	}
 }

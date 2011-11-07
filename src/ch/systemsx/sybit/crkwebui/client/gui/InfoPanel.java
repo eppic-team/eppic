@@ -14,10 +14,14 @@ import com.extjs.gxt.ui.client.core.Template;
 import com.extjs.gxt.ui.client.data.BeanModel;
 import com.extjs.gxt.ui.client.data.BeanModelFactory;
 import com.extjs.gxt.ui.client.data.BeanModelLookup;
+import com.extjs.gxt.ui.client.event.BaseEvent;
+import com.extjs.gxt.ui.client.event.Events;
+import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.widget.Label;
 import com.extjs.gxt.ui.client.widget.form.FormPanel;
 import com.extjs.gxt.ui.client.widget.layout.FormData;
 import com.extjs.gxt.ui.client.widget.layout.FormLayout;
+import com.extjs.gxt.ui.client.widget.tips.ToolTip;
 import com.extjs.gxt.ui.client.widget.tips.ToolTipConfig;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.ui.FlexTable;
@@ -33,6 +37,7 @@ import com.google.gwt.user.client.ui.HasVerticalAlignment;
 public class InfoPanel extends FormPanel 
 {
 	private Label inputParametersLabel;
+	private ToolTip inputParametersTooltip;
 //	private Label totalCoreSizeXtalCallCutoff;
 //	private Label infoPanelMinNumberHomologsRequired;
 //	private Label infoPanelSequenceIdentityCutoff;
@@ -99,19 +104,28 @@ public class InfoPanel extends FormPanel
 			}
 		}
 		
-		inputParametersLabel = new Label("<a href=\"\" onClick=\"return false;\">" + MainController.CONSTANTS.info_panel_input_parameters() + "</a>");
-		inputParametersLabel.addStyleName("crk-default-label");
-		
 		ToolTipConfig toolTipConfig = new ToolTipConfig();  
-		toolTipConfig.setTitle(MainController.CONSTANTS.info_panel_input_parameters());  
+		toolTipConfig.setTitle(MainController.CONSTANTS.info_panel_input_parameters());
 		toolTipConfig.setMouseOffset(new int[] {0, 0});  
-		toolTipConfig.setAnchor("left");  
 		toolTipConfig.setTemplate(new Template(generateInputParametersTemplate(mainController.getPdbScoreItem())));  
 		toolTipConfig.setCloseable(true); 
 		toolTipConfig.setDismissDelay(0);
 		toolTipConfig.setShowDelay(100);
-		toolTipConfig.setMaxWidth(mainController.getWindowWidth());  
-		inputParametersLabel.setToolTip(toolTipConfig);  
+		toolTipConfig.setMaxWidth(mainController.getWindowWidth());
+		inputParametersTooltip = new ToolTip(inputParametersLabel, toolTipConfig);
+		
+		inputParametersLabel = new Label("<a href=\"\" onClick=\"return false;\">" + MainController.CONSTANTS.info_panel_input_parameters() + "</a>");
+		inputParametersLabel.addListener(Events.OnClick, new Listener<BaseEvent>() {
+
+			@Override
+			public void handleEvent(BaseEvent be) {
+				inputParametersTooltip.showAt(inputParametersLabel.getAbsoluteLeft() + inputParametersLabel.getWidth() + 10, 
+						   					  inputParametersLabel.getAbsoluteTop());
+			}
+			
+		});
+		
+		inputParametersLabel.addStyleName("crk-default-label");
 		
 		flexTable.setWidget(0, 0, inputParametersLabel);
 		
@@ -152,7 +166,17 @@ public class InfoPanel extends FormPanel
 		downloadResultsLink.setHTML("<a href=" + GWT.getModuleBaseURL()
 				+ "fileDownload?type=zip&id=" + mainController.getSelectedJobId()
 				+ ">" + MainController.CONSTANTS.info_panel_download_results_link() + "</a>");
-		flexTable.setWidget(0, 2, downloadResultsLink);
+		flexTable.setWidget(0, 1, downloadResultsLink);
+
+		Label uniprotVersionlabel = new Label(MainController.CONSTANTS.info_panel_uniprot() + ": " +
+				mainController.getPdbScoreItem().getRunParameters().getUniprotVer());
+		uniprotVersionlabel.addStyleName("crk-default-label");
+		flexTable.setWidget(0, 2, uniprotVersionlabel);
+		
+		Label crkVersionLabel = new Label(MainController.CONSTANTS.info_panel_crk() + ": " +
+				mainController.getPdbScoreItem().getRunParameters().getCrkVersion());
+		crkVersionLabel.addStyleName("crk-default-label");
+		flexTable.setWidget(1, 2, crkVersionLabel);
 		
 		if(homologsStrings != null)
 		{
@@ -163,7 +187,7 @@ public class InfoPanel extends FormPanel
 				flexTable.setWidget(i, 3, label);
 			}
 		}
-
+		
 		// formdata -20 - fix for chrome - otherwise unnecessary scroll bar
 		this.add(flexTable, new FormData("-20 100%"));
 	}

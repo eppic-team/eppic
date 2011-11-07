@@ -18,7 +18,6 @@ public class InputParameters implements Serializable
 
 	private List<String> methods;
 
-	private boolean useTCoffee;
 	private boolean usePISA;
 	private boolean useNACCESS;
 
@@ -40,14 +39,6 @@ public class InputParameters implements Serializable
 
 	public void setMethods(List<String> methods) {
 		this.methods = methods;
-	}
-
-	public boolean isUseTCoffee() {
-		return useTCoffee;
-	}
-
-	public void setUseTCoffee(boolean useTCoffee) {
-		this.useTCoffee = useTCoffee;
 	}
 
 	public boolean isUsePISA() {

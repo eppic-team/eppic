@@ -25,7 +25,6 @@
 		</default_methods>
 		
 		<default_parameters>
-			<use_tcoffee>true</use_tcoffee>
 			<use_naccess>false</use_naccess>
 			<use_pisa>false</use_pisa>
 			<asa_calc>9600</asa_calc>

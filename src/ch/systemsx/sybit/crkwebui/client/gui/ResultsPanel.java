@@ -419,7 +419,7 @@ public class ResultsPanel extends DisplayPanel
 				model.setArea(interfaceItem.getArea());
 				model.setSize1(interfaceItem.getSize1());
 				model.setSize2(interfaceItem.getSize2());
-				model.setFinalCall(interfaceItem.getFinalCall());
+				model.setFinalCallName(interfaceItem.getFinalCallName());
 				model.setOperator(interfaceItem.getOperator());
 				model.setWarnings(interfaceItem.getWarnings());
 

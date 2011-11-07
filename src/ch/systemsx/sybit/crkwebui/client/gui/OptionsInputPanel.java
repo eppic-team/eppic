@@ -35,9 +35,6 @@ public class OptionsInputPanel extends FieldSet
 	private ComboBox<ReducedAlphabetComboModel> reducedAlphabetCombo;
 	private NumberField selecton;
 	private NumberField identityCutOff;
-	private Radio useTCoffeeFast;
-	private Radio useTCoffeeNormal;
-	private RadioGroup useTCoffee;
 	private NumberField maxNrOfSequences;
 	private Radio usePisaYes;
 	private Radio usePisaNo;
@@ -218,22 +215,6 @@ public class OptionsInputPanel extends FieldSet
 		identityCutOff.setMaxValue(1);
 		allignmentsParametersFieldSet.add(identityCutOff, formData);
 
-		useTCoffeeFast = new Radio();
-		useTCoffeeFast.setBoxLabel(MainController.CONSTANTS.parameters_use_tcoffee_fast());
-		useTCoffeeFast.setValue(true);
-
-		useTCoffeeNormal = new Radio();
-		useTCoffeeNormal.setBoxLabel(MainController.CONSTANTS.parameters_use_tcoffee_normal());
-
-		useTCoffee = new RadioGroup();
-		useTCoffee.setFieldLabel(MainController.CONSTANTS
-				.parameters_use_tcoffee());
-		useTCoffee.add(useTCoffeeFast);
-		useTCoffee.add(useTCoffeeNormal);
-//		useTCoffee.addPlugin(plugin);
-		useTCoffee.setData("hint", MainController.CONSTANTS.parameters_use_tcoffee_hint());
-		allignmentsParametersFieldSet.add(useTCoffee, formData);
-
 		maxNrOfSequences = new NumberField();
 		maxNrOfSequences.setFieldLabel(MainController.CONSTANTS
 				.parameters_max_num_sequences());
@@ -313,12 +294,6 @@ public class OptionsInputPanel extends FieldSet
 			usePisaNo.setValue(true);
 		}
 
-		if (defaultParameters.isUseTCoffee() == true) {
-			useTCoffeeFast.setValue(true);
-		} else {
-			useTCoffeeNormal.setValue(true);
-		}
-
 		asaCalcParam.setValue(defaultParameters.getAsaCalc());
 		identityCutOff.setValue(defaultParameters.getIdentityCutoff());
 		selecton.setValue(defaultParameters.getSelecton());
@@ -369,12 +344,6 @@ public class OptionsInputPanel extends FieldSet
 			currentInputParameters.setUsePISA(false);
 		}
 
-		if (useTCoffeeFast.getValue() == true) {
-			currentInputParameters.setUseTCoffee(true);
-		} else {
-			currentInputParameters.setUseTCoffee(false);
-		}
-		
 		List<String> selectedMethods = new ArrayList<String>();
 		
 		for(FieldSet fieldSet : methodsFieldsets)

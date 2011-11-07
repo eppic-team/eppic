@@ -31,7 +31,8 @@ public class InterfaceItem implements Serializable
 	private double asaR2;
 	private double bsaR1;
 	private double bsaR2;
-	private String finalCall;
+	private String finalCallName;
+	private String finalCallReason;
 	private String operator; 
 	private List<WarningItem> warnings;
 	
@@ -94,12 +95,20 @@ public class InterfaceItem implements Serializable
 		this.size2 = size2;
 	}
 
-	public void setFinalCall(String finalCall) {
-		this.finalCall = finalCall;
+	public void setFinalCallName(String finalCallName) {
+		this.finalCallName = finalCallName;
 	}
 
-	public String getFinalCall() {
-		return finalCall;
+	public String getFinalCallName() {
+		return finalCallName;
+	}
+	
+	public void setFinalCallReason(String finalCallReason) {
+		this.finalCallReason = finalCallReason;
+	}
+
+	public String getFinalCallReason() {
+		return finalCallReason;
 	}
 
 	public void setOperator(String operator) {
@@ -230,7 +239,8 @@ public class InterfaceItem implements Serializable
 		interfaceItem.setBsaC2(interfaceItemDB.getBsaC2());
 		interfaceItem.setBsaR1(interfaceItemDB.getBsaR1());
 		interfaceItem.setBsaR2(interfaceItemDB.getBsaR2());
-		interfaceItem.setFinalCall(interfaceItemDB.getFinalCall());
+		interfaceItem.setFinalCallName(interfaceItemDB.getFinalCallName());
+		interfaceItem.setFinalCallReason(interfaceItemDB.getFinalCallReason());
 		interfaceItem.setId(interfaceItemDB.getId());
 		
 		if(interfaceItemDB.getInterfaceResidues() != null)

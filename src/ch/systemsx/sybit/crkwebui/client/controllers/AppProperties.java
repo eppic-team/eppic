@@ -21,6 +21,8 @@ public interface AppProperties extends Constants
 	String window_title_loading();
 	String window_title_results();
 	
+	String top_panel_title();
+	
 	String input_email();
 	String input_file();
 	String input_advanced();
@@ -42,15 +44,11 @@ public interface AppProperties extends Constants
 	String parameters_selecton();
 	String parameters_allignment();
 	String parameters_identity_cutoff();
-	String parameters_use_tcoffee();
 	String parameters_max_num_sequences();
 	String parameters_others();
 	String parameters_use_pisa();
 	String parameters_asa_calc();
 	String parameters_use_naccess();
-	String parameters_use_tcoffee_hint();
-	String parameters_use_tcoffee_fast();
-	String parameters_use_tcoffee_normal();
 	String parameters_max_num_sequences_hint();
 	String parameters_asa_calc_hint();
 	String parameters_use_naccess_hint();
@@ -63,6 +61,8 @@ public interface AppProperties extends Constants
 	String info_panel_pdb_identifier();
 	String info_panel_input_parameters();
 	String info_panel_download_results_link();
+	String info_panel_uniprot();
+	String info_panel_crk();
 	
 	String myjobs_panel_head();
 	String myjobs_panel_new_button();
