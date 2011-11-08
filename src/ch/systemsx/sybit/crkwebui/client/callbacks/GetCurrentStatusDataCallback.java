@@ -55,6 +55,8 @@ public class GetCurrentStatusDataCallback implements AsyncCallback<ProcessingDat
 				mainController.updateStatusLabel(MainController.CONSTANTS.callback_get_current_status_data() + " " + result.getClass(), true);
 				mainController.cleanCenterPanel();
 			}
+			
+			mainController.getJobsForCurrentSession();
 		}
 		else
 		{

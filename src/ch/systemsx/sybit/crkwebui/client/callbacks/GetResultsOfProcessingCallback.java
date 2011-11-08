@@ -61,10 +61,7 @@ public class GetResultsOfProcessingCallback implements AsyncCallback<ProcessingD
 				mainController.cleanCenterPanel();
 			}
 			
-			if(!debug)
-			{
-				mainController.getJobsForCurrentSession();
-			}
+			mainController.getJobsForCurrentSession();
 		}
 		else
 		{

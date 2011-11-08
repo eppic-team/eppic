@@ -32,7 +32,7 @@ public class RunJobCallback implements AsyncCallback<String>
 		{
 			String jobId = result;
 			mainController.setSelectedJobId(jobId);
-			mainController.getJobsForCurrentSession();
+//			mainController.getJobsForCurrentSession();
 //			mainController.displayResults();
 			History.newItem("id/" + jobId);
 		} 

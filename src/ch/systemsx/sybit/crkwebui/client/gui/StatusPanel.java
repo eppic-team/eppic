@@ -28,6 +28,7 @@ public class StatusPanel extends DisplayPanel
 {
 	private FormPanel formPanel;
 	
+	private PDBIdentifierLabel pdbIdentifier;
 	private TextField<String> jobId;
 	private TextField<String> status;
 	private TextArea log;
@@ -47,6 +48,7 @@ public class StatusPanel extends DisplayPanel
 	{
 		this.setLayout(new FitLayout());
 		this.setBorders(true);
+		this.setStyleAttribute("padding-top", "10px");
 		
 		formPanel = new FormPanel();
 		formPanel.getHeader().setVisible(false);
@@ -54,6 +56,10 @@ public class StatusPanel extends DisplayPanel
 		formPanel.setButtonAlign(HorizontalAlignment.CENTER);
 		formPanel.setScrollMode(Scroll.AUTOY);
 		formPanel.setHeight(mainController.getWindowHeight() - 100);
+		
+		pdbIdentifier = new PDBIdentifierLabel();
+		pdbIdentifier.setStyleAttribute("padding-left", "10px");
+		this.add(pdbIdentifier, new FormData("95%"));
 
 		jobId = new TextField<String>();
 		jobId.setFieldLabel(MainController.CONSTANTS.status_panel_jobId());
@@ -120,6 +126,7 @@ public class StatusPanel extends DisplayPanel
 		
 		status.setValue(String.valueOf(statusData.getStatus()));
 		jobId.setValue(statusData.getJobId());
+		pdbIdentifier.setPDBText(statusData.getInput(), null);
 		
 		currentStep = statusData.getStep();
 		
@@ -140,5 +147,6 @@ public class StatusPanel extends DisplayPanel
 		log.setValue("");
 		status.setValue("");
 		jobId.setValue("");
+		pdbIdentifier.setPDBText("", null);
 	}
 }

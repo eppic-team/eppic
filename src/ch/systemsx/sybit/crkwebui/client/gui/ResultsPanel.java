@@ -43,7 +43,7 @@ import com.google.gwt.user.client.Cookies;
  */
 public class ResultsPanel extends DisplayPanel 
 {
-	private Label pdbIdentifier;
+	private PDBIdentifierLabel pdbIdentifier;
 	private Label pdbTitle;
 	
 	private InfoPanel infoPanel;
@@ -76,14 +76,8 @@ public class ResultsPanel extends DisplayPanel
 		this.setLayout(new RowLayout(Orientation.VERTICAL));
 		this.setStyleAttribute("padding", "10px");
 
-		pdbIdentifier = new Label(MainController.CONSTANTS.info_panel_pdb_identifier() + 
-								  ": " + 
-								  mainController.getPdbScoreItem().getPdbName() +
-								  " (" +
-								  mainController.getPdbScoreItem().getSpaceGroup() +
-								  ")");
-		
-		pdbIdentifier.addStyleName("pdb-identifier-label");
+		pdbIdentifier = new PDBIdentifierLabel(mainController.getPdbScoreItem().getPdbName(),
+											   mainController.getPdbScoreItem().getSpaceGroup());
 		this.add(pdbIdentifier);
 		
 		FormPanel breakPanel = new FormPanel();
@@ -369,12 +363,8 @@ public class ResultsPanel extends DisplayPanel
 		fillResultsGrid(resultsData);
 		infoPanel.generateInfoPanel(mainController);
 		
-		pdbIdentifier.setText(MainController.CONSTANTS.info_panel_pdb_identifier() + 
-							  ": " + 
-							  resultsData.getPdbName() +
-							  " (" +
-							  resultsData.getSpaceGroup() + 
-							  ")");
+		pdbIdentifier.setPDBText(resultsData.getPdbName(),
+							  	 resultsData.getSpaceGroup());
 		
 		pdbTitle.setText(resultsData.getTitle());
 	}

@@ -188,7 +188,7 @@ public class MyJobsPanel extends ContentPanel
 		myJobsStore.commitChanges();
 		
 
-		myJobsGrid.getView().refresh(false);
+//		myJobsGrid.getView().refresh(false);
 		
 		if((mainController.getSelectedJobId() != null) &&
 			(myJobsGrid.getStore().getCount() > 0))

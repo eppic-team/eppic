@@ -39,5 +39,7 @@ public class GetJobsForCurrentSession implements AsyncCallback<List<ProcessingIn
 		{
 			mainController.updateStatusLabel(MainController.CONSTANTS.callback_get_jobs_for_current_session_error() + " - incorrect type", true);
 		}
+		
+		mainController.setCanRefreshMyJobs();
 	}
 }

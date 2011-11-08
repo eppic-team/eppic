@@ -47,6 +47,7 @@ public class MainController
 	private boolean debug;
 
 	private Timer autoRefreshMyJobs;
+	private boolean canRefreshMyJobs = true;
 	
 	private boolean doStatusPanelRefreshing = false;
 	
@@ -167,8 +168,13 @@ public class MainController
 		serviceController.getCurrentStatusData(selectedJobId, debug);
 	}
 
-	public void getJobsForCurrentSession() {
-		serviceController.getJobsForCurrentSession();
+	public void getJobsForCurrentSession() 
+	{
+		if(canRefreshMyJobs)
+		{
+			canRefreshMyJobs = false;
+			serviceController.getJobsForCurrentSession();
+		}
 	}
 
 	public void getInterfaceResidues(int interfaceId) 
@@ -241,13 +247,15 @@ public class MainController
 		{
 			public void run() 
 			{
-				getJobsForCurrentSession();
-				
 				if((doStatusPanelRefreshing) && 
 					(selectedJobId != null) && 
 					(!selectedJobId.equals("")))
 				{
 					getCurrentStatusData(debug);
+				}
+				else
+				{
+					getJobsForCurrentSession();
 				}
 			}
 		};
@@ -551,5 +559,10 @@ public class MainController
 			residuesForInterface.clear();
 			residuesForInterface = null;
 		}
+	}
+	
+	public void setCanRefreshMyJobs()
+	{
+		this.canRefreshMyJobs = true;
 	}
 }

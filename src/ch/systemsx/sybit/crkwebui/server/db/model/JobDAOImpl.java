@@ -148,10 +148,17 @@ public class JobDAOImpl implements JobDAO
 			criteriaQuery.select(sessionRoot);
 			
 			Query query = entityManager.createQuery(criteriaQuery);
-			UserSessionDB session = (UserSessionDB)query.getSingleResult();
+			List<UserSessionDB> sessions = query.getResultList();
 
 			entityManager.getTransaction().begin();
-			entityManager.remove(session);
+			
+			if(sessions != null)
+			{
+				for(UserSessionDB session : sessions)
+				{
+					entityManager.remove(session);
+				}
+			}
 			
 //			Query query = entityManager.createQuery("from Job WHERE sessionId = :sessionId", JobDB.class);
 //			query.setParameter("sessionId", sessionId);
