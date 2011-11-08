@@ -123,7 +123,8 @@ public class OptionsInputPanel extends FieldSet
 					{
 						for(FieldSet fieldSet : methodsFieldsets)
 						{
-							if(fieldSet.getHeading().equals("KaKs"))
+							if((fieldSet.getHeading() != null) &&
+								(fieldSet.getHeading().equals("KaKs")))
 							{
 								fieldSet.setExpanded(false);
 							}
@@ -137,7 +138,9 @@ public class OptionsInputPanel extends FieldSet
 					{
 						for(FieldSet fieldSet : methodsFieldsets)
 						{
-							if(fieldSet.getHeading().equals("Geometry"))
+							
+							if((fieldSet.getHeading() != null) &&
+								(fieldSet.getHeading().equals("Geometry")))
 							{
 								fieldSet.setExpanded(true);
 							}
@@ -163,7 +166,8 @@ public class OptionsInputPanel extends FieldSet
 					{
 						for(FieldSet fieldSet : methodsFieldsets)
 						{
-							if(fieldSet.getHeading().equals("Entropy"))
+							if((fieldSet.getHeading() != null) &&
+							   (fieldSet.getHeading().equals("Entropy")))
 							{
 								fieldSet.setExpanded(true);
 							}
@@ -182,7 +186,8 @@ public class OptionsInputPanel extends FieldSet
 					{
 						for(FieldSet fieldSet : methodsFieldsets)
 						{
-							if(fieldSet.getHeading().equals("Entropy"))
+							if((fieldSet.getHeading() != null) &&
+							   (fieldSet.getHeading().equals("Entropy")))
 							{
 								fieldSet.setExpanded(false);
 							}
@@ -311,7 +316,8 @@ public class OptionsInputPanel extends FieldSet
 			{
 				for(FieldSet fieldSet : methodsFieldsets)
 				{
-					if(fieldSet.getHeading().equals(method))
+					if((fieldSet.getHeading() != null) &&
+						(fieldSet.getHeading().equals(method)))
 					{
 						fieldSet.setExpanded(true);
 					}

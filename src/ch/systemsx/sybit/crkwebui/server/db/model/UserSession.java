@@ -2,7 +2,7 @@ package ch.systemsx.sybit.crkwebui.server.db.model;
 
 import java.io.Serializable;
 
-public class Session implements Serializable 
+public class UserSession implements Serializable 
 {
 	/**
 	 * 
@@ -12,7 +12,7 @@ public class Session implements Serializable
 	private int uid;
 	private String sessionId;
 	
-	public Session()
+	public UserSession()
 	{
 		
 	}

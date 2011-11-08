@@ -45,6 +45,9 @@ public class GetCurrentStatusDataCallback implements AsyncCallback<ProcessingDat
 			{
 				PDBScoreItem resultsData = (PDBScoreItem) result;
 				mainController.setPDBScoreItem(resultsData);
+				mainController.cleanResiduesForInterface();
+				
+				mainController.getAllResidues(selectedId, resultsData.getUid());
 				mainController.displayResultView(resultsData);
 			}
 			else

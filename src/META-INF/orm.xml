@@ -6,8 +6,8 @@
     <description>CRK JPA entities</description>
     <package>CRK entities</package>
    
-    <entity class="model.SessionDB" name="Session">
-        <table name="Session"/>
+    <entity class="model.UserSessionDB" name="UserSession">
+        <table name="UserSession"/>
         <attributes>
         	<id name="uid">
                 <generated-value strategy="IDENTITY"/>
@@ -16,12 +16,15 @@
             <basic name="sessionId"></basic>
             
             <many-to-many name="jobs">
-            	<join-table name="SessionJob">
-            		<join-column name="SessionId" referenced-column-name="uid"/>
+            	<join-table name="UserSessionJob">
+            		<join-column name="UserSessionId" referenced-column-name="uid"/>
             		<inverse-join-column name="JobId" referenced-column-name="uid"/> 
             	</join-table>
         		<cascade>
-            	    <cascade-all/>  
+            	    <cascade-persist/>
+            	    <cascade-merge/>
+            	    <cascade-refresh/>
+            	    <cascade-detach/>   
             	</cascade> 
        		</many-to-many>
         </attributes>
@@ -49,7 +52,7 @@
             	</cascade> 
        		</one-to-one>
        		
-       		<many-to-many name="sessions" mapped-by="jobs">
+       		<many-to-many name="userSessions" mapped-by="jobs">
        			<cascade>
             	    <cascade-all/>  
             	</cascade> 

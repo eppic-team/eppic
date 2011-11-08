@@ -20,8 +20,8 @@ import javax.persistence.criteria.SetJoin;
 import model.JobDB;
 import model.JobDB_;
 import model.PDBScoreItemDB;
-import model.SessionDB;
-import model.SessionDB_;
+import model.UserSessionDB;
+import model.UserSessionDB_;
 import ch.systemsx.sybit.crkwebui.server.db.EntityManagerHandler;
 import ch.systemsx.sybit.crkwebui.shared.CrkWebException;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
@@ -43,8 +43,8 @@ public class JobDAOImpl implements JobDAO
 			entityManager = EntityManagerHandler.getEntityManager();
 			entityManager.getTransaction().begin();
 			
-			SessionDAO sessionDAO = new SessionDAOImpl();
-			SessionDB session = sessionDAO.getSession(entityManager, sessionId);
+			UserSessionDAO sessionDAO = new UserSessionDAOImpl();
+			UserSessionDB session = sessionDAO.getSession(entityManager, sessionId);
 			
 			JobDB job = new JobDB();
 			job.setJobId(jobId);
@@ -54,7 +54,7 @@ public class JobDAOImpl implements JobDAO
 			job.setStatus(StatusOfJob.RUNNING);
 			job.setSubmissionDate(submissionDate);
 			
-			job.getSessions().add(session);
+			job.getUserSessions().add(session);
 
 			entityManager.persist(job);
 			entityManager.flush();
@@ -139,22 +139,19 @@ public class JobDAOImpl implements JobDAO
 		try
 		{
 			entityManager = EntityManagerHandler.getEntityManager();
-			entityManager.getTransaction().begin();
 			
 			CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-			CriteriaQuery<SessionDB> criteriaQuery = criteriaBuilder.createQuery(SessionDB.class);
-			Root<SessionDB> sessionRoot = criteriaQuery.from(SessionDB.class);
-			Predicate condition = criteriaBuilder.equal(sessionRoot.get(SessionDB_.sessionId), sessionId);
+			CriteriaQuery<UserSessionDB> criteriaQuery = criteriaBuilder.createQuery(UserSessionDB.class);
+			Root<UserSessionDB> sessionRoot = criteriaQuery.from(UserSessionDB.class);
+			Predicate condition = criteriaBuilder.equal(sessionRoot.get(UserSessionDB_.sessionId), sessionId);
 			criteriaQuery.where(condition);
 			criteriaQuery.select(sessionRoot);
 			
 			Query query = entityManager.createQuery(criteriaQuery);
-			SessionDB session = (SessionDB)query.getSingleResult();
-			
-			if(session != null)
-			{
-				entityManager.remove(session);
-			}
+			UserSessionDB session = (UserSessionDB)query.getSingleResult();
+
+			entityManager.getTransaction().begin();
+			entityManager.remove(session);
 			
 //			Query query = entityManager.createQuery("from Job WHERE sessionId = :sessionId", JobDB.class);
 //			query.setParameter("sessionId", sessionId);
@@ -213,8 +210,8 @@ public class JobDAOImpl implements JobDAO
 			CriteriaQuery<JobDB> criteriaQuery = criteriaBuilder.createQuery(JobDB.class);
 			
 			Root<JobDB> jobRoot = criteriaQuery.from(JobDB.class);
-			SetJoin<JobDB, SessionDB> join = jobRoot.join(JobDB_.sessions);
-			Path<String> sessionIdPath = join.get(SessionDB_.sessionId);
+			SetJoin<JobDB, UserSessionDB> join = jobRoot.join(JobDB_.userSessions);
+			Path<String> sessionIdPath = join.get(UserSessionDB_.sessionId);
 			Predicate condition = criteriaBuilder.equal(sessionIdPath, sessionId);
 			criteriaQuery.where(condition);
 			criteriaQuery.select(jobRoot);
@@ -267,8 +264,8 @@ public class JobDAOImpl implements JobDAO
 			CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 			CriteriaQuery<Long> criteriaQuery  = criteriaBuilder.createQuery(Long.class);
 			
-			Root<SessionDB> sessionRoot = criteriaQuery.from(SessionDB.class);
-			SetJoin<SessionDB, JobDB> join = sessionRoot.join(SessionDB_.jobs);
+			Root<UserSessionDB> sessionRoot = criteriaQuery.from(UserSessionDB.class);
+			SetJoin<UserSessionDB, JobDB> join = sessionRoot.join(UserSessionDB_.jobs);
 			criteriaQuery.select(criteriaBuilder.count(join));
 			
 			Query query = entityManager.createQuery(criteriaQuery);
@@ -300,19 +297,16 @@ public class JobDAOImpl implements JobDAO
 	public String getStatusForJob(String jobId) throws PersistenceException
 	{
 		EntityManager entityManager = EntityManagerHandler.getEntityManager();
-		entityManager.getTransaction().begin();
 		Query query = entityManager.createQuery("SELECT status FROM Job WHERE jobId = :jobId", String.class);
 		query.setParameter("jobId", jobId);
 		String status = null;
-		Object result = query.getSingleResult();
+		List<String> result = query.getResultList();
 		
-		if(result != null)
+		if((result != null) && (result.size() > 0))
 		{
-			status = (String)result;
+			status = result.get(0);
 		}
 		
-		entityManager.flush();
-		entityManager.getTransaction().commit();
 		entityManager.close();
 		 
 		return status;
@@ -430,19 +424,19 @@ public class JobDAOImpl implements JobDAO
 			entityManager.getTransaction().begin();
 			
 			CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-			CriteriaQuery<SessionDB> criteriaQuery = criteriaBuilder.createQuery(SessionDB.class);
+			CriteriaQuery<UserSessionDB> criteriaQuery = criteriaBuilder.createQuery(UserSessionDB.class);
 			
-			Root<SessionDB> sessionRoot = criteriaQuery.from(SessionDB.class);
-			SetJoin<SessionDB, JobDB> join = sessionRoot.join(SessionDB_.jobs);
+			Root<UserSessionDB> sessionRoot = criteriaQuery.from(UserSessionDB.class);
+			SetJoin<UserSessionDB, JobDB> join = sessionRoot.join(UserSessionDB_.jobs);
 			Path<String> jobId = join.get(JobDB_.jobId);
-			Predicate sessionCondition = criteriaBuilder.equal(sessionRoot.get(SessionDB_.sessionId), sessionId);
+			Predicate sessionCondition = criteriaBuilder.equal(sessionRoot.get(UserSessionDB_.sessionId), sessionId);
 			Predicate jobCondition = criteriaBuilder.equal(jobId, jobToUntie);
 			Predicate condition = criteriaBuilder.and(sessionCondition, jobCondition);
 			criteriaQuery.select(sessionRoot);
 			criteriaQuery.where(condition);
 			
 			Query query = entityManager.createQuery(criteriaQuery);
-			SessionDB session = (SessionDB)query.getSingleResult();
+			UserSessionDB session = (UserSessionDB)query.getSingleResult();
 
 			if(session != null)
 			{

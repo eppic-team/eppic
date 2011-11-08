@@ -11,12 +11,12 @@ import javax.persistence.criteria.Root;
 
 import model.JobDB;
 import model.JobDB_;
-import model.SessionDB;
-import model.SessionDB_;
+import model.UserSessionDB;
+import model.UserSessionDB_;
 import ch.systemsx.sybit.crkwebui.server.db.EntityManagerHandler;
 import ch.systemsx.sybit.crkwebui.shared.CrkWebException;
 
-public class SessionDAOImpl implements SessionDAO 
+public class UserSessionDAOImpl implements UserSessionDAO 
 {
 	public void insertSessionForJob(String sessionId, String jobId) throws CrkWebException
 	{
@@ -37,7 +37,7 @@ public class SessionDAOImpl implements SessionDAO
 			Query query = entityManager.createQuery(criteriaQuery);
 			JobDB job = (JobDB)query.getSingleResult();
 			
-			SessionDB session = getSession(entityManager, sessionId);
+			UserSessionDB session = getSession(entityManager, sessionId);
 			session.getJobs().add(job);
 			entityManager.merge(session);
 			entityManager.getTransaction().commit();
@@ -80,22 +80,22 @@ public class SessionDAOImpl implements SessionDAO
 		}
 	}
 	
-	public SessionDB getSession(EntityManager entityManager,
+	public UserSessionDB getSession(EntityManager entityManager,
 								String sessionId) throws CrkWebException
 	{
-		SessionDB session = null; 
+		UserSessionDB session = null; 
 		
 		try
 		{
 			CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-			CriteriaQuery<SessionDB> criteriaQuery = criteriaBuilder.createQuery(SessionDB.class);
-			Root<SessionDB> sessionRoot = criteriaQuery.from(SessionDB.class);
-			Predicate condition = criteriaBuilder.equal(sessionRoot.get(SessionDB_.sessionId), sessionId);
+			CriteriaQuery<UserSessionDB> criteriaQuery = criteriaBuilder.createQuery(UserSessionDB.class);
+			Root<UserSessionDB> sessionRoot = criteriaQuery.from(UserSessionDB.class);
+			Predicate condition = criteriaBuilder.equal(sessionRoot.get(UserSessionDB_.sessionId), sessionId);
 			criteriaQuery.where(condition);
 			criteriaQuery.select(sessionRoot);
 			
 			Query query = entityManager.createQuery(criteriaQuery);
-			List<SessionDB> sessions = query.getResultList();
+			List<UserSessionDB> sessions = query.getResultList();
 			
 			if((sessions != null) && (sessions.size() > 0))
 			{
@@ -103,7 +103,7 @@ public class SessionDAOImpl implements SessionDAO
 			}
 			else
 			{
-				session = new SessionDB();
+				session = new UserSessionDB();
 				session.setSessionId(sessionId);
 				entityManager.persist(session);
 			}

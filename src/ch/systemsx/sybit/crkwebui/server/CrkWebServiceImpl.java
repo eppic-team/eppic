@@ -46,14 +46,13 @@ import ch.systemsx.sybit.crkwebui.server.db.model.NumHomologsStringsDAO;
 import ch.systemsx.sybit.crkwebui.server.db.model.NumHomologsStringsDAOImpl;
 import ch.systemsx.sybit.crkwebui.server.db.model.PDBScoreDAO;
 import ch.systemsx.sybit.crkwebui.server.db.model.PDBScoreDAOImpl;
-import ch.systemsx.sybit.crkwebui.server.db.model.SessionDAO;
-import ch.systemsx.sybit.crkwebui.server.db.model.SessionDAOImpl;
+import ch.systemsx.sybit.crkwebui.server.db.model.UserSessionDAO;
+import ch.systemsx.sybit.crkwebui.server.db.model.UserSessionDAOImpl;
 import ch.systemsx.sybit.crkwebui.server.util.IPVerifier;
 import ch.systemsx.sybit.crkwebui.server.util.InputParametersParser;
 import ch.systemsx.sybit.crkwebui.server.util.RandomDirectoryNameGenerator;
 import ch.systemsx.sybit.crkwebui.shared.CrkWebException;
 import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
-import ch.systemsx.sybit.crkwebui.shared.model.InputParameters;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceItem;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResidueItem;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResiduesItemsList;
@@ -235,8 +234,8 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 ////			item.setHomologsCutoff(125);
 //			
 ////			ObjectInputStream in = new ObjectInputStream(new FileInputStream("c:/test1.crk"));
-////			ObjectInputStream in = new ObjectInputStream(new FileInputStream("c:/files1/res2/1smt.webui.dat"));
-//			ObjectInputStream in = new ObjectInputStream(new FileInputStream("c:/1ton.webui.dat"));
+//			ObjectInputStream in = new ObjectInputStream(new FileInputStream("c:/files1/res2/1smt.webui.dat"));
+////			ObjectInputStream in = new ObjectInputStream(new FileInputStream("c:/1ton.webui.dat"));
 //			PDBScoreItemDB readitem = (PDBScoreItemDB)in.readObject();
 ////			System.out.println(readitem.getInterfaceItems().get(0).getInterfaceResidues().size());
 //			
@@ -530,30 +529,16 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 	{
 		String status = null;
 		
-		try
-		{
-			JobDAO jobDAO = new JobDAOImpl();
-			status = jobDAO.getStatusForJob(jobId);
-		}
-		catch(PersistenceException e)
-		{
-			
-		}
+		JobDAO jobDAO = new JobDAOImpl();
+		status = jobDAO.getStatusForJob(jobId);
 		
-		if(status == null)
+		if(status != null)
 		{
-			status = StatusOfJob.NONEXISTING;
-		}
-		else
-		{
-			SessionDAO sessionDAO = new SessionDAOImpl();
+			UserSessionDAO sessionDAO = new UserSessionDAOImpl();
 			sessionDAO.insertSessionForJob(getThreadLocalRequest().getSession().getId(), jobId);
-		}
 		
 //		String status = DBUtils.getStatusForJob(jobId, getThreadLocalRequest().getSession().getId());
 
-		if(status != null)
-		{
 			if(status.equals(StatusOfJob.FINISHED)) 
 			{
 				return getResultData(jobId);
@@ -688,7 +673,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 	
 	private String retrieveCurrentStep(final String jobId)
 	{
-		String currentStep = "0/" + steps.size() +" Waiting";
+		String currentStep = "0/" + steps.size() + " Waiting";
 		
 		boolean stepFound = false;
 		int i = steps.size();

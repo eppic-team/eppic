@@ -10,6 +10,7 @@ import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.Window.ClosingEvent;
 
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
@@ -21,6 +22,8 @@ public class Crkwebui implements EntryPoint, ValueChangeHandler<String>
 	private MainController mainController;
 
 	private Viewport viewport;
+	
+	private boolean isClosing = false;
 
 	/**
 	 * This is the entry point method.
@@ -32,13 +35,17 @@ public class Crkwebui implements EntryPoint, ValueChangeHandler<String>
 		History.addValueChangeHandler(this);
 
 //		// TODO: CHECK in IE
-//		Window.addWindowClosingHandler(new Window.ClosingHandler() 
-//		{
-//			public void onWindowClosing(ClosingEvent event) 
-//			{
-//				 mainController.untieJobsFromSession();
-//			}
-//		});
+		Window.addWindowClosingHandler(new Window.ClosingHandler() 
+		{
+			public void onWindowClosing(ClosingEvent event) 
+			{
+				if(!isClosing)
+				{
+					mainController.untieJobsFromSession();
+					isClosing = true;
+				}
+			}
+		});
 		
 		Window.addResizeHandler(new ResizeHandler() {
 			
