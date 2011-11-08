@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
-public class SessionDB implements Serializable 
+public class UserSessionDB implements Serializable 
 {
 	/**
 	 * 
@@ -16,7 +16,7 @@ public class SessionDB implements Serializable
 	
 	private Set<JobDB> jobs;
 	
-	public SessionDB()
+	public UserSessionDB()
 	{
 		jobs = new HashSet<JobDB>();
 	}

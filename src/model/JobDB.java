@@ -21,11 +21,11 @@ public class JobDB implements Serializable
 	
 	private PDBScoreItemDB pdbScoreItem;
 	
-	private Set<SessionDB> sessions;
+	private Set<UserSessionDB> userSessions;
 	
 	public JobDB()
 	{
-		this.sessions = new HashSet<SessionDB>();
+		this.userSessions = new HashSet<UserSessionDB>();
 	}
 	
 	public Long getUid() {
@@ -92,11 +92,11 @@ public class JobDB implements Serializable
 		return pdbScoreItem;
 	}
 
-	public void setSessions(Set<SessionDB> sessions) {
-		this.sessions = sessions;
+	public void setUserSessions(Set<UserSessionDB> userSessions) {
+		this.userSessions = userSessions;
 	}
 
-	public Set<SessionDB> getSessions() {
-		return sessions;
+	public Set<UserSessionDB> getUserSessions() {
+		return userSessions;
 	}
 }
