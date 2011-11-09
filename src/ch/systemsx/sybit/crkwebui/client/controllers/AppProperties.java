@@ -57,6 +57,7 @@ public interface AppProperties extends Constants
 	String status_panel_log();
 	String status_panel_status();
 	String status_panel_stop();
+	String status_panel_step_counter();
 	
 	String info_panel_pdb_identifier();
 	String info_panel_input_parameters();

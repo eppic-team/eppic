@@ -62,6 +62,7 @@ import ch.systemsx.sybit.crkwebui.shared.model.ProcessingData;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
 import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
 import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
+import ch.systemsx.sybit.crkwebui.shared.model.StepStatus;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
@@ -571,7 +572,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 				statusData.setJobId(jobId);
 				statusData.setStatus(status);
 				statusData.setInput(jobDAO.getInputForJob(jobId));
-				statusData.setStep("");
+				statusData.setStep(new StepStatus());
 	
 				try 
 				{
@@ -671,9 +672,12 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 		return statusData;
 	}
 	
-	private String retrieveCurrentStep(final String jobId)
+	private StepStatus retrieveCurrentStep(final String jobId)
 	{
-		String currentStep = "0/" + steps.size() + " Waiting";
+		StepStatus stepStatus = new StepStatus();
+		stepStatus.setTotalNumberOfSteps(steps.size());
+		stepStatus.setCurrentStepNumber(0);
+		stepStatus.setCurrentStep("Waiting");
 		
 		boolean stepFound = false;
 		int i = steps.size();
@@ -738,11 +742,8 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 						i++;
 					}
 					
-					currentStep = i +
-								  "/" +
-								  steps.size() +
-								  " " +
-								  steps.get(i).getDescription();
+					stepStatus.setCurrentStepNumber(i);
+					stepStatus.setCurrentStep(steps.get(i).getDescription());
 				}
 				else
 				{
@@ -751,7 +752,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 			}
 		}
 		
-		return currentStep;
+		return stepStatus;
 	}
 	
 //	private PDBScoreItem getResultData(String jobId) throws CrkWebException 

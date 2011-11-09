@@ -9,15 +9,17 @@ import com.extjs.gxt.ui.client.Style.Scroll;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
 import com.extjs.gxt.ui.client.event.SelectionListener;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
-import com.extjs.gxt.ui.client.widget.ProgressBar;
+import com.extjs.gxt.ui.client.widget.Status;
 import com.extjs.gxt.ui.client.widget.button.Button;
 import com.extjs.gxt.ui.client.widget.form.FormPanel;
 import com.extjs.gxt.ui.client.widget.form.TextArea;
 import com.extjs.gxt.ui.client.widget.form.TextField;
 import com.extjs.gxt.ui.client.widget.layout.CenterLayout;
-import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 import com.extjs.gxt.ui.client.widget.layout.FormData;
-import com.google.gwt.user.client.Timer;
+import com.extjs.gxt.ui.client.widget.layout.RowData;
+import com.extjs.gxt.ui.client.widget.layout.RowLayout;
+import com.extjs.gxt.ui.client.widget.toolbar.FillToolItem;
+import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
 
 /**
  * This panel is used to display status of the submitted job
@@ -32,11 +34,15 @@ public class StatusPanel extends DisplayPanel
 	private TextField<String> jobId;
 	private TextField<String> status;
 	private TextArea log;
-	private ProgressBar progressBar;
-	
-	private String currentStep = "";
+//	private ProgressBar progressBar;
+//	
+//	private String currentStep = "";
 	
 	private Button killJob;
+	
+	private ToolBar statusBar;
+	private Status statusProgress;
+	private Status statusStepsFinished;  
 	
 	public StatusPanel(MainController mainController) 
 	{
@@ -46,9 +52,9 @@ public class StatusPanel extends DisplayPanel
 
 	public void init() 
 	{
-		this.setLayout(new FitLayout());
 		this.setBorders(true);
 		this.setStyleAttribute("padding-top", "10px");
+		this.setLayout(new RowLayout());
 		
 		formPanel = new FormPanel();
 		formPanel.getHeader().setVisible(false);
@@ -75,34 +81,34 @@ public class StatusPanel extends DisplayPanel
 		log.setFieldLabel(MainController.CONSTANTS.status_panel_log());
 		log.setReadOnly(true);
 
-		formPanel.add(log, new FormData("95% -90"));
+		formPanel.add(log, new FormData("95% -110"));
 
-		LayoutContainer progressBarContainer = new LayoutContainer();
-		progressBarContainer.setLayout(new CenterLayout());
-		progressBarContainer.setHeight(20);
-		progressBar = new ProgressBar();
-		progressBar.setBounds(0, 0, 400, 20);
-		progressBarContainer.add(progressBar);
-		
-		formPanel.add(progressBarContainer, new FormData("100%"));
-		
-		Timer autoRefreshMyJobs = new Timer() 
-		{
-			private float counter = 0;
-			
-			public void run() 
-			{
-				progressBar.updateProgress(counter / 100, currentStep);
-				counter += 10;
-				
-				if(counter > 100)
-				{
-					counter = 0;
-				}
-			}
-		};
-
-		autoRefreshMyJobs.scheduleRepeating(500);
+//		LayoutContainer progressBarContainer = new LayoutContainer();
+//		progressBarContainer.setLayout(new CenterLayout());
+//		progressBarContainer.setHeight(20);
+//		progressBar = new ProgressBar();
+//		progressBar.setBounds(0, 0, 400, 20);
+//		progressBarContainer.add(progressBar);
+//		
+//		formPanel.add(progressBarContainer, new FormData("100%"));
+//		
+//		Timer autoRefreshMyJobs = new Timer() 
+//		{
+//			private float counter = 0;
+//			
+//			public void run() 
+//			{
+//				progressBar.updateProgress(counter / 100, currentStep);
+//				counter += 10;
+//				
+//				if(counter > 100)
+//				{
+//					counter = 0;
+//				}
+//			}
+//		};
+//
+//		autoRefreshMyJobs.scheduleRepeating(500);
 		
 		killJob = new Button(MainController.CONSTANTS.status_panel_stop(), new SelectionListener<ButtonEvent>() {
 
@@ -112,9 +118,29 @@ public class StatusPanel extends DisplayPanel
 			}
 		});
 		
-		formPanel.addButton(killJob);
+		killJob.setWidth(80);
+		LayoutContainer killButtonContainer = new LayoutContainer();
+		killButtonContainer.setLayout(new CenterLayout());
+		killButtonContainer.add(killJob);
+		killButtonContainer.setHeight(30);
+		formPanel.add(killButtonContainer, new FormData("95%"));
 		
-		this.add(formPanel);
+		statusBar = new ToolBar();  
+		  
+		statusProgress = new Status();  
+		statusProgress.setText("");  
+		statusProgress.setWidth(150);  
+		statusBar.add(statusProgress);  
+		statusBar.add(new FillToolItem());  
+	  
+	    statusStepsFinished = new Status();  
+	    statusStepsFinished.setWidth(100);  
+	    statusStepsFinished.setText("");  
+	    statusStepsFinished.setBox(true);
+	    statusBar.add(statusStepsFinished);  
+	    
+	    formPanel.setBottomComponent(statusBar);
+		this.add(formPanel, new RowData(1,1));
 
 	}
 
@@ -128,17 +154,26 @@ public class StatusPanel extends DisplayPanel
 		jobId.setValue(statusData.getJobId());
 		pdbIdentifier.setPDBText(statusData.getInput(), null);
 		
-		currentStep = statusData.getStep();
-		
 		if((status.getValue() != null) && (status.getValue().equals(StatusOfJob.RUNNING)))
 		{
 			killJob.setVisible(true);
-			progressBar.setVisible(true);
+			statusProgress.setBusy(statusData.getStep().getCurrentStep());
+			statusStepsFinished.setText(MainController.CONSTANTS.status_panel_step_counter() +
+										": " +
+										statusData.getStep().getCurrentStepNumber() +
+										"/" +
+										statusData.getStep().getTotalNumberOfSteps()
+										);
+			statusStepsFinished.setVisible(true);
+//			progressBar.setVisible(true);
 		}
 		else
 		{
 			killJob.setVisible(false);
-			progressBar.setVisible(false);
+			statusProgress.clearStatus("");
+			statusStepsFinished.clearStatus("");
+			statusStepsFinished.setVisible(false);
+//			progressBar.setVisible(false);
 		}
 	}
 

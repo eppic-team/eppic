@@ -19,6 +19,7 @@ import com.extjs.gxt.ui.client.event.SelectionChangedEvent;
 import com.extjs.gxt.ui.client.event.SelectionChangedListener;
 import com.extjs.gxt.ui.client.event.SelectionListener;
 import com.extjs.gxt.ui.client.store.ListStore;
+import com.extjs.gxt.ui.client.util.IconHelper;
 import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.button.Button;
@@ -63,6 +64,9 @@ public class MyJobsPanel extends ContentPanel
 				History.newItem("");
 			}
 		});
+		
+		String addIconSource = "resources/images/gxt/icons/add_icon.png";
+		addNew.setIcon(IconHelper.createPath(addIconSource));
 
 		toolBar.add(addNew);
 
