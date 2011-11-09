@@ -249,6 +249,12 @@ public class CRKMain {
 				gp.writePdbFile(params.getOutputFile("."+interf.getId()+".rimcore.pdb"));
 			}
 			scoreGeomPS.close();
+			
+			if (interfaces.getNumInterfaces()==0) {
+				// no interfaces found at all, can happen e.g. in NMR structure with 1 chain
+				throw new CRKException(null, "No interfaces found. Can't continue.",true);
+			}
+			
 			// for the webui
 			wuiAdaptor.setInterfaces(interfaces);
 			wuiAdaptor.setGeometryScores(gps);
