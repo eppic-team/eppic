@@ -12,6 +12,11 @@ import crk.InterfaceEvolContext;
 
 public class CombinedPredictor implements InterfaceTypePredictor {
 
+	// the hard limits aka "duarte" limits
+	// max limit based on 1pre (bio with 2290 and 0+2 cores) and 2vg5 interface 2 (xtal with 2070 and 0+0 cores) 
+	public static final double MAX_AREA_XTALCALL = 2200; 
+	public static final double MIN_AREA_BIOCALL  = 500;   
+	
 	private String callReason;
 	private List<String> warnings;
 
@@ -45,12 +50,12 @@ public class CombinedPredictor implements InterfaceTypePredictor {
 		if (!useHardLimits) reasonMsgPrefix = "Peptide-protein interface, not checking minimum area hard limit. ";
 		
 		// 1st the hard area limits		
-		if (useHardLimits && iec.getInterface().getInterfaceArea()<GeometryPredictor.MIN_AREA_BIOCALL) {
-			callReason = "Area below hard limit "+String.format("%4.0f", GeometryPredictor.MIN_AREA_BIOCALL);
+		if (useHardLimits && iec.getInterface().getInterfaceArea()<MIN_AREA_BIOCALL) {
+			callReason = "Area below hard limit "+String.format("%4.0f", MIN_AREA_BIOCALL);
 			call = CallType.CRYSTAL;
 		} 
-		else if (iec.getInterface().getInterfaceArea()>GeometryPredictor.MAX_AREA_XTALCALL) {
-			callReason = "Area above hard limit "+String.format("%4.0f", GeometryPredictor.MAX_AREA_XTALCALL);
+		else if (iec.getInterface().getInterfaceArea()>MAX_AREA_XTALCALL) {
+			callReason = "Area above hard limit "+String.format("%4.0f", MAX_AREA_XTALCALL);
 			call = CallType.BIO;
 		}
 		else {
