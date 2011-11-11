@@ -67,7 +67,8 @@ public class DetailsButtonCellRenderer extends DefaultCellRenderer
 							ResultsPanel resultsPanel = (ResultsPanel)mainController.getMainViewPort().getCenterPanel().getDisplayPanel();
 //							resultsPanel.updateScoresPanel((Integer)resultsPanel.getResultsStore().getAt(rowIndex).get("id"));
 							resultsPanel.getResultsGrid().getSelectionModel().select(rowIndex, false);
-							mainController.getInterfaceResidues((Integer)model.get("id"));
+//							mainController.getInterfaceResidues((Integer)model.get("id"));
+							mainController.getInterfaceResidues((Integer)resultsPanel.getResultsStore().getAt(rowIndex).get("id"));
 						}
 					}
 				});

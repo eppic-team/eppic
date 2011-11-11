@@ -37,10 +37,10 @@ public class DeleteJobsCallback implements AsyncCallback<String>
 			mainController.showMessage("Job deleting", result);
 			mainController.getJobsForCurrentSession();
 			
-			if(jobToRemove.equals(mainController.getSelectedJobId()))
-			{
-				History.newItem("");
-			}
+//			if(jobToRemove.equals(mainController.getSelectedJobId()))
+//			{
+//				History.newItem("");
+//			}
 		} 
 		else 
 		{

@@ -11,6 +11,8 @@ import com.extjs.gxt.ui.client.widget.MessageBox;
 import com.extjs.gxt.ui.client.widget.Viewport;
 import com.extjs.gxt.ui.client.widget.layout.BorderLayout;
 import com.extjs.gxt.ui.client.widget.layout.BorderLayoutData;
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 
 /**
  * Main view of the application
@@ -128,7 +130,12 @@ public class MainViewPort extends Viewport
 			interfacesResiduesWindow = new InterfacesResiduesWindow(mainController, selectedInterface);
 			mainController.setResizeInterfacesWindow(false);
 			interfacesResiduesWindow.setVisible(true);
-			interfacesResiduesWindow.getInterfacesResiduesPanel().resizeResiduesPanels();	
+			Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+				@Override
+				public void execute() {
+					interfacesResiduesWindow.getInterfacesResiduesPanel().resizeResiduesPanels();					
+				}
+			});
 		}
 		else
 		{

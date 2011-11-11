@@ -12,6 +12,7 @@ import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
 import com.extjs.gxt.ui.client.Style.Orientation;
 import com.extjs.gxt.ui.client.Style.SelectionMode;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
+import com.extjs.gxt.ui.client.event.ComponentEvent;
 import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.GridEvent;
 import com.extjs.gxt.ui.client.event.Listener;
@@ -20,6 +21,7 @@ import com.extjs.gxt.ui.client.event.SelectionChangedListener;
 import com.extjs.gxt.ui.client.event.SelectionListener;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.util.IconHelper;
+import com.extjs.gxt.ui.client.util.KeyNav;
 import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.button.Button;
@@ -106,6 +108,19 @@ public class MyJobsPanel extends ContentPanel
 				}
 			}
 		});
+		
+		new KeyNav<ComponentEvent>(myJobsGrid)
+		{
+			@Override
+            public void onDelete(ComponentEvent ce) 
+			{
+				MyJobsModel selectedItem = myJobsGrid.getSelectionModel().getSelectedItem();
+				if(selectedItem != null)
+				{
+					mainController.deleteJob(selectedItem.getJobid());
+				}
+			}
+		};
 		
 		this.add(myJobsGrid, new RowData(1, 1, new Margins(0)));
 	}
@@ -210,5 +225,38 @@ public class MyJobsPanel extends ContentPanel
 	public Grid<MyJobsModel> getMyJobsGrid()
 	{
 		return myJobsGrid;
+	}
+
+	public void selectPrevious(String jobToStop) 
+	{
+		List<MyJobsModel> currentJobs = myJobsStore.getModels();
+		
+		boolean found = false;
+		int jobNr = 0;
+		
+		while((jobNr < currentJobs.size()) && (!found))
+		{
+			if(currentJobs.get(jobNr).get("jobid").equals(jobToStop))
+			{
+				found = true;
+			}
+			
+			jobNr++;
+		}
+
+		jobNr -= 2;
+		
+		if(jobNr >= 0)
+		{
+			myJobsGrid.getSelectionModel().select(currentJobs.get(jobNr), false);
+		}
+		else if(myJobsStore.getModels().size() > 1)
+		{
+			myJobsGrid.getSelectionModel().select(currentJobs.get(0), false);
+		}
+		else
+		{
+			History.newItem("");
+		}
 	}
 }

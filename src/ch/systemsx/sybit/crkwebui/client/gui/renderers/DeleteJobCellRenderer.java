@@ -81,7 +81,10 @@ public class DeleteJobCellRenderer implements GridCellRenderer<BaseModel>
 			public void onDoubleClick(DoubleClickEvent event)
 			{
 				BaseModel selectedItem = grid.getSelectionModel().getSelectedItem();
-				mainController.deleteJob(String.valueOf(selectedItem.get("jobid")));
+				if(selectedItem != null)
+				{
+					mainController.deleteJob(String.valueOf(selectedItem.get("jobid")));
+				}
 			}
 		});
 		

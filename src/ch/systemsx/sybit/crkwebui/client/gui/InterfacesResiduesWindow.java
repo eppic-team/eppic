@@ -6,6 +6,7 @@ import com.extjs.gxt.ui.client.event.ComponentEvent;
 import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.event.WindowEvent;
+import com.extjs.gxt.ui.client.event.WindowListener;
 import com.extjs.gxt.ui.client.util.KeyNav;
 import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.Dialog;
@@ -97,6 +98,25 @@ public class InterfacesResiduesWindow extends Dialog
 						interfacesResiduesPanel.getSecondStructurePanel().getResiduesGridPagingToolbar().getActivePage() - 1);
             }
 		};
+		
+		this.addWindowListener(new WindowListener(){
+			
+			@Override
+			public void windowHide(WindowEvent we)
+			{
+				MainViewPort mainViewPort = mainController.getMainViewPort();
+				
+				if((mainViewPort != null) &&
+		           (mainViewPort.getCenterPanel() != null) &&
+		           (mainViewPort.getCenterPanel().getDisplayPanel() != null) &&
+		           (mainViewPort.getCenterPanel().getDisplayPanel() instanceof ResultsPanel))
+		           {
+				    	((ResultsPanel)mainViewPort.getCenterPanel().getDisplayPanel()).getResultsGrid().focus();
+		           }
+			}
+		}
+		
+		);
 	}
 
 	public InterfacesResiduesPanel getInterfacesResiduesPanel() {

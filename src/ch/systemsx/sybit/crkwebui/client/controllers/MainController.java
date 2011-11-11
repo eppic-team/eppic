@@ -15,6 +15,8 @@ import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
 import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
 import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
 
+import com.extjs.gxt.ui.client.event.Listener;
+import com.extjs.gxt.ui.client.event.MessageBoxEvent;
 import com.extjs.gxt.ui.client.widget.MessageBox;
 import com.extjs.gxt.ui.client.widget.Viewport;
 import com.google.gwt.core.client.GWT;
@@ -125,6 +127,7 @@ public class MainController
 			resultsPanel.resizeGrid();
 		}
 		
+		mainViewPort.getMyJobsPanel().getMyJobsGrid().focus();
 		Window.setTitle(CONSTANTS.window_title_results() + " - " + resultData.getPdbName());
 	}
 
@@ -160,6 +163,7 @@ public class MainController
 		
 		mainViewPort.getCenterPanel().layout();
 		
+		mainViewPort.getMyJobsPanel().getMyJobsGrid().focus();
 		Window.setTitle(CONSTANTS.window_title_processing() + " - " + statusData.getInput());
 	}
 	
@@ -236,6 +240,11 @@ public class MainController
 	
 	public void deleteJob(String jobToStop) 
 	{
+		if(jobToStop.equals(selectedJobId))
+		{
+			mainViewPort.getMyJobsPanel().selectPrevious(jobToStop);
+		}
+		
 		serviceController.deleteJob(jobToStop);
 	}
 
@@ -411,7 +420,14 @@ public class MainController
 	
 	public void showMessage(String title, String message)
 	{
-		MessageBox infoMessageBox = MessageBox.info(title, message, null);
+		MessageBox infoMessageBox = MessageBox.info(title, message, new Listener<MessageBoxEvent>() {
+			
+			@Override
+			public void handleEvent(MessageBoxEvent be) {
+				mainViewPort.getMyJobsPanel().getMyJobsGrid().focus();
+			}
+		});
+		
 		infoMessageBox.setMinWidth(300);
 		infoMessageBox.setMaxWidth(windowWidth);
 	}

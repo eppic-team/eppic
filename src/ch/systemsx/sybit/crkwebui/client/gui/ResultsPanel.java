@@ -14,10 +14,12 @@ import ch.systemsx.sybit.crkwebui.shared.model.SupportedMethod;
 
 import com.extjs.gxt.ui.client.Style.Orientation;
 import com.extjs.gxt.ui.client.event.BaseEvent;
+import com.extjs.gxt.ui.client.event.ComponentEvent;
 import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.FieldEvent;
 import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.store.ListStore;
+import com.extjs.gxt.ui.client.util.KeyNav;
 import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.Label;
@@ -181,6 +183,19 @@ public class ResultsPanel extends DisplayPanel
 				mainController.resizeResultsGrid();
 			}
 		});
+		
+		new KeyNav<ComponentEvent>(resultsGrid)
+		{
+			@Override
+            public void onEnter(ComponentEvent ce) 
+			{
+				InterfaceItemModel interfaceItemModel = resultsGrid.getSelectionModel().getSelectedItem();
+				if(interfaceItemModel != null)
+				{
+					mainController.getInterfaceResidues(interfaceItemModel.getId());
+				}
+			}
+		};
 
 		resultsGridContainer = new ContentPanel();
 		resultsGridContainer.getHeader().setVisible(false);

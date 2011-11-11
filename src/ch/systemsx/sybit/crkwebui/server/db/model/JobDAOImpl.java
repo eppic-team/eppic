@@ -443,10 +443,12 @@ public class JobDAOImpl implements JobDAO
 			criteriaQuery.where(condition);
 			
 			Query query = entityManager.createQuery(criteriaQuery);
-			UserSessionDB session = (UserSessionDB)query.getSingleResult();
+			List<UserSessionDB> sessionResult = query.getResultList();
 
-			if(session != null)
+			if((sessionResult != null) && (sessionResult.size() > 0))
 			{
+				UserSessionDB session = sessionResult.get(0);
+				
 				JobDB jobToRemove = null;
 				
 				Set<JobDB> jobs = session.getJobs();
