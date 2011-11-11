@@ -419,7 +419,7 @@ public class CRKMain {
 			// c) align
 			params.getProgressLog().println("Aligning protein sequences with t_coffee...");
 			try {
-				chainEvCont.align(params.getTcoffeeBin(), params.isUseTcoffeeVeryFastMode());
+				chainEvCont.align(params.getTcoffeeBin(), params.isUseTcoffeeVeryFastMode(), params.getNumThreads());
 			} catch (TcoffeeException e) {
 				throw new CRKException(e, "Couldn't run t_coffee to align protein sequences: "+e.getMessage(), true);
 			} catch (IOException e) {

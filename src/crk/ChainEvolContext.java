@@ -201,9 +201,9 @@ public class ChainEvolContext implements Serializable {
 
 	}
 
-	public void align(File tcoffeeBin, boolean tcoffeeVeryFastMode) throws IOException, TcoffeeException, InterruptedException{
+	public void align(File tcoffeeBin, boolean tcoffeeVeryFastMode, int nThreads) throws IOException, TcoffeeException, InterruptedException{
 		// 3) alignment of the protein sequences using tcoffee
-		homologs.computeTcoffeeAlignment(tcoffeeBin, tcoffeeVeryFastMode);
+		homologs.computeTcoffeeAlignment(tcoffeeBin, tcoffeeVeryFastMode, nThreads);
 	}
 	
 	public void writeAlignmentToFile(File alnFile) throws FileNotFoundException {
