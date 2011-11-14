@@ -195,7 +195,17 @@ public class EvolInterfZMemberPredictor implements InterfaceTypePredictor {
 		stat = new StandardDeviation();
 		sd = stat.evaluate(surfScoreDist);
 		LOGGER.info("Mean= "+String.format("%5.2f",mean)+", sd= "+String.format("%5.2f",sd));
-		zScore = (coreScore-mean)/sd;
+		if (sd!=0) {
+			zScore = (coreScore-mean)/sd;
+		} else {
+			if ((coreScore-mean)>0) {
+				zScore = CRKParams.SCORERATIO_INFINITY_VALUE;
+			} else if ((coreScore-mean)<0) {
+				zScore = -CRKParams.SCORERATIO_INFINITY_VALUE;
+			} else {
+				zScore = Double.NaN;
+			}
+		}
 		return zScore;
 	}
 	
