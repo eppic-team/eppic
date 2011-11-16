@@ -363,7 +363,7 @@ public class CRKMain {
 			params.getProgressLog().println("Blasting for homologues...");
 			File blastCacheFile = null;
 			if (params.getBlastCacheDir()!=null) {
-				blastCacheFile = new File(params.getBlastCacheDir(),params.getBaseName()+"."+chainEvCont.getRepresentativeChainCode()+".blast.xml"); 
+				blastCacheFile = new File(params.getBlastCacheDir(),chainEvCont.getQuery().getUniId()+".blast.xml"); 
 			}
 			try {
 				chainEvCont.retrieveHomologs(params.getBlastBinDir(), params.getBlastDbDir(), params.getBlastDb(), params.getNumThreads(), params.getIdCutoff(), params.getQueryCoverageCutoff(), blastCacheFile);
