@@ -534,8 +534,14 @@ public class ChainEvolContext implements Serializable {
 				String uniId = m.group(1);
 				uniprotMapping = new UniprotEntry(uniId);
 			} else {
-				LOGGER.error("Could not find uniprot id in subject id "+sid);
-				System.exit(1);
+				Matcher m2 = Sequence.DEFLINE_PRIM_ACCESSION_UNIREF_REGEX.matcher(sid);
+				if (m2.matches()) {
+					String uniId = m2.group(1);
+					uniprotMapping = new UniprotEntry(uniId);
+				} else {
+					LOGGER.error("Could not find uniprot id in subject id "+sid);
+					System.exit(1);
+				}
 			}
 		} else {
 			LOGGER.error("No Uniprot match could be found for the query "+pdbName+representativeChain);
