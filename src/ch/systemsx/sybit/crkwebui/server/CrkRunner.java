@@ -545,7 +545,7 @@ public class CrkRunner implements Runnable
 		
 		try
 		{
-			outputStream = new FileOutputStream(logFile);
+			outputStream = new FileOutputStream(logFile, true);
 			BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outputStream);
 			bufferedOutputStream.write(message.getBytes());
 		}
