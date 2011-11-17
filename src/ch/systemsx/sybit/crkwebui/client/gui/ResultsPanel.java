@@ -17,6 +17,7 @@ import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.ComponentEvent;
 import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.FieldEvent;
+import com.extjs.gxt.ui.client.event.GridEvent;
 import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.util.KeyNav;
@@ -62,6 +63,8 @@ public class ResultsPanel extends DisplayPanel
 	private ListStore<InterfaceItemModel> resultsStore;
 	private ColumnModel resultsColumnModel;
 	private Map<String, Integer> initialColumnWidth;
+	
+	private float gridWidthMultiplier;
 	// ***************************************
 
 	// ***************************************
@@ -78,8 +81,9 @@ public class ResultsPanel extends DisplayPanel
 		this.setLayout(new RowLayout(Orientation.VERTICAL));
 		this.setStyleAttribute("padding", "10px");
 
-		pdbIdentifier = new PDBIdentifierLabel(mainController.getPdbScoreItem().getPdbName(),
-											   mainController.getPdbScoreItem().getSpaceGroup());
+		pdbIdentifier = new PDBIdentifierLabel();
+		pdbIdentifier.setPDBText(mainController.getPdbScoreItem().getPdbName(),
+								 mainController.getPdbScoreItem().getSpaceGroup());
 		this.add(pdbIdentifier);
 		
 		FormPanel breakPanel = new FormPanel();
@@ -161,7 +165,7 @@ public class ResultsPanel extends DisplayPanel
 		resultsGrid.setContextMenu(new ResultsPanelContextMenu(mainController));
 		resultsGrid.disableTextSelection(false);
 //		resultsGrid.setAutoHeight(true);
-		fillResultsGrid(mainController.getPdbScoreItem());
+//		fillResultsGrid(mainController.getPdbScoreItem());
 		
 //		resultsGrid.addListener(Events.ColumnResize, new Listener<BaseEvent>(){
 //			@Override
@@ -181,6 +185,16 @@ public class ResultsPanel extends DisplayPanel
 			@Override
 			public void handleEvent(BaseEvent be) {
 				mainController.resizeResultsGrid();
+			}
+		});
+		
+		resultsGrid.addListener(Events.ColumnResize, new Listener<GridEvent>() {
+			@Override
+			public void handleEvent(GridEvent ge) 
+			{
+				int widthToSet = (int) (ge.getWidth() / gridWidthMultiplier);
+				mainController.getSettings().getGridProperties().put("results_" + resultsGrid.getColumnModel().getColumnId(ge.getColIndex()) + "_width", 
+																	 String.valueOf(widthToSet));
 			}
 		});
 		
@@ -475,19 +489,21 @@ public class ResultsPanel extends DisplayPanel
 		if (resultsGridWidthOfAllVisibleColumns < mainController.getWindowWidth() - limit) 
 		{
 			int maxWidth = mainController.getWindowWidth() - limit - 20;
-			float multiplier = (float)maxWidth / resultsGridWidthOfAllVisibleColumns;
+			gridWidthMultiplier = (float)maxWidth / resultsGridWidthOfAllVisibleColumns;
 			
 			int nrOfColumn = resultsGrid.getColumnModel().getColumnCount();
 			
 			for (int i = 0; i < nrOfColumn; i++) 
 			{
-				resultsGrid.getColumnModel().setColumnWidth(i, (int)(initialColumnWidth.get(resultsGrid.getColumnModel().getColumn(i).getId()) * multiplier), true);
+				resultsGrid.getColumnModel().setColumnWidth(i, (int)(initialColumnWidth.get(resultsGrid.getColumnModel().getColumn(i).getId()) * gridWidthMultiplier), true);
 //				resultsGrid.getColumnModel().getColumn(i)
 //						.setWidth((int)(initialColumnWidth.get(i) * multiplier));
 			}
 		} 
 		else 
 		{
+			gridWidthMultiplier = 1;
+			
 			int nrOfColumn = resultsGrid.getColumnModel().getColumnCount();
 
 			for (int i = 0; i < nrOfColumn; i++) {
@@ -556,5 +572,24 @@ public class ResultsPanel extends DisplayPanel
 	public ListStore<InterfaceItemModel> getResultsStore() 
 	{
 		return resultsStore;
+	}
+
+	public void saveGridSettings()
+	{
+		for(int i=0; i<resultsGrid.getColumnModel().getColumnCount(); i++)
+		{
+			String value = mainController.getSettings().getGridProperties().get("results_" + resultsGrid.getColumnModel().getColumn(i).getId() + "_visible");
+			
+			if(resultsGrid.getColumnModel().getColumn(i).isHidden() && ((value == null) || (!value.equals("no"))))
+			{
+				mainController.getSettings().getGridProperties().put("results_" + resultsGrid.getColumnModel().getColumn(i).getId() + "_visible", 
+																	 "no");	
+			}
+			else if(!resultsGrid.getColumnModel().getColumn(i).isHidden() && (value != null) && (!value.equals("yes")))
+			{
+				mainController.getSettings().getGridProperties().put("results_" + resultsGrid.getColumnModel().getColumn(i).getId() + "_visible", 
+																	 "yes");	
+			}
+		}
 	}
 }

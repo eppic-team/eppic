@@ -15,13 +15,13 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 public class GetCurrentStatusDataCallback implements AsyncCallback<ProcessingData>
 {
 	private MainController mainController;
-	private String selectedId;
+	private String jobId;
 
 	public GetCurrentStatusDataCallback(MainController mainController,
-			String selectedId) 
+			String jobId) 
 	{
 		this.mainController = mainController;
-		this.selectedId = selectedId;
+		this.jobId = jobId;
 	}
 
 	@Override
@@ -36,31 +36,34 @@ public class GetCurrentStatusDataCallback implements AsyncCallback<ProcessingDat
 	{
 		if(result != null)
 		{
-			if(result instanceof ProcessingInProgressData)
+			if(mainController.getSelectedJobId().equals(jobId))
 			{
-				ProcessingInProgressData statusData = (ProcessingInProgressData) result;
-				mainController.refreshStatusView(statusData);
-			}
-			else if(result instanceof PDBScoreItem)
-			{
-				PDBScoreItem resultsData = (PDBScoreItem) result;
-				mainController.setPDBScoreItem(resultsData);
-				mainController.cleanResiduesForInterface();
-				
-				mainController.getAllResidues(selectedId, resultsData.getUid());
-				mainController.displayResultView(resultsData);
-			}
-			else
-			{
-				mainController.updateStatusLabel(MainController.CONSTANTS.callback_get_current_status_data() + " " + result.getClass(), true);
-				mainController.cleanCenterPanel();
+				if(result instanceof ProcessingInProgressData)
+				{
+					ProcessingInProgressData statusData = (ProcessingInProgressData) result;
+					mainController.refreshStatusView(statusData);
+				}
+				else if(result instanceof PDBScoreItem)
+				{
+					PDBScoreItem resultsData = (PDBScoreItem) result;
+					mainController.setPDBScoreItem(resultsData);
+					mainController.cleanResiduesForInterface();
+					
+					mainController.getAllResidues(jobId, resultsData.getUid());
+					mainController.displayResultView(resultsData);
+				}
+				else
+				{
+					mainController.updateStatusLabel(MainController.CONSTANTS.callback_get_current_status_data() + " " + result.getClass(), true);
+					mainController.cleanCenterPanel();
+				}
 			}
 			
 			mainController.getJobsForCurrentSession();
 		}
 		else
 		{
-			mainController.showMessage(MainController.CONSTANTS.callback_job_not_found_error(), "Job with id=" + selectedId + " not found on the server");
+			mainController.showMessage(MainController.CONSTANTS.callback_job_not_found_error(), "Job with id=" + jobId + " not found on the server");
 			mainController.cleanCenterPanel();
 		}
 	}

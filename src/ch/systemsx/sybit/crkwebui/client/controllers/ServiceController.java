@@ -42,7 +42,7 @@ public interface ServiceController
 	 * @param jobId selected job id
 	 * @param interfaceId selected interface uid
 	 */
-	public abstract void getInterfaceResidues(String jobId, int interfaceUid);
+	public abstract void getInterfaceResidues(String jobId, int interfaceUid, int interfaceId);
 	
 	/**
 	 * Stop the execution of the specified running job

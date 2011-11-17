@@ -40,7 +40,7 @@ public class ThumbnailCellRenderer implements GridCellRenderer<BaseModel>
 		String url = mainController.getSettings().getResultsLocation();
 		
 		String source = url + 
-						mainController.getSelectedJobId() + 
+						mainController.getPdbScoreItem().getJobId() + 
 						"/" +
 						mainController.getPdbScoreItem().getPdbName() +
 						"." +

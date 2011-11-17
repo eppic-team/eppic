@@ -15,11 +15,14 @@ import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
 import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
 import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
 
+import com.extjs.gxt.ui.client.GXT;
 import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.event.MessageBoxEvent;
 import com.extjs.gxt.ui.client.widget.MessageBox;
 import com.extjs.gxt.ui.client.widget.Viewport;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.RootPanel;
@@ -59,8 +62,6 @@ public class MainController
 	
 	private boolean resizeInterfacesWindow;
 
-	private boolean isJobsListFirstTimeLoaded = true;
-	
 	public MainController(Viewport viewport) 
 	{
 		this.serviceController = new ServiceControllerImpl(this);
@@ -192,7 +193,9 @@ public class MainController
 		}
 		else
 		{
-			serviceController.getInterfaceResidues(selectedJobId, pdbScoreItem.getInterfaceItem(interfaceId - 1).getUid());
+			serviceController.getInterfaceResidues(pdbScoreItem.getJobId(), 
+												   pdbScoreItem.getInterfaceItem(interfaceId - 1).getUid(),
+												   interfaceId);
 		}
 	}
 
@@ -206,7 +209,10 @@ public class MainController
 	
 	public void getAllResidues(String jobId, int interfaceUid) 
 	{
-		serviceController.getAllResidues(jobId, interfaceUid);
+		if(!GXT.isIE8)
+		{
+			serviceController.getAllResidues(jobId, interfaceUid);
+		}
 	}
 
 	public void setSettings(ApplicationSettings settings) {
@@ -238,14 +244,14 @@ public class MainController
 		serviceController.stopJob(jobToStop, debug);
 	}
 	
-	public void deleteJob(String jobToStop) 
+	public void deleteJob(String jobToDelete) 
 	{
-		if(jobToStop.equals(selectedJobId))
+		if(jobToDelete.equals(selectedJobId))
 		{
-			mainViewPort.getMyJobsPanel().selectPrevious(jobToStop);
+			mainViewPort.getMyJobsPanel().selectPrevious(jobToDelete);
 		}
 		
-		serviceController.deleteJob(jobToStop);
+		serviceController.deleteJob(jobToDelete);
 	}
 
 	public void runMyJobsAutoRefresh() 
@@ -348,7 +354,7 @@ public class MainController
 		
 		openJmol(url, 
 				 interfaceNr, 
-				 selectedJobId,
+				 pdbScoreItem.getJobId(),
 				 pdbScoreItem.getPdbName(),
 				 size,
 				 pdbScoreItem.getInterfaceItem(Integer.parseInt(interfaceNr) - 1).getJmolScript());
@@ -374,7 +380,7 @@ public class MainController
 	public void downloadFileFromServer(String type, String interfaceId)
 	{
 		String fileDownloadServletUrl = GWT.getModuleBaseURL() + "fileDownload";
-		fileDownloadServletUrl += "?type=" + type + "&id=" + selectedJobId + "&interface=" + interfaceId;
+		fileDownloadServletUrl += "?type=" + type + "&id=" + pdbScoreItem.getJobId() + "&interface=" + interfaceId;
 		Window.open(fileDownloadServletUrl, "", "");
 //		RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, URL.encode(fileDownloadServletUrl));
 //
@@ -496,14 +502,6 @@ public class MainController
 		return resizeInterfacesWindow;
 	}
 
-	public boolean isJobsListFirstTimeLoaded() {
-		return isJobsListFirstTimeLoaded;
-	}
-
-	public void setJobsListFirstTimeLoaded(boolean isJobsListFirstTimeLoaded) {
-		this.isJobsListFirstTimeLoaded = isJobsListFirstTimeLoaded;
-	}
-	
 	public native static String getUserAgent() /*-{
 		return navigator.userAgent.toLowerCase();
 	}-*/;
@@ -537,23 +535,28 @@ public class MainController
 	}
 
 	public void setInterfacesResiduesWindowData(
-			HashMap<Integer, List<InterfaceResidueItem>> result) 
+			final HashMap<Integer, List<InterfaceResidueItem>> result) 
 	{
-		if(result.containsKey(1))
-		{
-			mainViewPort.getInterfacesResiduesWindow().getInterfacesResiduesPanel().getFirstStructurePanelSummary().fillResiduesGrid();
-			mainViewPort.getInterfacesResiduesWindow().getInterfacesResiduesPanel().getFirstStructurePanel()
-					.fillResiduesGrid(result.get(1));
-			mainViewPort.getInterfacesResiduesWindow().getInterfacesResiduesPanel().getFirstStructurePanel().applyFilter(false);
-		}
-		
-		if(result.containsKey(2))
-		{
-			mainViewPort.getInterfacesResiduesWindow().getInterfacesResiduesPanel().getSecondStructurePanelSummary().fillResiduesGrid();
-			mainViewPort.getInterfacesResiduesWindow().getInterfacesResiduesPanel().getSecondStructurePanel()
-					.fillResiduesGrid(result.get(2));
-			mainViewPort.getInterfacesResiduesWindow().getInterfacesResiduesPanel().getSecondStructurePanel().applyFilter(false);
-		}
+		Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+			@Override
+			public void execute() {
+				if(result.containsKey(1))
+				{
+					mainViewPort.getInterfacesResiduesWindow().getInterfacesResiduesPanel().getFirstStructurePanelSummary().fillResiduesGrid();
+					mainViewPort.getInterfacesResiduesWindow().getInterfacesResiduesPanel().getFirstStructurePanel()
+							.fillResiduesGrid(result.get(1));
+					mainViewPort.getInterfacesResiduesWindow().getInterfacesResiduesPanel().getFirstStructurePanel().applyFilter(false);
+				}
+				
+				if(result.containsKey(2))
+				{
+					mainViewPort.getInterfacesResiduesWindow().getInterfacesResiduesPanel().getSecondStructurePanelSummary().fillResiduesGrid();
+					mainViewPort.getInterfacesResiduesWindow().getInterfacesResiduesPanel().getSecondStructurePanel()
+							.fillResiduesGrid(result.get(2));
+					mainViewPort.getInterfacesResiduesWindow().getInterfacesResiduesPanel().getSecondStructurePanel().applyFilter(false);
+				}				
+			}
+		});
 		
 //		mainViewPort.getInterfacesResiduesWindow().getInterfacesResiduesPanel().resizeResiduesPanels();		
 	}

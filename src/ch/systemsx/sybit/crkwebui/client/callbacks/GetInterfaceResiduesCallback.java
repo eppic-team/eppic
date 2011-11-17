@@ -5,7 +5,9 @@ import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResidueItem;
+import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResiduesItemsList;
 
+import com.extjs.gxt.ui.client.GXT;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 /**
@@ -17,12 +19,15 @@ public class GetInterfaceResiduesCallback implements AsyncCallback<HashMap<Integ
 {
 	private MainController mainController;
 	private String jobId;
+	private int interfaceId;
 
 	public GetInterfaceResiduesCallback(MainController mainController,
-										String jobId) 
+										String jobId,
+										int interfaceId) 
 	{
 		this.mainController = mainController;
 		this.jobId = jobId;
+		this.interfaceId = interfaceId;
 	}
 
 	@Override
@@ -38,9 +43,23 @@ public class GetInterfaceResiduesCallback implements AsyncCallback<HashMap<Integ
 		
 		if (result != null)
 		{
-			if(mainController.getSelectedJobId().equals(jobId))
+			if(mainController.getSelectedJobId().equals(jobId) &&
+			   (mainController.getMainViewPort().getInterfacesResiduesWindow().getSelectedInterface() == interfaceId))
 			{
 				mainController.setInterfacesResiduesWindowData(result);
+				
+//				if(GXT.isIE8)
+//				{
+//					if(mainController.getInterfaceResiduesItemsList() == null)
+//					{
+//						mainController.setResiduesForInterface(new InterfaceResiduesItemsList());
+//					}
+//					
+//					if(mainController.getInterfaceResiduesItemsList().get(interfaceId) == null)
+//					{
+//						mainController.getInterfaceResiduesItemsList().put(interfaceId, result);
+//					}
+//				}
 			}
 		}
 		else 

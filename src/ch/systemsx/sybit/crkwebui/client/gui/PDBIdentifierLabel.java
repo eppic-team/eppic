@@ -11,13 +11,6 @@ public class PDBIdentifierLabel extends Label{
 		this.addStyleName("pdb-identifier-label");
 	}
 	
-	public PDBIdentifierLabel(String pdbName,
-							  String spaceGroup)
-	{
-		this.setText(preparePDBIdentifierText(pdbName, spaceGroup));
-		this.addStyleName("pdb-identifier-label");
-	}
-
 	public void setPDBText(String pdbName,
 			  			   String spaceGroup)
 	{

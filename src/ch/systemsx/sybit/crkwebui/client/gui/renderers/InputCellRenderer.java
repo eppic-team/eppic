@@ -26,7 +26,7 @@ public class InputCellRenderer extends DefaultCellRenderer
 			input = input.substring(0, input.indexOf("."));
 		}
 		
-		Hyperlink link = new Hyperlink(input, "id/" + store.getAt(rowIndex).get("jobid"));
+		Hyperlink link = new Hyperlink(input, "id/" + model.get("jobid"));
 		return link;
 	}
 }

@@ -2,6 +2,9 @@ package ch.systemsx.sybit.crkwebui.client.gui;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 
+import com.extjs.gxt.ui.client.event.ContainerEvent;
+import com.extjs.gxt.ui.client.event.Events;
+import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 
@@ -16,7 +19,7 @@ public class CenterPanel extends LayoutContainer
 	
 	private DisplayPanel displayPanel;
 	
-	public CenterPanel(MainController mainController)
+	public CenterPanel(final MainController mainController)
 	{
 		this.mainController = mainController;
 		this.setBorders(false);
@@ -24,6 +27,19 @@ public class CenterPanel extends LayoutContainer
 		
 		displayPanel = new DisplayPanel(mainController);
 		this.add(displayPanel);
+		
+		this.addListener(Events.BeforeRemove, new Listener<ContainerEvent>() {
+
+			@Override
+			public void handleEvent(ContainerEvent ce) 
+			{
+				if(ce.getItem() instanceof ResultsPanel)
+				{
+					((ResultsPanel)ce.getItem()).saveGridSettings();
+				}
+			}
+			
+		});
 	}
 	
 	public DisplayPanel getDisplayPanel()

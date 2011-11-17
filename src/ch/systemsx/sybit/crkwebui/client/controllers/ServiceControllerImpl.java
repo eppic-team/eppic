@@ -10,7 +10,7 @@ import ch.systemsx.sybit.crkwebui.client.callbacks.GetJobsForCurrentSession;
 import ch.systemsx.sybit.crkwebui.client.callbacks.GetResultsOfProcessingCallback;
 import ch.systemsx.sybit.crkwebui.client.callbacks.GetSettingsCallback;
 import ch.systemsx.sybit.crkwebui.client.callbacks.RunJobCallback;
-import ch.systemsx.sybit.crkwebui.client.callbacks.StopJobsCallback;
+import ch.systemsx.sybit.crkwebui.client.callbacks.StopJobCallback;
 import ch.systemsx.sybit.crkwebui.client.callbacks.UntieJobsFromSessionCallback;
 import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
 
@@ -49,13 +49,13 @@ public class ServiceControllerImpl implements ServiceController
 
 	public void getResultsOfProcessing(String jobId, boolean debug) {
 		crkWebService.getResultsOfProcessing(jobId, debug,
-				new GetResultsOfProcessingCallback(mainController, jobId, debug));
+				new GetResultsOfProcessingCallback(mainController, jobId));
 	}
 	
 	
-	public void getInterfaceResidues(String jobId, int interfaceUid) {
+	public void getInterfaceResidues(String jobId, int interfaceUid, int interfaceId) {
 		crkWebService.getInterfaceResidues(interfaceUid,
-				new GetInterfaceResiduesCallback(mainController, jobId));
+				new GetInterfaceResiduesCallback(mainController, jobId, interfaceId));
 	}
 	
 	public void getJobsForCurrentSession() {
@@ -68,7 +68,7 @@ public class ServiceControllerImpl implements ServiceController
 	}
 
 	public void stopJob(String jobToStop, boolean debug) {
-		crkWebService.stopJob(jobToStop, new StopJobsCallback(mainController, jobToStop, debug));
+		crkWebService.stopJob(jobToStop, new StopJobCallback(mainController, jobToStop, debug));
 	}
 	
 	public void deleteJob(String jobToDelete) {

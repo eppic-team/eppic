@@ -5,17 +5,17 @@ import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 /**
- * This is the callback used to handle the response from the server when trying to stop the jobs
+ * This is the callback used to handle the response from the server when trying to stop the job
  * @author srebniak_a
  *
  */
-public class StopJobsCallback implements AsyncCallback<String> 
+public class StopJobCallback implements AsyncCallback<String> 
 {
 	private MainController mainController;
 	private String jobToStop;
 	private boolean debug;
 
-	public StopJobsCallback(MainController mainController,
+	public StopJobCallback(MainController mainController,
 							String jobToStop,
 							boolean debug) 
 	{
