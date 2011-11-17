@@ -146,7 +146,7 @@ public class Pdb2UniprotCheck {
 		inputSeqFile.deleteOnExit();
 		pdb.getSequence().writeToFastaFile(inputSeqFile);
 		BlastRunner blastRunner = new BlastRunner(BLAST_BIN_DIR, BLAST_DB_DIR);
-		blastRunner.runBlastp(inputSeqFile, BLAST_DB, outBlast, BLAST_OUTPUT_TYPE, BLAST_NO_FILTERING, DEFAULT_BLAST_NUMTHREADS);
+		blastRunner.runBlastp(inputSeqFile, BLAST_DB, outBlast, BLAST_OUTPUT_TYPE, BLAST_NO_FILTERING, DEFAULT_BLAST_NUMTHREADS, 500);
 		
 		BlastHitList blastList = null;
 		try {

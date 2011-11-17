@@ -161,11 +161,12 @@ public class ChainEvolContext implements Serializable {
 		//}
 	}
 	
-	public void retrieveHomologs(String blastBinDir, String blastDbDir, String blastDb, int blastNumThreads, double idCutoff, double queryCovCutoff, File blastCache) 
+	public void retrieveHomologs(String blastBinDir, String blastDbDir, String blastDb, int blastNumThreads, double idCutoff, double queryCovCutoff, int maxNumSeqs, File blastCache) 
 	throws IOException, BlastException, UniprotVerMisMatchException, InterruptedException {
+		
 		homologs = new UniprotHomologList(query);
 		
-		homologs.searchWithBlast(blastBinDir, blastDbDir, blastDb, blastNumThreads, blastCache);
+		homologs.searchWithBlast(blastBinDir, blastDbDir, blastDb, blastNumThreads, maxNumSeqs, blastCache);
 		LOGGER.info(homologs.size()+" homologs found by blast");
 		
 		applyIdentityCutoff(idCutoff, queryCovCutoff);
@@ -512,7 +513,7 @@ public class ChainEvolContext implements Serializable {
 		String uniprotVer = UniprotHomologList.readUniprotVer(blastDbDir);
 		LOGGER.info("Query blast search for Uniprot mapping using Uniprot version "+uniprotVer);
 		BlastRunner blastRunner = new BlastRunner(blastBinDir, blastDbDir);
-		blastRunner.runBlastp(inputSeqFile, blastDb, outBlast, BLAST_OUTPUT_TYPE, BLAST_NO_FILTERING, blastNumThreads);
+		blastRunner.runBlastp(inputSeqFile, blastDb, outBlast, BLAST_OUTPUT_TYPE, BLAST_NO_FILTERING, blastNumThreads, 500);
 
 		BlastHitList blastList = null;
 		try {

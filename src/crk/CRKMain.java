@@ -368,7 +368,7 @@ public class CRKMain {
 				blastCacheFile = new File(params.getBlastCacheDir(),chainEvCont.getQuery().getUniId()+".blast.xml"); 
 			}
 			try {
-				chainEvCont.retrieveHomologs(params.getBlastBinDir(), params.getBlastDbDir(), params.getBlastDb(), params.getNumThreads(), params.getIdCutoff(), params.getQueryCoverageCutoff(), blastCacheFile);
+				chainEvCont.retrieveHomologs(params.getBlastBinDir(), params.getBlastDbDir(), params.getBlastDb(), params.getNumThreads(), params.getIdCutoff(), params.getQueryCoverageCutoff(), params.getMaxNumSeqs(), blastCacheFile);
 				LOGGER.info("Uniprot version used: "+chainEvCont.getUniprotVer());
 				LOGGER.info("Blasted against "+params.getBlastDbDir()+"/"+params.getBlastDb());
 				
