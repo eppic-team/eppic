@@ -33,7 +33,7 @@ public class DeleteJobCellRenderer implements GridCellRenderer<BaseModel>
 			ColumnData config, final int rowIndex, final int colIndex,
 			ListStore<BaseModel> store, final Grid<BaseModel> grid) 
 	{
-		String source = "resources/images/gxt/icons/delete_icon.PNG";
+		String source = "resources/icons/delete_icon.png";
 		
 		final Image image  = new Image(source);
 		image.addMouseOverHandler(new MouseOverHandler() {
@@ -80,11 +80,7 @@ public class DeleteJobCellRenderer implements GridCellRenderer<BaseModel>
 			@Override
 			public void onDoubleClick(DoubleClickEvent event)
 			{
-				BaseModel selectedItem = grid.getSelectionModel().getSelectedItem();
-				if(selectedItem != null)
-				{
-					mainController.deleteJob(String.valueOf(selectedItem.get("jobid")));
-				}
+				mainController.deleteJob(String.valueOf(model.get("jobid")));
 			}
 		});
 		

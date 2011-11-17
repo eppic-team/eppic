@@ -50,6 +50,8 @@ public class MyJobsPanel extends ContentPanel
 	private Map<String, Integer> initialColumnWidth;
 
 	private Button addNew;
+	
+	private boolean isJobsListFirstTimeLoaded = true;
 
 	public MyJobsPanel(final MainController mainController) 
 	{
@@ -67,7 +69,7 @@ public class MyJobsPanel extends ContentPanel
 			}
 		});
 		
-		String addIconSource = "resources/images/gxt/icons/add_icon.png";
+		String addIconSource = "resources/icons/add_icon.png";
 		addNew.setIcon(IconHelper.createPath(addIconSource));
 
 		toolBar.add(addNew);
@@ -129,7 +131,7 @@ public class MyJobsPanel extends ContentPanel
 	{
 		List<ColumnConfig> configs = GridColumnConfigGenerator.createColumnConfigs(mainController,
 																				   "jobs",
-																				   new InterfaceItemModel());
+																				   new MyJobsModel());
 
 		if(configs != null)
 		{
@@ -181,7 +183,8 @@ public class MyJobsPanel extends ContentPanel
 														  statusData.getStatus(),
 														  statusData.getInput());
 				
-				if(statusData.getJobId().equals(mainController.getSelectedJobId()))
+				if((mainController.getSelectedJobId() != null) &&
+				   (statusData.getJobId().equals(mainController.getSelectedJobId())))
 				{
 					itemToSelect = myJobsModel;
 					itemToSelectIndex = i; 
@@ -210,14 +213,14 @@ public class MyJobsPanel extends ContentPanel
 //		myJobsGrid.getView().refresh(false);
 		
 		if((mainController.getSelectedJobId() != null) &&
-			(myJobsGrid.getStore().getCount() > 0))
+			(myJobsStore.getCount() > 0))
 		{
 			myJobsGrid.getSelectionModel().select(itemToSelect, false);
 			
-			if(mainController.isJobsListFirstTimeLoaded())
+			if(isJobsListFirstTimeLoaded)
 			{
 				myJobsGrid.getView().focusRow(itemToSelectIndex);
-				mainController.setJobsListFirstTimeLoaded(false);
+				isJobsListFirstTimeLoaded = false;
 			}
 		}
 	}

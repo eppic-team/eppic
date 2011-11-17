@@ -37,7 +37,7 @@ public class StopIconRenderer implements GridCellRenderer<BaseModel>
 		
 		if((status != null) && (status.equals("Running")))
 		{
-			String source = "resources/images/gxt/icons/stop_icon.PNG";
+			String source = "resources/icons/stop_icon.png";
 			
 			final Image image  = new Image(source);
 			image.addMouseOverHandler(new MouseOverHandler() {

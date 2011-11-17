@@ -44,7 +44,7 @@ public class WarningsCellRenderer implements GridCellRenderer<BaseModel>
 		
 		if((warnings != null) && (warnings.size() > 0))
 		{
-			String source = "resources/images/gxt/icons/warning_icon.PNG";
+			String source = "resources/icons/warning_icon.png";
 			
 			final Image image  = new Image(source);
 			image.addMouseOverHandler(new MouseOverHandler() {
