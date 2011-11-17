@@ -287,7 +287,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 
 	private void prepareSteps(Properties stepProperties) 
 	{
-		int nrOfSteps=1;
+		int nrOfSteps = 1;
 		boolean nextStepFound = true;
 		
 		while((nrOfSteps < stepProperties.size() + 1) && (nextStepFound))
@@ -424,8 +424,6 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 		
 		settings.setResultsLocation(properties.getProperty("results_location"));
 		
-		settings.setJmolScript(properties.getProperty("jmol_script",""));
-		
 		return settings;
 	}
 	
@@ -434,6 +432,12 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 	{
 		if (runJobData != null) 
 		{
+			if(doIPBasedVerification)
+			{
+				IPVerifier.verifyIfCanBeSubmitted(getThreadLocalRequest().getRemoteAddr(), 
+ 												  defaultNrOfAllowedSubmissionsForIP);
+			}
+			
 			boolean wasFileUploaded = true;
 			
 			if(runJobData.getJobId() == null)
@@ -448,17 +452,6 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 				runJobData.setJobId(randomDirectoryName);
 				
 				wasFileUploaded = false;
-			}
-			
-			if(doIPBasedVerification)
-			{
-				String verificationError = IPVerifier.checkIfCanBeSubmitted(getThreadLocalRequest().getRemoteAddr(), 
-																			defaultNrOfAllowedSubmissionsForIP);
-				
-				if(verificationError !=  null)
-				{
-					throw new CrkWebException(verificationError);
-				}
 			}
 			
 			EmailData emailData = new EmailData();
@@ -619,8 +612,8 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 					
 					for(File logFile : filesToRead)
 					{
-						FileReader inputStream = new FileReader(logFile);
-				        BufferedReader bufferedInputStream = new BufferedReader(inputStream);
+						FileReader inputStream = null;
+				        BufferedReader bufferedInputStream = null;
 				        
 				        try
 				        {
@@ -640,11 +633,11 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 				        }
 				        finally
 				        {
-				        	if(bufferedInputStream != null)
+				        	if(inputStream != null)
 							{
 								try
 								{
-									bufferedInputStream.close();
+									inputStream.close();
 								}
 								catch(Throwable t)
 								{
@@ -837,6 +830,13 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 		return pdbScoreItem;
 	}
 	
+	public InterfaceResiduesItemsList getAllResidues(int pdbScoreId) throws CrkWebException 
+	{
+		InterfaceResidueItemDAO interfaceResidueItemDAO = new InterfaceResidueItemDAOImpl();
+		InterfaceResiduesItemsList interfaceResiduesItemsList = interfaceResidueItemDAO.getResiduesForAllInterfaces(pdbScoreId);
+		return interfaceResiduesItemsList;
+	}
+	
 	public HashMap<Integer, List<InterfaceResidueItem>> getInterfaceResidues(int interfaceUid) throws CrkWebException
 	{
 		InterfaceResidueItemDAO interfaceResidueItemDAO = new InterfaceResidueItemDAOImpl();
@@ -1013,7 +1013,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 					e.printStackTrace();
 				}
 				
-				activeThread.interrupt();
+				((CrkThread)activeThread).interrupt();
 			}
 		}
 		
@@ -1027,12 +1027,5 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 		}
 		
 //		runInstances.destroy();
-	}
-
-	public InterfaceResiduesItemsList getAllResidues(int pdbScoreId) throws CrkWebException 
-	{
-		InterfaceResidueItemDAO interfaceResidueItemDAO = new InterfaceResidueItemDAOImpl();
-		InterfaceResiduesItemsList interfaceResiduesItemsList = interfaceResidueItemDAO.getResiduesForAllInterfaces(pdbScoreId);
-		return interfaceResiduesItemsList;
 	}
 }

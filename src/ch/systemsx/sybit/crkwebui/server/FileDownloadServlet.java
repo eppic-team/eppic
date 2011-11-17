@@ -49,13 +49,22 @@ public class FileDownloadServlet extends FileBaseServlet
 		{
 			if ((jobId != null) && (jobId.length() != 0)) 
 			{
-	
-				if(((type.equals("interface") || (type.equals("pse")))) && 
+				if(!jobId.matches("[A-Za-z0-9]+"))
+				{
+					response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Incorrect format of job id");
+				}
+				else if(((type.equals("interface") || (type.equals("pse")))) && 
 				   ((interfaceId == null) ||
 				    (interfaceId.equals(""))))
 			    {
 					response.sendError(HttpServletResponse.SC_BAD_REQUEST, messages.getProperty("fileDownloadResultNoInterfaceSpecified"));
 			    }
+				else if((interfaceId != null) &&
+						(!interfaceId.equals("")) &&
+						(!interfaceId.matches("[0-9]+")))
+				{
+					response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Incorrect format of interface");
+				}
 				else
 				{
 					File resultFileDirectory = new File(
@@ -63,77 +72,93 @@ public class FileDownloadServlet extends FileBaseServlet
 									+ jobId);
 		
 					if (resultFileDirectory.exists()
-							&& resultFileDirectory.isDirectory()) {
-						String[] directoryContent = resultFileDirectory
-								.list(new FilenameFilter() {
-		
-									public boolean accept(File dir, String name) {
-										if (name.endsWith(FileNameGenerator.generateFileNameToDownload(type, jobId, interfaceId))) {
-											return true;
-										} else {
-											return false;
+						&& resultFileDirectory.isDirectory()) 
+					{
+						final String suffixType = FileNameGenerator.generateFileNameToDownload(type, jobId, interfaceId);
+						
+						if(suffixType == null)
+						{
+							response.sendError(HttpServletResponse.SC_BAD_REQUEST, "No support for selected type");
+						}
+						else
+						{
+							String[] directoryContent = resultFileDirectory
+									.list(new FilenameFilter() {
+			
+										public boolean accept(File dir, String name) {
+											if (name.endsWith(suffixType)) {
+												return true;
+											} else {
+												return false;
+											}
+										}
+									});
+			
+							if ((directoryContent != null) && (directoryContent.length > 0)) 
+							{
+								File resultFile = new File(resultFileDirectory + "/"
+										+ directoryContent[0]);
+			
+								if (resultFile.exists()) 
+								{
+									if(directoryContent[0].endsWith(".pdb"))
+									{
+										response.setContentType("chemical/x-pdb");
+									}
+									else if(directoryContent[0].endsWith(".zip"))
+									{
+										response.setContentType("application/zip");
+									}
+									else if(directoryContent[0].endsWith(".pse"))
+									{
+										response.setContentType("application/pymol-session");
+									}
+									else
+									{
+										response.setContentType("application/octet-stream");
+									}
+									
+									
+									String processedFileName = directoryContent[0];
+									
+									if(directoryContent[0].contains("."))
+									{
+										processedFileName = directoryContent[0].substring(0, directoryContent[0].indexOf("."));
+										processedFileName = processedFileName + "-" + jobId + ".";
+										
+										if(directoryContent[0].indexOf(".") + 1 != directoryContent[0].length())
+										{
+											processedFileName = processedFileName + directoryContent[0].substring(directoryContent[0].indexOf(".") + 1);
 										}
 									}
-								});
-		
-						if ((directoryContent != null) && (directoryContent.length > 0)) 
-						{
-							File resultFile = new File(resultFileDirectory + "/"
-									+ directoryContent[0]);
-		
-							if (resultFile.exists()) 
-							{
-								if(directoryContent[0].endsWith(".pdb"))
-								{
-									response.setContentType("chemical/x-pdb");
-								}
-								else if(directoryContent[0].endsWith(".zip"))
-								{
-									response.setContentType("application/zip");
-								}
-								else if(directoryContent[0].endsWith(".pse"))
-								{
-									response.setContentType("application/pymol-session");
-								}
-								else
-								{
-									response.setContentType("application/octet-stream");
-								}
-								
-								
-								String processedFileName = directoryContent[0];
-								
-								if(directoryContent[0].contains("."))
-								{
-									processedFileName = directoryContent[0].substring(0, directoryContent[0].indexOf("."));
-									processedFileName = processedFileName + "-" + jobId + ".";
 									
-									if(directoryContent[0].indexOf(".") + 1 != directoryContent[0].length())
+									response.setContentLength((int) resultFile.length());
+									response.setHeader("Content-Disposition",
+											"attachment; filename=\"" + processedFileName + "\"");
+	//								response.setHeader("Content-Encoding", "gzip");
+			
+									byte[] buffer = new byte[1024];
+									DataInputStream input = new DataInputStream(
+											new FileInputStream(resultFile));
+			
+									int length;
+			
+									while ((input != null)
+											&& ((length = input.read(buffer)) != -1)) 
 									{
-										processedFileName = processedFileName + directoryContent[0].substring(directoryContent[0].indexOf(".") + 1);
+										output.write(buffer, 0, length);
 									}
-								}
-								
-								response.setContentLength((int) resultFile.length());
-								response.setHeader("Content-Disposition",
-										"attachment; filename=\"" + processedFileName + "\"");
-//								response.setHeader("Content-Encoding", "gzip");
-		
-								byte[] buffer = new byte[1024];
-								DataInputStream in = new DataInputStream(
-										new FileInputStream(resultFile));
-		
-								int length;
-		
-								while ((in != null)
-										&& ((length = in.read(buffer)) != -1)) 
+			
+									input.close();
+									output.flush();
+									output.close();
+								} 
+								else 
 								{
-									output.write(buffer, 0, length);
+									response.sendError(
+											HttpServletResponse.SC_NOT_FOUND,
+											messages.getProperty("fileDownloadResultFileNofFound"));
 								}
-		
-								in.close();
-								output.flush();
-								output.close();
 							} 
 							else 
 							{
@@ -141,12 +166,6 @@ public class FileDownloadServlet extends FileBaseServlet
 										HttpServletResponse.SC_NOT_FOUND,
 										messages.getProperty("fileDownloadResultFileNofFound"));
 							}
-						} 
-						else 
-						{
-							response.sendError(
-									HttpServletResponse.SC_NOT_FOUND,
-									messages.getProperty("fileDownloadResultFileNofFound"));
 						}
 					}
 					else

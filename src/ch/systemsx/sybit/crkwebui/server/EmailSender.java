@@ -32,11 +32,11 @@ public class EmailSender
 		if ((emailData.getEmailRecipient() != null)
 				&& (!emailData.getEmailRecipient().equals(""))) 
 		{
-			Properties props = new Properties();
-			props.put("mail.smtp.host", emailData.getHost());
-			props.put("mail.smtp.port", emailData.getPort());
+			Properties properties = new Properties();
+			properties.put("mail.smtp.host", emailData.getHost());
+			properties.put("mail.smtp.port", emailData.getPort());
 
-			Session session = Session.getDefaultInstance(props);
+			Session session = Session.getDefaultInstance(properties);
 			Message simpleMessage = new MimeMessage(session);
 
 			InternetAddress fromAddress = null;
@@ -61,7 +61,7 @@ public class EmailSender
 				simpleMessage.saveChanges();
 
 				Transport transport = session.getTransport("smtp");
-				transport.connect(props.getProperty("mail.smtp.host"),
+				transport.connect(properties.getProperty("mail.smtp.host"),
 						emailData.getEmailSender(), "");
 				transport.sendMessage(simpleMessage,
 						simpleMessage.getAllRecipients());

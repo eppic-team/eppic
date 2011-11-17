@@ -50,6 +50,7 @@ public class PDBScoreDAOImpl implements PDBScoreDAO
 			PDBScoreItemDB pdbScoreItemDB = (PDBScoreItemDB)query.getSingleResult();
 			
 			result = PDBScoreItem.create(pdbScoreItemDB);
+			result.setJobId(jobId);
 			
 	//			Query query = entityManager.createQuery("from PDBScore WHERE jobId = :jobId", PDBScoreItem.class);
 	//			query.setParameter("jobId", jobId);

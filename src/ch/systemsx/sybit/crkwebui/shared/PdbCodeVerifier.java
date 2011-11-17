@@ -3,7 +3,7 @@ package ch.systemsx.sybit.crkwebui.shared;
 
 public class PdbCodeVerifier {
 
-	private static String PDBCODE_PATTERN = "\\d\\w\\w\\w";
+	private static String PDBCODE_PATTERN = "^\\d\\w\\w\\w$";
 	
 	public static boolean isValid(String pdbCode) {
 		if (pdbCode==null) {

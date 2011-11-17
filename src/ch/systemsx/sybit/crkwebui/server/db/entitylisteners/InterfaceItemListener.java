@@ -4,7 +4,6 @@ import javax.persistence.PostLoad;
 import javax.persistence.PrePersist;
 
 import model.InterfaceItemDB;
-import model.InterfaceResidueItemDB;
 
 public class InterfaceItemListener
 {

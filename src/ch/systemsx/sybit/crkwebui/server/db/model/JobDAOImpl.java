@@ -274,6 +274,8 @@ public class JobDAOImpl implements JobDAO
 			Root<UserSessionDB> sessionRoot = criteriaQuery.from(UserSessionDB.class);
 			SetJoin<UserSessionDB, JobDB> join = sessionRoot.join(UserSessionDB_.jobs);
 			criteriaQuery.select(criteriaBuilder.count(join));
+			Predicate condition = criteriaBuilder.equal(sessionRoot.get(UserSessionDB_.sessionId), sessionId);
+			criteriaQuery.where(condition);
 			
 			Query query = entityManager.createQuery(criteriaQuery);
 			Long nrOfJobs = (Long)query.getSingleResult();
@@ -301,20 +303,40 @@ public class JobDAOImpl implements JobDAO
 		}
 	}
 	
-	public String getStatusForJob(String jobId) throws PersistenceException
+	public String getStatusForJob(String jobId) throws CrkWebException
 	{
-		EntityManager entityManager = EntityManagerHandler.getEntityManager();
-		Query query = entityManager.createQuery("SELECT status FROM Job WHERE jobId = :jobId", String.class);
-		query.setParameter("jobId", jobId);
 		String status = null;
-		List<String> result = query.getResultList();
+		EntityManager entityManager = null;
 		
-		if((result != null) && (result.size() > 0))
+		try
 		{
-			status = result.get(0);
+			entityManager = EntityManagerHandler.getEntityManager();
+			
+			Query query = entityManager.createQuery("SELECT status FROM Job WHERE jobId = :jobId", String.class);
+			query.setParameter("jobId", jobId);
+			List<String> result = query.getResultList();
+			
+			if((result != null) && (result.size() > 0))
+			{
+				status = result.get(0);
+			}
 		}
-		
-		entityManager.close();
+		catch(Throwable e)
+		{
+			e.printStackTrace();
+			throw new CrkWebException(e);
+		}
+		finally
+		{
+			try
+			{
+				entityManager.close();
+			}
+			catch(Throwable t)
+			{
+				
+			}
+		}
 		 
 		return status;
 	}
@@ -435,9 +457,9 @@ public class JobDAOImpl implements JobDAO
 			
 			Root<UserSessionDB> sessionRoot = criteriaQuery.from(UserSessionDB.class);
 			SetJoin<UserSessionDB, JobDB> join = sessionRoot.join(UserSessionDB_.jobs);
-			Path<String> jobId = join.get(JobDB_.jobId);
+			Path<String> jobPath = join.get(JobDB_.jobId);
 			Predicate sessionCondition = criteriaBuilder.equal(sessionRoot.get(UserSessionDB_.sessionId), sessionId);
-			Predicate jobCondition = criteriaBuilder.equal(jobId, jobToUntie);
+			Predicate jobCondition = criteriaBuilder.equal(jobPath, jobToUntie);
 			Predicate condition = criteriaBuilder.and(sessionCondition, jobCondition);
 			criteriaQuery.select(sessionRoot);
 			criteriaQuery.where(condition);

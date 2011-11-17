@@ -12,7 +12,7 @@ public class FileNameGenerator
 													String jobId,
 													String interfaceId)
 	{
-		String pattern = "";
+		String pattern = null;
 		
 		if(type.equals("zip"))
 		{

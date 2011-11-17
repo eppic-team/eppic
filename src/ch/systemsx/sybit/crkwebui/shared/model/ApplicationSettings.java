@@ -37,8 +37,6 @@ public class ApplicationSettings implements Serializable {
 	private int nrOfAllowedSubmissionsWithoutCaptcha;
 	// *********************************************
 	
-	private String jmolScript;
-	
 	private String resultsLocation;
 	
 	private Map<String, String> runParametersNames;
@@ -124,14 +122,6 @@ public class ApplicationSettings implements Serializable {
 
 	public int getNrOfAllowedSubmissionsWithoutCaptcha() {
 		return nrOfAllowedSubmissionsWithoutCaptcha;
-	}
-
-	public String getJmolScript() {
-		return jmolScript;
-	}
-
-	public void setJmolScript(String jmolScript) {
-		this.jmolScript = jmolScript;
 	}
 
 	public void setRunParametersNames(Map<String, String> runParametersNames) {

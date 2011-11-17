@@ -27,6 +27,8 @@ public class PDBScoreItem implements Serializable, ProcessingData
 
 	private List<InterfaceItem> interfaceItems;
 	
+	private String jobId;
+	
 	public PDBScoreItem() 
 	{
 		interfaceItems = new ArrayList<InterfaceItem>();
@@ -160,5 +162,13 @@ public class PDBScoreItem implements Serializable, ProcessingData
 		pdbScoreItem.setTitle(pdbScoreItemDB.getTitle());
 		pdbScoreItem.setUid(pdbScoreItemDB.getUid());
 		return pdbScoreItem;
+	}
+
+	public void setJobId(String jobId) {
+		this.jobId = jobId;
+	}
+
+	public String getJobId() {
+		return jobId;
 	}
 }

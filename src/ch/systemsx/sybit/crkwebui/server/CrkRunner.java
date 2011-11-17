@@ -46,6 +46,8 @@ public class CrkRunner implements Runnable
 	private boolean wasFileUploaded;
 	private String[] downloadFileZipExcludeSufixes;
 //	private boolean isWaiting;
+
+	private boolean isInterrupted;
 	
 	public CrkRunner(
 					 EmailSender emailSender, 
@@ -86,19 +88,13 @@ public class CrkRunner implements Runnable
 		
 		try 
 		{
+			writeMessage("Processing started - please wait\n");
+			
 			emailSender.send("Crk: " + input + " submitted", message);
 			
 			File runFile = new File(destinationDirectoryName + "/crkrun");
 			runFile.createNewFile();
 
-			FileOutputStream outputStream = new FileOutputStream(logFile);
-			BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(
-					outputStream);
-			String logMessage = "Processing started - please wait\n";
-			bufferedOutputStream.write(logMessage.getBytes());
-			bufferedOutputStream.close();
-			outputStream.close();
-			
 //			synchronized(this)
 //			{
 //				if(!((CrkThreadGroup)getThreadGroup()).checkIfCanBeRun())
@@ -310,121 +306,26 @@ public class CrkRunner implements Runnable
 //			crkMain.doScoring();
 //			
 	      	
-	      	final List<String> prefixesToExclude = new ArrayList<String>();
-	      	prefixesToExclude.add(jobId + ".");
-	      	prefixesToExclude.add("crklog");
-	      	
-	      	
-			File destinationDirectory = new File(destinationDirectoryName);
-			String[] directoryContent = destinationDirectory.list(new FilenameFilter() 
-			{
-				public boolean accept(File dir, String name)
-				{
-					if(downloadFileZipExcludeSufixes != null)
-					{
-						for(String sufix : downloadFileZipExcludeSufixes)
-						{
-							if (name.endsWith(sufix)) 
-							{
-								return false;
-							}
-						}
-					}
-					
-					for(String prefix : prefixesToExclude)
-					{
-						if (name.startsWith(prefix)) 
-						{
-							return false;
-						}
-					}
-					
-					return true;
-				}
-			});
 		    
-		    byte[] buffer = new byte[1024];
 		    
-	        String generatedZip = destinationDirectoryName + "/" + input + ".zip";
-	        ZipOutputStream out = new ZipOutputStream(new FileOutputStream(generatedZip));
-	    
-	        if(directoryContent != null)
-	        {
-		        for (int i=0; i<directoryContent.length; i++) 
-		        {
-		        	File source = new File(destinationDirectoryName + "/" + directoryContent[i]);
-		        	{
-		        		if(source.isFile())
-		        		{
-		        			FileInputStream in = new FileInputStream(source);
-				            out.putNextEntry(new ZipEntry(directoryContent[i]));
-				    
-				            int length;
-				            while ((length = in.read(buffer)) > 0) 
-				            {
-				                out.write(buffer, 0, length);
-				            }
-				    
-				            out.closeEntry();
-				            in.close();
-		        		}
-		        	}
-		            
-		        }
-		    } 
-	        
-	        out.close();
-			
-	        
-	        PDBScoreItemDB pdbScoreItem = null;
-			File resultFile = new File(destinationDirectoryName + "/" + input + ".webui.dat");
-			
-			if (resultFile.exists()) 
-			{
-				FileInputStream fileInputStream = null;
-				ObjectInputStream inputStream = null;
-				
-				try 
-				{
-					fileInputStream = new FileInputStream(resultFile);
-					inputStream = new ObjectInputStream(fileInputStream);
-					pdbScoreItem = (PDBScoreItemDB)inputStream.readObject();
-				} 
-				catch (Throwable e)
-				{
-					throw new CrkWebException(e);
-				}
-				finally
-				{
-					if(inputStream != null)
-					{
-						try
-						{
-							inputStream.close();
-						}
-						catch(Throwable t)
-						{
-							t.printStackTrace();
-						}
-					}
-				}
-			}
-			else
-			{
-				throw new CrkWebException("WebUI dat file can not be found");
-			}
+		    generateZipFile(destinationDirectoryName + "/" + input + ".zip");
+		    
+		    String webuiFileName = input;
+		    
+		    if(webuiFileName.contains("."))
+		    {
+		    	webuiFileName = webuiFileName.substring(0, webuiFileName.lastIndexOf("."));
+		    }
+		    
+		    webuiFileName += ".webui.dat";
+		    	
+	        PDBScoreItemDB pdbScoreItem = retrieveResult(destinationDirectoryName + "/" + webuiFileName);
 	        
 			JobDAO jobDao = new JobDAOImpl();
 			jobDao.setPdbScoreItemForJob(jobId, pdbScoreItem);
 //			DBUtils.updateStatusOfJob(generatedDirectoryName, StatusOfJob.FINISHED);
 
-			outputStream = new FileOutputStream(logFile, true);
-			bufferedOutputStream = new BufferedOutputStream(
-					outputStream);
-			logMessage = "Processing finished\n";
-			bufferedOutputStream.write(logMessage.getBytes());
-			bufferedOutputStream.close();
-			outputStream.close();
+			writeMessage("Processing finished\n");
 
 			message = input
 					+ " processing finished. To see the status of the processing please go to: "
@@ -458,18 +359,27 @@ public class CrkRunner implements Runnable
 	{
 		String message = input + " - error during processing the data.\n\n" + errorMessage;
 		
+		FileOutputStream outputStream = null;
+		
 		try
 		{
-			FileOutputStream outputStream = new FileOutputStream(logFile, true);
-			BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(
-					outputStream);
+			outputStream = new FileOutputStream(logFile, true);
+			BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outputStream);
 			bufferedOutputStream.write(message.getBytes());
-			bufferedOutputStream.close();
-			outputStream.close();
 		}
 		catch(Exception ex)
 		{
-			
+			if(outputStream != null)
+			{
+				try
+				{
+					outputStream.close();
+				}
+				catch(Throwable t)
+				{
+					
+				}
+			}
 		}
 		
 		try 
@@ -498,6 +408,167 @@ public class CrkRunner implements Runnable
 				message + "\n\n" + resultPath);
 	}
 	
+	private void generateZipFile(String generatedZip) throws CrkWebException
+	{
+		final List<String> prefixesToExclude = new ArrayList<String>();
+      	prefixesToExclude.add(jobId + ".");
+      	prefixesToExclude.add("crklog");
+      	
+      	
+		File destinationDirectory = new File(destinationDirectoryName);
+		String[] directoryContent = destinationDirectory.list(new FilenameFilter() 
+		{
+			public boolean accept(File dir, String name)
+			{
+				if(downloadFileZipExcludeSufixes != null)
+				{
+					for(String sufix : downloadFileZipExcludeSufixes)
+					{
+						if (name.endsWith(sufix)) 
+						{
+							return false;
+						}
+					}
+				}
+				
+				for(String prefix : prefixesToExclude)
+				{
+					if (name.startsWith(prefix)) 
+					{
+						return false;
+					}
+				}
+				
+				return true;
+			}
+		});
+		
+		byte[] buffer = new byte[1024];
+		
+        ZipOutputStream zipOutputStream = null;
+    
+        try
+        {
+        	zipOutputStream = new ZipOutputStream(new FileOutputStream(generatedZip));
+        	
+	        if(directoryContent != null)
+	        {
+		        for (int i=0; i<directoryContent.length; i++) 
+		        {
+		        	File source = new File(destinationDirectoryName + "/" + directoryContent[i]);
+		        	{
+		        		if(source.isFile())
+		        		{
+		        			FileInputStream in = new FileInputStream(source);
+		        			zipOutputStream.putNextEntry(new ZipEntry(directoryContent[i]));
+				    
+				            int length;
+				            while ((length = in.read(buffer)) > 0) 
+				            {
+				            	zipOutputStream.write(buffer, 0, length);
+				            }
+				    
+				            zipOutputStream.closeEntry();
+				            in.close();
+		        		}
+		        	}
+		            
+		        }
+		    } 
+        }
+        catch(Throwable t)
+        {
+        	throw new CrkWebException(t);
+        }
+        finally
+        {
+        	if(zipOutputStream != null)
+        	{
+        		try
+        		{
+        			zipOutputStream.close();
+        		}
+        		catch(Throwable e)
+        		{
+        			
+        		}
+        	}
+        }
+	}
+	
+	private PDBScoreItemDB retrieveResult(String resultFileName) throws CrkWebException
+	{
+		PDBScoreItemDB pdbScoreItem = null;
+		File resultFile = new File(resultFileName);
+		
+		if (resultFile.exists()) 
+		{
+			FileInputStream fileInputStream = null;
+			ObjectInputStream inputStream = null;
+			
+			try 
+			{
+				fileInputStream = new FileInputStream(resultFile);
+				inputStream = new ObjectInputStream(fileInputStream);
+				pdbScoreItem = (PDBScoreItemDB)inputStream.readObject();
+			} 
+			catch (Throwable e)
+			{
+				throw new CrkWebException(e);
+			}
+			finally
+			{
+				if(fileInputStream != null)
+				{
+					try
+					{
+						fileInputStream.close();
+					}
+					catch(Throwable t)
+					{
+						t.printStackTrace();
+					}
+				}
+			}
+		}
+		else
+		{
+			throw new CrkWebException("WebUI dat file can not be found");
+		}
+		
+		return pdbScoreItem;
+	}
+	
+	private void writeMessage(String message) throws CrkWebException
+	{
+		FileOutputStream outputStream = null;
+		
+		try
+		{
+			outputStream = new FileOutputStream(logFile);
+			BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outputStream);
+			bufferedOutputStream.write(message.getBytes());
+		}
+		catch(Throwable t)
+		{
+			throw new CrkWebException(t);
+		}
+		finally
+		{
+			if(outputStream != null)
+			{
+				try
+				{
+					outputStream.close();
+				}
+				catch(Throwable e)
+				{
+					
+				}
+			}
+		}
+	}
+	
 	public void stopJob()
 	{
 		isInterrupted = true;
@@ -514,8 +585,6 @@ public class CrkRunner implements Runnable
 			t.printStackTrace();
 		}
 	}
-	
-	private boolean isInterrupted;
 	
 //	public synchronized boolean isWaiting()
 //	{

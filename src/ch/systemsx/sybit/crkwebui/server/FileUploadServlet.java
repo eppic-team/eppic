@@ -20,6 +20,7 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
 
 import ch.systemsx.sybit.crkwebui.server.util.IPVerifier;
 import ch.systemsx.sybit.crkwebui.server.util.RandomDirectoryNameGenerator;
+import ch.systemsx.sybit.crkwebui.shared.CrkWebException;
 
 /**
  * Servlet used to upload documents by the users to server
@@ -117,8 +118,7 @@ public class FileUploadServlet extends FileBaseServlet {
 			// above threshold.
 			fileItemFactory.setRepository(localTmpDir);
 
-			ServletFileUpload uploadHandler = new ServletFileUpload(
-					fileItemFactory);
+			ServletFileUpload uploadHandler = new ServletFileUpload(fileItemFactory);
 			
 			uploadHandler.setFileSizeMax(maxFileUploadSize * 1024 * 1024);
 
@@ -174,7 +174,14 @@ public class FileUploadServlet extends FileBaseServlet {
 				
 				if((doIPBasedVerification) && (verificationError == null))
 				{
-					verificationError = IPVerifier.checkIfCanBeSubmitted(request.getRemoteAddr(), defaultNrOfAllowedSubmissionsForIP);
+					try
+					{
+						IPVerifier.verifyIfCanBeSubmitted(request.getRemoteAddr(), defaultNrOfAllowedSubmissionsForIP);
+					}
+					catch(CrkWebException e)
+					{
+						verificationError = e.getMessage();
+					}
 				}
 				
 				if(verificationError == null)
@@ -186,8 +193,7 @@ public class FileUploadServlet extends FileBaseServlet {
 						fileName = fileName.substring(fileName.lastIndexOf("\\") + 1);
 					}
 					
-					File file = new File(localDestinationDir,
-							fileName);
+					File file = new File(localDestinationDir, fileName);
 					fileToUpload.write(file);
 
 //					File processingFile = new File(localDestinationDir
@@ -236,8 +242,8 @@ public class FileUploadServlet extends FileBaseServlet {
 		}
 		else
 		{
-			ReCaptcha r = ReCaptchaFactory.newReCaptcha(captchaPublicKey, captchaPrivateKey, true);
-			boolean verificationResult = r.checkAnswer(remoteAddress, challenge, response).isValid();
+			ReCaptcha recaptcha = ReCaptchaFactory.newReCaptcha(captchaPublicKey, captchaPrivateKey, true);
+			boolean verificationResult = recaptcha.checkAnswer(remoteAddress, challenge, response).isValid();
 			
 			if(!verificationResult)
 			{

@@ -14,17 +14,15 @@ import ch.systemsx.sybit.crkwebui.shared.CrkWebException;
 
 public class IPVerifier 
 {
-	public static String checkIfCanBeSubmitted(String ip,
-											   int defaultNrOfAllowedSubmissionsForIP) throws CrkWebException
+	public static void verifyIfCanBeSubmitted(String ip,
+											  int defaultNrOfAllowedSubmissionsForIP) throws CrkWebException
 	{
-		String verificationError = null;
-		
 		IPForbiddenDAO ipForbiddenDAO = new IPForbiddenDAOImpl();
 		boolean isIpForbidden = ipForbiddenDAO.isIPForbidden(ip);
 		
 		if(isIpForbidden)
 		{
-			verificationError = "Submitting jobs from IP: " + ip + " is not allowed. Please contact with the administrator";
+			throw new CrkWebException("Submitting jobs from IP: " + ip + " is not allowed. Please contact with the administrator");
 		}
 		else
 		{
@@ -49,14 +47,12 @@ public class IPVerifier
 				
 				String formattedDate = (DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT).format(calendar.getTime()));
 				
-				verificationError = "Submitting jobs from IP: " + ip + " is not allowed - too many submissions " +
+				throw new CrkWebException("Submitting jobs from IP: " + ip + " is not allowed - too many submissions " +
 									" - current nr of submissions: " + nrOfJobsForIPDuringLastDay + 
 									" equals allowed nr of allowed submissions per 24h: " + nrOfAllowedSubmissionsForIPDuringOneDay + 
 									" - Please contact with the administrator if you want to increase number of allowed submissions or try after: " +
-									formattedDate;
+									formattedDate);
 			}
 		}
-		
-		return verificationError;
 	}
 }
