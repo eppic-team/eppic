@@ -370,7 +370,6 @@ public class CRKMain {
 			try {
 				chainEvCont.retrieveHomologs(params.getBlastBinDir(), params.getBlastDbDir(), params.getBlastDb(), params.getNumThreads(), params.getIdCutoff(), params.getQueryCoverageCutoff(), params.getMaxNumSeqs(), blastCacheFile);
 				LOGGER.info("Uniprot version used: "+chainEvCont.getUniprotVer());
-				LOGGER.info("Blasted against "+params.getBlastDbDir()+"/"+params.getBlastDb());
 				
 				// for web ui uniprot ver will be set only when at least one sequence has uniprot match
 				// it will be redundantly set several times actually, TODO we should do it only once
