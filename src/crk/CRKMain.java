@@ -515,7 +515,8 @@ public class CRKMain {
 
 		if (params.isDoScoreEntropies()) {
 			try {
-				interfaces.calcRimAndCores(params.getCAcutoffForRimCore());
+				//interfaces.calcRimAndCores(params.getCAcutoffForRimCore());
+				iecList.setRimCorePredBsaToAsaCutoff(params.getCAcutoffForRimCore());
 				iecList.setCallCutoff(params.getEntrCallCutoff());
 				iecList.setZscoreCutoff(params.getZscoreCutoff());
 				PrintStream scoreEntrPS = new PrintStream(params.getOutputFile(CRKParams.ENTROPIES_FILE_SUFFIX+".scores"));
@@ -532,8 +533,9 @@ public class CRKMain {
 				scoreEntrPS.close();
 				iecList.resetCalls();
 				// z-scores
-				interfaces.calcRimAndCores(params.getCAcutoffForZscore());
+				//interfaces.calcRimAndCores(params.getCAcutoffForZscore());
 				PrintStream scoreZscorePS = new PrintStream(params.getOutputFile(CRKParams.ZSCORES_FILE_SUFFIX+".scores"));
+				iecList.setZPredBsaToAsaCutoff(params.getCAcutoffForZscore());
 				iecList.scoreZscore();
 				iecList.printZscoresTable(scoreZscorePS);
 				wuiAdaptor.add(iecList);
@@ -546,7 +548,8 @@ public class CRKMain {
 		}
 		if (params.isDoScoreKaks()) {
 			try {
-				interfaces.calcRimAndCores(params.getCAcutoffForRimCore());
+				//interfaces.calcRimAndCores(params.getCAcutoffForRimCore());
+				iecList.setRimCorePredBsaToAsaCutoff(params.getCAcutoffForRimCore());
 				iecList.setCallCutoff(params.getKaksCallCutoff());
 				// ka/ks scoring			
 				PrintStream scoreKaksPS = new PrintStream(params.getOutputFile(CRKParams.KAKS_FILE_SUFFIX+".scores"));
@@ -576,9 +579,11 @@ public class CRKMain {
 		
 		iecList.setCallCutoff(params.getEntrCallCutoff());
 		iecList.setZscoreCutoff(params.getZscoreCutoff());
-		interfaces.calcRimAndCores(params.getCAcutoffForRimCore());
+		//interfaces.calcRimAndCores(params.getCAcutoffForRimCore());
+		iecList.setRimCorePredBsaToAsaCutoff(params.getCAcutoffForRimCore());
 		iecList.scoreEntropy(false);
-		interfaces.calcRimAndCores(params.getCAcutoffForZscore());
+		//interfaces.calcRimAndCores(params.getCAcutoffForZscore());
+		iecList.setZPredBsaToAsaCutoff(params.getCAcutoffForZscore());
 		iecList.scoreZscore();
 		
 		List<CombinedPredictor> cps = new ArrayList<CombinedPredictor>();

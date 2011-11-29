@@ -400,9 +400,10 @@ public class CalcStats {
 		if (scoType==ScoringType.KAKS && !iec.canDoKaks()) return;
 
 		
-		interf.calcRimAndCore(caCutoffsCR[i]);
+		//interf.calcRimAndCore(caCutoffsCR[i]);
 
 		EvolRimCorePredictor ercp = new EvolRimCorePredictor(iec);
+		ercp.setBsaToAsaCutoff(caCutoffsCR[i]);
 		
 		if (scoType==ScoringType.ENTROPY) {
 			ercp.scoreEntropy(weighted);
@@ -423,9 +424,10 @@ public class CalcStats {
 	private static void doSingleEvolZScoring(InterfaceEvolContext iec, ChainInterface interf, 
 			int[][] countBios, int[][] countXtals, int i, int k) {
 		
-		interf.calcRimAndCore(caCutoffsZ[i]);
+		//interf.calcRimAndCore(caCutoffsZ[i]);
 		
 		EvolInterfZPredictor eizp = new EvolInterfZPredictor(iec);
+		eizp.setBsaToAsaCutoff(caCutoffsZ[i]);
 		
 		eizp.scoreEntropy();
 		eizp.setZscoreCutoff(zscoreCutoffs[k]);
@@ -450,14 +452,16 @@ public class CalcStats {
 		//gp.setMinCoreSizeForBio(minNumberCoreResForBios[j]);
 		gp.setMinCoreSizeForBio(DEFMINNUMBERCORERESFORBIO);
 		
-		interf.calcRimAndCore(caCutoffsCR[i]);
+		//interf.calcRimAndCore(caCutoffsCR[i]);
 		EvolRimCorePredictor ercp = new EvolRimCorePredictor(iec);
+		ercp.setBsaToAsaCutoff(caCutoffsCR[i]);
 		ercp.scoreEntropy(false);
 		ercp.setCallCutoff(corerimCallCutoffs[k]);
 		iec.setHomologsCutoff(MIN_NUM_HOMOLOGS);
 		
-		interf.calcRimAndCore(caCutoffsZ[l]);
+		//interf.calcRimAndCore(caCutoffsZ[l]);
 		EvolInterfZPredictor eizp = new EvolInterfZPredictor(iec);
+		eizp.setBsaToAsaCutoff(caCutoffsZ[l]);
 		eizp.scoreEntropy();
 		eizp.setZscoreCutoff(zscoreCutoffs[m]);
 		iec.setHomologsCutoff(MIN_NUM_HOMOLOGS);

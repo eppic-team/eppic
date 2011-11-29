@@ -189,6 +189,18 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 			evolInterfZPredictors.get(i).setZscoreCutoff(zScoreCutoff);
 		}
 	}
+
+	public void setRimCorePredBsaToAsaCutoff(double bsaToAsaCutoff) {
+		for (int i=0;i<list.size();i++) {
+			evolRimCorePredictors.get(i).setBsaToAsaCutoff(bsaToAsaCutoff);
+		}		
+	}
+	
+	public void setZPredBsaToAsaCutoff(double bsaToAsaCutoff) {
+		for (int i=0;i<list.size();i++) {
+			evolInterfZPredictors.get(i).setBsaToAsaCutoff(bsaToAsaCutoff);
+		}		
+	}
 	
 	public int getHomologsCutoff() {
 		return homologsCutoff;

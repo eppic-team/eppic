@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 
 import owl.core.structure.ChainInterface;
-import owl.core.structure.InterfaceRimCore;
 import owl.core.structure.PdbChain;
 import owl.core.structure.Residue;
 import owl.core.structure.AaResidue;
@@ -52,24 +51,6 @@ public class InterfaceEvolContext implements Serializable {
 	public ChainEvolContext getChainEvolContext(int molecId) {
 		if (molecId==FIRST) return getFirstChainEvolContext();
 		if (molecId==SECOND) return getSecondChainEvolContext();
-		return null;
-	}
-	
-	public InterfaceRimCore getFirstRimCore() {
-		return interf.getFirstRimCore();
-	}
-	
-	public InterfaceRimCore getSecondRimCore() {
-		return interf.getSecondRimCore();
-	}
-	
-	public InterfaceRimCore getRimCore(int molecId) {
-		if (molecId==FIRST) {
-			return getFirstRimCore();
-		}
-		if (molecId==SECOND) {
-			return getSecondRimCore();
-		}
 		return null;
 	}
 	

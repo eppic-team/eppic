@@ -42,6 +42,8 @@ public class EvolInterfZMemberPredictor implements InterfaceTypePredictor {
 	private double sd;
 	private double zScoreCutoff;
 	
+	private double bsaToAsaCutoff;
+	
 	public EvolInterfZMemberPredictor(InterfaceEvolContext iec, int molecId) {
 		this.iec = iec;
 		this.warnings = new ArrayList<String>();
@@ -57,7 +59,8 @@ public class EvolInterfZMemberPredictor implements InterfaceTypePredictor {
 		
 		int memberSerial = molecId+1;
 		
-		InterfaceRimCore rimCore = iec.getRimCore(molecId);
+		iec.getInterface().calcRimAndCore(bsaToAsaCutoff);
+		InterfaceRimCore rimCore = iec.getInterface().getRimCore(molecId);
 		
 		int countsUnrelCoreRes = -1;
 		if (canDoEntropyScoring()) {
@@ -74,7 +77,7 @@ public class EvolInterfZMemberPredictor implements InterfaceTypePredictor {
 			callReason = memberSerial+": there are only "+iec.getChainEvolContext(molecId).getNumHomologs()+
 					" homologs to calculate evolutionary scores (at least "+iec.getHomologsCutoff()+" required)";
 		}
-		else if (iec.getRimCore(molecId).getCoreSize()<CRKParams.MIN_NUMBER_CORE_RESIDUES_EVOL_SCORE) {
+		else if (rimCore.getCoreSize()<CRKParams.MIN_NUMBER_CORE_RESIDUES_EVOL_SCORE) {
 			call = CallType.NO_PREDICTION;
 			callReason = memberSerial+": not enough core residues to calculate evolutionary score (at least "+CRKParams.MIN_NUMBER_CORE_RESIDUES_EVOL_SCORE+" needed)";
 		} 
@@ -170,7 +173,9 @@ public class EvolInterfZMemberPredictor implements InterfaceTypePredictor {
 			zScore = Double.NaN;
 			return zScore;
 		}
-		InterfaceRimCore rimCore = iec.getRimCore(molecId);
+		
+		iec.getInterface().calcRimAndCore(bsaToAsaCutoff);
+		InterfaceRimCore rimCore = iec.getInterface().getRimCore(molecId);
 
 		coreScore = iec.calcScore(rimCore.getCoreResidues(),molecId, scoType, false);
 		// we need to check, before trying to sample residues in surface for getting 
@@ -213,6 +218,10 @@ public class EvolInterfZMemberPredictor implements InterfaceTypePredictor {
 		this.zScoreCutoff = zScoreCutoff;
 	}
 	
+	public void setBsaToAsaCutoff(double bsaToAsaCutoff) { 
+		this.bsaToAsaCutoff = bsaToAsaCutoff;
+	}
+	
 	/**
 	 * Finds all unreliable core residues and returns them in a list.
 	 * Unreliable are all residues that:
@@ -221,7 +230,7 @@ public class EvolInterfZMemberPredictor implements InterfaceTypePredictor {
 	 * @return
 	 */
 	private List<Residue> getUnreliableCoreRes() {
-		List<Residue> coreResidues = iec.getRimCore(molecId).getCoreResidues();
+		List<Residue> coreResidues = iec.getInterface().getRimCore(molecId).getCoreResidues();
 
 		List<Residue> unreliableCoreResidues = new ArrayList<Residue>();
 		List<Residue> unreliableForPdb = iec.getUnreliableResiduesForPDB(coreResidues, molecId);

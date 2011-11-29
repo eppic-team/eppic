@@ -28,6 +28,8 @@ public class EvolRimCoreMemberPredictor implements InterfaceTypePredictor {
 	
 	private double callCutoff;
 	
+	private double bsaToAsaCutoff;
+	
 	private double coreScore;
 	private double rimScore;
 	private double scoreRatio;
@@ -49,7 +51,8 @@ public class EvolRimCoreMemberPredictor implements InterfaceTypePredictor {
 		
 		int memberSerial = molecId+1;
 		
-		InterfaceRimCore rimCore = iec.getRimCore(molecId);
+		iec.getInterface().calcRimAndCore(bsaToAsaCutoff);
+		InterfaceRimCore rimCore = iec.getInterface().getRimCore(molecId);
 		
 		int countsUnrelCoreRes = -1;
 		int countsUnrelRimRes = -1;
@@ -81,7 +84,7 @@ public class EvolRimCoreMemberPredictor implements InterfaceTypePredictor {
 			call = CallType.NO_PREDICTION;
 			callReason = memberSerial+": no evol scores calculation could be performed";
 		}
-		else if (iec.getRimCore(molecId).getCoreSize()<CRKParams.MIN_NUMBER_CORE_RESIDUES_EVOL_SCORE) {
+		else if (rimCore.getCoreSize()<CRKParams.MIN_NUMBER_CORE_RESIDUES_EVOL_SCORE) {
 			call = CallType.NO_PREDICTION;
 			callReason = memberSerial+": not enough core residues to calculate evolutionary score (at least "+CRKParams.MIN_NUMBER_CORE_RESIDUES_EVOL_SCORE+" needed)";
 		}
@@ -153,7 +156,8 @@ public class EvolRimCoreMemberPredictor implements InterfaceTypePredictor {
 			scoreRatio = Double.NaN;
 			return;
 		}
-		InterfaceRimCore rimCore = iec.getRimCore(molecId);
+		iec.getInterface().calcRimAndCore(bsaToAsaCutoff);
+		InterfaceRimCore rimCore = iec.getInterface().getRimCore(molecId);
 		rimScore  = iec.calcScore(rimCore.getRimResidues(), molecId, scoType, weighted);
 		coreScore = iec.calcScore(rimCore.getCoreResidues(),molecId, scoType, weighted);
 		if (rimScore==0) {
@@ -183,6 +187,10 @@ public class EvolRimCoreMemberPredictor implements InterfaceTypePredictor {
 		this.callCutoff = callCutoff;
 	}
 	
+	public void setBsaToAsaCutoff(double bsaToAsaCutoff) { 
+		this.bsaToAsaCutoff = bsaToAsaCutoff;
+	}
+	
 	/**
 	 * Finds all unreliable core residues and returns them in a list.
 	 * Unreliable are all residues that:
@@ -191,7 +199,7 @@ public class EvolRimCoreMemberPredictor implements InterfaceTypePredictor {
 	 * @return
 	 */
 	protected List<Residue> getUnreliableCoreRes() {
-		List<Residue> coreResidues = iec.getRimCore(molecId).getCoreResidues();
+		List<Residue> coreResidues = iec.getInterface().getRimCore(molecId).getCoreResidues();
 
 		List<Residue> unreliableCoreResidues = new ArrayList<Residue>();
 		List<Residue> unreliableForPdb = iec.getUnreliableResiduesForPDB(coreResidues, molecId);
@@ -222,7 +230,7 @@ public class EvolRimCoreMemberPredictor implements InterfaceTypePredictor {
 	 * @return
 	 */
 	protected List<Residue> getUnreliableRimRes() {
-		List<Residue> rimResidues = iec.getRimCore(molecId).getRimResidues();
+		List<Residue> rimResidues = iec.getInterface().getRimCore(molecId).getRimResidues();
 
 		List<Residue> unreliableRimResidues = new ArrayList<Residue>();
 		List<Residue> unreliableForPdb = iec.getUnreliableResiduesForPDB(rimResidues, molecId);

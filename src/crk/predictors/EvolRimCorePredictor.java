@@ -227,6 +227,11 @@ public class EvolRimCorePredictor implements InterfaceTypePredictor {
 		this.member2Pred.setCallCutoff(callCutoff);
 	}
 	
+	public void setBsaToAsaCutoff(double bsaToAsaCutoff) {
+		this.member1Pred.setBsaToAsaCutoff(bsaToAsaCutoff);
+		this.member2Pred.setBsaToAsaCutoff(bsaToAsaCutoff);		
+	}
+	
 	@SuppressWarnings("unused")
 	private String getVotersString() {
 		String finalStr = "";

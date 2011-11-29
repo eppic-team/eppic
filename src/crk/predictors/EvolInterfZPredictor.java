@@ -195,6 +195,11 @@ public class EvolInterfZPredictor implements InterfaceTypePredictor {
 		this.member2Pred.setZscoreCutoff(zScoreCutoff);
 	}
 	
+	public void setBsaToAsaCutoff(double bsaToAsaCutoff) {
+		this.member1Pred.setBsaToAsaCutoff(bsaToAsaCutoff);
+		this.member2Pred.setBsaToAsaCutoff(bsaToAsaCutoff);		
+	}
+	
 	public void printScoresLine(PrintStream ps) {
 		CallType call = getCall();
 		iec.getInterface().printRimCoreInfo(ps);
