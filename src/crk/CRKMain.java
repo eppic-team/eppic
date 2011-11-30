@@ -398,14 +398,16 @@ public class CRKMain {
 			} catch (UniprotVerMisMatchException e) {
 				throw new CRKException(e, "Mismatch of Uniprot versions! "+e.getMessage(), true);
 			} catch (IOException e) {
-				throw new CRKException(e, "Problem while fetching CDS data: "+e.getMessage(),true);
+				String errmsg = "Problem while retrieving homologs data through Uniprot JAPI";
+				if (params.isDoScoreKaks()) errmsg += " or while fetching CDS data";
+				throw new CRKException(e, errmsg+": "+e.getMessage(),true);
 			} catch (Exception e) { // for any kind of exceptions thrown while connecting through uniprot JAPI
 				throw new CRKException(e, "Problems while retrieving homologs data through Uniprot JAPI. Is Uniprot server down?\n"+e.getMessage(),true);
 			}
 
 			if (params.isDoScoreKaks() && !chainEvCont.isConsistentGeneticCodeType()){
 				// note calling chainEvCont.canDoCRK() will also check for this condition (here we only want to log it once)
-				LOGGER.error("The list of homologs does not have a single genetic code type, can't do CRK analysis on it.");
+				LOGGER.error("The list of homologs does not have a single genetic code type, can't do KaKs analysis on it.");
 			}
 			
 			// remove redundancy
