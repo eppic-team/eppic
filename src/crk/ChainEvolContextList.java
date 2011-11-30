@@ -40,7 +40,7 @@ public class ChainEvolContextList implements Serializable {
 				continue;
 			}
 
-			ChainEvolContext cec = new ChainEvolContext(chain.getSequence().getSeq(), representativeChain, pdb.getPdbCode(), pdbName);
+			ChainEvolContext cec = new ChainEvolContext(chain.getSequenceMSEtoMET(), representativeChain, pdb.getPdbCode(), pdbName);
 			cec.setSeqIdenticalChainsStr(pdb.getSeqIdenticalGroupString(representativeChain));
 			
 			cecs.put(representativeChain, cec);
