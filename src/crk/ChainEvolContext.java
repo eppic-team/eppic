@@ -537,15 +537,13 @@ public class ChainEvolContext implements Serializable {
 				Matcher m2 = Sequence.DEFLINE_PRIM_ACCESSION_UNIREF_REGEX.matcher(sid);
 				if (m2.matches()) {
 					String uniId = m2.group(1);
-					if (uniId.startsWith("UPI") || uniId.contains("-")) { 
-						uniprotMapping = new UniprotEntry(uniId);
+					if (uniId.startsWith("UPI") || uniId.contains("-")) {
+						LOGGER.error("Best blast hit "+uniId+" is a Uniparc id or a Uniprot isoform id. No Uniprot match");						
 					} else {
-						LOGGER.error("Best blast hit "+uniId+" is a Uniparc id or a Uniprot isoform id. Can't continue without a Uniprot id.");
-						System.exit(1);						
+						uniprotMapping = new UniprotEntry(uniId);
 					}
 				} else {
-					LOGGER.error("Could not find Uniprot id in subject id "+sid);
-					System.exit(1);
+					LOGGER.error("Could not find Uniprot id in subject id "+sid+". No Uniprot match");
 				}
 			}
 		} else {
