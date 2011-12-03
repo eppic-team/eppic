@@ -34,6 +34,7 @@ import owl.core.sequence.alignment.PairwiseSequenceAlignment;
 import owl.core.sequence.alignment.PairwiseSequenceAlignment.PairwiseSequenceAlignmentException;
 import owl.core.structure.PdbAsymUnit;
 import owl.core.structure.Residue;
+import owl.core.util.Interval;
 
 public class ChainEvolContext implements Serializable {
 	
@@ -58,11 +59,13 @@ public class ChainEvolContext implements Serializable {
 	private String seqIdenticalChainsStr;	// a string of the form A(B,C,D,E) containing all represented sequence identical chains
 	
 	private UniprotEntry query;							// the uniprot id, seq, cds corresponding to this chain's sequence
+	private Interval queryInterv;
 	private boolean hasQueryMatch;						// whether we could find the query's uniprot match or not
 	private PairwiseSequenceAlignment alnPdb2Uniprot; 	// the alignment between the pdb sequence and the uniprot sequence (query)
 	
 	private UniprotHomologList homologs;	// the homologs of this chain's sequence
 		
+	private boolean searchWithFullUniprot;  // mode of searching, true=we search with full uniprot seq, false=we search with PDB matching part only
 
 	public ChainEvolContext(String sequence, String representativeChain, String pdbCode, String pdbName) {
 		this.pdbCode = pdbCode;
@@ -70,6 +73,7 @@ public class ChainEvolContext implements Serializable {
 		this.sequence = sequence;
 		this.representativeChain = representativeChain;
 		this.hasQueryMatch = false;
+		this.searchWithFullUniprot = true;
 	}
 	
 	/**
@@ -135,7 +139,7 @@ public class ChainEvolContext implements Serializable {
 			try {
 				query.retrieveUniprotKBData();
 			} catch (NoMatchFoundException e) {
-				LOGGER.error("Couldn't find uniprot id "+query.getUniId()+" through Uniprot JAPI. Obsolete?");
+				LOGGER.error("Couldn't find Uniprot id "+query.getUniId()+" through Uniprot JAPI. Obsolete?");
 				System.exit(1);
 			}
 
@@ -148,6 +152,9 @@ public class ChainEvolContext implements Serializable {
 			try {
 				alnPdb2Uniprot = new PairwiseSequenceAlignment(sequence, query.getUniprotSeq().getSeq(), pdbCode+representativeChain, query.getUniprotSeq().getName());
 				LOGGER.info("The PDB SEQRES to Uniprot alignmnent:\n"+alnPdb2Uniprot.getFormattedAlignmentString());
+				LOGGER.info("Query ("+pdbCode+representativeChain+") length: "+sequence.length());
+				LOGGER.info("Uniprot ("+query.getUniId()+") length: "+query.getLength());
+				LOGGER.info("Alignment length: "+alnPdb2Uniprot.getLength());
 			} catch (PairwiseSequenceAlignmentException e1) {
 				LOGGER.fatal("Problem aligning PDB sequence "+pdbCode+representativeChain+" to its Uniprot match "+query.getUniId());
 				LOGGER.fatal(e1.getMessage());
@@ -161,10 +168,30 @@ public class ChainEvolContext implements Serializable {
 		//}
 	}
 	
-	public void retrieveHomologs(String blastBinDir, String blastDbDir, String blastDb, int blastNumThreads, double idCutoff, double queryCovCutoff, int maxNumSeqs, File blastCache) 
+	public void retrieveHomologs(String blastBinDir, String blastDbDir, String blastDb, int blastNumThreads, double idCutoff, double queryCovCutoff, int maxNumSeqs, File blastCache, HomologsSearchMode searchMode) 
 	throws IOException, BlastException, UniprotVerMisMatchException, InterruptedException {
 		
-		homologs = new UniprotHomologList(query);
+		queryInterv = new Interval(1,query.getLength());
+		
+		LOGGER.info("Homologs search mode: "+searchMode.getName());
+		if (searchMode==HomologsSearchMode.GLOBAL) {
+			searchWithFullUniprot = true;
+		} else if (searchMode==HomologsSearchMode.LOCAL) {
+			searchWithFullUniprot = false;
+			queryInterv = new Interval(alnPdb2Uniprot.getFirstMatchingPos(false)+1,alnPdb2Uniprot.getLastMatchingPos(false)+1);
+		} else {
+			if (sequence.length()<CRKParams.MAX_PDB2UP_SUBJECT_COVERAGE_FOR_LOCAL_SEARCH*query.getLength()) {
+				queryInterv = new Interval(alnPdb2Uniprot.getFirstMatchingPos(false)+1,alnPdb2Uniprot.getLastMatchingPos(false)+1);
+				searchWithFullUniprot = false;
+				LOGGER.info("PDB sequence covers only "+String.format("%4.2f",(double)sequence.length()/(double)query.getLength())+" of Uniprot "+query.getUniId());
+			} else {
+				searchWithFullUniprot = true;
+			}
+		}
+		if (searchWithFullUniprot) LOGGER.info("Using full Uniprot sequence for blast search");
+		else LOGGER.info("Using Uniprot subsequence "+queryInterv.beg+"-"+queryInterv.end+" for blast search");
+		
+		homologs = new UniprotHomologList(query,queryInterv);
 		
 		homologs.searchWithBlast(blastBinDir, blastDbDir, blastDb, blastNumThreads, maxNumSeqs, blastCache);
 		LOGGER.info(homologs.size()+" homologs found by blast");
@@ -457,7 +484,9 @@ public class ChainEvolContext implements Serializable {
 	 * @return the mapped uniprot sequence position or -1 if it maps to a gap
 	 */
 	public int getQueryUniprotPosForPDBPos(int resser) {
-		return alnPdb2Uniprot.getMapping1To2(resser-1);
+		int uniprotPos = alnPdb2Uniprot.getMapping1To2(resser-1);
+		if (uniprotPos==-1) return -1;
+		return uniprotPos - (queryInterv.beg-1);
 	}
 	
 	/**
@@ -546,6 +575,7 @@ public class ChainEvolContext implements Serializable {
 					LOGGER.error("Could not find Uniprot id in subject id "+sid+". No Uniprot match");
 				}
 			}
+			
 		} else {
 			LOGGER.error("No Uniprot match could be found for the query "+pdbName+representativeChain);
 			if (best!=null) {

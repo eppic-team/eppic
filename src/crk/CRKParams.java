@@ -36,6 +36,9 @@ public class CRKParams {
 	public static final int        MIN_NUMBER_CORE_RESIDUES_EVOL_SCORE = 4;
 	// value to use when core/rim ratio is infinity (rim score=0), some arbitrary large value, unlikely to happen in realistic cases
 	public static final double     SCORERATIO_INFINITY_VALUE = 1000;
+	// for pdb query 2 uniprot alignment with subject (uniprot seq) coverage below this value we'll do global
+	// blast search (using whole uniprot), otherwise local search (using aligned part only) 
+	public static final double	   MAX_PDB2UP_SUBJECT_COVERAGE_FOR_LOCAL_SEARCH = 0.4;
 
 	// PROPERTY FILES
 	protected static final InputStream COLORS_PROPERTIES_IS = CRKParams.class.getResourceAsStream("/resources/chain_colors.dat");
@@ -65,6 +68,8 @@ public class CRKParams {
 	private static final int      DEF_MAX_NUM_SEQUENCES = 60;
 	
 	private static final int      DEF_NSPHEREPOINTS_ASA_CALC = 9600;
+	
+	private static final HomologsSearchMode DEF_HOMOLOGS_SEARCH_MODE = HomologsSearchMode.AUTO;
 	
 	// DEFAULTS FOR CONFIG FILE ASSIGNABLE CONSTANTS
 	// defaults for pdb data location
@@ -145,6 +150,7 @@ public class CRKParams {
 	
 	private boolean debug;
 	
+	private HomologsSearchMode homologsSearchMode;
 	
 	// some other fields
 	private File inFile;
@@ -215,12 +221,13 @@ public class CRKParams {
 		this.generateThumbnails = false;
 		this.progressLog = System.out;
 		this.debug = false;
+		this.homologsSearchMode = DEF_HOMOLOGS_SEARCH_MODE;
 	}
 	
 	public void parseCommandLine(String[] args, String programName, String help) {
 	
 
-		Getopt g = new Getopt(programName, args, "i:skd:a:b:o:r:e:c:z:m:x:X:y:q:pnA:I:C:lL:uh?");
+		Getopt g = new Getopt(programName, args, "i:ska:b:o:r:e:c:z:m:x:X:y:d:q:H:pnA:I:C:lL:uh?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
@@ -233,9 +240,6 @@ public class CRKParams {
 			case 'k':
 				doScoreKaks = true;
 				break;				
-			case 'd':
-				idCutoff = Double.parseDouble(g.getOptarg());
-				break;
 			case 'a':
 				numThreads = Integer.parseInt(g.getOptarg());
 				break;
@@ -269,8 +273,14 @@ public class CRKParams {
 			case 'y':
 				zScoreCutoff = Double.parseDouble(g.getOptarg());
 				break;				
+			case 'd':
+				idCutoff = Double.parseDouble(g.getOptarg());
+				break;				
 			case 'q':
 				maxNumSeqs = Integer.parseInt(g.getOptarg());
+				break;
+			case 'H':
+				homologsSearchMode = HomologsSearchMode.getByName(g.getOptarg());
 				break;
 			case 'p':
 				usePisa = true;
@@ -317,8 +327,6 @@ public class CRKParams {
 		"                  score and a core/surface z-score are calculated \n"+
 		"  [-k]         :  score based on ka/ks ratios. Slower than entropies, \n" +
 		"                  requires running of the selecton external program\n" +
-		"  [-d <float>] :  sequence identity cut-off, homologs below this threshold won't\n" +
-		"                  be considered, default: "+String.format("%3.1f",DEF_IDENTITY_CUTOFF)+"\n"+
 		"  [-a <int>]   :  number of threads for blast and ASA calculation. Default: "+DEF_NUMTHREADS+"\n"+
 		"  [-b <str>]   :  basename for output files. Default: PDB code \n"+
 		"  [-o <dir>]   :  output dir, where output files will be written. Default: current\n" +
@@ -341,10 +349,16 @@ public class CRKParams {
 		"                  Default: " + String.format("%4.2f",DEF_KAKS_CALL_CUTOFF)+"\n"+
 		"  [-y <float>] :  z-score cutoff to call BIO/XTAL. If below this z-score interface \n" +
 		"                  is BIO. Default: " + String.format("%4.2f",DEF_ZSCORE_CUTOFF)+"\n"+
+		"  [-d <float>] :  sequence identity cut-off, homologs below this threshold won't\n" +
+		"                  be considered, default: "+String.format("%3.1f",DEF_IDENTITY_CUTOFF)+"\n"+		
 		"  [-q <int>]   :  maximum number of sequences to keep for calculation of conservation \n" +
 		"                  scores. Default: "+DEF_MAX_NUM_SEQUENCES+". This is especially important when using \n" +
 		"                  the -k option, with too many sequences, selecton will run too long\n" +
 		"                  (and inaccurately because of ks saturation)\n" +
+		"  [-H <string>]:  homologues search mode: one of local (only Uniprot region covered by PDB entry \n" +
+		"                  will be used to search homologues), global (full Uniprot entry will be used \n" +
+		"                  to search homologues) or auto (global will be used except if coverage is under \n"+
+		"                  "+String.format("%3.1f",MAX_PDB2UP_SUBJECT_COVERAGE_FOR_LOCAL_SEARCH)+"). Default "+DEF_HOMOLOGS_SEARCH_MODE.getName() + "\n"+
 		"  [-p]         :  use PISA interface enumeration (will be downloaded from web) \n" +
 		"                  instead of ours (only possible for existing PDB entries).\n" +
 		"  [-n]         :  use NACCESS for ASA/BSA calculations, otherwise area calculations \n" +
@@ -605,6 +619,10 @@ public class CRKParams {
 	
 	public boolean getDebug() {
 		return debug;
+	}
+	
+	public HomologsSearchMode getHomologsSearchMode() {
+		return homologsSearchMode;
 	}
 
 	public void readConfigFile(File file) throws FileNotFoundException, IOException { 
