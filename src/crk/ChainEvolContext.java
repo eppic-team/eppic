@@ -479,14 +479,20 @@ public class ChainEvolContext implements Serializable {
 	
 	/**
 	 * Given a residue serial of the reference PDB SEQRES sequence (starting at 1), returns
-	 * its corresponding uniprot's sequence index (starting at 0)
+	 * its corresponding Uniprot's sequence index (starting at 0)
 	 * @param resser
 	 * @return the mapped uniprot sequence position or -1 if it maps to a gap
 	 */
 	public int getQueryUniprotPosForPDBPos(int resser) {
 		int uniprotPos = alnPdb2Uniprot.getMapping1To2(resser-1);
-		if (uniprotPos==-1) return -1;
-		return uniprotPos - (queryInterv.beg-1);
+		if (uniprotPos==-1) return -1; // maps to a gap in alignment: return -1
+		// the position in the subsequence that was used for blasting
+		int pos = uniprotPos - (queryInterv.beg-1); 
+		// check if it is out of the subsequence: can happen when his tags or other engineered residues at termini 
+		// in n-terminal (pos<0), e.g. 3n1e
+		// or c-terminal (pos>=subsequence length) e.g. 2eyi
+		if (pos<0 || pos>=queryInterv.getLength()) return -1;  
+		return pos;
 	}
 	
 	/**
