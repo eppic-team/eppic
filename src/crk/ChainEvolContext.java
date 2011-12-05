@@ -168,7 +168,7 @@ public class ChainEvolContext implements Serializable {
 		//}
 	}
 	
-	public void retrieveHomologs(String blastBinDir, String blastDbDir, String blastDb, int blastNumThreads, double idCutoff, double queryCovCutoff, int maxNumSeqs, File blastCache, HomologsSearchMode searchMode) 
+	public void retrieveHomologs(String blastBinDir, String blastDbDir, String blastDb, int blastNumThreads, double idCutoff, double queryCovCutoff, int maxNumSeqs, File blastCache, HomologsSearchMode searchMode, double pdb2uniprotMaxScovForLocal) 
 	throws IOException, BlastException, UniprotVerMisMatchException, InterruptedException {
 		
 		queryInterv = new Interval(1,query.getLength());
@@ -180,10 +180,12 @@ public class ChainEvolContext implements Serializable {
 			searchWithFullUniprot = false;
 			queryInterv = new Interval(alnPdb2Uniprot.getFirstMatchingPos(false)+1,alnPdb2Uniprot.getLastMatchingPos(false)+1);
 		} else {
-			if (sequence.length()<CRKParams.MAX_PDB2UP_SUBJECT_COVERAGE_FOR_LOCAL_SEARCH*query.getLength()) {
+			if (sequence.length()<pdb2uniprotMaxScovForLocal*query.getLength()) {
 				queryInterv = new Interval(alnPdb2Uniprot.getFirstMatchingPos(false)+1,alnPdb2Uniprot.getLastMatchingPos(false)+1);
 				searchWithFullUniprot = false;
-				LOGGER.info("PDB sequence covers only "+String.format("%4.2f",(double)sequence.length()/(double)query.getLength())+" of Uniprot "+query.getUniId());
+				LOGGER.info("PDB sequence covers only "+String.format("%4.2f",(double)sequence.length()/(double)query.getLength())+
+						" of Uniprot "+query.getUniId()+
+						" (cutoff is "+String.format("%4.2f", pdb2uniprotMaxScovForLocal)+")");
 			} else {
 				searchWithFullUniprot = true;
 			}

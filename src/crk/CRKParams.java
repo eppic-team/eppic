@@ -36,9 +36,6 @@ public class CRKParams {
 	public static final int        MIN_NUMBER_CORE_RESIDUES_EVOL_SCORE = 4;
 	// value to use when core/rim ratio is infinity (rim score=0), some arbitrary large value, unlikely to happen in realistic cases
 	public static final double     SCORERATIO_INFINITY_VALUE = 1000;
-	// for pdb query 2 uniprot alignment with subject (uniprot seq) coverage below this value we'll do global
-	// blast search (using whole uniprot), otherwise local search (using aligned part only) 
-	public static final double	   MAX_PDB2UP_SUBJECT_COVERAGE_FOR_LOCAL_SEARCH = 0.4;
 
 	// PROPERTY FILES
 	protected static final InputStream COLORS_PROPERTIES_IS = CRKParams.class.getResourceAsStream("/resources/chain_colors.dat");
@@ -103,6 +100,8 @@ public class CRKParams {
 	// default pdb2uniprot mapping blast thresholds
 	private static final double   DEF_PDB2UNIPROT_ID_THRESHOLD = 0.95;
 	private static final double   DEF_PDB2UNIPROT_QCOV_THRESHOLD = 0.85;
+	// default pdb2uniprot max subject (uniprot) coverage: below this value we do local blast search instead of global (see HomologsSearchMode) 
+	private static final double   DEF_PDB2UNIPROT_MAX_SCOV_FOR_LOCAL = 0.4;
 		
 	// default cache dirs
 	private static final String   DEF_EMBL_CDS_CACHE_DIR = null;
@@ -180,6 +179,7 @@ public class CRKParams {
 	
 	private double   pdb2uniprotIdThreshold;
 	private double   pdb2uniprotQcovThreshold;
+	private double   pdb2uniprotMaxScovForLocal;
 			
 	private String   emblCdsCacheDir;
 	private String   blastCacheDir;
@@ -358,7 +358,7 @@ public class CRKParams {
 		"  [-H <string>]:  homologues search mode: one of local (only Uniprot region covered by PDB entry \n" +
 		"                  will be used to search homologues), global (full Uniprot entry will be used \n" +
 		"                  to search homologues) or auto (global will be used except if coverage is under \n"+
-		"                  "+String.format("%3.1f",MAX_PDB2UP_SUBJECT_COVERAGE_FOR_LOCAL_SEARCH)+"). Default "+DEF_HOMOLOGS_SEARCH_MODE.getName() + "\n"+
+		"                  "+String.format("%3.1f",DEF_PDB2UNIPROT_MAX_SCOV_FOR_LOCAL)+"). Default "+DEF_HOMOLOGS_SEARCH_MODE.getName() + "\n"+
 		"  [-p]         :  use PISA interface enumeration (will be downloaded from web) \n" +
 		"                  instead of ours (only possible for existing PDB entries).\n" +
 		"  [-n]         :  use NACCESS for ASA/BSA calculations, otherwise area calculations \n" +
@@ -659,6 +659,8 @@ public class CRKParams {
 			
 			pdb2uniprotIdThreshold = Double.parseDouble(p.getProperty("PDB2UNIPROT_ID_THRESHOLD", new Double(DEF_PDB2UNIPROT_ID_THRESHOLD).toString()));
 			pdb2uniprotQcovThreshold = Double.parseDouble(p.getProperty("PDB2UNIPROT_QCOV_THRESHOLD", new Double(DEF_PDB2UNIPROT_QCOV_THRESHOLD).toString()));
+			
+			pdb2uniprotMaxScovForLocal = Double.parseDouble(p.getProperty("PDB2UNIPROT_MAX_SCOV_FOR_LOCAL", new Double(DEF_PDB2UNIPROT_MAX_SCOV_FOR_LOCAL).toString()));
 					
 			emblCdsCacheDir  = p.getProperty("EMBL_CDS_CACHE_DIR", DEF_EMBL_CDS_CACHE_DIR);
 			blastCacheDir    = p.getProperty("BLAST_CACHE_DIR", DEF_BLAST_CACHE_DIR);
@@ -722,6 +724,10 @@ public class CRKParams {
 		return pdb2uniprotQcovThreshold;
 	}
 
+	public double getPdb2uniprotMaxScovForLocal() {
+		return pdb2uniprotMaxScovForLocal;
+	}
+	
 	public String getEmblCdsCacheDir() {
 		return emblCdsCacheDir;
 	}
