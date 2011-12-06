@@ -98,7 +98,7 @@ public class CRKParams {
 	private static final double   DEF_QUERY_COVERAGE_CUTOFF = 0.85;
 	private static final int      DEF_MIN_HOMOLOGS_CUTOFF = 10;
 	// default pdb2uniprot mapping blast thresholds
-	private static final double   DEF_PDB2UNIPROT_ID_THRESHOLD = 0.95;
+	private static final double   DEF_PDB2UNIPROT_ID_THRESHOLD = 0.75;
 	private static final double   DEF_PDB2UNIPROT_QCOV_THRESHOLD = 0.85;
 	// default pdb2uniprot max subject (uniprot) coverage: below this value we do local blast search instead of global (see HomologsSearchMode) 
 	private static final double   DEF_PDB2UNIPROT_MAX_SCOV_FOR_LOCAL = 0.4;
