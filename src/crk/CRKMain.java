@@ -617,9 +617,14 @@ public class CRKMain {
 		
 		CRKMain crkMain = new CRKMain();
 
+		// we first parse command line and print errors to stderr (logging is not set up yet)
 		try {
 			crkMain.params.parseCommandLine(args);
-		
+		} catch (CRKException e) {
+			System.err.println(e.getMessage());
+			e.exitIfFatal(1);
+		}
+		try {
 			// turn off jaligner logging (we only use NeedlemanWunschGotoh from that package)
 			// (for some reason this doesn't work if condensated into one line, it seems that one needs to instantiate the logger and then call setLevel)
 			// (and even weirder, for some reason it doesn't work if you put the code in its own separate method!)
