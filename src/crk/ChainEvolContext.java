@@ -33,6 +33,7 @@ import owl.core.sequence.alignment.MultipleSequenceAlignment;
 import owl.core.sequence.alignment.PairwiseSequenceAlignment;
 import owl.core.sequence.alignment.PairwiseSequenceAlignment.PairwiseSequenceAlignmentException;
 import owl.core.structure.PdbAsymUnit;
+import owl.core.structure.PdbChain;
 import owl.core.structure.Residue;
 import owl.core.util.Interval;
 
@@ -388,14 +389,15 @@ public class ChainEvolContext implements Serializable {
 		}
 	}
 	
-	public void printConservationScores(PrintStream ps, ScoringType scoType) {
+	public void printConservationScores(PrintStream ps, ScoringType scoType, PdbAsymUnit pdb) {
 		if (scoType.equals(ScoringType.ENTROPY)) {
 			ps.println("# Entropies for all query sequence positions based on a "+homologs.getReducedAlphabet()+" letters alphabet.");
-			ps.println("# seqres\tuniprot\tentropy");
+			ps.println("# seqres\tpdb\tuniprot\tentropy");
 		} else if (scoType.equals(ScoringType.KAKS)){
 			ps.println("# Ka/Ks for all query sequence positions.");
-			ps.println("# seqres\ttranslated-CDS\tka/ks");
+			ps.println("# seqres\tpdb\ttranslated-CDS\tka/ks");
 		}
+		PdbChain chain = pdb.getChain(representativeChain);
 		List<Double> conservationScores = getConservationScores(scoType);
 		for (int i=0;i<conservationScores.size();i++) {
 			int resser = 0;
@@ -404,7 +406,8 @@ public class ChainEvolContext implements Serializable {
 			} else if (scoType.equals(ScoringType.KAKS)){
 				resser = getPDBPosForQueryCDSPos(i);
 			}
-			ps.printf("%4d\t%4d\t%5.2f\n",resser,i+1,conservationScores.get(i));
+			String pdbresser = chain.getPdbResSerFromResSer(resser);
+			ps.printf("%4d\t%4s\t%4d\t%5.2f\n",resser,pdbresser,i+1,conservationScores.get(i));
 		}
 	}
 	

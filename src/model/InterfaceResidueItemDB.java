@@ -19,6 +19,7 @@ public class InterfaceResidueItemDB implements Serializable
 	
 	private int structure;
 	private int residueNumber;
+	private String pdbResidueNumber;
 	private String residueType;
 	private Float asa;
 	private Float bsa;
@@ -36,8 +37,9 @@ public class InterfaceResidueItemDB implements Serializable
 	//entropy
 	//KaKs
 	
-	public InterfaceResidueItemDB(int residueNumber, String residueType, Float asa, Float bsa, Float bsaPercentage, int assignment) {
+	public InterfaceResidueItemDB(int residueNumber, String pdbResidueNumber, String residueType, Float asa, Float bsa, Float bsaPercentage, int assignment) {
 		this.residueNumber = residueNumber;
+		this.pdbResidueNumber = pdbResidueNumber;
 		this.residueType = residueType;
 		this.asa = asa;
 		this.bsa = bsa;
@@ -58,6 +60,14 @@ public class InterfaceResidueItemDB implements Serializable
 		this.residueNumber = residueNumber;
 	}
 
+	public String getPdbResidueNumber() {
+		return pdbResidueNumber;
+	}
+	
+	public void setPdbResidueNumber(String pdbResidueNumber) {
+		this.pdbResidueNumber = pdbResidueNumber;
+	}
+	
 	public String getResidueType() {
 		return residueType;
 	}

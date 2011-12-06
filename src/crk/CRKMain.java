@@ -334,7 +334,7 @@ public class CRKMain {
 		// a) getting the uniprot ids corresponding to the query (the pdb sequence)
 		for (ChainEvolContext chainEvCont:cecs.getAllChainEvolContext()) {
 			File emblQueryCacheFile = null;
-			if (params.getEmblCdsCacheDir()!=null) {
+			if (params.getEmblCdsCacheDir()!=null) { 
 				emblQueryCacheFile = new File(params.getEmblCdsCacheDir(),params.getBaseName()+"."+chainEvCont.getRepresentativeChainCode()+".query.emblcds.fa");
 			}
 			params.getProgressLog().println("Finding query's chain "+chainEvCont.getRepresentativeChainCode()+" uniprot mapping through SIFTS or blasting");
@@ -488,12 +488,12 @@ public class CRKMain {
 				// writing the conservation scores (entropies/kaks) log file
 				outFile = params.getOutputFile("."+chainEvCont.getRepresentativeChainCode()+CRKParams.ENTROPIES_FILE_SUFFIX);
 				PrintStream conservScoLog = new PrintStream(outFile);
-				chainEvCont.printConservationScores(conservScoLog, ScoringType.ENTROPY);
+				chainEvCont.printConservationScores(conservScoLog, ScoringType.ENTROPY, pdb);
 				conservScoLog.close();
 				if (params.isDoScoreKaks() && chainEvCont.canDoKaks()) {
 					outFile = params.getOutputFile("."+chainEvCont.getRepresentativeChainCode()+CRKParams.KAKS_FILE_SUFFIX);
 					conservScoLog = new PrintStream(outFile);
-					chainEvCont.printConservationScores(conservScoLog, ScoringType.KAKS);
+					chainEvCont.printConservationScores(conservScoLog, ScoringType.KAKS,pdb);
 					conservScoLog.close();				
 				}
 			} catch (FileNotFoundException e) {

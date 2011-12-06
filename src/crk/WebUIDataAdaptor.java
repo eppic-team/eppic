@@ -411,7 +411,7 @@ public class WebUIDataAdaptor {
 				float kaks = -1;
 				if (includeKaks && iec.canDoKaks() && (residue instanceof AaResidue) && queryUniprotPos!=-1)
 					kaks = (float)kaksRatios.get(queryUniprotPos).doubleValue();
-				InterfaceResidueItemDB iri = new InterfaceResidueItemDB(residue.getSerial(),resType,asa,bsa,bsa/asa,assignment);
+				InterfaceResidueItemDB iri = new InterfaceResidueItemDB(residue.getSerial(),residue.getPdbSerial(),resType,asa,bsa,bsa/asa,assignment);
 				iri.setStructure(molecId+1); // structure ids are 1 and 2 while molecId are 0 and 1
 
 				List<InterfaceResidueMethodItemDB> scores = new ArrayList<InterfaceResidueMethodItemDB>();
