@@ -368,9 +368,9 @@ public class CRKParams {
 		"                  the accuracy of the ASA calculations, the bigger the more accurate \n" +
 		"                  (and slower). Default: "+DEF_NSPHEREPOINTS_ASA_CALC+"\n" +
 		"  [-I <file>]  :  binary file containing the interface enumeration output of a previous \n" +
-		"                  run of CRK\n" +
+		"                  run of "+PROGRAM_NAME+"\n" +
 		"  [-C <file>]  :  binary file containing the evolutionary scores for a particular \n" +
-		"                  sequence output of a previous run of CRK\n" +
+		"                  sequence output of a previous run of "+PROGRAM_NAME+"\n" +
 		"  [-l]         :  if specified thumbnail images will be generated for each interface \n" +
 		"                  (requires pymol)\n" +
 		"  [-L <file>]  :  a file where progress log will be written to. Default: progress log \n" +
