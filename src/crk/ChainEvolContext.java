@@ -169,8 +169,22 @@ public class ChainEvolContext implements Serializable {
 		//}
 	}
 	
-	public void retrieveHomologs(String blastBinDir, String blastDbDir, String blastDb, int blastNumThreads, double idCutoff, double queryCovCutoff, int maxNumSeqs, File blastCache, HomologsSearchMode searchMode, double pdb2uniprotMaxScovForLocal) 
+	public void retrieveHomologs(CRKParams params,File blastCache) 
 	throws IOException, BlastException, UniprotVerMisMatchException, InterruptedException {
+		
+		
+		String blastBinDir = params.getBlastBinDir();
+		String blastDbDir = params.getBlastDbDir();
+		String blastDb = params.getBlastDb();
+		int blastNumThreads = params.getNumThreads(); 
+		double homSoftIdCutoff = params.getHomSoftIdCutoff();
+		double homHardIdCutoff = params.getHomHardIdCutoff();
+		double homIdStep = params.getHomIdStep();
+		double queryCovCutoff = params.getQueryCoverageCutoff();
+		int maxNumSeqs = params.getMaxNumSeqs();
+		HomologsSearchMode searchMode = params.getHomologsSearchMode();
+		double pdb2uniprotMaxScovForLocal = params.getPdb2uniprotMaxScovForLocal();
+		int minHomologsCutoff = params.getMinHomologsCutoff();
 		
 		queryInterv = new Interval(1,query.getLength());
 		
@@ -197,9 +211,9 @@ public class ChainEvolContext implements Serializable {
 		homologs = new UniprotHomologList(query,queryInterv);
 		
 		homologs.searchWithBlast(blastBinDir, blastDbDir, blastDb, blastNumThreads, maxNumSeqs, blastCache);
-		LOGGER.info(homologs.size()+" homologs found by blast");
+		LOGGER.info(homologs.getSizeFullList()+" homologs found by blast");
 		
-		applyIdentityCutoff(idCutoff, queryCovCutoff);
+		applyIdentityCutoff(homSoftIdCutoff, homHardIdCutoff, homIdStep, queryCovCutoff, minHomologsCutoff);
 	}
 	
 	public void removeRedundancy() {
@@ -225,10 +239,16 @@ public class ChainEvolContext implements Serializable {
 		
 	}
 	
-	private void applyIdentityCutoff(double idCutoff, double queryCovCutoff) {
+	private void applyIdentityCutoff(double homSoftIdCutoff, double homHardIdCutoff, double homIdStep, double queryCovCutoff, int minHomologsCutoff) {
 		// applying identity cutoff
-		homologs.restrictToMinIdAndCoverage(idCutoff, queryCovCutoff);
-		LOGGER.info(homologs.size()+" homologs after applying "+String.format("%4.2f",idCutoff)+" identity cutoff and "+String.format("%4.2f",queryCovCutoff)+" query coverage cutoff");
+		double idcutoff = homSoftIdCutoff;
+		while (idcutoff>=homHardIdCutoff) {
+			homologs.filterToMinIdAndCoverage(idcutoff, queryCovCutoff);
+			if (homologs.getSizeFilteredSubset()>=minHomologsCutoff) break;
+			LOGGER.info("Tried "+String.format("%4.2f",idcutoff)+" identity cutoff, only "+homologs.getSizeFilteredSubset()+" homologs found ("+minHomologsCutoff+" required)");
+			idcutoff -= homIdStep;
+		}
+		LOGGER.info(homologs.getSizeFilteredSubset()+" homologs after applying "+String.format("%4.2f",idcutoff)+" identity cutoff and "+String.format("%4.2f",queryCovCutoff)+" query coverage cutoff");
 	}
 
 	public void align(File tcoffeeBin, boolean tcoffeeVeryFastMode, int nThreads) throws IOException, TcoffeeException, InterruptedException{
@@ -377,9 +397,9 @@ public class ChainEvolContext implements Serializable {
 		
 		ps.println();
 		ps.println("Uniprot version: "+homologs.getUniprotVer());
-		ps.println("Homologs: "+homologs.size()+" at "+String.format("%4.2f",homologs.getIdCutoff())+" identity cut-off and "+
+		ps.println("Homologs: "+homologs.getSizeFilteredSubset()+" at "+String.format("%4.2f",homologs.getIdCutoff())+" identity cut-off and "+
 				String.format("%4.2f",homologs.getQCovCutoff())+" query coverage cutoff");
-		for (UniprotHomolog hom:homologs) {
+		for (UniprotHomolog hom:homologs.getFilteredSubset()) {
 			ps.print(hom.getUniId()+" (");
 			for (String emblcdsid: hom.getUniprotEntry().getEmblCdsIds()) {
 				ps.print(" "+emblcdsid);
@@ -413,7 +433,7 @@ public class ChainEvolContext implements Serializable {
 	
 	public int getNumHomologs() {
 		if (homologs==null) return 0;
-		return homologs.size();
+		return homologs.getSizeFilteredSubset();
 	}
 	
 	public String getRepresentativeChainCode() {

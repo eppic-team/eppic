@@ -13,7 +13,8 @@ public class RunParametersItemDB implements Serializable
 	private int uid;
 	
 	private int homologsCutoff;
-	private double idCutoff;
+	private double homSoftIdCutoff;
+	private double homHardIdCutoff;
 	private double queryCovCutoff;
 	private int maxNumSeqsCutoff;
 	private int reducedAlphabet;
@@ -107,12 +108,20 @@ public class RunParametersItemDB implements Serializable
 		this.zScoreCutoff = zScoreCutoff;
 	}
 
-	public double getIdCutoff() {
-		return idCutoff;
+	public double getHomSoftIdCutoff() {
+		return homSoftIdCutoff;
 	}
 
-	public void setIdCutoff(double idCutoff) {
-		this.idCutoff = idCutoff;
+	public void setHomSoftIdCutoff(double homSoftIdCutoff) {
+		this.homSoftIdCutoff = homSoftIdCutoff;
+	}
+	
+	public double getHomHardIdCutoff() {
+		return homHardIdCutoff;
+	}
+	
+	public void setHomHardIdCutoff(double homHardIdCutoff) {
+		this.homHardIdCutoff = homHardIdCutoff;
 	}
 
 	public double getQueryCovCutoff() {

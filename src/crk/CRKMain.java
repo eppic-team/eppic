@@ -368,10 +368,7 @@ public class CRKMain {
 				blastCacheFile = new File(params.getBlastCacheDir(),chainEvCont.getQuery().getUniId()+".blast.xml"); 
 			}
 			try {
-				chainEvCont.retrieveHomologs(params.getBlastBinDir(), params.getBlastDbDir(), params.getBlastDb(), params.getNumThreads(), 
-						params.getIdCutoff(), params.getQueryCoverageCutoff(), 
-						params.getMaxNumSeqs(), blastCacheFile, 
-						params.getHomologsSearchMode(), params.getPdb2uniprotMaxScovForLocal());
+				chainEvCont.retrieveHomologs(params, blastCacheFile);
 				LOGGER.info("Uniprot version used: "+chainEvCont.getUniprotVer());
 				
 				// for web ui uniprot ver will be set only when at least one sequence has uniprot match
@@ -515,7 +512,7 @@ public class CRKMain {
 		interfaces.calcRimAndCores(params.getCAcutoffForRimCore());
 		
 		iecList = new InterfaceEvolContextList(params.getJobName(), params.getMinHomologsCutoff(),  
-				params.getIdCutoff(), params.getQueryCoverageCutoff(), params.getMaxNumSeqs());
+				params.getHomSoftIdCutoff(), params.getQueryCoverageCutoff(), params.getMaxNumSeqs());
 		iecList.addAll(interfaces,cecs);
 
 		if (params.isDoScoreEntropies()) {

@@ -42,7 +42,8 @@ public class CRKParams {
 	protected static final InputStream PYMOL_COLOR_MAPPINGS_IS = CRKParams.class.getResourceAsStream("/resources/pymol.colors");
 	
 	// DEFAULTS FOR COMMAND LINE PARAMETERS
-	private static final double   DEF_IDENTITY_CUTOFF = 0.6;
+	private static final double   DEF_HOM_SOFT_ID_CUTOFF = 0.6;
+	private static final double   DEF_HOM_HARD_ID_CUTOFF = 0.5;
 
 	private static final int      DEF_NUMTHREADS = Runtime.getRuntime().availableProcessors();
 	
@@ -97,6 +98,7 @@ public class CRKParams {
 	// default crk cutoffs
 	private static final double   DEF_QUERY_COVERAGE_CUTOFF = 0.85;
 	private static final int      DEF_MIN_HOMOLOGS_CUTOFF = 10;
+	private static final double	  DEF_HOM_ID_STEP = 0.05;;
 	// default pdb2uniprot mapping blast thresholds
 	private static final double   DEF_PDB2UNIPROT_ID_THRESHOLD = 0.75;
 	private static final double   DEF_PDB2UNIPROT_QCOV_THRESHOLD = 0.85;
@@ -114,7 +116,9 @@ public class CRKParams {
 	private String pdbCode;
 	private boolean doScoreEntropies;
 	private boolean doScoreKaks;
-	private double idCutoff;
+	private double homSoftIdCutoff;
+	private double homHardIdCutoff;
+	private double homIdStep;
 	private String baseName;
 	private File outDir;
 	private int numThreads;
@@ -200,7 +204,9 @@ public class CRKParams {
 		this.pdbCode = null;
 		this.doScoreEntropies = false;
 		this.doScoreKaks = false;
-		this.idCutoff = DEF_IDENTITY_CUTOFF;
+		this.homSoftIdCutoff = DEF_HOM_SOFT_ID_CUTOFF;
+		this.homHardIdCutoff = DEF_HOM_HARD_ID_CUTOFF;
+		this.homIdStep = DEF_HOM_ID_STEP;
 		this.baseName = null;
 		this.outDir = new File(DEF_OUT_DIR);
 		this.numThreads = DEF_NUMTHREADS;
@@ -227,7 +233,7 @@ public class CRKParams {
 	public void parseCommandLine(String[] args, String programName, String help) {
 	
 
-		Getopt g = new Getopt(programName, args, "i:ska:b:o:r:e:c:z:m:x:X:y:d:q:H:pnA:I:C:lL:uh?");
+		Getopt g = new Getopt(programName, args, "i:ska:b:o:r:e:c:z:m:x:X:y:d:D:q:H:pnA:I:C:lL:uh?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
@@ -274,8 +280,11 @@ public class CRKParams {
 				zScoreCutoff = Double.parseDouble(g.getOptarg());
 				break;				
 			case 'd':
-				idCutoff = Double.parseDouble(g.getOptarg());
-				break;				
+				homSoftIdCutoff = Double.parseDouble(g.getOptarg());
+				break;
+			case 'D':
+				homHardIdCutoff = Double.parseDouble(g.getOptarg());
+				break;
 			case 'q':
 				maxNumSeqs = Integer.parseInt(g.getOptarg());
 				break;
@@ -349,8 +358,12 @@ public class CRKParams {
 		"                  Default: " + String.format("%4.2f",DEF_KAKS_CALL_CUTOFF)+"\n"+
 		"  [-y <float>] :  z-score cutoff to call BIO/XTAL. If below this z-score interface \n" +
 		"                  is BIO. Default: " + String.format("%4.2f",DEF_ZSCORE_CUTOFF)+"\n"+
-		"  [-d <float>] :  sequence identity cut-off, homologs below this threshold won't\n" +
-		"                  be considered, default: "+String.format("%3.1f",DEF_IDENTITY_CUTOFF)+"\n"+		
+		"  [-d <float>] :  sequence identity soft cut-off, if enough homologs ("+DEF_MIN_HOMOLOGS_CUTOFF+") above this threshold\n" +
+		"                  the search for homologs stops, default: "+String.format("%3.1f",DEF_HOM_SOFT_ID_CUTOFF)+"\n"+
+		"  [-D <float>] :  sequence identity hard cut-off, if after applying the soft cut-off (see -d), not\n" +
+		"                  enough homologs ("+DEF_MIN_HOMOLOGS_CUTOFF+") are found then the threshold is lowered \n"+
+		"                  in "+String.format("%4.2f",DEF_HOM_ID_STEP)+" steps until this hard cut-off is reached. \n" +
+		"                  Default: "+String.format("%3.1f",DEF_HOM_HARD_ID_CUTOFF)+"\n"+
 		"  [-q <int>]   :  maximum number of sequences to keep for calculation of conservation \n" +
 		"                  scores. Default: "+DEF_MAX_NUM_SEQUENCES+". This is especially important when using \n" +
 		"                  the -k option, with too many sequences, selecton will run too long\n" +
@@ -470,11 +483,20 @@ public class CRKParams {
 	public void setDoScoreKaks(boolean doScoreKaks) {
 		this.doScoreKaks = doScoreKaks;
 	}
-	public double getIdCutoff() {
-		return idCutoff;
+	public double getHomSoftIdCutoff() {
+		return homSoftIdCutoff;
 	}
-	public void setIdCutoff(double idCutoff) {
-		this.idCutoff = idCutoff;
+	public void setHomSoftIdCutoff(double homSoftIdCutoff) {
+		this.homSoftIdCutoff = homSoftIdCutoff;
+	}
+	public double getHomHardIdCutoff() {
+		return homHardIdCutoff;
+	}
+	public void setHomHardCutoff(double homHardIdCutoff) {
+		this.homHardIdCutoff = homHardIdCutoff;
+	}
+	public double getHomIdStep() {
+		return homIdStep;
 	}
 	public String getBaseName() {
 		return baseName;
@@ -656,6 +678,7 @@ public class CRKParams {
 
 			queryCoverageCutoff = Double.parseDouble(p.getProperty("QUERY_COVERAGE_CUTOFF", new Double(DEF_QUERY_COVERAGE_CUTOFF).toString()));
 			minHomologsCutoff = Integer.parseInt(p.getProperty("MIN_HOMOLOGS_CUTOFF", new Integer(DEF_MIN_HOMOLOGS_CUTOFF).toString()));
+			homIdStep = Double.parseDouble(p.getProperty("HOM_ID_STEP",new Double(DEF_HOM_ID_STEP).toString()));
 			
 			pdb2uniprotIdThreshold = Double.parseDouble(p.getProperty("PDB2UNIPROT_ID_THRESHOLD", new Double(DEF_PDB2UNIPROT_ID_THRESHOLD).toString()));
 			pdb2uniprotQcovThreshold = Double.parseDouble(p.getProperty("PDB2UNIPROT_QCOV_THRESHOLD", new Double(DEF_PDB2UNIPROT_QCOV_THRESHOLD).toString()));
