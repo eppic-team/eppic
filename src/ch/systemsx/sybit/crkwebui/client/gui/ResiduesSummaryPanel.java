@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
-import ch.systemsx.sybit.crkwebui.client.model.InterfaceItemModel;
 import ch.systemsx.sybit.crkwebui.client.model.InterfaceResidueSummaryModel;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceScoreItem;
 import ch.systemsx.sybit.crkwebui.shared.model.SupportedMethod;
@@ -73,6 +72,7 @@ public class ResiduesSummaryPanel extends ContentPanel
 		residuesGrid.setColumnLines(false);
 		residuesGrid.setHideHeaders(true);
 		residuesGrid.getSelectionModel().setLocked(true);
+		residuesGrid.setLoadMask(true);
 		
 		residuesGrid.getView().setViewConfig(new GridViewConfig(){
 			@Override
@@ -241,21 +241,21 @@ public class ResiduesSummaryPanel extends ContentPanel
 		residuesStore.removeAll();
 	}
 	
-	public void resizeGrid() 
+	public void resizeGrid(int assignedWidth) 
 	{
-		int scoresGridWidthOfAllVisibleColumns = calculateWidthOfVisibleColumns();
+		int scoresGridWidthOfAllVisibleColumns = GridUtil.calculateWidthOfVisibleColumns(residuesGrid, initialColumnWidth) + 10;
 		
 		if(useBufferedView)
 		{
 			scoresGridWidthOfAllVisibleColumns += 20;
 		}
 
-		int assignedWidth = (int)((mainController.getMainViewPort().getInterfacesResiduesWindow().getInterfacesResiduesPanel().getWidth() - 20) * 0.48);
+//		int assignedWidth = (int)((mainController.getMainViewPort().getInterfacesResiduesWindow().getWindowWidth() - 30) * 0.48);
 		
 		int nrOfColumn = residuesGrid.getColumnModel().getColumnCount();
 		
-		if (checkIfForceFit(scoresGridWidthOfAllVisibleColumns, 
-							assignedWidth)) 
+		if (GridUtil.checkIfForceFit(scoresGridWidthOfAllVisibleColumns, 
+									 assignedWidth)) 
 		{
 			float gridWidthMultiplier = (float)assignedWidth / scoresGridWidthOfAllVisibleColumns;
 			
@@ -275,7 +275,7 @@ public class ResiduesSummaryPanel extends ContentPanel
 		}
 		
 		residuesGrid.setWidth(assignedWidth);
-		this.setWidth(assignedWidth);
+		this.setWidth(assignedWidth + 10);
 		
 //		if(useBufferedView)
 		{
@@ -283,34 +283,6 @@ public class ResiduesSummaryPanel extends ContentPanel
 		}
 		
 		this.layout();
-	}
-	
-	private boolean checkIfForceFit(int scoresGridWidthOfAllVisibleColumns,
-									int width)
-	{
-		if(scoresGridWidthOfAllVisibleColumns < width)
-		{
-			return true;
-		}
-		else
-		{
-			return false;
-		}
-	}
-	
-	private int calculateWidthOfVisibleColumns()
-	{
-		int scoresGridWidthOfAllVisibleColumns = 0;
-		
-		for(int i=0; i<residuesGrid.getColumnModel().getColumnCount(); i++)
-		{
-			if(!residuesGrid.getColumnModel().getColumn(i).isHidden())
-			{
-				scoresGridWidthOfAllVisibleColumns += initialColumnWidth.get(i);
-			}
-		}
-		
-		return scoresGridWidthOfAllVisibleColumns;
 	}
 	
 	public Grid<InterfaceResidueSummaryModel> getResiduesGrid() 

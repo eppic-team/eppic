@@ -133,7 +133,8 @@ public class MainViewPort extends Viewport
 			Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 				@Override
 				public void execute() {
-					interfacesResiduesWindow.getInterfacesResiduesPanel().resizeResiduesPanels();					
+					interfacesResiduesWindow.getInterfacesResiduesPanel().resizeResiduesPanels(interfacesResiduesWindow.getWindowWidth(),
+																							   interfacesResiduesWindow.getWindowHeight());					
 				}
 			});
 		}

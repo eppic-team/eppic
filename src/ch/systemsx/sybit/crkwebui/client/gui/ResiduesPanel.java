@@ -57,8 +57,7 @@ public class ResiduesPanel extends ContentPanel
 	public ResiduesPanel(
 						 String header, 
 						 final MainController mainController,
-						 int width,
-						 int height) 
+						 int width) 
 	{
 		if(GXT.isIE8)
 		{
@@ -71,7 +70,6 @@ public class ResiduesPanel extends ContentPanel
 		this.setLayout(new FitLayout());
 		this.getHeader().setVisible(false);
 		this.setScrollMode(Scroll.NONE);
-		this.setHeight(height);
 
 		residuesConfigs = createColumnConfig();
 
@@ -120,7 +118,7 @@ public class ResiduesPanel extends ContentPanel
 		
 		this.add(residuesGrid, new RowData(1, 1, new Margins(0)));
 		
-		nrOfRows = (height - 70)/22;
+//		nrOfRows = (height - 71)/22;
 		
 		if(useBufferedView)
 		{
@@ -282,49 +280,47 @@ public class ResiduesPanel extends ContentPanel
 		residuesStore.removeAll();
 	}
 	
-	public void resizeGrid() 
+	public void resizeGrid(int assignedWidth) 
 	{
 //		int scoresGridWidthOfAllVisibleColumns = calculateWidthOfVisibleColumns();
 		
-		int windowHeight = mainController.getMainViewPort().getInterfacesResiduesWindow().getHeight();
-		this.setHeight((int)(windowHeight - 250));
-		nrOfRows = (this.getHeight() - 70)  / 22;
+//		int windowHeight = mainController.getMainViewPort().getInterfacesResiduesWindow().getWindowHeight();
+//		int residuesPanelHeight = (int)(windowHeight - 250);
+//		this.setHeight(assignedHeight);
+		nrOfRows = (this.getHeight() - 72)  / 22;
 		
-		int scoresGridWidthOfAllVisibleColumns = calculateWidthOfVisibleColumns();
+		int scoresGridWidthOfAllVisibleColumns = GridUtil.calculateWidthOfVisibleColumns(residuesGrid,
+																						 initialColumnWidth) + 10;
 		
 		if(useBufferedView)
 		{
 			scoresGridWidthOfAllVisibleColumns += 20;
 		}
 
-		int assignedWidth = (int)((mainController.getMainViewPort().getInterfacesResiduesWindow().getInterfacesResiduesPanel().getWidth() - 20) * 0.48);
-		
 		int nrOfColumn = residuesGrid.getColumnModel().getColumnCount();
 		
-		if (checkIfForceFit(scoresGridWidthOfAllVisibleColumns, 
-							assignedWidth)) 
+		if (GridUtil.checkIfForceFit(scoresGridWidthOfAllVisibleColumns, 
+									 assignedWidth)) 
 		{
 			float gridWidthMultiplier = (float)assignedWidth / scoresGridWidthOfAllVisibleColumns;
 			
 			for (int i = 0; i < nrOfColumn; i++) 
 			{
 				residuesGrid.getColumnModel().setColumnWidth(i, (int)(initialColumnWidth.get(i) * gridWidthMultiplier), true);
-//				resultsGrid.getColumnModel().getColumn(i)
-//						.setWidth((int)(initialColumnWidth.get(i) * multiplier));
 			}
 		} 
 		else 
 		{
-			for (int i = 0; i < nrOfColumn; i++) {
-				residuesGrid.getColumnModel().getColumn(i)
-						.setWidth(initialColumnWidth.get(i));
+			for (int i = 0; i < nrOfColumn; i++) 
+			{
+				residuesGrid.getColumnModel().getColumn(i).setWidth(initialColumnWidth.get(i));
 			}
 			
 			assignedWidth = scoresGridWidthOfAllVisibleColumns;
 		}
 		
 		residuesGrid.setWidth(assignedWidth);
-		this.setWidth(assignedWidth);
+		this.setWidth(assignedWidth + 10);
 		
 		if(!useBufferedView)
 		{
@@ -338,34 +334,6 @@ public class ResiduesPanel extends ContentPanel
 		}
 		
 		this.layout();
-	}
-	
-	private boolean checkIfForceFit(int scoresGridWidthOfAllVisibleColumns,
-									int width)
-	{
-		if(scoresGridWidthOfAllVisibleColumns < width)
-		{
-			return true;
-		}
-		else
-		{
-			return false;
-		}
-	}
-	
-	private int calculateWidthOfVisibleColumns()
-	{
-		int scoresGridWidthOfAllVisibleColumns = 0;
-		
-		for(int i=0; i<residuesGrid.getColumnModel().getColumnCount(); i++)
-		{
-			if(!residuesGrid.getColumnModel().getColumn(i).isHidden())
-			{
-				scoresGridWidthOfAllVisibleColumns += initialColumnWidth.get(i);
-			}
-		}
-		
-		return scoresGridWidthOfAllVisibleColumns;
 	}
 	
 	public PagingToolBar getResiduesGridPagingToolbar()

@@ -2,6 +2,7 @@ package ch.systemsx.sybit.crkwebui.client.gui;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 
+import com.extjs.gxt.ui.client.GXT;
 import com.extjs.gxt.ui.client.event.ComponentEvent;
 import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.Listener;
@@ -21,27 +22,27 @@ public class InterfacesResiduesWindow extends Dialog
 	private int selectedInterface;
 	
 	private MainController mainController;
+	
+	private int windowWidth = 1200;
+	private int windowHeight = 665;
 
 	public InterfacesResiduesWindow(final MainController mainController,
 									int selectedInterface) 
 	{
 		this.mainController = mainController;
 		
-		int width = 1200;
-		int height = 665;
-		
-		if(width > mainController.getWindowWidth())
+		if(windowWidth > mainController.getWindowWidth())
 		{
-			width = mainController.getWindowWidth();
+			windowWidth = mainController.getWindowWidth();
 		}
 		
-		if(height > mainController.getWindowHeight() - 50)
+		if(windowHeight > mainController.getWindowHeight() - 50)
 		{
-			height = mainController.getWindowHeight() - 50;
+			windowHeight = mainController.getWindowHeight() - 50;
 			
-			if(height <= 0)
+			if(windowHeight <= 0)
 			{
-				height = 1;
+				windowHeight = 1;
 			}
 		}
 		
@@ -54,13 +55,13 @@ public class InterfacesResiduesWindow extends Dialog
 		this.setWindowHeader();
 
 		// adjust to 22 height rows
-		height = (height - 322) / 22;
-		height = height * 22 + 322;
-		this.setSize(width, height);
+		windowHeight = (windowHeight - 322) / 22;
+		windowHeight = windowHeight * 22 + 322;
+		this.setSize(windowWidth, windowHeight);
 		
 		interfacesResiduesPanel = new InterfacesResiduesPanel(mainController,
-															  width,
-															  height - 100);
+															  windowWidth,
+															  windowHeight - 100);
 		
 		this.add(interfacesResiduesPanel, new RowData(1, 1, new Margins(0)));
 		
@@ -71,7 +72,9 @@ public class InterfacesResiduesWindow extends Dialog
 			@Override
 			public void handleEvent(WindowEvent be) 
 			{
-				interfacesResiduesPanel.resizeResiduesPanels();
+				windowHeight = be.getHeight();
+				windowWidth = be.getWidth();
+				interfacesResiduesPanel.resizeResiduesPanels(windowWidth, windowHeight);
 			}
 		};
 		
@@ -116,6 +119,11 @@ public class InterfacesResiduesWindow extends Dialog
 		}
 		
 		);
+		
+		if(GXT.isIE8)
+		{
+			this.setResizable(false);
+		}
 	}
 
 	public InterfacesResiduesPanel getInterfacesResiduesPanel() {
@@ -127,6 +135,11 @@ public class InterfacesResiduesWindow extends Dialog
 		this.selectedInterface = selectedInterface;
 	}
 	
+	public int getSelectedInterface()
+	{
+		return selectedInterface;
+	}
+	
 	public void setWindowHeader()
 	{
 		double area = mainController.getPdbScoreItem().getInterfaceItem(selectedInterface - 1).getArea();
@@ -134,9 +147,20 @@ public class InterfacesResiduesWindow extends Dialog
 		String formattedArea = number.format(area);
 		this.setHeading(MainController.CONSTANTS.interfaces_residues_window_title() + " " + selectedInterface + " (" + formattedArea + " A<sup>2</sup>)");
 	}
-	
-	public int getSelectedInterface()
-	{
-		return selectedInterface;
+
+	public int getWindowWidth() {
+		return windowWidth;
+	}
+
+	public void setWindowWidth(int windowWidth) {
+		this.windowWidth = windowWidth;
+	}
+
+	public int getWindowHeight() {
+		return windowHeight;
+	}
+
+	public void setWindowHeight(int windowHeight) {
+		this.windowHeight = windowHeight;
 	}
 }
