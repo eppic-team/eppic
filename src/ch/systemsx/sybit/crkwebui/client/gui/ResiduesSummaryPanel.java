@@ -128,38 +128,15 @@ public class ResiduesSummaryPanel extends ContentPanel
 			
 			if(structure == 1)
 			{
-				coreValue = number.format(scoreItem.getUnweightedCore1Scores()) + 
-							" (" + 
-							number.format(scoreItem.getWeightedCore1Scores()) + 
-							")";
-				
-				rimValue = number.format(scoreItem.getUnweightedRim1Scores()) + 
-						   " (" + 
-						   number.format(scoreItem.getWeightedRim1Scores()) + 
-						   ")";
-				
-				ratioValue = number.format(scoreItem.getUnweightedRatio1Scores()) + 
-							 " (" + 
-							 number.format(scoreItem.getWeightedRatio1Scores()) + 
-							 ")";
-				
+				coreValue = number.format(scoreItem.getUnweightedCore1Scores());
+				rimValue = number.format(scoreItem.getUnweightedRim1Scores());
+				ratioValue = number.format(scoreItem.getUnweightedRatio1Scores());
 			}
 			else
 			{
-				coreValue = number.format(scoreItem.getUnweightedCore2Scores()) + 
-							" (" + 
-							number.format(scoreItem.getWeightedCore2Scores()) + 
-							")";
-				
-				rimValue = number.format(scoreItem.getUnweightedRim2Scores()) + 
-						   " (" + 
-						   number.format(scoreItem.getWeightedRim2Scores()) + 
-						   ")";
-				
-				ratioValue = number.format(scoreItem.getUnweightedRatio2Scores()) + 
-							 " (" + 
-							 number.format(scoreItem.getWeightedRatio2Scores()) + 
-							 ")";
+				coreValue = number.format(scoreItem.getUnweightedCore2Scores());
+				rimValue = number.format(scoreItem.getUnweightedRim2Scores());
+				ratioValue = number.format(scoreItem.getUnweightedRatio2Scores());
 			}
 			
 			coreMethodValues.put(scoreItem.getMethod(), coreValue);
