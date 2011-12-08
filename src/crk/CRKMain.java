@@ -42,6 +42,8 @@ public class CRKMain {
 	private static final Logger ROOTLOGGER = Logger.getRootLogger();
 	private static final Log LOGGER = LogFactory.getLog(CRKMain.class);
 	
+	private static final int STEPS_TOTAL = 4;
+	
 	// fields
 	private CRKParams params;
 	
@@ -51,11 +53,14 @@ public class CRKMain {
 	private InterfaceEvolContextList iecList;
 	private List<GeometryPredictor> gps;
 	
+	private File stepsLogFile;
+	private int stepCount;
+	
 	private WebUIDataAdaptor wuiAdaptor;
 		
 	public CRKMain() {
 		this.params = new CRKParams();
-		
+		this.stepCount = 1;
 	}
 	
 
@@ -76,6 +81,7 @@ public class CRKMain {
 				FileAppender fileErrorAppender = new FileAppender(new PatternLayout("%5p - %m%n"),params.getProgressLogFile().getAbsolutePath(),true);
 				fileErrorAppender.setThreshold(Level.ERROR);
 				ROOTLOGGER.addAppender(fileErrorAppender);
+				stepsLogFile = new File(params.getOutDir(),params.getBaseName()+CRKParams.STEPS_LOG_FILE_SUFFIX);
 			}
 			if (params.getDebug())
 				ROOTLOGGER.addAppender(outAppender);
@@ -110,6 +116,7 @@ public class CRKMain {
 
 	public void doLoadPdb() throws CRKException {
 		params.getProgressLog().println("Loading PDB data: "+(params.getInFile()==null?params.getPdbCode():params.getInFile().getName()));
+		writeStep("Calculating Interfaces");
 		pdb = null;
 		File cifFile = null; // if given a pdb code in command line we will store the cif file here
 		try {
@@ -265,7 +272,7 @@ public class CRKMain {
 	
 	public void doWritePymolFiles() throws CRKException {
 		PymolRunner pr = null;
-		
+		writeStep("Generating Thumbnails and PyMol Files");
 		try {
 			pr = new PymolRunner(params.getPymolExe());
 			pr.readColorsFromPropertiesFile(CRKParams.COLORS_PROPERTIES_IS);
@@ -334,6 +341,7 @@ public class CRKMain {
 		// a) getting the uniprot ids corresponding to the query (the pdb sequence)
 		for (ChainEvolContext chainEvCont:cecs.getAllChainEvolContext()) {
 			params.getProgressLog().println("Finding query's chain "+chainEvCont.getRepresentativeChainCode()+" uniprot mapping through SIFTS or blasting");
+			writeStep("Finding Homologues and Calculating Entropies");
 			try {
 				chainEvCont.retrieveQueryData(params.getSiftsFile(), params.getBlastBinDir(), params.getBlastDbDir(), params.getBlastDb(), params.getNumThreads(),params.getPdb2uniprotIdThreshold(),params.getPdb2uniprotQcovThreshold());
 			} catch (BlastException e) {
@@ -463,6 +471,8 @@ public class CRKMain {
 				params.getHomSoftIdCutoff(), params.getQueryCoverageCutoff(), params.getMaxNumSeqs());
 		iecList.addAll(interfaces,cecs);
 
+		writeStep("Scoring Interfaces");
+		
 		if (params.isDoScoreEntropies()) {
 			try {
 				//interfaces.calcRimAndCores(params.getCAcutoffForRimCore());
@@ -493,7 +503,7 @@ public class CRKMain {
 			} 
 		}
 
-		params.getProgressLog().println("Done scoring");
+		
 	}
 	
 	public void doCombinedScoring() throws CRKException {
@@ -524,6 +534,20 @@ public class CRKMain {
 		
 		} catch (IOException e) {
 			throw new CRKException(e,"Couldn't write final combined scores file. "+e.getMessage(),true);
+		}
+		params.getProgressLog().println("Done scoring");
+	}
+	
+	private void writeStep(String text) {
+		if (stepsLogFile==null) return;
+		try {
+			PrintStream stepsLog = new PrintStream(stepsLogFile);
+			stepsLog.println("STEP_NUM="+stepCount);
+			stepsLog.println("STEP="+text);
+			stepsLog.println("STEP_TOTAL="+STEPS_TOTAL);
+			stepCount++;
+		} catch(FileNotFoundException e) {
+			LOGGER.error("Couldn't write to steps log file "+stepsLogFile);
 		}
 	}
 	
