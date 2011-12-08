@@ -17,6 +17,7 @@ public class JobDB implements Serializable
 	private String email;
 	private String ip;
 	private String input;
+	private int inputType;
 	private Date submissionDate;
 	
 	private PDBScoreItemDB pdbScoreItem;
@@ -98,5 +99,13 @@ public class JobDB implements Serializable
 
 	public Set<UserSessionDB> getUserSessions() {
 		return userSessions;
+	}
+
+	public void setInputType(int inputType) {
+		this.inputType = inputType;
+	}
+
+	public int getInputType() {
+		return inputType;
 	}
 }
