@@ -22,7 +22,6 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 	
 	private static final String IDENTIFIER_HEADER       = "# PDB identifier:";
 	private static final String SCORE_METHOD_HEADER 	= "# Score method:";
-	private static final String SCORE_TYPE_HEADER   	= "# Score type:";
 	private static final String NUM_HOMS_CUTOFF_HEADER  = "# Min number homologs required:";
 	private static final String SEQUENCE_ID_HEADER  	= "# Sequence identity cutoff:";
 	private static final String QUERY_COV_HEADER    	= "# Query coverage cutoff:";
@@ -40,7 +39,6 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 		
 	private String pdbName;
 	private ScoringType scoType;
-	private boolean isScoreWeighted;
 	private double callCutoff;
 	private int homologsCutoff;
 	private double idCutoff;
@@ -109,32 +107,26 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 	
 	public void scoreEntropy(boolean weighted) {
 		this.scoType = ScoringType.ENTROPY;
-		this.isScoreWeighted = weighted;
 		for (int i=0;i<list.size();i++) {
 			evolRimCorePredictors.get(i).scoreEntropy(weighted);
 		}
 	}
 	
-	public void scoreKaKs(boolean weighted) {
-		this.scoType = ScoringType.KAKS;
-		this.isScoreWeighted = weighted;
-		for (int i=0;i<list.size();i++) {
-			if (list.get(i).canDoKaks()) {
-				evolRimCorePredictors.get(i).scoreKaKs(weighted);
-			}
-		}		
-	}
+//	public void scoreKaKs(boolean weighted) {
+//		this.scoType = ScoringType.KAKS;
+//		this.isScoreWeighted = weighted;
+//		for (int i=0;i<list.size();i++) {
+//			if (list.get(i).canDoKaks()) {
+//				evolRimCorePredictors.get(i).scoreKaKs(weighted);
+//			}
+//		}		
+//	}
 	
 	public void scoreZscore() {
 		this.scoType = ScoringType.ZSCORE;
-		this.isScoreWeighted = false;
 		for (int i=0;i<list.size();i++) {
 			evolInterfZPredictors.get(i).scoreEntropy();
 		}
-	}
-	
-	public boolean isScoreWeighted() {
-		return isScoreWeighted;
 	}
 	
 	public void printScoresTable(PrintStream ps) {
@@ -162,7 +154,7 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 	
 	public void writeScoresPDBFiles(CRKParams params, String suffix) throws IOException {
 		for (InterfaceEvolContext iec:this) {
-			if (scoType==ScoringType.ENTROPY || (scoType==ScoringType.KAKS && iec.canDoKaks())) {
+			if (scoType==ScoringType.ENTROPY) {
 				iec.writePdbFile(params.getOutputFile("."+iec.getInterface().getId()+suffix),scoType);
 			}
 		}
@@ -223,7 +215,6 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 	private void printScoringParams(PrintStream ps, boolean zscore) {
 		ps.println(IDENTIFIER_HEADER+" "+pdbName);
 		ps.println(SCORE_METHOD_HEADER+" "+scoType.getName());
-		ps.println(SCORE_TYPE_HEADER+"   "+(isScoreWeighted?"weighted":"unweighted"));
 		ps.println(NUM_HOMS_CUTOFF_HEADER+" "+homologsCutoff);
 		ps.printf (SEQUENCE_ID_HEADER+" %4.2f\n",idCutoff);
 		ps.printf (QUERY_COV_HEADER+" %4.2f\n",queryCovCutoff);

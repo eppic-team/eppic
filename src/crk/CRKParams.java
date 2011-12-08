@@ -23,7 +23,6 @@ public class CRKParams {
 	protected static final String  CONFIG_FILE_NAME = ".crk.conf";
 	protected static final String  GEOMETRY_FILE_SUFFIX = ".geometry";
 	protected static final String  ENTROPIES_FILE_SUFFIX = ".entropies";
-	protected static final String  KAKS_FILE_SUFFIX = ".kaks";
 	protected static final String  ZSCORES_FILE_SUFFIX = ".zscores";
 	protected static final String  COMBINED_FILE_SUFFIX = ".combined";
 	public static final double     INTERFACE_DIST_CUTOFF = 5.9;
@@ -54,7 +53,6 @@ public class CRKParams {
 
 	// default cutoffs for the final bio/xtal call
 	private static final double   DEF_ENTR_CALL_CUTOFF = 0.85;
-	private static final double   DEF_KAKS_CALL_CUTOFF = 0.85;
 	private static final double   DEF_ZSCORE_CUTOFF = -1.0;
 	
 	// default core assignment thresholds
@@ -85,10 +83,6 @@ public class CRKParams {
 	private static final File     DEF_TCOFFE_BIN = new File("/usr/bin/t_coffee");
 	private static final boolean  DEF_USE_TCOFFEE_VERY_FAST_MODE = false;
 
-	// default selecton stuff
-	private static final File     DEF_SELECTON_BIN = new File("/usr/bin/selecton");
-	private static final double	  DEF_SELECTON_EPSILON = 0.1;
-
 	// default naccess location
 	private static final File     DEF_NACCESS_EXE = new File("/usr/bin/naccess");
 	
@@ -106,7 +100,6 @@ public class CRKParams {
 	private static final double   DEF_PDB2UNIPROT_MAX_SCOV_FOR_LOCAL = 0.4;
 		
 	// default cache dirs
-	private static final String   DEF_EMBL_CDS_CACHE_DIR = null;
 	private static final String   DEF_BLAST_CACHE_DIR = null;
 	
 	
@@ -115,7 +108,6 @@ public class CRKParams {
 	// the parameters
 	private String pdbCode;
 	private boolean doScoreEntropies;
-	private boolean doScoreKaks;
 	private double homSoftIdCutoff;
 	private double homHardIdCutoff;
 	private double homIdStep;
@@ -139,7 +131,6 @@ public class CRKParams {
 	private int nSpherePointsASAcalc;
 
 	private double entrCallCutoff;
-	private double kaksCallCutoff;
 	
 	private double zScoreCutoff;
 	
@@ -185,7 +176,6 @@ public class CRKParams {
 	private double   pdb2uniprotQcovThreshold;
 	private double   pdb2uniprotMaxScovForLocal;
 			
-	private String   emblCdsCacheDir;
 	private String   blastCacheDir;
 	
 	// and finally the ones with no defaults
@@ -203,7 +193,6 @@ public class CRKParams {
 		
 		this.pdbCode = null;
 		this.doScoreEntropies = false;
-		this.doScoreKaks = false;
 		this.homSoftIdCutoff = DEF_HOM_SOFT_ID_CUTOFF;
 		this.homHardIdCutoff = DEF_HOM_HARD_ID_CUTOFF;
 		this.homIdStep = DEF_HOM_ID_STEP;
@@ -220,7 +209,6 @@ public class CRKParams {
 		this.useNaccess = false;
 		this.nSpherePointsASAcalc = DEF_NSPHEREPOINTS_ASA_CALC;
 		this.entrCallCutoff = DEF_ENTR_CALL_CUTOFF;
-		this.kaksCallCutoff = DEF_KAKS_CALL_CUTOFF;
 		this.zScoreCutoff = DEF_ZSCORE_CUTOFF;
 		this.interfSerFile = null;
 		this.chainEvContextSerFile = null;
@@ -233,7 +221,7 @@ public class CRKParams {
 	public void parseCommandLine(String[] args, String programName, String help) {
 	
 
-		Getopt g = new Getopt(programName, args, "i:ska:b:o:r:e:c:z:m:x:X:y:d:D:q:H:pnA:I:C:lL:uh?");
+		Getopt g = new Getopt(programName, args, "i:sa:b:o:r:e:c:z:m:x:y:d:D:q:H:pnA:I:C:lL:uh?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
@@ -243,9 +231,6 @@ public class CRKParams {
 			case 's':
 				doScoreEntropies = true;
 				break;
-			case 'k':
-				doScoreKaks = true;
-				break;				
 			case 'a':
 				numThreads = Integer.parseInt(g.getOptarg());
 				break;
@@ -272,9 +257,6 @@ public class CRKParams {
 				break;
 			case 'x':
 				entrCallCutoff = Double.parseDouble(g.getOptarg());
-				break;
-			case 'X':
-				kaksCallCutoff = Double.parseDouble(g.getOptarg());
 				break;
 			case 'y':
 				zScoreCutoff = Double.parseDouble(g.getOptarg());
@@ -354,8 +336,6 @@ public class CRKParams {
 		"                  higher the geometry call is bio. Default "+DEF_MIN_CORE_SIZE_FOR_BIO+"\n" +
 		"  [-x <float>] :  entropy score cutoff for calling BIO/XTAL.\n" +
 		"                  Default: " + String.format("%4.2f",DEF_ENTR_CALL_CUTOFF)+"\n"+
-		"  [-X <float>] :  ka/ks score cutoff for calling BIO/XTAL.\n"+
-		"                  Default: " + String.format("%4.2f",DEF_KAKS_CALL_CUTOFF)+"\n"+
 		"  [-y <float>] :  z-score cutoff to call BIO/XTAL. If below this z-score interface \n" +
 		"                  is BIO. Default: " + String.format("%4.2f",DEF_ZSCORE_CUTOFF)+"\n"+
 		"  [-d <float>] :  sequence identity soft cut-off, if enough homologs ("+DEF_MIN_HOMOLOGS_CUTOFF+") above this threshold\n" +
@@ -477,12 +457,6 @@ public class CRKParams {
 	public boolean isDoScoreEntropies() {
 		return doScoreEntropies;
 	}
-	public boolean isDoScoreKaks() {
-		return doScoreKaks;
-	}
-	public void setDoScoreKaks(boolean doScoreKaks) {
-		this.doScoreKaks = doScoreKaks;
-	}
 	public double getHomSoftIdCutoff() {
 		return homSoftIdCutoff;
 	}
@@ -592,14 +566,6 @@ public class CRKParams {
 		this.entrCallCutoff = entrCallCutoff;
 	}
 	
-	public double getKaksCallCutoff() {
-		return kaksCallCutoff;
-	}
-
-	public void setKaksCallCutoffs(double kaksCallCutoff) {
-		this.kaksCallCutoff = kaksCallCutoff;
-	}
-	
 	public double getZscoreCutoff(){
 		return zScoreCutoff;
 	}
@@ -668,10 +634,6 @@ public class CRKParams {
 			
 			useTcoffeeVeryFastMode = Boolean.parseBoolean(p.getProperty("USE_TCOFFEE_VERY_FAST_MODE",new Boolean(DEF_USE_TCOFFEE_VERY_FAST_MODE).toString()));
 			
-			selectonBin 	= new File(p.getProperty("SELECTON_BIN", DEF_SELECTON_BIN.toString()));
-			
-			selectonEpsilon = Double.parseDouble(p.getProperty("SELECTON_EPSILON", new Double(DEF_SELECTON_EPSILON).toString()));
-			
 			naccessExe      = new File(p.getProperty("NACCESS_EXE", DEF_NACCESS_EXE.toString()));
 			
 			pymolExe		= new File(p.getProperty("PYMOL_EXE", DEF_PYMOL_EXE.toString()));
@@ -685,7 +647,6 @@ public class CRKParams {
 			
 			pdb2uniprotMaxScovForLocal = Double.parseDouble(p.getProperty("PDB2UNIPROT_MAX_SCOV_FOR_LOCAL", new Double(DEF_PDB2UNIPROT_MAX_SCOV_FOR_LOCAL).toString()));
 					
-			emblCdsCacheDir  = p.getProperty("EMBL_CDS_CACHE_DIR", DEF_EMBL_CDS_CACHE_DIR);
 			blastCacheDir    = p.getProperty("BLAST_CACHE_DIR", DEF_BLAST_CACHE_DIR);
 
 		} catch (NumberFormatException e) {
@@ -751,10 +712,6 @@ public class CRKParams {
 		return pdb2uniprotMaxScovForLocal;
 	}
 	
-	public String getEmblCdsCacheDir() {
-		return emblCdsCacheDir;
-	}
-
 	public String getBlastCacheDir() {
 		return blastCacheDir;
 	}

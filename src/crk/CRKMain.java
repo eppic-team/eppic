@@ -333,13 +333,9 @@ public class CRKMain {
 		
 		// a) getting the uniprot ids corresponding to the query (the pdb sequence)
 		for (ChainEvolContext chainEvCont:cecs.getAllChainEvolContext()) {
-			File emblQueryCacheFile = null;
-			if (params.getEmblCdsCacheDir()!=null) { 
-				emblQueryCacheFile = new File(params.getEmblCdsCacheDir(),params.getBaseName()+"."+chainEvCont.getRepresentativeChainCode()+".query.emblcds.fa");
-			}
 			params.getProgressLog().println("Finding query's chain "+chainEvCont.getRepresentativeChainCode()+" uniprot mapping through SIFTS or blasting");
 			try {
-				chainEvCont.retrieveQueryData(params.getSiftsFile(), emblQueryCacheFile, params.getBlastBinDir(), params.getBlastDbDir(), params.getBlastDb(), params.getNumThreads(),params.isDoScoreKaks(),params.getPdb2uniprotIdThreshold(),params.getPdb2uniprotQcovThreshold());
+				chainEvCont.retrieveQueryData(params.getSiftsFile(), params.getBlastBinDir(), params.getBlastDbDir(), params.getBlastDb(), params.getNumThreads(),params.getPdb2uniprotIdThreshold(),params.getPdb2uniprotQcovThreshold());
 			} catch (BlastException e) {
 				throw new CRKException(e,"Couldn't run blast to retrieve query's uniprot mapping: "+e.getMessage(),true);
 			} catch (IOException e) {
@@ -355,11 +351,6 @@ public class CRKMain {
 				// TODO should we go ahead and blast with the PDB sequence? that would require quite a few changes in the code
 				continue;
 			} 
-			
-			if (params.isDoScoreKaks() && chainEvCont.getQueryRepCDS()==null) {
-				// note calling chainEvCont.canDoCRK() will also check for this condition (here we only want to log it once)
-				LOGGER.error("No CDS good match for query sequence! can't do Ka/Ks analysis on it.");
-			}
 			
 			// b) getting the homologs and sequence data 
 			params.getProgressLog().println("Blasting for homologues...");
@@ -387,42 +378,25 @@ public class CRKMain {
 			}
 
 			String msg = "Retrieving UniprotKB data";
-			if (params.isDoScoreKaks()) msg+=" and EMBL CDS sequences";
+
 			params.getProgressLog().println(msg);
-			File emblHomsCacheFile = null;
-			if (params.getEmblCdsCacheDir()!=null) {
-				emblHomsCacheFile = new File(params.getEmblCdsCacheDir(),params.getBaseName()+"."+chainEvCont.getRepresentativeChainCode()+".homologs.emblcds.fa");
-			}
 			try {
-				chainEvCont.retrieveHomologsData(emblHomsCacheFile, params.isDoScoreKaks());
+				chainEvCont.retrieveHomologsData();
 			} catch (UniprotVerMisMatchException e) {
 				throw new CRKException(e, "Mismatch of Uniprot versions! "+e.getMessage(), true);
 			} catch (IOException e) {
 				String errmsg = "Problem while retrieving homologs data through Uniprot JAPI";
-				if (params.isDoScoreKaks()) errmsg += " or while fetching CDS data";
 				throw new CRKException(e, errmsg+": "+e.getMessage(),true);
 			} catch (Exception e) { // for any kind of exceptions thrown while connecting through uniprot JAPI
 				throw new CRKException(e, "Problems while retrieving homologs data through Uniprot JAPI. Is Uniprot server down?\n"+e.getMessage(),true);
 			}
 
-			if (params.isDoScoreKaks() && !chainEvCont.isConsistentGeneticCodeType()){
-				// note calling chainEvCont.canDoCRK() will also check for this condition (here we only want to log it once)
-				LOGGER.error("The list of homologs does not have a single genetic code type, can't do KaKs analysis on it.");
-			}
-			
 			// remove redundancy
 			chainEvCont.removeRedundancy();
 
 			// skimming so that there's not too many sequences for selecton
 			chainEvCont.skimList(params.getMaxNumSeqs());
 			
-			// check the back-translation of CDS to uniprot
-			// check whether we have a good enough CDS for the chain
-			if (params.isDoScoreKaks() && chainEvCont.canDoKaks()) {
-				LOGGER.info("Number of homologs with at least one uniprot CDS mapping: "+chainEvCont.getNumHomologsWithCDS());
-				LOGGER.info("Number of homologs with valid CDS: "+chainEvCont.getNumHomologsWithValidCDS());
-			}
-
 			// c) align
 			params.getProgressLog().println("Aligning protein sequences with t_coffee...");
 			try {
@@ -450,11 +424,7 @@ public class CRKMain {
 				// writing the alignment to file
 				outFile = params.getOutputFile("."+chainEvCont.getRepresentativeChainCode()+".aln");
 				chainEvCont.writeAlignmentToFile(outFile);
-				// writing the nucleotides alignment to file
-				if (params.isDoScoreKaks() && chainEvCont.canDoKaks()) {
-					outFile = params.getOutputFile("."+chainEvCont.getRepresentativeChainCode()+".cds.aln");
-					chainEvCont.writeNucleotideAlignmentToFile(outFile);
-				}
+
 			} catch(FileNotFoundException e){
 				LOGGER.error("Couldn't write file "+outFile);
 				LOGGER.error(e.getMessage());
@@ -464,22 +434,6 @@ public class CRKMain {
 			// d) computing entropies
 			chainEvCont.computeEntropies(params.getReducedAlphabet());
 
-			// e) compute ka/ks ratios
-			if (params.isDoScoreKaks() && chainEvCont.canDoKaks()) {
-				params.getProgressLog().println("Running selecton (this will take long)...");
-				try {
-					chainEvCont.computeKaKsRatiosSelecton(params.getSelectonBin(), 
-						params.getOutputFile("."+chainEvCont.getRepresentativeChainCode()+".selecton.res"),
-						params.getOutputFile("."+chainEvCont.getRepresentativeChainCode()+".selecton.log"), 
-						params.getOutputFile("."+chainEvCont.getRepresentativeChainCode()+".selecton.tree"),
-						params.getOutputFile("."+chainEvCont.getRepresentativeChainCode()+".selecton.global"),
-						params.getSelectonEpsilon());
-				} catch (IOException e) {
-					throw new CRKException(e, "Problems while running selecton: "+e.getMessage(), true);
-				} catch (InterruptedException e) {
-					throw new CRKException(e, "Thread interrupted while running selecton: "+e.getMessage(), true);
-				}
-			}
 
 			try {
 				// writing the conservation scores (entropies/kaks) log file
@@ -487,12 +441,6 @@ public class CRKMain {
 				PrintStream conservScoLog = new PrintStream(outFile);
 				chainEvCont.printConservationScores(conservScoLog, ScoringType.ENTROPY, pdb);
 				conservScoLog.close();
-				if (params.isDoScoreKaks() && chainEvCont.canDoKaks()) {
-					outFile = params.getOutputFile("."+chainEvCont.getRepresentativeChainCode()+CRKParams.KAKS_FILE_SUFFIX);
-					conservScoLog = new PrintStream(outFile);
-					chainEvCont.printConservationScores(conservScoLog, ScoringType.KAKS,pdb);
-					conservScoLog.close();				
-				}
 			} catch (FileNotFoundException e) {
 				LOGGER.error("Could not write the scores log file "+outFile);
 				LOGGER.error(e.getMessage());
@@ -527,11 +475,7 @@ public class CRKMain {
 				iecList.printScoresTable(scoreEntrPS);
 				wuiAdaptor.add(iecList);
 				iecList.resetCalls();
-				// entropy w
-				iecList.scoreEntropy(true);
-				iecList.printScoresTable(scoreEntrPS);
 				iecList.writeScoresPDBFiles(params,CRKParams.ENTROPIES_FILE_SUFFIX+".pdb");
-				wuiAdaptor.add(iecList);
 				scoreEntrPS.close();
 				iecList.resetCalls();
 				// z-scores
@@ -547,30 +491,6 @@ public class CRKMain {
 			} catch (IOException e) {
 				throw new CRKException(e, "Couldn't write final interface entropy scores or related PDB files. "+e.getMessage(),true);
 			} 
-		}
-		if (params.isDoScoreKaks()) {
-			try {
-				//interfaces.calcRimAndCores(params.getCAcutoffForRimCore());
-				iecList.setRimCorePredBsaToAsaCutoff(params.getCAcutoffForRimCore());
-				iecList.setCallCutoff(params.getKaksCallCutoff());
-				// ka/ks scoring			
-				PrintStream scoreKaksPS = new PrintStream(params.getOutputFile(CRKParams.KAKS_FILE_SUFFIX+".scores"));
-				// kaks nw
-				iecList.scoreKaKs(false);
-				iecList.printScoresTable(scoreKaksPS);
-				wuiAdaptor.add(iecList);
-				iecList.resetCalls();
-				// kaks w
-				iecList.scoreKaKs(true);
-				iecList.printScoresTable(scoreKaksPS);
-				iecList.writeScoresPDBFiles(params, CRKParams.KAKS_FILE_SUFFIX+".pdb");
-				wuiAdaptor.add(iecList);
-				scoreKaksPS.close();
-				iecList.resetCalls();
-
-			} catch (IOException e) {
-				throw new CRKException(e,"Couldn't write final interface Ka/Ks scores or related PDB files. "+e.getMessage(),true);
-			}
 		}
 
 		params.getProgressLog().println("Done scoring");

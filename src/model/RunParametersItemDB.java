@@ -23,7 +23,6 @@ public class RunParametersItemDB implements Serializable
 	private double caCutoffForRimCore;
 	private double caCutoffForZscore;
 	private double entrCallCutoff;
-	private double kaksCallCutoff;
 	private double zScoreCutoff; 
 
 	private String uniprotVer;
@@ -90,14 +89,6 @@ public class RunParametersItemDB implements Serializable
 
 	public void setEntrCallCutoff(double entrCallCutoff) {
 		this.entrCallCutoff = entrCallCutoff;
-	}
-
-	public double getKaksCallCutoff() {
-		return kaksCallCutoff;
-	}
-
-	public void setKaksCallCutoff(double kaksCallCutoff) {
-		this.kaksCallCutoff = kaksCallCutoff;
 	}
 
 	public double getzScoreCutoff() {

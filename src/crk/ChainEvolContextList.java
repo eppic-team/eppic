@@ -85,9 +85,10 @@ public class ChainEvolContextList implements Serializable {
 			int numHomologs = -1;
 			if (scoType==ScoringType.ENTROPY || scoType==ScoringType.ZSCORE) {
 				numHomologs = cec.getNumHomologs();
-			} else if (scoType==ScoringType.KAKS) {
-				numHomologs = cec.getNumHomologsWithValidCDS();
-			}
+			} 
+//			else if (scoType==ScoringType.KAKS) {
+//				numHomologs = cec.getNumHomologsWithValidCDS();
+//			}
 			String urlStr = "";
 			if (uni!=null) urlStr = " (<a href=\""+uni.getUniprotUrl()+"\" target=\"_blank\">"+uni.getUniId()+"</a>)";
 			list.add(cec.getSeqIndenticalChainStr()+urlStr+": "+numHomologs+" homologs");

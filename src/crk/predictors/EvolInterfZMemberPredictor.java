@@ -240,15 +240,7 @@ public class EvolInterfZMemberPredictor implements InterfaceTypePredictor {
 			warnings.add(msg);
 		}	
 		unreliableCoreResidues.addAll(unreliableForPdb);
-		if (scoringType==ScoringType.KAKS) {
-			List<Residue> unreliableForCDS = iec.getUnreliableResiduesForCDS(coreResidues, molecId);
-			msg = iec.getUnreliableForCDSWarningMsg(unreliableForCDS);
-			if (msg!=null) {
-				LOGGER.warn(msg);
-				warnings.add(msg);				
-			}
-			unreliableCoreResidues.addAll(unreliableForCDS);
-		}
+		
 
 		return unreliableCoreResidues;
 	}

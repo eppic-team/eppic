@@ -182,28 +182,28 @@ public class EvolRimCorePredictor implements InterfaceTypePredictor {
 		isScoreWeighted = weighted;
 	}
 	
-	/**
-	 * Calculates the ka/ks scores for this interface.
-	 * Subsequently use {@link #getCall()} and {@link #getScore()} to get the call and final score 
-	 * @param weighted
-	 */
-	public void scoreKaKs(boolean weighted) {
-
-		member1Pred.scoreKaKs(weighted);
-		member2Pred.scoreKaKs(weighted);
-
-		if (canDoFirstEntropyScoring() && canDoSecondEntropyScoring()) {
-			score = (member1Pred.getScore()+member2Pred.getScore())/2;
-		} else if (!canDoFirstEntropyScoring() && !canDoSecondEntropyScoring()) {
-			score = Double.NaN;
-		} else if (canDoFirstEntropyScoring()) {
-			score = member1Pred.getScore();
-		} else if (canDoSecondEntropyScoring()) {
-			score = member2Pred.getScore();
-		}
-		scoringType = ScoringType.KAKS;
-		isScoreWeighted = weighted;
-	}
+//	/**
+//	 * Calculates the ka/ks scores for this interface.
+//	 * Subsequently use {@link #getCall()} and {@link #getScore()} to get the call and final score 
+//	 * @param weighted
+//	 */
+//	public void scoreKaKs(boolean weighted) {
+//
+//		member1Pred.scoreKaKs(weighted);
+//		member2Pred.scoreKaKs(weighted);
+//
+//		if (canDoFirstEntropyScoring() && canDoSecondEntropyScoring()) {
+//			score = (member1Pred.getScore()+member2Pred.getScore())/2;
+//		} else if (!canDoFirstEntropyScoring() && !canDoSecondEntropyScoring()) {
+//			score = Double.NaN;
+//		} else if (canDoFirstEntropyScoring()) {
+//			score = member1Pred.getScore();
+//		} else if (canDoSecondEntropyScoring()) {
+//			score = member2Pred.getScore();
+//		}
+//		scoringType = ScoringType.KAKS;
+//		isScoreWeighted = weighted;
+//	}
 
 	public ScoringType getScoringType() {
 		return this.scoringType;
@@ -262,10 +262,11 @@ public class EvolRimCorePredictor implements InterfaceTypePredictor {
 		if (scoringType==ScoringType.ENTROPY) {
 			if (iec.isProtein(FIRST)) numHoms1 = iec.getFirstChainEvolContext().getNumHomologs();
 			if (iec.isProtein(SECOND)) numHoms2 = iec.getSecondChainEvolContext().getNumHomologs();
-		} else if (scoringType==ScoringType.KAKS) {
-			if (iec.isProtein(FIRST)) numHoms1 = iec.getFirstChainEvolContext().getNumHomologsWithValidCDS();
-			if (iec.isProtein(SECOND)) numHoms2 = iec.getSecondChainEvolContext().getNumHomologsWithValidCDS();
-		}
+		} 
+//		else if (scoringType==ScoringType.KAKS) {
+//			if (iec.isProtein(FIRST)) numHoms1 = iec.getFirstChainEvolContext().getNumHomologsWithValidCDS();
+//			if (iec.isProtein(SECOND)) numHoms2 = iec.getSecondChainEvolContext().getNumHomologsWithValidCDS();
+//		}
 		ps.printf("%2d\t%2d\t",numHoms1,numHoms2);
 	}
 	

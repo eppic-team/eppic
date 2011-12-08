@@ -94,23 +94,23 @@ public class InterfaceEvolContext implements Serializable {
 		return unreliableResidues;
 	}
 	
-	/**
-	 * Given a list of residue returns the subset of those that are unreliable in terms of CDS translation to protein matching
-	 * @param residues
-	 * @param molecId
-	 * @return
-	 */
-	public List<Residue> getUnreliableResiduesForCDS(List<Residue> residues, int molecId) {
-		List<Residue> unreliableResidues = new ArrayList<Residue>();
-		ChainEvolContext chain = getChainEvolContext(molecId);
-		for (Residue res:residues){
-			int resSer = res.getSerial(); // used to be: chain.getResSerFromPdbResSer(pdbChainCode, res.getPdbSerial()); pdbChainCode was passed
-			if (resSer!=-1 && !chain.isPdbSeqPositionReliable(resSer)) {
-				unreliableResidues.add(res);
-			}				
-		}
-		return unreliableResidues;
-	}
+//	/**
+//	 * Given a list of residue returns the subset of those that are unreliable in terms of CDS translation to protein matching
+//	 * @param residues
+//	 * @param molecId
+//	 * @return
+//	 */
+//	public List<Residue> getUnreliableResiduesForCDS(List<Residue> residues, int molecId) {
+//		List<Residue> unreliableResidues = new ArrayList<Residue>();
+//		ChainEvolContext chain = getChainEvolContext(molecId);
+//		for (Residue res:residues){
+//			int resSer = res.getSerial(); // used to be: chain.getResSerFromPdbResSer(pdbChainCode, res.getPdbSerial()); pdbChainCode was passed
+//			if (resSer!=-1 && !chain.isPdbSeqPositionReliable(resSer)) {
+//				unreliableResidues.add(res);
+//			}				
+//		}
+//		return unreliableResidues;
+//	}
 	
 	public String getUnreliableForPdbWarningMsg(List<Residue> unreliableResidues) {
 		String msg = null;
@@ -229,9 +229,10 @@ public class InterfaceEvolContext implements Serializable {
 			int queryPos = -2;
 			if (scoType==ScoringType.ENTROPY) {
 				queryPos = getChainEvolContext(molecId).getQueryUniprotPosForPDBPos(resser); 
-			} else if (scoType==ScoringType.KAKS) {
-				queryPos = getChainEvolContext(molecId).getQueryCDSPosForPDBPos(resser);
-			}
+			} 
+//			else if (scoType==ScoringType.KAKS) {
+//				queryPos = getChainEvolContext(molecId).getQueryCDSPosForPDBPos(resser);
+//			}
 			if (queryPos!=-1) {   
 				map.put(resser, conservationScores.get(queryPos));	
 			}
@@ -253,18 +254,18 @@ public class InterfaceEvolContext implements Serializable {
 		}
 	}
 
-	/**
-	 * Tells whether Ka/KS analysis is possible for this interface.
-	 * It will not be possible when there is no sufficient data from either chain.
-	 * @return
-	 */
-	public boolean canDoKaks() {
-		boolean canDoCRK = true;
-		if ((this.interf.isFirstProtein() && !getFirstChainEvolContext().canDoKaks()) || 
-			(this.interf.isSecondProtein() && !getSecondChainEvolContext().canDoKaks()) ) {
-			canDoCRK = false;
-		}
-		return canDoCRK;
-	}
+//	/**
+//	 * Tells whether Ka/KS analysis is possible for this interface.
+//	 * It will not be possible when there is no sufficient data from either chain.
+//	 * @return
+//	 */
+//	public boolean canDoKaks() {
+//		boolean canDoCRK = true;
+//		if ((this.interf.isFirstProtein() && !getFirstChainEvolContext().canDoKaks()) || 
+//			(this.interf.isSecondProtein() && !getSecondChainEvolContext().canDoKaks()) ) {
+//			canDoCRK = false;
+//		}
+//		return canDoCRK;
+//	}
 
 }

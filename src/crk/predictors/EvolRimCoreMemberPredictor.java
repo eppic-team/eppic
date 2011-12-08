@@ -24,7 +24,7 @@ public class EvolRimCoreMemberPredictor implements InterfaceTypePredictor {
 	private InterfaceEvolContext iec;
 	private int molecId;
 	
-	private ScoringType scoringType;
+//	private ScoringType scoringType;
 	
 	private double callCutoff;
 	
@@ -138,18 +138,18 @@ public class EvolRimCoreMemberPredictor implements InterfaceTypePredictor {
 	 */
 	public void scoreEntropy(boolean weighted) {
 		scoreInterfaceMember(weighted, ScoringType.ENTROPY);
-		scoringType = ScoringType.ENTROPY;
+		//scoringType = ScoringType.ENTROPY;
 	}
 	
-	/**
-	 * Calculates the ka/ks scores for this interface member.
-	 * Subsequently use {@link #getCall()} and {@link #getScore()} to get the call and score 
-	 * @param weighted
-	 */
-	public void scoreKaKs(boolean weighted) {
-		scoreInterfaceMember(weighted, ScoringType.KAKS);
-		scoringType = ScoringType.KAKS;
-	}
+//	/**
+//	 * Calculates the ka/ks scores for this interface member.
+//	 * Subsequently use {@link #getCall()} and {@link #getScore()} to get the call and score 
+//	 * @param weighted
+//	 */
+//	public void scoreKaKs(boolean weighted) {
+//		scoreInterfaceMember(weighted, ScoringType.KAKS);
+//		scoringType = ScoringType.KAKS;
+//	}
 	
 	private void scoreInterfaceMember(boolean weighted, ScoringType scoType) {	
 		if (!canDoEntropyScoring()) {
@@ -209,15 +209,15 @@ public class EvolRimCoreMemberPredictor implements InterfaceTypePredictor {
 			warnings.add(msg);
 		}	
 		unreliableCoreResidues.addAll(unreliableForPdb);
-		if (scoringType==ScoringType.KAKS) {
-			List<Residue> unreliableForCDS = iec.getUnreliableResiduesForCDS(coreResidues, molecId);
-			msg = iec.getUnreliableForCDSWarningMsg(unreliableForCDS);
-			if (msg!=null) {
-				LOGGER.warn(msg);
-				warnings.add(msg);				
-			}
-			unreliableCoreResidues.addAll(unreliableForCDS);
-		}
+//		if (scoringType==ScoringType.KAKS) {
+//			List<Residue> unreliableForCDS = iec.getUnreliableResiduesForCDS(coreResidues, molecId);
+//			msg = iec.getUnreliableForCDSWarningMsg(unreliableForCDS);
+//			if (msg!=null) {
+//				LOGGER.warn(msg);
+//				warnings.add(msg);				
+//			}
+//			unreliableCoreResidues.addAll(unreliableForCDS);
+//		}
 
 		return unreliableCoreResidues;
 	}
@@ -240,22 +240,22 @@ public class EvolRimCoreMemberPredictor implements InterfaceTypePredictor {
 			warnings.add(msg);
 		}
 		unreliableRimResidues.addAll(unreliableForPdb);
-		if (scoringType==ScoringType.KAKS) {
-			List<Residue> unreliableForCDS = iec.getUnreliableResiduesForCDS(rimResidues, molecId);
-			msg = iec.getUnreliableForCDSWarningMsg(unreliableForCDS);
-			if (msg!=null) {
-				LOGGER.warn(msg);
-				warnings.add(msg);				
-			}
-			unreliableRimResidues.addAll(unreliableForCDS);
-		}
+//		if (scoringType==ScoringType.KAKS) {
+//			List<Residue> unreliableForCDS = iec.getUnreliableResiduesForCDS(rimResidues, molecId);
+//			msg = iec.getUnreliableForCDSWarningMsg(unreliableForCDS);
+//			if (msg!=null) {
+//				LOGGER.warn(msg);
+//				warnings.add(msg);				
+//			}
+//			unreliableRimResidues.addAll(unreliableForCDS);
+//		}
 
 		return unreliableRimResidues;
 	}
 
 	public void resetCall() {
 		this.call = null;
-		this.scoringType = null;
+		//this.scoringType = null;
 		this.warnings = new ArrayList<String>();
 		this.callReason = null;
 		this.coreScore = -1;
