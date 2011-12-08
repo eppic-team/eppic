@@ -10,6 +10,7 @@ import com.google.gwt.i18n.client.Constants;
 public interface AppProperties extends Constants 
 {
 	String login();
+	String defaultmask();
 	String yes();
 	String no();
 	String option_true();
@@ -43,12 +44,12 @@ public interface AppProperties extends Constants
 	String parameters_reduced_alphabet();
 	String parameters_selecton();
 	String parameters_allignment();
-	String parameters_identity_cutoff();
+	String parameters_soft_identity_cutoff();
+	String parameters_hard_identity_cutoff();
 	String parameters_max_num_sequences();
+	String parameters_search_mode();
 	String parameters_others();
-	String parameters_use_pisa();
 	String parameters_asa_calc();
-	String parameters_use_naccess();
 	String parameters_max_num_sequences_hint();
 	String parameters_asa_calc_hint();
 	String parameters_use_naccess_hint();

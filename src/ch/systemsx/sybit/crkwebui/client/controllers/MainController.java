@@ -106,6 +106,7 @@ public class MainController
 
 	public void displayResults(boolean debug)
 	{
+		mainViewPort.mask(CONSTANTS.defaultmask());
 		serviceController.getResultsOfProcessing(selectedJobId, debug);
 	}
 

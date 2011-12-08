@@ -29,6 +29,7 @@ public class GetResultsOfProcessingCallback implements AsyncCallback<ProcessingD
 	{
 		String errorText = MainController.CONSTANTS.callback_get_results_of_processing_error() + " " + caught.getMessage();
 		mainController.updateStatusLabel(errorText, true);
+		mainController.getMainViewPort().unmask();
 	}
 
 	@Override
@@ -66,6 +67,8 @@ public class GetResultsOfProcessingCallback implements AsyncCallback<ProcessingD
 			mainController.showMessage(MainController.CONSTANTS.callback_job_not_found_error(), "Id=" + jobId + " not found on the server");
 			mainController.cleanCenterPanel();
 		}
+		
+		mainController.getMainViewPort().unmask();
 	}
 
 }
