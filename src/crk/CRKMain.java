@@ -242,7 +242,14 @@ public class CRKMain {
 	}
 	
 	public void doGeomScoring() throws CRKException {
-
+		if (interfaces.getNumInterfaces()==0) {
+			// no interfaces found at all, can happen e.g. in NMR structure with 1 chain, e.g. 1nmr
+			LOGGER.info("No interfaces found, nothing to analyse.");
+			params.getProgressLog().println("No interfaces found, nothing to analyse.");
+			// we still continue so that the web interface can pick it up too
+			return;
+		}
+		
 		try {
 			gps = new ArrayList<GeometryPredictor>();
 			PrintStream scoreGeomPS = new PrintStream(params.getOutputFile(CRKParams.GEOMETRY_FILE_SUFFIX+".scores"));
@@ -256,12 +263,7 @@ public class CRKMain {
 				gp.writePdbFile(params.getOutputFile("."+interf.getId()+".rimcore.pdb"));
 			}
 			scoreGeomPS.close();
-			
-			if (interfaces.getNumInterfaces()==0) {
-				// no interfaces found at all, can happen e.g. in NMR structure with 1 chain
-				throw new CRKException(null, "No interfaces found. Can't continue.",true);
-			}
-			
+						
 			// for the webui
 			wuiAdaptor.setInterfaces(interfaces);
 			wuiAdaptor.setGeometryScores(gps);
@@ -271,7 +273,10 @@ public class CRKMain {
 	}
 	
 	public void doWritePymolFiles() throws CRKException {
+		if (interfaces.getNumInterfaces()==0) return;
+		
 		PymolRunner pr = null;
+		params.getProgressLog().println("Writing pymol files");
 		writeStep("Generating Thumbnails and PyMol Files");
 		try {
 			pr = new PymolRunner(params.getPymolExe());
@@ -316,6 +321,7 @@ public class CRKMain {
 	}
 	
 	public void doLoadEvolContextFromFile() throws CRKException {
+		if (interfaces.getNumInterfaces()==0) return;
 		
 		findUniqueChains();
 		
@@ -333,6 +339,7 @@ public class CRKMain {
 	}
 	
 	public void doFindEvolContext() throws CRKException {
+		if (interfaces.getNumInterfaces()==0) return;
 		
 		findUniqueChains();
 		
@@ -464,6 +471,7 @@ public class CRKMain {
 	}
 	
 	public void doEvolScoring() throws CRKException {
+		if (interfaces.getNumInterfaces()==0) return;
 
 		interfaces.calcRimAndCores(params.getCAcutoffForRimCore());
 		
@@ -507,31 +515,33 @@ public class CRKMain {
 	}
 	
 	public void doCombinedScoring() throws CRKException {
+		if (interfaces.getNumInterfaces()==0) return;
+		
 		try {
 		
-		iecList.setCallCutoff(params.getEntrCallCutoff());
-		iecList.setZscoreCutoff(params.getZscoreCutoff());
-		//interfaces.calcRimAndCores(params.getCAcutoffForRimCore());
-		iecList.setRimCorePredBsaToAsaCutoff(params.getCAcutoffForRimCore());
-		iecList.scoreEntropy(false);
-		//interfaces.calcRimAndCores(params.getCAcutoffForZscore());
-		iecList.setZPredBsaToAsaCutoff(params.getCAcutoffForZscore());
-		iecList.scoreZscore();
-		
-		List<CombinedPredictor> cps = new ArrayList<CombinedPredictor>();
-		
-		PrintStream scoreCombPS = new PrintStream(params.getOutputFile(CRKParams.COMBINED_FILE_SUFFIX+".scores"));
-		CombinedPredictor.printScoringHeaders(scoreCombPS);
-		for (int i=0;i<iecList.size();i++) {
-			CombinedPredictor cp = 
-					new CombinedPredictor(iecList.get(i), gps.get(i), iecList.getEvolRimCorePredictor(i), iecList.getEvolInterfZPredictor(i));
-			cps.add(cp);
-			cp.printScoresLine(scoreCombPS);
-		}
-		scoreCombPS.close();
-		
-		wuiAdaptor.setCombinedPredictors(cps);
-		
+			iecList.setCallCutoff(params.getEntrCallCutoff());
+			iecList.setZscoreCutoff(params.getZscoreCutoff());
+			//interfaces.calcRimAndCores(params.getCAcutoffForRimCore());
+			iecList.setRimCorePredBsaToAsaCutoff(params.getCAcutoffForRimCore());
+			iecList.scoreEntropy(false);
+			//interfaces.calcRimAndCores(params.getCAcutoffForZscore());
+			iecList.setZPredBsaToAsaCutoff(params.getCAcutoffForZscore());
+			iecList.scoreZscore();
+
+			List<CombinedPredictor> cps = new ArrayList<CombinedPredictor>();
+
+			PrintStream scoreCombPS = new PrintStream(params.getOutputFile(CRKParams.COMBINED_FILE_SUFFIX+".scores"));
+			CombinedPredictor.printScoringHeaders(scoreCombPS);
+			for (int i=0;i<iecList.size();i++) {
+				CombinedPredictor cp = 
+						new CombinedPredictor(iecList.get(i), gps.get(i), iecList.getEvolRimCorePredictor(i), iecList.getEvolInterfZPredictor(i));
+				cps.add(cp);
+				cp.printScoresLine(scoreCombPS);
+			}
+			scoreCombPS.close();
+
+			wuiAdaptor.setCombinedPredictors(cps);
+
 		} catch (IOException e) {
 			throw new CRKException(e,"Couldn't write final combined scores file. "+e.getMessage(),true);
 		}
@@ -591,7 +601,7 @@ public class CRKMain {
 			} else {
 				crkMain.doFindInterfaces();
 			}
-			crkMain.doGeomScoring();
+			crkMain.doGeomScoring(); 
 			
 			if (crkMain.params.isDoScoreEntropies()) {
 				// 2 finding evolutionary context
@@ -611,7 +621,6 @@ public class CRKMain {
 			
 			if (crkMain.params.isGenerateThumbnails()) {
 				// 5 writing pymol files
-				crkMain.params.getProgressLog().println("Writing pymol files");
 				crkMain.doWritePymolFiles();
 				
 				// 6 writing out the serialized file for web ui
