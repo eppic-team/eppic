@@ -145,7 +145,7 @@ public class ChainEvolContext implements Serializable {
 			// and finally we align the 2 sequences (in case of mapping from SIFTS we rather do this than trusting the SIFTS alignment info)
 			try {
 				alnPdb2Uniprot = new PairwiseSequenceAlignment(sequence, query.getUniprotSeq().getSeq(), pdbCode+representativeChain, query.getUniprotSeq().getName());
-				LOGGER.info("The PDB SEQRES to Uniprot alignmnent:\n"+alnPdb2Uniprot.getFormattedAlignmentString());
+				LOGGER.info("The PDB SEQRES to Uniprot alignmnent:\n"+getQueryPdbToUniprotAlnString());
 				LOGGER.info("Query ("+pdbCode+representativeChain+") length: "+sequence.length());
 				LOGGER.info("Uniprot ("+query.getUniId()+") length: "+query.getLength());
 				LOGGER.info("Alignment length: "+alnPdb2Uniprot.getLength());
@@ -263,13 +263,17 @@ public class ChainEvolContext implements Serializable {
 	 * Returns the query's PDB SEQRES to uniprot alignment as a nicely formatted
 	 * aligmnent string in several lines with a middle line of matching characters,
 	 * e.g. 
-	 * 1abc    AAAA--BCDEFGICCC
+	 * 1abcA   AAAA--BCDEFGICCC
 	 *         ||.|  ||.|||:|||
 	 * QABCD1  AABALCBCJEFGLCCC
 	 * @return
 	 */
 	public String getQueryPdbToUniprotAlnString() {
 		return alnPdb2Uniprot.getFormattedAlignmentString();
+	}
+	
+	public PairwiseSequenceAlignment getPdb2uniprotAln() {
+		return alnPdb2Uniprot;
 	}
 	
 	/**
@@ -662,10 +666,27 @@ public class ChainEvolContext implements Serializable {
 	}
 	
 	/**
+	 * The interval in the Uniprot match (query) that is considered for the blast search
+	 * @return
+	 */
+	public Interval getQueryInterval() {
+		return queryInterv;
+	}
+	
+	/**
 	 * Whether the query's uniprot match could be found or not.
 	 * @return
 	 */
 	public boolean hasQueryMatch() {
 		return hasQueryMatch;
+	}
+	
+	/**
+	 * Whether the search for homologs is based on full Uniprot or on a sub-interval, 
+	 * get the interval with {@link #getQueryInterval()} 
+	 * @return
+	 */
+	public boolean isSearchWithFullUniprot() {
+		return searchWithFullUniprot;
 	}
 }

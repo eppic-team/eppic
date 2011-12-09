@@ -17,9 +17,11 @@ public class PDBScoreItemDB implements Serializable, ProcessingDataDB
 	private String pdbName;
 	private String title;
 	private String spaceGroup;
+	private double resolution;
+	private String expMethod;
 	private RunParametersItemDB runParameters;
 	
-	private List<NumHomologsStringItemDB> numHomologsStrings;
+	private List<HomologsInfoItemDB> homInfos;
 
 	private List<InterfaceItemDB> interfaceItems;
 	
@@ -28,7 +30,7 @@ public class PDBScoreItemDB implements Serializable, ProcessingDataDB
 	public PDBScoreItemDB() 
 	{
 		interfaceItems = new ArrayList<InterfaceItemDB>();
-		numHomologsStrings = new ArrayList<NumHomologsStringItemDB>();
+		homInfos = new ArrayList<HomologsInfoItemDB>();
 	}
 	
 	public PDBScoreItemDB(int uid,
@@ -39,7 +41,7 @@ public class PDBScoreItemDB implements Serializable, ProcessingDataDB
 						RunParametersItemDB runParameters) 
 	{
 		interfaceItems = new ArrayList<InterfaceItemDB>();
-		numHomologsStrings = new ArrayList<NumHomologsStringItemDB>();
+		homInfos = new ArrayList<HomologsInfoItemDB>();
 		this.uid = uid;
 		this.pdbName = pdbName;
 		this.title = title;
@@ -72,12 +74,12 @@ public class PDBScoreItemDB implements Serializable, ProcessingDataDB
 		return this.interfaceItems.get(i);
 	}
 
-	public void setNumHomologsStrings(List<NumHomologsStringItemDB> numHomologsStrings) {
-		this.numHomologsStrings = numHomologsStrings;
+	public void setHomInfos(List<HomologsInfoItemDB> homInfos) {
+		this.homInfos = homInfos;
 	}
 	
-	public List<NumHomologsStringItemDB> getNumHomologsStrings() {
-		return this.numHomologsStrings;
+	public List<HomologsInfoItemDB> getHomInfos() {
+		return this.homInfos;
 	}
 
 	public void setTitle(String title) {
@@ -119,4 +121,22 @@ public class PDBScoreItemDB implements Serializable, ProcessingDataDB
 	public JobDB getJobItem() {
 		return jobItem;
 	}
+
+	public double getResolution() {
+		return resolution;
+	}
+
+	public void setResolution(double resolution) {
+		this.resolution = resolution;
+	}
+
+	public String getExpMethod() {
+		return expMethod;
+	}
+
+	public void setExpMethod(String expMethod) {
+		this.expMethod = expMethod;
+	}
+	
+	
 }

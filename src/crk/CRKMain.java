@@ -151,8 +151,7 @@ public class CRKMain {
 		// for the webui
 		wuiAdaptor = new WebUIDataAdaptor();
 		wuiAdaptor.setParams(params);
-		wuiAdaptor.setTitle(pdb.getTitle());
-		wuiAdaptor.setSpaceGroup(pdb.getSpaceGroup());
+		wuiAdaptor.setPdbMetadata(pdb);
 		
 	}
 	

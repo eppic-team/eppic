@@ -1,16 +1,13 @@
 package crk;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.TreeMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import owl.core.sequence.UniprotEntry;
 import owl.core.structure.PdbAsymUnit;
 import owl.core.structure.PdbChain;
 
@@ -75,25 +72,6 @@ public class ChainEvolContextList implements Serializable {
 	
 	public void setPdbName(String pdbName) {
 		this.pdbName = pdbName;
-	}
-	
-	public List<String> getNumHomologsStrings(ScoringType scoType) {
-		List<String> list = new ArrayList<String>(); 
-		for (String repChain:cecs.keySet()) {
-			ChainEvolContext cec = cecs.get(repChain);
-			UniprotEntry uni = cec.getQuery();
-			int numHomologs = -1;
-			if (scoType==ScoringType.ENTROPY || scoType==ScoringType.ZSCORE) {
-				numHomologs = cec.getNumHomologs();
-			} 
-//			else if (scoType==ScoringType.KAKS) {
-//				numHomologs = cec.getNumHomologsWithValidCDS();
-//			}
-			String urlStr = "";
-			if (uni!=null) urlStr = " (<a href=\""+uni.getUniprotUrl()+"\" target=\"_blank\">"+uni.getUniId()+"</a>)";
-			list.add(cec.getSeqIndenticalChainStr()+urlStr+": "+numHomologs+" homologs");
-		}
-		return list;
 	}
 	
 }

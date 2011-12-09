@@ -14,7 +14,7 @@ import model.InterfaceItemDB;
 import model.InterfaceResidueItemDB;
 import model.InterfaceResidueMethodItemDB;
 import model.InterfaceScoreItemDB;
-import model.NumHomologsStringItemDB;
+import model.HomologsInfoItemDB;
 import model.PDBScoreItemDB;
 import model.RunParametersItemDB;
 import model.WarningItemDB;
@@ -24,6 +24,7 @@ import owl.core.structure.AaResidue;
 import owl.core.structure.ChainInterface;
 import owl.core.structure.ChainInterfaceList;
 import owl.core.structure.InterfaceRimCore;
+import owl.core.structure.PdbAsymUnit;
 import owl.core.structure.PdbChain;
 import owl.core.structure.Residue;
 import owl.core.structure.SpaceGroup;
@@ -71,17 +72,18 @@ public class WebUIDataAdaptor {
 		pdbScoreItem.setRunParameters(runParametersItem);
 	}
 	
-	public void setTitle(String title) {
-		pdbScoreItem.setTitle(title);
+	public void setPdbMetadata(PdbAsymUnit pdb) {
+		pdbScoreItem.setTitle(pdb.getTitle());
+		SpaceGroup sg = pdb.getSpaceGroup();
+		pdbScoreItem.setSpaceGroup(sg==null?"No space group info":sg.getShortSymbol());
+		pdbScoreItem.setResolution(pdb.getResolution());
+		pdbScoreItem.setExpMethod(pdb.getExpMethod());
+		
 	}
 	
 //	public void setCrkVersion(String crkVersion) {
 //		pdbScoreItem.setCrkVersion(crkVersion);
 //	}
-	
-	public void setSpaceGroup(SpaceGroup sg) {
-		pdbScoreItem.setSpaceGroup(sg==null?"No space group info":sg.getShortSymbol());
-	}
 	
 //	public void setUniprotVer(String uniprotVer) {
 //		pdbScoreItem.setUniprotVer(uniprotVer);
@@ -195,24 +197,27 @@ public class WebUIDataAdaptor {
 	
 	public void add(InterfaceEvolContextList iecl) {
 		
-		//this.iecl = iecl; // we cache the last one added
+		List<HomologsInfoItemDB> homInfos = new ArrayList<HomologsInfoItemDB>();
 		
-		
-		if(iecl.getNumHomologsStrings() != null)
-		{
-			List<String> strings = iecl.getNumHomologsStrings();
-			List<NumHomologsStringItemDB> numHomologsStrings = new ArrayList<NumHomologsStringItemDB>();
-			
-			for(String numString : strings)
-			{
-				NumHomologsStringItemDB numHomologsStringItem = new NumHomologsStringItemDB();
-				numHomologsStringItem.setText(numString);
-				numHomologsStringItem.setPdbScoreItem(pdbScoreItem);
-				numHomologsStrings.add(numHomologsStringItem);
+		ChainEvolContextList cecl = iecl.getChainEvolContextList();
+		for (ChainEvolContext cec:cecl.getAllChainEvolContext()) {
+			HomologsInfoItemDB homInfo = new HomologsInfoItemDB();
+			homInfo.setChains(cec.getSeqIndenticalChainStr());
+			if (cec.hasQueryMatch()) { //all other fields remain null otherwise
+				homInfo.setNumHomologs(cec.getNumHomologs());
+				homInfo.setUniprotId(cec.getQuery().getUniId()); 
+				if (!cec.isSearchWithFullUniprot()) { 
+					homInfo.setSubInterval(cec.getQueryInterval().beg+"-"+cec.getQueryInterval().end);
+				}
+				homInfo.setAlignedSeq1(cec.getPdb2uniprotAln().getAlignedSequences()[0]);
+				homInfo.setMarkupLine(cec.getPdb2uniprotAln().getAlignedSequences()[1]);
+				homInfo.setAlignedSeq2(cec.getPdb2uniprotAln().getMarkupLine().toString());
+				
 			}
+			homInfo.setPdbScoreItem(pdbScoreItem);
 			
-			pdbScoreItem.setNumHomologsStrings(numHomologsStrings);
 		}
+		pdbScoreItem.setHomInfos(homInfos);
 		
 		// first we add the residue details only once
 		if (!resDetailsAdded) {

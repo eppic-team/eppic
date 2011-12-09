@@ -246,8 +246,8 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 		
 	}
 	
-	public List<String> getNumHomologsStrings() {
-		return this.get(0).getChainEvolContextList().getNumHomologsStrings(scoType);
+	public ChainEvolContextList getChainEvolContextList() {
+		return this.get(0).getChainEvolContextList();	
 	}
 	
 	/**
