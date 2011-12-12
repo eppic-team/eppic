@@ -405,6 +405,9 @@ public class CRKMain {
 				throw new CRKException(e, "Problems while retrieving homologs data through Uniprot JAPI. Is Uniprot server down?\n"+e.getMessage(),true);
 			}
 
+			// filtering optionally for domain of life
+			if (params.isFilterByDomain()) chainEvCont.filterToSameDomainOfLife();
+			
 			// remove redundancy
 			chainEvCont.removeRedundancy();
 

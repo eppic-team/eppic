@@ -416,6 +416,10 @@ public class CRKParams {
 		if (usePisa && inFile!=null) {
 			throw new CRKException(null, "Can only get PISA interface enumeration for a PDB code. Can't use '-p' if the PDB given is a file", true);
 		}
+		
+		if (homSoftIdCutoff<homHardIdCutoff) {
+			homHardIdCutoff = homSoftIdCutoff;
+		}
 
 
 	}
