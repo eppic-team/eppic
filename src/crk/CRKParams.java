@@ -147,6 +147,8 @@ public class CRKParams {
 	
 	private HomologsSearchMode homologsSearchMode;
 	
+	private boolean filterByDomain;
+	
 	// some other fields
 	private File inFile;
 	private String jobName;
@@ -217,12 +219,13 @@ public class CRKParams {
 		this.progressLog = System.out;
 		this.debug = false;
 		this.homologsSearchMode = DEF_HOMOLOGS_SEARCH_MODE;
+		this.filterByDomain = false;
 	}
 	
 	public void parseCommandLine(String[] args, String programName, String help) {
 	
 
-		Getopt g = new Getopt(programName, args, "i:sa:b:o:r:e:c:z:m:x:y:d:D:q:H:pnA:I:C:lL:uh?");
+		Getopt g = new Getopt(programName, args, "i:sa:b:o:r:e:c:z:m:x:y:d:D:q:H:OpnA:I:C:lL:uh?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
@@ -273,6 +276,9 @@ public class CRKParams {
 				break;
 			case 'H':
 				homologsSearchMode = HomologsSearchMode.getByName(g.getOptarg());
+				break;
+			case 'O':
+				filterByDomain = true;
 				break;
 			case 'p':
 				usePisa = true;
@@ -349,10 +355,11 @@ public class CRKParams {
 		"                  scores. Default: "+DEF_MAX_NUM_SEQUENCES+". This is especially important when using \n" +
 		"                  the -k option, with too many sequences, selecton will run too long\n" +
 		"                  (and inaccurately because of ks saturation)\n" +
-		"  [-H <string>]:  homologues search mode: one of local (only Uniprot region covered by PDB entry \n" +
+		"  [-H <string>]:  homologues search mode: one of local (only Uniprot region covered by PDB structure \n" +
 		"                  will be used to search homologues), global (full Uniprot entry will be used \n" +
 		"                  to search homologues) or auto (global will be used except if coverage is under \n"+
 		"                  "+String.format("%3.1f",DEF_PDB2UNIPROT_MAX_SCOV_FOR_LOCAL)+"). Default "+DEF_HOMOLOGS_SEARCH_MODE.getName() + "\n"+
+		"  [-O]         :  restrict homologs search to those within the same domain of life as query\n"+
 		"  [-p]         :  use PISA interface enumeration (will be downloaded from web) \n" +
 		"                  instead of ours (only possible for existing PDB entries).\n" +
 		"  [-n]         :  use NACCESS for ASA/BSA calculations, otherwise area calculations \n" +
@@ -612,6 +619,10 @@ public class CRKParams {
 	
 	public HomologsSearchMode getHomologsSearchMode() {
 		return homologsSearchMode;
+	}
+	
+	public boolean isFilterByDomain() {
+		return filterByDomain;
 	}
 
 	public void readConfigFile(File file) throws FileNotFoundException, IOException { 

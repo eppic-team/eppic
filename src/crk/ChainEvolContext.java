@@ -178,6 +178,7 @@ public class ChainEvolContext implements Serializable {
 		HomologsSearchMode searchMode = params.getHomologsSearchMode();
 		double pdb2uniprotMaxScovForLocal = params.getPdb2uniprotMaxScovForLocal();
 		int minHomologsCutoff = params.getMinHomologsCutoff();
+		boolean filterByDomain = params.isFilterByDomain();
 		
 		queryInterv = new Interval(1,query.getLength());
 		
@@ -207,6 +208,8 @@ public class ChainEvolContext implements Serializable {
 		LOGGER.info(homologs.getSizeFullList()+" homologs found by blast");
 		
 		applyIdentityCutoff(homSoftIdCutoff, homHardIdCutoff, homIdStep, queryCovCutoff, minHomologsCutoff);
+		
+		if (filterByDomain) homologs.filterToSameDomainOfLife(); 
 	}
 	
 	public void removeRedundancy() {
