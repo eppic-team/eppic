@@ -211,7 +211,9 @@ public class ChainEvolContext implements Serializable {
 	}
 	
 	public void filterToSameDomainOfLife() {
+		LOGGER.info("Filtering to domain: "+query.getFirstTaxon());
 		homologs.filterToSameDomainOfLife();
+		LOGGER.info(homologs.getSizeFilteredSubset()+" homologs after filtering to "+query.getFirstTaxon());
 	}
 	
 	public void removeRedundancy() {
