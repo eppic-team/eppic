@@ -352,9 +352,7 @@ public class CRKParams {
 		"                  in "+String.format("%4.2f",DEF_HOM_ID_STEP)+" steps until this hard cut-off is reached. \n" +
 		"                  Default: "+String.format("%3.1f",DEF_HOM_HARD_ID_CUTOFF)+"\n"+
 		"  [-q <int>]   :  maximum number of sequences to keep for calculation of conservation \n" +
-		"                  scores. Default: "+DEF_MAX_NUM_SEQUENCES+". This is especially important when using \n" +
-		"                  the -k option, with too many sequences, selecton will run too long\n" +
-		"                  (and inaccurately because of ks saturation)\n" +
+		"                  scores. Default: "+DEF_MAX_NUM_SEQUENCES+"\n"+
 		"  [-H <string>]:  homologues search mode: one of local (only Uniprot region covered by PDB structure \n" +
 		"                  will be used to search homologues), global (full Uniprot entry will be used \n" +
 		"                  to search homologues) or auto (global will be used except if coverage is under \n"+
