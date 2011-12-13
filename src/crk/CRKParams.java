@@ -103,6 +103,8 @@ public class CRKParams {
 	// default cache dirs
 	private static final String   DEF_BLAST_CACHE_DIR = null;
 	
+	// default use uniparc
+	private static final boolean  DEF_USE_UNIPARC = true;
 	
 	// FIELDS
 	
@@ -181,6 +183,8 @@ public class CRKParams {
 			
 	private String   blastCacheDir;
 	
+	private boolean  useUniparc;
+	
 	// and finally the ones with no defaults
 	private String   blastDbDir; // no default
 	private String   blastDb;    // no default
@@ -220,6 +224,7 @@ public class CRKParams {
 		this.debug = false;
 		this.homologsSearchMode = DEF_HOMOLOGS_SEARCH_MODE;
 		this.filterByDomain = false;
+
 	}
 	
 	public void parseCommandLine(String[] args, String programName, String help) {
@@ -662,6 +667,8 @@ public class CRKParams {
 			pdb2uniprotMaxScovForLocal = Double.parseDouble(p.getProperty("PDB2UNIPROT_MAX_SCOV_FOR_LOCAL", new Double(DEF_PDB2UNIPROT_MAX_SCOV_FOR_LOCAL).toString()));
 					
 			blastCacheDir    = p.getProperty("BLAST_CACHE_DIR", DEF_BLAST_CACHE_DIR);
+			
+			useUniparc       = Boolean.parseBoolean(p.getProperty("USE_UNIPARC",new Boolean(DEF_USE_UNIPARC).toString()));
 
 		} catch (NumberFormatException e) {
 			System.err.println("A numerical value in the config file was incorrectly specified: "+e.getMessage()+".\n" +
@@ -736,6 +743,10 @@ public class CRKParams {
 
 	public String getBlastDb() {
 		return blastDb;
+	}
+	
+	public boolean isUseUniparc() {
+		return useUniparc;
 	}
 	
 

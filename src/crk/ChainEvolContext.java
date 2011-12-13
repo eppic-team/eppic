@@ -26,8 +26,8 @@ import owl.core.runners.blast.BlastXMLParser;
 //import owl.core.sequence.ProteinToCDSMatch;
 import owl.core.sequence.Sequence;
 import owl.core.sequence.UniprotEntry;
-import owl.core.sequence.UniprotHomolog;
-import owl.core.sequence.UniprotHomologList;
+import owl.core.sequence.Homolog;
+import owl.core.sequence.HomologList;
 import owl.core.sequence.UniprotVerMisMatchException;
 import owl.core.sequence.alignment.MultipleSequenceAlignment;
 import owl.core.sequence.alignment.PairwiseSequenceAlignment;
@@ -64,7 +64,7 @@ public class ChainEvolContext implements Serializable {
 	private boolean hasQueryMatch;						// whether we could find the query's uniprot match or not
 	private PairwiseSequenceAlignment alnPdb2Uniprot; 	// the alignment between the pdb sequence and the uniprot sequence (query)
 	
-	private UniprotHomologList homologs;	// the homologs of this chain's sequence
+	private HomologList homologs;	// the homologs of this chain's sequence
 		
 	private boolean searchWithFullUniprot;  // mode of searching, true=we search with full uniprot seq, false=we search with PDB matching part only
 
@@ -178,6 +178,7 @@ public class ChainEvolContext implements Serializable {
 		HomologsSearchMode searchMode = params.getHomologsSearchMode();
 		double pdb2uniprotMaxScovForLocal = params.getPdb2uniprotMaxScovForLocal();
 		int minHomologsCutoff = params.getMinHomologsCutoff();
+		boolean useUniparc = params.isUseUniparc();
 		
 		queryInterv = new Interval(1,query.getLength());
 		
@@ -201,7 +202,11 @@ public class ChainEvolContext implements Serializable {
 		if (searchWithFullUniprot) LOGGER.info("Using full Uniprot sequence for blast search");
 		else LOGGER.info("Using Uniprot subsequence "+queryInterv.beg+"-"+queryInterv.end+" for blast search");
 		
-		homologs = new UniprotHomologList(query,queryInterv);
+		homologs = new HomologList(query,queryInterv);
+		
+		if (useUniparc) LOGGER.info("Uniparc hits will be used");
+		else LOGGER.info("Uniparc hits won't be used");
+		homologs.setUseUniparc(useUniparc);
 		
 		homologs.searchWithBlast(blastBinDir, blastDbDir, blastDb, blastNumThreads, maxNumSeqs, blastCache);
 		LOGGER.info(homologs.getSizeFullList()+" homologs found by blast");
@@ -231,6 +236,7 @@ public class ChainEvolContext implements Serializable {
 	 */
 	public void retrieveHomologsData() throws IOException, UniprotVerMisMatchException {
 		homologs.retrieveUniprotKBData();
+		homologs.retrieveUniparcData(null);
 	}
 	
 	private void applyIdentityCutoff(double homSoftIdCutoff, double homHardIdCutoff, double homIdStep, double queryCovCutoff, int minHomologsCutoff) {
@@ -398,13 +404,16 @@ public class ChainEvolContext implements Serializable {
 		ps.println("Uniprot version: "+homologs.getUniprotVer());
 		ps.println("Homologs: "+homologs.getSizeFilteredSubset()+" at "+String.format("%4.2f",homologs.getIdCutoff())+" identity cut-off and "+
 				String.format("%4.2f",homologs.getQCovCutoff())+" query coverage cutoff");
-		for (UniprotHomolog hom:homologs.getFilteredSubset()) {
-			ps.print(hom.getUniId()+" (");
-			for (String emblcdsid: hom.getUniprotEntry().getEmblCdsIds()) {
-				ps.print(" "+emblcdsid);
-			}
-			ps.print(" )");
-			ps.println("\t"+String.format("%5.1f",hom.getPercentIdentity())+"\t"+hom.getUniprotEntry().getFirstTaxon()+"\t"+hom.getUniprotEntry().getLastTaxon());
+		for (Homolog hom:homologs.getFilteredSubset()) {
+			ps.printf("%-13s",hom.getIdentifier());
+			//ps.print(" (");
+			//for (String emblcdsid: hom.getUniprotEntry().getEmblCdsIds()) {
+			//	ps.print(" "+emblcdsid);
+			//}
+			//ps.print(" )");
+			ps.printf("\t%5.1f",hom.getPercentIdentity());
+			if (hom.isUniprot()) ps.print("\t"+hom.getUniprotEntry().getFirstTaxon()+"\t"+hom.getUniprotEntry().getLastTaxon());
+			ps.println();
 		}
 	}
 	
@@ -570,7 +579,7 @@ public class ChainEvolContext implements Serializable {
 		
 		new Sequence(pdbName,this.sequence).writeToFastaFile(inputSeqFile);
 
-		String uniprotVer = UniprotHomologList.readUniprotVer(blastDbDir);
+		String uniprotVer = HomologList.readUniprotVer(blastDbDir);
 		LOGGER.info("Query blast search for Uniprot mapping using Uniprot version "+uniprotVer);
 		BlastRunner blastRunner = new BlastRunner(blastBinDir, blastDbDir);
 		blastRunner.runBlastp(inputSeqFile, blastDb, outBlast, BLAST_OUTPUT_TYPE, BLAST_NO_FILTERING, blastNumThreads, 500);
