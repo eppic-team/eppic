@@ -212,7 +212,7 @@ public class WebUIDataAdaptor {
 				homInfo.setAlignedSeq1(cec.getPdb2uniprotAln().getAlignedSequences()[0]);
 				homInfo.setMarkupLine(cec.getPdb2uniprotAln().getAlignedSequences()[1]);
 				homInfo.setAlignedSeq2(cec.getPdb2uniprotAln().getMarkupLine().toString());
-				
+				homInfos.add(homInfo);
 			}
 			homInfo.setPdbScoreItem(pdbScoreItem);
 			
