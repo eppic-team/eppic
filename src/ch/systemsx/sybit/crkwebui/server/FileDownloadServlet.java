@@ -42,6 +42,7 @@ public class FileDownloadServlet extends FileBaseServlet
 		final String type = request.getParameter("type");
 		final String jobId = request.getParameter("id");
 		final String interfaceId = request.getParameter("interface");
+		final String alignment = request.getParameter("alignment");
 
 		ServletOutputStream output = response.getOutputStream();
 
@@ -49,7 +50,7 @@ public class FileDownloadServlet extends FileBaseServlet
 		{
 			if ((jobId != null) && (jobId.length() != 0)) 
 			{
-				if(!jobId.matches("[A-Za-z0-9]+"))
+				if(!jobId.matches("^[A-Za-z0-9]+$"))
 				{
 					response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Incorrect format of job id");
 				}
@@ -61,9 +62,16 @@ public class FileDownloadServlet extends FileBaseServlet
 			    }
 				else if((interfaceId != null) &&
 						(!interfaceId.equals("")) &&
-						(!interfaceId.matches("[0-9]+")))
+						(!interfaceId.matches("^[0-9]+$")))
 				{
 					response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Incorrect format of interface");
+				}
+				else if(type.equals("fasta") &&
+						((alignment == null) ||
+						(alignment.equals("")) ||
+						(!alignment.matches("^[A-Za-z]$"))))
+				{
+					response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Incorrect format of alignment");
 				}
 				else
 				{
@@ -74,7 +82,7 @@ public class FileDownloadServlet extends FileBaseServlet
 					if (resultFileDirectory.exists()
 						&& resultFileDirectory.isDirectory()) 
 					{
-						final String suffixType = FileNameGenerator.generateFileNameToDownload(type, jobId, interfaceId);
+						final String suffixType = FileNameGenerator.generateFileNameToDownload(type, jobId, interfaceId, alignment);
 						
 						if(suffixType == null)
 						{
@@ -112,6 +120,10 @@ public class FileDownloadServlet extends FileBaseServlet
 									else if(directoryContent[0].endsWith(".pse"))
 									{
 										response.setContentType("application/pymol-session");
+									}
+									else if(directoryContent[0].endsWith(".aln"))
+									{
+										response.setContentType("text/plain");
 									}
 									else
 									{

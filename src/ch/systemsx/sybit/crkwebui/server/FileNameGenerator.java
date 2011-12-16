@@ -10,7 +10,8 @@ public class FileNameGenerator
 
 	public static String generateFileNameToDownload(String type,
 													String jobId,
-													String interfaceId)
+													String interfaceId,
+													String alignment)
 	{
 		String pattern = null;
 		
@@ -25,6 +26,14 @@ public class FileNameGenerator
 		else if(type.equals("pse"))
 		{
 			pattern = "." + interfaceId + ".pse";
+		}
+		else if(type.equals("pse"))
+		{
+			pattern = "." + interfaceId + ".pse";
+		}
+		else if(type.equals("fasta"))
+		{
+			pattern = "." + alignment + ".aln";
 		}
 		
 		return pattern;
