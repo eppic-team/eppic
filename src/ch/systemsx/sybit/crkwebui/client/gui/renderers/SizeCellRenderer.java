@@ -4,6 +4,7 @@ import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 
 import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.store.ListStore;
+import com.extjs.gxt.ui.client.widget.Label;
 import com.extjs.gxt.ui.client.widget.grid.ColumnData;
 import com.extjs.gxt.ui.client.widget.grid.Grid;
 import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
@@ -32,15 +33,16 @@ public class SizeCellRenderer implements GridCellRenderer<BaseModel>
 		int size2 = model.get("size2");
 		
 		int sizeSum = size1 + size2;
+		
+		Label sizeLabel = new Label(String.valueOf(value));
 
 		if(sizeSum < mainController.getPdbScoreItem().getRunParameters().getMinCoreSizeForBio())
 		{
-			String color = "red";
-			return "<span style='font-weight: bold;color:" + color + "'>"
-					+ value + "</span>";
+			sizeLabel.setStyleAttribute("font-weight", "bold");
+			sizeLabel.setStyleAttribute("color", "red");
 		}
 
-		return value;
+		return sizeLabel;
 	}
 
 }

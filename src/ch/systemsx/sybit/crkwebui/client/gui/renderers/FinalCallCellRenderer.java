@@ -1,19 +1,14 @@
 package ch.systemsx.sybit.crkwebui.client.gui.renderers;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
+import ch.systemsx.sybit.crkwebui.client.gui.LabelWithTooltip;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceItem;
 
 import com.extjs.gxt.ui.client.data.BaseModel;
-import com.extjs.gxt.ui.client.event.BaseEvent;
-import com.extjs.gxt.ui.client.event.Events;
-import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.store.ListStore;
-import com.extjs.gxt.ui.client.widget.Label;
 import com.extjs.gxt.ui.client.widget.grid.ColumnData;
 import com.extjs.gxt.ui.client.widget.grid.Grid;
 import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
-import com.extjs.gxt.ui.client.widget.tips.ToolTip;
-import com.extjs.gxt.ui.client.widget.tips.ToolTipConfig;
 
 /**
  * This model is used to style final result
@@ -23,9 +18,6 @@ import com.extjs.gxt.ui.client.widget.tips.ToolTipConfig;
 public class FinalCallCellRenderer implements GridCellRenderer<BaseModel> 
 {
 	private MainController mainController;
-	
-	private ToolTip toolTip;
-	private boolean refreshTooltip = true;
 	
 	public FinalCallCellRenderer(MainController mainController) 
 	{
@@ -40,90 +32,48 @@ public class FinalCallCellRenderer implements GridCellRenderer<BaseModel>
 
 		if (value != null) 
 		{
-			String color = "black";
-
-			if (value.equals("bio")) 
-			{
-				color = "green";
-			}
-			else if (value.equals("xtal")) 
-			{
-				color = "red";
-			}
+			String tooltipText = null;
 			
-			final Label callReasonLabel = new Label(value);
-			String text = null;
-			
-			callReasonLabel.setStyleAttribute("color", color);
-
 			int interfaceId = model.get("id");
 			
 			InterfaceItem interfaceItem = mainController.getPdbScoreItem().getInterfaceItem(interfaceId - 1);
 			
 			if(interfaceItem != null)
 			{
-				text = interfaceItem.getFinalCallReason();
+				tooltipText = interfaceItem.getFinalCallReason();
 				
-				if(text != null)
+				if(tooltipText != null)
 				{
-					text = text.replaceAll("\n", "<br/>");
+					tooltipText = tooltipText.replaceAll("\n", "<br/>");
 				}
 			}
 			
-			final String callReasonText = text;
+			LabelWithTooltip callReasonLabel = new LabelWithTooltip(value, 
+																	tooltipText, 
+																	mainController, 
+																	100);
 			
-			callReasonLabel.addListener(Events.OnMouseOver, new Listener<BaseEvent>()
+			String color = "black";
+//			String backgroundColor = null;
+
+			if (value.equals("bio")) 
 			{
-				@Override
-				public void handleEvent(BaseEvent be) 
-				{
-					if((toolTip != null) && (refreshTooltip))
-					{
-						toolTip.disable();
-					}
-					
-					if(refreshTooltip)
-					{
-						ToolTipConfig toolTipConfig = new ToolTipConfig();  
-						toolTipConfig.setMouseOffset(new int[] {0, 0});  
-						
-						toolTipConfig.setText(callReasonText);  
-						
-						int width = 500;
-						if(width > mainController.getWindowWidth())
-						{
-							width = mainController.getWindowWidth() - 10;
-						}
-						
-						int toolTipXPosition = callReasonLabel.getAbsoluteLeft() + callReasonLabel.getWidth() + 5;
-						
-//							toolTipConfig.setMinWidth(width);
-						toolTipConfig.setMaxWidth(width);
-						toolTipConfig.setShowDelay(100);
-						toolTipConfig.setDismissDelay(0);
-						
-						toolTip = new ToolTip(null, toolTipConfig);
-						
-						toolTip.showAt(toolTipXPosition, 
-									   callReasonLabel.getAbsoluteTop() + callReasonLabel.getHeight() + 5);
-						refreshTooltip = false;
-					}
-				}
-			});
-		
-			callReasonLabel.addListener(Events.OnMouseOut, new Listener<BaseEvent>()
+				color = "green";
+//				backgroundColor = "#EEFFEE";
+			}
+			else if (value.equals("xtal")) 
 			{
-				@Override
-				public void handleEvent(BaseEvent be) 
-				{
-					if(toolTip != null)
-					{
-						toolTip.disable();
-					}
-					
-					refreshTooltip = true;
-				}
-			});
+				color = "red";
+//				backgroundColor = "#FFEEEE";
+			}
+			
+//			if(backgroundColor != null)
+//			{
+//				config.style = "background-color:" + backgroundColor + ";text-align:center;";
+//			}
+			
+			callReasonLabel.setStyleAttribute("color", color);
+			callReasonLabel.setStyleAttribute("font-weight", "bold");
 			
 			return callReasonLabel;
 		}

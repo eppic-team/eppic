@@ -4,6 +4,7 @@ import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
 
 import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.store.ListStore;
+import com.extjs.gxt.ui.client.widget.Label;
 import com.extjs.gxt.ui.client.widget.grid.ColumnData;
 import com.extjs.gxt.ui.client.widget.grid.Grid;
 
@@ -26,18 +27,17 @@ public class JobStatusCellRenderer extends DefaultCellRenderer
 
 		if (value == null) {
 			return value;
-		} else if (value.equals(StatusOfJob.ERROR)) {
+		} else if (value.equals(StatusOfJob.ERROR.getName())) {
 			color = "red";
-		} else if (value.equals(StatusOfJob.FINISHED)) {
+		} else if (value.equals(StatusOfJob.FINISHED.getName())) {
 			color = "green";
 		} else {
 			return value;
 		}
 
-		return "<span qtitle='"
-				+ grid.getColumnModel().getColumnById(property).getHeader()
-				+ "' qtip='" + value
-				+ "' style='font-weight: bold;color:" + color + "'>"
-				+ value + "</span>";
+		Label jobStatusLabel = new Label(value);
+		jobStatusLabel.setStyleAttribute("color", color);
+		jobStatusLabel.setStyleAttribute("font-weight", "bold");
+		return jobStatusLabel;
 	}
 }
