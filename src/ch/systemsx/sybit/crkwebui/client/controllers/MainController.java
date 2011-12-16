@@ -8,6 +8,7 @@ import ch.systemsx.sybit.crkwebui.client.gui.MainViewPort;
 import ch.systemsx.sybit.crkwebui.client.gui.ResultsPanel;
 import ch.systemsx.sybit.crkwebui.client.gui.StatusPanel;
 import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
+import ch.systemsx.sybit.crkwebui.shared.model.HomologsInfoItem;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResidueItem;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResiduesItemsList;
 import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
@@ -60,8 +61,6 @@ public class MainController
 	
 	private String selectedViewer = MainController.CONSTANTS.viewer_jmol();
 	
-	private boolean resizeInterfacesWindow;
-
 	public MainController(Viewport viewport) 
 	{
 		this.serviceController = new ServiceControllerImpl(this);
@@ -107,6 +106,7 @@ public class MainController
 	public void displayResults(boolean debug)
 	{
 		mainViewPort.mask(CONSTANTS.defaultmask());
+//		mainViewPort.showWaiting(CONSTANTS.defaultmask());
 		serviceController.getResultsOfProcessing(selectedJobId, debug);
 	}
 
@@ -154,7 +154,7 @@ public class MainController
 			statusPanel.fillData(statusData);
 		}
 		
-		if((statusData.getStatus() != null) && (statusData.getStatus().equals(StatusOfJob.RUNNING)))
+		if((statusData.getStatus() != null) && (statusData.getStatus().equals(StatusOfJob.RUNNING.getName())))
 		{
 			doStatusPanelRefreshing = true;
 		}
@@ -493,16 +493,12 @@ public class MainController
 //		}
 	}
 
-	public void setResizeInterfacesWindow(boolean resizeInterfacesWindow) 
+	public void setResizeWindows(boolean resizeWindow) 
 	{
-		this.resizeInterfacesWindow = resizeInterfacesWindow;
+		mainViewPort.getInterfacesResiduesWindow().setResizeWindow(true);
+		mainViewPort.getAlignmentsWindow().setResizeWindow(true);
 	}
 	
-	public boolean isResizeInterfacesWindow()
-	{
-		return resizeInterfacesWindow;
-	}
-
 	public native static String getUserAgent() /*-{
 		return navigator.userAgent.toLowerCase();
 	}-*/;
@@ -584,5 +580,14 @@ public class MainController
 	public void setCanRefreshMyJobs()
 	{
 		this.canRefreshMyJobs = true;
+	}
+	
+	public void showAlignments(HomologsInfoItem homologsInfoItem,
+							   int xPosition,
+							   int yPosition) 
+	{
+		mainViewPort.displayAlignmentsWindow(homologsInfoItem,
+											 xPosition,
+											 yPosition);
 	}
 }

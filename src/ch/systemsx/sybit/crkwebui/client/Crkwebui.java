@@ -59,7 +59,7 @@ public class Crkwebui implements EntryPoint, ValueChangeHandler<String>
 				
 				mainController.resizeResultsGrid();
 				mainController.resizeScoresGrid();
-				mainController.setResizeInterfacesWindow(true);
+				mainController.setResizeWindows(true);
 			}
 		});
 

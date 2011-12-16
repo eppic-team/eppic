@@ -1,6 +1,7 @@
 package ch.systemsx.sybit.crkwebui.client.gui;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
+import ch.systemsx.sybit.crkwebui.shared.model.HomologsInfoItem;
 
 import com.extjs.gxt.ui.client.Style.LayoutRegion;
 import com.extjs.gxt.ui.client.event.BorderLayoutEvent;
@@ -29,6 +30,8 @@ public class MainViewPort extends Viewport
 	private BottomPanel bottomPanel;
 	
 	private InterfacesResiduesWindow interfacesResiduesWindow;
+	private AlignmentsWindow alignmentsWindow;
+	
 	private MessageBox waitingMessageBox;
 	private MessageBox errorMessageBox;
 
@@ -125,10 +128,10 @@ public class MainViewPort extends Viewport
 	public void displayInterfacesWindow(int selectedInterface) 
 	{
 		if((interfacesResiduesWindow == null) ||
-		   (mainController.isResizeInterfacesWindow()))
+		   (interfacesResiduesWindow.isResizeWindow()))
 		{
 			interfacesResiduesWindow = new InterfacesResiduesWindow(mainController, selectedInterface);
-			mainController.setResizeInterfacesWindow(false);
+			interfacesResiduesWindow.setResizable(false);
 			interfacesResiduesWindow.setVisible(true);
 			Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 				@Override
@@ -163,12 +166,17 @@ public class MainViewPort extends Viewport
 		}
 	}
 	
-	public void showWaiting(String text)
+	public void showWaiting(final String text)
 	{
-		waitingMessageBox = MessageBox.wait(MainController.CONSTANTS.waiting_message_box_header(),  
-											text + ", " + MainController.CONSTANTS.waiting_message_box_info() + "...", 
-											text + "...");  
-		waitingMessageBox.show();
+		Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+			@Override
+			public void execute() {
+				waitingMessageBox = MessageBox.wait(MainController.CONSTANTS.waiting_message_box_header(),  
+						text + ", " + MainController.CONSTANTS.waiting_message_box_info() + "...", 
+						text + "...");  
+				waitingMessageBox.show();
+			}
+		});
 	}
 	
 	public void hideWaiting()
@@ -189,5 +197,31 @@ public class MainViewPort extends Viewport
 			errorMessageBox.setMaxWidth(mainController.getWindowWidth());
 			errorMessageBox.show();
 		}
+	}
+
+	public void displayAlignmentsWindow(HomologsInfoItem homologsInfoItem,
+										int xPosition,
+										int yPosition) 
+	{
+		if((alignmentsWindow == null) ||
+		   (alignmentsWindow.isResizeWindow()) || 
+		   (alignmentsWindow.getHomologsInfoItem() != homologsInfoItem))
+		{
+			alignmentsWindow = new AlignmentsWindow(mainController, homologsInfoItem);
+			alignmentsWindow.setResizeWindow(false);
+			alignmentsWindow.updateWindowContent();
+		}
+		
+		alignmentsWindow.setPagePosition(xPosition - alignmentsWindow.getWindowWidth(), yPosition);
+		alignmentsWindow.setVisible(true);
+		
+		//called beacuse of the bug in GXT 2.2.3
+		// http://www.sencha.com/forum/showthread.php?126888-Problems-with-RowLayout
+		alignmentsWindow.layout(true);
+	}
+
+	public AlignmentsWindow getAlignmentsWindow() 
+	{
+		return alignmentsWindow;
 	}
 }
