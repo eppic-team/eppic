@@ -65,62 +65,6 @@ public class InterfaceScoreItemListener
 				interfaceScoreItemDB.setUnweightedFinalScores(null);
 			}
 		}
-		
-		if(interfaceScoreItemDB.getWeightedRatio1Scores() != null)
-		{
-			if(Double.isNaN(interfaceScoreItemDB.getWeightedRatio1Scores()))
-			{
-				interfaceScoreItemDB.setWeightedRatio1Scores(null);
-			}
-		}
-		
-		if(interfaceScoreItemDB.getWeightedRatio2Scores() != null)
-		{
-			if(Double.isNaN(interfaceScoreItemDB.getWeightedRatio2Scores()))
-			{
-				interfaceScoreItemDB.setWeightedRatio2Scores(null);
-			}
-		}
-		
-		if(interfaceScoreItemDB.getWeightedCore1Scores() != null)
-		{
-			if(Double.isNaN(interfaceScoreItemDB.getWeightedCore1Scores()))
-			{
-				interfaceScoreItemDB.setWeightedCore1Scores(null);
-			}
-		}
-		
-		if(interfaceScoreItemDB.getWeightedCore2Scores() != null)
-		{
-			if(Double.isNaN(interfaceScoreItemDB.getWeightedCore2Scores()))
-			{
-				interfaceScoreItemDB.setWeightedCore2Scores(null);
-			}
-		}
-			
-		if(interfaceScoreItemDB.getWeightedRim1Scores() != null)
-		{
-			if(Double.isNaN(interfaceScoreItemDB.getWeightedRim1Scores()))
-			{
-				interfaceScoreItemDB.setWeightedRim1Scores(null);
-			}
-		}
-		
-		if(interfaceScoreItemDB.getWeightedRim2Scores() != null)
-		{
-			if(Double.isNaN(interfaceScoreItemDB.getWeightedRim2Scores()))
-			{
-				interfaceScoreItemDB.setWeightedRim2Scores(null);
-			}
-		}
-		
-		if(interfaceScoreItemDB.getWeightedFinalScores() != null)
-		{
-			if(Double.isNaN(interfaceScoreItemDB.getWeightedFinalScores()))
-			{
-				interfaceScoreItemDB.setWeightedFinalScores(null);
-			}
-		}
 	}
 	
 	@PostLoad
@@ -159,41 +103,6 @@ public class InterfaceScoreItemListener
 		if(interfaceScoreItemDB.getUnweightedFinalScores() == null)
 		{
 			interfaceScoreItemDB.setUnweightedFinalScores(Double.NaN);
-		}
-		
-		if(interfaceScoreItemDB.getWeightedRatio1Scores() == null)
-		{
-			interfaceScoreItemDB.setWeightedRatio1Scores(Double.NaN);
-		}
-		
-		if(interfaceScoreItemDB.getWeightedRatio2Scores() == null)
-		{
-			interfaceScoreItemDB.setWeightedRatio2Scores(Double.NaN);
-		}
-		
-		if(interfaceScoreItemDB.getWeightedCore1Scores() == null)
-		{
-			interfaceScoreItemDB.setWeightedCore1Scores(Double.NaN);
-		}
-		
-		if(interfaceScoreItemDB.getWeightedCore2Scores() == null)
-		{
-			interfaceScoreItemDB.setWeightedCore2Scores(Double.NaN);
-		}
-		
-		if(interfaceScoreItemDB.getWeightedRim1Scores() == null)
-		{
-			interfaceScoreItemDB.setWeightedRim1Scores(Double.NaN);
-		}
-		
-		if(interfaceScoreItemDB.getWeightedRim2Scores() == null)
-		{
-			interfaceScoreItemDB.setWeightedRim2Scores(Double.NaN);
-		}
-		
-		if(interfaceScoreItemDB.getWeightedFinalScores() == null)
-		{
-			interfaceScoreItemDB.setWeightedFinalScores(Double.NaN);
 		}
 	}
 }

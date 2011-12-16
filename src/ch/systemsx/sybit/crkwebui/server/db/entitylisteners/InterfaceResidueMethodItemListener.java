@@ -3,7 +3,6 @@ package ch.systemsx.sybit.crkwebui.server.db.entitylisteners;
 import javax.persistence.PostLoad;
 import javax.persistence.PrePersist;
 
-import model.InterfaceResidueItemDB;
 import model.InterfaceResidueMethodItemDB;
 
 public class InterfaceResidueMethodItemListener
