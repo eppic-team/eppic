@@ -73,7 +73,7 @@ public class InputParametersParser
 			{
 				if(inputParametersNode.getNodeName().equals("default_methods"))
 				{
-					List<String> defaultMethods = prepareDefaultMethodsList(inputParametersNode);
+					List<String> defaultMethods = prepareList(inputParametersNode);
 					inputParameters.setMethods(defaultMethods);
 				}
 				else if(inputParametersNode.getNodeName().equals("default_parameters"))
@@ -84,6 +84,11 @@ public class InputParametersParser
 				{
 					List<Integer> reducedAlphabetList = prepareReducedAlphabetList(inputParametersNode);
 					applicationSettings.setReducedAlphabetList(reducedAlphabetList);
+				}
+				else if(inputParametersNode.getNodeName().equals("search_mode"))
+				{
+					List<String> defaultMethods = prepareList(inputParametersNode);
+					applicationSettings.setSearchModeList(defaultMethods);
 				}
 			}
 		}
@@ -142,13 +147,13 @@ public class InputParametersParser
 											 InputParameters inputParameters) 
 	{
 		Element defaultInputParameterElement = (Element)defaultInputParametersNodeRoot;
-		inputParameters.setUseNACCESS(Boolean.parseBoolean(defaultInputParameterElement.getElementsByTagName("use_naccess").item(0).getFirstChild().getNodeValue()));
-		inputParameters.setUsePISA(Boolean.parseBoolean(defaultInputParameterElement.getElementsByTagName("use_pisa").item(0).getFirstChild().getNodeValue()));
 		inputParameters.setAsaCalc(Integer.parseInt(defaultInputParameterElement.getElementsByTagName("asa_calc").item(0).getFirstChild().getNodeValue()));
 		inputParameters.setMaxNrOfSequences(Integer.parseInt(defaultInputParameterElement.getElementsByTagName("max_nr_of_sequences").item(0).getFirstChild().getNodeValue()));
 		inputParameters.setReducedAlphabet(Integer.parseInt(defaultInputParameterElement.getElementsByTagName("reduced_alphabet").item(0).getFirstChild().getNodeValue()));
-		inputParameters.setIdentityCutoff(Float.parseFloat(defaultInputParameterElement.getElementsByTagName("identity_cutoff").item(0).getFirstChild().getNodeValue()));
+		inputParameters.setSoftIdentityCutoff(Float.parseFloat(defaultInputParameterElement.getElementsByTagName("soft_identity_cutoff").item(0).getFirstChild().getNodeValue()));
+		inputParameters.setHardIdentityCutoff(Float.parseFloat(defaultInputParameterElement.getElementsByTagName("hard_identity_cutoff").item(0).getFirstChild().getNodeValue()));
 		inputParameters.setSelecton(Float.parseFloat(defaultInputParameterElement.getElementsByTagName("selecton").item(0).getFirstChild().getNodeValue()));
+		inputParameters.setSearchMode(defaultInputParameterElement.getElementsByTagName("search_mode").item(0).getFirstChild().getNodeValue());
 	}
 
 	private static List<Integer> prepareReducedAlphabetList(Node reducedAlphabetNodeRoot) 
@@ -171,7 +176,7 @@ public class InputParametersParser
 		return reducedAlphabetList;
 	}
 
-	private static List<String> prepareDefaultMethodsList(Node defaultMethodsNodeListRoot) 
+	private static List<String> prepareList(Node defaultMethodsNodeListRoot) 
 	{
 		List<String> defaultMethods = new ArrayList<String>();
 		
