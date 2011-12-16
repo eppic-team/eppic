@@ -5,7 +5,7 @@ import java.util.Collections;
 import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
-import ch.systemsx.sybit.crkwebui.shared.model.NumHomologsStringItem;
+import ch.systemsx.sybit.crkwebui.shared.model.HomologsInfoItem;
 import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
 import ch.systemsx.sybit.crkwebui.shared.model.RunParametersItem;
 
@@ -18,6 +18,7 @@ import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.widget.Label;
+import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.form.FormPanel;
 import com.extjs.gxt.ui.client.widget.layout.FormData;
 import com.extjs.gxt.ui.client.widget.layout.FormLayout;
@@ -25,7 +26,6 @@ import com.extjs.gxt.ui.client.widget.tips.ToolTip;
 import com.extjs.gxt.ui.client.widget.tips.ToolTipConfig;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.ui.FlexTable;
-import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 
@@ -36,7 +36,7 @@ import com.google.gwt.user.client.ui.HasVerticalAlignment;
  */
 public class InfoPanel extends FormPanel 
 {
-	private Label inputParametersLabel;
+	private EmptyLinkWithTooltip inputParametersLabel;
 	private ToolTip inputParametersTooltip;
 //	private Label totalCoreSizeXtalCallCutoff;
 //	private Label infoPanelMinNumberHomologsRequired;
@@ -46,7 +46,7 @@ public class InfoPanel extends FormPanel
 //	private Label infoPanelMaxNumSequencesUsed;
 //	private Label infoPanelBioCallCutoff;
 //	private Label infoPanelXtalCallCutoff;
-	private HTML downloadResultsLink;
+	private LinkWithTooltip downloadResultsLink;
 	
 	private MainController mainController;
 	
@@ -72,7 +72,7 @@ public class InfoPanel extends FormPanel
 		int nrOfRows = 3;
 		int nrOfColumns = 4;
 		
-		List<NumHomologsStringItem> homologsStrings = mainController.getPdbScoreItem().getNumHomologsStrings();
+		List<HomologsInfoItem> homologsStrings = mainController.getPdbScoreItem().getHomologsInfoItems();
 		
 		int limit = 50;
 		
@@ -114,7 +114,10 @@ public class InfoPanel extends FormPanel
 		toolTipConfig.setMaxWidth(mainController.getWindowWidth());
 		inputParametersTooltip = new ToolTip(inputParametersLabel, toolTipConfig);
 		
-		inputParametersLabel = new Label("<a href=\"\" onClick=\"return false;\">" + MainController.CONSTANTS.info_panel_input_parameters() + "</a>");
+		inputParametersLabel = new EmptyLinkWithTooltip(MainController.CONSTANTS.info_panel_input_parameters(),
+														MainController.CONSTANTS.info_panel_input_parameters_hint(),
+														mainController,
+														0);
 		inputParametersLabel.addListener(Events.OnClick, new Listener<BaseEvent>() {
 
 			@Override
@@ -161,11 +164,12 @@ public class InfoPanel extends FormPanel
 //		infoPanelXtalCallCutoff.addStyleName("crk-default-label");
 //		flexTable.setWidget(1, 2, infoPanelXtalCallCutoff);
 		
-		downloadResultsLink = new HTML();
+		downloadResultsLink = new LinkWithTooltip(MainController.CONSTANTS.info_panel_download_results_link(), 
+												  MainController.CONSTANTS.info_panel_download_results_link_hint(), 
+												  mainController, 
+												  0, 
+												  GWT.getModuleBaseURL() + "fileDownload?type=zip&id=" + mainController.getSelectedJobId());
 		downloadResultsLink.addStyleName("crk-default-label");
-		downloadResultsLink.setHTML("<a href=" + GWT.getModuleBaseURL()
-				+ "fileDownload?type=zip&id=" + mainController.getSelectedJobId()
-				+ ">" + MainController.CONSTANTS.info_panel_download_results_link() + "</a>");
 		flexTable.setWidget(0, 1, downloadResultsLink);
 
 		Label uniprotVersionlabel = new Label(MainController.CONSTANTS.info_panel_uniprot() + ": " +
@@ -182,9 +186,8 @@ public class InfoPanel extends FormPanel
 		{
 			for(int i=0; i<homologsStrings.size(); i++)
 			{
-				Label label = new Label(homologsStrings.get(i).getText());
-				label.addStyleName("crk-default-label");
-				flexTable.setWidget(i, 3, label);
+				LayoutContainer homologsContainer = new HomologsInfoPanel(mainController, homologsStrings.get(i));
+				flexTable.setWidget(i, 3, homologsContainer);
 			}
 		}
 		
