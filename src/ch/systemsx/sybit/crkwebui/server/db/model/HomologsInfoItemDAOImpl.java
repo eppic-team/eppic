@@ -11,40 +11,46 @@ import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
-import model.NumHomologsStringItemDB;
-import model.NumHomologsStringItemDB_;
+import model.HomologsInfoItemDB;
+import model.HomologsInfoItemDB_;
 import model.PDBScoreItemDB;
 import model.PDBScoreItemDB_;
 import ch.systemsx.sybit.crkwebui.server.db.EntityManagerHandler;
 import ch.systemsx.sybit.crkwebui.shared.CrkWebException;
-import ch.systemsx.sybit.crkwebui.shared.model.NumHomologsStringItem;
+import ch.systemsx.sybit.crkwebui.shared.model.HomologsInfoItem;
 
-public class NumHomologsStringsDAOImpl implements NumHomologsStringsDAO
+public class HomologsInfoItemDAOImpl implements HomologsInfoItemDAO
 {
-	public List<NumHomologsStringItem> getNumHomologsStrings(int pdbScoreUid) throws CrkWebException
+	public List<HomologsInfoItem> getHomologsInfoItems(int pdbScoreUid) throws CrkWebException
 	{
 		EntityManager entityManager = null;
-		List<NumHomologsStringItem> result = new ArrayList<NumHomologsStringItem>();
+		List<HomologsInfoItem> result = new ArrayList<HomologsInfoItem>();
 		
 		try
 		{
 			entityManager = EntityManagerHandler.getEntityManager();
 			CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-			CriteriaQuery<NumHomologsStringItemDB> criteriaQuery = criteriaBuilder.createQuery(NumHomologsStringItemDB.class);
+			CriteriaQuery<HomologsInfoItemDB> criteriaQuery = criteriaBuilder.createQuery(HomologsInfoItemDB.class);
 			
-			Root<NumHomologsStringItemDB> numHomologsStringItemRoot = criteriaQuery.from(NumHomologsStringItemDB.class);
-			Path<PDBScoreItemDB> pdbScoreItemRoot = numHomologsStringItemRoot.get(NumHomologsStringItemDB_.pdbScoreItem);
+			Root<HomologsInfoItemDB> numHomologsStringItemRoot = criteriaQuery.from(HomologsInfoItemDB.class);
+			Path<PDBScoreItemDB> pdbScoreItemRoot = numHomologsStringItemRoot.get(HomologsInfoItemDB_.pdbScoreItem);
 			Predicate condition = criteriaBuilder.equal(pdbScoreItemRoot.get(PDBScoreItemDB_.uid), pdbScoreUid);
 			criteriaQuery.where(condition);
-			criteriaQuery.multiselect(numHomologsStringItemRoot.get(NumHomologsStringItemDB_.uid),
-									  numHomologsStringItemRoot.get(NumHomologsStringItemDB_.text));
+			criteriaQuery.multiselect(numHomologsStringItemRoot.get(HomologsInfoItemDB_.uid),
+									  numHomologsStringItemRoot.get(HomologsInfoItemDB_.chains),
+									  numHomologsStringItemRoot.get(HomologsInfoItemDB_.uniprotId),
+									  numHomologsStringItemRoot.get(HomologsInfoItemDB_.numHomologs),
+									  numHomologsStringItemRoot.get(HomologsInfoItemDB_.subInterval),
+									  numHomologsStringItemRoot.get(HomologsInfoItemDB_.alignedSeq1),
+									  numHomologsStringItemRoot.get(HomologsInfoItemDB_.alignedSeq2),
+									  numHomologsStringItemRoot.get(HomologsInfoItemDB_.markupLine));
 			
 			Query query = entityManager.createQuery(criteriaQuery);
-			List<NumHomologsStringItemDB> numHomologsStringItemDBs = query.getResultList();
+			List<HomologsInfoItemDB> numHomologsStringItemDBs = query.getResultList();
 			
-			for(NumHomologsStringItemDB numHomologsStringItemDB : numHomologsStringItemDBs)
+			for(HomologsInfoItemDB homologsInfoItemDB : numHomologsStringItemDBs)
 			{
-				result.add(NumHomologsStringItem.create(numHomologsStringItemDB));
+				result.add(HomologsInfoItem.create(homologsInfoItemDB));
 			}
 			
 	//			Query query = entityManager.createQuery("from PDBScore WHERE jobId = :jobId", PDBScoreItem.class);

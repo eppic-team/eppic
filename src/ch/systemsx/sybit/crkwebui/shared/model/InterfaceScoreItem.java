@@ -16,14 +16,6 @@ public class InterfaceScoreItem implements Serializable
 	private String method;
 	private int id;
 	
-	private double weightedRim1Scores;
-	private double weightedCore1Scores;
-	private double weightedRatio1Scores;
-	private double weightedRim2Scores;
-	private double weightedCore2Scores;
-	private double weightedRatio2Scores;
-	private double weightedFinalScores; 
-	
 	private double unweightedRim1Scores;
 	private double unweightedCore1Scores;
 	private double unweightedRatio1Scores;
@@ -45,48 +37,6 @@ public class InterfaceScoreItem implements Serializable
 //		this.pdbScoreItem = pdbScoreItem;
 	}
 	
-	public double getWeightedRim1Scores() {
-		return weightedRim1Scores;
-	}
-	public void setWeightedRim1Scores(double weightedRim1Scores) {
-		this.weightedRim1Scores = weightedRim1Scores;
-	}
-	public double getWeightedCore1Scores() {
-		return weightedCore1Scores;
-	}
-	public void setWeightedCore1Scores(double weightedCore1Scores) {
-		this.weightedCore1Scores = weightedCore1Scores;
-	}
-	public double getWeightedRatio1Scores() {
-		return weightedRatio1Scores;
-	}
-	public void setWeightedRatio1Scores(double weightedRatio1Scores) {
-		this.weightedRatio1Scores = weightedRatio1Scores;
-	}
-	public double getWeightedRim2Scores() {
-		return weightedRim2Scores;
-	}
-	public void setWeightedRim2Scores(double weightedRim2Scores) {
-		this.weightedRim2Scores = weightedRim2Scores;
-	}
-	public double getWeightedCore2Scores() {
-		return weightedCore2Scores;
-	}
-	public void setWeightedCore2Scores(double weightedCore2Scores) {
-		this.weightedCore2Scores = weightedCore2Scores;
-	}
-	public double getWeightedRatio2Scores() {
-		return weightedRatio2Scores;
-	}
-	public void setWeightedRatio2Scores(double weightedRatio2Scores) {
-		this.weightedRatio2Scores = weightedRatio2Scores;
-	}
-	public double getWeightedFinalScores() {
-		return weightedFinalScores;
-	}
-	public void setWeightedFinalScores(double weightedFinalScores) {
-		this.weightedFinalScores = weightedFinalScores;
-	}
 	public double getUnweightedRim1Scores() {
 		return unweightedRim1Scores;
 	}
@@ -187,13 +137,6 @@ public class InterfaceScoreItem implements Serializable
 		interfaceScoreItem.setUnweightedRatio1Scores(interfaceScoreItemDB.getUnweightedRatio1Scores());
 		interfaceScoreItem.setUnweightedRatio2Scores(interfaceScoreItemDB.getUnweightedRatio2Scores());
 		interfaceScoreItem.setUnweightedFinalScores(interfaceScoreItemDB.getUnweightedFinalScores());
-		interfaceScoreItem.setWeightedCore1Scores(interfaceScoreItemDB.getWeightedCore1Scores());
-		interfaceScoreItem.setWeightedCore2Scores(interfaceScoreItemDB.getWeightedCore2Scores());
-		interfaceScoreItem.setWeightedRim1Scores(interfaceScoreItemDB.getWeightedRim1Scores());
-		interfaceScoreItem.setWeightedRim2Scores(interfaceScoreItemDB.getWeightedRim2Scores());
-		interfaceScoreItem.setWeightedRatio1Scores(interfaceScoreItemDB.getWeightedRatio1Scores());
-		interfaceScoreItem.setWeightedRatio2Scores(interfaceScoreItemDB.getWeightedRatio2Scores());
-		interfaceScoreItem.setWeightedFinalScores(interfaceScoreItemDB.getWeightedFinalScores());
 		return interfaceScoreItem;
 	}
 

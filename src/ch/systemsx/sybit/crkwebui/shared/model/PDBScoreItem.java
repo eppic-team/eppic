@@ -4,8 +4,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import model.HomologsInfoItemDB;
 import model.InterfaceItemDB;
-import model.NumHomologsStringItemDB;
 import model.PDBScoreItemDB;
 
 
@@ -21,9 +21,10 @@ public class PDBScoreItem implements Serializable, ProcessingData
 	private String pdbName;
 	private String title;
 	private String spaceGroup;
+	private int inputType;
 	private RunParametersItem runParameters;
 	
-	private List<NumHomologsStringItem> numHomologsStrings;
+	private List<HomologsInfoItem> homologsInfoItems;
 
 	private List<InterfaceItem> interfaceItems;
 	
@@ -32,7 +33,7 @@ public class PDBScoreItem implements Serializable, ProcessingData
 	public PDBScoreItem() 
 	{
 		interfaceItems = new ArrayList<InterfaceItem>();
-		numHomologsStrings = new ArrayList<NumHomologsStringItem>();
+		homologsInfoItems = new ArrayList<HomologsInfoItem>();
 	}
 	
 	public PDBScoreItem(int uid,
@@ -42,7 +43,7 @@ public class PDBScoreItem implements Serializable, ProcessingData
 						RunParametersItem runParameters) 
 	{
 		interfaceItems = new ArrayList<InterfaceItem>();
-		numHomologsStrings = new ArrayList<NumHomologsStringItem>();
+		homologsInfoItems = new ArrayList<HomologsInfoItem>();
 		this.uid = uid;
 		this.pdbName = pdbName;
 		this.title = title;
@@ -84,12 +85,12 @@ public class PDBScoreItem implements Serializable, ProcessingData
 		return this.interfaceItems.get(i);
 	}
 
-	public void setNumHomologsStrings(List<NumHomologsStringItem> numHomologsStrings) {
-		this.numHomologsStrings = numHomologsStrings;
+	public void setHomologsInfoItems(List<HomologsInfoItem> homologsInfoItems) {
+		this.homologsInfoItems = homologsInfoItems;
 	}
 	
-	public List<NumHomologsStringItem> getNumHomologsStrings() {
-		return this.numHomologsStrings;
+	public List<HomologsInfoItem> getHomologsInfoItems() {
+		return this.homologsInfoItems;
 	}
 
 	public void setTitle(String title) {
@@ -142,18 +143,18 @@ public class PDBScoreItem implements Serializable, ProcessingData
 			pdbScoreItem.setInterfaceItems(interfaceItems);
 		}
 		
-		if(pdbScoreItemDB.getNumHomologsStrings() != null)
+		if(pdbScoreItemDB.getHomologsInfoItems() != null)
 		{
-			List<NumHomologsStringItemDB> numHomologsStringItemDBs = pdbScoreItemDB.getNumHomologsStrings();
+			List<HomologsInfoItemDB> homologsInfoItemDBs = pdbScoreItemDB.getHomologsInfoItems();
 			
-			List<NumHomologsStringItem> numHomologsStringItems = new ArrayList<NumHomologsStringItem>();
+			List<HomologsInfoItem> homologsStringItems = new ArrayList<HomologsInfoItem>();
 			
-			for(NumHomologsStringItemDB numHomologsStringItemDB : numHomologsStringItemDBs)
+			for(HomologsInfoItemDB homologsStringItemDB : homologsInfoItemDBs)
 			{
-				numHomologsStringItems.add(NumHomologsStringItem.create(numHomologsStringItemDB));
+				homologsStringItems.add(HomologsInfoItem.create(homologsStringItemDB));
 			}
 			
-			pdbScoreItem.setNumHomologsStrings(numHomologsStringItems);
+			pdbScoreItem.setHomologsInfoItems(homologsStringItems);
 		}
 		
 		pdbScoreItem.setPdbName(pdbScoreItemDB.getPdbName());
@@ -170,5 +171,13 @@ public class PDBScoreItem implements Serializable, ProcessingData
 
 	public String getJobId() {
 		return jobId;
+	}
+
+	public void setInputType(int inputType) {
+		this.inputType = inputType;
+	}
+
+	public int getInputType() {
+		return inputType;
 	}
 }
