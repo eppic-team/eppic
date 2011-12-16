@@ -210,8 +210,8 @@ public class WebUIDataAdaptor {
 					homInfo.setSubInterval(cec.getQueryInterval().beg+"-"+cec.getQueryInterval().end);
 				}
 				homInfo.setAlignedSeq1(cec.getPdb2uniprotAln().getAlignedSequences()[0]);
-				homInfo.setMarkupLine(cec.getPdb2uniprotAln().getAlignedSequences()[1]);
-				homInfo.setAlignedSeq2(cec.getPdb2uniprotAln().getMarkupLine().toString());
+				homInfo.setMarkupLine(String.valueOf(cec.getPdb2uniprotAln().getMarkupLine()));
+				homInfo.setAlignedSeq2(cec.getPdb2uniprotAln().getAlignedSequences()[1]);
 				homInfos.add(homInfo);
 			}
 			homInfo.setPdbScoreItem(pdbScoreItem);
