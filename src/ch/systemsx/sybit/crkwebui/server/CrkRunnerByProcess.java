@@ -104,19 +104,13 @@ public class CrkRunnerByProcess implements Runnable
 			command.add("-e");
 			command.add(String.valueOf(inputParameters.getSelecton()));
 			
-			if(inputParameters.isUsePISA())
-			{
-				command.add("-p");
-			}
-			
-			if(inputParameters.isUseNACCESS())
-			{
-				command.add("-n");
-			}
-			
 			command.add("-d");
-			command.add(String.valueOf(inputParameters.getIdentityCutoff()));
+			command.add(String.valueOf(inputParameters.getSoftIdentityCutoff()));
+			command.add("-D");
+			command.add(String.valueOf(inputParameters.getHardIdentityCutoff()));
 			command.add("-r");
+			command.add(String.valueOf(inputParameters.getReducedAlphabet()));
+			command.add("-H");
 			command.add(String.valueOf(inputParameters.getReducedAlphabet()));
 			command.add("-A");
 			command.add(String.valueOf(inputParameters.getAsaCalc()));
@@ -272,7 +266,7 @@ public class CrkRunnerByProcess implements Runnable
 	        
 	        out.close();
 			
-			DBUtils.updateStatusOfJob(generatedDirectoryName, StatusOfJob.FINISHED);
+			DBUtils.updateStatusOfJob(generatedDirectoryName, StatusOfJob.FINISHED.getName());
 
 			outputStream = new FileOutputStream(logFile, true);
 			bufferedOutputStream = new BufferedOutputStream(
@@ -326,7 +320,7 @@ public class CrkRunnerByProcess implements Runnable
 		
 		try 
 		{
-			DBUtils.updateStatusOfJob(generatedDirectoryName, StatusOfJob.ERROR);
+			DBUtils.updateStatusOfJob(generatedDirectoryName, StatusOfJob.ERROR.getName());
 		} 
 		catch (CrkWebException e2) 
 		{

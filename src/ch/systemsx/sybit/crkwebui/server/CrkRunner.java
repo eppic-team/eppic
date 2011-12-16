@@ -22,6 +22,7 @@ import ch.systemsx.sybit.crkwebui.server.db.model.JobDAO;
 import ch.systemsx.sybit.crkwebui.server.db.model.JobDAOImpl;
 import ch.systemsx.sybit.crkwebui.shared.CrkWebException;
 import ch.systemsx.sybit.crkwebui.shared.model.InputParameters;
+import ch.systemsx.sybit.crkwebui.shared.model.InputType;
 import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
 
 /**
@@ -43,7 +44,7 @@ public class CrkRunner implements Runnable
 	private Session sgeSession;
 	private String submissionId; 
 	
-	private boolean wasFileUploaded;
+	private int inputType;
 	private String[] downloadFileZipExcludeSufixes;
 //	private boolean isWaiting;
 
@@ -58,7 +59,7 @@ public class CrkRunner implements Runnable
 					 InputParameters inputParameters,
 					 String crkApplicationLocation,
 					 Session sgeSession,
-					 boolean wasFileUploaded,
+					 int inputType,
 					 String[] downloadFileZipExcludeSufixes)
 	{
 		this.inputParameters = inputParameters;
@@ -72,7 +73,7 @@ public class CrkRunner implements Runnable
 		
 		this.sgeSession = sgeSession;
 		
-		this.wasFileUploaded = wasFileUploaded;
+		this.inputType = inputType;
 		this.downloadFileZipExcludeSufixes = downloadFileZipExcludeSufixes;
 	}
 
@@ -119,7 +120,7 @@ public class CrkRunner implements Runnable
 			
 			String inputLocation = input;
 			
-			if(wasFileUploaded)
+			if(inputType == InputType.FILE.getIndex())
 			{
 				inputLocation = destinationDirectoryName + "/" + input;
 			}
@@ -130,20 +131,14 @@ public class CrkRunner implements Runnable
 			command.add("-q");
 			command.add(String.valueOf(inputParameters.getMaxNrOfSequences()));
 			
-			if(inputParameters.isUsePISA())
-			{
-				command.add("-p");
-			}
-			
-			if(inputParameters.isUseNACCESS())
-			{
-				command.add("-n");
-			}
-						
 			command.add("-d");
-			command.add(String.valueOf(inputParameters.getIdentityCutoff()));
+			command.add(String.valueOf(inputParameters.getSoftIdentityCutoff()));
+			command.add("-D");
+			command.add(String.valueOf(inputParameters.getHardIdentityCutoff()));
 			command.add("-r");
 			command.add(String.valueOf(inputParameters.getReducedAlphabet()));
+			command.add("-H");
+			command.add(String.valueOf(inputParameters.getSearchMode().toLowerCase()));
 			command.add("-A");
 			command.add(String.valueOf(inputParameters.getAsaCalc()));
 			command.add("-a");
@@ -385,7 +380,7 @@ public class CrkRunner implements Runnable
 		try 
 		{
 			JobDAO jobDao = new JobDAOImpl();
-			jobDao.updateStatusOfJob(jobId, StatusOfJob.ERROR);
+			jobDao.updateStatusOfJob(jobId, StatusOfJob.ERROR.getName());
 //			DBUtils.updateStatusOfJob(generatedDirectoryName, StatusOfJob.ERROR);
 		} 
 		catch (CrkWebException e) 
