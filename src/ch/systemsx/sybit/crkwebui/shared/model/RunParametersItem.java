@@ -14,7 +14,8 @@ public class RunParametersItem implements Serializable
 	private int uid;
 	
 	private int homologsCutoff;
-	private double idCutoff;
+	private double homSoftIdCutoff;
+	private double homHardIdCutoff;
 	private double queryCovCutoff;
 	private int maxNumSeqsCutoff;
 	private int reducedAlphabet;
@@ -23,7 +24,6 @@ public class RunParametersItem implements Serializable
 	private double caCutoffForRimCore;
 	private double caCutoffForZscore;
 	private double entrCallCutoff;
-	private double kaksCallCutoff;
 	private double zScoreCutoff; 
 	
 	private String uniprotVer;
@@ -90,28 +90,12 @@ public class RunParametersItem implements Serializable
 		this.entrCallCutoff = entrCallCutoff;
 	}
 
-	public double getKaksCallCutoff() {
-		return kaksCallCutoff;
-	}
-
-	public void setKaksCallCutoff(double kaksCallCutoff) {
-		this.kaksCallCutoff = kaksCallCutoff;
-	}
-
 	public double getzScoreCutoff() {
 		return zScoreCutoff;
 	}
 
 	public void setzScoreCutoff(double zScoreCutoff) {
 		this.zScoreCutoff = zScoreCutoff;
-	}
-
-	public double getIdCutoff() {
-		return idCutoff;
-	}
-
-	public void setIdCutoff(double idCutoff) {
-		this.idCutoff = idCutoff;
 	}
 
 	public double getQueryCovCutoff() {
@@ -146,8 +130,8 @@ public class RunParametersItem implements Serializable
 		runParametersItem.setCaCutoffForZscore(runParametersItemDB.getCaCutoffForZscore());
 		runParametersItem.setEntrCallCutoff(runParametersItemDB.getEntrCallCutoff());
 		runParametersItem.setHomologsCutoff(runParametersItemDB.getHomologsCutoff());
-		runParametersItem.setIdCutoff(runParametersItemDB.getIdCutoff());
-		runParametersItem.setKaksCallCutoff(runParametersItemDB.getKaksCallCutoff());
+		runParametersItem.setHomHardIdCutoff(runParametersItemDB.getHomHardIdCutoff());
+		runParametersItem.setHomSoftIdCutoff(runParametersItemDB.getHomSoftIdCutoff());
 		runParametersItem.setMaxNumSeqsCutoff(runParametersItemDB.getMaxNumSeqsCutoff());
 		runParametersItem.setMinCoreSizeForBio(runParametersItemDB.getMinCoreSizeForBio());
 		runParametersItem.setQueryCovCutoff(runParametersItemDB.getQueryCovCutoff());
@@ -173,5 +157,21 @@ public class RunParametersItem implements Serializable
 
 	public void setCrkVersion(String crkVersion) {
 		this.crkVersion = crkVersion;
+	}
+
+	public void setHomSoftIdCutoff(double homSoftIdCutoff) {
+		this.homSoftIdCutoff = homSoftIdCutoff;
+	}
+
+	public double getHomSoftIdCutoff() {
+		return homSoftIdCutoff;
+	}
+
+	public void setHomHardIdCutoff(double homHardIdCutoff) {
+		this.homHardIdCutoff = homHardIdCutoff;
+	}
+
+	public double getHomHardIdCutoff() {
+		return homHardIdCutoff;
 	}
 }

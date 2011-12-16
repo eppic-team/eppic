@@ -9,10 +9,6 @@
 			<input_field>true</input_field>
 		</method>
 		<method>
-			<name>Kaks</name>
-			<input_field>true</input_field>
-		</method>
-		<method>
 			<name>Z-scores</name>
 			<input_field>false</input_field>
 		</method>
@@ -25,13 +21,13 @@
 		</default_methods>
 		
 		<default_parameters>
-			<use_naccess>false</use_naccess>
-			<use_pisa>false</use_pisa>
 			<asa_calc>9600</asa_calc>
 			<max_nr_of_sequences>60</max_nr_of_sequences>
 			<reduced_alphabet>10</reduced_alphabet>
-			<identity_cutoff>0.6</identity_cutoff>
+			<soft_identity_cutoff>0.6</soft_identity_cutoff>
+			<hard_identity_cutoff>0.5</hard_identity_cutoff>
 			<selecton>0.1</selecton>
+			<search_mode>Auto</search_mode>
 		</default_parameters>
 		
 		<reduced_alphabet>
@@ -43,14 +39,24 @@
 			<value>15</value>
 			<value>20</value>
 		</reduced_alphabet>
+		
+		<search_mode>
+			<value>Auto</value>
+			<value>Local</value>
+			<value>Global</value>
+		</search_mode>
 	</input_parameters>
 	
 	<notification>abc</notification>
 	
 	<run_parameters>
 		<parameter>
-			<name>idCutoff</name>
-			<value>Sequence identity cutoff</value>
+			<name>homSoftIdCutoff</name>
+			<value>Sequence identity soft cutoff</value>
+		</parameter>
+		<parameter>
+			<name>homHardIdCutoff</name>
+			<value>Sequence identity hard cutoff</value>
 		</parameter>
 		<parameter>
 			<name>queryCovCutoff</name>
@@ -87,10 +93,6 @@
 		<parameter>
 			<name>entrCallCutoff</name>
 			<value>Entropy rim/core bio-xtal call cutoff</value>
-		</parameter>
-		<parameter> 
-			<name>kaksCallCutoff</name>
-			<value>KaKs rim/core bio-xtal call cutoff</value>
 		</parameter>
 		<parameter>
 			<name>zScoreCutoff</name>

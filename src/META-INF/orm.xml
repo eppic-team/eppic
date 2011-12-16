@@ -45,6 +45,7 @@
             <basic name="submissionDate">
             	<temporal>TIMESTAMP</temporal>
             </basic>
+            <basic name="inputType"></basic>
             
             <one-to-one name="pdbScoreItem">
         		<cascade>
@@ -83,7 +84,7 @@
             	</cascade>  
        		</one-to-many>  
        		
-       		<one-to-many name="numHomologsStrings" mapped-by="pdbScoreItem">  
+       		<one-to-many name="homologsInfoItems" mapped-by="pdbScoreItem">  
             	<cascade>  
             	    <cascade-all/>  
             	</cascade>  
@@ -98,7 +99,7 @@
        		<one-to-one name="jobItem" mapped-by="pdbScoreItem">  
             </one-to-one>  
        		
-       		<!-- element-collection name="numHomologsStrings"-->
+       		<!-- element-collection name="homologsInfoItems"-->
 				<!-- collection-table name="NUMHOMOLOGSSTRINGS"-->
 				<!-- /collection-table-->
 			<!-- /element-collection--> 
@@ -183,6 +184,7 @@
             </id>
             <basic name="structure"></basic>
             <basic name="residueNumber"></basic>
+            <basic name="pdbResidueNumber"></basic>
             <basic name="residueType">
             	<column length="3"/>
             </basic>
@@ -236,13 +238,6 @@
             	<column length="15"/>
             </basic>
             <basic name="id"></basic>
-            <basic name="weightedRim1Scores"><column nullable="true"/></basic>
-            <basic name="weightedCore1Scores"><column nullable="true"/></basic>
-            <basic name="weightedRatio1Scores"><column nullable="true"/></basic>
-            <basic name="weightedRim2Scores"><column nullable="true"/></basic>
-            <basic name="weightedCore2Scores"><column nullable="true"/></basic>
-            <basic name="weightedRatio2Scores"><column nullable="true"/></basic>
-            <basic name="weightedFinalScores"><column nullable="true"/></basic>
             <basic name="unweightedRim1Scores"><column nullable="true"/></basic>
             <basic name="unweightedCore1Scores"><column nullable="true"/></basic>
             <basic name="unweightedRatio1Scores"><column nullable="true"/></basic>
@@ -287,7 +282,8 @@
             
         	<basic name="homologsCutoff"></basic>
         	
-            <basic name="idCutoff"></basic>
+            <basic name="homSoftIdCutoff"></basic>
+			<basic name="homHardIdCutoff"></basic>
             <basic name="queryCovCutoff"></basic>
             <basic name="maxNumSeqsCutoff"></basic>
             <basic name="reducedAlphabet"></basic>
@@ -309,15 +305,20 @@
         </attributes>
    </entity>
    
-   <entity class="model.NumHomologsStringItemDB" name="NumHomologsStringItem">
-        <table name="NumHomologsString"/>
+   <entity class="model.HomologsInfoItemDB" name="HomologsInfoItem">
+        <table name="HomologsInfoItem"/>
         <attributes>
             <id name="uid">
                 <generated-value strategy="IDENTITY"/>
             </id>
-            <basic name="text">
-            	<column column-definition="text"/>
-            </basic>
+       		
+       		<basic name="chains"></basic>
+       		<basic name="uniprotId"></basic>
+       		<basic name="numHomologs"></basic>
+       		<basic name="subInterval"></basic>
+       		<basic name="alignedSeq1"></basic>
+       		<basic name="alignedSeq2"></basic>
+       		<basic name="markupLine"></basic>
        		
        		<many-to-one name="pdbScoreItem" >  
             </many-to-one>  
