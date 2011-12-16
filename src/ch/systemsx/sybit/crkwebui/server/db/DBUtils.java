@@ -289,7 +289,7 @@ public class DBUtils
 	public static String getStatusForJob(String jobId,
 										 String sessionId) throws CrkWebException 
 	{
-		String status = StatusOfJob.NONEXISTING;
+		String status = StatusOfJob.NONEXISTING.getName();
 
 		Connection connection = null;
 		Statement statement = null;

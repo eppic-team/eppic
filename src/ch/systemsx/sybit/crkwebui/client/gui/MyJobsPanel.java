@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
-import ch.systemsx.sybit.crkwebui.client.model.InterfaceItemModel;
 import ch.systemsx.sybit.crkwebui.client.model.MyJobsModel;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
 
