@@ -62,15 +62,24 @@ public interface AppProperties extends Constants
 	
 	String info_panel_pdb_identifier();
 	String info_panel_input_parameters();
+	String info_panel_input_parameters_hint();
 	String info_panel_download_results_link();
+	String info_panel_download_results_link_hint();
 	String info_panel_uniprot();
 	String info_panel_crk();
+	
+	String pdb_identifier_panel_label_hint();
+
+	String homologs_panel_chains_hint();
+	String homologs_panel_uniprot_hint();
+	String homologs_panel_nrhomologs_hint();
 	
 	String myjobs_panel_head();
 	String myjobs_panel_new_button();
 	String myjobs_grid_stop_tooltip();
 	String myjobs_grid_delete_tooltip();
 	
+	String results_grid_empty_text();
 	String results_grid_details_button();
 	String results_grid_details_button_tooltip();
 	String results_grid_viewer_button();
