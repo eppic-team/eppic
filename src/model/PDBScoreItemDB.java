@@ -21,7 +21,7 @@ public class PDBScoreItemDB implements Serializable, ProcessingDataDB
 	private String expMethod;
 	private RunParametersItemDB runParameters;
 	
-	private List<HomologsInfoItemDB> homInfos;
+	private List<HomologsInfoItemDB> homologsInfoItems;
 
 	private List<InterfaceItemDB> interfaceItems;
 	
@@ -30,7 +30,7 @@ public class PDBScoreItemDB implements Serializable, ProcessingDataDB
 	public PDBScoreItemDB() 
 	{
 		interfaceItems = new ArrayList<InterfaceItemDB>();
-		homInfos = new ArrayList<HomologsInfoItemDB>();
+		homologsInfoItems = new ArrayList<HomologsInfoItemDB>();
 	}
 	
 	public PDBScoreItemDB(int uid,
@@ -41,7 +41,7 @@ public class PDBScoreItemDB implements Serializable, ProcessingDataDB
 						RunParametersItemDB runParameters) 
 	{
 		interfaceItems = new ArrayList<InterfaceItemDB>();
-		homInfos = new ArrayList<HomologsInfoItemDB>();
+		homologsInfoItems = new ArrayList<HomologsInfoItemDB>();
 		this.uid = uid;
 		this.pdbName = pdbName;
 		this.title = title;
@@ -74,12 +74,12 @@ public class PDBScoreItemDB implements Serializable, ProcessingDataDB
 		return this.interfaceItems.get(i);
 	}
 
-	public void setHomInfos(List<HomologsInfoItemDB> homInfos) {
-		this.homInfos = homInfos;
+	public void setHomologsInfoItems(List<HomologsInfoItemDB> homologsInfoItems) {
+		this.homologsInfoItems = homologsInfoItems;
 	}
 	
-	public List<HomologsInfoItemDB> getHomInfos() {
-		return this.homInfos;
+	public List<HomologsInfoItemDB> getHomologsInfoItems() {
+		return this.homologsInfoItems;
 	}
 
 	public void setTitle(String title) {

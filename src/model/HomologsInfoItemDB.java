@@ -28,12 +28,22 @@ public class HomologsInfoItemDB implements Serializable
 	}
 	
 	public HomologsInfoItemDB(int uid,
-								 String chains, String uniprotId, int numHomologs) 
+							  String chains, 
+							  String uniprotId, 
+							  int numHomologs,
+							  String subInterval,
+							  String alignedSeq1,
+							  String alignedSeq2,
+							  String markupLine) 
 	{
 		this.uid = uid;
 		this.chains = chains;
 		this.uniprotId = uniprotId;
 		this.numHomologs = numHomologs;
+		this.subInterval = subInterval;
+		this.alignedSeq1 = alignedSeq1;
+		this.alignedSeq2 = alignedSeq2;
+		this.markupLine = markupLine;
 	}
 	
 	public void setPdbScoreItem(PDBScoreItemDB pdbScoreItem) {

@@ -554,9 +554,9 @@ public class CRKMain {
 		if (stepsLogFile==null) return;
 		try {
 			PrintStream stepsLog = new PrintStream(stepsLogFile);
-			stepsLog.println("STEP_NUM="+stepCount);
-			stepsLog.println("STEP="+text);
-			stepsLog.println("STEP_TOTAL="+STEPS_TOTAL);
+			stepsLog.println("step_num="+stepCount);
+			stepsLog.println("step="+text);
+			stepsLog.println("step_total="+STEPS_TOTAL);
 			stepCount++;
 		} catch(FileNotFoundException e) {
 			LOGGER.error("Couldn't write to steps log file "+stepsLogFile);

@@ -217,7 +217,7 @@ public class WebUIDataAdaptor {
 			homInfo.setPdbScoreItem(pdbScoreItem);
 			
 		}
-		pdbScoreItem.setHomInfos(homInfos);
+		pdbScoreItem.setHomologsInfoItems(homInfos);
 		
 		// first we add the residue details only once
 		if (!resDetailsAdded) {
