@@ -15,7 +15,8 @@ public interface JobDAO
 							 String email, 
 							 String input,
 							 String ip,
-							 Date submissionDate) throws CrkWebException;
+							 Date submissionDate,
+							 int inputType) throws CrkWebException;
 	
 	public void updateStatusOfJob(String jobId, String status) throws CrkWebException;
 	
@@ -26,6 +27,8 @@ public interface JobDAO
 	public Long getNrOfJobsForSessionId(String sessionId) throws CrkWebException;
 	
 	public String getStatusForJob(String jobId) throws CrkWebException;
+	
+	public int getInputTypeForJob(String jobId) throws CrkWebException;
 	 
 	public ProcessingInProgressData createProcessingInProgressData(JobDB job);
 	

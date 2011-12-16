@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Set;
 
 import javax.persistence.EntityManager;
-import javax.persistence.PersistenceException;
 import javax.persistence.Query;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -34,7 +33,8 @@ public class JobDAOImpl implements JobDAO
 							 String email, 
 							 String input,
 							 String ip,
-							 Date submissionDate) throws CrkWebException
+							 Date submissionDate,
+							 int inputType) throws CrkWebException
 	{
 		EntityManager entityManager = null;
 		
@@ -51,8 +51,9 @@ public class JobDAOImpl implements JobDAO
 			job.setEmail(email);
 			job.setInput(input);
 			job.setIp(ip);
-			job.setStatus(StatusOfJob.RUNNING);
+			job.setStatus(StatusOfJob.RUNNING.getName());
 			job.setSubmissionDate(submissionDate);
+			job.setInputType(inputType);
 			
 			job.getUserSessions().add(session);
 
@@ -340,6 +341,37 @@ public class JobDAOImpl implements JobDAO
 		 
 		return status;
 	}
+	
+	public int getInputTypeForJob(String jobId) throws CrkWebException
+	{
+		EntityManager entityManager = null;
+		
+		try
+		{
+			entityManager = EntityManagerHandler.getEntityManager();
+			
+			Query query = entityManager.createQuery("SELECT inputType FROM Job WHERE jobId = :jobId", Integer.class);
+			query.setParameter("jobId", jobId);
+			int input = (Integer)query.getSingleResult();
+			return input;
+		}
+		catch(Throwable e)
+		{
+			e.printStackTrace();
+			throw new CrkWebException(e);
+		}
+		finally
+		{
+			try
+			{
+				entityManager.close();
+			}
+			catch(Throwable t)
+			{
+				
+			}
+		}
+	}
 	 
 	public ProcessingInProgressData createProcessingInProgressData(JobDB job)
 	{
@@ -351,6 +383,7 @@ public class JobDAOImpl implements JobDAO
 			processingInProgressData.setJobId(job.getJobId());
 			processingInProgressData.setInput(job.getInput());
 			processingInProgressData.setStatus(job.getStatus());
+			processingInProgressData.setInputType(job.getInputType());
 		}
 		 
 		return processingInProgressData;
@@ -586,7 +619,7 @@ public class JobDAOImpl implements JobDAO
 			{
 				pdbScoreItem.setJobItem(job);
 				job.setPdbScoreItem(pdbScoreItem);
-				job.setStatus(StatusOfJob.FINISHED);
+				job.setStatus(StatusOfJob.FINISHED.getName());
 				entityManager.merge(job);
 			}
 			
