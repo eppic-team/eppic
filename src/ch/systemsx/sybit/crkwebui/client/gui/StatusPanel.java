@@ -1,6 +1,7 @@
 package ch.systemsx.sybit.crkwebui.client.gui;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
+import ch.systemsx.sybit.crkwebui.shared.model.InputType;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
 import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
 
@@ -30,7 +31,7 @@ public class StatusPanel extends DisplayPanel
 {
 	private FormPanel formPanel;
 	
-	private PDBIdentifierLabel pdbIdentifier;
+	private PDBIdentifierPanel pdbIdentifierPanel;
 	private TextField<String> jobId;
 	private TextField<String> status;
 	private TextArea log;
@@ -63,9 +64,9 @@ public class StatusPanel extends DisplayPanel
 		formPanel.setScrollMode(Scroll.AUTOY);
 		formPanel.setHeight(mainController.getWindowHeight() - 100);
 		
-		pdbIdentifier = new PDBIdentifierLabel();
-		pdbIdentifier.setStyleAttribute("padding-left", "10px");
-		this.add(pdbIdentifier, new FormData("95%"));
+		pdbIdentifierPanel = new PDBIdentifierPanel(mainController);
+		pdbIdentifierPanel.setStyleAttribute("padding-left", "10px");
+		this.add(pdbIdentifierPanel, new FormData("95%"));
 
 		jobId = new TextField<String>();
 		jobId.setFieldLabel(MainController.CONSTANTS.status_panel_jobId());
@@ -152,18 +153,27 @@ public class StatusPanel extends DisplayPanel
 		
 		status.setValue(String.valueOf(statusData.getStatus()));
 		jobId.setValue(statusData.getJobId());
-		pdbIdentifier.setPDBText(statusData.getInput(), null);
+		pdbIdentifierPanel.setPDBText(statusData.getInput(), null, statusData.getInputType());
 		
-		if((status.getValue() != null) && (status.getValue().equals(StatusOfJob.RUNNING)))
+		if((status.getValue() != null) && (status.getValue().equals(StatusOfJob.RUNNING.getName())))
 		{
 			killJob.setVisible(true);
 			statusProgress.setBusy(statusData.getStep().getCurrentStep());
-			statusStepsFinished.setText(MainController.CONSTANTS.status_panel_step_counter() +
-										": " +
-										statusData.getStep().getCurrentStepNumber() +
-										"/" +
-										statusData.getStep().getTotalNumberOfSteps()
-										);
+			
+			if(statusData.getStep().getTotalNumberOfSteps() != 0)
+			{
+				statusStepsFinished.setText(MainController.CONSTANTS.status_panel_step_counter() +
+											": " +
+											statusData.getStep().getCurrentStepNumber() +
+											"/" +
+											statusData.getStep().getTotalNumberOfSteps()
+											);
+			}
+			else
+			{
+				statusStepsFinished.setText("");
+			}
+			
 			statusStepsFinished.setVisible(true);
 //			progressBar.setVisible(true);
 		}
@@ -182,6 +192,6 @@ public class StatusPanel extends DisplayPanel
 		log.setValue("");
 		status.setValue("");
 		jobId.setValue("");
-		pdbIdentifier.setPDBText("", null);
+		pdbIdentifierPanel.setPDBText("", null, InputType.NONE.getIndex());
 	}
 }

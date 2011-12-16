@@ -46,7 +46,7 @@ import com.google.gwt.user.client.Cookies;
  */
 public class ResultsPanel extends DisplayPanel 
 {
-	private PDBIdentifierLabel pdbIdentifier;
+	private PDBIdentifierPanel pdbIdentifierPanel;
 	private Label pdbTitle;
 	
 	private InfoPanel infoPanel;
@@ -81,10 +81,11 @@ public class ResultsPanel extends DisplayPanel
 		this.setLayout(new RowLayout(Orientation.VERTICAL));
 		this.setStyleAttribute("padding", "10px");
 
-		pdbIdentifier = new PDBIdentifierLabel();
-		pdbIdentifier.setPDBText(mainController.getPdbScoreItem().getPdbName(),
-								 mainController.getPdbScoreItem().getSpaceGroup());
-		this.add(pdbIdentifier);
+		pdbIdentifierPanel = new PDBIdentifierPanel(mainController);
+		pdbIdentifierPanel.setPDBText(mainController.getPdbScoreItem().getPdbName(),
+									  mainController.getPdbScoreItem().getSpaceGroup(),
+									  mainController.getPdbScoreItem().getInputType());
+		this.add(pdbIdentifierPanel);
 		
 		FormPanel breakPanel = new FormPanel();
 		breakPanel.setBorders(false);
@@ -133,6 +134,7 @@ public class ResultsPanel extends DisplayPanel
 
 		resultsGrid = new Grid<InterfaceItemModel>(resultsStore, resultsColumnModel);
 		resultsGrid.getView().setForceFit(false);
+		resultsGrid.getView().setEmptyText(MainController.CONSTANTS.results_grid_empty_text());
 
 		resultsGrid.setBorders(false);
 		resultsGrid.setStripeRows(true);
@@ -392,8 +394,9 @@ public class ResultsPanel extends DisplayPanel
 		fillResultsGrid(resultsData);
 		infoPanel.generateInfoPanel(mainController);
 		
-		pdbIdentifier.setPDBText(resultsData.getPdbName(),
-							  	 resultsData.getSpaceGroup());
+		pdbIdentifierPanel.setPDBText(resultsData.getPdbName(),
+							  	 	resultsData.getSpaceGroup(),
+							  	 	resultsData.getInputType());
 		
 		pdbTitle.setText(resultsData.getTitle());
 	}
