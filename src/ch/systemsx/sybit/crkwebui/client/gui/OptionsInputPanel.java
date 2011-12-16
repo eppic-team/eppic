@@ -5,6 +5,7 @@ import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 import ch.systemsx.sybit.crkwebui.client.model.ReducedAlphabetComboModel;
+import ch.systemsx.sybit.crkwebui.client.model.SearchModeComboModel;
 import ch.systemsx.sybit.crkwebui.shared.model.InputParameters;
 import ch.systemsx.sybit.crkwebui.shared.model.SupportedMethod;
 
@@ -16,8 +17,6 @@ import com.extjs.gxt.ui.client.widget.form.ComboBox;
 import com.extjs.gxt.ui.client.widget.form.ComboBox.TriggerAction;
 import com.extjs.gxt.ui.client.widget.form.FieldSet;
 import com.extjs.gxt.ui.client.widget.form.NumberField;
-import com.extjs.gxt.ui.client.widget.form.Radio;
-import com.extjs.gxt.ui.client.widget.form.RadioGroup;
 import com.extjs.gxt.ui.client.widget.layout.FormData;
 import com.extjs.gxt.ui.client.widget.layout.FormLayout;
 import com.google.gwt.i18n.client.NumberFormat;
@@ -34,19 +33,17 @@ public class OptionsInputPanel extends FieldSet
 	private ListStore<ReducedAlphabetComboModel> reducedAlphabetValues;
 	private ComboBox<ReducedAlphabetComboModel> reducedAlphabetCombo;
 	private NumberField selecton;
-	private NumberField identityCutOff;
+	private NumberField softIdentityCutOff;
+	private NumberField hardIdentityCutOff;
+	private ListStore<SearchModeComboModel> searchModeValues;
+	private ComboBox<SearchModeComboModel> searchModeCombo;
 	private NumberField maxNrOfSequences;
-	private Radio usePisaYes;
-	private Radio usePisaNo;
-	private RadioGroup usePisa;
 	private NumberField asaCalcParam;
-	private Radio useNAccessYes;
-	private Radio useNAccessNo;
-	private RadioGroup useNAccess;
 	private FieldSet[] methodsFieldsets;
 
 	public OptionsInputPanel(InputParameters defaultInputParameters,
 							 List<Integer> reducedAlphabetDefaultList,
+							 List<String> searchModeDefaultList,
 							 List<SupportedMethod> supportedMethods) 
 	{
 		this.setHeading(MainController.CONSTANTS.input_advanced());
@@ -211,14 +208,23 @@ public class OptionsInputPanel extends FieldSet
 		allignmentsParametersFieldSet
 				.setLayout(allignmentsParametersFieldSetLayout);
 
-		identityCutOff = new NumberField();
-		identityCutOff.setFieldLabel(MainController.CONSTANTS
-				.parameters_identity_cutoff());
-		identityCutOff.setAllowBlank(false);
-		identityCutOff.setFormat(NumberFormat.getDecimalFormat());
-		identityCutOff.setMinValue(0);
-		identityCutOff.setMaxValue(1);
-		allignmentsParametersFieldSet.add(identityCutOff, formData);
+		softIdentityCutOff = new NumberField();
+		softIdentityCutOff.setFieldLabel(MainController.CONSTANTS
+				.parameters_soft_identity_cutoff());
+		softIdentityCutOff.setAllowBlank(false);
+		softIdentityCutOff.setFormat(NumberFormat.getDecimalFormat());
+		softIdentityCutOff.setMinValue(0);
+		softIdentityCutOff.setMaxValue(1);
+		allignmentsParametersFieldSet.add(softIdentityCutOff, formData);
+		
+		hardIdentityCutOff = new NumberField();
+		hardIdentityCutOff.setFieldLabel(MainController.CONSTANTS
+				.parameters_hard_identity_cutoff());
+		hardIdentityCutOff.setAllowBlank(false);
+		hardIdentityCutOff.setFormat(NumberFormat.getDecimalFormat());
+		hardIdentityCutOff.setMinValue(0);
+		hardIdentityCutOff.setMaxValue(1);
+		allignmentsParametersFieldSet.add(hardIdentityCutOff, formData);
 
 		maxNrOfSequences = new NumberField();
 		maxNrOfSequences.setFieldLabel(MainController.CONSTANTS
@@ -230,6 +236,26 @@ public class OptionsInputPanel extends FieldSet
 //		maxNrOfSequences.addPlugin(plugin);
 		maxNrOfSequences.setData("hint", MainController.CONSTANTS.parameters_max_num_sequences_hint());
 		allignmentsParametersFieldSet.add(maxNrOfSequences, formData);
+		
+		searchModeValues = new ListStore<SearchModeComboModel>();
+
+		for (String value : searchModeDefaultList)
+		{
+			SearchModeComboModel model = new SearchModeComboModel(
+					value);
+			searchModeValues.add(model);
+		}
+
+		searchModeCombo = new ComboBox<SearchModeComboModel>();
+		searchModeCombo.setFieldLabel(MainController.CONSTANTS
+				.parameters_search_mode());
+		searchModeCombo.setWidth(150);
+		searchModeCombo.setStore(searchModeValues);
+		searchModeCombo.setTypeAhead(true);
+		searchModeCombo.setTriggerAction(TriggerAction.ALL);
+		searchModeCombo.setDisplayField("searchMode");
+		searchModeCombo.setEditable(false);
+		allignmentsParametersFieldSet.add(searchModeCombo, formData);
 
 		this.add(allignmentsParametersFieldSet);
 
@@ -241,19 +267,6 @@ public class OptionsInputPanel extends FieldSet
 				.parameters_others());
 		othersParametersFieldSet.setLayout(othersParametersFieldSetLayout);
 
-		usePisaYes = new Radio();
-		usePisaYes.setBoxLabel(MainController.CONSTANTS.yes());
-		usePisaYes.setValue(true);
-
-		usePisaNo = new Radio();
-		usePisaNo.setBoxLabel(MainController.CONSTANTS.no());
-
-		usePisa = new RadioGroup();
-		usePisa.setFieldLabel(MainController.CONSTANTS.parameters_use_pisa());
-		usePisa.add(usePisaYes);
-		usePisa.add(usePisaNo);
-		othersParametersFieldSet.add(usePisa, formData);
-
 		asaCalcParam = new NumberField();
 		asaCalcParam.setFieldLabel(MainController.CONSTANTS
 				.parameters_asa_calc());
@@ -264,22 +277,6 @@ public class OptionsInputPanel extends FieldSet
 		asaCalcParam.setData("hint", MainController.CONSTANTS.parameters_asa_calc_hint());
 		othersParametersFieldSet.add(asaCalcParam, formData);
 
-		useNAccessYes = new Radio();
-		useNAccessYes.setBoxLabel(MainController.CONSTANTS.yes());
-		useNAccessYes.setValue(true);
-
-		useNAccessNo = new Radio();
-		useNAccessNo.setBoxLabel(MainController.CONSTANTS.no());
-
-		useNAccess = new RadioGroup();
-		useNAccess.setFieldLabel(MainController.CONSTANTS
-				.parameters_use_naccess());
-		useNAccess.add(useNAccessYes);
-		useNAccess.add(useNAccessNo);
-//		useNAccess.addPlugin(plugin);
-		useNAccess.setData("hint", MainController.CONSTANTS.parameters_use_naccess_hint());
-		othersParametersFieldSet.add(useNAccess, formData);
-
 		this.add(othersParametersFieldSet);
 
 		fillDefaultValues(defaultInputParameters);
@@ -287,26 +284,24 @@ public class OptionsInputPanel extends FieldSet
 
 	public void fillDefaultValues(InputParameters defaultParameters) 
 	{
-		if (defaultParameters.isUseNACCESS() == true) {
-			useNAccessYes.setValue(true);
-		} else {
-			useNAccessNo.setValue(true);
-		}
-
-		if (defaultParameters.isUsePISA() == true) {
-			usePisaYes.setValue(true);
-		} else {
-			usePisaNo.setValue(true);
-		}
-
 		asaCalcParam.setValue(defaultParameters.getAsaCalc());
-		identityCutOff.setValue(defaultParameters.getIdentityCutoff());
-		selecton.setValue(defaultParameters.getSelecton());
+		softIdentityCutOff.setValue(defaultParameters.getSoftIdentityCutoff());
+		hardIdentityCutOff.setValue(defaultParameters.getHardIdentityCutoff());
+		
+		if(selecton != null)
+		{
+			selecton.setValue(defaultParameters.getSelecton());
+		}
+		
 		maxNrOfSequences.setValue(defaultParameters.getMaxNrOfSequences());
 
 		ReducedAlphabetComboModel defaultValueModel = new ReducedAlphabetComboModel(
 				defaultParameters.getReducedAlphabet());
 		reducedAlphabetCombo.setValue(defaultValueModel);
+		
+		SearchModeComboModel defaultSearchModeValueModel = new SearchModeComboModel(
+				defaultParameters.getSearchMode());
+		searchModeCombo.setValue(defaultSearchModeValueModel);
 		
 		List<String> defaultMethods = defaultParameters.getMethods();
 		
@@ -330,24 +325,20 @@ public class OptionsInputPanel extends FieldSet
 	{
 		InputParameters currentInputParameters = new InputParameters();
 		currentInputParameters.setAsaCalc(asaCalcParam.getValue().intValue());
-		currentInputParameters.setIdentityCutoff(identityCutOff.getValue()
+		currentInputParameters.setSoftIdentityCutoff(softIdentityCutOff.getValue()
+				.floatValue());
+		currentInputParameters.setHardIdentityCutoff(hardIdentityCutOff.getValue()
 				.floatValue());
 		currentInputParameters.setMaxNrOfSequences(maxNrOfSequences.getValue()
 				.intValue());
 		currentInputParameters.setReducedAlphabet(reducedAlphabetCombo
 				.getValue().getReducedAlphabet());
-		currentInputParameters.setSelecton(selecton.getValue().floatValue());
-
-		if (useNAccessYes.getValue() == true) {
-			currentInputParameters.setUseNACCESS(true);
-		} else {
-			currentInputParameters.setUseNACCESS(false);
-		}
-
-		if (usePisaYes.getValue() == true) {
-			currentInputParameters.setUsePISA(true);
-		} else {
-			currentInputParameters.setUsePISA(false);
+		currentInputParameters.setSearchMode(searchModeCombo
+				.getValue().getSearchMode());
+		
+		if(selecton != null)
+		{
+			currentInputParameters.setSelecton(selecton.getValue().floatValue());
 		}
 
 		List<String> selectedMethods = new ArrayList<String>();
