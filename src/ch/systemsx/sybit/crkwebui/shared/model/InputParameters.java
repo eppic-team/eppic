@@ -18,14 +18,13 @@ public class InputParameters implements Serializable
 
 	private List<String> methods;
 
-	private boolean usePISA;
-	private boolean useNACCESS;
-
 	private int asaCalc;
 	private int maxNrOfSequences;
 	private int reducedAlphabet;
+	private String searchMode;
 
-	private float identityCutoff;
+	private float softIdentityCutoff;
+	private float hardIdentityCutoff;
 	private float selecton;
 
 	public InputParameters() 
@@ -39,22 +38,6 @@ public class InputParameters implements Serializable
 
 	public void setMethods(List<String> methods) {
 		this.methods = methods;
-	}
-
-	public boolean isUsePISA() {
-		return usePISA;
-	}
-
-	public void setUsePISA(boolean usePISA) {
-		this.usePISA = usePISA;
-	}
-
-	public boolean isUseNACCESS() {
-		return useNACCESS;
-	}
-
-	public void setUseNACCESS(boolean useNACCESS) {
-		this.useNACCESS = useNACCESS;
 	}
 
 	public int getAsaCalc() {
@@ -81,13 +64,22 @@ public class InputParameters implements Serializable
 		this.reducedAlphabet = reducedAlphabet;
 	}
 
-	public float getIdentityCutoff() {
-		return identityCutoff;
+	public float getSoftIdentityCutoff() {
+		return softIdentityCutoff;
 	}
 
-	public void setIdentityCutoff(float identityCutoff) {
-		this.identityCutoff = identityCutoff;
+	public void setSoftIdentityCutoff(float softIdentityCutoff) {
+		this.softIdentityCutoff = softIdentityCutoff;
 	}
+	
+	public float getHardIdentityCutoff() {
+		return hardIdentityCutoff;
+	}
+
+	public void setHardIdentityCutoff(float hardIdentityCutoff) {
+		this.hardIdentityCutoff = hardIdentityCutoff;
+	}
+
 
 	public float getSelecton() {
 		return selecton;
@@ -95,5 +87,13 @@ public class InputParameters implements Serializable
 
 	public void setSelecton(float selecton) {
 		this.selecton = selecton;
+	}
+
+	public void setSearchMode(String searchMode) {
+		this.searchMode = searchMode;
+	}
+
+	public String getSearchMode() {
+		return searchMode;
 	}
 }

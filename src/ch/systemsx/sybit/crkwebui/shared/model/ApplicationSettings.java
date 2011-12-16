@@ -28,6 +28,8 @@ public class ApplicationSettings implements Serializable {
 	// available values for reduced alphabet
 	private List<Integer> reducedAlphabetList;
 	
+	private List<String> searchModeList;
+	
 	// *********************************************
 	// * Settings for captcha
 	// *********************************************
@@ -44,6 +46,9 @@ public class ApplicationSettings implements Serializable {
 	// information which willbe displayed in the bottom panel when accessing the page - e.g. when the server will not be accessible
 	// this information is loaded by each new access to the server so that it does not require the server to be restarted
 	private String notificationOnStart;
+	
+	private String pdbLinkUrl;
+	private String uniprotLinkUrl;
 	
 	public ApplicationSettings()
 	{
@@ -138,5 +143,29 @@ public class ApplicationSettings implements Serializable {
 
 	public String getNotificationOnStart() {
 		return notificationOnStart;
+	}
+
+	public void setPdbLinkUrl(String pdbLinkUrl) {
+		this.pdbLinkUrl = pdbLinkUrl;
+	}
+
+	public String getPdbLinkUrl() {
+		return pdbLinkUrl;
+	}
+
+	public void setSearchModeList(List<String> searchModeList) {
+		this.searchModeList = searchModeList;
+	}
+
+	public List<String> getSearchModeList() {
+		return searchModeList;
+	}
+
+	public void setUniprotLinkUrl(String uniprotLinkUrl) {
+		this.uniprotLinkUrl = uniprotLinkUrl;
+	}
+
+	public String getUniprotLinkUrl() {
+		return uniprotLinkUrl;
 	}
 }
