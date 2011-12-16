@@ -2,7 +2,6 @@ package ch.systemsx.sybit.crkwebui.client.callbacks;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 
-import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 /**

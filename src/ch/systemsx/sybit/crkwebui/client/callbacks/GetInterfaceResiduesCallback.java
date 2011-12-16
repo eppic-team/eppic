@@ -5,9 +5,7 @@ import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResidueItem;
-import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResiduesItemsList;
 
-import com.extjs.gxt.ui.client.GXT;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 /**
