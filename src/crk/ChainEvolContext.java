@@ -242,7 +242,7 @@ public class ChainEvolContext implements Serializable {
 	private void applyIdentityCutoff(double homSoftIdCutoff, double homHardIdCutoff, double homIdStep, double queryCovCutoff, int minHomologsCutoff) {
 		// applying identity cutoff
 		double idcutoff = homSoftIdCutoff;
-		while (idcutoff>=homHardIdCutoff) {
+		while (idcutoff>=homHardIdCutoff-0.001) { // the 0.001 just to be sure we really reach the hard cutoff (there were problems with rounding)
 			homologs.filterToMinIdAndCoverage(idcutoff, queryCovCutoff);
 			if (homologs.getSizeFilteredSubset()>=minHomologsCutoff) break;
 			LOGGER.info("Tried "+String.format("%4.2f",idcutoff)+" identity cutoff, only "+homologs.getSizeFilteredSubset()+" homologs found ("+minHomologsCutoff+" required)");
