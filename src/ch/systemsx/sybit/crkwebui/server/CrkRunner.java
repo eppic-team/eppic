@@ -352,7 +352,7 @@ public class CrkRunner implements Runnable
 	
 	private void handleException(String errorMessage)
 	{
-		String message = input + " - error during processing the data.\n\n" + errorMessage;
+		String message = input + " - error while processing the data.\n\n" + errorMessage;
 		
 		FileOutputStream outputStream = null;
 		
@@ -399,7 +399,7 @@ public class CrkRunner implements Runnable
 			e.printStackTrace();
 		}
 
-		emailSender.send("Crk: " + input + " error during processing",
+		emailSender.send("Crk: " + input + ", error while processing",
 				message + "\n\n" + resultPath);
 	}
 	
