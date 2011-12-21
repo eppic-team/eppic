@@ -70,7 +70,7 @@ public class InfoPanel extends FormPanel
 		FlexTable flexTable = new FlexTable();
 		
 		int nrOfRows = 3;
-		int nrOfColumns = 4;
+		int nrOfColumns = 5;
 		
 		List<HomologsInfoItem> homologsStrings = mainController.getPdbScoreItem().getHomologsInfoItems();
 		
@@ -85,7 +85,9 @@ public class InfoPanel extends FormPanel
 			limit += 25;
 		}
 		
-		int columnWidth = (mainController.getWindowWidth() - limit - 20) / nrOfColumns;
+		// last 2 columns are half width of the others
+		int columnWidth = (mainController.getWindowWidth() - limit - 20) / (nrOfColumns-1);
+		int last2columnsWidth = columnWidth / 2;
 		
 		if(homologsStrings != null)
 		{
@@ -99,8 +101,13 @@ public class InfoPanel extends FormPanel
 		{
 			for(int j=0; j<nrOfRows; j++)
 			{
-				flexTable.getCellFormatter().setWidth(j, i, String.valueOf(columnWidth));
-				flexTable.getCellFormatter().setAlignment(j, i, HasHorizontalAlignment.ALIGN_LEFT, HasVerticalAlignment.ALIGN_TOP);
+				if (i<nrOfColumns-2) {
+					flexTable.getCellFormatter().setWidth(j, i, String.valueOf(columnWidth));
+					flexTable.getCellFormatter().setAlignment(j, i, HasHorizontalAlignment.ALIGN_LEFT, HasVerticalAlignment.ALIGN_TOP);
+				} else {
+					flexTable.getCellFormatter().setWidth(j, i, String.valueOf(last2columnsWidth));
+					flexTable.getCellFormatter().setAlignment(j, i, HasHorizontalAlignment.ALIGN_LEFT, HasVerticalAlignment.ALIGN_TOP);
+				}
 			}
 		}
 		
@@ -130,7 +137,7 @@ public class InfoPanel extends FormPanel
 		
 		inputParametersLabel.addStyleName("crk-default-label");
 		
-		flexTable.setWidget(0, 0, inputParametersLabel);
+		flexTable.setWidget(0, 1, inputParametersLabel);
 		
 //		totalCoreSizeXtalCallCutoff = new Label(MainController.CONSTANTS.info_panel_total_core_size_xtal_call_cutoff() + ": " + mainController.getPdbScoreItem().getMinCoreSize());
 //		totalCoreSizeXtalCallCutoff.addStyleName("crk-default-label");
@@ -170,24 +177,27 @@ public class InfoPanel extends FormPanel
 												  0, 
 												  GWT.getModuleBaseURL() + "fileDownload?type=zip&id=" + mainController.getSelectedJobId());
 		downloadResultsLink.addStyleName("crk-default-label");
-		flexTable.setWidget(0, 1, downloadResultsLink);
-
+		flexTable.setWidget(2, 4, downloadResultsLink);
+		
+		//flexTable.setWidget(0, 3, new Label("Column 4"));
+		//flexTable.setWidget(0, 2, new Label("Column 3"));
+		
 		Label uniprotVersionlabel = new Label(MainController.CONSTANTS.info_panel_uniprot() + ": " +
 				mainController.getPdbScoreItem().getRunParameters().getUniprotVer());
 		uniprotVersionlabel.addStyleName("crk-default-label");
-		flexTable.setWidget(0, 2, uniprotVersionlabel);
+		flexTable.setWidget(0, 4, uniprotVersionlabel);
 		
 		Label crkVersionLabel = new Label(MainController.CONSTANTS.info_panel_crk() + ": " +
 				mainController.getPdbScoreItem().getRunParameters().getCrkVersion());
 		crkVersionLabel.addStyleName("crk-default-label");
-		flexTable.setWidget(1, 2, crkVersionLabel);
+		flexTable.setWidget(1, 4, crkVersionLabel);
 		
 		if(homologsStrings != null)
 		{
 			for(int i=0; i<homologsStrings.size(); i++)
 			{
 				LayoutContainer homologsContainer = new HomologsInfoPanel(mainController, homologsStrings.get(i));
-				flexTable.setWidget(i, 3, homologsContainer);
+				flexTable.setWidget(i, 0, homologsContainer);
 			}
 		}
 		

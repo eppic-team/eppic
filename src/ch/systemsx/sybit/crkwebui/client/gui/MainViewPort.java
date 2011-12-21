@@ -212,7 +212,7 @@ public class MainViewPort extends Viewport
 			alignmentsWindow.updateWindowContent();
 		}
 		
-		alignmentsWindow.setPagePosition(xPosition - alignmentsWindow.getWindowWidth(), yPosition);
+		alignmentsWindow.setPagePosition(xPosition, yPosition);
 		alignmentsWindow.setVisible(true);
 		
 		//called beacuse of the bug in GXT 2.2.3

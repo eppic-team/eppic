@@ -24,7 +24,7 @@ public class HomologsInfoPanel extends LayoutContainer
 			@Override
 			public void handleEvent(BaseEvent be) {
 				mainController.showAlignments(homologsInfoItem, 
-											  chainsLink.getAbsoluteLeft(),
+											  chainsLink.getAbsoluteLeft()+chainsLink.getWidth(),
 											  chainsLink.getAbsoluteTop() + chainsLink.getHeight() + 10);
 			}
 			
