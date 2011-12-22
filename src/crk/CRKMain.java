@@ -290,7 +290,7 @@ public class CRKMain {
 		if (pr!=null) {
 			try {
 				for (ChainInterface interf:interfaces) {
-					pr.generateInterfPngPsePml(interf, 
+					pr.generateInterfPngPsePml(interf, params.getCAcutoffForGeom(), 
 							params.getOutputFile("."+interf.getId()+".rimcore.pdb"), 
 							params.getOutputFile("."+interf.getId()+".pse"),
 							params.getOutputFile("."+interf.getId()+".pml"),
@@ -301,7 +301,7 @@ public class CRKMain {
 			} catch (InterruptedException e) {
 				throw new CRKException(e, "Couldn't generate thumbnails or pse/pml files, pymol thread interrupted: "+e.getMessage(),false);
 			}
-			wuiAdaptor.setJmolScripts(interfaces, pr);
+			wuiAdaptor.setJmolScripts(interfaces, params.getCAcutoffForGeom(), pr);
 		}
 	}
 	

@@ -116,13 +116,13 @@ public class WebUIDataAdaptor {
 
 	}
 	
-	public void setJmolScripts(ChainInterfaceList interfaces, PymolRunner pr) {
+	public void setJmolScripts(ChainInterfaceList interfaces, double caCutoff, PymolRunner pr) {
 		for (int i=0;i<interfaces.size();i++) {
-			pdbScoreItem.getInterfaceItem(i).setJmolScript(createJmolScript(interfaces.get(i+1), pr));
+			pdbScoreItem.getInterfaceItem(i).setJmolScript(createJmolScript(interfaces.get(i+1), caCutoff, pr));
 		}
 	}
 	
-	private String createJmolScript(ChainInterface interf, PymolRunner pr) {
+	private String createJmolScript(ChainInterface interf, double caCutoff, PymolRunner pr) {
 		char chain1 = interf.getFirstMolecule().getPdbChainCode().charAt(0);
 		char chain2 = interf.getSecondPdbChainCodeForOutput().charAt(0);
 		
@@ -139,6 +139,7 @@ public class WebUIDataAdaptor {
 		sb.append("cartoon on; wireframe off; spacefill off; set solvent off;");
 		sb.append("select :"+chain1+"; color "+color1+";");
 		sb.append("select :"+chain2+"; color "+color2+";");
+		interf.calcRimAndCore(caCutoff);
 		sb.append(getSelString("core", chain1, interf.getFirstRimCore().getCoreResidues())+";");
 		sb.append(getSelString("core", chain2, interf.getSecondRimCore().getCoreResidues())+";");
 		sb.append(getSelString("rim", chain1, interf.getFirstRimCore().getRimResidues())+";");
@@ -149,8 +150,10 @@ public class WebUIDataAdaptor {
 		// surfaces are cool but in jmol they don't display as good as in pymol, especially the transparency effect is quite bad
 		//sb.append("select :"+chain1+"; isosurface surf"+chain1+" solvent;color isosurface gray;color isosurface translucent;");
 		//sb.append("select :"+chain2+"; isosurface surf"+chain2+" solvent;color isosurface gray;color isosurface translucent;");
-		sb.append("select interface"+chain1+";"+"color "+colorInterf1+";wireframe 0.3;");
-		sb.append("select interface"+chain2+";"+"color "+colorInterf2+";wireframe 0.3;");
+		sb.append("select interface"+chain1+";wireframe 0.3;");
+		sb.append("select interface"+chain2+";wireframe 0.3;");
+		sb.append("select core"+chain1+";"+"color "+colorInterf1+";wireframe 0.3;");
+		sb.append("select core"+chain2+";"+"color "+colorInterf2+";wireframe 0.3;");		
 		return sb.toString();
 	}
 	
