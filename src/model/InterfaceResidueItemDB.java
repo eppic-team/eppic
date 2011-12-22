@@ -1,6 +1,7 @@
 package model;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 public class InterfaceResidueItemDB implements Serializable
@@ -45,6 +46,7 @@ public class InterfaceResidueItemDB implements Serializable
 		this.bsa = bsa;
 		this.bsaPercentage = bsaPercentage;
 		this.assignment = assignment;
+		this.interfaceResidueMethodItems = new ArrayList<InterfaceResidueMethodItemDB>();
 	}
 	
 	public InterfaceResidueItemDB()
@@ -112,9 +114,8 @@ public class InterfaceResidueItemDB implements Serializable
 		return interfaceResidueMethodItems;
 	}
 
-	public void setInterfaceResidueMethodItems(
-			List<InterfaceResidueMethodItemDB> interfaceResidueMethodItems) {
-		this.interfaceResidueMethodItems = interfaceResidueMethodItems;
+	public void addInterfaceResidueMethodItem(InterfaceResidueMethodItemDB irmi) {
+		this.interfaceResidueMethodItems.add(irmi);
 	}
 
 	public void setStructure(int structure) {

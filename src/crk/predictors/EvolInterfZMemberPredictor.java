@@ -188,7 +188,7 @@ public class EvolInterfZMemberPredictor implements InterfaceTypePredictor {
 		double[] surfScoreDist = iec.getSurfaceScoreDist(molecId, MIN_INTERF_FOR_RES_NOT_IN_INTERFACES, NUM_SAMPLES_SCORE_DIST, rimCore.getCoreSize(), scoType);
 		
 		if (rimCore.getCoreSize()!=0) {
-			LOGGER.info("Sampled "+NUM_SAMPLES_SCORE_DIST+" surface evolutionary scores of size "+rimCore.getCoreSize()+": ");
+			LOGGER.info("Interface "+iec.getInterface().getId()+", member "+(molecId+1)+": sampled "+NUM_SAMPLES_SCORE_DIST+" surface evolutionary scores of size "+rimCore.getCoreSize()+": ");
 			StringBuffer sb = new StringBuffer();
 			for (double sample:surfScoreDist) {
 				sb.append(String.format("%4.2f",sample)+" ");

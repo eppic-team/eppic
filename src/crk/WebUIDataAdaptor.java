@@ -38,17 +38,12 @@ public class WebUIDataAdaptor {
 	
 	private PDBScoreItemDB pdbScoreItem;
 	
-//	private ChainInterfaceList interfaces;
-//	private InterfaceEvolContextList iecl;
 	private CRKParams params;
-	
-	private boolean resDetailsAdded;
 	
 	private RunParametersItemDB runParametersItem;
 	
 	public WebUIDataAdaptor() {
 		pdbScoreItem = new PDBScoreItemDB();
-		resDetailsAdded = false;
 	}
 	
 	public void setParams(CRKParams params) {
@@ -80,14 +75,6 @@ public class WebUIDataAdaptor {
 		pdbScoreItem.setExpMethod(pdb.getExpMethod());
 		
 	}
-	
-//	public void setCrkVersion(String crkVersion) {
-//		pdbScoreItem.setCrkVersion(crkVersion);
-//	}
-	
-//	public void setUniprotVer(String uniprotVer) {
-//		pdbScoreItem.setUniprotVer(uniprotVer);
-//	}
 	
 	public void setInterfaces(ChainInterfaceList interfaces) {
 		//this.interfaces = interfaces;
@@ -222,119 +209,79 @@ public class WebUIDataAdaptor {
 		}
 		pdbScoreItem.setHomologsInfoItems(homInfos);
 		
-		// first we add the residue details only once
-		if (!resDetailsAdded) {
-			for (int i=0;i<iecl.size();i++) {
-				InterfaceEvolContext iec = iecl.get(i);
-				InterfaceItemDB ii = pdbScoreItem.getInterfaceItem(i);
-				addResidueDetails(ii, iec, params.isDoScoreEntropies());
+
+		for (int i=0;i<iecl.size();i++) {
+			
+			InterfaceEvolContext iec = iecl.get(i);
+			InterfaceItemDB ii = pdbScoreItem.getInterfaceItem(i);
+			
+			// 1) we add entropy values to the residue details
+			addEntropyToResidueDetails(ii.getInterfaceResidues(), iec);
+			
+			
+			// 2) z-scores
+			EvolInterfZPredictor ezp = iecl.getEvolInterfZPredictor(i);
+			InterfaceScoreItemDB isiZ = new InterfaceScoreItemDB();
+			ii.addInterfaceScore(isiZ);
+			isiZ.setInterfaceItem(ii);
+			isiZ.setId(iec.getInterface().getId());
+			isiZ.setMethod("Z-scores");
+
+			CallType call = ezp.getCall();	
+			isiZ.setCallName(call.getName());
+			isiZ.setCallReason(ezp.getCallReason());
+			
+			if(ezp.getWarnings() != null) {
+				List<String> warnings = ezp.getWarnings();
+				for(String warning: warnings) {
+					WarningItemDB warningItem = new WarningItemDB();
+					warningItem.setText(warning);
+					warningItem.setInterfaceItem(ii);
+					ii.getWarnings().add(warningItem);
+				}
 			}
-			resDetailsAdded = true;
+
+			isiZ.setUnweightedCore1Scores(ezp.getMember1Predictor().getCoreScore());
+			isiZ.setUnweightedCore2Scores(ezp.getMember2Predictor().getCoreScore());
+			isiZ.setUnweightedRatio1Scores(ezp.getMember1Predictor().getScore());
+			isiZ.setUnweightedRatio2Scores(ezp.getMember2Predictor().getScore());
+			isiZ.setUnweightedFinalScores(ezp.getScore());				
+
+			
+			// 3) rim-core entropies
+			EvolRimCorePredictor ercp = iecl.getEvolRimCorePredictor(i);
+
+			InterfaceScoreItemDB isiRC = new InterfaceScoreItemDB();
+			isiRC.setInterfaceItem(ii);
+			ii.addInterfaceScore(isiRC);
+			isiRC.setId(iec.getInterface().getId());
+			isiRC.setMethod("Entropy");
+
+			call = ercp.getCall();	
+			isiRC.setCallName(call.getName());
+			isiRC.setCallReason(ercp.getCallReason());
+
+			if(ercp.getWarnings() != null) {
+				List<String> warnings = ercp.getWarnings();
+				for(String warning: warnings) {
+					WarningItemDB warningItem = new WarningItemDB();
+					warningItem.setText(warning);
+					warningItem.setInterfaceItem(ii);
+					ii.getWarnings().add(warningItem);
+				}
+			}
+
+			isiRC.setUnweightedCore1Scores(ercp.getMember1Predictor().getCoreScore());
+			isiRC.setUnweightedCore2Scores(ercp.getMember2Predictor().getCoreScore());
+			isiRC.setUnweightedRim1Scores(ercp.getMember1Predictor().getRimScore());
+			isiRC.setUnweightedRim2Scores(ercp.getMember2Predictor().getRimScore());
+			isiRC.setUnweightedRatio1Scores(ercp.getMember1Predictor().getScore());
+			isiRC.setUnweightedRatio2Scores(ercp.getMember2Predictor().getScore());
+			isiRC.setUnweightedFinalScores(ercp.getScore());				
+
 		}
 		
-		String method = null;
-		if (iecl.getScoringType()==ScoringType.ENTROPY) {
-			method = "Entropy";
-		} else if (iecl.getScoringType()==ScoringType.KAKS) {
-			method = "Kaks";
-		} else if (iecl.getScoringType()==ScoringType.ZSCORE) {
-			method = "Z-scores";
-		}
 
-		if (iecl.getScoringType()==ScoringType.ZSCORE) {
-			for (int i=0;i<iecl.size();i++) {
-				InterfaceEvolContext iec = iecl.get(i);
-				EvolInterfZPredictor ezp = iecl.getEvolInterfZPredictor(i);
-
-				InterfaceItemDB ii = pdbScoreItem.getInterfaceItem(i);
-
-				InterfaceScoreItemDB isi = new InterfaceScoreItemDB();
-				ii.addInterfaceScore(isi);
-				isi.setInterfaceItem(ii);
-				isi.setId(iec.getInterface().getId());
-				isi.setMethod(method);
-
-				CallType call = ezp.getCall();	
-				isi.setCallName(call.getName());
-				isi.setCallReason(ezp.getCallReason());
-				
-				if(ezp.getWarnings() != null)
-				{
-					List<String> warnings = ezp.getWarnings();
-					for(String warning: warnings)
-					{
-						WarningItemDB warningItem = new WarningItemDB();
-						warningItem.setText(warning);
-						warningItem.setInterfaceItem(ii);
-						ii.getWarnings().add(warningItem);
-					}
-				}
- 
-
-				isi.setUnweightedCore1Scores(ezp.getMember1Predictor().getCoreScore());
-				isi.setUnweightedCore2Scores(ezp.getMember2Predictor().getCoreScore());
-				//isi.setUnweightedRim1Scores(ezp.getMember1Predictor().getRimScore());
-				//isi.setUnweightedRim2Scores(ezp.getMember2Predictor().getRimScore());
-				isi.setUnweightedRatio1Scores(ezp.getMember1Predictor().getScore());
-				isi.setUnweightedRatio2Scores(ezp.getMember2Predictor().getScore());
-				isi.setUnweightedFinalScores(ezp.getScore());				
-
-			}
-
-		} else {
-			for (int i=0;i<iecl.size();i++) {
-				InterfaceEvolContext iec = iecl.get(i);
-				EvolRimCorePredictor ercp = iecl.getEvolRimCorePredictor(i);
-
-				InterfaceItemDB ii = pdbScoreItem.getInterfaceItem(i);
-
-				boolean append = false;
-				InterfaceScoreItemDB isi = null;
-				for (InterfaceScoreItemDB existing: ii.getInterfaceScores()){
-					if (existing.getMethod().equals(method)) { //if we already have the method in, then this is simply the second part of it (weighted scores)
-						append = true;
-						isi = existing;
-					}
-				}
-
-				if (!append) {
-					isi = new InterfaceScoreItemDB();
-					isi.setInterfaceItem(ii);
-					ii.addInterfaceScore(isi);
-					isi.setId(iec.getInterface().getId());
-					isi.setMethod(method);
-
-					// NOTE: here we are only getting call, callReason and warnings from first of the 2 added (unweighted) 
-					// thus we are ignoring the weighted calls in the web ui
-					CallType call = ercp.getCall();	
-					isi.setCallName(call.getName());
-					isi.setCallReason(ercp.getCallReason());
-					
-					if(ercp.getWarnings() != null)
-					{
-						List<String> warnings = ercp.getWarnings();
-						for(String warning: warnings)
-						{
-							WarningItemDB warningItem = new WarningItemDB();
-							warningItem.setText(warning);
-							warningItem.setInterfaceItem(ii);
-							ii.getWarnings().add(warningItem);
-						}
-					}
-
-				} 
-
-
-				isi.setUnweightedCore1Scores(ercp.getMember1Predictor().getCoreScore());
-				isi.setUnweightedCore2Scores(ercp.getMember2Predictor().getCoreScore());
-				isi.setUnweightedRim1Scores(ercp.getMember1Predictor().getRimScore());
-				isi.setUnweightedRim2Scores(ercp.getMember2Predictor().getRimScore());
-				isi.setUnweightedRatio1Scores(ercp.getMember1Predictor().getScore());
-				isi.setUnweightedRatio2Scores(ercp.getMember2Predictor().getScore());
-				isi.setUnweightedFinalScores(ercp.getScore());				
-
-			}
-		}
 	}
 	
 	public void setCombinedPredictors(List<CombinedPredictor> cps) {
@@ -353,13 +300,24 @@ public class WebUIDataAdaptor {
 		}
 	}
 	
-	private void addResidueDetails(InterfaceItemDB ii, InterfaceEvolContext iec, boolean includeEntropy) {
+	public void addResidueDetails(ChainInterfaceList interfaces, double caCutoff) {
+		for (int i=0;i<interfaces.size();i++) {
+
+			ChainInterface interf = interfaces.get(i+1);
+			InterfaceItemDB ii = pdbScoreItem.getInterfaceItem(i);
+
+			// we add the residue details
+			addResidueDetails(ii, interf, caCutoff, params.isDoScoreEntropies());
+		}
+	}
+	
+	private void addResidueDetails(InterfaceItemDB ii, ChainInterface interf, double caCutoff, boolean includeEntropy) {
 		
 		List<InterfaceResidueItemDB> iril = new ArrayList<InterfaceResidueItemDB>();
 		ii.setInterfaceResidues(iril);
 		
-		addResidueDetailsOfPartner(iril, iec, includeEntropy, 0);
-		addResidueDetailsOfPartner(iril, iec, includeEntropy, 1);
+		addResidueDetailsOfPartner(iril, interf, caCutoff, 0);
+		addResidueDetailsOfPartner(iril, interf, caCutoff, 1);
 
 		for(InterfaceResidueItemDB iri : iril)
 		{
@@ -367,11 +325,9 @@ public class WebUIDataAdaptor {
 		}
 	}
 	
-	private void addResidueDetailsOfPartner(List<InterfaceResidueItemDB> iril, InterfaceEvolContext iec, boolean includeEntropy, int molecId) {
-		ChainInterface interf = iec.getInterface();
-		ChainEvolContext cec = iec.getChainEvolContext(molecId);
-		
+	private void addResidueDetailsOfPartner(List<InterfaceResidueItemDB> iril, ChainInterface interf, double caCutoff, int molecId) {
 		if (interf.isProtein()) {
+			interf.calcRimAndCore(caCutoff);
 			PdbChain mol = null;
 			InterfaceRimCore rimCore = null;
 			if (molecId==FIRST) {
@@ -383,9 +339,6 @@ public class WebUIDataAdaptor {
 				rimCore = interf.getSecondRimCore();
 			}
 			 
-			List<Double> entropies = null;
-			if (cec.hasQueryMatch()) 
-				entropies = cec.getConservationScores(ScoringType.ENTROPY);
 			for (Residue residue:mol) {
 				String resType = residue.getLongCode();
 				int assignment = -1;
@@ -396,30 +349,68 @@ public class WebUIDataAdaptor {
 
 				if (assignment==-1 && asa>0) assignment = InterfaceResidueItemDB.SURFACE;
 
-				int queryUniprotPos = -1;
-				if (!mol.isNonPolyChain() && mol.getSequence().isProtein() && cec.hasQueryMatch()) 
-					queryUniprotPos = cec.getQueryUniprotPosForPDBPos(residue.getSerial());
-
-				float entropy = -1;
-				if (entropies!=null && residue instanceof AaResidue) {	
-					if (queryUniprotPos!=-1) entropy = (float) entropies.get(queryUniprotPos).doubleValue();
-				}
 				InterfaceResidueItemDB iri = new InterfaceResidueItemDB(residue.getSerial(),residue.getPdbSerial(),resType,asa,bsa,bsa/asa,assignment);
 				iri.setStructure(molecId+1); // structure ids are 1 and 2 while molecId are 0 and 1
 
-				List<InterfaceResidueMethodItemDB> scores = new ArrayList<InterfaceResidueMethodItemDB>();
-				scores.add(new InterfaceResidueMethodItemDB((float) 0, "geometry"));
-				if (includeEntropy) scores.add(new InterfaceResidueMethodItemDB(entropy, "entropy"));
+				InterfaceResidueMethodItemDB irmi = new InterfaceResidueMethodItemDB((float) 0, "geometry");
+				irmi.setInterfaceResidueItem(iri);
 				
-				for(InterfaceResidueMethodItemDB irmi : scores)
-				{
-					irmi.setInterfaceResidueItem(iri);
-				}
+				iri.addInterfaceResidueMethodItem(irmi);
 				
-				iri.setInterfaceResidueMethodItems(scores);
 				iril.add(iri);
 			}
 		}
+	}
+
+	private void addEntropyToResidueDetails(List<InterfaceResidueItemDB> iril, InterfaceEvolContext iec) {
+		ChainInterface interf = iec.getInterface();
+		
+		
+		int[] molecIds = new int[2];
+		molecIds[0] = 0;
+		molecIds[1] = 1;
+
+		// beware the counter is global for both molecule 1 and 2 (as the List<InterfaceResidueItemDB> contains both, identified by a structure id 1 or 2)
+		int i = 0;  
+
+		for (int molecId:molecIds) { 
+			ChainEvolContext cec = iec.getChainEvolContext(molecId);
+			PdbChain mol = null;
+			if (molecId==FIRST) {
+				mol = interf.getFirstMolecule();
+			}
+			else if (molecId==SECOND) {
+				mol = interf.getSecondMolecule();
+			}
+
+			if (interf.isProtein()) {
+				 
+				List<Double> entropies = null;
+				if (cec.hasQueryMatch()) 
+					entropies = cec.getConservationScores(ScoringType.ENTROPY);
+				for (Residue residue:mol) {
+
+	 				InterfaceResidueItemDB iri = iril.get(i);
+					
+					int queryUniprotPos = -1;
+					if (!mol.isNonPolyChain() && mol.getSequence().isProtein() && cec.hasQueryMatch()) 
+						queryUniprotPos = cec.getQueryUniprotPosForPDBPos(residue.getSerial());
+
+					float entropy = -1;
+					if (entropies!=null && residue instanceof AaResidue) {	
+						if (queryUniprotPos!=-1) entropy = (float) entropies.get(queryUniprotPos).doubleValue();
+					}
+
+					InterfaceResidueMethodItemDB irmi = new InterfaceResidueMethodItemDB(entropy, "entropy");
+					irmi.setInterfaceResidueItem(iri);
+					
+					iri.addInterfaceResidueMethodItem(irmi); 
+					i++;
+				}
+			}
+		}
+		
+		
 	}
 
 	public RunParametersItemDB getRunParametersItem() {

@@ -266,6 +266,7 @@ public class CRKMain {
 			// for the webui
 			wuiAdaptor.setInterfaces(interfaces);
 			wuiAdaptor.setGeometryScores(gps);
+			wuiAdaptor.addResidueDetails(interfaces, params.getCAcutoffForRimCore());
 		} catch (IOException e) {
 			throw new CRKException(e, "Couldn't write interface geometry scores or related pdb files. "+e.getMessage(),true);
 		}
@@ -493,21 +494,19 @@ public class CRKMain {
 				// entropy nw
 				iecList.scoreEntropy(false);
 				iecList.printScoresTable(scoreEntrPS);
-				wuiAdaptor.add(iecList);
-				iecList.resetCalls();
 				iecList.writeScoresPDBFiles(params,CRKParams.ENTROPIES_FILE_SUFFIX+".pdb");
 				scoreEntrPS.close();
-				iecList.resetCalls();
 				// z-scores
 				//interfaces.calcRimAndCores(params.getCAcutoffForZscore());
 				PrintStream scoreZscorePS = new PrintStream(params.getOutputFile(CRKParams.ZSCORES_FILE_SUFFIX+".scores"));
 				iecList.setZPredBsaToAsaCutoff(params.getCAcutoffForZscore());
 				iecList.scoreZscore();
 				iecList.printZscoresTable(scoreZscorePS);
-				wuiAdaptor.add(iecList);
-				iecList.resetCalls();
 				scoreZscorePS.close();
-
+				
+				// note this adds also the entropies to the residue details
+				wuiAdaptor.add(iecList);
+				
 			} catch (IOException e) {
 				throw new CRKException(e, "Couldn't write final interface entropy scores or related PDB files. "+e.getMessage(),true);
 			} 
@@ -521,14 +520,15 @@ public class CRKMain {
 		
 		try {
 		
-			iecList.setCallCutoff(params.getEntrCallCutoff());
-			iecList.setZscoreCutoff(params.getZscoreCutoff());
-			//interfaces.calcRimAndCores(params.getCAcutoffForRimCore());
-			iecList.setRimCorePredBsaToAsaCutoff(params.getCAcutoffForRimCore());
-			iecList.scoreEntropy(false);
-			//interfaces.calcRimAndCores(params.getCAcutoffForZscore());
-			iecList.setZPredBsaToAsaCutoff(params.getCAcutoffForZscore());
-			iecList.scoreZscore();
+			// commented out because it was an issue to calculate twice especially for z-scores that are non-deterministic: 
+			// in some cases (e.g. 1bos-20, 3ewe-5) it could happen that in first caculation a bio was called and in second a xtal was called 
+			//iecList.setCallCutoff(params.getEntrCallCutoff());
+			//iecList.setRimCorePredBsaToAsaCutoff(params.getCAcutoffForRimCore());
+			//iecList.scoreEntropy(false);
+
+			//iecList.setZscoreCutoff(params.getZscoreCutoff());
+			//iecList.setZPredBsaToAsaCutoff(params.getCAcutoffForZscore());			
+			//iecList.scoreZscore();
 
 			List<CombinedPredictor> cps = new ArrayList<CombinedPredictor>();
 
