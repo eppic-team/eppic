@@ -394,23 +394,14 @@ public class ChainEvolContext implements Serializable {
 	public void printSummary(PrintStream ps) {
 		ps.println("Query: "+pdbName+representativeChain);
 		ps.println("Uniprot id for query:");
-		ps.print(this.query.getUniId()+" (");
-		for (String emblcdsid: query.getEmblCdsIds()) {
-			ps.print(" "+emblcdsid);
-		}
-		ps.println(" )");
-		
+		ps.println(this.query.getUniId()+"\t"+this.query.getFirstTaxon()+"\t"+this.query.getLastTaxon());
 		ps.println();
+		
 		ps.println("Uniprot version: "+homologs.getUniprotVer());
 		ps.println("Homologs: "+homologs.getSizeFilteredSubset()+" at "+String.format("%4.2f",homologs.getIdCutoff())+" identity cut-off and "+
 				String.format("%4.2f",homologs.getQCovCutoff())+" query coverage cutoff");
 		for (Homolog hom:homologs.getFilteredSubset()) {
 			ps.printf("%-13s",hom.getIdentifier());
-			//ps.print(" (");
-			//for (String emblcdsid: hom.getUniprotEntry().getEmblCdsIds()) {
-			//	ps.print(" "+emblcdsid);
-			//}
-			//ps.print(" )");
 			ps.printf("\t%5.1f",hom.getPercentIdentity());
 			if (hom.isUniprot()) ps.print("\t"+hom.getUniprotEntry().getFirstTaxon()+"\t"+hom.getUniprotEntry().getLastTaxon());
 			ps.println();
