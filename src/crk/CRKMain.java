@@ -350,6 +350,8 @@ public class CRKMain {
 		// b) getting the homologs and sequence data
 		params.getProgressLog().println("Blasting for homologues");
 		cecs.retrieveHomologs(params);
+		cecs.applyIdentityCutoff(params);
+		
 		// the uniprot ver will be set only when at least one sequence has uniprot match
 		// if not a single sequence has match then it will be null
 		wuiAdaptor.getRunParametersItem().setUniprotVer(cecs.getUniprotVer());
@@ -357,6 +359,7 @@ public class CRKMain {
 		params.getProgressLog().println("Retrieving UniprotKB data");
 		cecs.retrieveHomologsData(params);
 		
+		// filtering optionally by domain of life, and further redundancy elimination
 		cecs.filter(params);
 
 		// c) align

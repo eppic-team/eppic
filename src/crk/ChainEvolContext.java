@@ -170,14 +170,9 @@ public class ChainEvolContext implements Serializable {
 		String blastDbDir = params.getBlastDbDir();
 		String blastDb = params.getBlastDb();
 		int blastNumThreads = params.getNumThreads(); 
-		double homSoftIdCutoff = params.getHomSoftIdCutoff();
-		double homHardIdCutoff = params.getHomHardIdCutoff();
-		double homIdStep = params.getHomIdStep();
-		double queryCovCutoff = params.getQueryCoverageCutoff();
 		int maxNumSeqs = params.getMaxNumSeqs();
 		HomologsSearchMode searchMode = params.getHomologsSearchMode();
 		double pdb2uniprotMaxScovForLocal = params.getPdb2uniprotMaxScovForLocal();
-		int minNumSeqs = params.getMinNumSeqs();
 		boolean useUniparc = params.isUseUniparc();
 		
 		queryInterv = new Interval(1,query.getLength());
@@ -210,8 +205,6 @@ public class ChainEvolContext implements Serializable {
 		
 		homologs.searchWithBlast(blastBinDir, blastDbDir, blastDb, blastNumThreads, maxNumSeqs, blastCache);
 		LOGGER.info(homologs.getSizeFullList()+" homologs found by blast");
-		
-		applyIdentityCutoff(homSoftIdCutoff, homHardIdCutoff, homIdStep, queryCovCutoff, minNumSeqs);
 		 
 	}
 	
@@ -239,13 +232,13 @@ public class ChainEvolContext implements Serializable {
 		homologs.retrieveUniparcData(null);
 	}
 	
-	private void applyIdentityCutoff(double homSoftIdCutoff, double homHardIdCutoff, double homIdStep, double queryCovCutoff, int minHomologsCutoff) {
+	public void applyIdentityCutoff(double homSoftIdCutoff, double homHardIdCutoff, double homIdStep, double queryCovCutoff, int minNumSeqs) {
 		// applying identity cutoff
 		double idcutoff = homSoftIdCutoff;
 		while (idcutoff>=homHardIdCutoff-0.001) { // the 0.001 just to be sure we really reach the hard cutoff (there were problems with rounding)
 			homologs.filterToMinIdAndCoverage(idcutoff, queryCovCutoff);
-			if (homologs.getSizeFilteredSubset()>=minHomologsCutoff) break;
-			LOGGER.info("Tried "+String.format("%4.2f",idcutoff)+" identity cutoff, only "+homologs.getSizeFilteredSubset()+" homologs found ("+minHomologsCutoff+" required)");
+			if (homologs.getSizeFilteredSubset()>=minNumSeqs) break;
+			LOGGER.info("Tried "+String.format("%4.2f",idcutoff)+" identity cutoff, only "+homologs.getSizeFilteredSubset()+" homologs found ("+minNumSeqs+" required)");
 			idcutoff -= homIdStep;
 		}
 		LOGGER.info(homologs.getSizeFilteredSubset()+" homologs after applying "+String.format("%4.2f",idcutoff)+" identity cutoff and "+String.format("%4.2f",queryCovCutoff)+" query coverage cutoff");

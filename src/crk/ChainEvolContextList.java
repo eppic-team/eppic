@@ -113,6 +113,7 @@ public class ChainEvolContextList implements Serializable {
 	}
 	
 	public void retrieveQueryData(CRKParams params) throws CRKException {
+		params.getProgressLog().print("chains: ");
 		for (ChainEvolContext chainEvCont:cecs.values()) {
 			params.getProgressLog().print(chainEvCont.getRepresentativeChainCode()+" ");
 			try {
@@ -131,17 +132,10 @@ public class ChainEvolContextList implements Serializable {
 	}
 	
 	public void retrieveHomologs(CRKParams params) throws CRKException {
-		
-		this.minNumSeqs = params.getMinNumSeqs();
-		this.maxNumSeqs = params.getMaxNumSeqs();
-		this.queryCovCutoff = params.getQueryCoverageCutoff();
-		this.homSoftIdCutoff = params.getHomSoftIdCutoff();
-		this.homHardIdCutoff = params.getHomHardIdCutoff();
-		
+		params.getProgressLog().print("chains: ");
 		for (ChainEvolContext chainEvCont:cecs.values()) {
 			if (!chainEvCont.hasQueryMatch()) {
 				// no query uniprot match, we do nothing with this sequence
-				// TODO should we go ahead and blast with the PDB sequence? that would require quite a few changes in the code
 				continue;
 			}
 			params.getProgressLog().print(chainEvCont.getRepresentativeChainCode()+" ");
@@ -173,10 +167,10 @@ public class ChainEvolContextList implements Serializable {
 	}
 	
 	public void retrieveHomologsData(CRKParams params) throws CRKException {
+		params.getProgressLog().print("chains: ");
 		for (ChainEvolContext chainEvCont:cecs.values()) {
 			if (!chainEvCont.hasQueryMatch()) {
 				// no query uniprot match, we do nothing with this sequence
-				// TODO should we go ahead and blast with the PDB sequence? that would require quite a few changes in the code
 				continue;
 			}
 			
@@ -196,11 +190,27 @@ public class ChainEvolContextList implements Serializable {
 		params.getProgressLog().println();
 	}
 	
+	public void applyIdentityCutoff(CRKParams params) {
+		
+		this.minNumSeqs = params.getMinNumSeqs();
+		this.maxNumSeqs = params.getMaxNumSeqs();
+		this.queryCovCutoff = params.getQueryCoverageCutoff();
+		this.homSoftIdCutoff = params.getHomSoftIdCutoff();
+		this.homHardIdCutoff = params.getHomHardIdCutoff();
+		
+		for (ChainEvolContext chainEvCont:cecs.values()) {
+			if (!chainEvCont.hasQueryMatch()) {
+				// no query uniprot match, we do nothing with this sequence
+				continue;
+			}
+			chainEvCont.applyIdentityCutoff(homSoftIdCutoff, homHardIdCutoff, params.getHomIdStep(), queryCovCutoff, minNumSeqs);
+		}
+	}
+	
 	public void filter(CRKParams params) {
 		for (ChainEvolContext chainEvCont:cecs.values()) {
 			if (!chainEvCont.hasQueryMatch()) {
 				// no query uniprot match, we do nothing with this sequence
-				// TODO should we go ahead and blast with the PDB sequence? that would require quite a few changes in the code
 				continue;
 			}
 			
@@ -210,17 +220,17 @@ public class ChainEvolContextList implements Serializable {
 			// remove redundancy
 			chainEvCont.removeRedundancy();
 
-			// skimming so that there's not too many sequences for selecton
+			// skimming so that there's not too many sequences 
 			chainEvCont.skimList(params.getMaxNumSeqs());
 
 		}
 	}
 	
 	public void align(CRKParams params) throws CRKException {
+		params.getProgressLog().print("chains: ");
 		for (ChainEvolContext chainEvCont:cecs.values()) {
 			if (!chainEvCont.hasQueryMatch()) {
 				// no query uniprot match, we do nothing with this sequence
-				// TODO should we go ahead and blast with the PDB sequence? that would require quite a few changes in the code
 				continue;
 			}
 			
@@ -243,7 +253,6 @@ public class ChainEvolContextList implements Serializable {
 		for (ChainEvolContext chainEvCont:cecs.values()) {
 			if (!chainEvCont.hasQueryMatch()) {
 				// no query uniprot match, we do nothing with this sequence
-				// TODO should we go ahead and blast with the PDB sequence? that would require quite a few changes in the code
 				continue;
 			}
 
@@ -273,7 +282,6 @@ public class ChainEvolContextList implements Serializable {
 		for (ChainEvolContext chainEvCont:cecs.values()) {
 			if (!chainEvCont.hasQueryMatch()) {
 				// no query uniprot match, we do nothing with this sequence
-				// TODO should we go ahead and blast with the PDB sequence? that would require quite a few changes in the code
 				continue;
 			}
 			
