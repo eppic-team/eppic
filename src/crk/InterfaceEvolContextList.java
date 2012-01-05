@@ -20,14 +20,15 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 
 	private static final long serialVersionUID = 1L;
 	
-	private static final String IDENTIFIER_HEADER       = "# PDB identifier:";
-	private static final String SCORE_METHOD_HEADER 	= "# Score method:";
-	private static final String NUM_HOMS_CUTOFF_HEADER  = "# Min number homologs required:";
-	private static final String SEQUENCE_ID_HEADER  	= "# Sequence identity cutoff:";
-	private static final String QUERY_COV_HEADER    	= "# Query coverage cutoff:";
-	private static final String MAX_NUM_SEQS_HEADER     = "# Max num sequences used:";
-	private static final String BIO_XTAL_CALL_HEADER         = "# Bio-xtal rim/core call cutoff:";
-	private static final String ZSCORE_CUTOFF_HEADER    = "# Z-score cutoff:";
+	private static final String IDENTIFIER_HEADER        = "# PDB identifier:";
+	private static final String SCORE_METHOD_HEADER 	 = "# Score method:";
+	private static final String MIN_NUM_SEQS_HEADER      = "# Min number homologs required:";
+	private static final String HOM_SOFT_ID_HEADER  	 = "# Sequence identity soft cutoff:";
+	private static final String HOM_HARD_ID_HEADER  	 = "# Sequence identity hard cutoff:";
+	private static final String QUERY_COV_HEADER    	 = "# Query coverage cutoff:";
+	private static final String MAX_NUM_SEQS_HEADER      = "# Max num sequences used:";
+	private static final String BIO_XTAL_CALL_HEADER     = "# Bio-xtal rim/core call cutoff:";
+	private static final String ZSCORE_CUTOFF_HEADER     = "# Z-score cutoff:";
 	private static final String BSA_TO_ASA_CUTOFF_HEADER = "# Core assignment cutoff:";
 	
 	
@@ -40,25 +41,44 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 	private String pdbName;
 	private ScoringType scoType;
 	private double callCutoff;
-	private int homologsCutoff;
-	private double idCutoff;
+	private int minNumSeqs;
+	private double homSoftIdCutoff;
+	private double homHardIdCutoff;
 	private double queryCovCutoff;
-	private int maxNumSeqsCutoff;
+	private int maxNumSeqs;
+	private double caCutoffForRimCore;
+	private double caCutoffForZscore;
 	
 	private double zScoreCutoff;
 	
-	public InterfaceEvolContextList(String pdbName, int homologsCutoff,  
-			double idCutoff, double queryCovCutoff, int maxNumSeqsCutoff) {
+	/**
+	 * Constructs a InterfaceEvolContextList given a ChainInterfaceList with all 
+	 * interfaces of a given PDB and a ChainEvolContextList with all evolutionary 
+	 * contexts of chains of that same PDB. Adds an InterfaceEvolContext (containing a pair
+	 * of ChainEvolContext and a ChainInterface) to this list for each protein-protein interface. 
+	 * @param interfaces
+	 * @param cecs
+	 */
+	public InterfaceEvolContextList(String pdbName, ChainInterfaceList interfaces, ChainEvolContextList cecs) {
 		this.pdbName = pdbName;
-		this.homologsCutoff = homologsCutoff;
-		this.idCutoff = idCutoff;
-		this.queryCovCutoff = queryCovCutoff;
-		this.maxNumSeqsCutoff = maxNumSeqsCutoff;
+		this.minNumSeqs = cecs.getMinNumSeqs();
+		this.homSoftIdCutoff = cecs.getHomSoftIdCutoff();
+		this.homHardIdCutoff = cecs.getHomHardIdCutoff();
+		this.queryCovCutoff = cecs.getQueryCovCutoff();
+		this.maxNumSeqs = cecs.getMaxNumSeqs();
+				
 		
 		list = new ArrayList<InterfaceEvolContext>();
 		evolRimCorePredictors = new ArrayList<EvolRimCorePredictor>();
 		evolInterfZPredictors = new ArrayList<EvolInterfZPredictor>();
-		
+	
+		this.chainInterfList = interfaces;
+		for (ChainInterface pi:interfaces) {
+			if (pi.isProtein()) {
+				InterfaceEvolContext iec = new InterfaceEvolContext(pi, cecs, this);
+				this.add(iec);
+			}
+		}
 	}
 	
 	public int size() {
@@ -77,27 +97,10 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 		return this.evolInterfZPredictors.get(i);
 	}
 	
-	public void add(InterfaceEvolContext iec) {
+	private void add(InterfaceEvolContext iec) {
 		list.add(iec);
 		evolRimCorePredictors.add(new EvolRimCorePredictor(iec));
 		evolInterfZPredictors.add(new EvolInterfZPredictor(iec));
-	}
-	
-	/**
-	 * Given a ChainInterfaceList with all interfaces of a given PDB and a ChainEvolContextList with
-	 * all evolutionary contexts of chains of that same PDB adds an InterfaceEvolContext (containing a pair
-	 * of ChainEvolContext and a ChainInterface) to this list for each protein-protein interface. 
-	 * @param interfaces
-	 * @param cecs
-	 */
-	public void addAll(ChainInterfaceList interfaces, ChainEvolContextList cecs) {
-		this.chainInterfList = interfaces;
-		for (ChainInterface pi:interfaces) {
-			if (pi.isProtein()) {
-				InterfaceEvolContext iec = new InterfaceEvolContext(pi, cecs,this);
-				this.add(iec);
-			}
-		}
 	}
 	
 	@Override
@@ -135,7 +138,7 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 		printScoringHeaders(ps);
 		
 		for (int i=0;i<list.size();i++) {
-			list.get(i).setHomologsCutoff(homologsCutoff);
+			list.get(i).setMinNumSeqs(minNumSeqs);
 			evolRimCorePredictors.get(i).printScoresLine(ps);
 		}
 	}
@@ -146,7 +149,7 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 		printZscoringHeaders(ps);
 		
 		for (int i=0;i<list.size();i++) {
-			list.get(i).setHomologsCutoff(homologsCutoff);
+			list.get(i).setMinNumSeqs(minNumSeqs);
 			evolInterfZPredictors.get(i).printScoresLine(ps);
 		}
 		
@@ -183,19 +186,25 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 	}
 
 	public void setRimCorePredBsaToAsaCutoff(double bsaToAsaCutoff) {
+		this.caCutoffForRimCore = bsaToAsaCutoff;
+		chainInterfList.calcRimAndCores(bsaToAsaCutoff);
+		
 		for (int i=0;i<list.size();i++) {
 			evolRimCorePredictors.get(i).setBsaToAsaCutoff(bsaToAsaCutoff);
 		}		
 	}
 	
 	public void setZPredBsaToAsaCutoff(double bsaToAsaCutoff) {
+		this.caCutoffForZscore = bsaToAsaCutoff;
+		chainInterfList.calcRimAndCores(bsaToAsaCutoff);
+		
 		for (int i=0;i<list.size();i++) {
 			evolInterfZPredictors.get(i).setBsaToAsaCutoff(bsaToAsaCutoff);
 		}		
 	}
 	
 	public int getHomologsCutoff() {
-		return homologsCutoff;
+		return minNumSeqs;
 	}
 
 	public ScoringType getScoringType() {
@@ -215,13 +224,15 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 	private void printScoringParams(PrintStream ps, boolean zscore) {
 		ps.println(IDENTIFIER_HEADER+" "+pdbName);
 		ps.println(SCORE_METHOD_HEADER+" "+scoType.getName());
-		ps.println(NUM_HOMS_CUTOFF_HEADER+" "+homologsCutoff);
-		ps.printf (SEQUENCE_ID_HEADER+" %4.2f\n",idCutoff);
+		ps.println(MIN_NUM_SEQS_HEADER+" "+minNumSeqs);
+		ps.printf (HOM_SOFT_ID_HEADER+" %4.2f\n",homSoftIdCutoff);
+		ps.printf (HOM_HARD_ID_HEADER+" %4.2f\n",homHardIdCutoff);
 		ps.printf (QUERY_COV_HEADER+" %4.2f\n",queryCovCutoff);
-		ps.println(MAX_NUM_SEQS_HEADER+" "+maxNumSeqsCutoff);
+		ps.println(MAX_NUM_SEQS_HEADER+" "+maxNumSeqs);
 		if (!zscore) ps.printf (BIO_XTAL_CALL_HEADER+"  %4.2f\n",callCutoff);
-		if (zscore) ps.printf (ZSCORE_CUTOFF_HEADER+" %5.2f\n",zScoreCutoff);
-		ps.printf (BSA_TO_ASA_CUTOFF_HEADER+" %4.2f\n",list.get(0).getInterface().getBsaToAsaCutoff());
+		if (zscore)  ps.printf (ZSCORE_CUTOFF_HEADER+" %5.2f\n",zScoreCutoff);
+		if (!zscore) ps.printf (BSA_TO_ASA_CUTOFF_HEADER+" %4.2f\n", caCutoffForRimCore);
+		if (zscore)  ps.printf (BSA_TO_ASA_CUTOFF_HEADER+" %4.2f\n", caCutoffForZscore);
 	}
 	
 	private static void printScoringHeaders(PrintStream ps) {

@@ -23,9 +23,6 @@ import crk.predictors.GeometryPredictor;
 
 import owl.core.connections.pisa.PisaConnection;
 import owl.core.runners.PymolRunner;
-import owl.core.runners.TcoffeeException;
-import owl.core.runners.blast.BlastException;
-import owl.core.sequence.UniprotVerMisMatchException;
 import owl.core.structure.ChainInterface;
 import owl.core.structure.ChainInterfaceList;
 import owl.core.structure.PdbAsymUnit;
@@ -346,125 +343,32 @@ public class CRKMain {
 		cecs = new ChainEvolContextList(pdb,params.getJobName());
 		
 		// a) getting the uniprot ids corresponding to the query (the pdb sequence)
-		for (ChainEvolContext chainEvCont:cecs.getAllChainEvolContext()) {
-			params.getProgressLog().println("Finding query's chain "+chainEvCont.getRepresentativeChainCode()+" uniprot mapping through SIFTS or blasting");
-			writeStep("Finding Homologues and Calculating Entropies");
-			try {
-				chainEvCont.retrieveQueryData(params.getSiftsFile(), params.getBlastBinDir(), params.getBlastDbDir(), params.getBlastDb(), params.getNumThreads(),params.getPdb2uniprotIdThreshold(),params.getPdb2uniprotQcovThreshold());
-			} catch (BlastException e) {
-				throw new CRKException(e,"Couldn't run blast to retrieve query's uniprot mapping: "+e.getMessage(),true);
-			} catch (IOException e) {
-				throw new CRKException(e,"Problems while retrieving query data: "+e.getMessage(),true);
-			} catch (InterruptedException e) {
-				throw new CRKException(e,"Thread interrupted while running blast for retrieving query data: "+e.getMessage(),true);
-			} catch (Exception e) { // for any kind of exceptions thrown while connecting through uniprot JAPI
-				throw new CRKException(e,"Problems while retrieving query data through Uniprot JAPI. Is Uniprot server down?\n"+e.getMessage(),true);
-			}
-
-			if (!chainEvCont.hasQueryMatch()) {
-				// no query uniprot match, we do nothing with this sequence
-				// TODO should we go ahead and blast with the PDB sequence? that would require quite a few changes in the code
-				continue;
-			} 
-			
-			// b) getting the homologs and sequence data 
-			params.getProgressLog().println("Blasting for homologues...");
-			File blastCacheFile = null;
-			if (params.getBlastCacheDir()!=null) {
-				blastCacheFile = new File(params.getBlastCacheDir(),chainEvCont.getQuery().getUniId()+".blast.xml"); 
-			}
-			try {
-				chainEvCont.retrieveHomologs(params, blastCacheFile);
-				LOGGER.info("Uniprot version used: "+chainEvCont.getUniprotVer());
-				
-				// for web ui uniprot ver will be set only when at least one sequence has uniprot match
-				// it will be redundantly set several times actually, TODO we should do it only once
-				// if not a single sequence has match then it will be null
-				wuiAdaptor.getRunParametersItem().setUniprotVer(chainEvCont.getUniprotVer());
-
-			} catch (UniprotVerMisMatchException e) {
-				throw new CRKException(e, "Mismatch of Uniprot versions! "+e.getMessage(), true);
-			} catch (BlastException e) {
-				throw new CRKException(e,"Couldn't run blast to retrieve homologs: "+e.getMessage() ,true);
-			} catch (IOException e) {
-				throw new CRKException(e,"Problem while blasting for sequence homologs: "+e.getMessage(),true);
-			} catch (InterruptedException e) {
-				throw new CRKException(e,"Thread interrupted while blasting for sequence homologs: "+e.getMessage(),true);
-			}
-
-			String msg = "Retrieving UniprotKB data";
-
-			params.getProgressLog().println(msg);
-			try {
-				chainEvCont.retrieveHomologsData();
-			} catch (UniprotVerMisMatchException e) {
-				throw new CRKException(e, "Mismatch of Uniprot versions! "+e.getMessage(), true);
-			} catch (IOException e) {
-				String errmsg = "Problem while retrieving homologs data through Uniprot JAPI";
-				throw new CRKException(e, errmsg+": "+e.getMessage(),true);
-			} catch (Exception e) { // for any kind of exceptions thrown while connecting through uniprot JAPI
-				throw new CRKException(e, "Problems while retrieving homologs data through Uniprot JAPI. Is Uniprot server down?\n"+e.getMessage(),true);
-			}
-
-			// filtering optionally for domain of life
-			if (params.isFilterByDomain()) chainEvCont.filterToSameDomainOfLife();
-			
-			// remove redundancy
-			chainEvCont.removeRedundancy();
-
-			// skimming so that there's not too many sequences for selecton
-			chainEvCont.skimList(params.getMaxNumSeqs());
-			
-			// c) align
-			params.getProgressLog().println("Aligning protein sequences with t_coffee...");
-			try {
-				chainEvCont.align(params.getTcoffeeBin(), params.isUseTcoffeeVeryFastMode(), params.getNumThreads());
-			} catch (TcoffeeException e) {
-				throw new CRKException(e, "Couldn't run t_coffee to align protein sequences: "+e.getMessage(), true);
-			} catch (IOException e) {
-				throw new CRKException(e, "Problems while running t_coffee to align protein sequences: "+e.getMessage(),true);
-			} catch (InterruptedException e) {
-				throw new CRKException(e, "Thread interrupted while running t_coffee to align protein sequences: "+e.getMessage(),true);
-			}
-
-
-			File outFile = null;
-			try {
-				// writing homolog sequences to file
-				outFile = params.getOutputFile("."+chainEvCont.getRepresentativeChainCode()+".fa");
-				chainEvCont.writeHomologSeqsToFile(outFile);
-
-				// printing summary to file
-				outFile = params.getOutputFile("."+chainEvCont.getRepresentativeChainCode()+".log");
-				PrintStream log = new PrintStream(outFile);
-				chainEvCont.printSummary(log);
-				log.close();
-				// writing the alignment to file
-				outFile = params.getOutputFile("."+chainEvCont.getRepresentativeChainCode()+".aln");
-				chainEvCont.writeAlignmentToFile(outFile);
-
-			} catch(FileNotFoundException e){
-				LOGGER.error("Couldn't write file "+outFile);
-				LOGGER.error(e.getMessage());
-			}
-
-
-			// d) computing entropies
-			chainEvCont.computeEntropies(params.getReducedAlphabet());
-
-
-			try {
-				// writing the conservation scores (entropies/kaks) log file
-				outFile = params.getOutputFile("."+chainEvCont.getRepresentativeChainCode()+CRKParams.ENTROPIES_FILE_SUFFIX);
-				PrintStream conservScoLog = new PrintStream(outFile);
-				chainEvCont.printConservationScores(conservScoLog, ScoringType.ENTROPY, pdb);
-				conservScoLog.close();
-			} catch (FileNotFoundException e) {
-				LOGGER.error("Could not write the scores log file "+outFile);
-				LOGGER.error(e.getMessage());
-			}
-		}
+		writeStep("Finding Homologues and Calculating Entropies");
+		params.getProgressLog().println("Finding query's uniprot mapping through SIFTS or blasting");
+		cecs.retrieveQueryData(params);
 		
+		// b) getting the homologs and sequence data
+		params.getProgressLog().println("Blasting for homologues");
+		cecs.retrieveHomologs(params);
+		// the uniprot ver will be set only when at least one sequence has uniprot match
+		// if not a single sequence has match then it will be null
+		wuiAdaptor.getRunParametersItem().setUniprotVer(cecs.getUniprotVer());
+		
+		params.getProgressLog().println("Retrieving UniprotKB data");
+		cecs.retrieveHomologsData(params);
+		
+		cecs.filter(params);
+
+		// c) align
+		params.getProgressLog().println("Aligning protein sequences with t_coffee");
+		cecs.align(params);
+		
+		cecs.writeSeqInfoToFiles(params);
+
+		// d) computing entropies
+		cecs.computeEntropies(params,pdb);
+		
+		// serializing the chain evol context list
 		try {
 			Goodies.serialize(params.getOutputFile(".chainevolcontext.dat"),cecs);
 		} catch (IOException e) {
@@ -476,18 +380,13 @@ public class CRKMain {
 	public void doEvolScoring() throws CRKException {
 		if (interfaces.getNumInterfaces()==0) return;
 
-		interfaces.calcRimAndCores(params.getCAcutoffForRimCore());
-		
-		iecList = new InterfaceEvolContextList(params.getJobName(), params.getMinHomologsCutoff(),  
-				params.getHomSoftIdCutoff(), params.getQueryCoverageCutoff(), params.getMaxNumSeqs());
-		iecList.addAll(interfaces,cecs);
+		iecList = new InterfaceEvolContextList(params.getJobName(), interfaces, cecs);
 
 		writeStep("Scoring Interfaces");
 		
 		if (params.isDoScoreEntropies()) {
 			try {
-				//interfaces.calcRimAndCores(params.getCAcutoffForRimCore());
-				iecList.setRimCorePredBsaToAsaCutoff(params.getCAcutoffForRimCore());
+				iecList.setRimCorePredBsaToAsaCutoff(params.getCAcutoffForRimCore()); // calls calcRimAndCores as well
 				iecList.setCallCutoff(params.getEntrCallCutoff());
 				iecList.setZscoreCutoff(params.getZscoreCutoff());
 				PrintStream scoreEntrPS = new PrintStream(params.getOutputFile(CRKParams.ENTROPIES_FILE_SUFFIX+".scores"));
@@ -497,9 +396,8 @@ public class CRKMain {
 				iecList.writeScoresPDBFiles(params,CRKParams.ENTROPIES_FILE_SUFFIX+".pdb");
 				scoreEntrPS.close();
 				// z-scores
-				//interfaces.calcRimAndCores(params.getCAcutoffForZscore());
 				PrintStream scoreZscorePS = new PrintStream(params.getOutputFile(CRKParams.ZSCORES_FILE_SUFFIX+".scores"));
-				iecList.setZPredBsaToAsaCutoff(params.getCAcutoffForZscore());
+				iecList.setZPredBsaToAsaCutoff(params.getCAcutoffForZscore()); // calls calcRimAndCores as well
 				iecList.scoreZscore();
 				iecList.printZscoresTable(scoreZscorePS);
 				scoreZscorePS.close();

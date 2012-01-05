@@ -92,7 +92,7 @@ public class CRKParams {
 	
 	// default crk cutoffs
 	private static final double   DEF_QUERY_COVERAGE_CUTOFF = 0.85;
-	private static final int      DEF_MIN_HOMOLOGS_CUTOFF = 10;
+	private static final int      DEF_MIN_NUM_SEQUENCES = 10;
 	private static final double	  DEF_HOM_ID_STEP = 0.05;;
 	// default pdb2uniprot mapping blast thresholds
 	private static final double   DEF_PDB2UNIPROT_ID_THRESHOLD = 0.75;
@@ -175,7 +175,7 @@ public class CRKParams {
 	private File	 pymolExe;
 	
 	private double   queryCoverageCutoff;
-	private int      minHomologsCutoff;
+	private int      minNumSeqs;
 	
 	private double   pdb2uniprotIdThreshold;
 	private double   pdb2uniprotQcovThreshold;
@@ -350,10 +350,10 @@ public class CRKParams {
 		"                  Default: " + String.format("%4.2f",DEF_ENTR_CALL_CUTOFF)+"\n"+
 		"  [-y <float>] :  z-score cutoff to call BIO/XTAL. If below this z-score interface \n" +
 		"                  is BIO. Default: " + String.format("%4.2f",DEF_ZSCORE_CUTOFF)+"\n"+
-		"  [-d <float>] :  sequence identity soft cut-off, if enough homologs ("+DEF_MIN_HOMOLOGS_CUTOFF+") above this threshold\n" +
+		"  [-d <float>] :  sequence identity soft cut-off, if enough homologs ("+DEF_MIN_NUM_SEQUENCES+") above this threshold\n" +
 		"                  the search for homologs stops, default: "+String.format("%3.1f",DEF_HOM_SOFT_ID_CUTOFF)+"\n"+
 		"  [-D <float>] :  sequence identity hard cut-off, if after applying the soft cut-off (see -d), not\n" +
-		"                  enough homologs ("+DEF_MIN_HOMOLOGS_CUTOFF+") are found then the threshold is lowered \n"+
+		"                  enough homologs ("+DEF_MIN_NUM_SEQUENCES+") are found then the threshold is lowered \n"+
 		"                  in "+String.format("%4.2f",DEF_HOM_ID_STEP)+" steps until this hard cut-off is reached. \n" +
 		"                  Default: "+String.format("%3.1f",DEF_HOM_HARD_ID_CUTOFF)+"\n"+
 		"  [-q <int>]   :  maximum number of sequences to keep for calculation of conservation \n" +
@@ -658,7 +658,7 @@ public class CRKParams {
 			pymolExe		= new File(p.getProperty("PYMOL_EXE", DEF_PYMOL_EXE.toString()));
 
 			queryCoverageCutoff = Double.parseDouble(p.getProperty("QUERY_COVERAGE_CUTOFF", new Double(DEF_QUERY_COVERAGE_CUTOFF).toString()));
-			minHomologsCutoff = Integer.parseInt(p.getProperty("MIN_HOMOLOGS_CUTOFF", new Integer(DEF_MIN_HOMOLOGS_CUTOFF).toString()));
+			minNumSeqs = Integer.parseInt(p.getProperty("MIN_NUM_SEQUENCES", new Integer(DEF_MIN_NUM_SEQUENCES).toString()));
 			homIdStep = Double.parseDouble(p.getProperty("HOM_ID_STEP",new Double(DEF_HOM_ID_STEP).toString()));
 			
 			pdb2uniprotIdThreshold = Double.parseDouble(p.getProperty("PDB2UNIPROT_ID_THRESHOLD", new Double(DEF_PDB2UNIPROT_ID_THRESHOLD).toString()));
@@ -717,8 +717,8 @@ public class CRKParams {
 		return queryCoverageCutoff;
 	}
 
-	public int getMinHomologsCutoff() {
-		return minHomologsCutoff;
+	public int getMinNumSeqs() {
+		return minNumSeqs;
 	}
 
 	public double getPdb2uniprotIdThreshold() {

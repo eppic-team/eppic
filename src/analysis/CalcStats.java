@@ -262,7 +262,7 @@ public class CalcStats {
 
 		for (int i=0;i<caCutoffsG.length;i++) {
 			for (int j=0;j<minNumberCoreResForBios.length;j++) {
-				list.add(new PredictionStatsSet(dir.getName(),truth,ScoringType.GEOMETRY,false,false,
+				list.add(new PredictionStatsSet(dir.getName(),truth,ScoringType.GEOMETRY,
 						caCutoffsG[i],minNumberCoreResForBios[j],-1,countBios[i][j],countXtals[i][j],total));
 			}
 		}
@@ -307,8 +307,7 @@ public class CalcStats {
 
 			ChainInterfaceList cil = Utils.readChainInterfaceList(interfdatFile);
 			ChainEvolContextList cecl = Utils.readChainEvolContextList(chainevolcontextdatFile);
-			InterfaceEvolContextList iecList = new InterfaceEvolContextList(pdbCode, MIN_NUM_HOMOLOGS,-1, -1, -1);
-			iecList.addAll(cil,cecl);
+			InterfaceEvolContextList iecList = new InterfaceEvolContextList(pdbCode, cil, cecl);
 			
 			for (int id:toAnalyse.get(pdbCode)) {
 
@@ -346,7 +345,7 @@ public class CalcStats {
 		for (int i=0;i<caCutoffsCR.length;i++) {
 			for (int k=0;k<corerimCallCutoffs.length;k++) {
 				
-				list.add(new PredictionStatsSet(dir.getName(),truth,ScoringType.ENTROPY, false, false,
+				list.add(new PredictionStatsSet(dir.getName(),truth,ScoringType.ENTROPY, 
 						caCutoffsCR[i],-1,corerimCallCutoffs[k],countBiosCR[i][k],countXtalsCR[i][k],total));
 				
 			}
@@ -354,7 +353,7 @@ public class CalcStats {
 		
 		for (int i=0;i<caCutoffsZ.length;i++) {
 			for (int k=0;k<zscoreCutoffs.length;k++) {
-				list.add(new PredictionStatsSet(dir.getName(),truth,ScoringType.ZSCORE, false, false,
+				list.add(new PredictionStatsSet(dir.getName(),truth,ScoringType.ZSCORE, 
 						caCutoffsZ[i],-1,zscoreCutoffs[k],countBiosZ[i][k],countXtalsZ[i][k],total));
 			}
 		}
@@ -363,7 +362,7 @@ public class CalcStats {
 			for (int k=0;k<corerimCallCutoffs.length;k++) {
 				for (int l=0;l<caCutoffsZ.length;l++) {
 					for (int m=0;m<zscoreCutoffs.length;m++) {
-						list.add(new PredictionStatsSet(dir.getName(),truth,ScoringType.COMBINED, false, false,
+						list.add(new PredictionStatsSet(dir.getName(),truth,ScoringType.COMBINED, 
 								Double.NaN,-1,Double.NaN,countBiosComb[i][k][l][m],countXtalsComb[i][k][l][m],total));
 					
 					}
@@ -389,7 +388,7 @@ public class CalcStats {
 		} 
 		
 		ercp.setCallCutoff(corerimCallCutoffs[k]);
-		iec.setHomologsCutoff(MIN_NUM_HOMOLOGS);
+		iec.setMinNumSeqs(MIN_NUM_HOMOLOGS);
 
 		CallType call = ercp.getCall();
 		if (call==CallType.BIO) countBios[i][k]++;
@@ -409,7 +408,7 @@ public class CalcStats {
 		
 		eizp.scoreEntropy();
 		eizp.setZscoreCutoff(zscoreCutoffs[k]);
-		iec.setHomologsCutoff(MIN_NUM_HOMOLOGS);
+		iec.setMinNumSeqs(MIN_NUM_HOMOLOGS);
 		
 		CallType call = eizp.getCall();
 		if (call==CallType.BIO) countBios[i][k]++;
@@ -435,14 +434,14 @@ public class CalcStats {
 		ercp.setBsaToAsaCutoff(caCutoffsCR[i]);
 		ercp.scoreEntropy(false);
 		ercp.setCallCutoff(corerimCallCutoffs[k]);
-		iec.setHomologsCutoff(MIN_NUM_HOMOLOGS);
+		iec.setMinNumSeqs(MIN_NUM_HOMOLOGS);
 		
 		//interf.calcRimAndCore(caCutoffsZ[l]);
 		EvolInterfZPredictor eizp = new EvolInterfZPredictor(iec);
 		eizp.setBsaToAsaCutoff(caCutoffsZ[l]);
 		eizp.scoreEntropy();
 		eizp.setZscoreCutoff(zscoreCutoffs[m]);
-		iec.setHomologsCutoff(MIN_NUM_HOMOLOGS);
+		iec.setMinNumSeqs(MIN_NUM_HOMOLOGS);
 		
 		CombinedPredictor cp = new CombinedPredictor(iec, gp, ercp, eizp);
 

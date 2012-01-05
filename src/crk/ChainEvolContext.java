@@ -177,7 +177,7 @@ public class ChainEvolContext implements Serializable {
 		int maxNumSeqs = params.getMaxNumSeqs();
 		HomologsSearchMode searchMode = params.getHomologsSearchMode();
 		double pdb2uniprotMaxScovForLocal = params.getPdb2uniprotMaxScovForLocal();
-		int minHomologsCutoff = params.getMinHomologsCutoff();
+		int minNumSeqs = params.getMinNumSeqs();
 		boolean useUniparc = params.isUseUniparc();
 		
 		queryInterv = new Interval(1,query.getLength());
@@ -211,7 +211,7 @@ public class ChainEvolContext implements Serializable {
 		homologs.searchWithBlast(blastBinDir, blastDbDir, blastDb, blastNumThreads, maxNumSeqs, blastCache);
 		LOGGER.info(homologs.getSizeFullList()+" homologs found by blast");
 		
-		applyIdentityCutoff(homSoftIdCutoff, homHardIdCutoff, homIdStep, queryCovCutoff, minHomologsCutoff);
+		applyIdentityCutoff(homSoftIdCutoff, homHardIdCutoff, homIdStep, queryCovCutoff, minNumSeqs);
 		 
 	}
 	

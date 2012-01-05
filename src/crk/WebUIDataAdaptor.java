@@ -50,7 +50,7 @@ public class WebUIDataAdaptor {
 		this.params = params;
 		pdbScoreItem.setPdbName(params.getJobName());
 		runParametersItem = new RunParametersItemDB();
-		runParametersItem.setHomologsCutoff(params.getMinHomologsCutoff());
+		runParametersItem.setHomologsCutoff(params.getMinNumSeqs());
 		runParametersItem.setHomSoftIdCutoff(params.getHomSoftIdCutoff());
 		runParametersItem.setHomHardIdCutoff(params.getHomHardIdCutoff());
 		runParametersItem.setQueryCovCutoff(params.getQueryCoverageCutoff());

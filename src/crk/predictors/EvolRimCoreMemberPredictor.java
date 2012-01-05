@@ -76,7 +76,7 @@ public class EvolRimCoreMemberPredictor implements InterfaceTypePredictor {
 			call = CallType.NO_PREDICTION;
 			LOGGER.info("Interface "+iec.getInterface().getId()+", member "+memberSerial+" calls NOPRED because there are not enough homologs to calculate evolutionary scores");
 			callReason = memberSerial+": there are only "+iec.getChainEvolContext(molecId).getNumHomologs()+
-					" homologs to calculate evolutionary scores (at least "+iec.getHomologsCutoff()+" required)";
+					" homologs to calculate evolutionary scores (at least "+iec.getMinNumSeqs()+" required)";
 		} 
 		else if (scoreRatio==-1) {
 			// this happens whenever the value wasn't initialized, in practice it will 

@@ -75,7 +75,7 @@ public class EvolInterfZMemberPredictor implements InterfaceTypePredictor {
 			call = CallType.NO_PREDICTION;
 			LOGGER.info("Interface "+iec.getInterface().getId()+", member "+memberSerial+" calls NOPRED because there are not enough homologs to calculate evolutionary scores");
 			callReason = memberSerial+": there are only "+iec.getChainEvolContext(molecId).getNumHomologs()+
-					" homologs to calculate evolutionary scores (at least "+iec.getHomologsCutoff()+" required)";
+					" homologs to calculate evolutionary scores (at least "+iec.getMinNumSeqs()+" required)";
 		}
 		else if (rimCore.getCoreSize()<CRKParams.MIN_NUMBER_CORE_RESIDUES_EVOL_SCORE) {
 			call = CallType.NO_PREDICTION;

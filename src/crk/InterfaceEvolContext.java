@@ -25,7 +25,7 @@ public class InterfaceEvolContext implements Serializable {
 
 	private ChainEvolContextList cecs;
 		
-	private int homologsCutoff;
+	private int minNumSeqs;
 	
 
 	
@@ -68,12 +68,12 @@ public class InterfaceEvolContext implements Serializable {
 		return cecs;
 	}
 	
-	public int getHomologsCutoff() {
-		return homologsCutoff;
+	public int getMinNumSeqs() {
+		return minNumSeqs;
 	}
 	
-	public void setHomologsCutoff(int homologsCutoff) {
-		this.homologsCutoff = homologsCutoff;
+	public void setMinNumSeqs(int minNumSeqs) {
+		this.minNumSeqs = minNumSeqs;
 	}
 	
 	/**
@@ -241,7 +241,7 @@ public class InterfaceEvolContext implements Serializable {
 	}
 	
 	public boolean hasEnoughHomologs(int molecId){
-		return this.getChainEvolContext(molecId).getNumHomologs()>=homologsCutoff;
+		return this.getChainEvolContext(molecId).getNumHomologs()>=minNumSeqs;
 	}
 
 	public boolean isProtein(int molecId) {

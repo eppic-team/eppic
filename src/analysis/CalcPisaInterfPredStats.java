@@ -144,7 +144,7 @@ public class CalcPisaInterfPredStats {
 			
 		}
 		
-		return new PredictionStatsSet("PISA", truth, ScoringType.PISA, false, false, -1, -1, -1, countBioCalls, countXtalCalls, total);
+		return new PredictionStatsSet("PISA", truth, ScoringType.PISA, -1, -1, -1, countBioCalls, countXtalCalls, total);
 	}
 
 }
