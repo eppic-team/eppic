@@ -93,7 +93,7 @@ public class CRKParams {
 	// default crk cutoffs
 	private static final double   DEF_QUERY_COVERAGE_CUTOFF = 0.85;
 	private static final int      DEF_MIN_NUM_SEQUENCES = 10;
-	private static final double	  DEF_HOM_ID_STEP = 0.05;;
+	private static final double	  DEF_HOM_ID_STEP = 0.05;
 	// default pdb2uniprot mapping blast thresholds
 	private static final double   DEF_PDB2UNIPROT_ID_THRESHOLD = 0.75;
 	private static final double   DEF_PDB2UNIPROT_QCOV_THRESHOLD = 0.85;
@@ -113,6 +113,8 @@ public class CRKParams {
 	private boolean doScoreEntropies;
 	private double homSoftIdCutoff;
 	private double homHardIdCutoff;
+	private double homSoftIdCutoffBacteria;
+	private double homHardIdCutoffBacteria;
 	private double homIdStep;
 	private String baseName;
 	private File outDir;
@@ -487,6 +489,18 @@ public class CRKParams {
 	public double getHomIdStep() {
 		return homIdStep;
 	}
+	public double getHomSoftIdCutoffBacteria() {
+		return homSoftIdCutoffBacteria;
+	}
+	public void setHomSoftIdCutoffBacteria(double homSoftIdCutoffBacteria) {
+		this.homSoftIdCutoffBacteria = homSoftIdCutoffBacteria;
+	}
+	public double getHomHardIdCutoffBacteria() {
+		return homHardIdCutoffBacteria;
+	}
+	public void setHomHardCutoffBacteria(double homHardIdCutoffBacteria) {
+		this.homHardIdCutoffBacteria = homHardIdCutoffBacteria;
+	}
 	public String getBaseName() {
 		return baseName;
 	}
@@ -669,6 +683,10 @@ public class CRKParams {
 			blastCacheDir    = p.getProperty("BLAST_CACHE_DIR", DEF_BLAST_CACHE_DIR);
 			
 			useUniparc       = Boolean.parseBoolean(p.getProperty("USE_UNIPARC",new Boolean(DEF_USE_UNIPARC).toString()));
+			
+			// note these 2 will take the values of the already set (from command line parameters) soft/hard general id cutoffs 
+			homSoftIdCutoffBacteria = Double.parseDouble(p.getProperty("HOM_SOFT_ID_CUTOFF_BACTERIA", new Double(homSoftIdCutoff).toString()));
+			homHardIdCutoffBacteria = Double.parseDouble(p.getProperty("HOM_HARD_ID_CUTOFF_BACTERIA", new Double(homHardIdCutoff).toString()));
 
 		} catch (NumberFormatException e) {
 			System.err.println("A numerical value in the config file was incorrectly specified: "+e.getMessage()+".\n" +

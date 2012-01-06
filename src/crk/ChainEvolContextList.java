@@ -203,6 +203,11 @@ public class ChainEvolContextList implements Serializable {
 				// no query uniprot match, we do nothing with this sequence
 				continue;
 			}
+			String queryFirstTaxon = chainEvCont.getQuery().getFirstTaxon();
+			if (queryFirstTaxon.equals("Bacteria") || queryFirstTaxon.equals("Archaea")) {
+				homSoftIdCutoff = params.getHomSoftIdCutoffBacteria(); 
+				homHardIdCutoff = params.getHomHardIdCutoffBacteria();
+			}
 			chainEvCont.applyIdentityCutoff(homSoftIdCutoff, homHardIdCutoff, params.getHomIdStep(), queryCovCutoff, minNumSeqs);
 		}
 	}
