@@ -114,6 +114,10 @@ public class InterfaceResidueItemDB implements Serializable
 		return interfaceResidueMethodItems;
 	}
 
+	public void setInterfaceResidueMethodItem(List<InterfaceResidueMethodItemDB> interfaceResidueMethodItems) {
+		this.interfaceResidueMethodItems = interfaceResidueMethodItems;
+	}
+	
 	public void addInterfaceResidueMethodItem(InterfaceResidueMethodItemDB irmi) {
 		this.interfaceResidueMethodItems.add(irmi);
 	}
