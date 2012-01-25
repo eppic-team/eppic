@@ -111,7 +111,7 @@ public class CompToPisaInterf {
 			
 			ChainInterfaceList interfaces = null;
 			try {
-				interfaces = pdb.getAllInterfaces(CUTOFF, null, Asa.DEFAULT_N_SPHERE_POINTS, NTHREADS, true, true, false);
+				interfaces = pdb.getAllInterfaces(CUTOFF, null, Asa.DEFAULT_N_SPHERE_POINTS, NTHREADS, true, true);
 			} catch (IOException e) {
 				// do nothing. Won't happen here as we don't use naccess
 			}

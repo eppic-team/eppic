@@ -99,7 +99,7 @@ public class CalcInterfaceStats extends Thread {
 				long start = System.currentTimeMillis();
 				ChainInterfaceList interfList = null;
 				try {
-					interfList = pdb.getAllInterfaces(CUTOFF, null, NSPHEREPOINTS, NTHREADS, false, false, false);
+					interfList = pdb.getAllInterfaces(CUTOFF, null, NSPHEREPOINTS, NTHREADS, false, false);
 				} catch (IOException e) {
 					// do nothing, this won't happen as we are not using naccess
 				}
