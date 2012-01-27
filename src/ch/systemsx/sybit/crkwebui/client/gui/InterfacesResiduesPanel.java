@@ -17,6 +17,7 @@ import com.extjs.gxt.ui.client.widget.layout.AnchorLayout;
 import com.extjs.gxt.ui.client.widget.layout.RowData;
 import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 import com.extjs.gxt.ui.client.widget.toolbar.FillToolItem;
+import com.extjs.gxt.ui.client.widget.toolbar.LabelToolItem;
 import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
 
 public class InterfacesResiduesPanel extends FormPanel 
@@ -257,7 +258,6 @@ public class InterfacesResiduesPanel extends FormPanel
 		residuesFilterComboBox.add(MainController.CONSTANTS.interfaces_residues_combo_rimcore());  
 		residuesFilterComboBox.setSimpleValue(MainController.CONSTANTS.interfaces_residues_combo_rimcore());
 		
-		residuesFilterComboBox.setFieldLabel(MainController.CONSTANTS.interfaces_residues_combo_title());
 		residuesFilterComboBox.addListener(Events.Change, new Listener<FieldEvent>() 
 		{  
 			public void handleEvent(FieldEvent be) 
@@ -276,6 +276,7 @@ public class InterfacesResiduesPanel extends FormPanel
 		
 		toolbar.add(new FillToolItem());
 		
+		toolbar.add(new LabelToolItem(MainController.CONSTANTS.interfaces_residues_combo_title()+": ")); 
 		toolbar.add(residuesFilterComboBox);  
 		
 		this.setTopComponent(toolbar);
