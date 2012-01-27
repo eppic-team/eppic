@@ -65,6 +65,12 @@ h1 {
 	white-space: nowrap;
 }
 
+.x-grid-empty {
+  	padding: 10px;
+  	font-size: 20px;
+  	text-align: center;
+}
+
 .pdb-identifier-label {
 	font-size: 16px;
 	font-family: Arial;
