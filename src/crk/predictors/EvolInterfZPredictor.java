@@ -4,9 +4,12 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import owl.core.structure.InterfaceRimCore;
+
 //import org.apache.commons.logging.Log;
 //import org.apache.commons.logging.LogFactory;
 
+import crk.CRKParams;
 import crk.CallType;
 import crk.InterfaceEvolContext;
 import crk.ScoringType;
@@ -24,6 +27,8 @@ public class EvolInterfZPredictor implements InterfaceTypePredictor {
 
 	private double score; // last run cached averaged score
 	private ScoringType scoringType; // the type of the last scoring run (either kaks or entropy)
+	
+	private double bsaToAsaCutoff;
 
 	private EvolInterfZMemberPredictor member1Pred;
 	private EvolInterfZMemberPredictor member2Pred;
@@ -107,7 +112,20 @@ public class EvolInterfZPredictor implements InterfaceTypePredictor {
 		int countXtal = xtalCalls.size();
 		int countNoPredict = noPredictCalls.size();
 
-		if (countNoPredict==2) {
+		
+		iec.getInterface().calcRimAndCore(bsaToAsaCutoff);
+		InterfaceRimCore rimCore1 = iec.getInterface().getRimCore(0);
+		InterfaceRimCore rimCore2 = iec.getInterface().getRimCore(1);
+
+		// a special condition for core size, we don't want that if one side says NOPREDICT because of size, 
+		// then the prediction is based only on the other side
+		if ((rimCore1.getCoreSize()+rimCore2.getCoreSize())<2*CRKParams.MIN_NUMBER_CORE_RESIDUES_EVOL_SCORE) {
+			call = CallType.NO_PREDICTION;
+			callReason ="Not enough core residues to calculate evolutionary score (at least "+2*CRKParams.MIN_NUMBER_CORE_RESIDUES_EVOL_SCORE+" needed)";
+		}
+		
+		// then the rest of the decision is based purely on what members call
+		else if (countNoPredict==2) {
 			call = CallType.NO_PREDICTION;
 			callReason = member1Pred.getCallReason()+"\n"+member2Pred.getCallReason();
 		} else if (countBio>countXtal) {
@@ -196,6 +214,7 @@ public class EvolInterfZPredictor implements InterfaceTypePredictor {
 	}
 	
 	public void setBsaToAsaCutoff(double bsaToAsaCutoff) {
+		this.bsaToAsaCutoff = bsaToAsaCutoff;
 		this.member1Pred.setBsaToAsaCutoff(bsaToAsaCutoff);
 		this.member2Pred.setBsaToAsaCutoff(bsaToAsaCutoff);		
 	}
