@@ -229,10 +229,13 @@ public class CRKMain {
 			throw new CRKException(e,"Couldn't log interfaces description to file: "+e.getMessage(),false);
 		}
 
-		try {
-			Goodies.serialize(params.getOutputFile(".interfaces.dat"),interfaces);
-		} catch (IOException e) {
-			throw new CRKException(e,"Couldn't write serialized ChainInterfaceList object to file: "+e.getMessage(),false);
+		if (!params.isGenerateThumbnails()) {
+			// we only produce the interfaces.dat file if not in -l mode (for WUI not to produce so many files)
+			try {
+				Goodies.serialize(params.getOutputFile(".interfaces.dat"),interfaces);
+			} catch (IOException e) {
+				throw new CRKException(e,"Couldn't write serialized ChainInterfaceList object to file: "+e.getMessage(),false);
+			}
 		}
 		
 	}
@@ -371,11 +374,13 @@ public class CRKMain {
 		// d) computing entropies
 		cecs.computeEntropies(params,pdb);
 		
-		// serializing the chain evol context list
-		try {
-			Goodies.serialize(params.getOutputFile(".chainevolcontext.dat"),cecs);
-		} catch (IOException e) {
-			throw new CRKException(e,"Couldn't write serialized ChainEvolContextList object to file: "+e.getMessage(),false);
+		if (!params.isGenerateThumbnails()) {
+			// we only produce the chainevolcontext.dat file if not in -l mode (for WUI not to produce so many files)
+			try {
+				Goodies.serialize(params.getOutputFile(".chainevolcontext.dat"),cecs);
+			} catch (IOException e) {
+				throw new CRKException(e,"Couldn't write serialized ChainEvolContextList object to file: "+e.getMessage(),false);
+			}
 		}
 		
 	}
