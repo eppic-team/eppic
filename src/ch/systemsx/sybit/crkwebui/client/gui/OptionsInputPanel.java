@@ -9,10 +9,15 @@ import ch.systemsx.sybit.crkwebui.client.model.SearchModeComboModel;
 import ch.systemsx.sybit.crkwebui.shared.model.InputParameters;
 import ch.systemsx.sybit.crkwebui.shared.model.SupportedMethod;
 
+import com.extjs.gxt.ui.client.core.El;
+import com.extjs.gxt.ui.client.core.XDOM;
+import com.extjs.gxt.ui.client.event.ComponentEvent;
 import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.FieldSetEvent;
 import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.store.ListStore;
+import com.extjs.gxt.ui.client.widget.Component;
+import com.extjs.gxt.ui.client.widget.ComponentPlugin;
 import com.extjs.gxt.ui.client.widget.form.ComboBox;
 import com.extjs.gxt.ui.client.widget.form.ComboBox.TriggerAction;
 import com.extjs.gxt.ui.client.widget.form.FieldSet;
@@ -63,19 +68,19 @@ public class OptionsInputPanel extends FieldSet
 			height = (int) (Window.getClientHeight() * 0.4);
 		}
 		
-//		ComponentPlugin plugin = new ComponentPlugin()
-//		{
-//			public void init(Component component) 
-//			{
-//				component.addListener(Events.Render, new Listener<ComponentEvent>() 
-//				{
-//					public void handleEvent(ComponentEvent be) {
-//						El elem = be.getComponent().el().findParent(".x-form-element", 3);
-//						elem.appendChild(XDOM.create("<div style='color: #615f5f;padding: 1 0 2 0px;'>" + be.getComponent().getData("hint") + "</div>"));
-//					}
-//				});
-//			}
-//		};
+		ComponentPlugin plugin = new ComponentPlugin()
+		{
+			public void init(Component component) 
+			{
+				component.addListener(Events.Render, new Listener<ComponentEvent>() 
+				{
+					public void handleEvent(ComponentEvent be) {
+						El elem = be.getComponent().el().findParent(".x-form-element", 3);
+						elem.appendChild(XDOM.create("<div style='color: #615f5f;padding: 1 0 2 0px;'>" + be.getComponent().getData("hint") + "</div>"));
+					}
+				});
+			}
+		};
 
 		methodsFieldsets = new FieldSet[supportedMethods.size()];
 		
@@ -112,6 +117,7 @@ public class OptionsInputPanel extends FieldSet
 				reducedAlphabetCombo.setTriggerAction(TriggerAction.ALL);
 				reducedAlphabetCombo.setDisplayField("reducedAlphabet");
 				reducedAlphabetCombo.setEditable(false);
+				reducedAlphabetCombo.addPlugin(plugin);
 				reducedAlphabetCombo.setData("hint", MainController.CONSTANTS.parameters_reduced_alphabet_hint());
 				methodsFieldsets[i].add(reducedAlphabetCombo, formData);
 				
@@ -216,6 +222,7 @@ public class OptionsInputPanel extends FieldSet
 		softIdentityCutOff.setFormat(NumberFormat.getDecimalFormat());
 		softIdentityCutOff.setMinValue(0);
 		softIdentityCutOff.setMaxValue(1);
+		softIdentityCutOff.addPlugin(plugin);
 		softIdentityCutOff.setData("hint", MainController.CONSTANTS.parameters_soft_identity_cutoff_hint());
 		allignmentsParametersFieldSet.add(softIdentityCutOff, formData);
 		
@@ -226,6 +233,7 @@ public class OptionsInputPanel extends FieldSet
 		hardIdentityCutOff.setFormat(NumberFormat.getDecimalFormat());
 		hardIdentityCutOff.setMinValue(0);
 		hardIdentityCutOff.setMaxValue(1);
+		hardIdentityCutOff.addPlugin(plugin);
 		hardIdentityCutOff.setData("hint", MainController.CONSTANTS.parameters_hard_identity_cutoff_hint());
 		allignmentsParametersFieldSet.add(hardIdentityCutOff, formData);
 
@@ -236,7 +244,7 @@ public class OptionsInputPanel extends FieldSet
 		maxNrOfSequences.setAllowNegative(false);
 		maxNrOfSequences.setPropertyEditorType(Integer.class);
 		maxNrOfSequences.setName("maxNrOfSequences");
-//		maxNrOfSequences.addPlugin(plugin);
+		maxNrOfSequences.addPlugin(plugin);
 		maxNrOfSequences.setData("hint", MainController.CONSTANTS.parameters_max_num_sequences_hint());
 		allignmentsParametersFieldSet.add(maxNrOfSequences, formData);
 		
@@ -258,6 +266,7 @@ public class OptionsInputPanel extends FieldSet
 		searchModeCombo.setTriggerAction(TriggerAction.ALL);
 		searchModeCombo.setDisplayField("searchMode");
 		searchModeCombo.setEditable(false);
+		searchModeCombo.addPlugin(plugin);
 		searchModeCombo.setData("hint", MainController.CONSTANTS.parameters_search_mode_hint());
 		allignmentsParametersFieldSet.add(searchModeCombo, formData);
 
@@ -277,7 +286,7 @@ public class OptionsInputPanel extends FieldSet
 		asaCalcParam.setAllowBlank(false);
 		asaCalcParam.setAllowNegative(false);
 		asaCalcParam.setPropertyEditorType(Integer.class);
-//		asaCalcParam.addPlugin(plugin);
+		asaCalcParam.addPlugin(plugin);
 		asaCalcParam.setData("hint", MainController.CONSTANTS.parameters_asa_calc_hint());
 		othersParametersFieldSet.add(asaCalcParam, formData);
 
