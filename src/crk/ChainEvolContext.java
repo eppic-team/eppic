@@ -64,6 +64,9 @@ public class ChainEvolContext implements Serializable {
 	private boolean hasQueryMatch;						// whether we could find the query's uniprot match or not
 	private PairwiseSequenceAlignment alnPdb2Uniprot; 	// the alignment between the pdb sequence and the uniprot sequence (query)
 	
+	private double idCutoff;
+	private double queryCov;
+	
 	private HomologList homologs;	// the homologs of this chain's sequence
 		
 	private boolean searchWithFullUniprot;  // mode of searching, true=we search with full uniprot seq, false=we search with PDB matching part only
@@ -233,20 +236,42 @@ public class ChainEvolContext implements Serializable {
 	}
 	
 	public void applyIdentityCutoff(double homSoftIdCutoff, double homHardIdCutoff, double homIdStep, double queryCovCutoff, int minNumSeqs) {
+		this.queryCov = queryCovCutoff;
 		// applying identity cutoff
-		double idcutoff = homSoftIdCutoff;
-		while (idcutoff>=homHardIdCutoff-0.001) { // the 0.001 just to be sure we really reach the hard cutoff (there were problems with rounding)
-			homologs.filterToMinIdAndCoverage(idcutoff, queryCovCutoff);
+		this.idCutoff = homSoftIdCutoff;
+		while (idCutoff>=homHardIdCutoff-0.001) { // the 0.001 just to be sure we really reach the hard cutoff (there were problems with rounding)
+			homologs.filterToMinIdAndCoverage(idCutoff, queryCovCutoff);
 			if (homologs.getSizeFilteredSubset()>=minNumSeqs) break;
-			LOGGER.info("Tried "+String.format("%4.2f",idcutoff)+" identity cutoff, only "+homologs.getSizeFilteredSubset()+" homologs found ("+minNumSeqs+" required)");
-			idcutoff -= homIdStep;
+			LOGGER.info("Tried "+String.format("%4.2f",idCutoff)+" identity cutoff, only "+homologs.getSizeFilteredSubset()+" homologs found ("+minNumSeqs+" required)");
+			idCutoff -= homIdStep;
 		}
-		LOGGER.info(homologs.getSizeFilteredSubset()+" homologs after applying "+String.format("%4.2f",idcutoff)+" identity cutoff and "+String.format("%4.2f",queryCovCutoff)+" query coverage cutoff");
+		LOGGER.info(homologs.getSizeFilteredSubset()+" homologs after applying "+String.format("%4.2f",idCutoff)+" identity cutoff and "+String.format("%4.2f",queryCovCutoff)+" query coverage cutoff");
 	}
 
-	public void align(File tcoffeeBin, boolean tcoffeeVeryFastMode, int nThreads) throws IOException, TcoffeeException, InterruptedException{
+	public void align(CRKParams params) throws IOException, TcoffeeException, InterruptedException, UniprotVerMisMatchException { 
+		File tcoffeeBin = params.getTcoffeeBin();
+		boolean tcoffeeVeryFastMode = params.isUseTcoffeeVeryFastMode();
+		int nThreads = params.getNumThreads();
+		File alnCacheDir = new File(params.getBlastCacheDir());
 		// 3) alignment of the protein sequences using tcoffee
-		homologs.computeTcoffeeAlignment(tcoffeeBin, tcoffeeVeryFastMode, nThreads);
+		File alnCacheFile = null;
+		// beware we only try to use cache file if we are in default mode: uniparc=true, filter by domain=false
+		if (alnCacheDir!=null && params.isUseUniparc() && !params.isFilterByDomain()) {
+			String intervStr = "";
+			if (!isSearchWithFullUniprot()) {
+				intervStr = "."+getQueryInterval().beg+"-"+getQueryInterval().end;
+			}
+			// a cache file will look like  Q9UKX7.i60.c85.m60.1-109.aln (that corresponds to 3tj3C) 
+			//                              P52294.i60.c85.m60.aln       (that corresponds to 3tj3A)
+			// i=identity threshold used, c=query coverage, m=max num seqs, optional two last numbers are the subinterval
+			alnCacheFile = new File(alnCacheDir,getQuery().getUniId()+
+					".i"+String.format("%2.0f", idCutoff*100.0)+
+					".c"+String.format("%2.0f", queryCov*100.0)+
+					".m"+params.getMaxNumSeqs()+
+					intervStr+".aln"); 
+		}
+
+		homologs.computeTcoffeeAlignment(tcoffeeBin, tcoffeeVeryFastMode, nThreads, alnCacheFile);
 	}
 	
 	public void writeAlignmentToFile(File alnFile) throws FileNotFoundException {
@@ -688,5 +713,13 @@ public class ChainEvolContext implements Serializable {
 	 */
 	public boolean isSearchWithFullUniprot() {
 		return searchWithFullUniprot;
+	}
+	
+	/**
+	 * Returns the actual identity cut-off applied after calling {@link #applyIdentityCutoff(double, double, double, double, int)}
+	 * @return
+	 */
+	public double getIdCutoff() {
+		return idCutoff;
 	}
 }

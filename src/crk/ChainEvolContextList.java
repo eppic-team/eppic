@@ -241,13 +241,15 @@ public class ChainEvolContextList implements Serializable {
 			
 			params.getProgressLog().print(chainEvCont.getRepresentativeChainCode()+" ");
 			try {
-				chainEvCont.align(params.getTcoffeeBin(), params.isUseTcoffeeVeryFastMode(), params.getNumThreads());
+				chainEvCont.align(params);
 			} catch (TcoffeeException e) {
 				throw new CRKException(e, "Couldn't run t_coffee to align protein sequences: "+e.getMessage(), true);
 			} catch (IOException e) {
 				throw new CRKException(e, "Problems while running t_coffee to align protein sequences: "+e.getMessage(),true);
 			} catch (InterruptedException e) {
 				throw new CRKException(e, "Thread interrupted while running t_coffee to align protein sequences: "+e.getMessage(),true);
+			} catch (UniprotVerMisMatchException e) {
+				throw new CRKException(e, "Uniprot versions mismatch while trying to read cached alignment: "+e.getMessage(),true);
 			}
 
 		}
