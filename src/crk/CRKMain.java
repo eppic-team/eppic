@@ -256,7 +256,7 @@ public class CRKMain {
 				gp.setBsaToAsaCutoff(params.getCAcutoffForGeom());
 				gp.setMinCoreSizeForBio(params.getMinCoreSizeForBio());
 				gp.printScores(scoreGeomPS);
-				gp.writePdbFile(params.getOutputFile("."+interf.getId()+".rimcore.pdb"));
+				gp.writePdbFile(params.getOutputFile("."+interf.getId()+".pdb"));
 			}
 			scoreGeomPS.close();
 						
@@ -289,7 +289,7 @@ public class CRKMain {
 			try {
 				for (ChainInterface interf:interfaces) {
 					pr.generateInterfPngPsePml(interf, params.getCAcutoffForGeom(), 
-							params.getOutputFile("."+interf.getId()+".rimcore.pdb"), 
+							params.getOutputFile("."+interf.getId()+".pdb"), 
 							params.getOutputFile("."+interf.getId()+".pse"),
 							params.getOutputFile("."+interf.getId()+".pml"),
 							params.getBaseName()+"."+interf.getId());
@@ -396,7 +396,11 @@ public class CRKMain {
 				// entropy nw
 				iecList.scoreEntropy(false);
 				iecList.printScoresTable(scoreEntrPS);
-				iecList.writeScoresPDBFiles(params,CRKParams.ENTROPIES_FILE_SUFFIX+".pdb");
+				if (!params.isGenerateThumbnails()) {
+					// we only write the pdb files with entropies as bfactors when not in -l mode (which is mainly used for WUI)
+					// in order to save space when we run in WUI
+					iecList.writeScoresPDBFiles(params,CRKParams.ENTROPIES_FILE_SUFFIX+".pdb");
+				}
 				scoreEntrPS.close();
 				// z-scores
 				PrintStream scoreZscorePS = new PrintStream(params.getOutputFile(CRKParams.ZSCORES_FILE_SUFFIX+".scores"));
