@@ -112,6 +112,7 @@ public class OptionsInputPanel extends FieldSet
 				reducedAlphabetCombo.setTriggerAction(TriggerAction.ALL);
 				reducedAlphabetCombo.setDisplayField("reducedAlphabet");
 				reducedAlphabetCombo.setEditable(false);
+				reducedAlphabetCombo.setData("hint", MainController.CONSTANTS.parameters_reduced_alphabet_hint());
 				methodsFieldsets[i].add(reducedAlphabetCombo, formData);
 				
 				methodsFieldsets[i].addListener(Events.Collapse, new Listener<FieldSetEvent>() 
@@ -215,6 +216,7 @@ public class OptionsInputPanel extends FieldSet
 		softIdentityCutOff.setFormat(NumberFormat.getDecimalFormat());
 		softIdentityCutOff.setMinValue(0);
 		softIdentityCutOff.setMaxValue(1);
+		softIdentityCutOff.setData("hint", MainController.CONSTANTS.parameters_soft_identity_cutoff_hint());
 		allignmentsParametersFieldSet.add(softIdentityCutOff, formData);
 		
 		hardIdentityCutOff = new NumberField();
@@ -224,6 +226,7 @@ public class OptionsInputPanel extends FieldSet
 		hardIdentityCutOff.setFormat(NumberFormat.getDecimalFormat());
 		hardIdentityCutOff.setMinValue(0);
 		hardIdentityCutOff.setMaxValue(1);
+		hardIdentityCutOff.setData("hint", MainController.CONSTANTS.parameters_hard_identity_cutoff_hint());
 		allignmentsParametersFieldSet.add(hardIdentityCutOff, formData);
 
 		maxNrOfSequences = new NumberField();
@@ -255,6 +258,7 @@ public class OptionsInputPanel extends FieldSet
 		searchModeCombo.setTriggerAction(TriggerAction.ALL);
 		searchModeCombo.setDisplayField("searchMode");
 		searchModeCombo.setEditable(false);
+		searchModeCombo.setData("hint", MainController.CONSTANTS.parameters_search_mode_hint());
 		allignmentsParametersFieldSet.add(searchModeCombo, formData);
 
 		this.add(allignmentsParametersFieldSet);

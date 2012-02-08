@@ -42,12 +42,16 @@ public interface AppProperties extends Constants
 	String parameters_kaks();
 	String parameters_geometry();
 	String parameters_reduced_alphabet();
+	String parameters_reduced_alphabet_hint();
 	String parameters_selecton();
 	String parameters_allignment();
 	String parameters_soft_identity_cutoff();
+	String parameters_soft_identity_cutoff_hint();
 	String parameters_hard_identity_cutoff();
+	String parameters_hard_identity_cutoff_hint();
 	String parameters_max_num_sequences();
 	String parameters_search_mode();
+	String parameters_search_mode_hint();
 	String parameters_others();
 	String parameters_asa_calc();
 	String parameters_max_num_sequences_hint();
