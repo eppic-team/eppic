@@ -1,13 +1,16 @@
 package crk;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.zip.GZIPOutputStream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -300,9 +303,34 @@ public class CRKMain {
 			} catch (IOException e) {
 				throw new CRKException(e, "Couldn't write thumbnails or pymol pse/pml files. "+e.getMessage(),true);
 			} catch (InterruptedException e) {
-				throw new CRKException(e, "Couldn't generate thumbnails or pse/pml files, pymol thread interrupted: "+e.getMessage(),false);
+				throw new CRKException(e, "Couldn't generate thumbnails or pse/pml files, pymol thread interrupted: "+e.getMessage(),true);
 			}
+			compressPseFiles();
 			wuiAdaptor.setJmolScripts(interfaces, params.getCAcutoffForGeom(), pr);
+		}
+	}
+	
+	private void compressPseFiles() throws CRKException {
+		for (ChainInterface interf:interfaces) {
+			 
+			File pseFile = params.getOutputFile("."+interf.getId()+".pse");
+			File gzipPseFile = params.getOutputFile("."+interf.getId()+".pse.gz");
+
+			try {
+				GZIPOutputStream zos = new GZIPOutputStream(new FileOutputStream(gzipPseFile));
+				FileInputStream is = new FileInputStream(pseFile);
+
+				int b;
+				while ( (b=is.read())!=-1) {
+					zos.write(b);
+				}
+				zos.close();
+				is.close();
+				pseFile.delete();
+			} catch (IOException e) {
+				throw new CRKException(e, "PSE file "+pseFile+" could not be gzipped to "+gzipPseFile+". "+e.getMessage(),true);
+			}
+
 		}
 	}
 	
