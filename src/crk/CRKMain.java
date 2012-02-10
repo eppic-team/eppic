@@ -122,6 +122,7 @@ public class CRKMain {
 		try {
 			if (!params.isInputAFile()) {
 				cifFile = new File(params.getOutDir(),params.getPdbCode() + ".cif");
+				cifFile.deleteOnExit();
 				try {
 					PdbAsymUnit.grabCifFile(params.getLocalCifDir(), params.getPdbFtpCifUrl(), params.getPdbCode(), cifFile, params.isUseOnlinePdb());
 				} catch(IOException e) {
