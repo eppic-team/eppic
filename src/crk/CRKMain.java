@@ -306,18 +306,21 @@ public class CRKMain {
 			} catch (InterruptedException e) {
 				throw new CRKException(e, "Couldn't generate thumbnails or pse/pml files, pymol thread interrupted: "+e.getMessage(),true);
 			}
-			compressPseFiles();
+			compressFiles();
 			wuiAdaptor.setJmolScripts(interfaces, params.getCAcutoffForGeom(), pr);
 		}
 	}
-	
-	private void compressPseFiles() throws CRKException {
-		for (ChainInterface interf:interfaces) {
-			 
-			File pseFile = params.getOutputFile("."+interf.getId()+".pse");
-			File gzipPseFile = params.getOutputFile("."+interf.getId()+".pse.gz");
 
-			try {
+	private void compressFiles() throws CRKException {
+		params.getProgressLog().println("Compressing files");
+		try {
+			for (ChainInterface interf:interfaces) {
+				File pseFile = params.getOutputFile("."+interf.getId()+".pse");
+				File gzipPseFile = params.getOutputFile("."+interf.getId()+".pse.gz");
+				File pdbFile = params.getOutputFile("."+interf.getId()+".pdb");
+				File gzipPdbFile = params.getOutputFile("."+interf.getId()+".pdb.gz");
+
+				// pse
 				GZIPOutputStream zos = new GZIPOutputStream(new FileOutputStream(gzipPseFile));
 				FileInputStream is = new FileInputStream(pseFile);
 
@@ -328,10 +331,20 @@ public class CRKMain {
 				zos.close();
 				is.close();
 				pseFile.delete();
-			} catch (IOException e) {
-				throw new CRKException(e, "PSE file "+pseFile+" could not be gzipped to "+gzipPseFile+". "+e.getMessage(),true);
-			}
 
+				// pdb
+				zos = new GZIPOutputStream(new FileOutputStream(gzipPdbFile));
+				is = new FileInputStream(pdbFile);
+
+				while ( (b=is.read())!=-1) {
+					zos.write(b);
+				}
+				zos.close();
+				is.close();
+				pdbFile.delete();
+			}
+		} catch (IOException e) {
+			throw new CRKException(e, "PSE or PDB files could not be gzipped. "+e.getMessage(),true);
 		}
 	}
 	
