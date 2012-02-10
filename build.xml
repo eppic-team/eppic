@@ -59,7 +59,9 @@
 		/>
 		<!-- resources -->
 		<copy todir="${bin.dir}">
-			<fileset dir="${src.dir}" excludes="**/*.java"></fileset>
+			<!-- Note we need the java files for the WUI -->
+			<!-- <fileset dir="${src.dir}" excludes="**/*.java"></fileset> -->
+			<fileset dir="${src.dir}"></fileset>
 		</copy>
 	</target>
 	
