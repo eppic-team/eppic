@@ -34,7 +34,7 @@ public class FinalCallCellRenderer implements GridCellRenderer<BaseModel>
 		{
 			String tooltipText = null;
 			
-			int interfaceId = model.get("id");
+			int interfaceId = (Integer)model.get("id");
 			
 			InterfaceItem interfaceItem = mainController.getPdbScoreItem().getInterfaceItem(interfaceId - 1);
 			

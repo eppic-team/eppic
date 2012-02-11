@@ -27,10 +27,10 @@ public class SizeCellRenderer implements GridCellRenderer<BaseModel>
 			ColumnData config, final int rowIndex, final int colIndex,
 			ListStore<BaseModel> store, Grid<BaseModel> grid) {
 		
-		int value = model.get(property);
+		int value = (Integer)model.get(property);
 		
-		int size1 = model.get("size1");
-		int size2 = model.get("size2");
+		int size1 = (Integer)model.get("size1");
+		int size2 = (Integer)model.get("size2");
 		
 		int sizeSum = size1 + size2;
 		
