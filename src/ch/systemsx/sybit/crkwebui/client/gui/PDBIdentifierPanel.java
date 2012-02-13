@@ -30,7 +30,7 @@ public class PDBIdentifierPanel extends LayoutContainer
 		informationLabel = new Label(MainController.CONSTANTS.info_panel_pdb_identifier() + ": ");
 		this.add(informationLabel);
 		
-		if(inputType == InputType.FILE.getIndex())
+		if(inputType == InputType.PDBCODE.getIndex())
 		{
 			pdbNameLabel = new LinkWithTooltip(pdbName,
 											   MainController.CONSTANTS.pdb_identifier_panel_label_hint(),

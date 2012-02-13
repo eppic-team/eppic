@@ -7,7 +7,6 @@ import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -15,13 +14,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
-
-import model.InterfaceScoreItemDB;
-import model.PDBScoreItemDB;
 
 import org.ggf.drmaa.DrmaaException;
 import org.ggf.drmaa.Session;
@@ -29,7 +24,6 @@ import org.ggf.drmaa.SessionFactory;
 
 import ch.systemsx.sybit.crkwebui.client.CrkWebService;
 import ch.systemsx.sybit.crkwebui.server.data.EmailData;
-import ch.systemsx.sybit.crkwebui.server.db.EntityManagerHandler;
 import ch.systemsx.sybit.crkwebui.server.db.model.HomologsInfoItemDAO;
 import ch.systemsx.sybit.crkwebui.server.db.model.HomologsInfoItemDAOImpl;
 import ch.systemsx.sybit.crkwebui.server.db.model.InterfaceItemDAO;
@@ -59,7 +53,6 @@ import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
 import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
 import ch.systemsx.sybit.crkwebui.shared.model.StepStatus;
 
-import com.extjs.gxt.ui.client.core.FastMap;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 /**
@@ -211,7 +204,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 ////			item.setHomologsCutoff(125);
 //			
 ////			ObjectInputStream in = new ObjectInputStream(new FileInputStream("c:/test1.crk"));
-//			ObjectInputStream in = new ObjectInputStream(new FileInputStream("c:/files1/res2/1smt.webui.dat"));
+//		ObjectInputStream in = new ObjectInputStream(new FileInputStream("c:/files1/res2/1smt.webui.dat"));
 ////			ObjectInputStream in = new ObjectInputStream(new FileInputStream("c:/1ton.webui.dat"));
 //			PDBScoreItemDB readitem = (PDBScoreItemDB)in.readObject();
 ////			System.out.println(readitem.getInterfaceItems().get(0).getInterfaceResidues().size());
@@ -388,6 +381,8 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 				localDestinationDir.mkdir();
 				
 				runJobData.setJobId(randomDirectoryName);
+				
+				inputType = InputType.PDBCODE.getIndex();
 			}
 			
 			EmailData emailData = new EmailData();
