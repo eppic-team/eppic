@@ -8,7 +8,6 @@
 		Script modified from the one in GWT web site: 
 		http://code.google.com/webtoolkit/doc/latest/RefCommandLineTools.html#webAppCreator
 		      	
-     duarte_j                                                                
      ====================================================================== -->
 <project name="crkwebui" default="war" basedir=".">
 
@@ -20,6 +19,10 @@
   <!-- NOTE we also need to keep the crk.jar in libs (at the moment also linking in file system) -->
   <property name="gwt.sdk" location="${libs.dir}/gwt"/>
 
+  <!-- Number of threads used for the gwtc compilation step (some of it will run in parallel), speeds up a bit
+       Ideally this should be read automatically from the system, couldn't find how to do that yet -->
+  <property name="num.threads" value="2"/>
+	
   <path id="project.class.path">
     <pathelement location="${gwt.sdk}/gwt-user.jar"/>
     <fileset dir="${gwt.sdk}" includes="gwt-dev*.jar"/>
@@ -64,12 +67,18 @@
         <path refid="project.class.path"/>
       </classpath>
       <!-- add jvmarg -Xss16M or similar if you see a StackOverflowError -->
-      <jvmarg value="-Xmx256M"/>
+      <!-- beware that if more localWorkers (i.e. threads) are required than memory requirements go up quickly -->
+      <jvmarg value="-Xmx512M"/>
       <!-- Additional arguments like -style PRETTY or -logLevel DEBUG -->
+      <!-- <arg value="-validateOnly"/> -->
+      <arg value="-localWorkers"/>
+      <arg value="${num.threads}"/>
       <arg value="ch.systemsx.sybit.crkwebui.Crkwebui"/>
+
     </java>
   </target>
 
+  <!-- still not implemented correctly -->
   <target name="devmode" depends="javac" description="Run development mode">
     <java failonerror="true" fork="true" classname="com.google.gwt.dev.DevMode">
       <classpath>
@@ -80,7 +89,7 @@
       <arg value="-startupUrl"/>
       <arg value="Foo.html"/>
       <!-- Additional arguments like -style PRETTY or -logLevel DEBUG -->
-      <arg value="ch.systemsx.sybit.crkwebui"/>
+      <arg value="ch.systemsx.sybit.crkwebui.Crkwebui"/>
     </java>
   </target>
 
