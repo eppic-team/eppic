@@ -22,7 +22,7 @@ public class Crkwebui implements EntryPoint, ValueChangeHandler<String>
 
 	private Viewport viewport;
 	
-	private boolean isClosing = false;
+//	private boolean isClosing = false;
 
 	/**
 	 * This is the entry point method.

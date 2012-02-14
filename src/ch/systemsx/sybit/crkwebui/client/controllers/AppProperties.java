@@ -121,8 +121,10 @@ public interface AppProperties extends Constants
 	String callback_get_jobs_for_current_session_error();
 	String callback_get_results_of_processing_error();
 	String callback_get_settings_error();
-	String callback_kill_job_error();
 	String callback_delete_job_error();
+	String callback_delete_job_message();
+	String callback_stop_job_error();
+	String callback_stop_job_message();
 	String callback_run_job_error();
 	String callback_untie_jobs_from_session_error();
 	String callback_job_not_found_error();

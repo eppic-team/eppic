@@ -27,7 +27,7 @@ public class StopJobCallback implements AsyncCallback<String>
 	@Override
 	public void onFailure(Throwable caught) 
 	{
-		mainController.updateStatusLabel(MainController.CONSTANTS.callback_kill_job_error() + " " + jobToStop, true);
+		mainController.updateStatusLabel(MainController.CONSTANTS.callback_stop_job_error() + " " + jobToStop, true);
 	}
 
 	@Override
@@ -35,7 +35,7 @@ public class StopJobCallback implements AsyncCallback<String>
 	{
 		if (result != null)
 		{
-			mainController.showMessage("Job stopping", result);
+			mainController.showMessage(MainController.CONSTANTS.callback_stop_job_message(), result);
 			mainController.getJobsForCurrentSession();
 			
 			if(jobToStop.equals(mainController.getSelectedJobId()))
@@ -45,7 +45,7 @@ public class StopJobCallback implements AsyncCallback<String>
 		} 
 		else 
 		{
-			mainController.updateStatusLabel(MainController.CONSTANTS.callback_kill_job_error() + " " + jobToStop, true);
+			mainController.updateStatusLabel(MainController.CONSTANTS.callback_stop_job_error() + " " + jobToStop, true);
 		}
 	}
 

@@ -69,8 +69,8 @@ public interface CrkWebService extends RemoteService
 	public String stopJob(String jobToStop) throws CrkWebException;
 	
 	/**
-	 * Untie specified job id with the session of the current user
-	 * @param jobsToDelete job for which session id is to be untied
+	 * Untie specified job id from the session of the current user
+	 * @param jobToDelete job for which session id is going to be untied
 	 * @return result of deleting
 	 * @throws CrkWebException
 	 */

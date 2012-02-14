@@ -2,7 +2,7 @@ package ch.systemsx.sybit.crkwebui.client.controllers;
 
 import ch.systemsx.sybit.crkwebui.client.CrkWebService;
 import ch.systemsx.sybit.crkwebui.client.CrkWebServiceAsync;
-import ch.systemsx.sybit.crkwebui.client.callbacks.DeleteJobsCallback;
+import ch.systemsx.sybit.crkwebui.client.callbacks.DeleteJobCallback;
 import ch.systemsx.sybit.crkwebui.client.callbacks.GetAllResiduesCallback;
 import ch.systemsx.sybit.crkwebui.client.callbacks.GetCurrentStatusDataCallback;
 import ch.systemsx.sybit.crkwebui.client.callbacks.GetInterfaceResiduesCallback;
@@ -43,43 +43,51 @@ public class ServiceControllerImpl implements ServiceController
 		this.mainController = mainController;
 	}
 
+	@Override
 	public void loadSettings() {
 		crkWebService.loadSettings(new GetSettingsCallback(mainController));
 	}
 
+	@Override
 	public void getResultsOfProcessing(String jobId, boolean debug) {
 		crkWebService.getResultsOfProcessing(jobId, debug,
 				new GetResultsOfProcessingCallback(mainController, jobId));
 	}
 	
-	
+	@Override
 	public void getInterfaceResidues(String jobId, int interfaceUid, int interfaceId) {
 		crkWebService.getInterfaceResidues(interfaceUid,
 				new GetInterfaceResiduesCallback(mainController, jobId, interfaceId));
 	}
 	
+	@Override
 	public void getJobsForCurrentSession() {
 		crkWebService.getJobsForCurrentSession(new GetJobsForCurrentSession(
 				mainController));
 	}
 	
+	@Override
 	public void runJob(RunJobData runJobData) {
 		crkWebService.runJob(runJobData, new RunJobCallback(mainController));
 	}
 
+	@Override
 	public void stopJob(String jobToStop, boolean debug) {
 		crkWebService.stopJob(jobToStop, new StopJobCallback(mainController, jobToStop, debug));
 	}
 	
+	@Override
 	public void deleteJob(String jobToDelete) {
-		crkWebService.deleteJob(jobToDelete, new DeleteJobsCallback(mainController, jobToDelete));
+		crkWebService.deleteJob(jobToDelete, new DeleteJobCallback(mainController, jobToDelete));
 	}
 
+	@Override
 	public void untieJobsFromSession() {
 		crkWebService.untieJobsFromSession(new UntieJobsFromSessionCallback(
 				mainController));
 	}
 	
+	@Override
 	public void getCurrentStatusData(String jobId, boolean debug) 
 	{
 		crkWebService.getResultsOfProcessing(jobId, debug,

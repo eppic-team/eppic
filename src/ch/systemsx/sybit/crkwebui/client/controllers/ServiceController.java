@@ -23,12 +23,14 @@ public interface ServiceController
 	/**
 	 * Retrieve results of processing for selected job id - the results type depends on the status of the job on the server
 	 * @param jobId job id
+	 * @param debug retrieve detailed information
 	 */
 	public abstract void getResultsOfProcessing(String jobId, boolean debug);
 	
 	/**
 	 * Retrieve the status data for the current jobs
 	 * @param jobId job id
+	 * @param debug retrieve detailed information
 	 */
 	public abstract void getCurrentStatusData(String jobId, boolean debug);
 	
@@ -40,19 +42,28 @@ public interface ServiceController
 	/**
 	 * Retrieve residues information for selected interface
 	 * @param jobId selected job id
-	 * @param interfaceId selected interface uid
+	 * @param interfaceUid selected interface uid
+	 * @param interfaceId selected interface id
 	 */
 	public abstract void getInterfaceResidues(String jobId, int interfaceUid, int interfaceId);
+
+	/**
+	 * 
+	 * @param jobId selected job identifier
+	 * @param pdbScoreUid uid of selected pdb score item
+	 */
+	public abstract void getAllResidues(String jobId, int pdbScoreUid);
 	
 	/**
 	 * Stop the execution of the specified running job
-	 * @param jobsToStop list of jobs to stop
+	 * @param jobToStop list of jobs to stop
+	 * @param debug retrieve detailed information
 	 */
 	public abstract void stopJob(String jobToStop, boolean debug);
 	
 	/**
 	 * Untie specified job with the current session id
-	 * @param jobsToStop list of jobs to remove
+	 * @param jobToDelete identifier of the job to remove
 	 */
 	public abstract void deleteJob(String jobToDelete);
 
@@ -60,6 +71,4 @@ public interface ServiceController
 	 * Untie all the jobs which are attached to the current session
 	 */
 	public abstract void untieJobsFromSession();
-
-	public abstract void getAllResidues(String jobId, int pdbScoreUid);
 }
