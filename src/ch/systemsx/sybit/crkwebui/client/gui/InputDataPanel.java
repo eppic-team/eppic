@@ -107,6 +107,7 @@ public class InputDataPanel extends DisplayPanel
 	        	{
 	        		file.setVisible(false);
 	        		file.setAllowBlank(true);
+	        		file.reset();
 	        		pdbCodeField.setVisible(true);
 	        		pdbCodeField.setAllowBlank(false);
 	        	}
@@ -114,6 +115,7 @@ public class InputDataPanel extends DisplayPanel
 	        	{
 	        		file.setVisible(true);
 	        		file.setAllowBlank(false);
+	        		pdbCodeField.setValue("");
 	        		pdbCodeField.setVisible(false);
 	        		pdbCodeField.setAllowBlank(true);
 	        	}
