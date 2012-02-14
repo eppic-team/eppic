@@ -84,9 +84,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 	
 	private boolean doIPBasedVerification;
 	private int defaultNrOfAllowedSubmissionsForIP;
-	
-	private String[] downloadFileZipExcludeSufixes;
-	
+		
 	public void init(ServletConfig config) throws ServletException 
 	{
 		super.init(config);
@@ -142,13 +140,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 		doIPBasedVerification = Boolean.parseBoolean(properties.getProperty("limit_access_by_ip","false"));
 		defaultNrOfAllowedSubmissionsForIP = Integer.parseInt(properties.getProperty("nr_of_allowed_submissions_for_ip","100"));
 		
-		String downloadFileZipExcludeSufixesList = properties.getProperty("download_file_zip_exclude_sufixes", null);
-		
-		if(downloadFileZipExcludeSufixesList != null)
-		{
-			downloadFileZipExcludeSufixes = downloadFileZipExcludeSufixesList.split(",");
-		}
-		
+				
 //		dataSource = properties.getProperty("data_source");
 //		DBUtils.setDataSource(dataSource);
 //		
@@ -425,8 +417,8 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 					runJobData.getInputParameters(),
 					crkApplicationLocation,
 					sgeSession,
-					inputType,
-					downloadFileZipExcludeSufixes);
+					inputType
+					);
 
 			CrkThread crkRunnerThread = new CrkThread(runInstances, 
 					crkRunner,

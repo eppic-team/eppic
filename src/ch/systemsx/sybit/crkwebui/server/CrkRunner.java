@@ -4,13 +4,10 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 import model.PDBScoreItemDB;
 
@@ -45,7 +42,6 @@ public class CrkRunner implements Runnable
 	private String submissionId; 
 	
 	private int inputType;
-	private String[] downloadFileZipExcludeSufixes;
 //	private boolean isWaiting;
 
 	private boolean isInterrupted;
@@ -59,8 +55,7 @@ public class CrkRunner implements Runnable
 					 InputParameters inputParameters,
 					 String crkApplicationLocation,
 					 Session sgeSession,
-					 int inputType,
-					 String[] downloadFileZipExcludeSufixes)
+					 int inputType)
 	{
 		this.inputParameters = inputParameters;
 		this.input = input;
@@ -74,7 +69,7 @@ public class CrkRunner implements Runnable
 		this.sgeSession = sgeSession;
 		
 		this.inputType = inputType;
-		this.downloadFileZipExcludeSufixes = downloadFileZipExcludeSufixes;
+
 	}
 
 	public void run() 
@@ -302,8 +297,8 @@ public class CrkRunner implements Runnable
 //			
 	      	
 		    
-		    
-		    generateZipFile(destinationDirectoryName + "/" + input + ".zip");
+		    // zip file generation now moved to the worker
+		    //generateZipFile(destinationDirectoryName + "/" + input + ".zip");
 		    
 		    String webuiFileName = input;
 		    
@@ -401,94 +396,6 @@ public class CrkRunner implements Runnable
 
 		emailSender.send("Crk: " + input + ", error while processing",
 				message + "\n\n" + resultPath);
-	}
-	
-	private void generateZipFile(String generatedZip) throws CrkWebException
-	{
-		final List<String> prefixesToExclude = new ArrayList<String>();
-      	prefixesToExclude.add(jobId + ".");
-      	prefixesToExclude.add("crklog");
-      	
-      	
-		File destinationDirectory = new File(destinationDirectoryName);
-		String[] directoryContent = destinationDirectory.list(new FilenameFilter() 
-		{
-			public boolean accept(File dir, String name)
-			{
-				if(downloadFileZipExcludeSufixes != null)
-				{
-					for(String sufix : downloadFileZipExcludeSufixes)
-					{
-						if (name.endsWith(sufix)) 
-						{
-							return false;
-						}
-					}
-				}
-				
-				for(String prefix : prefixesToExclude)
-				{
-					if (name.startsWith(prefix)) 
-					{
-						return false;
-					}
-				}
-				
-				return true;
-			}
-		});
-		
-		byte[] buffer = new byte[1024];
-		
-        ZipOutputStream zipOutputStream = null;
-    
-        try
-        {
-        	zipOutputStream = new ZipOutputStream(new FileOutputStream(generatedZip));
-        	
-	        if(directoryContent != null)
-	        {
-		        for (int i=0; i<directoryContent.length; i++) 
-		        {
-		        	File source = new File(destinationDirectoryName + "/" + directoryContent[i]);
-		        	{
-		        		if(source.isFile())
-		        		{
-		        			FileInputStream in = new FileInputStream(source);
-		        			zipOutputStream.putNextEntry(new ZipEntry(directoryContent[i]));
-				    
-				            int length;
-				            while ((length = in.read(buffer)) > 0) 
-				            {
-				            	zipOutputStream.write(buffer, 0, length);
-				            }
-				    
-				            zipOutputStream.closeEntry();
-				            in.close();
-		        		}
-		        	}
-		            
-		        }
-		    } 
-        }
-        catch(Throwable t)
-        {
-        	throw new CrkWebException(t);
-        }
-        finally
-        {
-        	if(zipOutputStream != null)
-        	{
-        		try
-        		{
-        			zipOutputStream.close();
-        		}
-        		catch(Throwable e)
-        		{
-        			
-        		}
-        	}
-        }
 	}
 	
 	private PDBScoreItemDB retrieveResult(String resultFileName) throws CrkWebException
