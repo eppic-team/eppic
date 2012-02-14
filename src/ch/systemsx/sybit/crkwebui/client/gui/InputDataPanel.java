@@ -108,8 +108,9 @@ public class InputDataPanel extends DisplayPanel
 	        		file.setVisible(false);
 	        		file.setAllowBlank(true);
 	        		file.reset();
-	        		pdbCodeField.setVisible(true);
+	        		pdbCodeField.reset();
 	        		pdbCodeField.setAllowBlank(false);
+	        		pdbCodeField.setVisible(true);
 	        	}
 	        	else if(selectedType.equals(MainController.CONSTANTS.input_upload_file_radio()))
 	        	{
@@ -171,11 +172,7 @@ public class InputDataPanel extends DisplayPanel
 		breakPanel.setBorders(false);
 		generalFieldSet.add(breakPanel);
 
-		optionsInputPanel = new OptionsInputPanel(
-				mainController.getSettings().getDefaultParametersValues(),
-				mainController.getSettings().getReducedAlphabetList(),
-				mainController.getSettings().getSearchModeList(),
-				mainController.getSettings().getScoresTypes());
+		optionsInputPanel = new OptionsInputPanel(mainController);
 		
 		generalFieldSet.add(optionsInputPanel);
 		optionsInputPanel.collapse();

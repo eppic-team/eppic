@@ -9,22 +9,25 @@ import ch.systemsx.sybit.crkwebui.client.model.SearchModeComboModel;
 import ch.systemsx.sybit.crkwebui.shared.model.InputParameters;
 import ch.systemsx.sybit.crkwebui.shared.model.SupportedMethod;
 
-import com.extjs.gxt.ui.client.core.El;
-import com.extjs.gxt.ui.client.core.XDOM;
 import com.extjs.gxt.ui.client.event.ComponentEvent;
 import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.FieldSetEvent;
 import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.widget.Component;
+import com.extjs.gxt.ui.client.widget.ComponentHelper;
 import com.extjs.gxt.ui.client.widget.ComponentPlugin;
+import com.extjs.gxt.ui.client.widget.WidgetComponent;
 import com.extjs.gxt.ui.client.widget.form.ComboBox;
 import com.extjs.gxt.ui.client.widget.form.ComboBox.TriggerAction;
 import com.extjs.gxt.ui.client.widget.form.FieldSet;
 import com.extjs.gxt.ui.client.widget.form.NumberField;
 import com.extjs.gxt.ui.client.widget.layout.FormData;
 import com.extjs.gxt.ui.client.widget.layout.FormLayout;
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.i18n.client.NumberFormat;
+import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Window;
 
 /**
@@ -45,20 +48,27 @@ public class OptionsInputPanel extends FieldSet
 	private NumberField maxNrOfSequences;
 	private NumberField asaCalcParam;
 	private FieldSet[] methodsFieldsets;
+	
+	private int LABEL_WIDTH = 200;
 
-	public OptionsInputPanel(InputParameters defaultInputParameters,
-							 List<Integer> reducedAlphabetDefaultList,
-							 List<String> searchModeDefaultList,
-							 List<SupportedMethod> supportedMethods) 
+	public OptionsInputPanel(final MainController mainController) 
 	{
+		InputParameters defaultInputParameters = mainController.getSettings().getDefaultParametersValues();
+		List<Integer> reducedAlphabetDefaultList= mainController.getSettings().getReducedAlphabetList();
+		List<String> searchModeDefaultList = mainController.getSettings().getSearchModeList();
+		List<SupportedMethod> supportedMethods = mainController.getSettings().getScoresTypes();
+		
 		this.setHeading(MainController.CONSTANTS.input_advanced());
 		this.setCollapsible(true);
 		this.setBorders(false);
 
 		formData = new FormData("-20");
 
-		FormLayout layout = new FormLayout();
-		layout.setLabelWidth(200);
+		final FormLayout layout = new FormLayout();
+		
+		final int defaultFieldLengthForHelp = layout.getDefaultWidth() - layout.getLabelWidth() + LABEL_WIDTH;
+		
+		layout.setLabelWidth(LABEL_WIDTH);
 		this.setLayout(layout);
 		
 		int height = 400;
@@ -74,9 +84,39 @@ public class OptionsInputPanel extends FieldSet
 			{
 				component.addListener(Events.Render, new Listener<ComponentEvent>() 
 				{
-					public void handleEvent(ComponentEvent be) {
-						El elem = be.getComponent().el().findParent(".x-form-element", 3);
-						elem.appendChild(XDOM.create("<div style='color: #615f5f;padding: 1 0 2 0px;'>" + be.getComponent().getData("hint") + "</div>"));
+					public void handleEvent(ComponentEvent be) 
+					{
+						HelpPanel helpPanel = new HelpPanel(mainController, (String)be.getComponent().getData("hint"));
+						final WidgetComponent helpImage = helpPanel.getImageComponent();
+						
+						if(helpImage != null)
+						{
+							Element parent = be.getComponent().el().findParent(".x-form-element", 3).dom;
+						    helpImage.render(parent);
+						    helpImage.el().setVisibility(true);
+						    helpImage.el().makePositionable(true);
+						        
+						    if (!helpImage.isAttached()) 
+						    {
+						    	ComponentHelper.doAttach(helpImage);
+						    }
+						
+						    Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+								@Override
+								public void execute() {
+									helpImage.setPosition(defaultFieldLengthForHelp + 80, 3);
+								    helpImage.el().setVisible(true);
+								}
+						    });
+						}
+					    
+					    
+//						elem.appendChild(XDOM.create("<span style='color: #615f5f;padding: 1 0 2 0px;font-size:10px'>" + be.getComponent().getData("hint") + "</span>"));
+//						HelpPanel helpPanel = new HelpPanel(null, "This is test");
+//						helpPanel.setId("testid");
+//						elem.appendChild(XDOM.getDocument()helpPanel.getElement());
+//						El elem = be.getComponent().el().findParent(".x-form-element", 3);
+//						elem.appendChild(XDOM.create("<span style='color: #615f5f;padding: 1 0 2 0px;font-size:10px'>" + be.getComponent().getData("hint") + "</span>"));
 					}
 				});
 			}
