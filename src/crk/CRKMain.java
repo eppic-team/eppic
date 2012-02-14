@@ -11,6 +11,8 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.GZIPOutputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -34,6 +36,7 @@ import owl.core.structure.SpaceGroup;
 import owl.core.structure.graphs.AICGraph;
 import owl.core.util.FileFormatException;
 import owl.core.util.Goodies;
+import owl.core.util.RegexFileFilter;
 
 public class CRKMain {
 	
@@ -345,6 +348,43 @@ public class CRKMain {
 			}
 		} catch (IOException e) {
 			throw new CRKException(e, "PSE or PDB files could not be gzipped. "+e.getMessage(),true);
+		}
+		
+		try {
+			File zipFile = params.getOutputFile(".zip");
+			File[] directoryContent = params.getOutDir().listFiles(new RegexFileFilter("^"+params.getBaseName()+"\\..*")); 
+
+			if (directoryContent==null) 
+				throw new CRKException(null, "Couldn't list files in dir "+params.getOutDir()+" for creating final .zip file", true);
+			
+			byte[] buffer = new byte[1024];
+			ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream(zipFile));
+
+			for (int i=0; i<directoryContent.length; i++) {
+				File source = new File(params.getOutDir(), directoryContent[i].getName());
+				
+				// we exclude the pse and pngs
+				if (source.getName().endsWith(".pse.gz") || source.getName().endsWith(".png")) 
+					continue;
+
+				if(source.isFile())	{
+					FileInputStream in = new FileInputStream(source);
+					zipOutputStream.putNextEntry(new ZipEntry(directoryContent[i].getName()));
+
+					int length;
+					while ((length = in.read(buffer)) > 0) {						
+						zipOutputStream.write(buffer, 0, length);
+					}
+					zipOutputStream.closeEntry();
+					in.close();
+				}
+			}
+ 
+			zipOutputStream.close();
+			
+
+		} catch (IOException e) {
+			throw new CRKException(e, "Final .zip file couldn't be created. "+e.getMessage(),true);
 		}
 	}
 	
