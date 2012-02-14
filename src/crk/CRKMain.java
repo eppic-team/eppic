@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.InetAddress;
@@ -388,6 +389,15 @@ public class CRKMain {
 		}
 	}
 	
+	public void writeFinishedFile() throws CRKException {
+		try {
+			FileWriter fw = new FileWriter(params.getOutputFile(".finished"));
+			fw.close();
+		} catch (IOException e) {
+			throw new CRKException(e, "Couldn't write the finished file", true);
+		}
+	}
+	
 	private void findUniqueChains() {
 		String msg = "Unique sequences for "+params.getJobName()+":";
 		int i = 1;
@@ -619,6 +629,10 @@ public class CRKMain {
 				
 				// 6 writing out the serialized file for web ui
 				crkMain.wuiAdaptor.writePdbScoreItemFile(crkMain.params.getOutputFile(".webui.dat"));
+				
+				// finally we write a signal file for the wui to know that job is finished
+				crkMain.writeFinishedFile();
+
 			}
 
 
