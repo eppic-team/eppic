@@ -168,15 +168,15 @@ public class MainViewPort extends Viewport
 	
 	public void showWaiting(final String text)
 	{
-		Scheduler.get().scheduleDeferred(new ScheduledCommand() {
-			@Override
-			public void execute() {
+//		Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+//			@Override
+//			public void execute() {
 				waitingMessageBox = MessageBox.wait(MainController.CONSTANTS.waiting_message_box_header(),  
 						text + ", " + MainController.CONSTANTS.waiting_message_box_info() + "...", 
 						text + "...");  
 				waitingMessageBox.show();
-			}
-		});
+//			}
+//		});
 	}
 	
 	public void hideWaiting()
