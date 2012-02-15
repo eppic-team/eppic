@@ -204,15 +204,20 @@ public class MainViewPort extends Viewport
 										int yPosition) 
 	{
 		if((alignmentsWindow == null) ||
-		   (alignmentsWindow.isResizeWindow()) || 
-		   (alignmentsWindow.getHomologsInfoItem() != homologsInfoItem))
+		   (alignmentsWindow.isResizeWindow()))
 		{
 			alignmentsWindow = new AlignmentsWindow(mainController, homologsInfoItem);
 			alignmentsWindow.setResizeWindow(false);
 			alignmentsWindow.updateWindowContent();
+			alignmentsWindow.setPagePosition(xPosition, yPosition);
+		}
+		else if(alignmentsWindow.getHomologsInfoItem() != homologsInfoItem)
+		{
+			alignmentsWindow.setHomologsInfoItem(homologsInfoItem);
+			alignmentsWindow.setHeading(homologsInfoItem.getChains());
+			alignmentsWindow.updateWindowContent();
 		}
 		
-		alignmentsWindow.setPagePosition(xPosition, yPosition);
 		alignmentsWindow.setVisible(true);
 		
 		//called beacuse of the bug in GXT 2.2.3

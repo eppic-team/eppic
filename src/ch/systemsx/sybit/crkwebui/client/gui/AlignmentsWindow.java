@@ -39,6 +39,7 @@ public class AlignmentsWindow extends ResizableWindow
 		this.setLayout(new FitLayout());
 		this.setHideOnButtonClick(true);
 		this.getButtonBar().setVisible(false);
+		this.setHeading(homologsInfoItem.getChains());
 		
 		Listener<WindowEvent> resizeWindowListener = new Listener<WindowEvent>() {
 
@@ -78,9 +79,12 @@ public class AlignmentsWindow extends ResizableWindow
 		homologsContentPanel.setBodyBorder(false);
 		homologsContentPanel.setBorders(false);
 		homologsContentPanel.getHeader().setVisible(false);
-		homologsContentPanel.setStyleAttribute("font-family", "courier");
+		homologsContentPanel.setStyleAttribute("fontSize", "10pt");
+		homologsContentPanel.setStyleAttribute("fontFamily", "courier");
+		homologsContentPanel.render(this.getElement());
 		
 		TextMetrics textMetrics = TextMetrics.get();
+		textMetrics.bind(homologsContentPanel.el());
 		int widthOfCharacter = textMetrics.getWidth("A");
 		
 		this.removeAll();
@@ -114,12 +118,13 @@ public class AlignmentsWindow extends ResizableWindow
 			}
 			
 			Text firstSequenceLabel = new Text(firstSequenceLine.toString());
-			Text markupLabel = new Text(markup.toString());
+			Text markupLabel = new Text(markup.replaceAll(" ", "&nbsp;"));
 			Text secondSequenceLabel = new Text(secondSequenceLine.toString());
 			
 			homologsContentPanel.add(firstSequenceLabel, new RowData(1, -1, new Margins(0)));  
 			homologsContentPanel.add(markupLabel, new RowData(1, -1, new Margins(0)));
 			homologsContentPanel.add(secondSequenceLabel, new RowData(1, -1, new Margins(0)));
+			homologsContentPanel.add(new Text(), new RowData(1, -1, new Margins(0)));
 			homologsContentPanel.add(new Text(), new RowData(1, -1, new Margins(0)));
 			homologsContentPanel.setScrollMode(Scroll.AUTOY);
 //			this.add(new Label(), new RowData(1, 20));
@@ -132,5 +137,10 @@ public class AlignmentsWindow extends ResizableWindow
 	public HomologsInfoItem getHomologsInfoItem()
 	{
 		return homologsInfoItem;
+	}
+	
+	public void setHomologsInfoItem(HomologsInfoItem homologsInfoItem)
+	{
+		this.homologsInfoItem = homologsInfoItem;
 	}
 }
