@@ -168,7 +168,7 @@ public class CoreDefinitionsStats {
 		for (Future<InterfList> future:futures) {
 			InterfList interfList = future.get();
 			if (interfList!=null) {
-				out.print(interfList.pdbCode);
+				
 				for (ChainInterface interf:interfList.getInterfaces()) {
 					double area = interf.getInterfaceArea();
 					interf.calcRimAndCore(CA_CUTOFF);
@@ -182,8 +182,8 @@ public class CoreDefinitionsStats {
 					int core2Levy = interf.getSecondRimCore().getCoreSize();
 
 					
-					out.printf("_%d %2d %2d %2d %2d %2d %2d %7.2f\n",
-							interf.getId(),core1Schaerer,core2Schaerer,core1Chak,core2Chak,core1Levy,core2Levy,area);
+					out.printf("%s_%d %2d %2d %2d %2d %2d %2d %7.2f\n",
+							interfList.pdbCode,interf.getId(),core1Schaerer,core2Schaerer,core1Chak,core2Chak,core1Levy,core2Levy,area);
 				}
 
 			}
