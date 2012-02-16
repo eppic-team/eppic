@@ -13,6 +13,7 @@ public class InterfaceResidueItemModel extends BaseModel
 	{
 		set("structure", "");
 		set("residueNumber", "");
+		set("pdbResidueNumber", "");
 		set("residueType", "");
 		set("asa", "");
 		set("bsa", "");
@@ -23,6 +24,7 @@ public class InterfaceResidueItemModel extends BaseModel
 
 	public InterfaceResidueItemModel( int structure,
 									  int residueNumber,
+									  String pdbResidueNumber,
 									  String residueType,
 									  float asa,
 									  float bsa,
@@ -31,6 +33,7 @@ public class InterfaceResidueItemModel extends BaseModel
 	{
 		set("structure", structure);
 		set("residueNumber", residueNumber);
+		set("pdbResidueNumber", pdbResidueNumber);
 		set("residueType", residueType);
 		set("asa", asa);
 		set("bsa", bsa);
@@ -53,6 +56,14 @@ public class InterfaceResidueItemModel extends BaseModel
 	
 	public void setResidueNumber(int residueNumber) {
 		set("residueNumber", residueNumber);
+	}
+	
+	public String getPdbResidueNumber() {
+		return (String) get("pdbResidueNumber");
+	}
+	
+	public void setPdbResidueNumber(String pdbResidueNumber) {
+		set("pdbResidueNumber", pdbResidueNumber);
 	}
 	
 	public String getResidueType() {

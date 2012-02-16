@@ -221,6 +221,7 @@ public class ResiduesPanel extends ContentPanel
 				
 				model.setStructure(residueValue.getStructure());
 				model.setResidueNumber(residueValue.getResidueNumber());
+				model.setPdbResidueNumber(residueValue.getPdbResidueNumber());
 				model.setResidueType(residueValue.getResidueType());
 				model.setAsa(residueValue.getAsa());
 				model.setBsa(residueValue.getBsa());
