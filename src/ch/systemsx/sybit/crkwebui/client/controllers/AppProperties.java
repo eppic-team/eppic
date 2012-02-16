@@ -91,6 +91,8 @@ public interface AppProperties extends Constants
 	String results_grid_thumbnail_tooltip_text();
 	String results_grid_warnings_tooltip_title();
 	
+	String alignment_window_title();
+	
 	String interfaces_residues_window_title();
 	String interfaces_residues_panel_first_structure();
 	String interfaces_residues_panel_second_structure();

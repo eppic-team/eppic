@@ -48,7 +48,6 @@ public class AlignmentsWindow extends ResizableWindow
 		this.setLayout(new FitLayout());
 		this.setHideOnButtonClick(true);
 		this.getButtonBar().setVisible(false);
-		this.setHeading(homologsInfoItem.getChains());
 		
 		Listener<WindowEvent> resizeWindowListener = new Listener<WindowEvent>() {
 

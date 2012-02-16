@@ -214,10 +214,13 @@ public class MainViewPort extends Viewport
 		else if(alignmentsWindow.getHomologsInfoItem() != homologsInfoItem)
 		{
 			alignmentsWindow.setHomologsInfoItem(homologsInfoItem);
-			alignmentsWindow.setHeading(homologsInfoItem.getChains());
 			alignmentsWindow.updateWindowContent();
 		}
 		
+		String alignmentWindowTitle = MainController.CONSTANTS.alignment_window_title();
+		alignmentWindowTitle = alignmentWindowTitle.replaceFirst("%s", homologsInfoItem.getChains().substring(0, 1));
+		alignmentWindowTitle = alignmentWindowTitle.replaceFirst("%s", homologsInfoItem.getUniprotId());
+		alignmentsWindow.setHeading(alignmentWindowTitle);
 		alignmentsWindow.setVisible(true);
 		
 		//called beacuse of the bug in GXT 2.2.3
