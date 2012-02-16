@@ -495,8 +495,20 @@ public class MainController
 
 	public void setResizeWindows(boolean resizeWindow) 
 	{
-		mainViewPort.getInterfacesResiduesWindow().setResizeWindow(true);
-		mainViewPort.getAlignmentsWindow().setResizeWindow(true);
+		if(mainViewPort.getInterfacesResiduesWindow() != null)
+		{
+			mainViewPort.getInterfacesResiduesWindow().setResizeWindow(true);
+		}
+		
+		if(mainViewPort.getAlignmentsWindow() != null)
+		{
+			mainViewPort.getAlignmentsWindow().setResizeWindow(true);
+		}
+		
+		if(mainViewPort.getAboutWindow() != null)
+		{
+			mainViewPort.getAboutWindow().setResizeWindow(true);
+		}
 	}
 	
 	public native static String getUserAgent() /*-{
@@ -589,5 +601,10 @@ public class MainController
 		mainViewPort.displayAlignmentsWindow(homologsInfoItem,
 											 xPosition,
 											 yPosition);
+	}
+	
+	public void showAbout() 
+	{
+		mainViewPort.displayAboutWindow();
 	}
 }

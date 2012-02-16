@@ -31,6 +31,7 @@ public class MainViewPort extends Viewport
 	
 	private InterfacesResiduesWindow interfacesResiduesWindow;
 	private AlignmentsWindow alignmentsWindow;
+	private AboutWindow aboutWindow;
 	
 	private MessageBox waitingMessageBox;
 	private MessageBox errorMessageBox;
@@ -231,5 +232,22 @@ public class MainViewPort extends Viewport
 	public AlignmentsWindow getAlignmentsWindow() 
 	{
 		return alignmentsWindow;
+	}
+
+	public void displayAboutWindow() 
+	{
+		if((aboutWindow == null) ||
+		   (aboutWindow.isResizeWindow()))
+		{
+			aboutWindow = new AboutWindow(mainController);
+			aboutWindow.setResizeWindow(false);
+		}
+		
+		aboutWindow.setVisible(true);
+	}
+	
+	public AboutWindow getAboutWindow()
+	{
+		return aboutWindow;
 	}
 }

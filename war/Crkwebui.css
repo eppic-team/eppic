@@ -60,9 +60,20 @@ h1 {
 	vertical-align:middle;
 }
 
+.top-panel-label {
+	font-size: 16px;
+	font-weight: bold;
+}
+
 .crk-default-label {
 	font-size: 12px;
 	white-space: nowrap;
+}
+
+.crk-bold-label {
+	font-size: 12px;
+	white-space: nowrap;
+	font-weight: bold;
 }
 
 .x-grid-empty {

@@ -107,10 +107,14 @@ public interface AppProperties extends Constants
 	String scores_panel_column_unweighted();
 	String scores_panel_column_structure1();
 	String scores_panel_column_structure2();
-	
+
+	String bottom_panel_about_link();
+	String bottom_panel_help_link();
 	String bottom_panel_contact_link();
 	String bottom_panel_contact_link_label();
 	String bottom_panel_status_error_refresh_page();
+	
+	String about_window_title();
 	
 	String error_message_box_header();
 	String waiting_message_box_header();
