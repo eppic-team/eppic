@@ -11,6 +11,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import crk.CRKParams;
+
 import owl.core.structure.ChainInterface;
 import owl.core.structure.ChainInterfaceList;
 import owl.core.structure.PdbAsymUnit;
@@ -30,7 +32,7 @@ import owl.core.util.FileFormatException;
  */
 public class CoreDefinitionsStats {
 
-	private static final String   LOCAL_CIF_DIR = "/gpfs/home/duarte_j/data/pdb/data/structures/all/mmCIF";
+	private static String   LOCAL_CIF_DIR;
 	
 	private static final double CA_CUTOFF = 0.95;
 	private static final double RASA_CUTOFF = 0.25;
@@ -135,6 +137,9 @@ public class CoreDefinitionsStats {
 			numThreads = Integer.parseInt(args[2]);
 		}
 		
+		CRKParams params = loadConfigFile(); 
+		LOCAL_CIF_DIR = params.getLocalCifDir();
+		
 		 
 		TreeMap<String,List<Integer>> entries2interfaces = Utils.readListFile(listFile);
 		
@@ -197,5 +202,22 @@ public class CoreDefinitionsStats {
 	
 	}
 
+	private static CRKParams loadConfigFile() {
+		CRKParams params = new CRKParams();
+		// loading settings from config file
+		File userConfigFile = new File(System.getProperty("user.home"),".crk.conf");  
+		try {
+			if (userConfigFile.exists()) {
+				System.out.println("Loading user configuration file " + userConfigFile);
+				params.readConfigFile(userConfigFile);
+			} else {
+				System.out.println("No config file found. Using default locations");
+			}
+		} catch (IOException e) {
+			System.err.println("Error while reading from config file " + userConfigFile + ": " + e.getMessage());
+			System.exit(1);
+		}
+		return params;
+	}
 	
 }
