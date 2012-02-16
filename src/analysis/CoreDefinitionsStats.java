@@ -92,11 +92,13 @@ public class CoreDefinitionsStats {
 			} finally {
 				cifFile.delete();
 			}
+			// very important indeed: remove the H atoms! otherwise we get uncomparable core sizes!!!!
+			pdb.removeHatoms();
 			
 			long start = System.currentTimeMillis();
 			ChainInterfaceList interfList = null;
 			try {
-				interfList = pdb.getAllInterfaces(CUTOFF, null, NSPHEREPOINTS, NTHREADS, false, false);
+				interfList = pdb.getAllInterfaces(CUTOFF, null, NSPHEREPOINTS, 1, true, false);
 			} catch (IOException e) {
 				// do nothing, this won't happen as we are not using naccess
 			}
