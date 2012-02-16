@@ -40,7 +40,6 @@ public class OptionsInputPanel extends FieldSet
 	private FormData formData;
 	private ListStore<ReducedAlphabetComboModel> reducedAlphabetValues;
 	private ComboBox<ReducedAlphabetComboModel> reducedAlphabetCombo;
-	private NumberField selecton;
 	private NumberField softIdentityCutOff;
 	private NumberField hardIdentityCutOff;
 	private ListStore<SearchModeComboModel> searchModeValues;
@@ -161,21 +160,6 @@ public class OptionsInputPanel extends FieldSet
 				reducedAlphabetCombo.setData("hint", MainController.CONSTANTS.parameters_reduced_alphabet_hint());
 				methodsFieldsets[i].add(reducedAlphabetCombo, formData);
 				
-				methodsFieldsets[i].addListener(Events.Collapse, new Listener<FieldSetEvent>() 
-				{
-					public void handleEvent(FieldSetEvent be) 
-					{
-						for(FieldSet fieldSet : methodsFieldsets)
-						{
-							if((fieldSet.getHeading() != null) &&
-								(fieldSet.getHeading().equals("KaKs")))
-							{
-								fieldSet.setExpanded(false);
-							}
-						}
-					}
-				});
-					
 				methodsFieldsets[i].addListener(Events.Expand, new Listener<FieldSetEvent>() 
 				{
 					public void handleEvent(FieldSetEvent be) 
@@ -185,33 +169,6 @@ public class OptionsInputPanel extends FieldSet
 							
 							if((fieldSet.getHeading() != null) &&
 								(fieldSet.getHeading().equals("Geometry")))
-							{
-								fieldSet.setExpanded(true);
-							}
-						}
-					}
-				});
-			}
-			else if(supportedMethods.get(i).getName().equals("Kaks"))
-			{
-				methodsFieldsets[i].setHeading(MainController.CONSTANTS.parameters_kaks());
-				
-				selecton = new NumberField();
-				selecton.setFieldLabel(MainController.CONSTANTS.parameters_selecton());
-				selecton.setAllowBlank(false);
-				selecton.setFormat(NumberFormat.getDecimalFormat());
-				selecton.setMinValue(0);
-				selecton.setMaxValue(1);
-				methodsFieldsets[i].add(selecton, formData);
-				
-				methodsFieldsets[i].addListener(Events.Expand, new Listener<FieldSetEvent>() 
-				{
-					public void handleEvent(FieldSetEvent be) 
-					{
-						for(FieldSet fieldSet : methodsFieldsets)
-						{
-							if((fieldSet.getHeading() != null) &&
-							   (fieldSet.getHeading().equals("Entropy")))
 							{
 								fieldSet.setExpanded(true);
 							}
@@ -341,11 +298,6 @@ public class OptionsInputPanel extends FieldSet
 		softIdentityCutOff.setValue(defaultParameters.getSoftIdentityCutoff());
 		hardIdentityCutOff.setValue(defaultParameters.getHardIdentityCutoff());
 		
-		if(selecton != null)
-		{
-			selecton.setValue(defaultParameters.getSelecton());
-		}
-		
 		maxNrOfSequences.setValue(defaultParameters.getMaxNrOfSequences());
 
 		ReducedAlphabetComboModel defaultValueModel = new ReducedAlphabetComboModel(
@@ -389,11 +341,6 @@ public class OptionsInputPanel extends FieldSet
 		currentInputParameters.setSearchMode(searchModeCombo
 				.getValue().getSearchMode());
 		
-		if(selecton != null)
-		{
-			currentInputParameters.setSelecton(selecton.getValue().floatValue());
-		}
-
 		List<String> selectedMethods = new ArrayList<String>();
 		
 		for(FieldSet fieldSet : methodsFieldsets)

@@ -101,8 +101,6 @@ public class CrkRunnerByProcess implements Runnable
 			command.add(destinationDirectoryName);
 			command.add("-q");
 			command.add(String.valueOf(inputParameters.getMaxNrOfSequences()));
-			command.add("-e");
-			command.add(String.valueOf(inputParameters.getSelecton()));
 			
 			command.add("-d");
 			command.add(String.valueOf(inputParameters.getSoftIdentityCutoff()));
@@ -121,10 +119,10 @@ public class CrkRunnerByProcess implements Runnable
 			{
 				for(String method : inputParameters.getMethods())
 				{
-					if(method.equals("KaKs"))
-					{
-						command.add("-k");
-					}
+//					if(method.equals("KaKs"))
+//					{
+//						command.add("-k");
+//					}
 				}
 			}
 			

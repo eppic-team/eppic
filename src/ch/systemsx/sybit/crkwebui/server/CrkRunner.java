@@ -143,11 +143,7 @@ public class CrkRunner implements Runnable
 			{
 				for(String method : inputParameters.getMethods())
 				{
-					if(method.equals("KaKs"))
-					{
-						command.add("-k");
-					}
-					else if(method.equals("Entropy"))
+					if(method.equals("Entropy"))
 					{
 						command.add("-s");
 					}

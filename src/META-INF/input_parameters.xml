@@ -26,7 +26,6 @@
 			<reduced_alphabet>10</reduced_alphabet>
 			<soft_identity_cutoff>0.6</soft_identity_cutoff>
 			<hard_identity_cutoff>0.5</hard_identity_cutoff>
-			<selecton>0.1</selecton>
 			<search_mode>Auto</search_mode>
 		</default_parameters>
 		

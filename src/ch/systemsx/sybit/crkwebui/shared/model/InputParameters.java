@@ -25,7 +25,6 @@ public class InputParameters implements Serializable
 
 	private float softIdentityCutoff;
 	private float hardIdentityCutoff;
-	private float selecton;
 
 	public InputParameters() 
 	{
@@ -78,15 +77,6 @@ public class InputParameters implements Serializable
 
 	public void setHardIdentityCutoff(float hardIdentityCutoff) {
 		this.hardIdentityCutoff = hardIdentityCutoff;
-	}
-
-
-	public float getSelecton() {
-		return selecton;
-	}
-
-	public void setSelecton(float selecton) {
-		this.selecton = selecton;
 	}
 
 	public void setSearchMode(String searchMode) {

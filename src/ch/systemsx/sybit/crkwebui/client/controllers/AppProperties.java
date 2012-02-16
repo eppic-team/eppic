@@ -39,11 +39,9 @@ public interface AppProperties extends Constants
 	String input_pdb_input_type();
 
 	String parameters_entropy();
-	String parameters_kaks();
 	String parameters_geometry();
 	String parameters_reduced_alphabet();
 	String parameters_reduced_alphabet_hint();
-	String parameters_selecton();
 	String parameters_allignment();
 	String parameters_soft_identity_cutoff();
 	String parameters_soft_identity_cutoff_hint();

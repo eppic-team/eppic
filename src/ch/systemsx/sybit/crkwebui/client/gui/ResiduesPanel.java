@@ -201,10 +201,6 @@ public class ResiduesPanel extends ContentPanel
 					{
 						processedMethod = "entropy";
 					}
-					else if(method.getName().equals("Kaks"))
-					{
-						processedMethod = "kaks";
-					}
 					else if(method.getName().equals("Geometry"))
 					{
 						processedMethod = "geometry";

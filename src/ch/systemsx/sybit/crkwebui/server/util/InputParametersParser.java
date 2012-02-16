@@ -152,7 +152,6 @@ public class InputParametersParser
 		inputParameters.setReducedAlphabet(Integer.parseInt(defaultInputParameterElement.getElementsByTagName("reduced_alphabet").item(0).getFirstChild().getNodeValue()));
 		inputParameters.setSoftIdentityCutoff(Float.parseFloat(defaultInputParameterElement.getElementsByTagName("soft_identity_cutoff").item(0).getFirstChild().getNodeValue()));
 		inputParameters.setHardIdentityCutoff(Float.parseFloat(defaultInputParameterElement.getElementsByTagName("hard_identity_cutoff").item(0).getFirstChild().getNodeValue()));
-		inputParameters.setSelecton(Float.parseFloat(defaultInputParameterElement.getElementsByTagName("selecton").item(0).getFirstChild().getNodeValue()));
 		inputParameters.setSearchMode(defaultInputParameterElement.getElementsByTagName("search_mode").item(0).getFirstChild().getNodeValue());
 	}
 
