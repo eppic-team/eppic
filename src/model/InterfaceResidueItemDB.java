@@ -1,8 +1,6 @@
 package model;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
 
 public class InterfaceResidueItemDB implements Serializable
 {
@@ -26,8 +24,7 @@ public class InterfaceResidueItemDB implements Serializable
 	private Float bsa;
 	private Float bsaPercentage;
 	private int assignment; // one of the constants above: SURFACE, RIM, CORE
-	
-	private List<InterfaceResidueMethodItemDB> interfaceResidueMethodItems;
+	private Float entropyScore;
 
 	private InterfaceItemDB interfaceItem;
 	// residue number
@@ -38,7 +35,7 @@ public class InterfaceResidueItemDB implements Serializable
 	//entropy
 	//KaKs
 	
-	public InterfaceResidueItemDB(int residueNumber, String pdbResidueNumber, String residueType, Float asa, Float bsa, Float bsaPercentage, int assignment) {
+	public InterfaceResidueItemDB(int residueNumber, String pdbResidueNumber, String residueType, Float asa, Float bsa, Float bsaPercentage, int assignment, Float entropyScore) {
 		this.residueNumber = residueNumber;
 		this.pdbResidueNumber = pdbResidueNumber;
 		this.residueType = residueType;
@@ -46,7 +43,7 @@ public class InterfaceResidueItemDB implements Serializable
 		this.bsa = bsa;
 		this.bsaPercentage = bsaPercentage;
 		this.assignment = assignment;
-		this.interfaceResidueMethodItems = new ArrayList<InterfaceResidueMethodItemDB>();
+		this.setEntropyScore(entropyScore);
 	}
 	
 	public InterfaceResidueItemDB()
@@ -110,18 +107,6 @@ public class InterfaceResidueItemDB implements Serializable
 		this.assignment = assignment;
 	}
 	
-	public List<InterfaceResidueMethodItemDB> getInterfaceResidueMethodItems() {
-		return interfaceResidueMethodItems;
-	}
-
-	public void setInterfaceResidueMethodItems(List<InterfaceResidueMethodItemDB> interfaceResidueMethodItems) {
-		this.interfaceResidueMethodItems = interfaceResidueMethodItems;
-	}
-	
-	public void addInterfaceResidueMethodItem(InterfaceResidueMethodItemDB irmi) {
-		this.interfaceResidueMethodItems.add(irmi);
-	}
-
 	public void setStructure(int structure) {
 		this.structure = structure;
 	}
@@ -144,5 +129,13 @@ public class InterfaceResidueItemDB implements Serializable
 
 	public int getUid() {
 		return uid;
+	}
+
+	public void setEntropyScore(Float entropyScore) {
+		this.entropyScore = entropyScore;
+	}
+
+	public Float getEntropyScore() {
+		return entropyScore;
 	}
 }

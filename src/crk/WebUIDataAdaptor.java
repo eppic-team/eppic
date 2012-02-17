@@ -12,7 +12,6 @@ import crk.predictors.GeometryPredictor;
 
 import model.InterfaceItemDB;
 import model.InterfaceResidueItemDB;
-import model.InterfaceResidueMethodItemDB;
 import model.InterfaceScoreItemDB;
 import model.HomologsInfoItemDB;
 import model.PDBScoreItemDB;
@@ -349,14 +348,9 @@ public class WebUIDataAdaptor {
 
 				if (assignment==-1 && asa>0) assignment = InterfaceResidueItemDB.SURFACE;
 
-				InterfaceResidueItemDB iri = new InterfaceResidueItemDB(residue.getSerial(),residue.getPdbSerial(),resType,asa,bsa,bsa/asa,assignment);
+				InterfaceResidueItemDB iri = new InterfaceResidueItemDB(residue.getSerial(),residue.getPdbSerial(),resType,asa,bsa,bsa/asa,assignment,null);
 				iri.setStructure(molecId+1); // structure ids are 1 and 2 while molecId are 0 and 1
 
-				InterfaceResidueMethodItemDB irmi = new InterfaceResidueMethodItemDB((float) 0, "geometry");
-				irmi.setInterfaceResidueItem(iri);
-				
-				iri.addInterfaceResidueMethodItem(irmi);
-				
 				iril.add(iri);
 			}
 		}
@@ -401,10 +395,7 @@ public class WebUIDataAdaptor {
 						if (queryUniprotPos!=-1) entropy = (float) entropies.get(queryUniprotPos).doubleValue();
 					}
 
-					InterfaceResidueMethodItemDB irmi = new InterfaceResidueMethodItemDB(entropy, "entropy");
-					irmi.setInterfaceResidueItem(iri);
-					
-					iri.addInterfaceResidueMethodItem(irmi); 
+					iri.setEntropyScore(entropy); 
 					i++;
 				}
 			}
