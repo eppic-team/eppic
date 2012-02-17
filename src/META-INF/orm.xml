@@ -192,34 +192,9 @@
             <basic name="bsa"><column nullable="true"/></basic>
             <basic name="bsaPercentage"><column nullable="true"/></basic>
             <basic name="assignment"></basic>
+            <basic name="entropyScore"><column nullable="true"/></basic>
        		
        		<many-to-one name="interfaceItem" >  
-            </many-to-one>  
-            
-       		<one-to-many name="interfaceResidueMethodItems" mapped-by="interfaceResidueItem" >  
-            	<cascade>
-       				<cascade-all/>
-       			</cascade>
-       		</one-to-many>  
-        </attributes>
-   </entity>
-   
-   <entity class="model.InterfaceResidueMethodItemDB" name="InterfaceResidueMethodItem">
-        <table name="InterfaceResidueMethod"/>
-        <entity-listeners>
-        	<entity-listener class="ch.systemsx.sybit.crkwebui.server.db.entitylisteners.InterfaceResidueMethodItemListener">
-        	</entity-listener>
-        </entity-listeners>
-        <attributes>
-            <id name="uid">
-                <generated-value strategy="IDENTITY"/>
-            </id>
-            <basic name="method">
-            	<column length="15"/>
-            </basic>
-            <basic name="score"><column nullable="true"/></basic>
-       		
-       		<many-to-one name="interfaceResidueItem" >  
             </many-to-one>  
         </attributes>
    </entity>
@@ -316,9 +291,15 @@
        		<basic name="uniprotId"></basic>
        		<basic name="numHomologs"></basic>
        		<basic name="subInterval"></basic>
-       		<basic name="alignedSeq1"></basic>
-       		<basic name="alignedSeq2"></basic>
-       		<basic name="markupLine"></basic>
+       		<basic name="alignedSeq1">
+       			<column column-definition="text"/>
+       		</basic>
+       		<basic name="alignedSeq2">
+       			<column column-definition="text"/>
+       		</basic>
+       		<basic name="markupLine">
+       			<column column-definition="text"/>
+       		</basic>
        		
        		<many-to-one name="pdbScoreItem" >  
             </many-to-one>  

@@ -15,19 +15,20 @@ public class InterfaceResidueSummaryModel extends BaseModel
 		set("asa", "");
 		set("bsa", "");
 		set("bsaPercentage", "");
-		set("METHODS", "");
+		set("entropyScore", "");
 	}
 
 	public InterfaceResidueSummaryModel( String title,
 										 double asa,
 										 double bsa,
-										 double bsaPercentage) 
+										 double bsaPercentage,
+										 double entropyScore) 
 	{
 		set("title", title);
 		set("asa", asa);
 		set("bsa", bsa);
 		set("bsaPercentage", bsaPercentage);
-		set("METHODS", "");
+		set("entropyScore", entropyScore);
 	}
 
 	public String getTitle() {
@@ -60,5 +61,13 @@ public class InterfaceResidueSummaryModel extends BaseModel
 	
 	public void setBsaPercentage(double bsaPercentage) {
 		set("bsaPercentage", bsaPercentage);
+	}
+	
+	public void setEntropyScore(double entropyScore) {
+		set("entropyScore", entropyScore);
+	}
+	
+	public double getEntropyScore() {
+		return (Double) get("entropyScore");
 	}
 }

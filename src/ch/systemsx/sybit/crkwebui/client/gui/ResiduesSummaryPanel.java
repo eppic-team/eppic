@@ -1,14 +1,11 @@
 package ch.systemsx.sybit.crkwebui.client.gui;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 import ch.systemsx.sybit.crkwebui.client.model.InterfaceResidueSummaryModel;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceScoreItem;
-import ch.systemsx.sybit.crkwebui.shared.model.SupportedMethod;
 
 import com.extjs.gxt.ui.client.GXT;
 import com.extjs.gxt.ui.client.Style.Scroll;
@@ -20,7 +17,6 @@ import com.extjs.gxt.ui.client.widget.grid.ColumnModel;
 import com.extjs.gxt.ui.client.widget.grid.Grid;
 import com.extjs.gxt.ui.client.widget.grid.GridViewConfig;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
-import com.google.gwt.i18n.client.NumberFormat;
 
 /**
  * This panel is used to display the residues for one structure
@@ -114,34 +110,27 @@ public class ResiduesSummaryPanel extends ContentPanel
 		
 		List<InterfaceResidueSummaryModel> interfaceSummaryItems = new ArrayList<InterfaceResidueSummaryModel>();
 
-		NumberFormat number = NumberFormat.getFormat("0.00");
-		
-		Map<String, String> coreMethodValues = new HashMap<String, String>();
-		Map<String, String> rimMethodValues = new HashMap<String, String>();
-		Map<String, String> ratioMethodValues = new HashMap<String, String>();
+		double entropyCoreValue = Double.NaN;
+		double entropyRimValue = Double.NaN;
+		double entropyRatioValue = Double.NaN;
 		
 		for (InterfaceScoreItem scoreItem : mainController.getPdbScoreItem().getInterfaceItem(mainController.getMainViewPort().getInterfacesResiduesWindow().getSelectedInterface() - 1).getInterfaceScores()) 
 		{
-			String coreValue = "";
-			String rimValue = "";
-			String ratioValue = "";
-			
-			if(structure == 1)
+			if(scoreItem.getMethod().equals("Entropy"))
 			{
-				coreValue = number.format(scoreItem.getUnweightedCore1Scores());
-				rimValue = number.format(scoreItem.getUnweightedRim1Scores());
-				ratioValue = number.format(scoreItem.getUnweightedRatio1Scores());
+				if(structure == 1)
+				{
+					entropyCoreValue = scoreItem.getUnweightedCore1Scores();
+					entropyRimValue = scoreItem.getUnweightedRim1Scores();
+					entropyRatioValue = scoreItem.getUnweightedRatio1Scores();
+				}
+				else
+				{
+					entropyCoreValue = scoreItem.getUnweightedCore2Scores();
+					entropyRimValue = scoreItem.getUnweightedRim2Scores();
+					entropyRatioValue = scoreItem.getUnweightedRatio2Scores();
+				}
 			}
-			else
-			{
-				coreValue = number.format(scoreItem.getUnweightedCore2Scores());
-				rimValue = number.format(scoreItem.getUnweightedRim2Scores());
-				ratioValue = number.format(scoreItem.getUnweightedRatio2Scores());
-			}
-			
-			coreMethodValues.put(scoreItem.getMethod(), coreValue);
-			rimMethodValues.put(scoreItem.getMethod(), rimValue);
-			ratioMethodValues.put(scoreItem.getMethod(), ratioValue);
 		}
 	
 		InterfaceResidueSummaryModel model = new InterfaceResidueSummaryModel();
@@ -163,11 +152,7 @@ public class ResiduesSummaryPanel extends ContentPanel
 		
 		model.setAsa(asa);
 		model.setBsa(bsa);
-		
-		for (SupportedMethod method : mainController.getSettings().getScoresTypes()) 
-		{
-			model.set(method.getName(), coreMethodValues.get(method.getName())); 
-		}
+		model.setEntropyScore(entropyCoreValue);
 		
 		interfaceSummaryItems.add(model);
 		
@@ -191,22 +176,14 @@ public class ResiduesSummaryPanel extends ContentPanel
 		
 		model.setAsa(asa);
 		model.setBsa(bsa);
-		
-		for (SupportedMethod method : mainController.getSettings().getScoresTypes()) 
-		{
-			model.set(method.getName(), rimMethodValues.get(method.getName())); 
-		}
+		model.setEntropyScore(entropyRimValue);
 		
 		interfaceSummaryItems.add(model);
 		
 		
 		model = new InterfaceResidueSummaryModel();
 		model.setTitle(MainController.CONSTANTS.interfaces_residues_aggergation_ratios());
-		
-		for (SupportedMethod method : mainController.getSettings().getScoresTypes()) 
-		{
-			model.set(method.getName(), ratioMethodValues.get(method.getName())); 
-		}
+		model.setEntropyScore(entropyRatioValue);
 		
 		interfaceSummaryItems.add(model);
 		

@@ -33,6 +33,14 @@ public class InterfaceResidueItemListener
 				interfaceResidueItemDB.setAsa(null);
 			}
 		}
+		
+		if(interfaceResidueItemDB.getEntropyScore() != null)
+		{
+			if(Float.isNaN(interfaceResidueItemDB.getEntropyScore()))
+			{
+				interfaceResidueItemDB.setEntropyScore(null);
+			}
+		}
 	}
 	
 	@PostLoad
@@ -51,6 +59,11 @@ public class InterfaceResidueItemListener
 		if(interfaceResidueItemDB.getAsa() == null)
 		{
 			interfaceResidueItemDB.setAsa(Float.NaN);
+		}
+		
+		if(interfaceResidueItemDB.getEntropyScore() == null)
+		{
+			interfaceResidueItemDB.setEntropyScore(Float.NaN);
 		}
 	}
 }

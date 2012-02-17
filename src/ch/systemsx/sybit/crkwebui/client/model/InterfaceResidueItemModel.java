@@ -19,7 +19,7 @@ public class InterfaceResidueItemModel extends BaseModel
 		set("bsa", "");
 		set("bsaPercentage", "");
 		set("assignment", "");
-		set("METHODS", "");
+		set("entropyScore", "");
 	}
 
 	public InterfaceResidueItemModel( int structure,
@@ -29,7 +29,8 @@ public class InterfaceResidueItemModel extends BaseModel
 									  float asa,
 									  float bsa,
 									  float bsaPercentage,
-									  int assignment) 
+									  int assignment,
+									  float entropyScore) 
 	{
 		set("structure", structure);
 		set("residueNumber", residueNumber);
@@ -39,7 +40,7 @@ public class InterfaceResidueItemModel extends BaseModel
 		set("bsa", bsa);
 		set("bsaPercentage", bsaPercentage);
 		set("assignment", assignment);
-		set("METHODS", "");
+		set("entropyScore", entropyScore);
 	}
 
 	public int getStructure() {
@@ -104,5 +105,13 @@ public class InterfaceResidueItemModel extends BaseModel
 	
 	public void setAssignment(int assignment) {
 		set("assignment", assignment);
+	}
+	
+	public void setEntropyScore(float entropyScore) {
+		set("entropyScore", entropyScore);
+	}
+	
+	public float getEntropyScore() {
+		return (Float) get("entropyScore");
 	}
 }

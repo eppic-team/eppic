@@ -26,6 +26,13 @@ public class NumberRenderer implements GridCellRenderer<BaseModel>
 						 ListStore<BaseModel> store, 
 						 final Grid<BaseModel> grid) 
 	{
-		return numberRenderer.render(null, property, model.get(property));  
+		String renderedNumber = numberRenderer.render(null, property, model.get(property));
+		
+		if((renderedNumber != null) && (renderedNumber.equals("NaN")))
+		{
+			renderedNumber = "-";
+		}
+		
+		return renderedNumber;
 	}
 }

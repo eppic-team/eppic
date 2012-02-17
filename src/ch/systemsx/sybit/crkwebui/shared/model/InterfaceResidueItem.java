@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import model.InterfaceResidueItemDB;
-import model.InterfaceResidueMethodItemDB;
 
 public class InterfaceResidueItem implements Serializable
 {
@@ -29,8 +28,7 @@ public class InterfaceResidueItem implements Serializable
 	private float bsa;
 	private float bsaPercentage;
 	private int assignment; // one of the constants above: SURFACE, RIM, CORE
-	
-	private List<InterfaceResidueMethodItem> interfaceResidueMethodItems;
+	private float entropyScore;
 
 	// residue number
 	// residue type
@@ -40,7 +38,7 @@ public class InterfaceResidueItem implements Serializable
 	//entropy
 	//KaKs
 	
-	public InterfaceResidueItem(int residueNumber, String pdbResidueNumber, String residueType, float asa, float bsa, float bsaPercentage, int assignment) {
+	public InterfaceResidueItem(int residueNumber, String pdbResidueNumber, String residueType, float asa, float bsa, float bsaPercentage, int assignment, float entropyScore) {
 		this.residueNumber = residueNumber;
 		this.pdbResidueNumber = pdbResidueNumber;
 		this.residueType = residueType;
@@ -48,6 +46,7 @@ public class InterfaceResidueItem implements Serializable
 		this.bsa = bsa;
 		this.bsaPercentage = bsaPercentage;
 		this.assignment = assignment;
+		this.entropyScore = entropyScore;
 	}
 	
 	public InterfaceResidueItem()
@@ -103,15 +102,6 @@ public class InterfaceResidueItem implements Serializable
 		this.assignment = assignment;
 	}
 	
-	public List<InterfaceResidueMethodItem> getInterfaceResidueMethodItems() {
-		return interfaceResidueMethodItems;
-	}
-
-	public void setInterfaceResidueMethodItems(
-			List<InterfaceResidueMethodItem> interfaceResidueMethodItems) {
-		this.interfaceResidueMethodItems = interfaceResidueMethodItems;
-	}
-
 	public void setStructure(int structure) {
 		this.structure = structure;
 	}
@@ -143,26 +133,20 @@ public class InterfaceResidueItem implements Serializable
 		interfaceResidueItem.setAssignment(interfaceResidueItemDB.getAssignment());
 		interfaceResidueItem.setBsa(interfaceResidueItemDB.getBsa());
 		interfaceResidueItem.setBsaPercentage(interfaceResidueItemDB.getBsaPercentage());
-		
-		if(interfaceResidueItemDB.getInterfaceResidueMethodItems() != null)
-		{
-			List<InterfaceResidueMethodItemDB> interfaceResidueMethodItemDBs = interfaceResidueItemDB.getInterfaceResidueMethodItems();
-			
-			List<InterfaceResidueMethodItem> interfaceResidueMethodItems = new ArrayList<InterfaceResidueMethodItem>();
-			
-			for(InterfaceResidueMethodItemDB interfaceResidueMethodItemDB : interfaceResidueMethodItemDBs)
-			{
-				interfaceResidueMethodItems.add(InterfaceResidueMethodItem.create(interfaceResidueMethodItemDB));
-			}
-			
-			interfaceResidueItem.setInterfaceResidueMethodItems(interfaceResidueMethodItems);
-		}
-		
+		interfaceResidueItem.setEntropyScore(interfaceResidueItemDB.getEntropyScore());
 		interfaceResidueItem.setResidueNumber(interfaceResidueItemDB.getResidueNumber());
 		interfaceResidueItem.setPdbResidueNumber(interfaceResidueItemDB.getPdbResidueNumber());
 		interfaceResidueItem.setResidueType(interfaceResidueItemDB.getResidueType());
 		interfaceResidueItem.setStructure(interfaceResidueItemDB.getStructure());
 		interfaceResidueItem.setUid(interfaceResidueItemDB.getUid());
 		return interfaceResidueItem;
+	}
+
+	public float getEntropyScore() {
+		return entropyScore;
+	}
+
+	public void setEntropyScore(float entropyScore) {
+		this.entropyScore = entropyScore;
 	}
 }

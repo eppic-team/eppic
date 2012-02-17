@@ -6,8 +6,6 @@ import java.util.List;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 import ch.systemsx.sybit.crkwebui.client.model.InterfaceResidueItemModel;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResidueItem;
-import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResidueMethodItem;
-import ch.systemsx.sybit.crkwebui.shared.model.SupportedMethod;
 
 import com.extjs.gxt.ui.client.GXT;
 import com.extjs.gxt.ui.client.Style.Scroll;
@@ -192,33 +190,7 @@ public class ResiduesPanel extends ContentPanel
 		if (residueValues != null) {
 			for (InterfaceResidueItem residueValue : residueValues) {
 				InterfaceResidueItemModel model = new InterfaceResidueItemModel();
-
-				for (SupportedMethod method : mainController.getSettings()
-						.getScoresTypes()) {
-					
-					String processedMethod = method.getName();
-					if(method.getName().equals("Entropy"))
-					{
-						processedMethod = "entropy";
-					}
-					else if(method.getName().equals("Geometry"))
-					{
-						processedMethod = "geometry";
-					}
-					else if(method.getName().equals("Z-scores"))
-					{
-						processedMethod = "zscores";
-					}
-					
-					for(InterfaceResidueMethodItem interfaceResidueMethodItem : residueValue.getInterfaceResidueMethodItems())
-					{
-						if(interfaceResidueMethodItem.getMethod().equals(processedMethod))
-						{
-							model.set(method.getName(), interfaceResidueMethodItem.getScore());
-						}
-					}
-				}
-				
+				model.setEntropyScore(residueValue.getEntropyScore());
 				model.setStructure(residueValue.getStructure());
 				model.setResidueNumber(residueValue.getResidueNumber());
 				model.setPdbResidueNumber(residueValue.getPdbResidueNumber());
