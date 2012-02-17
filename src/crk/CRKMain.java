@@ -364,8 +364,8 @@ public class CRKMain {
 			for (int i=0; i<directoryContent.length; i++) {
 				File source = new File(params.getOutDir(), directoryContent[i].getName());
 				
-				// we exclude the pse and pngs
-				if (source.getName().endsWith(".pse.gz") || source.getName().endsWith(".png")) 
+				// we exclude the pse and pngs and zip file (if there was one from an old run it would go into a self-reference and grow forever)
+				if (source.getName().endsWith(".pse.gz") || source.getName().endsWith(".png") || source.getName().endsWith(".zip")) 
 					continue;
 
 				if(source.isFile())	{
