@@ -326,7 +326,7 @@ public class CRKParams {
 	public void parseCommandLine(String[] args) throws CRKException {
 		
 		String help = "Usage: \n" +
-		PROGRAM_NAME+"\n" +
+		PROGRAM_NAME+" ver. "+PROGRAM_VERSION+"\n" +
 		"   -i          :  input PDB code or PDB file or mmCIF file\n" +
 		"  [-s]         :  score based on entropies. Using the entropy values both a core/rim\n" +
 		"                  score and a core/surface z-score are calculated \n"+
