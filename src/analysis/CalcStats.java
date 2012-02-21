@@ -172,9 +172,10 @@ public class CalcStats {
 		}
 		
 
+		ArrayList<PredictionStatsSet> bioPreds = null;
 		if (bioDir!=null) {
 			TreeMap<String,List<Integer>> bioToAnalyse = Utils.readListFile(bioList);
-			ArrayList<PredictionStatsSet> bioPreds = doPreds(bioToAnalyse,bioDir,CallType.BIO);
+			bioPreds = doPreds(bioToAnalyse,bioDir,CallType.BIO);
 			
 			System.out.println("Bio set: ");
 			PredictionStatsSet.printHeader(System.out);
@@ -184,9 +185,10 @@ public class CalcStats {
 		}
 		
 		
+		ArrayList<PredictionStatsSet> xtalPreds = null;
 		if (xtalDir!=null) {
 			TreeMap<String,List<Integer>> xtalToAnalyse = Utils.readListFile(xtalList);
-			ArrayList<PredictionStatsSet> xtalPreds = doPreds(xtalToAnalyse,xtalDir,CallType.CRYSTAL);
+			xtalPreds = doPreds(xtalToAnalyse,xtalDir,CallType.CRYSTAL);
 			
 			System.out.println("Xtal set: ");
 			PredictionStatsSet.printHeader(System.out);
@@ -195,7 +197,16 @@ public class CalcStats {
 			}
 		}
 
-		
+		if (bioDir!=null && xtalDir!=null) {
+			System.out.println("Global statistics for combined sets only: ");
+			PredictionStatsGlobalSet.printHeader(System.out);
+			for (int i=0;i<bioPreds.size();i++) {
+				if (bioPreds.get(i).scoType!=ScoringType.COMBINED) continue;
+				
+				PredictionStatsGlobalSet combPredStats = new PredictionStatsGlobalSet(bioPreds.get(i),xtalPreds.get(i));
+				combPredStats.print(System.out);
+			}
+		}
 
 		//System.out.println("Global: ");
 		//printStats(globalStats);
@@ -263,7 +274,8 @@ public class CalcStats {
 		for (int i=0;i<caCutoffsG.length;i++) {
 			for (int j=0;j<minNumberCoreResForBios.length;j++) {
 				list.add(new PredictionStatsSet(dir.getName(),truth,ScoringType.GEOMETRY,
-						caCutoffsG[i],minNumberCoreResForBios[j],-1,countBios[i][j],countXtals[i][j],total));
+						String.format("%4.2f",caCutoffsG[i]),String.format("%d",minNumberCoreResForBios[j]),
+						countBios[i][j],countXtals[i][j],total));
 			}
 		}
 		return list;
@@ -346,7 +358,8 @@ public class CalcStats {
 			for (int k=0;k<corerimCallCutoffs.length;k++) {
 				
 				list.add(new PredictionStatsSet(dir.getName(),truth,ScoringType.ENTROPY, 
-						caCutoffsCR[i],-1,corerimCallCutoffs[k],countBiosCR[i][k],countXtalsCR[i][k],total));
+						String.format("%4.2f",caCutoffsCR[i]),String.format("%4.2f",corerimCallCutoffs[k]),
+						countBiosCR[i][k],countXtalsCR[i][k],total));
 				
 			}
 		}
@@ -354,7 +367,8 @@ public class CalcStats {
 		for (int i=0;i<caCutoffsZ.length;i++) {
 			for (int k=0;k<zscoreCutoffs.length;k++) {
 				list.add(new PredictionStatsSet(dir.getName(),truth,ScoringType.ZSCORE, 
-						caCutoffsZ[i],-1,zscoreCutoffs[k],countBiosZ[i][k],countXtalsZ[i][k],total));
+						String.format("%4.2f",caCutoffsZ[i]),String.format("%5.2f",zscoreCutoffs[k]),
+						countBiosZ[i][k],countXtalsZ[i][k],total));
 			}
 		}
 		
@@ -362,8 +376,10 @@ public class CalcStats {
 			for (int k=0;k<corerimCallCutoffs.length;k++) {
 				for (int l=0;l<caCutoffsZ.length;l++) {
 					for (int m=0;m<zscoreCutoffs.length;m++) {
+						String caCutoffs = String.format("%4.2f,%4.2f",caCutoffsCR[i],caCutoffsZ[l]);
+						String callCutoffs = String.format("%4.2f,%5.2f",corerimCallCutoffs[k],zscoreCutoffs[m]);
 						list.add(new PredictionStatsSet(dir.getName(),truth,ScoringType.COMBINED, 
-								Double.NaN,-1,Double.NaN,countBiosComb[i][k][l][m],countXtalsComb[i][k][l][m],total));
+								caCutoffs,callCutoffs,countBiosComb[i][k][l][m],countXtalsComb[i][k][l][m],total));
 					
 					}
 				}
