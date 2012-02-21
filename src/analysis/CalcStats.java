@@ -201,10 +201,13 @@ public class CalcStats {
 			System.out.println("Global statistics for combined sets only: ");
 			PredictionStatsGlobalSet.printHeader(System.out);
 			for (int i=0;i<bioPreds.size();i++) {
-				if (bioPreds.get(i).scoType!=ScoringType.COMBINED) continue;
+				// we don't do it for the purely evol methods because there's the issue that we can't predict all cases (not enough homologs)
+				if (bioPreds.get(i).scoType==ScoringType.COMBINED ||
+					bioPreds.get(i).scoType==ScoringType.GEOMETRY) {  
 				
-				PredictionStatsGlobalSet combPredStats = new PredictionStatsGlobalSet(bioPreds.get(i),xtalPreds.get(i));
-				combPredStats.print(System.out);
+					PredictionStatsGlobalSet combPredStats = new PredictionStatsGlobalSet(bioPreds.get(i),xtalPreds.get(i));
+					combPredStats.print(System.out);
+				}
 			}
 		}
 
