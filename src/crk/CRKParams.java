@@ -36,7 +36,9 @@ public class CRKParams {
 	public static final int        MIN_NUMBER_CORE_RESIDUES_EVOL_SCORE = 4;
 	// value to use when core/rim ratio is infinity (rim score=0), some arbitrary large value, unlikely to happen in realistic cases
 	public static final double     SCORERATIO_INFINITY_VALUE = 1000;
-
+	// for sequences (strictly) below this length value no blast will be performed
+	public static final int		   MIN_SEQ_LENGTH_FOR_BLASTING = 7;
+	
 	// PROPERTY FILES
 	protected static final InputStream COLORS_PROPERTIES_IS = CRKParams.class.getResourceAsStream("/resources/chain_colors.dat");
 	protected static final InputStream PYMOL_COLOR_MAPPINGS_IS = CRKParams.class.getResourceAsStream("/resources/pymol.colors");

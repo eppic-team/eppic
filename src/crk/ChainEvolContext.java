@@ -578,6 +578,8 @@ public class ChainEvolContext implements Serializable {
 //	}
 	
 	private UniprotEntry findUniprotMapping(String blastBinDir, String blastDbDir, String blastDb, int blastNumThreads, double pdb2uniprotIdThreshold, double pdb2uniprotQcovThreshold) throws IOException, BlastException, InterruptedException {
+		// for too short sequence it doesn't make sense to blast
+		if (this.sequence.length()<CRKParams.MIN_SEQ_LENGTH_FOR_BLASTING) return null;
 		
 		File outBlast = File.createTempFile(BLAST_BASENAME,BLASTOUT_SUFFIX);
 		File inputSeqFile = File.createTempFile(BLAST_BASENAME,FASTA_SUFFIX);
