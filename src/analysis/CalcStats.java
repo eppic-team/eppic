@@ -367,7 +367,7 @@ public class CalcStats {
 		for (int i=0;i<caCutoffsZ.length;i++) {
 			for (int k=0;k<zscoreCutoffs.length;k++) {
 				list.add(new PredictionStatsSet(dir.getName(),truth,ScoringType.ZSCORE, 
-						String.format("%4.2f",caCutoffsZ[i]),String.format("%5.2f",zscoreCutoffs[k]),
+						String.format("%4.2f",caCutoffsZ[i]),String.format("%+5.2f",zscoreCutoffs[k]),
 						countBiosZ[i][k],countXtalsZ[i][k],total));
 			}
 		}
@@ -377,7 +377,7 @@ public class CalcStats {
 				for (int l=0;l<caCutoffsZ.length;l++) {
 					for (int m=0;m<zscoreCutoffs.length;m++) {
 						String caCutoffs = String.format("%4.2f,%4.2f",caCutoffsCR[i],caCutoffsZ[l]);
-						String callCutoffs = String.format("%4.2f,%5.2f",corerimCallCutoffs[k],zscoreCutoffs[m]);
+						String callCutoffs = String.format("%4.2f,%+5.2f",corerimCallCutoffs[k],zscoreCutoffs[m]);
 						list.add(new PredictionStatsSet(dir.getName(),truth,ScoringType.COMBINED, 
 								caCutoffs,callCutoffs,countBiosComb[i][k][l][m],countXtalsComb[i][k][l][m],total));
 					
