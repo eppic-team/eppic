@@ -278,10 +278,6 @@ public class ChainEvolContext implements Serializable {
 		homologs.writeAlignmentToFile(alnFile); 
 	}
 	
-	public void writeNucleotideAlignmentToFile(File alnFile) throws FileNotFoundException {
-		homologs.writeNucleotideAlignmentToFile(alnFile);
-	}
-	
 	public void writeHomologSeqsToFile(File outFile) throws FileNotFoundException {
 		homologs.writeToFasta(outFile, false);
 	}
@@ -308,15 +304,6 @@ public class ChainEvolContext implements Serializable {
 	}
 	
 	/**
-	 * Returns a multiple sequence alignment of all valid CDS sequences from the 
-	 * UniprotHomologList by mapping the CDS to the protein sequences alignment. 
-	 * @return
-	 */
-	public MultipleSequenceAlignment getNucleotideAlignment() {
-		return homologs.getNucleotideAlignment();
-	}
-	
-	/**
 	 * Returns a list of the conservation scores values, i.e. entropy or ka/ks ratios 
 	 * depending on scoType.
 	 * The sequence to which the list refers is the query Uniprot/CDS translated sequence, 
@@ -334,22 +321,6 @@ public class ChainEvolContext implements Serializable {
 		throw new IllegalArgumentException("Given scoring type "+scoType+" is not recognized ");
 
 	}
-	
-	/**
-	 * Compute the sequence ka/ks ratios with selecton for all reference CDS sequence positions
-	 * @param selectonBin
-	 * @param resultsFile
-	 * @param logFile
-	 * @param treeFile
-	 * @param globalResultsFile
-	 * @param epsilon
-	 * @throws IOException
-	 * @throws InterruptedException
-	 */
-	public void computeKaKsRatiosSelecton(File selectonBin, File resultsFile, File logFile, File treeFile, File globalResultsFile, double epsilon) 
-	throws IOException, InterruptedException {
-		homologs.computeKaKsRatiosSelecton(selectonBin, resultsFile, logFile, treeFile, globalResultsFile, epsilon);
-	}	
 	
 	/**
 	 * Compute the sequence entropies for all reference sequence (uniprot) positions
@@ -421,7 +392,7 @@ public class ChainEvolContext implements Serializable {
 		for (Homolog hom:homologs.getFilteredSubset()) {
 			ps.printf("%-13s",hom.getIdentifier());
 			ps.printf("\t%5.1f",hom.getPercentIdentity());
-			if (hom.isUniprot()) ps.print("\t"+hom.getUniprotEntry().getFirstTaxon()+"\t"+hom.getUniprotEntry().getLastTaxon());
+			if (hom.getUnirefEntry().hasTaxons()) ps.print("\t"+hom.getUnirefEntry().getFirstTaxon()+"\t"+hom.getUnirefEntry().getLastTaxon());
 			ps.println();
 		}
 	}
