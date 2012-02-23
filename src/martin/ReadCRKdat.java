@@ -26,17 +26,17 @@ public class ReadCRKdat {
 		
 		for (ChainEvolContext cec:cecs.getAllChainEvolContext()){
 			
-			System.out.println(cec.getQuery().getUniId());
+			System.out.println(cec.getQuery().getUniprotId());
 			
-			if (! (cec.getQuery().getUniId()).equalsIgnoreCase(args[1])){
+			if (! (cec.getQuery().getUniprotId()).equalsIgnoreCase(args[1])){
 				continue;
 			}
 			
 			
             List<Double> list = cec.getConservationScores(ScoringType.ENTROPY);
             
-            System.out.println("\n### "+cec.getQuery().getUniId());
-            Sequence seq = cec.getQuery().getUniprotSeq();
+            System.out.println("\n### "+cec.getQuery().getUniprotId());
+            Sequence seq = cec.getQuery().getSeq();
             
             System.out.println(seq);
             

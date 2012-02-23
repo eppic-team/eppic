@@ -23,12 +23,11 @@ import owl.core.runners.blast.BlastHit;
 import owl.core.runners.blast.BlastHitList;
 import owl.core.runners.blast.BlastRunner;
 import owl.core.runners.blast.BlastXMLParser;
-//import owl.core.sequence.ProteinToCDSMatch;
 import owl.core.sequence.Sequence;
-import owl.core.sequence.UniprotEntry;
 import owl.core.sequence.Homolog;
 import owl.core.sequence.HomologList;
 import owl.core.sequence.UniprotVerMisMatchException;
+import owl.core.sequence.UnirefEntry;
 import owl.core.sequence.alignment.MultipleSequenceAlignment;
 import owl.core.sequence.alignment.PairwiseSequenceAlignment;
 import owl.core.sequence.alignment.PairwiseSequenceAlignment.PairwiseSequenceAlignmentException;
@@ -59,7 +58,7 @@ public class ChainEvolContext implements Serializable {
 	private String pdbName;					// a name to identify the PDB, will be the pdbCode if a PDB entry or the file name without extension if from file
 	private String seqIdenticalChainsStr;	// a string of the form A(B,C,D,E) containing all represented sequence identical chains
 	
-	private UniprotEntry query;							// the uniprot id, seq, cds corresponding to this chain's sequence
+	private UnirefEntry query;							// the uniprot info (id,seq) corresponding to this chain's sequence
 	private Interval queryInterv;
 	private boolean hasQueryMatch;						// whether we could find the query's uniprot match or not
 	private PairwiseSequenceAlignment alnPdb2Uniprot; 	// the alignment between the pdb sequence and the uniprot sequence (query)
@@ -117,7 +116,8 @@ public class ChainEvolContext implements Serializable {
 					// we continue with a null query, i.e. we treat it in the same way as no match
 					query = null;
 				} else {
-					query = new UniprotEntry(uniqUniIds.iterator().next());
+					query = new UnirefEntry();
+					query.setUniprotId(uniqUniIds.iterator().next());
 				}
 
 			} catch (NoMatchFoundException e) {
@@ -135,25 +135,25 @@ public class ChainEvolContext implements Serializable {
 		
 		if (hasQueryMatch) {
 
-			LOGGER.info("Uniprot id for the query "+pdbCode+representativeChain+": "+query.getUniId());
+			LOGGER.info("Uniprot id for the query "+pdbCode+representativeChain+": "+query.getUniprotId());
 
 			// once we have the identifier we get the data from uniprot
 			try {
 				query.retrieveUniprotKBData();
 			} catch (NoMatchFoundException e) {
-				LOGGER.error("Couldn't find Uniprot id "+query.getUniId()+" through Uniprot JAPI. Obsolete?");
+				LOGGER.error("Couldn't find Uniprot id "+query.getUniprotId()+" through Uniprot JAPI. Obsolete?");
 				System.exit(1);
 			}
 
 			// and finally we align the 2 sequences (in case of mapping from SIFTS we rather do this than trusting the SIFTS alignment info)
 			try {
-				alnPdb2Uniprot = new PairwiseSequenceAlignment(sequence, query.getUniprotSeq().getSeq(), pdbCode+representativeChain, query.getUniprotSeq().getName());
+				alnPdb2Uniprot = new PairwiseSequenceAlignment(sequence, query.getSequence(), pdbCode+representativeChain, query.getUniprotId());
 				LOGGER.info("The PDB SEQRES to Uniprot alignmnent:\n"+getQueryPdbToUniprotAlnString());
 				LOGGER.info("Query ("+pdbCode+representativeChain+") length: "+sequence.length());
-				LOGGER.info("Uniprot ("+query.getUniId()+") length: "+query.getLength());
+				LOGGER.info("Uniprot ("+query.getUniprotId()+") length: "+query.getLength());
 				LOGGER.info("Alignment length: "+alnPdb2Uniprot.getLength());
 			} catch (PairwiseSequenceAlignmentException e1) {
-				LOGGER.fatal("Problem aligning PDB sequence "+pdbCode+representativeChain+" to its Uniprot match "+query.getUniId());
+				LOGGER.fatal("Problem aligning PDB sequence "+pdbCode+representativeChain+" to its Uniprot match "+query.getUniprotId());
 				LOGGER.fatal(e1.getMessage());
 				LOGGER.fatal("Can't continue");
 				System.exit(1);
@@ -191,7 +191,7 @@ public class ChainEvolContext implements Serializable {
 				queryInterv = new Interval(alnPdb2Uniprot.getFirstMatchingPos(false)+1,alnPdb2Uniprot.getLastMatchingPos(false)+1);
 				searchWithFullUniprot = false;
 				LOGGER.info("PDB sequence covers only "+String.format("%4.2f",(double)sequence.length()/(double)query.getLength())+
-						" of Uniprot "+query.getUniId()+
+						" of Uniprot "+query.getUniprotId()+
 						" (cutoff is "+String.format("%4.2f", pdb2uniprotMaxScovForLocal)+")");
 			} else {
 				searchWithFullUniprot = true;
@@ -264,7 +264,7 @@ public class ChainEvolContext implements Serializable {
 			// a cache file will look like  Q9UKX7.i60.c85.m60.1-109.aln (that corresponds to 3tj3C) 
 			//                              P52294.i60.c85.m60.aln       (that corresponds to 3tj3A)
 			// i=identity threshold used, c=query coverage, m=max num seqs, optional two last numbers are the subinterval
-			alnCacheFile = new File(params.getBlastCacheDir(),getQuery().getUniId()+
+			alnCacheFile = new File(params.getBlastCacheDir(),getQuery().getUniprotId()+
 					".i"+String.format("%2.0f", idCutoff*100.0)+
 					".c"+String.format("%2.0f", queryCov*100.0)+
 					".m"+params.getMaxNumSeqs()+
@@ -315,9 +315,6 @@ public class ChainEvolContext implements Serializable {
 		if (scoType.equals(ScoringType.ENTROPY)) {
 			return homologs.getEntropies();
 		}
-//		if (scoType.equals(ScoringType.KAKS)) {
-//			return homologs.getKaksRatios();
-//		}
 		throw new IllegalArgumentException("Given scoring type "+scoType+" is not recognized ");
 
 	}
@@ -349,9 +346,6 @@ public class ChainEvolContext implements Serializable {
 			if (scoType==ScoringType.ENTROPY) {
 				queryPos = getQueryUniprotPosForPDBPos(resSer); 
 			} 
-//			else if (scoType==ScoringType.KAKS) {
-//				queryPos = getQueryCDSPosForPDBPos(resSer);
-//			}
 			if (queryPos!=-1) {   
 				double weight = 1.0;
 				if (weighted) {
@@ -383,7 +377,7 @@ public class ChainEvolContext implements Serializable {
 	public void printSummary(PrintStream ps) {
 		ps.println("Query: "+pdbName+representativeChain);
 		ps.println("Uniprot id for query:");
-		ps.println(this.query.getUniId()+"\t"+this.query.getFirstTaxon()+"\t"+this.query.getLastTaxon());
+		ps.println(this.query.getUniprotId()+"\t"+this.query.getFirstTaxon()+"\t"+this.query.getLastTaxon());
 		ps.println();
 		
 		ps.println("Uniprot version: "+homologs.getUniprotVer());
@@ -402,10 +396,6 @@ public class ChainEvolContext implements Serializable {
 			ps.println("# Entropies for all query sequence positions based on a "+homologs.getReducedAlphabet()+" letters alphabet.");
 			ps.println("# seqres\tpdb\tuniprot\tentropy");
 		} 
-//		else if (scoType.equals(ScoringType.KAKS)){
-//			ps.println("# Ka/Ks for all query sequence positions.");
-//			ps.println("# seqres\tpdb\ttranslated-CDS\tka/ks");
-//		}
 		PdbChain chain = pdb.getChain(representativeChain);
 		List<Double> conservationScores = getConservationScores(scoType);
 		for (int i=0;i<conservationScores.size();i++) {
@@ -413,9 +403,6 @@ public class ChainEvolContext implements Serializable {
 			if (scoType.equals(ScoringType.ENTROPY)) {
 				resser = getPDBPosForQueryUniprotPos(i);
 			} 
-//			else if (scoType.equals(ScoringType.KAKS)){
-//				resser = getPDBPosForQueryCDSPos(i);
-//			}
 			String pdbresser = chain.getPdbResSerFromResSer(resser);
 			ps.printf("%4d\t%4s\t%4d\t%5.2f\n",resser,pdbresser,i+1,conservationScores.get(i));
 		}
@@ -434,29 +421,6 @@ public class ChainEvolContext implements Serializable {
 		return sequence;
 	}
 	
-//	public int getNumHomologsWithCDS() {
-//		if (homologs==null) return 0;
-//		return homologs.getNumHomologsWithCDS();
-//	}
-	
-//	public int getNumHomologsWithValidCDS() {
-//		if (homologs==null) return 0;
-//		return homologs.getNumHomologsWithValidCDS();
-//	}
-
-//	/**
-//	 * Gets the ProteinToCDSMatch of the best CDS match for the query protein.  
-//	 * @return
-//	 */
-//	public ProteinToCDSMatch getQueryRepCDS() {
-//		ProteinToCDSMatch seq = this.query.getRepresentativeCDS();
-//		return seq;
-//	}
-	
-//	public boolean isConsistentGeneticCodeType() {
-//		return this.homologs.isConsistentGeneticCodeType();
-//	}
-	
 	/**
 	 * Tells whether a given position of the reference PDB sequence (starting at 1)
 	 * is reliable with respect to:
@@ -471,26 +435,6 @@ public class ChainEvolContext implements Serializable {
 		}
 		return true;
 	}
-	
-//	/**
-//	 * Tells whether a given position of the reference PDB sequence (starting at 1)
-//	 * is reliable with respect to:
-//	 * a) the CDS matching of the reference sequence (not reliable if CDS translation doesn't match exactly the protein residue)
-//	 * b) the CDS matchings of the homologs (not reliable if CDS translation doesn't match exactly the protein residue)
-//	 * @param resser the (cif) PDB residue serial corresponding to the SEQRES record, starting at 1
-//	 * @return
-//	 */
-//	public boolean isPdbSeqPositionReliable(int resser) {
-//		// we map the pdb resser to the uniprot sequence position and check whether it is reliable CDS-wise for all homologs
-//		int uniprotPos = getQueryUniprotPosForPDBPos(resser);
-//		if (uniprotPos==-1) {
-//			return false; // if it maps to a gap then we have no info whatsoever from CDSs, totally unreliable
-//		}
-//		if (!homologs.isReferenceSeqPositionReliable(uniprotPos)) {
-//			return false;
-//		}
-//		return true;		
-//	}
 	
 	/**
 	 * Given a residue serial of the reference PDB SEQRES sequence (starting at 1), returns
@@ -520,35 +464,7 @@ public class ChainEvolContext implements Serializable {
 		return alnPdb2Uniprot.getMapping2To1(queryPos)+1;
 	}
 	
-//	/**
-//	 * Given a residue serial of the reference PDB SEQRES sequence (starting at 1), returns 
-//	 * its corresponding representative-translated-CDS sequence index (starting at 0)  
-//	 * @param resser
-//	 * @return the mapped translated-CDS sequence position or -1 if it maps to a gap
-//	 */
-//	public int getQueryCDSPosForPDBPos(int resser) {
-//		int uniprotPos = getQueryUniprotPosForPDBPos(resser);
-//		if (uniprotPos==-1) {
-//			return -1;
-//		}
-//		return this.getQueryRepCDS().getBestTranslation().getAln().getMapping1To2(uniprotPos);
-//	}
-	
-//	/**
-//	 * Given a sequence index of the query's representative-translated CDS sequence (starting at 0), 
-//	 * returns its corresponding residue serial of the reference PDB SEQRES sequence (starting at 1). 
-//	 * @param queryPos
-//	 * @return the mapped PDB SEQRES sequence position or -1 if it maps to a gap
-//	 */
-//	public int getPDBPosForQueryCDSPos(int queryPos) {
-//		int uniprotPos = this.getQueryRepCDS().getBestTranslation().getAln().getMapping2To1(queryPos);
-//		if (uniprotPos==-1){
-//			return -1;
-//		}
-//		return this.getPDBPosForQueryUniprotPos(uniprotPos);
-//	}
-	
-	private UniprotEntry findUniprotMapping(String blastBinDir, String blastDbDir, String blastDb, int blastNumThreads, double pdb2uniprotIdThreshold, double pdb2uniprotQcovThreshold) throws IOException, BlastException, InterruptedException {
+	private UnirefEntry findUniprotMapping(String blastBinDir, String blastDbDir, String blastDb, int blastNumThreads, double pdb2uniprotIdThreshold, double pdb2uniprotQcovThreshold) throws IOException, BlastException, InterruptedException {
 		// for too short sequence it doesn't make sense to blast
 		if (this.sequence.length()<CRKParams.MIN_SEQ_LENGTH_FOR_BLASTING) return null;
 		
@@ -576,7 +492,7 @@ public class ChainEvolContext implements Serializable {
 			System.exit(1);
 		}
 
-		UniprotEntry uniprotMapping = null;
+		UnirefEntry uniprotMapping = null;
 		BlastHit best = blastList.getBestHit(); // if null then list was empty, no hits at all
 		if (best!=null && (best.getTotalPercentIdentity()/100.0)>pdb2uniprotIdThreshold && best.getQueryCoverage()>pdb2uniprotQcovThreshold) {
 			
@@ -584,7 +500,8 @@ public class ChainEvolContext implements Serializable {
 			Matcher m = Sequence.DEFLINE_PRIM_ACCESSION_REGEX.matcher(sid);
 			if (m.matches()) {
 				String uniId = m.group(1);
-				uniprotMapping = new UniprotEntry(uniId);
+				uniprotMapping = new UnirefEntry();
+				uniprotMapping.setUniprotId(uniId);
 			} else {
 				Matcher m2 = Sequence.DEFLINE_PRIM_ACCESSION_UNIREF_REGEX.matcher(sid);
 				if (m2.matches()) {
@@ -592,7 +509,8 @@ public class ChainEvolContext implements Serializable {
 					if (uniId.startsWith("UPI") || uniId.contains("-")) {
 						LOGGER.error("Best blast hit "+uniId+" is a Uniparc id or a Uniprot isoform id. No Uniprot match");						
 					} else {
-						uniprotMapping = new UniprotEntry(uniId);
+						uniprotMapping = new UnirefEntry();
+						uniprotMapping.setUniprotId(uniId);
 					}
 				} else {
 					LOGGER.error("Could not find Uniprot id in subject id "+sid+". No Uniprot match");
@@ -611,22 +529,6 @@ public class ChainEvolContext implements Serializable {
 		return uniprotMapping;
 	}
 
-//	/**
-//	 * Tells whether Ka/Ks analysis is possible for this chain.
-//	 * Ka/Ks analysis will not be possible in following cases: 
-//	 * - no uniprot query match 
-//	 * - no representative CDS for the query 
-//	 * - no consistency in genetic code types in homologs
-//	 * @return
-//	 */
-//	public boolean canDoKaks() {
-//		boolean canDoKaks = true;
-//		if (!hasQueryMatch() || !this.homologs.hasCDSData() || getQueryRepCDS()==null || !isConsistentGeneticCodeType()) {
-//			canDoKaks = false;
-//		}
-//		return canDoKaks;
-//	}
-	
 	/**
 	 * Gets the PDB identifier: a PDB code if query was a PDB entry or a PDB file name. 
 	 * @return
@@ -659,7 +561,7 @@ public class ChainEvolContext implements Serializable {
 	 * The uniprot match for the query, use {@link #hasQueryMatch()} to check whether this can be called. 
 	 * @return
 	 */
-	public UniprotEntry getQuery() {
+	public UnirefEntry getQuery() {
 		return query;
 	}
 	

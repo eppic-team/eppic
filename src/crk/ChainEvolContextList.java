@@ -142,7 +142,7 @@ public class ChainEvolContextList implements Serializable {
 			
 			File blastCacheFile = null;
 			if (params.getBlastCacheDir()!=null) {
-				blastCacheFile = new File(params.getBlastCacheDir(),chainEvCont.getQuery().getUniId()+".blast.xml"); 
+				blastCacheFile = new File(params.getBlastCacheDir(),chainEvCont.getQuery().getUniprotId()+".blast.xml"); 
 			}
 			try {
 				chainEvCont.retrieveHomologs(params, blastCacheFile);

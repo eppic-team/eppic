@@ -194,7 +194,7 @@ public class WebUIDataAdaptor {
 			homInfo.setChains(cec.getSeqIndenticalChainStr());
 			if (cec.hasQueryMatch()) { //all other fields remain null otherwise
 				homInfo.setNumHomologs(cec.getNumHomologs());
-				homInfo.setUniprotId(cec.getQuery().getUniId()); 
+				homInfo.setUniprotId(cec.getQuery().getUniprotId()); 
 				if (!cec.isSearchWithFullUniprot()) { 
 					homInfo.setSubInterval(cec.getQueryInterval().beg+"-"+cec.getQueryInterval().end);
 				}

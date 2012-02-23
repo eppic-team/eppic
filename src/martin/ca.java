@@ -36,14 +36,14 @@ public class ca {
         for (ChainEvolContext cec:cecs.getAllChainEvolContext()){
         	SecondaryStructure ss = null;
         	
-			if (! (cec.getQuery().getUniId()).equalsIgnoreCase(uniprotCode)){
+			if (! (cec.getQuery().getUniprotId()).equalsIgnoreCase(uniprotCode)){
 				continue;
 			}
 			
 			List<Double> listEnt = cec.getConservationScores(ScoringType.ENTROPY);
 			List<Double> listKaK = cec.getConservationScores(ScoringType.KAKS);
 				
-			Sequence seq = cec.getQuery().getUniprotSeq();
+			Sequence seq = cec.getQuery().getSeq();
 			String seqStr = seq.getSeq();
 			File fastaFile = new File("/tmp/tmp.fasta");
 			seq.writeToFastaFile(fastaFile);
@@ -59,12 +59,12 @@ public class ca {
 			List<Integer> sssymb = SecStruToInt(cec,listEnt,ss);
 
 	
-			String outfile = "/afs/psi.ch/project/fim/projects/ca/selection/rcsb/values_"+cec.getQuery().getUniId()+".txt";
+			String outfile = "/afs/psi.ch/project/fim/projects/ca/selection/rcsb/values_"+cec.getQuery().getUniprotId()+".txt";
 			//String outfile = "values_"+cec.getQuery().getUniId()+".txt";
 			
 			FileWriter fstream = new FileWriter(outfile);
 			PrintWriter output = new PrintWriter(fstream);
-			output.println("#"+cec.getQuery().getUniId());
+			output.println("#"+cec.getQuery().getUniprotId());
 			output.printf("%s %3s %9s %8s %10s %n", "# Nr", "Aa","Entropy","KaKs","SecStr");
 
 			for (int i = 0; i < listEnt.size(); i++) {
