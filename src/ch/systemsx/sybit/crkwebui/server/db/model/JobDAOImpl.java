@@ -611,6 +611,8 @@ public class JobDAOImpl implements JobDAO
 		{
 			entityManager = EntityManagerHandler.getEntityManager();
 			entityManager.getTransaction().begin();
+			entityManager.persist(pdbScoreItem);
+			
 			Query query = entityManager.createQuery("from Job WHERE jobId=:jobId", JobDB.class);
 			query.setParameter("jobId", jobId);
 			JobDB job = (JobDB)query.getSingleResult();
