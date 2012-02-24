@@ -16,6 +16,7 @@ import org.xml.sax.SAXException;
 
 import owl.core.connections.NoMatchFoundException;
 import owl.core.connections.SiftsConnection;
+import owl.core.connections.UniProtConnection;
 import owl.core.features.SiftsFeature;
 import owl.core.runners.TcoffeeException;
 import owl.core.runners.blast.BlastException;
@@ -69,6 +70,8 @@ public class ChainEvolContext implements Serializable {
 	private HomologList homologs;	// the homologs of this chain's sequence
 		
 	private boolean searchWithFullUniprot;  // mode of searching, true=we search with full uniprot seq, false=we search with PDB matching part only
+	
+	private transient UniProtConnection uniprotJapiConn;
 
 	public ChainEvolContext(String sequence, String representativeChain, String pdbCode, String pdbName) {
 		this.pdbCode = pdbCode;
@@ -77,6 +80,7 @@ public class ChainEvolContext implements Serializable {
 		this.representativeChain = representativeChain;
 		this.hasQueryMatch = false;
 		this.searchWithFullUniprot = true;
+		this.uniprotJapiConn = new UniProtConnection();
 	}
 	
 	/**
@@ -93,6 +97,9 @@ public class ChainEvolContext implements Serializable {
 	 */
 	public void retrieveQueryData(String siftsLocation, String blastBinDir, String blastDbDir, String blastDb, int blastNumThreads, double pdb2uniprotIdThreshold, double pdb2uniprotQcovThreshold) 
 	throws IOException, BlastException, InterruptedException {
+		
+		String queryUniprotId = null;
+		query = null;
 		
 		// two possible cases: 
 		// 1) PDB code known and so SiftsFeatures can be taken from SiftsConnection
@@ -114,32 +121,31 @@ public class ChainEvolContext implements Serializable {
 					LOGGER.error(msg);
 					LOGGER.error("Check if the PDB entry is biologically reasonable (likely to be an engineered entry). Won't do evolution analysis on this chain.");
 					// we continue with a null query, i.e. we treat it in the same way as no match
-					query = null;
+					queryUniprotId = null;
 				} else {
-					query = new UnirefEntry();
-					query.setUniprotId(uniqUniIds.iterator().next());
+					queryUniprotId = uniqUniIds.iterator().next();
 				}
 
 			} catch (NoMatchFoundException e) {
 				LOGGER.warn("No SIFTS mapping could be found for "+pdbCode+representativeChain);
 				LOGGER.info("Trying blasting to find one.");
-				query = findUniprotMapping(blastBinDir, blastDbDir, blastDb, blastNumThreads, pdb2uniprotIdThreshold, pdb2uniprotQcovThreshold);
+				queryUniprotId = findUniprotMapping(blastBinDir, blastDbDir, blastDb, blastNumThreads, pdb2uniprotIdThreshold, pdb2uniprotQcovThreshold);  
 			}
 		// 2) PDB code not known and so SiftsFeatures have to be found by blasting, aligning etc.
 		} else {
 			LOGGER.info("No PDB code available. Can't use SIFTS. Blasting to find the query's Uniprot mapping.");
-			query = findUniprotMapping(blastBinDir, blastDbDir, blastDb, blastNumThreads, pdb2uniprotIdThreshold, pdb2uniprotQcovThreshold);
+			queryUniprotId = findUniprotMapping(blastBinDir, blastDbDir, blastDb, blastNumThreads, pdb2uniprotIdThreshold, pdb2uniprotQcovThreshold);
 		}
 		
-		if (query!=null) hasQueryMatch = true;
+		if (queryUniprotId!=null) hasQueryMatch = true;
 		
 		if (hasQueryMatch) {
 
-			LOGGER.info("Uniprot id for the query "+pdbCode+representativeChain+": "+query.getUniprotId());
+			LOGGER.info("Uniprot id for the query "+pdbCode+representativeChain+": "+queryUniprotId);
 
 			// once we have the identifier we get the data from uniprot
 			try {
-				query.retrieveUniprotKBData();
+				query = uniprotJapiConn.getUnirefEntry(queryUniprotId);				
 			} catch (NoMatchFoundException e) {
 				LOGGER.error("Couldn't find Uniprot id "+query.getUniprotId()+" through Uniprot JAPI. Obsolete?");
 				System.exit(1);
@@ -231,7 +237,7 @@ public class ChainEvolContext implements Serializable {
 	 * @throws UniprotVerMisMatchException
 	 */
 	public void retrieveHomologsData() throws IOException, UniprotVerMisMatchException {
-		homologs.retrieveUniprotKBData();
+		homologs.retrieveUniprotKBData(uniprotJapiConn);
 		homologs.retrieveUniparcData(null);
 	}
 	
@@ -464,7 +470,7 @@ public class ChainEvolContext implements Serializable {
 		return alnPdb2Uniprot.getMapping2To1(queryPos)+1;
 	}
 	
-	private UnirefEntry findUniprotMapping(String blastBinDir, String blastDbDir, String blastDb, int blastNumThreads, double pdb2uniprotIdThreshold, double pdb2uniprotQcovThreshold) throws IOException, BlastException, InterruptedException {
+	private String findUniprotMapping(String blastBinDir, String blastDbDir, String blastDb, int blastNumThreads, double pdb2uniprotIdThreshold, double pdb2uniprotQcovThreshold) throws IOException, BlastException, InterruptedException {
 		// for too short sequence it doesn't make sense to blast
 		if (this.sequence.length()<CRKParams.MIN_SEQ_LENGTH_FOR_BLASTING) return null;
 		
@@ -492,7 +498,7 @@ public class ChainEvolContext implements Serializable {
 			System.exit(1);
 		}
 
-		UnirefEntry uniprotMapping = null;
+		String uniprotMapping = null;
 		BlastHit best = blastList.getBestHit(); // if null then list was empty, no hits at all
 		if (best!=null && (best.getTotalPercentIdentity()/100.0)>pdb2uniprotIdThreshold && best.getQueryCoverage()>pdb2uniprotQcovThreshold) {
 			
@@ -500,8 +506,7 @@ public class ChainEvolContext implements Serializable {
 			Matcher m = Sequence.DEFLINE_PRIM_ACCESSION_REGEX.matcher(sid);
 			if (m.matches()) {
 				String uniId = m.group(1);
-				uniprotMapping = new UnirefEntry();
-				uniprotMapping.setUniprotId(uniId);
+				uniprotMapping = uniId;
 			} else {
 				Matcher m2 = Sequence.DEFLINE_PRIM_ACCESSION_UNIREF_REGEX.matcher(sid);
 				if (m2.matches()) {
@@ -509,8 +514,7 @@ public class ChainEvolContext implements Serializable {
 					if (uniId.startsWith("UPI") || uniId.contains("-")) {
 						LOGGER.error("Best blast hit "+uniId+" is a Uniparc id or a Uniprot isoform id. No Uniprot match");						
 					} else {
-						uniprotMapping = new UnirefEntry();
-						uniprotMapping.setUniprotId(uniId);
+						uniprotMapping = uniId;
 					}
 				} else {
 					LOGGER.error("Could not find Uniprot id in subject id "+sid+". No Uniprot match");
