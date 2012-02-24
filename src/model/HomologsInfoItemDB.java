@@ -1,6 +1,7 @@
 package model;
 
 import java.io.Serializable;
+import java.util.List;
 
 public class HomologsInfoItemDB implements Serializable 
 {
@@ -19,6 +20,11 @@ public class HomologsInfoItemDB implements Serializable
 	private String alignedSeq1;
 	private String alignedSeq2;
 	private String markupLine;
+	
+	private boolean hasQueryMatch;	
+	private List<String> queryWarnings;
+	
+	private double idCutoffUsed;
 	
 	private PDBScoreItemDB pdbScoreItem;
 	
@@ -116,6 +122,30 @@ public class HomologsInfoItemDB implements Serializable
 
 	public void setMarkupLine(String markupLine) {
 		this.markupLine = markupLine;
+	}
+
+	public boolean isHasQueryMatch() {
+		return hasQueryMatch;
+	}
+
+	public void setHasQueryMatch(boolean hasQueryMatch) {
+		this.hasQueryMatch = hasQueryMatch;
+	}
+
+	public List<String> getQueryWarnings() {
+		return queryWarnings;
+	}
+
+	public void setQueryWarnings(List<String> queryWarnings) {
+		this.queryWarnings = queryWarnings;
+	}
+
+	public double getIdCutoffUsed() {
+		return idCutoffUsed;
+	}
+
+	public void setIdCutoffUsed(double idCutoffUsed) {
+		this.idCutoffUsed = idCutoffUsed;
 	}
 
 

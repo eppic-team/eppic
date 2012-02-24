@@ -192,7 +192,10 @@ public class WebUIDataAdaptor {
 		for (ChainEvolContext cec:cecl.getAllChainEvolContext()) {
 			HomologsInfoItemDB homInfo = new HomologsInfoItemDB();
 			homInfo.setChains(cec.getSeqIndenticalChainStr());
+			homInfo.setHasQueryMatch(cec.hasQueryMatch());
+			homInfo.setQueryWarnings(cec.getQueryWarnings());
 			if (cec.hasQueryMatch()) { //all other fields remain null otherwise
+				
 				homInfo.setNumHomologs(cec.getNumHomologs());
 				homInfo.setUniprotId(cec.getQuery().getUniprotId()); 
 				if (!cec.isSearchWithFullUniprot()) { 
@@ -201,11 +204,13 @@ public class WebUIDataAdaptor {
 				homInfo.setAlignedSeq1(cec.getPdb2uniprotAln().getAlignedSequences()[0]);
 				homInfo.setMarkupLine(String.valueOf(cec.getPdb2uniprotAln().getMarkupLine()));
 				homInfo.setAlignedSeq2(cec.getPdb2uniprotAln().getAlignedSequences()[1]);
-				homInfos.add(homInfo);
-			}
+				homInfo.setIdCutoffUsed(cec.getIdCutoff());
+			} 
+
 			homInfo.setPdbScoreItem(pdbScoreItem);
-			
+			homInfos.add(homInfo);	
 		}
+		
 		pdbScoreItem.setHomologsInfoItems(homInfos);
 		
 

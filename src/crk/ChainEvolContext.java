@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -71,6 +72,8 @@ public class ChainEvolContext implements Serializable {
 		
 	private boolean searchWithFullUniprot;  // mode of searching, true=we search with full uniprot seq, false=we search with PDB matching part only
 	
+	private List<String> queryWarnings;
+	
 	private transient UniProtConnection uniprotJapiConn;
 
 	public ChainEvolContext(String sequence, String representativeChain, String pdbCode, String pdbName) {
@@ -81,6 +84,7 @@ public class ChainEvolContext implements Serializable {
 		this.hasQueryMatch = false;
 		this.searchWithFullUniprot = true;
 		this.uniprotJapiConn = new UniProtConnection();
+		this.queryWarnings = new ArrayList<String>();
 	}
 	
 	/**
@@ -113,13 +117,21 @@ public class ChainEvolContext implements Serializable {
 					uniqUniIds.add(sifts.getUniprotId());
 				}
 				if (uniqUniIds.size()>1) {
-					LOGGER.error("More than one uniprot SIFTS mapping for the query PDB code "+pdbCode);
+					LOGGER.error("More than one uniprot SIFTS mapping for the query PDB code "+pdbCode+" chain "+representativeChain);
 					String msg = ("Uniprot IDs are: ");
 					for (String uniId:uniqUniIds){
 						msg+=(uniId+" ");
 					}
 					LOGGER.error(msg);
 					LOGGER.error("Check if the PDB entry is biologically reasonable (likely to be an engineered entry). Won't do evolution analysis on this chain.");
+					
+					String warning = "More than one UniProt ids correspond to chain "+representativeChain+": ";
+					for (String uniId:uniqUniIds){
+						warning+=(uniId+" ");
+					}
+					warning+=". This is most likely a chimeric chain";
+					queryWarnings.add(warning);
+
 					// we continue with a null query, i.e. we treat it in the same way as no match
 					queryUniprotId = null;
 				} else {
@@ -511,7 +523,8 @@ public class ChainEvolContext implements Serializable {
 				if (m2.matches()) {
 					String uniId = m2.group(1);
 					if (uniId.startsWith("UPI") || uniId.contains("-")) {
-						LOGGER.error("Best blast hit "+uniId+" is a Uniparc id or a Uniprot isoform id. No Uniprot match");						
+						LOGGER.error("Best blast hit "+uniId+" is a Uniparc id or a Uniprot isoform id. No Uniprot match");
+						queryWarnings.add("Best blast hit "+uniId+" is a Uniparc id or a Uniprot isoform id. No Uniprot match.");
 					} else {
 						uniprotMapping = uniId;
 					}
@@ -528,6 +541,8 @@ public class ChainEvolContext implements Serializable {
 				LOGGER.error("Alignment: ");
 				LOGGER.error(best.getMaxScoringHsp().getAlignment().getFastaString(null, true));
 			}
+			queryWarnings.add("Blast didn't find a UniProt match for the chain. Best match was "+best.getSubjectId()+", with "+
+					String.format("%5.2f%% id and %4.2f coverage",best.getTotalPercentIdentity(),best.getQueryCoverage()));
 		}
 		return uniprotMapping;
 	}
@@ -599,5 +614,13 @@ public class ChainEvolContext implements Serializable {
 	 */
 	public double getIdCutoff() {
 		return idCutoff;
+	}
+	
+	/**
+	 * Returns a list of strings containing warnings related to the query sequence matching
+	 * @return
+	 */
+	public List<String> getQueryWarnings() {
+		return queryWarnings;
 	}
 }
