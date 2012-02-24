@@ -146,13 +146,8 @@ public class ChainEvolContext implements Serializable {
 			// once we have the identifier we get the data from uniprot
 			try {
 				query = uniprotJapiConn.getUnirefEntry(queryUniprotId);				
-			} catch (NoMatchFoundException e) {
-				LOGGER.error("Couldn't find Uniprot id "+query.getUniprotId()+" through Uniprot JAPI. Obsolete?");
-				System.exit(1);
-			}
 
-			// and finally we align the 2 sequences (in case of mapping from SIFTS we rather do this than trusting the SIFTS alignment info)
-			try {
+				// and finally we align the 2 sequences (in case of mapping from SIFTS we rather do this than trusting the SIFTS alignment info)
 				alnPdb2Uniprot = new PairwiseSequenceAlignment(sequence, query.getSequence(), pdbCode+representativeChain, query.getUniprotId());
 				LOGGER.info("The PDB SEQRES to Uniprot alignmnent:\n"+getQueryPdbToUniprotAlnString());
 				LOGGER.info("Query ("+pdbCode+representativeChain+") length: "+sequence.length());
@@ -163,6 +158,10 @@ public class ChainEvolContext implements Serializable {
 				LOGGER.fatal(e1.getMessage());
 				LOGGER.fatal("Can't continue");
 				System.exit(1);
+			}  catch (NoMatchFoundException e) {
+				LOGGER.error("Couldn't find Uniprot id "+query.getUniprotId()+" through Uniprot JAPI. Obsolete?");
+				query = null;
+				hasQueryMatch = false;
 			}
 		}
 		// TODO anyway we should do also a sanity check of our alignment against the SIFTS mappings (if we have them) 
