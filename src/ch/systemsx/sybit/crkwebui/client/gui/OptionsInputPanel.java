@@ -45,7 +45,6 @@ public class OptionsInputPanel extends FieldSet
 	private ListStore<SearchModeComboModel> searchModeValues;
 	private ComboBox<SearchModeComboModel> searchModeCombo;
 	private NumberField maxNrOfSequences;
-	private NumberField asaCalcParam;
 	private FieldSet[] methodsFieldsets;
 	
 	private int LABEL_WIDTH = 200;
@@ -269,32 +268,11 @@ public class OptionsInputPanel extends FieldSet
 
 		this.add(allignmentsParametersFieldSet);
 
-		FormLayout othersParametersFieldSetLayout = new FormLayout();
-		othersParametersFieldSetLayout.setLabelWidth(200);
-
-		FieldSet othersParametersFieldSet = new FieldSet();
-		othersParametersFieldSet.setHeading(MainController.CONSTANTS
-				.parameters_others());
-		othersParametersFieldSet.setLayout(othersParametersFieldSetLayout);
-
-		asaCalcParam = new NumberField();
-		asaCalcParam.setFieldLabel(MainController.CONSTANTS
-				.parameters_asa_calc());
-		asaCalcParam.setAllowBlank(false);
-		asaCalcParam.setAllowNegative(false);
-		asaCalcParam.setPropertyEditorType(Integer.class);
-		asaCalcParam.addPlugin(plugin);
-		asaCalcParam.setData("hint", MainController.CONSTANTS.parameters_asa_calc_hint());
-		othersParametersFieldSet.add(asaCalcParam, formData);
-
-		this.add(othersParametersFieldSet);
-
 		fillDefaultValues(defaultInputParameters);
 	}
 
 	public void fillDefaultValues(InputParameters defaultParameters) 
 	{
-		asaCalcParam.setValue(defaultParameters.getAsaCalc());
 		softIdentityCutOff.setValue(defaultParameters.getSoftIdentityCutoff());
 		hardIdentityCutOff.setValue(defaultParameters.getHardIdentityCutoff());
 		
@@ -329,7 +307,6 @@ public class OptionsInputPanel extends FieldSet
 	public InputParameters getCurrentInputParameters() 
 	{
 		InputParameters currentInputParameters = new InputParameters();
-		currentInputParameters.setAsaCalc(asaCalcParam.getValue().intValue());
 		currentInputParameters.setSoftIdentityCutoff(softIdentityCutOff.getValue()
 				.floatValue());
 		currentInputParameters.setHardIdentityCutoff(hardIdentityCutOff.getValue()

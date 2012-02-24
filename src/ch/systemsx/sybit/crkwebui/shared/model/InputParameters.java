@@ -18,7 +18,6 @@ public class InputParameters implements Serializable
 
 	private List<String> methods;
 
-	private int asaCalc;
 	private int maxNrOfSequences;
 	private int reducedAlphabet;
 	private String searchMode;
@@ -37,14 +36,6 @@ public class InputParameters implements Serializable
 
 	public void setMethods(List<String> methods) {
 		this.methods = methods;
-	}
-
-	public int getAsaCalc() {
-		return asaCalc;
-	}
-
-	public void setAsaCalc(int asaCalc) {
-		this.asaCalc = asaCalc;
 	}
 
 	public int getMaxNrOfSequences() {

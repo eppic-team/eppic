@@ -51,9 +51,7 @@ public interface AppProperties extends Constants
 	String parameters_search_mode();
 	String parameters_search_mode_hint();
 	String parameters_others();
-	String parameters_asa_calc();
 	String parameters_max_num_sequences_hint();
-	String parameters_asa_calc_hint();
 	String parameters_use_naccess_hint();
 	
 	String status_panel_jobId();

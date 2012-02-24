@@ -21,7 +21,6 @@
 		</default_methods>
 		
 		<default_parameters>
-			<asa_calc>9600</asa_calc>
 			<max_nr_of_sequences>60</max_nr_of_sequences>
 			<reduced_alphabet>10</reduced_alphabet>
 			<soft_identity_cutoff>0.6</soft_identity_cutoff>

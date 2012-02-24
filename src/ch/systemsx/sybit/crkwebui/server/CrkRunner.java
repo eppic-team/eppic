@@ -134,8 +134,6 @@ public class CrkRunner implements Runnable
 			command.add(String.valueOf(inputParameters.getReducedAlphabet()));
 			command.add("-H");
 			command.add(String.valueOf(inputParameters.getSearchMode().toLowerCase()));
-			command.add("-A");
-			command.add(String.valueOf(inputParameters.getAsaCalc()));
 			command.add("-a");
 			command.add(String.valueOf("1"));
 			

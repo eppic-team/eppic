@@ -147,7 +147,6 @@ public class InputParametersParser
 											 InputParameters inputParameters) 
 	{
 		Element defaultInputParameterElement = (Element)defaultInputParametersNodeRoot;
-		inputParameters.setAsaCalc(Integer.parseInt(defaultInputParameterElement.getElementsByTagName("asa_calc").item(0).getFirstChild().getNodeValue()));
 		inputParameters.setMaxNrOfSequences(Integer.parseInt(defaultInputParameterElement.getElementsByTagName("max_nr_of_sequences").item(0).getFirstChild().getNodeValue()));
 		inputParameters.setReducedAlphabet(Integer.parseInt(defaultInputParameterElement.getElementsByTagName("reduced_alphabet").item(0).getFirstChild().getNodeValue()));
 		inputParameters.setSoftIdentityCutoff(Float.parseFloat(defaultInputParameterElement.getElementsByTagName("soft_identity_cutoff").item(0).getFirstChild().getNodeValue()));
