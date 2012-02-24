@@ -107,7 +107,7 @@ public class AlignmentsWindow extends ResizableWindow
 		
 		String uniprotId = homologsInfoItem.getUniprotId();
 		
-		int nrOfCharactersPerLine = calculateNrOfCharactersPerLine(textMetrics, uniprotId, pdbId); 
+		int nrOfCharactersPerLine = calculateNrOfCharactersPerLine(textMetrics, pdbId, uniprotId); 
 		int totalNumberOfCharacters = homologsInfoItem.getAlignedSeq1().length();
 		
 		int firstSequenceIndex = 1;
@@ -168,14 +168,14 @@ public class AlignmentsWindow extends ResizableWindow
 					secondSequenceEndIndex--;
 				}
 				
-				String firstSequenceLineAnnotated = createAnnotatedSequenceLine(uniprotId,
+				String firstSequenceLineAnnotated = createAnnotatedSequenceLine(pdbId,
 																				firstSequenceStartIndex,
 																				firstSequenceEndIndex,
 																				nrOfCharactersPerLine,
 																				lengthOfFirstSequenceBeforeStyling,
 																				firstSequenceLine.toString()); 
 				
-				String secondSequenceLineAnnotated = createAnnotatedSequenceLine(pdbId,
+				String secondSequenceLineAnnotated = createAnnotatedSequenceLine(uniprotId,
 																				 secondSequenceStartIndex,
 																				 secondSequenceEndIndex,
 																				 nrOfCharactersPerLine,
