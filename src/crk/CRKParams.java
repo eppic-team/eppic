@@ -193,6 +193,9 @@ public class CRKParams {
 	private String   blastDbDir; // no default
 	private String   blastDb;    // no default
 	
+	private String   localUniprotDbName; // no default
+	private String   localTaxonomyDbName; // no default
+	
 	/**
 	 * 
 	 */
@@ -656,6 +659,9 @@ public class CRKParams {
 			// variables without defaults
 			blastDbDir    	= p.getProperty("BLAST_DB_DIR");
 			blastDb        	= p.getProperty("BLAST_DB");
+			
+			localUniprotDbName = p.getProperty("LOCAL_UNIPROT_DB_NAME");
+			localTaxonomyDbName = p.getProperty("LOCAL_TAXONOMY_DB_NAME");
 
 			localCifDir   	= p.getProperty("LOCAL_CIF_DIR", DEF_LOCAL_CIF_DIR);
 			pdbFtpCifUrl 	= p.getProperty("PDB_FTP_URL", DEF_PDB_FTP_CIF_URL);
@@ -763,6 +769,14 @@ public class CRKParams {
 
 	public String getBlastDb() {
 		return blastDb;
+	}
+	
+	public String getLocalUniprotDbName() {
+		return localUniprotDbName;
+	}
+	
+	public String getLocalTaxonomyDbName() {
+		return localTaxonomyDbName;
 	}
 	
 	public boolean isUseUniparc() {

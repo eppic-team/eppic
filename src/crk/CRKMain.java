@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.GZIPOutputStream;
@@ -435,7 +436,11 @@ public class CRKMain {
 		
 		findUniqueChains();
 		
-		cecs = new ChainEvolContextList(pdb,params.getJobName());
+		try {
+			cecs = new ChainEvolContextList(pdb,params);
+		} catch (SQLException e) {
+			throw new CRKException(e,"Could not connect to local uniprot database server: "+e.getMessage(),true);
+		}
 		
 		// a) getting the uniprot ids corresponding to the query (the pdb sequence)
 		writeStep("Finding Homologues and Calculating Entropies");

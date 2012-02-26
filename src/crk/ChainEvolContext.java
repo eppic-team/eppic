@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Serializable;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -18,6 +19,7 @@ import org.xml.sax.SAXException;
 import owl.core.connections.NoMatchFoundException;
 import owl.core.connections.SiftsConnection;
 import owl.core.connections.UniProtConnection;
+import owl.core.connections.UniprotLocalConnection;
 import owl.core.features.SiftsFeature;
 import owl.core.runners.TcoffeeException;
 import owl.core.runners.blast.BlastException;
@@ -74,17 +76,27 @@ public class ChainEvolContext implements Serializable {
 	
 	private List<String> queryWarnings;
 	
+	private boolean useLocalUniprot;
 	private transient UniProtConnection uniprotJapiConn;
+	private transient UniprotLocalConnection uniprotLocalConn;
 
-	public ChainEvolContext(String sequence, String representativeChain, String pdbCode, String pdbName) {
+	public ChainEvolContext(String sequence, String representativeChain, String pdbCode, CRKParams params) throws SQLException {
 		this.pdbCode = pdbCode;
-		this.pdbName = pdbName;
+		this.pdbName = params.getJobName();
 		this.sequence = sequence;
 		this.representativeChain = representativeChain;
 		this.hasQueryMatch = false;
 		this.searchWithFullUniprot = true;
-		this.uniprotJapiConn = new UniProtConnection();
 		this.queryWarnings = new ArrayList<String>();
+		
+		
+		if (params.getLocalUniprotDbName()!=null) {
+			this.useLocalUniprot = true;
+			this.uniprotLocalConn = new UniprotLocalConnection(params.getLocalUniprotDbName(),params.getLocalTaxonomyDbName());
+		} else {
+			this.useLocalUniprot = false;
+			this.uniprotJapiConn = new UniProtConnection();
+		}
 	}
 	
 	/**
@@ -157,7 +169,11 @@ public class ChainEvolContext implements Serializable {
 
 			// once we have the identifier we get the data from uniprot
 			try {
-				query = uniprotJapiConn.getUnirefEntry(queryUniprotId);				
+				if (useLocalUniprot) {
+					query = uniprotLocalConn.getUnirefEntry(queryUniprotId);
+				} else {
+					query = uniprotJapiConn.getUnirefEntry(queryUniprotId);
+				}
 
 				// and finally we align the 2 sequences (in case of mapping from SIFTS we rather do this than trusting the SIFTS alignment info)
 				alnPdb2Uniprot = new PairwiseSequenceAlignment(sequence, query.getSequence(), pdbCode+representativeChain, query.getUniprotId());
@@ -171,7 +187,11 @@ public class ChainEvolContext implements Serializable {
 				LOGGER.fatal("Can't continue");
 				System.exit(1);
 			}  catch (NoMatchFoundException e) {
-				LOGGER.error("Couldn't find Uniprot id "+query.getUniprotId()+" through Uniprot JAPI. Obsolete?");
+				LOGGER.error("Couldn't find Uniprot id "+queryUniprotId+" through Uniprot JAPI. Obsolete?");
+				query = null;
+				hasQueryMatch = false;
+			} catch (SQLException e) {
+				LOGGER.error("Could not retrieve the uniprot data for uniprot id "+queryUniprotId+" from local database: "+e.getMessage());
 				query = null;
 				hasQueryMatch = false;
 			}
@@ -246,10 +266,15 @@ public class ChainEvolContext implements Serializable {
 	 * Retrieves the Uniprot data and metadata
 	 * @throws IOException
 	 * @throws UniprotVerMisMatchException
+	 * @throws SQLException 
 	 */
-	public void retrieveHomologsData() throws IOException, UniprotVerMisMatchException {
-		homologs.retrieveUniprotKBData(uniprotJapiConn);
-		homologs.retrieveUniparcData(null);
+	public void retrieveHomologsData() throws IOException, UniprotVerMisMatchException, SQLException {
+		if (useLocalUniprot) {
+			homologs.retrieveUniprotKBData(uniprotLocalConn);
+		} else {
+			homologs.retrieveUniprotKBData(uniprotJapiConn);
+			homologs.retrieveUniparcData(null);
+		}
 	}
 	
 	public void applyIdentityCutoff(double homSoftIdCutoff, double homHardIdCutoff, double homIdStep, double queryCovCutoff, int minNumSeqs) {

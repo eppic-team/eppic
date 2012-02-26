@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Serializable;
+import java.sql.SQLException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.TreeMap;
@@ -37,10 +38,10 @@ public class ChainEvolContextList implements Serializable {
 	private double homSoftIdCutoff;
 	private double homHardIdCutoff;
 	
-	public ChainEvolContextList(PdbAsymUnit pdb, String pdbName) {
+	public ChainEvolContextList(PdbAsymUnit pdb, CRKParams params) throws SQLException {
 		this.cecs = new TreeMap<String, ChainEvolContext>();
 		this.chain2repChain = pdb.getChain2repChainMap();
-		this.pdbName = pdbName;
+		this.pdbName = params.getJobName();
 		
 		for (String representativeChain:pdb.getAllRepChains()) {
 						
@@ -51,7 +52,7 @@ public class ChainEvolContextList implements Serializable {
 				continue;
 			}
 
-			ChainEvolContext cec = new ChainEvolContext(chain.getSequenceMSEtoMET(), representativeChain, pdb.getPdbCode(), pdbName);
+			ChainEvolContext cec = new ChainEvolContext(chain.getSequenceMSEtoMET(), representativeChain, pdb.getPdbCode(), params);
 			cec.setSeqIdenticalChainsStr(pdb.getSeqIdenticalGroupString(representativeChain));
 			
 			cecs.put(representativeChain, cec);
@@ -182,6 +183,8 @@ public class ChainEvolContextList implements Serializable {
 			} catch (IOException e) {
 				String errmsg = "Problem while retrieving homologs data through Uniprot JAPI";
 				throw new CRKException(e, errmsg+": "+e.getMessage(),true);
+			} catch (SQLException e) {
+				throw new CRKException(e, "Problem while retrieving homologs data from Uniprot local database: "+e.getMessage(), true);
 			} catch (Exception e) { // for any kind of exceptions thrown while connecting through uniprot JAPI
 				throw new CRKException(e, "Problems while retrieving homologs data through Uniprot JAPI. Is Uniprot server down?\n"+e.getMessage(),true);
 			}
