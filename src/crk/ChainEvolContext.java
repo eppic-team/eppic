@@ -93,9 +93,11 @@ public class ChainEvolContext implements Serializable {
 		if (params.getLocalUniprotDbName()!=null) {
 			this.useLocalUniprot = true;
 			this.uniprotLocalConn = new UniprotLocalConnection(params.getLocalUniprotDbName(),params.getLocalTaxonomyDbName());
+			LOGGER.info("Using local UniProt connection to retrieve UniProtKB data. Local databases: "+params.getLocalUniprotDbName()+" and "+params.getLocalTaxonomyDbName());
 		} else {
 			this.useLocalUniprot = false;
 			this.uniprotJapiConn = new UniProtConnection();
+			LOGGER.info("Using remote UniProt JAPI connection to retrieve UniProtKB data");
 		}
 	}
 	
