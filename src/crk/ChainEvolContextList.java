@@ -118,7 +118,7 @@ public class ChainEvolContextList implements Serializable {
 		for (ChainEvolContext chainEvCont:cecs.values()) {
 			params.getProgressLog().print(chainEvCont.getRepresentativeChainCode()+" ");
 			try {
-				chainEvCont.retrieveQueryData(params.getSiftsFile(), params.getBlastBinDir(), params.getBlastDbDir(), params.getBlastDb(), params.getNumThreads(),params.getPdb2uniprotIdThreshold(),params.getPdb2uniprotQcovThreshold());
+				chainEvCont.retrieveQueryData(params);
 			} catch (BlastException e) {
 				throw new CRKException(e,"Couldn't run blast to retrieve query's uniprot mapping: "+e.getMessage(),true);
 			} catch (IOException e) {

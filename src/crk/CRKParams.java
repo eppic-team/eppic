@@ -78,6 +78,7 @@ public class CRKParams {
 
 	// default sifts file location
 	private static final String   DEF_SIFTS_FILE = "ftp://ftp.ebi.ac.uk/pub/databases/msd/sifts/text/pdb_chain_uniprot.lst";	
+	private static final boolean  DEF_USE_SIFTS = false;
 	
 	// default blast settings
 	private static final String   DEF_BLAST_BIN_DIR = "/usr/bin";
@@ -165,6 +166,8 @@ public class CRKParams {
 	private boolean  useOnlinePdb;
 	
 	private String   siftsFile;
+	
+	private boolean  useSifts;
 	
 	private String   blastBinDir;
 	
@@ -668,6 +671,7 @@ public class CRKParams {
 			useOnlinePdb  	= Boolean.parseBoolean(p.getProperty("USE_ONLINE_PDB", new Boolean(DEF_USE_ONLINE_PDB).toString()));
 			
 			siftsFile       = p.getProperty("SIFTS_FILE", DEF_SIFTS_FILE);
+			useSifts        = Boolean.parseBoolean(p.getProperty("USE_SIFTS", new Boolean(DEF_USE_SIFTS).toString()));
 			
 			blastBinDir     = p.getProperty("BLAST_BIN_DIR", DEF_BLAST_BIN_DIR);
 			
@@ -717,6 +721,10 @@ public class CRKParams {
 
 	public String getSiftsFile() {
 		return siftsFile;
+	}
+	
+	public boolean useSifts() {
+		return useSifts;
 	}
 
 	public String getBlastBinDir() {

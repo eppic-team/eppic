@@ -103,59 +103,66 @@ public class ChainEvolContext implements Serializable {
 	
 	/**
 	 * Retrieves the Uniprot mapping corresponding to the query PDB sequence 
-	 * @param siftsLocation file or URL of the SIFTS PDB to Uniprot mapping table
-	 * @param blastBinDir
-	 * @param blastDbDir
-	 * @param blastDb
-	 * @param blastNumThreads
-	 * @param retrieveCDS whether to retrieve CDSs or not
 	 * @throws IOException
 	 * @throws BlastException
 	 * @throws InterruptedException
 	 */
-	public void retrieveQueryData(String siftsLocation, String blastBinDir, String blastDbDir, String blastDb, int blastNumThreads, double pdb2uniprotIdThreshold, double pdb2uniprotQcovThreshold) 
-	throws IOException, BlastException, InterruptedException {
+	public void retrieveQueryData(CRKParams params) throws IOException, BlastException, InterruptedException {
+		
+		String siftsLocation = params.getSiftsFile();
+		boolean useSifts = params.useSifts();
+		String blastBinDir = params.getBlastBinDir();
+		String blastDbDir = params.getBlastDbDir();
+		String blastDb = params.getBlastDb();
+		int blastNumThreads = params.getNumThreads();
+		double pdb2uniprotIdThreshold = params.getPdb2uniprotIdThreshold();
+		double pdb2uniprotQcovThreshold = params.getPdb2uniprotQcovThreshold();
 		
 		String queryUniprotId = null;
 		query = null;
 		
 		// two possible cases: 
-		// 1) PDB code known and so SiftsFeatures can be taken from SiftsConnection
+		// 1) PDB code known and so SiftsFeatures can be taken from SiftsConnection (unless useSifts is set to false)
 		Collection<SiftsFeature> mappings = null;
 		if (!pdbCode.equals(PdbAsymUnit.NO_PDB_CODE)) {
-			SiftsConnection siftsConn = new SiftsConnection(siftsLocation);
-			try {
-				mappings = siftsConn.getMappings(pdbCode, representativeChain);
-				HashSet<String> uniqUniIds = new HashSet<String>();
-				for (SiftsFeature sifts:mappings) {
-					uniqUniIds.add(sifts.getUniprotId());
-				}
-				if (uniqUniIds.size()>1) {
-					LOGGER.error("More than one uniprot SIFTS mapping for the query PDB code "+pdbCode+" chain "+representativeChain);
-					String msg = ("Uniprot IDs are: ");
-					for (String uniId:uniqUniIds){
-						msg+=(uniId+" ");
+			if (useSifts) {
+				SiftsConnection siftsConn = new SiftsConnection(siftsLocation);
+				try {
+					mappings = siftsConn.getMappings(pdbCode, representativeChain);
+					HashSet<String> uniqUniIds = new HashSet<String>();
+					for (SiftsFeature sifts:mappings) {
+						uniqUniIds.add(sifts.getUniprotId());
 					}
-					LOGGER.error(msg);
-					LOGGER.error("Check if the PDB entry is biologically reasonable (likely to be an engineered entry). Won't do evolution analysis on this chain.");
-					
-					String warning = "More than one UniProt ids correspond to chain "+representativeChain+": ";
-					for (String uniId:uniqUniIds){
-						warning+=(uniId+" ");
+					if (uniqUniIds.size()>1) {
+						LOGGER.error("More than one uniprot SIFTS mapping for the query PDB code "+pdbCode+" chain "+representativeChain);
+						String msg = ("Uniprot IDs are: ");
+						for (String uniId:uniqUniIds){
+							msg+=(uniId+" ");
+						}
+						LOGGER.error(msg);
+						LOGGER.error("Check if the PDB entry is biologically reasonable (likely to be an engineered entry). Won't do evolution analysis on this chain.");
+
+						String warning = "More than one UniProt ids correspond to chain "+representativeChain+": ";
+						for (String uniId:uniqUniIds){
+							warning+=(uniId+" ");
+						}
+						warning+=". This is most likely a chimeric chain";
+						queryWarnings.add(warning);
+
+						// we continue with a null query, i.e. we treat it in the same way as no match
+						queryUniprotId = null;
+					} else {
+						queryUniprotId = uniqUniIds.iterator().next();
 					}
-					warning+=". This is most likely a chimeric chain";
-					queryWarnings.add(warning);
 
-					// we continue with a null query, i.e. we treat it in the same way as no match
-					queryUniprotId = null;
-				} else {
-					queryUniprotId = uniqUniIds.iterator().next();
+				} catch (NoMatchFoundException e) {
+					LOGGER.warn("No SIFTS mapping could be found for "+pdbCode+representativeChain);
+					LOGGER.info("Trying blasting to find one.");
+					queryUniprotId = findUniprotMapping(blastBinDir, blastDbDir, blastDb, blastNumThreads, pdb2uniprotIdThreshold, pdb2uniprotQcovThreshold);  
 				}
-
-			} catch (NoMatchFoundException e) {
-				LOGGER.warn("No SIFTS mapping could be found for "+pdbCode+representativeChain);
-				LOGGER.info("Trying blasting to find one.");
-				queryUniprotId = findUniprotMapping(blastBinDir, blastDbDir, blastDb, blastNumThreads, pdb2uniprotIdThreshold, pdb2uniprotQcovThreshold);  
+			} else {
+				LOGGER.info("Using SIFTS feature is turned off. Will blast to find query-to-uniprot mapping");
+				queryUniprotId = findUniprotMapping(blastBinDir, blastDbDir, blastDb, blastNumThreads, pdb2uniprotIdThreshold, pdb2uniprotQcovThreshold);
 			}
 		// 2) PDB code not known and so SiftsFeatures have to be found by blasting, aligning etc.
 		} else {
