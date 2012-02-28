@@ -206,10 +206,15 @@ public class ChainEvolContextList implements Serializable {
 				// no query uniprot match, we do nothing with this sequence
 				continue;
 			}
-			String queryFirstTaxon = chainEvCont.getQuery().getFirstTaxon();
-			if (queryFirstTaxon.equals("Bacteria") || queryFirstTaxon.equals("Archaea")) {
-				homSoftIdCutoff = params.getHomSoftIdCutoffBacteria(); 
-				homHardIdCutoff = params.getHomHardIdCutoffBacteria();
+			// special archaea/bacterial soft/hard cutoff parameters, can only use them if we know the taxon of query
+			if (chainEvCont.getQuery().hasTaxons()) {
+				String queryFirstTaxon = chainEvCont.getQuery().getFirstTaxon();
+				if (queryFirstTaxon.equals("Bacteria") || queryFirstTaxon.equals("Archaea")) {
+					homSoftIdCutoff = params.getHomSoftIdCutoffBacteria(); 
+					homHardIdCutoff = params.getHomHardIdCutoffBacteria();
+				}
+			} else {
+				LOGGER.info("Taxons of query are unknown. Can't use special archaea/bacteria identity cut-offs.");
 			}
 			chainEvCont.applyIdentityCutoff(homSoftIdCutoff, homHardIdCutoff, params.getHomIdStep(), queryCovCutoff, minNumSeqs);
 		}

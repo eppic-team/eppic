@@ -258,9 +258,13 @@ public class ChainEvolContext implements Serializable {
 	}
 	
 	public void filterToSameDomainOfLife() {
-		LOGGER.info("Filtering to domain: "+query.getFirstTaxon());
-		homologs.filterToSameDomainOfLife();
-		LOGGER.info(homologs.getSizeFilteredSubset()+" homologs after filtering to "+query.getFirstTaxon());
+		if (query.hasTaxons()) {
+			LOGGER.info("Filtering to domain: "+query.getFirstTaxon());
+			homologs.filterToSameDomainOfLife();
+			LOGGER.info(homologs.getSizeFilteredSubset()+" homologs after filtering to "+query.getFirstTaxon());
+		} else {
+			LOGGER.info("Taxons of query are unknown, can't filter to same domain of life.");
+		}
 	}
 	
 	public void removeRedundancy() {
@@ -428,7 +432,9 @@ public class ChainEvolContext implements Serializable {
 	public void printSummary(PrintStream ps) {
 		ps.println("Query: "+pdbName+representativeChain);
 		ps.println("Uniprot id for query:");
-		ps.println(this.query.getUniprotId()+"\t"+this.query.getFirstTaxon()+"\t"+this.query.getLastTaxon());
+		ps.print(this.query.getUniprotId());
+		if (this.query.hasTaxons()) ps.println("\t"+this.query.getFirstTaxon()+"\t"+this.query.getLastTaxon());
+		else ps.println("\tunknown taxonomy");
 		ps.println();
 		
 		ps.println("Uniprot version: "+homologs.getUniprotVer());
