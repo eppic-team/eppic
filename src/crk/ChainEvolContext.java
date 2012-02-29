@@ -117,6 +117,7 @@ public class ChainEvolContext implements Serializable {
 		int blastNumThreads = params.getNumThreads();
 		double pdb2uniprotIdThreshold = params.getPdb2uniprotIdThreshold();
 		double pdb2uniprotQcovThreshold = params.getPdb2uniprotQcovThreshold();
+		boolean useUniparc = params.isUseUniparc();
 		
 		String queryUniprotId = null;
 		query = null;
@@ -158,16 +159,16 @@ public class ChainEvolContext implements Serializable {
 				} catch (NoMatchFoundException e) {
 					LOGGER.warn("No SIFTS mapping could be found for "+pdbCode+representativeChain);
 					LOGGER.info("Trying blasting to find one.");
-					queryUniprotId = findUniprotMapping(blastBinDir, blastDbDir, blastDb, blastNumThreads, pdb2uniprotIdThreshold, pdb2uniprotQcovThreshold);  
+					queryUniprotId = findUniprotMapping(blastBinDir, blastDbDir, blastDb, blastNumThreads, pdb2uniprotIdThreshold, pdb2uniprotQcovThreshold, useUniparc);  
 				}
 			} else {
 				LOGGER.info("Using SIFTS feature is turned off. Will blast to find query-to-uniprot mapping");
-				queryUniprotId = findUniprotMapping(blastBinDir, blastDbDir, blastDb, blastNumThreads, pdb2uniprotIdThreshold, pdb2uniprotQcovThreshold);
+				queryUniprotId = findUniprotMapping(blastBinDir, blastDbDir, blastDb, blastNumThreads, pdb2uniprotIdThreshold, pdb2uniprotQcovThreshold, useUniparc);
 			}
 		// 2) PDB code not known and so SiftsFeatures have to be found by blasting, aligning etc.
 		} else {
 			LOGGER.info("No PDB code available. Can't use SIFTS. Blasting to find the query's Uniprot mapping.");
-			queryUniprotId = findUniprotMapping(blastBinDir, blastDbDir, blastDb, blastNumThreads, pdb2uniprotIdThreshold, pdb2uniprotQcovThreshold);
+			queryUniprotId = findUniprotMapping(blastBinDir, blastDbDir, blastDb, blastNumThreads, pdb2uniprotIdThreshold, pdb2uniprotQcovThreshold, useUniparc);
 		}
 		
 		if (queryUniprotId!=null) hasQueryMatch = true;
@@ -185,13 +186,13 @@ public class ChainEvolContext implements Serializable {
 				}
 
 				// and finally we align the 2 sequences (in case of mapping from SIFTS we rather do this than trusting the SIFTS alignment info)
-				alnPdb2Uniprot = new PairwiseSequenceAlignment(sequence, query.getSequence(), pdbCode+representativeChain, query.getUniprotId());
+				alnPdb2Uniprot = new PairwiseSequenceAlignment(sequence, query.getSequence(), pdbCode+representativeChain, query.getUniId());
 				LOGGER.info("The PDB SEQRES to Uniprot alignmnent:\n"+getQueryPdbToUniprotAlnString());
 				LOGGER.info("Query ("+pdbCode+representativeChain+") length: "+sequence.length());
-				LOGGER.info("Uniprot ("+query.getUniprotId()+") length: "+query.getLength());
+				LOGGER.info("Uniprot ("+query.getUniId()+") length: "+query.getLength());
 				LOGGER.info("Alignment length: "+alnPdb2Uniprot.getLength());
 			} catch (PairwiseSequenceAlignmentException e1) {
-				LOGGER.fatal("Problem aligning PDB sequence "+pdbCode+representativeChain+" to its Uniprot match "+query.getUniprotId());
+				LOGGER.fatal("Problem aligning PDB sequence "+pdbCode+representativeChain+" to its Uniprot match "+query.getUniId());
 				LOGGER.fatal(e1.getMessage());
 				LOGGER.fatal("Can't continue");
 				System.exit(1);
@@ -237,7 +238,7 @@ public class ChainEvolContext implements Serializable {
 				queryInterv = new Interval(alnPdb2Uniprot.getFirstMatchingPos(false)+1,alnPdb2Uniprot.getLastMatchingPos(false)+1);
 				searchWithFullUniprot = false;
 				LOGGER.info("PDB sequence covers only "+String.format("%4.2f",(double)sequence.length()/(double)query.getLength())+
-						" of Uniprot "+query.getUniprotId()+
+						" of Uniprot "+query.getUniId()+
 						" (cutoff is "+String.format("%4.2f", pdb2uniprotMaxScovForLocal)+")");
 			} else {
 				searchWithFullUniprot = true;
@@ -319,7 +320,7 @@ public class ChainEvolContext implements Serializable {
 			// a cache file will look like  Q9UKX7.i60.c85.m60.1-109.aln (that corresponds to 3tj3C) 
 			//                              P52294.i60.c85.m60.aln       (that corresponds to 3tj3A)
 			// i=identity threshold used, c=query coverage, m=max num seqs, optional two last numbers are the subinterval
-			alnCacheFile = new File(params.getBlastCacheDir(),getQuery().getUniprotId()+
+			alnCacheFile = new File(params.getBlastCacheDir(),getQuery().getUniId()+
 					".i"+String.format("%2.0f", idCutoff*100.0)+
 					".c"+String.format("%2.0f", queryCov*100.0)+
 					".m"+params.getMaxNumSeqs()+
@@ -432,7 +433,7 @@ public class ChainEvolContext implements Serializable {
 	public void printSummary(PrintStream ps) {
 		ps.println("Query: "+pdbName+representativeChain);
 		ps.println("Uniprot id for query:");
-		ps.print(this.query.getUniprotId());
+		ps.print(this.query.getUniId());
 		if (this.query.hasTaxons()) ps.println("\t"+this.query.getFirstTaxon()+"\t"+this.query.getLastTaxon());
 		else ps.println("\tunknown taxonomy");
 		ps.println();
@@ -521,7 +522,8 @@ public class ChainEvolContext implements Serializable {
 		return alnPdb2Uniprot.getMapping2To1(queryPos)+1;
 	}
 	
-	private String findUniprotMapping(String blastBinDir, String blastDbDir, String blastDb, int blastNumThreads, double pdb2uniprotIdThreshold, double pdb2uniprotQcovThreshold) throws IOException, BlastException, InterruptedException {
+	private String findUniprotMapping(String blastBinDir, String blastDbDir, String blastDb, int blastNumThreads, double pdb2uniprotIdThreshold, double pdb2uniprotQcovThreshold, boolean useUniparc) 
+			throws IOException, BlastException, InterruptedException {
 		// for too short sequence it doesn't make sense to blast
 		if (this.sequence.length()<CRKParams.MIN_SEQ_LENGTH_FOR_BLASTING) return null;
 		
@@ -562,9 +564,18 @@ public class ChainEvolContext implements Serializable {
 				Matcher m2 = Sequence.DEFLINE_PRIM_ACCESSION_UNIREF_REGEX.matcher(sid);
 				if (m2.matches()) {
 					String uniId = m2.group(1);
-					if (uniId.startsWith("UPI") || uniId.contains("-")) {
-						LOGGER.error("Best blast hit "+uniId+" is a Uniparc id or a Uniprot isoform id. No Uniprot match");
-						queryWarnings.add("Best blast hit "+uniId+" is a Uniparc id or a Uniprot isoform id. No Uniprot match.");
+					if (uniId.contains("-")) {
+						LOGGER.error("Best blast hit "+uniId+" is a Uniprot isoform id. No Uniprot match");
+						queryWarnings.add("Best blast hit "+uniId+" is a Uniprot isoform id. No Uniprot match.");
+					} else if (uniId.startsWith("UPI")) {
+						if (useLocalUniprot && useUniparc) {
+							// if a uniparc and using local we can deal with it so we pass it on
+							uniprotMapping = uniId;
+						} else {
+							// if a uniparc and using JAPI we can't deal with it so easily (can't get the data directly from JAPI), we don't take it
+							LOGGER.error("Best blast hit "+uniId+" is a Uniparc id. No Uniprot match");
+							queryWarnings.add("Best blast hit "+uniId+" is a Uniparc id. No Uniprot match.");
+						}
 					} else {
 						uniprotMapping = uniId;
 					}
