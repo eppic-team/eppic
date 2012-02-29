@@ -4,6 +4,7 @@ import gnu.getopt.Getopt;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
@@ -42,9 +43,9 @@ public class CalcStats {
 	
 	private static final int MIN_NUM_HOMOLOGS = 10;
 	
-	private static final double DEFCORERIMCALLCUTOFF = 0.85;
+	private static final double DEFCORERIMCALLCUTOFF = 0.70;
 	private static final int DEFMINNUMBERCORERESFORBIO = 6;
-	private static final double DEFZSCORECUTOFF = -1;
+	private static final double DEFZSCORECUTOFF = -0.80;
 	
 	private static final double DEFCACUTOFF_FOR_G = 0.95;
 	private static final double DEFCACUTOFF_FOR_Z = 0.70;
@@ -63,6 +64,10 @@ public class CalcStats {
 	private static double[] caCutoffsG = {DEFCACUTOFF_FOR_G};
 	private static double[] caCutoffsCR = {DEFCACUTOFF_FOR_CR};
 	private static double[] caCutoffsZ = {DEFCACUTOFF_FOR_Z};
+
+	private static File outDir = null;
+	private static TreeMap<String,List<Integer>> crPredicted;
+	private static TreeMap<String,List<Integer>> zPredicted;
 
 	
 	/**
@@ -90,9 +95,11 @@ public class CalcStats {
 		"   [-t]       :  evolutionary score core/rim ratio cutoffs to call bio/xtal, comma separated. If \n" +
 		"                 omitted then only one used: "+String.format("%4.2f",DEFCORERIMCALLCUTOFF)+"\n" +
 		"   [-y]       :  z-score cutoff to call bio/xtal, comma separated. If omitted\n" +
-		"                 then only one used: "+String.format("%4.2f",DEFZSCORECUTOFF)+"\n\n";
+		"                 then only one used: "+String.format("%4.2f",DEFZSCORECUTOFF)+"\n" +
+		"   [-w]       :  a directory to write files with pdb codes/interface ids of interfaces that \n" +
+		"                 could be predicted with evolutionary methods\n\n";
 
-		Getopt g = new Getopt(PROGRAM_NAME, args, "B:X:b:x:e:c:z:m:t:y:h?");
+		Getopt g = new Getopt(PROGRAM_NAME, args, "B:X:b:x:e:c:z:m:t:y:w:h?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
@@ -150,6 +157,9 @@ public class CalcStats {
 					zscoreCutoffs[i] = Double.parseDouble(tokens[i]);
 				}
 				break;
+			case 'w':
+				outDir = new File(g.getOptarg());
+				break;
 			case 'h':
 			case '?':
 				System.out.println(help);
@@ -172,6 +182,11 @@ public class CalcStats {
 		}
 		
 
+		if (outDir!=null) {
+			crPredicted = new TreeMap<String, List<Integer>>();
+			zPredicted = new TreeMap<String, List<Integer>>();
+		}
+		
 		ArrayList<PredictionStatsSet> bioPreds = null;
 		if (bioDir!=null) {
 			TreeMap<String,List<Integer>> bioToAnalyse = Utils.readListFile(bioList);
@@ -198,7 +213,7 @@ public class CalcStats {
 		}
 
 		if (bioDir!=null && xtalDir!=null) {
-			System.out.println("Global statistics for combined sets only: ");
+			System.out.println("Global statistics for geometry and combined sets: ");
 			PredictionStatsGlobalSet.printHeader(System.out);
 			for (int i=0;i<bioPreds.size();i++) {
 				// we don't do it for the purely evol methods because there's the issue that we can't predict all cases (not enough homologs)
@@ -211,9 +226,26 @@ public class CalcStats {
 			}
 		}
 
-		//System.out.println("Global: ");
-		//printStats(globalStats);
-		
+		if (outDir!=null) {
+			PrintWriter crOut = new PrintWriter(new File(outDir,"cr.predicted.list"));
+			PrintWriter zOut = new PrintWriter(new File(outDir,"z.predicted.list"));
+			for (String key:crPredicted.keySet()) {
+				crOut.print(key);
+				for (int id:crPredicted.get(key)) {
+					if (id!=1) crOut.print(" "+id);
+				}
+				crOut.println();
+			}
+			for (String key:zPredicted.keySet()) {
+				zOut.print(key);
+				for (int id:zPredicted.get(key)) {
+					if (id!=1) zOut.print(" "+id);
+				}
+				zOut.println();
+			}
+			crOut.close();
+			zOut.close();
+		}
 		
 
 	}
@@ -413,6 +445,19 @@ public class CalcStats {
 		if (call==CallType.BIO) countBios[i][k]++;
 		else if (call==CallType.CRYSTAL) countXtals[i][k]++;
 		
+		if (outDir!=null) {
+			if (call==CallType.BIO || call==CallType.CRYSTAL) {
+				String key = interf.getFirstMolecule().getPdbCode();
+				if (crPredicted.containsKey(key)) {
+					crPredicted.get(key).add(interf.getId());
+				} else {
+					List<Integer> list = new ArrayList<Integer>();
+					list.add(interf.getId());
+					crPredicted.put(key,list);
+				}
+			}						
+		}
+		
 		ercp.resetCall();
 
 	}
@@ -432,6 +477,19 @@ public class CalcStats {
 		CallType call = eizp.getCall();
 		if (call==CallType.BIO) countBios[i][k]++;
 		else if (call==CallType.CRYSTAL) countXtals[i][k]++;
+		
+		if (outDir!=null) {
+			if (call==CallType.BIO || call==CallType.CRYSTAL) {
+				String key = interf.getFirstMolecule().getPdbCode();
+				if (zPredicted.containsKey(key)) {
+					zPredicted.get(key).add(interf.getId());
+				} else {
+					List<Integer> list = new ArrayList<Integer>();
+					list.add(interf.getId());
+					zPredicted.put(key,list);
+				}
+			}						
+		}
 		
 		eizp.resetCall();
 		
