@@ -65,7 +65,7 @@ public class CalcStats {
 	private static double[] caCutoffsCR = {DEFCACUTOFF_FOR_CR};
 	private static double[] caCutoffsZ = {DEFCACUTOFF_FOR_Z};
 
-	private static File outDir = null;
+	private static File outFile = null;
 	private static TreeMap<String,List<Integer>> crPredicted;
 	private static TreeMap<String,List<Integer>> zPredicted;
 
@@ -96,8 +96,8 @@ public class CalcStats {
 		"                 omitted then only one used: "+String.format("%4.2f",DEFCORERIMCALLCUTOFF)+"\n" +
 		"   [-y]       :  z-score cutoff to call bio/xtal, comma separated. If omitted\n" +
 		"                 then only one used: "+String.format("%4.2f",DEFZSCORECUTOFF)+"\n" +
-		"   [-w]       :  a directory to write files with pdb codes/interface ids of interfaces that \n" +
-		"                 could be predicted with evolutionary methods\n\n";
+		"   [-w]       :  a file to write pdb_codes+interface_ids of interfaces that \n" +
+		"                 could be predicted with both evolutionary methods\n\n";
 
 		Getopt g = new Getopt(PROGRAM_NAME, args, "B:X:b:x:e:c:z:m:t:y:w:h?");
 		int c;
@@ -158,7 +158,7 @@ public class CalcStats {
 				}
 				break;
 			case 'w':
-				outDir = new File(g.getOptarg());
+				outFile = new File(g.getOptarg());
 				break;
 			case 'h':
 			case '?':
@@ -182,7 +182,7 @@ public class CalcStats {
 		}
 		
 
-		if (outDir!=null) {
+		if (outFile!=null) {
 			crPredicted = new TreeMap<String, List<Integer>>();
 			zPredicted = new TreeMap<String, List<Integer>>();
 		}
@@ -226,25 +226,28 @@ public class CalcStats {
 			}
 		}
 
-		if (outDir!=null) {
-			PrintWriter crOut = new PrintWriter(new File(outDir,"cr.predicted.list"));
-			PrintWriter zOut = new PrintWriter(new File(outDir,"z.predicted.list"));
-			for (String key:crPredicted.keySet()) {
-				crOut.print(key);
-				for (int id:crPredicted.get(key)) {
-					if (id!=1) crOut.print(" "+id);
+		if (outFile!=null) {
+			PrintWriter out = new PrintWriter(outFile);
+			TreeMap<String, List<Integer>> smallest = null;
+			TreeMap<String, List<Integer>> other = null;
+			if (crPredicted.size()<=zPredicted.size()) {
+				smallest = crPredicted;
+				other = zPredicted;
+			} else {
+				smallest = zPredicted;
+				other = crPredicted;
+			}			
+					
+			for (String key:smallest.keySet()) {
+				if (other.containsKey(key)) {
+					out.print(key);
+					for (int id:smallest.get(key)) {
+						if (id!=1) out.print(" "+id);
+					}
+					out.println();
 				}
-				crOut.println();
 			}
-			for (String key:zPredicted.keySet()) {
-				zOut.print(key);
-				for (int id:zPredicted.get(key)) {
-					if (id!=1) zOut.print(" "+id);
-				}
-				zOut.println();
-			}
-			crOut.close();
-			zOut.close();
+			out.close();
 		}
 		
 
@@ -445,7 +448,7 @@ public class CalcStats {
 		if (call==CallType.BIO) countBios[i][k]++;
 		else if (call==CallType.CRYSTAL) countXtals[i][k]++;
 		
-		if (outDir!=null) {
+		if (outFile!=null) {
 			if (call==CallType.BIO || call==CallType.CRYSTAL) {
 				String key = interf.getFirstMolecule().getPdbCode();
 				if (crPredicted.containsKey(key)) {
@@ -478,7 +481,7 @@ public class CalcStats {
 		if (call==CallType.BIO) countBios[i][k]++;
 		else if (call==CallType.CRYSTAL) countXtals[i][k]++;
 		
-		if (outDir!=null) {
+		if (outFile!=null) {
 			if (call==CallType.BIO || call==CallType.CRYSTAL) {
 				String key = interf.getFirstMolecule().getPdbCode();
 				if (zPredicted.containsKey(key)) {
