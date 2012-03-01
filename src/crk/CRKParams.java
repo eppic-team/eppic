@@ -78,7 +78,7 @@ public class CRKParams {
 
 	// default sifts file location
 	private static final String   DEF_SIFTS_FILE = "ftp://ftp.ebi.ac.uk/pub/databases/msd/sifts/text/pdb_chain_uniprot.lst";	
-	private static final boolean  DEF_USE_SIFTS = false;
+	private static final boolean  DEF_USE_SIFTS = true;
 	
 	// default blast settings
 	private static final String   DEF_BLAST_BIN_DIR = "/usr/bin";
@@ -723,7 +723,7 @@ public class CRKParams {
 		return siftsFile;
 	}
 	
-	public boolean useSifts() {
+	public boolean isUseSifts() {
 		return useSifts;
 	}
 

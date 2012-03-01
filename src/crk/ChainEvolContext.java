@@ -110,7 +110,7 @@ public class ChainEvolContext implements Serializable {
 	public void retrieveQueryData(CRKParams params) throws IOException, BlastException, InterruptedException {
 		
 		String siftsLocation = params.getSiftsFile();
-		boolean useSifts = params.useSifts();
+		boolean useSifts = params.isUseSifts();
 		String blastBinDir = params.getBlastBinDir();
 		String blastDbDir = params.getBlastDbDir();
 		String blastDb = params.getBlastDb();
