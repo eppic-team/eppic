@@ -237,15 +237,19 @@ public class ChainEvolContext implements Serializable {
 			if (sequence.length()<pdb2uniprotMaxScovForLocal*query.getLength()) {
 				queryInterv = new Interval(alnPdb2Uniprot.getFirstMatchingPos(false)+1,alnPdb2Uniprot.getLastMatchingPos(false)+1);
 				searchWithFullUniprot = false;
-				LOGGER.info("PDB sequence covers only "+String.format("%4.2f",(double)sequence.length()/(double)query.getLength())+
+				LOGGER.info("PDB sequence for chain "+representativeChain+" covers only "+
+						String.format("%4.2f",(double)sequence.length()/(double)query.getLength())+
 						" of Uniprot "+query.getUniId()+
 						" (cutoff is "+String.format("%4.2f", pdb2uniprotMaxScovForLocal)+")");
 			} else {
 				searchWithFullUniprot = true;
+				LOGGER.info("PDB sequence for chain "+representativeChain+" coverage of Uniprot reference "+
+						query.getUniId()+" is "+String.format("%4.2f",(double)sequence.length()/(double)query.getLength())+
+						" (thus above cutoff "+String.format("%4.2f", pdb2uniprotMaxScovForLocal)+" for local mode)");
 			}
 		}
-		if (searchWithFullUniprot) LOGGER.info("Using full Uniprot sequence for blast search");
-		else LOGGER.info("Using Uniprot subsequence "+queryInterv.beg+"-"+queryInterv.end+" for blast search");
+		if (searchWithFullUniprot) LOGGER.info("Using full Uniprot sequence "+query.getUniId()+" for blast search");
+		else LOGGER.info("Using Uniprot "+query.getUniId()+" subsequence "+queryInterv.beg+"-"+queryInterv.end+" for blast search");
 		
 		homologs = new HomologList(query,queryInterv);
 		
@@ -556,52 +560,90 @@ public class ChainEvolContext implements Serializable {
 		}
 
 		String uniprotMapping = null;
-		BlastHit best = blastList.getBestHit(); // if null then list was empty, no hits at all
-		if (best!=null && (best.getTotalPercentIdentity()/100.0)>pdb2uniprotIdThreshold && best.getQueryCoverage()>pdb2uniprotQcovThreshold) {
-			
-			String sid = best.getSubjectId();
-			Matcher m = Sequence.DEFLINE_PRIM_ACCESSION_REGEX.matcher(sid);
-			if (m.matches()) {
-				String uniId = m.group(1);
-				uniprotMapping = uniId;
-			} else {
-				Matcher m2 = Sequence.DEFLINE_PRIM_ACCESSION_UNIREF_REGEX.matcher(sid);
-				if (m2.matches()) {
-					String uniId = m2.group(1);
-					if (uniId.contains("-")) {
-						LOGGER.error("Best blast hit "+uniId+" is a Uniprot isoform id. No Uniprot match");
-						queryWarnings.add("Best blast hit "+uniId+" is a Uniprot isoform id. No Uniprot match.");
-					} else if (uniId.startsWith("UPI")) {
-						if (useLocalUniprot && useUniparc) {
-							// if a uniparc and using local we can deal with it so we pass it on
-							uniprotMapping = uniId;
-						} else {
-							// if a uniparc and using JAPI we can't deal with it so easily (can't get the data directly from JAPI), we don't take it
-							LOGGER.error("Best blast hit "+uniId+" is a Uniparc id. No Uniprot match");
-							queryWarnings.add("Best blast hit "+uniId+" is a Uniparc id. No Uniprot match.");
-						}
-					} else {
-						uniprotMapping = uniId;
-					}
-				} else {
-					LOGGER.error("Could not find Uniprot id in subject id "+sid+". No Uniprot match");
+
+		if (!blastList.isEmpty()) {
+			BlastHit best = null;
+			blastList.sort();
+			for (int i=0;i<blastList.size();i++) {
+				best = blastList.get(i);
+				if (isHitUniprot(best)) break;
+				if (i==blastList.size()-1) { // if not a single hit is uniprot then we get to here and we have to catch it
+					LOGGER.error("No UniProt match could be found for the query "+pdbName+representativeChain+
+							": no blast hit was a UniProt match");
+					return null;
 				}
 			}
-			
-		} else {
-			LOGGER.error("No Uniprot match could be found for the query "+pdbName+representativeChain);
-			if (best!=null) {
+			if ((best.getTotalPercentIdentity()/100.0)>pdb2uniprotIdThreshold && best.getQueryCoverage()>pdb2uniprotQcovThreshold) {
+				uniprotMapping = getDeflineAccession(best);
+				LOGGER.info("Blast found UniProt id "+uniprotMapping+" as best hit with "+
+						String.format("%5.2f%% id and %4.2f coverage",best.getTotalPercentIdentity(),best.getQueryCoverage()));
+			} else {
+				LOGGER.error("No UniProt match could be found for the query "+pdbName+representativeChain+" within cutoffs "+
+						String.format("%5.2f%% id and %4.2f coverage",pdb2uniprotIdThreshold,pdb2uniprotQcovThreshold));
 				LOGGER.error("Best match was "+best.getSubjectId()+", with "+
 						String.format("%5.2f%% id and %4.2f coverage",best.getTotalPercentIdentity(),best.getQueryCoverage()));
 				LOGGER.error("Alignment: ");
 				LOGGER.error(best.getMaxScoringHsp().getAlignment().getFastaString(null, true));
-			}
-			queryWarnings.add("Blast didn't find a UniProt match for the chain. Best match was "+best.getSubjectId()+", with "+
-					String.format("%5.2f%% id and %4.2f coverage",best.getTotalPercentIdentity(),best.getQueryCoverage()));
+				queryWarnings.add("Blast didn't find a UniProt match for the chain. Best match was "+best.getSubjectId()+", with "+
+						String.format("%5.2f%% id and %4.2f coverage",best.getTotalPercentIdentity(),best.getQueryCoverage()));
+			}			
+		} else {
+			LOGGER.error("No UniProt match could be found for the query "+pdbName+representativeChain+". Blast returned no hits.");
 		}
+
 		return uniprotMapping;
 	}
 
+	/**
+	 * Gets the uniprot id, uniprot isoform id or uniparc id given a blast hit
+	 * @param hit
+	 * @return the id or null if the defline doesn't match the regexes for uniprot, uniprot isoform or uniparc ids
+	 */
+	private String getDeflineAccession(BlastHit hit) {
+		String sid = hit.getSubjectId();
+		Matcher m = Sequence.DEFLINE_PRIM_ACCESSION_REGEX.matcher(sid);
+		if (m.matches()) {
+			return m.group(1); 
+		} else {
+			Matcher m2 = Sequence.DEFLINE_PRIM_ACCESSION_UNIREF_REGEX.matcher(sid);
+			if (m2.matches()) {
+				return m2.group(1);
+			} else {
+				return null;
+			}
+		}
+	}
+	
+	/**
+	 * Tells whether given BlastHit's defline matches a uniprot id
+	 * @param hit
+	 * @return
+	 */
+	private boolean isHitUniprot(BlastHit hit) {
+		String sid = hit.getSubjectId();
+		Matcher m = Sequence.DEFLINE_PRIM_ACCESSION_REGEX.matcher(sid);
+		if (m.matches()) {
+			return true;
+		} else {
+			Matcher m2 = Sequence.DEFLINE_PRIM_ACCESSION_UNIREF_REGEX.matcher(sid);
+			if (m2.matches()) {
+				String uniId = m2.group(1);
+				if (uniId.contains("-")) {
+					LOGGER.warn("Blast hit "+uniId+" is a Uniprot isoform id. Skipping it");
+					return false;
+				} else if (uniId.startsWith("UPI")) {
+					LOGGER.warn("Blast hit "+uniId+" is a Uniparc id. Skipping it");
+					return false;
+				} else {
+					return true;
+				}
+			} else {
+				LOGGER.warn("Could not find Uniprot id in blast subject id "+sid+". Skipping it");
+				return false;
+			}
+		}
+	}
+	
 	/**
 	 * Gets the PDB identifier: a PDB code if query was a PDB entry or a PDB file name. 
 	 * @return
