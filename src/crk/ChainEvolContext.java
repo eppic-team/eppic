@@ -79,6 +79,8 @@ public class ChainEvolContext implements Serializable {
 	private boolean useLocalUniprot;
 	private transient UniProtConnection uniprotJapiConn;
 	private transient UniprotLocalConnection uniprotLocalConn;
+	
+	private String uniprotVer;
 
 	public ChainEvolContext(String sequence, String representativeChain, String pdbCode, CRKParams params) throws SQLException {
 		this.pdbCode = pdbCode;
@@ -259,6 +261,16 @@ public class ChainEvolContext implements Serializable {
 		
 		homologs.searchWithBlast(blastBinDir, blastDbDir, blastDb, blastNumThreads, maxNumSeqs, blastCache);
 		LOGGER.info(homologs.getSizeFullList()+" homologs found by blast");
+		if (this.uniprotVer!=null) {
+			// uniprotVer will be set if query matching was done with blast
+			if (!uniprotVer.equals(homologs.getUniprotVer())) {
+				// I don't think this can really happen, but just as a sanity check
+				LOGGER.error("Uniprot version used for finding reference with blast ("+uniprotVer+") differs from Uniprot version used for finding homologs ("+homologs.getUniprotVer()+")");
+			}
+		} else {
+			// if query matching wasn't done with blast uniprotVer is unset and we have to set it here
+			this.uniprotVer = homologs.getUniprotVer();
+		}
 		 
 	}
 	
@@ -544,7 +556,7 @@ public class ChainEvolContext implements Serializable {
 		
 		new Sequence(pdbName,this.sequence).writeToFastaFile(inputSeqFile);
 
-		String uniprotVer = HomologList.readUniprotVer(blastDbDir);
+		uniprotVer = HomologList.readUniprotVer(blastDbDir);
 		LOGGER.info("Query blast search for Uniprot mapping using Uniprot version "+uniprotVer);
 		BlastRunner blastRunner = new BlastRunner(blastBinDir, blastDbDir);
 		blastRunner.runBlastp(inputSeqFile, blastDb, outBlast, BLAST_OUTPUT_TYPE, BLAST_NO_FILTERING, blastNumThreads, 500);
@@ -569,7 +581,8 @@ public class ChainEvolContext implements Serializable {
 				if (isHitUniprot(best)) break;
 				if (i==blastList.size()-1) { // if not a single hit is uniprot then we get to here and we have to catch it
 					LOGGER.error("No UniProt match could be found for the query "+pdbName+representativeChain+
-							": no blast hit was a UniProt match");
+							": no blast hit was a UniProt match (total "+blastList.size()+" blast hits)");
+					queryWarnings.add("Blast didn't find a UniProt match for the chain. All blast hits were non-uniprot matches (total "+blastList.size()+" blast hits).");
 					return null;
 				}
 			}
@@ -584,11 +597,12 @@ public class ChainEvolContext implements Serializable {
 						String.format("%5.2f%% id and %4.2f coverage",best.getTotalPercentIdentity(),best.getQueryCoverage()));
 				LOGGER.error("Alignment: ");
 				LOGGER.error(best.getMaxScoringHsp().getAlignment().getFastaString(null, true));
-				queryWarnings.add("Blast didn't find a UniProt match for the chain. Best match was "+best.getSubjectId()+", with "+
+				queryWarnings.add("Blast didn't find a UniProt match for the chain. Best match was "+getDeflineAccession(best)+", with "+
 						String.format("%5.2f%% id and %4.2f coverage",best.getTotalPercentIdentity(),best.getQueryCoverage()));
 			}			
 		} else {
 			LOGGER.error("No UniProt match could be found for the query "+pdbName+representativeChain+". Blast returned no hits.");
+			queryWarnings.add("Blast didn't find a UniProt match for the chain (no hits returned by blast)");
 		}
 
 		return uniprotMapping;
@@ -653,7 +667,7 @@ public class ChainEvolContext implements Serializable {
 	}
 	
 	public String getUniprotVer() {
-		return this.homologs.getUniprotVer();
+		return uniprotVer;
 	}
 	
 	/**

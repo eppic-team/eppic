@@ -119,6 +119,8 @@ public class ChainEvolContextList implements Serializable {
 			params.getProgressLog().print(chainEvCont.getRepresentativeChainCode()+" ");
 			try {
 				chainEvCont.retrieveQueryData(params);
+				this.uniprotVer = chainEvCont.getUniprotVer();
+
 			} catch (BlastException e) {
 				throw new CRKException(e,"Couldn't run blast to retrieve query's uniprot mapping: "+e.getMessage(),true);
 			} catch (IOException e) {
@@ -148,9 +150,6 @@ public class ChainEvolContextList implements Serializable {
 			try {
 				chainEvCont.retrieveHomologs(params, blastCacheFile);
 				LOGGER.info("Uniprot version used: "+chainEvCont.getUniprotVer());
-
-				// the uniprot ver will be set only when at least one sequence has uniprot match
-				// if not a single sequence has match then it will be null
 				this.uniprotVer = chainEvCont.getUniprotVer();
 
 			} catch (UniprotVerMisMatchException e) {
