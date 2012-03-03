@@ -291,6 +291,8 @@
        		<basic name="uniprotId"></basic>
        		<basic name="numHomologs"></basic>
        		<basic name="subInterval"></basic>
+       		<basic name="hasQueryMatch"></basic>
+       		<basic name="idCutoffUsed"></basic>
        		<basic name="alignedSeq1">
        			<column column-definition="text"/>
        		</basic>
@@ -302,6 +304,27 @@
        		</basic>
        		
        		<many-to-one name="pdbScoreItem" >  
+            </many-to-one>
+            
+            <one-to-many name="queryWarnings" mapped-by="homologsInfoItem">  
+            	<cascade>  
+            	    <cascade-all/>  
+            	</cascade>  
+       		</one-to-many>  
+        </attributes>
+   </entity>
+   
+   <entity class="model.QueryWarningItemDB" name="QueryWarningItem">
+        <table name="QueryWarning"/>
+        <attributes>
+            <id name="uid">
+                <generated-value strategy="IDENTITY"/>
+            </id>
+            <basic name="text">
+            	<column column-definition="text"/>
+            </basic>
+       		
+       		<many-to-one name="homologsInfoItem" >  
             </many-to-one>  
         </attributes>
    </entity>

@@ -36,14 +36,17 @@ public class HomologsInfoItemDAOImpl implements HomologsInfoItemDAO
 			Path<PDBScoreItemDB> pdbScoreItemRoot = numHomologsStringItemRoot.get(HomologsInfoItemDB_.pdbScoreItem);
 			Predicate condition = criteriaBuilder.equal(pdbScoreItemRoot.get(PDBScoreItemDB_.uid), pdbScoreUid);
 			criteriaQuery.where(condition);
-			criteriaQuery.multiselect(numHomologsStringItemRoot.get(HomologsInfoItemDB_.uid),
-									  numHomologsStringItemRoot.get(HomologsInfoItemDB_.chains),
-									  numHomologsStringItemRoot.get(HomologsInfoItemDB_.uniprotId),
-									  numHomologsStringItemRoot.get(HomologsInfoItemDB_.numHomologs),
-									  numHomologsStringItemRoot.get(HomologsInfoItemDB_.subInterval),
-									  numHomologsStringItemRoot.get(HomologsInfoItemDB_.alignedSeq1),
-									  numHomologsStringItemRoot.get(HomologsInfoItemDB_.alignedSeq2),
-									  numHomologsStringItemRoot.get(HomologsInfoItemDB_.markupLine));
+//			criteriaQuery.multiselect(numHomologsStringItemRoot.get(HomologsInfoItemDB_.uid),
+//									  numHomologsStringItemRoot.get(HomologsInfoItemDB_.chains),
+//									  numHomologsStringItemRoot.get(HomologsInfoItemDB_.uniprotId),
+//									  numHomologsStringItemRoot.get(HomologsInfoItemDB_.numHomologs),
+//									  numHomologsStringItemRoot.get(HomologsInfoItemDB_.subInterval),
+//									  numHomologsStringItemRoot.get(HomologsInfoItemDB_.alignedSeq1),
+//									  numHomologsStringItemRoot.get(HomologsInfoItemDB_.alignedSeq2),
+//									  numHomologsStringItemRoot.get(HomologsInfoItemDB_.markupLine),
+//									  numHomologsStringItemRoot.get(HomologsInfoItemDB_.hasQueryMatch),
+//									  numHomologsStringItemRoot.get(HomologsInfoItemDB_.queryWarnings),
+//									  numHomologsStringItemRoot.get(HomologsInfoItemDB_.idCutoffUsed));
 			
 			Query query = entityManager.createQuery(criteriaQuery);
 			List<HomologsInfoItemDB> numHomologsStringItemDBs = query.getResultList();

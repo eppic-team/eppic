@@ -48,6 +48,8 @@ public class InfoPanel extends FormPanel
 //	private Label infoPanelXtalCallCutoff;
 	private LinkWithTooltip downloadResultsLink;
 	
+	private ToolTip queryWarningsTooltip;
+	
 	private MainController mainController;
 	
 	public InfoPanel(MainController mainController) 
@@ -60,7 +62,20 @@ public class InfoPanel extends FormPanel
 		this.setScrollMode(Scroll.AUTO);
 		this.setPadding(10);
 
+		generateHomologsInfoTooltip(mainController);
 		generateInfoPanel(mainController);
+	}
+
+	private void generateHomologsInfoTooltip(MainController mainController) 
+	{
+		ToolTipConfig toolTipConfig = new ToolTipConfig();  
+		toolTipConfig.setTitle(MainController.CONSTANTS.homologs_panel_query_warnings_title());
+		toolTipConfig.setMouseOffset(new int[] {0, 0});  
+		toolTipConfig.setCloseable(true); 
+		toolTipConfig.setDismissDelay(0);
+		toolTipConfig.setShowDelay(100);
+		toolTipConfig.setMaxWidth(mainController.getWindowWidth());
+		queryWarningsTooltip = new ToolTip(null, toolTipConfig);
 	}
 
 	public void generateInfoPanel(MainController mainController)
@@ -196,9 +211,9 @@ public class InfoPanel extends FormPanel
 		{
 			for(int i=0; i<homologsStrings.size(); i++)
 			{
-				LayoutContainer homologsContainer = new HomologsInfoPanel(mainController, homologsStrings.get(i));
+				LayoutContainer homologsContainer = new HomologsInfoPanel(mainController, homologsStrings.get(i), this);
 				flexTable.setWidget(i, 0, homologsContainer);
-			}
+			};
 		}
 		
 		// formdata -20 - fix for chrome - otherwise unnecessary scroll bar
@@ -251,5 +266,21 @@ public class InfoPanel extends FormPanel
 		
 		result += "</table>";
 		return result;
+	}
+
+	public ToolTip getQueryWarningsTooltip() {
+		return queryWarningsTooltip;
+	}
+
+	public void setQueryWarningsTooltip(ToolTip queryWarningsTooltip) {
+		this.queryWarningsTooltip = queryWarningsTooltip;
+	}
+
+	public ToolTip getInputParametersTooltip() {
+		return inputParametersTooltip;
+	}
+
+	public void setInputParametersTooltip(ToolTip inputParametersTooltip) {
+		this.inputParametersTooltip = inputParametersTooltip;
 	}
 }

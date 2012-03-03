@@ -73,6 +73,8 @@ public class MainController
 
 	public void displayView(String token)
 	{
+		hideWindows();
+		
 		if ((token != null) && (token.length() > 3) && (token.startsWith("id"))) 
 		{
 			Window.setTitle(CONSTANTS.window_title_loading());
@@ -92,6 +94,43 @@ public class MainController
 			Window.setTitle(CONSTANTS.window_title_input());
 			selectedJobId = "";
 			displayInputView();
+		}
+	}
+
+	private void hideWindows() 
+	{
+		if(mainViewPort.getAlignmentsWindow() != null)
+		{
+			mainViewPort.getAlignmentsWindow().setVisible(false);
+		}
+		
+		if(mainViewPort.getInterfacesResiduesWindow() != null)
+		{
+			mainViewPort.getInterfacesResiduesWindow().setVisible(false);
+		}
+		
+		if(mainViewPort.getAboutWindow() != null)
+		{
+			mainViewPort.getAboutWindow().setVisible(false);
+		}
+		
+		if((mainViewPort.getCenterPanel().getDisplayPanel() != null) &&
+			(mainViewPort.getCenterPanel().getDisplayPanel() instanceof ResultsPanel))
+		{
+			ResultsPanel resultsPanel = (ResultsPanel)mainViewPort.getCenterPanel().getDisplayPanel();
+			
+			if(resultsPanel.getInfoPanel() != null)
+			{
+				if(resultsPanel.getInfoPanel().getQueryWarningsTooltip() != null)
+				{
+					resultsPanel.getInfoPanel().getQueryWarningsTooltip().setVisible(false);
+				}
+				
+				if(resultsPanel.getInfoPanel().getInputParametersTooltip() != null)
+				{
+					resultsPanel.getInfoPanel().getInputParametersTooltip().setVisible(false);
+				}
+			}
 		}
 	}
 

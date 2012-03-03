@@ -1,8 +1,11 @@
 package ch.systemsx.sybit.crkwebui.shared.model;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 import model.HomologsInfoItemDB;
+import model.QueryWarningItemDB;
 
 public class HomologsInfoItem implements Serializable 
 {
@@ -21,6 +24,11 @@ public class HomologsInfoItem implements Serializable
 	private String alignedSeq2;
 	private String markupLine;
 	
+	private boolean hasQueryMatch;	
+	private List<QueryWarningItem> queryWarnings;
+	
+	private double idCutoffUsed;
+	
 	public HomologsInfoItem() 
 	{
 		
@@ -33,7 +41,10 @@ public class HomologsInfoItem implements Serializable
 							String subInterval,
 							String alignedSeq1,
 							String alignedSeq2,
-							String markupLine) 
+							String markupLine,
+							boolean hasQueryMatch,
+							List<QueryWarningItem> queryWarnings,
+							double idCutoffUsed) 
 	{
 		this.uid = uid;
 		this.chains = chains;
@@ -43,6 +54,9 @@ public class HomologsInfoItem implements Serializable
 		this.alignedSeq1 = alignedSeq1;
 		this.alignedSeq2 = alignedSeq2;
 		this.markupLine = markupLine;
+		this.hasQueryMatch = hasQueryMatch;
+		this.queryWarnings = queryWarnings;
+		this.idCutoffUsed = idCutoffUsed;
 	}
 	
 	public void setUid(int uid) {
@@ -109,6 +123,30 @@ public class HomologsInfoItem implements Serializable
 		this.markupLine = markupLine;
 	}
 	
+	public boolean isHasQueryMatch() {
+		return hasQueryMatch;
+	}
+
+	public void setHasQueryMatch(boolean hasQueryMatch) {
+		this.hasQueryMatch = hasQueryMatch;
+	}
+
+	public List<QueryWarningItem> getQueryWarnings() {
+		return queryWarnings;
+	}
+
+	public void setQueryWarnings(List<QueryWarningItem> queryWarnings) {
+		this.queryWarnings = queryWarnings;
+	}
+
+	public double getIdCutoffUsed() {
+		return idCutoffUsed;
+	}
+
+	public void setIdCutoffUsed(double idCutoffUsed) {
+		this.idCutoffUsed = idCutoffUsed;
+	}
+	
 	public static HomologsInfoItem create(HomologsInfoItemDB homologsInfoItemDB)
 	{
 		HomologsInfoItem homologsInfoItem = new HomologsInfoItem();
@@ -120,6 +158,20 @@ public class HomologsInfoItem implements Serializable
 		homologsInfoItem.setSubInterval(homologsInfoItemDB.getSubInterval());
 		homologsInfoItem.setUniprotId(homologsInfoItemDB.getUniprotId());
 		homologsInfoItem.setUid(homologsInfoItemDB.getUid());
+		homologsInfoItem.setHasQueryMatch(homologsInfoItemDB.isHasQueryMatch());
+		
+		List<QueryWarningItem> queryWarningItems = new ArrayList<QueryWarningItem>();
+		if(homologsInfoItemDB.getQueryWarnings() != null)
+		{
+			for(QueryWarningItemDB queryWarningItemDB : homologsInfoItemDB.getQueryWarnings())
+			{
+				QueryWarningItem queryWarningItem = QueryWarningItem.create(queryWarningItemDB);
+				queryWarningItems.add(queryWarningItem);
+			}
+		}
+		homologsInfoItem.setQueryWarnings(queryWarningItems);
+		homologsInfoItem.setIdCutoffUsed(homologsInfoItemDB.getIdCutoffUsed());
+		
 		return homologsInfoItem;
 	}
 
