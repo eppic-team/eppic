@@ -22,7 +22,7 @@ public class HomologsInfoItemDB implements Serializable
 	private String markupLine;
 	
 	private boolean hasQueryMatch;	
-	private List<String> queryWarnings;
+	private List<QueryWarningItemDB> queryWarnings;
 	
 	private double idCutoffUsed;
 	
@@ -40,7 +40,10 @@ public class HomologsInfoItemDB implements Serializable
 							  String subInterval,
 							  String alignedSeq1,
 							  String alignedSeq2,
-							  String markupLine) 
+							  String markupLine,
+							  boolean hasQueryMatch, 
+							  List<QueryWarningItemDB> queryWarnings,
+							  double idCutoffUsed) 
 	{
 		this.uid = uid;
 		this.chains = chains;
@@ -50,6 +53,9 @@ public class HomologsInfoItemDB implements Serializable
 		this.alignedSeq1 = alignedSeq1;
 		this.alignedSeq2 = alignedSeq2;
 		this.markupLine = markupLine;
+		this.hasQueryMatch = hasQueryMatch;
+		this.queryWarnings = queryWarnings;
+		this.idCutoffUsed = idCutoffUsed;
 	}
 	
 	public void setPdbScoreItem(PDBScoreItemDB pdbScoreItem) {
@@ -132,11 +138,11 @@ public class HomologsInfoItemDB implements Serializable
 		this.hasQueryMatch = hasQueryMatch;
 	}
 
-	public List<String> getQueryWarnings() {
+	public List<QueryWarningItemDB> getQueryWarnings() {
 		return queryWarnings;
 	}
 
-	public void setQueryWarnings(List<String> queryWarnings) {
+	public void setQueryWarnings(List<QueryWarningItemDB> queryWarnings) {
 		this.queryWarnings = queryWarnings;
 	}
 

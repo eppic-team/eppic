@@ -15,6 +15,7 @@ import model.InterfaceResidueItemDB;
 import model.InterfaceScoreItemDB;
 import model.HomologsInfoItemDB;
 import model.PDBScoreItemDB;
+import model.QueryWarningItemDB;
 import model.RunParametersItemDB;
 import model.WarningItemDB;
 
@@ -193,7 +194,18 @@ public class WebUIDataAdaptor {
 			HomologsInfoItemDB homInfo = new HomologsInfoItemDB();
 			homInfo.setChains(cec.getSeqIndenticalChainStr());
 			homInfo.setHasQueryMatch(cec.hasQueryMatch());
-			homInfo.setQueryWarnings(cec.getQueryWarnings());
+			
+			List<QueryWarningItemDB> queryWarningItemDBs = new ArrayList<QueryWarningItemDB>();
+			for(String queryWarning : cec.getQueryWarnings())
+			{
+				QueryWarningItemDB queryWarningItemDB = new QueryWarningItemDB();
+				queryWarningItemDB.setHomologsInfoItem(homInfo);
+				queryWarningItemDB.setText(queryWarning);
+				queryWarningItemDBs.add(queryWarningItemDB);
+			}
+			
+			homInfo.setQueryWarnings(queryWarningItemDBs);
+			
 			if (cec.hasQueryMatch()) { //all other fields remain null otherwise
 				
 				homInfo.setNumHomologs(cec.getNumHomologs());
