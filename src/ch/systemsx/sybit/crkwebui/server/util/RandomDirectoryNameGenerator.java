@@ -6,7 +6,7 @@ import org.apache.commons.lang.RandomStringUtils;
 
 public class RandomDirectoryNameGenerator 
 {
-	public static String generateRandomDirectoryName(String generalDestinationDirectoryName)
+	public synchronized static String generateRandomDirectory(String generalDestinationDirectoryName)
 	{
 		String randomDirectoryName = null;
 		boolean isDirectorySet = false;
@@ -21,6 +21,7 @@ public class RandomDirectoryNameGenerator
 
 			if (!randomDirectory.exists()) 
 			{
+				randomDirectory.mkdir();
 				isDirectorySet = true;
 			}
 		}

@@ -95,16 +95,11 @@ public class FileUploadServlet extends FileBaseServlet {
 		
 		if (ServletFileUpload.isMultipartContent(request)) 
 		{
-			String randomDirectoryName = RandomDirectoryNameGenerator.generateRandomDirectoryName(generalDestinationDirectoryName);
+			String randomDirectoryName = RandomDirectoryNameGenerator.generateRandomDirectory(generalDestinationDirectoryName);
 
 			File localTmpDir = new File(generalTmpDirectoryName + "/"
 					+ randomDirectoryName);
 			localTmpDir.mkdir();
-
-			String localDestinationDirName = generalDestinationDirectoryName
-					+ "/" + randomDirectoryName;
-			File localDestinationDir = new File(localDestinationDirName);
-			localDestinationDir.mkdir();
 
 			response.setContentType("text/html");
 
@@ -193,14 +188,25 @@ public class FileUploadServlet extends FileBaseServlet {
 						fileName = fileName.substring(fileName.lastIndexOf("\\") + 1);
 					}
 					
-					File file = new File(localDestinationDir, fileName);
-					fileToUpload.write(file);
+					String fileNameVerificationError = verifyFileName(fileName);
+					
+					if(fileNameVerificationError == null)
+					{
+						File file = new File(generalDestinationDirectoryName + "/" + randomDirectoryName, 
+											 fileName);
+						fileToUpload.write(file);
+						
+						out.println("crkupres:" + randomDirectoryName);
+					}
+					else
+					{
+						out.println("err:Incorrect file name - " + fileNameVerificationError);
+					}
 
 //					File processingFile = new File(localDestinationDir
 //							+ "/" + fileName);
 //					processingFile.createNewFile();
 					
-					out.println("crkupres:" + randomDirectoryName);
 				}
 				else
 				{
@@ -254,4 +260,16 @@ public class FileUploadServlet extends FileBaseServlet {
 		return result;
 	}
 
+	private String verifyFileName(String fileName) 
+	{
+		String result = null;
+		
+		if(!fileName.matches("^[A-Za-z0-9\\.\\-\\_]+$"))
+		{
+			return "Filename: " + fileName + 
+				   " contains not allowed characters. Only the following characters are allowed: A-Z, a-z, 0-9, \".\", \"-\", \"_\"";
+		}
+		
+		return result;
+	}
 }

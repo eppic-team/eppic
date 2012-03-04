@@ -365,13 +365,8 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 			
 			if(runJobData.getJobId() == null)
 			{
-				String randomDirectoryName = RandomDirectoryNameGenerator.generateRandomDirectoryName(generalDestinationDirectoryName);
+				String randomDirectoryName = RandomDirectoryNameGenerator.generateRandomDirectory(generalDestinationDirectoryName);
 
-				String localDestinationDirName = generalDestinationDirectoryName
-						+ "/" + randomDirectoryName;
-				File localDestinationDir = new File(localDestinationDirName);
-				localDestinationDir.mkdir();
-				
 				runJobData.setJobId(randomDirectoryName);
 				
 				inputType = InputType.PDBCODE.getIndex();
