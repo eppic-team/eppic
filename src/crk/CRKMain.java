@@ -446,15 +446,12 @@ public class CRKMain {
 		writeStep("Finding Homologues and Calculating Entropies");
 		params.getProgressLog().println("Finding query's uniprot mapping through SIFTS or blasting");
 		cecs.retrieveQueryData(params);
-		// if query was matched with SIFTS this will set only a null, bit if query was tried to be matched by blast then this sets a uniprotver 
 		wuiAdaptor.getRunParametersItem().setUniprotVer(cecs.getUniprotVer());
 		
 		// b) getting the homologs and sequence data
 		params.getProgressLog().println("Blasting for homologues");
 		cecs.retrieveHomologs(params);
 		cecs.applyIdentityCutoff(params);
-		// we have to set uniprot ver again now in case query was matched with SIFTS, then until now there's no uniprotver 
-		wuiAdaptor.getRunParametersItem().setUniprotVer(cecs.getUniprotVer());
 				
 		params.getProgressLog().println("Retrieving UniprotKB data");
 		cecs.retrieveHomologsData(params);

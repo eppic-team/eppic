@@ -15,6 +15,7 @@ import org.apache.commons.logging.LogFactory;
 
 import owl.core.runners.TcoffeeException;
 import owl.core.runners.blast.BlastException;
+import owl.core.sequence.HomologList;
 import owl.core.sequence.UniprotVerMisMatchException;
 import owl.core.structure.PdbAsymUnit;
 import owl.core.structure.PdbChain;
@@ -42,6 +43,9 @@ public class ChainEvolContextList implements Serializable {
 		this.cecs = new TreeMap<String, ChainEvolContext>();
 		this.chain2repChain = pdb.getChain2repChainMap();
 		this.pdbName = params.getJobName();
+		// if we fail to read a version, it will stay null. Should we rather throw exception?
+		this.uniprotVer = HomologList.readUniprotVer(params.getBlastDbDir());
+		LOGGER.info("Using UniProt version "+uniprotVer+" for blasting");
 		
 		for (String representativeChain:pdb.getAllRepChains()) {
 						
@@ -54,9 +58,11 @@ public class ChainEvolContextList implements Serializable {
 
 			ChainEvolContext cec = new ChainEvolContext(chain.getSequenceMSEtoMET(), representativeChain, pdb.getPdbCode(), params);
 			cec.setSeqIdenticalChainsStr(pdb.getSeqIdenticalGroupString(representativeChain));
+			cec.setUniprotVer(this.uniprotVer);
 			
 			cecs.put(representativeChain, cec);
 		}
+		
 	}
 	
 	public void addChainEvolContext(String representativeChain, ChainEvolContext cec) {
@@ -119,7 +125,6 @@ public class ChainEvolContextList implements Serializable {
 			params.getProgressLog().print(chainEvCont.getRepresentativeChainCode()+" ");
 			try {
 				chainEvCont.retrieveQueryData(params);
-				this.uniprotVer = chainEvCont.getUniprotVer();
 
 			} catch (BlastException e) {
 				throw new CRKException(e,"Couldn't run blast to retrieve query's uniprot mapping: "+e.getMessage(),true);
@@ -149,8 +154,6 @@ public class ChainEvolContextList implements Serializable {
 			}
 			try {
 				chainEvCont.retrieveHomologs(params, blastCacheFile);
-				LOGGER.info("Uniprot version used: "+chainEvCont.getUniprotVer());
-				this.uniprotVer = chainEvCont.getUniprotVer();
 
 			} catch (UniprotVerMisMatchException e) {
 				throw new CRKException(e, "Mismatch of Uniprot versions! "+e.getMessage(), true);

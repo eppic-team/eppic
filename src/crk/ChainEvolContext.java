@@ -261,16 +261,6 @@ public class ChainEvolContext implements Serializable {
 		
 		homologs.searchWithBlast(blastBinDir, blastDbDir, blastDb, blastNumThreads, maxNumSeqs, blastCache);
 		LOGGER.info(homologs.getSizeFullList()+" homologs found by blast");
-		if (this.uniprotVer!=null) {
-			// uniprotVer will be set if query matching was done with blast
-			if (!uniprotVer.equals(homologs.getUniprotVer())) {
-				// I don't think this can really happen, but just as a sanity check
-				LOGGER.error("Uniprot version used for finding reference with blast ("+uniprotVer+") differs from Uniprot version used for finding homologs ("+homologs.getUniprotVer()+")");
-			}
-		} else {
-			// if query matching wasn't done with blast uniprotVer is unset and we have to set it here
-			this.uniprotVer = homologs.getUniprotVer();
-		}
 		 
 	}
 	
@@ -458,7 +448,7 @@ public class ChainEvolContext implements Serializable {
 		else ps.println("\tunknown taxonomy");
 		ps.println();
 		
-		ps.println("Uniprot version: "+homologs.getUniprotVer());
+		ps.println("Uniprot version: "+getUniprotVer());
 		ps.println("Homologs: "+homologs.getSizeFilteredSubset()+" at "+String.format("%4.2f",homologs.getIdCutoff())+" identity cut-off and "+
 				String.format("%4.2f",homologs.getQCovCutoff())+" query coverage cutoff");
 		for (Homolog hom:homologs.getFilteredSubset()) {
@@ -556,8 +546,6 @@ public class ChainEvolContext implements Serializable {
 		
 		new Sequence(pdbName,this.sequence).writeToFastaFile(inputSeqFile);
 
-		uniprotVer = HomologList.readUniprotVer(blastDbDir);
-		LOGGER.info("Query blast search for Uniprot mapping using Uniprot version "+uniprotVer);
 		BlastRunner blastRunner = new BlastRunner(blastBinDir, blastDbDir);
 		blastRunner.runBlastp(inputSeqFile, blastDb, outBlast, BLAST_OUTPUT_TYPE, BLAST_NO_FILTERING, blastNumThreads, 500);
 
@@ -668,6 +656,10 @@ public class ChainEvolContext implements Serializable {
 	
 	public String getUniprotVer() {
 		return uniprotVer;
+	}
+	
+	public void setUniprotVer(String uniprotVer) {
+		this.uniprotVer = uniprotVer;
 	}
 	
 	/**
