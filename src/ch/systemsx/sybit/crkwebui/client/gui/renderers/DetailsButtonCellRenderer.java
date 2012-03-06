@@ -30,6 +30,7 @@ public class DetailsButtonCellRenderer extends DefaultCellRenderer
 		this.mainController = mainController;
 	}
 
+	@Override
 	public Object render(final BaseModel model, String property,
 			ColumnData config, final int rowIndex, final int colIndex,
 			ListStore<BaseModel> store, Grid<BaseModel> grid) 
@@ -65,9 +66,7 @@ public class DetailsButtonCellRenderer extends DefaultCellRenderer
 						   (mainController.getMainViewPort().getCenterPanel().getDisplayPanel() instanceof ResultsPanel))
 						{
 							ResultsPanel resultsPanel = (ResultsPanel)mainController.getMainViewPort().getCenterPanel().getDisplayPanel();
-//							resultsPanel.updateScoresPanel((Integer)resultsPanel.getResultsStore().getAt(rowIndex).get("id"));
 							resultsPanel.getResultsGrid().getSelectionModel().select(rowIndex, false);
-//							mainController.getInterfaceResidues((Integer)model.get("id"));
 							mainController.getInterfaceResidues((Integer)resultsPanel.getResultsStore().getAt(rowIndex).get("id"));
 						}
 					}

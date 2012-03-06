@@ -36,6 +36,7 @@ public class WarningsCellRenderer implements GridCellRenderer<BaseModel>
 		this.mainController = mainController;
 	}
 
+	@Override
 	public Object render(final BaseModel model, String property,
 			ColumnData config, final int rowIndex, final int colIndex,
 			ListStore<BaseModel> store, Grid<BaseModel> grid) 
@@ -109,6 +110,11 @@ public class WarningsCellRenderer implements GridCellRenderer<BaseModel>
 		
 	}
 	
+	/**
+	 * Create list of interface warnings
+	 * @param warnings list of warnings to display
+	 * @return template containing list of warnings
+	 */
 	private String generateWarningsTemplate(List<WarningItem> warnings)
 	{
 		String warningsList = "<div><ul style=\"list-style: disc; margin: 0px 0px 0px 15px;\">";

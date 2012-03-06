@@ -31,6 +31,7 @@ public class ViewerButtonCellRenderer implements GridCellRenderer<BaseModel>
 		this.mainController = mainController;
 	}
 
+	@Override
 	public Object render(final BaseModel model, String property,
 			ColumnData config, final int rowIndex, final int colIndex,
 			ListStore<BaseModel> store, Grid<BaseModel> grid) {

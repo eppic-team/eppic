@@ -17,6 +17,11 @@ import com.google.gwt.event.dom.client.MouseOverEvent;
 import com.google.gwt.event.dom.client.MouseOverHandler;
 import com.google.gwt.user.client.ui.Image;
 
+/**
+ * This class is used to display icon used to stop job
+ * @author AS
+ *
+ */
 public class StopIconRenderer implements GridCellRenderer<BaseModel> 
 {
 	private MainController mainController;
@@ -29,6 +34,7 @@ public class StopIconRenderer implements GridCellRenderer<BaseModel>
 		this.mainController = mainController;
 	}
 
+	@Override
 	public Object render(final BaseModel model, String property,
 			ColumnData config, final int rowIndex, final int colIndex,
 			ListStore<BaseModel> store, final Grid<BaseModel> grid) 

@@ -18,6 +18,7 @@ public class NumberRenderer implements GridCellRenderer<BaseModel>
 	private NumberFormat number = NumberFormat.getFormat("0.00");  
 	private NumberCellRenderer<Grid<BaseModel>> numberRenderer = new NumberCellRenderer<Grid<BaseModel>>(number);  
 	
+	@Override
 	public Object render(final BaseModel model, 
 						 String property,
 						 ColumnData config, 

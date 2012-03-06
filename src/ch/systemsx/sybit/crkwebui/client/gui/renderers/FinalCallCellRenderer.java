@@ -11,7 +11,7 @@ import com.extjs.gxt.ui.client.widget.grid.Grid;
 import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
 
 /**
- * This model is used to style final result
+ * This renderer is used to style final result
  * @author srebniak_a
  *
  */
@@ -24,6 +24,7 @@ public class FinalCallCellRenderer implements GridCellRenderer<BaseModel>
 		this.mainController = mainController;
 	}
 
+	@Override
 	public Object render(final BaseModel model, final String property,
 			ColumnData config, final int rowIndex, final int colIndex,
 			ListStore<BaseModel> store, final Grid<BaseModel> grid) {
@@ -54,23 +55,15 @@ public class FinalCallCellRenderer implements GridCellRenderer<BaseModel>
 																	100);
 			
 			String color = "black";
-//			String backgroundColor = null;
 
 			if (value.equals("bio")) 
 			{
 				color = "green";
-//				backgroundColor = "#EEFFEE";
 			}
 			else if (value.equals("xtal")) 
 			{
 				color = "red";
-//				backgroundColor = "#FFEEEE";
 			}
-			
-//			if(backgroundColor != null)
-//			{
-//				config.style = "background-color:" + backgroundColor + ";text-align:center;";
-//			}
 			
 			callReasonLabel.setStyleAttribute("color", color);
 			callReasonLabel.setStyleAttribute("font-weight", "bold");

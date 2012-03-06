@@ -9,11 +9,13 @@ import com.extjs.gxt.ui.client.widget.grid.ColumnData;
 import com.extjs.gxt.ui.client.widget.grid.Grid;
 
 /**
+ * This renderer is used to display styled status of the job
  * @author srebniak_a
  *
  */
 public class JobStatusCellRenderer extends DefaultCellRenderer 
 {
+	@Override
 	public Object render(final BaseModel model, 
 						 String property,
 						 ColumnData config, 

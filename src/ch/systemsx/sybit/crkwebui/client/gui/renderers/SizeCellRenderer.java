@@ -10,7 +10,7 @@ import com.extjs.gxt.ui.client.widget.grid.Grid;
 import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
 
 /**
- * This model is used to style the results of calculations for each of the method
+ * This class is used to style the size results
  * @author srebniak_a
  *
  */
@@ -23,6 +23,7 @@ public class SizeCellRenderer implements GridCellRenderer<BaseModel>
 		this.mainController = mainController;
 	}
 
+	@Override
 	public Object render(final BaseModel model, String property,
 			ColumnData config, final int rowIndex, final int colIndex,
 			ListStore<BaseModel> store, Grid<BaseModel> grid) {

@@ -33,6 +33,7 @@ public class ThumbnailCellRenderer implements GridCellRenderer<BaseModel>
 		this.mainController = mainController;
 	}
 	
+	@Override
 	public Object render(final BaseModel model, String property,
 			ColumnData config, int rowIndex, int colIndex,
 			ListStore<BaseModel> store, final Grid<BaseModel> grid) 
@@ -99,14 +100,5 @@ public class ThumbnailCellRenderer implements GridCellRenderer<BaseModel>
 		});
 		
 		return image;
-//		return "<img src=\"" + 
-//				url + 
-//				mainController.getSelectedJobId() + 
-//				"/" +
-//				mainController.getPdbScoreItem().getPdbName() +
-//				"." +
-//				model.get("id") +
-//				".75x75.png" +
-//				"\"/>";
 	}
 }
