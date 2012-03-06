@@ -84,12 +84,12 @@ public class HomologsInfoPanel extends LayoutContainer
 			chainsLink.addStyleName("crk-default-label");
 			
 			final ToolTip chainsLinkTooltip = infoPanel.getQueryWarningsTooltip();
-			chainsLinkTooltip.getToolTipConfig().setTemplate(new Template(generateHomologsNoQueryMatchTemplate(homologsInfoItem.getQueryWarnings())));
 			
 			chainsLink.addListener(Events.OnClick, new Listener<BaseEvent>() {
 
 				@Override
 				public void handleEvent(BaseEvent be) {
+					chainsLinkTooltip.getToolTipConfig().setTemplate(new Template(generateHomologsNoQueryMatchTemplate(homologsInfoItem.getQueryWarnings())));
 					chainsLinkTooltip.showAt(chainsLink.getAbsoluteLeft() + chainsLink.getWidth(),
 						  					 chainsLink.getAbsoluteTop() + chainsLink.getHeight() + 10);
 				}
@@ -112,6 +112,8 @@ public class HomologsInfoPanel extends LayoutContainer
 				warningsList += "<li>" + warning.getText() + "</li>";
 			}
 		}
+		
+		warningsList += "</ul></div>";
 			
 		return warningsList;
 	}

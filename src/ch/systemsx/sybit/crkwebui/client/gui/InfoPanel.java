@@ -74,7 +74,6 @@ public class InfoPanel extends FormPanel
 		toolTipConfig.setCloseable(true); 
 		toolTipConfig.setDismissDelay(0);
 		toolTipConfig.setShowDelay(100);
-		toolTipConfig.setMaxWidth(mainController.getWindowWidth());
 		queryWarningsTooltip = new ToolTip(null, toolTipConfig);
 	}
 
