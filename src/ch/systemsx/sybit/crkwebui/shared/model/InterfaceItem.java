@@ -9,6 +9,10 @@ import model.InterfaceResidueItemDB;
 import model.InterfaceScoreItemDB;
 import model.WarningItemDB;
 
+/**
+ * DTO class for Interface item
+ * @author AS
+ */
 public class InterfaceItem implements Serializable 
 {
 	/**
@@ -227,6 +231,11 @@ public class InterfaceItem implements Serializable
 		return uid;
 	}
 	
+	/**
+	 * Convert DB model item into DTO one
+	 * @param interfaceItemDB model item to convert
+	 * @return DTO representation of model item
+	 */
 	public static InterfaceItem create(InterfaceItemDB interfaceItemDB)
 	{
 		InterfaceItem interfaceItem = new InterfaceItem();

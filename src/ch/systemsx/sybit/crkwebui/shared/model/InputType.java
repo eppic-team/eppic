@@ -1,5 +1,10 @@
 package ch.systemsx.sybit.crkwebui.shared.model;
 
+/**
+ * Input type used to start the job
+ * @author AS
+ *
+ */
 public enum InputType
 {
 	NONE (-1),

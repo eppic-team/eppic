@@ -7,6 +7,10 @@ import java.util.List;
 import model.HomologsInfoItemDB;
 import model.QueryWarningItemDB;
 
+/**
+ * DTO class for HomologsInfo item
+ * @author AS
+ */
 public class HomologsInfoItem implements Serializable 
 {
 	/**
@@ -147,6 +151,11 @@ public class HomologsInfoItem implements Serializable
 		this.idCutoffUsed = idCutoffUsed;
 	}
 	
+	/**
+	 * Convert DB model item into DTO one
+	 * @param homologsInfoItemDB model item to convert
+	 * @return DTO representation of model item
+	 */
 	public static HomologsInfoItem create(HomologsInfoItemDB homologsInfoItemDB)
 	{
 		HomologsInfoItem homologsInfoItem = new HomologsInfoItem();

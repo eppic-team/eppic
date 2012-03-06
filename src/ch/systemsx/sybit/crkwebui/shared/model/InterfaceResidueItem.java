@@ -4,6 +4,10 @@ import java.io.Serializable;
 
 import model.InterfaceResidueItemDB;
 
+/**
+ * DTO class for InterfaceResidue item
+ * @author AS
+ */
 public class InterfaceResidueItem implements Serializable
 {
 
@@ -28,14 +32,6 @@ public class InterfaceResidueItem implements Serializable
 	private int assignment; // one of the constants above: SURFACE, RIM, CORE
 	private float entropyScore;
 
-	// residue number
-	// residue type
-	// ASA
-	// BSA
-	// % BSA
-	//entropy
-	//KaKs
-	
 	public InterfaceResidueItem(int residueNumber, String pdbResidueNumber, String residueType, float asa, float bsa, float bsaPercentage, int assignment, float entropyScore) {
 		this.residueNumber = residueNumber;
 		this.pdbResidueNumber = pdbResidueNumber;
@@ -124,6 +120,11 @@ public class InterfaceResidueItem implements Serializable
 		this.pdbResidueNumber = pdbResidueNumber;
 	}
 	
+	/**
+	 * Convert DB model item into DTO one
+	 * @param interfaceResidueItemDB model item to convert
+	 * @return DTO representation of model item
+	 */
 	public static InterfaceResidueItem create(InterfaceResidueItemDB interfaceResidueItemDB)
 	{
 		InterfaceResidueItem interfaceResidueItem = new InterfaceResidueItem();
