@@ -7,7 +7,7 @@ import ch.systemsx.sybit.crkwebui.shared.model.WarningItem;
 import com.extjs.gxt.ui.client.data.BaseModel;
 
 /**
- * 
+ * Data model for interfaces grid.
  * @author srebniak_a
  *
  */

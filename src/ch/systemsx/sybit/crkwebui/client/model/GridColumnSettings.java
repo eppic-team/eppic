@@ -2,15 +2,46 @@ package ch.systemsx.sybit.crkwebui.client.model;
 
 import java.io.Serializable;
 
+/**
+ * This class is used to represent settings used by the grid column
+ * @author AS
+ */
 public class GridColumnSettings implements Serializable 
 {
 
+	/**
+	 * Flag specifying whether column should be displayed.
+	 */
 	private boolean displayColumn; 
+	
+	/**
+	 * Width of the column.
+	 */
 	private int columnWidth;
+	
+	/**
+	 * Used renderer.
+	 */
 	private String renderer;
+	
+	/**
+	 * Title of the column.
+	 */
 	private String header;
+	
+	/**
+	 * Flag specifying whether column can be resized.
+	 */
 	private boolean isResizable; 
-	private boolean disableColumnContextMenu; 
+	
+	/**
+	 * Flag specifying whether displaying context menu for specified column should be allowed.
+	 */
+	private boolean disableColumnContextMenu;
+	
+	/**
+	 * Tooltip for grid column.
+	 */
 	private String tooltip;
 			
 	/**

@@ -2,6 +2,10 @@ package ch.systemsx.sybit.crkwebui.client.model;
 
 import com.extjs.gxt.ui.client.data.BaseModel;
 
+/**
+ * Data model for interface residues grid.
+ * @author AS
+ */
 public class InterfaceResidueItemModel extends BaseModel
 {
 	/**
