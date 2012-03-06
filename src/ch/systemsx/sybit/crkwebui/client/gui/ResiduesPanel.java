@@ -315,8 +315,8 @@ public class ResiduesPanel extends ContentPanel
 		return residuesGrid;
 	}
 	
-	private void createAggregationRows()
-	{
+//	private void createAggregationRows()
+//	{
 //		residuesColumnModel.getAggregationRows().clear();
 //		
 //		NumberFormat number = NumberFormat.getFormat("0.00");
@@ -425,5 +425,5 @@ public class ResiduesPanel extends ContentPanel
 //		}
 //		
 //		residuesColumnModel.addAggregationRow(totalRatios);  
-	}
+//	}
 }
