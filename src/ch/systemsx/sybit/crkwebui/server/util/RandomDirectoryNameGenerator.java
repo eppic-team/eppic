@@ -4,8 +4,18 @@ import java.io.File;
 
 import org.apache.commons.lang.RandomStringUtils;
 
+/**
+ * This class is used to generate random job id directory
+ * @author AS
+ *
+ */
 public class RandomDirectoryNameGenerator 
 {
+	/**
+	 * Create unique directory for randomly generated job id
+	 * @param generalDestinationDirectoryName directory where jobid subdirectory will be created
+	 * @return name of the directory which was generated
+	 */
 	public synchronized static String generateRandomDirectory(String generalDestinationDirectoryName)
 	{
 		String randomDirectoryName = null;
