@@ -17,6 +17,10 @@ import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 import com.extjs.gxt.ui.client.widget.layout.RowData;
 import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 
+/**
+ * This is window containing sequence alignments.
+ * @author AS
+ */
 public class AlignmentsWindow extends ResizableWindow 
 {
 	private static int ALIGNMENT_WINDOW_DEFAULT_WIDTH = 600;
@@ -80,6 +84,9 @@ public class AlignmentsWindow extends ResizableWindow
 		});
 	}
 	
+	/**
+	 * Refresh content of the alignments window.
+	 */
 	public void updateWindowContent()
 	{
 		ContentPanel homologsContentPanel = new ContentPanel();
@@ -222,6 +229,13 @@ public class AlignmentsWindow extends ResizableWindow
 		this.homologsInfoItem = homologsInfoItem;
 	}
 	
+	/**
+	 * Generate general sequence text settings.
+	 * @param textMetrics used text metrics
+	 * @param firstSequenceLeftAnnotation first sequence to annotate
+	 * @param secondSequenceLeftAnnotation second sequence to annotate
+	 * @return nr of character of original sequences per line.
+	 */
 	private int calculateNrOfCharactersPerLine(TextMetrics textMetrics,
 											   String firstSequenceLeftAnnotation,
 											   String secondSequenceLeftAnnotation)
@@ -272,6 +286,16 @@ public class AlignmentsWindow extends ResizableWindow
 		return nrOfCharactersPerLine;
 	}
 	
+	/**
+	 * Generate annotated sequence line.
+	 * @param leftAnnotation uniprot/pdb id.
+	 * @param sequenceStartIndex index of the first character of the sequence part which is going to be annotated.
+	 * @param sequenceEndIndex index of the last character of the sequence part which is going to be annotated.
+	 * @param nrOfCharactersPerLine nr of characters per line for sequence.
+	 * @param lengthOfSequenceBeforeStyling nr of characters in the sequence. 
+	 * @param sequence sequence part to annotate.
+	 * @return annotated sequence line.
+	 */
 	private String createAnnotatedSequenceLine(String leftAnnotation,
 											   int sequenceStartIndex,
 											   int sequenceEndIndex,

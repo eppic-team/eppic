@@ -8,6 +8,10 @@ import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.event.WindowEvent;
 import com.extjs.gxt.ui.client.event.WindowListener;
 
+/**
+ * This is window containing general information about the application.
+ * @author AS
+ */
 public class AboutWindow extends ResizableWindow 
 {
 	private static int ABOUT_WINDOW_DEFAULT_WIDTH = 400;

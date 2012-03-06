@@ -78,6 +78,11 @@ public class BottomPanel extends LayoutContainer
 		this.add(linksContainerWrapper, new RowData(150, 1, new Margins(0)));
 	}
 	
+	/**
+	 * Update text of the status message label.
+	 * @param message text to display.
+	 * @param isError flag specifying whether message is the error.
+	 */
 	public void updateStatusMessage(String message, boolean isError)
 	{
 		String messageText = "<span style=\"color:";

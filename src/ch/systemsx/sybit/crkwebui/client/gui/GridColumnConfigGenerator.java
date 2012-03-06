@@ -15,6 +15,10 @@ import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
 import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
 
+/**
+ * This class is used to generate columns configs for the grid.
+ * @author AS
+ */
 public class GridColumnConfigGenerator
 {
 

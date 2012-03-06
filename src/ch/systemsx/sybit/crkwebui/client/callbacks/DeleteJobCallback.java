@@ -25,7 +25,6 @@ public class DeleteJobCallback implements AsyncCallback<String>
 	public void onFailure(Throwable caught) 
 	{
 		mainController.updateStatusLabel(MainController.CONSTANTS.callback_delete_job_error(), true);
-//		mainController.showError("Error during getting data from server: " + caught.getMessage());
 	}
 
 	@Override

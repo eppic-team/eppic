@@ -4,8 +4,12 @@ import java.util.List;
 
 import com.extjs.gxt.ui.client.widget.grid.Grid;
 
-public class GridUtil {
-
+/**
+ * This class contains util methods for grid.
+ * @author AS
+ */
+public class GridUtil 
+{
 	public static int calculateWidthOfVisibleColumns(Grid grid,
 													 List<Integer> initialColumnWidth)
 	{
