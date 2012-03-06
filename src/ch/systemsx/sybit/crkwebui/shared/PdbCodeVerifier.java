@@ -1,6 +1,9 @@
 package ch.systemsx.sybit.crkwebui.shared;
 
-
+/**
+ * This class is used to verify correctness of the pdb code 
+ *
+ */
 public class PdbCodeVerifier {
 
 	private static String PDBCODE_PATTERN = "^\\d\\w\\w\\w$";

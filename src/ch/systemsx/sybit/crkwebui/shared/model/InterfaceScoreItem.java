@@ -4,6 +4,10 @@ import java.io.Serializable;
 
 import model.InterfaceScoreItemDB;
 
+/**
+ * DTO class for InterfaceScore item
+ * @author AS
+ */
 public class InterfaceScoreItem implements Serializable
 {
 	/**
@@ -122,6 +126,11 @@ public class InterfaceScoreItem implements Serializable
 		return uid;
 	}
 	
+	/**
+	 * Convert DB model item into DTO one
+	 * @param interfaceScoreItemDB model item to convert
+	 * @return DTO representation of model item
+	 */
 	public static InterfaceScoreItem create(InterfaceScoreItemDB interfaceScoreItemDB)
 	{
 		InterfaceScoreItem interfaceScoreItem = new InterfaceScoreItem();

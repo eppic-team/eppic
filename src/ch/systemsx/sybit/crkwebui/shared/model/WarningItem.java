@@ -4,11 +4,11 @@ import java.io.Serializable;
 
 import model.WarningItemDB;
 
+/**
+ * DTO class for warning item entry
+ */
 public class WarningItem implements Serializable 
 {
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 	
 	private int uid;
@@ -36,6 +36,11 @@ public class WarningItem implements Serializable
 		return text;
 	}
 
+	/**
+	 * Convert DB model item into DTO one
+	 * @param warningItemDB model item to convert
+	 * @return DTO representation of model item
+	 */
 	public static WarningItem create(WarningItemDB warningItemDB)
 	{
 		WarningItem warningItem = new WarningItem();

@@ -8,7 +8,10 @@ import model.HomologsInfoItemDB;
 import model.InterfaceItemDB;
 import model.PDBScoreItemDB;
 
-
+/**
+ * DTO class for PDBScore item
+ * @author AS
+ */
 public class PDBScoreItem implements Serializable, ProcessingData
 {
 	/**
@@ -42,8 +45,8 @@ public class PDBScoreItem implements Serializable, ProcessingData
 						String spaceGroup,
 						RunParametersItem runParameters) 
 	{
-		interfaceItems = new ArrayList<InterfaceItem>();
-		homologsInfoItems = new ArrayList<HomologsInfoItem>();
+		this.interfaceItems = new ArrayList<InterfaceItem>();
+		this.homologsInfoItems = new ArrayList<HomologsInfoItem>();
 		this.uid = uid;
 		this.pdbName = pdbName;
 		this.title = title;
@@ -125,6 +128,11 @@ public class PDBScoreItem implements Serializable, ProcessingData
 		return uid;
 	}
 	
+	/**
+	 * Convert DB model item into DTO one
+	 * @param pdbScoreItemDB model item to convert
+	 * @return DTO representation of model item
+	 */
 	public static PDBScoreItem create(PDBScoreItemDB pdbScoreItemDB)
 	{
 		PDBScoreItem pdbScoreItem = new PDBScoreItem();

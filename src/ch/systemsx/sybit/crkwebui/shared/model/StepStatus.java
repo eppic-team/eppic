@@ -2,6 +2,10 @@ package ch.systemsx.sybit.crkwebui.shared.model;
 
 import java.io.Serializable;
 
+/**
+ * This class represents each of the steps of the processing.
+ * @author AS
+ */
 public class StepStatus implements Serializable
 {
 	/**
@@ -13,9 +17,20 @@ public class StepStatus implements Serializable
 	{
 		
 	}
-	
+
+	/**
+	 * Step description
+	 */
 	private String currentStep;
+	
+	/**
+	 * Id of the current step
+	 */
 	private int currentStepNumber;
+	
+	/**
+	 * Total number of steps for processing
+	 */
 	private int totalNumberOfSteps;
 
 	public String getCurrentStep() {

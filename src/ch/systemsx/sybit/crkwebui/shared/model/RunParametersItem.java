@@ -4,6 +4,10 @@ import java.io.Serializable;
 
 import model.RunParametersItemDB;
 
+/**
+ * This class represents parameters used to run processing
+ * @author AS
+ */
 public class RunParametersItem implements Serializable
 {
 	/**
