@@ -20,6 +20,7 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
 
 import ch.systemsx.sybit.crkwebui.server.util.IPVerifier;
 import ch.systemsx.sybit.crkwebui.server.util.RandomDirectoryNameGenerator;
+import ch.systemsx.sybit.crkwebui.server.util.RunJobDataValidator;
 import ch.systemsx.sybit.crkwebui.shared.CrkWebException;
 
 /**
@@ -188,7 +189,7 @@ public class FileUploadServlet extends FileBaseServlet {
 						fileName = fileName.substring(fileName.lastIndexOf("\\") + 1);
 					}
 					
-					String fileNameVerificationError = verifyFileName(fileName);
+					String fileNameVerificationError = RunJobDataValidator.verifyFileName(fileName);
 					
 					if(fileNameVerificationError == null)
 					{
@@ -255,19 +256,6 @@ public class FileUploadServlet extends FileBaseServlet {
 			{
 				result = "Captcha verification failed - incorrect value provided";
 			}
-		}
-		
-		return result;
-	}
-
-	private String verifyFileName(String fileName) 
-	{
-		String result = null;
-		
-		if(!fileName.matches("^[A-Za-z0-9\\.\\-\\_]+$"))
-		{
-			return "Filename: " + fileName + 
-				   " contains not allowed characters. Only the following characters are allowed: A-Z, a-z, 0-9, \".\", \"-\", \"_\"";
 		}
 		
 		return result;

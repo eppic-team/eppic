@@ -17,6 +17,7 @@ import org.ggf.drmaa.Session;
 
 import ch.systemsx.sybit.crkwebui.server.db.model.JobDAO;
 import ch.systemsx.sybit.crkwebui.server.db.model.JobDAOImpl;
+import ch.systemsx.sybit.crkwebui.server.util.RunJobDataValidator;
 import ch.systemsx.sybit.crkwebui.shared.CrkWebException;
 import ch.systemsx.sybit.crkwebui.shared.model.InputParameters;
 import ch.systemsx.sybit.crkwebui.shared.model.InputType;
@@ -107,6 +108,10 @@ public class CrkRunner implements Runnable
 //				}
 //			}
 
+			RunJobDataValidator.validateJobId(jobId);
+			RunJobDataValidator.validateInput(input);
+			RunJobDataValidator.validateInputParameters(inputParameters);
+			
 			List<String> command = new ArrayList<String>();
 //			command.add("java");
 			command.add("-jar");
@@ -133,7 +138,7 @@ public class CrkRunner implements Runnable
 			command.add("-r");
 			command.add(String.valueOf(inputParameters.getReducedAlphabet()));
 			command.add("-H");
-			command.add(String.valueOf(inputParameters.getSearchMode().toLowerCase()));
+			command.add(inputParameters.getSearchMode().toLowerCase());
 			command.add("-a");
 			command.add(String.valueOf("1"));
 			
