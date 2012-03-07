@@ -111,9 +111,17 @@ public class CRKMain {
 			if (userConfigFile.exists()) {
 				LOGGER.info("Loading user configuration file " + userConfigFile);
 				params.readConfigFile(userConfigFile);
+				params.checkConfigFileInput();
+			} else if (!params.isInputAFile() || params.isDoScoreEntropies()) {
+				LOGGER.error("No config file could be read at "+userConfigFile+
+						". Please set one if you want to run the program using PDB codes as input with -i or if you want to run evolutionary predictions (-s).");
+				System.exit(1);
 			}
 		} catch (IOException e) {
 			LOGGER.fatal("Error while reading from config file " + userConfigFile + ": " + e.getMessage());
+			System.exit(1);
+		} catch (CRKException e) {
+			LOGGER.error(e.getMessage());
 			System.exit(1);
 		}
 

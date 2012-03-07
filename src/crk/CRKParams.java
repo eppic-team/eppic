@@ -437,6 +437,33 @@ public class CRKParams {
 
 	}
 	
+	public void checkConfigFileInput() throws CRKException {
+		
+		if (!isInputAFile()) {
+			if (localCifDir==null || ! new File(localCifDir).isDirectory()) {
+				throw new CRKException(null,
+				"To be able to use PDB codes as input with -i option a valid LOCAL_CIF_DIR must be set in config file. " +
+				"It must contain the PDB mmCIF compressed file repository as in "+DEF_PDB_FTP_CIF_URL,true);
+			}
+			
+		}
+		
+		if (isDoScoreEntropies()) {
+			if (blastDbDir==null || ! new File(blastDbDir).isDirectory()) {
+				throw new CRKException(null,"BLAST_DB_DIR has not been set to a valid value in config file",true);
+			}
+			if (blastDb==null) {
+				throw new CRKException(null,"BLAST_DB has not been set to a valid value in config file",true);
+			}
+			if (! new File(blastBinDir).isDirectory()) {
+				throw new CRKException(null,"BLAST_BIN_DIR must be set to a valid value in config file. Directory "+blastBinDir+" doesn't exist.",true);
+			}
+			if (! tcoffeeBin.exists()) {
+				throw new CRKException(null,"TCOFFEE_BIN must be set to a valid value in config file. File "+tcoffeeBin+" doesn't exist.",true);
+			}
+		}
+	}
+	
 	/**
 	 * Returns the job name of this CRK parameter set. The job name will be the PDB 
 	 * code given or if a file given the file name without the extension (everything
