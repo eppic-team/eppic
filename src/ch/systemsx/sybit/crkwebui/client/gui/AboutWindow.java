@@ -32,7 +32,7 @@ public class AboutWindow extends ResizableWindow
 		this.setBlinkModal(true);
 		this.setScrollMode(Scroll.AUTO);
 		
-		this.addText("CRK 2012. Please add here some description...");
+		this.addText("CRK 2012. A protein-protein interface evolutionary classifier.");
 		
 		Listener<WindowEvent> resizeWindowListener = new Listener<WindowEvent>() {
 
