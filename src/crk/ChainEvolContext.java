@@ -124,6 +124,10 @@ public class ChainEvolContext implements Serializable {
 		String queryUniprotId = null;
 		query = null;
 		
+		if (sequence.length()<=CRKParams.PEPTIDE_LENGTH_CUTOFF) {
+			queryWarnings.add("Chain is a peptide ("+sequence.length()+" residues)");
+		}
+		
 		// two possible cases: 
 		// 1) PDB code known and so SiftsFeatures can be taken from SiftsConnection (unless useSifts is set to false)
 		Collection<SiftsFeature> mappings = null;
@@ -145,7 +149,7 @@ public class ChainEvolContext implements Serializable {
 						LOGGER.error(msg);
 						LOGGER.error("Check if the PDB entry is biologically reasonable (likely to be an engineered entry). Won't do evolution analysis on this chain.");
 
-						String warning = "More than one UniProt ids correspond to chain "+representativeChain+": ";
+						String warning = "More than one UniProt id correspond to chain "+representativeChain+": ";
 						for (String uniId:uniqUniIds){
 							warning+=(uniId+" ");
 						}
@@ -535,7 +539,11 @@ public class ChainEvolContext implements Serializable {
 	private String findUniprotMapping(String blastBinDir, String blastDbDir, String blastDb, int blastNumThreads, double pdb2uniprotIdThreshold, double pdb2uniprotQcovThreshold, boolean useUniparc) 
 			throws IOException, BlastException, InterruptedException {
 		// for too short sequence it doesn't make sense to blast
-		if (this.sequence.length()<CRKParams.MIN_SEQ_LENGTH_FOR_BLASTING) return null;
+		if (this.sequence.length()<CRKParams.MIN_SEQ_LENGTH_FOR_BLASTING) {
+			LOGGER.info("Chain "+representativeChain+" too short for blasting");
+			// query warnings for peptides (with a higher cutoff than this) are already logged before, see above
+			return null;
+		}
 		
 		File outBlast = File.createTempFile(BLAST_BASENAME,BLASTOUT_SUFFIX);
 		File inputSeqFile = File.createTempFile(BLAST_BASENAME,FASTA_SUFFIX);
