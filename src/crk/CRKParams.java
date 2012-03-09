@@ -38,6 +38,11 @@ public class CRKParams {
 	public static final double     SCORERATIO_INFINITY_VALUE = 1000;
 	// for sequences (strictly) below this length value no blast will be performed
 	public static final int		   MIN_SEQ_LENGTH_FOR_BLASTING = 7;
+	// the hard limits aka "duarte" limits
+	// max limit based on 1pre (bio with 2290 and 0+2 cores) and 2vg5 interface 2 (xtal with 2070 and 0+0 cores) 
+	public static final double	   MAX_AREA_XTALCALL = 2200; 
+	public static final double 	   MIN_AREA_BIOCALL  = 400;   
+
 	
 	// PROPERTY FILES
 	protected static final InputStream COLORS_PROPERTIES_IS = CRKParams.class.getResourceAsStream("/resources/chain_colors.dat");
