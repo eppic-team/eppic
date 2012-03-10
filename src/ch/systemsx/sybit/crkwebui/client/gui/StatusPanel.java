@@ -153,7 +153,7 @@ public class StatusPanel extends DisplayPanel
 		
 		status.setValue(String.valueOf(statusData.getStatus()));
 		jobId.setValue(statusData.getJobId());
-		pdbIdentifierPanel.setPDBText(statusData.getInput(), null, statusData.getInputType());
+		pdbIdentifierPanel.setPDBText(statusData.getInput(), null, null, 0, statusData.getInputType());
 		
 		if((status.getValue() != null) && (status.getValue().equals(StatusOfJob.RUNNING.getName())))
 		{
@@ -192,6 +192,6 @@ public class StatusPanel extends DisplayPanel
 		log.setValue("");
 		status.setValue("");
 		jobId.setValue("");
-		pdbIdentifierPanel.setPDBText("", null, InputType.NONE.getIndex());
+		pdbIdentifierPanel.setPDBText("", null, null, 0, InputType.NONE.getIndex());
 	}
 }

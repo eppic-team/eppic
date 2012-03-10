@@ -23,6 +23,8 @@ public class PDBIdentifierPanel extends LayoutContainer
 	
 	public void setPDBText(String pdbName,
 			  			   String spaceGroup,
+			  			   String expMethod,
+			  			   double resolution,
 			  			   int inputType)
 	{
 		this.removeAll();
@@ -45,13 +47,29 @@ public class PDBIdentifierPanel extends LayoutContainer
 		
 		this.add(pdbNameLabel);
 		
-		if(spaceGroup != null)
-		{
-			spaceGroupLabel = new Label(" (" +
-										spaceGroup +
-										")");
+		if (expMethod!=null) {
+			String labelStr = " (";
+			if (!expMethod.equals("X-RAY DIFFRACTION")) {
+				labelStr+=expMethod;
+			}
+			if (resolution>0) {
+				if (!expMethod.equals("X-RAY DIFFRACTION")) labelStr+=" - "; 					
+				labelStr+= resolution+"Å";//String.format("%4.2fÅ",resolution); // gwt compiler doesn't like String.format, anyway works without it
+			}
+			if(spaceGroup != null && 
+					(expMethod.equals("X-RAY DIFFRACTION") || 
+					 expMethod.equals("NEUTRON DIFFRACTION") || 
+					 expMethod.equals("ELECTRON CRYSTALLOGRAPHY")))
+			{
+				if (resolution>0 || !expMethod.equals("X-RAY DIFFRACTION")) labelStr+=" - ";
+				labelStr+=spaceGroup;
+			}
+			labelStr += ")";
+			if (!labelStr.equals(" ()")) {
+				spaceGroupLabel = new Label(labelStr);
+				this.add(spaceGroupLabel);
+			}
 			
-			this.add(spaceGroupLabel);
 		}
 		
 		this.layout(true);

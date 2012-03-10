@@ -77,6 +77,10 @@
             <basic name="spaceGroup">
             	<column length="10"/>
             </basic>
+            <basic name="expMethod">
+            	<column length="255"/>
+            </basic>
+            <basic name="resolution"></basic>
             
        		<one-to-many name="interfaceItems" mapped-by="pdbScoreItem">  
             	<cascade>  

@@ -84,6 +84,8 @@ public class ResultsPanel extends DisplayPanel
 		pdbIdentifierPanel = new PDBIdentifierPanel(mainController);
 		pdbIdentifierPanel.setPDBText(mainController.getPdbScoreItem().getPdbName(),
 									  mainController.getPdbScoreItem().getSpaceGroup(),
+									  mainController.getPdbScoreItem().getExpMethod(),
+									  mainController.getPdbScoreItem().getResolution(),
 									  mainController.getPdbScoreItem().getInputType());
 		this.add(pdbIdentifierPanel);
 		
@@ -396,6 +398,8 @@ public class ResultsPanel extends DisplayPanel
 		
 		pdbIdentifierPanel.setPDBText(resultsData.getPdbName(),
 							  	 	resultsData.getSpaceGroup(),
+							  	 	resultsData.getExpMethod(),
+							  	 	resultsData.getResolution(),
 							  	 	resultsData.getInputType());
 		
 		pdbTitle.setText(resultsData.getTitle());

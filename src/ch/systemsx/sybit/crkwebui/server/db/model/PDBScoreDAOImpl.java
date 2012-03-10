@@ -44,6 +44,8 @@ public class PDBScoreDAOImpl implements PDBScoreDAO
 									  pdbScoreItemRoot.get(PDBScoreItemDB_.pdbName),
 									  pdbScoreItemRoot.get(PDBScoreItemDB_.title),
 									  pdbScoreItemRoot.get(PDBScoreItemDB_.spaceGroup),
+									  pdbScoreItemRoot.get(PDBScoreItemDB_.expMethod),
+									  pdbScoreItemRoot.get(PDBScoreItemDB_.resolution),
 									  pdbScoreItemRoot.get(PDBScoreItemDB_.runParameters));
 			
 			Query query = entityManager.createQuery(criteriaQuery);
