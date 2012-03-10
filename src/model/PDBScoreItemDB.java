@@ -38,6 +38,8 @@ public class PDBScoreItemDB implements Serializable, ProcessingDataDB
 						String pdbName,
 						String title,
 						String spaceGroup,
+						String expMethod,
+						double resolution,
 						RunParametersItemDB runParameters) 
 	{
 		interfaceItems = new ArrayList<InterfaceItemDB>();
@@ -46,6 +48,8 @@ public class PDBScoreItemDB implements Serializable, ProcessingDataDB
 		this.pdbName = pdbName;
 		this.title = title;
 		this.spaceGroup = spaceGroup;
+		this.expMethod = expMethod;
+		this.resolution = resolution;
 		this.runParameters = runParameters;
 		this.jobItem = jobItem;
 	}
