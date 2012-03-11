@@ -73,26 +73,8 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 			}
 
 			call = CallType.BIO;
-		}
+		}		
 		
-		// check for electrostatic interactions with metal ions in interfaces, e.g. 2o3b (interface is small but strong because of the Mg2+)
-		// see also counter-example 1s1q interface 4: mediated by a Cu but it's a crystallization artifact. In this case area is very small and falls under hard limit above
-		// another counter-example: 2vis interfaces 5 and 8. Also very small area both
-		else if (!interactingPairs.isEmpty()) {
-			callReason = "Close interactions mediated by a non-polymer chain exist in interface. Between : ";
-			for (int i=0;i<interactingPairs.size();i++) {
-				Pair<Atom> pair = interactingPairs.get(i);
-				// first atom is always from nonpoly chain, second atom from either poly chain of interface
-				callReason+=pair.getFirst().getParentResSerial()+"-"+
-							pair.getFirst().getCode()+ " and "+
-							pair.getSecond().getParentResidue().getParent().getPdbChainCode()+"-"+
-							pair.getSecond().getParentResSerial()+pair.getSecond().getParentResidue().getLongCode()+"-"+
-							pair.getSecond().getCode()+
-							" ("+String.format("%3.1f",pair.getFirst().getCoords().distance(pair.getSecond().getCoords()))+")";
-				if (i!=interactingPairs.size()-1) callReason+=", ";
-			}
-			call = CallType.BIO;
-		}
 		else if (size<minCoreSizeForBio) {
 			callReason = "Total core size "+size+" below cutoff ("+minCoreSizeForBio+")";
 			call = CallType.CRYSTAL;
@@ -148,7 +130,11 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 		// 4) checking whether either first or second member of interface are peptides
 		checkForPeptides(FIRST);
 		checkForPeptides(SECOND);
-		// 5) if interactions mediated by a non-polymer are found we warn (sometimes this will be also a callReason, see above) 
+		// 5) if interactions mediated by a non-polymer are found we warn (sometimes this will be also a callReason, see above)
+		// In some cases it can be a natural thing, we believe it is so for 2o3b (interface is small but strong because of the Mg2+)
+		// but we think this are mostly artifacts of crystallization:
+		// e.g. 1s1q interface 4: mediated by a Cu but it's a crystallization artifact. In this case area is very small and falls under hard limit
+		// e.g. 2vis interfaces 5 and 8. Also very small area both		
 		if (!interactingPairs.isEmpty()) {
 			String warning = "Close interactions mediated by a non-polymer chain exist in interface. Between : ";
 			for (int i=0;i<interactingPairs.size();i++) {
