@@ -64,7 +64,13 @@ public class EvolInterfZMemberPredictor implements InterfaceTypePredictor {
 		
 		int countsUnrelCoreRes = -1;
 		if (canDoEntropyScoring()) {
-			countsUnrelCoreRes = getUnreliableCoreRes().size();
+			List<Residue> unreliableCoreRes = iec.getUnreliableCoreRes(molecId);
+			countsUnrelCoreRes = unreliableCoreRes.size();
+			String msg = iec.getReferenceMismatchWarningMsg(unreliableCoreRes,"core");
+			if (msg!=null) {
+				LOGGER.warn(msg);
+				warnings.add(msg);
+			}			
 		}
 
 		if (!canDoEntropyScoring()) {
@@ -224,30 +230,7 @@ public class EvolInterfZMemberPredictor implements InterfaceTypePredictor {
 	public void setBsaToAsaCutoff(double bsaToAsaCutoff) { 
 		this.bsaToAsaCutoff = bsaToAsaCutoff;
 	}
-	
-	/**
-	 * Finds all unreliable core residues and returns them in a list.
-	 * Unreliable are all residues that:
-	 * - if scoringType entropy: the alignment from Uniprot to PDB doesn't match
-	 * - if scoringType ka/ks: as entropy + the alignment of CDS translation to protein doesn't match
-	 * @return
-	 */
-	private List<Residue> getUnreliableCoreRes() {
-		List<Residue> coreResidues = iec.getInterface().getRimCore(molecId).getCoreResidues();
 
-		List<Residue> unreliableCoreResidues = new ArrayList<Residue>();
-		List<Residue> unreliableForPdb = iec.getUnreliableResiduesForPDB(coreResidues, molecId);
-		String msg = iec.getUnreliableForPdbWarningMsg(unreliableForPdb,"core");
-		if (msg!=null) {
-			LOGGER.warn(msg);
-			warnings.add(msg);
-		}	
-		unreliableCoreResidues.addAll(unreliableForPdb);
-		
-
-		return unreliableCoreResidues;
-	}
-	
 	public void resetCall() {
 		this.call = null;
 		this.scoringType = null;

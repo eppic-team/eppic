@@ -77,6 +77,26 @@ public class InterfaceEvolContext implements Serializable {
 	}
 	
 	/**
+	 * Finds all unreliable core residues and returns them in a list.
+	 * Unreliable are all residues for which the alignment from Uniprot to PDB doesn't match
+	 * @return
+	 */
+	public List<Residue> getUnreliableCoreRes(int molecId) {
+		List<Residue> coreResidues = getInterface().getRimCore(molecId).getCoreResidues();
+		return getReferenceMismatchResidues(coreResidues, molecId);
+	}
+	
+	/**
+	 * Finds all unreliable rim residues and returns them in a list.
+	 * Unreliable are all residues for which the alignment from Uniprot to PDB doesn't match
+	 * @return
+	 */
+	public List<Residue> getUnreliableRimRes(int molecId) {
+		List<Residue> rimResidues = getInterface().getRimCore(molecId).getRimResidues();
+		return getReferenceMismatchResidues(rimResidues, molecId);
+	}
+	
+	/**
 	 * Given a list of residues returns the subset of those that are unreliable 
 	 * because of mismatch of PDB sequence to Uniprot reference matching (thus indicating
 	 * engineered residues).
@@ -84,7 +104,7 @@ public class InterfaceEvolContext implements Serializable {
 	 * @param molecId
 	 * @return
 	 */
-	public List<Residue> getUnreliableResiduesForPDB(List<Residue> residues, int molecId) {
+	private List<Residue> getReferenceMismatchResidues(List<Residue> residues, int molecId) {
 		List<Residue> unreliableResidues = new ArrayList<Residue>();
 		ChainEvolContext chain = getChainEvolContext(molecId);
 		for (Residue res:residues){
@@ -96,7 +116,7 @@ public class InterfaceEvolContext implements Serializable {
 		return unreliableResidues;
 	}
 	
-	public String getUnreliableForPdbWarningMsg(List<Residue> unreliableResidues, String typeOfResidues) {
+	public String getReferenceMismatchWarningMsg(List<Residue> unreliableResidues, String typeOfResidues) {
 		String msg = null;
 		if (!unreliableResidues.isEmpty()) {
 			

@@ -57,8 +57,20 @@ public class EvolRimCoreMemberPredictor implements InterfaceTypePredictor {
 		int countsUnrelCoreRes = -1;
 		int countsUnrelRimRes = -1;
 		if (canDoEntropyScoring()) {
-			countsUnrelCoreRes = getUnreliableCoreRes().size();
-			countsUnrelRimRes = getUnreliableRimRes().size();
+			List<Residue> unreliableCoreRes = iec.getUnreliableCoreRes(molecId);
+			List<Residue> unreliableRimRes = iec.getUnreliableRimRes(molecId);
+			countsUnrelCoreRes = unreliableCoreRes.size();
+			countsUnrelRimRes = unreliableRimRes.size();
+			String msg = iec.getReferenceMismatchWarningMsg(unreliableCoreRes,"core");
+			if (msg!=null) {
+				LOGGER.warn(msg);
+				warnings.add(msg);
+			}
+			msg = iec.getReferenceMismatchWarningMsg(unreliableRimRes,"rim");
+			if (msg!=null) {
+				LOGGER.warn(msg);
+				warnings.add(msg);
+			}
 		}
 		
 		call = null;
@@ -191,50 +203,6 @@ public class EvolRimCoreMemberPredictor implements InterfaceTypePredictor {
 		this.bsaToAsaCutoff = bsaToAsaCutoff;
 	}
 	
-	/**
-	 * Finds all unreliable core residues and returns them in a list.
-	 * Unreliable are all residues that:
-	 * - if scoringType entropy: the alignment from Uniprot to PDB doesn't match
-	 * - if scoringType ka/ks: as entropy + the alignment of CDS translation to protein doesn't match
-	 * @return
-	 */
-	protected List<Residue> getUnreliableCoreRes() {
-		List<Residue> coreResidues = iec.getInterface().getRimCore(molecId).getCoreResidues();
-
-		List<Residue> unreliableCoreResidues = new ArrayList<Residue>();
-		List<Residue> unreliableForPdb = iec.getUnreliableResiduesForPDB(coreResidues, molecId);
-		String msg = iec.getUnreliableForPdbWarningMsg(unreliableForPdb, "core");
-		if (msg!=null) {
-			LOGGER.warn(msg);
-			warnings.add(msg);
-		}	
-		unreliableCoreResidues.addAll(unreliableForPdb);
-
-		return unreliableCoreResidues;
-	}
-
-	/**
-	 * Finds all unreliable rim residues and returns them in a list.
-	 * Unreliable are all residues that:
-	 * - if scoringType entropy: the alignment from Uniprot to PDB doesn't match
-	 * - if scoringType ka/ks: as entropy + the alignment of CDS translation to protein doesn't match
-	 * @return
-	 */
-	protected List<Residue> getUnreliableRimRes() {
-		List<Residue> rimResidues = iec.getInterface().getRimCore(molecId).getRimResidues();
-
-		List<Residue> unreliableRimResidues = new ArrayList<Residue>();
-		List<Residue> unreliableForPdb = iec.getUnreliableResiduesForPDB(rimResidues, molecId);
-		String msg = iec.getUnreliableForPdbWarningMsg(unreliableForPdb,"rim");
-		if (msg!=null) {
-			LOGGER.warn(msg);
-			warnings.add(msg);
-		}
-		unreliableRimResidues.addAll(unreliableForPdb);
-
-		return unreliableRimResidues;
-	}
-
 	public void resetCall() {
 		this.call = null;
 		//this.scoringType = null;
