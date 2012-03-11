@@ -203,21 +203,12 @@ public class EvolRimCoreMemberPredictor implements InterfaceTypePredictor {
 
 		List<Residue> unreliableCoreResidues = new ArrayList<Residue>();
 		List<Residue> unreliableForPdb = iec.getUnreliableResiduesForPDB(coreResidues, molecId);
-		String msg = iec.getUnreliableForPdbWarningMsg(unreliableForPdb);
+		String msg = iec.getUnreliableForPdbWarningMsg(unreliableForPdb, "core");
 		if (msg!=null) {
 			LOGGER.warn(msg);
 			warnings.add(msg);
 		}	
 		unreliableCoreResidues.addAll(unreliableForPdb);
-//		if (scoringType==ScoringType.KAKS) {
-//			List<Residue> unreliableForCDS = iec.getUnreliableResiduesForCDS(coreResidues, molecId);
-//			msg = iec.getUnreliableForCDSWarningMsg(unreliableForCDS);
-//			if (msg!=null) {
-//				LOGGER.warn(msg);
-//				warnings.add(msg);				
-//			}
-//			unreliableCoreResidues.addAll(unreliableForCDS);
-//		}
 
 		return unreliableCoreResidues;
 	}
@@ -234,21 +225,12 @@ public class EvolRimCoreMemberPredictor implements InterfaceTypePredictor {
 
 		List<Residue> unreliableRimResidues = new ArrayList<Residue>();
 		List<Residue> unreliableForPdb = iec.getUnreliableResiduesForPDB(rimResidues, molecId);
-		String msg = iec.getUnreliableForPdbWarningMsg(unreliableForPdb);
+		String msg = iec.getUnreliableForPdbWarningMsg(unreliableForPdb,"rim");
 		if (msg!=null) {
 			LOGGER.warn(msg);
 			warnings.add(msg);
 		}
 		unreliableRimResidues.addAll(unreliableForPdb);
-//		if (scoringType==ScoringType.KAKS) {
-//			List<Residue> unreliableForCDS = iec.getUnreliableResiduesForCDS(rimResidues, molecId);
-//			msg = iec.getUnreliableForCDSWarningMsg(unreliableForCDS);
-//			if (msg!=null) {
-//				LOGGER.warn(msg);
-//				warnings.add(msg);				
-//			}
-//			unreliableRimResidues.addAll(unreliableForCDS);
-//		}
 
 		return unreliableRimResidues;
 	}

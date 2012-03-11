@@ -237,7 +237,7 @@ public class EvolInterfZMemberPredictor implements InterfaceTypePredictor {
 
 		List<Residue> unreliableCoreResidues = new ArrayList<Residue>();
 		List<Residue> unreliableForPdb = iec.getUnreliableResiduesForPDB(coreResidues, molecId);
-		String msg = iec.getUnreliableForPdbWarningMsg(unreliableForPdb);
+		String msg = iec.getUnreliableForPdbWarningMsg(unreliableForPdb,"core");
 		if (msg!=null) {
 			LOGGER.warn(msg);
 			warnings.add(msg);

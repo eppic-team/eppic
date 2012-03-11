@@ -77,7 +77,9 @@ public class InterfaceEvolContext implements Serializable {
 	}
 	
 	/**
-	 * Given a list of residues returns the subset of those that are unreliable in terms of PDB to Uniprot matching
+	 * Given a list of residues returns the subset of those that are unreliable 
+	 * because of mismatch of PDB sequence to Uniprot reference matching (thus indicating
+	 * engineered residues).
 	 * @param residues
 	 * @param molecId
 	 * @return
@@ -86,7 +88,7 @@ public class InterfaceEvolContext implements Serializable {
 		List<Residue> unreliableResidues = new ArrayList<Residue>();
 		ChainEvolContext chain = getChainEvolContext(molecId);
 		for (Residue res:residues){
-			int resSer = res.getSerial(); // used to be: chain.getResSerFromPdbResSer(pdbChainCode, res.getPdbSerial()); pdbChainCode was passed
+			int resSer = res.getSerial(); 
 			if (resSer!=-1 && !chain.isPdbSeqPositionMatchingUniprot(resSer)) {
 				unreliableResidues.add(res);
 			}
@@ -94,54 +96,25 @@ public class InterfaceEvolContext implements Serializable {
 		return unreliableResidues;
 	}
 	
-//	/**
-//	 * Given a list of residue returns the subset of those that are unreliable in terms of CDS translation to protein matching
-//	 * @param residues
-//	 * @param molecId
-//	 * @return
-//	 */
-//	public List<Residue> getUnreliableResiduesForCDS(List<Residue> residues, int molecId) {
-//		List<Residue> unreliableResidues = new ArrayList<Residue>();
-//		ChainEvolContext chain = getChainEvolContext(molecId);
-//		for (Residue res:residues){
-//			int resSer = res.getSerial(); // used to be: chain.getResSerFromPdbResSer(pdbChainCode, res.getPdbSerial()); pdbChainCode was passed
-//			if (resSer!=-1 && !chain.isPdbSeqPositionReliable(resSer)) {
-//				unreliableResidues.add(res);
-//			}				
-//		}
-//		return unreliableResidues;
-//	}
-	
-	public String getUnreliableForPdbWarningMsg(List<Residue> unreliableResidues) {
+	public String getUnreliableForPdbWarningMsg(List<Residue> unreliableResidues, String typeOfResidues) {
 		String msg = null;
 		if (!unreliableResidues.isEmpty()) {
-			msg = "Interface residues: ";
+			
+			msg = unreliableResidues.size()+" "+typeOfResidues+
+					" residues of chain "+unreliableResidues.get(0).getParent().getPdbChainCode()+
+					" are unreliable because of mismatch of PDB sequence to UniProt reference: ";
+			
 			for (int i=0;i<unreliableResidues.size();i++) {
-				msg+=unreliableResidues.get(i).getParent().getPdbChainCode()+" "+unreliableResidues.get(i).getLongCode()+unreliableResidues.get(i).getSerial();
-				if (i!=unreliableResidues.size()-1) {
-					msg+=",";
-				}
+				msg+= unreliableResidues.get(i).getSerial()+
+					  "("+unreliableResidues.get(i).getLongCode()+")";
+				
+				if (i!=unreliableResidues.size()-1) msg+=",";				
 			}
-			msg+=" are not reliable because of mismatch in alignment of PDB SEQRES to Uniprot";
+			msg+=" ";
 		}
 		return msg;
 	}
 	
-	public String getUnreliableForCDSWarningMsg(List<Residue> unreliableResidues) {
-		String msg = null;
-		if (!unreliableResidues.isEmpty()) {
-			msg = "Interface residues: ";
-			for (int i=0;i<unreliableResidues.size();i++) {
-				msg+=unreliableResidues.get(i).getParent().getPdbChainCode()+" "+unreliableResidues.get(i).getLongCode()+unreliableResidues.get(i).getSerial();
-				if (i!=unreliableResidues.size()-1) {
-					msg+=(",");
-				}
-			}
-			msg+=" are not reliable because of inaccurate CDS sequence information";		
-		}
-		return msg;
-	}
-
 	/**
 	 * Calculates the evolutionary score for the given list of residues by summing up evolutionary
 	 * scores per residue and averaging (optionally weighted by BSA)
