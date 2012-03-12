@@ -335,4 +335,8 @@ public class InputDataPanel extends DisplayPanel
 							null);
 		}
 	}
+
+	public TextField<String> getPdbCodeField() {
+		return pdbCodeField;
+	}
 }

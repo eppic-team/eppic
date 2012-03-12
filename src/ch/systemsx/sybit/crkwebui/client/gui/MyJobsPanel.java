@@ -30,6 +30,8 @@ import com.extjs.gxt.ui.client.widget.grid.Grid;
 import com.extjs.gxt.ui.client.widget.layout.RowData;
 import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.user.client.History;
 
 /**
@@ -65,6 +67,18 @@ public class MyJobsPanel extends ContentPanel
 			public void componentSelected(ButtonEvent ce) 
 			{
 				History.newItem("");
+				
+				Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+					@Override
+					public void execute() {
+						if((mainController.getMainViewPort().getCenterPanel().getDisplayPanel() != null) &&
+						   (mainController.getMainViewPort().getCenterPanel().getDisplayPanel() instanceof InputDataPanel))
+						{
+							((InputDataPanel)mainController.getMainViewPort().getCenterPanel().getDisplayPanel()).getPdbCodeField().focus();
+						}
+					}
+			    });
+				
 			}
 		});
 		
