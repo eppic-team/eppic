@@ -104,16 +104,30 @@ public class InterfaceEvolContext implements Serializable {
 	 * @param molecId
 	 * @return
 	 */
-	private List<Residue> getReferenceMismatchResidues(List<Residue> residues, int molecId) {
+	public List<Residue> getReferenceMismatchResidues(List<Residue> residues, int molecId) {
 		List<Residue> unreliableResidues = new ArrayList<Residue>();
-		ChainEvolContext chain = getChainEvolContext(molecId);
 		for (Residue res:residues){
-			int resSer = res.getSerial(); 
-			if (resSer!=-1 && !chain.isPdbSeqPositionMatchingUniprot(resSer)) {
+			if (isReferenceMismatch(res, molecId)) {
 				unreliableResidues.add(res);
 			}
 		}
 		return unreliableResidues;
+	}
+	
+	/**
+	 * Given a residue and the molecId to which it belongs returns true if the position is 
+	 * a UniProt reference mismatch (thus indicating engineered residue)
+	 * @param residue
+	 * @param molecId
+	 * @return
+	 */
+	public boolean isReferenceMismatch(Residue residue, int molecId) {
+		ChainEvolContext chain = getChainEvolContext(molecId);
+		int resSer = residue.getSerial();
+		if (resSer!=-1 && !chain.isPdbSeqPositionMatchingUniprot(resSer)) {
+			return true;
+		}
+		return false;
 	}
 	
 	public String getReferenceMismatchWarningMsg(List<Residue> unreliableResidues, String typeOfResidues) {

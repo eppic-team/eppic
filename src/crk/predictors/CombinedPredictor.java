@@ -4,13 +4,18 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import owl.core.structure.Atom;
 import owl.core.structure.ChainInterface;
 
 import crk.CRKParams;
 import crk.CallType;
 import crk.InterfaceEvolContext;
+import edu.uci.ics.jung.graph.util.Pair;
 
 public class CombinedPredictor implements InterfaceTypePredictor {
+	
+	protected static final int FIRST  = 0;
+	protected static final int SECOND = 1;
 	
 	private String callReason;
 	private List<String> warnings;
@@ -33,6 +38,50 @@ public class CombinedPredictor implements InterfaceTypePredictor {
 	@Override
 	public CallType getCall() {
 		
+		// before making the call we gather any possible wild-type disulfide bridges present
+		// This is more of a geom prediction but as we need to check whether it's wild-type or artifactual it needs to be here
+		List<Pair<Atom>> wildTypeDisulfides = new ArrayList<Pair<Atom>>();
+		List<Pair<Atom>> engineeredDisulfides = new ArrayList<Pair<Atom>>();
+		if (iec.getInterface().getAICGraph().hasDisulfideBridges()) {
+			// we can only check whether they are not engineered if we have query matches for both sides
+			if (iec.getChainEvolContext(FIRST).hasQueryMatch() && iec.getChainEvolContext(SECOND).hasQueryMatch()) {				
+				for (Pair<Atom> pair:iec.getInterface().getAICGraph().getDisulfidePairs()) {	
+					if (iec.isReferenceMismatch(pair.getFirst().getParentResidue(),FIRST) || 
+						iec.isReferenceMismatch(pair.getSecond().getParentResidue(),SECOND)) {
+						engineeredDisulfides.add(pair);
+					} else {
+						wildTypeDisulfides.add(pair);
+					}
+				}
+			} else { // we can't tell whether they are engineered or not, we simply warn they are present
+				String msg = iec.getInterface().getAICGraph().getDisulfidePairs().size()+" disulfide bridges present, can't determine whether they are wild-type or not.";
+				msg += " Between CYS residues: ";			
+				for (Pair<Atom> pair:iec.getInterface().getAICGraph().getDisulfidePairs()) {		
+					msg +=
+							pair.getFirst().getParentResidue().getParent().getPdbChainCode()+"-"+
+									pair.getFirst().getParentResSerial()+" and "+
+									pair.getSecond().getParentResidue().getParent().getPdbChainCode()+"-"+
+									pair.getSecond().getParentResSerial();
+				}
+				warnings.add(msg);
+			}
+		}
+		// engineered disulfides: they are only warnings
+		if (!engineeredDisulfides.isEmpty()) {
+			String msg = engineeredDisulfides.size()+" engineered disulfide bridges present.";
+			msg += " Between CYS residues: ";			
+			for (Pair<Atom> pair:engineeredDisulfides) {		
+				msg +=
+						pair.getFirst().getParentResidue().getParent().getPdbChainCode()+"-"+
+								pair.getFirst().getParentResSerial()+" and "+
+								pair.getSecond().getParentResidue().getParent().getPdbChainCode()+"-"+
+								pair.getSecond().getParentResSerial();
+			}
+			warnings.add(msg);
+		}
+
+		
+		// THE CALL
 		
 		// 0 if peptide, we don't use hard area limits
 		// for some cases this works nicely (e.g. 1w9q interface 4)
@@ -43,9 +92,23 @@ public class CombinedPredictor implements InterfaceTypePredictor {
 		}
 		String reasonMsgPrefix = "";
 		if (!useHardLimits) reasonMsgPrefix = "Peptide-protein interface, not checking minimum area hard limit. ";
+				
 		
-		// 1st the hard area limits		
-		if (useHardLimits && iec.getInterface().getInterfaceArea()<CRKParams.MIN_AREA_BIOCALL) {
+		// 1st if wild-type disulfide bridges present we call bio
+		if (!wildTypeDisulfides.isEmpty()) {
+			callReason = wildTypeDisulfides.size()+" wild-type disulfide bridges present.";
+			callReason += " Between CYS residues: ";			
+			for (Pair<Atom> pair:wildTypeDisulfides) {		
+				callReason+=
+						pair.getFirst().getParentResidue().getParent().getPdbChainCode()+"-"+
+								pair.getFirst().getParentResSerial()+" and "+
+								pair.getSecond().getParentResidue().getParent().getPdbChainCode()+"-"+
+								pair.getSecond().getParentResSerial();
+			}
+			call = CallType.BIO;
+		}
+		// 2nd the hard area limits
+		else if (useHardLimits && iec.getInterface().getInterfaceArea()<CRKParams.MIN_AREA_BIOCALL) {
 			callReason = "Area below hard limit "+String.format("%4.0f", CRKParams.MIN_AREA_BIOCALL);
 			call = CallType.CRYSTAL;
 		} 

@@ -59,23 +59,12 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 		
 		// this will happen when we read from PISA, beware that the cutoff is similar to PISA's but not necessarily the same
 		if (interf.getAICGraph()==null) interf.calcAICGraph(INTERF_DIST_CUTOFF);
+
+		// NOTE that we used to detect disulfide bridges here, but it is now moved to CombinedPredictor
+		// as we also need to check in the reference alignment whether the bridge is wild-type or artifact
 		
 		// CALL
-		if (interf.getAICGraph().hasDisulfideBridges()) {
-			callReason = interf.getAICGraph().getDisulfidePairs().size()+" disulfide bridges present.";
-			callReason += " Between CYS residues: ";
-			for (Pair<Atom> pair:interf.getAICGraph().getDisulfidePairs()) {		
-				callReason+=
-					pair.getFirst().getParentResidue().getParent().getPdbChainCode()+"-"+
-					pair.getFirst().getParentResSerial()+" and "+
-					pair.getSecond().getParentResidue().getParent().getPdbChainCode()+"-"+
-					pair.getSecond().getParentResSerial();
-			}
-
-			call = CallType.BIO;
-		}		
-		
-		else if (size<minCoreSizeForBio) {
+		if (size<minCoreSizeForBio) {
 			callReason = "Total core size "+size+" below cutoff ("+minCoreSizeForBio+")";
 			call = CallType.CRYSTAL;
 		} 
@@ -130,7 +119,7 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 		// 4) checking whether either first or second member of interface are peptides
 		checkForPeptides(FIRST);
 		checkForPeptides(SECOND);
-		// 5) if interactions mediated by a non-polymer are found we warn (sometimes this will be also a callReason, see above)
+		// 5) if interactions mediated by a non-polymer are found we warn 
 		// In some cases it can be a natural thing, we believe it is so for 2o3b (interface is small but strong because of the Mg2+)
 		// but we think this are mostly artifacts of crystallization:
 		// e.g. 1s1q interface 4: mediated by a Cu but it's a crystallization artifact. In this case area is very small and falls under hard limit
