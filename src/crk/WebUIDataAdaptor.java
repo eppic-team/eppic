@@ -305,6 +305,17 @@ public class WebUIDataAdaptor {
 			InterfaceItemDB ii = pdbScoreItem.getInterfaceItem(i);
 			ii.setFinalCallName(cps.get(i).getCall().getName());		
 			ii.setFinalCallReason(cps.get(i).getCallReason());
+			if(cps.get(i).getWarnings() != null)
+			{
+				List<String> warnings = cps.get(i).getWarnings();
+				for(String warning: warnings)
+				{
+					WarningItemDB warningItem = new WarningItemDB();
+					warningItem.setText(warning);
+					warningItem.setInterfaceItem(ii);
+					ii.getWarnings().add(warningItem);
+				}
+			}
 		}
 	}
 	
