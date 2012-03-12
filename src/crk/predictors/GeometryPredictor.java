@@ -129,12 +129,12 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 			for (int i=0;i<interactingPairs.size();i++) {
 				Pair<Atom> pair = interactingPairs.get(i);
 				// first atom is always from nonpoly chain, second atom from either poly chain of interface
-				warning+=pair.getFirst().getParentResSerial()+"-"+
-							pair.getFirst().getCode()+ " and "+
+				warning+=pair.getFirst().getParentResSerial()+
+						"("+pair.getFirst().getCode()+ ") and "+
 							pair.getSecond().getParentResidue().getParent().getPdbChainCode()+"-"+
-							pair.getSecond().getParentResSerial()+pair.getSecond().getParentResidue().getLongCode()+"-"+
+							pair.getSecond().getParentResSerial()+"("+pair.getSecond().getParentResidue().getLongCode()+")-"+
 							pair.getSecond().getCode()+
-							" ("+String.format("%3.1f",pair.getFirst().getCoords().distance(pair.getSecond().getCoords()))+")";
+							" (dist: "+String.format("%3.1f",pair.getFirst().getCoords().distance(pair.getSecond().getCoords()))+")";
 				if (i!=interactingPairs.size()-1) warning+=", ";
 			}
 
@@ -158,12 +158,12 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 	private String getPairInteractionString(Pair<Atom> pair) {
 		return
 		pair.getFirst().getParentResidue().getParent().getPdbChainCode()+"-"+
-		pair.getFirst().getParentResSerial()+pair.getFirst().getParentResidue().getLongCode()+"-"+
+		pair.getFirst().getParentResSerial()+"("+pair.getFirst().getParentResidue().getLongCode()+")-"+
 		pair.getFirst().getCode()+" and "+ 	
 		pair.getSecond().getParentResidue().getParent().getPdbChainCode()+"-"+
-		pair.getSecond().getParentResSerial()+pair.getSecond().getParentResidue().getLongCode()+"-"+
+		pair.getSecond().getParentResSerial()+"("+pair.getSecond().getParentResidue().getLongCode()+")-"+
 		pair.getSecond().getCode()+
-		" ("+String.format("%3.1f",pair.getFirst().getCoords().distance(pair.getSecond().getCoords()))+")";
+		" (dist: "+String.format("%3.1f",pair.getFirst().getCoords().distance(pair.getSecond().getCoords()))+")";
 	}
 
 	public void printScores(PrintStream ps) {
