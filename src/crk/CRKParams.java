@@ -61,8 +61,8 @@ public class CRKParams {
 
 	// default cutoffs for the final bio/xtal call
 	private static final int      DEF_MIN_CORE_SIZE_FOR_BIO = 6;
-	private static final double   DEF_ENTR_CALL_CUTOFF = 0.70;
-	private static final double   DEF_ZSCORE_CUTOFF = -0.80;
+	private static final double   DEF_ENTR_CALL_CUTOFF = 0.75;
+	private static final double   DEF_ZSCORE_CUTOFF = -1.00;
 	
 	// default core assignment thresholds
 	private static final double   DEF_CA_CUTOFF_FOR_GEOM = 0.95;
