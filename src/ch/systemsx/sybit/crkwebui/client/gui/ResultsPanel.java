@@ -143,47 +143,11 @@ public class ResultsPanel extends DisplayPanel
 		resultsGrid.setColumnLines(true);
 		resultsGrid.setColumnReordering(true);
 
-//		Listener<GridEvent> resultsGridListener = new Listener<GridEvent>() {
-//			@Override
-//			public void handleEvent(GridEvent event) 
-//			{
-//				updateScoresPanel((Integer) resultsStore.getAt(event.getRowIndex()).get("id"));
-//			}
-//		};
-//		
-//		resultsGrid.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-//		resultsGrid.getSelectionModel().addSelectionChangedListener(new SelectionChangedListener<BeanModel>() 
-//		{
-//			@Override
-//			public void selectionChanged(SelectionChangedEvent<BeanModel> se) 
-//			{
-//				if(resultsGrid.getSelectionModel().getSelectedItem() != null)
-//				{
-//					updateScoresPanel((Integer) resultsGrid.getSelectionModel().getSelectedItem().get("id"));
-//				}
-//			}
-//			
-//		});
-		
 //		resultsGrid.addListener(Events.CellClick, resultsGridListener);
 		resultsGrid.setContextMenu(new ResultsPanelContextMenu(mainController));
 		resultsGrid.disableTextSelection(false);
 //		resultsGrid.setAutoHeight(true);
 //		fillResultsGrid(mainController.getPdbScoreItem());
-		
-//		resultsGrid.addListener(Events.ColumnResize, new Listener<BaseEvent>(){
-//			@Override
-//			public void handleEvent(BaseEvent be) {
-//				mainController.resizeResultsGrid();
-//			}
-//		});
-//		
-//		resultsGrid.addListener(Events.ColumnMove, new Listener<BaseEvent>(){
-//			@Override
-//			public void handleEvent(BaseEvent be) {
-//				mainController.resizeResultsGrid();
-//			}
-//		});
 		
 		resultsGrid.addListener(Events.ContextMenu, new Listener<BaseEvent>(){
 			@Override
@@ -443,8 +407,7 @@ public class ResultsPanel extends DisplayPanel
 				model.setId(interfaceItem.getId());
 				model.setName(interfaceItem.getName());
 				model.setArea(interfaceItem.getArea());
-				model.setSize1(interfaceItem.getSize1());
-				model.setSize2(interfaceItem.getSize2());
+				model.setSizes(String.valueOf(interfaceItem.getSize1()) + " + " + String.valueOf(interfaceItem.getSize2()));
 				model.setFinalCallName(interfaceItem.getFinalCallName());
 				model.setOperator(interfaceItem.getOperator());
 				model.setWarnings(interfaceItem.getWarnings());

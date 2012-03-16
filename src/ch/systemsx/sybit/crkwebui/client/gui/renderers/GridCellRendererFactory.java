@@ -28,8 +28,6 @@ public class GridCellRendererFactory {
 				 renderer = new ThumbnailCellRenderer(mainController);
 			} else if (rendererName.equals("warnings")) {
 				 renderer = new WarningsCellRenderer(mainController);
-			} else if (rendererName.equals("size")) {
-				renderer = new SizeCellRenderer(mainController);
 			} else if (rendererName.equals("jobinput")) {
 				renderer = new InputCellRenderer();
 			} else if (rendererName.equals("jobstatus")) {
