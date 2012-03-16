@@ -815,6 +815,9 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 	public String deleteJob(String jobToDelete) throws CrkWebException
 	{
 		String sessionId = getThreadLocalRequest().getSession().getId();
+		
+		stopJob(jobToDelete);
+		
 		JobDAO jobDAO = new JobDAOImpl();
 		jobDAO.untieSelectedJobFromSession(sessionId, jobToDelete);
 		
