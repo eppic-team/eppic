@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
 
+import crk.CRKParams;
 import crk.CallType;
 import crk.ChainEvolContextList;
 import crk.InterfaceEvolContext;
@@ -43,13 +44,13 @@ public class CalcStats {
 	
 	private static final int MIN_NUM_HOMOLOGS = 10;
 	
-	private static final double DEFCORERIMCALLCUTOFF = 0.70;
-	private static final int DEFMINNUMBERCORERESFORBIO = 6;
-	private static final double DEFZSCORECUTOFF = -0.80;
+	private static final double DEFCORERIMCALLCUTOFF = CRKParams.DEF_ENTR_CALL_CUTOFF;
+	private static final int DEFMINNUMBERCORERESFORBIO = CRKParams.DEF_MIN_CORE_SIZE_FOR_BIO;
+	private static final double DEFZSCORECUTOFF = CRKParams.DEF_ZSCORE_CUTOFF;
 	
-	private static final double DEFCACUTOFF_FOR_G = 0.95;
-	private static final double DEFCACUTOFF_FOR_Z = 0.70;
-	private static final double DEFCACUTOFF_FOR_CR = 0.70;
+	private static final double DEFCACUTOFF_FOR_G = CRKParams.DEF_CA_CUTOFF_FOR_GEOM;
+	private static final double DEFCACUTOFF_FOR_Z = CRKParams.DEF_CA_CUTOFF_FOR_ZSCORE;
+	private static final double DEFCACUTOFF_FOR_CR = CRKParams.DEF_CA_CUTOFF_FOR_RIMCORE;
 	
 
 	private static File bioDir    = null;

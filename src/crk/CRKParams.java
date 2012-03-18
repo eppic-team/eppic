@@ -17,7 +17,7 @@ import owl.core.structure.AminoAcid;
 public class CRKParams {
 	
 	// CONSTANTS
-	private static final String    PROGRAM_NAME = "crk";
+	public static final String     PROGRAM_NAME = "crk";
 	public static final String	   PROGRAM_VERSION = "1.9.3";
 	private static final Pattern   PDBCODE_PATTERN = Pattern.compile("^\\d\\w\\w\\w$");
 	protected static final String  CONFIG_FILE_NAME = ".crk.conf";
@@ -49,25 +49,25 @@ public class CRKParams {
 	protected static final InputStream PYMOL_COLOR_MAPPINGS_IS = CRKParams.class.getResourceAsStream("/resources/pymol.colors");
 	
 	// DEFAULTS FOR COMMAND LINE PARAMETERS
-	private static final double   DEF_HOM_SOFT_ID_CUTOFF = 0.6;
-	private static final double   DEF_HOM_HARD_ID_CUTOFF = 0.5;
+	public static final double    DEF_HOM_SOFT_ID_CUTOFF = 0.6;
+	public static final double    DEF_HOM_HARD_ID_CUTOFF = 0.5;
 
 	private static final int      DEF_NUMTHREADS = Runtime.getRuntime().availableProcessors();
 	
 	private static final String   DEF_OUT_DIR = ".";
 	
 	// default entropy calculation 
-	private static final int      DEF_ENTROPY_ALPHABET = 10;
+	public static final int       DEF_ENTROPY_ALPHABET = 10;
 
 	// default cutoffs for the final bio/xtal call
-	private static final int      DEF_MIN_CORE_SIZE_FOR_BIO = 6;
-	private static final double   DEF_ENTR_CALL_CUTOFF = 0.75;
-	private static final double   DEF_ZSCORE_CUTOFF = -1.00;
+	public static final int       DEF_MIN_CORE_SIZE_FOR_BIO = 6;
+	public static final double    DEF_ENTR_CALL_CUTOFF = 0.75;
+	public static final double    DEF_ZSCORE_CUTOFF = -1.00;
 	
 	// default core assignment thresholds
-	private static final double   DEF_CA_CUTOFF_FOR_GEOM = 0.95;
-	private static final double   DEF_CA_CUTOFF_FOR_RIMCORE = 0.70;
-	private static final double   DEF_CA_CUTOFF_FOR_ZSCORE = 0.70;
+	public static final double    DEF_CA_CUTOFF_FOR_GEOM = 0.95;
+	public static final double    DEF_CA_CUTOFF_FOR_RIMCORE = 0.70;
+	public static final double    DEF_CA_CUTOFF_FOR_ZSCORE = 0.70;
 
 	private static final int      DEF_MAX_NUM_SEQUENCES = 60;
 	
