@@ -21,8 +21,14 @@ import ch.systemsx.sybit.crkwebui.shared.CrkWebException;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResidueItem;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResiduesItemsList;
 
+/**
+ * Implementation of InterfaceResidueItemDAO.
+ * @author AS
+ *
+ */
 public class InterfaceResidueItemDAOImpl implements InterfaceResidueItemDAO 
 {
+	@Override
 	public List<InterfaceResidueItem> getResiduesForInterface(int interfaceUid) throws CrkWebException
 	{
 		EntityManager entityManager = null;
@@ -48,10 +54,6 @@ public class InterfaceResidueItemDAOImpl implements InterfaceResidueItemDAO
 			{
 				result.add(InterfaceResidueItem.create(interfaceResidueItemDB));
 			}
-			
-//			Query query = entityManager.createQuery("from InterfaceResidue WHERE InterfaceItem_uid = :uid", InterfaceResidueItem.class);
-//			query.setParameter("uid", interfaceUid);
-//			residues = query.getResultList();
 		}
 		catch(Throwable e)
 		{
@@ -73,6 +75,7 @@ public class InterfaceResidueItemDAOImpl implements InterfaceResidueItemDAO
 		return result;
 	}
 	
+	@Override
 	public InterfaceResiduesItemsList getResiduesForAllInterfaces(int pdbScoreUid) throws CrkWebException
 	{
 		EntityManager entityManager = null;
@@ -122,10 +125,6 @@ public class InterfaceResidueItemDAOImpl implements InterfaceResidueItemDAO
 				}
 				
 			}
-			
-//			Query query = entityManager.createQuery("from InterfaceResidue WHERE InterfaceItem_uid = :uid", InterfaceResidueItem.class);
-//			query.setParameter("uid", interfaceUid);
-//			residues = query.getResultList();
 		}
 		catch(Throwable e)
 		{

@@ -8,8 +8,14 @@ import javax.persistence.Query;
 import ch.systemsx.sybit.crkwebui.server.db.EntityManagerHandler;
 import ch.systemsx.sybit.crkwebui.shared.CrkWebException;
 
+/**
+ * Implementation of IPForbiddenDAO.
+ * @author AS
+ *
+ */
 public class IPForbiddenDAOImpl implements IPForbiddenDAO
 {
+	@Override
 	public boolean isIPForbidden(String ip) throws CrkWebException
 	{
 		EntityManager entityManager = null;

@@ -16,6 +16,11 @@ import ch.systemsx.sybit.crkwebui.server.db.EntityManagerHandler;
 import ch.systemsx.sybit.crkwebui.shared.CrkWebException;
 import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
 
+/**
+ * Implementation of PDBScoreDAO.
+ * @author AS
+ *
+ */
 public class PDBScoreDAOImpl implements PDBScoreDAO 
 {
 	
@@ -24,6 +29,7 @@ public class PDBScoreDAOImpl implements PDBScoreDAO
 		
 	}
 
+	@Override
 	public PDBScoreItem getPDBScore(String jobId) throws CrkWebException
 	{
 		EntityManager entityManager = null;
@@ -53,11 +59,6 @@ public class PDBScoreDAOImpl implements PDBScoreDAO
 			
 			result = PDBScoreItem.create(pdbScoreItemDB);
 			result.setJobId(jobId);
-			
-	//			Query query = entityManager.createQuery("from PDBScore WHERE jobId = :jobId", PDBScoreItem.class);
-	//			query.setParameter("jobId", jobId);
-	//			PDBScoreItem pdbScoreItem = (PDBScoreItem) query.getSingleResult();
-	//			return pdbScoreItem;
 		}
 		catch(Throwable e)
 		{
@@ -79,6 +80,7 @@ public class PDBScoreDAOImpl implements PDBScoreDAO
 		return result;
 	}
 	
+	@Override
 	public void insertPDBScore(PDBScoreItemDB pdbScoreItem) throws CrkWebException
 	{
 		EntityManager entityManager = null;

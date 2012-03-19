@@ -16,8 +16,13 @@ import model.UserSessionDB_;
 import ch.systemsx.sybit.crkwebui.server.db.EntityManagerHandler;
 import ch.systemsx.sybit.crkwebui.shared.CrkWebException;
 
+/**
+ * Implementation of UserSessionDAO.
+ * @author AS
+ */
 public class UserSessionDAOImpl implements UserSessionDAO 
 {
+	@Override
 	public void insertSessionForJob(String sessionId, String jobId) throws CrkWebException
 	{
 		EntityManager entityManager = null;
@@ -41,15 +46,6 @@ public class UserSessionDAOImpl implements UserSessionDAO
 			session.getJobs().add(job);
 			entityManager.merge(session);
 			entityManager.getTransaction().commit();
-			
-//			Query query = entityManager.createQuery("from Job WHERE jobId = :jobId");
-//			query.setParameter("jobId", jobId);
-//			JobDB job = (JobDB) query.getSingleResult();
-//			
-//			if(job != null)
-//			{
-//				job.setSessionId(sessionId);
-//			}
 		}
 		catch(Throwable e)
 		{
@@ -80,6 +76,7 @@ public class UserSessionDAOImpl implements UserSessionDAO
 		}
 	}
 	
+	@Override
 	public UserSessionDB getSession(EntityManager entityManager,
 								String sessionId) throws CrkWebException
 	{
@@ -107,29 +104,10 @@ public class UserSessionDAOImpl implements UserSessionDAO
 				session.setSessionId(sessionId);
 				entityManager.persist(session);
 			}
-			
-//			Query query = entityManager.createQuery("from Job WHERE jobId = :jobId");
-//			query.setParameter("jobId", jobId);
-//			JobDB job = (JobDB) query.getSingleResult();
-//			
-//			if(job != null)
-//			{
-//				job.setSessionId(sessionId);
-//			}
 		}
 		catch(Throwable e)
 		{
 			e.printStackTrace();
-			
-//			try
-//			{
-//				entityManager.getTransaction().rollback();
-//			}
-//			catch(Throwable t)
-//			{
-//				
-//			}
-			
 			throw new CrkWebException(e);
 		}
 		finally

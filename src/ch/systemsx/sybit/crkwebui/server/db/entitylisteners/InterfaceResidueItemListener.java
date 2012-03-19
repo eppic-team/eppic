@@ -5,6 +5,11 @@ import javax.persistence.PrePersist;
 
 import model.InterfaceResidueItemDB;
 
+/**
+ * Entity listener for InterfaceResidueItem used to properly handle NaN and null values.
+ * @author AS
+ *
+ */
 public class InterfaceResidueItemListener
 {
 	@PrePersist

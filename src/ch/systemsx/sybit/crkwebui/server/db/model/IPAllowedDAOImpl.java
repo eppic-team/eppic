@@ -8,8 +8,14 @@ import javax.persistence.Query;
 import ch.systemsx.sybit.crkwebui.server.db.EntityManagerHandler;
 import ch.systemsx.sybit.crkwebui.shared.CrkWebException;
 
+/**
+ * Implementation of IPAllowedDAO.
+ * @author AS
+ *
+ */
 public class IPAllowedDAOImpl implements IPAllowedDAO 
 {
+	@Override
 	public int getNrOfAllowedSubmissionsForIP(String ip) throws CrkWebException
 	{
 		EntityManager entityManager = null;

@@ -18,8 +18,14 @@ import ch.systemsx.sybit.crkwebui.server.db.EntityManagerHandler;
 import ch.systemsx.sybit.crkwebui.shared.CrkWebException;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceItem;
 
+/**
+ * Implementation of InterfaceItemDAO.
+ * @author AS
+ *
+ */
 public class InterfaceItemDAOImpl implements InterfaceItemDAO 
 {
+	@Override
 	public List<InterfaceItem> getInterfacesWithScores(int pdbScoreUid) throws CrkWebException
 	{
 		EntityManager entityManager = null;
@@ -36,27 +42,6 @@ public class InterfaceItemDAOImpl implements InterfaceItemDAO
 			Root<InterfaceItemDB> interfaceItemRoot = criteriaQuery.from(InterfaceItemDB.class);
 			Path<PDBScoreItemDB> pdbScoreItemDB = interfaceItemRoot.get(InterfaceItemDB_.pdbScoreItem);
 			criteriaQuery.where(criteriaBuilder.equal(pdbScoreItemDB.get(PDBScoreItemDB_.uid), pdbScoreUid));
-//			criteriaQuery.multiselect(interfaceItemRoot.get(InterfaceItemDB_.area),
-//					interfaceItemRoot.get(InterfaceItemDB_.area),
-//					interfaceItemRoot.get(InterfaceItemDB_.asaC1),
-//					interfaceItemRoot.get(InterfaceItemDB_.asaC2),
-//					interfaceItemRoot.get(InterfaceItemDB_.asaR1),
-//					interfaceItemRoot.get(InterfaceItemDB_.asaR2),
-//					interfaceItemRoot.get(InterfaceItemDB_.bsaC1),
-//					interfaceItemRoot.get(InterfaceItemDB_.bsaC2),
-//					interfaceItemRoot.get(InterfaceItemDB_.bsaR1),
-//					interfaceItemRoot.get(InterfaceItemDB_.bsaR2),
-//					interfaceItemRoot.get(InterfaceItemDB_.finalCall),
-//					interfaceItemRoot.get(InterfaceItemDB_.id),
-//					interfaceItemRoot.get(InterfaceItemDB_.jmolScript),
-//					interfaceItemRoot.get(InterfaceItemDB_.name),
-//					interfaceItemRoot.get(InterfaceItemDB_.operator),
-//					interfaceItemRoot.get(InterfaceItemDB_.pdbScoreItem),
-//					interfaceItemRoot.get(InterfaceItemDB_.size1),
-//					interfaceItemRoot.get(InterfaceItemDB_.size2),
-//					interfaceItemRoot.get(InterfaceItemDB_.uid),
-//					interfaceItemRoot.get(InterfaceItemDB_.warnings),
-//					interfaceItemRoot.get(InterfaceItemDB_.interfaceScores));
 			
 			Query query = entityManager.createQuery(criteriaQuery);
 			
@@ -67,11 +52,6 @@ public class InterfaceItemDAOImpl implements InterfaceItemDAO
 				interfaceItemDB.setInterfaceResidues(null);
 				result.add(InterfaceItem.create(interfaceItemDB));
 			}
-			
-//			entityManager = EntityManagerHandler.getEntityManager();
-//			Query query = entityManager.createQuery("from Interface WHERE PDBScoreItem_uid = :uid", InterfaceItem.class);
-//			query.setParameter("uid", pdbScoreUid);
-//			residues = query.getResultList();
 		}
 		catch(Throwable e)
 		{
@@ -93,6 +73,7 @@ public class InterfaceItemDAOImpl implements InterfaceItemDAO
 		return result;
 	}
 	
+	@Override
 	public List<InterfaceItem> getInterfacesWithResidues(int pdbScoreUid) throws CrkWebException
 	{
 		EntityManager entityManager = null;
@@ -109,27 +90,6 @@ public class InterfaceItemDAOImpl implements InterfaceItemDAO
 			Root<InterfaceItemDB> interfaceItemRoot = criteriaQuery.from(InterfaceItemDB.class);
 			Path<PDBScoreItemDB> pdbScoreItemDB = interfaceItemRoot.get(InterfaceItemDB_.pdbScoreItem);
 			criteriaQuery.where(criteriaBuilder.equal(pdbScoreItemDB.get(PDBScoreItemDB_.uid), pdbScoreUid));
-//			criteriaQuery.multiselect(interfaceItemRoot.get(InterfaceItemDB_.area),
-//					interfaceItemRoot.get(InterfaceItemDB_.area),
-//					interfaceItemRoot.get(InterfaceItemDB_.asaC1),
-//					interfaceItemRoot.get(InterfaceItemDB_.asaC2),
-//					interfaceItemRoot.get(InterfaceItemDB_.asaR1),
-//					interfaceItemRoot.get(InterfaceItemDB_.asaR2),
-//					interfaceItemRoot.get(InterfaceItemDB_.bsaC1),
-//					interfaceItemRoot.get(InterfaceItemDB_.bsaC2),
-//					interfaceItemRoot.get(InterfaceItemDB_.bsaR1),
-//					interfaceItemRoot.get(InterfaceItemDB_.bsaR2),
-//					interfaceItemRoot.get(InterfaceItemDB_.finalCall),
-//					interfaceItemRoot.get(InterfaceItemDB_.id),
-//					interfaceItemRoot.get(InterfaceItemDB_.jmolScript),
-//					interfaceItemRoot.get(InterfaceItemDB_.name),
-//					interfaceItemRoot.get(InterfaceItemDB_.operator),
-//					interfaceItemRoot.get(InterfaceItemDB_.pdbScoreItem),
-//					interfaceItemRoot.get(InterfaceItemDB_.size1),
-//					interfaceItemRoot.get(InterfaceItemDB_.size2),
-//					interfaceItemRoot.get(InterfaceItemDB_.uid),
-//					interfaceItemRoot.get(InterfaceItemDB_.warnings),
-//					interfaceItemRoot.get(InterfaceItemDB_.interfaceScores));
 			
 			Query query = entityManager.createQuery(criteriaQuery);
 			
@@ -142,10 +102,6 @@ public class InterfaceItemDAOImpl implements InterfaceItemDAO
 				result.add(InterfaceItem.create(interfaceItemDB));
 			}
 			
-//			entityManager = EntityManagerHandler.getEntityManager();
-//			Query query = entityManager.createQuery("from Interface WHERE PDBScoreItem_uid = :uid", InterfaceItem.class);
-//			query.setParameter("uid", pdbScoreUid);
-//			residues = query.getResultList();
 		}
 		catch(Throwable e)
 		{

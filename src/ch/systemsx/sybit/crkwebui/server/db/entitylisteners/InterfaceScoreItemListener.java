@@ -5,6 +5,11 @@ import javax.persistence.PrePersist;
 
 import model.InterfaceScoreItemDB;
 
+/**
+ * Entity listener for InterfaceScoreItem used to properly handle NaN and null values.
+ * @author AS
+ *
+ */
 public class InterfaceScoreItemListener
 {
 	@PrePersist
