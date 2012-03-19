@@ -13,7 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * Servlet used to download stored on the server side files
+ * Servlet used to download stored on the server side files.
  * 
  * @author srebniak_a
  * 
@@ -26,15 +26,14 @@ public class FileDownloadServlet extends FileBaseServlet
 	private static final long serialVersionUID = 1L;
 
 	/**
-	 * Read properties files
+	 * Reads properties files
 	 */
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
 	}
 
 	/**
-	 * Return file specified by the id - name of the directory where file is
-	 * stored
+	 * Returns file specified by the parameters.
 	 */
 	protected void doGet(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException 

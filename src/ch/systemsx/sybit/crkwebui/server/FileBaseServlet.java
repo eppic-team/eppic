@@ -9,7 +9,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 
 /**
- * Base class for file upload and download servlets
+ * Base class for file upload and download servlets.
  * @author srebniak_a
  *
  */

@@ -14,7 +14,7 @@ import javax.mail.internet.MimeMessage;
 import ch.systemsx.sybit.crkwebui.server.data.EmailData;
 
 /**
- * This class is used to send emails
+ * This class is used to send emails.
  * @author srebniak_a
  *
  */
@@ -27,6 +27,11 @@ public class EmailSender
 		this.emailData = emailData;
 	}
 
+	/**
+	 * Sends email.
+	 * @param subject subject of the email
+	 * @param text content of the email
+	 */
 	public void send(String subject, String text) 
 	{
 		if ((emailData.getEmailRecipient() != null)

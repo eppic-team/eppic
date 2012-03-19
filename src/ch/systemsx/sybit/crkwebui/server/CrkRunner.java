@@ -24,7 +24,7 @@ import ch.systemsx.sybit.crkwebui.shared.model.InputType;
 import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
 
 /**
- * This class is used to start crk application
+ * This class is used to start crk application.
  * @author srebniak_a
  *
  */
@@ -43,7 +43,6 @@ public class CrkRunner implements Runnable
 	private String submissionId; 
 	
 	private int inputType;
-//	private boolean isWaiting;
 
 	private boolean isInterrupted;
 	
@@ -73,6 +72,9 @@ public class CrkRunner implements Runnable
 
 	}
 
+	/**
+	 * Starts job.
+	 */
 	public void run() 
 	{
 		submissionId = null;
@@ -92,28 +94,12 @@ public class CrkRunner implements Runnable
 			File runFile = new File(destinationDirectoryName + "/crkrun");
 			runFile.createNewFile();
 
-//			synchronized(this)
-//			{
-//				if(!((CrkThreadGroup)getThreadGroup()).checkIfCanBeRun())
-//				{
-//					try 
-//					{
-//						isWaiting = true;
-//						this.wait();
-//					}
-//					catch (InterruptedException e) 
-//					{
-//						e.printStackTrace();
-//					}
-//				}
-//			}
 
 			RunJobDataValidator.validateJobId(jobId);
 			RunJobDataValidator.validateInput(input);
 			RunJobDataValidator.validateInputParameters(inputParameters);
 			
 			List<String> command = new ArrayList<String>();
-//			command.add("java");
 			command.add("-jar");
 			command.add(crkApplicationLocation);
 			command.add("-i");
@@ -158,37 +144,6 @@ public class CrkRunner implements Runnable
 			command.add("-l");
 			
 			
-//			// using ProcessBuilder to spawn an process
-//			ProcessBuilder processBuilder = new ProcessBuilder(command);
-//			processBuilder.redirectErrorStream(true);
-//
-//			Process crkProcess = processBuilder.start();
-//			
-////			BufferedReader br = new BufferedReader( new InputStreamReader( crkProcess.getErrorStream() ));
-////            
-////			StringBuffer errorLog = new StringBuffer();
-////			
-////			String line;
-////            while ( ( line = br.readLine() ) != null )
-////            {
-////            	errorLog.append(line);
-////            }
-////            
-////            br.close();
-//            
-//			int exitValue = crkProcess.waitFor();
-//			
-//			if(exitValue != 0)
-//			{
-//				throw new CrkWebException("Error during calculations");
-//			}
-			
-			
-//			SessionFactory factory = SessionFactory.getFactory();
-//			sgeSession = factory.getSession();
-//
-//			sgeSession.init("");
-			
 			JobTemplate jobTemplate = sgeSession.createJobTemplate();
 			jobTemplate.setRemoteCommand("java");
 			jobTemplate.setArgs(command);
@@ -200,17 +155,6 @@ public class CrkRunner implements Runnable
 
 	      	sgeSession.deleteJobTemplate(jobTemplate);
 
-//	      	while((sgeSession.getJobProgramStatus(submissionId) != Session.DONE) && 
-//	      		  (sgeSession.getJobProgramStatus(submissionId) != Session.FAILED))
-//	      	{
-//	      		
-//	      	}
-//	      	
-//	      	if(sgeSession.getJobProgramStatus(submissionId) == Session.FAILED)
-//	      	{
-//	      		throw new CrkWebException("Error during calculations");
-//	      	}
-	      	
 	      	JobInfo info = sgeSession.wait(submissionId, Session.TIMEOUT_WAIT_FOREVER);
 
 	      	if(info.getExitStatus() != 0)
@@ -218,86 +162,6 @@ public class CrkRunner implements Runnable
 	      		throw new CrkWebException("Error during calculations: " + info.getExitStatus());
 	      	}
 
-//	      	sgeSession.exit();
-			   
-			
-//			PrintStream logStream = new PrintStream(logFile);
-//			
-//			CRKMain crkMain = new CRKMain(logStream);
-//			ProcessBuilder processBuilder = new ProcessBuilder(arg0);
-//			crkMain.setDefaults();
-//
-//			crkMain.getCRKParams().setPdbCode(fileName);
-//			crkMain.getCRKParams()
-//					.setOutDir(new File(destinationDirectoryName));
-//			
-//			if(crkMain.getCRKParams().isInputAFile())
-//			{
-//				crkMain.getCRKParams().setInFile(new File(destinationDirectoryName + "/" + fileName));
-//			}
-//			
-//			crkMain.getCRKParams().setMaxNumSeqsSelecton(inputParameters.getMaxNrOfSequences());
-//			crkMain.getCRKParams().setSelectonEpsilon(inputParameters.getSelecton());
-//			crkMain.getCRKParams().setUsePisa(inputParameters.isUsePISA());
-//			crkMain.getCRKParams().setUseNaccess(inputParameters.isUseNACCESS());
-//			crkMain.getCRKParams().setUseTcoffeeVeryFastMode(inputParameters.isUseTCoffee());
-//			crkMain.getCRKParams().setIdCutoff(inputParameters.getIdentityCutoff());
-//			crkMain.getCRKParams().setReducedAlphabet(inputParameters.getReducedAlphabet());
-//			crkMain.getCRKParams().setnSpherePointsASAcalc(inputParameters.getAsaCalc());
-//			crkMain.getCRKParams().setNumThreads(1);
-//			
-//			if(inputParameters.getMethods() != null)
-//			{
-//				for(String method : inputParameters.getMethods())
-//				{
-//					if(method.equals("KaKs"))
-//					{
-//						crkMain.getCRKParams().setDoScoreCRK(true);
-//					}
-//				}
-//			}
-//			
-//			crkMain.getCRKParams().checkCommandLineInput();
-//
-//			// turn off jaligner logging (we only use NeedlemanWunschGotoh
-//			// from that package)
-//			// (for some reason this doesn't work if condensated into one
-//			// line, it seems that one needs to instantiate the logger and
-//			// then call setLevel)
-//			// (and even weirder, for some reason it doesn't work if you put
-//			// the code in its own separate method!)
-//			java.util.logging.Logger jalLogger = java.util.logging.Logger
-//					.getLogger("NeedlemanWunschGotoh");
-//			jalLogger.setLevel(java.util.logging.Level.OFF);
-//
-//			crkMain.setUpLogging();
-//
-//			crkMain.loadConfigFile();
-//
-//			// 0 load pdb
-//			crkMain.doLoadPdb();
-//
-//			// 1 finding interfaces
-//			if (crkMain.getCRKParams().getInterfSerFile() != null) {
-//				crkMain.doLoadInterfacesFromFile();
-//			} else {
-//				crkMain.doFindInterfaces();
-//			}
-//
-//			// 2 finding evolutionary context
-//			if (crkMain.getCRKParams().getChainEvContextSerFile() != null) {
-//				crkMain.doLoadEvolContextFromFile();
-//			} else {
-//				crkMain.doFindEvolContext();
-//			}
-//
-//			// 3 scoring
-//			crkMain.doScoring();
-//			
-	      	
-		    
-		    // zip file generation now moved to the worker
-		    //generateZipFile(destinationDirectoryName + "/" + input + ".zip");
 		    
 		    String webuiFileName = input;
 		    
@@ -312,7 +176,6 @@ public class CrkRunner implements Runnable
 	        
 			JobDAO jobDao = new JobDAOImpl();
 			jobDao.setPdbScoreItemForJob(jobId, pdbScoreItem);
-//			DBUtils.updateStatusOfJob(generatedDirectoryName, StatusOfJob.FINISHED);
 
 			writeMessage("Processing finished\n");
 
@@ -324,10 +187,6 @@ public class CrkRunner implements Runnable
 
 			runFile.delete();
 		} 
-//		catch(CRKException e)
-//		{
-//			handleException(e.getMessage());
-//		}
 		catch (Throwable e) 
 		{
 			e.printStackTrace();
@@ -337,11 +196,6 @@ public class CrkRunner implements Runnable
 				handleException(e.getMessage());
 			}
 		}
-//		finally
-//		{
-//			((CrkThreadGroup)getThreadGroup()).runNextInQueue();
-//		}
-
 	}
 	
 	private void handleException(String errorMessage)
@@ -375,7 +229,6 @@ public class CrkRunner implements Runnable
 		{
 			JobDAO jobDao = new JobDAOImpl();
 			jobDao.updateStatusOfJob(jobId, StatusOfJob.ERROR.getName());
-//			DBUtils.updateStatusOfJob(generatedDirectoryName, StatusOfJob.ERROR);
 		} 
 		catch (CrkWebException e) 
 		{
@@ -397,6 +250,12 @@ public class CrkRunner implements Runnable
 				message + "\n\n" + resultPath);
 	}
 	
+	/**
+	 * Retrieves result of processing from specified file.
+	 * @param resultFileName name of the file containing result of processing
+	 * @return pdb score item
+	 * @throws CrkWebException when can not retrieve result from specified file
+	 */
 	private PDBScoreItemDB retrieveResult(String resultFileName) throws CrkWebException
 	{
 		PDBScoreItemDB pdbScoreItem = null;
@@ -440,6 +299,11 @@ public class CrkRunner implements Runnable
 		return pdbScoreItem;
 	}
 	
+	/**
+	 * Adds message to the log file.
+	 * @param message message to add to the log file
+	 * @throws CrkWebException when message can not be added to the log
+	 */
 	private void writeMessage(String message) throws CrkWebException
 	{
 		FileOutputStream outputStream = null;
@@ -470,6 +334,9 @@ public class CrkRunner implements Runnable
 		}
 	}
 	
+	/**
+	 * Stops job.
+	 */
 	public void stopJob()
 	{
 		isInterrupted = true;
@@ -487,13 +354,4 @@ public class CrkRunner implements Runnable
 		}
 	}
 	
-//	public synchronized boolean isWaiting()
-//	{
-//		return isWaiting;
-//	}
-//	
-//	public synchronized void setIsWaiting(boolean isWaiting)
-//	{
-//		this.isWaiting = isWaiting;
-//	}
 }

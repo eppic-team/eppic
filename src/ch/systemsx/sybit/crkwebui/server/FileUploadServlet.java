@@ -49,7 +49,7 @@ public class FileUploadServlet extends FileBaseServlet {
 	private int maxFileUploadSize;
 
 	/**
-	 * Read properties file
+	 * Reads properties file
 	 */
 	public void init(ServletConfig config) throws ServletException 
 	{
@@ -120,9 +120,6 @@ public class FileUploadServlet extends FileBaseServlet {
 
 			try 
 			{
-				/*
-				 * Parse the request
-				 */
 				List<FileItem> items = uploadHandler.parseRequest(request);
 				
 				String verificationError = null;
@@ -203,42 +200,37 @@ public class FileUploadServlet extends FileBaseServlet {
 					{
 						out.println("err:Incorrect file name - " + fileNameVerificationError);
 					}
-
-//					File processingFile = new File(localDestinationDir
-//							+ "/" + fileName);
-//					processingFile.createNewFile();
-					
 				}
 				else
 				{
 					out.println("err:" + "Verification failed - " + verificationError);
-//					response.sendError(HttpServletResponse.SC_FORBIDDEN, "Verification failed - " + verificationError);
 				}
 				
 			} 
 			catch (FileUploadException ex)
 			{
 				out.println("err:" + "Error during uploading the file." + ex.getMessage());
-//				response.sendError(HttpServletResponse.SC_EXPECTATION_FAILED,
-//						"Error during uploading the file." + ex.getMessage());
 			}
 			catch (Exception ex) 
 			{
 				out.println("err:" + "Error encountered while uploading file" + ex.getMessage());
-//				response.sendError(HttpServletResponse.SC_EXPECTATION_FAILED,
-//						"Error encountered while uploading file" + ex.getMessage());
 			}
 		}
 		else 
 		{
 			out.println("err:" + "Error encountered while uploading file" + "Request contents type is not supported by the servlet.");
-//			response.sendError(HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE,
-//					"Request contents type is not supported by the servlet.");
 		}
 		
 		out.close();
 	}
 
+	/**
+	 * Verifies correctness of the challenge.
+	 * @param challenge challenge
+	 * @param response response
+	 * @param remoteAddress remote address
+	 * @return null if verification succeeded, otherwise error message
+	 */
 	private String verifyChallenge(String challenge, String response, String remoteAddress) 
 	{
 		String result = null;

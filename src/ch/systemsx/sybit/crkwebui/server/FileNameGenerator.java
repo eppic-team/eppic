@@ -1,13 +1,21 @@
 package ch.systemsx.sybit.crkwebui.server;
 
 /**
- * 
+ * This class is used to create file suffixes for specified input parameters.
  * @author srebniak_a
  *
  */
 public class FileNameGenerator 
 {
 
+	/**
+	 * Creates file suffix for specified input parameters.
+	 * @param type type of the file
+	 * @param jobId identifier of the job
+	 * @param interfaceId identifier of the interface
+	 * @param alignment alignment identifier
+	 * @return suffix of the file
+	 */
 	public static String generateFileNameToDownload(String type,
 													String jobId,
 													String interfaceId,

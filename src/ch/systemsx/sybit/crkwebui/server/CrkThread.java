@@ -1,5 +1,10 @@
 package ch.systemsx.sybit.crkwebui.server;
 
+/**
+ * Crk runner thread.
+ * @author AS
+ *
+ */
 public class CrkThread extends Thread
 {
 	private CrkRunner crkRunner;
@@ -11,6 +16,7 @@ public class CrkThread extends Thread
 		this.crkRunner = crkRunner;
 	}
 	
+	@Override
 	public void interrupt()
 	{
 		super.interrupt();
