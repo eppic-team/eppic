@@ -16,7 +16,7 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 
 /**
- * Main view of the application
+ * Main view of the application.
  * @author srebniak_a
  *
  */
@@ -53,7 +53,6 @@ public class MainViewPort extends Viewport
 				if(be.getPanel() instanceof MyJobsPanel)
 				{
 					mainController.resizeResultsGrid();
-					mainController.resizeScoresGrid();
 				}
 			}
 		});
@@ -65,7 +64,6 @@ public class MainViewPort extends Viewport
 				if(be.getPanel() instanceof MyJobsPanel)
 				{
 					mainController.resizeResultsGrid();
-					mainController.resizeScoresGrid();
 				}
 			}
 		});
@@ -104,28 +102,52 @@ public class MainViewPort extends Viewport
 		this.add(bottomPanel, southData);
 	}
 
+	/**
+	 * Retrieves panel containing list of jobs for the session.
+	 * @return panel containing list of jobs for the session
+	 */
 	public MyJobsPanel getMyJobsPanel() {
 		return myJobsPanel;
 	}
 
+	/**
+	 * Retrieves main central panel.
+	 * @return main central panel
+	 */
 	public CenterPanel getCenterPanel() {
 		return centerPanel;
 	}
 	
+	/**
+	 * Retrieves bottom panel.
+	 * @return bottom panel
+	 */
 	public BottomPanel getBottomPanel()
 	{
 		return bottomPanel;
 	}
 	
+	/**
+	 * Retrieves window containing interface residues.
+	 * @return window containing interface residues
+	 */
 	public InterfacesResiduesWindow getInterfacesResiduesWindow() {
 		return interfacesResiduesWindow;
 	}
 
+	/**
+	 * Sets window containing interface residues.
+	 * @param interfacesResiduesWindow window containing interface residues
+	 */
 	public void setInterfacesResiduesWindow(
 			InterfacesResiduesWindow interfacesResiduesWindow) {
 		this.interfacesResiduesWindow = interfacesResiduesWindow;
 	}
 	
+	/**
+	 * Displays window containing interface residues.
+	 * @param selectedInterface selected interface identifier
+	 */
 	public void displayInterfacesWindow(int selectedInterface) 
 	{
 		if((interfacesResiduesWindow == null) ||
@@ -159,6 +181,9 @@ public class MainViewPort extends Viewport
 		interfacesResiduesWindow.layout(true);
 	}
 	
+	/**
+	 * Hides window containing interface residues.
+	 */
 	public void hideInterfacesWindow()
 	{
 		if(interfacesResiduesWindow != null)
@@ -167,6 +192,10 @@ public class MainViewPort extends Viewport
 		}
 	}
 	
+	/**
+	 * Shows waiting messagebox with provided text.
+	 * @param text information displayed in messagebox
+	 */
 	public void showWaiting(final String text)
 	{
 //		Scheduler.get().scheduleDeferred(new ScheduledCommand() {
@@ -180,6 +209,9 @@ public class MainViewPort extends Viewport
 //		});
 	}
 	
+	/**
+	 * Hides waiting messagebox.
+	 */
 	public void hideWaiting()
 	{
 		if(waitingMessageBox != null)
@@ -188,6 +220,10 @@ public class MainViewPort extends Viewport
 		}
 	}
 	
+	/**
+	 * Shows error messagebox with provided error message.
+	 * @param message error message to display
+	 */
 	public void showError(String message)
 	{
 		if((errorMessageBox == null) ||
@@ -200,6 +236,12 @@ public class MainViewPort extends Viewport
 		}
 	}
 
+	/**
+	 * Displays alignments window.
+	 * @param homologsInfoItem homologs info item
+	 * @param xPosition left corner
+	 * @param yPosition top corner
+	 */
 	public void displayAlignmentsWindow(HomologsInfoItem homologsInfoItem,
 										int xPosition,
 										int yPosition) 
@@ -229,11 +271,18 @@ public class MainViewPort extends Viewport
 		alignmentsWindow.layout(true);
 	}
 
+	/**
+	 * Retrieves window containing alignments.
+	 * @return window containing alignments
+	 */
 	public AlignmentsWindow getAlignmentsWindow() 
 	{
 		return alignmentsWindow;
 	}
 
+	/**
+	 * Shows window containing general information about the application.
+	 */
 	public void displayAboutWindow() 
 	{
 		if((aboutWindow == null) ||
@@ -246,6 +295,10 @@ public class MainViewPort extends Viewport
 		aboutWindow.setVisible(true);
 	}
 	
+	/**
+	 * Retrieves window containing general information about application.
+	 * @return window containing general information about application
+	 */
 	public AboutWindow getAboutWindow()
 	{
 		return aboutWindow;
