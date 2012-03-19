@@ -6,6 +6,11 @@ import ch.systemsx.sybit.crkwebui.shared.model.InputType;
 import com.extjs.gxt.ui.client.widget.Label;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
 
+/**
+ * Panel used to store pdb identifier.
+ * @author AS
+ *
+ */
 public class PDBIdentifierPanel extends LayoutContainer
 {
 	private MainController mainController;
@@ -21,6 +26,14 @@ public class PDBIdentifierPanel extends LayoutContainer
 		this.mainController = mainController;
 	}
 	
+	/**
+	 * Sets values of pdb identifier.
+	 * @param pdbName pdb name
+	 * @param spaceGroup space group
+	 * @param expMethod method
+	 * @param resolution resolution
+	 * @param inputType type of the input - this information is used to determine whether link to pdb description should be added
+	 */
 	public void setPDBText(String pdbName,
 			  			   String spaceGroup,
 			  			   String expMethod,

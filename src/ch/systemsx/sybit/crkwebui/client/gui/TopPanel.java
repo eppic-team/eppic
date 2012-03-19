@@ -6,13 +6,14 @@ import com.extjs.gxt.ui.client.widget.Label;
 import com.extjs.gxt.ui.client.widget.form.FormPanel;
 import com.extjs.gxt.ui.client.widget.layout.CenterLayout;
 
+/**
+ * Top logo panel.
+ * @author AS
+ */
 public class TopPanel extends FormPanel
 {
-	private MainController mainController;
-	
 	public TopPanel(MainController mainController) 
 	{
-		this.mainController = mainController;
 		this.setBodyBorder(false);
 		this.setBorders(false);
 		this.getHeader().setVisible(false);

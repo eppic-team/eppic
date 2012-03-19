@@ -7,6 +7,11 @@ import com.extjs.gxt.ui.client.event.SelectionListener;
 import com.extjs.gxt.ui.client.widget.menu.Menu;
 import com.extjs.gxt.ui.client.widget.menu.MenuItem;
 
+/**
+ * Context menu for results panel. It contains viewer and details items.
+ * @author AS
+ *
+ */
 public class ResultsPanelContextMenu extends Menu 
 {
 	public ResultsPanelContextMenu(final MainController mainController)

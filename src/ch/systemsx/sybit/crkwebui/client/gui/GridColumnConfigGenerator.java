@@ -22,6 +22,13 @@ import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
 public class GridColumnConfigGenerator
 {
 
+	/**
+	 * Generates column configurations for specified grid using provided model.
+	 * @param mainController main application controller
+	 * @param gridName name of the grid
+	 * @param model model which is used for the grid
+	 * @return list of created column configurations
+	 */
 	public static List<ColumnConfig> createColumnConfigs(MainController mainController,
 														 String gridName,
 														 BaseModel model)
@@ -97,22 +104,30 @@ public class GridColumnConfigGenerator
 		return configs;
 	}
 	
+	/**
+	 * Creates settings for specified column of the grid.
+	 * @param gridProperties grid properties
+	 * @param gridName name of the grid
+	 * @param columnName name of the column
+	 * @param gridColumnSettingsInput initial grid column settings, this parameter is used for providing common settings for methods
+	 * @return settings for specified column of the grid
+	 */
 	private static GridColumnSettings fillGridColumnSettings(Map<String, String> gridProperties,
 														String gridName,
 														String columnName,
-														GridColumnSettings gridColumnSetttingsInput)
+														GridColumnSettings gridColumnSettingsInput)
 	{
 		GridColumnSettings gridColumnSettings = new GridColumnSettings();
 		
-		if(gridColumnSetttingsInput != null)
+		if(gridColumnSettingsInput != null)
 		{
-			gridColumnSettings.setColumnWidth(gridColumnSetttingsInput.getColumnWidth());
-			gridColumnSettings.setDisplayColumn(gridColumnSetttingsInput.isDisplayColumn());
-			gridColumnSettings.setResizable(gridColumnSetttingsInput.isResizable());
-			gridColumnSettings.setDisableColumnContextMenu(gridColumnSetttingsInput.isDisableColumnContextMenu());
-			gridColumnSettings.setRenderer(gridColumnSetttingsInput.getRenderer());
-			gridColumnSettings.setHeader(gridColumnSetttingsInput.getHeader());
-			gridColumnSettings.setTooltip(gridColumnSetttingsInput.getTooltip());
+			gridColumnSettings.setColumnWidth(gridColumnSettingsInput.getColumnWidth());
+			gridColumnSettings.setDisplayColumn(gridColumnSettingsInput.isDisplayColumn());
+			gridColumnSettings.setResizable(gridColumnSettingsInput.isResizable());
+			gridColumnSettings.setDisableColumnContextMenu(gridColumnSettingsInput.isDisableColumnContextMenu());
+			gridColumnSettings.setRenderer(gridColumnSettingsInput.getRenderer());
+			gridColumnSettings.setHeader(gridColumnSettingsInput.getHeader());
+			gridColumnSettings.setTooltip(gridColumnSettingsInput.getTooltip());
 		}
 			
 		
@@ -190,6 +205,13 @@ public class GridColumnConfigGenerator
 		return gridColumnSettings;
 	}
 	
+	/**
+	 * Creates configuration of the column of the grid.
+	 * @param gridColumnSettings grid column settings
+	 * @param columnName name of the column
+	 * @param mainController main application controller
+	 * @return configuration of the column
+	 */
 	private static ColumnConfig createColumnConfig(GridColumnSettings gridColumnSettings,
 												   String columnName,
 												   MainController mainController)

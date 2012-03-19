@@ -9,9 +9,8 @@ import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 
 /**
- * This is the main center panel
+ * Main central panel.
  * @author srebniak_a
- *
  */
 public class CenterPanel extends LayoutContainer 
 {
@@ -42,11 +41,19 @@ public class CenterPanel extends LayoutContainer
 		});
 	}
 	
+	/**
+	 * Retrieves content of the central panel.
+	 * @return content of central panel
+	 */
 	public DisplayPanel getDisplayPanel()
 	{
 		return displayPanel;
 	}
 	
+	/**
+	 * Sets content of the central panel.
+	 * @param displayPanel content of central panel
+	 */
 	public void setDisplayPanel(DisplayPanel displayPanel)
 	{
 		this.removeAll();

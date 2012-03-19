@@ -15,6 +15,11 @@ import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.tips.ToolTip;
 import com.google.gwt.core.client.GWT;
 
+/**
+ * Panel used to store information about homologs.
+ * @author AS
+ *
+ */
 public class HomologsInfoPanel extends LayoutContainer
 {
 	public HomologsInfoPanel(final MainController mainController,

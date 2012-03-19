@@ -30,7 +30,7 @@ import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 
 /**
- * The panel containing parameters values and download link
+ * Panel containing general information about results.
  * @author srebniak_a
  *
  */
@@ -38,14 +38,6 @@ public class InfoPanel extends FormPanel
 {
 	private EmptyLinkWithTooltip inputParametersLabel;
 	private ToolTip inputParametersTooltip;
-//	private Label totalCoreSizeXtalCallCutoff;
-//	private Label infoPanelMinNumberHomologsRequired;
-//	private Label infoPanelSequenceIdentityCutoff;
-//	private Label infoPanelQueryCoverageCutoff;
-//	private Label infoPanelPerMemberCoreSizeXtalCallCutoff;
-//	private Label infoPanelMaxNumSequencesUsed;
-//	private Label infoPanelBioCallCutoff;
-//	private Label infoPanelXtalCallCutoff;
 	private LinkWithTooltip downloadResultsLink;
 	
 	private ToolTip queryWarningsTooltip;
@@ -66,6 +58,10 @@ public class InfoPanel extends FormPanel
 		generateInfoPanel(mainController);
 	}
 
+	/**
+	 * Creates tooltip displayed over homologs query warnings.
+	 * @param mainController main application controller
+	 */
 	private void generateHomologsInfoTooltip(MainController mainController) 
 	{
 		ToolTipConfig toolTipConfig = new ToolTipConfig();  
@@ -77,6 +73,10 @@ public class InfoPanel extends FormPanel
 		queryWarningsTooltip = new ToolTip(null, toolTipConfig);
 	}
 
+	/**
+	 * Creates info panel containing general information about the job.
+	 * @param mainController main application controller
+	 */
 	public void generateInfoPanel(MainController mainController)
 	{
 		this.removeAll();
@@ -153,38 +153,6 @@ public class InfoPanel extends FormPanel
 		
 		flexTable.setWidget(0, 1, inputParametersLabel);
 		
-//		totalCoreSizeXtalCallCutoff = new Label(MainController.CONSTANTS.info_panel_total_core_size_xtal_call_cutoff() + ": " + mainController.getPdbScoreItem().getMinCoreSize());
-//		totalCoreSizeXtalCallCutoff.addStyleName("crk-default-label");
-//		flexTable.setWidget(0, 0, totalCoreSizeXtalCallCutoff);
-//		
-//		infoPanelMinNumberHomologsRequired = new Label(MainController.CONSTANTS.info_panel_min_number_homologs_required() + ": " + mainController.getPdbScoreItem().getHomologsCutoff());
-//		infoPanelMinNumberHomologsRequired.addStyleName("crk-default-label");
-//		flexTable.setWidget(1, 0, infoPanelMinNumberHomologsRequired);
-//		
-//		infoPanelSequenceIdentityCutoff = new Label(MainController.CONSTANTS.info_panel_sequence_identity_cutoff() + ": " + mainController.getPdbScoreItem().getIdCutoff());
-//		infoPanelSequenceIdentityCutoff.addStyleName("crk-default-label");
-//		flexTable.setWidget(2, 0, infoPanelSequenceIdentityCutoff);
-//		
-//		infoPanelQueryCoverageCutoff = new Label(MainController.CONSTANTS.info_panel_query_coverage_cutoff() + ": " + mainController.getPdbScoreItem().getQueryCovCutoff());
-//		infoPanelQueryCoverageCutoff.addStyleName("crk-default-label");
-//		flexTable.setWidget(0, 1, infoPanelQueryCoverageCutoff);
-//		
-//		infoPanelPerMemberCoreSizeXtalCallCutoff = new Label(MainController.CONSTANTS.info_panel_per_member_core_size_xtal_call_cutoff() + ": " + mainController.getPdbScoreItem().getMinMemberCoreSize());
-//		infoPanelPerMemberCoreSizeXtalCallCutoff.addStyleName("crk-default-label");
-//		flexTable.setWidget(1, 1, infoPanelPerMemberCoreSizeXtalCallCutoff);
-//		
-//		infoPanelMaxNumSequencesUsed = new Label(MainController.CONSTANTS.info_panel_max_num_sequences_used() + ": " + mainController.getPdbScoreItem().getMaxNumSeqsCutoff());
-//		infoPanelMaxNumSequencesUsed.addStyleName("crk-default-label");
-//		flexTable.setWidget(2, 1, infoPanelMaxNumSequencesUsed);
-//		
-//		infoPanelBioCallCutoff = new Label(MainController.CONSTANTS.info_panel_bio_call_cutoff() + ": " + mainController.getPdbScoreItem().getBioCutoff());
-//		infoPanelBioCallCutoff.addStyleName("crk-default-label");
-//		flexTable.setWidget(0, 2, infoPanelBioCallCutoff);
-//		
-//		infoPanelXtalCallCutoff = new Label(MainController.CONSTANTS.info_panel_xtal_call_cutoff() + ": " + mainController.getPdbScoreItem().getXtalCutoff());
-//		infoPanelXtalCallCutoff.addStyleName("crk-default-label");
-//		flexTable.setWidget(1, 2, infoPanelXtalCallCutoff);
-		
 		downloadResultsLink = new LinkWithTooltip(MainController.CONSTANTS.info_panel_download_results_link(), 
 												  MainController.CONSTANTS.info_panel_download_results_link_hint(), 
 												  mainController, 
@@ -192,9 +160,6 @@ public class InfoPanel extends FormPanel
 												  GWT.getModuleBaseURL() + "fileDownload?type=zip&id=" + mainController.getSelectedJobId());
 		downloadResultsLink.addStyleName("crk-default-label");
 		flexTable.setWidget(2, 4, downloadResultsLink);
-		
-		//flexTable.setWidget(0, 3, new Label("Column 4"));
-		//flexTable.setWidget(0, 2, new Label("Column 3"));
 		
 		Label uniprotVersionlabel = new Label(MainController.CONSTANTS.info_panel_uniprot() + ": " +
 				mainController.getPdbScoreItem().getRunParameters().getUniprotVer());
@@ -219,24 +184,14 @@ public class InfoPanel extends FormPanel
 		this.add(flexTable, new FormData("-20 100%"));
 	}
 	
+	/**
+	 * Creates content of the tooltip displayed over input parameters label and containing list of the parameters with values.
+	 * @param pdbScoreItem result item containing values of input parameters
+	 * @return template containing list of parameters with values
+	 */
 	private String generateInputParametersTemplate(PDBScoreItem pdbScoreItem)
 	{
 		String result = "<table>";
-		
-//		HashMap<String, String> properties = new HashMap();
-//		Field[] fields = pdbScoreItem.getRunParameters().getClass().getDeclaredFields();
-//		
-//		
-//		properties.put(key, value);
-//		
-//		properties.put(MainController.CONSTANTS.info_panel_total_core_size_xtal_call_cutoff() + ": " + mainController.getPdbScoreItem().getMinCoreSize());
-//		properties.put(MainController.CONSTANTS.info_panel_min_number_homologs_required() + ": " + mainController.getPdbScoreItem().getHomologsCutoff());
-//		properties.put(MainController.CONSTANTS.info_panel_sequence_identity_cutoff() + ": " + mainController.getPdbScoreItem().getIdCutoff());
-//		properties.put(MainController.CONSTANTS.info_panel_query_coverage_cutoff() + ": " + mainController.getPdbScoreItem().getQueryCovCutoff());
-//		properties.put(MainController.CONSTANTS.info_panel_per_member_core_size_xtal_call_cutoff() + ": " + mainController.getPdbScoreItem().getMinMemberCoreSize());
-//		properties.put(MainController.CONSTANTS.info_panel_max_num_sequences_used() + ": " + mainController.getPdbScoreItem().getMaxNumSeqsCutoff());
-//		properties.put(MainController.CONSTANTS.info_panel_bio_call_cutoff() + ": " + mainController.getPdbScoreItem().getBioCutoff());
-//		properties.put(MainController.CONSTANTS.info_panel_xtal_call_cutoff() + ": " + mainController.getPdbScoreItem().getXtalCutoff());
 		
 		BeanModelFactory factory = BeanModelLookup.get().getFactory(RunParametersItem.class);
 		BeanModel runParametersModel = factory.createModel(pdbScoreItem.getRunParameters());
@@ -267,19 +222,19 @@ public class InfoPanel extends FormPanel
 		return result;
 	}
 
+	/**
+	 * Gets tooltip displayed over query warnings label.
+	 * @return tooltip displayed over query warnings label
+	 */
 	public ToolTip getQueryWarningsTooltip() {
 		return queryWarningsTooltip;
 	}
 
-	public void setQueryWarningsTooltip(ToolTip queryWarningsTooltip) {
-		this.queryWarningsTooltip = queryWarningsTooltip;
-	}
-
+	/**
+	 * Gets tooltip displayed over input parameters label.
+	 * @return tooltip displayed over input parameters label
+	 */
 	public ToolTip getInputParametersTooltip() {
 		return inputParametersTooltip;
-	}
-
-	public void setInputParametersTooltip(ToolTip inputParametersTooltip) {
-		this.inputParametersTooltip = inputParametersTooltip;
 	}
 }

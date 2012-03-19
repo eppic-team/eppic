@@ -35,7 +35,7 @@ import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.user.client.History;
 
 /**
- * This panel is used to display the list of all jobs connected to the current session
+ * Panel used to display the list of all jobs connected to the current session.
  * @author srebniak_a
  *
  */
@@ -140,6 +140,10 @@ public class MyJobsPanel extends ContentPanel
 		this.add(myJobsGrid, new RowData(1, 1, new Margins(0)));
 	}
 	
+	/**
+	 * Creates columns configurations for residues summary grid.
+	 * @return columns configurations for residues summary grid
+	 */
 	private List<ColumnConfig> createColumnConfig() 
 	{
 		List<ColumnConfig> configs = GridColumnConfigGenerator.createColumnConfigs(mainController,
@@ -159,6 +163,10 @@ public class MyJobsPanel extends ContentPanel
 		return configs;
 	}
 
+	/**
+	 * Adds jobs to grid.
+	 * @param jobs jobs to display
+	 */
 	public void setJobs(List<ProcessingInProgressData> jobs) 
 	{
 		MyJobsModel itemToSelect = null;
@@ -223,8 +231,6 @@ public class MyJobsPanel extends ContentPanel
 		myJobsStore.commitChanges();
 		
 
-//		myJobsGrid.getView().refresh(false);
-		
 		if((mainController.getSelectedJobId() != null) &&
 			(myJobsStore.getCount() > 0))
 		{
@@ -238,11 +244,19 @@ public class MyJobsPanel extends ContentPanel
 		}
 	}
 	
+	/**
+	 * Retrieves grid containing jobs.
+	 * @return grid containing jobs
+	 */
 	public Grid<MyJobsModel> getMyJobsGrid()
 	{
 		return myJobsGrid;
 	}
 
+	/**
+	 * Selects correct job after removal.
+	 * @param jobToStop identifier of the job which was stopped
+	 */
 	public void selectPrevious(String jobToStop) 
 	{
 		List<MyJobsModel> currentJobs = myJobsStore.getModels();

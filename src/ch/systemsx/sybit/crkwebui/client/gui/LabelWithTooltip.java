@@ -9,11 +9,23 @@ import com.extjs.gxt.ui.client.widget.Label;
 import com.extjs.gxt.ui.client.widget.tips.ToolTip;
 import com.extjs.gxt.ui.client.widget.tips.ToolTipConfig;
 
+/**
+ * Label with assigned tooltip.
+ * @author AS
+ *
+ */
 public class LabelWithTooltip extends Label
 {
 	protected ToolTip toolTip;
 	protected boolean refreshTooltip = true;
 	
+	/**
+	 * Creates instance of label with assigned tooltip.
+	 * @param labelText text of the label
+	 * @param tooltipText text of the tooltip
+	 * @param mainController main application controller
+	 * @param delay delay after which tooltip is displayed
+	 */
 	public LabelWithTooltip(String labelText,
 							final String tooltipText,
 							final MainController mainController,
@@ -46,7 +58,6 @@ public class LabelWithTooltip extends Label
 					
 					int toolTipXPosition = LabelWithTooltip.this.getAbsoluteLeft() + LabelWithTooltip.this.getWidth() + 5;
 					
-//						toolTipConfig.setMinWidth(width);
 					toolTipConfig.setMaxWidth(width);
 					toolTipConfig.setShowDelay(delay);
 					toolTipConfig.setDismissDelay(0);

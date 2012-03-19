@@ -17,7 +17,7 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.ui.HTML;
 
 /**
- * This is the bottom panel containing status label and contact information
+ * Bottom panel containing status label and contact information.
  * @author srebniak_a
  *
  */
@@ -79,7 +79,7 @@ public class BottomPanel extends LayoutContainer
 	}
 	
 	/**
-	 * Update text of the status message label.
+	 * Updates text of the status message label.
 	 * @param message text to display.
 	 * @param isError flag specifying whether message is the error.
 	 */

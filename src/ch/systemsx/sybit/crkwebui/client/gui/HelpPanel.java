@@ -12,7 +12,7 @@ import com.google.gwt.event.dom.client.MouseOverHandler;
 import com.google.gwt.user.client.ui.Image;
 
 /**
- * This is the widget used for displaying help icon with tooltip
+ * Component used for displaying help icon with tooltip.
  * @author srebniak_a
  *
  */
@@ -82,6 +82,10 @@ public class HelpPanel
 		}
 	}
 	
+	/**
+	 * Retrieves help image icon component.
+	 * @return help image icon component
+	 */
 	public WidgetComponent getImageComponent()
 	{
 		return imageComponent;

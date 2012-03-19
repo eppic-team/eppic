@@ -31,7 +31,7 @@ import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Window;
 
 /**
- * This panel is used to display advanced parameters which can be selected by the user
+ * Panel used to display advanced parameters which can be selected by the user.
  * @author srebniak_a
  *
  */
@@ -108,13 +108,6 @@ public class OptionsInputPanel extends FieldSet
 						    });
 						}
 					    
-					    
-//						elem.appendChild(XDOM.create("<span style='color: #615f5f;padding: 1 0 2 0px;font-size:10px'>" + be.getComponent().getData("hint") + "</span>"));
-//						HelpPanel helpPanel = new HelpPanel(null, "This is test");
-//						helpPanel.setId("testid");
-//						elem.appendChild(XDOM.getDocument()helpPanel.getElement());
-//						El elem = be.getComponent().el().findParent(".x-form-element", 3);
-//						elem.appendChild(XDOM.create("<span style='color: #615f5f;padding: 1 0 2 0px;font-size:10px'>" + be.getComponent().getData("hint") + "</span>"));
 					}
 				});
 			}
@@ -271,6 +264,10 @@ public class OptionsInputPanel extends FieldSet
 		fillDefaultValues(defaultInputParameters);
 	}
 
+	/**
+	 * Sets default values of input parameters.
+	 * @param defaultParameters default values of input parameters
+	 */
 	public void fillDefaultValues(InputParameters defaultParameters) 
 	{
 		softIdentityCutOff.setValue(defaultParameters.getSoftIdentityCutoff());
@@ -304,6 +301,10 @@ public class OptionsInputPanel extends FieldSet
 		}
 	}
 
+	/**
+	 * Retrieves input parameters set by the user.
+	 * @return input parameters set by the user
+	 */
 	public InputParameters getCurrentInputParameters() 
 	{
 		InputParameters currentInputParameters = new InputParameters();
@@ -333,6 +334,10 @@ public class OptionsInputPanel extends FieldSet
 		return currentInputParameters;
 	}
 	
+	/**
+	 * Checks whether there is any method selected by the user.
+	 * @return information whether any method is selected
+	 */
 	public boolean checkIfAnyMethodSelected()
 	{
 		boolean isAnyMethodSelected = false;

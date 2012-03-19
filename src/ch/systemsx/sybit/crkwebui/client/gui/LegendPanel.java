@@ -15,7 +15,7 @@ import com.extjs.gxt.ui.client.widget.layout.VBoxLayout;
 import com.extjs.gxt.ui.client.widget.layout.VBoxLayout.VBoxLayoutAlign;
 
 /**
- * The panel containing the description of the residues values
+ * Panel containing the description of the residues values.
  * @author srebniak_a
  *
  */

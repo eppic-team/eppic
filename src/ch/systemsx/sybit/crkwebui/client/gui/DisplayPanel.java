@@ -6,7 +6,7 @@ import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 
 /**
- * Base class for different views visible in center panel
+ * Base class for different views visible in center panel.
  * @author srebniak_a
  *
  */

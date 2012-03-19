@@ -27,7 +27,7 @@ import com.extjs.gxt.ui.client.widget.layout.RowData;
 import com.extjs.gxt.ui.client.widget.toolbar.PagingToolBar;
 
 /**
- * This panel is used to display the residues for one structure
+ * Panel used to display residues data for one structure.
  * @author srebniak_a
  *
  */
@@ -45,7 +45,6 @@ public class ResiduesPanel extends ContentPanel
 	private MainController mainController;
 	
 	private List<InterfaceResidueItemModel> data;
-	private boolean isShowAll;
 	
 	private int nrOfRows = 20;
 	private PagingToolBar pagingToolbar;
@@ -77,28 +76,6 @@ public class ResiduesPanel extends ContentPanel
 		   
 		residuesStore = new ListStore<InterfaceResidueItemModel>(loader);
 		
-//		residuesStore.addFilter(new StoreFilter<InterfaceResidueItemModel>() {
-//			
-//			@Override
-//			public boolean select(Store<InterfaceResidueItemModel> store,
-//								  InterfaceResidueItemModel parent,
-//								  InterfaceResidueItemModel item, 
-//								  String property) 
-//			{
-//				if(isShowAll)
-//				{
-//					return true;
-//				}
-//				else if(((Integer)item.get("assignment") == InterfaceResidueItem.CORE) || 
-//						((Integer)item.get("assignment") == InterfaceResidueItem.RIM))
-//				{
-//					return true;
-//				}
-//				
-//				return false;
-//			}
-//		});
-		
 		residuesColumnModel = new ColumnModel(residuesConfigs);
 		
 		residuesColumnModel.addHeaderGroup(0, 0, new HeaderGroupConfig(header,
@@ -115,8 +92,6 @@ public class ResiduesPanel extends ContentPanel
 		residuesGrid.getView().setForceFit(false);
 		
 		this.add(residuesGrid, new RowData(1, 1, new Margins(0)));
-		
-//		nrOfRows = (height - 71)/22;
 		
 		if(useBufferedView)
 		{
@@ -161,7 +136,11 @@ public class ResiduesPanel extends ContentPanel
 			}
 		});
 	}
-	
+
+	/**
+	 * Creates columns configurations for residues grid.
+	 * @return list of columns configurations for residues grid
+	 */
 	private List<ColumnConfig> createColumnConfig() 
 	{
 		List<ColumnConfig> configs = GridColumnConfigGenerator.createColumnConfigs(mainController,
@@ -181,6 +160,10 @@ public class ResiduesPanel extends ContentPanel
 		return configs;
 	}
 
+	/**
+	 * Sets content of residues grid.
+	 * @param residueValues list of items to add to the grid
+	 */
 	public void fillResiduesGrid(List<InterfaceResidueItem> residueValues) 
 	{
 		residuesStore.removeAll();
@@ -202,24 +185,14 @@ public class ResiduesPanel extends ContentPanel
 				data.add(model);
 			}
 		}
-
-//		proxy.setData(data);
-		
-//		residuesStore.add(data);
-		
-//		residuesStore.
-		
-//		residuesStore.applyFilters("residueType");
-//		residuesGrid.reconfigure(residuesStore, residuesColumnModel);
 	}
-	
+
+	/**
+	 * Limits amount of visible entries based on type of the entry.
+	 * @param isShowAll show all or only rim/core entries
+	 */
 	public void applyFilter(boolean isShowAll)
 	{
-//		residuesStore.applyFilters("residueType");
-//		loader.load(0, 20);
-		
-		this.isShowAll = isShowAll;
-		
 		List<InterfaceResidueItemModel> dataToSet = new ArrayList<InterfaceResidueItemModel>();
 		for(InterfaceResidueItemModel item : data)
 		{
@@ -244,18 +217,21 @@ public class ResiduesPanel extends ContentPanel
 		}
 	}
 	
+	/**
+	 * Cleans content of residues grid.
+	 */
 	public void cleanResiduesGrid()
 	{
 		residuesStore.removeAll();
 	}
 	
+	/**
+	 * Adjusts size of the residues grid based on the size of the screen and intial
+	 * settings for the grid.
+	 * @param assignedWidth width assigned for the grid
+	 */
 	public void resizeGrid(int assignedWidth) 
 	{
-//		int scoresGridWidthOfAllVisibleColumns = calculateWidthOfVisibleColumns();
-		
-//		int windowHeight = mainController.getMainViewPort().getInterfacesResiduesWindow().getWindowHeight();
-//		int residuesPanelHeight = (int)(windowHeight - 250);
-//		this.setHeight(assignedHeight);
 		nrOfRows = (this.getHeight() - 72)  / 22;
 		
 		int scoresGridWidthOfAllVisibleColumns = GridUtil.calculateWidthOfVisibleColumns(residuesGrid,
@@ -305,125 +281,21 @@ public class ResiduesPanel extends ContentPanel
 		this.layout();
 	}
 	
+	/**
+	 * Retrieves paging toolbar for residues grid.
+	 * @return paging toolbar for residues grid
+	 */
 	public PagingToolBar getResiduesGridPagingToolbar()
 	{
 		return pagingToolbar;
 	}
 
+	/**
+	 * Retrieves residues grid.
+	 * @return residues grid
+	 */
 	public Grid<InterfaceResidueItemModel> getResiduesGrid() 
 	{
 		return residuesGrid;
 	}
-	
-//	private void createAggregationRows()
-//	{
-//		residuesColumnModel.getAggregationRows().clear();
-//		
-//		NumberFormat number = NumberFormat.getFormat("0.00");
-//		
-//		Map<String, String> coreMethodValues = new HashMap<String, String>();
-//		Map<String, String> rimMethodValues = new HashMap<String, String>();
-//		Map<String, String> ratioMethodValues = new HashMap<String, String>();
-//		
-//		for (InterfaceScoreItem scoreItem : mainController.getPdbScoreItem().getInterfaceItem(mainController.getMainViewPort().getInterfacesResiduesWindow().getSelectedInterface() - 1).getInterfaceScores()) 
-//		{
-//			String coreValue = "";
-//			String rimValue = "";
-//			String ratioValue = "";
-//			
-//			if(structure == 1)
-//			{
-//				coreValue = number.format(scoreItem.getUnweightedCore1Scores()) + 
-//							" (" + 
-//							number.format(scoreItem.getWeightedCore1Scores()) + 
-//							")";
-//				
-//				rimValue = number.format(scoreItem.getUnweightedRim1Scores()) + 
-//						   " (" + 
-//						   number.format(scoreItem.getWeightedRim1Scores()) + 
-//						   ")";
-//				
-//				ratioValue = number.format(scoreItem.getUnweightedRatio1Scores()) + 
-//							 " (" + 
-//							 number.format(scoreItem.getWeightedRatio1Scores()) + 
-//							 ")";
-//			}
-//			else
-//			{
-//				coreValue = number.format(scoreItem.getUnweightedCore2Scores()) + 
-//							" (" + 
-//							number.format(scoreItem.getWeightedCore2Scores()) + 
-//							")";
-//				
-//				rimValue = number.format(scoreItem.getUnweightedRim2Scores()) + 
-//						   " (" + 
-//						   number.format(scoreItem.getWeightedRim2Scores()) + 
-//						   ")";
-//				
-//				ratioValue = number.format(scoreItem.getUnweightedRatio2Scores()) + 
-//							 " (" + 
-//							 number.format(scoreItem.getWeightedRatio2Scores()) + 
-//							 ")";
-//			}
-//			
-//			coreMethodValues.put(scoreItem.getMethod(), coreValue);
-//			rimMethodValues.put(scoreItem.getMethod(), rimValue);
-//			ratioMethodValues.put(scoreItem.getMethod(), ratioValue);
-//		}
-//	
-//		AggregationRowConfig<InterfaceResidueItemModel> totalCores = new AggregationRowConfig<InterfaceResidueItemModel>();  
-//		
-//		int nrOfCores = 0;
-//		int nrOfRims = 0;
-//		for(InterfaceResidueItemModel dataItem : data)
-//		{
-//			if(dataItem.get("assignment") != null)
-//			{
-//				if(dataItem.get("assignment").equals(InterfaceResidueItem.CORE))
-//			    {
-//					nrOfCores++;
-//				}
-//			    else if(dataItem.get("assignment").equals(InterfaceResidueItem.RIM))
-//			    {
-//			    	nrOfRims++;
-//				}
-//			}
-//		}
-//		
-//		totalCores.setHtml("residueNumber", MainController.CONSTANTS.interfaces_residues_aggergation_total_cores() + " (" + nrOfCores + ")"); 
-//		totalCores.setCellStyle("residueNumber", "aggregation-row-head");
-//		
-//		for (String method : mainController.getSettings()
-//				.getScoresTypes()) 
-//		{
-//			totalCores.setHtml(method, coreMethodValues.get(method)); 
-//		}
-//		
-//		residuesColumnModel.addAggregationRow(totalCores);  
-//		
-//		
-//		AggregationRowConfig<InterfaceResidueItemModel> totalRims = new AggregationRowConfig<InterfaceResidueItemModel>();  
-//		totalRims.setHtml("residueNumber", MainController.CONSTANTS.interfaces_residues_aggergation_total_rims() + " (" + nrOfRims + ")"); 
-//		totalRims.setCellStyle("residueNumber", "aggregation-row-head");
-//		
-//		for (String method : mainController.getSettings()
-//				.getScoresTypes()) 
-//		{
-//			totalRims.setHtml(method, rimMethodValues.get(method)); 
-//		}
-//		
-//		residuesColumnModel.addAggregationRow(totalRims);  
-//		
-//		AggregationRowConfig<InterfaceResidueItemModel> totalRatios = new AggregationRowConfig<InterfaceResidueItemModel>();  
-//		totalRatios.setHtml("residueNumber", MainController.CONSTANTS.interfaces_residues_aggergation_ratios() + " ("); 
-//		totalRatios.setCellStyle("residueNumber", "aggregation-row-head");
-//		
-//		for (String method : mainController.getSettings()
-//				.getScoresTypes()) 
-//		{
-//			totalRatios.setHtml(method, ratioMethodValues.get(method)); 
-//		}
-//		
-//		residuesColumnModel.addAggregationRow(totalRatios);  
-//	}
 }

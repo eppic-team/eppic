@@ -35,7 +35,7 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.KeyCodes;
 
 /**
- * The panel used to submit new job
+ * Panel used to submit new job.
  * @author srebniak_a
  *
  */
@@ -61,6 +61,9 @@ public class InputDataPanel extends DisplayPanel
 		init();
 	}
 
+	/**
+	 * Initalizes content of the panel.
+	 */
 	public void init() 
 	{
 		this.setLayout(new RowLayout(Orientation.HORIZONTAL));
@@ -261,11 +264,10 @@ public class InputDataPanel extends DisplayPanel
 		this.add(formPanel, new RowData(-1, -1, new Margins(0)));
 	}
 	
-	public RecaptchaPanel getRecaptchaPanel()
-	{
-		return recaptchaPanel;
-	}
-	
+	/**
+	 * Starts new job. If file is uploaded then jobId is used to identify uploaded file, otherwise jobId is null.
+	 * @param jobId identifier of the job
+	 */
 	private void runJob(String jobId)
 	{
 		mainController.setNrOfSubmissions(mainController.getNrOfSubmissions() + 1);
@@ -307,6 +309,9 @@ public class InputDataPanel extends DisplayPanel
 		mainController.runJob(runJobData);
 	}
 	
+	/**
+	 * Validates and submits form.
+	 */
 	public void submitForm()
 	{
 		if(!optionsInputPanel.checkIfAnyMethodSelected())
@@ -336,6 +341,10 @@ public class InputDataPanel extends DisplayPanel
 		}
 	}
 
+	/**
+	 * Retrieves field containing code of the pdb to use as the source for the job.
+	 * @return field containing pdb pode
+	 */
 	public TextField<String> getPdbCodeField() {
 		return pdbCodeField;
 	}

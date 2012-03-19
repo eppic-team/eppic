@@ -19,7 +19,7 @@ import com.extjs.gxt.ui.client.widget.grid.GridViewConfig;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 
 /**
- * This panel is used to display the residues for one structure
+ * Panel used to display the residues summary for one structure.
  * @author srebniak_a
  *
  */
@@ -84,6 +84,10 @@ public class ResiduesSummaryPanel extends ContentPanel
 		this.add(residuesGrid);
 	}
 	
+	/**
+	 * Creates columns configurations for residues summary grid.
+	 * @return columns configurations for residues summary grid
+	 */
 	private List<ColumnConfig> createColumnConfig() 
 	{
 		List<ColumnConfig> configs = GridColumnConfigGenerator.createColumnConfigs(mainController,
@@ -104,6 +108,9 @@ public class ResiduesSummaryPanel extends ContentPanel
 
 	}
 
+	/**
+	 * Sets content of residues summary grid.
+	 */
 	public void fillResiduesGrid() 
 	{
 		residuesStore.removeAll();
@@ -190,11 +197,19 @@ public class ResiduesSummaryPanel extends ContentPanel
 		residuesStore.add(interfaceSummaryItems);
 	}
 	
+	/**
+	 * Cleans content of residues summary grid.
+	 */
 	public void cleanResiduesGrid()
 	{
 		residuesStore.removeAll();
 	}
 	
+	/**
+	 * Adjusts size of the residues summary grid based on the size of the screen
+	 * and initial settings for the grid. 
+	 * @param assignedWidth width assigned for the grid
+	 */
 	public void resizeGrid(int assignedWidth) 
 	{
 		int scoresGridWidthOfAllVisibleColumns = GridUtil.calculateWidthOfVisibleColumns(residuesGrid, initialColumnWidth) + 10;
@@ -239,6 +254,10 @@ public class ResiduesSummaryPanel extends ContentPanel
 		this.layout();
 	}
 	
+	/**
+	 * Retrieves residues summary grid.
+	 * @return residues summary grid
+	 */
 	public Grid<InterfaceResidueSummaryModel> getResiduesGrid() 
 	{
 		return residuesGrid;

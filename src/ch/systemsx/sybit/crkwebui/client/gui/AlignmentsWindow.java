@@ -18,7 +18,7 @@ import com.extjs.gxt.ui.client.widget.layout.RowData;
 import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 
 /**
- * This is window containing sequence alignments.
+ * Window containing sequence alignments.
  * @author AS
  */
 public class AlignmentsWindow extends ResizableWindow 
@@ -85,7 +85,7 @@ public class AlignmentsWindow extends ResizableWindow
 	}
 	
 	/**
-	 * Refresh content of the alignments window.
+	 * Refreshes content of the alignments window.
 	 */
 	public void updateWindowContent()
 	{
@@ -204,7 +204,6 @@ public class AlignmentsWindow extends ResizableWindow
 				homologsContentPanel.add(new Text(), new RowData(1, -1, new Margins(0)));
 				homologsContentPanel.add(new Text(), new RowData(1, -1, new Margins(0)));
 				homologsContentPanel.setScrollMode(Scroll.AUTOY);
-	//			this.add(new Label(), new RowData(1, 20));
 			}
 			
 			int minWindowWidth = 0;
@@ -230,7 +229,7 @@ public class AlignmentsWindow extends ResizableWindow
 	}
 	
 	/**
-	 * Generate general sequence text settings.
+	 * Generates general sequence text settings.
 	 * @param textMetrics used text metrics
 	 * @param firstSequenceLeftAnnotation first sequence to annotate
 	 * @param secondSequenceLeftAnnotation second sequence to annotate
@@ -287,7 +286,7 @@ public class AlignmentsWindow extends ResizableWindow
 	}
 	
 	/**
-	 * Generate annotated sequence line.
+	 * Generates annotated sequence line.
 	 * @param leftAnnotation uniprot/pdb id.
 	 * @param sequenceStartIndex index of the first character of the sequence part which is going to be annotated.
 	 * @param sequenceEndIndex index of the last character of the sequence part which is going to be annotated.

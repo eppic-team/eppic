@@ -23,7 +23,7 @@ import com.extjs.gxt.ui.client.widget.toolbar.FillToolItem;
 import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
 
 /**
- * This panel is used to display status of the submitted job
+ * Panel used to display status of submitted job.
  * @author srebniak_a
  *
  */
@@ -35,9 +35,6 @@ public class StatusPanel extends DisplayPanel
 	private TextField<String> jobId;
 	private TextField<String> status;
 	private TextArea log;
-//	private ProgressBar progressBar;
-//	
-//	private String currentStep = "";
 	
 	private Button killJob;
 	
@@ -51,6 +48,9 @@ public class StatusPanel extends DisplayPanel
 		init();
 	}
 
+	/**
+	 * Initializes content of the panel.
+	 */
 	public void init() 
 	{
 		this.setBorders(true);
@@ -84,33 +84,6 @@ public class StatusPanel extends DisplayPanel
 
 		formPanel.add(log, new FormData("95% -110"));
 
-//		LayoutContainer progressBarContainer = new LayoutContainer();
-//		progressBarContainer.setLayout(new CenterLayout());
-//		progressBarContainer.setHeight(20);
-//		progressBar = new ProgressBar();
-//		progressBar.setBounds(0, 0, 400, 20);
-//		progressBarContainer.add(progressBar);
-//		
-//		formPanel.add(progressBarContainer, new FormData("100%"));
-//		
-//		Timer autoRefreshMyJobs = new Timer() 
-//		{
-//			private float counter = 0;
-//			
-//			public void run() 
-//			{
-//				progressBar.updateProgress(counter / 100, currentStep);
-//				counter += 10;
-//				
-//				if(counter > 100)
-//				{
-//					counter = 0;
-//				}
-//			}
-//		};
-//
-//		autoRefreshMyJobs.scheduleRepeating(500);
-		
 		killJob = new Button(MainController.CONSTANTS.status_panel_stop(), new SelectionListener<ButtonEvent>() {
 
 			public void componentSelected(ButtonEvent ce) 
@@ -145,6 +118,10 @@ public class StatusPanel extends DisplayPanel
 
 	}
 
+	/**
+	 * Sets content of the status panel.
+	 * @param statusData status data of selected job
+	 */
 	public void fillData(ProcessingInProgressData statusData) 
 	{
 		int scrollBefore = log.getElement().getFirstChildElement().getScrollTop();
@@ -175,7 +152,6 @@ public class StatusPanel extends DisplayPanel
 			}
 			
 			statusStepsFinished.setVisible(true);
-//			progressBar.setVisible(true);
 		}
 		else
 		{
@@ -183,10 +159,12 @@ public class StatusPanel extends DisplayPanel
 			statusProgress.clearStatus("");
 			statusStepsFinished.clearStatus("");
 			statusStepsFinished.setVisible(false);
-//			progressBar.setVisible(false);
 		}
 	}
 
+	/**
+	 * Cleans content of status panel.
+	 */
 	public void cleanData() 
 	{
 		log.setValue("");

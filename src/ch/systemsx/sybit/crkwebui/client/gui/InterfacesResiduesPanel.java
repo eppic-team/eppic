@@ -20,6 +20,11 @@ import com.extjs.gxt.ui.client.widget.toolbar.FillToolItem;
 import com.extjs.gxt.ui.client.widget.toolbar.LabelToolItem;
 import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
 
+/**
+ * Panel containing interface residues for both structures.
+ * @author AS
+ *
+ */
 public class InterfacesResiduesPanel extends FormPanel 
 {
 	private ResiduesPanel firstStructure;
@@ -32,13 +37,10 @@ public class InterfacesResiduesPanel extends FormPanel
 
 	private SimpleComboBox<String> residuesFilterComboBox;
 	
-	private boolean wasResized = false;
-	
 	public InterfacesResiduesPanel(MainController mainController,
 								   int width,
 								   int height)
 	{
-		// infoPanel.setFrame(true);
 		this.getHeader().setVisible(false);
 		this.setBodyBorder(false);
 		this.setBorders(false);
@@ -46,21 +48,6 @@ public class InterfacesResiduesPanel extends FormPanel
 		
 		LayoutContainer residuesLayoutContainer = new LayoutContainer();
 		residuesLayoutContainer.setLayout(new RowLayout(Orientation.HORIZONTAL));
-		
-//		String interfaceName = mainController.getPdbScoreItem().getInterfaceItem(selectedInterface - 1).getName();
-//		
-//		String firstStructureName = "";
-//		String secondStructureName = "";
-//		
-//		if((interfaceName !=  null) && (interfaceName.contains("+")))
-//		{
-//			firstStructureName = interfaceName.substring(0, interfaceName.indexOf("+"));
-//			
-//			if(interfaceName.indexOf("+") < interfaceName.length() - 1)
-//			{
-//				secondStructureName = interfaceName.substring(interfaceName.indexOf("+") + 1);
-//			}
-//		}
 		
 		firstStructure = new ResiduesPanel(
 										   MainController.CONSTANTS.interfaces_residues_panel_first_structure(), 
@@ -100,6 +87,7 @@ public class InterfacesResiduesPanel extends FormPanel
 		
 		residuesLayoutContainer.add(firstStructureContainer, new RowData(0.48, 1, new Margins(0)));
 		
+		
 		LayoutContainer secondStructureContainer = new LayoutContainer();
 		secondStructureContainer.setScrollMode(Scroll.AUTOX);
 		secondStructureContainer.setLayout(new AnchorLayout());
@@ -131,120 +119,9 @@ public class InterfacesResiduesPanel extends FormPanel
 		
 		residuesLayoutContainer.add(secondStructureContainer, new RowData(0.48, 1, new Margins(0)));
 		
-		
-//		VBoxLayout layout = new VBoxLayout();  
-//        layout.setPadding(new Padding(0));  
-//        layout.setVBoxLayoutAlign(VBoxLayoutAlign.LEFT);  
-//  
-//		LayoutContainer firstStructureContainer = new LayoutContainer();
-//		firstStructureContainer.setScrollMode(Scroll.AUTOX);
-//		firstStructureContainer.setLayout(layout);
-//		firstStructureContainer.add(firstStructure, new VBoxLayoutData(new Margins(0)));
-//		
-//		FormPanel firstStructureBreakPanel = new FormPanel();
-//		firstStructureBreakPanel.setBodyBorder(false);
-//		firstStructureBreakPanel.setBorders(false);
-//		firstStructureBreakPanel.getHeader().setVisible(false);
-//		firstStructureBreakPanel.setHeight(20);
-//		firstStructureContainer.add(firstStructureBreakPanel, new VBoxLayoutData(new Margins(0)));
-//
-//		firstStructureContainer.add(firstStructureSummary, new VBoxLayoutData(new Margins(0)));
-//		
-//		FormPanel firstStructureScrollPanel = new FormPanel();
-//		firstStructureScrollPanel.setBodyBorder(false);
-//		firstStructureScrollPanel.setBorders(false);
-//		firstStructureScrollPanel.getHeader().setVisible(false);
-//		firstStructureScrollPanel.setHeight(20);
-//		firstStructureContainer.add(firstStructureScrollPanel, new VBoxLayoutData(new Margins(0)));
-//		
-//		residuesLayoutContainer.add(firstStructureContainer, new RowData(0.48, 1, new Margins(0)));
-//		
-//		VBoxLayout layout = new VBoxLayout();  
-//        layout.setPadding(new Padding(0));  
-//        layout.setVBoxLayoutAlign(VBoxLayoutAlign.LEFT);  
-//        
-//		LayoutContainer secondStructureContainer = new LayoutContainer();
-//		secondStructureContainer.setScrollMode(Scroll.AUTOX);
-//		secondStructureContainer.setLayout(layout);
-//		secondStructureContainer.add(secondStructure, new VBoxLayoutData(new Margins(0)));
-//		
-//		FormPanel secondStructureBreakPanel = new FormPanel();
-//		secondStructureBreakPanel.setBodyBorder(false);
-//		secondStructureBreakPanel.setBorders(false);
-//		secondStructureBreakPanel.getHeader().setVisible(false);
-//		secondStructureBreakPanel.setHeight(20);
-//		secondStructureContainer.add(secondStructureBreakPanel, new VBoxLayoutData(new Margins(0)));
-//		
-//		secondStructureContainer.add(secondStructureSummary, new VBoxLayoutData(new Margins(0)));
-//
-//		FormPanel breakPanel = new FormPanel();
-//		breakPanel.setBodyBorder(false);
-//		breakPanel.setBorders(false);
-//		breakPanel.getHeader().setVisible(false);
-//		residuesLayoutContainer.add(breakPanel, new RowData(0.04, 1, new Margins(0)));
-//		
-//		FormPanel secondStructureScrollPanel = new FormPanel();
-//		secondStructureScrollPanel.setBodyBorder(false);
-//		secondStructureScrollPanel.setBorders(false);
-//		secondStructureScrollPanel.getHeader().setVisible(false);
-//		secondStructureScrollPanel.setHeight(20);
-//		secondStructureContainer.add(secondStructureScrollPanel, new VBoxLayoutData(new Margins(0)));
-//
-//		residuesLayoutContainer.add(secondStructureContainer, new RowData(0.48, 1, new Margins(0)));
-		
 		this.add(residuesLayoutContainer, new RowData(1, 1, new Margins(0, 0, 0, 0)));
 		
 		
-		
-//		LayoutContainer firstStructureContainer = new LayoutContainer();
-//		firstStructureContainer.setScrollMode(Scroll.AUTOX);
-//		firstStructureContainer.setLayout(new RowLayout(Orientation.VERTICAL));
-//		firstStructureContainer.add(firstStructure, new RowData(1, 1, new Margins(0)));
-//		
-//		FormPanel firstStructureBreakPanel = new FormPanel();
-//		firstStructureBreakPanel.setBodyBorder(false);
-//		firstStructureBreakPanel.setBorders(false);
-//		firstStructureBreakPanel.getHeader().setVisible(false);
-//		firstStructureContainer.add(firstStructureBreakPanel, new RowData(1, 20, new Margins(0)));
-//
-//		firstStructureContainer.add(firstStructureSummary, new RowData(1, 70, new Margins(0)));
-//		
-//		FormPanel firstStructureScrollPanel = new FormPanel();
-//		firstStructureScrollPanel.setBodyBorder(false);
-//		firstStructureScrollPanel.setBorders(false);
-//		firstStructureScrollPanel.getHeader().setVisible(false);
-//		firstStructureContainer.add(firstStructureScrollPanel, new RowData(1, 20, new Margins(0)));
-//		
-//		residuesLayoutContainer.add(firstStructureContainer, new RowData(0.48, 1, new Margins(0)));
-//		
-//		LayoutContainer secondStructureContainer = new LayoutContainer();
-//		secondStructureContainer.setScrollMode(Scroll.AUTOX);
-//		secondStructureContainer.setLayout(new RowLayout());
-//		secondStructureContainer.add(secondStructure, new RowData(1, 1));
-//		
-//		FormPanel secondStructureBreakPanel = new FormPanel();
-//		secondStructureBreakPanel.setBodyBorder(false);
-//		secondStructureBreakPanel.setBorders(false);
-//		secondStructureBreakPanel.getHeader().setVisible(false);
-//		secondStructureContainer.add(secondStructureBreakPanel, new RowData(20, 1));
-//		
-//		secondStructureContainer.add(secondStructureSummary, new RowData(70, 1));
-//
-//		FormPanel breakPanel = new FormPanel();
-//		breakPanel.setBodyBorder(false);
-//		breakPanel.setBorders(false);
-//		breakPanel.getHeader().setVisible(false);
-//		residuesLayoutContainer.add(breakPanel, new RowData(0.04, 1, new Margins(0)));
-//		
-//		FormPanel secondStructureScrollPanel = new FormPanel();
-//		secondStructureScrollPanel.setBodyBorder(false);
-//		secondStructureScrollPanel.setBorders(false);
-//		secondStructureScrollPanel.getHeader().setVisible(false);
-//		secondStructureContainer.add(secondStructureScrollPanel, new RowData(20, 1));
-//
-//		residuesLayoutContainer.add(secondStructureContainer, new RowData(0.48, 1, new Margins(0)));
-//		
-//		this.add(residuesLayoutContainer, new RowData(1, 1, new Margins(0, 0, 0, 0)));
 		
 		toolbar = new ToolBar();  
 		
@@ -282,11 +159,19 @@ public class InterfacesResiduesPanel extends FormPanel
 		this.setTopComponent(toolbar);
 	}
 
+	/**
+	 * Cleans data of residues filter.
+	 */
 	public void cleanData()
 	{
 		residuesFilterComboBox.setSimpleValue(MainController.CONSTANTS.interfaces_residues_combo_rimcore());
 	}
 
+	/**
+	 * Resizes interfaces residues panels.
+	 * @param assignedWidth
+	 * @param assignedHeight
+	 */
 	public void resizeResiduesPanels(int assignedWidth, int assignedHeight) 
 	{
 		int assignedResiduesWidth = (int)((assignedWidth - 36) * 0.48) - 10;
@@ -295,25 +180,39 @@ public class InterfacesResiduesPanel extends FormPanel
 		firstStructureSummary.resizeGrid(assignedResiduesWidth);
 		secondStructureSummary.resizeGrid(assignedResiduesWidth);
 		this.layout(true);
-//		this.repaint();
-//		this.recalculate();
 	}
 	
+	/**
+	 * Retrieves panel containing interface residues for first structure.
+	 * @return panel containing interface residues for first structure
+	 */
 	public ResiduesPanel getFirstStructurePanel() 
 	{
 		return firstStructure;
 	}
 
+	/**
+	 * Retrieves panel containing interface residues for second structure.
+	 * @return panel containing interface residues for second structure
+	 */
 	public ResiduesPanel getSecondStructurePanel() 
 	{
 		return secondStructure;
 	}
 	
+	/**
+	 * Retrieves panel containing interface residues summary for first structure.
+	 * @return panel containing interface residues summary for first structure
+	 */
 	public ResiduesSummaryPanel getFirstStructurePanelSummary() 
 	{
 		return firstStructureSummary;
 	}
 
+	/**
+	 * Retrieves panel containing interface residues summary for second structure.
+	 * @return panel containing interface residues summary for second structure
+	 */
 	public ResiduesSummaryPanel getSecondStructurePanelSummary() 
 	{
 		return secondStructureSummary;

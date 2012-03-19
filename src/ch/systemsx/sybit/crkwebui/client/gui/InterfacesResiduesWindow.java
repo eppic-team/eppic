@@ -14,6 +14,11 @@ import com.extjs.gxt.ui.client.widget.layout.RowData;
 import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 import com.google.gwt.i18n.client.NumberFormat;
 
+/**
+ * Window containing interface residues.
+ * @author AS
+ *
+ */
 public class InterfacesResiduesWindow extends ResizableWindow 
 {
 	private static int INTERFACE_RESIDUES_WINDOW_DEFAULT_WIDTH = 1200;
@@ -110,20 +115,35 @@ public class InterfacesResiduesWindow extends ResizableWindow
 		}
 	}
 
+	/**
+	 * Retrieves panel containing interface residues.
+	 * @return panel containing interface residues
+	 */
 	public InterfacesResiduesPanel getInterfacesResiduesPanel() {
 		return interfacesResiduesPanel;
 	}
 	
+	/**
+	 * Sets identifier of selected interface.
+	 * @param selectedInterface identifier of selected interface
+	 */
 	public void setSelectedInterface(int selectedInterface)
 	{
 		this.selectedInterface = selectedInterface;
 	}
 	
+	/**
+	 * Retrieves identifier of selected interface.
+	 * @return identifier of selected interface
+	 */
 	public int getSelectedInterface()
 	{
 		return selectedInterface;
 	}
 	
+	/**
+	 * Sets header of interface residues window.
+	 */
 	public void setWindowHeader()
 	{
 		double area = mainController.getPdbScoreItem().getInterfaceItem(selectedInterface - 1).getArea();

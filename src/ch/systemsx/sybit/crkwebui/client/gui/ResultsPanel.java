@@ -40,7 +40,7 @@ import com.extjs.gxt.ui.client.widget.layout.VBoxLayout.VBoxLayoutAlign;
 import com.google.gwt.user.client.Cookies;
 
 /**
- * This panel is used to display the results of the calculations
+ * Panel used to display the results of the calculations.
  * @author srebniak_a
  *
  */
@@ -65,13 +65,6 @@ public class ResultsPanel extends DisplayPanel
 	private Map<String, Integer> initialColumnWidth;
 	
 	private float gridWidthMultiplier;
-	// ***************************************
-
-	// ***************************************
-	// * Scores grid
-	// ***************************************
-//	private LayoutContainer scoresPanelLocation;
-//	private ScoresPanel scoresPanel;
 	// ***************************************
 
 	public ResultsPanel(final MainController mainController)
@@ -188,37 +181,12 @@ public class ResultsPanel extends DisplayPanel
 		resultsGridContainer.add(resultsGrid);
 		
 		this.add(resultsGridContainer, new RowData(1, 1, new Margins(0)));
-		
-//		createResultsGridContainerToolbar();
-
-//		breakPanel = new FormPanel();
-//		breakPanel.setBorders(false);
-//		breakPanel.setBodyBorder(false);
-//		breakPanel.setPadding(0);
-//		breakPanel.getHeader().setVisible(false);
-//		this.add(breakPanel, new RowData(1, 10, new Margins(0)));
-//
-//		scoresPanelLocation = new LayoutContainer();
-//		scoresPanelLocation.setLayout(new FitLayout());
-//		scoresPanelLocation.setBorders(false);
-//		
-//		this.add(scoresPanelLocation, new RowData(1, 0.45, new Margins(0)));
 	}
 
-//	public void updateScoresPanel(int selectedInterface)
-//	{
-//		if (scoresPanel == null) 
-//		{
-//			createScoresPanel();
-//			scoresPanelLocation.add(scoresPanel);
-//			scoresPanelLocation.layout();
-//		}
-//		
-//		scoresPanel.fillGrid(mainController.getPdbScoreItem(), selectedInterface);
-//		scoresPanel.resizeGrid();
-//		scoresPanel.setVisible(true);
-//	}
-
+	/**
+	 * Creates configurations of the columns for results grid.
+	 * @return list of columns configurations for results grid
+	 */
 	private List<ColumnConfig> createColumnConfig() 
 	{
 		List<ColumnConfig> configs = GridColumnConfigGenerator.createColumnConfigs(mainController,
@@ -238,12 +206,18 @@ public class ResultsPanel extends DisplayPanel
 		return configs;
 	}
 
+	/**
+	 * Generates info panel containing general information about finished job.
+	 */
 	private void createInfoPanel()
 	{
 		infoPanel = new InfoPanel(mainController);
 		this.add(infoPanel, new RowData(1, 80, new Margins(0)));
 	}
 
+	/**
+	 * Generates panel containing viewer and thumbnail selectors.
+	 */
 	private void createViewerTypePanel() 
 	{
 		LayoutContainer optionsLocation = new LayoutContainer();
@@ -344,19 +318,12 @@ public class ResultsPanel extends DisplayPanel
 		this.add(optionsLocation, new RowData(1, 35, new Margins(0)));
 	}
 
-//	private void createScoresPanel() 
-//	{
-//		scoresPanel = new ScoresPanel(mainController);
-//	}
-
+	/**
+	 * Sets content of results panel.
+	 * @param resultsData results data of selected job
+	 */
 	public void fillResultsPanel(PDBScoreItem resultsData) 
 	{
-//		if (scoresPanel != null)
-//		{
-//			scoresPanelLocation.removeAll();
-//			scoresPanel = null;
-//		}
-
 		fillResultsGrid(resultsData);
 		infoPanel.generateInfoPanel(mainController);
 		
@@ -369,6 +336,10 @@ public class ResultsPanel extends DisplayPanel
 		pdbTitle.setText(resultsData.getTitle());
 	}
 	
+	/**
+	 * Sets content of results grid.
+	 * @param resultsData results data of selected job
+	 */
 	public void fillResultsGrid(PDBScoreItem resultsData)
 	{
 		boolean hideWarnings = true;
@@ -402,8 +373,6 @@ public class ResultsPanel extends DisplayPanel
 					}
 				}
 				
-				// Window.alert(String.valueOf(interfaceItem));
-				// ResultsModel resultsModel = new ResultsModel("");
 				model.setId(interfaceItem.getId());
 				model.setName(interfaceItem.getName());
 				model.setArea(interfaceItem.getArea());
@@ -434,6 +403,10 @@ public class ResultsPanel extends DisplayPanel
 		}
 	}
 
+	/**
+	 * Adjusts size of the results grid based on the current screen size and
+	 * initial settings for the columns.
+	 */
 	public void resizeGrid() 
 	{
 		int limit = 50;
@@ -466,8 +439,6 @@ public class ResultsPanel extends DisplayPanel
 			for (int i = 0; i < nrOfColumn; i++) 
 			{
 				resultsGrid.getColumnModel().setColumnWidth(i, (int)(initialColumnWidth.get(resultsGrid.getColumnModel().getColumn(i).getId()) * gridWidthMultiplier), true);
-//				resultsGrid.getColumnModel().getColumn(i)
-//						.setWidth((int)(initialColumnWidth.get(i) * multiplier));
 			}
 		} 
 		else 
@@ -498,14 +469,9 @@ public class ResultsPanel extends DisplayPanel
 		}
 	}
 
-//	public void resizeScoresGrid() 
-//	{
-//		if(scoresPanel != null)
-//		{
-//			scoresPanel.resizeGrid();
-//		}
-//	}
-	
+	/**
+	 * Sets value of thumbnail checkbox based on saved cookie.
+	 */
 	public void displayThumbnails()
 	{
 		String thumbnailCookie = Cookies.getCookie("crkthumbnail");
@@ -523,27 +489,37 @@ public class ResultsPanel extends DisplayPanel
 			showThumbnailCheckBox.setValue(false);
 		}
 	}
-	
+
+	/**
+	 * Retrieves panel containing general information about job.
+	 * @return panel containing general information about job
+	 */
 	public InfoPanel getInfoPanel() 
 	{
 		return infoPanel;
 	}
 	
-//	public ScoresPanel getScoresPanel()
-//	{
-//		return scoresPanel;
-//	}
-	
+	/**
+	 * Retrieves grid containing results of processing.
+	 */
 	public Grid<InterfaceItemModel> getResultsGrid()
 	{
 		return resultsGrid;
 	}
 	
+	/**
+	 * Retrieves store of the results grid.
+	 * @return store of the results grid
+	 */
 	public ListStore<InterfaceItemModel> getResultsStore() 
 	{
 		return resultsStore;
 	}
 
+	/**
+	 * Saves currently customized by the user grid settings to reuse them for
+	 * displaying other results.
+	 */
 	public void saveGridSettings()
 	{
 		for(int i=0; i<resultsGrid.getColumnModel().getColumnCount(); i++)
