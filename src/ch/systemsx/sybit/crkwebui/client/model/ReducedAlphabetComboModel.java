@@ -3,7 +3,7 @@ package ch.systemsx.sybit.crkwebui.client.model;
 import com.extjs.gxt.ui.client.data.BaseModel;
 
 /**
- * Data model for reduced alphabet combobox
+ * Data model for reduced alphabet combobox.
  * @author srebniak_a
  *
  */

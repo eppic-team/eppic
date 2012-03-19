@@ -6,7 +6,7 @@ import com.extjs.gxt.ui.client.widget.form.Field;
 import com.extjs.gxt.ui.client.widget.form.Validator;
 
 /**
- * This class is used to validate email address provided by the user
+ * Email address validator.
  * 
  * @author srebniak_a
  * 

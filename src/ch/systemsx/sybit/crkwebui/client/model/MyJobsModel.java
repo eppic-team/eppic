@@ -3,7 +3,7 @@ package ch.systemsx.sybit.crkwebui.client.model;
 import com.extjs.gxt.ui.client.data.BaseModel;
 
 /**
- * Data model for jobs grid
+ * Data model for jobs grid.
  * @author srebniak_a
  *
  */

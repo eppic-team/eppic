@@ -14,7 +14,7 @@ import com.extjs.gxt.ui.client.widget.grid.Grid;
 import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
 
 /**
- * This class is used to style the results of calculations for each of the method
+ * Renderer used to style the results of calculations for each of the method.
  * @author srebniak_a
  *
  */

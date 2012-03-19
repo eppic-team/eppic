@@ -18,7 +18,7 @@ import com.google.gwt.event.dom.client.MouseOverHandler;
 import com.google.gwt.user.client.ui.Image;
 
 /**
- * This class is used to display icon used to stop job
+ * Renderer used to display icon used to stop job.
  * @author AS
  *
  */

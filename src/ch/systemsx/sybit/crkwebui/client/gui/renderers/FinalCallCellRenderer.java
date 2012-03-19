@@ -11,7 +11,7 @@ import com.extjs.gxt.ui.client.widget.grid.Grid;
 import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
 
 /**
- * This renderer is used to style final result
+ * Renderer used to style final result.
  * @author srebniak_a
  *
  */

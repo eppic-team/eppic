@@ -9,7 +9,7 @@ import com.extjs.gxt.ui.client.widget.grid.ColumnData;
 import com.extjs.gxt.ui.client.widget.grid.Grid;
 
 /**
- * This renderer is used to display styled status of the job
+ * Renderer used to display styled status of the job.
  * @author srebniak_a
  *
  */

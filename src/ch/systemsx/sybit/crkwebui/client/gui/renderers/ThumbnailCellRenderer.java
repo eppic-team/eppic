@@ -18,7 +18,7 @@ import com.google.gwt.event.dom.client.MouseOverHandler;
 import com.google.gwt.user.client.ui.Image;
 
 /**
- * This renderer is used to display interfaces thumbnails
+ * Renderer used to display interfaces thumbnails.
  * @author srebniak_a
  *
  */
@@ -47,7 +47,6 @@ public class ThumbnailCellRenderer implements GridCellRenderer<BaseModel>
 						"." +
 						model.get("id") +
 						".75x75.png";
-//		String source = "http://localhost/3pi9.10.75x75.png";
 		
 		final Image image  = new Image(source);
 		image.addMouseOverHandler(new MouseOverHandler() {

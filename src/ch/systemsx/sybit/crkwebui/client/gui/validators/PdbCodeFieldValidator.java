@@ -5,6 +5,11 @@ import ch.systemsx.sybit.crkwebui.shared.PdbCodeVerifier;
 import com.extjs.gxt.ui.client.widget.form.Field;
 import com.extjs.gxt.ui.client.widget.form.Validator;
 
+/**
+ * Pdb code validator.
+ * @author AS
+ *
+ */
 public class PdbCodeFieldValidator implements Validator {
 
 	@Override

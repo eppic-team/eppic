@@ -6,7 +6,7 @@ import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
 
 /**
- * This factory is used to select correct renderer for each of the column in the grid
+ * Factory used to select correct renderer for each of the column in the grid.
  * @author srebniak_a
  *
  */

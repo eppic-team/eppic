@@ -16,7 +16,7 @@ import com.extjs.gxt.ui.client.widget.grid.ColumnData;
 import com.extjs.gxt.ui.client.widget.grid.Grid;
 
 /**
- * This renderer is used to display details button which shows the residues
+ * Renderer used to display details button which shows the residues.
  * @author srebniak_a
  *
  */

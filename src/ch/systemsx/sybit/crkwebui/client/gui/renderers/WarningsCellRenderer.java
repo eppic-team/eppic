@@ -20,7 +20,7 @@ import com.google.gwt.event.dom.client.MouseOverHandler;
 import com.google.gwt.user.client.ui.Image;
 
 /**
- * This renderer is used to display view button used to open viewer
+ * Renderer used to display warning icon.
  * @author srebniak_a
  *
  */
@@ -111,7 +111,7 @@ public class WarningsCellRenderer implements GridCellRenderer<BaseModel>
 	}
 	
 	/**
-	 * Create list of interface warnings
+	 * Creates list of interface warnings.
 	 * @param warnings list of warnings to display
 	 * @return template containing list of warnings
 	 */

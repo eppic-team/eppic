@@ -18,7 +18,7 @@ import com.google.gwt.event.dom.client.MouseOverHandler;
 import com.google.gwt.user.client.ui.Image;
 
 /**
- * This renderer is used to display icon used to delete job
+ * Renderer used to display icon used to delete job.
  * @author AS
  */
 public class DeleteJobCellRenderer implements GridCellRenderer<BaseModel> 

@@ -7,7 +7,7 @@ import com.extjs.gxt.ui.client.widget.grid.Grid;
 import com.google.gwt.user.client.ui.Hyperlink;
 
 /**
- * This renderer is used to display input value (pdb code or filename without extension)
+ * Renderer used to display input value (pdb code or filename without extension).
  * @author srebniak_a
  */
 public class InputCellRenderer extends DefaultCellRenderer 
