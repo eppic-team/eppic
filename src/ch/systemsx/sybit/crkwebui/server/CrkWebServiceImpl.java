@@ -70,8 +70,6 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 	private String generalTmpDirectoryName;
 	private String generalDestinationDirectoryName;
 
-//	private String dataSource;
-
 	// list of running  threads
 	private CrkThreadGroup runInstances;
 	
@@ -85,6 +83,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 	private boolean doIPBasedVerification;
 	private int defaultNrOfAllowedSubmissionsForIP;
 		
+	@Override
 	public void init(ServletConfig config) throws ServletException 
 	{
 		super.init(config);
@@ -141,9 +140,6 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 		defaultNrOfAllowedSubmissionsForIP = Integer.parseInt(properties.getProperty("nr_of_allowed_submissions_for_ip","100"));
 		
 				
-//		dataSource = properties.getProperty("data_source");
-//		DBUtils.setDataSource(dataSource);
-//		
 		sgeFactory = SessionFactory.getFactory();
 		sgeSession = sgeFactory.getSession();
 		try 
@@ -155,119 +151,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 			e.printStackTrace();
 			throw new ServletException("Can not initialize sge session");
 		}
-		
-//		**********************
-//		* Hibernate pure
-//		**********************
-//		try {
-//			org.hibernate.classic.Session hibernateSession = HibernateUtil.getSessionFactory().getCurrentSession();
-//			
-//            // Begin unit of work
-//			hibernateSession.beginTransaction();
-//			
-//			Job job = (Job)hibernateSession.get(Job.class, "1");
-//			System.out.println(job.getJobId());
-//            
-//            // Process request and render page...
-//
-//            // End unit of work
-//			hibernateSession.getTransaction().commit();
-//        }
-//        catch (Exception ex) {
-//            HibernateUtil.getSessionFactory().getCurrentSession().getTransaction().rollback();
-//            if ( ServletException.class.isInstance( ex ) ) {
-////                throw ( ServletException ) ex;
-//            }
-//            else {
-////                throw new ServletException( ex );
-//            }
-//        }
-		
-//		***********************
-//		* Hibernate JPA
-//		***********************
-		
-//		EntityManager entityManager = null;
-//		
-//		try
-//		{
-////			RunParametersItem item = new RunParametersItem();
-////			item.setUid(2);
-////			item.setHomologsCutoff(125);
-//			
-////			ObjectInputStream in = new ObjectInputStream(new FileInputStream("c:/test1.crk"));
-//		ObjectInputStream in = new ObjectInputStream(new FileInputStream("c:/files1/res2/1smt.webui.dat"));
-////			ObjectInputStream in = new ObjectInputStream(new FileInputStream("c:/1ton.webui.dat"));
-//			PDBScoreItemDB readitem = (PDBScoreItemDB)in.readObject();
-////			System.out.println(readitem.getInterfaceItems().get(0).getInterfaceResidues().size());
-//			
-//			InterfaceScoreItemDB iitem = readitem.getInterfaceItems().get(0).getInterfaceScores().get(0);
-//			
-//			entityManager = EntityManagerHandler.getEntityManager();
-//			entityManager.getTransaction().begin();
-//			entityManager.persist(readitem);
-//			entityManager.getTransaction().commit();
-//			entityManager.close();
-//		}
-//		catch(Throwable e)
-//		{
-//			e.printStackTrace();
-//		}
-		
-		
-//		EntityManager entityManager = null;
-//		PDBScoreItem result = null;
-//		
-//		try
-//		{
-//			entityManager = EntityManagerHandler.getEntityManager();
-//			PDBScoreDAO pdbScoreDAO = new PDBScoreDAOImpl();
-//			PDBScoreItem item = pdbScoreDAO.getPDBScore("test1");
-//			System.out.println("NAME: " + item.getPdbName());
-//			
-////			List<NumHomologsStringItem> hom = pdbScoreDAO.get(item.getUid());
-////			System.out.println("ASAC1: " + item.getInterfaceItems().get(0).getAsaC1());
-////			System.out.println("NUMHOMOL: " + hom.get(1).getText());
-//		}
-//		catch(Throwable e)
-//		{
-//			e.printStackTrace();
-//		}
-//		finally
-//		{
-//			try
-//			{
-//				entityManager.close();
-//			}
-//			catch(Throwable t)
-//			{
-//				
-//			}
-//		}
 	}
-
-//	public String greetServer(String input) throws IllegalArgumentException {
-//		// // Verify that the input is valid.
-//		// if (!FieldVerifier.isValidName(input)) {
-//		// // If the input is not valid, throw an IllegalArgumentException back
-//		// to
-//		// // the client.
-//		// throw new IllegalArgumentException(
-//		// "Name must be at least 4 characters long");
-//		// }
-//		//
-//		// String serverInfo = getServletContext().getServerInfo();
-//		// String userAgent = getThreadLocalRequest().getHeader("User-Agent");
-//		//
-//		// // Escape data from the client to avoid cross-site script
-//		// vulnerabilities.
-//		// input = escapeHtml(input);
-//		// userAgent = escapeHtml(userAgent);
-//		//
-//		// return "Hello, " + input + "!<br><br>I am running " + serverInfo
-//		// + ".<br><br>It looks like you are using:<br>" + userAgent;
-//		return "";
-//	}
 
 	/**
 	 * Escape an html string. Escaping data received from the client helps to
@@ -393,11 +277,6 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 								getThreadLocalRequest().getRemoteAddr(),
 								currentDate,
 								inputType);
-//			DBUtils.insertNewJob(runJobData.getJobId(),
-//								 getThreadLocalRequest().getSession().getId(),
-//								 emailData.getEmailRecipient(), 
-//								 runJobData.getInput(),
-//								 getThreadLocalRequest().getRemoteAddr());
 
 			String serverName = getThreadLocalRequest().getServerName();
 			int serverPort = getThreadLocalRequest().getServerPort();
@@ -438,6 +317,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 		return null;
 	}
 
+	@Override
 	public ProcessingData getResultsOfProcessing(String jobId, boolean debug) throws CrkWebException 
 	{
 		String status = null;
@@ -450,8 +330,6 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 			UserSessionDAO sessionDAO = new UserSessionDAOImpl();
 			sessionDAO.insertSessionForJob(getThreadLocalRequest().getSession().getId(), jobId);
 		
-//		String status = DBUtils.getStatusForJob(jobId, getThreadLocalRequest().getSession().getId());
-
 			if(status.equals(StatusOfJob.FINISHED.getName())) 
 			{
 				return getResultData(jobId);
@@ -619,72 +497,6 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 		return stepStatus;
 	}
 	
-//	private PDBScoreItem getResultData(String jobId) throws CrkWebException 
-//	{
-//		PDBScoreItem resultsData = null;
-//
-//		if ((jobId != null) && (jobId.length() != 0)) 
-//		{
-//			File resultFileDirectory = new File(
-//					generalDestinationDirectoryName + "/" + jobId);
-//
-//			if (resultFileDirectory.exists()
-//					&& resultFileDirectory.isDirectory())
-//			{
-//				String[] directoryContent = resultFileDirectory
-//						.list(new FilenameFilter() {
-//
-//							public boolean accept(File dir, String name) {
-//								if (name.endsWith(".webui.dat")) {
-//									return true;
-//								} else {
-//									return false;
-//								}
-//							}
-//						});
-//
-//				if ((directoryContent != null) && (directoryContent.length > 0)) 
-//				{
-//					File resultFile = new File(resultFileDirectory + "/" + directoryContent[0]);
-//					
-//					if (resultFile.exists()) 
-//					{
-//						FileInputStream fileInputStream = null;
-//						ObjectInputStream inputStream = null;
-//						
-//						try 
-//						{
-//							fileInputStream = new FileInputStream(resultFile);
-//							inputStream = new ObjectInputStream(fileInputStream);
-//							resultsData = (PDBScoreItem)inputStream.readObject();
-//							resultsData.setJobId(jobId);
-//						} 
-//						catch (Throwable e)
-//						{
-//							throw new CrkWebException(e);
-//						}
-//						finally
-//						{
-//							if(inputStream != null)
-//							{
-//								try
-//								{
-//									inputStream.close();
-//								}
-//								catch(Throwable t)
-//								{
-//									t.printStackTrace();
-//								}
-//							}
-//						}
-//					}
-//				}
-//			}
-//		}
-//
-//		return resultsData;
-//	}
-	
 	private PDBScoreItem getResultData(String jobId) throws CrkWebException 
 	{
 		JobDAO jobDAO = new JobDAOImpl();
@@ -706,6 +518,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 		return pdbScoreItem;
 	}
 	
+	@Override
 	public InterfaceResiduesItemsList getAllResidues(int pdbScoreId) throws CrkWebException 
 	{
 		InterfaceResidueItemDAO interfaceResidueItemDAO = new InterfaceResidueItemDAOImpl();
@@ -713,6 +526,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 		return interfaceResiduesItemsList;
 	}
 	
+	@Override
 	public HashMap<Integer, List<InterfaceResidueItem>> getInterfaceResidues(int interfaceUid) throws CrkWebException
 	{
 		InterfaceResidueItemDAO interfaceResidueItemDAO = new InterfaceResidueItemDAOImpl();
@@ -747,7 +561,6 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 		String sessionId = getThreadLocalRequest().getSession().getId();
 		JobDAO jobDAO = new JobDAOImpl();
 		return jobDAO.getJobsForSession(sessionId);
-//		return DBUtils.getJobsForCurrentSession(sessionId);
 	}
 	
 	@Override
@@ -812,6 +625,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 		return result;
 	}
 	
+	@Override
 	public String deleteJob(String jobToDelete) throws CrkWebException
 	{
 		String sessionId = getThreadLocalRequest().getSession().getId();
@@ -831,14 +645,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 		String sessionId = getThreadLocalRequest().getSession().getId();
 		JobDAO jobDAO = new JobDAOImpl();
 		jobDAO.untieJobsFromSession(sessionId);
-//		DBUtils.untieJobsFromSession(sessionId);
 	}
-
-	
-
-//	public String test(String test) {
-//		return getThreadLocalRequest().getSession().getId();
-//	}
 
 	private boolean checkIfDirectoryExist(String directoryName) {
 		File directory = new File(directoryName);
@@ -904,7 +711,5 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 		{
 			e.printStackTrace();
 		}
-		
-//		runInstances.destroy();
 	}
 }

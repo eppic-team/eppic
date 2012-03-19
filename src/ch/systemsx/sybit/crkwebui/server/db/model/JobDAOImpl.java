@@ -26,8 +26,14 @@ import ch.systemsx.sybit.crkwebui.shared.CrkWebException;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
 import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
 
+/**
+ * Implementation of JobDAO.
+ * @author AS
+ *
+ */
 public class JobDAOImpl implements JobDAO
 {
+	@Override
 	public void insertNewJob(String jobId, 
 							 String sessionId,
 							 String email, 
@@ -89,6 +95,7 @@ public class JobDAOImpl implements JobDAO
 		}
 	}
 	
+	@Override
 	public void updateStatusOfJob(String jobId, String status) throws CrkWebException
 	{
 		EntityManager entityManager = null;
@@ -133,6 +140,7 @@ public class JobDAOImpl implements JobDAO
 		}
 	}
 	
+	@Override
 	public void untieJobsFromSession(String sessionId) throws CrkWebException
 	{
 		EntityManager entityManager = null;
@@ -160,21 +168,6 @@ public class JobDAOImpl implements JobDAO
 					entityManager.remove(session);
 				}
 			}
-			
-//			Query query = entityManager.createQuery("from Job WHERE sessionId = :sessionId", JobDB.class);
-//			query.setParameter("sessionId", sessionId);
-//			List<JobDB> jobs = query.getResultList();
-//			
-//			if(jobs != null)
-//			{
-//				for(JobDB job : jobs)
-//				{
-//					job.setSessionId(null);
-//					entityManager.merge(job);
-//					entityManager.flush();
-//					entityManager.clear();
-//				}
-//			}
 			
 			entityManager.getTransaction().commit();
 		}
@@ -206,6 +199,7 @@ public class JobDAOImpl implements JobDAO
 		}
 	}
 	
+	@Override
 	public List<ProcessingInProgressData> getJobsForSession(String sessionId) throws CrkWebException
 	{
 		EntityManager entityManager = null;
@@ -225,9 +219,6 @@ public class JobDAOImpl implements JobDAO
 			criteriaQuery.select(jobRoot);
 			
 			Query query = entityManager.createQuery(criteriaQuery);
-//			entityManager = EntityManagerHandler.getEntityManager();
-//			Query query = entityManager.createQuery("from Job WHERE sessionId = :sessionId", JobDB.class);
-//			query.setParameter("sessionId", sessionId);
 			List<JobDB> jobs = query.getResultList();
 			 
 			List<ProcessingInProgressData> processingInProgressDataList = null;
@@ -261,6 +252,7 @@ public class JobDAOImpl implements JobDAO
 		}
 	}
 	
+	@Override
 	public Long getNrOfJobsForSessionId(String sessionId) throws CrkWebException
 	{
 		EntityManager entityManager = null;
@@ -280,10 +272,6 @@ public class JobDAOImpl implements JobDAO
 			
 			Query query = entityManager.createQuery(criteriaQuery);
 			Long nrOfJobs = (Long)query.getSingleResult();
-			
-//			Query query = entityManager.createQuery("SELECT count(jobId) FROM Job WHERE sessionId = :sessionId", Long.class);
-//			query.setParameter("sessionId", sessionId);
-//			Long nrOfJobs = (Long) query.getSingleResult();
 			return nrOfJobs;
 		}
 		catch(Throwable e)
@@ -304,6 +292,7 @@ public class JobDAOImpl implements JobDAO
 		}
 	}
 	
+	@Override
 	public String getStatusForJob(String jobId) throws CrkWebException
 	{
 		String status = null;
@@ -342,6 +331,7 @@ public class JobDAOImpl implements JobDAO
 		return status;
 	}
 	
+	@Override
 	public int getInputTypeForJob(String jobId) throws CrkWebException
 	{
 		EntityManager entityManager = null;
@@ -373,6 +363,7 @@ public class JobDAOImpl implements JobDAO
 		}
 	}
 	 
+	@Override
 	public ProcessingInProgressData createProcessingInProgressData(JobDB job)
 	{
 		ProcessingInProgressData processingInProgressData = null;
@@ -429,6 +420,7 @@ public class JobDAOImpl implements JobDAO
 		return nrOfJobs;
 	}
 	
+	@Override
 	public Date getOldestJobSubmissionDateDuringLastDay(String ip) throws CrkWebException
 	{
 		EntityManager entityManager = null;
@@ -526,21 +518,6 @@ public class JobDAOImpl implements JobDAO
 				entityManager.merge(session);
 			}
 			
-//			Query query = entityManager.createQuery("from Job WHERE jobId=:jobId", JobDB.class);
-//			query.setParameter("jobId", jobToUntie);
-//			List<JobDB> jobs = query.getResultList();
-//			
-//			if(jobs != null)
-//			{
-//				for(JobDB job : jobs)
-//				{
-//					job.setSessionId(null);
-//					entityManager.merge(job);
-//					entityManager.flush();
-//					entityManager.clear();
-//				}
-//			}
-			
 			entityManager.getTransaction().commit();
 		}
 		catch(Throwable e)
@@ -571,6 +548,7 @@ public class JobDAOImpl implements JobDAO
 		}
 	}
 	
+	@Override
 	public String getInputForJob(String jobId) throws CrkWebException
 	{
 		EntityManager entityManager = null;
@@ -602,6 +580,7 @@ public class JobDAOImpl implements JobDAO
 		}
 	}
 
+	@Override
 	public void setPdbScoreItemForJob(String jobId, PDBScoreItemDB pdbScoreItem)
 			throws CrkWebException 
 	{
