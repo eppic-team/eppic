@@ -1,7 +1,7 @@
 package ch.systemsx.sybit.crkwebui.shared;
 
 /**
- * The verifier of the email names
+ * Verifier of the email names.
  * @author srebniak_a
  *
  */

@@ -13,15 +13,15 @@ import ch.systemsx.sybit.crkwebui.server.db.model.JobDAOImpl;
 import ch.systemsx.sybit.crkwebui.shared.CrkWebException;
 
 /**
- * This class is used to verify whether job can be submitted from specified IP 
+ * This class is used to verify whether job can be submitted from specified IP. 
  * @author AS
  */
 public class IPVerifier 
 {
 	/**
-	 * Check whether job can be submitted from specified IP address
+	 * Checks whether job can be submitted from specified IP address
 	 * @param ip ip address
-	 * @param defaultNrOfAllowedSubmissionsForIP default number of allowed submission for IP address 
+	 * @param defaultNrOfAllowedSubmissionsForIP default number of allowed submissions for IP address 
 	 * @throws CrkWebException when job can not be submitted
 	 */
 	public static void verifyIfCanBeSubmitted(String ip,

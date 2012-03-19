@@ -8,7 +8,7 @@ import model.HomologsInfoItemDB;
 import model.QueryWarningItemDB;
 
 /**
- * DTO class for HomologsInfo item
+ * DTO class for HomologsInfo item.
  * @author AS
  */
 public class HomologsInfoItem implements Serializable 
@@ -152,7 +152,7 @@ public class HomologsInfoItem implements Serializable
 	}
 	
 	/**
-	 * Convert DB model item into DTO one
+	 * Converts DB model item into DTO one.
 	 * @param homologsInfoItemDB model item to convert
 	 * @return DTO representation of model item
 	 */

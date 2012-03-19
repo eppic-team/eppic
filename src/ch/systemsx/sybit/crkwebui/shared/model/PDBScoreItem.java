@@ -9,7 +9,7 @@ import model.InterfaceItemDB;
 import model.PDBScoreItemDB;
 
 /**
- * DTO class for PDBScore item
+ * DTO class for PDBScore item.
  * @author AS
  */
 public class PDBScoreItem implements Serializable, ProcessingData
@@ -67,16 +67,6 @@ public class PDBScoreItem implements Serializable, ProcessingData
 	public void setPdbName(String pdbName) {
 		this.pdbName = pdbName;
 	}
-
-//	public String getJobId()
-//	{
-//		return jobId;
-//	}
-//	
-//	public void setJobId(String jobId)
-//	{
-//		this.jobId = jobId;
-//	}
 
 	public void setInterfaceItems(List<InterfaceItem> interfaceItems) {
 		this.interfaceItems = interfaceItems;
@@ -151,7 +141,7 @@ public class PDBScoreItem implements Serializable, ProcessingData
 	}
 	
 	/**
-	 * Convert DB model item into DTO one
+	 * Converts DB model item into DTO one.
 	 * @param pdbScoreItemDB model item to convert
 	 * @return DTO representation of model item
 	 */

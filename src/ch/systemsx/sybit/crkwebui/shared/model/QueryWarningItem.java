@@ -5,7 +5,7 @@ import java.io.Serializable;
 import model.QueryWarningItemDB;
 
 /**
- * DTO class for Query Warning item
+ * DTO class for Query Warning item.
  * @author AS
  */
 public class QueryWarningItem implements Serializable 
@@ -51,7 +51,7 @@ public class QueryWarningItem implements Serializable
 	}
 	
 	/**
-	 * Convert DB model item into DTO one
+	 * Converts DB model item into DTO one.
 	 * @param queryWarningItemDB model item to convert
 	 * @return DTO representation of model item
 	 */

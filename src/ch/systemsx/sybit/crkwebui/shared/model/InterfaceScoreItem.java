@@ -5,7 +5,7 @@ import java.io.Serializable;
 import model.InterfaceScoreItemDB;
 
 /**
- * DTO class for InterfaceScore item
+ * DTO class for InterfaceScore item.
  * @author AS
  */
 public class InterfaceScoreItem implements Serializable
@@ -127,7 +127,7 @@ public class InterfaceScoreItem implements Serializable
 	}
 	
 	/**
-	 * Convert DB model item into DTO one
+	 * Converts DB model item into DTO one
 	 * @param interfaceScoreItemDB model item to convert
 	 * @return DTO representation of model item
 	 */

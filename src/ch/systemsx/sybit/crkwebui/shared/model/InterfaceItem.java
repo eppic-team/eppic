@@ -10,7 +10,7 @@ import model.InterfaceScoreItemDB;
 import model.WarningItemDB;
 
 /**
- * DTO class for Interface item
+ * DTO class for Interface item.
  * @author AS
  */
 public class InterfaceItem implements Serializable 
@@ -75,14 +75,6 @@ public class InterfaceItem implements Serializable
 		this.name = name;
 	}
 
-//	public void setInterfaceStructures(List<InterfaceStructureItem> interfaceStructures) {
-//		this.interfaceStructures = interfaceStructures;
-//	}
-//
-//	public List<InterfaceStructureItem> getInterfaceStructures() {
-//		return interfaceStructures;
-//	}
-	
 	public int getSize1() {
 		return size1;
 	}
@@ -232,7 +224,7 @@ public class InterfaceItem implements Serializable
 	}
 	
 	/**
-	 * Convert DB model item into DTO one
+	 * Converts DB model item into DTO one.
 	 * @param interfaceItemDB model item to convert
 	 * @return DTO representation of model item
 	 */

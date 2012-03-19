@@ -1,7 +1,7 @@
 package ch.systemsx.sybit.crkwebui.shared.model;
 
 /**
- * Input type used to start the job
+ * Input type used to start the job.
  * @author AS
  *
  */

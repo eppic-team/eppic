@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Settings stored on the server side and transfered to the client during initialization
+ * Settings stored on the server side and transfered to the client during initialization.
  * @author srebniak_a
  *
  */
@@ -16,18 +16,29 @@ public class ApplicationSettings implements Serializable {
 	 */
 	private static final long serialVersionUID = 1L;
 
-	// supported scoring methods
+	/**
+	 * Supported scoring methods.
+	 */
 	private List<SupportedMethod> scoresTypes;
 
-	// grid settings - column specification
+	/**
+	 * Grid settings - columns specifications.
+	 */
 	private Map<String, String> gridProperties;
 
-	// input parameters
+	/**
+	 * Input parameters.
+	 */
 	private InputParameters defaultParametersValues;
 
-	// available values for reduced alphabet
+	/**
+	 * Available values for reduced alphabet.
+	 */
 	private List<Integer> reducedAlphabetList;
 	
+	/**
+	 * Available values for search mode.
+	 */
 	private List<String> searchModeList;
 	
 	// *********************************************
@@ -43,7 +54,7 @@ public class ApplicationSettings implements Serializable {
 	
 	private Map<String, String> runParametersNames;
 	
-	// information which willbe displayed in the bottom panel when accessing the page - e.g. when the server will not be accessible
+	// information which will be displayed in the bottom panel when accessing the page - e.g. when the server will not be accessible
 	// this information is loaded by each new access to the server so that it does not require the server to be restarted
 	private String notificationOnStart;
 	

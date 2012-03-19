@@ -5,7 +5,7 @@ import java.io.Serializable;
 import model.InterfaceResidueItemDB;
 
 /**
- * DTO class for InterfaceResidue item
+ * DTO class for InterfaceResidue item.
  * @author AS
  */
 public class InterfaceResidueItem implements Serializable
@@ -121,7 +121,7 @@ public class InterfaceResidueItem implements Serializable
 	}
 	
 	/**
-	 * Convert DB model item into DTO one
+	 * Converts DB model item into DTO one.
 	 * @param interfaceResidueItemDB model item to convert
 	 * @return DTO representation of model item
 	 */

@@ -5,7 +5,7 @@ import java.io.Serializable;
 import model.WarningItemDB;
 
 /**
- * DTO class for warning item entry
+ * DTO class for warning item entry.
  */
 public class WarningItem implements Serializable 
 {
@@ -37,7 +37,7 @@ public class WarningItem implements Serializable
 	}
 
 	/**
-	 * Convert DB model item into DTO one
+	 * Converts DB model item into DTO one.
 	 * @param warningItemDB model item to convert
 	 * @return DTO representation of model item
 	 */

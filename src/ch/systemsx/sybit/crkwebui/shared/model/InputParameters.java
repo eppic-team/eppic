@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * This class is used to transfer parameters selected by the user
+ * This class is used to transfer parameters selected by the user.
  * @author srebniak_a
  *
  */

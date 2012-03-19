@@ -20,8 +20,18 @@ import ch.systemsx.sybit.crkwebui.shared.model.InputParameters;
 import ch.systemsx.sybit.crkwebui.shared.model.RunParametersItem;
 import ch.systemsx.sybit.crkwebui.shared.model.SupportedMethod;
 
+/**
+ * This class is used to parse input parameters file.
+ * @author AS
+ */
 public class InputParametersParser
 {
+	/**
+	 * Reads application settings from input stream
+	 * @param inputParametersStream stream from which parameters are going to be read
+	 * @return retrieved application settings
+	 * @throws Throwable when can not properly parse input parameters file
+	 */
 	public static ApplicationSettings prepareApplicationSettings(InputStream inputParametersStream) throws Throwable
 	{
 		ApplicationSettings applicationSettings = new ApplicationSettings();

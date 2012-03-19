@@ -1,7 +1,7 @@
 package ch.systemsx.sybit.crkwebui.shared;
 
 /**
- * This class is used to verify correctness of the pdb code 
+ * Pdb code verifier. 
  *
  */
 public class PdbCodeVerifier {

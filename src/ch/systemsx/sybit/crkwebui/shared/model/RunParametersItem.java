@@ -5,8 +5,7 @@ import java.io.Serializable;
 import model.RunParametersItemDB;
 
 /**
- * This class represents parameters used to run processing
- * @author AS
+ * DTO class for run parameters item entry.
  */
 public class RunParametersItem implements Serializable
 {
@@ -126,6 +125,11 @@ public class RunParametersItem implements Serializable
 		return uid;
 	}
 	
+	/**
+	 * Converts DB model item into DTO one.
+	 * @param runParametersItemDB model item to convert
+	 * @return DTO representation of model item
+	 */
 	public static RunParametersItem create(RunParametersItemDB runParametersItemDB)
 	{
 		RunParametersItem runParametersItem = new RunParametersItem();
