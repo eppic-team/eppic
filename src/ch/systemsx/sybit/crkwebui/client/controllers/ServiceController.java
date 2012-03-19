@@ -10,37 +10,37 @@ import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
 public interface ServiceController
 {
 	/**
-	 * Load initial setttings
+	 * Loads initial setttings.
 	 */
 	public abstract void loadSettings();
 	
 	/**
-	 * Submit the job to the server
+	 * Submits the job to the server.
 	 * @param runJobData input parameters
 	 */
 	public abstract void runJob(RunJobData runJobData);
 	
 	/**
-	 * Retrieve results of processing for selected job id - the results type depends on the status of the job on the server
+	 * Retrieves results of processing for selected job id - the results type depends on the status of the job on the server.
 	 * @param jobId job id
 	 * @param debug retrieve detailed information
 	 */
 	public abstract void getResultsOfProcessing(String jobId, boolean debug);
 	
 	/**
-	 * Retrieve the status data for the current jobs
-	 * @param jobId job id
+	 * Retrieves the status data for the current jobs.
+	 * @param jobId job identifier
 	 * @param debug retrieve detailed information
 	 */
 	public abstract void getCurrentStatusData(String jobId, boolean debug);
 	
 	/**
-	 * Retrieve list of all jobs for current session id
+	 * Retrieves list of all jobs for current session id.
 	 */
 	public abstract void getJobsForCurrentSession();
 
 	/**
-	 * Retrieve residues information for selected interface
+	 * Retrieves residues information for selected interface.
 	 * @param jobId selected job id
 	 * @param interfaceUid selected interface uid
 	 * @param interfaceId selected interface id
@@ -48,27 +48,27 @@ public interface ServiceController
 	public abstract void getInterfaceResidues(String jobId, int interfaceUid, int interfaceId);
 
 	/**
-	 * 
+	 * Retrieves all the residues for all interfaces for specified job.
 	 * @param jobId selected job identifier
 	 * @param pdbScoreUid uid of selected pdb score item
 	 */
 	public abstract void getAllResidues(String jobId, int pdbScoreUid);
 	
 	/**
-	 * Stop the execution of the specified running job
-	 * @param jobToStop list of jobs to stop
+	 * Stops the execution of specified running job.
+	 * @param jobToStop job to stop
 	 * @param debug retrieve detailed information
 	 */
 	public abstract void stopJob(String jobToStop, boolean debug);
 	
 	/**
-	 * Untie specified job with the current session id
+	 * Unties specified job from the current session id.
 	 * @param jobToDelete identifier of the job to remove
 	 */
 	public abstract void deleteJob(String jobToDelete);
 
 	/**
-	 * Untie all the jobs which are attached to the current session
+	 * Unties all the jobs which are attached to the current session.
 	 */
 	public abstract void untieJobsFromSession();
 }

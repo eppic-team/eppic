@@ -8,7 +8,7 @@ import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 /**
- * This is the callback used to handle the response from the server
+ * Callback used to handle the response from the server when retrieving results of processing.
  * @author srebniak_a
  *
  */
@@ -30,7 +30,6 @@ public class GetResultsOfProcessingCallback implements AsyncCallback<ProcessingD
 		String errorText = MainController.CONSTANTS.callback_get_results_of_processing_error() + " " + caught.getMessage();
 		mainController.updateStatusLabel(errorText, true);
 		mainController.getMainViewPort().unmask();
-//		mainController.hideWaiting();
 	}
 
 	@Override
@@ -70,7 +69,6 @@ public class GetResultsOfProcessingCallback implements AsyncCallback<ProcessingD
 		}
 		
 		mainController.getMainViewPort().unmask();
-//		mainController.hideWaiting();
 	}
 
 }

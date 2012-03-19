@@ -8,7 +8,7 @@ import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 /**
- * This is the callback used to handle the response from the server when trying to retrieve the list of jobs for the current session
+ * Callback used to handle the response from the server when trying to retrieve the list of jobs for the current session.
  * @author srebniak_a
  *
  */

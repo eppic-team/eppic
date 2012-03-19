@@ -8,7 +8,7 @@ import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 /**
- * This is the callback used to handle the response from the server when trying to retrieve the status of currently selected job
+ * Callback used to handle the response from the server when trying to retrieve the status of currently selected job.
  * @author srebniak_a
  *
  */
@@ -27,7 +27,7 @@ public class GetCurrentStatusDataCallback implements AsyncCallback<ProcessingDat
 	@Override
 	public void onFailure(Throwable caught) 
 	{
-		String errorText = MainController.CONSTANTS.callback_get_current_status_data();// + caught.getMessage();
+		String errorText = MainController.CONSTANTS.callback_get_current_status_data();
 		mainController.updateStatusLabel(errorText, true);
 	}
 

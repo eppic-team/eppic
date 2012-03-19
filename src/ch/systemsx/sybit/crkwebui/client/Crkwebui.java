@@ -33,7 +33,6 @@ public class Crkwebui implements EntryPoint, ValueChangeHandler<String>
 
 		History.addValueChangeHandler(this);
 
-//		// TODO: CHECK in IE
 //		This feature has been disabled because it untied the sessions also during the refreshing of the page
 //		or closing one of the tab in the browser.
 //		
@@ -58,7 +57,6 @@ public class Crkwebui implements EntryPoint, ValueChangeHandler<String>
 				mainController.setWindowWidth(event.getWidth());
 				
 				mainController.resizeResultsGrid();
-				mainController.resizeScoresGrid();
 				mainController.setResizeWindows(true);
 			}
 		});

@@ -6,7 +6,7 @@ import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 /**
- * This is the callback to handle response when trying to run new job
+ * Callback used to handle response when trying to run new job.
  * @author srebniak_a
  *
  */
@@ -32,8 +32,6 @@ public class RunJobCallback implements AsyncCallback<String>
 		{
 			String jobId = result;
 			mainController.setSelectedJobId(jobId);
-//			mainController.getJobsForCurrentSession();
-//			mainController.displayResults();
 			History.newItem("id/" + jobId);
 		} 
 		else 

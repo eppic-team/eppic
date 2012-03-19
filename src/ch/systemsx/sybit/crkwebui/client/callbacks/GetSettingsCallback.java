@@ -7,7 +7,7 @@ import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 /**
- * This is the callback used to handle the response from the server when trying to retrieve initial settings
+ * Callback used to handle the response from the server when trying to retrieve initial settings.
  * @author srebniak_a
  *
  */

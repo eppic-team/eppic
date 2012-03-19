@@ -9,7 +9,7 @@ import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResidueItem;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 /**
- * This is the callback used to handle the response from the server when trying to retrieve residues data
+ * Callback used to handle the response from the server when trying to retrieve residues data.
  * @author srebniak_a
  *
  */

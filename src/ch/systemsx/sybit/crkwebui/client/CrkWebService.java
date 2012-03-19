@@ -23,70 +23,70 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 public interface CrkWebService extends RemoteService
 {
 	/**
-	 * Load initial setttings
+	 * Loads initial setttings.
 	 * @return initial setttings
-	 * @throws CrkWebException
+	 * @throws CrkWebException when an asynchronous call fails to complete normally 
 	 */
 	public ApplicationSettings loadSettings() throws CrkWebException;
 
 	/**
-	 * Submit the job to the server
+	 * Submits the job to the server.
 	 * @param runJobData input parameters
 	 * @return results of job submission
-	 * @throws CrkWebException
+	 * @throws CrkWebException when an asynchronous call fails to complete normally
 	 */
 	public String runJob(RunJobData runJobData) throws CrkWebException;
 	
 	/**
-	 * Retrieve results of processing for selected job id - the results type depends on the status of the job on the server
-	 * @param jobId identitifier of the job
+	 * Retrieves results of processing for selected job id - the results type depends on the status of the job on the server.
+	 * @param jobId identifier of the job
 	 * @return status data for the selected job
-	 * @throws CrkWebException
+	 * @throws CrkWebException when an asynchronous call fails to complete normally
 	 */
 	public ProcessingData getResultsOfProcessing(String jobId, boolean debug) throws CrkWebException;
 	
 	/**
-	 * Retrieve list of all jobs for current session id
+	 * Retrieves list of all jobs for current session id.
 	 * @return list of jobs attached to the current session
-	 * @throws CrkWebException
+	 * @throws CrkWebException when an asynchronous call fails to complete normally
 	 */
 	public List<ProcessingInProgressData> getJobsForCurrentSession() throws CrkWebException;
 
 	/**
-	 * Retrieve residues information for selected interface
+	 * Retrieves residues information for selected interface.
 	 * @param interfaceUid selected interface uid
 	 * @return residues information
-	 * @throws CrkWebException
+	 * @throws CrkWebException when an asynchronous call fails to complete normally
 	 */
 	public HashMap<Integer, List<InterfaceResidueItem>> getInterfaceResidues(int interfaceUid) throws CrkWebException;
 	
 	/**
-	 * Killing selected job
-	 * @param jobsToStop id of the job which is going to be removed
+	 * Killing selected job.
+	 * @param jobToStop id of the job to remove
 	 * @return result of stopping
-	 * @throws CrkWebException
+	 * @throws CrkWebException when an asynchronous call fails to complete normally
 	 */
 	public String stopJob(String jobToStop) throws CrkWebException;
 	
 	/**
-	 * Untie specified job id from the session of the current user
+	 * Unties specified job id from the session of the current user.
 	 * @param jobToDelete job for which session id is going to be untied
 	 * @return result of deleting
-	 * @throws CrkWebException
+	 * @throws CrkWebException when an asynchronous call fails to complete normally
 	 */
 	public String deleteJob(String jobToDelete) throws CrkWebException;
 	
 	/**
-	 * Untie all the jobs which are attached to the current session
-	 * @throws CrkWebException
+	 * Unties all the jobs which are attached to the current session.
+	 * @throws CrkWebException when an asynchronous call fails to complete normally
 	 */
 	public void untieJobsFromSession() throws CrkWebException;
 
 	/**
-	 * Retrieve all the residues for all interfaces for specified job
+	 * Retrieves all the residues for all interfaces for specified job.
 	 * @param pdbScoreUid unique id of selected results item
 	 * @return all residues for job
-	 * @throws CrkWebException
+	 * @throws CrkWebException when an asynchronous call fails to complete normally
 	 */
 	public InterfaceResiduesItemsList getAllResidues(int pdbScoreUid) throws CrkWebException;
 }
