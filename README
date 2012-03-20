@@ -1,0 +1,107 @@
+EPPIC
+
+Evolutionary Protein-Protein Interface Classifier
+
+http://www.eppic-web.org
+
+INSTALLATION
+
+        EPPIC is a java program that should work in any Unix like system. 
+        for instance in MacOSX, though it has only been tested in Linux.
+        
+        You need Java 1.6 or newer. Most systems will have java already 
+        installed. Otherwise get it by installing the OpenJDK package in 
+        Linux or downloading java from http://java.com/en/download/index.jsp
+
+
+        1. Prerequisites:
+        
+           As minimum prerequisites you will need:
+        
+           - The UniRef100 database downloadable from UniProt 
+             (http://www.uniprot.org/downloads), formatted for blasting with 
+             formatdb.
+           
+           - Blast binaries, downloadable from 
+             http://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Download
+             
+           - T-coffee binary, downloadable from
+             http://www.tcoffee.org/Projects_home_page/t_coffee_home_page.html
+             
+           - The UniProt JAPI, downloadable from
+             http://www.ebi.ac.uk/uniprot/remotingAPI/download/uniprotjapi.jar 
+             
+
+        2. Configuring it: 
+           
+           - Unzip the eppic.zip file. This will produce an eppic directory with 
+             a few files in it (including this README).
+             
+           - Copy the downloaded uniprot.jar to the eppic directory.
+           
+           - Copy the eppic.conf file provided to your home directory with the 
+             name .eppic.conf. Edit it and set the parameters:
+           
+              BLAST_DB_DIR
+              BLAST_DB
+              BLAST_BIN_DIR
+              TCOFFEE_BIN
+           
+             To their appropriate paths. 
+             Optionally you can also set PYMOL_EXE (needed for -l option) and 
+             LOCAL_CIF_DIR (needed to provide PDB codes with -i). 
+
+
+        3. Now you can run eppic:
+           
+           ./eppic
+           
+           In order to run it from anywhere in your system you will need to
+           add the directory containing it to your path or simply set a soft 
+           link to it from your bin directory, e.g.:
+           
+           ln -s /path/to/unpacked/eppic/eppic ~/bin/eppic  
+
+
+THIRD PARTY LICENSE INFORMATION
+
+	EPPIC uses the following third-party libraries
+	which are contained in the EPPIC download archive:
+	
+	1.  Package:  OWL library for Structural Bioinformatics
+	    URL:      http://www.bioinformatics.org/owl
+	    License:  GPL (http://www.gnu.org/copyleft/gpl.html)
+
+	2.	Package:  Jama	
+		URL: 	  http://math.nist.gov/javanumerics/jama/
+		License:  Public Domain
+		
+	3.	Package:  Jaligner
+		URL:	  http://jaligner.sourceforge.net/
+		License:  GPL (http://www.gnu.org/copyleft/gpl.html)
+		
+	4.	Package:  MySQL java connector
+		URL:	  http://dev.mysql.com/downloads/connector/j/5.1.html
+		License:  GPL (http://www.gnu.org/copyleft/gpl.html)
+		
+	5.	Package:  Java vecmath
+		URL:	  https://java3d.dev.java.net/binary-builds.html
+		License:  GPL with Classpath exception
+				  http://www.gnu.org/software/classpath/license.html
+		
+	6.	Package:  JUNG graph library
+ 		URL: 	  http://jung.sourceforge.net/
+ 		License:  JUNG license (BSD)
+ 				  http://jung.sourceforge.net/license.txt
+ 		
+ 	7.	Package:  java-getopt
+ 		URL:	  http://www.urbanophile.com/arenn/hacking/download.html
+ 		License:  LGPL (http://www.gnu.org/licenses/lgpl.html)
+ 		
+ 	8.  Package:  UniProt JAPI
+ 	    URL:      http://www.ebi.ac.uk/uniprot/remotingAPI/
+ 	    License:  Apache License, version 2
+ 	
+		
+	
+
