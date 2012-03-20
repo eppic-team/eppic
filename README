@@ -7,7 +7,8 @@ http://www.eppic-web.org
 INSTALLATION
 
         EPPIC is a java program that should work in any Unix like system. 
-        for instance in MacOSX, though it has only been tested in Linux.
+        It has only been tested in Linux but there is no reason why it should
+        not work in MacOSX.
         
         You need Java 1.6 or newer. Most systems will have java already 
         installed. Otherwise get it by installing the OpenJDK package in 
