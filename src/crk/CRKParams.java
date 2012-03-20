@@ -17,10 +17,10 @@ import owl.core.structure.AminoAcid;
 public class CRKParams {
 	
 	// CONSTANTS
-	public static final String     PROGRAM_NAME = "crk";
-	public static final String	   PROGRAM_VERSION = "1.9.3";
+	public static final String     PROGRAM_NAME = "eppic";
+	public static final String	   PROGRAM_VERSION = "1.9.4";
 	private static final Pattern   PDBCODE_PATTERN = Pattern.compile("^\\d\\w\\w\\w$");
-	protected static final String  CONFIG_FILE_NAME = ".crk.conf";
+	protected static final String  CONFIG_FILE_NAME = ".eppic.conf";
 	protected static final String  GEOMETRY_FILE_SUFFIX = ".geometry";
 	protected static final String  ENTROPIES_FILE_SUFFIX = ".entropies";
 	protected static final String  ZSCORES_FILE_SUFFIX = ".zscores";
