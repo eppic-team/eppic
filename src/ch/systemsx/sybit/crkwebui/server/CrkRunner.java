@@ -80,7 +80,7 @@ public class CrkRunner implements Runnable
 		submissionId = null;
 		
 		String message = input
-				+ " job submitted. To see the status of the processing please go to: "
+				+ " job submitted. To see the job status please go to: "
 				+ resultPath;
 
 		logFile = new File(destinationDirectoryName + "/crklog");
@@ -89,7 +89,7 @@ public class CrkRunner implements Runnable
 		{
 			writeMessage("Processing started - please wait\n");
 			
-			emailSender.send("Crk: " + input + " submitted", message);
+			emailSender.send("EPPIC: " + input + " submitted", message);
 			
 			File runFile = new File(destinationDirectoryName + "/crkrun");
 			runFile.createNewFile();
@@ -180,9 +180,9 @@ public class CrkRunner implements Runnable
 			writeMessage("Processing finished\n");
 
 			message = input
-					+ " processing finished. To see the status of the processing please go to: "
+					+ " processing finished. To see the job results please go to: "
 					+ resultPath;
-			emailSender.send("Crk: " + input
+			emailSender.send("EPPIC: " + input
 					+ " processing finished", message);
 
 			runFile.delete();
