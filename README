@@ -58,10 +58,10 @@ INSTALLATION
            ./eppic
            
            In order to run it from anywhere in your system you will need to
-           add the directory containing it to your path or simply set a soft 
-           link to it from your bin directory, e.g.:
+           add the directory containing it to your path or simply add an alias
+           to your .bashrc:
            
-           ln -s /path/to/unpacked/eppic/eppic ~/bin/eppic  
+           alias eppic='/path/to/unpacked/eppic/eppic'  
 
 
 THIRD PARTY LICENSE INFORMATION
@@ -91,17 +91,17 @@ THIRD PARTY LICENSE INFORMATION
 				  http://www.gnu.org/software/classpath/license.html
 		
 	6.	Package:  JUNG graph library
- 		URL: 	  http://jung.sourceforge.net/
- 		License:  JUNG license (BSD)
+		URL: 	  http://jung.sourceforge.net/
+		License:  JUNG license (BSD)
  				  http://jung.sourceforge.net/license.txt
  		
- 	7.	Package:  java-getopt
- 		URL:	  http://www.urbanophile.com/arenn/hacking/download.html
- 		License:  LGPL (http://www.gnu.org/licenses/lgpl.html)
+	7.	Package:  java-getopt
+		URL:	  http://www.urbanophile.com/arenn/hacking/download.html
+		License:  LGPL (http://www.gnu.org/licenses/lgpl.html)
  		
- 	8.  Package:  UniProt JAPI
- 	    URL:      http://www.ebi.ac.uk/uniprot/remotingAPI/
- 	    License:  Apache License, version 2
+	8.  Package:  UniProt JAPI
+		URL:      http://www.ebi.ac.uk/uniprot/remotingAPI/
+		License:  Apache License, version 2
  	
 		
 	
