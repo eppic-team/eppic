@@ -31,6 +31,7 @@ public class Utils {
 		String line;
 		while ((line=br.readLine())!=null){
 			if (line.startsWith("#")) continue;
+			if (line.trim().isEmpty()) continue;
 			String[] fields = line.trim().split("\\s+");
 			String pdbId = fields[0].toLowerCase();
 			
