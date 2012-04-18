@@ -65,16 +65,31 @@ h1 {
 	font-weight: bold;
 }
 
-.crk-default-label {
+.eppic-default-label {
 	font-size: 12px;
 	white-space: nowrap;
 }
 
-.crk-bold-label {
+.eppic-bold-label {
 	font-size: 12px;
 	white-space: nowrap;
 	font-weight: bold;
 }
+
+.eppic-action A:link {text-decoration: none; font-weight:bold}
+.eppic-action A:visited {text-decoration: none; font-weight:bold}
+.eppic-action A:active {text-decoration: none; font-weight:bold}
+.eppic-action A:hover {background: #5288DB; color: white; font-weight:bold}
+
+.eppic-internal-link A:link {text-decoration: none}
+.eppic-internal-link A:visited {text-decoration: none}
+.eppic-internal-link A:active {text-decoration: none}
+.eppic-internal-link A:hover {text-decoration: underline}
+
+.eppic-external-link A:link {text-decoration: none}
+.eppic-external-link A:visited {text-decoration: none}
+.eppic-external-link A:active {text-decoration: none}
+.eppic-external-link A:hover {text-decoration: underline}
 
 .x-grid-empty {
   	padding: 10px;
@@ -83,7 +98,7 @@ h1 {
 }
 
 .pdb-identifier-label {
-	font-size: 16px;
+	font-size: 20px;
 	font-family: Arial;
 	font-weight: bold;
 }

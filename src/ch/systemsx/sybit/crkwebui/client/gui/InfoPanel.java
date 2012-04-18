@@ -149,7 +149,7 @@ public class InfoPanel extends FormPanel
 			
 		});
 		
-		inputParametersLabel.addStyleName("crk-default-label");
+		inputParametersLabel.addStyleName("eppic-action");
 		
 		flexTable.setWidget(0, 1, inputParametersLabel);
 		
@@ -158,17 +158,17 @@ public class InfoPanel extends FormPanel
 												  mainController, 
 												  0, 
 												  GWT.getModuleBaseURL() + "fileDownload?type=zip&id=" + mainController.getSelectedJobId());
-		downloadResultsLink.addStyleName("crk-default-label");
+		downloadResultsLink.addStyleName("eppic-internal-link");
 		flexTable.setWidget(2, 4, downloadResultsLink);
 		
 		Label uniprotVersionlabel = new Label(MainController.CONSTANTS.info_panel_uniprot() + ": " +
 				mainController.getPdbScoreItem().getRunParameters().getUniprotVer());
-		uniprotVersionlabel.addStyleName("crk-default-label");
+		uniprotVersionlabel.addStyleName("eppic-default-label");
 		flexTable.setWidget(0, 4, uniprotVersionlabel);
 		
 		Label crkVersionLabel = new Label(MainController.CONSTANTS.info_panel_crk() + ": " +
 				mainController.getPdbScoreItem().getRunParameters().getCrkVersion());
-		crkVersionLabel.addStyleName("crk-default-label");
+		crkVersionLabel.addStyleName("eppic-default-label");
 		flexTable.setWidget(1, 4, crkVersionLabel);
 		
 		if(homologsStrings != null)

@@ -52,6 +52,7 @@ public class PDBIdentifierPanel extends LayoutContainer
 											   mainController, 
 											   0, 
 											   mainController.getSettings().getPdbLinkUrl() + pdbName);
+			pdbNameLabel.addStyleName("eppic-external-link");
 		}
 		else
 		{

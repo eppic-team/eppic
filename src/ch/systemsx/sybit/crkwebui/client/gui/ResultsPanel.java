@@ -90,7 +90,7 @@ public class ResultsPanel extends DisplayPanel
 		this.add(breakPanel, new RowData(1, 1.1, new Margins(0)));
 		
 		pdbTitle = new Label(mainController.getPdbScoreItem().getTitle());
-		pdbTitle.addStyleName("crk-default-label");
+		pdbTitle.addStyleName("eppic-default-label");
 		this.add(pdbTitle);
 		
 		breakPanel = new FormPanel();
@@ -260,7 +260,7 @@ public class ResultsPanel extends DisplayPanel
 				.getValue());
 
 		viewerTypeComboBox.setFieldLabel(MainController.CONSTANTS.results_grid_viewer_combo_label());
-		viewerTypeComboBox.setLabelStyle("crk-default-label");
+		viewerTypeComboBox.setLabelStyle("eppic-default-label");
 		viewerTypeComboBox.addListener(Events.Change,
 				new Listener<FieldEvent>() {
 					public void handleEvent(FieldEvent be) {

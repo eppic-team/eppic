@@ -48,6 +48,8 @@ public class BottomPanel extends LayoutContainer
 	    aboutLink = new Label("<a href=\"\" onClick=\"return false;\">" +
 								MainController.CONSTANTS.bottom_panel_about_link() +
 								"</a>");
+	    aboutLink.addStyleName("eppic-internal-link");
+	    
 	    aboutLink.addListener(Events.OnClick, new Listener<BaseEvent>() {
 
 			@Override
@@ -62,6 +64,7 @@ public class BottomPanel extends LayoutContainer
 								MainController.CONSTANTS.bottom_panel_contact_link_label() + 
 								"</a>");
 		contactLink.setStyleAttribute("margin-left", "10px");
+		contactLink.addStyleName("eppic-internal-link");
 		
 		helpLink = new Label("<a href=\"" +
 							GWT.getHostPageBaseURL() + "Help.html" +
@@ -69,6 +72,7 @@ public class BottomPanel extends LayoutContainer
 							MainController.CONSTANTS.bottom_panel_help_link() +
 							"</a>");
 		helpLink.setStyleAttribute("margin-left", "10px");
+		helpLink.addStyleName("eppic-internal-link");
 		
 		linksContainer.add(aboutLink);
 		linksContainer.add(helpLink);

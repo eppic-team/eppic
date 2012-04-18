@@ -29,12 +29,12 @@ public class HomologsInfoPanel extends LayoutContainer
 		
 		if(homologsInfoItem.isHasQueryMatch())
 		{
-			final EmptyLinkWithTooltip chainsLink = new EmptyLinkWithTooltip(homologsInfoItem.getChains(), 
+			final EmptyLinkWithTooltip chainsLink = new EmptyLinkWithTooltip("Chain "+homologsInfoItem.getChains(), 
 																	   		 MainController.CONSTANTS.homologs_panel_chains_hint(),
 																	   		 mainController, 
 																	   		 0);
 			
-			chainsLink.addStyleName("crk-default-label");
+			chainsLink.addStyleName("eppic-action");
 			
 			chainsLink.addListener(Events.OnClick, new Listener<BaseEvent>() {
 	
@@ -57,7 +57,7 @@ public class HomologsInfoPanel extends LayoutContainer
 																 mainController, 
 																 0, 
 																 mainController.getSettings().getUniprotLinkUrl() + homologsInfoItem.getUniprotId());
-			uniprotIdLabel.addStyleName("crk-default-label");
+			uniprotIdLabel.addStyleName("eppic-external-link");
 			this.add(uniprotIdLabel);
 			
 			Label endUniprotLabel = new Label(") ");
@@ -80,13 +80,13 @@ public class HomologsInfoPanel extends LayoutContainer
 																  0, 
 																  downloadLink);
 			
-			nrHomologsLabel.addStyleName("crk-default-label");
+			nrHomologsLabel.addStyleName("eppic-internal-link");
 			this.add(nrHomologsLabel);
 		}
 		else
 		{
 			final EmptyLink chainsLink = new EmptyLink(homologsInfoItem.getChains());
-			chainsLink.addStyleName("crk-default-label");
+			chainsLink.addStyleName("eppic-action");
 			
 			final ToolTip chainsLinkTooltip = infoPanel.getQueryWarningsTooltip();
 			
