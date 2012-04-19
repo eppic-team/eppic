@@ -84,7 +84,7 @@ public class InfoPanel extends FormPanel
 		FlexTable flexTable = new FlexTable();
 		
 		int nrOfRows = 3;
-		int nrOfColumns = 5;
+		int nrOfColumns = 4;
 		
 		List<HomologsInfoItem> homologsStrings = mainController.getPdbScoreItem().getHomologsInfoItems();
 		
@@ -99,8 +99,11 @@ public class InfoPanel extends FormPanel
 			limit += 25;
 		}
 		
-		// last 2 columns are half width of the others
-		int columnWidth = (mainController.getWindowWidth() - limit - 20) / (nrOfColumns-1);
+		// we divide the window width by desired number of columns (4) and use double width for first and half width for last 2
+		// 1st column is double width
+		// last 2 columns are half width
+		int columnWidth = (mainController.getWindowWidth() - limit - 20) / (nrOfColumns);
+		int firstcolumnWidth = columnWidth * 2;
 		int last2columnsWidth = columnWidth / 2;
 		
 		if(homologsStrings != null)
@@ -115,7 +118,10 @@ public class InfoPanel extends FormPanel
 		{
 			for(int j=0; j<nrOfRows; j++)
 			{
-				if (i<nrOfColumns-2) {
+				if (i==0) {
+					flexTable.getCellFormatter().setWidth(j, i, String.valueOf(firstcolumnWidth));
+					flexTable.getCellFormatter().setAlignment(j, i, HasHorizontalAlignment.ALIGN_LEFT, HasVerticalAlignment.ALIGN_TOP);					
+				} else if (i>0 && i<nrOfColumns-2) {
 					flexTable.getCellFormatter().setWidth(j, i, String.valueOf(columnWidth));
 					flexTable.getCellFormatter().setAlignment(j, i, HasHorizontalAlignment.ALIGN_LEFT, HasVerticalAlignment.ALIGN_TOP);
 				} else {
@@ -159,17 +165,17 @@ public class InfoPanel extends FormPanel
 												  0, 
 												  GWT.getModuleBaseURL() + "fileDownload?type=zip&id=" + mainController.getSelectedJobId());
 		downloadResultsLink.addStyleName("eppic-internal-link");
-		flexTable.setWidget(2, 4, downloadResultsLink);
+		flexTable.setWidget(2, 3, downloadResultsLink);
 		
 		Label uniprotVersionlabel = new Label(MainController.CONSTANTS.info_panel_uniprot() + ": " +
 				mainController.getPdbScoreItem().getRunParameters().getUniprotVer());
 		uniprotVersionlabel.addStyleName("eppic-default-label");
-		flexTable.setWidget(0, 4, uniprotVersionlabel);
+		flexTable.setWidget(0, 3, uniprotVersionlabel);
 		
 		Label crkVersionLabel = new Label(MainController.CONSTANTS.info_panel_crk() + ": " +
 				mainController.getPdbScoreItem().getRunParameters().getCrkVersion());
 		crkVersionLabel.addStyleName("eppic-default-label");
-		flexTable.setWidget(1, 4, crkVersionLabel);
+		flexTable.setWidget(1, 3, crkVersionLabel);
 		
 		if(homologsStrings != null)
 		{

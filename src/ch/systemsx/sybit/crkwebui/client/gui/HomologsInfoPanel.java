@@ -85,7 +85,7 @@ public class HomologsInfoPanel extends LayoutContainer
 		}
 		else
 		{
-			final EmptyLink chainsLink = new EmptyLink(homologsInfoItem.getChains());
+			final EmptyLink chainsLink = new EmptyLink("Chain "+homologsInfoItem.getChains());
 			chainsLink.addStyleName("eppic-action");
 			
 			final ToolTip chainsLinkTooltip = infoPanel.getQueryWarningsTooltip();

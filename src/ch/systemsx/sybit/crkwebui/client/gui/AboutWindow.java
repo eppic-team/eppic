@@ -15,7 +15,7 @@ import com.extjs.gxt.ui.client.event.WindowListener;
 public class AboutWindow extends ResizableWindow 
 {
 	private static int ABOUT_WINDOW_DEFAULT_WIDTH = 400;
-	private static int ABOUT_WINDOW_DEFAULT_HEIGHT = 400;
+	private static int ABOUT_WINDOW_DEFAULT_HEIGHT = 300;
 	
 	public AboutWindow(final MainController mainController) 
 	{
@@ -32,7 +32,23 @@ public class AboutWindow extends ResizableWindow
 		this.setBlinkModal(true);
 		this.setScrollMode(Scroll.AUTO);
 		
-		this.addText("EPPIC 2012. An Evolutionary Protein-Protein Interface Classifier.");
+		this.addText(
+				"<table cellspacing=\"10\">" +
+				"<tr>" +
+				"<td>" +
+				"<b>EPPIC</b>" +
+				"</td>" +
+				"<td>" +
+				"An Evolutionary Protein-Protein Interface Classifier." +
+				"</td>" +
+				"</tr>" +
+				"<tr>" +
+				"<td></td>" +
+				"<td>" +
+				"Laboratory of Biomolecular Research<br>Paul Scherrer Institut<br>Villigen PSI<br>Switzerland" +
+				"</td>" +
+				"</tr>" +
+				"</table>");
 		
 		Listener<WindowEvent> resizeWindowListener = new Listener<WindowEvent>() {
 
