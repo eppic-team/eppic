@@ -98,10 +98,12 @@ public class CRKParams {
 	// default pymol exec
 	private static final File	  DEF_PYMOL_EXE = new File("/usr/bin/pymol");
 	
-	// default crk cutoffs
+	// default cutoffs
 	private static final double   DEF_QUERY_COVERAGE_CUTOFF = 0.85;
 	private static final int      DEF_MIN_NUM_SEQUENCES = 10;
 	private static final double	  DEF_HOM_ID_STEP = 0.05;
+	private static final double   DEF_MIN_QUERY_COV_FOR_IDENTICALS_REMOVAL = 0.85;
+	
 	// default pdb2uniprot mapping blast thresholds
 	private static final double   DEF_PDB2UNIPROT_ID_THRESHOLD = 0.75;
 	private static final double   DEF_PDB2UNIPROT_QCOV_THRESHOLD = 0.85;
@@ -177,7 +179,7 @@ public class CRKParams {
 	private String   blastBinDir;
 	
 	private File     tcoffeeBin;
-	private boolean useTcoffeeVeryFastMode;
+	private boolean  useTcoffeeVeryFastMode;
 	
 	private File     selectonBin;
 	private double   selectonEpsilon;
@@ -188,6 +190,8 @@ public class CRKParams {
 	
 	private double   queryCoverageCutoff;
 	private int      minNumSeqs;
+	
+	private double   minQueryCovForIdenticalsRemoval;
 	
 	private double   pdb2uniprotIdThreshold;
 	private double   pdb2uniprotQcovThreshold;
@@ -717,6 +721,9 @@ public class CRKParams {
 
 			queryCoverageCutoff = Double.parseDouble(p.getProperty("QUERY_COVERAGE_CUTOFF", new Double(DEF_QUERY_COVERAGE_CUTOFF).toString()));
 			minNumSeqs = Integer.parseInt(p.getProperty("MIN_NUM_SEQUENCES", new Integer(DEF_MIN_NUM_SEQUENCES).toString()));
+			
+			minQueryCovForIdenticalsRemoval = Double.parseDouble(p.getProperty("MIN_QUERY_COV_FOR_IDENTICALS_REMOVAL", new Double(DEF_MIN_QUERY_COV_FOR_IDENTICALS_REMOVAL).toString()));
+			
 			homIdStep = Double.parseDouble(p.getProperty("HOM_ID_STEP",new Double(DEF_HOM_ID_STEP).toString()));
 			
 			pdb2uniprotIdThreshold = Double.parseDouble(p.getProperty("PDB2UNIPROT_ID_THRESHOLD", new Double(DEF_PDB2UNIPROT_ID_THRESHOLD).toString()));
@@ -787,6 +794,10 @@ public class CRKParams {
 		return minNumSeqs;
 	}
 
+	public double getMinQueryCovForIdenticalsRemoval() {
+		return minQueryCovForIdenticalsRemoval;
+	}
+	
 	public double getPdb2uniprotIdThreshold() {
 		return pdb2uniprotIdThreshold;
 	}

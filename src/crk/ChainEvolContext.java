@@ -282,6 +282,10 @@ public class ChainEvolContext implements Serializable {
 		homologs.removeRedundancy();
 	}
 	
+	public void removeIdenticalToQuery(double minQueryCov) {
+		homologs.removeIdenticalToQuery(minQueryCov);
+	}
+	
 	public void skimList(int maxDesiredHomologs) {
 		homologs.skimList(maxDesiredHomologs);
 	}
@@ -453,11 +457,12 @@ public class ChainEvolContext implements Serializable {
 		ps.println();
 		
 		ps.println("Uniprot version: "+getUniprotVer());
-		ps.println("Homologs: "+homologs.getSizeFilteredSubset()+" at "+String.format("%4.2f",homologs.getIdCutoff())+" identity cut-off and "+
-				String.format("%4.2f",homologs.getQCovCutoff())+" query coverage cutoff");
+		ps.println("Homologs: "+homologs.getSizeFilteredSubset()+" with minimum "+String.format("%4.2f",homologs.getIdCutoff())+" identity and "+
+				String.format("%4.2f",homologs.getQCovCutoff())+" query coverage");
 		for (Homolog hom:homologs.getFilteredSubset()) {
 			ps.printf("%-13s",hom.getIdentifier());
 			ps.printf("\t%5.1f",hom.getPercentIdentity());
+			ps.printf("\t%5.1f",hom.getBlastHit().getQueryCoverage()*100.0);
 			if (hom.getUnirefEntry().hasTaxons()) ps.print("\t"+hom.getUnirefEntry().getFirstTaxon()+"\t"+hom.getUnirefEntry().getLastTaxon());
 			ps.println();
 		}

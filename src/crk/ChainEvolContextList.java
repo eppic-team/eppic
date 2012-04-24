@@ -232,6 +232,9 @@ public class ChainEvolContextList implements Serializable {
 			// filtering optionally for domain of life
 			if (params.isFilterByDomain()) chainEvCont.filterToSameDomainOfLife();
 
+			// remove hits totally identical to query
+			chainEvCont.removeIdenticalToQuery(params.getMinQueryCovForIdenticalsRemoval());
+			
 			// remove redundancy
 			chainEvCont.removeRedundancy();
 
