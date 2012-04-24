@@ -327,33 +327,61 @@ public class ChainEvolContext implements Serializable {
 		boolean tcoffeeVeryFastMode = params.isUseTcoffeeVeryFastMode();
 		int nThreads = params.getNumThreads();
 		
+		LOGGER.info("Alignment mode for chain "+getRepresentativeChainCode()+" is: "+params.getAlignmentMode().getName());
+		boolean useHspsOnly = false;
+		if (params.getAlignmentMode()==AlignmentMode.AUTO) {
+			if (isSearchWithFullUniprot()) {
+				useHspsOnly = false;
+				LOGGER.info("Full sequences will be used for tcoffee alignment (because search mode is GLOBAL)");
+			}
+			else {
+				useHspsOnly = true;
+				LOGGER.info("Only matching HSP subsequences will be used for tcoffee alignment (because search mode is LOCAL)");
+			}
+		} else if (params.getAlignmentMode()==AlignmentMode.FULLLENGTH) {
+			useHspsOnly = false;
+		} else if (params.getAlignmentMode()==AlignmentMode.HSPSONLY) {
+			useHspsOnly = true;
+		}
+		
 		// 3) alignment of the protein sequences using tcoffee
 		File alnCacheFile = null;
-		// beware we only try to use cache file if we are in default mode: uniparc=true, filter by domain=false
-		if (params.getBlastCacheDir()!=null && params.isUseUniparc() && !params.isFilterByDomain()) {
+		// beware we only try to use cache file if we are in default mode: uniparc=true, filter by domain=false, veryFastMode=false
+		if (params.getBlastCacheDir()!=null && params.isUseUniparc() && !params.isFilterByDomain() && !tcoffeeVeryFastMode) {
 			String intervStr = "";
 			if (!isSearchWithFullUniprot()) {
 				intervStr = "."+getQueryInterval().beg+"-"+getQueryInterval().end;
 			}
-			// a cache file will look like  Q9UKX7.i60.c85.m60.1-109.aln (that corresponds to 3tj3C) 
-			//                              P52294.i60.c85.m60.aln       (that corresponds to 3tj3A)
+			// a cache file will look like  Q9UKX7.i60.c85.m60.1-109.full.aln (that corresponds to 3tj3C) 
+			//                              P52294.i60.c85.m60.full.aln       (that corresponds to 3tj3A)
 			// i=identity threshold used, c=query coverage, m=max num seqs, optional two last numbers are the subinterval
 			alnCacheFile = new File(params.getBlastCacheDir(),getQuery().getUniId()+
 					".i"+String.format("%2.0f", idCutoff*100.0)+
 					".c"+String.format("%2.0f", queryCov*100.0)+
 					".m"+params.getMaxNumSeqs()+
-					intervStr+".aln"); 
+					intervStr+
+					"."+(useHspsOnly?"hsp":"full")+
+					".aln"); 
 		}
-
-		homologs.computeTcoffeeAlignment(tcoffeeBin, tcoffeeVeryFastMode, nThreads, alnCacheFile);
+		
+		homologs.computeTcoffeeAlignment(tcoffeeBin, tcoffeeVeryFastMode, nThreads, useHspsOnly, alnCacheFile);
 	}
 	
 	public void writeAlignmentToFile(File alnFile) throws FileNotFoundException {
 		homologs.writeAlignmentToFile(alnFile); 
 	}
 	
-	public void writeHomologSeqsToFile(File outFile) throws FileNotFoundException {
-		homologs.writeToFasta(outFile, false);
+	public void writeHomologSeqsToFile(File outFile, CRKParams params) throws FileNotFoundException {
+		boolean useHspsOnly = false;
+		if (params.getAlignmentMode()==AlignmentMode.AUTO) {
+			if (isSearchWithFullUniprot()) useHspsOnly = false;
+			else useHspsOnly = true;
+		} else if (params.getAlignmentMode()==AlignmentMode.FULLLENGTH) {
+			useHspsOnly = false;
+		} else if (params.getAlignmentMode()==AlignmentMode.HSPSONLY) {
+			useHspsOnly = true;
+		}
+		homologs.writeToFasta(outFile, false, useHspsOnly);
 	}
 	
 	public MultipleSequenceAlignment getAlignment() {

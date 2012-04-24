@@ -280,7 +280,7 @@ public class ChainEvolContextList implements Serializable {
 			try {
 				// writing homolog sequences to file
 				outFile = params.getOutputFile("."+chainEvCont.getRepresentativeChainCode()+".fa");
-				chainEvCont.writeHomologSeqsToFile(outFile);
+				chainEvCont.writeHomologSeqsToFile(outFile, params);
 
 				// printing summary to file
 				outFile = params.getOutputFile("."+chainEvCont.getRepresentativeChainCode()+".log");

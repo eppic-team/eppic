@@ -75,6 +75,8 @@ public class CRKParams {
 	
 	private static final HomologsSearchMode DEF_HOMOLOGS_SEARCH_MODE = HomologsSearchMode.AUTO;
 	
+	private static final AlignmentMode DEF_ALIGNMENT_MODE = AlignmentMode.AUTO;
+	
 	// DEFAULTS FOR CONFIG FILE ASSIGNABLE CONSTANTS
 	// defaults for pdb data location
 	private static final String   DEF_LOCAL_CIF_DIR = "/pdbdata/pdb/data/structures/all/mmCIF";
@@ -161,6 +163,8 @@ public class CRKParams {
 	
 	private HomologsSearchMode homologsSearchMode;
 	
+	private AlignmentMode alignmentMode;
+	
 	private boolean filterByDomain;
 	
 	// some other fields
@@ -242,6 +246,7 @@ public class CRKParams {
 		this.progressLog = System.out;
 		this.debug = false;
 		this.homologsSearchMode = DEF_HOMOLOGS_SEARCH_MODE;
+		this.alignmentMode = DEF_ALIGNMENT_MODE;
 		this.filterByDomain = false;
 
 	}
@@ -249,7 +254,7 @@ public class CRKParams {
 	public void parseCommandLine(String[] args, String programName, String help) {
 	
 
-		Getopt g = new Getopt(programName, args, "i:sa:b:o:r:e:c:z:m:x:y:d:D:q:H:OpnA:I:C:lL:uh?");
+		Getopt g = new Getopt(programName, args, "i:sa:b:o:r:e:c:z:m:x:y:d:D:q:H:G:OpnA:I:C:lL:uh?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
@@ -301,6 +306,9 @@ public class CRKParams {
 			case 'H':
 				homologsSearchMode = HomologsSearchMode.getByName(g.getOptarg());
 				break;
+			case 'G':
+				alignmentMode = AlignmentMode.getByName(g.getOptarg());
+				break;
 			case 'O':
 				filterByDomain = true;
 				break;
@@ -344,13 +352,11 @@ public class CRKParams {
 		
 		String help = "Usage: \n" +
 		PROGRAM_NAME+" ver. "+PROGRAM_VERSION+"\n" +
-		"   -i          :  input PDB code or PDB file or mmCIF file\n" +
+		"   -i <string> :  input PDB code or PDB/mmCIF file\n" +
 		"  [-s]         :  score based on entropies. Using the entropy values both a core/rim\n" +
-		"                  score and a core/surface z-score are calculated \n"+
-		"  [-k]         :  score based on ka/ks ratios. Slower than entropies, \n" +
-		"                  requires running of the selecton external program\n" +
+		"                  score and a core-surface z-score are calculated \n"+
 		"  [-a <int>]   :  number of threads for blast and ASA calculation. Default: "+DEF_NUMTHREADS+"\n"+
-		"  [-b <str>]   :  basename for output files. Default: PDB code \n"+
+		"  [-b <string>]:  basename for output files. Default: PDB code \n"+
 		"  [-o <dir>]   :  output dir, where output files will be written. Default: current\n" +
 		"                  dir \n" +
 		"  [-r <int>]   :  specify the number of groups of aminoacids (reduced alphabet) to\n" +
@@ -369,19 +375,27 @@ public class CRKParams {
 		"                  Default: " + String.format("%4.2f",DEF_ENTR_CALL_CUTOFF)+"\n"+
 		"  [-y <float>] :  z-score cutoff to call BIO/XTAL. If below this z-score interface \n" +
 		"                  is BIO. Default: " + String.format("%4.2f",DEF_ZSCORE_CUTOFF)+"\n"+
-		"  [-d <float>] :  sequence identity soft cut-off, if enough homologs ("+DEF_MIN_NUM_SEQUENCES+") above this threshold\n" +
-		"                  the search for homologs stops, default: "+String.format("%3.1f",DEF_HOM_SOFT_ID_CUTOFF)+"\n"+
-		"  [-D <float>] :  sequence identity hard cut-off, if after applying the soft cut-off (see -d), not\n" +
-		"                  enough homologs ("+DEF_MIN_NUM_SEQUENCES+") are found then the threshold is lowered \n"+
-		"                  in "+String.format("%4.2f",DEF_HOM_ID_STEP)+" steps until this hard cut-off is reached. \n" +
+		"  [-d <float>] :  sequence identity soft cut-off, if enough homologs ("+DEF_MIN_NUM_SEQUENCES+") above this \n" +
+		"                  threshold the search for homologs stops, default: "+String.format("%3.1f",DEF_HOM_SOFT_ID_CUTOFF)+"\n"+
+		"  [-D <float>] :  sequence identity hard cut-off, if after applying the soft\n" +
+		"                  cut-off (see -d), not enough homologs ("+DEF_MIN_NUM_SEQUENCES+") are found\n" +
+		"                  then the threshold is lowered in "+String.format("%4.2f",DEF_HOM_ID_STEP)+" steps until this hard\n" +
+		"                  cut-off is reached. \n" +
 		"                  Default: "+String.format("%3.1f",DEF_HOM_HARD_ID_CUTOFF)+"\n"+
 		"  [-q <int>]   :  maximum number of sequences to keep for calculation of conservation \n" +
 		"                  scores. Default: "+DEF_MAX_NUM_SEQUENCES+"\n"+
-		"  [-H <string>]:  homologues search mode: one of local (only Uniprot region covered by PDB structure \n" +
-		"                  will be used to search homologues), global (full Uniprot entry will be used \n" +
-		"                  to search homologues) or auto (global will be used except if coverage is under \n"+
-		"                  "+String.format("%3.1f",DEF_PDB2UNIPROT_MAX_SCOV_FOR_LOCAL)+"). Default "+DEF_HOMOLOGS_SEARCH_MODE.getName() + "\n"+
-		"  [-O]         :  restrict homologs search to those within the same domain of life as query\n"+
+		"  [-H <string>]:  homologs search mode: one of \"local\" (only Uniprot region covered\n" +
+		"                  by PDB structure will be used to search homologs), \"global\" (full\n" +
+		"                  Uniprot entry will be used to search homologs) or \"auto\" (global\n" +
+		"                  will be used except if coverage is under "+String.format("%3.1f",DEF_PDB2UNIPROT_MAX_SCOV_FOR_LOCAL)+").\n" +
+		"                  Default "+DEF_HOMOLOGS_SEARCH_MODE.getName() + "\n"+
+		"  [-G <string>]:  alignment mode for t-cofee multiple sequence alignment: one of \"full\"\n" +
+		"                  (full homolog sequences will be used for alignment) \"hsp\" (only blast\n" +
+		"                  HSP matching homolog subsequences will be used) or \"auto\" (one of the\n" +
+		"                  2 modes is decided based on the homologs search mode: full if global\n" +
+		"                  search mode or hsp if local search mode)\n"+
+		"  [-O]         :  restrict homologs search to those within the same domain of life as \n" +
+		"                  query\n"+
 		"  [-p]         :  use PISA interface enumeration (will be downloaded from web) \n" +
 		"                  instead of ours (only possible for existing PDB entries).\n" +
 		"  [-n]         :  use NACCESS for ASA/BSA calculations, otherwise area calculations \n" +
@@ -684,6 +698,10 @@ public class CRKParams {
 	
 	public HomologsSearchMode getHomologsSearchMode() {
 		return homologsSearchMode;
+	}
+	
+	public AlignmentMode getAlignmentMode() {
+		return alignmentMode;
 	}
 	
 	public boolean isFilterByDomain() {
