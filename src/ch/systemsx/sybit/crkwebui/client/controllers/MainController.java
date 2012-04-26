@@ -450,7 +450,7 @@ public class MainController
 	 */
 	public void showJmolViewer(String interfaceNr)
 	{
-		String url = settings.getResultsLocation();
+		String resultsLocation = settings.getResultsLocation();
 
 		int size = windowHeight;
 		if(size > windowWidth)
@@ -460,7 +460,7 @@ public class MainController
 
 		openJmol(GWT.getHostPageBaseURL() + "Jmol.html",
 				 GWT.getHostPageBaseURL() + "resources/jmol",
-				 url,
+				 GWT.getHostPageBaseURL() + resultsLocation,
 				 interfaceNr,
 				 pdbScoreItem.getJobId(),
 				 pdbScoreItem.getPdbName(),
