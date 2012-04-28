@@ -159,6 +159,8 @@ public class CRKParams {
 	private File progressLogFile;
 	private PrintStream progressLog;
 	
+	private File configFile;
+	
 	private boolean debug;
 	
 	private HomologsSearchMode homologsSearchMode;
@@ -254,7 +256,7 @@ public class CRKParams {
 	public void parseCommandLine(String[] args, String programName, String help) {
 	
 
-		Getopt g = new Getopt(programName, args, "i:sa:b:o:r:e:c:z:m:x:y:d:D:q:H:G:OpnA:I:C:lL:uh?");
+		Getopt g = new Getopt(programName, args, "i:sa:b:o:r:e:c:z:m:x:y:d:D:q:H:G:OpnA:I:C:lL:g:uh?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
@@ -333,6 +335,9 @@ public class CRKParams {
 			case 'L':
 				progressLogFile = new File(g.getOptarg());
 				break;
+			case 'g':
+				configFile = new File(g.getOptarg());
+				break;
 			case 'u':
 				debug = true;
 				break;
@@ -389,7 +394,7 @@ public class CRKParams {
 		"                  Uniprot entry will be used to search homologs) or \"auto\" (global\n" +
 		"                  will be used except if coverage is under "+String.format("%3.1f",DEF_PDB2UNIPROT_MAX_SCOV_FOR_LOCAL)+").\n" +
 		"                  Default "+DEF_HOMOLOGS_SEARCH_MODE.getName() + "\n"+
-		"  [-G <string>]:  alignment mode for t-cofee multiple sequence alignment: one of \"full\"\n" +
+		"  [-G <string>]:  alignment mode for t-coffee multiple sequence alignment: one of \"full\"\n" +
 		"                  (full homolog sequences will be used for alignment) \"hsp\" (only blast\n" +
 		"                  HSP matching homolog subsequences will be used) or \"auto\" (one of the\n" +
 		"                  2 modes is decided based on the homologs search mode: full if global\n" +
@@ -412,6 +417,8 @@ public class CRKParams {
 		"                  (requires pymol)\n" +
 		"  [-L <file>]  :  a file where progress log will be written to. Default: progress log \n" +
 		"                  written to std output\n" +
+		"  [-g <file>]  :  an eppic config file. This will override the existing config \n" +
+		"                  file in the user's home directory\n" +
 		"  [-u]         :  debug, if specified debug output will be also shown on standard\n" +
 		"                  output\n\n";
 		
@@ -444,6 +451,10 @@ public class CRKParams {
 				throw new CRKException(e, "Specified log file can not be written to: "+e.getMessage(), true);
 			}
 		} 
+		
+		if (configFile!=null && !configFile.exists()) {
+			throw new CRKException(null, "Specified config file "+configFile+" doesn't exist",true);
+		}
 		
 		if (!AminoAcid.isValidNumGroupsReducedAlphabet(reducedAlphabet)) {
 			throw new CRKException(null, "Invalid number of amino acid groups specified ("+reducedAlphabet+")", true);
@@ -690,6 +701,10 @@ public class CRKParams {
 	
 	public File getProgressLogFile() {
 		return progressLogFile;
+	}
+	
+	public File getConfigFile() {
+		return configFile;
 	}
 	
 	public boolean getDebug() {

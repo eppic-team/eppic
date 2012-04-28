@@ -108,7 +108,11 @@ public class CRKMain {
 		// loading settings from config file
 		File userConfigFile = new File(System.getProperty("user.home"),CRKParams.CONFIG_FILE_NAME);  
 		try {
-			if (userConfigFile.exists()) {
+			if (params.getConfigFile()!=null) {
+				LOGGER.info("Loading user configuration file given in command line " + params.getConfigFile());
+				params.readConfigFile(params.getConfigFile());
+				params.checkConfigFileInput();				
+			} else if (userConfigFile.exists()) {
 				LOGGER.info("Loading user configuration file " + userConfigFile);
 				params.readConfigFile(userConfigFile);
 				params.checkConfigFileInput();
@@ -118,7 +122,7 @@ public class CRKMain {
 				System.exit(1);
 			}
 		} catch (IOException e) {
-			LOGGER.fatal("Error while reading from config file " + userConfigFile + ": " + e.getMessage());
+			LOGGER.fatal("Error while reading from config file: " + e.getMessage());
 			System.exit(1);
 		} catch (CRKException e) {
 			LOGGER.error(e.getMessage());
