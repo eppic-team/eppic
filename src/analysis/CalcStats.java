@@ -242,8 +242,16 @@ public class CalcStats {
 			for (String key:smallest.keySet()) {
 				if (other.containsKey(key)) {
 					out.print(key);
-					for (int id:smallest.get(key)) {
-						if (id!=1) out.print(" "+id);
+					if (smallest.get(key).size()>1) {
+						// many members, we print them all
+						for (int id:smallest.get(key)) {
+							out.print(" "+id);
+						}						
+					} else {
+						// if only 1 member, then we only print it if it's not 1
+						for (int id:smallest.get(key)) {
+							if (id!=1) out.print(" "+id);
+						}												
 					}
 					out.println();
 				}
