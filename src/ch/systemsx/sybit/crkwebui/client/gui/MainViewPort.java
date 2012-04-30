@@ -10,6 +10,7 @@ import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.MessageBox;
 import com.extjs.gxt.ui.client.widget.Viewport;
+import com.extjs.gxt.ui.client.widget.custom.ThemeSelector;
 import com.extjs.gxt.ui.client.widget.layout.BorderLayout;
 import com.extjs.gxt.ui.client.widget.layout.BorderLayoutData;
 import com.google.gwt.core.client.Scheduler;
@@ -20,7 +21,7 @@ import com.google.gwt.core.client.Scheduler.ScheduledCommand;
  * @author srebniak_a
  *
  */
-public class MainViewPort extends Viewport 
+public class MainViewPort extends Viewport
 {
 	private MyJobsPanel myJobsPanel;
 
@@ -28,27 +29,27 @@ public class MainViewPort extends Viewport
 
 //	private TopPanel topPanel;
 	private BottomPanel bottomPanel;
-	
+
 	private InterfacesResiduesWindow interfacesResiduesWindow;
 	private AlignmentsWindow alignmentsWindow;
 	private AboutWindow aboutWindow;
-	
+
 	private MessageBox waitingMessageBox;
 	private MessageBox errorMessageBox;
 
 	private MainController mainController;
 
-	public MainViewPort(final MainController mainController) 
+	public MainViewPort(final MainController mainController)
 	{
 		this.mainController = mainController;
 
 		BorderLayout layout = new BorderLayout();
 		this.setLayout(layout);
 		this.setStyleAttribute("padding", "10px");
-		
+
 		layout.addListener(Events.Collapse, new Listener<BorderLayoutEvent>()
 		{
-			public void handleEvent(BorderLayoutEvent be) 
+			public void handleEvent(BorderLayoutEvent be)
 			{
 				if(be.getPanel() instanceof MyJobsPanel)
 				{
@@ -56,10 +57,10 @@ public class MainViewPort extends Viewport
 				}
 			}
 		});
-		
+
 		layout.addListener(Events.Expand, new Listener<BorderLayoutEvent>()
 		{
-			public void handleEvent(BorderLayoutEvent be) 
+			public void handleEvent(BorderLayoutEvent be)
 			{
 				if(be.getPanel() instanceof MyJobsPanel)
 				{
@@ -93,12 +94,13 @@ public class MainViewPort extends Viewport
 
 //		topPanel = new TopPanel(mainController);
 //		this.add(topPanel, northData);
-		
+
 		BorderLayoutData southData = new BorderLayoutData(LayoutRegion.SOUTH,
 				20);
 		southData.setMargins(new Margins(5, 0, 0, 0));
-		
+
 		bottomPanel = new BottomPanel(mainController);
+		bottomPanel.add(new ThemeSelector());
 		this.add(bottomPanel, southData);
 	}
 
@@ -117,7 +119,7 @@ public class MainViewPort extends Viewport
 	public CenterPanel getCenterPanel() {
 		return centerPanel;
 	}
-	
+
 	/**
 	 * Retrieves bottom panel.
 	 * @return bottom panel
@@ -126,7 +128,7 @@ public class MainViewPort extends Viewport
 	{
 		return bottomPanel;
 	}
-	
+
 	/**
 	 * Retrieves window containing interface residues.
 	 * @return window containing interface residues
@@ -143,12 +145,12 @@ public class MainViewPort extends Viewport
 			InterfacesResiduesWindow interfacesResiduesWindow) {
 		this.interfacesResiduesWindow = interfacesResiduesWindow;
 	}
-	
+
 	/**
 	 * Displays window containing interface residues.
 	 * @param selectedInterface selected interface identifier
 	 */
-	public void displayInterfacesWindow(int selectedInterface) 
+	public void displayInterfacesWindow(int selectedInterface)
 	{
 		if((interfacesResiduesWindow == null) ||
 		   (interfacesResiduesWindow.isResizeWindow()))
@@ -160,7 +162,7 @@ public class MainViewPort extends Viewport
 				@Override
 				public void execute() {
 					interfacesResiduesWindow.getInterfacesResiduesPanel().resizeResiduesPanels(interfacesResiduesWindow.getWindowWidth(),
-																							   interfacesResiduesWindow.getWindowHeight());					
+																							   interfacesResiduesWindow.getWindowHeight());
 				}
 			});
 		}
@@ -175,12 +177,12 @@ public class MainViewPort extends Viewport
 			interfacesResiduesWindow.getInterfacesResiduesPanel().getSecondStructurePanelSummary().cleanResiduesGrid();
 			interfacesResiduesWindow.setVisible(true);
 		}
-		
+
 		//called beacuse of the bug in GXT 2.2.3
 		// http://www.sencha.com/forum/showthread.php?126888-Problems-with-RowLayout
 		interfacesResiduesWindow.layout(true);
 	}
-	
+
 	/**
 	 * Hides window containing interface residues.
 	 */
@@ -191,7 +193,7 @@ public class MainViewPort extends Viewport
 			interfacesResiduesWindow.setVisible(false);
 		}
 	}
-	
+
 	/**
 	 * Shows waiting messagebox with provided text.
 	 * @param text information displayed in messagebox
@@ -201,14 +203,14 @@ public class MainViewPort extends Viewport
 //		Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 //			@Override
 //			public void execute() {
-				waitingMessageBox = MessageBox.wait(MainController.CONSTANTS.waiting_message_box_header(),  
-						text + ", " + MainController.CONSTANTS.waiting_message_box_info() + "...", 
-						text + "...");  
+				waitingMessageBox = MessageBox.wait(MainController.CONSTANTS.waiting_message_box_header(),
+						text + ", " + MainController.CONSTANTS.waiting_message_box_info() + "...",
+						text + "...");
 				waitingMessageBox.show();
 //			}
 //		});
 	}
-	
+
 	/**
 	 * Hides waiting messagebox.
 	 */
@@ -219,7 +221,7 @@ public class MainViewPort extends Viewport
 			waitingMessageBox.close();
 		}
 	}
-	
+
 	/**
 	 * Shows error messagebox with provided error message.
 	 * @param message error message to display
@@ -244,7 +246,7 @@ public class MainViewPort extends Viewport
 	 */
 	public void displayAlignmentsWindow(HomologsInfoItem homologsInfoItem,
 										int xPosition,
-										int yPosition) 
+										int yPosition)
 	{
 		if((alignmentsWindow == null) ||
 		   (alignmentsWindow.isResizeWindow()))
@@ -259,13 +261,13 @@ public class MainViewPort extends Viewport
 			alignmentsWindow.setHomologsInfoItem(homologsInfoItem);
 			alignmentsWindow.updateWindowContent();
 		}
-		
+
 		String alignmentWindowTitle = MainController.CONSTANTS.alignment_window_title();
 		alignmentWindowTitle = alignmentWindowTitle.replaceFirst("%s", homologsInfoItem.getChains().substring(0, 1));
 		alignmentWindowTitle = alignmentWindowTitle.replaceFirst("%s", homologsInfoItem.getUniprotId());
 		alignmentsWindow.setHeading(alignmentWindowTitle);
 		alignmentsWindow.setVisible(true);
-		
+
 		//called beacuse of the bug in GXT 2.2.3
 		// http://www.sencha.com/forum/showthread.php?126888-Problems-with-RowLayout
 		alignmentsWindow.layout(true);
@@ -275,7 +277,7 @@ public class MainViewPort extends Viewport
 	 * Retrieves window containing alignments.
 	 * @return window containing alignments
 	 */
-	public AlignmentsWindow getAlignmentsWindow() 
+	public AlignmentsWindow getAlignmentsWindow()
 	{
 		return alignmentsWindow;
 	}
@@ -283,7 +285,7 @@ public class MainViewPort extends Viewport
 	/**
 	 * Shows window containing general information about the application.
 	 */
-	public void displayAboutWindow() 
+	public void displayAboutWindow()
 	{
 		if((aboutWindow == null) ||
 		   (aboutWindow.isResizeWindow()))
@@ -291,10 +293,10 @@ public class MainViewPort extends Viewport
 			aboutWindow = new AboutWindow(mainController);
 			aboutWindow.setResizeWindow(false);
 		}
-		
+
 		aboutWindow.setVisible(true);
 	}
-	
+
 	/**
 	 * Retrieves window containing general information about application.
 	 * @return window containing general information about application
