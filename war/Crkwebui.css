@@ -76,20 +76,25 @@ h1 {
 	font-weight: bold;
 }
 
-.eppic-action A:link {text-decoration: none; font-weight:bold}
-.eppic-action A:visited {text-decoration: none; font-weight:bold}
-.eppic-action A:active {text-decoration: none; font-weight:bold}
-.eppic-action A:hover {background: #5288DB; color: white; font-weight:bold}
+.eppic-action A:link {text-decoration: none; font-weight:bold; font-size: 14px}
+.eppic-action A:visited {text-decoration: none; font-weight:bold; font-size: 14px}
+.eppic-action A:active {text-decoration: none; font-weight:bold; font-size: 14px}
+.eppic-action A:hover {background: #5288DB; color: white; font-weight:bold; font-size: 14px}
 
-.eppic-internal-link A:link {text-decoration: none}
-.eppic-internal-link A:visited {text-decoration: none}
-.eppic-internal-link A:active {text-decoration: none}
-.eppic-internal-link A:hover {text-decoration: underline}
+.eppic-internal-link A:link {text-decoration: none; font-size: 14px}
+.eppic-internal-link A:visited {text-decoration: none; font-size: 14px}
+.eppic-internal-link A:active {text-decoration: none; font-size: 14px}
+.eppic-internal-link A:hover {text-decoration: underline; font-size: 14px}
 
-.eppic-external-link A:link {text-decoration: none}
-.eppic-external-link A:visited {text-decoration: none}
-.eppic-external-link A:active {text-decoration: none}
-.eppic-external-link A:hover {text-decoration: underline}
+.eppic-external-link A:link {text-decoration: none; font-size: 14px}
+.eppic-external-link A:visited {text-decoration: none; font-size: 14px}
+.eppic-external-link A:active {text-decoration: none; font-size: 14px}
+.eppic-external-link A:hover {text-decoration: underline; font-size: 14px}
+
+.eppic-horizontal-nav A:link {text-decoration: none; font-size: 12px}
+.eppic-horizontal-nav A:visited {text-decoration: none; font-size: 12px}
+.eppic-horizontal-nav A:active {text-decoration: none; font-size: 12px}
+.eppic-horizontal-nav A:hover {text-decoration: underLine; font-size: 12px}
 
 .x-grid-empty {
   	padding: 10px;
@@ -98,9 +103,21 @@ h1 {
 }
 
 .pdb-identifier-label {
-	font-size: 20px;
+	font-size: 22px;
 	font-family: Arial;
 	font-weight: bold;
+}
+.pdb-identifier-label A:link {text-decoration: none}
+.pdb-identifier-label A:visited {text-decoration: none}
+.pdb-identifier-label A:active {text-decoration: none}
+.pdb-identifier-label A:hover {text-decoration: underLine}
+
+.pdb-spacegroup-label {
+	font-weight: normal;
+}
+
+.pdb-title-label {
+	font-size: 12px;
 }
 
 .aggregation-row-head

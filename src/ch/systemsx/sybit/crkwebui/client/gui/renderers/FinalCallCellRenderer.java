@@ -67,6 +67,7 @@ public class FinalCallCellRenderer implements GridCellRenderer<BaseModel>
 			
 			callReasonLabel.setStyleAttribute("color", color);
 			callReasonLabel.setStyleAttribute("font-weight", "bold");
+			callReasonLabel.setStyleAttribute("font-size", "14px");
 			
 			return callReasonLabel;
 		}

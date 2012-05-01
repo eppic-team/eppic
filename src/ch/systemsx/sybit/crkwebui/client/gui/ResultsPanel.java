@@ -90,7 +90,7 @@ public class ResultsPanel extends DisplayPanel
 		this.add(breakPanel, new RowData(1, 1.1, new Margins(0)));
 		
 		pdbTitle = new Label(mainController.getPdbScoreItem().getTitle());
-		pdbTitle.addStyleName("eppic-default-label");
+		pdbTitle.addStyleName("pdb-title-label");
 		this.add(pdbTitle);
 		
 		breakPanel = new FormPanel();

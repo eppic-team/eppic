@@ -3,7 +3,7 @@
   <!-- Inherit the core Web Toolkit stuff.                        -->
   <inherits name='com.google.gwt.user.User'/>
 
-<set-property name="user.agent" value="safari"/>
+  <!--  <set-property name="user.agent" value="safari"/>  -->
 
   <!-- Inherit the default GWT style sheet.  You can change       -->
   <!-- the theme of your GWT application by uncommenting          -->

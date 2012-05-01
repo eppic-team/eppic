@@ -52,7 +52,7 @@ public class PDBIdentifierPanel extends LayoutContainer
 											   mainController, 
 											   0, 
 											   mainController.getSettings().getPdbLinkUrl() + pdbName);
-			pdbNameLabel.addStyleName("eppic-external-link");
+			//pdbNameLabel.addStyleName("eppic-external-link");
 		}
 		else
 		{
@@ -81,6 +81,7 @@ public class PDBIdentifierPanel extends LayoutContainer
 			labelStr += ")";
 			if (!labelStr.equals(" ()")) {
 				spaceGroupLabel = new Label(labelStr);
+				spaceGroupLabel.addStyleName("pdb-spacegroup-label");
 				this.add(spaceGroupLabel);
 			}
 			
