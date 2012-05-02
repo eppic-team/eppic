@@ -88,14 +88,6 @@ public class WebUIDataAdaptor {
 			ii.setSize2(interf.getSecondRimCore().getCoreSize());
 			ii.setWarnings(new ArrayList<WarningItemDB>()); // we then need to add warnings from each method as we add the scores from each method
 			
-			ii.setAsaC1(interf.getFirstRimCore().getAsaCore());
-			ii.setAsaR1(interf.getFirstRimCore().getAsaRim());
-			ii.setBsaC1(interf.getFirstRimCore().getBsaCore());
-			ii.setBsaR1(interf.getFirstRimCore().getBsaRim());
-			ii.setAsaC2(interf.getSecondRimCore().getAsaCore());
-			ii.setAsaR2(interf.getSecondRimCore().getAsaRim());
-			ii.setBsaC2(interf.getSecondRimCore().getBsaCore());
-			ii.setBsaR2(interf.getSecondRimCore().getBsaRim());
 			ii.setPdbScoreItem(pdbScoreItem);
 			
 			pdbScoreItem.addInterfaceItem(ii);
@@ -342,7 +334,17 @@ public class WebUIDataAdaptor {
 		
 		List<InterfaceResidueItemDB> iril = new ArrayList<InterfaceResidueItemDB>();
 		ii.setInterfaceResidues(iril);
-		
+
+		interf.calcRimAndCore(caCutoff);
+		ii.setAsaC1(interf.getFirstRimCore().getAsaCore());
+		ii.setAsaR1(interf.getFirstRimCore().getAsaRim());
+		ii.setBsaC1(interf.getFirstRimCore().getBsaCore());
+		ii.setBsaR1(interf.getFirstRimCore().getBsaRim());
+		ii.setAsaC2(interf.getSecondRimCore().getAsaCore());
+		ii.setAsaR2(interf.getSecondRimCore().getAsaRim());
+		ii.setBsaC2(interf.getSecondRimCore().getBsaCore());
+		ii.setBsaR2(interf.getSecondRimCore().getBsaRim());
+
 		addResidueDetailsOfPartner(iril, interf, caCutoff, 0);
 		addResidueDetailsOfPartner(iril, interf, caCutoff, 1);
 
@@ -354,7 +356,7 @@ public class WebUIDataAdaptor {
 	
 	private void addResidueDetailsOfPartner(List<InterfaceResidueItemDB> iril, ChainInterface interf, double caCutoff, int molecId) {
 		if (interf.isProtein()) {
-			interf.calcRimAndCore(caCutoff);
+			//interf.calcRimAndCore(caCutoff); // no need to call again, already called in caller addResidueDetails
 			PdbChain mol = null;
 			InterfaceRimCore rimCore = null;
 			if (molecId==FIRST) {
@@ -365,7 +367,7 @@ public class WebUIDataAdaptor {
 				mol = interf.getSecondMolecule();
 				rimCore = interf.getSecondRimCore();
 			}
-			 
+			
 			for (Residue residue:mol) {
 				String resType = residue.getLongCode();
 				int assignment = -1;
