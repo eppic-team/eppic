@@ -5,6 +5,7 @@ import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 import ch.systemsx.sybit.crkwebui.client.model.InterfaceResidueSummaryModel;
+import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResidueItem;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceScoreItem;
 
 import com.extjs.gxt.ui.client.GXT;
@@ -139,22 +140,34 @@ public class ResiduesSummaryPanel extends ContentPanel
 				}
 			}
 		}
+
+		
+		int coreSize = 0;
+		int rimSize = 0;
+		for (InterfaceResidueItem interfResItem:mainController.getInterfaceResiduesItemsList().get(mainController.getMainViewPort().getInterfacesResiduesWindow().getSelectedInterface()).get(structure)) {
+			
+			if (interfResItem.getAssignment() == InterfaceResidueItem.CORE) coreSize++;
+			else if (interfResItem.getAssignment() == InterfaceResidueItem.RIM) rimSize++;
+		}
+		
 	
 		InterfaceResidueSummaryModel model = new InterfaceResidueSummaryModel();
-		model.setTitle(MainController.CONSTANTS.interfaces_residues_aggergation_total_cores());
+		model.setTitle(MainController.CONSTANTS.interfaces_residues_aggergation_total_cores()+" ("+coreSize+")");
+		
+		int interfId = mainController.getMainViewPort().getInterfacesResiduesWindow().getSelectedInterface() - 1;
 		
 		double asa = 0;
 		double bsa = 0;
 		
 		if(structure == 1)
 		{
-			asa = mainController.getPdbScoreItem().getInterfaceItem(mainController.getMainViewPort().getInterfacesResiduesWindow().getSelectedInterface() - 1).getAsaC1();
-			bsa = mainController.getPdbScoreItem().getInterfaceItem(mainController.getMainViewPort().getInterfacesResiduesWindow().getSelectedInterface() - 1).getBsaC1();
+			asa = mainController.getPdbScoreItem().getInterfaceItem(interfId).getAsaC1();
+			bsa = mainController.getPdbScoreItem().getInterfaceItem(interfId).getBsaC1();
 		}
 		else
 		{
-			asa = mainController.getPdbScoreItem().getInterfaceItem(mainController.getMainViewPort().getInterfacesResiduesWindow().getSelectedInterface() - 1).getAsaC2();
-			bsa = mainController.getPdbScoreItem().getInterfaceItem(mainController.getMainViewPort().getInterfacesResiduesWindow().getSelectedInterface() - 1).getBsaC2();
+			asa = mainController.getPdbScoreItem().getInterfaceItem(interfId).getAsaC2();
+			bsa = mainController.getPdbScoreItem().getInterfaceItem(interfId).getBsaC2();
 		}
 		
 		model.setAsa(asa);
@@ -165,20 +178,20 @@ public class ResiduesSummaryPanel extends ContentPanel
 		
 		
 		model = new InterfaceResidueSummaryModel();
-		model.setTitle(MainController.CONSTANTS.interfaces_residues_aggergation_total_rims());
+		model.setTitle(MainController.CONSTANTS.interfaces_residues_aggergation_total_rims()+" ("+rimSize+")");
 		
 		asa = 0;
 		bsa = 0;
 		
 		if(structure == 1)
 		{
-			asa = mainController.getPdbScoreItem().getInterfaceItem(mainController.getMainViewPort().getInterfacesResiduesWindow().getSelectedInterface() - 1).getAsaR1();
-			bsa = mainController.getPdbScoreItem().getInterfaceItem(mainController.getMainViewPort().getInterfacesResiduesWindow().getSelectedInterface() - 1).getBsaR1();
+			asa = mainController.getPdbScoreItem().getInterfaceItem(interfId).getAsaR1();
+			bsa = mainController.getPdbScoreItem().getInterfaceItem(interfId).getBsaR1();
 		}
 		else
 		{
-			asa = mainController.getPdbScoreItem().getInterfaceItem(mainController.getMainViewPort().getInterfacesResiduesWindow().getSelectedInterface() - 1).getAsaR2();
-			bsa = mainController.getPdbScoreItem().getInterfaceItem(mainController.getMainViewPort().getInterfacesResiduesWindow().getSelectedInterface() - 1).getBsaR2();
+			asa = mainController.getPdbScoreItem().getInterfaceItem(interfId).getAsaR2();
+			bsa = mainController.getPdbScoreItem().getInterfaceItem(interfId).getBsaR2();
 		}
 		
 		model.setAsa(asa);
