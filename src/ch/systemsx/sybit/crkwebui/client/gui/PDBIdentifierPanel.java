@@ -21,7 +21,7 @@ public class PDBIdentifierPanel extends LayoutContainer
 	
 	public PDBIdentifierPanel(MainController mainController)
 	{
-		this.setHeight(20);
+		this.setHeight(25);
 		this.addStyleName("pdb-identifier-label");
 		this.mainController = mainController;
 	}
