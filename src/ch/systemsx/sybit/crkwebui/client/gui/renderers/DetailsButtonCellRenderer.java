@@ -1,9 +1,11 @@
 package ch.systemsx.sybit.crkwebui.client.gui.renderers;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
+//import ch.systemsx.sybit.crkwebui.client.gui.EmptyLinkWithTooltip;
 import ch.systemsx.sybit.crkwebui.client.gui.ResultsPanel;
 
 import com.extjs.gxt.ui.client.data.BaseModel;
+//import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
 import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.GridEvent;
@@ -56,6 +58,7 @@ public class DetailsButtonCellRenderer extends DefaultCellRenderer
 					});
 		}
 
+		
 		Button detailsButton = new Button(MainController.CONSTANTS.results_grid_details_button(),
 				new SelectionListener<ButtonEvent>() {
 
@@ -77,6 +80,32 @@ public class DetailsButtonCellRenderer extends DefaultCellRenderer
 		detailsButton.setToolTip(MainController.CONSTANTS.results_grid_details_button_tooltip());
 
 		return detailsButton;
+		
+		
+//      following commented out code to replace the button by a link 		
+//		EmptyLinkWithTooltip detailsLink = new EmptyLinkWithTooltip("Details",
+//				"Click for details of the residues in the interface",
+//				mainController,
+//				0);
+//		detailsLink.addListener(Events.OnClick, new Listener<BaseEvent>() {
+//		
+//		@Override
+//		public void handleEvent(BaseEvent be) {
+//
+//			if((mainController.getMainViewPort().getCenterPanel().getDisplayPanel() != null) &&
+//			   (mainController.getMainViewPort().getCenterPanel().getDisplayPanel() instanceof ResultsPanel))
+//			{
+//				ResultsPanel resultsPanel = (ResultsPanel)mainController.getMainViewPort().getCenterPanel().getDisplayPanel();
+//				resultsPanel.getResultsGrid().getSelectionModel().select(rowIndex, false);
+//				mainController.getInterfaceResidues((Integer)resultsPanel.getResultsStore().getAt(rowIndex).get("id"));
+//			}
+//		}
+//		
+//		});
+//		detailsLink.addStyleName("eppic-action");
+//		
+//		return detailsLink;
+
 	}
 
 }
