@@ -249,8 +249,16 @@ public class WebUIDataAdaptor {
 				}
 			}
 
-			isiZ.setUnweightedCore1Scores(ezp.getMember1Predictor().getCoreScore());
-			isiZ.setUnweightedCore2Scores(ezp.getMember2Predictor().getCoreScore());
+			// In z-scores, core, rim and ratio scores don't make so much sense
+			// So we basically abuse them to carry all desired info to WUI:
+			// - core1/core2Scores: the surface sampling mean score for each side
+			// - rim1/rim2Scores: the surface sampling standard deviation for each side
+			// - ratio1/ratio2Scores: the z-scores for each side
+			// - score: the average z-score
+			isiZ.setUnweightedCore1Scores(ezp.getMember1Predictor().getMean());
+			isiZ.setUnweightedCore2Scores(ezp.getMember2Predictor().getMean());
+			isiZ.setUnweightedRim1Scores(ezp.getMember1Predictor().getSd());
+			isiZ.setUnweightedRim2Scores(ezp.getMember2Predictor().getSd());
 			isiZ.setUnweightedRatio1Scores(ezp.getMember1Predictor().getScore());
 			isiZ.setUnweightedRatio2Scores(ezp.getMember2Predictor().getScore());
 			isiZ.setUnweightedFinalScores(ezp.getScore());				
