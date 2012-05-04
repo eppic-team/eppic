@@ -691,10 +691,11 @@ public class MainController
 			@Override
 			public void execute() {
 				if(result.containsKey(1))
-				{
+				{					
 					mainViewPort.getInterfacesResiduesWindow().getInterfacesResiduesPanel().getFirstStructurePanelSummary().fillResiduesGrid();
 					mainViewPort.getInterfacesResiduesWindow().getInterfacesResiduesPanel().getFirstStructurePanel()
 							.fillResiduesGrid(result.get(1));
+					//mainViewPort.getInterfacesResiduesWindow().getInterfacesResiduesPanel().getFirstStructureBottomContainer().fillScoresLabels();
 					mainViewPort.getInterfacesResiduesWindow().getInterfacesResiduesPanel().getFirstStructurePanel().applyFilter(false);
 				}
 
@@ -703,7 +704,8 @@ public class MainController
 					mainViewPort.getInterfacesResiduesWindow().getInterfacesResiduesPanel().getSecondStructurePanelSummary().fillResiduesGrid();
 					mainViewPort.getInterfacesResiduesWindow().getInterfacesResiduesPanel().getSecondStructurePanel()
 							.fillResiduesGrid(result.get(2));
-					mainViewPort.getInterfacesResiduesWindow().getInterfacesResiduesPanel().getSecondStructurePanel().applyFilter(false);
+					//mainViewPort.getInterfacesResiduesWindow().getInterfacesResiduesPanel().getSecondStructureBottomContainer().fillScoresLabels();
+					mainViewPort.getInterfacesResiduesWindow().getInterfacesResiduesPanel().getSecondStructurePanel().applyFilter(false);					
 				}
 			}
 		});

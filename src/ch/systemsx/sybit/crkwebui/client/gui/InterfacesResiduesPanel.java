@@ -59,13 +59,13 @@ public class InterfacesResiduesPanel extends FormPanel
 											mainController,
 											width);
 		
-		firstStructureSummary = new ResiduesSummaryPanel("", mainController, 70, 1);
-		secondStructureSummary = new ResiduesSummaryPanel("", mainController, 70, 2);
+		firstStructureSummary = new ResiduesSummaryPanel("", mainController, 1);
+		secondStructureSummary = new ResiduesSummaryPanel("", mainController, 2);
 		
 		LayoutContainer firstStructureContainer = new LayoutContainer();
 		firstStructureContainer.setScrollMode(Scroll.AUTOX);
 		firstStructureContainer.setLayout(new AnchorLayout());
-		firstStructureContainer.add(firstStructure, new AnchorData("none -110"));
+		firstStructureContainer.add(firstStructure, new AnchorData("none -135"));
 		firstStructure.setScrollMode(Scroll.NONE);
 		
 		FormPanel firstStructureBreakPanel = new FormPanel();
@@ -76,22 +76,16 @@ public class InterfacesResiduesPanel extends FormPanel
 		firstStructureContainer.add(firstStructureBreakPanel);
 
 		firstStructureContainer.add(firstStructureSummary);
+		firstStructureSummary.setHeight(90);
 		firstStructureSummary.setScrollMode(Scroll.NONE);
-		
-		FormPanel firstStructureScrollPanel = new FormPanel();
-		firstStructureScrollPanel.setBodyBorder(false);
-		firstStructureScrollPanel.setBorders(false);
-		firstStructureScrollPanel.getHeader().setVisible(false);
-		firstStructureScrollPanel.setHeight(20);
-		firstStructureContainer.add(firstStructureScrollPanel);
-		
+				
 		residuesLayoutContainer.add(firstStructureContainer, new RowData(0.48, 1, new Margins(0)));
 		
 		
 		LayoutContainer secondStructureContainer = new LayoutContainer();
 		secondStructureContainer.setScrollMode(Scroll.AUTOX);
 		secondStructureContainer.setLayout(new AnchorLayout());
-		secondStructureContainer.add(secondStructure, new AnchorData("none -110"));
+		secondStructureContainer.add(secondStructure, new AnchorData("none -135"));
 		secondStructure.setScrollMode(Scroll.NONE);
 		
 		FormPanel secondStructureBreakPanel = new FormPanel();
@@ -102,14 +96,8 @@ public class InterfacesResiduesPanel extends FormPanel
 		secondStructureContainer.add(secondStructureBreakPanel);
 
 		secondStructureContainer.add(secondStructureSummary);
+		secondStructureSummary.setHeight(90);
 		secondStructureSummary.setScrollMode(Scroll.NONE);
-		
-		FormPanel secondStructureScrollPanel = new FormPanel();
-		secondStructureScrollPanel.setBodyBorder(false);
-		secondStructureScrollPanel.setBorders(false);
-		secondStructureScrollPanel.getHeader().setVisible(false);
-		secondStructureScrollPanel.setHeight(20);
-		secondStructureContainer.add(secondStructureScrollPanel);
 		
 		FormPanel breakPanel = new FormPanel();
 		breakPanel.setBodyBorder(false);

@@ -156,7 +156,7 @@ public class MainViewPort extends Viewport
 		   (interfacesResiduesWindow.isResizeWindow()))
 		{
 			interfacesResiduesWindow = new InterfacesResiduesWindow(mainController, selectedInterface);
-			interfacesResiduesWindow.setResizable(false);
+//			interfacesResiduesWindow.setResizable(false);
 			interfacesResiduesWindow.setVisible(true);
 			Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 				@Override

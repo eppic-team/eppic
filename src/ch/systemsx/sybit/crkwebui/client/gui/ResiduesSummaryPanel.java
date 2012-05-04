@@ -18,6 +18,7 @@ import com.extjs.gxt.ui.client.widget.grid.ColumnModel;
 import com.extjs.gxt.ui.client.widget.grid.Grid;
 import com.extjs.gxt.ui.client.widget.grid.GridViewConfig;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
+import com.google.gwt.i18n.client.NumberFormat;
 
 /**
  * Panel used to display the residues summary for one structure.
@@ -41,7 +42,6 @@ public class ResiduesSummaryPanel extends ContentPanel
 	public ResiduesSummaryPanel(
 						 String header, 
 						 final MainController mainController,
-						 int height,
 						 int structure) 
 	{
 		if(GXT.isIE8)
@@ -56,7 +56,6 @@ public class ResiduesSummaryPanel extends ContentPanel
 		this.setLayout(new FitLayout());
 		this.getHeader().setVisible(false);
 		this.setScrollMode(Scroll.NONE);
-		this.setHeight(height);
 
 		residuesConfigs = createColumnConfig();
 
@@ -118,11 +117,18 @@ public class ResiduesSummaryPanel extends ContentPanel
 		
 		List<InterfaceResidueSummaryModel> interfaceSummaryItems = new ArrayList<InterfaceResidueSummaryModel>();
 
+		NumberFormat number = NumberFormat.getFormat("0.00");
+		
 		double entropyCoreValue = Double.NaN;
 		double entropyRimValue = Double.NaN;
 		double entropyRatioValue = Double.NaN;
+		double entropySurfSamplingMean = Double.NaN;
+		double entropySurfSamplingSd = Double.NaN;
+		double entropyZscore = Double.NaN;
 		
-		for (InterfaceScoreItem scoreItem : mainController.getPdbScoreItem().getInterfaceItem(mainController.getMainViewPort().getInterfacesResiduesWindow().getSelectedInterface() - 1).getInterfaceScores()) 
+		int interfId = mainController.getMainViewPort().getInterfacesResiduesWindow().getSelectedInterface() - 1;
+		
+		for (InterfaceScoreItem scoreItem : mainController.getPdbScoreItem().getInterfaceItem(interfId).getInterfaceScores()) 
 		{
 			if(scoreItem.getMethod().equals("Entropy"))
 			{
@@ -139,6 +145,18 @@ public class ResiduesSummaryPanel extends ContentPanel
 					entropyRatioValue = scoreItem.getUnweightedRatio2Scores();
 				}
 			}
+			else if (scoreItem.getMethod().equals("Z-scores")) {
+				if (structure == 1) {
+					entropySurfSamplingMean = scoreItem.getUnweightedCore1Scores();
+					entropySurfSamplingSd = scoreItem.getUnweightedRim1Scores();
+					entropyZscore = scoreItem.getUnweightedRatio1Scores();
+				} else {
+					entropySurfSamplingMean = scoreItem.getUnweightedCore2Scores();
+					entropySurfSamplingSd = scoreItem.getUnweightedRim2Scores();
+					entropyZscore = scoreItem.getUnweightedRatio2Scores();					
+				}
+				
+			}
 		}
 
 		
@@ -153,8 +171,7 @@ public class ResiduesSummaryPanel extends ContentPanel
 	
 		InterfaceResidueSummaryModel model = new InterfaceResidueSummaryModel();
 		model.setTitle(MainController.CONSTANTS.interfaces_residues_aggergation_total_cores()+" ("+coreSize+")");
-		
-		int interfId = mainController.getMainViewPort().getInterfacesResiduesWindow().getSelectedInterface() - 1;
+
 		
 		double asa = 0;
 		double bsa = 0;
@@ -172,7 +189,7 @@ public class ResiduesSummaryPanel extends ContentPanel
 		
 		model.setAsa(asa);
 		model.setBsa(bsa);
-		model.setEntropyScore(entropyCoreValue);
+		model.setEntropyScore(number.format(entropyCoreValue));
 		
 		interfaceSummaryItems.add(model);
 		
@@ -196,14 +213,20 @@ public class ResiduesSummaryPanel extends ContentPanel
 		
 		model.setAsa(asa);
 		model.setBsa(bsa);
-		model.setEntropyScore(entropyRimValue);
+		model.setEntropyScore(number.format(entropyRimValue));
+		
+		interfaceSummaryItems.add(model);
+
+		model = new InterfaceResidueSummaryModel();
+		model.setTitle(MainController.CONSTANTS.interfaces_residues_aggergation_surface());
+		model.setEntropyScore(number.format(entropySurfSamplingMean)+", "+number.format(entropySurfSamplingSd));
 		
 		interfaceSummaryItems.add(model);
 		
 		
 		model = new InterfaceResidueSummaryModel();
 		model.setTitle(MainController.CONSTANTS.interfaces_residues_aggergation_ratios());
-		model.setEntropyScore(entropyRatioValue);
+		model.setEntropyScore(number.format(entropyRatioValue)+", "+number.format(entropyZscore));
 		
 		interfaceSummaryItems.add(model);
 		
