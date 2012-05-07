@@ -10,7 +10,6 @@ import java.util.List;
 import owl.core.structure.ChainInterface;
 import owl.core.structure.PdbChain;
 import owl.core.structure.Residue;
-import owl.core.structure.AaResidue;
 
 public class InterfaceEvolContext implements Serializable {
 
@@ -231,15 +230,13 @@ public class InterfaceEvolContext implements Serializable {
 		
 		HashMap<Integer,Double> map = new HashMap<Integer, Double>();
 		for (Residue residue:pdb) {
-			if (!(residue instanceof AaResidue)) continue;
+			// we don't need to take care of het residues, as we use the uniprot ref for the calc of entropies entropies will always be asigned even for hets
+			//if (!(residue instanceof AaResidue)) continue;
 			int resser = residue.getSerial();
 			int queryPos = -2;
 			if (scoType==ScoringType.ENTROPY) {
 				queryPos = getChainEvolContext(molecId).getQueryUniprotPosForPDBPos(resser); 
 			} 
-//			else if (scoType==ScoringType.KAKS) {
-//				queryPos = getChainEvolContext(molecId).getQueryCDSPosForPDBPos(resser);
-//			}
 			if (queryPos!=-1) {   
 				map.put(resser, conservationScores.get(queryPos));	
 			}

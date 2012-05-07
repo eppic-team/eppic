@@ -20,7 +20,6 @@ import model.RunParametersItemDB;
 import model.WarningItemDB;
 
 import owl.core.runners.PymolRunner;
-import owl.core.structure.AaResidue;
 import owl.core.structure.ChainInterface;
 import owl.core.structure.ChainInterfaceList;
 import owl.core.structure.InterfaceRimCore;
@@ -429,7 +428,9 @@ public class WebUIDataAdaptor {
 						queryUniprotPos = cec.getQueryUniprotPosForPDBPos(residue.getSerial());
 
 					float entropy = -1;
-					if (entropies!=null && residue instanceof AaResidue) {	
+					// we used to have here: "&& residue instanceof AaResidue" but that was preventing entropy values of mismatch-to-ref-uniprot-residues to be passed
+					// for het residues we do have entropy values too as the entropy values are calculated on the reference uniprot sequence (where no het residues are present)
+					if (entropies!=null) {	
 						if (queryUniprotPos!=-1) entropy = (float) entropies.get(queryUniprotPos).doubleValue();
 					}
 

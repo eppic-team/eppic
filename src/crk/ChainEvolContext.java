@@ -35,6 +35,7 @@ import owl.core.sequence.UnirefEntry;
 import owl.core.sequence.alignment.MultipleSequenceAlignment;
 import owl.core.sequence.alignment.PairwiseSequenceAlignment;
 import owl.core.sequence.alignment.PairwiseSequenceAlignment.PairwiseSequenceAlignmentException;
+import owl.core.structure.AminoAcid;
 import owl.core.structure.PdbAsymUnit;
 import owl.core.structure.PdbChain;
 import owl.core.structure.Residue;
@@ -63,7 +64,7 @@ public class ChainEvolContext implements Serializable {
 	private String seqIdenticalChainsStr;	// a string of the form A(B,C,D,E) containing all represented sequence identical chains
 	
 	private UnirefEntry query;							// the uniprot info (id,seq) corresponding to this chain's sequence
-	private Interval queryInterv;
+	private Interval queryInterv;						// the interval of the query uniprot reference sequence that is actually used in the blast search
 	private boolean hasQueryMatch;						// whether we could find the query's uniprot match or not
 	private PairwiseSequenceAlignment alnPdb2Uniprot; 	// the alignment between the pdb sequence and the uniprot sequence (query)
 	
@@ -498,18 +499,23 @@ public class ChainEvolContext implements Serializable {
 	
 	public void printConservationScores(PrintStream ps, ScoringType scoType, PdbAsymUnit pdb) {
 		if (scoType.equals(ScoringType.ENTROPY)) {
-			ps.println("# Entropies for all query sequence positions based on a "+homologs.getReducedAlphabet()+" letters alphabet.");
-			ps.println("# seqres\tpdb\tuniprot\tentropy");
+			ps.println("# Entropies for all query sequence positions (reference UniProt: "+query.getUniId()+") based on a "+homologs.getReducedAlphabet()+" letters alphabet.");
+			ps.println("# seqres\tpdb\tuniprot\tuniprot_res\tentropy");
 		} 
 		PdbChain chain = pdb.getChain(representativeChain);
-		List<Double> conservationScores = getConservationScores(scoType);
+		List<Double> conservationScores = getConservationScores(scoType);		
 		for (int i=0;i<conservationScores.size();i++) {
 			int resser = 0;
 			if (scoType.equals(ScoringType.ENTROPY)) {
-				resser = getPDBPosForQueryUniprotPos(i);
-			} 
+				resser = getPDBPosForQueryUniprotPos(i+queryInterv.beg-1);
+			} 			
 			String pdbresser = chain.getPdbResSerFromResSer(resser);
-			ps.printf("%4d\t%4s\t%4d\t%5.2f\n",resser,pdbresser,i+1,conservationScores.get(i));
+			ps.printf("%4d\t%4s\t%4d\t%3s\t%5.2f\n",
+					resser, 
+					pdbresser, 
+					i+queryInterv.beg, 
+					AminoAcid.one2three(query.getSequence().charAt(i+queryInterv.beg-1)), 
+					conservationScores.get(i));
 		}
 	}
 	
@@ -543,7 +549,7 @@ public class ChainEvolContext implements Serializable {
 	
 	/**
 	 * Given a residue serial of the reference PDB SEQRES sequence (starting at 1), returns
-	 * its corresponding Uniprot's sequence index (starting at 0)
+	 * its corresponding Uniprot's sequence index within subinterval (starting at 0)
 	 * @param resser
 	 * @return the mapped uniprot sequence position or -1 if it maps to a gap
 	 */
