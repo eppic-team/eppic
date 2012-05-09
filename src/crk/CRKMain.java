@@ -468,7 +468,7 @@ public class CRKMain {
 		params.getProgressLog().println("Retrieving UniprotKB data");
 		cecs.retrieveHomologsData(params);
 		
-		// filtering optionally by domain of life, and further redundancy elimination
+		// filtering optionally by domain of life, and further redundancy reduction
 		cecs.filter(params);
 
 		// c) align

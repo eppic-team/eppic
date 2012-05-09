@@ -74,6 +74,7 @@ public class ChainEvolContext implements Serializable {
 	private HomologList homologs;	// the homologs of this chain's sequence
 		
 	private boolean searchWithFullUniprot;  // mode of searching, true=we search with full uniprot seq, false=we search with PDB matching part only
+	private boolean useHspsOnly;			// mode of aligning, true=we align on the uniprot hsp subsequences, false=we align on the full uniprot sequences
 	
 	private List<String> queryWarnings;
 	
@@ -279,16 +280,12 @@ public class ChainEvolContext implements Serializable {
 		}
 	}
 	
-	public void removeRedundancy() {
-		homologs.removeRedundancy();
-	}
-	
 	public void removeIdenticalToQuery(double minQueryCov) {
 		homologs.removeIdenticalToQuery(minQueryCov);
 	}
 	
-	public void skimList(int maxDesiredHomologs) {
-		homologs.skimList(maxDesiredHomologs);
+	public void reduceRedundancy(CRKParams params) throws IOException, InterruptedException, BlastException { 
+		homologs.reduceRedundancy(params.getMaxNumSeqs(), params.getBlastBinDir(), params.getBlastDataDir(), params.getNumThreads());
 	}
 	
 	/**
@@ -329,7 +326,7 @@ public class ChainEvolContext implements Serializable {
 		int nThreads = params.getNumThreads();
 		
 		LOGGER.info("Alignment mode for chain "+getRepresentativeChainCode()+" is: "+params.getAlignmentMode().getName());
-		boolean useHspsOnly = false;
+		useHspsOnly = false;
 		if (params.getAlignmentMode()==AlignmentMode.AUTO) {
 			if (isSearchWithFullUniprot()) {
 				useHspsOnly = false;
@@ -373,16 +370,7 @@ public class ChainEvolContext implements Serializable {
 	}
 	
 	public void writeHomologSeqsToFile(File outFile, CRKParams params) throws FileNotFoundException {
-		boolean useHspsOnly = false;
-		if (params.getAlignmentMode()==AlignmentMode.AUTO) {
-			if (isSearchWithFullUniprot()) useHspsOnly = false;
-			else useHspsOnly = true;
-		} else if (params.getAlignmentMode()==AlignmentMode.FULLLENGTH) {
-			useHspsOnly = false;
-		} else if (params.getAlignmentMode()==AlignmentMode.HSPSONLY) {
-			useHspsOnly = true;
-		}
-		homologs.writeToFasta(outFile, false, useHspsOnly);
+		homologs.writeToFasta(outFile, false, useHspsOnly, true);
 	}
 	
 	public MultipleSequenceAlignment getAlignment() {
@@ -478,6 +466,7 @@ public class ChainEvolContext implements Serializable {
 	 * @param ps
 	 */
 	public void printSummary(PrintStream ps) {
+		
 		ps.println("Query: "+pdbName+representativeChain);
 		ps.println("Uniprot id for query:");
 		ps.print(this.query.getUniId());
@@ -486,13 +475,20 @@ public class ChainEvolContext implements Serializable {
 		ps.println();
 		
 		ps.println("Uniprot version: "+getUniprotVer());
-		ps.println("Homologs: "+homologs.getSizeFilteredSubset()+" with minimum "+String.format("%4.2f",homologs.getIdCutoff())+" identity and "+
+		ps.println("Homologs: "+homologs.getSizeFilteredSubset()+" with minimum "+
+				String.format("%4.2f",homologs.getIdCutoff())+" identity and "+
 				String.format("%4.2f",homologs.getQCovCutoff())+" query coverage");
+
+		int clusteringPercentId = homologs.getUsedClusteringPercentId();		
+		if (clusteringPercentId>0) 
+			ps.println("List is redundancy reduced through clustering on "+clusteringPercentId+"% sequence identity");
+		
 		for (Homolog hom:homologs.getFilteredSubset()) {
 			ps.printf("%-13s",hom.getIdentifier());
 			ps.printf("\t%5.1f",hom.getPercentIdentity());
 			ps.printf("\t%5.1f",hom.getBlastHit().getQueryCoverage()*100.0);
-			if (hom.getUnirefEntry().hasTaxons()) ps.print("\t"+hom.getUnirefEntry().getFirstTaxon()+"\t"+hom.getUnirefEntry().getLastTaxon());
+			if (hom.getUnirefEntry().hasTaxons()) 
+				ps.print("\t"+hom.getUnirefEntry().getFirstTaxon()+"\t"+hom.getUnirefEntry().getLastTaxon());
 			ps.println();
 		}
 	}
@@ -756,6 +752,14 @@ public class ChainEvolContext implements Serializable {
 	 */
 	public boolean isSearchWithFullUniprot() {
 		return searchWithFullUniprot;
+	}
+	
+	/**
+	 * Whether the alignment is done on UniProt hsp subsequences or on the full ones
+	 * @return
+	 */
+	public boolean isUseHspsOnly() {
+		return useHspsOnly;
 	}
 	
 	/**

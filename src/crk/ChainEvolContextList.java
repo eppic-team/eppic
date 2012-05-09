@@ -222,7 +222,7 @@ public class ChainEvolContextList implements Serializable {
 		}
 	}
 	
-	public void filter(CRKParams params) {
+	public void filter(CRKParams params) throws CRKException {
 		for (ChainEvolContext chainEvCont:cecs.values()) {
 			if (!chainEvCont.hasQueryMatch()) {
 				// no query uniprot match, we do nothing with this sequence
@@ -235,11 +235,16 @@ public class ChainEvolContextList implements Serializable {
 			// remove hits totally identical to query
 			chainEvCont.removeIdenticalToQuery(params.getMinQueryCovForIdenticalsRemoval());
 			
-			// remove redundancy
-			chainEvCont.removeRedundancy();
-
-			// skimming so that there's not too many sequences 
-			chainEvCont.skimList(params.getMaxNumSeqs());
+			// reducing redundancy by clustering so that we have at least the max num seqs required 
+			try {
+				chainEvCont.reduceRedundancy(params);
+			} catch (IOException e) {
+				throw new CRKException(e, "Problems while running blastclust for redundancy reduction of homologs: "+e.getMessage(), true);
+			} catch (InterruptedException e) {
+				throw new CRKException(e, "Problems while running blastclust for redundancy reduction of homologs: "+e.getMessage(), true);
+			} catch (BlastException e) {
+				throw new CRKException(e, "Problems while running blastclust for redundancy reduction of homologs: "+e.getMessage(), true);
+			}
 
 		}
 	}

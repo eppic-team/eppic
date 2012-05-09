@@ -12,6 +12,7 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import owl.core.runners.blast.BlastRunner;
 import owl.core.structure.AminoAcid;
 
 public class CRKParams {
@@ -89,6 +90,7 @@ public class CRKParams {
 	
 	// default blast settings
 	private static final String   DEF_BLAST_BIN_DIR = "/usr/bin";
+	private static final String   DEF_BLAST_DATA_DIR = "/usr/share/blast";
 	
 	// default tcoffee settings
 	private static final File     DEF_TCOFFE_BIN = new File("/usr/bin/t_coffee");
@@ -111,7 +113,7 @@ public class CRKParams {
 	private static final double   DEF_PDB2UNIPROT_QCOV_THRESHOLD = 0.85;
 	// default pdb2uniprot max subject (uniprot) coverage: below this value we do local blast search instead of global (see HomologsSearchMode) 
 	private static final double   DEF_PDB2UNIPROT_MAX_SCOV_FOR_LOCAL = 0.4;
-		
+
 	// default cache dirs
 	private static final String   DEF_BLAST_CACHE_DIR = null;
 	
@@ -183,6 +185,8 @@ public class CRKParams {
 	private boolean  useSifts;
 	
 	private String   blastBinDir;
+	
+	private String   blastDataDir; // dir with blosum matrices only needed for blastclust
 	
 	private File     tcoffeeBin;
 	private boolean  useTcoffeeVeryFastMode;
@@ -491,6 +495,15 @@ public class CRKParams {
 			}
 			if (! new File(blastBinDir).isDirectory()) {
 				throw new CRKException(null,"BLAST_BIN_DIR must be set to a valid value in config file. Directory "+blastBinDir+" doesn't exist.",true);
+			} 
+			else if (!new File(blastBinDir,BlastRunner.BLASTALL_PROG).exists() || 
+					 !new File(blastBinDir,BlastRunner.BLASTCLUST_PROG).exists()) {
+				throw new CRKException(null,"BLAST_BIN_DIR parameter in config file must be set to a dir containing the blastall and blastclust executables. Either blastall or blastclust are not in given dir "+blastBinDir,true);				
+			}
+			if (! new File(blastDataDir).isDirectory()) {
+				throw new CRKException(null,"BLAST_DATA_DIR must be set to a valid value in config file. Directory "+blastDataDir+ " doesn't exist.",true);
+			} else if (! new File(blastDataDir,"BLOSUM62").exists()) {
+				throw new CRKException(null, "BLAST_DATA_DIR parameter in config file must be set to a dir containing a blast BLOSUM62 file. No BLOSUM62 file in "+blastDataDir, true);
 			}
 			if (! tcoffeeBin.exists()) {
 				throw new CRKException(null,"TCOFFEE_BIN must be set to a valid value in config file. File "+tcoffeeBin+" doesn't exist.",true);
@@ -744,6 +757,8 @@ public class CRKParams {
 			
 			blastBinDir     = p.getProperty("BLAST_BIN_DIR", DEF_BLAST_BIN_DIR);
 			
+			blastDataDir    = p.getProperty("BLAST_DATA_DIR", DEF_BLAST_DATA_DIR);
+			
 			tcoffeeBin 		= new File(p.getProperty("TCOFFEE_BIN", DEF_TCOFFE_BIN.toString()));
 			
 			useTcoffeeVeryFastMode = Boolean.parseBoolean(p.getProperty("USE_TCOFFEE_VERY_FAST_MODE",new Boolean(DEF_USE_TCOFFEE_VERY_FAST_MODE).toString()));
@@ -803,6 +818,10 @@ public class CRKParams {
 		return blastBinDir;
 	}
 
+	public String getBlastDataDir() {
+		return blastDataDir;
+	}
+	
 	public File getTcoffeeBin() {
 		return tcoffeeBin;
 	}
