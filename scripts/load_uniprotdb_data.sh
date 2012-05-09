@@ -12,7 +12,9 @@ clustersfile=$3
 table=uniprot
 mysql $db <<EOF
 LOAD DATA LOCAL INFILE '$file' INTO TABLE $table;
+SHOW WARNINGS;
 LOAD DATA LOCAL INFILE '$clustersfile' INTO TABLE ${table}_clusters;
+SHOW WARNINGS;
 EOF
 
 exit 0
