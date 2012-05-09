@@ -18,8 +18,6 @@ import org.xml.sax.SAXException;
 
 import owl.core.connections.NoMatchFoundException;
 import owl.core.connections.SiftsConnection;
-import owl.core.connections.UniProtConnection;
-import owl.core.connections.UniprotLocalConnection;
 import owl.core.features.SiftsFeature;
 import owl.core.runners.TcoffeeException;
 import owl.core.runners.blast.BlastException;
@@ -78,13 +76,10 @@ public class ChainEvolContext implements Serializable {
 	
 	private List<String> queryWarnings;
 	
-	private boolean useLocalUniprot;
-	private transient UniProtConnection uniprotJapiConn;
-	private transient UniprotLocalConnection uniprotLocalConn;
-	
-	private String uniprotVer;
+	private ChainEvolContextList parent;
 
-	public ChainEvolContext(String sequence, String representativeChain, String pdbCode, CRKParams params) throws SQLException {
+	public ChainEvolContext(ChainEvolContextList parent, String sequence, String representativeChain, String pdbCode, CRKParams params) throws SQLException {
+		this.parent = parent;
 		this.pdbCode = pdbCode;
 		this.pdbName = params.getJobName();
 		this.sequence = sequence;
@@ -93,16 +88,6 @@ public class ChainEvolContext implements Serializable {
 		this.searchWithFullUniprot = true;
 		this.queryWarnings = new ArrayList<String>();
 		
-		
-		if (params.getLocalUniprotDbName()!=null) {
-			this.useLocalUniprot = true;
-			this.uniprotLocalConn = new UniprotLocalConnection(params.getLocalUniprotDbName(),params.getLocalTaxonomyDbName());
-			LOGGER.info("Using local UniProt connection to retrieve UniProtKB data. Local databases: "+params.getLocalUniprotDbName()+" and "+params.getLocalTaxonomyDbName());
-		} else {
-			this.useLocalUniprot = false;
-			this.uniprotJapiConn = new UniProtConnection();
-			LOGGER.info("Using remote UniProt JAPI connection to retrieve UniProtKB data");
-		}
 	}
 	
 	/**
@@ -187,10 +172,10 @@ public class ChainEvolContext implements Serializable {
 
 			// once we have the identifier we get the data from uniprot
 			try {
-				if (useLocalUniprot) {
-					query = uniprotLocalConn.getUnirefEntry(queryUniprotId);
+				if (parent.isUseLocalUniprot()) {
+					query = parent.getUniProtLocalConnection().getUnirefEntry(queryUniprotId);
 				} else {
-					query = uniprotJapiConn.getUnirefEntry(queryUniprotId);
+					query = parent.getUniProtJapiConnection().getUnirefEntry(queryUniprotId);
 				}
 
 				// and finally we align the 2 sequences (in case of mapping from SIFTS we rather do this than trusting the SIFTS alignment info)
@@ -295,10 +280,10 @@ public class ChainEvolContext implements Serializable {
 	 * @throws SQLException 
 	 */
 	public void retrieveHomologsData() throws IOException, UniprotVerMisMatchException, SQLException {
-		if (useLocalUniprot) {
-			homologs.retrieveUniprotKBData(uniprotLocalConn);
+		if (parent.isUseLocalUniprot()) {
+			homologs.retrieveUniprotKBData(parent.getUniProtLocalConnection());
 		} else {
-			homologs.retrieveUniprotKBData(uniprotJapiConn);
+			homologs.retrieveUniprotKBData(parent.getUniProtJapiConnection());
 			homologs.retrieveUniparcData(null);
 		}
 	}
@@ -698,11 +683,7 @@ public class ChainEvolContext implements Serializable {
 	}
 	
 	public String getUniprotVer() {
-		return uniprotVer;
-	}
-	
-	public void setUniprotVer(String uniprotVer) {
-		this.uniprotVer = uniprotVer;
+		return parent.getUniprotVer();
 	}
 	
 	/**

@@ -13,6 +13,8 @@ import java.util.TreeMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import owl.core.connections.UniProtConnection;
+import owl.core.connections.UniprotLocalConnection;
 import owl.core.runners.TcoffeeException;
 import owl.core.runners.blast.BlastException;
 import owl.core.sequence.HomologList;
@@ -39,6 +41,11 @@ public class ChainEvolContextList implements Serializable {
 	private double homSoftIdCutoff;
 	private double homHardIdCutoff;
 	
+	private boolean useLocalUniprot;
+	private transient UniProtConnection uniprotJapiConn;
+	private transient UniprotLocalConnection uniprotLocalConn;
+
+	
 	public ChainEvolContextList(PdbAsymUnit pdb, CRKParams params) throws SQLException {
 		this.cecs = new TreeMap<String, ChainEvolContext>();
 		this.chain2repChain = pdb.getChain2repChainMap();
@@ -46,6 +53,16 @@ public class ChainEvolContextList implements Serializable {
 		// if we fail to read a version, it will stay null. Should we rather throw exception?
 		this.uniprotVer = HomologList.readUniprotVer(params.getBlastDbDir());
 		LOGGER.info("Using UniProt version "+uniprotVer+" for blasting");
+		
+		if (params.getLocalUniprotDbName()!=null) {
+			this.useLocalUniprot = true;
+			this.uniprotLocalConn = new UniprotLocalConnection(params.getLocalUniprotDbName(),params.getLocalTaxonomyDbName());
+			LOGGER.info("Using local UniProt connection to retrieve UniProtKB data. Local databases: "+params.getLocalUniprotDbName()+" and "+params.getLocalTaxonomyDbName());
+		} else {
+			this.useLocalUniprot = false;
+			this.uniprotJapiConn = new UniProtConnection();
+			LOGGER.info("Using remote UniProt JAPI connection to retrieve UniProtKB data");
+		}
 		
 		for (String representativeChain:pdb.getAllRepChains()) {
 						
@@ -56,9 +73,8 @@ public class ChainEvolContextList implements Serializable {
 				continue;
 			}
 
-			ChainEvolContext cec = new ChainEvolContext(chain.getSequenceMSEtoMET(), representativeChain, pdb.getPdbCode(), params);
+			ChainEvolContext cec = new ChainEvolContext(this, chain.getSequenceMSEtoMET(), representativeChain, pdb.getPdbCode(), params);
 			cec.setSeqIdenticalChainsStr(pdb.getSeqIdenticalGroupString(representativeChain));
-			cec.setUniprotVer(this.uniprotVer);
 			
 			cecs.put(representativeChain, cec);
 		}
@@ -117,6 +133,18 @@ public class ChainEvolContextList implements Serializable {
 	
 	public double getHomHardIdCutoff() {
 		return homHardIdCutoff;
+	}
+	
+	public boolean isUseLocalUniprot() {
+		return useLocalUniprot;
+	}
+	
+	public UniprotLocalConnection getUniProtLocalConnection() {
+		return uniprotLocalConn;
+	}
+	
+	public UniProtConnection getUniProtJapiConnection() {
+		return uniprotJapiConn;
 	}
 	
 	public void retrieveQueryData(CRKParams params) throws CRKException {
