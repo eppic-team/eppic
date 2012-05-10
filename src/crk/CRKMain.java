@@ -584,6 +584,8 @@ public class CRKMain {
 	 */
 	public static void main(String[] args) {
 		
+		long start = System.nanoTime();
+		
 		CRKMain crkMain = new CRKMain();
 
 		// we first parse command line and print errors to stderr (logging is not set up yet)
@@ -649,6 +651,8 @@ public class CRKMain {
 
 			}
 
+			long end = System.nanoTime();
+			LOGGER.info("Finished successfully (total runtime "+((end-start)/1000000000L)+"s)");
 
 		} catch (CRKException e) {
 			e.log(LOGGER);
@@ -664,6 +668,8 @@ public class CRKMain {
 //			LOGGER.fatal("Unexpected error. Exiting.\n"+e+"\n"+stack);
 //			System.exit(1);
 //		}
+		
+		
 	}
 	
 
