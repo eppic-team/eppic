@@ -493,13 +493,23 @@ public class CRKParams {
 			}
 			if (blastDb==null) {
 				throw new CRKException(null,"BLAST_DB has not been set to a valid value in config file",true);
+			} else {
+				// .00.xxx or .xxx with xxx one of phr, pin, psd, psi, psq
+				File dbFile1 = new File(blastDbDir,blastDb+".00.phr"); 
+				File dbFile2 = new File(blastDbDir,blastDb+".phr");
+				if (!dbFile1.exists() && !dbFile2.exists()){
+					throw new CRKException(null,dbFile1+" or "+dbFile2+" blast index files not present. Please set correct values of BLAST_DB_DIR and BLAST_DB in config file",true);
+				}
+				
 			}
 			if (! new File(blastBinDir).isDirectory()) {
 				throw new CRKException(null,"BLAST_BIN_DIR must be set to a valid value in config file. Directory "+blastBinDir+" doesn't exist.",true);
 			} 
 			else if (!new File(blastBinDir,BlastRunner.BLASTALL_PROG).exists() || 
 					 !new File(blastBinDir,BlastRunner.BLASTCLUST_PROG).exists()) {
-				throw new CRKException(null,"BLAST_BIN_DIR parameter in config file must be set to a dir containing the blastall and blastclust executables. Either blastall or blastclust are not in given dir "+blastBinDir,true);				
+				throw new CRKException(null,"BLAST_BIN_DIR parameter in config file must be set to a dir containing the "+
+						BlastRunner.BLASTALL_PROG+" and "+BlastRunner.BLASTCLUST_PROG+" executables. " +
+						"Either "+BlastRunner.BLASTALL_PROG+" or "+BlastRunner.BLASTCLUST_PROG+" are not in given dir "+blastBinDir,true);				
 			}
 			if (! new File(blastDataDir).isDirectory()) {
 				throw new CRKException(null,"BLAST_DATA_DIR must be set to a valid value in config file. Directory "+blastDataDir+ " doesn't exist.",true);
