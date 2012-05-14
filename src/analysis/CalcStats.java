@@ -42,7 +42,7 @@ public class CalcStats {
 
 	private static final String   PROGRAM_NAME ="CalcStats";
 	
-	private static final int MIN_NUM_HOMOLOGS = 10;
+	private static final int MIN_NUM_HOMOLOGS = CRKParams.DEF_MIN_NUM_SEQUENCES;
 	
 	private static final double DEFCORERIMCALLCUTOFF = CRKParams.DEF_ENTR_CALL_CUTOFF;
 	private static final int DEFMINNUMBERCORERESFORBIO = CRKParams.DEF_MIN_CORE_SIZE_FOR_BIO;

@@ -148,6 +148,7 @@ public class ChainEvolContextList implements Serializable {
 	}
 	
 	public void retrieveQueryData(CRKParams params) throws CRKException {
+		params.getProgressLog().println("Finding query's uniprot mappings through SIFTS or blasting");
 		params.getProgressLog().print("chains: ");
 		for (ChainEvolContext chainEvCont:cecs.values()) {
 			params.getProgressLog().print(chainEvCont.getRepresentativeChainCode()+" ");
@@ -168,6 +169,27 @@ public class ChainEvolContextList implements Serializable {
 	}
 	
 	public void retrieveHomologs(CRKParams params) throws CRKException {
+		
+		// 1) we find homologs by blasting
+		blastForHomologs(params);
+
+		// 2) we remove the identicals to the query (removal base on blast id/coverage results, no further calculations needed)
+		filterIdenticalsToQuery(params);
+		
+		// 3) we then retrieve the uniprot kb data: sequences, tax ids and taxons for all homologs above the given hard cutoffs thresholds
+		// we won't need data for any other homolog
+		retrieveHomologsData(params);
+		
+		// 4) and now we apply the identity (soft/hard) cutoffs, which also does redundancy reduction in each iteration
+		applyIdentityCutoff(params);
+
+		// then we filter optionally for domain of life (needs the taxon data above)
+		if (params.isFilterByDomain()) filterToSameDomainOfLife();
+
+	}
+	
+	private void blastForHomologs(CRKParams params) throws CRKException {
+		params.getProgressLog().println("Blasting for homologs");
 		params.getProgressLog().print("chains: ");
 		for (ChainEvolContext chainEvCont:cecs.values()) {
 			if (!chainEvCont.hasQueryMatch()) {
@@ -181,7 +203,7 @@ public class ChainEvolContextList implements Serializable {
 				blastCacheFile = new File(params.getBlastCacheDir(),chainEvCont.getQuery().getUniId()+".blast.xml"); 
 			}
 			try {
-				chainEvCont.retrieveHomologs(params, blastCacheFile);
+				chainEvCont.blastForHomologs(params, blastCacheFile);
 
 			} catch (UniprotVerMisMatchException e) {
 				throw new CRKException(e, "Mismatch of Uniprot versions! "+e.getMessage(), true);
@@ -197,7 +219,8 @@ public class ChainEvolContextList implements Serializable {
 		params.getProgressLog().println();
 	}
 	
-	public void retrieveHomologsData(CRKParams params) throws CRKException {
+	private void retrieveHomologsData(CRKParams params) throws CRKException {
+		params.getProgressLog().println("Retrieving UniprotKB data");
 		params.getProgressLog().print("chains: ");
 		for (ChainEvolContext chainEvCont:cecs.values()) {
 			if (!chainEvCont.hasQueryMatch()) {
@@ -206,6 +229,10 @@ public class ChainEvolContextList implements Serializable {
 			}
 			
 			params.getProgressLog().print(chainEvCont.getRepresentativeChainCode()+" ");
+			
+			// we first apply the hard identity cutoff because that's the maximum list we can ever have after applying filters, i.e. that's all data we need
+			chainEvCont.applyHardIdentityCutoff(params.getHomHardIdCutoff(), params.getQueryCoverageCutoff());
+			
 			try {
 				chainEvCont.retrieveHomologsData();
 			} catch (UniprotVerMisMatchException e) {
@@ -223,7 +250,7 @@ public class ChainEvolContextList implements Serializable {
 		params.getProgressLog().println();
 	}
 	
-	public void applyIdentityCutoff(CRKParams params) {
+	private void applyIdentityCutoff(CRKParams params) throws CRKException {
 		
 		this.minNumSeqs = params.getMinNumSeqs();
 		this.maxNumSeqs = params.getMaxNumSeqs();
@@ -236,36 +263,13 @@ public class ChainEvolContextList implements Serializable {
 				// no query uniprot match, we do nothing with this sequence
 				continue;
 			}
-			// special archaea/bacterial soft/hard cutoff parameters, can only use them if we know the taxon of query
-			if (chainEvCont.getQuery().hasTaxons()) {
-				String queryFirstTaxon = chainEvCont.getQuery().getFirstTaxon();
-				if (queryFirstTaxon.equals("Bacteria") || queryFirstTaxon.equals("Archaea")) {
-					homSoftIdCutoff = params.getHomSoftIdCutoffBacteria(); 
-					homHardIdCutoff = params.getHomHardIdCutoffBacteria();
-				}
-			} else {
-				LOGGER.info("Taxons of query are unknown. Can't use special archaea/bacteria identity cut-offs.");
-			}
-			chainEvCont.applyIdentityCutoff(homSoftIdCutoff, homHardIdCutoff, params.getHomIdStep(), queryCovCutoff, minNumSeqs);
-		}
-	}
-	
-	public void filter(CRKParams params) throws CRKException {
-		for (ChainEvolContext chainEvCont:cecs.values()) {
-			if (!chainEvCont.hasQueryMatch()) {
-				// no query uniprot match, we do nothing with this sequence
-				continue;
-			}
-			
-			// filtering optionally for domain of life
-			if (params.isFilterByDomain()) chainEvCont.filterToSameDomainOfLife();
 
-			// remove hits totally identical to query
-			chainEvCont.removeIdenticalToQuery(params.getMinQueryCovForIdenticalsRemoval());
-			
-			// reducing redundancy by clustering so that we have at least the max num seqs required 
 			try {
-				chainEvCont.reduceRedundancy(params);
+				
+				// applies the identity cutoffs iteratively and performs the redundancy reduction procedure 
+				chainEvCont.applyIdentityCutoff(params);
+
+
 			} catch (IOException e) {
 				throw new CRKException(e, "Problems while running blastclust for redundancy reduction of homologs: "+e.getMessage(), true);
 			} catch (InterruptedException e) {
@@ -274,10 +278,35 @@ public class ChainEvolContextList implements Serializable {
 				throw new CRKException(e, "Problems while running blastclust for redundancy reduction of homologs: "+e.getMessage(), true);
 			}
 
+			
+		}
+	}
+	
+	private void filterToSameDomainOfLife() {
+		for (ChainEvolContext chainEvCont:cecs.values()) {
+			if (!chainEvCont.hasQueryMatch()) {
+				// no query uniprot match, we do nothing with this sequence
+				continue;
+			}
+
+			chainEvCont.filterToSameDomainOfLife();
+		}
+	}
+	
+	private void filterIdenticalsToQuery(CRKParams params) {
+		for (ChainEvolContext chainEvCont:cecs.values()) {
+			if (!chainEvCont.hasQueryMatch()) {
+				// no query uniprot match, we do nothing with this sequence
+				continue;
+			}
+			
+			// remove hits totally identical to query (based on the blast id and query coverage numbers)
+			chainEvCont.removeIdenticalToQuery(params.getMinQueryCovForIdenticalsRemoval());
 		}
 	}
 	
 	public void align(CRKParams params) throws CRKException {
+		params.getProgressLog().println("Aligning protein sequences with t_coffee");
 		params.getProgressLog().print("chains: ");
 		for (ChainEvolContext chainEvCont:cecs.values()) {
 			if (!chainEvCont.hasQueryMatch()) {

@@ -205,7 +205,7 @@ public class ChainEvolContext implements Serializable {
 		//}
 	}
 	
-	public void retrieveHomologs(CRKParams params,File blastCache) 
+	public void blastForHomologs(CRKParams params,File blastCache) 
 	throws IOException, BlastException, UniprotVerMisMatchException, InterruptedException {
 		
 		
@@ -269,10 +269,6 @@ public class ChainEvolContext implements Serializable {
 		homologs.removeIdenticalToQuery(minQueryCov);
 	}
 	
-	public void reduceRedundancy(CRKParams params) throws IOException, InterruptedException, BlastException { 
-		homologs.reduceRedundancy(params.getMaxNumSeqs(), params.getBlastBinDir(), params.getBlastDataDir(), params.getNumThreads());
-	}
-	
 	/**
 	 * Retrieves the Uniprot data and metadata
 	 * @throws IOException
@@ -288,21 +284,44 @@ public class ChainEvolContext implements Serializable {
 		}
 	}
 	
-	public void applyIdentityCutoff(double homSoftIdCutoff, double homHardIdCutoff, double homIdStep, double queryCovCutoff, int minNumSeqs) {
+	public void applyHardIdentityCutoff(double homHardIdCutoff, double queryCovCutoff) {
+		homologs.filterToMinIdAndCoverage(homHardIdCutoff, queryCovCutoff);
+		LOGGER.info(homologs.getSizeFilteredSubset()+" homologs below the hard identity cutoff "+String.format("%4.2f",homHardIdCutoff));
+	}
+	
+	public void applyIdentityCutoff(CRKParams params) throws IOException, InterruptedException, BlastException {
+
+		double homSoftIdCutoff = params.getHomSoftIdCutoff();
+		double homHardIdCutoff = params.getHomHardIdCutoff();
+		double homIdStep = params.getHomIdStep();
+		double queryCovCutoff = params.getQueryCoverageCutoff();
+		int minNumSeqs = params.getMinNumSeqs();
+		int maxNumSeqs = params.getMaxNumSeqs();
+		
+		
 		this.queryCov = queryCovCutoff;
-		// applying identity cutoff
 		this.idCutoff = homSoftIdCutoff;
+		
 		while (true) { 
+						
 			homologs.filterToMinIdAndCoverage(idCutoff, queryCovCutoff);
+						
+			LOGGER.info(homologs.getSizeFilteredSubset()+" homologs after applying "+String.format("%4.2f",idCutoff)+" identity cutoff and "+String.format("%4.2f",queryCovCutoff)+" query coverage cutoff and before redundancy elimination.");
+			
+			homologs.reduceRedundancy(maxNumSeqs, params.getBlastBinDir(), params.getBlastDataDir(), params.getNumThreads());
+			
 			if (homologs.getSizeFilteredSubset()>=minNumSeqs) break;
-			LOGGER.info("Tried "+String.format("%4.2f",idCutoff)+" identity cutoff, only "+homologs.getSizeFilteredSubset()+" homologs found ("+minNumSeqs+" required)");
+
+			LOGGER.info("Tried "+String.format("%4.2f",idCutoff)+" identity cutoff, only "+homologs.getSizeFilteredSubset()+" non-redundant homologs found ("+minNumSeqs+" required)");
+
 			// instead of putting the condition in the while above, we need it here so that in case that the hard cutoff
 			// is reached and still not enough homologs the last really tried idCutoff is the one that stays stored and logged in next line
 			// the 0.001 just to be sure we really reach the hard cutoff (there were problems with rounding)
 			if (Math.abs(idCutoff-homHardIdCutoff)<0.001) break; 
+			
 			idCutoff -= homIdStep;
 		}
-		LOGGER.info(homologs.getSizeFilteredSubset()+" homologs after applying "+String.format("%4.2f",idCutoff)+" identity cutoff and "+String.format("%4.2f",queryCovCutoff)+" query coverage cutoff");
+				
 	}
 
 	public void align(CRKParams params) throws IOException, TcoffeeException, InterruptedException, UniprotVerMisMatchException { 

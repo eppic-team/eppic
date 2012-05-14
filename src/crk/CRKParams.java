@@ -105,7 +105,7 @@ public class CRKParams {
 	
 	// default cutoffs
 	private static final double   DEF_QUERY_COVERAGE_CUTOFF = 0.85;
-	private static final int      DEF_MIN_NUM_SEQUENCES = 10;
+	public static final int       DEF_MIN_NUM_SEQUENCES = 10;
 	private static final double	  DEF_HOM_ID_STEP = 0.05;
 	private static final double   DEF_MIN_QUERY_COV_FOR_IDENTICALS_REMOVAL = 0.85;
 	
@@ -128,8 +128,6 @@ public class CRKParams {
 	private boolean doScoreEntropies;
 	private double homSoftIdCutoff;
 	private double homHardIdCutoff;
-	private double homSoftIdCutoffBacteria;
-	private double homHardIdCutoffBacteria;
 	private double homIdStep;
 	private String baseName;
 	private File outDir;
@@ -567,60 +565,63 @@ public class CRKParams {
 	public boolean isDoScoreEntropies() {
 		return doScoreEntropies;
 	}
+	
 	public double getHomSoftIdCutoff() {
 		return homSoftIdCutoff;
 	}
+	
 	public void setHomSoftIdCutoff(double homSoftIdCutoff) {
 		this.homSoftIdCutoff = homSoftIdCutoff;
 	}
+	
 	public double getHomHardIdCutoff() {
 		return homHardIdCutoff;
 	}
+	
 	public void setHomHardCutoff(double homHardIdCutoff) {
 		this.homHardIdCutoff = homHardIdCutoff;
 	}
+	
 	public double getHomIdStep() {
 		return homIdStep;
 	}
-	public double getHomSoftIdCutoffBacteria() {
-		return homSoftIdCutoffBacteria;
-	}
-	public void setHomSoftIdCutoffBacteria(double homSoftIdCutoffBacteria) {
-		this.homSoftIdCutoffBacteria = homSoftIdCutoffBacteria;
-	}
-	public double getHomHardIdCutoffBacteria() {
-		return homHardIdCutoffBacteria;
-	}
-	public void setHomHardCutoffBacteria(double homHardIdCutoffBacteria) {
-		this.homHardIdCutoffBacteria = homHardIdCutoffBacteria;
-	}
+
 	public String getBaseName() {
 		return baseName;
 	}
+	
 	public void setBaseName(String baseName) {
 		this.baseName = baseName;
 	}
+	
 	public File getOutDir() {
 		return outDir;
 	}
+	
 	public void setOutDir(File outDir) {
 		this.outDir = outDir;
 	}
+	
 	public int getNumThreads() {
 		return numThreads;
 	}
+	
 	public void setNumThreads(int numThreads) {
 		this.numThreads = numThreads;
 	}
+	
 	public int getReducedAlphabet() {
 		return reducedAlphabet;
 	}
+	
 	public void setReducedAlphabet(int reducedAlphabet) {
 		this.reducedAlphabet = reducedAlphabet;
 	}
+	
 	public boolean isUseTcoffeeVeryFastMode() {
 		return useTcoffeeVeryFastMode;
 	}
+	
 	public void setUseTcoffeeVeryFastMode(boolean useTcoffeeVeryFastMode) {
 		this.useTcoffeeVeryFastMode = useTcoffeeVeryFastMode;
 	}
@@ -794,10 +795,6 @@ public class CRKParams {
 			
 			useUniparc       = Boolean.parseBoolean(p.getProperty("USE_UNIPARC",new Boolean(DEF_USE_UNIPARC).toString()));
 			
-			// note these 2 will take the values of the already set (from command line parameters) soft/hard general id cutoffs 
-			homSoftIdCutoffBacteria = Double.parseDouble(p.getProperty("HOM_SOFT_ID_CUTOFF_BACTERIA", new Double(homSoftIdCutoff).toString()));
-			homHardIdCutoffBacteria = Double.parseDouble(p.getProperty("HOM_HARD_ID_CUTOFF_BACTERIA", new Double(homHardIdCutoff).toString()));
-
 		} catch (NumberFormatException e) {
 			System.err.println("A numerical value in the config file was incorrectly specified: "+e.getMessage()+".\n" +
 					"Please check the config file.");

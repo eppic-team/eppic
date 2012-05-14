@@ -455,24 +455,14 @@ public class CRKMain {
 		}
 		
 		// a) getting the uniprot ids corresponding to the query (the pdb sequence)
-		writeStep("Finding Homologues and Calculating Entropies");
-		params.getProgressLog().println("Finding query's uniprot mapping through SIFTS or blasting");
+		writeStep("Finding Homologs and Calculating Entropies");		
 		cecs.retrieveQueryData(params);
 		wuiAdaptor.getRunParametersItem().setUniprotVer(cecs.getUniprotVer());
 		
-		// b) getting the homologs and sequence data
-		params.getProgressLog().println("Blasting for homologues");
+		// b) getting the homologs and sequence data and filtering it
 		cecs.retrieveHomologs(params);
-		cecs.applyIdentityCutoff(params);
-				
-		params.getProgressLog().println("Retrieving UniprotKB data");
-		cecs.retrieveHomologsData(params);
-		
-		// filtering optionally by domain of life, and further redundancy reduction
-		cecs.filter(params);
 
 		// c) align
-		params.getProgressLog().println("Aligning protein sequences with t_coffee");
 		cecs.align(params);
 		
 		cecs.writeSeqInfoToFiles(params);
