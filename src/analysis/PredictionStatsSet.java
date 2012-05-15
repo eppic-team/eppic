@@ -39,6 +39,14 @@ public class PredictionStatsSet {
 		this.total = counter.getTotal();
 	}
 
+	public int getTotal() {
+		return total;
+	}
+	
+	public int getSubTotal(String taxon) {
+		return counter.getSubTotal(taxon);
+	}
+	
 	public int getFailed() {
 		return total-getCalculated();
 	}
@@ -118,7 +126,7 @@ public class PredictionStatsSet {
 	
 	public void printByTaxon(PrintStream ps, String taxon) {
 		ps.printf("%25s\t%4s\t%16s\t%12s\t%10s\t%4d\t%4d\t%4d\t%4d\t%4.2f\t%4.2f\n",
-				"", "", taxon, callCutoffs, caCutoffs, counter.getSubTotal(taxon), getTP(taxon),getFN(taxon),getFailed(taxon),getAccuracy(taxon),getRecall(taxon));		
+				"", "", "", "", taxon, getSubTotal(taxon), getTP(taxon),getFN(taxon),getFailed(taxon),getAccuracy(taxon),getRecall(taxon));		
 	}
 	
 	public static void printHeader(PrintStream ps) {

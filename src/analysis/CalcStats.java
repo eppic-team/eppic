@@ -209,7 +209,8 @@ public class CalcStats {
 				bioPred.print(System.out);
 				if (statsByTaxon) {
 					for (String taxon:TAXON_CLASSES) {
-						bioPred.printByTaxon(System.out, taxon);
+						if (bioPred.getSubTotal(taxon)>0)
+							bioPred.printByTaxon(System.out, taxon);
 					}
 				}
 			}
@@ -227,7 +228,8 @@ public class CalcStats {
 				xtalPred.print(System.out);
 				if (statsByTaxon) {
 					for (String taxon:TAXON_CLASSES) {
-						xtalPred.printByTaxon(System.out, taxon);
+						if (xtalPred.getSubTotal(taxon)>0) 
+							xtalPred.printByTaxon(System.out, taxon);
 					}
 				}
 			}
