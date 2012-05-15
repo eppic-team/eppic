@@ -144,7 +144,13 @@ public class CalcPisaInterfPredStats {
 			
 		}
 		
-		return new PredictionStatsSet("PISA", truth, ScoringType.PISA, "n/a", "n/a", countBioCalls, countXtalCalls, total);
+		String[] taxons = {"Unkown"};
+		PredCounter counter = new PredCounter(taxons);
+		counter.setTotal(total);
+		counter.setCountBio(taxons[0], countBioCalls);
+		counter.setCountXtal(taxons[0], countXtalCalls);
+		
+		return new PredictionStatsSet("PISA", truth, ScoringType.PISA, "n/a", "n/a", counter);
 	}
 
 }

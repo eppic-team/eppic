@@ -51,12 +51,18 @@ public class CalcStats {
 	private static final double DEFCACUTOFF_FOR_G = CRKParams.DEF_CA_CUTOFF_FOR_GEOM;
 	private static final double DEFCACUTOFF_FOR_Z = CRKParams.DEF_CA_CUTOFF_FOR_ZSCORE;
 	private static final double DEFCACUTOFF_FOR_CR = CRKParams.DEF_CA_CUTOFF_FOR_RIMCORE;
+		
+	private static final String UNKNOWN_TAXON = "Unknown";
+	
+	private static final String[] TAXON_CLASSES = {"Eukaryota", "Bacteria", "Archaea", "Viruses", UNKNOWN_TAXON};
 	
 
 	private static File bioDir    = null;
 	private static File xtalDir   = null;
 	private static File bioList   = null;
 	private static File xtalList  = null;
+	
+	private static boolean statsByTaxon = false;
 	
 	private static double[] corerimCallCutoffs = {DEFCORERIMCALLCUTOFF};
 	private static int[] minNumberCoreResForBios = {DEFMINNUMBERCORERESFORBIO};
@@ -98,9 +104,10 @@ public class CalcStats {
 		"   [-y]       :  z-score cutoff to call bio/xtal, comma separated. If omitted\n" +
 		"                 then only one used: "+String.format("%4.2f",DEFZSCORECUTOFF)+"\n" +
 		"   [-w]       :  a file to write pdb_codes+interface_ids of interfaces that \n" +
-		"                 could be predicted with both evolutionary methods\n\n";
+		"                 could be predicted with both evolutionary methods\n" +
+		"   [-d]       :  output also statistics by taxonomy group (domains of life)\n\n";
 
-		Getopt g = new Getopt(PROGRAM_NAME, args, "B:X:b:x:e:c:z:m:t:y:w:h?");
+		Getopt g = new Getopt(PROGRAM_NAME, args, "B:X:b:x:e:c:z:m:t:y:w:dh?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
@@ -161,6 +168,9 @@ public class CalcStats {
 			case 'w':
 				outFile = new File(g.getOptarg());
 				break;
+			case 'd':
+				statsByTaxon = true;
+				break;
 			case 'h':
 			case '?':
 				System.out.println(help);
@@ -197,6 +207,11 @@ public class CalcStats {
 			PredictionStatsSet.printHeader(System.out);
 			for (PredictionStatsSet bioPred:bioPreds) {
 				bioPred.print(System.out);
+				if (statsByTaxon) {
+					for (String taxon:TAXON_CLASSES) {
+						bioPred.printByTaxon(System.out, taxon);
+					}
+				}
 			}
 		}
 		
@@ -210,6 +225,11 @@ public class CalcStats {
 			PredictionStatsSet.printHeader(System.out);
 			for (PredictionStatsSet xtalPred:xtalPreds) {
 				xtalPred.print(System.out);
+				if (statsByTaxon) {
+					for (String taxon:TAXON_CLASSES) {
+						xtalPred.printByTaxon(System.out, taxon);
+					}
+				}
 			}
 		}
 
@@ -290,18 +310,21 @@ public class CalcStats {
 			total+=vals.size();
 		}
 		
-		ArrayList<PredictionStatsSet> list = new ArrayList<PredictionStatsSet>();
-		int[][] countBios = new int[caCutoffsG.length][minNumberCoreResForBios.length];
-		int[][] countXtals = new int[caCutoffsG.length][minNumberCoreResForBios.length];
+
+		
+		PredCounter[][] counters = new PredCounter[caCutoffsG.length][minNumberCoreResForBios.length];
+		initialiseCounters(counters,total);
 
 		for (String pdbCode:toAnalyse.keySet()) {
 			File interfdatFile = new File(dir,pdbCode+".interfaces.dat");
 			if (!interfdatFile.exists()) continue;
 			ChainInterfaceList interfaces = Utils.readChainInterfaceList(interfdatFile);
+			
 			for (int id:toAnalyse.get(pdbCode)) {
-
+				
 				for (int i=0;i<caCutoffsG.length;i++) {
-					for (int j=0;j<minNumberCoreResForBios.length;j++) {
+					for (int j=0;j<minNumberCoreResForBios.length;j++) {											
+						
 						ChainInterface interf = interfaces.get(id);
 						GeometryPredictor gp = new GeometryPredictor(interf);
 						gp.setBsaToAsaCutoff(caCutoffsG[i]);
@@ -310,19 +333,20 @@ public class CalcStats {
 						interf.calcRimAndCore(caCutoffsG[i]);
 						CallType call = gp.getCall();
 
-						if (call==CallType.BIO) countBios[i][j]++;
-						else if (call==CallType.CRYSTAL) countXtals[i][j]++;
+						if (call==CallType.BIO) counters[i][j].countBio(UNKNOWN_TAXON);
+						else if (call==CallType.CRYSTAL) counters[i][j].countXtal(UNKNOWN_TAXON);
 
 					}
 				}				
 			}
 		}
 
+		ArrayList<PredictionStatsSet> list = new ArrayList<PredictionStatsSet>();
 		for (int i=0;i<caCutoffsG.length;i++) {
 			for (int j=0;j<minNumberCoreResForBios.length;j++) {
 				list.add(new PredictionStatsSet(dir.getName(),truth,ScoringType.GEOMETRY,
 						String.format("%4.2f",caCutoffsG[i]),String.format("%d",minNumberCoreResForBios[j]),
-						countBios[i][j],countXtals[i][j],total));
+						counters[i][j]));
 			}
 		}
 		return list;
@@ -339,16 +363,17 @@ public class CalcStats {
 			total+=vals.size();
 		}
 		
-		ArrayList<PredictionStatsSet> list = new ArrayList<PredictionStatsSet>();
+
 		// counts for core/rim scoring
-		int[][] countBiosCR = new int[caCutoffsCR.length][corerimCallCutoffs.length];
-		int[][] countXtalsCR = new int[caCutoffsCR.length][corerimCallCutoffs.length];
+		PredCounter[][] countersCR = new PredCounter[caCutoffsCR.length][corerimCallCutoffs.length];
+		initialiseCounters(countersCR, total);
 		// counts for z-score scoring
-		int[][] countBiosZ = new int[caCutoffsZ.length][zscoreCutoffs.length];
-		int[][] countXtalsZ = new int[caCutoffsZ.length][zscoreCutoffs.length];
+		PredCounter[][] countersZ = new PredCounter[caCutoffsZ.length][zscoreCutoffs.length];
+		initialiseCounters(countersZ, total);
 		// counts for combined scoring: fixed geom cutoffs, 2 indices for core/rim, 2 indices for z-scoring
-		int[][][][] countBiosComb = new int[caCutoffsCR.length][corerimCallCutoffs.length][caCutoffsZ.length][zscoreCutoffs.length];
-		int[][][][] countXtalsComb = new int[caCutoffsCR.length][corerimCallCutoffs.length][caCutoffsZ.length][zscoreCutoffs.length];
+		PredCounter[][][][] countersComb = new PredCounter[caCutoffsCR.length][corerimCallCutoffs.length][caCutoffsZ.length][zscoreCutoffs.length];
+		initialiseCounters(countersComb, total);
+
 		
 		for (String pdbCode:toAnalyse.keySet()) {
 			File chainevolcontextdatFile = new File(dir,pdbCode+".chainevolcontext.dat");
@@ -368,22 +393,29 @@ public class CalcStats {
 			ChainEvolContextList cecl = Utils.readChainEvolContextList(chainevolcontextdatFile);
 			InterfaceEvolContextList iecList = new InterfaceEvolContextList(pdbCode, cil, cecl);
 			
+			String dol = cecl.getDomainOfLife();
+			if (dol==null) dol = UNKNOWN_TAXON;
+			
 			for (int id:toAnalyse.get(pdbCode)) {
 
+				countSubTotal(countersCR, dol);
+				countSubTotal(countersZ, dol);
+				countSubTotal(countersComb, dol);
+				
 				ChainInterface interf = cil.get(id);
 				InterfaceEvolContext iec = iecList.get(id-1);
 
 				// evol core/rim scoring
 				for (int i=0;i<caCutoffsCR.length;i++) {
 					for (int k=0;k<corerimCallCutoffs.length;k++) {
-						doSingleEvolCRScoring(iec, interf, ScoringType.ENTROPY, countBiosCR, countXtalsCR, i, k);
+						doSingleEvolCRScoring(iec, interf, ScoringType.ENTROPY, countersCR, i, k, dol);
 					}
 				}
 				
 				// evol z-score scoring
 				for (int i=0;i<caCutoffsZ.length;i++) {
 					for (int k=0;k<zscoreCutoffs.length;k++) {						
-						doSingleEvolZScoring(iec, interf, countBiosZ, countXtalsZ, i, k);
+						doSingleEvolZScoring(iec, interf, countersZ, i, k, dol);
 					}
 				}
 				
@@ -392,7 +424,7 @@ public class CalcStats {
 					for (int k=0;k<corerimCallCutoffs.length;k++) {
 						for (int l=0;l<caCutoffsZ.length;l++) {
 							for (int m=0;m<zscoreCutoffs.length;m++) {
-								doSingleCombinedScoring(iec, interf, countBiosComb, countXtalsComb, i, k, l, m);
+								doSingleCombinedScoring(iec, interf, countersComb, i, k, l, m, dol);
 							}
 						}
 					}
@@ -401,12 +433,14 @@ public class CalcStats {
 		}
 		
 		
+		ArrayList<PredictionStatsSet> list = new ArrayList<PredictionStatsSet>();
+		
 		for (int i=0;i<caCutoffsCR.length;i++) {
 			for (int k=0;k<corerimCallCutoffs.length;k++) {
 				
 				list.add(new PredictionStatsSet(dir.getName(),truth,ScoringType.ENTROPY, 
 						String.format("%4.2f",caCutoffsCR[i]),String.format("%4.2f",corerimCallCutoffs[k]),
-						countBiosCR[i][k],countXtalsCR[i][k],total));
+						countersCR[i][k]));
 				
 			}
 		}
@@ -415,7 +449,7 @@ public class CalcStats {
 			for (int k=0;k<zscoreCutoffs.length;k++) {
 				list.add(new PredictionStatsSet(dir.getName(),truth,ScoringType.ZSCORE, 
 						String.format("%4.2f",caCutoffsZ[i]),String.format("%+5.2f",zscoreCutoffs[k]),
-						countBiosZ[i][k],countXtalsZ[i][k],total));
+						countersZ[i][k]));
 			}
 		}
 		
@@ -426,7 +460,8 @@ public class CalcStats {
 						String caCutoffs = String.format("%4.2f,%4.2f",caCutoffsCR[i],caCutoffsZ[l]);
 						String callCutoffs = String.format("%4.2f,%+5.2f",corerimCallCutoffs[k],zscoreCutoffs[m]);
 						list.add(new PredictionStatsSet(dir.getName(),truth,ScoringType.COMBINED, 
-								caCutoffs,callCutoffs,countBiosComb[i][k][l][m],countXtalsComb[i][k][l][m],total));
+								caCutoffs,callCutoffs,
+								countersComb[i][k][l][m]));
 					
 					}
 				}
@@ -437,7 +472,7 @@ public class CalcStats {
 	}
 	
 	private static void doSingleEvolCRScoring(InterfaceEvolContext iec, ChainInterface interf, ScoringType scoType,   
-			int[][] countBios, int[][] countXtals, int i, int k) {
+			PredCounter[][] counters, int i, int k, String dol) {
 
 		
 		
@@ -454,8 +489,8 @@ public class CalcStats {
 		iec.setMinNumSeqs(MIN_NUM_HOMOLOGS);
 
 		CallType call = ercp.getCall();
-		if (call==CallType.BIO) countBios[i][k]++;
-		else if (call==CallType.CRYSTAL) countXtals[i][k]++;
+		if (call==CallType.BIO) counters[i][k].countBio(dol);
+		else if (call==CallType.CRYSTAL) counters[i][k].countXtal(dol);
 		
 		if (outFile!=null) {
 			if (call==CallType.BIO || call==CallType.CRYSTAL) {
@@ -475,7 +510,7 @@ public class CalcStats {
 	}
 	
 	private static void doSingleEvolZScoring(InterfaceEvolContext iec, ChainInterface interf, 
-			int[][] countBios, int[][] countXtals, int i, int k) {
+			PredCounter[][] counters, int i, int k, String dol) {
 		
 		//interf.calcRimAndCore(caCutoffsZ[i]);
 		
@@ -487,8 +522,8 @@ public class CalcStats {
 		iec.setMinNumSeqs(MIN_NUM_HOMOLOGS);
 		
 		CallType call = eizp.getCall();
-		if (call==CallType.BIO) countBios[i][k]++;
-		else if (call==CallType.CRYSTAL) countXtals[i][k]++;
+		if (call==CallType.BIO) counters[i][k].countBio(dol);
+		else if (call==CallType.CRYSTAL) counters[i][k].countXtal(dol); 
 		
 		if (outFile!=null) {
 			if (call==CallType.BIO || call==CallType.CRYSTAL) {
@@ -508,7 +543,7 @@ public class CalcStats {
 	}
 	
 	private static void doSingleCombinedScoring(InterfaceEvolContext iec, ChainInterface interf, 
-			int[][][][] countBios, int[][][][] countXtals, int i, int k, int l, int m) {
+			PredCounter[][][][] counters, int i, int k, int l, int m, String dol) {
 
 		//interf.calcRimAndCore(caCutoffsG[i]);
 		interf.calcRimAndCore(DEFCACUTOFF_FOR_G);
@@ -535,8 +570,8 @@ public class CalcStats {
 		CombinedPredictor cp = new CombinedPredictor(iec, gp, ercp, eizp);
 
 		CallType call = cp.getCall();
-		if (call==CallType.BIO) countBios[i][k][l][m]++;
-		else if (call==CallType.CRYSTAL) countXtals[i][k][l][m]++;
+		if (call==CallType.BIO) counters[i][k][l][m].countBio(dol);
+		else if (call==CallType.CRYSTAL) counters[i][k][l][m].countXtal(dol);
 		else {
 			// do nothing, just a place holder for debugging
 			return;
@@ -544,5 +579,49 @@ public class CalcStats {
 		
 		
 		
+	}
+	
+
+	
+	private static void initialiseCounters(PredCounter[][] counters, int total) {
+		for (int i=0;i<counters.length;i++) {
+			for (int j=0;j<counters[i].length;j++) {
+				counters[i][j] = new PredCounter(TAXON_CLASSES);
+				counters[i][j].setTotal(total);
+			}
+		}
+	}
+	
+	private static void countSubTotal(PredCounter[][] counters, String taxon) {
+		for (int i=0;i<counters.length;i++) {
+			for (int j=0;j<counters[i].length;j++) {
+				counters[i][j].count(taxon);
+			}
+		}		
+	}
+	
+	private static void initialiseCounters(PredCounter[][][][] counters, int total) {
+		for (int i=0;i<counters.length;i++) {
+			for (int j=0;j<counters[i].length;j++) {
+				for (int k=0;k<counters[i][j].length;k++) {
+					for (int l=0;l<counters[i][j][k].length;l++) {				
+						counters[i][j][k][l] = new PredCounter(TAXON_CLASSES);
+						counters[i][j][k][l].setTotal(total);
+					}
+				}
+			}
+		}
+	}
+	
+	private static void countSubTotal(PredCounter[][][][] counters, String taxon) {
+		for (int i=0;i<counters.length;i++) {
+			for (int j=0;j<counters[i].length;j++) {
+				for (int k=0;k<counters[i][j].length;k++) {
+					for (int l=0;l<counters[i][j][k].length;l++) {				
+						counters[i][j][k][l].count(taxon);
+					}
+				}
+			}
+		}
 	}
 }
