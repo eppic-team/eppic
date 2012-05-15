@@ -386,6 +386,37 @@ public class ChainEvolContextList implements Serializable {
 		}
 	}
 	
+	/**
+	 * Returns the Domain of Life (was known as Kingdom) of the entry.
+	 * If different chains have different Domain of Life assignments then a warning is logged and null returned.
+	 * If no query match is present for any entry a null is returned.
+	 * @return
+	 */
+	public String getDomainOfLife() {
+		String dol = null;
+		int i = 0;
+		for (ChainEvolContext chainEvCont:cecs.values()) {
+			i++;
+			if (!chainEvCont.hasQueryMatch()) {
+				// no query uniprot match, we do nothing with this sequence
+				continue;
+			}
+
+			if (chainEvCont.getQuery().hasTaxons()) {
+				if (i==1) {
+					dol = chainEvCont.getQuery().getFirstTaxon();
+				} else {
+					if (!chainEvCont.getQuery().getFirstTaxon().equals(dol)) {
+						LOGGER.warn("Different domain of lifes for different chains of the same PDB. " +
+								"First chain is "+dol+" while chain "+chainEvCont.getRepresentativeChainCode()+" is "+chainEvCont.getQuery().getFirstTaxon());
+					}
+					dol = null;
+				}				
+			}
+		}
+		return dol;
+	}
+	
 	public void closeConnections() {
 		if (useLocalUniprot) {			
 			this.uniprotLocalConn.close();
