@@ -9,6 +9,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
 
+import org.apache.log4j.ConsoleAppender;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.apache.log4j.PatternLayout;
+
 import crk.CRKParams;
 import crk.CallType;
 import crk.ChainEvolContextList;
@@ -41,6 +46,8 @@ public class CalcStats {
 
 
 	private static final String   PROGRAM_NAME ="CalcStats";
+	
+	private static final Logger ROOTLOGGER = Logger.getRootLogger();
 	
 	private static final int MIN_NUM_HOMOLOGS = CRKParams.DEF_MIN_NUM_SEQUENCES;
 	
@@ -197,6 +204,12 @@ public class CalcStats {
 			crPredicted = new TreeMap<String, List<Integer>>();
 			zPredicted = new TreeMap<String, List<Integer>>();
 		}
+
+		// initialising logging
+		ConsoleAppender errorAppender = new ConsoleAppender(new PatternLayout("%5p - %m%n"),ConsoleAppender.SYSTEM_ERR);
+		errorAppender.setThreshold(Level.WARN);
+		ROOTLOGGER.addAppender(errorAppender);
+		
 		
 		ArrayList<PredictionStatsSet> bioPreds = null;
 		if (bioDir!=null) {
@@ -381,13 +394,13 @@ public class CalcStats {
 			File chainevolcontextdatFile = new File(dir,pdbCode+".chainevolcontext.dat");
 			File interfdatFile = new File(dir,pdbCode+".interfaces.dat");
 			if (!chainevolcontextdatFile.exists() && !interfdatFile.exists()) {
-				System.err.println("Warning: both chainevolcontext.dat and interf.dat files missing for "+pdbCode);
+				ROOTLOGGER.warn("Both chainevolcontext.dat and interf.dat files missing for "+pdbCode);
 				continue; // failed predictions
 			} else if (!chainevolcontextdatFile.exists()) {
-				System.err.println("Warning: chainevolcontext.dat missing but interf.dat file present for "+pdbCode);
+				ROOTLOGGER.warn("chainevolcontext.dat missing but interf.dat file present for "+pdbCode);
 				continue;
 			} else if (!interfdatFile.exists()) {
-				System.err.println("Warning: interf.dat missing but chainevolcontext.dat file present for "+pdbCode);
+				ROOTLOGGER.warn("interf.dat missing but chainevolcontext.dat file present for "+pdbCode);
 				continue;				
 			}
 
