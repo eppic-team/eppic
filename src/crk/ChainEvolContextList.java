@@ -180,6 +180,9 @@ public class ChainEvolContextList implements Serializable {
 		// we won't need data for any other homolog
 		retrieveHomologsData(params);
 		
+		// now that we have all data we don't need the connections anymore
+		closeConnections();
+		
 		// 4) and now we apply the identity (soft/hard) cutoffs, which also does redundancy reduction in each iteration
 		applyIdentityCutoff(params);
 
@@ -383,4 +386,11 @@ public class ChainEvolContextList implements Serializable {
 		}
 	}
 	
+	public void closeConnections() {
+		if (useLocalUniprot) {			
+			this.uniprotLocalConn.close();
+			LOGGER.info("Connection to local Uniprot database closed");
+		}
+		// there doesn't seem to be a way of closing the japi connection, we do nothing in that case
+	}
 }
