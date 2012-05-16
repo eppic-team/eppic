@@ -77,7 +77,7 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 		// 1) clashes
 		if (interf.hasClashes()) {
 			List<Pair<Atom>> pairs = interf.getAICGraph().getClashingPairs();
-			String warning = pairs.size()+" clashes: ";
+			String warning = "";
 			for (int i=0;i<pairs.size();i++) {
 				Pair<Atom> pair = pairs.get(i);
 				warning +=  getPairInteractionString(pair);
@@ -85,7 +85,7 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 			}
 			
 			warnings.add(warning);
-			LOGGER.warn("Interface "+interf.getId()+" has clashes: "+warning);
+			LOGGER.warn("Interface "+interf.getId()+" has "+pairs.size()+" clashes: "+warning);
 		} 
 		// if no clashes then we report on any other kind of short distances
 		// 2) hydrogen bonds -- commented out for now: 
