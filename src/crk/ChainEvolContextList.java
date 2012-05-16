@@ -394,23 +394,24 @@ public class ChainEvolContextList implements Serializable {
 	 */
 	public String getDomainOfLife() {
 		String dol = null;
-		int i = 0;
+
 		for (ChainEvolContext chainEvCont:cecs.values()) {
-			i++;
 			if (!chainEvCont.hasQueryMatch()) {
 				// no query uniprot match, we do nothing with this sequence
 				continue;
 			}
 
 			if (chainEvCont.getQuery().hasTaxons()) {
-				if (i==1) {
+				if (dol==null) {
+					// we take as dol the first one available
 					dol = chainEvCont.getQuery().getFirstTaxon();
-				} else {
+				} else {					
 					if (!chainEvCont.getQuery().getFirstTaxon().equals(dol)) {
 						LOGGER.warn("Different domain of lifes for different chains of the same PDB. " +
-								"First chain is "+dol+" while chain "+chainEvCont.getRepresentativeChainCode()+" is "+chainEvCont.getQuery().getFirstTaxon());
-					}
-					dol = null;
+							"First chain is "+dol+" while chain "+chainEvCont.getRepresentativeChainCode()+" is "+chainEvCont.getQuery().getFirstTaxon());
+						dol = null;
+						break;
+					}					 
 				}				
 			}
 		}
