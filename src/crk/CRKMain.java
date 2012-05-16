@@ -83,9 +83,11 @@ public class CRKMain {
 			ROOTLOGGER.addAppender(fullLogAppender);
 			ROOTLOGGER.addAppender(errorAppender);
 			if (params.getProgressLogFile()!=null) {
-				FileAppender fileErrorAppender = new FileAppender(new PatternLayout("%5p - %m%n"),params.getProgressLogFile().getAbsolutePath(),true);
-				fileErrorAppender.setThreshold(Level.ERROR);
-				ROOTLOGGER.addAppender(fileErrorAppender);
+				// commenting out the error logging to progress file (was needed for server, but now it will read stderr from sge file)
+				//FileAppender fileErrorAppender = new FileAppender(new PatternLayout("%5p - %m%n"),params.getProgressLogFile().getAbsolutePath(),true);
+				//fileErrorAppender.setThreshold(Level.ERROR);
+				//ROOTLOGGER.addAppender(fileErrorAppender);
+				// the steps log file needed for the server, we only initialise it if a -L progress log file was passed (as that is only used by server)
 				stepsLogFile = new File(params.getOutDir(),params.getBaseName()+CRKParams.STEPS_LOG_FILE_SUFFIX);
 			}
 			if (params.getDebug())
