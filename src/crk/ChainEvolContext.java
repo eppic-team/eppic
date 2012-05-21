@@ -45,6 +45,8 @@ public class ChainEvolContext implements Serializable {
 
 	private static final Log LOGGER = LogFactory.getLog(ChainEvolContext.class);
 
+	private static final double ROUNDING_MARGIN = 0.0001;
+	
 	// blast constants
 	private static final String BLASTOUT_SUFFIX = "blast.out.xml";
 	private static final String BLAST_BASENAME = "pdb2unimapping";
@@ -285,7 +287,12 @@ public class ChainEvolContext implements Serializable {
 	}
 	
 	public void applyHardIdentityCutoff(double homHardIdCutoff, double queryCovCutoff) {
-		homologs.filterToMinIdAndCoverage(homHardIdCutoff, queryCovCutoff);
+		// note that we subtract just a tiny rounding margin (0.0001) in order to be sure that we do take anything
+		// that's just at the hard cutoff
+		// Otherwise in rare cases (e.g. 2os7 with hard cutoff of 0.4 in uniprot_2012_05, blast hit G5S5I8 is exactly at 40%)
+		// we would not include an entry in this procedure but it would be included in the applyIdentityCutoff method below (which would 
+		// then crash because there wouldn't be sequence data for it)
+		homologs.filterToMinIdAndCoverage(homHardIdCutoff-ROUNDING_MARGIN, queryCovCutoff);		
 		LOGGER.info(homologs.getSizeFilteredSubset()+" homologs below the hard identity cutoff "+String.format("%4.2f",homHardIdCutoff));
 	}
 	
@@ -316,8 +323,8 @@ public class ChainEvolContext implements Serializable {
 
 			// instead of putting the condition in the while above, we need it here so that in case that the hard cutoff
 			// is reached and still not enough homologs the last really tried idCutoff is the one that stays stored and logged in next line
-			// the 0.001 just to be sure we really reach the hard cutoff (there were problems with rounding)
-			if (Math.abs(idCutoff-homHardIdCutoff)<0.001) break; 
+			// the 0.0001 just to be sure we really reach the hard cutoff (there were problems with rounding)
+			if (Math.abs(idCutoff-homHardIdCutoff)<ROUNDING_MARGIN) break; 
 			
 			idCutoff -= homIdStep;
 		}
