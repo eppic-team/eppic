@@ -84,7 +84,7 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 				if (i!=pairs.size()-1) warning+=", ";
 			}
 			
-			warnings.add(warning);
+			warnings.add("Clashes found between: "+warning);
 			LOGGER.warn("Interface "+interf.getId()+" has "+pairs.size()+" clashes: "+warning);
 		} 
 		// if no clashes then we report on any other kind of short distances
