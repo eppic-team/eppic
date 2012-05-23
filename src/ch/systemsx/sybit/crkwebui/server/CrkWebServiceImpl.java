@@ -373,8 +373,8 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 						filesToRead.add(new File(dataDirectory + "/crklog"));
 					}
 					
-					if(debug)
-					{
+					//if(debug)
+					//{
 						File directory = new File(dataDirectory);
 						
 						File[] directoryContent = null;
@@ -402,7 +402,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 								filesToRead.add(fileToInclude);
 							}
 						}
-					}
+					//}
 					
 
 					StringBuffer log = new StringBuffer();
