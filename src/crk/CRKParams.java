@@ -22,7 +22,7 @@ public class CRKParams {
 	public static final String	   PROGRAM_VERSION = "1.9.5";
 	
 	private static final Pattern   PDBCODE_PATTERN = Pattern.compile("^\\d\\w\\w\\w$");
-	protected static final String  CONFIG_FILE_NAME = ".eppic.conf";
+	public static final String     CONFIG_FILE_NAME = ".eppic.conf";
 	protected static final String  GEOMETRY_FILE_SUFFIX = ".geometry";
 	protected static final String  ENTROPIES_FILE_SUFFIX = ".entropies";
 	protected static final String  ZSCORES_FILE_SUFFIX = ".zscores";
