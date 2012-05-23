@@ -27,6 +27,8 @@ public class CombinedPredictor implements InterfaceTypePredictor {
 	
 	private CallType call;
 	
+	private int votes;
+	
 	public CombinedPredictor(InterfaceEvolContext iec, GeometryPredictor gp, EvolRimCorePredictor rp, EvolInterfZPredictor zp) {
 		this.iec=iec;
 		this.gp=gp;
@@ -106,15 +108,18 @@ public class CombinedPredictor implements InterfaceTypePredictor {
 								pair.getSecond().getParentResSerial();
 			}
 			call = CallType.BIO;
+			votes = 0;
 		}
 		// 2nd the hard area limits
 		else if (useHardLimits && iec.getInterface().getInterfaceArea()<CRKParams.MIN_AREA_BIOCALL) {
 			callReason = "Area below hard limit "+String.format("%4.0f", CRKParams.MIN_AREA_BIOCALL);
 			call = CallType.CRYSTAL;
+			votes = 0;
 		} 
 		else if (iec.getInterface().getInterfaceArea()>CRKParams.MAX_AREA_XTALCALL) {
 			callReason = "Area above hard limit "+String.format("%4.0f", CRKParams.MAX_AREA_XTALCALL);
 			call = CallType.BIO;
+			votes = 0;
 		}
 		else {
 			// STRATEGY 1: consensus, when no evolution take geometry, when no consensus take evol
@@ -123,16 +128,19 @@ public class CombinedPredictor implements InterfaceTypePredictor {
 			if (counts[0]>=2) {
 				callReason = reasonMsgPrefix+"BIO consensus ("+counts[0]+" votes)";
 				call = CallType.BIO;
+				votes = counts[0];
 			} 
 			// 2) 2 xtal calls
 			else if (counts[1]>=2) {
 				callReason = reasonMsgPrefix+"XTAL consensus ("+counts[1]+" votes)";
 				call = CallType.CRYSTAL;
+				votes = counts[1];
 			}
 			// 3) 2 nopreds (necessarily from the evol methods): we take geometry as the call
 			else if (counts[2]==2) {
 				callReason = reasonMsgPrefix+"Prediction purely geometrical (no evolutionary prediction could be made): "+gp.getCallReason();
 				call = gp.getCall();
+				votes = 1;
 			}
 			// 4) 1 nopred (an evol method), 1 xtal, 1 bio
 			else {
@@ -145,6 +153,7 @@ public class CombinedPredictor implements InterfaceTypePredictor {
 				else validPred = zp;
 				callReason = reasonMsgPrefix+"No consensus. Z-score "+zp.getCall().getName()+", core/rim "+rp.getCall().getName()+". Taking evol call as final: "+validPred.getCallReason();
 				call = validPred.getCall();
+				votes = 1;
 			}
 //			// STRATEGY 2: trust more evolution when we can
 //			// 1) there is evolutionary prediction from both methods
@@ -190,6 +199,11 @@ public class CombinedPredictor implements InterfaceTypePredictor {
 	@Override
 	public List<String> getWarnings() {
 		return warnings;
+	}
+	
+	@Override
+	public double getScore() {
+		return (double)votes;
 	}
 
 	private int[] countCalls() {

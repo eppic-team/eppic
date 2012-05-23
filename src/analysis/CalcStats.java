@@ -3,7 +3,9 @@ package analysis;
 import gnu.getopt.Getopt;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
@@ -83,6 +85,9 @@ public class CalcStats {
 	private static TreeMap<String,List<Integer>> crPredicted;
 	private static TreeMap<String,List<Integer>> zPredicted;
 
+	private static File outDir = null;
+	
+		
 	
 	/**
 	 * @param args
@@ -112,9 +117,11 @@ public class CalcStats {
 		"                 then only one used: "+String.format("%4.2f",DEFZSCORECUTOFF)+"\n" +
 		"   [-w]       :  a file to write pdb_codes+interface_ids of interfaces that \n" +
 		"                 could be predicted with both evolutionary methods\n" +
-		"   [-d]       :  output also statistics by taxonomy group (domains of life)\n\n";
+		"   [-d]       :  output also statistics by taxonomy group (domains of life)\n" +
+		"   [-f]       :  directory where tabular files with scores and calls per \n" +
+		"                 interface are written, reporting all methods' calls and scores\n\n";
 
-		Getopt g = new Getopt(PROGRAM_NAME, args, "B:X:b:x:e:c:z:m:t:y:w:dh?");
+		Getopt g = new Getopt(PROGRAM_NAME, args, "B:X:b:x:e:c:z:m:t:y:w:df:h?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
@@ -178,6 +185,9 @@ public class CalcStats {
 			case 'd':
 				statsByTaxon = true;
 				break;
+			case 'f':
+				outDir = new File(g.getOptarg());
+				break;
 			case 'h':
 			case '?':
 				System.out.println(help);
@@ -204,6 +214,8 @@ public class CalcStats {
 			crPredicted = new TreeMap<String, List<Integer>>();
 			zPredicted = new TreeMap<String, List<Integer>>();
 		}
+		
+		
 
 		// initialising logging
 		ConsoleAppender errorAppender = new ConsoleAppender(new PatternLayout("%5p - %m%n"),ConsoleAppender.SYSTEM_ERR);
@@ -213,8 +225,11 @@ public class CalcStats {
 		
 		ArrayList<PredictionStatsSet> bioPreds = null;
 		if (bioDir!=null) {
+			
+			TreeMap<String, InterfacePrediction> perInterfPreds = new TreeMap<String,InterfacePrediction>();			
+			
 			TreeMap<String,List<Integer>> bioToAnalyse = Utils.readListFile(bioList);
-			bioPreds = doPreds(bioToAnalyse,bioDir,CallType.BIO);
+			bioPreds = doPreds(bioToAnalyse,bioDir,CallType.BIO,perInterfPreds);
 			
 			System.out.println("Bio set: ");
 			PredictionStatsSet.printHeader(System.out);
@@ -227,13 +242,21 @@ public class CalcStats {
 					}
 				}
 			}
+			
+			if (outDir!=null) {
+				printPerInterfacePreds(bioDir,perInterfPreds);
+			}
+
 		}
 		
 		
 		ArrayList<PredictionStatsSet> xtalPreds = null;
 		if (xtalDir!=null) {
+			
+			TreeMap<String, InterfacePrediction> perInterfPreds = new TreeMap<String,InterfacePrediction>();			
+			
 			TreeMap<String,List<Integer>> xtalToAnalyse = Utils.readListFile(xtalList);
-			xtalPreds = doPreds(xtalToAnalyse,xtalDir,CallType.CRYSTAL);
+			xtalPreds = doPreds(xtalToAnalyse,xtalDir,CallType.CRYSTAL,perInterfPreds);
 			
 			System.out.println("Xtal set: ");
 			PredictionStatsSet.printHeader(System.out);
@@ -245,6 +268,9 @@ public class CalcStats {
 							xtalPred.printByTaxon(System.out, taxon);
 					}
 				}
+			}
+			if (outDir!=null) {
+				printPerInterfacePreds(bioDir,perInterfPreds);
 			}
 		}
 
@@ -294,10 +320,21 @@ public class CalcStats {
 			out.close();
 		}
 		
+		
+		
 
 	}
 	
-	private static ArrayList<PredictionStatsSet> doPreds(TreeMap<String,List<Integer>> toAnalyse, File dir, CallType truth) 
+	private static void printPerInterfacePreds(File dir, TreeMap<String,InterfacePrediction> perInterfPreds) throws FileNotFoundException {
+		PrintStream ps = new PrintStream(new File(outDir,dir.getName()+".preds.tab"));
+		for (InterfacePrediction perInterfPred:perInterfPreds.values()) {
+			perInterfPred.printTabular(ps);
+		}
+		ps.close();
+
+	}
+	
+	private static ArrayList<PredictionStatsSet> doPreds(TreeMap<String,List<Integer>> toAnalyse, File dir, CallType truth, TreeMap<String,InterfacePrediction> perInterfPreds) 
 	throws IOException, ClassNotFoundException {
 		
 		// we pass only dir name and then read files   
@@ -307,13 +344,13 @@ public class CalcStats {
 
 		ArrayList<PredictionStatsSet> preds = new ArrayList<PredictionStatsSet>();
 		
-		preds.addAll(doGeometryScoring(toAnalyse, dir, truth));
-		preds.addAll(doEvolScoring(toAnalyse, dir, truth));
+		preds.addAll(doGeometryScoring(toAnalyse, dir, truth, perInterfPreds));
+		preds.addAll(doEvolScoring(toAnalyse, dir, truth, perInterfPreds));
 		
 		return preds;
 	}
 	
-	private static ArrayList<PredictionStatsSet> doGeometryScoring(TreeMap<String,List<Integer>> toAnalyse,	File dir, CallType truth) 
+	private static ArrayList<PredictionStatsSet> doGeometryScoring(TreeMap<String,List<Integer>> toAnalyse,	File dir, CallType truth, TreeMap<String,InterfacePrediction> perInterfPreds) 
 	throws IOException, ClassNotFoundException {
 		
 		// in order to read files just once, we need to loop in a slightly contrived way
@@ -337,6 +374,16 @@ public class CalcStats {
 			
 			for (int id:toAnalyse.get(pdbCode)) {
 				
+				String interfStr = pdbCode+"_"+id;
+				if (!perInterfPreds.containsKey(interfStr)) {
+					InterfacePrediction perInterfPred = new InterfacePrediction();
+					perInterfPred.setPdbCode(pdbCode);
+					perInterfPred.setInterfaceId(id);
+					perInterfPreds.put(interfStr, perInterfPred);
+				}
+				InterfacePrediction perInterfPred = perInterfPreds.get(interfStr);
+				
+				
 				for (int i=0;i<caCutoffsG.length;i++) {
 					for (int j=0;j<minNumberCoreResForBios.length;j++) {											
 						
@@ -350,6 +397,13 @@ public class CalcStats {
 
 						if (call==CallType.BIO) counters[i][j].countBio(UNKNOWN_TAXON);
 						else if (call==CallType.CRYSTAL) counters[i][j].countXtal(UNKNOWN_TAXON);
+						
+						if (i==0 && j==0) {
+							// only using first pair of cutoffs for the per interface predictions file
+							perInterfPred.setGeomCall(call);
+							perInterfPred.setGeomScore(gp.getScore());
+						}						
+
 
 					}
 				}				
@@ -367,7 +421,7 @@ public class CalcStats {
 		return list;
 	}
 	
-	private static ArrayList<PredictionStatsSet> doEvolScoring(TreeMap<String,List<Integer>> toAnalyse,	File dir, CallType truth) 
+	private static ArrayList<PredictionStatsSet> doEvolScoring(TreeMap<String,List<Integer>> toAnalyse,	File dir, CallType truth, TreeMap<String,InterfacePrediction> perInterfPreds) 
 	throws IOException, ClassNotFoundException {
 		
 		// in order to read files just once, we need to loop in a slightly contrived way
@@ -412,7 +466,17 @@ public class CalcStats {
 			if (dol==null) dol = UNKNOWN_TAXON;
 			
 			for (int id:toAnalyse.get(pdbCode)) {
+				
+				String interfStr = pdbCode+"_"+id;
+				if (!perInterfPreds.containsKey(interfStr)) {
+					InterfacePrediction perInterfPred = new InterfacePrediction();
+					perInterfPred.setPdbCode(pdbCode);
+					perInterfPred.setInterfaceId(id);
+					perInterfPreds.put(interfStr, perInterfPred);
+				}
+				InterfacePrediction perInterfPred = perInterfPreds.get(interfStr);
 
+				
 				countSubTotal(countersCR, dol);
 				countSubTotal(countersZ, dol);
 				countSubTotal(countersComb, dol);
@@ -423,14 +487,14 @@ public class CalcStats {
 				// evol core/rim scoring
 				for (int i=0;i<caCutoffsCR.length;i++) {
 					for (int k=0;k<corerimCallCutoffs.length;k++) {
-						doSingleEvolCRScoring(iec, interf, ScoringType.ENTROPY, countersCR, i, k, dol);
+						doSingleEvolCRScoring(iec, interf, ScoringType.ENTROPY, countersCR, i, k, dol, perInterfPred);
 					}
 				}
 				
 				// evol z-score scoring
 				for (int i=0;i<caCutoffsZ.length;i++) {
 					for (int k=0;k<zscoreCutoffs.length;k++) {						
-						doSingleEvolZScoring(iec, interf, countersZ, i, k, dol);
+						doSingleEvolZScoring(iec, interf, countersZ, i, k, dol, perInterfPred);
 					}
 				}
 				
@@ -439,7 +503,7 @@ public class CalcStats {
 					for (int k=0;k<corerimCallCutoffs.length;k++) {
 						for (int l=0;l<caCutoffsZ.length;l++) {
 							for (int m=0;m<zscoreCutoffs.length;m++) {
-								doSingleCombinedScoring(iec, interf, countersComb, i, k, l, m, dol);
+								doSingleCombinedScoring(iec, interf, countersComb, i, k, l, m, dol, perInterfPred);
 							}
 						}
 					}
@@ -487,7 +551,7 @@ public class CalcStats {
 	}
 	
 	private static void doSingleEvolCRScoring(InterfaceEvolContext iec, ChainInterface interf, ScoringType scoType,   
-			PredCounter[][] counters, int i, int k, String dol) {
+			PredCounter[][] counters, int i, int k, String dol, InterfacePrediction perInterfPred) {
 
 		
 		
@@ -507,6 +571,10 @@ public class CalcStats {
 		if (call==CallType.BIO) counters[i][k].countBio(dol);
 		else if (call==CallType.CRYSTAL) counters[i][k].countXtal(dol);
 		
+		perInterfPred.setCrCall(call);
+		perInterfPred.setCrScore(ercp.getScore());
+		
+		
 		if (outFile!=null) {
 			if (call==CallType.BIO || call==CallType.CRYSTAL) {
 				String key = interf.getFirstMolecule().getPdbCode();
@@ -525,7 +593,7 @@ public class CalcStats {
 	}
 	
 	private static void doSingleEvolZScoring(InterfaceEvolContext iec, ChainInterface interf, 
-			PredCounter[][] counters, int i, int k, String dol) {
+			PredCounter[][] counters, int i, int k, String dol, InterfacePrediction perInterfPred) {
 		
 		//interf.calcRimAndCore(caCutoffsZ[i]);
 		
@@ -539,6 +607,10 @@ public class CalcStats {
 		CallType call = eizp.getCall();
 		if (call==CallType.BIO) counters[i][k].countBio(dol);
 		else if (call==CallType.CRYSTAL) counters[i][k].countXtal(dol); 
+		
+		perInterfPred.setzCall(call);
+		perInterfPred.setzScore(eizp.getScore());
+
 		
 		if (outFile!=null) {
 			if (call==CallType.BIO || call==CallType.CRYSTAL) {
@@ -558,7 +630,7 @@ public class CalcStats {
 	}
 	
 	private static void doSingleCombinedScoring(InterfaceEvolContext iec, ChainInterface interf, 
-			PredCounter[][][][] counters, int i, int k, int l, int m, String dol) {
+			PredCounter[][][][] counters, int i, int k, int l, int m, String dol, InterfacePrediction perInterfPred) {
 
 		//interf.calcRimAndCore(caCutoffsG[i]);
 		interf.calcRimAndCore(DEFCACUTOFF_FOR_G);
@@ -587,11 +659,9 @@ public class CalcStats {
 		CallType call = cp.getCall();
 		if (call==CallType.BIO) counters[i][k][l][m].countBio(dol);
 		else if (call==CallType.CRYSTAL) counters[i][k][l][m].countXtal(dol);
-		else {
-			// do nothing, just a place holder for debugging
-			return;
-		}
-		
+
+		perInterfPred.setCombCall(call);
+		perInterfPred.setCombScore(cp.getScore());
 		
 		
 	}

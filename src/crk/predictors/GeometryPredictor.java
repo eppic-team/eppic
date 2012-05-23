@@ -40,6 +40,8 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 	private String callReason;
 	private List<String> warnings;
 	
+	private int size;
+	
 	public GeometryPredictor(ChainInterface interf) {
 		this.interf = interf;
 		warnings = new ArrayList<String>();
@@ -53,7 +55,7 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 		interf.calcRimAndCore(bsaToAsaCutoff);
 		int size1 = interf.getFirstRimCore().getCoreSize();
 		int size2 = interf.getSecondRimCore().getCoreSize();
-		int size = size1+size2;				
+		size = size1+size2;				
 		
 		List<Pair<Atom>> interactingPairs = getNonpolyInteractingPairs();
 		
@@ -153,6 +155,11 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 	@Override
 	public List<String> getWarnings() {
 		return warnings;
+	}
+	
+	@Override
+	public double getScore() {
+		return (double)size;
 	}
 	
 	private String getPairInteractionString(Pair<Atom> pair) {

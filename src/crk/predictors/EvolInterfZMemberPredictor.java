@@ -170,6 +170,7 @@ public class EvolInterfZMemberPredictor implements InterfaceTypePredictor {
 	 * Gets the z-score for this interface member
 	 * @return
 	 */
+	@Override
 	public double getScore() {
 		return zScore;
 	}

@@ -229,6 +229,7 @@ public class EvolRimCorePredictor implements InterfaceTypePredictor {
 	 * Gets the final score computed from both members of the interface.
 	 * @return
 	 */
+	@Override
 	public double getScore() {
 		return score;
 	}

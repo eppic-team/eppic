@@ -26,4 +26,10 @@ public interface InterfaceTypePredictor {
 	 * @return
 	 */
 	public List<String> getWarnings();
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public double getScore();
 }

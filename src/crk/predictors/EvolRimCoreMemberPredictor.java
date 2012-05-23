@@ -183,6 +183,7 @@ public class EvolRimCoreMemberPredictor implements InterfaceTypePredictor {
 	 * Gets the ratio score core over rim
 	 * @return
 	 */
+	@Override
 	public double getScore() {
 		return scoreRatio;
 	}

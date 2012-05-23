@@ -203,6 +203,7 @@ public class EvolInterfZPredictor implements InterfaceTypePredictor {
 		return this.scoringType;
 	}
 	
+	@Override
 	public double getScore() {
 		return score;
 	}
