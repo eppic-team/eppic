@@ -98,7 +98,7 @@ public class MyJobsPanel extends ContentPanel
 		myJobsGrid.setStyleAttribute("borderTop", "none");
 		myJobsGrid.setBorders(false);
 		myJobsGrid.setStripeRows(true);
-		myJobsGrid.setColumnLines(true);
+		myJobsGrid.setColumnLines(false);
 		myJobsGrid.setAutoWidth(true);
 		myJobsGrid.getView().setForceFit(true);
 		

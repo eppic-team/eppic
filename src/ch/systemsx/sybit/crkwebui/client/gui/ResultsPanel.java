@@ -133,7 +133,7 @@ public class ResultsPanel extends DisplayPanel
 
 		resultsGrid.setBorders(false);
 		resultsGrid.setStripeRows(true);
-		resultsGrid.setColumnLines(true);
+		resultsGrid.setColumnLines(false);
 		resultsGrid.setColumnReordering(true);
 
 //		resultsGrid.addListener(Events.CellClick, resultsGridListener);

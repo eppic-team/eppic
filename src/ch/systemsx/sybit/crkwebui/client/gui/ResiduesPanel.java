@@ -84,7 +84,7 @@ public class ResiduesPanel extends ContentPanel
 		residuesGrid = new Grid<InterfaceResidueItemModel>(residuesStore, residuesColumnModel);
 		residuesGrid.setBorders(false);
 		residuesGrid.setStripeRows(true);
-		residuesGrid.setColumnLines(true);
+		residuesGrid.setColumnLines(false);
 		residuesGrid.setLoadMask(true);
 		
 		residuesGrid.disableTextSelection(false);
