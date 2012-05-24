@@ -778,6 +778,14 @@ public class ChainEvolContext implements Serializable {
 	}
 	
 	/**
+	 * Returns the actual percent identity cut-off used for the final list of homologs
+	 * @return
+	 */
+	public int getUsedClusteringPercentId() {
+		return homologs.getUsedClusteringPercentId();
+	}
+	
+	/**
 	 * Returns a list of strings containing warnings related to the query sequence matching
 	 * @return
 	 */

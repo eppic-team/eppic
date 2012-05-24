@@ -25,6 +25,7 @@ public class HomologsInfoItemDB implements Serializable
 	private List<QueryWarningItemDB> queryWarnings;
 	
 	private double idCutoffUsed;
+	private int clusteringPercentIdUsed;
 	
 	private PDBScoreItemDB pdbScoreItem;
 	
@@ -153,6 +154,13 @@ public class HomologsInfoItemDB implements Serializable
 	public void setIdCutoffUsed(double idCutoffUsed) {
 		this.idCutoffUsed = idCutoffUsed;
 	}
-
+	
+	public int getClusteringPercentIdUsed() {
+		return clusteringPercentIdUsed;
+	}
+	
+	public void setClusteringPercentIdUsed(int clusteringPercentIdUsed) {
+		this.clusteringPercentIdUsed = clusteringPercentIdUsed;
+	}
 
 }

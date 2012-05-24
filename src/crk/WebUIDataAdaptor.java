@@ -208,6 +208,7 @@ public class WebUIDataAdaptor {
 				homInfo.setMarkupLine(String.valueOf(cec.getPdb2uniprotAln().getMarkupLine()));
 				homInfo.setAlignedSeq2(cec.getPdb2uniprotAln().getAlignedSequences()[1]);
 				homInfo.setIdCutoffUsed(cec.getIdCutoff());
+				homInfo.setClusteringPercentIdUsed(cec.getUsedClusteringPercentId());
 			} 
 
 			homInfo.setPdbScoreItem(pdbScoreItem);
