@@ -286,6 +286,10 @@
    
    <entity class="model.HomologsInfoItemDB" name="HomologsInfoItem">
         <table name="HomologsInfoItem"/>
+        <entity-listeners>
+        	<entity-listener class="ch.systemsx.sybit.crkwebui.server.db.entitylisteners.HomologsInfoItemListener">
+        	</entity-listener>
+        </entity-listeners>
         <attributes>
             <id name="uid">
                 <generated-value strategy="IDENTITY"/>
@@ -296,7 +300,7 @@
        		<basic name="numHomologs"></basic>
        		<basic name="subInterval"></basic>
        		<basic name="hasQueryMatch"></basic>
-       		<basic name="idCutoffUsed"></basic>
+       		<basic name="idCutoffUsed"><column nullable="true"/></basic>
        		<basic name="clusteringPercentIdUsed"></basic>
        		<basic name="alignedSeq1">
        			<column column-definition="text"/>
@@ -315,7 +319,39 @@
             	<cascade>  
             	    <cascade-all/>  
             	</cascade>  
-       		</one-to-many>  
+       		</one-to-many>
+       		<one-to-many name="homologs" mapped-by="homologsInfoItem">  
+            	<cascade>  
+            	    <cascade-all/>  
+            	</cascade>  
+       		</one-to-many>   
+        </attributes>
+   </entity>
+   
+   <entity class="model.HomologItemDB" name="HomologItem">
+        <table name="HomologItem"/>
+        <entity-listeners>
+        	<entity-listener class="ch.systemsx.sybit.crkwebui.server.db.entitylisteners.HomologItemListener">
+        	</entity-listener>
+        </entity-listeners>
+        <attributes>        
+            <id name="uid">
+                <generated-value strategy="IDENTITY"/>
+            </id>
+       		
+       		<basic name="uniId"></basic>
+       		<basic name="firstTaxon">
+       			<column length="255"/>
+       		</basic>
+       		<basic name="lastTaxon">
+       			<column length="255"/>
+       		</basic>
+       		<basic name="seqIdToQuery"><column nullable="true"/></basic>
+       		<basic name="queryCov"><column nullable="true"/></basic>
+       		
+       		<many-to-one name="homologsInfoItem" >  
+            </many-to-one>
+            
         </attributes>
    </entity>
    

@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import model.HomologItemDB;
 import model.HomologsInfoItemDB;
 import model.QueryWarningItemDB;
 
@@ -34,6 +35,8 @@ public class HomologsInfoItem implements Serializable
 	private double idCutoffUsed;
 	private int clusteringPercentIdUsed;
 	
+	private List<HomologItem> homologs;
+	
 	public HomologsInfoItem() 
 	{
 		
@@ -50,7 +53,8 @@ public class HomologsInfoItem implements Serializable
 							boolean hasQueryMatch,
 							List<QueryWarningItem> queryWarnings,
 							double idCutoffUsed,
-							int clusteringPercentIdUsed) 
+							int clusteringPercentIdUsed,
+							List<HomologItem> homologs) 
 	{
 		this.uid = uid;
 		this.chains = chains;
@@ -64,6 +68,7 @@ public class HomologsInfoItem implements Serializable
 		this.queryWarnings = queryWarnings;
 		this.idCutoffUsed = idCutoffUsed;
 		this.clusteringPercentIdUsed = clusteringPercentIdUsed;
+		this.homologs = homologs;
 	}
 	
 	public void setUid(int uid) {
@@ -162,6 +167,14 @@ public class HomologsInfoItem implements Serializable
 		this.clusteringPercentIdUsed = clusteringPercentIdUsed;
 	}
 	
+	public List<HomologItem> getHomologs() {
+		return homologs;
+	}
+
+	public void setHomologs(List<HomologItem> homologs) {
+		this.homologs = homologs;
+	}
+
 	/**
 	 * Converts DB model item into DTO one.
 	 * @param homologsInfoItemDB model item to convert
@@ -192,6 +205,16 @@ public class HomologsInfoItem implements Serializable
 		homologsInfoItem.setQueryWarnings(queryWarningItems);
 		homologsInfoItem.setIdCutoffUsed(homologsInfoItemDB.getIdCutoffUsed());
 		homologsInfoItem.setClusteringPercentIdUsed(homologsInfoItemDB.getClusteringPercentIdUsed());
+		
+		List<HomologItem> homologs = new ArrayList<HomologItem>();
+		if (homologsInfoItemDB.getHomologs()!=null) {
+			
+			for (HomologItemDB homologItemDB : homologsInfoItemDB.getHomologs()) {
+				HomologItem homologItem = HomologItem.create(homologItemDB);
+				homologs.add(homologItem);				
+			}
+		}
+		homologsInfoItem.setHomologs(homologs);
 		
 		return homologsInfoItem;
 	}
