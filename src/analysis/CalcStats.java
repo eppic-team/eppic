@@ -270,7 +270,7 @@ public class CalcStats {
 				}
 			}
 			if (outDir!=null) {
-				printPerInterfacePreds(bioDir,perInterfPreds);
+				printPerInterfacePreds(xtalDir,perInterfPreds);
 			}
 		}
 
