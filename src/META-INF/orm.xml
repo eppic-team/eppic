@@ -297,6 +297,7 @@
        		<basic name="subInterval"></basic>
        		<basic name="hasQueryMatch"></basic>
        		<basic name="idCutoffUsed"></basic>
+       		<basic name="clusteringPercentIdUsed"></basic>
        		<basic name="alignedSeq1">
        			<column column-definition="text"/>
        		</basic>

@@ -32,6 +32,7 @@ public class HomologsInfoItem implements Serializable
 	private List<QueryWarningItem> queryWarnings;
 	
 	private double idCutoffUsed;
+	private int clusteringPercentIdUsed;
 	
 	public HomologsInfoItem() 
 	{
@@ -48,7 +49,8 @@ public class HomologsInfoItem implements Serializable
 							String markupLine,
 							boolean hasQueryMatch,
 							List<QueryWarningItem> queryWarnings,
-							double idCutoffUsed) 
+							double idCutoffUsed,
+							int clusteringPercentIdUsed) 
 	{
 		this.uid = uid;
 		this.chains = chains;
@@ -61,6 +63,7 @@ public class HomologsInfoItem implements Serializable
 		this.hasQueryMatch = hasQueryMatch;
 		this.queryWarnings = queryWarnings;
 		this.idCutoffUsed = idCutoffUsed;
+		this.clusteringPercentIdUsed = clusteringPercentIdUsed;
 	}
 	
 	public void setUid(int uid) {
@@ -151,6 +154,14 @@ public class HomologsInfoItem implements Serializable
 		this.idCutoffUsed = idCutoffUsed;
 	}
 	
+	public int getClusteringPercentIdUsed() {
+		return clusteringPercentIdUsed;
+	}
+	
+	public void setClusteringPercentIdUsed(int clusteringPercentIdUsed) {
+		this.clusteringPercentIdUsed = clusteringPercentIdUsed;
+	}
+	
 	/**
 	 * Converts DB model item into DTO one.
 	 * @param homologsInfoItemDB model item to convert
@@ -180,6 +191,7 @@ public class HomologsInfoItem implements Serializable
 		}
 		homologsInfoItem.setQueryWarnings(queryWarningItems);
 		homologsInfoItem.setIdCutoffUsed(homologsInfoItemDB.getIdCutoffUsed());
+		homologsInfoItem.setClusteringPercentIdUsed(homologsInfoItemDB.getClusteringPercentIdUsed());
 		
 		return homologsInfoItem;
 	}
