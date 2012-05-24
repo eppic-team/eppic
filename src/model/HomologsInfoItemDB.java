@@ -24,8 +24,10 @@ public class HomologsInfoItemDB implements Serializable
 	private boolean hasQueryMatch;	
 	private List<QueryWarningItemDB> queryWarnings;
 	
-	private double idCutoffUsed;
+	private Double idCutoffUsed;
 	private int clusteringPercentIdUsed;
+	
+	private List<HomologItemDB> homologs;
 	
 	private PDBScoreItemDB pdbScoreItem;
 	
@@ -44,7 +46,9 @@ public class HomologsInfoItemDB implements Serializable
 							  String markupLine,
 							  boolean hasQueryMatch, 
 							  List<QueryWarningItemDB> queryWarnings,
-							  double idCutoffUsed) 
+							  double idCutoffUsed,
+							  int clusteringPercentIdUsed,
+							  List<HomologItemDB> homologs) 
 	{
 		this.uid = uid;
 		this.chains = chains;
@@ -57,6 +61,8 @@ public class HomologsInfoItemDB implements Serializable
 		this.hasQueryMatch = hasQueryMatch;
 		this.queryWarnings = queryWarnings;
 		this.idCutoffUsed = idCutoffUsed;
+		this.clusteringPercentIdUsed = clusteringPercentIdUsed;
+		this.homologs = homologs;
 	}
 	
 	public void setPdbScoreItem(PDBScoreItemDB pdbScoreItem) {
@@ -147,11 +153,11 @@ public class HomologsInfoItemDB implements Serializable
 		this.queryWarnings = queryWarnings;
 	}
 
-	public double getIdCutoffUsed() {
+	public Double getIdCutoffUsed() {
 		return idCutoffUsed;
 	}
 
-	public void setIdCutoffUsed(double idCutoffUsed) {
+	public void setIdCutoffUsed(Double idCutoffUsed) {
 		this.idCutoffUsed = idCutoffUsed;
 	}
 	
@@ -161,6 +167,14 @@ public class HomologsInfoItemDB implements Serializable
 	
 	public void setClusteringPercentIdUsed(int clusteringPercentIdUsed) {
 		this.clusteringPercentIdUsed = clusteringPercentIdUsed;
+	}
+
+	public List<HomologItemDB> getHomologs() {
+		return homologs;
+	}
+
+	public void setHomologs(List<HomologItemDB> homologs) {
+		this.homologs = homologs;
 	}
 
 }

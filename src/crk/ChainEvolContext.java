@@ -792,4 +792,12 @@ public class ChainEvolContext implements Serializable {
 	public List<String> getQueryWarnings() {
 		return queryWarnings;
 	}
+	
+	/**
+	 * Returns the HomologList
+	 * @return
+	 */
+	public HomologList getHomologs() {
+		return homologs;
+	}
 }

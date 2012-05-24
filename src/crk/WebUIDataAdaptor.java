@@ -10,6 +10,7 @@ import crk.predictors.EvolInterfZPredictor;
 import crk.predictors.EvolRimCorePredictor;
 import crk.predictors.GeometryPredictor;
 
+import model.HomologItemDB;
 import model.InterfaceItemDB;
 import model.InterfaceResidueItemDB;
 import model.InterfaceScoreItemDB;
@@ -20,6 +21,7 @@ import model.RunParametersItemDB;
 import model.WarningItemDB;
 
 import owl.core.runners.PymolRunner;
+import owl.core.sequence.Homolog;
 import owl.core.structure.ChainInterface;
 import owl.core.structure.ChainInterfaceList;
 import owl.core.structure.InterfaceRimCore;
@@ -209,6 +211,20 @@ public class WebUIDataAdaptor {
 				homInfo.setAlignedSeq2(cec.getPdb2uniprotAln().getAlignedSequences()[1]);
 				homInfo.setIdCutoffUsed(cec.getIdCutoff());
 				homInfo.setClusteringPercentIdUsed(cec.getUsedClusteringPercentId());
+				
+				List<HomologItemDB> homologItemDBs = new ArrayList<HomologItemDB>();
+				for (Homolog hom:cec.getHomologs().getFilteredSubset()) {
+					HomologItemDB homologItemDB = new HomologItemDB();
+					homologItemDB.setUniId(hom.getIdentifier());
+					homologItemDB.setFirstTaxon(hom.getUnirefEntry().getFirstTaxon());
+					homologItemDB.setLastTaxon(hom.getUnirefEntry().getLastTaxon());
+					homologItemDB.setSeqIdToQuery(hom.getPercentIdentity());
+					homologItemDB.setQueryCov(hom.getBlastHit().getQueryCoverage()*100.0);
+					homologItemDB.setHomologsInfoItem(homInfo);
+					homologItemDBs.add(homologItemDB);
+				}
+				
+				homInfo.setHomologs(homologItemDBs);
 			} 
 
 			homInfo.setPdbScoreItem(pdbScoreItem);
