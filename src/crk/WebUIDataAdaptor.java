@@ -216,8 +216,10 @@ public class WebUIDataAdaptor {
 				for (Homolog hom:cec.getHomologs().getFilteredSubset()) {
 					HomologItemDB homologItemDB = new HomologItemDB();
 					homologItemDB.setUniId(hom.getIdentifier());
-					homologItemDB.setFirstTaxon(hom.getUnirefEntry().getFirstTaxon());
-					homologItemDB.setLastTaxon(hom.getUnirefEntry().getLastTaxon());
+					if (hom.getUnirefEntry().hasTaxons()) {
+						homologItemDB.setFirstTaxon(hom.getUnirefEntry().getFirstTaxon());
+						homologItemDB.setLastTaxon(hom.getUnirefEntry().getLastTaxon());
+					}
 					homologItemDB.setSeqIdToQuery(hom.getPercentIdentity());
 					homologItemDB.setQueryCov(hom.getBlastHit().getQueryCoverage()*100.0);
 					homologItemDB.setHomologsInfoItem(homInfo);
