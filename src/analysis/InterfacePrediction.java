@@ -35,10 +35,10 @@ public class InterfacePrediction {
 	
 	public void printTabular(PrintStream ps) {
 		ps.println(pdbCode+"\t"+interfaceId+"\t"+
-				formatIntScore(geomScore,3)+"\t"+geomCall.getName()+"\t"+
-				formatDoubleScore(crScore)+"\t"+crCall.getName()+"\t"+
-				formatDoubleScore(zScore)+"\t"+zCall.getName()+"\t"+
-				formatIntScore(combScore,1)+"\t"+combCall.getName());
+				formatIntScore(geomScore,3)+"\t" + geomCall!=null?geomCall.getName():"null" +"\t"+
+				formatDoubleScore(crScore)+"\t"  + crCall!=null?crCall.getName():"null"     +"\t"+
+				formatDoubleScore(zScore)+"\t"   + zCall!=null?zCall.getName():"null"       +"\t"+
+				formatIntScore(combScore,1)+"\t" + combCall!=null?combCall.getName():"null"       );
 	}
 	
 	private String formatIntScore(double score, int digits) {
