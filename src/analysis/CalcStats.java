@@ -573,6 +573,8 @@ public class CalcStats {
 		
 		perInterfPred.setCrCall(call);
 		perInterfPred.setCrScore(ercp.getScore());
+		perInterfPred.setNumHomologs1(iec.getChainEvolContext(0).getNumHomologs());
+		perInterfPred.setNumHomologs2(iec.getChainEvolContext(1).getNumHomologs());
 		
 		
 		if (outFile!=null) {

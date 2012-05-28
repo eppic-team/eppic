@@ -17,6 +17,9 @@ public class InterfacePrediction {
 	private String pdbCode;
 	private int interfaceId;
 	
+	private int numHomologs1;
+	private int numHomologs2;
+	
 	private CallType geomCall;
 	private double geomScore;
 	
@@ -35,10 +38,11 @@ public class InterfacePrediction {
 	
 	public void printTabular(PrintStream ps) {
 		ps.println(pdbCode+"\t"+interfaceId+"\t"+
-				formatIntScore(geomScore,3)+"\t" + geomCall!=null?geomCall.getName():"null" +"\t"+
-				formatDoubleScore(crScore)+"\t"  + crCall!=null?crCall.getName():"null"     +"\t"+
-				formatDoubleScore(zScore)+"\t"   + zCall!=null?zCall.getName():"null"       +"\t"+
-				formatIntScore(combScore,1)+"\t" + combCall!=null?combCall.getName():"null"       );
+				String.format("%3d",numHomologs1)+"\t"+String.format("%3d",numHomologs2)+"\t"+
+				formatIntScore(geomScore,3)+"\t" + (geomCall!=null?geomCall.getName():"null") +"\t"+
+				formatDoubleScore(crScore)+"\t"  + (crCall!=null?crCall.getName():"null")     +"\t"+
+				formatDoubleScore(zScore)+"\t"   + (zCall!=null?zCall.getName():"null")       +"\t"+
+				formatIntScore(combScore,1)+"\t" + (combCall!=null?combCall.getName():"null")       );
 	}
 	
 	private String formatIntScore(double score, int digits) {
@@ -127,6 +131,22 @@ public class InterfacePrediction {
 
 	public void setCombScore(double combScore) {
 		this.combScore = combScore;
+	}
+
+	public int getNumHomologs1() {
+		return numHomologs1;
+	}
+
+	public void setNumHomologs1(int numHomologs1) {
+		this.numHomologs1 = numHomologs1;
+	}
+
+	public int getNumHomologs2() {
+		return numHomologs2;
+	}
+
+	public void setNumHomologs2(int numHomologs2) {
+		this.numHomologs2 = numHomologs2;
 	}
 	
 	
