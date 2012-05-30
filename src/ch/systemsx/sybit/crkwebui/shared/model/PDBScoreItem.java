@@ -140,6 +140,22 @@ public class PDBScoreItem implements Serializable, ProcessingData
 		return uid;
 	}
 	
+	public void setJobId(String jobId) {
+		this.jobId = jobId;
+	}
+
+	public String getJobId() {
+		return jobId;
+	}
+
+	public void setInputType(int inputType) {
+		this.inputType = inputType;
+	}
+
+	public int getInputType() {
+		return inputType;
+	}
+	
 	/**
 	 * Converts DB model item into DTO one.
 	 * @param pdbScoreItemDB model item to convert
@@ -185,21 +201,5 @@ public class PDBScoreItem implements Serializable, ProcessingData
 		pdbScoreItem.setTitle(pdbScoreItemDB.getTitle());
 		pdbScoreItem.setUid(pdbScoreItemDB.getUid());
 		return pdbScoreItem;
-	}
-
-	public void setJobId(String jobId) {
-		this.jobId = jobId;
-	}
-
-	public String getJobId() {
-		return jobId;
-	}
-
-	public void setInputType(int inputType) {
-		this.inputType = inputType;
-	}
-
-	public int getInputType() {
-		return inputType;
 	}
 }

@@ -10,18 +10,16 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import net.tanesha.recaptcha.ReCaptcha;
-import net.tanesha.recaptcha.ReCaptchaFactory;
-
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 
-import ch.systemsx.sybit.crkwebui.server.util.IPVerifier;
-import ch.systemsx.sybit.crkwebui.server.util.RandomDirectoryNameGenerator;
-import ch.systemsx.sybit.crkwebui.server.util.RunJobDataValidator;
-import ch.systemsx.sybit.crkwebui.shared.CrkWebException;
+import ch.systemsx.sybit.crkwebui.server.generators.RandomDirectoryNameGenerator;
+import ch.systemsx.sybit.crkwebui.server.validators.CaptchaValidator;
+import ch.systemsx.sybit.crkwebui.server.validators.IPVerifier;
+import ch.systemsx.sybit.crkwebui.server.validators.RunJobDataValidator;
+import ch.systemsx.sybit.crkwebui.shared.exceptions.ValidationException;
 
 /**
  * Servlet used to upload documents by the users to server
@@ -39,8 +37,7 @@ public class FileUploadServlet extends FileBaseServlet {
 	private String generalDestinationDirectoryName;
 	
 	private boolean useCaptcha;
-	private String captchaPublicKey;
-	private String captchaPrivateKey;
+	private CaptchaValidator captchaValidator;
 	private int nrOfAllowedSubmissionsWithoutCaptcha = 1;
 	
 	private boolean doIPBasedVerification;
@@ -48,9 +45,7 @@ public class FileUploadServlet extends FileBaseServlet {
 	
 	private int maxFileUploadSize;
 
-	/**
-	 * Reads properties file
-	 */
+	@Override
 	public void init(ServletConfig config) throws ServletException 
 	{
 		super.init(config);
@@ -75,8 +70,9 @@ public class FileUploadServlet extends FileBaseServlet {
 		}
 		
 		useCaptcha = Boolean.parseBoolean(properties.getProperty("use_captcha"));
-		captchaPublicKey = properties.getProperty("captcha_public_key");
-		captchaPrivateKey = properties.getProperty("captcha_private_key");
+		String captchaPublicKey = properties.getProperty("captcha_public_key");
+		String captchaPrivateKey = properties.getProperty("captcha_private_key");
+		captchaValidator = new CaptchaValidator(captchaPublicKey, captchaPrivateKey);
 		nrOfAllowedSubmissionsWithoutCaptcha = Integer.parseInt(properties.getProperty("nr_of_allowed_submissions_without_captcha"));
 		
 		doIPBasedVerification = Boolean.parseBoolean(properties.getProperty("limit_access_by_ip","false"));
@@ -85,8 +81,9 @@ public class FileUploadServlet extends FileBaseServlet {
 		maxFileUploadSize = Integer.parseInt(properties.getProperty("max_file_upload_size", "10"));
 	}
 
+	@Override
 	protected void doPost(HttpServletRequest request,
-			HttpServletResponse response) throws ServletException, IOException 
+						  HttpServletResponse response) throws ServletException, IOException 
 	{
 //		String currentSessionId = request.getSession().getId();
 		
@@ -98,8 +95,7 @@ public class FileUploadServlet extends FileBaseServlet {
 		{
 			String randomDirectoryName = RandomDirectoryNameGenerator.generateRandomDirectory(generalDestinationDirectoryName);
 
-			File localTmpDir = new File(generalTmpDirectoryName + "/"
-					+ randomDirectoryName);
+			File localTmpDir = new File(generalTmpDirectoryName, randomDirectoryName);
 			localTmpDir.mkdir();
 
 			response.setContentType("text/html");
@@ -122,7 +118,6 @@ public class FileUploadServlet extends FileBaseServlet {
 			{
 				List<FileItem> items = uploadHandler.parseRequest(request);
 				
-				String verificationError = null;
 				String captchaResponse = null;
 				String challenge = null;
 				
@@ -155,101 +150,55 @@ public class FileUploadServlet extends FileBaseServlet {
 				
 				if((useCaptcha) && (nrOfSubmittedJobs > nrOfAllowedSubmissionsWithoutCaptcha))
 				{
-					if((captchaResponse == null) || (challenge == null))
-					{
-						verificationError = "Captcha verification failed";
-					}
-					else
-					{
-						verificationError = verifyChallenge(challenge, captchaResponse, request.getRemoteAddr());
-					}
+					captchaValidator.verifyChallenge(challenge, captchaResponse, request.getRemoteAddr());
 				}
 				
-				if((doIPBasedVerification) && (verificationError == null))
+				if(doIPBasedVerification)
 				{
-					try
-					{
-						IPVerifier.verifyIfCanBeSubmitted(request.getRemoteAddr(), defaultNrOfAllowedSubmissionsForIP);
-					}
-					catch(CrkWebException e)
-					{
-						verificationError = e.getMessage();
-					}
+					IPVerifier.verifyIfCanBeSubmitted(request.getRemoteAddr(), defaultNrOfAllowedSubmissionsForIP);
 				}
 				
-				if(verificationError == null)
+				String fileName = fileToUpload.getName();
+				
+				if(fileName.contains("\\"))
 				{
-					String fileName = fileToUpload.getName();
+					fileName = fileName.substring(fileName.lastIndexOf("\\") + 1);
+				}
+				
+				String fileNameVerificationError = RunJobDataValidator.verifyFileName(fileName);
+				
+				if(fileNameVerificationError == null)
+				{
+					File fileToUploadDirectory = new File(generalDestinationDirectoryName, randomDirectoryName);
+					File file = new File(fileToUploadDirectory, fileName);
+					fileToUpload.write(file);
 					
-					if(fileName.contains("\\"))
-					{
-						fileName = fileName.substring(fileName.lastIndexOf("\\") + 1);
-					}
-					
-					String fileNameVerificationError = RunJobDataValidator.verifyFileName(fileName);
-					
-					if(fileNameVerificationError == null)
-					{
-						File file = new File(generalDestinationDirectoryName + "/" + randomDirectoryName, 
-											 fileName);
-						fileToUpload.write(file);
-						
-						out.println("crkupres:" + randomDirectoryName);
-					}
-					else
-					{
-						out.println("err:Incorrect file name - " + fileNameVerificationError);
-					}
+					out.println("crkupres:" + randomDirectoryName);
 				}
 				else
 				{
-					out.println("err:" + "Verification failed - " + verificationError);
+					out.println("err:Incorrect file name - " + fileNameVerificationError);
 				}
 				
 			} 
-			catch (FileUploadException ex)
+			catch(ValidationException ex)
+			{
+				out.println("err:" + "Verification failed - " + ex.getMessage());
+			}
+			catch(FileUploadException ex)
 			{
 				out.println("err:" + "Error during uploading the file." + ex.getMessage());
 			}
-			catch (Exception ex) 
+			catch(Exception ex) 
 			{
 				out.println("err:" + "Error encountered while uploading file" + ex.getMessage());
 			}
 		}
 		else 
 		{
-			out.println("err:" + "Error encountered while uploading file" + "Request contents type is not supported by the servlet.");
+			out.println("err:" + "Error encountered while uploading file - Request content type is not supported by the servlet.");
 		}
 		
 		out.close();
-	}
-
-	/**
-	 * Verifies correctness of the challenge.
-	 * @param challenge challenge
-	 * @param response response
-	 * @param remoteAddress remote address
-	 * @return null if verification succeeded, otherwise error message
-	 */
-	private String verifyChallenge(String challenge, String response, String remoteAddress) 
-	{
-		String result = null;
-		
-		if(response == null)
-		{
-			result = "Captcha verification not possible";
-		}
-		else
-		{
-			ReCaptcha recaptcha = ReCaptchaFactory.newReCaptcha(captchaPublicKey, captchaPrivateKey, true);
-			boolean verificationResult = recaptcha.checkAnswer(remoteAddress, challenge, response).isValid();
-			
-			if(!verificationResult)
-			{
-				result = "Captcha verification failed - incorrect value provided";
-			}
-		}
-		
-		return result;
 	}
 }

@@ -1,5 +1,6 @@
 package ch.systemsx.sybit.crkwebui.client.callbacks;
 
+import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
 
@@ -22,7 +23,7 @@ public class GetSettingsCallback implements AsyncCallback<ApplicationSettings>
 	@Override
 	public void onFailure(Throwable caught) 
 	{
-		mainController.updateStatusLabel(MainController.CONSTANTS.callback_get_settings_error(), true);
+		mainController.updateStatusLabel(AppPropertiesManager.CONSTANTS.callback_get_settings_error(), true);
 	}
 
 	@Override
@@ -45,7 +46,7 @@ public class GetSettingsCallback implements AsyncCallback<ApplicationSettings>
 		}
 		else 
 		{
-			mainController.updateStatusLabel(MainController.CONSTANTS.callback_get_settings_error() + " - incorrect type", true);
+			mainController.updateStatusLabel(AppPropertiesManager.CONSTANTS.callback_get_settings_error() + " - incorrect type", true);
 		}
 	}
 }

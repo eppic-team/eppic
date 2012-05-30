@@ -3,9 +3,11 @@ package ch.systemsx.sybit.crkwebui.client.gui;
 import java.util.ArrayList;
 import java.util.List;
 
+import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 import ch.systemsx.sybit.crkwebui.client.model.InterfaceResidueSummaryModel;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResidueItem;
+import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResidueType;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceScoreItem;
 
 import com.extjs.gxt.ui.client.GXT;
@@ -128,7 +130,7 @@ public class ResiduesSummaryPanel extends ContentPanel
 		
 		int interfId = mainController.getMainViewPort().getInterfacesResiduesWindow().getSelectedInterface() - 1;
 		
-		for (InterfaceScoreItem scoreItem : mainController.getPdbScoreItem().getInterfaceItem(interfId).getInterfaceScores()) 
+		for (InterfaceScoreItem scoreItem : mainController.getPdbScoreItem().getInterfaceItem(interfId).getInterfaceScores())
 		{
 			if(scoreItem.getMethod().equals("Entropy"))
 			{
@@ -145,12 +147,16 @@ public class ResiduesSummaryPanel extends ContentPanel
 					entropyRatioValue = scoreItem.getUnweightedRatio2Scores();
 				}
 			}
-			else if (scoreItem.getMethod().equals("Z-scores")) {
-				if (structure == 1) {
+			else if (scoreItem.getMethod().equals("Z-scores"))
+			{
+				if (structure == 1)
+				{
 					entropySurfSamplingMean = scoreItem.getUnweightedCore1Scores();
 					entropySurfSamplingSd = scoreItem.getUnweightedRim1Scores();
 					entropyZscore = scoreItem.getUnweightedRatio1Scores();
-				} else {
+				} 
+				else 
+				{
 					entropySurfSamplingMean = scoreItem.getUnweightedCore2Scores();
 					entropySurfSamplingSd = scoreItem.getUnweightedRim2Scores();
 					entropyZscore = scoreItem.getUnweightedRatio2Scores();					
@@ -158,20 +164,17 @@ public class ResiduesSummaryPanel extends ContentPanel
 				
 			}
 		}
-
 		
 		int coreSize = 0;
 		int rimSize = 0;
 		for (InterfaceResidueItem interfResItem:mainController.getInterfaceResiduesItemsList().get(mainController.getMainViewPort().getInterfacesResiduesWindow().getSelectedInterface()).get(structure)) {
 			
-			if (interfResItem.getAssignment() == InterfaceResidueItem.CORE) coreSize++;
-			else if (interfResItem.getAssignment() == InterfaceResidueItem.RIM) rimSize++;
+			if (interfResItem.getAssignment() == InterfaceResidueType.CORE.getAssignment()) coreSize++;
+			else if (interfResItem.getAssignment() == InterfaceResidueType.RIM.getAssignment()) rimSize++;
 		}
-		
 	
 		InterfaceResidueSummaryModel model = new InterfaceResidueSummaryModel();
-		model.setTitle(MainController.CONSTANTS.interfaces_residues_aggergation_total_cores()+" ("+coreSize+")");
-
+		model.setTitle(AppPropertiesManager.CONSTANTS.interfaces_residues_aggergation_total_cores()+" ("+coreSize+")");
 		
 		double asa = 0;
 		double bsa = 0;
@@ -195,7 +198,7 @@ public class ResiduesSummaryPanel extends ContentPanel
 		
 		
 		model = new InterfaceResidueSummaryModel();
-		model.setTitle(MainController.CONSTANTS.interfaces_residues_aggergation_total_rims()+" ("+rimSize+")");
+		model.setTitle(AppPropertiesManager.CONSTANTS.interfaces_residues_aggergation_total_rims()+" ("+rimSize+")");
 		
 		asa = 0;
 		bsa = 0;
@@ -216,16 +219,16 @@ public class ResiduesSummaryPanel extends ContentPanel
 		model.setEntropyScore(number.format(entropyRimValue));
 		
 		interfaceSummaryItems.add(model);
-
+		
 		model = new InterfaceResidueSummaryModel();
-		model.setTitle(MainController.CONSTANTS.interfaces_residues_aggergation_surface());
+		model.setTitle(AppPropertiesManager.CONSTANTS.interfaces_residues_aggergation_surface());
 		model.setEntropyScore(number.format(entropySurfSamplingMean)+", "+number.format(entropySurfSamplingSd));
 		
 		interfaceSummaryItems.add(model);
 		
 		
 		model = new InterfaceResidueSummaryModel();
-		model.setTitle(MainController.CONSTANTS.interfaces_residues_aggergation_ratios());
+		model.setTitle(AppPropertiesManager.CONSTANTS.interfaces_residues_aggergation_ratios());
 		model.setEntropyScore(number.format(entropyRatioValue)+", "+number.format(entropyZscore));
 		
 		interfaceSummaryItems.add(model);

@@ -22,8 +22,6 @@ public class GridCellRendererFactory {
 				renderer = new MethodCellRenderer(mainController);
 			} else if (rendererName.equals("number")) {
 				 renderer = new NumberRenderer();
-			} else if (rendererName.equals("viewer")) {
-				 renderer = new ViewerButtonCellRenderer(mainController);
 			} else if (rendererName.equals("thumbnail")) {
 				 renderer = new ThumbnailCellRenderer(mainController);
 			} else if (rendererName.equals("warnings")) {

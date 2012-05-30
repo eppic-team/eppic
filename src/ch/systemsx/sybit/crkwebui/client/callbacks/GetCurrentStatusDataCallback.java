@@ -1,5 +1,6 @@
 package ch.systemsx.sybit.crkwebui.client.callbacks;
 
+import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingData;
@@ -27,7 +28,7 @@ public class GetCurrentStatusDataCallback implements AsyncCallback<ProcessingDat
 	@Override
 	public void onFailure(Throwable caught) 
 	{
-		String errorText = MainController.CONSTANTS.callback_get_current_status_data();
+		String errorText = AppPropertiesManager.CONSTANTS.callback_get_current_status_data();
 		mainController.updateStatusLabel(errorText, true);
 	}
 
@@ -54,7 +55,7 @@ public class GetCurrentStatusDataCallback implements AsyncCallback<ProcessingDat
 				}
 				else
 				{
-					mainController.updateStatusLabel(MainController.CONSTANTS.callback_get_current_status_data() + " " + result.getClass(), true);
+					mainController.updateStatusLabel(AppPropertiesManager.CONSTANTS.callback_get_current_status_data() + " " + result.getClass(), true);
 					mainController.cleanCenterPanel();
 				}
 			}
@@ -63,7 +64,7 @@ public class GetCurrentStatusDataCallback implements AsyncCallback<ProcessingDat
 		}
 		else
 		{
-			mainController.showMessage(MainController.CONSTANTS.callback_job_not_found_error(), "Job with id=" + jobId + " not found on the server");
+			mainController.showMessage(AppPropertiesManager.CONSTANTS.callback_job_not_found_error(), "Job with id=" + jobId + " not found on the server");
 			mainController.cleanCenterPanel();
 		}
 	}

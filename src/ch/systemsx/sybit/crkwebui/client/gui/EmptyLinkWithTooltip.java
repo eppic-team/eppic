@@ -1,6 +1,6 @@
 package ch.systemsx.sybit.crkwebui.client.gui;
 
-import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
+import ch.systemsx.sybit.crkwebui.client.data.WindowData;
 
 /**
  * Label styled as link with tooltip. 
@@ -9,11 +9,11 @@ import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 public class EmptyLinkWithTooltip extends LabelWithTooltip
 {
 	public EmptyLinkWithTooltip(String labelText,
-							final String tooltipText,
-							final MainController mainController,
-							final int delay)
+								String tooltipText,
+								WindowData windowData,
+								int delay)
 	{
-		super(labelText, tooltipText, mainController, delay);
+		super(labelText, tooltipText, windowData, delay);
 		this.setText("<a href=\"\" onClick=\"return false;\">" + labelText + "</a>");
 	}
 }

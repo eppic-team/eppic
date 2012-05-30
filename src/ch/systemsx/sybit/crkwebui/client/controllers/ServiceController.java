@@ -3,7 +3,7 @@ package ch.systemsx.sybit.crkwebui.client.controllers;
 import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
 
 /**
- * This is the controller used to contact with the server
+ * This is the service manager used to contact with the server
  * @author srebniak_a
  *
  */
@@ -23,16 +23,14 @@ public interface ServiceController
 	/**
 	 * Retrieves results of processing for selected job id - the results type depends on the status of the job on the server.
 	 * @param jobId job id
-	 * @param debug retrieve detailed information
 	 */
-	public abstract void getResultsOfProcessing(String jobId, boolean debug);
+	public abstract void getResultsOfProcessing(String jobId);
 	
 	/**
-	 * Retrieves the status data for the current jobs.
+	 * Retrieves the status data for the current job.
 	 * @param jobId job identifier
-	 * @param debug retrieve detailed information
 	 */
-	public abstract void getCurrentStatusData(String jobId, boolean debug);
+	public abstract void getCurrentStatusData(String jobId);
 	
 	/**
 	 * Retrieves list of all jobs for current session id.
@@ -57,9 +55,8 @@ public interface ServiceController
 	/**
 	 * Stops the execution of specified running job.
 	 * @param jobToStop job to stop
-	 * @param debug retrieve detailed information
 	 */
-	public abstract void stopJob(String jobToStop, boolean debug);
+	public abstract void stopJob(String jobToStop);
 	
 	/**
 	 * Unties specified job from the current session id.

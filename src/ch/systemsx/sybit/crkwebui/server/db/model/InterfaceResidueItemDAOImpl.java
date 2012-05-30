@@ -17,7 +17,7 @@ import model.InterfaceResidueItemDB;
 import model.InterfaceResidueItemDB_;
 import model.PDBScoreItemDB_;
 import ch.systemsx.sybit.crkwebui.server.db.EntityManagerHandler;
-import ch.systemsx.sybit.crkwebui.shared.CrkWebException;
+import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResidueItem;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResiduesItemsList;
 
@@ -29,7 +29,7 @@ import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResiduesItemsList;
 public class InterfaceResidueItemDAOImpl implements InterfaceResidueItemDAO 
 {
 	@Override
-	public List<InterfaceResidueItem> getResiduesForInterface(int interfaceUid) throws CrkWebException
+	public List<InterfaceResidueItem> getResiduesForInterface(int interfaceUid) throws DaoException
 	{
 		EntityManager entityManager = null;
 		
@@ -58,7 +58,7 @@ public class InterfaceResidueItemDAOImpl implements InterfaceResidueItemDAO
 		catch(Throwable e)
 		{
 			e.printStackTrace();
-			throw new CrkWebException(e);
+			throw new DaoException(e);
 		}
 		finally
 		{
@@ -68,7 +68,7 @@ public class InterfaceResidueItemDAOImpl implements InterfaceResidueItemDAO
 			}
 			catch(Throwable t)
 			{
-				
+				t.printStackTrace();
 			}
 		}
 		
@@ -76,7 +76,7 @@ public class InterfaceResidueItemDAOImpl implements InterfaceResidueItemDAO
 	}
 	
 	@Override
-	public InterfaceResiduesItemsList getResiduesForAllInterfaces(int pdbScoreUid) throws CrkWebException
+	public InterfaceResiduesItemsList getResiduesForAllInterfaces(int pdbScoreUid) throws DaoException
 	{
 		EntityManager entityManager = null;
 		
@@ -129,7 +129,7 @@ public class InterfaceResidueItemDAOImpl implements InterfaceResidueItemDAO
 		catch(Throwable e)
 		{
 			e.printStackTrace();
-			throw new CrkWebException(e);
+			throw new DaoException(e);
 		}
 		finally
 		{
@@ -139,7 +139,7 @@ public class InterfaceResidueItemDAOImpl implements InterfaceResidueItemDAO
 			}
 			catch(Throwable t)
 			{
-				
+				t.printStackTrace();
 			}
 		}
 		

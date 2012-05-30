@@ -1,5 +1,6 @@
 package ch.systemsx.sybit.crkwebui.client.gui.renderers;
 
+import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 
 import com.extjs.gxt.ui.client.data.BaseModel;
@@ -62,7 +63,7 @@ public class ThumbnailCellRenderer implements GridCellRenderer<BaseModel>
 				if(refreshTooltip)
 				{
 					ToolTipConfig tipConfig = new ToolTipConfig();
-					tipConfig.setText(MainController.CONSTANTS.results_grid_thumbnail_tooltip_text());
+					tipConfig.setText(AppPropertiesManager.CONSTANTS.results_grid_thumbnail_tooltip_text());
 					tipConfig.setDismissDelay(0);
 					tipConfig.setShowDelay(1000);
 					toolTip = new ToolTip(null, tipConfig);

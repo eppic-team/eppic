@@ -1,5 +1,6 @@
 package ch.systemsx.sybit.crkwebui.client.callbacks;
 
+import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 
 import com.google.gwt.user.client.History;
@@ -36,7 +37,7 @@ public class RunJobCallback implements AsyncCallback<String>
 		} 
 		else 
 		{
-			mainController.updateStatusLabel(MainController.CONSTANTS.callback_run_job_error() + " - incorrect type" , true);
+			mainController.updateStatusLabel(AppPropertiesManager.CONSTANTS.callback_run_job_error() + " - incorrect type" , true);
 		}
 	}
 }

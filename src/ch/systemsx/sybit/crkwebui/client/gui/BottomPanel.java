@@ -1,5 +1,6 @@
 package ch.systemsx.sybit.crkwebui.client.gui;
 
+import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 
 import com.extjs.gxt.ui.client.Style.Orientation;
@@ -21,32 +22,32 @@ import com.google.gwt.user.client.ui.HTML;
  * @author srebniak_a
  *
  */
-public class BottomPanel extends LayoutContainer 
+public class BottomPanel extends LayoutContainer
 {
 	private HTML status;
 	private Label helpLink;
 	private Label contactLink;
 	private Label aboutLink;
 
-	public BottomPanel(final MainController mainController) 
+	public BottomPanel(final MainController mainController)
 	{
 		this.setLayout(new RowLayout(Orientation.HORIZONTAL));
-		
-	    status = new HTML();  
+
+	    status = new HTML();
 	    this.add(status, new RowData(1, 1, new Margins(0)));
 
 	    LayoutContainer linksContainerWrapper = new LayoutContainer();
 	    linksContainerWrapper.setBorders(false);
-	    
+
 	    VBoxLayout vBoxLayout = new VBoxLayout();
 	    vBoxLayout.setVBoxLayoutAlign(VBoxLayoutAlign.RIGHT);
 	    linksContainerWrapper.setLayout(vBoxLayout);
-	    
+
 	    LayoutContainer linksContainer = new LayoutContainer();
 	    linksContainer.setBorders(false);
-		
+
 	    aboutLink = new Label("<a href=\"\" onClick=\"return false;\">" +
-								MainController.CONSTANTS.bottom_panel_about_link() +
+	    						AppPropertiesManager.CONSTANTS.bottom_panel_about_link() +
 								"</a>");
 	    aboutLink.addStyleName("eppic-horizontal-nav");
 	    
@@ -57,11 +58,11 @@ public class BottomPanel extends LayoutContainer
 				mainController.showAbout();
 			}
 		});
-	    
-		contactLink = new Label("<a href=\"" + 
-								MainController.CONSTANTS.bottom_panel_contact_link() +
-								"\" target=\"_blank\">" + 
-								MainController.CONSTANTS.bottom_panel_contact_link_label() + 
+
+		contactLink = new Label("<a href=\"" +
+								AppPropertiesManager.CONSTANTS.bottom_panel_contact_link() +
+								"\" target=\"_blank\">" +
+								AppPropertiesManager.CONSTANTS.bottom_panel_contact_link_label() +
 								"</a>");
 		contactLink.setStyleAttribute("margin-left", "10px");
 		contactLink.addStyleName("eppic-horizontal-nav");
@@ -69,19 +70,19 @@ public class BottomPanel extends LayoutContainer
 		helpLink = new Label("<a href=\"" +
 							GWT.getHostPageBaseURL() + "Help.html" +
 							"\" target=\"_blank\">" +
-							MainController.CONSTANTS.bottom_panel_help_link() +
+							AppPropertiesManager.CONSTANTS.bottom_panel_help_link() +
 							"</a>");
 		helpLink.setStyleAttribute("margin-left", "10px");
 		helpLink.addStyleName("eppic-horizontal-nav");
-		
+
 		linksContainer.add(aboutLink);
 		linksContainer.add(helpLink);
 		linksContainer.add(contactLink);
-		
+
 		linksContainerWrapper.add(linksContainer);
 		this.add(linksContainerWrapper, new RowData(150, 1, new Margins(0)));
 	}
-	
+
 	/**
 	 * Updates text of the status message label.
 	 * @param message text to display.
@@ -90,23 +91,23 @@ public class BottomPanel extends LayoutContainer
 	public void updateStatusMessage(String message, boolean isError)
 	{
 		String messageText = "<span style=\"color:";
-		
+
 		String color = "black";
-		
+
 		if(isError)
 		{
 			color = "red; font-weight: bold";
 		}
-		
+
 		messageText += color + "\">" + "Status: " + message;
-		
+
 		if(isError)
 		{
-			messageText += " - " + MainController.CONSTANTS.bottom_panel_status_error_refresh_page();
+			messageText += " - " + AppPropertiesManager.CONSTANTS.bottom_panel_status_error_refresh_page();
 		}
-		
+
 		messageText += "</span>";
-		
+
 		status.setHTML(messageText);
 	}
 

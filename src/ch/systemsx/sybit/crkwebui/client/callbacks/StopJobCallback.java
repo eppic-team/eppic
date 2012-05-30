@@ -1,5 +1,6 @@
 package ch.systemsx.sybit.crkwebui.client.callbacks;
 
+import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -13,21 +14,18 @@ public class StopJobCallback implements AsyncCallback<String>
 {
 	private MainController mainController;
 	private String jobToStop;
-	private boolean debug;
 
 	public StopJobCallback(MainController mainController,
-							String jobToStop,
-							boolean debug) 
+							String jobToStop) 
 	{
 		this.mainController = mainController;
 		this.jobToStop = jobToStop;
-		this.debug = debug;
 	}
 
 	@Override
 	public void onFailure(Throwable caught) 
 	{
-		mainController.updateStatusLabel(MainController.CONSTANTS.callback_stop_job_error() + " " + jobToStop, true);
+		mainController.updateStatusLabel(AppPropertiesManager.CONSTANTS.callback_stop_job_error() + " " + jobToStop, true);
 	}
 
 	@Override
@@ -35,17 +33,17 @@ public class StopJobCallback implements AsyncCallback<String>
 	{
 		if (result != null)
 		{
-			mainController.showMessage(MainController.CONSTANTS.callback_stop_job_message(), result);
+			mainController.showMessage(AppPropertiesManager.CONSTANTS.callback_stop_job_message(), result);
 			mainController.getJobsForCurrentSession();
 			
 			if(jobToStop.equals(mainController.getSelectedJobId()))
 			{
-				mainController.getCurrentStatusData(debug);
+				mainController.getCurrentStatusData();
 			}
 		} 
 		else 
 		{
-			mainController.updateStatusLabel(MainController.CONSTANTS.callback_stop_job_error() + " " + jobToStop, true);
+			mainController.updateStatusLabel(AppPropertiesManager.CONSTANTS.callback_stop_job_error() + " " + jobToStop, true);
 		}
 	}
 

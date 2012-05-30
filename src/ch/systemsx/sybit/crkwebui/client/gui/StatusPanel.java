@@ -1,5 +1,6 @@
 package ch.systemsx.sybit.crkwebui.client.gui;
 
+import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 import ch.systemsx.sybit.crkwebui.shared.model.InputType;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
@@ -27,22 +28,22 @@ import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
  * @author srebniak_a
  *
  */
-public class StatusPanel extends DisplayPanel 
+public class StatusPanel extends DisplayPanel
 {
 	private FormPanel formPanel;
-	
+
 	private PDBIdentifierPanel pdbIdentifierPanel;
 	private TextField<String> jobId;
 	private TextField<String> status;
 	private TextArea log;
-	
+
 	private Button killJob;
-	
+
 	private ToolBar statusBar;
 	private Status statusProgress;
-	private Status statusStepsFinished;  
-	
-	public StatusPanel(MainController mainController) 
+	private Status statusStepsFinished;
+
+	public StatusPanel(MainController mainController)
 	{
 		super(mainController);
 		init();
@@ -51,68 +52,68 @@ public class StatusPanel extends DisplayPanel
 	/**
 	 * Initializes content of the panel.
 	 */
-	public void init() 
+	public void init()
 	{
 		this.setBorders(true);
 		this.setStyleAttribute("padding-top", "10px");
 		this.setLayout(new RowLayout());
-		
+
 		formPanel = new FormPanel();
 		formPanel.getHeader().setVisible(false);
 		formPanel.setBodyBorder(false);
 		formPanel.setButtonAlign(HorizontalAlignment.CENTER);
 		formPanel.setScrollMode(Scroll.AUTOY);
-		formPanel.setHeight(mainController.getWindowHeight() - 100);
-		
+		formPanel.setHeight(mainController.getWindowData().getWindowHeight() - 100);
+
 		pdbIdentifierPanel = new PDBIdentifierPanel(mainController);
 		pdbIdentifierPanel.setStyleAttribute("padding-left", "10px");
 		this.add(pdbIdentifierPanel, new FormData("95%"));
 
 		jobId = new TextField<String>();
-		jobId.setFieldLabel(MainController.CONSTANTS.status_panel_jobId());
+		jobId.setFieldLabel(AppPropertiesManager.CONSTANTS.status_panel_jobId());
 		jobId.setReadOnly(true);
 		formPanel.add(jobId, new FormData("95%"));
 
 		status = new TextField<String>();
-		status.setFieldLabel(MainController.CONSTANTS.status_panel_status());
+		status.setFieldLabel(AppPropertiesManager.CONSTANTS.status_panel_status());
 		status.setReadOnly(true);
 		formPanel.add(status, new FormData("95%"));
 
 		log = new TextArea();
-		log.setFieldLabel(MainController.CONSTANTS.status_panel_log());
+		log.setFieldLabel(AppPropertiesManager.CONSTANTS.status_panel_log());
 		log.setReadOnly(true);
 
 		formPanel.add(log, new FormData("95% -110"));
 
-		killJob = new Button(MainController.CONSTANTS.status_panel_stop(), new SelectionListener<ButtonEvent>() {
+		killJob = new Button(AppPropertiesManager.CONSTANTS.status_panel_stop(), new SelectionListener<ButtonEvent>() {
 
-			public void componentSelected(ButtonEvent ce) 
+			public void componentSelected(ButtonEvent ce)
 			{
 				mainController.stopJob(jobId.getValue());
 			}
 		});
-		
+
 		killJob.setWidth(80);
 		LayoutContainer killButtonContainer = new LayoutContainer();
 		killButtonContainer.setLayout(new CenterLayout());
 		killButtonContainer.add(killJob);
 		killButtonContainer.setHeight(30);
 		formPanel.add(killButtonContainer, new FormData("95%"));
-		
-		statusBar = new ToolBar();  
-		  
-		statusProgress = new Status();  
-		statusProgress.setText("");  
-		statusProgress.setWidth(150);  
-		statusBar.add(statusProgress);  
-		statusBar.add(new FillToolItem());  
-	  
-	    statusStepsFinished = new Status();  
-	    statusStepsFinished.setWidth(100);  
-	    statusStepsFinished.setText("");  
+
+		statusBar = new ToolBar();
+
+		statusProgress = new Status();
+		statusProgress.setText("");
+		statusProgress.setWidth(150);
+		statusBar.add(statusProgress);
+		statusBar.add(new FillToolItem());
+
+	    statusStepsFinished = new Status();
+	    statusStepsFinished.setWidth(100);
+	    statusStepsFinished.setText("");
 	    statusStepsFinished.setBox(true);
-	    statusBar.add(statusStepsFinished);  
-	    
+	    statusBar.add(statusStepsFinished);
+
 	    formPanel.setBottomComponent(statusBar);
 		this.add(formPanel, new RowData(1,1));
 
@@ -122,24 +123,27 @@ public class StatusPanel extends DisplayPanel
 	 * Sets content of the status panel.
 	 * @param statusData status data of selected job
 	 */
-	public void fillData(ProcessingInProgressData statusData) 
+	public void fillData(ProcessingInProgressData statusData)
 	{
 		int scrollBefore = log.getElement().getFirstChildElement().getScrollTop();
 		log.setValue(statusData.getLog());
 		log.getElement().getFirstChildElement().setScrollTop(scrollBefore);
-		
+
 		status.setValue(String.valueOf(statusData.getStatus()));
 		jobId.setValue(statusData.getJobId());
 		pdbIdentifierPanel.setPDBText(statusData.getInput(), null, null, 0, statusData.getInputType());
-		
-		if((status.getValue() != null) && (status.getValue().equals(StatusOfJob.RUNNING.getName())))
+
+		if((status.getValue() != null) &&
+		   ((status.getValue().equals(StatusOfJob.RUNNING.getName())) ||
+			(status.getValue().equals(StatusOfJob.WAITING.getName())) ||
+			(status.getValue().equals(StatusOfJob.QUEUING.getName()))))
 		{
 			killJob.setVisible(true);
 			statusProgress.setBusy(statusData.getStep().getCurrentStep());
-			
+
 			if(statusData.getStep().getTotalNumberOfSteps() != 0)
 			{
-				statusStepsFinished.setText(MainController.CONSTANTS.status_panel_step_counter() +
+				statusStepsFinished.setText(AppPropertiesManager.CONSTANTS.status_panel_step_counter() +
 											": " +
 											statusData.getStep().getCurrentStepNumber() +
 											"/" +
@@ -150,7 +154,7 @@ public class StatusPanel extends DisplayPanel
 			{
 				statusStepsFinished.setText("");
 			}
-			
+
 			statusStepsFinished.setVisible(true);
 		}
 		else
@@ -165,7 +169,7 @@ public class StatusPanel extends DisplayPanel
 	/**
 	 * Cleans content of status panel.
 	 */
-	public void cleanData() 
+	public void cleanData()
 	{
 		log.setValue("");
 		status.setValue("");

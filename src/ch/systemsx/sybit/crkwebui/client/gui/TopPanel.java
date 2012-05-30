@@ -1,6 +1,6 @@
 package ch.systemsx.sybit.crkwebui.client.gui;
 
-import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
+import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
 
 import com.extjs.gxt.ui.client.widget.Label;
 import com.extjs.gxt.ui.client.widget.form.FormPanel;
@@ -12,7 +12,7 @@ import com.extjs.gxt.ui.client.widget.layout.CenterLayout;
  */
 public class TopPanel extends FormPanel
 {
-	public TopPanel(MainController mainController) 
+	public TopPanel() 
 	{
 		this.setBodyBorder(false);
 		this.setBorders(false);
@@ -20,7 +20,7 @@ public class TopPanel extends FormPanel
 		this.setLayout(new CenterLayout());
 		this.addStyleName("top-panel-label");
 		Label title = new Label();
-		title.setText(MainController.CONSTANTS.top_panel_title());
+		title.setText(AppPropertiesManager.CONSTANTS.top_panel_title());
 		this.add(title);
 	}
 

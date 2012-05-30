@@ -1,6 +1,6 @@
 package ch.systemsx.sybit.crkwebui.client.gui;
 
-import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
+import ch.systemsx.sybit.crkwebui.client.data.WindowData;
 
 import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.Events;
@@ -23,12 +23,12 @@ public class LabelWithTooltip extends Label
 	 * Creates instance of label with assigned tooltip.
 	 * @param labelText text of the label
 	 * @param tooltipText text of the tooltip
-	 * @param mainController main application controller
+	 * @param windowData general application data
 	 * @param delay delay after which tooltip is displayed
 	 */
 	public LabelWithTooltip(String labelText,
 							final String tooltipText,
-							final MainController mainController,
+							final WindowData windowData,
 							final int delay)
 	{
 		super(labelText);
@@ -51,9 +51,9 @@ public class LabelWithTooltip extends Label
 					toolTipConfig.setText(tooltipText);  
 					
 					int width = 500;
-					if(width > mainController.getWindowWidth())
+					if(width > windowData.getWindowWidth())
 					{
-						width = mainController.getWindowWidth() - 10;
+						width = windowData.getWindowWidth() - 10;
 					}
 					
 					int toolTipXPosition = LabelWithTooltip.this.getAbsoluteLeft() + LabelWithTooltip.this.getWidth() + 5;

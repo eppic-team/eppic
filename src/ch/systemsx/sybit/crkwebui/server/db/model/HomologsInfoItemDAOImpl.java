@@ -16,7 +16,7 @@ import model.HomologsInfoItemDB_;
 import model.PDBScoreItemDB;
 import model.PDBScoreItemDB_;
 import ch.systemsx.sybit.crkwebui.server.db.EntityManagerHandler;
-import ch.systemsx.sybit.crkwebui.shared.CrkWebException;
+import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
 import ch.systemsx.sybit.crkwebui.shared.model.HomologsInfoItem;
 
 /**
@@ -27,13 +27,14 @@ import ch.systemsx.sybit.crkwebui.shared.model.HomologsInfoItem;
 public class HomologsInfoItemDAOImpl implements HomologsInfoItemDAO
 {
 	@Override
-	public List<HomologsInfoItem> getHomologsInfoItems(int pdbScoreUid) throws CrkWebException
+	public List<HomologsInfoItem> getHomologsInfoItems(int pdbScoreUid) throws DaoException
 	{
 		EntityManager entityManager = null;
-		List<HomologsInfoItem> result = new ArrayList<HomologsInfoItem>();
 		
 		try
 		{
+			List<HomologsInfoItem> result = new ArrayList<HomologsInfoItem>();
+			
 			entityManager = EntityManagerHandler.getEntityManager();
 			CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 			CriteriaQuery<HomologsInfoItemDB> criteriaQuery = criteriaBuilder.createQuery(HomologsInfoItemDB.class);
@@ -50,11 +51,13 @@ public class HomologsInfoItemDAOImpl implements HomologsInfoItemDAO
 			{
 				result.add(HomologsInfoItem.create(homologsInfoItemDB));
 			}
+			
+			return result;
 		}
 		catch(Throwable e)
 		{
 			e.printStackTrace();
-			throw new CrkWebException(e);
+			throw new DaoException(e);
 		}
 		finally
 		{
@@ -64,10 +67,8 @@ public class HomologsInfoItemDAOImpl implements HomologsInfoItemDAO
 			}
 			catch(Throwable t)
 			{
-				
+				t.printStackTrace();
 			}
 		}
-		
-		return result;
 	}
 }

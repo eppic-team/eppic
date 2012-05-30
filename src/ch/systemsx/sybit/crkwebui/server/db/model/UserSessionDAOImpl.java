@@ -14,7 +14,7 @@ import model.JobDB_;
 import model.UserSessionDB;
 import model.UserSessionDB_;
 import ch.systemsx.sybit.crkwebui.server.db.EntityManagerHandler;
-import ch.systemsx.sybit.crkwebui.shared.CrkWebException;
+import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
 
 /**
  * Implementation of UserSessionDAO.
@@ -23,7 +23,7 @@ import ch.systemsx.sybit.crkwebui.shared.CrkWebException;
 public class UserSessionDAOImpl implements UserSessionDAO 
 {
 	@Override
-	public void insertSessionForJob(String sessionId, String jobId) throws CrkWebException
+	public void insertSessionForJob(String sessionId, String jobId) throws DaoException
 	{
 		EntityManager entityManager = null;
 		
@@ -57,11 +57,11 @@ public class UserSessionDAOImpl implements UserSessionDAO
 			}
 			catch(Throwable t)
 			{
-				
+				t.printStackTrace();
 			}
 			
 			
-			throw new CrkWebException(e);
+			throw new DaoException(e);
 		}
 		finally
 		{
@@ -71,14 +71,14 @@ public class UserSessionDAOImpl implements UserSessionDAO
 			}
 			catch(Throwable t)
 			{
-				
+				t.printStackTrace();
 			}
 		}
 	}
 	
 	@Override
 	public UserSessionDB getSession(EntityManager entityManager,
-								String sessionId) throws CrkWebException
+									String sessionId) throws DaoException
 	{
 		UserSessionDB session = null; 
 		
@@ -108,7 +108,7 @@ public class UserSessionDAOImpl implements UserSessionDAO
 		catch(Throwable e)
 		{
 			e.printStackTrace();
-			throw new CrkWebException(e);
+			throw new DaoException(e);
 		}
 		finally
 		{

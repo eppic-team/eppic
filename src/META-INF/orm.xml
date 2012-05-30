@@ -5,38 +5,38 @@
     version="2.0">
     <description>CRK JPA entities</description>
     <package>CRK entities</package>
-   
+
     <entity class="model.UserSessionDB" name="UserSession">
         <table name="UserSession"/>
         <attributes>
         	<id name="uid">
                 <generated-value strategy="IDENTITY"/>
             </id>
-            
+
             <basic name="sessionId"></basic>
-            
+
             <many-to-many name="jobs">
             	<join-table name="UserSessionJob">
             		<join-column name="UserSessionId" referenced-column-name="uid"/>
-            		<inverse-join-column name="JobId" referenced-column-name="uid"/> 
+            		<inverse-join-column name="JobId" referenced-column-name="uid"/>
             	</join-table>
         		<cascade>
             	    <cascade-persist/>
             	    <cascade-merge/>
             	    <cascade-refresh/>
-            	    <cascade-detach/>   
-            	</cascade> 
+            	    <cascade-detach/>
+            	</cascade>
        		</many-to-many>
         </attributes>
     </entity>
-    
+
     <entity class="model.JobDB" name="Job">
         <table name="Job"/>
         <attributes>
         	<id name="uid">
                 <generated-value strategy="IDENTITY"/>
             </id>
-            
+
         	<basic name="jobId"></basic>
             <basic name="status"></basic>
             <basic name="email"></basic>
@@ -46,21 +46,22 @@
             	<temporal>TIMESTAMP</temporal>
             </basic>
             <basic name="inputType"></basic>
-            
+            <basic name="submissionId"></basic>
+
             <one-to-one name="pdbScoreItem">
         		<cascade>
-            	    <cascade-all/>  
-            	</cascade> 
+            	    <cascade-all/>
+            	</cascade>
        		</one-to-one>
-       		
+
        		<many-to-many name="userSessions" mapped-by="jobs">
        			<cascade>
-            	    <cascade-all/>  
-            	</cascade> 
+            	    <cascade-all/>
+            	</cascade>
        		</many-to-many>
         </attributes>
     </entity>
-   
+
 	<entity class="model.PDBScoreItemDB" name="PDBScoreItem">
         <table name="PdbScore"/>
         <attributes>
@@ -81,35 +82,35 @@
             	<column length="255"/>
             </basic>
             <basic name="resolution"></basic>
-            
-       		<one-to-many name="interfaceItems" mapped-by="pdbScoreItem">  
-            	<cascade>  
-            	    <cascade-all/>  
-            	</cascade>  
-       		</one-to-many>  
-       		
-       		<one-to-many name="homologsInfoItems" mapped-by="pdbScoreItem">  
-            	<cascade>  
-            	    <cascade-all/>  
-            	</cascade>  
-       		</one-to-many>  
-        
+
+       		<one-to-many name="interfaceItems" mapped-by="pdbScoreItem">
+            	<cascade>
+            	    <cascade-all/>
+            	</cascade>
+       		</one-to-many>
+
+       		<one-to-many name="homologsInfoItems" mapped-by="pdbScoreItem">
+            	<cascade>
+            	    <cascade-all/>
+            	</cascade>
+       		</one-to-many>
+
         	<one-to-one name="runParameters">
         		<cascade>
-            	    <cascade-all/>  
-            	</cascade> 
+            	    <cascade-all/>
+            	</cascade>
        		</one-to-one>
-       		
-       		<one-to-one name="jobItem" mapped-by="pdbScoreItem">  
-            </one-to-one>  
-       		
+
+       		<one-to-one name="jobItem" mapped-by="pdbScoreItem">
+            </one-to-one>
+
        		<!-- element-collection name="homologsInfoItems"-->
 				<!-- collection-table name="NUMHOMOLOGSSTRINGS"-->
 				<!-- /collection-table-->
-			<!-- /element-collection--> 
+			<!-- /element-collection-->
         </attributes>
    </entity>
-   
+
    <entity class="model.InterfaceItemDB" name="InterfaceItem">
         <table name="Interface"/>
         <entity-listeners>
@@ -147,35 +148,35 @@
        		<basic name="jmolScript">
        			<column column-definition="text"/>
        		</basic>
-       		
-       		<many-to-one name="pdbScoreItem" >  
-            </many-to-one>  
-            
+
+       		<many-to-one name="pdbScoreItem" >
+            </many-to-one>
+
        		<one-to-many name="interfaceScores" mapped-by="interfaceItem">
-            	<cascade>  
-            	    <cascade-all/>  
-            	</cascade>  
-       		</one-to-many>  
-       		
-       		<one-to-many name="interfaceResidues" mapped-by="interfaceItem">  
-            	<cascade>  
-            	    <cascade-all/>  
-            	</cascade>  
+            	<cascade>
+            	    <cascade-all/>
+            	</cascade>
        		</one-to-many>
-       		
-       		<one-to-many name="warnings" mapped-by="interfaceItem">  
-            	<cascade>  
-            	    <cascade-all/>  
-            	</cascade>  
-       		</one-to-many>  
-       		
+
+       		<one-to-many name="interfaceResidues" mapped-by="interfaceItem">
+            	<cascade>
+            	    <cascade-all/>
+            	</cascade>
+       		</one-to-many>
+
+       		<one-to-many name="warnings" mapped-by="interfaceItem">
+            	<cascade>
+            	    <cascade-all/>
+            	</cascade>
+       		</one-to-many>
+
        		<!-- element-collection name="warnings"-->
 				<!-- collection-table name="WARNINGS"-->
 				<!-- /collection-table-->
-			<!-- /element-collection--> 
+			<!-- /element-collection-->
         </attributes>
    </entity>
-   
+
    <entity class="model.InterfaceResidueItemDB" name="InterfaceResidueItem">
         <table name="InterfaceResidue"/>
         <entity-listeners>
@@ -197,12 +198,12 @@
             <basic name="bsaPercentage"><column nullable="true"/></basic>
             <basic name="assignment"></basic>
             <basic name="entropyScore"><column nullable="true"/></basic>
-       		
-       		<many-to-one name="interfaceItem" >  
-            </many-to-one>  
+
+       		<many-to-one name="interfaceItem" >
+            </many-to-one>
         </attributes>
    </entity>
-   
+
    <entity class="model.InterfaceScoreItemDB" name="InterfaceScoreItem">
         <table name="InterfaceScore"/>
         <entity-listeners>
@@ -230,13 +231,13 @@
             <basic name="callReason">
             	<column column-definition="text"/>
             </basic>
-            
-       		
-       		<many-to-one name="interfaceItem" >  
-            </many-to-one>  
+
+
+       		<many-to-one name="interfaceItem" >
+            </many-to-one>
         </attributes>
    </entity>
-   
+
    <entity class="model.WarningItemDB" name="WarningItem">
         <table name="Warning"/>
         <attributes>
@@ -246,21 +247,21 @@
             <basic name="text">
             	<column column-definition="text"/>
             </basic>
-       		
-       		<many-to-one name="interfaceItem" >  
-            </many-to-one>  
+
+       		<many-to-one name="interfaceItem" >
+            </many-to-one>
         </attributes>
    </entity>
-   
+
    <entity class="model.RunParametersItemDB" name="RunParametersItem">
         <table name="RunParameters"/>
         <attributes>
         	<id name="uid">
                 <generated-value strategy="IDENTITY"/>
             </id>
-            
+
         	<basic name="homologsCutoff"></basic>
-        	
+
             <basic name="homSoftIdCutoff"></basic>
 			<basic name="homHardIdCutoff"></basic>
             <basic name="queryCovCutoff"></basic>
@@ -279,11 +280,11 @@
             	<column length="15"/>
             </basic>
 
-       		<one-to-one name="pdbScoreItem" mapped-by="runParameters">  
-            </one-to-one>  
+       		<one-to-one name="pdbScoreItem" mapped-by="runParameters">
+            </one-to-one>
         </attributes>
    </entity>
-   
+
    <entity class="model.HomologsInfoItemDB" name="HomologsInfoItem">
         <table name="HomologsInfoItem"/>
         <entity-listeners>
@@ -294,7 +295,7 @@
             <id name="uid">
                 <generated-value strategy="IDENTITY"/>
             </id>
-       		
+
        		<basic name="chains"></basic>
        		<basic name="uniprotId"></basic>
        		<basic name="numHomologs"></basic>
@@ -311,10 +312,10 @@
        		<basic name="markupLine">
        			<column column-definition="text"/>
        		</basic>
-       		
-       		<many-to-one name="pdbScoreItem" >  
+
+       		<many-to-one name="pdbScoreItem" >
             </many-to-one>
-            
+
             <one-to-many name="queryWarnings" mapped-by="homologsInfoItem">  
             	<cascade>  
             	    <cascade-all/>  
@@ -354,7 +355,7 @@
             
         </attributes>
    </entity>
-   
+
    <entity class="model.QueryWarningItemDB" name="QueryWarningItem">
         <table name="QueryWarning"/>
         <attributes>
@@ -364,10 +365,10 @@
             <basic name="text">
             	<column column-definition="text"/>
             </basic>
-       		
-       		<many-to-one name="homologsInfoItem" >  
-            </many-to-one>  
+
+       		<many-to-one name="homologsInfoItem" >
+            </many-to-one>
         </attributes>
    </entity>
-   
+
 </entity-mappings>

@@ -1,5 +1,6 @@
 package ch.systemsx.sybit.crkwebui.client.callbacks;
 
+import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingData;
@@ -27,7 +28,7 @@ public class GetResultsOfProcessingCallback implements AsyncCallback<ProcessingD
 	@Override
 	public void onFailure(Throwable caught) 
 	{
-		String errorText = MainController.CONSTANTS.callback_get_results_of_processing_error() + " " + caught.getMessage();
+		String errorText = AppPropertiesManager.CONSTANTS.callback_get_results_of_processing_error() + " " + caught.getMessage();
 		mainController.updateStatusLabel(errorText, true);
 		mainController.getMainViewPort().unmask();
 	}
@@ -55,7 +56,7 @@ public class GetResultsOfProcessingCallback implements AsyncCallback<ProcessingD
 				}
 				else
 				{
-					mainController.updateStatusLabel(MainController.CONSTANTS.callback_get_results_of_processing_error() + " - incorrect type ", true);
+					mainController.updateStatusLabel(AppPropertiesManager.CONSTANTS.callback_get_results_of_processing_error() + " - incorrect type ", true);
 					mainController.cleanCenterPanel();
 				}
 			}
@@ -64,7 +65,7 @@ public class GetResultsOfProcessingCallback implements AsyncCallback<ProcessingD
 		}
 		else
 		{
-			mainController.showMessage(MainController.CONSTANTS.callback_job_not_found_error(), "Id=" + jobId + " not found on the server");
+			mainController.showMessage(AppPropertiesManager.CONSTANTS.callback_job_not_found_error(), "Id=" + jobId + " not found on the server");
 			mainController.cleanCenterPanel();
 		}
 		

@@ -1,5 +1,6 @@
 package ch.systemsx.sybit.crkwebui.client.callbacks;
 
+import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -24,7 +25,7 @@ public class DeleteJobCallback implements AsyncCallback<String>
 	@Override
 	public void onFailure(Throwable caught) 
 	{
-		mainController.updateStatusLabel(MainController.CONSTANTS.callback_delete_job_error(), true);
+		mainController.updateStatusLabel(AppPropertiesManager.CONSTANTS.callback_delete_job_error(), true);
 	}
 
 	@Override
@@ -37,7 +38,7 @@ public class DeleteJobCallback implements AsyncCallback<String>
 		} 
 		else 
 		{
-			mainController.updateStatusLabel(MainController.CONSTANTS.callback_delete_job_error() + " " + jobToRemove, true);
+			mainController.updateStatusLabel(AppPropertiesManager.CONSTANTS.callback_delete_job_error() + " " + jobToRemove, true);
 		}
 	}
 

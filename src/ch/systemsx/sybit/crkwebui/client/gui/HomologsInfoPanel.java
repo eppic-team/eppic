@@ -2,6 +2,7 @@ package ch.systemsx.sybit.crkwebui.client.gui;
 
 import java.util.List;
 
+import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 import ch.systemsx.sybit.crkwebui.shared.model.HomologsInfoItem;
 import ch.systemsx.sybit.crkwebui.shared.model.QueryWarningItem;
@@ -29,9 +30,9 @@ public class HomologsInfoPanel extends LayoutContainer
 		
 		if(homologsInfoItem.isHasQueryMatch())
 		{
-			final EmptyLinkWithTooltip chainsLink = new EmptyLinkWithTooltip("Chain "+homologsInfoItem.getChains(), 
-																	   		 MainController.CONSTANTS.homologs_panel_chains_hint(),
-																	   		 mainController, 
+			final EmptyLinkWithTooltip chainsLink = new EmptyLinkWithTooltip("Chain " + homologsInfoItem.getChains(), 
+																			 AppPropertiesManager.CONSTANTS.homologs_panel_chains_hint(),
+																	   		 mainController.getWindowData(), 
 																	   		 0);
 			
 			chainsLink.addStyleName("eppic-action");
@@ -53,8 +54,8 @@ public class HomologsInfoPanel extends LayoutContainer
 			this.add(startUniprotLabel);
 			
 			LinkWithTooltip uniprotIdLabel = new LinkWithTooltip(homologsInfoItem.getUniprotId(), 
-																 MainController.CONSTANTS.homologs_panel_uniprot_hint(),
-																 mainController, 
+																 AppPropertiesManager.CONSTANTS.homologs_panel_uniprot_hint(),
+																 mainController.getWindowData(), 
 																 0, 
 																 mainController.getSettings().getUniprotLinkUrl() + homologsInfoItem.getUniprotId());
 			uniprotIdLabel.addStyleName("eppic-external-link");
@@ -75,8 +76,8 @@ public class HomologsInfoPanel extends LayoutContainer
 			String downloadLink = GWT.getModuleBaseURL() + "fileDownload?type=fasta&id=" + mainController.getSelectedJobId() + "&alignment=" + alignmentId; 
 			
 			LinkWithTooltip nrHomologsLabel = new LinkWithTooltip(nrOfHomologsText, 
-																  MainController.CONSTANTS.homologs_panel_nrhomologs_hint(),
-																  mainController, 
+																  AppPropertiesManager.CONSTANTS.homologs_panel_nrhomologs_hint(),
+																  mainController.getWindowData(), 
 																  0, 
 																  downloadLink);
 			
@@ -85,7 +86,7 @@ public class HomologsInfoPanel extends LayoutContainer
 		}
 		else
 		{
-			final EmptyLink chainsLink = new EmptyLink("Chain "+homologsInfoItem.getChains());
+			final EmptyLink chainsLink = new EmptyLink("Chain " + homologsInfoItem.getChains());
 			chainsLink.addStyleName("eppic-action");
 			
 			final ToolTip chainsLinkTooltip = infoPanel.getQueryWarningsTooltip();

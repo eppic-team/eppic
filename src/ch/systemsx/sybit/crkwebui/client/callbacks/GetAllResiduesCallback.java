@@ -1,5 +1,6 @@
 package ch.systemsx.sybit.crkwebui.client.callbacks;
 
+import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResiduesItemsList;
 
@@ -25,7 +26,7 @@ public class GetAllResiduesCallback implements AsyncCallback<InterfaceResiduesIt
 	@Override
 	public void onFailure(Throwable caught) 
 	{
-		mainController.updateStatusLabel(MainController.CONSTANTS.callback_get_interface_residues_error(), true);
+		mainController.updateStatusLabel(AppPropertiesManager.CONSTANTS.callback_get_interface_residues_error(), true);
 	}
 
 	@Override
@@ -40,7 +41,7 @@ public class GetAllResiduesCallback implements AsyncCallback<InterfaceResiduesIt
 		}
 		else 
 		{
-			mainController.updateStatusLabel(MainController.CONSTANTS.callback_get_interface_residues_error() + " - incorrect result type", true);
+			mainController.updateStatusLabel(AppPropertiesManager.CONSTANTS.callback_get_interface_residues_error() + " - incorrect result type", true);
 		}
 		
 		mainController.hideWaiting();

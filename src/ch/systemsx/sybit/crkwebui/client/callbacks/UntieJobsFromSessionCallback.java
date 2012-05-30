@@ -1,5 +1,6 @@
 package ch.systemsx.sybit.crkwebui.client.callbacks;
 
+import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -21,7 +22,7 @@ public class UntieJobsFromSessionCallback implements AsyncCallback<Void>
 	@Override
 	public void onFailure(Throwable caught) 
 	{
-		mainController.updateStatusLabel(MainController.CONSTANTS.callback_untie_jobs_from_session_error(), true);
+		mainController.updateStatusLabel(AppPropertiesManager.CONSTANTS.callback_untie_jobs_from_session_error(), true);
 	}
 
 	@Override

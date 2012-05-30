@@ -3,6 +3,7 @@ package ch.systemsx.sybit.crkwebui.client.gui;
 import java.util.ArrayList;
 import java.util.List;
 
+import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 import ch.systemsx.sybit.crkwebui.client.model.ReducedAlphabetComboModel;
 import ch.systemsx.sybit.crkwebui.client.model.SearchModeComboModel;
@@ -56,7 +57,7 @@ public class OptionsInputPanel extends FieldSet
 		List<String> searchModeDefaultList = mainController.getSettings().getSearchModeList();
 		List<SupportedMethod> supportedMethods = mainController.getSettings().getScoresTypes();
 		
-		this.setHeading(MainController.CONSTANTS.input_advanced());
+		this.setHeading(AppPropertiesManager.CONSTANTS.input_advanced());
 		this.setCollapsible(true);
 		this.setBorders(false);
 
@@ -127,7 +128,7 @@ public class OptionsInputPanel extends FieldSet
 			
 			if(supportedMethods.get(i).getName().equals("Entropy"))
 			{
-				methodsFieldsets[i].setHeading(MainController.CONSTANTS
+				methodsFieldsets[i].setHeading(AppPropertiesManager.CONSTANTS
 						.parameters_entropy());
 				
 				reducedAlphabetValues = new ListStore<ReducedAlphabetComboModel>();
@@ -140,7 +141,7 @@ public class OptionsInputPanel extends FieldSet
 				}
 
 				reducedAlphabetCombo = new ComboBox<ReducedAlphabetComboModel>();
-				reducedAlphabetCombo.setFieldLabel(MainController.CONSTANTS
+				reducedAlphabetCombo.setFieldLabel(AppPropertiesManager.CONSTANTS
 						.parameters_reduced_alphabet());
 				reducedAlphabetCombo.setWidth(150);
 				reducedAlphabetCombo.setStore(reducedAlphabetValues);
@@ -149,7 +150,7 @@ public class OptionsInputPanel extends FieldSet
 				reducedAlphabetCombo.setDisplayField("reducedAlphabet");
 				reducedAlphabetCombo.setEditable(false);
 				reducedAlphabetCombo.addPlugin(plugin);
-				reducedAlphabetCombo.setData("hint", MainController.CONSTANTS.parameters_reduced_alphabet_hint());
+				reducedAlphabetCombo.setData("hint", AppPropertiesManager.CONSTANTS.parameters_reduced_alphabet_hint());
 				methodsFieldsets[i].add(reducedAlphabetCombo, formData);
 				
 				methodsFieldsets[i].addListener(Events.Expand, new Listener<FieldSetEvent>() 
@@ -170,7 +171,7 @@ public class OptionsInputPanel extends FieldSet
 			}
 			else if(supportedMethods.get(i).getName().equals("Geometry"))
 			{
-				methodsFieldsets[i].setHeading(MainController.CONSTANTS
+				methodsFieldsets[i].setHeading(AppPropertiesManager.CONSTANTS
 						.parameters_geometry());
 				
 				methodsFieldsets[i].addListener(Events.Collapse, new Listener<FieldSetEvent>() 
@@ -199,42 +200,42 @@ public class OptionsInputPanel extends FieldSet
 		allignmentsParametersFieldSetLayout.setLabelWidth(200);
 
 		FieldSet allignmentsParametersFieldSet = new FieldSet();
-		allignmentsParametersFieldSet.setHeading(MainController.CONSTANTS
+		allignmentsParametersFieldSet.setHeading(AppPropertiesManager.CONSTANTS
 				.parameters_allignment());
 		allignmentsParametersFieldSet
 				.setLayout(allignmentsParametersFieldSetLayout);
 
 		softIdentityCutOff = new NumberField();
-		softIdentityCutOff.setFieldLabel(MainController.CONSTANTS
+		softIdentityCutOff.setFieldLabel(AppPropertiesManager.CONSTANTS
 				.parameters_soft_identity_cutoff());
 		softIdentityCutOff.setAllowBlank(false);
 		softIdentityCutOff.setFormat(NumberFormat.getDecimalFormat());
 		softIdentityCutOff.setMinValue(0);
 		softIdentityCutOff.setMaxValue(1);
 		softIdentityCutOff.addPlugin(plugin);
-		softIdentityCutOff.setData("hint", MainController.CONSTANTS.parameters_soft_identity_cutoff_hint());
+		softIdentityCutOff.setData("hint", AppPropertiesManager.CONSTANTS.parameters_soft_identity_cutoff_hint());
 		allignmentsParametersFieldSet.add(softIdentityCutOff, formData);
 		
 		hardIdentityCutOff = new NumberField();
-		hardIdentityCutOff.setFieldLabel(MainController.CONSTANTS
+		hardIdentityCutOff.setFieldLabel(AppPropertiesManager.CONSTANTS
 				.parameters_hard_identity_cutoff());
 		hardIdentityCutOff.setAllowBlank(false);
 		hardIdentityCutOff.setFormat(NumberFormat.getDecimalFormat());
 		hardIdentityCutOff.setMinValue(0);
 		hardIdentityCutOff.setMaxValue(1);
 		hardIdentityCutOff.addPlugin(plugin);
-		hardIdentityCutOff.setData("hint", MainController.CONSTANTS.parameters_hard_identity_cutoff_hint());
+		hardIdentityCutOff.setData("hint", AppPropertiesManager.CONSTANTS.parameters_hard_identity_cutoff_hint());
 		allignmentsParametersFieldSet.add(hardIdentityCutOff, formData);
 
 		maxNrOfSequences = new NumberField();
-		maxNrOfSequences.setFieldLabel(MainController.CONSTANTS
+		maxNrOfSequences.setFieldLabel(AppPropertiesManager.CONSTANTS
 				.parameters_max_num_sequences());
 		maxNrOfSequences.setAllowBlank(false);
 		maxNrOfSequences.setAllowNegative(false);
 		maxNrOfSequences.setPropertyEditorType(Integer.class);
 		maxNrOfSequences.setName("maxNrOfSequences");
 		maxNrOfSequences.addPlugin(plugin);
-		maxNrOfSequences.setData("hint", MainController.CONSTANTS.parameters_max_num_sequences_hint());
+		maxNrOfSequences.setData("hint", AppPropertiesManager.CONSTANTS.parameters_max_num_sequences_hint());
 		allignmentsParametersFieldSet.add(maxNrOfSequences, formData);
 		
 		searchModeValues = new ListStore<SearchModeComboModel>();
@@ -247,7 +248,7 @@ public class OptionsInputPanel extends FieldSet
 		}
 
 		searchModeCombo = new ComboBox<SearchModeComboModel>();
-		searchModeCombo.setFieldLabel(MainController.CONSTANTS
+		searchModeCombo.setFieldLabel(AppPropertiesManager.CONSTANTS
 				.parameters_search_mode());
 		searchModeCombo.setWidth(150);
 		searchModeCombo.setStore(searchModeValues);
@@ -256,7 +257,7 @@ public class OptionsInputPanel extends FieldSet
 		searchModeCombo.setDisplayField("searchMode");
 		searchModeCombo.setEditable(false);
 		searchModeCombo.addPlugin(plugin);
-		searchModeCombo.setData("hint", MainController.CONSTANTS.parameters_search_mode_hint());
+		searchModeCombo.setData("hint", AppPropertiesManager.CONSTANTS.parameters_search_mode_hint());
 		allignmentsParametersFieldSet.add(searchModeCombo, formData);
 
 		this.add(allignmentsParametersFieldSet);

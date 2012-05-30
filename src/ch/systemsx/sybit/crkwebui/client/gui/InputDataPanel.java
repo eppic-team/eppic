@@ -1,9 +1,11 @@
 package ch.systemsx.sybit.crkwebui.client.gui;
 
+import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 import ch.systemsx.sybit.crkwebui.client.gui.validators.EmailFieldValidator;
 import ch.systemsx.sybit.crkwebui.client.gui.validators.PdbCodeFieldValidator;
 import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
+import ch.systemsx.sybit.crkwebui.shared.validators.InputParametersComparator;
 
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.Style.Orientation;
@@ -33,6 +35,7 @@ import com.extjs.gxt.ui.client.widget.layout.RowData;
 import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.user.client.History;
 
 /**
  * Panel used to submit new job.
@@ -42,20 +45,20 @@ import com.google.gwt.event.dom.client.KeyCodes;
 public class InputDataPanel extends DisplayPanel
 {
 	private RecaptchaPanel recaptchaPanel;
-	
+
 	private FormPanel formPanel;
-	
+
 	private RadioGroup inputRadioGroup;
 	private Radio pdbCodeRadio;
 	private Radio pdbFileRadio;
-	
+
 	private FileUploadField file;
 	private TextField<String> pdbCodeField;
 	private TextField<String> emailTextField;
-	
-	private OptionsInputPanel optionsInputPanel; 
 
-	public InputDataPanel(MainController mainController) 
+	private OptionsInputPanel optionsInputPanel;
+
+	public InputDataPanel(MainController mainController)
 	{
 		super(mainController);
 		init();
@@ -64,12 +67,12 @@ public class InputDataPanel extends DisplayPanel
 	/**
 	 * Initalizes content of the panel.
 	 */
-	public void init() 
+	public void init()
 	{
 		this.setLayout(new RowLayout(Orientation.HORIZONTAL));
 		this.setBorders(false);
 		this.setScrollMode(Scroll.AUTO);
-		
+
 		formPanel = new FormPanel();
 
 		formPanel.getHeader().setVisible(false);
@@ -90,23 +93,23 @@ public class InputDataPanel extends DisplayPanel
 		generalFieldSet.setBorders(false);
 		generalFieldSet.setLayout(layout);
 
-		pdbCodeRadio = new Radio();  
-		pdbCodeRadio.setBoxLabel(MainController.CONSTANTS.input_pdb_code_radio());  
-		pdbCodeRadio.setValue(true);  
-	  
-	    pdbFileRadio = new Radio();  
-	    pdbFileRadio.setBoxLabel(MainController.CONSTANTS.input_upload_file_radio());  
-	  
-	    inputRadioGroup = new RadioGroup();  
-	    inputRadioGroup.setFieldLabel(MainController.CONSTANTS.input_pdb_input_type());  
-	    inputRadioGroup.add(pdbCodeRadio);  
-	    inputRadioGroup.add(pdbFileRadio);  
+		pdbCodeRadio = new Radio();
+		pdbCodeRadio.setBoxLabel(AppPropertiesManager.CONSTANTS.input_pdb_code_radio());
+		pdbCodeRadio.setValue(true);
+
+	    pdbFileRadio = new Radio();
+	    pdbFileRadio.setBoxLabel(AppPropertiesManager.CONSTANTS.input_upload_file_radio());
+
+	    inputRadioGroup = new RadioGroup();
+	    inputRadioGroup.setFieldLabel(AppPropertiesManager.CONSTANTS.input_pdb_input_type());
+	    inputRadioGroup.add(pdbCodeRadio);
+	    inputRadioGroup.add(pdbFileRadio);
 	    inputRadioGroup.addListener(Events.Change, new Listener<BaseEvent>(){
-	        public void handleEvent(BaseEvent be) 
+	        public void handleEvent(BaseEvent be)
 	        {
 	        	String selectedType = inputRadioGroup.getValue().getBoxLabel();
-	        	
-	        	if(selectedType.equals(MainController.CONSTANTS.input_pdb_code_radio()))
+
+	        	if(selectedType.equals(AppPropertiesManager.CONSTANTS.input_pdb_code_radio()))
 	        	{
 	        		file.setVisible(false);
 	        		file.setAllowBlank(true);
@@ -115,7 +118,7 @@ public class InputDataPanel extends DisplayPanel
 	        		pdbCodeField.setAllowBlank(false);
 	        		pdbCodeField.setVisible(true);
 	        	}
-	        	else if(selectedType.equals(MainController.CONSTANTS.input_upload_file_radio()))
+	        	else if(selectedType.equals(AppPropertiesManager.CONSTANTS.input_upload_file_radio()))
 	        	{
 	        		file.setVisible(true);
 	        		file.setAllowBlank(false);
@@ -123,24 +126,24 @@ public class InputDataPanel extends DisplayPanel
 	        		pdbCodeField.setVisible(false);
 	        		pdbCodeField.setAllowBlank(true);
 	        	}
-	        	
+
 	        	formPanel.layout();
 	        }
 	    });
-	    
-	    generalFieldSet.add(inputRadioGroup); 
-	    
+
+	    generalFieldSet.add(inputRadioGroup);
+
 		file = new FileUploadField();
 		file.setWidth(200);
 		file.setAllowBlank(true);
 		file.setName("uploadFormElement");
-		file.setFieldLabel(MainController.CONSTANTS.input_file());
+		file.setFieldLabel(AppPropertiesManager.CONSTANTS.input_file());
 		file.setVisible(false);
 		generalFieldSet.add(file);
-		
+
 		pdbCodeField = new TextField<String>();
 		pdbCodeField.setName("code");
-		pdbCodeField.setFieldLabel(MainController.CONSTANTS.input_pdb_code_radio());
+		pdbCodeField.setFieldLabel(AppPropertiesManager.CONSTANTS.input_pdb_code_radio());
 		pdbCodeField.setValidator(new PdbCodeFieldValidator());
 		pdbCodeField.setAllowBlank(false);
 		pdbCodeField.addKeyListener(new KeyListener(){
@@ -153,10 +156,10 @@ public class InputDataPanel extends DisplayPanel
 			}
 		});
 		generalFieldSet.add(pdbCodeField);
-		
+
 		emailTextField = new TextField<String>();
 		emailTextField.setName("email");
-		emailTextField.setFieldLabel(MainController.CONSTANTS.input_email());
+		emailTextField.setFieldLabel(AppPropertiesManager.CONSTANTS.input_email());
 		emailTextField.setValidator(new EmailFieldValidator());
 		emailTextField.addKeyListener(new KeyListener(){
 			public void componentKeyPress(ComponentEvent event)
@@ -176,7 +179,7 @@ public class InputDataPanel extends DisplayPanel
 		generalFieldSet.add(breakPanel);
 
 		optionsInputPanel = new OptionsInputPanel(mainController);
-		
+
 		generalFieldSet.add(optionsInputPanel);
 		optionsInputPanel.collapse();
 
@@ -185,7 +188,7 @@ public class InputDataPanel extends DisplayPanel
 			public void handleEvent(FormEvent formEvent)
 			{
 				String result = formEvent.getResultHtml();
-				
+
 				if((result != null) && (result.startsWith("crkupres:")))
 				{
 					result = result.replaceAll("\n", "");
@@ -203,30 +206,30 @@ public class InputDataPanel extends DisplayPanel
 				}
 				else
 				{
-					mainController.showError(MainController.CONSTANTS.input_submit_error());
+					mainController.showError(AppPropertiesManager.CONSTANTS.input_submit_error());
 					mainController.hideWaiting();
 				}
 			}
 		});
 
-		Button resetButton = new Button(MainController.CONSTANTS.input_reset());
+		Button resetButton = new Button(AppPropertiesManager.CONSTANTS.input_reset());
 		resetButton.addSelectionListener(new SelectionListener<ButtonEvent>() {
-			public void componentSelected(ButtonEvent ce) 
+			public void componentSelected(ButtonEvent ce)
 			{
 				emailTextField.setValue("");
-				
+
 				file.setAllowBlank(true);
 				pdbCodeField.setAllowBlank(true);
 				pdbCodeField.setValue("");
 				file.reset();
-				
+
 				file.setVisible(false);
         		file.setAllowBlank(true);
         		pdbCodeField.setVisible(true);
         		pdbCodeField.setAllowBlank(false);
-        		
+
         		pdbCodeRadio.setValue(true);
-				
+
 				optionsInputPanel.fillDefaultValues(mainController
 						.getSettings().getDefaultParametersValues());
 			}
@@ -235,9 +238,9 @@ public class InputDataPanel extends DisplayPanel
 		formPanel.addButton(resetButton);
 
 		Button submitButton = new Button(
-				MainController.CONSTANTS.input_submit());
+				AppPropertiesManager.CONSTANTS.input_submit());
 		submitButton.addSelectionListener(new SelectionListener<ButtonEvent>() {
-			public void componentSelected(ButtonEvent ce) 
+			public void componentSelected(ButtonEvent ce)
 			{
 				submitForm();
 			}
@@ -248,22 +251,22 @@ public class InputDataPanel extends DisplayPanel
 		if(mainController.getSettings().isUseCaptcha())
 		{
 			recaptchaPanel = new RecaptchaPanel(mainController.getSettings().getCaptchaPublicKey());
-			
+
 			if(mainController.getNrOfSubmissions() < mainController.getSettings().getNrOfAllowedSubmissionsWithoutCaptcha())
 			{
 				recaptchaPanel.setVisible(false);
 			}
-			
+
 			generalFieldSet.add(recaptchaPanel);
 		}
-		
+
 		formPanel.add(generalFieldSet);
-		
+
 		//fix for chrome - otherwise unnecessary scrollbars visible
 		this.add(new LayoutContainer(), new RowData(0.5, -1, new Margins(0)));
 		this.add(formPanel, new RowData(-1, -1, new Margins(0)));
 	}
-	
+
 	/**
 	 * Starts new job. If file is uploaded then jobId is used to identify uploaded file, otherwise jobId is null.
 	 * @param jobId identifier of the job
@@ -271,16 +274,16 @@ public class InputDataPanel extends DisplayPanel
 	private void runJob(String jobId)
 	{
 		mainController.setNrOfSubmissions(mainController.getNrOfSubmissions() + 1);
-		
+
 		RunJobData runJobData = new RunJobData();
 		runJobData.setEmailAddress(emailTextField.getValue());
-		
+
 		String input = null;
-		
+
 		if(pdbFileRadio.getValue())
 		{
 			input = file.getValue();
-			
+
 			if(input.startsWith("C:\\fakepath\\"))
 			{
 				input = input.substring(12);
@@ -293,13 +296,13 @@ public class InputDataPanel extends DisplayPanel
 		else
 		{
 			input = pdbCodeField.getValue();
-			
+
 			if(input != null)
 			{
 				input = input.toLowerCase();
 			}
 		}
-		
+
 		runJobData.setInput(input);
 		runJobData.setJobId(jobId);
 		runJobData.setInputParameters(optionsInputPanel
@@ -308,7 +311,7 @@ public class InputDataPanel extends DisplayPanel
 		mainController.hideWaiting();
 		mainController.runJob(runJobData);
 	}
-	
+
 	/**
 	 * Validates and submits form.
 	 */
@@ -316,17 +319,24 @@ public class InputDataPanel extends DisplayPanel
 	{
 		if(!optionsInputPanel.checkIfAnyMethodSelected())
 		{
-			MessageBox.info(MainController.CONSTANTS.input_submit_form_invalid_header(),
-							MainController.CONSTANTS.input_submit_form_no_methods_selected(),
+			MessageBox.info(AppPropertiesManager.CONSTANTS.input_submit_form_invalid_header(),
+							AppPropertiesManager.CONSTANTS.input_submit_form_no_methods_selected(),
 							null);
 		}
 		else if (formPanel.isValid())
 		{
-			mainController.showWaiting(MainController.CONSTANTS.input_submit_waiting_message());
-			
+			mainController.showWaiting(AppPropertiesManager.CONSTANTS.input_submit_waiting_message());
+
 			if(pdbFileRadio.getValue())
 			{
 				formPanel.submit();
+			}
+			else if(InputParametersComparator.checkIfEquals(optionsInputPanel.getCurrentInputParameters(),
+															mainController.getSettings().getDefaultParametersValues()))
+			{
+				mainController.hideWaiting();
+				mainController.setSelectedJobId(pdbCodeField.getValue().toLowerCase());
+				History.newItem("id/" + pdbCodeField.getValue().toLowerCase());
 			}
 			else
 			{
@@ -335,12 +345,12 @@ public class InputDataPanel extends DisplayPanel
 		}
 		else
 		{
-			MessageBox.info(MainController.CONSTANTS.input_submit_form_invalid_header(),
-							MainController.CONSTANTS.input_submit_form_invalid_message(),
+			MessageBox.info(AppPropertiesManager.CONSTANTS.input_submit_form_invalid_header(),
+							AppPropertiesManager.CONSTANTS.input_submit_form_invalid_message(),
 							null);
 		}
 	}
-
+	
 	/**
 	 * Retrieves field containing code of the pdb to use as the source for the job.
 	 * @return field containing pdb pode

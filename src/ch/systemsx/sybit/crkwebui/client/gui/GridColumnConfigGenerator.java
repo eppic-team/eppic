@@ -42,7 +42,7 @@ public class GridColumnConfigGenerator
 
 		if (columnOrder == null) {
 			columns = new String[model.getPropertyNames().size()];
-			
+
 			Iterator<String> fieldsIterator = model.getPropertyNames()
 					.iterator();
 
@@ -66,26 +66,26 @@ public class GridColumnConfigGenerator
 				addColumn = false;
 			}
 
-			if (addColumn) 
+			if (addColumn)
 			{
-				GridColumnSettings gridColumnSettings = fillGridColumnSettings(mainController.getSettings().getGridProperties(), 
-																			   gridName, 
-																			   columnName, 
+				GridColumnSettings gridColumnSettings = fillGridColumnSettings(mainController.getSettings().getGridProperties(),
+																			   gridName,
+																			   columnName,
 																			   null);
-				
-				if (columnName.equals("METHODS")) 
+
+				if (columnName.equals("METHODS"))
 				{
-					for (SupportedMethod method : mainController.getSettings().getScoresTypes()) 
+					for (SupportedMethod method : mainController.getSettings().getScoresTypes())
 					{
-						GridColumnSettings methodGridColumnSettings = fillGridColumnSettings(mainController.getSettings().getGridProperties(), 
-								   gridName, 
-								   method.getName(), 
+						GridColumnSettings methodGridColumnSettings = fillGridColumnSettings(mainController.getSettings().getGridProperties(),
+								   gridName,
+								   method.getName(),
 								   gridColumnSettings);
-						
+
 						ColumnConfig column = createColumnConfig(methodGridColumnSettings,
 								 								 method.getName(),
 								 								 mainController);
-						
+
 						configs.add(column);
 					}
 				}
@@ -100,10 +100,10 @@ public class GridColumnConfigGenerator
 			}
 
 		}
-		
+
 		return configs;
 	}
-	
+
 	/**
 	 * Creates settings for specified column of the grid.
 	 * @param gridProperties grid properties
@@ -118,7 +118,7 @@ public class GridColumnConfigGenerator
 														GridColumnSettings gridColumnSettingsInput)
 	{
 		GridColumnSettings gridColumnSettings = new GridColumnSettings();
-		
+
 		if(gridColumnSettingsInput != null)
 		{
 			gridColumnSettings.setColumnWidth(gridColumnSettingsInput.getColumnWidth());
@@ -129,24 +129,24 @@ public class GridColumnConfigGenerator
 			gridColumnSettings.setHeader(gridColumnSettingsInput.getHeader());
 			gridColumnSettings.setTooltip(gridColumnSettingsInput.getTooltip());
 		}
-			
-		
+
+
 		String customVisibility = gridProperties
 				.get(gridName + "_" + columnName + "_visible");
-		if (customVisibility != null) 
+		if (customVisibility != null)
 		{
 			boolean displayColumn = true;
-			
+
 			if (!customVisibility.equals("yes")) {
 				displayColumn = false;
 			}
-			
+
 			gridColumnSettings.setDisplayColumn(displayColumn);
 		}
-		
+
 		String customColumnWidth = gridProperties
 				.get(gridName + "_" + columnName + "_width");
-		if (customColumnWidth != null) 
+		if (customColumnWidth != null)
 		{
 			int columnWidth = Integer.parseInt(customColumnWidth);
 			gridColumnSettings.setColumnWidth(columnWidth);
@@ -162,49 +162,49 @@ public class GridColumnConfigGenerator
 		String header = columnName;
 		String customHeader = gridProperties
 				.get(gridName + "_" + columnName + "_header");
-		if (customHeader != null) 
+		if (customHeader != null)
 		{
 			header = customHeader;
 		}
-		
+
 		gridColumnSettings.setHeader(header);
-		
+
 		String customIsResizable = gridProperties
 				.get(gridName + "_" + columnName + "_resizable");
-		if (customIsResizable != null) 
+		if (customIsResizable != null)
 		{
 			boolean isResizable = true;
-			
+
 			if (!customIsResizable.equals("yes")) {
 				isResizable = false;
 			}
-			
+
 			gridColumnSettings.setResizable(isResizable);
 		}
-		
+
 		String customDisbaleColumnContextMenu = gridProperties
 				.get(gridName + "_" + columnName + "_disablemenu");
-		if (customDisbaleColumnContextMenu != null) 
+		if (customDisbaleColumnContextMenu != null)
 		{
 			boolean disableColumnContextMenu = false;
-			
+
 			if (customDisbaleColumnContextMenu.equals("yes")) {
 				disableColumnContextMenu = true;
 			}
-			
+
 			gridColumnSettings.setDisableColumnContextMenu(disableColumnContextMenu);
 		}
-		
+
 		String tootlip = gridProperties
 				.get(gridName + "_" + columnName + "_tooltip");
 		if(tootlip != null)
 		{
 			gridColumnSettings.setTooltip(tootlip);
 		}
-		
+
 		return gridColumnSettings;
 	}
-	
+
 	/**
 	 * Creates configuration of the column of the grid.
 	 * @param gridColumnSettings grid column settings
@@ -222,25 +222,25 @@ public class GridColumnConfigGenerator
 		column.setWidth(gridColumnSettings.getColumnWidth());
 		column.setAlignment(HorizontalAlignment.CENTER);
 		column.setHidden(!gridColumnSettings.isDisplayColumn());
-		
+
 		column.setResizable(gridColumnSettings.isResizable());
 		column.setMenuDisabled(gridColumnSettings.isDisableColumnContextMenu());
 
 		if (gridColumnSettings.getRenderer() != null) {
-			
+
 			GridCellRenderer<BaseModel> renderer = null;
 			if ((gridColumnSettings.getRenderer() != null) && (!gridColumnSettings.getRenderer().equals(""))) {
 				renderer = GridCellRendererFactory.createGridCellRenderer(
 						gridColumnSettings.getRenderer(), mainController);
 			}
-			
+
 			column.setRenderer(renderer);
 		}
-		
+
 		if (gridColumnSettings.getTooltip() != null) {
 			column.setToolTip(gridColumnSettings.getTooltip());
 		}
-		
+
 		return column;
 	}
 }

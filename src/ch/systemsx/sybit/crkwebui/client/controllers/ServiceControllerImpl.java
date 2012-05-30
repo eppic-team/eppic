@@ -17,7 +17,7 @@ import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
 import com.google.gwt.core.client.GWT;
 
 /**
- * Implementation of service controller.
+ * Implementation of service manager.
  * @author srebniak_a
  *
  */
@@ -41,8 +41,8 @@ public class ServiceControllerImpl implements ServiceController
 	}
 
 	@Override
-	public void getResultsOfProcessing(String jobId, boolean debug) {
-		crkWebService.getResultsOfProcessing(jobId, debug,
+	public void getResultsOfProcessing(String jobId) {
+		crkWebService.getResultsOfProcessing(jobId, 
 				new GetResultsOfProcessingCallback(mainController, jobId));
 	}
 	
@@ -64,8 +64,8 @@ public class ServiceControllerImpl implements ServiceController
 	}
 
 	@Override
-	public void stopJob(String jobToStop, boolean debug) {
-		crkWebService.stopJob(jobToStop, new StopJobCallback(mainController, jobToStop, debug));
+	public void stopJob(String jobToStop) {
+		crkWebService.stopJob(jobToStop, new StopJobCallback(mainController, jobToStop));
 	}
 	
 	@Override
@@ -80,10 +80,9 @@ public class ServiceControllerImpl implements ServiceController
 	}
 	
 	@Override
-	public void getCurrentStatusData(String jobId, boolean debug) 
+	public void getCurrentStatusData(String jobId) 
 	{
-		crkWebService.getResultsOfProcessing(jobId, debug,
-				new GetCurrentStatusDataCallback(mainController, jobId));
+		crkWebService.getResultsOfProcessing(jobId, new GetCurrentStatusDataCallback(mainController, jobId));
 	}
 
 	@Override

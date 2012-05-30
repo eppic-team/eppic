@@ -4,9 +4,13 @@ import java.util.List;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 
 import ch.systemsx.sybit.crkwebui.server.db.EntityManagerHandler;
-import ch.systemsx.sybit.crkwebui.shared.CrkWebException;
+import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
 
 /**
  * Implementation of IPForbiddenDAO.
@@ -16,15 +20,23 @@ import ch.systemsx.sybit.crkwebui.shared.CrkWebException;
 public class IPForbiddenDAOImpl implements IPForbiddenDAO
 {
 	@Override
-	public boolean isIPForbidden(String ip) throws CrkWebException
+	public boolean isIPForbidden(String ip) throws DaoException
 	{
 		EntityManager entityManager = null;
 		
 		try
 		{
 			entityManager = EntityManagerHandler.getEntityManager();
-			Query query = entityManager.createQuery("from IPForbidden WHERE ip = :ip", IPForbidden.class);
-			query.setParameter("ip", ip);
+			
+			CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+			CriteriaQuery<String> criteriaQuery = criteriaBuilder.createQuery(String.class);
+			Root<IPForbidden> sessionRoot = criteriaQuery.from(IPForbidden.class);
+			criteriaQuery.select(sessionRoot.get(IPForbidden_.ip));
+			Predicate condition = criteriaBuilder.equal(sessionRoot.get(IPForbidden_.ip), ip);
+			criteriaQuery.where(condition);
+			Query query = entityManager.createQuery(criteriaQuery);
+//			Query query = entityManager.createQuery("from IPForbidden WHERE ip = :ip", IPForbidden.class);
+//			query.setParameter("ip", ip);
 			
 			boolean isIPForbidden = false;
 			
@@ -40,7 +52,7 @@ public class IPForbiddenDAOImpl implements IPForbiddenDAO
 		catch(Throwable e)
 		{
 			e.printStackTrace();
-			throw new CrkWebException(e);
+			throw new DaoException(e);
 		}
 		finally
 		{
@@ -50,7 +62,7 @@ public class IPForbiddenDAOImpl implements IPForbiddenDAO
 			}
 			catch(Throwable t)
 			{
-				
+				t.printStackTrace();
 			}
 		}
 	}

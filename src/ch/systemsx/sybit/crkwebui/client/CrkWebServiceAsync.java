@@ -23,7 +23,7 @@ public interface CrkWebServiceAsync
 
 	public void runJob(RunJobData runJobData, AsyncCallback<String> callback);
 	
-	public void getResultsOfProcessing(String jobId, boolean debug, AsyncCallback<ProcessingData> callback);
+	public void getResultsOfProcessing(String jobId, AsyncCallback<ProcessingData> callback);
 	
 	public void getJobsForCurrentSession(AsyncCallback<List<ProcessingInProgressData>> callback);
 	

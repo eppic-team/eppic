@@ -1,6 +1,8 @@
 package ch.systemsx.sybit.crkwebui.client.gui.renderers;
 
+import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
+import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
 
 import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.store.ListStore;
@@ -22,32 +24,34 @@ import com.google.gwt.user.client.ui.Image;
  * @author AS
  *
  */
-public class StopIconRenderer implements GridCellRenderer<BaseModel> 
+public class StopIconRenderer implements GridCellRenderer<BaseModel>
 {
 	private MainController mainController;
-	
+
 	private ToolTip toolTip;
 	private boolean refreshTooltip = true;
 
-	public StopIconRenderer(MainController mainController) 
-	{                                
+	public StopIconRenderer(MainController mainController)
+	{
 		this.mainController = mainController;
 	}
 
 	@Override
 	public Object render(final BaseModel model, String property,
 			ColumnData config, final int rowIndex, final int colIndex,
-			ListStore<BaseModel> store, final Grid<BaseModel> grid) 
+			ListStore<BaseModel> store, final Grid<BaseModel> grid)
 	{
 		String status = model.get("status");
-		
-		if((status != null) && (status.equals("Running")))
+
+		if((status != null) &&
+		   ((status.equals(StatusOfJob.RUNNING.getName())) ||
+		    (status.equals(StatusOfJob.QUEUING.getName()))))
 		{
 			String source = "resources/icons/stop_icon.png";
-			
+
 			final Image image  = new Image(source);
 			image.addMouseOverHandler(new MouseOverHandler() {
-				
+
 				@Override
 				public void onMouseOver(MouseOverEvent event)
 				{
@@ -55,37 +59,37 @@ public class StopIconRenderer implements GridCellRenderer<BaseModel>
 					{
 						toolTip.disable();
 					}
-					
+
 					if(refreshTooltip)
 					{
-						ToolTipConfig toolTipConfig = new ToolTipConfig();  
-						toolTipConfig.setMouseOffset(new int[] {0, 0});  
-						toolTipConfig.setText(MainController.CONSTANTS.myjobs_grid_stop_tooltip());  
-						
+						ToolTipConfig toolTipConfig = new ToolTipConfig();
+						toolTipConfig.setMouseOffset(new int[] {0, 0});
+						toolTipConfig.setText(AppPropertiesManager.CONSTANTS.myjobs_grid_stop_tooltip());
+
 						toolTip = new ToolTip(null, toolTipConfig);
-						toolTip.showAt(image.getAbsoluteLeft() + image.getOffsetWidth(), 
+						toolTip.showAt(image.getAbsoluteLeft() + image.getOffsetWidth(),
 									   image.getAbsoluteTop());
-						
+
 						refreshTooltip = false;
 					}
 				}
 			});
-			
-			image.addMouseOutHandler(new MouseOutHandler() 
+
+			image.addMouseOutHandler(new MouseOutHandler()
 			{
 				@Override
-				public void onMouseOut(MouseOutEvent event) 
+				public void onMouseOut(MouseOutEvent event)
 				{
 					if(toolTip != null)
 					{
 						toolTip.disable();
 					}
-					
+
 					refreshTooltip = true;
 				}
 			});
-			
-			image.addClickHandler(new ClickHandler() 
+
+			image.addClickHandler(new ClickHandler()
 			{
 				@Override
 				public void onClick(ClickEvent event)
@@ -94,7 +98,7 @@ public class StopIconRenderer implements GridCellRenderer<BaseModel>
 					mainController.stopJob(String.valueOf(selectedItem.get("jobid")));
 				}
 			});
-			
+
 			return image;
 		}
 		else

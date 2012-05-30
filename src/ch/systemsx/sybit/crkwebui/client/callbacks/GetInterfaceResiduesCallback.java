@@ -3,6 +3,7 @@ package ch.systemsx.sybit.crkwebui.client.callbacks;
 import java.util.HashMap;
 import java.util.List;
 
+import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResidueItem;
 
@@ -31,7 +32,7 @@ public class GetInterfaceResiduesCallback implements AsyncCallback<HashMap<Integ
 	@Override
 	public void onFailure(Throwable caught) 
 	{
-		mainController.updateStatusLabel(MainController.CONSTANTS.callback_get_interface_residues_error(), true);
+		mainController.updateStatusLabel(AppPropertiesManager.CONSTANTS.callback_get_interface_residues_error(), true);
 	}
 
 	@Override
@@ -62,7 +63,7 @@ public class GetInterfaceResiduesCallback implements AsyncCallback<HashMap<Integ
 		}
 		else 
 		{
-			mainController.updateStatusLabel(MainController.CONSTANTS.callback_get_interface_residues_error() + " - incorrect result type", true);
+			mainController.updateStatusLabel(AppPropertiesManager.CONSTANTS.callback_get_interface_residues_error() + " - incorrect result type", true);
 		}
 		
 		mainController.hideWaiting();

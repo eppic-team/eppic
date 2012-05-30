@@ -9,10 +9,10 @@ import java.util.List;
  * @author srebniak_a
  *
  */
-public class InputParameters implements Serializable 
+public class InputParameters implements Serializable
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 1L;
 
@@ -25,7 +25,7 @@ public class InputParameters implements Serializable
 	private float softIdentityCutoff;
 	private float hardIdentityCutoff;
 
-	public InputParameters() 
+	public InputParameters()
 	{
 		this.methods = new ArrayList<String>();
 	}
@@ -61,7 +61,7 @@ public class InputParameters implements Serializable
 	public void setSoftIdentityCutoff(float softIdentityCutoff) {
 		this.softIdentityCutoff = softIdentityCutoff;
 	}
-	
+
 	public float getHardIdentityCutoff() {
 		return hardIdentityCutoff;
 	}

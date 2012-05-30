@@ -125,32 +125,6 @@ public class RunParametersItem implements Serializable
 		return uid;
 	}
 	
-	/**
-	 * Converts DB model item into DTO one.
-	 * @param runParametersItemDB model item to convert
-	 * @return DTO representation of model item
-	 */
-	public static RunParametersItem create(RunParametersItemDB runParametersItemDB)
-	{
-		RunParametersItem runParametersItem = new RunParametersItem();
-		runParametersItem.setCaCutoffForGeom(runParametersItemDB.getCaCutoffForGeom());
-		runParametersItem.setCaCutoffForRimCore(runParametersItemDB.getCaCutoffForRimCore());
-		runParametersItem.setCaCutoffForZscore(runParametersItemDB.getCaCutoffForZscore());
-		runParametersItem.setEntrCallCutoff(runParametersItemDB.getEntrCallCutoff());
-		runParametersItem.setHomologsCutoff(runParametersItemDB.getHomologsCutoff());
-		runParametersItem.setHomHardIdCutoff(runParametersItemDB.getHomHardIdCutoff());
-		runParametersItem.setHomSoftIdCutoff(runParametersItemDB.getHomSoftIdCutoff());
-		runParametersItem.setMaxNumSeqsCutoff(runParametersItemDB.getMaxNumSeqsCutoff());
-		runParametersItem.setMinCoreSizeForBio(runParametersItemDB.getMinCoreSizeForBio());
-		runParametersItem.setQueryCovCutoff(runParametersItemDB.getQueryCovCutoff());
-		runParametersItem.setReducedAlphabet(runParametersItemDB.getReducedAlphabet());
-		runParametersItem.setUid(runParametersItemDB.getUid());
-		runParametersItem.setzScoreCutoff(runParametersItemDB.getzScoreCutoff());
-		runParametersItem.setUniprotVer(runParametersItemDB.getUniprotVer());
-		runParametersItem.setCrkVersion(runParametersItemDB.getCrkVersion());
-		return runParametersItem;
-	}
-
 	public String getUniprotVer() {
 		return uniprotVer;
 	}
@@ -182,4 +156,31 @@ public class RunParametersItem implements Serializable
 	public double getHomHardIdCutoff() {
 		return homHardIdCutoff;
 	}
+	
+	/**
+	 * Converts DB model item into DTO one.
+	 * @param runParametersItemDB model item to convert
+	 * @return DTO representation of model item
+	 */
+	public static RunParametersItem create(RunParametersItemDB runParametersItemDB)
+	{
+		RunParametersItem runParametersItem = new RunParametersItem();
+		runParametersItem.setCaCutoffForGeom(runParametersItemDB.getCaCutoffForGeom());
+		runParametersItem.setCaCutoffForRimCore(runParametersItemDB.getCaCutoffForRimCore());
+		runParametersItem.setCaCutoffForZscore(runParametersItemDB.getCaCutoffForZscore());
+		runParametersItem.setEntrCallCutoff(runParametersItemDB.getEntrCallCutoff());
+		runParametersItem.setHomologsCutoff(runParametersItemDB.getHomologsCutoff());
+		runParametersItem.setHomHardIdCutoff(runParametersItemDB.getHomHardIdCutoff());
+		runParametersItem.setHomSoftIdCutoff(runParametersItemDB.getHomSoftIdCutoff());
+		runParametersItem.setMaxNumSeqsCutoff(runParametersItemDB.getMaxNumSeqsCutoff());
+		runParametersItem.setMinCoreSizeForBio(runParametersItemDB.getMinCoreSizeForBio());
+		runParametersItem.setQueryCovCutoff(runParametersItemDB.getQueryCovCutoff());
+		runParametersItem.setReducedAlphabet(runParametersItemDB.getReducedAlphabet());
+		runParametersItem.setUid(runParametersItemDB.getUid());
+		runParametersItem.setzScoreCutoff(runParametersItemDB.getzScoreCutoff());
+		runParametersItem.setUniprotVer(runParametersItemDB.getUniprotVer());
+		runParametersItem.setCrkVersion(runParametersItemDB.getCrkVersion());
+		return runParametersItem;
+	}
+
 }

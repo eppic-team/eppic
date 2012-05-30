@@ -1,6 +1,8 @@
 package ch.systemsx.sybit.crkwebui.client.gui;
 
+import ch.systemsx.sybit.crkwebui.client.controllers.EventBusManager;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
+import ch.systemsx.sybit.crkwebui.client.events.WindowHideEvent;
 import ch.systemsx.sybit.crkwebui.shared.model.HomologsInfoItem;
 
 import com.extjs.gxt.ui.client.Style.Orientation;
@@ -37,8 +39,8 @@ public class AlignmentsWindow extends ResizableWindow
 	private int MIN_DISTANCE_BETWEEN_UNIPROTID_AND_POSITION = 6;
 	private int DISTANCE_BETWEEN_CURRENT_NR_AND_SEQUENCE = 2;
 	
-	public AlignmentsWindow(final MainController mainController,
-							 HomologsInfoItem homologsInfoItem) 
+	public AlignmentsWindow(MainController mainController,
+							HomologsInfoItem homologsInfoItem) 
 	{
 		super(mainController,
 			  ALIGNMENT_WINDOW_DEFAULT_WIDTH,
@@ -71,15 +73,7 @@ public class AlignmentsWindow extends ResizableWindow
 			@Override
 			public void windowHide(WindowEvent we)
 			{
-				MainViewPort mainViewPort = mainController.getMainViewPort();
-				
-				if((mainViewPort != null) &&
-		           (mainViewPort.getCenterPanel() != null) &&
-		           (mainViewPort.getCenterPanel().getDisplayPanel() != null) &&
-		           (mainViewPort.getCenterPanel().getDisplayPanel() instanceof ResultsPanel))
-		           {
-				    	((ResultsPanel)mainViewPort.getCenterPanel().getDisplayPanel()).getResultsGrid().focus();
-		           }
+				EventBusManager.EVENT_BUS.fireEvent(new WindowHideEvent());
 			}
 		});
 	}

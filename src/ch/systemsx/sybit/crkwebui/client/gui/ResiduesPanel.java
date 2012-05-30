@@ -6,6 +6,7 @@ import java.util.List;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 import ch.systemsx.sybit.crkwebui.client.model.InterfaceResidueItemModel;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResidueItem;
+import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResidueType;
 
 import com.extjs.gxt.ui.client.GXT;
 import com.extjs.gxt.ui.client.Style.Scroll;
@@ -38,29 +39,29 @@ public class ResiduesPanel extends ContentPanel
 	private ColumnModel residuesColumnModel;
 	private Grid<InterfaceResidueItemModel> residuesGrid;
 	private List<Integer> initialColumnWidth;
-	
+
 	private PagingModelMemoryProxy proxy;
 	private PagingLoader loader;
 
 	private MainController mainController;
-	
+
 	private List<InterfaceResidueItemModel> data;
-	
+
 	private int nrOfRows = 20;
 	private PagingToolBar pagingToolbar;
-	
+
 	private boolean useBufferedView = false;
-	
+
 	public ResiduesPanel(
-						 String header, 
+						 String header,
 						 final MainController mainController,
-						 int width) 
+						 int width)
 	{
 		if(GXT.isIE8)
 		{
 			useBufferedView = true;
 		}
-		
+
 		this.mainController = mainController;
 		this.setBodyBorder(false);
 		this.setBorders(false);
@@ -70,14 +71,14 @@ public class ResiduesPanel extends ContentPanel
 
 		residuesConfigs = createColumnConfig();
 
-		proxy = new PagingModelMemoryProxy(null); 
-		loader = new BasePagingLoader(proxy);  
+		proxy = new PagingModelMemoryProxy(null);
+		loader = new BasePagingLoader(proxy);
 		loader.setRemoteSort(true);
-		   
+
 		residuesStore = new ListStore<InterfaceResidueItemModel>(loader);
-		
+
 		residuesColumnModel = new ColumnModel(residuesConfigs);
-		
+
 		residuesColumnModel.addHeaderGroup(0, 0, new HeaderGroupConfig(header,
 				1, residuesColumnModel.getColumnCount()));
 
@@ -86,13 +87,13 @@ public class ResiduesPanel extends ContentPanel
 		residuesGrid.setStripeRows(true);
 		residuesGrid.setColumnLines(false);
 		residuesGrid.setLoadMask(true);
-		
+
 		residuesGrid.disableTextSelection(false);
-		
+
 		residuesGrid.getView().setForceFit(false);
-		
+
 		this.add(residuesGrid, new RowData(1, 1, new Margins(0)));
-		
+
 		if(useBufferedView)
 		{
 			BufferView view = new BufferView();
@@ -104,25 +105,25 @@ public class ResiduesPanel extends ContentPanel
 		{
 			pagingToolbar = new PagingToolBar(nrOfRows);
 			pagingToolbar.bind(loader);
-		
+
 			this.setBottomComponent(pagingToolbar);
 		}
-		
+
 		residuesGrid.getView().setViewConfig(new GridViewConfig(){
 			@Override
 			public String getRowStyle(ModelData model, int rowIndex,
 					ListStore<ModelData> ds) {
 				if (model != null)
 				{
-					if ((Integer)model.get("assignment") == InterfaceResidueItem.SURFACE)
+					if ((Integer)model.get("assignment") == InterfaceResidueType.SURFACE.getAssignment())
 					{
 						return "surface";
 					}
-					else if((Integer)model.get("assignment") == InterfaceResidueItem.CORE)
+					else if((Integer)model.get("assignment") == InterfaceResidueType.CORE.getAssignment())
 					{
 						return "core";
 					}
-					else if((Integer)model.get("assignment") == InterfaceResidueItem.RIM)
+					else if((Integer)model.get("assignment") == InterfaceResidueType.RIM.getAssignment())
 					{
 						return "rim";
 					}
@@ -131,7 +132,7 @@ public class ResiduesPanel extends ContentPanel
 						return "buried";
 					}
 				}
-				
+
 				return "";
 			}
 		});
@@ -141,7 +142,7 @@ public class ResiduesPanel extends ContentPanel
 	 * Creates columns configurations for residues grid.
 	 * @return list of columns configurations for residues grid
 	 */
-	private List<ColumnConfig> createColumnConfig() 
+	private List<ColumnConfig> createColumnConfig()
 	{
 		List<ColumnConfig> configs = GridColumnConfigGenerator.createColumnConfigs(mainController,
 				   "residues",
@@ -150,13 +151,13 @@ public class ResiduesPanel extends ContentPanel
 		if(configs != null)
 		{
 			initialColumnWidth = new ArrayList<Integer>();
-			
+
 			for(ColumnConfig columnConfig : configs)
 			{
 				initialColumnWidth.add(columnConfig.getWidth());
 			}
 		}
-		
+
 		return configs;
 	}
 
@@ -164,7 +165,7 @@ public class ResiduesPanel extends ContentPanel
 	 * Sets content of residues grid.
 	 * @param residueValues list of items to add to the grid
 	 */
-	public void fillResiduesGrid(List<InterfaceResidueItem> residueValues) 
+	public void fillResiduesGrid(List<InterfaceResidueItem> residueValues)
 	{
 		residuesStore.removeAll();
 
@@ -197,13 +198,13 @@ public class ResiduesPanel extends ContentPanel
 		for(InterfaceResidueItemModel item : data)
 		{
 			if((isShowAll) ||
-				(((Integer)item.get("assignment") == InterfaceResidueItem.CORE) || 
-				((Integer)item.get("assignment") == InterfaceResidueItem.RIM)))
+				(((Integer)item.get("assignment") == InterfaceResidueType.CORE.getAssignment()) ||
+				((Integer)item.get("assignment") == InterfaceResidueType.RIM.getAssignment())))
 			{
 				dataToSet.add(item);
 			}
 		}
-		
+
 		if(useBufferedView)
 		{
 			residuesStore.removeAll();
@@ -216,7 +217,7 @@ public class ResiduesPanel extends ContentPanel
 			loader.load(0, nrOfRows);
 		}
 	}
-	
+
 	/**
 	 * Cleans content of residues grid.
 	 */
@@ -224,49 +225,49 @@ public class ResiduesPanel extends ContentPanel
 	{
 		residuesStore.removeAll();
 	}
-	
+
 	/**
 	 * Adjusts size of the residues grid based on the size of the screen and intial
 	 * settings for the grid.
 	 * @param assignedWidth width assigned for the grid
 	 */
-	public void resizeGrid(int assignedWidth) 
+	public void resizeGrid(int assignedWidth)
 	{
 		nrOfRows = (this.getHeight() - 72)  / 22;
-		
+
 		int scoresGridWidthOfAllVisibleColumns = GridUtil.calculateWidthOfVisibleColumns(residuesGrid,
 																						 initialColumnWidth) + 10;
-		
+
 		if(useBufferedView)
 		{
 			scoresGridWidthOfAllVisibleColumns += 20;
 		}
 
 		int nrOfColumn = residuesGrid.getColumnModel().getColumnCount();
-		
-		if (GridUtil.checkIfForceFit(scoresGridWidthOfAllVisibleColumns, 
-									 assignedWidth)) 
+
+		if (GridUtil.checkIfForceFit(scoresGridWidthOfAllVisibleColumns,
+									 assignedWidth))
 		{
 			float gridWidthMultiplier = (float)assignedWidth / scoresGridWidthOfAllVisibleColumns;
-			
-			for (int i = 0; i < nrOfColumn; i++) 
+
+			for (int i = 0; i < nrOfColumn; i++)
 			{
 				residuesGrid.getColumnModel().setColumnWidth(i, (int)(initialColumnWidth.get(i) * gridWidthMultiplier), true);
 			}
-		} 
-		else 
+		}
+		else
 		{
-			for (int i = 0; i < nrOfColumn; i++) 
+			for (int i = 0; i < nrOfColumn; i++)
 			{
 				residuesGrid.getColumnModel().getColumn(i).setWidth(initialColumnWidth.get(i));
 			}
-			
+
 			assignedWidth = scoresGridWidthOfAllVisibleColumns;
 		}
-		
+
 		residuesGrid.setWidth(assignedWidth);
 		this.setWidth(assignedWidth + 10);
-		
+
 		if(!useBufferedView)
 		{
 			pagingToolbar.setPageSize(nrOfRows);
@@ -277,10 +278,10 @@ public class ResiduesPanel extends ContentPanel
 		{
 			residuesGrid.getView().refresh(true);
 		}
-		
+
 		this.layout();
 	}
-	
+
 	/**
 	 * Retrieves paging toolbar for residues grid.
 	 * @return paging toolbar for residues grid
@@ -294,7 +295,7 @@ public class ResiduesPanel extends ContentPanel
 	 * Retrieves residues grid.
 	 * @return residues grid
 	 */
-	public Grid<InterfaceResidueItemModel> getResiduesGrid() 
+	public Grid<InterfaceResidueItemModel> getResiduesGrid()
 	{
 		return residuesGrid;
 	}

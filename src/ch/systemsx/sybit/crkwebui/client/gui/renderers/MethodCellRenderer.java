@@ -65,7 +65,7 @@ public class MethodCellRenderer implements GridCellRenderer<BaseModel>
 			
 			LabelWithTooltip callReasonLabel = new LabelWithTooltip(value, 
 																	tooltipText, 
-																	mainController, 
+																	mainController.getWindowData(), 
 																	100);
 			
 			String color = "black";

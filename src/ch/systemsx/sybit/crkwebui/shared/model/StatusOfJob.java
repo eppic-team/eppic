@@ -7,20 +7,33 @@ package ch.systemsx.sybit.crkwebui.shared.model;
 public enum StatusOfJob
 {
 	RUNNING("Running"),
-	STOPPED("Stopped"),
 	FINISHED("Finished"),
 	ERROR("Error"),
-	NONEXISTING("nonexisting"),
-	QUEUING("queuing");
-	
+	NONEXISTING("Nonexisting"),
+	QUEUING("Queuing"),
+	WAITING("Waiting");
+
 	StatusOfJob(String name) {
 		this.name = name;
 	}
-	
+
 	private String name;
-	
+
 	public String getName()
 	{
 		return name;
+	}
+
+	public static StatusOfJob getByName(String name)
+	{
+		for(StatusOfJob statusOfJob : StatusOfJob.values())
+		{
+			if(statusOfJob.getName().equals(name))
+			{
+				return statusOfJob;
+			}
+		}
+
+		return null;
 	}
 }

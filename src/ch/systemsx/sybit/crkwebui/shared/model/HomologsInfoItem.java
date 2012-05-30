@@ -207,9 +207,11 @@ public class HomologsInfoItem implements Serializable
 		homologsInfoItem.setClusteringPercentIdUsed(homologsInfoItemDB.getClusteringPercentIdUsed());
 		
 		List<HomologItem> homologs = new ArrayList<HomologItem>();
-		if (homologsInfoItemDB.getHomologs()!=null) {
+		if (homologsInfoItemDB.getHomologs()!=null) 
+		{
 			
-			for (HomologItemDB homologItemDB : homologsInfoItemDB.getHomologs()) {
+			for (HomologItemDB homologItemDB : homologsInfoItemDB.getHomologs()) 
+			{
 				HomologItem homologItem = HomologItem.create(homologItemDB);
 				homologs.add(homologItem);				
 			}

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 import ch.systemsx.sybit.crkwebui.shared.model.HomologsInfoItem;
 import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
@@ -65,7 +66,7 @@ public class InfoPanel extends FormPanel
 	private void generateHomologsInfoTooltip(MainController mainController) 
 	{
 		ToolTipConfig toolTipConfig = new ToolTipConfig();  
-		toolTipConfig.setTitle(MainController.CONSTANTS.homologs_panel_query_warnings_title());
+		toolTipConfig.setTitle(AppPropertiesManager.CONSTANTS.homologs_panel_query_warnings_title());
 		toolTipConfig.setMouseOffset(new int[] {0, 0});  
 		toolTipConfig.setCloseable(true); 
 		toolTipConfig.setDismissDelay(0);
@@ -102,7 +103,7 @@ public class InfoPanel extends FormPanel
 		// we divide the window width by desired number of columns (4) and use double width for first and half width for last 2
 		// 1st column is double width
 		// last 2 columns are half width
-		int columnWidth = (mainController.getWindowWidth() - limit - 20) / (nrOfColumns);
+		int columnWidth = (mainController.getWindowData().getWindowWidth() - limit - 20) / (nrOfColumns);
 		int firstcolumnWidth = columnWidth * 2;
 		int last2columnsWidth = columnWidth / 2;
 		
@@ -132,18 +133,18 @@ public class InfoPanel extends FormPanel
 		}
 		
 		ToolTipConfig toolTipConfig = new ToolTipConfig();  
-		toolTipConfig.setTitle(MainController.CONSTANTS.info_panel_input_parameters());
+		toolTipConfig.setTitle(AppPropertiesManager.CONSTANTS.info_panel_input_parameters());
 		toolTipConfig.setMouseOffset(new int[] {0, 0});  
 		toolTipConfig.setTemplate(new Template(generateInputParametersTemplate(mainController.getPdbScoreItem())));  
 		toolTipConfig.setCloseable(true); 
 		toolTipConfig.setDismissDelay(0);
 		toolTipConfig.setShowDelay(100);
-		toolTipConfig.setMaxWidth(mainController.getWindowWidth());
+		toolTipConfig.setMaxWidth(mainController.getWindowData().getWindowWidth());
 		inputParametersTooltip = new ToolTip(inputParametersLabel, toolTipConfig);
 		
-		inputParametersLabel = new EmptyLinkWithTooltip(MainController.CONSTANTS.info_panel_input_parameters(),
-														MainController.CONSTANTS.info_panel_input_parameters_hint(),
-														mainController,
+		inputParametersLabel = new EmptyLinkWithTooltip(AppPropertiesManager.CONSTANTS.info_panel_input_parameters(),
+														AppPropertiesManager.CONSTANTS.info_panel_input_parameters_hint(),
+														mainController.getWindowData(),
 														0);
 		inputParametersLabel.addListener(Events.OnClick, new Listener<BaseEvent>() {
 
@@ -159,20 +160,20 @@ public class InfoPanel extends FormPanel
 		
 		flexTable.setWidget(0, 1, inputParametersLabel);
 		
-		downloadResultsLink = new LinkWithTooltip(MainController.CONSTANTS.info_panel_download_results_link(), 
-												  MainController.CONSTANTS.info_panel_download_results_link_hint(), 
-												  mainController, 
+		downloadResultsLink = new LinkWithTooltip(AppPropertiesManager.CONSTANTS.info_panel_download_results_link(), 
+												  AppPropertiesManager.CONSTANTS.info_panel_download_results_link_hint(), 
+												  mainController.getWindowData(), 
 												  0, 
 												  GWT.getModuleBaseURL() + "fileDownload?type=zip&id=" + mainController.getSelectedJobId());
 		downloadResultsLink.addStyleName("eppic-internal-link");
 		flexTable.setWidget(2, 3, downloadResultsLink);
 		
-		Label uniprotVersionlabel = new Label(MainController.CONSTANTS.info_panel_uniprot() + ": " +
+		Label uniprotVersionlabel = new Label(AppPropertiesManager.CONSTANTS.info_panel_uniprot() + ": " +
 				mainController.getPdbScoreItem().getRunParameters().getUniprotVer());
 		uniprotVersionlabel.addStyleName("eppic-default-label");
 		flexTable.setWidget(0, 3, uniprotVersionlabel);
 		
-		Label crkVersionLabel = new Label(MainController.CONSTANTS.info_panel_crk() + ": " +
+		Label crkVersionLabel = new Label(AppPropertiesManager.CONSTANTS.info_panel_crk() + ": " +
 				mainController.getPdbScoreItem().getRunParameters().getCrkVersion());
 		crkVersionLabel.addStyleName("eppic-default-label");
 		flexTable.setWidget(1, 3, crkVersionLabel);

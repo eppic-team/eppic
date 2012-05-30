@@ -48,7 +48,7 @@ public class HelpPanel
 						toolTipConfig.setText(helpText);  
 						
 						int width = 500;
-						if(width > mainController.getWindowWidth())
+						if(width > mainController.getWindowData().getWindowWidth())
 						{
 							width = image.getAbsoluteLeft();
 						}

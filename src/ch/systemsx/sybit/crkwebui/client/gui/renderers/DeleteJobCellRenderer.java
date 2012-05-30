@@ -1,5 +1,6 @@
 package ch.systemsx.sybit.crkwebui.client.gui.renderers;
 
+import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 
 import com.extjs.gxt.ui.client.data.BaseModel;
@@ -55,7 +56,7 @@ public class DeleteJobCellRenderer implements GridCellRenderer<BaseModel>
 				{
 					ToolTipConfig toolTipConfig = new ToolTipConfig();  
 					toolTipConfig.setMouseOffset(new int[] {0, 0});  
-					toolTipConfig.setText(MainController.CONSTANTS.myjobs_grid_delete_tooltip());  
+					toolTipConfig.setText(AppPropertiesManager.CONSTANTS.myjobs_grid_delete_tooltip());  
 					
 					toolTip = new ToolTip(null, toolTipConfig);
 					toolTip.showAt(image.getAbsoluteLeft() + image.getOffsetWidth(), 

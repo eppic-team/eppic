@@ -12,6 +12,8 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import ch.systemsx.sybit.crkwebui.server.generators.FileNameGenerator;
+
 /**
  * Servlet used to download stored on the server side files.
  * 
@@ -25,9 +27,7 @@ public class FileDownloadServlet extends FileBaseServlet
 	 */
 	private static final long serialVersionUID = 1L;
 
-	/**
-	 * Reads properties files
-	 */
+	@Override
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
 	}
@@ -36,7 +36,7 @@ public class FileDownloadServlet extends FileBaseServlet
 	 * Returns file specified by the parameters.
 	 */
 	protected void doGet(HttpServletRequest request,
-			HttpServletResponse response) throws ServletException, IOException 
+						 HttpServletResponse response) throws ServletException, IOException 
 	{
 		boolean acceptGzipEncoding = false;
 		String acceptEncodingHeader = request.getHeader("Accept-Encoding");
@@ -83,13 +83,12 @@ public class FileDownloadServlet extends FileBaseServlet
 				else
 				{
 					File resultFileDirectory = new File(
-							properties.getProperty("destination_path") + "/"
-									+ jobId);
+							properties.getProperty("destination_path"), jobId);
 		
 					if (resultFileDirectory.exists()
 						&& resultFileDirectory.isDirectory()) 
 					{
-						String suffixType = FileNameGenerator.generateFileNameToDownload(type, jobId, interfaceId, alignment);
+						String suffixType = FileNameGenerator.generateFileSuffixNameToDownload(type, jobId, interfaceId, alignment);
 						
 						if(suffixType == null)
 						{

@@ -16,10 +16,6 @@ public class InterfaceResidueItem implements Serializable
 	 */
 	private static final long serialVersionUID = 1L;
 	
-	public static final int SURFACE = 0;
-	public static final int RIM = 1;
-	public static final int CORE = 2;
-	
 	private int uid;
 	
 	private int structure;

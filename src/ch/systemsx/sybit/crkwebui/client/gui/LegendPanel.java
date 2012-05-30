@@ -1,6 +1,6 @@
 package ch.systemsx.sybit.crkwebui.client.gui;
 
-import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
+import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
 
 import com.extjs.gxt.ui.client.Style.Orientation;
 import com.extjs.gxt.ui.client.util.Margins;
@@ -35,10 +35,10 @@ public class LegendPanel extends LayoutContainer
 		legendContainer.setHeight(30);
 		legendContainer.setWidth(500);
 
-		String typesString = MainController.CONSTANTS.legend_panel_names();
+		String typesString = AppPropertiesManager.CONSTANTS.legend_panel_names();
 		String[] types = typesString.split(",");
 		
-		String colorsString = MainController.CONSTANTS.legend_panel_styles();
+		String colorsString = AppPropertiesManager.CONSTANTS.legend_panel_styles();
 		String[] colors = colorsString.split(",");
 		
 		for(int i=0; i<types.length; i++)

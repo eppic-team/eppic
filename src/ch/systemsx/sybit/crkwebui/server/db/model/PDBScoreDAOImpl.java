@@ -13,7 +13,7 @@ import model.JobDB_;
 import model.PDBScoreItemDB;
 import model.PDBScoreItemDB_;
 import ch.systemsx.sybit.crkwebui.server.db.EntityManagerHandler;
-import ch.systemsx.sybit.crkwebui.shared.CrkWebException;
+import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
 import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
 
 /**
@@ -30,7 +30,7 @@ public class PDBScoreDAOImpl implements PDBScoreDAO
 	}
 
 	@Override
-	public PDBScoreItem getPDBScore(String jobId) throws CrkWebException
+	public PDBScoreItem getPDBScore(String jobId) throws DaoException
 	{
 		EntityManager entityManager = null;
 		PDBScoreItem result = null;
@@ -63,7 +63,7 @@ public class PDBScoreDAOImpl implements PDBScoreDAO
 		catch(Throwable e)
 		{
 			e.printStackTrace();
-			throw new CrkWebException(e);
+			throw new DaoException(e);
 		}
 		finally
 		{
@@ -73,7 +73,7 @@ public class PDBScoreDAOImpl implements PDBScoreDAO
 			}
 			catch(Throwable t)
 			{
-				
+				t.printStackTrace();
 			}
 		}
 		
@@ -81,7 +81,7 @@ public class PDBScoreDAOImpl implements PDBScoreDAO
 	}
 	
 	@Override
-	public void insertPDBScore(PDBScoreItemDB pdbScoreItem) throws CrkWebException
+	public void insertPDBScore(PDBScoreItemDB pdbScoreItem) throws DaoException
 	{
 		EntityManager entityManager = null;
 		
@@ -102,10 +102,10 @@ public class PDBScoreDAOImpl implements PDBScoreDAO
 			}
 			catch(Throwable t)
 			{
-				
+				t.printStackTrace();
 			}
 			
-			throw new CrkWebException(e);
+			throw new DaoException(e);
 		}
 		finally
 		{
@@ -115,7 +115,7 @@ public class PDBScoreDAOImpl implements PDBScoreDAO
 			}
 			catch(Throwable t)
 			{
-				
+				t.printStackTrace();
 			}
 		}
 	}

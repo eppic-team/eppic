@@ -1,6 +1,6 @@
 package ch.systemsx.sybit.crkwebui.server.db.model;
 
-import ch.systemsx.sybit.crkwebui.shared.CrkWebException;
+import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
 
 /**
  * DAO interface for IPAllowed.
@@ -13,7 +13,7 @@ public interface IPAllowedDAO
 	 * Retrieves number of allowed submissions for specified ip.
 	 * @param ip ip address
 	 * @return number of allowed submissions for specified ip
-	 * @throws CrkWebException
+	 * @throws DaoException when can not retrieve information from data storage
 	 */
-	public int getNrOfAllowedSubmissionsForIP(String ip) throws CrkWebException;
+	public int getNrOfAllowedSubmissionsForIP(String ip) throws DaoException;
 }

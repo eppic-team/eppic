@@ -2,6 +2,7 @@ package ch.systemsx.sybit.crkwebui.client.callbacks;
 
 import java.util.List;
 
+import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
 
@@ -24,7 +25,7 @@ public class GetJobsForCurrentSession implements AsyncCallback<List<ProcessingIn
 	@Override
 	public void onFailure(Throwable caught) 
 	{
-		mainController.updateStatusLabel(MainController.CONSTANTS.callback_get_jobs_for_current_session_error(), true);
+		mainController.updateStatusLabel(AppPropertiesManager.CONSTANTS.callback_get_jobs_for_current_session_error(), true);
 		mainController.stopMyJobsAutoRefresh();
 	}
 
@@ -37,7 +38,7 @@ public class GetJobsForCurrentSession implements AsyncCallback<List<ProcessingIn
 		}
 		else
 		{
-			mainController.updateStatusLabel(MainController.CONSTANTS.callback_get_jobs_for_current_session_error() + " - incorrect type", true);
+			mainController.updateStatusLabel(AppPropertiesManager.CONSTANTS.callback_get_jobs_for_current_session_error() + " - incorrect type", true);
 		}
 		
 		mainController.setCanRefreshMyJobs();

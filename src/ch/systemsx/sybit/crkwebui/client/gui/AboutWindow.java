@@ -1,6 +1,9 @@
 package ch.systemsx.sybit.crkwebui.client.gui;
 
+import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
+import ch.systemsx.sybit.crkwebui.client.controllers.EventBusManager;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
+import ch.systemsx.sybit.crkwebui.client.events.WindowHideEvent;
 
 import com.extjs.gxt.ui.client.Style.Scroll;
 import com.extjs.gxt.ui.client.event.Events;
@@ -17,7 +20,7 @@ public class AboutWindow extends ResizableWindow
 	private static int ABOUT_WINDOW_DEFAULT_WIDTH = 400;
 	private static int ABOUT_WINDOW_DEFAULT_HEIGHT = 300;
 	
-	public AboutWindow(final MainController mainController) 
+	public AboutWindow(MainController mainController) 
 	{
 		super(mainController,
 			  ABOUT_WINDOW_DEFAULT_WIDTH,
@@ -25,7 +28,7 @@ public class AboutWindow extends ResizableWindow
 		
 		this.setSize(windowWidth, windowHeight);
 		
-		this.setHeading(MainController.CONSTANTS.about_window_title());
+		this.setHeading(AppPropertiesManager.CONSTANTS.about_window_title());
 		this.setPlain(true);
 		this.setHideOnButtonClick(true);
 		this.setModal(true);
@@ -67,15 +70,7 @@ public class AboutWindow extends ResizableWindow
 			@Override
 			public void windowHide(WindowEvent we)
 			{
-				MainViewPort mainViewPort = mainController.getMainViewPort();
-				
-				if((mainViewPort != null) &&
-		           (mainViewPort.getCenterPanel() != null) &&
-		           (mainViewPort.getCenterPanel().getDisplayPanel() != null) &&
-		           (mainViewPort.getCenterPanel().getDisplayPanel() instanceof ResultsPanel))
-		           {
-				    	((ResultsPanel)mainViewPort.getCenterPanel().getDisplayPanel()).getResultsGrid().focus();
-		           }
+				EventBusManager.EVENT_BUS.fireEvent(new WindowHideEvent());
 			}
 		});
 	}

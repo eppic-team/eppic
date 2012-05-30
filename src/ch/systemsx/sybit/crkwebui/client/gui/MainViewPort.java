@@ -1,5 +1,6 @@
 package ch.systemsx.sybit.crkwebui.client.gui;
 
+import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 import ch.systemsx.sybit.crkwebui.shared.model.HomologsInfoItem;
 
@@ -203,8 +204,8 @@ public class MainViewPort extends Viewport
 //		Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 //			@Override
 //			public void execute() {
-				waitingMessageBox = MessageBox.wait(MainController.CONSTANTS.waiting_message_box_header(),
-						text + ", " + MainController.CONSTANTS.waiting_message_box_info() + "...",
+				waitingMessageBox = MessageBox.wait(AppPropertiesManager.CONSTANTS.waiting_message_box_header(),
+						text + ", " + AppPropertiesManager.CONSTANTS.waiting_message_box_info() + "...",
 						text + "...");
 				waitingMessageBox.show();
 //			}
@@ -231,9 +232,9 @@ public class MainViewPort extends Viewport
 		if((errorMessageBox == null) ||
 		   (!errorMessageBox.isVisible()))
 		{
-			errorMessageBox = MessageBox.alert(MainController.CONSTANTS.error_message_box_header(), message, null);
+			errorMessageBox = MessageBox.alert(AppPropertiesManager.CONSTANTS.error_message_box_header(), message, null);
 			errorMessageBox.setMinWidth(300);
-			errorMessageBox.setMaxWidth(mainController.getWindowWidth());
+			errorMessageBox.setMaxWidth(mainController.getWindowData().getWindowWidth());
 			errorMessageBox.show();
 		}
 	}
@@ -262,7 +263,7 @@ public class MainViewPort extends Viewport
 			alignmentsWindow.updateWindowContent();
 		}
 
-		String alignmentWindowTitle = MainController.CONSTANTS.alignment_window_title();
+		String alignmentWindowTitle = AppPropertiesManager.CONSTANTS.alignment_window_title();
 		alignmentWindowTitle = alignmentWindowTitle.replaceFirst("%s", homologsInfoItem.getChains().substring(0, 1));
 		alignmentWindowTitle = alignmentWindowTitle.replaceFirst("%s", homologsInfoItem.getUniprotId());
 		alignmentsWindow.setHeading(alignmentWindowTitle);

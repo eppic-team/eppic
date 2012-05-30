@@ -1,5 +1,6 @@
 package ch.systemsx.sybit.crkwebui.client.gui;
 
+import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 
 import com.extjs.gxt.ui.client.event.MenuEvent;
@@ -19,7 +20,7 @@ public class ResultsPanelContextMenu extends Menu
 		this.setWidth(140);  
 		  
 		MenuItem detailsItem = new MenuItem();  
-		detailsItem.setText(MainController.CONSTANTS.results_grid_details_button());
+		detailsItem.setText(AppPropertiesManager.CONSTANTS.results_grid_details_button());
 		detailsItem.addSelectionListener(new SelectionListener<MenuEvent>() 
 		{  
 			public void componentSelected(MenuEvent ce) 
@@ -35,7 +36,7 @@ public class ResultsPanelContextMenu extends Menu
 		this.add(detailsItem);
 		
 		MenuItem viewerItem = new MenuItem();  
-		viewerItem.setText(MainController.CONSTANTS.results_grid_viewer_button()); 
+		viewerItem.setText(AppPropertiesManager.CONSTANTS.results_grid_viewer_button()); 
 		viewerItem.addSelectionListener(new SelectionListener<MenuEvent>() 
 		{  
 			public void componentSelected(MenuEvent ce) 

@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 import ch.systemsx.sybit.crkwebui.client.model.MyJobsModel;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
@@ -39,11 +40,10 @@ import com.google.gwt.user.client.History;
  * @author srebniak_a
  *
  */
-public class MyJobsPanel extends ContentPanel 
+public class MyJobsPanel extends ContentPanel
 {
 	private MainController mainController;
 
-	private ContentPanel myJobsGridContainer;
 	private Grid<MyJobsModel> myJobsGrid;
 	private List<ColumnConfig> myJobsConfigs;
 	private ListStore<MyJobsModel> myJobsStore;
@@ -51,23 +51,23 @@ public class MyJobsPanel extends ContentPanel
 	private Map<String, Integer> initialColumnWidth;
 
 	private Button addNew;
-	
+
 	private boolean isJobsListFirstTimeLoaded = true;
 
-	public MyJobsPanel(final MainController mainController) 
+	public MyJobsPanel(final MainController mainController)
 	{
 		this.mainController = mainController;
 		this.setLayout(new RowLayout(Orientation.VERTICAL));
-		this.setHeading(MainController.CONSTANTS.myjobs_panel_head());
+		this.setHeading(AppPropertiesManager.CONSTANTS.myjobs_panel_head());
 
 		ToolBar toolBar = new ToolBar();
 
-		addNew = new Button(MainController.CONSTANTS.myjobs_panel_new_button(), new SelectionListener<ButtonEvent>() {
+		addNew = new Button(AppPropertiesManager.CONSTANTS.myjobs_panel_new_button(), new SelectionListener<ButtonEvent>() {
 
-			public void componentSelected(ButtonEvent ce) 
+			public void componentSelected(ButtonEvent ce)
 			{
 				History.newItem("");
-				
+
 				Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 					@Override
 					public void execute() {
@@ -78,17 +78,17 @@ public class MyJobsPanel extends ContentPanel
 						}
 					}
 			    });
-				
+
 			}
 		});
-		
+
 		String addIconSource = "resources/icons/add_icon.png";
 		addNew.setIcon(IconHelper.createPath(addIconSource));
 
 		toolBar.add(addNew);
 
 		this.setTopComponent(toolBar);
-		
+
 		myJobsConfigs = createColumnConfig();
 
 		myJobsStore = new ListStore<MyJobsModel>();
@@ -101,21 +101,21 @@ public class MyJobsPanel extends ContentPanel
 		myJobsGrid.setColumnLines(false);
 		myJobsGrid.setAutoWidth(true);
 		myJobsGrid.getView().setForceFit(true);
-		
+
 		myJobsGrid.addListener(Events.CellClick, new Listener<GridEvent>()
 		{
 			@Override
-			public void handleEvent(GridEvent be) 
+			public void handleEvent(GridEvent be)
 			{
 				History.newItem("id/" + myJobsStore.getAt(be.getRowIndex()).getJobid());
 			}
 		});
-		
+
 		myJobsGrid.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-		myJobsGrid.getSelectionModel().addSelectionChangedListener(new SelectionChangedListener<MyJobsModel>() 
+		myJobsGrid.getSelectionModel().addSelectionChangedListener(new SelectionChangedListener<MyJobsModel>()
 		{
 			@Override
-			public void selectionChanged(SelectionChangedEvent<MyJobsModel> se) 
+			public void selectionChanged(SelectionChangedEvent<MyJobsModel> se)
 			{
 				if(se.getSelectedItem() != null)
 				{
@@ -123,11 +123,11 @@ public class MyJobsPanel extends ContentPanel
 				}
 			}
 		});
-		
+
 		new KeyNav<ComponentEvent>(myJobsGrid)
 		{
 			@Override
-            public void onDelete(ComponentEvent ce) 
+            public void onDelete(ComponentEvent ce)
 			{
 				MyJobsModel selectedItem = myJobsGrid.getSelectionModel().getSelectedItem();
 				if(selectedItem != null)
@@ -136,15 +136,15 @@ public class MyJobsPanel extends ContentPanel
 				}
 			}
 		};
-		
+
 		this.add(myJobsGrid, new RowData(1, 1, new Margins(0)));
 	}
-	
+
 	/**
 	 * Creates columns configurations for residues summary grid.
 	 * @return columns configurations for residues summary grid
 	 */
-	private List<ColumnConfig> createColumnConfig() 
+	private List<ColumnConfig> createColumnConfig()
 	{
 		List<ColumnConfig> configs = GridColumnConfigGenerator.createColumnConfigs(mainController,
 																				   "jobs",
@@ -153,7 +153,7 @@ public class MyJobsPanel extends ContentPanel
 		if(configs != null)
 		{
 			initialColumnWidth = new HashMap<String, Integer>();
-			
+
 			for(ColumnConfig columnConfig : configs)
 			{
 				initialColumnWidth.put(columnConfig.getId(), columnConfig.getWidth());
@@ -167,52 +167,52 @@ public class MyJobsPanel extends ContentPanel
 	 * Adds jobs to grid.
 	 * @param jobs jobs to display
 	 */
-	public void setJobs(List<ProcessingInProgressData> jobs) 
+	public void setJobs(List<ProcessingInProgressData> jobs)
 	{
 		MyJobsModel itemToSelect = null;
 		int itemToSelectIndex = 0;
-		
+
 		if(jobs != null)
 		{
 			int i = 0;
-			
+
 			List<MyJobsModel> currentModels = myJobsStore.getModels();
 			for(MyJobsModel model : currentModels)
 			{
 				boolean found = false;
 				int j=0;
-				
+
 				while((j < jobs.size()) && (!found))
 				{
 					if(jobs.get(j).getJobId().equals(model.get("jobid")))
 					{
 						found = true;
 					}
-					
+
 					j++;
 				}
-				
+
 				if(!found)
 				{
 					myJobsStore.remove(model);
 				}
 			}
-			
+
 			for (ProcessingInProgressData statusData : jobs)
 			{
 				MyJobsModel myJobsModel = new MyJobsModel(statusData.getJobId(),
 														  statusData.getStatus(),
 														  statusData.getInput());
-				
+
 				if((mainController.getSelectedJobId() != null) &&
 				   (statusData.getJobId().equals(mainController.getSelectedJobId())))
 				{
 					itemToSelect = myJobsModel;
-					itemToSelectIndex = i; 
+					itemToSelectIndex = i;
 				}
-				
+
 				MyJobsModel existingModel = myJobsStore.findModel("jobid", statusData.getJobId());
-				
+
 				if(existingModel != null)
 				{
 					existingModel.set("status", statusData.getStatus());
@@ -223,19 +223,19 @@ public class MyJobsPanel extends ContentPanel
 				{
 					myJobsStore.add(myJobsModel);
 				}
-				
+
 				i++;
 			}
 		}
 
 		myJobsStore.commitChanges();
-		
+
 
 		if((mainController.getSelectedJobId() != null) &&
 			(myJobsStore.getCount() > 0))
 		{
 			myJobsGrid.getSelectionModel().select(itemToSelect, false);
-			
+
 			if(isJobsListFirstTimeLoaded)
 			{
 				myJobsGrid.getView().focusRow(itemToSelectIndex);
@@ -243,7 +243,7 @@ public class MyJobsPanel extends ContentPanel
 			}
 		}
 	}
-	
+
 	/**
 	 * Retrieves grid containing jobs.
 	 * @return grid containing jobs
@@ -257,25 +257,25 @@ public class MyJobsPanel extends ContentPanel
 	 * Selects correct job after removal.
 	 * @param jobToStop identifier of the job which was stopped
 	 */
-	public void selectPrevious(String jobToStop) 
+	public void selectPrevious(String jobToStop)
 	{
 		List<MyJobsModel> currentJobs = myJobsStore.getModels();
-		
+
 		boolean found = false;
 		int jobNr = 0;
-		
+
 		while((jobNr < currentJobs.size()) && (!found))
 		{
 			if(currentJobs.get(jobNr).get("jobid").equals(jobToStop))
 			{
 				found = true;
 			}
-			
+
 			jobNr++;
 		}
 
 		jobNr -= 2;
-		
+
 		if(jobNr >= 0)
 		{
 			myJobsGrid.getSelectionModel().select(currentJobs.get(jobNr), false);

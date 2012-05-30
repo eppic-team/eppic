@@ -5,7 +5,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
+import ch.systemsx.sybit.crkwebui.client.controllers.EventBusManager;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
+import ch.systemsx.sybit.crkwebui.client.events.WindowHideEvent;
+import ch.systemsx.sybit.crkwebui.client.handlers.WindowHideHandler;
 import ch.systemsx.sybit.crkwebui.client.model.InterfaceItemModel;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceItem;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceScoreItem;
@@ -44,7 +48,7 @@ import com.google.gwt.user.client.Cookies;
  * @author srebniak_a
  *
  */
-public class ResultsPanel extends DisplayPanel 
+public class ResultsPanel extends DisplayPanel
 {
 	private PDBIdentifierPanel pdbIdentifierPanel;
 	private Label pdbTitle;
@@ -129,7 +133,7 @@ public class ResultsPanel extends DisplayPanel
 
 		resultsGrid = new Grid<InterfaceItemModel>(resultsStore, resultsColumnModel);
 		resultsGrid.getView().setForceFit(false);
-		resultsGrid.getView().setEmptyText(MainController.CONSTANTS.results_grid_empty_text());
+		resultsGrid.getView().setEmptyText(AppPropertiesManager.CONSTANTS.results_grid_empty_text());
 
 		resultsGrid.setBorders(false);
 		resultsGrid.setStripeRows(true);
@@ -181,6 +185,18 @@ public class ResultsPanel extends DisplayPanel
 		resultsGridContainer.add(resultsGrid);
 		
 		this.add(resultsGridContainer, new RowData(1, 1, new Margins(0)));
+		
+		EventBusManager.EVENT_BUS.addHandler(WindowHideEvent.TYPE, new WindowHideHandler() 
+		{
+			@Override
+			public void onWindowHide(WindowHideEvent event) 
+			{
+				if(resultsGrid.isVisible())
+				{
+					resultsGrid.focus();
+				}
+			}
+		});
 	}
 
 	/**
@@ -245,21 +261,21 @@ public class ResultsPanel extends DisplayPanel
 		viewerTypeComboBox.setEditable(false);
 		viewerTypeComboBox.setFireChangeEventOnSetValue(true);
 		viewerTypeComboBox.setWidth(100);
-		viewerTypeComboBox.add(MainController.CONSTANTS.viewer_local());
-		viewerTypeComboBox.add(MainController.CONSTANTS.viewer_jmol());
-		viewerTypeComboBox.add(MainController.CONSTANTS.viewer_pse());
+		viewerTypeComboBox.add(AppPropertiesManager.CONSTANTS.viewer_local());
+		viewerTypeComboBox.add(AppPropertiesManager.CONSTANTS.viewer_jmol());
+		viewerTypeComboBox.add(AppPropertiesManager.CONSTANTS.viewer_pse());
 
 		String viewerCookie = Cookies.getCookie("crkviewer");
 		if (viewerCookie != null) {
 			viewerTypeComboBox.setSimpleValue(viewerCookie);
 		} else {
-			viewerTypeComboBox.setSimpleValue(MainController.CONSTANTS.viewer_jmol());
+			viewerTypeComboBox.setSimpleValue(AppPropertiesManager.CONSTANTS.viewer_jmol());
 		}
 
 		mainController.setSelectedViewer(viewerTypeComboBox.getValue()
 				.getValue());
 
-		viewerTypeComboBox.setFieldLabel(MainController.CONSTANTS.results_grid_viewer_combo_label());
+		viewerTypeComboBox.setFieldLabel(AppPropertiesManager.CONSTANTS.results_grid_viewer_combo_label());
 		viewerTypeComboBox.setLabelStyle("eppic-default-label");
 		viewerTypeComboBox.addListener(Events.Change,
 				new Listener<FieldEvent>() {
@@ -282,7 +298,7 @@ public class ResultsPanel extends DisplayPanel
 		showThumbnailPanelLocation.setLayout(vBoxLayout);
 		
 		showThumbnailCheckBox = new CheckBox();
-		showThumbnailCheckBox.setBoxLabel(MainController.CONSTANTS.results_grid_show_thumbnails());
+		showThumbnailCheckBox.setBoxLabel(AppPropertiesManager.CONSTANTS.results_grid_show_thumbnails());
 		displayThumbnails();
 		showThumbnailCheckBox.addListener(Events.Change, new Listener<FieldEvent>() {
 
@@ -429,9 +445,9 @@ public class ResultsPanel extends DisplayPanel
 			}
 		}
 		
-		if (resultsGridWidthOfAllVisibleColumns < mainController.getWindowWidth() - limit) 
+		if (resultsGridWidthOfAllVisibleColumns < mainController.getWindowData().getWindowWidth() - limit) 
 		{
-			int maxWidth = mainController.getWindowWidth() - limit - 20;
+			int maxWidth = mainController.getWindowData().getWindowWidth() - limit - 20;
 			gridWidthMultiplier = (float)maxWidth / resultsGridWidthOfAllVisibleColumns;
 			
 			int nrOfColumn = resultsGrid.getColumnModel().getColumnCount();
@@ -453,7 +469,7 @@ public class ResultsPanel extends DisplayPanel
 			}
 		}
 		
-		resultsGrid.setWidth(mainController.getWindowWidth() - limit);
+		resultsGrid.setWidth(mainController.getWindowData().getWindowWidth() - limit);
 
 //		resultsGrid.reconfigure(resultsStore, resultsColumnModel);
 		resultsGrid.getView().refresh(true);

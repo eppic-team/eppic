@@ -4,9 +4,13 @@ import java.util.List;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 
 import ch.systemsx.sybit.crkwebui.server.db.EntityManagerHandler;
-import ch.systemsx.sybit.crkwebui.shared.CrkWebException;
+import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
 
 /**
  * Implementation of IPAllowedDAO.
@@ -16,7 +20,7 @@ import ch.systemsx.sybit.crkwebui.shared.CrkWebException;
 public class IPAllowedDAOImpl implements IPAllowedDAO 
 {
 	@Override
-	public int getNrOfAllowedSubmissionsForIP(String ip) throws CrkWebException
+	public int getNrOfAllowedSubmissionsForIP(String ip) throws DaoException
 	{
 		EntityManager entityManager = null;
 
@@ -25,8 +29,17 @@ public class IPAllowedDAOImpl implements IPAllowedDAO
 		try
 		{
 			entityManager = EntityManagerHandler.getEntityManager();
-			Query query = entityManager.createQuery("SELECT nrOfAllowedSubmission from IPAllowed WHERE ip = :ip", Integer.class);
-			query.setParameter("ip", ip);
+			
+			CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+			CriteriaQuery<Integer> criteriaQuery = criteriaBuilder.createQuery(Integer.class);
+			Root<IPAllowed> sessionRoot = criteriaQuery.from(IPAllowed.class);
+			criteriaQuery.select(sessionRoot.get(IPAllowed_.nrOfAllowedSubmission));
+			Predicate condition = criteriaBuilder.equal(sessionRoot.get(IPAllowed_.ip), ip);
+			criteriaQuery.where(condition);
+			Query query = entityManager.createQuery(criteriaQuery);
+			
+//			Query query = entityManager.createQuery("SELECT nrOfAllowedSubmission from IPAllowed WHERE ip = :ip", Integer.class);
+//			query.setParameter("ip", ip);
 			
 			List<Integer> nrOfAllowedSubmissionsPerIPResult = query.getResultList();
 			
@@ -38,7 +51,7 @@ public class IPAllowedDAOImpl implements IPAllowedDAO
 		catch(Throwable e)
 		{
 			e.printStackTrace();
-			throw new CrkWebException(e);
+			throw new DaoException(e);
 		}
 		finally
 		{
@@ -48,7 +61,7 @@ public class IPAllowedDAOImpl implements IPAllowedDAO
 			}
 			catch(Throwable t)
 			{
-				
+				t.printStackTrace();
 			}
 		}
 		

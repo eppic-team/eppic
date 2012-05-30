@@ -1,6 +1,9 @@
 package ch.systemsx.sybit.crkwebui.client.gui;
 
+import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
+import ch.systemsx.sybit.crkwebui.client.controllers.EventBusManager;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
+import ch.systemsx.sybit.crkwebui.client.events.WindowHideEvent;
 
 import com.extjs.gxt.ui.client.GXT;
 import com.extjs.gxt.ui.client.event.ComponentEvent;
@@ -95,15 +98,7 @@ public class InterfacesResiduesWindow extends ResizableWindow
 			@Override
 			public void windowHide(WindowEvent we)
 			{
-				MainViewPort mainViewPort = mainController.getMainViewPort();
-				
-				if((mainViewPort != null) &&
-		           (mainViewPort.getCenterPanel() != null) &&
-		           (mainViewPort.getCenterPanel().getDisplayPanel() != null) &&
-		           (mainViewPort.getCenterPanel().getDisplayPanel() instanceof ResultsPanel))
-		           {
-				    	((ResultsPanel)mainViewPort.getCenterPanel().getDisplayPanel()).getResultsGrid().focus();
-		           }
+				EventBusManager.EVENT_BUS.fireEvent(new WindowHideEvent());
 			}
 		}
 		
@@ -149,6 +144,6 @@ public class InterfacesResiduesWindow extends ResizableWindow
 		double area = mainController.getPdbScoreItem().getInterfaceItem(selectedInterface - 1).getArea();
 		NumberFormat number = NumberFormat.getFormat("0.00");
 		String formattedArea = number.format(area);
-		this.setHeading(MainController.CONSTANTS.interfaces_residues_window_title() + " " + selectedInterface + " (" + formattedArea + " A<sup>2</sup>)");
+		this.setHeading(AppPropertiesManager.CONSTANTS.interfaces_residues_window_title() + " " + selectedInterface + " (" + formattedArea + " A<sup>2</sup>)");
 	}
 }

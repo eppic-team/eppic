@@ -3,6 +3,7 @@ package ch.systemsx.sybit.crkwebui.client.controllers;
 import java.util.HashMap;
 import java.util.List;
 
+import ch.systemsx.sybit.crkwebui.client.data.WindowData;
 import ch.systemsx.sybit.crkwebui.client.gui.InputDataPanel;
 import ch.systemsx.sybit.crkwebui.client.gui.MainViewPort;
 import ch.systemsx.sybit.crkwebui.client.gui.ResultsPanel;
@@ -35,12 +36,9 @@ import com.google.gwt.user.client.ui.RootPanel;
  */
 public class MainController
 {
-	public static final AppProperties CONSTANTS = (AppProperties) GWT.create(AppProperties.class);
-
 	private MainViewPort mainViewPort;
-
-	private int windowWidth = Window.getClientWidth();
-	private int windowHeight = Window.getClientHeight();
+	
+	private WindowData windowData;
 
 	private ServiceController serviceController;
 
@@ -50,7 +48,6 @@ public class MainController
 	private InterfaceResiduesItemsList residuesForInterface;
 
 	private String selectedJobId;
-	private boolean debug;
 
 	private Timer autoRefreshMyJobs;
 	private boolean canRefreshMyJobs = true;
@@ -59,11 +56,12 @@ public class MainController
 
 	private int nrOfSubmissions = 0;
 
-	private String selectedViewer = MainController.CONSTANTS.viewer_jmol();
+	private String selectedViewer = AppPropertiesManager.CONSTANTS.viewer_jmol();
 
 	public MainController(Viewport viewport)
 	{
 		this.serviceController = new ServiceControllerImpl(this);
+		windowData = new WindowData(Window.getClientWidth(), Window.getClientHeight());
 	}
 
 	/**
@@ -84,21 +82,13 @@ public class MainController
 
 		if ((token != null) && (token.length() > 3) && (token.startsWith("id")))
 		{
-			Window.setTitle(CONSTANTS.window_title_loading());
+			Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_loading());
 			selectedJobId = token.substring(3);
-			debug = false;
-			displayResults(false);
-		}
-		else if ((token != null) && (token.length() > 4) && (token.startsWith("deb")))
-		{
-			Window.setTitle(CONSTANTS.window_title_loading());
-			selectedJobId = token.substring(4);
-			debug = true;
-			displayResults(true);
+			displayResults();
 		}
 		else
 		{
-			Window.setTitle(CONSTANTS.window_title_input());
+			Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_input());
 			selectedJobId = "";
 			displayInputView();
 		}
@@ -157,12 +147,11 @@ public class MainController
 
 	/**
 	 * Retrieves results of processing for displaying central panel content.
-	 * @param debug flag specifying whether detailed information should be displayed
 	 */
-	public void displayResults(boolean debug)
+	public void displayResults()
 	{
-		mainViewPort.mask(CONSTANTS.defaultmask());
-		serviceController.getResultsOfProcessing(selectedJobId, debug);
+		mainViewPort.mask(AppPropertiesManager.CONSTANTS.defaultmask());
+		serviceController.getResultsOfProcessing(selectedJobId);
 	}
 
 	/**
@@ -189,7 +178,7 @@ public class MainController
 		}
 
 		mainViewPort.getMyJobsPanel().getMyJobsGrid().focus();
-		Window.setTitle(CONSTANTS.window_title_results() + " - " + resultData.getPdbName());
+		Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_results() + " - " + resultData.getPdbName());
 	}
 
 	/**
@@ -217,7 +206,10 @@ public class MainController
 			statusPanel.fillData(statusData);
 		}
 
-		if((statusData.getStatus() != null) && (statusData.getStatus().equals(StatusOfJob.RUNNING.getName())))
+		if((statusData.getStatus() != null) &&
+		   ((statusData.getStatus().equals(StatusOfJob.RUNNING.getName())) ||
+			(statusData.getStatus().equals(StatusOfJob.WAITING.getName())) ||
+			(statusData.getStatus().equals(StatusOfJob.QUEUING.getName()))))
 		{
 			doStatusPanelRefreshing = true;
 		}
@@ -229,12 +221,12 @@ public class MainController
 		mainViewPort.getCenterPanel().layout();
 
 		mainViewPort.getMyJobsPanel().getMyJobsGrid().focus();
-		Window.setTitle(CONSTANTS.window_title_processing() + " - " + statusData.getInput());
+		Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_processing() + " - " + statusData.getInput());
 	}
 
-	public void getCurrentStatusData(boolean debug)
+	public void getCurrentStatusData()
 	{
-		serviceController.getCurrentStatusData(selectedJobId, debug);
+		serviceController.getCurrentStatusData(selectedJobId);
 	}
 
 	public void getJobsForCurrentSession()
@@ -317,7 +309,7 @@ public class MainController
 	 */
 	public void stopJob(String jobToStop)
 	{
-		serviceController.stopJob(jobToStop, debug);
+		serviceController.stopJob(jobToStop);
 	}
 
 	/**
@@ -349,7 +341,7 @@ public class MainController
 					(selectedJobId != null) &&
 					(!selectedJobId.equals("")))
 				{
-					getCurrentStatusData(debug);
+					getCurrentStatusData();
 				}
 				else
 				{
@@ -426,15 +418,15 @@ public class MainController
 	 */
 	public void runViewer(String interfaceId)
 	{
-		if(selectedViewer.equals(MainController.CONSTANTS.viewer_jmol()))
+		if(selectedViewer.equals(AppPropertiesManager.CONSTANTS.viewer_jmol()))
 		{
 			showJmolViewer(interfaceId);
 		}
-		else if(selectedViewer.equals(MainController.CONSTANTS.viewer_local()))
+		else if(selectedViewer.equals(AppPropertiesManager.CONSTANTS.viewer_local()))
 		{
 			downloadFileFromServer("interface", interfaceId);
 		}
-		else if(selectedViewer.equals(MainController.CONSTANTS.viewer_pse()))
+		else if(selectedViewer.equals(AppPropertiesManager.CONSTANTS.viewer_pse()))
 		{
 			downloadFileFromServer("pse", interfaceId);
 		}
@@ -452,10 +444,10 @@ public class MainController
 	{
 		String resultsLocation = settings.getResultsLocation();
 
-		int size = windowHeight;
-		if(size > windowWidth)
+		int size = windowData.getWindowHeight();
+		if(size > windowData.getWindowWidth())
 		{
-			size = windowWidth;
+			size = windowData.getWindowWidth();
 		}
 
 		openJmol(GWT.getHostPageBaseURL() + "Jmol.html",
@@ -466,6 +458,14 @@ public class MainController
 				 pdbScoreItem.getPdbName(),
 				 size,
 				 pdbScoreItem.getInterfaceItem(Integer.parseInt(interfaceNr) - 1).getJmolScript());
+	}
+
+	public WindowData getWindowData() {
+		return windowData;
+	}
+
+	public void setWindowData(WindowData windowData) {
+		this.windowData = windowData;
 	}
 
 	/*
@@ -541,7 +541,7 @@ public class MainController
 		});
 
 		infoMessageBox.setMinWidth(300);
-		infoMessageBox.setMaxWidth(windowWidth);
+		infoMessageBox.setMaxWidth(windowData.getWindowWidth());
 	}
 
 	/**
@@ -559,38 +559,6 @@ public class MainController
 	public void hideWaiting()
 	{
 		mainViewPort.hideWaiting();
-	}
-
-	/**
-	 * Retrieves width of the window.
-	 * @return width of the window
-	 */
-	public int getWindowWidth() {
-		return windowWidth;
-	}
-
-	/**
-	 * Sets width of the window.
-	 * @param windowWidth width of the window
-	 */
-	public void setWindowWidth(int windowWidth) {
-		this.windowWidth = windowWidth;
-	}
-
-	/**
-	 * Retrieves height of the window.
-	 * @return height of the window
-	 */
-	public int getWindowHeight() {
-		return windowHeight;
-	}
-
-	/**
-	 * Sets height of the window.
-	 * @param windowHeight height of the window
-	 */
-	public void setWindowHeight(int windowHeight) {
-		this.windowHeight = windowHeight;
 	}
 
 	/**
@@ -691,11 +659,10 @@ public class MainController
 			@Override
 			public void execute() {
 				if(result.containsKey(1))
-				{					
+				{
 					mainViewPort.getInterfacesResiduesWindow().getInterfacesResiduesPanel().getFirstStructurePanelSummary().fillResiduesGrid();
 					mainViewPort.getInterfacesResiduesWindow().getInterfacesResiduesPanel().getFirstStructurePanel()
 							.fillResiduesGrid(result.get(1));
-					//mainViewPort.getInterfacesResiduesWindow().getInterfacesResiduesPanel().getFirstStructureBottomContainer().fillScoresLabels();
 					mainViewPort.getInterfacesResiduesWindow().getInterfacesResiduesPanel().getFirstStructurePanel().applyFilter(false);
 				}
 
@@ -704,8 +671,7 @@ public class MainController
 					mainViewPort.getInterfacesResiduesWindow().getInterfacesResiduesPanel().getSecondStructurePanelSummary().fillResiduesGrid();
 					mainViewPort.getInterfacesResiduesWindow().getInterfacesResiduesPanel().getSecondStructurePanel()
 							.fillResiduesGrid(result.get(2));
-					//mainViewPort.getInterfacesResiduesWindow().getInterfacesResiduesPanel().getSecondStructureBottomContainer().fillScoresLabels();
-					mainViewPort.getInterfacesResiduesWindow().getInterfacesResiduesPanel().getSecondStructurePanel().applyFilter(false);					
+					mainViewPort.getInterfacesResiduesWindow().getInterfacesResiduesPanel().getSecondStructurePanel().applyFilter(false);
 				}
 			}
 		});

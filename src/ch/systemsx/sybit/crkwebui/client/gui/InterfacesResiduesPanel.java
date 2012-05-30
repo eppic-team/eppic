@@ -1,5 +1,6 @@
 package ch.systemsx.sybit.crkwebui.client.gui;
 
+import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 
 import com.extjs.gxt.ui.client.Style.Orientation;
@@ -50,12 +51,12 @@ public class InterfacesResiduesPanel extends FormPanel
 		residuesLayoutContainer.setLayout(new RowLayout(Orientation.HORIZONTAL));
 		
 		firstStructure = new ResiduesPanel(
-										   MainController.CONSTANTS.interfaces_residues_panel_first_structure(), 
+										   AppPropertiesManager.CONSTANTS.interfaces_residues_panel_first_structure(), 
 										   mainController,
 										   width);
 		
 		secondStructure = new ResiduesPanel(
-											MainController.CONSTANTS.interfaces_residues_panel_second_structure(),
+											AppPropertiesManager.CONSTANTS.interfaces_residues_panel_second_structure(),
 											mainController,
 											width);
 		
@@ -119,9 +120,9 @@ public class InterfacesResiduesPanel extends FormPanel
 		residuesFilterComboBox.setEditable(false);  
 		residuesFilterComboBox.setFireChangeEventOnSetValue(true);  
 		residuesFilterComboBox.setWidth(100);  
-		residuesFilterComboBox.add(MainController.CONSTANTS.interfaces_residues_combo_all());  
-		residuesFilterComboBox.add(MainController.CONSTANTS.interfaces_residues_combo_rimcore());  
-		residuesFilterComboBox.setSimpleValue(MainController.CONSTANTS.interfaces_residues_combo_rimcore());
+		residuesFilterComboBox.add(AppPropertiesManager.CONSTANTS.interfaces_residues_combo_all());  
+		residuesFilterComboBox.add(AppPropertiesManager.CONSTANTS.interfaces_residues_combo_rimcore());  
+		residuesFilterComboBox.setSimpleValue(AppPropertiesManager.CONSTANTS.interfaces_residues_combo_rimcore());
 		
 		residuesFilterComboBox.addListener(Events.Change, new Listener<FieldEvent>() 
 		{  
@@ -129,7 +130,7 @@ public class InterfacesResiduesPanel extends FormPanel
 			{
 				boolean showAll = true;
 				
-				if(!residuesFilterComboBox.getValue().getValue().equals(MainController.CONSTANTS.interfaces_residues_combo_all()))
+				if(!residuesFilterComboBox.getValue().getValue().equals(AppPropertiesManager.CONSTANTS.interfaces_residues_combo_all()))
 				{
 					showAll = false;
 				}
@@ -141,7 +142,7 @@ public class InterfacesResiduesPanel extends FormPanel
 		
 		toolbar.add(new FillToolItem());
 		
-		toolbar.add(new LabelToolItem(MainController.CONSTANTS.interfaces_residues_combo_title()+": ")); 
+		toolbar.add(new LabelToolItem(AppPropertiesManager.CONSTANTS.interfaces_residues_combo_title()+": ")); 
 		toolbar.add(residuesFilterComboBox);  
 		
 		this.setTopComponent(toolbar);
@@ -152,7 +153,7 @@ public class InterfacesResiduesPanel extends FormPanel
 	 */
 	public void cleanData()
 	{
-		residuesFilterComboBox.setSimpleValue(MainController.CONSTANTS.interfaces_residues_combo_rimcore());
+		residuesFilterComboBox.setSimpleValue(AppPropertiesManager.CONSTANTS.interfaces_residues_combo_rimcore());
 	}
 
 	/**

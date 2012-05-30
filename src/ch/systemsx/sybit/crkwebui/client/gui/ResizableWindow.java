@@ -8,32 +8,32 @@ import com.extjs.gxt.ui.client.widget.Dialog;
  * Generic resizable window.
  * @author AS
  */
-public class ResizableWindow extends Dialog 
+public class ResizableWindow extends Dialog
 {
 	protected MainController mainController;
-	
+
 	protected int windowWidth;
 	protected int windowHeight;
-	
+
 	private boolean resizeWindow;
 
 	public ResizableWindow(final MainController mainController,
 						   int defaultWidth,
-						   int defaultHeight) 
+						   int defaultHeight)
 	{
 		this.mainController = mainController;
 		this.windowWidth = defaultWidth;
 		this.windowHeight = defaultHeight;
-		
-		if(windowWidth > mainController.getWindowWidth())
+
+		if(windowWidth > mainController.getWindowData().getWindowWidth())
 		{
-			windowWidth = mainController.getWindowWidth();
+			windowWidth = mainController.getWindowData().getWindowWidth();
 		}
-		
-		if(windowHeight > mainController.getWindowHeight() - 50)
+
+		if(windowHeight > mainController.getWindowData().getWindowHeight() - 50)
 		{
-			windowHeight = mainController.getWindowHeight() - 50;
-			
+			windowHeight = mainController.getWindowData().getWindowHeight() - 50;
+
 			if(windowHeight <= 0)
 			{
 				windowHeight = 1;
@@ -77,7 +77,7 @@ public class ResizableWindow extends Dialog
 	 * Sets flag pointing whether window should be resized.
 	 * @param resizeWindow flag pointing whether window should be resized
 	 */
-	public void setResizeWindow(boolean resizeWindow) 
+	public void setResizeWindow(boolean resizeWindow)
 	{
 		this.resizeWindow = resizeWindow;
 	}

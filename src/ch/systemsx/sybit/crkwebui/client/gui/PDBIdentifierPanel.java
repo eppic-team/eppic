@@ -1,5 +1,6 @@
 package ch.systemsx.sybit.crkwebui.client.gui;
 
+import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 import ch.systemsx.sybit.crkwebui.shared.model.InputType;
 
@@ -42,17 +43,16 @@ public class PDBIdentifierPanel extends LayoutContainer
 	{
 		this.removeAll();
 		
-		informationLabel = new Label(MainController.CONSTANTS.info_panel_pdb_identifier() + ": ");
+		informationLabel = new Label(AppPropertiesManager.CONSTANTS.info_panel_pdb_identifier() + ": ");
 		this.add(informationLabel);
 		
 		if(inputType == InputType.PDBCODE.getIndex())
 		{
 			pdbNameLabel = new LinkWithTooltip(pdbName,
-											   MainController.CONSTANTS.pdb_identifier_panel_label_hint(),
-											   mainController, 
+											   AppPropertiesManager.CONSTANTS.pdb_identifier_panel_label_hint(),
+											   mainController.getWindowData(), 
 											   0, 
 											   mainController.getSettings().getPdbLinkUrl() + pdbName);
-			//pdbNameLabel.addStyleName("eppic-external-link");
 		}
 		else
 		{

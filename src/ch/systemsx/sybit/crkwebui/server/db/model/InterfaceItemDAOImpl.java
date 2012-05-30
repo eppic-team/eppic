@@ -15,7 +15,7 @@ import model.InterfaceItemDB_;
 import model.PDBScoreItemDB;
 import model.PDBScoreItemDB_;
 import ch.systemsx.sybit.crkwebui.server.db.EntityManagerHandler;
-import ch.systemsx.sybit.crkwebui.shared.CrkWebException;
+import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceItem;
 
 /**
@@ -26,14 +26,14 @@ import ch.systemsx.sybit.crkwebui.shared.model.InterfaceItem;
 public class InterfaceItemDAOImpl implements InterfaceItemDAO 
 {
 	@Override
-	public List<InterfaceItem> getInterfacesWithScores(int pdbScoreUid) throws CrkWebException
+	public List<InterfaceItem> getInterfacesWithScores(int pdbScoreUid) throws DaoException
 	{
 		EntityManager entityManager = null;
 		
-		List<InterfaceItem> result = new ArrayList<InterfaceItem>();
-		
 		try
 		{
+			List<InterfaceItem> result = new ArrayList<InterfaceItem>();
+			
 			entityManager = EntityManagerHandler.getEntityManager();
 			
 			CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
@@ -52,11 +52,13 @@ public class InterfaceItemDAOImpl implements InterfaceItemDAO
 				interfaceItemDB.setInterfaceResidues(null);
 				result.add(InterfaceItem.create(interfaceItemDB));
 			}
+			
+			return result;
 		}
 		catch(Throwable e)
 		{
 			e.printStackTrace();
-			throw new CrkWebException(e);
+			throw new DaoException(e);
 		}
 		finally
 		{
@@ -66,22 +68,20 @@ public class InterfaceItemDAOImpl implements InterfaceItemDAO
 			}
 			catch(Throwable t)
 			{
-				
+				t.printStackTrace();
 			}
 		}
-		
-		return result;
 	}
 	
 	@Override
-	public List<InterfaceItem> getInterfacesWithResidues(int pdbScoreUid) throws CrkWebException
+	public List<InterfaceItem> getInterfacesWithResidues(int pdbScoreUid) throws DaoException
 	{
 		EntityManager entityManager = null;
 		
-		List<InterfaceItem> result = new ArrayList<InterfaceItem>();
-		
 		try
 		{
+			List<InterfaceItem> result = new ArrayList<InterfaceItem>();
+			
 			entityManager = EntityManagerHandler.getEntityManager();
 			
 			CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
@@ -102,11 +102,12 @@ public class InterfaceItemDAOImpl implements InterfaceItemDAO
 				result.add(InterfaceItem.create(interfaceItemDB));
 			}
 			
+			return result;
 		}
 		catch(Throwable e)
 		{
 			e.printStackTrace();
-			throw new CrkWebException(e);
+			throw new DaoException(e);
 		}
 		finally
 		{
@@ -116,10 +117,8 @@ public class InterfaceItemDAOImpl implements InterfaceItemDAO
 			}
 			catch(Throwable t)
 			{
-				
+				t.printStackTrace();
 			}
 		}
-		
-		return result;
 	}
 }

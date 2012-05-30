@@ -33,6 +33,10 @@ public class JobStatusCellRenderer extends DefaultCellRenderer
 			color = "red";
 		} else if (value.equals(StatusOfJob.FINISHED.getName())) {
 			color = "green";
+		} else if (value.equals(StatusOfJob.QUEUING.getName())) {
+			color = "orange";
+		} else if (value.equals(StatusOfJob.WAITING.getName())) {
+			color = "blue";
 		} else {
 			return value;
 		}

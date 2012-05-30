@@ -66,8 +66,8 @@ public class Crkwebui implements EntryPoint, ValueChangeHandler<String>
 			@Override
 			public void onResize(ResizeEvent event)
 			{
-				mainController.setWindowHeight(event.getHeight());
-				mainController.setWindowWidth(event.getWidth());
+				mainController.getWindowData().setWindowHeight(event.getHeight());
+				mainController.getWindowData().setWindowWidth(event.getWidth());
 
 				mainController.resizeResultsGrid();
 				mainController.setResizeWindows(true);

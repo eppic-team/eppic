@@ -18,7 +18,7 @@ import ch.systemsx.sybit.crkwebui.server.data.EmailData;
  * @author srebniak_a
  *
  */
-public class EmailSender 
+public class EmailSender
 {
 	private EmailData emailData;
 
@@ -29,13 +29,16 @@ public class EmailSender
 
 	/**
 	 * Sends email.
+	 * @param recipient email recipient
 	 * @param subject subject of the email
 	 * @param text content of the email
 	 */
-	public void send(String subject, String text) 
+	public void send(String recipient,
+					 String subject,
+					 String text)
 	{
-		if ((emailData.getEmailRecipient() != null)
-				&& (!emailData.getEmailRecipient().equals(""))) 
+		if ((recipient != null)
+				&& (!recipient.equals("")))
 		{
 			Properties properties = new Properties();
 			properties.put("mail.smtp.host", emailData.getHost());
@@ -46,18 +49,18 @@ public class EmailSender
 
 			InternetAddress fromAddress = null;
 			InternetAddress toAddress = null;
-			
-			try 
+
+			try
 			{
 				fromAddress = new InternetAddress(emailData.getEmailSender());
-				toAddress = new InternetAddress(emailData.getEmailRecipient());
+				toAddress = new InternetAddress(recipient);
 			}
-			catch (AddressException e) 
+			catch (AddressException e)
 			{
 				e.printStackTrace();
 			}
 
-			try 
+			try
 			{
 				simpleMessage.setFrom(fromAddress);
 				simpleMessage.setRecipient(RecipientType.TO, toAddress);
@@ -74,7 +77,7 @@ public class EmailSender
 
 //				Transport.send(simpleMessage);
 			}
-			catch (MessagingException e) 
+			catch (MessagingException e)
 			{
 				e.printStackTrace();
 			}

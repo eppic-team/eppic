@@ -2,6 +2,7 @@ package ch.systemsx.sybit.crkwebui.client.gui.renderers;
 
 import java.util.List;
 
+import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 import ch.systemsx.sybit.crkwebui.shared.model.WarningItem;
 
@@ -61,12 +62,12 @@ public class WarningsCellRenderer implements GridCellRenderer<BaseModel>
 					if(refreshTooltip)
 					{
 						ToolTipConfig toolTipConfig = new ToolTipConfig();  
-						toolTipConfig.setTitle(MainController.CONSTANTS.results_grid_warnings_tooltip_title());  
+						toolTipConfig.setTitle(AppPropertiesManager.CONSTANTS.results_grid_warnings_tooltip_title());  
 						toolTipConfig.setMouseOffset(new int[] {0, 0});  
 						toolTipConfig.setTemplate(new Template(generateWarningsTemplate(warnings)));  
 						
 						int width = 500;
-						if(width > mainController.getWindowWidth())
+						if(width > mainController.getWindowData().getWindowWidth())
 						{
 							width = image.getAbsoluteLeft();
 						}

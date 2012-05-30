@@ -22,7 +22,7 @@ import model.PDBScoreItemDB;
 import model.UserSessionDB;
 import model.UserSessionDB_;
 import ch.systemsx.sybit.crkwebui.server.db.EntityManagerHandler;
-import ch.systemsx.sybit.crkwebui.shared.CrkWebException;
+import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
 import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
 
@@ -34,33 +34,36 @@ import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
 public class JobDAOImpl implements JobDAO
 {
 	@Override
-	public void insertNewJob(String jobId, 
+	public void insertNewJob(String jobId,
 							 String sessionId,
-							 String email, 
+							 String email,
 							 String input,
 							 String ip,
 							 Date submissionDate,
-							 int inputType) throws CrkWebException
+							 int inputType,
+							 StatusOfJob status,
+							 String submissionId) throws DaoException
 	{
 		EntityManager entityManager = null;
-		
+
 		try
 		{
 			entityManager = EntityManagerHandler.getEntityManager();
 			entityManager.getTransaction().begin();
-			
+
 			UserSessionDAO sessionDAO = new UserSessionDAOImpl();
 			UserSessionDB session = sessionDAO.getSession(entityManager, sessionId);
-			
+
 			JobDB job = new JobDB();
 			job.setJobId(jobId);
 			job.setEmail(email);
 			job.setInput(input);
 			job.setIp(ip);
-			job.setStatus(StatusOfJob.RUNNING.getName());
+			job.setStatus(status.getName());
 			job.setSubmissionDate(submissionDate);
 			job.setInputType(inputType);
-			
+			job.setSubmissionId(submissionId);
+
 			job.getUserSessions().add(session);
 
 			entityManager.persist(job);
@@ -70,17 +73,17 @@ public class JobDAOImpl implements JobDAO
 		catch(Throwable e)
 		{
 			e.printStackTrace();
-			
+
 			try
 			{
 				entityManager.getTransaction().rollback();
 			}
 			catch(Throwable t)
 			{
-				
+				t.printStackTrace();
 			}
-			
-			throw new CrkWebException(e);
+
+			throw new DaoException(e);
 		}
 		finally
 		{
@@ -90,16 +93,16 @@ public class JobDAOImpl implements JobDAO
 			}
 			catch(Throwable t)
 			{
-				
+				t.printStackTrace();
 			}
 		}
 	}
-	
+
 	@Override
-	public void updateStatusOfJob(String jobId, String status) throws CrkWebException
+	public void updateStatusOfJob(String jobId, String status) throws DaoException
 	{
 		EntityManager entityManager = null;
-		
+
 		try
 		{
 			entityManager = EntityManagerHandler.getEntityManager();
@@ -115,17 +118,17 @@ public class JobDAOImpl implements JobDAO
 		catch(Throwable e)
 		{
 			e.printStackTrace();
-			
+
 			try
 			{
 				entityManager.getTransaction().rollback();
 			}
 			catch(Throwable t)
 			{
-				
+				t.printStackTrace();
 			}
-			
-			throw new CrkWebException(e);
+
+			throw new DaoException(e);
 		}
 		finally
 		{
@@ -135,32 +138,32 @@ public class JobDAOImpl implements JobDAO
 			}
 			catch(Throwable t)
 			{
-				
+				t.printStackTrace();
 			}
 		}
 	}
-	
+
 	@Override
-	public void untieJobsFromSession(String sessionId) throws CrkWebException
+	public void untieJobsFromSession(String sessionId) throws DaoException
 	{
 		EntityManager entityManager = null;
-		
+
 		try
 		{
 			entityManager = EntityManagerHandler.getEntityManager();
-			
+
 			CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 			CriteriaQuery<UserSessionDB> criteriaQuery = criteriaBuilder.createQuery(UserSessionDB.class);
 			Root<UserSessionDB> sessionRoot = criteriaQuery.from(UserSessionDB.class);
 			Predicate condition = criteriaBuilder.equal(sessionRoot.get(UserSessionDB_.sessionId), sessionId);
 			criteriaQuery.where(condition);
 			criteriaQuery.select(sessionRoot);
-			
+
 			Query query = entityManager.createQuery(criteriaQuery);
 			List<UserSessionDB> sessions = query.getResultList();
 
 			entityManager.getTransaction().begin();
-			
+
 			if(sessions != null)
 			{
 				for(UserSessionDB session : sessions)
@@ -168,23 +171,23 @@ public class JobDAOImpl implements JobDAO
 					entityManager.remove(session);
 				}
 			}
-			
+
 			entityManager.getTransaction().commit();
 		}
 		catch(Throwable e)
 		{
 			e.printStackTrace();
-			
+
 			try
 			{
 				entityManager.getTransaction().rollback();
 			}
 			catch(Throwable t)
 			{
-				
+				t.printStackTrace();
 			}
-			
-			throw new CrkWebException(e);
+
+			throw new DaoException(e);
 		}
 		finally
 		{
@@ -194,50 +197,50 @@ public class JobDAOImpl implements JobDAO
 			}
 			catch(Throwable t)
 			{
-				
+				t.printStackTrace();
 			}
 		}
 	}
-	
+
 	@Override
-	public List<ProcessingInProgressData> getJobsForSession(String sessionId) throws CrkWebException
+	public List<ProcessingInProgressData> getJobsForSession(String sessionId) throws DaoException
 	{
 		EntityManager entityManager = null;
-		
+
 		try
 		{
 			entityManager = EntityManagerHandler.getEntityManager();
-			
+
 			CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 			CriteriaQuery<JobDB> criteriaQuery = criteriaBuilder.createQuery(JobDB.class);
-			
+
 			Root<JobDB> jobRoot = criteriaQuery.from(JobDB.class);
 			SetJoin<JobDB, UserSessionDB> join = jobRoot.join(JobDB_.userSessions);
 			Path<String> sessionIdPath = join.get(UserSessionDB_.sessionId);
 			Predicate condition = criteriaBuilder.equal(sessionIdPath, sessionId);
 			criteriaQuery.where(condition);
 			criteriaQuery.select(jobRoot);
-			
+
 			Query query = entityManager.createQuery(criteriaQuery);
 			List<JobDB> jobs = query.getResultList();
-			 
+
 			List<ProcessingInProgressData> processingInProgressDataList = null;
 			if(jobs != null)
 			{
 				processingInProgressDataList = new ArrayList<ProcessingInProgressData>();
-				 
+
 				for(JobDB job : jobs)
 				{
 					processingInProgressDataList.add(createProcessingInProgressData(job));
 				}
 			}
-			
+
 			return processingInProgressDataList;
 		}
-		catch(Throwable e)
+		catch(Throwable t)
 		{
-			e.printStackTrace();
-			throw new CrkWebException(e);
+			t.printStackTrace();
+			throw new DaoException(t);
 		}
 		finally
 		{
@@ -247,37 +250,37 @@ public class JobDAOImpl implements JobDAO
 			}
 			catch(Throwable t)
 			{
-				
+				t.printStackTrace();
 			}
 		}
 	}
-	
+
 	@Override
-	public Long getNrOfJobsForSessionId(String sessionId) throws CrkWebException
+	public Long getNrOfJobsForSessionId(String sessionId) throws DaoException
 	{
 		EntityManager entityManager = null;
-		
+
 		try
 		{
 			entityManager = EntityManagerHandler.getEntityManager();
-			
+
 			CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 			CriteriaQuery<Long> criteriaQuery  = criteriaBuilder.createQuery(Long.class);
-			
+
 			Root<UserSessionDB> sessionRoot = criteriaQuery.from(UserSessionDB.class);
 			SetJoin<UserSessionDB, JobDB> join = sessionRoot.join(UserSessionDB_.jobs);
 			criteriaQuery.select(criteriaBuilder.count(join));
 			Predicate condition = criteriaBuilder.equal(sessionRoot.get(UserSessionDB_.sessionId), sessionId);
 			criteriaQuery.where(condition);
-			
+
 			Query query = entityManager.createQuery(criteriaQuery);
 			Long nrOfJobs = (Long)query.getSingleResult();
 			return nrOfJobs;
 		}
-		catch(Throwable e)
+		catch(Throwable t)
 		{
-			e.printStackTrace();
-			throw new CrkWebException(e);
+			t.printStackTrace();
+			throw new DaoException(t);
 		}
 		finally
 		{
@@ -287,34 +290,34 @@ public class JobDAOImpl implements JobDAO
 			}
 			catch(Throwable t)
 			{
-				
+				t.printStackTrace();
 			}
 		}
 	}
-	
+
 	@Override
-	public String getStatusForJob(String jobId) throws CrkWebException
+	public String getStatusForJob(String jobId) throws DaoException
 	{
 		String status = null;
 		EntityManager entityManager = null;
-		
+
 		try
 		{
 			entityManager = EntityManagerHandler.getEntityManager();
-			
+
 			Query query = entityManager.createQuery("SELECT status FROM Job WHERE jobId = :jobId", String.class);
 			query.setParameter("jobId", jobId);
 			List<String> result = query.getResultList();
-			
+
 			if((result != null) && (result.size() > 0))
 			{
 				status = result.get(0);
 			}
 		}
-		catch(Throwable e)
+		catch(Throwable t)
 		{
-			e.printStackTrace();
-			throw new CrkWebException(e);
+			t.printStackTrace();
+			throw new DaoException(t);
 		}
 		finally
 		{
@@ -324,22 +327,22 @@ public class JobDAOImpl implements JobDAO
 			}
 			catch(Throwable t)
 			{
-				
+				t.printStackTrace();
 			}
 		}
-		 
+
 		return status;
 	}
-	
+
 	@Override
-	public int getInputTypeForJob(String jobId) throws CrkWebException
+	public int getInputTypeForJob(String jobId) throws DaoException
 	{
 		EntityManager entityManager = null;
-		
+
 		try
 		{
 			entityManager = EntityManagerHandler.getEntityManager();
-			
+
 			Query query = entityManager.createQuery("SELECT inputType FROM Job WHERE jobId = :jobId", Integer.class);
 			query.setParameter("jobId", jobId);
 			int input = (Integer)query.getSingleResult();
@@ -348,7 +351,7 @@ public class JobDAOImpl implements JobDAO
 		catch(Throwable e)
 		{
 			e.printStackTrace();
-			throw new CrkWebException(e);
+			throw new DaoException(e);
 		}
 		finally
 		{
@@ -358,16 +361,16 @@ public class JobDAOImpl implements JobDAO
 			}
 			catch(Throwable t)
 			{
-				
+				t.printStackTrace();
 			}
 		}
 	}
-	 
+
 	@Override
 	public ProcessingInProgressData createProcessingInProgressData(JobDB job)
 	{
 		ProcessingInProgressData processingInProgressData = null;
-			 
+
 		if(job != null)
 		{
 			processingInProgressData = new ProcessingInProgressData();
@@ -376,34 +379,43 @@ public class JobDAOImpl implements JobDAO
 			processingInProgressData.setStatus(job.getStatus());
 			processingInProgressData.setInputType(job.getInputType());
 		}
-		 
+
 		return processingInProgressData;
 	}
 
 	@Override
-	public Long getNrOfJobsForIPDuringLastDay(String ip) throws CrkWebException 
+	public Long getNrOfJobsForIPDuringLastDay(String ip) throws DaoException
 	{
 		EntityManager entityManager = null;
-		
+
 		long nrOfJobs = 0;
-		
+
 		try
 		{
 			entityManager = EntityManagerHandler.getEntityManager();
-			
+
 			Date currentDate = new Date();
 			long oneDay = 1 * 24 * 60 * 60 * 1000;
 			Timestamp dayBeforeTimestamp = new Timestamp(currentDate.getTime() - oneDay);
-			
+
+//			CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+//			CriteriaQuery<Long> criteriaQuery = criteriaBuilder.createQuery(Long.class);
+//			Root<JobDB> sessionRoot = criteriaQuery.from(JobDB.class);
+//			criteriaQuery.select(criteriaBuilder.count(sessionRoot));
+//			Predicate ipCondition = criteriaBuilder.equal(sessionRoot.get(JobDB_.ip), ip);
+//			Predicate submissionDateCondition =  criteriaBuilder.greaterThan(sessionRoot.get(JobDB_.submissionDate), dayBeforeTimestamp);
+//			Predicate condition = criteriaBuilder.and(ipCondition, submissionDateCondition);
+//			criteriaQuery.where(condition);
+//			Query query = entityManager.createQuery(criteriaQuery);
 			Query query = entityManager.createQuery("SELECT count(jobId) FROM Job WHERE ip = :ip AND submissionDate > :dayBefore", Long.class);
 			query.setParameter("ip", ip);
 			query.setParameter("dayBefore", dayBeforeTimestamp);
 			nrOfJobs = (Long) query.getSingleResult();
 		}
-		catch(Throwable e)
+		catch(Throwable t)
 		{
-			e.printStackTrace();
-			throw new CrkWebException(e);
+			t.printStackTrace();
+			throw new DaoException(t);
 		}
 		finally
 		{
@@ -413,46 +425,46 @@ public class JobDAOImpl implements JobDAO
 			}
 			catch(Throwable t)
 			{
-				
+				t.printStackTrace();
 			}
 		}
-		
+
 		return nrOfJobs;
 	}
-	
+
 	@Override
-	public Date getOldestJobSubmissionDateDuringLastDay(String ip) throws CrkWebException
+	public Date getOldestJobSubmissionDateDuringLastDay(String ip) throws DaoException
 	{
 		EntityManager entityManager = null;
-		
+
 		try
 		{
 			entityManager = EntityManagerHandler.getEntityManager();
-			
+
 			Date currentDate = new Date();
 			long oneDay = 1 * 24 * 60 * 60 * 1000;
 			Timestamp dayBeforeTimestamp = new Timestamp(currentDate.getTime() - oneDay);
-			
+
 			Query query = entityManager.createQuery("SELECT MIN(submissionDate) FROM Job WHERE ip = :ip AND submissionDate > :dayBefore", Date.class);
 			query.setParameter("ip", ip);
 			query.setParameter("dayBefore", dayBeforeTimestamp);
-			
+
 			Date oldestJobSubmissionDateDuringLastDay  = new Date(dayBeforeTimestamp.getTime());
-			
+
 			List<Date> oldestJobSubmissionDateDuringLastDayResult = query.getResultList();
-			
+
 			if((oldestJobSubmissionDateDuringLastDayResult != null) &&
 			   (oldestJobSubmissionDateDuringLastDayResult.size() > 0))
 			{
 				oldestJobSubmissionDateDuringLastDay = oldestJobSubmissionDateDuringLastDayResult.get(0);
 			}
-			
+
 			return oldestJobSubmissionDateDuringLastDay;
 		}
-		catch(Throwable e)
+		catch(Throwable t)
 		{
-			e.printStackTrace();
-			throw new CrkWebException(e);
+			t.printStackTrace();
+			throw new DaoException(t);
 		}
 		finally
 		{
@@ -462,24 +474,24 @@ public class JobDAOImpl implements JobDAO
 			}
 			catch(Throwable t)
 			{
-				
+				t.printStackTrace();
 			}
 		}
 	}
 
 	@Override
-	public void untieSelectedJobFromSession(String sessionId, String jobToUntie) throws CrkWebException 
+	public void untieSelectedJobFromSession(String sessionId, String jobToUntie) throws DaoException
 	{
 		EntityManager entityManager = null;
-		
+
 		try
 		{
 			entityManager = EntityManagerHandler.getEntityManager();
 			entityManager.getTransaction().begin();
-			
+
 			CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 			CriteriaQuery<UserSessionDB> criteriaQuery = criteriaBuilder.createQuery(UserSessionDB.class);
-			
+
 			Root<UserSessionDB> sessionRoot = criteriaQuery.from(UserSessionDB.class);
 			SetJoin<UserSessionDB, JobDB> join = sessionRoot.join(UserSessionDB_.jobs);
 			Path<String> jobPath = join.get(JobDB_.jobId);
@@ -488,19 +500,19 @@ public class JobDAOImpl implements JobDAO
 			Predicate condition = criteriaBuilder.and(sessionCondition, jobCondition);
 			criteriaQuery.select(sessionRoot);
 			criteriaQuery.where(condition);
-			
+
 			Query query = entityManager.createQuery(criteriaQuery);
 			List<UserSessionDB> sessionResult = query.getResultList();
 
 			if((sessionResult != null) && (sessionResult.size() > 0))
 			{
 				UserSessionDB session = sessionResult.get(0);
-				
+
 				JobDB jobToRemove = null;
-				
+
 				Set<JobDB> jobs = session.getJobs();
 				Iterator<JobDB> iterator = jobs.iterator();
-				
+
 				while((iterator.hasNext()) && (jobToRemove == null))
 				{
 					JobDB job = iterator.next();
@@ -509,31 +521,31 @@ public class JobDAOImpl implements JobDAO
 						jobToRemove = job;
 					}
 				}
-				
+
 				if(jobToRemove != null)
 				{
 					session.getJobs().remove(jobToRemove);
 				}
-				
+
 				entityManager.merge(session);
 			}
-			
+
 			entityManager.getTransaction().commit();
 		}
 		catch(Throwable e)
 		{
 			e.printStackTrace();
-			
+
 			try
 			{
 				entityManager.getTransaction().rollback();
 			}
 			catch(Throwable t)
 			{
-				
+				t.printStackTrace();
 			}
-			
-			throw new CrkWebException(e);
+
+			throw new DaoException(e);
 		}
 		finally
 		{
@@ -543,20 +555,20 @@ public class JobDAOImpl implements JobDAO
 			}
 			catch(Throwable t)
 			{
-				
+				t.printStackTrace();
 			}
 		}
 	}
-	
+
 	@Override
-	public String getInputForJob(String jobId) throws CrkWebException
+	public String getInputForJob(String jobId) throws DaoException
 	{
 		EntityManager entityManager = null;
-		
+
 		try
 		{
 			entityManager = EntityManagerHandler.getEntityManager();
-			
+
 			Query query = entityManager.createQuery("SELECT input FROM Job WHERE jobId = :jobId", String.class);
 			query.setParameter("jobId", jobId);
 			String input = (String)query.getSingleResult();
@@ -565,7 +577,7 @@ public class JobDAOImpl implements JobDAO
 		catch(Throwable e)
 		{
 			e.printStackTrace();
-			throw new CrkWebException(e);
+			throw new DaoException(e);
 		}
 		finally
 		{
@@ -575,27 +587,27 @@ public class JobDAOImpl implements JobDAO
 			}
 			catch(Throwable t)
 			{
-				
+				t.printStackTrace();
 			}
 		}
 	}
 
 	@Override
 	public void setPdbScoreItemForJob(String jobId, PDBScoreItemDB pdbScoreItem)
-			throws CrkWebException 
+			throws DaoException
 	{
 		EntityManager entityManager = null;
-		
+
 		try
 		{
 			entityManager = EntityManagerHandler.getEntityManager();
 			entityManager.getTransaction().begin();
 			entityManager.persist(pdbScoreItem);
-			
+
 			Query query = entityManager.createQuery("from Job WHERE jobId=:jobId", JobDB.class);
 			query.setParameter("jobId", jobId);
 			JobDB job = (JobDB)query.getSingleResult();
-			
+
 			if(job != null)
 			{
 				pdbScoreItem.setJobItem(job);
@@ -603,23 +615,23 @@ public class JobDAOImpl implements JobDAO
 				job.setStatus(StatusOfJob.FINISHED.getName());
 				entityManager.merge(job);
 			}
-			
+
 			entityManager.getTransaction().commit();
 		}
 		catch(Throwable e)
 		{
 			e.printStackTrace();
-			
+
 			try
 			{
 				entityManager.getTransaction().rollback();
 			}
 			catch(Throwable t)
 			{
-				
+				t.printStackTrace();
 			}
-			
-			throw new CrkWebException(e);
+
+			throw new DaoException(e);
 		}
 		finally
 		{
@@ -629,8 +641,110 @@ public class JobDAOImpl implements JobDAO
 			}
 			catch(Throwable t)
 			{
-				
+				t.printStackTrace();
 			}
 		}
+	}
+
+	@Override
+	public List<JobStatusDetails> getListOfUnfinishedJobs() throws DaoException
+	{
+		EntityManager entityManager = null;
+
+		try
+		{
+			entityManager = EntityManagerHandler.getEntityManager();
+
+			CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+			CriteriaQuery<JobDB> criteriaQuery = criteriaBuilder.createQuery(JobDB.class);
+
+			Root<JobDB> jobRoot = criteriaQuery.from(JobDB.class);
+			Predicate queingStatusCondition = criteriaBuilder.equal(jobRoot.get(JobDB_.status), StatusOfJob.QUEUING.getName());
+			Predicate runningStatusCondition = criteriaBuilder.equal(jobRoot.get(JobDB_.status), StatusOfJob.RUNNING.getName());
+			Predicate waitingStatusCondition = criteriaBuilder.equal(jobRoot.get(JobDB_.status), StatusOfJob.WAITING.getName());
+			Predicate condition = criteriaBuilder.or(queingStatusCondition, runningStatusCondition, waitingStatusCondition);
+			criteriaQuery.where(condition);
+			criteriaQuery.select(jobRoot);
+
+			Query query = entityManager.createQuery(criteriaQuery);
+			List<JobDB> jobs = query.getResultList();
+
+			List<JobStatusDetails> processingInProgressDataList = null;
+			if(jobs != null)
+			{
+				processingInProgressDataList = new ArrayList<JobStatusDetails>();
+
+				for(JobDB job : jobs)
+				{
+					processingInProgressDataList.add(createJobStatusDetails(job));
+				}
+			}
+
+			return processingInProgressDataList;
+		}
+		catch(Throwable e)
+		{
+			e.printStackTrace();
+			throw new DaoException(e);
+		}
+		finally
+		{
+			try
+			{
+				entityManager.close();
+			}
+			catch(Throwable t)
+			{
+				t.printStackTrace();
+			}
+		}
+	}
+
+	@Override
+	public String getSubmissionIdForJobId(String jobId) throws DaoException
+	{
+		EntityManager entityManager = null;
+
+		try
+		{
+			entityManager = EntityManagerHandler.getEntityManager();
+
+			Query query = entityManager.createQuery("SELECT submissionId FROM Job WHERE jobId = :jobId", String.class);
+			query.setParameter("jobId", jobId);
+			String submissionId = (String)query.getSingleResult();
+			return submissionId;
+		}
+		catch(Throwable e)
+		{
+			e.printStackTrace();
+			throw new DaoException(e);
+		}
+		finally
+		{
+			try
+			{
+				entityManager.close();
+			}
+			catch(Throwable t)
+			{
+				t.printStackTrace();
+			}
+		}
+	}
+	
+	private JobStatusDetails createJobStatusDetails(JobDB job)
+	{
+		JobStatusDetails jobStatusDetails = null;
+
+		if(job != null)
+		{
+			jobStatusDetails = new JobStatusDetails(job.getJobId(),
+													job.getStatus(),
+													job.getInput(),
+													job.getEmail(),
+													job.getSubmissionId());
+		}
+
+		return jobStatusDetails;
 	}
 }
