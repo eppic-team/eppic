@@ -171,7 +171,7 @@ public class JobStatusUpdater implements Runnable
 
 	        try
 	        {
-	        	inputStream = new FileReader(logFile);
+	        	inputStream = new FileReader(errorLogFile);
 		        bufferedInputStream = new BufferedReader(inputStream);
 
 		        String line = "";
@@ -203,10 +203,8 @@ public class JobStatusUpdater implements Runnable
 
 		jobDAO.updateStatusOfJob(jobStatusDetails.getJobId(), StatusOfJob.ERROR.getName());
 		
-		LogHandler.writeToLogFile(logFile, message.toString());
-		
 		emailSender.send(jobStatusDetails.getEmailAddress(),
-						 "Crk: " + jobStatusDetails.getInput() + ", error while processing",
+						 "EPPIC: " + jobStatusDetails.getInput() + ", error while processing",
 						 message + "\n\n" + resultsPathUrl + "#id=" + jobStatusDetails.getJobId());
 	}
 
