@@ -405,7 +405,7 @@ public class CRKMain {
 	
 	public void writeFinishedFile() throws CRKException {
 		try {
-			FileWriter fw = new FileWriter(params.getOutputFile(".finished"));
+			FileWriter fw = new FileWriter(new File(params.getOutDir(), "finished"));
 			fw.close();
 		} catch (IOException e) {
 			throw new CRKException(e, "Couldn't write the finished file", true);
