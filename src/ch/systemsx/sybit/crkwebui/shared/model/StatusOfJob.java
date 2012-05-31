@@ -9,6 +9,7 @@ public enum StatusOfJob
 	RUNNING("Running"),
 	FINISHED("Finished"),
 	ERROR("Error"),
+	STOPPED("Stopped"),
 	NONEXISTING("Nonexisting"),
 	QUEUING("Queuing"),
 	WAITING("Waiting");

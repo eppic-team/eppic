@@ -96,6 +96,10 @@ public class JobStatusUpdater implements Runnable
 							{
 								handleWaitingJob(unfinishedJob.getJobId());
 							}
+							else if(currentStatus == StatusOfJob.STOPPED)
+							{
+								handleStoppedJob(unfinishedJob.getJobId());
+							}
 						}
 					}
 					catch (JobHandlerException e)
@@ -228,6 +232,16 @@ public class JobStatusUpdater implements Runnable
 	private void handleWaitingJob(String jobId) throws DaoException
 	{
 		jobDAO.updateStatusOfJob(jobId, StatusOfJob.WAITING.getName());
+	}
+	
+	/**
+	 * Handles job with stopped status.
+	 * @param jobId identifier of the job
+	 * @throws DaoException when can not appropriately handle stopped job
+	 */
+	private void handleStoppedJob(String jobId) throws DaoException
+	{
+		jobDAO.updateStatusOfJob(jobId, StatusOfJob.STOPPED.getName());
 	}
 
 

@@ -639,21 +639,23 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 			JobDAO jobDAO = new JobDAOImpl();
 			String submissionId = jobDAO.getSubmissionIdForJobId(jobId);
 			
-			jobManager.stopJob(submissionId);
-
 			File jobDirectory = new File(generalDestinationDirectoryName, jobId);
-			File killFile = new File(jobDirectory, "crkkilled");
+			File logFile = new File(jobDirectory, "crklog");
+			File killFile = new File(jobDirectory, "killed");
+			killFile.createNewFile();
 			
-			try
-			{
-				killFile.createNewFile();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-
-			jobDAO.updateStatusOfJob(jobId, StatusOfJob.ERROR.getName());
-
+			jobManager.stopJob(submissionId);
+			
 			result = "Job: " + jobId + " was stopped";
+			
+			LogHandler.writeToLogFile(logFile, result);
+
+			jobDAO.updateStatusOfJob(jobId, StatusOfJob.STOPPED.getName());
+		}
+		catch(IOException e)
+		{
+			e.printStackTrace();
+			result = "Job: " + jobId + " was not stopped";
 		}
 		catch(DaoException e)
 		{

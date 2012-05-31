@@ -121,19 +121,26 @@ public class DrmaaJobManager implements JobManager
 					break;
 					
 				case Session.FAILED:
-					statusOfJob = StatusOfJob.ERROR;
+					if(checkIfJobWasStopped(jobId))
+					{
+						statusOfJob = StatusOfJob.STOPPED;
+					}
+					else
+					{
+						statusOfJob = StatusOfJob.ERROR;
+					}
 					break;
 					
 				case Session.UNDETERMINED:
-					boolean wasJobSubmitted = checkIfJobWasSubmitted(jobId);
-
-					if(wasJobSubmitted)
+					if(checkIfJobWasSubmitted(jobId))
 					{
-						boolean isJobFinishedSuccessfully = checkIfJobWasFinishedSuccessfully(jobId);
-
-						if(isJobFinishedSuccessfully)
+						if(checkIfJobWasFinishedSuccessfully(jobId))
 						{
 							statusOfJob = StatusOfJob.FINISHED;
+						}
+						else if(checkIfJobWasStopped(jobId))
+						{
+							statusOfJob = StatusOfJob.STOPPED;
 						}
 						else
 						{
@@ -213,6 +220,28 @@ public class DrmaaJobManager implements JobManager
 		}
 
 		return wasJobFinishedSuccessfully;
+	}
+	
+	/**
+	 * Checks if job was stopped. If job was stopped then killed file exists
+	 * in job directory.
+	 *
+	 * @param jobId identifier of the job
+	 * @return information whether job was stopped
+	 */
+	private boolean checkIfJobWasStopped(String jobId)
+	{
+		boolean wasStopped = false;
+
+		File stoppedJobDirectory = new File(jobsDirectory, jobId);
+		File stoppedJobFile = new File(stoppedJobDirectory, "killed");
+
+		if(stoppedJobFile.exists())
+		{
+			wasStopped = true;
+		}
+
+		return wasStopped;
 	}
 
 	@Override

@@ -6,6 +6,7 @@ import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingData;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
 
+import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 /**
@@ -66,7 +67,7 @@ public class GetResultsOfProcessingCallback implements AsyncCallback<ProcessingD
 		else
 		{
 			mainController.showMessage(AppPropertiesManager.CONSTANTS.callback_job_not_found_error(), "Id=" + jobId + " not found on the server");
-			mainController.cleanCenterPanel();
+			History.newItem("");
 		}
 		
 		mainController.getMainViewPort().unmask();
