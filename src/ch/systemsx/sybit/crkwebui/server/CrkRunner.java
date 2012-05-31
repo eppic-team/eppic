@@ -36,7 +36,7 @@ public class CrkRunner
 					  int inputType) throws Exception
 	{
 		File logFile = new File(destinationDirectoryName, "crklog");
-		LogHandler.writeToLogFile(logFile, "Processing started - please wait\n");
+		LogHandler.writeToLogFile(logFile, "Job submitted - please wait\n");
 
 		File runFile = new File(destinationDirectoryName, "crkrun");
 		runFile.createNewFile();
