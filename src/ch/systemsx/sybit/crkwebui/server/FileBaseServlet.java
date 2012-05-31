@@ -1,5 +1,6 @@
 package ch.systemsx.sybit.crkwebui.server;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
@@ -29,7 +30,10 @@ public class FileBaseServlet extends HttpServlet {
 
 		InputStream propertiesStream = getServletContext()
 				.getResourceAsStream(
-						"/WEB-INF/classes/META-INF/server.properties");
+						File.separator + "WEB-INF" + 
+						File.separator + "classes" + 
+						File.separator + "META-INF" + 
+						File.separator + "server.properties");
 
 		properties = new Properties();
 
@@ -45,7 +49,10 @@ public class FileBaseServlet extends HttpServlet {
 
 		InputStream messagesStream = getServletContext()
 				.getResourceAsStream(
-						"/WEB-INF/classes/META-INF/constants.properties");
+						File.separator + "WEB-INF" + 
+						File.separator + "classes" + 
+						File.separator + "META-INF" + 
+						File.separator + "constants.properties");
 
 		messages = new Properties();
 

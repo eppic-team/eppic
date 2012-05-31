@@ -107,6 +107,8 @@ public class JobStatusUpdater implements Runnable
 						e.printStackTrace();
 					}
 				}
+				
+				Thread.sleep(2000);
 			}
 			catch (Throwable t)
 			{

@@ -59,7 +59,7 @@ public class FileDownloadServlet extends FileBaseServlet
 			{
 				if(!jobId.matches("^[A-Za-z0-9]+$"))
 				{
-					response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Incorrect format of job id");
+					response.sendError(HttpServletResponse.SC_BAD_REQUEST, messages.getProperty("fileDownloadResultIncorrectFormatOfJobId"));
 				}
 				else if(((type.equals("interface") || (type.equals("pse")))) && 
 				   ((interfaceId == null) ||
@@ -71,14 +71,14 @@ public class FileDownloadServlet extends FileBaseServlet
 						(!interfaceId.equals("")) &&
 						(!interfaceId.matches("^[0-9]+$")))
 				{
-					response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Incorrect format of interface");
+					response.sendError(HttpServletResponse.SC_BAD_REQUEST, messages.getProperty("fileDownloadResultIncorrectFormatOfInterface"));
 				}
 				else if(type.equals("fasta") &&
 						((alignment == null) ||
 						(alignment.equals("")) ||
 						(!alignment.matches("^[A-Za-z]$"))))
 				{
-					response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Incorrect format of alignment");
+					response.sendError(HttpServletResponse.SC_BAD_REQUEST, messages.getProperty("fileDownloadResultIncorrectFormatOfAlignment"));
 				}
 				else
 				{
@@ -92,7 +92,7 @@ public class FileDownloadServlet extends FileBaseServlet
 						
 						if(suffixType == null)
 						{
-							response.sendError(HttpServletResponse.SC_BAD_REQUEST, "No support for selected type");
+							response.sendError(HttpServletResponse.SC_BAD_REQUEST, messages.getProperty("fileDownloadResultNoSupportForType"));
 						}
 						else
 						{
@@ -106,7 +106,7 @@ public class FileDownloadServlet extends FileBaseServlet
 							
 							if(isContentGzipped && !acceptGzipEncoding)
 							{
-								response.sendError(HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE, "No support for gzip encoding - please use the browser supporting Content-Encoding:gzip");
+								response.sendError(HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE, messages.getProperty("fileDownloadResultNoSupportForGzipEncoding"));
 							}
 							else
 							{

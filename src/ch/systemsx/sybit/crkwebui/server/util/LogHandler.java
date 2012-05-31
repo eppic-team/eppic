@@ -42,18 +42,6 @@ public class LogHandler
 					t.printStackTrace();
 				}
 			}
-			
-			if(outputStream != null)
-			{
-				try
-				{
-					outputStream.close();
-				}
-				catch(Throwable t)
-				{
-					t.printStackTrace();
-				}
-			}
 		}
 	}
 }

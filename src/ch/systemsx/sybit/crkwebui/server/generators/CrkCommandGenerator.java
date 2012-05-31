@@ -1,5 +1,6 @@
 package ch.systemsx.sybit.crkwebui.server.generators;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,7 +38,7 @@ public class CrkCommandGenerator
 
 		if(inputType == InputType.FILE.getIndex())
 		{
-			inputLocation = destinationDirectoryName + "/" + input;
+			inputLocation = destinationDirectoryName + File.separator + input;
 		}
 
 		command.add(inputLocation);
@@ -69,7 +70,7 @@ public class CrkCommandGenerator
 		}
 
 		command.add("-L");
-		command.add(destinationDirectoryName + "/crklog");
+		command.add(destinationDirectoryName + File.separator + "crklog");
 		command.add("-l");
 
 		return command;

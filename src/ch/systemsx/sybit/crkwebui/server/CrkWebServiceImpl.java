@@ -57,7 +57,6 @@ import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
 import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
 import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
 import ch.systemsx.sybit.crkwebui.shared.model.StepStatus;
-import ch.systemsx.sybit.crkwebui.shared.validators.InputParametersComparator;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
@@ -110,7 +109,10 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 
 		InputStream propertiesStream = getServletContext()
 				.getResourceAsStream(
-						"/WEB-INF/classes/META-INF/server.properties");
+						File.separator + "WEB-INF" + 
+						File.separator + "classes" + 
+						File.separator + "META-INF" + 
+						File.separator + "server.properties");
 
 		properties = new Properties();
 
@@ -232,7 +234,10 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 			// default input parameters values
 			InputStream inputParametersStream = getServletContext()
 					.getResourceAsStream(
-							"/WEB-INF/classes/META-INF/input_parameters.xml");
+							File.separator + "WEB-INF" + 
+							File.separator + "classes" + 
+							File.separator + "META-INF" + 
+							File.separator + "input_parameters.xml");
 
 			settings = InputParametersParser.prepareApplicationSettings(inputParametersStream);
 		}
@@ -244,7 +249,10 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 
 		InputStream propertiesStream = getServletContext()
 		.getResourceAsStream(
-				"/WEB-INF/classes/META-INF/grid.properties");
+				File.separator + "WEB-INF" + 
+				File.separator + "classes" + 
+				File.separator + "META-INF" + 
+				File.separator + "grid.properties");
 
 		Properties gridProperties = new Properties();
 
@@ -309,7 +317,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 				inputType = InputType.PDBCODE.getIndex();
 			}
 
-			String localDestinationDirName = generalDestinationDirectoryName + "/" + runJobData.getJobId();
+			String localDestinationDirName = generalDestinationDirectoryName + File.separator + runJobData.getJobId();
 
 			Date currentDate = new Date();
 
@@ -416,7 +424,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 
 		if((jobId != null) && (!jobId.equals("")))
 		{
-			String dataDirectory = generalDestinationDirectoryName + "/" + jobId;
+			File dataDirectory = new File(generalDestinationDirectoryName, jobId);
 
 			if (IOUtil.checkIfDirectoryExist(dataDirectory))
 			{
@@ -431,15 +439,16 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 				{
 					List<File> filesToRead = new ArrayList<File>();
 
-					if (IOUtil.checkIfFileExist(dataDirectory + "/crklog"))
+					File logFile = new File(dataDirectory, "crklog");
+					
+					if (IOUtil.checkIfFileExist(logFile))
 					{
 						filesToRead.add(new File(dataDirectory, "crklog"));
 					}
 
 //					if(debug)
 //					{
-						File directory = new File(dataDirectory);
-						File[] directoryContent = DirectoryContentGenerator.getFilesNamesWithPrefix(directory, jobId + ".e");
+						File[] directoryContent = DirectoryContentGenerator.getFilesNamesWithPrefix(dataDirectory, jobId + ".e");
 						
 						if(directoryContent != null)
 						{
@@ -453,14 +462,14 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 
 					StringBuffer log = new StringBuffer();
 
-					for(File logFile : filesToRead)
+					for(File fileToRead : filesToRead)
 					{
 						FileReader inputStream = null;
 				        BufferedReader bufferedInputStream = null;
 
 				        try
 				        {
-				        	inputStream = new FileReader(logFile);
+				        	inputStream = new FileReader(fileToRead);
 					        bufferedInputStream = new BufferedReader(inputStream);
 
 					        String line = "";
@@ -472,18 +481,6 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 				        }
 				        finally
 				        {
-				        	if(inputStream != null)
-							{
-								try
-								{
-									inputStream.close();
-								}
-								catch(Throwable t)
-								{
-									t.printStackTrace();
-								}
-							}
-				        	
 				        	if(bufferedInputStream != null)
 							{
 								try
@@ -532,7 +529,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 		stepStatus.setCurrentStepNumber(0);
 		stepStatus.setCurrentStep("Waiting");
 
-		String dataDirectory = generalDestinationDirectoryName + "/" + jobId;
+		File dataDirectory = new File(generalDestinationDirectoryName, jobId);
 
 		if (IOUtil.checkIfDirectoryExist(dataDirectory))
 		{
