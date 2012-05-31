@@ -19,6 +19,7 @@ public class JobDB implements Serializable
 	private String input;
 	private int inputType;
 	private Date submissionDate;
+	private String submissionId;
 	
 	private PDBScoreItemDB pdbScoreItem;
 	
@@ -107,5 +108,13 @@ public class JobDB implements Serializable
 
 	public int getInputType() {
 		return inputType;
+	}
+
+	public void setSubmissionId(String submissionId) {
+		this.submissionId = submissionId;
+	}
+
+	public String getSubmissionId() {
+		return submissionId;
 	}
 }
