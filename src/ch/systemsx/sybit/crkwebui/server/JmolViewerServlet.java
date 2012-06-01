@@ -45,7 +45,7 @@ public class JmolViewerServlet extends BaseServlet
 			protocol = properties.getProperty("protocol");
 		}
 		
-		String serverUrl = protocol + "://" + serverName + ":" + serverPort;
+		String serverUrl = protocol + "://" + serverName + ":" + serverPort + "/crkwebui";
 		
 		String resultsLocation = properties.getProperty("results_location");
 		
@@ -58,6 +58,9 @@ public class JmolViewerServlet extends BaseServlet
 		ServletOutputStream output = response.getOutputStream();
 		output.println("<html>");
 		output.println("<head>");
+		output.println("<title>");
+		output.println(jobId + " - " + interfaceId);
+		output.println("</title>");
 		output.println("<script type=\"text/javascript\" language=\"javascript\" src=\"" + 
 						serverUrl + "/resources/jmol/Jmol.js\"></script>");
 		output.println("</head>");

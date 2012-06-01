@@ -448,7 +448,7 @@ public class MainController
 			size = windowData.getWindowWidth();
 		}
 		
-		size -=20;
+		size -= 20;
 		
 		String jmolViewerUrl = GWT.getModuleBaseURL() + "jmolViewer";
 		jmolViewerUrl += "?id=" + pdbScoreItem.getJobId() + 
@@ -456,8 +456,7 @@ public class MainController
 						 "&interface=" + interfaceNr +
 						 "&size=" + size;
 		
-		String jmolViewerWindowTitle = pdbScoreItem.getJobId() + " - " + interfaceNr;
-		Window.open(jmolViewerUrl, jmolViewerWindowTitle, "");
+		Window.open(jmolViewerUrl, "", "");
 
 //		openJmol(GWT.getHostPageBaseURL() + "Jmol.html",
 //				 GWT.getHostPageBaseURL() + "resources/jmol",
