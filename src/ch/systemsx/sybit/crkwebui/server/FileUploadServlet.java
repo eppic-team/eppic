@@ -27,7 +27,7 @@ import ch.systemsx.sybit.crkwebui.shared.exceptions.ValidationException;
  * @author srebniak_a
  * 
  */
-public class FileUploadServlet extends FileBaseServlet {
+public class FileUploadServlet extends BaseServlet {
 	/**
 	 * 
 	 */

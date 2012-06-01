@@ -54,6 +54,16 @@
 	    <servlet-name>FileDownloadService</servlet-name>
 	    <url-pattern>/crkwebui/fileDownload</url-pattern>
  	</servlet-mapping>
+ 	
+ 	<servlet>
+	    <servlet-name>JmolViewerService</servlet-name>
+	    <servlet-class>ch.systemsx.sybit.crkwebui.server.JmolViewerServlet</servlet-class>
+	</servlet>
+
+	<servlet-mapping>
+	    <servlet-name>JmolViewerService</servlet-name>
+	    <url-pattern>/crkwebui/jmolViewer</url-pattern>
+ 	</servlet-mapping>
 
  	<welcome-file-list>
 		<welcome-file>Crkwebui.html</welcome-file>

@@ -40,8 +40,6 @@ public class InterfaceItem implements Serializable
 	private String operator; 
 	private List<WarningItem> warnings;
 	
-	private String jmolScript;
-	
 	private List<InterfaceScoreItem> interfaceScores;
 	private List<InterfaceResidueItem> interfaceResidues;
 	
@@ -123,14 +121,6 @@ public class InterfaceItem implements Serializable
 		this.warnings = warnings;
 	}
 
-	public String getJmolScript() {
-		return jmolScript;
-	}
-	
-	public void setJmolScript(String jmolScript) {
-		this.jmolScript = jmolScript;
-	}
-	
 	public List<InterfaceScoreItem> getInterfaceScores() {
 		return this.interfaceScores;
 	}
@@ -272,7 +262,6 @@ public class InterfaceItem implements Serializable
 			interfaceItem.setInterfaceScores(interfaceScoreItems);
 		}
 		
-		interfaceItem.setJmolScript(interfaceItemDB.getJmolScript());
 		interfaceItem.setName(interfaceItemDB.getName());
 		interfaceItem.setOperator(interfaceItemDB.getOperator());
 		interfaceItem.setSize1(interfaceItemDB.getSize1());

@@ -10,11 +10,11 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 
 /**
- * Base class for file upload and download servlets.
+ * Base class for other servlets.
  * @author srebniak_a
  *
  */
-public class FileBaseServlet extends HttpServlet {
+public class BaseServlet extends HttpServlet {
 
 	/**
 	 * 

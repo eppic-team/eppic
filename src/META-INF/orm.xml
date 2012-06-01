@@ -145,9 +145,6 @@
             <basic name="operator">
             	<column length="25"/>
             </basic>
-       		<basic name="jmolScript">
-       			<column column-definition="text"/>
-       		</basic>
 
        		<many-to-one name="pdbScoreItem" >
             </many-to-one>

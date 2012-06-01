@@ -20,7 +20,7 @@ import ch.systemsx.sybit.crkwebui.server.generators.FileNameGenerator;
  * @author srebniak_a
  * 
  */
-public class FileDownloadServlet extends FileBaseServlet 
+public class FileDownloadServlet extends BaseServlet 
 {
 	/**
 	 * 

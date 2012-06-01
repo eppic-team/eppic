@@ -442,22 +442,31 @@ public class MainController
 	 */
 	public void showJmolViewer(String interfaceNr)
 	{
-		String resultsLocation = settings.getResultsLocation();
-
 		int size = windowData.getWindowHeight();
 		if(size > windowData.getWindowWidth())
 		{
 			size = windowData.getWindowWidth();
 		}
+		
+		size -=20;
+		
+		String jmolViewerUrl = GWT.getModuleBaseURL() + "jmolViewer";
+		jmolViewerUrl += "?id=" + pdbScoreItem.getJobId() + 
+						 "&input=" + pdbScoreItem.getPdbName() + 
+						 "&interface=" + interfaceNr +
+						 "&size=" + size;
+		
+		String jmolViewerWindowTitle = pdbScoreItem.getJobId() + " - " + interfaceNr;
+		Window.open(jmolViewerUrl, jmolViewerWindowTitle, "");
 
-		openJmol(GWT.getHostPageBaseURL() + "Jmol.html",
-				 GWT.getHostPageBaseURL() + "resources/jmol",
-				 GWT.getHostPageBaseURL() + resultsLocation,
-				 interfaceNr,
-				 pdbScoreItem.getJobId(),
-				 pdbScoreItem.getPdbName(),
-				 size,
-				 pdbScoreItem.getInterfaceItem(Integer.parseInt(interfaceNr) - 1).getJmolScript());
+//		openJmol(GWT.getHostPageBaseURL() + "Jmol.html",
+//				 GWT.getHostPageBaseURL() + "resources/jmol",
+//				 GWT.getHostPageBaseURL() + resultsLocation,
+//				 interfaceNr,
+//				 pdbScoreItem.getJobId(),
+//				 pdbScoreItem.getPdbName(),
+//				 size,
+//				 pdbScoreItem.getInterfaceItem(Integer.parseInt(interfaceNr) - 1).getJmolScript());
 	}
 
 	public WindowData getWindowData() {
@@ -468,34 +477,34 @@ public class MainController
 		this.windowData = windowData;
 	}
 
-	/*
-	 * height and width should be set always - otherwise firefox is opening new tab ( and not window )
-	 */
-	/**
-	 * Opens jmol viewer window.
-	 * @param jmolPage page where jmol is going to be embedded
-	 * @param jmolResources path to jmol resources
-	 * @param url server url
-	 * @param interfaceNr interface identifier
-	 * @param filename name of the file
-	 * @param size size of the window
-	 * @param jmolScript jmol script which is going to be executed
-	 */
-	public native void openJmol(String jmolPage,
-								String jmolResources,
-								String url,
-								String interfaceNr,
-								String selectedJob,
-								String filename,
-								int size,
-								String jmolScript) /*-{
-		var jmolwindow = window.open(jmolPage, "Jmol", "status=no,width=" + size + ",height=" + size);
-		jmolwindow.document.body.innerHTML = "";
-		$wnd.jmolInitialize(jmolResources);
-		$wnd.jmolSetCallback("language", "en");
-		$wnd.jmolSetDocument(jmolwindow.document);
-		$wnd.jmolApplet(size - 20, 'load ' + url + selectedJob + "/" + filename + "." + interfaceNr + '.pdb.gz;' + jmolScript);
-	}-*/;
+//	/*
+//	 * height and width should be set always - otherwise firefox is opening new tab ( and not window )
+//	 */
+//	/**
+//	 * Opens jmol viewer window.
+//	 * @param jmolPage page where jmol is going to be embedded
+//	 * @param jmolResources path to jmol resources
+//	 * @param url server url
+//	 * @param interfaceNr interface identifier
+//	 * @param filename name of the file
+//	 * @param size size of the window
+//	 * @param jmolScript jmol script which is going to be executed
+//	 */
+//	public native void openJmol(String jmolPage,
+//								String jmolResources,
+//								String url,
+//								String interfaceNr,
+//								String selectedJob,
+//								String filename,
+//								int size,
+//								String jmolScript) /*-{
+//		var jmolwindow = window.open(jmolPage, "Jmol", "status=no,width=" + size + ",height=" + size);
+//		jmolwindow.document.body.innerHTML = "";
+//		$wnd.jmolInitialize(jmolResources);
+//		$wnd.jmolSetCallback("language", "en");
+//		$wnd.jmolSetDocument(jmolwindow.document);
+//		$wnd.jmolApplet(size - 20, 'load ' + url + selectedJob + "/" + filename + "." + interfaceNr + '.pdb.gz;' + jmolScript);
+//	}-*/;
 
 	/**
 	 * Downloads file from the server.
