@@ -30,6 +30,13 @@ public class JobDB implements Serializable
 		this.userSessions = new HashSet<UserSessionDB>();
 	}
 	
+	public JobDB(String input,
+				 int inputType)
+	{
+		this.input = input;
+		this.inputType = inputType;
+	}
+	
 	public Long getUid() {
 		return uid;
 	}
