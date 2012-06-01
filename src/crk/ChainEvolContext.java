@@ -307,26 +307,27 @@ public class ChainEvolContext implements Serializable {
 		
 		
 		this.queryCov = queryCovCutoff;
-		this.idCutoff = homSoftIdCutoff;
 		
-		while (true) { 
+		double currentIdCutoff = homSoftIdCutoff;
+		
+		while (currentIdCutoff>homHardIdCutoff-ROUNDING_MARGIN) { 
 						
-			homologs.filterToMinIdAndCoverage(idCutoff, queryCovCutoff);
+			homologs.filterToMinIdAndCoverage(currentIdCutoff, queryCovCutoff);
 						
-			LOGGER.info(homologs.getSizeFilteredSubset()+" homologs after applying "+String.format("%4.2f",idCutoff)+" identity cutoff and "+String.format("%4.2f",queryCovCutoff)+" query coverage cutoff and before redundancy elimination.");
+			LOGGER.info(homologs.getSizeFilteredSubset()+" homologs after applying "+
+					String.format("%4.2f",currentIdCutoff)+" identity cutoff and "+
+					String.format("%4.2f",queryCovCutoff)+" query coverage cutoff and before redundancy elimination.");
 			
 			homologs.reduceRedundancy(maxNumSeqs, params.getBlastBinDir(), params.getBlastDataDir(), params.getNumThreads());
+
+			this.idCutoff = currentIdCutoff;
 			
 			if (homologs.getSizeFilteredSubset()>=minNumSeqs) break;
 
-			LOGGER.info("Tried "+String.format("%4.2f",idCutoff)+" identity cutoff, only "+homologs.getSizeFilteredSubset()+" non-redundant homologs found ("+minNumSeqs+" required)");
-
-			// instead of putting the condition in the while above, we need it here so that in case that the hard cutoff
-			// is reached and still not enough homologs the last really tried idCutoff is the one that stays stored and logged in next line
-			// the 0.0001 just to be sure we really reach the hard cutoff (there were problems with rounding)
-			if (Math.abs(idCutoff-homHardIdCutoff)<ROUNDING_MARGIN) break; 
+			LOGGER.info("Tried "+String.format("%4.2f",currentIdCutoff)+" identity cutoff, only "+
+					homologs.getSizeFilteredSubset()+" non-redundant homologs found ("+minNumSeqs+" required)");
 			
-			idCutoff -= homIdStep;
+			currentIdCutoff -= homIdStep;
 		}
 				
 	}
