@@ -306,27 +306,28 @@ public class CRKMain {
 			pr.readColorMappingsFromResourceFile(CRKParams.PYMOL_COLOR_MAPPINGS_IS);
 
 		} catch (IOException e) {
-			LOGGER.error("Couldn't read colors file. Won't generate thumbnails or pse/pml files");
-			pr = null;
-		}
-		
-		if (pr!=null) {
-			try {
-				for (ChainInterface interf:interfaces) {
-					pr.generateInterfPngPsePml(interf, params.getCAcutoffForGeom(), 
-							params.getOutputFile("."+interf.getId()+".pdb"), 
-							params.getOutputFile("."+interf.getId()+".pse"),
-							params.getOutputFile("."+interf.getId()+".pml"),
-							params.getBaseName()+"."+interf.getId());
-				}
-			} catch (IOException e) {
-				throw new CRKException(e, "Couldn't write thumbnails or pymol pse/pml files. "+e.getMessage(),true);
-			} catch (InterruptedException e) {
-				throw new CRKException(e, "Couldn't generate thumbnails or pse/pml files, pymol thread interrupted: "+e.getMessage(),true);
+			throw new CRKException(e,"Couldn't read colors file. Won't generate thumbnails or pse/pml files. "+e.getMessage(),true);
+		}		
+
+		try {
+			for (ChainInterface interf:interfaces) {
+				pr.generateInterfPngPsePml(interf, params.getCAcutoffForGeom(), 
+						params.getOutputFile("."+interf.getId()+".pdb"), 
+						params.getOutputFile("."+interf.getId()+".pse"),
+						params.getOutputFile("."+interf.getId()+".pml"),
+						params.getBaseName()+"."+interf.getId());
+				
+				wuiAdaptor.writeJmolScriptFile(interf, params.getCAcutoffForGeom(), pr, params.getOutDir(), params.getBaseName());
 			}
-			compressFiles();
-			wuiAdaptor.setJmolScripts(interfaces, params.getCAcutoffForGeom(), pr);
+		} catch (IOException e) {
+			throw new CRKException(e, "Couldn't write thumbnails, pymol pse/pml files or jmol files. "+e.getMessage(),true);
+		} catch (InterruptedException e) {
+			throw new CRKException(e, "Couldn't generate thumbnails, pymol pse/pml files or jmol files, pymol thread interrupted: "+e.getMessage(),true);
 		}
+
+		compressFiles();
+				
+		
 	}
 
 	private void compressFiles() throws CRKException {
@@ -378,8 +379,12 @@ public class CRKMain {
 			for (int i=0; i<directoryContent.length; i++) {
 				File source = new File(params.getOutDir(), directoryContent[i].getName());
 				
-				// we exclude the pse and pngs and zip file (if there was one from an old run it would go into a self-reference and grow forever)
-				if (source.getName().endsWith(".pse.gz") || source.getName().endsWith(".png") || source.getName().endsWith(".zip")) 
+				// we exclude the pse, pngs, jmols, dats and zip file (if there was one from an old run it would go into a self-reference and grow forever)
+				if (source.getName().endsWith(".pse.gz") || 
+						source.getName().endsWith(".png") || 
+						source.getName().endsWith(".jmol") || 
+						source.getName().endsWith(".dat") || // this includes chainevolcontext.dat and interfaces.dat
+						source.getName().endsWith(".zip")) 
 					continue;
 
 				if(source.isFile())	{

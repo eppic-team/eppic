@@ -31,8 +31,6 @@ public class InterfaceItemDB implements Serializable
 	private String operator; 
 	private List<WarningItemDB> warnings;
 	
-	private String jmolScript;
-	
 	private List<InterfaceScoreItemDB> interfaceScores;
 	private List<InterfaceResidueItemDB> interfaceResidues;
 	
@@ -45,48 +43,7 @@ public class InterfaceItemDB implements Serializable
 		interfaceResidues = new ArrayList<InterfaceResidueItemDB>();
 	}
 	
-//	public InterfaceItemDB(
-//							 Double area,
-//							 Double asaC1,
-//							 Double asaC2,
-//							 Double asaR1,
-//							 Double asaR2,
-//							 Double bsaC1,
-//							 Double bsaC2,
-//							 Double bsaR1,
-//							 Double bsaR2,
-//							 String finalCall,
-//							 int id,
-//							 String jmolScript,
-//							 String name,
-//							 String operator, 
-//							 int size1,
-//							 int size2,
-//							 int uid,
-//							 List<WarningItemDB> warnings,
-//							 List<InterfaceScoreItemDB> interfaceScores)
-//	{
-//		this.area = area;
-//		this.asaC1 = asaC1;
-//		this.asaC2 = asaC2;
-//		this.asaR1 = asaR1;
-//		this.asaR2 = asaR2;
-//		this.bsaC1 = bsaC1;
-//		this.bsaC2 = bsaC2;
-//		this.bsaR1 = bsaR1;
-//		this.bsaR2 = bsaR2;
-//		this.finalCall = finalCall;
-//		this.id = id;
-//		this.jmolScript = jmolScript;
-//		this.name = name;
-//		this.operator = operator;
-//		this.size1 = size1;
-//		this.size2 = size2;
-//		this.uid = uid;
-//		this.interfaceScores = interfaceScores;
-//		this.warnings = warnings;
-//		interfaceResidues = new ArrayList<InterfaceResidueItemDB>();
-//	}
+
 	
 	public int getId() {
 		return id;
@@ -112,14 +69,6 @@ public class InterfaceItemDB implements Serializable
 		this.name = name;
 	}
 
-//	public void setInterfaceStructures(List<InterfaceStructureItem> interfaceStructures) {
-//		this.interfaceStructures = interfaceStructures;
-//	}
-//
-//	public List<InterfaceStructureItem> getInterfaceStructures() {
-//		return interfaceStructures;
-//	}
-	
 	public int getSize1() {
 		return size1;
 	}
@@ -168,14 +117,6 @@ public class InterfaceItemDB implements Serializable
 		this.warnings = warnings;
 	}
 
-	public String getJmolScript() {
-		return jmolScript;
-	}
-	
-	public void setJmolScript(String jmolScript) {
-		this.jmolScript = jmolScript;
-	}
-	
 	public List<InterfaceScoreItemDB> getInterfaceScores() {
 		return this.interfaceScores;
 	}

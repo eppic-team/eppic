@@ -1,7 +1,9 @@
 package crk;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -96,10 +98,14 @@ public class WebUIDataAdaptor {
 
 	}
 	
-	public void setJmolScripts(ChainInterfaceList interfaces, double caCutoff, PymolRunner pr) {
-		for (int i=0;i<interfaces.size();i++) {
-			pdbScoreItem.getInterfaceItem(i).setJmolScript(createJmolScript(interfaces.get(i+1), caCutoff, pr));
-		}
+	public void writeJmolScriptFile(ChainInterface interf, double caCutoff, PymolRunner pr, File dir, String prefix) 
+			throws FileNotFoundException {
+		 
+			File file = new File(dir,prefix+"."+interf.getId()+".jmol");
+			PrintStream ps = new PrintStream(file);
+			ps.print(createJmolScript(interf, caCutoff, pr));
+			ps.close();
+
 	}
 	
 	private String createJmolScript(ChainInterface interf, double caCutoff, PymolRunner pr) {
@@ -116,24 +122,24 @@ public class WebUIDataAdaptor {
 		colorInterf2 = "[x"+colorInterf2.substring(1, colorInterf2.length())+"]";
 		
 		StringBuffer sb = new StringBuffer();
-		sb.append("cartoon on; wireframe off; spacefill off; set solvent off;");
-		sb.append("select :"+chain1+"; color "+color1+";");
-		sb.append("select :"+chain2+"; color "+color2+";");
+		sb.append("cartoon on; wireframe off; spacefill off; set solvent off;\n");
+		sb.append("select :"+chain1+"; color "+color1+";\n");
+		sb.append("select :"+chain2+"; color "+color2+";\n");
 		interf.calcRimAndCore(caCutoff);
-		sb.append(getSelString("core", chain1, interf.getFirstRimCore().getCoreResidues())+";");
-		sb.append(getSelString("core", chain2, interf.getSecondRimCore().getCoreResidues())+";");
-		sb.append(getSelString("rim", chain1, interf.getFirstRimCore().getRimResidues())+";");
-		sb.append(getSelString("rim", chain2, interf.getSecondRimCore().getRimResidues())+";");
-		sb.append("define interface"+chain1+" core"+chain1+" or rim"+chain1+";");
-		sb.append("define interface"+chain2+" core"+chain2+" or rim"+chain2+";");
-		sb.append("define bothinterf interface"+chain1+" or interface"+chain2+";");
+		sb.append(getSelString("core", chain1, interf.getFirstRimCore().getCoreResidues())+";\n");
+		sb.append(getSelString("core", chain2, interf.getSecondRimCore().getCoreResidues())+";\n");
+		sb.append(getSelString("rim", chain1, interf.getFirstRimCore().getRimResidues())+";\n");
+		sb.append(getSelString("rim", chain2, interf.getSecondRimCore().getRimResidues())+";\n");
+		sb.append("define interface"+chain1+" core"+chain1+" or rim"+chain1+";\n");
+		sb.append("define interface"+chain2+" core"+chain2+" or rim"+chain2+";\n");
+		sb.append("define bothinterf interface"+chain1+" or interface"+chain2+";\n");
 		// surfaces are cool but in jmol they don't display as good as in pymol, especially the transparency effect is quite bad
-		//sb.append("select :"+chain1+"; isosurface surf"+chain1+" solvent;color isosurface gray;color isosurface translucent;");
-		//sb.append("select :"+chain2+"; isosurface surf"+chain2+" solvent;color isosurface gray;color isosurface translucent;");
-		sb.append("select interface"+chain1+";wireframe 0.3;");
-		sb.append("select interface"+chain2+";wireframe 0.3;");
-		sb.append("select core"+chain1+";"+"color "+colorInterf1+";wireframe 0.3;");
-		sb.append("select core"+chain2+";"+"color "+colorInterf2+";wireframe 0.3;");		
+		//sb.append("select :"+chain1+"; isosurface surf"+chain1+" solvent;color isosurface gray;color isosurface translucent;\n");
+		//sb.append("select :"+chain2+"; isosurface surf"+chain2+" solvent;color isosurface gray;color isosurface translucent;\n");
+		sb.append("select interface"+chain1+";wireframe 0.3;\n");
+		sb.append("select interface"+chain2+";wireframe 0.3;\n");
+		sb.append("select core"+chain1+";"+"color "+colorInterf1+";wireframe 0.3;\n");
+		sb.append("select core"+chain2+";"+"color "+colorInterf2+";wireframe 0.3;\n");		
 		return sb.toString();
 	}
 	
