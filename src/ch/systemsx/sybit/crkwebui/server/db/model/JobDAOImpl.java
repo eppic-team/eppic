@@ -561,7 +561,7 @@ public class JobDAOImpl implements JobDAO
 	}
 
 	@Override
-	public String getInputForJob(String jobId) throws DaoException
+	public InputWithType getInputWithTypeForJob(String jobId) throws DaoException
 	{
 		EntityManager entityManager = null;
 
@@ -569,10 +569,21 @@ public class JobDAOImpl implements JobDAO
 		{
 			entityManager = EntityManagerHandler.getEntityManager();
 
-			Query query = entityManager.createQuery("SELECT input FROM Job WHERE jobId = :jobId", String.class);
-			query.setParameter("jobId", jobId);
-			String input = (String)query.getSingleResult();
-			return input;
+			CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+			CriteriaQuery<JobDB> criteriaQuery = criteriaBuilder.createQuery(JobDB.class);
+
+			Root<JobDB> sessionRoot = criteriaQuery.from(JobDB.class);
+			criteriaQuery.multiselect(sessionRoot.get(JobDB_.input),
+									  sessionRoot.get(JobDB_.inputType));
+			Predicate condition = criteriaBuilder.equal(sessionRoot.get(JobDB_.jobId), jobId);
+			criteriaQuery.where(condition);
+			
+			Query query = entityManager.createQuery(criteriaQuery);
+			JobDB job = (JobDB)query.getSingleResult();
+			
+			InputWithType inputWithType = new InputWithType(job.getInput(), 
+															job.getInputType());
+			return inputWithType;
 		}
 		catch(Throwable e)
 		{

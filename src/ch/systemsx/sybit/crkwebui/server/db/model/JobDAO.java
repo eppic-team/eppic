@@ -117,12 +117,12 @@ public interface JobDAO
 	public void untieSelectedJobFromSession(String sessionId, String jobToUntie) throws DaoException;
 
 	/**
-	 * Retrieves input(pdb code/name) for specified job.
+	 * Retrieves input with type(pdb code/name) for specified job.
 	 * @param jobId identifier of the job
-	 * @return input(pdb code/file name)
+	 * @return input with type(pdb code/file name)
 	 * @throws DaoException when can not retrieve information from data storage
 	 */
-	public String getInputForJob(String jobId) throws DaoException;
+	public InputWithType getInputWithTypeForJob(String jobId) throws DaoException;
 
 	/**
 	 * Sets pdb score item for specified job.

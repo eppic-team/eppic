@@ -21,6 +21,7 @@ import ch.systemsx.sybit.crkwebui.client.CrkWebService;
 import ch.systemsx.sybit.crkwebui.server.data.EmailData;
 import ch.systemsx.sybit.crkwebui.server.db.model.HomologsInfoItemDAO;
 import ch.systemsx.sybit.crkwebui.server.db.model.HomologsInfoItemDAOImpl;
+import ch.systemsx.sybit.crkwebui.server.db.model.InputWithType;
 import ch.systemsx.sybit.crkwebui.server.db.model.InterfaceItemDAO;
 import ch.systemsx.sybit.crkwebui.server.db.model.InterfaceItemDAOImpl;
 import ch.systemsx.sybit.crkwebui.server.db.model.InterfaceResidueItemDAO;
@@ -432,7 +433,11 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 
 				statusData.setJobId(jobId);
 				statusData.setStatus(status);
-				statusData.setInput(jobDAO.getInputForJob(jobId));
+				
+				InputWithType inputWithType = jobDAO.getInputWithTypeForJob(jobId);
+				statusData.setInputType(inputWithType.getInputType());
+				statusData.setInput(inputWithType.getInput());
+				
 				statusData.setStep(new StepStatus());
 
 				try
