@@ -40,6 +40,10 @@ public class UploadToDb {
 		for (File jobDirectory : jobsDirectories)
 		{
 			
+			if (!jobDirectory.isDirectory()) continue;
+			
+			if (!jobDirectory.getName().matches("^\\d\\w\\w\\w$")) continue; 
+			
 			try 
 			{
 				System.out.print(jobDirectory.getName()+" ");
