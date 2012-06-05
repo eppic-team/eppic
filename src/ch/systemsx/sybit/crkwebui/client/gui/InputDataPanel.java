@@ -344,8 +344,9 @@ public class InputDataPanel extends DisplayPanel
 															mainController.getSettings().getDefaultParametersValues()))
 			{
 				mainController.hideWaiting();
-				mainController.setSelectedJobId(pdbCodeField.getValue().toLowerCase());
-				History.newItem("id/" + pdbCodeField.getValue().toLowerCase());
+				String trimmedJobId = pdbCodeField.getValue().toLowerCase().trim();
+				mainController.setSelectedJobId(trimmedJobId);
+				History.newItem("id/" + trimmedJobId);
 			}
 			else
 			{
