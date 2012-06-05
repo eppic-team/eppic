@@ -93,23 +93,23 @@ public class InputDataPanel extends DisplayPanel
 		generalFieldSet.setBorders(false);
 		generalFieldSet.setLayout(layout);
 
-		pdbCodeRadio = new Radio();  
-		pdbCodeRadio.setBoxLabel(AppPropertiesManager.CONSTANTS.input_pdb_code_radio());  
+		pdbCodeRadio = new Radio();
+		pdbCodeRadio.setBoxLabel(AppPropertiesManager.CONSTANTS.input_pdb_code_radio());
 		pdbCodeRadio.setValue(true);
 		pdbCodeRadio.setLabelStyle("font-size: 14px;");
-	  
-	    pdbFileRadio = new Radio();  
+
+	    pdbFileRadio = new Radio();
 	    pdbFileRadio.setBoxLabel(AppPropertiesManager.CONSTANTS.input_upload_file_radio());
 	    pdbFileRadio.setLabelStyle("font-size: 14px;");
-	  
-	    inputRadioGroup = new RadioGroup();  
+
+	    inputRadioGroup = new RadioGroup();
 	    inputRadioGroup.setFieldLabel(AppPropertiesManager.CONSTANTS.input_pdb_input_type());
-	    if (AppPropertiesManager.CONSTANTS.input_pdb_input_type()!=null && 
-	    		AppPropertiesManager.CONSTANTS.input_pdb_input_type().equals("")) 
-	    	inputRadioGroup.setLabelSeparator("");	    
-	    inputRadioGroup.add(pdbCodeRadio);  
-	    inputRadioGroup.add(pdbFileRadio);  
-	    
+	    if (AppPropertiesManager.CONSTANTS.input_pdb_input_type()!=null &&
+	    		AppPropertiesManager.CONSTANTS.input_pdb_input_type().equals(""))
+	    	inputRadioGroup.setLabelSeparator("");
+	    inputRadioGroup.add(pdbCodeRadio);
+	    inputRadioGroup.add(pdbFileRadio);
+
 	    inputRadioGroup.addListener(Events.Change, new Listener<BaseEvent>(){
 	        public void handleEvent(BaseEvent be)
 	        {
@@ -168,7 +168,7 @@ public class InputDataPanel extends DisplayPanel
 		emailTextField = new TextField<String>();
 		emailTextField.setName("email");
 		emailTextField.setFieldLabel(AppPropertiesManager.CONSTANTS.input_email());
-		emailTextField.setLabelStyle("font-size: 14px;");		
+		emailTextField.setLabelStyle("font-size: 14px;");
 		emailTextField.setValidator(new EmailFieldValidator());
 		emailTextField.addKeyListener(new KeyListener(){
 			public void componentKeyPress(ComponentEvent event)
@@ -308,7 +308,7 @@ public class InputDataPanel extends DisplayPanel
 
 			if(input != null)
 			{
-				input = input.toLowerCase();
+				input = input.toLowerCase().trim();
 			}
 		}
 
@@ -359,7 +359,7 @@ public class InputDataPanel extends DisplayPanel
 							null);
 		}
 	}
-	
+
 	/**
 	 * Retrieves field containing code of the pdb to use as the source for the job.
 	 * @return field containing pdb pode
