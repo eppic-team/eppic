@@ -96,6 +96,9 @@ public class CalcInterfaceStats extends Thread {
 				}
 				cifFile.delete();
 				
+				// very important indeed: remove the H atoms! otherwise we get uncomparable areas/core sizes!!!!
+				pdb.removeHatoms();
+				
 				long start = System.currentTimeMillis();
 				ChainInterfaceList interfList = null;
 				try {

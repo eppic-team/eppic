@@ -103,6 +103,9 @@ public class InterfaceSorter {
 			}
 			cifFile.delete();
 			
+			// very important indeed: remove the H atoms! otherwise we get uncomparable areas!!!!
+			pdb.removeHatoms();
+			
 			long start = System.currentTimeMillis();
 			ChainInterfaceList interfList = null;
 			try {
