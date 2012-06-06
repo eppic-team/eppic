@@ -24,7 +24,7 @@ import owl.core.util.FileFormatException;
  */
 public class CalcInterfaceStats extends Thread {
 
-	private static final String   LOCAL_CIF_DIR = "/afs/psi.ch/project/bioinfo2/kaks/jose/coresize_v_area/cifgzfiles";
+	private static final String   LOCAL_CIF_DIR = new File(System.getProperty("user.home"),"cifrepo").getAbsolutePath();
 	
 	private static final double CA_CUTOFF = 0.95;
 	
@@ -117,6 +117,7 @@ public class CalcInterfaceStats extends Thread {
 				
 				for (ChainInterface interf:interfList) {
 				
+					int interfId = interf.getId();
 					String pdbChainCode1 = interf.getFirstMolecule().getPdbChainCode();
 					String pdbChainCode2 = interf.getSecondMolecule().getPdbChainCode();
 					String op = SpaceGroup.getAlgebraicFromMatrix(interf.getSecondTransf());
@@ -129,8 +130,8 @@ public class CalcInterfaceStats extends Thread {
 
 
 					
-					outputStrings.add(String.format("%4s\t%4s\t%20s\t%8.2f\t%3d\t%3.1f\t%4.2f\t%4.2f\t%3d\t%3d",
-							pdbCode,
+					outputStrings.add(String.format("%4s\t%2d\t%4s\t%20s\t%8.2f\t%3d\t%3.1f\t%4.2f\t%4.2f\t%3d\t%3d",
+							pdbCode,interfId,
 							pdbChainCode1+"+"+pdbChainCode2,
 							op,area,clashes,
 							pdb.getResolution(),pdb.getRfree(),pdb.getRsym(),
@@ -148,7 +149,7 @@ public class CalcInterfaceStats extends Thread {
 		int numThreads = NTHREADS;
 		
 		if (args.length<2) {
-			System.err.println("Usage: InterfaceSorter <list file> <ouput file> [<number of threads to spawn>]");
+			System.err.println("Usage: CalcInterfaceStats <list file> <ouput file> [<number of threads to spawn>]");
 			System.exit(1);
 		}		
 		File listFile = new File(args[0]);
@@ -167,10 +168,10 @@ public class CalcInterfaceStats extends Thread {
 		System.out.println("Total entries to calculate: "+pdbCodes.size());
 		System.out.println("Spawning "+numThreads+" threads");
 		System.out.println("Entries in each thread: ");
-		int total = 0;
+		//int total = 0;
 		for (List<String> list:lists) {
 			System.out.println(list.size());
-			total +=list.size();
+			//total +=list.size();
 		}
 		
 		
