@@ -5,6 +5,9 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 
 import owl.core.runners.blast.BlastException;
 import owl.core.runners.blast.BlastRunner;
@@ -49,19 +52,26 @@ public class FindRedundantEntries {
 		}				
 		
 		
-		List<String> pdbCodes = new ArrayList<String>();
-		for (File listFile:listFiles) {
-			pdbCodes.addAll(Utils.readListFile(listFile).keySet());
+		//List<String> pdbCodes = new ArrayList<String>();
+		Map<String,Integer> pdbCodes = new TreeMap<String,Integer>();
+		for (int i=0;i<listFiles.length;i++) {
+			for (String pdbCode:Utils.readListFile(listFiles[i]).keySet()) {
+				pdbCodes.put(pdbCode,i+1);
+			}
+			
 		}
 		
 		File fastaTmpFile = File.createTempFile(BASENAME, ".fasta");
 		
 		System.out.println("Total of "+pdbCodes.size()+" PDB entries");
+		for (int i=0;i<listFiles.length;i++) {
+			System.out.println("File "+(i+1)+": "+listFiles[i]);
+		}
 		
 		System.out.println("Writing unique sequences to fasta file");
-		writeFastaFile(pdbCodes, fastaTmpFile);
+		writeFastaFile(pdbCodes.keySet(), fastaTmpFile);
 		
-		doClustering(fastaTmpFile, ID_CUTOFFS);
+		doClustering(fastaTmpFile, ID_CUTOFFS, pdbCodes);
 		
 		
 		
@@ -69,7 +79,7 @@ public class FindRedundantEntries {
 		
 	}
 	
-	private static void writeFastaFile(List<String> pdbCodes, File file) throws IOException, FileFormatException, PdbLoadException {
+	private static void writeFastaFile(Set<String> pdbCodes, File file) throws IOException, FileFormatException, PdbLoadException {
 		
 		PrintStream ps = new PrintStream(file);
 		
@@ -96,7 +106,7 @@ public class FindRedundantEntries {
 		
 	}
 	
-	private static void doClustering(File inputSeqFile, int[] idCutoffs) throws IOException, InterruptedException, BlastException {
+	private static void doClustering(File inputSeqFile, int[] idCutoffs, Map<String,Integer> pdbCodes) throws IOException, InterruptedException, BlastException {
 		
 		System.out.println("Running blastclust");
 		
@@ -120,7 +130,7 @@ public class FindRedundantEntries {
 			
 					String memberString = "";
 					for (String member:cluster) {
-						memberString+=member+" ";
+						memberString+=member+"("+pdbCodes.get(member.substring(0, 4))+")"+" ";
 					}
 					memberStrings.add(memberString); 
 				}
