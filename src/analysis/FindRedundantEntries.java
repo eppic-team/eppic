@@ -95,6 +95,7 @@ public class FindRedundantEntries {
 			
 			for (String pdbChainCode:pdb.getAllRepChains()) {
 				Sequence seq = pdb.getChain(pdbChainCode).getSequence();
+				if (seq.getSeq().matches("X+")) continue; // if it's an all X sequence we don't want it (blastclust doesn't like them)
 				seq.writeToPrintStream(ps);
 			}
 			
