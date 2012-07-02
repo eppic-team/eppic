@@ -56,7 +56,9 @@ public class FindRedundantEntries {
 		Map<String,Integer> pdbCodes = new TreeMap<String,Integer>();
 		for (int i=0;i<listFiles.length;i++) {
 			for (String pdbCode:Utils.readListFile(listFiles[i]).keySet()) {
-				pdbCodes.put(pdbCode,i+1);
+				Integer previous = pdbCodes.put(pdbCode,i+1);
+				if (previous!=null) 
+					System.err.println("Warning! code "+pdbCode+" from list "+(i+1)+" was already present in list "+previous);
 			}
 			
 		}
