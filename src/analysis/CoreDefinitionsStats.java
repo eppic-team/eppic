@@ -205,13 +205,13 @@ public class CoreDefinitionsStats {
 	private static CRKParams loadConfigFile() {
 		CRKParams params = new CRKParams();
 		// loading settings from config file
-		File userConfigFile = new File(System.getProperty("user.home"),".crk.conf");  
+		File userConfigFile = new File(System.getProperty("user.home"),".eppic.conf");  
 		try {
 			if (userConfigFile.exists()) {
 				System.out.println("Loading user configuration file " + userConfigFile);
 				params.readConfigFile(userConfigFile);
 			} else {
-				System.out.println("No config file found. Using default locations");
+				System.err.println("Warning! No config file found. Using default locations");
 			}
 		} catch (IOException e) {
 			System.err.println("Error while reading from config file " + userConfigFile + ": " + e.getMessage());
