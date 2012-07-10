@@ -51,24 +51,33 @@ public class FindRedundantEntries {
 			listFiles[i] = new File(args[i]);
 		}				
 		
+		int[] listSizes = new int[listFiles.length];
 		
-		//List<String> pdbCodes = new ArrayList<String>();
 		Map<String,Integer> pdbCodes = new TreeMap<String,Integer>();
+		int countIdentical = 0;
+		
 		for (int i=0;i<listFiles.length;i++) {
-			for (String pdbCode:Utils.readListFile(listFiles[i]).keySet()) {
+			TreeMap<String,List<Integer>> list = Utils.readListFile(listFiles[i]);	
+			listSizes[i] = list.size();
+			
+			for (String pdbCode:list.keySet()) {
 				Integer previous = pdbCodes.put(pdbCode,i+1);
-				if (previous!=null) 
+				if (previous!=null) {
+					countIdentical++;
 					System.err.println("Warning! code "+pdbCode+" from list "+(i+1)+" was already present in list "+previous);
+				}
 			}
+			
 			
 		}
 		
 		File fastaTmpFile = File.createTempFile(BASENAME, ".fasta");
 		
-		System.out.println("Total of "+pdbCodes.size()+" PDB entries");
+		System.out.println("Total of "+pdbCodes.size()+" unique PDB entries");
 		for (int i=0;i<listFiles.length;i++) {
-			System.out.println("File "+(i+1)+": "+listFiles[i]);
+			System.out.println("File "+(i+1)+": "+listFiles[i]+" ("+listSizes[i]+" entries)");
 		}
+		System.out.println(countIdentical+" identical entries in lists");
 		
 		System.out.println("Writing unique sequences to fasta file");
 		writeFastaFile(pdbCodes.keySet(), fastaTmpFile);
@@ -98,6 +107,8 @@ public class FindRedundantEntries {
 			for (String pdbChainCode:pdb.getAllRepChains()) {
 				Sequence seq = pdb.getChain(pdbChainCode).getSequence();
 				if (seq.getSeq().matches("X+")) continue; // if it's an all X sequence we don't want it (blastclust doesn't like them)
+				if (seq.getLength()<12) continue; // we ignore too small sequences (blastclust doesn't like them)
+				if (seq.isNucleotide()) continue; // some sets (like Bahadur's monomers) contain DNA/RNA: ignore
 				seq.writeToPrintStream(ps);
 			}
 			
