@@ -85,7 +85,8 @@ public class CalcStats {
 	private static TreeMap<String,List<Integer>> crPredicted;
 	private static TreeMap<String,List<Integer>> zPredicted;
 
-	private static File outDir = null;
+	private static File perInterfPredBioFile = null;
+	private static File perInterfPredXtalFile = null;
 	
 		
 	
@@ -118,10 +119,12 @@ public class CalcStats {
 		"   [-w]       :  a file to write pdb_codes+interface_ids of interfaces that \n" +
 		"                 could be predicted with both evolutionary methods\n" +
 		"   [-d]       :  output also statistics by taxonomy group (domains of life)\n" +
-		"   [-f]       :  directory where tabular files with scores and calls per \n" +
-		"                 interface are written, reporting all methods' calls and scores\n\n";
+		"   [-f]       :  file to write bio interfaces summary table of scores and calls \n" +
+		"                 per interface\n" +
+		"   [-F]       :  file to write xtal interfaces summary table of scores and calls \n" +
+		"                 per interface\n\n";
 
-		Getopt g = new Getopt(PROGRAM_NAME, args, "B:X:b:x:e:c:z:m:t:y:w:df:h?");
+		Getopt g = new Getopt(PROGRAM_NAME, args, "B:X:b:x:e:c:z:m:t:y:w:df:F:h?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
@@ -186,7 +189,10 @@ public class CalcStats {
 				statsByTaxon = true;
 				break;
 			case 'f':
-				outDir = new File(g.getOptarg());
+				perInterfPredBioFile = new File(g.getOptarg());
+				break;
+			case 'F':
+				perInterfPredXtalFile = new File(g.getOptarg());
 				break;
 			case 'h':
 			case '?':
@@ -243,8 +249,8 @@ public class CalcStats {
 				}
 			}
 			
-			if (outDir!=null) {
-				printPerInterfacePreds(bioDir,perInterfPreds);
+			if (perInterfPredBioFile!=null) {
+				printPerInterfacePreds(perInterfPredBioFile,perInterfPreds);
 			}
 
 		}
@@ -269,8 +275,8 @@ public class CalcStats {
 					}
 				}
 			}
-			if (outDir!=null) {
-				printPerInterfacePreds(xtalDir,perInterfPreds);
+			if (perInterfPredXtalFile!=null) {
+				printPerInterfacePreds(perInterfPredXtalFile,perInterfPreds);
 			}
 		}
 
@@ -325,8 +331,8 @@ public class CalcStats {
 
 	}
 	
-	private static void printPerInterfacePreds(File dir, TreeMap<String,InterfacePrediction> perInterfPreds) throws FileNotFoundException {
-		PrintStream ps = new PrintStream(new File(outDir,dir.getName()+".preds.tab"));
+	private static void printPerInterfacePreds(File file, TreeMap<String,InterfacePrediction> perInterfPreds) throws FileNotFoundException {
+		PrintStream ps = new PrintStream(file);
 		for (InterfacePrediction perInterfPred:perInterfPreds.values()) {
 			perInterfPred.printTabular(ps);
 		}
@@ -400,6 +406,7 @@ public class CalcStats {
 						
 						if (i==0 && j==0) {
 							// only using first pair of cutoffs for the per interface predictions file
+							perInterfPred.setArea(interf.getInterfaceArea());
 							perInterfPred.setGeomCall(call);
 							perInterfPred.setGeomScore(gp.getScore());
 						}						

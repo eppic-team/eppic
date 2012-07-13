@@ -16,6 +16,7 @@ public class InterfacePrediction {
 
 	private String pdbCode;
 	private int interfaceId;
+	private double area;
 	
 	private int numHomologs1;
 	private int numHomologs2;
@@ -37,7 +38,7 @@ public class InterfacePrediction {
 	}
 	
 	public void printTabular(PrintStream ps) {
-		ps.println(pdbCode+"\t"+interfaceId+"\t"+
+		ps.println(pdbCode+"\t"+interfaceId+"\t"+String.format("%7.2f", area)+"\t"+
 				String.format("%3d",numHomologs1)+"\t"+String.format("%3d",numHomologs2)+"\t"+
 				formatIntScore(geomScore,3)+"\t" + (geomCall!=null?geomCall.getName():"null") +"\t"+
 				formatDoubleScore(crScore)+"\t"  + (crCall!=null?crCall.getName():"null")     +"\t"+
@@ -69,6 +70,14 @@ public class InterfacePrediction {
 		this.interfaceId = interfaceId;
 	}
 
+	public double getArea() {
+		return area;
+	}
+	
+	public void setArea(double area) {
+		this.area = area;
+	}
+	
 	public CallType getGeomCall() {
 		return geomCall;
 	}
