@@ -71,7 +71,7 @@ public class CRKParams {
 	public static final double    DEF_CA_CUTOFF_FOR_RIMCORE = 0.70;
 	public static final double    DEF_CA_CUTOFF_FOR_ZSCORE = 0.70;
 
-	private static final int      DEF_MAX_NUM_SEQUENCES = 60;
+	private static final int      DEF_MAX_NUM_SEQUENCES = 100;
 	
 	private static final int      DEF_NSPHEREPOINTS_ASA_CALC = 9600;
 	
