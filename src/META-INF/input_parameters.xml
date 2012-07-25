@@ -21,7 +21,7 @@
 		</default_methods>
 		
 		<default_parameters>
-			<max_nr_of_sequences>60</max_nr_of_sequences>
+			<max_nr_of_sequences>100</max_nr_of_sequences>
 			<reduced_alphabet>10</reduced_alphabet>
 			<soft_identity_cutoff>0.6</soft_identity_cutoff>
 			<hard_identity_cutoff>0.5</hard_identity_cutoff>
@@ -78,11 +78,11 @@
 		</parameter>
 		<parameter>
 			<name>caCutoffForRimCore</name>
-			<value>Core assignment BSA/ASA ratio cutoff for rim/core</value>
+			<value>Core assignment BSA/ASA ratio cutoff for core-rim score</value>
 		</parameter>
 		<parameter>
 			<name>caCutoffForZscore</name>
-			<value>Core assignment BSA/ASA ratio cutoff for z-score</value>
+			<value>Core assignment BSA/ASA ratio cutoff for core-surface score</value>
 		</parameter>
 		<parameter>
 			<name>minCoreSizeForBio</name>
@@ -90,11 +90,11 @@
 		</parameter>
 		<parameter>
 			<name>entrCallCutoff</name>
-			<value>Entropy rim/core bio-xtal call cutoff</value>
+			<value>Entropy core-rim bio-xtal call cutoff</value>
 		</parameter>
 		<parameter>
 			<name>zScoreCutoff</name>
-			<value>Entropy z-score bio-xtal call cutoff</value>
+			<value>Entropy core-surface bio-xtal call cutoff</value>
 		</parameter>
 	</run_parameters>
 </settings>
