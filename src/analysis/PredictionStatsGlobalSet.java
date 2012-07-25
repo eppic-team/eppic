@@ -79,13 +79,18 @@ public class PredictionStatsGlobalSet {
 		return (1.0 - getSpecificity());
 	}
 	
+	public double getMCC() {
+		return ((getTP()*getTN()-getFP()*getFN())/Math.sqrt(totalBio*totalXtal*(getTP()+getFP())*(getTN()+getFN())));
+		
+	}
+	
 	public void print(PrintStream ps) {
-		ps.printf("%25s\t%12s\t%10s\t%4d\t%4d\t%4d\t%4d\t%4d\t%4d\t%4d\t%4.2f\t%4.2f\t%4.2f\n",
-				name, callCutoffs, caCutoffs, total, totalBio, totalXtal, getTP(), getFP(), getTN(), getFN(), getAccuracy(), getSensitivity(), getSpecificity());
+		ps.printf("%25s\t%12s\t%10s\t%4d\t%4d\t%4d\t%4d\t%4d\t%4d\t%4d\t%4.2f\t%4.2f\t%4.2f\t%4.2f\n",
+				name, callCutoffs, caCutoffs, total, totalBio, totalXtal, getTP(), getFP(), getTN(), getFN(), getAccuracy(), getSensitivity(), getSpecificity(), getMCC());
 	}
 	
 	public static void printHeader(PrintStream ps) {
-		ps.printf("%25s\t%12s\t%10s\t%4s\t%4s\t%4s\t%4s\t%4s\t%4s\t%4s\t%4s\t%4s\t%4s\n",
-				"name","call-cutoffs","CA-cutoffs","tot","totb","totx","tp","fp","tn","fn","acc","sens","spec");
+		ps.printf("%25s\t%12s\t%10s\t%4s\t%4s\t%4s\t%4s\t%4s\t%4s\t%4s\t%4s\t%4s\t%4s\t%4s\n",
+				"name","call-cutoffs","CA-cutoffs","tot","totb","totx","tp","fp","tn","fn","acc","sens","spec","mcc");
 	}
 }
