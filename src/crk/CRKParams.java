@@ -113,7 +113,7 @@ public class CRKParams {
 	private static final double   DEF_PDB2UNIPROT_ID_THRESHOLD = 0.75;
 	private static final double   DEF_PDB2UNIPROT_QCOV_THRESHOLD = 0.85;
 	// default pdb2uniprot max subject (uniprot) coverage: below this value we do local blast search instead of global (see HomologsSearchMode) 
-	private static final double   DEF_PDB2UNIPROT_MAX_SCOV_FOR_LOCAL = 0.4;
+	private static final double   DEF_PDB2UNIPROT_MAX_SCOV_FOR_LOCAL = 0.5;
 
 	// default cache dirs
 	private static final String   DEF_BLAST_CACHE_DIR = null;
