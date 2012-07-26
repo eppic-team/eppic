@@ -499,7 +499,7 @@ public class CRKMain {
 				iecList.setRimCorePredBsaToAsaCutoff(params.getCAcutoffForRimCore()); // calls calcRimAndCores as well
 				iecList.setCallCutoff(params.getEntrCallCutoff());
 				iecList.setZscoreCutoff(params.getZscoreCutoff());
-				PrintStream scoreEntrPS = new PrintStream(params.getOutputFile(CRKParams.ENTROPIES_FILE_SUFFIX+".scores"));
+				PrintStream scoreEntrPS = new PrintStream(params.getOutputFile(CRKParams.CRSCORES_FILE_SUFFIX));
 				// entropy nw
 				iecList.scoreEntropy(false);
 				iecList.printScoresTable(scoreEntrPS);
@@ -510,7 +510,7 @@ public class CRKMain {
 				}
 				scoreEntrPS.close();
 				// z-scores
-				PrintStream scoreZscorePS = new PrintStream(params.getOutputFile(CRKParams.ZSCORES_FILE_SUFFIX+".scores"));
+				PrintStream scoreZscorePS = new PrintStream(params.getOutputFile(CRKParams.CSSCORES_FILE_SUFFIX));
 				iecList.setZPredBsaToAsaCutoff(params.getCAcutoffForZscore()); // calls calcRimAndCores as well
 				iecList.scoreZscore();
 				iecList.printZscoresTable(scoreZscorePS);

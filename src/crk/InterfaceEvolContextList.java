@@ -27,8 +27,8 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 	private static final String HOM_HARD_ID_HEADER  	 = "# Sequence identity hard cutoff:";
 	private static final String QUERY_COV_HEADER    	 = "# Query coverage cutoff:";
 	private static final String MAX_NUM_SEQS_HEADER      = "# Max num sequences used:";
-	private static final String BIO_XTAL_CALL_HEADER     = "# Bio-xtal rim/core call cutoff:";
-	private static final String ZSCORE_CUTOFF_HEADER     = "# Z-score cutoff:";
+	private static final String BIO_XTAL_CALL_HEADER     = "# Bio/xtal call core-rim cutoff:";
+	private static final String ZSCORE_CUTOFF_HEADER     = "# Bio/xtal call core-surface cutoff:";
 	private static final String BSA_TO_ASA_CUTOFF_HEADER = "# Core assignment cutoff:";
 	
 	
@@ -239,8 +239,8 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 		ps.printf("%15s\t%6s\t","interface","area");
 		ps.printf("%5s\t%5s\t%5s\t","size1", "size2","CA");
 		ps.printf("%2s\t%2s\t","n1","n2");
-		ps.printf("%5s\t%5s\t%5s\t%6s\t","core1","rim1","rat1","call1");
-		ps.printf("%5s\t%5s\t%5s\t%6s\t","core2","rim2","rat2","call2");
+		ps.printf("%5s\t%5s\t%5s\t%6s\t","core1","rim1","cr1","call1");
+		ps.printf("%5s\t%5s\t%5s\t%6s\t","core2","rim2","cr2","call2");
 		ps.printf("%6s\t%5s","call","score");
 		ps.println();
 	}
@@ -250,8 +250,8 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 		ps.printf("%5s\t%5s\t%5s","size1", "size2","CA");
 		ps.print("\t");
 		ps.printf("%2s\t%2s\t","n1","n2");
-		ps.printf("%5s\t%5s\t%5s\t%5s\t%6s\t","core1","mean","sigma","z1","call1");
-		ps.printf("%5s\t%5s\t%5s\t%5s\t%6s\t","core2","mean","sigma","z2","call2");
+		ps.printf("%5s\t%5s\t%5s\t%5s\t%6s\t","core1","mean","sigma","cs1","call1");
+		ps.printf("%5s\t%5s\t%5s\t%5s\t%6s\t","core2","mean","sigma","cs2","call2");
 		ps.printf("%6s\t%5s","call","score");
 		ps.println();
 		

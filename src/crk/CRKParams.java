@@ -25,7 +25,8 @@ public class CRKParams {
 	public static final String     CONFIG_FILE_NAME = ".eppic.conf";
 	protected static final String  GEOMETRY_FILE_SUFFIX = ".geometry";
 	protected static final String  ENTROPIES_FILE_SUFFIX = ".entropies";
-	protected static final String  ZSCORES_FILE_SUFFIX = ".zscores";
+	protected static final String  CRSCORES_FILE_SUFFIX = ".corerim";
+	protected static final String  CSSCORES_FILE_SUFFIX = ".coresurface";
 	protected static final String  COMBINED_FILE_SUFFIX = ".combined";
 	protected static final String  STEPS_LOG_FILE_SUFFIX = ".steps.log";
 	public static final double     INTERFACE_DIST_CUTOFF = 5.9;
