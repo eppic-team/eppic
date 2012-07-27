@@ -587,8 +587,9 @@ public class ChainEvolContext implements Serializable {
 			throws IOException, BlastException, InterruptedException {
 		// for too short sequence it doesn't make sense to blast
 		if (this.sequence.length()<CRKParams.MIN_SEQ_LENGTH_FOR_BLASTING) {
-			LOGGER.info("Chain "+representativeChain+" too short for blasting");
+			LOGGER.info("Chain "+representativeChain+" too short for blasting. Won't try to find a UniProt reference for it.");
 			// query warnings for peptides (with a higher cutoff than this) are already logged before, see above
+			// note that then as no reference is found, there won't be blasting for homologs either
 			return null;
 		}
 		

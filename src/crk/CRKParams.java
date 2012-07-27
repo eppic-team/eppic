@@ -40,7 +40,7 @@ public class CRKParams {
 	// value to use when core/rim ratio is infinity (rim score=0), some arbitrary large value, unlikely to happen in realistic cases
 	public static final double     SCORERATIO_INFINITY_VALUE = 1000;
 	// for sequences (strictly) below this length value no blast will be performed
-	public static final int		   MIN_SEQ_LENGTH_FOR_BLASTING = 7;
+	public static final int		   MIN_SEQ_LENGTH_FOR_BLASTING = 10;
 	// the hard limits aka "duarte" limits
 	// max limit based on 1pre (bio with 2290 and 0+2 cores) and 2vg5 interface 2 (xtal with 2070 and 0+0 cores) 
 	public static final double	   MAX_AREA_XTALCALL = 2200; 
