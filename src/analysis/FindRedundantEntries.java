@@ -33,7 +33,7 @@ public class FindRedundantEntries {
 	private static final String BLAST_BIN_DIR = "/home/duarte_j/bin";
 	private static final String BLAST_DATA_DIR = "/nfs/data/software/packages/blast-2.2.18/data";
 	
-	private static final int[] ID_CUTOFFS =  {95,90,80,70};
+	private static final int[] ID_CUTOFFS =  {95,90,80,70,60,50};
 	
 	/**
 	 * @param args
