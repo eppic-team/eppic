@@ -362,10 +362,11 @@ public class CRKParams {
 		String help = "Usage: \n" +
 		PROGRAM_NAME+" ver. "+PROGRAM_VERSION+"\n" +
 		"   -i <string> :  input PDB code or PDB/mmCIF file\n" +
-		"  [-s]         :  score based on entropies. Using the entropy values both a core/rim\n" +
-		"                  score and a core-surface z-score are calculated \n"+
-		"  [-a <int>]   :  number of threads for blast and ASA calculation. Default: "+DEF_NUMTHREADS+"\n"+
-		"  [-b <string>]:  basename for output files. Default: PDB code \n"+
+		"  [-s]         :  calculate evolutionary entropy-based scores (core-rim and \n" +
+		"                  core-surface).\n" +
+		"                  If not specified, only geometric scoring is done.\n"+
+		"  [-a <int>]   :  number of threads for blast, t-coffee and ASA calculation. Default: "+DEF_NUMTHREADS+"\n"+
+		"  [-b <string>]:  basename for output files. Default: as input PDB code or file name\n"+
 		"  [-o <dir>]   :  output dir, where output files will be written. Default: current\n" +
 		"                  dir \n" +
 		"  [-r <int>]   :  specify the number of groups of aminoacids (reduced alphabet) to\n" +
@@ -373,23 +374,23 @@ public class CRKParams {
 		"                  Valid values are 2, 4, 6, 8, 10, 15 and 20. Default: "+DEF_ENTROPY_ALPHABET+"\n" +
 		"  [-e <float>] :  the BSA/ASA cutoff for core assignment in geometry predictor.\n" +
 		"                  Default: "+String.format("%4.2f",DEF_CA_CUTOFF_FOR_GEOM)+"\n" +
-		"  [-c <float>] :  the BSA/ASA cutoff for core assignment in rim/core evolutionary \n" +
+		"  [-c <float>] :  the BSA/ASA cutoff for core assignment in core-rim evolutionary \n" +
 		"                  predictor. Default: "+String.format("%4.2f",DEF_CA_CUTOFF_FOR_RIMCORE)+"\n" +
-		"  [-z <float>] :  the BSA/ASA cutoff for core assignment in core vs surface z-score \n" +
+		"  [-z <float>] :  the BSA/ASA cutoff for core assignment in core-surface \n" +
 		"                  evolutionary predictor. Default: "+String.format("%4.2f",DEF_CA_CUTOFF_FOR_ZSCORE)+"\n" +
 		"  [-m <int>]   :  geometry scoring cutoff for number of interface core residues, if \n" +
-		"                  below this value the geometry call will be crystal, if equals or \n" +
-		"                  higher the geometry call is bio. Default "+DEF_MIN_CORE_SIZE_FOR_BIO+"\n" +
-		"  [-x <float>] :  entropy score cutoff for calling BIO/XTAL.\n" +
-		"                  Default: " + String.format("%4.2f",DEF_ENTR_CALL_CUTOFF)+"\n"+
-		"  [-y <float>] :  z-score cutoff to call BIO/XTAL. If below this z-score interface \n" +
-		"                  is BIO. Default: " + String.format("%4.2f",DEF_ZSCORE_CUTOFF)+"\n"+
-		"  [-d <float>] :  sequence identity soft cut-off, if enough homologs ("+DEF_MIN_NUM_SEQUENCES+") above this \n" +
+		"                  below this value the geometry call will be XTAL, if equals or \n" +
+		"                  higher the geometry call is BIO. Default "+DEF_MIN_CORE_SIZE_FOR_BIO+"\n" +
+		"  [-x <float>] :  core-rim score cutoff for calling BIO/XTAL. If below this score, \n" +
+		"                  interface is BIO, if above XTAL. Default: " + String.format("%4.2f",DEF_ENTR_CALL_CUTOFF)+"\n"+
+		"  [-y <float>] :  core-surface score cutoff to call BIO/XTAL. If below this score, \n" +
+		"                  interface is BIO, if above XTAL. Default: " + String.format("%4.2f",DEF_ZSCORE_CUTOFF)+"\n"+
+		"  [-d <float>] :  sequence identity soft cutoff, if enough homologs ("+DEF_MIN_NUM_SEQUENCES+") above this \n" +
 		"                  threshold the search for homologs stops, default: "+String.format("%3.1f",DEF_HOM_SOFT_ID_CUTOFF)+"\n"+
-		"  [-D <float>] :  sequence identity hard cut-off, if after applying the soft\n" +
-		"                  cut-off (see -d), not enough homologs ("+DEF_MIN_NUM_SEQUENCES+") are found\n" +
+		"  [-D <float>] :  sequence identity hard cutoff, if after applying the soft\n" +
+		"                  cutoff (see -d), not enough homologs ("+DEF_MIN_NUM_SEQUENCES+") are found\n" +
 		"                  then the threshold is lowered in "+String.format("%4.2f",DEF_HOM_ID_STEP)+" steps until this hard\n" +
-		"                  cut-off is reached. \n" +
+		"                  cutoff is reached. \n" +
 		"                  Default: "+String.format("%3.1f",DEF_HOM_HARD_ID_CUTOFF)+"\n"+
 		"  [-q <int>]   :  maximum number of sequences to keep for calculation of conservation \n" +
 		"                  scores. Default: "+DEF_MAX_NUM_SEQUENCES+"\n"+
