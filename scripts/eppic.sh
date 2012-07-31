@@ -7,7 +7,7 @@ eppicjar=eppic.jar
 
 if [ ! -f "$dir/$uniprotjar" ]
 then
-	echo "$uniprotjar is missing in directory $dir. Can't run eppic without it."
+	echo "$uniprotjar is missing in $dir directory. Can't run eppic without it."
 	exit 1
 fi
 
