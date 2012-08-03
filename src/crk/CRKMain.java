@@ -298,8 +298,9 @@ public class CRKMain {
 		if (interfaces.getNumInterfaces()==0) return;
 		
 		PymolRunner pr = null;
-		params.getProgressLog().println("Writing pymol files");
-		writeStep("Generating Thumbnails and PyMol Files");
+		params.getProgressLog().println("Writing PyMOL files");
+		writeStep("Generating Thumbnails and PyMOL Files");
+		LOGGER.info("Generating PyMOL files");
 		try {
 			pr = new PymolRunner(params.getPymolExe());
 			pr.readColorsFromPropertiesFile(CRKParams.COLORS_PROPERTIES_IS);
@@ -316,13 +317,13 @@ public class CRKMain {
 						params.getOutputFile("."+interf.getId()+".pse"),
 						params.getOutputFile("."+interf.getId()+".pml"),
 						params.getBaseName()+"."+interf.getId());
-				
+				LOGGER.info("Generated PyMOL files for interface "+interf.getId());
 				wuiAdaptor.writeJmolScriptFile(interf, params.getCAcutoffForGeom(), pr, params.getOutDir(), params.getBaseName());
 			}
 		} catch (IOException e) {
-			throw new CRKException(e, "Couldn't write thumbnails, pymol pse/pml files or jmol files. "+e.getMessage(),true);
+			throw new CRKException(e, "Couldn't write thumbnails, PyMOL pse/pml files or jmol files. "+e.getMessage(),true);
 		} catch (InterruptedException e) {
-			throw new CRKException(e, "Couldn't generate thumbnails, pymol pse/pml files or jmol files, pymol thread interrupted: "+e.getMessage(),true);
+			throw new CRKException(e, "Couldn't generate thumbnails, PyMOL pse/pml files or jmol files, pymol thread interrupted: "+e.getMessage(),true);
 		}
 
 		compressFiles();
@@ -332,6 +333,7 @@ public class CRKMain {
 
 	private void compressFiles() throws CRKException {
 		params.getProgressLog().println("Compressing files");
+		LOGGER.info("Compressing files");
 		try {
 			for (ChainInterface interf:interfaces) {
 				File pseFile = params.getOutputFile("."+interf.getId()+".pse");
@@ -367,6 +369,7 @@ public class CRKMain {
 		}
 		
 		try {
+			LOGGER.info("Generating zip results file");
 			File zipFile = params.getOutputFile(".zip");
 			File[] directoryContent = params.getOutDir().listFiles(new RegexFileFilter("^"+params.getBaseName()+"\\..*")); 
 
