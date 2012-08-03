@@ -130,8 +130,8 @@ public class ChainEvolContext implements Serializable {
 						uniqUniIds.add(sifts.getUniprotId());
 					}
 					if (uniqUniIds.size()>1) {
-						LOGGER.error("More than one uniprot SIFTS mapping for the query PDB code "+pdbCode+" chain "+representativeChain);
-						String msg = ("Uniprot IDs are: ");
+						LOGGER.error("More than one UniProt SIFTS mapping for the query PDB code "+pdbCode+" chain "+representativeChain);
+						String msg = ("UniProt IDs are: ");
 						for (String uniId:uniqUniIds){
 							msg+=(uniId+" ");
 						}
@@ -170,7 +170,7 @@ public class ChainEvolContext implements Serializable {
 		
 		if (hasQueryMatch) {
 
-			LOGGER.info("Uniprot id for the query "+pdbCode+representativeChain+": "+queryUniprotId);
+			LOGGER.info("UniProt id for chain "+representativeChain+": "+queryUniprotId);
 
 			// once we have the identifier we get the data from uniprot
 			try {
@@ -181,22 +181,22 @@ public class ChainEvolContext implements Serializable {
 				}
 
 				// and finally we align the 2 sequences (in case of mapping from SIFTS we rather do this than trusting the SIFTS alignment info)
-				alnPdb2Uniprot = new PairwiseSequenceAlignment(sequence, query.getSequence(), pdbCode+representativeChain, query.getUniId());
-				LOGGER.info("The PDB SEQRES to Uniprot alignmnent:\n"+getQueryPdbToUniprotAlnString());
-				LOGGER.info("Query ("+pdbCode+representativeChain+") length: "+sequence.length());
-				LOGGER.info("Uniprot ("+query.getUniId()+") length: "+query.getLength());
+				alnPdb2Uniprot = new PairwiseSequenceAlignment(sequence, query.getSequence(), pdbName+representativeChain, query.getUniId());
+				LOGGER.info("The PDB SEQRES to UniProt alignmnent:\n"+getQueryPdbToUniprotAlnString());
+				LOGGER.info("Query ("+pdbName+representativeChain+") length: "+sequence.length());
+				LOGGER.info("UniProt ("+query.getUniId()+") length: "+query.getLength());
 				LOGGER.info("Alignment length: "+alnPdb2Uniprot.getLength());
 			} catch (PairwiseSequenceAlignmentException e1) {
-				LOGGER.fatal("Problem aligning PDB sequence "+pdbCode+representativeChain+" to its Uniprot match "+query.getUniId());
+				LOGGER.fatal("Problem aligning PDB sequence for chain "+representativeChain+" to its UniProt match "+query.getUniId());
 				LOGGER.fatal(e1.getMessage());
 				LOGGER.fatal("Can't continue");
 				System.exit(1);
 			}  catch (NoMatchFoundException e) {
-				LOGGER.error("Couldn't find Uniprot id "+queryUniprotId+" through Uniprot JAPI. Obsolete?");
+				LOGGER.error("Couldn't find UniProt id "+queryUniprotId+" through UniProt JAPI. Obsolete?");
 				query = null;
 				hasQueryMatch = false;
 			} catch (SQLException e) {
-				LOGGER.error("Could not retrieve the uniprot data for uniprot id "+queryUniprotId+" from local database: "+e.getMessage());
+				LOGGER.error("Could not retrieve the UniProt data for UniProt id "+queryUniprotId+" from local database: "+e.getMessage());
 				query = null;
 				hasQueryMatch = false;
 			}
@@ -243,17 +243,17 @@ public class ChainEvolContext implements Serializable {
 						" (thus above cutoff "+String.format("%4.2f", pdb2uniprotMaxScovForLocal)+" for local mode)");
 			}
 		}
-		if (searchWithFullUniprot) LOGGER.info("Using full Uniprot sequence "+query.getUniId()+" for blast search");
-		else LOGGER.info("Using Uniprot "+query.getUniId()+" subsequence "+queryInterv.beg+"-"+queryInterv.end+" for blast search");
+		if (searchWithFullUniprot) LOGGER.info("Using full UniProt sequence "+query.getUniId()+" for blast search"+" (chain "+getRepresentativeChainCode()+")");
+		else LOGGER.info("Using UniProt "+query.getUniId()+" subsequence "+queryInterv.beg+"-"+queryInterv.end+" for blast search"+" (chain "+getRepresentativeChainCode()+")");
 		
 		homologs = new HomologList(query,queryInterv);
 		
-		if (useUniparc) LOGGER.info("Uniparc hits will be used");
-		else LOGGER.info("Uniparc hits won't be used");
+		if (useUniparc) LOGGER.info("UniParc hits will be used");
+		else LOGGER.info("UniParc hits won't be used");
 		homologs.setUseUniparc(useUniparc);
 		
 		homologs.searchWithBlast(blastBinDir, blastDbDir, blastDb, blastNumThreads, maxNumSeqs, blastCache);
-		LOGGER.info(homologs.getSizeFullList()+" homologs found by blast");
+		LOGGER.info(homologs.getSizeFullList()+" homologs found by blast"+" (chain "+getRepresentativeChainCode()+")");
 		 
 	}
 	
@@ -261,9 +261,9 @@ public class ChainEvolContext implements Serializable {
 		if (query.hasTaxons()) {
 			LOGGER.info("Filtering to domain: "+query.getFirstTaxon());
 			homologs.filterToSameDomainOfLife();
-			LOGGER.info(homologs.getSizeFilteredSubset()+" homologs after filtering to "+query.getFirstTaxon());
+			LOGGER.info(homologs.getSizeFilteredSubset()+" homologs after filtering to "+query.getFirstTaxon()+" (chain "+getRepresentativeChainCode()+")");
 		} else {
-			LOGGER.info("Taxons of query are unknown, can't filter to same domain of life.");
+			LOGGER.info("Taxons of chain "+getRepresentativeChainCode()+" are unknown, can't filter to same domain of life.");
 		}
 	}
 	
@@ -293,7 +293,8 @@ public class ChainEvolContext implements Serializable {
 		// we would not include an entry in this procedure but it would be included in the applyIdentityCutoff method below (which would 
 		// then crash because there wouldn't be sequence data for it)
 		homologs.filterToMinIdAndCoverage(homHardIdCutoff-ROUNDING_MARGIN, queryCovCutoff);		
-		LOGGER.info(homologs.getSizeFilteredSubset()+" homologs below the hard identity cutoff "+String.format("%4.2f",homHardIdCutoff));
+		LOGGER.info(homologs.getSizeFilteredSubset()+" homologs within the hard identity cutoff "+String.format("%4.2f",homHardIdCutoff)
+				+" (chain "+getRepresentativeChainCode()+")");
 	}
 	
 	public void applyIdentityCutoff(CRKParams params) throws IOException, InterruptedException, BlastException {
@@ -316,7 +317,8 @@ public class ChainEvolContext implements Serializable {
 						
 			LOGGER.info(homologs.getSizeFilteredSubset()+" homologs after applying "+
 					String.format("%4.2f",currentIdCutoff)+" identity cutoff and "+
-					String.format("%4.2f",queryCovCutoff)+" query coverage cutoff and before redundancy elimination.");
+					String.format("%4.2f",queryCovCutoff)+" query coverage cutoff and before redundancy elimination"
+					+" (chain "+getRepresentativeChainCode()+")");
 			
 			homologs.reduceRedundancy(maxNumSeqs, params.getBlastBinDir(), params.getBlastDataDir(), params.getNumThreads());
 
@@ -325,7 +327,8 @@ public class ChainEvolContext implements Serializable {
 			if (homologs.getSizeFilteredSubset()>=minNumSeqs) break;
 
 			LOGGER.info("Tried "+String.format("%4.2f",currentIdCutoff)+" identity cutoff, only "+
-					homologs.getSizeFilteredSubset()+" non-redundant homologs found ("+minNumSeqs+" required)");
+					homologs.getSizeFilteredSubset()+" non-redundant homologs found ("+minNumSeqs+" required)"
+					+" (chain "+getRepresentativeChainCode()+")");
 			
 			currentIdCutoff -= homIdStep;
 		}
@@ -337,16 +340,16 @@ public class ChainEvolContext implements Serializable {
 		boolean tcoffeeVeryFastMode = params.isUseTcoffeeVeryFastMode();
 		int nThreads = params.getNumThreads();
 		
-		LOGGER.info("Alignment mode for chain "+getRepresentativeChainCode()+" is: "+params.getAlignmentMode().getName());
+		LOGGER.info("Alignment mode is: "+params.getAlignmentMode().getName());
 		useHspsOnly = false;
 		if (params.getAlignmentMode()==AlignmentMode.AUTO) {
 			if (isSearchWithFullUniprot()) {
 				useHspsOnly = false;
-				LOGGER.info("Full sequences will be used for tcoffee alignment (because search mode is GLOBAL)");
+				LOGGER.info("Full sequences will be used for tcoffee alignment for chain "+representativeChain+" (because search mode is GLOBAL)");
 			}
 			else {
 				useHspsOnly = true;
-				LOGGER.info("Only matching HSP subsequences will be used for tcoffee alignment (because search mode is LOCAL)");
+				LOGGER.info("Only matching HSP subsequences will be used for tcoffee alignment for chain "+representativeChain+" (because search mode is LOCAL)");
 			}
 		} else if (params.getAlignmentMode()==AlignmentMode.FULLLENGTH) {
 			useHspsOnly = false;
@@ -626,7 +629,7 @@ public class ChainEvolContext implements Serializable {
 				if (i==blastList.size()-1) { // if not a single hit is uniprot then we get to here and we have to catch it
 					LOGGER.error("No UniProt match could be found for the query "+pdbName+representativeChain+
 							": no blast hit was a UniProt match (total "+blastList.size()+" blast hits)");
-					queryWarnings.add("Blast didn't find a UniProt match for the chain. All blast hits were non-uniprot matches (total "+blastList.size()+" blast hits).");
+					queryWarnings.add("Blast didn't find a UniProt match for the chain. All blast hits were non-UniProt matches (total "+blastList.size()+" blast hits).");
 					return null;
 				}
 			}
@@ -687,16 +690,16 @@ public class ChainEvolContext implements Serializable {
 			if (m2.matches()) {
 				String uniId = m2.group(1);
 				if (uniId.contains("-")) {
-					LOGGER.warn("Blast hit "+uniId+" is a Uniprot isoform id. Skipping it");
+					LOGGER.warn("Blast hit "+uniId+" is a UniProt isoform id. Skipping it");
 					return false;
 				} else if (uniId.startsWith("UPI")) {
-					LOGGER.warn("Blast hit "+uniId+" is a Uniparc id. Skipping it");
+					LOGGER.warn("Blast hit "+uniId+" is a UniParc id. Skipping it");
 					return false;
 				} else {
 					return true;
 				}
 			} else {
-				LOGGER.warn("Could not find Uniprot id in blast subject id "+sid+". Skipping it");
+				LOGGER.warn("Could not find UniProt id in blast subject id "+sid+". Skipping it");
 				return false;
 			}
 		}
