@@ -11,6 +11,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -46,6 +47,8 @@ public class ChainEvolContext implements Serializable {
 	private static final Log LOGGER = LogFactory.getLog(ChainEvolContext.class);
 
 	private static final double ROUNDING_MARGIN = 0.0001;
+	
+	private static final Pattern ALLX_SEQ_PATTERN = Pattern.compile("^X+$");
 	
 	// blast constants
 	private static final String BLASTOUT_SUFFIX = "blast.out.xml";
@@ -593,6 +596,12 @@ public class ChainEvolContext implements Serializable {
 			LOGGER.info("Chain "+representativeChain+" too short for blasting. Won't try to find a UniProt reference for it.");
 			// query warnings for peptides (with a higher cutoff than this) are already logged before, see above
 			// note that then as no reference is found, there won't be blasting for homologs either
+			return null;
+		}
+		// we have to skip sequences composed of all unknown/non-standard (all Xs), blast fails otherwise
+		Matcher m = ALLX_SEQ_PATTERN.matcher(this.sequence);
+		if (m.matches()) {
+			LOGGER.info("Chain "+representativeChain+" is composed only of unknown or non-standard aminoacids. Won't try to find a UniProt reference for it.");
 			return null;
 		}
 		

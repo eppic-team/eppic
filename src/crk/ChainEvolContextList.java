@@ -148,7 +148,7 @@ public class ChainEvolContextList implements Serializable {
 	}
 	
 	public void retrieveQueryData(CRKParams params) throws CRKException {
-		params.getProgressLog().println("Finding query's uniprot mappings through SIFTS or blasting");
+		params.getProgressLog().println("Finding query's UniProt mappings through SIFTS or blasting");
 		params.getProgressLog().print("chains: ");
 		for (ChainEvolContext chainEvCont:cecs.values()) {
 			params.getProgressLog().print(chainEvCont.getRepresentativeChainCode()+" ");
@@ -156,13 +156,13 @@ public class ChainEvolContextList implements Serializable {
 				chainEvCont.retrieveQueryData(params);
 
 			} catch (BlastException e) {
-				throw new CRKException(e,"Couldn't run blast to retrieve query's uniprot mapping: "+e.getMessage(),true);
+				throw new CRKException(e,"Couldn't run blast to retrieve query's UniProt mapping: "+e.getMessage(),true);
 			} catch (IOException e) {
 				throw new CRKException(e,"Problems while retrieving query data: "+e.getMessage(),true);
 			} catch (InterruptedException e) {
 				throw new CRKException(e,"Thread interrupted while running blast for retrieving query data: "+e.getMessage(),true);
 			} catch (Exception e) { // for any kind of exceptions thrown while connecting through uniprot JAPI
-				throw new CRKException(e,"Problems while retrieving query data through Uniprot JAPI. Is Uniprot server down?\n"+e.getMessage(),true);
+				throw new CRKException(e,"Problems while retrieving query data through UniProt JAPI. Is UniProt server down?\n"+e.getMessage(),true);
 			}
 		}
 		params.getProgressLog().println();
