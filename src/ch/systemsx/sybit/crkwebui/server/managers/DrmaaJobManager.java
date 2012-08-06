@@ -29,16 +29,16 @@ public class DrmaaJobManager implements JobManager
 	 */
 	public DrmaaJobManager(String jobsDirectory) throws JobManagerException
 	{
-//		sessionFactory = SessionFactory.getFactory();
-//		session = sessionFactory.getSession();
-//		try
-//		{
-//			session.init("");
-//		}
-//		catch (Throwable e)
-//		{
-//			throw new JobManagerException("Can not initialize sge session", e);
-//		}
+		sessionFactory = SessionFactory.getFactory();
+		session = sessionFactory.getSession();
+		try
+		{
+			session.init("");
+		}
+		catch (Throwable e)
+		{
+			throw new JobManagerException("Can not initialize sge session", e);
+		}
 
 		this.jobsDirectory = jobsDirectory;
 	}
