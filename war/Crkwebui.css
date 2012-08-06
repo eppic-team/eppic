@@ -1,68 +1,18 @@
-/** Add css rules here for your application. */
-
-
-/** Example rules used by the template application (remove for your app) */
-h1 {
-  font-size: 2em;
-  font-weight: bold;
-  color: #777777;
-  margin: 40px 0px 70px;
-  text-align: center;
-}
-
-.sendButton {
-  display: block;
-  font-size: 16pt;
-}
-
-/** Most GWT widgets already have a style name defined */
-.gwt-DialogBox {
-  width: 400px;
-}
-
-.dialogVPanel {
-  margin: 5px;
-}
-
-.serverResponseLabelError {
-  color: red;
-}
-
-/** Set ids using widget.getElement().setId("idOfElement") */
-#closeButton {
-  margin: 15px 6px 6px;
-}
-
-
-.rim.x-grid3-row,.rim {
-	background-color:#bedeff;
-}
-
-.core.x-grid3-row,.core {
-	background-color:#ff7979;
-}
-
-.surface.x-grid3-row,.surface {
-	background-color:white;
-}
-
-.buried.x-grid3-row,.buried {
-	background-color:#CDCDCD;
-}
-
-.summary.x-grid3-row,.summary {
-	border-color: #ddd;
-    background-color: #efefef;
-    background-image: url(../images/default/grid/row-over.gif);
+@media screen and (-webkit-min-device-pixel-ratio:0) {
+	.x-grid3-row td.x-grid3-cell { 
+		padding-left: 0; 
+		padding-right: 0; 
+	}
 }
 
 .x-grid3-row td.x-grid3-cell,.x-grid3-summary-row td.x-grid3-cell {
 	vertical-align:middle;
 }
 
-.top-panel-label {
-	font-size: 16px;
-	font-weight: bold;
+.x-grid-empty {
+  	padding: 10px;
+  	font-size: 20px;
+  	text-align: center;
 }
 
 .eppic-default-label {
@@ -96,32 +46,77 @@ h1 {
 .eppic-horizontal-nav A:active {text-decoration: none; font-size: 12px}
 .eppic-horizontal-nav A:hover {text-decoration: underLine; font-size: 12px}
 
-.x-grid-empty {
-  	padding: 10px;
-  	font-size: 20px;
-  	text-align: center;
+.eppic-monospaced-font {
+	font-size: 10pt;
+	font-family: courier;
 }
 
-.pdb-identifier-label {
+.eppic-default-padding {
+	padding: 10px;
+}
+
+.eppic-default-top-padding {
+	padding-top: 10px;
+}
+
+.eppic-default-left-padding {
+	padding-left: 10px;
+}
+
+.eppic-default-left-margin {
+	margin-left: 10px;
+}
+
+.eppic-grid-row-rim.x-grid3-row,.eppic-grid-row-rim {
+	background-color:#bedeff;
+}
+
+.eppic-grid-row-core.x-grid3-row,.eppic-grid-row-core {
+	background-color:#ff7979;
+}
+
+.eppic-grid-row-surface.x-grid3-row,.eppic-grid-row-surface {
+	background-color:white;
+}
+
+.eppic-grid-row-buried.x-grid3-row,.eppic-grid-row-buried {
+	background-color:#CDCDCD;
+}
+
+.eppic-summary-grid-row.x-grid3-row,.eppic-summary-grid-row {
+	border-color: #ddd;
+    background-color: #efefef;
+    background-image: url(../images/default/grid/row-over.gif);
+}
+
+.eppic-pdb-identifier-label {
 	font-size: 22px;
 	font-family: Arial;
 	font-weight: bold;
 }
-.pdb-identifier-label A:link {text-decoration: none}
-.pdb-identifier-label A:visited {text-decoration: none}
-.pdb-identifier-label A:active {text-decoration: none}
-.pdb-identifier-label A:hover {text-decoration: underLine}
+.eppic-pdb-identifier-label A:link {text-decoration: none}
+.eppic-pdb-identifier-label A:visited {text-decoration: none}
+.eppic-pdb-identifier-label A:active {text-decoration: none}
+.eppic-pdb-identifier-label A:hover {text-decoration: underLine}
 
-.pdb-spacegroup-label {
+.eppic-pdb-spacegroup-label {
 	font-weight: normal;
 }
 
-.pdb-title-label {
+.eppic-pdb-title-label {
 	font-size: 12px;
 }
 
-.aggregation-row-head
-{
-	text-align: left;
+.eppic-my-jobs-list-status {
 	font-weight: bold;
+}
+
+.eppic-results-final-call {
+	font-weight: bold;
+	font-size: 14px;
+}
+
+.eppic-tooltip-list {
+	list-style: disc;
+	margin: 0px 0px 0px 15px;
 }
