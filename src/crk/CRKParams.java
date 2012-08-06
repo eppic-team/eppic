@@ -23,11 +23,11 @@ public class CRKParams {
 	
 	private static final Pattern   PDBCODE_PATTERN = Pattern.compile("^\\d\\w\\w\\w$");
 	public static final String     CONFIG_FILE_NAME = ".eppic.conf";
-	protected static final String  GEOMETRY_FILE_SUFFIX = ".geometry";
 	protected static final String  ENTROPIES_FILE_SUFFIX = ".entropies";
-	protected static final String  CRSCORES_FILE_SUFFIX = ".corerim";
-	protected static final String  CSSCORES_FILE_SUFFIX = ".coresurface";
-	protected static final String  COMBINED_FILE_SUFFIX = ".combined";
+	protected static final String  GEOMETRY_FILE_SUFFIX = ".geometry.scores";
+	protected static final String  CRSCORES_FILE_SUFFIX = ".corerim.scores";
+	protected static final String  CSSCORES_FILE_SUFFIX = ".coresurface.scores";
+	protected static final String  COMBINED_FILE_SUFFIX = ".combined.scores";
 	protected static final String  STEPS_LOG_FILE_SUFFIX = ".steps.log";
 	public static final double     INTERFACE_DIST_CUTOFF = 5.9;
 	// shorter chains will be considered peptides

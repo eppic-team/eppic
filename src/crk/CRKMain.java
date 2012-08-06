@@ -273,7 +273,7 @@ public class CRKMain {
 		
 		try {
 			gps = new ArrayList<GeometryPredictor>();
-			PrintStream scoreGeomPS = new PrintStream(params.getOutputFile(CRKParams.GEOMETRY_FILE_SUFFIX+".scores"));
+			PrintStream scoreGeomPS = new PrintStream(params.getOutputFile(CRKParams.GEOMETRY_FILE_SUFFIX));
 			GeometryPredictor.printScoringHeaders(scoreGeomPS);
 			for (ChainInterface interf:interfaces) {
 				GeometryPredictor gp = new GeometryPredictor(interf);
@@ -547,7 +547,7 @@ public class CRKMain {
 
 			List<CombinedPredictor> cps = new ArrayList<CombinedPredictor>();
 
-			PrintStream scoreCombPS = new PrintStream(params.getOutputFile(CRKParams.COMBINED_FILE_SUFFIX+".scores"));
+			PrintStream scoreCombPS = new PrintStream(params.getOutputFile(CRKParams.COMBINED_FILE_SUFFIX));
 			CombinedPredictor.printScoringHeaders(scoreCombPS);
 			for (int i=0;i<iecList.size();i++) {
 				CombinedPredictor cp = 
