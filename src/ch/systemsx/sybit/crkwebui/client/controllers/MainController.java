@@ -263,7 +263,7 @@ public class MainController
 	 */
 	private void showMessage(String title, String message)
 	{
-		MessageBox infoMessageBox = MessageBox.info(title, message, new Listener<MessageBoxEvent>() {
+		final MessageBox infoMessageBox = MessageBox.info(title, message, new Listener<MessageBoxEvent>() {
 
 			@Override
 			public void handleEvent(MessageBoxEvent be) {
@@ -273,6 +273,13 @@ public class MainController
 
 		infoMessageBox.setMinWidth(300);
 		infoMessageBox.setMaxWidth(ApplicationContext.getWindowData().getWindowWidth());
+		
+		Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+			@Override
+			public void execute() {
+				infoMessageBox.getDialog().focus();
+			}
+	    });
 	}
 
 	/**

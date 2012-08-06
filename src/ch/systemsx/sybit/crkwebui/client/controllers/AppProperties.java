@@ -73,6 +73,7 @@ public interface AppProperties extends Constants
 
 	String homologs_panel_chains_hint();
 	String homologs_panel_uniprot_hint();
+	String homologs_panel_uniprot_no_query_match_hint();
 	String homologs_panel_nrhomologs_hint();
 	String homologs_panel_query_warnings_title();
 	

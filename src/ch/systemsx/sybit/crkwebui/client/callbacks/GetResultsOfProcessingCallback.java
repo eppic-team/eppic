@@ -71,8 +71,8 @@ public class GetResultsOfProcessingCallback implements AsyncCallback<ProcessingD
 		}
 		else
 		{
-			EventBusManager.EVENT_BUS.fireEvent(new ShowMessageEvent(AppPropertiesManager.CONSTANTS.callback_job_not_found_error(), "Id=" + jobId + " not found on the server"));
 			History.newItem("");
+			EventBusManager.EVENT_BUS.fireEvent(new ShowMessageEvent(AppPropertiesManager.CONSTANTS.callback_job_not_found_error(), "Id=" + jobId + " not found on the server"));
 		}
 		
 		EventBusManager.EVENT_BUS.fireEvent(new UnmaskMainViewEvent());
