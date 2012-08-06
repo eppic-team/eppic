@@ -1,6 +1,6 @@
 package ch.systemsx.sybit.crkwebui.client.gui;
 
-import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
+import ch.systemsx.sybit.crkwebui.client.data.WindowData;
 
 import com.extjs.gxt.ui.client.widget.Dialog;
 
@@ -10,29 +10,26 @@ import com.extjs.gxt.ui.client.widget.Dialog;
  */
 public class ResizableWindow extends Dialog
 {
-	protected MainController mainController;
-
 	protected int windowWidth;
 	protected int windowHeight;
 
 	private boolean resizeWindow;
 
-	public ResizableWindow(final MainController mainController,
-						   int defaultWidth,
-						   int defaultHeight)
+	public ResizableWindow(int defaultWidth,
+						   int defaultHeight,
+						   WindowData windowData)
 	{
-		this.mainController = mainController;
 		this.windowWidth = defaultWidth;
 		this.windowHeight = defaultHeight;
 
-		if(windowWidth > mainController.getWindowData().getWindowWidth())
+		if(windowWidth > windowData.getWindowWidth())
 		{
-			windowWidth = mainController.getWindowData().getWindowWidth();
+			windowWidth = windowData.getWindowWidth();
 		}
 
-		if(windowHeight > mainController.getWindowData().getWindowHeight() - 50)
+		if(windowHeight > windowData.getWindowHeight() - 50)
 		{
-			windowHeight = mainController.getWindowData().getWindowHeight() - 50;
+			windowHeight = windowData.getWindowHeight() - 50;
 
 			if(windowHeight <= 0)
 			{

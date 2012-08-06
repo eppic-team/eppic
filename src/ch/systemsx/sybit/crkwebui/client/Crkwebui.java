@@ -1,6 +1,10 @@
 package ch.systemsx.sybit.crkwebui.client;
 
+import ch.systemsx.sybit.crkwebui.client.controllers.ApplicationContext;
+import ch.systemsx.sybit.crkwebui.client.controllers.CrkWebServiceProvider;
+import ch.systemsx.sybit.crkwebui.client.controllers.EventBusManager;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
+import ch.systemsx.sybit.crkwebui.client.events.ApplicationWindowResizeEvent;
 
 import com.extjs.gxt.themes.client.Access;
 import com.extjs.gxt.themes.client.Slate;
@@ -40,7 +44,7 @@ public class Crkwebui implements EntryPoint, ValueChangeHandler<String>
 		Slate.SLATE.set("file","resources/themes/slate/css/xtheme-slate.css");
 		Access.ACCESS.set("file","resources/themes/access/css/xtheme-access.css");
 		Theme.GRAY.set("file","resources/css/gxt-gray.css");
-		GXT.setDefaultTheme(Slate.SLATE, false);
+		GXT.setDefaultTheme(Theme.GRAY, false);
 
 		mainController = new MainController(viewport);
 
@@ -66,15 +70,14 @@ public class Crkwebui implements EntryPoint, ValueChangeHandler<String>
 			@Override
 			public void onResize(ResizeEvent event)
 			{
-				mainController.getWindowData().setWindowHeight(event.getHeight());
-				mainController.getWindowData().setWindowWidth(event.getWidth());
+				ApplicationContext.getWindowData().setWindowHeight(event.getHeight());
+				ApplicationContext.getWindowData().setWindowWidth(event.getWidth());
 
-				mainController.resizeResultsGrid();
-				mainController.setResizeWindows(true);
+				EventBusManager.EVENT_BUS.fireEvent(new ApplicationWindowResizeEvent());
 			}
 		});
 
-		mainController.loadSettings();
+		CrkWebServiceProvider.getServiceController().loadSettings();
 	}
 
 	@Override

@@ -4,9 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
-import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
+import ch.systemsx.sybit.crkwebui.client.data.WindowData;
+import ch.systemsx.sybit.crkwebui.client.listeners.SubmitKeyListener;
 import ch.systemsx.sybit.crkwebui.client.model.ReducedAlphabetComboModel;
 import ch.systemsx.sybit.crkwebui.client.model.SearchModeComboModel;
+import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
 import ch.systemsx.sybit.crkwebui.shared.model.InputParameters;
 import ch.systemsx.sybit.crkwebui.shared.model.SupportedMethod;
 
@@ -50,12 +52,13 @@ public class OptionsInputPanel extends FieldSet
 	
 	private int LABEL_WIDTH = 200;
 
-	public OptionsInputPanel(final MainController mainController) 
+	public OptionsInputPanel(ApplicationSettings applicationSettings,
+							 final WindowData windowData) 
 	{
-		InputParameters defaultInputParameters = mainController.getSettings().getDefaultParametersValues();
-		List<Integer> reducedAlphabetDefaultList= mainController.getSettings().getReducedAlphabetList();
-		List<String> searchModeDefaultList = mainController.getSettings().getSearchModeList();
-		List<SupportedMethod> supportedMethods = mainController.getSettings().getScoresTypes();
+		InputParameters defaultInputParameters = applicationSettings.getDefaultParametersValues();
+		List<Integer> reducedAlphabetDefaultList = applicationSettings.getReducedAlphabetList();
+		List<String> searchModeDefaultList = applicationSettings.getSearchModeList();
+		List<SupportedMethod> supportedMethods = applicationSettings.getScoresTypes();
 		
 		this.setHeading(AppPropertiesManager.CONSTANTS.input_advanced());
 		this.setCollapsible(true);
@@ -65,7 +68,7 @@ public class OptionsInputPanel extends FieldSet
 
 		final FormLayout layout = new FormLayout();
 		
-		final int defaultFieldLengthForHelp = layout.getDefaultWidth() - layout.getLabelWidth() + LABEL_WIDTH;
+		int defaultFieldLengthForHelp = layout.getDefaultWidth() - layout.getLabelWidth() + LABEL_WIDTH;
 		
 		layout.setLabelWidth(LABEL_WIDTH);
 		this.setLayout(layout);
@@ -77,6 +80,36 @@ public class OptionsInputPanel extends FieldSet
 			height = (int) (Window.getClientHeight() * 0.4);
 		}
 		
+		ComponentPlugin helpIconPlugin = createHelpIconPlugin(defaultFieldLengthForHelp, windowData);
+
+		methodsFieldsets = new FieldSet[supportedMethods.size()];
+		
+		for(int i=0; i<supportedMethods.size(); i++)
+		{
+			methodsFieldsets[i] = createMethodFieldSet(supportedMethods.get(i), helpIconPlugin, reducedAlphabetDefaultList);
+			
+			if(supportedMethods.get(i).isHasFieldSet())
+			{
+				this.add(methodsFieldsets[i]);
+			}
+		}
+		
+
+		FieldSet alignmentsParametersFieldSet = createAlignmentsParametersFieldSet(helpIconPlugin, searchModeDefaultList);
+		this.add(alignmentsParametersFieldSet);
+
+		fillDefaultValues(defaultInputParameters);
+	}
+	
+	/**
+	 * Creates help icon plugin.
+	 * @param defaultFieldLengthForHelp position for help icon
+	 * @param windowData general window data
+	 * @return help icon plugin
+	 */
+	private ComponentPlugin createHelpIconPlugin(final int defaultFieldLengthForHelp,
+												 final WindowData windowData)
+	{
 		ComponentPlugin plugin = new ComponentPlugin()
 		{
 			public void init(Component component) 
@@ -85,8 +118,8 @@ public class OptionsInputPanel extends FieldSet
 				{
 					public void handleEvent(ComponentEvent be) 
 					{
-						HelpPanel helpPanel = new HelpPanel(mainController, (String)be.getComponent().getData("hint"));
-						final WidgetComponent helpImage = helpPanel.getImageComponent();
+						HelpIconPanel helpIconPanel = new HelpIconPanel(windowData, (String)be.getComponent().getData("hint"));
+						final WidgetComponent helpImage = helpIconPanel.getImageComponent();
 						
 						if(helpImage != null)
 						{
@@ -113,97 +146,27 @@ public class OptionsInputPanel extends FieldSet
 				});
 			}
 		};
-
-		methodsFieldsets = new FieldSet[supportedMethods.size()];
 		
-		for(int i=0; i<supportedMethods.size(); i++)
-		{
-			FormLayout fieldSetLayout = new FormLayout();
-			fieldSetLayout.setLabelWidth(200);
+		return plugin;
+	}
+	
+	/**
+	 * Creates alignments parameters fieldset.
+	 * @param helpIconPlugin help icon plugin
+	 * @param searchModeDefaultList search mode default list
+	 * @return alignments parameters fieldset
+	 */
+	private FieldSet createAlignmentsParametersFieldSet(ComponentPlugin helpIconPlugin,
+													List<String> searchModeDefaultList)
+	{
+		FormLayout alignmentsParametersFieldSetLayout = new FormLayout();
+		alignmentsParametersFieldSetLayout.setLabelWidth(LABEL_WIDTH);
 
-			methodsFieldsets[i] = new FieldSet();
-			methodsFieldsets[i].setCheckboxToggle(true);
-			methodsFieldsets[i].setExpanded(false);
-			methodsFieldsets[i].setLayout(fieldSetLayout);
-			
-			if(supportedMethods.get(i).getName().equals("Entropy"))
-			{
-				methodsFieldsets[i].setHeading(AppPropertiesManager.CONSTANTS
-						.parameters_entropy());
-				
-				reducedAlphabetValues = new ListStore<ReducedAlphabetComboModel>();
-
-				for (Integer value : reducedAlphabetDefaultList)
-				{
-					ReducedAlphabetComboModel model = new ReducedAlphabetComboModel(
-							value);
-					reducedAlphabetValues.add(model);
-				}
-
-				reducedAlphabetCombo = new ComboBox<ReducedAlphabetComboModel>();
-				reducedAlphabetCombo.setFieldLabel(AppPropertiesManager.CONSTANTS
-						.parameters_reduced_alphabet());
-				reducedAlphabetCombo.setWidth(150);
-				reducedAlphabetCombo.setStore(reducedAlphabetValues);
-				reducedAlphabetCombo.setTypeAhead(true);
-				reducedAlphabetCombo.setTriggerAction(TriggerAction.ALL);
-				reducedAlphabetCombo.setDisplayField("reducedAlphabet");
-				reducedAlphabetCombo.setEditable(false);
-				reducedAlphabetCombo.addPlugin(plugin);
-				reducedAlphabetCombo.setData("hint", AppPropertiesManager.CONSTANTS.parameters_reduced_alphabet_hint());
-				methodsFieldsets[i].add(reducedAlphabetCombo, formData);
-				
-				methodsFieldsets[i].addListener(Events.Expand, new Listener<FieldSetEvent>() 
-				{
-					public void handleEvent(FieldSetEvent be) 
-					{
-						for(FieldSet fieldSet : methodsFieldsets)
-						{
-							
-							if((fieldSet.getHeading() != null) &&
-								(fieldSet.getHeading().equals("Geometry")))
-							{
-								fieldSet.setExpanded(true);
-							}
-						}
-					}
-				});
-			}
-			else if(supportedMethods.get(i).getName().equals("Geometry"))
-			{
-				methodsFieldsets[i].setHeading(AppPropertiesManager.CONSTANTS
-						.parameters_geometry());
-				
-				methodsFieldsets[i].addListener(Events.Collapse, new Listener<FieldSetEvent>() 
-				{
-					public void handleEvent(FieldSetEvent be) 
-					{
-						for(FieldSet fieldSet : methodsFieldsets)
-						{
-							if((fieldSet.getHeading() != null) &&
-							   (fieldSet.getHeading().equals("Entropy")))
-							{
-								fieldSet.setExpanded(false);
-							}
-						}
-					}
-				});
-			}
-			
-			if(supportedMethods.get(i).isHasFieldSet())
-			{
-				this.add(methodsFieldsets[i]);
-			}
-		}
-		
-		FormLayout allignmentsParametersFieldSetLayout = new FormLayout();
-		allignmentsParametersFieldSetLayout.setLabelWidth(200);
-
-		FieldSet allignmentsParametersFieldSet = new FieldSet();
-		allignmentsParametersFieldSet.setHeading(AppPropertiesManager.CONSTANTS
+		FieldSet alignmentsParametersFieldSet = new FieldSet();
+		alignmentsParametersFieldSet.setHeading(AppPropertiesManager.CONSTANTS
 				.parameters_allignment());
-		allignmentsParametersFieldSet
-				.setLayout(allignmentsParametersFieldSetLayout);
+		alignmentsParametersFieldSet
+				.setLayout(alignmentsParametersFieldSetLayout);
 
 		softIdentityCutOff = new NumberField();
 		softIdentityCutOff.setFieldLabel(AppPropertiesManager.CONSTANTS
@@ -212,9 +175,10 @@ public class OptionsInputPanel extends FieldSet
 		softIdentityCutOff.setFormat(NumberFormat.getDecimalFormat());
 		softIdentityCutOff.setMinValue(0);
 		softIdentityCutOff.setMaxValue(1);
-		softIdentityCutOff.addPlugin(plugin);
+		softIdentityCutOff.addPlugin(helpIconPlugin);
 		softIdentityCutOff.setData("hint", AppPropertiesManager.CONSTANTS.parameters_soft_identity_cutoff_hint());
-		allignmentsParametersFieldSet.add(softIdentityCutOff, formData);
+		softIdentityCutOff.addKeyListener(new SubmitKeyListener());
+		alignmentsParametersFieldSet.add(softIdentityCutOff, formData);
 		
 		hardIdentityCutOff = new NumberField();
 		hardIdentityCutOff.setFieldLabel(AppPropertiesManager.CONSTANTS
@@ -223,9 +187,10 @@ public class OptionsInputPanel extends FieldSet
 		hardIdentityCutOff.setFormat(NumberFormat.getDecimalFormat());
 		hardIdentityCutOff.setMinValue(0);
 		hardIdentityCutOff.setMaxValue(1);
-		hardIdentityCutOff.addPlugin(plugin);
+		hardIdentityCutOff.addPlugin(helpIconPlugin);
 		hardIdentityCutOff.setData("hint", AppPropertiesManager.CONSTANTS.parameters_hard_identity_cutoff_hint());
-		allignmentsParametersFieldSet.add(hardIdentityCutOff, formData);
+		hardIdentityCutOff.addKeyListener(new SubmitKeyListener());
+		alignmentsParametersFieldSet.add(hardIdentityCutOff, formData);
 
 		maxNrOfSequences = new NumberField();
 		maxNrOfSequences.setFieldLabel(AppPropertiesManager.CONSTANTS
@@ -234,9 +199,10 @@ public class OptionsInputPanel extends FieldSet
 		maxNrOfSequences.setAllowNegative(false);
 		maxNrOfSequences.setPropertyEditorType(Integer.class);
 		maxNrOfSequences.setName("maxNrOfSequences");
-		maxNrOfSequences.addPlugin(plugin);
+		maxNrOfSequences.addPlugin(helpIconPlugin);
 		maxNrOfSequences.setData("hint", AppPropertiesManager.CONSTANTS.parameters_max_num_sequences_hint());
-		allignmentsParametersFieldSet.add(maxNrOfSequences, formData);
+		maxNrOfSequences.addKeyListener(new SubmitKeyListener());
+		alignmentsParametersFieldSet.add(maxNrOfSequences, formData);
 		
 		searchModeValues = new ListStore<SearchModeComboModel>();
 
@@ -256,13 +222,97 @@ public class OptionsInputPanel extends FieldSet
 		searchModeCombo.setTriggerAction(TriggerAction.ALL);
 		searchModeCombo.setDisplayField("searchMode");
 		searchModeCombo.setEditable(false);
-		searchModeCombo.addPlugin(plugin);
+		searchModeCombo.addPlugin(helpIconPlugin);
 		searchModeCombo.setData("hint", AppPropertiesManager.CONSTANTS.parameters_search_mode_hint());
-		allignmentsParametersFieldSet.add(searchModeCombo, formData);
+		alignmentsParametersFieldSet.add(searchModeCombo, formData);
+		
+		return alignmentsParametersFieldSet;
+	}
+	
+	/**
+	 * Creates method fieldset.
+	 * @param supportedMethod supported method for which fieldset is to be generated
+	 * @param helpIconPlugin help icon plugin
+	 * @param reducedAlphabetDefaultList reduced alphabet values list
+	 * @return method fieldset
+	 */
+	private FieldSet createMethodFieldSet(SupportedMethod supportedMethod,
+										  ComponentPlugin helpIconPlugin,
+										  List<Integer> reducedAlphabetDefaultList)
+	{
+		FormLayout fieldSetLayout = new FormLayout();
+		fieldSetLayout.setLabelWidth(LABEL_WIDTH);
 
-		this.add(allignmentsParametersFieldSet);
+		FieldSet methodsFieldset = new FieldSet();
+		methodsFieldset.setCheckboxToggle(true);
+		methodsFieldset.setExpanded(false);
+		methodsFieldset.setLayout(fieldSetLayout);
+		
+		if(supportedMethod.getName().equals("Entropy"))
+		{
+			methodsFieldset.setHeading(AppPropertiesManager.CONSTANTS
+					.parameters_entropy());
+			
+			reducedAlphabetValues = new ListStore<ReducedAlphabetComboModel>();
 
-		fillDefaultValues(defaultInputParameters);
+			for (Integer value : reducedAlphabetDefaultList)
+			{
+				ReducedAlphabetComboModel model = new ReducedAlphabetComboModel(
+						value);
+				reducedAlphabetValues.add(model);
+			}
+
+			reducedAlphabetCombo = new ComboBox<ReducedAlphabetComboModel>();
+			reducedAlphabetCombo.setFieldLabel(AppPropertiesManager.CONSTANTS
+					.parameters_reduced_alphabet());
+			reducedAlphabetCombo.setWidth(150);
+			reducedAlphabetCombo.setStore(reducedAlphabetValues);
+			reducedAlphabetCombo.setTypeAhead(true);
+			reducedAlphabetCombo.setTriggerAction(TriggerAction.ALL);
+			reducedAlphabetCombo.setDisplayField("reducedAlphabet");
+			reducedAlphabetCombo.setEditable(false);
+			reducedAlphabetCombo.addPlugin(helpIconPlugin);
+			reducedAlphabetCombo.setData("hint", AppPropertiesManager.CONSTANTS.parameters_reduced_alphabet_hint());
+			methodsFieldset.add(reducedAlphabetCombo, formData);
+			
+			methodsFieldset.addListener(Events.Expand, new Listener<FieldSetEvent>() 
+			{
+				public void handleEvent(FieldSetEvent be) 
+				{
+					for(FieldSet fieldSet : methodsFieldsets)
+					{
+						
+						if((fieldSet.getHeading() != null) &&
+							(fieldSet.getHeading().equals("Geometry")))
+						{
+							fieldSet.setExpanded(true);
+						}
+					}
+				}
+			});
+		}
+		else if(supportedMethod.getName().equals("Geometry"))
+		{
+			methodsFieldset.setHeading(AppPropertiesManager.CONSTANTS
+					.parameters_geometry());
+			
+			methodsFieldset.addListener(Events.Collapse, new Listener<FieldSetEvent>() 
+			{
+				public void handleEvent(FieldSetEvent be) 
+				{
+					for(FieldSet fieldSet : methodsFieldsets)
+					{
+						if((fieldSet.getHeading() != null) &&
+						   (fieldSet.getHeading().equals("Entropy")))
+						{
+							fieldSet.setExpanded(false);
+						}
+					}
+				}
+			});
+		}
+		
+		return methodsFieldset;
 	}
 
 	/**

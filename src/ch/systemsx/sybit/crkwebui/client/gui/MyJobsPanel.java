@@ -5,7 +5,15 @@ import java.util.List;
 import java.util.Map;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
-import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
+import ch.systemsx.sybit.crkwebui.client.controllers.ApplicationContext;
+import ch.systemsx.sybit.crkwebui.client.controllers.CrkWebServiceProvider;
+import ch.systemsx.sybit.crkwebui.client.controllers.EventBusManager;
+import ch.systemsx.sybit.crkwebui.client.events.BeforeJobDeletedEvent;
+import ch.systemsx.sybit.crkwebui.client.events.GetFocusOnJobsListEvent;
+import ch.systemsx.sybit.crkwebui.client.events.JobListRetrievedEvent;
+import ch.systemsx.sybit.crkwebui.client.handlers.BeforeJobRemovedHandler;
+import ch.systemsx.sybit.crkwebui.client.handlers.GetFocusOnJobsListHandler;
+import ch.systemsx.sybit.crkwebui.client.handlers.JobListRetrievedHandler;
 import ch.systemsx.sybit.crkwebui.client.model.MyJobsModel;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
 
@@ -31,8 +39,6 @@ import com.extjs.gxt.ui.client.widget.grid.Grid;
 import com.extjs.gxt.ui.client.widget.layout.RowData;
 import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
-import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.user.client.History;
 
 /**
@@ -42,8 +48,6 @@ import com.google.gwt.user.client.History;
  */
 public class MyJobsPanel extends ContentPanel
 {
-	private MainController mainController;
-
 	private Grid<MyJobsModel> myJobsGrid;
 	private List<ColumnConfig> myJobsConfigs;
 	private ListStore<MyJobsModel> myJobsStore;
@@ -54,9 +58,8 @@ public class MyJobsPanel extends ContentPanel
 
 	private boolean isJobsListFirstTimeLoaded = true;
 
-	public MyJobsPanel(final MainController mainController)
+	public MyJobsPanel()
 	{
-		this.mainController = mainController;
 		this.setLayout(new RowLayout(Orientation.VERTICAL));
 		this.setHeading(AppPropertiesManager.CONSTANTS.myjobs_panel_head());
 
@@ -67,18 +70,6 @@ public class MyJobsPanel extends ContentPanel
 			public void componentSelected(ButtonEvent ce)
 			{
 				History.newItem("");
-
-				Scheduler.get().scheduleDeferred(new ScheduledCommand() {
-					@Override
-					public void execute() {
-						if((mainController.getMainViewPort().getCenterPanel().getDisplayPanel() != null) &&
-						   (mainController.getMainViewPort().getCenterPanel().getDisplayPanel() instanceof InputDataPanel))
-						{
-							((InputDataPanel)mainController.getMainViewPort().getCenterPanel().getDisplayPanel()).getPdbCodeField().focus();
-						}
-					}
-			    });
-
 			}
 		});
 
@@ -132,22 +123,23 @@ public class MyJobsPanel extends ContentPanel
 				MyJobsModel selectedItem = myJobsGrid.getSelectionModel().getSelectedItem();
 				if(selectedItem != null)
 				{
-					mainController.deleteJob(selectedItem.getJobid());
+					CrkWebServiceProvider.getServiceController().deleteJob(selectedItem.getJobid());
 				}
 			}
 		};
 
 		this.add(myJobsGrid, new RowData(1, 1, new Margins(0)));
+		
+		initializeEventsListeners();
 	}
 
 	/**
-	 * Creates columns configurations for residues summary grid.
-	 * @return columns configurations for residues summary grid
+	 * Creates columns configurations for jobs grid.
+	 * @return columns configurations for jobs grid
 	 */
 	private List<ColumnConfig> createColumnConfig()
 	{
-		List<ColumnConfig> configs = GridColumnConfigGenerator.createColumnConfigs(mainController,
-																				   "jobs",
+		List<ColumnConfig> configs = GridColumnConfigGenerator.createColumnConfigs("jobs",
 																				   new MyJobsModel());
 
 		if(configs != null)
@@ -166,8 +158,10 @@ public class MyJobsPanel extends ContentPanel
 	/**
 	 * Adds jobs to grid.
 	 * @param jobs jobs to display
+	 * @param selectedJobId current job
 	 */
-	public void setJobs(List<ProcessingInProgressData> jobs)
+	private void setJobs(List<ProcessingInProgressData> jobs,
+						String selectedJobId)
 	{
 		MyJobsModel itemToSelect = null;
 		int itemToSelectIndex = 0;
@@ -204,8 +198,8 @@ public class MyJobsPanel extends ContentPanel
 														  statusData.getStatus(),
 														  statusData.getInput());
 
-				if((mainController.getSelectedJobId() != null) &&
-				   (statusData.getJobId().equals(mainController.getSelectedJobId())))
+				if((selectedJobId != null) &&
+				   (statusData.getJobId().equals(selectedJobId)))
 				{
 					itemToSelect = myJobsModel;
 					itemToSelectIndex = i;
@@ -231,7 +225,7 @@ public class MyJobsPanel extends ContentPanel
 		myJobsStore.commitChanges();
 
 
-		if((mainController.getSelectedJobId() != null) &&
+		if((selectedJobId != null) &&
 			(myJobsStore.getCount() > 0))
 		{
 			myJobsGrid.getSelectionModel().select(itemToSelect, false);
@@ -245,19 +239,10 @@ public class MyJobsPanel extends ContentPanel
 	}
 
 	/**
-	 * Retrieves grid containing jobs.
-	 * @return grid containing jobs
+	 * Selects correct job before removal.
+	 * @param jobToStop identifier of the job which was removed
 	 */
-	public Grid<MyJobsModel> getMyJobsGrid()
-	{
-		return myJobsGrid;
-	}
-
-	/**
-	 * Selects correct job after removal.
-	 * @param jobToStop identifier of the job which was stopped
-	 */
-	public void selectPrevious(String jobToStop)
+	private void selectPrevious(String jobToRemove)
 	{
 		List<MyJobsModel> currentJobs = myJobsStore.getModels();
 
@@ -266,7 +251,7 @@ public class MyJobsPanel extends ContentPanel
 
 		while((jobNr < currentJobs.size()) && (!found))
 		{
-			if(currentJobs.get(jobNr).get("jobid").equals(jobToStop))
+			if(currentJobs.get(jobNr).get("jobid").equals(jobToRemove))
 			{
 				found = true;
 			}
@@ -282,11 +267,45 @@ public class MyJobsPanel extends ContentPanel
 		}
 		else if(myJobsStore.getModels().size() > 1)
 		{
-			myJobsGrid.getSelectionModel().select(currentJobs.get(0), false);
+			myJobsGrid.getSelectionModel().select(currentJobs.get(1), false);
 		}
 		else
 		{
 			History.newItem("");
 		}
+	}
+	
+	/**
+	 * Events listeners initialization.
+	 */
+	private void initializeEventsListeners()
+	{
+		EventBusManager.EVENT_BUS.addHandler(GetFocusOnJobsListEvent.TYPE, new GetFocusOnJobsListHandler() {
+			
+			@Override
+			public void onGrabFocusOnJobsList(GetFocusOnJobsListEvent event) {
+				myJobsGrid.focus();
+			}
+		});
+		
+		EventBusManager.EVENT_BUS.addHandler(JobListRetrievedEvent.TYPE, new JobListRetrievedHandler() {
+			
+			@Override
+			public void onJobListRetrieved(JobListRetrievedEvent event) {
+				setJobs(event.getJobs(), ApplicationContext.getSelectedJobId());
+			}
+		});
+		
+		EventBusManager.EVENT_BUS.addHandler(BeforeJobDeletedEvent.TYPE, new BeforeJobRemovedHandler() {
+			
+			@Override
+			public void onBeforeJobRemoved(BeforeJobDeletedEvent event) 
+			{
+				if(event.getJobToDelete().equals(ApplicationContext.getSelectedJobId()))
+				{
+					selectPrevious(event.getJobToDelete());
+				}
+			}
+		});
 	}
 }

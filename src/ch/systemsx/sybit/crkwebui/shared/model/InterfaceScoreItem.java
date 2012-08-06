@@ -36,11 +36,6 @@ public class InterfaceScoreItem implements Serializable
 		
 	}
 	
-	public InterfaceScoreItem(PDBScoreItem pdbScoreItem)
-	{
-//		this.pdbScoreItem = pdbScoreItem;
-	}
-	
 	public double getUnweightedRim1Scores() {
 		return unweightedRim1Scores;
 	}

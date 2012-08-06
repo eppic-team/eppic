@@ -5,8 +5,7 @@ import com.google.gwt.event.shared.EventBus;
 import com.google.gwt.event.shared.SimpleEventBus;
 
 /**
- * Applicaiton wide event bus manager.
- * @author root
+ * Application wide event bus manager.
  *
  */
 public class EventBusManager 

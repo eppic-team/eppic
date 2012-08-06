@@ -37,4 +37,38 @@ public class DirectoryContentGenerator
 
 		return directoryContent;
 	}
+	
+	/**
+	 * Retrieves first file in the directory matching specified suffix.
+	 * @param directory directory from which file is to be retrieved
+	 * @param suffix suffix to match
+	 * @return file with specified suffix
+	 */
+	public static File getFileFromDirectoryWithSpecifiedSuffix(File resultFileDirectory,
+															   final String suffix)
+	{
+		File retrievedFile = null;
+		
+		String[] directoryContent = resultFileDirectory.list(new FilenameFilter() {
+
+			public boolean accept(File dir, String name) 
+			{
+				if (name.endsWith(suffix)) 
+				{
+					return true;
+				}
+				else 
+				{
+					return false;
+				}
+			}
+		});
+		
+		if ((directoryContent != null) && (directoryContent.length > 0)) 
+		{
+			retrievedFile = new File(resultFileDirectory + File.separator + directoryContent[0]);
+		}
+		
+		return retrievedFile;
+	}
 }

@@ -20,12 +20,6 @@
             		<join-column name="UserSessionId" referenced-column-name="uid"/>
             		<inverse-join-column name="JobId" referenced-column-name="uid"/>
             	</join-table>
-        		<cascade>
-            	    <cascade-persist/>
-            	    <cascade-merge/>
-            	    <cascade-refresh/>
-            	    <cascade-detach/>
-            	</cascade>
        		</many-to-many>
         </attributes>
     </entity>
@@ -48,7 +42,7 @@
             <basic name="inputType"></basic>
             <basic name="submissionId"></basic>
 
-            <one-to-one name="pdbScoreItem">
+            <one-to-one name="pdbScoreItem" mapped-by="jobItem">
         		<cascade>
             	    <cascade-all/>
             	</cascade>
@@ -101,7 +95,7 @@
             	</cascade>
        		</one-to-one>
 
-       		<one-to-one name="jobItem" mapped-by="pdbScoreItem">
+       		<one-to-one name="jobItem">
             </one-to-one>
 
        		<!-- element-collection name="homologsInfoItems"-->

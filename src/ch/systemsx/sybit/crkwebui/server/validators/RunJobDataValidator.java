@@ -41,7 +41,7 @@ public class RunJobDataValidator
 	/**
 	 * Checks whether input is valid filename.
 	 * @param input input value to validate
-	 * @throws Exception when input is not valid
+	 * @throws ValidationException when input is not valid
 	 */
 	public static void validateInput(String input) throws ValidationException
 	{

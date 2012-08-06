@@ -3,7 +3,6 @@ package ch.systemsx.sybit.crkwebui.client.gui;
 import java.util.ArrayList;
 import java.util.List;
 
-import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 import ch.systemsx.sybit.crkwebui.client.model.InterfaceResidueItemModel;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResidueItem;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResidueType;
@@ -43,8 +42,6 @@ public class ResiduesPanel extends ContentPanel
 	private PagingModelMemoryProxy proxy;
 	private PagingLoader loader;
 
-	private MainController mainController;
-
 	private List<InterfaceResidueItemModel> data;
 
 	private int nrOfRows = 20;
@@ -54,7 +51,6 @@ public class ResiduesPanel extends ContentPanel
 
 	public ResiduesPanel(
 						 String header,
-						 final MainController mainController,
 						 int width)
 	{
 		if(GXT.isIE8)
@@ -62,7 +58,6 @@ public class ResiduesPanel extends ContentPanel
 			useBufferedView = true;
 		}
 
-		this.mainController = mainController;
 		this.setBodyBorder(false);
 		this.setBorders(false);
 		this.setLayout(new FitLayout());
@@ -117,19 +112,19 @@ public class ResiduesPanel extends ContentPanel
 				{
 					if ((Integer)model.get("assignment") == InterfaceResidueType.SURFACE.getAssignment())
 					{
-						return "surface";
+						return "eppic-grid-row-surface";
 					}
 					else if((Integer)model.get("assignment") == InterfaceResidueType.CORE.getAssignment())
 					{
-						return "core";
+						return "eppic-grid-row-core";
 					}
 					else if((Integer)model.get("assignment") == InterfaceResidueType.RIM.getAssignment())
 					{
-						return "rim";
+						return "eppic-grid-row-rim";
 					}
 					else
 					{
-						return "buried";
+						return "eppic-grid-row-buried";
 					}
 				}
 
@@ -144,7 +139,7 @@ public class ResiduesPanel extends ContentPanel
 	 */
 	private List<ColumnConfig> createColumnConfig()
 	{
-		List<ColumnConfig> configs = GridColumnConfigGenerator.createColumnConfigs(mainController,
+		List<ColumnConfig> configs = GridColumnConfigGenerator.createColumnConfigs(
 				   "residues",
 				   new InterfaceResidueItemModel());
 
@@ -227,7 +222,7 @@ public class ResiduesPanel extends ContentPanel
 	}
 
 	/**
-	 * Adjusts size of the residues grid based on the size of the screen and intial
+	 * Adjusts size of the residues grid based on the size of the screen and initial
 	 * settings for the grid.
 	 * @param assignedWidth width assigned for the grid
 	 */
@@ -289,14 +284,5 @@ public class ResiduesPanel extends ContentPanel
 	public PagingToolBar getResiduesGridPagingToolbar()
 	{
 		return pagingToolbar;
-	}
-
-	/**
-	 * Retrieves residues grid.
-	 * @return residues grid
-	 */
-	public Grid<InterfaceResidueItemModel> getResiduesGrid()
-	{
-		return residuesGrid;
 	}
 }

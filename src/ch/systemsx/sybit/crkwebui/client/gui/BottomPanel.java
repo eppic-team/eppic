@@ -1,7 +1,10 @@
 package ch.systemsx.sybit.crkwebui.client.gui;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
-import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
+import ch.systemsx.sybit.crkwebui.client.controllers.EventBusManager;
+import ch.systemsx.sybit.crkwebui.client.events.ShowAboutEvent;
+import ch.systemsx.sybit.crkwebui.client.events.UpdateStatusLabelEvent;
+import ch.systemsx.sybit.crkwebui.client.handlers.UpdateStatusLabelHandler;
 
 import com.extjs.gxt.ui.client.Style.Orientation;
 import com.extjs.gxt.ui.client.event.BaseEvent;
@@ -14,7 +17,7 @@ import com.extjs.gxt.ui.client.widget.layout.RowData;
 import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 import com.extjs.gxt.ui.client.widget.layout.VBoxLayout;
 import com.extjs.gxt.ui.client.widget.layout.VBoxLayout.VBoxLayoutAlign;
-import com.google.gwt.core.client.GWT;
+import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.ui.HTML;
 
 /**
@@ -29,7 +32,7 @@ public class BottomPanel extends LayoutContainer
 	private Label contactLink;
 	private Label aboutLink;
 
-	public BottomPanel(final MainController mainController)
+	public BottomPanel()
 	{
 		this.setLayout(new RowLayout(Orientation.HORIZONTAL));
 
@@ -46,16 +49,14 @@ public class BottomPanel extends LayoutContainer
 	    LayoutContainer linksContainer = new LayoutContainer();
 	    linksContainer.setBorders(false);
 
-	    aboutLink = new Label("<a href=\"\" onClick=\"return false;\">" +
-	    						AppPropertiesManager.CONSTANTS.bottom_panel_about_link() +
-								"</a>");
+	    aboutLink = new EmptyLink(AppPropertiesManager.CONSTANTS.bottom_panel_about_link());
 	    aboutLink.addStyleName("eppic-horizontal-nav");
 	    
 	    aboutLink.addListener(Events.OnClick, new Listener<BaseEvent>() {
 
 			@Override
 			public void handleEvent(BaseEvent be) {
-				mainController.showAbout();
+				EventBusManager.EVENT_BUS.fireEvent(new ShowAboutEvent());
 			}
 		});
 
@@ -64,16 +65,19 @@ public class BottomPanel extends LayoutContainer
 								"\" target=\"_blank\">" +
 								AppPropertiesManager.CONSTANTS.bottom_panel_contact_link_label() +
 								"</a>");
-		contactLink.setStyleAttribute("margin-left", "10px");
+		contactLink.addStyleName("eppic-default-left-margin");
 		contactLink.addStyleName("eppic-horizontal-nav");
 		
-		helpLink = new Label("<a href=\"" +
-							GWT.getHostPageBaseURL() + "Help.html" +
-							"\" target=\"_blank\">" +
-							AppPropertiesManager.CONSTANTS.bottom_panel_help_link() +
-							"</a>");
-		helpLink.setStyleAttribute("margin-left", "10px");
+		helpLink = new EmptyLink(AppPropertiesManager.CONSTANTS.bottom_panel_help_link());
+		helpLink.addStyleName("eppic-default-left-margin");
 		helpLink.addStyleName("eppic-horizontal-nav");
+		helpLink.addListener(Events.OnClick, new Listener<BaseEvent>() {
+
+			@Override
+			public void handleEvent(BaseEvent be) {
+				History.newItem("help");
+			}
+		});
 
 		linksContainer.add(aboutLink);
 		linksContainer.add(helpLink);
@@ -81,6 +85,8 @@ public class BottomPanel extends LayoutContainer
 
 		linksContainerWrapper.add(linksContainer);
 		this.add(linksContainerWrapper, new RowData(150, 1, new Margins(0)));
+		
+		initializeEventsListeners();
 	}
 
 	/**
@@ -88,7 +94,7 @@ public class BottomPanel extends LayoutContainer
 	 * @param message text to display.
 	 * @param isError flag specifying whether message is the error.
 	 */
-	public void updateStatusMessage(String message, boolean isError)
+	private void updateStatusMessage(String message, boolean isError)
 	{
 		String messageText = "<span style=\"color:";
 
@@ -110,5 +116,19 @@ public class BottomPanel extends LayoutContainer
 
 		status.setHTML(messageText);
 	}
-
+	
+	/**
+	 * Events listeners initialization.
+	 */
+	private void initializeEventsListeners()
+	{
+		EventBusManager.EVENT_BUS.addHandler(UpdateStatusLabelEvent.TYPE, new UpdateStatusLabelHandler() 
+		{
+			@Override
+			public void onUpdateStatusLabel(UpdateStatusLabelEvent event)
+			{
+				updateStatusMessage(event.getStatusText(), event.isWasError());
+			}
+		});
+	}
 }

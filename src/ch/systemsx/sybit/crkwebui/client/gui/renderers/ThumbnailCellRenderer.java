@@ -1,22 +1,21 @@
 package ch.systemsx.sybit.crkwebui.client.gui.renderers;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
-import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
+import ch.systemsx.sybit.crkwebui.client.controllers.ApplicationContext;
+import ch.systemsx.sybit.crkwebui.client.controllers.EventBusManager;
+import ch.systemsx.sybit.crkwebui.client.data.TooltipXPositionType;
+import ch.systemsx.sybit.crkwebui.client.data.TooltipYPositionType;
+import ch.systemsx.sybit.crkwebui.client.events.SelectResultsRowEvent;
+import ch.systemsx.sybit.crkwebui.client.events.ShowViewerEvent;
+import ch.systemsx.sybit.crkwebui.client.gui.ImageWithTooltip;
 
 import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.widget.grid.ColumnData;
 import com.extjs.gxt.ui.client.widget.grid.Grid;
 import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
-import com.extjs.gxt.ui.client.widget.tips.ToolTip;
-import com.extjs.gxt.ui.client.widget.tips.ToolTipConfig;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.MouseOutEvent;
-import com.google.gwt.event.dom.client.MouseOutHandler;
-import com.google.gwt.event.dom.client.MouseOverEvent;
-import com.google.gwt.event.dom.client.MouseOverHandler;
-import com.google.gwt.user.client.ui.Image;
 
 /**
  * Renderer used to display interfaces thumbnails.
@@ -25,80 +24,41 @@ import com.google.gwt.user.client.ui.Image;
  */
 public class ThumbnailCellRenderer implements GridCellRenderer<BaseModel> 
 {
-	private MainController mainController;
-	
-	private ToolTip toolTip;
-	private boolean refreshTooltip = true;
-
-	public ThumbnailCellRenderer(MainController mainController) {
-		this.mainController = mainController;
-	}
-	
 	@Override
 	public Object render(final BaseModel model, String property,
-			ColumnData config, int rowIndex, int colIndex,
+			ColumnData config, final int rowIndex, int colIndex,
 			ListStore<BaseModel> store, final Grid<BaseModel> grid) 
 	{
-		String url = mainController.getSettings().getResultsLocation();
+		String url = ApplicationContext.getSettings().getResultsLocation();
 		
 		String source = url + 
-						mainController.getPdbScoreItem().getJobId() + 
+						ApplicationContext.getPdbScoreItem().getJobId() + 
 						"/" +
-						mainController.getPdbScoreItem().getPdbName() +
+						ApplicationContext.getPdbScoreItem().getPdbName() +
 						"." +
 						model.get("id") +
 						".75x75.png";
 		
-		final Image image  = new Image(source);
-		image.addMouseOverHandler(new MouseOverHandler() {
-			
-			@Override
-			public void onMouseOver(MouseOverEvent event) 
-			{
-				if((toolTip != null) && (refreshTooltip))
-				{
-					toolTip.disable();
-				}
-				
-				if(refreshTooltip)
-				{
-					ToolTipConfig tipConfig = new ToolTipConfig();
-					tipConfig.setText(AppPropertiesManager.CONSTANTS.results_grid_thumbnail_tooltip_text());
-					tipConfig.setDismissDelay(0);
-					tipConfig.setShowDelay(1000);
-					toolTip = new ToolTip(null, tipConfig);
-					toolTip.showAt(image.getAbsoluteLeft() + image.getOffsetWidth(), 
-								   image.getAbsoluteTop());
-					refreshTooltip = false;
-				}
-				
-				
-			}
-		});
+		ImageWithTooltip imageWithTooltip = new ImageWithTooltip(source, 
+																 null,
+																 AppPropertiesManager.CONSTANTS.results_grid_thumbnail_tooltip_text(),
+																 -1, 
+																 true, 
+																 1000, 
+																 0, 
+																 TooltipXPositionType.RIGHT, 
+																 TooltipYPositionType.TOP);
 		
-		image.addMouseOutHandler(new MouseOutHandler() 
-		{
-			@Override
-			public void onMouseOut(MouseOutEvent event) 
-			{
-				if(toolTip != null)
-				{
-					toolTip.disable();
-				}
-				
-				refreshTooltip = true;
-			}
-		});
-		
-		image.addClickHandler(new ClickHandler() 
+		imageWithTooltip.addClickHandler(new ClickHandler() 
 		{
 			@Override
 			public void onClick(ClickEvent event)
 			{
-				mainController.runViewer(String.valueOf(model.get("id")));
+				EventBusManager.EVENT_BUS.fireEvent(new SelectResultsRowEvent(rowIndex));
+				EventBusManager.EVENT_BUS.fireEvent(new ShowViewerEvent());
 			}
 		});
 		
-		return image;
+		return imageWithTooltip;
 	}
 }

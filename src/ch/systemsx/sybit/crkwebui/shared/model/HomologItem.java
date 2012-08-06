@@ -22,8 +22,6 @@ public class HomologItem implements Serializable {
 	private String firstTaxon;
 	private String lastTaxon;
 	
-	private HomologsInfoItem homologsInfoItem;
-	
 	public HomologItem() {
 		
 	}
@@ -91,20 +89,6 @@ public class HomologItem implements Serializable {
 		homologItem.setLastTaxon(homologItemDB.getLastTaxon());
 		homologItem.setSeqIdToQuery(homologItemDB.getSeqIdToQuery());
 		homologItem.setQueryCov(homologItemDB.getQueryCov());
-				
 		return homologItem;
 	}
-
-
-	public HomologsInfoItem getHomologsInfoItem() {
-		return homologsInfoItem;
-	}
-
-
-	public void setHomologsInfoItem(HomologsInfoItem homologsInfoItem) {
-		this.homologsInfoItem = homologsInfoItem;
-	}
-	
-	
-
 }

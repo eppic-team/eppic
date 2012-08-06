@@ -12,7 +12,7 @@ public interface WindowHideHandler extends EventHandler
 {
 	/**
 	 * This method is called when internal application window is closed.
-	 * @param event window hide event
+	 * @param event Window hide event
 	 */
 	 public void onWindowHide(WindowHideEvent event);
 }

@@ -1,7 +1,10 @@
 package ch.systemsx.sybit.crkwebui.client.callbacks;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
-import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
+import ch.systemsx.sybit.crkwebui.client.controllers.ApplicationContext;
+import ch.systemsx.sybit.crkwebui.client.controllers.EventBusManager;
+import ch.systemsx.sybit.crkwebui.client.events.ShowErrorEvent;
+import ch.systemsx.sybit.crkwebui.client.events.UpdateStatusLabelEvent;
 
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -13,17 +16,15 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
  */
 public class RunJobCallback implements AsyncCallback<String> 
 {
-	private MainController mainController;
-
-	public RunJobCallback(MainController mainController) 
+	public RunJobCallback() 
 	{
-		this.mainController = mainController;
+		
 	}
 
 	@Override
 	public void onFailure(Throwable caught) 
 	{
-		mainController.showError("Error during running job: " + caught.getMessage());
+		EventBusManager.EVENT_BUS.fireEvent(new ShowErrorEvent("Error during running job: " + caught.getMessage()));
 	}
 
 	@Override
@@ -32,12 +33,12 @@ public class RunJobCallback implements AsyncCallback<String>
 		if(result != null) 
 		{
 			String jobId = result;
-			mainController.setSelectedJobId(jobId);
+			ApplicationContext.setSelectedJobId(jobId);
 			History.newItem("id/" + jobId);
 		} 
 		else 
 		{
-			mainController.updateStatusLabel(AppPropertiesManager.CONSTANTS.callback_run_job_error() + " - incorrect type" , true);
+			EventBusManager.EVENT_BUS.fireEvent(new UpdateStatusLabelEvent(AppPropertiesManager.CONSTANTS.callback_run_job_error() + " - incorrect type", true));
 		}
 	}
 }

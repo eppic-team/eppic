@@ -4,11 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
-import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 import ch.systemsx.sybit.crkwebui.client.model.InterfaceResidueSummaryModel;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResidueItem;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResidueType;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceScoreItem;
+import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
 
 import com.extjs.gxt.ui.client.GXT;
 import com.extjs.gxt.ui.client.Style.Scroll;
@@ -35,15 +35,12 @@ public class ResiduesSummaryPanel extends ContentPanel
 	private Grid<InterfaceResidueSummaryModel> residuesGrid;
 	private List<Integer> initialColumnWidth;
 	
-	private MainController mainController;
-	
 	private int structure;
 	
 	private boolean useBufferedView = false;
 	
 	public ResiduesSummaryPanel(
 						 String header, 
-						 final MainController mainController,
 						 int structure) 
 	{
 		if(GXT.isIE8)
@@ -51,7 +48,6 @@ public class ResiduesSummaryPanel extends ContentPanel
 			useBufferedView = true;
 		}
 		
-		this.mainController = mainController;
 		this.structure = structure;
 		this.setBodyBorder(false);
 		this.setBorders(false);
@@ -77,7 +73,7 @@ public class ResiduesSummaryPanel extends ContentPanel
 			public String getRowStyle(ModelData model, int rowIndex,
 					ListStore<ModelData> ds) 
 			{
-				return "summary";
+				return "eppic-summary-grid-row";
 			}
 		});
 		
@@ -92,7 +88,7 @@ public class ResiduesSummaryPanel extends ContentPanel
 	 */
 	private List<ColumnConfig> createColumnConfig() 
 	{
-		List<ColumnConfig> configs = GridColumnConfigGenerator.createColumnConfigs(mainController,
+		List<ColumnConfig> configs = GridColumnConfigGenerator.createColumnConfigs(
 				   "residues_summary",
 				   new InterfaceResidueSummaryModel());
 
@@ -113,7 +109,9 @@ public class ResiduesSummaryPanel extends ContentPanel
 	/**
 	 * Sets content of residues summary grid.
 	 */
-	public void fillResiduesGrid() 
+	public void fillResiduesGrid(PDBScoreItem pdbScoreItem,
+								 int selectedInterfaceId,
+								 List<InterfaceResidueItem> interfaceResidueItems) 
 	{
 		residuesStore.removeAll();
 		
@@ -128,9 +126,9 @@ public class ResiduesSummaryPanel extends ContentPanel
 		double entropySurfSamplingSd = Double.NaN;
 		double entropyZscore = Double.NaN;
 		
-		int interfId = mainController.getMainViewPort().getInterfacesResiduesWindow().getSelectedInterface() - 1;
+		int interfId = selectedInterfaceId - 1;
 		
-		for (InterfaceScoreItem scoreItem : mainController.getPdbScoreItem().getInterfaceItem(interfId).getInterfaceScores())
+		for (InterfaceScoreItem scoreItem : pdbScoreItem.getInterfaceItem(interfId).getInterfaceScores())
 		{
 			if(scoreItem.getMethod().equals("Entropy"))
 			{
@@ -167,7 +165,9 @@ public class ResiduesSummaryPanel extends ContentPanel
 		
 		int coreSize = 0;
 		int rimSize = 0;
-		for (InterfaceResidueItem interfResItem:mainController.getInterfaceResiduesItemsList().get(mainController.getMainViewPort().getInterfacesResiduesWindow().getSelectedInterface()).get(structure)) {
+		
+		for(InterfaceResidueItem interfResItem : interfaceResidueItems) {
+//		for (InterfaceResidueItem interfResItem:mainController.getInterfaceResiduesItemsList().get(mainController.getMainViewPort().getInterfacesResiduesWindow().getSelectedInterface()).get(structure)) {
 			
 			if (interfResItem.getAssignment() == InterfaceResidueType.CORE.getAssignment()) coreSize++;
 			else if (interfResItem.getAssignment() == InterfaceResidueType.RIM.getAssignment()) rimSize++;
@@ -181,13 +181,13 @@ public class ResiduesSummaryPanel extends ContentPanel
 		
 		if(structure == 1)
 		{
-			asa = mainController.getPdbScoreItem().getInterfaceItem(interfId).getAsaC1();
-			bsa = mainController.getPdbScoreItem().getInterfaceItem(interfId).getBsaC1();
+			asa = pdbScoreItem.getInterfaceItem(interfId).getAsaC1();
+			bsa = pdbScoreItem.getInterfaceItem(interfId).getBsaC1();
 		}
 		else
 		{
-			asa = mainController.getPdbScoreItem().getInterfaceItem(interfId).getAsaC2();
-			bsa = mainController.getPdbScoreItem().getInterfaceItem(interfId).getBsaC2();
+			asa = pdbScoreItem.getInterfaceItem(interfId).getAsaC2();
+			bsa = pdbScoreItem.getInterfaceItem(interfId).getBsaC2();
 		}
 		
 		model.setAsa(asa);
@@ -205,13 +205,13 @@ public class ResiduesSummaryPanel extends ContentPanel
 		
 		if(structure == 1)
 		{
-			asa = mainController.getPdbScoreItem().getInterfaceItem(interfId).getAsaR1();
-			bsa = mainController.getPdbScoreItem().getInterfaceItem(interfId).getBsaR1();
+			asa = pdbScoreItem.getInterfaceItem(interfId).getAsaR1();
+			bsa = pdbScoreItem.getInterfaceItem(interfId).getBsaR1();
 		}
 		else
 		{
-			asa = mainController.getPdbScoreItem().getInterfaceItem(interfId).getAsaR2();
-			bsa = mainController.getPdbScoreItem().getInterfaceItem(interfId).getBsaR2();
+			asa = pdbScoreItem.getInterfaceItem(interfId).getAsaR2();
+			bsa = pdbScoreItem.getInterfaceItem(interfId).getBsaR2();
 		}
 		
 		model.setAsa(asa);
@@ -291,14 +291,5 @@ public class ResiduesSummaryPanel extends ContentPanel
 		}
 		
 		this.layout();
-	}
-	
-	/**
-	 * Retrieves residues summary grid.
-	 * @return residues summary grid
-	 */
-	public Grid<InterfaceResidueSummaryModel> getResiduesGrid() 
-	{
-		return residuesGrid;
 	}
 }

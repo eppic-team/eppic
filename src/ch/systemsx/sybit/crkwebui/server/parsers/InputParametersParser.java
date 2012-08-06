@@ -35,7 +35,6 @@ public class InputParametersParser
 	public static ApplicationSettings prepareApplicationSettings(InputStream inputParametersStream) throws Throwable
 	{
 		ApplicationSettings applicationSettings = new ApplicationSettings();
-		List<SupportedMethod> supportedMethods = new ArrayList<SupportedMethod>();
 		
 		DocumentBuilderFactory xmlDocumentBuilderFactory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder xmlDocumentBuilder = xmlDocumentBuilderFactory.newDocumentBuilder();
@@ -46,26 +45,7 @@ public class InputParametersParser
 		
 		NodeList supportedMethodsRootNodeList = documentRootNode.getElementsByTagName("supported_methods");
 		Node supportedMethodsRootNode = (Node)supportedMethodsRootNodeList.item(0);
-		
-		NodeList supportedMethodsNodeList = supportedMethodsRootNode.getChildNodes();
-		
-		for(int i=0; i<supportedMethodsNodeList.getLength(); i++)
-		{
-			Node supportedMethodNode = supportedMethodsNodeList.item(i);
-			
-			if(supportedMethodNode.getNodeType() == Node.ELEMENT_NODE)
-			{
-				Element supportedMethodElement = (Element)supportedMethodNode;
-				Node methodNameNode = supportedMethodElement.getElementsByTagName("name").item(0).getFirstChild();
-				Node methodInputFieldNode = supportedMethodElement.getElementsByTagName("input_field").item(0).getFirstChild();
-				
-				SupportedMethod supportedMethod = new SupportedMethod();
-				supportedMethod.setName(methodNameNode.getNodeValue());
-				supportedMethod.setHasFieldSet(Boolean.parseBoolean(methodInputFieldNode.getNodeValue()));
-				supportedMethods.add(supportedMethod);
-			}
-		}
-		
+		List<SupportedMethod> supportedMethods = prepareSupportedMethods(supportedMethodsRootNode);
 		applicationSettings.setScoresTypes(supportedMethods);
 		
 		InputParameters inputParameters = new InputParameters();
@@ -115,7 +95,43 @@ public class InputParametersParser
 		
 		return applicationSettings;
 	}
+	
+	/**
+	 * Retrieves list of supported methods.
+	 * @param supportedMethodsRootNode methods root node
+	 * @return list of supported methods
+	 */
+	private static List<SupportedMethod> prepareSupportedMethods(Node supportedMethodsRootNode)
+	{
+		List<SupportedMethod> supportedMethods = new ArrayList<SupportedMethod>();
+		
+		NodeList supportedMethodsNodeList = supportedMethodsRootNode.getChildNodes();
+		
+		for(int i=0; i<supportedMethodsNodeList.getLength(); i++)
+		{
+			Node supportedMethodNode = supportedMethodsNodeList.item(i);
+			
+			if(supportedMethodNode.getNodeType() == Node.ELEMENT_NODE)
+			{
+				Element supportedMethodElement = (Element)supportedMethodNode;
+				Node methodNameNode = supportedMethodElement.getElementsByTagName("name").item(0).getFirstChild();
+				Node methodInputFieldNode = supportedMethodElement.getElementsByTagName("input_field").item(0).getFirstChild();
+				
+				SupportedMethod supportedMethod = new SupportedMethod();
+				supportedMethod.setName(methodNameNode.getNodeValue());
+				supportedMethod.setHasFieldSet(Boolean.parseBoolean(methodInputFieldNode.getNodeValue()));
+				supportedMethods.add(supportedMethod);
+			}
+		}
+		
+		return supportedMethods;
+	}
 
+	/**
+	 * Retrieves human readable names of run parameters.
+	 * @param runParametersRootNode run parameters node
+	 * @return human readable names of run parameters
+	 */
 	private static Map<String, String> prepareRunParameters(Node runParametersRootNode)
 	{
 		NodeList runParametersRootNodeList = runParametersRootNode.getChildNodes();
@@ -148,6 +164,11 @@ public class InputParametersParser
 		return runPropetiesMap;
 	}
 
+	/**
+	 * Retrieves notification which is to be set as status of application.
+	 * @param inputParametersNode notification node
+	 * @return start notification
+	 */
 	private static String prepareNotificationText(Node inputParametersNode) 
 	{
 		return inputParametersNode.getFirstChild().getNodeValue();
@@ -164,6 +185,11 @@ public class InputParametersParser
 		inputParameters.setSearchMode(defaultInputParameterElement.getElementsByTagName("search_mode").item(0).getFirstChild().getNodeValue());
 	}
 
+	/**
+	 * Retrieves list of values for reduced alphabet.
+	 * @param reducedAlphabetNodeRoot reduced alphabet node root
+	 * @return list of values for reduced alphabet
+	 */
 	private static List<Integer> prepareReducedAlphabetList(Node reducedAlphabetNodeRoot) 
 	{
 		List<Integer> reducedAlphabetList = new ArrayList<Integer>();
@@ -184,23 +210,28 @@ public class InputParametersParser
 		return reducedAlphabetList;
 	}
 
-	private static List<String> prepareList(Node defaultMethodsNodeListRoot) 
+	/**
+	 * Prepares list of strings for specified node list root.
+	 * @param nodeListRoot
+	 * @return list of retrieved strings
+	 */
+	private static List<String> prepareList(Node nodeListRoot) 
 	{
-		List<String> defaultMethods = new ArrayList<String>();
+		List<String> nodesValues = new ArrayList<String>();
 		
-		NodeList defaultMethodsNodeList = defaultMethodsNodeListRoot.getChildNodes();
+		NodeList nodeList = nodeListRoot.getChildNodes();
 		
-		for(int i=0; i<defaultMethodsNodeList.getLength(); i++)
+		for(int i=0; i<nodeList.getLength(); i++)
 		{
-			Node defaultMethodsNode = defaultMethodsNodeList.item(i);
+			Node node = nodeList.item(i);
 			
-			if(defaultMethodsNode.getNodeType() == Node.ELEMENT_NODE)
+			if(node.getNodeType() == Node.ELEMENT_NODE)
 			{
-				Node methodNameNode = defaultMethodsNode.getFirstChild();
-				defaultMethods.add(methodNameNode.getNodeValue());
+				Node elementNode = node.getFirstChild();
+				nodesValues.add(elementNode.getNodeValue());
 			}
 		}
 		
-		return defaultMethods;
+		return nodesValues;
 	}
 }

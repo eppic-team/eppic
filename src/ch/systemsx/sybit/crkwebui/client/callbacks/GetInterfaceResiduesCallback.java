@@ -4,7 +4,12 @@ import java.util.HashMap;
 import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
-import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
+import ch.systemsx.sybit.crkwebui.client.controllers.ApplicationContext;
+import ch.systemsx.sybit.crkwebui.client.controllers.EventBusManager;
+import ch.systemsx.sybit.crkwebui.client.events.HideWaitingEvent;
+import ch.systemsx.sybit.crkwebui.client.events.InterfaceResiduesDataRetrievedEvent;
+import ch.systemsx.sybit.crkwebui.client.events.ShowWaitingEvent;
+import ch.systemsx.sybit.crkwebui.client.events.UpdateStatusLabelEvent;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResidueItem;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -16,15 +21,12 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
  */
 public class GetInterfaceResiduesCallback implements AsyncCallback<HashMap<Integer, List<InterfaceResidueItem>>>
 {
-	private MainController mainController;
 	private String jobId;
 	private int interfaceId;
 
-	public GetInterfaceResiduesCallback(MainController mainController,
-										String jobId,
+	public GetInterfaceResiduesCallback(String jobId,
 										int interfaceId) 
 	{
-		this.mainController = mainController;
 		this.jobId = jobId;
 		this.interfaceId = interfaceId;
 	}
@@ -32,20 +34,20 @@ public class GetInterfaceResiduesCallback implements AsyncCallback<HashMap<Integ
 	@Override
 	public void onFailure(Throwable caught) 
 	{
-		mainController.updateStatusLabel(AppPropertiesManager.CONSTANTS.callback_get_interface_residues_error(), true);
+		EventBusManager.EVENT_BUS.fireEvent(new UpdateStatusLabelEvent(AppPropertiesManager.CONSTANTS.callback_get_interface_residues_error(), true));
 	}
 
 	@Override
 	public void onSuccess(HashMap<Integer, List<InterfaceResidueItem>> result) 
 	{
-		mainController.showWaiting("Loading");
+		EventBusManager.EVENT_BUS.fireEvent(new ShowWaitingEvent("Loading"));
 		
 		if (result != null)
 		{
-			if(mainController.getSelectedJobId().equals(jobId) &&
-			   (mainController.getMainViewPort().getInterfacesResiduesWindow().getSelectedInterface() == interfaceId))
+			if(ApplicationContext.getSelectedJobId().equals(jobId) &&
+			   (ApplicationContext.getSelectedInterface() == interfaceId))
 			{
-				mainController.setInterfacesResiduesWindowData(result);
+				EventBusManager.EVENT_BUS.fireEvent(new InterfaceResiduesDataRetrievedEvent(result));
 				
 //				if(GXT.isIE8)
 //				{
@@ -63,9 +65,9 @@ public class GetInterfaceResiduesCallback implements AsyncCallback<HashMap<Integ
 		}
 		else 
 		{
-			mainController.updateStatusLabel(AppPropertiesManager.CONSTANTS.callback_get_interface_residues_error() + " - incorrect result type", true);
+			EventBusManager.EVENT_BUS.fireEvent(new UpdateStatusLabelEvent(AppPropertiesManager.CONSTANTS.callback_get_interface_residues_error() + " - incorrect result type", true));
 		}
 		
-		mainController.hideWaiting();
+		EventBusManager.EVENT_BUS.fireEvent(new HideWaitingEvent());
 	}
 }

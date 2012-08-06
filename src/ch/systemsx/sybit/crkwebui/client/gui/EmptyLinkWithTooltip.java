@@ -3,7 +3,7 @@ package ch.systemsx.sybit.crkwebui.client.gui;
 import ch.systemsx.sybit.crkwebui.client.data.WindowData;
 
 /**
- * Label styled as link with tooltip. 
+ * Label styled as empty link with tooltip. 
  * @author AS
  */
 public class EmptyLinkWithTooltip extends LabelWithTooltip

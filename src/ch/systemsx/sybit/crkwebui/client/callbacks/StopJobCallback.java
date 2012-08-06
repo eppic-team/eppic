@@ -1,7 +1,11 @@
 package ch.systemsx.sybit.crkwebui.client.callbacks;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
-import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
+import ch.systemsx.sybit.crkwebui.client.controllers.ApplicationContext;
+import ch.systemsx.sybit.crkwebui.client.controllers.CrkWebServiceProvider;
+import ch.systemsx.sybit.crkwebui.client.controllers.EventBusManager;
+import ch.systemsx.sybit.crkwebui.client.events.ShowMessageEvent;
+import ch.systemsx.sybit.crkwebui.client.events.UpdateStatusLabelEvent;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
@@ -12,20 +16,17 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
  */
 public class StopJobCallback implements AsyncCallback<String> 
 {
-	private MainController mainController;
 	private String jobToStop;
 
-	public StopJobCallback(MainController mainController,
-							String jobToStop) 
+	public StopJobCallback(String jobToStop) 
 	{
-		this.mainController = mainController;
 		this.jobToStop = jobToStop;
 	}
 
 	@Override
 	public void onFailure(Throwable caught) 
 	{
-		mainController.updateStatusLabel(AppPropertiesManager.CONSTANTS.callback_stop_job_error() + " " + jobToStop, true);
+		EventBusManager.EVENT_BUS.fireEvent(new UpdateStatusLabelEvent(AppPropertiesManager.CONSTANTS.callback_stop_job_error() + " " + jobToStop, true));
 	}
 
 	@Override
@@ -33,17 +34,17 @@ public class StopJobCallback implements AsyncCallback<String>
 	{
 		if (result != null)
 		{
-			mainController.showMessage(AppPropertiesManager.CONSTANTS.callback_stop_job_message(), result);
-			mainController.getJobsForCurrentSession();
+			EventBusManager.EVENT_BUS.fireEvent(new ShowMessageEvent(AppPropertiesManager.CONSTANTS.callback_stop_job_message(), result));
+			CrkWebServiceProvider.getServiceController().getJobsForCurrentSession();
 			
-			if(jobToStop.equals(mainController.getSelectedJobId()))
+			if(jobToStop.equals(ApplicationContext.getSelectedJobId()))
 			{
-				mainController.getCurrentStatusData();
+				CrkWebServiceProvider.getServiceController().getCurrentStatusData(jobToStop);
 			}
 		} 
 		else 
 		{
-			mainController.updateStatusLabel(AppPropertiesManager.CONSTANTS.callback_stop_job_error() + " " + jobToStop, true);
+			EventBusManager.EVENT_BUS.fireEvent(new UpdateStatusLabelEvent(AppPropertiesManager.CONSTANTS.callback_stop_job_error() + " " + jobToStop, true));
 		}
 	}
 

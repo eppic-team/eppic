@@ -26,13 +26,13 @@ public class PDBScoreItem implements Serializable, ProcessingData
 	private String spaceGroup;
 	private double resolution;
 	private String expMethod;
-	private int inputType;
 	private RunParametersItem runParameters;
 	
 	private List<HomologsInfoItem> homologsInfoItems;
 
 	private List<InterfaceItem> interfaceItems;
 	
+	private int inputType;
 	private String jobId;
 	
 	public PDBScoreItem() 

@@ -6,9 +6,19 @@ import java.util.List;
 import java.util.Map;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
+import ch.systemsx.sybit.crkwebui.client.controllers.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.controllers.EventBusManager;
-import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
+import ch.systemsx.sybit.crkwebui.client.controllers.ViewerRunner;
+import ch.systemsx.sybit.crkwebui.client.events.ApplicationWindowResizeEvent;
+import ch.systemsx.sybit.crkwebui.client.events.SelectResultsRowEvent;
+import ch.systemsx.sybit.crkwebui.client.events.ShowDetailsEvent;
+import ch.systemsx.sybit.crkwebui.client.events.ShowInterfaceResiduesEvent;
+import ch.systemsx.sybit.crkwebui.client.events.ShowViewerEvent;
 import ch.systemsx.sybit.crkwebui.client.events.WindowHideEvent;
+import ch.systemsx.sybit.crkwebui.client.handlers.ApplicationWindowResizeHandler;
+import ch.systemsx.sybit.crkwebui.client.handlers.SelectResultsRowHandler;
+import ch.systemsx.sybit.crkwebui.client.handlers.ShowDetailsHandler;
+import ch.systemsx.sybit.crkwebui.client.handlers.ShowViewerHandler;
 import ch.systemsx.sybit.crkwebui.client.handlers.WindowHideHandler;
 import ch.systemsx.sybit.crkwebui.client.model.InterfaceItemModel;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceItem;
@@ -17,6 +27,7 @@ import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
 import ch.systemsx.sybit.crkwebui.shared.model.SupportedMethod;
 
 import com.extjs.gxt.ui.client.Style.Orientation;
+import com.extjs.gxt.ui.client.core.Template;
 import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.ComponentEvent;
 import com.extjs.gxt.ui.client.event.Events;
@@ -41,6 +52,7 @@ import com.extjs.gxt.ui.client.widget.layout.RowData;
 import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 import com.extjs.gxt.ui.client.widget.layout.VBoxLayout;
 import com.extjs.gxt.ui.client.widget.layout.VBoxLayout.VBoxLayoutAlign;
+import com.extjs.gxt.ui.client.widget.tips.ToolTipConfig;
 import com.google.gwt.user.client.Cookies;
 
 /**
@@ -71,19 +83,13 @@ public class ResultsPanel extends DisplayPanel
 	private float gridWidthMultiplier;
 	// ***************************************
 
-	public ResultsPanel(final MainController mainController)
+	public ResultsPanel(PDBScoreItem pdbScoreItem)
 	{
-		super(mainController);
 		this.setBorders(true);
 		this.setLayout(new RowLayout(Orientation.VERTICAL));
-		this.setStyleAttribute("padding", "10px");
+		this.addStyleName("eppic-default-padding");
 
-		pdbIdentifierPanel = new PDBIdentifierPanel(mainController);
-		pdbIdentifierPanel.setPDBText(mainController.getPdbScoreItem().getPdbName(),
-									  mainController.getPdbScoreItem().getSpaceGroup(),
-									  mainController.getPdbScoreItem().getExpMethod(),
-									  mainController.getPdbScoreItem().getResolution(),
-									  mainController.getPdbScoreItem().getInputType());
+		pdbIdentifierPanel = new PDBIdentifierPanel();
 		this.add(pdbIdentifierPanel);
 		
 		FormPanel breakPanel = new FormPanel();
@@ -93,8 +99,8 @@ public class ResultsPanel extends DisplayPanel
 		breakPanel.getHeader().setVisible(false);
 		this.add(breakPanel, new RowData(1, 1.1, new Margins(0)));
 		
-		pdbTitle = new Label(mainController.getPdbScoreItem().getTitle());
-		pdbTitle.addStyleName("pdb-title-label");
+		pdbTitle = new Label();
+		pdbTitle.addStyleName("eppic-pdb-title-label");
 		this.add(pdbTitle);
 		
 		breakPanel = new FormPanel();
@@ -104,7 +110,7 @@ public class ResultsPanel extends DisplayPanel
 		breakPanel.getHeader().setVisible(false);
 		this.add(breakPanel, new RowData(1, 10, new Margins(0)));
 		
-		createInfoPanel();
+		createInfoPanel(pdbScoreItem);
 
 		createViewerTypePanel();
 
@@ -141,7 +147,7 @@ public class ResultsPanel extends DisplayPanel
 		resultsGrid.setColumnReordering(true);
 
 //		resultsGrid.addListener(Events.CellClick, resultsGridListener);
-		resultsGrid.setContextMenu(new ResultsPanelContextMenu(mainController));
+		resultsGrid.setContextMenu(new ResultsPanelContextMenu());
 		resultsGrid.disableTextSelection(false);
 //		resultsGrid.setAutoHeight(true);
 //		fillResultsGrid(mainController.getPdbScoreItem());
@@ -149,7 +155,7 @@ public class ResultsPanel extends DisplayPanel
 		resultsGrid.addListener(Events.ContextMenu, new Listener<BaseEvent>(){
 			@Override
 			public void handleEvent(BaseEvent be) {
-				mainController.resizeResultsGrid();
+				resizeGrid();
 			}
 		});
 		
@@ -158,7 +164,7 @@ public class ResultsPanel extends DisplayPanel
 			public void handleEvent(GridEvent ge) 
 			{
 				int widthToSet = (int) (ge.getWidth() / gridWidthMultiplier);
-				mainController.getSettings().getGridProperties().put("results_" + resultsGrid.getColumnModel().getColumnId(ge.getColIndex()) + "_width", 
+				ApplicationContext.getSettings().getGridProperties().put("results_" + resultsGrid.getColumnModel().getColumnId(ge.getColIndex()) + "_width", 
 																	 String.valueOf(widthToSet));
 			}
 		});
@@ -171,7 +177,7 @@ public class ResultsPanel extends DisplayPanel
 				InterfaceItemModel interfaceItemModel = resultsGrid.getSelectionModel().getSelectedItem();
 				if(interfaceItemModel != null)
 				{
-					mainController.getInterfaceResidues(interfaceItemModel.getId());
+					EventBusManager.EVENT_BUS.fireEvent(new ShowDetailsEvent());
 				}
 			}
 		};
@@ -186,17 +192,7 @@ public class ResultsPanel extends DisplayPanel
 		
 		this.add(resultsGridContainer, new RowData(1, 1, new Margins(0)));
 		
-		EventBusManager.EVENT_BUS.addHandler(WindowHideEvent.TYPE, new WindowHideHandler() 
-		{
-			@Override
-			public void onWindowHide(WindowHideEvent event) 
-			{
-				if(resultsGrid.isVisible())
-				{
-					resultsGrid.focus();
-				}
-			}
-		});
+		initializeEventsListeners();
 	}
 
 	/**
@@ -205,8 +201,7 @@ public class ResultsPanel extends DisplayPanel
 	 */
 	private List<ColumnConfig> createColumnConfig() 
 	{
-		List<ColumnConfig> configs = GridColumnConfigGenerator.createColumnConfigs(mainController,
-																				   "results",
+		List<ColumnConfig> configs = GridColumnConfigGenerator.createColumnConfigs("results",
 																				   new InterfaceItemModel());
 
 		if(configs != null)
@@ -225,9 +220,9 @@ public class ResultsPanel extends DisplayPanel
 	/**
 	 * Generates info panel containing general information about finished job.
 	 */
-	private void createInfoPanel()
+	private void createInfoPanel(PDBScoreItem pdbScoreItem)
 	{
-		infoPanel = new InfoPanel(mainController);
+		infoPanel = new InfoPanel(pdbScoreItem);
 		this.add(infoPanel, new RowData(1, 80, new Margins(0)));
 	}
 
@@ -238,7 +233,7 @@ public class ResultsPanel extends DisplayPanel
 	{
 		LayoutContainer optionsLocation = new LayoutContainer();
 		optionsLocation.setLayout(new RowLayout(Orientation.HORIZONTAL));
-		optionsLocation.setStyleAttribute("padding-top", "10px");
+		optionsLocation.addStyleName("eppic-default-top-padding");
 
 		LayoutContainer viewerTypePanelLocation = new LayoutContainer();
 		viewerTypePanelLocation.setBorders(false);
@@ -264,7 +259,8 @@ public class ResultsPanel extends DisplayPanel
 		viewerTypeComboBox.add(AppPropertiesManager.CONSTANTS.viewer_local());
 		viewerTypeComboBox.add(AppPropertiesManager.CONSTANTS.viewer_jmol());
 		viewerTypeComboBox.add(AppPropertiesManager.CONSTANTS.viewer_pse());
-
+		viewerTypeComboBox.setToolTip(createViewerTypeComboBoxToolTipConfig());
+		
 		String viewerCookie = Cookies.getCookie("crkviewer");
 		if (viewerCookie != null) {
 			viewerTypeComboBox.setSimpleValue(viewerCookie);
@@ -272,7 +268,7 @@ public class ResultsPanel extends DisplayPanel
 			viewerTypeComboBox.setSimpleValue(AppPropertiesManager.CONSTANTS.viewer_jmol());
 		}
 
-		mainController.setSelectedViewer(viewerTypeComboBox.getValue()
+		ApplicationContext.setSelectedViewer(viewerTypeComboBox.getValue()
 				.getValue());
 
 		viewerTypeComboBox.setFieldLabel(AppPropertiesManager.CONSTANTS.results_grid_viewer_combo_label());
@@ -282,7 +278,7 @@ public class ResultsPanel extends DisplayPanel
 					public void handleEvent(FieldEvent be) {
 						Cookies.setCookie("crkviewer", viewerTypeComboBox
 								.getValue().getValue());
-						mainController.setSelectedViewer(viewerTypeComboBox
+						ApplicationContext.setSelectedViewer(viewerTypeComboBox
 								.getValue().getValue());
 					}
 				});
@@ -335,13 +331,42 @@ public class ResultsPanel extends DisplayPanel
 	}
 
 	/**
+	 * Creates configuration of the tooltip displayed over viewer type selector.
+	 * @return configuration of tooltip displayed over viewer type selector
+	 */
+	private ToolTipConfig createViewerTypeComboBoxToolTipConfig()
+	{
+		ToolTipConfig viewerTypeComboBoxToolTipConfig = new ToolTipConfig();  
+		viewerTypeComboBoxToolTipConfig.setTitle("3D viewer selector");
+		viewerTypeComboBoxToolTipConfig.setTemplate(new Template(generateViewerTypeComboBoxTooltipTemplate()));  
+		viewerTypeComboBoxToolTipConfig.setShowDelay(0);
+		viewerTypeComboBoxToolTipConfig.setDismissDelay(0);
+		return viewerTypeComboBoxToolTipConfig;
+	}
+	
+	/**
+	 * Generates content of viewer type tooltip.
+	 * @return content of viewer type tooltip
+	 */
+	private String generateViewerTypeComboBoxTooltipTemplate()
+	{
+		String viewerTypeDescription = "To run selected 3D viewer please click one of the thumbnails on the list below. The following options are provided: " +
+									   "<div><ul class=\"eppic-tooltip-list\">" +
+									   "<li>PDB file downloadable to a local molecular viewer</li>" +
+									   "<li>Browser embedded Jmol viewer (no need for local viewer)</li>" +
+									   "<li>PyMol session file (.pse) to be opened in local PyMol</li>" +
+									   "</ul></div>";
+		return viewerTypeDescription;
+	}
+
+	/**
 	 * Sets content of results panel.
 	 * @param resultsData results data of selected job
 	 */
 	public void fillResultsPanel(PDBScoreItem resultsData) 
 	{
 		fillResultsGrid(resultsData);
-		infoPanel.generateInfoPanel(mainController);
+		infoPanel.generateInfoPanel(resultsData);
 		
 		pdbIdentifierPanel.setPDBText(resultsData.getPdbName(),
 							  	 	resultsData.getSpaceGroup(),
@@ -378,7 +403,7 @@ public class ResultsPanel extends DisplayPanel
 				
 				InterfaceItemModel model = new InterfaceItemModel();
 
-				for (SupportedMethod method : mainController.getSettings().getScoresTypes())
+				for (SupportedMethod method : ApplicationContext.getSettings().getScoresTypes())
 				{
 					for(InterfaceScoreItem interfaceScoreItem : interfaceItem.getInterfaceScores())
 					{
@@ -426,9 +451,9 @@ public class ResultsPanel extends DisplayPanel
 	public void resizeGrid() 
 	{
 		int limit = 50;
-		if(mainController.getMainViewPort().getMyJobsPanel().isExpanded())
+		if(ApplicationContext.isMyJobsListVisible())
 		{
-			limit += mainController.getMainViewPort().getMyJobsPanel().getWidth();
+			limit += ApplicationContext.getMyJobsPanelWidth();
 		}
 		else
 		{
@@ -445,9 +470,9 @@ public class ResultsPanel extends DisplayPanel
 			}
 		}
 		
-		if (resultsGridWidthOfAllVisibleColumns < mainController.getWindowData().getWindowWidth() - limit) 
+		if (resultsGridWidthOfAllVisibleColumns < ApplicationContext.getWindowData().getWindowWidth() - limit) 
 		{
-			int maxWidth = mainController.getWindowData().getWindowWidth() - limit - 20;
+			int maxWidth = ApplicationContext.getWindowData().getWindowWidth() - limit - 20;
 			gridWidthMultiplier = (float)maxWidth / resultsGridWidthOfAllVisibleColumns;
 			
 			int nrOfColumn = resultsGrid.getColumnModel().getColumnCount();
@@ -469,7 +494,7 @@ public class ResultsPanel extends DisplayPanel
 			}
 		}
 		
-		resultsGrid.setWidth(mainController.getWindowData().getWindowWidth() - limit);
+		resultsGrid.setWidth(ApplicationContext.getWindowData().getWindowWidth() - limit);
 
 //		resultsGrid.reconfigure(resultsStore, resultsColumnModel);
 		resultsGrid.getView().refresh(true);
@@ -488,7 +513,7 @@ public class ResultsPanel extends DisplayPanel
 	/**
 	 * Sets value of thumbnail checkbox based on saved cookie.
 	 */
-	public void displayThumbnails()
+	private void displayThumbnails()
 	{
 		String thumbnailCookie = Cookies.getCookie("crkthumbnail");
 		if(thumbnailCookie == null)
@@ -507,32 +532,6 @@ public class ResultsPanel extends DisplayPanel
 	}
 
 	/**
-	 * Retrieves panel containing general information about job.
-	 * @return panel containing general information about job
-	 */
-	public InfoPanel getInfoPanel() 
-	{
-		return infoPanel;
-	}
-	
-	/**
-	 * Retrieves grid containing results of processing.
-	 */
-	public Grid<InterfaceItemModel> getResultsGrid()
-	{
-		return resultsGrid;
-	}
-	
-	/**
-	 * Retrieves store of the results grid.
-	 * @return store of the results grid
-	 */
-	public ListStore<InterfaceItemModel> getResultsStore() 
-	{
-		return resultsStore;
-	}
-
-	/**
 	 * Saves currently customized by the user grid settings to reuse them for
 	 * displaying other results.
 	 */
@@ -540,18 +539,70 @@ public class ResultsPanel extends DisplayPanel
 	{
 		for(int i=0; i<resultsGrid.getColumnModel().getColumnCount(); i++)
 		{
-			String value = mainController.getSettings().getGridProperties().get("results_" + resultsGrid.getColumnModel().getColumn(i).getId() + "_visible");
+			String value = ApplicationContext.getSettings().getGridProperties().get("results_" + resultsGrid.getColumnModel().getColumn(i).getId() + "_visible");
 			
 			if(resultsGrid.getColumnModel().getColumn(i).isHidden() && ((value == null) || (!value.equals("no"))))
 			{
-				mainController.getSettings().getGridProperties().put("results_" + resultsGrid.getColumnModel().getColumn(i).getId() + "_visible", 
+				ApplicationContext.getSettings().getGridProperties().put("results_" + resultsGrid.getColumnModel().getColumn(i).getId() + "_visible", 
 																	 "no");	
 			}
 			else if(!resultsGrid.getColumnModel().getColumn(i).isHidden() && (value != null) && (!value.equals("yes")))
 			{
-				mainController.getSettings().getGridProperties().put("results_" + resultsGrid.getColumnModel().getColumn(i).getId() + "_visible", 
+				ApplicationContext.getSettings().getGridProperties().put("results_" + resultsGrid.getColumnModel().getColumn(i).getId() + "_visible", 
 																	 "yes");	
 			}
 		}
+	}
+	
+	/**
+	 * Events listeners initialization.
+	 */
+	private void initializeEventsListeners()
+	{
+		EventBusManager.EVENT_BUS.addHandler(WindowHideEvent.TYPE, new WindowHideHandler() 
+		{
+			@Override
+			public void onWindowHide(WindowHideEvent event) 
+			{
+				if(resultsGrid.isVisible())
+				{
+					resultsGrid.focus();
+				}
+			}
+		});
+		
+		EventBusManager.EVENT_BUS.addHandler(ShowViewerEvent.TYPE, new ShowViewerHandler() 
+		{
+			@Override
+			public void onShowViewer(ShowViewerEvent event) 
+			{
+				ViewerRunner.runViewer(String.valueOf(resultsGrid.getSelectionModel().getSelectedItem().get("id")));
+			}
+		}); 
+		
+		EventBusManager.EVENT_BUS.addHandler(ShowDetailsEvent.TYPE, new ShowDetailsHandler() 
+		{
+			@Override
+			public void onShowDetails(ShowDetailsEvent event) 
+			{
+				EventBusManager.EVENT_BUS.fireEvent(new ShowInterfaceResiduesEvent((Integer)resultsGrid.getSelectionModel().getSelectedItem().get("id")));
+			}
+		}); 
+		
+		EventBusManager.EVENT_BUS.addHandler(SelectResultsRowEvent.TYPE, new SelectResultsRowHandler() {
+			
+			@Override
+			public void onSelectResultsRow(SelectResultsRowEvent event) {
+				resultsGrid.getSelectionModel().select(event.getRowIndex(), false);
+			}
+		}); 
+		
+		EventBusManager.EVENT_BUS.addHandler(ApplicationWindowResizeEvent.TYPE, new ApplicationWindowResizeHandler() {
+			
+			@Override
+			public void onResizeApplicationWindow(ApplicationWindowResizeEvent event) {
+				resizeGrid();
+			}
+		});
 	}
 }

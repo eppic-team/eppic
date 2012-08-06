@@ -1,6 +1,6 @@
 package ch.systemsx.sybit.crkwebui.client.gui;
 
-import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
+import ch.systemsx.sybit.crkwebui.client.data.LegendItem;
 
 import com.extjs.gxt.ui.client.Style.Orientation;
 import com.extjs.gxt.ui.client.util.Margins;
@@ -35,34 +35,25 @@ public class LegendPanel extends LayoutContainer
 		legendContainer.setHeight(30);
 		legendContainer.setWidth(500);
 
-		String typesString = AppPropertiesManager.CONSTANTS.legend_panel_names();
-		String[] types = typesString.split(",");
-		
-		String colorsString = AppPropertiesManager.CONSTANTS.legend_panel_styles();
-		String[] colors = colorsString.split(",");
-		
-		for(int i=0; i<types.length; i++)
+		for(LegendItem item : LegendItem.values())
 		{
-			if(colors.length >= i)
-		    {
-				LayoutContainer rimContainer = new LayoutContainer();
-				HBoxLayout rimContainerLayout = new HBoxLayout();  
-			    rimContainerLayout.setHBoxLayoutAlign(HBoxLayoutAlign.MIDDLE);  
-			    rimContainer.setLayout(rimContainerLayout);
-				
-			    LayoutContainer rimTypePanel = new LayoutContainer();
-				rimTypePanel.setBorders(true);
-				rimTypePanel.addStyleName(colors[i]);
-				rimTypePanel.setWidth(20);
-				rimTypePanel.setHeight(20);
-				
-				Label rimTypeLabel = new Label(types[i]);
-				
-				rimContainer.add(rimTypePanel, new HBoxLayoutData(new Margins(0, 10, 0, 0)));
-				rimContainer.add(rimTypeLabel);
-				
-				legendContainer.add(rimContainer, new RowData(0.25, 1, new Margins(0)));
-		    }
+			LayoutContainer itemContainer = new LayoutContainer();
+			HBoxLayout itemContainerLayout = new HBoxLayout();  
+			itemContainerLayout.setHBoxLayoutAlign(HBoxLayoutAlign.MIDDLE);  
+		    itemContainer.setLayout(itemContainerLayout);
+			
+		    LayoutContainer itemTypePanel = new LayoutContainer();
+		    itemTypePanel.setBorders(true);
+		    itemTypePanel.addStyleName(item.getStyleName());
+		    itemTypePanel.setWidth(20);
+		    itemTypePanel.setHeight(20);
+			
+			Label itemTypeLabel = new Label(item.getName());
+			
+			itemContainer.add(itemTypePanel, new HBoxLayoutData(new Margins(0, 10, 0, 0)));
+			itemContainer.add(itemTypeLabel);
+			
+			legendContainer.add(itemContainer, new RowData(0.25, 1, new Margins(0)));
 		}
 		
 		this.add(legendContainer);

@@ -9,7 +9,6 @@ import javax.persistence.Table;
 public class IPAllowed 
 {
 	private String ip;
-	
 	private int nrOfAllowedSubmission;
 
 	public void setIp(String ip) {

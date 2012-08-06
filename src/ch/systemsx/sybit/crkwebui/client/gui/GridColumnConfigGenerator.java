@@ -5,7 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
+import ch.systemsx.sybit.crkwebui.client.controllers.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.gui.renderers.GridCellRendererFactory;
 import ch.systemsx.sybit.crkwebui.client.model.GridColumnSettings;
 import ch.systemsx.sybit.crkwebui.shared.model.SupportedMethod;
@@ -24,18 +24,16 @@ public class GridColumnConfigGenerator
 
 	/**
 	 * Generates column configurations for specified grid using provided model.
-	 * @param mainController main application controller
 	 * @param gridName name of the grid
 	 * @param model model which is used for the grid
 	 * @return list of created column configurations
 	 */
-	public static List<ColumnConfig> createColumnConfigs(MainController mainController,
-														 String gridName,
+	public static List<ColumnConfig> createColumnConfigs(String gridName,
 														 BaseModel model)
 	{
 		List<ColumnConfig> configs = new ArrayList<ColumnConfig>();
 
-		String columnOrder = mainController.getSettings().getGridProperties()
+		String columnOrder = ApplicationContext.getSettings().getGridProperties()
 				.get(gridName + "_columns");
 
 		String[] columns = null;
@@ -59,7 +57,7 @@ public class GridColumnConfigGenerator
 		for (String columnName : columns) {
 			boolean addColumn = true;
 
-			String customAdd = mainController.getSettings().getGridProperties()
+			String customAdd = ApplicationContext.getSettings().getGridProperties()
 					.get(gridName + "_" + columnName + "_add");
 			if ((customAdd != null) && (!customAdd.equals("yes")))
 			{
@@ -68,23 +66,22 @@ public class GridColumnConfigGenerator
 
 			if (addColumn)
 			{
-				GridColumnSettings gridColumnSettings = fillGridColumnSettings(mainController.getSettings().getGridProperties(),
+				GridColumnSettings gridColumnSettings = fillGridColumnSettings(ApplicationContext.getSettings().getGridProperties(),
 																			   gridName,
 																			   columnName,
 																			   null);
 
 				if (columnName.equals("METHODS"))
 				{
-					for (SupportedMethod method : mainController.getSettings().getScoresTypes())
+					for (SupportedMethod method : ApplicationContext.getSettings().getScoresTypes())
 					{
-						GridColumnSettings methodGridColumnSettings = fillGridColumnSettings(mainController.getSettings().getGridProperties(),
+						GridColumnSettings methodGridColumnSettings = fillGridColumnSettings(ApplicationContext.getSettings().getGridProperties(),
 								   gridName,
 								   method.getName(),
 								   gridColumnSettings);
 
 						ColumnConfig column = createColumnConfig(methodGridColumnSettings,
-								 								 method.getName(),
-								 								 mainController);
+								 								 method.getName());
 
 						configs.add(column);
 					}
@@ -92,8 +89,7 @@ public class GridColumnConfigGenerator
 				else
 				{
 					ColumnConfig column = createColumnConfig(gridColumnSettings,
-															 columnName,
-															 mainController);
+															 columnName);
 
 					configs.add(column);
 				}
@@ -195,11 +191,11 @@ public class GridColumnConfigGenerator
 			gridColumnSettings.setDisableColumnContextMenu(disableColumnContextMenu);
 		}
 
-		String tootlip = gridProperties
+		String tooltip = gridProperties
 				.get(gridName + "_" + columnName + "_tooltip");
-		if(tootlip != null)
+		if(tooltip != null)
 		{
-			gridColumnSettings.setTooltip(tootlip);
+			gridColumnSettings.setTooltip(tooltip);
 		}
 
 		return gridColumnSettings;
@@ -209,12 +205,10 @@ public class GridColumnConfigGenerator
 	 * Creates configuration of the column of the grid.
 	 * @param gridColumnSettings grid column settings
 	 * @param columnName name of the column
-	 * @param mainController main application controller
 	 * @return configuration of the column
 	 */
 	private static ColumnConfig createColumnConfig(GridColumnSettings gridColumnSettings,
-												   String columnName,
-												   MainController mainController)
+												   String columnName)
 	{
 		ColumnConfig column = new ColumnConfig();
 		column.setId(columnName);
@@ -231,7 +225,7 @@ public class GridColumnConfigGenerator
 			GridCellRenderer<BaseModel> renderer = null;
 			if ((gridColumnSettings.getRenderer() != null) && (!gridColumnSettings.getRenderer().equals(""))) {
 				renderer = GridCellRendererFactory.createGridCellRenderer(
-						gridColumnSettings.getRenderer(), mainController);
+						gridColumnSettings.getRenderer());
 			}
 
 			column.setRenderer(renderer);

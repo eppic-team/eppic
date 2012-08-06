@@ -1,7 +1,6 @@
 package ch.systemsx.sybit.crkwebui.client.gui;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
-import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 
 import com.extjs.gxt.ui.client.Style.Orientation;
 import com.extjs.gxt.ui.client.Style.Scroll;
@@ -34,12 +33,9 @@ public class InterfacesResiduesPanel extends FormPanel
 	private ResiduesSummaryPanel firstStructureSummary;
 	private ResiduesSummaryPanel secondStructureSummary;
 	
-	private ToolBar toolbar;
-
 	private SimpleComboBox<String> residuesFilterComboBox;
 	
-	public InterfacesResiduesPanel(MainController mainController,
-								   int width,
+	public InterfacesResiduesPanel(int width,
 								   int height)
 	{
 		this.getHeader().setVisible(false);
@@ -52,16 +48,14 @@ public class InterfacesResiduesPanel extends FormPanel
 		
 		firstStructure = new ResiduesPanel(
 										   AppPropertiesManager.CONSTANTS.interfaces_residues_panel_first_structure(), 
-										   mainController,
 										   width);
 		
 		secondStructure = new ResiduesPanel(
 											AppPropertiesManager.CONSTANTS.interfaces_residues_panel_second_structure(),
-											mainController,
 											width);
 		
-		firstStructureSummary = new ResiduesSummaryPanel("", mainController, 1);
-		secondStructureSummary = new ResiduesSummaryPanel("", mainController, 2);
+		firstStructureSummary = new ResiduesSummaryPanel("", 1);
+		secondStructureSummary = new ResiduesSummaryPanel("", 2);
 		
 		LayoutContainer firstStructureContainer = new LayoutContainer();
 		firstStructureContainer.setScrollMode(Scroll.AUTOX);
@@ -110,9 +104,17 @@ public class InterfacesResiduesPanel extends FormPanel
 		
 		this.add(residuesLayoutContainer, new RowData(1, 1, new Margins(0, 0, 0, 0)));
 		
-		
-		
-		toolbar = new ToolBar();  
+		ToolBar toolbar = createToolbar();  
+		this.setTopComponent(toolbar);
+	}
+	
+	/**
+	 * Creates toolbar.
+	 * @return toolbar
+	 */
+	private ToolBar createToolbar()
+	{
+		ToolBar toolbar = new ToolBar();  
 		
 		residuesFilterComboBox = new SimpleComboBox<String>();
 		residuesFilterComboBox.setId("residuesfilter");
@@ -145,15 +147,19 @@ public class InterfacesResiduesPanel extends FormPanel
 		toolbar.add(new LabelToolItem(AppPropertiesManager.CONSTANTS.interfaces_residues_combo_title()+": ")); 
 		toolbar.add(residuesFilterComboBox);  
 		
-		this.setTopComponent(toolbar);
+		return toolbar;
 	}
-
+	
 	/**
 	 * Cleans data of residues filter.
 	 */
 	public void cleanData()
 	{
 		residuesFilterComboBox.setSimpleValue(AppPropertiesManager.CONSTANTS.interfaces_residues_combo_rimcore());
+		firstStructure.cleanResiduesGrid();
+		secondStructure.cleanResiduesGrid();
+		firstStructureSummary.cleanResiduesGrid();
+		secondStructureSummary.cleanResiduesGrid();
 	}
 
 	/**

@@ -1,7 +1,9 @@
 package ch.systemsx.sybit.crkwebui.client.gui;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
-import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
+import ch.systemsx.sybit.crkwebui.client.controllers.EventBusManager;
+import ch.systemsx.sybit.crkwebui.client.events.ShowDetailsEvent;
+import ch.systemsx.sybit.crkwebui.client.events.ShowViewerEvent;
 
 import com.extjs.gxt.ui.client.event.MenuEvent;
 import com.extjs.gxt.ui.client.event.SelectionListener;
@@ -15,7 +17,7 @@ import com.extjs.gxt.ui.client.widget.menu.MenuItem;
  */
 public class ResultsPanelContextMenu extends Menu 
 {
-	public ResultsPanelContextMenu(final MainController mainController)
+	public ResultsPanelContextMenu()
 	{
 		this.setWidth(140);  
 		  
@@ -25,12 +27,7 @@ public class ResultsPanelContextMenu extends Menu
 		{  
 			public void componentSelected(MenuEvent ce) 
 			{  
-				if((mainController.getMainViewPort().getCenterPanel().getDisplayPanel() != null) &&
-					(mainController.getMainViewPort().getCenterPanel().getDisplayPanel() instanceof ResultsPanel))
-				{
-					ResultsPanel resultsPanel = (ResultsPanel)mainController.getMainViewPort().getCenterPanel().getDisplayPanel();
-					mainController.getInterfaceResidues((Integer) resultsPanel.getResultsGrid().getSelectionModel().getSelectedItem().get("id"));
-				}
+				EventBusManager.EVENT_BUS.fireEvent(new ShowDetailsEvent());
 			}  
 		});  
 		this.add(detailsItem);
@@ -41,14 +38,10 @@ public class ResultsPanelContextMenu extends Menu
 		{  
 			public void componentSelected(MenuEvent ce) 
 			{  
-				if((mainController.getMainViewPort().getCenterPanel().getDisplayPanel() != null) &&
-					(mainController.getMainViewPort().getCenterPanel().getDisplayPanel() instanceof ResultsPanel))
-				{
-					ResultsPanel resultsPanel = (ResultsPanel)mainController.getMainViewPort().getCenterPanel().getDisplayPanel();
-					mainController.runViewer(String.valueOf(resultsPanel.getResultsGrid().getSelectionModel().getSelectedItem().get("id")));
-				}
+				EventBusManager.EVENT_BUS.fireEvent(new ShowViewerEvent());
 			}  
 		});  
+		
 		this.add(viewerItem);  
 	}
 }

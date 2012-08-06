@@ -1,16 +1,13 @@
 package ch.systemsx.sybit.crkwebui.server;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 import javax.persistence.PersistenceContext;
@@ -32,12 +29,13 @@ import ch.systemsx.sybit.crkwebui.server.db.model.PDBScoreDAO;
 import ch.systemsx.sybit.crkwebui.server.db.model.PDBScoreDAOImpl;
 import ch.systemsx.sybit.crkwebui.server.db.model.UserSessionDAO;
 import ch.systemsx.sybit.crkwebui.server.db.model.UserSessionDAOImpl;
+import ch.systemsx.sybit.crkwebui.server.generators.ApplicationSettingsGenerator;
 import ch.systemsx.sybit.crkwebui.server.generators.DirectoryContentGenerator;
 import ch.systemsx.sybit.crkwebui.server.generators.RandomDirectoryNameGenerator;
 import ch.systemsx.sybit.crkwebui.server.managers.JobManager;
 import ch.systemsx.sybit.crkwebui.server.managers.JobManagerFactory;
 import ch.systemsx.sybit.crkwebui.server.managers.JobStatusUpdater;
-import ch.systemsx.sybit.crkwebui.server.parsers.InputParametersParser;
+import ch.systemsx.sybit.crkwebui.server.util.FileContentReader;
 import ch.systemsx.sybit.crkwebui.server.util.IOUtil;
 import ch.systemsx.sybit.crkwebui.server.util.LogHandler;
 import ch.systemsx.sybit.crkwebui.server.validators.IPVerifier;
@@ -89,20 +87,20 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 
 	private JobManager jobManager;
 	private CrkRunner crkRunner;
-
+	
 	private JobStatusUpdater jobStatusUpdater;
 	private Thread jobDaemon;
 	private EmailSender emailSender;
 
 	private String resultsPathUrl;
-
+	
 //	private JobDAO jobDao;
 
 	@Override
 	public void init(ServletConfig config) throws ServletException
 	{
 		super.init(config);
-
+		
 //		WebApplicationContext webContext = WebApplicationContextUtils.getRequiredWebApplicationContext(config.getServletContext());
 //		AutowireCapableBeanFactory beanFactory = ctx.getAutowireCapableBeanFactory();
 //		beanFactory.autowireBean(this);
@@ -182,7 +180,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 
 //		String serverName =  getThreadLocalRequest().getServerName();
 //		int serverPort = getThreadLocalRequest().getServerPort();
-
+		
 		String serverName =  getServletContext().getInitParameter("serverName");
 		int serverPort = Integer.parseInt(getServletContext().getInitParameter("serverPort"));
 
@@ -204,6 +202,40 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 				generalDestinationDirectoryName);
 		jobDaemon = new Thread(jobStatusUpdater);
 		jobDaemon.start();
+		
+//		try
+//		{		
+//			ObjectInputStream in = new ObjectInputStream(new FileInputStream("c:/results/1smt/1smt.webui.dat"));
+//		
+//			PDBScoreItemDB pdbScoreItem = (PDBScoreItemDB)in.readObject();
+//
+//			EntityManager entityManager = EntityManagerHandler.getEntityManager();
+//
+//			entityManager.getTransaction().begin();
+//			entityManager.persist(pdbScoreItem);
+//	
+//			String pdbCode = pdbScoreItem.getPdbName();
+//
+//			JobDB job = new JobDB();
+//			job.setJobId(pdbCode);
+//			job.setEmail(null);
+//			job.setInput(pdbCode);
+//			job.setIp("localhost");
+//			job.setStatus(StatusOfJob.FINISHED.getName());
+//			job.setSubmissionDate(new Date());
+//			job.setInputType(InputType.PDBCODE.getIndex());
+//			job.setSubmissionId("-1");
+//
+//			pdbScoreItem.setJobItem(job);
+//			job.setPdbScoreItem(pdbScoreItem);
+//			entityManager.persist(job);
+//
+//			entityManager.getTransaction().commit();
+//		}
+//		catch(Exception e)
+//		{
+//			e.printStackTrace();
+//		}
 	}
 
 	/**
@@ -225,65 +257,25 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 	@Override
 	public ApplicationSettings loadSettings() throws Exception
 	{
-		ApplicationSettings settings = null;
+		ApplicationSettingsGenerator applicationSettingsGenerator = new ApplicationSettingsGenerator(properties);
+		
+		InputStream inputParametersStream = getServletContext()
+				.getResourceAsStream("/WEB-INF/classes/META-INF/input_parameters.xml");
+		
+		InputStream helpPageStream = getServletContext()
+				.getResourceAsStream("/WEB-INF/classes/META-INF/help.html");
+		
+		InputStream gridPropertiesInputStream = getServletContext()
+				.getResourceAsStream("/WEB-INF/classes/META-INF/grid.properties");
 
-		try
-		{
-			// default input parameters values
-			InputStream inputParametersStream = getServletContext()
-					.getResourceAsStream(
-							"/WEB-INF/classes/META-INF/input_parameters.xml");
+		ApplicationSettings settings = applicationSettingsGenerator.generateApplicationSettings(inputParametersStream, 
+																								helpPageStream, 
+																								gridPropertiesInputStream);
 
-			settings = InputParametersParser.prepareApplicationSettings(inputParametersStream);
-		}
-		catch(Throwable t)
-		{
-			t.printStackTrace();
-			throw new CrkWebException("Error during preparing input parameters");
-		}
-
-
-		Properties gridProperties = new Properties();
-
-		try
-		{
-			InputStream gridPropertiesStream = getServletContext()
-			.getResourceAsStream(
-					"/WEB-INF/classes/META-INF/grid.properties");
-			gridProperties.load(gridPropertiesStream);
-		}
-		catch(Throwable t)
-		{
-			t.printStackTrace();
-			throw new CrkWebException("Error during loading grid properties");
-		}
-
-		Map<String, String> gridPropetiesMap = new HashMap<String, String>();
-		for (Object key : gridProperties.keySet())
-		{
-			gridPropetiesMap.put((String) key, (String) gridProperties.get(key));
-		}
-
-		settings.setGridProperties(gridPropetiesMap);
 
 		JobDAO jobDAO = new JobDAOImpl();
 		int nrOfJobsForSession = jobDAO.getNrOfJobsForSessionId(getThreadLocalRequest().getSession().getId()).intValue();
-//		int nrOfJobsForSession = DBUtils.getNrOfJobsForSessionId(getThreadLocalRequest().getSession().getId());
 		settings.setNrOfJobsForSession(nrOfJobsForSession);
-
-		boolean useCaptcha = Boolean.parseBoolean(properties.getProperty("use_captcha","false"));
-		String captchaPublicKey = properties.getProperty("captcha_public_key");
-		int nrOfAllowedSubmissionsWithoutCaptcha = Integer.parseInt(properties.getProperty("nr_of_allowed_submissions_without_captcha"));
-		String pdbLinkUrl = properties.getProperty("pdb_link_url");
-		String uniprotLinkUrl = properties.getProperty("uniprot_link_url");
-
-		settings.setCaptchaPublicKey(captchaPublicKey);
-		settings.setUseCaptcha(useCaptcha);
-		settings.setNrOfAllowedSubmissionsWithoutCaptcha(nrOfAllowedSubmissionsWithoutCaptcha);
-		settings.setPdbLinkUrl(pdbLinkUrl);
-		settings.setUniprotLinkUrl(uniprotLinkUrl);
-
-		settings.setResultsLocation(properties.getProperty("results_location"));
 
 		return settings;
 	}
@@ -304,9 +296,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 			if(runJobData.getJobId() == null)
 			{
 				String randomDirectoryName = RandomDirectoryNameGenerator.generateRandomDirectory(generalDestinationDirectoryName);
-
 				runJobData.setJobId(randomDirectoryName);
-
 				inputType = InputType.PDBCODE.getIndex();
 			}
 
@@ -329,10 +319,10 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 
 			String submissionId = null;
 			StatusOfJob submissionStatus = StatusOfJob.QUEUING;
-
-			String emailTitle = "";
-			String emailMessage = "";
-
+			
+			String emailTitle = "EPPIC: " + runJobData.getInput();
+			String emailMessage = ""; 
+				
 			try
 			{
 				if(inputType == InputType.PDBCODE.getIndex())
@@ -343,8 +333,8 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 				submissionId = crkRunner.run(runJobData,
 				 							 localDestinationDirName,
 											 inputType);
-
-				emailTitle = "EPPIC: " + runJobData.getInput() + " submitted";
+				
+				emailTitle += " submitted";
 				emailMessage = runJobData.getInput()
 								 + " job submitted. To see the status of the processing please go to: "
 								 + resultsPathUrl + "#id=" + runJobData.getJobId();
@@ -355,8 +345,8 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 
 				submissionStatus = StatusOfJob.ERROR;
 
-				emailTitle = runJobData.getInput() + " - error while submitting the job.\n\n";
-				emailMessage = e.getMessage() +
+				emailTitle += " - error while submitting the job.\n\n";
+				emailMessage = e.getMessage() + 
 							   "  To see more details go to: "
 								 + resultsPathUrl + "#id=" + runJobData.getJobId();
 			}
@@ -370,11 +360,11 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 					inputType,
 					submissionStatus,
 					submissionId);
-
+			
 			emailSender.send(runJobData.getEmailAddress(),
 							 emailTitle,
 							 emailMessage);
-
+			
 			return runJobData.getJobId();
 		}
 
@@ -425,11 +415,11 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 
 				statusData.setJobId(jobId);
 				statusData.setStatus(status);
-
+				
 				InputWithType inputWithType = jobDAO.getInputWithTypeForJob(jobId);
 				statusData.setInputType(inputWithType.getInputType());
 				statusData.setInput(inputWithType.getInput());
-
+				
 				statusData.setStep(new StepStatus());
 
 				try
@@ -437,59 +427,28 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 					List<File> filesToRead = new ArrayList<File>();
 
 					File logFile = new File(dataDirectory, "crklog");
-
+					
 					if (IOUtil.checkIfFileExist(logFile))
 					{
 						filesToRead.add(new File(dataDirectory, "crklog"));
 					}
 
-//					if(debug)
-//					{
-						File[] directoryContent = DirectoryContentGenerator.getFilesNamesWithPrefix(dataDirectory, jobId + ".e");
-
-						if(directoryContent != null)
+					File[] directoryContent = DirectoryContentGenerator.getFilesNamesWithPrefix(dataDirectory, jobId + ".e");
+						
+					if(directoryContent != null)
+					{
+						for(File fileToInclude : directoryContent)
 						{
-							for(File fileToInclude : directoryContent)
-							{
-								filesToRead.add(fileToInclude);
-							}
+							filesToRead.add(fileToInclude);
 						}
-//					}
+					}
 
-
+						
 					StringBuffer log = new StringBuffer();
 
 					for(File fileToRead : filesToRead)
 					{
-						FileReader inputStream = null;
-				        BufferedReader bufferedInputStream = null;
-
-				        try
-				        {
-				        	inputStream = new FileReader(fileToRead);
-					        bufferedInputStream = new BufferedReader(inputStream);
-
-					        String line = "";
-
-					        while ((line = bufferedInputStream.readLine()) != null)
-					        {
-					        	log.append(line + "\n");
-					        }
-				        }
-				        finally
-				        {
-				        	if(bufferedInputStream != null)
-							{
-								try
-								{
-									bufferedInputStream.close();
-								}
-								catch(Throwable t)
-								{
-									t.printStackTrace();
-								}
-							}
-				        }
+						log.append(FileContentReader.readContentOfFile(fileToRead, true));
 					}
 
 					statusData.setLog(log.toString());
@@ -635,16 +594,16 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 		{
 			JobDAO jobDAO = new JobDAOImpl();
 			String submissionId = jobDAO.getSubmissionIdForJobId(jobId);
-
+			
 			File jobDirectory = new File(generalDestinationDirectoryName, jobId);
 			File logFile = new File(jobDirectory, "crklog");
 			File killFile = new File(jobDirectory, "killed");
 			killFile.createNewFile();
-
+			
 			jobManager.stopJob(submissionId);
-
+			
 			result = "Job: " + jobId + " was stopped";
-
+			
 			LogHandler.writeToLogFile(logFile, result);
 
 			jobDAO.updateStatusOfJob(jobId, StatusOfJob.STOPPED.getName());
@@ -703,12 +662,12 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 		super.destroy();
 
 		jobStatusUpdater.setRunning(false);
-
+		
 		while(jobStatusUpdater.isUpdating())
 		{
-
+			
 		}
-
+		
 		try
 		{
 			jobManager.finalize();
@@ -718,8 +677,4 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 			e.printStackTrace();
 		}
 	}
-
-//	public void setJobDao(JobDAO jobDao) {
-//		this.jobDao = jobDao;
-//	}
 }

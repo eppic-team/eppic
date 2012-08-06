@@ -1,6 +1,6 @@
 package ch.systemsx.sybit.crkwebui.client.gui.renderers;
 
-import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
+import ch.systemsx.sybit.crkwebui.client.controllers.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.gui.LabelWithTooltip;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceItem;
 
@@ -17,13 +17,6 @@ import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
  */
 public class FinalCallCellRenderer implements GridCellRenderer<BaseModel> 
 {
-	private MainController mainController;
-	
-	public FinalCallCellRenderer(MainController mainController) 
-	{
-		this.mainController = mainController;
-	}
-
 	@Override
 	public Object render(final BaseModel model, final String property,
 			ColumnData config, final int rowIndex, final int colIndex,
@@ -37,7 +30,7 @@ public class FinalCallCellRenderer implements GridCellRenderer<BaseModel>
 			
 			int interfaceId = (Integer)model.get("id");
 			
-			InterfaceItem interfaceItem = mainController.getPdbScoreItem().getInterfaceItem(interfaceId - 1);
+			InterfaceItem interfaceItem = ApplicationContext.getPdbScoreItem().getInterfaceItem(interfaceId - 1);
 			
 			if(interfaceItem != null)
 			{
@@ -51,7 +44,7 @@ public class FinalCallCellRenderer implements GridCellRenderer<BaseModel>
 			
 			LabelWithTooltip callReasonLabel = new LabelWithTooltip(value, 
 																	tooltipText, 
-																	mainController.getWindowData(), 
+																	ApplicationContext.getWindowData(), 
 																	100);
 			
 			String color = "black";
@@ -66,8 +59,7 @@ public class FinalCallCellRenderer implements GridCellRenderer<BaseModel>
 			}
 			
 			callReasonLabel.setStyleAttribute("color", color);
-			callReasonLabel.setStyleAttribute("font-weight", "bold");
-			callReasonLabel.setStyleAttribute("font-size", "14px");
+			callReasonLabel.addStyleName("eppic-results-final-call");
 			
 			return callReasonLabel;
 		}

@@ -44,7 +44,7 @@ public class UserSessionDAOImpl implements UserSessionDAO
 			
 			UserSessionDB session = getSession(entityManager, sessionId);
 			session.getJobs().add(job);
-			entityManager.merge(session);
+//			entityManager.merge(session);
 			entityManager.getTransaction().commit();
 		}
 		catch(Throwable e)

@@ -1,9 +1,7 @@
 package ch.systemsx.sybit.crkwebui.server.managers;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.ObjectInputStream;
 import java.util.List;
 
@@ -12,8 +10,10 @@ import ch.systemsx.sybit.crkwebui.server.EmailSender;
 import ch.systemsx.sybit.crkwebui.server.db.model.JobDAO;
 import ch.systemsx.sybit.crkwebui.server.db.model.JobStatusDetails;
 import ch.systemsx.sybit.crkwebui.server.generators.DirectoryContentGenerator;
+import ch.systemsx.sybit.crkwebui.server.util.FileContentReader;
 import ch.systemsx.sybit.crkwebui.server.util.LogHandler;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
+import ch.systemsx.sybit.crkwebui.shared.exceptions.DeserializationException;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.JobHandlerException;
 import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
 
@@ -76,17 +76,7 @@ public class JobStatusUpdater implements Runnable
 							}
 							else if(currentStatus == StatusOfJob.ERROR)
 							{
-								File jobDirectory = new File(generalDestinationDirectoryName, unfinishedJob.getJobId());
-								
-								File directoryContent[] = DirectoryContentGenerator.getFilesNamesWithPrefix(jobDirectory,
-																									  		unfinishedJob.getJobId() + ".e");
-								File errorLogFile = null;
-								if((directoryContent != null) && (directoryContent.length > 0))
-								{
-									errorLogFile = directoryContent[0];
-								}
-
-								handleJobFinishedWithError(unfinishedJob, logFile, errorLogFile);
+								handleJobFinishedWithError(unfinishedJob);
 							}
 							else if(currentStatus == StatusOfJob.RUNNING)
 							{
@@ -101,6 +91,10 @@ public class JobStatusUpdater implements Runnable
 								handleStoppedJob(unfinishedJob.getJobId());
 							}
 						}
+					}
+					catch(DeserializationException e)
+					{
+						handleJobFinishedWithError(unfinishedJob);
 					}
 					catch (JobHandlerException e)
 					{
@@ -128,9 +122,10 @@ public class JobStatusUpdater implements Runnable
 	 * @param jobStatusDetails details of the job
 	 * @param logFile file where job execution log is stored
 	 * @throws DaoException when can not appropriately handle results of the job
+	 * @throws DeserializationException when can not deserialize results file
 	 */
 	private void handleJobFinishedSuccessfully(JobStatusDetails jobStatusDetails,
-											   File logFile) throws DaoException
+											   File logFile) throws DaoException, DeserializationException
 	{
 		String webuiFileName = jobStatusDetails.getInput();
 
@@ -160,50 +155,31 @@ public class JobStatusUpdater implements Runnable
 	/**
 	 * Handles job which finished with error status.
 	 * @param jobStatusDetails details of the job
-	 * @param logFile file where job execution log is stored
-	 * @param errorLogFile file where job execution error log is stored
 	 * @throws DaoException when can not appropriately handle results of the job
 	 */
-	private void handleJobFinishedWithError(JobStatusDetails jobStatusDetails,
-											File logFile,
-											File errorLogFile) throws DaoException
+	private void handleJobFinishedWithError(JobStatusDetails jobStatusDetails) throws DaoException
 	{
-		StringBuffer message = new StringBuffer(jobStatusDetails.getInput() + " - error while processing the data.\n\n");
+		File jobDirectory = new File(generalDestinationDirectoryName, jobStatusDetails.getJobId());
+		
+		File directoryContent[] = DirectoryContentGenerator.getFilesNamesWithPrefix(jobDirectory,
+																					jobStatusDetails.getJobId() + ".e");
+		File errorLogFile = null;
+		if((directoryContent != null) && (directoryContent.length > 0))
+		{
+			errorLogFile = directoryContent[0];
+		}
+		
+		String message = jobStatusDetails.getInput() + " - error while processing the data.\n\n";
 
 		if(errorLogFile != null)
 		{
-			FileReader inputStream = null;
-	        BufferedReader bufferedInputStream = null;
-
-	        try
-	        {
-	        	inputStream = new FileReader(errorLogFile);
-		        bufferedInputStream = new BufferedReader(inputStream);
-
-		        String line = "";
-
-		        while ((line = bufferedInputStream.readLine()) != null)
-		        {
-		        	message.append(line + "\n");
-		        }
-	        }
-	        catch(Throwable t)
+			try
+			{
+				message += FileContentReader.readContentOfFile(errorLogFile, true);
+			}
+			catch(Throwable t)
 	        {
 	        	t.printStackTrace();
-	        }
-	        finally
-	        {
-	        	if(bufferedInputStream != null)
-				{
-					try
-					{
-						bufferedInputStream.close();
-					}
-					catch(Throwable t)
-					{
-						t.printStackTrace();
-					}
-				}
 	        }
 		}
 
@@ -249,9 +225,9 @@ public class JobStatusUpdater implements Runnable
 	 * Retrieves result of processing from specified file.
 	 * @param resultFileName file containing result of processing
 	 * @return pdb score item
-	 * @throws DaoException when can not retrieve result from specified file
+	 * @throws DeserializationException when can not retrieve result from specified file
 	 */
-	private PDBScoreItemDB retrieveResult(File resultFile) throws DaoException
+	private PDBScoreItemDB retrieveResult(File resultFile) throws DeserializationException
 	{
 		PDBScoreItemDB pdbScoreItem = null;
 
@@ -268,7 +244,8 @@ public class JobStatusUpdater implements Runnable
 			}
 			catch (Throwable e)
 			{
-				throw new DaoException(e);
+				e.printStackTrace();
+				throw new DeserializationException(e);
 			}
 			finally
 			{
@@ -287,7 +264,7 @@ public class JobStatusUpdater implements Runnable
 		}
 		else
 		{
-			throw new DaoException("WebUI dat file can not be found");
+			throw new DeserializationException("WebUI dat file can not be found");
 		}
 
 		return pdbScoreItem;
@@ -298,10 +275,10 @@ public class JobStatusUpdater implements Runnable
 		this.running = running;
 	}
 
-	public void setUpdating(boolean isUpdating) {
-		this.isUpdating = isUpdating;
-	}
-
+	/**
+	 * Retrieves information whether daemon is currently updating statuses of the jobs.
+	 * @return information whether daemon is currently updating statuses of the jobs
+	 */
 	public boolean isUpdating() {
 		return isUpdating;
 	}

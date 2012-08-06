@@ -35,10 +35,10 @@ public class HomologsInfoItemDAOImpl implements HomologsInfoItemDAO
 		{
 			List<HomologsInfoItem> result = new ArrayList<HomologsInfoItem>();
 			
-			entityManager = EntityManagerHandler.getEntityManager();
+			entityManager = EntityManagerHandler.getEntityManager();			
 			CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-			CriteriaQuery<HomologsInfoItemDB> criteriaQuery = criteriaBuilder.createQuery(HomologsInfoItemDB.class);
 			
+			CriteriaQuery<HomologsInfoItemDB> criteriaQuery = criteriaBuilder.createQuery(HomologsInfoItemDB.class);
 			Root<HomologsInfoItemDB> numHomologsStringItemRoot = criteriaQuery.from(HomologsInfoItemDB.class);
 			Path<PDBScoreItemDB> pdbScoreItemRoot = numHomologsStringItemRoot.get(HomologsInfoItemDB_.pdbScoreItem);
 			Predicate condition = criteriaBuilder.equal(pdbScoreItemRoot.get(PDBScoreItemDB_.uid), pdbScoreUid);

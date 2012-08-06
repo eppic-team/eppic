@@ -23,7 +23,7 @@ public class LabelWithTooltip extends Label
 	 * Creates instance of label with assigned tooltip.
 	 * @param labelText text of the label
 	 * @param tooltipText text of the tooltip
-	 * @param windowData general application data
+	 * @param windowData general window data
 	 * @param delay delay after which tooltip is displayed
 	 */
 	public LabelWithTooltip(String labelText,
@@ -84,5 +84,15 @@ public class LabelWithTooltip extends Label
 				refreshTooltip = true;
 			}
 		});
+	}
+	
+	protected void onUnload()
+	{
+		if(toolTip != null)
+		{
+			toolTip.disable();
+		}
+		
+		refreshTooltip = true;
 	}
 }

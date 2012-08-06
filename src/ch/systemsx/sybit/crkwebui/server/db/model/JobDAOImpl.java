@@ -67,7 +67,7 @@ public class JobDAOImpl implements JobDAO
 			job.getUserSessions().add(session);
 
 			entityManager.persist(job);
-			entityManager.flush();
+//			entityManager.flush();
 			entityManager.getTransaction().commit();
 		}
 		catch(Throwable e)
@@ -107,12 +107,11 @@ public class JobDAOImpl implements JobDAO
 		{
 			entityManager = EntityManagerHandler.getEntityManager();
 			entityManager.getTransaction().begin();
-			Query query = entityManager.createQuery("from Job WHERE jobId = :jobId");
-			query.setParameter("jobId", jobId);
-			JobDB job = (JobDB) query.getSingleResult();
+
+			JobDB job = getJob(entityManager, jobId);
 			job.setStatus(status);
-			entityManager.merge(job);
-			entityManager.flush();
+//			entityManager.merge(job);
+//			entityManager.flush();
 			entityManager.getTransaction().commit();
 		}
 		catch(Throwable e)
@@ -152,6 +151,8 @@ public class JobDAOImpl implements JobDAO
 		{
 			entityManager = EntityManagerHandler.getEntityManager();
 
+			entityManager.getTransaction().begin();
+			
 			CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 			CriteriaQuery<UserSessionDB> criteriaQuery = criteriaBuilder.createQuery(UserSessionDB.class);
 			Root<UserSessionDB> sessionRoot = criteriaQuery.from(UserSessionDB.class);
@@ -161,8 +162,6 @@ public class JobDAOImpl implements JobDAO
 
 			Query query = entityManager.createQuery(criteriaQuery);
 			List<UserSessionDB> sessions = query.getResultList();
-
-			entityManager.getTransaction().begin();
 
 			if(sessions != null)
 			{
@@ -305,8 +304,17 @@ public class JobDAOImpl implements JobDAO
 		{
 			entityManager = EntityManagerHandler.getEntityManager();
 
-			Query query = entityManager.createQuery("SELECT status FROM Job WHERE jobId = :jobId", String.class);
-			query.setParameter("jobId", jobId);
+			CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+			CriteriaQuery<String> criteriaQuery = criteriaBuilder.createQuery(String.class);
+			
+			Root<JobDB> jobRoot = criteriaQuery.from(JobDB.class);
+			criteriaQuery.select(jobRoot.get(JobDB_.status));
+			criteriaQuery.where(criteriaBuilder.equal(jobRoot.get(JobDB_.jobId), jobId));
+			Query query = entityManager.createQuery(criteriaQuery);
+			
+//			Query query = entityManager.createQuery("SELECT status FROM Job WHERE jobId = :jobId", String.class);
+//			query.setParameter("jobId", jobId);
+			
 			List<String> result = query.getResultList();
 
 			if((result != null) && (result.size() > 0))
@@ -342,9 +350,16 @@ public class JobDAOImpl implements JobDAO
 		try
 		{
 			entityManager = EntityManagerHandler.getEntityManager();
+			CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+			CriteriaQuery<Integer> criteriaQuery = criteriaBuilder.createQuery(Integer.class);
+			
+			Root<JobDB> jobRoot = criteriaQuery.from(JobDB.class);
+			criteriaQuery.select(jobRoot.get(JobDB_.inputType));
+			criteriaQuery.where(criteriaBuilder.equal(jobRoot.get(JobDB_.jobId), jobId));
+			Query query = entityManager.createQuery(criteriaQuery);
 
-			Query query = entityManager.createQuery("SELECT inputType FROM Job WHERE jobId = :jobId", Integer.class);
-			query.setParameter("jobId", jobId);
+//			Query query = entityManager.createQuery("SELECT inputType FROM Job WHERE jobId = :jobId", Integer.class);
+//			query.setParameter("jobId", jobId);
 			int input = (Integer)query.getSingleResult();
 			return input;
 		}
@@ -398,18 +413,19 @@ public class JobDAOImpl implements JobDAO
 			long oneDay = 1 * 24 * 60 * 60 * 1000;
 			Timestamp dayBeforeTimestamp = new Timestamp(currentDate.getTime() - oneDay);
 
-//			CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-//			CriteriaQuery<Long> criteriaQuery = criteriaBuilder.createQuery(Long.class);
-//			Root<JobDB> sessionRoot = criteriaQuery.from(JobDB.class);
-//			criteriaQuery.select(criteriaBuilder.count(sessionRoot));
-//			Predicate ipCondition = criteriaBuilder.equal(sessionRoot.get(JobDB_.ip), ip);
-//			Predicate submissionDateCondition =  criteriaBuilder.greaterThan(sessionRoot.get(JobDB_.submissionDate), dayBeforeTimestamp);
-//			Predicate condition = criteriaBuilder.and(ipCondition, submissionDateCondition);
-//			criteriaQuery.where(condition);
-//			Query query = entityManager.createQuery(criteriaQuery);
-			Query query = entityManager.createQuery("SELECT count(jobId) FROM Job WHERE ip = :ip AND submissionDate > :dayBefore", Long.class);
-			query.setParameter("ip", ip);
-			query.setParameter("dayBefore", dayBeforeTimestamp);
+			CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+			CriteriaQuery<Long> criteriaQuery = criteriaBuilder.createQuery(Long.class);
+			Root<JobDB> sessionRoot = criteriaQuery.from(JobDB.class);
+			criteriaQuery.select(criteriaBuilder.count(sessionRoot));
+			Predicate ipCondition = criteriaBuilder.equal(sessionRoot.get(JobDB_.ip), ip);
+			Predicate submissionDateCondition =  criteriaBuilder.greaterThan(sessionRoot.get(JobDB_.submissionDate), dayBeforeTimestamp);
+			Predicate condition = criteriaBuilder.and(ipCondition, submissionDateCondition);
+			criteriaQuery.where(condition);
+			Query query = entityManager.createQuery(criteriaQuery);
+			
+//			Query query = entityManager.createQuery("SELECT count(jobId) FROM Job WHERE ip = :ip AND submissionDate > :dayBefore", Long.class);
+//			query.setParameter("ip", ip);
+//			query.setParameter("dayBefore", dayBeforeTimestamp);
 			nrOfJobs = (Long) query.getSingleResult();
 		}
 		catch(Throwable t)
@@ -445,9 +461,21 @@ public class JobDAOImpl implements JobDAO
 			long oneDay = 1 * 24 * 60 * 60 * 1000;
 			Timestamp dayBeforeTimestamp = new Timestamp(currentDate.getTime() - oneDay);
 
-			Query query = entityManager.createQuery("SELECT MIN(submissionDate) FROM Job WHERE ip = :ip AND submissionDate > :dayBefore", Date.class);
-			query.setParameter("ip", ip);
-			query.setParameter("dayBefore", dayBeforeTimestamp);
+			CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+			CriteriaQuery<Date> criteriaQuery = criteriaBuilder.createQuery(Date.class);
+			
+			Root<JobDB> jobRoot = criteriaQuery.from(JobDB.class);
+			criteriaQuery.select(criteriaBuilder.least(jobRoot.get(JobDB_.submissionDate)));
+			
+			Predicate ipCondition = criteriaBuilder.equal(jobRoot.get(JobDB_.ip), ip);
+			Predicate submissionDateCondition = criteriaBuilder.greaterThan(jobRoot.get(JobDB_.submissionDate), dayBeforeTimestamp);
+			Predicate condition = criteriaBuilder.and(ipCondition, submissionDateCondition);
+			criteriaQuery.where(condition);
+			Query query = entityManager.createQuery(criteriaQuery);
+			
+//			Query query = entityManager.createQuery("SELECT MIN(submissionDate) FROM Job WHERE ip = :ip AND submissionDate > :dayBefore", Date.class);
+//			query.setParameter("ip", ip);
+//			query.setParameter("dayBefore", dayBeforeTimestamp);
 
 			Date oldestJobSubmissionDateDuringLastDay  = new Date(dayBeforeTimestamp.getTime());
 
@@ -527,7 +555,7 @@ public class JobDAOImpl implements JobDAO
 					session.getJobs().remove(jobToRemove);
 				}
 
-				entityManager.merge(session);
+//				entityManager.merge(session);
 			}
 
 			entityManager.getTransaction().commit();
@@ -615,16 +643,14 @@ public class JobDAOImpl implements JobDAO
 			entityManager.getTransaction().begin();
 			entityManager.persist(pdbScoreItem);
 
-			Query query = entityManager.createQuery("from Job WHERE jobId=:jobId", JobDB.class);
-			query.setParameter("jobId", jobId);
-			JobDB job = (JobDB)query.getSingleResult();
+			JobDB job = getJob(entityManager, jobId);
 
 			if(job != null)
 			{
 				pdbScoreItem.setJobItem(job);
 				job.setPdbScoreItem(pdbScoreItem);
 				job.setStatus(StatusOfJob.FINISHED.getName());
-				entityManager.merge(job);
+//				entityManager.merge(job);
 			}
 
 			entityManager.getTransaction().commit();
@@ -665,10 +691,9 @@ public class JobDAOImpl implements JobDAO
 		try
 		{
 			entityManager = EntityManagerHandler.getEntityManager();
-
 			CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+			
 			CriteriaQuery<JobDB> criteriaQuery = criteriaBuilder.createQuery(JobDB.class);
-
 			Root<JobDB> jobRoot = criteriaQuery.from(JobDB.class);
 			Predicate queingStatusCondition = criteriaBuilder.equal(jobRoot.get(JobDB_.status), StatusOfJob.QUEUING.getName());
 			Predicate runningStatusCondition = criteriaBuilder.equal(jobRoot.get(JobDB_.status), StatusOfJob.RUNNING.getName());
@@ -719,9 +744,16 @@ public class JobDAOImpl implements JobDAO
 		try
 		{
 			entityManager = EntityManagerHandler.getEntityManager();
+			CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 
-			Query query = entityManager.createQuery("SELECT submissionId FROM Job WHERE jobId = :jobId", String.class);
-			query.setParameter("jobId", jobId);
+			CriteriaQuery<String> criteriaQuery = criteriaBuilder.createQuery(String.class);
+			Root<JobDB> jobRoot = criteriaQuery.from(JobDB.class);
+			criteriaQuery.select(jobRoot.get(JobDB_.submissionId));
+			criteriaQuery.where(criteriaBuilder.equal(jobRoot.get(JobDB_.jobId), jobId));
+			Query query = entityManager.createQuery(criteriaQuery);
+			
+//			Query query = entityManager.createQuery("SELECT submissionId FROM Job WHERE jobId = :jobId", String.class);
+//			query.setParameter("jobId", jobId);
 			String submissionId = (String)query.getSingleResult();
 			return submissionId;
 		}
@@ -757,5 +789,31 @@ public class JobDAOImpl implements JobDAO
 		}
 
 		return jobStatusDetails;
+	}
+	
+	private JobDB getJob(EntityManager entityManager,
+			 			 String jobId) throws DaoException
+	{
+		JobDB job = null; 
+		
+		try
+		{
+			CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+			CriteriaQuery<JobDB> criteriaQuery = criteriaBuilder.createQuery(JobDB.class);
+			Root<JobDB> jobRoot = criteriaQuery.from(JobDB.class);
+			criteriaQuery.where(criteriaBuilder.equal(jobRoot.get(JobDB_.jobId), jobId));
+			criteriaQuery.select(jobRoot);
+			
+			Query query = entityManager.createQuery(criteriaQuery);
+			job = (JobDB) query.getSingleResult();
+			
+		}
+		catch(Throwable e)
+		{
+			e.printStackTrace();
+			throw new DaoException(e);
+		}
+		
+		return job;
 	}
 }

@@ -3,7 +3,10 @@ package ch.systemsx.sybit.crkwebui.client.callbacks;
 import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
-import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
+import ch.systemsx.sybit.crkwebui.client.controllers.EventBusManager;
+import ch.systemsx.sybit.crkwebui.client.events.JobListRetrievedEvent;
+import ch.systemsx.sybit.crkwebui.client.events.StopJobsListAutoRefreshEvent;
+import ch.systemsx.sybit.crkwebui.client.events.UpdateStatusLabelEvent;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -15,18 +18,16 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
  */
 public class GetJobsForCurrentSession implements AsyncCallback<List<ProcessingInProgressData>> 
 {
-	private MainController mainController;
-	
-	public GetJobsForCurrentSession(MainController mainController)
+	public GetJobsForCurrentSession()
 	{
-		this.mainController = mainController;
+		
 	}
 	
 	@Override
 	public void onFailure(Throwable caught) 
 	{
-		mainController.updateStatusLabel(AppPropertiesManager.CONSTANTS.callback_get_jobs_for_current_session_error(), true);
-		mainController.stopMyJobsAutoRefresh();
+		EventBusManager.EVENT_BUS.fireEvent(new UpdateStatusLabelEvent(AppPropertiesManager.CONSTANTS.callback_get_jobs_for_current_session_error(), true));
+		EventBusManager.EVENT_BUS.fireEvent(new StopJobsListAutoRefreshEvent());
 	}
 
 	@Override
@@ -34,13 +35,11 @@ public class GetJobsForCurrentSession implements AsyncCallback<List<ProcessingIn
 	{
 		if(result != null)
 		{
-			mainController.setJobs(result);
+			EventBusManager.EVENT_BUS.fireEvent(new JobListRetrievedEvent(result));
 		}
 		else
 		{
-			mainController.updateStatusLabel(AppPropertiesManager.CONSTANTS.callback_get_jobs_for_current_session_error() + " - incorrect type", true);
+			EventBusManager.EVENT_BUS.fireEvent(new UpdateStatusLabelEvent(AppPropertiesManager.CONSTANTS.callback_get_jobs_for_current_session_error() + " - incorrect type", true));
 		}
-		
-		mainController.setCanRefreshMyJobs();
 	}
 }

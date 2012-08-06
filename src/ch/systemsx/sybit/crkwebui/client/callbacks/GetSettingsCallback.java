@@ -1,7 +1,10 @@
 package ch.systemsx.sybit.crkwebui.client.callbacks;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
-import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
+import ch.systemsx.sybit.crkwebui.client.controllers.ApplicationContext;
+import ch.systemsx.sybit.crkwebui.client.controllers.EventBusManager;
+import ch.systemsx.sybit.crkwebui.client.events.ApplicationInitEvent;
+import ch.systemsx.sybit.crkwebui.client.events.UpdateStatusLabelEvent;
 import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
 
 import com.google.gwt.user.client.History;
@@ -14,16 +17,10 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
  */
 public class GetSettingsCallback implements AsyncCallback<ApplicationSettings>
 {
-	private MainController mainController;
-
-	public GetSettingsCallback(MainController mainController) {
-		this.mainController = mainController;
-	}
-
 	@Override
 	public void onFailure(Throwable caught) 
 	{
-		mainController.updateStatusLabel(AppPropertiesManager.CONSTANTS.callback_get_settings_error(), true);
+		EventBusManager.EVENT_BUS.fireEvent(new UpdateStatusLabelEvent(AppPropertiesManager.CONSTANTS.callback_get_settings_error(), true));
 	}
 
 	@Override
@@ -31,22 +28,21 @@ public class GetSettingsCallback implements AsyncCallback<ApplicationSettings>
 	{
 		if (result != null)
 		{
-			mainController.setSettings(result);
-			mainController.setNrOfSubmissions(result.getNrOfJobsForSession());
-			mainController.setMainView();
-			mainController.runMyJobsAutoRefresh();
+			ApplicationContext.setSettings(result);
+			ApplicationContext.setNrOfSubmissions(result.getNrOfJobsForSession());
+			EventBusManager.EVENT_BUS.fireEvent(new ApplicationInitEvent());
 			
 			if((result.getNotificationOnStart() != null) &&
 			   (!result.getNotificationOnStart().equals("")))
 			{
-				mainController.updateStatusLabel(result.getNotificationOnStart(), false);
+				EventBusManager.EVENT_BUS.fireEvent(new UpdateStatusLabelEvent(result.getNotificationOnStart(), false));
 			}
 			
 			History.fireCurrentHistoryState();
 		}
 		else 
 		{
-			mainController.updateStatusLabel(AppPropertiesManager.CONSTANTS.callback_get_settings_error() + " - incorrect type", true);
+			EventBusManager.EVENT_BUS.fireEvent(new UpdateStatusLabelEvent(AppPropertiesManager.CONSTANTS.callback_get_settings_error() + " - incorrect type", true));
 		}
 	}
 }

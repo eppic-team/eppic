@@ -1,7 +1,7 @@
 package ch.systemsx.sybit.crkwebui.shared.model;
 
 /**
- * This enum is used to represent current status of processing for the job
+ * This enum is used to represent current status of processing for the job.
  * @author AS
  */
 public enum StatusOfJob

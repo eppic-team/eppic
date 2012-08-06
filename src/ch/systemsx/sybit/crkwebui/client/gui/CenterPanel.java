@@ -1,7 +1,5 @@
 package ch.systemsx.sybit.crkwebui.client.gui;
 
-import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
-
 import com.extjs.gxt.ui.client.event.ContainerEvent;
 import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.Listener;
@@ -14,17 +12,14 @@ import com.extjs.gxt.ui.client.widget.layout.FitLayout;
  */
 public class CenterPanel extends LayoutContainer 
 {
-	protected MainController mainController;
-	
 	private DisplayPanel displayPanel;
 	
-	public CenterPanel(final MainController mainController)
+	public CenterPanel()
 	{
-		this.mainController = mainController;
 		this.setBorders(false);
 		this.setLayout(new FitLayout());
 		
-		displayPanel = new DisplayPanel(mainController);
+		displayPanel = new DisplayPanel();
 		this.add(displayPanel);
 		
 		this.addListener(Events.BeforeRemove, new Listener<ContainerEvent>() {

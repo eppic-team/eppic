@@ -3,8 +3,7 @@ package ch.systemsx.sybit.crkwebui.client.controllers;
 import com.google.gwt.core.client.GWT;
 
 /**
- * Applciation properties manager.
- * @author root
+ * Application properties manager.
  *
  */
 public class AppPropertiesManager 

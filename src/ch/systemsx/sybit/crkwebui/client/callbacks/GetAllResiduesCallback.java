@@ -1,7 +1,10 @@
 package ch.systemsx.sybit.crkwebui.client.callbacks;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
-import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
+import ch.systemsx.sybit.crkwebui.client.controllers.ApplicationContext;
+import ch.systemsx.sybit.crkwebui.client.controllers.EventBusManager;
+import ch.systemsx.sybit.crkwebui.client.events.HideWaitingEvent;
+import ch.systemsx.sybit.crkwebui.client.events.UpdateStatusLabelEvent;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResiduesItemsList;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -13,20 +16,17 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
  */
 public class GetAllResiduesCallback implements AsyncCallback<InterfaceResiduesItemsList>
 {
-	private MainController mainController;
 	private String jobId;
 
-	public GetAllResiduesCallback(MainController mainController,
-								  String jobId) 
+	public GetAllResiduesCallback(String jobId) 
 	{
-		this.mainController = mainController;
 		this.jobId = jobId;
 	}
 
 	@Override
 	public void onFailure(Throwable caught) 
 	{
-		mainController.updateStatusLabel(AppPropertiesManager.CONSTANTS.callback_get_interface_residues_error(), true);
+		EventBusManager.EVENT_BUS.fireEvent(new UpdateStatusLabelEvent(AppPropertiesManager.CONSTANTS.callback_get_interface_residues_error(), true));
 	}
 
 	@Override
@@ -34,16 +34,16 @@ public class GetAllResiduesCallback implements AsyncCallback<InterfaceResiduesIt
 	{
 		if (result != null)
 		{
-			if(mainController.getSelectedJobId().equals(jobId))
+			if(ApplicationContext.getSelectedJobId().equals(jobId))
 			{
-				mainController.setResiduesForInterface(result);
+				ApplicationContext.setResiduesForInterface(result);
 			}
 		}
 		else 
 		{
-			mainController.updateStatusLabel(AppPropertiesManager.CONSTANTS.callback_get_interface_residues_error() + " - incorrect result type", true);
+			EventBusManager.EVENT_BUS.fireEvent(new UpdateStatusLabelEvent(AppPropertiesManager.CONSTANTS.callback_get_interface_residues_error() + " - incorrect result type", true));
 		}
 		
-		mainController.hideWaiting();
+		EventBusManager.EVENT_BUS.fireEvent(new HideWaitingEvent());
 	}
 }

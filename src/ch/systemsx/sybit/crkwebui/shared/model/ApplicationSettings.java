@@ -50,133 +50,302 @@ public class ApplicationSettings implements Serializable {
 	private int nrOfAllowedSubmissionsWithoutCaptcha;
 	// *********************************************
 	
+	/**
+	 * Location where generated files are stored.
+	 */
 	private String resultsLocation;
 	
+	/**
+	 * Human readable names of the run parameters.
+	 */
 	private Map<String, String> runParametersNames;
 	
-	// information which will be displayed in the bottom panel when accessing the page - e.g. when the server will not be accessible
-	// this information is loaded by each new access to the server so that it does not require the server to be restarted
+	/**
+	 * Information which will be displayed in the bottom panel when accessing the page - e.g. when the server will not be accessible
+	 * this information is loaded by each new access to the server so that it does not require the server to be restarted.
+	 */
 	private String notificationOnStart;
 	
+	/**
+	 * Base url to pdb.org
+	 */
 	private String pdbLinkUrl;
+	
+	/**
+	 * Base url to the uniprot.
+	 */
 	private String uniprotLinkUrl;
+	
+	/**
+	 * Content of the help panel.
+	 */
+	private String helpPageContent;
+	
+	/**
+	 * Flag pointing whether precompiled values stored in the db should be used.
+	 */
+	private boolean usePrecompiledResults;
 	
 	public ApplicationSettings()
 	{
 		this.scoresTypes = new ArrayList<SupportedMethod>();
 	}
 
+	/**
+	 * Sets list of supported methods.
+	 * @param scoresTypes list of supported methods
+	 */
 	public void setScoresTypes(List<SupportedMethod> scoresTypes) {
 		this.scoresTypes = scoresTypes;
 	}
 
+	/**
+	 * Retrieves list of supported methods.
+	 * @return list of supported methods
+	 */
 	public List<SupportedMethod> getScoresTypes() {
 		return scoresTypes;
 	}
 
+	/**
+	 * Sets grid settings.
+	 * @param gridProperties grid settings
+	 */
 	public void setGridProperties(Map<String, String> gridProperties) {
 		this.gridProperties = gridProperties;
 	}
 
+	/**
+	 * Retrieves grid settings.
+	 * @return grid settings
+	 */
 	public Map<String, String> getGridProperties() {
 		return gridProperties;
 	}
 
+	/**
+	 * Sets default input parameters.
+	 * @param defaultParametersValues default input parameters
+	 */
 	public void setDefaultParametersValues(
 			InputParameters defaultParametersValues) {
 		this.defaultParametersValues = defaultParametersValues;
 	}
 
+	/**
+	 * Retrieves default input parameters.
+	 * @return default input parameters
+	 */
 	public InputParameters getDefaultParametersValues() {
 		return defaultParametersValues;
 	}
 
+	/**
+	 * Sets possible values of reduced alphabet.
+	 * @param reducedAlphabetList list of allowed values for reduced alphabet
+	 */
 	public void setReducedAlphabetList(List<Integer> reducedAlphabetList) {
 		this.reducedAlphabetList = reducedAlphabetList;
 	}
 
+	/**
+	 * Retrieves list of allowed values for reduced alphabet.
+	 * @return list of allowed values for reduced alphabet
+	 */
 	public List<Integer> getReducedAlphabetList() {
 		return reducedAlphabetList;
 	}
 
+	/**
+	 * Sets nr of submitted jobs for current session.
+	 * @param nrOfJobsForSession nr of submitted jobs for current session
+	 */
 	public void setNrOfJobsForSession(int nrOfJobsForSession) {
 		this.nrOfJobsForSession = nrOfJobsForSession;
 	}
 
+	/**
+	 * Retrieves nr of submitted jobs for current session.
+	 * @return nr of submitted jobs for current session
+	 */
 	public int getNrOfJobsForSession() {
 		return nrOfJobsForSession;
 	}
 
+	/**
+	 * Retrieves location of generated results.
+	 * @return location of generated results
+	 */
 	public String getResultsLocation() {
 		return resultsLocation;
 	}
 
+	/**
+	 * Sets location where results are accessible.
+	 * @param resultsLocation location where results are accessible
+	 */
 	public void setResultsLocation(String resultsLocation) {
 		this.resultsLocation = resultsLocation;
 	}
 	
+	/**
+	 * Retrieves information whether captcha validation should be used.
+	 * @return information whether captcha validation should be used
+	 */
 	public boolean isUseCaptcha() {
 		return useCaptcha;
 	}
 
+	/**
+	 * Sets whether captcha validation should be used.
+	 * @param useCaptcha information whether captcha validation should be used
+	 */
 	public void setUseCaptcha(boolean useCaptcha) {
 		this.useCaptcha = useCaptcha;
 	}
 
+	/**
+	 * Retrieves captcha public key.
+	 * @return captcha public key
+	 */
 	public String getCaptchaPublicKey() {
 		return captchaPublicKey;
 	}
 
+	/**
+	 * Sets captcha public key.
+	 * @param captchaPublicKey captcha public key
+	 */
 	public void setCaptchaPublicKey(String captchaPublicKey) {
 		this.captchaPublicKey = captchaPublicKey;
 	}
 	
+	/**
+	 * Sets max nr of allowed submissions without captcha validation.
+	 * @param nrOfAllowedSubmissionsWithoutCaptcha max nr of submissions without captcha validation 
+	 */
 	public void setNrOfAllowedSubmissionsWithoutCaptcha(
 			int nrOfAllowedSubmissionsWithoutCaptcha) {
 		this.nrOfAllowedSubmissionsWithoutCaptcha = nrOfAllowedSubmissionsWithoutCaptcha;
 	}
 
+	/**
+	 * Retrieves max nr of submissions without captcha validation.
+	 * @return max nr of submissions without captcha validation
+	 */
 	public int getNrOfAllowedSubmissionsWithoutCaptcha() {
 		return nrOfAllowedSubmissionsWithoutCaptcha;
 	}
 
+	/**
+	 * Sets human readable names of run parameters.
+	 * @param runParametersNames human readable names of run parameters
+	 */
 	public void setRunParametersNames(Map<String, String> runParametersNames) {
 		this.runParametersNames = runParametersNames;
 	}
 
+	/**
+	 * Retrieves human readable names of run parameters.
+	 * @return human readable names of run parameters
+	 */
 	public Map<String, String> getRunParametersNames() {
 		return runParametersNames;
 	}
 
+	/**
+	 * Sets text which is to be displayed as status.
+	 * @param notificationOnStart text which is to be displayed as status
+	 */
 	public void setNotificationOnStart(String notificationOnStart) {
 		this.notificationOnStart = notificationOnStart;
 	}
 
+	/**
+	 * Retrieves text which is to be displayed as status.
+	 * @return text which is to be displayed as status
+	 */
 	public String getNotificationOnStart() {
 		return notificationOnStart;
 	}
 
+	/**
+	 * Sets base url to pdb.org
+	 * @param pdbLinkUrl base url to pdb.org
+	 */
 	public void setPdbLinkUrl(String pdbLinkUrl) {
 		this.pdbLinkUrl = pdbLinkUrl;
 	}
 
+	/**
+	 * Retrieves base url to pdb.org.
+	 * @return base url to pdb.org
+	 */
 	public String getPdbLinkUrl() {
 		return pdbLinkUrl;
 	}
 
+	/**
+	 * Sets list of allowed values for search mode.
+	 * @param searchModeList list of allowed values for search mode
+	 */
 	public void setSearchModeList(List<String> searchModeList) {
 		this.searchModeList = searchModeList;
 	}
 
+	/**
+	 * Retrieves list of allowed values for search mode.
+	 * @return list of allowed values for search mode
+	 */
 	public List<String> getSearchModeList() {
 		return searchModeList;
 	}
 
+	/**
+	 * Sets base url to uniprot.
+	 * @param uniprotLinkUrl base url to uniprot
+	 */
 	public void setUniprotLinkUrl(String uniprotLinkUrl) {
 		this.uniprotLinkUrl = uniprotLinkUrl;
 	}
 
+	/**
+	 * Retrieves base url to uniprot.
+	 * @return base url to uniprot
+	 */
 	public String getUniprotLinkUrl() {
 		return uniprotLinkUrl;
+	}
+
+	/**
+	 * Sets content which is to be used in help page.
+	 * @param helpPageContent content of the help page
+	 */
+	public void setHelpPageContent(String helpPageContent) {
+		this.helpPageContent = helpPageContent;
+	}
+
+	/**
+	 * Retrieves content which is to be set as help.
+	 * @return content of help panel
+	 */
+	public String getHelpPageContent() {
+		return helpPageContent;
+	}
+
+	/**
+	 * Sets information whether precompiled results stored in the db should be used.
+	 * @param usePrecompiledResults information whether precompiled values stored in the db should be used
+	 */
+	public void setUsePrecompiledResults(boolean usePrecompiledResults) {
+		this.usePrecompiledResults = usePrecompiledResults;
+	}
+
+	/**
+	 * Retrieves information whether precompiled results stored in the db should be used.
+	 * @return whether precompiled results stored in the db should be used
+	 */
+	public boolean isUsePrecompiledResults() {
+		return usePrecompiledResults;
 	}
 }

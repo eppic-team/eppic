@@ -1,8 +1,9 @@
 package ch.systemsx.sybit.crkwebui.client.gui.renderers;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
-import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
-import ch.systemsx.sybit.crkwebui.client.gui.ResultsPanel;
+import ch.systemsx.sybit.crkwebui.client.controllers.EventBusManager;
+import ch.systemsx.sybit.crkwebui.client.events.SelectResultsRowEvent;
+import ch.systemsx.sybit.crkwebui.client.events.ShowDetailsEvent;
 
 import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
@@ -23,13 +24,7 @@ import com.extjs.gxt.ui.client.widget.grid.Grid;
  */
 public class DetailsButtonCellRenderer extends DefaultCellRenderer 
 {
-	private MainController mainController;
-
 	private boolean init;
-
-	public DetailsButtonCellRenderer(MainController mainController) {
-		this.mainController = mainController;
-	}
 
 	@Override
 	public Object render(final BaseModel model, String property,
@@ -63,13 +58,8 @@ public class DetailsButtonCellRenderer extends DefaultCellRenderer
 					@Override
 					public void componentSelected(ButtonEvent ce) 
 					{
-						if((mainController.getMainViewPort().getCenterPanel().getDisplayPanel() != null) &&
-						   (mainController.getMainViewPort().getCenterPanel().getDisplayPanel() instanceof ResultsPanel))
-						{
-							ResultsPanel resultsPanel = (ResultsPanel)mainController.getMainViewPort().getCenterPanel().getDisplayPanel();
-							resultsPanel.getResultsGrid().getSelectionModel().select(rowIndex, false);
-							mainController.getInterfaceResidues((Integer)resultsPanel.getResultsStore().getAt(rowIndex).get("id"));
-						}
+						EventBusManager.EVENT_BUS.fireEvent(new SelectResultsRowEvent(rowIndex));
+						EventBusManager.EVENT_BUS.fireEvent(new ShowDetailsEvent());
 					}
 				});
 

@@ -1,7 +1,7 @@
 package ch.systemsx.sybit.crkwebui.client.gui;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.EventBusManager;
-import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
+import ch.systemsx.sybit.crkwebui.client.data.WindowData;
 import ch.systemsx.sybit.crkwebui.client.events.WindowHideEvent;
 import ch.systemsx.sybit.crkwebui.shared.model.HomologsInfoItem;
 
@@ -29,6 +29,7 @@ public class AlignmentsWindow extends ResizableWindow
 	private static int ALIGNMENT_WINDOW_DEFAULT_HEIGHT = 400;
 	
 	private HomologsInfoItem homologsInfoItem;
+	private String pdbName;
 	
 	private int nrOfCharacterInFirstSequence;
 	private int nrOfCharacterInSecondSequence;
@@ -39,14 +40,16 @@ public class AlignmentsWindow extends ResizableWindow
 	private int MIN_DISTANCE_BETWEEN_UNIPROTID_AND_POSITION = 6;
 	private int DISTANCE_BETWEEN_CURRENT_NR_AND_SEQUENCE = 2;
 	
-	public AlignmentsWindow(MainController mainController,
-							HomologsInfoItem homologsInfoItem) 
+	public AlignmentsWindow(WindowData windowData,
+							HomologsInfoItem homologsInfoItem,
+							String pdbName) 
 	{
-		super(mainController,
-			  ALIGNMENT_WINDOW_DEFAULT_WIDTH,
-			  ALIGNMENT_WINDOW_DEFAULT_HEIGHT);
+		super(ALIGNMENT_WINDOW_DEFAULT_WIDTH,
+			  ALIGNMENT_WINDOW_DEFAULT_HEIGHT,
+			  windowData);
 		
 		this.homologsInfoItem = homologsInfoItem;
+		this.pdbName = pdbName;
 		
 		this.setSize(windowWidth, windowHeight);
 		
@@ -55,7 +58,7 @@ public class AlignmentsWindow extends ResizableWindow
 		this.setHideOnButtonClick(true);
 		this.getButtonBar().setVisible(false);
 		
-		Listener<WindowEvent> resizeWindowListener = new Listener<WindowEvent>() {
+		this.addListener(Events.Resize, new Listener<WindowEvent>() {
 
 			@Override
 			public void handleEvent(WindowEvent be) 
@@ -64,9 +67,7 @@ public class AlignmentsWindow extends ResizableWindow
 				windowWidth = be.getWidth();
 				updateWindowContent();
 			}
-		};
-		
-		this.addListener(Events.Resize, resizeWindowListener);
+		});
 		
 		this.addWindowListener(new WindowListener()
 		{
@@ -88,8 +89,7 @@ public class AlignmentsWindow extends ResizableWindow
 		homologsContentPanel.setBodyBorder(false);
 		homologsContentPanel.setBorders(false);
 		homologsContentPanel.getHeader().setVisible(false);
-		homologsContentPanel.setStyleAttribute("fontSize", "10pt");
-		homologsContentPanel.setStyleAttribute("fontFamily", "courier");
+		homologsContentPanel.addStyleName("eppic-monospaced-font");
 		homologsContentPanel.render(this.getElement());
 		
 		TextMetrics textMetrics = TextMetrics.get();
@@ -104,7 +104,7 @@ public class AlignmentsWindow extends ResizableWindow
 			pdbId = pdbId.substring(0, pdbId.indexOf("("));
 		}
 		
-		pdbId = mainController.getPdbScoreItem().getPdbName() + pdbId;
+		pdbId = pdbName + pdbId;
 		
 		String uniprotId = homologsInfoItem.getUniprotId();
 		
@@ -222,12 +222,20 @@ public class AlignmentsWindow extends ResizableWindow
 		this.homologsInfoItem = homologsInfoItem;
 	}
 	
+	public String getPdbName() {
+		return pdbName;
+	}
+
+	public void setPdbName(String pdbName) {
+		this.pdbName = pdbName;
+	}
+
 	/**
 	 * Generates general sequence text settings.
 	 * @param textMetrics used text metrics
 	 * @param firstSequenceLeftAnnotation first sequence to annotate
 	 * @param secondSequenceLeftAnnotation second sequence to annotate
-	 * @return nr of character of original sequences per line.
+	 * @return nr of characters of original sequences per line.
 	 */
 	private int calculateNrOfCharactersPerLine(TextMetrics textMetrics,
 											   String firstSequenceLeftAnnotation,

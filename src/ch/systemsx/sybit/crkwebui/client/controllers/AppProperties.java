@@ -18,6 +18,7 @@ public interface AppProperties extends Constants
 	
 	String window_title();
 	String window_title_input();
+	String window_title_help();
 	String window_title_processing();
 	String window_title_loading();
 	String window_title_results();
@@ -132,9 +133,6 @@ public interface AppProperties extends Constants
 	String callback_run_job_error();
 	String callback_untie_jobs_from_session_error();
 	String callback_job_not_found_error();
-	
-	String legend_panel_names();
-	String legend_panel_styles();
 	
 	String viewer_jmol();
 	String viewer_local();

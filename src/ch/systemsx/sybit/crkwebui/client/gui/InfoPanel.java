@@ -5,7 +5,12 @@ import java.util.Collections;
 import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
-import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
+import ch.systemsx.sybit.crkwebui.client.controllers.ApplicationContext;
+import ch.systemsx.sybit.crkwebui.client.controllers.EventBusManager;
+import ch.systemsx.sybit.crkwebui.client.events.HideAllWindowsEvent;
+import ch.systemsx.sybit.crkwebui.client.events.ShowQueryWarningsEvent;
+import ch.systemsx.sybit.crkwebui.client.handlers.HideAllWindowsHandler;
+import ch.systemsx.sybit.crkwebui.client.handlers.ShowQueryWarningsHandler;
 import ch.systemsx.sybit.crkwebui.shared.model.HomologsInfoItem;
 import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
 import ch.systemsx.sybit.crkwebui.shared.model.RunParametersItem;
@@ -43,27 +48,25 @@ public class InfoPanel extends FormPanel
 	
 	private ToolTip queryWarningsTooltip;
 	
-	private MainController mainController;
-	
-	public InfoPanel(MainController mainController) 
+	public InfoPanel(PDBScoreItem pdbScoreItem) 
 	{
-		this.mainController = mainController;
 		this.getHeader().setVisible(false);
 		this.setBodyBorder(false);
 		this.setBorders(true);
 		this.setLayout(new FormLayout());
 		this.setScrollMode(Scroll.AUTO);
-		this.setPadding(10);
+//		this.addStyleName("eppic-default-padding");
 
-		generateHomologsInfoTooltip(mainController);
-		generateInfoPanel(mainController);
+		generateHomologsInfoTooltip();
+		generateInfoPanel(pdbScoreItem);
+		
+		initializeEventsListeners();
 	}
 
 	/**
 	 * Creates tooltip displayed over homologs query warnings.
-	 * @param mainController main application controller
 	 */
-	private void generateHomologsInfoTooltip(MainController mainController) 
+	private void generateHomologsInfoTooltip() 
 	{
 		ToolTipConfig toolTipConfig = new ToolTipConfig();  
 		toolTipConfig.setTitle(AppPropertiesManager.CONSTANTS.homologs_panel_query_warnings_title());
@@ -76,9 +79,8 @@ public class InfoPanel extends FormPanel
 
 	/**
 	 * Creates info panel containing general information about the job.
-	 * @param mainController main application controller
 	 */
-	public void generateInfoPanel(MainController mainController)
+	public void generateInfoPanel(PDBScoreItem pdbScoreItem)
 	{
 		this.removeAll();
 		
@@ -87,13 +89,13 @@ public class InfoPanel extends FormPanel
 		int nrOfRows = 3;
 		int nrOfColumns = 4;
 		
-		List<HomologsInfoItem> homologsStrings = mainController.getPdbScoreItem().getHomologsInfoItems();
+		List<HomologsInfoItem> homologsStrings = pdbScoreItem.getHomologsInfoItems();
 		
 		int limit = 50;
 		
-		if(mainController.getMainViewPort().getMyJobsPanel().isExpanded())
+		if(ApplicationContext.isMyJobsListVisible())
 		{
-			limit += mainController.getMainViewPort().getMyJobsPanel().getWidth();
+			limit += ApplicationContext.getMyJobsPanelWidth();
 		}
 		else
 		{
@@ -103,7 +105,7 @@ public class InfoPanel extends FormPanel
 		// we divide the window width by desired number of columns (4) and use double width for first and half width for last 2
 		// 1st column is double width
 		// last 2 columns are half width
-		int columnWidth = (mainController.getWindowData().getWindowWidth() - limit - 20) / (nrOfColumns);
+		int columnWidth = (ApplicationContext.getWindowData().getWindowWidth() - limit - 20) / (nrOfColumns);
 		int firstcolumnWidth = columnWidth * 2;
 		int last2columnsWidth = columnWidth / 2;
 		
@@ -135,16 +137,16 @@ public class InfoPanel extends FormPanel
 		ToolTipConfig toolTipConfig = new ToolTipConfig();  
 		toolTipConfig.setTitle(AppPropertiesManager.CONSTANTS.info_panel_input_parameters());
 		toolTipConfig.setMouseOffset(new int[] {0, 0});  
-		toolTipConfig.setTemplate(new Template(generateInputParametersTemplate(mainController.getPdbScoreItem())));  
+		toolTipConfig.setTemplate(new Template(generateInputParametersTemplate(pdbScoreItem)));  
 		toolTipConfig.setCloseable(true); 
 		toolTipConfig.setDismissDelay(0);
 		toolTipConfig.setShowDelay(100);
-		toolTipConfig.setMaxWidth(mainController.getWindowData().getWindowWidth());
+		toolTipConfig.setMaxWidth(ApplicationContext.getWindowData().getWindowWidth());
 		inputParametersTooltip = new ToolTip(inputParametersLabel, toolTipConfig);
 		
 		inputParametersLabel = new EmptyLinkWithTooltip(AppPropertiesManager.CONSTANTS.info_panel_input_parameters(),
 														AppPropertiesManager.CONSTANTS.info_panel_input_parameters_hint(),
-														mainController.getWindowData(),
+														ApplicationContext.getWindowData(),
 														0);
 		inputParametersLabel.addListener(Events.OnClick, new Listener<BaseEvent>() {
 
@@ -162,19 +164,19 @@ public class InfoPanel extends FormPanel
 		
 		downloadResultsLink = new LinkWithTooltip(AppPropertiesManager.CONSTANTS.info_panel_download_results_link(), 
 												  AppPropertiesManager.CONSTANTS.info_panel_download_results_link_hint(), 
-												  mainController.getWindowData(), 
+												  ApplicationContext.getWindowData(), 
 												  0, 
-												  GWT.getModuleBaseURL() + "fileDownload?type=zip&id=" + mainController.getSelectedJobId());
+												  GWT.getModuleBaseURL() + "fileDownload?type=zip&id=" + pdbScoreItem.getJobId());
 		downloadResultsLink.addStyleName("eppic-internal-link");
 		flexTable.setWidget(2, 3, downloadResultsLink);
 		
 		Label uniprotVersionlabel = new Label(AppPropertiesManager.CONSTANTS.info_panel_uniprot() + ": " +
-				mainController.getPdbScoreItem().getRunParameters().getUniprotVer());
+				pdbScoreItem.getRunParameters().getUniprotVer());
 		uniprotVersionlabel.addStyleName("eppic-default-label");
 		flexTable.setWidget(0, 3, uniprotVersionlabel);
 		
 		Label crkVersionLabel = new Label(AppPropertiesManager.CONSTANTS.info_panel_crk() + ": " +
-				mainController.getPdbScoreItem().getRunParameters().getCrkVersion());
+				pdbScoreItem.getRunParameters().getCrkVersion());
 		crkVersionLabel.addStyleName("eppic-default-label");
 		flexTable.setWidget(1, 3, crkVersionLabel);
 		
@@ -182,7 +184,9 @@ public class InfoPanel extends FormPanel
 		{
 			for(int i=0; i<homologsStrings.size(); i++)
 			{
-				LayoutContainer homologsContainer = new HomologsInfoPanel(mainController, homologsStrings.get(i), this);
+				LayoutContainer homologsContainer = new HomologsInfoPanel(pdbScoreItem.getJobId(),
+																		  homologsStrings.get(i),
+																		  pdbScoreItem.getPdbName());
 				flexTable.setWidget(i, 0, homologsContainer);
 			};
 		}
@@ -206,15 +210,15 @@ public class InfoPanel extends FormPanel
 		List<String> parametersList = new ArrayList<String>(runParametersModel.getPropertyNames());
 		Collections.sort(parametersList);
 		
-		if(mainController.getSettings().getRunParametersNames() != null)
+		if(ApplicationContext.getSettings().getRunParametersNames() != null)
 		{
 			for(String parameter : parametersList)
 			{
-				if((mainController.getSettings().getRunParametersNames().get(parameter) != null))
+				if((ApplicationContext.getSettings().getRunParametersNames().get(parameter) != null))
 				{
 					result += "<tr>";
 					result += "<td>";
-					result += mainController.getSettings().getRunParametersNames().get(parameter);
+					result += ApplicationContext.getSettings().getRunParametersNames().get(parameter);
 					result += "</td>";
 					result += "<td></td>";
 					result += "<td>";
@@ -243,5 +247,39 @@ public class InfoPanel extends FormPanel
 	 */
 	public ToolTip getInputParametersTooltip() {
 		return inputParametersTooltip;
+	}
+	
+	/**
+	 * Initializes events listeners.
+	 */
+	private void initializeEventsListeners()
+	{
+		EventBusManager.EVENT_BUS.addHandler(HideAllWindowsEvent.TYPE, new HideAllWindowsHandler() {
+			
+			@Override
+			public void onHideAllWindows(HideAllWindowsEvent event) 
+			{
+				if(queryWarningsTooltip != null)
+				{
+					queryWarningsTooltip.setVisible(false);
+				}
+
+				if(inputParametersTooltip != null)
+				{
+					inputParametersTooltip.setVisible(false);
+				}
+			}
+		});
+		
+		EventBusManager.EVENT_BUS.addHandler(ShowQueryWarningsEvent.TYPE, new ShowQueryWarningsHandler() {
+			
+			@Override
+			public void onShowQueryWarnings(ShowQueryWarningsEvent event) {
+				queryWarningsTooltip.getToolTipConfig().setTemplate(new Template(event.getTooltipTemplate()));
+				
+				queryWarningsTooltip.showAt(event.getxCoordinate(),
+					  					    event.getyCoordinate());
+			}
+		});
 	}
 }

@@ -43,7 +43,7 @@ public class JobStatusCellRenderer extends DefaultCellRenderer
 
 		Label jobStatusLabel = new Label(value);
 		jobStatusLabel.setStyleAttribute("color", color);
-		jobStatusLabel.setStyleAttribute("font-weight", "bold");
+		jobStatusLabel.addStyleName("eppic-my-jobs-list-status");
 		return jobStatusLabel;
 	}
 }

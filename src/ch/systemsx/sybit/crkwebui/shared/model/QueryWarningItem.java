@@ -19,21 +19,11 @@ public class QueryWarningItem implements Serializable
 	
 	private String text;
 	
-	private HomologsInfoItem homologsInfoItem;
-	
 	public QueryWarningItem() 
 	{
 		
 	}
 	
-	public void setHomologsInfoItem(HomologsInfoItem homologsInfoItem) {
-		this.homologsInfoItem = homologsInfoItem;
-	}
-
-	public HomologsInfoItem getHomologsInfoItem() {
-		return homologsInfoItem;
-	}
-
 	public void setUid(int uid) {
 		this.uid = uid;
 	}

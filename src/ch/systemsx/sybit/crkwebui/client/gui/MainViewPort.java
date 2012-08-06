@@ -1,8 +1,18 @@
 package ch.systemsx.sybit.crkwebui.client.gui;
 
+import java.util.HashMap;
+import java.util.List;
+
 import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
+import ch.systemsx.sybit.crkwebui.client.controllers.ApplicationContext;
+import ch.systemsx.sybit.crkwebui.client.controllers.EventBusManager;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
+import ch.systemsx.sybit.crkwebui.client.events.ApplicationWindowResizeEvent;
+import ch.systemsx.sybit.crkwebui.client.events.UnmaskMainViewEvent;
+import ch.systemsx.sybit.crkwebui.client.handlers.UnmaskMainViewHandler;
 import ch.systemsx.sybit.crkwebui.shared.model.HomologsInfoItem;
+import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResidueItem;
+import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
 
 import com.extjs.gxt.ui.client.Style.LayoutRegion;
 import com.extjs.gxt.ui.client.event.BorderLayoutEvent;
@@ -11,7 +21,6 @@ import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.MessageBox;
 import com.extjs.gxt.ui.client.widget.Viewport;
-import com.extjs.gxt.ui.client.widget.custom.ThemeSelector;
 import com.extjs.gxt.ui.client.widget.layout.BorderLayout;
 import com.extjs.gxt.ui.client.widget.layout.BorderLayoutData;
 import com.google.gwt.core.client.Scheduler;
@@ -37,16 +46,16 @@ public class MainViewPort extends Viewport
 
 	private MessageBox waitingMessageBox;
 	private MessageBox errorMessageBox;
-
-	private MainController mainController;
-
+	
+	private ResultsPanel resultsPanel;
+	private StatusPanel statusPanel;
+	private InputDataPanel inputDataPanel;
+	
 	public MainViewPort(final MainController mainController)
 	{
-		this.mainController = mainController;
-
 		BorderLayout layout = new BorderLayout();
 		this.setLayout(layout);
-		this.setStyleAttribute("padding", "10px");
+		this.addStyleName("eppic-default-padding");
 
 		layout.addListener(Events.Collapse, new Listener<BorderLayoutEvent>()
 		{
@@ -54,7 +63,9 @@ public class MainViewPort extends Viewport
 			{
 				if(be.getPanel() instanceof MyJobsPanel)
 				{
-					mainController.resizeResultsGrid();
+					ApplicationContext.setMyJobsListVisible(false);
+					ApplicationContext.setMyJobsPanelWidth(be.getPanel().getWidth());
+					EventBusManager.EVENT_BUS.fireEvent(new ApplicationWindowResizeEvent());
 				}
 			}
 		});
@@ -65,7 +76,9 @@ public class MainViewPort extends Viewport
 			{
 				if(be.getPanel() instanceof MyJobsPanel)
 				{
-					mainController.resizeResultsGrid();
+					ApplicationContext.setMyJobsListVisible(true);
+					ApplicationContext.setMyJobsPanelWidth(be.getPanel().getWidth());
+					EventBusManager.EVENT_BUS.fireEvent(new ApplicationWindowResizeEvent());
 				}
 			}
 		});
@@ -76,8 +89,9 @@ public class MainViewPort extends Viewport
 		westData.setSplit(true);
 		westData.setMargins(new Margins(0, 5, 0, 0));
 
-		myJobsPanel = new MyJobsPanel(mainController);
+		myJobsPanel = new MyJobsPanel();
 		this.add(myJobsPanel, westData);
+		ApplicationContext.setMyJobsPanelWidth(220);
 
 		BorderLayoutData centerData = new BorderLayoutData(LayoutRegion.CENTER,
 				200);
@@ -86,7 +100,7 @@ public class MainViewPort extends Viewport
 		centerData.setSplit(true);
 		centerData.setMargins(new Margins(0));
 
-		centerPanel = new CenterPanel(mainController);
+		centerPanel = new CenterPanel();
 		this.add(centerPanel, centerData);
 
 		BorderLayoutData northData = new BorderLayoutData(LayoutRegion.NORTH,
@@ -100,9 +114,11 @@ public class MainViewPort extends Viewport
 				20);
 		southData.setMargins(new Margins(5, 0, 0, 0));
 
-		bottomPanel = new BottomPanel(mainController);
-		bottomPanel.add(new ThemeSelector());
+		bottomPanel = new BottomPanel();
+//		bottomPanel.add(new ThemeSelector());
 		this.add(bottomPanel, southData);
+		
+		initializeEventsListeners();
 	}
 
 	/**
@@ -131,32 +147,17 @@ public class MainViewPort extends Viewport
 	}
 
 	/**
-	 * Retrieves window containing interface residues.
-	 * @return window containing interface residues
-	 */
-	public InterfacesResiduesWindow getInterfacesResiduesWindow() {
-		return interfacesResiduesWindow;
-	}
-
-	/**
-	 * Sets window containing interface residues.
-	 * @param interfacesResiduesWindow window containing interface residues
-	 */
-	public void setInterfacesResiduesWindow(
-			InterfacesResiduesWindow interfacesResiduesWindow) {
-		this.interfacesResiduesWindow = interfacesResiduesWindow;
-	}
-
-	/**
 	 * Displays window containing interface residues.
 	 * @param selectedInterface selected interface identifier
 	 */
 	public void displayInterfacesWindow(int selectedInterface)
 	{
+		ApplicationContext.setSelectedInterface(selectedInterface);
+		
 		if((interfacesResiduesWindow == null) ||
 		   (interfacesResiduesWindow.isResizeWindow()))
 		{
-			interfacesResiduesWindow = new InterfacesResiduesWindow(mainController, selectedInterface);
+			interfacesResiduesWindow = new InterfacesResiduesWindow(ApplicationContext.getWindowData());
 //			interfacesResiduesWindow.setResizable(false);
 			interfacesResiduesWindow.setVisible(true);
 			Scheduler.get().scheduleDeferred(new ScheduledCommand() {
@@ -169,15 +170,12 @@ public class MainViewPort extends Viewport
 		}
 		else
 		{
-			interfacesResiduesWindow.setSelectedInterface(selectedInterface);
-			interfacesResiduesWindow.setWindowHeader();
 			interfacesResiduesWindow.getInterfacesResiduesPanel().cleanData();
-			interfacesResiduesWindow.getInterfacesResiduesPanel().getFirstStructurePanel().cleanResiduesGrid();
-			interfacesResiduesWindow.getInterfacesResiduesPanel().getSecondStructurePanel().cleanResiduesGrid();
-			interfacesResiduesWindow.getInterfacesResiduesPanel().getFirstStructurePanelSummary().cleanResiduesGrid();
-			interfacesResiduesWindow.getInterfacesResiduesPanel().getSecondStructurePanelSummary().cleanResiduesGrid();
 			interfacesResiduesWindow.setVisible(true);
 		}
+		
+		interfacesResiduesWindow.setWindowHeader(ApplicationContext.getPdbScoreItem().getInterfaceItem(selectedInterface - 1).getArea(),
+												 selectedInterface);
 
 		//called beacuse of the bug in GXT 2.2.3
 		// http://www.sencha.com/forum/showthread.php?126888-Problems-with-RowLayout
@@ -194,12 +192,41 @@ public class MainViewPort extends Viewport
 			interfacesResiduesWindow.setVisible(false);
 		}
 	}
+	
+	/**
+	 * Fills content of interface residues window.
+	 * @param interfaceResidues interface residues
+	 */
+	public void fillInterfacesWindow(HashMap<Integer, List<InterfaceResidueItem>> interfaceResidues,
+									 PDBScoreItem pdbScoreItem,
+									 int selectedInterface)
+	{
+		if(interfaceResidues.containsKey(1))
+		{
+			interfacesResiduesWindow.getInterfacesResiduesPanel().getFirstStructurePanelSummary().fillResiduesGrid(pdbScoreItem,
+																					 selectedInterface,
+																					 interfaceResidues.get(1));
+			interfacesResiduesWindow.getInterfacesResiduesPanel().getFirstStructurePanel()
+					.fillResiduesGrid(interfaceResidues.get(1));
+			interfacesResiduesWindow.getInterfacesResiduesPanel().getFirstStructurePanel().applyFilter(false);
+		}
+
+		if(interfaceResidues.containsKey(2))
+		{
+			interfacesResiduesWindow.getInterfacesResiduesPanel().getSecondStructurePanelSummary().fillResiduesGrid(pdbScoreItem,
+																					  selectedInterface,
+																					  interfaceResidues.get(2));
+			interfacesResiduesWindow.getInterfacesResiduesPanel().getSecondStructurePanel()
+					.fillResiduesGrid(interfaceResidues.get(2));
+			interfacesResiduesWindow.getInterfacesResiduesPanel().getSecondStructurePanel().applyFilter(false);
+		}
+	}
 
 	/**
 	 * Shows waiting messagebox with provided text.
 	 * @param text information displayed in messagebox
 	 */
-	public void showWaiting(final String text)
+	public void displayWaiting(final String text)
 	{
 //		Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 //			@Override
@@ -227,14 +254,14 @@ public class MainViewPort extends Viewport
 	 * Shows error messagebox with provided error message.
 	 * @param message error message to display
 	 */
-	public void showError(String message)
+	public void displayError(String message)
 	{
 		if((errorMessageBox == null) ||
 		   (!errorMessageBox.isVisible()))
 		{
 			errorMessageBox = MessageBox.alert(AppPropertiesManager.CONSTANTS.error_message_box_header(), message, null);
 			errorMessageBox.setMinWidth(300);
-			errorMessageBox.setMaxWidth(mainController.getWindowData().getWindowWidth());
+			errorMessageBox.setMaxWidth(ApplicationContext.getWindowData().getWindowWidth());
 			errorMessageBox.show();
 		}
 	}
@@ -242,17 +269,19 @@ public class MainViewPort extends Viewport
 	/**
 	 * Displays alignments window.
 	 * @param homologsInfoItem homologs info item
+	 * @param pdbName pdb name
 	 * @param xPosition left corner
 	 * @param yPosition top corner
 	 */
 	public void displayAlignmentsWindow(HomologsInfoItem homologsInfoItem,
+										String pdbName,
 										int xPosition,
 										int yPosition)
 	{
 		if((alignmentsWindow == null) ||
 		   (alignmentsWindow.isResizeWindow()))
 		{
-			alignmentsWindow = new AlignmentsWindow(mainController, homologsInfoItem);
+			alignmentsWindow = new AlignmentsWindow(ApplicationContext.getWindowData(), homologsInfoItem, pdbName);
 			alignmentsWindow.setResizeWindow(false);
 			alignmentsWindow.updateWindowContent();
 			alignmentsWindow.setPagePosition(xPosition, yPosition);
@@ -260,6 +289,7 @@ public class MainViewPort extends Viewport
 		else if(alignmentsWindow.getHomologsInfoItem() != homologsInfoItem)
 		{
 			alignmentsWindow.setHomologsInfoItem(homologsInfoItem);
+			alignmentsWindow.setPdbName(pdbName);
 			alignmentsWindow.updateWindowContent();
 		}
 
@@ -275,15 +305,6 @@ public class MainViewPort extends Viewport
 	}
 
 	/**
-	 * Retrieves window containing alignments.
-	 * @return window containing alignments
-	 */
-	public AlignmentsWindow getAlignmentsWindow()
-	{
-		return alignmentsWindow;
-	}
-
-	/**
 	 * Shows window containing general information about the application.
 	 */
 	public void displayAboutWindow()
@@ -291,19 +312,91 @@ public class MainViewPort extends Viewport
 		if((aboutWindow == null) ||
 		   (aboutWindow.isResizeWindow()))
 		{
-			aboutWindow = new AboutWindow(mainController);
+			aboutWindow = new AboutWindow(ApplicationContext.getWindowData());
 			aboutWindow.setResizeWindow(false);
 		}
 
 		aboutWindow.setVisible(true);
 	}
+	
 
 	/**
-	 * Retrieves window containing general information about application.
-	 * @return window containing general information about application
+	 * Hides all internal windows.
 	 */
-	public AboutWindow getAboutWindow()
+	public void hideAllWindows() 
 	{
-		return aboutWindow;
+		if(aboutWindow != null)
+		{
+			aboutWindow.setVisible(false);
+		}
+		
+		if(alignmentsWindow != null)
+		{
+			alignmentsWindow.setVisible(false);
+		}
+		
+		if(interfacesResiduesWindow != null)
+		{
+			interfacesResiduesWindow.setVisible(false);
+		}
+	}	
+	
+	/**
+	 * Sets flag of all internal windows to resize.
+	 */
+	public void setAllWindowsToResize()
+	{
+		if(aboutWindow != null)
+		{
+			aboutWindow.setResizable(true);
+		}
+		
+		if(alignmentsWindow != null)
+		{
+			alignmentsWindow.setResizable(true);
+		}
+		
+		if(interfacesResiduesWindow != null)
+		{
+			interfacesResiduesWindow.setResizable(true);
+		}
+	}
+	
+	public ResultsPanel getResultsPanel() {
+		return resultsPanel;
+	}
+
+	public StatusPanel getStatusPanel() {
+		return statusPanel;
+	}
+
+	public InputDataPanel getInputDataPanel() {
+		return inputDataPanel;
+	}
+
+	public void setResultsPanel(ResultsPanel resultsPanel) {
+		this.resultsPanel = resultsPanel;
+	}
+
+	public void setStatusPanel(StatusPanel statusPanel) {
+		this.statusPanel = statusPanel;
+	}
+
+	public void setInputDataPanel(InputDataPanel inputDataPanel) {
+		this.inputDataPanel = inputDataPanel;
+	}
+
+	/**
+	 * Initializes events listeners.
+	 */
+	private void initializeEventsListeners()
+	{
+		EventBusManager.EVENT_BUS.addHandler(UnmaskMainViewEvent.TYPE, new UnmaskMainViewHandler() {
+			
+			@Override
+			public void onUnmaskMainView(UnmaskMainViewEvent event) {
+				unmask();
+			}
+		});
 	}
 }

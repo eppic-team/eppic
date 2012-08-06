@@ -1,9 +1,19 @@
 package ch.systemsx.sybit.crkwebui.client.gui;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
-import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
+import ch.systemsx.sybit.crkwebui.client.controllers.ApplicationContext;
+import ch.systemsx.sybit.crkwebui.client.controllers.CrkWebServiceProvider;
+import ch.systemsx.sybit.crkwebui.client.controllers.EventBusManager;
+import ch.systemsx.sybit.crkwebui.client.events.GetFocusOnPdbCodeFieldEvent;
+import ch.systemsx.sybit.crkwebui.client.events.HideWaitingEvent;
+import ch.systemsx.sybit.crkwebui.client.events.ShowErrorEvent;
+import ch.systemsx.sybit.crkwebui.client.events.ShowWaitingEvent;
+import ch.systemsx.sybit.crkwebui.client.events.SubmitJobEvent;
 import ch.systemsx.sybit.crkwebui.client.gui.validators.EmailFieldValidator;
 import ch.systemsx.sybit.crkwebui.client.gui.validators.PdbCodeFieldValidator;
+import ch.systemsx.sybit.crkwebui.client.handlers.GetFocusOnPdbCodeFieldHandler;
+import ch.systemsx.sybit.crkwebui.client.handlers.SubmitJobHandler;
+import ch.systemsx.sybit.crkwebui.client.listeners.SubmitKeyListener;
 import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
 import ch.systemsx.sybit.crkwebui.shared.validators.InputParametersComparator;
 
@@ -12,10 +22,8 @@ import com.extjs.gxt.ui.client.Style.Orientation;
 import com.extjs.gxt.ui.client.Style.Scroll;
 import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
-import com.extjs.gxt.ui.client.event.ComponentEvent;
 import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.FormEvent;
-import com.extjs.gxt.ui.client.event.KeyListener;
 import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.event.SelectionListener;
 import com.extjs.gxt.ui.client.util.Margins;
@@ -34,7 +42,6 @@ import com.extjs.gxt.ui.client.widget.layout.FormLayout;
 import com.extjs.gxt.ui.client.widget.layout.RowData;
 import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.History;
 
 /**
@@ -58,16 +65,15 @@ public class InputDataPanel extends DisplayPanel
 
 	private OptionsInputPanel optionsInputPanel;
 
-	public InputDataPanel(MainController mainController)
+	public InputDataPanel()
 	{
-		super(mainController);
 		init();
 	}
 
 	/**
-	 * Initalizes content of the panel.
+	 * Initializes content of the panel.
 	 */
-	public void init()
+	private void init()
 	{
 		this.setLayout(new RowLayout(Orientation.HORIZONTAL));
 		this.setBorders(false);
@@ -104,9 +110,11 @@ public class InputDataPanel extends DisplayPanel
 
 	    inputRadioGroup = new RadioGroup();
 	    inputRadioGroup.setFieldLabel(AppPropertiesManager.CONSTANTS.input_pdb_input_type());
-	    if (AppPropertiesManager.CONSTANTS.input_pdb_input_type()!=null &&
-	    		AppPropertiesManager.CONSTANTS.input_pdb_input_type().equals(""))
+	    if ((AppPropertiesManager.CONSTANTS.input_pdb_input_type() != null) &&
+	    	(AppPropertiesManager.CONSTANTS.input_pdb_input_type().equals("")))
+	    {
 	    	inputRadioGroup.setLabelSeparator("");
+	    }
 	    inputRadioGroup.add(pdbCodeRadio);
 	    inputRadioGroup.add(pdbFileRadio);
 
@@ -154,15 +162,7 @@ public class InputDataPanel extends DisplayPanel
 		pdbCodeField.setLabelStyle("font-size: 14px;");
 		pdbCodeField.setValidator(new PdbCodeFieldValidator());
 		pdbCodeField.setAllowBlank(false);
-		pdbCodeField.addKeyListener(new KeyListener(){
-			public void componentKeyPress(ComponentEvent event)
-			{
-				if(event.getKeyCode() == KeyCodes.KEY_ENTER)
-				{
-					submitForm();
-				}
-			}
-		});
+		pdbCodeField.addKeyListener(new SubmitKeyListener());
 		generalFieldSet.add(pdbCodeField);
 
 		emailTextField = new TextField<String>();
@@ -170,15 +170,7 @@ public class InputDataPanel extends DisplayPanel
 		emailTextField.setFieldLabel(AppPropertiesManager.CONSTANTS.input_email());
 		emailTextField.setLabelStyle("font-size: 14px;");
 		emailTextField.setValidator(new EmailFieldValidator());
-		emailTextField.addKeyListener(new KeyListener(){
-			public void componentKeyPress(ComponentEvent event)
-			{
-				if(event.getKeyCode() == KeyCodes.KEY_ENTER)
-				{
-					submitForm();
-				}
-			}
-		});
+		emailTextField.addKeyListener(new SubmitKeyListener());
 		generalFieldSet.add(emailTextField);
 
 		FormPanel breakPanel = new FormPanel();
@@ -187,7 +179,8 @@ public class InputDataPanel extends DisplayPanel
 		breakPanel.setBorders(false);
 		generalFieldSet.add(breakPanel);
 
-		optionsInputPanel = new OptionsInputPanel(mainController);
+		optionsInputPanel = new OptionsInputPanel(ApplicationContext.getSettings(),
+												  ApplicationContext.getWindowData());
 
 		generalFieldSet.add(optionsInputPanel);
 		optionsInputPanel.collapse();
@@ -210,13 +203,13 @@ public class InputDataPanel extends DisplayPanel
 					result = result.replaceAll("\n", "");
 					result = result.trim();
 					result = result.substring(4);
-					mainController.showError(result);
-					mainController.hideWaiting();
+					EventBusManager.EVENT_BUS.fireEvent(new ShowErrorEvent(result));
+					EventBusManager.EVENT_BUS.fireEvent(new HideWaitingEvent());
 				}
 				else
 				{
-					mainController.showError(AppPropertiesManager.CONSTANTS.input_submit_error());
-					mainController.hideWaiting();
+					EventBusManager.EVENT_BUS.fireEvent(new ShowErrorEvent(AppPropertiesManager.CONSTANTS.input_submit_error()));
+					EventBusManager.EVENT_BUS.fireEvent(new HideWaitingEvent());
 				}
 			}
 		});
@@ -225,43 +218,28 @@ public class InputDataPanel extends DisplayPanel
 		resetButton.addSelectionListener(new SelectionListener<ButtonEvent>() {
 			public void componentSelected(ButtonEvent ce)
 			{
-				emailTextField.setValue("");
-
-				file.setAllowBlank(true);
-				pdbCodeField.setAllowBlank(true);
-				pdbCodeField.setValue("");
-				file.reset();
-
-				file.setVisible(false);
-        		file.setAllowBlank(true);
-        		pdbCodeField.setVisible(true);
-        		pdbCodeField.setAllowBlank(false);
-
-        		pdbCodeRadio.setValue(true);
-
-				optionsInputPanel.fillDefaultValues(mainController
-						.getSettings().getDefaultParametersValues());
+				resetValues();
 			}
 		});
 
 		formPanel.addButton(resetButton);
 
-		Button submitButton = new Button(
+		final Button submitButton = new Button(
 				AppPropertiesManager.CONSTANTS.input_submit());
 		submitButton.addSelectionListener(new SelectionListener<ButtonEvent>() {
 			public void componentSelected(ButtonEvent ce)
 			{
-				submitForm();
+				EventBusManager.EVENT_BUS.fireEventFromSource(new SubmitJobEvent(), submitButton);
 			}
 		});
 
 		formPanel.addButton(submitButton);
 
-		if(mainController.getSettings().isUseCaptcha())
+		if(ApplicationContext.getSettings().isUseCaptcha())
 		{
-			recaptchaPanel = new RecaptchaPanel(mainController.getSettings().getCaptchaPublicKey());
+			recaptchaPanel = new RecaptchaPanel(ApplicationContext.getSettings().getCaptchaPublicKey());
 
-			if(mainController.getNrOfSubmissions() < mainController.getSettings().getNrOfAllowedSubmissionsWithoutCaptcha())
+			if(ApplicationContext.getNrOfSubmissions() < ApplicationContext.getSettings().getNrOfAllowedSubmissionsWithoutCaptcha())
 			{
 				recaptchaPanel.setVisible(false);
 			}
@@ -274,6 +252,8 @@ public class InputDataPanel extends DisplayPanel
 		//fix for chrome - otherwise unnecessary scrollbars visible
 		this.add(new LayoutContainer(), new RowData(0.5, -1, new Margins(0)));
 		this.add(formPanel, new RowData(-1, -1, new Margins(0)));
+		
+		initializeEventsListeners();
 	}
 
 	/**
@@ -282,7 +262,7 @@ public class InputDataPanel extends DisplayPanel
 	 */
 	private void runJob(String jobId)
 	{
-		mainController.setNrOfSubmissions(mainController.getNrOfSubmissions() + 1);
+		ApplicationContext.setNrOfSubmissions(ApplicationContext.getNrOfSubmissions() + 1);
 
 		RunJobData runJobData = new RunJobData();
 		runJobData.setEmailAddress(emailTextField.getValue());
@@ -317,14 +297,14 @@ public class InputDataPanel extends DisplayPanel
 		runJobData.setInputParameters(optionsInputPanel
 				.getCurrentInputParameters());
 
-		mainController.hideWaiting();
-		mainController.runJob(runJobData);
+		EventBusManager.EVENT_BUS.fireEvent(new HideWaitingEvent());
+		CrkWebServiceProvider.getServiceController().runJob(runJobData);
 	}
 
 	/**
 	 * Validates and submits form.
 	 */
-	public void submitForm()
+	private void submitForm()
 	{
 		if(!optionsInputPanel.checkIfAnyMethodSelected())
 		{
@@ -334,18 +314,19 @@ public class InputDataPanel extends DisplayPanel
 		}
 		else if (formPanel.isValid())
 		{
-			mainController.showWaiting(AppPropertiesManager.CONSTANTS.input_submit_waiting_message());
+			EventBusManager.EVENT_BUS.fireEvent(new ShowWaitingEvent(AppPropertiesManager.CONSTANTS.input_submit_waiting_message()));
 
 			if(pdbFileRadio.getValue())
 			{
 				formPanel.submit();
 			}
-			else if(InputParametersComparator.checkIfEquals(optionsInputPanel.getCurrentInputParameters(),
-															mainController.getSettings().getDefaultParametersValues()))
+			else if((ApplicationContext.getSettings().isUsePrecompiledResults()) &&
+					(InputParametersComparator.checkIfEquals(optionsInputPanel.getCurrentInputParameters(),
+					 										 ApplicationContext.getSettings().getDefaultParametersValues())))
 			{
-				mainController.hideWaiting();
+				EventBusManager.EVENT_BUS.fireEvent(new HideWaitingEvent());
 				String trimmedJobId = pdbCodeField.getValue().toLowerCase().trim();
-				mainController.setSelectedJobId(trimmedJobId);
+				ApplicationContext.setSelectedJobId(trimmedJobId);
 				History.newItem("id/" + trimmedJobId);
 			}
 			else
@@ -362,10 +343,47 @@ public class InputDataPanel extends DisplayPanel
 	}
 
 	/**
-	 * Retrieves field containing code of the pdb to use as the source for the job.
-	 * @return field containing pdb pode
+	 * Resets values of the fields.
 	 */
-	public TextField<String> getPdbCodeField() {
-		return pdbCodeField;
+	public void resetValues()
+	{
+		emailTextField.setValue("");
+
+		file.setAllowBlank(true);
+		pdbCodeField.setAllowBlank(true);
+		pdbCodeField.setValue("");
+		file.reset();
+
+		file.setVisible(false);
+		file.setAllowBlank(true);
+		pdbCodeField.setVisible(true);
+		pdbCodeField.setAllowBlank(false);
+
+		pdbCodeRadio.setValue(true);
+
+		optionsInputPanel.fillDefaultValues(ApplicationContext
+				.getSettings().getDefaultParametersValues());
+	}
+	
+	/**
+	 * Events listeners initialization.
+	 */
+	private void initializeEventsListeners()
+	{
+		EventBusManager.EVENT_BUS.addHandler(GetFocusOnPdbCodeFieldEvent.TYPE, new GetFocusOnPdbCodeFieldHandler() {
+			
+			@Override
+			public void onGrabFocusOnPdbCodeField(GetFocusOnPdbCodeFieldEvent event) {
+				pdbCodeField.focus();
+			}
+		});
+		
+		EventBusManager.EVENT_BUS.addHandler(SubmitJobEvent.TYPE, new SubmitJobHandler() {
+			
+			@Override
+			public void onSubmitJob(SubmitJobEvent event) {
+				submitForm();
+			}
+		});
 	}
 }

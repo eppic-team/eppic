@@ -12,8 +12,10 @@ import ch.systemsx.sybit.crkwebui.client.callbacks.GetSettingsCallback;
 import ch.systemsx.sybit.crkwebui.client.callbacks.RunJobCallback;
 import ch.systemsx.sybit.crkwebui.client.callbacks.StopJobCallback;
 import ch.systemsx.sybit.crkwebui.client.callbacks.UntieJobsFromSessionCallback;
+import ch.systemsx.sybit.crkwebui.client.events.BeforeJobDeletedEvent;
 import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
 
+import com.extjs.gxt.ui.client.GXT;
 import com.google.gwt.core.client.GWT;
 
 /**
@@ -29,65 +31,67 @@ public class ServiceControllerImpl implements ServiceController
 	private final CrkWebServiceAsync crkWebService = GWT
 			.create(CrkWebService.class);
 
-	private MainController mainController;
-
-	public ServiceControllerImpl(MainController mainController) {
-		this.mainController = mainController;
+	public ServiceControllerImpl() {
+		
 	}
 
 	@Override
 	public void loadSettings() {
-		crkWebService.loadSettings(new GetSettingsCallback(mainController));
+		crkWebService.loadSettings(new GetSettingsCallback());
 	}
 
 	@Override
 	public void getResultsOfProcessing(String jobId) {
 		crkWebService.getResultsOfProcessing(jobId, 
-				new GetResultsOfProcessingCallback(mainController, jobId));
+				new GetResultsOfProcessingCallback(jobId));
 	}
 	
 	@Override
 	public void getInterfaceResidues(String jobId, int interfaceUid, int interfaceId) {
 		crkWebService.getInterfaceResidues(interfaceUid,
-				new GetInterfaceResiduesCallback(mainController, jobId, interfaceId));
+				new GetInterfaceResiduesCallback(jobId, interfaceId));
 	}
 	
 	@Override
 	public void getJobsForCurrentSession() {
 		crkWebService.getJobsForCurrentSession(new GetJobsForCurrentSession(
-				mainController));
+				));
 	}
 	
 	@Override
 	public void runJob(RunJobData runJobData) {
-		crkWebService.runJob(runJobData, new RunJobCallback(mainController));
+		crkWebService.runJob(runJobData, new RunJobCallback());
 	}
 
 	@Override
 	public void stopJob(String jobToStop) {
-		crkWebService.stopJob(jobToStop, new StopJobCallback(mainController, jobToStop));
+		crkWebService.stopJob(jobToStop, new StopJobCallback(jobToStop));
 	}
 	
 	@Override
-	public void deleteJob(String jobToDelete) {
-		crkWebService.deleteJob(jobToDelete, new DeleteJobCallback(mainController, jobToDelete));
+	public void deleteJob(String jobToDelete) 
+	{
+		EventBusManager.EVENT_BUS.fireEvent(new BeforeJobDeletedEvent(jobToDelete));
+		crkWebService.deleteJob(jobToDelete, new DeleteJobCallback(jobToDelete));
 	}
 
 	@Override
 	public void untieJobsFromSession() {
 		crkWebService.untieJobsFromSession(new UntieJobsFromSessionCallback(
-				mainController));
+				));
 	}
 	
 	@Override
 	public void getCurrentStatusData(String jobId) 
 	{
-		crkWebService.getResultsOfProcessing(jobId, new GetCurrentStatusDataCallback(mainController, jobId));
+		crkWebService.getResultsOfProcessing(jobId, new GetCurrentStatusDataCallback(jobId));
 	}
 
 	@Override
 	public void getAllResidues(String jobId, int pdbScoreUid) {
-		crkWebService.getAllResidues(pdbScoreUid,
-				new GetAllResiduesCallback(mainController, jobId));
+		if(!GXT.isIE8)
+		{
+			crkWebService.getAllResidues(pdbScoreUid,new GetAllResiduesCallback(jobId));
+		}
 	}
 }

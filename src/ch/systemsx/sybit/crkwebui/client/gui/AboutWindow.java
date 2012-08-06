@@ -2,7 +2,7 @@ package ch.systemsx.sybit.crkwebui.client.gui;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.controllers.EventBusManager;
-import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
+import ch.systemsx.sybit.crkwebui.client.data.WindowData;
 import ch.systemsx.sybit.crkwebui.client.events.WindowHideEvent;
 
 import com.extjs.gxt.ui.client.Style.Scroll;
@@ -20,11 +20,11 @@ public class AboutWindow extends ResizableWindow
 	private static int ABOUT_WINDOW_DEFAULT_WIDTH = 400;
 	private static int ABOUT_WINDOW_DEFAULT_HEIGHT = 300;
 	
-	public AboutWindow(MainController mainController) 
+	public AboutWindow(WindowData windowData) 
 	{
-		super(mainController,
-			  ABOUT_WINDOW_DEFAULT_WIDTH,
-			  ABOUT_WINDOW_DEFAULT_HEIGHT);
+		super(ABOUT_WINDOW_DEFAULT_WIDTH,
+			  ABOUT_WINDOW_DEFAULT_HEIGHT,
+			  windowData);
 		
 		this.setSize(windowWidth, windowHeight);
 		
@@ -53,7 +53,7 @@ public class AboutWindow extends ResizableWindow
 				"</tr>" +
 				"</table>");
 		
-		Listener<WindowEvent> resizeWindowListener = new Listener<WindowEvent>() {
+		this.addListener(Events.Resize, new Listener<WindowEvent>() {
 
 			@Override
 			public void handleEvent(WindowEvent be) 
@@ -61,9 +61,7 @@ public class AboutWindow extends ResizableWindow
 				windowHeight = be.getHeight();
 				windowWidth = be.getWidth();
 			}
-		};
-		
-		this.addListener(Events.Resize, resizeWindowListener);
+		});
 		
 		this.addWindowListener(new WindowListener()
 		{

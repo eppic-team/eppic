@@ -2,7 +2,7 @@ package ch.systemsx.sybit.crkwebui.client.gui;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.controllers.EventBusManager;
-import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
+import ch.systemsx.sybit.crkwebui.client.data.WindowData;
 import ch.systemsx.sybit.crkwebui.client.events.WindowHideEvent;
 
 import com.extjs.gxt.ui.client.GXT;
@@ -29,30 +29,24 @@ public class InterfacesResiduesWindow extends ResizableWindow
 	
 	private InterfacesResiduesPanel interfacesResiduesPanel;
 	
-	private int selectedInterface;
-	
-	public InterfacesResiduesWindow(final MainController mainController,
-									int selectedInterface) 
+	public InterfacesResiduesWindow(WindowData windowData) 
 	{
-		super(mainController,
-			  INTERFACE_RESIDUES_WINDOW_DEFAULT_WIDTH,
-			  INTERFACE_RESIDUES_WINDOW_DEFAULT_HEIGHT);
+		super(INTERFACE_RESIDUES_WINDOW_DEFAULT_WIDTH,
+			  INTERFACE_RESIDUES_WINDOW_DEFAULT_HEIGHT,
+			  windowData);
 		
 		this.setPlain(true);
 		this.setModal(false);
 		this.setBlinkModal(true);
 		this.setLayout(new RowLayout());
 		this.setHideOnButtonClick(true);
-		this.setSelectedInterface(selectedInterface);
-		this.setWindowHeader();
 
 		// adjust to 22 height rows
 		windowHeight = (windowHeight - 322) / 22;
 		windowHeight = windowHeight * 22 + 322;
 		this.setSize(windowWidth, windowHeight);
 		
-		interfacesResiduesPanel = new InterfacesResiduesPanel(mainController,
-															  windowWidth,
+		interfacesResiduesPanel = new InterfacesResiduesPanel(windowWidth,
 															  windowHeight - 100);
 		
 		this.add(interfacesResiduesPanel, new RowData(1, 1, new Margins(0)));
@@ -119,29 +113,14 @@ public class InterfacesResiduesWindow extends ResizableWindow
 	}
 	
 	/**
-	 * Sets identifier of selected interface.
-	 * @param selectedInterface identifier of selected interface
-	 */
-	public void setSelectedInterface(int selectedInterface)
-	{
-		this.selectedInterface = selectedInterface;
-	}
-	
-	/**
-	 * Retrieves identifier of selected interface.
-	 * @return identifier of selected interface
-	 */
-	public int getSelectedInterface()
-	{
-		return selectedInterface;
-	}
-	
-	/**
 	 * Sets header of interface residues window.
+	 * @param area area
+	 * @param selectedInterface chosen interface
 	 */
-	public void setWindowHeader()
+	public void setWindowHeader(double area,
+								int selectedInterface)
 	{
-		double area = mainController.getPdbScoreItem().getInterfaceItem(selectedInterface - 1).getArea();
+//		double area = mainController.getPdbScoreItem().getInterfaceItem(selectedInterface - 1).getArea();
 		NumberFormat number = NumberFormat.getFormat("0.00");
 		String formattedArea = number.format(area);
 		this.setHeading(AppPropertiesManager.CONSTANTS.interfaces_residues_window_title() + " " + selectedInterface + " (" + formattedArea + " A<sup>2</sup>)");

@@ -1,7 +1,7 @@
 package ch.systemsx.sybit.crkwebui.client.gui;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
-import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
+import ch.systemsx.sybit.crkwebui.client.controllers.CrkWebServiceProvider;
 import ch.systemsx.sybit.crkwebui.shared.model.InputType;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
 import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
@@ -43,19 +43,18 @@ public class StatusPanel extends DisplayPanel
 	private Status statusProgress;
 	private Status statusStepsFinished;
 
-	public StatusPanel(MainController mainController)
+	public StatusPanel(int windowHeight)
 	{
-		super(mainController);
-		init();
+		init(windowHeight);
 	}
 
 	/**
 	 * Initializes content of the panel.
 	 */
-	public void init()
+	private void init(int windowHeight)
 	{
 		this.setBorders(true);
-		this.setStyleAttribute("padding-top", "10px");
+		this.addStyleName("eppic-default-top-padding");
 		this.setLayout(new RowLayout());
 
 		formPanel = new FormPanel();
@@ -63,10 +62,10 @@ public class StatusPanel extends DisplayPanel
 		formPanel.setBodyBorder(false);
 		formPanel.setButtonAlign(HorizontalAlignment.CENTER);
 		formPanel.setScrollMode(Scroll.AUTOY);
-		formPanel.setHeight(mainController.getWindowData().getWindowHeight() - 100);
+		formPanel.setHeight(windowHeight - 100);
 
-		pdbIdentifierPanel = new PDBIdentifierPanel(mainController);
-		pdbIdentifierPanel.setStyleAttribute("padding-left", "10px");
+		pdbIdentifierPanel = new PDBIdentifierPanel();
+		pdbIdentifierPanel.addStyleName("eppic-default-left-padding");
 		this.add(pdbIdentifierPanel, new FormData("95%"));
 
 		jobId = new TextField<String>();
@@ -89,7 +88,7 @@ public class StatusPanel extends DisplayPanel
 
 			public void componentSelected(ButtonEvent ce)
 			{
-				mainController.stopJob(jobId.getValue());
+				CrkWebServiceProvider.getServiceController().stopJob(jobId.getValue());
 			}
 		});
 

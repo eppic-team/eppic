@@ -1,28 +1,55 @@
 package ch.systemsx.sybit.crkwebui.client.controllers;
 
-import java.util.HashMap;
-import java.util.List;
-
 import ch.systemsx.sybit.crkwebui.client.data.WindowData;
+import ch.systemsx.sybit.crkwebui.client.events.ApplicationInitEvent;
+import ch.systemsx.sybit.crkwebui.client.events.ApplicationWindowResizeEvent;
+import ch.systemsx.sybit.crkwebui.client.events.GetFocusOnJobsListEvent;
+import ch.systemsx.sybit.crkwebui.client.events.GetFocusOnPdbCodeFieldEvent;
+import ch.systemsx.sybit.crkwebui.client.events.HideAllWindowsEvent;
+import ch.systemsx.sybit.crkwebui.client.events.HideWaitingEvent;
+import ch.systemsx.sybit.crkwebui.client.events.InterfaceResiduesDataRetrievedEvent;
+import ch.systemsx.sybit.crkwebui.client.events.RefreshStatusDataEvent;
+import ch.systemsx.sybit.crkwebui.client.events.ShowAboutEvent;
+import ch.systemsx.sybit.crkwebui.client.events.ShowAlignmentsEvent;
+import ch.systemsx.sybit.crkwebui.client.events.ShowErrorEvent;
+import ch.systemsx.sybit.crkwebui.client.events.ShowInterfaceResiduesEvent;
+import ch.systemsx.sybit.crkwebui.client.events.ShowMessageEvent;
+import ch.systemsx.sybit.crkwebui.client.events.ShowNoResultsDataEvent;
+import ch.systemsx.sybit.crkwebui.client.events.ShowResultsDataEvent;
+import ch.systemsx.sybit.crkwebui.client.events.ShowStatusDataEvent;
+import ch.systemsx.sybit.crkwebui.client.events.ShowWaitingEvent;
+import ch.systemsx.sybit.crkwebui.client.events.StopJobsListAutoRefreshEvent;
+import ch.systemsx.sybit.crkwebui.client.events.UpdateStatusLabelEvent;
+import ch.systemsx.sybit.crkwebui.client.gui.HelpPanel;
 import ch.systemsx.sybit.crkwebui.client.gui.InputDataPanel;
 import ch.systemsx.sybit.crkwebui.client.gui.MainViewPort;
 import ch.systemsx.sybit.crkwebui.client.gui.ResultsPanel;
 import ch.systemsx.sybit.crkwebui.client.gui.StatusPanel;
-import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
-import ch.systemsx.sybit.crkwebui.shared.model.HomologsInfoItem;
-import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResidueItem;
-import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResiduesItemsList;
+import ch.systemsx.sybit.crkwebui.client.handlers.ApplicationInitHandler;
+import ch.systemsx.sybit.crkwebui.client.handlers.ApplicationWindowResizeHandler;
+import ch.systemsx.sybit.crkwebui.client.handlers.HideAllWindowsHandler;
+import ch.systemsx.sybit.crkwebui.client.handlers.HideWaitingHandler;
+import ch.systemsx.sybit.crkwebui.client.handlers.InterfaceResiduesDataRetrievedHandler;
+import ch.systemsx.sybit.crkwebui.client.handlers.RefreshStatusDataHandler;
+import ch.systemsx.sybit.crkwebui.client.handlers.ShowAboutHandler;
+import ch.systemsx.sybit.crkwebui.client.handlers.ShowAlignmentsHandler;
+import ch.systemsx.sybit.crkwebui.client.handlers.ShowErrorHandler;
+import ch.systemsx.sybit.crkwebui.client.handlers.ShowInterfaceResiduesWindowHandler;
+import ch.systemsx.sybit.crkwebui.client.handlers.ShowMessageHandler;
+import ch.systemsx.sybit.crkwebui.client.handlers.ShowNoResultsDataHandler;
+import ch.systemsx.sybit.crkwebui.client.handlers.ShowResultsDataHandler;
+import ch.systemsx.sybit.crkwebui.client.handlers.ShowStatusDataHandler;
+import ch.systemsx.sybit.crkwebui.client.handlers.ShowWaitingHandler;
+import ch.systemsx.sybit.crkwebui.client.handlers.StopJobsListAutoRefreshHandler;
+import ch.systemsx.sybit.crkwebui.client.handlers.UpdateStatusLabelHandler;
 import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
-import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
 import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
 
-import com.extjs.gxt.ui.client.GXT;
 import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.event.MessageBoxEvent;
 import com.extjs.gxt.ui.client.widget.MessageBox;
 import com.extjs.gxt.ui.client.widget.Viewport;
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.user.client.Timer;
@@ -38,38 +65,214 @@ public class MainController
 {
 	private MainViewPort mainViewPort;
 	
-	private WindowData windowData;
-
-	private ServiceController serviceController;
-
-	private ApplicationSettings settings;
-
-	private PDBScoreItem pdbScoreItem;
-	private InterfaceResiduesItemsList residuesForInterface;
-
-	private String selectedJobId;
-
+	/**
+	 * Timer used to automatically refresh list of jobs in my jobs panel.
+	 */
 	private Timer autoRefreshMyJobs;
-	private boolean canRefreshMyJobs = true;
 
-	private boolean doStatusPanelRefreshing = false;
-
-	private int nrOfSubmissions = 0;
-
-	private String selectedViewer = AppPropertiesManager.CONSTANTS.viewer_jmol();
-
+	/**
+	 * Creates instance of main controller with specified viewport.
+	 * @param viewport main viewport
+	 */
 	public MainController(Viewport viewport)
 	{
-		this.serviceController = new ServiceControllerImpl(this);
-		windowData = new WindowData(Window.getClientWidth(), Window.getClientHeight());
+		ApplicationContext.setWindowData(new WindowData(Window.getClientWidth(), Window.getClientHeight()));
+		initializeEventsListeners();
+	}
+	
+	private void initializeEventsListeners()
+	{
+		EventBusManager.EVENT_BUS.addHandler(ApplicationInitEvent.TYPE, new ApplicationInitHandler() {
+			
+			@Override
+			public void onApplicationInit(ApplicationInitEvent event) {
+				setMainView();
+				runMyJobsAutoRefresh();
+			}
+		});
+		
+		EventBusManager.EVENT_BUS.addHandler(ShowResultsDataEvent.TYPE, new ShowResultsDataHandler() {
+			
+			@Override
+			public void onShowResultsData(ShowResultsDataEvent event) {
+				displayResultView(event.getPdbScoreItem());
+			}
+		});
+		
+		EventBusManager.EVENT_BUS.addHandler(ShowStatusDataEvent.TYPE, new ShowStatusDataHandler() {
+			
+			@Override
+			public void onShowStatusData(ShowStatusDataEvent event) {
+				displayStatusView(event.getStatusData());
+			}
+		});
+		
+		EventBusManager.EVENT_BUS.addHandler(RefreshStatusDataEvent.TYPE, new RefreshStatusDataHandler() {
+			
+			@Override
+			public void onRefreshStatusData(RefreshStatusDataEvent event) {
+				refreshStatusView(event.getStatusData());
+			}
+		});
+		
+		EventBusManager.EVENT_BUS.addHandler(ShowNoResultsDataEvent.TYPE, new ShowNoResultsDataHandler() {
+			
+			@Override
+			public void onShowNoResultsData(ShowNoResultsDataEvent event) {
+				cleanCenterPanel();
+			}
+		});
+		
+		EventBusManager.EVENT_BUS.addHandler(ShowErrorEvent.TYPE, new ShowErrorHandler() {
+			
+			@Override
+			public void onShowError(ShowErrorEvent event) 
+			{
+				showError(event.getErrorText());
+			}
+		});
+		
+		EventBusManager.EVENT_BUS.addHandler(ShowMessageEvent.TYPE, new ShowMessageHandler() {
+			
+			@Override
+			public void onShowMessage(ShowMessageEvent event) {
+				showMessage(event.getTitle(), event.getMessage());
+			}
+		});
+		
+		EventBusManager.EVENT_BUS.addHandler(ShowAboutEvent.TYPE, new ShowAboutHandler() 
+		{
+			@Override
+			public void onShowAbout(ShowAboutEvent event) 
+			{
+				mainViewPort.displayAboutWindow();
+			}
+		});
+		
+		EventBusManager.EVENT_BUS.addHandler(ShowAlignmentsEvent.TYPE, new ShowAlignmentsHandler() {
+			
+			@Override
+			public void onShowAlignments(ShowAlignmentsEvent event) {
+				mainViewPort.displayAlignmentsWindow(event.getHomologsInfoItem(),
+										event.getPdbName(), 
+										event.getxPosition(), 
+										event.getyPostiton());
+			}
+		});
+		
+		EventBusManager.EVENT_BUS.addHandler(ShowInterfaceResiduesEvent.TYPE, new ShowInterfaceResiduesWindowHandler() {
+			
+			@Override
+			public void onShowInterfaceResidues(ShowInterfaceResiduesEvent event) {
+				showInterfaceResidues(event.getInterfaceId());
+			}
+		}); 
+		
+		EventBusManager.EVENT_BUS.addHandler(ShowWaitingEvent.TYPE, new ShowWaitingHandler() {
+			
+			@Override
+			public void onShowWaiting(ShowWaitingEvent event) {
+				mainViewPort.displayWaiting(event.getMessage());
+			}
+		});
+		
+		EventBusManager.EVENT_BUS.addHandler(HideWaitingEvent.TYPE, new HideWaitingHandler() {
+			
+			@Override
+			public void onHideWaiting(HideWaitingEvent event) {
+				mainViewPort.hideWaiting();
+			}
+		});
+		
+		EventBusManager.EVENT_BUS.addHandler(StopJobsListAutoRefreshEvent.TYPE, new StopJobsListAutoRefreshHandler() {
+			
+			@Override
+			public void onStopJobsListAutoRefresh(StopJobsListAutoRefreshEvent event) {
+				stopMyJobsAutoRefresh();
+			}
+		});
+		
+		
+		EventBusManager.EVENT_BUS.addHandler(UpdateStatusLabelEvent.TYPE, new UpdateStatusLabelHandler() {
+			
+			@Override
+			public void onUpdateStatusLabel(UpdateStatusLabelEvent event) 
+			{
+				if((mainViewPort == null) || (mainViewPort.getBottomPanel() == null))
+				{
+					showError(event.getStatusText());
+				}
+			}
+		});
+		
+		EventBusManager.EVENT_BUS.addHandler(InterfaceResiduesDataRetrievedEvent.TYPE, new InterfaceResiduesDataRetrievedHandler() {
+			
+			@Override
+			public void onInterfaceResiduesDataRetrieved(
+					final InterfaceResiduesDataRetrievedEvent event) {
+				
+				Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+					@Override
+					public void execute() 
+					{
+						mainViewPort.fillInterfacesWindow(event.getInterfaceResidues(),
+														  ApplicationContext.getPdbScoreItem(),
+														  ApplicationContext.getSelectedInterface());
+					}
+				});
+			}
+		});
+		
+		EventBusManager.EVENT_BUS.addHandler(HideAllWindowsEvent.TYPE, new HideAllWindowsHandler() {
+			
+			@Override
+			public void onHideAllWindows(HideAllWindowsEvent event) {
+				mainViewPort.hideAllWindows();
+			}
+		});
+		
+		EventBusManager.EVENT_BUS.addHandler(ApplicationWindowResizeEvent.TYPE, new ApplicationWindowResizeHandler() {
+			
+			@Override
+			public void onResizeApplicationWindow(ApplicationWindowResizeEvent event) {
+				mainViewPort.setAllWindowsToResize();
+			}
+		});
+	}
+	
+	/**
+	 * Displays error.
+	 * @param errorMessage message of the error
+	 */
+	private void showError(String errorMessage)
+	{
+		if(mainViewPort == null)
+		{
+			Window.alert(errorMessage);
+		}
+		else
+		{
+			mainViewPort.displayError(errorMessage);
+		}
 	}
 
 	/**
-	 * Retrieves general application settings.
+	 * Shows messagebox with provided message.
+	 * @param title title of message
+	 * @param message text of the message
 	 */
-	public void loadSettings()
+	private void showMessage(String title, String message)
 	{
-		serviceController.loadSettings();
+		MessageBox infoMessageBox = MessageBox.info(title, message, new Listener<MessageBoxEvent>() {
+
+			@Override
+			public void handleEvent(MessageBoxEvent be) {
+				EventBusManager.EVENT_BUS.fireEvent(new GetFocusOnJobsListEvent());
+			}
+		});
+
+		infoMessageBox.setMinWidth(300);
+		infoMessageBox.setMaxWidth(ApplicationContext.getWindowData().getWindowWidth());
 	}
 
 	/**
@@ -78,60 +281,35 @@ public class MainController
 	 */
 	public void displayView(String token)
 	{
-		hideWindows();
+		EventBusManager.EVENT_BUS.fireEvent(new HideAllWindowsEvent());
 
 		if ((token != null) && (token.length() > 3) && (token.startsWith("id")))
 		{
 			Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_loading());
-			selectedJobId = token.substring(3);
+			ApplicationContext.setSelectedJobId(token.substring(3));
 			displayResults();
+		}
+		else if((token != null) && (token.equals("help")))
+		{
+			Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_help());
+			ApplicationContext.setSelectedJobId("");
+			displayHelp();
 		}
 		else
 		{
 			Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_input());
-			selectedJobId = "";
+			ApplicationContext.setSelectedJobId("");
 			displayInputView();
 		}
 	}
-
+	
 	/**
-	 * Hides all visible windows.
+	 * Initializes main view.
 	 */
-	private void hideWindows()
+	private void setMainView()
 	{
-		if(mainViewPort.getAlignmentsWindow() != null)
-		{
-			mainViewPort.getAlignmentsWindow().setVisible(false);
-		}
-
-		if(mainViewPort.getInterfacesResiduesWindow() != null)
-		{
-			mainViewPort.getInterfacesResiduesWindow().setVisible(false);
-		}
-
-		if(mainViewPort.getAboutWindow() != null)
-		{
-			mainViewPort.getAboutWindow().setVisible(false);
-		}
-
-		if((mainViewPort.getCenterPanel().getDisplayPanel() != null) &&
-			(mainViewPort.getCenterPanel().getDisplayPanel() instanceof ResultsPanel))
-		{
-			ResultsPanel resultsPanel = (ResultsPanel)mainViewPort.getCenterPanel().getDisplayPanel();
-
-			if(resultsPanel.getInfoPanel() != null)
-			{
-				if(resultsPanel.getInfoPanel().getQueryWarningsTooltip() != null)
-				{
-					resultsPanel.getInfoPanel().getQueryWarningsTooltip().setVisible(false);
-				}
-
-				if(resultsPanel.getInfoPanel().getInputParametersTooltip() != null)
-				{
-					resultsPanel.getInfoPanel().getInputParametersTooltip().setVisible(false);
-				}
-			}
-		}
+		mainViewPort = new MainViewPort(this);
+		RootPanel.get().add(mainViewPort);
 	}
 
 	/**
@@ -139,10 +317,47 @@ public class MainController
 	 */
 	public void displayInputView()
 	{
-		doStatusPanelRefreshing = false;
+		ApplicationContext.setDoStatusPanelRefreshing(false);
 
-		InputDataPanel inputDataPanel = new InputDataPanel(this);
-		mainViewPort.getCenterPanel().setDisplayPanel(inputDataPanel);
+		InputDataPanel inputDataPanel = null;
+		
+		if((mainViewPort.getCenterPanel().getDisplayPanel() != null) &&
+		   (mainViewPort.getCenterPanel().getDisplayPanel() instanceof InputDataPanel))
+		{
+			inputDataPanel = (InputDataPanel)mainViewPort.getCenterPanel().getDisplayPanel();
+			inputDataPanel.resetValues();
+			inputDataPanel.layout();
+		}
+		else if(mainViewPort.getInputDataPanel() != null)
+		{
+			inputDataPanel = mainViewPort.getInputDataPanel();
+			inputDataPanel.resetValues();
+			mainViewPort.getCenterPanel().setDisplayPanel(inputDataPanel);
+		}
+		else
+		{
+			inputDataPanel = new InputDataPanel();
+			mainViewPort.setInputDataPanel(inputDataPanel);
+			mainViewPort.getCenterPanel().setDisplayPanel(inputDataPanel);
+		}
+		
+		Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+			@Override
+			public void execute() {
+				EventBusManager.EVENT_BUS.fireEvent(new GetFocusOnPdbCodeFieldEvent());
+			}
+	    });
+	}
+	
+	/**
+	 * Displays help panel.
+	 */
+	public void displayHelp()
+	{
+		ApplicationContext.setDoStatusPanelRefreshing(false);
+
+		HelpPanel helpPanel = new HelpPanel();
+		mainViewPort.getCenterPanel().setDisplayPanel(helpPanel);
 	}
 
 	/**
@@ -151,33 +366,43 @@ public class MainController
 	public void displayResults()
 	{
 		mainViewPort.mask(AppPropertiesManager.CONSTANTS.defaultmask());
-		serviceController.getResultsOfProcessing(selectedJobId);
+		CrkWebServiceProvider.getServiceController().getResultsOfProcessing(ApplicationContext.getSelectedJobId());
 	}
 
 	/**
 	 * Displays results data panel.
 	 * @param resultData results of processing
 	 */
-	public void displayResultView(PDBScoreItem resultData)
+	private void displayResultView(PDBScoreItem resultData)
 	{
-		doStatusPanelRefreshing = false;
+		ApplicationContext.setDoStatusPanelRefreshing(false);
 
+		ResultsPanel resultsPanel = null;
+		
 		if((mainViewPort.getCenterPanel().getDisplayPanel() != null) &&
 		   (mainViewPort.getCenterPanel().getDisplayPanel() instanceof ResultsPanel))
 		{
-			ResultsPanel resultsPanel = (ResultsPanel)mainViewPort.getCenterPanel().getDisplayPanel();
+			resultsPanel = (ResultsPanel)mainViewPort.getCenterPanel().getDisplayPanel();
 			resultsPanel.fillResultsPanel(resultData);
 			resultsPanel.layout();
 		}
+		else if(mainViewPort.getResultsPanel() != null)
+		{
+			resultsPanel = mainViewPort.getResultsPanel();
+			resultsPanel.fillResultsPanel(resultData);
+			mainViewPort.getCenterPanel().setDisplayPanel(resultsPanel);
+			resultsPanel.resizeGrid();
+		}
 		else
 		{
-			ResultsPanel resultsPanel = new ResultsPanel(this);
-			resultsPanel.fillResultsGrid(resultData);
+			resultsPanel = new ResultsPanel(resultData);
+			resultsPanel.fillResultsPanel(resultData);
+			mainViewPort.setResultsPanel(resultsPanel);
 			mainViewPort.getCenterPanel().setDisplayPanel(resultsPanel);
 			resultsPanel.resizeGrid();
 		}
 
-		mainViewPort.getMyJobsPanel().getMyJobsGrid().focus();
+		EventBusManager.EVENT_BUS.fireEvent(new GetFocusOnJobsListEvent());
 		Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_results() + " - " + resultData.getPdbName());
 	}
 
@@ -197,7 +422,7 @@ public class MainController
 		}
 		else
 		{
-			statusPanel = new StatusPanel(this);
+			statusPanel = new StatusPanel(ApplicationContext.getWindowData().getWindowHeight());
 			mainViewPort.getCenterPanel().setDisplayPanel(statusPanel);
 		}
 
@@ -211,169 +436,24 @@ public class MainController
 			(statusData.getStatus().equals(StatusOfJob.WAITING.getName())) ||
 			(statusData.getStatus().equals(StatusOfJob.QUEUING.getName()))))
 		{
-			doStatusPanelRefreshing = true;
+			ApplicationContext.setDoStatusPanelRefreshing(true);
 		}
 		else
 		{
-			doStatusPanelRefreshing = false;
+			ApplicationContext.setDoStatusPanelRefreshing(false);
 		}
 
 		mainViewPort.getCenterPanel().layout();
 
-		mainViewPort.getMyJobsPanel().getMyJobsGrid().focus();
+		EventBusManager.EVENT_BUS.fireEvent(new GetFocusOnJobsListEvent());
 		Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_processing() + " - " + statusData.getInput());
 	}
-
-	public void getCurrentStatusData()
-	{
-		serviceController.getCurrentStatusData(selectedJobId);
-	}
-
-	public void getJobsForCurrentSession()
-	{
-		if(canRefreshMyJobs)
-		{
-			canRefreshMyJobs = false;
-			serviceController.getJobsForCurrentSession();
-		}
-	}
-
-	public void getInterfaceResidues(int interfaceId)
-	{
-		mainViewPort.displayInterfacesWindow(interfaceId);
-
-		if((residuesForInterface != null) &&
-		   (residuesForInterface.containsKey(interfaceId)))
-		{
-			setInterfacesResiduesWindowData(residuesForInterface.get(interfaceId));
-		}
-		else
-		{
-			serviceController.getInterfaceResidues(pdbScoreItem.getJobId(),
-												   pdbScoreItem.getInterfaceItem(interfaceId - 1).getUid(),
-												   interfaceId);
-		}
-	}
-
-	public void setJobs(List<ProcessingInProgressData> statusData) {
-		mainViewPort.getMyJobsPanel().setJobs(statusData);
-	}
-
-	public void untieJobsFromSession() {
-		serviceController.untieJobsFromSession();
-	}
-
-	public void getAllResidues(String jobId, int interfaceUid)
-	{
-		if(!GXT.isIE8)
-		{
-			serviceController.getAllResidues(jobId, interfaceUid);
-		}
-	}
-
-	public void setSettings(ApplicationSettings settings) {
-		this.settings = settings;
-	}
-
-	public ApplicationSettings getSettings() {
-		return settings;
-	}
-
-	public void setPDBScoreItem(PDBScoreItem pdbScoreItem) {
-		this.pdbScoreItem = pdbScoreItem;
-	}
-
-	public PDBScoreItem getPdbScoreItem() {
-		return pdbScoreItem;
-	}
-
-	/**
-	 * Retrieves main view.
-	 * @return main view
-	 */
-	public MainViewPort getMainViewPort() {
-		return mainViewPort;
-	}
-
-	/**
-	 * Stars new job.
-	 * @param runJobData run job data
-	 */
-	public void runJob(RunJobData runJobData) {
-		serviceController.runJob(runJobData);
-	}
-
-	/**
-	 * Stops job.
-	 * @param jobToStop identifier of the job to stop
-	 */
-	public void stopJob(String jobToStop)
-	{
-		serviceController.stopJob(jobToStop);
-	}
-
-	/**
-	 * Removes job.
-	 * @param jobToDelete identifier of the job to remove
-	 */
-	public void deleteJob(String jobToDelete)
-	{
-		if(jobToDelete.equals(selectedJobId))
-		{
-			mainViewPort.getMyJobsPanel().selectPrevious(jobToDelete);
-		}
-
-		serviceController.deleteJob(jobToDelete);
-	}
-
-	/**
-	 * Auto refreshes jobs grid.
-	 */
-	public void runMyJobsAutoRefresh()
-	{
-		getJobsForCurrentSession();
-
-		autoRefreshMyJobs = new Timer()
-		{
-			public void run()
-			{
-				if((doStatusPanelRefreshing) &&
-					(selectedJobId != null) &&
-					(!selectedJobId.equals("")))
-				{
-					getCurrentStatusData();
-				}
-				else
-				{
-					getJobsForCurrentSession();
-				}
-			}
-		};
-
-		autoRefreshMyJobs.scheduleRepeating(10000);
-	}
-
-	/**
-	 * Retrieves selected job identifier.
-	 * @return job identifier
-	 */
-	public String getSelectedJobId() {
-		return selectedJobId;
-	}
-
-	/**
-	 * Sets currently selected job identifier.
-	 * @param selectedJobId job identifier
-	 */
-	public void setSelectedJobId(String selectedJobId) {
-		this.selectedJobId = selectedJobId;
-	}
-
+	
 	/**
 	 * Refreshes content of the status panel.
 	 * @param statusData status data of the current job
 	 */
-	public void refreshStatusView(ProcessingInProgressData statusData)
+	private void refreshStatusView(ProcessingInProgressData statusData)
 	{
 		if((mainViewPort.getCenterPanel().getDisplayPanel() != null) &&
 		   (mainViewPort.getCenterPanel().getDisplayPanel() instanceof StatusPanel))
@@ -383,363 +463,69 @@ public class MainController
 			mainViewPort.getCenterPanel().layout();
 		}
 	}
-
-	/**
-	 * Sets number of submitted jobs.
-	 * @param nrOfSubmissions number of submitted jobs
-	 */
-	public void setNrOfSubmissions(int nrOfSubmissions)
-	{
-		this.nrOfSubmissions = nrOfSubmissions;
-	}
-
-	/**
-	 * Retrieves number of submitted jobs. This information is used in a case of using recaptcha protection to limit
-	 * number of submissions.
-	 * @return number of submitted jobs.
-	 */
-	public int getNrOfSubmissions()
-	{
-		return nrOfSubmissions;
-	}
-
-	/**
-	 * Sets selected viewer type.
-	 * @param selectedViewer viewer type
-	 */
-	public void setSelectedViewer(String selectedViewer)
-	{
-		this.selectedViewer = selectedViewer;
-	}
-
-	/**
-	 * Starts selected viewer. Type of the viewer is determined based on the option selected in viewer selector.
-	 * @param interfaceId identifier of the interface
-	 */
-	public void runViewer(String interfaceId)
-	{
-		if(selectedViewer.equals(AppPropertiesManager.CONSTANTS.viewer_jmol()))
-		{
-			showJmolViewer(interfaceId);
-		}
-		else if(selectedViewer.equals(AppPropertiesManager.CONSTANTS.viewer_local()))
-		{
-			downloadFileFromServer("interface", interfaceId);
-		}
-		else if(selectedViewer.equals(AppPropertiesManager.CONSTANTS.viewer_pse()))
-		{
-			downloadFileFromServer("pse", interfaceId);
-		}
-		else
-		{
-			showError("No viewer selected");
-		}
-	}
-
-	/**
-	 * Displays jmol viewer.
-	 * @param interfaceNr interface identifier
-	 */
-	public void showJmolViewer(String interfaceNr)
-	{
-		int size = windowData.getWindowHeight();
-		if(size > windowData.getWindowWidth())
-		{
-			size = windowData.getWindowWidth();
-		}
-		
-		size -= 20;
-		
-		String jmolViewerUrl = GWT.getModuleBaseURL() + "jmolViewer";
-		jmolViewerUrl += "?id=" + pdbScoreItem.getJobId() + 
-						 "&input=" + pdbScoreItem.getPdbName() + 
-						 "&interface=" + interfaceNr +
-						 "&size=" + size;
-		
-		Window.open(jmolViewerUrl, "", "");
-
-//		openJmol(GWT.getHostPageBaseURL() + "Jmol.html",
-//				 GWT.getHostPageBaseURL() + "resources/jmol",
-//				 GWT.getHostPageBaseURL() + resultsLocation,
-//				 interfaceNr,
-//				 pdbScoreItem.getJobId(),
-//				 pdbScoreItem.getPdbName(),
-//				 size,
-//				 pdbScoreItem.getInterfaceItem(Integer.parseInt(interfaceNr) - 1).getJmolScript());
-	}
-
-	public WindowData getWindowData() {
-		return windowData;
-	}
-
-	public void setWindowData(WindowData windowData) {
-		this.windowData = windowData;
-	}
-
-//	/*
-//	 * height and width should be set always - otherwise firefox is opening new tab ( and not window )
-//	 */
-//	/**
-//	 * Opens jmol viewer window.
-//	 * @param jmolPage page where jmol is going to be embedded
-//	 * @param jmolResources path to jmol resources
-//	 * @param url server url
-//	 * @param interfaceNr interface identifier
-//	 * @param filename name of the file
-//	 * @param size size of the window
-//	 * @param jmolScript jmol script which is going to be executed
-//	 */
-//	public native void openJmol(String jmolPage,
-//								String jmolResources,
-//								String url,
-//								String interfaceNr,
-//								String selectedJob,
-//								String filename,
-//								int size,
-//								String jmolScript) /*-{
-//		var jmolwindow = window.open(jmolPage, "Jmol", "status=no,width=" + size + ",height=" + size);
-//		jmolwindow.document.body.innerHTML = "";
-//		$wnd.jmolInitialize(jmolResources);
-//		$wnd.jmolSetCallback("language", "en");
-//		$wnd.jmolSetDocument(jmolwindow.document);
-//		$wnd.jmolApplet(size - 20, 'load ' + url + selectedJob + "/" + filename + "." + interfaceNr + '.pdb.gz;' + jmolScript);
-//	}-*/;
-
-	/**
-	 * Downloads file from the server.
-	 * @param type type of the file to download
-	 * @param interfaceId identifier of the interface
-	 */
-	public void downloadFileFromServer(String type, String interfaceId)
-	{
-		String fileDownloadServletUrl = GWT.getModuleBaseURL() + "fileDownload";
-		fileDownloadServletUrl += "?type=" + type + "&id=" + pdbScoreItem.getJobId() + "&interface=" + interfaceId;
-		Window.open(fileDownloadServletUrl, "", "");
-	}
-
-	/**
-	 * Displays error.
-	 * @param errorMessage message of the error
-	 */
-	public void showError(String errorMessage)
-	{
-		if(mainViewPort != null)
-		{
-			mainViewPort.showError(errorMessage);
-		}
-		else
-		{
-			Window.alert(errorMessage);
-		}
-	}
-
-	/**
-	 * Shows messagebox with provided message.
-	 * @param title title of message
-	 * @param message text of the message
-	 */
-	public void showMessage(String title, String message)
-	{
-		MessageBox infoMessageBox = MessageBox.info(title, message, new Listener<MessageBoxEvent>() {
-
-			@Override
-			public void handleEvent(MessageBoxEvent be) {
-				mainViewPort.getMyJobsPanel().getMyJobsGrid().focus();
-			}
-		});
-
-		infoMessageBox.setMinWidth(300);
-		infoMessageBox.setMaxWidth(windowData.getWindowWidth());
-	}
-
-	/**
-	 * Shows waiting messagebox.
-	 * @param text
-	 */
-	public void showWaiting(String text)
-	{
-		mainViewPort.showWaiting(text);
-	}
-
-	/**
-	 * Hides waiting messagebox.
-	 */
-	public void hideWaiting()
-	{
-		mainViewPort.hideWaiting();
-	}
-
-	/**
-	 * Initializes main view.
-	 */
-	public void setMainView()
-	{
-		mainViewPort = new MainViewPort(this);
-		RootPanel.get().add(mainViewPort);
-	}
-
-	/**
-	 * Stops automated refreshing of jobs grid.
-	 */
-	public void stopMyJobsAutoRefresh()
-	{
-		autoRefreshMyJobs.cancel();
-	}
-
-	/**
-	 * Updates text of the status label.
-	 * @param message information to display
-	 * @param isError flag pointing whether message is error
-	 */
-	public void updateStatusLabel(String message, boolean isError)
-	{
-		if((mainViewPort != null) && (mainViewPort.getBottomPanel() != null))
-		{
-			mainViewPort.getBottomPanel().updateStatusMessage(message, isError);
-		}
-		else
-		{
-			showError(message);
-		}
-	}
-
-	/**
-	 * Sets resize flag for all windows.
-	 * @param resizeWindow flag pointing whether window should be resized
-	 */
-	public void setResizeWindows(boolean resizeWindow)
-	{
-		if(mainViewPort.getInterfacesResiduesWindow() != null)
-		{
-			mainViewPort.getInterfacesResiduesWindow().setResizeWindow(true);
-		}
-
-		if(mainViewPort.getAlignmentsWindow() != null)
-		{
-			mainViewPort.getAlignmentsWindow().setResizeWindow(true);
-		}
-
-		if(mainViewPort.getAboutWindow() != null)
-		{
-			mainViewPort.getAboutWindow().setResizeWindow(true);
-		}
-	}
-
-	/**
-	 * Retrieves information about user browser.
-	 * @return information about browser of the user
-	 */
-	public native static String getUserAgent() /*-{
-		return navigator.userAgent.toLowerCase();
-	}-*/;
-
-	/**
-	 * Resizes results grid.
-	 */
-	public void resizeResultsGrid()
-    {
-		if((mainViewPort != null) &&
-           (mainViewPort.getCenterPanel() != null) &&
-           (mainViewPort.getCenterPanel().getDisplayPanel() != null) &&
-           (mainViewPort.getCenterPanel().getDisplayPanel() instanceof ResultsPanel))
-           {
-		    	((ResultsPanel)mainViewPort.getCenterPanel().getDisplayPanel()).resizeGrid();
-           }
-    }
-
+	
 	/**
 	 * Cleans content of central panel.
 	 */
-	public void cleanCenterPanel()
+	private void cleanCenterPanel()
 	{
 		mainViewPort.getCenterPanel().removeAll();
 		mainViewPort.getCenterPanel().setDisplayPanel(null);
 	}
-
+	
 	/**
-	 * Sets data for interface residues items window.
-	 * @param result interface residues data
+	 * Show interface residues items window.
+	 * @param interfaceId interface identifier
 	 */
-	public void setInterfacesResiduesWindowData(
-			final HashMap<Integer, List<InterfaceResidueItem>> result)
+	private void showInterfaceResidues(int interfaceId)
 	{
-		Scheduler.get().scheduleDeferred(new ScheduledCommand() {
-			@Override
-			public void execute() {
-				if(result.containsKey(1))
-				{
-					mainViewPort.getInterfacesResiduesWindow().getInterfacesResiduesPanel().getFirstStructurePanelSummary().fillResiduesGrid();
-					mainViewPort.getInterfacesResiduesWindow().getInterfacesResiduesPanel().getFirstStructurePanel()
-							.fillResiduesGrid(result.get(1));
-					mainViewPort.getInterfacesResiduesWindow().getInterfacesResiduesPanel().getFirstStructurePanel().applyFilter(false);
-				}
+		mainViewPort.displayInterfacesWindow(interfaceId);
 
-				if(result.containsKey(2))
-				{
-					mainViewPort.getInterfacesResiduesWindow().getInterfacesResiduesPanel().getSecondStructurePanelSummary().fillResiduesGrid();
-					mainViewPort.getInterfacesResiduesWindow().getInterfacesResiduesPanel().getSecondStructurePanel()
-							.fillResiduesGrid(result.get(2));
-					mainViewPort.getInterfacesResiduesWindow().getInterfacesResiduesPanel().getSecondStructurePanel().applyFilter(false);
-				}
-			}
-		});
-	}
-
-	/**
-	 * Retrieves list of interface residues.
-	 * @return interface residues
-	 */
-	public InterfaceResiduesItemsList getInterfaceResiduesItemsList()
-	{
-		return residuesForInterface;
-	}
-
-	/**
-	 * Sets residues list for interface.
-	 * @param residuesForInterface residues list
-	 */
-	public void setResiduesForInterface(InterfaceResiduesItemsList residuesForInterface)
-	{
-		this.residuesForInterface = residuesForInterface;
-	}
-
-	/**
-	 * Cleans interface residues.
-	 */
-	public void cleanResiduesForInterface()
-	{
-		if(residuesForInterface != null)
+		if((ApplicationContext.getResiduesForInterface() != null) &&
+		   (ApplicationContext.getResiduesForInterface().containsKey(interfaceId)))
 		{
-			residuesForInterface.clear();
-			residuesForInterface = null;
+			EventBusManager.EVENT_BUS.fireEvent(new InterfaceResiduesDataRetrievedEvent(ApplicationContext.getResiduesForInterface().get(interfaceId)));
+		}
+		else
+		{
+			CrkWebServiceProvider.getServiceController().getInterfaceResidues(ApplicationContext.getPdbScoreItem().getJobId(),
+												   ApplicationContext.getPdbScoreItem().getInterfaceItem(interfaceId - 1).getUid(),
+												   interfaceId);
 		}
 	}
-
-	public void setCanRefreshMyJobs()
-	{
-		this.canRefreshMyJobs = true;
-	}
-
+	
 	/**
-	 * Displays alignments window.
-	 * @param homologsInfoItem homologs info item
-	 * @param xPosition left corner
-	 * @param yPosition top corner
+	 * Auto refreshes jobs grid.
 	 */
-	public void showAlignments(HomologsInfoItem homologsInfoItem,
-							   int xPosition,
-							   int yPosition)
+	private void runMyJobsAutoRefresh()
 	{
-		mainViewPort.displayAlignmentsWindow(homologsInfoItem,
-											 xPosition,
-											 yPosition);
-	}
+		CrkWebServiceProvider.getServiceController().getJobsForCurrentSession();
 
+		autoRefreshMyJobs = new Timer()
+		{
+			public void run()
+			{
+				if((ApplicationContext.isDoStatusPanelRefreshing()) &&
+					(ApplicationContext.getSelectedJobId() != null) &&
+					(!ApplicationContext.getSelectedJobId().equals("")))
+				{
+					CrkWebServiceProvider.getServiceController().getCurrentStatusData(ApplicationContext.getSelectedJobId());
+				}
+				else
+				{
+					CrkWebServiceProvider.getServiceController().getJobsForCurrentSession();
+				}
+			}
+		};
+
+		autoRefreshMyJobs.scheduleRepeating(10000);
+	}
+	
 	/**
-	 * Displays about window.
+	 * Stops automated refreshing of jobs grid.
 	 */
-	public void showAbout()
+	private void stopMyJobsAutoRefresh()
 	{
-		mainViewPort.displayAboutWindow();
+		autoRefreshMyJobs.cancel();
 	}
 }

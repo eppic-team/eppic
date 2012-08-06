@@ -1,7 +1,10 @@
 package ch.systemsx.sybit.crkwebui.client.callbacks;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
-import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
+import ch.systemsx.sybit.crkwebui.client.controllers.CrkWebServiceProvider;
+import ch.systemsx.sybit.crkwebui.client.controllers.EventBusManager;
+import ch.systemsx.sybit.crkwebui.client.events.ShowMessageEvent;
+import ch.systemsx.sybit.crkwebui.client.events.UpdateStatusLabelEvent;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
@@ -12,20 +15,17 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
  */
 public class DeleteJobCallback implements AsyncCallback<String> 
 {
-	private MainController mainController;
 	private String jobToRemove;
 
-	public DeleteJobCallback(MainController mainController,
-							  String jobToRemove)
+	public DeleteJobCallback(String jobToRemove)
 	{
-		this.mainController = mainController;
 		this.jobToRemove = jobToRemove;
 	}
 
 	@Override
 	public void onFailure(Throwable caught) 
 	{
-		mainController.updateStatusLabel(AppPropertiesManager.CONSTANTS.callback_delete_job_error(), true);
+		EventBusManager.EVENT_BUS.fireEvent(new UpdateStatusLabelEvent(AppPropertiesManager.CONSTANTS.callback_delete_job_error(), true));
 	}
 
 	@Override
@@ -33,12 +33,12 @@ public class DeleteJobCallback implements AsyncCallback<String>
 	{
 		if (result != null)
 		{
-			mainController.showMessage("Job deleting", result);
-			mainController.getJobsForCurrentSession();
+			EventBusManager.EVENT_BUS.fireEvent(new ShowMessageEvent("Job deleting", result));
+			CrkWebServiceProvider.getServiceController().getJobsForCurrentSession();
 		} 
 		else 
 		{
-			mainController.updateStatusLabel(AppPropertiesManager.CONSTANTS.callback_delete_job_error() + " " + jobToRemove, true);
+			EventBusManager.EVENT_BUS.fireEvent(new UpdateStatusLabelEvent(AppPropertiesManager.CONSTANTS.callback_delete_job_error() + " " + jobToRemove, true));
 		}
 	}
 

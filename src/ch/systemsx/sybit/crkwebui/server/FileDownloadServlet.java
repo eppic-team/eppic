@@ -3,7 +3,6 @@ package ch.systemsx.sybit.crkwebui.server;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FilenameFilter;
 import java.io.IOException;
 
 import javax.servlet.ServletConfig;
@@ -12,7 +11,11 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import ch.systemsx.sybit.crkwebui.server.generators.ContentTypeGenerator;
+import ch.systemsx.sybit.crkwebui.server.generators.DirectoryContentGenerator;
 import ch.systemsx.sybit.crkwebui.server.generators.FileNameGenerator;
+import ch.systemsx.sybit.crkwebui.server.validators.FileDownloadServletInputValidator;
+import ch.systemsx.sybit.crkwebui.shared.exceptions.ValidationException;
 
 /**
  * Servlet used to download stored on the server side files.
@@ -36,9 +39,99 @@ public class FileDownloadServlet extends BaseServlet
 	 * Returns file specified by the parameters.
 	 */
 	protected void doGet(HttpServletRequest request,
-						 HttpServletResponse response) throws ServletException, IOException 
+						 HttpServletResponse response) throws ServletException, IOException
+	{
+		boolean acceptGzipEncoding = checkIfAcceptGzipEncoding(request);
+		
+		String type = request.getParameter("type");
+		String jobId = request.getParameter("id");
+		String interfaceId = request.getParameter("interface");
+		String alignment = request.getParameter("alignment");
+
+		try
+		{
+			FileDownloadServletInputValidator.validateFileDownloadInput(type, jobId, interfaceId, alignment);
+			
+			File resultFileDirectory = new File(properties.getProperty("destination_path"), jobId);
+
+			if (resultFileDirectory.exists()
+				&& resultFileDirectory.isDirectory()) 
+			{
+				String suffixType = FileNameGenerator.generateFileSuffixNameToDownload(type, jobId, interfaceId, alignment);
+				
+				if(suffixType == null)
+				{
+					throw new ValidationException("No support for specified type.");
+				}
+				else
+				{
+					boolean isContentGzipped = false;
+					
+					if(suffixType.endsWith(".pdb") ||
+					  (suffixType.endsWith(".pse")))
+					{
+						isContentGzipped = true;
+						suffixType = suffixType + ".gz";
+					}
+					
+					if(isContentGzipped && !acceptGzipEncoding)
+					{
+						throw new ValidationException("No support for gzip encoding - please use the browser supporting Content-Encoding:gzip");
+					}
+					else
+					{
+						File resultFile = DirectoryContentGenerator.getFileFromDirectoryWithSpecifiedSuffix(resultFileDirectory, suffixType);
+		
+						if (resultFile != null) 
+						{
+							String contentType = ContentTypeGenerator.generateContentTypeByFileExtension(resultFile.getName());
+							response.setContentType(contentType);
+							
+							String processedFileName = FileNameGenerator.generateNameOfTheFileToDownload(resultFile.getName(), jobId);
+							
+							//remove gz
+							if(isContentGzipped)
+							{
+								processedFileName = processedFileName.substring(0, processedFileName.length() - 3);
+								response.setHeader("Content-Encoding", "gzip");
+							}
+							
+//									response.setContentLength((int) resultFile.length());
+							response.setHeader("Content-Disposition", "attachment; filename=\"" + processedFileName + "\"");
+	
+							printFileContentToOutput(resultFile, response);
+						} 
+						else 
+						{
+							throw new IOException("Results file does not exist.");
+						}
+					}
+				}
+			}
+			else
+			{
+				throw new IOException("Results directory does not exist.");
+			}
+		}
+		catch(ValidationException e)
+		{
+			response.sendError(HttpServletResponse.SC_PRECONDITION_FAILED, "Input values are incorrect: " + e.getMessage());
+		}
+		catch(IOException e)
+		{
+			response.sendError(HttpServletResponse.SC_NO_CONTENT, "Error during trying to download the file: " + e.getMessage());
+		}
+	}
+	
+	/**
+	 * Checks whether compress response.
+	 * @param request servlet request
+	 * @return information whether compressed response should be sent
+	 */
+	private boolean checkIfAcceptGzipEncoding(HttpServletRequest request)
 	{
 		boolean acceptGzipEncoding = false;
+		
 		String acceptEncodingHeader = request.getHeader("Accept-Encoding");
 		if((acceptEncodingHeader != null) &&
 		   (acceptEncodingHeader.contains("gzip")))
@@ -46,191 +139,60 @@ public class FileDownloadServlet extends BaseServlet
 			acceptGzipEncoding = true;
 		}
 		
-		final String type = request.getParameter("type");
-		final String jobId = request.getParameter("id");
-		final String interfaceId = request.getParameter("interface");
-		final String alignment = request.getParameter("alignment");
-
-		ServletOutputStream output = response.getOutputStream();
-
-		if ((type != null) && (type.length() != 0))
-		{
-			if ((jobId != null) && (jobId.length() != 0)) 
-			{
-				if(!jobId.matches("^[A-Za-z0-9]+$"))
-				{
-					response.sendError(HttpServletResponse.SC_BAD_REQUEST, messages.getProperty("fileDownloadResultIncorrectFormatOfJobId"));
-				}
-				else if(((type.equals("interface") || (type.equals("pse")))) && 
-				   ((interfaceId == null) ||
-				    (interfaceId.equals(""))))
-			    {
-					response.sendError(HttpServletResponse.SC_BAD_REQUEST, messages.getProperty("fileDownloadResultNoInterfaceSpecified"));
-			    }
-				else if((interfaceId != null) &&
-						(!interfaceId.equals("")) &&
-						(!interfaceId.matches("^[0-9]+$")))
-				{
-					response.sendError(HttpServletResponse.SC_BAD_REQUEST, messages.getProperty("fileDownloadResultIncorrectFormatOfInterface"));
-				}
-				else if(type.equals("fasta") &&
-						((alignment == null) ||
-						(alignment.equals("")) ||
-						(!alignment.matches("^[A-Za-z]$"))))
-				{
-					response.sendError(HttpServletResponse.SC_BAD_REQUEST, messages.getProperty("fileDownloadResultIncorrectFormatOfAlignment"));
-				}
-				else
-				{
-					File resultFileDirectory = new File(
-							properties.getProperty("destination_path"), jobId);
+		return acceptGzipEncoding;
+	}
+	
+	/**
+	 * Prints content of the retrieved file to the output.
+	 * @param resultFile retrieved file
+	 * @param response servlet response
+	 * @throws IOException when printing fails
+	 */
+	private void printFileContentToOutput(File resultFile,
+										  HttpServletResponse response) throws IOException
+	{
+		byte[] buffer = new byte[1024];
+		DataInputStream input = null;
+		ServletOutputStream output = null;
 		
-					if (resultFileDirectory.exists()
-						&& resultFileDirectory.isDirectory()) 
-					{
-						String suffixType = FileNameGenerator.generateFileSuffixNameToDownload(type, jobId, interfaceId, alignment);
-						
-						if(suffixType == null)
-						{
-							response.sendError(HttpServletResponse.SC_BAD_REQUEST, messages.getProperty("fileDownloadResultNoSupportForType"));
-						}
-						else
-						{
-							boolean isContentGzipped = false;
-							
-							if(suffixType.endsWith(".pdb") ||
-							  (suffixType.endsWith(".pse")))
-							{
-								isContentGzipped = true;
-							}
-							
-							if(isContentGzipped && !acceptGzipEncoding)
-							{
-								response.sendError(HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE, messages.getProperty("fileDownloadResultNoSupportForGzipEncoding"));
-							}
-							else
-							{
-								if(isContentGzipped)
-								{
-									suffixType = suffixType + ".gz";
-								}
-								
-								final String usedSuffix = suffixType;
-								
-								String[] directoryContent = resultFileDirectory
-										.list(new FilenameFilter() {
-				
-											public boolean accept(File dir, String name) {
-												if (name.endsWith(usedSuffix)) {
-													return true;
-												} else {
-													return false;
-												}
-											}
-										});
-				
-								if ((directoryContent != null) && (directoryContent.length > 0)) 
-								{
-									File resultFile = new File(resultFileDirectory + "/"
-											+ directoryContent[0]);
-				
-									if (resultFile.exists()) 
-									{
-										if(directoryContent[0].endsWith(".pdb.gz"))
-										{
-											response.setContentType("chemical/x-pdb");
-										}
-										else if(directoryContent[0].endsWith(".zip"))
-										{
-											response.setContentType("application/zip");
-										}
-										else if(directoryContent[0].endsWith(".pse.gz"))
-										{
-											response.setContentType("application/pymol-session");
-										}
-										else if(directoryContent[0].endsWith(".aln"))
-										{
-											response.setContentType("text/plain");
-										}
-										else
-										{
-											response.setContentType("application/octet-stream");
-										}
-										
-										
-										String processedFileName = directoryContent[0];
-										
-										if(directoryContent[0].contains("."))
-										{
-											processedFileName = directoryContent[0].substring(0, directoryContent[0].indexOf("."));
-											processedFileName = processedFileName + "-" + jobId + ".";
-											
-											if(directoryContent[0].indexOf(".") + 1 != directoryContent[0].length())
-											{
-												processedFileName = processedFileName + directoryContent[0].substring(directoryContent[0].indexOf(".") + 1);
-											}
-										}
-										
-										//remove gz
-										if(isContentGzipped)
-										{
-											processedFileName = processedFileName.substring(0, processedFileName.length() - 3);
-											response.setHeader("Content-Encoding", "gzip");
-										}
-										
-	//									response.setContentLength((int) resultFile.length());
-										response.setHeader("Content-Disposition",
-												"attachment; filename=\"" + processedFileName + "\"");
-				
-										byte[] buffer = new byte[1024];
-										DataInputStream input = new DataInputStream(
-												new FileInputStream(resultFile));
-				
-										int length;
-				
-										while ((input != null)
-												&& ((length = input.read(buffer)) != -1)) 
-										{
-											output.write(buffer, 0, length);
-										}
-				
-										input.close();
-										output.flush();
-										output.close();
-									} 
-									else 
-									{
-										response.sendError(
-												HttpServletResponse.SC_NOT_FOUND,
-												messages.getProperty("fileDownloadResultFileNofFound"));
-									}
-								} 
-								else 
-								{
-									response.sendError(
-											HttpServletResponse.SC_NOT_FOUND,
-											messages.getProperty("fileDownloadResultFileNofFound"));
-								}
-							}
-						}
-					}
-					else
-					{
-						response.sendError(HttpServletResponse.SC_NOT_FOUND, messages
-								.getProperty("fileDownloadResultDirectoryNotFound"));
-					}
-				}
-			} 
-			else
+		try
+		{
+			input = new DataInputStream(new FileInputStream(resultFile));
+			output = response.getOutputStream();
+			
+			int length;
+
+			while ((input != null)
+					&& ((length = input.read(buffer)) != -1)) 
 			{
-				response.sendError(HttpServletResponse.SC_BAD_REQUEST,
-						messages.getProperty("fileDownloadResultIdNotSpecified"));
+				output.write(buffer, 0, length);
 			}
 		}
-		else
+		catch(IOException e)
 		{
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST,
-					messages.getProperty("fileDownloadResultTypeNotSpecified"));
+			e.printStackTrace();
+			throw e;
+		}
+		finally
+		{
+			if(input != null)
+			{
+				try
+				{
+					input.close();
+				}
+				catch(Exception ex) {}
+			}
+			
+			if(output != null)
+			{
+				try
+				{
+					output.close();
+				}
+				catch(Exception ex) {}
+			}
 		}
 	}
+	
 }
