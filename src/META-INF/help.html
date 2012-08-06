@@ -1,35 +1,155 @@
-<html>
-<p>
-The EPPIC (Evolutionary Protein-Protein Interface Classifier) service aims at classifying the interfaces present in protein crystal structures in order to determine whether they are biologically relevant or not.
+
+<p style="font-size:20px;font-weight:bold;padding: 25px 20px 0px 5px">
+The EPPIC server
 </p>
-<p>
-After submitting your protein structure as a PDB/mmCIF file or typing a PDB code you will get a view of all the protein-protein interfaces present in the crystal. We assess them based on 3 criteria:
-<ul>
+
+<p style="font-size:14px;padding: 15px 20px 0px 5px">
+EPPIC (Evolutionary Protein-Protein Interface Classifier) aims at classifying 
+the interfaces present in protein crystal structures in order to determine whether they are 
+biologically relevant or not.
+</p>
+
+<p style="font-size:14px;padding: 15px 20px 0px 5px">
+After submitting your protein structure as a PDB/mmCIF file or typing a PDB code you will 
+get a view of all the protein-protein interfaces present in the crystal. We assess them 
+based on one geometrical and two evolutionary criteria:
+
+<div style="font-size:14px;padding: 15px 20px 0px 15px"><ul class="eppic-tooltip-list">
 <li>
-geometry: indicating how good is the packing in the interface
+<b>geometry</b>: number of core residues, indicating how good the packing in the interface is
 </li>
 <li>
-ratio of evolutionary signal of core residues versus rim residues
+<b>core-rim score</b>: ratio of evolutionary signal (sequence entropy) of core residues versus 
+rim residues
 </li>
 <li>
-z-score of evolutionary signal of core residues versus random samples of rest of surface residues
+<b>core-surface score</b>: a score (z-score like) of sequence entropy of core residues versus 
+random samples of other surface residues
 </li>
 </ul>
-From these 3 criteria a final decision is made ("Final" column). BIO will mean that both evolutionary (if available) and geometrical evidence indicate that the interface is biologically relevant. Otherwise the interface is called CRYSTAL.
+</div>
 </p>
-<p>
-The interfaces are described by a few important parameters: the two chain codes of the partners, the Buried Surface Area upon formation (sorting is based on this value) and the crystal operator used to generate the second partner of the interface.
+
+<p style="font-size:14px;padding: 15px 20px 0px 5px">
+Each of these indicators casts a vote based on predefined score thresholds. The possible calls are: 
+
+
+<div style="font-size:14px;padding: 15px 20px 0px 15px"><ul class="eppic-tooltip-list">
+<li>
+<font color="green">BIO</font>, the interface is biologically relevant
+</li>
+<li>
+<font color="red">XTAL</font>, the interface is only a crystal lattice contact
+</li>
+<li>
+NOPRED, there is not enough information available to make a decision (usually not enough sequence data)
+</li>
+</ul>
+</div>  
 </p>
-<p>
-Additionally the thumbnails give a visual cartoon representation of the interfaces. By cliking on them one gets an interactive 3D view, depending on selected mode: as browser embedded Jmol viewer (no need for local viewer), as a PDB file downloadable to a local molecular viewer, or as PyMol session file (.pse) to be opened in local PyMol. The pse mode is particularly useful as it is prepared with selections of the different parts of the interface and nicely depicted.
+
+<p style="font-size:14px;padding: 15px 20px 0px 5px">
+You can see the actual scores for each of the indicators by hovering the mouse pointer 
+over the bio/xtal/nopred calls. Warnings may appear on the right side of the interfaces table
+marked by the icon <img src="resources/icons/warning_icon.png"></img>. By hovering the mouse over
+the icon, one can see different issues for which the prediction should be taken with care, e.g.
+engineered residues at the core or rim, metal ions mediating the interface, atom clashes in the interface etc. 
 </p>
-<p>
-Click <a href="help-gui.html">here</a> for a more detail explanation of what the output means.
+<p style="font-size:14px;padding: 15px 20px 0px 5px">
+From the 3 votes a final decision is made ("Final" column). <font color="green">BIO</font> will mean that a majority
+of the criteria indicated a biological interface and likewise for <font color="red">XTAL</font>.
+This is the final prediction column and what you need to look at first.
 </p>
-<p>
-Please cite <a href="http://the.paper.url">Duarte et al.</a> if you use this service for your research.
+
+<p style="font-size:14px;font-weight:bold;padding: 20px 20px 0px 5px">
+The main Interface table
 </p>
-<p>
-Do get in <a href="mailto:contact@SERVER_NAME.org">contact</a> with us if you want to report problems or send any kind of feedback.
+<p style="font-size:14px;padding: 3px 20px 0px 5px">
+The other columns in the interface table correspond to a few important parameters that describe
+the interfaces: the two chain codes of the partners (e.g. "A+B"), the Buried Surface Area upon 
+formation (the sorting of the interfaces is based on this value), the crystal operator used to 
+generate the second partner of the interface (e.g. "-X+1,Y-1/2,-Z") and the number of core residues in each side of 
+the interface (e.g. "4+5")
 </p>
-</html>
+
+<table style="padding: 20px 20px 0px 5px">
+<tr>
+<td style="vertical-align:top;padding: 0px 5px 0px 0px">
+<p style="font-size:14px;font-weight:bold;padding: 0px 0px 0px 0px">
+Viewing the interfaces in 3D
+</p>
+<p style="font-size:14px;padding: 3px 0px 0px 0px">
+The thumbnails in the Interface table give a visual cartoon representation of the interfaces. By 
+clicking on them one gets an interactive 3D view, depending on selected mode: as browser 
+embedded Jmol viewer (no need for local viewer), as a PDB file downloadable to a local 
+molecular viewer, or as PyMOL session file (.pse) to be opened in local PyMOL. The pse mode 
+is particularly useful as it is already prepared with selections of the different parts of the 
+interface and nicely depicted.
+</p>
+</td>
+<td style="vertical-align:top;padding: 0px 0px 0px 5px">
+ <img src="resources/images/Figure8b-verysmall.png" alt="3D view in PyMOL as it appears with the .pse files (surface representation was added)" style="padding: 0px 0px 0px 0px"></img>
+</td>
+</tr>
+</table>
+
+
+<p style="font-size:14px;font-weight:bold;padding: 20px 20px 0px 5px">
+The Residue Details table
+</p>
+<p style="font-size:14px;padding: 3px 20px 0px 5px"> 
+Clicking the "Details" button in the last column will give you a detailed view of scores and surface 
+areas per residue. In the residues table, only the residues at the interface are shown by default. To 
+see all residues of the two chains one needs to switch the view with the drop down button on the upper 
+right of the residues window. 
+</p>
+
+
+<p style="font-size:14px;font-weight:bold;padding: 20px 20px 0px 5px">
+Top panel
+</p>
+<p style="font-size:14px;padding: 3px 20px 0px 5px">
+The top panel contains additional information about the sequences and parameters used to run
+the evolutionary predictions. On the top left corner there is a line for each of the distinct
+protein sequences present in the protein structure. Clicking on the chain name one can see
+the alignment to the reference UniProt sequence, where mismatching residues (normally engineered artifacts)
+are shown in red. By clicking the download link on the bottom right corner one gets a single zip file 
+containing the text output files with the results for all interfaces.
+</p>
+
+<!-- <img src="resources/images/EPPIC-screenshot-3hbx-small.png"></img> -->
+
+
+<p style="font-size:14px;padding: 30px 20px 0px 5px">
+Please cite <a href="http://the.paper.url">Duarte et al.</a> if you use this service for 
+your research.
+</p>
+
+<p style="font-size:14px;padding: 15px 20px 0px 5px">
+Do get in <a href="mailto:jose.duarte@psi.ch">contact</a> with us if you want to report 
+problems or send any kind of feedback.
+</p>
+
+<p style="font-size:14px;padding: 60px 20px 0px 5px">
+With support from:
+</p>
+
+
+<!-- float:left; -->
+<a href="http://www.psi.ch">
+<img src="resources/images/psi-logo.png" style="float:left;padding: 30px 20px 0px 5px"></img>
+</a>
+
+<a href="http://www.sybit.net">
+<img src="resources/images/sybit-logo.png" style="float:right;padding: 30px 20px 0px 5px"></img>
+</a>
+
+<!--
+<a href="http://www.snf.ch">
+<img src="resources/images/SNSF_Logo.jpg" style="padding: 30px 20px 0px 5px"></img>
+</a>
+
+<a href="http://www.ethz.ch">
+<img src="resources/images/eth_logo.gif" style="padding: 30px 20px 0px 5px"></img>
+</a>
+-->
