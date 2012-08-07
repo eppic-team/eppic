@@ -53,13 +53,13 @@ public class BottomPanel extends LayoutContainer
 	    Label contactLink = createContactLink();
 
 	    linksContainer.add(homeLink);
+	    linksContainer.add(downloadsLink);
+	    linksContainer.add(helpLink);
 		linksContainer.add(aboutLink);
-		linksContainer.add(helpLink);
-		linksContainer.add(downloadsLink);
 		linksContainer.add(contactLink);
 
 		linksContainerWrapper.add(linksContainer);
-		this.add(linksContainerWrapper, new RowData(250, 1, new Margins(0)));
+		this.add(linksContainerWrapper, new RowData(300, 1, new Margins(0)));
 		
 		initializeEventsListeners();
 	}
