@@ -19,11 +19,15 @@ public interface AppProperties extends Constants
 	String window_title();
 	String window_title_input();
 	String window_title_help();
+	String window_title_downloads();
 	String window_title_processing();
 	String window_title_loading();
 	String window_title_results();
 	
 	String top_panel_title();
+	
+	String downloads_panel_download_crk_link();
+	String downloads_panel_download_crk_link_hint();
 	
 	String input_email();
 	String input_file();
@@ -110,8 +114,10 @@ public interface AppProperties extends Constants
 	String scores_panel_column_structure1();
 	String scores_panel_column_structure2();
 
-	String bottom_panel_about_link();
-	String bottom_panel_help_link();
+	String bottom_panel_home_link_label();
+	String bottom_panel_about_link_label();
+	String bottom_panel_help_link_label();
+	String bottom_panel_downloads_link_label();
 	String bottom_panel_contact_link();
 	String bottom_panel_contact_link_label();
 	String bottom_panel_status_error_refresh_page();

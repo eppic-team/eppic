@@ -20,6 +20,7 @@ import ch.systemsx.sybit.crkwebui.client.events.ShowStatusDataEvent;
 import ch.systemsx.sybit.crkwebui.client.events.ShowWaitingEvent;
 import ch.systemsx.sybit.crkwebui.client.events.StopJobsListAutoRefreshEvent;
 import ch.systemsx.sybit.crkwebui.client.events.UpdateStatusLabelEvent;
+import ch.systemsx.sybit.crkwebui.client.gui.DownloadsPanel;
 import ch.systemsx.sybit.crkwebui.client.gui.HelpPanel;
 import ch.systemsx.sybit.crkwebui.client.gui.InputDataPanel;
 import ch.systemsx.sybit.crkwebui.client.gui.MainViewPort;
@@ -302,6 +303,12 @@ public class MainController
 			ApplicationContext.setSelectedJobId("");
 			displayHelp();
 		}
+		else if((token != null) && (token.equals("downloads")))
+		{
+			Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_downloads());
+			ApplicationContext.setSelectedJobId("");
+			displayDownloads();
+		}
 		else
 		{
 			Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_input());
@@ -365,6 +372,17 @@ public class MainController
 
 		HelpPanel helpPanel = new HelpPanel();
 		mainViewPort.getCenterPanel().setDisplayPanel(helpPanel);
+	}
+	
+	/**
+	 * Displays downloads panel.
+	 */
+	public void displayDownloads()
+	{
+		ApplicationContext.setDoStatusPanelRefreshing(false);
+
+		DownloadsPanel downloadsPanel = new DownloadsPanel();
+		mainViewPort.getCenterPanel().setDisplayPanel(downloadsPanel);
 	}
 
 	/**

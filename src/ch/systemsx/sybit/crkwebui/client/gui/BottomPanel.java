@@ -28,15 +28,12 @@ import com.google.gwt.user.client.ui.HTML;
 public class BottomPanel extends LayoutContainer
 {
 	private HTML status;
-	private Label helpLink;
-	private Label contactLink;
-	private Label aboutLink;
 
 	public BottomPanel()
 	{
 		this.setLayout(new RowLayout(Orientation.HORIZONTAL));
 
-	    status = new HTML();
+		status = new HTML();
 	    this.add(status, new RowData(1, 1, new Margins(0)));
 
 	    LayoutContainer linksContainerWrapper = new LayoutContainer();
@@ -49,9 +46,52 @@ public class BottomPanel extends LayoutContainer
 	    LayoutContainer linksContainer = new LayoutContainer();
 	    linksContainer.setBorders(false);
 
-	    aboutLink = new EmptyLink(AppPropertiesManager.CONSTANTS.bottom_panel_about_link());
-	    aboutLink.addStyleName("eppic-horizontal-nav");
+	    Label homeLink = createHomeLink();
+	    Label aboutLink = createAboutLink();
+	    Label helpLink = createHelpLink();
+	    Label downloadsLink = createDownloadsLink();
+	    Label contactLink = createContactLink();
+
+	    linksContainer.add(homeLink);
+		linksContainer.add(aboutLink);
+		linksContainer.add(helpLink);
+		linksContainer.add(downloadsLink);
+		linksContainer.add(contactLink);
+
+		linksContainerWrapper.add(linksContainer);
+		this.add(linksContainerWrapper, new RowData(250, 1, new Margins(0)));
+		
+		initializeEventsListeners();
+	}
+	
+	/**
+	 * Creates link to the home page.
+	 * @return link to the home page
+	 */
+	private Label createHomeLink()
+	{
+		Label homeLink = new EmptyLink(AppPropertiesManager.CONSTANTS.bottom_panel_home_link_label());
+		homeLink.addStyleName("eppic-horizontal-nav");
+		homeLink.addListener(Events.OnClick, new Listener<BaseEvent>() {
+
+			@Override
+			public void handleEvent(BaseEvent be) {
+				History.newItem("");
+			}
+		});
 	    
+	    return homeLink;
+	}
+	
+	/**
+	 * Creates link to open about window.
+	 * @return link to about window
+	 */
+	private Label createAboutLink()
+	{
+		Label aboutLink = new EmptyLink(AppPropertiesManager.CONSTANTS.bottom_panel_about_link_label());
+	    aboutLink.addStyleName("eppic-horizontal-nav");
+	    aboutLink.addStyleName("eppic-default-left-margin");
 	    aboutLink.addListener(Events.OnClick, new Listener<BaseEvent>() {
 
 			@Override
@@ -59,16 +99,17 @@ public class BottomPanel extends LayoutContainer
 				EventBusManager.EVENT_BUS.fireEvent(new ShowAboutEvent());
 			}
 		});
-
-		contactLink = new Label("<a href=\"" +
-								AppPropertiesManager.CONSTANTS.bottom_panel_contact_link() +
-								"\" target=\"_blank\">" +
-								AppPropertiesManager.CONSTANTS.bottom_panel_contact_link_label() +
-								"</a>");
-		contactLink.addStyleName("eppic-default-left-margin");
-		contactLink.addStyleName("eppic-horizontal-nav");
-		
-		helpLink = new EmptyLink(AppPropertiesManager.CONSTANTS.bottom_panel_help_link());
+	    
+	    return aboutLink;
+	}
+	
+	/**
+	 * Creates link to help page.
+	 * @return link to help page
+	 */
+	private Label createHelpLink()
+	{
+		Label helpLink = new EmptyLink(AppPropertiesManager.CONSTANTS.bottom_panel_help_link_label());
 		helpLink.addStyleName("eppic-default-left-margin");
 		helpLink.addStyleName("eppic-horizontal-nav");
 		helpLink.addListener(Events.OnClick, new Listener<BaseEvent>() {
@@ -78,15 +119,45 @@ public class BottomPanel extends LayoutContainer
 				History.newItem("help");
 			}
 		});
-
-		linksContainer.add(aboutLink);
-		linksContainer.add(helpLink);
-		linksContainer.add(contactLink);
-
-		linksContainerWrapper.add(linksContainer);
-		this.add(linksContainerWrapper, new RowData(150, 1, new Margins(0)));
 		
-		initializeEventsListeners();
+		return helpLink;
+	}
+	
+	/**
+	 * Creates link to the view containing downloads.
+	 * @return link to downloads view
+	 */
+	private Label createDownloadsLink()
+	{
+		Label downloadsLink = new EmptyLink(AppPropertiesManager.CONSTANTS.bottom_panel_downloads_link_label());
+		downloadsLink.addStyleName("eppic-horizontal-nav");
+		downloadsLink.addStyleName("eppic-default-left-margin");
+		downloadsLink.addListener(Events.OnClick, new Listener<BaseEvent>() {
+
+			@Override
+			public void handleEvent(BaseEvent be) {
+				History.newItem("downloads");
+			}
+		});
+	    
+	    return downloadsLink;
+	}
+	
+	/**
+	 * Creates contact link.
+	 * @return contact link
+	 */
+	private Label createContactLink()
+	{
+		Label contactLink = new Label("<a href=\"" +
+				AppPropertiesManager.CONSTANTS.bottom_panel_contact_link() +
+				"\" target=\"_blank\">" +
+				AppPropertiesManager.CONSTANTS.bottom_panel_contact_link_label() +
+				"</a>");
+		contactLink.addStyleName("eppic-default-left-margin");
+		contactLink.addStyleName("eppic-horizontal-nav");
+
+		return contactLink;
 	}
 
 	/**
