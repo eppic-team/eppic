@@ -141,7 +141,7 @@ public class InterfaceEvolContext implements Serializable {
 				msg+= unreliableResidues.get(i).getSerial()+
 					  "("+unreliableResidues.get(i).getLongCode()+")";
 				
-				if (i!=unreliableResidues.size()-1) msg+=",";				
+				if (i!=unreliableResidues.size()-1) msg+=", ";				
 			}
 			msg+=" ";
 		}
