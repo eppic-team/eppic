@@ -265,11 +265,15 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 		InputStream helpPageStream = getServletContext()
 				.getResourceAsStream("/WEB-INF/classes/META-INF/help.html");
 		
+		InputStream downloadsPageStream = getServletContext()
+				.getResourceAsStream("/WEB-INF/classes/META-INF/downloads.html");
+		
 		InputStream gridPropertiesInputStream = getServletContext()
 				.getResourceAsStream("/WEB-INF/classes/META-INF/grid.properties");
 
 		ApplicationSettings settings = applicationSettingsGenerator.generateApplicationSettings(inputParametersStream, 
-																								helpPageStream, 
+																								helpPageStream,
+																								downloadsPageStream,
 																								gridPropertiesInputStream);
 
 
