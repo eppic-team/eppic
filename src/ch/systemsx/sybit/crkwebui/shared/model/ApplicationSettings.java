@@ -82,6 +82,11 @@ public class ApplicationSettings implements Serializable {
 	private String helpPageContent;
 	
 	/**
+	 * Content of the downloads panel.
+	 */
+	private String downloadsPageContent;
+	
+	/**
 	 * Flag pointing whether precompiled values stored in the db should be used.
 	 */
 	private boolean usePrecompiledResults;
@@ -331,6 +336,22 @@ public class ApplicationSettings implements Serializable {
 	 */
 	public String getHelpPageContent() {
 		return helpPageContent;
+	}
+	
+	/**
+	 * Sets content which is to be used in downloads page.
+	 * @param downloadsPageContent content of the downloads page
+	 */
+	public void setDownloadsPageContent(String downloadsPageContent) {
+		this.downloadsPageContent = downloadsPageContent;
+	}
+
+	/**
+	 * Retrieves content which is to be set as downloads.
+	 * @return content of downloads panel
+	 */
+	public String getDownloadsPageContent() {
+		return downloadsPageContent;
 	}
 
 	/**

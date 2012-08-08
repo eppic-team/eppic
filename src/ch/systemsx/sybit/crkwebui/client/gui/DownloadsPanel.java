@@ -4,6 +4,7 @@ import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.controllers.ApplicationContext;
 
 import com.extjs.gxt.ui.client.Style.Scroll;
+import com.extjs.gxt.ui.client.widget.Label;
 import com.extjs.gxt.ui.client.widget.layout.FormData;
 
 /**
@@ -19,12 +20,9 @@ public class DownloadsPanel extends DisplayPanel
 		this.addStyleName("eppic-default-padding");
 		this.setScrollMode(Scroll.AUTO);
 		
-		LinkWithTooltip downloadCrkCommandLine = new LinkWithTooltip(AppPropertiesManager.CONSTANTS.downloads_panel_download_crk_link(), 
-																	 AppPropertiesManager.CONSTANTS.downloads_panel_download_crk_link_hint(), 
-																	 ApplicationContext.getWindowData(), 
-																	 0, 
-																	 "http://crkfe.psi.ch/downloads/eppic.zip");
-		this.add(downloadCrkCommandLine, new FormData("-20 100%"));
+		Label downloadsText = new Label();
+		downloadsText.setText(ApplicationContext.getSettings().getDownloadsPageContent());
+		this.add(downloadsText, new FormData("-20 100%"));
 	}
 }
 

@@ -33,16 +33,19 @@ public class ApplicationSettingsGenerator
 	 * Creates application settings using provided input streams.
 	 * @param inputParametersStream input parameters input stream
 	 * @param helpPageStream stream containing help page content
+	 * @param downloadsPageStream stream containing downloads page content
 	 * @param gridPropertiesInputStream stream containing settings of the grids
 	 * @return application settings
 	 * @throws ParsingException when can not properly prepare application settings
 	 */
 	public ApplicationSettings generateApplicationSettings(InputStream inputParametersStream,
 														   InputStream helpPageStream,
+														   InputStream downloadsPageStream,
 														   InputStream gridPropertiesInputStream) throws ParsingException
 	{
 		ApplicationSettings settings = initializeApplicationSettings(inputParametersStream);
-		settings.setHelpPageContent(prepareHelpPageContent(helpPageStream));
+		settings.setHelpPageContent(preparePageContent(helpPageStream, "help"));
+		settings.setDownloadsPageContent(preparePageContent(downloadsPageStream, "downloads"));
 		settings.setGridProperties(prepareGridProperties(gridPropertiesInputStream));
 
 		boolean useCaptcha = Boolean.parseBoolean(globalProperties.getProperty("use_captcha","false"));
@@ -84,22 +87,24 @@ public class ApplicationSettingsGenerator
 	}
 	
 	/**
-	 * Retrieves content of the help page.
-	 * @param helpPageStream stream containing content of the help page
-	 * @return content of the help page
-	 * @throws ParsingException when can not properly prepare content of the help page
+	 * Retrieves content of the page.
+	 * @param pageStream stream containing content of the page
+	 * @param pageName name of the page
+	 * @return content of the page
+	 * @throws ParsingException when can not properly prepare content of the page
 	 */
-	private String prepareHelpPageContent(InputStream helpPageStream) throws ParsingException
+	private String preparePageContent(InputStream pageStream,
+									  String pageName) throws ParsingException
 	{
 		try
 		{
-			String helpPageContent = FileContentReader.readContentOfFile(helpPageStream, true);
-			return helpPageContent;
+			String pageContent = FileContentReader.readContentOfFile(pageStream, true);
+			return pageContent;
 		}
 		catch(Throwable t)
 		{
 			t.printStackTrace();
-			throw new ParsingException("Error during preparing help page content");
+			throw new ParsingException("Error during preparing " + pageName + " page content");
 		}
 	}
 	
