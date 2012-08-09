@@ -48,6 +48,8 @@ public class ChainEvolContext implements Serializable {
 
 	private static final double ROUNDING_MARGIN = 0.0001;
 	
+	private static final double MAX_QUERY_TO_UNIPROT_DISAGREEMENT = 0.1;
+	
 	private static final Pattern ALLX_SEQ_PATTERN = Pattern.compile("^X+$");
 	
 	// blast constants
@@ -185,10 +187,25 @@ public class ChainEvolContext implements Serializable {
 
 				// and finally we align the 2 sequences (in case of mapping from SIFTS we rather do this than trusting the SIFTS alignment info)
 				alnPdb2Uniprot = new PairwiseSequenceAlignment(sequence, query.getSequence(), pdbName+representativeChain, query.getUniId());
-				LOGGER.info("The PDB SEQRES to UniProt alignmnent:\n"+getQueryPdbToUniprotAlnString());
+				
+				LOGGER.info("Chain "+representativeChain+" PDB SEQRES to UniProt alignmnent:\n"+getQueryPdbToUniprotAlnString());
 				LOGGER.info("Query ("+pdbName+representativeChain+") length: "+sequence.length());
 				LOGGER.info("UniProt ("+query.getUniId()+") length: "+query.getLength());
 				LOGGER.info("Alignment length: "+alnPdb2Uniprot.getLength());
+				int shortestSeqLength = Math.min(query.getLength(), sequence.length());
+				double id = (double)alnPdb2Uniprot.getIdentity()/(double)shortestSeqLength;
+				LOGGER.info("Query to reference UniProt percent identity: "+String.format("%6.2f%%",id*100.0));
+				// in strange cases like 3try (a racemic mixture with a chain composed of L and D aminoacids) the SIFTS-mapped
+				// UniProt entry does not align at all to the PDB SEQRES (mostly 'X'), we have to check for this
+				if (id<MAX_QUERY_TO_UNIPROT_DISAGREEMENT) {
+					String msg = "Identity of PDB to UniProt reference alignment is below maximum allowed threshold ("+
+								String.format("%2.0f%%", 100.0*MAX_QUERY_TO_UNIPROT_DISAGREEMENT)+"). " +
+								"Will not use the UniProt reference "+query.getUniId();
+					LOGGER.error(msg);
+					queryWarnings.add(msg);
+					query = null;
+					hasQueryMatch = false;
+				}
 			} catch (PairwiseSequenceAlignmentException e1) {
 				LOGGER.fatal("Problem aligning PDB sequence for chain "+representativeChain+" to its UniProt match "+query.getUniId());
 				LOGGER.fatal(e1.getMessage());
