@@ -277,7 +277,10 @@ public class InputDataPanel extends DisplayPanel
 		
 		Label exampleLinkLabel = new Label(AppPropertiesManager.CONSTANTS.input_example() + ":");
 		
-		Label exampleLink = new EmptyLink(ApplicationContext.getSettings().getExamplePdb());
+		Label exampleLink = new EmptyLinkWithTooltip(ApplicationContext.getSettings().getExamplePdb(),
+													 AppPropertiesManager.CONSTANTS.input_example_hint(),
+													 ApplicationContext.getWindowData(),
+													 0);
 		exampleLink.addStyleName("eppic-horizontal-nav");
 		exampleLink.addListener(Events.OnClick, new Listener<BaseEvent>() {
 

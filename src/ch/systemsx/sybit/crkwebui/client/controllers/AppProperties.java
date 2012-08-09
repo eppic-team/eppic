@@ -32,6 +32,7 @@ public interface AppProperties extends Constants
 	String input_email();
 	String input_file();
 	String input_example();
+	String input_example_hint();
 	String input_advanced();
 	String input_submit();
 	String input_submit_error();
