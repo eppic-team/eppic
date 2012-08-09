@@ -82,6 +82,15 @@ public class PDBIdentifierPanel extends LayoutContainer
 				this.add(spaceGroupLabel);
 			}
 			
+		} else {
+			// if no exp method defined but there is a space group and a resol>0, then we hope this is x-ray or at least some kind of xtalography 
+			// this happens for instance in phenix PDB files (no exp method, but both space group and resol are present)
+			if (spaceGroup!=null && resolution>0) {
+				String labelStr = " ("+resolution+"Å - "+spaceGroup+")";
+				spaceGroupLabel = new Label(labelStr);
+				spaceGroupLabel.addStyleName("eppic-pdb-spacegroup-label");
+				this.add(spaceGroupLabel);				
+			}
 		}
 		
 		this.layout(true);
