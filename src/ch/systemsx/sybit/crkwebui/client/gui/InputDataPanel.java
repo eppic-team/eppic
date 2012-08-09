@@ -14,6 +14,7 @@ import ch.systemsx.sybit.crkwebui.client.gui.validators.PdbCodeFieldValidator;
 import ch.systemsx.sybit.crkwebui.client.handlers.GetFocusOnPdbCodeFieldHandler;
 import ch.systemsx.sybit.crkwebui.client.handlers.SubmitJobHandler;
 import ch.systemsx.sybit.crkwebui.client.listeners.SubmitKeyListener;
+import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
 import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
 import ch.systemsx.sybit.crkwebui.shared.validators.InputParametersComparator;
 
@@ -27,6 +28,7 @@ import com.extjs.gxt.ui.client.event.FormEvent;
 import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.event.SelectionListener;
 import com.extjs.gxt.ui.client.util.Margins;
+import com.extjs.gxt.ui.client.widget.Label;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.MessageBox;
 import com.extjs.gxt.ui.client.widget.button.Button;
@@ -62,7 +64,7 @@ public class InputDataPanel extends DisplayPanel
 	private FileUploadField file;
 	private TextField<String> pdbCodeField;
 	private TextField<String> emailTextField;
-
+	
 	private OptionsInputPanel optionsInputPanel;
 
 	public InputDataPanel()
@@ -164,6 +166,12 @@ public class InputDataPanel extends DisplayPanel
 		pdbCodeField.setAllowBlank(false);
 		pdbCodeField.addKeyListener(new SubmitKeyListener());
 		generalFieldSet.add(pdbCodeField);
+		
+		if(ApplicationContext.getSettings().getExamplePdb() != null)
+		{
+			LayoutContainer examplePanel = createExamplePanel();
+			generalFieldSet.add(examplePanel);
+		}
 
 		emailTextField = new TextField<String>();
 		emailTextField.setName("email");
@@ -172,7 +180,7 @@ public class InputDataPanel extends DisplayPanel
 		emailTextField.setValidator(new EmailFieldValidator());
 		emailTextField.addKeyListener(new SubmitKeyListener());
 		generalFieldSet.add(emailTextField);
-
+		
 		FormPanel breakPanel = new FormPanel();
 		breakPanel.getHeader().setVisible(false);
 		breakPanel.setBodyBorder(false);
@@ -254,6 +262,34 @@ public class InputDataPanel extends DisplayPanel
 		this.add(formPanel, new RowData(-1, -1, new Margins(0)));
 		
 		initializeEventsListeners();
+	}
+	
+	/**
+	 * Creates panel containing link to example results.
+	 * @return panel containing link to example results
+	 */
+	private LayoutContainer createExamplePanel()
+	{
+		LayoutContainer examplePanel = new LayoutContainer();
+		examplePanel.setStyleAttribute("padding-left", "175px");
+		examplePanel.setStyleAttribute("height", "22px");
+		examplePanel.setStyleAttribute("padding-bottom", "10px");
+		
+		Label exampleLinkLabel = new Label(AppPropertiesManager.CONSTANTS.input_example() + ":");
+		
+		Label exampleLink = new EmptyLink(ApplicationContext.getSettings().getExamplePdb());
+		exampleLink.addStyleName("eppic-horizontal-nav");
+		exampleLink.addListener(Events.OnClick, new Listener<BaseEvent>() {
+
+			@Override
+			public void handleEvent(BaseEvent be) {
+				History.newItem("id/" + ApplicationContext.getSettings().getExamplePdb());
+			}
+		});
+		examplePanel.add(exampleLinkLabel);
+		examplePanel.add(exampleLink);
+		
+		return examplePanel;
 	}
 
 	/**

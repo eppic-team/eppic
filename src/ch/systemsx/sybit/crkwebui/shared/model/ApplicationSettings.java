@@ -91,6 +91,11 @@ public class ApplicationSettings implements Serializable {
 	 */
 	private boolean usePrecompiledResults;
 	
+	/**
+	 * Name of the example pdb entry which is to be displayed in input view.
+	 */
+	private String examplePdb;
+	
 	public ApplicationSettings()
 	{
 		this.scoresTypes = new ArrayList<SupportedMethod>();
@@ -368,5 +373,21 @@ public class ApplicationSettings implements Serializable {
 	 */
 	public boolean isUsePrecompiledResults() {
 		return usePrecompiledResults;
+	}
+
+	/**
+	 * Sets name of the example pdb entry to display in input panel.
+	 * @param examplePdb name of the example pdb entry
+	 */
+	public void setExamplePdb(String examplePdb) {
+		this.examplePdb = examplePdb;
+	}
+
+	/**
+	 * Retrieves name of the example pdb entry to display in input panel.
+	 * @return name of the example pdb entry
+	 */
+	public String getExamplePdb() {
+		return examplePdb;
 	}
 }

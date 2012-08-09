@@ -54,13 +54,15 @@ public class ApplicationSettingsGenerator
 		String pdbLinkUrl = globalProperties.getProperty("pdb_link_url");
 		String uniprotLinkUrl = globalProperties.getProperty("uniprot_link_url");
 		boolean usePrecompiledResults = Boolean.parseBoolean(globalProperties.getProperty("use_precompiled","true"));
-
+		String examplePdb = globalProperties.getProperty("example_pdb");
+		
 		settings.setCaptchaPublicKey(captchaPublicKey);
 		settings.setUseCaptcha(useCaptcha);
 		settings.setNrOfAllowedSubmissionsWithoutCaptcha(nrOfAllowedSubmissionsWithoutCaptcha);
 		settings.setPdbLinkUrl(pdbLinkUrl);
 		settings.setUniprotLinkUrl(uniprotLinkUrl);
 		settings.setUsePrecompiledResults(usePrecompiledResults);
+		settings.setExamplePdb(examplePdb);
 
 		settings.setResultsLocation(globalProperties.getProperty("results_location"));
 		return settings;
