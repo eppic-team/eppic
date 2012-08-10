@@ -41,10 +41,10 @@
 .eppic-external-link A:active {text-decoration: none; font-size: 14px}
 .eppic-external-link A:hover {text-decoration: underline; font-size: 14px}
 
-.eppic-horizontal-nav A:link {text-decoration: none; font-size: 12px}
-.eppic-horizontal-nav A:visited {text-decoration: none; font-size: 12px}
-.eppic-horizontal-nav A:active {text-decoration: none; font-size: 12px}
-.eppic-horizontal-nav A:hover {text-decoration: underLine; font-size: 12px}
+.eppic-horizontal-nav A:link {text-decoration: none; font-weight:bold; font-size: 14px}
+.eppic-horizontal-nav A:visited {text-decoration: none; font-weight:bold; font-size: 14px}
+.eppic-horizontal-nav A:active {text-decoration: none; font-weight:bold; font-size: 14px}
+.eppic-horizontal-nav A:hover {background: #5288DB; color: white; font-weight:bold; font-size: 14px}
 
 .eppic-monospaced-font {
 	font-size: 10pt;
