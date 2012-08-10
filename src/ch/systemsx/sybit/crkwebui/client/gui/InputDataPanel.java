@@ -275,7 +275,7 @@ public class InputDataPanel extends DisplayPanel
 		examplePanel.setStyleAttribute("height", "22px");
 		examplePanel.setStyleAttribute("padding-bottom", "10px");
 		
-		Label exampleLinkLabel = new Label(AppPropertiesManager.CONSTANTS.input_example() + ":");
+		Label exampleLinkLabel = new Label(AppPropertiesManager.CONSTANTS.input_example() + ": ");
 		
 		Label exampleLink = new EmptyLinkWithTooltip(ApplicationContext.getSettings().getExamplePdb(),
 													 AppPropertiesManager.CONSTANTS.input_example_hint(),
