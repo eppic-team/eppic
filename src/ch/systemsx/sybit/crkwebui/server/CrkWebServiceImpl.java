@@ -495,7 +495,14 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 		{
 			try
 			{
-				File stepFile = new File(dataDirectory, input + ".steps.log");
+				String stepFileName = input;
+				
+				if(stepFileName.contains("."))
+			    {
+					stepFileName = stepFileName.substring(0, stepFileName.lastIndexOf("."));
+			    }
+				
+				File stepFile = new File(dataDirectory, stepFileName + ".steps.log");
 
 				if(stepFile.exists())
 				{
