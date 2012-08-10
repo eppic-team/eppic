@@ -144,7 +144,7 @@ public class JobStatusUpdater implements Runnable
 		LogHandler.writeToLogFile(logFile, "Processing finished\n");
 
 		String message = jobStatusDetails.getInput() +
-				  		 " processing finished. To see the status of the processing please go to: " +
+				  		 " processing finished. To see the results please go to: " +
 				  		 resultsPathUrl + "#id=" + jobStatusDetails.getJobId();
 
 		emailSender.send(jobStatusDetails.getEmailAddress(),
