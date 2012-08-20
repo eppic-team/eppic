@@ -98,9 +98,6 @@ public class CRKParams {
 	private static final File     DEF_TCOFFE_BIN = new File("/usr/bin/t_coffee");
 	private static final boolean  DEF_USE_TCOFFEE_VERY_FAST_MODE = false;
 
-	// default naccess location
-	private static final File     DEF_NACCESS_EXE = new File("/usr/bin/naccess");
-	
 	// default pymol exec
 	private static final File	  DEF_PYMOL_EXE = new File("/usr/bin/pymol");
 	
@@ -145,8 +142,6 @@ public class CRKParams {
 	
 	private boolean usePisa;
 
-	private boolean useNaccess;
-	
 	private int nSpherePointsASAcalc;
 
 	private double entrCallCutoff;
@@ -194,8 +189,6 @@ public class CRKParams {
 	private File     selectonBin;
 	private double   selectonEpsilon;
 
-	private File     naccessExe;
-	
 	private File	 pymolExe;
 	
 	private double   queryCoverageCutoff;
@@ -242,7 +235,6 @@ public class CRKParams {
 		this.minCoreSizeForBio = DEF_MIN_CORE_SIZE_FOR_BIO;
 		this.maxNumSeqs = DEF_MAX_NUM_SEQUENCES;
 		this.usePisa = false;
-		this.useNaccess = false;
 		this.nSpherePointsASAcalc = DEF_NSPHEREPOINTS_ASA_CALC;
 		this.entrCallCutoff = DEF_ENTR_CALL_CUTOFF;
 		this.zScoreCutoff = DEF_ZSCORE_CUTOFF;
@@ -260,7 +252,7 @@ public class CRKParams {
 	public void parseCommandLine(String[] args, String programName, String help) {
 	
 
-		Getopt g = new Getopt(programName, args, "i:sa:b:o:r:e:c:z:m:x:y:d:D:q:H:G:OpnA:I:C:lL:g:uh?");
+		Getopt g = new Getopt(programName, args, "i:sa:b:o:r:e:c:z:m:x:y:d:D:q:H:G:OpA:I:C:lL:g:uh?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
@@ -320,9 +312,6 @@ public class CRKParams {
 				break;
 			case 'p':
 				usePisa = true;
-				break;
-			case 'n':
-				useNaccess = true;
 				break;
 			case 'A':
 				nSpherePointsASAcalc = Integer.parseInt(g.getOptarg());
@@ -408,9 +397,6 @@ public class CRKParams {
 		"                  query\n"+
 		"  [-p]         :  use PISA interface enumeration (will be downloaded from web) \n" +
 		"                  instead of ours (only possible for existing PDB entries).\n" +
-		"  [-n]         :  use NACCESS for ASA/BSA calculations, otherwise area calculations \n" +
-		"                  done with the internal rolling ball algorithm implementation \n" +
-		"                  (multi-threaded using number of CPUs specified in -a)\n" +
 		"  [-A <int>]   :  number of sphere points for ASA calculation, this parameter controls\n" +
 		"                  the accuracy of the ASA calculations, the bigger the more accurate \n" +
 		"                  (and slower). Default: "+DEF_NSPHEREPOINTS_ASA_CALC+"\n" +
@@ -667,14 +653,6 @@ public class CRKParams {
 		this.usePisa = usePisa;
 	}
 
-	public boolean isUseNaccess() {
-		return useNaccess;
-	}
-
-	public void setUseNaccess(boolean useNaccess) {
-		this.useNaccess = useNaccess;
-	}
-
 	public int getnSpherePointsASAcalc() {
 		return nSpherePointsASAcalc;
 	}
@@ -777,8 +755,6 @@ public class CRKParams {
 			
 			useTcoffeeVeryFastMode = Boolean.parseBoolean(p.getProperty("USE_TCOFFEE_VERY_FAST_MODE",new Boolean(DEF_USE_TCOFFEE_VERY_FAST_MODE).toString()));
 			
-			naccessExe      = new File(p.getProperty("NACCESS_EXE", DEF_NACCESS_EXE.toString()));
-			
 			pymolExe		= new File(p.getProperty("PYMOL_EXE", DEF_PYMOL_EXE.toString()));
 
 			queryCoverageCutoff = Double.parseDouble(p.getProperty("QUERY_COVERAGE_CUTOFF", new Double(DEF_QUERY_COVERAGE_CUTOFF).toString()));
@@ -838,10 +814,6 @@ public class CRKParams {
 
 	public File getSelectonBin() {
 		return selectonBin;
-	}
-
-	public File getNaccessExe() {
-		return naccessExe;
 	}
 
 	public File getPymolExe() {

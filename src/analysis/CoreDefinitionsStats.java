@@ -99,11 +99,9 @@ public class CoreDefinitionsStats {
 			
 			long start = System.currentTimeMillis();
 			ChainInterfaceList interfList = null;
-			try {
-				interfList = pdb.getAllInterfaces(CUTOFF, null, NSPHEREPOINTS, 1, true, false);
-			} catch (IOException e) {
-				// do nothing, this won't happen as we are not using naccess
-			}
+
+			interfList = pdb.getAllInterfaces(CUTOFF, NSPHEREPOINTS, 1, true, false);
+			
 			long end = System.currentTimeMillis();
 			System.out.printf(pdbCode+"\t%4d\n",(end-start)/1000l);
 

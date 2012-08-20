@@ -110,11 +110,8 @@ public class CompToPisaInterf {
 			pisaInterfaces.sort();
 			
 			ChainInterfaceList interfaces = null;
-			try {
-				interfaces = pdb.getAllInterfaces(CUTOFF, null, Asa.DEFAULT_N_SPHERE_POINTS, NTHREADS, true, true);
-			} catch (IOException e) {
-				// do nothing. Won't happen here as we don't use naccess
-			}
+
+			interfaces = pdb.getAllInterfaces(CUTOFF, Asa.DEFAULT_N_SPHERE_POINTS, NTHREADS, true, true);
 
 			System.out.print("Number of interfaces: ours "+interfaces.size()+", pisa "+pisaInterfaces.getNumInterfaces());
 			if (pisaInterfaces.getNumInterfaces()!=interfaces.size()) {

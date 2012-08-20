@@ -108,11 +108,9 @@ public class InterfaceSorter {
 			
 			long start = System.currentTimeMillis();
 			ChainInterfaceList interfList = null;
-			try {
-				interfList = pdb.getAllInterfaces(CUTOFF, null, NSPHEREPOINTS, numThreads, false, false);
-			} catch (IOException e) {
-				// do nothing, this won't happen as we are not using naccess
-			}
+
+			interfList = pdb.getAllInterfaces(CUTOFF, NSPHEREPOINTS, numThreads, false, false);
+			
 			long end = System.currentTimeMillis();
 			System.out.printf("\t%4d\n",(end-start)/1000l);
 			//System.out.print(".");
