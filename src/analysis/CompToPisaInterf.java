@@ -131,14 +131,14 @@ public class CompToPisaInterf {
 				if (i<pisaInterfaces.size()) {
 					ChainInterface pisaInterf = pisaInterfaces.get(i+1);
 					String name = pisaInterf.getFirstMolecule().getChainCode()+"+"+pisaInterf.getSecondMolecule().getChainCode();
-					System.out.printf("%2d\t%8.2f\t%20s\t%20s",i+1,pisaInterf.getInterfaceArea(),name,SpaceGroup.getAlgebraicFromMatrix(pisaInterf.getSecondTransf()));
+					System.out.printf("%2d\t%8.2f\t%20s\t%20s",i+1,pisaInterf.getInterfaceArea(),name,SpaceGroup.getAlgebraicFromMatrix(pisaInterf.getSecondTransf().getMatTransform()));
 				} else {
 					System.out.printf("%2s\t%8s\t%20s\t%20s","","","","");
 				}
 				if (i<interfaces.size()) {
 					ChainInterface ourInterf = interfaces.get(i+1);
 					String name = ourInterf.getFirstMolecule().getChainCode()+"+"+ourInterf.getSecondMolecule().getChainCode();
-					System.out.printf("\t%8.2f\t%20s\t%20s\n",ourInterf.getInterfaceArea(),name,SpaceGroup.getAlgebraicFromMatrix(ourInterf.getSecondTransf()));
+					System.out.printf("\t%8.2f\t%20s\t%20s\n",ourInterf.getInterfaceArea(),name,SpaceGroup.getAlgebraicFromMatrix(ourInterf.getSecondTransf().getMatTransform()));
 				} else {
 					System.out.printf("\t%8s\t%20s\t%20s\n","","","");
 				}

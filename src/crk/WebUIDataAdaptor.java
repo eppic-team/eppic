@@ -86,7 +86,7 @@ public class WebUIDataAdaptor {
 			ii.setId(interf.getId());
 			ii.setArea(interf.getInterfaceArea());
 			ii.setName(interf.getName());
-			ii.setOperator(SpaceGroup.getAlgebraicFromMatrix(interf.getSecondTransf()));
+			ii.setOperator(SpaceGroup.getAlgebraicFromMatrix(interf.getSecondTransf().getMatTransform()));
 			ii.setSize1(interf.getFirstRimCore().getCoreSize());
 			ii.setSize2(interf.getSecondRimCore().getCoreSize());
 			ii.setWarnings(new ArrayList<WarningItemDB>()); // we then need to add warnings from each method as we add the scores from each method

@@ -121,7 +121,7 @@ public class CalcInterfaceStats extends Thread {
 					int interfId = interf.getId();
 					String pdbChainCode1 = interf.getFirstMolecule().getPdbChainCode();
 					String pdbChainCode2 = interf.getSecondMolecule().getPdbChainCode();
-					String op = SpaceGroup.getAlgebraicFromMatrix(interf.getSecondTransf());
+					String op = SpaceGroup.getAlgebraicFromMatrix(interf.getSecondTransf().getMatTransform());
 					double area = interf.getInterfaceArea();
 					int clashes = interf.getAICGraph().getNumClashes();
 					

@@ -224,7 +224,7 @@ public class CRKMain {
 			for (ChainInterface clashyInterf:clashyInterfs) {
 				msg+=("\nInterface: "+clashyInterf.getFirstMolecule().getPdbChainCode()+"+"
 						+clashyInterf.getSecondMolecule().getPdbChainCode()+" ("+
-						SpaceGroup.getAlgebraicFromMatrix(clashyInterf.getSecondTransf())+
+						SpaceGroup.getAlgebraicFromMatrix(clashyInterf.getSecondTransf().getMatTransform())+
 						") Clashes: "+clashyInterf.getNumClashes());
 			}
 

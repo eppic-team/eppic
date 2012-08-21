@@ -123,7 +123,7 @@ public class InterfaceSorter {
 			
 			String pdbChainCode1 = firstInterf.getFirstMolecule().getPdbChainCode();
 			String pdbChainCode2 = firstInterf.getSecondMolecule().getPdbChainCode();
-			String op = SpaceGroup.getAlgebraicFromMatrix(firstInterf.getSecondTransf());
+			String op = SpaceGroup.getAlgebraicFromMatrix(firstInterf.getSecondTransf().getMatTransform());
 			double area = firstInterf.getInterfaceArea();
 			int clashes = firstInterf.getAICGraph().getNumClashes();
 			
