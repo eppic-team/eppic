@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -239,6 +240,12 @@ public class InterfaceEvolContext implements Serializable {
 			} 
 			if (queryPos!=-1) {   
 				map.put(resser, conservationScores.get(queryPos));	
+			} else {
+				// when no entropy info is available for a residue we still want to assign a value for it
+				// or otherwise the residue would keep its original real bfactor and then possibly screw up the
+				// scaling of colors for the rest
+				// The most sensible value we can use is the max entropy so that it looks like a poorly conserved residue
+				map.put(resser, Collections.max(conservationScores));
 			}
 		}
 		pdb.setBFactorsPerResidue(map);		

@@ -273,7 +273,11 @@ public class CRKMain {
 				gp.setBsaToAsaCutoff(params.getCAcutoffForGeom());
 				gp.setMinCoreSizeForBio(params.getMinCoreSizeForBio());
 				gp.printScores(scoreGeomPS);
-				gp.writePdbFile(params.getOutputFile("."+interf.getId()+".pdb"));
+				// we write a PDB file only if no evol scoring is to be done, if evol scoring is done then 
+				// the PDB files are written later with entropy values encoded as bfactors
+				if (!params.isDoScoreEntropies()) {
+					gp.writePdbFile(params.getOutputFile("."+interf.getId()+".pdb"));
+				}
 			}
 			scoreGeomPS.close();
 						
@@ -498,11 +502,10 @@ public class CRKMain {
 				// entropy nw
 				iecList.scoreEntropy(false);
 				iecList.printScoresTable(scoreEntrPS);
-				if (!params.isGenerateThumbnails()) {
-					// we only write the pdb files with entropies as bfactors when not in -l mode (which is mainly used for WUI)
-					// in order to save space when we run in WUI
-					iecList.writeScoresPDBFiles(params,CRKParams.ENTROPIES_FILE_SUFFIX+".pdb");
-				}
+				
+				// writing PDB files with entropies as bfactors (if no evol scoring performed, then these files are written at geom scoring of course without entropies)
+				iecList.writeScoresPDBFiles(params,".pdb");
+
 				scoreEntrPS.close();
 				// z-scores
 				PrintStream scoreZscorePS = new PrintStream(params.getOutputFile(CRKParams.CSSCORES_FILE_SUFFIX));
