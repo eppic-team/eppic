@@ -84,7 +84,11 @@ clicking on them one gets an interactive 3D view, depending on selected mode: as
 embedded Jmol viewer (no need for local viewer), as a PDB file downloadable to a local 
 molecular viewer, or as PyMOL session file (.pse) to be opened in local PyMOL. The pse mode 
 is particularly useful as it is already prepared with selections of the different parts of the 
-interface and nicely depicted.
+interface and nicely depicted. Additionally the entropy values for each residue are written as
+b-factors in the .pdb and .pse files. Thus one can use the PyMOL "color by b-factor" functionality 
+(spectrum command) to show the selection pressure pattern mapped on the 3-dimensional structure: blue colors
+indicate low entropies and colors toward reds correspond to increasingly higher entropies. The surface
+representation is particularly helpful here in order to see surface residues only.   
 </p>
 </td>
 <td style="vertical-align:top;padding: 0px 0px 0px 5px">
