@@ -41,9 +41,10 @@ by a serial number from 1 to n going from largest interface to smallest).
   1smt.1.pdb              -  The structure of interface 1: first partner of 
                              interface is in the original PDB file position, 
                              second partner is the one transformed with a 
-                             crystal operator (unless it is in asymmetric unit)
-  1smt.1.entropies.pdb    -  Same but with entropy values encoded as b-factors
-                             (useful for PyMOL coloring) 
+                             crystal operator (unless it is in asymmetric 
+                             unit).
+                             The entropy values per residue are encoded as 
+                             b-factors (useful for PyMOL coloring) 
 
 Note that more structure files can be produced per interface by running with 
 the -l switch: PyMOL session files (pse), PyMOL script files (pml), thumbnail 
