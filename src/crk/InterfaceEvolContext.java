@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -245,7 +244,8 @@ public class InterfaceEvolContext implements Serializable {
 				// or otherwise the residue would keep its original real bfactor and then possibly screw up the
 				// scaling of colors for the rest
 				// The most sensible value we can use is the max entropy so that it looks like a poorly conserved residue
-				map.put(resser, Collections.max(conservationScores));
+				double maxEntropy = Math.log(this.getChainEvolContext(molecId).getHomologs().getReducedAlphabet())/Math.log(2);
+				map.put(resser, maxEntropy);
 			}
 		}
 		pdb.setBFactorsPerResidue(map);		

@@ -33,6 +33,7 @@ import owl.core.runners.PymolRunner;
 import owl.core.structure.ChainInterface;
 import owl.core.structure.ChainInterfaceList;
 import owl.core.structure.PdbAsymUnit;
+import owl.core.structure.PdbChain;
 import owl.core.structure.PdbLoadException;
 import owl.core.structure.SpaceGroup;
 import owl.core.structure.graphs.AICGraph;
@@ -316,6 +317,19 @@ public class CRKMain {
 				LOGGER.info("Generated PyMOL files for interface "+interf.getId());
 				wuiAdaptor.writeJmolScriptFile(interf, params.getCAcutoffForGeom(), pr, params.getOutDir(), params.getBaseName());
 			}
+
+			for (ChainEvolContext cec:cecs.getAllChainEvolContext()) {
+				PdbChain chain = pdb.getChain(cec.getRepresentativeChainCode());
+				cec.setConservationScoresAsBfactors(chain);
+				File chainPdbFile = params.getOutputFile("."+cec.getRepresentativeChainCode()+".pdb");
+				chain.writeToPDBFile(chainPdbFile);
+				pr.generateChainPse(chain, interfaces, params.getCAcutoffForGeom(), params.getCAcutoffForZscore(),
+						chainPdbFile, 
+						params.getOutputFile("."+cec.getRepresentativeChainCode()+".pse"), 
+						params.getOutputFile("."+cec.getRepresentativeChainCode()+".pml"),
+						0,params.getMaxEntropy());
+			}
+			
 		} catch (IOException e) {
 			throw new CRKException(e, "Couldn't write thumbnails, PyMOL pse/pml files or jmol files. "+e.getMessage(),true);
 		} catch (InterruptedException e) {
@@ -336,29 +350,26 @@ public class CRKMain {
 				File gzipPseFile = params.getOutputFile("."+interf.getId()+".pse.gz");
 				File pdbFile = params.getOutputFile("."+interf.getId()+".pdb");
 				File gzipPdbFile = params.getOutputFile("."+interf.getId()+".pdb.gz");
-
 				// pse
-				GZIPOutputStream zos = new GZIPOutputStream(new FileOutputStream(gzipPseFile));
-				FileInputStream is = new FileInputStream(pseFile);
-
-				int b;
-				while ( (b=is.read())!=-1) {
-					zos.write(b);
-				}
-				zos.close();
-				is.close();
+				gzipFile(pseFile, gzipPseFile);
 				pseFile.delete();
-
 				// pdb
-				zos = new GZIPOutputStream(new FileOutputStream(gzipPdbFile));
-				is = new FileInputStream(pdbFile);
-
-				while ( (b=is.read())!=-1) {
-					zos.write(b);
-				}
-				zos.close();
-				is.close();
+				gzipFile(pdbFile, gzipPdbFile);
 				pdbFile.delete();
+				
+			}
+			for (ChainEvolContext cec:cecs.getAllChainEvolContext()) {
+				File pseFile = params.getOutputFile("."+cec.getRepresentativeChainCode()+".pse");
+				File gzipPseFile = params.getOutputFile("."+cec.getRepresentativeChainCode()+".pse.gz");
+				File pdbFile = params.getOutputFile("."+cec.getRepresentativeChainCode()+".pdb");
+				File gzipPdbFile = params.getOutputFile("."+cec.getRepresentativeChainCode()+".pdb.gz");
+				// pse
+				gzipFile(pseFile, gzipPseFile);
+				pseFile.delete();
+				// pdb
+				gzipFile(pdbFile, gzipPdbFile);
+				pdbFile.delete();
+				
 			}
 		} catch (IOException e) {
 			throw new CRKException(e, "PSE or PDB files could not be gzipped. "+e.getMessage(),true);
@@ -405,6 +416,18 @@ public class CRKMain {
 		} catch (IOException e) {
 			throw new CRKException(e, "Final .zip file couldn't be created. "+e.getMessage(),true);
 		}
+	}
+	
+	private void gzipFile(File inFile, File outFile) throws IOException {
+		GZIPOutputStream zos = new GZIPOutputStream(new FileOutputStream(outFile));
+		FileInputStream is = new FileInputStream(inFile);
+
+		int b;
+		while ( (b=is.read())!=-1) {
+			zos.write(b);
+		}
+		zos.close();
+		is.close();
 	}
 	
 	public void writeFinishedFile() throws CRKException {

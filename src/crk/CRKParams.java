@@ -606,6 +606,16 @@ public class CRKParams {
 		this.reducedAlphabet = reducedAlphabet;
 	}
 	
+	/**
+	 * Returns the maximum theoretical value that entropy can have for an 
+	 * alignment column (for entropies defined with log base 2). 
+	 * The value is log(number of aminoacid classes)
+	 * @return
+	 */
+	public double getMaxEntropy() {
+		return Math.log(reducedAlphabet)/Math.log(2);
+	}
+	
 	public boolean isUseTcoffeeVeryFastMode() {
 		return useTcoffeeVeryFastMode;
 	}

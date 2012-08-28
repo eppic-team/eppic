@@ -8,6 +8,7 @@ import java.io.Serializable;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -548,6 +549,38 @@ public class ChainEvolContext implements Serializable {
 					AminoAcid.one2three(query.getSequence().charAt(i+queryInterv.beg-1)), 
 					conservationScores.get(i));
 		}
+	}
+	
+	/**
+	 * Set the b-factors of the given pdb chain to conservation score values.
+	 * @param chain
+	 */
+	protected void setConservationScoresAsBfactors(PdbChain chain) {
+		
+		// do nothing (i.e. keep original b-factors) if there's no query match for this sequence and thus no evol scores calculated 
+		if (!hasQueryMatch()) return;
+		
+		List<Double> conservationScores = getConservationScores(ScoringType.ENTROPY);
+		
+		HashMap<Integer,Double> map = new HashMap<Integer, Double>();
+		for (Residue residue:chain) {
+			// we don't need to take care of het residues, as we use the uniprot ref for the calc of entropies entropies will always be asigned even for hets
+			//if (!(residue instanceof AaResidue)) continue;
+			int resser = residue.getSerial();
+			int queryPos = getQueryUniprotPosForPDBPos(resser); 
+ 
+			if (queryPos!=-1) {   
+				map.put(resser, conservationScores.get(queryPos));	
+			} else {
+				// when no entropy info is available for a residue we still want to assign a value for it
+				// or otherwise the residue would keep its original real bfactor and then possibly screw up the
+				// scaling of colors for the rest
+				// The most sensible value we can use is the max entropy so that it looks like a poorly conserved residue
+				double maxEntropy = Math.log(this.homologs.getReducedAlphabet())/Math.log(2);
+				map.put(resser, maxEntropy);
+			}
+		}
+		chain.setBFactorsPerResidue(map);		
 	}
 	
 	public int getNumHomologs() {
