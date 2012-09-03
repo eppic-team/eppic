@@ -318,16 +318,18 @@ public class CRKMain {
 				wuiAdaptor.writeJmolScriptFile(interf, params.getCAcutoffForGeom(), pr, params.getOutDir(), params.getBaseName());
 			}
 
-			for (ChainEvolContext cec:cecs.getAllChainEvolContext()) {
-				PdbChain chain = pdb.getChain(cec.getRepresentativeChainCode());
-				cec.setConservationScoresAsBfactors(chain);
-				File chainPdbFile = params.getOutputFile("."+cec.getRepresentativeChainCode()+".pdb");
-				chain.writeToPDBFile(chainPdbFile);
-				pr.generateChainPse(chain, interfaces, params.getCAcutoffForGeom(), params.getCAcutoffForZscore(),
-						chainPdbFile, 
-						params.getOutputFile("."+cec.getRepresentativeChainCode()+".pse"), 
-						params.getOutputFile("."+cec.getRepresentativeChainCode()+".pml"),
-						0,params.getMaxEntropy());
+			if (params.isDoScoreEntropies()) {
+				for (ChainEvolContext cec:cecs.getAllChainEvolContext()) {
+					PdbChain chain = pdb.getChain(cec.getRepresentativeChainCode());
+					cec.setConservationScoresAsBfactors(chain);
+					File chainPdbFile = params.getOutputFile("."+cec.getRepresentativeChainCode()+".pdb");
+					chain.writeToPDBFile(chainPdbFile);
+					pr.generateChainPse(chain, interfaces, params.getCAcutoffForGeom(), params.getCAcutoffForZscore(),
+							chainPdbFile, 
+							params.getOutputFile("."+cec.getRepresentativeChainCode()+".pse"), 
+							params.getOutputFile("."+cec.getRepresentativeChainCode()+".pml"),
+							0,params.getMaxEntropy());
+				}
 			}
 			
 		} catch (IOException e) {
@@ -358,18 +360,21 @@ public class CRKMain {
 				pdbFile.delete();
 				
 			}
-			for (ChainEvolContext cec:cecs.getAllChainEvolContext()) {
-				File pseFile = params.getOutputFile("."+cec.getRepresentativeChainCode()+".pse");
-				File gzipPseFile = params.getOutputFile("."+cec.getRepresentativeChainCode()+".pse.gz");
-				File pdbFile = params.getOutputFile("."+cec.getRepresentativeChainCode()+".pdb");
-				File gzipPdbFile = params.getOutputFile("."+cec.getRepresentativeChainCode()+".pdb.gz");
-				// pse
-				gzipFile(pseFile, gzipPseFile);
-				pseFile.delete();
-				// pdb
-				gzipFile(pdbFile, gzipPdbFile);
-				pdbFile.delete();
-				
+			
+			if (params.isDoScoreEntropies()) {
+				for (ChainEvolContext cec:cecs.getAllChainEvolContext()) {
+					File pseFile = params.getOutputFile("."+cec.getRepresentativeChainCode()+".pse");
+					File gzipPseFile = params.getOutputFile("."+cec.getRepresentativeChainCode()+".pse.gz");
+					File pdbFile = params.getOutputFile("."+cec.getRepresentativeChainCode()+".pdb");
+					File gzipPdbFile = params.getOutputFile("."+cec.getRepresentativeChainCode()+".pdb.gz");
+					// pse
+					gzipFile(pseFile, gzipPseFile);
+					pseFile.delete();
+					// pdb
+					gzipFile(pdbFile, gzipPdbFile);
+					pdbFile.delete();
+
+				}
 			}
 		} catch (IOException e) {
 			throw new CRKException(e, "PSE or PDB files could not be gzipped. "+e.getMessage(),true);
