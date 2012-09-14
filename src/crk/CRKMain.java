@@ -501,7 +501,8 @@ public class CRKMain {
 		cecs.writeSeqInfoToFiles(params);
 
 		// d) computing entropies
-		cecs.computeEntropies(params,pdb);
+		cecs.computeEntropies(params);
+		cecs.writeEntropiesToFile(params, pdb);
 		
 		if (!params.isGenerateThumbnails()) {
 			// we only produce the chainevolcontext.dat file if not in -l mode (for WUI not to produce so many files)

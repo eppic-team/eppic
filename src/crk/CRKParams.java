@@ -76,7 +76,7 @@ public class CRKParams {
 	
 	private static final int      DEF_NSPHEREPOINTS_ASA_CALC = 3000;
 	
-	private static final HomologsSearchMode DEF_HOMOLOGS_SEARCH_MODE = HomologsSearchMode.AUTO;
+	protected static final HomologsSearchMode DEF_HOMOLOGS_SEARCH_MODE = HomologsSearchMode.AUTO;
 	
 	private static final AlignmentMode DEF_ALIGNMENT_MODE = AlignmentMode.AUTO;
 	
@@ -111,7 +111,7 @@ public class CRKParams {
 	private static final double   DEF_PDB2UNIPROT_ID_THRESHOLD = 0.75;
 	private static final double   DEF_PDB2UNIPROT_QCOV_THRESHOLD = 0.85;
 	// default pdb2uniprot max subject (uniprot) coverage: below this value we do local blast search instead of global (see HomologsSearchMode) 
-	private static final double   DEF_PDB2UNIPROT_MAX_SCOV_FOR_LOCAL = 0.5;
+	protected static final double DEF_PDB2UNIPROT_MAX_SCOV_FOR_LOCAL = 0.5;
 
 	// default cache dirs
 	private static final String   DEF_BLAST_CACHE_DIR = null;
@@ -730,12 +730,24 @@ public class CRKParams {
 		return homologsSearchMode;
 	}
 	
+	public void setHomologsSearchMode(HomologsSearchMode homologsSearchMode) {
+		this.homologsSearchMode = homologsSearchMode;
+	}
+	
 	public AlignmentMode getAlignmentMode() {
 		return alignmentMode;
 	}
 	
+	public void setAlignmentMode(AlignmentMode alignmentMode) {
+		this.alignmentMode = alignmentMode;
+	}
+	
 	public boolean isFilterByDomain() {
 		return filterByDomain;
+	}
+	
+	public void setIsFilterByDomain(boolean filterByDomain) {
+		this.filterByDomain = filterByDomain;
 	}
 
 	public void readConfigFile(File file) throws FileNotFoundException, IOException { 

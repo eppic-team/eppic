@@ -8,6 +8,7 @@ import java.io.Serializable;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.TreeMap;
 
 import org.apache.commons.logging.Log;
@@ -18,10 +19,10 @@ import owl.core.connections.UniprotLocalConnection;
 import owl.core.runners.TcoffeeException;
 import owl.core.runners.blast.BlastException;
 import owl.core.sequence.HomologList;
+import owl.core.sequence.Sequence;
 import owl.core.sequence.UniprotVerMisMatchException;
 import owl.core.structure.PdbAsymUnit;
 import owl.core.structure.PdbChain;
-
 
 public class ChainEvolContextList implements Serializable {
 
@@ -77,6 +78,35 @@ public class ChainEvolContextList implements Serializable {
 			cec.setSeqIdenticalChainsStr(pdb.getSeqIdenticalGroupString(representativeChain));
 			
 			cecs.put(representativeChain, cec);
+		}
+		
+	}
+	
+	public ChainEvolContextList(List<Sequence> sequences, CRKParams params) throws SQLException {
+		this.cecs = new TreeMap<String, ChainEvolContext>();
+		this.chain2repChain = new HashMap<String, String>();
+		this.pdbName = "";
+		// if we fail to read a version, it will stay null. Should we rather throw exception?
+		this.uniprotVer = HomologList.readUniprotVer(params.getBlastDbDir());
+		LOGGER.info("Using UniProt version "+uniprotVer+" for blasting");
+		
+		if (params.getLocalUniprotDbName()!=null) {
+			this.useLocalUniprot = true;
+			this.uniprotLocalConn = new UniprotLocalConnection(params.getLocalUniprotDbName(),params.getLocalTaxonomyDbName());
+			LOGGER.info("Using local UniProt connection to retrieve UniProtKB data. Local databases: "+params.getLocalUniprotDbName()+" and "+params.getLocalTaxonomyDbName());
+		} else {
+			this.useLocalUniprot = false;
+			this.uniprotJapiConn = new UniProtConnection();
+			LOGGER.info("Using remote UniProt JAPI connection to retrieve UniProtKB data");
+		}
+		
+		for (Sequence sequence: sequences) {
+						
+			ChainEvolContext cec = new ChainEvolContext(this, sequence.getSeq(), sequence.getName(), "NOT_A_PDB", params);
+			cec.setSeqIdenticalChainsStr(sequence.getName());
+			
+			cecs.put(sequence.getName(), cec);
+			chain2repChain.put(sequence.getName(), sequence.getName());
 		}
 		
 	}
@@ -363,7 +393,7 @@ public class ChainEvolContextList implements Serializable {
 		}
 	}
 	
-	public void computeEntropies(CRKParams params, PdbAsymUnit pdb) {
+	public void computeEntropies(CRKParams params) {
 		for (ChainEvolContext chainEvCont:cecs.values()) {
 			if (!chainEvCont.hasQueryMatch()) {
 				// no query uniprot match, we do nothing with this sequence
@@ -371,7 +401,16 @@ public class ChainEvolContextList implements Serializable {
 			}
 			
 			chainEvCont.computeEntropies(params.getReducedAlphabet());
-
+		}
+	}
+	
+	public void writeEntropiesToFile(CRKParams params, PdbAsymUnit pdb) {
+		for (ChainEvolContext chainEvCont:cecs.values()) {
+			if (!chainEvCont.hasQueryMatch()) {
+				// no query uniprot match, we do nothing with this sequence
+				continue;
+			}
+			
 			File outFile = null;
 			try {
 				// writing the conservation scores (entropies/kaks) log file

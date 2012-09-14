@@ -534,14 +534,16 @@ public class ChainEvolContext implements Serializable {
 			ps.println("# Entropies for all query sequence positions (reference UniProt: "+query.getUniId()+") based on a "+homologs.getReducedAlphabet()+" letters alphabet.");
 			ps.println("# seqres\tpdb\tuniprot\tuniprot_res\tentropy");
 		} 
-		PdbChain chain = pdb.getChain(representativeChain);
+		PdbChain chain = null;
+		if (pdb!=null) chain = pdb.getChain(representativeChain);
 		List<Double> conservationScores = getConservationScores(scoType);		
 		for (int i=0;i<conservationScores.size();i++) {
 			int resser = 0;
 			if (scoType.equals(ScoringType.ENTROPY)) {
 				resser = getPDBPosForQueryUniprotPos(i+queryInterv.beg-1);
-			} 			
-			String pdbresser = chain.getPdbResSerFromResSer(resser);
+			}
+			String pdbresser = "NA";
+			if (chain!=null) pdbresser = chain.getPdbResSerFromResSer(resser);
 			ps.printf("%4d\t%4s\t%4d\t%3s\t%5.2f\n",
 					resser, 
 					pdbresser, 
