@@ -29,13 +29,14 @@ public class EvolInterfZPredictor implements InterfaceTypePredictor {
 	private ScoringType scoringType; // the type of the last scoring run (either kaks or entropy)
 	
 	private double bsaToAsaCutoff;
+	private double minAsaForSurface;
 
 	private EvolInterfZMemberPredictor member1Pred;
 	private EvolInterfZMemberPredictor member2Pred;
 	
 	private InterfaceEvolContext iec;
 	
-	private double zScoreCutoff;
+	private double callCutoff;
 	
 	// cached values of scoring (filled upon call of score methods and getCall)
 	private ArrayList<Integer> bioCalls; // cache of the votes (lists of interface member indices)
@@ -48,8 +49,8 @@ public class EvolInterfZPredictor implements InterfaceTypePredictor {
 	public EvolInterfZPredictor(InterfaceEvolContext iec) {
 		this.iec = iec;
 		this.warnings = new ArrayList<String>();
-		this.member1Pred = new EvolInterfZMemberPredictor(iec,FIRST);
-		this.member2Pred = new EvolInterfZMemberPredictor(iec, SECOND);
+		this.member1Pred = new EvolInterfZMemberPredictor(this, FIRST);
+		this.member2Pred = new EvolInterfZMemberPredictor(this, SECOND);
 	}
 	
 	public EvolInterfZMemberPredictor getMember1Predictor() {
@@ -58,6 +59,14 @@ public class EvolInterfZPredictor implements InterfaceTypePredictor {
 	
 	public EvolInterfZMemberPredictor getMember2Predictor() {
 		return member2Pred;
+	}
+	
+	protected boolean canDoEntropyScoring(int molecId) {
+		return iec.getChainEvolContext(molecId).hasQueryMatch();
+	}
+	
+	protected InterfaceEvolContext getInterfaceEvolContext() {
+		return iec;
 	}
 	
 	private boolean canDoFirstEntropyScoring() {
@@ -113,7 +122,7 @@ public class EvolInterfZPredictor implements InterfaceTypePredictor {
 		int countNoPredict = noPredictCalls.size();
 
 		
-		iec.getInterface().calcRimAndCore(bsaToAsaCutoff);
+		iec.getInterface().calcRimAndCore(bsaToAsaCutoff, minAsaForSurface);
 		InterfaceRimCore rimCore1 = iec.getInterface().getRimCore(0);
 		InterfaceRimCore rimCore2 = iec.getInterface().getRimCore(1);
 
@@ -136,12 +145,12 @@ public class EvolInterfZPredictor implements InterfaceTypePredictor {
 			callReason = member1Pred.getCallReason()+"\n"+member2Pred.getCallReason();
 		} else if (countBio==countXtal) {
 			callReason = member1Pred.getCallReason()+"\n"+member2Pred.getCallReason();
-			if (score<zScoreCutoff) {
+			if (score<callCutoff) {
 				call = CallType.BIO;
-				callReason += "\nAverage score "+String.format("%4.2f", score)+" is below BIO cutoff ("+String.format("%4.2f", zScoreCutoff)+")";
-			} else if (score>zScoreCutoff) {
+				callReason += "\nAverage score "+String.format("%4.2f", score)+" is below BIO cutoff ("+String.format("%4.2f", callCutoff)+")";
+			} else if (score>callCutoff) {
 				call = CallType.CRYSTAL;
-				callReason += "\nAverage score "+String.format("%4.2f", score)+" is above XTAL cutoff ("+String.format("%4.2f", zScoreCutoff)+")";
+				callReason += "\nAverage score "+String.format("%4.2f", score)+" is above XTAL cutoff ("+String.format("%4.2f", callCutoff)+")";
 			} else if (Double.isNaN(score)) {
 				call = CallType.NO_PREDICTION;
 				callReason += "\nAverage score is NaN";
@@ -149,7 +158,7 @@ public class EvolInterfZPredictor implements InterfaceTypePredictor {
 				// note this is useless, keeping it here only as place holder in case we want to introduce a gray zone
 				call = CallType.GRAY;
 				callReason += "\nAverage score "+String.format("%4.2f", score)+" falls in gray area ("+
-						String.format("%4.2f", zScoreCutoff)+" - "+String.format("%4.2f", zScoreCutoff)+")";
+						String.format("%4.2f", callCutoff)+" - "+String.format("%4.2f", callCutoff)+")";
 			}
 		}
 		return call;
@@ -188,17 +197,6 @@ public class EvolInterfZPredictor implements InterfaceTypePredictor {
 		scoringType = ScoringType.ENTROPY;
 	}
 	
-	/**
-	 * Calculates the ka/ks scores for this interface.
-	 * Subsequently use {@link #getCall()} and {@link #getScore()} to get call and average score 
-	 */
-	public void scoreKaKs() {
-		member1Pred.scoreKaKs();
-		member2Pred.scoreKaKs();
-		score = (member1Pred.getScore()+member2Pred.getScore())/2;
-		scoringType = ScoringType.KAKS;
-	}
-
 	public ScoringType getScoringType() {
 		return this.scoringType;
 	}
@@ -208,16 +206,25 @@ public class EvolInterfZPredictor implements InterfaceTypePredictor {
 		return score;
 	}
 	
-	public void setZscoreCutoff(double zScoreCutoff) {
-		this.zScoreCutoff = zScoreCutoff;
-		this.member1Pred.setZscoreCutoff(zScoreCutoff);
-		this.member2Pred.setZscoreCutoff(zScoreCutoff);
+	protected double getCallCutoff() {
+		return callCutoff;
 	}
 	
-	public void setBsaToAsaCutoff(double bsaToAsaCutoff) {
+	public void setCallCutoff(double callCutoff) {
+		this.callCutoff = callCutoff;
+	}
+	
+	public void setBsaToAsaCutoff(double bsaToAsaCutoff, double minAsaForSurface) {
 		this.bsaToAsaCutoff = bsaToAsaCutoff;
-		this.member1Pred.setBsaToAsaCutoff(bsaToAsaCutoff);
-		this.member2Pred.setBsaToAsaCutoff(bsaToAsaCutoff);		
+		this.minAsaForSurface = minAsaForSurface;
+	}
+	
+	protected double getBsaToAsaCutoff() {
+		return bsaToAsaCutoff;
+	}
+	
+	protected double getMinAsaForSurface() {
+		return minAsaForSurface;
 	}
 	
 	public void printScoresLine(PrintStream ps) {

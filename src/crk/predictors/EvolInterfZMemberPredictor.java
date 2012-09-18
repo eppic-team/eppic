@@ -14,7 +14,6 @@ import owl.core.structure.Residue;
 
 import crk.CRKParams;
 import crk.CallType;
-import crk.InterfaceEvolContext;
 import crk.ScoringType;
 
 public class EvolInterfZMemberPredictor implements InterfaceTypePredictor {
@@ -25,7 +24,7 @@ public class EvolInterfZMemberPredictor implements InterfaceTypePredictor {
 	
 	private static final Log LOGGER = LogFactory.getLog(EvolInterfZMemberPredictor.class);
 	
-	private InterfaceEvolContext iec;
+	private EvolInterfZPredictor parent;
 	
 	private CallType call;
 	private String callReason;
@@ -33,25 +32,18 @@ public class EvolInterfZMemberPredictor implements InterfaceTypePredictor {
 
 	private double zScore; // cache of the last run scoreEntropy/scoreKaKs 
 	
-	private ScoringType scoringType; // the type of the last scoring run (either kaks or entropy)
+	//private ScoringType scoringType; // the type of the last scoring run (either kaks or entropy)
 	
 	private int molecId;
 
 	private double coreScore;
 	private double mean;
 	private double sd;
-	private double zScoreCutoff;
 	
-	private double bsaToAsaCutoff;
-	
-	public EvolInterfZMemberPredictor(InterfaceEvolContext iec, int molecId) {
-		this.iec = iec;
+	public EvolInterfZMemberPredictor(EvolInterfZPredictor parent, int molecId) {
+		this.parent = parent;
 		this.warnings = new ArrayList<String>();
 		this.molecId = molecId;
-	}
-	
-	private boolean canDoEntropyScoring() {
-		return iec.getChainEvolContext(molecId).hasQueryMatch();
 	}
 	
 	@Override
@@ -59,54 +51,54 @@ public class EvolInterfZMemberPredictor implements InterfaceTypePredictor {
 		
 		int memberSerial = molecId+1;
 		
-		iec.getInterface().calcRimAndCore(bsaToAsaCutoff);
-		InterfaceRimCore rimCore = iec.getInterface().getRimCore(molecId);
+		parent.getInterfaceEvolContext().getInterface().calcRimAndCore(parent.getBsaToAsaCutoff(), parent.getMinAsaForSurface());
+		InterfaceRimCore rimCore = parent.getInterfaceEvolContext().getInterface().getRimCore(molecId);
 		
 		int countsUnrelCoreRes = -1;
-		if (canDoEntropyScoring()) {
-			List<Residue> unreliableCoreRes = iec.getUnreliableCoreRes(molecId);
+		if (parent.canDoEntropyScoring(molecId)) {
+			List<Residue> unreliableCoreRes = parent.getInterfaceEvolContext().getUnreliableCoreRes(molecId);
 			countsUnrelCoreRes = unreliableCoreRes.size();
-			String msg = iec.getReferenceMismatchWarningMsg(unreliableCoreRes,"core");
+			String msg = parent.getInterfaceEvolContext().getReferenceMismatchWarningMsg(unreliableCoreRes,"core");
 			if (msg!=null) {
 				LOGGER.warn(msg);
 				warnings.add(msg);
 			}			
 		}
 
-		if (!canDoEntropyScoring()) {
+		if (!parent.canDoEntropyScoring(molecId)) {
 			call = CallType.NO_PREDICTION;
 			callReason = memberSerial+": no evol z-scores calculation could be performed (no uniprot query match)";
 		}
-		else if (!iec.hasEnoughHomologs(molecId)) {
+		else if (!parent.getInterfaceEvolContext().hasEnoughHomologs(molecId)) {
 			call = CallType.NO_PREDICTION;
-			LOGGER.info("Interface "+iec.getInterface().getId()+", member "+memberSerial+" calls NOPRED because there are not enough homologs to calculate evolutionary scores");
-			callReason = memberSerial+": there are only "+iec.getChainEvolContext(molecId).getNumHomologs()+
-					" homologs to calculate evolutionary scores (at least "+iec.getMinNumSeqs()+" required)";
+			LOGGER.info("Interface "+parent.getInterfaceEvolContext().getInterface().getId()+", member "+memberSerial+" calls NOPRED because there are not enough homologs to calculate evolutionary scores");
+			callReason = memberSerial+": there are only "+parent.getInterfaceEvolContext().getChainEvolContext(molecId).getNumHomologs()+
+					" homologs to calculate evolutionary scores (at least "+parent.getInterfaceEvolContext().getMinNumSeqs()+" required)";
 		}
 		else if (rimCore.getCoreSize()<CRKParams.MIN_NUMBER_CORE_RESIDUES_EVOL_SCORE) {
 			call = CallType.NO_PREDICTION;
 			callReason = memberSerial+": not enough core residues to calculate evolutionary score (at least "+CRKParams.MIN_NUMBER_CORE_RESIDUES_EVOL_SCORE+" needed)";
 		} 
-		else if (iec.getNumResiduesNotInInterfaces(molecId, MIN_INTERF_FOR_RES_NOT_IN_INTERFACES)<rimCore.getCoreSize()*NUM_RESIDUES_NOT_IN_INTERFACES_TOLERANCE) {
+		else if (parent.getInterfaceEvolContext().getNumResiduesNotInInterfaces(molecId, MIN_INTERF_FOR_RES_NOT_IN_INTERFACES, parent.getMinAsaForSurface())<rimCore.getCoreSize()*NUM_RESIDUES_NOT_IN_INTERFACES_TOLERANCE) {
 			call = CallType.NO_PREDICTION;
 			callReason = memberSerial+": not enough residues in protein surface belonging to no interface, can't calculate the surface score distribution";
 		}
 		else if (((double)countsUnrelCoreRes/(double)rimCore.getCoreSize())>CRKParams.MAX_ALLOWED_UNREL_RES) {
 			call = CallType.NO_PREDICTION;
-			LOGGER.info("Interface "+iec.getInterface().getId()+", member "+memberSerial+" calls NOPRED because there are not enough reliable core residues ("+
+			LOGGER.info("Interface "+parent.getInterfaceEvolContext().getInterface().getId()+", member "+memberSerial+" calls NOPRED because there are not enough reliable core residues ("+
 					countsUnrelCoreRes+" unreliable residues out of "+rimCore.getCoreSize()+" residues in core)");
 			callReason = memberSerial+": there are not enough reliable core residues: "+
 					countsUnrelCoreRes+" unreliable out of "+rimCore.getCoreSize()+" in core";
 		}
 		else {
-			if (zScore<zScoreCutoff) {
+			if (zScore<parent.getCallCutoff()) {
 				call = CallType.BIO;
 				callReason = memberSerial+": score "+
-						String.format("%4.2f",getScore())+" is below BIO cutoff ("+String.format("%4.2f", zScoreCutoff)+")";
-			} else if (zScore>zScoreCutoff) {
+						String.format("%4.2f",getScore())+" is below BIO cutoff ("+String.format("%4.2f", parent.getCallCutoff())+")";
+			} else if (zScore>parent.getCallCutoff()) {
 				call = CallType.CRYSTAL;
 				callReason = memberSerial+": score "+
-						String.format("%4.2f",zScore)+" is above XTAL cutoff ("+String.format("%4.2f", zScoreCutoff)+")";
+						String.format("%4.2f",zScore)+" is above XTAL cutoff ("+String.format("%4.2f", parent.getCallCutoff())+")";
 			} else if (Double.isNaN(zScore)) {
 				call = CallType.NO_PREDICTION;
 				callReason = memberSerial+": score is NaN";
@@ -114,7 +106,7 @@ public class EvolInterfZMemberPredictor implements InterfaceTypePredictor {
 				// note: this is useless, just kept here as a placeholder in case we want to introduce gray zone
 				call = CallType.GRAY;
 				callReason = memberSerial+": score "+String.format("%4.2f",zScore)+" falls in gray area ("+
-				String.format("%4.2f", zScoreCutoff)+" - "+String.format("%4.2f", zScoreCutoff)+")"; 
+				String.format("%4.2f", parent.getCallCutoff())+" - "+String.format("%4.2f", parent.getCallCutoff())+")"; 
 			}
 		}
 
@@ -138,22 +130,9 @@ public class EvolInterfZMemberPredictor implements InterfaceTypePredictor {
 	 */
 	public void scoreEntropy() {
 		scoreInterfaceMember(ScoringType.ENTROPY);
-		scoringType = ScoringType.ENTROPY;
+		//scoringType = ScoringType.ENTROPY;
 	}
 
-	/**
-	 * Calculates the ka/ks score for this interface member.
-	 * Subsequently use {@link #getCall()} and {@link #getScore()} to get the call and score
-	 */
-	public void scoreKaKs() {
-		scoreInterfaceMember(ScoringType.KAKS);
-		scoringType = ScoringType.KAKS;
-	}
-	
-	public ScoringType getScoringType() {
-		return this.scoringType;
-	}
-	
 	public double getCoreScore() {
 		return coreScore;
 	}
@@ -176,26 +155,26 @@ public class EvolInterfZMemberPredictor implements InterfaceTypePredictor {
 	}
 	
 	private double scoreInterfaceMember(ScoringType scoType) {
-		if (!canDoEntropyScoring()) {
+		if (!parent.canDoEntropyScoring(molecId)) {
 			zScore = Double.NaN;
 			return zScore;
 		}
 		
-		iec.getInterface().calcRimAndCore(bsaToAsaCutoff);
-		InterfaceRimCore rimCore = iec.getInterface().getRimCore(molecId);
+		parent.getInterfaceEvolContext().getInterface().calcRimAndCore(parent.getBsaToAsaCutoff(), parent.getMinAsaForSurface());
+		InterfaceRimCore rimCore = parent.getInterfaceEvolContext().getInterface().getRimCore(molecId);
 
-		coreScore = iec.calcScore(rimCore.getCoreResidues(),molecId, scoType, false);
+		coreScore = parent.getInterfaceEvolContext().calcScore(rimCore.getCoreResidues(), molecId, scoType, false);
 		// we need to check, before trying to sample residues in surface for getting 
 		// the background distribution, whether there are enough residues at all for sampling
 		// it can happen for small proteins that the number of residues in surface is really small (e.g. 3jsd with only 1)
-		if (iec.getNumResiduesNotInInterfaces(molecId, MIN_INTERF_FOR_RES_NOT_IN_INTERFACES)<rimCore.getCoreSize()*NUM_RESIDUES_NOT_IN_INTERFACES_TOLERANCE) {
+		if (parent.getInterfaceEvolContext().getNumResiduesNotInInterfaces(molecId, MIN_INTERF_FOR_RES_NOT_IN_INTERFACES, parent.getMinAsaForSurface())<rimCore.getCoreSize()*NUM_RESIDUES_NOT_IN_INTERFACES_TOLERANCE) {
 			zScore = Double.NaN;
 			return Double.NaN;
 		}
-		double[] surfScoreDist = iec.getSurfaceScoreDist(molecId, MIN_INTERF_FOR_RES_NOT_IN_INTERFACES, NUM_SAMPLES_SCORE_DIST, rimCore.getCoreSize(), scoType);
+		double[] surfScoreDist = parent.getInterfaceEvolContext().getSurfaceScoreDist(molecId, MIN_INTERF_FOR_RES_NOT_IN_INTERFACES, NUM_SAMPLES_SCORE_DIST, rimCore.getCoreSize(), scoType, parent.getMinAsaForSurface());
 		
 		if (rimCore.getCoreSize()!=0) {
-			LOGGER.info("Interface "+iec.getInterface().getId()+", member "+(molecId+1)+": sampled "+NUM_SAMPLES_SCORE_DIST+" surface evolutionary scores of size "+rimCore.getCoreSize()+": ");
+			LOGGER.info("Interface "+parent.getInterfaceEvolContext().getInterface().getId()+", member "+(molecId+1)+": sampled "+NUM_SAMPLES_SCORE_DIST+" surface evolutionary scores of size "+rimCore.getCoreSize()+": ");
 			StringBuffer sb = new StringBuffer();
 			for (double sample:surfScoreDist) {
 				sb.append(String.format("%4.2f",sample)+" ");
@@ -224,17 +203,8 @@ public class EvolInterfZMemberPredictor implements InterfaceTypePredictor {
 		return zScore;
 	}
 	
-	public void setZscoreCutoff(double zScoreCutoff) {
-		this.zScoreCutoff = zScoreCutoff;
-	}
-	
-	public void setBsaToAsaCutoff(double bsaToAsaCutoff) { 
-		this.bsaToAsaCutoff = bsaToAsaCutoff;
-	}
-
 	public void resetCall() {
 		this.call = null;
-		this.scoringType = null;
 		this.warnings = new ArrayList<String>();
 		this.callReason = null;
 		this.coreScore = -1;

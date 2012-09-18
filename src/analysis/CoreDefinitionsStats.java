@@ -36,6 +36,7 @@ public class CoreDefinitionsStats {
 	
 	private static final double CA_CUTOFF = 0.95;
 	private static final double RASA_CUTOFF = 0.25;
+	private static final double MIN_ASA_FOR_SURFACE = 5;
 	
 	private static final String BASENAME = "interf_coredef";
 	private static final String TMPDIR = System.getProperty("java.io.tmpdir");
@@ -169,10 +170,10 @@ public class CoreDefinitionsStats {
 				
 				for (ChainInterface interf:interfList.getInterfaces()) {
 					double area = interf.getInterfaceArea();
-					interf.calcRimAndCore(CA_CUTOFF);
+					interf.calcRimAndCore(CA_CUTOFF, MIN_ASA_FOR_SURFACE);
 					int core1Schaerer = interf.getFirstRimCore().getCoreSize();
 					int core2Schaerer = interf.getSecondRimCore().getCoreSize();
-					interf.calcRimAndCoreChakrabarti();
+					interf.calcRimAndCoreChakrabarti(MIN_ASA_FOR_SURFACE);
 					int core1Chak = interf.getFirstRimCore().getCoreSize();
 					int core2Chak = interf.getSecondRimCore().getCoreSize();
 					interf.calcRimAndCoreLevy(RASA_CUTOFF);

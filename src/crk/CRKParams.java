@@ -101,6 +101,9 @@ public class CRKParams {
 	// default pymol exec
 	private static final File	  DEF_PYMOL_EXE = new File("/usr/bin/pymol");
 	
+	// default minimum ASA for calling a residue surface
+	public static final double    DEF_MIN_ASA_FOR_SURFACE = 5;
+	
 	// default cutoffs
 	private static final double   DEF_QUERY_COVERAGE_CUTOFF = 0.85;
 	public static final int       DEF_MIN_NUM_SEQUENCES = 10;
@@ -135,6 +138,8 @@ public class CRKParams {
 	private double caCutoffForGeom;
 	private double caCutoffForRimCore;
 	private double caCutoffForZscore;
+	
+	private double minAsaForSurface;
 	
 	private int    minCoreSizeForBio;
 	
@@ -636,6 +641,10 @@ public class CRKParams {
 		return caCutoffForZscore;
 	}
 	
+	public double getMinAsaForSurface() {
+		return minAsaForSurface;
+	}
+	
 	public int getMinCoreSizeForBio() {
 		return minCoreSizeForBio;
 	}
@@ -778,6 +787,8 @@ public class CRKParams {
 			useTcoffeeVeryFastMode = Boolean.parseBoolean(p.getProperty("USE_TCOFFEE_VERY_FAST_MODE",new Boolean(DEF_USE_TCOFFEE_VERY_FAST_MODE).toString()));
 			
 			pymolExe		= new File(p.getProperty("PYMOL_EXE", DEF_PYMOL_EXE.toString()));
+			
+			minAsaForSurface = Double.parseDouble(p.getProperty("MIN_ASA_FOR_SURFACE", new Double(DEF_MIN_ASA_FOR_SURFACE).toString()));
 
 			queryCoverageCutoff = Double.parseDouble(p.getProperty("QUERY_COVERAGE_CUTOFF", new Double(DEF_QUERY_COVERAGE_CUTOFF).toString()));
 			minNumSeqs = Integer.parseInt(p.getProperty("MIN_NUM_SEQUENCES", new Integer(DEF_MIN_NUM_SEQUENCES).toString()));

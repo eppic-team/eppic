@@ -215,6 +215,8 @@ public class CRKMain {
 
 		}
 
+		LOGGER.info("Minimum ASA for a residue to be considered surface: "+String.format("%2.0f",params.getMinAsaForSurface()));
+		
 		params.getProgressLog().println("Done");
 
 
@@ -234,7 +236,7 @@ public class CRKMain {
 
 		}
 
-		interfaces.calcRimAndCores(params.getCAcutoffForGeom());
+		interfaces.calcRimAndCores(params.getCAcutoffForGeom(), params.getMinAsaForSurface());
 		
 		try {
 			PrintStream interfLogPS = new PrintStream(params.getOutputFile(".interfaces"));
@@ -272,6 +274,7 @@ public class CRKMain {
 				GeometryPredictor gp = new GeometryPredictor(interf);
 				gps.add(gp);
 				gp.setBsaToAsaCutoff(params.getCAcutoffForGeom());
+				gp.setMinAsaForSurface(params.getMinAsaForSurface());
 				gp.setMinCoreSizeForBio(params.getMinCoreSizeForBio());
 				gp.printScores(scoreGeomPS);
 				// we write a PDB file only if no evol scoring is to be done, if evol scoring is done then 
@@ -285,7 +288,7 @@ public class CRKMain {
 			// for the webui
 			wuiAdaptor.setInterfaces(interfaces);
 			wuiAdaptor.setGeometryScores(gps);
-			wuiAdaptor.addResidueDetails(interfaces, params.getCAcutoffForRimCore());
+			wuiAdaptor.addResidueDetails(interfaces, params.getCAcutoffForRimCore(), params.getMinAsaForSurface());
 		} catch (IOException e) {
 			throw new CRKException(e, "Couldn't write interface geometry scores or related pdb files. "+e.getMessage(),true);
 		}
@@ -309,13 +312,14 @@ public class CRKMain {
 
 		try {
 			for (ChainInterface interf:interfaces) {
-				pr.generateInterfPngPsePml(interf, params.getCAcutoffForGeom(), 
+				pr.generateInterfPngPsePml(interf, 
+						params.getCAcutoffForGeom(), params.getMinAsaForSurface(), 
 						params.getOutputFile("."+interf.getId()+".pdb"), 
 						params.getOutputFile("."+interf.getId()+".pse"),
 						params.getOutputFile("."+interf.getId()+".pml"),
 						params.getBaseName()+"."+interf.getId());
 				LOGGER.info("Generated PyMOL files for interface "+interf.getId());
-				wuiAdaptor.writeJmolScriptFile(interf, params.getCAcutoffForGeom(), pr, params.getOutDir(), params.getBaseName());
+				wuiAdaptor.writeJmolScriptFile(interf, params.getCAcutoffForGeom(), params.getMinAsaForSurface(), pr, params.getOutDir(), params.getBaseName());
 			}
 
 			if (params.isDoScoreEntropies()) {
@@ -324,7 +328,8 @@ public class CRKMain {
 					cec.setConservationScoresAsBfactors(chain);
 					File chainPdbFile = params.getOutputFile("."+cec.getRepresentativeChainCode()+".pdb");
 					chain.writeToPDBFile(chainPdbFile);
-					pr.generateChainPse(chain, interfaces, params.getCAcutoffForGeom(), params.getCAcutoffForZscore(),
+					pr.generateChainPse(chain, interfaces, 
+							params.getCAcutoffForGeom(), params.getCAcutoffForZscore(), params.getMinAsaForSurface(),
 							chainPdbFile, 
 							params.getOutputFile("."+cec.getRepresentativeChainCode()+".pse"), 
 							params.getOutputFile("."+cec.getRepresentativeChainCode()+".pml"),
@@ -524,7 +529,7 @@ public class CRKMain {
 		
 		if (params.isDoScoreEntropies()) {
 			try {
-				iecList.setRimCorePredBsaToAsaCutoff(params.getCAcutoffForRimCore()); // calls calcRimAndCores as well
+				iecList.setRimCorePredBsaToAsaCutoff(params.getCAcutoffForRimCore(), params.getMinAsaForSurface()); // calls calcRimAndCores as well
 				iecList.setCallCutoff(params.getEntrCallCutoff());
 				iecList.setZscoreCutoff(params.getZscoreCutoff());
 				PrintStream scoreEntrPS = new PrintStream(params.getOutputFile(CRKParams.CRSCORES_FILE_SUFFIX));
@@ -538,7 +543,7 @@ public class CRKMain {
 				scoreEntrPS.close();
 				// z-scores
 				PrintStream scoreZscorePS = new PrintStream(params.getOutputFile(CRKParams.CSSCORES_FILE_SUFFIX));
-				iecList.setZPredBsaToAsaCutoff(params.getCAcutoffForZscore()); // calls calcRimAndCores as well
+				iecList.setZPredBsaToAsaCutoff(params.getCAcutoffForZscore(), params.getMinAsaForSurface()); // calls calcRimAndCores as well
 				iecList.scoreZscore();
 				iecList.printZscoresTable(scoreZscorePS);
 				scoreZscorePS.close();

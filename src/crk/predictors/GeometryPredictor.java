@@ -35,6 +35,7 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 	
 	private ChainInterface interf;
 	private double bsaToAsaCutoff;
+	private double minAsaForSurface;
 	private int minCoreSizeForBio;
 	private CallType call;
 	private String callReason;
@@ -52,7 +53,7 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 		
 		if (call!=null) return call;
 		
-		interf.calcRimAndCore(bsaToAsaCutoff);
+		interf.calcRimAndCore(bsaToAsaCutoff, minAsaForSurface);
 		int size1 = interf.getFirstRimCore().getCoreSize();
 		int size2 = interf.getSecondRimCore().getCoreSize();
 		size = size1+size2;				
@@ -214,6 +215,10 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 	
 	public void setBsaToAsaCutoff(double bsaToAsaCutoff) {
 		this.bsaToAsaCutoff = bsaToAsaCutoff;
+	}
+	
+	public void setMinAsaForSurface(double minAsaForSurface) {
+		this.minAsaForSurface = minAsaForSurface;
 	}
 	
 	public void setMinCoreSizeForBio(int minCoreSizeForBio) {

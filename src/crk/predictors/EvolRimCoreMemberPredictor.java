@@ -11,7 +11,6 @@ import owl.core.structure.Residue;
 
 import crk.CRKParams;
 import crk.CallType;
-import crk.InterfaceEvolContext;
 import crk.ScoringType;
 
 public class EvolRimCoreMemberPredictor implements InterfaceTypePredictor {
@@ -20,15 +19,10 @@ public class EvolRimCoreMemberPredictor implements InterfaceTypePredictor {
 		
 	private String callReason;
 	private List<String> warnings;
+
+	private EvolRimCorePredictor parent;
 	
-	private InterfaceEvolContext iec;
 	private int molecId;
-	
-//	private ScoringType scoringType;
-	
-	private double callCutoff;
-	
-	private double bsaToAsaCutoff;
 	
 	private double coreScore;
 	private double rimScore;
@@ -36,14 +30,10 @@ public class EvolRimCoreMemberPredictor implements InterfaceTypePredictor {
 	
 	private CallType call;
 	
-	public EvolRimCoreMemberPredictor(InterfaceEvolContext iec, int molecId) {
-		this.iec = iec;
+	public EvolRimCoreMemberPredictor(EvolRimCorePredictor parent, int molecId) {
+		this.parent = parent;
 		this.molecId = molecId;
 		this.warnings = new ArrayList<String>();
-	}
-	
-	private boolean canDoEntropyScoring() {
-		return iec.getChainEvolContext(molecId).hasQueryMatch();
 	}
 	
 	@Override
@@ -51,22 +41,22 @@ public class EvolRimCoreMemberPredictor implements InterfaceTypePredictor {
 		
 		int memberSerial = molecId+1;
 		
-		iec.getInterface().calcRimAndCore(bsaToAsaCutoff);
-		InterfaceRimCore rimCore = iec.getInterface().getRimCore(molecId);
+		parent.getInterfaceEvolContext().getInterface().calcRimAndCore(parent.getBsaToAsaCutoff(), parent.getMinAsaForSurface());
+		InterfaceRimCore rimCore = parent.getInterfaceEvolContext().getInterface().getRimCore(molecId);
 		
 		int countsUnrelCoreRes = -1;
 		int countsUnrelRimRes = -1;
-		if (canDoEntropyScoring()) {
-			List<Residue> unreliableCoreRes = iec.getUnreliableCoreRes(molecId);
-			List<Residue> unreliableRimRes = iec.getUnreliableRimRes(molecId);
+		if (parent.canDoEntropyScoring(molecId)) {
+			List<Residue> unreliableCoreRes = parent.getInterfaceEvolContext().getUnreliableCoreRes(molecId);
+			List<Residue> unreliableRimRes = parent.getInterfaceEvolContext().getUnreliableRimRes(molecId);
 			countsUnrelCoreRes = unreliableCoreRes.size();
 			countsUnrelRimRes = unreliableRimRes.size();
-			String msg = iec.getReferenceMismatchWarningMsg(unreliableCoreRes,"core");
+			String msg = parent.getInterfaceEvolContext().getReferenceMismatchWarningMsg(unreliableCoreRes,"core");
 			if (msg!=null) {
 				LOGGER.warn(msg);
 				warnings.add(msg);
 			}
-			msg = iec.getReferenceMismatchWarningMsg(unreliableRimRes,"rim");
+			msg = parent.getInterfaceEvolContext().getReferenceMismatchWarningMsg(unreliableRimRes,"rim");
 			if (msg!=null) {
 				LOGGER.warn(msg);
 				warnings.add(msg);
@@ -75,20 +65,20 @@ public class EvolRimCoreMemberPredictor implements InterfaceTypePredictor {
 		
 		call = null;
 
-		if (!iec.isProtein(molecId)) {
+		if (!parent.getInterfaceEvolContext().isProtein(molecId)) {
 			call = CallType.NO_PREDICTION;
-			LOGGER.info("Interface "+iec.getInterface().getId()+", member "+memberSerial+" calls NOPRED because it is not a protein");
+			LOGGER.info("Interface "+parent.getInterfaceEvolContext().getInterface().getId()+", member "+memberSerial+" calls NOPRED because it is not a protein");
 			callReason = memberSerial+": is not a protein";
 		}
-		else if (!canDoEntropyScoring()) {
+		else if (!parent.canDoEntropyScoring(molecId)) {
 			call = CallType.NO_PREDICTION;
 			callReason = memberSerial+": no evol scores calculation could be performed (no uniprot query match)";
 		}
-		else if (!iec.hasEnoughHomologs(molecId)) {
+		else if (!parent.getInterfaceEvolContext().hasEnoughHomologs(molecId)) {
 			call = CallType.NO_PREDICTION;
-			LOGGER.info("Interface "+iec.getInterface().getId()+", member "+memberSerial+" calls NOPRED because there are not enough homologs to calculate evolutionary scores");
-			callReason = memberSerial+": there are only "+iec.getChainEvolContext(molecId).getNumHomologs()+
-					" homologs to calculate evolutionary scores (at least "+iec.getMinNumSeqs()+" required)";
+			LOGGER.info("Interface "+parent.getInterfaceEvolContext().getInterface().getId()+", member "+memberSerial+" calls NOPRED because there are not enough homologs to calculate evolutionary scores");
+			callReason = memberSerial+": there are only "+parent.getInterfaceEvolContext().getChainEvolContext(molecId).getNumHomologs()+
+					" homologs to calculate evolutionary scores (at least "+parent.getInterfaceEvolContext().getMinNumSeqs()+" required)";
 		} 
 		else if (scoreRatio==-1) {
 			// this happens whenever the value wasn't initialized, in practice it will 
@@ -102,27 +92,27 @@ public class EvolRimCoreMemberPredictor implements InterfaceTypePredictor {
 		}
 		else if (((double)countsUnrelCoreRes/(double)rimCore.getCoreSize())>CRKParams.MAX_ALLOWED_UNREL_RES) {
 			call = CallType.NO_PREDICTION;
-			LOGGER.info("Interface "+iec.getInterface().getId()+", member "+memberSerial+" calls NOPRED because there are not enough reliable core residues ("+
+			LOGGER.info("Interface "+parent.getInterfaceEvolContext().getInterface().getId()+", member "+memberSerial+" calls NOPRED because there are not enough reliable core residues ("+
 					countsUnrelCoreRes+" unreliable residues out of "+rimCore.getCoreSize()+" residues in core)");
 			callReason = memberSerial+": there are not enough reliable core residues: "+
 					countsUnrelCoreRes+" unreliable out of "+rimCore.getCoreSize()+" in core";
 		}
 		else if (((double)countsUnrelRimRes/(double)rimCore.getRimSize())>CRKParams.MAX_ALLOWED_UNREL_RES) {
 			call = CallType.NO_PREDICTION;
-			LOGGER.info("Interface "+iec.getInterface().getId()+", member "+memberSerial+" calls NOPRED because there are not enough reliable rim residues ("+
+			LOGGER.info("Interface "+parent.getInterfaceEvolContext().getInterface().getId()+", member "+memberSerial+" calls NOPRED because there are not enough reliable rim residues ("+
 					countsUnrelRimRes+" unreliable residues out of "+rimCore.getRimSize()+" residues in rim)");
 			callReason = memberSerial+": there are not enough reliable rim residues: "+
 					countsUnrelRimRes+" unreliable out of "+rimCore.getRimSize()+" in rim";
 		}
 		else {
-			if (scoreRatio<callCutoff) {
+			if (scoreRatio<parent.getCallCutoff()) {
 				call = CallType.BIO;
 				callReason = memberSerial+": score "+
-						String.format("%4.2f",scoreRatio)+" is below cutoff ("+String.format("%4.2f", callCutoff)+")";
-			} else if (scoreRatio>callCutoff) {
+						String.format("%4.2f",scoreRatio)+" is below cutoff ("+String.format("%4.2f", parent.getCallCutoff())+")";
+			} else if (scoreRatio>parent.getCallCutoff()) {
 				call = CallType.CRYSTAL;
 				callReason = memberSerial+": score "+
-						String.format("%4.2f",scoreRatio)+" is above cutoff ("+String.format("%4.2f", callCutoff)+")";
+						String.format("%4.2f",scoreRatio)+" is above cutoff ("+String.format("%4.2f", parent.getCallCutoff())+")";
 			} else if (Double.isNaN(scoreRatio)) {
 				call = CallType.NO_PREDICTION;
 				callReason = memberSerial+": score is NaN";
@@ -150,28 +140,17 @@ public class EvolRimCoreMemberPredictor implements InterfaceTypePredictor {
 	 */
 	public void scoreEntropy(boolean weighted) {
 		scoreInterfaceMember(weighted, ScoringType.ENTROPY);
-		//scoringType = ScoringType.ENTROPY;
 	}
 	
-//	/**
-//	 * Calculates the ka/ks scores for this interface member.
-//	 * Subsequently use {@link #getCall()} and {@link #getScore()} to get the call and score 
-//	 * @param weighted
-//	 */
-//	public void scoreKaKs(boolean weighted) {
-//		scoreInterfaceMember(weighted, ScoringType.KAKS);
-//		scoringType = ScoringType.KAKS;
-//	}
-	
 	private void scoreInterfaceMember(boolean weighted, ScoringType scoType) {	
-		if (!canDoEntropyScoring()) {
+		if (!parent.canDoEntropyScoring(molecId)) {
 			scoreRatio = Double.NaN;
 			return;
 		}
-		iec.getInterface().calcRimAndCore(bsaToAsaCutoff);
-		InterfaceRimCore rimCore = iec.getInterface().getRimCore(molecId);
-		rimScore  = iec.calcScore(rimCore.getRimResidues(), molecId, scoType, weighted);
-		coreScore = iec.calcScore(rimCore.getCoreResidues(),molecId, scoType, weighted);
+		parent.getInterfaceEvolContext().getInterface().calcRimAndCore(parent.getBsaToAsaCutoff(), parent.getMinAsaForSurface());
+		InterfaceRimCore rimCore = parent.getInterfaceEvolContext().getInterface().getRimCore(molecId);
+		rimScore  = parent.getInterfaceEvolContext().calcScore(rimCore.getRimResidues(), molecId, scoType, weighted);
+		coreScore = parent.getInterfaceEvolContext().calcScore(rimCore.getCoreResidues(),molecId, scoType, weighted);
 		if (rimScore==0) {
 			scoreRatio = CRKParams.SCORERATIO_INFINITY_VALUE;
 		} else {
@@ -194,14 +173,6 @@ public class EvolRimCoreMemberPredictor implements InterfaceTypePredictor {
 	
 	public double getRimScore() {
 		return rimScore;
-	}
-	
-	public void setCallCutoff(double callCutoff) {
-		this.callCutoff = callCutoff;
-	}
-	
-	public void setBsaToAsaCutoff(double bsaToAsaCutoff) { 
-		this.bsaToAsaCutoff = bsaToAsaCutoff;
 	}
 	
 	public void resetCall() {

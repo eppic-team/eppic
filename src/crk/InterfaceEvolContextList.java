@@ -181,25 +181,25 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 	public void setZscoreCutoff(double zScoreCutoff) {
 		this.zScoreCutoff = zScoreCutoff;
 		for (int i=0;i<list.size();i++) {
-			evolInterfZPredictors.get(i).setZscoreCutoff(zScoreCutoff);
+			evolInterfZPredictors.get(i).setCallCutoff(zScoreCutoff);
 		}
 	}
 
-	public void setRimCorePredBsaToAsaCutoff(double bsaToAsaCutoff) {
+	public void setRimCorePredBsaToAsaCutoff(double bsaToAsaCutoff, double minAsaForSurface) {
 		this.caCutoffForRimCore = bsaToAsaCutoff;
-		chainInterfList.calcRimAndCores(bsaToAsaCutoff);
+		chainInterfList.calcRimAndCores(bsaToAsaCutoff, minAsaForSurface);
 		
 		for (int i=0;i<list.size();i++) {
-			evolRimCorePredictors.get(i).setBsaToAsaCutoff(bsaToAsaCutoff);
+			evolRimCorePredictors.get(i).setBsaToAsaCutoff(bsaToAsaCutoff, minAsaForSurface);
 		}		
 	}
 	
-	public void setZPredBsaToAsaCutoff(double bsaToAsaCutoff) {
+	public void setZPredBsaToAsaCutoff(double bsaToAsaCutoff, double minAsaForSurface) {
 		this.caCutoffForZscore = bsaToAsaCutoff;
-		chainInterfList.calcRimAndCores(bsaToAsaCutoff);
+		chainInterfList.calcRimAndCores(bsaToAsaCutoff, minAsaForSurface);
 		
 		for (int i=0;i<list.size();i++) {
-			evolInterfZPredictors.get(i).setBsaToAsaCutoff(bsaToAsaCutoff);
+			evolInterfZPredictors.get(i).setBsaToAsaCutoff(bsaToAsaCutoff, minAsaForSurface);
 		}		
 	}
 	
@@ -268,8 +268,8 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 	 * @param minInterfArea
 	 * @return
 	 */
-	public List<Residue> getResiduesNotInInterfaces(String pdbChainCode, double minInterfArea) {
-		return this.chainInterfList.getResiduesNotInInterfaces(pdbChainCode, minInterfArea);
+	public List<Residue> getResiduesNotInInterfaces(String pdbChainCode, double minInterfArea, double minAsaForSurface) {
+		return this.chainInterfList.getResiduesNotInInterfaces(pdbChainCode, minInterfArea, minAsaForSurface);
 	}
 	
 	private ChainEvolContext getChainEvolContext(String pdbChainCode) {
@@ -284,16 +284,17 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 	 * @param numSamples number of samples of size sampleSize to be taken from the surface
 	 * @param sampleSize number of residues in each sample
 	 * @param scoType
+	 * @param minAsaForSurface the minimum ASA for a residue to be considered surface
 	 * @return
 	 */
-	public double[] getSurfaceScoreDist(String pdbChainCode, double minInterfArea, int numSamples, int sampleSize, ScoringType scoType) {
+	public double[] getSurfaceScoreDist(String pdbChainCode, double minInterfArea, int numSamples, int sampleSize, ScoringType scoType, double minAsaForSurface) {
 		if (sampleSize==0) return new double[0];
 		
 		double[] dist = new double[numSamples];
 
 		RandomDataImpl rd = new RandomDataImpl();
 		for (int i=0;i<numSamples;i++) {
-			Object[] sample = rd.nextSample(getResiduesNotInInterfaces(pdbChainCode, minInterfArea), sampleSize);
+			Object[] sample = rd.nextSample(getResiduesNotInInterfaces(pdbChainCode, minInterfArea, minAsaForSurface), sampleSize);
 			List<Residue> residues = new ArrayList<Residue>(sample.length);
 			for (int j=0;j<sample.length;j++){
 				residues.add((Residue)sample[j]);

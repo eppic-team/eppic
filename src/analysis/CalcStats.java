@@ -60,6 +60,8 @@ public class CalcStats {
 	private static final double DEFCACUTOFF_FOR_G = CRKParams.DEF_CA_CUTOFF_FOR_GEOM;
 	private static final double DEFCACUTOFF_FOR_Z = CRKParams.DEF_CA_CUTOFF_FOR_ZSCORE;
 	private static final double DEFCACUTOFF_FOR_CR = CRKParams.DEF_CA_CUTOFF_FOR_RIMCORE;
+	
+	private static final double DEF_MIN_ASA_FOR_SURFACE = CRKParams.DEF_MIN_ASA_FOR_SURFACE;
 		
 	private static final String UNKNOWN_TAXON = "Unknown";
 	
@@ -80,6 +82,8 @@ public class CalcStats {
 	private static double[] caCutoffsG = {DEFCACUTOFF_FOR_G};
 	private static double[] caCutoffsCR = {DEFCACUTOFF_FOR_CR};
 	private static double[] caCutoffsZ = {DEFCACUTOFF_FOR_Z};
+	
+	private static double minAsaForSurface = DEF_MIN_ASA_FOR_SURFACE;
 
 	private static File outFile = null;
 	private static TreeMap<String,List<Integer>> crPredicted;
@@ -110,6 +114,8 @@ public class CalcStats {
 	    "                 If omitted then only one used: "+String.format("%4.2f",DEFCACUTOFF_FOR_CR)+"\n" +
 	    "   [-z]       :  core assignemnt cutoffs for evolutionary z-scoring, comma separated. If \n" +
 	    "                 omitted then only one used: "+String.format("%4.2f", DEFCACUTOFF_FOR_Z)+"\n"+
+	    "   [-s]       :  minimum ASA value to call a residue in surface. If omitted default value \n" +
+	    "                 used: "+String.format("%4.1f",DEF_MIN_ASA_FOR_SURFACE)+"\n"+
 		"   [-m]       :  minimum number of core residues for geometry calls: below xtal, equals\n" +
 		"                 or above bio. Comma separated. If omitted only one used: "+DEFMINNUMBERCORERESFORBIO+"\n" +
 		"   [-t]       :  evolutionary score core/rim ratio cutoffs to call bio/xtal, comma separated. If \n" +
@@ -124,7 +130,7 @@ public class CalcStats {
 		"   [-F]       :  file to write xtal interfaces summary table of scores and calls \n" +
 		"                 per interface\n\n";
 
-		Getopt g = new Getopt(PROGRAM_NAME, args, "B:X:b:x:e:c:z:m:t:y:w:df:F:h?");
+		Getopt g = new Getopt(PROGRAM_NAME, args, "B:X:b:x:e:c:z:s:m:t:y:w:df:F:h?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
@@ -160,6 +166,9 @@ public class CalcStats {
 				for (int i=0;i<tokens.length;i++) {
 					caCutoffsZ[i] = Double.parseDouble(tokens[i]);
 				}				
+				break;
+			case 's':
+				minAsaForSurface = Double.parseDouble(g.getOptarg());
 				break;
 			case 'm':
 				tokens = g.getOptarg().split(",");
@@ -396,9 +405,10 @@ public class CalcStats {
 						ChainInterface interf = interfaces.get(id);
 						GeometryPredictor gp = new GeometryPredictor(interf);
 						gp.setBsaToAsaCutoff(caCutoffsG[i]);
+						gp.setMinAsaForSurface(minAsaForSurface);
 						gp.setMinCoreSizeForBio(minNumberCoreResForBios[j]);
 
-						interf.calcRimAndCore(caCutoffsG[i]);
+						interf.calcRimAndCore(caCutoffsG[i], minAsaForSurface);
 						CallType call = gp.getCall();
 
 						if (call==CallType.BIO) counters[i][j].countBio(UNKNOWN_TAXON);
@@ -565,7 +575,7 @@ public class CalcStats {
 		//interf.calcRimAndCore(caCutoffsCR[i]);
 
 		EvolRimCorePredictor ercp = new EvolRimCorePredictor(iec);
-		ercp.setBsaToAsaCutoff(caCutoffsCR[i]);
+		ercp.setBsaToAsaCutoff(caCutoffsCR[i], minAsaForSurface);
 		
 		if (scoType==ScoringType.ENTROPY) {
 			ercp.scoreEntropy(false);
@@ -607,10 +617,10 @@ public class CalcStats {
 		//interf.calcRimAndCore(caCutoffsZ[i]);
 		
 		EvolInterfZPredictor eizp = new EvolInterfZPredictor(iec);
-		eizp.setBsaToAsaCutoff(caCutoffsZ[i]);
+		eizp.setBsaToAsaCutoff(caCutoffsZ[i], minAsaForSurface);
 		
 		eizp.scoreEntropy();
-		eizp.setZscoreCutoff(zscoreCutoffs[k]);
+		eizp.setCallCutoff(zscoreCutoffs[k]);
 		iec.setMinNumSeqs(MIN_NUM_HOMOLOGS);
 		
 		CallType call = eizp.getCall();
@@ -642,25 +652,26 @@ public class CalcStats {
 			PredCounter[][][][] counters, int i, int k, int l, int m, String dol, InterfacePrediction perInterfPred) {
 
 		//interf.calcRimAndCore(caCutoffsG[i]);
-		interf.calcRimAndCore(DEFCACUTOFF_FOR_G);
+		interf.calcRimAndCore(DEFCACUTOFF_FOR_G, minAsaForSurface);
 		GeometryPredictor gp = new GeometryPredictor(interf);
 		//gp.setBsaToAsaCutoff(caCutoffsG[i]);
 		gp.setBsaToAsaCutoff(DEFCACUTOFF_FOR_G);
+		gp.setMinAsaForSurface(minAsaForSurface);
 		//gp.setMinCoreSizeForBio(minNumberCoreResForBios[j]);
 		gp.setMinCoreSizeForBio(DEFMINNUMBERCORERESFORBIO);
 		
 		//interf.calcRimAndCore(caCutoffsCR[i]);
 		EvolRimCorePredictor ercp = new EvolRimCorePredictor(iec);
-		ercp.setBsaToAsaCutoff(caCutoffsCR[i]);
+		ercp.setBsaToAsaCutoff(caCutoffsCR[i], minAsaForSurface);
 		ercp.scoreEntropy(false);
 		ercp.setCallCutoff(corerimCallCutoffs[k]);
 		iec.setMinNumSeqs(MIN_NUM_HOMOLOGS);
 		
 		//interf.calcRimAndCore(caCutoffsZ[l]);
 		EvolInterfZPredictor eizp = new EvolInterfZPredictor(iec);
-		eizp.setBsaToAsaCutoff(caCutoffsZ[l]);
+		eizp.setBsaToAsaCutoff(caCutoffsZ[l], minAsaForSurface);
 		eizp.scoreEntropy();
-		eizp.setZscoreCutoff(zscoreCutoffs[m]);
+		eizp.setCallCutoff(zscoreCutoffs[m]);
 		iec.setMinNumSeqs(MIN_NUM_HOMOLOGS);
 		
 		CombinedPredictor cp = new CombinedPredictor(iec, gp, ercp, eizp);

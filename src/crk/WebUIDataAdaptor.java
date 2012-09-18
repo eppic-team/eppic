@@ -98,17 +98,17 @@ public class WebUIDataAdaptor {
 
 	}
 	
-	public void writeJmolScriptFile(ChainInterface interf, double caCutoff, PymolRunner pr, File dir, String prefix) 
+	public void writeJmolScriptFile(ChainInterface interf, double caCutoff, double minAsaForSurface, PymolRunner pr, File dir, String prefix) 
 			throws FileNotFoundException {
 		 
 			File file = new File(dir,prefix+"."+interf.getId()+".jmol");
 			PrintStream ps = new PrintStream(file);
-			ps.print(createJmolScript(interf, caCutoff, pr));
+			ps.print(createJmolScript(interf, caCutoff, minAsaForSurface, pr));
 			ps.close();
 
 	}
 	
-	private String createJmolScript(ChainInterface interf, double caCutoff, PymolRunner pr) {
+	private String createJmolScript(ChainInterface interf, double caCutoff, double minAsaForSurface, PymolRunner pr) {
 		char chain1 = interf.getFirstMolecule().getPdbChainCode().charAt(0);
 		char chain2 = interf.getSecondPdbChainCodeForOutput().charAt(0);
 		
@@ -125,7 +125,7 @@ public class WebUIDataAdaptor {
 		sb.append("cartoon on; wireframe off; spacefill off; set solvent off;\n");
 		sb.append("select :"+chain1+"; color "+color1+";\n");
 		sb.append("select :"+chain2+"; color "+color2+";\n");
-		interf.calcRimAndCore(caCutoff);
+		interf.calcRimAndCore(caCutoff, minAsaForSurface);
 		sb.append(getSelString("core", chain1, interf.getFirstRimCore().getCoreResidues())+";\n");
 		sb.append(getSelString("core", chain2, interf.getSecondRimCore().getCoreResidues())+";\n");
 		sb.append(getSelString("rim", chain1, interf.getFirstRimCore().getRimResidues())+";\n");
@@ -351,23 +351,23 @@ public class WebUIDataAdaptor {
 		}
 	}
 	
-	public void addResidueDetails(ChainInterfaceList interfaces, double caCutoff) {
+	public void addResidueDetails(ChainInterfaceList interfaces, double caCutoff, double minAsaForSurface) {
 		for (int i=0;i<interfaces.size();i++) {
 
 			ChainInterface interf = interfaces.get(i+1);
 			InterfaceItemDB ii = pdbScoreItem.getInterfaceItem(i);
 
 			// we add the residue details
-			addResidueDetails(ii, interf, caCutoff, params.isDoScoreEntropies());
+			addResidueDetails(ii, interf, caCutoff, minAsaForSurface, params.isDoScoreEntropies());
 		}
 	}
 	
-	private void addResidueDetails(InterfaceItemDB ii, ChainInterface interf, double caCutoff, boolean includeEntropy) {
+	private void addResidueDetails(InterfaceItemDB ii, ChainInterface interf, double caCutoff, double minAsaForSurface, boolean includeEntropy) {
 		
 		List<InterfaceResidueItemDB> iril = new ArrayList<InterfaceResidueItemDB>();
 		ii.setInterfaceResidues(iril);
 
-		interf.calcRimAndCore(caCutoff);
+		interf.calcRimAndCore(caCutoff, minAsaForSurface);
 		ii.setAsaC1(interf.getFirstRimCore().getAsaCore());
 		ii.setAsaR1(interf.getFirstRimCore().getAsaRim());
 		ii.setBsaC1(interf.getFirstRimCore().getBsaCore());
@@ -377,8 +377,8 @@ public class WebUIDataAdaptor {
 		ii.setBsaC2(interf.getSecondRimCore().getBsaCore());
 		ii.setBsaR2(interf.getSecondRimCore().getBsaRim());
 
-		addResidueDetailsOfPartner(iril, interf, caCutoff, 0);
-		addResidueDetailsOfPartner(iril, interf, caCutoff, 1);
+		addResidueDetailsOfPartner(iril, interf, 0, minAsaForSurface);
+		addResidueDetailsOfPartner(iril, interf, 1, minAsaForSurface);
 
 		for(InterfaceResidueItemDB iri : iril)
 		{
@@ -386,7 +386,7 @@ public class WebUIDataAdaptor {
 		}
 	}
 	
-	private void addResidueDetailsOfPartner(List<InterfaceResidueItemDB> iril, ChainInterface interf, double caCutoff, int molecId) {
+	private void addResidueDetailsOfPartner(List<InterfaceResidueItemDB> iril, ChainInterface interf, int molecId, double minAsaForSurface) {
 		if (interf.isProtein()) {
 			//interf.calcRimAndCore(caCutoff); // no need to call again, already called in caller addResidueDetails
 			PdbChain mol = null;
@@ -408,7 +408,7 @@ public class WebUIDataAdaptor {
 				if (rimCore.getRimResidues().contains(residue)) assignment = InterfaceResidueItemDB.RIM;
 				else if (rimCore.getCoreResidues().contains(residue)) assignment = InterfaceResidueItemDB.CORE;
 
-				if (assignment==-1 && asa>0) assignment = InterfaceResidueItemDB.SURFACE;
+				if (assignment==-1 && asa>minAsaForSurface) assignment = InterfaceResidueItemDB.SURFACE;
 
 				InterfaceResidueItemDB iri = new InterfaceResidueItemDB(residue.getSerial(),residue.getPdbSerial(),resType,asa,bsa,bsa/asa,assignment,null);
 				iri.setStructure(molecId+1); // structure ids are 1 and 2 while molecId are 0 and 1

@@ -27,6 +27,7 @@ public class CalcInterfaceStats extends Thread {
 	private static final String   LOCAL_CIF_DIR = new File(System.getProperty("user.home"),"cifrepo").getAbsolutePath();
 	
 	private static final double CA_CUTOFF = 0.95;
+	private static final double MIN_ASA_FOR_SURFACE = 5;
 	
 	private static final String BASENAME = "interf_sort";
 	private static final String TMPDIR = System.getProperty("java.io.tmpdir");
@@ -125,7 +126,7 @@ public class CalcInterfaceStats extends Thread {
 					double area = interf.getInterfaceArea();
 					int clashes = interf.getAICGraph().getNumClashes();
 					
-					interf.calcRimAndCore(CA_CUTOFF);
+					interf.calcRimAndCore(CA_CUTOFF, MIN_ASA_FOR_SURFACE);
 					int core1 = interf.getFirstRimCore().getCoreSize();
 					int core2 = interf.getSecondRimCore().getCoreSize();
 

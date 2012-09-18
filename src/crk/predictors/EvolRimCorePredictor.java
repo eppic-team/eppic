@@ -42,6 +42,7 @@ public class EvolRimCorePredictor implements InterfaceTypePredictor {
 	private boolean isScoreWeighted; // whether last scoring run was weighted/unweighted
 	
 	private double bsaToAsaCutoff;
+	private double minAsaForSurface;
 
 	private EvolRimCoreMemberPredictor member1Pred;
 	private EvolRimCoreMemberPredictor member2Pred;
@@ -49,8 +50,8 @@ public class EvolRimCorePredictor implements InterfaceTypePredictor {
 	public EvolRimCorePredictor(InterfaceEvolContext iec) {
 		this.iec = iec;
 		this.warnings = new ArrayList<String>();
-		this.member1Pred = new EvolRimCoreMemberPredictor(iec, FIRST);
-		this.member2Pred = new EvolRimCoreMemberPredictor(iec, SECOND);
+		this.member1Pred = new EvolRimCoreMemberPredictor(this, FIRST);
+		this.member2Pred = new EvolRimCoreMemberPredictor(this, SECOND);
 	}
 	
 	public EvolRimCoreMemberPredictor getMember1Predictor() {
@@ -59,6 +60,14 @@ public class EvolRimCorePredictor implements InterfaceTypePredictor {
 	
 	public EvolRimCoreMemberPredictor getMember2Predictor() {
 		return member2Pred;
+	}
+	
+	protected boolean canDoEntropyScoring(int molecId) {
+		return iec.getChainEvolContext(molecId).hasQueryMatch();
+	}
+	
+	protected InterfaceEvolContext getInterfaceEvolContext() {
+		return iec;
 	}
 	
 	private boolean canDoFirstEntropyScoring() {
@@ -120,7 +129,7 @@ public class EvolRimCorePredictor implements InterfaceTypePredictor {
 		int countGray = grayCalls.size();
 		int countNoPredict = noPredictCalls.size();
 		
-		iec.getInterface().calcRimAndCore(bsaToAsaCutoff);
+		iec.getInterface().calcRimAndCore(bsaToAsaCutoff, minAsaForSurface);
 		InterfaceRimCore rimCore1 = iec.getInterface().getRimCore(0);
 		InterfaceRimCore rimCore2 = iec.getInterface().getRimCore(1);
 
@@ -237,17 +246,26 @@ public class EvolRimCorePredictor implements InterfaceTypePredictor {
 	public boolean isScoreWeighted() {
 		return this.isScoreWeighted;
 	}
+
+	protected double getCallCutoff() {
+		return callCutoff;
+	}
 	
 	public void setCallCutoff(double callCutoff) {
 		this.callCutoff = callCutoff;
-		this.member1Pred.setCallCutoff(callCutoff);
-		this.member2Pred.setCallCutoff(callCutoff);
 	}
 	
-	public void setBsaToAsaCutoff(double bsaToAsaCutoff) {
+	public void setBsaToAsaCutoff(double bsaToAsaCutoff, double minAsaForSurface) {
 		this.bsaToAsaCutoff = bsaToAsaCutoff;
-		this.member1Pred.setBsaToAsaCutoff(bsaToAsaCutoff);
-		this.member2Pred.setBsaToAsaCutoff(bsaToAsaCutoff);		
+		this.minAsaForSurface = minAsaForSurface;
+	}
+	
+	protected double getBsaToAsaCutoff() {
+		return bsaToAsaCutoff;
+	}
+	
+	protected double getMinAsaForSurface() {
+		return minAsaForSurface;
 	}
 	
 	@SuppressWarnings("unused")

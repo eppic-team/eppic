@@ -170,10 +170,11 @@ public class InterfaceEvolContext implements Serializable {
 	 * @param numSamples number of samples of size sampleSize to be taken from the surface
 	 * @param sampleSize number of residues in each sample
 	 * @param scoType
+	 * @param minAsaForSurface the minimum ASA for a residue to be considered surface
 	 * @return
 	 */
-	public double[] getSurfaceScoreDist(int molecId, double minInterfArea, int numSamples, int sampleSize, ScoringType scoType) {		
-		return parent.getSurfaceScoreDist(getMolecule(molecId).getPdbChainCode(), minInterfArea, numSamples, sampleSize, scoType); 
+	public double[] getSurfaceScoreDist(int molecId, double minInterfArea, int numSamples, int sampleSize, ScoringType scoType, double minAsaForSurface) {		
+		return parent.getSurfaceScoreDist(getMolecule(molecId).getPdbChainCode(), minInterfArea, numSamples, sampleSize, scoType, minAsaForSurface); 
 	}
 	
 	/**
@@ -181,10 +182,11 @@ public class InterfaceEvolContext implements Serializable {
 	 * are not member of any interface above minInterfArea 
 	 * @param molecId the molecule id: either {@link #FIRST} or {@link #SECOND}
 	 * @param minInterfArea the residues considered will be those that are not in interfaces above this area value
+	 * @param minAsaForSurface the minimum ASA for a residue to be considered surface
 	 * @return
 	 */
-	public int getNumResiduesNotInInterfaces(int molecId, double minInterfArea) {
-		return parent.getResiduesNotInInterfaces(getMolecule(molecId).getPdbChainCode(), minInterfArea).size();
+	public int getNumResiduesNotInInterfaces(int molecId, double minInterfArea, double minAsaForSurface) {
+		return parent.getResiduesNotInInterfaces(getMolecule(molecId).getPdbChainCode(), minInterfArea, minAsaForSurface).size();
 	}
 	
 	/**
