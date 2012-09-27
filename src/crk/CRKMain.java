@@ -32,6 +32,7 @@ import owl.core.connections.pisa.PisaConnection;
 import owl.core.runners.PymolRunner;
 import owl.core.structure.ChainInterface;
 import owl.core.structure.ChainInterfaceList;
+import owl.core.structure.InterfacesFinder;
 import owl.core.structure.PdbAsymUnit;
 import owl.core.structure.PdbChain;
 import owl.core.structure.PdbLoadException;
@@ -210,8 +211,22 @@ public class CRKMain {
 			}
 		} else {
 			params.getProgressLog().println("Calculating possible interfaces...");
-			interfaces = pdb.getAllInterfaces(CRKParams.INTERFACE_DIST_CUTOFF, params.getnSpherePointsASAcalc(), params.getNumThreads(), true, false);
+			InterfacesFinder interfFinder = new InterfacesFinder(pdb);
+			interfaces = interfFinder.getAllInterfaces(CRKParams.INTERFACE_DIST_CUTOFF, params.getnSpherePointsASAcalc(), params.getNumThreads(), true, false, params.getMinSizeCofactorForAsa());
 			LOGGER.info("Interfaces calculated with "+params.getnSpherePointsASAcalc()+" sphere points.");
+			if (interfFinder.hasCofactors()) {
+				LOGGER.info("Cofactors of more than "+params.getMinSizeCofactorForAsa()+" atoms present: they will be taken into account for ASA calculations");
+				for (String pdbChainCode:pdb.getPdbChainCodes()) {
+					LOGGER.info("Chain "+pdbChainCode+": "+interfFinder.getNumCofactorsForPdbChainCode(pdbChainCode)+" cofactor(s) - "+
+							interfFinder.getCofactorsInfoString(pdbChainCode));
+				}
+			} else {
+				if (params.getMinSizeCofactorForAsa()<0) {
+					LOGGER.info("No minimum size for cofactors set. All cofactors will be ignored for ASA calculations");
+				} else {
+					LOGGER.info("No cofactors of more than "+params.getMinSizeCofactorForAsa()+" atoms present. Cofactors will be ignored for ASA calculations");
+				}
+			}
 
 		}
 

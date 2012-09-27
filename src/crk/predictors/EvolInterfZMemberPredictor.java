@@ -167,8 +167,14 @@ public class EvolInterfZMemberPredictor implements InterfaceTypePredictor {
 		// we need to check, before trying to sample residues in surface for getting 
 		// the background distribution, whether there are enough residues at all for sampling
 		// it can happen for small proteins that the number of residues in surface is really small (e.g. 3jsd with only 1)
-		if (parent.getInterfaceEvolContext().getNumResiduesNotInInterfaces(molecId, MIN_INTERF_FOR_RES_NOT_IN_INTERFACES, parent.getMinAsaForSurface())<rimCore.getCoreSize()*NUM_RESIDUES_NOT_IN_INTERFACES_TOLERANCE) {
+		int numSurfResNotInInterfaces = parent.getInterfaceEvolContext().getNumResiduesNotInInterfaces(molecId, MIN_INTERF_FOR_RES_NOT_IN_INTERFACES, parent.getMinAsaForSurface());
+		LOGGER.info("Interface "+parent.getInterfaceEvolContext().getInterface().getId()+", member "+(molecId+1)+
+				". Residues on surface not belonging to any crystal interface (above "+String.format("%3.0f",MIN_INTERF_FOR_RES_NOT_IN_INTERFACES)+" A2): "+numSurfResNotInInterfaces);
+		if (numSurfResNotInInterfaces<rimCore.getCoreSize()*NUM_RESIDUES_NOT_IN_INTERFACES_TOLERANCE) {
 			zScore = Double.NaN;
+			LOGGER.info("There are only "+numSurfResNotInInterfaces+
+					" residues in surface not belonging to any crystal interface (above "+String.format("%3.0f",MIN_INTERF_FOR_RES_NOT_IN_INTERFACES)+
+					" A2). Can't do core-surface scoring for interface "+parent.getInterfaceEvolContext().getInterface().getId()+", member "+(molecId+1));
 			return Double.NaN;
 		}
 		double[] surfScoreDist = parent.getInterfaceEvolContext().getSurfaceScoreDist(molecId, MIN_INTERF_FOR_RES_NOT_IN_INTERFACES, NUM_SAMPLES_SCORE_DIST, rimCore.getCoreSize(), scoType, parent.getMinAsaForSurface());

@@ -103,6 +103,8 @@ public class CRKParams {
 	
 	// default minimum ASA for calling a residue surface
 	public static final double    DEF_MIN_ASA_FOR_SURFACE = 5;
+	// default minimum number of atoms for a cofactor to be considered for ASA calculations purposes, if -1 all ignored
+	public static final int		  DEF_MIN_SIZE_COFACTOR_FOR_ASA = -1;
 	
 	// default cutoffs
 	private static final double   DEF_QUERY_COVERAGE_CUTOFF = 0.85;
@@ -138,8 +140,6 @@ public class CRKParams {
 	private double caCutoffForGeom;
 	private double caCutoffForRimCore;
 	private double caCutoffForZscore;
-	
-	private double minAsaForSurface;
 	
 	private int    minCoreSizeForBio;
 	
@@ -195,6 +195,9 @@ public class CRKParams {
 	private double   selectonEpsilon;
 
 	private File	 pymolExe;
+	
+	private double minAsaForSurface;
+	private int minSizeCofactorForAsa;	
 	
 	private double   queryCoverageCutoff;
 	private int      minNumSeqs;
@@ -645,6 +648,10 @@ public class CRKParams {
 		return minAsaForSurface;
 	}
 	
+	public int getMinSizeCofactorForAsa() {
+		return minSizeCofactorForAsa;
+	}
+	
 	public int getMinCoreSizeForBio() {
 		return minCoreSizeForBio;
 	}
@@ -789,6 +796,8 @@ public class CRKParams {
 			pymolExe		= new File(p.getProperty("PYMOL_EXE", DEF_PYMOL_EXE.toString()));
 			
 			minAsaForSurface = Double.parseDouble(p.getProperty("MIN_ASA_FOR_SURFACE", new Double(DEF_MIN_ASA_FOR_SURFACE).toString()));
+			
+			minSizeCofactorForAsa = Integer.parseInt(p.getProperty("MIN_SIZE_COFACTOR_FOR_ASA", new Integer(DEF_MIN_SIZE_COFACTOR_FOR_ASA).toString()));
 
 			queryCoverageCutoff = Double.parseDouble(p.getProperty("QUERY_COVERAGE_CUTOFF", new Double(DEF_QUERY_COVERAGE_CUTOFF).toString()));
 			minNumSeqs = Integer.parseInt(p.getProperty("MIN_NUM_SEQUENCES", new Integer(DEF_MIN_NUM_SEQUENCES).toString()));

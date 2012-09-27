@@ -225,7 +225,7 @@ public class CombinedPredictor implements InterfaceTypePredictor {
 	
 	public static void printScoringHeaders(PrintStream ps) {
 		ps.printf("%15s\t%6s\t","interface","area");
-		ps.printf("%6s\t%6s\t%6s\t%6s\t%6s","geom","c/r","z","call","reason");
+		ps.printf("%6s\t%6s\t%6s\t%6s\t%6s","geom","c-r","c-s","call","reason");
 		ps.println();
 		
 	}

@@ -139,7 +139,10 @@ public class WebUIDataAdaptor {
 		sb.append("select interface"+chain1+";wireframe 0.3;\n");
 		sb.append("select interface"+chain2+";wireframe 0.3;\n");
 		sb.append("select core"+chain1+";"+"color "+colorInterf1+";wireframe 0.3;\n");
-		sb.append("select core"+chain2+";"+"color "+colorInterf2+";wireframe 0.3;\n");		
+		sb.append("select core"+chain2+";"+"color "+colorInterf2+";wireframe 0.3;\n");
+		if (interf.hasCofactors()) {
+			sb.append("select ligand;wireframe 0.3;\n");
+		}
 		return sb.toString();
 	}
 	

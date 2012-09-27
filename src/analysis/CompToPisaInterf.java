@@ -111,7 +111,7 @@ public class CompToPisaInterf {
 			
 			ChainInterfaceList interfaces = null;
 
-			interfaces = pdb.getAllInterfaces(CUTOFF, Asa.DEFAULT_N_SPHERE_POINTS, NTHREADS, true, true);
+			interfaces = pdb.getAllInterfaces(CUTOFF, Asa.DEFAULT_N_SPHERE_POINTS, NTHREADS, true, true, -1);
 
 			System.out.print("Number of interfaces: ours "+interfaces.size()+", pisa "+pisaInterfaces.getNumInterfaces());
 			if (pisaInterfaces.getNumInterfaces()!=interfaces.size()) {

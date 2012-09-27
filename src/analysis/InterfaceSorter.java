@@ -109,7 +109,7 @@ public class InterfaceSorter {
 			long start = System.currentTimeMillis();
 			ChainInterfaceList interfList = null;
 
-			interfList = pdb.getAllInterfaces(CUTOFF, NSPHEREPOINTS, numThreads, false, false);
+			interfList = pdb.getAllInterfaces(CUTOFF, NSPHEREPOINTS, numThreads, false, false, -1);
 			
 			long end = System.currentTimeMillis();
 			System.out.printf("\t%4d\n",(end-start)/1000l);

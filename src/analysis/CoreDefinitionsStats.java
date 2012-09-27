@@ -101,7 +101,7 @@ public class CoreDefinitionsStats {
 			long start = System.currentTimeMillis();
 			ChainInterfaceList interfList = null;
 
-			interfList = pdb.getAllInterfaces(CUTOFF, NSPHEREPOINTS, 1, true, false);
+			interfList = pdb.getAllInterfaces(CUTOFF, NSPHEREPOINTS, 1, true, false, -1);
 			
 			long end = System.currentTimeMillis();
 			System.out.printf(pdbCode+"\t%4d\n",(end-start)/1000l);
