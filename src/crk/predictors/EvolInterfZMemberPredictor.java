@@ -20,7 +20,11 @@ public class EvolInterfZMemberPredictor implements InterfaceTypePredictor {
 	
 	private static final double  MIN_INTERF_FOR_RES_NOT_IN_INTERFACES = 500;
 	private static final double  NUM_RESIDUES_NOT_IN_INTERFACES_TOLERANCE = 1.20; // we require 20% more residues in surface than required sample size
-	private static final int     NUM_SAMPLES_SCORE_DIST = 100;
+	
+	// we used to do only 100, but that was too unstable: we want a predictor as deterministic as possible! 10000 seems a good compromise
+	// Tested on DCbio/DCxtal datasets: cs-scores have a mean standard deviation on 10 runs of:
+	//   <0.05 using 100, <0.01 using 10000, and <0.005 using 100000
+	private static final int     NUM_SAMPLES_SCORE_DIST = 10000; 
 	
 	private static final Log LOGGER = LogFactory.getLog(EvolInterfZMemberPredictor.class);
 	
@@ -159,17 +163,27 @@ public class EvolInterfZMemberPredictor implements InterfaceTypePredictor {
 			zScore = Double.NaN;
 			return zScore;
 		}
+
+		mean = Double.NaN;
+		sd = Double.NaN;
 		
 		parent.getInterfaceEvolContext().getInterface().calcRimAndCore(parent.getBsaToAsaCutoff(), parent.getMinAsaForSurface());
 		InterfaceRimCore rimCore = parent.getInterfaceEvolContext().getInterface().getRimCore(molecId);
+
+		if (rimCore.getCoreSize()==0) {
+			zScore = Double.NaN;
+			return Double.NaN;
+		}
 
 		coreScore = parent.getInterfaceEvolContext().calcScore(rimCore.getCoreResidues(), molecId, scoType, false);
 		// we need to check, before trying to sample residues in surface for getting 
 		// the background distribution, whether there are enough residues at all for sampling
 		// it can happen for small proteins that the number of residues in surface is really small (e.g. 3jsd with only 1)
 		int numSurfResNotInInterfaces = parent.getInterfaceEvolContext().getNumResiduesNotInInterfaces(molecId, MIN_INTERF_FOR_RES_NOT_IN_INTERFACES, parent.getMinAsaForSurface());
-		LOGGER.info("Interface "+parent.getInterfaceEvolContext().getInterface().getId()+", member "+(molecId+1)+
-				". Residues on surface not belonging to any crystal interface (above "+String.format("%3.0f",MIN_INTERF_FOR_RES_NOT_IN_INTERFACES)+" A2): "+numSurfResNotInInterfaces);
+
+		LOGGER.info("Interface "+parent.getInterfaceEvolContext().getInterface().getId()+", member "+(molecId+1)+":");
+		LOGGER.info("Residues on surface not belonging to any crystal interface (above "+
+				String.format("%3.0f",MIN_INTERF_FOR_RES_NOT_IN_INTERFACES)+" A2): "+numSurfResNotInInterfaces);			
 		if (numSurfResNotInInterfaces<rimCore.getCoreSize()*NUM_RESIDUES_NOT_IN_INTERFACES_TOLERANCE) {
 			zScore = Double.NaN;
 			LOGGER.info("There are only "+numSurfResNotInInterfaces+
@@ -178,22 +192,25 @@ public class EvolInterfZMemberPredictor implements InterfaceTypePredictor {
 			return Double.NaN;
 		}
 		double[] surfScoreDist = parent.getInterfaceEvolContext().getSurfaceScoreDist(molecId, MIN_INTERF_FOR_RES_NOT_IN_INTERFACES, NUM_SAMPLES_SCORE_DIST, rimCore.getCoreSize(), scoType, parent.getMinAsaForSurface());
-		
-		if (rimCore.getCoreSize()!=0) {
-			LOGGER.info("Interface "+parent.getInterfaceEvolContext().getInterface().getId()+", member "+(molecId+1)+": sampled "+NUM_SAMPLES_SCORE_DIST+" surface evolutionary scores of size "+rimCore.getCoreSize()+": ");
-			StringBuffer sb = new StringBuffer();
-			for (double sample:surfScoreDist) {
-				sb.append(String.format("%4.2f",sample)+" ");
-			}
-			LOGGER.info(sb.toString());
-		}
-		
+
+
+
 		UnivariateStatistic stat = new Mean();		
 		mean = stat.evaluate(surfScoreDist);
 		stat = new StandardDeviation();
 		sd = stat.evaluate(surfScoreDist);
-		
-		if (rimCore.getCoreSize()!=0) LOGGER.info("Mean= "+String.format("%5.2f",mean)+", sd= "+String.format("%5.2f",sd));
+
+
+		LOGGER.info("Sampled "+NUM_SAMPLES_SCORE_DIST+" surface evolutionary scores of size "+rimCore.getCoreSize()+": "+
+				"mean= "+String.format("%5.2f",mean)+", sd= "+String.format("%5.2f",sd));
+		// logging the actual samples averages (now commented out)
+		//StringBuffer sb = new StringBuffer();
+		//for (double sample:surfScoreDist) {
+		//	sb.append(String.format("%4.2f",sample)+" ");
+		//}
+		//LOGGER.info(sb.toString());
+
+
 		
 		if (sd!=0) {
 			zScore = (coreScore-mean)/sd;
