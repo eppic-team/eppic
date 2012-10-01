@@ -22,10 +22,12 @@ import crk.ChainEvolContextList;
 import crk.InterfaceEvolContext;
 import crk.InterfaceEvolContextList;
 import crk.ScoringType;
+import crk.predictors.CombinedCSGeomPredictor;
 import crk.predictors.CombinedPredictor;
 import crk.predictors.EvolInterfZPredictor;
 import crk.predictors.EvolRimCorePredictor;
 import crk.predictors.GeometryPredictor;
+import crk.predictors.InterfaceTypePredictor;
 
 import owl.core.structure.ChainInterface;
 import owl.core.structure.ChainInterfaceList;
@@ -92,6 +94,8 @@ public class CalcStats {
 	private static File perInterfPredBioFile = null;
 	private static File perInterfPredXtalFile = null;
 	
+	private static boolean combinedCSG = false;
+	
 		
 	
 	/**
@@ -128,9 +132,11 @@ public class CalcStats {
 		"   [-f]       :  file to write bio interfaces summary table of scores and calls \n" +
 		"                 per interface\n" +
 		"   [-F]       :  file to write xtal interfaces summary table of scores and calls \n" +
-		"                 per interface\n\n";
+		"                 per interface\n" +
+		"   [-C]       :  use combined core-surface/geometry predictor instead of consensus \n" +
+		"                 geometry/core-rim/core-surface predictor\n\n";
 
-		Getopt g = new Getopt(PROGRAM_NAME, args, "B:X:b:x:e:c:z:s:m:t:y:w:df:F:h?");
+		Getopt g = new Getopt(PROGRAM_NAME, args, "B:X:b:x:e:c:z:s:m:t:y:w:df:F:Ch?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
@@ -203,6 +209,9 @@ public class CalcStats {
 			case 'F':
 				perInterfPredXtalFile = new File(g.getOptarg());
 				break;
+			case 'C':
+				combinedCSG = true;
+				break;				
 			case 'h':
 			case '?':
 				System.out.println(help);
@@ -674,7 +683,12 @@ public class CalcStats {
 		eizp.setCallCutoff(zscoreCutoffs[m]);
 		iec.setMinNumSeqs(MIN_NUM_HOMOLOGS);
 		
-		CombinedPredictor cp = new CombinedPredictor(iec, gp, ercp, eizp);
+		InterfaceTypePredictor cp = null;
+		if (combinedCSG) {
+			cp = new CombinedCSGeomPredictor(iec, gp, ercp, eizp);
+		} else {
+			cp = new CombinedPredictor(iec, gp, ercp, eizp);
+		}
 
 		CallType call = cp.getCall();
 		if (call==CallType.BIO) counters[i][k][l][m].countBio(dol);
