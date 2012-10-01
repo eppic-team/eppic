@@ -30,6 +30,8 @@ public class CRKParams {
 	protected static final String  COMBINED_FILE_SUFFIX = ".combined.scores";
 	protected static final String  STEPS_LOG_FILE_SUFFIX = ".steps.log";
 	public static final double     INTERFACE_DIST_CUTOFF = 5.9;
+	// if any interface has this number of clashes we'll abort with an error
+	public static final int		   NUM_CLASHES_FOR_ERROR = 30;
 	// shorter chains will be considered peptides
 	public static final int	       PEPTIDE_LENGTH_CUTOFF = 20; 
 	// 10% maximum allowed unreliable residues for calling nopred

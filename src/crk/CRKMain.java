@@ -237,17 +237,23 @@ public class CRKMain {
 
 		// checking for clashes
 		if (!params.isUsePisa() && interfaces.hasInterfacesWithClashes()) {
-			String msg = "Clashes found in some of the interfaces (atoms distance below "+AICGraph.CLASH_DISTANCE+"):";
+			String msg = "Clashes (atoms distance below "+AICGraph.CLASH_DISTANCE+") found in:";
 			List<ChainInterface> clashyInterfs = interfaces.getInterfacesWithClashes();
+			boolean tooManyClashes = false;
 			for (ChainInterface clashyInterf:clashyInterfs) {
+				int numClashes = clashyInterf.getNumClashes();
+				if (numClashes>CRKParams.NUM_CLASHES_FOR_ERROR) tooManyClashes = true;
 				msg+=("\nInterface: "+clashyInterf.getFirstMolecule().getPdbChainCode()+"+"
 						+clashyInterf.getSecondMolecule().getPdbChainCode()+" ("+
 						SpaceGroup.getAlgebraicFromMatrix(clashyInterf.getSecondTransf().getMatTransform())+
-						") Clashes: "+clashyInterf.getNumClashes());
+						") Clashes: "+numClashes); 
 			}
-
-			// we used to throw a fatal exception and exit here, but we decided to simply warn and go ahead 
-			LOGGER.warn(msg);			
+			
+			if (tooManyClashes) {
+				throw new CRKException(null, "Too many clashes in at least one interface, most likely there is an error in this structure. "+msg , true);				
+			} else { 
+				LOGGER.warn(msg);
+			}
 
 		}
 
