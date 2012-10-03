@@ -102,7 +102,13 @@ public class FindRedundantEntries {
 				System.out.println("\nError while reading cif.gz file ("+new File(LOCAL_CIF_DIR,pdbCode+".cif.gz").toString()+") or writing temp cif file: "+e.getMessage());
 				continue;
 			}
-			PdbAsymUnit pdb = new PdbAsymUnit(cifFile);
+			PdbAsymUnit pdb = null;
+			try {
+				pdb = new PdbAsymUnit(cifFile);
+			} catch (PdbLoadException e) {
+				System.err.println("Could not load "+pdbCode+": "+e.getMessage());
+				continue;
+			}
 			
 			for (String pdbChainCode:pdb.getAllRepChains()) {
 				Sequence seq = pdb.getChain(pdbChainCode).getSequence();
