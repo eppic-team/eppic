@@ -181,10 +181,19 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 //		String serverName =  getThreadLocalRequest().getServerName();
 //		int serverPort = getThreadLocalRequest().getServerPort();
 		
-		String serverName =  getServletContext().getInitParameter("serverName");
-		int serverPort = Integer.parseInt(getServletContext().getInitParameter("serverPort"));
+		String serverName = getServletContext().getInitParameter("serverName");
+		
+		resultsPathUrl = protocol + "://" + serverName;
+		
+		String serverPortValue = getServletContext().getInitParameter("serverPort");
+		if((serverPortValue != null) &&
+		   (!serverPortValue.equals("")))
+		{
+			int serverPort = Integer.parseInt(serverPortValue);
+			resultsPathUrl += ":" + serverPort;
+		}
 
-		resultsPathUrl = protocol + "://" + serverName + ":" + serverPort + "/crkwebui/";
+		resultsPathUrl += "/crkwebui/";
 
 		EmailData emailData = new EmailData();
 		emailData.setEmailSender(properties.getProperty("email_username", ""));

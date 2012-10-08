@@ -17,6 +17,7 @@ public class HelpPanel extends DisplayPanel
 	{
 		this.setBorders(true);
 		this.addStyleName("eppic-default-padding");
+		this.addStyleName("eppic-help-panel");
 		this.setScrollMode(Scroll.AUTO);
 		
 		Label helpText = new Label();

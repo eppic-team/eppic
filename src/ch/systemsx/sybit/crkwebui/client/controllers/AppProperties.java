@@ -133,6 +133,7 @@ public interface AppProperties extends Constants
 	String callback_get_current_status_data();
 	String callback_get_interface_residues_error();
 	String callback_get_jobs_for_current_session_error();
+	String callback_get_jobs_for_current_session_ok();
 	String callback_get_results_of_processing_error();
 	String callback_get_settings_error();
 	String callback_delete_job_error();

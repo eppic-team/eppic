@@ -35,6 +35,7 @@ public class GetJobsForCurrentSession implements AsyncCallback<List<ProcessingIn
 	{
 		if(result != null)
 		{
+			EventBusManager.EVENT_BUS.fireEvent(new UpdateStatusLabelEvent(AppPropertiesManager.CONSTANTS.callback_get_jobs_for_current_session_ok(), false));
 			EventBusManager.EVENT_BUS.fireEvent(new JobListRetrievedEvent(result));
 		}
 		else
