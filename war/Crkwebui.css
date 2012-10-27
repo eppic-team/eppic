@@ -48,7 +48,7 @@
 
 .eppic-monospaced-font {
 	font-size: 10pt;
-	font-family: courier;
+	font-family: "Courier New", courier, monospace;
 }
 
 .eppic-default-padding {
@@ -116,11 +116,15 @@
 	font-size: 14px;
 }
 
+.eppic-status-log {
+	font-family: "Courier New", courier, monospace;
+}
+
 .eppic-tooltip-list {
 	list-style: disc;
 	margin: 0px 0px 0px 15px;
 }
 
-.eppic-help-panel {
+.eppic-text-panel {
 	background-color: #ffffff;
 }

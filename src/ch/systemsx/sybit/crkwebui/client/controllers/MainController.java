@@ -235,8 +235,12 @@ public class MainController
 		EventBusManager.EVENT_BUS.addHandler(ApplicationWindowResizeEvent.TYPE, new ApplicationWindowResizeHandler() {
 			
 			@Override
-			public void onResizeApplicationWindow(ApplicationWindowResizeEvent event) {
-				mainViewPort.setAllWindowsToResize();
+			public void onResizeApplicationWindow(ApplicationWindowResizeEvent event) 
+			{
+				if(mainViewPort != null)
+				{
+					mainViewPort.setAllWindowsToResize();
+				}
 			}
 		});
 	}

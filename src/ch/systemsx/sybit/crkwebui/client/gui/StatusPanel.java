@@ -81,7 +81,8 @@ public class StatusPanel extends DisplayPanel
 		log = new TextArea();
 		log.setFieldLabel(AppPropertiesManager.CONSTANTS.status_panel_log());
 		log.setReadOnly(true);
-
+		log.addInputStyleName("eppic-status-log");
+		
 		formPanel.add(log, new FormData("95% -110"));
 
 		killJob = new Button(AppPropertiesManager.CONSTANTS.status_panel_stop(), new SelectionListener<ButtonEvent>() {
