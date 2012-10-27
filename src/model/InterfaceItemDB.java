@@ -15,7 +15,8 @@ public class InterfaceItemDB implements Serializable
 	
 	private int id;
 	private Double area;
-	private String name;
+	private String chain1;
+	private String chain2;
 	private int size1;
 	private int size2;
 	private Double asaC1;
@@ -61,12 +62,20 @@ public class InterfaceItemDB implements Serializable
 		this.area = area;
 	}
 
-	public String getName() {
-		return name;
+	public String getChain1() {
+		return chain1;
 	}
 
-	public void setName(String name) {
-		this.name = name;
+	public void setChain1(String chain1) {
+		this.chain1 = chain1;
+	}
+	
+	public String getChain2() {
+		return chain2;
+	}
+
+	public void setChain2(String chain2) {
+		this.chain2 = chain2;
 	}
 
 	public int getSize1() {
