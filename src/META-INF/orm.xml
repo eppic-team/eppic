@@ -117,8 +117,11 @@
             </id>
             <basic name="id"></basic>
             <basic name="area"><column nullable="true"/></basic>
-            <basic name="name">
-            	<column length="3"/>
+            <basic name="chain1">
+            	<column length="1"/>
+            </basic>
+            <basic name="chain2">
+            	<column length="1"/>
             </basic>
             <basic name="size1"></basic>
             <basic name="size2"></basic>

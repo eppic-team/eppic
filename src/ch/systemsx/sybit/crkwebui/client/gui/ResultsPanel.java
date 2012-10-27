@@ -415,7 +415,7 @@ public class ResultsPanel extends DisplayPanel
 				}
 				
 				model.setId(interfaceItem.getId());
-				model.setName(interfaceItem.getName());
+				model.setName(interfaceItem.getChain1() + "+" + interfaceItem.getChain2());
 				model.setArea(interfaceItem.getArea());
 				model.setSizes(String.valueOf(interfaceItem.getSize1()) + " + " + String.valueOf(interfaceItem.getSize2()));
 				model.setFinalCallName(interfaceItem.getFinalCallName());

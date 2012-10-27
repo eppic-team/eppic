@@ -49,9 +49,7 @@ public class ResiduesPanel extends ContentPanel
 
 	private boolean useBufferedView = false;
 
-	public ResiduesPanel(
-						 String header,
-						 int width)
+	public ResiduesPanel(int width)
 	{
 		if(GXT.isIE8)
 		{
@@ -74,8 +72,8 @@ public class ResiduesPanel extends ContentPanel
 
 		residuesColumnModel = new ColumnModel(residuesConfigs);
 
-		residuesColumnModel.addHeaderGroup(0, 0, new HeaderGroupConfig(header,
-				1, residuesColumnModel.getColumnCount()));
+//		residuesColumnModel.addHeaderGroup(0, 0, new HeaderGroupConfig(header,
+//				1, residuesColumnModel.getColumnCount()));
 
 		residuesGrid = new Grid<InterfaceResidueItemModel>(residuesStore, residuesColumnModel);
 		residuesGrid.setBorders(false);
@@ -228,7 +226,7 @@ public class ResiduesPanel extends ContentPanel
 	 */
 	public void resizeGrid(int assignedWidth)
 	{
-		nrOfRows = (this.getHeight() - 72)  / 22;
+		nrOfRows = (this.getHeight() - 50)  / 22;
 
 		int scoresGridWidthOfAllVisibleColumns = GridUtil.calculateWidthOfVisibleColumns(residuesGrid,
 																						 initialColumnWidth) + 10;

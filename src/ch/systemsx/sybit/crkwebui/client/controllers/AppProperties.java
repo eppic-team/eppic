@@ -101,8 +101,7 @@ public interface AppProperties extends Constants
 	String alignment_window_title();
 	
 	String interfaces_residues_window_title();
-	String interfaces_residues_panel_first_structure();
-	String interfaces_residues_panel_second_structure();
+	String interfaces_residues_panel_structure();
 	String interfaces_residues_combo_all();
 	String interfaces_residues_combo_rimcore();
 	String interfaces_residues_combo_title();

@@ -8,6 +8,7 @@ import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.FieldEvent;
 import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.util.Margins;
+import com.extjs.gxt.ui.client.widget.Label;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.form.ComboBox.TriggerAction;
 import com.extjs.gxt.ui.client.widget.form.FormPanel;
@@ -16,6 +17,8 @@ import com.extjs.gxt.ui.client.widget.layout.AnchorData;
 import com.extjs.gxt.ui.client.widget.layout.AnchorLayout;
 import com.extjs.gxt.ui.client.widget.layout.RowData;
 import com.extjs.gxt.ui.client.widget.layout.RowLayout;
+import com.extjs.gxt.ui.client.widget.layout.VBoxLayout;
+import com.extjs.gxt.ui.client.widget.layout.VBoxLayout.VBoxLayoutAlign;
 import com.extjs.gxt.ui.client.widget.toolbar.FillToolItem;
 import com.extjs.gxt.ui.client.widget.toolbar.LabelToolItem;
 import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
@@ -27,11 +30,14 @@ import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
  */
 public class InterfacesResiduesPanel extends FormPanel 
 {
-	private ResiduesPanel firstStructure;
-	private ResiduesPanel secondStructure;
+	private Label firstStructureHeader;
+	private Label secondStructureHeader;
 	
-	private ResiduesSummaryPanel firstStructureSummary;
-	private ResiduesSummaryPanel secondStructureSummary;
+	private ResiduesPanel firstStructurePanel;
+	private ResiduesPanel secondStructurePanel;
+	
+	private ResiduesSummaryPanel firstStructureSummaryPanel;
+	private ResiduesSummaryPanel secondStructureSummaryPanel;
 	
 	private SimpleComboBox<String> residuesFilterComboBox;
 	
@@ -45,60 +51,38 @@ public class InterfacesResiduesPanel extends FormPanel
 		
 		LayoutContainer residuesLayoutContainer = new LayoutContainer();
 		residuesLayoutContainer.setLayout(new RowLayout(Orientation.HORIZONTAL));
+	
+		firstStructureHeader = new Label();
+		secondStructureHeader = new Label();
 		
-		firstStructure = new ResiduesPanel(
-										   AppPropertiesManager.CONSTANTS.interfaces_residues_panel_first_structure(), 
-										   width);
+		firstStructurePanel = new ResiduesPanel(width);
+		firstStructurePanel.setScrollMode(Scroll.NONE);
 		
-		secondStructure = new ResiduesPanel(
-											AppPropertiesManager.CONSTANTS.interfaces_residues_panel_second_structure(),
-											width);
+		secondStructurePanel = new ResiduesPanel(width);
+		secondStructurePanel.setScrollMode(Scroll.NONE);
 		
-		firstStructureSummary = new ResiduesSummaryPanel("", 1);
-		secondStructureSummary = new ResiduesSummaryPanel("", 2);
+		firstStructureSummaryPanel = new ResiduesSummaryPanel("", 1);
+		secondStructureSummaryPanel = new ResiduesSummaryPanel("", 2);
 		
-		LayoutContainer firstStructureContainer = new LayoutContainer();
-		firstStructureContainer.setScrollMode(Scroll.AUTOX);
-		firstStructureContainer.setLayout(new AnchorLayout());
-		firstStructureContainer.add(firstStructure, new AnchorData("none -135"));
-		firstStructure.setScrollMode(Scroll.NONE);
+		firstStructureSummaryPanel.setHeight(90);
+		firstStructureSummaryPanel.setScrollMode(Scroll.NONE);
+		secondStructureSummaryPanel.setHeight(90);
+		secondStructureSummaryPanel.setScrollMode(Scroll.NONE);
 		
-		FormPanel firstStructureBreakPanel = new FormPanel();
-		firstStructureBreakPanel.setBodyBorder(false);
-		firstStructureBreakPanel.setBorders(false);
-		firstStructureBreakPanel.getHeader().setVisible(false);
-		firstStructureBreakPanel.setHeight(20);
-		firstStructureContainer.add(firstStructureBreakPanel);
-
-		firstStructureContainer.add(firstStructureSummary);
-		firstStructureSummary.setHeight(90);
-		firstStructureSummary.setScrollMode(Scroll.NONE);
-				
+		LayoutContainer firstStructureContainer = createStructurePanel(firstStructureHeader,
+																	   firstStructurePanel,
+																	   firstStructureSummaryPanel);
 		residuesLayoutContainer.add(firstStructureContainer, new RowData(0.48, 1, new Margins(0)));
-		
-		
-		LayoutContainer secondStructureContainer = new LayoutContainer();
-		secondStructureContainer.setScrollMode(Scroll.AUTOX);
-		secondStructureContainer.setLayout(new AnchorLayout());
-		secondStructureContainer.add(secondStructure, new AnchorData("none -135"));
-		secondStructure.setScrollMode(Scroll.NONE);
-		
-		FormPanel secondStructureBreakPanel = new FormPanel();
-		secondStructureBreakPanel.setBodyBorder(false);
-		secondStructureBreakPanel.setBorders(false);
-		secondStructureBreakPanel.getHeader().setVisible(false);
-		secondStructureBreakPanel.setHeight(20);
-		secondStructureContainer.add(secondStructureBreakPanel);
 
-		secondStructureContainer.add(secondStructureSummary);
-		secondStructureSummary.setHeight(90);
-		secondStructureSummary.setScrollMode(Scroll.NONE);
-		
 		FormPanel breakPanel = new FormPanel();
 		breakPanel.setBodyBorder(false);
 		breakPanel.setBorders(false);
 		breakPanel.getHeader().setVisible(false);
 		residuesLayoutContainer.add(breakPanel, new RowData(0.04, 1, new Margins(0)));
+		
+		LayoutContainer secondStructureContainer = createStructurePanel(secondStructureHeader,
+																	    secondStructurePanel,
+																	    secondStructureSummaryPanel);
 		
 		residuesLayoutContainer.add(secondStructureContainer, new RowData(0.48, 1, new Margins(0)));
 		
@@ -137,17 +121,55 @@ public class InterfacesResiduesPanel extends FormPanel
 					showAll = false;
 				}
 				
-				firstStructure.applyFilter(showAll);
-				secondStructure.applyFilter(showAll);
+				firstStructurePanel.applyFilter(showAll);
+				secondStructurePanel.applyFilter(showAll);
 			}  
 		}); 
 		
 		toolbar.add(new FillToolItem());
 		
-		toolbar.add(new LabelToolItem(AppPropertiesManager.CONSTANTS.interfaces_residues_combo_title()+": ")); 
+		toolbar.add(new LabelToolItem(AppPropertiesManager.CONSTANTS.interfaces_residues_combo_title() + ": ")); 
 		toolbar.add(residuesFilterComboBox);  
 		
 		return toolbar;
+	}
+	
+	/**
+	 * Creates structure panel.
+	 * @param structureHeader structure header label
+	 * @param residuesPanel residues panel
+	 * @param residuesSummaryPanel residues summary panel
+	 * @return structure panel
+	 */
+	private LayoutContainer createStructurePanel(Label structureHeader,
+												 ResiduesPanel residuesPanel,
+												 ResiduesSummaryPanel residuesSummaryPanel)
+	{
+		LayoutContainer structureContainer = new LayoutContainer();
+		structureContainer.setScrollMode(Scroll.AUTOX);
+		structureContainer.setLayout(new AnchorLayout());
+
+		VBoxLayout layout = new VBoxLayout();
+	    layout.setVBoxLayoutAlign(VBoxLayoutAlign.CENTER);
+	    
+		LayoutContainer structureHeaderPanel = new LayoutContainer();
+		structureHeaderPanel.setHeight(20);
+		structureHeaderPanel.setLayout(layout);
+		structureHeaderPanel.add(structureHeader);
+		structureContainer.add(structureHeaderPanel);
+		
+		structureContainer.add(residuesPanel, new AnchorData("none -155"));
+		
+		FormPanel structureBreakPanel = new FormPanel();
+		structureBreakPanel.setBodyBorder(false);
+		structureBreakPanel.setBorders(false);
+		structureBreakPanel.getHeader().setVisible(false);
+		structureBreakPanel.setHeight(20);
+		structureContainer.add(structureBreakPanel);
+
+		structureContainer.add(residuesSummaryPanel);
+		
+		return structureContainer;
 	}
 	
 	/**
@@ -156,10 +178,21 @@ public class InterfacesResiduesPanel extends FormPanel
 	public void cleanData()
 	{
 		residuesFilterComboBox.setSimpleValue(AppPropertiesManager.CONSTANTS.interfaces_residues_combo_rimcore());
-		firstStructure.cleanResiduesGrid();
-		secondStructure.cleanResiduesGrid();
-		firstStructureSummary.cleanResiduesGrid();
-		secondStructureSummary.cleanResiduesGrid();
+		firstStructurePanel.cleanResiduesGrid();
+		secondStructurePanel.cleanResiduesGrid();
+		firstStructureSummaryPanel.cleanResiduesGrid();
+		secondStructureSummaryPanel.cleanResiduesGrid();
+	}
+	
+	/**
+	 * Fills headers of structures panels.
+	 * @param firstChainName name of first structure
+	 * @param secondChainName name of second structure
+	 */
+	public void fillHeaders(String firstChainName, String secondChainName) 
+	{
+		firstStructureHeader.setText(AppPropertiesManager.CONSTANTS.interfaces_residues_panel_structure() + " " + firstChainName);
+		secondStructureHeader.setText(AppPropertiesManager.CONSTANTS.interfaces_residues_panel_structure() + " " + secondChainName);
 	}
 
 	/**
@@ -170,10 +203,10 @@ public class InterfacesResiduesPanel extends FormPanel
 	public void resizeResiduesPanels(int assignedWidth, int assignedHeight) 
 	{
 		int assignedResiduesWidth = (int)((assignedWidth - 36) * 0.48) - 10;
-		firstStructure.resizeGrid(assignedResiduesWidth);
-		secondStructure.resizeGrid(assignedResiduesWidth);
-		firstStructureSummary.resizeGrid(assignedResiduesWidth);
-		secondStructureSummary.resizeGrid(assignedResiduesWidth);
+		firstStructurePanel.resizeGrid(assignedResiduesWidth);
+		secondStructurePanel.resizeGrid(assignedResiduesWidth);
+		firstStructureSummaryPanel.resizeGrid(assignedResiduesWidth);
+		secondStructureSummaryPanel.resizeGrid(assignedResiduesWidth);
 		this.layout(true);
 	}
 	
@@ -183,7 +216,7 @@ public class InterfacesResiduesPanel extends FormPanel
 	 */
 	public ResiduesPanel getFirstStructurePanel() 
 	{
-		return firstStructure;
+		return firstStructurePanel;
 	}
 
 	/**
@@ -192,7 +225,7 @@ public class InterfacesResiduesPanel extends FormPanel
 	 */
 	public ResiduesPanel getSecondStructurePanel() 
 	{
-		return secondStructure;
+		return secondStructurePanel;
 	}
 	
 	/**
@@ -201,7 +234,7 @@ public class InterfacesResiduesPanel extends FormPanel
 	 */
 	public ResiduesSummaryPanel getFirstStructurePanelSummary() 
 	{
-		return firstStructureSummary;
+		return firstStructureSummaryPanel;
 	}
 
 	/**
@@ -210,7 +243,6 @@ public class InterfacesResiduesPanel extends FormPanel
 	 */
 	public ResiduesSummaryPanel getSecondStructurePanelSummary() 
 	{
-		return secondStructureSummary;
+		return secondStructureSummaryPanel;
 	}
-
 }

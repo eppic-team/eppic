@@ -113,16 +113,23 @@ public class InterfacesResiduesWindow extends ResizableWindow
 	}
 	
 	/**
-	 * Sets header of interface residues window.
+	 * Sets headers of interface residues window and structures panels.
 	 * @param area area
+	 * @firstChainName name of first structure
+	 * @secondChainName name of second structure
 	 * @param selectedInterface chosen interface
 	 */
-	public void setWindowHeader(double area,
-								int selectedInterface)
+	public void setWindowHeaders(double area,
+								 String firstChainName,
+								 String secondChainName,
+								 int selectedInterface)
 	{
 //		double area = mainController.getPdbScoreItem().getInterfaceItem(selectedInterface - 1).getArea();
 		NumberFormat number = NumberFormat.getFormat("0.00");
 		String formattedArea = number.format(area);
 		this.setHeading(AppPropertiesManager.CONSTANTS.interfaces_residues_window_title() + " " + selectedInterface + " (" + formattedArea + " A<sup>2</sup>)");
+		
+		interfacesResiduesPanel.fillHeaders(firstChainName,
+											secondChainName);
 	}
 }

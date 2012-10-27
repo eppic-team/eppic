@@ -11,6 +11,7 @@ import ch.systemsx.sybit.crkwebui.client.events.ApplicationWindowResizeEvent;
 import ch.systemsx.sybit.crkwebui.client.events.UnmaskMainViewEvent;
 import ch.systemsx.sybit.crkwebui.client.handlers.UnmaskMainViewHandler;
 import ch.systemsx.sybit.crkwebui.shared.model.HomologsInfoItem;
+import ch.systemsx.sybit.crkwebui.shared.model.InterfaceItem;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResidueItem;
 import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
 
@@ -158,7 +159,7 @@ public class MainViewPort extends Viewport
 		   (interfacesResiduesWindow.isResizeWindow()))
 		{
 			interfacesResiduesWindow = new InterfacesResiduesWindow(ApplicationContext.getWindowData());
-//			interfacesResiduesWindow.setResizable(false);
+			interfacesResiduesWindow.setResizeWindow(false);
 			interfacesResiduesWindow.setVisible(true);
 			Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 				@Override
@@ -174,8 +175,11 @@ public class MainViewPort extends Viewport
 			interfacesResiduesWindow.setVisible(true);
 		}
 		
-		interfacesResiduesWindow.setWindowHeader(ApplicationContext.getPdbScoreItem().getInterfaceItem(selectedInterface - 1).getArea(),
-												 selectedInterface);
+		InterfaceItem interfaceItem = ApplicationContext.getPdbScoreItem().getInterfaceItem(selectedInterface - 1);
+		interfacesResiduesWindow.setWindowHeaders(interfaceItem.getArea(),
+												  interfaceItem.getChain1(),
+												  interfaceItem.getChain2(),
+												  selectedInterface);
 
 		//called beacuse of the bug in GXT 2.2.3
 		// http://www.sencha.com/forum/showthread.php?126888-Problems-with-RowLayout
@@ -348,17 +352,17 @@ public class MainViewPort extends Viewport
 	{
 		if(aboutWindow != null)
 		{
-			aboutWindow.setResizable(true);
+			aboutWindow.setResizeWindow(true);
 		}
 		
 		if(alignmentsWindow != null)
 		{
-			alignmentsWindow.setResizable(true);
+			alignmentsWindow.setResizeWindow(true);
 		}
 		
 		if(interfacesResiduesWindow != null)
 		{
-			interfacesResiduesWindow.setResizable(true);
+			interfacesResiduesWindow.setResizeWindow(true);
 		}
 	}
 	

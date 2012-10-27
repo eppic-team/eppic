@@ -24,7 +24,8 @@ public class InterfaceItem implements Serializable
 	
 	private int id;
 	private double area;
-	private String name;
+	private String chain1;
+	private String chain2;
 	private int size1;
 	private int size2;
 	private double asaC1;
@@ -65,12 +66,20 @@ public class InterfaceItem implements Serializable
 		this.area = area;
 	}
 
-	public String getName() {
-		return name;
+	public String getChain1() {
+		return chain1;
 	}
 
-	public void setName(String name) {
-		this.name = name;
+	public void setChain1(String chain1) {
+		this.chain1 = chain1;
+	}
+	
+	public String getChain2() {
+		return chain2;
+	}
+
+	public void setChain2(String chain2) {
+		this.chain2 = chain2;
 	}
 
 	public int getSize1() {
@@ -262,7 +271,8 @@ public class InterfaceItem implements Serializable
 			interfaceItem.setInterfaceScores(interfaceScoreItems);
 		}
 		
-		interfaceItem.setName(interfaceItemDB.getName());
+		interfaceItem.setChain1(interfaceItemDB.getChain1());
+		interfaceItem.setChain2(interfaceItemDB.getChain2());
 		interfaceItem.setOperator(interfaceItemDB.getOperator());
 		interfaceItem.setSize1(interfaceItemDB.getSize1());
 		interfaceItem.setSize2(interfaceItemDB.getSize2());
