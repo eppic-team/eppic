@@ -10,6 +10,7 @@ import ch.systemsx.sybit.crkwebui.client.events.UpdateStatusLabelEvent;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.rpc.IncompatibleRemoteServiceException;
 
 /**
  * Callback used to handle the response from the server when trying to retrieve the list of jobs for the current session.
@@ -27,7 +28,11 @@ public class GetJobsForCurrentSession implements AsyncCallback<List<ProcessingIn
 	public void onFailure(Throwable caught) 
 	{
 		EventBusManager.EVENT_BUS.fireEvent(new UpdateStatusLabelEvent(AppPropertiesManager.CONSTANTS.callback_get_jobs_for_current_session_error(), true));
-		EventBusManager.EVENT_BUS.fireEvent(new StopJobsListAutoRefreshEvent());
+		
+		if(caught instanceof IncompatibleRemoteServiceException)
+		{
+			EventBusManager.EVENT_BUS.fireEvent(new StopJobsListAutoRefreshEvent());
+		}
 	}
 
 	@Override
