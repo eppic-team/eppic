@@ -1,6 +1,6 @@
 package ch.systemsx.sybit.crkwebui.client.gui;
 
-import ch.systemsx.sybit.crkwebui.client.data.WindowData;
+import ch.systemsx.sybit.crkwebui.shared.model.WindowData;
 
 /**
  * Label styled as empty link with tooltip. 

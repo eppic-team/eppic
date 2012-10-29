@@ -9,6 +9,7 @@ import ch.systemsx.sybit.crkwebui.client.controllers.EventBusManager;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 import ch.systemsx.sybit.crkwebui.client.events.ApplicationWindowResizeEvent;
 import ch.systemsx.sybit.crkwebui.client.events.UnmaskMainViewEvent;
+import ch.systemsx.sybit.crkwebui.client.handlers.ApplicationWindowResizeHandler;
 import ch.systemsx.sybit.crkwebui.client.handlers.UnmaskMainViewHandler;
 import ch.systemsx.sybit.crkwebui.shared.model.HomologsInfoItem;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceItem;
@@ -20,8 +21,8 @@ import com.extjs.gxt.ui.client.event.BorderLayoutEvent;
 import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.util.Margins;
+import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.MessageBox;
-import com.extjs.gxt.ui.client.widget.Viewport;
 import com.extjs.gxt.ui.client.widget.layout.BorderLayout;
 import com.extjs.gxt.ui.client.widget.layout.BorderLayoutData;
 import com.google.gwt.core.client.Scheduler;
@@ -32,7 +33,7 @@ import com.google.gwt.core.client.Scheduler.ScheduledCommand;
  * @author srebniak_a
  *
  */
-public class MainViewPort extends Viewport
+public class MainViewPort extends LayoutContainer
 {
 	private MyJobsPanel myJobsPanel;
 
@@ -57,7 +58,7 @@ public class MainViewPort extends Viewport
 		BorderLayout layout = new BorderLayout();
 		this.setLayout(layout);
 		this.addStyleName("eppic-default-padding");
-
+		
 		layout.addListener(Events.Collapse, new Listener<BorderLayoutEvent>()
 		{
 			public void handleEvent(BorderLayoutEvent be)
@@ -265,7 +266,7 @@ public class MainViewPort extends Viewport
 		{
 			errorMessageBox = MessageBox.alert(AppPropertiesManager.CONSTANTS.error_message_box_header(), message, null);
 			errorMessageBox.setMinWidth(300);
-			errorMessageBox.setMaxWidth(ApplicationContext.getWindowData().getWindowWidth());
+			errorMessageBox.setMaxWidth(ApplicationContext.getWindowData().getWindowWidth() - 20);
 			errorMessageBox.show();
 		}
 	}
@@ -402,5 +403,21 @@ public class MainViewPort extends Viewport
 				unmask();
 			}
 		});
+		
+		EventBusManager.EVENT_BUS.addHandler(ApplicationWindowResizeEvent.TYPE, new ApplicationWindowResizeHandler() {
+			
+			@Override
+			public void onResizeApplicationWindow(ApplicationWindowResizeEvent event) {
+				setSize(ApplicationContext.getAdjustedWindowData().getWindowWidth(), 
+						ApplicationContext.getAdjustedWindowData().getWindowHeight());
+			}
+		});
+	}
+	
+	public void onAttach() 
+	{
+		setSize(ApplicationContext.getAdjustedWindowData().getWindowWidth(), 
+				ApplicationContext.getAdjustedWindowData().getWindowHeight());
+		super.onAttach();
 	}
 }

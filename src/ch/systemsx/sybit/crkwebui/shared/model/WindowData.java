@@ -1,12 +1,19 @@
-package ch.systemsx.sybit.crkwebui.client.data;
+package ch.systemsx.sybit.crkwebui.shared.model;
+
+import java.io.Serializable;
 
 /**
  * Window application data.
  * @author AS
  *
  */
-public class WindowData 
+public class WindowData implements Serializable
 {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	/**
 	 * Width of the application window.
 	 */
@@ -16,6 +23,11 @@ public class WindowData
 	 * Height of the application window.
 	 */
 	private int windowHeight;
+	
+	public WindowData()
+	{
+		
+	}
 	
 	/**
 	 * Creates instance of window data with specified width and height.
@@ -57,7 +69,8 @@ public class WindowData
 	 * Sets height of the application window.
 	 * @param windowHeight height of the application window
 	 */
-	public void setWindowHeight(int windowHeight) {
+	public void setWindowHeight(int windowHeight) 
+	{
 		this.windowHeight = windowHeight;
 	}
 }

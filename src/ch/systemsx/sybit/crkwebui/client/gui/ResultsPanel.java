@@ -470,9 +470,9 @@ public class ResultsPanel extends DisplayPanel
 			}
 		}
 		
-		if (resultsGridWidthOfAllVisibleColumns < ApplicationContext.getWindowData().getWindowWidth() - limit) 
+		if (resultsGridWidthOfAllVisibleColumns < ApplicationContext.getAdjustedWindowData().getWindowWidth() - limit) 
 		{
-			int maxWidth = ApplicationContext.getWindowData().getWindowWidth() - limit - 20;
+			int maxWidth = ApplicationContext.getAdjustedWindowData().getWindowWidth() - limit - 20;
 			gridWidthMultiplier = (float)maxWidth / resultsGridWidthOfAllVisibleColumns;
 			
 			int nrOfColumn = resultsGrid.getColumnModel().getColumnCount();
@@ -494,7 +494,7 @@ public class ResultsPanel extends DisplayPanel
 			}
 		}
 		
-		resultsGrid.setWidth(ApplicationContext.getWindowData().getWindowWidth() - limit);
+		resultsGrid.setWidth(ApplicationContext.getAdjustedWindowData().getWindowWidth() - limit);
 
 //		resultsGrid.reconfigure(resultsStore, resultsColumnModel);
 		resultsGrid.getView().refresh(true);

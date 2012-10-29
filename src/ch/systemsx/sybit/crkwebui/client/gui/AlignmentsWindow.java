@@ -1,9 +1,9 @@
 package ch.systemsx.sybit.crkwebui.client.gui;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.EventBusManager;
-import ch.systemsx.sybit.crkwebui.client.data.WindowData;
 import ch.systemsx.sybit.crkwebui.client.events.WindowHideEvent;
 import ch.systemsx.sybit.crkwebui.shared.model.HomologsInfoItem;
+import ch.systemsx.sybit.crkwebui.shared.model.WindowData;
 
 import com.extjs.gxt.ui.client.Style.Orientation;
 import com.extjs.gxt.ui.client.Style.Scroll;

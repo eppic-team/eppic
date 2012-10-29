@@ -2,8 +2,8 @@ package ch.systemsx.sybit.crkwebui.client.gui;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.controllers.EventBusManager;
-import ch.systemsx.sybit.crkwebui.client.data.WindowData;
 import ch.systemsx.sybit.crkwebui.client.events.WindowHideEvent;
+import ch.systemsx.sybit.crkwebui.shared.model.WindowData;
 
 import com.extjs.gxt.ui.client.Style.Scroll;
 import com.extjs.gxt.ui.client.event.Events;

@@ -1,9 +1,9 @@
 package ch.systemsx.sybit.crkwebui.client.controllers;
 
-import ch.systemsx.sybit.crkwebui.client.data.WindowData;
 import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResiduesItemsList;
 import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
+import ch.systemsx.sybit.crkwebui.shared.model.WindowData;
 
 /**
  * Application wide data.
@@ -15,6 +15,11 @@ public class ApplicationContext
 	 * Main application window data.
 	 */
 	private static WindowData windowData;
+	
+	/**
+	 * Main application window data adjusted limitted by min values of width and height.
+	 */
+	private static WindowData adjustedWindowData = new WindowData();
 	
 	/**
 	 * General application settings.
@@ -255,5 +260,53 @@ public class ApplicationContext
 
 	public static void setMyJobsPanelWidth(int myJobsPanelWidth) {
 		ApplicationContext.myJobsPanelWidth = myJobsPanelWidth;
+	}
+	
+	/**
+	 * Retrieves adjusted main application window data.
+	 * @return adjusted main application window data
+	 */
+	public static WindowData getAdjustedWindowData() {
+		return adjustedWindowData;
+	}
+	
+	/**
+	 * Sets adjusted main application window data.
+	 * @param windowData adjusted main application window data
+	 */
+	public static void setAdjustedWindowData(WindowData adjustedWindowData) {
+		ApplicationContext.adjustedWindowData = adjustedWindowData;
+	}
+	
+	/**
+	 * Sets stored value of width of the window based on the min allowed value and current width of 
+	 * client window. This information is used to properly resize internal panels.
+	 * 
+	 * @param windowWidth width of client window
+	 */
+	public static void adjustWindowWidth(int windowWidth)
+	{
+		if(windowWidth < settings.getScreenSettings().getMinWindowData().getWindowWidth())
+		{
+			windowWidth = settings.getScreenSettings().getMinWindowData().getWindowWidth() - 25; 
+		}
+		
+		adjustedWindowData.setWindowWidth(windowWidth);
+	}
+	
+	/**
+	 * Sets stored value of height of the window based on the min allowed value and current height of 
+	 * client window. This information is used to properly resize internal panels.
+	 * 
+	 * @param windowHeight height of client window
+	 */
+	public static void adjustWindowHeight(int windowHeight)
+	{
+		if(windowHeight < settings.getScreenSettings().getMinWindowData().getWindowHeight())
+		{
+			windowHeight = settings.getScreenSettings().getMinWindowData().getWindowHeight() - 25; 
+		}
+		
+		adjustedWindowData.setWindowHeight(windowHeight);
 	}
 }

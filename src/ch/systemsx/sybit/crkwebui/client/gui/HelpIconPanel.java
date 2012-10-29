@@ -2,7 +2,6 @@ package ch.systemsx.sybit.crkwebui.client.gui;
 
 import ch.systemsx.sybit.crkwebui.client.data.TooltipXPositionType;
 import ch.systemsx.sybit.crkwebui.client.data.TooltipYPositionType;
-import ch.systemsx.sybit.crkwebui.client.data.WindowData;
 
 import com.extjs.gxt.ui.client.widget.WidgetComponent;
 
@@ -15,8 +14,7 @@ public class HelpIconPanel
 {
 	private WidgetComponent imageComponent;
 
-	public HelpIconPanel(final WindowData windowData,
-					 	 final String helpText) 
+	public HelpIconPanel(final String helpText) 
 	{           
 		if(helpText != null)
 		{

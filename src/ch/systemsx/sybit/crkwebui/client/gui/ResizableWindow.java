@@ -1,6 +1,6 @@
 package ch.systemsx.sybit.crkwebui.client.gui;
 
-import ch.systemsx.sybit.crkwebui.client.data.WindowData;
+import ch.systemsx.sybit.crkwebui.shared.model.WindowData;
 
 import com.extjs.gxt.ui.client.widget.Dialog;
 
@@ -22,9 +22,9 @@ public class ResizableWindow extends Dialog
 		this.windowWidth = defaultWidth;
 		this.windowHeight = defaultHeight;
 
-		if(windowWidth > windowData.getWindowWidth())
+		if(windowWidth > windowData.getWindowWidth() - 20)
 		{
-			windowWidth = windowData.getWindowWidth();
+			windowWidth = windowData.getWindowWidth() - 20;
 		}
 
 		if(windowHeight > windowData.getWindowHeight() - 50)

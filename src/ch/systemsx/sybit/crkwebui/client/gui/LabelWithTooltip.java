@@ -1,6 +1,6 @@
 package ch.systemsx.sybit.crkwebui.client.gui;
 
-import ch.systemsx.sybit.crkwebui.client.data.WindowData;
+import ch.systemsx.sybit.crkwebui.shared.model.WindowData;
 
 import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.Events;

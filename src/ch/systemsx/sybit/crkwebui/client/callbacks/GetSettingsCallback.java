@@ -6,8 +6,10 @@ import ch.systemsx.sybit.crkwebui.client.controllers.EventBusManager;
 import ch.systemsx.sybit.crkwebui.client.events.ApplicationInitEvent;
 import ch.systemsx.sybit.crkwebui.client.events.UpdateStatusLabelEvent;
 import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
+import ch.systemsx.sybit.crkwebui.shared.model.WindowData;
 
 import com.google.gwt.user.client.History;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 /**
@@ -30,6 +32,11 @@ public class GetSettingsCallback implements AsyncCallback<ApplicationSettings>
 		{
 			ApplicationContext.setSettings(result);
 			ApplicationContext.setNrOfSubmissions(result.getNrOfJobsForSession());
+			
+			ApplicationContext.setWindowData(new WindowData(Window.getClientWidth(), Window.getClientHeight()));
+			ApplicationContext.adjustWindowWidth(Window.getClientWidth());
+			ApplicationContext.adjustWindowHeight(Window.getClientHeight());
+			
 			EventBusManager.EVENT_BUS.fireEvent(new ApplicationInitEvent());
 			
 			if((result.getNotificationOnStart() != null) &&

@@ -105,7 +105,7 @@ public class InfoPanel extends FormPanel
 		// we divide the window width by desired number of columns (4) and use double width for first and half width for last 2
 		// 1st column is double width
 		// last 2 columns are half width
-		int columnWidth = (ApplicationContext.getWindowData().getWindowWidth() - limit - 20) / (nrOfColumns);
+		int columnWidth = (ApplicationContext.getAdjustedWindowData().getWindowWidth() - limit - 20) / (nrOfColumns);
 		int firstcolumnWidth = columnWidth * 2;
 		int last2columnsWidth = columnWidth / 2;
 		
@@ -141,7 +141,7 @@ public class InfoPanel extends FormPanel
 		toolTipConfig.setCloseable(true); 
 		toolTipConfig.setDismissDelay(0);
 		toolTipConfig.setShowDelay(100);
-		toolTipConfig.setMaxWidth(ApplicationContext.getWindowData().getWindowWidth());
+		toolTipConfig.setMaxWidth(ApplicationContext.getWindowData().getWindowWidth() - 20);
 		inputParametersTooltip = new ToolTip(inputParametersLabel, toolTipConfig);
 		
 		inputParametersLabel = new EmptyLinkWithTooltip(AppPropertiesManager.CONSTANTS.info_panel_input_parameters(),

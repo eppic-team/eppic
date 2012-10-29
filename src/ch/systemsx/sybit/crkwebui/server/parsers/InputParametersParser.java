@@ -18,6 +18,7 @@ import org.w3c.dom.NodeList;
 import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
 import ch.systemsx.sybit.crkwebui.shared.model.InputParameters;
 import ch.systemsx.sybit.crkwebui.shared.model.RunParametersItem;
+import ch.systemsx.sybit.crkwebui.shared.model.ScreenSettings;
 import ch.systemsx.sybit.crkwebui.shared.model.SupportedMethod;
 
 /**
@@ -93,6 +94,10 @@ public class InputParametersParser
 		Map<String, String> runPropetiesMap = prepareRunParameters(runParametersNode);
 		applicationSettings.setRunParametersNames(runPropetiesMap);
 		
+		Node screenSettingsNode = documentRootNode.getElementsByTagName("screen_settings").item(0);
+		ScreenSettings screenSettings = prepareScreenSettings(screenSettingsNode);
+		applicationSettings.setScreenSettings(screenSettings);
+		
 		return applicationSettings;
 	}
 	
@@ -162,6 +167,37 @@ public class InputParametersParser
 		}
 		
 		return runPropetiesMap;
+	}
+	
+	/**
+	 * Retrieves screen settings.
+	 * @param screenSettingsNode screen settings node
+	 * @return screen settings
+	 */
+	private static ScreenSettings prepareScreenSettings(Node screenSettingsNode)
+	{
+		ScreenSettings screenSettings = new ScreenSettings();
+		
+		NodeList screenSettingsNodeList = screenSettingsNode.getChildNodes();
+		
+		for(int i=0; i<screenSettingsNodeList.getLength(); i++)
+		{
+			Node settingNode = (Node)screenSettingsNodeList.item(i);
+			
+			if(settingNode.getNodeType() == Node.ELEMENT_NODE)
+			{
+				if(settingNode.getNodeName().equals("min_screen_width"))
+				{
+					screenSettings.getMinWindowData().setWindowWidth(Integer.parseInt(settingNode.getFirstChild().getNodeValue()));
+				}
+				else if(settingNode.getNodeName().equals("min_screen_height"))
+				{
+					screenSettings.getMinWindowData().setWindowHeight(Integer.parseInt(settingNode.getFirstChild().getNodeValue()));
+				}
+			}
+		}
+		
+		return screenSettings;
 	}
 
 	/**

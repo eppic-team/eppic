@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
-import ch.systemsx.sybit.crkwebui.client.data.WindowData;
+import ch.systemsx.sybit.crkwebui.client.controllers.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.listeners.SubmitKeyListener;
 import ch.systemsx.sybit.crkwebui.client.model.ReducedAlphabetComboModel;
 import ch.systemsx.sybit.crkwebui.client.model.SearchModeComboModel;
@@ -52,8 +52,7 @@ public class OptionsInputPanel extends FieldSet
 	
 	private int LABEL_WIDTH = 200;
 
-	public OptionsInputPanel(ApplicationSettings applicationSettings,
-							 final WindowData windowData) 
+	public OptionsInputPanel(ApplicationSettings applicationSettings) 
 	{
 		InputParameters defaultInputParameters = applicationSettings.getDefaultParametersValues();
 		List<Integer> reducedAlphabetDefaultList = applicationSettings.getReducedAlphabetList();
@@ -75,12 +74,12 @@ public class OptionsInputPanel extends FieldSet
 		
 		int height = 400;
 		
-		if(height > Window.getClientHeight() * 0.4)
+		if(height > ApplicationContext.getAdjustedWindowData().getWindowHeight() * 0.4)
 		{
-			height = (int) (Window.getClientHeight() * 0.4);
+			height = (int) (ApplicationContext.getAdjustedWindowData().getWindowHeight() * 0.4);
 		}
 		
-		ComponentPlugin helpIconPlugin = createHelpIconPlugin(defaultFieldLengthForHelp, windowData);
+		ComponentPlugin helpIconPlugin = createHelpIconPlugin(defaultFieldLengthForHelp);
 
 		methodsFieldsets = new FieldSet[supportedMethods.size()];
 		
@@ -104,11 +103,9 @@ public class OptionsInputPanel extends FieldSet
 	/**
 	 * Creates help icon plugin.
 	 * @param defaultFieldLengthForHelp position for help icon
-	 * @param windowData general window data
 	 * @return help icon plugin
 	 */
-	private ComponentPlugin createHelpIconPlugin(final int defaultFieldLengthForHelp,
-												 final WindowData windowData)
+	private ComponentPlugin createHelpIconPlugin(final int defaultFieldLengthForHelp)
 	{
 		ComponentPlugin plugin = new ComponentPlugin()
 		{
@@ -118,7 +115,7 @@ public class OptionsInputPanel extends FieldSet
 				{
 					public void handleEvent(ComponentEvent be) 
 					{
-						HelpIconPanel helpIconPanel = new HelpIconPanel(windowData, (String)be.getComponent().getData("hint"));
+						HelpIconPanel helpIconPanel = new HelpIconPanel((String)be.getComponent().getData("hint"));
 						final WidgetComponent helpImage = helpIconPanel.getImageComponent();
 						
 						if(helpImage != null)

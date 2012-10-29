@@ -95,6 +95,11 @@ public class ApplicationSettings implements Serializable {
 	 * Name of the example pdb entry which is to be displayed in input view.
 	 */
 	private String examplePdb;
+
+	/**
+	 * Settings of main screen.
+	 */
+	private ScreenSettings screenSettings;
 	
 	public ApplicationSettings()
 	{
@@ -390,4 +395,21 @@ public class ApplicationSettings implements Serializable {
 	public String getExamplePdb() {
 		return examplePdb;
 	}
+
+	/**
+	 * Sets settings of main application screen.
+	 * @param screenSettings settings of main application screen
+	 */
+	public void setScreenSettings(ScreenSettings screenSettings) {
+		this.screenSettings = screenSettings;
+	}
+	
+	/**
+	 * Retrieves settings of main application screen.
+	 * @return settings of main application screen
+	 */
+	public ScreenSettings getScreenSettings() {
+		return screenSettings;
+	}
+
 }

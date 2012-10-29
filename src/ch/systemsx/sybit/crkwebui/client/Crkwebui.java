@@ -5,6 +5,7 @@ import ch.systemsx.sybit.crkwebui.client.controllers.CrkWebServiceProvider;
 import ch.systemsx.sybit.crkwebui.client.controllers.EventBusManager;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 import ch.systemsx.sybit.crkwebui.client.events.ApplicationWindowResizeEvent;
+import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
 
 import com.extjs.gxt.themes.client.Access;
 import com.extjs.gxt.themes.client.Slate;
@@ -70,8 +71,11 @@ public class Crkwebui implements EntryPoint, ValueChangeHandler<String>
 			@Override
 			public void onResize(ResizeEvent event)
 			{
-				ApplicationContext.getWindowData().setWindowHeight(event.getHeight());
 				ApplicationContext.getWindowData().setWindowWidth(event.getWidth());
+				ApplicationContext.getWindowData().setWindowHeight(event.getHeight());
+				
+				ApplicationContext.adjustWindowWidth(event.getWidth());
+				ApplicationContext.adjustWindowHeight(event.getHeight());
 
 				EventBusManager.EVENT_BUS.fireEvent(new ApplicationWindowResizeEvent());
 			}

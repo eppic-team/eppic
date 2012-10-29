@@ -1,6 +1,5 @@
 package ch.systemsx.sybit.crkwebui.client.controllers;
 
-import ch.systemsx.sybit.crkwebui.client.data.WindowData;
 import ch.systemsx.sybit.crkwebui.client.events.ApplicationInitEvent;
 import ch.systemsx.sybit.crkwebui.client.events.ApplicationWindowResizeEvent;
 import ch.systemsx.sybit.crkwebui.client.events.GetFocusOnJobsListEvent;
@@ -24,6 +23,7 @@ import ch.systemsx.sybit.crkwebui.client.gui.DownloadsPanel;
 import ch.systemsx.sybit.crkwebui.client.gui.HelpPanel;
 import ch.systemsx.sybit.crkwebui.client.gui.InputDataPanel;
 import ch.systemsx.sybit.crkwebui.client.gui.MainViewPort;
+import ch.systemsx.sybit.crkwebui.client.gui.MainViewWrapper;
 import ch.systemsx.sybit.crkwebui.client.gui.ResultsPanel;
 import ch.systemsx.sybit.crkwebui.client.gui.StatusPanel;
 import ch.systemsx.sybit.crkwebui.client.handlers.ApplicationInitHandler;
@@ -51,6 +51,7 @@ import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.event.MessageBoxEvent;
 import com.extjs.gxt.ui.client.widget.MessageBox;
 import com.extjs.gxt.ui.client.widget.Viewport;
+import com.extjs.gxt.ui.client.widget.layout.FlowLayout;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.user.client.Timer;
@@ -77,7 +78,6 @@ public class MainController
 	 */
 	public MainController(Viewport viewport)
 	{
-		ApplicationContext.setWindowData(new WindowData(Window.getClientWidth(), Window.getClientHeight()));
 		initializeEventsListeners();
 	}
 	
@@ -277,7 +277,7 @@ public class MainController
 		});
 
 		infoMessageBox.setMinWidth(300);
-		infoMessageBox.setMaxWidth(ApplicationContext.getWindowData().getWindowWidth());
+		infoMessageBox.setMaxWidth(ApplicationContext.getWindowData().getWindowWidth() - 20);
 		
 		Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 			@Override
@@ -327,7 +327,13 @@ public class MainController
 	private void setMainView()
 	{
 		mainViewPort = new MainViewPort(this);
-		RootPanel.get().add(mainViewPort);
+		MainViewWrapper mainViewWrapper = new MainViewWrapper(mainViewPort);
+		
+		Viewport viewPort = new Viewport();
+		viewPort.setLayout(new FlowLayout());
+		viewPort.add(mainViewWrapper);
+		
+		RootPanel.get().add(viewPort);
 	}
 
 	/**
@@ -451,7 +457,7 @@ public class MainController
 		}
 		else
 		{
-			statusPanel = new StatusPanel(ApplicationContext.getWindowData().getWindowHeight());
+			statusPanel = new StatusPanel(ApplicationContext.getAdjustedWindowData().getWindowHeight());
 			mainViewPort.getCenterPanel().setDisplayPanel(statusPanel);
 		}
 

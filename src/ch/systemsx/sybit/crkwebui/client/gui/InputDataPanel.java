@@ -14,7 +14,6 @@ import ch.systemsx.sybit.crkwebui.client.gui.validators.PdbCodeFieldValidator;
 import ch.systemsx.sybit.crkwebui.client.handlers.GetFocusOnPdbCodeFieldHandler;
 import ch.systemsx.sybit.crkwebui.client.handlers.SubmitJobHandler;
 import ch.systemsx.sybit.crkwebui.client.listeners.SubmitKeyListener;
-import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
 import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
 import ch.systemsx.sybit.crkwebui.shared.validators.InputParametersComparator;
 
@@ -187,8 +186,7 @@ public class InputDataPanel extends DisplayPanel
 		breakPanel.setBorders(false);
 		generalFieldSet.add(breakPanel);
 
-		optionsInputPanel = new OptionsInputPanel(ApplicationContext.getSettings(),
-												  ApplicationContext.getWindowData());
+		optionsInputPanel = new OptionsInputPanel(ApplicationContext.getSettings());
 
 		generalFieldSet.add(optionsInputPanel);
 		optionsInputPanel.collapse();
