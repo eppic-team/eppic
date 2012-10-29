@@ -86,9 +86,8 @@ public class WebUIDataAdaptor {
 			ii.setId(interf.getId());
 			ii.setArea(interf.getInterfaceArea());
 			
-			String[] chains = interf.getName().split("+");
-			ii.setChain1(chains[0]);
-			ii.setChain2(chains[1]);
+			ii.setChain1(interf.getFirstMolecule().getPdbChainCode());
+			ii.setChain2(interf.getSecondMolecule().getPdbChainCode());
 			
 			ii.setOperator(SpaceGroup.getAlgebraicFromMatrix(interf.getSecondTransf().getMatTransform()));
 			ii.setSize1(interf.getFirstRimCore().getCoreSize());
