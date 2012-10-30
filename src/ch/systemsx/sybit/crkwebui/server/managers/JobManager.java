@@ -17,10 +17,14 @@ public interface JobManager
 	 * @param jobId identifier of the job to submit
 	 * @param command command to execute
 	 * @param jobDirectory directory where results of the job are to be stored
+	 * @param nrOfThreadsForSubmission nr of threads used to run command
 	 * @return submissionId
 	 * @throws JobHandlerException when job can not be successfully started
 	 */
-	public String startJob(String jobId, List<String> command, String jobDirectory) throws JobHandlerException;
+	public String startJob(String jobId, 
+						   List<String> command, 
+						   String jobDirectory, 
+						   int nrOfThreadsForSubmission) throws JobHandlerException;
 
 	/**
 	 * Retrieves current status of specified job.

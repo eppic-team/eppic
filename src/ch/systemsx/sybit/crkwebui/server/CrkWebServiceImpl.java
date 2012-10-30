@@ -154,7 +154,14 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 		doIPBasedVerification = Boolean.parseBoolean(properties.getProperty("limit_access_by_ip","false"));
 		defaultNrOfAllowedSubmissionsForIP = Integer.parseInt(properties.getProperty("nr_of_allowed_submissions_for_ip","100"));
 
-
+		String queuingSystem = properties.getProperty("queuing_system");
+		if(queuingSystem == null)
+		{
+			throw new ServletException("Queuing system not specified");
+		}
+		
+		int nrOfThreadForSubmission = Integer.parseInt(properties.getProperty("nr_of_threads_for_submission","1"));
+		
 		Properties crkProperties = new Properties();
 
 		try
@@ -169,9 +176,29 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 
 		localCifDir = crkProperties.getProperty("LOCAL_CIF_DIR");
 
+		
+		InputStream queuingSystemPropertiesStream = getServletContext()
+				.getResourceAsStream(
+						"/WEB-INF/classes/META-INF/" + queuingSystem + "_queuing_system.properties");
+
+		Properties queuingSystemProperties = new Properties();
+
 		try
 		{
-			jobManager = JobManagerFactory.getJobManager("drmaa", generalDestinationDirectoryName);
+			queuingSystemProperties.load(queuingSystemPropertiesStream);
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+			throw new ServletException("Properties file for " + queuingSystem + " can not be read");
+		}
+
+		
+		try
+		{
+			jobManager = JobManagerFactory.getJobManager(queuingSystem,
+														 queuingSystemProperties,
+														 generalDestinationDirectoryName);
 		}
 		catch(JobManagerException e)
 		{
@@ -202,7 +229,9 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 		emailData.setPort(properties.getProperty("email_port"));
 		emailSender = new EmailSender(emailData);
 
-		crkRunner = new CrkRunner(jobManager, crkApplicationLocation);
+		crkRunner = new CrkRunner(jobManager, 
+								  crkApplicationLocation,
+								  nrOfThreadForSubmission);
 
 		jobStatusUpdater = new JobStatusUpdater(jobManager,
 				new JobDAOImpl(),

@@ -18,12 +18,15 @@ public class CrkRunner
 {
 	private JobManager jobManager;
 	private String crkApplicationLocation;
+	private int nrOfThreadsForSubmission;
 
 	public CrkRunner(JobManager jobManager,
-					 String crkApplicationLocation)
+					 String crkApplicationLocation,
+					 int nrOfThreadsForSubmission)
 	{
 		this.jobManager = jobManager;
 		this.crkApplicationLocation = crkApplicationLocation;
+		this.nrOfThreadsForSubmission = nrOfThreadsForSubmission;
 	}
 
 	/**
@@ -49,8 +52,12 @@ public class CrkRunner
 															  runJobData.getInput(),
 															  inputType,
 															  runJobData.getInputParameters(),
-															  destinationDirectoryName);
+															  destinationDirectoryName,
+															  nrOfThreadsForSubmission);
 
-	    return jobManager.startJob(runJobData.getJobId(), crkCommand, destinationDirectoryName);
+	    return jobManager.startJob(runJobData.getJobId(), 
+	    						   crkCommand, 
+	    						   destinationDirectoryName,
+	    						   nrOfThreadsForSubmission);
 	}
 }

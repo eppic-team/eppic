@@ -2,11 +2,14 @@ package ch.systemsx.sybit.crkwebui.server.managers;
 
 import java.io.File;
 import java.util.List;
+import java.util.Properties;
 
 import org.ggf.drmaa.JobTemplate;
 import org.ggf.drmaa.Session;
 import org.ggf.drmaa.SessionFactory;
 
+import ch.systemsx.sybit.crkwebui.server.generators.queuing.NativeSpecificationGenerator;
+import ch.systemsx.sybit.crkwebui.server.generators.queuing.NativeSpecificationGeneratorFactory;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.JobHandlerException;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.JobManagerException;
 import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
@@ -20,14 +23,20 @@ public class DrmaaJobManager implements JobManager
 	private SessionFactory sessionFactory;
 	private Session session;
 
+	private String queuingSystemName;
+	private Properties queuingSystemProperties;
 	private String jobsDirectory;
 
 	/**
-	 * Creates instance of drmaa job manager and sets directory where results of jobs are stored.
+	 * Creates instance of drmaa job manager.
+	 * @param queuingSystemName name of the queuing system
+	 * @param queuingSystemProperties native properties for queuing system
 	 * @param jobsDirectory directory where results of jobs are stored
 	 * @throws JobManagerException when session can not be initialized
 	 */
-	public DrmaaJobManager(String jobsDirectory) throws JobManagerException
+	public DrmaaJobManager(String queuingSystemName,
+						   Properties queuingSystemProperties, 
+						   String jobsDirectory) throws JobManagerException
 	{
 		sessionFactory = SessionFactory.getFactory();
 		session = sessionFactory.getSession();
@@ -37,16 +46,19 @@ public class DrmaaJobManager implements JobManager
 		}
 		catch (Throwable e)
 		{
-			throw new JobManagerException("Can not initialize sge session", e);
+			throw new JobManagerException("Can not initialize " + queuingSystemName + " session", e);
 		}
 
+		this.queuingSystemName = queuingSystemName;
+		this.queuingSystemProperties = queuingSystemProperties;
 		this.jobsDirectory = jobsDirectory;
 	}
 
 	@Override
 	public String startJob(String jobId,
 						   List<String> command,
-						   String jobDirectory) throws JobHandlerException
+						   String jobDirectory,
+						   int nrOfThreadsForSubmission) throws JobHandlerException
 	{
 		try
 		{
@@ -56,6 +68,18 @@ public class DrmaaJobManager implements JobManager
 			jobTemplate.setJobName(jobId);
 			jobTemplate.setErrorPath(":" + jobDirectory);
 			jobTemplate.setOutputPath(":" + jobDirectory);
+			
+			NativeSpecificationGenerator nativeSpecificationGenerator = NativeSpecificationGeneratorFactory.
+						getNativeSpecificationGenerator(queuingSystemName, 
+														queuingSystemProperties);
+			
+			String nativeSpecification = nativeSpecificationGenerator.
+						generateNativeSpecificationForSubmission(nrOfThreadsForSubmission);
+			
+			if(nativeSpecification != null)
+			{
+				jobTemplate.setNativeSpecification(nativeSpecification);
+			}
 
 			String submissionId = session.runJob(jobTemplate);
 			

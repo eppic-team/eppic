@@ -21,13 +21,15 @@ public class CrkCommandGenerator
 	 * @param inputType type of the input
 	 * @param inputParameters input parameters
 	 * @param destinationDirectoryName directory where results of the job are to be stored
+	 * @param nrOfThreadsForSubmission nr of threads used to run command
 	 * @return crk command
 	 */
 	public static List<String> createCrkCommand(String crkApplicationLocation,
 												String input,
 												int inputType,
 												InputParameters inputParameters,
-												String destinationDirectoryName)
+												String destinationDirectoryName,
+												int nrOfThreadsForSubmission)
 	{
 		List<String> command = new ArrayList<String>();
 		command.add("-jar");
@@ -56,7 +58,7 @@ public class CrkCommandGenerator
 		command.add("-H");
 		command.add(inputParameters.getSearchMode().toLowerCase());
 		command.add("-a");
-		command.add(String.valueOf("1"));
+		command.add(String.valueOf(nrOfThreadsForSubmission));
 
 		if(inputParameters.getMethods() != null)
 		{

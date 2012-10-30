@@ -695,10 +695,10 @@ public class JobDAOImpl implements JobDAO
 			
 			CriteriaQuery<JobDB> criteriaQuery = criteriaBuilder.createQuery(JobDB.class);
 			Root<JobDB> jobRoot = criteriaQuery.from(JobDB.class);
-			Predicate queingStatusCondition = criteriaBuilder.equal(jobRoot.get(JobDB_.status), StatusOfJob.QUEUING.getName());
+			Predicate queuingStatusCondition = criteriaBuilder.equal(jobRoot.get(JobDB_.status), StatusOfJob.QUEUING.getName());
 			Predicate runningStatusCondition = criteriaBuilder.equal(jobRoot.get(JobDB_.status), StatusOfJob.RUNNING.getName());
 			Predicate waitingStatusCondition = criteriaBuilder.equal(jobRoot.get(JobDB_.status), StatusOfJob.WAITING.getName());
-			Predicate condition = criteriaBuilder.or(queingStatusCondition, runningStatusCondition, waitingStatusCondition);
+			Predicate condition = criteriaBuilder.or(queuingStatusCondition, runningStatusCondition, waitingStatusCondition);
 			criteriaQuery.where(condition);
 			criteriaQuery.select(jobRoot);
 

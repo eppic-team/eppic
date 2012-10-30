@@ -1,5 +1,7 @@
 package ch.systemsx.sybit.crkwebui.server.managers;
 
+import java.util.Properties;
+
 import ch.systemsx.sybit.crkwebui.shared.exceptions.JobManagerException;
 
 /**
@@ -10,21 +12,25 @@ public class JobManagerFactory
 {
 	/**
 	 * Retrieves instance of job manager by name.
-	 * @param jobManagerName name of the job manager
+	 * @param queuingSystemName name of the queuing system
+	 * @param queuingSystemProperties native specification properties for queuing system
 	 * @param jobsDirectory directory where results of the job are stored
 	 * @return job manager instance
 	 * @throws JobManagerException when can not create job manager
 	 */
-	public static JobManager getJobManager(String jobManagerName,
+	public static JobManager getJobManager(String queuingSystemName,
+										   Properties queuingSystemProperties,
 										   String jobsDirectory) throws JobManagerException
 	{
 		JobManager jobManager = null;
 
-		if(jobManagerName != null)
+		if(queuingSystemName != null)
 		{
-			if(jobManagerName.equals("drmaa"))
+			if(queuingSystemName.equals("sge"))
 			{
-				jobManager = new DrmaaJobManager(jobsDirectory);
+				jobManager = new DrmaaJobManager(queuingSystemName, 
+												 queuingSystemProperties,
+												 jobsDirectory);
 			}
 		}
 
