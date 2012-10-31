@@ -21,7 +21,6 @@ import org.xml.sax.SAXException;
 import owl.core.connections.NoMatchFoundException;
 import owl.core.connections.SiftsConnection;
 import owl.core.features.SiftsFeature;
-import owl.core.runners.TcoffeeException;
 import owl.core.runners.blast.BlastException;
 import owl.core.runners.blast.BlastHit;
 import owl.core.runners.blast.BlastHitList;
@@ -356,9 +355,9 @@ public class ChainEvolContext implements Serializable {
 				
 	}
 
-	public void align(CRKParams params) throws IOException, TcoffeeException, InterruptedException, UniprotVerMisMatchException { 
+	public void align(CRKParams params) throws IOException, InterruptedException, UniprotVerMisMatchException { 
 		File tcoffeeBin = params.getTcoffeeBin();
-		boolean tcoffeeVeryFastMode = params.isUseTcoffeeVeryFastMode();
+		File clustaloBin = params.getClustaloBin();
 		int nThreads = params.getNumThreads();
 		
 		LOGGER.info("Alignment mode is: "+params.getAlignmentMode().getName());
@@ -366,11 +365,11 @@ public class ChainEvolContext implements Serializable {
 		if (params.getAlignmentMode()==AlignmentMode.AUTO) {
 			if (isSearchWithFullUniprot()) {
 				useHspsOnly = false;
-				LOGGER.info("Full sequences will be used for tcoffee alignment for chain "+representativeChain+" (because search mode is GLOBAL)");
+				LOGGER.info("Full sequences will be used for the alignment of homologs of chain "+representativeChain+" (because search mode is GLOBAL)");
 			}
 			else {
 				useHspsOnly = true;
-				LOGGER.info("Only matching HSP subsequences will be used for tcoffee alignment for chain "+representativeChain+" (because search mode is LOCAL)");
+				LOGGER.info("Only matching HSP subsequences will be used for the alignment of homologs of chain "+representativeChain+" (because search mode is LOCAL)");
 			}
 		} else if (params.getAlignmentMode()==AlignmentMode.FULLLENGTH) {
 			useHspsOnly = false;
@@ -378,10 +377,10 @@ public class ChainEvolContext implements Serializable {
 			useHspsOnly = true;
 		}
 		
-		// 3) alignment of the protein sequences using tcoffee
+		// 3) alignment of the protein sequences
 		File alnCacheFile = null;
-		// beware we only try to use cache file if we are in default mode: uniparc=true, filter by domain=false, veryFastMode=false
-		if (params.getBlastCacheDir()!=null && params.isUseUniparc() && !params.isFilterByDomain() && !tcoffeeVeryFastMode) {
+		// beware we only try to use cache file if we are in default mode: uniparc=true, filter by domain=false
+		if (params.getBlastCacheDir()!=null && params.isUseUniparc() && !params.isFilterByDomain()) {
 			String intervStr = "";
 			if (!isSearchWithFullUniprot()) {
 				intervStr = "."+getQueryInterval().beg+"-"+getQueryInterval().end;
@@ -398,7 +397,7 @@ public class ChainEvolContext implements Serializable {
 					".aln"); 
 		}
 		
-		homologs.computeTcoffeeAlignment(tcoffeeBin, tcoffeeVeryFastMode, nThreads, useHspsOnly, alnCacheFile);
+		homologs.computeAlignment(tcoffeeBin, clustaloBin, nThreads, useHspsOnly, alnCacheFile);
 	}
 	
 	public void writeAlignmentToFile(File alnFile) throws FileNotFoundException {

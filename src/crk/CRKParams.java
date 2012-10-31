@@ -96,10 +96,10 @@ public class CRKParams {
 	private static final String   DEF_BLAST_BIN_DIR = "/usr/bin";
 	private static final String   DEF_BLAST_DATA_DIR = "/usr/share/blast";
 	
-	// default tcoffee settings
-	private static final File     DEF_TCOFFE_BIN = new File("/usr/bin/t_coffee");
-	private static final boolean  DEF_USE_TCOFFEE_VERY_FAST_MODE = false;
-
+	// default aligner programs execs: blank files, so that we can control that one and only one is set (see checkConfigFileInput)
+	private static final File	  DEF_TCOFFEE_BIN = new File("");
+	private static final File	  DEF_CLUSTALO_BIN = new File("");
+	
 	// default pymol exec
 	private static final File	  DEF_PYMOL_EXE = new File("/usr/bin/pymol");
 	
@@ -191,7 +191,7 @@ public class CRKParams {
 	private String   blastDataDir; // dir with blosum matrices only needed for blastclust
 	
 	private File     tcoffeeBin;
-	private boolean  useTcoffeeVeryFastMode;
+	private File	 clustaloBin;
 	
 	private File     selectonBin;
 	private double   selectonEpsilon;
@@ -364,7 +364,7 @@ public class CRKParams {
 		"  [-s]         :  calculate evolutionary entropy-based scores (core-rim and \n" +
 		"                  core-surface).\n" +
 		"                  If not specified, only geometric scoring is done.\n"+
-		"  [-a <int>]   :  number of threads for blast, t-coffee and ASA calculation. Default: "+DEF_NUMTHREADS+"\n"+
+		"  [-a <int>]   :  number of threads for blast, alignment and ASA calculation. Default: "+DEF_NUMTHREADS+"\n"+
 		"  [-b <string>]:  basename for output files. Default: as input PDB code or file name\n"+
 		"  [-o <dir>]   :  output dir, where output files will be written. Default: current\n" +
 		"                  dir \n" +
@@ -398,7 +398,7 @@ public class CRKParams {
 		"                  Uniprot entry will be used to search homologs) or \"auto\" (global\n" +
 		"                  will be used except if coverage is under "+String.format("%3.1f",DEF_PDB2UNIPROT_MAX_SCOV_FOR_LOCAL)+").\n" +
 		"                  Default "+DEF_HOMOLOGS_SEARCH_MODE.getName() + "\n"+
-		"  [-G <string>]:  alignment mode for t-coffee multiple sequence alignment: one of \"full\"\n" +
+		"  [-G <string>]:  alignment mode for multiple sequence alignment computation: one of \"full\"\n" +
 		"                  (full homolog sequences will be used for alignment) \"hsp\" (only blast\n" +
 		"                  HSP matching homolog subsequences will be used) or \"auto\" (one of the\n" +
 		"                  2 modes is decided based on the homologs search mode: full if global\n" +
@@ -512,8 +512,17 @@ public class CRKParams {
 			} else if (! new File(blastDataDir,"BLOSUM62").exists()) {
 				throw new CRKException(null, "BLAST_DATA_DIR parameter in config file must be set to a dir containing a blast BLOSUM62 file. No BLOSUM62 file in "+blastDataDir, true);
 			}
-			if (! tcoffeeBin.exists()) {
-				throw new CRKException(null,"TCOFFEE_BIN must be set to a valid value in config file. File "+tcoffeeBin+" doesn't exist.",true);
+			
+			// alignment programs: we allow one and only one to be set
+			if (!tcoffeeBin.exists() && !clustaloBin.exists()) {
+				throw new CRKException(null,"Either TCOFFEE_BIN or CLUSTALO_BIN must be set to a valid value in config file.",true);
+			} else if (tcoffeeBin.exists() && clustaloBin.exists()){
+				throw new CRKException(null,"Both TCOFFEE_BIN and CLUSTALO_BIN are set in config file. Only one of the 2 programs can be set at the same time.",true);
+			}
+			if (tcoffeeBin.exists()) {
+				clustaloBin = null;
+			} else {
+				tcoffeeBin = null;
 			}
 		}
 	}
@@ -626,14 +635,6 @@ public class CRKParams {
 		return Math.log(reducedAlphabet)/Math.log(2);
 	}
 	
-	public boolean isUseTcoffeeVeryFastMode() {
-		return useTcoffeeVeryFastMode;
-	}
-	
-	public void setUseTcoffeeVeryFastMode(boolean useTcoffeeVeryFastMode) {
-		this.useTcoffeeVeryFastMode = useTcoffeeVeryFastMode;
-	}
-
 	public double getCAcutoffForGeom() {
 		return caCutoffForGeom;
 	}
@@ -791,9 +792,10 @@ public class CRKParams {
 			
 			blastDataDir    = p.getProperty("BLAST_DATA_DIR", DEF_BLAST_DATA_DIR);
 			
-			tcoffeeBin 		= new File(p.getProperty("TCOFFEE_BIN", DEF_TCOFFE_BIN.toString()));
+			// for alignment programs we either read them or set them to null
+			tcoffeeBin 		= new File(p.getProperty("TCOFFEE_BIN", DEF_TCOFFEE_BIN.toString()));
 			
-			useTcoffeeVeryFastMode = Boolean.parseBoolean(p.getProperty("USE_TCOFFEE_VERY_FAST_MODE",new Boolean(DEF_USE_TCOFFEE_VERY_FAST_MODE).toString()));
+			clustaloBin		= new File(p.getProperty("CLUSTALO_BIN", DEF_CLUSTALO_BIN.toString()));
 			
 			pymolExe		= new File(p.getProperty("PYMOL_EXE", DEF_PYMOL_EXE.toString()));
 			
@@ -854,6 +856,10 @@ public class CRKParams {
 	
 	public File getTcoffeeBin() {
 		return tcoffeeBin;
+	}
+	
+	public File getClustaloBin() {
+		return clustaloBin;
 	}
 
 	public File getSelectonBin() {

@@ -32,7 +32,7 @@ public class CalcInterfaceStats extends Thread {
 	private static final String BASENAME = "interf_sort";
 	private static final String TMPDIR = System.getProperty("java.io.tmpdir");
 	
-	private static final int NSPHEREPOINTS =9600;
+	private static final int NSPHEREPOINTS = 3000;
 	private static final int NTHREADS = 1;
 	private static final double CUTOFF = 5.9; 	
 	
