@@ -6,8 +6,8 @@ import java.util.List;
 import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResidueItem;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResiduesItemsList;
+import ch.systemsx.sybit.crkwebui.shared.model.JobsForSession;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingData;
-import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
 import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
 
 import com.google.gwt.user.client.rpc.RemoteService;
@@ -49,7 +49,7 @@ public interface CrkWebService extends RemoteService
 	 * @return list of jobs attached to the current session
 	 * @throws Exception when an asynchronous call fails to complete normally
 	 */
-	public List<ProcessingInProgressData> getJobsForCurrentSession() throws Exception;
+	public JobsForSession getJobsForCurrentSession() throws Exception;
 
 	/**
 	 * Retrieves residues information for selected interface.

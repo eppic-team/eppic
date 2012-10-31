@@ -1,10 +1,11 @@
 package ch.systemsx.sybit.crkwebui.shared.exceptions;
 
+
 /**
  * Exception thrown when deserialization of the input data fails.
  * @author AS
  */
-public class DeserializationException extends Exception
+public class DeserializationException extends Exception implements InternalException
 {
 	/**
 	 *

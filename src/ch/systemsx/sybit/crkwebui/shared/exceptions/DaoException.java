@@ -1,13 +1,12 @@
 package ch.systemsx.sybit.crkwebui.shared.exceptions;
 
-import java.io.Serializable;
 
 /**
  * Exception thrown during retrieving the data.
  * @author srebniak_a
  *
  */
-public class DaoException extends Exception implements Serializable
+public class DaoException extends Exception implements InternalException
 {
 	/**
 	 * 

@@ -1,10 +1,11 @@
 package ch.systemsx.sybit.crkwebui.shared.exceptions;
 
+
 /**
  * Exception thrown when validation of the input data fails.
  * @author AS
  */
-public class ValidationException extends Exception
+public class ValidationException extends Exception implements InternalException
 {
 	/**
 	 *

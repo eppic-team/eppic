@@ -5,7 +5,6 @@ import ch.systemsx.sybit.crkwebui.client.controllers.CrkWebServiceProvider;
 import ch.systemsx.sybit.crkwebui.client.controllers.EventBusManager;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 import ch.systemsx.sybit.crkwebui.client.events.ApplicationWindowResizeEvent;
-import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
 
 import com.extjs.gxt.themes.client.Access;
 import com.extjs.gxt.themes.client.Slate;

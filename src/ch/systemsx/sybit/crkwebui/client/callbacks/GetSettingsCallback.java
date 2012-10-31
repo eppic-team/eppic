@@ -3,6 +3,7 @@ package ch.systemsx.sybit.crkwebui.client.callbacks;
 import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.controllers.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.controllers.EventBusManager;
+import ch.systemsx.sybit.crkwebui.client.data.StatusMessageType;
 import ch.systemsx.sybit.crkwebui.client.events.ApplicationInitEvent;
 import ch.systemsx.sybit.crkwebui.client.events.UpdateStatusLabelEvent;
 import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
@@ -22,7 +23,7 @@ public class GetSettingsCallback implements AsyncCallback<ApplicationSettings>
 	@Override
 	public void onFailure(Throwable caught) 
 	{
-		EventBusManager.EVENT_BUS.fireEvent(new UpdateStatusLabelEvent(AppPropertiesManager.CONSTANTS.callback_get_settings_error(), true));
+		EventBusManager.EVENT_BUS.fireEvent(new UpdateStatusLabelEvent(AppPropertiesManager.CONSTANTS.callback_get_settings_error(), caught));
 	}
 
 	@Override
@@ -42,14 +43,16 @@ public class GetSettingsCallback implements AsyncCallback<ApplicationSettings>
 			if((result.getNotificationOnStart() != null) &&
 			   (!result.getNotificationOnStart().equals("")))
 			{
-				EventBusManager.EVENT_BUS.fireEvent(new UpdateStatusLabelEvent(result.getNotificationOnStart(), false));
+				EventBusManager.EVENT_BUS.fireEvent(new UpdateStatusLabelEvent(result.getNotificationOnStart(), 
+																			   StatusMessageType.NO_ERROR));
 			}
 			
 			History.fireCurrentHistoryState();
 		}
 		else 
 		{
-			EventBusManager.EVENT_BUS.fireEvent(new UpdateStatusLabelEvent(AppPropertiesManager.CONSTANTS.callback_get_settings_error() + " - incorrect type", true));
+			EventBusManager.EVENT_BUS.fireEvent(new UpdateStatusLabelEvent(AppPropertiesManager.CONSTANTS.callback_get_settings_error() + " - incorrect type", 
+																		   StatusMessageType.INTERNAL_ERROR));
 		}
 	}
 }

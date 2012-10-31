@@ -1,10 +1,11 @@
 package ch.systemsx.sybit.crkwebui.shared.exceptions;
 
+
 /**
  * Exception thrown when job can not be submitted or stopped.
  * @author AS
  */
-public class JobHandlerException extends Exception
+public class JobHandlerException extends Exception implements InternalException
 {
 	/**
 	 *

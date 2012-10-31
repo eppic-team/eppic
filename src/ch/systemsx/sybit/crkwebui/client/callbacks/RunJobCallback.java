@@ -3,6 +3,7 @@ package ch.systemsx.sybit.crkwebui.client.callbacks;
 import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.controllers.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.controllers.EventBusManager;
+import ch.systemsx.sybit.crkwebui.client.data.StatusMessageType;
 import ch.systemsx.sybit.crkwebui.client.events.ShowErrorEvent;
 import ch.systemsx.sybit.crkwebui.client.events.UpdateStatusLabelEvent;
 
@@ -38,7 +39,8 @@ public class RunJobCallback implements AsyncCallback<String>
 		} 
 		else 
 		{
-			EventBusManager.EVENT_BUS.fireEvent(new UpdateStatusLabelEvent(AppPropertiesManager.CONSTANTS.callback_run_job_error() + " - incorrect type", true));
+			EventBusManager.EVENT_BUS.fireEvent(new UpdateStatusLabelEvent(AppPropertiesManager.CONSTANTS.callback_run_job_error() + " - incorrect type", 
+																		   StatusMessageType.INTERNAL_ERROR));
 		}
 	}
 }

@@ -6,6 +6,7 @@ import java.util.List;
 import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.controllers.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.controllers.EventBusManager;
+import ch.systemsx.sybit.crkwebui.client.data.StatusMessageType;
 import ch.systemsx.sybit.crkwebui.client.events.HideWaitingEvent;
 import ch.systemsx.sybit.crkwebui.client.events.InterfaceResiduesDataRetrievedEvent;
 import ch.systemsx.sybit.crkwebui.client.events.ShowWaitingEvent;
@@ -34,7 +35,7 @@ public class GetInterfaceResiduesCallback implements AsyncCallback<HashMap<Integ
 	@Override
 	public void onFailure(Throwable caught) 
 	{
-		EventBusManager.EVENT_BUS.fireEvent(new UpdateStatusLabelEvent(AppPropertiesManager.CONSTANTS.callback_get_interface_residues_error(), true));
+		EventBusManager.EVENT_BUS.fireEvent(new UpdateStatusLabelEvent(AppPropertiesManager.CONSTANTS.callback_get_interface_residues_error(), caught));
 	}
 
 	@Override
@@ -65,7 +66,8 @@ public class GetInterfaceResiduesCallback implements AsyncCallback<HashMap<Integ
 		}
 		else 
 		{
-			EventBusManager.EVENT_BUS.fireEvent(new UpdateStatusLabelEvent(AppPropertiesManager.CONSTANTS.callback_get_interface_residues_error() + " - incorrect result type", true));
+			EventBusManager.EVENT_BUS.fireEvent(new UpdateStatusLabelEvent(AppPropertiesManager.CONSTANTS.callback_get_interface_residues_error() + " - incorrect result type", 
+																		   StatusMessageType.INTERNAL_ERROR));
 		}
 		
 		EventBusManager.EVENT_BUS.fireEvent(new HideWaitingEvent());

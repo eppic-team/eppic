@@ -54,6 +54,7 @@ import com.extjs.gxt.ui.client.widget.Viewport;
 import com.extjs.gxt.ui.client.widget.layout.FlowLayout;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.RootPanel;
@@ -199,7 +200,7 @@ public class MainController
 			@Override
 			public void onUpdateStatusLabel(UpdateStatusLabelEvent event) 
 			{
-				if((mainViewPort == null) || (mainViewPort.getBottomPanel() == null))
+				if((mainViewPort == null) || (mainViewPort.getNavigationPanel() == null))
 				{
 					showError(event.getStatusText());
 				}

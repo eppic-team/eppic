@@ -2,6 +2,7 @@ package ch.systemsx.sybit.crkwebui.client.gui;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.controllers.EventBusManager;
+import ch.systemsx.sybit.crkwebui.client.data.StatusMessageType;
 import ch.systemsx.sybit.crkwebui.client.events.ShowAboutEvent;
 import ch.systemsx.sybit.crkwebui.client.events.UpdateStatusLabelEvent;
 import ch.systemsx.sybit.crkwebui.client.handlers.UpdateStatusLabelHandler;
@@ -25,11 +26,12 @@ import com.google.gwt.user.client.ui.HTML;
  * @author srebniak_a
  *
  */
-public class BottomPanel extends LayoutContainer
+public class NavigationPanel extends LayoutContainer
 {
 	private HTML status;
+	private StatusMessageType lastMessageType = StatusMessageType.NO_ERROR;
 
-	public BottomPanel()
+	public NavigationPanel()
 	{
 		this.setLayout(new RowLayout(Orientation.HORIZONTAL));
 
@@ -163,22 +165,22 @@ public class BottomPanel extends LayoutContainer
 	/**
 	 * Updates text of the status message label.
 	 * @param message text to display.
-	 * @param isError flag specifying whether message is the error.
+	 * @param messageType type of the message(no error, internal error, system error)
 	 */
-	private void updateStatusMessage(String message, boolean isError)
+	private void updateStatusMessage(String message, StatusMessageType messageType)
 	{
 		String messageText = "<span style=\"color:";
 
 		String color = "black";
 
-		if(isError)
+		if(messageType != StatusMessageType.NO_ERROR)
 		{
 			color = "red; font-weight: bold";
 		}
 
 		messageText += color + "\">" + "Status: " + message;
 
-		if(isError)
+		if(messageType != StatusMessageType.NO_ERROR)
 		{
 			messageText += " - " + AppPropertiesManager.CONSTANTS.bottom_panel_status_error_refresh_page();
 		}
@@ -198,7 +200,11 @@ public class BottomPanel extends LayoutContainer
 			@Override
 			public void onUpdateStatusLabel(UpdateStatusLabelEvent event)
 			{
-				updateStatusMessage(event.getStatusText(), event.isWasError());
+				if(lastMessageType != StatusMessageType.INTERNAL_ERROR)
+				{
+					updateStatusMessage(event.getStatusText(), event.getMessageType());
+					lastMessageType = event.getMessageType();
+				}
 			}
 		});
 	}

@@ -21,7 +21,8 @@ public class UntieJobsFromSessionCallback implements AsyncCallback<Void>
 	@Override
 	public void onFailure(Throwable caught) 
 	{
-		EventBusManager.EVENT_BUS.fireEvent(new UpdateStatusLabelEvent(AppPropertiesManager.CONSTANTS.callback_untie_jobs_from_session_error(), true));
+		EventBusManager.EVENT_BUS.fireEvent(new UpdateStatusLabelEvent(AppPropertiesManager.CONSTANTS.callback_untie_jobs_from_session_error(), 
+																	   caught));
 	}
 
 	@Override

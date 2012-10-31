@@ -4,6 +4,7 @@ import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.controllers.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.controllers.CrkWebServiceProvider;
 import ch.systemsx.sybit.crkwebui.client.controllers.EventBusManager;
+import ch.systemsx.sybit.crkwebui.client.data.StatusMessageType;
 import ch.systemsx.sybit.crkwebui.client.events.ShowMessageEvent;
 import ch.systemsx.sybit.crkwebui.client.events.UpdateStatusLabelEvent;
 
@@ -26,7 +27,7 @@ public class StopJobCallback implements AsyncCallback<String>
 	@Override
 	public void onFailure(Throwable caught) 
 	{
-		EventBusManager.EVENT_BUS.fireEvent(new UpdateStatusLabelEvent(AppPropertiesManager.CONSTANTS.callback_stop_job_error() + " " + jobToStop, true));
+		EventBusManager.EVENT_BUS.fireEvent(new UpdateStatusLabelEvent(AppPropertiesManager.CONSTANTS.callback_stop_job_error() + " " + jobToStop, caught));
 	}
 
 	@Override
@@ -44,7 +45,8 @@ public class StopJobCallback implements AsyncCallback<String>
 		} 
 		else 
 		{
-			EventBusManager.EVENT_BUS.fireEvent(new UpdateStatusLabelEvent(AppPropertiesManager.CONSTANTS.callback_stop_job_error() + " " + jobToStop, true));
+			EventBusManager.EVENT_BUS.fireEvent(new UpdateStatusLabelEvent(AppPropertiesManager.CONSTANTS.callback_stop_job_error() + " " + jobToStop, 
+																		   StatusMessageType.INTERNAL_ERROR));
 		}
 	}
 

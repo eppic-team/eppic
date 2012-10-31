@@ -1,5 +1,6 @@
 package ch.systemsx.sybit.crkwebui.client.events;
 
+import ch.systemsx.sybit.crkwebui.client.data.StatusMessageType;
 import ch.systemsx.sybit.crkwebui.client.handlers.UpdateStatusLabelHandler;
 
 import com.google.gwt.event.shared.GwtEvent;
@@ -17,16 +18,24 @@ public class UpdateStatusLabelEvent extends GwtEvent<UpdateStatusLabelHandler>
 	 */
 	private final String statusText;
 	
+	
 	/**
-	 * Flag pointing whether message is error.
+	 * Type of the message (internal error, system error, no error).
 	 */
-	private final boolean wasError;
+	private final StatusMessageType messageType;
 	
 	public UpdateStatusLabelEvent(String statusText,
-								  boolean wasError)
+			  					  StatusMessageType messageType)
 	{
 		this.statusText = statusText;
-		this.wasError = wasError;
+		this.messageType = messageType;
+	}
+	
+	public UpdateStatusLabelEvent(String statusText,
+								  Throwable throwable)
+	{
+		this.statusText = statusText;
+		this.messageType = StatusMessageType.getTypeForThrowable(throwable);
 	}
 	
 	@Override
@@ -50,11 +59,11 @@ public class UpdateStatusLabelEvent extends GwtEvent<UpdateStatusLabelHandler>
 	}
 
 	/**
-	 * Retrieves information whether message is the error.
-	 * @return information whether message is the error
+	 * Retrieves type of the message.
+	 * @return type of the message
 	 */
-	public boolean isWasError() {
-		return wasError;
+	public StatusMessageType getMessageType() {
+		return messageType;
 	}
 
 }

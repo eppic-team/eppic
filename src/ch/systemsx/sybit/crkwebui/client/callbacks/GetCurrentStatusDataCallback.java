@@ -4,6 +4,7 @@ import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.controllers.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.controllers.CrkWebServiceProvider;
 import ch.systemsx.sybit.crkwebui.client.controllers.EventBusManager;
+import ch.systemsx.sybit.crkwebui.client.data.StatusMessageType;
 import ch.systemsx.sybit.crkwebui.client.events.RefreshStatusDataEvent;
 import ch.systemsx.sybit.crkwebui.client.events.ShowMessageEvent;
 import ch.systemsx.sybit.crkwebui.client.events.ShowNoResultsDataEvent;
@@ -33,7 +34,7 @@ public class GetCurrentStatusDataCallback implements AsyncCallback<ProcessingDat
 	public void onFailure(Throwable caught) 
 	{
 		String errorText = AppPropertiesManager.CONSTANTS.callback_get_current_status_data();
-		EventBusManager.EVENT_BUS.fireEvent(new UpdateStatusLabelEvent(errorText, true));
+		EventBusManager.EVENT_BUS.fireEvent(new UpdateStatusLabelEvent(errorText, caught));
 	}
 
 	@Override
@@ -59,7 +60,8 @@ public class GetCurrentStatusDataCallback implements AsyncCallback<ProcessingDat
 				}
 				else
 				{
-					EventBusManager.EVENT_BUS.fireEvent(new UpdateStatusLabelEvent(AppPropertiesManager.CONSTANTS.callback_get_current_status_data() + " " + result.getClass(), true));
+					EventBusManager.EVENT_BUS.fireEvent(new UpdateStatusLabelEvent(AppPropertiesManager.CONSTANTS.callback_get_current_status_data() + " " + result.getClass(),
+																				   StatusMessageType.INTERNAL_ERROR));
 					EventBusManager.EVENT_BUS.fireEvent(new ShowNoResultsDataEvent());
 				}
 			}

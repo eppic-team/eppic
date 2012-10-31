@@ -1,10 +1,11 @@
 package ch.systemsx.sybit.crkwebui.shared.exceptions;
 
+
 /**
  * Exception thrown when can not properly instantiate job manager.
  * @author AS
  */
-public class JobManagerException extends Exception
+public class JobManagerException extends Exception implements InternalException
 {
 	/**
 	 *

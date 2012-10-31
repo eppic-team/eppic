@@ -1,10 +1,11 @@
 package ch.systemsx.sybit.crkwebui.shared.exceptions;
 
+
 /**
  * Exception thrown when parsing of the input data fails.
  * @author AS
  */
-public class ParsingException extends Exception
+public class ParsingException extends Exception implements InternalException
 {
 	/**
 	 *

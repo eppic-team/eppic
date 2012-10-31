@@ -1,10 +1,11 @@
 package ch.systemsx.sybit.crkwebui.shared.exceptions;
 
+
 /**
  * Exception thrown when can nto generate native specification for queuing system.
  * @author AS
  */
-public class NativeSpecificationException extends Exception
+public class NativeSpecificationException extends Exception implements InternalException
 {
 	/**
 	 *

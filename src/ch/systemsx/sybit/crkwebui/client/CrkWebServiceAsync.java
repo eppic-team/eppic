@@ -6,8 +6,8 @@ import java.util.List;
 import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResidueItem;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResiduesItemsList;
+import ch.systemsx.sybit.crkwebui.shared.model.JobsForSession;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingData;
-import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
 import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -25,7 +25,7 @@ public interface CrkWebServiceAsync
 	
 	public void getResultsOfProcessing(String jobId, AsyncCallback<ProcessingData> callback);
 	
-	public void getJobsForCurrentSession(AsyncCallback<List<ProcessingInProgressData>> callback);
+	public void getJobsForCurrentSession(AsyncCallback<JobsForSession> callback);
 	
 	public void getInterfaceResidues(int interfaceUid,
 									 AsyncCallback<HashMap<Integer, List<InterfaceResidueItem>>> callback);

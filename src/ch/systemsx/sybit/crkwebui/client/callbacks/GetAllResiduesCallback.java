@@ -3,6 +3,7 @@ package ch.systemsx.sybit.crkwebui.client.callbacks;
 import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.controllers.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.controllers.EventBusManager;
+import ch.systemsx.sybit.crkwebui.client.data.StatusMessageType;
 import ch.systemsx.sybit.crkwebui.client.events.HideWaitingEvent;
 import ch.systemsx.sybit.crkwebui.client.events.UpdateStatusLabelEvent;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResiduesItemsList;
@@ -26,7 +27,7 @@ public class GetAllResiduesCallback implements AsyncCallback<InterfaceResiduesIt
 	@Override
 	public void onFailure(Throwable caught) 
 	{
-		EventBusManager.EVENT_BUS.fireEvent(new UpdateStatusLabelEvent(AppPropertiesManager.CONSTANTS.callback_get_interface_residues_error(), true));
+		EventBusManager.EVENT_BUS.fireEvent(new UpdateStatusLabelEvent(AppPropertiesManager.CONSTANTS.callback_get_interface_residues_error(), caught));
 	}
 
 	@Override
@@ -41,7 +42,8 @@ public class GetAllResiduesCallback implements AsyncCallback<InterfaceResiduesIt
 		}
 		else 
 		{
-			EventBusManager.EVENT_BUS.fireEvent(new UpdateStatusLabelEvent(AppPropertiesManager.CONSTANTS.callback_get_interface_residues_error() + " - incorrect result type", true));
+			EventBusManager.EVENT_BUS.fireEvent(new UpdateStatusLabelEvent(AppPropertiesManager.CONSTANTS.callback_get_interface_residues_error() + " - incorrect result type", 
+																		   StatusMessageType.INTERNAL_ERROR));
 		}
 		
 		EventBusManager.EVENT_BUS.fireEvent(new HideWaitingEvent());

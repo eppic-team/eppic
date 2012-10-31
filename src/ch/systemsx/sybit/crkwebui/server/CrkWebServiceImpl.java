@@ -50,6 +50,7 @@ import ch.systemsx.sybit.crkwebui.shared.model.InputType;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceItem;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResidueItem;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResiduesItemsList;
+import ch.systemsx.sybit.crkwebui.shared.model.JobsForSession;
 import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingData;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
@@ -318,6 +319,8 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 		JobDAO jobDAO = new JobDAOImpl();
 		int nrOfJobsForSession = jobDAO.getNrOfJobsForSessionId(getThreadLocalRequest().getSession().getId()).intValue();
 		settings.setNrOfJobsForSession(nrOfJobsForSession);
+		
+		settings.setSessionId(getThreadLocalRequest().getSession().getId());
 
 		return settings;
 	}
@@ -627,11 +630,14 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 	}
 
 	@Override
-	public List<ProcessingInProgressData> getJobsForCurrentSession() throws Exception
+	public JobsForSession getJobsForCurrentSession() throws Exception
 	{
 		String sessionId = getThreadLocalRequest().getSession().getId();
 		JobDAO jobDAO = new JobDAOImpl();
-		return jobDAO.getJobsForSession(sessionId);
+		List<ProcessingInProgressData> jobs = jobDAO.getJobsForSession(sessionId);
+		
+		JobsForSession jobsForSession = new JobsForSession(sessionId, jobs);
+		return jobsForSession;
 	}
 
 	@Override

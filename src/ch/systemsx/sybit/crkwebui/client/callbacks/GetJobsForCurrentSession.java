@@ -3,11 +3,14 @@ package ch.systemsx.sybit.crkwebui.client.callbacks;
 import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
+import ch.systemsx.sybit.crkwebui.client.controllers.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.controllers.EventBusManager;
+import ch.systemsx.sybit.crkwebui.client.data.StatusMessageType;
 import ch.systemsx.sybit.crkwebui.client.events.JobListRetrievedEvent;
+import ch.systemsx.sybit.crkwebui.client.events.ShowErrorEvent;
 import ch.systemsx.sybit.crkwebui.client.events.StopJobsListAutoRefreshEvent;
 import ch.systemsx.sybit.crkwebui.client.events.UpdateStatusLabelEvent;
-import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
+import ch.systemsx.sybit.crkwebui.shared.model.JobsForSession;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.rpc.IncompatibleRemoteServiceException;
@@ -17,7 +20,7 @@ import com.google.gwt.user.client.rpc.IncompatibleRemoteServiceException;
  * @author srebniak_a
  *
  */
-public class GetJobsForCurrentSession implements AsyncCallback<List<ProcessingInProgressData>> 
+public class GetJobsForCurrentSession implements AsyncCallback<JobsForSession> 
 {
 	public GetJobsForCurrentSession()
 	{
@@ -27,7 +30,7 @@ public class GetJobsForCurrentSession implements AsyncCallback<List<ProcessingIn
 	@Override
 	public void onFailure(Throwable caught) 
 	{
-		EventBusManager.EVENT_BUS.fireEvent(new UpdateStatusLabelEvent(AppPropertiesManager.CONSTANTS.callback_get_jobs_for_current_session_error(), true));
+		EventBusManager.EVENT_BUS.fireEvent(new UpdateStatusLabelEvent(AppPropertiesManager.CONSTANTS.callback_get_jobs_for_current_session_error(), caught));
 		
 		if(caught instanceof IncompatibleRemoteServiceException)
 		{
@@ -36,16 +39,27 @@ public class GetJobsForCurrentSession implements AsyncCallback<List<ProcessingIn
 	}
 
 	@Override
-	public void onSuccess(List<ProcessingInProgressData> result) 
+	public void onSuccess(JobsForSession result) 
 	{
 		if(result != null)
 		{
-			EventBusManager.EVENT_BUS.fireEvent(new UpdateStatusLabelEvent(AppPropertiesManager.CONSTANTS.callback_get_jobs_for_current_session_ok(), false));
-			EventBusManager.EVENT_BUS.fireEvent(new JobListRetrievedEvent(result));
+			if(!result.getSessionId().equals(ApplicationContext.getSettings().getSessionId()))
+			{
+				EventBusManager.EVENT_BUS.fireEvent(new ShowErrorEvent(AppPropertiesManager.CONSTANTS.callback_get_jobs_for_current_session_changed()));
+				ApplicationContext.getSettings().setSessionId(result.getSessionId());
+			}
+			else
+			{
+				EventBusManager.EVENT_BUS.fireEvent(new UpdateStatusLabelEvent(AppPropertiesManager.CONSTANTS.callback_get_jobs_for_current_session_ok(), 
+																			   StatusMessageType.NO_ERROR));
+			}
+			
+			EventBusManager.EVENT_BUS.fireEvent(new JobListRetrievedEvent(result.getJobs()));
 		}
 		else
 		{
-			EventBusManager.EVENT_BUS.fireEvent(new UpdateStatusLabelEvent(AppPropertiesManager.CONSTANTS.callback_get_jobs_for_current_session_error() + " - incorrect type", true));
+			EventBusManager.EVENT_BUS.fireEvent(new UpdateStatusLabelEvent(AppPropertiesManager.CONSTANTS.callback_get_jobs_for_current_session_error() + " - incorrect type", 
+																		   StatusMessageType.INTERNAL_ERROR));
 		}
 	}
 }

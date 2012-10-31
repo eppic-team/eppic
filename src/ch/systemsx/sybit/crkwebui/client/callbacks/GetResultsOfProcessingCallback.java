@@ -4,6 +4,7 @@ import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.controllers.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.controllers.CrkWebServiceProvider;
 import ch.systemsx.sybit.crkwebui.client.controllers.EventBusManager;
+import ch.systemsx.sybit.crkwebui.client.data.StatusMessageType;
 import ch.systemsx.sybit.crkwebui.client.events.ShowMessageEvent;
 import ch.systemsx.sybit.crkwebui.client.events.ShowNoResultsDataEvent;
 import ch.systemsx.sybit.crkwebui.client.events.ShowResultsDataEvent;
@@ -35,7 +36,7 @@ public class GetResultsOfProcessingCallback implements AsyncCallback<ProcessingD
 	public void onFailure(Throwable caught) 
 	{
 		String errorText = AppPropertiesManager.CONSTANTS.callback_get_results_of_processing_error() + " " + caught.getMessage();
-		EventBusManager.EVENT_BUS.fireEvent(new UpdateStatusLabelEvent(errorText, true));
+		EventBusManager.EVENT_BUS.fireEvent(new UpdateStatusLabelEvent(errorText, caught));
 		EventBusManager.EVENT_BUS.fireEvent(new UnmaskMainViewEvent());
 	}
 
@@ -62,7 +63,8 @@ public class GetResultsOfProcessingCallback implements AsyncCallback<ProcessingD
 				}
 				else
 				{
-					EventBusManager.EVENT_BUS.fireEvent(new UpdateStatusLabelEvent(AppPropertiesManager.CONSTANTS.callback_get_results_of_processing_error() + " - incorrect type ", true));
+					EventBusManager.EVENT_BUS.fireEvent(new UpdateStatusLabelEvent(AppPropertiesManager.CONSTANTS.callback_get_results_of_processing_error() + " - incorrect type ", 
+																				   StatusMessageType.INTERNAL_ERROR));
 					EventBusManager.EVENT_BUS.fireEvent(new ShowNoResultsDataEvent());
 				}
 			}

@@ -3,6 +3,7 @@ package ch.systemsx.sybit.crkwebui.client.callbacks;
 import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.controllers.CrkWebServiceProvider;
 import ch.systemsx.sybit.crkwebui.client.controllers.EventBusManager;
+import ch.systemsx.sybit.crkwebui.client.data.StatusMessageType;
 import ch.systemsx.sybit.crkwebui.client.events.ShowMessageEvent;
 import ch.systemsx.sybit.crkwebui.client.events.UpdateStatusLabelEvent;
 
@@ -25,7 +26,7 @@ public class DeleteJobCallback implements AsyncCallback<String>
 	@Override
 	public void onFailure(Throwable caught) 
 	{
-		EventBusManager.EVENT_BUS.fireEvent(new UpdateStatusLabelEvent(AppPropertiesManager.CONSTANTS.callback_delete_job_error(), true));
+		EventBusManager.EVENT_BUS.fireEvent(new UpdateStatusLabelEvent(AppPropertiesManager.CONSTANTS.callback_delete_job_error(), caught));
 	}
 
 	@Override
@@ -38,7 +39,8 @@ public class DeleteJobCallback implements AsyncCallback<String>
 		} 
 		else 
 		{
-			EventBusManager.EVENT_BUS.fireEvent(new UpdateStatusLabelEvent(AppPropertiesManager.CONSTANTS.callback_delete_job_error() + " " + jobToRemove, true));
+			EventBusManager.EVENT_BUS.fireEvent(new UpdateStatusLabelEvent(AppPropertiesManager.CONSTANTS.callback_delete_job_error() + " " + jobToRemove, 
+																		   StatusMessageType.INTERNAL_ERROR));
 		}
 	}
 
