@@ -100,7 +100,7 @@ public class FindEvolContext {
 				params.checkConfigFileInput();
 			} else {
 				ROOTLOGGER.error("No config file could be read at "+userConfigFile+
-						". Please set one in order to be able to read blast directories and blast/t_coffee binaries.");
+						". Please set one in order to be able to read blast directories and blast/t_coffee/clustalo binaries.");
 				System.exit(1);
 			}
 		} catch (IOException e) {
@@ -129,7 +129,7 @@ public class FindEvolContext {
 				"      Uniprot entry will be used to search homologs) or \"auto\" (global\n" +
 				"      will be used except if coverage is under "+String.format("%3.1f",CRKParams.DEF_PDB2UNIPROT_MAX_SCOV_FOR_LOCAL)+").\n" +
 				"      Default "+CRKParams.DEF_HOMOLOGS_SEARCH_MODE.getName() + "\n"+
-				" -G : alignment mode for t-coffee multiple sequence alignment: one of \"full\"\n" +
+				" -G : alignment mode for multiple sequence alignment computation: one of \"full\"\n" +
 				"      (full homolog sequences will be used for alignment) \"hsp\" (only blast\n" +
 				"      HSP matching homolog subsequences will be used) or \"auto\" (one of the\n" +
 				"      2 modes is decided based on the homologs search mode: full if global\n" +
