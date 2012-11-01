@@ -1,4 +1,4 @@
-package ch.systemsx.sybit.crkwebui.server.db.model;
+package ch.systemsx.sybit.crkwebui.server.db.dao;
 
 import javax.persistence.EntityManager;
 

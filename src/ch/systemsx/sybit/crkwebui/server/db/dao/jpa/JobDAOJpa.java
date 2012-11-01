@@ -1,4 +1,4 @@
-package ch.systemsx.sybit.crkwebui.server.db.model;
+package ch.systemsx.sybit.crkwebui.server.db.dao.jpa;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -21,7 +21,11 @@ import model.JobDB_;
 import model.PDBScoreItemDB;
 import model.UserSessionDB;
 import model.UserSessionDB_;
+import ch.systemsx.sybit.crkwebui.server.data.InputWithType;
+import ch.systemsx.sybit.crkwebui.server.data.JobStatusDetails;
 import ch.systemsx.sybit.crkwebui.server.db.EntityManagerHandler;
+import ch.systemsx.sybit.crkwebui.server.db.dao.JobDAO;
+import ch.systemsx.sybit.crkwebui.server.db.dao.UserSessionDAO;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
 import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
@@ -31,7 +35,7 @@ import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
  * @author AS
  *
  */
-public class JobDAOImpl implements JobDAO
+public class JobDAOJpa implements JobDAO
 {
 	@Override
 	public void insertNewJob(String jobId,
@@ -51,7 +55,7 @@ public class JobDAOImpl implements JobDAO
 			entityManager = EntityManagerHandler.getEntityManager();
 			entityManager.getTransaction().begin();
 
-			UserSessionDAO sessionDAO = new UserSessionDAOImpl();
+			UserSessionDAO sessionDAO = new UserSessionDAOJpa();
 			UserSessionDB session = sessionDAO.getSession(entityManager, sessionId);
 
 			JobDB job = new JobDB();

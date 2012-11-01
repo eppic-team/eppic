@@ -1,4 +1,4 @@
-package ch.systemsx.sybit.crkwebui.server.db.model;
+package ch.systemsx.sybit.crkwebui.server.db.dao.jpa;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,6 +17,7 @@ import model.InterfaceResidueItemDB;
 import model.InterfaceResidueItemDB_;
 import model.PDBScoreItemDB_;
 import ch.systemsx.sybit.crkwebui.server.db.EntityManagerHandler;
+import ch.systemsx.sybit.crkwebui.server.db.dao.InterfaceResidueItemDAO;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResidueItem;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResiduesItemsList;
@@ -26,7 +27,7 @@ import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResiduesItemsList;
  * @author AS
  *
  */
-public class InterfaceResidueItemDAOImpl implements InterfaceResidueItemDAO 
+public class InterfaceResidueItemDAOJpa implements InterfaceResidueItemDAO 
 {
 	@Override
 	public List<InterfaceResidueItem> getResiduesForInterface(int interfaceUid) throws DaoException

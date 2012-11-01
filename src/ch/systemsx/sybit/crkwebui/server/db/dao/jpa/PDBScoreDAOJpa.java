@@ -1,4 +1,4 @@
-package ch.systemsx.sybit.crkwebui.server.db.model;
+package ch.systemsx.sybit.crkwebui.server.db.dao.jpa;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
@@ -13,6 +13,7 @@ import model.JobDB_;
 import model.PDBScoreItemDB;
 import model.PDBScoreItemDB_;
 import ch.systemsx.sybit.crkwebui.server.db.EntityManagerHandler;
+import ch.systemsx.sybit.crkwebui.server.db.dao.PDBScoreDAO;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
 import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
 
@@ -21,10 +22,10 @@ import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
  * @author AS
  *
  */
-public class PDBScoreDAOImpl implements PDBScoreDAO 
+public class PDBScoreDAOJpa implements PDBScoreDAO 
 {
 	
-	public PDBScoreDAOImpl() 
+	public PDBScoreDAOJpa() 
 	{
 		
 	}

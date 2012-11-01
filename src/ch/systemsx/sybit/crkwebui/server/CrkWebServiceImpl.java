@@ -17,19 +17,19 @@ import javax.servlet.http.HttpSession;
 
 import ch.systemsx.sybit.crkwebui.client.CrkWebService;
 import ch.systemsx.sybit.crkwebui.server.data.EmailData;
-import ch.systemsx.sybit.crkwebui.server.db.model.HomologsInfoItemDAO;
-import ch.systemsx.sybit.crkwebui.server.db.model.HomologsInfoItemDAOImpl;
-import ch.systemsx.sybit.crkwebui.server.db.model.InputWithType;
-import ch.systemsx.sybit.crkwebui.server.db.model.InterfaceItemDAO;
-import ch.systemsx.sybit.crkwebui.server.db.model.InterfaceItemDAOImpl;
-import ch.systemsx.sybit.crkwebui.server.db.model.InterfaceResidueItemDAO;
-import ch.systemsx.sybit.crkwebui.server.db.model.InterfaceResidueItemDAOImpl;
-import ch.systemsx.sybit.crkwebui.server.db.model.JobDAO;
-import ch.systemsx.sybit.crkwebui.server.db.model.JobDAOImpl;
-import ch.systemsx.sybit.crkwebui.server.db.model.PDBScoreDAO;
-import ch.systemsx.sybit.crkwebui.server.db.model.PDBScoreDAOImpl;
-import ch.systemsx.sybit.crkwebui.server.db.model.UserSessionDAO;
-import ch.systemsx.sybit.crkwebui.server.db.model.UserSessionDAOImpl;
+import ch.systemsx.sybit.crkwebui.server.data.InputWithType;
+import ch.systemsx.sybit.crkwebui.server.db.dao.HomologsInfoItemDAO;
+import ch.systemsx.sybit.crkwebui.server.db.dao.InterfaceItemDAO;
+import ch.systemsx.sybit.crkwebui.server.db.dao.InterfaceResidueItemDAO;
+import ch.systemsx.sybit.crkwebui.server.db.dao.JobDAO;
+import ch.systemsx.sybit.crkwebui.server.db.dao.PDBScoreDAO;
+import ch.systemsx.sybit.crkwebui.server.db.dao.UserSessionDAO;
+import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.HomologsInfoItemDAOJpa;
+import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.InterfaceItemDAOJpa;
+import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.InterfaceResidueItemDAOJpa;
+import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.JobDAOJpa;
+import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.PDBScoreDAOJpa;
+import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.UserSessionDAOJpa;
 import ch.systemsx.sybit.crkwebui.server.generators.ApplicationSettingsGenerator;
 import ch.systemsx.sybit.crkwebui.server.generators.DirectoryContentGenerator;
 import ch.systemsx.sybit.crkwebui.server.generators.RandomDirectoryNameGenerator;
@@ -238,7 +238,7 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 								  nrOfThreadForSubmission);
 
 		jobStatusUpdater = new JobStatusUpdater(jobManager,
-				new JobDAOImpl(),
+				new JobDAOJpa(),
 				resultsPathUrl,
 				emailSender,
 				generalDestinationDirectoryName);
@@ -319,7 +319,7 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 																								gridPropertiesInputStream);
 
 
-		JobDAO jobDAO = new JobDAOImpl();
+		JobDAO jobDAO = new JobDAOJpa();
 		int nrOfJobsForSession = jobDAO.getNrOfJobsForSessionId(getThreadLocalRequest().getSession().getId()).intValue();
 		settings.setNrOfJobsForSession(nrOfJobsForSession);
 		
@@ -354,7 +354,7 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 
 			Date currentDate = new Date();
 
-			JobDAO jobDAO = new JobDAOImpl();
+			JobDAO jobDAO = new JobDAOJpa();
 
 			File logFile = new File(localDestinationDirName, "crklog");
 
@@ -426,12 +426,12 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 	{
 		String status = null;
 
-		JobDAO jobDAO = new JobDAOImpl();
+		JobDAO jobDAO = new JobDAOJpa();
 		status = jobDAO.getStatusForJob(jobId);
 
 		if(status != null)
 		{
-			UserSessionDAO sessionDAO = new UserSessionDAOImpl();
+			UserSessionDAO sessionDAO = new UserSessionDAOJpa();
 			sessionDAO.insertSessionForJob(getThreadLocalRequest().getSession().getId(), jobId);
 
 			if(status.equals(StatusOfJob.FINISHED.getName()))
@@ -451,7 +451,7 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 
 	private ProcessingInProgressData getStatusData(final String jobId, String status) throws Exception
 	{
-		JobDAO jobDAO = new JobDAOImpl();
+		JobDAO jobDAO = new JobDAOJpa();
 
 		ProcessingInProgressData statusData = null;
 
@@ -578,17 +578,17 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 	 */
 	private PDBScoreItem getResultData(String jobId) throws Exception
 	{
-		JobDAO jobDAO = new JobDAOImpl();
+		JobDAO jobDAO = new JobDAOJpa();
 		int inputType = jobDAO.getInputTypeForJob(jobId);
 
-		PDBScoreDAO pdbScoreDAO = new PDBScoreDAOImpl();
+		PDBScoreDAO pdbScoreDAO = new PDBScoreDAOJpa();
 		PDBScoreItem pdbScoreItem = pdbScoreDAO.getPDBScore(jobId);
 
-		InterfaceItemDAO interfaceItemDAO = new InterfaceItemDAOImpl();
+		InterfaceItemDAO interfaceItemDAO = new InterfaceItemDAOJpa();
 		List<InterfaceItem> interfaceItems = interfaceItemDAO.getInterfacesWithScores(pdbScoreItem.getUid());
 		pdbScoreItem.setInterfaceItems(interfaceItems);
 
-		HomologsInfoItemDAO homologsInfoItemDAO = new HomologsInfoItemDAOImpl();
+		HomologsInfoItemDAO homologsInfoItemDAO = new HomologsInfoItemDAOJpa();
 		List<HomologsInfoItem> homologsInfoItems = homologsInfoItemDAO.getHomologsInfoItems(pdbScoreItem.getUid());
 		pdbScoreItem.setHomologsInfoItems(homologsInfoItems);
 
@@ -600,7 +600,7 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 	@Override
 	public InterfaceResiduesItemsList getAllResidues(int pdbScoreId) throws Exception
 	{
-		InterfaceResidueItemDAO interfaceResidueItemDAO = new InterfaceResidueItemDAOImpl();
+		InterfaceResidueItemDAO interfaceResidueItemDAO = new InterfaceResidueItemDAOJpa();
 		InterfaceResiduesItemsList interfaceResiduesItemsList = interfaceResidueItemDAO.getResiduesForAllInterfaces(pdbScoreId);
 		return interfaceResiduesItemsList;
 	}
@@ -608,7 +608,7 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 	@Override
 	public HashMap<Integer, List<InterfaceResidueItem>> getInterfaceResidues(int interfaceUid) throws Exception
 	{
-		InterfaceResidueItemDAO interfaceResidueItemDAO = new InterfaceResidueItemDAOImpl();
+		InterfaceResidueItemDAO interfaceResidueItemDAO = new InterfaceResidueItemDAOJpa();
 		List<InterfaceResidueItem> interfaceResidues = interfaceResidueItemDAO.getResiduesForInterface(interfaceUid);
 
 		HashMap<Integer, List<InterfaceResidueItem>> structures = new HashMap<Integer, List<InterfaceResidueItem>>();
@@ -638,7 +638,7 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 	public JobsForSession getJobsForCurrentSession() throws Exception
 	{
 		String sessionId = getThreadLocalRequest().getSession().getId();
-		JobDAO jobDAO = new JobDAOImpl();
+		JobDAO jobDAO = new JobDAOJpa();
 		List<ProcessingInProgressData> jobs = jobDAO.getJobsForSession(sessionId);
 		
 		HttpSession session = getThreadLocalRequest().getSession();
@@ -661,7 +661,7 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 
 		try
 		{
-			JobDAO jobDAO = new JobDAOImpl();
+			JobDAO jobDAO = new JobDAOJpa();
 			String submissionId = jobDAO.getSubmissionIdForJobId(jobId);
 			
 			File jobDirectory = new File(generalDestinationDirectoryName, jobId);
@@ -701,7 +701,7 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 	{
 		String sessionId = getThreadLocalRequest().getSession().getId();
 
-		JobDAO jobDAO = new JobDAOImpl();
+		JobDAO jobDAO = new JobDAOJpa();
 		String status = jobDAO.getStatusForJob(jobId);
 
 		if((status.equals(StatusOfJob.RUNNING.getName())) ||
@@ -721,7 +721,7 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 	public void untieJobsFromSession() throws Exception
 	{
 		String sessionId = getThreadLocalRequest().getSession().getId();
-		JobDAO jobDAO = new JobDAOImpl();
+		JobDAO jobDAO = new JobDAOJpa();
 		jobDAO.untieJobsFromSession(sessionId);
 	}
 

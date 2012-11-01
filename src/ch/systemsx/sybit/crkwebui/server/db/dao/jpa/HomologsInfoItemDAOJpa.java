@@ -1,4 +1,4 @@
-package ch.systemsx.sybit.crkwebui.server.db.model;
+package ch.systemsx.sybit.crkwebui.server.db.dao.jpa;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +16,7 @@ import model.HomologsInfoItemDB_;
 import model.PDBScoreItemDB;
 import model.PDBScoreItemDB_;
 import ch.systemsx.sybit.crkwebui.server.db.EntityManagerHandler;
+import ch.systemsx.sybit.crkwebui.server.db.dao.HomologsInfoItemDAO;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
 import ch.systemsx.sybit.crkwebui.shared.model.HomologsInfoItem;
 
@@ -24,7 +25,7 @@ import ch.systemsx.sybit.crkwebui.shared.model.HomologsInfoItem;
  * @author AS
  *
  */
-public class HomologsInfoItemDAOImpl implements HomologsInfoItemDAO
+public class HomologsInfoItemDAOJpa implements HomologsInfoItemDAO
 {
 	@Override
 	public List<HomologsInfoItem> getHomologsInfoItems(int pdbScoreUid) throws DaoException

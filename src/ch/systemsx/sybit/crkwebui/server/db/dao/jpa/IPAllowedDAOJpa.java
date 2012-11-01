@@ -1,4 +1,4 @@
-package ch.systemsx.sybit.crkwebui.server.db.model;
+package ch.systemsx.sybit.crkwebui.server.db.dao.jpa;
 
 import java.util.List;
 
@@ -10,6 +10,9 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
 import ch.systemsx.sybit.crkwebui.server.db.EntityManagerHandler;
+import ch.systemsx.sybit.crkwebui.server.db.dao.IPAllowedDAO;
+import ch.systemsx.sybit.crkwebui.server.db.model.IPAllowed;
+import ch.systemsx.sybit.crkwebui.server.db.model.IPAllowed_;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
 
 /**
@@ -17,7 +20,7 @@ import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
  * @author AS
  *
  */
-public class IPAllowedDAOImpl implements IPAllowedDAO 
+public class IPAllowedDAOJpa implements IPAllowedDAO 
 {
 	@Override
 	public int getNrOfAllowedSubmissionsForIP(String ip) throws DaoException

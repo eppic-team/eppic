@@ -1,4 +1,4 @@
-package ch.systemsx.sybit.crkwebui.server.db.model;
+package ch.systemsx.sybit.crkwebui.server.db.dao.jpa;
 
 import java.util.List;
 
@@ -14,13 +14,14 @@ import model.JobDB_;
 import model.UserSessionDB;
 import model.UserSessionDB_;
 import ch.systemsx.sybit.crkwebui.server.db.EntityManagerHandler;
+import ch.systemsx.sybit.crkwebui.server.db.dao.UserSessionDAO;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
 
 /**
  * Implementation of UserSessionDAO.
  * @author AS
  */
-public class UserSessionDAOImpl implements UserSessionDAO 
+public class UserSessionDAOJpa implements UserSessionDAO 
 {
 	@Override
 	public void insertSessionForJob(String sessionId, String jobId) throws DaoException

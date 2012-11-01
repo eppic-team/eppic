@@ -1,4 +1,4 @@
-package ch.systemsx.sybit.crkwebui.server.db.model;
+package ch.systemsx.sybit.crkwebui.server.db.dao.jpa;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,6 +15,7 @@ import model.InterfaceItemDB_;
 import model.PDBScoreItemDB;
 import model.PDBScoreItemDB_;
 import ch.systemsx.sybit.crkwebui.server.db.EntityManagerHandler;
+import ch.systemsx.sybit.crkwebui.server.db.dao.InterfaceItemDAO;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceItem;
 
@@ -23,7 +24,7 @@ import ch.systemsx.sybit.crkwebui.shared.model.InterfaceItem;
  * @author AS
  *
  */
-public class InterfaceItemDAOImpl implements InterfaceItemDAO 
+public class InterfaceItemDAOJpa implements InterfaceItemDAO 
 {
 	@Override
 	public List<InterfaceItem> getInterfacesWithScores(int pdbScoreUid) throws DaoException

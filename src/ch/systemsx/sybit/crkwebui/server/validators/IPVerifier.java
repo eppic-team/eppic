@@ -4,12 +4,12 @@ import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
-import ch.systemsx.sybit.crkwebui.server.db.model.IPAllowedDAO;
-import ch.systemsx.sybit.crkwebui.server.db.model.IPAllowedDAOImpl;
-import ch.systemsx.sybit.crkwebui.server.db.model.IPForbiddenDAO;
-import ch.systemsx.sybit.crkwebui.server.db.model.IPForbiddenDAOImpl;
-import ch.systemsx.sybit.crkwebui.server.db.model.JobDAO;
-import ch.systemsx.sybit.crkwebui.server.db.model.JobDAOImpl;
+import ch.systemsx.sybit.crkwebui.server.db.dao.IPAllowedDAO;
+import ch.systemsx.sybit.crkwebui.server.db.dao.IPForbiddenDAO;
+import ch.systemsx.sybit.crkwebui.server.db.dao.JobDAO;
+import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.IPAllowedDAOJpa;
+import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.IPForbiddenDAOJpa;
+import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.JobDAOJpa;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.ValidationException;
 
@@ -29,7 +29,7 @@ public class IPVerifier
 	public static void verifyIfCanBeSubmitted(String ip,
 											  int defaultNrOfAllowedSubmissionsForIP) throws ValidationException, DaoException
 	{
-		IPForbiddenDAO ipForbiddenDAO = new IPForbiddenDAOImpl();
+		IPForbiddenDAO ipForbiddenDAO = new IPForbiddenDAOJpa();
 		boolean isIpForbidden = ipForbiddenDAO.isIPForbidden(ip);
 		
 		if(isIpForbidden)
@@ -38,7 +38,7 @@ public class IPVerifier
 		}
 		else
 		{
-			IPAllowedDAO ipAllowedDAO = new IPAllowedDAOImpl();
+			IPAllowedDAO ipAllowedDAO = new IPAllowedDAOJpa();
 			
 			int nrOfAllowedSubmissionsForIPDuringOneDay  = ipAllowedDAO.getNrOfAllowedSubmissionsForIP(ip);
 			
@@ -47,7 +47,7 @@ public class IPVerifier
 				nrOfAllowedSubmissionsForIPDuringOneDay = defaultNrOfAllowedSubmissionsForIP;
 			}
 			
-			JobDAO jobDAO = new JobDAOImpl();
+			JobDAO jobDAO = new JobDAOJpa();
 			long nrOfJobsForIPDuringLastDay = jobDAO.getNrOfJobsForIPDuringLastDay(ip);
 			
 			if(nrOfJobsForIPDuringLastDay >= nrOfAllowedSubmissionsForIPDuringOneDay)

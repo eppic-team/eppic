@@ -7,8 +7,8 @@ import java.util.List;
 
 import model.PDBScoreItemDB;
 import ch.systemsx.sybit.crkwebui.server.EmailSender;
-import ch.systemsx.sybit.crkwebui.server.db.model.JobDAO;
-import ch.systemsx.sybit.crkwebui.server.db.model.JobStatusDetails;
+import ch.systemsx.sybit.crkwebui.server.data.JobStatusDetails;
+import ch.systemsx.sybit.crkwebui.server.db.dao.JobDAO;
 import ch.systemsx.sybit.crkwebui.server.generators.DirectoryContentGenerator;
 import ch.systemsx.sybit.crkwebui.server.util.FileContentReader;
 import ch.systemsx.sybit.crkwebui.server.util.LogHandler;
