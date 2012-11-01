@@ -12,6 +12,8 @@ import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
+import com.google.gwt.user.server.rpc.NoXsrfProtect;
+import com.google.gwt.user.server.rpc.XsrfProtect;
 
 /**
  * The client side stub for the RPC service.
@@ -26,6 +28,7 @@ public interface CrkWebService extends RemoteService
 	 * @return initial setttings
 	 * @throws Exception when an asynchronous call fails to complete normally 
 	 */
+	@NoXsrfProtect
 	public ApplicationSettings loadSettings() throws Exception;
 
 	/**
@@ -34,6 +37,7 @@ public interface CrkWebService extends RemoteService
 	 * @return results of job submission
 	 * @throws Exception when an asynchronous call fails to complete normally
 	 */
+	@XsrfProtect
 	public String runJob(RunJobData runJobData) throws Exception;
 	
 	/**
@@ -42,6 +46,7 @@ public interface CrkWebService extends RemoteService
 	 * @return status data for the selected job
 	 * @throws Exception when an asynchronous call fails to complete normally
 	 */
+	@NoXsrfProtect
 	public ProcessingData getResultsOfProcessing(String jobId) throws Exception;
 	
 	/**
@@ -49,6 +54,7 @@ public interface CrkWebService extends RemoteService
 	 * @return list of jobs attached to the current session
 	 * @throws Exception when an asynchronous call fails to complete normally
 	 */
+	@XsrfProtect
 	public JobsForSession getJobsForCurrentSession() throws Exception;
 
 	/**
@@ -57,6 +63,7 @@ public interface CrkWebService extends RemoteService
 	 * @return residues information
 	 * @throws Exception when an asynchronous call fails to complete normally
 	 */
+	@NoXsrfProtect
 	public HashMap<Integer, List<InterfaceResidueItem>> getInterfaceResidues(int interfaceUid) throws Exception;
 	
 	/**
@@ -65,6 +72,7 @@ public interface CrkWebService extends RemoteService
 	 * @return result of stopping
 	 * @throws Exception when an asynchronous call fails to complete normally
 	 */
+	@XsrfProtect
 	public String stopJob(String jobToStop) throws Exception;
 	
 	/**
@@ -73,12 +81,14 @@ public interface CrkWebService extends RemoteService
 	 * @return result of deleting
 	 * @throws Exception when an asynchronous call fails to complete normally
 	 */
+	@XsrfProtect
 	public String deleteJob(String jobToDelete) throws Exception;
 	
 	/**
 	 * Unties all the jobs which are attached to the current session.
 	 * @throws Exception when an asynchronous call fails to complete normally
 	 */
+	@XsrfProtect
 	public void untieJobsFromSession() throws Exception;
 
 	/**
@@ -87,5 +97,6 @@ public interface CrkWebService extends RemoteService
 	 * @return all residues for job
 	 * @throws Exception when an asynchronous call fails to complete normally
 	 */
+	@NoXsrfProtect
 	public InterfaceResiduesItemsList getAllResidues(int pdbScoreUid) throws Exception;
 }

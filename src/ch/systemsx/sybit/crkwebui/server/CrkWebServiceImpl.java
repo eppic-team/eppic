@@ -13,6 +13,7 @@ import java.util.Properties;
 import javax.persistence.PersistenceContext;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpSession;
 
 import ch.systemsx.sybit.crkwebui.client.CrkWebService;
 import ch.systemsx.sybit.crkwebui.server.data.EmailData;
@@ -40,6 +41,8 @@ import ch.systemsx.sybit.crkwebui.server.util.IOUtil;
 import ch.systemsx.sybit.crkwebui.server.util.LogHandler;
 import ch.systemsx.sybit.crkwebui.server.validators.IPVerifier;
 import ch.systemsx.sybit.crkwebui.server.validators.PreSubmitValidator;
+import ch.systemsx.sybit.crkwebui.server.validators.RunJobDataValidator;
+import ch.systemsx.sybit.crkwebui.server.validators.SessionValidator;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.CrkWebException;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.JobHandlerException;
@@ -58,7 +61,7 @@ import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
 import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
 import ch.systemsx.sybit.crkwebui.shared.model.StepStatus;
 
-import com.google.gwt.user.server.rpc.RemoteServiceServlet;
+import com.google.gwt.user.server.rpc.XsrfProtectedServiceServlet;
 
 import crk.CRKParams;
 
@@ -69,7 +72,7 @@ import crk.CRKParams;
  */
 @PersistenceContext(name="crkjpa", unitName="crkjpa")
 @SuppressWarnings("serial")
-public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebService
+public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements CrkWebService
 {
 	// general server settings
 	private Properties properties;
@@ -320,7 +323,7 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 		int nrOfJobsForSession = jobDAO.getNrOfJobsForSessionId(getThreadLocalRequest().getSession().getId()).intValue();
 		settings.setNrOfJobsForSession(nrOfJobsForSession);
 		
-		settings.setSessionId(getThreadLocalRequest().getSession().getId());
+		SessionValidator.validateSession(getThreadLocalRequest().getSession());
 
 		return settings;
 	}
@@ -345,6 +348,8 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 				inputType = InputType.PDBCODE.getIndex();
 			}
 
+			RunJobDataValidator.validateJobId(runJobData.getJobId());
+			
 			String localDestinationDirName = generalDestinationDirectoryName + File.separator + runJobData.getJobId();
 
 			Date currentDate = new Date();
@@ -636,7 +641,16 @@ public class CrkWebServiceImpl extends RemoteServiceServlet implements CrkWebSer
 		JobDAO jobDAO = new JobDAOImpl();
 		List<ProcessingInProgressData> jobs = jobDAO.getJobsForSession(sessionId);
 		
-		JobsForSession jobsForSession = new JobsForSession(sessionId, jobs);
+		HttpSession session = getThreadLocalRequest().getSession();
+		boolean isSessionNew = false;
+		
+		if(!SessionValidator.isSessionValid(session))
+		{
+			SessionValidator.validateSession(session);
+			isSessionNew = true;
+		}
+		
+		JobsForSession jobsForSession = new JobsForSession(isSessionNew, jobs);
 		return jobsForSession;
 	}
 

@@ -2,21 +2,22 @@ package ch.systemsx.sybit.crkwebui.client.controllers;
 
 import ch.systemsx.sybit.crkwebui.client.CrkWebService;
 import ch.systemsx.sybit.crkwebui.client.CrkWebServiceAsync;
-import ch.systemsx.sybit.crkwebui.client.callbacks.DeleteJobCallback;
+import ch.systemsx.sybit.crkwebui.client.callbacks.DeleteJobCallbackXsrf;
 import ch.systemsx.sybit.crkwebui.client.callbacks.GetAllResiduesCallback;
 import ch.systemsx.sybit.crkwebui.client.callbacks.GetCurrentStatusDataCallback;
 import ch.systemsx.sybit.crkwebui.client.callbacks.GetInterfaceResiduesCallback;
-import ch.systemsx.sybit.crkwebui.client.callbacks.GetJobsForCurrentSession;
 import ch.systemsx.sybit.crkwebui.client.callbacks.GetResultsOfProcessingCallback;
 import ch.systemsx.sybit.crkwebui.client.callbacks.GetSettingsCallback;
-import ch.systemsx.sybit.crkwebui.client.callbacks.RunJobCallback;
-import ch.systemsx.sybit.crkwebui.client.callbacks.StopJobCallback;
-import ch.systemsx.sybit.crkwebui.client.callbacks.UntieJobsFromSessionCallback;
+import ch.systemsx.sybit.crkwebui.client.callbacks.GetJobsForCurrentSessionCallbackXsrf;
+import ch.systemsx.sybit.crkwebui.client.callbacks.RunJobCallbackXsrf;
+import ch.systemsx.sybit.crkwebui.client.callbacks.StopJobCallbackXsrf;
+import ch.systemsx.sybit.crkwebui.client.callbacks.UntieJobsFromSessionCallbackXsrf;
 import ch.systemsx.sybit.crkwebui.client.events.BeforeJobDeletedEvent;
 import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
 
 import com.extjs.gxt.ui.client.GXT;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.user.client.rpc.XsrfTokenServiceAsync;
 
 /**
  * Implementation of service manager.
@@ -30,8 +31,11 @@ public class ServiceControllerImpl implements ServiceController
 	 */
 	private final CrkWebServiceAsync crkWebService = GWT
 			.create(CrkWebService.class);
+	
+	private final XsrfTokenServiceAsync xsrfTokenService = XsrfTokenServiceProvider.getXsrfTokenService();
 
-	public ServiceControllerImpl() {
+	public ServiceControllerImpl() 
+	{
 		
 	}
 
@@ -54,36 +58,33 @@ public class ServiceControllerImpl implements ServiceController
 	
 	@Override
 	public void getJobsForCurrentSession() {
-		crkWebService.getJobsForCurrentSession(new GetJobsForCurrentSession(
-				));
+		xsrfTokenService.getNewXsrfToken(new GetJobsForCurrentSessionCallbackXsrf(crkWebService));
 	}
 	
 	@Override
 	public void runJob(RunJobData runJobData) {
-		crkWebService.runJob(runJobData, new RunJobCallback());
+		xsrfTokenService.getNewXsrfToken(new RunJobCallbackXsrf(crkWebService, runJobData));
 	}
 
 	@Override
 	public void stopJob(String jobToStop) {
-		crkWebService.stopJob(jobToStop, new StopJobCallback(jobToStop));
+		xsrfTokenService.getNewXsrfToken(new StopJobCallbackXsrf(crkWebService, jobToStop));
 	}
 	
 	@Override
 	public void deleteJob(String jobToDelete) 
 	{
 		EventBusManager.EVENT_BUS.fireEvent(new BeforeJobDeletedEvent(jobToDelete));
-		crkWebService.deleteJob(jobToDelete, new DeleteJobCallback(jobToDelete));
+		xsrfTokenService.getNewXsrfToken(new DeleteJobCallbackXsrf(crkWebService, jobToDelete));
 	}
 
 	@Override
 	public void untieJobsFromSession() {
-		crkWebService.untieJobsFromSession(new UntieJobsFromSessionCallback(
-				));
+		xsrfTokenService.getNewXsrfToken(new UntieJobsFromSessionCallbackXsrf(crkWebService));
 	}
 	
 	@Override
-	public void getCurrentStatusData(String jobId) 
-	{
+	public void getCurrentStatusData(String jobId) {
 		crkWebService.getResultsOfProcessing(jobId, new GetCurrentStatusDataCallback(jobId));
 	}
 

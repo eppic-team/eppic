@@ -416,21 +416,4 @@ public class ApplicationSettings implements Serializable {
 	public ScreenSettings getScreenSettings() {
 		return screenSettings;
 	}
-
-	/**
-	 * Retrieves session identifier.
-	 * @return session identifier
-	 */
-	public String getSessionId() {
-		return sessionId;
-	}
-
-	/**
-	 * Sets session identifier.
-	 * @param sessionId session identifier
-	 */
-	public void setSessionId(String sessionId) {
-		this.sessionId = sessionId;
-	}
-
 }

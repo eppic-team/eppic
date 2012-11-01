@@ -12,9 +12,9 @@ public class JobsForSession implements Serializable
 	private static final long serialVersionUID = 1L;
 
 	/**
-	 * Identifier of the session.
+	 * Flag pointing whether new session has been established.
 	 */
-	private String sessionId;
+	private boolean isSessionNew;
 	
 	/**
 	 * List of jobs for session.
@@ -26,27 +26,11 @@ public class JobsForSession implements Serializable
 		
 	}
 	
-	public JobsForSession(String sessionId,
+	public JobsForSession(boolean isSessionNew,
 						  List<ProcessingInProgressData> jobs)
 	{
-		this.sessionId = sessionId;
+		this.setSessionNew(isSessionNew);
 		this.jobs = jobs;
-	}
-
-	/**
-	 * Retrieves identifier of the session.
-	 * @return identifier of the session
-	 */
-	public String getSessionId() {
-		return sessionId;
-	}
-
-	/**
-	 * Sets identifier of the session
-	 * @param sessionId identifier of the session
-	 */
-	public void setSessionId(String sessionId) {
-		this.sessionId = sessionId;
 	}
 
 	/**
@@ -64,6 +48,21 @@ public class JobsForSession implements Serializable
 	public void setJobs(List<ProcessingInProgressData> jobs) {
 		this.jobs = jobs;
 	}
-	
+
+	/**
+	 * Retrieves information whether new session has been established.
+	 * @return information whether new session has been established
+	 */
+	public boolean isSessionNew() {
+		return isSessionNew;
+	}
+
+	/**
+	 * Sets information whether new session has been established.
+	 * @param isSessionNew information whether new session has been established
+	 */
+	public void setSessionNew(boolean isSessionNew) {
+		this.isSessionNew = isSessionNew;
+	}
 	
 }

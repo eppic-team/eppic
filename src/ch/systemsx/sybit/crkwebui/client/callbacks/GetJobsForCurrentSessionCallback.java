@@ -1,9 +1,6 @@
 package ch.systemsx.sybit.crkwebui.client.callbacks;
 
-import java.util.List;
-
 import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
-import ch.systemsx.sybit.crkwebui.client.controllers.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.controllers.EventBusManager;
 import ch.systemsx.sybit.crkwebui.client.data.StatusMessageType;
 import ch.systemsx.sybit.crkwebui.client.events.JobListRetrievedEvent;
@@ -16,13 +13,13 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.rpc.IncompatibleRemoteServiceException;
 
 /**
- * Callback used to handle the response from the server when trying to retrieve the list of jobs for the current session.
+ * Callback used to handle the response from the server when trying to retrieve list of jobs for current session.
  * @author srebniak_a
  *
  */
-public class GetJobsForCurrentSession implements AsyncCallback<JobsForSession> 
+public class GetJobsForCurrentSessionCallback implements AsyncCallback<JobsForSession> 
 {
-	public GetJobsForCurrentSession()
+	public GetJobsForCurrentSessionCallback()
 	{
 		
 	}
@@ -43,10 +40,9 @@ public class GetJobsForCurrentSession implements AsyncCallback<JobsForSession>
 	{
 		if(result != null)
 		{
-			if(!result.getSessionId().equals(ApplicationContext.getSettings().getSessionId()))
+			if(result.isSessionNew())
 			{
 				EventBusManager.EVENT_BUS.fireEvent(new ShowErrorEvent(AppPropertiesManager.CONSTANTS.callback_get_jobs_for_current_session_changed()));
-				ApplicationContext.getSettings().setSessionId(result.getSessionId());
 			}
 			else
 			{

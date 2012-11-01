@@ -129,6 +129,7 @@ public interface AppProperties extends Constants
 	String waiting_message_box_header();
 	String waiting_message_box_info();
 	
+	String callback_get_xsrf_token_error();
 	String callback_get_current_status_data();
 	String callback_get_interface_residues_error();
 	String callback_get_jobs_for_current_session_error();
