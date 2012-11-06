@@ -239,6 +239,14 @@ public class MainViewPort extends LayoutContainer
 				waitingMessageBox = MessageBox.wait(AppPropertiesManager.CONSTANTS.waiting_message_box_header(),
 						text + ", " + AppPropertiesManager.CONSTANTS.waiting_message_box_info() + "...",
 						text + "...");
+				
+				waitingMessageBox.getDialog().setResizable(true);
+				if(waitingMessageBox.getDialog().getInitialWidth() > ApplicationContext.getWindowData().getWindowWidth() - 20)
+				{
+					waitingMessageBox.getDialog().setWidth(ApplicationContext.getWindowData().getWindowWidth() - 20);
+				}
+				
+				
 				waitingMessageBox.show();
 //			}
 //		});
@@ -265,8 +273,13 @@ public class MainViewPort extends LayoutContainer
 		   (!errorMessageBox.isVisible()))
 		{
 			errorMessageBox = MessageBox.alert(AppPropertiesManager.CONSTANTS.error_message_box_header(), message, null);
-			errorMessageBox.setMinWidth(300);
-			errorMessageBox.setMaxWidth(ApplicationContext.getWindowData().getWindowWidth() - 20);
+
+			errorMessageBox.getDialog().setResizable(true);
+			if(errorMessageBox.getDialog().getInitialWidth() > ApplicationContext.getWindowData().getWindowWidth() - 20)
+			{
+				errorMessageBox.getDialog().setWidth(ApplicationContext.getWindowData().getWindowWidth() - 20);
+			}
+			
 			errorMessageBox.show();
 		}
 	}

@@ -8,6 +8,7 @@ import ch.systemsx.sybit.crkwebui.client.events.UpdateStatusLabelEvent;
 import ch.systemsx.sybit.crkwebui.client.handlers.UpdateStatusLabelHandler;
 
 import com.extjs.gxt.ui.client.Style.Orientation;
+import com.extjs.gxt.ui.client.Style.Scroll;
 import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.Listener;
@@ -35,8 +36,10 @@ public class NavigationPanel extends LayoutContainer
 	{
 		this.setLayout(new RowLayout(Orientation.HORIZONTAL));
 
+		LayoutContainer statusMessagePanel = createStatusMessagePanel();
 		status = new HTML();
-	    this.add(status, new RowData(1, 1, new Margins(0)));
+		statusMessagePanel.add(status);
+	    this.add(statusMessagePanel, new RowData(1, 1, new Margins(0)));
 
 	    LayoutContainer linksContainerWrapper = new LayoutContainer();
 	    linksContainerWrapper.setBorders(false);
@@ -64,6 +67,17 @@ public class NavigationPanel extends LayoutContainer
 		this.add(linksContainerWrapper, new RowData(300, 1, new Margins(0)));
 		
 		initializeEventsListeners();
+	}
+	
+	/**
+	 * Creates panel containing status message.
+	 * @return panel containing status message
+	 */
+	private LayoutContainer createStatusMessagePanel()
+	{
+		LayoutContainer statusMessagePanel = new LayoutContainer();
+		statusMessagePanel.setScrollMode(Scroll.AUTOY);
+		return statusMessagePanel;
 	}
 	
 	/**

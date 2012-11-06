@@ -78,7 +78,7 @@ public class InputDataPanel extends DisplayPanel
 	{
 		this.setLayout(new RowLayout(Orientation.HORIZONTAL));
 		this.setBorders(false);
-		this.setScrollMode(Scroll.AUTO);
+		this.setScrollMode(Scroll.AUTOY);
 
 		formPanel = new FormPanel();
 
@@ -345,9 +345,15 @@ public class InputDataPanel extends DisplayPanel
 	{
 		if(!optionsInputPanel.checkIfAnyMethodSelected())
 		{
-			MessageBox.info(AppPropertiesManager.CONSTANTS.input_submit_form_invalid_header(),
+			final MessageBox messageBox = MessageBox.info(AppPropertiesManager.CONSTANTS.input_submit_form_invalid_header(),
 							AppPropertiesManager.CONSTANTS.input_submit_form_no_methods_selected(),
 							null);
+			
+			messageBox.getDialog().setResizable(true);
+			if(messageBox.getDialog().getInitialWidth() > ApplicationContext.getWindowData().getWindowWidth() - 20)
+			{
+				messageBox.getDialog().setWidth(ApplicationContext.getWindowData().getWindowWidth() - 20);
+			}
 		}
 		else if (formPanel.isValid())
 		{
@@ -373,9 +379,15 @@ public class InputDataPanel extends DisplayPanel
 		}
 		else
 		{
-			MessageBox.info(AppPropertiesManager.CONSTANTS.input_submit_form_invalid_header(),
+			final MessageBox messageBox = MessageBox.info(AppPropertiesManager.CONSTANTS.input_submit_form_invalid_header(),
 							AppPropertiesManager.CONSTANTS.input_submit_form_invalid_message(),
 							null);
+			
+			messageBox.getDialog().setResizable(true);
+			if(messageBox.getDialog().getInitialWidth() > ApplicationContext.getWindowData().getWindowWidth() - 20)
+			{
+				messageBox.getDialog().setWidth(ApplicationContext.getWindowData().getWindowWidth() - 20);
+			}
 		}
 	}
 
