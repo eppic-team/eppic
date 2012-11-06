@@ -35,8 +35,7 @@ public class GetSettingsCallback implements AsyncCallback<ApplicationSettings>
 			ApplicationContext.setNrOfSubmissions(result.getNrOfJobsForSession());
 			
 			ApplicationContext.setWindowData(new WindowData(Window.getClientWidth(), Window.getClientHeight()));
-			ApplicationContext.adjustWindowWidth(Window.getClientWidth());
-			ApplicationContext.adjustWindowHeight(Window.getClientHeight());
+			ApplicationContext.adjustWindowData(Window.getClientWidth(), Window.getClientHeight());
 			
 			EventBusManager.EVENT_BUS.fireEvent(new ApplicationInitEvent());
 			

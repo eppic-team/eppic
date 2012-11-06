@@ -279,34 +279,41 @@ public class ApplicationContext
 	}
 	
 	/**
-	 * Sets stored value of width of the window based on the min allowed value and current width of 
+	 * Sets stored value of height/width of the window based on the min allowed value and current height/width of 
 	 * client window. This information is used to properly resize internal panels.
 	 * 
 	 * @param windowWidth width of client window
-	 */
-	public static void adjustWindowWidth(int windowWidth)
-	{
-		if(windowWidth < settings.getScreenSettings().getMinWindowData().getWindowWidth())
-		{
-			windowWidth = settings.getScreenSettings().getMinWindowData().getWindowWidth() - 25; 
-		}
-		
-		adjustedWindowData.setWindowWidth(windowWidth);
-	}
-	
-	/**
-	 * Sets stored value of height of the window based on the min allowed value and current height of 
-	 * client window. This information is used to properly resize internal panels.
-	 * 
 	 * @param windowHeight height of client window
 	 */
-	public static void adjustWindowHeight(int windowHeight)
+	public static void adjustWindowData(int windowWidth,
+										int windowHeight)
 	{
+		boolean addHorizontalScroll = false;
+		boolean addVerticalScroll = false;
+		
 		if(windowHeight < settings.getScreenSettings().getMinWindowData().getWindowHeight())
 		{
-			windowHeight = settings.getScreenSettings().getMinWindowData().getWindowHeight() - 25; 
+			windowHeight = settings.getScreenSettings().getMinWindowData().getWindowHeight();
+			addVerticalScroll = true;
+		}
+		
+		if(windowWidth < settings.getScreenSettings().getMinWindowData().getWindowWidth())
+		{
+			windowWidth = settings.getScreenSettings().getMinWindowData().getWindowWidth();
+			addHorizontalScroll = true;
+		}
+		
+		if(addVerticalScroll)
+		{
+			windowWidth -= 15;
+		}
+		
+		if(addHorizontalScroll)
+		{
+			windowHeight -= 15;
 		}
 		
 		adjustedWindowData.setWindowHeight(windowHeight);
+		adjustedWindowData.setWindowWidth(windowWidth);
 	}
 }

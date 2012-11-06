@@ -73,8 +73,7 @@ public class Crkwebui implements EntryPoint, ValueChangeHandler<String>
 				ApplicationContext.getWindowData().setWindowWidth(event.getWidth());
 				ApplicationContext.getWindowData().setWindowHeight(event.getHeight());
 				
-				ApplicationContext.adjustWindowWidth(event.getWidth());
-				ApplicationContext.adjustWindowHeight(event.getHeight());
+				ApplicationContext.adjustWindowData(event.getWidth(), event.getHeight());
 
 				EventBusManager.EVENT_BUS.fireEvent(new ApplicationWindowResizeEvent());
 			}
