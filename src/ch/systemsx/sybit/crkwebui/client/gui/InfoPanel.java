@@ -7,8 +7,10 @@ import java.util.List;
 import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.controllers.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.controllers.EventBusManager;
+import ch.systemsx.sybit.crkwebui.client.events.ApplicationWindowResizeEvent;
 import ch.systemsx.sybit.crkwebui.client.events.HideAllWindowsEvent;
 import ch.systemsx.sybit.crkwebui.client.events.ShowQueryWarningsEvent;
+import ch.systemsx.sybit.crkwebui.client.handlers.ApplicationWindowResizeHandler;
 import ch.systemsx.sybit.crkwebui.client.handlers.HideAllWindowsHandler;
 import ch.systemsx.sybit.crkwebui.client.handlers.ShowQueryWarningsHandler;
 import ch.systemsx.sybit.crkwebui.shared.model.HomologsInfoItem;
@@ -74,6 +76,7 @@ public class InfoPanel extends FormPanel
 		toolTipConfig.setCloseable(true); 
 		toolTipConfig.setDismissDelay(0);
 		toolTipConfig.setShowDelay(100);
+		toolTipConfig.setMaxWidth(ApplicationContext.getWindowData().getWindowWidth() - 20);
 		queryWarningsTooltip = new ToolTip(null, toolTipConfig);
 	}
 
@@ -142,7 +145,7 @@ public class InfoPanel extends FormPanel
 		toolTipConfig.setDismissDelay(0);
 		toolTipConfig.setShowDelay(100);
 		toolTipConfig.setMaxWidth(ApplicationContext.getWindowData().getWindowWidth() - 20);
-		inputParametersTooltip = new ToolTip(inputParametersLabel, toolTipConfig);
+		inputParametersTooltip = new ToolTip(null, toolTipConfig);
 		
 		inputParametersLabel = new EmptyLinkWithTooltip(AppPropertiesManager.CONSTANTS.info_panel_input_parameters(),
 														AppPropertiesManager.CONSTANTS.info_panel_input_parameters_hint(),
@@ -279,6 +282,23 @@ public class InfoPanel extends FormPanel
 				
 				queryWarningsTooltip.showAt(event.getxCoordinate(),
 					  					    event.getyCoordinate());
+			}
+		});
+		
+		EventBusManager.EVENT_BUS.addHandler(ApplicationWindowResizeEvent.TYPE, new ApplicationWindowResizeHandler() {
+			
+			@Override
+			public void onResizeApplicationWindow(ApplicationWindowResizeEvent event) {
+				
+				if(queryWarningsTooltip != null)
+				{
+					queryWarningsTooltip.setMaxWidth(ApplicationContext.getWindowData().getWindowWidth() - 20);
+				}
+				
+				if(inputParametersTooltip != null)
+				{
+					inputParametersTooltip.setMaxWidth(ApplicationContext.getWindowData().getWindowWidth() - 20);
+				}
 			}
 		});
 	}
