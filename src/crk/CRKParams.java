@@ -12,7 +12,6 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import owl.core.runners.blast.BlastRunner;
 import owl.core.structure.AminoAcid;
 
 public class CRKParams {
@@ -93,7 +92,8 @@ public class CRKParams {
 	private static final boolean  DEF_USE_SIFTS = true;
 	
 	// default blast settings
-	private static final String   DEF_BLAST_BIN_DIR = "/usr/bin";
+	private static final File     DEF_BLASTP_BIN = new File("/usr/bin/blastp"); // from blast+ package
+	private static final File     DEF_BLASTCLUST_BIN = new File("/usr/bin/blastclust"); // from legacy blast package
 	private static final String   DEF_BLAST_DATA_DIR = "/usr/share/blast";
 	
 	// default aligner programs execs: blank files, so that we can control that one and only one is set (see checkConfigFileInput)
@@ -186,7 +186,8 @@ public class CRKParams {
 	
 	private boolean  useSifts;
 	
-	private String   blastBinDir;
+	private File     blastclustBin;
+	private File     blastpBin;
 	
 	private String   blastDataDir; // dir with blosum matrices only needed for blastclust
 	
@@ -498,14 +499,11 @@ public class CRKParams {
 				}
 				
 			}
-			if (! new File(blastBinDir).isDirectory()) {
-				throw new CRKException(null,"BLAST_BIN_DIR must be set to a valid value in config file. Directory "+blastBinDir+" doesn't exist.",true);
-			} 
-			else if (!new File(blastBinDir,BlastRunner.BLASTALL_PROG).exists() || 
-					 !new File(blastBinDir,BlastRunner.BLASTCLUST_PROG).exists()) {
-				throw new CRKException(null,"BLAST_BIN_DIR parameter in config file must be set to a dir containing the "+
-						BlastRunner.BLASTALL_PROG+" and "+BlastRunner.BLASTCLUST_PROG+" executables. " +
-						"Either "+BlastRunner.BLASTALL_PROG+" or "+BlastRunner.BLASTCLUST_PROG+" are not in given dir "+blastBinDir,true);				
+			if (!blastpBin.exists()) {
+				throw new CRKException(null,"The BLASTP_BIN path given in config file does not exist: "+blastpBin,true);
+			}
+			if (!blastclustBin.exists()) {
+				throw new CRKException(null,"The BLASTCLUST_BIN path given in config file does not exist: "+blastclustBin,true);
 			}
 			if (! new File(blastDataDir).isDirectory()) {
 				throw new CRKException(null,"BLAST_DATA_DIR must be set to a valid value in config file. Directory "+blastDataDir+ " doesn't exist.",true);
@@ -788,7 +786,9 @@ public class CRKParams {
 			siftsFile       = p.getProperty("SIFTS_FILE", DEF_SIFTS_FILE);
 			useSifts        = Boolean.parseBoolean(p.getProperty("USE_SIFTS", new Boolean(DEF_USE_SIFTS).toString()));
 			
-			blastBinDir     = p.getProperty("BLAST_BIN_DIR", DEF_BLAST_BIN_DIR);
+			blastclustBin   = new File(p.getProperty("BLASTCLUST_BIN", DEF_BLASTCLUST_BIN.toString()));
+			
+			blastpBin	    = new File(p.getProperty("BLASTP_BIN", DEF_BLASTP_BIN.toString()));
 			
 			blastDataDir    = p.getProperty("BLAST_DATA_DIR", DEF_BLAST_DATA_DIR);
 			
@@ -846,8 +846,12 @@ public class CRKParams {
 		return useSifts;
 	}
 
-	public String getBlastBinDir() {
-		return blastBinDir;
+	public File getBlastpBin() {
+		return blastpBin;
+	}
+	
+	public File getBlastclustBin() {
+		return blastclustBin;
 	}
 
 	public String getBlastDataDir() {

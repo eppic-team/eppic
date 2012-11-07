@@ -629,9 +629,9 @@ public class CRKMain {
 	}
 	
 	/**
-	 * The main of CRK 
+	 * The main of EPPIC (formerly known as CRK) 
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args){
 		
 		long start = System.nanoTime();
 		

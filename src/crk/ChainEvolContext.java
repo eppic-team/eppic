@@ -55,8 +55,7 @@ public class ChainEvolContext implements Serializable {
 	// blast constants
 	private static final String BLASTOUT_SUFFIX = "blast.out.xml";
 	private static final String BLAST_BASENAME = "pdb2unimapping";
-	private static final String FASTA_SUFFIX = ".fa";
-	private static final int 	BLAST_OUTPUT_TYPE = 7;  // xml output
+	private static final String FASTA_SUFFIX = ".fa";	
 	private static final boolean BLAST_NO_FILTERING = true;
 	private static final boolean DEBUG = false;
 	
@@ -107,7 +106,7 @@ public class ChainEvolContext implements Serializable {
 		
 		String siftsLocation = params.getSiftsFile();
 		boolean useSifts = params.isUseSifts();
-		String blastBinDir = params.getBlastBinDir();
+		File blastPlusBlastp = params.getBlastpBin();
 		String blastDbDir = params.getBlastDbDir();
 		String blastDb = params.getBlastDb();
 		int blastNumThreads = params.getNumThreads();
@@ -159,16 +158,16 @@ public class ChainEvolContext implements Serializable {
 				} catch (NoMatchFoundException e) {
 					LOGGER.warn("No SIFTS mapping could be found for "+pdbCode+representativeChain);
 					LOGGER.info("Trying blasting to find one.");
-					queryUniprotId = findUniprotMapping(blastBinDir, blastDbDir, blastDb, blastNumThreads, pdb2uniprotIdThreshold, pdb2uniprotQcovThreshold, useUniparc);  
+					queryUniprotId = findUniprotMapping(blastPlusBlastp, blastDbDir, blastDb, blastNumThreads, pdb2uniprotIdThreshold, pdb2uniprotQcovThreshold, useUniparc);  
 				}
 			} else {
 				LOGGER.info("Using SIFTS feature is turned off. Will blast to find query-to-uniprot mapping");
-				queryUniprotId = findUniprotMapping(blastBinDir, blastDbDir, blastDb, blastNumThreads, pdb2uniprotIdThreshold, pdb2uniprotQcovThreshold, useUniparc);
+				queryUniprotId = findUniprotMapping(blastPlusBlastp, blastDbDir, blastDb, blastNumThreads, pdb2uniprotIdThreshold, pdb2uniprotQcovThreshold, useUniparc);
 			}
 		// 2) PDB code not known and so SiftsFeatures have to be found by blasting, aligning etc.
 		} else {
 			LOGGER.info("No PDB code available. Can't use SIFTS. Blasting to find the query's Uniprot mapping.");
-			queryUniprotId = findUniprotMapping(blastBinDir, blastDbDir, blastDb, blastNumThreads, pdb2uniprotIdThreshold, pdb2uniprotQcovThreshold, useUniparc);
+			queryUniprotId = findUniprotMapping(blastPlusBlastp, blastDbDir, blastDb, blastNumThreads, pdb2uniprotIdThreshold, pdb2uniprotQcovThreshold, useUniparc);
 		}
 		
 		if (queryUniprotId!=null) hasQueryMatch = true;
@@ -231,7 +230,7 @@ public class ChainEvolContext implements Serializable {
 	throws IOException, BlastException, UniprotVerMisMatchException, InterruptedException {
 		
 		
-		String blastBinDir = params.getBlastBinDir();
+		File blastPlusBlastp = params.getBlastpBin();
 		String blastDbDir = params.getBlastDbDir();
 		String blastDb = params.getBlastDb();
 		int blastNumThreads = params.getNumThreads(); 
@@ -272,7 +271,7 @@ public class ChainEvolContext implements Serializable {
 		else LOGGER.info("UniParc hits won't be used");
 		homologs.setUseUniparc(useUniparc);
 		
-		homologs.searchWithBlast(blastBinDir, blastDbDir, blastDb, blastNumThreads, maxNumSeqs, blastCache);
+		homologs.searchWithBlast(blastPlusBlastp, blastDbDir, blastDb, blastNumThreads, maxNumSeqs, blastCache);
 		LOGGER.info(homologs.getSizeFullList()+" homologs found by blast"+" (chain "+getRepresentativeChainCode()+")");
 		 
 	}
@@ -340,7 +339,7 @@ public class ChainEvolContext implements Serializable {
 					String.format("%4.2f",queryCovCutoff)+" query coverage cutoff and before redundancy elimination"
 					+" (chain "+getRepresentativeChainCode()+")");
 			
-			homologs.reduceRedundancy(maxNumSeqs, params.getBlastBinDir(), params.getBlastDataDir(), params.getNumThreads());
+			homologs.reduceRedundancy(maxNumSeqs, params.getBlastclustBin(), params.getBlastDataDir(), params.getNumThreads());
 
 			this.idCutoff = currentIdCutoff;
 			
@@ -640,7 +639,7 @@ public class ChainEvolContext implements Serializable {
 		return alnPdb2Uniprot.getMapping2To1(queryPos)+1;
 	}
 	
-	private String findUniprotMapping(String blastBinDir, String blastDbDir, String blastDb, int blastNumThreads, double pdb2uniprotIdThreshold, double pdb2uniprotQcovThreshold, boolean useUniparc) 
+	private String findUniprotMapping(File blastPlusBlastp, String blastDbDir, String blastDb, int blastNumThreads, double pdb2uniprotIdThreshold, double pdb2uniprotQcovThreshold, boolean useUniparc) 
 			throws IOException, BlastException, InterruptedException {
 		// for too short sequence it doesn't make sense to blast
 		if (this.sequence.length()<CRKParams.MIN_SEQ_LENGTH_FOR_BLASTING) {
@@ -665,12 +664,13 @@ public class ChainEvolContext implements Serializable {
 		
 		new Sequence(pdbName,this.sequence).writeToFastaFile(inputSeqFile);
 
-		BlastRunner blastRunner = new BlastRunner(blastBinDir, blastDbDir);
-		blastRunner.runBlastp(inputSeqFile, blastDb, outBlast, BLAST_OUTPUT_TYPE, BLAST_NO_FILTERING, blastNumThreads, 500);
+		BlastRunner blastRunner = new BlastRunner(blastDbDir);
+		blastRunner.runBlastp(blastPlusBlastp, inputSeqFile, blastDb, outBlast, BlastRunner.BLASTPLUS_XML_OUTPUT_TYPE, BLAST_NO_FILTERING, blastNumThreads, 500);
 
 		BlastHitList blastList = null;
 		try {
-			BlastXMLParser blastParser = new BlastXMLParser(outBlast);
+			// note that by setting second parameter to true we are ignoring the DTD url to avoid unnecessary network connections
+			BlastXMLParser blastParser = new BlastXMLParser(outBlast, true);
 			blastList = blastParser.getHits();
 		} catch (SAXException e) {
 			// if this happens it means that blast doesn't format correctly its XML, i.e. has a bug

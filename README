@@ -9,7 +9,7 @@ http://www.eppic-web.org
 USAGE
 
 Use 'eppic -h' to obtain help about the available command line options for 
-EPPIC. A typical run would be:
+eppic. A typical run would be:
 
 eppic -i 1smt.pdb -s
 
@@ -71,10 +71,14 @@ INSTALLATION
              (http://www.uniprot.org/downloads), formatted for blasting with 
              formatdb.
            
-           - Blast binaries, downloadable from 
+           - Blast+ binaries, downloadable from 
+             http://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Download
+
+           - Blastclust binary found in legacy blast package, downloadable from 
              http://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Download
              
-           - T-coffee binary, downloadable from
+           - Clustalo (recommended) or T-coffee binary, downloadable from
+             http://www.clustal.org/omega/
              http://www.tcoffee.org/Projects_home_page/t_coffee_home_page.html
              
            - The UniProt JAPI, downloadable from
@@ -93,10 +97,11 @@ INSTALLATION
            
               BLAST_DB_DIR
               BLAST_DB
-              BLAST_BIN_DIR
-              TCOFFEE_BIN
+              BLASTCLUST_BIN
+              BLASTP_BIN
+              CLUSTALO_BIN or TCOFFEE_BIN
            
-             To their appropriate paths. 
+             to their appropriate paths. 
              Optionally you can also set PYMOL_EXE (needed for -l option) and 
              LOCAL_CIF_DIR (needed to provide PDB codes with -i). 
 

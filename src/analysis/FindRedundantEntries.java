@@ -30,7 +30,7 @@ public class FindRedundantEntries {
 	private static final String BASENAME = "find_redundant_entries";
 	private static final String TMPDIR = System.getProperty("java.io.tmpdir");
 
-	private static final String BLAST_BIN_DIR = "/home/duarte_j/bin";
+	private static final File BLASTCLUST_BIN = new File("/home/duarte_j/bin/blastclust");
 	private static final String BLAST_DATA_DIR = "/nfs/data/software/packages/blast-2.2.18/data";
 	
 	private static final int[] ID_CUTOFFS =  {95,90,80,70,60,50};
@@ -133,15 +133,15 @@ public class FindRedundantEntries {
 		File outblastclustFile = File.createTempFile(BASENAME, ".blastclust.out");
 		File saveFile = File.createTempFile(BASENAME, ".blastclust.neighbors");
 		
-		BlastRunner blastRunner = new BlastRunner(BLAST_BIN_DIR, null);
+		BlastRunner blastRunner = new BlastRunner(null);
 		long start = System.currentTimeMillis();
-		blastRunner.runBlastclust(inputSeqFile, outblastclustFile, true, idCutoffs[0], 1, BLAST_DATA_DIR, saveFile, NTHREADS);
+		blastRunner.runBlastclust(BLASTCLUST_BIN, inputSeqFile, outblastclustFile, true, idCutoffs[0], 1, BLAST_DATA_DIR, saveFile, NTHREADS);
 		long end = System.currentTimeMillis();
 		System.out.println("Initial blastclust done in "+((end-start)/1000)+"s");
 		
 		
 		for (int idCutoff:idCutoffs) {
-			List<List<String>> clusters = blastRunner.runBlastclust(outblastclustFile,true,idCutoff,1,saveFile,NTHREADS);
+			List<List<String>> clusters = blastRunner.runBlastclust(BLASTCLUST_BIN, outblastclustFile,true,idCutoff,1,saveFile,NTHREADS);
 			
 			List<String> memberStrings = new ArrayList<String>();
 			

@@ -32,7 +32,6 @@ public class Pdb2UniprotCheck {
 	private static final String FASTA_SUFFIX = ".fa";
 	private static final String BLAST_BASENAME = "homSearch";
 	
-	private static final int 	BLAST_OUTPUT_TYPE = 7;  // xml output
 	private static final boolean BLAST_NO_FILTERING = true;
 
 	private static final String BLAST_BIN_DIR = "/usr/bin";
@@ -145,12 +144,13 @@ public class Pdb2UniprotCheck {
 		outBlast.deleteOnExit();
 		inputSeqFile.deleteOnExit();
 		pdb.getSequence().writeToFastaFile(inputSeqFile);
-		BlastRunner blastRunner = new BlastRunner(BLAST_BIN_DIR, BLAST_DB_DIR);
-		blastRunner.runBlastp(inputSeqFile, BLAST_DB, outBlast, BLAST_OUTPUT_TYPE, BLAST_NO_FILTERING, DEFAULT_BLAST_NUMTHREADS, 500);
+		BlastRunner blastRunner = new BlastRunner(BLAST_DB_DIR);
+		blastRunner.setLegacyBlastBinDir(BLAST_BIN_DIR);
+		blastRunner.runLegacyBlastp(inputSeqFile, BLAST_DB, outBlast, BlastRunner.LEGACYBLAST_XML_OUTPUT_TYPE, BLAST_NO_FILTERING, DEFAULT_BLAST_NUMTHREADS, 500);
 		
 		BlastHitList blastList = null;
 		try {
-			BlastXMLParser blastParser = new BlastXMLParser(outBlast);
+			BlastXMLParser blastParser = new BlastXMLParser(outBlast, true);
 			blastList = blastParser.getHits();
 		} catch (SAXException e1) {
 			// if this happens it means that blast doesn't format correctly its XML, i.e. has a bug
