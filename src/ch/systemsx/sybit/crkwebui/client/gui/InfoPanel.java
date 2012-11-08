@@ -227,7 +227,15 @@ public class InfoPanel extends FormPanel
 					result += "</td>";
 					result += "<td></td>";
 					result += "<td>";
-					result += EscapedStringGenerator.generateEscapedString((String)runParametersModel.get(parameter));
+					
+					Object parameterValue = runParametersModel.get(parameter);
+					if((parameterValue != null) &&
+					   (parameterValue instanceof String))
+					{
+						parameterValue = EscapedStringGenerator.generateEscapedString((String)parameterValue);
+					}
+					
+					result += parameterValue;
 					result += "</td>";
 					result += "</tr>";
 				}
