@@ -51,9 +51,9 @@ public class LabelWithTooltip extends Label
 					toolTipConfig.setText(tooltipText);  
 					
 					int width = 500;
-					if(width > windowData.getWindowWidth())
+					if(width > windowData.getWindowWidth() - 20)
 					{
-						width = windowData.getWindowWidth() - 10;
+						width = windowData.getWindowWidth() - 20;
 					}
 					
 					int toolTipXPosition = LabelWithTooltip.this.getAbsoluteLeft() + LabelWithTooltip.this.getWidth() + 5;

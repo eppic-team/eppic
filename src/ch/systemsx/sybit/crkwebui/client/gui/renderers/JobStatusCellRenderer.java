@@ -1,5 +1,6 @@
 package ch.systemsx.sybit.crkwebui.client.gui.renderers;
 
+import ch.systemsx.sybit.crkwebui.client.gui.util.EscapedStringGenerator;
 import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
 
 import com.extjs.gxt.ui.client.data.BaseModel;
@@ -24,7 +25,7 @@ public class JobStatusCellRenderer extends DefaultCellRenderer
 						 ListStore<BaseModel> store, 
 						 final Grid<BaseModel> grid) 
 	{
-		String value = (String) model.get(property);
+		String value = EscapedStringGenerator.generateEscapedString((String) model.get(property));
 		String color = "black";
 
 		if (value == null) {

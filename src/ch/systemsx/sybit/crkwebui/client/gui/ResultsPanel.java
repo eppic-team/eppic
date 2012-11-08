@@ -15,6 +15,8 @@ import ch.systemsx.sybit.crkwebui.client.events.ShowDetailsEvent;
 import ch.systemsx.sybit.crkwebui.client.events.ShowInterfaceResiduesEvent;
 import ch.systemsx.sybit.crkwebui.client.events.ShowViewerEvent;
 import ch.systemsx.sybit.crkwebui.client.events.WindowHideEvent;
+import ch.systemsx.sybit.crkwebui.client.gui.util.EscapedStringGenerator;
+import ch.systemsx.sybit.crkwebui.client.gui.util.GridColumnConfigGenerator;
 import ch.systemsx.sybit.crkwebui.client.handlers.ApplicationWindowResizeHandler;
 import ch.systemsx.sybit.crkwebui.client.handlers.SelectResultsRowHandler;
 import ch.systemsx.sybit.crkwebui.client.handlers.ShowDetailsHandler;
@@ -374,7 +376,7 @@ public class ResultsPanel extends DisplayPanel
 							  	 	resultsData.getResolution(),
 							  	 	resultsData.getInputType());
 		
-		pdbTitle.setText(resultsData.getTitle());
+		pdbTitle.setText(EscapedStringGenerator.generateEscapedString(resultsData.getTitle()));
 	}
 	
 	/**

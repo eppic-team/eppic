@@ -12,7 +12,7 @@ public class ResizableWindow extends Dialog
 {
 	protected int windowWidth;
 	protected int windowHeight;
-
+	
 	private boolean resizeWindow;
 
 	public ResizableWindow(int defaultWidth,
@@ -37,7 +37,7 @@ public class ResizableWindow extends Dialog
 			}
 		}
 	}
-
+	
 	/**
 	 * Retrieves width of the window.
 	 * @return width of the window

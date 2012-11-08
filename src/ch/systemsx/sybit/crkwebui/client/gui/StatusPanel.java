@@ -2,6 +2,7 @@ package ch.systemsx.sybit.crkwebui.client.gui;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.controllers.CrkWebServiceProvider;
+import ch.systemsx.sybit.crkwebui.client.gui.util.EscapedStringGenerator;
 import ch.systemsx.sybit.crkwebui.shared.model.InputType;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
 import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
@@ -126,11 +127,11 @@ public class StatusPanel extends DisplayPanel
 	public void fillData(ProcessingInProgressData statusData)
 	{
 		int scrollBefore = log.getElement().getFirstChildElement().getScrollTop();
-		log.setValue(statusData.getLog());
+		log.setValue(EscapedStringGenerator.generateEscapedString(statusData.getLog()));
 		log.getElement().getFirstChildElement().setScrollTop(scrollBefore);
 
-		status.setValue(String.valueOf(statusData.getStatus()));
-		jobId.setValue(statusData.getJobId());
+		status.setValue(EscapedStringGenerator.generateEscapedString(String.valueOf(statusData.getStatus())));
+		jobId.setValue(EscapedStringGenerator.generateEscapedString(statusData.getJobId()));
 		pdbIdentifierPanel.setPDBText(statusData.getInput(), null, null, 0, statusData.getInputType());
 
 		if((status.getValue() != null) &&

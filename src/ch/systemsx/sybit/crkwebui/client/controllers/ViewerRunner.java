@@ -40,10 +40,10 @@ public class ViewerRunner
 	 */
 	private static void showJmolViewer(String interfaceNr)
 	{
-		int size = ApplicationContext.getWindowData().getWindowHeight();
-		if(size > ApplicationContext.getWindowData().getWindowWidth())
+		int size = ApplicationContext.getWindowData().getWindowHeight() - 20;
+		if(size > ApplicationContext.getWindowData().getWindowWidth() - 20)
 		{
-			size = ApplicationContext.getWindowData().getWindowWidth();
+			size = ApplicationContext.getWindowData().getWindowWidth() - 20;
 		}
 		
 		int jmolAppletSize = size - 40;

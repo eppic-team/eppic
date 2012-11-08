@@ -1,5 +1,7 @@
 package ch.systemsx.sybit.crkwebui.client.gui.renderers;
 
+import ch.systemsx.sybit.crkwebui.client.gui.util.EscapedStringGenerator;
+
 import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.widget.grid.ColumnData;
@@ -16,7 +18,16 @@ public class DefaultCellRenderer implements GridCellRenderer<BaseModel> {
 	public Object render(BaseModel model, String property, ColumnData config,
 			int rowIndex, int colIndex, ListStore<BaseModel> store,
 			Grid<BaseModel> grid) {
-		return model.get(property);
+		
+		Object value = model.get(property);
+		
+		if((value != null) &&
+		   (value instanceof String))
+		{
+			value = EscapedStringGenerator.generateEscapedString((String)value);
+		}
+		
+		return value;
 	}
 
 }

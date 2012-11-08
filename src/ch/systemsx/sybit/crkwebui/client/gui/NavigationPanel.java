@@ -5,6 +5,7 @@ import ch.systemsx.sybit.crkwebui.client.controllers.EventBusManager;
 import ch.systemsx.sybit.crkwebui.client.data.StatusMessageType;
 import ch.systemsx.sybit.crkwebui.client.events.ShowAboutEvent;
 import ch.systemsx.sybit.crkwebui.client.events.UpdateStatusLabelEvent;
+import ch.systemsx.sybit.crkwebui.client.gui.util.EscapedStringGenerator;
 import ch.systemsx.sybit.crkwebui.client.handlers.UpdateStatusLabelHandler;
 
 import com.extjs.gxt.ui.client.Style.Orientation;
@@ -192,7 +193,7 @@ public class NavigationPanel extends LayoutContainer
 			color = "red; font-weight: bold";
 		}
 
-		messageText += color + "\">" + "Status: " + message;
+		messageText += color + "\">" + "Status: " + EscapedStringGenerator.generateEscapedString(message);
 
 		if(messageType != StatusMessageType.NO_ERROR)
 		{

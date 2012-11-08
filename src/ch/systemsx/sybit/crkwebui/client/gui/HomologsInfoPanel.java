@@ -7,6 +7,7 @@ import ch.systemsx.sybit.crkwebui.client.controllers.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.controllers.EventBusManager;
 import ch.systemsx.sybit.crkwebui.client.events.ShowAlignmentsEvent;
 import ch.systemsx.sybit.crkwebui.client.events.ShowQueryWarningsEvent;
+import ch.systemsx.sybit.crkwebui.client.gui.util.EscapedStringGenerator;
 import ch.systemsx.sybit.crkwebui.shared.model.HomologsInfoItem;
 import ch.systemsx.sybit.crkwebui.shared.model.QueryWarningItem;
 
@@ -31,7 +32,7 @@ public class HomologsInfoPanel extends LayoutContainer
 		
 		if(homologsInfoItem.isHasQueryMatch())
 		{
-			final EmptyLinkWithTooltip chainsLink = new EmptyLinkWithTooltip("Chain " + homologsInfoItem.getChains(), 
+			final EmptyLinkWithTooltip chainsLink = new EmptyLinkWithTooltip("Chain " + EscapedStringGenerator.generateEscapedString(homologsInfoItem.getChains()), 
 																			 AppPropertiesManager.CONSTANTS.homologs_panel_chains_hint(),
 																	   		 ApplicationContext.getWindowData(), 
 																	   		 0);
@@ -56,7 +57,7 @@ public class HomologsInfoPanel extends LayoutContainer
 			Label startUniprotLabel = new Label(" (");
 			this.add(startUniprotLabel);
 			
-			LinkWithTooltip uniprotIdLabel = new LinkWithTooltip(homologsInfoItem.getUniprotId(), 
+			LinkWithTooltip uniprotIdLabel = new LinkWithTooltip(EscapedStringGenerator.generateEscapedString(homologsInfoItem.getUniprotId()), 
 																 AppPropertiesManager.CONSTANTS.homologs_panel_uniprot_hint(),
 																 ApplicationContext.getWindowData(), 
 																 0, 
@@ -89,7 +90,7 @@ public class HomologsInfoPanel extends LayoutContainer
 		}
 		else
 		{
-			final EmptyLinkWithTooltip chainsLink = new EmptyLinkWithTooltip("Chain " + homologsInfoItem.getChains(),
+			final EmptyLinkWithTooltip chainsLink = new EmptyLinkWithTooltip("Chain " + EscapedStringGenerator.generateEscapedString(homologsInfoItem.getChains()),
 																		 	 AppPropertiesManager.CONSTANTS.homologs_panel_uniprot_no_query_match_hint(),
 																			 ApplicationContext.getWindowData(), 
 																			 0);
@@ -125,7 +126,7 @@ public class HomologsInfoPanel extends LayoutContainer
 			if((warning.getText() != null) &&
 				(!warning.getText().equals("")))
 			{
-				warningsList += "<li>" + warning.getText() + "</li>";
+				warningsList += "<li>" + EscapedStringGenerator.generateSanitizedString(warning.getText()) + "</li>";
 			}
 		}
 		

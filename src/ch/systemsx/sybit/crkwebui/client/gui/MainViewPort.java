@@ -9,6 +9,7 @@ import ch.systemsx.sybit.crkwebui.client.controllers.EventBusManager;
 import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
 import ch.systemsx.sybit.crkwebui.client.events.ApplicationWindowResizeEvent;
 import ch.systemsx.sybit.crkwebui.client.events.UnmaskMainViewEvent;
+import ch.systemsx.sybit.crkwebui.client.gui.util.EscapedStringGenerator;
 import ch.systemsx.sybit.crkwebui.client.handlers.ApplicationWindowResizeHandler;
 import ch.systemsx.sybit.crkwebui.client.handlers.UnmaskMainViewHandler;
 import ch.systemsx.sybit.crkwebui.shared.model.HomologsInfoItem;
@@ -237,8 +238,8 @@ public class MainViewPort extends LayoutContainer
 //			@Override
 //			public void execute() {
 				waitingMessageBox = MessageBox.wait(AppPropertiesManager.CONSTANTS.waiting_message_box_header(),
-						text + ", " + AppPropertiesManager.CONSTANTS.waiting_message_box_info() + "...",
-						text + "...");
+						EscapedStringGenerator.generateEscapedString(text) + ", " + AppPropertiesManager.CONSTANTS.waiting_message_box_info() + "...",
+						EscapedStringGenerator.generateEscapedString(text) + "...");
 				
 				waitingMessageBox.getDialog().setResizable(true);
 				if(waitingMessageBox.getDialog().getInitialWidth() > ApplicationContext.getWindowData().getWindowWidth() - 20)
@@ -272,7 +273,9 @@ public class MainViewPort extends LayoutContainer
 		if((errorMessageBox == null) ||
 		   (!errorMessageBox.isVisible()))
 		{
-			errorMessageBox = MessageBox.alert(AppPropertiesManager.CONSTANTS.error_message_box_header(), message, null);
+			errorMessageBox = MessageBox.alert(AppPropertiesManager.CONSTANTS.error_message_box_header(),
+											   EscapedStringGenerator.generateEscapedString(message), 
+											   null);
 
 			errorMessageBox.getDialog().setResizable(true);
 			if(errorMessageBox.getDialog().getInitialWidth() > ApplicationContext.getWindowData().getWindowWidth() - 20)
@@ -314,7 +317,7 @@ public class MainViewPort extends LayoutContainer
 		String alignmentWindowTitle = AppPropertiesManager.CONSTANTS.alignment_window_title();
 		alignmentWindowTitle = alignmentWindowTitle.replaceFirst("%s", homologsInfoItem.getChains().substring(0, 1));
 		alignmentWindowTitle = alignmentWindowTitle.replaceFirst("%s", homologsInfoItem.getUniprotId());
-		alignmentsWindow.setHeading(alignmentWindowTitle);
+		alignmentsWindow.setHeading(EscapedStringGenerator.generateEscapedString(alignmentWindowTitle));
 		alignmentsWindow.setVisible(true);
 
 		//called beacuse of the bug in GXT 2.2.3

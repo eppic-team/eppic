@@ -1,4 +1,4 @@
-package ch.systemsx.sybit.crkwebui.client.gui;
+package ch.systemsx.sybit.crkwebui.client.gui.util;
 
 import java.util.List;
 

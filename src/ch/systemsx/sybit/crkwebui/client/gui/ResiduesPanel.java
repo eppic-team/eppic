@@ -3,6 +3,8 @@ package ch.systemsx.sybit.crkwebui.client.gui;
 import java.util.ArrayList;
 import java.util.List;
 
+import ch.systemsx.sybit.crkwebui.client.gui.util.GridColumnConfigGenerator;
+import ch.systemsx.sybit.crkwebui.client.gui.util.GridUtil;
 import ch.systemsx.sybit.crkwebui.client.model.InterfaceResidueItemModel;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResidueItem;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResidueType;

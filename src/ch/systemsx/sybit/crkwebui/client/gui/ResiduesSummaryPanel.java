@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
+import ch.systemsx.sybit.crkwebui.client.gui.util.GridColumnConfigGenerator;
+import ch.systemsx.sybit.crkwebui.client.gui.util.GridUtil;
 import ch.systemsx.sybit.crkwebui.client.model.InterfaceResidueSummaryModel;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResidueItem;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResidueType;

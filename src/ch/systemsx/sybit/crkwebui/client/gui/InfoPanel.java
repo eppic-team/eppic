@@ -10,6 +10,7 @@ import ch.systemsx.sybit.crkwebui.client.controllers.EventBusManager;
 import ch.systemsx.sybit.crkwebui.client.events.ApplicationWindowResizeEvent;
 import ch.systemsx.sybit.crkwebui.client.events.HideAllWindowsEvent;
 import ch.systemsx.sybit.crkwebui.client.events.ShowQueryWarningsEvent;
+import ch.systemsx.sybit.crkwebui.client.gui.util.EscapedStringGenerator;
 import ch.systemsx.sybit.crkwebui.client.handlers.ApplicationWindowResizeHandler;
 import ch.systemsx.sybit.crkwebui.client.handlers.HideAllWindowsHandler;
 import ch.systemsx.sybit.crkwebui.client.handlers.ShowQueryWarningsHandler;
@@ -174,12 +175,12 @@ public class InfoPanel extends FormPanel
 		flexTable.setWidget(2, 3, downloadResultsLink);
 		
 		Label uniprotVersionlabel = new Label(AppPropertiesManager.CONSTANTS.info_panel_uniprot() + ": " +
-				pdbScoreItem.getRunParameters().getUniprotVer());
+				EscapedStringGenerator.generateEscapedString(pdbScoreItem.getRunParameters().getUniprotVer()));
 		uniprotVersionlabel.addStyleName("eppic-default-label");
 		flexTable.setWidget(0, 3, uniprotVersionlabel);
 		
 		Label crkVersionLabel = new Label(AppPropertiesManager.CONSTANTS.info_panel_crk() + ": " +
-				pdbScoreItem.getRunParameters().getCrkVersion());
+				EscapedStringGenerator.generateEscapedString(pdbScoreItem.getRunParameters().getCrkVersion()));
 		crkVersionLabel.addStyleName("eppic-default-label");
 		flexTable.setWidget(1, 3, crkVersionLabel);
 		
@@ -221,11 +222,12 @@ public class InfoPanel extends FormPanel
 				{
 					result += "<tr>";
 					result += "<td>";
-					result += ApplicationContext.getSettings().getRunParametersNames().get(parameter);
+					result += EscapedStringGenerator.generateEscapedString(
+							ApplicationContext.getSettings().getRunParametersNames().get(parameter));
 					result += "</td>";
 					result += "<td></td>";
 					result += "<td>";
-					result += runParametersModel.get(parameter);
+					result += EscapedStringGenerator.generateEscapedString((String)runParametersModel.get(parameter));
 					result += "</td>";
 					result += "</tr>";
 				}

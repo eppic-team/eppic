@@ -26,6 +26,7 @@ import ch.systemsx.sybit.crkwebui.client.gui.MainViewPort;
 import ch.systemsx.sybit.crkwebui.client.gui.MainViewWrapper;
 import ch.systemsx.sybit.crkwebui.client.gui.ResultsPanel;
 import ch.systemsx.sybit.crkwebui.client.gui.StatusPanel;
+import ch.systemsx.sybit.crkwebui.client.gui.util.EscapedStringGenerator;
 import ch.systemsx.sybit.crkwebui.client.handlers.ApplicationInitHandler;
 import ch.systemsx.sybit.crkwebui.client.handlers.ApplicationWindowResizeHandler;
 import ch.systemsx.sybit.crkwebui.client.handlers.HideAllWindowsHandler;
@@ -254,7 +255,7 @@ public class MainController
 	{
 		if(mainViewPort == null)
 		{
-			Window.alert(errorMessage);
+			Window.alert(EscapedStringGenerator.generateEscapedString(errorMessage));
 		}
 		else
 		{
@@ -269,7 +270,9 @@ public class MainController
 	 */
 	private void showMessage(String title, String message)
 	{
-		final MessageBox infoMessageBox = MessageBox.info(title, message, new Listener<MessageBoxEvent>() {
+		final MessageBox infoMessageBox = MessageBox.info(EscapedStringGenerator.generateEscapedString(title), 
+														  EscapedStringGenerator.generateEscapedString(message), 
+														  new Listener<MessageBoxEvent>() {
 
 			@Override
 			public void handleEvent(MessageBoxEvent be) {
@@ -277,8 +280,11 @@ public class MainController
 			}
 		});
 
-		infoMessageBox.setMinWidth(300);
-		infoMessageBox.setMaxWidth(ApplicationContext.getWindowData().getWindowWidth() - 20);
+		infoMessageBox.getDialog().setResizable(true);
+		if(infoMessageBox.getDialog().getInitialWidth() > ApplicationContext.getWindowData().getWindowWidth() - 20)
+		{
+			infoMessageBox.getDialog().setWidth(ApplicationContext.getWindowData().getWindowWidth() - 20);
+		}
 		
 		Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 			@Override
@@ -439,7 +445,8 @@ public class MainController
 		}
 
 		EventBusManager.EVENT_BUS.fireEvent(new GetFocusOnJobsListEvent());
-		Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_results() + " - " + resultData.getPdbName());
+		Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_results() + " - " + 
+						EscapedStringGenerator.generateEscapedString(resultData.getPdbName()));
 	}
 
 	/**
@@ -482,7 +489,8 @@ public class MainController
 		mainViewPort.getCenterPanel().layout();
 
 		EventBusManager.EVENT_BUS.fireEvent(new GetFocusOnJobsListEvent());
-		Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_processing() + " - " + statusData.getInput());
+		Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_processing() + " - " + 
+						EscapedStringGenerator.generateEscapedString(statusData.getInput()));
 	}
 	
 	/**

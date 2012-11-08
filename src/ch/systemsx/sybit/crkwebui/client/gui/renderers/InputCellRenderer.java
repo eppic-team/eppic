@@ -1,5 +1,7 @@
 package ch.systemsx.sybit.crkwebui.client.gui.renderers;
 
+import ch.systemsx.sybit.crkwebui.client.gui.util.EscapedStringGenerator;
+
 import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.widget.grid.ColumnData;
@@ -27,7 +29,9 @@ public class InputCellRenderer extends DefaultCellRenderer
 			input = input.substring(0, input.indexOf("."));
 		}
 		
-		Hyperlink link = new Hyperlink(input, "id/" + model.get("jobid"));
+		Hyperlink link = new Hyperlink(EscapedStringGenerator.generateEscapedString(input), 
+									   "id/" + model.get("jobid"));
+		
 		return link;
 	}
 }

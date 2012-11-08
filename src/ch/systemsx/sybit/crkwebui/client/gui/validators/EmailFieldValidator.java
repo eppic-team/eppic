@@ -1,5 +1,6 @@
 package ch.systemsx.sybit.crkwebui.client.gui.validators;
 
+import ch.systemsx.sybit.crkwebui.client.gui.util.EscapedStringGenerator;
 import ch.systemsx.sybit.crkwebui.shared.validators.EmailFieldVerifier;
 
 import com.extjs.gxt.ui.client.widget.form.Field;
@@ -20,7 +21,7 @@ public class EmailFieldValidator implements Validator
 
 		if (!EmailFieldVerifier.isValid(value)) 
 		{
-			validationResult = value + " is not correct email address";
+			validationResult = EscapedStringGenerator.generateEscapedString(value) + " is not correct email address";
 		}
 
 		return validationResult;

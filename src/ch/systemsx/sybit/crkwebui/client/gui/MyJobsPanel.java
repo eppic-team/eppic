@@ -11,6 +11,7 @@ import ch.systemsx.sybit.crkwebui.client.controllers.EventBusManager;
 import ch.systemsx.sybit.crkwebui.client.events.BeforeJobDeletedEvent;
 import ch.systemsx.sybit.crkwebui.client.events.GetFocusOnJobsListEvent;
 import ch.systemsx.sybit.crkwebui.client.events.JobListRetrievedEvent;
+import ch.systemsx.sybit.crkwebui.client.gui.util.GridColumnConfigGenerator;
 import ch.systemsx.sybit.crkwebui.client.handlers.BeforeJobRemovedHandler;
 import ch.systemsx.sybit.crkwebui.client.handlers.GetFocusOnJobsListHandler;
 import ch.systemsx.sybit.crkwebui.client.handlers.JobListRetrievedHandler;

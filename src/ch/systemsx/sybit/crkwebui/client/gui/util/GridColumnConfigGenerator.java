@@ -1,4 +1,4 @@
-package ch.systemsx.sybit.crkwebui.client.gui;
+package ch.systemsx.sybit.crkwebui.client.gui.util;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -212,7 +212,7 @@ public class GridColumnConfigGenerator
 	{
 		ColumnConfig column = new ColumnConfig();
 		column.setId(columnName);
-		column.setHeader(gridColumnSettings.getHeader());
+		column.setHeader(EscapedStringGenerator.generateSanitizedString(gridColumnSettings.getHeader()));
 		column.setWidth(gridColumnSettings.getColumnWidth());
 		column.setAlignment(HorizontalAlignment.CENTER);
 		column.setHidden(!gridColumnSettings.isDisplayColumn());
@@ -220,19 +220,12 @@ public class GridColumnConfigGenerator
 		column.setResizable(gridColumnSettings.isResizable());
 		column.setMenuDisabled(gridColumnSettings.isDisableColumnContextMenu());
 
-		if (gridColumnSettings.getRenderer() != null) {
-
-			GridCellRenderer<BaseModel> renderer = null;
-			if ((gridColumnSettings.getRenderer() != null) && (!gridColumnSettings.getRenderer().equals(""))) {
-				renderer = GridCellRendererFactory.createGridCellRenderer(
-						gridColumnSettings.getRenderer());
-			}
-
-			column.setRenderer(renderer);
-		}
+		GridCellRenderer<BaseModel> renderer = GridCellRendererFactory.createGridCellRenderer(
+					gridColumnSettings.getRenderer());
+		column.setRenderer(renderer);
 
 		if (gridColumnSettings.getTooltip() != null) {
-			column.setToolTip(gridColumnSettings.getTooltip());
+			column.setToolTip(EscapedStringGenerator.generateSanitizedString(gridColumnSettings.getTooltip()));
 		}
 
 		return column;

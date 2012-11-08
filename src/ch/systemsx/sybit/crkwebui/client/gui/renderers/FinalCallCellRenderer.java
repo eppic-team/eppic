@@ -2,6 +2,7 @@ package ch.systemsx.sybit.crkwebui.client.gui.renderers;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.gui.LabelWithTooltip;
+import ch.systemsx.sybit.crkwebui.client.gui.util.EscapedStringGenerator;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceItem;
 
 import com.extjs.gxt.ui.client.data.BaseModel;
@@ -22,7 +23,7 @@ public class FinalCallCellRenderer implements GridCellRenderer<BaseModel>
 			ColumnData config, final int rowIndex, final int colIndex,
 			ListStore<BaseModel> store, final Grid<BaseModel> grid) {
 		
-		String value = (String) model.get(property);
+		String value = EscapedStringGenerator.generateEscapedString((String) model.get(property));
 
 		if (value != null) 
 		{
@@ -43,7 +44,7 @@ public class FinalCallCellRenderer implements GridCellRenderer<BaseModel>
 			}
 			
 			LabelWithTooltip callReasonLabel = new LabelWithTooltip(value, 
-																	tooltipText, 
+																	EscapedStringGenerator.generateSanitizedString(tooltipText), 
 																	ApplicationContext.getWindowData(), 
 																	100);
 			

@@ -6,6 +6,7 @@ import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.data.TooltipXPositionType;
 import ch.systemsx.sybit.crkwebui.client.data.TooltipYPositionType;
 import ch.systemsx.sybit.crkwebui.client.gui.ImageWithTooltip;
+import ch.systemsx.sybit.crkwebui.client.gui.util.EscapedStringGenerator;
 import ch.systemsx.sybit.crkwebui.shared.model.WarningItem;
 
 import com.extjs.gxt.ui.client.data.BaseModel;
@@ -61,7 +62,7 @@ public class WarningsCellRenderer implements GridCellRenderer<BaseModel>
 		{
 			if(!warning.getText().equals(""))
 			{
-				warningsList += "<li>" + warning.getText() + "</li>";
+				warningsList += "<li>" + EscapedStringGenerator.generateSanitizedString(warning.getText()) + "</li>";
 			}
 		}
 			

@@ -1,6 +1,7 @@
 package ch.systemsx.sybit.crkwebui.client.gui;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
+import ch.systemsx.sybit.crkwebui.client.gui.util.EscapedStringGenerator;
 
 import com.extjs.gxt.ui.client.Style.Orientation;
 import com.extjs.gxt.ui.client.Style.Scroll;
@@ -191,8 +192,10 @@ public class InterfacesResiduesPanel extends FormPanel
 	 */
 	public void fillHeaders(String firstChainName, String secondChainName) 
 	{
-		firstStructureHeader.setText(AppPropertiesManager.CONSTANTS.interfaces_residues_panel_structure() + " " + firstChainName);
-		secondStructureHeader.setText(AppPropertiesManager.CONSTANTS.interfaces_residues_panel_structure() + " " + secondChainName);
+		firstStructureHeader.setText(AppPropertiesManager.CONSTANTS.interfaces_residues_panel_structure() + " " + 
+									 EscapedStringGenerator.generateEscapedString(firstChainName));
+		secondStructureHeader.setText(AppPropertiesManager.CONSTANTS.interfaces_residues_panel_structure() + " " + 
+									 EscapedStringGenerator.generateEscapedString(secondChainName));
 	}
 
 	/**

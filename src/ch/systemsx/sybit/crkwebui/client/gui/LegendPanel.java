@@ -1,6 +1,7 @@
 package ch.systemsx.sybit.crkwebui.client.gui;
 
 import ch.systemsx.sybit.crkwebui.client.data.LegendItem;
+import ch.systemsx.sybit.crkwebui.client.gui.util.EscapedStringGenerator;
 
 import com.extjs.gxt.ui.client.Style.Orientation;
 import com.extjs.gxt.ui.client.util.Margins;
@@ -48,7 +49,7 @@ public class LegendPanel extends LayoutContainer
 		    itemTypePanel.setWidth(20);
 		    itemTypePanel.setHeight(20);
 			
-			Label itemTypeLabel = new Label(item.getName());
+			Label itemTypeLabel = new Label(EscapedStringGenerator.generateEscapedString(item.getName()));
 			
 			itemContainer.add(itemTypePanel, new HBoxLayoutData(new Margins(0, 10, 0, 0)));
 			itemContainer.add(itemTypeLabel);

@@ -2,6 +2,7 @@ package ch.systemsx.sybit.crkwebui.client.gui;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.controllers.ApplicationContext;
+import ch.systemsx.sybit.crkwebui.client.gui.util.EscapedStringGenerator;
 import ch.systemsx.sybit.crkwebui.shared.model.InputType;
 
 import com.extjs.gxt.ui.client.widget.Label;
@@ -45,7 +46,7 @@ public class PDBIdentifierPanel extends LayoutContainer
 		
 		if(inputType == InputType.PDBCODE.getIndex())
 		{
-			pdbNameLabel = new LinkWithTooltip(pdbName,
+			pdbNameLabel = new LinkWithTooltip(EscapedStringGenerator.generateEscapedString(pdbName),
 											   AppPropertiesManager.CONSTANTS.pdb_identifier_panel_label_hint(),
 											   ApplicationContext.getWindowData(), 
 											   0, 
@@ -53,7 +54,7 @@ public class PDBIdentifierPanel extends LayoutContainer
 		}
 		else
 		{
-			pdbNameLabel = new Label(pdbName);
+			pdbNameLabel = new Label(EscapedStringGenerator.generateEscapedString(pdbName));
 		}
 		
 		this.add(pdbNameLabel);
@@ -61,7 +62,7 @@ public class PDBIdentifierPanel extends LayoutContainer
 		if (expMethod!=null) {
 			String labelStr = " (";
 			if (!expMethod.equals("X-RAY DIFFRACTION")) {
-				labelStr+=expMethod;
+				labelStr += EscapedStringGenerator.generateEscapedString(expMethod);
 			}
 			if (resolution>0) {
 				if (!expMethod.equals("X-RAY DIFFRACTION")) labelStr+=" - "; 					
@@ -73,7 +74,7 @@ public class PDBIdentifierPanel extends LayoutContainer
 					 expMethod.equals("ELECTRON CRYSTALLOGRAPHY")))
 			{
 				if (resolution>0 || !expMethod.equals("X-RAY DIFFRACTION")) labelStr+=" - ";
-				labelStr+=spaceGroup;
+				labelStr += EscapedStringGenerator.generateEscapedString(spaceGroup);
 			}
 			labelStr += ")";
 			if (!labelStr.equals(" ()")) {
@@ -86,7 +87,7 @@ public class PDBIdentifierPanel extends LayoutContainer
 			// if no exp method defined but there is a space group and a resol>0, then we hope this is x-ray or at least some kind of xtalography 
 			// this happens for instance in phenix PDB files (no exp method, but both space group and resol are present)
 			if (spaceGroup!=null && resolution>0) {
-				String labelStr = " ("+resolution+"Å - "+spaceGroup+")";
+				String labelStr = " ("+resolution+"Å - " + EscapedStringGenerator.generateEscapedString(spaceGroup) + ")";
 				spaceGroupLabel = new Label(labelStr);
 				spaceGroupLabel.addStyleName("eppic-pdb-spacegroup-label");
 				this.add(spaceGroupLabel);				

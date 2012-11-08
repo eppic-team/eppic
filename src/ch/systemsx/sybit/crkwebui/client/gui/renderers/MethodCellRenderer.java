@@ -4,6 +4,7 @@ import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.client.controllers.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.gui.LabelWithTooltip;
+import ch.systemsx.sybit.crkwebui.client.gui.util.EscapedStringGenerator;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceItem;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceScoreItem;
 
@@ -30,7 +31,7 @@ public class MethodCellRenderer implements GridCellRenderer<BaseModel>
 			ColumnData config, final int rowIndex, final int colIndex,
 			ListStore<BaseModel> store, final Grid<BaseModel> grid) {
 		
-		String value = (String) model.get(property);
+		String value = EscapedStringGenerator.generateEscapedString((String) model.get(property));
 
 		if (value != null) 
 		{
@@ -62,7 +63,7 @@ public class MethodCellRenderer implements GridCellRenderer<BaseModel>
 			}
 			
 			LabelWithTooltip callReasonLabel = new LabelWithTooltip(value, 
-																	tooltipText, 
+																	EscapedStringGenerator.generateSanitizedString(tooltipText), 
 																	ApplicationContext.getWindowData(), 
 																	100);
 			
