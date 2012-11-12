@@ -11,6 +11,7 @@ import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.Style.Scroll;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
 import com.extjs.gxt.ui.client.event.SelectionListener;
+import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.Status;
 import com.extjs.gxt.ui.client.widget.button.Button;
@@ -23,6 +24,7 @@ import com.extjs.gxt.ui.client.widget.layout.RowData;
 import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 import com.extjs.gxt.ui.client.widget.toolbar.FillToolItem;
 import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
+import com.google.gwt.core.client.GWT;
 
 /**
  * Panel used to display status of submitted job.
@@ -34,6 +36,8 @@ public class StatusPanel extends DisplayPanel
 	private FormPanel formPanel;
 
 	private PDBIdentifierPanel pdbIdentifierPanel;
+	private PDBIdentifierSubtitlePanel pdbIdentifierSubtitlePanel;
+	
 	private TextField<String> jobId;
 	private TextField<String> status;
 	private TextArea log;
@@ -63,12 +67,29 @@ public class StatusPanel extends DisplayPanel
 		formPanel.setBodyBorder(false);
 		formPanel.setButtonAlign(HorizontalAlignment.CENTER);
 		formPanel.setScrollMode(Scroll.AUTOY);
-		formPanel.setHeight(windowHeight - 100);
 
 		pdbIdentifierPanel = new PDBIdentifierPanel();
 		pdbIdentifierPanel.addStyleName("eppic-default-left-padding");
 		this.add(pdbIdentifierPanel, new FormData("95%"));
-
+		
+		FormPanel breakPanel = new FormPanel();
+		breakPanel.setBorders(false);
+		breakPanel.setBodyBorder(false);
+		breakPanel.setPadding(0);
+		breakPanel.getHeader().setVisible(false);
+		this.add(breakPanel, new RowData(1, 1.1, new Margins(0)));
+		
+		pdbIdentifierSubtitlePanel = new PDBIdentifierSubtitlePanel();
+		pdbIdentifierSubtitlePanel.addStyleName("eppic-default-left-padding");
+		this.add(pdbIdentifierSubtitlePanel, new FormData("95%"));
+		
+		breakPanel = new FormPanel();
+		breakPanel.setBorders(false);
+		breakPanel.setBodyBorder(false);
+		breakPanel.setPadding(0);
+		breakPanel.getHeader().setVisible(false);
+		this.add(breakPanel, new RowData(1, 1.1, new Margins(0)));
+		
 		jobId = new TextField<String>();
 		jobId.setFieldLabel(AppPropertiesManager.CONSTANTS.status_panel_jobId());
 		jobId.setReadOnly(true);
@@ -139,6 +160,11 @@ public class StatusPanel extends DisplayPanel
 			(status.getValue().equals(StatusOfJob.WAITING.getName())) ||
 			(status.getValue().equals(StatusOfJob.QUEUING.getName()))))
 		{
+			String subTitle = AppPropertiesManager.CONSTANTS.status_panel_subtitle();
+			subTitle = subTitle.replaceFirst("%s", GWT.getHostPageBaseURL() + 
+												   "Crkwebui.html?#id/" + 
+												   EscapedStringGenerator.generateEscapedString(statusData.getJobId()));
+			pdbIdentifierSubtitlePanel.setPDBIdentifierSubtitle(subTitle);
 			killJob.setVisible(true);
 			statusProgress.setBusy(statusData.getStep().getCurrentStep());
 
@@ -160,11 +186,14 @@ public class StatusPanel extends DisplayPanel
 		}
 		else
 		{
+			pdbIdentifierSubtitlePanel.setPDBIdentifierSubtitle("");
 			killJob.setVisible(false);
 			statusProgress.clearStatus("");
 			statusStepsFinished.clearStatus("");
 			statusStepsFinished.setVisible(false);
 		}
+		
+		this.layout(true);
 	}
 
 	/**
@@ -176,5 +205,8 @@ public class StatusPanel extends DisplayPanel
 		status.setValue("");
 		jobId.setValue("");
 		pdbIdentifierPanel.setPDBText("", null, null, 0, InputType.NONE.getIndex());
+		pdbIdentifierSubtitlePanel.setPDBIdentifierSubtitle("");
+		
+		this.layout(true);
 	}
 }

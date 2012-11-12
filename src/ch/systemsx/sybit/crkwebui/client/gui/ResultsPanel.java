@@ -65,7 +65,7 @@ import com.google.gwt.user.client.Cookies;
 public class ResultsPanel extends DisplayPanel
 {
 	private PDBIdentifierPanel pdbIdentifierPanel;
-	private Label pdbTitle;
+	private PDBIdentifierSubtitlePanel pdbIdentifierSubtitlePanel;
 	
 	private InfoPanel infoPanel;
 	
@@ -101,9 +101,8 @@ public class ResultsPanel extends DisplayPanel
 		breakPanel.getHeader().setVisible(false);
 		this.add(breakPanel, new RowData(1, 1.1, new Margins(0)));
 		
-		pdbTitle = new Label();
-		pdbTitle.addStyleName("eppic-pdb-title-label");
-		this.add(pdbTitle);
+		pdbIdentifierSubtitlePanel = new PDBIdentifierSubtitlePanel();
+		this.add(pdbIdentifierSubtitlePanel);
 		
 		breakPanel = new FormPanel();
 		breakPanel.setBorders(false);
@@ -376,7 +375,7 @@ public class ResultsPanel extends DisplayPanel
 							  	 	resultsData.getResolution(),
 							  	 	resultsData.getInputType());
 		
-		pdbTitle.setText(EscapedStringGenerator.generateEscapedString(resultsData.getTitle()));
+		pdbIdentifierSubtitlePanel.setPDBIdentifierSubtitle(EscapedStringGenerator.generateEscapedString(resultsData.getTitle()));
 	}
 	
 	/**
