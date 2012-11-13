@@ -255,7 +255,7 @@ public class MainController
 	{
 		if(mainViewPort == null)
 		{
-			Window.alert(EscapedStringGenerator.generateEscapedString(errorMessage));
+			Window.alert(errorMessage);
 		}
 		else
 		{
@@ -446,7 +446,7 @@ public class MainController
 
 		EventBusManager.EVENT_BUS.fireEvent(new GetFocusOnJobsListEvent());
 		Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_results() + " - " + 
-						EscapedStringGenerator.generateEscapedString(resultData.getPdbName()));
+						resultData.getPdbName());
 	}
 
 	/**
@@ -490,7 +490,7 @@ public class MainController
 
 		EventBusManager.EVENT_BUS.fireEvent(new GetFocusOnJobsListEvent());
 		Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_processing() + " - " + 
-						EscapedStringGenerator.generateEscapedString(statusData.getInput()));
+						statusData.getInput());
 	}
 	
 	/**

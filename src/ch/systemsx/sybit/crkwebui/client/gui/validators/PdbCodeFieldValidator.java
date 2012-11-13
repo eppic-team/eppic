@@ -20,7 +20,7 @@ public class PdbCodeFieldValidator implements Validator {
 
 		if (!PdbCodeVerifier.isTrimmedValid(value))
 		{
-			validationResult = EscapedStringGenerator.generateEscapedString(value) + " is not a correct PDB code";
+			validationResult = value + " is not a correct PDB code";
 		}
 
 		return validationResult;

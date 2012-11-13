@@ -29,7 +29,7 @@ public class InputCellRenderer extends DefaultCellRenderer
 			input = input.substring(0, input.indexOf("."));
 		}
 		
-		Hyperlink link = new Hyperlink(EscapedStringGenerator.generateEscapedString(input), 
+		Hyperlink link = new Hyperlink(input, 
 									   "id/" + model.get("jobid"));
 		
 		return link;

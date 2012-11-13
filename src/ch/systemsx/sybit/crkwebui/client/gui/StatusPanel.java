@@ -148,11 +148,11 @@ public class StatusPanel extends DisplayPanel
 	public void fillData(ProcessingInProgressData statusData)
 	{
 		int scrollBefore = log.getElement().getFirstChildElement().getScrollTop();
-		log.setValue(EscapedStringGenerator.generateEscapedString(statusData.getLog()));
+		log.setValue(statusData.getLog());
 		log.getElement().getFirstChildElement().setScrollTop(scrollBefore);
 
-		status.setValue(EscapedStringGenerator.generateEscapedString(String.valueOf(statusData.getStatus())));
-		jobId.setValue(EscapedStringGenerator.generateEscapedString(statusData.getJobId()));
+		status.setValue(String.valueOf(statusData.getStatus()));
+		jobId.setValue(statusData.getJobId());
 		pdbIdentifierPanel.setPDBText(statusData.getInput(), null, null, 0, statusData.getInputType());
 
 		if((status.getValue() != null) &&

@@ -21,7 +21,7 @@ public class EmailFieldValidator implements Validator
 
 		if (!EmailFieldVerifier.isValid(value)) 
 		{
-			validationResult = EscapedStringGenerator.generateEscapedString(value) + " is not correct email address";
+			validationResult = value + " is not correct email address";
 		}
 
 		return validationResult;
