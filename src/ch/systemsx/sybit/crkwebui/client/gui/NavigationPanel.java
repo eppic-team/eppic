@@ -65,7 +65,7 @@ public class NavigationPanel extends LayoutContainer
 		linksContainer.add(contactLink);
 
 		linksContainerWrapper.add(linksContainer);
-		this.add(linksContainerWrapper, new RowData(300, 1, new Margins(0)));
+		this.add(linksContainerWrapper, new RowData(400, 1, new Margins(0)));
 		
 		initializeEventsListeners();
 	}

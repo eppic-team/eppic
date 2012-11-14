@@ -48,7 +48,7 @@ public class AboutWindow extends ResizableWindow
 				"<tr>" +
 				"<td></td>" +
 				"<td>" +
-				"Structural Bioinformatics Group<br>" +
+				"Crystallography and Structural Bioinformatics Group<br>" +
 				"Laboratory of Biomolecular Research<br>" +
 				"Paul Scherrer Institut<br>" +
 				"Villigen PSI<br>" +
@@ -57,8 +57,17 @@ public class AboutWindow extends ResizableWindow
 				"</tr>" +
 				"<tr>" +
 				"<td></td>" +
+				"<td>This server is intended for research purposes only. " +
+				"It is a non-profit service to the scientific community, " +
+				"provided on an \"as is\" basis without any warranty, expressed or implied. " +
+				"The authors can not be held liable in any way for the service provided here. </td>" +
+				"<td>" +
+				"</tr>" +
+				"<tr>" +
+				"<td></td>" +
 				"<td>eppic@systemsx.ch</td>" +
 				"<td>" +
+				"</tr>" +
 				"</table>");
 		
 		this.addListener(Events.Resize, new Listener<WindowEvent>() {
