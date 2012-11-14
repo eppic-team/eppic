@@ -386,8 +386,10 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 				
 				emailTitle += " submitted";
 				emailMessage = runJobData.getInput()
-								 + " job submitted. To see the status of the processing please go to: "
-								 + resultsPathUrl + "#id=" + runJobData.getJobId();
+								 + " job submitted. \n" +
+								 "To see the status of the processing please go to: \n" +
+								 resultsPathUrl + "#id/" + runJobData.getJobId()+"\n\n" +
+								 "Thanks for using the EPPIC service.";
 			}
 			catch(Throwable e)
 			{

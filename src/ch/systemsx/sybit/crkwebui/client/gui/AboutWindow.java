@@ -48,9 +48,17 @@ public class AboutWindow extends ResizableWindow
 				"<tr>" +
 				"<td></td>" +
 				"<td>" +
-				"Laboratory of Biomolecular Research<br>Paul Scherrer Institut<br>Villigen PSI<br>Switzerland" +
+				"Structural Bioinformatics Group<br>" +
+				"Laboratory of Biomolecular Research<br>" +
+				"Paul Scherrer Institut<br>" +
+				"Villigen PSI<br>" +
+				"Switzerland" +
 				"</td>" +
 				"</tr>" +
+				"<tr>" +
+				"<td></td>" +
+				"<td>eppic@systemsx.ch</td>" +
+				"<td>" +
 				"</table>");
 		
 		this.addListener(Events.Resize, new Listener<WindowEvent>() {

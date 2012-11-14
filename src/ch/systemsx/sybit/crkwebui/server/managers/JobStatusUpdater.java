@@ -144,8 +144,10 @@ public class JobStatusUpdater implements Runnable
 		LogHandler.writeToLogFile(logFile, "Processing finished\n");
 
 		String message = jobStatusDetails.getInput() +
-				  		 " processing finished. To see the results please go to: " +
-				  		 resultsPathUrl + "#id=" + jobStatusDetails.getJobId();
+				  		 " processing finished. \n" +
+				  		 "To see the results please go to: \n" +
+				  		 resultsPathUrl + "#id/" + jobStatusDetails.getJobId()+"\n\n" +
+				  		 "Thanks for using the EPPIC service";
 
 		emailSender.send(jobStatusDetails.getEmailAddress(),
 						 "EPPIC: " + jobStatusDetails.getInput() + " processing finished",
