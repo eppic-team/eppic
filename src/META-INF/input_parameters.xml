@@ -25,7 +25,7 @@
 			<reduced_alphabet>10</reduced_alphabet>
 			<soft_identity_cutoff>0.6</soft_identity_cutoff>
 			<hard_identity_cutoff>0.5</hard_identity_cutoff>
-			<search_mode>Auto</search_mode>
+			<search_mode>Local</search_mode>
 		</default_parameters>
 		
 		<reduced_alphabet>
@@ -39,7 +39,6 @@
 		</reduced_alphabet>
 		
 		<search_mode>
-			<value>Auto</value>
 			<value>Local</value>
 			<value>Global</value>
 		</search_mode>
