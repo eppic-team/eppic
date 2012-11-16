@@ -227,13 +227,13 @@ public class WebUIDataAdaptor {
 				List<HomologItemDB> homologItemDBs = new ArrayList<HomologItemDB>();
 				for (Homolog hom:cec.getHomologs().getFilteredSubset()) {
 					HomologItemDB homologItemDB = new HomologItemDB();
-					homologItemDB.setUniId(hom.getIdentifier());
+					homologItemDB.setUniId(hom.getUniId());
 					if (hom.getUnirefEntry().hasTaxons()) {
 						homologItemDB.setFirstTaxon(hom.getUnirefEntry().getFirstTaxon());
 						homologItemDB.setLastTaxon(hom.getUnirefEntry().getLastTaxon());
 					}
 					homologItemDB.setSeqIdToQuery(hom.getPercentIdentity());
-					homologItemDB.setQueryCov(hom.getBlastHit().getQueryCoverage()*100.0);
+					homologItemDB.setQueryCov(hom.getQueryCoverage()*100.0);
 					homologItemDB.setHomologsInfoItem(homInfo);
 					homologItemDBs.add(homologItemDB);
 				}

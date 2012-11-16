@@ -129,11 +129,6 @@ public class FindEvolContext {
 				"      Uniprot entry will be used to search homologs) or \"auto\" (global\n" +
 				"      will be used except if coverage is under "+String.format("%3.1f",CRKParams.DEF_PDB2UNIPROT_MAX_SCOV_FOR_LOCAL)+").\n" +
 				"      Default "+CRKParams.DEF_HOMOLOGS_SEARCH_MODE.getName() + "\n"+
-				" -G : alignment mode for multiple sequence alignment computation: one of \"full\"\n" +
-				"      (full homolog sequences will be used for alignment) \"hsp\" (only blast\n" +
-				"      HSP matching homolog subsequences will be used) or \"auto\" (one of the\n" +
-				"      2 modes is decided based on the homologs search mode: full if global\n" +
-				"      search mode or hsp if local search mode)\n"+
 				" -O : restrict homologs search to those within the same domain of life as \n" +
 				"      query\n" +
 				" -h : print command line parameters help\n\n"
@@ -169,9 +164,6 @@ public class FindEvolContext {
 				break;
 			case 'H':
 				params.setHomologsSearchMode(HomologsSearchMode.getByName(g.getOptarg()));
-				break;
-			case 'G':
-				params.setAlignmentMode(AlignmentMode.getByName(g.getOptarg()));
 				break;
 			case 'O':
 				params.setIsFilterByDomain(true);

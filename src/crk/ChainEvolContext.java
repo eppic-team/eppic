@@ -24,6 +24,7 @@ import owl.core.features.SiftsFeature;
 import owl.core.runners.blast.BlastException;
 import owl.core.runners.blast.BlastHit;
 import owl.core.runners.blast.BlastHitList;
+import owl.core.runners.blast.BlastHsp;
 import owl.core.runners.blast.BlastRunner;
 import owl.core.runners.blast.BlastXMLParser;
 import owl.core.sequence.Sequence;
@@ -78,7 +79,6 @@ public class ChainEvolContext implements Serializable {
 	private HomologList homologs;	// the homologs of this chain's sequence
 		
 	private boolean searchWithFullUniprot;  // mode of searching, true=we search with full uniprot seq, false=we search with PDB matching part only
-	private boolean useHspsOnly;			// mode of aligning, true=we align on the uniprot hsp subsequences, false=we align on the full uniprot sequences
 	
 	private List<String> queryWarnings;
 	
@@ -359,23 +359,6 @@ public class ChainEvolContext implements Serializable {
 		File clustaloBin = params.getClustaloBin();
 		int nThreads = params.getNumThreads();
 		
-		LOGGER.info("Alignment mode is: "+params.getAlignmentMode().getName());
-		useHspsOnly = false;
-		if (params.getAlignmentMode()==AlignmentMode.AUTO) {
-			if (isSearchWithFullUniprot()) {
-				useHspsOnly = false;
-				LOGGER.info("Full sequences will be used for the alignment of homologs of chain "+representativeChain+" (because search mode is GLOBAL)");
-			}
-			else {
-				useHspsOnly = true;
-				LOGGER.info("Only matching HSP subsequences will be used for the alignment of homologs of chain "+representativeChain+" (because search mode is LOCAL)");
-			}
-		} else if (params.getAlignmentMode()==AlignmentMode.FULLLENGTH) {
-			useHspsOnly = false;
-		} else if (params.getAlignmentMode()==AlignmentMode.HSPSONLY) {
-			useHspsOnly = true;
-		}
-		
 		// 3) alignment of the protein sequences
 		File alnCacheFile = null;
 		// beware we only try to use cache file if we are in default mode: uniparc=true, filter by domain=false
@@ -384,19 +367,18 @@ public class ChainEvolContext implements Serializable {
 			if (!isSearchWithFullUniprot()) {
 				intervStr = "."+getQueryInterval().beg+"-"+getQueryInterval().end;
 			}
-			// a cache file will look like  Q9UKX7.i60.c85.m60.1-109.full.aln (that corresponds to 3tj3C) 
-			//                              P52294.i60.c85.m60.full.aln       (that corresponds to 3tj3A)
+			// a cache file will look like  Q9UKX7.i60.c85.m60.1-109.aln (that corresponds to 3tj3C) 
+			//                              P52294.i60.c85.m60.aln       (that corresponds to 3tj3A)
 			// i=identity threshold used, c=query coverage, m=max num seqs, optional two last numbers are the subinterval
 			alnCacheFile = new File(params.getBlastCacheDir(),getQuery().getUniId()+
 					".i"+String.format("%2.0f", idCutoff*100.0)+
 					".c"+String.format("%2.0f", queryCov*100.0)+
 					".m"+params.getMaxNumSeqs()+
 					intervStr+
-					"."+(useHspsOnly?"hsp":"full")+
 					".aln"); 
 		}
 		
-		homologs.computeAlignment(tcoffeeBin, clustaloBin, nThreads, useHspsOnly, alnCacheFile);
+		homologs.computeAlignment(tcoffeeBin, clustaloBin, nThreads, alnCacheFile);
 	}
 	
 	public void writeAlignmentToFile(File alnFile) throws FileNotFoundException {
@@ -404,7 +386,7 @@ public class ChainEvolContext implements Serializable {
 	}
 	
 	public void writeHomologSeqsToFile(File outFile, CRKParams params) throws FileNotFoundException {
-		homologs.writeToFasta(outFile, false, useHspsOnly, true);
+		homologs.writeToFasta(outFile, false);
 	}
 	
 	public MultipleSequenceAlignment getAlignment() {
@@ -518,9 +500,9 @@ public class ChainEvolContext implements Serializable {
 			ps.println("List is redundancy reduced through clustering on "+clusteringPercentId+"% sequence identity");
 		
 		for (Homolog hom:homologs.getFilteredSubset()) {
-			ps.printf("%-13s",hom.getIdentifier());
+			ps.printf("%-13s",hom.getUniId());
 			ps.printf("\t%5.1f",hom.getPercentIdentity());
-			ps.printf("\t%5.1f",hom.getBlastHit().getQueryCoverage()*100.0);
+			ps.printf("\t%5.1f",hom.getQueryCoverage()*100.0);
 			if (hom.getUnirefEntry().hasTaxons()) 
 				ps.print("\t"+hom.getUnirefEntry().getFirstTaxon()+"\t"+hom.getUnirefEntry().getLastTaxon());
 			ps.println();
@@ -693,19 +675,20 @@ public class ChainEvolContext implements Serializable {
 					return null;
 				}
 			}
-			if ((best.getTotalPercentIdentity()/100.0)>pdb2uniprotIdThreshold && best.getQueryCoverage()>pdb2uniprotQcovThreshold) {
+			BlastHsp bestHsp = best.getMaxScoringHsp();
+			if ((bestHsp.getPercentIdentity()/100.0)>pdb2uniprotIdThreshold && bestHsp.getQueryCoverage()>pdb2uniprotQcovThreshold) {
 				uniprotMapping = getDeflineAccession(best);
 				LOGGER.info("Blast found UniProt id "+uniprotMapping+" as best hit with "+
-						String.format("%5.2f%% id and %4.2f coverage",best.getTotalPercentIdentity(),best.getQueryCoverage()));
+						String.format("%5.2f%% id and %4.2f coverage",bestHsp.getPercentIdentity(),bestHsp.getQueryCoverage()));
 			} else {
 				LOGGER.error("No UniProt match could be found for the query "+pdbName+representativeChain+" within cutoffs "+
 						String.format("%5.2f%% id and %4.2f coverage",pdb2uniprotIdThreshold,pdb2uniprotQcovThreshold));
 				LOGGER.error("Best match was "+best.getSubjectId()+", with "+
-						String.format("%5.2f%% id and %4.2f coverage",best.getTotalPercentIdentity(),best.getQueryCoverage()));
+						String.format("%5.2f%% id and %4.2f coverage",bestHsp.getPercentIdentity(),bestHsp.getQueryCoverage()));
 				LOGGER.error("Alignment: ");
-				LOGGER.error(best.getMaxScoringHsp().getAlignment().getFastaString(null, true));
+				LOGGER.error(bestHsp.getAlignment().getFastaString(null, true));
 				queryWarnings.add("Blast didn't find a UniProt match for the chain. Best match was "+getDeflineAccession(best)+", with "+
-						String.format("%5.2f%% id and %4.2f coverage",best.getTotalPercentIdentity(),best.getQueryCoverage()));
+						String.format("%5.2f%% id and %4.2f coverage",bestHsp.getPercentIdentity(),bestHsp.getQueryCoverage()));
 			}			
 		} else {
 			LOGGER.error("No UniProt match could be found for the query "+pdbName+representativeChain+". Blast returned no hits.");
@@ -824,14 +807,6 @@ public class ChainEvolContext implements Serializable {
 	 */
 	public boolean isSearchWithFullUniprot() {
 		return searchWithFullUniprot;
-	}
-	
-	/**
-	 * Whether the alignment is done on UniProt hsp subsequences or on the full ones
-	 * @return
-	 */
-	public boolean isUseHspsOnly() {
-		return useHspsOnly;
 	}
 	
 	/**

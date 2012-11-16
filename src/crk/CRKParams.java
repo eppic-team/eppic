@@ -79,8 +79,6 @@ public class CRKParams {
 	
 	protected static final HomologsSearchMode DEF_HOMOLOGS_SEARCH_MODE = HomologsSearchMode.AUTO;
 	
-	private static final AlignmentMode DEF_ALIGNMENT_MODE = AlignmentMode.AUTO;
-	
 	// DEFAULTS FOR CONFIG FILE ASSIGNABLE CONSTANTS
 	// defaults for pdb data location
 	private static final String   DEF_LOCAL_CIF_DIR = "/pdbdata/pdb/data/structures/all/mmCIF";
@@ -169,8 +167,6 @@ public class CRKParams {
 	
 	private HomologsSearchMode homologsSearchMode;
 	
-	private AlignmentMode alignmentMode;
-	
 	private boolean filterByDomain;
 	
 	// some other fields
@@ -255,7 +251,6 @@ public class CRKParams {
 		this.progressLog = System.out;
 		this.debug = false;
 		this.homologsSearchMode = DEF_HOMOLOGS_SEARCH_MODE;
-		this.alignmentMode = DEF_ALIGNMENT_MODE;
 		this.filterByDomain = false;
 
 	}
@@ -314,9 +309,6 @@ public class CRKParams {
 				break;
 			case 'H':
 				homologsSearchMode = HomologsSearchMode.getByName(g.getOptarg());
-				break;
-			case 'G':
-				alignmentMode = AlignmentMode.getByName(g.getOptarg());
 				break;
 			case 'O':
 				filterByDomain = true;
@@ -399,11 +391,6 @@ public class CRKParams {
 		"                  Uniprot entry will be used to search homologs) or \"auto\" (global\n" +
 		"                  will be used except if coverage is under "+String.format("%3.1f",DEF_PDB2UNIPROT_MAX_SCOV_FOR_LOCAL)+").\n" +
 		"                  Default "+DEF_HOMOLOGS_SEARCH_MODE.getName() + "\n"+
-		"  [-G <string>]:  alignment mode for multiple sequence alignment computation: one of \"full\"\n" +
-		"                  (full homolog sequences will be used for alignment) \"hsp\" (only blast\n" +
-		"                  HSP matching homolog subsequences will be used) or \"auto\" (one of the\n" +
-		"                  2 modes is decided based on the homologs search mode: full if global\n" +
-		"                  search mode or hsp if local search mode)\n"+
 		"  [-O]         :  restrict homologs search to those within the same domain of life as \n" +
 		"                  query\n"+
 		"  [-p]         :  use PISA interface enumeration (will be downloaded from web) \n" +
@@ -749,14 +736,6 @@ public class CRKParams {
 	
 	public void setHomologsSearchMode(HomologsSearchMode homologsSearchMode) {
 		this.homologsSearchMode = homologsSearchMode;
-	}
-	
-	public AlignmentMode getAlignmentMode() {
-		return alignmentMode;
-	}
-	
-	public void setAlignmentMode(AlignmentMode alignmentMode) {
-		this.alignmentMode = alignmentMode;
 	}
 	
 	public boolean isFilterByDomain() {
