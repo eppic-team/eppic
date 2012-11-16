@@ -194,6 +194,8 @@ public class ChainEvolContext implements Serializable {
 				int shortestSeqLength = Math.min(query.getLength(), sequence.length());
 				double id = (double)alnPdb2Uniprot.getIdentity()/(double)shortestSeqLength;
 				LOGGER.info("Query to reference UniProt percent identity: "+String.format("%6.2f%%",id*100.0));
+				LOGGER.info("UniProt reference coverage of query's sequence: "+
+						String.format("%6.2f%%",100.0*(double)sequence.length()/(double)query.getLength()));
 				// in strange cases like 3try (a racemic mixture with a chain composed of L and D aminoacids) the SIFTS-mapped
 				// UniProt entry does not align at all to the PDB SEQRES (mostly 'X'), we have to check for this
 				if (id<MAX_QUERY_TO_UNIPROT_DISAGREEMENT) {
@@ -236,7 +238,6 @@ public class ChainEvolContext implements Serializable {
 		int blastNumThreads = params.getNumThreads(); 
 		int maxNumSeqs = params.getMaxNumSeqs();
 		HomologsSearchMode searchMode = params.getHomologsSearchMode();
-		double pdb2uniprotMaxScovForLocal = params.getPdb2uniprotMaxScovForLocal();
 		boolean useUniparc = params.isUseUniparc();
 		
 		queryInterv = new Interval(1,query.getLength());
@@ -244,26 +245,12 @@ public class ChainEvolContext implements Serializable {
 		LOGGER.info("Homologs search mode: "+searchMode.getName());
 		if (searchMode==HomologsSearchMode.GLOBAL) {
 			searchWithFullUniprot = true;
+			LOGGER.info("Using full UniProt sequence "+query.getUniId()+" for blast search"+" (chain "+getRepresentativeChainCode()+")");
 		} else if (searchMode==HomologsSearchMode.LOCAL) {
 			searchWithFullUniprot = false;
 			queryInterv = new Interval(alnPdb2Uniprot.getFirstMatchingPos(false)+1,alnPdb2Uniprot.getLastMatchingPos(false)+1);
-		} else {
-			if (sequence.length()<pdb2uniprotMaxScovForLocal*query.getLength()) {
-				queryInterv = new Interval(alnPdb2Uniprot.getFirstMatchingPos(false)+1,alnPdb2Uniprot.getLastMatchingPos(false)+1);
-				searchWithFullUniprot = false;
-				LOGGER.info("PDB sequence for chain "+representativeChain+" covers only "+
-						String.format("%4.2f",(double)sequence.length()/(double)query.getLength())+
-						" of Uniprot "+query.getUniId()+
-						" (cutoff is "+String.format("%4.2f", pdb2uniprotMaxScovForLocal)+")");
-			} else {
-				searchWithFullUniprot = true;
-				LOGGER.info("PDB sequence for chain "+representativeChain+" coverage of Uniprot reference "+
-						query.getUniId()+" is "+String.format("%4.2f",(double)sequence.length()/(double)query.getLength())+
-						" (thus above cutoff "+String.format("%4.2f", pdb2uniprotMaxScovForLocal)+" for local mode)");
-			}
-		}
-		if (searchWithFullUniprot) LOGGER.info("Using full UniProt sequence "+query.getUniId()+" for blast search"+" (chain "+getRepresentativeChainCode()+")");
-		else LOGGER.info("Using UniProt "+query.getUniId()+" subsequence "+queryInterv.beg+"-"+queryInterv.end+" for blast search"+" (chain "+getRepresentativeChainCode()+")");
+			LOGGER.info("Using UniProt "+query.getUniId()+" subsequence "+queryInterv.beg+"-"+queryInterv.end+" for blast search"+" (chain "+getRepresentativeChainCode()+")");
+		} 
 		
 		homologs = new HomologList(query,queryInterv);
 		

@@ -77,7 +77,7 @@ public class CRKParams {
 	
 	private static final int      DEF_NSPHEREPOINTS_ASA_CALC = 3000;
 	
-	protected static final HomologsSearchMode DEF_HOMOLOGS_SEARCH_MODE = HomologsSearchMode.AUTO;
+	protected static final HomologsSearchMode DEF_HOMOLOGS_SEARCH_MODE = HomologsSearchMode.LOCAL;
 	
 	// DEFAULTS FOR CONFIG FILE ASSIGNABLE CONSTANTS
 	// defaults for pdb data location
@@ -115,8 +115,6 @@ public class CRKParams {
 	// default pdb2uniprot mapping blast thresholds
 	private static final double   DEF_PDB2UNIPROT_ID_THRESHOLD = 0.75;
 	private static final double   DEF_PDB2UNIPROT_QCOV_THRESHOLD = 0.85;
-	// default pdb2uniprot max subject (uniprot) coverage: below this value we do local blast search instead of global (see HomologsSearchMode) 
-	protected static final double DEF_PDB2UNIPROT_MAX_SCOV_FOR_LOCAL = 0.5;
 
 	// default cache dirs
 	private static final String   DEF_BLAST_CACHE_DIR = null;
@@ -205,7 +203,6 @@ public class CRKParams {
 	
 	private double   pdb2uniprotIdThreshold;
 	private double   pdb2uniprotQcovThreshold;
-	private double   pdb2uniprotMaxScovForLocal;
 			
 	private String   blastCacheDir;
 	
@@ -386,10 +383,9 @@ public class CRKParams {
 		"                  Default: "+String.format("%3.1f",DEF_HOM_HARD_ID_CUTOFF)+"\n"+
 		"  [-q <int>]   :  maximum number of sequences to keep for calculation of conservation \n" +
 		"                  scores. Default: "+DEF_MAX_NUM_SEQUENCES+"\n"+
-		"  [-H <string>]:  homologs search mode: one of \"local\" (only Uniprot region covered\n" +
-		"                  by PDB structure will be used to search homologs), \"global\" (full\n" +
-		"                  Uniprot entry will be used to search homologs) or \"auto\" (global\n" +
-		"                  will be used except if coverage is under "+String.format("%3.1f",DEF_PDB2UNIPROT_MAX_SCOV_FOR_LOCAL)+").\n" +
+		"  [-H <string>]:  homologs search mode: either \"local\" (only Uniprot region covered\n" +
+		"                  by PDB structure will be used to search homologs) or \"global\" (full\n" +
+		"                  Uniprot entry will be used to search homologs).\n" +
 		"                  Default "+DEF_HOMOLOGS_SEARCH_MODE.getName() + "\n"+
 		"  [-O]         :  restrict homologs search to those within the same domain of life as \n" +
 		"                  query\n"+
@@ -451,6 +447,11 @@ public class CRKParams {
 		
 		if (usePisa && inFile!=null) {
 			throw new CRKException(null, "Can only get PISA interface enumeration for a PDB code. Can't use '-p' if the PDB given is a file", true);
+		}
+
+		if (homologsSearchMode==null) {
+			// invalid string passed as homologs search mode
+			throw new CRKException(null, "Invalid string specified as homologs search mode (-H).", true);
 		}
 		
 		if (homSoftIdCutoff<homHardIdCutoff) {
@@ -792,8 +793,6 @@ public class CRKParams {
 			pdb2uniprotIdThreshold = Double.parseDouble(p.getProperty("PDB2UNIPROT_ID_THRESHOLD", new Double(DEF_PDB2UNIPROT_ID_THRESHOLD).toString()));
 			pdb2uniprotQcovThreshold = Double.parseDouble(p.getProperty("PDB2UNIPROT_QCOV_THRESHOLD", new Double(DEF_PDB2UNIPROT_QCOV_THRESHOLD).toString()));
 			
-			pdb2uniprotMaxScovForLocal = Double.parseDouble(p.getProperty("PDB2UNIPROT_MAX_SCOV_FOR_LOCAL", new Double(DEF_PDB2UNIPROT_MAX_SCOV_FOR_LOCAL).toString()));
-					
 			blastCacheDir    = p.getProperty("BLAST_CACHE_DIR", DEF_BLAST_CACHE_DIR);
 			
 			useUniparc       = Boolean.parseBoolean(p.getProperty("USE_UNIPARC",new Boolean(DEF_USE_UNIPARC).toString()));
@@ -873,10 +872,6 @@ public class CRKParams {
 		return pdb2uniprotQcovThreshold;
 	}
 
-	public double getPdb2uniprotMaxScovForLocal() {
-		return pdb2uniprotMaxScovForLocal;
-	}
-	
 	public String getBlastCacheDir() {
 		return blastCacheDir;
 	}

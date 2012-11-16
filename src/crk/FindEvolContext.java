@@ -124,10 +124,9 @@ public class FindEvolContext {
 				" -d : homologs soft identity cutoff\n" +
 				" -D : homologs hard identity cutoff\n" +
 				" -q : max num homologs\n" +
-				" -H : homologs search mode: one of \"local\" (only Uniprot region covered\n" +
-				"      by PDB structure will be used to search homologs), \"global\" (full\n" +
-				"      Uniprot entry will be used to search homologs) or \"auto\" (global\n" +
-				"      will be used except if coverage is under "+String.format("%3.1f",CRKParams.DEF_PDB2UNIPROT_MAX_SCOV_FOR_LOCAL)+").\n" +
+				" -H : homologs search mode: either \"local\" (only Uniprot region covered\n" +
+				"      by PDB structure will be used to search homologs) or \"global\" (full\n" +
+				"      Uniprot entry will be used to search homologs)\n" +
 				"      Default "+CRKParams.DEF_HOMOLOGS_SEARCH_MODE.getName() + "\n"+
 				" -O : restrict homologs search to those within the same domain of life as \n" +
 				"      query\n" +
