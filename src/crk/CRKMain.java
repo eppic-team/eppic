@@ -347,13 +347,15 @@ public class CRKMain {
 				for (ChainEvolContext cec:cecs.getAllChainEvolContext()) {
 					PdbChain chain = pdb.getChain(cec.getRepresentativeChainCode());
 					cec.setConservationScoresAsBfactors(chain);
-					File chainPdbFile = params.getOutputFile("."+cec.getRepresentativeChainCode()+".pdb");
+					File chainPdbFile = params.getOutputFile("."+cec.getRepresentativeChainCode()+CRKParams.ENTROPIES_FILE_SUFFIX+".pdb");
+					File chainPseFile = params.getOutputFile("."+cec.getRepresentativeChainCode()+CRKParams.ENTROPIES_FILE_SUFFIX+".pse");
+					File chainPmlFile = params.getOutputFile("."+cec.getRepresentativeChainCode()+CRKParams.ENTROPIES_FILE_SUFFIX+".pml");
 					chain.writeToPDBFile(chainPdbFile);
 					pr.generateChainPse(chain, interfaces, 
 							params.getCAcutoffForGeom(), params.getCAcutoffForZscore(), params.getMinAsaForSurface(),
 							chainPdbFile, 
-							params.getOutputFile("."+cec.getRepresentativeChainCode()+".pse"), 
-							params.getOutputFile("."+cec.getRepresentativeChainCode()+".pml"),
+							chainPseFile, 
+							chainPmlFile,
 							0,params.getMaxEntropy());
 				}
 			}
@@ -389,10 +391,14 @@ public class CRKMain {
 			
 			if (params.isDoScoreEntropies()) {
 				for (ChainEvolContext cec:cecs.getAllChainEvolContext()) {
-					File pseFile = params.getOutputFile("."+cec.getRepresentativeChainCode()+".pse");
-					File gzipPseFile = params.getOutputFile("."+cec.getRepresentativeChainCode()+".pse.gz");
-					File pdbFile = params.getOutputFile("."+cec.getRepresentativeChainCode()+".pdb");
-					File gzipPdbFile = params.getOutputFile("."+cec.getRepresentativeChainCode()+".pdb.gz");
+					File pseFile = 
+							params.getOutputFile("."+cec.getRepresentativeChainCode()+CRKParams.ENTROPIES_FILE_SUFFIX+".pse");
+					File gzipPseFile = 
+							params.getOutputFile("."+cec.getRepresentativeChainCode()+CRKParams.ENTROPIES_FILE_SUFFIX+".pse.gz");
+					File pdbFile = 
+							params.getOutputFile("."+cec.getRepresentativeChainCode()+CRKParams.ENTROPIES_FILE_SUFFIX+".pdb");
+					File gzipPdbFile = 
+							params.getOutputFile("."+cec.getRepresentativeChainCode()+CRKParams.ENTROPIES_FILE_SUFFIX+".pdb.gz");
 					// pse
 					gzipFile(pseFile, gzipPseFile);
 					pseFile.delete();
