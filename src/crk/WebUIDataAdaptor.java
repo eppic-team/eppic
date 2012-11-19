@@ -5,6 +5,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 import crk.predictors.CombinedPredictor;
@@ -45,8 +47,12 @@ public class WebUIDataAdaptor {
 	
 	private RunParametersItemDB runParametersItem;
 	
+	// a temp map to hold the warnings per interface, used in order to eliminate duplicate warnings
+	private HashMap<Integer,HashSet<String>> interfId2Warnings;
+	
 	public WebUIDataAdaptor() {
 		pdbScoreItem = new PDBScoreItemDB();
+		interfId2Warnings = new HashMap<Integer, HashSet<String>>();
 	}
 	
 	public void setParams(CRKParams params) {
@@ -80,7 +86,7 @@ public class WebUIDataAdaptor {
 	}
 	
 	public void setInterfaces(ChainInterfaceList interfaces) {
-		//this.interfaces = interfaces;
+
 		for (ChainInterface interf:interfaces) {
 			InterfaceItemDB ii = new InterfaceItemDB();
 			ii.setId(interf.getId());
@@ -92,11 +98,12 @@ public class WebUIDataAdaptor {
 			ii.setOperator(SpaceGroup.getAlgebraicFromMatrix(interf.getSecondTransf().getMatTransform()));
 			ii.setSize1(interf.getFirstRimCore().getCoreSize());
 			ii.setSize2(interf.getSecondRimCore().getCoreSize());
-			ii.setWarnings(new ArrayList<WarningItemDB>()); // we then need to add warnings from each method as we add the scores from each method
 			
 			ii.setPdbScoreItem(pdbScoreItem);
 			
 			pdbScoreItem.addInterfaceItem(ii);
+			
+			interfId2Warnings.put(interf.getId(),new HashSet<String>());
 		}
 
 	}
@@ -179,11 +186,10 @@ public class WebUIDataAdaptor {
 			{
 				List<String> warnings = gps.get(i).getWarnings();
 				for(String warning: warnings)
-				{
-					WarningItemDB warningItem = new WarningItemDB();
-					warningItem.setText(warning);
-					warningItem.setInterfaceItem(ii);
-					ii.getWarnings().add(warningItem);
+				{	
+					// we first add warning to the temp HashSets in order to eliminate duplicates, 
+					// in the end we fill the InterfaceItemDBs by calling addInterfaceWarnings
+					interfId2Warnings.get(ii.getId()).add(warning);
 				}
 			}
 
@@ -272,10 +278,9 @@ public class WebUIDataAdaptor {
 			if(ezp.getWarnings() != null) {
 				List<String> warnings = ezp.getWarnings();
 				for(String warning: warnings) {
-					WarningItemDB warningItem = new WarningItemDB();
-					warningItem.setText(warning);
-					warningItem.setInterfaceItem(ii);
-					ii.getWarnings().add(warningItem);
+					// we first add warning to the temp HashSets in order to eliminate duplicates, 
+					// in the end we fill the InterfaceItemDBs by calling addInterfaceWarnings
+					interfId2Warnings.get(ii.getId()).add(warning);
 				}
 			}
 
@@ -310,10 +315,9 @@ public class WebUIDataAdaptor {
 			if(ercp.getWarnings() != null) {
 				List<String> warnings = ercp.getWarnings();
 				for(String warning: warnings) {
-					WarningItemDB warningItem = new WarningItemDB();
-					warningItem.setText(warning);
-					warningItem.setInterfaceItem(ii);
-					ii.getWarnings().add(warningItem);
+					// we first add warning to the temp HashSets in order to eliminate duplicates, 
+					// in the end we fill the InterfaceItemDBs by calling addInterfaceWarnings
+					interfId2Warnings.get(ii.getId()).add(warning);
 				}
 			}
 
@@ -340,10 +344,9 @@ public class WebUIDataAdaptor {
 				List<String> warnings = cps.get(i).getWarnings();
 				for(String warning: warnings)
 				{
-					WarningItemDB warningItem = new WarningItemDB();
-					warningItem.setText(warning);
-					warningItem.setInterfaceItem(ii);
-					ii.getWarnings().add(warningItem);
+					// we first add warning to the temp HashSets in order to eliminate duplicates, 
+					// in the end we fill the InterfaceItemDBs by calling addInterfaceWarnings
+					interfId2Warnings.get(ii.getId()).add(warning);
 				}
 			}
 		}
@@ -476,6 +479,23 @@ public class WebUIDataAdaptor {
 
 	public RunParametersItemDB getRunParametersItem() {
 		return runParametersItem;
+	}
+	
+	/**
+	 * Add to the pdbScoreItem member the cached warnings interfId2Warnings, compiled in
+	 * {@link #setGeometryScores(List)}, {@link #setCombinedPredictors(List)} and {@link #add(InterfaceEvolContextList)} 
+	 */
+	public void addInterfaceWarnings() {
+		
+		for (int i=0;i<pdbScoreItem.getInterfaceItems().size();i++) {
+			InterfaceItemDB ii = pdbScoreItem.getInterfaceItem(i);
+			for (String warning : interfId2Warnings.get(ii.getId())) {
+				WarningItemDB warningItem = new WarningItemDB();
+				warningItem.setText(warning);
+				warningItem.setInterfaceItem(ii);
+				ii.getWarnings().add(warningItem);
+			}
+		}
 	}
 	
 }

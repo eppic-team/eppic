@@ -693,6 +693,7 @@ public class CRKMain {
 				crkMain.doWritePymolFiles();
 				
 				// 6 writing out the serialized file for web ui
+				crkMain.wuiAdaptor.addInterfaceWarnings(); // first we call this method to add all the cached warnings
 				crkMain.wuiAdaptor.writePdbScoreItemFile(crkMain.params.getOutputFile(".webui.dat"));
 				
 				// finally we write a signal file for the wui to know that job is finished
