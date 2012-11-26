@@ -137,7 +137,7 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 							pair.getSecond().getParentResidue().getParent().getPdbChainCode()+"-"+
 							pair.getSecond().getParentResSerial()+"("+pair.getSecond().getParentResidue().getLongCode()+")-"+
 							pair.getSecond().getCode()+
-							" (dist: "+String.format("%3.1f",pair.getFirst().getCoords().distance(pair.getSecond().getCoords()))+")";
+							" (distance: "+String.format("%3.1f",pair.getFirst().getCoords().distance(pair.getSecond().getCoords()))+" A)";
 				if (i!=interactingPairs.size()-1) warning+=", ";
 			}
 
@@ -171,7 +171,7 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 		pair.getSecond().getParentResidue().getParent().getPdbChainCode()+"-"+
 		pair.getSecond().getParentResSerial()+"("+pair.getSecond().getParentResidue().getLongCode()+")-"+
 		pair.getSecond().getCode()+
-		" (dist: "+String.format("%3.1f",pair.getFirst().getCoords().distance(pair.getSecond().getCoords()))+")";
+		" (distance: "+String.format("%3.1f",pair.getFirst().getCoords().distance(pair.getSecond().getCoords()))+" A)";
 	}
 
 	public void printScores(PrintStream ps) {

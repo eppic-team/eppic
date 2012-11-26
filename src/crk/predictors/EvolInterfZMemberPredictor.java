@@ -71,7 +71,7 @@ public class EvolInterfZMemberPredictor implements InterfaceTypePredictor {
 
 		if (!parent.canDoEntropyScoring(molecId)) {
 			call = CallType.NO_PREDICTION;
-			callReason = memberSerial+": no evol z-scores calculation could be performed (no uniprot query match)";
+			callReason = memberSerial+": could not calculate evolutionary scores (no UniProt reference found for query)";
 		}
 		else if (!parent.getInterfaceEvolContext().hasEnoughHomologs(molecId)) {
 			call = CallType.NO_PREDICTION;

@@ -252,7 +252,7 @@ public class ChainEvolContextList implements Serializable {
 	}
 	
 	private void retrieveHomologsData(CRKParams params) throws CRKException {
-		params.getProgressLog().println("Retrieving UniprotKB data");
+		params.getProgressLog().println("Retrieving UniProtKB data");
 		params.getProgressLog().print("chains: ");
 		for (ChainEvolContext chainEvCont:cecs.values()) {
 			if (!chainEvCont.hasQueryMatch()) {
@@ -268,14 +268,14 @@ public class ChainEvolContextList implements Serializable {
 			try {
 				chainEvCont.retrieveHomologsData();
 			} catch (UniprotVerMisMatchException e) {
-				throw new CRKException(e, "Mismatch of Uniprot versions! "+e.getMessage(), true);
+				throw new CRKException(e, "Mismatch of UniProt versions! "+e.getMessage(), true);
 			} catch (IOException e) {
-				String errmsg = "Problem while retrieving homologs data through Uniprot JAPI";
+				String errmsg = "Problem while retrieving homologs data through UniProtJAPI";
 				throw new CRKException(e, errmsg+": "+e.getMessage(),true);
 			} catch (SQLException e) {
-				throw new CRKException(e, "Problem while retrieving homologs data from Uniprot local database: "+e.getMessage(), true);
+				throw new CRKException(e, "Problem while retrieving homologs data from UniProt local database: "+e.getMessage(), true);
 			} catch (Exception e) { // for any kind of exceptions thrown while connecting through uniprot JAPI
-				throw new CRKException(e, "Problems while retrieving homologs data through Uniprot JAPI. Is Uniprot server down?\n"+e.getMessage(),true);
+				throw new CRKException(e, "Problems while retrieving homologs data through UniProt JAPI. Make sure you have the latest UniProtJAPI jar, or otherwise that the UniProt server is up\n"+e.getMessage(),true);
 			}
 
 		}		

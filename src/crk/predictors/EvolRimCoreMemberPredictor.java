@@ -72,7 +72,7 @@ public class EvolRimCoreMemberPredictor implements InterfaceTypePredictor {
 		}
 		else if (!parent.canDoEntropyScoring(molecId)) {
 			call = CallType.NO_PREDICTION;
-			callReason = memberSerial+": no evol scores calculation could be performed (no uniprot query match)";
+			callReason = memberSerial+": could not calculate evolutionary scores (no UniProt reference found for query)";
 		}
 		else if (!parent.getInterfaceEvolContext().hasEnoughHomologs(molecId)) {
 			call = CallType.NO_PREDICTION;
@@ -84,7 +84,7 @@ public class EvolRimCoreMemberPredictor implements InterfaceTypePredictor {
 			// this happens whenever the value wasn't initialized, in practice it will 
 			// happen when doing Ka/Ks scoring and for some reason (e.g. no CDS match for query) it can't be done 
 			call = CallType.NO_PREDICTION;
-			callReason = memberSerial+": no evol scores calculation could be performed";
+			callReason = memberSerial+": could not calculate evolutionary scores";
 		}
 		else if (rimCore.getCoreSize()<CRKParams.MIN_NUMBER_CORE_RESIDUES_EVOL_SCORE) {
 			call = CallType.NO_PREDICTION;
