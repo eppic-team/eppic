@@ -18,7 +18,7 @@ public class CRKParams {
 	
 	// CONSTANTS
 	public static final String     PROGRAM_NAME    = "eppic";
-	public static final String	   PROGRAM_VERSION = "1.9.5";
+	public static final String	   PROGRAM_VERSION = "1.9.6";
 	
 	private static final Pattern   PDBCODE_PATTERN = Pattern.compile("^\\d\\w\\w\\w$");
 	public static final String     CONFIG_FILE_NAME = ".eppic.conf";
