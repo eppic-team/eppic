@@ -98,11 +98,11 @@ public class EvolInterfZMemberPredictor implements InterfaceTypePredictor {
 			if (zScore<parent.getCallCutoff()) {
 				call = CallType.BIO;
 				callReason = memberSerial+": score "+
-						String.format("%4.2f",getScore())+" is below BIO cutoff ("+String.format("%4.2f", parent.getCallCutoff())+")";
+						String.format("%4.2f",getScore())+" is below cutoff ("+String.format("%4.2f", parent.getCallCutoff())+")";
 			} else if (zScore>parent.getCallCutoff()) {
 				call = CallType.CRYSTAL;
 				callReason = memberSerial+": score "+
-						String.format("%4.2f",zScore)+" is above XTAL cutoff ("+String.format("%4.2f", parent.getCallCutoff())+")";
+						String.format("%4.2f",zScore)+" is above cutoff ("+String.format("%4.2f", parent.getCallCutoff())+")";
 			} else if (Double.isNaN(zScore)) {
 				call = CallType.NO_PREDICTION;
 				callReason = memberSerial+": score is NaN";

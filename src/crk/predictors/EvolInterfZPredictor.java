@@ -147,10 +147,10 @@ public class EvolInterfZPredictor implements InterfaceTypePredictor {
 			callReason = member1Pred.getCallReason()+"\n"+member2Pred.getCallReason();
 			if (score<callCutoff) {
 				call = CallType.BIO;
-				callReason += "\nAverage score "+String.format("%4.2f", score)+" is below BIO cutoff ("+String.format("%4.2f", callCutoff)+")";
+				callReason += "\nAverage score "+String.format("%4.2f", score)+" is below cutoff ("+String.format("%4.2f", callCutoff)+")";
 			} else if (score>callCutoff) {
 				call = CallType.CRYSTAL;
-				callReason += "\nAverage score "+String.format("%4.2f", score)+" is above XTAL cutoff ("+String.format("%4.2f", callCutoff)+")";
+				callReason += "\nAverage score "+String.format("%4.2f", score)+" is above cutoff ("+String.format("%4.2f", callCutoff)+")";
 			} else if (Double.isNaN(score)) {
 				call = CallType.NO_PREDICTION;
 				callReason += "\nAverage score is NaN";
