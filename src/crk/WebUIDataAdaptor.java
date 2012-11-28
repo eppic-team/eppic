@@ -28,7 +28,6 @@ import owl.core.runners.PymolRunner;
 import owl.core.sequence.Homolog;
 import owl.core.structure.ChainInterface;
 import owl.core.structure.ChainInterfaceList;
-import owl.core.structure.InterfaceRimCore;
 import owl.core.structure.PdbAsymUnit;
 import owl.core.structure.PdbChain;
 import owl.core.structure.Residue;
@@ -360,23 +359,23 @@ public class WebUIDataAdaptor {
 		}
 	}
 	
-	public void addResidueDetails(ChainInterfaceList interfaces, double caCutoff, double minAsaForSurface) {
+	public void addResidueDetails(ChainInterfaceList interfaces) {
 		for (int i=0;i<interfaces.size();i++) {
 
 			ChainInterface interf = interfaces.get(i+1);
 			InterfaceItemDB ii = pdbScoreItem.getInterfaceItem(i);
 
 			// we add the residue details
-			addResidueDetails(ii, interf, caCutoff, minAsaForSurface, params.isDoScoreEntropies());
+			addResidueDetails(ii, interf, params.isDoScoreEntropies());
 		}
 	}
 	
-	private void addResidueDetails(InterfaceItemDB ii, ChainInterface interf, double caCutoff, double minAsaForSurface, boolean includeEntropy) {
+	private void addResidueDetails(InterfaceItemDB ii, ChainInterface interf, boolean includeEntropy) {
 		
 		List<InterfaceResidueItemDB> iril = new ArrayList<InterfaceResidueItemDB>();
 		ii.setInterfaceResidues(iril);
 
-		interf.calcRimAndCore(caCutoff, minAsaForSurface);
+		//interf.calcRimAndCore(caCutoff, minAsaForSurface);
 		ii.setAsaC1(interf.getFirstRimCore().getAsaCore());
 		ii.setAsaR1(interf.getFirstRimCore().getAsaRim());
 		ii.setBsaC1(interf.getFirstRimCore().getBsaCore());
@@ -386,8 +385,8 @@ public class WebUIDataAdaptor {
 		ii.setBsaC2(interf.getSecondRimCore().getBsaCore());
 		ii.setBsaR2(interf.getSecondRimCore().getBsaRim());
 
-		addResidueDetailsOfPartner(iril, interf, 0, minAsaForSurface);
-		addResidueDetailsOfPartner(iril, interf, 1, minAsaForSurface);
+		addResidueDetailsOfPartner(iril, interf, 0);
+		addResidueDetailsOfPartner(iril, interf, 1);
 
 		for(InterfaceResidueItemDB iri : iril)
 		{
@@ -395,30 +394,37 @@ public class WebUIDataAdaptor {
 		}
 	}
 	
-	private void addResidueDetailsOfPartner(List<InterfaceResidueItemDB> iril, ChainInterface interf, int molecId, double minAsaForSurface) {
+	private void addResidueDetailsOfPartner(List<InterfaceResidueItemDB> iril, ChainInterface interf, int molecId) {
 		if (interf.isProtein()) {
-			//interf.calcRimAndCore(caCutoff); // no need to call again, already called in caller addResidueDetails
 			PdbChain mol = null;
-			InterfaceRimCore rimCore = null;
 			if (molecId==FIRST) {
 				mol = interf.getFirstMolecule();
-				rimCore = interf.getFirstRimCore();
 			}
 			else if (molecId==SECOND) {
 				mol = interf.getSecondMolecule();
-				rimCore = interf.getSecondRimCore();
 			}
 			
 			for (Residue residue:mol) {
 				String resType = residue.getLongCode();
 				int assignment = -1;
+				
 				float asa = (float) residue.getAsa();
 				float bsa = (float) residue.getBsa();
-				if (rimCore.getRimResidues().contains(residue)) assignment = InterfaceResidueItemDB.RIM;
-				else if (rimCore.getCoreResidues().contains(residue)) assignment = InterfaceResidueItemDB.CORE;
-
-				if (assignment==-1 && asa>minAsaForSurface) assignment = InterfaceResidueItemDB.SURFACE;
-
+				
+				if (residue.getAsa()>params.getMinAsaForSurface() && residue.getBsa()>0) {
+					// NOTE: we use here caCutoffForRimCore as the one and only for both evol methods
+					// NOTE2: we are assuming that caCutoffForRimCore<caCutoffForGeom, if that doesn't hold this won't work!
+					if (residue.getBsaToAsaRatio()<params.getCAcutoffForRimCore()) {
+						assignment = InterfaceResidueItemDB.RIM;
+					} else if (residue.getBsaToAsaRatio()<params.getCAcutoffForGeom()){
+						assignment = InterfaceResidueItemDB.CORE_EVOLUTIONARY; 
+					} else {
+						assignment = InterfaceResidueItemDB.CORE_GEOMETRY;
+					}
+				} else if (residue.getAsa()>params.getMinAsaForSurface()) {
+					assignment = InterfaceResidueItemDB.SURFACE;
+				}
+				
 				InterfaceResidueItemDB iri = new InterfaceResidueItemDB(residue.getSerial(),residue.getPdbSerial(),resType,asa,bsa,assignment,null);
 				iri.setStructure(molecId+1); // structure ids are 1 and 2 while molecId are 0 and 1
 

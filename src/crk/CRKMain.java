@@ -309,7 +309,7 @@ public class CRKMain {
 			// for the webui
 			wuiAdaptor.setInterfaces(interfaces);
 			wuiAdaptor.setGeometryScores(gps);
-			wuiAdaptor.addResidueDetails(interfaces, params.getCAcutoffForRimCore(), params.getMinAsaForSurface());
+			wuiAdaptor.addResidueDetails(interfaces);
 		} catch (IOException e) {
 			throw new CRKException(e, "Couldn't write interface geometry scores or related pdb files. "+e.getMessage(),true);
 		}

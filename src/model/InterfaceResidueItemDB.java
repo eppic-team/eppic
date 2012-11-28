@@ -12,7 +12,8 @@ public class InterfaceResidueItemDB implements Serializable
 	
 	public static final int SURFACE = 0;
 	public static final int RIM = 1;
-	public static final int CORE = 2;
+	public static final int CORE_EVOLUTIONARY = 2;
+	public static final int CORE_GEOMETRY = 3;
 	
 	private int uid;
 	
