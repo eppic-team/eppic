@@ -419,7 +419,7 @@ public class WebUIDataAdaptor {
 
 				if (assignment==-1 && asa>minAsaForSurface) assignment = InterfaceResidueItemDB.SURFACE;
 
-				InterfaceResidueItemDB iri = new InterfaceResidueItemDB(residue.getSerial(),residue.getPdbSerial(),resType,asa,bsa,bsa/asa,assignment,null);
+				InterfaceResidueItemDB iri = new InterfaceResidueItemDB(residue.getSerial(),residue.getPdbSerial(),resType,asa,bsa,assignment,null);
 				iri.setStructure(molecId+1); // structure ids are 1 and 2 while molecId are 0 and 1
 
 				iril.add(iri);

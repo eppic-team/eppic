@@ -22,7 +22,6 @@ public class InterfaceResidueItemDB implements Serializable
 	private String residueType;
 	private Float asa;
 	private Float bsa;
-	private Float bsaPercentage;
 	private int assignment; // one of the constants above: SURFACE, RIM, CORE
 	private Float entropyScore;
 
@@ -35,13 +34,12 @@ public class InterfaceResidueItemDB implements Serializable
 	//entropy
 	//KaKs
 	
-	public InterfaceResidueItemDB(int residueNumber, String pdbResidueNumber, String residueType, Float asa, Float bsa, Float bsaPercentage, int assignment, Float entropyScore) {
+	public InterfaceResidueItemDB(int residueNumber, String pdbResidueNumber, String residueType, Float asa, Float bsa, int assignment, Float entropyScore) {
 		this.residueNumber = residueNumber;
 		this.pdbResidueNumber = pdbResidueNumber;
 		this.residueType = residueType;
 		this.asa = asa;
 		this.bsa = bsa;
-		this.bsaPercentage = bsaPercentage;
 		this.assignment = assignment;
 		this.setEntropyScore(entropyScore);
 	}
@@ -90,15 +88,7 @@ public class InterfaceResidueItemDB implements Serializable
 	public void setBsa(Float bsa) {
 		this.bsa = bsa;
 	}
-
-	public Float getBsaPercentage() {
-		return bsaPercentage;
-	}
-
-	public void setBsaPercentage(Float bsaPercentage) {
-		this.bsaPercentage = bsaPercentage;
-	}
-
+	
 	public int getAssignment() {
 		return this.assignment;
 	}
@@ -106,7 +96,7 @@ public class InterfaceResidueItemDB implements Serializable
 	public void setAssignment(int assignment) {
 		this.assignment = assignment;
 	}
-	
+
 	public void setStructure(int structure) {
 		this.structure = structure;
 	}
