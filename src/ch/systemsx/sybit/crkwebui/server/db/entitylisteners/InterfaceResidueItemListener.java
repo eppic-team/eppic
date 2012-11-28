@@ -15,14 +15,6 @@ public class InterfaceResidueItemListener
 	@PrePersist
 	public void prePersist(InterfaceResidueItemDB interfaceResidueItemDB)
 	{
-		if(interfaceResidueItemDB.getBsaPercentage() != null)
-		{
-			if(Float.isNaN(interfaceResidueItemDB.getBsaPercentage()))
-			{
-				interfaceResidueItemDB.setBsaPercentage(null);
-			}
-		}
-		
 		if(interfaceResidueItemDB.getBsa() != null)
 		{
 			if(Float.isNaN(interfaceResidueItemDB.getBsa()))
@@ -51,11 +43,6 @@ public class InterfaceResidueItemListener
 	@PostLoad
 	public void postLoad(InterfaceResidueItemDB interfaceResidueItemDB)
 	{
-		if(interfaceResidueItemDB.getBsaPercentage() == null)
-		{
-			interfaceResidueItemDB.setBsaPercentage(Float.NaN);
-		}
-		
 		if(interfaceResidueItemDB.getBsa() == null)
 		{
 			interfaceResidueItemDB.setBsa(Float.NaN);

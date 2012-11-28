@@ -224,7 +224,8 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 			resultsPathUrl += ":" + serverPort;
 		}
 
-		resultsPathUrl += "/crkwebui/";
+		String servletContPath = getServletContext().getInitParameter("servletContPath");
+		resultsPathUrl += "/" + servletContPath + "/";
 
 		EmailData emailData = new EmailData();
 		emailData.setEmailSender(properties.getProperty("email_username", ""));

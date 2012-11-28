@@ -4,7 +4,8 @@ public enum InterfaceResidueType {
 
 	SURFACE(0),
 	RIM(1),
-	CORE(2);
+	CORE_EVOLUTIONARY(2),
+	CORE_GEOMETRY(3);
 	
 	private int assignment;
 	

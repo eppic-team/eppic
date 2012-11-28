@@ -113,9 +113,13 @@ public class ResiduesPanel extends ContentPanel
 					{
 						return "eppic-grid-row-surface";
 					}
-					else if((Integer)model.get("assignment") == InterfaceResidueType.CORE.getAssignment())
+					else if((Integer)model.get("assignment") == InterfaceResidueType.CORE_EVOLUTIONARY.getAssignment())
 					{
-						return "eppic-grid-row-core";
+						return "eppic-grid-row-core-evolutionary";
+					}
+					else if((Integer)model.get("assignment") == InterfaceResidueType.CORE_GEOMETRY.getAssignment())
+					{
+						return "eppic-grid-row-core-geometry";
 					}
 					else if((Integer)model.get("assignment") == InterfaceResidueType.RIM.getAssignment())
 					{
@@ -192,7 +196,8 @@ public class ResiduesPanel extends ContentPanel
 		for(InterfaceResidueItemModel item : data)
 		{
 			if((isShowAll) ||
-				(((Integer)item.get("assignment") == InterfaceResidueType.CORE.getAssignment()) ||
+				(((Integer)item.get("assignment") == InterfaceResidueType.CORE_GEOMETRY.getAssignment()) ||
+				((Integer)item.get("assignment") == InterfaceResidueType.CORE_EVOLUTIONARY.getAssignment()) ||
 				((Integer)item.get("assignment") == InterfaceResidueType.RIM.getAssignment())))
 			{
 				dataToSet.add(item);

@@ -27,6 +27,7 @@ public class JmolViewerServlet extends BaseServlet
 	private String resultsLocation;
 	private String protocol;
 	private String generalDestinationDirectoryName;
+	private String servletContPath;
 
 	@Override
 	public void init(ServletConfig config) throws ServletException
@@ -42,6 +43,8 @@ public class JmolViewerServlet extends BaseServlet
 		}
 		
 		generalDestinationDirectoryName = properties.getProperty("destination_path");
+		
+		servletContPath = getServletContext().getInitParameter("servletContPath");
 	}
 	
 	@Override
@@ -55,8 +58,8 @@ public class JmolViewerServlet extends BaseServlet
 		
 		String serverName = request.getServerName();
 		int serverPort = request.getServerPort();
-		
-		String serverUrl = protocol + "://" + serverName + ":" + serverPort + "/crkwebui";
+
+		String serverUrl = protocol + "://" + serverName + ":" + serverPort + "/" + servletContPath;
 		
 		File jmolScriptFile = new File(generalDestinationDirectoryName + File.separator + jobId, 
 									   input + "." + interfaceId + ".jmol");

@@ -54,7 +54,7 @@ public class LegendPanel extends LayoutContainer
 			itemContainer.add(itemTypePanel, new HBoxLayoutData(new Margins(0, 10, 0, 0)));
 			itemContainer.add(itemTypeLabel);
 			
-			legendContainer.add(itemContainer, new RowData(0.25, 1, new Margins(0)));
+			legendContainer.add(itemContainer, new RowData(0.2, 1, new Margins(0)));
 		}
 		
 		this.add(legendContainer);

@@ -127,7 +127,8 @@ public class InterfaceResidueItem implements Serializable
 		interfaceResidueItem.setAsa(interfaceResidueItemDB.getAsa());
 		interfaceResidueItem.setAssignment(interfaceResidueItemDB.getAssignment());
 		interfaceResidueItem.setBsa(interfaceResidueItemDB.getBsa());
-		interfaceResidueItem.setBsaPercentage(interfaceResidueItemDB.getBsaPercentage());
+		interfaceResidueItem.setBsaPercentage(interfaceResidueItemDB.getBsa() / 
+											  interfaceResidueItemDB.getAsa());
 		interfaceResidueItem.setEntropyScore(interfaceResidueItemDB.getEntropyScore());
 		interfaceResidueItem.setResidueNumber(interfaceResidueItemDB.getResidueNumber());
 		interfaceResidueItem.setPdbResidueNumber(interfaceResidueItemDB.getPdbResidueNumber());

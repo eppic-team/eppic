@@ -6,7 +6,8 @@ package ch.systemsx.sybit.crkwebui.client.data;
 public enum LegendItem 
 {
 	RIM("Rim", "eppic-grid-row-rim"),
-	CORE("Core", "eppic-grid-row-core"),
+	CORE_GEOMETRY("Core geometry", "eppic-grid-row-core-geometry"),
+	CORE_EVOLUTIONARY("Core evolutionary", "eppic-grid-row-core-evolutionary"),
 	TOTALLY_BURIED("Totally buried", "eppic-grid-row-buried"),
 	SURFACE("Surface", "eppic-grid-row-surface");
 	

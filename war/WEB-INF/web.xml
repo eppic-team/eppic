@@ -13,6 +13,10 @@
        	<param-name>serverPort</param-name> 
        	<param-value>8888</param-value> 
     </context-param>
+    <context-param> 
+       	<param-name>servletContPath</param-name> 
+       	<param-value>ewui</param-value> 
+    </context-param>
     <context-param>
   		<param-name>gwt.xsrf.session_cookie_name</param-name>
   		<param-value>JSESSIONID</param-value>
@@ -36,7 +40,7 @@
 
 	<servlet-mapping>
 		<servlet-name>CrkService</servlet-name>
-		<url-pattern>/crkwebui/crk</url-pattern>
+		<url-pattern>/ewui/crk</url-pattern>
 	</servlet-mapping>
 	
 	<servlet>
@@ -45,7 +49,7 @@
 	</servlet>
 	<servlet-mapping>
   		<servlet-name>xsrf</servlet-name>
-  		<url-pattern>/crkwebui/xsrf</url-pattern>
+  		<url-pattern>/ewui/xsrf</url-pattern>
 	</servlet-mapping>
 
 	<servlet>
@@ -55,7 +59,7 @@
 
 	<servlet-mapping>
 	    <servlet-name>FileUploadService</servlet-name>
-	    <url-pattern>/crkwebui/fileUpload</url-pattern>
+	    <url-pattern>/ewui/fileUpload</url-pattern>
  	</servlet-mapping>
 
  	<servlet>
@@ -65,7 +69,7 @@
 
 	<servlet-mapping>
 	    <servlet-name>FileDownloadService</servlet-name>
-	    <url-pattern>/crkwebui/fileDownload</url-pattern>
+	    <url-pattern>/ewui/fileDownload</url-pattern>
  	</servlet-mapping>
  	
  	<servlet>
@@ -75,11 +79,11 @@
 
 	<servlet-mapping>
 	    <servlet-name>JmolViewerService</servlet-name>
-	    <url-pattern>/crkwebui/jmolViewer</url-pattern>
+	    <url-pattern>/ewui/jmolViewer</url-pattern>
  	</servlet-mapping>
 
  	<welcome-file-list>
-		<welcome-file>Crkwebui.html</welcome-file>
+		<welcome-file>Ewui.html</welcome-file>
 	</welcome-file-list>
 
 	<resource-ref>

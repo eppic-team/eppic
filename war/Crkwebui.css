@@ -71,8 +71,12 @@
 	background-color:#bedeff;
 }
 
-.eppic-grid-row-core.x-grid3-row,.eppic-grid-row-core {
+.eppic-grid-row-core-evolutionary.x-grid3-row,.eppic-grid-row-core-evolutionary {
 	background-color:#ff7979;
+}
+
+.eppic-grid-row-core-geometry.x-grid3-row,.eppic-grid-row-core-geometry {
+	background-color:#EE2C2C;
 }
 
 .eppic-grid-row-surface.x-grid3-row,.eppic-grid-row-surface {

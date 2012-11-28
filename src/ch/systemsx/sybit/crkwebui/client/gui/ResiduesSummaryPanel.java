@@ -171,8 +171,15 @@ public class ResiduesSummaryPanel extends ContentPanel
 		for(InterfaceResidueItem interfResItem : interfaceResidueItems) {
 //		for (InterfaceResidueItem interfResItem:mainController.getInterfaceResiduesItemsList().get(mainController.getMainViewPort().getInterfacesResiduesWindow().getSelectedInterface()).get(structure)) {
 			
-			if (interfResItem.getAssignment() == InterfaceResidueType.CORE.getAssignment()) coreSize++;
-			else if (interfResItem.getAssignment() == InterfaceResidueType.RIM.getAssignment()) rimSize++;
+			if ((interfResItem.getAssignment() == InterfaceResidueType.CORE_EVOLUTIONARY.getAssignment()) ||
+				(interfResItem.getAssignment() == InterfaceResidueType.CORE_GEOMETRY.getAssignment()))
+			{
+				coreSize++;
+			}
+			else if (interfResItem.getAssignment() == InterfaceResidueType.RIM.getAssignment()) 
+			{
+				rimSize++;
+			}
 		}
 	
 		InterfaceResidueSummaryModel model = new InterfaceResidueSummaryModel();

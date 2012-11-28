@@ -189,7 +189,6 @@
             </basic>
             <basic name="asa"><column nullable="true"/></basic>
             <basic name="bsa"><column nullable="true"/></basic>
-            <basic name="bsaPercentage"><column nullable="true"/></basic>
             <basic name="assignment"></basic>
             <basic name="entropyScore"><column nullable="true"/></basic>
 
