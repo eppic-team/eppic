@@ -165,6 +165,7 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 		}
 		
 		int nrOfThreadForSubmission = Integer.parseInt(properties.getProperty("nr_of_threads_for_submission","1"));
+		int assignedMemory = Integer.parseInt(properties.getProperty("assigned_memory","512"));
 		
 		Properties crkProperties = new Properties();
 
@@ -236,7 +237,8 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 
 		crkRunner = new CrkRunner(jobManager, 
 								  crkApplicationLocation,
-								  nrOfThreadForSubmission);
+								  nrOfThreadForSubmission,
+								  assignedMemory);
 
 		jobStatusUpdater = new JobStatusUpdater(jobManager,
 				new JobDAOJpa(),

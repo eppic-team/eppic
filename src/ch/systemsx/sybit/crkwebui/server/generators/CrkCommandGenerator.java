@@ -22,6 +22,7 @@ public class CrkCommandGenerator
 	 * @param inputParameters input parameters
 	 * @param destinationDirectoryName directory where results of the job are to be stored
 	 * @param nrOfThreadsForSubmission nr of threads used to run command
+	 * @param assignedMemory memory assigned for execution of the command
 	 * @return crk command
 	 */
 	public static List<String> createCrkCommand(String crkApplicationLocation,
@@ -29,9 +30,11 @@ public class CrkCommandGenerator
 												int inputType,
 												InputParameters inputParameters,
 												String destinationDirectoryName,
-												int nrOfThreadsForSubmission)
+												int nrOfThreadsForSubmission,
+												int assignedMemory)
 	{
 		List<String> command = new ArrayList<String>();
+		command.add("-Xmx" + assignedMemory + "m");
 		command.add("-jar");
 		command.add(crkApplicationLocation);
 		command.add("-i");
