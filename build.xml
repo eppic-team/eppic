@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <!-- ====================================================================== 
-     crkwebui    
+     EPPIC WebUI    
                    
-     	An ant script to build the crkwebui package. The default target "war" will clean,
+     	An ant script to build the EPPIC WebUI package. The default target "war" will clean,
      	compile the java code, compile the gwt code to js and 
-     	create a crkwebui.war archive 
+     	create a ewui.war archive 
 		Script modified from the one in GWT web site: 
 		http://code.google.com/webtoolkit/doc/latest/RefCommandLineTools.html#webAppCreator
 		      	
      ====================================================================== -->
-<project name="crkwebui" default="war" basedir=".">
+<project name="ewui" default="war" basedir=".">
 
   <property name="libs.dir" location="libs"/>
   <!-- ideally we should use the GWT from eclipse by calling the relative path to it,
@@ -160,7 +160,7 @@
   if already done. If ant executed from eclipse that's a lot more convenient because eclipse compiles 
   the java code automatically -->
   <target name="war" depends="clean-exceptclasses,build" description="Create a war file">
-    <zip destfile="crkwebui.war" basedir="war"/>
+    <zip destfile="ewui.war" basedir="war"/>
   </target>
 
   <target name="clean" depends="clean-exceptclasses,clean-classes"/>
@@ -174,7 +174,7 @@
   if already done. If ant executed from eclipse that's a lot more convenient because eclipse compiles 
   the java code automatically -->
   <target name="clean-exceptclasses" description="Cleans this project">
-  	<delete dir="war/crkwebui" failonerror="false" />
+  	<delete dir="war/ewui" failonerror="false" />
   	<delete dir="war/WEB-INF/lib" failonerror="false" />
   </target>
 
