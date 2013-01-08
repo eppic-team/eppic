@@ -714,16 +714,17 @@ public class CRKMain {
 			e.log(LOGGER);
 			e.exitIfFatal(1);
 		} 
-//		catch (Exception e) {
-//			e.printStackTrace();
-//
-//			String stack = "";
-//			for (StackTraceElement el:e.getStackTrace()) {
-//				stack+="\tat "+el.toString()+"\n";				
-//			}
-//			LOGGER.fatal("Unexpected error. Exiting.\n"+e+"\n"+stack);
-//			System.exit(1);
-//		}
+		catch (Exception e) {
+			//e.printStackTrace();
+
+			String stack = "";
+			for (StackTraceElement el:e.getStackTrace()) {
+				stack+="\tat "+el.toString()+"\n";				
+			}
+			LOGGER.fatal("Unexpected error. Stack trace:\n"+e+"\n"+stack+
+					"\nPlease report a bug to "+CRKParams.CONTACT_EMAIL);
+			System.exit(1);
+		}
 		
 		
 	}
