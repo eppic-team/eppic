@@ -105,7 +105,7 @@ public class EvolRimCoreMemberPredictor implements InterfaceTypePredictor {
 					countsUnrelRimRes+" unreliable out of "+rimCore.getRimSize()+" in rim";
 		}
 		else {
-			if (scoreRatio<parent.getCallCutoff()) {
+			if (scoreRatio<=parent.getCallCutoff()) {
 				call = CallType.BIO;
 				callReason = memberSerial+": score "+
 						String.format("%4.2f",scoreRatio)+" is below cutoff ("+String.format("%4.2f", parent.getCallCutoff())+")";

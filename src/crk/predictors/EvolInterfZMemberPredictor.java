@@ -95,7 +95,7 @@ public class EvolInterfZMemberPredictor implements InterfaceTypePredictor {
 					countsUnrelCoreRes+" unreliable out of "+rimCore.getCoreSize()+" in core";
 		}
 		else {
-			if (zScore<parent.getCallCutoff()) {
+			if (zScore<=parent.getCallCutoff()) {
 				call = CallType.BIO;
 				callReason = memberSerial+": score "+
 						String.format("%4.2f",getScore())+" is below cutoff ("+String.format("%4.2f", parent.getCallCutoff())+")";
