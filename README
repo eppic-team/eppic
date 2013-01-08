@@ -1,8 +1,15 @@
 EPPIC
 
 Evolutionary Protein-Protein Interface Classifier
-
 http://www.eppic-web.org
+
+If you use this software for your research, please cite:
+ 
+ Duarte JM, Srebniak A, Schärer MA and Capitani G, Protein interface 
+ classification by evolutionary analysis, BMC Bioinformatics 2012 13:334 
+ doi:10.1186/1471-2105-13-334 
+ 
+ http://www.biomedcentral.com/1471-2105/13/334
 
 
 
