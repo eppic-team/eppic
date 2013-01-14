@@ -89,6 +89,7 @@
 		<copy file="${jar.dir}/${ant.project.name}.jar" tofile="${dist.dir}/${appname}.jar"></copy>
 		<copy file="LICENSE" todir="${dist.dir}"></copy>
 		<copy file="README" todir="${dist.dir}"></copy>
+		<copy file="eppic.conf" todir="${dist.dir}"></copy>
 		<copy file="${scripts.dir}/${appname}.sh" tofile="${dist.dir}/${appname}" ></copy>
 		<chmod perm="+x" file="${dist.dir}/${appname}"></chmod>
 		
