@@ -659,6 +659,8 @@ public class CRKMain {
 
 			crkMain.setUpLogging();
 
+			LOGGER.info(CRKParams.PROGRAM_NAME+" version "+CRKParams.PROGRAM_VERSION);
+			
 			crkMain.loadConfigFile();
 			
 			try {
