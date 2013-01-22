@@ -229,13 +229,9 @@ public class ChainEvolContextList implements Serializable {
 				continue;
 			}
 			params.getProgressLog().print(chainEvCont.getRepresentativeChainCode()+" ");
-			
-			File blastCacheFile = null;
-			if (params.getBlastCacheDir()!=null) {
-				blastCacheFile = new File(params.getBlastCacheDir(),chainEvCont.getQuery().getUniId()+".blast.xml"); 
-			}
+						
 			try {
-				chainEvCont.blastForHomologs(params, blastCacheFile);
+				chainEvCont.blastForHomologs(params);
 
 			} catch (UniprotVerMisMatchException e) {
 				throw new CRKException(e, "Mismatch of Uniprot versions! "+e.getMessage(), true);
