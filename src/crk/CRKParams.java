@@ -349,14 +349,17 @@ public class CRKParams {
 	
 	public void parseCommandLine(String[] args) throws CRKException {
 		
-		String help = "Usage: \n" +
+		String help = 
 		PROGRAM_NAME+" ver. "+PROGRAM_VERSION+"\n" +
+		"Usage: \n" +
 		"   -i <string> :  input PDB code or PDB/mmCIF file\n" +
 		"  [-s]         :  calculate evolutionary entropy-based scores (core-rim and \n" +
 		"                  core-surface).\n" +
 		"                  If not specified, only geometric scoring is done.\n"+
-		"  [-a <int>]   :  number of threads for blast, alignment and ASA calculation. Default: "+DEF_NUMTHREADS+"\n"+
-		"  [-b <string>]:  basename for output files. Default: as input PDB code or file name\n"+
+		"  [-a <int>]   :  number of threads for blast, alignment and ASA calculation. \n" +
+		"                  Default: "+DEF_NUMTHREADS+"\n"+
+		"  [-b <string>]:  basename for output files. Default: as input PDB code or file \n" +
+		"                  name\n"+
 		"  [-o <dir>]   :  output dir, where output files will be written. Default: current\n" +
 		"                  dir \n" +
 		"  [-r <int>]   :  specify the number of groups of aminoacids (reduced alphabet) to\n" +
@@ -384,27 +387,27 @@ public class CRKParams {
 		"                  Default: "+String.format("%3.1f",DEF_HOM_HARD_ID_CUTOFF)+"\n"+
 		"  [-q <int>]   :  maximum number of sequences to keep for calculation of conservation \n" +
 		"                  scores. Default: "+DEF_MAX_NUM_SEQUENCES+"\n"+
-		"  [-H <string>]:  homologs search mode: either \"local\" (only Uniprot region covered\n" +
-		"                  by PDB structure will be used to search homologs) or \"global\" (full\n" +
-		"                  Uniprot entry will be used to search homologs).\n" +
+		"  [-H <string>]:  homologs search mode: either \"local\" (only UniProt region covered\n" +
+		"                  by PDB structure will be used to search homologs) or \"global\" \n" +
+		"                  (full UniProt entry will be used to search homologs).\n" +
 		"                  Default "+DEF_HOMOLOGS_SEARCH_MODE.getName() + "\n"+
-		"  [-O]         :  restrict homologs search to those within the same domain of life as \n" +
-		"                  query\n"+
+		"  [-O]         :  restrict homologs search to those within the same domain of \n" +
+		"                  life as query\n"+
 		"  [-p]         :  use PISA interface enumeration (will be downloaded from web) \n" +
 		"                  instead of ours (only possible for existing PDB entries).\n" +
-		"  [-A <int>]   :  number of sphere points for ASA calculation, this parameter controls\n" +
-		"                  the accuracy of the ASA calculations, the bigger the more accurate \n" +
-		"                  (and slower). Default: "+DEF_NSPHEREPOINTS_ASA_CALC+"\n" +
-		"  [-I <file>]  :  binary file containing the interface enumeration output of a previous \n" +
-		"                  run of "+PROGRAM_NAME+"\n" +
+		"  [-A <int>]   :  number of sphere points for ASA calculation, this parameter \n" +
+		"                  controls the accuracy of the ASA calculations, the bigger the\n" +
+		"                  more accurate (and slower). Default: "+DEF_NSPHEREPOINTS_ASA_CALC+"\n" +
+		"  [-I <file>]  :  binary file containing the interface enumeration output of a \n" +
+		"                  previous run of "+PROGRAM_NAME+"\n" +
 		"  [-C <file>]  :  binary file containing the evolutionary scores for a particular \n" +
 		"                  sequence output of a previous run of "+PROGRAM_NAME+"\n" +
 		"  [-l]         :  if specified thumbnail images will be generated for each interface \n" +
 		"                  (requires pymol)\n" +
-		"  [-L <file>]  :  a file where progress log will be written to. Default: progress log \n" +
-		"                  written to std output\n" +
-		"  [-g <file>]  :  an eppic config file. This will override the existing config \n" +
-		"                  file in the user's home directory\n" +
+		"  [-L <file>]  :  a file where progress log will be written to. Default: progress\n" +
+		"                  log written to std output\n" +
+		"  [-g <file>]  :  a "+PROGRAM_NAME+" config file. This will override the existing \n" +
+		"                  config file in the user's home directory\n" +
 		"  [-u]         :  debug, if specified debug output will be also shown on standard\n" +
 		"                  output\n\n";
 		
