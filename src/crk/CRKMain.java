@@ -350,7 +350,7 @@ public class CRKMain {
 					File chainPdbFile = params.getOutputFile("."+cec.getRepresentativeChainCode()+CRKParams.ENTROPIES_FILE_SUFFIX+".pdb");
 					File chainPseFile = params.getOutputFile("."+cec.getRepresentativeChainCode()+CRKParams.ENTROPIES_FILE_SUFFIX+".pse");
 					File chainPmlFile = params.getOutputFile("."+cec.getRepresentativeChainCode()+CRKParams.ENTROPIES_FILE_SUFFIX+".pml");
-					chain.writeToPDBFile(chainPdbFile);
+					chain.writeToPDBFileWithPdbChainCodes(chainPdbFile);
 					pr.generateChainPse(chain, interfaces, 
 							params.getCAcutoffForGeom(), params.getCAcutoffForZscore(), params.getMinAsaForSurface(),
 							chainPdbFile, 
