@@ -63,20 +63,16 @@ public class CombinedPredictor implements InterfaceTypePredictor {
 				}
 			} else { // we can't tell whether they are engineered or not, we simply warn they are present
 				String msg = iec.getInterface().getAICGraph().getDisulfidePairs().size()+" disulfide bridges present, can't determine whether they are wild-type or not.";
-				msg += " Between CYS residues: ";			
-				for (Pair<Atom> pair:iec.getInterface().getAICGraph().getDisulfidePairs()) {		
-					msg += getPairInteractionString(pair);
-				}
+				msg += " Between CYS residues: ";
+				msg += getPairInteractionsString(iec.getInterface().getAICGraph().getDisulfidePairs());
 				warnings.add(msg);
 			}
 		}
 		// engineered disulfides: they are only warnings
 		if (!engineeredDisulfides.isEmpty()) {
 			String msg = engineeredDisulfides.size()+" engineered disulfide bridges present.";
-			msg += " Between CYS residues: ";			
-			for (Pair<Atom> pair:engineeredDisulfides) {		
-				msg += getPairInteractionString(pair);
-			}
+			msg += " Between CYS residues: ";
+			msg += getPairInteractionsString(engineeredDisulfides);
 			warnings.add(msg);
 		}
 
@@ -97,10 +93,8 @@ public class CombinedPredictor implements InterfaceTypePredictor {
 		// 1st if wild-type disulfide bridges present we call bio
 		if (!wildTypeDisulfides.isEmpty()) {
 			callReason = wildTypeDisulfides.size()+" wild-type disulfide bridges present.";
-			callReason += " Between CYS residues: ";			
-			for (Pair<Atom> pair:wildTypeDisulfides) {		
-				callReason+= getPairInteractionString(pair);
-			}
+			callReason += " Between CYS residues: ";
+			callReason += getPairInteractionsString(wildTypeDisulfides);
 			call = CallType.BIO;
 			votes = 0;
 		}
@@ -145,7 +139,7 @@ public class CombinedPredictor implements InterfaceTypePredictor {
 				InterfaceTypePredictor validPred = null;
 				if (rp.getCall()!=CallType.NO_PREDICTION) validPred = rp;
 				else validPred = zp;
-				callReason = reasonMsgPrefix+"No consensus. Z-score "+zp.getCall().getName()+", core/rim "+rp.getCall().getName()+". Taking evol call as final: "+validPred.getCallReason();
+				callReason = reasonMsgPrefix+"No consensus. Core-surface "+zp.getCall().getName()+", core-rim "+rp.getCall().getName()+". Taking evolutionary call as final: "+validPred.getCallReason();
 				call = validPred.getCall();
 				votes = 1;
 			}
@@ -240,6 +234,19 @@ public class CombinedPredictor implements InterfaceTypePredictor {
 			}
 		}
 	}
+	
+	private String getPairInteractionsString(List<Pair<Atom>> pairs) {
+		String msg = "";
+		
+		for (int i=0;i<pairs.size();i++) {
+			if (i<pairs.size()-1) {
+				msg += getPairInteractionString(pairs.get(i))+", ";
+			} else {
+				msg += getPairInteractionString(pairs.get(i));
+			}
+		}
+		return msg;
+	}	
 	
 	private String getPairInteractionString(Pair<Atom> pair) {
 		String firstResSer = null;
