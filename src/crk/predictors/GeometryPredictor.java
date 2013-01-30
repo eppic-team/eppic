@@ -43,6 +43,8 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 	
 	private int size;
 	
+	private boolean usePdbResSer;
+	
 	public GeometryPredictor(ChainInterface interf) {
 		this.interf = interf;
 		warnings = new ArrayList<String>();
@@ -131,11 +133,20 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 			String warning = "Close interactions mediated by a non-polymer chain exist in interface. Between : ";
 			for (int i=0;i<interactingPairs.size();i++) {
 				Pair<Atom> pair = interactingPairs.get(i);
+				String firstResSer = null;
+				String secondResSer = null;
+				if (usePdbResSer) {
+					firstResSer = pair.getFirst().getParentResidue().getPdbSerial();	
+					secondResSer = pair.getSecond().getParentResidue().getPdbSerial();
+				} else {
+					firstResSer = ""+pair.getFirst().getParentResidue().getSerial();
+					secondResSer = ""+pair.getSecond().getParentResidue().getSerial();
+				}
 				// first atom is always from nonpoly chain, second atom from either poly chain of interface
-				warning+=pair.getFirst().getParentResSerial()+
+				warning+=firstResSer+
 						"("+pair.getFirst().getCode()+ ") and "+
 							pair.getSecond().getParentResidue().getParent().getPdbChainCode()+"-"+
-							pair.getSecond().getParentResSerial()+"("+pair.getSecond().getParentResidue().getLongCode()+")-"+
+							secondResSer+"("+pair.getSecond().getParentResidue().getLongCode()+")-"+
 							pair.getSecond().getCode()+
 							" (distance: "+String.format("%3.1f",pair.getFirst().getCoords().distance(pair.getSecond().getCoords()))+" A)";
 				if (i!=interactingPairs.size()-1) warning+=", ";
@@ -164,12 +175,22 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 	}
 	
 	private String getPairInteractionString(Pair<Atom> pair) {
+		String firstResSer = null;
+		String secondResSer = null;
+		if (usePdbResSer) {
+			firstResSer = pair.getFirst().getParentResidue().getPdbSerial();	
+			secondResSer = pair.getSecond().getParentResidue().getPdbSerial();
+		} else {
+			firstResSer = ""+pair.getFirst().getParentResidue().getSerial();
+			secondResSer = ""+pair.getSecond().getParentResidue().getSerial();
+		}
+		
 		return
 		pair.getFirst().getParentResidue().getParent().getPdbChainCode()+"-"+
-		pair.getFirst().getParentResSerial()+"("+pair.getFirst().getParentResidue().getLongCode()+")-"+
+		firstResSer+"("+pair.getFirst().getParentResidue().getLongCode()+")-"+
 		pair.getFirst().getCode()+" and "+ 	
 		pair.getSecond().getParentResidue().getParent().getPdbChainCode()+"-"+
-		pair.getSecond().getParentResSerial()+"("+pair.getSecond().getParentResidue().getLongCode()+")-"+
+		secondResSer+"("+pair.getSecond().getParentResidue().getLongCode()+")-"+
 		pair.getSecond().getCode()+
 		" (distance: "+String.format("%3.1f",pair.getFirst().getCoords().distance(pair.getSecond().getCoords()))+" A)";
 	}
@@ -202,14 +223,15 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 	 * Writes out a PDB file with the 2 chains of this interface
 	 * In order for the file to be handled properly by molecular viewers whenever the two
 	 * chains have the same code we rename the second one to the next letter in alphabet.
-	 * PDB chain codes are used for the output, not cif codes.  
+	 * PDB chain codes are used for the output, not CIF codes.
+	 * Serials will be either PDB or CIF depending on {@link #setUsePdbResSer(boolean)}  
 	 * @param file
 	 * @throws IOException
 	 */
 	public void writePdbFile(File file) throws IOException {
  
 		if (interf.isFirstProtein() && interf.isSecondProtein()) {
-			this.interf.writeToPdbFile(file);
+			this.interf.writeToPdbFile(file, usePdbResSer);
 		}
 	}
 	
@@ -223,6 +245,16 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 	
 	public void setMinCoreSizeForBio(int minCoreSizeForBio) {
 		this.minCoreSizeForBio = minCoreSizeForBio;
+	}
+	
+	/**
+	 * Sets whether the output warnings and PDB files are to be written with
+	 * PDB residue serials or CIF (SEQRES) residue serials
+	 * @param usePdbResSer if true PDB residue serials are used, if false CIF
+	 * residue serials are used
+	 */
+	public void setUsePdbResSer(boolean usePdbResSer) {
+		this.usePdbResSer = usePdbResSer;
 	}
 	
 	public int countGlycines(InterfaceRimCore rimcore) {

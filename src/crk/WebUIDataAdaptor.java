@@ -107,17 +107,17 @@ public class WebUIDataAdaptor {
 
 	}
 	
-	public void writeJmolScriptFile(ChainInterface interf, double caCutoff, double minAsaForSurface, PymolRunner pr, File dir, String prefix) 
+	public void writeJmolScriptFile(ChainInterface interf, double caCutoff, double minAsaForSurface, PymolRunner pr, File dir, String prefix, boolean usePdbResSer) 
 			throws FileNotFoundException {
 		 
 			File file = new File(dir,prefix+"."+interf.getId()+".jmol");
 			PrintStream ps = new PrintStream(file);
-			ps.print(createJmolScript(interf, caCutoff, minAsaForSurface, pr));
+			ps.print(createJmolScript(interf, caCutoff, minAsaForSurface, pr, usePdbResSer));
 			ps.close();
 
 	}
 	
-	private String createJmolScript(ChainInterface interf, double caCutoff, double minAsaForSurface, PymolRunner pr) {
+	private String createJmolScript(ChainInterface interf, double caCutoff, double minAsaForSurface, PymolRunner pr, boolean usePdbResSer) {
 		char chain1 = interf.getFirstMolecule().getPdbChainCode().charAt(0);
 		char chain2 = interf.getSecondPdbChainCodeForOutput().charAt(0);
 		
@@ -135,10 +135,10 @@ public class WebUIDataAdaptor {
 		sb.append("select :"+chain1+"; color "+color1+";\n");
 		sb.append("select :"+chain2+"; color "+color2+";\n");
 		interf.calcRimAndCore(caCutoff, minAsaForSurface);
-		sb.append(getSelString("core", chain1, interf.getFirstRimCore().getCoreResidues())+";\n");
-		sb.append(getSelString("core", chain2, interf.getSecondRimCore().getCoreResidues())+";\n");
-		sb.append(getSelString("rim", chain1, interf.getFirstRimCore().getRimResidues())+";\n");
-		sb.append(getSelString("rim", chain2, interf.getSecondRimCore().getRimResidues())+";\n");
+		sb.append(getSelString("core", chain1, interf.getFirstRimCore().getCoreResidues(), usePdbResSer)+";\n");
+		sb.append(getSelString("core", chain2, interf.getSecondRimCore().getCoreResidues(), usePdbResSer)+";\n");
+		sb.append(getSelString("rim", chain1, interf.getFirstRimCore().getRimResidues(), usePdbResSer)+";\n");
+		sb.append(getSelString("rim", chain2, interf.getSecondRimCore().getRimResidues(), usePdbResSer)+";\n");
 		sb.append("define interface"+chain1+" core"+chain1+" or rim"+chain1+";\n");
 		sb.append("define interface"+chain2+" core"+chain2+" or rim"+chain2+";\n");
 		sb.append("define bothinterf interface"+chain1+" or interface"+chain2+";\n");
@@ -155,18 +155,22 @@ public class WebUIDataAdaptor {
 		return sb.toString();
 	}
 	
-	private String getResiSelString(List<Residue> list, char chainName) {
+	private String getResiSelString(List<Residue> list, char chainName, boolean usePdbResSer) {
 		if (list.isEmpty()) return "0:"+chainName;
 		StringBuffer sb = new StringBuffer();
 		for (int i=0;i<list.size();i++) {
-			sb.append(list.get(i).getSerial()+":"+chainName);
+			if (usePdbResSer) {
+				sb.append(list.get(i).getPdbSerial()+":"+chainName);
+			} else {
+				sb.append(list.get(i).getSerial()+":"+chainName);
+			}
 			if (i!=list.size()-1) sb.append(",");
 		}
 		return sb.toString();
 	}
 
-	private String getSelString(String namePrefix, char chainName, List<Residue> list) {
-		return "define "+namePrefix+chainName+" "+getResiSelString(list,chainName);
+	private String getSelString(String namePrefix, char chainName, List<Residue> list, boolean usePdbResSer) {
+		return "define "+namePrefix+chainName+" "+getResiSelString(list,chainName, usePdbResSer);
 	}
 	
 	public void setGeometryScores(List<GeometryPredictor> gps) {

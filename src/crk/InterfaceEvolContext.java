@@ -138,7 +138,13 @@ public class InterfaceEvolContext implements Serializable {
 					" are unreliable because of mismatch of PDB sequence to UniProt reference: ";
 			
 			for (int i=0;i<unreliableResidues.size();i++) {
-				msg+= unreliableResidues.get(i).getSerial()+
+				String serial = null;
+				if (parent.isUsePdbResSer()) {
+					serial = unreliableResidues.get(i).getPdbSerial();
+				} else {
+					serial = "" + unreliableResidues.get(i).getSerial();
+				}
+				msg+= serial +
 					  "("+unreliableResidues.get(i).getLongCode()+")";
 				
 				if (i!=unreliableResidues.size()-1) msg+=", ";				
@@ -194,19 +200,21 @@ public class InterfaceEvolContext implements Serializable {
 	 * as b-factors. 
 	 * In order for the file to be handled properly by molecular viewers whenever the two
 	 * chains have the same code we rename the second one to the next letter in alphabet.
-	 * PDB chain codes are used for the output, not cif codes.  
+	 * PDB chain codes are used for the output, not CIF codes.  
 	 * @param file
 	 * @param scoringType
+	 * @param usePdbResSer if true PDB residue serials are written, if false CIF residue 
+	 * serials are written 
 	 * @throws IOException
 	 */
-	public void writePdbFile(File file, ScoringType scoringType) throws IOException {
+	public void writePdbFile(File file, ScoringType scoringType, boolean usePdbResSer) throws IOException {
 
 		if (interf.isFirstProtein() && interf.isSecondProtein()) {
 
 			setConservationScoresAsBfactors(FIRST,scoringType);
 			setConservationScoresAsBfactors(SECOND,scoringType);
 			
-			this.interf.writeToPdbFile(file);
+			this.interf.writeToPdbFile(file, usePdbResSer);
 		}
 	}
 	

@@ -51,6 +51,8 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 	
 	private double zScoreCutoff;
 	
+	private boolean usePdbResSer;
+	
 	/**
 	 * Constructs a InterfaceEvolContextList given a ChainInterfaceList with all 
 	 * interfaces of a given PDB and a ChainEvolContextList with all evolutionary 
@@ -115,16 +117,6 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 		}
 	}
 	
-//	public void scoreKaKs(boolean weighted) {
-//		this.scoType = ScoringType.KAKS;
-//		this.isScoreWeighted = weighted;
-//		for (int i=0;i<list.size();i++) {
-//			if (list.get(i).canDoKaks()) {
-//				evolRimCorePredictors.get(i).scoreKaKs(weighted);
-//			}
-//		}		
-//	}
-	
 	public void scoreZscore() {
 		this.scoType = ScoringType.ZSCORE;
 		for (int i=0;i<list.size();i++) {
@@ -158,7 +150,7 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 	public void writeScoresPDBFiles(CRKParams params, String suffix) throws IOException {
 		for (InterfaceEvolContext iec:this) {
 			if (scoType==ScoringType.ENTROPY) {
-				iec.writePdbFile(params.getOutputFile("."+iec.getInterface().getId()+suffix),scoType);
+				iec.writePdbFile(params.getOutputFile("."+iec.getInterface().getId()+suffix),scoType, usePdbResSer);
 			}
 		}
 	}
@@ -201,6 +193,26 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 		for (int i=0;i<list.size();i++) {
 			evolInterfZPredictors.get(i).setBsaToAsaCutoff(bsaToAsaCutoff, minAsaForSurface);
 		}		
+	}
+	
+	/**
+	 * Whether the output warnings and PDB files are to be written with
+	 * PDB residue serials or CIF (SEQRES) residue serials
+	 * @param usePdbResSer if true PDB residue serials are used, if false CIF
+	 * residue serials are used
+	 */
+	public boolean isUsePdbResSer() {
+		return usePdbResSer;
+	}
+	
+	/**
+	 * Sets whether the output warnings and PDB files are to be written with
+	 * PDB residue serials or CIF (SEQRES) residue serials
+	 * @param usePdbResSer if true PDB residue serials are used, if false CIF
+	 * residue serials are used
+	 */
+	public void setUsePdbResSer(boolean usePdbResSer) {
+		this.usePdbResSer = usePdbResSer;
 	}
 	
 	public int getHomologsCutoff() {

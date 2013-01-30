@@ -261,7 +261,7 @@ public class CRKMain {
 		
 		try {
 			PrintStream interfLogPS = new PrintStream(params.getOutputFile(".interfaces"));
-			interfaces.printTabular(interfLogPS, params.getJobName());
+			interfaces.printTabular(interfLogPS, params.getJobName(), params.isUsePdbResSer());
 			interfLogPS.close();
 		} catch(IOException	e) {
 			throw new CRKException(e,"Couldn't log interfaces description to file: "+e.getMessage(),false);
@@ -293,6 +293,7 @@ public class CRKMain {
 			GeometryPredictor.printScoringHeaders(scoreGeomPS);
 			for (ChainInterface interf:interfaces) {
 				GeometryPredictor gp = new GeometryPredictor(interf);
+				gp.setUsePdbResSer(params.isUsePdbResSer());
 				gps.add(gp);
 				gp.setBsaToAsaCutoff(params.getCAcutoffForGeom());
 				gp.setMinAsaForSurface(params.getMinAsaForSurface());
@@ -338,9 +339,11 @@ public class CRKMain {
 						params.getOutputFile("."+interf.getId()+".pdb"), 
 						params.getOutputFile("."+interf.getId()+".pse"),
 						params.getOutputFile("."+interf.getId()+".pml"),
-						params.getBaseName()+"."+interf.getId());
+						params.getBaseName()+"."+interf.getId(), 
+						params.isUsePdbResSer());
 				LOGGER.info("Generated PyMOL files for interface "+interf.getId());
-				wuiAdaptor.writeJmolScriptFile(interf, params.getCAcutoffForGeom(), params.getMinAsaForSurface(), pr, params.getOutDir(), params.getBaseName());
+				wuiAdaptor.writeJmolScriptFile(interf, params.getCAcutoffForGeom(), params.getMinAsaForSurface(), pr, 
+						params.getOutDir(), params.getBaseName(), params.isUsePdbResSer());
 			}
 
 			if (params.isDoScoreEntropies()) {
@@ -350,13 +353,14 @@ public class CRKMain {
 					File chainPdbFile = params.getOutputFile("."+cec.getRepresentativeChainCode()+CRKParams.ENTROPIES_FILE_SUFFIX+".pdb");
 					File chainPseFile = params.getOutputFile("."+cec.getRepresentativeChainCode()+CRKParams.ENTROPIES_FILE_SUFFIX+".pse");
 					File chainPmlFile = params.getOutputFile("."+cec.getRepresentativeChainCode()+CRKParams.ENTROPIES_FILE_SUFFIX+".pml");
-					chain.writeToPDBFileWithPdbChainCodes(chainPdbFile);
+					chain.writeToPDBFileWithPdbChainCodes(chainPdbFile, params.isUsePdbResSer());
 					pr.generateChainPse(chain, interfaces, 
 							params.getCAcutoffForGeom(), params.getCAcutoffForZscore(), params.getMinAsaForSurface(),
 							chainPdbFile, 
 							chainPseFile, 
 							chainPmlFile,
-							0,params.getMaxEntropy());
+							0,params.getMaxEntropy(),
+							params.isUsePdbResSer());
 				}
 			}
 			
@@ -551,6 +555,7 @@ public class CRKMain {
 		if (interfaces.getNumInterfaces()==0) return;
 
 		iecList = new InterfaceEvolContextList(params.getJobName(), interfaces, cecs);
+		iecList.setUsePdbResSer(params.isUsePdbResSer());
 
 		writeStep("Scoring Interfaces");
 		
@@ -560,7 +565,7 @@ public class CRKMain {
 				iecList.setCallCutoff(params.getEntrCallCutoff());
 				iecList.setZscoreCutoff(params.getZscoreCutoff());
 				PrintStream scoreEntrPS = new PrintStream(params.getOutputFile(CRKParams.CRSCORES_FILE_SUFFIX));
-				// entropy nw
+
 				iecList.scoreEntropy(false);
 				iecList.printScoresTable(scoreEntrPS);
 				

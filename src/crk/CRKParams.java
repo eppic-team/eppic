@@ -123,6 +123,9 @@ public class CRKParams {
 	// default use uniparc
 	private static final boolean  DEF_USE_UNIPARC = true;
 	
+	// default use pdb res serials for output
+	public static final boolean   DEF_USE_PDB_RES_SER = true;
+	
 	// FIELDS
 	
 	// the parameters
@@ -208,6 +211,8 @@ public class CRKParams {
 	private String   blastCacheDir;
 	
 	private boolean  useUniparc;
+	
+	private boolean  usePdbResSer;
 	
 	// and finally the ones with no defaults
 	private String   blastDbDir; // no default
@@ -801,6 +806,8 @@ public class CRKParams {
 			
 			useUniparc       = Boolean.parseBoolean(p.getProperty("USE_UNIPARC",new Boolean(DEF_USE_UNIPARC).toString()));
 			
+			usePdbResSer	 = Boolean.parseBoolean(p.getProperty("USE_PDB_RES_SER",new Boolean(DEF_USE_PDB_RES_SER).toString()));
+			
 		} catch (NumberFormatException e) {
 			System.err.println("A numerical value in the config file was incorrectly specified: "+e.getMessage()+".\n" +
 					"Please check the config file.");
@@ -900,5 +907,8 @@ public class CRKParams {
 		return useUniparc;
 	}
 	
+	public boolean isUsePdbResSer() {
+		return usePdbResSer;
+	}
 
 }

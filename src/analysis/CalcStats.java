@@ -64,6 +64,8 @@ public class CalcStats {
 	private static final double DEFCACUTOFF_FOR_CR = CRKParams.DEF_CA_CUTOFF_FOR_RIMCORE;
 	
 	private static final double DEF_MIN_ASA_FOR_SURFACE = CRKParams.DEF_MIN_ASA_FOR_SURFACE;
+	
+	private static final boolean DEF_USE_PDB_RES_SER = CRKParams.DEF_USE_PDB_RES_SER;
 		
 	private static final String UNKNOWN_TAXON = "Unknown";
 	
@@ -413,6 +415,7 @@ public class CalcStats {
 						
 						ChainInterface interf = interfaces.get(id);
 						GeometryPredictor gp = new GeometryPredictor(interf);
+						gp.setUsePdbResSer(DEF_USE_PDB_RES_SER);
 						gp.setBsaToAsaCutoff(caCutoffsG[i]);
 						gp.setMinAsaForSurface(minAsaForSurface);
 						gp.setMinCoreSizeForBio(minNumberCoreResForBios[j]);
@@ -487,6 +490,7 @@ public class CalcStats {
 			ChainInterfaceList cil = Utils.readChainInterfaceList(interfdatFile);
 			ChainEvolContextList cecl = Utils.readChainEvolContextList(chainevolcontextdatFile);
 			InterfaceEvolContextList iecList = new InterfaceEvolContextList(pdbCode, cil, cecl);
+			iecList.setUsePdbResSer(DEF_USE_PDB_RES_SER);
 			
 			String dol = cecl.getDomainOfLife();
 			if (dol==null) dol = UNKNOWN_TAXON;
@@ -663,6 +667,7 @@ public class CalcStats {
 		//interf.calcRimAndCore(caCutoffsG[i]);
 		interf.calcRimAndCore(DEFCACUTOFF_FOR_G, minAsaForSurface);
 		GeometryPredictor gp = new GeometryPredictor(interf);
+		gp.setUsePdbResSer(DEF_USE_PDB_RES_SER);
 		//gp.setBsaToAsaCutoff(caCutoffsG[i]);
 		gp.setBsaToAsaCutoff(DEFCACUTOFF_FOR_G);
 		gp.setMinAsaForSurface(minAsaForSurface);
