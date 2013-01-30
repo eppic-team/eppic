@@ -29,12 +29,18 @@ public class CombinedCSGeomPredictor implements InterfaceTypePredictor {
 	
 	private int votes;
 	
+	private boolean usePdbResSer;
+	
 	public CombinedCSGeomPredictor(InterfaceEvolContext iec, GeometryPredictor gp, EvolRimCorePredictor rp, EvolInterfZPredictor zp) {
 		this.iec=iec;
 		this.gp=gp;
 		this.rp=rp;
 		this.zp=zp;
 		this.warnings = new ArrayList<String>();
+	}
+	
+	public void setUsePdbResSer(boolean usePdbResSer) {
+		this.usePdbResSer = usePdbResSer;
 	}
 	
 	@Override
@@ -59,11 +65,7 @@ public class CombinedCSGeomPredictor implements InterfaceTypePredictor {
 				String msg = iec.getInterface().getAICGraph().getDisulfidePairs().size()+" disulfide bridges present, can't determine whether they are wild-type or not.";
 				msg += " Between CYS residues: ";			
 				for (Pair<Atom> pair:iec.getInterface().getAICGraph().getDisulfidePairs()) {		
-					msg +=
-							pair.getFirst().getParentResidue().getParent().getPdbChainCode()+"-"+
-									pair.getFirst().getParentResSerial()+" and "+
-									pair.getSecond().getParentResidue().getParent().getPdbChainCode()+"-"+
-									pair.getSecond().getParentResSerial();
+					msg += getPairInteractionString(pair);
 				}
 				warnings.add(msg);
 			}
@@ -73,11 +75,7 @@ public class CombinedCSGeomPredictor implements InterfaceTypePredictor {
 			String msg = engineeredDisulfides.size()+" engineered disulfide bridges present.";
 			msg += " Between CYS residues: ";			
 			for (Pair<Atom> pair:engineeredDisulfides) {		
-				msg +=
-						pair.getFirst().getParentResidue().getParent().getPdbChainCode()+"-"+
-								pair.getFirst().getParentResSerial()+" and "+
-								pair.getSecond().getParentResidue().getParent().getPdbChainCode()+"-"+
-								pair.getSecond().getParentResSerial();
+				msg += getPairInteractionString(pair);
 			}
 			warnings.add(msg);
 		}
@@ -101,11 +99,7 @@ public class CombinedCSGeomPredictor implements InterfaceTypePredictor {
 			callReason = wildTypeDisulfides.size()+" wild-type disulfide bridges present.";
 			callReason += " Between CYS residues: ";			
 			for (Pair<Atom> pair:wildTypeDisulfides) {		
-				callReason+=
-						pair.getFirst().getParentResidue().getParent().getPdbChainCode()+"-"+
-								pair.getFirst().getParentResSerial()+" and "+
-								pair.getSecond().getParentResidue().getParent().getPdbChainCode()+"-"+
-								pair.getSecond().getParentResSerial();
+				callReason+= getPairInteractionString(pair);
 			}
 			call = CallType.BIO;
 			votes = 0;
@@ -177,6 +171,25 @@ public class CombinedCSGeomPredictor implements InterfaceTypePredictor {
 				ps.println("     "+warning);
 			}
 		}
+	}
+	
+	private String getPairInteractionString(Pair<Atom> pair) {
+		String firstResSer = null;
+		String secondResSer = null;
+		if (usePdbResSer) {
+			firstResSer = pair.getFirst().getParentResidue().getPdbSerial();	
+			secondResSer = pair.getSecond().getParentResidue().getPdbSerial();
+		} else {
+			firstResSer = ""+pair.getFirst().getParentResidue().getSerial();
+			secondResSer = ""+pair.getSecond().getParentResidue().getSerial();
+		}
+		
+		return
+		pair.getFirst().getParentResidue().getParent().getPdbChainCode()+"-"+
+		firstResSer+" and "+
+		pair.getSecond().getParentResidue().getParent().getPdbChainCode()+"-"+
+		secondResSer;
+		
 	}
 	
 }

@@ -691,8 +691,12 @@ public class CalcStats {
 		InterfaceTypePredictor cp = null;
 		if (combinedCSG) {
 			cp = new CombinedCSGeomPredictor(iec, gp, ercp, eizp);
+			CombinedCSGeomPredictor casted = (CombinedCSGeomPredictor)cp;
+			casted.setUsePdbResSer(DEF_USE_PDB_RES_SER);			
 		} else {
 			cp = new CombinedPredictor(iec, gp, ercp, eizp);
+			CombinedPredictor casted = (CombinedPredictor)cp;
+			casted.setUsePdbResSer(DEF_USE_PDB_RES_SER);
 		}
 
 		CallType call = cp.getCall();

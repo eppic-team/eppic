@@ -613,6 +613,7 @@ public class CRKMain {
 			for (int i=0;i<iecList.size();i++) {
 				CombinedPredictor cp = 
 						new CombinedPredictor(iecList.get(i), gps.get(i), iecList.getEvolRimCorePredictor(i), iecList.getEvolInterfZPredictor(i));
+				cp.setUsePdbResSer(params.isUsePdbResSer());
 				cps.add(cp);
 				cp.printScoresLine(scoreCombPS);
 			}
