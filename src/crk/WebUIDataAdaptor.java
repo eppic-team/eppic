@@ -156,7 +156,9 @@ public class WebUIDataAdaptor {
 	}
 	
 	private String getResiSelString(List<Residue> list, char chainName, boolean usePdbResSer) {
-		if (list.isEmpty()) return "0:"+chainName;
+		// residue 0 or negatives can exist (e.g. 1epr). In order to have an empty selection we 
+		// simply use a very low negative numbe which is unlikely to exist in PDB
+		if (list.isEmpty()) return "-10000:"+chainName;
 		StringBuffer sb = new StringBuffer();
 		for (int i=0;i<list.size();i++) {
 			if (usePdbResSer) {
