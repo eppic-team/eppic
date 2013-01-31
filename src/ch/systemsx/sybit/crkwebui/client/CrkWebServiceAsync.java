@@ -38,6 +38,6 @@ public interface CrkWebServiceAsync
 
 	public void untieJobsFromSession(AsyncCallback<Void> callback);
 
-	public void getAllResidues(int pdbScoreUid,
+	public void getAllResidues(String jobId,
 			AsyncCallback<InterfaceResiduesItemsList> getAllResiduesCallback);
 }

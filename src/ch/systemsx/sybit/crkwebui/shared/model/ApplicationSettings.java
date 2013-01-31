@@ -77,6 +77,11 @@ public class ApplicationSettings implements Serializable {
 	private String uniprotLinkUrl;
 	
 	/**
+	 * Url to published paper.
+	 */
+	private String publicationLinkUrl;
+	
+	/**
 	 * Content of the help panel.
 	 */
 	private String helpPageContent;
@@ -335,6 +340,22 @@ public class ApplicationSettings implements Serializable {
 	 */
 	public String getUniprotLinkUrl() {
 		return uniprotLinkUrl;
+	}
+	
+	/**
+	 * Sets url to publication.
+	 * @param publicationLinkUrl url to published paper
+	 */
+	public void setPublicationLinkUrl(String publicationLinkUrl) {
+		this.publicationLinkUrl = publicationLinkUrl;
+	}
+
+	/**
+	 * Retrieves url to publication.
+	 * @return url to publication
+	 */
+	public String getPublicationLinkUrl() {
+		return publicationLinkUrl;
 	}
 
 	/**

@@ -1,4 +1,4 @@
-package ch.systemsx.sybit.crkwebui.shared.validators;
+package ch.systemsx.sybit.crkwebui.shared.comparators;
 
 import ch.systemsx.sybit.crkwebui.shared.model.InputParameters;
 

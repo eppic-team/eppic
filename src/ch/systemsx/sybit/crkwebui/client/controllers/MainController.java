@@ -555,7 +555,7 @@ public class MainController
 				{
 					CrkWebServiceProvider.getServiceController().getCurrentStatusData(ApplicationContext.getSelectedJobId());
 				}
-				else
+				else if(ApplicationContext.isAnyJobRunning())
 				{
 					CrkWebServiceProvider.getServiceController().getJobsForCurrentSession();
 				}

@@ -53,6 +53,7 @@ public class ApplicationSettingsGenerator
 		int nrOfAllowedSubmissionsWithoutCaptcha = Integer.parseInt(globalProperties.getProperty("nr_of_allowed_submissions_without_captcha"));
 		String pdbLinkUrl = globalProperties.getProperty("pdb_link_url");
 		String uniprotLinkUrl = globalProperties.getProperty("uniprot_link_url");
+		String publicationLinkUrl = globalProperties.getProperty("publication_link_url");
 		boolean usePrecompiledResults = Boolean.parseBoolean(globalProperties.getProperty("use_precompiled","true"));
 		String examplePdb = globalProperties.getProperty("example_pdb");
 		
@@ -61,6 +62,7 @@ public class ApplicationSettingsGenerator
 		settings.setNrOfAllowedSubmissionsWithoutCaptcha(nrOfAllowedSubmissionsWithoutCaptcha);
 		settings.setPdbLinkUrl(pdbLinkUrl);
 		settings.setUniprotLinkUrl(uniprotLinkUrl);
+		settings.setPublicationLinkUrl(publicationLinkUrl);
 		settings.setUsePrecompiledResults(usePrecompiledResults);
 		settings.setExamplePdb(examplePdb);
 

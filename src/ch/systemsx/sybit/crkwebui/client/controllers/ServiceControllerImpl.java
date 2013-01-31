@@ -89,10 +89,10 @@ public class ServiceControllerImpl implements ServiceController
 	}
 
 	@Override
-	public void getAllResidues(String jobId, int pdbScoreUid) {
+	public void getAllResidues(String jobId) {
 		if(!GXT.isIE8)
 		{
-			crkWebService.getAllResidues(pdbScoreUid,new GetAllResiduesCallback(jobId));
+			crkWebService.getAllResidues(jobId,new GetAllResiduesCallback(jobId));
 		}
 	}
 }

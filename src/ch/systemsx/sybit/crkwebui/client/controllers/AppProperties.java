@@ -29,6 +29,7 @@ public interface AppProperties extends Constants
 	String downloads_panel_download_crk_link();
 	String downloads_panel_download_crk_link_hint();
 	
+	String input_title();
 	String input_email();
 	String input_file();
 	String input_example();
@@ -44,6 +45,9 @@ public interface AppProperties extends Constants
 	String input_upload_file_radio();
 	String input_pdb_code_radio();
 	String input_pdb_input_type();
+	String input_citation();
+	String input_citation_link_tooltip();
+	String input_citation_link_text();
 
 	String parameters_entropy();
 	String parameters_geometry();

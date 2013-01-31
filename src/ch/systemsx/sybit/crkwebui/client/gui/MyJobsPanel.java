@@ -17,6 +17,7 @@ import ch.systemsx.sybit.crkwebui.client.handlers.GetFocusOnJobsListHandler;
 import ch.systemsx.sybit.crkwebui.client.handlers.JobListRetrievedHandler;
 import ch.systemsx.sybit.crkwebui.client.model.MyJobsModel;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
+import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
 
 import com.extjs.gxt.ui.client.Style.Orientation;
 import com.extjs.gxt.ui.client.Style.SelectionMode;
@@ -277,6 +278,39 @@ public class MyJobsPanel extends ContentPanel
 	}
 	
 	/**
+	 * Checks whether there is any job which was not finished.
+	 * @param jobs jobs to validate
+	 * @return information whether there is any job which was not finished.
+	 */
+	private boolean checkIfAnyJobRunning(List<ProcessingInProgressData> jobs)
+	{
+		boolean anyRunning = false;
+				
+		if(jobs != null)
+		{
+			int counter = 0;
+			
+			while((!anyRunning) &&
+				  (counter < jobs.size()))
+			{
+				String status = jobs.get(counter).getStatus();
+				
+				if((status != null) &&
+				   ((status.equals(StatusOfJob.QUEUING.getName())) ||
+					(status.equals(StatusOfJob.RUNNING.getName())) ||
+					(status.equals(StatusOfJob.WAITING.getName()))))
+				{
+					anyRunning = true;
+				}
+				
+				counter++;
+			}
+		}
+				
+		return anyRunning;
+	}
+	
+	/**
 	 * Events listeners initialization.
 	 */
 	private void initializeEventsListeners()
@@ -294,6 +328,7 @@ public class MyJobsPanel extends ContentPanel
 			@Override
 			public void onJobListRetrieved(JobListRetrievedEvent event) {
 				setJobs(event.getJobs(), ApplicationContext.getSelectedJobId());
+				ApplicationContext.setAnyJobRunning(checkIfAnyJobRunning(event.getJobs()));
 			}
 		});
 		

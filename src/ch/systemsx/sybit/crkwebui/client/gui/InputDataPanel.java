@@ -14,8 +14,8 @@ import ch.systemsx.sybit.crkwebui.client.gui.validators.PdbCodeFieldValidator;
 import ch.systemsx.sybit.crkwebui.client.handlers.GetFocusOnPdbCodeFieldHandler;
 import ch.systemsx.sybit.crkwebui.client.handlers.SubmitJobHandler;
 import ch.systemsx.sybit.crkwebui.client.listeners.SubmitKeyListener;
+import ch.systemsx.sybit.crkwebui.shared.comparators.InputParametersComparator;
 import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
-import ch.systemsx.sybit.crkwebui.shared.validators.InputParametersComparator;
 
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.Style.Orientation;
@@ -42,8 +42,11 @@ import com.extjs.gxt.ui.client.widget.form.TextField;
 import com.extjs.gxt.ui.client.widget.layout.FormLayout;
 import com.extjs.gxt.ui.client.widget.layout.RowData;
 import com.extjs.gxt.ui.client.widget.layout.RowLayout;
+import com.extjs.gxt.ui.client.widget.layout.VBoxLayout;
+import com.extjs.gxt.ui.client.widget.layout.VBoxLayout.VBoxLayoutAlign;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.History;
+import com.google.gwt.user.client.ui.Image;
 
 /**
  * Panel used to submit new job.
@@ -76,11 +79,110 @@ public class InputDataPanel extends DisplayPanel
 	 */
 	private void init()
 	{
-		this.setLayout(new RowLayout(Orientation.HORIZONTAL));
-		this.setBorders(false);
-		this.setScrollMode(Scroll.AUTOY);
+		LayoutContainer container = new LayoutContainer();
+		container.setLayout(new RowLayout());
+		
+		LayoutContainer headerContainer = createHeaderRowContainer();
+		container.add(headerContainer, new RowData(1, 40, new Margins(0)));
+		
+		LayoutContainer fieldsetContainer = createFieldsetRowContainer();
+		container.add(fieldsetContainer, new RowData(1, 1, new Margins(0)));
+		
+		LayoutContainer footerContainer = createFooterRowContainer();
+		container.add(footerContainer, new RowData(1, 20, new Margins(0)));
+		
+		this.add(container);
+		
+		initializeEventsListeners();
+	}
+	
+	/**
+	 * Creates header of input panel (title and logo).
+	 * @return header container
+	 */
+	private LayoutContainer createHeaderRowContainer()
+	{
+		LayoutContainer headerContainer = new LayoutContainer();
+		headerContainer.setLayout(new RowLayout(Orientation.HORIZONTAL));
+		
+		headerContainer.add(new LayoutContainer(), new RowData(0.5, 1, new Margins(0, 0, 10, 0)));
+		
+		Label title = new Label(AppPropertiesManager.CONSTANTS.input_title());
+		title.addStyleName("eppic-input-title");
+		headerContainer.add(title, new RowData(-1, 1, new Margins(0)));
 
-		formPanel = new FormPanel();
+		LayoutContainer logoContainer = createLogoContainer();
+		headerContainer.add(logoContainer, new RowData(0.5, 1, new Margins(0)));
+		
+		return headerContainer;
+	}
+
+	/**
+	 * Creates panel containing logo.
+	 * @return panel with logo
+	 */
+	private LayoutContainer createLogoContainer()
+	{
+		LayoutContainer logoContainer = new LayoutContainer();
+		VBoxLayout logoContainerLayout = new VBoxLayout();  
+		logoContainerLayout.setVBoxLayoutAlign(VBoxLayoutAlign.RIGHT);  
+		logoContainer.setLayout(logoContainerLayout);
+		
+		String logoIconSource = "resources/images/eppic-logo.png";
+		Image logo = new Image(logoIconSource);
+		logoContainer.add(logo);
+		
+		return logoContainer;
+	}
+	
+	/**
+	 * Creates container with submission form.
+	 * @return submission form panel container
+	 */
+	private LayoutContainer createFieldsetRowContainer()
+	{
+		LayoutContainer fieldsetContainer = new LayoutContainer();
+		fieldsetContainer.setLayout(new RowLayout(Orientation.HORIZONTAL));
+		fieldsetContainer.add(new LayoutContainer(), new RowData(0.5, -1, new Margins(0)));
+		
+		formPanel = createFormPanel();
+		fieldsetContainer.add(formPanel, new RowData(-1, -1, new Margins(0)));
+		
+		fieldsetContainer.setScrollMode(Scroll.AUTOY);
+		return fieldsetContainer;
+	}
+	
+	/**
+	 * Creates input panel bottom row (citation).
+	 * @return bottom row container
+	 */
+	private LayoutContainer createFooterRowContainer()
+	{
+		LayoutContainer footerContainer = new LayoutContainer();
+		footerContainer.setLayout(new RowLayout(Orientation.HORIZONTAL));
+		footerContainer.add(new LayoutContainer(), new RowData(0.5, -1, new Margins(0)));
+		
+		Label citationDescription = new Label(AppPropertiesManager.CONSTANTS.input_citation() + " :&nbsp;");
+		citationDescription.addStyleName("eppic-nowrap-text");
+		footerContainer.add(citationDescription, new RowData(-1, -1, new Margins(0)));
+		
+		LinkWithTooltip citationLink = new LinkWithTooltip(AppPropertiesManager.CONSTANTS.input_citation_link_text(), 
+													   AppPropertiesManager.CONSTANTS.input_citation_link_tooltip(), 
+													   ApplicationContext.getWindowData(), 
+				   									   0,
+				   									   ApplicationContext.getSettings().getPublicationLinkUrl());
+		footerContainer.add(citationLink, new RowData(-1, -1, new Margins(0)));
+		
+		return footerContainer;
+	}
+	
+	/**
+	 * Creates start new job form panel.
+	 * @return form panel
+	 */
+	private FormPanel createFormPanel()
+	{
+		final FormPanel formPanel = new FormPanel();
 
 		formPanel.getHeader().setVisible(false);
 		formPanel.setBorders(true);
@@ -93,23 +195,131 @@ public class InputDataPanel extends DisplayPanel
 		formPanel.setAutoHeight(true);
 		formPanel.setPadding(20);
 
+		formPanel.addListener(Events.Submit, new Listener<FormEvent>()
+		{
+			public void handleEvent(FormEvent formEvent)
+			{
+				String result = formEvent.getResultHtml();
+
+				if((result != null) && (result.startsWith("crkupres:")))
+				{
+					result = result.replaceAll("\n", "");
+					result = result.trim();
+					result = result.substring(9);
+					runJob(result);
+				}
+				else if((result != null) && (result.startsWith("err:")))
+				{
+					result = result.replaceAll("\n", "");
+					result = result.trim();
+					result = result.substring(4);
+					EventBusManager.EVENT_BUS.fireEvent(new ShowErrorEvent(result));
+					EventBusManager.EVENT_BUS.fireEvent(new HideWaitingEvent());
+				}
+				else
+				{
+					EventBusManager.EVENT_BUS.fireEvent(new ShowErrorEvent(AppPropertiesManager.CONSTANTS.input_submit_error()));
+					EventBusManager.EVENT_BUS.fireEvent(new HideWaitingEvent());
+				}
+			}
+		});
+
+		FieldSet generalFieldSet = createFieldSet();
+		formPanel.add(generalFieldSet);
+		
+		Button resetButton = createResetButton(AppPropertiesManager.CONSTANTS.input_reset());
+		formPanel.addButton(resetButton);
+
+		Button submitButton = createSubmitButton(AppPropertiesManager.CONSTANTS.input_submit());
+		formPanel.addButton(submitButton);
+
+		return formPanel;
+	}
+	
+	/**
+	 * Creates fieldset with general and advanced options.
+	 * @return fieldset with data to submit
+	 */
+	private FieldSet createFieldSet()
+	{
 		FormLayout layout = new FormLayout();
 		layout.setLabelWidth(170);
-
+		
 		FieldSet generalFieldSet = new FieldSet();
 		generalFieldSet.setBorders(false);
 		generalFieldSet.setLayout(layout);
 
-		pdbCodeRadio = new Radio();
-		pdbCodeRadio.setBoxLabel(AppPropertiesManager.CONSTANTS.input_pdb_code_radio());
+		pdbCodeRadio = createPDBCodeFileRadioItem(AppPropertiesManager.CONSTANTS.input_pdb_code_radio());
 		pdbCodeRadio.setValue(true);
+		
+	    pdbFileRadio = createPDBCodeFileRadioItem(AppPropertiesManager.CONSTANTS.input_upload_file_radio());
+	    
+		inputRadioGroup = createInputRadioGroup(pdbCodeRadio, pdbFileRadio);
+	    generalFieldSet.add(inputRadioGroup);
+
+		file = createFileUploadField(AppPropertiesManager.CONSTANTS.input_file());
+		generalFieldSet.add(file);
+
+		pdbCodeField = createPDBCodeField(AppPropertiesManager.CONSTANTS.input_pdb_code_radio());
+		generalFieldSet.add(pdbCodeField);
+		
+		if(ApplicationContext.getSettings().getExamplePdb() != null)
+		{
+			LayoutContainer examplePanel = createExamplePanel();
+			generalFieldSet.add(examplePanel);
+		}
+
+		emailTextField = createEmailField(AppPropertiesManager.CONSTANTS.input_email());
+		generalFieldSet.add(emailTextField);
+		
+		FormPanel breakPanel = new FormPanel();
+		breakPanel.getHeader().setVisible(false);
+		breakPanel.setBodyBorder(false);
+		breakPanel.setBorders(false);
+		generalFieldSet.add(breakPanel);
+
+		optionsInputPanel = new OptionsInputPanel(ApplicationContext.getSettings());
+		generalFieldSet.add(optionsInputPanel);
+		optionsInputPanel.collapse();
+
+		if(ApplicationContext.getSettings().isUseCaptcha())
+		{
+			recaptchaPanel = new RecaptchaPanel(ApplicationContext.getSettings().getCaptchaPublicKey());
+
+			if(ApplicationContext.getNrOfSubmissions() < ApplicationContext.getSettings().getNrOfAllowedSubmissionsWithoutCaptcha())
+			{
+				recaptchaPanel.setVisible(false);
+			}
+
+			generalFieldSet.add(recaptchaPanel);
+		}
+		
+		return generalFieldSet;
+	}
+	
+	/**
+	 * Creates radio item used to select file or code submission.
+	 * @param label labe of the radio item
+	 * @return radio item
+	 */
+	private Radio createPDBCodeFileRadioItem(String label)
+	{
+		Radio pdbCodeRadio = new Radio();
+		pdbCodeRadio.setBoxLabel(label);
 		pdbCodeRadio.setLabelStyle("font-size: 14px;");
-
-	    pdbFileRadio = new Radio();
-	    pdbFileRadio.setBoxLabel(AppPropertiesManager.CONSTANTS.input_upload_file_radio());
-	    pdbFileRadio.setLabelStyle("font-size: 14px;");
-
-	    inputRadioGroup = new RadioGroup();
+		return pdbCodeRadio;
+	}
+	
+	/**
+	 * Creates radio group used to select submission method - file or pdb code.
+	 * @param pdbCodeRadio pdb code selector
+	 * @param pdbFileRadio pdb file selector
+	 * @return radio group
+	 */
+	private RadioGroup createInputRadioGroup(Radio pdbCodeRadio,
+											 Radio pdbFileRadio)
+	{
+	    final RadioGroup inputRadioGroup = new RadioGroup();
 	    inputRadioGroup.setFieldLabel(AppPropertiesManager.CONSTANTS.input_pdb_input_type());
 	    if ((AppPropertiesManager.CONSTANTS.input_pdb_input_type() != null) &&
 	    	(AppPropertiesManager.CONSTANTS.input_pdb_input_type().equals("")))
@@ -145,81 +355,67 @@ public class InputDataPanel extends DisplayPanel
 	        	formPanel.layout();
 	        }
 	    });
-
-	    generalFieldSet.add(inputRadioGroup);
-
-		file = new FileUploadField();
+	    
+	    return inputRadioGroup;
+	}
+	
+	/**
+	 * Creates field used to upload pdb file.
+	 * @param label label of the field
+	 * @return file uploader field
+	 */
+	private FileUploadField createFileUploadField(String label)
+	{
+		FileUploadField file = new FileUploadField();
 		file.setWidth(200);
 		file.setAllowBlank(true);
 		file.setName("uploadFormElement");
-		file.setFieldLabel(AppPropertiesManager.CONSTANTS.input_file());
+		file.setFieldLabel(label);
 		file.setLabelStyle("font-size: 14px;");
 		file.setVisible(false);
-		generalFieldSet.add(file);
-
-		pdbCodeField = new TextField<String>();
+		return file;
+	}
+	
+	/**
+	 * Creates field used to provide code of the pdb to submit.
+	 * @param label label of the field
+	 * @return field used to provide pdb code
+	 */
+	private TextField<String> createPDBCodeField(String label)
+	{
+		TextField<String> pdbCodeField = new TextField<String>();
 		pdbCodeField.setName("code");
-		pdbCodeField.setFieldLabel(AppPropertiesManager.CONSTANTS.input_pdb_code_radio());
+		pdbCodeField.setFieldLabel(label);
 		pdbCodeField.setLabelStyle("font-size: 14px;");
 		pdbCodeField.setValidator(new PdbCodeFieldValidator());
 		pdbCodeField.setAllowBlank(false);
 		pdbCodeField.addKeyListener(new SubmitKeyListener());
-		generalFieldSet.add(pdbCodeField);
-		
-		if(ApplicationContext.getSettings().getExamplePdb() != null)
-		{
-			LayoutContainer examplePanel = createExamplePanel();
-			generalFieldSet.add(examplePanel);
-		}
-
-		emailTextField = new TextField<String>();
+		return pdbCodeField;
+	}
+	
+	/**
+	 * Creates field used to provide email address to notify about results of processing.
+	 * @param label label of the field
+	 * @return email field
+	 */
+	private TextField<String> createEmailField(String label)
+	{
+		TextField<String> emailTextField = new TextField<String>();
 		emailTextField.setName("email");
-		emailTextField.setFieldLabel(AppPropertiesManager.CONSTANTS.input_email());
+		emailTextField.setFieldLabel(label);
 		emailTextField.setLabelStyle("font-size: 14px;");
 		emailTextField.setValidator(new EmailFieldValidator());
 		emailTextField.addKeyListener(new SubmitKeyListener());
-		generalFieldSet.add(emailTextField);
-		
-		FormPanel breakPanel = new FormPanel();
-		breakPanel.getHeader().setVisible(false);
-		breakPanel.setBodyBorder(false);
-		breakPanel.setBorders(false);
-		generalFieldSet.add(breakPanel);
+		return emailTextField;
+	}
 
-		optionsInputPanel = new OptionsInputPanel(ApplicationContext.getSettings());
-
-		generalFieldSet.add(optionsInputPanel);
-		optionsInputPanel.collapse();
-
-		formPanel.addListener(Events.Submit, new Listener<FormEvent>()
-		{
-			public void handleEvent(FormEvent formEvent)
-			{
-				String result = formEvent.getResultHtml();
-
-				if((result != null) && (result.startsWith("crkupres:")))
-				{
-					result = result.replaceAll("\n", "");
-					result = result.trim();
-					result = result.substring(9);
-					runJob(result);
-				}
-				else if((result != null) && (result.startsWith("err:")))
-				{
-					result = result.replaceAll("\n", "");
-					result = result.trim();
-					result = result.substring(4);
-					EventBusManager.EVENT_BUS.fireEvent(new ShowErrorEvent(result));
-					EventBusManager.EVENT_BUS.fireEvent(new HideWaitingEvent());
-				}
-				else
-				{
-					EventBusManager.EVENT_BUS.fireEvent(new ShowErrorEvent(AppPropertiesManager.CONSTANTS.input_submit_error()));
-					EventBusManager.EVENT_BUS.fireEvent(new HideWaitingEvent());
-				}
-			}
-		});
-
+	/**
+	 * Creates button used to reset all the fields of the form.
+	 * @param text text of the button
+	 * @return reset button
+	 */
+	private Button createResetButton(String text)
+	{
 		Button resetButton = new Button(AppPropertiesManager.CONSTANTS.input_reset());
 		resetButton.addSelectionListener(new SelectionListener<ButtonEvent>() {
 			public void componentSelected(ButtonEvent ce)
@@ -227,9 +423,17 @@ public class InputDataPanel extends DisplayPanel
 				resetValues();
 			}
 		});
-
-		formPanel.addButton(resetButton);
-
+		
+		return resetButton;
+	}
+	
+	/**
+	 * Creates button used to start new jobs.
+	 * @param text text of the button
+	 * @return submit button
+	 */
+	private Button createSubmitButton(String text)
+	{
 		final Button submitButton = new Button(
 				AppPropertiesManager.CONSTANTS.input_submit());
 		submitButton.addSelectionListener(new SelectionListener<ButtonEvent>() {
@@ -238,28 +442,8 @@ public class InputDataPanel extends DisplayPanel
 				EventBusManager.EVENT_BUS.fireEventFromSource(new SubmitJobEvent(), submitButton);
 			}
 		});
-
-		formPanel.addButton(submitButton);
-
-		if(ApplicationContext.getSettings().isUseCaptcha())
-		{
-			recaptchaPanel = new RecaptchaPanel(ApplicationContext.getSettings().getCaptchaPublicKey());
-
-			if(ApplicationContext.getNrOfSubmissions() < ApplicationContext.getSettings().getNrOfAllowedSubmissionsWithoutCaptcha())
-			{
-				recaptchaPanel.setVisible(false);
-			}
-
-			generalFieldSet.add(recaptchaPanel);
-		}
-
-		formPanel.add(generalFieldSet);
-
-		//fix for chrome - otherwise unnecessary scrollbars visible
-		this.add(new LayoutContainer(), new RowData(0.5, -1, new Margins(0)));
-		this.add(formPanel, new RowData(-1, -1, new Margins(0)));
 		
-		initializeEventsListeners();
+		return submitButton;
 	}
 	
 	/**

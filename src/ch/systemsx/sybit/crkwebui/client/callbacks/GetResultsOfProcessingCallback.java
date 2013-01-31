@@ -58,7 +58,7 @@ public class GetResultsOfProcessingCallback implements AsyncCallback<ProcessingD
 					ApplicationContext.setPdbScoreItem(resultsData);
 					ApplicationContext.cleanResiduesForInterface();
 					
-					CrkWebServiceProvider.getServiceController().getAllResidues(jobId, resultsData.getUid());
+					CrkWebServiceProvider.getServiceController().getAllResidues(jobId);
 					EventBusManager.EVENT_BUS.fireEvent(new ShowResultsDataEvent(resultsData));
 				}
 				else

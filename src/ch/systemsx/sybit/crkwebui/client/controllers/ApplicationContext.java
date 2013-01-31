@@ -71,6 +71,11 @@ public class ApplicationContext
 	 * Type of the viewer (jmol, local, pse, etc.)
 	 */
 	private static String selectedViewer = AppPropertiesManager.CONSTANTS.viewer_jmol();
+
+	/**
+	 * Flag pointing whether there is any job with status running or waiting for the session.
+	 */
+	private static boolean isAnyJobRunning;
 	
 	/**
 	 * Retrieves main application window data.
@@ -315,5 +320,21 @@ public class ApplicationContext
 		
 		adjustedWindowData.setWindowHeight(windowHeight);
 		adjustedWindowData.setWindowWidth(windowWidth);
+	}
+	
+	/**
+	 * Retrieves information whether there is any job running/waiting for the session.
+	 * @return information whether there is any job running/waiting for the session
+	 */
+	public static boolean isAnyJobRunning() {
+		return isAnyJobRunning;
+	}
+
+	/**
+	 * Sets information whether there is any job running/waiting for the session.
+	 * @param isAnyJobRunning information whether there is any job running/waiting for the session.
+	 */
+	public static void setAnyJobRunning(boolean isAnyJobRunning) {
+		ApplicationContext.isAnyJobRunning = isAnyJobRunning;
 	}
 }

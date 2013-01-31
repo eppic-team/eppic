@@ -48,9 +48,8 @@ public interface ServiceController
 	/**
 	 * Retrieves all the residues for all interfaces for specified job.
 	 * @param jobId selected job identifier
-	 * @param pdbScoreUid uid of selected pdb score item
 	 */
-	public abstract void getAllResidues(String jobId, int pdbScoreUid);
+	public abstract void getAllResidues(String jobId);
 	
 	/**
 	 * Stops the execution of specified running job.

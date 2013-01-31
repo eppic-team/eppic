@@ -23,9 +23,9 @@ public interface InterfaceResidueItemDAO {
 	
 	/**
 	 * Retrieves list of interface residue items for all interfaces.
-	 * @param pdbScoreUid uid of pdb score item
+	 * @param jobId identifier of the job
 	 * @return list of interface residue items for all interfaces
 	 * @throws DaoException when can not retrieve list of residue items
 	 */
-	public InterfaceResiduesItemsList getResiduesForAllInterfaces(int pdbScoreUid) throws DaoException;
+	public InterfaceResiduesItemsList getResiduesForAllInterfaces(String jobId) throws DaoException;
 }

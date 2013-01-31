@@ -603,10 +603,10 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 	}
 
 	@Override
-	public InterfaceResiduesItemsList getAllResidues(int pdbScoreId) throws Exception
+	public InterfaceResiduesItemsList getAllResidues(String jobId) throws Exception
 	{
 		InterfaceResidueItemDAO interfaceResidueItemDAO = new InterfaceResidueItemDAOJpa();
-		InterfaceResiduesItemsList interfaceResiduesItemsList = interfaceResidueItemDAO.getResiduesForAllInterfaces(pdbScoreId);
+		InterfaceResiduesItemsList interfaceResiduesItemsList = interfaceResidueItemDAO.getResiduesForAllInterfaces(jobId);
 		return interfaceResiduesItemsList;
 	}
 

@@ -93,10 +93,10 @@ public interface CrkWebService extends RemoteService
 
 	/**
 	 * Retrieves all the residues for all interfaces for specified job.
-	 * @param pdbScoreUid unique id of selected results item
+	 * @param jobId identifier of the job
 	 * @return all residues for job
 	 * @throws Exception when an asynchronous call fails to complete normally
 	 */
 	@NoXsrfProtect
-	public InterfaceResiduesItemsList getAllResidues(int pdbScoreUid) throws Exception;
+	public InterfaceResiduesItemsList getAllResidues(String jobId) throws Exception;
 }

@@ -55,7 +55,7 @@ public class GetCurrentStatusDataCallback implements AsyncCallback<ProcessingDat
 					ApplicationContext.setPdbScoreItem(resultsData);
 					ApplicationContext.cleanResiduesForInterface();
 					
-					CrkWebServiceProvider.getServiceController().getAllResidues(jobId, resultsData.getUid());
+					CrkWebServiceProvider.getServiceController().getAllResidues(jobId);
 					EventBusManager.EVENT_BUS.fireEvent(new ShowResultsDataEvent(resultsData));
 				}
 				else
