@@ -83,13 +83,13 @@ public class InputDataPanel extends DisplayPanel
 		container.setLayout(new RowLayout());
 		
 		LayoutContainer headerContainer = createHeaderRowContainer();
-		container.add(headerContainer, new RowData(1, 40, new Margins(0)));
+		container.add(headerContainer, new RowData(1, 70, new Margins(0)));
 		
 		LayoutContainer fieldsetContainer = createFieldsetRowContainer();
 		container.add(fieldsetContainer, new RowData(1, 1, new Margins(0)));
 		
 		LayoutContainer footerContainer = createFooterRowContainer();
-		container.add(footerContainer, new RowData(1, 20, new Margins(0)));
+		container.add(footerContainer, new RowData(1, 50, new Margins(0)));
 		
 		this.add(container);
 		
@@ -107,34 +107,15 @@ public class InputDataPanel extends DisplayPanel
 		
 		headerContainer.add(new LayoutContainer(), new RowData(0.5, 1, new Margins(0, 0, 10, 0)));
 		
-		Label title = new Label(AppPropertiesManager.CONSTANTS.input_title());
-		title.addStyleName("eppic-input-title");
-		headerContainer.add(title, new RowData(-1, 1, new Margins(0)));
-
-		LayoutContainer logoContainer = createLogoContainer();
-		headerContainer.add(logoContainer, new RowData(0.5, 1, new Margins(0)));
+		String logoIconSource = "resources/images/eppic-logo.png";
+		Image logo = new Image(logoIconSource);
+		logo.setWidth("200px");
+		logo.setHeight("100px");
+		headerContainer.add(logo, new RowData(-1, 1, new Margins(0, 0, 10, 0)));
 		
 		return headerContainer;
 	}
 
-	/**
-	 * Creates panel containing logo.
-	 * @return panel with logo
-	 */
-	private LayoutContainer createLogoContainer()
-	{
-		LayoutContainer logoContainer = new LayoutContainer();
-		VBoxLayout logoContainerLayout = new VBoxLayout();  
-		logoContainerLayout.setVBoxLayoutAlign(VBoxLayoutAlign.RIGHT);  
-		logoContainer.setLayout(logoContainerLayout);
-		
-		String logoIconSource = "resources/images/eppic-logo.png";
-		Image logo = new Image(logoIconSource);
-		logoContainer.add(logo);
-		
-		return logoContainer;
-	}
-	
 	/**
 	 * Creates container with submission form.
 	 * @return submission form panel container
