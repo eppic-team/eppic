@@ -143,18 +143,33 @@ public class InputDataPanel extends DisplayPanel
 		footerContainer.setLayout(new RowLayout(Orientation.HORIZONTAL));
 		footerContainer.add(new LayoutContainer(), new RowData(0.5, -1, new Margins(0)));
 		
+		LayoutContainer citationContainer = createCitationContainer();
+		footerContainer.add(citationContainer, new RowData(-1, -1, new Margins(0)));
+		
+		return footerContainer;
+	}
+	
+	/**
+	 * Creates container used to store citation.
+	 * @return citation container
+	 */
+	private LayoutContainer createCitationContainer()
+	{
+		LayoutContainer citationContainer = new LayoutContainer();
+		
 		Label citationDescription = new Label(AppPropertiesManager.CONSTANTS.input_citation() + " :&nbsp;");
-		citationDescription.addStyleName("eppic-nowrap-text");
-		footerContainer.add(citationDescription, new RowData(-1, -1, new Margins(0)));
+		citationContainer.add(citationDescription);
 		
 		LinkWithTooltip citationLink = new LinkWithTooltip(AppPropertiesManager.CONSTANTS.input_citation_link_text(), 
 													   AppPropertiesManager.CONSTANTS.input_citation_link_tooltip(), 
 													   ApplicationContext.getWindowData(), 
 				   									   0,
 				   									   ApplicationContext.getSettings().getPublicationLinkUrl());
-		footerContainer.add(citationLink, new RowData(-1, -1, new Margins(0)));
+		citationContainer.add(citationLink);
+		citationContainer.setAutoWidth(true);
+		citationContainer.setAutoHeight(true);
 		
-		return footerContainer;
+		return citationContainer;
 	}
 	
 	/**
