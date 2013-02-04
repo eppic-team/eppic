@@ -42,8 +42,6 @@ import com.extjs.gxt.ui.client.widget.form.TextField;
 import com.extjs.gxt.ui.client.widget.layout.FormLayout;
 import com.extjs.gxt.ui.client.widget.layout.RowData;
 import com.extjs.gxt.ui.client.widget.layout.RowLayout;
-import com.extjs.gxt.ui.client.widget.layout.VBoxLayout;
-import com.extjs.gxt.ui.client.widget.layout.VBoxLayout.VBoxLayoutAlign;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.ui.Image;
@@ -83,7 +81,7 @@ public class InputDataPanel extends DisplayPanel
 		container.setLayout(new RowLayout());
 		
 		LayoutContainer headerContainer = createHeaderRowContainer();
-		container.add(headerContainer, new RowData(1, 70, new Margins(0)));
+		container.add(headerContainer, new RowData(1, 90, new Margins(0)));
 		
 		LayoutContainer fieldsetContainer = createFieldsetRowContainer();
 		container.add(fieldsetContainer, new RowData(1, 1, new Margins(0)));
@@ -110,7 +108,7 @@ public class InputDataPanel extends DisplayPanel
 		String logoIconSource = "resources/images/eppic-logo.png";
 		Image logo = new Image(logoIconSource);
 		logo.setWidth("200px");
-		logo.setHeight("100px");
+		logo.setHeight("80px");
 		headerContainer.add(logo, new RowData(-1, 1, new Margins(0, 0, 10, 0)));
 		
 		return headerContainer;
@@ -168,6 +166,7 @@ public class InputDataPanel extends DisplayPanel
 		citationContainer.add(citationLink);
 		citationContainer.setAutoWidth(true);
 		citationContainer.setAutoHeight(true);
+		citationContainer.addStyleName("eppic-citation");
 		
 		return citationContainer;
 	}

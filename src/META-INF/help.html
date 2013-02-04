@@ -1,3 +1,7 @@
+<img src="resources/images/eppic-logo.png" 
+style="padding: 25px 20px 0px 5px;margin-left:auto;margin-right:auto;display: block;width:200px;height:80px">
+</img>
+
 
 <p style="font-size:20px;font-weight:bold;padding: 25px 20px 0px 5px">
 The EPPIC server
@@ -82,8 +86,11 @@ Viewing the interfaces in 3D
 The thumbnails in the Interface table give a visual cartoon representation of the interfaces. By 
 clicking on them one gets an interactive 3D view, depending on selected mode: as browser 
 embedded Jmol viewer (no need for local viewer), as a PDB file downloadable to a local 
-molecular viewer, or as PyMOL session file (.pse) to be opened in local PyMOL. The pse mode 
-is particularly useful as it is already prepared with selections of the different parts of the 
+molecular viewer, or as PyMOL session file (.pse) to be opened in local PyMOL.
+In both the jmol and the pse modes the two protomers are represented as cartoons with interface 
+residues also shown as sticks. Core residues from both protomers are shown in two different shades 
+of red. 
+The pse mode is particularly useful as it is already prepared with selections of the different parts of the 
 interface and nicely depicted. Additionally the entropy values for each residue are written as
 b-factors in the .pdb and .pse files. Thus one can use the PyMOL "color by b-factor" functionality 
 (spectrum command) to show the selection pressure pattern mapped on the 3-dimensional structure: blue colors
