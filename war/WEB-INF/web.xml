@@ -21,6 +21,12 @@
   		<param-name>gwt.xsrf.session_cookie_name</param-name>
   		<param-value>JSESSIONID</param-value>
 	</context-param>
+
+    <!-- Session timeout: if the client is idle for more than this time (in minutes) 
+         then the session is lost. 1440min = 24x60min -->
+    <session-config>
+        <session-timeout>1440</session-timeout>
+    </session-config>
      
   	<!-- Spring -->
   	<!-- context-param -->
