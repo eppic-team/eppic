@@ -32,84 +32,102 @@ public class HomologsInfoPanel extends LayoutContainer
 		
 		if(homologsInfoItem.isHasQueryMatch())
 		{
-			final EmptyLinkWithTooltip chainsLink = new EmptyLinkWithTooltip("Chain " + EscapedStringGenerator.generateEscapedString(homologsInfoItem.getChains()), 
-																			 AppPropertiesManager.CONSTANTS.homologs_panel_chains_hint(),
-																	   		 ApplicationContext.getWindowData(), 
-																	   		 0);
-			
-			chainsLink.addStyleName("eppic-action");
-			
-			chainsLink.addListener(Events.OnClick, new Listener<BaseEvent>() {
-	
-				@Override
-				public void handleEvent(BaseEvent be) {
-					EventBusManager.EVENT_BUS.fireEvent(new ShowAlignmentsEvent(
-												  homologsInfoItem, 
-												  pdbName,
-												  chainsLink.getAbsoluteLeft() + chainsLink.getWidth(),
-												  chainsLink.getAbsoluteTop() + chainsLink.getHeight() + 10));
-				}
-				
-			});
-			
-			this.add(chainsLink);
-			
-			Label startUniprotLabel = new Label(" (");
-			this.add(startUniprotLabel);
-			
-			LinkWithTooltip uniprotIdLabel = new LinkWithTooltip(EscapedStringGenerator.generateEscapedString(homologsInfoItem.getUniprotId()), 
-																 AppPropertiesManager.CONSTANTS.homologs_panel_uniprot_hint(),
-																 ApplicationContext.getWindowData(), 
-																 0, 
-																 ApplicationContext.getSettings().getUniprotLinkUrl() + homologsInfoItem.getUniprotId());
-			uniprotIdLabel.addStyleName("eppic-external-link");
-			this.add(uniprotIdLabel);
-			
-			Label endUniprotLabel = new Label(") ");
-			this.add(endUniprotLabel);
-			
-			int nrOfHomologs = homologsInfoItem.getNumHomologs();
-			String nrOfHomologsText = String.valueOf(nrOfHomologs) + " homolog";
-			
-			if(nrOfHomologs > 1)
-			{
-				nrOfHomologsText += "s";
-			}
-			
-			String alignmentId = homologsInfoItem.getChains().substring(0, 1);
-			String downloadLink = GWT.getModuleBaseURL() + "fileDownload?type=fasta&id=" + selectedJobId + "&alignment=" + alignmentId; 
-			
-			LinkWithTooltip nrHomologsLabel = new LinkWithTooltip(nrOfHomologsText, 
-																  AppPropertiesManager.CONSTANTS.homologs_panel_nrhomologs_hint(),
-																  ApplicationContext.getWindowData(), 
-																  0, 
-																  downloadLink);
-			
-			nrHomologsLabel.addStyleName("eppic-internal-link");
-			this.add(nrHomologsLabel);
+			createHomologsPanelQueryMatch(selectedJobId, homologsInfoItem, pdbName);
 		}
 		else
 		{
-			final EmptyLinkWithTooltip chainsLink = new EmptyLinkWithTooltip("Chain " + EscapedStringGenerator.generateEscapedString(homologsInfoItem.getChains()),
-																		 	 AppPropertiesManager.CONSTANTS.homologs_panel_uniprot_no_query_match_hint(),
-																			 ApplicationContext.getWindowData(), 
-																			 0);
-			chainsLink.addStyleName("eppic-action");
-			
-			chainsLink.addListener(Events.OnClick, new Listener<BaseEvent>() {
-
-				@Override
-				public void handleEvent(BaseEvent be) {
-					
-					EventBusManager.EVENT_BUS.fireEvent(new ShowQueryWarningsEvent(generateHomologsNoQueryMatchTemplate(homologsInfoItem.getQueryWarnings()),
-																				   chainsLink.getAbsoluteLeft() + chainsLink.getWidth(),
-																				   chainsLink.getAbsoluteTop() + chainsLink.getHeight() + 10));
-				}
-				
-			});
-			
-			this.add(chainsLink);
+			createHomologsPanelNoQueryMatch(homologsInfoItem);
 		}
+	}
+
+	/**
+	 * Creates homologs panel when there is query match.
+	 * @param selectedJobId job id
+	 * @param homologsInfoItem homologs info
+	 * @param pdbName name of the pdb
+	 */
+	private void createHomologsPanelQueryMatch(final String selectedJobId,
+											   final HomologsInfoItem homologsInfoItem,
+											   final String pdbName)
+	{
+		final EmptyLinkWithTooltip chainsLink = new EmptyLinkWithTooltip("Chain " + EscapedStringGenerator.generateEscapedString(homologsInfoItem.getChains()), 
+				 AppPropertiesManager.CONSTANTS.homologs_panel_chains_hint(),
+		   		 ApplicationContext.getWindowData(), 
+		   		 0);
+
+		chainsLink.addStyleName("eppic-action");
+
+		chainsLink.addListener(Events.OnClick, new Listener<BaseEvent>() {
+		
+			@Override
+			public void handleEvent(BaseEvent be) {
+				EventBusManager.EVENT_BUS.fireEvent(new ShowAlignmentsEvent(
+						homologsInfoItem, 
+						pdbName,
+						chainsLink.getAbsoluteLeft() + chainsLink.getWidth(),
+						chainsLink.getAbsoluteTop() + chainsLink.getHeight() + 10));
+			}
+		
+		});
+		
+		this.add(chainsLink);
+		
+		Label startUniprotLabel = new Label(" (");
+		this.add(startUniprotLabel);
+		
+		LinkWithTooltip uniprotIdLabel = new LinkWithTooltip(EscapedStringGenerator.generateEscapedString(homologsInfoItem.getUniprotId()), 
+			 AppPropertiesManager.CONSTANTS.homologs_panel_uniprot_hint(),
+			 ApplicationContext.getWindowData(), 
+			 0, 
+			 ApplicationContext.getSettings().getUniprotLinkUrl() + homologsInfoItem.getUniprotId());
+		uniprotIdLabel.addStyleName("eppic-external-link");
+		this.add(uniprotIdLabel);
+		
+		Label endUniprotLabel = new Label(") ");
+		this.add(endUniprotLabel);
+		
+		int nrOfHomologs = homologsInfoItem.getNumHomologs();
+		String nrOfHomologsText = String.valueOf(nrOfHomologs) + " homolog";
+		
+		if(nrOfHomologs > 1)
+		{
+			nrOfHomologsText += "s";
+		}
+		
+		String alignmentId = homologsInfoItem.getChains().substring(0, 1);
+		String downloadLink = GWT.getModuleBaseURL() + "fileDownload?type=fasta&id=" + selectedJobId + "&alignment=" + alignmentId; 
+		
+		LinkWithTooltip nrHomologsLabel = new LinkWithTooltip(nrOfHomologsText, 
+			  AppPropertiesManager.CONSTANTS.homologs_panel_nrhomologs_hint(),
+			  ApplicationContext.getWindowData(), 
+			  0, 
+			  downloadLink);
+		
+		nrHomologsLabel.addStyleName("eppic-internal-link");
+		this.add(nrHomologsLabel);
+	}
+	
+	private void createHomologsPanelNoQueryMatch(final HomologsInfoItem homologsInfoItem)
+	{
+		final EmptyLinkWithTooltip chainsLink = new EmptyLinkWithTooltip("Chain " + EscapedStringGenerator.generateEscapedString(homologsInfoItem.getChains()),
+			 	 AppPropertiesManager.CONSTANTS.homologs_panel_uniprot_no_query_match_hint(),
+				 ApplicationContext.getWindowData(), 
+				 0);
+		chainsLink.addStyleName("eppic-action");
+		
+		chainsLink.addListener(Events.OnClick, new Listener<BaseEvent>() {
+		
+		@Override
+		public void handleEvent(BaseEvent be) {
+		
+				EventBusManager.EVENT_BUS.fireEvent(new ShowQueryWarningsEvent(generateHomologsNoQueryMatchTemplate(homologsInfoItem.getQueryWarnings()),
+							   chainsLink.getAbsoluteLeft() + chainsLink.getWidth(),
+							   chainsLink.getAbsoluteTop() + chainsLink.getHeight() + 10));
+			}
+		
+		});
+		
+		this.add(chainsLink);
 	}
 	
 	/**

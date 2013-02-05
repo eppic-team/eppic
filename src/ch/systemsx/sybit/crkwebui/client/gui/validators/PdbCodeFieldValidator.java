@@ -1,6 +1,5 @@
 package ch.systemsx.sybit.crkwebui.client.gui.validators;
 
-import ch.systemsx.sybit.crkwebui.client.gui.util.EscapedStringGenerator;
 import ch.systemsx.sybit.crkwebui.shared.validators.PdbCodeVerifier;
 
 import com.extjs.gxt.ui.client.widget.form.Field;

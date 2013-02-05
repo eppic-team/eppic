@@ -53,7 +53,6 @@ public class OptionsInputPanel extends FieldSet
 
 	public OptionsInputPanel(ApplicationSettings applicationSettings) 
 	{
-		InputParameters defaultInputParameters = applicationSettings.getDefaultParametersValues();
 		List<Integer> reducedAlphabetDefaultList = applicationSettings.getReducedAlphabetList();
 		List<String> searchModeDefaultList = applicationSettings.getSearchModeList();
 		List<SupportedMethod> supportedMethods = applicationSettings.getScoresTypes();
@@ -95,8 +94,6 @@ public class OptionsInputPanel extends FieldSet
 
 		FieldSet alignmentsParametersFieldSet = createAlignmentsParametersFieldSet(helpIconPlugin, searchModeDefaultList);
 		this.add(alignmentsParametersFieldSet);
-
-		fillDefaultValues(defaultInputParameters);
 	}
 	
 	/**
@@ -164,40 +161,13 @@ public class OptionsInputPanel extends FieldSet
 		alignmentsParametersFieldSet
 				.setLayout(alignmentsParametersFieldSetLayout);
 
-		softIdentityCutOff = new NumberField();
-		softIdentityCutOff.setFieldLabel(AppPropertiesManager.CONSTANTS
-				.parameters_soft_identity_cutoff());
-		softIdentityCutOff.setAllowBlank(false);
-		softIdentityCutOff.setFormat(NumberFormat.getDecimalFormat());
-		softIdentityCutOff.setMinValue(0);
-		softIdentityCutOff.setMaxValue(1);
-		softIdentityCutOff.addPlugin(helpIconPlugin);
-		softIdentityCutOff.setData("hint", AppPropertiesManager.CONSTANTS.parameters_soft_identity_cutoff_hint());
-		softIdentityCutOff.addKeyListener(new SubmitKeyListener());
+		softIdentityCutOff = createSoftIdentityCutoff(helpIconPlugin);
 		alignmentsParametersFieldSet.add(softIdentityCutOff, formData);
 		
-		hardIdentityCutOff = new NumberField();
-		hardIdentityCutOff.setFieldLabel(AppPropertiesManager.CONSTANTS
-				.parameters_hard_identity_cutoff());
-		hardIdentityCutOff.setAllowBlank(false);
-		hardIdentityCutOff.setFormat(NumberFormat.getDecimalFormat());
-		hardIdentityCutOff.setMinValue(0);
-		hardIdentityCutOff.setMaxValue(1);
-		hardIdentityCutOff.addPlugin(helpIconPlugin);
-		hardIdentityCutOff.setData("hint", AppPropertiesManager.CONSTANTS.parameters_hard_identity_cutoff_hint());
-		hardIdentityCutOff.addKeyListener(new SubmitKeyListener());
+		hardIdentityCutOff = createHardIdentityCutoff(helpIconPlugin);
 		alignmentsParametersFieldSet.add(hardIdentityCutOff, formData);
 
-		maxNrOfSequences = new NumberField();
-		maxNrOfSequences.setFieldLabel(AppPropertiesManager.CONSTANTS
-				.parameters_max_num_sequences());
-		maxNrOfSequences.setAllowBlank(false);
-		maxNrOfSequences.setAllowNegative(false);
-		maxNrOfSequences.setPropertyEditorType(Integer.class);
-		maxNrOfSequences.setName("maxNrOfSequences");
-		maxNrOfSequences.addPlugin(helpIconPlugin);
-		maxNrOfSequences.setData("hint", AppPropertiesManager.CONSTANTS.parameters_max_num_sequences_hint());
-		maxNrOfSequences.addKeyListener(new SubmitKeyListener());
+		maxNrOfSequences = createMaxNrOfSequences(helpIconPlugin);
 		alignmentsParametersFieldSet.add(maxNrOfSequences, formData);
 		
 		searchModeValues = new ListStore<SearchModeComboModel>();
@@ -209,7 +179,60 @@ public class OptionsInputPanel extends FieldSet
 			searchModeValues.add(model);
 		}
 
-		searchModeCombo = new ComboBox<SearchModeComboModel>();
+		searchModeCombo = createSearchModeComboBox(helpIconPlugin);
+		alignmentsParametersFieldSet.add(searchModeCombo, formData);
+		
+		return alignmentsParametersFieldSet;
+	}
+	
+	private NumberField createSoftIdentityCutoff(ComponentPlugin helpIconPlugin)
+	{
+		NumberField softIdentityCutOff = new NumberField();
+		softIdentityCutOff.setFieldLabel(AppPropertiesManager.CONSTANTS
+				.parameters_soft_identity_cutoff());
+		softIdentityCutOff.setAllowBlank(false);
+		softIdentityCutOff.setFormat(NumberFormat.getDecimalFormat());
+		softIdentityCutOff.setMinValue(0);
+		softIdentityCutOff.setMaxValue(1);
+		softIdentityCutOff.addPlugin(helpIconPlugin);
+		softIdentityCutOff.setData("hint", AppPropertiesManager.CONSTANTS.parameters_soft_identity_cutoff_hint());
+		softIdentityCutOff.addKeyListener(new SubmitKeyListener());
+		return softIdentityCutOff;
+	}
+	
+	private NumberField createHardIdentityCutoff(ComponentPlugin helpIconPlugin)
+	{
+		NumberField hardIdentityCutOff = new NumberField();
+		hardIdentityCutOff.setFieldLabel(AppPropertiesManager.CONSTANTS
+				.parameters_hard_identity_cutoff());
+		hardIdentityCutOff.setAllowBlank(false);
+		hardIdentityCutOff.setFormat(NumberFormat.getDecimalFormat());
+		hardIdentityCutOff.setMinValue(0);
+		hardIdentityCutOff.setMaxValue(1);
+		hardIdentityCutOff.addPlugin(helpIconPlugin);
+		hardIdentityCutOff.setData("hint", AppPropertiesManager.CONSTANTS.parameters_hard_identity_cutoff_hint());
+		hardIdentityCutOff.addKeyListener(new SubmitKeyListener());
+		return hardIdentityCutOff;
+	}
+	
+	private NumberField createMaxNrOfSequences(ComponentPlugin helpIconPlugin)
+	{
+		NumberField maxNrOfSequences = new NumberField();
+		maxNrOfSequences.setFieldLabel(AppPropertiesManager.CONSTANTS
+				.parameters_max_num_sequences());
+		maxNrOfSequences.setAllowBlank(false);
+		maxNrOfSequences.setAllowNegative(false);
+		maxNrOfSequences.setPropertyEditorType(Integer.class);
+		maxNrOfSequences.setName("maxNrOfSequences");
+		maxNrOfSequences.addPlugin(helpIconPlugin);
+		maxNrOfSequences.setData("hint", AppPropertiesManager.CONSTANTS.parameters_max_num_sequences_hint());
+		maxNrOfSequences.addKeyListener(new SubmitKeyListener());
+		return maxNrOfSequences;
+	}
+	
+	private ComboBox<SearchModeComboModel> createSearchModeComboBox(ComponentPlugin helpIconPlugin)
+	{
+		ComboBox<SearchModeComboModel> searchModeCombo = new ComboBox<SearchModeComboModel>();
 		searchModeCombo.setFieldLabel(AppPropertiesManager.CONSTANTS
 				.parameters_search_mode());
 		searchModeCombo.setWidth(150);
@@ -220,9 +243,7 @@ public class OptionsInputPanel extends FieldSet
 		searchModeCombo.setEditable(false);
 		searchModeCombo.addPlugin(helpIconPlugin);
 		searchModeCombo.setData("hint", AppPropertiesManager.CONSTANTS.parameters_search_mode_hint());
-		alignmentsParametersFieldSet.add(searchModeCombo, formData);
-		
-		return alignmentsParametersFieldSet;
+		return searchModeCombo;
 	}
 	
 	/**
@@ -258,17 +279,7 @@ public class OptionsInputPanel extends FieldSet
 				reducedAlphabetValues.add(model);
 			}
 
-			reducedAlphabetCombo = new ComboBox<ReducedAlphabetComboModel>();
-			reducedAlphabetCombo.setFieldLabel(AppPropertiesManager.CONSTANTS
-					.parameters_reduced_alphabet());
-			reducedAlphabetCombo.setWidth(150);
-			reducedAlphabetCombo.setStore(reducedAlphabetValues);
-			reducedAlphabetCombo.setTypeAhead(true);
-			reducedAlphabetCombo.setTriggerAction(TriggerAction.ALL);
-			reducedAlphabetCombo.setDisplayField("reducedAlphabet");
-			reducedAlphabetCombo.setEditable(false);
-			reducedAlphabetCombo.addPlugin(helpIconPlugin);
-			reducedAlphabetCombo.setData("hint", AppPropertiesManager.CONSTANTS.parameters_reduced_alphabet_hint());
+			reducedAlphabetCombo = createReducedAlphabetCombo(helpIconPlugin);
 			methodsFieldset.add(reducedAlphabetCombo, formData);
 			
 			methodsFieldset.addListener(Events.Expand, new Listener<FieldSetEvent>() 
@@ -309,6 +320,22 @@ public class OptionsInputPanel extends FieldSet
 		}
 		
 		return methodsFieldset;
+	}
+	
+	private ComboBox<ReducedAlphabetComboModel> createReducedAlphabetCombo(ComponentPlugin helpIconPlugin)
+	{
+		ComboBox<ReducedAlphabetComboModel> reducedAlphabetCombo = new ComboBox<ReducedAlphabetComboModel>();
+		reducedAlphabetCombo.setFieldLabel(AppPropertiesManager.CONSTANTS
+				.parameters_reduced_alphabet());
+		reducedAlphabetCombo.setWidth(150);
+		reducedAlphabetCombo.setStore(reducedAlphabetValues);
+		reducedAlphabetCombo.setTypeAhead(true);
+		reducedAlphabetCombo.setTriggerAction(TriggerAction.ALL);
+		reducedAlphabetCombo.setDisplayField("reducedAlphabet");
+		reducedAlphabetCombo.setEditable(false);
+		reducedAlphabetCombo.addPlugin(helpIconPlugin);
+		reducedAlphabetCombo.setData("hint", AppPropertiesManager.CONSTANTS.parameters_reduced_alphabet_hint());
+		return reducedAlphabetCombo;
 	}
 
 	/**

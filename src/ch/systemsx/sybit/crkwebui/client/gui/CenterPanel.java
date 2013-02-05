@@ -1,5 +1,8 @@
 package ch.systemsx.sybit.crkwebui.client.gui;
 
+import ch.systemsx.sybit.crkwebui.client.controllers.EventBusManager;
+import ch.systemsx.sybit.crkwebui.client.events.SaveResultsPanelGridSettingsEvent;
+
 import com.extjs.gxt.ui.client.event.ContainerEvent;
 import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.Listener;
@@ -29,7 +32,7 @@ public class CenterPanel extends LayoutContainer
 			{
 				if(ce.getItem() instanceof ResultsPanel)
 				{
-					((ResultsPanel)ce.getItem()).saveGridSettings();
+					EventBusManager.EVENT_BUS.fireEvent(new SaveResultsPanelGridSettingsEvent());
 				}
 			}
 			

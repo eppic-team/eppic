@@ -42,30 +42,8 @@ public class NavigationPanel extends LayoutContainer
 		statusMessagePanel.add(status);
 	    this.add(statusMessagePanel, new RowData(1, 1, new Margins(0)));
 
-	    LayoutContainer linksContainerWrapper = new LayoutContainer();
-	    linksContainerWrapper.setBorders(false);
-
-	    VBoxLayout vBoxLayout = new VBoxLayout();
-	    vBoxLayout.setVBoxLayoutAlign(VBoxLayoutAlign.RIGHT);
-	    linksContainerWrapper.setLayout(vBoxLayout);
-
-	    LayoutContainer linksContainer = new LayoutContainer();
-	    linksContainer.setBorders(false);
-
-	    Label homeLink = createHomeLink();
-	    Label aboutLink = createAboutLink();
-	    Label helpLink = createHelpLink();
-	    Label downloadsLink = createDownloadsLink();
-	    Label contactLink = createContactLink();
-
-	    linksContainer.add(homeLink);
-	    linksContainer.add(downloadsLink);
-	    linksContainer.add(helpLink);
-		linksContainer.add(aboutLink);
-		linksContainer.add(contactLink);
-
-		linksContainerWrapper.add(linksContainer);
-		this.add(linksContainerWrapper, new RowData(400, 1, new Margins(0)));
+	    LayoutContainer linksPanel = createLinksPanelWrapper();
+		this.add(linksPanel, new RowData(400, 1, new Margins(0)));
 		
 		initializeEventsListeners();
 	}
@@ -79,6 +57,48 @@ public class NavigationPanel extends LayoutContainer
 		LayoutContainer statusMessagePanel = new LayoutContainer();
 		statusMessagePanel.setScrollMode(Scroll.AUTOY);
 		return statusMessagePanel;
+	}
+	
+	/**
+	 * Creates wrapper of links panel with proper alignments.
+	 * @return wrapper of links panel
+	 */
+	private LayoutContainer createLinksPanelWrapper()
+	{
+		LayoutContainer linksContainerWrapper = new LayoutContainer();
+	    linksContainerWrapper.setBorders(false);
+
+	    VBoxLayout vBoxLayout = new VBoxLayout();
+	    vBoxLayout.setVBoxLayoutAlign(VBoxLayoutAlign.RIGHT);
+	    linksContainerWrapper.setLayout(vBoxLayout);
+
+	    LayoutContainer linksContainer = createLinksPanel();
+		linksContainerWrapper.add(linksContainer);
+		return linksContainerWrapper;
+	}
+	
+	/**
+	 * Creates panel containing navigation links.
+	 * @return panel with links
+	 */
+	private LayoutContainer createLinksPanel()
+	{
+		LayoutContainer linksContainer = new LayoutContainer();
+	    linksContainer.setBorders(false);
+	    
+	    Label homeLink = createHomeLink();
+	    Label aboutLink = createAboutLink();
+	    Label helpLink = createHelpLink();
+	    Label downloadsLink = createDownloadsLink();
+	    Label contactLink = createContactLink();
+
+	    linksContainer.add(homeLink);
+	    linksContainer.add(downloadsLink);
+	    linksContainer.add(helpLink);
+		linksContainer.add(aboutLink);
+		linksContainer.add(contactLink);
+		
+		return linksContainer;
 	}
 	
 	/**

@@ -1,25 +1,23 @@
 package ch.systemsx.sybit.crkwebui.client.gui;
 
+import java.util.List;
+
 import ch.systemsx.sybit.crkwebui.client.controllers.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.gui.util.EscapedStringGenerator;
+import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResidueItem;
+import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
 
 import com.extjs.gxt.ui.client.Style.Orientation;
-import com.extjs.gxt.ui.client.Style.Scroll;
 import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.FieldEvent;
 import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.util.Margins;
-import com.extjs.gxt.ui.client.widget.Label;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.form.ComboBox.TriggerAction;
 import com.extjs.gxt.ui.client.widget.form.FormPanel;
 import com.extjs.gxt.ui.client.widget.form.SimpleComboBox;
-import com.extjs.gxt.ui.client.widget.layout.AnchorData;
-import com.extjs.gxt.ui.client.widget.layout.AnchorLayout;
 import com.extjs.gxt.ui.client.widget.layout.RowData;
 import com.extjs.gxt.ui.client.widget.layout.RowLayout;
-import com.extjs.gxt.ui.client.widget.layout.VBoxLayout;
-import com.extjs.gxt.ui.client.widget.layout.VBoxLayout.VBoxLayoutAlign;
 import com.extjs.gxt.ui.client.widget.toolbar.FillToolItem;
 import com.extjs.gxt.ui.client.widget.toolbar.LabelToolItem;
 import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
@@ -31,14 +29,8 @@ import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
  */
 public class InterfacesResiduesPanel extends FormPanel 
 {
-	private Label firstStructureHeader;
-	private Label secondStructureHeader;
-	
-	private ResiduesPanel firstStructurePanel;
-	private ResiduesPanel secondStructurePanel;
-	
-	private ResiduesSummaryPanel firstStructureSummaryPanel;
-	private ResiduesSummaryPanel secondStructureSummaryPanel;
+	private StructurePanel firstStructurePanel;
+	private StructurePanel secondStructurePanel;
 	
 	private SimpleComboBox<String> residuesFilterComboBox;
 	
@@ -53,44 +45,32 @@ public class InterfacesResiduesPanel extends FormPanel
 		LayoutContainer residuesLayoutContainer = new LayoutContainer();
 		residuesLayoutContainer.setLayout(new RowLayout(Orientation.HORIZONTAL));
 	
-		firstStructureHeader = new Label();
-		secondStructureHeader = new Label();
-		
-		firstStructurePanel = new ResiduesPanel(width);
-		firstStructurePanel.setScrollMode(Scroll.NONE);
-		
-		secondStructurePanel = new ResiduesPanel(width);
-		secondStructurePanel.setScrollMode(Scroll.NONE);
-		
-		firstStructureSummaryPanel = new ResiduesSummaryPanel("", 1);
-		secondStructureSummaryPanel = new ResiduesSummaryPanel("", 2);
-		
-		firstStructureSummaryPanel.setHeight(90);
-		firstStructureSummaryPanel.setScrollMode(Scroll.NONE);
-		secondStructureSummaryPanel.setHeight(90);
-		secondStructureSummaryPanel.setScrollMode(Scroll.NONE);
-		
-		LayoutContainer firstStructureContainer = createStructurePanel(firstStructureHeader,
-																	   firstStructurePanel,
-																	   firstStructureSummaryPanel);
-		residuesLayoutContainer.add(firstStructureContainer, new RowData(0.48, 1, new Margins(0)));
+		firstStructurePanel = new StructurePanel(width, 1);
+		residuesLayoutContainer.add(firstStructurePanel, new RowData(0.48, 1, new Margins(0)));
 
-		FormPanel breakPanel = new FormPanel();
-		breakPanel.setBodyBorder(false);
-		breakPanel.setBorders(false);
-		breakPanel.getHeader().setVisible(false);
+		FormPanel breakPanel = createBreakPanel();
 		residuesLayoutContainer.add(breakPanel, new RowData(0.04, 1, new Margins(0)));
 		
-		LayoutContainer secondStructureContainer = createStructurePanel(secondStructureHeader,
-																	    secondStructurePanel,
-																	    secondStructureSummaryPanel);
-		
-		residuesLayoutContainer.add(secondStructureContainer, new RowData(0.48, 1, new Margins(0)));
+		secondStructurePanel = new StructurePanel(width, 2);
+		residuesLayoutContainer.add(secondStructurePanel, new RowData(0.48, 1, new Margins(0)));
 		
 		this.add(residuesLayoutContainer, new RowData(1, 1, new Margins(0, 0, 0, 0)));
 		
 		ToolBar toolbar = createToolbar();  
 		this.setTopComponent(toolbar);
+	}
+	
+	/**
+	 * Creates panel used as a break between structures panels.
+	 * @return break panel
+	 */
+	private FormPanel createBreakPanel()
+	{
+		FormPanel breakPanel = new FormPanel();
+		breakPanel.setBodyBorder(false);
+		breakPanel.setBorders(false);
+		breakPanel.getHeader().setVisible(false);
+		return breakPanel;
 	}
 	
 	/**
@@ -101,7 +81,23 @@ public class InterfacesResiduesPanel extends FormPanel
 	{
 		ToolBar toolbar = new ToolBar();  
 		
-		residuesFilterComboBox = new SimpleComboBox<String>();
+		toolbar.add(new FillToolItem());
+		
+		toolbar.add(new LabelToolItem(AppPropertiesManager.CONSTANTS.interfaces_residues_combo_title() + ": ")); 
+
+		residuesFilterComboBox = createResiduesFilterComboBox();
+		toolbar.add(residuesFilterComboBox);  
+		
+		return toolbar;
+	}
+	
+	/**
+	 * Creates selector used to limit types of interface residues to display.
+	 * @return residues filter combobox
+	 */
+	private SimpleComboBox<String> createResiduesFilterComboBox()
+	{
+		final SimpleComboBox<String> residuesFilterComboBox = new SimpleComboBox<String>();
 		residuesFilterComboBox.setId("residuesfilter");
 		residuesFilterComboBox.setTriggerAction(TriggerAction.ALL);  
 		residuesFilterComboBox.setEditable(false);  
@@ -122,67 +118,44 @@ public class InterfacesResiduesPanel extends FormPanel
 					showAll = false;
 				}
 				
-				firstStructurePanel.applyFilter(showAll);
-				secondStructurePanel.applyFilter(showAll);
+				firstStructurePanel.getResiduesPanel().applyFilter(showAll);
+				secondStructurePanel.getResiduesPanel().applyFilter(showAll);
 			}  
 		}); 
 		
-		toolbar.add(new FillToolItem());
-		
-		toolbar.add(new LabelToolItem(AppPropertiesManager.CONSTANTS.interfaces_residues_combo_title() + ": ")); 
-		toolbar.add(residuesFilterComboBox);  
-		
-		return toolbar;
+		return residuesFilterComboBox;
 	}
 	
 	/**
-	 * Creates structure panel.
-	 * @param structureHeader structure header label
-	 * @param residuesPanel residues panel
-	 * @param residuesSummaryPanel residues summary panel
-	 * @return structure panel
-	 */
-	private LayoutContainer createStructurePanel(Label structureHeader,
-												 ResiduesPanel residuesPanel,
-												 ResiduesSummaryPanel residuesSummaryPanel)
-	{
-		LayoutContainer structureContainer = new LayoutContainer();
-		structureContainer.setScrollMode(Scroll.AUTOX);
-		structureContainer.setLayout(new AnchorLayout());
-
-		VBoxLayout layout = new VBoxLayout();
-	    layout.setVBoxLayoutAlign(VBoxLayoutAlign.CENTER);
-	    
-		LayoutContainer structureHeaderPanel = new LayoutContainer();
-		structureHeaderPanel.setHeight(20);
-		structureHeaderPanel.setLayout(layout);
-		structureHeaderPanel.add(structureHeader);
-		structureContainer.add(structureHeaderPanel);
-		
-		structureContainer.add(residuesPanel, new AnchorData("none -155"));
-		
-		FormPanel structureBreakPanel = new FormPanel();
-		structureBreakPanel.setBodyBorder(false);
-		structureBreakPanel.setBorders(false);
-		structureBreakPanel.getHeader().setVisible(false);
-		structureBreakPanel.setHeight(20);
-		structureContainer.add(structureBreakPanel);
-
-		structureContainer.add(residuesSummaryPanel);
-		
-		return structureContainer;
-	}
-	
-	/**
-	 * Cleans data of residues filter.
+	 * Cleans data of structure filter and panels.
 	 */
 	public void cleanData()
 	{
 		residuesFilterComboBox.setSimpleValue(AppPropertiesManager.CONSTANTS.interfaces_residues_combo_rimcore());
-		firstStructurePanel.cleanResiduesGrid();
-		secondStructurePanel.cleanResiduesGrid();
-		firstStructureSummaryPanel.cleanResiduesGrid();
-		secondStructureSummaryPanel.cleanResiduesGrid();
+		firstStructurePanel.cleanData();
+		secondStructurePanel.cleanData();
+	}
+	
+	/**
+	 * Fills content of structure panel
+	 * @param structureNr nr of the structure
+	 * @param pdbScoreItem result of calculations
+	 * @param selectedInterface interface for which residues are to be displayed
+	 * @param interfaceResidueItems residues to display
+	 */
+	public void fillStructurePanel(int structureNr,
+								   PDBScoreItem pdbScoreItem,
+								   int selectedInterface,
+								   List<InterfaceResidueItem> interfaceResidueItems)
+	{
+		if(structureNr == 1)
+		{
+			firstStructurePanel.fillStructurePanel(pdbScoreItem, selectedInterface, interfaceResidueItems);
+		}
+		else
+		{
+			secondStructurePanel.fillStructurePanel(pdbScoreItem, selectedInterface, interfaceResidueItems);
+		}
 	}
 	
 	/**
@@ -192,10 +165,22 @@ public class InterfacesResiduesPanel extends FormPanel
 	 */
 	public void fillHeaders(String firstChainName, String secondChainName) 
 	{
-		firstStructureHeader.setText(AppPropertiesManager.CONSTANTS.interfaces_residues_panel_structure() + " " + 
+		firstStructurePanel.fillHeader(AppPropertiesManager.CONSTANTS.interfaces_residues_panel_structure() + " " + 
 									 EscapedStringGenerator.generateEscapedString(firstChainName));
-		secondStructureHeader.setText(AppPropertiesManager.CONSTANTS.interfaces_residues_panel_structure() + " " + 
+		secondStructurePanel.fillHeader(AppPropertiesManager.CONSTANTS.interfaces_residues_panel_structure() + " " + 
 									 EscapedStringGenerator.generateEscapedString(secondChainName));
+	}
+	
+	public void increaseActivePages()
+	{
+		firstStructurePanel.increaseActivePage();
+		secondStructurePanel.increaseActivePage();
+	}
+	
+	public void decreaseActivePages()
+	{
+		firstStructurePanel.decreaseActivePage();
+		secondStructurePanel.decreaseActivePage();
 	}
 
 	/**
@@ -206,46 +191,8 @@ public class InterfacesResiduesPanel extends FormPanel
 	public void resizeResiduesPanels(int assignedWidth, int assignedHeight) 
 	{
 		int assignedResiduesWidth = (int)((assignedWidth - 36) * 0.48) - 10;
-		firstStructurePanel.resizeGrid(assignedResiduesWidth);
-		secondStructurePanel.resizeGrid(assignedResiduesWidth);
-		firstStructureSummaryPanel.resizeGrid(assignedResiduesWidth);
-		secondStructureSummaryPanel.resizeGrid(assignedResiduesWidth);
+		firstStructurePanel.resizeResiduesPanels(assignedResiduesWidth, assignedHeight);
+		secondStructurePanel.resizeResiduesPanels(assignedResiduesWidth, assignedHeight);
 		this.layout(true);
-	}
-	
-	/**
-	 * Retrieves panel containing interface residues for first structure.
-	 * @return panel containing interface residues for first structure
-	 */
-	public ResiduesPanel getFirstStructurePanel() 
-	{
-		return firstStructurePanel;
-	}
-
-	/**
-	 * Retrieves panel containing interface residues for second structure.
-	 * @return panel containing interface residues for second structure
-	 */
-	public ResiduesPanel getSecondStructurePanel() 
-	{
-		return secondStructurePanel;
-	}
-	
-	/**
-	 * Retrieves panel containing interface residues summary for first structure.
-	 * @return panel containing interface residues summary for first structure
-	 */
-	public ResiduesSummaryPanel getFirstStructurePanelSummary() 
-	{
-		return firstStructureSummaryPanel;
-	}
-
-	/**
-	 * Retrieves panel containing interface residues summary for second structure.
-	 * @return panel containing interface residues summary for second structure
-	 */
-	public ResiduesSummaryPanel getSecondStructurePanelSummary() 
-	{
-		return secondStructureSummaryPanel;
 	}
 }

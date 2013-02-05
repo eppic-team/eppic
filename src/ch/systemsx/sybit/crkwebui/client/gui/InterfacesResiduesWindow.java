@@ -71,19 +71,13 @@ public class InterfacesResiduesWindow extends ResizableWindow
 			@Override
             public void onPageDown(ComponentEvent ce) 
 			{
-				interfacesResiduesPanel.getFirstStructurePanel().getResiduesGridPagingToolbar().setActivePage(
-						interfacesResiduesPanel.getFirstStructurePanel().getResiduesGridPagingToolbar().getActivePage() + 1);
-				interfacesResiduesPanel.getSecondStructurePanel().getResiduesGridPagingToolbar().setActivePage(
-						interfacesResiduesPanel.getSecondStructurePanel().getResiduesGridPagingToolbar().getActivePage() + 1);
+				interfacesResiduesPanel.increaseActivePages();
             }
 			
 			@Override
             public void onPageUp(ComponentEvent ce) 
 			{
-				interfacesResiduesPanel.getFirstStructurePanel().getResiduesGridPagingToolbar().setActivePage(
-						interfacesResiduesPanel.getFirstStructurePanel().getResiduesGridPagingToolbar().getActivePage() - 1);
-				interfacesResiduesPanel.getSecondStructurePanel().getResiduesGridPagingToolbar().setActivePage(
-						interfacesResiduesPanel.getSecondStructurePanel().getResiduesGridPagingToolbar().getActivePage() - 1);
+				interfacesResiduesPanel.decreaseActivePages();
             }
 		};
 		

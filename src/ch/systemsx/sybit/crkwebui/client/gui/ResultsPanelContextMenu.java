@@ -21,6 +21,19 @@ public class ResultsPanelContextMenu extends Menu
 	{
 		this.setWidth(140);  
 		  
+		MenuItem detailsItem = createDetailsMenuItem();
+		this.add(detailsItem);
+		
+		MenuItem viewerItem = createViewerMenuItem();  
+		this.add(viewerItem);  
+	}
+	
+	/**
+	 * Creates context menu item used to show details for specified interface.
+	 * @return menu item
+	 */
+	private MenuItem createDetailsMenuItem()
+	{
 		MenuItem detailsItem = new MenuItem();  
 		detailsItem.setText(AppPropertiesManager.CONSTANTS.results_grid_details_button());
 		detailsItem.addSelectionListener(new SelectionListener<MenuEvent>() 
@@ -30,8 +43,16 @@ public class ResultsPanelContextMenu extends Menu
 				EventBusManager.EVENT_BUS.fireEvent(new ShowDetailsEvent());
 			}  
 		});  
-		this.add(detailsItem);
 		
+		return detailsItem;
+	}
+
+	/**
+	 * Creates context menu item used to open molecular viewer.
+	 * @return menu item
+	 */
+	private MenuItem createViewerMenuItem()
+	{
 		MenuItem viewerItem = new MenuItem();  
 		viewerItem.setText(AppPropertiesManager.CONSTANTS.results_grid_viewer_button()); 
 		viewerItem.addSelectionListener(new SelectionListener<MenuEvent>() 
@@ -42,6 +63,6 @@ public class ResultsPanelContextMenu extends Menu
 			}  
 		});  
 		
-		this.add(viewerItem);  
+		return viewerItem;
 	}
 }

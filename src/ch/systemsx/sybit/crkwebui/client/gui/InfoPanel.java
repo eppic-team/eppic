@@ -45,10 +45,7 @@ import com.google.gwt.user.client.ui.HasVerticalAlignment;
  */
 public class InfoPanel extends FormPanel 
 {
-	private EmptyLinkWithTooltip inputParametersLabel;
 	private ToolTip inputParametersTooltip;
-	private LinkWithTooltip downloadResultsLink;
-	
 	private ToolTip queryWarningsTooltip;
 	
 	public InfoPanel(PDBScoreItem pdbScoreItem) 
@@ -60,7 +57,7 @@ public class InfoPanel extends FormPanel
 		this.setScrollMode(Scroll.AUTO);
 //		this.addStyleName("eppic-default-padding");
 
-		generateHomologsInfoTooltip();
+		queryWarningsTooltip = createHomologsInfoTooltip();
 		generateInfoPanel(pdbScoreItem);
 		
 		initializeEventsListeners();
@@ -69,7 +66,7 @@ public class InfoPanel extends FormPanel
 	/**
 	 * Creates tooltip displayed over homologs query warnings.
 	 */
-	private void generateHomologsInfoTooltip() 
+	private ToolTip createHomologsInfoTooltip() 
 	{
 		ToolTipConfig toolTipConfig = new ToolTipConfig();  
 		toolTipConfig.setTitle(AppPropertiesManager.CONSTANTS.homologs_panel_query_warnings_title());
@@ -78,7 +75,7 @@ public class InfoPanel extends FormPanel
 		toolTipConfig.setDismissDelay(0);
 		toolTipConfig.setShowDelay(100);
 		toolTipConfig.setMaxWidth(ApplicationContext.getWindowData().getWindowWidth() - 20);
-		queryWarningsTooltip = new ToolTip(null, toolTipConfig);
+		return new ToolTip(null, toolTipConfig);
 	}
 
 	/**
@@ -138,51 +135,18 @@ public class InfoPanel extends FormPanel
 			}
 		}
 		
-		ToolTipConfig toolTipConfig = new ToolTipConfig();  
-		toolTipConfig.setTitle(AppPropertiesManager.CONSTANTS.info_panel_input_parameters());
-		toolTipConfig.setMouseOffset(new int[] {0, 0});  
-		toolTipConfig.setTemplate(new Template(generateInputParametersTemplate(pdbScoreItem)));  
-		toolTipConfig.setCloseable(true); 
-		toolTipConfig.setDismissDelay(0);
-		toolTipConfig.setShowDelay(100);
-		toolTipConfig.setMaxWidth(ApplicationContext.getWindowData().getWindowWidth() - 20);
-		inputParametersTooltip = new ToolTip(null, toolTipConfig);
-		
-		inputParametersLabel = new EmptyLinkWithTooltip(AppPropertiesManager.CONSTANTS.info_panel_input_parameters(),
-														AppPropertiesManager.CONSTANTS.info_panel_input_parameters_hint(),
-														ApplicationContext.getWindowData(),
-														0);
-		inputParametersLabel.addListener(Events.OnClick, new Listener<BaseEvent>() {
-
-			@Override
-			public void handleEvent(BaseEvent be) {
-				inputParametersTooltip.showAt(inputParametersLabel.getAbsoluteLeft() + inputParametersLabel.getWidth() + 10, 
-						   					  inputParametersLabel.getAbsoluteTop());
-			}
-			
-		});
-		
-		inputParametersLabel.addStyleName("eppic-action");
-		
+		inputParametersTooltip = createInputParametersTooltip(pdbScoreItem);
+		EmptyLinkWithTooltip inputParametersLabel = createInputParametersLabel();
 		flexTable.setWidget(0, 1, inputParametersLabel);
 		
-		downloadResultsLink = new LinkWithTooltip(AppPropertiesManager.CONSTANTS.info_panel_download_results_link(), 
-												  AppPropertiesManager.CONSTANTS.info_panel_download_results_link_hint(), 
-												  ApplicationContext.getWindowData(), 
-												  0, 
-												  GWT.getModuleBaseURL() + "fileDownload?type=zip&id=" + pdbScoreItem.getJobId());
-		downloadResultsLink.addStyleName("eppic-internal-link");
+		LinkWithTooltip downloadResultsLink = createDownloadsLink(pdbScoreItem.getJobId());
 		flexTable.setWidget(2, 3, downloadResultsLink);
 		
-		Label uniprotVersionlabel = new Label(AppPropertiesManager.CONSTANTS.info_panel_uniprot() + ": " +
-				EscapedStringGenerator.generateEscapedString(pdbScoreItem.getRunParameters().getUniprotVer()));
-		uniprotVersionlabel.addStyleName("eppic-default-label");
+		Label uniprotVersionlabel = createUniprotVersionlabel(pdbScoreItem.getRunParameters().getUniprotVer());
 		flexTable.setWidget(0, 3, uniprotVersionlabel);
 		
-		Label crkVersionLabel = new Label(AppPropertiesManager.CONSTANTS.info_panel_crk() + ": " +
-				EscapedStringGenerator.generateEscapedString(pdbScoreItem.getRunParameters().getCrkVersion()));
-		crkVersionLabel.addStyleName("eppic-default-label");
-		flexTable.setWidget(1, 3, crkVersionLabel);
+		Label eppicVersionLabel = createEppicVersionLabel(pdbScoreItem.getRunParameters().getCrkVersion());
+		flexTable.setWidget(1, 3, eppicVersionLabel);
 		
 		if(homologsStrings != null)
 		{
@@ -197,6 +161,48 @@ public class InfoPanel extends FormPanel
 		
 		// formdata -20 - fix for chrome - otherwise unnecessary scroll bar
 		this.add(flexTable, new FormData("-20 100%"));
+	}
+	
+	/**
+	 * Creates tooltip displayed over input parameters label and containing list of the parameters with values.
+	 * @param pdbScoreItem result item containing values of input parameters
+	 * @return tooltip
+	 */
+	private ToolTip createInputParametersTooltip(PDBScoreItem pdbScoreItem)
+	{
+		ToolTipConfig toolTipConfig = new ToolTipConfig();  
+		toolTipConfig.setTitle(AppPropertiesManager.CONSTANTS.info_panel_input_parameters());
+		toolTipConfig.setMouseOffset(new int[] {0, 0});  
+		toolTipConfig.setTemplate(new Template(generateInputParametersTemplate(pdbScoreItem)));  
+		toolTipConfig.setCloseable(true); 
+		toolTipConfig.setDismissDelay(0);
+		toolTipConfig.setShowDelay(100);
+		toolTipConfig.setMaxWidth(ApplicationContext.getWindowData().getWindowWidth() - 20);
+		return new ToolTip(null, toolTipConfig);
+	}
+	
+	/**
+	 * Creates link used to open list of input parameters.
+	 * @return link to input parameters
+	 */
+	private EmptyLinkWithTooltip createInputParametersLabel()
+	{
+		final EmptyLinkWithTooltip inputParametersLabel = new EmptyLinkWithTooltip(AppPropertiesManager.CONSTANTS.info_panel_input_parameters(),
+				AppPropertiesManager.CONSTANTS.info_panel_input_parameters_hint(),
+				ApplicationContext.getWindowData(),
+				0);
+		inputParametersLabel.addListener(Events.OnClick, new Listener<BaseEvent>() {
+		
+		@Override
+		public void handleEvent(BaseEvent be) {
+			inputParametersTooltip.showAt(inputParametersLabel.getAbsoluteLeft() + inputParametersLabel.getWidth() + 10, 
+					inputParametersLabel.getAbsoluteTop());
+			}
+		});
+		
+		inputParametersLabel.addStyleName("eppic-action");
+		
+		return inputParametersLabel;
 	}
 	
 	/**
@@ -244,6 +250,48 @@ public class InfoPanel extends FormPanel
 		
 		result += "</table>";
 		return result;
+	}
+	
+	/**
+	 * Creates link to download compressed results of processing.
+	 * @param jobId identifier of the job
+	 * @return link to compressed results
+	 */
+	private LinkWithTooltip createDownloadsLink(String jobId)
+	{
+		LinkWithTooltip downloadResultsLink = new LinkWithTooltip(AppPropertiesManager.CONSTANTS.info_panel_download_results_link(), 
+				  AppPropertiesManager.CONSTANTS.info_panel_download_results_link_hint(), 
+				  ApplicationContext.getWindowData(), 
+				  0, 
+				  GWT.getModuleBaseURL() + "fileDownload?type=zip&id=" + jobId);
+		downloadResultsLink.addStyleName("eppic-internal-link");
+		return downloadResultsLink;
+	}
+	
+	/**
+	 * Creates label containing version of the uniprot used for processing.
+	 * @param uniprotVersion version of uniprot used during processing
+	 * @return label with uniprot version
+	 */
+	private Label createUniprotVersionlabel(String uniprotVersion)
+	{
+		Label uniprotVersionlabel = new Label(AppPropertiesManager.CONSTANTS.info_panel_uniprot() + ": " +
+				EscapedStringGenerator.generateEscapedString(uniprotVersion));
+		uniprotVersionlabel.addStyleName("eppic-default-label");
+		return uniprotVersionlabel;
+	}
+	
+	/**
+	 * Creates label containing version of the eppic application used for processing.
+	 * @param eppicVersion version of eppic application used during processing
+	 * @return label with eppic version
+	 */
+	private Label createEppicVersionLabel(String eppicVersion)
+	{
+		Label eppicVersionLabel = new Label(AppPropertiesManager.CONSTANTS.info_panel_crk() + ": " +
+				EscapedStringGenerator.generateEscapedString(eppicVersion));
+		eppicVersionLabel.addStyleName("eppic-default-label");
+		return eppicVersionLabel;
 	}
 
 	/**

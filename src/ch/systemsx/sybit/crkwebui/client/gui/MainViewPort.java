@@ -209,22 +209,18 @@ public class MainViewPort extends LayoutContainer
 	{
 		if(interfaceResidues.containsKey(1))
 		{
-			interfacesResiduesWindow.getInterfacesResiduesPanel().getFirstStructurePanelSummary().fillResiduesGrid(pdbScoreItem,
-																					 selectedInterface,
+			interfacesResiduesWindow.getInterfacesResiduesPanel().fillStructurePanel(1, 
+																					 pdbScoreItem, 
+																					 selectedInterface, 
 																					 interfaceResidues.get(1));
-			interfacesResiduesWindow.getInterfacesResiduesPanel().getFirstStructurePanel()
-					.fillResiduesGrid(interfaceResidues.get(1));
-			interfacesResiduesWindow.getInterfacesResiduesPanel().getFirstStructurePanel().applyFilter(false);
 		}
 
 		if(interfaceResidues.containsKey(2))
 		{
-			interfacesResiduesWindow.getInterfacesResiduesPanel().getSecondStructurePanelSummary().fillResiduesGrid(pdbScoreItem,
-																					  selectedInterface,
-																					  interfaceResidues.get(2));
-			interfacesResiduesWindow.getInterfacesResiduesPanel().getSecondStructurePanel()
-					.fillResiduesGrid(interfaceResidues.get(2));
-			interfacesResiduesWindow.getInterfacesResiduesPanel().getSecondStructurePanel().applyFilter(false);
+			interfacesResiduesWindow.getInterfacesResiduesPanel().fillStructurePanel(2, 
+																					 pdbScoreItem, 
+																					 selectedInterface, 
+																					 interfaceResidues.get(2));
 		}
 	}
 

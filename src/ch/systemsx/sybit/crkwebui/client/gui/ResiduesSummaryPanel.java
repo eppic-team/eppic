@@ -62,25 +62,7 @@ public class ResiduesSummaryPanel extends ContentPanel
 		residuesStore = new ListStore<InterfaceResidueSummaryModel>();
 		residuesColumnModel = new ColumnModel(residuesConfigs);
 		
-		residuesGrid = new Grid<InterfaceResidueSummaryModel>(residuesStore, residuesColumnModel);
-		residuesGrid.setBorders(false);
-		residuesGrid.setStripeRows(true);
-		residuesGrid.setColumnLines(false);
-		residuesGrid.setHideHeaders(true);
-		residuesGrid.getSelectionModel().setLocked(true);
-		residuesGrid.setLoadMask(true);
-		
-		residuesGrid.getView().setViewConfig(new GridViewConfig(){
-			@Override
-			public String getRowStyle(ModelData model, int rowIndex,
-					ListStore<ModelData> ds) 
-			{
-				return "eppic-summary-grid-row";
-			}
-		});
-		
-		residuesGrid.disableTextSelection(false);
-		residuesGrid.getView().setForceFit(false);
+		residuesGrid = createResiduesSummaryGrid();
 		this.add(residuesGrid);
 	}
 	
@@ -106,6 +88,35 @@ public class ResiduesSummaryPanel extends ContentPanel
 		
 		return configs;
 
+	}
+	
+	/**
+	 * Creates grid containing summary for specified interface and structure.
+	 * @return summary grid
+	 */
+	private Grid<InterfaceResidueSummaryModel> createResiduesSummaryGrid()
+	{
+		Grid<InterfaceResidueSummaryModel> residuesGrid = new Grid<InterfaceResidueSummaryModel>(residuesStore, residuesColumnModel);
+		residuesGrid.setBorders(false);
+		residuesGrid.setStripeRows(true);
+		residuesGrid.setColumnLines(false);
+		residuesGrid.setHideHeaders(true);
+		residuesGrid.getSelectionModel().setLocked(true);
+		residuesGrid.setLoadMask(true);
+		
+		residuesGrid.getView().setViewConfig(new GridViewConfig(){
+			@Override
+			public String getRowStyle(ModelData model, int rowIndex,
+					ListStore<ModelData> ds) 
+			{
+				return "eppic-summary-grid-row";
+			}
+		});
+		
+		residuesGrid.disableTextSelection(false);
+		residuesGrid.getView().setForceFit(false);
+		
+		return residuesGrid;
 	}
 
 	/**

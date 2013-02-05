@@ -1,8 +1,6 @@
 package ch.systemsx.sybit.crkwebui.client.gui.util;
 
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
-import com.google.gwt.safehtml.shared.SafeHtmlUtils;
-import com.google.gwt.safehtml.shared.SimpleHtmlSanitizer;
 
 /**
  * Generator of escaped strings.

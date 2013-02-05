@@ -70,13 +70,47 @@ public class ResiduesPanel extends ContentPanel
 		loader.setRemoteSort(true);
 
 		residuesStore = new ListStore<InterfaceResidueItemModel>(loader);
-
 		residuesColumnModel = new ColumnModel(residuesConfigs);
 
-//		residuesColumnModel.addHeaderGroup(0, 0, new HeaderGroupConfig(header,
-//				1, residuesColumnModel.getColumnCount()));
+		residuesGrid = createResiduesGrid();
+		this.add(residuesGrid, new RowData(1, 1, new Margins(0)));
 
-		residuesGrid = new Grid<InterfaceResidueItemModel>(residuesStore, residuesColumnModel);
+		if(!useBufferedView)
+		{
+			pagingToolbar = new PagingToolBar(nrOfRows);
+			pagingToolbar.bind(loader);
+
+			this.setBottomComponent(pagingToolbar);
+		}
+
+	}
+
+	/**
+	 * Creates columns configurations for residues grid.
+	 * @return list of columns configurations for residues grid
+	 */
+	private List<ColumnConfig> createColumnConfig()
+	{
+		List<ColumnConfig> configs = GridColumnConfigGenerator.createColumnConfigs(
+				   "residues",
+				   new InterfaceResidueItemModel());
+
+		if(configs != null)
+		{
+			initialColumnWidth = new ArrayList<Integer>();
+
+			for(ColumnConfig columnConfig : configs)
+			{
+				initialColumnWidth.add(columnConfig.getWidth());
+			}
+		}
+
+		return configs;
+	}
+
+	private Grid<InterfaceResidueItemModel> createResiduesGrid()
+	{
+		Grid<InterfaceResidueItemModel> residuesGrid = new Grid<InterfaceResidueItemModel>(residuesStore, residuesColumnModel);
 		residuesGrid.setBorders(false);
 		residuesGrid.setStripeRows(true);
 		residuesGrid.setColumnLines(false);
@@ -94,13 +128,6 @@ public class ResiduesPanel extends ContentPanel
 			view.setScrollDelay(0);
 			view.setRowHeight(20);
 			residuesGrid.setView(view);
-		}
-		else
-		{
-			pagingToolbar = new PagingToolBar(nrOfRows);
-			pagingToolbar.bind(loader);
-
-			this.setBottomComponent(pagingToolbar);
 		}
 
 		residuesGrid.getView().setViewConfig(new GridViewConfig(){
@@ -134,31 +161,10 @@ public class ResiduesPanel extends ContentPanel
 				return "";
 			}
 		});
+		
+		return residuesGrid;
 	}
-
-	/**
-	 * Creates columns configurations for residues grid.
-	 * @return list of columns configurations for residues grid
-	 */
-	private List<ColumnConfig> createColumnConfig()
-	{
-		List<ColumnConfig> configs = GridColumnConfigGenerator.createColumnConfigs(
-				   "residues",
-				   new InterfaceResidueItemModel());
-
-		if(configs != null)
-		{
-			initialColumnWidth = new ArrayList<Integer>();
-
-			for(ColumnConfig columnConfig : configs)
-			{
-				initialColumnWidth.add(columnConfig.getWidth());
-			}
-		}
-
-		return configs;
-	}
-
+	
 	/**
 	 * Sets content of residues grid.
 	 * @param residueValues list of items to add to the grid
@@ -281,12 +287,13 @@ public class ResiduesPanel extends ContentPanel
 		this.layout();
 	}
 
-	/**
-	 * Retrieves paging toolbar for residues grid.
-	 * @return paging toolbar for residues grid
-	 */
-	public PagingToolBar getResiduesGridPagingToolbar()
+	public void increaseActivePage()
 	{
-		return pagingToolbar;
+		pagingToolbar.setActivePage(pagingToolbar.getActivePage() + 1);
+	}
+	
+	public void decreaseActivePage()
+	{
+		pagingToolbar.setActivePage(pagingToolbar.getActivePage() - 1);
 	}
 }

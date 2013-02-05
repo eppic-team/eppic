@@ -51,12 +51,8 @@ import com.google.gwt.user.client.History;
 public class MyJobsPanel extends ContentPanel
 {
 	private Grid<MyJobsModel> myJobsGrid;
-	private List<ColumnConfig> myJobsConfigs;
 	private ListStore<MyJobsModel> myJobsStore;
-	private ColumnModel myJobsColumnModel;
 	private Map<String, Integer> initialColumnWidth;
-
-	private Button addNew;
 
 	private boolean isJobsListFirstTimeLoaded = true;
 
@@ -65,9 +61,39 @@ public class MyJobsPanel extends ContentPanel
 		this.setLayout(new RowLayout(Orientation.VERTICAL));
 		this.setHeading(AppPropertiesManager.CONSTANTS.myjobs_panel_head());
 
-		ToolBar toolBar = new ToolBar();
+		ToolBar toolBar = createToolbar();
+		this.setTopComponent(toolBar);
 
-		addNew = new Button(AppPropertiesManager.CONSTANTS.myjobs_panel_new_button(), new SelectionListener<ButtonEvent>() {
+		List<ColumnConfig> myJobsConfigs = createColumnConfig();
+		ColumnModel myJobsColumnModel = new ColumnModel(myJobsConfigs);
+		myJobsStore = new ListStore<MyJobsModel>();
+
+		myJobsGrid = createJobsGrid(myJobsColumnModel);
+		this.add(myJobsGrid, new RowData(1, 1, new Margins(0)));
+		
+		initializeEventsListeners();
+	}
+
+	/**
+	 * Creates panel toolbar.
+	 * @return toolbar
+	 */
+	private ToolBar createToolbar()
+	{
+		ToolBar toolBar = new ToolBar();
+		Button addNew = createAddNewJobButton(AppPropertiesManager.CONSTANTS.myjobs_panel_new_button());
+		toolBar.add(addNew);
+		return toolBar;
+	}
+	
+	/**
+	 * Creates button used to switch to new job view.
+	 * @param text text of the button
+	 * @return button to go to start new job view
+	 */
+	private Button createAddNewJobButton(String text)
+	{
+		Button addNew = new Button(text, new SelectionListener<ButtonEvent>() {
 
 			public void componentSelected(ButtonEvent ce)
 			{
@@ -77,17 +103,40 @@ public class MyJobsPanel extends ContentPanel
 
 		String addIconSource = "resources/icons/add_icon.png";
 		addNew.setIcon(IconHelper.createPath(addIconSource));
+		
+		return addNew;
+	}
 
-		toolBar.add(addNew);
+	/**
+	 * Creates columns configurations for jobs grid.
+	 * @return columns configurations for jobs grid
+	 */
+	private List<ColumnConfig> createColumnConfig()
+	{
+		List<ColumnConfig> configs = GridColumnConfigGenerator.createColumnConfigs("jobs",
+																				   new MyJobsModel());
 
-		this.setTopComponent(toolBar);
+		if(configs != null)
+		{
+			initialColumnWidth = new HashMap<String, Integer>();
 
-		myJobsConfigs = createColumnConfig();
+			for(ColumnConfig columnConfig : configs)
+			{
+				initialColumnWidth.put(columnConfig.getId(), columnConfig.getWidth());
+			}
+		}
 
-		myJobsStore = new ListStore<MyJobsModel>();
-		myJobsColumnModel = new ColumnModel(myJobsConfigs);
-
-		myJobsGrid = new Grid<MyJobsModel>(myJobsStore, myJobsColumnModel);
+		return configs;
+	}
+	
+	/**
+	 * Creates jobs grid.
+	 * @param myJobsColumnModel column model used for jobs grid
+	 * @return grid with jobs
+	 */
+	private Grid<MyJobsModel> createJobsGrid(ColumnModel myJobsColumnModel)
+	{
+		final Grid<MyJobsModel> myJobsGrid = new Grid<MyJobsModel>(myJobsStore, myJobsColumnModel);
 		myJobsGrid.setStyleAttribute("borderTop", "none");
 		myJobsGrid.setBorders(false);
 		myJobsGrid.setStripeRows(true);
@@ -129,32 +178,8 @@ public class MyJobsPanel extends ContentPanel
 				}
 			}
 		};
-
-		this.add(myJobsGrid, new RowData(1, 1, new Margins(0)));
 		
-		initializeEventsListeners();
-	}
-
-	/**
-	 * Creates columns configurations for jobs grid.
-	 * @return columns configurations for jobs grid
-	 */
-	private List<ColumnConfig> createColumnConfig()
-	{
-		List<ColumnConfig> configs = GridColumnConfigGenerator.createColumnConfigs("jobs",
-																				   new MyJobsModel());
-
-		if(configs != null)
-		{
-			initialColumnWidth = new HashMap<String, Integer>();
-
-			for(ColumnConfig columnConfig : configs)
-			{
-				initialColumnWidth.put(columnConfig.getId(), columnConfig.getWidth());
-			}
-		}
-
-		return configs;
+		return myJobsGrid;
 	}
 
 	/**

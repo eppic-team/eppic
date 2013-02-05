@@ -38,25 +38,36 @@ public class LegendPanel extends LayoutContainer
 
 		for(LegendItem item : LegendItem.values())
 		{
-			LayoutContainer itemContainer = new LayoutContainer();
-			HBoxLayout itemContainerLayout = new HBoxLayout();  
-			itemContainerLayout.setHBoxLayoutAlign(HBoxLayoutAlign.MIDDLE);  
-		    itemContainer.setLayout(itemContainerLayout);
-			
-		    LayoutContainer itemTypePanel = new LayoutContainer();
-		    itemTypePanel.setBorders(true);
-		    itemTypePanel.addStyleName(item.getStyleName());
-		    itemTypePanel.setWidth(20);
-		    itemTypePanel.setHeight(20);
-			
-			Label itemTypeLabel = new Label(EscapedStringGenerator.generateEscapedString(item.getName()));
-			
-			itemContainer.add(itemTypePanel, new HBoxLayoutData(new Margins(0, 10, 0, 0)));
-			itemContainer.add(itemTypeLabel);
-			
+			LayoutContainer itemContainer = createLegendItemContainer(item);
 			legendContainer.add(itemContainer, new RowData(0.2, 1, new Margins(0)));
 		}
 		
 		this.add(legendContainer);
+	}
+
+	/**
+	 * Creates item container.
+	 * @param item item to display
+	 * @return panel for legend item
+	 */
+	private LayoutContainer createLegendItemContainer(LegendItem item)
+	{
+		LayoutContainer itemContainer = new LayoutContainer();
+		HBoxLayout itemContainerLayout = new HBoxLayout();  
+		itemContainerLayout.setHBoxLayoutAlign(HBoxLayoutAlign.MIDDLE);  
+	    itemContainer.setLayout(itemContainerLayout);
+		
+	    LayoutContainer itemTypePanel = new LayoutContainer();
+	    itemTypePanel.setBorders(true);
+	    itemTypePanel.addStyleName(item.getStyleName());
+	    itemTypePanel.setWidth(20);
+	    itemTypePanel.setHeight(20);
+		
+		Label itemTypeLabel = new Label(EscapedStringGenerator.generateEscapedString(item.getName()));
+		
+		itemContainer.add(itemTypePanel, new HBoxLayoutData(new Margins(0, 10, 0, 0)));
+		itemContainer.add(itemTypeLabel);
+		
+		return itemContainer;
 	}
 }

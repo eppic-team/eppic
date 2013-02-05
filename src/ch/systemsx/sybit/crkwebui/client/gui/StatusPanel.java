@@ -72,42 +72,98 @@ public class StatusPanel extends DisplayPanel
 		pdbIdentifierPanel.addStyleName("eppic-default-left-padding");
 		this.add(pdbIdentifierPanel, new FormData("95%"));
 		
-		FormPanel breakPanel = new FormPanel();
-		breakPanel.setBorders(false);
-		breakPanel.setBodyBorder(false);
-		breakPanel.setPadding(0);
-		breakPanel.getHeader().setVisible(false);
+		FormPanel breakPanel = createBreakPanel();
 		this.add(breakPanel, new RowData(1, 1.1, new Margins(0)));
 		
 		pdbIdentifierSubtitlePanel = new PDBIdentifierSubtitlePanel();
 		pdbIdentifierSubtitlePanel.addStyleName("eppic-default-left-padding");
 		this.add(pdbIdentifierSubtitlePanel, new FormData("95%"));
 		
-		breakPanel = new FormPanel();
+		breakPanel = createBreakPanel();
+		this.add(breakPanel, new RowData(1, 1.1, new Margins(0)));
+		
+		jobId = createJobIdField();
+		formPanel.add(jobId, new FormData("95%"));
+
+		status = createStatusField();
+		formPanel.add(status, new FormData("95%"));
+
+		log = createLogTextarea();
+		formPanel.add(log, new FormData("95% -110"));
+
+		killJob = createStopJobButton();
+		
+		LayoutContainer killButtonContainer = new LayoutContainer();
+		killButtonContainer.setLayout(new CenterLayout());
+		killButtonContainer.add(killJob);
+		killButtonContainer.setHeight(30);
+		formPanel.add(killButtonContainer, new FormData("95%"));
+
+		statusBar = createStatusBar();
+		formPanel.setBottomComponent(statusBar);
+		
+		this.add(formPanel, new RowData(1,1));
+
+	}
+	
+	/**
+	 * Creates panel used to separate rows.
+	 * @return break panel
+	 */
+	private FormPanel createBreakPanel()
+	{
+		FormPanel breakPanel = new FormPanel();
 		breakPanel.setBorders(false);
 		breakPanel.setBodyBorder(false);
 		breakPanel.setPadding(0);
 		breakPanel.getHeader().setVisible(false);
-		this.add(breakPanel, new RowData(1, 1.1, new Margins(0)));
-		
-		jobId = new TextField<String>();
+		return breakPanel;
+	}
+	
+	/**
+	 * Creates field used to store identifier of the job
+	 * @return jobid field
+	 */
+	private TextField<String> createJobIdField()
+	{
+		TextField<String> jobId = new TextField<String>();
 		jobId.setFieldLabel(AppPropertiesManager.CONSTANTS.status_panel_jobId());
 		jobId.setReadOnly(true);
-		formPanel.add(jobId, new FormData("95%"));
-
-		status = new TextField<String>();
+		return jobId;
+	}
+	
+	/**
+	 * Creates field used to store status of processing (running, waiting, error, etc.)
+	 * @return status field
+	 */
+	private TextField<String> createStatusField()
+	{
+		TextField<String> status = new TextField<String>();
 		status.setFieldLabel(AppPropertiesManager.CONSTANTS.status_panel_status());
 		status.setReadOnly(true);
-		formPanel.add(status, new FormData("95%"));
-
-		log = new TextArea();
+		return status;
+	}
+	
+	/**
+	 * Creates text area used to store log of processing.
+	 * @return log textarea
+	 */
+	private TextArea createLogTextarea()
+	{
+		TextArea log = new TextArea();
 		log.setFieldLabel(AppPropertiesManager.CONSTANTS.status_panel_log());
 		log.setReadOnly(true);
 		log.addInputStyleName("eppic-status-log");
-		
-		formPanel.add(log, new FormData("95% -110"));
-
-		killJob = new Button(AppPropertiesManager.CONSTANTS.status_panel_stop(), new SelectionListener<ButtonEvent>() {
+		return log;
+	}
+	
+	/**
+	 * Creates button used to stop execution of the job
+	 * @return stop job button
+	 */
+	private Button createStopJobButton()
+	{
+		Button killJob = new Button(AppPropertiesManager.CONSTANTS.status_panel_stop(), new SelectionListener<ButtonEvent>() {
 
 			public void componentSelected(ButtonEvent ce)
 			{
@@ -116,29 +172,51 @@ public class StatusPanel extends DisplayPanel
 		});
 
 		killJob.setWidth(80);
-		LayoutContainer killButtonContainer = new LayoutContainer();
-		killButtonContainer.setLayout(new CenterLayout());
-		killButtonContainer.add(killJob);
-		killButtonContainer.setHeight(30);
-		formPanel.add(killButtonContainer, new FormData("95%"));
+		
+		return killJob;
+	}
 
-		statusBar = new ToolBar();
+	/**
+	 * Creates status toolbar.
+	 * @return status toolbar
+	 */
+	private ToolBar createStatusBar()
+	{
+		ToolBar statusBar = new ToolBar();
 
-		statusProgress = new Status();
-		statusProgress.setText("");
-		statusProgress.setWidth(150);
+		statusProgress = createStatusProgress();
 		statusBar.add(statusProgress);
 		statusBar.add(new FillToolItem());
 
-	    statusStepsFinished = new Status();
+	    statusStepsFinished = createStatusStepsFinished();
+	    statusBar.add(statusStepsFinished);
+	    
+	    return statusBar;
+	}
+	
+	/**
+	 * Creates status item used to display busy icon.
+	 * @return status item
+	 */
+	private Status createStatusProgress()
+	{
+		Status statusProgress = new Status();
+		statusProgress.setText("");
+		statusProgress.setWidth(150);
+		return statusProgress;
+	}
+	
+	/**
+	 * Creates status item specifying current step and nr of total steps.
+	 * @return step item
+	 */
+	private Status createStatusStepsFinished()
+	{
+		Status statusStepsFinished = new Status();
 	    statusStepsFinished.setWidth(100);
 	    statusStepsFinished.setText("");
 	    statusStepsFinished.setBox(true);
-	    statusBar.add(statusStepsFinished);
-
-	    formPanel.setBottomComponent(statusBar);
-		this.add(formPanel, new RowData(1,1));
-
+	    return statusStepsFinished;
 	}
 
 	/**

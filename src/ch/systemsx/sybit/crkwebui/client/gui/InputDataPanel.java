@@ -53,8 +53,6 @@ import com.google.gwt.user.client.ui.Image;
  */
 public class InputDataPanel extends DisplayPanel
 {
-	private RecaptchaPanel recaptchaPanel;
-
 	private FormPanel formPanel;
 
 	private RadioGroup inputRadioGroup;
@@ -274,12 +272,13 @@ public class InputDataPanel extends DisplayPanel
 		generalFieldSet.add(breakPanel);
 
 		optionsInputPanel = new OptionsInputPanel(ApplicationContext.getSettings());
+		optionsInputPanel.fillDefaultValues(ApplicationContext.getSettings().getDefaultParametersValues());
 		generalFieldSet.add(optionsInputPanel);
 		optionsInputPanel.collapse();
 
 		if(ApplicationContext.getSettings().isUseCaptcha())
 		{
-			recaptchaPanel = new RecaptchaPanel(ApplicationContext.getSettings().getCaptchaPublicKey());
+			RecaptchaPanel recaptchaPanel = new RecaptchaPanel(ApplicationContext.getSettings().getCaptchaPublicKey());
 
 			if(ApplicationContext.getNrOfSubmissions() < ApplicationContext.getSettings().getNrOfAllowedSubmissionsWithoutCaptcha())
 			{
