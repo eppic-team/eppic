@@ -15,7 +15,7 @@ import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpSession;
 
-import ch.systemsx.sybit.crkwebui.client.CrkWebService;
+import ch.systemsx.sybit.crkwebui.client.commons.services.eppic.CrkWebService;
 import ch.systemsx.sybit.crkwebui.server.data.EmailData;
 import ch.systemsx.sybit.crkwebui.server.data.InputWithType;
 import ch.systemsx.sybit.crkwebui.server.db.dao.HomologsInfoItemDAO;
