@@ -160,7 +160,7 @@ public class EvolRimCorePredictor implements InterfaceTypePredictor {
 			//TODO we are taking simply the average, is this the best solution?
 			// weighting is not done here, scores are calculated either weighted/non-weighted before
 			callReason = member1Pred.getCallReason()+"\n"+member2Pred.getCallReason();
-			if (score<callCutoff) {
+			if (score<=callCutoff) {
 				call = CallType.BIO;
 				callReason += "\nAverage score "+String.format("%4.2f", score)+" is below cutoff ("+String.format("%4.2f", callCutoff)+")";
 			} else if (score>callCutoff) {
