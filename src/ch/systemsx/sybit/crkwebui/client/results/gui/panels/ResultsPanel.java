@@ -31,7 +31,6 @@ public class ResultsPanel extends DisplayPanel
 
 	public ResultsPanel(PDBScoreItem pdbScoreItem)
 	{
-		this.setBorders(true);
 		this.setLayout(new RowLayout(Orientation.VERTICAL));
 		this.addStyleName("eppic-default-padding");
 

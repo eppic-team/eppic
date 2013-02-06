@@ -12,7 +12,7 @@ public class DisplayPanel extends LayoutContainer
 {
 	public DisplayPanel()
 	{
-		this.setBorders(false);
+		this.setBorders(true);
 		this.setLayout(new FitLayout());
 	}
 }
