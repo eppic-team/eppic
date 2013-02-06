@@ -78,6 +78,8 @@ public class InputDataPanel extends DisplayPanel
 	 */
 	private void init()
 	{
+		this.setBorders(true);
+		
 		LayoutContainer container = new LayoutContainer();
 		container.setLayout(new RowLayout());
 		
