@@ -106,12 +106,7 @@ public class EvolInterfZMemberPredictor implements InterfaceTypePredictor {
 			} else if (Double.isNaN(zScore)) {
 				call = CallType.NO_PREDICTION;
 				callReason = memberSerial+": score is NaN";
-			} else {
-				// note: this is useless, just kept here as a placeholder in case we want to introduce gray zone
-				call = CallType.GRAY;
-				callReason = memberSerial+": score "+String.format("%4.2f",zScore)+" falls in gray area ("+
-				String.format("%4.2f", parent.getCallCutoff())+" - "+String.format("%4.2f", parent.getCallCutoff())+")"; 
-			}
+			} 
 		}
 
 		

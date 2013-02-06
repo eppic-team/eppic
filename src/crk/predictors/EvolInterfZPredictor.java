@@ -145,7 +145,7 @@ public class EvolInterfZPredictor implements InterfaceTypePredictor {
 			callReason = member1Pred.getCallReason()+"\n"+member2Pred.getCallReason();
 		} else if (countBio==countXtal) {
 			callReason = member1Pred.getCallReason()+"\n"+member2Pred.getCallReason();
-			if (score<callCutoff) {
+			if (score<=callCutoff) {
 				call = CallType.BIO;
 				callReason += "\nAverage score "+String.format("%4.2f", score)+" is below cutoff ("+String.format("%4.2f", callCutoff)+")";
 			} else if (score>callCutoff) {
@@ -154,12 +154,7 @@ public class EvolInterfZPredictor implements InterfaceTypePredictor {
 			} else if (Double.isNaN(score)) {
 				call = CallType.NO_PREDICTION;
 				callReason += "\nAverage score is NaN";
-			} else {
-				// note this is useless, keeping it here only as place holder in case we want to introduce a gray zone
-				call = CallType.GRAY;
-				callReason += "\nAverage score "+String.format("%4.2f", score)+" falls in gray area ("+
-						String.format("%4.2f", callCutoff)+" - "+String.format("%4.2f", callCutoff)+")";
-			}
+			} 
 		}
 		return call;
 		
