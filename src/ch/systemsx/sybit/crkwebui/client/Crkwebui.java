@@ -1,10 +1,10 @@
 package ch.systemsx.sybit.crkwebui.client;
 
-import ch.systemsx.sybit.crkwebui.client.controllers.ApplicationContext;
-import ch.systemsx.sybit.crkwebui.client.controllers.CrkWebServiceProvider;
-import ch.systemsx.sybit.crkwebui.client.controllers.EventBusManager;
-import ch.systemsx.sybit.crkwebui.client.controllers.MainController;
-import ch.systemsx.sybit.crkwebui.client.events.ApplicationWindowResizeEvent;
+import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
+import ch.systemsx.sybit.crkwebui.client.commons.events.ApplicationWindowResizeEvent;
+import ch.systemsx.sybit.crkwebui.client.commons.managers.EventBusManager;
+import ch.systemsx.sybit.crkwebui.client.commons.services.eppic.CrkWebServiceProvider;
+import ch.systemsx.sybit.crkwebui.client.main.controllers.MainController;
 
 import com.extjs.gxt.themes.client.Access;
 import com.extjs.gxt.themes.client.Slate;
