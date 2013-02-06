@@ -67,7 +67,7 @@ public class ProteinFrequencies {
 	public void printEnrichmentsTable(PrintWriter out){
 		double interfcorefreq, fullfreq, surfacefreq, chaincorefreq, ratiofull, ratiosurface, ratiochaincore;
 		out.println("# Enrichment of Interface Core");
-		out.println("# AA    Full   Surf   Prot.Core");
+		out.println("# AA     Full    Surf    Prot.Core");
 		for(ResidueCount res:interfCore.resid){
 			if(this.interfCore.count != 0) interfcorefreq = res.getFrequency()/this.interfCore.count;
 			else interfcorefreq = 0;
@@ -82,7 +82,7 @@ public class ProteinFrequencies {
 			ratiosurface = Math.log(interfcorefreq/surfacefreq)/Math.log(2);
 			ratiochaincore = Math.log(interfcorefreq/chaincorefreq)/Math.log(2);
 			
-			out.println(String.format(" %3s  %6.1f %6.1f %6.1f", res.aa.getThreeLetterCode(), ratiofull, ratiosurface, ratiochaincore));
+			out.println(String.format(" %3s  %7.3f %7.3f %7.3f", res.aa.getThreeLetterCode(), ratiofull, ratiosurface, ratiochaincore));
 		}
 		out.print('\n');
 	}
@@ -94,13 +94,13 @@ public class ProteinFrequencies {
 		out.println("# Total number of Interface Core Residues encountered: " + this.interfCore.count);
 		out.println("# Total number of Protein Core Residues encountered: " + this.chainCore.count);
 		out.print('\n');
-		out.println("# AA    Core   Full   Surf   Prot.Core");
+		out.println("# AA     Core    Full    Surf    Prot.Core");
 		for(ResidueCount res:interfCore.resid){
 			double interfcorefreq = res.getFrequency()/this.interfCore.count;
 			double fullfreq = this.full.getFrequency(res.aa)/this.full.count;
 			double surfacefreq = this.surface.getFrequency(res.aa)/this.surface.count;
 			double chaincorefreq = this.chainCore.getFrequency(res.aa)/this.chainCore.count;
-			out.println(String.format(" %3s  %6.2f %6.2f %6.2f %6.2f", res.aa.getThreeLetterCode(), interfcorefreq, fullfreq, surfacefreq, chaincorefreq));
+			out.println(String.format(" %3s  %7.3f %7.3f %7.3f %7.3f", res.aa.getThreeLetterCode(), interfcorefreq, fullfreq, surfacefreq, chaincorefreq));
 		}
 		out.print('\n');
 	}
@@ -113,9 +113,9 @@ public class ProteinFrequencies {
 		double[] propChainCore = this.chainCore.getProperties(out);
 		
 		out.print('\n');
-		out.println("# Property        Full   Surf  InCore  ProtCore");
+		out.println("# Property         Full    Surf   InCore   ProtCore");
 		for(int i=0; i<9; i++)
-			out.println(String.format("%15s %6.2f %6.2f %6.2f %6.2f", props[i], propFull[i], propSurface[i], propInterfCore[i], propChainCore[i]));
+			out.println(String.format("%15s %7.3f %7.3f %7.3f %7.3f", props[i], propFull[i], propSurface[i], propInterfCore[i], propChainCore[i]));
 		out.print('\n');
 	}
 

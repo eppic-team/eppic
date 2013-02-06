@@ -36,14 +36,14 @@ public class InterfaceResidueAnalysis {
 	private static String dataSet;
 	private static String outDir;
 	private static String dataBioDir;
+	private static String localCifDir;
 	
 	//Methods
 	public static PdbAsymUnit loadPdbFile(String pdbCode) throws CRKException, IOException, FileFormatException, PdbLoadException {
 		System.out.println("Loading PDB data: " + pdbCode);
 		String pdbFtpCifUrl = "";
-		String localCifDir = "/nfs/data/dbs/pdb/data/structures/all/mmCIF";
-		File cifFile = null;
-		cifFile = new File(pdbCode + ".cif");
+		//String localCifDir = "/nfs/data/dbs/pdb/data/structures/all/mmCIF";
+		File cifFile = File.createTempFile(pdbCode, ".cif");
 		cifFile.deleteOnExit();
 		PdbAsymUnit.grabCifFile(localCifDir, pdbFtpCifUrl, pdbCode, cifFile, false);
 		PdbAsymUnit fullpdb = new PdbAsymUnit(cifFile, PdbAsymUnit.DEFAULT_MODEL, false);
@@ -54,7 +54,7 @@ public class InterfaceResidueAnalysis {
 		return fullpdb;
 	}
 	
-	private static void calFrequencies(ChainInterface interFace, int iChain, boolean ifBio){
+	private static void calFrequencies(ChainInterface interFace, int iChain, boolean ifBio) throws IOException{
 		ProteinFrequencies local = new ProteinFrequencies();
 		PdbChain chain = interFace.getFirstMolecule();
 		if (iChain == 2) chain = interFace.getSecondMolecule();
@@ -80,6 +80,7 @@ public class InterfaceResidueAnalysis {
 		if(ifBio) {
 			globalBio.addData(local);
 			coreEnrich.addData(local);
+			coreEnrich.printDistribution(local, outDir);
 		}
 		else globalXtal.addData(local);
 	}
@@ -93,12 +94,12 @@ public class InterfaceResidueAnalysis {
 		PrintWriter outSumm = new PrintWriter(outFileSummary);
 		
 		outSumm.println("-------------------------------------------------------");
-		outSumm.println(" ENRICHMENTS ");
+		outSumm.println(" ENRICHMENTS (GLOBAL)");
 		outSumm.println("-------------------------------------------------------");
 		globalBio.printEnrichments(outSumm);
 		
 		outSumm.println("-------------------------------------------------------");
-		outSumm.println(" RELATIVE ABUNDANCE ");
+		outSumm.println(" RELATIVE ABUNDANCE (LOCAL)");
 		outSumm.println("-------------------------------------------------------");
 		coreEnrich.printData(outSumm);
 		
@@ -108,7 +109,7 @@ public class InterfaceResidueAnalysis {
 		globalBio.printProperties(outSumm);
 		
 		outSumm.println("-------------------------------------------------------");
-		outSumm.println(" PROPENSITIES ");
+		outSumm.println(" FREQUENCIES ");
 		outSumm.println("-------------------------------------------------------");
 		globalBio.printPropensities(outSumm);
 		
@@ -153,7 +154,7 @@ public class InterfaceResidueAnalysis {
 			if(variable.equals("#DATASET PATH")) dataBioDir = line;
 			if(variable.equals("#OUTPUT PATH")) outDir = line;
 			if(variable.equals("#CORE CUT OFF")) coreCutOff = Double.parseDouble(line);
-			
+			if(variable.equals("#PDBDATA PATH")) localCifDir = line;
 		}
 		br.close();
 	}
@@ -190,11 +191,11 @@ public class InterfaceResidueAnalysis {
 			
 			//Calculate the frequencies for bio and xtal separately
 			int countInterFace = 0;
-			boolean isBio = false;
 			for (ChainInterface interFace:allInterFaces) {
 				countInterFace++;
-				if(countInterFace <= bioInterFaces) isBio = true;
-				else isBio = false;
+				boolean isBio = bioToAnalyse.get(pdbCode).contains(countInterFace);
+				if (isBio == true) System.out.println("Getting Data from Interface: "+ countInterFace);
+
 				//Calculate the frequencies of residues in various regions for both chains
 				for(int iChain=1; iChain<=2; iChain++) calFrequencies(interFace, iChain, isBio);
 			}
