@@ -48,6 +48,7 @@ public interface AppProperties extends Constants
 	String input_citation();
 	String input_citation_link_tooltip();
 	String input_citation_link_text();
+	String input_news_header();
 
 	String parameters_entropy();
 	String parameters_geometry();

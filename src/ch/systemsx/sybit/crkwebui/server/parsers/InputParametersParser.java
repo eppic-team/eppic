@@ -86,9 +86,11 @@ public class InputParametersParser
 		
 		applicationSettings.setDefaultParametersValues(inputParameters);
 		
-		Node notificationNode = documentRootNode.getElementsByTagName("notification").item(0);
-		String notification = prepareNotificationText(notificationNode);
+		String notification = getNodeText(documentRootNode, "notification");
 		applicationSettings.setNotificationOnStart(notification);
+		
+		String newsMessage = getNodeText(documentRootNode, "news");
+		applicationSettings.setNewsMessage(newsMessage);
 		
 		Node runParametersNode = documentRootNode.getElementsByTagName("run_parameters").item(0);
 		Map<String, String> runPropetiesMap = prepareRunParameters(runParametersNode);
@@ -200,16 +202,6 @@ public class InputParametersParser
 		return screenSettings;
 	}
 
-	/**
-	 * Retrieves notification which is to be set as status of application.
-	 * @param inputParametersNode notification node
-	 * @return start notification
-	 */
-	private static String prepareNotificationText(Node inputParametersNode) 
-	{
-		return inputParametersNode.getFirstChild().getNodeValue();
-	}
-
 	private static void setDefaultParameters(Node defaultInputParametersNodeRoot, 
 											 InputParameters inputParameters) 
 	{
@@ -269,5 +261,19 @@ public class InputParametersParser
 		}
 		
 		return nodesValues;
+	}
+	
+	/**
+	 * Retrieves text specified in node.
+	 * @param rootNode root node
+	 * @param nodeName name of the node for which text is to be retrieved
+	 * @return text stored in node
+	 */
+	private static String getNodeText(Element rootNode,
+									  String nodeName)
+	{
+		Node node = rootNode.getElementsByTagName(nodeName).item(0);
+		String nodeText = node.getFirstChild().getNodeValue();
+		return nodeText;	
 	}
 }

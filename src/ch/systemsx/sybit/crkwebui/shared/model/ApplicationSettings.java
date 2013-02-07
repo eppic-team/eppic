@@ -67,6 +67,11 @@ public class ApplicationSettings implements Serializable {
 	private String notificationOnStart;
 	
 	/**
+	 * News informing about new version of the application.
+	 */
+	private String newsMessage;
+	
+	/**
 	 * Base url to pdb.org
 	 */
 	private String pdbLinkUrl;
@@ -292,6 +297,22 @@ public class ApplicationSettings implements Serializable {
 	 */
 	public String getNotificationOnStart() {
 		return notificationOnStart;
+	}
+	
+	/**
+	 * Retrieves news about new features of the system.
+	 * @return news about new features of the system
+	 */
+	public String getNewsMessage() {
+		return newsMessage;
+	}
+
+	/**
+	 * Sets news about new features of the system.
+	 * @param newsMessage news about new features of the system
+	 */
+	public void setNewsMessage(String newsMessage) {
+		this.newsMessage = newsMessage;
 	}
 
 	/**

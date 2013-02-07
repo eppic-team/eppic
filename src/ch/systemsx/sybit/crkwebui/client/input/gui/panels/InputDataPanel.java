@@ -86,9 +86,16 @@ public class InputDataPanel extends DisplayPanel
 		
 		LayoutContainer fieldsetContainer = createFieldsetRowContainer();
 		container.add(fieldsetContainer, new RowData(1, 1, new Margins(0)));
+	
+		if((ApplicationContext.getSettings().getNewsMessage() != null) &&
+		   (!ApplicationContext.getSettings().getNewsMessage().equals("")))
+		{
+			LayoutContainer newsContainer = new NewsPanel(ApplicationContext.getSettings().getNewsMessage());
+			container.add(newsContainer, new RowData(1, 40, new Margins(0)));
+		}
 		
 		LayoutContainer footerContainer = createFooterRowContainer();
-		container.add(footerContainer, new RowData(1, 50, new Margins(0)));
+		container.add(footerContainer, new RowData(1, 40, new Margins(0)));
 		
 		this.add(container);
 		
@@ -155,6 +162,7 @@ public class InputDataPanel extends DisplayPanel
 	private LayoutContainer createCitationContainer()
 	{
 		LayoutContainer citationContainer = new LayoutContainer();
+		citationContainer.addStyleName("eppic-default-top-padding");
 		
 		Label citationDescription = new Label(AppPropertiesManager.CONSTANTS.input_citation() + " :&nbsp;");
 		citationContainer.add(citationDescription);
@@ -167,7 +175,6 @@ public class InputDataPanel extends DisplayPanel
 		citationContainer.add(citationLink);
 		citationContainer.setAutoWidth(true);
 		citationContainer.setAutoHeight(true);
-		citationContainer.addStyleName("eppic-citation");
 		
 		return citationContainer;
 	}
@@ -473,7 +480,7 @@ public class InputDataPanel extends DisplayPanel
 		
 		return examplePanel;
 	}
-
+	
 	/**
 	 * Starts new job. If file is uploaded then jobId is used to identify uploaded file, otherwise jobId is null.
 	 * @param jobId identifier of the job
