@@ -14,5 +14,6 @@ public class DisplayPanel extends LayoutContainer
 	{
 		this.setBorders(true);
 		this.setLayout(new FitLayout());
+		this.addStyleName("eppic-default-padding");
 	}
 }

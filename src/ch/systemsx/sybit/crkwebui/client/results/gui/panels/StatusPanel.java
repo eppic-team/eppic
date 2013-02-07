@@ -60,7 +60,6 @@ public class StatusPanel extends DisplayPanel
 	private void init(int windowHeight)
 	{
 		this.setBorders(true);
-		this.addStyleName("eppic-default-top-padding");
 		this.setLayout(new RowLayout());
 
 		formPanel = new FormPanel();

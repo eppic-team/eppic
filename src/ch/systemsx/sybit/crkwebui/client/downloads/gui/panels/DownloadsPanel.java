@@ -16,7 +16,6 @@ public class DownloadsPanel extends DisplayPanel
 {
 	public DownloadsPanel() 
 	{
-		this.addStyleName("eppic-default-padding");
 		this.addStyleName("eppic-text-panel");
 		this.setScrollMode(Scroll.AUTO);
 		
