@@ -26,10 +26,10 @@
 	font-weight: bold;
 }
 
-.eppic-action A:link {text-decoration: none; font-weight:bold; font-size: 14px}
-.eppic-action A:visited {text-decoration: none; font-weight:bold; font-size: 14px}
-.eppic-action A:active {text-decoration: none; font-weight:bold; font-size: 14px}
-.eppic-action A:hover {background: #5288DB; color: white; font-weight:bold; font-size: 14px}
+.eppic-action A:link {text-decoration: none; font-weight:bold; font-size: 14px; color: #434350}
+.eppic-action A:visited {text-decoration: none; font-weight:bold; font-size: 14px; color: #434350}
+.eppic-action A:active {text-decoration: none; font-weight:bold; font-size: 14px; color: #434350}
+.eppic-action A:hover {text-decoration: underline; font-weight:bold; font-size: 14px; color: #1428bf}
 
 .eppic-internal-link A:link {text-decoration: none; font-size: 14px}
 .eppic-internal-link A:visited {text-decoration: none; font-size: 14px}
@@ -41,10 +41,10 @@
 .eppic-external-link A:active {text-decoration: none; font-size: 14px}
 .eppic-external-link A:hover {text-decoration: underline; font-size: 14px}
 
-.eppic-horizontal-nav A:link {text-decoration: none; font-weight:bold; font-size: 14px}
-.eppic-horizontal-nav A:visited {text-decoration: none; font-weight:bold; font-size: 14px}
-.eppic-horizontal-nav A:active {text-decoration: none; font-weight:bold; font-size: 14px}
-.eppic-horizontal-nav A:hover {background: #5288DB; color: white; font-weight:bold; font-size: 14px}
+.eppic-horizontal-nav A:link {text-decoration: none; font-weight:bold; font-size: 14px; color: #434350}
+.eppic-horizontal-nav A:visited {text-decoration: none; font-weight:bold; font-size: 14px; color: #434350}
+.eppic-horizontal-nav A:active {text-decoration: none; font-weight:bold; font-size: 14px; color: #434350}
+.eppic-horizontal-nav A:hover {text-decoration: underline; font-weight:bold; font-size: 14px; color: #1428bf}
 
 .eppic-monospaced-font {
 	font-size: 10pt;
