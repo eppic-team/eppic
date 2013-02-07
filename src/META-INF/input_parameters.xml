@@ -46,6 +46,8 @@
 	
 	<notification>Ok</notification>
 	
+	<news>This is example news. This is example news. This is example news. This is example news. This is example news.</news>
+	
 	<run_parameters>
 		<parameter>
 			<name>homSoftIdCutoff</name>

@@ -59,6 +59,10 @@
 	padding-top: 10px;
 }
 
+.eppic-default-right-padding {
+	padding-right: 10px;
+}
+
 .eppic-default-left-padding {
 	padding-left: 10px;
 }
@@ -143,8 +147,14 @@
 	white-space: nowrap;
 }
 
+.eppic-input-news-header {
+	font-weight: bold;
+	color: red;
+}
+
 .eppic-citation A:link {text-decoration: none}
 .eppic-citation A:visited {text-decoration: none}
 .eppic-citation A:active {text-decoration: none}
 .eppic-citation A:hover {text-decoration: underline}
+
 
