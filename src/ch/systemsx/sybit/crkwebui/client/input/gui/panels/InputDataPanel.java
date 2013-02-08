@@ -175,6 +175,7 @@ public class InputDataPanel extends DisplayPanel
 		citationContainer.add(citationLink);
 		citationContainer.setAutoWidth(true);
 		citationContainer.setAutoHeight(true);
+		citationContainer.addStyleName("eppic-citation");
 		
 		return citationContainer;
 	}
