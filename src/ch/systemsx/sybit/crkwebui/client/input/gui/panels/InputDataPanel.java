@@ -88,7 +88,7 @@ public class InputDataPanel extends DisplayPanel
 		container.add(fieldsetContainer, new RowData(1, 1, new Margins(0)));
 	
 		if((ApplicationContext.getSettings().getNewsMessage() != null) &&
-		   (!ApplicationContext.getSettings().getNewsMessage().equals("")))
+		   (!ApplicationContext.getSettings().getNewsMessage().trim().equals("")))
 		{
 			LayoutContainer newsContainer = new NewsPanel(ApplicationContext.getSettings().getNewsMessage());
 			container.add(newsContainer, new RowData(1, 40, new Margins(0)));

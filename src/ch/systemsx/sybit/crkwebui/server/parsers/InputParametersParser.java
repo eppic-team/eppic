@@ -273,7 +273,13 @@ public class InputParametersParser
 									  String nodeName)
 	{
 		Node node = rootNode.getElementsByTagName(nodeName).item(0);
-		String nodeText = node.getFirstChild().getNodeValue();
+		String nodeText = null;
+
+		if(node.hasChildNodes())
+		{
+			nodeText = node.getFirstChild().getNodeValue();
+		}
 		return nodeText;	
 	}
+	
 }
