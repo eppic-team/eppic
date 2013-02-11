@@ -60,7 +60,7 @@
 
 	<servlet>
 	    <servlet-name>FileUploadService</servlet-name>
-	    <servlet-class>ch.systemsx.sybit.crkwebui.server.FileUploadServlet</servlet-class>
+	    <servlet-class>ch.systemsx.sybit.crkwebui.server.files.uploader.servlets.FileUploadServlet</servlet-class>
 	</servlet>
 
 	<servlet-mapping>
@@ -70,7 +70,7 @@
 
  	<servlet>
 	    <servlet-name>FileDownloadService</servlet-name>
-	    <servlet-class>ch.systemsx.sybit.crkwebui.server.FileDownloadServlet</servlet-class>
+	    <servlet-class>ch.systemsx.sybit.crkwebui.server.files.downloader.servlets.FileDownloadServlet</servlet-class>
 	</servlet>
 
 	<servlet-mapping>
@@ -80,7 +80,7 @@
  	
  	<servlet>
 	    <servlet-name>JmolViewerService</servlet-name>
-	    <servlet-class>ch.systemsx.sybit.crkwebui.server.JmolViewerServlet</servlet-class>
+	    <servlet-class>ch.systemsx.sybit.crkwebui.server.jmol.servlets.JmolViewerServlet</servlet-class>
 	</servlet>
 
 	<servlet-mapping>
