@@ -16,8 +16,15 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpSession;
 
 import ch.systemsx.sybit.crkwebui.client.commons.services.eppic.CrkWebService;
-import ch.systemsx.sybit.crkwebui.server.data.EmailData;
-import ch.systemsx.sybit.crkwebui.server.data.InputWithType;
+import ch.systemsx.sybit.crkwebui.server.db.data.InputWithType;
+import ch.systemsx.sybit.crkwebui.server.commons.util.io.DirectoryContentReader;
+import ch.systemsx.sybit.crkwebui.server.commons.util.io.FileContentReader;
+import ch.systemsx.sybit.crkwebui.server.commons.util.io.IOUtil;
+import ch.systemsx.sybit.crkwebui.server.commons.util.io.RandomDirectoryGenerator;
+import ch.systemsx.sybit.crkwebui.server.commons.util.log.LogHandler;
+import ch.systemsx.sybit.crkwebui.server.commons.validators.PreSubmitValidator;
+import ch.systemsx.sybit.crkwebui.server.commons.validators.RunJobDataValidator;
+import ch.systemsx.sybit.crkwebui.server.commons.validators.SessionValidator;
 import ch.systemsx.sybit.crkwebui.server.db.dao.HomologsInfoItemDAO;
 import ch.systemsx.sybit.crkwebui.server.db.dao.InterfaceItemDAO;
 import ch.systemsx.sybit.crkwebui.server.db.dao.InterfaceResidueItemDAO;
@@ -30,19 +37,14 @@ import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.InterfaceResidueItemDAOJpa;
 import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.JobDAOJpa;
 import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.PDBScoreDAOJpa;
 import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.UserSessionDAOJpa;
-import ch.systemsx.sybit.crkwebui.server.generators.ApplicationSettingsGenerator;
-import ch.systemsx.sybit.crkwebui.server.generators.DirectoryContentGenerator;
-import ch.systemsx.sybit.crkwebui.server.generators.RandomDirectoryNameGenerator;
-import ch.systemsx.sybit.crkwebui.server.managers.JobManager;
-import ch.systemsx.sybit.crkwebui.server.managers.JobManagerFactory;
-import ch.systemsx.sybit.crkwebui.server.managers.JobStatusUpdater;
-import ch.systemsx.sybit.crkwebui.server.util.FileContentReader;
-import ch.systemsx.sybit.crkwebui.server.util.IOUtil;
-import ch.systemsx.sybit.crkwebui.server.util.LogHandler;
-import ch.systemsx.sybit.crkwebui.server.validators.IPVerifier;
-import ch.systemsx.sybit.crkwebui.server.validators.PreSubmitValidator;
-import ch.systemsx.sybit.crkwebui.server.validators.RunJobDataValidator;
-import ch.systemsx.sybit.crkwebui.server.validators.SessionValidator;
+import ch.systemsx.sybit.crkwebui.server.email.data.EmailData;
+import ch.systemsx.sybit.crkwebui.server.email.managers.EmailSender;
+import ch.systemsx.sybit.crkwebui.server.ip.validators.IPVerifier;
+import ch.systemsx.sybit.crkwebui.server.jobs.managers.JobManagerFactory;
+import ch.systemsx.sybit.crkwebui.server.jobs.managers.commons.JobManager;
+import ch.systemsx.sybit.crkwebui.server.jobs.managers.commons.JobStatusUpdater;
+import ch.systemsx.sybit.crkwebui.server.runners.CrkRunner;
+import ch.systemsx.sybit.crkwebui.server.settings.generators.ApplicationSettingsGenerator;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.CrkWebException;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.JobHandlerException;
@@ -346,7 +348,7 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 
 			if(runJobData.getJobId() == null)
 			{
-				String randomDirectoryName = RandomDirectoryNameGenerator.generateRandomDirectory(generalDestinationDirectoryName);
+				String randomDirectoryName = RandomDirectoryGenerator.generateRandomDirectory(generalDestinationDirectoryName);
 				runJobData.setJobId(randomDirectoryName);
 				inputType = InputType.PDBCODE.getIndex();
 			}
@@ -488,7 +490,7 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 						filesToRead.add(new File(dataDirectory, "crklog"));
 					}
 
-					File[] directoryContent = DirectoryContentGenerator.getFilesNamesWithPrefix(dataDirectory, jobId + ".e");
+					File[] directoryContent = DirectoryContentReader.getFilesNamesWithPrefix(dataDirectory, jobId + ".e");
 						
 					if(directoryContent != null)
 					{
