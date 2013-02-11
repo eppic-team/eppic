@@ -7,7 +7,7 @@ import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
  * @author srebniak_a
  *
  */
-public interface ServiceController
+public interface CrkWebServiceController
 {
 	/**
 	 * Loads initial setttings.

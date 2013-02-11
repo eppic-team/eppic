@@ -24,7 +24,7 @@ import com.google.gwt.user.client.rpc.XsrfTokenServiceAsync;
  * @author srebniak_a
  *
  */
-public class ServiceControllerImpl implements ServiceController 
+public class CrkWebServiceControllerImpl implements CrkWebServiceController 
 {
 	/**
 	 * Create a remote service proxy to talk to the server-side service.
@@ -34,7 +34,7 @@ public class ServiceControllerImpl implements ServiceController
 	
 	private final XsrfTokenServiceAsync xsrfTokenService = XsrfTokenServiceProvider.getXsrfTokenService();
 
-	public ServiceControllerImpl() 
+	public CrkWebServiceControllerImpl() 
 	{
 		
 	}

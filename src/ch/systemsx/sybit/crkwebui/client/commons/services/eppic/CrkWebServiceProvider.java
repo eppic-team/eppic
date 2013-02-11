@@ -6,9 +6,9 @@ package ch.systemsx.sybit.crkwebui.client.commons.services.eppic;
  */
 public class CrkWebServiceProvider
 {
-	private static ServiceController serviceController = new ServiceControllerImpl();
+	private static CrkWebServiceController serviceController = new CrkWebServiceControllerImpl();
 	
-	public static ServiceController getServiceController()
+	public static CrkWebServiceController getServiceController()
 	{
 		return serviceController;
 	}
