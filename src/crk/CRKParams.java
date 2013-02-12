@@ -105,7 +105,7 @@ public class CRKParams {
 	// default minimum ASA for calling a residue surface
 	public static final double    DEF_MIN_ASA_FOR_SURFACE = 5;
 	// default minimum number of atoms for a cofactor to be considered for ASA calculations purposes, if -1 all ignored
-	public static final int		  DEF_MIN_SIZE_COFACTOR_FOR_ASA = -1;
+	public static final int		  DEF_MIN_SIZE_COFACTOR_FOR_ASA = 40;
 	
 	// default cutoffs
 	private static final double   DEF_QUERY_COVERAGE_CUTOFF = 0.85;
