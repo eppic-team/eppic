@@ -198,6 +198,8 @@ public class InputDataPanel extends DisplayPanel
 		formPanel.setWidth(500);
 		formPanel.setAutoHeight(true);
 		formPanel.setPadding(20);
+		
+		formPanel.addStyleName("eppic-rounded-border");
 
 		formPanel.addListener(Events.Submit, new Listener<FormEvent>()
 		{

@@ -95,7 +95,12 @@ public class ApplicationSettings implements Serializable {
 	 * Content of the downloads panel.
 	 */
 	private String downloadsPageContent;
-	
+
+	/**
+	 * Content of the releases panel.
+	 */
+	private String releasesPageContent;
+
 	/**
 	 * Flag pointing whether precompiled values stored in the db should be used.
 	 */
@@ -411,6 +416,22 @@ public class ApplicationSettings implements Serializable {
 		return downloadsPageContent;
 	}
 
+	/**
+	 * Sets content which is to be used in releases page.
+	 * @param releasesPageContent content of the releases page
+	 */
+	public void setReleasesPageContent(String releasesPageContent) {
+		this.releasesPageContent = releasesPageContent;
+	}
+
+	/**
+	 * Retrieves content which is to be set as releases.
+	 * @return content of releases panel
+	 */
+	public String getReleasesPageContent() {
+		return releasesPageContent;
+	}
+	
 	/**
 	 * Sets information whether precompiled results stored in the db should be used.
 	 * @param usePrecompiledResults information whether precompiled values stored in the db should be used

@@ -59,6 +59,8 @@ public class InfoPanel extends FormPanel
 		this.setScrollMode(Scroll.AUTO);
 //		this.addStyleName("eppic-default-padding");
 
+		this.addStyleName("eppic-rounded-border");
+		
 		queryWarningsTooltip = createHomologsInfoTooltip();
 		generateInfoPanel(pdbScoreItem);
 		

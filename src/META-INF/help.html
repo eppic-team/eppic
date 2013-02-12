@@ -128,6 +128,37 @@ are shown in red. By clicking the download link on the bottom right corner one g
 containing the text output files with the results for all interfaces.
 </p>
 
+
+<p style="font-size:14px;font-weight:bold;padding: 20px 20px 0px 5px">
+A note on assemblies
+</p>
+<p style="font-size:14px;padding: 3px 20px 0px 5px">
+At the moment EPPIC classifies only pairwise interfaces in protein
+crystals. It does not consider interfaces in the context of the full
+biological assembly and does not group single interface calls into a
+biological unit call. 
+We intend to implement that in future versions of the software. 
+In the meantime please keep in mind that some interfaces may be called <font color="red">XTAL</font> when they
+are actually <font color="green">BIO</font> if considered in the context of the assembly: they are
+"induced" by the topology or point-group symmetry of the assembly. 
+</p>
+
+
+
+<p style="font-size:14px;font-weight:bold;padding: 20px 20px 0px 5px">
+Job identifiers
+</p>
+<p style="font-size:14px;padding: 3px 20px 0px 5px">
+Every new job run on the server is assigned a unique job identifier, a long alpha numerical string 
+that is only known by the user that submits it and that is very hard to guess. 
+It is recommended that you give an email address while submitting so that you receive the URL with 
+the job identifier in your inbox. Otherwise you will have to bookmark it or keep a record of it yourself.  
+It is always possible to retrieve the job by using the URL http://www.eppic-web.org/ewui/#id/&lt;my_job_id&gt;.
+Whether the job is still running or already done, the URL will show its current status and 
+automatically display the final results whenever it is finished. You can even share the URL with 
+colleagues.
+</p>
+
 <!-- <img src="resources/images/EPPIC-screenshot-3hbx-small.png"></img> -->
 
 

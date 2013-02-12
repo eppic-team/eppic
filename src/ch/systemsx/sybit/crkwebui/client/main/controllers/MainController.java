@@ -46,6 +46,7 @@ import ch.systemsx.sybit.crkwebui.client.help.gui.panels.HelpPanel;
 import ch.systemsx.sybit.crkwebui.client.input.gui.panels.InputDataPanel;
 import ch.systemsx.sybit.crkwebui.client.main.gui.panels.MainViewPort;
 import ch.systemsx.sybit.crkwebui.client.main.gui.panels.MainViewWrapper;
+import ch.systemsx.sybit.crkwebui.client.releases.gui.panels.ReleasesPanel;
 import ch.systemsx.sybit.crkwebui.client.results.gui.panels.ResultsPanel;
 import ch.systemsx.sybit.crkwebui.client.results.gui.panels.StatusPanel;
 import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
@@ -323,6 +324,12 @@ public class MainController
 			ApplicationContext.setSelectedJobId("");
 			displayDownloads();
 		}
+		else if((token != null) && (token.equals("releases")))
+		{
+			Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_releases());
+			ApplicationContext.setSelectedJobId("");
+			displayReleases();
+		}
 		else
 		{
 			Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_input());
@@ -405,6 +412,17 @@ public class MainController
 		mainViewPort.getCenterPanel().setDisplayPanel(downloadsPanel);
 	}
 
+	/**
+	 * Displays releases panel.
+	 */
+	public void displayReleases()
+	{
+		ApplicationContext.setDoStatusPanelRefreshing(false);
+
+		ReleasesPanel releasesPanel = new ReleasesPanel();
+		mainViewPort.getCenterPanel().setDisplayPanel(releasesPanel);
+	}	
+	
 	/**
 	 * Retrieves results of processing for displaying central panel content.
 	 */

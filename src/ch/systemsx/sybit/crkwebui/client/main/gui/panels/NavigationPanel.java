@@ -44,7 +44,7 @@ public class NavigationPanel extends LayoutContainer
 	    this.add(statusMessagePanel, new RowData(1, 1, new Margins(0)));
 
 	    LayoutContainer linksPanel = createLinksPanelWrapper();
-		this.add(linksPanel, new RowData(400, 1, new Margins(0)));
+		this.add(linksPanel, new RowData(500, 1, new Margins(0)));
 		
 		initializeEventsListeners();
 	}
@@ -83,24 +83,39 @@ public class NavigationPanel extends LayoutContainer
 	 * @return panel with links
 	 */
 	private LayoutContainer createLinksPanel()
-	{
-		LayoutContainer linksContainer = new LayoutContainer();
-	    linksContainer.setBorders(false);
-	    
-	    Label homeLink = createHomeLink();
-	    Label aboutLink = createAboutLink();
-	    Label helpLink = createHelpLink();
-	    Label downloadsLink = createDownloadsLink();
-	    Label contactLink = createContactLink();
+    {
+        LayoutContainer linksContainer = new LayoutContainer();
+        linksContainer.setBorders(false);
 
-	    linksContainer.add(homeLink);
-	    linksContainer.add(downloadsLink);
-	    linksContainer.add(helpLink);
-		linksContainer.add(aboutLink);
-		linksContainer.add(contactLink);
-		
-		return linksContainer;
-	}
+        Label homeLink = createHomeLink();
+        Label aboutLink = createAboutLink();
+        Label helpLink = createHelpLink();
+        Label downloadsLink = createDownloadsLink();
+        Label releasesLink = createReleasesLink();
+        Label contactLink = createContactLink();
+
+        linksContainer.add(homeLink);
+        linksContainer.add(createBreakLabel());
+        linksContainer.add(downloadsLink);
+        linksContainer.add(createBreakLabel());
+        linksContainer.add(helpLink);
+        linksContainer.add(createBreakLabel());
+        linksContainer.add(releasesLink);
+        linksContainer.add(createBreakLabel());        
+        linksContainer.add(aboutLink);
+        linksContainer.add(createBreakLabel());
+        linksContainer.add(contactLink);
+
+        return linksContainer;
+    }
+
+    private Label createBreakLabel()
+    {
+        Label breakLabel = new Label("|");
+        breakLabel.addStyleName("eppic-default-left-margin");
+        return breakLabel;
+    }
+
 	
 	/**
 	 * Creates link to the home page.
@@ -179,6 +194,26 @@ public class NavigationPanel extends LayoutContainer
 		});
 	    
 	    return downloadsLink;
+	}
+	
+	/**
+	 * Creates link to the view containing the releases.
+	 * @return link to releases view
+	 */
+	private Label createReleasesLink()
+	{
+		Label releasesLink = new EmptyLink(AppPropertiesManager.CONSTANTS.bottom_panel_releases_link_label());
+		releasesLink.addStyleName("eppic-horizontal-nav");
+		releasesLink.addStyleName("eppic-default-left-margin");
+		releasesLink.addListener(Events.OnClick, new Listener<BaseEvent>() {
+
+			@Override
+			public void handleEvent(BaseEvent be) {
+				History.newItem("releases");
+			}
+		});
+	    
+	    return releasesLink;
 	}
 	
 	/**

@@ -20,6 +20,7 @@ public interface AppProperties extends Constants
 	String window_title_input();
 	String window_title_help();
 	String window_title_downloads();
+	String window_title_releases();
 	String window_title_processing();
 	String window_title_loading();
 	String window_title_results();
@@ -125,6 +126,7 @@ public interface AppProperties extends Constants
 	String bottom_panel_about_link_label();
 	String bottom_panel_help_link_label();
 	String bottom_panel_downloads_link_label();
+	String bottom_panel_releases_link_label();
 	String bottom_panel_contact_link();
 	String bottom_panel_contact_link_label();
 	String bottom_panel_status_error_refresh_page();

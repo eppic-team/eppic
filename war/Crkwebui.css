@@ -68,7 +68,7 @@
 }
 
 .eppic-default-left-margin {
-	margin-left: 10px;
+	margin-left: 5px;
 }
 
 .eppic-grid-row-rim.x-grid3-row,.eppic-grid-row-rim {
@@ -157,4 +157,7 @@
 .eppic-citation A:active {text-decoration: none}
 .eppic-citation A:hover {text-decoration: underline}
 
+.eppic-rounded-border {
+	border-radius: 5px;
+}
 
