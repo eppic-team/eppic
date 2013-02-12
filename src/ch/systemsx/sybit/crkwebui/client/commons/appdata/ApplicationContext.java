@@ -1,5 +1,7 @@
 package ch.systemsx.sybit.crkwebui.client.commons.appdata;
 
+import java.util.Collections;
+
 import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResiduesItemsList;
 import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
@@ -123,6 +125,7 @@ public class ApplicationContext
 	 */
 	public static void setPdbScoreItem(PDBScoreItem pdbScoreItem) {
 		ApplicationContext.pdbScoreItem = pdbScoreItem;
+		Collections.sort(pdbScoreItem.getInterfaceItems());
 	}
 	
 	/**

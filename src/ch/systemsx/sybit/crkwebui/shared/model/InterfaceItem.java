@@ -13,7 +13,7 @@ import model.WarningItemDB;
  * DTO class for Interface item.
  * @author AS
  */
-public class InterfaceItem implements Serializable 
+public class InterfaceItem implements Serializable, Comparable<InterfaceItem> 
 {
 	/**
 	 * 
@@ -293,5 +293,11 @@ public class InterfaceItem implements Serializable
 		}
 		
 		return interfaceItem;
+	}
+
+	@Override
+	public int compareTo(InterfaceItem that) 
+	{
+		return this.id - that.id;
 	}
 }
