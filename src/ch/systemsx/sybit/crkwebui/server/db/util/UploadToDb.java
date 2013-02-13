@@ -12,6 +12,7 @@ import javax.persistence.TypedQuery;
 
 import model.JobDB;
 import model.PDBScoreItemDB;
+import model.UserSessionDB;
 import ch.systemsx.sybit.crkwebui.server.db.EntityManagerHandler;
 import ch.systemsx.sybit.crkwebui.shared.model.InputType;
 import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
@@ -59,24 +60,30 @@ public class UploadToDb {
 		
 				long start = System.currentTimeMillis();
 				
+				//Remove Job from DB if already present
 				entityManager.getTransaction().begin();
-				String queryPDBstr = "FROM " + PDBScoreItemDB.class.getName() + " WHERE pdbName='" + pdbScoreItem.getPdbName() +"'";
-				String queryJobstr = "FROM " + JobDB.class.getName() + " WHERE jobId='" + pdbScoreItem.getPdbName() +"'";
-				TypedQuery<PDBScoreItemDB> queryPDB = entityManager.createQuery(queryPDBstr, PDBScoreItemDB.class);
-				TypedQuery<JobDB> queryJob = entityManager.createQuery(queryJobstr, JobDB.class);
 				
-				List<PDBScoreItemDB> queryPDBList = queryPDB.getResultList();
+				String queryJobstr = "FROM " + JobDB.class.getName() + " WHERE jobId='" + pdbScoreItem.getPdbName() +"'";
+				TypedQuery<JobDB> queryJob = entityManager.createQuery(queryJobstr, JobDB.class);
+								
 				List<JobDB> queryJobList = queryJob.getResultList();
-				int querySize = queryPDBList.size();
+				int querySize = queryJobList.size();
 				
 				if(querySize>0){
-					System.out.print(" .. Already present ( " + querySize + " times) Removing and Updating.. ");
-					for(Object quer:queryPDBList){
-						entityManager.remove(quer);
-					}
-					
-					for(Object quer:queryJobList){
-						entityManager.remove(quer);
+					System.out.print(": Already present (" + querySize + " time(s)) Removing and Updating.. ");
+					for(JobDB itemJobDB:queryJobList){
+						Long itemUid = itemJobDB.getUid();
+						String queryPDBstr = "FROM " + PDBScoreItemDB.class.getName() + " WHERE jobItem_uid='" + itemUid +"'";
+						TypedQuery<PDBScoreItemDB> queryPDB = entityManager.createQuery(queryPDBstr, PDBScoreItemDB.class);
+						List<PDBScoreItemDB> queryPDBList = queryPDB.getResultList();
+						if( queryPDBList != null)
+						{
+							for(PDBScoreItemDB itemPDB : queryPDBList)
+							{
+								entityManager.remove(itemPDB);
+							}
+						}
+						entityManager.remove(itemJobDB);
 					}
 				}
 				entityManager.getTransaction().commit();
