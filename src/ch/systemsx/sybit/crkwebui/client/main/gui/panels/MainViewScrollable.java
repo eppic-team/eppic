@@ -14,9 +14,9 @@ import com.google.gwt.user.client.Window;
  * Scrollable wrapper of main view.
  * @author adam
  */
-public class MainViewWrapper extends LayoutContainer
+public class MainViewScrollable extends LayoutContainer
 {
-	public MainViewWrapper(MainViewPort mainViewPort)
+	public MainViewScrollable(MainViewPort mainViewPort)
 	{
 		this.addStyleName("eppic-panel-with-gray-background");
 		this.setLayout(new FlowLayout());

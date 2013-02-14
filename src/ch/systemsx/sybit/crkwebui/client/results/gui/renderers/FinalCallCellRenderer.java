@@ -3,6 +3,7 @@ package ch.systemsx.sybit.crkwebui.client.results.gui.renderers;
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.labels.LabelWithTooltip;
 import ch.systemsx.sybit.crkwebui.client.commons.util.EscapedStringGenerator;
+import ch.systemsx.sybit.crkwebui.client.results.gui.labels.CallLabel;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceItem;
 
 import com.extjs.gxt.ui.client.data.BaseModel;
@@ -43,23 +44,9 @@ public class FinalCallCellRenderer implements GridCellRenderer<BaseModel>
 				}
 			}
 			
-			LabelWithTooltip callReasonLabel = new LabelWithTooltip(value, 
-																	EscapedStringGenerator.generateSanitizedString(tooltipText), 
-																	ApplicationContext.getWindowData(), 
-																	100);
-			
-			String color = "black";
-
-			if (value.equals("bio")) 
-			{
-				color = "green";
-			}
-			else if (value.equals("xtal")) 
-			{
-				color = "red";
-			}
-			
-			callReasonLabel.setStyleAttribute("color", color);
+			LabelWithTooltip callReasonLabel = new CallLabel(value, 
+															 tooltipText,
+															 ApplicationContext.getWindowData());
 			callReasonLabel.addStyleName("eppic-results-final-call");
 			
 			return callReasonLabel;

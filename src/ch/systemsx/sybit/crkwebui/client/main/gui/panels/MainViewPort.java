@@ -48,7 +48,7 @@ public class MainViewPort extends LayoutContainer
 	private CenterPanel centerPanel;
 
 //	private TopPanel topPanel;
-	private NavigationPanel navigationPanel;
+	private BottomPanel bottomPanel;
 
 	private InterfacesResiduesWindow interfacesResiduesWindow;
 	private AlignmentsWindow alignmentsWindow;
@@ -124,9 +124,9 @@ public class MainViewPort extends LayoutContainer
 				20);
 		southData.setMargins(new Margins(5, 0, 0, 0));
 
-		navigationPanel = new NavigationPanel();
+		bottomPanel = new BottomPanel();
 //		navigationPanel.add(new ThemeSelector());
-		this.add(navigationPanel, southData);
+		this.add(bottomPanel, southData);
 		
 		initializeEventsListeners();
 	}
@@ -148,12 +148,12 @@ public class MainViewPort extends LayoutContainer
 	}
 
 	/**
-	 * Retrieves navigation panel.
-	 * @return navigation panel
+	 * Retrieves bottom panel.
+	 * @return bottom panel
 	 */
-	public NavigationPanel getNavigationPanel()
+	public BottomPanel getBottomPanel()
 	{
-		return navigationPanel;
+		return bottomPanel;
 	}
 
 	/**

@@ -45,7 +45,7 @@ import ch.systemsx.sybit.crkwebui.client.downloads.gui.panels.DownloadsPanel;
 import ch.systemsx.sybit.crkwebui.client.help.gui.panels.HelpPanel;
 import ch.systemsx.sybit.crkwebui.client.input.gui.panels.InputDataPanel;
 import ch.systemsx.sybit.crkwebui.client.main.gui.panels.MainViewPort;
-import ch.systemsx.sybit.crkwebui.client.main.gui.panels.MainViewWrapper;
+import ch.systemsx.sybit.crkwebui.client.main.gui.panels.MainViewScrollable;
 import ch.systemsx.sybit.crkwebui.client.releases.gui.panels.ReleasesPanel;
 import ch.systemsx.sybit.crkwebui.client.results.gui.panels.ResultsPanel;
 import ch.systemsx.sybit.crkwebui.client.results.gui.panels.StatusPanel;
@@ -205,7 +205,7 @@ public class MainController
 			@Override
 			public void onUpdateStatusLabel(UpdateStatusLabelEvent event) 
 			{
-				if((mainViewPort == null) || (mainViewPort.getNavigationPanel() == null))
+				if((mainViewPort == null) || (mainViewPort.getBottomPanel() == null))
 				{
 					showError(event.getStatusText());
 				}
@@ -344,11 +344,11 @@ public class MainController
 	private void setMainView()
 	{
 		mainViewPort = new MainViewPort(this);
-		MainViewWrapper mainViewWrapper = new MainViewWrapper(mainViewPort);
+		MainViewScrollable mainViewScrollable = new MainViewScrollable(mainViewPort);
 		
 		Viewport viewPort = new Viewport();
 		viewPort.setLayout(new FlowLayout());
-		viewPort.add(mainViewWrapper);
+		viewPort.add(mainViewScrollable);
 		
 		RootPanel.get().add(viewPort);
 	}

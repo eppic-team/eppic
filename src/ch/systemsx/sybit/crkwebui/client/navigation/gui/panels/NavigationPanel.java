@@ -1,81 +1,36 @@
-package ch.systemsx.sybit.crkwebui.client.main.gui.panels;
+package ch.systemsx.sybit.crkwebui.client.navigation.gui.panels;
 
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowAboutEvent;
-import ch.systemsx.sybit.crkwebui.client.commons.events.UpdateStatusLabelEvent;
-import ch.systemsx.sybit.crkwebui.client.commons.gui.data.StatusMessageType;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.links.EmptyLink;
-import ch.systemsx.sybit.crkwebui.client.commons.handlers.UpdateStatusLabelHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.managers.EventBusManager;
-import ch.systemsx.sybit.crkwebui.client.commons.util.EscapedStringGenerator;
 
-import com.extjs.gxt.ui.client.Style.Orientation;
-import com.extjs.gxt.ui.client.Style.Scroll;
 import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.Listener;
-import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.Label;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
-import com.extjs.gxt.ui.client.widget.layout.RowData;
-import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 import com.extjs.gxt.ui.client.widget.layout.VBoxLayout;
 import com.extjs.gxt.ui.client.widget.layout.VBoxLayout.VBoxLayoutAlign;
 import com.google.gwt.user.client.History;
-import com.google.gwt.user.client.ui.HTML;
 
 /**
- * Bottom panel containing status label and contact information.
+ * Panel containing navigation links.
  * @author srebniak_a
  *
  */
 public class NavigationPanel extends LayoutContainer
 {
-	private HTML status;
-	private StatusMessageType lastMessageType = StatusMessageType.NO_ERROR;
-
 	public NavigationPanel()
 	{
-		this.setLayout(new RowLayout(Orientation.HORIZONTAL));
-
-		LayoutContainer statusMessagePanel = createStatusMessagePanel();
-		status = new HTML();
-		statusMessagePanel.add(status);
-	    this.add(statusMessagePanel, new RowData(1, 1, new Margins(0)));
-
-	    LayoutContainer linksPanel = createLinksPanelWrapper();
-		this.add(linksPanel, new RowData(500, 1, new Margins(0)));
-		
-		initializeEventsListeners();
-	}
-	
-	/**
-	 * Creates panel containing status message.
-	 * @return panel containing status message
-	 */
-	private LayoutContainer createStatusMessagePanel()
-	{
-		LayoutContainer statusMessagePanel = new LayoutContainer();
-		statusMessagePanel.setScrollMode(Scroll.AUTOY);
-		return statusMessagePanel;
-	}
-	
-	/**
-	 * Creates wrapper of links panel with proper alignments.
-	 * @return wrapper of links panel
-	 */
-	private LayoutContainer createLinksPanelWrapper()
-	{
-		LayoutContainer linksContainerWrapper = new LayoutContainer();
-	    linksContainerWrapper.setBorders(false);
+	    this.setBorders(false);
 
 	    VBoxLayout vBoxLayout = new VBoxLayout();
 	    vBoxLayout.setVBoxLayoutAlign(VBoxLayoutAlign.RIGHT);
-	    linksContainerWrapper.setLayout(vBoxLayout);
+	    this.setLayout(vBoxLayout);
 
 	    LayoutContainer linksContainer = createLinksPanel();
-		linksContainerWrapper.add(linksContainer);
-		return linksContainerWrapper;
+		this.add(linksContainer);
 	}
 	
 	/**
@@ -231,52 +186,5 @@ public class NavigationPanel extends LayoutContainer
 		contactLink.addStyleName("eppic-horizontal-nav");
 
 		return contactLink;
-	}
-
-	/**
-	 * Updates text of the status message label.
-	 * @param message text to display.
-	 * @param messageType type of the message(no error, internal error, system error)
-	 */
-	private void updateStatusMessage(String message, StatusMessageType messageType)
-	{
-		String messageText = "<span style=\"color:";
-
-		String color = "black";
-
-		if(messageType != StatusMessageType.NO_ERROR)
-		{
-			color = "red; font-weight: bold";
-		}
-
-		messageText += color + "\">" + "Status: " + EscapedStringGenerator.generateEscapedString(message);
-
-		if(messageType != StatusMessageType.NO_ERROR)
-		{
-			messageText += " - " + AppPropertiesManager.CONSTANTS.bottom_panel_status_error_refresh_page();
-		}
-
-		messageText += "</span>";
-
-		status.setHTML(messageText);
-	}
-	
-	/**
-	 * Events listeners initialization.
-	 */
-	private void initializeEventsListeners()
-	{
-		EventBusManager.EVENT_BUS.addHandler(UpdateStatusLabelEvent.TYPE, new UpdateStatusLabelHandler() 
-		{
-			@Override
-			public void onUpdateStatusLabel(UpdateStatusLabelEvent event)
-			{
-				if(lastMessageType != StatusMessageType.INTERNAL_ERROR)
-				{
-					updateStatusMessage(event.getStatusText(), event.getMessageType());
-					lastMessageType = event.getMessageType();
-				}
-			}
-		});
 	}
 }

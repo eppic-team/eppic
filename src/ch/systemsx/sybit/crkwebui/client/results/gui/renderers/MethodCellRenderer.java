@@ -5,6 +5,7 @@ import java.util.List;
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.labels.LabelWithTooltip;
 import ch.systemsx.sybit.crkwebui.client.commons.util.EscapedStringGenerator;
+import ch.systemsx.sybit.crkwebui.client.results.gui.labels.CallLabel;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceItem;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceScoreItem;
 
@@ -62,23 +63,9 @@ public class MethodCellRenderer implements GridCellRenderer<BaseModel>
 				}
 			}
 			
-			LabelWithTooltip callReasonLabel = new LabelWithTooltip(value, 
-																	EscapedStringGenerator.generateSanitizedString(tooltipText), 
-																	ApplicationContext.getWindowData(), 
-																	100);
-			
-			String color = "black";
-
-			if (value.equals("bio")) 
-			{
-				color = "green";
-			}
-			else if (value.equals("xtal")) 
-			{
-				color = "red";
-			}
-			
-			callReasonLabel.setStyleAttribute("color", color);
+			LabelWithTooltip callReasonLabel = new CallLabel(value, 
+															 tooltipText,
+															 ApplicationContext.getWindowData());
 			
 			return callReasonLabel;
 		}
