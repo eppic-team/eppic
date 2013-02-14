@@ -69,6 +69,7 @@ public class ResiduesPanel extends ContentPanel
 		proxy = new PagingModelMemoryProxy(null);
 		loader = new BasePagingLoader(proxy);
 		loader.setRemoteSort(true);
+		loader.setSortField("residueNumber");
 
 		residuesStore = new ListStore<InterfaceResidueItemModel>(loader);
 		residuesColumnModel = new ColumnModel(residuesConfigs);
