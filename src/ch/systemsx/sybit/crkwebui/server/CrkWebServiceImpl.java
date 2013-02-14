@@ -16,7 +16,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpSession;
 
 import ch.systemsx.sybit.crkwebui.client.commons.services.eppic.CrkWebService;
-import ch.systemsx.sybit.crkwebui.server.db.data.InputWithType;
 import ch.systemsx.sybit.crkwebui.server.commons.util.io.DirectoryContentReader;
 import ch.systemsx.sybit.crkwebui.server.commons.util.io.FileContentReader;
 import ch.systemsx.sybit.crkwebui.server.commons.util.io.IOUtil;
@@ -37,6 +36,7 @@ import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.InterfaceResidueItemDAOJpa;
 import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.JobDAOJpa;
 import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.PDBScoreDAOJpa;
 import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.UserSessionDAOJpa;
+import ch.systemsx.sybit.crkwebui.server.db.data.InputWithType;
 import ch.systemsx.sybit.crkwebui.server.email.data.EmailData;
 import ch.systemsx.sybit.crkwebui.server.email.managers.EmailSender;
 import ch.systemsx.sybit.crkwebui.server.ip.validators.IPVerifier;

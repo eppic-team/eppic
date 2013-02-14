@@ -5,8 +5,6 @@ import java.util.Map;
 import java.util.Properties;
 
 import ch.systemsx.sybit.crkwebui.server.commons.util.io.FileContentReader;
-import ch.systemsx.sybit.crkwebui.server.settings.parsers.GridPropertiesParser;
-import ch.systemsx.sybit.crkwebui.server.settings.parsers.InputParametersParser;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.ParsingException;
 import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
 
@@ -83,7 +81,7 @@ public class ApplicationSettingsGenerator
 	{
 		try
 		{
-			ApplicationSettings settings = InputParametersParser.prepareApplicationSettings(inputParametersStream);
+			ApplicationSettings settings = InputParametersGenerator.prepareApplicationSettings(inputParametersStream);
 			return settings;
 		}
 		catch(Throwable t)
@@ -125,7 +123,7 @@ public class ApplicationSettingsGenerator
 	{
 		try
 		{
-			Map<String, String> gridProperties = GridPropertiesParser.prepareGridProperties(gridPropertiesInputStream);
+			Map<String, String> gridProperties = GridPropertiesGenerator.prepareGridProperties(gridPropertiesInputStream);
 			return gridProperties;
 		}
 		catch(Throwable t)

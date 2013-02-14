@@ -1,4 +1,4 @@
-package ch.systemsx.sybit.crkwebui.server.files.downloader.generators;
+package ch.systemsx.sybit.crkwebui.server.commons.util.http;
 
 /**
  * This class is used to generate content types.

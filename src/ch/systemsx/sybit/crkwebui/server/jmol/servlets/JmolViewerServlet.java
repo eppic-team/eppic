@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import ch.systemsx.sybit.crkwebui.server.commons.servlets.BaseServlet;
 import ch.systemsx.sybit.crkwebui.server.commons.util.io.FileContentReader;
+import ch.systemsx.sybit.crkwebui.server.jmol.generators.JmolPageGenerator;
 import ch.systemsx.sybit.crkwebui.server.jmol.validators.JmolViewerServletInputValidator;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.ValidationException;
 
@@ -65,14 +66,23 @@ public class JmolViewerServlet extends BaseServlet
 		File jmolScriptFile = new File(generalDestinationDirectoryName + File.separator + jobId, 
 									   input + "." + interfaceId + ".jmol");
 		
+		ServletOutputStream outputStream = null;
+		
 		try
 		{
 			JmolViewerServletInputValidator.validateJmolViewerInput(jobId, interfaceId, input, size);
 			
 			String jmolScript = FileContentReader.readContentOfFile(jmolScriptFile, true);
 			
-			ServletOutputStream output = response.getOutputStream();
-			output.println(generateOutput(jobId, interfaceId, input, size, serverUrl, jmolScript));
+			String jmolPage = JmolPageGenerator.generatePage(jobId + " - " + interfaceId + "\n", 
+															 size, 
+															 serverUrl, 
+															 resultsLocation + jobId, 
+															 input + "." + interfaceId + ".pdb.gz", 
+															 jmolScript);
+
+			outputStream = response.getOutputStream();
+			outputStream.println(jmolPage);
 		}
 		catch(ValidationException e)
 		{
@@ -82,36 +92,16 @@ public class JmolViewerServlet extends BaseServlet
 		{
 			response.sendError(HttpServletResponse.SC_NO_CONTENT, "Error during preparation of jmol page.");
 		}
-	}
-	
-	private String generateOutput(String jobId,
-								  String interfaceId,
-								  String input,
-								  String size,
-								  String serverUrl,
-								  String jmolScript)
-	{
-		jmolScript = jmolScript.replaceAll("\n", "");
-		
-		StringBuffer jmolPage = new StringBuffer();
-		
-		jmolPage.append("<html>" + "\n");
-		jmolPage.append("<head>" + "\n");
-		jmolPage.append("<title>" + "\n");
-		jmolPage.append(jobId + " - " + interfaceId + "\n");
-		jmolPage.append("</title>" + "\n");
-		jmolPage.append("<script type=\"text/javascript\" language=\"javascript\" src=\"" + 
-						serverUrl + "/resources/jmol/Jmol.js\"></script>" + "\n");
-		jmolPage.append("</head>" + "\n");
-		jmolPage.append("<body>" + "\n");
-		jmolPage.append("<script>" + "\n");
-		jmolPage.append("jmolInitialize(\"" + serverUrl + "/resources/jmol\");" + "\n");
-		jmolPage.append("jmolSetCallback(\"language\", \"en\");" + "\n");
-		jmolPage.append("jmolApplet(" + size + ", 'load " + serverUrl + "/" + resultsLocation + jobId + "/" + input + "." + interfaceId + ".pdb.gz; "+ jmolScript + "');" + "\n");
-		jmolPage.append("</script>" + "\n");
-		jmolPage.append("</body>" + "\n");
-		jmolPage.append("</html>" + "\n");
-		
-		return jmolPage.toString();
+		finally
+		{
+			if(outputStream != null)
+			{
+				try
+				{
+					outputStream.close();
+				}
+				catch(Throwable t) {}
+			}
+		}
 	}
 }

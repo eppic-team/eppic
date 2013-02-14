@@ -12,7 +12,7 @@ import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.google.gwt.user.client.ui.HTML;
 
 /**
- * Bottom panel containing status label and contact information.
+ * Panel containing status label.
  * @author srebniak_a
  *
  */
