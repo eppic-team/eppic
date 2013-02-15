@@ -23,12 +23,15 @@ public class CRKParams {
 	
 	private static final Pattern   PDBCODE_PATTERN = Pattern.compile("^\\d\\w\\w\\w$");
 	public static final String     CONFIG_FILE_NAME = ".eppic.conf";
+	
 	protected static final String  ENTROPIES_FILE_SUFFIX = ".entropies";
 	protected static final String  GEOMETRY_FILE_SUFFIX = ".geometry.scores";
 	protected static final String  CRSCORES_FILE_SUFFIX = ".corerim.scores";
 	protected static final String  CSSCORES_FILE_SUFFIX = ".coresurface.scores";
 	protected static final String  COMBINED_FILE_SUFFIX = ".combined.scores";
 	protected static final String  STEPS_LOG_FILE_SUFFIX = ".steps.log";
+	protected static final String  BLAST_CACHE_FILE_SUFFIX = ".blast.xml.gz";
+	
 	public static final double     INTERFACE_DIST_CUTOFF = 5.9;
 	// if any interface has this number of clashes we'll abort with an error
 	public static final int		   NUM_CLASHES_FOR_ERROR = 30;

@@ -310,7 +310,7 @@ public class ChainEvolContext implements Serializable {
 		File blastCacheFile = null;
 		if (params.getBlastCacheDir()!=null) {
 			blastCacheFile = new File(params.getBlastCacheDir(),getQuery().getUniId()+
-					"."+queryInterv.beg+"-"+queryInterv.end+".blast.xml");
+					"."+queryInterv.beg+"-"+queryInterv.end+CRKParams.BLAST_CACHE_FILE_SUFFIX);
 		}
 		
 		homologs.searchWithBlast(blastPlusBlastp, blastDbDir, blastDb, blastNumThreads, maxNumSeqs, blastCacheFile);

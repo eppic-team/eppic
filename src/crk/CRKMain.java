@@ -12,7 +12,6 @@ import java.net.UnknownHostException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.zip.GZIPOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -385,10 +384,10 @@ public class CRKMain {
 				File pdbFile = params.getOutputFile("."+interf.getId()+".pdb");
 				File gzipPdbFile = params.getOutputFile("."+interf.getId()+".pdb.gz");
 				// pse
-				gzipFile(pseFile, gzipPseFile);
+				Goodies.gzipFile(pseFile, gzipPseFile);
 				pseFile.delete();
 				// pdb
-				gzipFile(pdbFile, gzipPdbFile);
+				Goodies.gzipFile(pdbFile, gzipPdbFile);
 				pdbFile.delete();
 				
 			}
@@ -404,10 +403,10 @@ public class CRKMain {
 					File gzipPdbFile = 
 							params.getOutputFile("."+cec.getRepresentativeChainCode()+CRKParams.ENTROPIES_FILE_SUFFIX+".pdb.gz");
 					// pse
-					gzipFile(pseFile, gzipPseFile);
+					Goodies.gzipFile(pseFile, gzipPseFile);
 					pseFile.delete();
 					// pdb
-					gzipFile(pdbFile, gzipPdbFile);
+					Goodies.gzipFile(pdbFile, gzipPdbFile);
 					pdbFile.delete();
 
 				}
@@ -459,19 +458,7 @@ public class CRKMain {
 		}
 	}
 	
-	private void gzipFile(File inFile, File outFile) throws IOException {
-		GZIPOutputStream zos = new GZIPOutputStream(new FileOutputStream(outFile));
-		FileInputStream is = new FileInputStream(inFile);
-
-		int b;
-		while ( (b=is.read())!=-1) {
-			zos.write(b);
-		}
-		zos.close();
-		is.close();
-	}
-	
-	public void writeFinishedFile() throws CRKException {
+	private void writeFinishedFile() throws CRKException {
 		try {
 			FileWriter fw = new FileWriter(new File(params.getOutDir(), "finished"));
 			fw.close();
@@ -520,7 +507,7 @@ public class CRKMain {
 		try {
 			cecs = new ChainEvolContextList(pdb,params);
 		} catch (SQLException e) {
-			throw new CRKException(e,"Could not connect to local uniprot database server: "+e.getMessage(),true);
+			throw new CRKException(e,"Could not connect to local UniProt database server: "+e.getMessage(),true);
 		}
 		
 		// a) getting the uniprot ids corresponding to the query (the pdb sequence)
