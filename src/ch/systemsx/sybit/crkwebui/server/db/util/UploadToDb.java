@@ -329,7 +329,8 @@ public class UploadToDb {
 				
 				//MODE REMOVE
 				if (modeRemove) {
-					removefromDB(pdbScoreItem.getPdbName());
+					if (typeJob) removefromDB(jobDirectory.getName());
+					else removefromDB(pdbScoreItem.getPdbName());
 				}
 				
 				//MODE FORCE
