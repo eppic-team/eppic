@@ -25,6 +25,11 @@ public class ResizableWindow extends Dialog
 		if(windowWidth > windowData.getWindowWidth() - 20)
 		{
 			windowWidth = windowData.getWindowWidth() - 20;
+			
+			if(windowWidth <= 0)
+			{
+				windowWidth = 1;
+			}
 		}
 
 		if(windowHeight > windowData.getWindowHeight() - 50)

@@ -22,7 +22,6 @@ public class PDBIdentifierPanel extends LayoutContainer
 	
 	public PDBIdentifierPanel()
 	{
-		this.setHeight(25);
 		this.addStyleName("eppic-pdb-identifier-label");
 	}
 	

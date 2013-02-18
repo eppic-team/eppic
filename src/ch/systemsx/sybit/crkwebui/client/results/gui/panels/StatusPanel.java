@@ -73,7 +73,7 @@ public class StatusPanel extends DisplayPanel
 		this.add(pdbIdentifierPanel, new FormData("95%"));
 		
 		FormPanel breakPanel = createBreakPanel();
-		this.add(breakPanel, new RowData(1, 1.1, new Margins(0)));
+		this.add(breakPanel, new FormData("95% 1"));
 		
 		pdbIdentifierSubtitlePanel = new PDBIdentifierSubtitlePanel();
 		pdbIdentifierSubtitlePanel.addStyleName("eppic-default-left-padding");

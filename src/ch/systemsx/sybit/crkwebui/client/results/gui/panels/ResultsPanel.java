@@ -34,46 +34,23 @@ public class ResultsPanel extends DisplayPanel
 		this.setLayout(new RowLayout(Orientation.VERTICAL));
 
 		pdbIdentifierPanel = new PDBIdentifierPanel();
-		this.add(pdbIdentifierPanel);
-		
-		FormPanel breakPanel = createBreakPanel();
-		this.add(breakPanel, new RowData(1, 1.1, new Margins(0)));
+		this.add(pdbIdentifierPanel, new RowData(1, -1, new Margins(0, 0, 1, 0)));
 		
 		pdbIdentifierSubtitlePanel = new PDBIdentifierSubtitlePanel();
-		this.add(pdbIdentifierSubtitlePanel);
-		
-		breakPanel = createBreakPanel();
-		this.add(breakPanel, new RowData(1, 10, new Margins(0)));
+		this.add(pdbIdentifierSubtitlePanel, new RowData(1, -1, new Margins(0, 0, 10, 0)));
 		
 		infoPanel = new InfoPanel(pdbScoreItem);
 		this.add(infoPanel, new RowData(1, 80, new Margins(0)));
 		
 		resultsSelectorsPanel = new ResultsSelectorsPanel();
-		this.add(resultsSelectorsPanel, new RowData(1, 35, new Margins(0)));
+		this.add(resultsSelectorsPanel, new RowData(1, 40, new Margins(0, 0, 5, 0)));
 
-		breakPanel = createBreakPanel();
-		this.add(breakPanel, new RowData(1, 5, new Margins(0)));
-		
 		resultsGridContainer = new ResultsGridPanel(resultsSelectorsPanel.getShowThumbnailCheckBox().getValue());
 		this.add(resultsGridContainer, new RowData(1, 1, new Margins(0)));
 		
 		initializeEventsListeners();
 	}
 	
-	/**
-	 * Creates panel used to separate rows.
-	 * @return break panel
-	 */
-	private FormPanel createBreakPanel()
-	{
-		FormPanel breakPanel = new FormPanel();
-		breakPanel.setBorders(false);
-		breakPanel.setBodyBorder(false);
-		breakPanel.setPadding(0);
-		breakPanel.getHeader().setVisible(false);
-		return breakPanel;
-	}
-
 	/**
 	 * Sets content of results panel.
 	 * @param resultsData results data of selected job

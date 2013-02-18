@@ -96,23 +96,12 @@ public class InfoPanel extends FormPanel
 		
 		List<HomologsInfoItem> homologsStrings = pdbScoreItem.getHomologsInfoItems();
 		
-		int limit = 50;
-		
-		if(ApplicationContext.isMyJobsListVisible())
-		{
-			limit += ApplicationContext.getMyJobsPanelWidth();
-		}
-		else
-		{
-			limit += 25;
-		}
-		
 		// we divide the window width by desired number of columns (4) and use double width for first and half width for last 2
 		// 1st column is double width
 		// last 2 columns are half width
-		int columnWidth = (ApplicationContext.getAdjustedWindowData().getWindowWidth() - limit - 20) / (nrOfColumns);
-		int firstcolumnWidth = columnWidth * 2;
-		int last2columnsWidth = columnWidth / 2;
+		int columnWidthPercentage = 100 / nrOfColumns;
+		int firstcolumnWidthPercentage = columnWidthPercentage * 2;
+		int last2columnsWidthPercentage = columnWidthPercentage / 2;
 		
 		if(homologsStrings != null)
 		{
@@ -127,13 +116,13 @@ public class InfoPanel extends FormPanel
 			for(int j=0; j<nrOfRows; j++)
 			{
 				if (i==0) {
-					flexTable.getCellFormatter().setWidth(j, i, String.valueOf(firstcolumnWidth));
+					flexTable.getCellFormatter().setWidth(j, i, String.valueOf(firstcolumnWidthPercentage) + "%");
 					flexTable.getCellFormatter().setAlignment(j, i, HasHorizontalAlignment.ALIGN_LEFT, HasVerticalAlignment.ALIGN_TOP);					
 				} else if (i>0 && i<nrOfColumns-2) {
-					flexTable.getCellFormatter().setWidth(j, i, String.valueOf(columnWidth));
+					flexTable.getCellFormatter().setWidth(j, i, String.valueOf(columnWidthPercentage) + "%");
 					flexTable.getCellFormatter().setAlignment(j, i, HasHorizontalAlignment.ALIGN_LEFT, HasVerticalAlignment.ALIGN_TOP);
 				} else {
-					flexTable.getCellFormatter().setWidth(j, i, String.valueOf(last2columnsWidth));
+					flexTable.getCellFormatter().setWidth(j, i, String.valueOf(last2columnsWidthPercentage) + "%");
 					flexTable.getCellFormatter().setAlignment(j, i, HasHorizontalAlignment.ALIGN_LEFT, HasVerticalAlignment.ALIGN_TOP);
 				}
 			}

@@ -206,7 +206,7 @@ public class InputDataPanel extends DisplayPanel
 			public void handleEvent(FormEvent formEvent)
 			{
 				String result = formEvent.getResultHtml();
-
+				
 				if((result != null) && (result.startsWith("crkupres:")))
 				{
 					result = result.replaceAll("\n", "");

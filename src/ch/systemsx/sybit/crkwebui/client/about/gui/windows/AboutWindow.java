@@ -18,8 +18,8 @@ import com.extjs.gxt.ui.client.event.WindowListener;
  */
 public class AboutWindow extends ResizableWindow 
 {
-	private static int ABOUT_WINDOW_DEFAULT_WIDTH = 400;
-	private static int ABOUT_WINDOW_DEFAULT_HEIGHT = 300;
+	private static int ABOUT_WINDOW_DEFAULT_WIDTH = 500;
+	private static int ABOUT_WINDOW_DEFAULT_HEIGHT = 400;
 	
 	public AboutWindow(WindowData windowData) 
 	{
