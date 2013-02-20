@@ -301,7 +301,9 @@ public class CRKMain {
 				// we write a PDB file only if no evol scoring is to be done, if evol scoring is done then 
 				// the PDB files are written later with entropy values encoded as bfactors
 				if (!params.isDoScoreEntropies()) {
-					gp.writePdbFile(params.getOutputFile("."+interf.getId()+".pdb"));
+					if (interf.isFirstProtein() && interf.isSecondProtein()) {
+						interf.writeToPdbFile(params.getOutputFile("."+interf.getId()+".pdb"), params.isUsePdbResSer());
+					}
 				}
 			}
 			scoreGeomPS.close();

@@ -1,7 +1,5 @@
 package crk.predictors;
 
-import java.io.File;
-import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -217,22 +215,6 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 		ps.print("\t");
 		ps.printf("%6s","reason");
 		ps.println();
-	}
-	
-	/**
-	 * Writes out a PDB file with the 2 chains of this interface
-	 * In order for the file to be handled properly by molecular viewers whenever the two
-	 * chains have the same code we rename the second one to the next letter in alphabet.
-	 * PDB chain codes are used for the output, not CIF codes.
-	 * Serials will be either PDB or CIF depending on {@link #setUsePdbResSer(boolean)}  
-	 * @param file
-	 * @throws IOException
-	 */
-	public void writePdbFile(File file) throws IOException {
- 
-		if (interf.isFirstProtein() && interf.isSecondProtein()) {
-			this.interf.writeToPdbFile(file, usePdbResSer);
-		}
 	}
 	
 	public void setBsaToAsaCutoff(double bsaToAsaCutoff) {
