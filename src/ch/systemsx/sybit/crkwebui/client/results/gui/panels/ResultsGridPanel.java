@@ -1,9 +1,7 @@
 package ch.systemsx.sybit.crkwebui.client.results.gui.panels;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
@@ -15,6 +13,7 @@ import ch.systemsx.sybit.crkwebui.client.commons.events.ShowThumbnailEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowViewerEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.WindowHideEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.util.GridColumnConfigGenerator;
+import ch.systemsx.sybit.crkwebui.client.commons.gui.util.GridResizer;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.SaveResultsPanelGridSettingsHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.SelectResultsRowHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowDetailsHandler;
@@ -31,6 +30,8 @@ import ch.systemsx.sybit.crkwebui.shared.model.InterfaceScoreItem;
 import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
 import ch.systemsx.sybit.crkwebui.shared.model.SupportedMethod;
 
+import com.extjs.gxt.ui.client.data.BaseListLoader;
+import com.extjs.gxt.ui.client.data.MemoryProxy;
 import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.ComponentEvent;
 import com.extjs.gxt.ui.client.event.Events;
@@ -43,15 +44,19 @@ import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
 import com.extjs.gxt.ui.client.widget.grid.ColumnModel;
 import com.extjs.gxt.ui.client.widget.grid.Grid;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 
 public class ResultsGridPanel extends ContentPanel
 {
-	private Grid<InterfaceItemModel> resultsGrid;
 	private ListStore<InterfaceItemModel> resultsStore;
 	private ColumnModel resultsColumnModel;
-	private Map<String, Integer> initialColumnWidth;
+	private Grid<InterfaceItemModel> resultsGrid;
+	private GridResizer gridResizer;
+	private List<Integer> initialColumnWidth;
 	
-	private float gridWidthMultiplier;
+	private MemoryProxy proxy;
+	private BaseListLoader loader;
 	
 	public ResultsGridPanel(boolean showThumbnail)
 	{
@@ -73,12 +78,16 @@ public class ResultsGridPanel extends ContentPanel
 			}
 		}
 
-		resultsStore = new ListStore<InterfaceItemModel>();
+		proxy = new MemoryProxy(null);
+		loader = new BaseListLoader(proxy);
+		
+		resultsStore = new ListStore<InterfaceItemModel>(loader);
 		resultsColumnModel = new ColumnModel(resultsConfigs);
 		
 		resultsGrid = createResultsGrid();
 		this.add(resultsGrid);
 		
+		gridResizer = new GridResizer(resultsGrid, initialColumnWidth, false, true);
 		initializeEventsListeners();
 	}
 	
@@ -94,11 +103,11 @@ public class ResultsGridPanel extends ContentPanel
 
 		if(configs != null)
 		{
-			initialColumnWidth = new HashMap<String, Integer>();
+			initialColumnWidth = new ArrayList<Integer>();
 			
 			for(ColumnConfig columnConfig : configs)
 			{
-				initialColumnWidth.put(columnConfig.getId(), columnConfig.getWidth());
+				initialColumnWidth.add(columnConfig.getWidth());
 			}
 		}
 
@@ -112,20 +121,15 @@ public class ResultsGridPanel extends ContentPanel
 	private Grid<InterfaceItemModel> createResultsGrid()
 	{
 		final Grid<InterfaceItemModel> resultsGrid = new Grid<InterfaceItemModel>(resultsStore, resultsColumnModel);
-		resultsGrid.getView().setForceFit(false);
-		resultsGrid.getView().setEmptyText(AppPropertiesManager.CONSTANTS.results_grid_empty_text());
-
 		resultsGrid.setBorders(false);
 		resultsGrid.setStripeRows(true);
 		resultsGrid.setColumnLines(false);
-		resultsGrid.setColumnReordering(true);
-
-//		resultsGrid.addListener(Events.CellClick, resultsGridListener);
 		resultsGrid.setContextMenu(new ResultsPanelContextMenu());
 		resultsGrid.disableTextSelection(false);
-//		resultsGrid.setAutoHeight(true);
-//		fillResultsGrid(mainController.getPdbScoreItem());
 		
+		resultsGrid.getView().setForceFit(false);
+		resultsGrid.getView().setEmptyText(AppPropertiesManager.CONSTANTS.results_grid_empty_text());
+
 		resultsGrid.addListener(Events.ContextMenu, new Listener<BaseEvent>(){
 			@Override
 			public void handleEvent(BaseEvent be) {
@@ -137,9 +141,9 @@ public class ResultsGridPanel extends ContentPanel
 			@Override
 			public void handleEvent(GridEvent ge) 
 			{
-				int widthToSet = (int) (ge.getWidth() / gridWidthMultiplier);
+				int widthToSet = (int) (ge.getWidth() / gridResizer.getGridWidthMultiplier());
 				ApplicationContext.getSettings().getGridProperties().put("results_" + resultsGrid.getColumnModel().getColumnId(ge.getColIndex()) + "_width", 
-																	 String.valueOf(widthToSet));
+																	 	 String.valueOf(widthToSet));
 			}
 		});
 		
@@ -208,7 +212,8 @@ public class ResultsGridPanel extends ContentPanel
 			}
 		}
 
-		resultsStore.add(data);
+		proxy.setData(data);
+		loader.load();
 		
 		boolean resizeGrid = false;
 		if(resultsColumnModel.getColumnById("warnings").isHidden() != hideWarnings)
@@ -242,54 +247,11 @@ public class ResultsGridPanel extends ContentPanel
 			limit += 25;
 		}
 		
-		int resultsGridWidthOfAllVisibleColumns = 0;
+		gridResizer.resize(ApplicationContext.getAdjustedWindowData().getWindowWidth() - limit - 2);
+		this.setWidth(ApplicationContext.getAdjustedWindowData().getWindowWidth() - limit + 2);
 		
-		for(int i=0; i<resultsGrid.getColumnModel().getColumnCount(); i++)
-		{
-			if(!resultsGrid.getColumnModel().getColumn(i).isHidden())
-			{
-				resultsGridWidthOfAllVisibleColumns += initialColumnWidth.get(resultsGrid.getColumnModel().getColumn(i).getId());
-			}
-		}
-		
-		if (resultsGridWidthOfAllVisibleColumns < ApplicationContext.getAdjustedWindowData().getWindowWidth() - limit) 
-		{
-			int maxWidth = ApplicationContext.getAdjustedWindowData().getWindowWidth() - limit - 20;
-			gridWidthMultiplier = (float)maxWidth / resultsGridWidthOfAllVisibleColumns;
-			
-			int nrOfColumn = resultsGrid.getColumnModel().getColumnCount();
-			
-			for (int i = 0; i < nrOfColumn; i++) 
-			{
-				resultsGrid.getColumnModel().setColumnWidth(i, (int)(initialColumnWidth.get(resultsGrid.getColumnModel().getColumn(i).getId()) * gridWidthMultiplier), true);
-			}
-		} 
-		else 
-		{
-			gridWidthMultiplier = 1;
-			
-			int nrOfColumn = resultsGrid.getColumnModel().getColumnCount();
-
-			for (int i = 0; i < nrOfColumn; i++) {
-				resultsGrid.getColumnModel().getColumn(i)
-						.setWidth(initialColumnWidth.get(resultsGrid.getColumnModel().getColumn(i).getId()));
-			}
-		}
-		
-		resultsGrid.setWidth(ApplicationContext.getAdjustedWindowData().getWindowWidth() - limit);
-
-//		resultsGrid.reconfigure(resultsStore, resultsColumnModel);
+		loader.load();
 		resultsGrid.getView().refresh(true);
-		resultsGrid.getView().layout();
-		resultsGrid.repaint();
-		
-		
-		this.layout();
-		
-		if(resultsGrid.getView().getHeader() != null)
-		{
-			resultsGrid.getView().getHeader().refresh();
-		}
 	}
 	
 	/**

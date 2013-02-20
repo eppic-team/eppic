@@ -25,7 +25,7 @@ public class LegendPanel extends LayoutContainer
 	public LegendPanel()
 	{
 		this.setHeight(30);
-		this.setStyleAttribute("padding", "0px");
+		this.addStyleName("eppic-no-padding");
 		
 		VBoxLayout legendPanelLayout = new VBoxLayout();  
 		legendPanelLayout.setVBoxLayoutAlign(VBoxLayoutAlign.CENTER);  
@@ -39,7 +39,8 @@ public class LegendPanel extends LayoutContainer
 		for(LegendItem item : LegendItem.values())
 		{
 			LayoutContainer itemContainer = createLegendItemContainer(item);
-			legendContainer.add(itemContainer, new RowData(0.2, 1, new Margins(0)));
+			double space = 1.0 / LegendItem.values().length;
+			legendContainer.add(itemContainer, new RowData(space, 1, new Margins(0)));
 		}
 		
 		this.add(legendContainer);

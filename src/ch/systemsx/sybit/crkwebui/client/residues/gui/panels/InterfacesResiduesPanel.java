@@ -33,8 +33,7 @@ public class InterfacesResiduesPanel extends FormPanel
 	
 	private SimpleComboBox<String> residuesFilterComboBox;
 	
-	public InterfacesResiduesPanel(int width,
-								   int height)
+	public InterfacesResiduesPanel()
 	{
 		this.getHeader().setVisible(false);
 		this.setBodyBorder(false);
@@ -44,13 +43,13 @@ public class InterfacesResiduesPanel extends FormPanel
 		LayoutContainer residuesLayoutContainer = new LayoutContainer();
 		residuesLayoutContainer.setLayout(new RowLayout(Orientation.HORIZONTAL));
 	
-		firstStructurePanel = new StructurePanel(width, 1);
+		firstStructurePanel = new StructurePanel(1);
 		residuesLayoutContainer.add(firstStructurePanel, new RowData(0.48, 1, new Margins(0)));
 
 		FormPanel breakPanel = createBreakPanel();
 		residuesLayoutContainer.add(breakPanel, new RowData(0.04, 1, new Margins(0)));
 		
-		secondStructurePanel = new StructurePanel(width, 2);
+		secondStructurePanel = new StructurePanel(2);
 		residuesLayoutContainer.add(secondStructurePanel, new RowData(0.48, 1, new Margins(0)));
 		
 		this.add(residuesLayoutContainer, new RowData(1, 1, new Margins(0, 0, 0, 0)));
@@ -79,9 +78,7 @@ public class InterfacesResiduesPanel extends FormPanel
 	private ToolBar createToolbar()
 	{
 		ToolBar toolbar = new ToolBar();  
-		
 		toolbar.add(new FillToolItem());
-		
 		toolbar.add(new LabelToolItem(AppPropertiesManager.CONSTANTS.interfaces_residues_combo_title() + ": ")); 
 
 		residuesFilterComboBox = createResiduesFilterComboBox();
@@ -182,14 +179,11 @@ public class InterfacesResiduesPanel extends FormPanel
 
 	/**
 	 * Resizes interfaces residues panels.
-	 * @param assignedWidth
-	 * @param assignedHeight
 	 */
-	public void resizeResiduesPanels(int assignedWidth, int assignedHeight) 
+	public void resizeResiduesPanels() 
 	{
-		int assignedResiduesWidth = (int)((assignedWidth - 36) * 0.48) - 10;
-		firstStructurePanel.resizeResiduesPanels(assignedResiduesWidth, assignedHeight);
-		secondStructurePanel.resizeResiduesPanels(assignedResiduesWidth, assignedHeight);
+		firstStructurePanel.resizeResiduesPanels();
+		secondStructurePanel.resizeResiduesPanels();
 		this.layout(true);
 	}
 }

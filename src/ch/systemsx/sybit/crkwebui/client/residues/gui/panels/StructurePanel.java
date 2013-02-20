@@ -8,11 +8,12 @@ import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResidueItem;
 import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
 
 import com.extjs.gxt.ui.client.Style.Scroll;
+import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.Label;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.form.FormPanel;
-import com.extjs.gxt.ui.client.widget.layout.AnchorData;
-import com.extjs.gxt.ui.client.widget.layout.AnchorLayout;
+import com.extjs.gxt.ui.client.widget.layout.RowData;
+import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 import com.extjs.gxt.ui.client.widget.layout.VBoxLayout;
 import com.extjs.gxt.ui.client.widget.layout.VBoxLayout.VBoxLayoutAlign;
 
@@ -22,27 +23,29 @@ public class StructurePanel extends LayoutContainer
 	private ResiduesPanel residuesPanel;
 	private ResiduesSummaryPanel residuesSummaryPanel;
 	
-	public StructurePanel(int width,
-						  int structureNr)
+	public StructurePanel(int structureNr)
 	{
 		this.setScrollMode(Scroll.AUTOX);
-		this.setLayout(new AnchorLayout());
+		this.setLayout(new RowLayout());
 		
 		header = new Label();
 		LayoutContainer structureHeaderPanel = createStructureHeaderPanel(header);
-		this.add(structureHeaderPanel);
+		this.add(structureHeaderPanel, new RowData(-1, -1, new Margins(0)));
 		
-		residuesPanel = new ResiduesPanel(width);
+		residuesPanel = new ResiduesPanel();
 		residuesPanel.setScrollMode(Scroll.NONE);
-		this.add(residuesPanel, new AnchorData("none -155"));
+		this.add(residuesPanel, new RowData(-1, 1, new Margins(0)));
 		
 		FormPanel breakPanel = createBreakPanel();
-		this.add(breakPanel);
-
+		this.add(breakPanel, new RowData(-1, -1, new Margins(0)));
+		
 		residuesSummaryPanel = new ResiduesSummaryPanel("", structureNr);
 		residuesSummaryPanel.setHeight(90);
 		residuesSummaryPanel.setScrollMode(Scroll.NONE);
-		this.add(residuesSummaryPanel);
+		this.add(residuesSummaryPanel, new RowData(-1, -1, new Margins(0)));
+		
+		breakPanel = createBreakPanel();
+		this.add(breakPanel, new RowData(-1, -1, new Margins(0)));
 	}
 	
 	/**
@@ -116,13 +119,11 @@ public class StructurePanel extends LayoutContainer
 	
 	/**
 	 * Resizes interfaces residues panels.
-	 * @param assignedWidth
-	 * @param assignedHeight
 	 */
-	public void resizeResiduesPanels(int assignedWidth, int assignedHeight) 
+	public void resizeResiduesPanels() 
 	{
-		residuesPanel.resizeGrid(assignedWidth);
-		residuesSummaryPanel.resizeGrid(assignedWidth);
+		residuesPanel.resizeGrid(this.getWidth());
+		residuesSummaryPanel.resizeGrid(this.getWidth());
 		this.layout(true);
 	}
 	

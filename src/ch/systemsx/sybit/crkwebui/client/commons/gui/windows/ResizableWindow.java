@@ -10,17 +10,14 @@ import com.extjs.gxt.ui.client.widget.Dialog;
  */
 public class ResizableWindow extends Dialog
 {
-	protected int windowWidth;
-	protected int windowHeight;
-	
 	private boolean resizeWindow;
 
 	public ResizableWindow(int defaultWidth,
 						   int defaultHeight,
 						   WindowData windowData)
 	{
-		this.windowWidth = defaultWidth;
-		this.windowHeight = defaultHeight;
+		int windowWidth = defaultWidth;
+		int windowHeight = defaultHeight;
 
 		if(windowWidth > windowData.getWindowWidth() - 20)
 		{
@@ -41,40 +38,10 @@ public class ResizableWindow extends Dialog
 				windowHeight = 1;
 			}
 		}
+		
+		this.setSize(windowWidth, windowHeight);
 	}
 	
-	/**
-	 * Retrieves width of the window.
-	 * @return width of the window
-	 */
-	public int getWindowWidth() {
-		return windowWidth;
-	}
-
-	/**
-	 * Sets width of the window.
-	 * @param windowWidth width of the window
-	 */
-	public void setWindowWidth(int windowWidth) {
-		this.windowWidth = windowWidth;
-	}
-
-	/**
-	 * Retrieves height of the window.
-	 * @return height of the window
-	 */
-	public int getWindowHeight() {
-		return windowHeight;
-	}
-
-	/**
-	 * Sets height of the window.
-	 * @param windowHeight height of the window
-	 */
-	public void setWindowHeight(int windowHeight) {
-		this.windowHeight = windowHeight;
-	}
-
 	/**
 	 * Sets flag pointing whether window should be resized.
 	 * @param resizeWindow flag pointing whether window should be resized

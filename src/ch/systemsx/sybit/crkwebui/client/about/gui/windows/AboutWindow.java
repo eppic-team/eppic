@@ -7,8 +7,6 @@ import ch.systemsx.sybit.crkwebui.client.commons.managers.EventBusManager;
 import ch.systemsx.sybit.crkwebui.shared.model.WindowData;
 
 import com.extjs.gxt.ui.client.Style.Scroll;
-import com.extjs.gxt.ui.client.event.Events;
-import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.event.WindowEvent;
 import com.extjs.gxt.ui.client.event.WindowListener;
 
@@ -26,8 +24,6 @@ public class AboutWindow extends ResizableWindow
 		super(ABOUT_WINDOW_DEFAULT_WIDTH,
 			  ABOUT_WINDOW_DEFAULT_HEIGHT,
 			  windowData);
-		
-		this.setSize(windowWidth, windowHeight);
 		
 		this.setHeading(AppPropertiesManager.CONSTANTS.about_window_title());
 		this.setPlain(true);
@@ -70,16 +66,6 @@ public class AboutWindow extends ResizableWindow
 				"<td>" +
 				"</tr>" +
 				"</table>");
-		
-		this.addListener(Events.Resize, new Listener<WindowEvent>() {
-
-			@Override
-			public void handleEvent(WindowEvent be) 
-			{
-				windowHeight = be.getHeight();
-				windowWidth = be.getWidth();
-			}
-		});
 		
 		this.addWindowListener(new WindowListener()
 		{

@@ -173,8 +173,7 @@ public class MainViewPort extends LayoutContainer
 			Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 				@Override
 				public void execute() {
-					interfacesResiduesWindow.getInterfacesResiduesPanel().resizeResiduesPanels(interfacesResiduesWindow.getWindowWidth(),
-																							   interfacesResiduesWindow.getWindowHeight());
+					interfacesResiduesWindow.getInterfacesResiduesPanel().resizeResiduesPanels();
 				}
 			});
 		}

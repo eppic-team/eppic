@@ -52,8 +52,6 @@ public class AlignmentsWindow extends ResizableWindow
 		this.homologsInfoItem = homologsInfoItem;
 		this.pdbName = pdbName;
 		
-		this.setSize(windowWidth, windowHeight);
-		
 		this.setPlain(true);
 		this.setLayout(new FitLayout());
 		this.setHideOnButtonClick(true);
@@ -64,8 +62,6 @@ public class AlignmentsWindow extends ResizableWindow
 			@Override
 			public void handleEvent(WindowEvent be) 
 			{
-				windowHeight = be.getHeight();
-				windowWidth = be.getWidth();
 				updateWindowContent();
 			}
 		});
@@ -109,7 +105,7 @@ public class AlignmentsWindow extends ResizableWindow
 		
 		String uniprotId = homologsInfoItem.getUniprotId();
 		
-		int nrOfCharactersPerLine = calculateNrOfCharactersPerLine(textMetrics, pdbId, uniprotId); 
+		int nrOfCharactersPerLine = calculateNrOfCharactersPerLine(this.getWidth(), textMetrics, pdbId, uniprotId); 
 		int totalNumberOfCharacters = homologsInfoItem.getAlignedSeq1().length();
 		
 		int firstSequenceIndex = 1;
@@ -238,7 +234,8 @@ public class AlignmentsWindow extends ResizableWindow
 	 * @param secondSequenceLeftAnnotation second sequence to annotate
 	 * @return nr of characters of original sequences per line.
 	 */
-	private int calculateNrOfCharactersPerLine(TextMetrics textMetrics,
+	private int calculateNrOfCharactersPerLine(int width,
+											   TextMetrics textMetrics,
 											   String firstSequenceLeftAnnotation,
 											   String secondSequenceLeftAnnotation)
 	{
@@ -283,7 +280,7 @@ public class AlignmentsWindow extends ResizableWindow
 									 MIN_DISTANCE_BETWEEN_UNIPROTID_AND_POSITION +
 									 DISTANCE_BETWEEN_CURRENT_NR_AND_SEQUENCE * 2;
 		
-		int nrOfCharactersPerLine = (windowWidth - 40) / widthOfCharacter;
+		int nrOfCharactersPerLine = (width - 40) / widthOfCharacter;
 		nrOfCharactersPerLine -= maxLengthOfAnnotations;
 		return nrOfCharactersPerLine;
 	}

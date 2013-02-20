@@ -6,7 +6,7 @@ import java.util.List;
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.renderers.GridCellRendererFactoryImpl;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.util.GridColumnConfigGenerator;
-import ch.systemsx.sybit.crkwebui.client.commons.gui.util.GridUtil;
+import ch.systemsx.sybit.crkwebui.client.commons.gui.util.GridResizer;
 import ch.systemsx.sybit.crkwebui.client.residues.data.InterfaceResidueSummaryModel;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResidueItem;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResidueType;
@@ -15,6 +15,8 @@ import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
 
 import com.extjs.gxt.ui.client.GXT;
 import com.extjs.gxt.ui.client.Style.Scroll;
+import com.extjs.gxt.ui.client.data.BaseListLoader;
+import com.extjs.gxt.ui.client.data.MemoryProxy;
 import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
@@ -36,11 +38,14 @@ public class ResiduesSummaryPanel extends ContentPanel
 	private ListStore<InterfaceResidueSummaryModel> residuesStore;
 	private ColumnModel residuesColumnModel;
 	private Grid<InterfaceResidueSummaryModel> residuesGrid;
+	private GridResizer gridResizer;
 	private List<Integer> initialColumnWidth;
 	
-	private int structure;
-	
+	private MemoryProxy proxy;
+	private BaseListLoader loader;
 	private boolean useBufferedView = false;
+	
+	private int structure;
 	
 	public ResiduesSummaryPanel(
 						 String header, 
@@ -59,12 +64,17 @@ public class ResiduesSummaryPanel extends ContentPanel
 		this.setScrollMode(Scroll.NONE);
 
 		residuesConfigs = createColumnConfig();
+		
+		proxy = new MemoryProxy(null);
+		loader = new BaseListLoader(proxy);
 
-		residuesStore = new ListStore<InterfaceResidueSummaryModel>();
+		residuesStore = new ListStore<InterfaceResidueSummaryModel>(loader);
 		residuesColumnModel = new ColumnModel(residuesConfigs);
 		
 		residuesGrid = createResiduesSummaryGrid();
 		this.add(residuesGrid);
+		
+		gridResizer = new GridResizer(residuesGrid, initialColumnWidth, useBufferedView, false);
 	}
 	
 	/**
@@ -105,6 +115,7 @@ public class ResiduesSummaryPanel extends ContentPanel
 		residuesGrid.setHideHeaders(true);
 		residuesGrid.getSelectionModel().setLocked(true);
 		residuesGrid.setLoadMask(true);
+		residuesGrid.disableTextSelection(false);
 		
 		residuesGrid.getView().setViewConfig(new GridViewConfig(){
 			@Override
@@ -115,9 +126,8 @@ public class ResiduesSummaryPanel extends ContentPanel
 			}
 		});
 		
-		residuesGrid.disableTextSelection(false);
 		residuesGrid.getView().setForceFit(false);
-		
+
 		return residuesGrid;
 	}
 
@@ -255,7 +265,9 @@ public class ResiduesSummaryPanel extends ContentPanel
 		
 		interfaceSummaryItems.add(model);
 		
-		residuesStore.add(interfaceSummaryItems);
+//		residuesStore.add(interfaceSummaryItems);
+		proxy.setData(interfaceSummaryItems);
+		loader.load();
 	}
 	
 	/**
@@ -273,45 +285,10 @@ public class ResiduesSummaryPanel extends ContentPanel
 	 */
 	public void resizeGrid(int assignedWidth) 
 	{
-		int scoresGridWidthOfAllVisibleColumns = GridUtil.calculateWidthOfVisibleColumns(residuesGrid, initialColumnWidth) + 10;
+		gridResizer.resize(assignedWidth - 2);
+		this.setWidth(residuesGrid.getWidth() + 2);
 		
-		if(useBufferedView)
-		{
-			scoresGridWidthOfAllVisibleColumns += 20;
-		}
-
-//		int assignedWidth = (int)((mainController.getMainViewPort().getInterfacesResiduesWindow().getWindowWidth() - 30) * 0.48);
-		
-		int nrOfColumn = residuesGrid.getColumnModel().getColumnCount();
-		
-		if (GridUtil.checkIfForceFit(scoresGridWidthOfAllVisibleColumns, 
-									 assignedWidth)) 
-		{
-			float gridWidthMultiplier = (float)assignedWidth / scoresGridWidthOfAllVisibleColumns;
-			
-			for (int i = 0; i < nrOfColumn; i++) 
-			{
-				residuesGrid.getColumnModel().setColumnWidth(i, (int)(initialColumnWidth.get(i) * gridWidthMultiplier), true);
-			}
-		} 
-		else 
-		{
-			for (int i = 0; i < nrOfColumn; i++) 
-			{
-				residuesGrid.getColumnModel().getColumn(i).setWidth(initialColumnWidth.get(i));
-			}
-			
-			assignedWidth = scoresGridWidthOfAllVisibleColumns;
-		}
-		
-		residuesGrid.setWidth(assignedWidth);
-		this.setWidth(assignedWidth + 10);
-		
-//		if(useBufferedView)
-		{
-			residuesGrid.getView().refresh(true);
-		}
-		
-		this.layout();
+		loader.load();
+		residuesGrid.getView().refresh(true);
 	}
 }

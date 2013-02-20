@@ -5,7 +5,7 @@ import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.client.commons.gui.renderers.GridCellRendererFactoryImpl;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.util.GridColumnConfigGenerator;
-import ch.systemsx.sybit.crkwebui.client.commons.gui.util.GridUtil;
+import ch.systemsx.sybit.crkwebui.client.commons.gui.util.GridResizer;
 import ch.systemsx.sybit.crkwebui.client.residues.data.InterfaceResidueItemModel;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResidueItem;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResidueType;
@@ -17,7 +17,6 @@ import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.data.PagingLoader;
 import com.extjs.gxt.ui.client.data.PagingModelMemoryProxy;
 import com.extjs.gxt.ui.client.store.ListStore;
-import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.grid.BufferView;
 import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
@@ -25,7 +24,6 @@ import com.extjs.gxt.ui.client.widget.grid.ColumnModel;
 import com.extjs.gxt.ui.client.widget.grid.Grid;
 import com.extjs.gxt.ui.client.widget.grid.GridViewConfig;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
-import com.extjs.gxt.ui.client.widget.layout.RowData;
 import com.extjs.gxt.ui.client.widget.toolbar.PagingToolBar;
 
 /**
@@ -39,19 +37,19 @@ public class ResiduesPanel extends ContentPanel
 	private ListStore<InterfaceResidueItemModel> residuesStore;
 	private ColumnModel residuesColumnModel;
 	private Grid<InterfaceResidueItemModel> residuesGrid;
+	private GridResizer gridResizer;
 	private List<Integer> initialColumnWidth;
 
 	private PagingModelMemoryProxy proxy;
 	private PagingLoader loader;
-
+	private PagingToolBar pagingToolbar;
+	private boolean useBufferedView = false;
+	
 	private List<InterfaceResidueItemModel> data;
 
 	private int nrOfRows = 20;
-	private PagingToolBar pagingToolbar;
-
-	private boolean useBufferedView = false;
-
-	public ResiduesPanel(int width)
+	
+	public ResiduesPanel()
 	{
 		if(GXT.isIE8)
 		{
@@ -75,13 +73,14 @@ public class ResiduesPanel extends ContentPanel
 		residuesColumnModel = new ColumnModel(residuesConfigs);
 
 		residuesGrid = createResiduesGrid();
-		this.add(residuesGrid, new RowData(1, 1, new Margins(0)));
+		this.add(residuesGrid);
+		
+		gridResizer = new GridResizer(residuesGrid, initialColumnWidth, useBufferedView, false);
 
 		if(!useBufferedView)
 		{
 			pagingToolbar = new PagingToolBar(nrOfRows);
 			pagingToolbar.bind(loader);
-
 			this.setBottomComponent(pagingToolbar);
 		}
 
@@ -111,6 +110,10 @@ public class ResiduesPanel extends ContentPanel
 		return configs;
 	}
 
+	/**
+	 * Generates grid used to store residues items.
+	 * @return residues grid
+	 */
 	private Grid<InterfaceResidueItemModel> createResiduesGrid()
 	{
 		Grid<InterfaceResidueItemModel> residuesGrid = new Grid<InterfaceResidueItemModel>(residuesStore, residuesColumnModel);
@@ -118,12 +121,9 @@ public class ResiduesPanel extends ContentPanel
 		residuesGrid.setStripeRows(true);
 		residuesGrid.setColumnLines(false);
 		residuesGrid.setLoadMask(true);
-
 		residuesGrid.disableTextSelection(false);
 
 		residuesGrid.getView().setForceFit(false);
-
-		this.add(residuesGrid, new RowData(1, 1, new Margins(0)));
 
 		if(useBufferedView)
 		{
@@ -242,39 +242,9 @@ public class ResiduesPanel extends ContentPanel
 	public void resizeGrid(int assignedWidth)
 	{
 		nrOfRows = (this.getHeight() - 50)  / 22;
-
-		int scoresGridWidthOfAllVisibleColumns = GridUtil.calculateWidthOfVisibleColumns(residuesGrid,
-																						 initialColumnWidth) + 10;
-
-		if(useBufferedView)
-		{
-			scoresGridWidthOfAllVisibleColumns += 20;
-		}
-
-		int nrOfColumn = residuesGrid.getColumnModel().getColumnCount();
-
-		if (GridUtil.checkIfForceFit(scoresGridWidthOfAllVisibleColumns,
-									 assignedWidth))
-		{
-			float gridWidthMultiplier = (float)assignedWidth / scoresGridWidthOfAllVisibleColumns;
-
-			for (int i = 0; i < nrOfColumn; i++)
-			{
-				residuesGrid.getColumnModel().setColumnWidth(i, (int)(initialColumnWidth.get(i) * gridWidthMultiplier), true);
-			}
-		}
-		else
-		{
-			for (int i = 0; i < nrOfColumn; i++)
-			{
-				residuesGrid.getColumnModel().getColumn(i).setWidth(initialColumnWidth.get(i));
-			}
-
-			assignedWidth = scoresGridWidthOfAllVisibleColumns;
-		}
-
-		residuesGrid.setWidth(assignedWidth);
-		this.setWidth(assignedWidth + 10);
+		
+		gridResizer.resize(assignedWidth - 2);
+		this.setWidth(residuesGrid.getWidth() + 2);
 
 		if(!useBufferedView)
 		{
@@ -282,12 +252,8 @@ public class ResiduesPanel extends ContentPanel
 			loader.load(0, nrOfRows);
 			pagingToolbar.setActivePage(1);
 		}
-		else
-		{
-			residuesGrid.getView().refresh(true);
-		}
 
-		this.layout();
+		residuesGrid.getView().refresh(true);
 	}
 
 	public void increaseActivePage()

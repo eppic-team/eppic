@@ -28,7 +28,7 @@ import com.google.gwt.i18n.client.NumberFormat;
 public class InterfacesResiduesWindow extends ResizableWindow 
 {
 	private static int INTERFACE_RESIDUES_WINDOW_DEFAULT_WIDTH = 1200;
-	private static int INTERFACE_RESIDUES_WINDOW_DEFAULT_HEIGHT = 665;
+	private static int INTERFACE_RESIDUES_WINDOW_DEFAULT_HEIGHT = 660;
 	
 	private InterfacesResiduesPanel interfacesResiduesPanel;
 	
@@ -38,20 +38,11 @@ public class InterfacesResiduesWindow extends ResizableWindow
 			  INTERFACE_RESIDUES_WINDOW_DEFAULT_HEIGHT,
 			  windowData);
 		
-		this.setPlain(true);
-		this.setModal(false);
 		this.setBlinkModal(true);
 		this.setLayout(new RowLayout());
 		this.setHideOnButtonClick(true);
 
-		// adjust to 22 height rows
-		windowHeight = (windowHeight - 322) / 22;
-		windowHeight = windowHeight * 22 + 322;
-		this.setSize(windowWidth, windowHeight);
-		
-		interfacesResiduesPanel = new InterfacesResiduesPanel(windowWidth,
-															  windowHeight - 100);
-		
+		interfacesResiduesPanel = new InterfacesResiduesPanel();
 		this.add(interfacesResiduesPanel, new RowData(1, 1, new Margins(0)));
 		
 		this.add(new LegendPanel(), new RowData(1, 30, new Margins(0)));
@@ -61,9 +52,7 @@ public class InterfacesResiduesWindow extends ResizableWindow
 			@Override
 			public void handleEvent(WindowEvent be) 
 			{
-				windowHeight = be.getHeight();
-				windowWidth = be.getWidth();
-				interfacesResiduesPanel.resizeResiduesPanels(windowWidth, windowHeight);
+				interfacesResiduesPanel.resizeResiduesPanels();
 			}
 		};
 		
