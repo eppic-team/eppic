@@ -70,6 +70,7 @@ public class ResultsPanel extends DisplayPanel
 
 	public void resizeContent() 
 	{
+		resultsGridContainer.setAssignedWidth(this.getWidth(true));
 		resultsGridContainer.resizeGrid();
 		this.layout();
 	}

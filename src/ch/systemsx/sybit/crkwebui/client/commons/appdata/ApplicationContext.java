@@ -50,15 +50,6 @@ public class ApplicationContext
 	 */
 	private static PDBScoreItem pdbScoreItem;
 	
-	
-	
-	/**
-	 * Flag pointing whether my jobs panel is visible.
-	 */
-	private static boolean isMyJobsListVisible = true;
-	
-	private static int myJobsPanelWidth;
-	
 	/**
 	 * Flag pointing whether content of the status panel should be refreshed using timer.
 	 */
@@ -211,22 +202,6 @@ public class ApplicationContext
 	}
 
 	/**
-	 * Sets information whether jobs panel is visible.
-	 * @param isMyJobsListVisible information whether jobs panel is visible
-	 */
-	public static void setMyJobsListVisible(boolean isMyJobsListVisible) {
-		ApplicationContext.isMyJobsListVisible = isMyJobsListVisible;
-	}
-
-	/**
-	 * Retrieves information whether jobs list panel is visible
-	 * @return information whether jobs list panel is visible
-	 */
-	public static boolean isMyJobsListVisible() {
-		return isMyJobsListVisible;
-	}
-
-	/**
 	 * Sets selected interface id.
 	 * @param selectedInterface selected interface id
 	 */
@@ -261,14 +236,6 @@ public class ApplicationContext
 	public native static String getUserAgent() /*-{
 		return navigator.userAgent.toLowerCase();
 	}-*/;
-	
-	public static int getMyJobsPanelWidth() {
-		return myJobsPanelWidth;
-	}
-
-	public static void setMyJobsPanelWidth(int myJobsPanelWidth) {
-		ApplicationContext.myJobsPanelWidth = myJobsPanelWidth;
-	}
 	
 	/**
 	 * Retrieves adjusted main application window data.

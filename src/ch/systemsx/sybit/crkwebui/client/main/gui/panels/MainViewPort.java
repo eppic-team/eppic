@@ -73,8 +73,6 @@ public class MainViewPort extends LayoutContainer
 			{
 				if(be.getPanel() instanceof MyJobsPanel)
 				{
-					ApplicationContext.setMyJobsListVisible(false);
-					ApplicationContext.setMyJobsPanelWidth(be.getPanel().getWidth());
 					EventBusManager.EVENT_BUS.fireEvent(new ApplicationWindowResizeEvent());
 				}
 			}
@@ -86,8 +84,6 @@ public class MainViewPort extends LayoutContainer
 			{
 				if(be.getPanel() instanceof MyJobsPanel)
 				{
-					ApplicationContext.setMyJobsListVisible(true);
-					ApplicationContext.setMyJobsPanelWidth(be.getPanel().getWidth());
 					EventBusManager.EVENT_BUS.fireEvent(new ApplicationWindowResizeEvent());
 				}
 			}
@@ -101,7 +97,6 @@ public class MainViewPort extends LayoutContainer
 
 		myJobsPanel = new MyJobsPanel();
 		this.add(myJobsPanel, westData);
-		ApplicationContext.setMyJobsPanelWidth(220);
 
 		BorderLayoutData centerData = new BorderLayoutData(LayoutRegion.CENTER,
 				200);

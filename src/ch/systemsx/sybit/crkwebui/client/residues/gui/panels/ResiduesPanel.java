@@ -241,7 +241,7 @@ public class ResiduesPanel extends ContentPanel
 	 */
 	public void resizeGrid(int assignedWidth)
 	{
-		nrOfRows = (this.getHeight() - 50)  / 22;
+		nrOfRows = residuesGrid.getView().getBody().getHeight()  / 22;
 		
 		gridResizer.resize(assignedWidth - 2);
 		this.setWidth(residuesGrid.getWidth() + 2);

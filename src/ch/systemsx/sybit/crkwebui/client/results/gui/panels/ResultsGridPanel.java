@@ -57,6 +57,8 @@ public class ResultsGridPanel extends ContentPanel
 	private MemoryProxy proxy;
 	private BaseListLoader loader;
 	
+	private int assignedWidth;
+	
 	public ResultsGridPanel(boolean showThumbnail)
 	{
 		this.getHeader().setVisible(false);
@@ -237,18 +239,8 @@ public class ResultsGridPanel extends ContentPanel
 	 */
 	public void resizeGrid() 
 	{
-		int limit = 50;
-		if(ApplicationContext.isMyJobsListVisible())
-		{
-			limit += ApplicationContext.getMyJobsPanelWidth();
-		}
-		else
-		{
-			limit += 25;
-		}
-		
-		gridResizer.resize(ApplicationContext.getAdjustedWindowData().getWindowWidth() - limit - 2);
-		this.setWidth(ApplicationContext.getAdjustedWindowData().getWindowWidth() - limit + 2);
+		gridResizer.resize(assignedWidth - 2);
+		this.setWidth(assignedWidth + 2);
 		
 		loader.load();
 		resultsGrid.getView().refresh(true);
@@ -344,5 +336,14 @@ public class ResultsGridPanel extends ContentPanel
 				saveGridSettings();
 			}
 		});
+	}
+	
+	/**
+	 * Sets width available for the grid.
+	 * @param assignedWidth max width available for the grid
+	 */
+	public void setAssignedWidth(int assignedWidth)
+	{
+		this.assignedWidth = assignedWidth;
 	}
 }
