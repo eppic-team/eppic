@@ -33,10 +33,10 @@ public class ResultsPanel extends DisplayPanel
 		this.setLayout(new RowLayout(Orientation.VERTICAL));
 
 		pdbIdentifierPanel = new PDBIdentifierPanel();
-		this.add(pdbIdentifierPanel, new RowData(1, -1, new Margins(0, 0, 1, 0)));
+		this.add(pdbIdentifierPanel, new RowData(-1, -1, new Margins(0, 0, 1, 0)));
 		
 		pdbIdentifierSubtitlePanel = new PDBIdentifierSubtitlePanel();
-		this.add(pdbIdentifierSubtitlePanel, new RowData(1, -1, new Margins(0, 0, 10, 0)));
+		this.add(pdbIdentifierSubtitlePanel, new RowData(-1, -1, new Margins(0, 0, 10, 0)));
 		
 		infoPanel = new InfoPanel(pdbScoreItem);
 		this.add(infoPanel, new RowData(1, 80, new Margins(0)));

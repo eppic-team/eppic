@@ -30,6 +30,7 @@ import ch.systemsx.sybit.crkwebui.shared.model.InterfaceScoreItem;
 import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
 import ch.systemsx.sybit.crkwebui.shared.model.SupportedMethod;
 
+import com.extjs.gxt.ui.client.Style.Scroll;
 import com.extjs.gxt.ui.client.data.BaseListLoader;
 import com.extjs.gxt.ui.client.data.MemoryProxy;
 import com.extjs.gxt.ui.client.event.BaseEvent;
@@ -44,8 +45,6 @@ import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
 import com.extjs.gxt.ui.client.widget.grid.ColumnModel;
 import com.extjs.gxt.ui.client.widget.grid.Grid;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
-import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 
 public class ResultsGridPanel extends ContentPanel
 {
@@ -64,6 +63,7 @@ public class ResultsGridPanel extends ContentPanel
 		this.setBorders(true);
 		this.setBodyBorder(false);
 		this.setLayout(new FitLayout());
+		this.setScrollMode(Scroll.AUTOX);
 		
 		List<ColumnConfig> resultsConfigs = createColumnConfig();
 		
