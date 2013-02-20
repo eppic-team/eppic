@@ -2,10 +2,10 @@ package ch.systemsx.sybit.crkwebui.client.downloads.gui.panels;
 
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.panels.DisplayPanel;
+import ch.systemsx.sybit.crkwebui.client.commons.gui.windows.Iframe;
 
 import com.extjs.gxt.ui.client.Style.Scroll;
-import com.extjs.gxt.ui.client.widget.Label;
-import com.extjs.gxt.ui.client.widget.layout.FormData;
+import com.google.gwt.core.client.GWT;
 
 /**
  * Panel used to display downloads.
@@ -17,11 +17,10 @@ public class DownloadsPanel extends DisplayPanel
 	public DownloadsPanel() 
 	{
 		this.addStyleName("eppic-text-panel");
-		this.setScrollMode(Scroll.AUTO);
-		
-		Label downloadsText = new Label();
-		downloadsText.setText(ApplicationContext.getSettings().getDownloadsPageContent());
-		this.add(downloadsText, new FormData("-20 100%"));
+		this.setScrollMode(Scroll.NONE);
+
+		Iframe iframe = new Iframe(GWT.getHostPageBaseURL() + "Downloads.html");
+		this.add(iframe);
 	}
 }
 
