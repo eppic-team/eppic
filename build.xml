@@ -175,7 +175,9 @@
   the java code automatically -->
   <target name="clean-exceptclasses" description="Cleans this project">
   	<delete dir="war/ewui" failonerror="false" />
-  	<delete dir="war/WEB-INF/lib" failonerror="false" />
+  	<delete>
+  	  <fileset dir="war/WEB-INF/lib" excludes="**/gwt-servlet.jar" />
+  	</delete>
   </target>
 
 </project>
