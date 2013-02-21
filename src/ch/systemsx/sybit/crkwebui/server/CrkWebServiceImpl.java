@@ -309,22 +309,10 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 		InputStream inputParametersStream = getServletContext()
 				.getResourceAsStream("/WEB-INF/classes/META-INF/input_parameters.xml");
 		
-		InputStream helpPageStream = getServletContext()
-				.getResourceAsStream("/WEB-INF/classes/META-INF/help.html");
-		
-		InputStream downloadsPageStream = getServletContext()
-				.getResourceAsStream("/WEB-INF/classes/META-INF/downloads.html");
-
-		InputStream releasesPageStream = getServletContext()
-				.getResourceAsStream("/WEB-INF/classes/META-INF/releases.html");
-
 		InputStream gridPropertiesInputStream = getServletContext()
 				.getResourceAsStream("/WEB-INF/classes/META-INF/grid.properties");
 
 		ApplicationSettings settings = applicationSettingsGenerator.generateApplicationSettings(inputParametersStream, 
-																								helpPageStream,
-																								downloadsPageStream,
-																								releasesPageStream,
 																								gridPropertiesInputStream);
 
 

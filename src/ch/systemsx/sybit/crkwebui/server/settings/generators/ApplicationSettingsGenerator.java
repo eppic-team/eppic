@@ -38,15 +38,9 @@ public class ApplicationSettingsGenerator
 	 * @throws ParsingException when can not properly prepare application settings
 	 */
 	public ApplicationSettings generateApplicationSettings(InputStream inputParametersStream,
-														   InputStream helpPageStream,
-														   InputStream downloadsPageStream,
-														   InputStream releasesPageStream,
 														   InputStream gridPropertiesInputStream) throws ParsingException
 	{
 		ApplicationSettings settings = initializeApplicationSettings(inputParametersStream);
-		settings.setHelpPageContent(preparePageContent(helpPageStream, "help"));
-		settings.setDownloadsPageContent(preparePageContent(downloadsPageStream, "downloads"));
-		settings.setReleasesPageContent(preparePageContent(releasesPageStream, "releases"));
 		settings.setGridProperties(prepareGridProperties(gridPropertiesInputStream));
 
 		boolean useCaptcha = Boolean.parseBoolean(globalProperties.getProperty("use_captcha","false"));

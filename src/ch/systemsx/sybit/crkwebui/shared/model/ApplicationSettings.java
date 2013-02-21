@@ -87,21 +87,6 @@ public class ApplicationSettings implements Serializable {
 	private String publicationLinkUrl;
 	
 	/**
-	 * Content of the help panel.
-	 */
-	private String helpPageContent;
-	
-	/**
-	 * Content of the downloads panel.
-	 */
-	private String downloadsPageContent;
-
-	/**
-	 * Content of the releases panel.
-	 */
-	private String releasesPageContent;
-
-	/**
 	 * Flag pointing whether precompiled values stored in the db should be used.
 	 */
 	private boolean usePrecompiledResults;
@@ -384,54 +369,6 @@ public class ApplicationSettings implements Serializable {
 		return publicationLinkUrl;
 	}
 
-	/**
-	 * Sets content which is to be used in help page.
-	 * @param helpPageContent content of the help page
-	 */
-	public void setHelpPageContent(String helpPageContent) {
-		this.helpPageContent = helpPageContent;
-	}
-
-	/**
-	 * Retrieves content which is to be set as help.
-	 * @return content of help panel
-	 */
-	public String getHelpPageContent() {
-		return helpPageContent;
-	}
-	
-	/**
-	 * Sets content which is to be used in downloads page.
-	 * @param downloadsPageContent content of the downloads page
-	 */
-	public void setDownloadsPageContent(String downloadsPageContent) {
-		this.downloadsPageContent = downloadsPageContent;
-	}
-
-	/**
-	 * Retrieves content which is to be set as downloads.
-	 * @return content of downloads panel
-	 */
-	public String getDownloadsPageContent() {
-		return downloadsPageContent;
-	}
-
-	/**
-	 * Sets content which is to be used in releases page.
-	 * @param releasesPageContent content of the releases page
-	 */
-	public void setReleasesPageContent(String releasesPageContent) {
-		this.releasesPageContent = releasesPageContent;
-	}
-
-	/**
-	 * Retrieves content which is to be set as releases.
-	 * @return content of releases panel
-	 */
-	public String getReleasesPageContent() {
-		return releasesPageContent;
-	}
-	
 	/**
 	 * Sets information whether precompiled results stored in the db should be used.
 	 * @param usePrecompiledResults information whether precompiled values stored in the db should be used

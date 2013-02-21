@@ -2,10 +2,10 @@ package ch.systemsx.sybit.crkwebui.client.releases.gui.panels;
 
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.panels.DisplayPanel;
+import ch.systemsx.sybit.crkwebui.client.commons.gui.windows.Iframe;
 
 import com.extjs.gxt.ui.client.Style.Scroll;
-import com.extjs.gxt.ui.client.widget.Label;
-import com.extjs.gxt.ui.client.widget.layout.FormData;
+import com.google.gwt.core.client.GWT;
 
 
 /**
@@ -18,10 +18,9 @@ public class ReleasesPanel extends DisplayPanel
 	public ReleasesPanel() 
 	{
 		this.addStyleName("eppic-text-panel");
-		this.setScrollMode(Scroll.AUTO);
-		
-		Label releasesText = new Label();
-		releasesText.setText(ApplicationContext.getSettings().getReleasesPageContent());
-		this.add(releasesText, new FormData("-20 100%"));
+		this.setScrollMode(Scroll.NONE);
+
+		Iframe iframe = new Iframe(GWT.getHostPageBaseURL() + "Releases.html");
+		this.add(iframe);
 	}
 }
