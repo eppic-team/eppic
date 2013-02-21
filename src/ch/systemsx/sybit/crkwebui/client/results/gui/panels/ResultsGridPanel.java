@@ -132,13 +132,6 @@ public class ResultsGridPanel extends ContentPanel
 		resultsGrid.getView().setForceFit(false);
 		resultsGrid.getView().setEmptyText(AppPropertiesManager.CONSTANTS.results_grid_empty_text());
 
-		resultsGrid.addListener(Events.ContextMenu, new Listener<BaseEvent>(){
-			@Override
-			public void handleEvent(BaseEvent be) {
-				resizeGrid();
-			}
-		});
-		
 		resultsGrid.addListener(Events.ColumnResize, new Listener<GridEvent>() {
 			@Override
 			public void handleEvent(GridEvent ge) 
