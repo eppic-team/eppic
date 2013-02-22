@@ -1,0 +1,92 @@
+.eppic-iframe h1 {
+	font-family: Arial Unicode MS, Arial, sans-serif;
+	font-size:20px;
+	font-weight:bold;
+	margin-left: 15px;
+	margin-right: 20px;
+	margin-top: 20px;	
+}
+
+.eppic-iframe h2 {
+	font-family: Arial Unicode MS, Arial, sans-serif;
+	font-size:16px;
+	font-weight:bold;	
+	margin-left: 15px;
+	margin-right: 20px;
+	margin-top: 20px;	
+}
+
+.eppic-iframe p {
+	font-family: Arial Unicode MS, Arial, sans-serif;
+	font-size:14px;
+	line-height:125%;
+	margin-left: 15px;
+	margin-right: 20px;
+}
+
+.eppic-iframe code {
+	font-size:14px;
+	font-family:monospace;
+	margin-left: 15px;
+	margin-right: 20px;		
+	padding-left: 10px;
+}
+
+.eppic-iframe ul {
+	font-family: Arial Unicode MS, Arial, sans-serif;
+	font-size:14px;
+	margin-left: 15px;
+	margin-right: 20px;
+}
+
+.eppic-iframe A:link {text-decoration: none}
+.eppic-iframe A:visited {text-decoration: none}
+.eppic-iframe A:active {text-decoration: none}
+.eppic-iframe A:hover {text-decoration: underline}
+
+/*
+The style for the list items in Release Log, apply it to enclosing ul element 
+*/
+.eppic-iframe-log-list li {
+	margin-top: 10px;	
+}
+
+.eppic-iframe-top-img {
+	margin-left:auto;
+	margin-right:auto;
+	display: block;
+	width:200px;
+	height:80px;
+}
+
+.eppic-iframe-left-img {
+	float:left;
+}
+
+.eppic-iframe-right-img {
+	float:right;
+}
+
+.eppic-iframe-bottom-logos {
+	margin-top: 50px;
+	margin-right: 20px;
+	margin-left: 20px;
+}
+
+
+/*
+Possible code to display 3 images, doesn't quite work because of the scroll bar on right I believe
+
+.first {
+	display:block;
+    float:left;  
+}
+.second {
+	display:block;
+    float:right;
+}
+.third {
+	display:block;
+    margin:0 auto;
+}
+*/
