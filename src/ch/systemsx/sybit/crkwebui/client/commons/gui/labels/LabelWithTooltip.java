@@ -2,6 +2,7 @@ package ch.systemsx.sybit.crkwebui.client.commons.gui.labels;
 
 import ch.systemsx.sybit.crkwebui.shared.model.WindowData;
 
+import com.extjs.gxt.ui.client.core.Template;
 import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.Listener;
@@ -22,12 +23,12 @@ public class LabelWithTooltip extends Label
 	/**
 	 * Creates instance of label with assigned tooltip.
 	 * @param labelText text of the label
-	 * @param tooltipText text of the tooltip
+	 * @param template text of the tooltip
 	 * @param windowData general window data
 	 * @param delay delay after which tooltip is displayed
 	 */
 	public LabelWithTooltip(String labelText,
-							final String tooltipText,
+							final String template,
 							final WindowData windowData,
 							final int delay)
 	{
@@ -48,7 +49,7 @@ public class LabelWithTooltip extends Label
 					ToolTipConfig toolTipConfig = new ToolTipConfig();  
 					toolTipConfig.setMouseOffset(new int[] {0, 0});  
 					
-					toolTipConfig.setText(tooltipText);  
+					toolTipConfig.setTemplate(new Template(template));  
 					
 					int width = 500;
 					if(width > windowData.getWindowWidth() - 20)

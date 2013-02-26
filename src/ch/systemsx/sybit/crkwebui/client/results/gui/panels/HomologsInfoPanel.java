@@ -6,6 +6,7 @@ import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowAlignmentsEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowQueryWarningsEvent;
+import ch.systemsx.sybit.crkwebui.client.commons.gui.links.EmptyLink;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.links.EmptyLinkWithTooltip;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.links.LinkWithTooltip;
 import ch.systemsx.sybit.crkwebui.client.commons.managers.EventBusManager;
@@ -139,7 +140,7 @@ public class HomologsInfoPanel extends LayoutContainer
 	 */
 	private String generateHomologsNoQueryMatchTemplate(List<QueryWarningItem> warnings)
 	{
-		String warningsList = "<div><ul style=\"list-style: disc; margin: 0px 0px 0px 15px;\">";
+		String warningsList = "<div><ul class=\"eppic-tooltip-list\">";
 		
 		for(QueryWarningItem warning : warnings)
 		{

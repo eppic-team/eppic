@@ -1,6 +1,5 @@
 package ch.systemsx.sybit.crkwebui.client.releases.gui.panels;
 
-import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.panels.DisplayPanel;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.windows.Iframe;
 

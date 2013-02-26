@@ -78,7 +78,7 @@ public class InfoPanel extends FormPanel
 		toolTipConfig.setCloseable(true); 
 		toolTipConfig.setDismissDelay(0);
 		toolTipConfig.setShowDelay(100);
-		toolTipConfig.setMaxWidth(ApplicationContext.getWindowData().getWindowWidth() - 20);
+		toolTipConfig.setMaxWidth(calculateTooltipMaxWidth());
 		return new ToolTip(null, toolTipConfig);
 	}
 
@@ -170,7 +170,7 @@ public class InfoPanel extends FormPanel
 		toolTipConfig.setCloseable(true); 
 		toolTipConfig.setDismissDelay(0);
 		toolTipConfig.setShowDelay(100);
-		toolTipConfig.setMaxWidth(ApplicationContext.getWindowData().getWindowWidth() - 20);
+		toolTipConfig.setMaxWidth(calculateTooltipMaxWidth());
 		return new ToolTip(null, toolTipConfig);
 	}
 	
@@ -186,10 +186,10 @@ public class InfoPanel extends FormPanel
 				0);
 		inputParametersLabel.addListener(Events.OnClick, new Listener<BaseEvent>() {
 		
-		@Override
-		public void handleEvent(BaseEvent be) {
-			inputParametersTooltip.showAt(inputParametersLabel.getAbsoluteLeft() + inputParametersLabel.getWidth() + 10, 
-					inputParametersLabel.getAbsoluteTop());
+			@Override
+			public void handleEvent(BaseEvent be) {
+				inputParametersTooltip.showAt(inputParametersLabel.getAbsoluteLeft() + inputParametersLabel.getWidth() + 10, 
+						inputParametersLabel.getAbsoluteTop());
 			}
 		});
 		
@@ -343,14 +343,30 @@ public class InfoPanel extends FormPanel
 				
 				if(queryWarningsTooltip != null)
 				{
-					queryWarningsTooltip.setMaxWidth(ApplicationContext.getWindowData().getWindowWidth() - 20);
+					queryWarningsTooltip.setMaxWidth(calculateTooltipMaxWidth());
 				}
 				
 				if(inputParametersTooltip != null)
 				{
-					inputParametersTooltip.setMaxWidth(ApplicationContext.getWindowData().getWindowWidth() - 20);
+					inputParametersTooltip.setMaxWidth(calculateTooltipMaxWidth());
 				}
 			}
 		});
+	}
+	
+	/**
+	 * Calculate max width which can be assigned to tooltip.
+	 * @return max width of the tooltip
+	 */
+	private int calculateTooltipMaxWidth()
+	{
+		int width = 500;
+		
+		if(width > ApplicationContext.getWindowData().getWindowWidth() - 20)
+		{
+			width = ApplicationContext.getWindowData().getWindowWidth() - 20;
+		}
+		
+		return width;
 	}
 }
