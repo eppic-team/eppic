@@ -320,6 +320,7 @@ public class DBHandler {
 		criteriaQuery.where(condition);
 
 		String pdbID = entityManager.createQuery(criteriaQuery).getSingleResult();
+		if(pdbID.endsWith(".pdb") || pdbID.endsWith(".cif")) pdbID = pdbID.substring(0, pdbID.length()-4);
 		
 		File webuiFile = new File(jobDir, pdbID + ".webui.dat");
 		
