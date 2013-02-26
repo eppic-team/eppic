@@ -40,12 +40,14 @@ public class CRKParams {
 	// 10% maximum allowed unreliable residues for calling nopred
 	public static final double     MAX_ALLOWED_UNREL_RES = 0.1; 
 	// minimum number of core residues per interface member to calculate evol score (if fewer 
-	// we don't calculate anything becase it would be too unreliable statistically)
+	// we don't calculate anything because it would be too unreliable statistically)
 	public static final int        MIN_NUMBER_CORE_RESIDUES_EVOL_SCORE = 4;
 	// value to use when core/rim ratio is infinity (rim score=0), some arbitrary large value, unlikely to happen in realistic cases
 	public static final double     SCORERATIO_INFINITY_VALUE = 1000;
 	// for sequences (strictly) below this length value no blast will be performed
 	public static final int		   MIN_SEQ_LENGTH_FOR_BLASTING = 10;
+	// the maximum number of gap residues between segments allowed when a single chain maps to multiple segments of the same UniProt reference
+	public static final int		   NUM_GAP_RES_FOR_CHIMERIC_FUSION = 3;
 	// the hard limits aka "duarte" limits
 	// max limit based on 1pre (bio with 2290 and 0+2 cores) and 2vg5 interface 2 (xtal with 2070 and 0+0 cores) 
 	public static final double	   MAX_AREA_XTALCALL = 2200; 

@@ -7,7 +7,6 @@ import java.io.PrintStream;
 import java.io.Serializable;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -123,7 +122,7 @@ public class ChainEvolContext implements Serializable {
 		
 		// two possible cases: 
 		// 1) PDB code known and so SiftsFeatures can be taken from SiftsConnection (unless useSifts is set to false)
-		Collection<SiftsFeature> mappings = null;
+		List<SiftsFeature> mappings = null;
 		if (!pdbCode.equals(PdbAsymUnit.NO_PDB_CODE)) {
 			if (useSifts) {
 				SiftsConnection siftsConn = new SiftsConnection(siftsLocation);
@@ -153,26 +152,48 @@ public class ChainEvolContext implements Serializable {
 						queryUniprotId = null;
 					} else if (mappings.size()>1) {
 						// more than 1 mapping but with 1 uniprot id: different parts of a protein fusion together in one construct
-						LOGGER.error("More than one UniProt segment SIFTS mapping for the query PDB code "+pdbCode+" chain "+representativeChain);
+						boolean unacceptableGaps = false;
 						String msg = "UniProt ID "+mappings.iterator().next().getUniprotId()+" segments:";
+						int lastEnd = -1;
 						for (SiftsFeature sifts:mappings) {
 							Interval interv = sifts.getIntervalSet().iterator().next(); // there's always only 1 interval per SiftsFeature
+							if (lastEnd!=-1 && 
+								( (interv.beg-lastEnd)>CRKParams.NUM_GAP_RES_FOR_CHIMERIC_FUSION ||
+								  (interv.beg-lastEnd)<0 )) {
+								// if at least 1 of the gaps is long or an inversion (e.g. circular permutants) 
+								// then we consider the mappings unacceptable
+								// Note: for this to work properly the intervals have to be sorted as they appear in the PDB chain (getMappings above sorts them)
+								unacceptableGaps = true;
+							}
 							msg+=" "+interv.beg+"-"+interv.end;
+							lastEnd = interv.end;
 						}
-						LOGGER.error(msg);
-						LOGGER.error("Check if the PDB entry is biologically reasonable (likely to be an engineered entry). Won't do evolution analysis on this chain.");
-						
-						String warning = "More than one UniProt segment of id "+mappings.iterator().next().getUniprotId()+
-								" correspond to chain "+representativeChain+": ";
-						for (SiftsFeature sifts:mappings) {
-							Interval interv = sifts.getIntervalSet().iterator().next(); // there's always only 1 interval per SiftsFeature
-							warning+=" "+interv.beg+"-"+interv.end;
-						}
-						warning+=". This is most likely a chimeric chain";
-						queryWarnings.add(warning);
+						if (unacceptableGaps) {
+							LOGGER.error("More than one UniProt segment SIFTS mapping for the query PDB code "+pdbCode+" chain "+representativeChain);
+							LOGGER.error(msg);
+							LOGGER.error("Check if the PDB entry is biologically reasonable (likely to be an engineered entry). Won't do evolution analysis on this chain.");
 
-						// we continue with a null query, i.e. we treat it in the same way as no match
-						queryUniprotId = null;
+							String warning = "More than one UniProt segment of id "+mappings.iterator().next().getUniprotId()+
+									" correspond to chain "+representativeChain+": ";
+							for (SiftsFeature sifts:mappings) {
+								Interval interv = sifts.getIntervalSet().iterator().next(); // there's always only 1 interval per SiftsFeature
+								warning+=" "+interv.beg+"-"+interv.end;
+							}
+							warning+=". This is most likely a chimeric chain";
+							queryWarnings.add(warning);
+
+							// we continue with a null query, i.e. we treat it in the same way as no match
+							queryUniprotId = null;
+						} else {
+							// this we need to do because sometimes the gaps are of only 2-3 residues and 
+							// it is a bit over the top to reject it plainly
+							// for some cases the gaps are even 0 length! (I guess a SIFTS error) e.g. 2jdi chain D
+							LOGGER.warn("More than one UniProt segment SIFTS mapping for the query PDB code "+pdbCode+" chain "+representativeChain);
+							LOGGER.warn(msg);
+							LOGGER.warn("Gaps between segments are all below "+CRKParams.NUM_GAP_RES_FOR_CHIMERIC_FUSION+" residues. " +
+									"Will anyway proceed with this UniProt reference");
+							queryUniprotId = uniqUniIds.iterator().next();
+						}
 
 					} else {
 						queryUniprotId = uniqUniIds.iterator().next();
