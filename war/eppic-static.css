@@ -5,6 +5,7 @@
 	margin-left: 15px;
 	margin-right: 20px;
 	margin-top: 20px;	
+	margin-bottom: 5px;
 }
 
 .eppic-iframe h2 {
@@ -13,7 +14,8 @@
 	font-weight:bold;	
 	margin-left: 15px;
 	margin-right: 20px;
-	margin-top: 20px;	
+	margin-top: 20px;
+	margin-bottom: 0px;	
 }
 
 .eppic-iframe p {
@@ -22,13 +24,17 @@
 	line-height:125%;
 	margin-left: 15px;
 	margin-right: 20px;
+	margin-top: 10px;
+	margin-bottom: 0px;
 }
 
 .eppic-iframe code {
 	font-size:14px;
 	font-family:monospace;
 	margin-left: 15px;
-	margin-right: 20px;		
+	margin-right: 20px;
+	margin-top: 10px;
+	margin-bottom: 10px;
 	padding-left: 10px;
 }
 
