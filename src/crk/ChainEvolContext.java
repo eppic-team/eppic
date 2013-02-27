@@ -133,13 +133,13 @@ public class ChainEvolContext implements Serializable {
 						uniqUniIds.add(sifts.getUniprotId());
 					}
 					if (uniqUniIds.size()>1) {
-						LOGGER.error("More than one UniProt SIFTS mapping for the query PDB code "+pdbCode+" chain "+representativeChain);
+						LOGGER.warn("More than one UniProt SIFTS mapping for the query PDB code "+pdbCode+" chain "+representativeChain);
 						String msg = "UniProt IDs are: ";
 						for (String uniId:uniqUniIds){
 							msg+=(uniId+" ");
 						}
-						LOGGER.error(msg);
-						LOGGER.error("Check if the PDB entry is biologically reasonable (likely to be an engineered entry). Won't do evolution analysis on this chain.");
+						LOGGER.warn(msg);
+						LOGGER.warn("Check if the PDB entry is biologically reasonable (likely to be a chimeric chain). Won't do evolution analysis on this chain.");
 
 						String warning = "More than one UniProt id correspond to chain "+representativeChain+": ";
 						for (String uniId:uniqUniIds){
@@ -169,9 +169,9 @@ public class ChainEvolContext implements Serializable {
 							lastEnd = interv.end;
 						}
 						if (unacceptableGaps) {
-							LOGGER.error("More than one UniProt segment SIFTS mapping for the query PDB code "+pdbCode+" chain "+representativeChain);
-							LOGGER.error(msg);
-							LOGGER.error("Check if the PDB entry is biologically reasonable (likely to be an engineered entry). Won't do evolution analysis on this chain.");
+							LOGGER.warn("More than one UniProt segment SIFTS mapping for the query PDB code "+pdbCode+" chain "+representativeChain);
+							LOGGER.warn(msg);
+							LOGGER.warn("Check if the PDB entry is biologically reasonable (likely to be an engineered entry). Won't do evolution analysis on this chain.");
 
 							String warning = "More than one UniProt segment of id "+mappings.iterator().next().getUniprotId()+
 									" correspond to chain "+representativeChain+": ";
@@ -179,7 +179,7 @@ public class ChainEvolContext implements Serializable {
 								Interval interv = sifts.getIntervalSet().iterator().next(); // there's always only 1 interval per SiftsFeature
 								warning+=" "+interv.beg+"-"+interv.end;
 							}
-							warning+=". This is most likely a chimeric chain";
+							warning+=". This is most likely an engineered chain";
 							queryWarnings.add(warning);
 
 							// we continue with a null query, i.e. we treat it in the same way as no match
