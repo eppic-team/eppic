@@ -38,6 +38,7 @@ import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.PDBScoreDAOJpa;
 import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.UserSessionDAOJpa;
 import ch.systemsx.sybit.crkwebui.server.db.data.InputWithType;
 import ch.systemsx.sybit.crkwebui.server.email.data.EmailData;
+import ch.systemsx.sybit.crkwebui.server.email.data.EmailMessageData;
 import ch.systemsx.sybit.crkwebui.server.email.managers.EmailSender;
 import ch.systemsx.sybit.crkwebui.server.ip.validators.IPVerifier;
 import ch.systemsx.sybit.crkwebui.server.jobs.managers.JobManagerFactory;
@@ -99,6 +100,8 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 	private EmailSender emailSender;
 
 	private String resultsPathUrl;
+	
+	private EmailMessageData emailMessageData;
 	
 //	private JobDAO jobDao;
 
@@ -237,6 +240,49 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 		emailData.setPort(properties.getProperty("email_port"));
 		emailSender = new EmailSender(emailData);
 
+		
+		InputStream emailPropertiesStream = getServletContext()
+				.getResourceAsStream(
+						"/WEB-INF/classes/META-INF/email.properties");
+
+		Properties emailProperties = new Properties();
+
+		emailMessageData = new EmailMessageData();
+		
+		try
+		{
+			emailProperties.load(emailPropertiesStream);
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+			throw new ServletException("Email properties file can not be read. "+e.getMessage());
+		}
+		
+		emailMessageData.setEmailJobSubmittedTitle(emailProperties.getProperty("email_job_submitted_title"));
+		emailMessageData.setEmailJobSubmittedMessage(emailProperties.getProperty("email_job_submitted_message"));
+		
+		emailMessageData.setEmailJobSubmitErrorTitle(emailProperties.getProperty("email_job_submit_error_title"));
+		emailMessageData.setEmailJobSubmitErrorMessage(emailProperties.getProperty("email_job_submit_error_message"));
+
+		emailMessageData.setEmailJobErrorTitle(emailProperties.getProperty("email_job_error_title"));
+		emailMessageData.setEmailJobErrorMessage(emailProperties.getProperty("email_job_error_message"));
+
+		emailMessageData.setEmailJobFinishedTitle(emailProperties.getProperty("email_job_finished_title"));
+		emailMessageData.setEmailJobFinishedMessage(emailProperties.getProperty("email_job_finished_message")); 
+
+
+		if (	emailMessageData.getEmailJobSubmittedTitle() == null || emailMessageData.getEmailJobSubmittedMessage() == null ||
+				emailMessageData.getEmailJobSubmitErrorTitle() == null || emailMessageData.getEmailJobSubmitErrorMessage() == null ||
+				emailMessageData.getEmailJobErrorTitle() == null || emailMessageData.getEmailJobErrorMessage() == null ||
+				emailMessageData.getEmailJobFinishedTitle() == null || emailMessageData.getEmailJobFinishedMessage() == null)
+		{
+			throw new ServletException("Email titles and messages have not been specified");
+		}
+
+		
+		
+		
 		crkRunner = new CrkRunner(jobManager, 
 								  crkApplicationLocation,
 								  nrOfThreadForSubmission,
@@ -246,9 +292,14 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 				new JobDAOJpa(),
 				resultsPathUrl,
 				emailSender,
+				emailMessageData,
 				generalDestinationDirectoryName);
 		jobDaemon = new Thread(jobStatusUpdater);
 		jobDaemon.start();
+		
+		
+		
+
 		
 //		try
 //		{		
@@ -367,11 +418,12 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 			String submissionId = null;
 			StatusOfJob submissionStatus = StatusOfJob.QUEUING;
 			
-			String emailTitle = "EPPIC: " + runJobData.getInput();
-			String emailMessage = ""; 
-				
+
+			String emailTitle = "";
+			String emailMessage = "";
+			
 			try
-			{
+			{				
 				if(inputType == InputType.PDBCODE.getIndex())
 				{
 					PreSubmitValidator.checkIfSubmit(localCifDir, runJobData.getInput());
@@ -381,12 +433,11 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 				 							 localDestinationDirName,
 											 inputType);
 				
-				emailTitle += " submitted";
-				emailMessage = runJobData.getInput()
-								 + " job submitted. \n" +
-								 "To see the status of the processing please go to: \n" +
-								 resultsPathUrl + "#id/" + runJobData.getJobId()+"\n\n" +
-								 "Thanks for using the EPPIC service.";
+				emailTitle = emailMessageData.getEmailJobSubmittedTitle().replaceFirst("%s", runJobData.getInput());
+				emailMessage = emailMessageData.getEmailJobSubmittedMessage().replaceFirst("%s", runJobData.getInput());
+				emailMessage = emailMessage.replaceFirst("%s", resultsPathUrl);
+				emailMessage = emailMessage.replaceFirst("%s", runJobData.getJobId());
+				
 			}
 			catch(Throwable e)
 			{
@@ -394,10 +445,11 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 
 				submissionStatus = StatusOfJob.ERROR;
 
-				emailTitle += " - error while submitting the job.\n\n";
-				emailMessage = e.getMessage() + 
-							   "  To see more details go to: "
-								 + resultsPathUrl + "#id=" + runJobData.getJobId();
+				emailTitle = emailMessageData.getEmailJobSubmitErrorTitle().replaceFirst("%s", runJobData.getInput());
+				emailMessage = emailMessageData.getEmailJobSubmitErrorMessage().replaceFirst("%s", e.getMessage());
+				emailMessage = emailMessage.replaceFirst("%s", resultsPathUrl);
+				emailMessage = emailMessage.replaceFirst("%s", runJobData.getJobId());
+				
 			}
 
 			jobDAO.insertNewJob(runJobData.getJobId(),

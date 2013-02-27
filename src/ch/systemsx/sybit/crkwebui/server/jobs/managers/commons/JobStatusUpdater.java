@@ -11,6 +11,7 @@ import ch.systemsx.sybit.crkwebui.server.commons.util.io.FileContentReader;
 import ch.systemsx.sybit.crkwebui.server.commons.util.log.LogHandler;
 import ch.systemsx.sybit.crkwebui.server.db.dao.JobDAO;
 import ch.systemsx.sybit.crkwebui.server.db.data.JobStatusDetails;
+import ch.systemsx.sybit.crkwebui.server.email.data.EmailMessageData;
 import ch.systemsx.sybit.crkwebui.server.email.managers.EmailSender;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.DeserializationException;
@@ -30,12 +31,14 @@ public class JobStatusUpdater implements Runnable
 	private JobDAO jobDAO;
 	private String resultsPathUrl;
 	private EmailSender emailSender;
+	private EmailMessageData emailMessageData;
 	private String generalDestinationDirectoryName;
 
 	public JobStatusUpdater(JobManager jobManager,
 							JobDAO jobDAO,
 							String resultsPathUrl,
 							EmailSender emailSender,
+							EmailMessageData emailMessageData,
 							String generalDestinationDirectoryName)
 	{
 		this.running = true;
@@ -43,6 +46,7 @@ public class JobStatusUpdater implements Runnable
 		this.jobDAO = jobDAO;
 		this.resultsPathUrl = resultsPathUrl;
 		this.emailSender = emailSender;
+		this.emailMessageData = emailMessageData;
 		this.generalDestinationDirectoryName = generalDestinationDirectoryName;
 	}
 
@@ -143,15 +147,14 @@ public class JobStatusUpdater implements Runnable
 
 		LogHandler.writeToLogFile(logFile, "Processing finished\n");
 
-		String message = jobStatusDetails.getInput() +
-				  		 " processing finished. \n" +
-				  		 "To see the results please go to: \n" +
-				  		 resultsPathUrl + "#id/" + jobStatusDetails.getJobId()+"\n\n" +
-				  		 "Thanks for using the EPPIC service";
+		String emailTitle = emailMessageData.getEmailJobFinishedTitle().replaceFirst("%s", jobStatusDetails.getInput());
+		String emailMessage = emailMessageData.getEmailJobFinishedMessage().replaceFirst("%s", jobStatusDetails.getInput());
+		emailMessage = emailMessage.replaceFirst("%s", resultsPathUrl);
+		emailMessage = emailMessage.replaceFirst("%s", jobStatusDetails.getJobId());
 
 		emailSender.send(jobStatusDetails.getEmailAddress(),
-						 "EPPIC: " + jobStatusDetails.getInput() + " processing finished",
-						 message);
+						 emailTitle,
+						 emailMessage);
 	}
 
 	/**
@@ -171,25 +174,32 @@ public class JobStatusUpdater implements Runnable
 			errorLogFile = directoryContent[0];
 		}
 		
-		String message = jobStatusDetails.getInput() + " - error while processing the data.\n\n";
-
+		
+		String errorMsg = null;
+		
 		if(errorLogFile != null)
 		{
 			try
 			{
-				message += FileContentReader.readContentOfFile(errorLogFile, true);
+				errorMsg = FileContentReader.readContentOfFile(errorLogFile, true);
 			}
 			catch(Throwable t)
 	        {
+				errorMsg = "Unknown error";
 	        	t.printStackTrace();
 	        }
 		}
 
 		jobDAO.updateStatusOfJob(jobStatusDetails.getJobId(), StatusOfJob.ERROR.getName());
 		
+		String emailTitle = emailMessageData.getEmailJobErrorTitle().replaceFirst("%s", jobStatusDetails.getInput());
+		String emailMessage = emailMessageData.getEmailJobErrorMessage().replaceFirst("%s", errorMsg);
+		emailMessage = emailMessage.replaceFirst("%s", resultsPathUrl);
+		emailMessage = emailMessage.replaceFirst("%s", jobStatusDetails.getJobId());
+		
 		emailSender.send(jobStatusDetails.getEmailAddress(),
-						 "EPPIC: " + jobStatusDetails.getInput() + ", error while processing",
-						 message + "\n\n" + resultsPathUrl + "#id=" + jobStatusDetails.getJobId());
+						 emailTitle,
+						 emailMessage);
 	}
 
 	/**
