@@ -84,6 +84,12 @@ EOF
 table=uniprot
 
 # note 1: uniprot ids are 6 char, but for isoforms they can be 8 or 9 chars (hyphen and number additionally)
+# note 2: primary keys are created later in indexing step so that load data is a lot quicker
+# note 3: in first versions of uniprot there are duplicate uniprot ids, e.g. Q9WHW0 in version 1.0
+#      Because of that we need to create the uniprot table with a primary key in uniparc id so that 
+#      on loading the duplicates will be eliminated. Also a primary key on uniprot_clusters (member)
+#      The other indexes are created in another step
+
 
 echo "Creating tables.."
 mysql $db <<EOF
@@ -109,7 +115,6 @@ EOF
 # Load Data
 #--------------------------------------------------------
 
-# NOTE in first versions of uniprot there are duplicate uniprot ids, e.g. Q9WHW0 in version 1.0
 echo "Loading Data... "
 mysql $db <<EOF
 LOAD DATA LOCAL INFILE '$outtab' INTO TABLE $table;
