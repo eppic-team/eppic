@@ -1,0 +1,59 @@
+##############################################
+
+    PRECOMPUTING PIPELINE FOR EPPIC
+
+##############################################
+
+Steps to be followed:
+
+---------- On Local Machine with lots of space ----------------
+
+A) Upload new uniprot to database
+	Use script: make-new-uniprot-in-DB
+
+---------- On Merlin -----------------------
+
+B) Create BLAST-Cache
+B1. Copy the new uniprot to scratch of all terminals of merlin (presently 1-30)
+	Use script: scripts/cp2cluster
+
+B2. After successfully copying, create unique fasta files
+	Use Script: scripts/compute-uniue-fasta
+
+B3. Precompute BLAST on merlin
+	Use script: scripts/blast-the-pdb
+
+B4. Remove uniprot from the scratch of all terminals
+	Use script: scripts/rm-from-cluster
+
+C) Precompute-EPPIC
+C1. Sync all PDB files on merlin
+	Use script: rsync-pdb
+
+C2. Precompute eppic
+	Use script: scripts/eppic-run-4wui
+
+C3. Check if the jobs finished successfully
+	Use script: scripts/check-jobs
+
+C4. Rerun eppic on uncompleted jobs
+	Use script: scripts/eppic-run-4wui
+
+------- On Virtual Machine -------------
+
+D) Upload to Database
+D1. Sync the eppic pdb output
+	Use Script: /bin/copy-to-server (On VM)
+
+D2. Backup user jobs to offline DB
+	Use Script: /bin/user_job_handler (On VM)
+
+D3. Remove the database "crk" using mysql. Create a blank "crk" database
+
+D4. Restore the user jobs from offline to Online DB
+	Use Script: /bin/user_job_handler (On VM)
+
+D5. Upload all computed pdb eppic output to database
+	Use script: /bin/upload_to_db (On VM)
+
+DONE !!!!

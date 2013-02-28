@@ -1,0 +1,116 @@
+#!/bin/sh
+
+# --------------------------------------------------------------
+# Makes a shell script which can be submitted to server for running eppic jobs in a PDB file
+#
+# Author: Jose Duarte, Nikhil Biyani
+# Date: 14/02/2013
+#
+# --- Hard-Coaded ----
+# RAM used: 4 GB
+# Job time: 3 hours
+# Creates subfolders in <OUTPUT DIR> named data and logs
+# <data> contains data files and has subfolders: 
+#	<divided> which has subfolders with two middle digits of PDB codes
+#		These subfolders have all pdb directories
+#	<all> which contains soft links to pdb id folders in divided
+# <logs> contains all the log files from server
+#
+# --- Output -----
+# A shell script which can be submitted to server for running eppic jobs
+# ------------------------------------------------------------
+
+# --------------------------------------------------------------
+# Example Usage
+# ./eppic-run-4wui -p /gpfs/home/duarte_j/software/bin/eppic -l /home/eppic/pdb-100.list -c /home/.eppic.conf -o home/eppic/output
+# ----------------------------------------------------------------
+
+help=" Usage: $0 \n
+	\t	[ -p <Path> : EPPIC Executable Path \n
+	\t	  -l <File> : List File conatining a set of PDB ID's for which eppic is to be computed \n
+	\t	  -c <File> : EPPIC Configuration File \n
+	\t        -o <Dir>  : Directory where Output files are to be written ] \n
+Example: ./eppic-run-4wui -p /gpfs/home/duarte_j/software/bin/eppic -l /home/eppic/pdb-100.list -c /home/.eppic.conf -o home/eppic/output "
+
+# Set Defaults
+eppic=eppic
+
+while getopts :p:l:c:o:h option
+do
+        case "${option}"
+        in
+		p) eppic=${OPTARG};;
+                l) list=${OPTARG};;
+		c) cfgfile=${OPTARG};;
+		o) outdir=${OPTARG};;
+                h) echo -e $help;;
+               \?) print >&2 $help
+		   exit 1;;
+		:) echo "Option -$OPTARG requires an argument." >&2
+      		   exit 1;;
+        esac
+done
+
+if [[ -z $list ]] || [[ -z $cfgfile ]] || [[ -z $outdir ]]
+then
+	echo -e "\n ---- SOME OPTIONS NOT SPECIFIED CORRECTLY ---- "
+	echo -e $help
+	exit 1
+fi
+
+shift 3
+
+# soft and hard run time limits (default is 1 hour)
+srt="03:00:00"
+hrt="03:00:30"
+
+maxjobs=`grep -v "^#" $list | wc -l`
+
+if [ ! -f "$cfgfile" ] 
+then
+	echo "Missing config file $cfgfile"
+	exit 1
+fi
+
+if [ -d $outdir/logs ]; then echo "WARNING: Directory $outdir/logs already present"; else mkdir $outdir/logs; fi
+if [ -d $outdir/data ]; then echo "WARNING: Directory $outdir/data already present"; else mkdir $outdir/data; fi
+if [ -d $outdir/data/all ]; then echo "WARNING: Directory $outdir/data/all already present"; else mkdir $outdir/data/all; fi
+if [ -d $outdir/data/divided ]; then echo "WARNING: Directory $outdir/data/divided already present"; else mkdir $outdir/data/divided; fi
+
+date=`date +%Y%m%d`
+scriptname=eppic-submit-$date.sh
+
+cat << _EOF_ > $scriptname
+#!/bin/sh
+
+#$ -N eppic-4wui
+#$ -q all.q
+#$ -e $outdir/logs
+#$ -o $outdir/logs
+#$ -t 1-$maxjobs
+#$ -l ram=4G
+#$ -l s_rt=$srt,h_rt=$hrt
+
+pdb=\`grep -v "^#" $list | sed "s/\(....\).*/\1/" | sed "\${SGE_TASK_ID}q;d"\`
+
+# Cut the middle letters of pdb code for making directory in divided
+mid_pdb=\`echo \$pdb | awk -F "" '{print \$2\$3}'\`
+
+# Check is directory is not present
+if [ ! -d $outdir/data/divided/\$mid_pdb ]; then
+        mkdir $outdir/data/divided/\$mid_pdb
+fi
+
+mkdir $outdir/data/divided/\$mid_pdb/\$pdb
+cd $outdir/data/all/
+ln -s ../divided/\$mid_pdb/\$pdb \$pdb
+
+$eppic -i \$pdb -a 1 -s -o $outdir/data/divided/\$mid_pdb/\$pdb -l -g $cfgfile
+cp $outdir/logs/eppic-4wui.e\${JOB_ID}.\${SGE_TASK_ID} $outdir/data/divided/\$mid_pdb/\$pdb/\$pdb.e
+cp $outdir/logs/eppic-4wui.o\${JOB_ID}.\${SGE_TASK_ID} $outdir/data/divided/\$mid_pdb/\$pdb/\$pdb.o
+_EOF_
+
+chmod +x $scriptname
+echo "Submitting job on server.."
+qsub $scriptname
+rm $scriptname

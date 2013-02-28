@@ -1,0 +1,97 @@
+#!/bin/sh
+
+# ---------------------------------------------------------
+# Script to Check the task array of an EPPIC JOB submitted
+#
+# Author: Nikhil Biyani
+# Date: 14/02/2013
+#
+# Hard-Coaded
+# Output Log Files of the server contains files in format:
+# Output Files: <Job_Name>.o<Job_ID>.<Task_ID>
+# Error Files: <Job_Name>.e<Job_ID>.<Task_ID>
+# ---------------------------------------------------------
+
+# --------------------------------------------------------------
+# Example Usage
+# sh check_jobs.sh -l /output/logs/ -o /output/data/all/ -j eppic-4wui -i 189925 -n 10000
+# ----------------------------------------------------------------
+
+help=" Usage: $0 \n
+	\t	[ -l <Dir> : Logs Directory of the server\n 
+	\t	  -o <Dir> : OUTPUT DIR PATH with sub-folders as PDB ID's \n
+	\t	  -j <String> : Job Name of the job submitted on server \n
+	\t	  -i <String> : Job Id assigned by server \n
+	\t	  -n <Int> : Number of Jobs ] \n
+Example: sh check_jobs.sh -l /output/logs/ -o /output/data/all/ -j eppic-4wui -i 189925 -n 10000 "
+
+while getopts :l:o:j:i:n:h option
+do
+        case "${option}"
+        in
+                l) LOGS_DIR=${OPTARG};;
+                o) EPPIC_OUTPUT_DIR=${OPTARG};;
+                j) JOB_NAME=${OPTARG};;
+                i) JOB_ID=${OPTARG};;
+                n) NUM_JOBS=${OPTARG};;
+                h) echo -e $help;;
+               \?) print >&2 $help
+		   exit 1;;
+		:) echo "Option -$OPTARG requires an argument." >&2
+      		   exit 1;;
+        esac
+done
+
+if [[ -z $LOGS_DIR ]] || [[ -z $EPPIC_OUTPUT_DIR ]] ||[[ -z $JOB_NAME ]] ||[[ -z $JOB_ID ]] ||[[ -z $NUM_JOBS ]]
+then
+	echo -e "\n ---- SOME OPTIONS NOT SPECIFIED CORRECTLY ---- "
+	echo -e $help
+	exit 1
+fi
+
+WDIR=`pwd`
+ERRORS_FILE=$WDIR/$JOB_NAME.$JOB_ID.errors.list
+UNCOMP_FILE=$WDIR/$JOB_NAME.$JOB_ID.uncompleted.list
+FINISH_FILE=$WDIR/$JOB_NAME.$JOB_ID.finished.list
+
+if [ -f $ERRORS_FILE ]; then 
+	rm $ERRORS_FILE 
+fi
+
+if [ -f $UNCOMP_FILE ]; then 
+	rm $UNCOMP_FILE
+fi
+
+if [ -f $FINISH_FILE ]; then 
+	rm $FINISH_FILE
+fi
+
+cd $LOGS_DIR
+for (( i=1; i <= $NUM_JOBS; i++ ))
+do
+	echo Checking Job $i ..
+	file_out="$JOB_NAME.o$JOB_ID.$i"
+	file_err="$JOB_NAME.e$JOB_ID.$i"
+	size_out=`stat -c %s $file_out`
+	size_err=`stat -c %s $file_err`
+	pdbID=`grep '^Loading PDB data: ' $file_out | sed 's/Loading PDB data: //'`
+	check=`grep "Finished successfully" $EPPIC_OUTPUT_DIR/$pdbID/$pdbID.log | wc -l`
+	if [ $size_err -gt 0 ]; then
+		echo " " >> $ERRORS_FILE
+		echo ------ $file_err ------- >> $ERRORS_FILE
+		echo PDB-ID: $pdbID  JOBID: $i >> $ERRORS_FILE
+		cat $file_err >> $ERRORS_FILE
+
+	elif [ ! -f $file_out ] || [ $size_out -eq 0 ]; then
+		echo $i >> $UNCOMP_FILE
+	elif [ -f $EPPIC_OUTPUT_DIR/$pdbID/$pdbID.log ] &&  [ $check -gt 0 ]; then
+		echo $pdbID  $i >> $FINISH_FILE
+	else
+		echo $i  $pdbID >> $UNCOMP_FILE
+	fi
+done
+
+echo -e "Created following output files: \t
+	$ERRORS_FILE : Errors during run \t
+	$UNCOMP_FILE : Uncompleted jobs \t
+	$FINISH_FILE : Successfully finished Jobs"

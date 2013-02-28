@@ -1,0 +1,19 @@
+#!/bin/sh
+
+#############################################################
+#     EXECUTE STEP (A) OF PRECOMPUTE-PIPELINE OF EPPIC      #
+#      (to be run on local machine)                         #
+#############################################################
+
+# SET Inputs Here (CHECK Before Executing)
+DATABASE_NAME=uniprot_2013_02    # CHECK !! !! !!
+CURRENT_DIR=`pwd`
+
+# EXECUTABLE PATHS
+EPPIC_JAR=/gpfs/home/duarte_j/software/jars/eppic.jar
+
+#---------------------------------------------------
+# A2) Make the database entry
+./scripts/make-new-uniprot-in-DB -o $CURRENT_DIR -d $DATABASE_NAME -p $EPPIC_JAR
+#---------------------------------------------------
+echo THIS STEP DONE !!!

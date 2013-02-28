@@ -1,0 +1,82 @@
+#!/bin/sh
+
+#############################################################
+#     EXECUTE STEP (C) OF PRECOMPUTE-PIPELINE OF EPPIC      #
+#      (to be run on merlin)                                #
+#############################################################
+
+# SET Inputs Here (CHECK Before Executing)
+SOURCE_SERVER=biyani_n@pc7074
+SOURCE_MMCIF_DIR=/nfs/data/dbs/pdb/data/structures/all/mmCIF/
+DEST_MMCIF_DIR=/gpfs/home/duarte_j/data/pdb/data/structures/all/mmCIF/
+CURRENT_DIR=`pwd`
+
+# EXECUTABLE PATHS (Check before Executing)
+EPPIC=/gpfs/home/duarte_j/software/bin/eppic
+
+#CONSTANTS
+NUM_IN_JOB=30000
+
+# Setting Paths
+DATE=`date +%F`
+SYNC_LOGFILE=$CURRENT_DIR/PDB-sync_${DATE}.log
+PDB_LIST=$CURRENT_DIR/resources/all-pdb-id.list
+
+
+##################################################################
+# C1) Sync PDB Files
+#-----------------------------------------------------------------
+# rsync from source host server to local directory
+# uses the option -L which gets the content of soft linked files
+# prints the log file with todays date
+
+echo "Syncing MMCIF Files.. "
+rsync -r -v -L --rsh=ssh --delete $SOURCE_SERVER:$SOURCE_MMCIF_DIR $DEST_MMCIF_DIR > $SYNC_LOGFILE || exit 1
+#-------------------------------------------------------
+
+###################################################################
+# C2) Create a list of pdb-id's for which eppic is to be computed
+#-----------------------------------------------------------------
+echo "Creating a list file of all PDB IDs in $PDB_LIST .."
+cd $DEST_MMCIF_DIR || exit 1
+ls | sed 's/.cif.gz//' > $PDB_LIST || exit 1
+#-----------------------------------------------------------
+
+###################################################################
+# C3) Run EPPIC
+#------------------------------------------------------------------
+cd $CURRENT_DIR
+
+# create jobs with NUM_IN_JOB pdb's in one!
+PDB_TOTAL=`cat $PDB_LIST | wc -l`
+let NUM_JOBS=($PDB_TOTAL+$NUM_IN_JOB-1)/$NUM_IN_JOB
+undone=$PDB_TOTAL
+finished=0
+
+echo "Dividing PDB in $NUM_JOBS chunks.."
+
+for (( i=1; i<=$NUM_JOBS; i++ ))
+do
+	if [ $undone -lt $NUM_IN_JOB ]; then
+		PDB_IN_JOB=$undone
+	else
+		PDB_IN_JOB=$NUM_IN_JOB
+	fi
+
+	echo " "
+	echo "Creating chunk #$i with $PDB_IN_JOB PDB's.."
+	let start=$finished+1
+	let end=$start+$PDB_IN_JOB-1
+
+	cat $PDB_LIST | head -$end | tail -$PDB_IN_JOB > $CURRENT_DIR/resources/PDB_JOB_$i.list
+	
+	let undone=$undone-$NUM_IN_JOB
+	let finished=$finished+$PDB_IN_JOB
+ 
+	if [ ! -d $CURRENT_DIR/output_job$i ]; then mkdir $CURRENT_DIR/output_job$i; fi || exit 1
+	./scripts/eppic-run-4wui -p $EPPIC -l $CURRENT_DIR/resources/PDB_JOB_$i.list -c $CURRENT_DIR/eppic.conf -o $CURRENT_DIR/output_job$i/ || exit 1
+done
+#--------------------------------------------------------
+
+echo
+echo Once jobs are finished, Please check the jobs usnig script/check_jobs

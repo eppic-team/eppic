@@ -1,0 +1,10 @@
+#! /bin/sh
+
+# Create fasta files using java program WriteUniqueUniprots
+
+# Executable paths
+JAR_PATH=/gpfs/home/duarte_j/software/jars/eppic.jar
+maxmem=512m
+
+# Execute Command
+java -Xmx$maxmem -cp $JAR_PATH tools.WriteUniqueUniprots $@
