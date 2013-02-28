@@ -1,16 +1,40 @@
 #!/bin/sh
 
-taxonomytabfile=/nfs/data/dbs/uniprot/taxonomy-all.tab
-db=uniprot_taxonomy
+if [ -z "$2" ]
+then
+	echo
+	echo "Script to download the NEWT UniProt taxonomy database and load it"
+	echo "to a local MySQL db"
+	echo 
+	echo "Usage: $0 <taxonomy-all tab file> <db name>"
+	echo "The taxonomy file (NEWT database) will be downloaded from UniProt server"
+	echo "and then loaded into local db "
+	echo 
+	echo "  e.g. $0 /nfs/data/dbs/taxonomy/taxonomy-all.tab uniprot_taxonomy"
+	echo
+	exit 1
+fi
+
+taxonfile=$1
+db=$2
+
+
+curl "http://www.uniprot.org/taxonomy/?query=*&compress=yes&format=tab" | gunzip > $taxonfile || exit 1
+
+
 table=taxonomy
 
+# create database
+echo "Creating db..."
+echo "CREATE DATABASE $db" | mysql || exit 1
 
 # creating tables
+echo "Creating table..."
 mysql $db <<EOF
 DROP TABLE IF EXISTS $table;
 
 CREATE TABLE $table (
- tax_id int,
+ tax_id int PRIMARY KEY,
  mnemonic varchar(20),
  scientific varchar(255),
  common varchar(255),
@@ -26,12 +50,8 @@ EOF
 
 
 # loading data
+echo "Loading data..."
 mysql $db <<EOF
-LOAD DATA LOCAL INFILE '$taxonomytabfile' INTO TABLE $table IGNORE 1 LINES;
-EOF
-
-
-# indexing
-mysql $db <<EOF
-ALTER TABLE $table ADD PRIMARY KEY (tax_id);
+LOAD DATA LOCAL INFILE '$taxonfile' INTO TABLE $table IGNORE 1 LINES;
+SHOW WARNINGS;
 EOF
