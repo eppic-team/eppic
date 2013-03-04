@@ -732,7 +732,7 @@ public class ChainEvolContext implements Serializable {
 				best = blastList.get(i);
 				if (isHitUniprot(best)) break;
 				if (i==blastList.size()-1) { // if not a single hit is uniprot then we get to here and we have to catch it
-					LOGGER.error("No UniProt match could be found for the query "+pdbName+representativeChain+
+					LOGGER.warn("No UniProt match could be found for the query "+pdbName+representativeChain+
 							": no blast hit was a UniProt match (total "+blastList.size()+" blast hits)");
 					queryWarnings.add("Blast didn't find a UniProt match for the chain. All blast hits were non-UniProt matches (total "+blastList.size()+" blast hits).");
 					return null;
@@ -744,17 +744,17 @@ public class ChainEvolContext implements Serializable {
 				LOGGER.info("Blast found UniProt id "+uniprotMapping+" as best hit with "+
 						String.format("%5.2f%% id and %4.2f coverage",bestHsp.getPercentIdentity(),bestHsp.getQueryCoverage()));
 			} else {
-				LOGGER.error("No UniProt match could be found for the query "+pdbName+representativeChain+" within cutoffs "+
+				LOGGER.warn("No UniProt match could be found for the query "+pdbName+representativeChain+" within cutoffs "+
 						String.format("%5.2f%% id and %4.2f coverage",pdb2uniprotIdThreshold,pdb2uniprotQcovThreshold));
-				LOGGER.error("Best match was "+best.getSubjectId()+", with "+
+				LOGGER.warn("Best match was "+best.getSubjectId()+", with "+
 						String.format("%5.2f%% id and %4.2f coverage",bestHsp.getPercentIdentity(),bestHsp.getQueryCoverage()));
-				LOGGER.error("Alignment: ");
-				LOGGER.error(bestHsp.getAlignment().getFastaString(null, true));
+				LOGGER.warn("Alignment: ");
+				LOGGER.warn(bestHsp.getAlignment().getFastaString(null, true));
 				queryWarnings.add("Blast didn't find a UniProt match for the chain. Best match was "+getDeflineAccession(best)+", with "+
 						String.format("%5.2f%% id and %4.2f coverage",bestHsp.getPercentIdentity(),bestHsp.getQueryCoverage()));
 			}			
 		} else {
-			LOGGER.error("No UniProt match could be found for the query "+pdbName+representativeChain+". Blast returned no hits.");
+			LOGGER.warn("No UniProt match could be found for the query "+pdbName+representativeChain+". Blast returned no hits.");
 			queryWarnings.add("Blast didn't find a UniProt match for the chain (no hits returned by blast)");
 		}
 
