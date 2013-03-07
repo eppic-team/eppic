@@ -13,7 +13,7 @@ import java.util.List;
 public class UserJobDBHandler {
 
 	private static DBHandler dbhOnline = new DBHandler();
-	private static DBHandler dbhOffline = new DBHandler("crk-offline-jpa");
+	private static DBHandler dbhOffline = new DBHandler(DBHandler.DEFAULT_OFFLINE_JPA);
 	
 	public static boolean isUserJob(String str){
 		return str.matches("^[a-zA-Z]\\w{29}$");
@@ -30,18 +30,18 @@ public class UserJobDBHandler {
 				"Usage: UserJobDBHandler\n" +
 				"Perform operations on user-jobs in the database \n" +
 				" (In conflicting cases, options you specify later override the earlier ones)\n" +
-				" -d <dir>  	: Root Directory of eppic output files with subdirectories as job names \n" +
+				"   -d <dir>   : Root Directory of eppic output files with subdirectories as job names \n" +
 				" Mode of FUNCTION \n" +
 				"  [-b]        : (Default) Back-up jobs (Copies from online to offline database)\n" +
 				"  [-s]        : Restores jobs (Copies from offline to online database)\n" +
 				"  [-r]        : Removes jobs from online database\n" +
-				"  [-R]		: Removes jobs from offline database\n" +
+				"  [-R]		   : Removes jobs from offline database\n" +
 				" SELECTION of jobs \n" +
-				"  [-a]		: (Default) Selects all jobs in Database\n" +
+				"  [-a]		   : (Default) Selects all jobs in Database\n" +
 				"  [-t <int>]  : Selects jobs from last <int> days\n" +
 				"  [-f <file>] : Selects job-ids from a file\n" +
 				" OTHER OPTIONS \n" +
-				"  [-F]		: Forces to remove the entries from destination database if already present\n\n";
+				"  [-F]		   : Forces to remove the entries from destination database if already present\n\n";
 		
 		File jobDirectoriesRoot = null;
 		boolean backup = true;

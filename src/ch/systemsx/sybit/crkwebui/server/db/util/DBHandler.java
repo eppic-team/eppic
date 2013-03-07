@@ -33,6 +33,11 @@ import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
  *
  */
 public class DBHandler {
+	
+	public static final String DEFAULT_ONLINE_JPA = "crkjpa";
+	public static final String DEFAULT_OFFLINE_JPA = "crk-offline-jpa";
+	
+	
 	@PersistenceUnit
 	private EntityManagerFactory emf;
 	
@@ -40,7 +45,7 @@ public class DBHandler {
 	 * Default Constructor : Initializes factory with "crk" databse
 	 */
 	public DBHandler(){
-		this.emf = Persistence.createEntityManagerFactory("crkjpa");
+		this.emf = Persistence.createEntityManagerFactory(DEFAULT_ONLINE_JPA);
 	}
 	
 	/**

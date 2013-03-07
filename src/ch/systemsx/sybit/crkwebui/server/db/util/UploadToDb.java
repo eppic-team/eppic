@@ -15,7 +15,7 @@ import model.PDBScoreItemDB;
 
 public class UploadToDb {
 
-	private static DBHandler dbh = new DBHandler();
+	private static DBHandler dbh;
 	
 	
 	/**
@@ -27,15 +27,16 @@ public class UploadToDb {
 		
 		String help = 
 				"Usage: UploadToDB\n" +
-				"Uploads a set of eppic output files to Data Base \n" +
-				" -d <dir>  	: Root Directory of eppic output files with subdirectories as pdb names \n" +
+				"Uploads a set of eppic output files to database specified in "+DBHandler.DEFAULT_OFFLINE_JPA+" persistence unit\n" +
+				"  -d <dir>  	: Root Directory of eppic output files with subdirectories as pdb names \n" +
 				" [-f <file>] 	: File specifying the sub-directories to be used from output directory \n" +
 				"                 (Default: Uses all files in the root directory) \n" +
+				" [-o]          : Use the "+DBHandler.DEFAULT_ONLINE_JPA+" persistence unit instead of "+DBHandler.DEFAULT_OFFLINE_JPA+" \n" +
 				" OPERATION MODE\n" +
 				" (In conflicting cases, options you specify later override the earlier ones)\n" +
-				" 	[-i]        : (Default mode) Inserts only the entries which are not in the database\n" +
-				" 	[-F]        : Forces everything chosen to be inserted, deletes previous entries if present\n " +
-				"	[-r]        : Removes the specified files from Database\n";
+				" [-i]          : Inserts only the entries which are not in the database (Default mode)\n" +
+				" [-F]          : Forces everything chosen to be inserted, deletes previous entries if present\n " +
+				" [-r]          : Removes the specified files from database\n";
 
 		File jobDirectoriesRoot = null;
 		File choosefromFile = null;
@@ -43,8 +44,9 @@ public class UploadToDb {
 		boolean modeNew = true;
 		boolean modeEverything = false;
 		boolean modeRemove = false;
+		boolean useOnlineJpa = false;
 
-		Getopt g = new Getopt("UploadToDB", args, "d:f:iFrh?");
+		Getopt g = new Getopt("UploadToDB", args, "d:f:oiFrh?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
@@ -54,6 +56,9 @@ public class UploadToDb {
 			case 'f':
 				choosefrom = true;
 				choosefromFile = new File(g.getOptarg());
+				break;
+			case 'o':
+				useOnlineJpa = true;
 				break;
 			case 'i':
 				modeNew = true;
@@ -124,6 +129,13 @@ public class UploadToDb {
 		if(modeNew) System.out.println("\n\nMODE SELECTED: Insert New Entries\n");
 		if(modeEverything) System.out.println("\n\nMODE SELECTED: Force Insert, which will insert everything in DB\n");
 		if(modeRemove) System.out.println("\n\nMODE SELECTED: Remove entried from DB\n");
+		
+		// starting the db handler
+		if (!useOnlineJpa) {
+			dbh = new DBHandler(DBHandler.DEFAULT_OFFLINE_JPA);
+		} else {
+			dbh = new DBHandler();
+		}
 		
 		// Start the Process
 		for (File jobDirectory : jobsDirectories)
