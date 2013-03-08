@@ -246,7 +246,7 @@ public class ChainEvolContext implements Serializable {
 					String msg = "Identity of PDB to UniProt reference alignment is below maximum allowed threshold ("+
 								String.format("%2.0f%%", 100.0*MAX_QUERY_TO_UNIPROT_DISAGREEMENT)+"). " +
 								"Will not use the UniProt reference "+query.getUniId();
-					LOGGER.error(msg);
+					LOGGER.warn(msg);
 					queryWarnings.add(msg);
 					query = null;
 					hasQueryMatch = false;
