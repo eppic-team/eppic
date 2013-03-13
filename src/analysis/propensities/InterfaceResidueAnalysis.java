@@ -90,7 +90,7 @@ public class InterfaceResidueAnalysis {
 		System.out.println(outDir);
 		
 		//Write Summary File
-		File outFileSummary = new File (outDir+dataSet+"_Summary.dat");
+		File outFileSummary = new File (outDir,dataSet+"_Summary.dat");
 		PrintWriter outSumm = new PrintWriter(outFileSummary);
 		
 		outSumm.println("-------------------------------------------------------");
@@ -119,22 +119,22 @@ public class InterfaceResidueAnalysis {
 		//globalXtal.printData(outSumm);
 		outSumm.close();
 		
-		File outFileEnrichments = new File (outDir+dataSet+"_Enrichments.dat");
+		File outFileEnrichments = new File (outDir,dataSet+"_Enrichments.dat");
 		PrintWriter outEnrich = new PrintWriter(outFileEnrichments);
 		globalBio.printEnrichmentsTable(outEnrich);
 		outEnrich.close();
 		
-		File outFilePropensities = new File (outDir+dataSet+"_Propensities.dat");
+		File outFilePropensities = new File (outDir,dataSet+"_Propensities.dat");
 		PrintWriter outProp = new PrintWriter(outFilePropensities);
 		globalBio.printPropensitiesTable(outProp);
 		outProp.close();
 		
-		File outFileProperties = new File (outDir+dataSet+"_Properties.dat");
+		File outFileProperties = new File (outDir,dataSet+"_Properties.dat");
 		PrintWriter outProperty = new PrintWriter(outFileProperties);
 		globalBio.printProperties(outProperty);
 		outProperty.close();
 		
-		File outFileRelAbun = new File (outDir+dataSet+"_RelAbundance.dat");
+		File outFileRelAbun = new File (outDir,dataSet+"_RelAbundance.dat");
 		PrintWriter outAbun = new PrintWriter(outFileRelAbun);
 		coreEnrich.printDataTable(outAbun);
 		outAbun.close();
