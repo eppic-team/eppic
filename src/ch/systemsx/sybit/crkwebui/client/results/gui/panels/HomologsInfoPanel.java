@@ -6,8 +6,8 @@ import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowAlignmentsEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowQueryWarningsEvent;
-import ch.systemsx.sybit.crkwebui.client.commons.gui.links.EmptyLink;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.links.EmptyLinkWithTooltip;
+import ch.systemsx.sybit.crkwebui.client.commons.gui.links.ImageLinkWithTooltip;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.links.LinkWithTooltip;
 import ch.systemsx.sybit.crkwebui.client.commons.managers.EventBusManager;
 import ch.systemsx.sybit.crkwebui.client.commons.util.EscapedStringGenerator;
@@ -108,6 +108,27 @@ public class HomologsInfoPanel extends LayoutContainer
 		
 		nrHomologsLabel.addStyleName("eppic-internal-link");
 		this.add(nrHomologsLabel);
+		
+		Label separatorLabel = new Label(" ");
+		this.add(separatorLabel);
+		
+		String downloadPseLink = GWT.getModuleBaseURL() + 
+				"fileDownload?type=entropiespse&id=" + selectedJobId + "&alignment=" + alignmentId; 
+		
+		String colorPseIconImgSrc = 
+				ApplicationContext.getSettings().getResultsLocation() + 
+				selectedJobId+"/"+
+				pdbName +"."+alignmentId+".entropies.png";
+		//String colorPseIconImgSrc = "resources/icons/entropies_pse_icon.png";
+		
+		ImageLinkWithTooltip colorPseImg = 
+				new ImageLinkWithTooltip(colorPseIconImgSrc, 14, 14, 
+						AppPropertiesManager.CONSTANTS.homologs_panel_entropiespse_hint(), 
+						ApplicationContext.getWindowData(), 
+						0, 
+						downloadPseLink);
+		this.add(colorPseImg);
+		
 	}
 	
 	private void createHomologsPanelNoQueryMatch(final HomologsInfoItem homologsInfoItem)

@@ -76,7 +76,7 @@ public class FileDownloadServlet extends BaseServlet
 		}
 		catch(IOException e)
 		{
-			response.sendError(HttpServletResponse.SC_NO_CONTENT, "Error during trying to download the file: " + e.getMessage());
+			response.sendError(HttpServletResponse.SC_NO_CONTENT, "Error while trying to download the file: " + e.getMessage());
 		}
 	}
 	

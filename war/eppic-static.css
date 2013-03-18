@@ -67,6 +67,7 @@ The style for the list items in Release Log, apply it to enclosing ul element
 
 .eppic-iframe-left-img {
 	float:left;
+	margin-right: 15px;
 }
 
 .eppic-iframe-right-img {

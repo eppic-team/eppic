@@ -65,6 +65,9 @@ public class FileToDownloadNameSuffixGenerator
 		{
 			pattern = "." + alignment + ".aln";
 		}
+		else if(type.equals("entropiespse")) {
+			pattern = "." + alignment + ".entropies.pse";
+		}
 		
 		return pattern;
 	}

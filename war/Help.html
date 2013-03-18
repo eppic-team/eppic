@@ -99,7 +99,7 @@ residues also shown as sticks. Core residues from both protomers are shown in tw
 of red.
 </p> 
 <p>
-The pse mode is particularly useful as it is already prepared with selections of the different parts of the 
+The PSE mode is particularly useful as it is already prepared with selections of the different parts of the 
 interface and nicely depicted. Additionally the entropy values for each residue are written as
 b-factors in the .pdb and .pse files. Thus one can use the PyMOL "color by b-factor" functionality 
 (spectrum command) to show the selection pressure pattern mapped on the 3-dimensional structure: blue colors
@@ -112,25 +112,75 @@ representation is particularly helpful here in order to see surface residues onl
 
 
 <h2>
-The Residue Details table
+The Residue Details window
 </h2>
+<p>
+<img class="eppic-iframe-left-img" src="resources/images/residue-details-table.png">
+</img>  
+Clicking on the "Details" button in the last column of the main interfaces table will give you a detailed 
+view of scores and information per residue, divided into two upper tables with all residue details and
+two lower tables with score details.
+</p>
 <p> 
-Clicking the "Details" button in the last column will give you a detailed view of scores and surface 
-areas per residue. In the residues table, only the residues at the interface are shown by default. To 
-see all residues of the two chains one needs to switch the view with the drop down button on the upper 
-right of the residues window. 
+In the residue tables, only the residues at the interface are shown by default. To 
+see all residues of the two chains one needs to switch the view with the drop down menu on the upper 
+right of the residue details window.
+</p>
+<p>
+The first 2 columns of the residue tables are the residue numbers: "Res Serial" for 
+the numbering based on the SEQRES sequence from 1 to n, "Pdb serial" for the numbering as it appears on the 
+ATOM lines of the PDB file. Four pieces of information are given for each residue: the total accessible surface 
+area (ASA), the total buried surface area (BSA) upon formation of interface, the ratio of burial (BSA/ASA) 
+upon formation of interface (the core/rim assignments are based on this) and finally the entropy value based on
+the multiple sequence alignments of homologs to the query sequence. More information about the homologs and 
+alignments can be found on the Top Panel.
+</p>
+<p>
+Below the residue details tables are the score summary tables with each of the core-rim and core-surface
+scores for each side of the interface plus average entropy of core residues, average entropy of rim residues 
+and the mean entropy and standard deviation of the surface samples. Beneath that, the legend shows the color 
+coding used for the residues in the residue tables.
 </p>
 
-
 <h2>
-Top panel
+Top panel: homolog sequences and alignments
 </h2>
 <p>
 The top panel contains additional information about the sequences and parameters used to run
 the evolutionary predictions. On the top left corner there is a line for each of the distinct
-protein sequences present in the protein structure. Clicking on the chain name one can see
-the alignment to the reference UniProt sequence, where mismatching residues (normally engineered artifacts)
-are shown in red. By clicking the download link on the bottom right corner one gets a single zip file 
+protein sequences present in the protein structure. Each line is composed of 4 parts:
+</p>
+ 
+<ul>
+<img class="eppic-iframe-right-img" src="resources/images/pse-color-entropies.png" 
+ alt="3D view in PyMol with colors representing sequence entropies">
+</img>
+<li>
+<b>The chain identifier(s)</b>: click on it to see the alignment of the chain to its reference 
+UniProt sequence (based on the <a href="http://www.ebi.ac.uk/pdbe/docs/sifts/">SIFTS</a> mapping 
+or found by blasting). Mismatching residues, normally engineered
+artifacts, are shown in red in the alignment.
+</li>
+<li>
+<b>The UniProt identifier of the reference sequence</b>: click on it to open its corresponding UniProt page.
+</li>
+<li>
+<b>The number of homologs</b>: click on it to download the multiple sequence alignment of all homolog sequences  
+(FASTA format)
+</li>
+<li>
+<b>The colored entropies icon</b>: click on it to get a PyMol PSE file with the sequence entropy values (found 
+through the alignment) mapped as colors onto the surface of the 3D structure. This is particularly useful in order to
+get a visual impression of the patterns of selection pressure on the surface of the particular chain. The 
+spectrum function of PyMol is used in order to color the residues: the highest conservation appears in blue, 
+transitioning to yellow and orange for lower conservation values. Residues that could not be aligned (for 
+instance because they belong to an engineered tag) appear in red. Additionally magenta dots mark  
+the core residues of the largest interface in which this chain participates. PyMol selections are also 
+prepared in order to select other interfaces different from the largest one. 
+</li>
+</ul>
+<p>
+By clicking the download link on the bottom right corner of the Top Panel, one gets a single zip file 
 containing the text output files with the results for all interfaces.
 </p>
 
