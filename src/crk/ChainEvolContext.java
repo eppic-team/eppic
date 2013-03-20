@@ -7,6 +7,7 @@ import java.io.PrintStream;
 import java.io.Serializable;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -59,6 +60,26 @@ public class ChainEvolContext implements Serializable {
 	private static final boolean BLAST_NO_FILTERING = true;
 	private static final boolean DEBUG = false;
 	
+	// private classes
+	private class MappingCoverage implements Comparable<MappingCoverage>{
+		public String uniprotId;
+		public int totalCoverage;
+		public MappingCoverage(String uniprotId, int coverage) {
+			this.uniprotId = uniprotId;
+			this.totalCoverage = coverage;			
+		}
+		public void add(int coverage) {
+			this.totalCoverage += coverage;
+		}
+		@Override
+		public int compareTo(MappingCoverage o) {
+			return new Integer(totalCoverage).compareTo(o.totalCoverage);
+		}
+		public String toString() {
+			return uniprotId+"-"+totalCoverage;
+		}
+	}
+
 	
 	// members 
 	private String representativeChain;		// the pdb chain code of the representative chain
@@ -133,23 +154,39 @@ public class ChainEvolContext implements Serializable {
 						uniqUniIds.add(sifts.getUniprotId());
 					}
 					if (uniqUniIds.size()>1) {
+						HashMap<String,MappingCoverage> map = new HashMap<String,MappingCoverage>();
+						for (SiftsFeature sifts:mappings) {
+							Interval interv = sifts.getIntervalSet().iterator().next(); // there's always only 1 interval per SiftsFeature
+							if (!map.containsKey(sifts.getUniprotId())) {
+								map.put(sifts.getUniprotId(), new MappingCoverage(sifts.getUniprotId(),interv.getLength()));
+							} else {
+								map.get(sifts.getUniprotId()).add(interv.getLength());
+							}
+						}
+						String largestCoverageUniprotId = Collections.max(map.values()).uniprotId;
+						
 						LOGGER.warn("More than one UniProt SIFTS mapping for the query PDB code "+pdbCode+" chain "+representativeChain);
 						String msg = "UniProt IDs are: ";
 						for (String uniId:uniqUniIds){
-							msg+=(uniId+" ");
+							msg+=(uniId+" (total coverage "+map.get(uniId).totalCoverage+") ");
 						}
 						LOGGER.warn(msg);
-						LOGGER.warn("Check if the PDB entry is biologically reasonable (likely to be a chimeric chain). Won't do evolution analysis on this chain.");
-
-						String warning = "More than one UniProt id correspond to chain "+representativeChain+": ";
-						for (String uniId:uniqUniIds){
-							warning+=(uniId+" ");
+						
+						if (params.isAllowChimeras()) {
+							LOGGER.warn("ALLOW_CHIMERAS mode is on. Will use longest coverage UniProt id as reference "+largestCoverageUniprotId);
+							queryUniprotId = largestCoverageUniprotId;
+						} else {
+							LOGGER.warn("This is likely to be a chimeric chain. Won't do evolution analysis on this chain.");
+							String warning = "More than one UniProt id correspond to chain "+representativeChain+": ";
+							for (String uniId:uniqUniIds){
+								warning+=(uniId+" (total coverage "+map.get(uniId).totalCoverage+") ");
+							}
+							warning+=". This is most likely a chimeric chain";
+							queryWarnings.add(warning);
+							// we continue with a null query, i.e. we treat it in the same way as no match
+							queryUniprotId = null;
 						}
-						warning+=". This is most likely a chimeric chain";
-						queryWarnings.add(warning);
 
-						// we continue with a null query, i.e. we treat it in the same way as no match
-						queryUniprotId = null;
 					} else if (mappings.size()>1) {
 						// more than 1 mapping but with 1 uniprot id: different parts of a protein fusion together in one construct
 						boolean unacceptableGaps = false;
@@ -499,7 +536,9 @@ public class ChainEvolContext implements Serializable {
 	
 	/**
 	 * Calculates the evolutionary score for the given list of residues by summing up evolutionary
-	 * scores per residue and averaging (optionally weighted by BSA)
+	 * scores per residue and averaging (optionally weighted by BSA).
+	 * If a residue does not have a mapping to its reference UniProt (i.e. aligns to a gap) 
+	 * then it is ignored and not counted in the average.
 	 * @param residues
 	 * @param scoType whether the evolutionary score should be entropy or Ka/Ks
 	 * @param weighted whether the scores should be weighted by BSA of each residue
@@ -524,7 +563,7 @@ public class ChainEvolContext implements Serializable {
 				totalScore += weight*(conservScores.get(queryPos));
 				totalWeight += weight;
 			} else {
-
+				// ignore it
 			}
 
 		}

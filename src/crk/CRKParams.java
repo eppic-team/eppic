@@ -125,6 +125,8 @@ public class CRKParams {
 	// default pdb2uniprot mapping blast thresholds
 	private static final double   DEF_PDB2UNIPROT_ID_THRESHOLD = 0.75;
 	private static final double   DEF_PDB2UNIPROT_QCOV_THRESHOLD = 0.85;
+	
+	private static final boolean  DEF_ALLOW_CHIMERAS = false;
 
 	// default cache dirs
 	private static final String   DEF_BLAST_CACHE_DIR = null;
@@ -216,6 +218,8 @@ public class CRKParams {
 	
 	private double   pdb2uniprotIdThreshold;
 	private double   pdb2uniprotQcovThreshold;
+	
+	private boolean  allowChimeras;
 			
 	private String   blastCacheDir;
 	
@@ -811,6 +815,8 @@ public class CRKParams {
 			pdb2uniprotIdThreshold = Double.parseDouble(p.getProperty("PDB2UNIPROT_ID_THRESHOLD", new Double(DEF_PDB2UNIPROT_ID_THRESHOLD).toString()));
 			pdb2uniprotQcovThreshold = Double.parseDouble(p.getProperty("PDB2UNIPROT_QCOV_THRESHOLD", new Double(DEF_PDB2UNIPROT_QCOV_THRESHOLD).toString()));
 			
+			allowChimeras = Boolean.parseBoolean(p.getProperty("ALLOW_CHIMERAS", new Boolean(DEF_ALLOW_CHIMERAS).toString()));
+			
 			blastCacheDir    = p.getProperty("BLAST_CACHE_DIR", DEF_BLAST_CACHE_DIR);
 			
 			useUniparc       = Boolean.parseBoolean(p.getProperty("USE_UNIPARC",new Boolean(DEF_USE_UNIPARC).toString()));
@@ -890,6 +896,10 @@ public class CRKParams {
 
 	public double getPdb2uniprotQcovThreshold() {
 		return pdb2uniprotQcovThreshold;
+	}
+	
+	public boolean isAllowChimeras() {
+		return allowChimeras;
 	}
 
 	public String getBlastCacheDir() {
