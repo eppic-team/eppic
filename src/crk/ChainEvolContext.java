@@ -537,12 +537,14 @@ public class ChainEvolContext implements Serializable {
 	/**
 	 * Calculates the evolutionary score for the given list of residues by summing up evolutionary
 	 * scores per residue and averaging (optionally weighted by BSA).
-	 * If a residue does not have a mapping to its reference UniProt (i.e. aligns to a gap) 
-	 * then it is ignored and not counted in the average.
+	 * If a residue does not have a mapping to the reference UniProt (i.e. aligns to a gap) 
+	 * then it is ignored and not counted in the average. 
 	 * @param residues
 	 * @param scoType whether the evolutionary score should be entropy or Ka/Ks
 	 * @param weighted whether the scores should be weighted by BSA of each residue
-	 * @return
+	 * @return the average (optionally BSA weighted) evolutionary score for the given set 
+	 * of residues or NaN if all residues do not have a mapping to the reference UniProt or 
+	 * if the input residue list is empty.
 	 */
 	public double calcScoreForResidueSet(List<Residue> residues, ScoringType scoType, boolean weighted) {
 		double totalScore = 0.0;

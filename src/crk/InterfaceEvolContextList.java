@@ -311,6 +311,7 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 			for (int j=0;j<sample.length;j++){
 				residues.add((Residue)sample[j]);
 			}
+			// note that we must pass weighted=false as the weighting is done on bsas which doesn't make sense at all here 
 			dist[i] = getChainEvolContext(pdbChainCode).calcScoreForResidueSet(residues, scoType, false);
 			
 			//Collections.sort(residues, new Comparator<Residue>() {

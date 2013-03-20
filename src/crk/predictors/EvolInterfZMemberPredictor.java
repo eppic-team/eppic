@@ -186,9 +186,7 @@ public class EvolInterfZMemberPredictor implements InterfaceTypePredictor {
 					" A2). Can't do core-surface scoring for interface "+parent.getInterfaceEvolContext().getInterface().getId()+", member "+(molecId+1));
 			return Double.NaN;
 		}
-		double[] surfScoreDist = parent.getInterfaceEvolContext().getSurfaceScoreDist(molecId, MIN_INTERF_FOR_RES_NOT_IN_INTERFACES, NUM_SAMPLES_SCORE_DIST, rimCore.getCoreSize(), scoType, parent.getMinAsaForSurface());
-
-
+		double[] surfScoreDist = parent.getInterfaceEvolContext().getSurfaceScoreDist(molecId, MIN_INTERF_FOR_RES_NOT_IN_INTERFACES, NUM_SAMPLES_SCORE_DIST, rimCore.getCoreSize(), scoType, parent.getMinAsaForSurface());		
 
 		UnivariateStatistic stat = new Mean();		
 		mean = stat.evaluate(surfScoreDist);
@@ -198,6 +196,15 @@ public class EvolInterfZMemberPredictor implements InterfaceTypePredictor {
 
 		LOGGER.info("Sampled "+NUM_SAMPLES_SCORE_DIST+" surface evolutionary scores of size "+rimCore.getCoreSize()+": "+
 				"mean= "+String.format("%5.2f",mean)+", sd= "+String.format("%5.2f",sd));
+		
+		if (Double.isNaN(mean)) {
+			int countNaNs = 0;
+			for (int i=0;i<surfScoreDist.length;i++) {
+				if (Double.isNaN(surfScoreDist[i])) countNaNs++;
+			}
+			LOGGER.info("The samples contained "+countNaNs+" NaNs"); 
+		}
+		
 		// logging the actual samples averages (now commented out)
 		//StringBuffer sb = new StringBuffer();
 		//for (double sample:surfScoreDist) {
