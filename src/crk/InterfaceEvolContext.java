@@ -77,7 +77,8 @@ public class InterfaceEvolContext implements Serializable {
 	
 	/**
 	 * Finds all unreliable core residues and returns them in a list.
-	 * Unreliable are all residues for which the alignment from Uniprot to PDB doesn't match
+	 * Unreliable are all residues for which the alignment from reference UniProt to PDB doesn't match
+	 * @param molecId
 	 * @return
 	 */
 	public List<Residue> getUnreliableCoreRes(int molecId) {
@@ -87,17 +88,31 @@ public class InterfaceEvolContext implements Serializable {
 	
 	/**
 	 * Finds all unreliable rim residues and returns them in a list.
-	 * Unreliable are all residues for which the alignment from Uniprot to PDB doesn't match
+	 * Unreliable are all residues for which the alignment from reference UniProt to PDB doesn't match
+	 * @param molecId
 	 * @return
 	 */
 	public List<Residue> getUnreliableRimRes(int molecId) {
 		List<Residue> rimResidues = getInterface().getRimCore(molecId).getRimResidues();
 		return getReferenceMismatchResidues(rimResidues, molecId);
 	}
+
+	/**
+	 * Finds all unreliable residues that belong to no crystal interface above given minInterfArea and returns them in a list.
+	 * Unreliable are all residues for which the alignment from reference UniProt to PDB doesn't match
+	 * @param molecId
+	 * @param minInterfArea
+	 * @param minAsaForSurface
+	 * @return
+	 */
+	public List<Residue> getUnreliableNotInInterfacesRes(int molecId, double minInterfArea, double minAsaForSurface) {
+		List<Residue> notInInterfacesResidues = parent.getResiduesNotInInterfaces(getMolecule(molecId).getPdbChainCode(), minInterfArea, minAsaForSurface);
+		return getReferenceMismatchResidues(notInInterfacesResidues, molecId);
+	}
 	
 	/**
 	 * Given a list of residues returns the subset of those that are unreliable 
-	 * because of mismatch of PDB sequence to Uniprot reference matching (thus indicating
+	 * because of mismatch of PDB sequence to UniProt reference matching (thus indicating
 	 * engineered residues).
 	 * @param residues
 	 * @param molecId

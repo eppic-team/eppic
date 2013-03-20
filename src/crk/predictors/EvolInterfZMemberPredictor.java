@@ -58,7 +58,10 @@ public class EvolInterfZMemberPredictor implements InterfaceTypePredictor {
 		parent.getInterfaceEvolContext().getInterface().calcRimAndCore(parent.getBsaToAsaCutoff(), parent.getMinAsaForSurface());
 		InterfaceRimCore rimCore = parent.getInterfaceEvolContext().getInterface().getRimCore(molecId);
 		
+		int numSurfResidues = parent.getInterfaceEvolContext().getNumResiduesNotInInterfaces(molecId, MIN_INTERF_FOR_RES_NOT_IN_INTERFACES, parent.getMinAsaForSurface());
+		
 		int countsUnrelCoreRes = -1;
+		int countsUnrelNotInInterfacesRes = -1;
 		if (parent.canDoEntropyScoring(molecId)) {
 			List<Residue> unreliableCoreRes = parent.getInterfaceEvolContext().getUnreliableCoreRes(molecId);
 			countsUnrelCoreRes = unreliableCoreRes.size();
@@ -67,6 +70,14 @@ public class EvolInterfZMemberPredictor implements InterfaceTypePredictor {
 				LOGGER.warn(msg);
 				warnings.add(msg);
 			}			
+			
+			List<Residue> unreliableSurfaceRes = parent.getInterfaceEvolContext().getUnreliableNotInInterfacesRes(molecId, MIN_INTERF_FOR_RES_NOT_IN_INTERFACES, parent.getMinAsaForSurface());
+			countsUnrelNotInInterfacesRes = unreliableSurfaceRes.size();
+			msg = parent.getInterfaceEvolContext().getReferenceMismatchWarningMsg(unreliableSurfaceRes,"surface");
+			if (msg!=null) {
+				LOGGER.warn(msg);
+				warnings.add(msg);
+			}
 		}
 
 		if (!parent.canDoEntropyScoring(molecId)) {
@@ -83,7 +94,7 @@ public class EvolInterfZMemberPredictor implements InterfaceTypePredictor {
 			call = CallType.NO_PREDICTION;
 			callReason = memberSerial+": not enough core residues to calculate evolutionary score (at least "+CRKParams.MIN_NUMBER_CORE_RESIDUES_EVOL_SCORE+" needed)";
 		} 
-		else if (parent.getInterfaceEvolContext().getNumResiduesNotInInterfaces(molecId, MIN_INTERF_FOR_RES_NOT_IN_INTERFACES, parent.getMinAsaForSurface())<rimCore.getCoreSize()*NUM_RESIDUES_NOT_IN_INTERFACES_TOLERANCE) {
+		else if (numSurfResidues<rimCore.getCoreSize()*NUM_RESIDUES_NOT_IN_INTERFACES_TOLERANCE) {
 			call = CallType.NO_PREDICTION;
 			callReason = memberSerial+": not enough residues in protein surface belonging to no interface, can't calculate the surface score distribution";
 		}
@@ -93,6 +104,12 @@ public class EvolInterfZMemberPredictor implements InterfaceTypePredictor {
 					countsUnrelCoreRes+" unreliable residues out of "+rimCore.getCoreSize()+" residues in core)");
 			callReason = memberSerial+": there are not enough reliable core residues: "+
 					countsUnrelCoreRes+" unreliable out of "+rimCore.getCoreSize()+" in core";
+		}
+		else if (((double)countsUnrelNotInInterfacesRes/(double)numSurfResidues)>CRKParams.MAX_ALLOWED_UNREL_RES) {
+			call = CallType.NO_PREDICTION;
+			callReason = memberSerial+": not enough reliable residues in protein surface belonging to no interface: " +
+					countsUnrelNotInInterfacesRes+" unreliable residues out of "+
+					numSurfResidues+" residues in surface";			
 		}
 		else {
 			if (zScore<=parent.getCallCutoff()) {
