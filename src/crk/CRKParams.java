@@ -447,7 +447,11 @@ public class CRKParams {
 		if (baseName==null) {
 			baseName=pdbCode;
 			if (inFile!=null) {
-				baseName = inFile.getName().substring(0, inFile.getName().lastIndexOf('.'));
+				if (inFile.getName().contains(".")) {
+					baseName = inFile.getName().substring(0, inFile.getName().lastIndexOf('.'));
+				} else {
+					baseName = inFile.getName();
+				}
 			}
 		}
 		
@@ -547,7 +551,11 @@ public class CRKParams {
 		}
 		jobName = pdbCode; // the name to be used in many of the output files
 		if (inFile!=null) {
-			jobName = inFile.getName().substring(0, inFile.getName().lastIndexOf('.'));
+			if (inFile.getName().contains(".")) {
+				jobName = inFile.getName().substring(0, inFile.getName().lastIndexOf('.'));
+			} else {
+				jobName = inFile.getName();
+			}
 		}
 		return jobName;
 	}
