@@ -296,20 +296,10 @@ public class MainViewPort extends LayoutContainer
 										int xPosition,
 										int yPosition)
 	{
-		if((alignmentsWindow == null) ||
-		   (alignmentsWindow.isResizeWindow()))
-		{
-			alignmentsWindow = new AlignmentsWindow(ApplicationContext.getWindowData(), homologsInfoItem, pdbName);
-			alignmentsWindow.setResizeWindow(false);
-			alignmentsWindow.updateWindowContent();
-			alignmentsWindow.setPagePosition(xPosition, yPosition);
-		}
-		else if(alignmentsWindow.getHomologsInfoItem() != homologsInfoItem)
-		{
-			alignmentsWindow.setHomologsInfoItem(homologsInfoItem);
-			alignmentsWindow.setPdbName(pdbName);
-			alignmentsWindow.updateWindowContent();
-		}
+		alignmentsWindow = new AlignmentsWindow(ApplicationContext.getWindowData(), homologsInfoItem, pdbName);
+		alignmentsWindow.setResizeWindow(false);
+		alignmentsWindow.updateWindowContent();
+		alignmentsWindow.setPagePosition(xPosition, yPosition);
 
 		String alignmentWindowTitle = AppPropertiesManager.CONSTANTS.alignment_window_title();
 		alignmentWindowTitle = alignmentWindowTitle.replaceFirst("%s", homologsInfoItem.getChains().substring(0, 1));
