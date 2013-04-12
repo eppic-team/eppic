@@ -490,12 +490,14 @@ public class CRKParams {
 	public void checkConfigFileInput() throws CRKException {
 		
 		if (!isInputAFile()) {
-			if (localCifDir==null || ! new File(localCifDir).isDirectory()) {
-				throw new CRKException(null,
-				"To be able to use PDB codes as input with -i option a valid LOCAL_CIF_DIR must be set in config file. " +
-				"It must contain the PDB mmCIF compressed file repository as in "+DEF_PDB_FTP_CIF_URL,true);
-			}
-			
+			if (!isUseOnlinePdb()) {
+				if (localCifDir==null || ! new File(localCifDir).isDirectory()) {
+					throw new CRKException(null,
+						"To be able to use PDB codes as input with -i option, a valid LOCAL_CIF_DIR must be set in config file. " +
+						"It must contain the PDB mmCIF compressed file repository as in "+DEF_PDB_FTP_CIF_URL+
+						". Alternatively you can set USE_ONLINE_PDB to true and the default PDB ftp server will be used (or the one set in PDB_FTP_CIF_URL)",true);
+				}
+			} 		
 		}
 		
 		if (isDoScoreEntropies()) {
