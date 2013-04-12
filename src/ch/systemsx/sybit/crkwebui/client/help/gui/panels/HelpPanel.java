@@ -18,7 +18,7 @@ public class HelpPanel extends DisplayPanel
 		this.addStyleName("eppic-text-panel");
 		this.setScrollMode(Scroll.NONE);
 
-		Iframe iframe = new Iframe(GWT.getHostPageBaseURL() + "Help.html");
+		Iframe iframe = new Iframe(GWT.getHostPageBaseURL() + "help.html");
 		this.add(iframe);
 	}
 }

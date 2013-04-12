@@ -18,7 +18,7 @@ public class DownloadsPanel extends DisplayPanel
 		this.addStyleName("eppic-text-panel");
 		this.setScrollMode(Scroll.NONE);
 
-		Iframe iframe = new Iframe(GWT.getHostPageBaseURL() + "Downloads.html");
+		Iframe iframe = new Iframe(GWT.getHostPageBaseURL() + "downloads.html");
 		this.add(iframe);
 	}
 }

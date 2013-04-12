@@ -19,7 +19,7 @@ public class ReleasesPanel extends DisplayPanel
 		this.addStyleName("eppic-text-panel");
 		this.setScrollMode(Scroll.NONE);
 
-		Iframe iframe = new Iframe(GWT.getHostPageBaseURL() + "Releases.html");
+		Iframe iframe = new Iframe(GWT.getHostPageBaseURL() + "releases.html");
 		this.add(iframe);
 	}
 }
