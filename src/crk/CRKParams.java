@@ -85,7 +85,7 @@ public class CRKParams {
 
 	private static final int      DEF_MAX_NUM_SEQUENCES = 100;
 	
-	private static final int      DEF_NSPHEREPOINTS_ASA_CALC = 3000;
+	public static final int 	  DEF_NSPHEREPOINTS_ASA_CALC = 3000;
 	
 	protected static final HomologsSearchMode DEF_HOMOLOGS_SEARCH_MODE = HomologsSearchMode.LOCAL;
 	

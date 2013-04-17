@@ -11,6 +11,7 @@ import java.util.TreeMap;
 import analysis.Utils;
 
 import crk.CRKException;
+import crk.CRKParams;
 
 import owl.core.structure.*;
 import owl.core.util.FileFormatException;
@@ -183,7 +184,8 @@ public class InterfaceResidueAnalysis {
 			
 			//Calculate all the interfaces for the pdb structure
 			System.out.println("Calculating all Interfaces ....");
-			ChainInterfaceList allInterFaces = fullpdb.getAllInterfaces(6, 3000, 1, true, false, -1);
+			ChainInterfaceList allInterFaces = 
+					fullpdb.getAllInterfaces(CRKParams.INTERFACE_DIST_CUTOFF, CRKParams.DEF_NSPHEREPOINTS_ASA_CALC, 1, true, false, CRKParams.DEF_MIN_SIZE_COFACTOR_FOR_ASA);
 			
 			//Get number of Bio Interfaces
 			int bioInterFaces = bioToAnalyse.get(pdbCode).size();
