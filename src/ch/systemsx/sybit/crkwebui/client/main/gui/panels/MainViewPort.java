@@ -296,6 +296,11 @@ public class MainViewPort extends LayoutContainer
 										int xPosition,
 										int yPosition)
 	{
+		if(alignmentsWindow != null)
+		{
+			alignmentsWindow.setVisible(false);
+		}
+		
 		alignmentsWindow = new AlignmentsWindow(ApplicationContext.getWindowData(), homologsInfoItem, pdbName);
 		alignmentsWindow.setResizeWindow(false);
 		alignmentsWindow.updateWindowContent();
