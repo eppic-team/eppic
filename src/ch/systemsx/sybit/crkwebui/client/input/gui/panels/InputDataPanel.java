@@ -99,6 +99,9 @@ public class InputDataPanel extends DisplayPanel
 		
 		this.add(container);
 		
+		fieldsetContainer.addStyleName("eppic-input-bg");
+		//this.addStyleName("eppic-input-bg");
+		
 		initializeEventsListeners();
 	}
 	

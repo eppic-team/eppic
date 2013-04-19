@@ -161,3 +161,8 @@
 	border-radius: 5px;
 }
 
+.eppic-input-bg {
+	background-image:url('resources/images/main_bg.png');
+	background-repeat:no-repeat;
+	background-position:center bottom;
+}
