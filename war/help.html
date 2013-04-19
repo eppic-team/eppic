@@ -26,15 +26,16 @@ based on one geometrical and two evolutionary criteria:
 
 <ul>
 <li>
-<b>geometry</b>: number of core residues, indicating how good the packing in the interface is
+<b>geometry</b>: number of core residues (at 95% burial), indicating how good the packing in 
+the interface is
 </li>
 <li>
-<b>core-rim score</b>: ratio of evolutionary signal (sequence entropy) of core residues versus 
-rim residues
+<b>core-rim score</b>: ratio of evolutionary signal (sequence entropy) of core residues (at 
+70% burial) versus rim residues
 </li>
 <li>
-<b>core-surface score</b>: a score (z-score like) of sequence entropy of core residues versus 
-random samples of other surface residues
+<b>core-surface score</b>: a score (z-score like) of sequence entropy of core residues (at 70% 
+burial) versus random samples of other surface residues
 </li>
 </ul>
 
@@ -138,8 +139,14 @@ alignments can be found on the Top Panel.
 <p>
 Below the residue details tables are the score summary tables with each of the core-rim and core-surface
 scores for each side of the interface plus average entropy of core residues, average entropy of rim residues 
-and the mean entropy and standard deviation of the surface samples. Beneath that, the legend shows the color 
-coding used for the residues in the residue tables.
+and the mean entropy and standard deviation of the surface samples.
+</p>
+<p> 
+Beneath that, the legend shows the color coding used for the residues in the tables. Dark red is used for the 
+core residues at <b>95% burial</b>, which are used for the geometry prediction. Lighter red for the core 
+residues at <b>70% burial</b>, used in the evolutionary core-rim and core-surface predictions. Light blue 
+for all other interface residues. White for surface residues not at the interface and grey for fully buried 
+(protein interior) residues.
 </p>
 
 <h2>
@@ -156,7 +163,8 @@ protein sequences present in the protein structure. Each line is composed of 4 p
  alt="3D view in PyMol with colors representing sequence entropies">
 </img>
 <li>
-<b>The chain identifier(s)</b>: click on it to see the alignment of the chain to its reference 
+<b>The chain identifier(s)</b>: first letter is the chain identifier of the representative sequence, in brackets 
+the identifiers of identical sequences. Click on it to see the alignment of the chain to its reference 
 UniProt sequence (based on the <a href="http://www.ebi.ac.uk/pdbe/docs/sifts/">SIFTS</a> mapping 
 or found by blasting). Mismatching residues, normally engineered
 artifacts, are shown in red in the alignment.
@@ -166,7 +174,8 @@ artifacts, are shown in red in the alignment.
 </li>
 <li>
 <b>The number of homologs</b>: click on it to download the multiple sequence alignment of all homolog sequences  
-(FASTA format)
+(FASTA format). You will need an alignment viewer like <a href="http://www.jalview.org/">Jalview</a> to have it 
+nicely displayed. 
 </li>
 <li>
 <b>The colored entropies icon</b>: click on it to get a PyMol PSE file with the sequence entropy values (found 
@@ -217,6 +226,9 @@ colleagues.
 
 <!-- <img src="resources/images/EPPIC-screenshot-3hbx-small.png"></img> -->
 
+<br>
+<br>
+<br>
 
 <p>
 Please cite <a href="http://www.biomedcentral.com/1471-2105/13/334/abstract">Duarte et al., BMC Bioinformatics 2012</a> if you use this service for 
@@ -234,23 +246,28 @@ With support from:
 
 </div>
 
-<div class="eppic-iframe-bottom-logos">
+<!-- <div class="eppic-iframe-bottom-logos"> -->
+<div class="first" >
 <a href="http://www.psi.ch">
 <img class="eppic-iframe-left-img" src="resources/images/psi-logo.png"></img>
 </a>
+</div>
 
+<div class="second" >
 <a href="http://www.sybit.net">
 <img class="eppic-iframe-right-img" src="resources/images/sybit-logo.png"></img>
 </a>
-
 </div>
 
-
-<!--
-<a href="http://www.snf.ch">
+<div class="third" >
+<a class="third" href="http://www.snf.ch">
 <img src="resources/images/SNSF_Logo.jpg"></img>
 </a>
--->
+</div>
+
+<!-- </div> -->
+
+
 
 <!--
 <a href="http://www.ethz.ch">

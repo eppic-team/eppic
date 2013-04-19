@@ -43,6 +43,7 @@
 	font-size:14px;
 	margin-left: 15px;
 	margin-right: 20px;
+	line-height:125%;
 }
 
 .eppic-iframe A:link {text-decoration: none}
@@ -82,18 +83,28 @@ The style for the list items in Release Log, apply it to enclosing ul element
 
 
 /*
-Possible code to display 3 images, doesn't quite work because of the scroll bar on right I believe
-
+Displaying 3 images, third is the one in middle, not quite centered. 
+In a 1280px-wide screen it should be centered
+*/
 .first {
 	display:block;
-    float:left;  
+    float:left;      
+    margin-right: 120px; /* this separates the middle image */
+	margin-left: 20px;
+	margin-top: 50px;
+    
 }
 .second {
 	display:block;
     float:right;
+    margin-right: 20px;
+	margin-left: 20px;
+	margin-top: 50px;
+    
 }
 .third {
 	display:block;
-    margin:0 auto;
+    /*margin:0 auto;*/
+    margin-left: 20px;
+    margin-top: 50px;
 }
-*/
