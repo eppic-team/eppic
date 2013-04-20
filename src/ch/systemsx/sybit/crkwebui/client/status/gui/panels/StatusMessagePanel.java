@@ -38,16 +38,16 @@ public class StatusMessagePanel extends LayoutContainer
 	 */
 	private void updateStatusMessage(String message, StatusMessageType messageType)
 	{
-		String messageText = "<span style=\"color:";
+		String messageText = "<span class=\"";
 
-		String color = "black";
+		String styleClass = "eppic-status-message-info";
 
 		if(messageType != StatusMessageType.NO_ERROR)
 		{
-			color = "red; font-weight: bold";
+			styleClass = "eppic-status-message-error";
 		}
 
-		messageText += color + "\">" + "Status: " + EscapedStringGenerator.generateEscapedString(message);
+		messageText += styleClass + "\">" + "Status: " + EscapedStringGenerator.generateEscapedString(message);
 
 		if(messageType != StatusMessageType.NO_ERROR)
 		{
