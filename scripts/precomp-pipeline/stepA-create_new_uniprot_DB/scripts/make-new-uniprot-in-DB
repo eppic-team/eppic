@@ -116,7 +116,7 @@ EOF
 #--------------------------------------------------------
 
 echo "Loading Data... "
-mysql $db <<EOF
+mysql --enable-local $db <<EOF
 LOAD DATA LOCAL INFILE '$outtab' INTO TABLE $table;
 SHOW WARNINGS;
 LOAD DATA LOCAL INFILE '$outclust' INTO TABLE ${table}_clusters;
