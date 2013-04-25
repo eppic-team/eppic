@@ -51,7 +51,7 @@ EOF
 
 # loading data
 echo "Loading data..."
-mysql $db <<EOF
+mysql --enable-local $db <<EOF
 LOAD DATA LOCAL INFILE '$taxonfile' INTO TABLE $table IGNORE 1 LINES;
 SHOW WARNINGS;
 EOF
