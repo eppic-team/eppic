@@ -56,8 +56,8 @@ public class ChainEvolContextList implements Serializable {
 		
 		if (params.getLocalUniprotDbName()!=null) {
 			this.useLocalUniprot = true;
-			this.uniprotLocalConn = new UniprotLocalConnection(params.getLocalUniprotDbName(),params.getLocalTaxonomyDbName());
-			LOGGER.info("Using local UniProt connection to retrieve UniProtKB data. Local databases: "+params.getLocalUniprotDbName()+" and "+params.getLocalTaxonomyDbName());
+			this.uniprotLocalConn = new UniprotLocalConnection(params.getLocalUniprotDbName());
+			LOGGER.info("Using local UniProt connection to retrieve UniProtKB data. Local database: "+params.getLocalUniprotDbName());
 		} else {
 			this.useLocalUniprot = false;
 			this.uniprotJapiConn = new UniProtConnection();
@@ -91,8 +91,8 @@ public class ChainEvolContextList implements Serializable {
 		
 		if (params.getLocalUniprotDbName()!=null) {
 			this.useLocalUniprot = true;
-			this.uniprotLocalConn = new UniprotLocalConnection(params.getLocalUniprotDbName(),params.getLocalTaxonomyDbName());
-			LOGGER.info("Using local UniProt connection to retrieve UniProtKB data. Local databases: "+params.getLocalUniprotDbName()+" and "+params.getLocalTaxonomyDbName());
+			this.uniprotLocalConn = new UniprotLocalConnection(params.getLocalUniprotDbName());
+			LOGGER.info("Using local UniProt connection to retrieve UniProtKB data. Local database: "+params.getLocalUniprotDbName());
 		} else {
 			this.useLocalUniprot = false;
 			this.uniprotJapiConn = new UniProtConnection();
@@ -455,7 +455,7 @@ public class ChainEvolContextList implements Serializable {
 	public void closeConnections() {
 		if (useLocalUniprot) {			
 			this.uniprotLocalConn.close();
-			LOGGER.info("Connection to local Uniprot database closed");
+			LOGGER.info("Connection to local UniProt database closed");
 		}
 		// there doesn't seem to be a way of closing the japi connection, we do nothing in that case
 	}

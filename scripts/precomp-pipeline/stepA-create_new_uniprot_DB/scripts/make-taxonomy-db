@@ -6,16 +6,16 @@ then
 	echo "Script to download the NEWT UniProt taxonomy database and load it"
 	echo "to a local MySQL db"
 	echo 
-	echo "Usage: $0 <taxonomy-all tab file> <db name>"
+	echo "Usage: $0 <output dir to store taxonomy file> <db name>"
 	echo "The taxonomy file (NEWT database) will be downloaded from UniProt server"
 	echo "and then loaded into local db "
 	echo 
-	echo "  e.g. $0 /nfs/data/dbs/taxonomy/taxonomy-all.tab uniprot_taxonomy"
+	echo "  e.g. $0 /nfs/data/dbs/taxonomy/ uniprot_2013_02"
 	echo
 	exit 1
 fi
 
-taxonfile=$1
+taxonfile=$1/taxonomy-all.tab
 db=$2
 
 
@@ -23,10 +23,6 @@ curl "http://www.uniprot.org/taxonomy/?query=*&compress=yes&format=tab" | gunzip
 
 
 table=taxonomy
-
-# create database
-echo "Creating db..."
-echo "CREATE DATABASE $db" | mysql || exit 1
 
 # creating tables
 echo "Creating table..."

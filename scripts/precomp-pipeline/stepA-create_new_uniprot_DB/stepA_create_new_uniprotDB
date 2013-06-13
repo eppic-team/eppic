@@ -13,7 +13,9 @@ CURRENT_DIR=`pwd`
 EPPIC_JAR=/gpfs/home/duarte_j/software/jars/eppic.jar
 
 #---------------------------------------------------
-# A2) Make the database entry
+# A2) Make the database and load data
 ./scripts/make-new-uniprot-in-DB -o $CURRENT_DIR -d $DATABASE_NAME -p $EPPIC_JAR
+./scripts/make-taxonomy-db $CURRENT_DIR $DATABASE_NAME
+
 #---------------------------------------------------
 echo THIS STEP DONE !!!

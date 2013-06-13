@@ -29,7 +29,7 @@ public class WriteUniqueUniprots {
 	
 	public WriteUniqueUniprots(String scPath, String uniprotdb) throws IOException, SQLException{
 			sc = new SiftsConnection(scPath);
-			uniLC = new UniprotLocalConnection(uniprotdb, null);
+			uniLC = new UniprotLocalConnection(uniprotdb);
 	}
 	
 	/**

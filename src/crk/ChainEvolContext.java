@@ -295,10 +295,12 @@ public class ChainEvolContext implements Serializable {
 				System.exit(1);
 			}  catch (NoMatchFoundException e) {
 				LOGGER.error("Couldn't find UniProt id "+queryUniprotId+" through UniProt JAPI. Obsolete?");
+				LOGGER.error("Won't do evolution analysis for chain "+representativeChain);
 				query = null;
 				hasQueryMatch = false;
 			} catch (SQLException e) {
-				LOGGER.error("Could not retrieve the UniProt data for UniProt id "+queryUniprotId+" from local database: "+e.getMessage());
+				LOGGER.error("Could not retrieve the UniProt data for UniProt id "+queryUniprotId+" from local database "+params.getLocalUniprotDbName()+", error: "+e.getMessage());
+				LOGGER.error("Won't do evolution analysis for chain "+representativeChain);
 				query = null;
 				hasQueryMatch = false;
 			}
