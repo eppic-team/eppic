@@ -464,7 +464,7 @@ public class ChainEvolContext implements Serializable {
 		// 3) alignment of the protein sequences
 		File alnCacheFile = null;
 		// beware we only try to use cache file if we are in default mode: uniparc=true, filter by domain=false
-		if (params.getBlastCacheDir()!=null && params.isUseUniparc() && !params.isFilterByDomain()) {
+		if (params.getAlnCacheDir()!=null && params.isUseUniparc() && !params.isFilterByDomain()) {
 			String intervStr = "";
 			if (!isSearchWithFullUniprot()) {
 				intervStr = "."+getQueryInterval().beg+"-"+getQueryInterval().end;
@@ -472,7 +472,7 @@ public class ChainEvolContext implements Serializable {
 			// a cache file will look like  Q9UKX7.i60.c85.m60.1-109.aln (that corresponds to 3tj3C) 
 			//                              P52294.i60.c85.m60.aln       (that corresponds to 3tj3A)
 			// i=identity threshold used, c=query coverage, m=max num seqs, optional two last numbers are the subinterval
-			alnCacheFile = new File(params.getBlastCacheDir(),getQuery().getUniId()+
+			alnCacheFile = new File(params.getAlnCacheDir(),getQuery().getUniId()+
 					".i"+String.format("%2.0f", idCutoff*100.0)+
 					".c"+String.format("%2.0f", queryCov*100.0)+
 					".m"+params.getMaxNumSeqs()+

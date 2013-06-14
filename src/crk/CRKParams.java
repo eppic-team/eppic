@@ -130,6 +130,7 @@ public class CRKParams {
 
 	// default cache dirs
 	private static final String   DEF_BLAST_CACHE_DIR = null;
+	private static final String   DEF_ALN_CACHE_DIR = null;
 	
 	// default use uniparc
 	private static final boolean  DEF_USE_UNIPARC = true;
@@ -222,6 +223,7 @@ public class CRKParams {
 	private boolean  allowChimeras;
 			
 	private String   blastCacheDir;
+	private String   alnCacheDir;
 	
 	private boolean  useUniparc;
 	
@@ -826,6 +828,7 @@ public class CRKParams {
 			allowChimeras = Boolean.parseBoolean(p.getProperty("ALLOW_CHIMERAS", new Boolean(DEF_ALLOW_CHIMERAS).toString()));
 			
 			blastCacheDir    = p.getProperty("BLAST_CACHE_DIR", DEF_BLAST_CACHE_DIR);
+			alnCacheDir		 = p.getProperty("ALN_CACHE_DIR", DEF_ALN_CACHE_DIR);
 			
 			useUniparc       = Boolean.parseBoolean(p.getProperty("USE_UNIPARC",new Boolean(DEF_USE_UNIPARC).toString()));
 			
@@ -912,6 +915,10 @@ public class CRKParams {
 
 	public String getBlastCacheDir() {
 		return blastCacheDir;
+	}
+	
+	public String getAlnCacheDir() {
+		return alnCacheDir;
 	}
 
 	public String getBlastDbDir() {
