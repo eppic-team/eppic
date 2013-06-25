@@ -19,8 +19,7 @@ import com.extjs.gxt.ui.client.widget.layout.RowLayout;
  */
 public class ResultsPanel extends DisplayPanel
 {
-	private PDBIdentifierPanel pdbIdentifierPanel;
-	private PDBIdentifierSubtitlePanel pdbIdentifierSubtitlePanel;
+	private IdentifierHeaderPanel identifierHeaderPanel;
 	
 	private InfoPanel infoPanel;
 
@@ -32,11 +31,8 @@ public class ResultsPanel extends DisplayPanel
 	{
 		this.setLayout(new RowLayout(Orientation.VERTICAL));
 
-		pdbIdentifierPanel = new PDBIdentifierPanel();
-		this.add(pdbIdentifierPanel, new RowData(-1, -1, new Margins(0, 0, 1, 0)));
-		
-		pdbIdentifierSubtitlePanel = new PDBIdentifierSubtitlePanel();
-		this.add(pdbIdentifierSubtitlePanel, new RowData(-1, -1, new Margins(0, 0, 10, 0)));
+		identifierHeaderPanel = new IdentifierHeaderPanel();
+		this.add(identifierHeaderPanel);
 		
 		infoPanel = new InfoPanel(pdbScoreItem);
 		this.add(infoPanel, new RowData(1, 80, new Margins(0)));
@@ -59,20 +55,21 @@ public class ResultsPanel extends DisplayPanel
 		resultsGridContainer.fillResultsGrid(resultsData);
 		infoPanel.generateInfoPanel(resultsData);
 		
-		pdbIdentifierPanel.setPDBText(resultsData.getPdbName(),
+		identifierHeaderPanel.setPDBText(resultsData.getPdbName(),
 							  	 	resultsData.getSpaceGroup(),
 							  	 	resultsData.getExpMethod(),
 							  	 	resultsData.getResolution(),
 							  	 	resultsData.getInputType());
 		
-		pdbIdentifierSubtitlePanel.setPDBIdentifierSubtitle(EscapedStringGenerator.generateEscapedString(resultsData.getTitle()));
+		identifierHeaderPanel.setPDBIdentifierSubtitle(EscapedStringGenerator.generateEscapedString(resultsData.getTitle()));
 	}
 
 	public void resizeContent() 
 	{
 		resultsGridContainer.setAssignedWidth(this.getWidth(true));
 		resultsGridContainer.resizeGrid();
-		this.layout();
+		identifierHeaderPanel.resize();
+		this.layout(true);
 	}
 	
 	/**
