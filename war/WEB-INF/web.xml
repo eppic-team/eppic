@@ -7,11 +7,11 @@
 
 	<context-param> 
        	<param-name>serverName</param-name> 
-       	<param-value>127.0.0.1</param-value> 
+       	<param-value>mpc1153.psi.ch</param-value> 
     </context-param> 
     <context-param> 
        	<param-name>serverPort</param-name> 
-       	<param-value>8888</param-value> 
+       	<param-value>8081</param-value> 
     </context-param>
     <context-param> 
        	<param-name>servletContPath</param-name> 
@@ -101,8 +101,8 @@
 
 	<filter>
 		<filter-name>GzipFilter</filter-name>
-		<!-- <filter-class>org.eclipse.jetty.servlets.GzipFilter</filter-class> -->
-		<filter-class>org.mortbay.servlet.GzipFilter</filter-class>
+		<filter-class>org.eclipse.jetty.servlets.GzipFilter</filter-class>
+		<!--  <filter-class>org.mortbay.servlet.GzipFilter</filter-class>  -->
 		<init-param>
 			<param-name>mimeTypes</param-name>
 			<param-value>text/html,text/plain,text/xml,application/xhtml+xml,text/css,application/javascript,image/svg+xml</param-value>
