@@ -650,11 +650,6 @@ public class CRKMain {
 			e.exitIfFatal(1);
 		}
 		try {
-			// turn off jaligner logging (we only use NeedlemanWunschGotoh from that package)
-			// (for some reason this doesn't work if condensated into one line, it seems that one needs to instantiate the logger and then call setLevel)
-			// (and even weirder, for some reason it doesn't work if you put the code in its own separate method!)
-			java.util.logging.Logger jalLogger = java.util.logging.Logger.getLogger("NeedlemanWunschGotoh");
-			jalLogger.setLevel(java.util.logging.Level.OFF);
 
 			crkMain.setUpLogging();
 
