@@ -651,6 +651,16 @@ public class CRKMain {
 		}
 		try {
 
+			// turn off jaligner logging (we only use NeedlemanWunschGotoh from that package)
+			// (for some reason this doesn't work if condensated into one line, it seems that one needs to instantiate the logger and then call setLevel)
+			// (and even weirder, for some reason it doesn't work if you put the code in its own separate method!)
+			// NOTE: as of owl revision 1647 the embedded jaligner jar contains a modified NeedlemanWunschGotoh class
+			//       that doesn't have logging at all (we fixed a bug in the code and took the opportunity to remove
+			//       the logging). The official jaligner has still loggin (and the bug). If we go back to using the official 
+			//       jaligner we need to put this logging-turning-off code back.
+			//java.util.logging.Logger jalLogger = java.util.logging.Logger.getLogger("NeedlemanWunschGotoh");
+			//jalLogger.setLevel(java.util.logging.Level.OFF);
+			
 			crkMain.setUpLogging();
 
 			LOGGER.info(CRKParams.PROGRAM_NAME+" version "+CRKParams.PROGRAM_VERSION);
