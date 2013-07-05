@@ -13,6 +13,7 @@ import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
  */
 public class ApplicationSettingsGenerator 
 {
+	public static final String DEVELOPMENT_MODE = "development_mode";
 	/**
 	 * General server settings.
 	 */
@@ -60,6 +61,10 @@ public class ApplicationSettingsGenerator
 		settings.setPublicationLinkUrl(publicationLinkUrl);
 		settings.setUsePrecompiledResults(usePrecompiledResults);
 		settings.setExamplePdb(examplePdb);
+		boolean readOnlyMode = Boolean.parseBoolean(globalProperties.getProperty("read_only_mode","false"));
+		settings.setReadOnlyMode(readOnlyMode);
+		boolean devMode = Boolean.parseBoolean(globalProperties.getProperty(DEVELOPMENT_MODE,"false"));
+		settings.setDevelopmentMode(devMode);
 
 		settings.setResultsLocation(globalProperties.getProperty("results_location"));
 		return settings;

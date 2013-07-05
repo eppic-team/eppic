@@ -105,6 +105,16 @@ public class ApplicationSettings implements Serializable {
 	 * Session identifier.
 	 */
 	private String sessionId;
+
+	/**
+	 * Read Only Mode: only pre-computed data is available, file upload and advanced parameter settings are disabled
+	 */
+	private boolean readOnlyMode;
+	
+	/**
+	 * Only usefull for development: jobmanager won't be created
+	 */
+	private boolean developmentMode;
 	
 	public ApplicationSettings()
 	{
@@ -415,5 +425,22 @@ public class ApplicationSettings implements Serializable {
 	 */
 	public ScreenSettings getScreenSettings() {
 		return screenSettings;
+	}
+
+	
+	public void setReadOnlyMode(boolean readOnlyMode) {
+	    this.readOnlyMode = readOnlyMode;
+	}
+	
+	public boolean isReadOnlyMode() {
+	    return readOnlyMode;
+	}
+
+	public boolean isDevelopmentMode() {
+	    return developmentMode;
+	}
+
+	public void setDevelopmentMode(boolean developmentMode) {
+	    this.developmentMode = developmentMode;
 	}
 }

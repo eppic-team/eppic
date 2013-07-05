@@ -15,6 +15,7 @@ import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpSession;
 
+import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.commons.services.eppic.CrkWebService;
 import ch.systemsx.sybit.crkwebui.server.commons.util.io.DirectoryContentReader;
 import ch.systemsx.sybit.crkwebui.server.commons.util.io.FileContentReader;
@@ -186,34 +187,8 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 
 		localCifDir = crkProperties.getProperty("LOCAL_CIF_DIR");
 
-		
-		InputStream queuingSystemPropertiesStream = getServletContext()
-				.getResourceAsStream(
-						"/WEB-INF/classes/META-INF/" + queuingSystem + "_queuing_system.properties");
-
-		Properties queuingSystemProperties = new Properties();
-
-		try
-		{
-			queuingSystemProperties.load(queuingSystemPropertiesStream);
-		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
-			throw new ServletException("Properties file for " + queuingSystem + " can not be read");
-		}
-
-		
-		try
-		{
-			jobManager = JobManagerFactory.getJobManager(queuingSystem,
-														 queuingSystemProperties,
-														 generalDestinationDirectoryName);
-		}
-		catch(JobManagerException e)
-		{
-			throw new ServletException(e);
-		}
+		if(!properties.containsKey(ApplicationSettingsGenerator.DEVELOPMENT_MODE))
+		    initializeJobManager(queuingSystem);
 
 //		String serverName =  getThreadLocalRequest().getServerName();
 //		int serverPort = getThreadLocalRequest().getServerPort();
@@ -334,6 +309,23 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 //		{
 //			e.printStackTrace();
 //		}
+	}
+
+	private void initializeJobManager(String queuingSystem) throws ServletException {
+	    String queueingSystemConfigFile = "/WEB-INF/classes/META-INF/" + queuingSystem + "_queuing_system.properties";
+	    InputStream queuingSystemPropertiesStream = getServletContext().getResourceAsStream(queueingSystemConfigFile );
+	    Properties queuingSystemProperties = new Properties();
+	    try {
+	    	queuingSystemProperties.load(queuingSystemPropertiesStream);
+	    }catch (IOException e) {
+	    	e.printStackTrace();
+	    	throw new ServletException("Properties file for " + queuingSystem + " can not be read");
+	    }
+	    try {
+	    	jobManager = JobManagerFactory.getJobManager(queuingSystem, queuingSystemProperties, generalDestinationDirectoryName);
+	    }catch(JobManagerException e) {
+	    	throw new ServletException(e);
+	    }
 	}
 
 	/**
