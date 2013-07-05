@@ -1,0 +1,25 @@
+#!/bin/bash
+#**************************************************************
+#  EPPIC Pre-Computation Script
+#  Author : Kumaran Baskaran
+#  Date   : 05/07/2013
+#***************************************************************
+
+CURRENT=`pwd`
+VERSION=uniprot_2013_07
+SOURCE=$CURRENT/$VERSION
+USER=baskaran_k
+CONCURRENCY=4
+BLAST=/gpfs/home/baskaran_k/software/packages/ncbi-blast-2.2.27+/bin/blastp
+
+
+echo "`date +%d/%m/%y-%H:%M:%S` INFO: Started copying uniprot files to merlin computing nodes"
+./Cp2Nodes -s $SOURCE -d /scratch/$USER/$VERSION -n $CURRENT/hosts.list -l $CURRENT/logs/node-copy -c $CONCURRENCY 1>>eppic_precomp.out 2>>eppic_precomp.err
+
+echo "`date +%d/%m/%y-%H:%M:%S` INFO: Finished copying uniprot files to merlin computing nodes"
+echo "`date +%d/%m/%y-%H:%M:%S` INFO: Creating qsub script to create blast cache"
+./BlastPDB -i $CURRENT/unique_fasta -o $CURRENT/blast_cache_$VERSION -l $CURRENT/logs/blast-cache -f $CURRENT/unique_fasta/queries.list -d /scratch/$USER/$VERSION -p $BLAST 1>>eppic_precomp.out 2>>eppic_precomp.err
+
+echo "`date +%d/%m/%y-%H:%M:%S` INFO: qsub generated to create blast cache"
+
+

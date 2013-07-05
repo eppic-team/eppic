@@ -1,0 +1,108 @@
+#!/bin/sh
+#**************************************************************
+#  EPPIC Pre-Computation Script
+#  Author : Kumaran Baskaran
+#  Date   : 05/07/2013
+#***************************************************************
+
+
+help=" Usage: $0 \n
+        \t\t    [ -i <dir>  : Input Directory where the fasta files are present \n
+        \t\t      -o <dir>  : Output Directory where blast files are to be written \n
+        \t\t      -l <dir>  : Logs Directory\n
+        \t\t      -f <file> : Queries file containing list of fasta files to be blasted \n
+	\t\t	  -d <dir>  : Uniprot Database Path(Preferably in the local scratch) \n
+	\t\t	  -p <path> : Blast Program Path  ] \n
+Example: ./blast-the-pdb -i /home/in -o /home/out -l /home/logs/ -f /home/queries.list -d /scratch/biyanin/uniprot_2013_01 -p /bin/blastp "
+
+# Set Defaults
+BLASTPBIN=/gpfs/home/duarte_j/software/packages/ncbi-blast-2.2.27+/bin/blastp
+
+while getopts :i:o:l:f:d:p:h option
+do
+        case "${option}"
+        in
+                i) blastqueriesdir=${OPTARG};;
+                o) outdir=${OPTARG};;
+                l) logsdir=${OPTARG};;
+                f) queriesfile=${OPTARG};;
+		d) BLASTDBDIR=${OPTARG};;
+		p) BLASTPBIN=${OPTARG};;
+                h) echo -e $help;;
+               \?) print >&2 $help
+                   exit 1;;
+                :) echo "`date +%d/%m/%y-%H:%M:%S` ERROR: Option -$OPTARG requires an argument." >&2
+                   exit 1;;
+        esac
+done
+
+if [ -z $blastqueriesdir ] || [ -z $outdir ] || [ -z $logsdir ] || [ -z $queriesfile ] || [ -z $BLASTDBDIR ]
+then
+        echo -e "\n `date +%d/%m/%y-%H:%M:%S` ERROR: ---- SOME OPTIONS NOT SPECIFIED CORRECTLY ---- "
+        echo -e $help
+        exit 1
+fi
+
+
+if [ ! -d $outdir ]
+then
+	mkdir -p $outdir
+fi
+if [ ! -d $logsdir ]
+then
+	mkdir -p $logsdir
+fi
+
+
+
+blastdb=$BLASTDBDIR/uniref100.fasta
+
+numthreads=1
+srt="23:40:00"
+hrt="24:00:00"
+
+maxjobs=`cat $queriesfile | wc -l`
+
+cur_dir=`pwd`
+date=`date +%Y%m%d`
+scriptname=$cur_dir/blast_submit-$date.sh
+
+cat << _EOF_ > $scriptname
+#!/bin/sh
+
+#$ -N pdb-blast
+#$ -q all.q
+#$ -e $logsdir
+#$ -o $logsdir
+#$ -t 1-$maxjobs
+#$ -l ram=8G
+#$ -l s_rt=$srt,h_rt=$hrt
+
+query=\`sed "\${SGE_TASK_ID}q;d" $queriesfile\`
+
+chars=\`grep -v "^>" $blastqueriesdir/\$query.fa | wc -c\`
+lines=\`grep -v "^>" $blastqueriesdir/\$query.fa | wc -l\`
+count=\$(( chars-lines ))
+
+matrix=BLOSUM62
+
+if [ \$count -lt 35 ]; then
+	matrix=PAM30
+else
+	if [ \$count -lt 50 ]; then
+	matrix=PAM70
+	else
+		if [ \$count -lt 85 ]; then
+		matrix=BLOSUM80
+		fi
+	fi
+fi
+
+time $BLASTPBIN -matrix \$matrix -db $blastdb -query $blastqueriesdir/\$query.fa -num_threads $numthreads -outfmt 5 -seg no | gzip > $outdir/\$query.blast.xml.gz
+_EOF_
+
+chmod +x $scriptname
+echo "`date +%d/%m/%y-%H:%M:%S` INFO: $scriptname is created"
+#echo "Submitting Job to server.."
+#qsub $scriptname
+

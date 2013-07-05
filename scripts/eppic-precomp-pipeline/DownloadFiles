@@ -1,0 +1,115 @@
+#!/bin/bash
+#***********************************************************
+#	Script to Download necessary files 
+#	Author  : Kumaran Baskaran
+#	Date 	: 01.07.2013
+#************************************************************ 
+
+
+help="\t\tUsage : $0 \n
+	\t\t [-o <dir> : Directory to download]\n
+\t\tExample : ./Download files -o ~/Downloads "
+
+if (($# == 0)); then
+	echo "`date +%d/%m/%y-%H:%M:%S` ERROR: Script requires arguments" >&2
+	echo -e $help
+	exit 1;
+fi
+while getopts :o:h opt
+do
+	case $opt in 
+	o) DOWNLOAD=$OPTARG;;
+	h) echo -e $help;;
+	\?) echo "`date +%d/%m/%y-%H:%M:%S` ERROR: Invalid option: -$OPTARG" >&2
+		exit 1;;
+	:) echo "`date +%d/%m/%y-%H:%M:%S` ERROR: Option -$OPTARG requires an argument." >&2
+		exit 1;;
+	esac
+done
+
+
+#===================== Download links =====================================
+
+
+UNIPROT_URL="ftp://ftp.expasy.org/databases/uniprot/current_release/uniref/uniref100/uniref100.xml.gz"
+TAXONOMY_URL="http://www.uniprot.org/taxonomy/?query=*&compress=yes&format=tab"
+#BLASTDB_URL="ftp://ftp.uniprot.org/pub" # US main ftp
+BLASTDB_URL="ftp://ftp.ebi.ac.uk/pub" # UK mirror
+SIFTSPDB2UNIPROTFTP="ftp://ftp.ebi.ac.uk/pub/databases/msd/sifts/text/pdb_chain_uniprot.lst"
+
+#====================End Donwload links=====================================
+
+if [ -z $DOWNLOAD ]
+then
+	echo "`date +%d/%m/%y-%H:%M:%S` ERROR: ---------Some Options not specified correctly -------" >&2
+	echo -e $help
+	exit 1
+fi
+
+if [ ! -d $DOWNLOAD ]
+then
+	mkdir -p $DOWNLOAD || exit 1
+fi
+
+
+echo "`date +%d/%m/%y-%H:%M:%S` INFO: Downloading Uniprot files......"
+curl $UNIPROT_URL > $DOWNLOAD/uniref100.xml.gz
+
+if [ $? -ne 0 ]
+then
+	echo "`date +%d/%m/%y-%H:%M:%S` ERROR: Downloading Uniprot file failed.. " >&2
+	exit 1
+fi
+echo "`date +%d/%m/%y-%H:%M:%S` INFO: Downloading Uniprot files completed."
+echo "`date +%d/%m/%y-%H:%M:%S` INFO: Downloading Taxonomy files......"
+curl $TAXONOMY_URL | gunzip > $DOWNLOAD/taxonomy-all.tab || exit 1
+if [ $? -ne 0 ]
+then
+	echo "`date +%d/%m/%y-%H:%M:%S` ERROR: Downloading Taxonomy table failed.. " >&2
+	exit 1
+fi
+echo "`date +%d/%m/%y-%H:%M:%S` INFO: Downloading Taxonomy files completed."
+
+echo "`date +%d/%m/%y-%H:%M:%S` INFO: Downloading the SIFTS PDB to UNIPROT maping file"
+SIFTSPDB2UNIPROT="pdb_chain_uniprot.lst"
+curl $SIFTSPDB2UNIPROTFTP > $DOWNLOAD/$SIFTSPDB2UNIPROT
+if [ $? -ne 0 ]
+then
+	echo "`date +%d/%m/%y-%H:%M:%S` ERROR: Downloading the SIFTS PDB to UNIPROT maping file failed " >&2
+	exit 1
+fi
+echo "`date +%d/%m/%y-%H:%M:%S` INFO: Downloading the SIFTS PDB to UNIPROT maping file completed"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
