@@ -162,7 +162,15 @@ public class WebUIDataAdaptor {
 		StringBuffer sb = new StringBuffer();
 		for (int i=0;i<list.size();i++) {
 			if (usePdbResSer) {
-				sb.append(list.get(i).getPdbSerial()+":"+chainName);
+				// jmol uses a special syntax for residue serials with insertion 
+				// codes, e.g. 23A from chain A would be "23^A:A" and not "23A:A"
+				// A PDB with this problem is 1yg9, it would show a blank jmol screen before this fix
+				String pdbSerial = list.get(i).getPdbSerial();
+				char lastChar = pdbSerial.charAt(pdbSerial.length()-1);
+				if (!Character.isDigit(lastChar)) {
+					pdbSerial = pdbSerial.replace(Character.toString(lastChar), "^"+lastChar);
+				}
+				sb.append(pdbSerial+":"+chainName);
 			} else {
 				sb.append(list.get(i).getSerial()+":"+chainName);
 			}
