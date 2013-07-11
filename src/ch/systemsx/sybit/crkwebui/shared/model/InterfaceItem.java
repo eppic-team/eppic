@@ -39,6 +39,8 @@ public class InterfaceItem implements Serializable, Comparable<InterfaceItem>
 	private String finalCallName;
 	private String finalCallReason;
 	private String operator; 
+	// the types are the short names of the owl.core.structure.TransformType enum
+	private String operatorType;
 	private List<WarningItem> warnings;
 	
 	private List<InterfaceScoreItem> interfaceScores;
@@ -120,6 +122,14 @@ public class InterfaceItem implements Serializable, Comparable<InterfaceItem>
 
 	public String getOperator() {
 		return operator;
+	}
+	
+	public void setOperatorType(String operatorType) {
+		this.operatorType = operatorType;
+	}
+	
+	public String getOperatorType() {
+		return operatorType;
 	}
 	
 	public List<WarningItem> getWarnings() {
@@ -274,6 +284,7 @@ public class InterfaceItem implements Serializable, Comparable<InterfaceItem>
 		interfaceItem.setChain1(interfaceItemDB.getChain1());
 		interfaceItem.setChain2(interfaceItemDB.getChain2());
 		interfaceItem.setOperator(interfaceItemDB.getOperator());
+		interfaceItem.setOperatorType(interfaceItemDB.getOperatorType());
 		interfaceItem.setSize1(interfaceItemDB.getSize1());
 		interfaceItem.setSize2(interfaceItemDB.getSize2());
 		interfaceItem.setUid(interfaceItemDB.getUid());
