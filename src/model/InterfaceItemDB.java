@@ -30,6 +30,8 @@ public class InterfaceItemDB implements Serializable
 	private String finalCallName;
 	private String finalCallReason;
 	private String operator; 
+	// the types are the short names of the owl.core.structure.TransformType enum
+	private String operatorType;
 	private List<WarningItemDB> warnings;
 	
 	private List<InterfaceScoreItemDB> interfaceScores;
@@ -116,6 +118,14 @@ public class InterfaceItemDB implements Serializable
 
 	public String getOperator() {
 		return operator;
+	}
+	
+	public void setOperatorType(String operatorType) {
+		this.operatorType = operatorType;
+	}
+	
+	public String getOperatorType() {
+		return operatorType;
 	}
 	
 	public List<WarningItemDB> getWarnings() {

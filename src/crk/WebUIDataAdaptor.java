@@ -95,6 +95,8 @@ public class WebUIDataAdaptor {
 			ii.setChain2(interf.getSecondMolecule().getPdbChainCode());
 			
 			ii.setOperator(SpaceGroup.getAlgebraicFromMatrix(interf.getSecondTransf().getMatTransform()));
+			ii.setOperatorType(interf.getSecondTransf().getTransformType().getShortName());
+			
 			ii.setSize1(interf.getFirstRimCore().getCoreSize());
 			ii.setSize2(interf.getSecondRimCore().getCoreSize());
 			
