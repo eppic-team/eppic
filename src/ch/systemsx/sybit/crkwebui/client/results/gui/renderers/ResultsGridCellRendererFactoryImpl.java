@@ -40,6 +40,8 @@ public class ResultsGridCellRendererFactoryImpl implements GridCellRendererFacto
 				 renderer = new WarningsCellRenderer();
 			} else if (rendererName.equals("finalcall")) {
 				renderer = new FinalCallCellRenderer();
+			} else if (rendererName.equals("operatorType")) {
+				renderer = new OperatorTypeCellRenderer();
 			}
 		}
 		

@@ -41,6 +41,7 @@ public class InterfaceItem implements Serializable, Comparable<InterfaceItem>
 	private String operator; 
 	// the types are the short names of the owl.core.structure.TransformType enum
 	private String operatorType;
+	private boolean isInfinite;
 	private List<WarningItem> warnings;
 	
 	private List<InterfaceScoreItem> interfaceScores;
@@ -130,6 +131,14 @@ public class InterfaceItem implements Serializable, Comparable<InterfaceItem>
 	
 	public String getOperatorType() {
 		return operatorType;
+	}
+	
+	public boolean getIsInfinite() {
+		return this.isInfinite;
+	}
+	
+	public void setIsInfinite(boolean isInfinite) {
+		this.isInfinite = isInfinite;
 	}
 	
 	public List<WarningItem> getWarnings() {
@@ -285,6 +294,7 @@ public class InterfaceItem implements Serializable, Comparable<InterfaceItem>
 		interfaceItem.setChain2(interfaceItemDB.getChain2());
 		interfaceItem.setOperator(interfaceItemDB.getOperator());
 		interfaceItem.setOperatorType(interfaceItemDB.getOperatorType());
+		interfaceItem.setIsInfinite(interfaceItemDB.getIsInfinite());
 		interfaceItem.setSize1(interfaceItemDB.getSize1());
 		interfaceItem.setSize2(interfaceItemDB.getSize2());
 		interfaceItem.setUid(interfaceItemDB.getUid());

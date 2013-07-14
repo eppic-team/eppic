@@ -26,6 +26,8 @@ public class InterfaceItemModel extends BaseModel {
 		set("sizes", "");
 		set("finalCallName", "");
 		set("operator", "");
+		set("operatorType", "");
+		set("isInfinite", "");
 		set("warnings", "");
 		set("METHODS", "");
 	}
@@ -36,6 +38,8 @@ public class InterfaceItemModel extends BaseModel {
 							  String sizes,
 							  String finalCallName,
 							  String operator,
+							  String operatorType,
+							  boolean isInfinite,
 							  List<WarningItem> warnings) 
 	{
 		set("id", id);
@@ -44,6 +48,8 @@ public class InterfaceItemModel extends BaseModel {
 		set("sizes", sizes);
 		set("finalCallName", finalCallName);
 		set("operator", operator);
+		set("operatorType", operatorType);
+		set("isInfinite", isInfinite);
 		set("warnings", warnings);
 		set("METHODS", "");
 	}
@@ -94,6 +100,22 @@ public class InterfaceItemModel extends BaseModel {
 	
 	public void setOperator(String operator) {
 		set("operator", operator);
+	}
+	
+	public String getOperatorType() {
+		return (String) get("operatorType");
+	}
+	
+	public void setOperatorType(String operatorType) {
+		set("operatorType", operatorType);
+	}
+	
+	public boolean getIsInfinite() {
+		return (Boolean) get("isInfinite");
+	}
+	
+	public void setIsInfinite(boolean isInfinite) {
+		set("isInfinite", isInfinite);
 	}
 	
 	public List<WarningItem> getWarnings() {

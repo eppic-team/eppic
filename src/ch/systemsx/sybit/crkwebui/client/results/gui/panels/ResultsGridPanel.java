@@ -200,6 +200,8 @@ public class ResultsGridPanel extends ContentPanel
 				model.setSizes(String.valueOf(interfaceItem.getSize1()) + " + " + String.valueOf(interfaceItem.getSize2()));
 				model.setFinalCallName(interfaceItem.getFinalCallName());
 				model.setOperator(interfaceItem.getOperator());
+				model.setOperatorType(interfaceItem.getOperatorType());
+				model.setIsInfinite(interfaceItem.getIsInfinite());
 				model.setWarnings(interfaceItem.getWarnings());
 
 				data.add(model);
