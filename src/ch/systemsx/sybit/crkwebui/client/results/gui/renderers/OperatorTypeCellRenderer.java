@@ -63,7 +63,7 @@ public class OperatorTypeCellRenderer implements GridCellRenderer<BaseModel>
 					1000, 
 					0, 
 					TooltipXPositionType.RIGHT, 
-					TooltipYPositionType.TOP);
+					TooltipYPositionType.BOTTOM);
 			
 			//LabelWithTooltip operatorLabel = new CallLabel(value, 
 			//												 tooltipText,
