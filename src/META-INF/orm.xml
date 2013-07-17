@@ -64,7 +64,7 @@
             </id>
             <basic name="jobId"></basic>
             <basic name="pdbName">
-            	<column column-definition="text"/>
+            	<column length="255"/>
             </basic>
             <basic name="title">
             	<column column-definition="text"/>
