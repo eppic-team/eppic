@@ -172,6 +172,8 @@ public class CRKParams {
 	
 	private boolean generateThumbnails;
 	
+	private boolean generateWuiSerializedFile;
+	
 	private File progressLogFile;
 	private PrintStream progressLog;
 	
@@ -265,6 +267,7 @@ public class CRKParams {
 		this.interfSerFile = null;
 		this.chainEvContextSerFile = null;
 		this.generateThumbnails = false;
+		this.generateWuiSerializedFile = false;
 		this.progressLog = System.out;
 		this.debug = false;
 		this.homologsSearchMode = DEF_HOMOLOGS_SEARCH_MODE;
@@ -275,7 +278,7 @@ public class CRKParams {
 	public void parseCommandLine(String[] args, String programName, String help) {
 	
 
-		Getopt g = new Getopt(programName, args, "i:sa:b:o:r:e:c:z:m:x:y:d:D:q:H:G:OpA:I:C:lL:g:uh?");
+		Getopt g = new Getopt(programName, args, "i:sa:b:o:r:e:c:z:m:x:y:d:D:q:H:G:OpA:I:C:lwL:g:uh?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
@@ -344,6 +347,9 @@ public class CRKParams {
 				break;
 			case 'l':
 				generateThumbnails = true;
+				break;
+			case 'w':
+				generateWuiSerializedFile = true;
 				break;
 			case 'L':
 				progressLogFile = new File(g.getOptarg());
@@ -423,9 +429,10 @@ public class CRKParams {
 		"                  sequence output of a previous run of "+PROGRAM_NAME+"\n" +
 		"  [-l]         :  if specified thumbnail images will be generated for each interface \n" +
 		"                  (requires pymol)\n" +
+		"  [-w]         :  if specified a serialized webui.dat file will be produced\n" +
 		"  [-L <file>]  :  a file where progress log will be written to. Default: progress\n" +
 		"                  log written to std output\n" +
-		"  [-g <file>]  :  a "+PROGRAM_NAME+" config file. This will override the existing \n" +
+		"  [-g <file>]  :  an "+PROGRAM_NAME+" config file. This will override the existing \n" +
 		"                  config file in the user's home directory\n" +
 		"  [-u]         :  debug, if specified debug output will be also shown on standard\n" +
 		"                  output\n\n";
@@ -746,6 +753,10 @@ public class CRKParams {
 	
 	public boolean isGenerateThumbnails() {
 		return generateThumbnails;
+	}
+	
+	public boolean isGenerateWuiSerializedFile() {
+		return generateWuiSerializedFile;
 	}
 	
 	public PrintStream getProgressLog() {

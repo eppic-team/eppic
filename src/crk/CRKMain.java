@@ -266,8 +266,8 @@ public class CRKMain {
 			throw new CRKException(e,"Couldn't log interfaces description to file: "+e.getMessage(),false);
 		}
 
-		if (!params.isGenerateThumbnails()) {
-			// we only produce the interfaces.dat file if not in -l mode (for WUI not to produce so many files)
+		if (!params.isGenerateWuiSerializedFile()) {
+			// we only produce the interfaces.dat file if not in -w mode (for WUI not to produce so many files)
 			try {
 				Goodies.serialize(params.getOutputFile(".interfaces.dat"),interfaces);
 			} catch (IOException e) {
@@ -318,6 +318,9 @@ public class CRKMain {
 	}
 	
 	public void doWritePymolFiles() throws CRKException {
+		
+		if (!params.isGenerateThumbnails()) return;
+		
 		if (interfaces.getNumInterfaces()==0) return;
 		
 		PymolRunner pr = null;
@@ -375,27 +378,41 @@ public class CRKMain {
 			throw new CRKException(e, "Couldn't generate thumbnails, PyMOL pse/pml files or jmol files, pymol thread interrupted: "+e.getMessage(),true);
 		}
 
-		compressFiles();
-				
-		
 	}
 
-	private void compressFiles() throws CRKException {
+	public void doCompressFiles() throws CRKException {
+		
+		if (interfaces.getNumInterfaces()==0) return;
+		
 		params.getProgressLog().println("Compressing files");
 		LOGGER.info("Compressing files");
+		
+		try {
+			for (ChainInterface interf:interfaces) {
+				File pdbFile = params.getOutputFile("."+interf.getId()+".pdb");
+				File gzipPdbFile = params.getOutputFile("."+interf.getId()+".pdb.gz");
+				
+				// pdb, always generated whether in -l or not
+				Goodies.gzipFile(pdbFile, gzipPdbFile);
+				pdbFile.delete();
+			}
+		} catch (IOException e) {
+			throw new CRKException(e, "PDB files could not be gzipped. "+e.getMessage(),true);
+		}
+		
+		
+		if (!params.isGenerateThumbnails()) return;
+			
+		
+		// from here only if in -l mode: compress pse, chain pses and pdbs, create zip
 		try {
 			for (ChainInterface interf:interfaces) {
 				File pseFile = params.getOutputFile("."+interf.getId()+".pse");
 				File gzipPseFile = params.getOutputFile("."+interf.getId()+".pse.gz");
-				File pdbFile = params.getOutputFile("."+interf.getId()+".pdb");
-				File gzipPdbFile = params.getOutputFile("."+interf.getId()+".pdb.gz");
-				// pse
+
+				// pse (only if in -l mode)
 				Goodies.gzipFile(pseFile, gzipPseFile);
-				pseFile.delete();
-				// pdb
-				Goodies.gzipFile(pdbFile, gzipPdbFile);
-				pdbFile.delete();
-				
+				pseFile.delete();				
 			}
 			
 			if (params.isDoScoreEntropies()) {
@@ -442,6 +459,11 @@ public class CRKMain {
 						source.getName().endsWith(".dat") || // this includes chainevolcontext.dat and interfaces.dat
 						source.getName().endsWith(".zip")) 
 					continue;
+				
+				if (!params.isInputAFile()) { // i.e. PDB code from local cif repo
+					// we don't want to store the cif file in zip
+					if (source.getName().endsWith(".cif")) continue;
+				}
 
 				if(source.isFile())	{
 					FileInputStream in = new FileInputStream(source);
@@ -533,8 +555,8 @@ public class CRKMain {
 		cecs.computeEntropies(params);
 		cecs.writeEntropiesToFile(params, pdb);
 		
-		if (!params.isGenerateThumbnails()) {
-			// we only produce the chainevolcontext.dat file if not in -l mode (for WUI not to produce so many files)
+		if (!params.isGenerateWuiSerializedFile()) {
+			// we only produce the chainevolcontext.dat file if not in -w mode (for WUI not to produce so many files)
 			try {
 				Goodies.serialize(params.getOutputFile(".chainevolcontext.dat"),cecs);
 			} catch (IOException e) {
@@ -628,6 +650,7 @@ public class CRKMain {
 			stepsLog.println("step="+text);
 			stepsLog.println("step_total="+STEPS_TOTAL);
 			stepCount++;
+			stepsLog.close();
 		} catch(FileNotFoundException e) {
 			LOGGER.error("Couldn't write to steps log file "+stepsLogFile);
 		}
@@ -656,7 +679,7 @@ public class CRKMain {
 			// (and even weirder, for some reason it doesn't work if you put the code in its own separate method!)
 			// NOTE: as of owl revision 1647 the embedded jaligner jar contains a modified NeedlemanWunschGotoh class
 			//       that doesn't have logging at all (we fixed a bug in the code and took the opportunity to remove
-			//       the logging). The official jaligner has still loggin (and the bug). If we go back to using the official 
+			//       the logging). The official jaligner has still logging (and the bug). If we go back to using the official 
 			//       jaligner we need to put this logging-turning-off code back.
 			//java.util.logging.Logger jalLogger = java.util.logging.Logger.getLogger("NeedlemanWunschGotoh");
 			//jalLogger.setLevel(java.util.logging.Level.OFF);
@@ -699,19 +722,22 @@ public class CRKMain {
 				crkMain.doCombinedScoring();
 			}
 			
+						
+			// 5 writing pymol files
+			crkMain.doWritePymolFiles();
 			
-			if (crkMain.params.isGenerateThumbnails()) {
-				// 5 writing pymol files
-				crkMain.doWritePymolFiles();
-				
-				// 6 writing out the serialized file for web ui
+			// 6 compressing files
+			crkMain.doCompressFiles();
+
+			if (crkMain.params.isGenerateWuiSerializedFile()) {
+				// 7 writing out the serialized file for web ui
 				crkMain.wuiAdaptor.addInterfaceWarnings(); // first we call this method to add all the cached warnings
 				crkMain.wuiAdaptor.writePdbScoreItemFile(crkMain.params.getOutputFile(".webui.dat"));
-				
+
 				// finally we write a signal file for the wui to know that job is finished
 				crkMain.writeFinishedFile();
-
 			}
+
 
 			long end = System.nanoTime();
 			LOGGER.info("Finished successfully (total runtime "+((end-start)/1000000000L)+"s)");
