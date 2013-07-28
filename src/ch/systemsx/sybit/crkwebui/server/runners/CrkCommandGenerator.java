@@ -76,7 +76,8 @@ public class CrkCommandGenerator
 
 		command.add("-L");
 		command.add(destinationDirectoryName + File.separator + "crklog");
-		command.add("-l");
+		command.add("-l"); // for thumbnails and pse files
+		command.add("-w"); // for webui.dat file
 
 		return command;
 	}
