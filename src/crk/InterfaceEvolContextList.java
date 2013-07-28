@@ -1,6 +1,5 @@
 package crk;
 
-import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -145,14 +144,6 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 			evolInterfZPredictors.get(i).printScoresLine(ps);
 		}
 		
-	}
-	
-	public void writeScoresPDBFiles(CRKParams params, String suffix) throws IOException {
-		for (InterfaceEvolContext iec:this) {
-			if (scoType==ScoringType.ENTROPY) {
-				iec.writePdbFile(params.getOutputFile("."+iec.getInterface().getId()+suffix),scoType, usePdbResSer);
-			}
-		}
 	}
 	
 	public double getCallCutoff() {

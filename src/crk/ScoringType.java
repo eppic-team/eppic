@@ -4,7 +4,12 @@ import java.io.Serializable;
 
 public enum ScoringType implements Serializable
 {
-	GEOMETRY("geometry"), ENTROPY("entropy core-rim"), KAKS("Ka/Ks core-rim"), ZSCORE("entropy core-surface"), COMBINED("combined"), PISA("pisa");
+	GEOMETRY("geometry"), 
+	ENTROPY("entropy core-rim"), 
+	KAKS("Ka/Ks core-rim"), 
+	ZSCORE("entropy core-surface"), 
+	COMBINED("combined"), 
+	PISA("pisa");
 	
 	private String name;
 	private ScoringType(String name) {

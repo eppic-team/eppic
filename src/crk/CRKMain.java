@@ -259,9 +259,12 @@ public class CRKMain {
 		interfaces.calcRimAndCores(params.getCAcutoffForGeom(), params.getMinAsaForSurface());
 		
 		try {
-			PrintStream interfLogPS = new PrintStream(params.getOutputFile(".interfaces"));
-			interfaces.printTabular(interfLogPS, params.getJobName(), params.isUsePdbResSer());
-			interfLogPS.close();
+			// if no interfaces found (e.g. NMR) we don't want to write the file
+			if (interfaces.getNumInterfaces()>0) {
+				PrintStream interfLogPS = new PrintStream(params.getOutputFile(".interfaces"));
+				interfaces.printTabular(interfLogPS, params.getJobName(), params.isUsePdbResSer());
+				interfLogPS.close();
+			}
 		} catch(IOException	e) {
 			throw new CRKException(e,"Couldn't log interfaces description to file: "+e.getMessage(),false);
 		}
@@ -298,13 +301,7 @@ public class CRKMain {
 				gp.setMinAsaForSurface(params.getMinAsaForSurface());
 				gp.setMinCoreSizeForBio(params.getMinCoreSizeForBio());
 				gp.printScores(scoreGeomPS);
-				// we write a PDB file only if no evol scoring is to be done, if evol scoring is done then 
-				// the PDB files are written later with entropy values encoded as bfactors
-				if (!params.isDoScoreEntropies()) {
-					if (interf.isFirstProtein() && interf.isSecondProtein()) {
-						interf.writeToPdbFile(params.getOutputFile("."+interf.getId()+".pdb"), params.isUsePdbResSer());
-					}
-				}
+				
 			}
 			scoreGeomPS.close();
 						
@@ -313,8 +310,35 @@ public class CRKMain {
 			wuiAdaptor.setGeometryScores(gps);
 			wuiAdaptor.addResidueDetails(interfaces);
 		} catch (IOException e) {
-			throw new CRKException(e, "Couldn't write interface geometry scores or related pdb files. "+e.getMessage(),true);
+			throw new CRKException(e, "Couldn't write interface geometry scores file. "+e.getMessage(),true);
 		}
+	}
+	
+	public void doWritePdbFiles() throws CRKException {
+
+		if (interfaces.getNumInterfaces()==0) return;
+		
+		try {
+			if (!params.isDoScoreEntropies()) {
+				// no evol scoring: plain PDB files without altered bfactors
+				for (ChainInterface interf:interfaces) {
+					if (interf.isFirstProtein() && interf.isSecondProtein()) {
+						interf.writeToPdbFile(params.getOutputFile("."+interf.getId()+".pdb.gz"), params.isUsePdbResSer(), true);
+					}
+
+				}
+			} else {
+				// writing PDB files with entropies as bfactors
+				for (InterfaceEvolContext iec:iecList) {
+					iec.writePdbFile(params.getOutputFile("."+iec.getInterface().getId()+".pdb.gz"),ScoringType.ENTROPY, params.isUsePdbResSer());			
+				}
+			}
+			
+		} catch (IOException e) {
+			throw new CRKException(e, "Couldn't write interfaces PDB files. "+e.getMessage(), true);
+		}
+
+
 	}
 	
 	public void doWritePymolFiles() throws CRKException {
@@ -340,7 +364,7 @@ public class CRKMain {
 			for (ChainInterface interf:interfaces) {
 				pr.generateInterfPngPsePml(interf, 
 						params.getCAcutoffForGeom(), params.getMinAsaForSurface(), 
-						params.getOutputFile("."+interf.getId()+".pdb"), 
+						params.getOutputFile("."+interf.getId()+".pdb.gz"), 
 						params.getOutputFile("."+interf.getId()+".pse"),
 						params.getOutputFile("."+interf.getId()+".pml"),
 						params.getBaseName()+"."+interf.getId(), 
@@ -384,27 +408,12 @@ public class CRKMain {
 		
 		if (interfaces.getNumInterfaces()==0) return;
 		
+		if (!params.isGenerateThumbnails()) return;
+		// from here only if in -l mode: compress pse, chain pses and pdbs, create zip
+		
 		params.getProgressLog().println("Compressing files");
 		LOGGER.info("Compressing files");
 		
-		try {
-			for (ChainInterface interf:interfaces) {
-				File pdbFile = params.getOutputFile("."+interf.getId()+".pdb");
-				File gzipPdbFile = params.getOutputFile("."+interf.getId()+".pdb.gz");
-				
-				// pdb, always generated whether in -l or not
-				Goodies.gzipFile(pdbFile, gzipPdbFile);
-				pdbFile.delete();
-			}
-		} catch (IOException e) {
-			throw new CRKException(e, "PDB files could not be gzipped. "+e.getMessage(),true);
-		}
-		
-		
-		if (!params.isGenerateThumbnails()) return;
-			
-		
-		// from here only if in -l mode: compress pse, chain pses and pdbs, create zip
 		try {
 			for (ChainInterface interf:interfaces) {
 				File pseFile = params.getOutputFile("."+interf.getId()+".pse");
@@ -579,15 +588,12 @@ public class CRKMain {
 				iecList.setRimCorePredBsaToAsaCutoff(params.getCAcutoffForRimCore(), params.getMinAsaForSurface()); // calls calcRimAndCores as well
 				iecList.setCallCutoff(params.getEntrCallCutoff());
 				iecList.setZscoreCutoff(params.getZscoreCutoff());
-				PrintStream scoreEntrPS = new PrintStream(params.getOutputFile(CRKParams.CRSCORES_FILE_SUFFIX));
 
+				PrintStream scoreEntrPS = new PrintStream(params.getOutputFile(CRKParams.CRSCORES_FILE_SUFFIX));
 				iecList.scoreEntropy(false);
 				iecList.printScoresTable(scoreEntrPS);
-				
-				// writing PDB files with entropies as bfactors (if no evol scoring performed, then these files are written at geom scoring of course without entropies)
-				iecList.writeScoresPDBFiles(params,".pdb");
-
 				scoreEntrPS.close();
+				
 				// z-scores
 				PrintStream scoreZscorePS = new PrintStream(params.getOutputFile(CRKParams.CSSCORES_FILE_SUFFIX));
 				iecList.setZPredBsaToAsaCutoff(params.getCAcutoffForZscore(), params.getMinAsaForSurface()); // calls calcRimAndCores as well
@@ -599,7 +605,7 @@ public class CRKMain {
 				wuiAdaptor.add(iecList);
 				
 			} catch (IOException e) {
-				throw new CRKException(e, "Couldn't write final interface entropy scores or related PDB files. "+e.getMessage(),true);
+				throw new CRKException(e, "Couldn't write interface evolutionary scores files. "+e.getMessage(),true);
 			} 
 		}
 
@@ -611,15 +617,6 @@ public class CRKMain {
 		
 		try {
 		
-			// commented out because it was an issue to calculate twice especially for z-scores that are non-deterministic: 
-			// in some cases (e.g. 1bos-20, 3ewe-5) it could happen that in first caculation a bio was called and in second a xtal was called 
-			//iecList.setCallCutoff(params.getEntrCallCutoff());
-			//iecList.setRimCorePredBsaToAsaCutoff(params.getCAcutoffForRimCore());
-			//iecList.scoreEntropy(false);
-
-			//iecList.setZscoreCutoff(params.getZscoreCutoff());
-			//iecList.setZPredBsaToAsaCutoff(params.getCAcutoffForZscore());			
-			//iecList.scoreZscore();
 
 			List<CombinedPredictor> cps = new ArrayList<CombinedPredictor>();
 
@@ -722,6 +719,7 @@ public class CRKMain {
 				crkMain.doCombinedScoring();
 			}
 			
+			crkMain.doWritePdbFiles();
 						
 			// 5 writing pymol files
 			crkMain.doWritePymolFiles();

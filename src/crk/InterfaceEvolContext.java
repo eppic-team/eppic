@@ -211,7 +211,7 @@ public class InterfaceEvolContext implements Serializable {
 	}
 	
 	/**
-	 * Writes out a PDB file with the 2 chains of this interface with evolutionary scores 
+	 * Writes out a gzipped PDB file with the 2 chains of this interface with evolutionary scores 
 	 * as b-factors. 
 	 * In order for the file to be handled properly by molecular viewers whenever the two
 	 * chains have the same code we rename the second one to the next letter in alphabet.
@@ -229,17 +229,19 @@ public class InterfaceEvolContext implements Serializable {
 			setConservationScoresAsBfactors(FIRST,scoringType);
 			setConservationScoresAsBfactors(SECOND,scoringType);
 			
-			this.interf.writeToPdbFile(file, usePdbResSer);
+			this.interf.writeToPdbFile(file, usePdbResSer, true);
 		}
 	}
 	
 	/**
-	 * Set the b-factors of the given molecId (FIRST or SECOND) to conservation score values (entropy or ka/ks).
+	 * Set the b-factors of the given molecId (FIRST or SECOND) to conservation score values (at the
+	 * moment, only entropy supported).
 	 * @param molecId
-	 * @param scoType
-	 * @throws NullPointerException if ka/ks ratios are not calculated yet by calling {@link #computeKaKsRatiosSelecton(File)}
+	 * @throws NullPointerException if evolutionary scores are not calculated yet
 	 */
 	private void setConservationScoresAsBfactors(int molecId, ScoringType scoType) {
+		if (scoType!=ScoringType.ENTROPY) 
+			throw new IllegalArgumentException("Only entropy scoring supported at the moment as evolutionary scoring");
 		
 		// do nothing (i.e. keep original b-factors) if there's no query match for this sequence and thus no evol scores calculated 
 		if (!getChainEvolContext(molecId).hasQueryMatch()) return;
@@ -265,12 +267,18 @@ public class InterfaceEvolContext implements Serializable {
 			if (queryPos!=-1) {   
 				map.put(resser, conservationScores.get(queryPos));	
 			} else {
-				// when no entropy info is available for a residue we still want to assign a value for it
-				// or otherwise the residue would keep its original real bfactor and then possibly screw up the
-				// scaling of colors for the rest
-				// The most sensible value we can use is the max entropy so that it looks like a poorly conserved residue
-				double maxEntropy = Math.log(this.getChainEvolContext(molecId).getHomologs().getReducedAlphabet())/Math.log(2);
-				map.put(resser, maxEntropy);
+				
+				if (scoType==ScoringType.ENTROPY) {
+					// when no entropy info is available for a residue we still want to assign a value for it
+					// or otherwise the residue would keep its original real bfactor and then possibly screw up the
+					// scaling of colors for the rest
+					// The most sensible value we can use is the max entropy so that it looks like a poorly conserved residue
+					double maxEntropy = Math.log(this.getChainEvolContext(molecId).getHomologs().getReducedAlphabet())/Math.log(2);
+					map.put(resser, maxEntropy);
+				} else {
+					// if not in ENTROPY, we assign 0 (just as placeholder, only scoring supported at the moment is entropy)
+					map.put(resser, 0.0);
+				}
 			}
 		}
 		pdb.setBFactorsPerResidue(map);		
