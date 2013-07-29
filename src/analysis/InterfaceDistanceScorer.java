@@ -357,7 +357,10 @@ public class InterfaceDistanceScorer {
 			}
 			if (!line.startsWith("#")) {
 				String[] tokens = line.split("\\s");
-				if (tokens.length!=4) throw new FileFormatException("Counts file "+file+" has incorrect number of columns in line "+lineCount);
+				if (tokens.length!=4) {
+					br.close();
+					throw new FileFormatException("Counts file "+file+" has incorrect number of columns in line "+lineCount);
+				}
 				int i = types2indices.get(tokens[0]);
 				int j = types2indices.get(tokens[1]);
 				int k = Integer.parseInt(tokens[2]);
@@ -365,6 +368,7 @@ public class InterfaceDistanceScorer {
 				pairCounts[i][j][k] = count;
 			}
 		}
+		br.close();
 		
 		if (cutoff!=distanceBins[distanceBins.length-1]) {
 			throw new FileFormatException("Cutoff line doesn't coincide with last value in distance bins line in counts file "+file);
