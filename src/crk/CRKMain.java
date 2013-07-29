@@ -459,23 +459,23 @@ public class CRKMain {
 			ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream(zipFile));
 
 			for (int i=0; i<directoryContent.length; i++) {
-				File source = new File(params.getOutDir(), directoryContent[i].getName());
+				File file = new File(params.getOutDir(), directoryContent[i].getName());
 				
 				// we exclude the pse, pngs, jmols, dats and zip file (if there was one from an old run it would go into a self-reference and grow forever)
-				if (source.getName().endsWith(".pse.gz") || 
-						source.getName().endsWith(".png") || 
-						source.getName().endsWith(".jmol") || 
-						source.getName().endsWith(".dat") || // this includes chainevolcontext.dat and interfaces.dat
-						source.getName().endsWith(".zip")) 
+				if (file.getName().endsWith(".pse.gz") || 
+						file.getName().endsWith(".png") || 
+						file.getName().endsWith(".jmol") || 
+						file.getName().endsWith(".dat") || // this includes chainevolcontext.dat and interfaces.dat
+						file.getName().endsWith(".zip")) 
 					continue;
 				
 				if (!params.isInputAFile()) { // i.e. PDB code from local cif repo
 					// we don't want to store the cif file in zip
-					if (source.getName().endsWith(".cif")) continue;
+					if (file.getName().endsWith(".cif")) continue;
 				}
 
-				if(source.isFile())	{
-					FileInputStream in = new FileInputStream(source);
+				if(file.isFile())	{
+					FileInputStream in = new FileInputStream(file);
 					zipOutputStream.putNextEntry(new ZipEntry(directoryContent[i].getName()));
 
 					int length;
@@ -484,6 +484,27 @@ public class CRKMain {
 					}
 					zipOutputStream.closeEntry();
 					in.close();
+				}
+				
+				// finally we mark for removal files that we've zipped and that we don't need explicitely for the WUI
+				// in order to save space and increase transfer times between servers for PDB-wide precomputation
+				// Files needed by WUI explicitly are: 
+				// png, jmol, <interface_id>.pdb.gz, <interface_id>.pse.gz, entropies.pse.gz, aln and of course zip
+				// also the main log file is needed to keep writing logs to it after compression and to check for errors in precomputing
+				if ( file.getName().endsWith(".pml") ||
+					 file.getName().endsWith(".interfaces") ||
+					 file.getName().endsWith(CRKParams.GEOMETRY_FILE_SUFFIX) ||
+					 file.getName().endsWith(CRKParams.CRSCORES_FILE_SUFFIX) ||
+					 file.getName().endsWith(CRKParams.CSSCORES_FILE_SUFFIX) ||
+					 file.getName().endsWith(CRKParams.COMBINED_FILE_SUFFIX) ||
+					 file.getName().endsWith(CRKParams.ENTROPIES_FILE_SUFFIX) ||					 
+					 file.getName().endsWith(".fa") ||
+					 file.getName().endsWith(CRKParams.ENTROPIES_FILE_SUFFIX+".pdb.gz") ||
+					 ( file.getName().endsWith(".log") && 
+					   !file.getName().substring(0, file.getName().lastIndexOf('.')).equals(params.getBaseName()) ) // i.e. .A.log but not main .log 
+						) {
+					
+					file.deleteOnExit();
 				}
 			}
  
