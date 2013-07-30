@@ -61,7 +61,7 @@ NOPRED, there is not enough information available to make a decision (usually no
 <p>
 You can see the actual scores for each of the indicators by hovering the mouse pointer 
 over the bio/xtal/nopred calls. Warnings may appear on the right side of the interfaces table
-marked by the icon <img src="resources/icons/warning_icon.png"></img>. By hovering the mouse over
+marked by the icon <img src="resources/icons/warning_icon.png" style="vertical-align:middle" ></img>. By hovering the mouse over
 the icon, one can see different issues for which the prediction should be taken with care, e.g.
 engineered residues at the core or rim, metal ions mediating the interface, atom clashes in the interface etc. 
 </p>
@@ -77,9 +77,44 @@ The main Interface table
 <p>
 The other columns in the interface table correspond to a few important parameters that describe
 the interfaces: the two chain codes of the partners (e.g. "A+B"), the Buried Surface Area upon 
-formation (the sorting of the interfaces is based on this value), the crystal operator used to 
-generate the second partner of the interface (e.g. "-X+1,Y-1/2,-Z") and the number of core residues in each side of 
-the interface (e.g. "4+5")
+formation (the sorting of the interfaces is based on this value), the icon of the crystal operator used to 
+generate the second partner of the interface and the number of core residues in each side of 
+the interface (e.g. "4+5").
+</p>
+<p>
+The operators are represented as icons to show at a glance
+what kind of crystallographic symmetry is present at the interface. The actual full algebraic operator 
+(e.g. "-X+1,Y-1/2,-Z") can still be seen by hovering the mouse over the icon.
+The icons used for the operators are mostly the standard ones found in crystallographic tables:
+<img class="eppic-iframe-optype-img" src="resources/icons/optype_AU.png"></img> the identity operator (i.e. an interface in the asymmetric unit),
+<img class="eppic-iframe-optype-img" src="resources/icons/optype_XT.png"></img> a crystal translation (integer) without rotation,
+<img class="eppic-iframe-optype-img" src="resources/icons/optype_FT.png"></img> a re-centering translation without rotation,
+<img class="eppic-iframe-optype-img" src="resources/icons/optype_2.png"></img> a 2-fold axis, 
+<img class="eppic-iframe-optype-img" src="resources/icons/optype_2S.png"></img> a 2-fold screw axis,
+<img class="eppic-iframe-optype-img" src="resources/icons/optype_3.png"></img> a 3-fold axis, 
+<img class="eppic-iframe-optype-img" src="resources/icons/optype_3S.png"></img> a 3-fold screw axis,
+<img class="eppic-iframe-optype-img" src="resources/icons/optype_4.png"></img> a 4-fold axis, 
+<img class="eppic-iframe-optype-img" src="resources/icons/optype_4S.png"></img> a 4-fold screw axis,
+<img class="eppic-iframe-optype-img" src="resources/icons/optype_6.png"></img> a 6-fold axis, 
+<img class="eppic-iframe-optype-img" src="resources/icons/optype_6S.png"></img> a 6-fold screw axis.
+</p>
+<p>
+For the rare cases where a protein is crystallised in non-chiral space groups (e.g. racemic mixtures) there are
+additional operators:
+<img class="eppic-iframe-optype-img" src="resources/icons/optype_-1.png"></img> an inversion centre,
+<img class="eppic-iframe-optype-img" src="resources/icons/optype_-2.png"></img> a mirror plane,
+<img class="eppic-iframe-optype-img" src="resources/icons/optype_GL.png"></img> a glide plane,
+<img class="eppic-iframe-optype-img" src="resources/icons/optype_-3.png"></img> an improper 3-fold axis,
+<img class="eppic-iframe-optype-img" src="resources/icons/optype_-4.png"></img> an improper 4-fold axis,
+<img class="eppic-iframe-optype-img" src="resources/icons/optype_-6.png"></img> an improper 6-fold axis.
+</p>
+<p>
+Some of these operators lead to formation of infinite 
+interfaces if occurring between two crystallographically-related copies of the same molecule (e.g. A+A). 
+This happens for both the pure translations
+and for any of the screw rotations and it is generally a very strong indication of a crystal contact. 
+In those cases we colour the operator icon in red.   
+In any case our final call ignores this at the moment but we might use that information in future versions.
 </p>
 
 <h2>
@@ -160,7 +195,7 @@ protein sequences present in the protein structure. Each line is composed of 4 p
  
 <ul>
 <img class="eppic-iframe-right-img" src="resources/images/pse-color-entropies.png" 
- alt="3D view in PyMol with colors representing sequence entropies">
+ alt="3D view in PyMOL with colors representing sequence entropies">
 </img>
 <li>
 <b>The chain identifier(s)</b>: first letter is the chain identifier of the representative sequence, in brackets 
@@ -177,13 +212,13 @@ or found by blasting). Mismatching residues, normally engineering artifacts, are
 nicely displayed. 
 </li>
 <li>
-<b>The colored entropies icon</b>: click on it to get a PyMol PSE file with the sequence entropy values from 
+<b>The colored entropies icon</b>: click on it to get a PyMOL PSE file with the sequence entropy values from 
 the alignment color-mapped onto the protein surface. This is particularly useful in order to
 get a visual impression of the patterns of selection pressure on the surface of the particular chain. The 
-spectrum function of PyMol is used in order to color the residues: the highest conservation appears in blue, 
+spectrum function of PyMOL is used in order to color the residues: the highest conservation appears in blue, 
 transitioning to yellow and orange for lower conservation values. Residues that could not be aligned (for 
 instance because they belong to an engineered tag) appear in red. Additionally magenta dots mark  
-the core residues of the largest interface in which this chain participates. PyMol selections are also 
+the core residues of the largest interface in which this chain participates. PyMOL selections are also 
 prepared in order to select other interfaces different from the largest one. 
 </li>
 </ul>

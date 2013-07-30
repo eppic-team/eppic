@@ -58,6 +58,23 @@ The style for the list items in Release Log, apply it to enclosing ul element
 	margin-top: 10px;	
 }
 
+
+.eppic-iframe-optype-img {
+    width: 25px;
+    height: 25px;
+    margin-left: 5px;
+    margin-right: 5px;
+    margin-top: 2px;
+    margin-bottom: 2px;
+    padding-bottom: 1px;
+    padding-top: 1px;
+    padding-left: 1px;
+    padding-right: 1px;
+    vertical-align: middle;
+    border:1px solid #dbdbdb;
+    border-radius:2px;
+}
+
 .eppic-iframe-top-img {
 	margin-left:auto;
 	margin-right:auto;
