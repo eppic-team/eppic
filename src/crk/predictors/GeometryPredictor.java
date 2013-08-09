@@ -24,8 +24,6 @@ import owl.core.structure.graphs.AICGraph;
 
 public class GeometryPredictor implements InterfaceTypePredictor {
 
-	private static final double INTERF_DIST_CUTOFF = 5.9;
-	
 	private static final int FIRST = 0;
 	private static final int SECOND = 1;
 	
@@ -61,7 +59,7 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 		List<Pair<Atom>> interactingPairs = getNonpolyInteractingPairs();
 		
 		// this will happen when we read from PISA, beware that the cutoff is similar to PISA's but not necessarily the same
-		if (interf.getAICGraph()==null) interf.calcAICGraph(INTERF_DIST_CUTOFF);
+		if (interf.getAICGraph()==null) interf.calcAICGraph(CRKParams.INTERFACE_DIST_CUTOFF);
 
 		// NOTE that we used to detect disulfide bridges here, but it is now moved to CombinedPredictor
 		// as we also need to check in the reference alignment whether the bridge is wild-type or artifact
@@ -268,9 +266,9 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 	private List<Pair<Atom>> getNonPolyContacts(PdbChain firstChain, PdbChain secondChain, PdbAsymUnit au) {
 		List<Pair<Atom>> pairs = new ArrayList<Pair<Atom>>();
 		for (PdbChain nonpoly:au.getNonPolyChains()) {
-			AICGraph graph1 = nonpoly.getAICGraph(firstChain, INTERF_DIST_CUTOFF);
+			AICGraph graph1 = nonpoly.getAICGraph(firstChain, CRKParams.INTERFACE_DIST_CUTOFF);
 			if (graph1.getEdgeCount()>0) {
-				AICGraph graph2 = nonpoly.getAICGraph(secondChain, INTERF_DIST_CUTOFF);
+				AICGraph graph2 = nonpoly.getAICGraph(secondChain, CRKParams.INTERFACE_DIST_CUTOFF);
 				if (graph2.getEdgeCount()>0) {
 					// the nonpoly chain is in contact with both firstChain and secondChain
 					// we check for atoms within a narrow cutoff in both sides -> electrostatic/covalent interactions

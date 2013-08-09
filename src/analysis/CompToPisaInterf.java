@@ -12,6 +12,7 @@ import java.util.Set;
 
 import org.xml.sax.SAXException;
 
+import crk.CRKParams;
 import owl.core.connections.pisa.PisaConnection;
 import owl.core.connections.pisa.PisaInterfaceList;
 import owl.core.structure.Asa;
@@ -35,8 +36,6 @@ public class CompToPisaInterf {
 	
 	private static final String   LOCAL_CIF_DIR = "/nfs/data/dbs/pdb/data/structures/all/mmCIF";
 
-	private static final double CUTOFF = 5.9;
-	
 	private static final int NTHREADS = Runtime.getRuntime().availableProcessors(); // number of threads for ASA calculation
 
 	private static final String TMPDIR = System.getProperty("java.io.tmpdir");
@@ -111,7 +110,7 @@ public class CompToPisaInterf {
 			
 			ChainInterfaceList interfaces = null;
 
-			interfaces = pdb.getAllInterfaces(CUTOFF, Asa.DEFAULT_N_SPHERE_POINTS, NTHREADS, true, true, -1);
+			interfaces = pdb.getAllInterfaces(CRKParams.INTERFACE_DIST_CUTOFF, Asa.DEFAULT_N_SPHERE_POINTS, NTHREADS, true, true, -1);
 
 			System.out.print("Number of interfaces: ours "+interfaces.size()+", pisa "+pisaInterfaces.getNumInterfaces());
 			if (pisaInterfaces.getNumInterfaces()!=interfaces.size()) {

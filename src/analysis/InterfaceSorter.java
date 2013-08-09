@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import crk.CRKParams;
 import owl.core.structure.ChainInterface;
 import owl.core.structure.ChainInterfaceList;
 import owl.core.structure.PdbAsymUnit;
@@ -23,7 +24,6 @@ public class InterfaceSorter {
 	
 	private static final int NSPHEREPOINTS =9600;
 	private static final int NTHREADS = Runtime.getRuntime().availableProcessors();
-	private static final double CUTOFF = 5.9; 
 
 	
 	private class SimpleInterface implements Comparable<SimpleInterface>{
@@ -109,7 +109,7 @@ public class InterfaceSorter {
 			long start = System.currentTimeMillis();
 			ChainInterfaceList interfList = null;
 
-			interfList = pdb.getAllInterfaces(CUTOFF, NSPHEREPOINTS, numThreads, false, false, -1);
+			interfList = pdb.getAllInterfaces(CRKParams.INTERFACE_DIST_CUTOFF, NSPHEREPOINTS, numThreads, false, false, -1);
 			
 			long end = System.currentTimeMillis();
 			System.out.printf("\t%4d\n",(end-start)/1000l);

@@ -36,7 +36,10 @@ public class CRKParams {
 	protected static final int	   COLOR_ENTROPIES_ICON_WIDTH = 14;
 	protected static final int	   COLOR_ENTROPIES_ICON_HEIGHT = 14;
 	
-	public static final double     INTERFACE_DIST_CUTOFF = 5.9;
+	// the default used to be 5.9 to match PISA, now reduced to 5.5 in order to reduce
+	// the number of useless too small interfaces and thus make PDB-wide calculations a bit
+	// more optimal
+	public static final double     INTERFACE_DIST_CUTOFF = 5.5;
 	// if any interface has this number of clashes we'll abort with an error
 	public static final int		   NUM_CLASHES_FOR_ERROR = 30;
 	// shorter chains will be considered peptides
