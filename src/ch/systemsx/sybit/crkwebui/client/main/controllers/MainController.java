@@ -21,6 +21,7 @@ import ch.systemsx.sybit.crkwebui.client.commons.events.ShowStatusDataEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowWaitingEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.StopJobsListAutoRefreshEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.UpdateStatusLabelEvent;
+import ch.systemsx.sybit.crkwebui.client.commons.gui.panels.DisplayPanel;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ApplicationInitHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ApplicationWindowResizeHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.HideAllWindowsHandler;
@@ -305,29 +306,22 @@ public class MainController
 	public void displayView(String token)
 	{
 		EventBusManager.EVENT_BUS.fireEvent(new HideAllWindowsEvent());
-
 		if ((token != null) && (token.length() > 3) && (token.startsWith("id")))
 		{
 			Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_loading());
 			ApplicationContext.setSelectedJobId(token.substring(3));
 			displayResults();
 		}
-		else if((token != null) && (token.equals("help")))
+		else if((token != null) && (token.equals("help") || token.equals("!help")))
 		{
-			Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_help());
-			ApplicationContext.setSelectedJobId("");
 			displayHelp();
 		}
-		else if((token != null) && (token.equals("downloads")))
+		else if((token != null) && (token.equals("downloads") || token.equals("!downloads")))
 		{
-			Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_downloads());
-			ApplicationContext.setSelectedJobId("");
 			displayDownloads();
 		}
-		else if((token != null) && (token.equals("releases")))
+		else if((token != null) && (token.equals("releases") || token.equals("!releases")))
 		{
-			Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_releases());
-			ApplicationContext.setSelectedJobId("");
 			displayReleases();
 		}
 		else
@@ -395,10 +389,10 @@ public class MainController
 	 */
 	public void displayHelp()
 	{
-		ApplicationContext.setDoStatusPanelRefreshing(false);
-
+	    	Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_help());
+		ApplicationContext.setSelectedJobId("");
 		HelpPanel helpPanel = new HelpPanel();
-		mainViewPort.getCenterPanel().setDisplayPanel(helpPanel);
+		displayPanelInCentralPanel(helpPanel);
 	}
 	
 	/**
@@ -406,10 +400,10 @@ public class MainController
 	 */
 	public void displayDownloads()
 	{
-		ApplicationContext.setDoStatusPanelRefreshing(false);
-
+		Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_downloads());
+		ApplicationContext.setSelectedJobId("");
 		DownloadsPanel downloadsPanel = new DownloadsPanel();
-		mainViewPort.getCenterPanel().setDisplayPanel(downloadsPanel);
+		displayPanelInCentralPanel(downloadsPanel);
 	}
 
 	/**
@@ -417,11 +411,16 @@ public class MainController
 	 */
 	public void displayReleases()
 	{
-		ApplicationContext.setDoStatusPanelRefreshing(false);
-
+		Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_releases());
+		ApplicationContext.setSelectedJobId("");
 		ReleasesPanel releasesPanel = new ReleasesPanel();
-		mainViewPort.getCenterPanel().setDisplayPanel(releasesPanel);
-	}	
+		displayPanelInCentralPanel(releasesPanel);
+	}
+	
+	public void displayPanelInCentralPanel(DisplayPanel panel) {
+	    ApplicationContext.setDoStatusPanelRefreshing(false);
+	    mainViewPort.getCenterPanel().setDisplayPanel(panel);
+	}
 	
 	/**
 	 * Retrieves results of processing for displaying central panel content.
