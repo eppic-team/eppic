@@ -76,6 +76,7 @@
             	<column length="255"/>
             </basic>
             <basic name="resolution"></basic>
+            <basic name="RFree"></basic>
 
        		<one-to-many name="interfaceItems" mapped-by="pdbScoreItem">
             	<cascade>

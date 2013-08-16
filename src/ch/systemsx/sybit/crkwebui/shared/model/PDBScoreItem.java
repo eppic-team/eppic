@@ -25,6 +25,7 @@ public class PDBScoreItem implements Serializable, ProcessingData
 	private String title;
 	private String spaceGroup;
 	private double resolution;
+	private double rFree;
 	private String expMethod;
 	private RunParametersItem runParameters;
 	
@@ -47,6 +48,7 @@ public class PDBScoreItem implements Serializable, ProcessingData
 						String spaceGroup,
 						String expMethod,
 						double resolution,
+						double rFree,
 						RunParametersItem runParameters) 
 	{
 		this.interfaceItems = new ArrayList<InterfaceItem>();
@@ -57,6 +59,7 @@ public class PDBScoreItem implements Serializable, ProcessingData
 		this.spaceGroup = spaceGroup;
 		this.expMethod = expMethod;
 		this.resolution = resolution;
+		this.rFree = rFree;
 		this.runParameters = runParameters;
 	}
 	
@@ -122,6 +125,14 @@ public class PDBScoreItem implements Serializable, ProcessingData
 	
 	public void setResolution(double resolution) {
 		this.resolution = resolution;
+	}
+	
+	public double getRFre() {
+		return rFree;
+	}
+	
+	public void setRFree(double rFree) {
+		this.rFree = rFree;
 	}
 
 	public void setRunParameters(RunParametersItem runParameters) {
@@ -198,6 +209,7 @@ public class PDBScoreItem implements Serializable, ProcessingData
 		pdbScoreItem.setSpaceGroup(pdbScoreItemDB.getSpaceGroup());
 		pdbScoreItem.setExpMethod(pdbScoreItemDB.getExpMethod());
 		pdbScoreItem.setResolution(pdbScoreItemDB.getResolution());
+		pdbScoreItem.setRFree(pdbScoreItemDB.getRFree());
 		pdbScoreItem.setTitle(pdbScoreItemDB.getTitle());
 		pdbScoreItem.setUid(pdbScoreItemDB.getUid());
 		return pdbScoreItem;
