@@ -18,6 +18,7 @@ public class PDBScoreItemDB implements Serializable, ProcessingDataDB
 	private String title;
 	private String spaceGroup;
 	private double resolution;
+	private double rFree;
 	private String expMethod;
 	private RunParametersItemDB runParameters;
 	
@@ -132,6 +133,14 @@ public class PDBScoreItemDB implements Serializable, ProcessingDataDB
 
 	public void setResolution(double resolution) {
 		this.resolution = resolution;
+	}
+	
+	public double getRFree() {
+		return rFree;
+	}
+	
+	public void setRFree(double rFree) {
+		this.rFree = rFree;
 	}
 
 	public String getExpMethod() {

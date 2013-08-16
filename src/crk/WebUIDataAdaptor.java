@@ -80,6 +80,7 @@ public class WebUIDataAdaptor {
 		SpaceGroup sg = pdb.getSpaceGroup();
 		pdbScoreItem.setSpaceGroup(sg==null?null:sg.getShortSymbol());
 		pdbScoreItem.setResolution(pdb.getResolution());
+		pdbScoreItem.setRFree(pdb.getRfree());
 		pdbScoreItem.setExpMethod(pdb.getExpMethod());
 		
 	}
