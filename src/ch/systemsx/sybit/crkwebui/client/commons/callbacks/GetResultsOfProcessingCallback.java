@@ -74,7 +74,15 @@ public class GetResultsOfProcessingCallback implements AsyncCallback<ProcessingD
 		else
 		{
 			History.newItem("");
-			EventBusManager.EVENT_BUS.fireEvent(new ShowMessageEvent(AppPropertiesManager.CONSTANTS.callback_job_not_found_error(), "Id=" + jobId + " not found on the server"));
+			String msg = "Id=" + jobId + " not found on the server";
+			
+			if (jobId!=null && jobId.length()==4 && Character.isDigit(jobId.charAt(0))) {
+				msg = "Could not find PDB code '"+jobId+"' on the server. Make sure that the PDB code exists. "
+						+ "If the PDB entry was released recently we might not have computed results for it yet. "
+						+ "You can always try uploading the corresponding PDB/mmCIF file.";
+			}
+			
+			EventBusManager.EVENT_BUS.fireEvent(new ShowMessageEvent(AppPropertiesManager.CONSTANTS.callback_job_not_found_error(), msg));
 		}
 		
 		EventBusManager.EVENT_BUS.fireEvent(new UnmaskMainViewEvent());

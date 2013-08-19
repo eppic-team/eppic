@@ -26,7 +26,7 @@ public class PreSubmitValidator
 
 		if(!gzCifFile.exists())
 		{
-			throw new ValidationException("Cif file for specified pdb code does not exist in local repository.");
+			throw new ValidationException("mmCIF file for specified PDB code does not exist in EPPIC's local PDB repository. Does the PDB code exist?");
 		}
 	}
 }
