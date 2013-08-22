@@ -26,16 +26,16 @@ based on one geometrical and two evolutionary criteria:
 
 <ul>
 <li>
-<b>geometry</b>: number of core residues (at 95% burial), indicating how good the packing in 
+<b>geometry</b>: number of core residues (at <b>95% burial</b>), indicating how good the packing in 
 the interface is
 </li>
 <li>
 <b>core-rim score</b>: ratio of evolutionary signal (sequence entropy) of core residues (at 
-70% burial) versus rim residues
+<b>70% burial</b>) versus rim residues
 </li>
 <li>
-<b>core-surface score</b>: a score (z-score like) of sequence entropy of core residues (at 70% 
-burial) versus random samples of other surface residues
+<b>core-surface score</b>: a score (z-score like) of sequence entropy of core residues (at <b>70% 
+burial</b>) versus random samples of other surface residues
 </li>
 </ul>
 
@@ -99,7 +99,7 @@ The icons used for the operators are mostly the standard ones found in crystallo
 <img class="eppic-iframe-optype-img" src="resources/icons/optype_6S.png"></img> a 6-fold screw axis.
 </p>
 <p>
-For the rare cases where a protein is crystallised in non-chiral space groups (e.g. racemic mixtures) there are
+For the rare cases where a protein is crystallized in non-chiral space groups (e.g. racemic mixtures) there are
 additional operators:
 <img class="eppic-iframe-optype-img" src="resources/icons/optype_-1.png"></img> an inversion centre,
 <img class="eppic-iframe-optype-img" src="resources/icons/optype_-2.png"></img> a mirror plane,
@@ -113,7 +113,7 @@ Some of these operators lead to formation of infinite
 interfaces if occurring between two crystallographically-related copies of the same molecule (e.g. A+A). 
 This happens for both the pure translations
 and for any of the screw rotations and it is generally a very strong indication of a crystal contact. 
-In those cases we colour the operator icon in red.   
+In those cases we color the operator icon in red.   
 In any case our final call ignores this at the moment but we might use that information in future versions.
 </p>
 
@@ -200,7 +200,7 @@ protein sequences present in the protein structure. Each line is composed of 4 p
 <li>
 <b>The chain identifier(s)</b>: first letter is the chain identifier of the representative sequence, in brackets 
 are the identifiers of identical sequences. Click on it to see the alignment of the chain to its reference 
-UniProt sequence (based on the <a href="http://www.ebi.ac.uk/pdbe/docs/sifts/">SIFTS</a> mapping 
+UniProt sequence (based on the <a href="http://www.ebi.ac.uk/pdbe/docs/sifts/" target="_blank">SIFTS</a> mapping 
 or found by blasting). Mismatching residues, normally engineering artifacts, are shown in red in the alignment.
 </li>
 <li>
@@ -208,8 +208,11 @@ or found by blasting). Mismatching residues, normally engineering artifacts, are
 </li>
 <li>
 <b>The number of homologs</b>: click on it to download the multiple sequence alignment of all homolog sequences  
-(FASTA format). You will need an alignment viewer like <a href="http://www.jalview.org/">Jalview</a> to have it 
-nicely displayed. 
+(FASTA format). You will need an alignment viewer like <a href="http://www.jalview.org/" target="_blank">Jalview</a> to have it 
+nicely displayed. Whenever fewer than 10 homologs are found then you will see a NOPRED in the evolutionary
+predictor columns (core-rim and core-surface), indicating that the multiple sequence alignment is too small 
+to make a proper decision. The more sequences in the alignment the more reliable the evolutionary
+predictions will be, so looking at this number is important. 
 </li>
 <li>
 <b>The colored entropies icon</b>: click on it to get a PyMOL PSE file with the sequence entropy values from 
@@ -223,8 +226,23 @@ prepared in order to select other interfaces different from the largest one.
 </li>
 </ul>
 <p>
-By clicking the download link on the bottom right corner of the Top Panel, one gets a single zip file 
-containing the text output files with the results for all interfaces.
+By clicking the "Download results" link on the bottom right corner of the Top Panel, one gets a single zip file 
+containing the text output files with the results for all interfaces (as when running eppic from the command line). 
+</p>
+
+<h2>
+The UniProt database version: the sequence data
+</h2>
+<p>
+On the right of the Top Panel the UniProt version is indicated. This is the UniProt database version used to 
+find homologs for the EPPIC multiple sequence alignments. A new UniProt database release appears every month containing
+more and more sequences, in fact the growth is exponential thanks to new sequencing technologies (growth
+statistics can be seen <a href="http://www.ebi.ac.uk/uniprot/TrEMBLstats/" target="_blank">here</a>). With more 
+sequences we can do better predictions (see this <a href="http://www.biomedcentral.com/1471-2105/13/334/figure/F6" target="_blank">figure</a>), 
+thus the growth of the UniProt sequence database has quite an important effect in our predictions. We will
+try to maintain the results as up-to-date as possible and to update the PDB-wide precomputed results every few 
+months and eventually every month (for every UniProt update). In any case if you use our results it is thus important to quote 
+the UniProt database version used.
 </p>
 
 
@@ -255,7 +273,11 @@ the job identifier in your inbox. Otherwise you will have to bookmark it or keep
 It is always possible to retrieve the job by using the URL http://www.eppic-web.org/ewui/#id/&lt;my_job_id&gt;.
 Whether the job is still running or already done, the URL will show its current status and 
 automatically display the final results whenever it is finished. You can even share the URL with 
-colleagues.
+colleagues. The jobs will be stored in our servers for at least 1 month.
+</p>
+<p>
+The PDB-wide precomputed results can be accessed directly by using the permanent URLs:
+http://www.eppic-web.org/ewui/#id/&lt;PDB_code&gt;
 </p>
 
 <!-- <img src="resources/images/EPPIC-screenshot-3hbx-small.png"></img> -->
@@ -265,7 +287,7 @@ colleagues.
 <br>
 
 <p>
-Please cite <a href="http://www.biomedcentral.com/1471-2105/13/334/abstract">Duarte et al., BMC Bioinformatics 2012</a> if you use this service for 
+Please cite <a href="http://www.biomedcentral.com/1471-2105/13/334/abstract" target="_blank">Duarte et al., BMC Bioinformatics 2012</a> if you use this service for 
 your research.
 </p>
 
@@ -282,19 +304,19 @@ With support from:
 
 <!-- <div class="eppic-iframe-bottom-logos"> -->
 <div class="first" >
-<a href="http://www.psi.ch">
+<a href="http://www.psi.ch" target="_blank">
 <img class="eppic-iframe-left-img" src="resources/images/psi-logo.png"></img>
 </a>
 </div>
 
 <div class="second" >
-<a href="http://www.sybit.net">
+<a href="http://www.sybit.net" target="_blank">
 <img class="eppic-iframe-right-img" src="resources/images/sybit-logo.png"></img>
 </a>
 </div>
 
 <div class="third" >
-<a class="third" href="http://www.snf.ch">
+<a class="third" href="http://www.snf.ch" target="_blank">
 <img src="resources/images/SNSF_Logo.jpg"></img>
 </a>
 </div>
