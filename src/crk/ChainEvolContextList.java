@@ -191,7 +191,13 @@ public class ChainEvolContextList implements Serializable {
 			} catch (InterruptedException e) {
 				throw new CRKException(e,"Thread interrupted while running blast for retrieving query data: "+e.getMessage(),true);
 			} catch (Exception e) { // for any kind of exceptions thrown while connecting through uniprot JAPI
-				throw new CRKException(e,"Problems while retrieving query data through UniProt JAPI. Is UniProt server down?\n"+e.getMessage(),true);
+				String msg = null;
+				if (useLocalUniprot) {
+					msg = "Problems while retrieving query data from UniProt local database. Error "+e.getMessage();;
+				} else {
+					msg = "Problems while retrieving query data through UniProt JAPI. Make sure you have the latest UniProtJAPI jar, or otherwise that the UniProt server is up\n"+e.getMessage();
+				}
+				throw new CRKException(e, msg, true);
 			}
 		}
 		params.getProgressLog().println();
@@ -266,12 +272,17 @@ public class ChainEvolContextList implements Serializable {
 			} catch (UniprotVerMisMatchException e) {
 				throw new CRKException(e, "Mismatch of UniProt versions! "+e.getMessage(), true);
 			} catch (IOException e) {
-				String errmsg = "Problem while retrieving homologs data through UniProtJAPI";
-				throw new CRKException(e, errmsg+": "+e.getMessage(),true);
+				throw new CRKException(e, "Problems while retrieving homologs data: "+e.getMessage(),true);
 			} catch (SQLException e) {
 				throw new CRKException(e, "Problem while retrieving homologs data from UniProt local database: "+e.getMessage(), true);
 			} catch (Exception e) { // for any kind of exceptions thrown while connecting through uniprot JAPI
-				throw new CRKException(e, "Problems while retrieving homologs data through UniProt JAPI. Make sure you have the latest UniProtJAPI jar, or otherwise that the UniProt server is up\n"+e.getMessage(),true);
+				String msg = null;
+				if (useLocalUniprot) {
+					msg = "Problems while retrieving homologs data from UniProt local database. Error "+e.getMessage();
+				} else {
+					msg = "Problems while retrieving homologs data through UniProt JAPI. Make sure you have the latest UniProtJAPI jar, or otherwise that the UniProt server is up\n"+e.getMessage();
+				}
+				throw new CRKException(e, msg, true);
 			}
 
 		}		
