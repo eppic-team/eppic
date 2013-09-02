@@ -8,6 +8,7 @@ import com.extjs.gxt.ui.client.data.BaseModel;
  */
 public class InterfaceResidueItemModel extends BaseModel
 {
+	public static final String PDB_RESIDUE_NUMBER_PROPERTY_NAME = "pdbResidueNumber";
 	/**
 	 * 
 	 */
@@ -17,7 +18,7 @@ public class InterfaceResidueItemModel extends BaseModel
 	{
 		set("structure", "");
 		set("residueNumber", "");
-		set("pdbResidueNumber", "");
+		set(PDB_RESIDUE_NUMBER_PROPERTY_NAME, "");
 		set("residueType", "");
 		set("asa", "");
 		set("bsa", "");
@@ -38,7 +39,7 @@ public class InterfaceResidueItemModel extends BaseModel
 	{
 		set("structure", structure);
 		set("residueNumber", residueNumber);
-		set("pdbResidueNumber", pdbResidueNumber);
+		set(PDB_RESIDUE_NUMBER_PROPERTY_NAME, pdbResidueNumber);
 		set("residueType", residueType);
 		set("asa", asa);
 		set("bsa", bsa);
@@ -64,11 +65,11 @@ public class InterfaceResidueItemModel extends BaseModel
 	}
 	
 	public String getPdbResidueNumber() {
-		return (String) get("pdbResidueNumber");
+		return (String) get(PDB_RESIDUE_NUMBER_PROPERTY_NAME);
 	}
 	
 	public void setPdbResidueNumber(String pdbResidueNumber) {
-		set("pdbResidueNumber", pdbResidueNumber);
+		set(PDB_RESIDUE_NUMBER_PROPERTY_NAME, pdbResidueNumber);
 	}
 	
 	public String getResidueType() {
