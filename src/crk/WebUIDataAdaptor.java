@@ -97,13 +97,7 @@ public class WebUIDataAdaptor {
 			
 			ii.setOperator(SpaceGroup.getAlgebraicFromMatrix(interf.getSecondTransf().getMatTransform()));
 			ii.setOperatorType(interf.getSecondTransf().getTransformType().getShortName());
-			boolean isInfinite = false;
-			if (interf.getFirstMolecule().getPdbChainCode().equals
-					(interf.getSecondMolecule().getPdbChainCode()) &&
-					interf.getSecondTransf().getTransformType().isInfinite()) {
-				isInfinite = true;
-			}
-			ii.setIsInfinite(isInfinite);
+			ii.setIsInfinite(interf.isInfinite());
 			
 			ii.setSize1(interf.getFirstRimCore().getCoreSize());
 			ii.setSize2(interf.getSecondRimCore().getCoreSize());
