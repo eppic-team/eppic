@@ -108,8 +108,11 @@ public class WriteUniqueUniprots {
 		try{
 			WriteUniqueUniprots wuni = new WriteUniqueUniprots(scFilePath, uniprotdbName);
 			HashMap<String, ArrayList<Interval>> uniqueMap = wuni.sc.getUniqueMappings();
-			PrintWriter outList = new PrintWriter(new File (outdirPath + "queries.list"));
+			PrintWriter outList = new PrintWriter(new File (outdirPath, "queries.list"));
 		
+			int countFishy = 0;
+			int countErrLength = 0;
+			
 			for(String uniprotid:uniqueMap.keySet()) {
 				try {
 					UnirefEntry uniEntry = wuni.uniLC.getUnirefEntry(uniprotid);
@@ -118,7 +121,12 @@ public class WriteUniqueUniprots {
 						//Create fasta files
 						String fileName = outdirPath + uniprotid + "." + interv.beg + "-" + interv.end + ".fa";
 						int maxLen = 60;
-				
+						
+						if(interv.beg > interv.end){
+							System.err.println("Warning: Fishy mapping in uniprot for "+uniprotid+"_"+interv.beg+"-"+interv.end);
+							countFishy++;
+							continue;
+						}
 						if(uniSeq.length() >= interv.end){
 							File outFile = new File (fileName); 
 							PrintWriter out = new PrintWriter(outFile);
@@ -131,7 +139,8 @@ public class WriteUniqueUniprots {
 							out.close();
 						}
 						else{
-							System.err.println("Warning: Length of query seq longer than uniprot seq for "+uniprotid+"_"+interv.beg+"-"+interv.end);
+							System.err.println("Warning: Length of query seq ("+uniSeq.length()+") smaller than interval end of uniprot seq for "+uniprotid+"_"+interv.beg+"-"+interv.end);
+							countErrLength++;
 						}
 					
 					}
@@ -141,8 +150,10 @@ public class WriteUniqueUniprots {
 				}
 			}
 			outList.close();
+			if(countFishy > 0) System.err.println("Warning: Oops! total encountered fishy mappings: "+countFishy);
+			if(countErrLength > 0) System.err.println("Warning: Oops! total encountered problems in the length: "+countErrLength);
 		}
-		catch(Exception ex){
+		catch(IOException ex){
 			System.err.println("Error in inputs: " + ex.getClass() + " " + ex.getMessage());
 			System.exit(1);
 		}
