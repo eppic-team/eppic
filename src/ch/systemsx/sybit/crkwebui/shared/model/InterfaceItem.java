@@ -7,6 +7,7 @@ import java.util.List;
 import model.InterfaceItemDB;
 import model.InterfaceResidueItemDB;
 import model.InterfaceScoreItemDB;
+import model.PdbBioUnitAssignmentItemDB;
 import model.WarningItemDB;
 
 /**
@@ -46,11 +47,13 @@ public class InterfaceItem implements Serializable, Comparable<InterfaceItem>
 	
 	private List<InterfaceScoreItem> interfaceScores;
 	private List<InterfaceResidueItem> interfaceResidues;
+	private List<PdbBioUnitAssignmentItem> bioUnitAssignments; 
 	
 	public InterfaceItem()
 	{
 		interfaceScores = new ArrayList<InterfaceScoreItem>();
 		warnings = new ArrayList<WarningItem>();
+		bioUnitAssignments = new ArrayList<PdbBioUnitAssignmentItem>();
 	}
 	
 	public int getId() {
@@ -159,6 +162,19 @@ public class InterfaceItem implements Serializable, Comparable<InterfaceItem>
 	
 	public void addInterfaceScore(InterfaceScoreItem interfaceScore) {
 		this.interfaceScores.add(interfaceScore);
+	}
+
+	public List<PdbBioUnitAssignmentItem> getBioUnitAssignments() {
+		return bioUnitAssignments;
+	}
+
+	public void setBioUnitAssignments(
+			List<PdbBioUnitAssignmentItem> bioUnitAssignments) {
+		this.bioUnitAssignments = bioUnitAssignments;
+	}
+	
+	public void addBioUnitAssignment(PdbBioUnitAssignmentItem bioUnitAssignmentItem){
+		this.bioUnitAssignments.add(bioUnitAssignmentItem);
 	}
 
 	public List<InterfaceResidueItem> getInterfaceResidues() {
@@ -288,6 +304,20 @@ public class InterfaceItem implements Serializable, Comparable<InterfaceItem>
 			}
 			
 			interfaceItem.setInterfaceScores(interfaceScoreItems);
+		}
+		
+		if(interfaceItemDB.getBioUnitAssignments() != null)
+		{
+			List<PdbBioUnitAssignmentItemDB> bioUnitAssignmentItemDBs = interfaceItemDB.getBioUnitAssignments();
+			
+			List<PdbBioUnitAssignmentItem> bioUnitAssignmentItems = new ArrayList<PdbBioUnitAssignmentItem>();
+			
+			for(PdbBioUnitAssignmentItemDB bioUnitAssignmentItemDB:bioUnitAssignmentItemDBs)
+			{
+				bioUnitAssignmentItems.add(PdbBioUnitAssignmentItem.create(bioUnitAssignmentItemDB));				
+			}
+			
+			interfaceItem.setBioUnitAssignments(bioUnitAssignmentItems);
 		}
 		
 		interfaceItem.setChain1(interfaceItemDB.getChain1());

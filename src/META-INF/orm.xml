@@ -89,6 +89,12 @@
             	    <cascade-all/>
             	</cascade>
        		</one-to-many>
+       		
+       		<one-to-many name="bioUnitItems" mapped-by="pdbScoreItem">
+            	<cascade>
+            	    <cascade-all/>
+            	</cascade>
+       		</one-to-many>
 
         	<one-to-one name="runParameters">
         		<cascade>
@@ -103,6 +109,24 @@
 				<!-- collection-table name="NUMHOMOLOGSSTRINGS"-->
 				<!-- /collection-table-->
 			<!-- /element-collection-->
+        </attributes>
+   </entity>
+   
+   <entity class="model.PdbBioUnitItemDB" name="PdbBioUnitItem">
+        <table name="PdbBioUnit"/>
+        <attributes>
+        	<id name="uid">
+                <generated-value strategy="IDENTITY"/>
+            </id>
+
+        	<basic name="size"></basic>
+			
+            <basic name="type">
+            	<column length="10"/>
+            </basic>
+
+       		<many-to-one name="pdbScoreItem" >
+            </many-to-one>
         </attributes>
    </entity>
 
@@ -148,6 +172,12 @@
             </many-to-one>
 
        		<one-to-many name="interfaceScores" mapped-by="interfaceItem">
+            	<cascade>
+            	    <cascade-all/>
+            	</cascade>
+       		</one-to-many>
+       		
+       		<one-to-many name="bioUnitAssignments" mapped-by="interfaceItem">
             	<cascade>
             	    <cascade-all/>
             	</cascade>
@@ -232,6 +262,26 @@
         </attributes>
    </entity>
 
+   <entity class="model.PdbBioUnitAssignmentItemDB" name="PdbBioUnitAssignment">
+        <table name="PdbBioUnitAssignment"/>
+        <attributes>
+            <id name="uid">
+                <generated-value strategy="IDENTITY"/>
+            </id>
+            
+            <basic name="size"></basic>
+            <basic name="type">
+            	<column length="10"/>
+            </basic>
+            <basic name="assignment">
+            	<column length="10"/>
+            </basic>
+
+       		<many-to-one name="interfaceItem" >
+            </many-to-one>
+        </attributes>
+   </entity>
+   
    <entity class="model.WarningItemDB" name="WarningItem">
         <table name="Warning"/>
         <attributes>

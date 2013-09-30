@@ -4,9 +4,12 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import owl.core.structure.PdbBioUnit;
+
 import model.HomologsInfoItemDB;
 import model.InterfaceItemDB;
 import model.PDBScoreItemDB;
+import model.PdbBioUnitItemDB;
 
 /**
  * DTO class for PDBScore item.
@@ -33,6 +36,8 @@ public class PDBScoreItem implements Serializable, ProcessingData
 
 	private List<InterfaceItem> interfaceItems;
 	
+	private List<PdbBioUnitItem> bioUnitItems;
+
 	private int inputType;
 	private String jobId;
 	
@@ -40,6 +45,7 @@ public class PDBScoreItem implements Serializable, ProcessingData
 	{
 		interfaceItems = new ArrayList<InterfaceItem>();
 		homologsInfoItems = new ArrayList<HomologsInfoItem>();
+		bioUnitItems = new ArrayList<PdbBioUnitItem>();
 	}
 	
 	public PDBScoreItem(int uid,
@@ -93,6 +99,14 @@ public class PDBScoreItem implements Serializable, ProcessingData
 	
 	public List<HomologsInfoItem> getHomologsInfoItems() {
 		return this.homologsInfoItems;
+	}
+	
+	public List<PdbBioUnitItem> getBioUnitItems() {
+		return bioUnitItems;
+	}
+
+	public void setBioUnitItems(List<PdbBioUnitItem> bioUnitItems) {
+		this.bioUnitItems = bioUnitItems;
 	}
 
 	public void setTitle(String title) {
@@ -188,6 +202,20 @@ public class PDBScoreItem implements Serializable, ProcessingData
 			}
 			
 			pdbScoreItem.setInterfaceItems(interfaceItems);
+		}
+		
+		if(pdbScoreItemDB.getBioUnitItems() != null)
+		{
+			List<PdbBioUnitItemDB> bioUnitItemDBs = pdbScoreItemDB.getBioUnitItems();
+			
+			List<PdbBioUnitItem> bioUnitItems = new ArrayList<PdbBioUnitItem>();
+			
+			for(PdbBioUnitItemDB bioUnitItemDB : bioUnitItemDBs)
+			{
+				bioUnitItems.add(PdbBioUnitItem.create(bioUnitItemDB));
+			}
+			
+			pdbScoreItem.setBioUnitItems(bioUnitItems);
 		}
 		
 		if(pdbScoreItemDB.getHomologsInfoItems() != null)
