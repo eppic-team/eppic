@@ -12,6 +12,7 @@ import java.net.UnknownHostException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TreeMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -29,10 +30,12 @@ import crk.predictors.GeometryPredictor;
 
 import owl.core.connections.pisa.PisaConnection;
 import owl.core.runners.PymolRunner;
+import owl.core.structure.BioUnitAssignmentType;
 import owl.core.structure.ChainInterface;
 import owl.core.structure.ChainInterfaceList;
 import owl.core.structure.InterfacesFinder;
 import owl.core.structure.PdbAsymUnit;
+import owl.core.structure.PdbBioUnitList;
 import owl.core.structure.PdbChain;
 import owl.core.structure.PdbLoadException;
 import owl.core.structure.SpaceGroup;
@@ -306,12 +309,92 @@ public class CRKMain {
 			scoreGeomPS.close();
 						
 			// for the webui
-			wuiAdaptor.setInterfaces(interfaces);
+			wuiAdaptor.setInterfaces(interfaces, this.pdb.getPdbBioUnitList());
+			wuiAdaptor.setPdbBioUnits(pdb.getPdbBioUnitList());
 			wuiAdaptor.setGeometryScores(gps);
 			wuiAdaptor.addResidueDetails(interfaces);
 		} catch (IOException e) {
 			throw new CRKException(e, "Couldn't write interface geometry scores file. "+e.getMessage(),true);
 		}
+	}
+	
+	private void writePdbAssignments() throws FileNotFoundException{
+		if(this.interfaces.size()==0) return;
+		
+		PrintStream ps = new PrintStream(params.getOutputFile(CRKParams.PDB_BIOUNIT_ASSIGN_FILE_SUFFIX));
+		PdbBioUnitList bioUnitList = this.pdb.getPdbBioUnitList();
+		
+		//Get the full details on biounits
+		TreeMap<Integer, List<Integer>> matchIds = bioUnitList.getInterfaceMatches(this.interfaces);
+		
+		
+		//Get the summary
+		TreeMap<BioUnitAssignmentType, int[]> matchSummary = bioUnitList.gatherBioUnits(this.interfaces);
+		
+		//Add eppic results to the matchSummary
+		int[] eppicResults = new int[this.interfaces.size()];
+
+		if(params.isDoScoreEntropies()){
+			for (int i=0; i<iecList.size(); i++) {
+				CombinedPredictor cp = 
+						new CombinedPredictor(iecList.get(i), gps.get(i), iecList.getEvolRimCorePredictor(i), iecList.getEvolInterfZPredictor(i));
+				cp.setUsePdbResSer(params.isUsePdbResSer());
+				int callIdx = cp.getCall().getIndex();
+				if(callIdx == 0) eppicResults[i] = 0;
+				else if(callIdx == 1) eppicResults[i] = 1;
+				else eppicResults[i] = -1;
+			}
+		} else{
+			for (int i=0; i<this.interfaces.size(); i++) {
+				GeometryPredictor gp = new GeometryPredictor(this.interfaces.get(i+1));
+				gp.setUsePdbResSer(params.isUsePdbResSer());
+				gp.setBsaToAsaCutoff(params.getCAcutoffForGeom());
+				gp.setMinAsaForSurface(params.getMinAsaForSurface());
+				gp.setMinCoreSizeForBio(params.getMinCoreSizeForBio());
+				int callIdx = gp.getCall().getIndex();
+				if(callIdx == 0) eppicResults[i] = 0;
+				else if(callIdx == 1) eppicResults[i] = 1;
+				else eppicResults[i] = -1;
+			}
+		}
+	
+		matchSummary.put(BioUnitAssignmentType.eppic, eppicResults);
+		
+		//Print Headers--------
+		ps.printf("#%15s\t%36s\t\t\t%12s\n","Interfaces","Gathered BioUnits","Details");
+		
+		ps.printf("%15s\t","");
+				
+		for(BioUnitAssignmentType type:matchSummary.keySet()){
+			ps.printf("%12s\t",type.getType()+"(Final)");
+		}
+		
+		//ps.printf("%1s", "|");
+		
+		for(int iUnit:matchIds.keySet()) 
+			ps.printf("%12s\t",bioUnitList.get(iUnit).getType().getType()+"("+bioUnitList.get(iUnit).getSize()+")");
+		
+		ps.print("\n");
+		
+		//Print rest------
+		for (int i=1; i<=this.interfaces.getNumInterfaces(); i++) {
+			ChainInterface interf = this.interfaces.get(i);
+			ps.printf("%15s\t", interf.getId()+"("+interf.getFirstMolecule().getPdbChainCode()+"+"+interf.getSecondMolecule().getPdbChainCode()+")");
+			
+			for(BioUnitAssignmentType type:matchSummary.keySet()){
+				if(matchSummary.get(type)[i-1] == 0) ps.printf("%12s\t","bio");
+				else if(matchSummary.get(type)[i-1] == 1) ps.printf("%12s\t","xtal");
+				else ps.printf("%12s\t","nopred");
+			}
+			//ps.printf("%1s", "|");
+			
+			for(int iUnit:matchIds.keySet()){
+				if(matchIds.get(iUnit).contains(i)) ps.printf("%12s\t","bio");
+				else ps.printf("%12s\t","xtal");
+			}
+			ps.print("\n");
+		}
+		ps.close();
 	}
 	
 	public void doWritePdbFiles() throws CRKException {
@@ -497,7 +580,8 @@ public class CRKMain {
 					 file.getName().endsWith(CRKParams.CRSCORES_FILE_SUFFIX) ||
 					 file.getName().endsWith(CRKParams.CSSCORES_FILE_SUFFIX) ||
 					 file.getName().endsWith(CRKParams.COMBINED_FILE_SUFFIX) ||
-					 file.getName().endsWith(CRKParams.ENTROPIES_FILE_SUFFIX) ||					 
+					 file.getName().endsWith(CRKParams.ENTROPIES_FILE_SUFFIX) ||
+					 file.getName().endsWith(CRKParams.PDB_BIOUNIT_ASSIGN_FILE_SUFFIX) ||
 					 file.getName().endsWith(".fa") ||
 					 file.getName().endsWith(CRKParams.ENTROPIES_FILE_SUFFIX+".pdb.gz") ||
 					 ( file.getName().endsWith(".log") && 
@@ -740,6 +824,9 @@ public class CRKMain {
 				crkMain.doCombinedScoring();
 			}
 			
+			//4.5 Write the pdb BioUnits file
+			crkMain.writePdbAssignments();
+			
 			crkMain.doWritePdbFiles();
 						
 			// 5 writing pymol files
@@ -761,10 +848,10 @@ public class CRKMain {
 			long end = System.nanoTime();
 			LOGGER.info("Finished successfully (total runtime "+((end-start)/1000000000L)+"s)");
 
-		} catch (CRKException e) {
-			e.log(LOGGER);
-			e.exitIfFatal(1);
-		} 
+		} //catch (CRKException e) {
+			//e.log(LOGGER);
+			//e.exitIfFatal(1);
+		//} 
 		catch (Exception e) {
 			//e.printStackTrace();
 

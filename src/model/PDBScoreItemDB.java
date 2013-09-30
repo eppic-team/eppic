@@ -26,12 +26,15 @@ public class PDBScoreItemDB implements Serializable, ProcessingDataDB
 
 	private List<InterfaceItemDB> interfaceItems;
 	
+	private List<PdbBioUnitItemDB> bioUnitItems;
+	
 	private JobDB jobItem;
 	
 	public PDBScoreItemDB() 
 	{
 		interfaceItems = new ArrayList<InterfaceItemDB>();
 		homologsInfoItems = new ArrayList<HomologsInfoItemDB>();
+		bioUnitItems = new ArrayList<PdbBioUnitItemDB>();
 	}
 	
 	public PDBScoreItemDB(int uid,
@@ -45,6 +48,7 @@ public class PDBScoreItemDB implements Serializable, ProcessingDataDB
 	{
 		interfaceItems = new ArrayList<InterfaceItemDB>();
 		homologsInfoItems = new ArrayList<HomologsInfoItemDB>();
+		bioUnitItems = new ArrayList<PdbBioUnitItemDB>();
 		this.uid = uid;
 		this.pdbName = pdbName;
 		this.title = title;
@@ -55,6 +59,18 @@ public class PDBScoreItemDB implements Serializable, ProcessingDataDB
 		this.jobItem = jobItem;
 	}
 	
+	public List<PdbBioUnitItemDB> getBioUnitItems() {
+		return bioUnitItems;
+	}
+
+	public void setBioUnitItems(List<PdbBioUnitItemDB> bioUnitItems) {
+		this.bioUnitItems = bioUnitItems;
+	}
+	
+	public void addPdbBioUnitItem(PdbBioUnitItemDB unitItem) {
+		this.bioUnitItems.add(unitItem);
+	}
+
 	public String getPdbName() {
 		return pdbName;
 	}

@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.TreeMap;
 
 import crk.predictors.CombinedPredictor;
 import crk.predictors.EvolInterfZPredictor;
@@ -20,6 +21,8 @@ import model.InterfaceResidueItemDB;
 import model.InterfaceScoreItemDB;
 import model.HomologsInfoItemDB;
 import model.PDBScoreItemDB;
+import model.PdbBioUnitAssignmentItemDB;
+import model.PdbBioUnitItemDB;
 import model.QueryWarningItemDB;
 import model.RunParametersItemDB;
 import model.WarningItemDB;
@@ -29,6 +32,8 @@ import owl.core.sequence.Homolog;
 import owl.core.structure.ChainInterface;
 import owl.core.structure.ChainInterfaceList;
 import owl.core.structure.PdbAsymUnit;
+import owl.core.structure.PdbBioUnit;
+import owl.core.structure.PdbBioUnitList;
 import owl.core.structure.PdbChain;
 import owl.core.structure.Residue;
 import owl.core.structure.SpaceGroup;
@@ -85,9 +90,12 @@ public class WebUIDataAdaptor {
 		
 	}
 	
-	public void setInterfaces(ChainInterfaceList interfaces) {
-
+	public void setInterfaces(ChainInterfaceList interfaces, PdbBioUnitList bioUnitList) {
+		int iInterface = 0;
+		//Get the full details on biounits
+		TreeMap<Integer, List<Integer>> matchIds = bioUnitList.getInterfaceMatches(interfaces);
 		for (ChainInterface interf:interfaces) {
+			iInterface++;
 			InterfaceItemDB ii = new InterfaceItemDB();
 			ii.setId(interf.getId());
 			ii.setArea(interf.getInterfaceArea());
@@ -101,6 +109,21 @@ public class WebUIDataAdaptor {
 			
 			ii.setSize1(interf.getFirstRimCore().getCoreSize());
 			ii.setSize2(interf.getSecondRimCore().getCoreSize());
+
+			for(int bioUnitId:matchIds.keySet()){
+				PdbBioUnit unit = bioUnitList.get(bioUnitId);
+				PdbBioUnitAssignmentItemDB assignDB = new PdbBioUnitAssignmentItemDB();
+				
+				assignDB.setSize(unit.getSize());
+				assignDB.setType(unit.getType().getType());
+				
+				if(matchIds.get(bioUnitId).contains(iInterface)) assignDB.setAssignment("bio");
+				else assignDB.setAssignment("xtal");
+				
+				assignDB.setInterfaceItem(ii);
+				
+				ii.addBioUnitAssignment(assignDB);
+			}
 			
 			ii.setPdbScoreItem(pdbScoreItem);
 			
@@ -109,6 +132,20 @@ public class WebUIDataAdaptor {
 			interfId2Warnings.put(interf.getId(),new HashSet<String>());
 		}
 
+	}
+	
+	public void setPdbBioUnits(PdbBioUnitList pdbBioUnitList) {
+		
+		for(PdbBioUnit unit:pdbBioUnitList){
+			PdbBioUnitItemDB unitDb = new PdbBioUnitItemDB();
+			unitDb.setSize(unit.getSize());
+			unitDb.setType(unit.getType().getType());
+			
+			unitDb.setPdbScoreItem(pdbScoreItem);
+			
+			pdbScoreItem.addPdbBioUnitItem(unitDb);
+		}
+		
 	}
 	
 	public void writeJmolScriptFile(ChainInterface interf, double caCutoff, double minAsaForSurface, PymolRunner pr, File dir, String prefix, boolean usePdbResSer) 

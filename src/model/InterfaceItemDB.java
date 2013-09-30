@@ -37,6 +37,7 @@ public class InterfaceItemDB implements Serializable
 	
 	private List<InterfaceScoreItemDB> interfaceScores;
 	private List<InterfaceResidueItemDB> interfaceResidues;
+	private List<PdbBioUnitAssignmentItemDB> bioUnitAssignments;
 	
 	private PDBScoreItemDB pdbScoreItem;
 
@@ -45,6 +46,7 @@ public class InterfaceItemDB implements Serializable
 		interfaceScores = new ArrayList<InterfaceScoreItemDB>();
 		warnings = new ArrayList<WarningItemDB>();
 		interfaceResidues = new ArrayList<InterfaceResidueItemDB>();
+		bioUnitAssignments = new ArrayList<PdbBioUnitAssignmentItemDB>();
 	}
 	
 
@@ -171,6 +173,19 @@ public class InterfaceItemDB implements Serializable
 
 	public void setInterfaceResidues(List<InterfaceResidueItemDB> interfaceResidues) {
 		this.interfaceResidues = interfaceResidues;
+	}
+
+	public List<PdbBioUnitAssignmentItemDB> getBioUnitAssignments() {
+		return bioUnitAssignments;
+	}
+
+	public void setBioUnitAssignments(
+			List<PdbBioUnitAssignmentItemDB> bioUnitAssignments) {
+		this.bioUnitAssignments = bioUnitAssignments;
+	}
+	
+	public void addBioUnitAssignment(PdbBioUnitAssignmentItemDB bioUnitAssignment) {
+		this.bioUnitAssignments.add(bioUnitAssignment);
 	}
 
 	public Double getAsaC1() {
