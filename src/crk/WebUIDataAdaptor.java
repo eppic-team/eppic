@@ -82,6 +82,7 @@ public class WebUIDataAdaptor {
 	
 	public void setPdbMetadata(PdbAsymUnit pdb) {
 		pdbScoreItem.setTitle(pdb.getTitle());
+		pdbScoreItem.setReleaseDate(pdb.getReleaseDate());
 		SpaceGroup sg = pdb.getSpaceGroup();
 		pdbScoreItem.setSpaceGroup(sg==null?null:sg.getShortSymbol());
 		pdbScoreItem.setResolution(pdb.getResolution());

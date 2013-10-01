@@ -2,6 +2,7 @@ package model;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 
@@ -16,6 +17,7 @@ public class PDBScoreItemDB implements Serializable, ProcessingDataDB
 	
 	private String pdbName;
 	private String title;
+	private Date releaseDate;
 	private String spaceGroup;
 	private double resolution;
 	private double rFree;
@@ -77,6 +79,14 @@ public class PDBScoreItemDB implements Serializable, ProcessingDataDB
 
 	public void setPdbName(String pdbName) {
 		this.pdbName = pdbName;
+	}
+
+	public Date getReleaseDate() {
+		return releaseDate;
+	}
+
+	public void setReleaseDate(Date releaseDate) {
+		this.releaseDate = releaseDate;
 	}
 
 	public void setInterfaceItems(List<InterfaceItemDB> interfaceItems) {
