@@ -40,7 +40,7 @@ public class ResultsPanel extends DisplayPanel
 		resultsSelectorsPanel = new ResultsSelectorsPanel();
 		this.add(resultsSelectorsPanel, new RowData(1, 40, new Margins(0, 0, 5, 0)));
 
-		resultsGridContainer = new ResultsGridPanel(resultsSelectorsPanel.getShowThumbnailCheckBox().getValue());
+		resultsGridContainer = new ResultsGridPanel();
 		this.add(resultsGridContainer, new RowData(1, 1, new Margins(0)));
 		
 		initializeEventsListeners();

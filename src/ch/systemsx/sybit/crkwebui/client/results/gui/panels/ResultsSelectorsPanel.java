@@ -2,8 +2,6 @@ package ch.systemsx.sybit.crkwebui.client.results.gui.panels;
 
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
-import ch.systemsx.sybit.crkwebui.client.commons.events.ShowThumbnailEvent;
-import ch.systemsx.sybit.crkwebui.client.commons.managers.EventBusManager;
 
 import com.extjs.gxt.ui.client.Style.Orientation;
 import com.extjs.gxt.ui.client.core.Template;
@@ -29,9 +27,7 @@ import com.google.gwt.user.client.Cookies;
  *
  */
 public class ResultsSelectorsPanel extends LayoutContainer
-{
-	private CheckBox showThumbnailCheckBox;
-	
+{	
 	public ResultsSelectorsPanel()
 	{
 		init();
@@ -44,11 +40,7 @@ public class ResultsSelectorsPanel extends LayoutContainer
 
 		LayoutContainer viewerTypePanelLocation = createViewerTypePanelLocation();
 		
-		showThumbnailCheckBox = createShowThumbnailCheckBox();
-		LayoutContainer showThumbnailPanelLocation = createShowThumbnailPanelLocation(showThumbnailCheckBox);
-
 		this.add(viewerTypePanelLocation, new RowData(0.5, 1, new Margins(0)));
-		this.add(showThumbnailPanelLocation, new RowData(0.5, 1, new Margins(0)));
 	}
 	
 	/**
@@ -148,79 +140,5 @@ public class ResultsSelectorsPanel extends LayoutContainer
 									   "<li>PyMol session file (.pse) to be opened in local PyMol</li>" +
 									   "</ul></div>";
 		return viewerTypeDescription;
-	}
-
-	/**
-	 * Creates checkbox used to specify whether thumbnails should be visible or not.
-	 * @return thumbnails checkbox
-	 */
-	private CheckBox createShowThumbnailCheckBox()
-	{
-		final CheckBox showThumbnailCheckBox = new CheckBox();
-		showThumbnailCheckBox.setBoxLabel(AppPropertiesManager.CONSTANTS.results_grid_show_thumbnails());
-		showThumbnailCheckBox.setValue(isDisplayThumbnails());
-		showThumbnailCheckBox.addListener(Events.Change, new Listener<FieldEvent>() {
-
-			@Override
-			public void handleEvent(FieldEvent event)
-			{
-				Cookies.setCookie("crkthumbnail", String.valueOf(showThumbnailCheckBox.getValue()));
-				
-				boolean hideThumbnail = true;
-				if(showThumbnailCheckBox.getValue())
-				{
-					hideThumbnail = false;
-				}
-				
-				EventBusManager.EVENT_BUS.fireEvent(new ShowThumbnailEvent(hideThumbnail));
-			}
-		});
-		
-		return showThumbnailCheckBox;
-	}
-	
-	/**
-	 * Creates panel containing checkbox used to specify whether thumbnails should be displayed.
-	 * @param showThumbnailCheckBox checkbox to specify whether to display thumbnails
-	 * @return thumbnails checkbox
-	 */
-	private LayoutContainer createShowThumbnailPanelLocation(CheckBox showThumbnailCheckBox)
-	{
-		LayoutContainer showThumbnailPanelLocation = new LayoutContainer();
-		showThumbnailPanelLocation.setBorders(false);
-		
-		VBoxLayout vBoxLayout = new VBoxLayout();
-		vBoxLayout.setVBoxLayoutAlign(VBoxLayoutAlign.RIGHT);
-		showThumbnailPanelLocation.setLayout(vBoxLayout);
-		
-		showThumbnailCheckBox = createShowThumbnailCheckBox();
-		showThumbnailPanelLocation.add(showThumbnailCheckBox);
-		
-		return showThumbnailPanelLocation;
-	}
-	
-	/**
-	 * Checks whether thumbnails should be displayed based on saved cookie.
-	 */
-	private boolean isDisplayThumbnails()
-	{
-		String thumbnailCookie = Cookies.getCookie("crkthumbnail");
-		if(thumbnailCookie == null)
-		{
-			thumbnailCookie = "true";
-		}
-		
-		if (thumbnailCookie.equals("true"))
-		{
-			return true;
-		} 
-		else
-		{
-			return false;
-		}
-	}
-	
-	public CheckBox getShowThumbnailCheckBox() {
-		return showThumbnailCheckBox;
 	}
 }

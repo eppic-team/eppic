@@ -58,7 +58,7 @@ public class ResultsGridPanel extends ContentPanel
 	
 	private int assignedWidth;
 	
-	public ResultsGridPanel(boolean showThumbnail)
+	public ResultsGridPanel()
 	{
 		this.getHeader().setVisible(false);
 		this.setBorders(true);
@@ -68,17 +68,6 @@ public class ResultsGridPanel extends ContentPanel
 		
 		List<ColumnConfig> resultsConfigs = createColumnConfig();
 		
-		if(!showThumbnail)
-		{
-			for(ColumnConfig column : resultsConfigs)
-			{
-				if(column.getId().equals("thumbnail"))
-				{
-					column.setHidden(true);
-				}
-			}
-		}
-
 		proxy = new MemoryProxy(null);
 		loader = new BaseListLoader(proxy);
 		
