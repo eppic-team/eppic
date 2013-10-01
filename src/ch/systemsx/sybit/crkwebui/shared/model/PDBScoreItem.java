@@ -2,9 +2,8 @@ package ch.systemsx.sybit.crkwebui.shared.model;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
-
-import owl.core.structure.PdbBioUnit;
 
 import model.HomologsInfoItemDB;
 import model.InterfaceItemDB;
@@ -26,6 +25,7 @@ public class PDBScoreItem implements Serializable, ProcessingData
 	
 	private String pdbName;
 	private String title;
+	private Date releaseDate;
 	private String spaceGroup;
 	private double resolution;
 	private double rFree;
@@ -75,6 +75,14 @@ public class PDBScoreItem implements Serializable, ProcessingData
 
 	public void setPdbName(String pdbName) {
 		this.pdbName = pdbName;
+	}
+
+	public Date getReleaseDate() {
+		return releaseDate;
+	}
+
+	public void setReleaseDate(Date releaseDate) {
+		this.releaseDate = releaseDate;
 	}
 
 	public void setInterfaceItems(List<InterfaceItem> interfaceItems) {
@@ -233,6 +241,7 @@ public class PDBScoreItem implements Serializable, ProcessingData
 		}
 		
 		pdbScoreItem.setPdbName(pdbScoreItemDB.getPdbName());
+		pdbScoreItem.setReleaseDate(pdbScoreItemDB.getReleaseDate());
 		pdbScoreItem.setRunParameters(RunParametersItem.create(pdbScoreItemDB.getRunParameters()));
 		pdbScoreItem.setSpaceGroup(pdbScoreItemDB.getSpaceGroup());
 		pdbScoreItem.setExpMethod(pdbScoreItemDB.getExpMethod());

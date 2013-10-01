@@ -69,6 +69,7 @@
             <basic name="title">
             	<column column-definition="text"/>
             </basic>
+            <basic name="releaseDate"></basic>
             <basic name="spaceGroup">
             	<column length="10"/>
             </basic>
