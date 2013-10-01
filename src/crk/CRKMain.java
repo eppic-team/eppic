@@ -176,6 +176,9 @@ public class CRKMain {
 		wuiAdaptor = new WebUIDataAdaptor();
 		wuiAdaptor.setParams(params);
 		wuiAdaptor.setPdbMetadata(pdb);
+		//add biounit details to the db
+		wuiAdaptor.setPdbBioUnits(pdb.getPdbBioUnitList());
+		
 		
 	}
 	
@@ -310,7 +313,6 @@ public class CRKMain {
 						
 			// for the webui
 			wuiAdaptor.setInterfaces(interfaces, this.pdb.getPdbBioUnitList());
-			wuiAdaptor.setPdbBioUnits(pdb.getPdbBioUnitList());
 			wuiAdaptor.setGeometryScores(gps);
 			wuiAdaptor.addResidueDetails(interfaces);
 		} catch (IOException e) {
