@@ -179,3 +179,12 @@
 	color: red;
 	font-weight: bold;
 }
+
+.eppic-homologs-infopanel {
+	float: right;
+	padding-right: 50px
+}
+
+.eppic-homologstable td {
+	padding-right: 10px;
+}
