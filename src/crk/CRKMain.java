@@ -850,10 +850,10 @@ public class CRKMain {
 			long end = System.nanoTime();
 			LOGGER.info("Finished successfully (total runtime "+((end-start)/1000000000L)+"s)");
 
-		} //catch (CRKException e) {
-			//e.log(LOGGER);
-			//e.exitIfFatal(1);
-		//} 
+		} catch (CRKException e) {
+			e.log(LOGGER);
+			e.exitIfFatal(1);
+		} 
 		catch (Exception e) {
 			//e.printStackTrace();
 
