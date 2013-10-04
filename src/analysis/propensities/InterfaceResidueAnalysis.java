@@ -185,7 +185,7 @@ public class InterfaceResidueAnalysis {
 			//Calculate all the interfaces for the pdb structure
 			System.out.println("Calculating all Interfaces ....");
 			ChainInterfaceList allInterFaces = 
-					fullpdb.getAllInterfaces(CRKParams.INTERFACE_DIST_CUTOFF, CRKParams.DEF_NSPHEREPOINTS_ASA_CALC, 1, true, false, CRKParams.DEF_MIN_SIZE_COFACTOR_FOR_ASA);
+					fullpdb.getAllInterfaces(CRKParams.INTERFACE_DIST_CUTOFF, CRKParams.DEF_NSPHEREPOINTS_ASA_CALC, 1, true, false, CRKParams.DEF_MIN_SIZE_COFACTOR_FOR_ASA, CRKParams.MIN_INTERFACE_AREA_TO_KEEP);
 			
 			//Get number of Bio Interfaces
 			int bioInterFaces = bioToAnalyse.get(pdbCode).size();

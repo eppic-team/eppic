@@ -41,6 +41,11 @@ public class CRKParams {
 	// the number of useless too small interfaces and thus make PDB-wide calculations a bit
 	// more optimal
 	public static final double     INTERFACE_DIST_CUTOFF = 5.5;
+	// min interface area to keep interfaces: interfaces below this value are discarded
+	// value is "guesstimated" from a reasonable experimental error and by looking at the histogram of 
+	// area distributions for the whole PDB (in Oct 2013): it peaks at ~15, then has a small shoulder 
+	// until 35 and decays monotonically after that
+	public static final double     MIN_INTERFACE_AREA_TO_KEEP = 35;
 	// if any interface has this number of clashes we'll abort with an error
 	public static final int		   NUM_CLASHES_FOR_ERROR = 30;
 	// shorter chains will be considered peptides

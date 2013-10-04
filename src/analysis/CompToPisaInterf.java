@@ -110,7 +110,8 @@ public class CompToPisaInterf {
 			
 			ChainInterfaceList interfaces = null;
 
-			interfaces = pdb.getAllInterfaces(CRKParams.INTERFACE_DIST_CUTOFF, Asa.DEFAULT_N_SPHERE_POINTS, NTHREADS, true, true, -1);
+			// not we use 0 as min interface area so that we compare to pisa better (since they keep all interfaces)
+			interfaces = pdb.getAllInterfaces(CRKParams.INTERFACE_DIST_CUTOFF, Asa.DEFAULT_N_SPHERE_POINTS, NTHREADS, true, true, -1, 0);
 
 			System.out.print("Number of interfaces: ours "+interfaces.size()+", pisa "+pisaInterfaces.getNumInterfaces());
 			if (pisaInterfaces.getNumInterfaces()!=interfaces.size()) {

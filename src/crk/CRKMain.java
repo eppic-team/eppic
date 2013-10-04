@@ -217,7 +217,10 @@ public class CRKMain {
 		} else {
 			params.getProgressLog().println("Calculating possible interfaces...");
 			InterfacesFinder interfFinder = new InterfacesFinder(pdb);
-			interfaces = interfFinder.getAllInterfaces(CRKParams.INTERFACE_DIST_CUTOFF, params.getnSpherePointsASAcalc(), params.getNumThreads(), true, false, params.getMinSizeCofactorForAsa());
+			interfaces = interfFinder.getAllInterfaces(CRKParams.INTERFACE_DIST_CUTOFF, 
+					params.getnSpherePointsASAcalc(), params.getNumThreads(), true, false, 
+					params.getMinSizeCofactorForAsa(),
+					CRKParams.MIN_INTERFACE_AREA_TO_KEEP);
 			LOGGER.info("Interfaces calculated with "+params.getnSpherePointsASAcalc()+" sphere points.");
 			if (interfFinder.hasCofactors()) {
 				LOGGER.info("Cofactors of more than "+params.getMinSizeCofactorForAsa()+" atoms present: they will be taken into account for ASA calculations");
