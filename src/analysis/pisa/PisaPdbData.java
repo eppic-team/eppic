@@ -103,7 +103,7 @@ public class PisaPdbData {
 					break;
 				}
 			}
-			if(!map.containsKey(eppicI)) System.err.println("No corresponding PISA interface found for Eppic Interface with id="+eppicI.getId());
+			if(!map.containsKey(eppicI.getId())) System.err.println("No corresponding PISA interface found for Eppic Interface with id="+eppicI.getId());
 		}
 		
 		return map;
