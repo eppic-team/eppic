@@ -28,14 +28,14 @@ public class PisaPdbData {
 	private PdbAsymUnit pdb;
 	private PisaAsmSet assemblySet;
 	private PisaInterfaceList pisaInterfaces;
-	private Map<ChainInterface, PisaInterface> eppicToPisaInterfaceMap;
+	private Map<Integer, PisaInterface> eppicToPisaInterfaceMap;   //Map of eppic Id to Pisa Interface
 	private Map<PisaInterface, CallType> pisaCalls;
 	
 	public PisaPdbData(PdbAsymUnit pdb){
 		this.pdb = pdb;
 		this.assemblySet = new PisaAsmSet();
 		this.pisaInterfaces = new PisaInterfaceList();
-		this.eppicToPisaInterfaceMap = new TreeMap<ChainInterface, PisaInterface>();
+		this.eppicToPisaInterfaceMap = new TreeMap<Integer, PisaInterface>();
 		this.pisaCalls = new TreeMap<PisaInterface, CallType>();
 	}
 	
@@ -51,12 +51,12 @@ public class PisaPdbData {
 		return this.pdb.getPdbCode();
 	}
 	
-	public Map<ChainInterface, PisaInterface> getEppicToPisaInterfaceMap() {
+	public Map<Integer, PisaInterface> getEppicToPisaInterfaceMap() {
 		return eppicToPisaInterfaceMap;
 	}
 
 	public void setEppicToPisaInterfaceMap(
-			Map<ChainInterface, PisaInterface> eppicToPisaInterface) {
+			Map<Integer, PisaInterface> eppicToPisaInterface) {
 		this.eppicToPisaInterfaceMap = eppicToPisaInterface;
 	}
 
@@ -78,11 +78,17 @@ public class PisaPdbData {
 		this.eppicToPisaInterfaceMap = createEppicToPisaMap(eppicInterfaces, this.pisaInterfaces);
 		
 	}
-		
-	public static Map<ChainInterface, PisaInterface> createEppicToPisaMap(ChainInterfaceList eppicInterfaces, PisaInterfaceList pisaInterfaces){
+	/**
+	 * Method to get the PISA interface corresponding to EPPIC interface.
+	 * Returns a map with EPPIC Interface Id's as the keys and PIsa interfaces as the values
+	 * @param eppicInterfaces
+	 * @param pisaInterfaces
+	 * @return Map<Integer, PisaInterface> eppicIdToPisaInterfaceMap
+	 */
+	public static Map<Integer, PisaInterface> createEppicToPisaMap(ChainInterfaceList eppicInterfaces, PisaInterfaceList pisaInterfaces){
 		//if(pisaInterfaces == null) return null;
 		
-		Map<ChainInterface, PisaInterface> map = new TreeMap<ChainInterface, PisaInterface>();
+		Map<Integer, PisaInterface> map = new TreeMap<Integer, PisaInterface>();
 				
 		for(ChainInterface eppicI:eppicInterfaces){
 			for(PisaInterface pisaI:pisaInterfaces){
@@ -93,7 +99,7 @@ public class PisaPdbData {
 						pisaI.getSecondMolecule().getTransf().getMatTransform() );
 				
 				if(pisaUnit.matchesInterface(eppicI)) {
-					map.put(eppicI, pisaI);
+					map.put(eppicI.getId(), pisaI);
 					break;
 				}
 			}
@@ -119,17 +125,17 @@ public class PisaPdbData {
 		return map;
 	}
 	
-	public CallType getPisaCallFromEppicInterface(ChainInterface eppicInterface){
+	public CallType getPisaCallFromEppicInterface(int eppicInterfaceId){
 		
-		if(!this.eppicToPisaInterfaceMap.containsKey(eppicInterface)) return null;		
-		else return(this.pisaCalls.get(this.eppicToPisaInterfaceMap.get(eppicInterface)));
+		if(!this.eppicToPisaInterfaceMap.containsKey(eppicInterfaceId)) return null;		
+		else return(this.pisaCalls.get(this.eppicToPisaInterfaceMap.get(eppicInterfaceId)));
 	}
 	
 	public int getEppicIdForPisaInterface(PisaInterface pisaInterface){
 		int eppicId=-1;
-		for(ChainInterface eppicI:this.eppicToPisaInterfaceMap.keySet() ){
+		for(int eppicI:this.eppicToPisaInterfaceMap.keySet() ){
 			if(this.eppicToPisaInterfaceMap.get(eppicI).getId() == pisaInterface.getId()){
-				eppicId = eppicI.getId();
+				eppicId = eppicI;
 				break;
 			}
 		}
@@ -137,9 +143,9 @@ public class PisaPdbData {
 		return eppicId;
 	}
 	
-	public int getPisaIdForEppicInterface(ChainInterface eppicInterface){
-		if(!this.eppicToPisaInterfaceMap.containsKey(eppicInterface)) return -1;
-		else return(this.eppicToPisaInterfaceMap.get(eppicInterface).getId());
+	public int getPisaIdForEppicInterface(int eppicInterfaceId){
+		if(!this.eppicToPisaInterfaceMap.containsKey(eppicInterfaceId)) return -1;
+		else return(this.eppicToPisaInterfaceMap.get(eppicInterfaceId).getId());
 	}
 
 }

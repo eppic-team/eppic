@@ -23,7 +23,6 @@ import owl.core.connections.pisa.PisaAsmSetList;
 import owl.core.connections.pisa.PisaAssembliesXMLParser;
 import owl.core.connections.pisa.PisaInterfaceList;
 import owl.core.connections.pisa.PisaInterfaceXMLParser;
-import owl.core.structure.ChainInterface;
 import owl.core.structure.PdbAsymUnit;
 import owl.core.structure.PdbLoadException;
 import owl.core.util.FileFormatException;
@@ -138,8 +137,8 @@ public class PredictPisaInterfaceCalls {
 		out.print("\n");
 		if(!this.pisaDatas.isEmpty()) out.printf("#%4s %8s %8s %8s\n","PDB","EPPIC_ID","PISA_ID","PisaCall");
 		for(PisaPdbData data:this.pisaDatas){
-			for(ChainInterface eppicI:data.getEppicToPisaInterfaceMap().keySet()){
-				out.printf("%5s %8s %8s %8s\n",data.getPdbCode(),eppicI.getId(),data.getPisaIdForEppicInterface(eppicI),data.getPisaCallFromEppicInterface(eppicI).getName() );
+			for(int eppicI:data.getEppicToPisaInterfaceMap().keySet()){
+				out.printf("%5s %8s %8s %8s\n",data.getPdbCode(),eppicI,data.getPisaIdForEppicInterface(eppicI),data.getPisaCallFromEppicInterface(eppicI).getName() );
 			}
 		}
 	}
