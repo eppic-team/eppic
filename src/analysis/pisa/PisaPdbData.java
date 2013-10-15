@@ -9,7 +9,7 @@ import java.util.TreeMap;
 import crk.CRKParams;
 import crk.CallType;
 
-import owl.core.connections.pisa.PisaAsmSet;
+import owl.core.connections.pisa.PisaAsmSetList;
 import owl.core.connections.pisa.PisaAssembly;
 import owl.core.connections.pisa.PisaInterface;
 import owl.core.connections.pisa.PisaInterfaceList;
@@ -26,22 +26,14 @@ import owl.core.structure.PdbBioUnit;
 public class PisaPdbData {
 	
 	private PdbAsymUnit pdb;
-	private PisaAsmSet assemblySet;
+	private PisaAsmSetList assemblySetList;
 	private PisaInterfaceList pisaInterfaces;
 	private Map<Integer, PisaInterface> eppicToPisaInterfaceMap;   //Map of eppic Id to Pisa Interface
-	private Map<PisaInterface, CallType> pisaCalls;
+	private Map<Integer, CallType> pisaCalls;						//Map of Pisa Interface Id's to pisa Calls
 	
-	public PisaPdbData(PdbAsymUnit pdb){
+	public PisaPdbData(PdbAsymUnit pdb, PisaAsmSetList assemblySetList, PisaInterfaceList pisaInterfaceList){
 		this.pdb = pdb;
-		this.assemblySet = new PisaAsmSet();
-		this.pisaInterfaces = new PisaInterfaceList();
-		this.eppicToPisaInterfaceMap = new TreeMap<Integer, PisaInterface>();
-		this.pisaCalls = new TreeMap<PisaInterface, CallType>();
-	}
-	
-	public PisaPdbData(PdbAsymUnit pdb, PisaAsmSet assemblySet, PisaInterfaceList pisaInterfaceList){
-		this.pdb = pdb;
-		this.assemblySet = assemblySet;
+		this.assemblySetList = assemblySetList;
 		this.pisaInterfaces = pisaInterfaceList;
 		setEppicToPisaMap();
 		this.pisaCalls = setPisaCalls();
@@ -60,11 +52,11 @@ public class PisaPdbData {
 		this.eppicToPisaInterfaceMap = eppicToPisaInterface;
 	}
 
-	public Map<PisaInterface, CallType> getPisaCalls() {
+	public Map<Integer, CallType> getPisaCalls() {
 		return pisaCalls;
 	}
 
-	public void setPisaCalls(Map<PisaInterface, CallType> pisaCalls) {
+	public void setPisaCalls(Map<Integer, CallType> pisaCalls) {
 		this.pisaCalls = pisaCalls;
 	}
 
@@ -81,6 +73,7 @@ public class PisaPdbData {
 	/**
 	 * Method to get the PISA interface corresponding to EPPIC interface.
 	 * Returns a map with EPPIC Interface Id's as the keys and PIsa interfaces as the values
+	 * If no Pisa interface is found, sets the value of that key to null
 	 * @param eppicInterfaces
 	 * @param pisaInterfaces
 	 * @return Map<Integer, PisaInterface> eppicIdToPisaInterfaceMap
@@ -103,32 +96,49 @@ public class PisaPdbData {
 					break;
 				}
 			}
-			if(!map.containsKey(eppicI.getId())) System.err.println("No corresponding PISA interface found for Eppic Interface with id="+eppicI.getId());
-		}
-		
-		return map;
-	}
-	
-	private Map<PisaInterface, CallType> setPisaCalls(){
-		Map<PisaInterface, CallType> map = new TreeMap<PisaInterface, CallType>();
-		
-		for(PisaInterface interf:this.pisaInterfaces){
-			for(PisaAssembly assembly:this.assemblySet){
-				if(assembly.getInterfaceIds().contains(interf.getId())){
-					map.put(interf, CallType.BIO);
-					break;
-				}
+			if(!map.containsKey(eppicI.getId())){
+				System.err.println("Warning: No corresponding PISA interface found for Eppic Interface with id="+eppicI.getId()+" for pdb: "+pisaInterfaces.getPdbCode());
+				map.put(eppicI.getId(), null);
 			}
-			if(!map.containsKey(interf)) map.put(interf, CallType.CRYSTAL);
 		}
-		
 		return map;
 	}
 	
+	private Map<Integer, CallType> setPisaCalls(){
+		Map<Integer, CallType> map = new TreeMap<Integer, CallType>();
+
+		int assemSize = this.assemblySetList.getOligomericPred().getMmSize();
+
+		if(assemSize == -1){
+			for(PisaInterface interf:this.pisaInterfaces){
+				map.put(interf.getId(), CallType.NO_PREDICTION);
+			}
+		}
+		else{
+			for(PisaInterface interf:this.pisaInterfaces){
+				for(PisaAssembly assembly:this.assemblySetList.getOligomericPred().getPisaAsmSet()){
+					if(assembly.getInterfaceIds().contains(interf.getId())){
+						map.put(interf.getId(), CallType.BIO);
+						break;
+					}
+				}
+				if(!map.containsKey(interf.getId())) map.put(interf.getId(), CallType.CRYSTAL);
+			}
+		}
+		return map;
+	}
+	
+	/**
+	 * Returns the Call Type from the eppic Id. 
+	 * If there is no pisa interface found for a eppic id "NO PREDICTION" is returned
+	 * @param eppicInterfaceId
+	 * @return
+	 */
 	public CallType getPisaCallFromEppicInterface(int eppicInterfaceId){
 		
-		if(!this.eppicToPisaInterfaceMap.containsKey(eppicInterfaceId)) return null;		
-		else return(this.pisaCalls.get(this.eppicToPisaInterfaceMap.get(eppicInterfaceId)));
+		if(!this.eppicToPisaInterfaceMap.containsKey(eppicInterfaceId)) return null;
+		else if(this.eppicToPisaInterfaceMap.get(eppicInterfaceId)==null) return CallType.NO_PREDICTION;
+		else return(this.pisaCalls.get(this.eppicToPisaInterfaceMap.get(eppicInterfaceId).getId()));
 	}
 	
 	public int getEppicIdForPisaInterface(PisaInterface pisaInterface){
@@ -143,8 +153,14 @@ public class PisaPdbData {
 		return eppicId;
 	}
 	
+	/**
+	 * Returns the pisa id for an eppic interface, returns 0 if no pisa interface is found corresponding to eepic interface
+	 * @param eppicInterfaceId
+	 * @return
+	 */
 	public int getPisaIdForEppicInterface(int eppicInterfaceId){
 		if(!this.eppicToPisaInterfaceMap.containsKey(eppicInterfaceId)) return -1;
+		else if(this.eppicToPisaInterfaceMap.get(eppicInterfaceId)==null) return 0;
 		else return(this.eppicToPisaInterfaceMap.get(eppicInterfaceId).getId());
 	}
 

@@ -13,12 +13,10 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.zip.GZIPInputStream;
 
 import org.xml.sax.SAXException;
 
-import owl.core.connections.pisa.PisaAsmSet;
 import owl.core.connections.pisa.PisaAsmSetList;
 import owl.core.connections.pisa.PisaAssembliesXMLParser;
 import owl.core.connections.pisa.PisaInterfaceList;
@@ -94,34 +92,25 @@ public class PredictPisaInterfaceCalls {
 		
 		//Parse Assemblies
 		PisaAssembliesXMLParser assemblyParser = new PisaAssembliesXMLParser(new GZIPInputStream(new FileInputStream(assemblyFile)));
-		Map<String,PisaAsmSetList> assemblySetListMap = assemblyParser.getAllAssemblies();
-		
-		//We take only the 1st Set element form the AssemlySetList
-		//If it falls in gray or is unstable we discard it too
-		//All implemented in the getOligomerPred() method
-		Map<String,PisaAsmSet> assemblySetMap = new TreeMap<String,PisaAsmSet>();
-		for(String key:assemblySetListMap.keySet() ){
-			PisaAsmSetList pasList = assemblySetListMap.get(key);
-			if(pasList.getOligomericPred().getMmSize() > 1)	{
-				assemblySetMap.put(key, pasList.getOligomericPred().getPisaAsmSet());
-			}
-			
-		}
-		
+		Map<String,PisaAsmSetList> assemblySetListMap = assemblyParser.getAllAssemblies();		
 		
 		//Parse Interfaces
 		PisaInterfaceXMLParser interfaceParser = new PisaInterfaceXMLParser(new GZIPInputStream(new FileInputStream(interfaceFile)));
 		Map<String, PisaInterfaceList> interfaceListMap = interfaceParser.getAllInterfaces();
 		
-		for(String pdbCode:assemblySetMap.keySet()){
+		for(String pdbCode:assemblySetListMap.keySet()){
 			if(!interfaceListMap.keySet().contains(pdbCode))
 				throw new FileFormatException("Assembly file different from interface file; Interface file does not contain data for pdb:"+pdbCode);
 			else{
-				File cifFile = File.createTempFile(pdbCode, "cif");
-				PdbAsymUnit.grabCifFile(this.cifDir, null, pdbCode, cifFile, false);
-				PisaPdbData local = new PisaPdbData(new PdbAsymUnit(cifFile),assemblySetMap.get(pdbCode), interfaceListMap.get(pdbCode));
-				cifFile.deleteOnExit();
-				pisaDataList.add(local);
+				try{
+					File cifFile = File.createTempFile(pdbCode, "cif");
+					PdbAsymUnit.grabCifFile(this.cifDir, null, pdbCode, cifFile, false);
+					PisaPdbData local = new PisaPdbData(new PdbAsymUnit(cifFile),assemblySetListMap.get(pdbCode), interfaceListMap.get(pdbCode));
+					cifFile.deleteOnExit();
+					pisaDataList.add(local);
+				}catch(PdbLoadException e){
+					System.err.println("ERROR: Unable to load pdb file: "+pdbCode+"; "+e.getMessage());
+				}
 			}
 		}
 		
@@ -131,8 +120,7 @@ public class PredictPisaInterfaceCalls {
 	
 	public void printData(PrintStream out){
 		//Print Header
-		out.println("#Contains PDB's:");
-		out.print("#");
+		out.print("#Contains PDB's: ");
 		for(PisaPdbData data:this.pisaDatas) out.print(data.getPdbCode()+" ");
 		out.print("\n");
 		if(!this.pisaDatas.isEmpty()) out.printf("#%4s %8s %8s %8s\n","PDB","EPPIC_ID","PISA_ID","PisaCall");
