@@ -160,7 +160,7 @@ public class CRKMain {
 		} catch (FileFormatException e) {
 			throw new CRKException(e,"File format error: "+e.getMessage(),true);
 		} catch (PdbLoadException e) {
-			throw new CRKException(e,"Couldn't load file "+cifFile+". Error: "+e.getMessage(),true);
+			throw new CRKException(e,"Couldn't load file "+cifFile.getName()+". Error: "+e.getMessage(),true);
 		} catch (IOException e) {
 			throw new CRKException(e,"Problems reading PDB data from "+cifFile+". Error: "+e.getMessage(),true);
 		}
