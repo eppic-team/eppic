@@ -97,7 +97,14 @@ public class PisaPdbData {
 				}
 			}
 			if(!map.containsKey(eppicI.getId())){
-				System.err.println("Warning: No corresponding PISA interface found for Eppic Interface with id="+eppicI.getId()+" for pdb: "+pisaInterfaces.getPdbCode());
+				int xTrans = Math.abs(eppicI.getSecondTransf().getCrystalTranslation().x);
+				int yTrans = Math.abs(eppicI.getSecondTransf().getCrystalTranslation().y);
+				int zTrans = Math.abs(eppicI.getSecondTransf().getCrystalTranslation().z);
+				int maxTrans = Math.max(Math.max(xTrans, yTrans), zTrans);
+				if(maxTrans > 3){
+					System.err.println("Warning: EPPIC interface with Id="+eppicI.getId()+" for pdb: "+pisaInterfaces.getPdbCode()+" has a maximum translation of "+maxTrans+" cells; No PISA interface should be expected");
+				}
+				else System.err.println("Warning: No corresponding PISA interface found for EPPIC Interface with id="+eppicI.getId()+" for pdb: "+pisaInterfaces.getPdbCode());
 				map.put(eppicI.getId(), null);
 			}
 		}

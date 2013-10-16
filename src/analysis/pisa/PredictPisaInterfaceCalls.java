@@ -87,7 +87,7 @@ public class PredictPisaInterfaceCalls {
 		this.pisaDatas = pisaDatas;
 	}
 
-	public List<PisaPdbData> createPisaDatafromFiles(File assemblyFile, File interfaceFile) throws FileNotFoundException, SAXException, IOException, FileFormatException, PdbLoadException{
+	public List<PisaPdbData> createPisaDatafromFiles(File assemblyFile, File interfaceFile) throws FileNotFoundException, SAXException, IOException, PdbLoadException, FileFormatException{
 		List<PisaPdbData> pisaDataList = new ArrayList<PisaPdbData>();
 		
 		//Parse Assemblies
@@ -100,7 +100,7 @@ public class PredictPisaInterfaceCalls {
 		
 		for(String pdbCode:assemblySetListMap.keySet()){
 			if(!interfaceListMap.keySet().contains(pdbCode))
-				throw new FileFormatException("Assembly file different from interface file; Interface file does not contain data for pdb:"+pdbCode);
+				System.err.println("Warning: Assembly file different from interface file; Interface file does not contain data for pdb:"+pdbCode);
 			else{
 				try{
 					File cifFile = File.createTempFile(pdbCode, "cif");
@@ -110,6 +110,8 @@ public class PredictPisaInterfaceCalls {
 					pisaDataList.add(local);
 				}catch(PdbLoadException e){
 					System.err.println("ERROR: Unable to load pdb file: "+pdbCode+"; "+e.getMessage());
+				}catch(FileNotFoundException e){
+					System.err.println("ERROR: Unable to find the file "+e.getMessage());
 				}
 			}
 		}
