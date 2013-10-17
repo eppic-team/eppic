@@ -104,7 +104,7 @@ public class ChainEvolContext implements Serializable {
 	
 	private ChainEvolContextList parent;
 
-	public ChainEvolContext(ChainEvolContextList parent, String sequence, String representativeChain, String pdbCode, CRKParams params) throws SQLException {
+	public ChainEvolContext(ChainEvolContextList parent, String sequence, String representativeChain, String pdbCode, CRKParams params) {
 		this.parent = parent;
 		this.pdbCode = pdbCode;
 		this.pdbName = params.getJobName();
@@ -590,13 +590,13 @@ public class ChainEvolContext implements Serializable {
 	public void printSummary(PrintStream ps) {
 		
 		ps.println("Query: "+pdbName+representativeChain);
-		ps.println("Uniprot id for query:");
+		ps.println("UniProt id for query:");
 		ps.print(this.query.getUniId());
 		if (this.query.hasTaxons()) ps.println("\t"+this.query.getFirstTaxon()+"\t"+this.query.getLastTaxon());
 		else ps.println("\tunknown taxonomy");
 		ps.println();
 		
-		ps.println("Uniprot version: "+getUniprotVer());
+		ps.println("UniProt version: "+getUniprotVer());
 		ps.println("Homologs: "+homologs.getSizeFilteredSubset()+" with minimum "+
 				String.format("%4.2f",homologs.getIdCutoff())+" identity and "+
 				String.format("%4.2f",homologs.getQCovCutoff())+" query coverage");
