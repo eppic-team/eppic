@@ -34,6 +34,7 @@ public interface AppProperties extends Constants
 	String input_email();
 	String input_file();
 	String input_example();
+	String input_uniprot_version();
 	String input_example_hint();
 	String input_advanced();
 	String input_submit();
@@ -79,6 +80,7 @@ public interface AppProperties extends Constants
 	String info_panel_input_parameters_hint();
 	String info_panel_download_results_link();
 	String info_panel_download_results_link_hint();
+	String info_panel_homologs_info();
 	String info_panel_uniprot();
 	String info_panel_crk();
 	

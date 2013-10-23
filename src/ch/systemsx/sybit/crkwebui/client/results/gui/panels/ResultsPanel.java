@@ -35,9 +35,9 @@ public class ResultsPanel extends DisplayPanel
 		this.add(identifierHeaderPanel);
 		
 		infoPanel = new InfoPanel(pdbScoreItem);
-		this.add(infoPanel, new RowData(1, 80, new Margins(0)));
+		this.add(infoPanel, new RowData(1, 90, new Margins(0)));
 		
-		resultsSelectorsPanel = new ResultsSelectorsPanel();
+		resultsSelectorsPanel = new ResultsSelectorsPanel(pdbScoreItem);
 		this.add(resultsSelectorsPanel, new RowData(1, 40, new Margins(0, 0, 5, 0)));
 
 		resultsGridContainer = new ResultsGridPanel();
@@ -60,6 +60,8 @@ public class ResultsPanel extends DisplayPanel
 							  	 	resultsData.getExpMethod(),
 							  	 	resultsData.getResolution(),
 							  	 	resultsData.getInputType());
+		
+		identifierHeaderPanel.setEppicLogoPanel(resultsData.getRunParameters().getCrkVersion());
 		
 		identifierHeaderPanel.setPDBIdentifierSubtitle(EscapedStringGenerator.generateEscapedString(resultsData.getTitle()));
 	}

@@ -92,6 +92,11 @@ public class ApplicationSettings implements Serializable {
 	private boolean usePrecompiledResults;
 	
 	/**
+	 * Name of the current uniprot which is to be displayed in input view.
+	 */
+	private String uniprotVersion;
+	
+	/**
 	 * Name of the example pdb entry which is to be displayed in input view.
 	 */
 	private String examplePdb;
@@ -395,6 +400,22 @@ public class ApplicationSettings implements Serializable {
 		return usePrecompiledResults;
 	}
 
+	/**
+	 * Sets name of the uniprot version to display in input panel.
+	 * @param examplePdb name of the uniprot version
+	 */
+	public void setUniprotVersion(String uniprotVersion) {
+		this.uniprotVersion = uniprotVersion;
+	}
+
+	/**
+	 * Retrieves name of the current uniprot version to display in input panel.
+	 * @return name of the uniprot version
+	 */
+	public String getUniprotVersion() {
+		return uniprotVersion;
+	}
+	
 	/**
 	 * Sets name of the example pdb entry to display in input panel.
 	 * @param examplePdb name of the example pdb entry

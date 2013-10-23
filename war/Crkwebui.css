@@ -36,6 +36,11 @@
 .eppic-internal-link A:active {text-decoration: none; font-size: 14px}
 .eppic-internal-link A:hover {text-decoration: underline; font-size: 14px}
 
+.eppic-download-link A:link {text-decoration: none; font-size: 12px}
+.eppic-download-link A:visited {text-decoration: none; font-size: 12px}
+.eppic-download-link A:active {text-decoration: none; font-size: 12px}
+.eppic-download-link A:hover {text-decoration: underline; font-size: 12px}
+
 .eppic-external-link A:link {text-decoration: none; font-size: 14px}
 .eppic-external-link A:visited {text-decoration: none; font-size: 14px}
 .eppic-external-link A:active {text-decoration: none; font-size: 14px}
@@ -154,6 +159,26 @@
 .eppic-input-news-header {
 	font-weight: bold;
 	color: red;
+}
+
+.eppic-uniprot-version-header {
+	font-size: 11px;
+	color: #15428B;
+	font-weight: bold;
+}
+
+.eppic-uniprot-version {
+	font-style: italic;
+	font-size: 11px;
+	color: #15428B;
+	font-weight: bold;
+}
+
+.eppic-version {
+	font-style: italic;
+	font-weight: bold;
+	font-size: 11px;
+	color: #15428B;
 }
 
 .eppic-citation A:link {text-decoration: none}

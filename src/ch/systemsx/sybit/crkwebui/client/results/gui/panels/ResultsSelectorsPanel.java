@@ -2,6 +2,8 @@ package ch.systemsx.sybit.crkwebui.client.results.gui.panels;
 
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
+import ch.systemsx.sybit.crkwebui.client.commons.gui.links.LinkWithTooltip;
+import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
 
 import com.extjs.gxt.ui.client.Style.Orientation;
 import com.extjs.gxt.ui.client.core.Template;
@@ -10,7 +12,6 @@ import com.extjs.gxt.ui.client.event.FieldEvent;
 import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
-import com.extjs.gxt.ui.client.widget.form.CheckBox;
 import com.extjs.gxt.ui.client.widget.form.ComboBox.TriggerAction;
 import com.extjs.gxt.ui.client.widget.form.FormPanel;
 import com.extjs.gxt.ui.client.widget.form.SimpleComboBox;
@@ -19,6 +20,7 @@ import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 import com.extjs.gxt.ui.client.widget.layout.VBoxLayout;
 import com.extjs.gxt.ui.client.widget.layout.VBoxLayout.VBoxLayoutAlign;
 import com.extjs.gxt.ui.client.widget.tips.ToolTipConfig;
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Cookies;
 
 /**
@@ -28,19 +30,30 @@ import com.google.gwt.user.client.Cookies;
  */
 public class ResultsSelectorsPanel extends LayoutContainer
 {	
-	public ResultsSelectorsPanel()
+	public ResultsSelectorsPanel(PDBScoreItem pdbScoreItem)
 	{
-		init();
+		init(pdbScoreItem);
 	}
 	
-	private void init()
+	private void init(PDBScoreItem pdbScoreItem)
 	{
 		this.setLayout(new RowLayout(Orientation.HORIZONTAL));
 		this.addStyleName("eppic-default-top-padding");
 
 		LayoutContainer viewerTypePanelLocation = createViewerTypePanelLocation();
-		
 		this.add(viewerTypePanelLocation, new RowData(0.5, 1, new Margins(0)));
+		
+		LayoutContainer showDownloadResultsPanel = new LayoutContainer();
+		showDownloadResultsPanel.setBorders(false);
+		
+		VBoxLayout vBoxLayout = new VBoxLayout();
+		vBoxLayout.setVBoxLayoutAlign(VBoxLayoutAlign.RIGHT);
+		
+		showDownloadResultsPanel.setLayout(vBoxLayout);
+		
+		LinkWithTooltip downloadResultsLink = createDownloadsLink(pdbScoreItem.getJobId());
+		showDownloadResultsPanel.add(downloadResultsLink, new RowData(1, 1, new Margins(0)));
+		this.add(showDownloadResultsPanel, new RowData(0.5, 1, new Margins(0)));
 	}
 	
 	/**
@@ -141,4 +154,20 @@ public class ResultsSelectorsPanel extends LayoutContainer
 									   "</ul></div>";
 		return viewerTypeDescription;
 	}
+	
+	/**
+     * Creates link to download compressed results of processing.
+     * @param jobId identifier of the job
+     * @return link to compressed results
+     */
+    private LinkWithTooltip createDownloadsLink(String jobId)
+    {
+	LinkWithTooltip downloadResultsLink = new LinkWithTooltip(AppPropertiesManager.CONSTANTS.info_panel_download_results_link(), 
+		AppPropertiesManager.CONSTANTS.info_panel_download_results_link_hint(), 
+		ApplicationContext.getWindowData(), 
+		0, 
+		GWT.getModuleBaseURL() + "fileDownload?type=zip&id=" + jobId);
+	downloadResultsLink.addStyleName("eppic-download-link");
+	return downloadResultsLink;
+    }
 }

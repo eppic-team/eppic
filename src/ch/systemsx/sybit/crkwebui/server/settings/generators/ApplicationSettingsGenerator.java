@@ -51,6 +51,7 @@ public class ApplicationSettingsGenerator
 		String uniprotLinkUrl = globalProperties.getProperty("uniprot_link_url");
 		String publicationLinkUrl = globalProperties.getProperty("publication_link_url");
 		boolean usePrecompiledResults = Boolean.parseBoolean(globalProperties.getProperty("use_precompiled","true"));
+		String uniprotVersion = globalProperties.getProperty("uniprot_version");
 		String examplePdb = globalProperties.getProperty("example_pdb");
 		
 		settings.setCaptchaPublicKey(captchaPublicKey);
@@ -60,6 +61,7 @@ public class ApplicationSettingsGenerator
 		settings.setUniprotLinkUrl(uniprotLinkUrl);
 		settings.setPublicationLinkUrl(publicationLinkUrl);
 		settings.setUsePrecompiledResults(usePrecompiledResults);
+		settings.setUniprotVersion(uniprotVersion);
 		settings.setExamplePdb(examplePdb);
 		boolean readOnlyMode = Boolean.parseBoolean(globalProperties.getProperty("read_only_mode","false"));
 		settings.setReadOnlyMode(readOnlyMode);

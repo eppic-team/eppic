@@ -121,7 +121,7 @@ public class InputDataPanel extends DisplayPanel
 	logo.setWidth("200px");
 	logo.setHeight("80px");
 	headerContainer.add(logo, new RowData(-1, 1, new Margins(0, 0, 10, 0)));
-
+	
 	return headerContainer;
     }
 
@@ -278,9 +278,16 @@ public class InputDataPanel extends DisplayPanel
 	    generalFieldSet.add(examplePanel);
 	}
 
+	
 	emailTextField = createEmailField(AppPropertiesManager.CONSTANTS.input_email());
 	generalFieldSet.add(emailTextField);
 
+	if(ApplicationContext.getSettings().getUniprotVersion() != null)
+	{
+	    LayoutContainer uniprotVersionPanel = createCurrentUniprotPanel();
+	    generalFieldSet.add(uniprotVersionPanel);
+	}
+	
 	FormPanel breakPanel = new FormPanel();
 	breakPanel.getHeader().setVisible(false);
 	breakPanel.setBodyBorder(false);
@@ -361,6 +368,7 @@ public class InputDataPanel extends DisplayPanel
 		    pdbCodeField.reset();
 		    pdbCodeField.setAllowBlank(false);
 		    pdbCodeField.setVisible(true);
+		    emailTextField.setVisible(false);
 		}
 		else if(selectedType.equals(AppPropertiesManager.CONSTANTS.input_upload_file_radio()))
 		{
@@ -369,6 +377,7 @@ public class InputDataPanel extends DisplayPanel
 		    pdbCodeField.setValue("");
 		    pdbCodeField.setVisible(false);
 		    pdbCodeField.setAllowBlank(true);
+		    emailTextField.setVisible(true);
 		}
 
 		formPanel.layout();
@@ -425,6 +434,7 @@ public class InputDataPanel extends DisplayPanel
 	emailTextField.setLabelStyle("font-size: 14px;");
 	emailTextField.setValidator(new EmailFieldValidator());
 	emailTextField.addKeyListener(new SubmitKeyListener());
+	emailTextField.setVisible(false);
 	return emailTextField;
     }
 
@@ -464,6 +474,32 @@ public class InputDataPanel extends DisplayPanel
 
 	return submitButton;
     }
+    
+    /**
+     * Creates panel containing current uniprot version.
+     * @return panel containing current uniprot version
+     */
+    private LayoutContainer createCurrentUniprotPanel()
+    {
+	LayoutContainer uniprotPanel = new LayoutContainer();
+	//uniprotPanel.setStyleAttribute("padding-left", "120px");
+	uniprotPanel.setStyleAttribute("text-align","center");
+	uniprotPanel.setStyleAttribute("height", "22px");
+	uniprotPanel.setStyleAttribute("padding-top", "25px");
+	uniprotPanel.setStyleAttribute("padding-bottom", "1px");
+
+	Label uniprotVersionLabel = new Label(AppPropertiesManager.CONSTANTS.input_uniprot_version() + ": ");
+	uniprotVersionLabel.addStyleName("eppic-uniprot-version-header");
+
+	Label uniprotVersion = new Label(ApplicationContext.getSettings().getUniprotVersion());
+	uniprotVersion.addStyleName("eppic-uniprot-version");
+	
+	uniprotPanel.add(uniprotVersionLabel);
+	uniprotPanel.add(uniprotVersion);
+
+	return uniprotPanel;
+    }
+
 
     /**
      * Creates panel containing link to example results.

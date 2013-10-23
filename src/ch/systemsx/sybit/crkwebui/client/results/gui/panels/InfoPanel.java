@@ -11,7 +11,6 @@ import ch.systemsx.sybit.crkwebui.client.commons.events.ShowQueryWarningsEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.data.TooltipXPositionType;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.data.TooltipYPositionType;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.images.ImageWithTooltip;
-import ch.systemsx.sybit.crkwebui.client.commons.gui.links.LinkWithTooltip;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ApplicationWindowResizeHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.HideAllWindowsHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowQueryWarningsHandler;
@@ -22,12 +21,10 @@ import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
 
 import com.extjs.gxt.ui.client.Style.Scroll;
 import com.extjs.gxt.ui.client.core.Template;
-import com.extjs.gxt.ui.client.widget.Label;
-import com.extjs.gxt.ui.client.widget.form.FormPanel;
+import com.extjs.gxt.ui.client.widget.form.FieldSet;
 import com.extjs.gxt.ui.client.widget.layout.ColumnLayout;
 import com.extjs.gxt.ui.client.widget.tips.ToolTip;
 import com.extjs.gxt.ui.client.widget.tips.ToolTipConfig;
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.FlexTable;
@@ -38,7 +35,7 @@ import com.google.gwt.user.client.ui.Widget;
  * @author srebniak_a
  *
  */
-public class InfoPanel extends FormPanel 
+public class InfoPanel extends FieldSet 
 {
     private final static int ROWS_PER_PAGE = 3;
 
@@ -50,8 +47,12 @@ public class InfoPanel extends FormPanel
 
     public InfoPanel(PDBScoreItem pdbScoreItem) 
     {
-	this.getHeader().setVisible(false);
-	this.setBodyBorder(false);
+    this.setHeading(AppPropertiesManager.CONSTANTS.info_panel_homologs_info()+
+    		" ("+AppPropertiesManager.CONSTANTS.info_panel_uniprot() +" " +
+    		EscapedStringGenerator.generateEscapedString(pdbScoreItem.getRunParameters().getUniprotVer())+ ")");
+	//this.getHeader().setVisible(true);
+	//this.setCollapsible(true);
+	//this.setBodyBorder(false);
 	this.setBorders(true);
 	this.setLayout(new ColumnLayout());
 	this.setScrollMode(Scroll.NONE);
@@ -89,14 +90,6 @@ public class InfoPanel extends FormPanel
 	FlexTable flexTable = new FlexTable();
 	flexTable.addStyleName("eppic-homologs-infopanel");
 
-	LinkWithTooltip downloadResultsLink = createDownloadsLink(pdbScoreItem.getJobId());
-	flexTable.setWidget(2, 0, downloadResultsLink);
-
-	Label uniprotVersionlabel = createUniprotVersionlabel(pdbScoreItem.getRunParameters().getUniprotVer());
-	flexTable.setWidget(0, 0, uniprotVersionlabel);
-
-	Label eppicVersionLabel = createEppicVersionLabel(pdbScoreItem.getRunParameters().getCrkVersion());
-	flexTable.setWidget(1, 0, eppicVersionLabel);
 	this.pdbScoreItem = pdbScoreItem; 
 
 	homologsTable = new FlexTable();
@@ -160,48 +153,6 @@ public class InfoPanel extends FormPanel
 		    pdbScoreItem.getPdbName()));
 	};
 	return homologsInfoPanels;
-    }
-
-    /**
-     * Creates link to download compressed results of processing.
-     * @param jobId identifier of the job
-     * @return link to compressed results
-     */
-    private LinkWithTooltip createDownloadsLink(String jobId)
-    {
-	LinkWithTooltip downloadResultsLink = new LinkWithTooltip(AppPropertiesManager.CONSTANTS.info_panel_download_results_link(), 
-		AppPropertiesManager.CONSTANTS.info_panel_download_results_link_hint(), 
-		ApplicationContext.getWindowData(), 
-		0, 
-		GWT.getModuleBaseURL() + "fileDownload?type=zip&id=" + jobId);
-	downloadResultsLink.addStyleName("eppic-internal-link");
-	return downloadResultsLink;
-    }
-
-    /**
-     * Creates label containing version of the uniprot used for processing.
-     * @param uniprotVersion version of uniprot used during processing
-     * @return label with uniprot version
-     */
-    private Label createUniprotVersionlabel(String uniprotVersion)
-    {
-	Label uniprotVersionlabel = new Label(AppPropertiesManager.CONSTANTS.info_panel_uniprot() + ": " +
-		EscapedStringGenerator.generateEscapedString(uniprotVersion));
-	uniprotVersionlabel.addStyleName("eppic-default-label");
-	return uniprotVersionlabel;
-    }
-
-    /**
-     * Creates label containing version of the eppic application used for processing.
-     * @param eppicVersion version of eppic application used during processing
-     * @return label with eppic version
-     */
-    private Label createEppicVersionLabel(String eppicVersion)
-    {
-	Label eppicVersionLabel = new Label(AppPropertiesManager.CONSTANTS.info_panel_crk() + ": " +
-		EscapedStringGenerator.generateEscapedString(eppicVersion));
-	eppicVersionLabel.addStyleName("eppic-default-label");
-	return eppicVersionLabel;
     }
 
     /**

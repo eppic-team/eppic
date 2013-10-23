@@ -36,6 +36,10 @@ publication_link_url=http://www.biomedcentral.com/1471-2105/13/334
 
 use_precompiled=true
 example_pdb=1smt
+
+#UniProt version to be displayed in the input page
+uniprot_version=2013_08
+
 #Set true if you wanna disable file upload and advanced settings
 read_only_mode = true
 #Delete this property if you wanna use queueing systems - in production 

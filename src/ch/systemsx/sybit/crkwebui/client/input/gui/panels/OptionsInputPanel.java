@@ -84,11 +84,12 @@ public class OptionsInputPanel extends FieldSet
 		for(int i=0; i<supportedMethods.size(); i++)
 		{
 			methodsFieldsets[i] = createMethodFieldSet(supportedMethods.get(i), helpIconPlugin, reducedAlphabetDefaultList);
-			
-			if(supportedMethods.get(i).isHasFieldSet())
-			{
-				this.add(methodsFieldsets[i]);
-			}
+
+// *** Uncomment the following lines to see Geometry and Entropy options in Advanced Menu ***
+//			if(supportedMethods.get(i).isHasFieldSet())
+//			{
+//				this.add(methodsFieldsets[i]);
+//			}
 		}
 		
 
@@ -161,6 +162,8 @@ public class OptionsInputPanel extends FieldSet
 		alignmentsParametersFieldSet
 				.setLayout(alignmentsParametersFieldSetLayout);
 
+		alignmentsParametersFieldSet.addStyleName("eppic-rounded-border");
+		
 		softIdentityCutOff = createSoftIdentityCutoff(helpIconPlugin);
 		alignmentsParametersFieldSet.add(softIdentityCutOff, formData);
 		
