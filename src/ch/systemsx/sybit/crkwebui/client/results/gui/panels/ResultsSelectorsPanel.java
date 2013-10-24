@@ -30,6 +30,8 @@ import com.google.gwt.user.client.Cookies;
  */
 public class ResultsSelectorsPanel extends LayoutContainer
 {	
+	private LayoutContainer showDownloadResultsPanel;
+	
 	public ResultsSelectorsPanel(PDBScoreItem pdbScoreItem)
 	{
 		init(pdbScoreItem);
@@ -43,7 +45,7 @@ public class ResultsSelectorsPanel extends LayoutContainer
 		LayoutContainer viewerTypePanelLocation = createViewerTypePanelLocation();
 		this.add(viewerTypePanelLocation, new RowData(0.5, 1, new Margins(0)));
 		
-		LayoutContainer showDownloadResultsPanel = new LayoutContainer();
+		showDownloadResultsPanel = new LayoutContainer();
 		showDownloadResultsPanel.setBorders(false);
 		
 		VBoxLayout vBoxLayout = new VBoxLayout();
@@ -51,9 +53,26 @@ public class ResultsSelectorsPanel extends LayoutContainer
 		
 		showDownloadResultsPanel.setLayout(vBoxLayout);
 		
-		LinkWithTooltip downloadResultsLink = createDownloadsLink(pdbScoreItem.getJobId());
-		showDownloadResultsPanel.add(downloadResultsLink, new RowData(1, 1, new Margins(0)));
+		setDownloadResultsLink(pdbScoreItem.getJobId());
+		
 		this.add(showDownloadResultsPanel, new RowData(0.5, 1, new Margins(0)));
+	}
+	
+	/**
+	 * sets the link in the Download Results 
+	 * @param PDBScoreItem
+	 */
+	public void setDownloadResultsLink(String jobId){
+		showDownloadResultsPanel.removeAll();
+		
+		LinkWithTooltip downloadResultsLink = new LinkWithTooltip(AppPropertiesManager.CONSTANTS.info_panel_download_results_link(), 
+				AppPropertiesManager.CONSTANTS.info_panel_download_results_link_hint(), 
+				ApplicationContext.getWindowData(), 
+				0, 
+				GWT.getModuleBaseURL() + "fileDownload?type=zip&id=" + jobId);
+			downloadResultsLink.addStyleName("eppic-download-link");
+			
+		showDownloadResultsPanel.add(downloadResultsLink, new RowData(1, 1, new Margins(0)));
 	}
 	
 	/**
@@ -155,19 +174,4 @@ public class ResultsSelectorsPanel extends LayoutContainer
 		return viewerTypeDescription;
 	}
 	
-	/**
-     * Creates link to download compressed results of processing.
-     * @param jobId identifier of the job
-     * @return link to compressed results
-     */
-    private LinkWithTooltip createDownloadsLink(String jobId)
-    {
-	LinkWithTooltip downloadResultsLink = new LinkWithTooltip(AppPropertiesManager.CONSTANTS.info_panel_download_results_link(), 
-		AppPropertiesManager.CONSTANTS.info_panel_download_results_link_hint(), 
-		ApplicationContext.getWindowData(), 
-		0, 
-		GWT.getModuleBaseURL() + "fileDownload?type=zip&id=" + jobId);
-	downloadResultsLink.addStyleName("eppic-download-link");
-	return downloadResultsLink;
-    }
 }

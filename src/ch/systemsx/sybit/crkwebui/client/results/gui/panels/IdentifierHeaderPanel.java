@@ -28,6 +28,9 @@ public class IdentifierHeaderPanel extends LayoutContainer
 	
 	eppicLogoPanel = new LayoutContainer();
 	
+	Image logo = getLogo();
+	eppicLogoPanel.add(logo, new RowData(-1, -1, new Margins(0, 0, 0, 0)));
+	
 	this.add(eppicLogoPanel, new ColumnData(100));
     }
 
@@ -43,7 +46,7 @@ public class IdentifierHeaderPanel extends LayoutContainer
     	eppicLogoPanel.removeAll();
     	
     	Image logo = getLogo();
-    	eppicLogoPanel.add(logo, new RowData(-1, -1, new Margins(0, 0, 1, 0)));
+    	eppicLogoPanel.add(logo, new RowData(-1, -1, new Margins(0, 0, 0, 0)));
     	
     	Label eppicVersionLabel = new Label(eppicVersion);
     	eppicVersionLabel.addStyleName("eppic-version");

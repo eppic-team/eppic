@@ -64,6 +64,8 @@ public class ResultsPanel extends DisplayPanel
 		identifierHeaderPanel.setEppicLogoPanel(resultsData.getRunParameters().getCrkVersion());
 		
 		identifierHeaderPanel.setPDBIdentifierSubtitle(EscapedStringGenerator.generateEscapedString(resultsData.getTitle()));
+		
+		resultsSelectorsPanel.setDownloadResultsLink(resultsData.getJobId());
 	}
 
 	public void resizeContent() 
