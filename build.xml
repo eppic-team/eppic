@@ -72,7 +72,7 @@
       </classpath>
       <!-- add jvmarg -Xss16M or similar if you see a StackOverflowError -->
       <!-- beware that if more localWorkers (i.e. threads) are required than memory requirements go up quickly -->
-      <jvmarg value="-Xmx512M"/>
+      <jvmarg value="-Xss16M"/>
       <!-- Additional arguments like -style PRETTY or -logLevel DEBUG -->
       <!-- <arg value="-validateOnly"/> -->
       <arg value="-localWorkers"/>
