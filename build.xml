@@ -11,6 +11,8 @@
      ====================================================================== -->
 <project name="ewui" default="war" basedir=".">
 
+  <property name= "javaversion" value="1.6"/>
+	
   <property name="libs.dir" location="libs"/>
   <!-- ideally we should use the GWT from eclipse by calling the relative path to it,
   but I don't know how to get the path to the eclipse root.
@@ -44,7 +46,9 @@
   <target name="javac" depends="libs" description="Compile java source">
     <mkdir dir="war/WEB-INF/classes"/>
   	
-  	<javac destdir="war/WEB-INF/classes" sourcepath=".apt_generated" source="1.6" target="1.6" > 
+  	<javac destdir="war/WEB-INF/classes" sourcepath=".apt_generated" 
+  		source="${javaversion}" 
+  		target="${javaversion}" > 
         <src path="src"/>
         <classpath refid="project.class.path"/>
     </javac>
