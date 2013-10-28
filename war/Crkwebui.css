@@ -213,3 +213,18 @@
 .eppic-homologstable td {
 	padding-right: 10px;
 }
+
+.eppic-general-info-label{
+	top-padding: 10px;
+	text-decoration: none; 
+	font-weight:bold; 
+	font-size: 12px; 
+	color: #434350;
+}
+
+.eppic-general-info-label-value{
+	top-padding: 10px;
+	text-decoration: none;  
+	font-size: 12px; 
+	color: #434350;
+}
