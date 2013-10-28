@@ -20,7 +20,7 @@ public class PDBScoreItemDB implements Serializable, ProcessingDataDB
 	private Date releaseDate;
 	private String spaceGroup;
 	private double resolution;
-	private double rFree;
+	private double rfreeValue;
 	private String expMethod;
 	private RunParametersItemDB runParameters;
 	
@@ -46,6 +46,7 @@ public class PDBScoreItemDB implements Serializable, ProcessingDataDB
 						String spaceGroup,
 						String expMethod,
 						double resolution,
+						double rfreeValue,
 						RunParametersItemDB runParameters) 
 	{
 		interfaceItems = new ArrayList<InterfaceItemDB>();
@@ -59,6 +60,7 @@ public class PDBScoreItemDB implements Serializable, ProcessingDataDB
 		this.resolution = resolution;
 		this.runParameters = runParameters;
 		this.jobItem = jobItem;
+		this.rfreeValue = rfreeValue;
 	}
 	
 	public List<PdbBioUnitItemDB> getBioUnitItems() {
@@ -161,12 +163,12 @@ public class PDBScoreItemDB implements Serializable, ProcessingDataDB
 		this.resolution = resolution;
 	}
 	
-	public double getRFree() {
-		return rFree;
+	public double getRfreeValue() {
+		return rfreeValue;
 	}
 	
-	public void setRFree(double rFree) {
-		this.rFree = rFree;
+	public void setRfreeValue(double rfreeValue) {
+		this.rfreeValue = rfreeValue;
 	}
 
 	public String getExpMethod() {
