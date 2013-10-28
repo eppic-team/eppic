@@ -30,7 +30,6 @@
         	<id name="uid">
                 <generated-value strategy="IDENTITY"/>
             </id>
-
         	<basic name="jobId"></basic>
             <basic name="status"></basic>
             <basic name="email"></basic>
@@ -62,7 +61,6 @@
             <id name="uid">
                 <generated-value strategy="IDENTITY"/>
             </id>
-            <basic name="jobId"></basic>
             <basic name="pdbName">
             	<column length="255"/>
             </basic>
@@ -77,7 +75,7 @@
             	<column length="255"/>
             </basic>
             <basic name="resolution"></basic>
-            <basic name="RFree"></basic>
+            <basic name="rfreeValue"></basic>
 
        		<one-to-many name="interfaceItems" mapped-by="pdbScoreItem">
             	<cascade>

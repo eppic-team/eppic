@@ -81,8 +81,14 @@ public interface AppProperties extends Constants
 	String info_panel_download_results_link();
 	String info_panel_download_results_link_hint();
 	String info_panel_homologs_info();
+	String info_panel_general_info();
 	String info_panel_uniprot();
 	String info_panel_crk();
+	String info_panel_experiment();
+	String info_panel_resolution();
+	String info_panel_rfree();
+	String info_panel_spacegroup();
+	String info_panel_nothing_found();
 	
 	String pdb_identifier_panel_label_hint();
 

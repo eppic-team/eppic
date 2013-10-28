@@ -48,11 +48,7 @@ public class ResultsSelectorsPanel extends LayoutContainer
 		showDownloadResultsPanel = new LayoutContainer();
 		showDownloadResultsPanel.setBorders(false);
 		
-		VBoxLayout vBoxLayout = new VBoxLayout();
-		vBoxLayout.setVBoxLayoutAlign(VBoxLayoutAlign.RIGHT);
-		
-		showDownloadResultsPanel.setLayout(vBoxLayout);
-		
+		showDownloadResultsPanel.setStyleAttribute("text-align", "right");
 		setDownloadResultsLink(pdbScoreItem.getJobId());
 		
 		this.add(showDownloadResultsPanel, new RowData(0.5, 1, new Margins(0)));
@@ -71,8 +67,8 @@ public class ResultsSelectorsPanel extends LayoutContainer
 				0, 
 				GWT.getModuleBaseURL() + "fileDownload?type=zip&id=" + jobId);
 			downloadResultsLink.addStyleName("eppic-download-link");
-			
-		showDownloadResultsPanel.add(downloadResultsLink, new RowData(1, 1, new Margins(0)));
+		
+		showDownloadResultsPanel.add(downloadResultsLink, new RowData(-1, -1, new Margins(0)));
 	}
 	
 	/**

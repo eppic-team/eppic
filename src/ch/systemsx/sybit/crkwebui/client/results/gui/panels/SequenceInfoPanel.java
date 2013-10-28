@@ -21,6 +21,7 @@ import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
 
 import com.extjs.gxt.ui.client.Style.Scroll;
 import com.extjs.gxt.ui.client.core.Template;
+import com.extjs.gxt.ui.client.widget.Label;
 import com.extjs.gxt.ui.client.widget.form.FieldSet;
 import com.extjs.gxt.ui.client.widget.layout.ColumnLayout;
 import com.extjs.gxt.ui.client.widget.tips.ToolTip;
@@ -31,28 +32,22 @@ import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.Widget;
 
 /**
- * Panel containing general information about results.
+ * Panel containing information about the sequences and their homologs.
  * @author srebniak_a
  *
  */
-public class InfoPanel extends FieldSet 
+public class SequenceInfoPanel extends FieldSet 
 {
     private final static int ROWS_PER_PAGE = 3;
 
     PDBScoreItem pdbScoreItem;
     private int homologsStartIndex;
     private FlexTable homologsTable;
-    private ToolTip inputParametersTooltip;
     private ToolTip queryWarningsTooltip;
 
-    public InfoPanel(PDBScoreItem pdbScoreItem) 
+    public SequenceInfoPanel(PDBScoreItem pdbScoreItem) 
     {
-    this.setHeading(AppPropertiesManager.CONSTANTS.info_panel_homologs_info()+
-    		" ("+AppPropertiesManager.CONSTANTS.info_panel_uniprot() +" " +
-    		EscapedStringGenerator.generateEscapedString(pdbScoreItem.getRunParameters().getUniprotVer())+ ")");
-	//this.getHeader().setVisible(true);
-	//this.setCollapsible(true);
-	//this.setBodyBorder(false);
+    
 	this.setBorders(true);
 	this.setLayout(new ColumnLayout());
 	this.setScrollMode(Scroll.NONE);
@@ -60,7 +55,7 @@ public class InfoPanel extends FieldSet
 	this.addStyleName("eppic-rounded-border");
 
 	queryWarningsTooltip = createHomologsInfoTooltip();
-	generateInfoPanel(pdbScoreItem);
+	generateSequenceInfoPanel(pdbScoreItem);
 
 	initializeEventsListeners();
     }
@@ -79,13 +74,36 @@ public class InfoPanel extends FieldSet
 	toolTipConfig.setMaxWidth(calculateTooltipMaxWidth());
 	return new ToolTip(null, toolTipConfig);
     }
+    
+    /**
+     * Sets the heading of the toolbar
+     */
+    public void fillHeading(String uniprot_version){
+    	String fullHeading = AppPropertiesManager.CONSTANTS.info_panel_homologs_info();
+    	
+    	if(uniprot_version != null)
+    		fullHeading = fullHeading+" ("+AppPropertiesManager.CONSTANTS.info_panel_uniprot() +" " +
+            		EscapedStringGenerator.generateEscapedString(uniprot_version)+ ")";
+    	
+    	this.setHeading(fullHeading);
+    }
 
     /**
-     * Creates info panel containing general information about the job.
+     * Creates info panel containing information about the sequence.
      */
-    public void generateInfoPanel(PDBScoreItem pdbScoreItem)
+    public void generateSequenceInfoPanel(PDBScoreItem pdbScoreItem)
     {
 	this.removeAll();
+	
+	this.fillHeading(pdbScoreItem.getRunParameters().getUniprotVer());
+	
+	//No information found
+	if(pdbScoreItem.getRunParameters().getUniprotVer()==null){
+		Label nothingFound = new Label(AppPropertiesManager.CONSTANTS.info_panel_nothing_found());
+		nothingFound.addStyleName("eppic-general-info-label");
+		this.add(nothingFound);
+		return;
+	}
 
 	FlexTable flexTable = new FlexTable();
 	flexTable.addStyleName("eppic-homologs-infopanel");
@@ -164,14 +182,6 @@ public class InfoPanel extends FieldSet
     }
 
     /**
-     * Gets tooltip displayed over input parameters label.
-     * @return tooltip displayed over input parameters label
-     */
-    public ToolTip getInputParametersTooltip() {
-	return inputParametersTooltip;
-    }
-
-    /**
      * Initializes events listeners.
      */
     private void initializeEventsListeners()
@@ -184,11 +194,6 @@ public class InfoPanel extends FieldSet
 		if(queryWarningsTooltip != null)
 		{
 		    queryWarningsTooltip.setVisible(false);
-		}
-
-		if(inputParametersTooltip != null)
-		{
-		    inputParametersTooltip.setVisible(false);
 		}
 	    }
 	});
@@ -212,11 +217,6 @@ public class InfoPanel extends FieldSet
 		if(queryWarningsTooltip != null)
 		{
 		    queryWarningsTooltip.setMaxWidth(calculateTooltipMaxWidth());
-		}
-
-		if(inputParametersTooltip != null)
-		{
-		    inputParametersTooltip.setMaxWidth(calculateTooltipMaxWidth());
 		}
 	    }
 	});

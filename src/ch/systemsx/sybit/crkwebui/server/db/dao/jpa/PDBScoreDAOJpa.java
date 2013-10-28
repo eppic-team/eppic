@@ -53,6 +53,7 @@ public class PDBScoreDAOJpa implements PDBScoreDAO
 									  pdbScoreItemRoot.get(PDBScoreItemDB_.spaceGroup),
 									  pdbScoreItemRoot.get(PDBScoreItemDB_.expMethod),
 									  pdbScoreItemRoot.get(PDBScoreItemDB_.resolution),
+									  pdbScoreItemRoot.get(PDBScoreItemDB_.rfreeValue),
 									  pdbScoreItemRoot.get(PDBScoreItemDB_.runParameters));
 			
 			Query query = entityManager.createQuery(criteriaQuery);

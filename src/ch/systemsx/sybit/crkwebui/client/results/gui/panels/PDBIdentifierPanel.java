@@ -18,7 +18,6 @@ public class PDBIdentifierPanel extends LayoutContainer
 {
 	private Label informationLabel;
 	private Label pdbNameLabel;
-	private Label spaceGroupLabel;
 	
 	public PDBIdentifierPanel()
 	{
@@ -58,41 +57,6 @@ public class PDBIdentifierPanel extends LayoutContainer
 		}
 		
 		this.add(pdbNameLabel);
-		
-		if (expMethod!=null) {
-			String labelStr = " (";
-			if (!expMethod.equals("X-RAY DIFFRACTION")) {
-				labelStr += EscapedStringGenerator.generateEscapedString(expMethod);
-			}
-			if (resolution>0) {
-				if (!expMethod.equals("X-RAY DIFFRACTION")) labelStr+=" - "; 					
-				labelStr+= resolution+"Å";//String.format("%4.2fÅ",resolution); // gwt compiler doesn't like String.format, anyway works without it
-			}
-			if(spaceGroup != null && 
-					(expMethod.equals("X-RAY DIFFRACTION") || 
-					 expMethod.equals("NEUTRON DIFFRACTION") || 
-					 expMethod.equals("ELECTRON CRYSTALLOGRAPHY")))
-			{
-				if (resolution>0 || !expMethod.equals("X-RAY DIFFRACTION")) labelStr+=" - ";
-				labelStr += EscapedStringGenerator.generateEscapedString(spaceGroup);
-			}
-			labelStr += ")";
-			if (!labelStr.equals(" ()")) {
-				spaceGroupLabel = new Label(labelStr);
-				spaceGroupLabel.addStyleName("eppic-pdb-spacegroup-label");
-				this.add(spaceGroupLabel);
-			}
-			
-		} else {
-			// if no exp method defined but there is a space group and a resol>0, then we hope this is x-ray or at least some kind of xtalography 
-			// this happens for instance in phenix PDB files (no exp method, but both space group and resol are present)
-			if (spaceGroup!=null && resolution>0) {
-				String labelStr = " ("+resolution+"Å - " + EscapedStringGenerator.generateEscapedString(spaceGroup) + ")";
-				spaceGroupLabel = new Label(labelStr);
-				spaceGroupLabel.addStyleName("eppic-pdb-spacegroup-label");
-				this.add(spaceGroupLabel);				
-			}
-		}
 		
 		this.layout(true);
 	}

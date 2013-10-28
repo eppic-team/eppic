@@ -21,7 +21,7 @@ public class ResultsPanel extends DisplayPanel
 {
 	private IdentifierHeaderPanel identifierHeaderPanel;
 	
-	private InfoPanel infoPanel;
+	private InformationPanel informationPanel;
 
 	private ResultsSelectorsPanel resultsSelectorsPanel;
 	
@@ -34,8 +34,8 @@ public class ResultsPanel extends DisplayPanel
 		identifierHeaderPanel = new IdentifierHeaderPanel();
 		this.add(identifierHeaderPanel);
 		
-		infoPanel = new InfoPanel(pdbScoreItem);
-		this.add(infoPanel, new RowData(1, 90, new Margins(0)));
+		informationPanel = new InformationPanel(pdbScoreItem);
+		this.add(informationPanel, new RowData(1, 90, new Margins(0)));
 		
 		resultsSelectorsPanel = new ResultsSelectorsPanel(pdbScoreItem);
 		this.add(resultsSelectorsPanel, new RowData(1, 40, new Margins(0, 0, 5, 0)));
@@ -53,7 +53,7 @@ public class ResultsPanel extends DisplayPanel
 	public void fillResultsPanel(PDBScoreItem resultsData) 
 	{
 		resultsGridContainer.fillResultsGrid(resultsData);
-		infoPanel.generateInfoPanel(resultsData);
+		informationPanel.fillInfoPanel(resultsData);
 		
 		identifierHeaderPanel.setPDBText(resultsData.getPdbName(),
 							  	 	resultsData.getSpaceGroup(),
@@ -73,6 +73,7 @@ public class ResultsPanel extends DisplayPanel
 		resultsGridContainer.setAssignedWidth(this.getWidth(true));
 		resultsGridContainer.resizeGrid();
 		identifierHeaderPanel.resize();
+		informationPanel.resize();
 		this.layout(true);
 	}
 	
