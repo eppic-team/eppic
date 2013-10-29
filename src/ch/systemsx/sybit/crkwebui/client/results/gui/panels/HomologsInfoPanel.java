@@ -210,6 +210,8 @@ public class HomologsInfoPanel extends LayoutContainer
 		chainHintStr,
 		ApplicationContext.getWindowData(), 
 		0);
+	
+	chainsLink.addStyleName("eppic-action");
 
 	chainsLink.addListener(Events.OnClick, new Listener<BaseEvent>() {
 
