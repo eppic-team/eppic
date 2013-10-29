@@ -116,6 +116,12 @@
 .eppic-pdb-identifier-label A:active {text-decoration: none}
 .eppic-pdb-identifier-label A:hover {text-decoration: underLine}
 
+.eppic-header-warning {
+	font-weight: normal;
+	color: #FF0000;
+	padding-left:20px;
+}
+
 .eppic-pdb-spacegroup-label {
 	font-weight: normal;
 }
@@ -162,12 +168,14 @@
 }
 
 .eppic-uniprot-version-header {
+	font-family: tahoma, arial, helvetica, sans-serif;
 	font-size: 11px;
 	color: #15428B;
 	font-weight: bold;
 }
 
 .eppic-uniprot-version {
+	font-family: tahoma, arial, helvetica, sans-serif;
 	font-style: italic;
 	font-size: 11px;
 	color: #15428B;
@@ -175,6 +183,7 @@
 }
 
 .eppic-version {
+	font-family: tahoma, arial, helvetica, sans-serif;
 	font-style: italic;
 	font-weight: bold;
 	font-size: 11px;
@@ -214,8 +223,12 @@
 	padding-right: 10px;
 }
 
+.eppic-info-panel {
+	padding-top: 5px;
+	padding-bottom: 2px;
+}
+
 .eppic-general-info-label{
-	top-padding: 10px;
 	text-decoration: none; 
 	font-weight:bold; 
 	font-size: 12px; 
@@ -223,7 +236,6 @@
 }
 
 .eppic-general-info-label-value{
-	top-padding: 10px;
 	text-decoration: none;  
 	font-size: 12px; 
 	color: #434350;

@@ -59,6 +59,7 @@ public class ResultsPanel extends DisplayPanel
 							  	 	resultsData.getSpaceGroup(),
 							  	 	resultsData.getExpMethod(),
 							  	 	resultsData.getResolution(),
+							  	 	resultsData.getRfreeValue(),
 							  	 	resultsData.getInputType());
 		
 		identifierHeaderPanel.setEppicLogoPanel(resultsData.getRunParameters().getCrkVersion());

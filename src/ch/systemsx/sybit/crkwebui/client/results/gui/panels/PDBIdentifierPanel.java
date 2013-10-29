@@ -2,6 +2,7 @@ package ch.systemsx.sybit.crkwebui.client.results.gui.panels;
 
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
+import ch.systemsx.sybit.crkwebui.client.commons.gui.labels.LabelWithTooltip;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.links.LinkWithTooltip;
 import ch.systemsx.sybit.crkwebui.client.commons.util.EscapedStringGenerator;
 import ch.systemsx.sybit.crkwebui.shared.model.InputType;
@@ -18,6 +19,7 @@ public class PDBIdentifierPanel extends LayoutContainer
 {
 	private Label informationLabel;
 	private Label pdbNameLabel;
+	private Label warningLabel;
 	
 	public PDBIdentifierPanel()
 	{
@@ -36,6 +38,7 @@ public class PDBIdentifierPanel extends LayoutContainer
 			  			   String spaceGroup,
 			  			   String expMethod,
 			  			   double resolution,
+			  			   double rfreeValue,
 			  			   int inputType)
 	{
 		this.removeAll();
@@ -57,6 +60,28 @@ public class PDBIdentifierPanel extends LayoutContainer
 		}
 		
 		this.add(pdbNameLabel);
+		
+		if(ApplicationContext.getSettings().getResolutionCutOff() > 0 && 
+				resolution > ApplicationContext.getSettings().getResolutionCutOff() && resolution > 0){			
+			warningLabel = new LabelWithTooltip(
+					AppPropertiesManager.CONSTANTS.pdb_identifier_panel_warning_lowRes(),
+					AppPropertiesManager.CONSTANTS.pdb_identifier_panel_warning_lowRes_hint(), 
+					ApplicationContext.getWindowData(), 
+					100);
+		}else if(ApplicationContext.getSettings().getRfreeCutOff() > 0 && 
+				rfreeValue > ApplicationContext.getSettings().getRfreeCutOff() && rfreeValue > 0){
+			warningLabel = new LabelWithTooltip(
+					AppPropertiesManager.CONSTANTS.pdb_identifier_panel_warning_highRfree(),
+					AppPropertiesManager.CONSTANTS.pdb_identifier_panel_warning_highRfree_hint(), 
+					ApplicationContext.getWindowData(), 
+					100);
+		}else
+			warningLabel = null;
+		
+		if(warningLabel != null){
+			warningLabel.addStyleName("eppic-header-warning");
+			this.add(warningLabel);
+		}
 		
 		this.layout(true);
 	}

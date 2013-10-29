@@ -56,9 +56,9 @@ public class IdentifierHeaderPanel extends LayoutContainer
     	eppicLogoPanel.layout(true);
     }
     
-    public void setPDBText(String pdbName, String spaceGroup, String expMethod, double resolution, int inputType)
+    public void setPDBText(String pdbName, String spaceGroup, String expMethod, double resolution, double rfreeValue, int inputType)
     {
-	pdbIdentifierPanel.setPDBText(pdbName, spaceGroup, expMethod, resolution, inputType);
+	pdbIdentifierPanel.setPDBText(pdbName, spaceGroup, expMethod, resolution, rfreeValue, inputType);
     }
 
     public void setPDBIdentifierSubtitle(String subtitle)

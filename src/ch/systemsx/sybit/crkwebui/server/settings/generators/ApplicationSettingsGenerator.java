@@ -53,7 +53,21 @@ public class ApplicationSettingsGenerator
 		boolean usePrecompiledResults = Boolean.parseBoolean(globalProperties.getProperty("use_precompiled","true"));
 		String uniprotVersion = globalProperties.getProperty("uniprot_version");
 		String examplePdb = globalProperties.getProperty("example_pdb");
-		
+		double resolutionCutOff;
+		if(globalProperties.getProperty("resolution_cutoff")!=null)
+			resolutionCutOff = Double.parseDouble(globalProperties.getProperty("resolution_cutoff"));
+		else{
+			System.err.println("Warning: Resolution cut off value not found from the server properties file.");
+			resolutionCutOff = -2;
+		}
+
+		double rfreeCutOff;
+		if(globalProperties.getProperty("rfree_cutoff")!=null)
+			rfreeCutOff = Double.parseDouble(globalProperties.getProperty("rfree_cutoff"));
+		else{
+			System.err.println("Warning: R-Free cut off value not found from the server properties file.");
+			rfreeCutOff = -2;
+		}
 		settings.setCaptchaPublicKey(captchaPublicKey);
 		settings.setUseCaptcha(useCaptcha);
 		settings.setNrOfAllowedSubmissionsWithoutCaptcha(nrOfAllowedSubmissionsWithoutCaptcha);
@@ -67,6 +81,8 @@ public class ApplicationSettingsGenerator
 		settings.setReadOnlyMode(readOnlyMode);
 		boolean devMode = Boolean.parseBoolean(globalProperties.getProperty(DEVELOPMENT_MODE,"false"));
 		settings.setDevelopmentMode(devMode);
+		settings.setResolutionCutOff(resolutionCutOff);
+		settings.setRfreeCutOff(rfreeCutOff);
 
 		settings.setResultsLocation(globalProperties.getProperty("results_location"));
 		return settings;

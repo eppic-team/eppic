@@ -91,6 +91,11 @@ public interface AppProperties extends Constants
 	String info_panel_nothing_found();
 	
 	String pdb_identifier_panel_label_hint();
+	
+	String pdb_identifier_panel_warning_lowRes_hint();
+	String pdb_identifier_panel_warning_lowRes();
+	String pdb_identifier_panel_warning_highRfree_hint();
+	String pdb_identifier_panel_warning_highRfree();
 
 	String homologs_panel_chains_hint();
 	String homologs_panel_uniprot_hint();

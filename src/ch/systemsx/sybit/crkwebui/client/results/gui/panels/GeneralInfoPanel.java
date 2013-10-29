@@ -31,9 +31,10 @@ public class GeneralInfoPanel extends FieldSet {
 		 
 		this.setBorders(true);
 		this.setLayout(new ColumnLayout());
-		this.setScrollMode(Scroll.AUTOX);
+		this.setScrollMode(Scroll.AUTO);
 
 		this.addStyleName("eppic-rounded-border");
+		this.addStyleName("eppic-info-panel");
 		
 		generateGeneralInfoPanel();
 		
@@ -73,7 +74,7 @@ public class GeneralInfoPanel extends FieldSet {
 		
 		if(expMethod != null) experimentContainer.fillContent(AppPropertiesManager.CONSTANTS.info_panel_experiment(), expMethod);
 		if(spaceGroup != null) spaceGroupContainer.fillContent(AppPropertiesManager.CONSTANTS.info_panel_spacegroup(), spaceGroup);
-		if(resolution > 0) resolutionContainer.fillContent(AppPropertiesManager.CONSTANTS.info_panel_resolution(), resolution+"Å");
+		if(resolution > 0) resolutionContainer.fillContent(AppPropertiesManager.CONSTANTS.info_panel_resolution(), resolution+" Å");
 		if(rFree > 0) rFreeContainer.fillContent(AppPropertiesManager.CONSTANTS.info_panel_rfree(), rFree+" ");
 		
 		if(expMethod == null && spaceGroup == null && resolution <=0 && rFree <=0){

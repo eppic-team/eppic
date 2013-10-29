@@ -204,7 +204,7 @@ public class StatusPanel extends DisplayPanel
 
 		status.setValue(String.valueOf(statusData.getStatus()));
 		jobId.setValue(statusData.getJobId());
-		identifierHeaderPanel.setPDBText(statusData.getInput(), null, null, 0, statusData.getInputType());
+		identifierHeaderPanel.setPDBText(statusData.getInput(), null, null, 0, 0, statusData.getInputType());
 
 		if((status.getValue() != null) &&
 		   ((status.getValue().equals(StatusOfJob.RUNNING.getName())) ||
@@ -255,7 +255,7 @@ public class StatusPanel extends DisplayPanel
 		log.setValue("");
 		status.setValue("");
 		jobId.setValue("");
-		identifierHeaderPanel.setPDBText("", null, null, 0, InputType.NONE.getIndex());
+		identifierHeaderPanel.setPDBText("", null, null, 0, 0, InputType.NONE.getIndex());
 		identifierHeaderPanel.setPDBIdentifierSubtitle("");
 		
 		this.layout(true);

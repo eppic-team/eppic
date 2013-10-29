@@ -197,11 +197,19 @@ public class HomologsInfoPanel extends LayoutContainer
     private static List<Widget> createHomologsPanelItemsIfNoQueryMatch(final HomologsInfoItem homologsInfoItem)
     {
 	ArrayList<Widget> items = new ArrayList<Widget>();
-	final EmptyLinkWithTooltip chainsLink = new EmptyLinkWithTooltip("Chain " + EscapedStringGenerator.generateEscapedString(homologsInfoItem.getChains()),
-		AppPropertiesManager.CONSTANTS.homologs_panel_uniprot_no_query_match_hint(),
+	
+	String chainStr = EscapedStringGenerator.generateEscapedString(homologsInfoItem.getChains());
+	String chainHintStr = AppPropertiesManager.CONSTANTS.homologs_panel_chains_hint();
+	if(chainStr.length() > 13){
+		chainStr = chainStr.substring(0,12)+",..)";
+		chainHintStr = "<b>Chain " + EscapedStringGenerator.generateEscapedString(homologsInfoItem.getChains())+
+				"</b><br>"+AppPropertiesManager.CONSTANTS.homologs_panel_chains_hint();;
+	}
+	
+	final EmptyLinkWithTooltip chainsLink = new EmptyLinkWithTooltip("Chain " + EscapedStringGenerator.generateEscapedString(chainStr), 
+		chainHintStr,
 		ApplicationContext.getWindowData(), 
 		0);
-	chainsLink.addStyleName("eppic-action");
 
 	chainsLink.addListener(Events.OnClick, new Listener<BaseEvent>() {
 
@@ -223,8 +231,17 @@ public class HomologsInfoPanel extends LayoutContainer
 	    final HomologsInfoItem homologsInfoItem,
 	    final String pdbName) {
 	ArrayList<Widget> items = new ArrayList<Widget>();
-	final EmptyLinkWithTooltip chainsLink = new EmptyLinkWithTooltip("Chain " + EscapedStringGenerator.generateEscapedString(homologsInfoItem.getChains()), 
-		AppPropertiesManager.CONSTANTS.homologs_panel_chains_hint(),
+	
+	String chainStr = EscapedStringGenerator.generateEscapedString(homologsInfoItem.getChains());
+	String chainHintStr = AppPropertiesManager.CONSTANTS.homologs_panel_chains_hint();
+	if(chainStr.length() > 13){
+		chainStr = chainStr.substring(0,12)+",..)";
+		chainHintStr = "<b>Chain " + EscapedStringGenerator.generateEscapedString(homologsInfoItem.getChains())+
+				"</b><br>"+AppPropertiesManager.CONSTANTS.homologs_panel_chains_hint();;
+	}
+	
+	final EmptyLinkWithTooltip chainsLink = new EmptyLinkWithTooltip("Chain " + EscapedStringGenerator.generateEscapedString(chainStr), 
+		chainHintStr,
 		ApplicationContext.getWindowData(), 
 		0);
 

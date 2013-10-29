@@ -121,6 +121,16 @@ public class ApplicationSettings implements Serializable {
 	 */
 	private boolean developmentMode;
 	
+	/**
+	 * Cut-off of resolution for producing warnings in the pdb-header
+	 */
+	private double resolutionCutOff;
+	
+	/**
+	 * Cut-off of rFree for producing warnings in the pdb-header
+	 */
+	private double rfreeCutOff;
+	
 	public ApplicationSettings()
 	{
 		this.scoresTypes = new ArrayList<SupportedMethod>();
@@ -464,4 +474,22 @@ public class ApplicationSettings implements Serializable {
 	public void setDevelopmentMode(boolean developmentMode) {
 	    this.developmentMode = developmentMode;
 	}
+
+	public double getResolutionCutOff() {
+		return resolutionCutOff;
+	}
+
+	public void setResolutionCutOff(double resolutionCutOff) {
+		this.resolutionCutOff = resolutionCutOff;
+	}
+
+	public double getRfreeCutOff() {
+		return rfreeCutOff;
+	}
+
+	public void setRfreeCutOff(double rfreeCutOff) {
+		this.rfreeCutOff = rfreeCutOff;
+	}
+
+	
 }

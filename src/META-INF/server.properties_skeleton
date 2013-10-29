@@ -40,6 +40,10 @@ example_pdb=1smt
 #UniProt version to be displayed in the input page
 uniprot_version=2013_08
 
+#Cut-offs for warnings in pdb header
+resolution_cutoff=3.5
+rfree_cutoff=0.35
+
 #Set true if you wanna disable file upload and advanced settings
 read_only_mode = true
 #Delete this property if you wanna use queueing systems - in production 

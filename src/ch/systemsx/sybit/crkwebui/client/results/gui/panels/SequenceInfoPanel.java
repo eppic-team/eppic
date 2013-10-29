@@ -50,9 +50,10 @@ public class SequenceInfoPanel extends FieldSet
     
 	this.setBorders(true);
 	this.setLayout(new ColumnLayout());
-	this.setScrollMode(Scroll.NONE);
+	this.setScrollMode(Scroll.AUTO);
 
 	this.addStyleName("eppic-rounded-border");
+	this.addStyleName("eppic-info-panel");
 
 	queryWarningsTooltip = createHomologsInfoTooltip();
 	generateSequenceInfoPanel(pdbScoreItem);
@@ -96,14 +97,6 @@ public class SequenceInfoPanel extends FieldSet
 	this.removeAll();
 	
 	this.fillHeading(pdbScoreItem.getRunParameters().getUniprotVer());
-	
-	//No information found
-	if(pdbScoreItem.getRunParameters().getUniprotVer()==null){
-		Label nothingFound = new Label(AppPropertiesManager.CONSTANTS.info_panel_nothing_found());
-		nothingFound.addStyleName("eppic-general-info-label");
-		this.add(nothingFound);
-		return;
-	}
 
 	FlexTable flexTable = new FlexTable();
 	flexTable.addStyleName("eppic-homologs-infopanel");
@@ -123,6 +116,9 @@ public class SequenceInfoPanel extends FieldSet
 	List<HomologsInfoItem> homologsStrings = pdbScoreItem.getHomologsInfoItems();
 	if(homologsStrings == null)
 	{
+		Label nothingFound = new Label(AppPropertiesManager.CONSTANTS.info_panel_nothing_found());
+		nothingFound.addStyleName("eppic-general-info-label");
+		this.add(nothingFound);
 	    return;
 	}
 	List<List<Widget>> homologsInfoPanels = loadHomologPanles(pdbScoreItem, homologsStrings);
