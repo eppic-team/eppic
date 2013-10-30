@@ -214,6 +214,10 @@
 	font-weight: bold;
 }
 
+.eppic-homologs-infopanel-buttons {
+	cursor: pointer;
+}
+
 .eppic-homologs-infopanel {
 	float: right;
 	padding-right: 50px

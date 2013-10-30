@@ -123,7 +123,7 @@ public class SequenceInfoPanel extends FieldSet
 
     private void fillePagedHomologsInfoTable() {
 	List<HomologsInfoItem> homologsStrings = pdbScoreItem.getHomologsInfoItems();
-	if(homologsStrings == null)
+	if(homologsStrings == null || homologsStrings.isEmpty())
 	{
 		Label nothingFound = new Label(AppPropertiesManager.CONSTANTS.info_panel_nothing_found());
 		nothingFound.addStyleName("eppic-general-info-label");
@@ -142,6 +142,7 @@ public class SequenceInfoPanel extends FieldSet
 	    ImageWithTooltip nextButton = new ImageWithTooltip(downIcon, null,
 		    AppPropertiesManager.CONSTANTS.homologs_panel_next_homologs_button(), 
 		    -1, true, 0, 0,TooltipXPositionType.RIGHT, TooltipYPositionType.TOP);
+	    nextButton.addStyleName("eppic-homologs-infopanel-buttons");
 	    nextButton.addClickHandler(new ClickHandler() {
 		@Override
 		public void onClick(ClickEvent event) {
@@ -156,6 +157,7 @@ public class SequenceInfoPanel extends FieldSet
 	    ImageWithTooltip prevButton = new ImageWithTooltip(downIcon, null,
 		    AppPropertiesManager.CONSTANTS.homologs_panel_prev_homologs_button(), 
 		    -1, true, 0, 0,TooltipXPositionType.RIGHT, TooltipYPositionType.TOP);
+	    prevButton.addStyleName("eppic-homologs-infopanel-buttons");
 	    prevButton.addClickHandler(new ClickHandler() {
 		@Override
 		public void onClick(ClickEvent event) {
