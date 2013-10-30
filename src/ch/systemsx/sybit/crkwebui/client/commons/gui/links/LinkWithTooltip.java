@@ -25,6 +25,6 @@ public class LinkWithTooltip extends LabelWithTooltip
 							String linkUrl)
 	{
 		super(labelText, tooltipText, windowData, delay);
-		this.setText("<a href=\"" + linkUrl + "\" target=\"_blank\">" + labelText + "</a>");
+		this.setHtml("<a href=\"" + linkUrl + "\" target=\"_blank\">" + labelText + "</a>");
 	}
 }

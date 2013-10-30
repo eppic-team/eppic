@@ -57,7 +57,7 @@ public class OptionsInputPanel extends FieldSet
 		List<String> searchModeDefaultList = applicationSettings.getSearchModeList();
 		List<SupportedMethod> supportedMethods = applicationSettings.getScoresTypes();
 		
-		this.setHeading(AppPropertiesManager.CONSTANTS.input_advanced());
+		this.setHeadingHtml(AppPropertiesManager.CONSTANTS.input_advanced());
 		this.setCollapsible(true);
 		this.setBorders(false);
 
@@ -157,7 +157,7 @@ public class OptionsInputPanel extends FieldSet
 		alignmentsParametersFieldSetLayout.setLabelWidth(LABEL_WIDTH);
 
 		FieldSet alignmentsParametersFieldSet = new FieldSet();
-		alignmentsParametersFieldSet.setHeading(AppPropertiesManager.CONSTANTS
+		alignmentsParametersFieldSet.setHeadingHtml(AppPropertiesManager.CONSTANTS
 				.parameters_allignment());
 		alignmentsParametersFieldSet
 				.setLayout(alignmentsParametersFieldSetLayout);
@@ -270,7 +270,7 @@ public class OptionsInputPanel extends FieldSet
 		
 		if(supportedMethod.getName().equals("Entropy"))
 		{
-			methodsFieldset.setHeading(AppPropertiesManager.CONSTANTS
+			methodsFieldset.setHeadingHtml(AppPropertiesManager.CONSTANTS
 					.parameters_entropy());
 			
 			reducedAlphabetValues = new ListStore<ReducedAlphabetComboModel>();
@@ -292,8 +292,8 @@ public class OptionsInputPanel extends FieldSet
 					for(FieldSet fieldSet : methodsFieldsets)
 					{
 						
-						if((fieldSet.getHeading() != null) &&
-							(fieldSet.getHeading().equals("Geometry")))
+						if((fieldSet.getHeadingHtml() != null) &&
+							(fieldSet.getHeadingHtml().equals("Geometry")))
 						{
 							fieldSet.setExpanded(true);
 						}
@@ -303,7 +303,7 @@ public class OptionsInputPanel extends FieldSet
 		}
 		else if(supportedMethod.getName().equals("Geometry"))
 		{
-			methodsFieldset.setHeading(AppPropertiesManager.CONSTANTS
+			methodsFieldset.setHeadingHtml(AppPropertiesManager.CONSTANTS
 					.parameters_geometry());
 			
 			methodsFieldset.addListener(Events.Collapse, new Listener<FieldSetEvent>() 
@@ -312,8 +312,8 @@ public class OptionsInputPanel extends FieldSet
 				{
 					for(FieldSet fieldSet : methodsFieldsets)
 					{
-						if((fieldSet.getHeading() != null) &&
-						   (fieldSet.getHeading().equals("Entropy")))
+						if((fieldSet.getHeadingHtml() != null) &&
+						   (fieldSet.getHeadingHtml().equals("Entropy")))
 						{
 							fieldSet.setExpanded(false);
 						}
@@ -368,8 +368,8 @@ public class OptionsInputPanel extends FieldSet
 			{
 				for(FieldSet fieldSet : methodsFieldsets)
 				{
-					if((fieldSet.getHeading() != null) &&
-						(fieldSet.getHeading().equals(method)))
+					if((fieldSet.getHeadingHtml() != null) &&
+						(fieldSet.getHeadingHtml().equals(method)))
 					{
 						fieldSet.setExpanded(true);
 					}
@@ -402,7 +402,7 @@ public class OptionsInputPanel extends FieldSet
 		{
 			if(fieldSet.isExpanded())
 			{
-				selectedMethods.add(fieldSet.getHeading());
+				selectedMethods.add(fieldSet.getHeadingHtml());
 			}
 		}
 			

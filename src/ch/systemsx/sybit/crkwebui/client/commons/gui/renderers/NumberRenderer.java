@@ -5,7 +5,7 @@ import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.widget.grid.ColumnData;
 import com.extjs.gxt.ui.client.widget.grid.Grid;
 import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
-import com.extjs.gxt.ui.client.widget.table.NumberCellRenderer;
+//import com.extjs.gxt.ui.client.widget.table.NumberCellRenderer;
 import com.google.gwt.i18n.client.NumberFormat;
 
 /**
@@ -16,7 +16,8 @@ import com.google.gwt.i18n.client.NumberFormat;
 public class NumberRenderer implements GridCellRenderer<BaseModel> 
 {
 	private NumberFormat number = NumberFormat.getFormat("0.00");  
-	private NumberCellRenderer<Grid<BaseModel>> numberRenderer = new NumberCellRenderer<Grid<BaseModel>>(number);  
+	//NumericFilter nf = new NumericFilter("0.00");
+	//private NumberCellRenderer<Grid<BaseModel>> numberRenderer = new NumberCellRenderer<Grid<BaseModel>>(number);  
 	
 	@Override
 	public Object render(final BaseModel model, 
@@ -27,7 +28,10 @@ public class NumberRenderer implements GridCellRenderer<BaseModel>
 						 ListStore<BaseModel> store, 
 						 final Grid<BaseModel> grid) 
 	{
-		String renderedNumber = numberRenderer.render(null, property, model.get(property));
+		
+		Number val = (Number) model.get(property);
+		//String renderedNumber = numberRenderer.render(null, property, model.get(property));
+		String renderedNumber = number.format(val);
 		
 		if((renderedNumber != null) && (renderedNumber.equals("NaN")))
 		{

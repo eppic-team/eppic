@@ -10,6 +10,6 @@ public class EmptyLink extends Label
 {
 	public EmptyLink(String labelText)
 	{
-		this.setText("<a href=\"\" onClick=\"return false;\">" + labelText + "</a>");
+		this.setHtml("<a href=\"\" onClick=\"return false;\">" + labelText + "</a>");
 	}
 }

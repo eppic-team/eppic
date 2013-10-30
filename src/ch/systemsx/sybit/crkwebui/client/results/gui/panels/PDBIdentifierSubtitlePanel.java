@@ -26,6 +26,6 @@ public class PDBIdentifierSubtitlePanel extends LayoutContainer
 	 */
 	public void setPDBIdentifierSubtitle(String subtitle)
 	{
-		pdbSubtitle.setText(subtitle);
+		pdbSubtitle.setHtml(subtitle);
 	}
 }

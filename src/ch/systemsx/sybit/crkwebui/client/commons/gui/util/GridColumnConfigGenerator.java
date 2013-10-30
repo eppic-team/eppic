@@ -219,7 +219,7 @@ public class GridColumnConfigGenerator
 	{
 		ColumnConfig column = new ColumnConfig();
 		column.setId(columnName);
-		column.setHeader(EscapedStringGenerator.generateSanitizedString(gridColumnSettings.getHeader()));
+		column.setHeaderHtml(EscapedStringGenerator.generateSanitizedString(gridColumnSettings.getHeader()));
 		column.setWidth(gridColumnSettings.getColumnWidth());
 		column.setAlignment(HorizontalAlignment.CENTER);
 		column.setHidden(!gridColumnSettings.isDisplayColumn());

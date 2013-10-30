@@ -649,12 +649,12 @@ html,body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form,fieldset,input,p,bloc
 
 ul.x-tab-strip {
   display: block;
-  width: 7000px;
+  width: 1000000px;
   zoom: 1;
 }
 
 ul.x-tab-strip-top {
-  padding-top: 1px;
+  margin-top: 1px;
   background: repeat-x bottom;
   border-bottom: 1px solid;
 }
@@ -1714,7 +1714,6 @@ fieldset.x-panel-collapsed .x-fieldset-bwrap {
     overflow:hidden;
     width:auto;
     -moz-outline:0 none;
-    outline:0 none;
 }
 * html .ext-ie .x-btn button {
     width:1px;
@@ -3888,7 +3887,7 @@ td.x-date-mp-sep {
   outline: 0 none;
 }
 
-.x-menu a {
+.x-menu .x-menu-item {
   text-decoration: none !important;
 }
 
@@ -3918,12 +3917,6 @@ td.x-date-mp-sep {
   white-space: nowrap;
   display: block;
   padding: 1px;
-}
-
-.x-menu-item {
-  -moz-user-select: none;
-  -khtml-user-select: none;
-   -webkit-user-select: ignore
 }
 
 .x-menu-item-arrow {
@@ -3956,8 +3949,7 @@ td.x-date-mp-sep {
   display: block;
 }
 
-a.x-menu-item {
-  cursor: pointer;
+.x-menu-item {
   display: block;
   line-height: 16px;
   outline-color: -moz-use-text-color;
@@ -3967,6 +3959,7 @@ a.x-menu-item {
   position: relative;
   text-decoration: none;
   white-space: nowrap;
+  cursor: pointer;
 }
 
 .x-menu-item-active {
@@ -4092,6 +4085,10 @@ a.x-menu-item {
 
 .x-menubar-item-active {
   background-color: #98c5f5;
+}
+
+.x-range-menu-item {
+  cursor: default;	
 }.x-box-tl {
 	background: transparent no-repeat 0 0;
     zoom:1;
@@ -7023,7 +7020,7 @@ td.x-date-mp-sep {
     background-color:#e0e0e0;
 	border-bottom-color:#fff;
 }
-a.x-menu-item {
+.x-menu-item {
 	color:#222;
 }
 .x-menu-item-active {
@@ -7031,7 +7028,7 @@ a.x-menu-item {
 	border:1px solid #aaccf6;
 	padding:0;
 }
-.x-menu-item-active a.x-menu-item {
+.x-menu-item-active .x-menu-item {
 	color:#233d6d;
 }
 

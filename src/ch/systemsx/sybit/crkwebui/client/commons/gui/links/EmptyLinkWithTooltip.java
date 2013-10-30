@@ -15,6 +15,6 @@ public class EmptyLinkWithTooltip extends LabelWithTooltip
 								int delay)
 	{
 		super(labelText, tooltipText, windowData, delay);
-		this.setText("<a href=\"\" onClick=\"return false;\">" + labelText + "</a>");
+		this.setHtml("<a href=\"\" onClick=\"return false;\">" + labelText + "</a>");
 	}
 }

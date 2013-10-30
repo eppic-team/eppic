@@ -27,7 +27,7 @@ public class GeneralInfoPanel extends FieldSet {
 	private GeneralInfoRowContainer rFreeContainer;
 	
 	public GeneralInfoPanel(PDBScoreItem pdbScoreItem){
-		this.setHeading(AppPropertiesManager.CONSTANTS.info_panel_general_info());
+		this.setHeadingHtml(AppPropertiesManager.CONSTANTS.info_panel_general_info());
 		 
 		this.setBorders(true);
 		this.setLayout(new ColumnLayout());

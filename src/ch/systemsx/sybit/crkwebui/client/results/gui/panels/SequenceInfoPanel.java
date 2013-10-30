@@ -95,7 +95,7 @@ public class SequenceInfoPanel extends FieldSet
     		fullHeading = fullHeading+" ("+AppPropertiesManager.CONSTANTS.info_panel_uniprot() +" " +
             		EscapedStringGenerator.generateEscapedString(uniprot_version)+ ")";
     	
-    	this.setHeading(fullHeading);
+    	this.setHeadingHtml(fullHeading);
     }
 
     /**

@@ -58,7 +58,7 @@ public class ResiduesSummaryPanel extends LayoutContainer
 		FieldSet sizesContainer = new FieldSet();
 		sizesContainer.addStyleName("eppic-rounded-border");
 		sizesContainer.addStyleName("eppic-residues-summary");
-		sizesContainer.setHeading(AppPropertiesManager.CONSTANTS.interfaces_residues_summary_sizes_heading());
+		sizesContainer.setHeadingHtml(AppPropertiesManager.CONSTANTS.interfaces_residues_summary_sizes_heading());
 		sizesContainer.add(sizesTable, new RowData(1, 45,  new Margins(0)));
 		this.add(sizesContainer, new RowData(0.30, 1,  new Margins(0, 5, 0, 0)));
 		
@@ -66,7 +66,7 @@ public class ResiduesSummaryPanel extends LayoutContainer
 		coreRimScoreTable.addStyleName("eppic-residues-summary-table");
 		coreRimScoreTable.setWidth("140px");
 		FieldSet coreRimScoreContainer = new FieldSet();
-		coreRimScoreContainer.setHeading(AppPropertiesManager.CONSTANTS.interfaces_residues_summary_corerim_heading());
+		coreRimScoreContainer.setHeadingHtml(AppPropertiesManager.CONSTANTS.interfaces_residues_summary_corerim_heading());
 		coreRimScoreContainer.addStyleName("eppic-rounded-border");
 		coreRimScoreContainer.addStyleName("eppic-residues-summary");
 		coreRimScoreContainer.add(coreRimScoreTable, new RowData(1, 45,  new Margins(0)));
@@ -78,7 +78,7 @@ public class ResiduesSummaryPanel extends LayoutContainer
 		coreSurfaceScoreTable.setWidth("140px");
 		FieldSet coreSurfaceScoreContainer = new FieldSet();
 		coreSurfaceScoreContainer.addStyleName("eppic-rounded-border");
-		coreSurfaceScoreContainer.setHeading(AppPropertiesManager.CONSTANTS.interfaces_residues_summary_coresurface_heading());
+		coreSurfaceScoreContainer.setHeadingHtml(AppPropertiesManager.CONSTANTS.interfaces_residues_summary_coresurface_heading());
 		coreSurfaceScoreContainer.setStyleAttribute("padding-top","5px");
 		coreSurfaceScoreContainer.add(coreSurfaceScoreTable, new RowData(1, 45,  new Margins(0)));
 		this.add(coreSurfaceScoreContainer, new RowData(0.35, 1,  new Margins(0, 5, 0, 0)));

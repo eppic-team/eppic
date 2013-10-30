@@ -114,7 +114,7 @@ public class InterfacesResiduesWindow extends ResizableWindow
 //		double area = mainController.getPdbScoreItem().getInterfaceItem(selectedInterface - 1).getArea();
 		NumberFormat number = NumberFormat.getFormat("0.00");
 		String formattedArea = number.format(area);
-		this.setHeading(AppPropertiesManager.CONSTANTS.interfaces_residues_window_title() + " " + selectedInterface + " (" + formattedArea + " A<sup>2</sup>)");
+		this.setHeadingHtml(AppPropertiesManager.CONSTANTS.interfaces_residues_window_title() + " " + selectedInterface + " (" + formattedArea + " A<sup>2</sup>)");
 		
 		interfacesResiduesPanel.fillHeaders(firstChainName,
 											secondChainName);

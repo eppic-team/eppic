@@ -60,7 +60,7 @@ public class MyJobsPanel extends ContentPanel
 	public MyJobsPanel()
 	{
 		this.setLayout(new RowLayout(Orientation.VERTICAL));
-		this.setHeading(AppPropertiesManager.CONSTANTS.myjobs_panel_head());
+		this.setHeadingHtml(AppPropertiesManager.CONSTANTS.myjobs_panel_head());
 
 		ToolBar toolBar = createToolbar();
 		this.setTopComponent(toolBar);

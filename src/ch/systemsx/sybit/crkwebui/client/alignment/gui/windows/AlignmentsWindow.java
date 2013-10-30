@@ -15,6 +15,7 @@ import com.extjs.gxt.ui.client.event.WindowListener;
 import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.util.TextMetrics;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
+import com.extjs.gxt.ui.client.widget.Html;
 import com.extjs.gxt.ui.client.widget.Text;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 import com.extjs.gxt.ui.client.widget.layout.RowData;
@@ -185,9 +186,9 @@ public class AlignmentsWindow extends ResizableWindow
 					markup.insert(0, " ");
 				}
 				
-				Text firstSequenceLabel = new Text(firstSequenceLineAnnotated.toString());
-				Text markupLabel = new Text(markup.toString().replaceAll(" ", "&nbsp;"));
-				Text secondSequenceLabel = new Text(secondSequenceLineAnnotated.toString());
+				Html firstSequenceLabel = new Html(firstSequenceLineAnnotated.toString());				
+				Html markupLabel = new Html(markup.toString().replaceAll(" ", "&nbsp;"));
+				Html secondSequenceLabel = new Html(secondSequenceLineAnnotated.toString());
 				
 				homologsContentPanel.add(firstSequenceLabel, new RowData(1, -1, new Margins(0)));  
 				homologsContentPanel.add(markupLabel, new RowData(1, -1, new Margins(0)));

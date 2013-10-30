@@ -23,7 +23,7 @@ public class ImageLinkWithTooltip extends LabelWithTooltip
 							String linkUrl)
 	{
 		super("", tooltipText, windowData, delay);
-		this.setText("<a href=\"" + linkUrl + "\" target=\"_blank\">" +
+		this.setHtml("<a href=\"" + linkUrl + "\" target=\"_blank\">" +
 				"<img border=\"0\" src=\""+imgsrc+"\" width=\""+width+"\" height=\""+height+"\">"+ 
 						"</a>");
 	}

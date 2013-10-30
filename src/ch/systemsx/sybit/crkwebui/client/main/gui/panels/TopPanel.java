@@ -19,7 +19,7 @@ public class TopPanel extends FormPanel
 		this.getHeader().setVisible(false);
 		this.setLayout(new CenterLayout());
 		Label title = new Label();
-		title.setText(AppPropertiesManager.CONSTANTS.top_panel_title());
+		title.setHtml(AppPropertiesManager.CONSTANTS.top_panel_title());
 		this.add(title);
 	}
 

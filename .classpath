@@ -17,16 +17,16 @@
 	<classpathentry kind="lib" path="libs/log4j-1.2.16.jar"/>
 	<classpathentry kind="lib" path="libs/slf4j-api-1.6.1.jar"/>
 	<classpathentry kind="lib" path="libs/slf4j-log4j12-1.6.1.jar"/>
-	<classpathentry kind="con" path="com.google.gwt.eclipse.core.GWT_CONTAINER/GWT (2)"/>
 	<classpathentry kind="lib" path="libs/cglib-2.2.jar"/>
 	<classpathentry kind="lib" path="libs/c3p0-0.9.1.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/crk"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/owl"/>
-	<classpathentry kind="lib" path="libs/gxt-2.2.5-gwt22.jar"/>
 	<classpathentry kind="src" path=".apt_generated">
 		<attributes>
 			<attribute name="optional" value="true"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="con" path="com.google.gwt.eclipse.core.GWT_CONTAINER"/>
+	<classpathentry kind="lib" path="libs/gxt-2.3.1-gwt22.jar"/>
 	<classpathentry kind="output" path="war/WEB-INF/classes"/>
 </classpath>

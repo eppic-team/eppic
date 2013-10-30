@@ -104,7 +104,7 @@ public class StructurePanel extends LayoutContainer
 	 */
 	public void fillHeader(String chainName) 
 	{
-		header.setText(AppPropertiesManager.CONSTANTS.interfaces_residues_panel_structure() + " " + 
+		header.setHtml(AppPropertiesManager.CONSTANTS.interfaces_residues_panel_structure() + " " + 
 									 EscapedStringGenerator.generateEscapedString(chainName));
 	}
 	
