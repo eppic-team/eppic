@@ -27,8 +27,8 @@ import com.google.gwt.i18n.client.NumberFormat;
  */
 public class InterfacesResiduesWindow extends ResizableWindow 
 {
-	private static int INTERFACE_RESIDUES_WINDOW_DEFAULT_WIDTH = 1200;
-	private static int INTERFACE_RESIDUES_WINDOW_DEFAULT_HEIGHT = 660;
+	private static int INTERFACE_RESIDUES_WINDOW_DEFAULT_WIDTH = 1000;
+	private static int INTERFACE_RESIDUES_WINDOW_DEFAULT_HEIGHT = 585;
 	
 	private InterfacesResiduesPanel interfacesResiduesPanel;
 	
@@ -41,6 +41,7 @@ public class InterfacesResiduesWindow extends ResizableWindow
 		this.setBlinkModal(true);
 		this.setLayout(new RowLayout());
 		this.setHideOnButtonClick(true);
+		this.getButtonBar().setVisible(false);
 
 		interfacesResiduesPanel = new InterfacesResiduesPanel();
 		this.add(interfacesResiduesPanel, new RowData(1, 1, new Margins(0)));

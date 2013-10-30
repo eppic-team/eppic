@@ -134,6 +134,28 @@ public interface AppProperties extends Constants
 	String interfaces_residues_aggergation_surface();
 	String interfaces_residues_aggergation_ratios();
 	
+	String interfaces_residues_summary_corerim_heading();
+	String interfaces_residues_summary_corerim_avgcore();
+	String interfaces_residues_summary_corerim_avgcore_hint();
+	String interfaces_residues_summary_corerim_avgrim();
+	String interfaces_residues_summary_corerim_avgrim_hint();
+	String interfaces_residues_summary_corerim_final();
+	String interfaces_residues_summary_corerim_final_hint();
+
+	String interfaces_residues_summary_coresurface_heading();
+	String interfaces_residues_summary_coresurface_mean();
+	String interfaces_residues_summary_coresurface_mean_hint();
+	String interfaces_residues_summary_coresurface_sd();
+	String interfaces_residues_summary_coresurface_sd_hint();
+	String interfaces_residues_summary_coresurface_final();
+	String interfaces_residues_summary_coresurface_final_hint();
+
+	String interfaces_residues_summary_sizes_heading();
+	String interfaces_residues_summary_sizes_cores();
+	String interfaces_residues_summary_sizes_cores_hint();
+	String interfaces_residues_summary_sizes_rims();
+	String interfaces_residues_summary_sizes_rims_hint();
+	
 	String scores_panel_column_weighted();
 	String scores_panel_column_unweighted();
 	String scores_panel_column_structure1();

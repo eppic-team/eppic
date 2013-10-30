@@ -34,7 +34,7 @@ public class LegendPanel extends LayoutContainer
 		LayoutContainer legendContainer = new LayoutContainer();
 		legendContainer.setLayout(new RowLayout(Orientation.HORIZONTAL));
 		legendContainer.setHeight(30);
-		legendContainer.setWidth(500);
+		legendContainer.setWidth(620);
 
 		for(LegendItem item : LegendItem.values())
 		{

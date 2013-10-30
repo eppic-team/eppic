@@ -5,11 +5,12 @@ package ch.systemsx.sybit.crkwebui.client.residues.data;
  */
 public enum LegendItem 
 {
-	RIM("Rim", "eppic-grid-row-rim"),
-	CORE_GEOMETRY("Core geometry", "eppic-grid-row-core-geometry"),
-	CORE_EVOLUTIONARY("Core evolutionary", "eppic-grid-row-core-evolutionary"),
 	TOTALLY_BURIED("Totally buried", "eppic-grid-row-buried"),
-	SURFACE("Surface", "eppic-grid-row-surface");
+	SURFACE("Surface", "eppic-grid-row-surface"),
+	RIM("Rim", "eppic-grid-row-rim"),
+	CORE_GEOMETRY("Core geometry (95% BSA)", "eppic-grid-row-core-geometry"),
+	CORE_EVOLUTIONARY("Core evolutionary (70% BSA)", "eppic-grid-row-core-evolutionary");
+	
 	
 	/**
 	 * Type of the item.

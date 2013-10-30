@@ -1,158 +1,205 @@
 package ch.systemsx.sybit.crkwebui.client.residues.gui.panels;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
-import ch.systemsx.sybit.crkwebui.client.commons.gui.renderers.GridCellRendererFactoryImpl;
-import ch.systemsx.sybit.crkwebui.client.commons.gui.util.GridColumnConfigGenerator;
-import ch.systemsx.sybit.crkwebui.client.commons.gui.util.GridResizer;
-import ch.systemsx.sybit.crkwebui.client.residues.data.InterfaceResidueSummaryModel;
+import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
+import ch.systemsx.sybit.crkwebui.client.commons.gui.labels.LabelWithTooltip;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResidueItem;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResidueType;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceScoreItem;
 import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
 
-import com.extjs.gxt.ui.client.GXT;
-import com.extjs.gxt.ui.client.Style.Scroll;
-import com.extjs.gxt.ui.client.data.BaseListLoader;
-import com.extjs.gxt.ui.client.data.MemoryProxy;
-import com.extjs.gxt.ui.client.data.ModelData;
-import com.extjs.gxt.ui.client.store.ListStore;
-import com.extjs.gxt.ui.client.widget.ContentPanel;
-import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
-import com.extjs.gxt.ui.client.widget.grid.ColumnModel;
-import com.extjs.gxt.ui.client.widget.grid.Grid;
-import com.extjs.gxt.ui.client.widget.grid.GridViewConfig;
-import com.extjs.gxt.ui.client.widget.layout.FitLayout;
+import com.extjs.gxt.ui.client.Style.Orientation;
+import com.extjs.gxt.ui.client.util.Margins;
+import com.extjs.gxt.ui.client.widget.Label;
+import com.extjs.gxt.ui.client.widget.LayoutContainer;
+import com.extjs.gxt.ui.client.widget.form.FieldSet;
+import com.extjs.gxt.ui.client.widget.layout.RowData;
+import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 import com.google.gwt.i18n.client.NumberFormat;
+import com.google.gwt.user.client.ui.FlexTable;
 
 /**
  * Panel used to display the residues summary for one structure.
- * @author srebniak_a
+ * @author srebniak_a; biyani_n
  *
  */
-public class ResiduesSummaryPanel extends ContentPanel
+public class ResiduesSummaryPanel extends LayoutContainer
 {
-	private List<ColumnConfig> residuesConfigs;
-	private ListStore<InterfaceResidueSummaryModel> residuesStore;
-	private ColumnModel residuesColumnModel;
-	private Grid<InterfaceResidueSummaryModel> residuesGrid;
-	private GridResizer gridResizer;
-	private List<Integer> initialColumnWidth;
+	private FlexTable coreRimScoreTable;
+	private FlexTable coreSurfaceScoreTable;
+	private FlexTable sizesTable;
 	
-	private MemoryProxy proxy;
-	private BaseListLoader loader;
-	private boolean useBufferedView = false;
+	private double entropyCoreValue = Double.NaN;
+	private double entropyRimValue = Double.NaN;
+	private double entropyRatioValue = Double.NaN;
+	private double entropySurfSamplingMean = Double.NaN;
+	private double entropySurfSamplingSd = Double.NaN;
+	private double entropyZscore = Double.NaN;
+	
+	private int coreSize = 0;
+	private int rimSize = 0;
+	
+	private static final NumberFormat number = NumberFormat.getFormat("0.00");
 	
 	private int structure;
 	
-	public ResiduesSummaryPanel(
-						 String header, 
-						 int structure) 
+	public ResiduesSummaryPanel(int structure) 
 	{
-		if(GXT.isIE8)
-		{
-			useBufferedView = true;
-		}
-		
 		this.structure = structure;
-		this.setBodyBorder(false);
+		
+		this.setLayout(new RowLayout(Orientation.HORIZONTAL));
 		this.setBorders(false);
-		this.setLayout(new FitLayout());
-		this.getHeader().setVisible(false);
-		this.setScrollMode(Scroll.NONE);
-
-		residuesConfigs = createColumnConfig();
 		
-		proxy = new MemoryProxy(null);
-		loader = new BaseListLoader(proxy);
-
-		residuesStore = new ListStore<InterfaceResidueSummaryModel>(loader);
-		residuesColumnModel = new ColumnModel(residuesConfigs);
+		sizesTable = new FlexTable();
+		sizesTable.addStyleName("eppic-residues-summary-table");
+		sizesTable.setWidth("110px");
+		FieldSet sizesContainer = new FieldSet();
+		sizesContainer.addStyleName("eppic-rounded-border");
+		sizesContainer.addStyleName("eppic-residues-summary");
+		sizesContainer.setHeading(AppPropertiesManager.CONSTANTS.interfaces_residues_summary_sizes_heading());
+		sizesContainer.add(sizesTable, new RowData(1, 45,  new Margins(0)));
+		this.add(sizesContainer, new RowData(0.30, 1,  new Margins(0, 5, 0, 0)));
 		
-		residuesGrid = createResiduesSummaryGrid();
-		this.add(residuesGrid);
+		coreRimScoreTable = new FlexTable();
+		coreRimScoreTable.addStyleName("eppic-residues-summary-table");
+		coreRimScoreTable.setWidth("140px");
+		FieldSet coreRimScoreContainer = new FieldSet();
+		coreRimScoreContainer.setHeading(AppPropertiesManager.CONSTANTS.interfaces_residues_summary_corerim_heading());
+		coreRimScoreContainer.addStyleName("eppic-rounded-border");
+		coreRimScoreContainer.addStyleName("eppic-residues-summary");
+		coreRimScoreContainer.add(coreRimScoreTable, new RowData(1, 45,  new Margins(0)));
+		this.add(coreRimScoreContainer, new RowData(0.35, 1,  new Margins(0, 5, 0, 0)));
 		
-		gridResizer = new GridResizer(residuesGrid, initialColumnWidth, useBufferedView, false);
+		
+		coreSurfaceScoreTable = new FlexTable();
+		coreSurfaceScoreTable.addStyleName("eppic-residues-summary-table");
+		coreSurfaceScoreTable.setWidth("140px");
+		FieldSet coreSurfaceScoreContainer = new FieldSet();
+		coreSurfaceScoreContainer.addStyleName("eppic-rounded-border");
+		coreSurfaceScoreContainer.setHeading(AppPropertiesManager.CONSTANTS.interfaces_residues_summary_coresurface_heading());
+		coreSurfaceScoreContainer.setStyleAttribute("padding-top","5px");
+		coreSurfaceScoreContainer.add(coreSurfaceScoreTable, new RowData(1, 45,  new Margins(0)));
+		this.add(coreSurfaceScoreContainer, new RowData(0.35, 1,  new Margins(0, 5, 0, 0)));
+		
+		fillTableHeadings();
 	}
 	
 	/**
-	 * Creates columns configurations for residues summary grid.
-	 * @return columns configurations for residues summary grid
+	 * Method to fill in the details of the panel
+	 * @param pdbScoreItem
+	 * @param selectedInterfaceId
+	 * @param interfaceResidueItems
 	 */
-	private List<ColumnConfig> createColumnConfig() 
-	{
-		List<ColumnConfig> configs = GridColumnConfigGenerator.createColumnConfigs(
-				   GridCellRendererFactoryImpl.getInstance(),
-				   "residues_summary",
-				   new InterfaceResidueSummaryModel());
-
-		if(configs != null)
-		{
-			initialColumnWidth = new ArrayList<Integer>();
-			
-			for(ColumnConfig columnConfig : configs)
-			{
-				initialColumnWidth.add(columnConfig.getWidth());
-			}
-		}
-		
-		return configs;
-
+	public void fillResultsSummary(PDBScoreItem pdbScoreItem,
+			 int selectedInterfaceId,
+			 List<InterfaceResidueItem> interfaceResidueItems){
+		fillTableData(pdbScoreItem, selectedInterfaceId, interfaceResidueItems);
 	}
 	
 	/**
-	 * Creates grid containing summary for specified interface and structure.
-	 * @return summary grid
+	 * Fills the values in the table
+	 * @param pdbScoreItem
+	 * @param selectedInterfaceId
+	 * @param interfaceResidueItems
 	 */
-	private Grid<InterfaceResidueSummaryModel> createResiduesSummaryGrid()
-	{
-		Grid<InterfaceResidueSummaryModel> residuesGrid = new Grid<InterfaceResidueSummaryModel>(residuesStore, residuesColumnModel);
-		residuesGrid.setBorders(false);
-		residuesGrid.setStripeRows(true);
-		residuesGrid.setColumnLines(false);
-		residuesGrid.setHideHeaders(true);
-		residuesGrid.getSelectionModel().setLocked(true);
-		residuesGrid.setLoadMask(true);
-		residuesGrid.disableTextSelection(false);
+	private void fillTableData(PDBScoreItem pdbScoreItem,
+			 int selectedInterfaceId,
+			 List<InterfaceResidueItem> interfaceResidueItems){
+		calculateData(pdbScoreItem, selectedInterfaceId, interfaceResidueItems);
 		
-		residuesGrid.getView().setViewConfig(new GridViewConfig(){
-			@Override
-			public String getRowStyle(ModelData model, int rowIndex,
-					ListStore<ModelData> ds) 
-			{
-				return "eppic-summary-grid-row";
-			}
-		});
+		coreRimScoreTable.setWidget(1, 0, new Label(number.format(entropyCoreValue)));
+		coreRimScoreTable.setWidget(1, 1, new Label(number.format(entropyRimValue)));
+		coreRimScoreTable.setWidget(1, 2, new Label(number.format(entropyRatioValue)));
 		
-		residuesGrid.getView().setForceFit(false);
-
-		return residuesGrid;
+		coreSurfaceScoreTable.setWidget(1, 0, new Label(number.format(entropySurfSamplingMean)));
+		coreSurfaceScoreTable.setWidget(1, 1, new Label(number.format(entropySurfSamplingSd)));
+		coreSurfaceScoreTable.setWidget(1, 2, new Label(number.format(entropyZscore)));
+		
+		sizesTable.setWidget(1, 0, new Label(Integer.toString(coreSize)));
+		sizesTable.setWidget(1, 1, new Label(Integer.toString(rimSize)));
 	}
 
 	/**
-	 * Sets content of residues summary grid.
+	 * Sets content of tables.
 	 */
-	public void fillResiduesGrid(PDBScoreItem pdbScoreItem,
-								 int selectedInterfaceId,
-								 List<InterfaceResidueItem> interfaceResidueItems) 
-	{
-		residuesStore.removeAll();
+	private void fillTableHeadings(){		
 		
-		List<InterfaceResidueSummaryModel> interfaceSummaryItems = new ArrayList<InterfaceResidueSummaryModel>();
+		Label crstHeadLbl1 = new LabelWithTooltip(AppPropertiesManager.CONSTANTS.interfaces_residues_summary_corerim_avgcore(), 
+				AppPropertiesManager.CONSTANTS.interfaces_residues_summary_corerim_avgcore_hint(), 
+				ApplicationContext.getWindowData(), 
+				100);
+		crstHeadLbl1.addStyleName("eppic-residues-summary-fields");
+		coreRimScoreTable.setWidget(0, 0, crstHeadLbl1);
+		
+		Label crstHeadLbl2 = new LabelWithTooltip(AppPropertiesManager.CONSTANTS.interfaces_residues_summary_corerim_avgrim(), 
+				AppPropertiesManager.CONSTANTS.interfaces_residues_summary_corerim_avgrim_hint(), 
+				ApplicationContext.getWindowData(), 
+				100);
+		crstHeadLbl2.addStyleName("eppic-residues-summary-fields");
+		coreRimScoreTable.setWidget(0, 1, crstHeadLbl2);
+		
+		Label crstHeadLbl3 = new LabelWithTooltip(AppPropertiesManager.CONSTANTS.interfaces_residues_summary_corerim_final(), 
+				AppPropertiesManager.CONSTANTS.interfaces_residues_summary_corerim_final_hint(), 
+				ApplicationContext.getWindowData(), 
+				100);
+		crstHeadLbl3.addStyleName("eppic-residues-summary-fields");
+		coreRimScoreTable.setWidget(0, 2, crstHeadLbl3);
+		
+		
+		Label csstHeadLbl1 = new LabelWithTooltip(AppPropertiesManager.CONSTANTS.interfaces_residues_summary_coresurface_mean(), 
+				AppPropertiesManager.CONSTANTS.interfaces_residues_summary_coresurface_mean_hint(), 
+				ApplicationContext.getWindowData(), 
+				100);
+		csstHeadLbl1.addStyleName("eppic-residues-summary-fields");
+		coreSurfaceScoreTable.setWidget(0, 0, csstHeadLbl1);
+		
+		Label csstHeadLbl2 = new LabelWithTooltip(AppPropertiesManager.CONSTANTS.interfaces_residues_summary_coresurface_sd(), 
+				AppPropertiesManager.CONSTANTS.interfaces_residues_summary_coresurface_sd_hint(), 
+				ApplicationContext.getWindowData(), 
+				100);
+		csstHeadLbl2.addStyleName("eppic-residues-summary-fields");
+		coreSurfaceScoreTable.setWidget(0, 1, csstHeadLbl2);
+		
+		Label csstHeadLbl3 = new LabelWithTooltip(AppPropertiesManager.CONSTANTS.interfaces_residues_summary_coresurface_final(), 
+				AppPropertiesManager.CONSTANTS.interfaces_residues_summary_coresurface_final_hint(), 
+				ApplicationContext.getWindowData(), 
+				100);
+		csstHeadLbl3.addStyleName("eppic-residues-summary-fields");
+		coreSurfaceScoreTable.setWidget(0, 2, csstHeadLbl3);
+		
+		Label sizesHeadLbl1 = new LabelWithTooltip(AppPropertiesManager.CONSTANTS.interfaces_residues_summary_sizes_cores(), 
+				AppPropertiesManager.CONSTANTS.interfaces_residues_summary_sizes_cores_hint(), 
+				ApplicationContext.getWindowData(), 
+				100);
+		sizesHeadLbl1.addStyleName("eppic-residues-summary-fields");
+		sizesTable.setWidget(0, 0, sizesHeadLbl1);
+		
+		Label sizesHeadLbl2 = new LabelWithTooltip(AppPropertiesManager.CONSTANTS.interfaces_residues_summary_sizes_rims(), 
+				AppPropertiesManager.CONSTANTS.interfaces_residues_summary_sizes_rims_hint(), 
+				ApplicationContext.getWindowData(), 
+				100);
+		sizesHeadLbl2.addStyleName("eppic-residues-summary-fields");
+		sizesTable.setWidget(0, 1, sizesHeadLbl2);
+	}
+	
+	private void calculateData(PDBScoreItem pdbScoreItem,
+			int selectedInterfaceId,
+			List<InterfaceResidueItem> interfaceResidueItems) {
 
-		NumberFormat number = NumberFormat.getFormat("0.00");
-		
-		double entropyCoreValue = Double.NaN;
-		double entropyRimValue = Double.NaN;
-		double entropyRatioValue = Double.NaN;
-		double entropySurfSamplingMean = Double.NaN;
-		double entropySurfSamplingSd = Double.NaN;
-		double entropyZscore = Double.NaN;
-		
 		int interfId = selectedInterfaceId - 1;
 		
+		entropyCoreValue = Double.NaN;
+		entropyRimValue = Double.NaN;
+		entropyRatioValue = Double.NaN;
+		entropySurfSamplingMean = Double.NaN;
+		entropySurfSamplingSd = Double.NaN;
+		entropyZscore = Double.NaN;
+		
+		coreSize = 0;
+		rimSize = 0;
+
 		for (InterfaceScoreItem scoreItem : pdbScoreItem.getInterfaceItem(interfId).getInterfaceScores())
 		{
 			if(scoreItem.getMethod().equals("Entropy"))
@@ -184,18 +231,15 @@ public class ResiduesSummaryPanel extends ContentPanel
 					entropySurfSamplingSd = scoreItem.getUnweightedRim2Scores();
 					entropyZscore = scoreItem.getUnweightedRatio2Scores();					
 				}
-				
+
 			}
 		}
-		
-		int coreSize = 0;
-		int rimSize = 0;
-		
+
 		for(InterfaceResidueItem interfResItem : interfaceResidueItems) {
-//		for (InterfaceResidueItem interfResItem:mainController.getInterfaceResiduesItemsList().get(mainController.getMainViewPort().getInterfacesResiduesWindow().getSelectedInterface()).get(structure)) {
-			
+			//		for (InterfaceResidueItem interfResItem:mainController.getInterfaceResiduesItemsList().get(mainController.getMainViewPort().getInterfacesResiduesWindow().getSelectedInterface()).get(structure)) {
+
 			if ((interfResItem.getAssignment() == InterfaceResidueType.CORE_EVOLUTIONARY.getAssignment()) ||
-				(interfResItem.getAssignment() == InterfaceResidueType.CORE_GEOMETRY.getAssignment()))
+					(interfResItem.getAssignment() == InterfaceResidueType.CORE_GEOMETRY.getAssignment()))
 			{
 				coreSize++;
 			}
@@ -204,91 +248,25 @@ public class ResiduesSummaryPanel extends ContentPanel
 				rimSize++;
 			}
 		}
-	
-		InterfaceResidueSummaryModel model = new InterfaceResidueSummaryModel();
-		model.setTitle(AppPropertiesManager.CONSTANTS.interfaces_residues_aggergation_total_cores()+" ("+coreSize+")");
-		
-		double asa = 0;
-		double bsa = 0;
-		
-		if(structure == 1)
-		{
-			asa = pdbScoreItem.getInterfaceItem(interfId).getAsaC1();
-			bsa = pdbScoreItem.getInterfaceItem(interfId).getBsaC1();
-		}
-		else
-		{
-			asa = pdbScoreItem.getInterfaceItem(interfId).getAsaC2();
-			bsa = pdbScoreItem.getInterfaceItem(interfId).getBsaC2();
-		}
-		
-		model.setAsa(asa);
-		model.setBsa(bsa);
-		model.setEntropyScore(number.format(entropyCoreValue));
-		
-		interfaceSummaryItems.add(model);
-		
-		
-		model = new InterfaceResidueSummaryModel();
-		model.setTitle(AppPropertiesManager.CONSTANTS.interfaces_residues_aggergation_total_rims()+" ("+rimSize+")");
-		
-		asa = 0;
-		bsa = 0;
-		
-		if(structure == 1)
-		{
-			asa = pdbScoreItem.getInterfaceItem(interfId).getAsaR1();
-			bsa = pdbScoreItem.getInterfaceItem(interfId).getBsaR1();
-		}
-		else
-		{
-			asa = pdbScoreItem.getInterfaceItem(interfId).getAsaR2();
-			bsa = pdbScoreItem.getInterfaceItem(interfId).getBsaR2();
-		}
-		
-		model.setAsa(asa);
-		model.setBsa(bsa);
-		model.setEntropyScore(number.format(entropyRimValue));
-		
-		interfaceSummaryItems.add(model);
-		
-		model = new InterfaceResidueSummaryModel();
-		model.setTitle(AppPropertiesManager.CONSTANTS.interfaces_residues_aggergation_surface());
-		model.setEntropyScore(number.format(entropySurfSamplingMean)+", "+number.format(entropySurfSamplingSd));
-		
-		interfaceSummaryItems.add(model);
-		
-		
-		model = new InterfaceResidueSummaryModel();
-		model.setTitle(AppPropertiesManager.CONSTANTS.interfaces_residues_aggergation_ratios());
-		model.setEntropyScore(number.format(entropyRatioValue)+", "+number.format(entropyZscore));
-		
-		interfaceSummaryItems.add(model);
-		
-//		residuesStore.add(interfaceSummaryItems);
-		proxy.setData(interfaceSummaryItems);
-		loader.load();
+
 	}
-	
+
 	/**
 	 * Cleans content of residues summary grid.
 	 */
 	public void cleanResiduesGrid()
 	{
-		residuesStore.removeAll();
+		coreRimScoreTable.setWidget(2, 0, new Label(" "));
+		coreRimScoreTable.setWidget(2, 1, new Label(" "));
+		coreRimScoreTable.setWidget(2, 2, new Label(" "));
+		
+		coreSurfaceScoreTable.setWidget(2, 0, new Label(" "));
+		coreSurfaceScoreTable.setWidget(2, 1, new Label(" "));
+		coreSurfaceScoreTable.setWidget(2, 2, new Label(" "));
+		
+		sizesTable.setWidget(1, 0, new Label(" "));
+		sizesTable.setWidget(1, 1, new Label(" "));
 	}
 	
-	/**
-	 * Adjusts size of the residues summary grid based on the size of the screen
-	 * and initial settings for the grid. 
-	 * @param assignedWidth width assigned for the grid
-	 */
-	public void resizeGrid(int assignedWidth) 
-	{
-		gridResizer.resize(assignedWidth - 2);
-		this.setWidth(residuesGrid.getWidth() + 2);
-		
-		loader.load();
-		residuesGrid.getView().refresh(true);
-	}
+	
 }

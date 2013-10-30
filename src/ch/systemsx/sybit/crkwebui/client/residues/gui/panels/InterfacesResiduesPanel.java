@@ -44,13 +44,13 @@ public class InterfacesResiduesPanel extends FormPanel
 		residuesLayoutContainer.setLayout(new RowLayout(Orientation.HORIZONTAL));
 	
 		firstStructurePanel = new StructurePanel(1);
-		residuesLayoutContainer.add(firstStructurePanel, new RowData(0.48, 1, new Margins(0)));
+		residuesLayoutContainer.add(firstStructurePanel, new RowData(0.49, 1, new Margins(0)));
 
 		FormPanel breakPanel = createBreakPanel();
-		residuesLayoutContainer.add(breakPanel, new RowData(0.04, 1, new Margins(0)));
+		residuesLayoutContainer.add(breakPanel, new RowData(0.02, 1, new Margins(0)));
 		
 		secondStructurePanel = new StructurePanel(2);
-		residuesLayoutContainer.add(secondStructurePanel, new RowData(0.48, 1, new Margins(0)));
+		residuesLayoutContainer.add(secondStructurePanel, new RowData(0.49, 1, new Margins(0)));
 		
 		this.add(residuesLayoutContainer, new RowData(1, 1, new Margins(0, 0, 0, 0)));
 		

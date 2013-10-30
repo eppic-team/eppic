@@ -29,20 +29,21 @@ public class StructurePanel extends LayoutContainer
 		this.setLayout(new RowLayout());
 		
 		header = new Label();
+		header.setStyleAttribute("font-weight", "bold");
 		LayoutContainer structureHeaderPanel = createStructureHeaderPanel(header);
 		this.add(structureHeaderPanel, new RowData(-1, -1, new Margins(0)));
 		
-		residuesPanel = new ResiduesPanel();
-		residuesPanel.setScrollMode(Scroll.NONE);
-		this.add(residuesPanel, new RowData(-1, 1, new Margins(0)));
+		residuesSummaryPanel = new ResiduesSummaryPanel(structureNr);
+		residuesSummaryPanel.setHeight(70);
+		residuesSummaryPanel.setScrollMode(Scroll.NONE);
+		this.add(residuesSummaryPanel, new RowData(-1, -1, new Margins(0)));
 		
 		FormPanel breakPanel = createBreakPanel();
 		this.add(breakPanel, new RowData(-1, -1, new Margins(0)));
 		
-		residuesSummaryPanel = new ResiduesSummaryPanel("", structureNr);
-		residuesSummaryPanel.setHeight(90);
-		residuesSummaryPanel.setScrollMode(Scroll.NONE);
-		this.add(residuesSummaryPanel, new RowData(-1, -1, new Margins(0)));
+		residuesPanel = new ResiduesPanel();
+		residuesPanel.setScrollMode(Scroll.NONE);
+		this.add(residuesPanel, new RowData(-1, 1, new Margins(0)));
 		
 		breakPanel = createBreakPanel();
 		this.add(breakPanel, new RowData(-1, -1, new Margins(0)));
@@ -92,7 +93,7 @@ public class StructurePanel extends LayoutContainer
 		residuesPanel.fillResiduesGrid(interfaceResidueItems);
 		residuesPanel.applyFilter(false);
 		
-		residuesSummaryPanel.fillResiduesGrid(pdbScoreItem,
+		residuesSummaryPanel.fillResultsSummary(pdbScoreItem,
 					 selectedInterface,
 					 interfaceResidueItems);
 	}
@@ -123,7 +124,7 @@ public class StructurePanel extends LayoutContainer
 	public void resizeResiduesPanels() 
 	{
 		residuesPanel.resizeGrid(this.getWidth());
-		residuesSummaryPanel.resizeGrid(this.getWidth());
+		//residuesSummaryPanel.resizeGrid(this.getWidth());
 		this.layout(true);
 	}
 	
