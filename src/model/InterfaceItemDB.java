@@ -14,6 +14,7 @@ public class InterfaceItemDB implements Serializable
 	private int uid;
 	
 	private int id;
+	private int clusterId;
 	private Double area;
 	private String chain1;
 	private String chain2;
@@ -59,6 +60,14 @@ public class InterfaceItemDB implements Serializable
 		this.id = id;
 	}
 
+	public int getClusterId() {
+		return clusterId;
+	}
+	
+	public void setClusterId(int clusterId) {
+		this.clusterId = clusterId;
+	}
+	
 	public Double getArea() {
 		return area;
 	}

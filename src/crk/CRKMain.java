@@ -23,16 +23,15 @@ import org.apache.log4j.FileAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
-import org.xml.sax.SAXException;
 
 import crk.predictors.CombinedPredictor;
 import crk.predictors.GeometryPredictor;
-
-import owl.core.connections.pisa.PisaConnection;
 import owl.core.runners.PymolRunner;
 import owl.core.structure.BioUnitAssignmentType;
+import owl.core.structure.ChainCluster;
 import owl.core.structure.ChainInterface;
 import owl.core.structure.ChainInterfaceList;
+import owl.core.structure.InterfaceCluster;
 import owl.core.structure.InterfacesFinder;
 import owl.core.structure.PdbAsymUnit;
 import owl.core.structure.PdbBioUnitList;
@@ -201,42 +200,43 @@ public class CRKMain {
 
 	public void doFindInterfaces() throws CRKException {
 
-		if (params.isUsePisa()) {
-			params.getProgressLog().println("Getting PISA interfaces...");
-			LOGGER.info("Interfaces from PISA.");
-			PisaConnection pc = new PisaConnection();
-			List<String> pdbCodes = new ArrayList<String>();
-			pdbCodes.add(pdb.getPdbCode());
-			try {
-				interfaces = pc.getInterfacesDescription(pdbCodes).get(pdb.getPdbCode()).convertToChainInterfaceList(pdb);
-			} catch(SAXException e) {
-				throw new CRKException(e,"Error while reading PISA xml file"+e.getMessage(),true);
-			} catch(IOException e) {
-				throw new CRKException(e,"Error while retrieving PISA xml file: "+e.getMessage(),true);
+		params.getProgressLog().println("Calculating possible interfaces...");
+		LOGGER.info("Calculating possible interfaces");
+		InterfacesFinder interfFinder = new InterfacesFinder(pdb);
+		interfaces = interfFinder.getAllInterfaces(CRKParams.INTERFACE_DIST_CUTOFF, 
+				params.getnSpherePointsASAcalc(), params.getNumThreads(), true, false, 
+				params.getMinSizeCofactorForAsa(),
+				CRKParams.MIN_INTERFACE_AREA_TO_KEEP);		
+		LOGGER.info("Interfaces calculated with "+params.getnSpherePointsASAcalc()+" sphere points.");
+
+		LOGGER.info("Calculating interface clusters");
+		interfaces.initialiseClusters(pdb, CRKParams.CLUSTERING_RMSD_CUTOFF, CRKParams.CLUSTERING_MINATOMS, CRKParams.CLUSTERING_ATOM_TYPE);
+
+		int clustersSize = interfaces.getClusters().size();
+		int numInterfaces = interfaces.size();
+		LOGGER.info("Interface clustering done: "+numInterfaces+" interfaces - "+clustersSize+" clusters");
+		String msg = "Interface clusters: ";
+		for (int i=0; i<clustersSize;i++) {
+			InterfaceCluster cluster = interfaces.getClusters().get(i);
+			msg += cluster.toString();
+			if (i!=clustersSize-1) msg += ", "; 
+		}
+		LOGGER.info(msg); 
+
+		if (interfFinder.hasCofactors()) {
+			LOGGER.info("Cofactors of more than "+params.getMinSizeCofactorForAsa()+" atoms present: they will be taken into account for ASA calculations");
+			for (String pdbChainCode:pdb.getPdbChainCodes()) {
+				LOGGER.info("Chain "+pdbChainCode+": "+interfFinder.getNumCofactorsForPdbChainCode(pdbChainCode)+" cofactor(s) - "+
+						interfFinder.getCofactorsInfoString(pdbChainCode));
 			}
 		} else {
-			params.getProgressLog().println("Calculating possible interfaces...");
-			InterfacesFinder interfFinder = new InterfacesFinder(pdb);
-			interfaces = interfFinder.getAllInterfaces(CRKParams.INTERFACE_DIST_CUTOFF, 
-					params.getnSpherePointsASAcalc(), params.getNumThreads(), true, false, 
-					params.getMinSizeCofactorForAsa(),
-					CRKParams.MIN_INTERFACE_AREA_TO_KEEP);
-			LOGGER.info("Interfaces calculated with "+params.getnSpherePointsASAcalc()+" sphere points.");
-			if (interfFinder.hasCofactors()) {
-				LOGGER.info("Cofactors of more than "+params.getMinSizeCofactorForAsa()+" atoms present: they will be taken into account for ASA calculations");
-				for (String pdbChainCode:pdb.getPdbChainCodes()) {
-					LOGGER.info("Chain "+pdbChainCode+": "+interfFinder.getNumCofactorsForPdbChainCode(pdbChainCode)+" cofactor(s) - "+
-							interfFinder.getCofactorsInfoString(pdbChainCode));
-				}
+			if (params.getMinSizeCofactorForAsa()<0) {
+				LOGGER.info("No minimum size for cofactors set. All cofactors will be ignored for ASA calculations");
 			} else {
-				if (params.getMinSizeCofactorForAsa()<0) {
-					LOGGER.info("No minimum size for cofactors set. All cofactors will be ignored for ASA calculations");
-				} else {
-					LOGGER.info("No cofactors of more than "+params.getMinSizeCofactorForAsa()+" atoms present. Cofactors will be ignored for ASA calculations");
-				}
+				LOGGER.info("No cofactors of more than "+params.getMinSizeCofactorForAsa()+" atoms present. Cofactors will be ignored for ASA calculations");
 			}
-
 		}
+
 
 		LOGGER.info("Minimum ASA for a residue to be considered surface: "+String.format("%2.0f",params.getMinAsaForSurface()));
 		
@@ -244,8 +244,8 @@ public class CRKMain {
 
 
 		// checking for clashes
-		if (!params.isUsePisa() && interfaces.hasInterfacesWithClashes()) {
-			String msg = "Clashes (atoms distance below "+AICGraph.CLASH_DISTANCE+") found in:";
+		if (interfaces.hasInterfacesWithClashes()) {
+			msg = "Clashes (atoms distance below "+AICGraph.CLASH_DISTANCE+") found in:";
 			List<ChainInterface> clashyInterfs = interfaces.getInterfacesWithClashes();
 			boolean tooManyClashes = false;
 			for (ChainInterface clashyInterf:clashyInterfs) {
@@ -615,16 +615,12 @@ public class CRKMain {
 	}
 	
 	private void findUniqueChains() {
-		String msg = "Unique sequences for "+params.getJobName()+":";
-		int i = 1;
-		for (String representativeChain:pdb.getAllRepChains()) {
-			List<String> entity = pdb.getSeqIdenticalGroup(representativeChain);
-			msg+=" "+i+":";
-			for (String chain:entity) {
-				msg+=" "+chain;
-			}
-			i++;
+		String msg = "Unique sequences for "+params.getJobName()+": ";
+		
+		for (ChainCluster chainCluster:pdb.getProtChainClusters()) {
+			msg += chainCluster.getClusterString()+" ";
 		}
+		
 		LOGGER.info(msg);
 	}
 	

@@ -20,6 +20,7 @@ import owl.core.runners.blast.BlastException;
 import owl.core.sequence.HomologList;
 import owl.core.sequence.Sequence;
 import owl.core.sequence.UniprotVerMisMatchException;
+import owl.core.structure.ChainCluster;
 import owl.core.structure.PdbAsymUnit;
 import owl.core.structure.PdbChain;
 
@@ -48,7 +49,12 @@ public class ChainEvolContextList implements Serializable {
 	
 	public ChainEvolContextList(PdbAsymUnit pdb, CRKParams params) throws SQLException {
 		this.cecs = new TreeMap<String, ChainEvolContext>();
-		this.chain2repChain = pdb.getChain2repChainMap();
+		this.chain2repChain = new HashMap<String, String>();
+		for (ChainCluster chainCluster:pdb.getProtChainClusters()) {
+			for (PdbChain member:chainCluster.getMembers()) {
+				this.chain2repChain.put(member.getPdbChainCode(), chainCluster.getRepresentative().getPdbChainCode());
+			}
+		}
 		this.pdbName = params.getJobName();
 		// if we fail to read a version, it will stay null. Should we rather throw exception?
 		this.uniprotVer = HomologList.readUniprotVer(params.getBlastDbDir());
@@ -64,9 +70,11 @@ public class ChainEvolContextList implements Serializable {
 			LOGGER.info("Using remote UniProt JAPI connection to retrieve UniProtKB data");
 		}
 		
-		for (String representativeChain:pdb.getAllRepChains()) {
+		for (ChainCluster chainCluster:pdb.getProtChainClusters()) {
 						
-			PdbChain chain = pdb.getChain(representativeChain);
+			PdbChain chain = chainCluster.getRepresentative();
+			
+			String representativeChain = chain.getPdbChainCode();
 			
 			if (!chain.getSequence().isProtein()) {
 				LOGGER.warn("Representative chain "+representativeChain+" does not seem to be a protein chain. Won't analyse it.");
@@ -74,7 +82,7 @@ public class ChainEvolContextList implements Serializable {
 			}
 
 			ChainEvolContext cec = new ChainEvolContext(this, chain.getSequenceMSEtoMET(), representativeChain, pdb.getPdbCode(), params);
-			cec.setSeqIdenticalChainsStr(pdb.getSeqIdenticalGroupString(representativeChain));
+			cec.setSeqIdenticalChainsStr(chainCluster.getClusterString());
 			
 			cecs.put(representativeChain, cec);
 		}
@@ -116,7 +124,7 @@ public class ChainEvolContextList implements Serializable {
 	
 	/**
 	 * Gets the ChainEvolContext corresponding to the given PDB chain code (can be 
-	 * any chain code, representative or not)
+	 * any PDB chain code, representative or not)
 	 * @param pdbChainCode
 	 * @return
 	 */

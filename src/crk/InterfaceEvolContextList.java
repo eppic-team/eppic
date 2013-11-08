@@ -36,6 +36,7 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 	private List<EvolInterfZPredictor> evolInterfZPredictors;
 	
 	private ChainInterfaceList chainInterfList; // we keep the reference also to be able to call methods from it
+	private ChainEvolContextList cecs;
 		
 	private String pdbName;
 	private ScoringType scoType;
@@ -74,9 +75,11 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 		evolInterfZPredictors = new ArrayList<EvolInterfZPredictor>();
 	
 		this.chainInterfList = interfaces;
+		this.cecs = cecs;
+		
 		for (ChainInterface pi:interfaces) {
 			if (pi.isProtein()) {
-				InterfaceEvolContext iec = new InterfaceEvolContext(pi, cecs, this);
+				InterfaceEvolContext iec = new InterfaceEvolContext(pi, this);
 				this.add(iec);
 			}
 		}
@@ -261,7 +264,7 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 	}
 	
 	public ChainEvolContextList getChainEvolContextList() {
-		return this.get(0).getChainEvolContextList();	
+		return cecs;	
 	}
 	
 	/**
@@ -275,8 +278,15 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 		return this.chainInterfList.getResiduesNotInInterfaces(pdbChainCode, minInterfArea, minAsaForSurface);
 	}
 	
-	private ChainEvolContext getChainEvolContext(String pdbChainCode) {
-		return this.list.get(0).getChainEvolContextList().getChainEvolContext(pdbChainCode);
+	/**
+	 * Gets the ChainEvolContext corresponding to the given PDB chain code (can be 
+	 * any PDB chain code, representative or not)
+	 * 
+	 * @param pdbChainCode
+	 * @return
+	 */
+	public ChainEvolContext getChainEvolContext(String pdbChainCode) {
+		return getChainEvolContextList().getChainEvolContext(pdbChainCode);
 	}
 	
 	/**

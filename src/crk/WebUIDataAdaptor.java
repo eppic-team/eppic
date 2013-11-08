@@ -99,6 +99,7 @@ public class WebUIDataAdaptor {
 			iInterface++;
 			InterfaceItemDB ii = new InterfaceItemDB();
 			ii.setId(interf.getId());
+			ii.setClusterId(interfaces.getCluster(interf.getId()).getId());
 			ii.setArea(interf.getInterfaceArea());
 			
 			ii.setChain1(interf.getFirstMolecule().getPdbChainCode());

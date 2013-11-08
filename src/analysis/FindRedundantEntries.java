@@ -12,6 +12,7 @@ import java.util.TreeMap;
 import owl.core.runners.blast.BlastException;
 import owl.core.runners.blast.BlastRunner;
 import owl.core.sequence.Sequence;
+import owl.core.structure.ChainCluster;
 import owl.core.structure.PdbAsymUnit;
 import owl.core.structure.PdbLoadException;
 import owl.core.util.FileFormatException;
@@ -110,8 +111,8 @@ public class FindRedundantEntries {
 				continue;
 			}
 			
-			for (String pdbChainCode:pdb.getAllRepChains()) {
-				Sequence seq = pdb.getChain(pdbChainCode).getSequence();
+			for (ChainCluster chainCluster:pdb.getProtChainClusters()) {
+				Sequence seq = chainCluster.getRepresentative().getSequence();
 				if (seq.getSeq().matches("X+")) continue; // if it's an all X sequence we don't want it (blastclust doesn't like them)
 				if (seq.getLength()<12) continue; // we ignore too small sequences (blastclust doesn't like them)
 				if (seq.isNucleotide()) continue; // some sets (like Bahadur's monomers) contain DNA/RNA: ignore

@@ -65,7 +65,10 @@ public class CRKParams {
 	// max limit based on 1pre (bio with 2290 and 0+2 cores) and 2vg5 interface 2 (xtal with 2070 and 0+0 cores) 
 	public static final double	   MAX_AREA_XTALCALL = 2200; 
 	public static final double 	   MIN_AREA_BIOCALL  = 400;   
-
+	// interface clustering constants
+	public static final double 	   CLUSTERING_RMSD_CUTOFF = 2.0;
+	public static final int 	   CLUSTERING_MINATOMS = 10;
+	public static final String     CLUSTERING_ATOM_TYPE = "CA";
 	
 	// PROPERTY FILES
 	protected static final InputStream COLORS_PROPERTIES_IS = CRKParams.class.getResourceAsStream("/resources/chain_colors.dat");
@@ -168,8 +171,6 @@ public class CRKParams {
 	
 	private int maxNumSeqs;
 	
-	private boolean usePisa;
-
 	private int nSpherePointsASAcalc;
 
 	private double entrCallCutoff;
@@ -269,7 +270,6 @@ public class CRKParams {
 		this.caCutoffForZscore = DEF_CA_CUTOFF_FOR_ZSCORE;
 		this.minCoreSizeForBio = DEF_MIN_CORE_SIZE_FOR_BIO;
 		this.maxNumSeqs = DEF_MAX_NUM_SEQUENCES;
-		this.usePisa = false;
 		this.nSpherePointsASAcalc = DEF_NSPHEREPOINTS_ASA_CALC;
 		this.entrCallCutoff = DEF_ENTR_CALL_CUTOFF;
 		this.zScoreCutoff = DEF_ZSCORE_CUTOFF;
@@ -287,7 +287,7 @@ public class CRKParams {
 	public void parseCommandLine(String[] args, String programName, String help) {
 	
 
-		Getopt g = new Getopt(programName, args, "i:sa:b:o:r:e:c:z:m:x:y:d:D:q:H:G:OpA:I:C:lwL:g:uh?");
+		Getopt g = new Getopt(programName, args, "i:sa:b:o:r:e:c:z:m:x:y:d:D:q:H:G:OA:I:C:lwL:g:uh?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
@@ -341,9 +341,6 @@ public class CRKParams {
 				break;
 			case 'O':
 				filterByDomain = true;
-				break;
-			case 'p':
-				usePisa = true;
 				break;
 			case 'A':
 				nSpherePointsASAcalc = Integer.parseInt(g.getOptarg());
@@ -427,8 +424,6 @@ public class CRKParams {
 		"                  Default "+DEF_HOMOLOGS_SEARCH_MODE.getName() + "\n"+
 		"  [-O]         :  restrict homologs search to those within the same domain of \n" +
 		"                  life as query\n"+
-		"  [-p]         :  use PISA interface enumeration (will be downloaded from web) \n" +
-		"                  instead of ours (only possible for existing PDB entries).\n" +
 		"  [-A <int>]   :  number of sphere points for ASA calculation, this parameter \n" +
 		"                  controls the accuracy of the ASA calculations, the bigger the\n" +
 		"                  more accurate (and slower). Default: "+DEF_NSPHEREPOINTS_ASA_CALC+"\n" +
@@ -488,10 +483,6 @@ public class CRKParams {
 			throw new CRKException(null, "Invalid number of amino acid groups specified ("+reducedAlphabet+")", true);
 		}
 		
-		if (usePisa && inFile!=null) {
-			throw new CRKException(null, "Can only get PISA interface enumeration for a PDB code. Can't use '-p' if the PDB given is a file", true);
-		}
-
 		if (homologsSearchMode==null) {
 			// invalid string passed as homologs search mode
 			throw new CRKException(null, "Invalid string specified as homologs search mode (-H).", true);
@@ -710,13 +701,6 @@ public class CRKParams {
 		this.maxNumSeqs = maxNumSeqs;
 	}
 	
-	public boolean isUsePisa() {
-		return usePisa;
-	}
-	public void setUsePisa(boolean usePisa) {
-		this.usePisa = usePisa;
-	}
-
 	public int getnSpherePointsASAcalc() {
 		return nSpherePointsASAcalc;
 	}

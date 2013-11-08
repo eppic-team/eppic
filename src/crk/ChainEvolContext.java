@@ -375,6 +375,10 @@ public class ChainEvolContext implements Serializable {
 		
 		homologs.searchWithBlast(blastPlusBlastp, blastDbDir, blastDb, blastNumThreads, maxNumSeqs, blastCacheFile);
 		LOGGER.info(homologs.getSizeFullList()+" homologs found by blast (chain "+getRepresentativeChainCode()+")");
+		
+		BlastHit lastBlastHit = homologs.getLast().getBlastHsp().getParent();		
+		LOGGER.info("Last blast hit (lowest score hit): "+lastBlastHit.getSubjectId()+", identity of its best HSP: "+
+					String.format("%5.2f%%",lastBlastHit.getMaxScoringHsp().getPercentIdentity()) );
 		 
 	}
 	

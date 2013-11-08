@@ -22,16 +22,13 @@ public class InterfaceEvolContext implements Serializable {
 	
 	private ChainInterface interf;
 
-	private ChainEvolContextList cecs;
-		
 	private int minNumSeqs;
 	
 
 	
 	
-	public InterfaceEvolContext(ChainInterface interf, ChainEvolContextList cecs, InterfaceEvolContextList parent) {
+	public InterfaceEvolContext(ChainInterface interf, InterfaceEvolContextList parent) {
 		this.interf = interf;
-		this.cecs = cecs;
 		this.parent = parent;
 	}
 
@@ -40,11 +37,11 @@ public class InterfaceEvolContext implements Serializable {
 	}
 	
 	public ChainEvolContext getFirstChainEvolContext() {
-		return cecs.getChainEvolContext(interf.getFirstMolecule().getPdbChainCode());
+		return parent.getChainEvolContext(interf.getFirstMolecule().getPdbChainCode());
 	}
 	
 	public ChainEvolContext getSecondChainEvolContext() {
-		return cecs.getChainEvolContext(interf.getSecondMolecule().getPdbChainCode());
+		return parent.getChainEvolContext(interf.getSecondMolecule().getPdbChainCode());
 	}
 	
 	public ChainEvolContext getChainEvolContext(int molecId) {
@@ -61,10 +58,6 @@ public class InterfaceEvolContext implements Serializable {
 			return getInterface().getSecondMolecule();
 		}
 		return null;		
-	}
-	
-	public ChainEvolContextList getChainEvolContextList() {
-		return cecs;
 	}
 	
 	public int getMinNumSeqs() {
@@ -297,19 +290,5 @@ public class InterfaceEvolContext implements Serializable {
 			throw new IllegalArgumentException("Fatal error! Wrong molecId "+molecId);
 		}
 	}
-
-//	/**
-//	 * Tells whether Ka/KS analysis is possible for this interface.
-//	 * It will not be possible when there is no sufficient data from either chain.
-//	 * @return
-//	 */
-//	public boolean canDoKaks() {
-//		boolean canDoCRK = true;
-//		if ((this.interf.isFirstProtein() && !getFirstChainEvolContext().canDoKaks()) || 
-//			(this.interf.isSecondProtein() && !getSecondChainEvolContext().canDoKaks()) ) {
-//			canDoCRK = false;
-//		}
-//		return canDoCRK;
-//	}
 
 }
