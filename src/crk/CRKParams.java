@@ -292,7 +292,7 @@ public class CRKParams {
 		while ((c = g.getopt()) != -1) {
 			switch(c){
 			case 'i':
-				setPdbCode(g.getOptarg());
+				setInput(g.getOptarg());
 				break;
 			case 's':
 				doScoreEntropies = true;
@@ -586,7 +586,7 @@ public class CRKParams {
 		return pdbCode;
 	}
 	
-	public void setPdbCode(String pdbCode) {
+	public void setInput(String pdbCode) {
 		inFile = new File(pdbCode);
 		Matcher m = PDBCODE_PATTERN.matcher(pdbCode);
 		if (m.matches()) {

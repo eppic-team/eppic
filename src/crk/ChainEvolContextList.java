@@ -7,7 +7,6 @@ import java.io.PrintStream;
 import java.io.Serializable;
 import java.sql.SQLException;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.TreeMap;
 
@@ -30,10 +29,11 @@ public class ChainEvolContextList implements Serializable {
 
 	private static final Log LOGGER = LogFactory.getLog(ChainEvolContextList.class);
 	
-	private TreeMap<String, ChainEvolContext> cecs; // one per representative chain
-	private HashMap<String,String> chain2repChain; // pdb chain codes to pdb chain codes of representative chain
+	private PdbAsymUnit pdb;
 	
-	private String pdbName;
+	private String pdbName; // the job name
+	
+	private TreeMap<String, ChainEvolContext> cecs; // one per representative chain
 	
 	private String uniprotVer;
 	private int minNumSeqs;
@@ -48,14 +48,11 @@ public class ChainEvolContextList implements Serializable {
 
 	
 	public ChainEvolContextList(PdbAsymUnit pdb, CRKParams params) throws SQLException {
-		this.cecs = new TreeMap<String, ChainEvolContext>();
-		this.chain2repChain = new HashMap<String, String>();
-		for (ChainCluster chainCluster:pdb.getProtChainClusters()) {
-			for (PdbChain member:chainCluster.getMembers()) {
-				this.chain2repChain.put(member.getPdbChainCode(), chainCluster.getRepresentative().getPdbChainCode());
-			}
-		}
+		this.pdb = pdb;
 		this.pdbName = params.getJobName();
+		
+		this.cecs = new TreeMap<String, ChainEvolContext>();
+		
 		// if we fail to read a version, it will stay null. Should we rather throw exception?
 		this.uniprotVer = HomologList.readUniprotVer(params.getBlastDbDir());
 		LOGGER.info("Using UniProt version "+uniprotVer+" for blasting");
@@ -74,25 +71,19 @@ public class ChainEvolContextList implements Serializable {
 						
 			PdbChain chain = chainCluster.getRepresentative();
 			
-			String representativeChain = chain.getPdbChainCode();
+			ChainEvolContext cec = new ChainEvolContext(this, chain.getSequenceMSEtoMET(), chain.getPdbChainCode());
 			
-			if (!chain.getSequence().isProtein()) {
-				LOGGER.warn("Representative chain "+representativeChain+" does not seem to be a protein chain. Won't analyse it.");
-				continue;
-			}
-
-			ChainEvolContext cec = new ChainEvolContext(this, chain.getSequenceMSEtoMET(), representativeChain, pdb.getPdbCode(), params);
-			cec.setSeqIdenticalChainsStr(chainCluster.getClusterString());
-			
-			cecs.put(representativeChain, cec);
+			cecs.put(chain.getPdbChainCode(), cec);
 		}
 		
 	}
 	
 	public ChainEvolContextList(List<Sequence> sequences, CRKParams params) throws SQLException {
+		this.pdb = null;
+		this.pdbName = null; // TODO check if this is correct, not tested
+		
 		this.cecs = new TreeMap<String, ChainEvolContext>();
-		this.chain2repChain = new HashMap<String, String>();
-		this.pdbName = "";
+
 		// if we fail to read a version, it will stay null. Should we rather throw exception?
 		this.uniprotVer = HomologList.readUniprotVer(params.getBlastDbDir());
 		LOGGER.info("Using UniProt version "+uniprotVer+" for blasting");
@@ -109,11 +100,9 @@ public class ChainEvolContextList implements Serializable {
 		
 		for (Sequence sequence: sequences) {
 						
-			ChainEvolContext cec = new ChainEvolContext(this, sequence.getSeq(), sequence.getName(), "NOT_A_PDB", params);
-			cec.setSeqIdenticalChainsStr(sequence.getName());
+			ChainEvolContext cec = new ChainEvolContext(this, sequence.getSeq(), sequence.getName());
 			
 			cecs.put(sequence.getName(), cec);
-			chain2repChain.put(sequence.getName(), sequence.getName());
 		}
 		
 	}
@@ -129,23 +118,23 @@ public class ChainEvolContextList implements Serializable {
 	 * @return
 	 */
 	public ChainEvolContext getChainEvolContext(String pdbChainCode) {
-		return cecs.get(chain2repChain.get(pdbChainCode));
+		return cecs.get(pdb.getProtChainCluster(pdbChainCode).getRepresentative().getPdbChainCode());
 	}
 	
 	/**
-	 * Gets the Collection of all ChainEvolContext (sorted alphabetically by representative pdb chain code) 
+	 * Gets the Collection of all ChainEvolContext (sorted alphabetically by representative PDB chain code) 
 	 * @return
 	 */
 	public Collection<ChainEvolContext> getAllChainEvolContext() {
 		return cecs.values();
 	}
 	
-	public String getPdbName() {
-		return pdbName;
+	public PdbAsymUnit getPdb() {
+		return this.pdb;
 	}
 	
-	public void setPdbName(String pdbName) {
-		this.pdbName = pdbName;
+	public String getPdbName() {
+		return this.pdbName;
 	}
 	
 	public String getUniprotVer() {

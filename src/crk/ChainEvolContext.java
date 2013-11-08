@@ -83,10 +83,7 @@ public class ChainEvolContext implements Serializable {
 	
 	// members 
 	private String representativeChain;		// the pdb chain code of the representative chain
-	private String pdbCode; 		 		// the pdb code (if no pdb code then Pdb.NO_PDB_CODE)
 	private String sequence;
-	private String pdbName;					// a name to identify the PDB, will be the pdbCode if a PDB entry or the file name without extension if from file
-	private String seqIdenticalChainsStr;	// a string of the form A(B,C,D,E) containing all represented sequence identical chains
 	
 	private UnirefEntry query;							// the uniprot info (id,seq) corresponding to this chain's sequence
 	private Interval queryInterv;						// the interval of the query uniprot reference sequence that is actually used in the blast search
@@ -104,10 +101,8 @@ public class ChainEvolContext implements Serializable {
 	
 	private ChainEvolContextList parent;
 
-	public ChainEvolContext(ChainEvolContextList parent, String sequence, String representativeChain, String pdbCode, CRKParams params) {
-		this.parent = parent;
-		this.pdbCode = pdbCode;
-		this.pdbName = params.getJobName();
+	public ChainEvolContext(ChainEvolContextList parent, String sequence, String representativeChain) {
+		this.parent = parent;		
 		this.sequence = sequence;
 		this.representativeChain = representativeChain;
 		this.hasQueryMatch = false;
@@ -117,7 +112,7 @@ public class ChainEvolContext implements Serializable {
 	}
 	
 	/**
-	 * Retrieves the Uniprot mapping corresponding to the query PDB sequence 
+	 * Retrieves the UniProt mapping corresponding to the query PDB sequence 
 	 * @throws IOException
 	 * @throws BlastException
 	 * @throws InterruptedException
@@ -144,7 +139,8 @@ public class ChainEvolContext implements Serializable {
 		// two possible cases: 
 		// 1) PDB code known and so SiftsFeatures can be taken from SiftsConnection (unless useSifts is set to false)
 		List<SiftsFeature> mappings = null;
-		if (!pdbCode.equals(PdbAsymUnit.NO_PDB_CODE)) {
+		if (!params.isInputAFile()) {
+			String pdbCode = parent.getPdb().getPdbCode();
 			if (useSifts) {
 				SiftsConnection siftsConn = new SiftsConnection(siftsLocation);
 				try {
@@ -233,6 +229,7 @@ public class ChainEvolContext implements Serializable {
 						}
 
 					} else {
+						LOGGER.info("Getting SIFTS UniProt reference mapping for "+pdbCode+representativeChain);
 						queryUniprotId = uniqUniIds.iterator().next();
 					}
 					 
@@ -266,10 +263,10 @@ public class ChainEvolContext implements Serializable {
 				}
 
 				// and finally we align the 2 sequences (in case of mapping from SIFTS we rather do this than trusting the SIFTS alignment info)
-				alnPdb2Uniprot = new PairwiseSequenceAlignment(sequence, query.getSequence(), pdbName+representativeChain, query.getUniId());
+				alnPdb2Uniprot = new PairwiseSequenceAlignment(sequence, query.getSequence(), parent.getPdbName()+representativeChain, query.getUniId());
 				
 				LOGGER.info("Chain "+representativeChain+" PDB SEQRES to UniProt alignmnent:\n"+getQueryPdbToUniprotAlnString());
-				LOGGER.info("Query ("+pdbName+representativeChain+") length: "+sequence.length());
+				LOGGER.info("Query ("+parent.getPdbName()+representativeChain+") length: "+sequence.length());
 				LOGGER.info("UniProt ("+query.getUniId()+") length: "+query.getLength());
 				LOGGER.info("Alignment length: "+alnPdb2Uniprot.getLength());
 				int shortestSeqLength = Math.min(query.getLength(), sequence.length());
@@ -593,7 +590,7 @@ public class ChainEvolContext implements Serializable {
 	 */
 	public void printSummary(PrintStream ps) {
 		
-		ps.println("Query: "+pdbName+representativeChain);
+		ps.println("Query: "+parent.getPdbName()+representativeChain);
 		ps.println("UniProt id for query:");
 		ps.print(this.query.getUniId());
 		if (this.query.hasTaxons()) ps.println("\t"+this.query.getFirstTaxon()+"\t"+this.query.getLastTaxon());
@@ -754,7 +751,7 @@ public class ChainEvolContext implements Serializable {
 			inputSeqFile.deleteOnExit();
 		}
 		
-		new Sequence(pdbName,this.sequence).writeToFastaFile(inputSeqFile);
+		new Sequence(parent.getPdbName(),this.sequence).writeToFastaFile(inputSeqFile);
 
 		BlastRunner blastRunner = new BlastRunner(blastDbDir);
 		blastRunner.runBlastp(blastPlusBlastp, inputSeqFile, blastDb, outBlast, BlastRunner.BLASTPLUS_XML_OUTPUT_TYPE, BLAST_NO_FILTERING, blastNumThreads, 500);
@@ -779,7 +776,7 @@ public class ChainEvolContext implements Serializable {
 				best = blastList.get(i);
 				if (isHitUniprot(best)) break;
 				if (i==blastList.size()-1) { // if not a single hit is uniprot then we get to here and we have to catch it
-					LOGGER.warn("No UniProt match could be found for the query "+pdbName+representativeChain+
+					LOGGER.warn("No UniProt match could be found for the query "+parent.getPdbName()+representativeChain+
 							": no blast hit was a UniProt match (total "+blastList.size()+" blast hits)");
 					queryWarnings.add("Blast didn't find a UniProt match for the chain. All blast hits were non-UniProt matches (total "+blastList.size()+" blast hits).");
 					return null;
@@ -791,7 +788,7 @@ public class ChainEvolContext implements Serializable {
 				LOGGER.info("Blast found UniProt id "+uniprotMapping+" as best hit with "+
 						String.format("%5.2f%% id and %4.2f coverage",bestHsp.getPercentIdentity(),bestHsp.getQueryCoverage()));
 			} else {
-				LOGGER.warn("No UniProt match could be found for the query "+pdbName+representativeChain+" within cutoffs "+
+				LOGGER.warn("No UniProt match could be found for the query "+parent.getPdbName()+representativeChain+" within cutoffs "+
 						String.format("%5.2f%% id and %4.2f coverage",pdb2uniprotIdThreshold,pdb2uniprotQcovThreshold));
 				LOGGER.warn("Best match was "+best.getSubjectId()+", with "+
 						String.format("%5.2f%% id and %4.2f coverage",bestHsp.getPercentIdentity(),bestHsp.getQueryCoverage()));
@@ -801,7 +798,7 @@ public class ChainEvolContext implements Serializable {
 						String.format("%5.2f%% id and %4.2f coverage",bestHsp.getPercentIdentity(),bestHsp.getQueryCoverage()));
 			}			
 		} else {
-			LOGGER.warn("No UniProt match could be found for the query "+pdbName+representativeChain+". Blast returned no hits.");
+			LOGGER.warn("No UniProt match could be found for the query "+parent.getPdbName()+representativeChain+". Blast returned no hits.");
 			queryWarnings.add("Blast didn't find a UniProt match for the chain (no hits returned by blast)");
 		}
 
@@ -809,9 +806,9 @@ public class ChainEvolContext implements Serializable {
 	}
 
 	/**
-	 * Gets the uniprot id, uniprot isoform id or uniparc id given a blast hit
+	 * Gets the UniProt id, UniProt isoform id or UniParc id given a blast hit
 	 * @param hit
-	 * @return the id or null if the defline doesn't match the regexes for uniprot, uniprot isoform or uniparc ids
+	 * @return the id or null if the defline doesn't match the regexes for UniProt, UniProt isoform or UniParc ids
 	 */
 	private String getDeflineAccession(BlastHit hit) {
 		String sid = hit.getSubjectId();
@@ -829,7 +826,7 @@ public class ChainEvolContext implements Serializable {
 	}
 	
 	/**
-	 * Tells whether given BlastHit's defline matches a uniprot id
+	 * Tells whether given BlastHit's defline matches a UniProt id
 	 * @param hit
 	 * @return
 	 */
@@ -858,32 +855,8 @@ public class ChainEvolContext implements Serializable {
 		}
 	}
 	
-	/**
-	 * Gets the PDB identifier: a PDB code if query was a PDB entry or a PDB file name. 
-	 * @return
-	 */
-	public String getPdbName() {
-		return this.pdbName;
-	}
-	
 	public String getUniprotVer() {
 		return parent.getUniprotVer();
-	}
-	
-	/**
-	 * Sets the sequence-identical chains string for this ChainEvolContext
-	 * @param seqIdenticalChainsStr
-	 */
-	public void setSeqIdenticalChainsStr(String seqIdenticalChainsStr) {
-		this.seqIdenticalChainsStr = seqIdenticalChainsStr;
-	}
-	
-	/**
-	 * Returns the sequence-identical chains string for this ChainEvolContext
-	 * @return
-	 */
-	public String getSeqIndenticalChainStr() {
-		return seqIdenticalChainsStr;
 	}
 	
 	/**
@@ -895,7 +868,7 @@ public class ChainEvolContext implements Serializable {
 	}
 	
 	/**
-	 * The interval in the Uniprot match (query) that is considered for the blast search
+	 * The interval in the UniProt match (query) that is considered for the blast search
 	 * @return
 	 */
 	public Interval getQueryInterval() {
@@ -903,7 +876,7 @@ public class ChainEvolContext implements Serializable {
 	}
 	
 	/**
-	 * Whether the query's uniprot match could be found or not.
+	 * Whether the query's UniProt match could be found or not.
 	 * @return
 	 */
 	public boolean hasQueryMatch() {

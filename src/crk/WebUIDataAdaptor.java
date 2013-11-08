@@ -258,8 +258,8 @@ public class WebUIDataAdaptor {
 		
 		ChainEvolContextList cecl = iecl.getChainEvolContextList();
 		for (ChainEvolContext cec:cecl.getAllChainEvolContext()) {
-			HomologsInfoItemDB homInfo = new HomologsInfoItemDB();
-			homInfo.setChains(cec.getSeqIndenticalChainStr());
+			HomologsInfoItemDB homInfo = new HomologsInfoItemDB();			
+			homInfo.setChains(cecl.getPdb().getProtChainCluster(cec.getRepresentativeChainCode()).getClusterString());
 			homInfo.setHasQueryMatch(cec.hasQueryMatch());
 			
 			List<QueryWarningItemDB> queryWarningItemDBs = new ArrayList<QueryWarningItemDB>();
