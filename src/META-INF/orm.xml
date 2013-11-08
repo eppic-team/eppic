@@ -140,6 +140,7 @@
                 <generated-value strategy="IDENTITY"/>
             </id>
             <basic name="id"></basic>
+            <basic name="clusterId"></basic>
             <basic name="area"><column nullable="true"/></basic>
             <basic name="chain1">
             	<column length="1"/>
