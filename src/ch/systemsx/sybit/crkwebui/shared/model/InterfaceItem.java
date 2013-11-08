@@ -24,6 +24,7 @@ public class InterfaceItem implements Serializable, Comparable<InterfaceItem>
 	private int uid;
 	
 	private int id;
+	private int clusterId;
 	private double area;
 	private String chain1;
 	private String chain2;
@@ -62,6 +63,14 @@ public class InterfaceItem implements Serializable, Comparable<InterfaceItem>
 
 	public void setId(int id) {
 		this.id = id;
+	}
+	
+	public int getClusterId() {
+		return clusterId;
+	}
+	
+	public void setClusterId(int clusterId) {
+		this.clusterId = clusterId;
 	}
 
 	public double getArea() {
@@ -277,6 +286,7 @@ public class InterfaceItem implements Serializable, Comparable<InterfaceItem>
 		interfaceItem.setFinalCallName(interfaceItemDB.getFinalCallName());
 		interfaceItem.setFinalCallReason(interfaceItemDB.getFinalCallReason());
 		interfaceItem.setId(interfaceItemDB.getId());
+		interfaceItem.setClusterId(interfaceItemDB.getClusterId());
 		
 		if(interfaceItemDB.getInterfaceResidues() != null)
 		{
