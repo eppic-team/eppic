@@ -323,10 +323,15 @@ public class CRKMain {
 		}
 	}
 	
-	private void writePdbAssignments() throws FileNotFoundException{
+	private void writePdbAssignments() throws CRKException{
 		if(this.interfaces.size()==0) return;
 		
-		PrintStream ps = new PrintStream(params.getOutputFile(CRKParams.PDB_BIOUNIT_ASSIGN_FILE_SUFFIX));
+		PrintStream ps = null;
+		try {
+			ps = new PrintStream(params.getOutputFile(CRKParams.PDB_BIOUNIT_ASSIGN_FILE_SUFFIX));
+		} catch (FileNotFoundException e) {
+			throw new CRKException(e,"Could not write the PDB bio-unit assignments file: "+e.getMessage(),true);
+		}
 		PdbBioUnitList bioUnitList = this.pdb.getPdbBioUnitList();
 		
 		//Get the full details on biounits
