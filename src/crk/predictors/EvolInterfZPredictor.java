@@ -41,7 +41,6 @@ public class EvolInterfZPredictor implements InterfaceTypePredictor {
 	// cached values of scoring (filled upon call of score methods and getCall)
 	private ArrayList<Integer> bioCalls; // cache of the votes (lists of interface member indices)
 	private ArrayList<Integer> xtalCalls;
-	private ArrayList<Integer> grayCalls;
 	private ArrayList<Integer> noPredictCalls;
 	
 
@@ -85,7 +84,6 @@ public class EvolInterfZPredictor implements InterfaceTypePredictor {
 		// the votes with voters (no anonymous vote here!)
 		bioCalls = new ArrayList<Integer>();
 		xtalCalls = new ArrayList<Integer>();
-		grayCalls = new ArrayList<Integer>();
 		noPredictCalls = new ArrayList<Integer>();
 
 		// cast your votes!
@@ -128,13 +126,18 @@ public class EvolInterfZPredictor implements InterfaceTypePredictor {
 
 		// a special condition for core size, we don't want that if one side says NOPREDICT because of size, 
 		// then the prediction is based only on the other side
-		if ((rimCore1.getCoreSize()+rimCore2.getCoreSize())<2*CRKParams.MIN_NUMBER_CORE_RESIDUES_EVOL_SCORE) {
+		if (rimCore1.getCoreSize()<CRKParams.MIN_NUMBER_CORE_RESIDUES_EVOL_SCORE ||
+			rimCore2.getCoreSize()<CRKParams.MIN_NUMBER_CORE_RESIDUES_EVOL_SCORE) {
 			call = CallType.NO_PREDICTION;
-			callReason ="Not enough core residues to calculate evolutionary score (at least "+2*CRKParams.MIN_NUMBER_CORE_RESIDUES_EVOL_SCORE+" needed)";
+			callReason ="Not enough core residues to calculate evolutionary score ("+
+			rimCore1.getCoreSize()+"+"+rimCore2.getCoreSize()+"), at least "+CRKParams.MIN_NUMBER_CORE_RESIDUES_EVOL_SCORE+" per side required";
+
 		}
 		
 		// then the rest of the decision is based purely on what members call
 		else if (countNoPredict==2) {
+			// NOTE nopred because of too few residues was caught already in previous condition
+			// here we catch any other kind of nopreds
 			call = CallType.NO_PREDICTION;
 			callReason = member1Pred.getCallReason()+"\n"+member2Pred.getCallReason();
 		} else if (countBio>countXtal) {
@@ -257,30 +260,6 @@ public class EvolInterfZPredictor implements InterfaceTypePredictor {
 			if (iec.isProtein(SECOND)) numHoms2 = iec.getSecondChainEvolContext().getNumHomologs();
 		} 
 		ps.printf("%2d\t%2d\t",numHoms1,numHoms2);
-	}
-	
-	@SuppressWarnings("unused")
-	private String getVotersString() {
-		String finalStr = "";
-		for (CallType callType: CallType.values()) {
-			List<Integer> calls = null;
-			if (callType==CallType.BIO) {
-				calls = bioCalls;
-			} else if (callType==CallType.CRYSTAL) {
-				calls = xtalCalls;
-			} else if (callType==CallType.GRAY) {
-				calls = grayCalls;
-			} else if (callType==CallType.NO_PREDICTION) {
-				calls = noPredictCalls;
-			}
-			String callsStr = "";
-			for (int ind=0;ind<calls.size();ind++) {
-				callsStr+=(calls.get(ind)+1);
-				if (ind!=calls.size()-1) callsStr+=","; // skip the comma for the last member
-			}
-			finalStr+=String.format("\t%6s",callsStr);
-		}
-		return finalStr;
 	}
 	
 	public void resetCall() {

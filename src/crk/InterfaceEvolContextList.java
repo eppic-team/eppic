@@ -40,7 +40,7 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 		
 	private String pdbName;
 	private ScoringType scoType;
-	private double callCutoff;
+
 	private int minNumSeqs;
 	private double homSoftIdCutoff;
 	private double homHardIdCutoff;
@@ -48,8 +48,9 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 	private int maxNumSeqs;
 	private double caCutoffForRimCore;
 	private double caCutoffForZscore;
-	
-	private double zScoreCutoff;
+
+	private double coreRimScoreCutoff;
+	private double coreSurfScoreCutoff;
 	
 	private boolean usePdbResSer;
 	
@@ -149,25 +150,17 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 		
 	}
 	
-	public double getCallCutoff() {
-		return callCutoff;
-	}
-	
-	public void setCallCutoff(double callCutoff) {
-		this.callCutoff = callCutoff;
+	public void setCoreRimScoreCutoff(double coreRimScoreCutoff) {
+		this.coreRimScoreCutoff = coreRimScoreCutoff;
 		for (int i=0;i<list.size();i++) {
-			evolRimCorePredictors.get(i).setCallCutoff(callCutoff);	
+			evolRimCorePredictors.get(i).setCallCutoff(coreRimScoreCutoff);	
 		}
 	}
 
-	public double getZscoreCutoff() {
-		return zScoreCutoff;
-	}
-	
-	public void setZscoreCutoff(double zScoreCutoff) {
-		this.zScoreCutoff = zScoreCutoff;
+	public void setCoreSurfScoreCutoff(double coreSurfScoreCutoff) {
+		this.coreSurfScoreCutoff = coreSurfScoreCutoff;
 		for (int i=0;i<list.size();i++) {
-			evolInterfZPredictors.get(i).setCallCutoff(zScoreCutoff);
+			evolInterfZPredictors.get(i).setCallCutoff(coreSurfScoreCutoff);
 		}
 	}
 
@@ -235,8 +228,8 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 		ps.printf (HOM_HARD_ID_HEADER+" %4.2f\n",homHardIdCutoff);
 		ps.printf (QUERY_COV_HEADER+" %4.2f\n",queryCovCutoff);
 		ps.println(MAX_NUM_SEQS_HEADER+" "+maxNumSeqs);
-		if (!zscore) ps.printf (BIO_XTAL_CALL_HEADER+"  %4.2f\n",callCutoff);
-		if (zscore)  ps.printf (ZSCORE_CUTOFF_HEADER+" %5.2f\n",zScoreCutoff);
+		if (!zscore) ps.printf (BIO_XTAL_CALL_HEADER+"  %4.2f\n",coreRimScoreCutoff);
+		if (zscore)  ps.printf (ZSCORE_CUTOFF_HEADER+" %5.2f\n",coreSurfScoreCutoff);
 		if (!zscore) ps.printf (BSA_TO_ASA_CUTOFF_HEADER+" %4.2f\n", caCutoffForRimCore);
 		if (zscore)  ps.printf (BSA_TO_ASA_CUTOFF_HEADER+" %4.2f\n", caCutoffForZscore);
 	}

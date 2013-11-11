@@ -31,7 +31,6 @@ public class EvolRimCorePredictor implements InterfaceTypePredictor {
 	
 	private ArrayList<Integer> bioCalls; // cache of the votes (lists of interface member indices)
 	private ArrayList<Integer> xtalCalls;
-	private ArrayList<Integer> grayCalls;
 	private ArrayList<Integer> noPredictCalls;
 
 	private double score; // cache of the last run final score (average of ratios of both sides) (filled by getCall)
@@ -86,7 +85,6 @@ public class EvolRimCorePredictor implements InterfaceTypePredictor {
 		// the votes with voters (no anonymous vote here!)
 		bioCalls = new ArrayList<Integer>();
 		xtalCalls = new ArrayList<Integer>();
-		grayCalls = new ArrayList<Integer>();
 		noPredictCalls = new ArrayList<Integer>();
 
 		// cast your votes!
@@ -102,9 +100,6 @@ public class EvolRimCorePredictor implements InterfaceTypePredictor {
 		else if (member1Call == CallType.CRYSTAL) {
 			xtalCalls.add(FIRST);
 		}
-		else if (member1Call == CallType.GRAY) {
-			grayCalls.add(FIRST);
-		}
 		else if (member1Call == CallType.NO_PREDICTION) {
 			noPredictCalls.add(FIRST);
 		}
@@ -115,9 +110,6 @@ public class EvolRimCorePredictor implements InterfaceTypePredictor {
 		else if (member2Call == CallType.CRYSTAL) {
 			xtalCalls.add(SECOND);
 		}
-		else if (member2Call == CallType.GRAY) {
-			grayCalls.add(SECOND);
-		}
 		else if (member2Call == CallType.NO_PREDICTION) {
 			noPredictCalls.add(SECOND);
 		}
@@ -126,7 +118,6 @@ public class EvolRimCorePredictor implements InterfaceTypePredictor {
 		// decision time!
 		int countBio = bioCalls.size();
 		int countXtal = xtalCalls.size();
-		int countGray = grayCalls.size();
 		int countNoPredict = noPredictCalls.size();
 		
 		iec.getInterface().calcRimAndCore(bsaToAsaCutoff, minAsaForSurface);
@@ -135,12 +126,16 @@ public class EvolRimCorePredictor implements InterfaceTypePredictor {
 
 		// a special condition for core size, we don't want that if one side says NOPREDICT because of size, 
 		// then the prediction is based only on the other side
-		if ((rimCore1.getCoreSize()+rimCore2.getCoreSize())<2*CRKParams.MIN_NUMBER_CORE_RESIDUES_EVOL_SCORE) {
+		if (rimCore1.getCoreSize()<CRKParams.MIN_NUMBER_CORE_RESIDUES_EVOL_SCORE ||
+			rimCore2.getCoreSize()<CRKParams.MIN_NUMBER_CORE_RESIDUES_EVOL_SCORE) {
 			call = CallType.NO_PREDICTION;
-			callReason ="Not enough core residues to calculate evolutionary score (at least "+2*CRKParams.MIN_NUMBER_CORE_RESIDUES_EVOL_SCORE+" needed)";
+			callReason ="Not enough core residues to calculate evolutionary score ("+
+			rimCore1.getCoreSize()+"+"+rimCore2.getCoreSize()+"), at least "+CRKParams.MIN_NUMBER_CORE_RESIDUES_EVOL_SCORE+" per side required";
 			
 		// then the rest of the decision is based solely on what members call
 		} else if (countNoPredict==2) {
+			// NOTE nopred because of too few residues was caught already in previous condition
+			// here we catch any other kind of nopreds
 			call = CallType.NO_PREDICTION;
 			callReason = member1Pred.getCallReason()+"\n"+member2Pred.getCallReason();
 		} else if (countBio>countXtal) {
@@ -151,11 +146,7 @@ public class EvolRimCorePredictor implements InterfaceTypePredictor {
 			callReason = member1Pred.getCallReason()+"\n"+member2Pred.getCallReason();
 		} else if (countXtal>countBio) {
 			call = CallType.CRYSTAL;
-			callReason = member1Pred.getCallReason()+"\n"+member2Pred.getCallReason();
-		} else if (countGray>countBio+countXtal) {
-			// we use as final score the average of all gray member scores
-			call = CallType.GRAY;
-			callReason = member1Pred.getCallReason()+"\n"+member2Pred.getCallReason();
+			callReason = member1Pred.getCallReason()+"\n"+member2Pred.getCallReason(); 
 		} else if (countBio==countXtal) {
 			//TODO we are taking simply the average, is this the best solution?
 			// weighting is not done here, scores are calculated either weighted/non-weighted before
@@ -207,29 +198,6 @@ public class EvolRimCorePredictor implements InterfaceTypePredictor {
 		isScoreWeighted = weighted;
 	}
 	
-//	/**
-//	 * Calculates the ka/ks scores for this interface.
-//	 * Subsequently use {@link #getCall()} and {@link #getScore()} to get the call and final score 
-//	 * @param weighted
-//	 */
-//	public void scoreKaKs(boolean weighted) {
-//
-//		member1Pred.scoreKaKs(weighted);
-//		member2Pred.scoreKaKs(weighted);
-//
-//		if (canDoFirstEntropyScoring() && canDoSecondEntropyScoring()) {
-//			score = (member1Pred.getScore()+member2Pred.getScore())/2;
-//		} else if (!canDoFirstEntropyScoring() && !canDoSecondEntropyScoring()) {
-//			score = Double.NaN;
-//		} else if (canDoFirstEntropyScoring()) {
-//			score = member1Pred.getScore();
-//		} else if (canDoSecondEntropyScoring()) {
-//			score = member2Pred.getScore();
-//		}
-//		scoringType = ScoringType.KAKS;
-//		isScoreWeighted = weighted;
-//	}
-
 	public ScoringType getScoringType() {
 		return this.scoringType;
 	}
@@ -268,30 +236,6 @@ public class EvolRimCorePredictor implements InterfaceTypePredictor {
 		return minAsaForSurface;
 	}
 	
-	@SuppressWarnings("unused")
-	private String getVotersString() {
-		String finalStr = "";
-		for (CallType callType: CallType.values()) {
-			List<Integer> calls = null;
-			if (callType==CallType.BIO) {
-				calls = bioCalls;
-			} else if (callType==CallType.CRYSTAL) {
-				calls = xtalCalls;
-			} else if (callType==CallType.GRAY) {
-				calls = grayCalls;
-			} else if (callType==CallType.NO_PREDICTION) {
-				calls = noPredictCalls;
-			}
-			String callsStr = "";
-			for (int ind=0;ind<calls.size();ind++) {
-				callsStr+=(calls.get(ind)+1);
-				if (ind!=calls.size()-1) callsStr+=","; // skip the comma for the last member
-			}
-			finalStr+=String.format("\t%6s",callsStr);
-		}
-		return finalStr;
-	}
-	
 	private void printHomologsInfo(PrintStream ps) {
 		int numHoms1 = -1;
 		int numHoms2 = -1;
@@ -299,10 +243,6 @@ public class EvolRimCorePredictor implements InterfaceTypePredictor {
 			if (iec.isProtein(FIRST)) numHoms1 = iec.getFirstChainEvolContext().getNumHomologs();
 			if (iec.isProtein(SECOND)) numHoms2 = iec.getSecondChainEvolContext().getNumHomologs();
 		} 
-//		else if (scoringType==ScoringType.KAKS) {
-//			if (iec.isProtein(FIRST)) numHoms1 = iec.getFirstChainEvolContext().getNumHomologsWithValidCDS();
-//			if (iec.isProtein(SECOND)) numHoms2 = iec.getSecondChainEvolContext().getNumHomologsWithValidCDS();
-//		}
 		ps.printf("%2d\t%2d\t",numHoms1,numHoms2);
 	}
 	
@@ -339,7 +279,6 @@ public class EvolRimCorePredictor implements InterfaceTypePredictor {
 		this.callReason = null;
 		this.bioCalls = new ArrayList<Integer>();
 		this.xtalCalls = new ArrayList<Integer>();
-		this.grayCalls = new ArrayList<Integer>();
 		this.noPredictCalls = new ArrayList<Integer>();
 		this.score = -1;
 		this.isScoreWeighted = false;

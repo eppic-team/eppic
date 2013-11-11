@@ -55,9 +55,9 @@ public class CalcStats {
 	
 	private static final int MIN_NUM_HOMOLOGS = CRKParams.DEF_MIN_NUM_SEQUENCES;
 	
-	private static final double DEFCORERIMCALLCUTOFF = CRKParams.DEF_ENTR_CALL_CUTOFF;
+	private static final double DEFCORERIMCALLCUTOFF = CRKParams.DEF_CORERIM_SCORE_CUTOFF;
 	private static final int DEFMINNUMBERCORERESFORBIO = CRKParams.DEF_MIN_CORE_SIZE_FOR_BIO;
-	private static final double DEFZSCORECUTOFF = CRKParams.DEF_ZSCORE_CUTOFF;
+	private static final double DEFZSCORECUTOFF = CRKParams.DEF_CORESURF_SCORE_CUTOFF;
 	
 	private static final double DEFCACUTOFF_FOR_G = CRKParams.DEF_CA_CUTOFF_FOR_GEOM;
 	private static final double DEFCACUTOFF_FOR_Z = CRKParams.DEF_CA_CUTOFF_FOR_ZSCORE;

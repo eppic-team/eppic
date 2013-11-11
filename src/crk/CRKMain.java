@@ -692,8 +692,8 @@ public class CRKMain {
 		if (params.isDoScoreEntropies()) {
 			try {
 				iecList.setRimCorePredBsaToAsaCutoff(params.getCAcutoffForRimCore(), params.getMinAsaForSurface()); // calls calcRimAndCores as well
-				iecList.setCallCutoff(params.getEntrCallCutoff());
-				iecList.setZscoreCutoff(params.getZscoreCutoff());
+				iecList.setCoreRimScoreCutoff(params.getCoreRimScoreCutoff());
+				iecList.setCoreSurfScoreCutoff(params.getCoreSurfScoreCutoff());
 
 				PrintStream scoreEntrPS = new PrintStream(params.getOutputFile(CRKParams.CRSCORES_FILE_SUFFIX));
 				iecList.scoreEntropy(false);

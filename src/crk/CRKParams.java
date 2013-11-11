@@ -87,8 +87,8 @@ public class CRKParams {
 
 	// default cutoffs for the final bio/xtal call
 	public static final int       DEF_MIN_CORE_SIZE_FOR_BIO = 6;
-	public static final double    DEF_ENTR_CALL_CUTOFF = 0.75;
-	public static final double    DEF_ZSCORE_CUTOFF = -1.00;
+	public static final double    DEF_CORERIM_SCORE_CUTOFF = 0.75;
+	public static final double    DEF_CORESURF_SCORE_CUTOFF = -1.00;
 	
 	// default core assignment thresholds
 	public static final double    DEF_CA_CUTOFF_FOR_GEOM = 0.95;
@@ -173,9 +173,9 @@ public class CRKParams {
 	
 	private int nSpherePointsASAcalc;
 
-	private double entrCallCutoff;
+	private double coreRimScoreCutoff;
 	
-	private double zScoreCutoff;
+	private double coreSurfScoreCutoff;
 	
 	private File interfSerFile;
 	private File chainEvContextSerFile;
@@ -271,8 +271,8 @@ public class CRKParams {
 		this.minCoreSizeForBio = DEF_MIN_CORE_SIZE_FOR_BIO;
 		this.maxNumSeqs = DEF_MAX_NUM_SEQUENCES;
 		this.nSpherePointsASAcalc = DEF_NSPHEREPOINTS_ASA_CALC;
-		this.entrCallCutoff = DEF_ENTR_CALL_CUTOFF;
-		this.zScoreCutoff = DEF_ZSCORE_CUTOFF;
+		this.coreRimScoreCutoff = DEF_CORERIM_SCORE_CUTOFF;
+		this.coreSurfScoreCutoff = DEF_CORESURF_SCORE_CUTOFF;
 		this.interfSerFile = null;
 		this.chainEvContextSerFile = null;
 		this.generateThumbnails = false;
@@ -322,10 +322,10 @@ public class CRKParams {
 				minCoreSizeForBio = Integer.parseInt(g.getOptarg());
 				break;
 			case 'x':
-				entrCallCutoff = Double.parseDouble(g.getOptarg());
+				coreRimScoreCutoff = Double.parseDouble(g.getOptarg());
 				break;
 			case 'y':
-				zScoreCutoff = Double.parseDouble(g.getOptarg());
+				coreSurfScoreCutoff = Double.parseDouble(g.getOptarg());
 				break;				
 			case 'd':
 				homSoftIdCutoff = Double.parseDouble(g.getOptarg());
@@ -406,9 +406,9 @@ public class CRKParams {
 		"                  below this value the geometry call will be XTAL, if equals or \n" +
 		"                  higher the geometry call is BIO. Default "+DEF_MIN_CORE_SIZE_FOR_BIO+"\n" +
 		"  [-x <float>] :  core-rim score cutoff for calling BIO/XTAL. If below this score, \n" +
-		"                  interface is BIO, if above XTAL. Default: " + String.format("%4.2f",DEF_ENTR_CALL_CUTOFF)+"\n"+
+		"                  interface is BIO, if above XTAL. Default: " + String.format("%4.2f",DEF_CORERIM_SCORE_CUTOFF)+"\n"+
 		"  [-y <float>] :  core-surface score cutoff to call BIO/XTAL. If below this score, \n" +
-		"                  interface is BIO, if above XTAL. Default: " + String.format("%4.2f",DEF_ZSCORE_CUTOFF)+"\n"+
+		"                  interface is BIO, if above XTAL. Default: " + String.format("%4.2f",DEF_CORESURF_SCORE_CUTOFF)+"\n"+
 		"  [-d <float>] :  sequence identity soft cutoff, if enough homologs ("+DEF_MIN_NUM_SEQUENCES+") above this \n" +
 		"                  threshold the search for homologs stops, default: "+String.format("%3.1f",DEF_HOM_SOFT_ID_CUTOFF)+"\n"+
 		"  [-D <float>] :  sequence identity hard cutoff, if after applying the soft\n" +
@@ -709,16 +709,20 @@ public class CRKParams {
 		this.nSpherePointsASAcalc = nSpherePointsASAcalc;
 	}
 	
-	public double getEntrCallCutoff() {
-		return entrCallCutoff;
+	public double getCoreRimScoreCutoff() {
+		return coreRimScoreCutoff;
 	}
 
-	public void setEntrCallCutoff(double entrCallCutoff) {
-		this.entrCallCutoff = entrCallCutoff;
+	public void setCoreRimScoreCutoff(double entrCallCutoff) {
+		this.coreRimScoreCutoff = entrCallCutoff;
 	}
 	
-	public double getZscoreCutoff(){
-		return zScoreCutoff;
+	public double getCoreSurfScoreCutoff(){
+		return coreSurfScoreCutoff;
+	}
+	
+	public void setCoreSurfScoreCutoff(double coreSurfScoreCutoff) {
+		this.coreSurfScoreCutoff = coreSurfScoreCutoff;
 	}
 
 	public File getInterfSerFile() {

@@ -72,8 +72,8 @@ public class WebUIDataAdaptor {
 		runParametersItem.setCaCutoffForGeom(params.getCAcutoffForGeom());
 		runParametersItem.setCaCutoffForRimCore(params.getCAcutoffForRimCore());
 		runParametersItem.setCaCutoffForZscore(params.getCAcutoffForZscore());
-		runParametersItem.setEntrCallCutoff(params.getEntrCallCutoff());
-		runParametersItem.setzScoreCutoff(params.getZscoreCutoff());
+		runParametersItem.setEntrCallCutoff(params.getCoreRimScoreCutoff());
+		runParametersItem.setzScoreCutoff(params.getCoreSurfScoreCutoff());
 		runParametersItem.setMinCoreSizeForBio(params.getMinCoreSizeForBio());
 		runParametersItem.setPdbScoreItem(pdbScoreItem);
 		runParametersItem.setCrkVersion(CRKParams.PROGRAM_VERSION);
