@@ -122,7 +122,7 @@ public class WriteUniqueUniprots {
 						String fileName = outdirPath + uniprotid + "." + interv.beg + "-" + interv.end + ".fa";
 						int maxLen = 60;
 						
-						if(interv.beg > interv.end){
+						if(interv.beg >= interv.end || interv.beg <= 0){
 							System.err.println("Warning: Fishy mapping in uniprot for "+uniprotid+"_"+interv.beg+"-"+interv.end);
 							countFishy++;
 							continue;
