@@ -5,7 +5,6 @@
 <div class="eppic-iframe">
 
 <img class="eppic-iframe-top-img" src="resources/images/eppic-logo.png">
-</img>
 
 
 <h1>
@@ -117,14 +116,14 @@ In those cases we color the operator icon in red.
 In any case our final call ignores this at the moment but we might use that information in future versions.
 </p>
 
+
 <h2>
 Viewing the interfaces in 3D
 </h2>
 
 <p>
 <img class="eppic-iframe-right-img" src="resources/images/pse-withsurface-verysmall.png" 
- alt="3D view in PyMOL as it appears with the .pse files (surface representation was added)">
-</img>
+ title="3D view of interface as it would appear in PyMOL using the pse mode (surface representation was added)">
 
 The thumbnails in the Interface table give a visual cartoon representation of the interfaces. By 
 clicking on them one gets an interactive 3D view, depending on the selected mode in the drop-down menu: 
@@ -144,59 +143,23 @@ representation is particularly helpful here in order to see surface residues onl
 </p>
 
 
-
-
-
 <h2>
-The Residue Details window
+Top panel: experimental information and sequence information 
 </h2>
 <p>
-<img class="eppic-iframe-left-img" src="resources/images/residue-details-table.png">
-</img>  
-Clicking on the "Details" button in the last column of the main interfaces table will give you a detailed 
-view of scores and information per residue, divided into two upper tables with all residue details and
-two lower tables with score details.
-</p>
-<p> 
-In the residue tables, only the residues at the interface are shown by default. To 
-see all residues of the two chains one needs to switch the view with the drop down menu on the upper 
-right of the residue details window.
+The top panel is subdivided into two subpanels: on the left an <b>Experimental Information</b> panel
+and on the right a <b>Sequence Information</b> panel.
 </p>
 <p>
-The first 2 columns of the residue tables are the residue numbers: "Res Serial" for 
-the numbering based on the SEQRES sequence from 1 to n, "Pdb serial" for the numbering as it appears on the 
-ATOM lines of the PDB file. Four pieces of information are given for each residue: the total accessible surface 
-area (ASA), the total buried surface area (BSA) upon formation of interface, the ratio of burial (BSA/ASA) 
-upon formation of interface (the core/rim assignments are based on this) and finally the entropy value based on
-the multiple sequence alignments of homologs to the query sequence. More information about the homologs and 
-alignments can be found on the Top Panel.
-</p>
-<p>
-Below the residue details tables are the score summary tables with each of the core-rim and core-surface
-scores for each side of the interface plus average entropy of core residues, average entropy of rim residues 
-and the mean entropy and standard deviation of the surface samples.
-</p>
-<p> 
-Beneath that, the legend shows the color coding used for the residues in the tables. Dark red is used for the 
-core residues at <b>95% burial</b>, which are used for the geometry prediction. Lighter red for the core 
-residues at <b>70% burial</b>, used in the evolutionary core-rim and core-surface predictions. Light blue 
-for all other interface residues. White for surface residues not at the interface and grey for fully buried 
-(protein interior) residues.
-</p>
-
-<h2>
-Top panel: homolog sequences and alignments
-</h2>
-<p>
-The top panel contains additional information about the sequences and parameters used to run
-the evolutionary predictions. On the top left corner there is a line for each of the distinct
-protein sequences present in the protein structure. Each line is composed of 4 parts:
+The <b>Sequence Information</b> panel contains information about the sequences and their homologs. 
+There is a line for each of the distinct protein sequences present in the protein structure. 
+If too many chains are present in the structures,
+arrows will appear on the left of the panel to navigate to other chains. Each line is composed of 4 parts:
 </p>
  
 <ul>
 <img class="eppic-iframe-right-img" src="resources/images/pse-color-entropies.png" 
- alt="3D view in PyMOL with colors representing sequence entropies">
-</img>
+ title="Protein surface rendering with colors representing sequence entropies, as one would get by clicking on the colored entropies icon">
 <li>
 <b>The chain identifier(s)</b>: first letter is the chain identifier of the representative sequence, in brackets 
 are the identifiers of identical sequences. Click on it to see the alignment of the chain to its reference 
@@ -234,15 +197,68 @@ containing the text output files with the results for all interfaces (as when ru
 The UniProt database version: the sequence data
 </h2>
 <p>
-On the right of the Top Panel the UniProt version is indicated. This is the UniProt database version used to 
-find homologs for the EPPIC multiple sequence alignments. A new UniProt database release appears every month containing
-more and more sequences, in fact the growth is exponential thanks to new sequencing technologies (growth
-statistics can be seen <a href="http://www.ebi.ac.uk/uniprot/TrEMBLstats/" target="_blank">here</a>). With more 
-sequences we can do better predictions (see this <a href="http://www.biomedcentral.com/1471-2105/13/334/figure/F6" target="_blank">figure</a>), 
+On the header of the <b>Sequence Information</b> panel the UniProt version is indicated. This is the UniProt 
+database version used to find homologs for the EPPIC multiple sequence alignments. A new UniProt database 
+release appears every month containing more and more sequences, in fact the growth is exponential thanks to 
+new sequencing technologies (growth statistics can be seen 
+<a href="http://www.ebi.ac.uk/uniprot/TrEMBLstats/" target="_blank">here</a>). With more 
+sequences we can do better predictions (see this 
+<a href="http://www.biomedcentral.com/1471-2105/13/334/figure/F6" target="_blank">figure</a>), 
 thus the growth of the UniProt sequence database has quite an important effect in our predictions. We will
 try to maintain the results as up-to-date as possible and to update the PDB-wide precomputed results every few 
-months and eventually every month (for every UniProt update). In any case if you use our results it is thus important to quote 
+months and eventually every month (for every UniProt update). In any case if you use our results it is important to quote 
 the UniProt database version used.
+</p>
+
+
+<h2>
+The Residue Details window
+</h2>
+<p>
+<img class="eppic-iframe-left-img" src="resources/images/residue-details-table.png" 
+title="Screenshot of the residue details window">
+Clicking on the "Details" button in the last column of the main interfaces table will give you a detailed 
+view of scores and information per residue, divided into a top panel containing score details per side of 
+interface and two lower tables with details per residue.
+</p>
+<p>
+The scores are subdivided into 3 different panels: 
+<b>Counts</b> containing the number of core residues at 70% burial, i.e. those used for the evolutionary 
+predictions; <b>Core-Rim Score</b> showing average entropy of core and rim plus the ratio of both (final core-rim score);
+<b>Core-Surface Score</b> showing the mean and standard deviation of average entropies of surface samples and final
+core-surface score. 
+</p>
+<p> 
+In the residue tables, only the residues at the interface are shown by default. To 
+see all residues of the two chains one needs to switch the view with the drop down menu on the upper 
+right of the residue details window.
+</p>
+<p>
+The first 2 columns of the residue tables are the residue numbers: "Res Serial" for 
+the numbering based on the SEQRES sequence from 1 to n, "Pdb serial" for the numbering as it appears on the 
+ATOM lines of the PDB file. Four pieces of information are given for each residue: the total accessible surface 
+area (ASA), the total buried surface area (BSA) upon formation of interface, the ratio of burial (BSA/ASA) 
+upon formation of interface (the core/rim assignments are based on this) and finally the entropy value based on
+the multiple sequence alignments of homologs to the query sequence. More information about the homologs and 
+alignments can be found on the Top Panel.
+</p>
+<p> 
+At the bottom of the window the legend shows the color coding used for the residues in the tables. 
+Dark red is used for the core residues at <b>95% burial</b>, which are used for the geometry prediction. 
+Lighter red for the core residues at <b>70% burial</b>, used in the evolutionary core-rim and core-surface predictions. 
+Light blue for all other interface residues. 
+White for surface residues not at the interface and grey for fully buried (protein interior) residues.
+</p>
+
+
+<h2>
+Low resolution warnings
+</h2>
+<p>
+A low resolution/high R-free warning will appear in red next to the structure title on top. 
+Whenever this happens one should treat all results with care: in low resolution structures
+side chains can not always be trusted. Our predictions depend on the side chains to calculate burial 
+and find the interface core residues, thus they will be unreliable. 
 </p>
 
 
@@ -277,18 +293,22 @@ colleagues. The jobs will be stored in our servers for at least 1 month.
 </p>
 <p>
 The PDB-wide precomputed results can be accessed directly by using the permanent URLs:
-http://www.eppic-web.org/ewui/#id/&lt;PDB_code&gt;
+<code>http://www.eppic-web.org/ewui/#id/&lt;PDB_code&gt;</code>
 </p>
 
-<!-- <img src="resources/images/EPPIC-screenshot-3hbx-small.png"></img> -->
 
 <br>
 <br>
 <br>
 
 <p>
-Please cite <a href="http://www.biomedcentral.com/1471-2105/13/334/abstract" target="_blank">Duarte et al., BMC Bioinformatics 2012</a> if you use this service for 
-your research.
+Please cite 
+<a href="http://www.biomedcentral.com/1471-2105/13/334" target="_blank">
+Duarte JM, Srebniak A, Schaerer MA, Capitani G, BMC Bioinformatics 2012</a>
+if you use this service for your research. 
+See also 
+<a href="http://www.biomedcentral.com/1472-6807/13/21" target="_blank">this paper</a> 
+where we show that the method works well on membrane proteins. 
 </p>
 
 <p>
@@ -300,7 +320,7 @@ problems or send any kind of feedback.
 With support from:
 </p>
 
-</div>
+
 
 <!-- <div class="eppic-iframe-bottom-logos"> -->
 <div class="first" >
@@ -321,12 +341,11 @@ With support from:
 </a>
 </div>
 
-<!-- </div> -->
-
-
 
 <!--
 <a href="http://www.ethz.ch">
 <img class="eppic-iframe-bottom-img" src="resources/images/eth_logo.gif"></img>
 </a>
 -->
+
+</div>
