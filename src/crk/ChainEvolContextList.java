@@ -13,6 +13,7 @@ import java.util.TreeMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import owl.core.connections.SiftsConnection;
 import owl.core.connections.UniProtConnection;
 import owl.core.connections.UniprotLocalConnection;
 import owl.core.runners.blast.BlastException;
@@ -45,6 +46,8 @@ public class ChainEvolContextList implements Serializable {
 	private boolean useLocalUniprot;
 	private transient UniProtConnection uniprotJapiConn;
 	private transient UniprotLocalConnection uniprotLocalConn;
+	
+	private transient SiftsConnection siftsConn;
 
 	
 	public ChainEvolContextList(PdbAsymUnit pdb, CRKParams params) throws SQLException {
@@ -171,6 +174,14 @@ public class ChainEvolContextList implements Serializable {
 	
 	public UniProtConnection getUniProtJapiConnection() {
 		return uniprotJapiConn;
+	}
+	
+	public SiftsConnection getSiftsConn(String siftsLocation) throws IOException {
+		// we store the sifts connection here in order not to reparse the file for every chain
+		if (this.siftsConn==null) {
+			this.siftsConn = new SiftsConnection(siftsLocation);
+		}
+		return this.siftsConn;
 	}
 	
 	public void retrieveQueryData(CRKParams params) throws CRKException {
