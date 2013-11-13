@@ -61,8 +61,17 @@ public class PDBIdentifierPanel extends LayoutContainer
 		
 		this.add(pdbNameLabel);
 		
-		if(ApplicationContext.getSettings().getResolutionCutOff() > 0 && 
-				resolution > ApplicationContext.getSettings().getResolutionCutOff() && resolution > 0){			
+		// TODO we should try to set a constant "always-low-res exp method=ELECTRON MICROSCOPY". 
+		// It's not ideal that the name is hard-coded
+		if (expMethod!=null && expMethod.equals("ELECTRON MICROSCOPY")) {
+			warningLabel = new LabelWithTooltip(
+					AppPropertiesManager.CONSTANTS.pdb_identifier_panel_warning_lowRes(),
+					AppPropertiesManager.CONSTANTS.pdb_identifier_panel_warning_lowRes_hint(), 
+					ApplicationContext.getWindowData(), 
+					100);			
+		}
+		else if(ApplicationContext.getSettings().getResolutionCutOff() > 0 && 
+				resolution > ApplicationContext.getSettings().getResolutionCutOff() && resolution > 0) {			
 			warningLabel = new LabelWithTooltip(
 					AppPropertiesManager.CONSTANTS.pdb_identifier_panel_warning_lowRes(),
 					AppPropertiesManager.CONSTANTS.pdb_identifier_panel_warning_lowRes_hint(), 
