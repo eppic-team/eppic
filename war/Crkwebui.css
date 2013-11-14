@@ -205,11 +205,11 @@
 	background-position:center bottom;
 }
 
-.eppic-status-message-label-info {
+.eppic-status-message-info {
 	color: black;
 }
 
-.eppic-status-message-label-error {
+.eppic-status-message-error {
 	color: red;
 	font-weight: bold;
 }
