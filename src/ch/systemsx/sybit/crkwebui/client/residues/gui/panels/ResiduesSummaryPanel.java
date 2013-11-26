@@ -79,7 +79,7 @@ public class ResiduesSummaryPanel extends LayoutContainer
 		FieldSet coreSurfaceScoreContainer = new FieldSet();
 		coreSurfaceScoreContainer.addStyleName("eppic-rounded-border");
 		coreSurfaceScoreContainer.setHeadingHtml(AppPropertiesManager.CONSTANTS.interfaces_residues_summary_coresurface_heading());
-		coreSurfaceScoreContainer.setStyleAttribute("padding-top","5px");
+		coreSurfaceScoreContainer.addStyleName("eppic-residues-summary");
 		coreSurfaceScoreContainer.add(coreSurfaceScoreTable, new RowData(1, 45,  new Margins(0)));
 		this.add(coreSurfaceScoreContainer, new RowData(0.35, 1,  new Margins(0, 5, 0, 0)));
 		
