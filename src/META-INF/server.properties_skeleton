@@ -10,11 +10,11 @@ email_port=25
 
 # location of crk runnable jar
 crk_jar=/Users/hullarb/Work/workspace/eclipse projects/crk/build/jar/crk.jar
-nr_of_threads_for_submission=2
 assigned_memory=512
 
 # queuing system
 queuing_system=sge
+nr_of_threads_for_submission=2
 
 # captcha settings
 use_captcha=false
@@ -44,7 +44,7 @@ uniprot_version=2013_08
 resolution_cutoff=3.5
 rfree_cutoff=0.35
 
-#Set true if you wanna disable file upload and advanced settings
+#Set true if you want to disable file upload and advanced input
 read_only_mode = true
-#Delete this property if you wanna use queueing systems - in production 
+#Delete this property if you want to use queueing systems - in production 
 development_mode = true
