@@ -28,6 +28,6 @@
 	<classpathentry kind="con" path="com.google.gwt.eclipse.core.GWT_CONTAINER"/>
 	<classpathentry kind="lib" path="libs/gxt-2.3.1-gwt22.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/eppic"/>
-	<classpathentry kind="lib" path="/afs/psi.ch/user/b/biyani_n/Workspace/crkwebui/libs/gxt-3.0.1.jar"/>
+	<classpathentry kind="lib" path="libs/gxt-3.0.1.jar"/>
 	<classpathentry kind="output" path="war/WEB-INF/classes"/>
 </classpath>
