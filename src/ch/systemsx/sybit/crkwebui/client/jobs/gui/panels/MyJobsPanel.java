@@ -1,134 +1,167 @@
 package ch.systemsx.sybit.crkwebui.client.jobs.gui.panels;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.commons.events.BeforeJobDeletedEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.GetFocusOnJobsListEvent;
+import ch.systemsx.sybit.crkwebui.client.commons.events.HideJobsPanelEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.JobListRetrievedEvent;
-import ch.systemsx.sybit.crkwebui.client.commons.gui.util.GridColumnConfigGenerator;
+import ch.systemsx.sybit.crkwebui.client.commons.events.ShowJobsPanelEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.BeforeJobRemovedHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.GetFocusOnJobsListHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.JobListRetrievedHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.managers.EventBusManager;
 import ch.systemsx.sybit.crkwebui.client.commons.services.eppic.CrkWebServiceProvider;
 import ch.systemsx.sybit.crkwebui.client.jobs.data.MyJobsModel;
-import ch.systemsx.sybit.crkwebui.client.jobs.gui.renderers.JobsGridCellRendererFactoryImpl;
+import ch.systemsx.sybit.crkwebui.client.jobs.data.MyJobsModelProperties;
+import ch.systemsx.sybit.crkwebui.client.jobs.gui.cells.InputCell;
+import ch.systemsx.sybit.crkwebui.client.jobs.gui.cells.JobStatusCell;
+import ch.systemsx.sybit.crkwebui.client.jobs.gui.grids.contextmenus.JobsPanelContextMenu;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
 import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
 
-import com.extjs.gxt.ui.client.Style.Orientation;
-import com.extjs.gxt.ui.client.Style.SelectionMode;
-import com.extjs.gxt.ui.client.event.ButtonEvent;
-import com.extjs.gxt.ui.client.event.ComponentEvent;
-import com.extjs.gxt.ui.client.event.Events;
-import com.extjs.gxt.ui.client.event.GridEvent;
-import com.extjs.gxt.ui.client.event.Listener;
-import com.extjs.gxt.ui.client.event.SelectionChangedEvent;
-import com.extjs.gxt.ui.client.event.SelectionChangedListener;
-import com.extjs.gxt.ui.client.event.SelectionListener;
-import com.extjs.gxt.ui.client.store.ListStore;
-import com.extjs.gxt.ui.client.util.IconHelper;
-import com.extjs.gxt.ui.client.util.KeyNav;
-import com.extjs.gxt.ui.client.util.Margins;
-import com.extjs.gxt.ui.client.widget.ContentPanel;
-import com.extjs.gxt.ui.client.widget.button.Button;
-import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
-import com.extjs.gxt.ui.client.widget.grid.ColumnModel;
-import com.extjs.gxt.ui.client.widget.grid.Grid;
-import com.extjs.gxt.ui.client.widget.layout.RowData;
-import com.extjs.gxt.ui.client.widget.layout.RowLayout;
-import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.NativeEvent;
+import com.google.gwt.safehtml.shared.UriUtils;
 import com.google.gwt.user.client.History;
+import com.sencha.gxt.widget.core.client.ContentPanel;
+import com.sencha.gxt.widget.core.client.button.TextButton;
+import com.sencha.gxt.widget.core.client.button.ToolButton;
+import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer;
+import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer.VerticalLayoutData;
+import com.sencha.gxt.widget.core.client.event.SelectEvent;
+import com.sencha.gxt.widget.core.client.event.SelectEvent.SelectHandler;
+import com.sencha.gxt.widget.core.client.grid.ColumnConfig;
+import com.sencha.gxt.widget.core.client.grid.ColumnModel;
+import com.sencha.gxt.widget.core.client.grid.Grid;
+import com.sencha.gxt.widget.core.client.selection.SelectionChangedEvent;
+import com.sencha.gxt.widget.core.client.selection.SelectionChangedEvent.SelectionChangedHandler;
+import com.sencha.gxt.widget.core.client.tips.QuickTip;
+import com.sencha.gxt.widget.core.client.tips.ToolTipConfig;
+import com.sencha.gxt.widget.core.client.toolbar.FillToolItem;
+import com.sencha.gxt.widget.core.client.toolbar.ToolBar;
+import com.sencha.gxt.core.client.util.IconHelper;
+import com.sencha.gxt.core.client.util.KeyNav;
+import com.sencha.gxt.core.client.util.Margins;
+import com.sencha.gxt.data.shared.ListStore;
 
 /**
  * Panel used to display the list of all jobs connected to the current session.
- * @author srebniak_a
+ * @author srebniak_a; nikhil
  *
  */
 public class MyJobsPanel extends ContentPanel
-{
+{	
 	private Grid<MyJobsModel> myJobsGrid;
 	private ListStore<MyJobsModel> myJobsStore;
-	private Map<String, Integer> initialColumnWidth;
+	
+	private static final MyJobsModelProperties props = GWT.create(MyJobsModelProperties.class);
 
 	private boolean isJobsListFirstTimeLoaded = true;
 
 	public MyJobsPanel()
 	{
-		this.setLayout(new RowLayout(Orientation.VERTICAL));
 		this.setHeadingHtml(AppPropertiesManager.CONSTANTS.myjobs_panel_head());
+		
+		VerticalLayoutContainer mainContainer = new VerticalLayoutContainer();
 
-		ToolBar toolBar = createToolbar();
-		this.setTopComponent(toolBar);
+		List<ColumnConfig<MyJobsModel, ?>> myJobsConfigs = createColumnConfig();
+		ColumnModel<MyJobsModel> myJobsColumnModel = new ColumnModel<MyJobsModel>(myJobsConfigs);
+		myJobsStore = new ListStore<MyJobsModel>(props.key());
 
-		List<ColumnConfig> myJobsConfigs = createColumnConfig();
-		ColumnModel myJobsColumnModel = new ColumnModel(myJobsConfigs);
-		myJobsStore = new ListStore<MyJobsModel>();
-
+		ToolBar myJobsToolBar = createToolBar();
+		mainContainer.add(myJobsToolBar, new VerticalLayoutData(1, -1, new Margins(0)));
+		
 		myJobsGrid = createJobsGrid(myJobsColumnModel);
-		this.add(myJobsGrid, new RowData(1, 1, new Margins(0)));
+		mainContainer.add(myJobsGrid, new VerticalLayoutData(1, 1, new Margins(0)));
+		
+		this.setWidget(mainContainer);
 		
 		initializeEventsListeners();
-	}
-
-	/**
-	 * Creates panel toolbar.
-	 * @return toolbar
-	 */
-	private ToolBar createToolbar()
-	{
-		ToolBar toolBar = new ToolBar();
-		Button addNew = createAddNewJobButton(AppPropertiesManager.CONSTANTS.myjobs_panel_new_button());
-		toolBar.add(addNew);
-		return toolBar;
-	}
-	
-	/**
-	 * Creates button used to switch to new job view.
-	 * @param text text of the button
-	 * @return button to go to start new job view
-	 */
-	private Button createAddNewJobButton(String text)
-	{
-		Button addNew = new Button(text, new SelectionListener<ButtonEvent>() {
-
-			public void componentSelected(ButtonEvent ce)
-			{
-				History.newItem("");
-			}
-		});
-
-		String addIconSource = "resources/icons/add_icon.png";
-		addNew.setIcon(IconHelper.createPath(addIconSource));
-		
-		return addNew;
 	}
 
 	/**
 	 * Creates columns configurations for jobs grid.
 	 * @return columns configurations for jobs grid
 	 */
-	private List<ColumnConfig> createColumnConfig()
-	{
-		List<ColumnConfig> configs = GridColumnConfigGenerator.createColumnConfigs(JobsGridCellRendererFactoryImpl.getInstance(),
-																				   "jobs",
-																				   new MyJobsModel());
+	private List<ColumnConfig<MyJobsModel,?>> createColumnConfig()
+	{		
+		List<ColumnConfig<MyJobsModel,?>> configs = new ArrayList<ColumnConfig<MyJobsModel,?>>();
 
-		if(configs != null)
-		{
-			initialColumnWidth = new HashMap<String, Integer>();
-
-			for(ColumnConfig columnConfig : configs)
-			{
-				initialColumnWidth.put(columnConfig.getId(), columnConfig.getWidth());
-			}
-		}
+		ColumnConfig<MyJobsModel, String> inputColumn = new ColumnConfig<MyJobsModel, String>(props.input(),
+						Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("jobs_input_width")),
+						ApplicationContext.getSettings().getGridProperties().get("jobs_input_header"));
+		inputColumn.setCell(new InputCell());
+		inputColumn.setResizable(true);
+		inputColumn.setColumnTextClassName("eppic-my-jobs-list-input");
+		
+		ColumnConfig<MyJobsModel, String> statusColumn = new ColumnConfig<MyJobsModel, String>(props.status(),
+				Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("jobs_status_width")),
+				ApplicationContext.getSettings().getGridProperties().get("jobs_status_header"));
+		statusColumn.setCell(new JobStatusCell());
+		statusColumn.setResizable(false);
+		
+		configs.add(inputColumn);
+		configs.add(statusColumn);
 
 		return configs;
+	}
+	
+	/**
+	 * Creates the tool bar of myjobs grid
+	 * @return tool bar
+	 */
+	private ToolBar createToolBar(){
+		ToolBar tb = new ToolBar();
+
+		tb.add(createClearAllButton());
+		tb.add(new FillToolItem());
+		
+		ToolButton info = new ToolButton(ToolButton.QUESTION);
+		ToolTipConfig config = new ToolTipConfig(AppPropertiesManager.CONSTANTS.myjobs_grid_tooltip());
+		config.setMaxWidth(225);
+		info.setToolTipConfig(config);
+		tb.add(info);
+
+		return tb;
+	}
+	
+	/**
+	 * Creates button used to clear the list.
+	 * @return button 
+	 */
+	private TextButton createClearAllButton()
+	{
+		TextButton clearAllButton = new TextButton(AppPropertiesManager.CONSTANTS.myjobs_clear_button());
+
+		clearAllButton.addSelectHandler(new SelectHandler() {
+			@Override
+			public void onSelect(SelectEvent event) {
+				CrkWebServiceProvider.getServiceController().deleteAllJobs(getCurrentJobsList());
+			}
+		});
+
+
+		String iconSource = "resources/icons/clear_icon.png";
+		clearAllButton.setIcon(IconHelper.getImageResource(UriUtils.fromSafeConstant(iconSource), 12, 12));
+		
+		return clearAllButton;
+	}
+	
+	/**
+	 * Method to return a list of current jobs
+	 * @return list of job id's
+	 */
+	private List<String> getCurrentJobsList() {
+		List<String> jobsList = new ArrayList<String>();
+		for(MyJobsModel m:myJobsStore.getAll()){
+			jobsList.add(m.getJobid());
+		}
+		
+		return jobsList;
 	}
 	
 	/**
@@ -136,42 +169,38 @@ public class MyJobsPanel extends ContentPanel
 	 * @param myJobsColumnModel column model used for jobs grid
 	 * @return grid with jobs
 	 */
-	private Grid<MyJobsModel> createJobsGrid(ColumnModel myJobsColumnModel)
+	private Grid<MyJobsModel> createJobsGrid(ColumnModel<MyJobsModel> myJobsColumnModel)
 	{
 		final Grid<MyJobsModel> myJobsGrid = new Grid<MyJobsModel>(myJobsStore, myJobsColumnModel);
-		myJobsGrid.setStyleAttribute("borderTop", "none");
 		myJobsGrid.setBorders(false);
-		myJobsGrid.setStripeRows(true);
-		myJobsGrid.setColumnLines(false);
-		myJobsGrid.setAutoWidth(true);
+		myJobsGrid.getView().setStripeRows(true);
+		myJobsGrid.getView().setColumnLines(false);
 		myJobsGrid.getView().setForceFit(true);
+		
+		myJobsGrid.addStyleName("eppic-default-font");
+		
+		myJobsGrid.setContextMenu(new JobsPanelContextMenu(myJobsGrid));
 
-		myJobsGrid.addListener(Events.CellClick, new Listener<GridEvent>()
-		{
-			@Override
-			public void handleEvent(GridEvent be)
-			{
-				History.newItem("id/" + myJobsStore.getAt(be.getRowIndex()).getJobid());
-			}
-		});
+		myJobsGrid.getSelectionModel().addSelectionChangedHandler(new SelectionChangedHandler<MyJobsModel>() {
 
-		myJobsGrid.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-		myJobsGrid.getSelectionModel().addSelectionChangedListener(new SelectionChangedListener<MyJobsModel>()
-		{
 			@Override
-			public void selectionChanged(SelectionChangedEvent<MyJobsModel> se)
-			{
-				if(se.getSelectedItem() != null)
+			public void onSelectionChanged(SelectionChangedEvent<MyJobsModel> event) {
+				if(event.getSelection() != null && !event.getSelection().isEmpty())
 				{
-					History.newItem("id/" + se.getSelectedItem().getJobid());
+					for(MyJobsModel m: event.getSelection()){
+						History.newItem("id/" + m.getJobid());
+						EventBusManager.EVENT_BUS.fireEvent(new GetFocusOnJobsListEvent());
+					}
 				}
+				
 			}
+			
 		});
 
-		new KeyNav<ComponentEvent>(myJobsGrid)
+		new KeyNav(myJobsGrid)
 		{
 			@Override
-            public void onDelete(ComponentEvent ce)
+            public void onDelete(NativeEvent event)
 			{
 				MyJobsModel selectedItem = myJobsGrid.getSelectionModel().getSelectedItem();
 				if(selectedItem != null)
@@ -180,6 +209,8 @@ public class MyJobsPanel extends ContentPanel
 				}
 			}
 		};
+		
+		new QuickTip(myJobsGrid);
 		
 		return myJobsGrid;
 	}
@@ -199,17 +230,18 @@ public class MyJobsPanel extends ContentPanel
 		{
 			int i = 0;
 
-			List<MyJobsModel> currentModels = myJobsStore.getModels();
-			for(MyJobsModel model : currentModels)
+			for (int ii=0; ii < myJobsStore.size(); ii++)
 			{
+				MyJobsModel model = myJobsStore.get(ii);
 				boolean found = false;
 				int j=0;
 
 				while((j < jobs.size()) && (!found))
 				{
-					if(jobs.get(j).getJobId().equals(model.get("jobid")))
+					if(jobs.get(j).getJobId().equals(model.getJobid()))
 					{
 						found = true;
+						break;
 					}
 
 					j++;
@@ -217,7 +249,7 @@ public class MyJobsPanel extends ContentPanel
 
 				if(!found)
 				{
-					myJobsStore.remove(model);
+					myJobsStore.remove(ii);
 				}
 			}
 
@@ -234,12 +266,12 @@ public class MyJobsPanel extends ContentPanel
 					itemToSelectIndex = i;
 				}
 
-				MyJobsModel existingModel = myJobsStore.findModel("jobid", statusData.getJobId());
+				MyJobsModel existingModel = myJobsStore.findModel(myJobsModel);
 
 				if(existingModel != null)
 				{
-					existingModel.set("status", statusData.getStatus());
-					existingModel.set("input", statusData.getInput());
+					existingModel.setStatus(statusData.getStatus());
+					existingModel.setInput(statusData.getInput());
 					myJobsStore.update(existingModel);
 				}
 				else
@@ -253,9 +285,8 @@ public class MyJobsPanel extends ContentPanel
 
 		myJobsStore.commitChanges();
 
-
 		if((selectedJobId != null) &&
-			(myJobsStore.getCount() > 0))
+			(myJobsStore.size() > 0))
 		{
 			myJobsGrid.getSelectionModel().select(itemToSelect, false);
 
@@ -264,23 +295,27 @@ public class MyJobsPanel extends ContentPanel
 				myJobsGrid.getView().focusRow(itemToSelectIndex);
 				isJobsListFirstTimeLoaded = false;
 			}
+			EventBusManager.EVENT_BUS.fireEvent(new ShowJobsPanelEvent());
+		}else{
+			EventBusManager.EVENT_BUS.fireEvent(new HideJobsPanelEvent());
+			
 		}
 	}
-
+	
 	/**
 	 * Selects correct job before removal.
 	 * @param jobToStop identifier of the job which was removed
 	 */
 	private void selectPrevious(String jobToRemove)
 	{
-		List<MyJobsModel> currentJobs = myJobsStore.getModels();
+		List<MyJobsModel> currentJobs = myJobsStore.getAll();
 
 		boolean found = false;
 		int jobNr = 0;
 
 		while((jobNr < currentJobs.size()) && (!found))
 		{
-			if(currentJobs.get(jobNr).get("jobid").equals(jobToRemove))
+			if(currentJobs.get(jobNr).getJobid().equals(jobToRemove))
 			{
 				found = true;
 			}
@@ -294,7 +329,7 @@ public class MyJobsPanel extends ContentPanel
 		{
 			myJobsGrid.getSelectionModel().select(currentJobs.get(jobNr), false);
 		}
-		else if(myJobsStore.getModels().size() > 1)
+		else if(myJobsStore.getAll().size() > 1)
 		{
 			myJobsGrid.getSelectionModel().select(currentJobs.get(1), false);
 		}

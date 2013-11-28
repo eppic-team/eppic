@@ -7,20 +7,25 @@ import ch.systemsx.sybit.crkwebui.client.commons.events.ApplicationWindowResizeE
 import ch.systemsx.sybit.crkwebui.client.commons.events.GetFocusOnJobsListEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.GetFocusOnPdbCodeFieldEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.HideAllWindowsEvent;
+import ch.systemsx.sybit.crkwebui.client.commons.events.HideTopPanelSearchBoxEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.HideWaitingEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.InterfaceResiduesDataRetrievedEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.RefreshStatusDataEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowAboutEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowAlignmentsEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowErrorEvent;
+import ch.systemsx.sybit.crkwebui.client.commons.events.ShowHomologsEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowInterfaceResiduesEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowMessageEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowNoResultsDataEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowResultsDataEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowStatusDataEvent;
+import ch.systemsx.sybit.crkwebui.client.commons.events.ShowTopPanelSearchBoxEvent;
+import ch.systemsx.sybit.crkwebui.client.commons.events.ShowViewerSelectorEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowWaitingEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.StopJobsListAutoRefreshEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.UpdateStatusLabelEvent;
+import ch.systemsx.sybit.crkwebui.client.commons.gui.data.StatusMessageType;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.panels.DisplayPanel;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ApplicationInitHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ApplicationWindowResizeHandler;
@@ -31,11 +36,13 @@ import ch.systemsx.sybit.crkwebui.client.commons.handlers.RefreshStatusDataHandl
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowAboutHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowAlignmentsHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowErrorHandler;
+import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowHomologsHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowInterfaceResiduesWindowHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowMessageHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowNoResultsDataHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowResultsDataHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowStatusDataHandler;
+import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowViewerSelectorHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowWaitingHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.StopJobsListAutoRefreshHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.UpdateStatusLabelHandler;
@@ -54,16 +61,18 @@ import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
 import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
 
-import com.extjs.gxt.ui.client.event.Listener;
-import com.extjs.gxt.ui.client.event.MessageBoxEvent;
-import com.extjs.gxt.ui.client.widget.MessageBox;
-import com.extjs.gxt.ui.client.widget.Viewport;
-import com.extjs.gxt.ui.client.widget.layout.FlowLayout;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.HTMLPanel;
 import com.google.gwt.user.client.ui.RootPanel;
+import com.sencha.gxt.widget.core.client.Dialog;
+import com.sencha.gxt.widget.core.client.info.Info;
+import com.sencha.gxt.widget.core.client.container.FlowLayoutContainer;
+import com.sencha.gxt.widget.core.client.container.Viewport;
+import com.sencha.gxt.widget.core.client.event.HideEvent;
+import com.sencha.gxt.widget.core.client.event.HideEvent.HideHandler;
 
 /**
  * Main application controller.
@@ -78,6 +87,11 @@ public class MainController
 	 * Timer used to automatically refresh list of jobs in my jobs panel.
 	 */
 	private Timer autoRefreshMyJobs;
+	
+	/**
+	 * Dialog box used to show information
+	 */
+	private Dialog infoMessageBox = new Dialog();
 
 	/**
 	 * Creates instance of main controller with specified viewport.
@@ -96,6 +110,18 @@ public class MainController
 			public void onApplicationInit(ApplicationInitEvent event) {
 				setMainView();
 				runMyJobsAutoRefresh();
+			}
+		});
+		
+		EventBusManager.EVENT_BUS.addHandler(UpdateStatusLabelEvent.TYPE, new UpdateStatusLabelHandler() 
+		{
+			@Override
+			public void onUpdateStatusLabel(UpdateStatusLabelEvent event)
+			{
+				if(event.getMessageType() != StatusMessageType.NO_ERROR)
+				{
+					Info.display("Web-Application Error",event.getStatusText());
+				}
 			}
 		});
 		
@@ -157,6 +183,15 @@ public class MainController
 			}
 		});
 		
+		EventBusManager.EVENT_BUS.addHandler(ShowViewerSelectorEvent.TYPE, new ShowViewerSelectorHandler() {
+			
+			@Override
+			public void onShowWindow(ShowViewerSelectorEvent event) {
+				mainViewPort.displayViewerSelectorWindow();
+				
+			}
+		});
+		
 		EventBusManager.EVENT_BUS.addHandler(ShowAlignmentsEvent.TYPE, new ShowAlignmentsHandler() {
 			
 			@Override
@@ -165,6 +200,18 @@ public class MainController
 										event.getPdbName(), 
 										event.getxPosition(), 
 										event.getyPostiton());
+			}
+		});
+		
+		EventBusManager.EVENT_BUS.addHandler(ShowHomologsEvent.TYPE, new ShowHomologsHandler() {
+			
+			@Override
+			public void onShowHomologs(ShowHomologsEvent event) {
+				mainViewPort.displayHomologsWindow(event.getHomologsInfoItem(),
+						event.getJobId(), 
+						event.getxPosition(), 
+						event.getyPosition());
+				
 			}
 		});
 		
@@ -275,26 +322,34 @@ public class MainController
 	 */
 	private void showMessage(String title, String message)
 	{
-		final MessageBox infoMessageBox = MessageBox.info(EscapedStringGenerator.generateEscapedString(title), 
-														  EscapedStringGenerator.generateEscapedString(message), 
-														  new Listener<MessageBoxEvent>() {
-
+		infoMessageBox = new Dialog();
+		
+		infoMessageBox.setHeadingHtml(EscapedStringGenerator.generateEscapedString(title));
+		infoMessageBox.add(new HTMLPanel(EscapedStringGenerator.generateSafeHtml(message)));
+		
+		infoMessageBox.setHideOnButtonClick(true);
+	    infoMessageBox.setPixelSize(350,170);
+		
+		infoMessageBox.show();
+	    
+		infoMessageBox.addHideHandler(new HideHandler() {
 			@Override
-			public void handleEvent(MessageBoxEvent be) {
+			public void onHide(HideEvent event) {
 				EventBusManager.EVENT_BUS.fireEvent(new GetFocusOnJobsListEvent());
+				
 			}
 		});
 
-		infoMessageBox.getDialog().setResizable(true);
-		if(infoMessageBox.getDialog().getInitialWidth() > ApplicationContext.getWindowData().getWindowWidth() - 20)
+		infoMessageBox.setResizable(true);
+		if(infoMessageBox.getMinWidth() > ApplicationContext.getWindowData().getWindowWidth() - 20)
 		{
-			infoMessageBox.getDialog().setWidth(ApplicationContext.getWindowData().getWindowWidth() - 20);
+			infoMessageBox.setWidth(ApplicationContext.getWindowData().getWindowWidth() - 20);
 		}
 		
 		Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 			@Override
 			public void execute() {
-				infoMessageBox.getDialog().focus();
+				infoMessageBox.focus();
 			}
 	    });
 	}
@@ -306,6 +361,7 @@ public class MainController
 	public void displayView(String token)
 	{
 		EventBusManager.EVENT_BUS.fireEvent(new HideAllWindowsEvent());
+		EventBusManager.EVENT_BUS.fireEvent(new ShowTopPanelSearchBoxEvent());
 		if ((token != null) && (token.length() > 3) && (token.startsWith("id")))
 		{
 			Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_loading());
@@ -329,6 +385,7 @@ public class MainController
 			Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_input());
 			ApplicationContext.setSelectedJobId("");
 			displayInputView();
+			EventBusManager.EVENT_BUS.fireEvent(new HideTopPanelSearchBoxEvent());
 		}
 	}
 	
@@ -341,7 +398,7 @@ public class MainController
 		MainViewScrollable mainViewScrollable = new MainViewScrollable(mainViewPort);
 		
 		Viewport viewPort = new Viewport();
-		viewPort.setLayout(new FlowLayout());
+		viewPort.setLayoutData(new FlowLayoutContainer());
 		viewPort.add(mainViewScrollable);
 		
 		RootPanel.get().add(viewPort);
@@ -361,7 +418,6 @@ public class MainController
 		{
 			inputDataPanel = (InputDataPanel)mainViewPort.getCenterPanel().getDisplayPanel();
 			inputDataPanel.resetValues();
-			inputDataPanel.layout();
 		}
 		else if(mainViewPort.getInputDataPanel() != null)
 		{
@@ -389,7 +445,7 @@ public class MainController
 	 */
 	public void displayHelp()
 	{
-	    	Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_help());
+	    Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_help());
 		ApplicationContext.setSelectedJobId("");
 		HelpPanel helpPanel = new HelpPanel();
 		displayPanelInCentralPanel(helpPanel);
@@ -446,7 +502,7 @@ public class MainController
 		{
 			resultsPanel = (ResultsPanel)mainViewPort.getCenterPanel().getDisplayPanel();
 			resultsPanel.fillResultsPanel(resultData);
-			resultsPanel.layout();
+			//resultsPanel.layout();
 		}
 		else if(mainViewPort.getResultsPanel() != null)
 		{
@@ -485,7 +541,7 @@ public class MainController
 		}
 		else
 		{
-			statusPanel = new StatusPanel(ApplicationContext.getAdjustedWindowData().getWindowHeight());
+			statusPanel = new StatusPanel();
 			mainViewPort.getCenterPanel().setDisplayPanel(statusPanel);
 		}
 
@@ -506,7 +562,7 @@ public class MainController
 			ApplicationContext.setDoStatusPanelRefreshing(false);
 		}
 
-		mainViewPort.getCenterPanel().layout();
+		//mainViewPort.getCenterPanel().layout();
 
 		EventBusManager.EVENT_BUS.fireEvent(new GetFocusOnJobsListEvent());
 		Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_processing() + " - " + 
@@ -524,7 +580,7 @@ public class MainController
 		{
 			StatusPanel statusPanel = (StatusPanel)mainViewPort.getCenterPanel().getDisplayPanel();
 			statusPanel.fillData(statusData);
-			mainViewPort.getCenterPanel().layout();
+			//mainViewPort.getCenterPanel().layout();
 		}
 	}
 	
@@ -533,7 +589,7 @@ public class MainController
 	 */
 	private void cleanCenterPanel()
 	{
-		mainViewPort.getCenterPanel().removeAll();
+		//mainViewPort.getCenterPanel().removeAll();
 		mainViewPort.getCenterPanel().setDisplayPanel(null);
 	}
 	
@@ -543,7 +599,7 @@ public class MainController
 	 */
 	private void showInterfaceResidues(int interfaceId)
 	{
-		mainViewPort.displayInterfacesWindow(interfaceId);
+		
 
 		if((ApplicationContext.getResiduesForInterface() != null) &&
 		   (ApplicationContext.getResiduesForInterface().containsKey(interfaceId)))
@@ -556,6 +612,8 @@ public class MainController
 												   ApplicationContext.getPdbScoreItem().getInterfaceItem(interfaceId - 1).getUid(),
 												   interfaceId);
 		}
+		
+		mainViewPort.displayInterfacesWindow(interfaceId);
 	}
 	
 	/**

@@ -1,13 +1,13 @@
 package ch.systemsx.sybit.crkwebui.client.commons.callbacks;
 
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
-import ch.systemsx.sybit.crkwebui.client.commons.events.ShowMessageEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.UpdateStatusLabelEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.data.StatusMessageType;
 import ch.systemsx.sybit.crkwebui.client.commons.managers.EventBusManager;
 import ch.systemsx.sybit.crkwebui.client.commons.services.eppic.CrkWebServiceProvider;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.sencha.gxt.widget.core.client.info.Info;
 
 /**
  * Callback used to handle the response from the server when trying to remove the job.
@@ -17,10 +17,13 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 public class DeleteJobCallback implements AsyncCallback<String> 
 {
 	private String jobToRemove;
+	
+	private boolean isAllJobsDelete;
 
-	public DeleteJobCallback(String jobToRemove)
+	public DeleteJobCallback(String jobToRemove, boolean isAllJobsDelete)
 	{
 		this.jobToRemove = jobToRemove;
+		this.isAllJobsDelete =isAllJobsDelete;
 	}
 
 	@Override
@@ -34,7 +37,7 @@ public class DeleteJobCallback implements AsyncCallback<String>
 	{
 		if (result != null)
 		{
-			EventBusManager.EVENT_BUS.fireEvent(new ShowMessageEvent("Job deleting", result));
+			if(!isAllJobsDelete)Info.display("Job deleted", result);
 			CrkWebServiceProvider.getServiceController().getJobsForCurrentSession();
 		} 
 		else 

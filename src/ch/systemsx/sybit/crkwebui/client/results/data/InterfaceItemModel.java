@@ -1,132 +1,174 @@
 package ch.systemsx.sybit.crkwebui.client.results.data;
 
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
+import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.shared.model.WarningItem;
-
-import com.extjs.gxt.ui.client.data.BaseModel;
 
 /**
  * Data model for interfaces grid.
  * @author srebniak_a
  *
  */
-public class InterfaceItemModel extends BaseModel {
+public class InterfaceItemModel implements Serializable {
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+	
+	private int id;
+	private double area;
+	private String name;
+	private String sizes;
+	private String geometryCall;
+	private String coreRimCall;
+	private String coreSurfaceCall;
+	private String finalCallName;
+	private String operator;
+	private String operatorType;
+	private boolean isInfinite;
+	private List<WarningItem> warnings;
+	private String thumbnailUrl = "";
+	private String warningsImagePath = "resources/icons/warning_icon.png";
+	private String detailsButtonText = AppPropertiesManager.CONSTANTS.results_grid_details_button();
 
 	public InterfaceItemModel()
 	{
-		set("id", "");
-		set("area", "");
-		set("name", "");
-		set("sizes", "");
-		set("finalCallName", "");
-		set("operator", "");
-		set("operatorType", "");
-		set("isInfinite", "");
-		set("warnings", "");
-		set("METHODS", "");
+		id = 0;
+		area = 0;
+		name = "";
+		sizes = "";
+		geometryCall = "";
+		coreRimCall = "";
+		coreSurfaceCall = "";
+		finalCallName = "";
+		operator = "";
+		operatorType = "";
+		isInfinite = false;
+		warnings = new ArrayList<WarningItem>();
 	}
 
-	public InterfaceItemModel(int id,
-							  double area,
-							  String name,
-							  String sizes,
-							  String finalCallName,
-							  String operator,
-							  String operatorType,
-							  boolean isInfinite,
-							  List<WarningItem> warnings) 
-	{
-		set("id", id);
-		set("area", area);
-		set("name", name);
-		set("sizes", sizes);
-		set("finalCallName", finalCallName);
-		set("operator", operator);
-		set("operatorType", operatorType);
-		set("isInfinite", isInfinite);
-		set("warnings", warnings);
-		set("METHODS", "");
+	public String getGeometryCall() {
+		return geometryCall;
+	}
+
+	public void setGeometryCall(String geometryCall) {
+		this.geometryCall = geometryCall;
+	}
+
+	public String getCoreRimCall() {
+		return coreRimCall;
+	}
+
+	public void setCoreRimCall(String coreRimCall) {
+		this.coreRimCall = coreRimCall;
+	}
+
+	public String getCoreSurfaceCall() {
+		return coreSurfaceCall;
+	}
+
+	public void setCoreSurfaceCall(String coreSurfaceCall) {
+		this.coreSurfaceCall = coreSurfaceCall;
+	}
+
+	public String getWarningsImagePath() {
+		return warningsImagePath;
+	}
+
+	public void setWarningsImagePath(String warningsImagePath) {
+		this.warningsImagePath = warningsImagePath;
 	}
 
 	public int getId() {
-		return (Integer) get("id");
+		return id;
 	}
-	
+
 	public void setId(int id) {
-		set("id", id);
+		this.id = id;
 	}
 
 	public double getArea() {
-		return (Double) get("area");
+		return area;
 	}
-	
+
 	public void setArea(double area) {
-		set("area", area);
+		this.area = area;
 	}
 
 	public String getName() {
-		return (String) get("name");
+		return name;
 	}
-	
+
 	public void setName(String name) {
-		set("name", name);
+		this.name = name;
 	}
-	
+
 	public String getSizes() {
-		return (String) get("sizes");
+		return sizes;
 	}
-	
+
 	public void setSizes(String sizes) {
-		set("sizes", sizes);
+		this.sizes = sizes;
 	}
-	
+
 	public String getFinalCallName() {
-		return (String) get("finalCallName");
+		return finalCallName;
 	}
-	
+
 	public void setFinalCallName(String finalCallName) {
-		set("finalCallName", finalCallName);
+		this.finalCallName = finalCallName;
 	}
-	
+
 	public String getOperator() {
-		return (String) get("operator");
+		return operator;
 	}
-	
+
 	public void setOperator(String operator) {
-		set("operator", operator);
+		this.operator = operator;
 	}
-	
+
 	public String getOperatorType() {
-		return (String) get("operatorType");
+		return operatorType;
 	}
-	
+
 	public void setOperatorType(String operatorType) {
-		set("operatorType", operatorType);
+		this.operatorType = operatorType;
 	}
-	
-	public boolean getIsInfinite() {
-		return (Boolean) get("isInfinite");
+
+	public boolean isInfinite() {
+		return isInfinite;
 	}
-	
+
 	public void setIsInfinite(boolean isInfinite) {
-		set("isInfinite", isInfinite);
+		this.isInfinite = isInfinite;
 	}
-	
+
 	public List<WarningItem> getWarnings() {
-		return (List<WarningItem>) get("warnings");
+		return warnings;
 	}
-	
+
 	public void setWarnings(List<WarningItem> warnings) {
-		set("warnings", warnings);
+		this.warnings = warnings;
+	}
+
+	public String getThumbnailUrl() {
+		return thumbnailUrl;
+	}
+
+	public void setThumbnailUrl(String thumbnailUrl) {
+		this.thumbnailUrl = thumbnailUrl;
 	}
 	
-	public String getMETHODS() {
-		return (String) get("METHODS");
+	public String getDetailsButtonText() {
+		return detailsButtonText;
 	}
+
+	public void setDetailsButtonText(String detailsButtonText) {
+		this.detailsButtonText = detailsButtonText;
+	}
+	
 }

@@ -1,9 +1,14 @@
 package ch.systemsx.sybit.crkwebui.client.input.validators;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import ch.systemsx.sybit.crkwebui.shared.validators.EmailFieldVerifier;
 
-import com.extjs.gxt.ui.client.widget.form.Field;
-import com.extjs.gxt.ui.client.widget.form.Validator;
+import com.google.gwt.editor.client.Editor;
+import com.google.gwt.editor.client.EditorError;
+import com.sencha.gxt.widget.core.client.form.Validator;
+import com.sencha.gxt.widget.core.client.form.error.DefaultEditorError;
 
 /**
  * Email address validator.
@@ -11,18 +16,18 @@ import com.extjs.gxt.ui.client.widget.form.Validator;
  * @author srebniak_a
  * 
  */
-public class EmailFieldValidator implements Validator 
+public class EmailFieldValidator implements Validator<String>
 {
 	@Override
-	public String validate(Field<?> field, String value) 
-	{
-		String validationResult = null;
+	public List<EditorError> validate(Editor<String> editor, String value) {
+		List<EditorError> validationResult = null;
 
-		if (!EmailFieldVerifier.isValid(value)) 
+		if (!EmailFieldVerifier.isValid(value))
 		{
-			validationResult = value + " is not correct email address";
+			validationResult = new ArrayList<EditorError>();
+			validationResult.add(new DefaultEditorError(editor, value + " is not a correct email address", value));
 		}
-
+		
 		return validationResult;
 	}
 

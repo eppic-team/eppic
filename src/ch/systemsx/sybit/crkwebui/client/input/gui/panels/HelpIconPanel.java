@@ -1,10 +1,8 @@
 package ch.systemsx.sybit.crkwebui.client.input.gui.panels;
 
-import ch.systemsx.sybit.crkwebui.client.commons.gui.data.TooltipXPositionType;
-import ch.systemsx.sybit.crkwebui.client.commons.gui.data.TooltipYPositionType;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.images.ImageWithTooltip;
 
-import com.extjs.gxt.ui.client.widget.WidgetComponent;
+import com.sencha.gxt.widget.core.client.WidgetComponent;
 
 /**
  * Component used for displaying help icon with tooltip.
@@ -23,13 +21,7 @@ public class HelpIconPanel
 			
 			ImageWithTooltip imageWithTooltip = new ImageWithTooltip(source,
 					 null,
-					 helpText,
-					 500,
-					 false,
-					 100,
-					 0,
-					 TooltipXPositionType.RIGHT,
-					 TooltipYPositionType.BOTTOM);
+					 helpText);
 
 			imageComponent = new WidgetComponent(imageWithTooltip);
 		}

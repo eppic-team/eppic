@@ -1,6 +1,7 @@
 package ch.systemsx.sybit.crkwebui.client.results.gui.panels;
 
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
+import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.panels.DisplayPanel;
 import ch.systemsx.sybit.crkwebui.client.commons.services.eppic.CrkWebServiceProvider;
 import ch.systemsx.sybit.crkwebui.client.commons.util.EscapedStringGenerator;
@@ -8,23 +9,28 @@ import ch.systemsx.sybit.crkwebui.shared.model.InputType;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
 import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
 
-import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
-import com.extjs.gxt.ui.client.Style.Scroll;
-import com.extjs.gxt.ui.client.event.ButtonEvent;
-import com.extjs.gxt.ui.client.event.SelectionListener;
-import com.extjs.gxt.ui.client.widget.LayoutContainer;
-import com.extjs.gxt.ui.client.widget.Status;
-import com.extjs.gxt.ui.client.widget.button.Button;
-import com.extjs.gxt.ui.client.widget.form.FormPanel;
-import com.extjs.gxt.ui.client.widget.form.TextArea;
-import com.extjs.gxt.ui.client.widget.form.TextField;
-import com.extjs.gxt.ui.client.widget.layout.CenterLayout;
-import com.extjs.gxt.ui.client.widget.layout.FormData;
-import com.extjs.gxt.ui.client.widget.layout.RowData;
-import com.extjs.gxt.ui.client.widget.layout.RowLayout;
-import com.extjs.gxt.ui.client.widget.toolbar.FillToolItem;
-import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.user.client.ui.DockLayoutPanel;
+import com.google.gwt.user.client.ui.HTML;
+import com.sencha.gxt.core.client.util.Padding;
+import com.sencha.gxt.widget.core.client.FramedPanel;
+import com.sencha.gxt.widget.core.client.Status;
+import com.sencha.gxt.widget.core.client.button.TextButton;
+import com.sencha.gxt.widget.core.client.container.CenterLayoutContainer;
+import com.sencha.gxt.widget.core.client.container.HorizontalLayoutContainer;
+import com.sencha.gxt.widget.core.client.container.HorizontalLayoutContainer.HorizontalLayoutData;
+import com.sencha.gxt.widget.core.client.container.SimpleContainer;
+import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer;
+import com.sencha.gxt.widget.core.client.container.BoxLayoutContainer.BoxLayoutPack;
+import com.sencha.gxt.widget.core.client.event.SelectEvent;
+import com.sencha.gxt.widget.core.client.event.SelectEvent.SelectHandler;
+import com.sencha.gxt.widget.core.client.form.FieldLabel;
+import com.sencha.gxt.widget.core.client.form.FormPanel;
+import com.sencha.gxt.widget.core.client.form.FormPanel.LabelAlign;
+import com.sencha.gxt.widget.core.client.form.TextArea;
+import com.sencha.gxt.widget.core.client.toolbar.FillToolItem;
+import com.sencha.gxt.widget.core.client.toolbar.ToolBar;
 
 /**
  * Panel used to display status of submitted job.
@@ -37,84 +43,80 @@ public class StatusPanel extends DisplayPanel
 
 	private IdentifierHeaderPanel identifierHeaderPanel;
 	
-	private TextField<String> jobId;
-	private TextField<String> status;
+	private HTML jobId;
+	private HTML status;
 	private TextArea log;
 
-	private Button killJob;
+	private TextButton killJob;
 
 	private ToolBar statusBar;
 	private Status statusProgress;
 	private Status statusStepsFinished;
 
-	public StatusPanel(int windowHeight)
+	public StatusPanel()
 	{
-		init(windowHeight);
+		init();
 	}
 
 	/**
 	 * Initializes content of the panel.
 	 */
-	private void init(int windowHeight)
+	private void init()
 	{
-		this.setBorders(true);
-		this.setLayout(new RowLayout());
+		
+		DockLayoutPanel dock = new DockLayoutPanel(Unit.PX);
+		
+		identifierHeaderPanel = new IdentifierHeaderPanel(ApplicationContext.getWindowData().getWindowWidth() - 180);
+		dock.addNorth(identifierHeaderPanel,50);
+		
+		HorizontalLayoutContainer statusContainer = new HorizontalLayoutContainer();
+		statusContainer.getElement().setPadding(new Padding(0));
+		//statusContainer.setScrollMode(ScrollMode.AUTOY);
 
+		FramedPanel framedPanel = new FramedPanel();
+		framedPanel.getHeader().setVisible(false);
+		framedPanel.setButtonAlign(BoxLayoutPack.CENTER);
+		
 		formPanel = new FormPanel();
-		formPanel.getHeader().setVisible(false);
-		formPanel.setBodyBorder(false);
-		formPanel.setButtonAlign(HorizontalAlignment.CENTER);
-		formPanel.setScrollMode(Scroll.AUTOY);
+		framedPanel.setWidget(formPanel);
 		
-		identifierHeaderPanel = new IdentifierHeaderPanel();
-		this.add(identifierHeaderPanel);
+		VerticalLayoutContainer formContainer = new VerticalLayoutContainer();
 		
-		jobId = createJobIdField();
-		formPanel.add(jobId, new FormData("95%"));
+		formContainer.add(new SimpleContainer(), new VerticalLayoutData(-1,20));
+		
+		jobId = new HTML();
+		FieldLabel jobIdLabel = new FieldLabel(jobId, AppPropertiesManager.CONSTANTS.status_panel_jobId());
+		formContainer.add(jobIdLabel, new VerticalLayoutData(-1,-1));
 
-		status = createStatusField();
-		formPanel.add(status, new FormData("95%"));
+		status = new HTML();
+		FieldLabel statusLabel = new FieldLabel(status, AppPropertiesManager.CONSTANTS.status_panel_status());
+		formContainer.add(statusLabel, new VerticalLayoutData(-1,-1));
 
 		log = createLogTextarea();
-		formPanel.add(log, new FormData("95% -110"));
+		FieldLabel logLabel = new FieldLabel(log, AppPropertiesManager.CONSTANTS.status_panel_log());
+		logLabel.setLabelAlign(LabelAlign.TOP);
+		formContainer.add(logLabel, new VerticalLayoutData(1,1));
 
 		killJob = createStopJobButton();
 		
-		LayoutContainer killButtonContainer = new LayoutContainer();
-		killButtonContainer.setLayout(new CenterLayout());
+		CenterLayoutContainer killButtonContainer = new CenterLayoutContainer();
 		killButtonContainer.add(killJob);
 		killButtonContainer.setHeight(30);
-		formPanel.add(killButtonContainer, new FormData("95%"));
+		formContainer.add(killButtonContainer, new VerticalLayoutData(1,60));
 
 		statusBar = createStatusBar();
-		formPanel.setBottomComponent(statusBar);
+		formContainer.add(statusBar, new VerticalLayoutData(1,40));
 		
-		this.add(formPanel, new RowData(1,1));
+		formPanel.setWidget(formContainer);
+		
+		statusContainer.add(new SimpleContainer(), new HorizontalLayoutData(0.05,1));
+		statusContainer.add(formPanel, new HorizontalLayoutData(0.90,1));
+		statusContainer.add(new SimpleContainer(), new HorizontalLayoutData(0.05,1));
+		
+		dock.add(statusContainer);
+		
+		this.setData(dock);
 
-	}
-	
-	/**
-	 * Creates field used to store identifier of the job
-	 * @return jobid field
-	 */
-	private TextField<String> createJobIdField()
-	{
-		TextField<String> jobId = new TextField<String>();
-		jobId.setFieldLabel(AppPropertiesManager.CONSTANTS.status_panel_jobId());
-		jobId.setReadOnly(true);
-		return jobId;
-	}
-	
-	/**
-	 * Creates field used to store status of processing (running, waiting, error, etc.)
-	 * @return status field
-	 */
-	private TextField<String> createStatusField()
-	{
-		TextField<String> status = new TextField<String>();
-		status.setFieldLabel(AppPropertiesManager.CONSTANTS.status_panel_status());
-		status.setReadOnly(true);
-		return status;
 	}
 	
 	/**
@@ -124,9 +126,8 @@ public class StatusPanel extends DisplayPanel
 	private TextArea createLogTextarea()
 	{
 		TextArea log = new TextArea();
-		log.setFieldLabel(AppPropertiesManager.CONSTANTS.status_panel_log());
 		log.setReadOnly(true);
-		log.addInputStyleName("eppic-status-log");
+		log.addStyleName("eppic-status-log");
 		return log;
 	}
 	
@@ -134,13 +135,15 @@ public class StatusPanel extends DisplayPanel
 	 * Creates button used to stop execution of the job
 	 * @return stop job button
 	 */
-	private Button createStopJobButton()
+	private TextButton createStopJobButton()
 	{
-		Button killJob = new Button(AppPropertiesManager.CONSTANTS.status_panel_stop(), new SelectionListener<ButtonEvent>() {
-
-			public void componentSelected(ButtonEvent ce)
-			{
-				CrkWebServiceProvider.getServiceController().stopJob(jobId.getValue());
+		TextButton killJob = new TextButton(AppPropertiesManager.CONSTANTS.status_panel_stop());
+		killJob.addSelectHandler(new SelectHandler() {
+			
+			@Override
+			public void onSelect(SelectEvent event) {
+				CrkWebServiceProvider.getServiceController().stopJob(jobId.getHTML());
+				
 			}
 		});
 
@@ -188,7 +191,7 @@ public class StatusPanel extends DisplayPanel
 		Status statusStepsFinished = new Status();
 	    statusStepsFinished.setWidth(100);
 	    statusStepsFinished.setText("");
-	    statusStepsFinished.setBox(true);
+	    //statusStepsFinished.setBox(true);
 	    return statusStepsFinished;
 	}
 
@@ -202,14 +205,15 @@ public class StatusPanel extends DisplayPanel
 		log.setValue(statusData.getLog());
 		log.getElement().getFirstChildElement().setScrollTop(scrollBefore);
 
-		status.setValue(String.valueOf(statusData.getStatus()));
-		jobId.setValue(statusData.getJobId());
+		status.setHTML(String.valueOf(statusData.getStatus()));
+		jobId.setHTML(statusData.getJobId());
 		identifierHeaderPanel.setPDBText(statusData.getInput(), null, null, 0, 0, statusData.getInputType());
+		identifierHeaderPanel.setEmptyDownloadResultsLink();
 
-		if((status.getValue() != null) &&
-		   ((status.getValue().equals(StatusOfJob.RUNNING.getName())) ||
-			(status.getValue().equals(StatusOfJob.WAITING.getName())) ||
-			(status.getValue().equals(StatusOfJob.QUEUING.getName()))))
+		if((status.getHTML() != null) &&
+		   ((status.getHTML().equals(StatusOfJob.RUNNING.getName())) ||
+			(status.getHTML().equals(StatusOfJob.WAITING.getName())) ||
+			(status.getHTML().equals(StatusOfJob.QUEUING.getName()))))
 		{
 			String subTitle = AppPropertiesManager.CONSTANTS.status_panel_subtitle();
 			subTitle = subTitle.replaceFirst("%s", GWT.getHostPageBaseURL() + 
@@ -243,8 +247,6 @@ public class StatusPanel extends DisplayPanel
 			statusStepsFinished.clearStatus("");
 			statusStepsFinished.setVisible(false);
 		}
-		
-		this.layout(true);
 	}
 
 	/**
@@ -253,11 +255,10 @@ public class StatusPanel extends DisplayPanel
 	public void cleanData()
 	{
 		log.setValue("");
-		status.setValue("");
-		jobId.setValue("");
+		status.setHTML("");
+		jobId.setHTML("");
 		identifierHeaderPanel.setPDBText("", null, null, 0, 0, InputType.NONE.getIndex());
 		identifierHeaderPanel.setPDBIdentifierSubtitle("");
-		
-		this.layout(true);
+		identifierHeaderPanel.setEmptyDownloadResultsLink();
 	}
 }

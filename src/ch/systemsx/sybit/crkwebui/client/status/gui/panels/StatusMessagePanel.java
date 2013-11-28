@@ -7,26 +7,23 @@ import ch.systemsx.sybit.crkwebui.client.commons.handlers.UpdateStatusLabelHandl
 import ch.systemsx.sybit.crkwebui.client.commons.managers.EventBusManager;
 import ch.systemsx.sybit.crkwebui.client.commons.util.EscapedStringGenerator;
 
-import com.extjs.gxt.ui.client.Style.Scroll;
-import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.google.gwt.user.client.ui.HTML;
+import com.sencha.gxt.widget.core.client.container.SimpleContainer;
 
 /**
  * Panel containing status label.
  * @author srebniak_a
  *
  */
-public class StatusMessagePanel extends LayoutContainer
+public class StatusMessagePanel extends SimpleContainer
 {
 	private HTML status;
 	private StatusMessageType lastMessageType = StatusMessageType.NO_ERROR;
 
 	public StatusMessagePanel()
 	{
-		this.setScrollMode(Scroll.AUTOY);
-
 		status = new HTML();
-		this.add(status);
+		this.setWidget(status);
 		
 		initializeEventsListeners();
 	}

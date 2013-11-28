@@ -19,7 +19,6 @@
 	<classpathentry kind="lib" path="libs/slf4j-log4j12-1.6.1.jar"/>
 	<classpathentry kind="lib" path="libs/cglib-2.2.jar"/>
 	<classpathentry kind="lib" path="libs/c3p0-0.9.1.jar"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/crk"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/owl"/>
 	<classpathentry kind="src" path=".apt_generated">
 		<attributes>
@@ -28,5 +27,7 @@
 	</classpathentry>
 	<classpathentry kind="con" path="com.google.gwt.eclipse.core.GWT_CONTAINER"/>
 	<classpathentry kind="lib" path="libs/gxt-2.3.1-gwt22.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/eppic"/>
+	<classpathentry kind="lib" path="/afs/psi.ch/user/b/biyani_n/Workspace/crkwebui/libs/gxt-3.0.1.jar"/>
 	<classpathentry kind="output" path="war/WEB-INF/classes"/>
 </classpath>

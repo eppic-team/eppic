@@ -1,5 +1,7 @@
 package ch.systemsx.sybit.crkwebui.client.commons.services.eppic;
 
+import java.util.List;
+
 import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
 
 /**
@@ -56,6 +58,12 @@ public interface CrkWebServiceController
 	 * @param jobToStop job to stop
 	 */
 	public abstract void stopJob(String jobToStop);
+	
+	/**
+	 * Deletes all jobs in the current my jobs panel
+	 * @param List of jobsToDelete identifiers of the jobs to remove
+	 */
+	public abstract void deleteAllJobs(List<String> jobsToDelete);
 	
 	/**
 	 * Unties specified job from the current session id.

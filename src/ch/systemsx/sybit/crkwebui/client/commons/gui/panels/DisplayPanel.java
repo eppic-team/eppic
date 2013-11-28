@@ -1,20 +1,33 @@
 package ch.systemsx.sybit.crkwebui.client.commons.gui.panels;
 
-import com.extjs.gxt.ui.client.widget.LayoutContainer;
-import com.extjs.gxt.ui.client.widget.layout.FitLayout;
+import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
+
+import com.google.gwt.user.client.ui.Widget;
+import com.sencha.gxt.core.client.dom.ScrollSupport.ScrollMode;
+import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer;
 
 /**
  * Base class for different views visible in center panel.
  * @author srebniak_a
  *
  */
-public class DisplayPanel extends LayoutContainer 
+public class DisplayPanel extends VerticalLayoutContainer
 {
+	Widget mainWidget = new Widget();
+	
 	public DisplayPanel()
 	{
-		this.setBorders(true);
-		this.setLayout(new FitLayout());
+		this.setScrollMode(ScrollMode.AUTOY);
+		this.setHeight(ApplicationContext.getWindowData().getWindowHeight() - 65);
+		this.setBorders(false);
 		this.addStyleName("eppic-default-padding");
 		this.addStyleName("eppic-rounded-border");
+	}
+	
+	public void setData(Widget w){
+		if(mainWidget != null) this.remove(mainWidget);
+		
+		mainWidget = w;
+		this.add(mainWidget, new VerticalLayoutData(1,1));
 	}
 }

@@ -6,56 +6,53 @@ import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResidueItem;
 import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
 
-import com.extjs.gxt.ui.client.Style.Orientation;
-import com.extjs.gxt.ui.client.event.Events;
-import com.extjs.gxt.ui.client.event.FieldEvent;
-import com.extjs.gxt.ui.client.event.Listener;
-import com.extjs.gxt.ui.client.util.Margins;
-import com.extjs.gxt.ui.client.widget.LayoutContainer;
-import com.extjs.gxt.ui.client.widget.form.ComboBox.TriggerAction;
-import com.extjs.gxt.ui.client.widget.form.FormPanel;
-import com.extjs.gxt.ui.client.widget.form.SimpleComboBox;
-import com.extjs.gxt.ui.client.widget.layout.RowData;
-import com.extjs.gxt.ui.client.widget.layout.RowLayout;
-import com.extjs.gxt.ui.client.widget.toolbar.FillToolItem;
-import com.extjs.gxt.ui.client.widget.toolbar.LabelToolItem;
-import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
+import com.google.gwt.event.logical.shared.SelectionEvent;
+import com.google.gwt.event.logical.shared.SelectionHandler;
+import com.sencha.gxt.cell.core.client.form.ComboBoxCell.TriggerAction;
+import com.sencha.gxt.core.client.util.Margins;
+import com.sencha.gxt.data.shared.LabelProvider;
+import com.sencha.gxt.data.shared.ListStore;
+import com.sencha.gxt.data.shared.ModelKeyProvider;
+import com.sencha.gxt.widget.core.client.container.HorizontalLayoutContainer;
+import com.sencha.gxt.widget.core.client.container.HorizontalLayoutContainer.HorizontalLayoutData;
+import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer;
+import com.sencha.gxt.widget.core.client.form.ComboBox;
+import com.sencha.gxt.widget.core.client.form.FormPanel;
+import com.sencha.gxt.widget.core.client.toolbar.FillToolItem;
+import com.sencha.gxt.widget.core.client.toolbar.LabelToolItem;
+import com.sencha.gxt.widget.core.client.toolbar.ToolBar;
 
 /**
  * Panel containing interface residues for both structures.
  * @author AS
  *
  */
-public class InterfacesResiduesPanel extends FormPanel 
+public class InterfacesResiduesPanel extends VerticalLayoutContainer 
 {
 	private StructurePanel firstStructurePanel;
 	private StructurePanel secondStructurePanel;
 	
-	private SimpleComboBox<String> residuesFilterComboBox;
+	private ComboBox<String> residuesFilterComboBox;
 	
 	public InterfacesResiduesPanel()
 	{
-		this.getHeader().setVisible(false);
-		this.setBodyBorder(false);
 		this.setBorders(false);
-		this.setLayout(new RowLayout(Orientation.VERTICAL));
 		
-		LayoutContainer residuesLayoutContainer = new LayoutContainer();
-		residuesLayoutContainer.setLayout(new RowLayout(Orientation.HORIZONTAL));
+		HorizontalLayoutContainer residuesLayoutContainer = new HorizontalLayoutContainer();
 	
 		firstStructurePanel = new StructurePanel(1);
-		residuesLayoutContainer.add(firstStructurePanel, new RowData(0.49, 1, new Margins(0)));
+		residuesLayoutContainer.add(firstStructurePanel, new HorizontalLayoutData(0.49, 1, new Margins(0)));
 
 		FormPanel breakPanel = createBreakPanel();
-		residuesLayoutContainer.add(breakPanel, new RowData(0.02, 1, new Margins(0)));
+		residuesLayoutContainer.add(breakPanel, new HorizontalLayoutData(0.02, 1, new Margins(0)));
 		
 		secondStructurePanel = new StructurePanel(2);
-		residuesLayoutContainer.add(secondStructurePanel, new RowData(0.49, 1, new Margins(0)));
+		residuesLayoutContainer.add(secondStructurePanel, new HorizontalLayoutData(0.49, 1, new Margins(0)));
 		
-		this.add(residuesLayoutContainer, new RowData(1, 1, new Margins(0, 0, 0, 0)));
+		this.add(createToolbar(), new VerticalLayoutData(1,-1));
 		
-		ToolBar toolbar = createToolbar();  
-		this.setTopComponent(toolbar);
+		this.add(residuesLayoutContainer, new VerticalLayoutData(1, 1));
+
 	}
 	
 	/**
@@ -65,9 +62,7 @@ public class InterfacesResiduesPanel extends FormPanel
 	private FormPanel createBreakPanel()
 	{
 		FormPanel breakPanel = new FormPanel();
-		breakPanel.setBodyBorder(false);
 		breakPanel.setBorders(false);
-		breakPanel.getHeader().setVisible(false);
 		return breakPanel;
 	}
 	
@@ -91,32 +86,49 @@ public class InterfacesResiduesPanel extends FormPanel
 	 * Creates selector used to limit types of interface residues to display.
 	 * @return residues filter combobox
 	 */
-	private SimpleComboBox<String> createResiduesFilterComboBox()
+	private ComboBox<String> createResiduesFilterComboBox()
 	{
-		final SimpleComboBox<String> residuesFilterComboBox = new SimpleComboBox<String>();
+		ListStore<String> store = new ListStore<String>(new ModelKeyProvider<String>() {
+			@Override
+			public String getKey(String item) {
+				return item;
+			}
+		});
+
+		store.add(AppPropertiesManager.CONSTANTS.interfaces_residues_combo_all());
+		store.add(AppPropertiesManager.CONSTANTS.interfaces_residues_combo_rimcore());
+		
+		final ComboBox<String> residuesFilterComboBox = new ComboBox<String>(store, new LabelProvider<String>() {
+			@Override
+			public String getLabel(String item) {
+				return item;
+			}
+		});
+		
 		residuesFilterComboBox.setId("residuesfilter");
 		residuesFilterComboBox.setTriggerAction(TriggerAction.ALL);  
 		residuesFilterComboBox.setEditable(false);  
-		residuesFilterComboBox.setFireChangeEventOnSetValue(true);  
+		//residuesFilterComboBox.setFireChangeEventOnSetValue(true);  
 		residuesFilterComboBox.setWidth(100);  
-		residuesFilterComboBox.add(AppPropertiesManager.CONSTANTS.interfaces_residues_combo_all());  
-		residuesFilterComboBox.add(AppPropertiesManager.CONSTANTS.interfaces_residues_combo_rimcore());  
-		residuesFilterComboBox.setSimpleValue(AppPropertiesManager.CONSTANTS.interfaces_residues_combo_rimcore());
+
+		residuesFilterComboBox.setValue(AppPropertiesManager.CONSTANTS.interfaces_residues_combo_rimcore());
 		
-		residuesFilterComboBox.addListener(Events.Change, new Listener<FieldEvent>() 
-		{  
-			public void handleEvent(FieldEvent be) 
-			{
+		residuesFilterComboBox.addSelectionHandler(new SelectionHandler<String>() {
+			
+			@Override
+			public void onSelection(SelectionEvent<String> event) {
 				boolean showAll = true;
 				
-				if(!residuesFilterComboBox.getValue().getValue().equals(AppPropertiesManager.CONSTANTS.interfaces_residues_combo_all()))
+				if(!event.getSelectedItem().equals(AppPropertiesManager.CONSTANTS.interfaces_residues_combo_all()))
 				{
 					showAll = false;
 				}
 				
 				firstStructurePanel.getResiduesPanel().applyFilter(showAll);
 				secondStructurePanel.getResiduesPanel().applyFilter(showAll);
-			}  
+				
+				
+			}
 		}); 
 		
 		return residuesFilterComboBox;
@@ -127,7 +139,7 @@ public class InterfacesResiduesPanel extends FormPanel
 	 */
 	public void cleanData()
 	{
-		residuesFilterComboBox.setSimpleValue(AppPropertiesManager.CONSTANTS.interfaces_residues_combo_rimcore());
+		residuesFilterComboBox.setValue(AppPropertiesManager.CONSTANTS.interfaces_residues_combo_rimcore());
 		firstStructurePanel.cleanData();
 		secondStructurePanel.cleanData();
 	}
@@ -184,6 +196,5 @@ public class InterfacesResiduesPanel extends FormPanel
 	{
 		firstStructurePanel.resizeResiduesPanels();
 		secondStructurePanel.resizeResiduesPanels();
-		this.layout(true);
 	}
 }

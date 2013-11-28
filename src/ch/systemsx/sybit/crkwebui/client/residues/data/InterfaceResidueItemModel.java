@@ -1,122 +1,112 @@
 package ch.systemsx.sybit.crkwebui.client.residues.data;
 
-import com.extjs.gxt.ui.client.data.BaseModel;
+import java.io.Serializable;
 
 /**
  * Data model for interface residues grid.
  * @author AS
  */
-public class InterfaceResidueItemModel extends BaseModel
+public class InterfaceResidueItemModel implements Serializable
 {
 	public static final String PDB_RESIDUE_NUMBER_PROPERTY_NAME = "pdbResidueNumber";
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+	
+	private int structure;
+	private int residueNumber;
+	private String pdbResidueNumber;
+	private String residueType;
+	private float asa;
+	private float bsa;
+	private float bsaPercentage;
+	private int assignment;
+	private float entropyScore;
 
 	public InterfaceResidueItemModel()
 	{
-		set("structure", "");
-		set("residueNumber", "");
-		set(PDB_RESIDUE_NUMBER_PROPERTY_NAME, "");
-		set("residueType", "");
-		set("asa", "");
-		set("bsa", "");
-		set("bsaPercentage", "");
-		set("assignment", "");
-		set("entropyScore", "");
-	}
-
-	public InterfaceResidueItemModel( int structure,
-									  int residueNumber,
-									  String pdbResidueNumber,
-									  String residueType,
-									  float asa,
-									  float bsa,
-									  float bsaPercentage,
-									  int assignment,
-									  float entropyScore) 
-	{
-		set("structure", structure);
-		set("residueNumber", residueNumber);
-		set(PDB_RESIDUE_NUMBER_PROPERTY_NAME, pdbResidueNumber);
-		set("residueType", residueType);
-		set("asa", asa);
-		set("bsa", bsa);
-		set("bsaPercentage", bsaPercentage);
-		set("assignment", assignment);
-		set("entropyScore", entropyScore);
+		this.structure = 0;
+		this.residueNumber = 0;
+		this.pdbResidueNumber = "";
+		this.residueType = "";
+		this.asa = 0;
+		this.bsa = 0;
+		this.bsaPercentage = 0;
+		this.assignment = 0;
+		this.entropyScore = 0;
 	}
 
 	public int getStructure() {
-		return (Integer) get("structure");
+		return structure;
 	}
-	
+
 	public void setStructure(int structure) {
-		set("structure", structure);
+		this.structure = structure;
 	}
-	
+
 	public int getResidueNumber() {
-		return (Integer) get("residueNumber");
+		return residueNumber;
 	}
-	
+
 	public void setResidueNumber(int residueNumber) {
-		set("residueNumber", residueNumber);
+		this.residueNumber = residueNumber;
 	}
-	
+
 	public String getPdbResidueNumber() {
-		return (String) get(PDB_RESIDUE_NUMBER_PROPERTY_NAME);
+		return pdbResidueNumber;
 	}
-	
+
 	public void setPdbResidueNumber(String pdbResidueNumber) {
-		set(PDB_RESIDUE_NUMBER_PROPERTY_NAME, pdbResidueNumber);
+		this.pdbResidueNumber = pdbResidueNumber;
 	}
-	
+
 	public String getResidueType() {
-		return (String) get("residueType");
+		return residueType;
 	}
-	
+
 	public void setResidueType(String residueType) {
-		set("residueType", residueType);
+		this.residueType = residueType;
 	}
 
 	public float getAsa() {
-		return (Float) get("asa");
+		return asa;
 	}
-	
+
 	public void setAsa(float asa) {
-		set("asa", asa);
+		this.asa = asa;
 	}
-	
+
 	public float getBsa() {
-		return (Float) get("bsa");
+		return bsa;
 	}
-	
+
 	public void setBsa(float bsa) {
-		set("bsa", bsa);
+		this.bsa = bsa;
 	}
-	
+
 	public float getBsaPercentage() {
-		return (Float) get("bsaPercentage");
+		return bsaPercentage;
 	}
-	
+
 	public void setBsaPercentage(float bsaPercentage) {
-		set("bsaPercentage", bsaPercentage);
+		this.bsaPercentage = bsaPercentage;
 	}
-	
+
 	public int getAssignment() {
-		return (Integer) get("assignment");
+		return assignment;
 	}
-	
+
 	public void setAssignment(int assignment) {
-		set("assignment", assignment);
+		this.assignment = assignment;
 	}
-	
-	public void setEntropyScore(float entropyScore) {
-		set("entropyScore", entropyScore);
-	}
-	
+
 	public float getEntropyScore() {
-		return (Float) get("entropyScore");
+		return entropyScore;
 	}
+
+	public void setEntropyScore(float entropyScore) {
+		this.entropyScore = entropyScore;
+	}
+
 }

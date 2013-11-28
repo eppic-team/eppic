@@ -1,8 +1,10 @@
 package ch.systemsx.sybit.crkwebui.client.commons.gui.windows;
 
-import com.extjs.gxt.ui.client.widget.Html;
+import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
 
-public class Iframe extends Html
+import com.sencha.gxt.widget.core.client.container.HtmlLayoutContainer;
+
+public class Iframe extends HtmlLayoutContainer
 {
 	/**
 	 * Creates instance of iframe widget with specified source.
@@ -10,7 +12,7 @@ public class Iframe extends Html
 	 */
 	public Iframe(String source)
 	{
-		this.setHtml("<iframe src=\"" + source + "\"" +
-					 " frameborder=\"0\" width=\"100%\" height=\"100%\" />");
+		super("<iframe src='" + source + "'" +" frameborder='0' width='100%' height='100%' />");
+		this.setHeight(ApplicationContext.getWindowData().getWindowHeight()- 80);
 	}
 }

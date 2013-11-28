@@ -2,7 +2,7 @@ package ch.systemsx.sybit.crkwebui.client.commons.gui.windows;
 
 import ch.systemsx.sybit.crkwebui.shared.model.WindowData;
 
-import com.extjs.gxt.ui.client.widget.Dialog;
+import com.sencha.gxt.widget.core.client.Dialog;
 
 /**
  * Generic resizable window.
@@ -39,7 +39,7 @@ public class ResizableWindow extends Dialog
 			}
 		}
 		
-		this.setSize(windowWidth, windowHeight);
+		this.setPixelSize(windowWidth, windowHeight);
 	}
 	
 	/**

@@ -30,6 +30,11 @@ public interface AppProperties extends Constants
 	String downloads_panel_download_crk_link();
 	String downloads_panel_download_crk_link_hint();
 	
+	String top_search_panel_box_empty_text();
+	
+	String pdb_code_box_wrong_code_header();
+	String pdb_code_box_wrong_code_supporting_text();
+	
 	String input_title();
 	String input_email();
 	String input_file();
@@ -105,16 +110,32 @@ public interface AppProperties extends Constants
 	String homologs_panel_query_warnings_title();
 	String homologs_panel_next_homologs_button();
 	String homologs_panel_prev_homologs_button();
-
 	
+	String homologs_window_title();
+	String homologs_window_query_text();
+	String homologs_window_subtitle_text();
+	String homologs_window_downloads_tooltip();
+	
+	String homologs_window_grid_identity_bar_text();
+	String homologs_window_grid_coverage_bar_text();
+
+	String myjobs_clear_button();
 	String myjobs_panel_head();
-	String myjobs_panel_new_button();
-	String myjobs_grid_stop_tooltip();
-	String myjobs_grid_delete_tooltip();
+	String myjobs_grid_tooltip();
+	String myjobs_grid_delete_button();
+	
+	String myjobs_ERROR();
+	String myjobs_FINISHED();
+	String myjobs_NONEXISTING();
+	String myjobs_QUEUING();
+	String myjobs_RUNNING();
+	String myjobs_STOPPED();
+	String myjobs_WAITING();
 	
 	String results_grid_empty_text();
 	String results_grid_details_button();
 	String results_grid_details_button_tooltip();
+	String results_grid_selector_button();
 	String results_grid_viewer_button();
 	String results_grid_viewer_button_tooltip();
 	String results_grid_viewer_combo_label();
@@ -160,6 +181,7 @@ public interface AppProperties extends Constants
 	String bottom_panel_contact_link();
 	String bottom_panel_contact_link_label();
 	String bottom_panel_status_error_refresh_page();
+	String bottom_panel_change_viewer_link_label();
 	
 	String about_window_title();
 	
@@ -186,4 +208,7 @@ public interface AppProperties extends Constants
 	String viewer_jmol();
 	String viewer_local();
 	String viewer_pse();
+	
+	String viewer_window_title();
+	String viewer_window_box_title();
 }

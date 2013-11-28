@@ -1,15 +1,15 @@
 package ch.systemsx.sybit.crkwebui.client.commons.gui.links;
 
-import com.extjs.gxt.ui.client.widget.Label;
+import com.google.gwt.user.client.ui.HTML;
 
 /**
  * Label styled as link.
  * @author AS
  */
-public class EmptyLink extends Label
+public class EmptyLink extends HTML
 {
 	public EmptyLink(String labelText)
 	{
-		this.setHtml("<a href=\"\" onClick=\"return false;\">" + labelText + "</a>");
+		this.setHTML("<a href=\"\" onClick=\"return false;\">" + labelText + "</a>");
 	}
 }

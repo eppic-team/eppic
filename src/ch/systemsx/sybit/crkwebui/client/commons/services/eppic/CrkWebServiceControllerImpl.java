@@ -1,5 +1,7 @@
 package ch.systemsx.sybit.crkwebui.client.commons.services.eppic;
 
+import java.util.List;
+
 import ch.systemsx.sybit.crkwebui.client.commons.callbacks.DeleteJobCallbackXsrf;
 import ch.systemsx.sybit.crkwebui.client.commons.callbacks.GetAllResiduesCallback;
 import ch.systemsx.sybit.crkwebui.client.commons.callbacks.GetCurrentStatusDataCallback;
@@ -15,9 +17,10 @@ import ch.systemsx.sybit.crkwebui.client.commons.managers.EventBusManager;
 import ch.systemsx.sybit.crkwebui.client.commons.services.xsrf.XsrfTokenServiceProvider;
 import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
 
-import com.extjs.gxt.ui.client.GXT;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.rpc.XsrfTokenServiceAsync;
+import com.sencha.gxt.core.client.GXT;
 
 /**
  * Implementation of service manager.
@@ -72,10 +75,18 @@ public class CrkWebServiceControllerImpl implements CrkWebServiceController
 	}
 	
 	@Override
+	public void deleteAllJobs(List<String> jobsToDelete) 
+	{
+		History.newItem("");
+		for(String jobToDelete : jobsToDelete)
+			xsrfTokenService.getNewXsrfToken(new DeleteJobCallbackXsrf(crkWebService, jobToDelete, true));
+	}
+	
+	@Override
 	public void deleteJob(String jobToDelete) 
 	{
 		EventBusManager.EVENT_BUS.fireEvent(new BeforeJobDeletedEvent(jobToDelete));
-		xsrfTokenService.getNewXsrfToken(new DeleteJobCallbackXsrf(crkWebService, jobToDelete));
+		xsrfTokenService.getNewXsrfToken(new DeleteJobCallbackXsrf(crkWebService, jobToDelete, false));
 	}
 
 	@Override
@@ -90,7 +101,7 @@ public class CrkWebServiceControllerImpl implements CrkWebServiceController
 
 	@Override
 	public void getAllResidues(String jobId) {
-		if(!GXT.isIE8)
+		if(!GXT.isIE8())
 		{
 			crkWebService.getAllResidues(jobId,new GetAllResiduesCallback(jobId));
 		}

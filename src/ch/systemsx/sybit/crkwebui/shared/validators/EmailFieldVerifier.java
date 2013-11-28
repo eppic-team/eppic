@@ -18,9 +18,12 @@ public class EmailFieldVerifier
 	{
 		if (email == null) 
 		{
-			return false;
+			email = "";
 		}
-
+		if (email == "")
+		{
+			return true;
+		}
 		if (email.matches(EMAIL_PATTERN)) 
 		{
 			return true;

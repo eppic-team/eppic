@@ -1,5 +1,9 @@
+.eppic-iframe {
+	font-family: 'Ubuntu', sans-serif;
+}
+
 .eppic-iframe h1 {
-	font-family: Arial Unicode MS, Arial, sans-serif;
+	font-family: 'Ubuntu', sans-serif;
 	font-size:20px;
 	font-weight:bold;
 	margin-left: 15px;
@@ -9,7 +13,7 @@
 }
 
 .eppic-iframe h2 {
-	font-family: Arial Unicode MS, Arial, sans-serif;
+	font-family: 'Ubuntu', sans-serif;
 	font-size:16px;
 	font-weight:bold;	
 	margin-left: 15px;
@@ -19,7 +23,7 @@
 }
 
 .eppic-iframe p {
-	font-family: Arial Unicode MS, Arial, sans-serif;
+	font-family: 'Ubuntu', sans-serif;
 	font-size:14px;
 	line-height:125%;
 	margin-left: 15px;
@@ -39,7 +43,7 @@
 }
 
 .eppic-iframe ul {
-	font-family: Arial Unicode MS, Arial, sans-serif;
+	font-family: 'Ubuntu', sans-serif;
 	font-size:14px;
 	margin-left: 15px;
 	margin-right: 20px;

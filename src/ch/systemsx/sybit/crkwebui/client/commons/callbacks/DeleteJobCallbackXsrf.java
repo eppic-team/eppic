@@ -21,11 +21,15 @@ public class DeleteJobCallbackXsrf implements AsyncCallback<XsrfToken>
 	
 	private String jobToDelete;
 	
+	private boolean isAllJobsDelete;
+	
 	public DeleteJobCallbackXsrf(CrkWebServiceAsync crkWebService,
-							   String jobToDelete)
+							   String jobToDelete,
+							   boolean isAllJobsDelete)
 	{
 		this.crkWebService = crkWebService;
 		this.jobToDelete = jobToDelete;
+		this.isAllJobsDelete = isAllJobsDelete;
 	}
 	
 	@Override
@@ -40,7 +44,7 @@ public class DeleteJobCallbackXsrf implements AsyncCallback<XsrfToken>
 		if (token != null)
 		{
 			((HasRpcToken)crkWebService).setRpcToken(token);
-			crkWebService.deleteJob(jobToDelete, new DeleteJobCallback(jobToDelete));
+			crkWebService.deleteJob(jobToDelete, new DeleteJobCallback(jobToDelete, isAllJobsDelete));
 		}
 		else 
 		{

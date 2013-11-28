@@ -6,9 +6,9 @@ import ch.systemsx.sybit.crkwebui.client.commons.gui.windows.ResizableWindow;
 import ch.systemsx.sybit.crkwebui.client.commons.managers.EventBusManager;
 import ch.systemsx.sybit.crkwebui.shared.model.WindowData;
 
-import com.extjs.gxt.ui.client.Style.Scroll;
-import com.extjs.gxt.ui.client.event.WindowEvent;
-import com.extjs.gxt.ui.client.event.WindowListener;
+import com.google.gwt.user.client.ui.HTML;
+import com.sencha.gxt.widget.core.client.event.HideEvent;
+import com.sencha.gxt.widget.core.client.event.HideEvent.HideHandler;
 
 /**
  * Window containing general information about the application.
@@ -26,13 +26,12 @@ public class AboutWindow extends ResizableWindow
 			  windowData);
 		
 		this.setHeadingHtml(AppPropertiesManager.CONSTANTS.about_window_title());
-		this.setPlain(true);
 		this.setHideOnButtonClick(true);
 		this.setModal(true);
 		this.setBlinkModal(true);
-		this.setScrollMode(Scroll.AUTO);
+		this.addStyleName("eppic-default-font");
 		
-		this.addText(
+		this.setWidget(new HTML(
 				"<table cellspacing=\"10\">" +
 				"<tr>" +
 				"<td>" +
@@ -65,14 +64,14 @@ public class AboutWindow extends ResizableWindow
 				"<td>eppic@systemsx.ch</td>" +
 				"<td>" +
 				"</tr>" +
-				"</table>");
+				"</table>"));
 		
-		this.addWindowListener(new WindowListener()
+		this.addHideHandler(new HideHandler()
 		{
 			@Override
-			public void windowHide(WindowEvent we)
-			{
-				EventBusManager.EVENT_BUS.fireEvent(new WindowHideEvent());
+			public void onHide(HideEvent event) {
+				EventBusManager.EVENT_BUS.fireEvent(new WindowHideEvent());	
+
 			}
 		});
 	}

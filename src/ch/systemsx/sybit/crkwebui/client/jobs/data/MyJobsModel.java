@@ -1,38 +1,55 @@
 package ch.systemsx.sybit.crkwebui.client.jobs.data;
 
-import com.extjs.gxt.ui.client.data.BaseModel;
+import java.io.Serializable;
 
 /**
  * Data model for jobs grid.
- * @author srebniak_a
+ * @author nikhil
  *
  */
-public class MyJobsModel extends BaseModel 
+public class MyJobsModel implements Serializable
 {
 	private static final long serialVersionUID = 1L;
 
+	private String jobid;
+	private String status;
+	private String input;
+	
 	public MyJobsModel() {
-		set("jobid", "");
-		set("status", "");
-		set("input", "");
+		this.jobid = "";
+		this.status = "";
+		this.input = "";
 	}
 
 	public MyJobsModel(String inputData, String status, String input) 
 	{
-		set("jobid", inputData);
-		set("status", status);
-		set("input", input);
+		this.jobid = inputData;
+		this.status = status;
+		this.input = input;
 	}
 
 	public String getJobid() {
-		return (String) get("jobid");
+		return jobid;
+	}
+	
+	public void setJobid(String jobid) {
+		this.jobid = jobid;
 	}
 
 	public String getStatus() {
-		return (String) get("status");
+		return status;
+	}
+	
+	public void setStatus(String status) {
+		this.status = status;
 	}
 
 	public String getInput() {
-		return (String) get("input");
+		return input;
 	}
+	
+	public void setInput(String input) {
+		this.input = input;
+	}
+	
 }

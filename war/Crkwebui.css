@@ -15,6 +15,10 @@
   	text-align: center;
 }
 
+.eppic-default-font, .eppic-default-font td {
+	font-family: 'Ubuntu', sans-serif;
+}
+
 .eppic-default-label {
 	font-size: 12px;
 	white-space: nowrap;
@@ -26,10 +30,10 @@
 	font-weight: bold;
 }
 
-.eppic-action A:link {text-decoration: none; font-weight:bold; font-size: 14px; color: #434350}
-.eppic-action A:visited {text-decoration: none; font-weight:bold; font-size: 14px; color: #434350}
-.eppic-action A:active {text-decoration: none; font-weight:bold; font-size: 14px; color: #434350}
-.eppic-action A:hover {text-decoration: underline; font-weight:bold; font-size: 14px; color: #1428bf}
+.eppic-action A:link {vertical-align:top; text-decoration: none; font-weight:bold; font-size: 12px; color: #434350}
+.eppic-action A:visited {vertical-align:top; text-decoration: none; font-weight:bold; font-size: 12px; color: #434350}
+.eppic-action A:active {vertical-align:top; text-decoration: none; font-weight:bold; font-size: 12px; color: #434350}
+.eppic-action A:hover {vertical-align:top; text-decoration: underline; font-weight:bold; font-size: 12px; color: #1428bf}
 
 .eppic-internal-link A:link {text-decoration: none; font-size: 14px}
 .eppic-internal-link A:visited {text-decoration: none; font-size: 14px}
@@ -41,15 +45,15 @@
 .eppic-download-link A:active {text-decoration: none; font-size: 12px}
 .eppic-download-link A:hover {text-decoration: underline; font-size: 12px}
 
-.eppic-external-link A:link {text-decoration: none; font-size: 14px}
-.eppic-external-link A:visited {text-decoration: none; font-size: 14px}
-.eppic-external-link A:active {text-decoration: none; font-size: 14px}
-.eppic-external-link A:hover {text-decoration: underline; font-size: 14px}
+.eppic-external-link A:link {vertical-align:top; text-decoration: none; font-size: 12px; color: #434350}
+.eppic-external-link A:visited {vertical-align:top; text-decoration: none; font-size: 12px; color: #434350}
+.eppic-external-link A:active {vertical-align:top; text-decoration: none; font-size: 12px; color: #434350}
+.eppic-external-link A:hover {vertical-align:top; text-decoration: underline; font-size: 12px; color: #1428bf}
 
 .eppic-horizontal-nav A:link {text-decoration: none; font-weight:bold; font-size: 14px; color: #434350}
 .eppic-horizontal-nav A:visited {text-decoration: none; font-weight:bold; font-size: 14px; color: #434350}
 .eppic-horizontal-nav A:active {text-decoration: none; font-weight:bold; font-size: 14px; color: #434350}
-.eppic-horizontal-nav A:hover {text-decoration: underline; font-weight:bold; font-size: 14px; color: #1428bf}
+.eppic-horizontal-nav A:hover {text-decoration: none; border-bottom:2px solid #C5C5C5; font-weight:bold; font-size: 14px; color: #434350}
 
 .eppic-monospaced-font {
 	font-size: 10pt;
@@ -80,24 +84,28 @@
 	margin-left: 5px;
 }
 
-.eppic-grid-row-rim.x-grid3-row,.eppic-grid-row-rim {
+.eppic-grid-row-rim.x-grid3-row,.eppic-grid-row-rim,.eppic-grid-row-rim td{
 	background-color:#bedeff;
 }
 
-.eppic-grid-row-core-evolutionary.x-grid3-row,.eppic-grid-row-core-evolutionary {
+.eppic-grid-row-core-evolutionary.x-grid3-row,.eppic-grid-row-core-evolutionary, .eppic-grid-row-core-evolutionary td {
 	background-color:#ff7979;
 }
 
-.eppic-grid-row-core-geometry.x-grid3-row,.eppic-grid-row-core-geometry {
+.eppic-grid-row-core-geometry.x-grid3-row,.eppic-grid-row-core-geometry,.eppic-grid-row-core-geometry td {
 	background-color:#EE2C2C;
 }
 
-.eppic-grid-row-surface.x-grid3-row,.eppic-grid-row-surface {
+.eppic-grid-row-surface.x-grid3-row,.eppic-grid-row-surface, .eppic-grid-row-surface td {
 	background-color:white;
 }
 
-.eppic-grid-row-buried.x-grid3-row,.eppic-grid-row-buried {
+.eppic-grid-row-buried.x-grid3-row,.eppic-grid-row-buried, .eppic-grid-row-buried td {
 	background-color:#CDCDCD;
+}
+
+.eppic-results-header-panel{
+	border-bottom: 3px solid #C5C5C5;
 }
 
 .eppic-summary-grid-row.x-grid3-row,.eppic-summary-grid-row {
@@ -108,7 +116,6 @@
 
 .eppic-pdb-identifier-label {
 	font-size: 22px;
-	font-family: Arial;
 	font-weight: bold;
 }
 .eppic-pdb-identifier-label A:link {text-decoration: none}
@@ -130,13 +137,28 @@
 	font-size: 12px;
 }
 
-.eppic-my-jobs-list-status {
+.eppic-homologs-window-query{
+	font-size: 14px;
+	font-weight:bold;
+}
+
+.eppic-my-jobs-list-input {
+	font-size: 14;
 	font-weight: bold;
+}
+
+.eppic-results-grid td{
+	vertical-align:middle;
+}
+
+.eppic-results-grid-common-cells{
+	text-align: center;
+	font-size: 14px;
 }
 
 .eppic-results-final-call {
 	font-weight: bold;
-	font-size: 14px;
+	font-size: 16px;
 }
 
 .eppic-status-log {
@@ -168,14 +190,12 @@
 }
 
 .eppic-uniprot-version-header {
-	font-family: tahoma, arial, helvetica, sans-serif;
 	font-size: 11px;
 	color: #15428B;
 	font-weight: bold;
 }
 
 .eppic-uniprot-version {
-	font-family: tahoma, arial, helvetica, sans-serif;
 	font-style: italic;
 	font-size: 11px;
 	color: #15428B;
@@ -183,11 +203,11 @@
 }
 
 .eppic-version {
-	font-family: tahoma, arial, helvetica, sans-serif;
 	font-style: italic;
 	font-weight: bold;
 	font-size: 11px;
 	color: #15428B;
+	padding-left: 70px;
 }
 
 .eppic-citation A:link {text-decoration: none}
@@ -261,4 +281,14 @@
 	text-decoration: none;  
 	font-size: 12px; 
 	color: #434350;
+}
+
+.eppic-top-panel-search-button{
+	 background-image: url('resources/icons/find.png');
+	 background-repeat:no-repeat;
+	 background-position:center;
+}
+
+.eppic-top-panel-search-button-over{
+	 background-color: #D7DDE8;
 }

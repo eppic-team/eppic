@@ -1,7 +1,6 @@
 package ch.systemsx.sybit.crkwebui.client.commons.gui.links;
 
 import ch.systemsx.sybit.crkwebui.client.commons.gui.labels.LabelWithTooltip;
-import ch.systemsx.sybit.crkwebui.shared.model.WindowData;
 
 /**
  * Link with attached tooltip.
@@ -9,22 +8,29 @@ import ch.systemsx.sybit.crkwebui.shared.model.WindowData;
  *
  */
 public class LinkWithTooltip extends LabelWithTooltip
-{
+{ 
 	/**
 	 * Creates instance of link with assigned tooltip.
 	 * @param labelText text of the link
 	 * @param tooltipText text of the tooltip
-	 * @param windowData general window data
-	 * @param delay delay after which tooltip is displayed
 	 * @param linkUrl url of the link
 	 */
 	public LinkWithTooltip(String labelText,
 							String tooltipText,
-							WindowData windowData,
-							int delay,
 							String linkUrl)
 	{
-		super(labelText, tooltipText, windowData, delay);
-		this.setHtml("<a href=\"" + linkUrl + "\" target=\"_blank\">" + labelText + "</a>");
+		super(labelText, tooltipText);
+		this.setData(labelText, linkUrl);
+	}
+	
+	/**
+	 * Resets the link and content
+	 * @param labelText
+	 * @param tooltipText
+	 * @param linkUrl
+	 */
+	public void setData(String labelText,
+					String linkUrl){
+		this.setHTML("<a href=\"" + linkUrl + "\" target=\"_blank\" style='vertical-align:top;'>" + labelText + "</a>");
 	}
 }

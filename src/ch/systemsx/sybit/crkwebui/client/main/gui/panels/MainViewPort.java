@@ -8,51 +8,63 @@ import ch.systemsx.sybit.crkwebui.client.alignment.gui.windows.AlignmentsWindow;
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ApplicationWindowResizeEvent;
+import ch.systemsx.sybit.crkwebui.client.commons.events.HideJobsPanelEvent;
+import ch.systemsx.sybit.crkwebui.client.commons.events.ShowJobsPanelEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.UnmaskMainViewEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ApplicationWindowResizeHandler;
+import ch.systemsx.sybit.crkwebui.client.commons.handlers.HideJobsPanelHandler;
+import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowJobsPanelHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.UnmaskMainViewHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.managers.EventBusManager;
 import ch.systemsx.sybit.crkwebui.client.commons.util.EscapedStringGenerator;
+import ch.systemsx.sybit.crkwebui.client.homologs.gui.windows.HomologsWindow;
 import ch.systemsx.sybit.crkwebui.client.input.gui.panels.InputDataPanel;
 import ch.systemsx.sybit.crkwebui.client.jobs.gui.panels.MyJobsPanel;
 import ch.systemsx.sybit.crkwebui.client.main.controllers.MainController;
 import ch.systemsx.sybit.crkwebui.client.residues.gui.windows.InterfacesResiduesWindow;
 import ch.systemsx.sybit.crkwebui.client.results.gui.panels.ResultsPanel;
 import ch.systemsx.sybit.crkwebui.client.results.gui.panels.StatusPanel;
+import ch.systemsx.sybit.crkwebui.client.viewer.gui.windows.ViewerSelectorWindow;
 import ch.systemsx.sybit.crkwebui.shared.model.HomologsInfoItem;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceItem;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResidueItem;
 import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
 
-import com.extjs.gxt.ui.client.Style.LayoutRegion;
-import com.extjs.gxt.ui.client.event.BorderLayoutEvent;
-import com.extjs.gxt.ui.client.event.Events;
-import com.extjs.gxt.ui.client.event.Listener;
-import com.extjs.gxt.ui.client.util.Margins;
-import com.extjs.gxt.ui.client.widget.LayoutContainer;
-import com.extjs.gxt.ui.client.widget.MessageBox;
-import com.extjs.gxt.ui.client.widget.layout.BorderLayout;
-import com.extjs.gxt.ui.client.widget.layout.BorderLayoutData;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.sencha.gxt.widget.core.client.container.BorderLayoutContainer;
+import com.sencha.gxt.widget.core.client.event.CollapseItemEvent;
+import com.sencha.gxt.widget.core.client.event.CollapseItemEvent.CollapseItemHandler;
+import com.sencha.gxt.widget.core.client.event.ExpandItemEvent;
+import com.sencha.gxt.widget.core.client.event.ExpandItemEvent.ExpandItemHandler;
+import com.sencha.gxt.widget.core.client.ContentPanel;
+import com.sencha.gxt.core.client.Style.LayoutRegion;
+import com.sencha.gxt.core.client.util.Margins;
+import com.sencha.gxt.core.client.util.Padding;
+import com.sencha.gxt.widget.core.client.box.AlertMessageBox;
+import com.sencha.gxt.widget.core.client.box.AutoProgressMessageBox;
+import com.sencha.gxt.widget.core.client.box.MessageBox;
 
 /**
  * Main view of the application.
  * @author srebniak_a
  *
  */
-public class MainViewPort extends LayoutContainer
+public class MainViewPort extends BorderLayoutContainer
 {
 	private MyJobsPanel myJobsPanel;
 
 	private CenterPanel centerPanel;
 
-//	private TopPanel topPanel;
+	private TopPanel topPanel;
+	
 	private BottomPanel bottomPanel;
 
 	private InterfacesResiduesWindow interfacesResiduesWindow;
 	private AlignmentsWindow alignmentsWindow;
 	private AboutWindow aboutWindow;
+	private ViewerSelectorWindow viewerWindow;
+	private HomologsWindow homologsWindow;
 
 	private MessageBox waitingMessageBox;
 	private MessageBox errorMessageBox;
@@ -63,65 +75,63 @@ public class MainViewPort extends LayoutContainer
 	
 	public MainViewPort(final MainController mainController)
 	{
-		BorderLayout layout = new BorderLayout();
-		this.setLayout(layout);
-		this.addStyleName("eppic-default-padding");
+		//this.addStyleName("eppic-default-padding");
+		this.addStyleName("eppic-default-font");
+		this.getElement().setPadding(new Padding(0,0,10,0));
 		
-		layout.addListener(Events.Collapse, new Listener<BorderLayoutEvent>()
-		{
-			public void handleEvent(BorderLayoutEvent be)
-			{
-				if(be.getPanel() instanceof MyJobsPanel)
+		this.addCollapseHandler(new CollapseItemHandler<ContentPanel>() {
+			@Override
+			public void onCollapse(CollapseItemEvent<ContentPanel> event) {
+				if(event.getItem() instanceof MyJobsPanel)
+				{
+					EventBusManager.EVENT_BUS.fireEvent(new ApplicationWindowResizeEvent());
+				}
+				
+			}
+			
+		});
+
+		this.addExpandHandler(new ExpandItemHandler<ContentPanel>() {
+			@Override
+			public void onExpand(ExpandItemEvent<ContentPanel> event) {
+				if(event.getItem() instanceof MyJobsPanel)
 				{
 					EventBusManager.EVENT_BUS.fireEvent(new ApplicationWindowResizeEvent());
 				}
 			}
+	
 		});
 
-		layout.addListener(Events.Expand, new Listener<BorderLayoutEvent>()
-		{
-			public void handleEvent(BorderLayoutEvent be)
-			{
-				if(be.getPanel() instanceof MyJobsPanel)
-				{
-					EventBusManager.EVENT_BUS.fireEvent(new ApplicationWindowResizeEvent());
-				}
-			}
-		});
-
-		BorderLayoutData westData = new BorderLayoutData(LayoutRegion.WEST, 220);
+		BorderLayoutData westData = new BorderLayoutData(120);
 		westData.setCollapsible(true);
 		westData.setFloatable(true);
 		westData.setSplit(true);
-		westData.setMargins(new Margins(0, 5, 0, 0));
+		westData.setMargins(new Margins(0, 5, 10, 10));
 
 		myJobsPanel = new MyJobsPanel();
-		this.add(myJobsPanel, westData);
+		this.setWestWidget(myJobsPanel, westData);
 
-		BorderLayoutData centerData = new BorderLayoutData(LayoutRegion.CENTER,
-				200);
+		BorderLayoutData centerData = new BorderLayoutData(200);
 		centerData.setCollapsible(true);
 		centerData.setFloatable(true);
 		centerData.setSplit(true);
 		centerData.setMargins(new Margins(0));
 
 		centerPanel = new CenterPanel();
-		this.add(centerPanel, centerData);
+		this.setCenterWidget(centerPanel, centerData);
 
-		BorderLayoutData northData = new BorderLayoutData(LayoutRegion.NORTH,
-				10);
-		northData.setMargins(new Margins(0, 0, 10, 0));
+		BorderLayoutData northData = new BorderLayoutData(40);
+		northData.setMargins(new Margins(0));
 
-//		topPanel = new TopPanel(mainController);
-//		this.add(topPanel, northData);
-
-		BorderLayoutData southData = new BorderLayoutData(LayoutRegion.SOUTH,
-				20);
-		southData.setMargins(new Margins(5, 0, 0, 0));
-
+		topPanel = new TopPanel();
+		this.setNorthWidget(topPanel, northData);
+		
+		BorderLayoutData southData = new BorderLayoutData(15);
+		southData.setMargins(new Margins(0));
 		bottomPanel = new BottomPanel();
-//		navigationPanel.add(new ThemeSelector());
-		this.add(bottomPanel, southData);
+		//this.setSouthWidget(bottomPanel, southData);
+		
+		this.hide(LayoutRegion.EAST);
 		
 		initializeEventsListeners();
 	}
@@ -149,6 +159,15 @@ public class MainViewPort extends LayoutContainer
 	public BottomPanel getBottomPanel()
 	{
 		return bottomPanel;
+	}
+	
+	/**
+	 * Retrieves top panel.
+	 * @return top panel
+	 */
+	public TopPanel getTopPanel()
+	{
+		return topPanel;
 	}
 
 	/**
@@ -184,9 +203,6 @@ public class MainViewPort extends LayoutContainer
 												  interfaceItem.getChain2(),
 												  selectedInterface);
 
-		//called beacuse of the bug in GXT 2.2.3
-		// http://www.sencha.com/forum/showthread.php?126888-Problems-with-RowLayout
-		interfacesResiduesWindow.layout(true);
 	}
 
 	/**
@@ -231,23 +247,18 @@ public class MainViewPort extends LayoutContainer
 	 */
 	public void displayWaiting(final String text)
 	{
-//		Scheduler.get().scheduleDeferred(new ScheduledCommand() {
-//			@Override
-//			public void execute() {
-				waitingMessageBox = MessageBox.wait(AppPropertiesManager.CONSTANTS.waiting_message_box_header(),
-						EscapedStringGenerator.generateEscapedString(text) + ", " + AppPropertiesManager.CONSTANTS.waiting_message_box_info() + "...",
-						EscapedStringGenerator.generateEscapedString(text) + "...");
-				
-				waitingMessageBox.getDialog().setResizable(true);
-				if(waitingMessageBox.getDialog().getInitialWidth() > ApplicationContext.getWindowData().getWindowWidth() - 20)
-				{
-					waitingMessageBox.getDialog().setWidth(ApplicationContext.getWindowData().getWindowWidth() - 20);
-				}
-				
-				
-				waitingMessageBox.show();
-//			}
-//		});
+		waitingMessageBox = new AutoProgressMessageBox(AppPropertiesManager.CONSTANTS.waiting_message_box_header(),
+				EscapedStringGenerator.generateEscapedString(text) + ", " + AppPropertiesManager.CONSTANTS.waiting_message_box_info() + "...");
+
+		waitingMessageBox.setResizable(true);
+		if(waitingMessageBox.getMinWidth() > ApplicationContext.getWindowData().getWindowWidth() - 20)
+		{
+			waitingMessageBox.setWidth(ApplicationContext.getWindowData().getWindowWidth() - 20);
+		}
+
+
+		waitingMessageBox.show();
+
 	}
 
 	/**
@@ -257,7 +268,7 @@ public class MainViewPort extends LayoutContainer
 	{
 		if(waitingMessageBox != null)
 		{
-			waitingMessageBox.close();
+			waitingMessageBox.hide();
 		}
 	}
 
@@ -270,14 +281,13 @@ public class MainViewPort extends LayoutContainer
 		if((errorMessageBox == null) ||
 		   (!errorMessageBox.isVisible()))
 		{
-			errorMessageBox = MessageBox.alert(AppPropertiesManager.CONSTANTS.error_message_box_header(),
-											   EscapedStringGenerator.generateEscapedString(message), 
-											   null);
+			errorMessageBox = new AlertMessageBox(AppPropertiesManager.CONSTANTS.error_message_box_header(),
+											   EscapedStringGenerator.generateEscapedString(message));
 
-			errorMessageBox.getDialog().setResizable(true);
-			if(errorMessageBox.getDialog().getInitialWidth() > ApplicationContext.getWindowData().getWindowWidth() - 20)
+			errorMessageBox.setResizable(true);
+			if(errorMessageBox.getMinWidth() > ApplicationContext.getWindowData().getWindowWidth() - 20)
 			{
-				errorMessageBox.getDialog().setWidth(ApplicationContext.getWindowData().getWindowWidth() - 20);
+				errorMessageBox.setWidth(ApplicationContext.getWindowData().getWindowWidth() - 20);
 			}
 			
 			errorMessageBox.show();
@@ -314,9 +324,36 @@ public class MainViewPort extends LayoutContainer
 
 		//called beacuse of the bug in GXT 2.2.3
 		// http://www.sencha.com/forum/showthread.php?126888-Problems-with-RowLayout
-		alignmentsWindow.layout(true);
+		//alignmentsWindow.layout(true);
 	}
 
+	/**
+	 * Displays homologs window.
+	 * @param homologsInfoItem homologs info item
+	 * @param pdbName pdb name
+	 * @param xPosition left corner
+	 * @param yPosition top corner
+	 */
+	public void displayHomologsWindow(HomologsInfoItem homologsInfoItem,
+										String pdbName,
+										int xPosition,
+										int yPosition)
+	{
+		if(homologsWindow != null)
+		{
+			homologsWindow.setVisible(false);
+		}
+		
+		homologsWindow = new HomologsWindow(ApplicationContext.getWindowData(), homologsInfoItem, pdbName);
+		homologsWindow.setResizeWindow(false);
+		homologsWindow.updateWindowContent();
+		homologsWindow.setPagePosition(xPosition, yPosition);
+
+		String homologsWindowTitle = AppPropertiesManager.CONSTANTS.homologs_window_title();
+		homologsWindow.setHeadingHtml(EscapedStringGenerator.generateEscapedString(homologsWindowTitle));
+		homologsWindow.setVisible(true);
+	}
+	
 	/**
 	 * Shows window containing general information about the application.
 	 */
@@ -332,6 +369,21 @@ public class MainViewPort extends LayoutContainer
 		aboutWindow.setVisible(true);
 	}
 	
+	
+	/**
+	 * Shows window to select the viewer.
+	 */
+	public void displayViewerSelectorWindow()
+	{
+		if((viewerWindow == null) ||
+		   (viewerWindow.isResizeWindow()))
+		{
+			viewerWindow = new ViewerSelectorWindow(ApplicationContext.getWindowData());
+			viewerWindow.setResizeWindow(false);
+		}
+
+		viewerWindow.setVisible(true);
+	}
 
 	/**
 	 * Hides all internal windows.
@@ -351,6 +403,16 @@ public class MainViewPort extends LayoutContainer
 		if(interfacesResiduesWindow != null)
 		{
 			interfacesResiduesWindow.setVisible(false);
+		}
+		
+		if(viewerWindow != null)
+		{
+			viewerWindow.setVisible(false);
+		}
+		
+		if(homologsWindow != null)
+		{
+			homologsWindow.setVisible(false);
 		}
 	}	
 	
@@ -373,6 +435,17 @@ public class MainViewPort extends LayoutContainer
 		{
 			interfacesResiduesWindow.setResizeWindow(true);
 		}
+		
+		if(homologsWindow != null)
+		{
+			homologsWindow.setResizeWindow(true);
+		}
+		
+	}
+	
+	private void setJobsPanelVisibility(boolean visibility){
+		if(visibility) this.show(LayoutRegion.WEST);
+		else this.hide(LayoutRegion.WEST);
 	}
 	
 	public ResultsPanel getResultsPanel() {
@@ -416,15 +489,41 @@ public class MainViewPort extends LayoutContainer
 			
 			@Override
 			public void onResizeApplicationWindow(ApplicationWindowResizeEvent event) {
-				setSize(ApplicationContext.getAdjustedWindowData().getWindowWidth(), 
+				setPixelSize(ApplicationContext.getAdjustedWindowData().getWindowWidth(), 
 						ApplicationContext.getAdjustedWindowData().getWindowHeight());
+				resizeContent();
+			}
+		});
+		
+		EventBusManager.EVENT_BUS.addHandler(ShowJobsPanelEvent.TYPE, new ShowJobsPanelHandler() {
+			
+			@Override
+			public void onShowJobsPanel(ShowJobsPanelEvent event) {
+				setJobsPanelVisibility(true);
+				EventBusManager.EVENT_BUS.fireEvent(new ApplicationWindowResizeEvent());
+			}
+		});
+		
+		EventBusManager.EVENT_BUS.addHandler(HideJobsPanelEvent.TYPE, new HideJobsPanelHandler() {
+			
+			@Override
+			public void onHideJobsPanel(HideJobsPanelEvent event) {
+				setJobsPanelVisibility(false);
+				EventBusManager.EVENT_BUS.fireEvent(new ApplicationWindowResizeEvent());
 			}
 		});
 	}
 	
+	protected void resizeContent() {
+		if(this.getCenterPanel().getDisplayPanel() instanceof ResultsPanel){
+			resultsPanel = (ResultsPanel)this.getCenterPanel().getDisplayPanel();
+			resultsPanel.resizeContent();
+		}
+	}
+
 	public void onAttach() 
 	{
-		setSize(ApplicationContext.getAdjustedWindowData().getWindowWidth(), 
+		setPixelSize(ApplicationContext.getAdjustedWindowData().getWindowWidth(), 
 				ApplicationContext.getAdjustedWindowData().getWindowHeight());
 		super.onAttach();
 	}

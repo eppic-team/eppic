@@ -62,12 +62,20 @@ public class InputParameters implements Serializable
 		this.softIdentityCutoff = softIdentityCutoff;
 	}
 
+	public void setSoftIdentityCutoff(int softIdentityCutoff) {
+		this.softIdentityCutoff = (float) (softIdentityCutoff/100.0);
+	}
+	
 	public float getHardIdentityCutoff() {
 		return hardIdentityCutoff;
 	}
 
 	public void setHardIdentityCutoff(float hardIdentityCutoff) {
 		this.hardIdentityCutoff = hardIdentityCutoff;
+	}
+	
+	public void setHardIdentityCutoff(int hardIdentityCutoff) {
+		this.hardIdentityCutoff = (float) (hardIdentityCutoff/100.0);
 	}
 
 	public void setSearchMode(String searchMode) {

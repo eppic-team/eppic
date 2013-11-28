@@ -1,5 +1,6 @@
 package ch.systemsx.sybit.crkwebui.client.commons.util;
 
+import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 
 /**
@@ -22,6 +23,24 @@ public class EscapedStringGenerator
 		{
 			SafeHtmlBuilder safeHtmlBuilder = new SafeHtmlBuilder();
 			escapedString = safeHtmlBuilder.appendEscaped(stringToEscape).toSafeHtml().asString();
+		}
+		
+		return escapedString;
+	}
+	
+	/**
+	 * Creates safe html of the string.
+	 * @param stringToEscape string to escape
+	 * @return escaped string
+	 */
+	public static SafeHtml generateSafeHtml(String stringToEscape)
+	{
+		SafeHtml escapedString = null;
+		
+		if(stringToEscape != null)
+		{
+			SafeHtmlBuilder safeHtmlBuilder = new SafeHtmlBuilder();
+			escapedString = safeHtmlBuilder.appendHtmlConstant(stringToEscape).toSafeHtml();
 		}
 		
 		return escapedString;

@@ -5,32 +5,32 @@ import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.links.LinkWithTooltip;
 import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
 
-import com.extjs.gxt.ui.client.Style.Orientation;
-import com.extjs.gxt.ui.client.core.Template;
-import com.extjs.gxt.ui.client.event.Events;
-import com.extjs.gxt.ui.client.event.FieldEvent;
-import com.extjs.gxt.ui.client.event.Listener;
-import com.extjs.gxt.ui.client.util.Margins;
-import com.extjs.gxt.ui.client.widget.LayoutContainer;
-import com.extjs.gxt.ui.client.widget.form.ComboBox.TriggerAction;
-import com.extjs.gxt.ui.client.widget.form.FormPanel;
-import com.extjs.gxt.ui.client.widget.form.SimpleComboBox;
-import com.extjs.gxt.ui.client.widget.layout.RowData;
-import com.extjs.gxt.ui.client.widget.layout.RowLayout;
-import com.extjs.gxt.ui.client.widget.layout.VBoxLayout;
-import com.extjs.gxt.ui.client.widget.layout.VBoxLayout.VBoxLayoutAlign;
-import com.extjs.gxt.ui.client.widget.tips.ToolTipConfig;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.event.logical.shared.SelectionEvent;
+import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.Cookies;
+import com.sencha.gxt.widget.core.client.container.HorizontalLayoutContainer;
+import com.sencha.gxt.widget.core.client.container.VBoxLayoutContainer;
+import com.sencha.gxt.widget.core.client.container.VBoxLayoutContainer.VBoxLayoutAlign;
+import com.sencha.gxt.widget.core.client.form.ComboBox;
+import com.sencha.gxt.widget.core.client.form.FieldLabel;
+import com.sencha.gxt.widget.core.client.form.FormPanel;
+import com.sencha.gxt.widget.core.client.tips.ToolTipConfig;
+import com.sencha.gxt.cell.core.client.form.ComboBoxCell.TriggerAction;
+import com.sencha.gxt.core.client.util.Margins;
+import com.sencha.gxt.core.client.util.Padding;
+import com.sencha.gxt.data.shared.LabelProvider;
+import com.sencha.gxt.data.shared.ListStore;
+import com.sencha.gxt.data.shared.ModelKeyProvider;
 
 /**
  * Panel containing results panel selectors (thumbnails, viewer).
  * @author adam
  *
  */
-public class ResultsSelectorsPanel extends LayoutContainer
+public class ResultsSelectorsPanel extends HorizontalLayoutContainer
 {	
-	private LayoutContainer showDownloadResultsPanel;
+	private VBoxLayoutContainer showDownloadResultsPanel;
 	
 	public ResultsSelectorsPanel(PDBScoreItem pdbScoreItem)
 	{
@@ -39,19 +39,14 @@ public class ResultsSelectorsPanel extends LayoutContainer
 	
 	private void init(PDBScoreItem pdbScoreItem)
 	{
-		this.setLayout(new RowLayout(Orientation.HORIZONTAL));
 		this.addStyleName("eppic-default-top-padding");
 
-		LayoutContainer viewerTypePanelLocation = createViewerTypePanelLocation();
-		this.add(viewerTypePanelLocation, new RowData(0.5, 1, new Margins(0)));
+		VBoxLayoutContainer viewerTypePanelLocation = createViewerTypePanelLocation();
+		this.add(viewerTypePanelLocation, new HorizontalLayoutData(0.5, 1, new Margins(0)));
 		
-		showDownloadResultsPanel = new LayoutContainer();
-		showDownloadResultsPanel.setBorders(false);
-		
-		showDownloadResultsPanel.setStyleAttribute("text-align", "right");
 		setDownloadResultsLink(pdbScoreItem.getJobId());
 		
-		this.add(showDownloadResultsPanel, new RowData(0.5, 1, new Margins(0)));
+		this.add(showDownloadResultsPanel, new HorizontalLayoutData(0.5, 1, new Margins(0)));
 	}
 	
 	/**
@@ -59,41 +54,41 @@ public class ResultsSelectorsPanel extends LayoutContainer
 	 * @param PDBScoreItem
 	 */
 	public void setDownloadResultsLink(String jobId){
-		showDownloadResultsPanel.removeAll();
+		showDownloadResultsPanel = new VBoxLayoutContainer();
+		showDownloadResultsPanel.setBorders(false);
+		
+		showDownloadResultsPanel.setVBoxLayoutAlign(VBoxLayoutAlign.RIGHT);
 		
 		LinkWithTooltip downloadResultsLink = new LinkWithTooltip(AppPropertiesManager.CONSTANTS.info_panel_download_results_link(), 
-				AppPropertiesManager.CONSTANTS.info_panel_download_results_link_hint(), 
-				ApplicationContext.getWindowData(), 
-				0, 
+				AppPropertiesManager.CONSTANTS.info_panel_download_results_link_hint(),
 				GWT.getModuleBaseURL() + "fileDownload?type=zip&id=" + jobId);
 			downloadResultsLink.addStyleName("eppic-download-link");
 		
-		showDownloadResultsPanel.add(downloadResultsLink, new RowData(-1, -1, new Margins(0)));
+		showDownloadResultsPanel.add(downloadResultsLink);
 	}
 	
 	/**
 	 * Creates panel storing selector used to select type of the molecular viewer.
 	 * @return panel with viewer selector
 	 */
-	private LayoutContainer createViewerTypePanelLocation()
+	private VBoxLayoutContainer createViewerTypePanelLocation()
 	{
-		LayoutContainer viewerTypePanelLocation = new LayoutContainer();
+		VBoxLayoutContainer viewerTypePanelLocation = new VBoxLayoutContainer();
 		viewerTypePanelLocation.setBorders(false);
 
-		VBoxLayout vBoxLayout = new VBoxLayout();
+		VBoxLayoutContainer vBoxLayout = new VBoxLayoutContainer();
 		vBoxLayout.setVBoxLayoutAlign(VBoxLayoutAlign.LEFT);
 
-		viewerTypePanelLocation.setLayout(vBoxLayout);
-
 		FormPanel viewerTypePanel = new FormPanel();
-		viewerTypePanel.getHeader().setVisible(false);
 		viewerTypePanel.setBorders(false);
-		viewerTypePanel.setBodyBorder(false);
-		viewerTypePanel.setFieldWidth(100);
-		viewerTypePanel.setPadding(0);
+		viewerTypePanel.setWidth(100);
+		viewerTypePanel.getElement().setPadding(new Padding(0));
 
-		SimpleComboBox<String> viewerTypeComboBox = createViewerTypeCombobox();
-		viewerTypePanel.add(viewerTypeComboBox);
+		ComboBox<String> viewerTypeComboBox = createViewerTypeCombobox();
+		FieldLabel viewerTypeComboBoxLabel = new FieldLabel(viewerTypeComboBox, AppPropertiesManager.CONSTANTS.results_grid_viewer_combo_label());
+		viewerTypeComboBox.setStyleName("eppic-default-label");
+		viewerTypePanel.add(viewerTypeComboBoxLabel);
+		
 		viewerTypePanelLocation.add(viewerTypePanel);
 		
 		return viewerTypePanelLocation;
@@ -103,40 +98,50 @@ public class ResultsSelectorsPanel extends LayoutContainer
 	 * Creates combobox used to select molecular viewer.
 	 * @return viewer selector
 	 */
-	private SimpleComboBox<String> createViewerTypeCombobox()
+	private ComboBox<String> createViewerTypeCombobox()
 	{
-		final SimpleComboBox<String> viewerTypeComboBox = new SimpleComboBox<String>();
+		ListStore<String> store = new ListStore<String>(new ModelKeyProvider<String>() {
+			@Override
+			public String getKey(String item) {
+				return item;
+			}
+		});
+
+		store.add(AppPropertiesManager.CONSTANTS.viewer_local());
+		store.add(AppPropertiesManager.CONSTANTS.viewer_jmol());
+		store.add(AppPropertiesManager.CONSTANTS.viewer_pse());
+
+		final ComboBox<String> viewerTypeComboBox = new ComboBox<String>(store, new LabelProvider<String>() {
+			@Override
+			public String getLabel(String item) {
+				return item;
+			}
+		});
+		
 		viewerTypeComboBox.setId("viewercombo");
 		viewerTypeComboBox.setTriggerAction(TriggerAction.ALL);
 		viewerTypeComboBox.setEditable(false);
-		viewerTypeComboBox.setFireChangeEventOnSetValue(true);
 		viewerTypeComboBox.setWidth(100);
-		viewerTypeComboBox.add(AppPropertiesManager.CONSTANTS.viewer_local());
-		viewerTypeComboBox.add(AppPropertiesManager.CONSTANTS.viewer_jmol());
-		viewerTypeComboBox.add(AppPropertiesManager.CONSTANTS.viewer_pse());
-		viewerTypeComboBox.setToolTip(createViewerTypeComboBoxToolTipConfig());
+
+		viewerTypeComboBox.setToolTipConfig(createViewerTypeComboBoxToolTipConfig());
 		
 		String viewerCookie = Cookies.getCookie("crkviewer");
 		if (viewerCookie != null) {
-			viewerTypeComboBox.setSimpleValue(viewerCookie);
+			viewerTypeComboBox.setValue(viewerCookie);
 		} else {
-			viewerTypeComboBox.setSimpleValue(AppPropertiesManager.CONSTANTS.viewer_jmol());
+			viewerTypeComboBox.setValue(AppPropertiesManager.CONSTANTS.viewer_jmol());
 		}
 
-		ApplicationContext.setSelectedViewer(viewerTypeComboBox.getValue()
-				.getValue());
+		ApplicationContext.setSelectedViewer(viewerTypeComboBox.getValue());
 
-		viewerTypeComboBox.setFieldLabel(AppPropertiesManager.CONSTANTS.results_grid_viewer_combo_label());
-		viewerTypeComboBox.setLabelStyle("eppic-default-label");
-		viewerTypeComboBox.addListener(Events.Change,
-				new Listener<FieldEvent>() {
-					public void handleEvent(FieldEvent be) {
-						Cookies.setCookie("crkviewer", viewerTypeComboBox
-								.getValue().getValue());
-						ApplicationContext.setSelectedViewer(viewerTypeComboBox
-								.getValue().getValue());
-					}
-				});
+		viewerTypeComboBox.addSelectionHandler(new SelectionHandler<String>() {	
+			@Override
+			public void onSelection(SelectionEvent<String> event) {
+				Cookies.setCookie("crkviewer", event.getSelectedItem());
+				ApplicationContext.setSelectedViewer(event.getSelectedItem());
+				
+			}
+		});
 		
 		return viewerTypeComboBox;
 	}
@@ -148,8 +153,8 @@ public class ResultsSelectorsPanel extends LayoutContainer
 	private ToolTipConfig createViewerTypeComboBoxToolTipConfig()
 	{
 		ToolTipConfig viewerTypeComboBoxToolTipConfig = new ToolTipConfig();  
-		viewerTypeComboBoxToolTipConfig.setTitle("3D viewer selector");
-		viewerTypeComboBoxToolTipConfig.setTemplate(new Template(generateViewerTypeComboBoxTooltipTemplate()));  
+		viewerTypeComboBoxToolTipConfig.setTitleHtml("3D viewer selector");
+		viewerTypeComboBoxToolTipConfig.setBodyHtml(generateViewerTypeComboBoxTooltipTemplate());  
 		viewerTypeComboBoxToolTipConfig.setShowDelay(0);
 		viewerTypeComboBoxToolTipConfig.setDismissDelay(0);
 		return viewerTypeComboBoxToolTipConfig;

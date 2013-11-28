@@ -8,17 +8,16 @@ import ch.systemsx.sybit.crkwebui.client.residues.gui.panels.InterfacesResiduesP
 import ch.systemsx.sybit.crkwebui.client.residues.gui.panels.LegendPanel;
 import ch.systemsx.sybit.crkwebui.shared.model.WindowData;
 
-import com.extjs.gxt.ui.client.GXT;
-import com.extjs.gxt.ui.client.event.ComponentEvent;
-import com.extjs.gxt.ui.client.event.Events;
-import com.extjs.gxt.ui.client.event.Listener;
-import com.extjs.gxt.ui.client.event.WindowEvent;
-import com.extjs.gxt.ui.client.event.WindowListener;
-import com.extjs.gxt.ui.client.util.KeyNav;
-import com.extjs.gxt.ui.client.util.Margins;
-import com.extjs.gxt.ui.client.widget.layout.RowData;
-import com.extjs.gxt.ui.client.widget.layout.RowLayout;
+import com.google.gwt.dom.client.NativeEvent;
+import com.google.gwt.event.logical.shared.ResizeEvent;
+import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.i18n.client.NumberFormat;
+import com.sencha.gxt.core.client.GXT;
+import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer;
+import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer.VerticalLayoutData;
+import com.sencha.gxt.widget.core.client.event.HideEvent;
+import com.sencha.gxt.widget.core.client.event.HideEvent.HideHandler;
+import com.sencha.gxt.core.client.util.KeyNav;
 
 /**
  * Window containing interface residues.
@@ -39,53 +38,52 @@ public class InterfacesResiduesWindow extends ResizableWindow
 			  windowData);
 		
 		this.setBlinkModal(true);
-		this.setLayout(new RowLayout());
 		this.setHideOnButtonClick(true);
 		this.getButtonBar().setVisible(false);
 
+		VerticalLayoutContainer mainContainer = new VerticalLayoutContainer();
+		this.setWidget(mainContainer);
+		mainContainer.addStyleName("eppic-default-font");
+		
 		interfacesResiduesPanel = new InterfacesResiduesPanel();
-		this.add(interfacesResiduesPanel, new RowData(1, 1, new Margins(0)));
+		mainContainer.add(interfacesResiduesPanel, new VerticalLayoutData(1, 1));
 		
-		this.add(new LegendPanel(), new RowData(1, 30, new Margins(0)));
+		mainContainer.add(new LegendPanel(), new VerticalLayoutData(1, 30));
 		
-		Listener<WindowEvent> resizeWindowListener = new Listener<WindowEvent>() {
-
+		this.addResizeHandler(new ResizeHandler() {
+			
 			@Override
-			public void handleEvent(WindowEvent be) 
-			{
+			public void onResize(ResizeEvent event) {
 				interfacesResiduesPanel.resizeResiduesPanels();
+				
 			}
-		};
+		});
 		
-		this.addListener(Events.Resize, resizeWindowListener);
-		
-		new KeyNav<ComponentEvent>(this)
+		new KeyNav(this)
 		{
 			@Override
-            public void onPageDown(ComponentEvent ce) 
+            public void onPageDown(NativeEvent event) 
 			{
 				interfacesResiduesPanel.increaseActivePages();
             }
 			
 			@Override
-            public void onPageUp(ComponentEvent ce) 
+            public void onPageUp(NativeEvent event) 
 			{
 				interfacesResiduesPanel.decreaseActivePages();
             }
 		};
 		
-		this.addWindowListener(new WindowListener(){
-			
+		this.addHideHandler(new HideHandler()
+		{
 			@Override
-			public void windowHide(WindowEvent we)
-			{
-				EventBusManager.EVENT_BUS.fireEvent(new WindowHideEvent());
+			public void onHide(HideEvent event) {
+				EventBusManager.EVENT_BUS.fireEvent(new WindowHideEvent());	
+
 			}
-		}
+		});
 		
-		);
-		
-		if(GXT.isIE8)
+		if(GXT.isIE8())
 		{
 			this.setResizable(false);
 		}
@@ -111,7 +109,6 @@ public class InterfacesResiduesWindow extends ResizableWindow
 								 String secondChainName,
 								 int selectedInterface)
 	{
-//		double area = mainController.getPdbScoreItem().getInterfaceItem(selectedInterface - 1).getArea();
 		NumberFormat number = NumberFormat.getFormat("0.00");
 		String formattedArea = number.format(area);
 		this.setHeadingHtml(AppPropertiesManager.CONSTANTS.interfaces_residues_window_title() + " " + selectedInterface + " (" + formattedArea + " A<sup>2</sup>)");

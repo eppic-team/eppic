@@ -3,29 +3,26 @@ package ch.systemsx.sybit.crkwebui.client.residues.gui.panels;
 import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
-import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.labels.LabelWithTooltip;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResidueItem;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResidueType;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceScoreItem;
 import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
 
-import com.extjs.gxt.ui.client.Style.Orientation;
-import com.extjs.gxt.ui.client.util.Margins;
-import com.extjs.gxt.ui.client.widget.Label;
-import com.extjs.gxt.ui.client.widget.LayoutContainer;
-import com.extjs.gxt.ui.client.widget.form.FieldSet;
-import com.extjs.gxt.ui.client.widget.layout.RowData;
-import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.ui.FlexTable;
+import com.google.gwt.user.client.ui.Label;
+import com.sencha.gxt.core.client.util.Margins;
+import com.sencha.gxt.widget.core.client.container.HorizontalLayoutContainer;
+import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer;
+import com.sencha.gxt.widget.core.client.form.FieldSet;
 
 /**
  * Panel used to display the residues summary for one structure.
  * @author srebniak_a; biyani_n
  *
  */
-public class ResiduesSummaryPanel extends LayoutContainer
+public class ResiduesSummaryPanel extends HorizontalLayoutContainer
 {
 	private FlexTable coreRimScoreTable;
 	private FlexTable coreSurfaceScoreTable;
@@ -48,40 +45,47 @@ public class ResiduesSummaryPanel extends LayoutContainer
 	public ResiduesSummaryPanel(int structure) 
 	{
 		this.structure = structure;
-		
-		this.setLayout(new RowLayout(Orientation.HORIZONTAL));
 		this.setBorders(false);
 		
 		sizesTable = new FlexTable();
 		sizesTable.addStyleName("eppic-residues-summary-table");
 		sizesTable.setWidth("110px");
-		FieldSet sizesContainer = new FieldSet();
-		sizesContainer.addStyleName("eppic-rounded-border");
-		sizesContainer.addStyleName("eppic-residues-summary");
-		sizesContainer.setHeadingHtml(AppPropertiesManager.CONSTANTS.interfaces_residues_summary_sizes_heading());
-		sizesContainer.add(sizesTable, new RowData(1, 45,  new Margins(0)));
-		this.add(sizesContainer, new RowData(0.30, 1,  new Margins(0, 5, 0, 0)));
+		FieldSet sizesFS = new FieldSet();
+		sizesFS.setHeadingHtml(AppPropertiesManager.CONSTANTS.interfaces_residues_summary_sizes_heading());
+		VerticalLayoutContainer sizesContainer = new VerticalLayoutContainer();
+		sizesContainer.setPixelSize(110, 45);
+		sizesFS.setWidget(sizesContainer);
+		sizesFS.addStyleName("eppic-rounded-border");
+		sizesFS.addStyleName("eppic-residues-summary");
+		sizesContainer.add(sizesTable);
+		this.add(sizesFS, new HorizontalLayoutData(-1,1, new Margins(0, 5, 0, 5)));
 		
 		coreRimScoreTable = new FlexTable();
 		coreRimScoreTable.addStyleName("eppic-residues-summary-table");
 		coreRimScoreTable.setWidth("140px");
-		FieldSet coreRimScoreContainer = new FieldSet();
-		coreRimScoreContainer.setHeadingHtml(AppPropertiesManager.CONSTANTS.interfaces_residues_summary_corerim_heading());
-		coreRimScoreContainer.addStyleName("eppic-rounded-border");
-		coreRimScoreContainer.addStyleName("eppic-residues-summary");
-		coreRimScoreContainer.add(coreRimScoreTable, new RowData(1, 45,  new Margins(0)));
-		this.add(coreRimScoreContainer, new RowData(0.35, 1,  new Margins(0, 5, 0, 0)));
+		FieldSet coreRimScoreFS = new FieldSet();
+		coreRimScoreFS.setHeadingHtml(AppPropertiesManager.CONSTANTS.interfaces_residues_summary_corerim_heading());
+		VerticalLayoutContainer coreRimScoreContainer = new VerticalLayoutContainer();
+		coreRimScoreContainer.setPixelSize(140, 45);
+		coreRimScoreFS.setWidget(coreRimScoreContainer);
+		coreRimScoreFS.addStyleName("eppic-rounded-border");
+		coreRimScoreFS.addStyleName("eppic-residues-summary");
+		coreRimScoreContainer.add(coreRimScoreTable);
+		this.add(coreRimScoreFS, new HorizontalLayoutData(-1,1, new Margins(0, 5, 0, 0)));
 		
 		
 		coreSurfaceScoreTable = new FlexTable();
 		coreSurfaceScoreTable.addStyleName("eppic-residues-summary-table");
 		coreSurfaceScoreTable.setWidth("140px");
-		FieldSet coreSurfaceScoreContainer = new FieldSet();
-		coreSurfaceScoreContainer.addStyleName("eppic-rounded-border");
-		coreSurfaceScoreContainer.setHeadingHtml(AppPropertiesManager.CONSTANTS.interfaces_residues_summary_coresurface_heading());
-		coreSurfaceScoreContainer.addStyleName("eppic-residues-summary");
-		coreSurfaceScoreContainer.add(coreSurfaceScoreTable, new RowData(1, 45,  new Margins(0)));
-		this.add(coreSurfaceScoreContainer, new RowData(0.35, 1,  new Margins(0, 5, 0, 0)));
+		FieldSet coreSurfaceScoreFS = new FieldSet();
+		coreSurfaceScoreFS.setHeadingHtml(AppPropertiesManager.CONSTANTS.interfaces_residues_summary_coresurface_heading());
+		VerticalLayoutContainer coreSurfaceScoreContainer = new VerticalLayoutContainer();
+		coreSurfaceScoreContainer.setPixelSize(140, 45);
+		coreSurfaceScoreFS.setWidget(coreSurfaceScoreContainer);
+		coreSurfaceScoreFS.addStyleName("eppic-rounded-border");
+		coreSurfaceScoreFS.addStyleName("eppic-residues-summary");
+		coreSurfaceScoreContainer.add(coreSurfaceScoreTable);
+		this.add(coreSurfaceScoreFS, new HorizontalLayoutData(-1,1, new Margins(0, 5, 0, 0)));
 		
 		fillTableHeadings();
 	}
@@ -93,18 +97,6 @@ public class ResiduesSummaryPanel extends LayoutContainer
 	 * @param interfaceResidueItems
 	 */
 	public void fillResultsSummary(PDBScoreItem pdbScoreItem,
-			 int selectedInterfaceId,
-			 List<InterfaceResidueItem> interfaceResidueItems){
-		fillTableData(pdbScoreItem, selectedInterfaceId, interfaceResidueItems);
-	}
-	
-	/**
-	 * Fills the values in the table
-	 * @param pdbScoreItem
-	 * @param selectedInterfaceId
-	 * @param interfaceResidueItems
-	 */
-	private void fillTableData(PDBScoreItem pdbScoreItem,
 			 int selectedInterfaceId,
 			 List<InterfaceResidueItem> interfaceResidueItems){
 		calculateData(pdbScoreItem, selectedInterfaceId, interfaceResidueItems);
@@ -126,60 +118,44 @@ public class ResiduesSummaryPanel extends LayoutContainer
 	 */
 	private void fillTableHeadings(){		
 		
-		Label crstHeadLbl1 = new LabelWithTooltip(AppPropertiesManager.CONSTANTS.interfaces_residues_summary_corerim_avgcore(), 
-				AppPropertiesManager.CONSTANTS.interfaces_residues_summary_corerim_avgcore_hint(), 
-				ApplicationContext.getWindowData(), 
-				100);
+		LabelWithTooltip crstHeadLbl1 = new LabelWithTooltip(AppPropertiesManager.CONSTANTS.interfaces_residues_summary_corerim_avgcore(), 
+				AppPropertiesManager.CONSTANTS.interfaces_residues_summary_corerim_avgcore_hint());
 		crstHeadLbl1.addStyleName("eppic-residues-summary-fields");
 		coreRimScoreTable.setWidget(0, 0, crstHeadLbl1);
 		
-		Label crstHeadLbl2 = new LabelWithTooltip(AppPropertiesManager.CONSTANTS.interfaces_residues_summary_corerim_avgrim(), 
-				AppPropertiesManager.CONSTANTS.interfaces_residues_summary_corerim_avgrim_hint(), 
-				ApplicationContext.getWindowData(), 
-				100);
+		LabelWithTooltip crstHeadLbl2 = new LabelWithTooltip(AppPropertiesManager.CONSTANTS.interfaces_residues_summary_corerim_avgrim(), 
+				AppPropertiesManager.CONSTANTS.interfaces_residues_summary_corerim_avgrim_hint());
 		crstHeadLbl2.addStyleName("eppic-residues-summary-fields");
 		coreRimScoreTable.setWidget(0, 1, crstHeadLbl2);
 		
-		Label crstHeadLbl3 = new LabelWithTooltip(AppPropertiesManager.CONSTANTS.interfaces_residues_summary_corerim_final(), 
-				AppPropertiesManager.CONSTANTS.interfaces_residues_summary_corerim_final_hint(), 
-				ApplicationContext.getWindowData(), 
-				100);
+		LabelWithTooltip crstHeadLbl3 = new LabelWithTooltip(AppPropertiesManager.CONSTANTS.interfaces_residues_summary_corerim_final(), 
+				AppPropertiesManager.CONSTANTS.interfaces_residues_summary_corerim_final_hint());
 		crstHeadLbl3.addStyleName("eppic-residues-summary-fields");
 		coreRimScoreTable.setWidget(0, 2, crstHeadLbl3);
 		
 		
-		Label csstHeadLbl1 = new LabelWithTooltip(AppPropertiesManager.CONSTANTS.interfaces_residues_summary_coresurface_mean(), 
-				AppPropertiesManager.CONSTANTS.interfaces_residues_summary_coresurface_mean_hint(), 
-				ApplicationContext.getWindowData(), 
-				100);
+		LabelWithTooltip csstHeadLbl1 = new LabelWithTooltip(AppPropertiesManager.CONSTANTS.interfaces_residues_summary_coresurface_mean(), 
+				AppPropertiesManager.CONSTANTS.interfaces_residues_summary_coresurface_mean_hint());
 		csstHeadLbl1.addStyleName("eppic-residues-summary-fields");
 		coreSurfaceScoreTable.setWidget(0, 0, csstHeadLbl1);
 		
-		Label csstHeadLbl2 = new LabelWithTooltip(AppPropertiesManager.CONSTANTS.interfaces_residues_summary_coresurface_sd(), 
-				AppPropertiesManager.CONSTANTS.interfaces_residues_summary_coresurface_sd_hint(), 
-				ApplicationContext.getWindowData(), 
-				100);
+		LabelWithTooltip csstHeadLbl2 = new LabelWithTooltip(AppPropertiesManager.CONSTANTS.interfaces_residues_summary_coresurface_sd(), 
+				AppPropertiesManager.CONSTANTS.interfaces_residues_summary_coresurface_sd_hint());
 		csstHeadLbl2.addStyleName("eppic-residues-summary-fields");
 		coreSurfaceScoreTable.setWidget(0, 1, csstHeadLbl2);
 		
-		Label csstHeadLbl3 = new LabelWithTooltip(AppPropertiesManager.CONSTANTS.interfaces_residues_summary_coresurface_final(), 
-				AppPropertiesManager.CONSTANTS.interfaces_residues_summary_coresurface_final_hint(), 
-				ApplicationContext.getWindowData(), 
-				100);
+		LabelWithTooltip csstHeadLbl3 = new LabelWithTooltip(AppPropertiesManager.CONSTANTS.interfaces_residues_summary_coresurface_final(), 
+				AppPropertiesManager.CONSTANTS.interfaces_residues_summary_coresurface_final_hint());
 		csstHeadLbl3.addStyleName("eppic-residues-summary-fields");
 		coreSurfaceScoreTable.setWidget(0, 2, csstHeadLbl3);
 		
-		Label sizesHeadLbl1 = new LabelWithTooltip(AppPropertiesManager.CONSTANTS.interfaces_residues_summary_sizes_cores(), 
-				AppPropertiesManager.CONSTANTS.interfaces_residues_summary_sizes_cores_hint(), 
-				ApplicationContext.getWindowData(), 
-				100);
+		LabelWithTooltip sizesHeadLbl1 = new LabelWithTooltip(AppPropertiesManager.CONSTANTS.interfaces_residues_summary_sizes_cores(), 
+				AppPropertiesManager.CONSTANTS.interfaces_residues_summary_sizes_cores_hint());
 		sizesHeadLbl1.addStyleName("eppic-residues-summary-fields");
 		sizesTable.setWidget(0, 0, sizesHeadLbl1);
 		
-		Label sizesHeadLbl2 = new LabelWithTooltip(AppPropertiesManager.CONSTANTS.interfaces_residues_summary_sizes_rims(), 
-				AppPropertiesManager.CONSTANTS.interfaces_residues_summary_sizes_rims_hint(), 
-				ApplicationContext.getWindowData(), 
-				100);
+		LabelWithTooltip sizesHeadLbl2 = new LabelWithTooltip(AppPropertiesManager.CONSTANTS.interfaces_residues_summary_sizes_rims(), 
+				AppPropertiesManager.CONSTANTS.interfaces_residues_summary_sizes_rims_hint());
 		sizesHeadLbl2.addStyleName("eppic-residues-summary-fields");
 		sizesTable.setWidget(0, 1, sizesHeadLbl2);
 	}
@@ -236,7 +212,6 @@ public class ResiduesSummaryPanel extends LayoutContainer
 		}
 
 		for(InterfaceResidueItem interfResItem : interfaceResidueItems) {
-			//		for (InterfaceResidueItem interfResItem:mainController.getInterfaceResiduesItemsList().get(mainController.getMainViewPort().getInterfacesResiduesWindow().getSelectedInterface()).get(structure)) {
 
 			if ((interfResItem.getAssignment() == InterfaceResidueType.CORE_EVOLUTIONARY.getAssignment()) ||
 					(interfResItem.getAssignment() == InterfaceResidueType.CORE_GEOMETRY.getAssignment()))

@@ -77,6 +77,11 @@ public class ApplicationSettings implements Serializable {
 	private String pdbLinkUrl;
 	
 	/**
+	 * Base url to the uniparc.
+	 */
+	private String uniparcLinkUrl;
+	
+	/**
 	 * Base url to the uniprot.
 	 */
 	private String uniprotLinkUrl;
@@ -360,6 +365,21 @@ public class ApplicationSettings implements Serializable {
 	 */
 	public List<String> getSearchModeList() {
 		return searchModeList;
+	}
+	/**
+	 * Sets base url to uniparc
+	 * @param uniparcLinkUrl base url to uniprot
+	 */
+	public void setUniparcLinkUrl(String uniparcLinkUrl) {
+		this.uniparcLinkUrl = uniparcLinkUrl;
+	}
+
+	/**
+	 * Retrieves base url to uniparc.
+	 * @return base url to uniparc
+	 */
+	public String getUniparcLinkUrl() {
+		return uniparcLinkUrl;
 	}
 
 	/**

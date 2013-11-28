@@ -1,8 +1,8 @@
 package ch.systemsx.sybit.crkwebui.client.input.gui.panels;
 
-import com.extjs.gxt.ui.client.widget.ContentPanel;
-import com.extjs.gxt.ui.client.widget.layout.CenterLayout;
 import com.google.gwt.user.client.ui.HTML;
+import com.sencha.gxt.widget.core.client.ContentPanel;
+import com.sencha.gxt.widget.core.client.container.CenterLayoutContainer;
 
 /**
  * This panel is used to display captcha - depending on the settings on the server side.
@@ -16,9 +16,10 @@ public class RecaptchaPanel extends ContentPanel
 	public RecaptchaPanel(String key) 
 	{
 		this.key = key;
-		this.setLayout(new CenterLayout());
+		CenterLayoutContainer mainContainer = new CenterLayoutContainer();
+		this.setWidget(mainContainer);
 		captchaDiv = new HTML("<div id=\"recaptcha_div\"/>");
-		this.add(captchaDiv);
+		mainContainer.add(captchaDiv);
 		this.getHeader().setVisible(false);
 	}
 

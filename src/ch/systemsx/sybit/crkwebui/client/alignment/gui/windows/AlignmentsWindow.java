@@ -6,20 +6,17 @@ import ch.systemsx.sybit.crkwebui.client.commons.managers.EventBusManager;
 import ch.systemsx.sybit.crkwebui.shared.model.HomologsInfoItem;
 import ch.systemsx.sybit.crkwebui.shared.model.WindowData;
 
-import com.extjs.gxt.ui.client.Style.Orientation;
-import com.extjs.gxt.ui.client.Style.Scroll;
-import com.extjs.gxt.ui.client.event.Events;
-import com.extjs.gxt.ui.client.event.Listener;
-import com.extjs.gxt.ui.client.event.WindowEvent;
-import com.extjs.gxt.ui.client.event.WindowListener;
-import com.extjs.gxt.ui.client.util.Margins;
-import com.extjs.gxt.ui.client.util.TextMetrics;
-import com.extjs.gxt.ui.client.widget.ContentPanel;
-import com.extjs.gxt.ui.client.widget.Html;
-import com.extjs.gxt.ui.client.widget.Text;
-import com.extjs.gxt.ui.client.widget.layout.FitLayout;
-import com.extjs.gxt.ui.client.widget.layout.RowData;
-import com.extjs.gxt.ui.client.widget.layout.RowLayout;
+import com.google.gwt.event.logical.shared.ResizeEvent;
+import com.google.gwt.event.logical.shared.ResizeHandler;
+import com.google.gwt.user.client.ui.HTML;
+import com.sencha.gxt.widget.core.client.FramedPanel;
+import com.sencha.gxt.widget.core.client.event.HideEvent;
+import com.sencha.gxt.widget.core.client.event.HideEvent.HideHandler;
+import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer;
+import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer.VerticalLayoutData;
+import com.sencha.gxt.core.client.dom.ScrollSupport.ScrollMode;
+import com.sencha.gxt.core.client.util.Margins;
+import com.sencha.gxt.core.client.util.TextMetrics;
 
 /**
  * Window containing sequence alignments.
@@ -29,6 +26,8 @@ public class AlignmentsWindow extends ResizableWindow
 {
 	private static int ALIGNMENT_WINDOW_DEFAULT_WIDTH = 600;
 	private static int ALIGNMENT_WINDOW_DEFAULT_HEIGHT = 400;
+	
+	private static int LETTER_WIDTH_GXT3_CORRECTION = 2;
 	
 	private HomologsInfoItem homologsInfoItem;
 	private String pdbName;
@@ -52,48 +51,45 @@ public class AlignmentsWindow extends ResizableWindow
 		
 		this.homologsInfoItem = homologsInfoItem;
 		this.pdbName = pdbName;
-		
-		this.setPlain(true);
-		this.setLayout(new FitLayout());
 		this.setHideOnButtonClick(true);
 		this.getButtonBar().setVisible(false);
 		
-		this.addListener(Events.Resize, new Listener<WindowEvent>() {
-
-			@Override
-			public void handleEvent(WindowEvent be) 
-			{
-				updateWindowContent();
-			}
-		});
-		
-		this.addWindowListener(new WindowListener()
+		this.addResizeHandler(new ResizeHandler()
 		{
 			@Override
-			public void windowHide(WindowEvent we)
-			{
-				EventBusManager.EVENT_BUS.fireEvent(new WindowHideEvent());
+			public void onResize(ResizeEvent event) {
+				updateWindowContent();
+
+			}
+		});
+
+		this.addHideHandler(new HideHandler()
+		{
+			@Override
+			public void onHide(HideEvent event) {
+				EventBusManager.EVENT_BUS.fireEvent(new WindowHideEvent());	
+
 			}
 		});
 	}
-	
+
 	/**
 	 * Refreshes content of the alignments window.
 	 */
 	public void updateWindowContent()
 	{
-		ContentPanel homologsContentPanel = new ContentPanel();
-		homologsContentPanel.setLayout(new RowLayout(Orientation.VERTICAL));
+		FramedPanel homologsContentPanel = new FramedPanel();
 		homologsContentPanel.setBodyBorder(false);
 		homologsContentPanel.setBorders(false);
 		homologsContentPanel.getHeader().setVisible(false);
+		
 		homologsContentPanel.addStyleName("eppic-monospaced-font");
-		homologsContentPanel.render(this.getElement());
+		
+		VerticalLayoutContainer homologsContentPanelContainer = new VerticalLayoutContainer();
+		homologsContentPanel.setWidget(homologsContentPanelContainer);
 		
 		TextMetrics textMetrics = TextMetrics.get();
-		textMetrics.bind(homologsContentPanel.el());
-		
-		this.removeAll();
+		textMetrics.bind(homologsContentPanel.getElement());
 		
 		String pdbId = homologsInfoItem.getChains();
 		
@@ -106,7 +102,7 @@ public class AlignmentsWindow extends ResizableWindow
 		
 		String uniprotId = homologsInfoItem.getUniprotId();
 		
-		int nrOfCharactersPerLine = calculateNrOfCharactersPerLine(this.getWidth(), textMetrics, pdbId, uniprotId); 
+		int nrOfCharactersPerLine = calculateNrOfCharactersPerLine(this.getElement().getClientWidth(), textMetrics, pdbId, uniprotId); 
 		int totalNumberOfCharacters = homologsInfoItem.getAlignedSeq1().length();
 		
 		int firstSequenceIndex = 1;
@@ -186,28 +182,26 @@ public class AlignmentsWindow extends ResizableWindow
 					markup.insert(0, " ");
 				}
 				
-				Html firstSequenceLabel = new Html(firstSequenceLineAnnotated.toString());				
-				Html markupLabel = new Html(markup.toString().replaceAll(" ", "&nbsp;"));
-				Html secondSequenceLabel = new Html(secondSequenceLineAnnotated.toString());
+				HTML firstSequenceLabel = new HTML(firstSequenceLineAnnotated.toString());				
+				HTML markupLabel = new HTML(markup.toString().replaceAll(" ", "&nbsp;"));
+				HTML secondSequenceLabel = new HTML(secondSequenceLineAnnotated.toString());
 				
-				homologsContentPanel.add(firstSequenceLabel, new RowData(1, -1, new Margins(0)));  
-				homologsContentPanel.add(markupLabel, new RowData(1, -1, new Margins(0)));
-				homologsContentPanel.add(secondSequenceLabel, new RowData(1, -1, new Margins(0)));
-				homologsContentPanel.add(new Text(), new RowData(1, -1, new Margins(0)));
-				homologsContentPanel.add(new Text(), new RowData(1, -1, new Margins(0)));
-				homologsContentPanel.setScrollMode(Scroll.AUTOY);
+				homologsContentPanelContainer.add(firstSequenceLabel, new VerticalLayoutData(1, -1, new Margins(0)));  
+				homologsContentPanelContainer.add(markupLabel, new VerticalLayoutData(1, -1, new Margins(0)));
+				homologsContentPanelContainer.add(secondSequenceLabel, new VerticalLayoutData(1, -1, new Margins(0)));
+				homologsContentPanelContainer.add(new HTML("&nbsp;"), new VerticalLayoutData(1, -1, new Margins(0)));
+				homologsContentPanelContainer.add(new HTML("&nbsp;"), new VerticalLayoutData(1, -1, new Margins(0)));
+				homologsContentPanelContainer.setScrollMode(ScrollMode.AUTOY);
 			}
 			
 			int minWindowWidth = 0;
-			for(int i=0; i<maxLengthOfAnnotations + 40; i++)
+			for(int i=0; i<maxLengthOfAnnotations + 20; i++)
 			{
-				minWindowWidth += textMetrics.getWidth("A");
+				minWindowWidth += textMetrics.getWidth("A") - LETTER_WIDTH_GXT3_CORRECTION;
 			}
 			this.setMinWidth(minWindowWidth);
 		}
-		
 		this.add(homologsContentPanel);
-		this.layout(true);
 	}
 
 	public HomologsInfoItem getHomologsInfoItem()
@@ -240,7 +234,7 @@ public class AlignmentsWindow extends ResizableWindow
 											   String firstSequenceLeftAnnotation,
 											   String secondSequenceLeftAnnotation)
 	{
-		int widthOfCharacter = textMetrics.getWidth("A");
+		int widthOfCharacter = textMetrics.getWidth("A") - LETTER_WIDTH_GXT3_CORRECTION;
 		
 		nrOfCharacterInFirstSequence = 0;
 		for(int i=0; i<homologsInfoItem.getAlignedSeq1().length(); i++)
@@ -281,7 +275,7 @@ public class AlignmentsWindow extends ResizableWindow
 									 MIN_DISTANCE_BETWEEN_UNIPROTID_AND_POSITION +
 									 DISTANCE_BETWEEN_CURRENT_NR_AND_SEQUENCE * 2;
 		
-		int nrOfCharactersPerLine = (width - 40) / widthOfCharacter;
+		int nrOfCharactersPerLine = (width) / widthOfCharacter;
 		nrOfCharactersPerLine -= maxLengthOfAnnotations;
 		return nrOfCharactersPerLine;
 	}

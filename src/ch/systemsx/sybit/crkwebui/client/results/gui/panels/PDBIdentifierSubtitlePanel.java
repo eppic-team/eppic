@@ -1,22 +1,22 @@
 package ch.systemsx.sybit.crkwebui.client.results.gui.panels;
 
-import com.extjs.gxt.ui.client.widget.Label;
-import com.extjs.gxt.ui.client.widget.LayoutContainer;
+import com.google.gwt.user.client.ui.HTML;
+import com.sencha.gxt.widget.core.client.container.SimpleContainer;
 
 /**
  * Panel used to store pdb identifier subtitle.
  * @author AS
  *
  */
-public class PDBIdentifierSubtitlePanel extends LayoutContainer
+public class PDBIdentifierSubtitlePanel extends SimpleContainer
 {
-	private Label pdbSubtitle;
+	private HTML pdbSubtitle;
 	
 	public PDBIdentifierSubtitlePanel()
 	{
 		this.addStyleName("eppic-pdb-title-label");
 		
-		pdbSubtitle = new Label();
+		pdbSubtitle = new HTML();
 		this.add(pdbSubtitle);
 	}
 	
@@ -26,6 +26,6 @@ public class PDBIdentifierSubtitlePanel extends LayoutContainer
 	 */
 	public void setPDBIdentifierSubtitle(String subtitle)
 	{
-		pdbSubtitle.setHtml(subtitle);
+		pdbSubtitle.setHTML(subtitle);
 	}
 }

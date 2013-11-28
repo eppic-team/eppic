@@ -13,9 +13,9 @@
   <!-- <inherits name='com.google.gwt.user.theme.dark.Dark'/>     -->
 
   <inherits name="com.extjs.gxt.ui.GXT" />
-  <inherits name='com.extjs.gxt.themes.Themes' />
+  <inherits name='com.sencha.gxt.ui.GXT' />
+  <inherits name="com.sencha.gxt.theme.gray.Gray" />
   <!-- Other module inherits                                      -->
-
   <inherits name='model'/>
 
   <inherits name="com.google.gwt.http.HTTP"/>

@@ -5,23 +5,21 @@ import ch.systemsx.sybit.crkwebui.client.commons.events.ApplicationWindowResizeE
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ApplicationWindowResizeHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.managers.EventBusManager;
 
-import com.extjs.gxt.ui.client.Style.Scroll;
-import com.extjs.gxt.ui.client.widget.LayoutContainer;
-import com.extjs.gxt.ui.client.widget.layout.FlowLayout;
 import com.google.gwt.user.client.Window;
+import com.sencha.gxt.core.client.dom.ScrollSupport.ScrollMode;
+import com.sencha.gxt.widget.core.client.container.FlowLayoutContainer;
 
 /**
  * Scrollable wrapper of main view.
  * @author adam
  */
-public class MainViewScrollable extends LayoutContainer
+public class MainViewScrollable extends FlowLayoutContainer
 {
 	public MainViewScrollable(MainViewPort mainViewPort)
 	{
 		this.addStyleName("eppic-panel-with-gray-background");
-		this.setLayout(new FlowLayout());
 		this.setScrollMode(selectScrollType(Window.getClientWidth(), Window.getClientHeight()));
-		this.setSize(Window.getClientWidth(),
+		this.setPixelSize(Window.getClientWidth(),
 					 Window.getClientHeight());
 		this.add(mainViewPort);
 		
@@ -37,7 +35,7 @@ public class MainViewScrollable extends LayoutContainer
 			
 			@Override
 			public void onResizeApplicationWindow(ApplicationWindowResizeEvent event) {
-				setSize(Window.getClientWidth(),
+				setPixelSize(Window.getClientWidth(),
 				    	Window.getClientHeight());
 				
 				setScrollMode(selectScrollType(Window.getClientWidth(), Window.getClientHeight()));
@@ -53,23 +51,23 @@ public class MainViewScrollable extends LayoutContainer
 	 * @param height height of client window
 	 * @return scroll type
 	 */
-	private Scroll selectScrollType(int width,
+	private ScrollMode selectScrollType(int width,
 									int height)
 	{
-		Scroll scrollType = Scroll.NONE;
+		ScrollMode scrollType = ScrollMode.NONE;
 		
 		if((width < ApplicationContext.getAdjustedWindowData().getWindowWidth()) &&
 		   (height < ApplicationContext.getAdjustedWindowData().getWindowHeight()))
 		{
-			scrollType = Scroll.AUTO;
+			scrollType = ScrollMode.AUTO;
 		}
 		else if(width < ApplicationContext.getAdjustedWindowData().getWindowWidth())
 		{
-			scrollType = Scroll.AUTOX;
+			scrollType = ScrollMode.AUTOX;
 		}
 		else if(height < ApplicationContext.getAdjustedWindowData().getWindowHeight())
 		{
-			scrollType = Scroll.AUTOY;
+			scrollType = ScrollMode.AUTOY;
 		}
 		
 		return scrollType;

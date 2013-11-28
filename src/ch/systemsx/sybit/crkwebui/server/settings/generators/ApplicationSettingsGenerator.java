@@ -48,6 +48,7 @@ public class ApplicationSettingsGenerator
 		String captchaPublicKey = globalProperties.getProperty("captcha_public_key");
 		int nrOfAllowedSubmissionsWithoutCaptcha = Integer.parseInt(globalProperties.getProperty("nr_of_allowed_submissions_without_captcha"));
 		String pdbLinkUrl = globalProperties.getProperty("pdb_link_url");
+		String uniparcLinkUrl = globalProperties.getProperty("uniparc_link_url");
 		String uniprotLinkUrl = globalProperties.getProperty("uniprot_link_url");
 		String publicationLinkUrl = globalProperties.getProperty("publication_link_url");
 		boolean usePrecompiledResults = Boolean.parseBoolean(globalProperties.getProperty("use_precompiled","true"));
@@ -72,6 +73,7 @@ public class ApplicationSettingsGenerator
 		settings.setUseCaptcha(useCaptcha);
 		settings.setNrOfAllowedSubmissionsWithoutCaptcha(nrOfAllowedSubmissionsWithoutCaptcha);
 		settings.setPdbLinkUrl(pdbLinkUrl);
+		settings.setUniparcLinkUrl(uniparcLinkUrl);
 		settings.setUniprotLinkUrl(uniprotLinkUrl);
 		settings.setPublicationLinkUrl(publicationLinkUrl);
 		settings.setUsePrecompiledResults(usePrecompiledResults);

@@ -3,47 +3,44 @@ package ch.systemsx.sybit.crkwebui.client.residues.gui.panels;
 import ch.systemsx.sybit.crkwebui.client.commons.util.EscapedStringGenerator;
 import ch.systemsx.sybit.crkwebui.client.residues.data.LegendItem;
 
-import com.extjs.gxt.ui.client.Style.Orientation;
-import com.extjs.gxt.ui.client.util.Margins;
-import com.extjs.gxt.ui.client.widget.Label;
-import com.extjs.gxt.ui.client.widget.LayoutContainer;
-import com.extjs.gxt.ui.client.widget.layout.HBoxLayout;
-import com.extjs.gxt.ui.client.widget.layout.HBoxLayout.HBoxLayoutAlign;
-import com.extjs.gxt.ui.client.widget.layout.HBoxLayoutData;
-import com.extjs.gxt.ui.client.widget.layout.RowData;
-import com.extjs.gxt.ui.client.widget.layout.RowLayout;
-import com.extjs.gxt.ui.client.widget.layout.VBoxLayout;
-import com.extjs.gxt.ui.client.widget.layout.VBoxLayout.VBoxLayoutAlign;
+import com.google.gwt.user.client.ui.HTML;
+import com.sencha.gxt.core.client.util.Margins;
+import com.sencha.gxt.widget.core.client.container.BoxLayoutContainer.BoxLayoutData;
+import com.sencha.gxt.widget.core.client.container.HBoxLayoutContainer;
+import com.sencha.gxt.widget.core.client.container.HBoxLayoutContainer.HBoxLayoutAlign;
+import com.sencha.gxt.widget.core.client.container.HorizontalLayoutContainer;
+import com.sencha.gxt.widget.core.client.container.HorizontalLayoutContainer.HorizontalLayoutData;
+import com.sencha.gxt.widget.core.client.container.SimpleContainer;
+import com.sencha.gxt.widget.core.client.container.VBoxLayoutContainer;
+import com.sencha.gxt.widget.core.client.container.VBoxLayoutContainer.VBoxLayoutAlign;
 
 /**
  * Panel containing the description of the residues values.
  * @author srebniak_a
  *
  */
-public class LegendPanel extends LayoutContainer 
+public class LegendPanel extends SimpleContainer 
 {
 	public LegendPanel()
 	{
+		VBoxLayoutContainer mainContainer = new VBoxLayoutContainer(VBoxLayoutAlign.CENTER);
+		this.setWidget(mainContainer);
+		
 		this.setHeight(30);
-		this.addStyleName("eppic-no-padding");
+		this.addStyleName("eppic-no-padding");  
 		
-		VBoxLayout legendPanelLayout = new VBoxLayout();  
-		legendPanelLayout.setVBoxLayoutAlign(VBoxLayoutAlign.CENTER);  
-		this.setLayout(legendPanelLayout);
-		
-		LayoutContainer legendContainer = new LayoutContainer();
-		legendContainer.setLayout(new RowLayout(Orientation.HORIZONTAL));
+		HorizontalLayoutContainer legendContainer = new HorizontalLayoutContainer();
 		legendContainer.setHeight(30);
-		legendContainer.setWidth(620);
+		legendContainer.setWidth(650);
 
 		for(LegendItem item : LegendItem.values())
 		{
-			LayoutContainer itemContainer = createLegendItemContainer(item);
+			HBoxLayoutContainer itemContainer = createLegendItemContainer(item);
 			double space = 1.0 / LegendItem.values().length;
-			legendContainer.add(itemContainer, new RowData(space, 1, new Margins(0)));
+			legendContainer.add(itemContainer, new HorizontalLayoutData(space,1));
 		}
 		
-		this.add(legendContainer);
+		mainContainer.add(legendContainer);
 	}
 
 	/**
@@ -51,22 +48,19 @@ public class LegendPanel extends LayoutContainer
 	 * @param item item to display
 	 * @return panel for legend item
 	 */
-	private LayoutContainer createLegendItemContainer(LegendItem item)
+	private HBoxLayoutContainer createLegendItemContainer(LegendItem item)
 	{
-		LayoutContainer itemContainer = new LayoutContainer();
-		HBoxLayout itemContainerLayout = new HBoxLayout();  
-		itemContainerLayout.setHBoxLayoutAlign(HBoxLayoutAlign.MIDDLE);  
-	    itemContainer.setLayout(itemContainerLayout);
+		HBoxLayoutContainer itemContainer = new HBoxLayoutContainer(HBoxLayoutAlign.MIDDLE);
 		
-	    LayoutContainer itemTypePanel = new LayoutContainer();
+	    HBoxLayoutContainer itemTypePanel = new HBoxLayoutContainer();
 	    itemTypePanel.setBorders(true);
 	    itemTypePanel.addStyleName(item.getStyleName());
 	    itemTypePanel.setWidth(20);
 	    itemTypePanel.setHeight(20);
 		
-		Label itemTypeLabel = new Label(EscapedStringGenerator.generateEscapedString(item.getName()));
+		HTML itemTypeLabel = new HTML(EscapedStringGenerator.generateEscapedString(item.getName()));
 		
-		itemContainer.add(itemTypePanel, new HBoxLayoutData(new Margins(0, 10, 0, 0)));
+		itemContainer.add(itemTypePanel, new BoxLayoutData(new Margins(0, 10, 0, 0)));
 		itemContainer.add(itemTypeLabel);
 		
 		return itemContainer;

@@ -1,5 +1,6 @@
 package ch.systemsx.sybit.crkwebui.client.results.gui.panels;
 
+import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ApplicationWindowResizeEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.panels.DisplayPanel;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ApplicationWindowResizeHandler;
@@ -7,10 +8,11 @@ import ch.systemsx.sybit.crkwebui.client.commons.managers.EventBusManager;
 import ch.systemsx.sybit.crkwebui.client.commons.util.EscapedStringGenerator;
 import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
 
-import com.extjs.gxt.ui.client.Style.Orientation;
-import com.extjs.gxt.ui.client.util.Margins;
-import com.extjs.gxt.ui.client.widget.layout.RowData;
-import com.extjs.gxt.ui.client.widget.layout.RowLayout;
+import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.user.client.ui.DockLayoutPanel;
+import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer;
+import com.sencha.gxt.core.client.dom.ScrollSupport.ScrollMode;
+import com.sencha.gxt.core.client.util.Margins;
 
 /**
  * Panel used to display the results of the calculations.
@@ -18,32 +20,42 @@ import com.extjs.gxt.ui.client.widget.layout.RowLayout;
  *
  */
 public class ResultsPanel extends DisplayPanel
-{
-	private IdentifierHeaderPanel identifierHeaderPanel;
+{	
+	private IdentifierHeaderPanel headerPanel;
+	private VerticalLayoutContainer resultsContainer;
 	
 	private InformationPanel informationPanel;
-
-	private ResultsSelectorsPanel resultsSelectorsPanel;
-	
 	private ResultsGridPanel resultsGridContainer;
 
 	public ResultsPanel(PDBScoreItem pdbScoreItem)
 	{
-		this.setLayout(new RowLayout(Orientation.VERTICAL));
+		DockLayoutPanel dock = new DockLayoutPanel(Unit.PX);
 
-		identifierHeaderPanel = new IdentifierHeaderPanel();
-		this.add(identifierHeaderPanel);
+		headerPanel = new IdentifierHeaderPanel(ApplicationContext.getWindowData().getWindowWidth() - 190);
+		dock.addNorth(headerPanel, 65);
 		
-		informationPanel = new InformationPanel(pdbScoreItem);
-		this.add(informationPanel, new RowData(1, 90, new Margins(0)));
+		resultsContainer = createResultsContainer(pdbScoreItem);
+		dock.add(resultsContainer);
 		
-		resultsSelectorsPanel = new ResultsSelectorsPanel(pdbScoreItem);
-		this.add(resultsSelectorsPanel, new RowData(1, 40, new Margins(0, 0, 5, 0)));
-
-		resultsGridContainer = new ResultsGridPanel();
-		this.add(resultsGridContainer, new RowData(1, 1, new Margins(0)));
+		this.setData(dock);
 		
 		initializeEventsListeners();
+	}
+	
+	/**
+	 * Creates the results container with information panel, grid panel
+	 */
+	private VerticalLayoutContainer createResultsContainer(PDBScoreItem pdbScoreItem){
+		VerticalLayoutContainer mainContainer = new VerticalLayoutContainer();
+		mainContainer.setScrollMode(ScrollMode.AUTOY);
+		
+		informationPanel = new InformationPanel(pdbScoreItem, ApplicationContext.getWindowData().getWindowWidth() - 180);
+		mainContainer.add(informationPanel, new VerticalLayoutData(-1, 110, new Margins(10,0,10,0)));
+
+		resultsGridContainer = new ResultsGridPanel(ApplicationContext.getWindowData().getWindowWidth() - 180);
+		mainContainer.add(resultsGridContainer, new VerticalLayoutData(-1, 1, new Margins(0)));
+		
+		return mainContainer;
 	}
 	
 	/**
@@ -55,27 +67,25 @@ public class ResultsPanel extends DisplayPanel
 		resultsGridContainer.fillResultsGrid(resultsData);
 		informationPanel.fillInfoPanel(resultsData);
 		
-		identifierHeaderPanel.setPDBText(resultsData.getPdbName(),
+		headerPanel.setPDBText(resultsData.getPdbName(),
 							  	 	resultsData.getSpaceGroup(),
 							  	 	resultsData.getExpMethod(),
 							  	 	resultsData.getResolution(),
 							  	 	resultsData.getRfreeValue(),
 							  	 	resultsData.getInputType());
 		
-		identifierHeaderPanel.setEppicLogoPanel(resultsData.getRunParameters().getCrkVersion());
+		headerPanel.setEppicLogoPanel(resultsData.getRunParameters().getCrkVersion());
 		
-		identifierHeaderPanel.setPDBIdentifierSubtitle(EscapedStringGenerator.generateEscapedString(resultsData.getTitle()));
+		headerPanel.setPDBIdentifierSubtitle(EscapedStringGenerator.generateEscapedString(resultsData.getTitle()));
 		
-		resultsSelectorsPanel.setDownloadResultsLink(resultsData.getJobId());
+		headerPanel.setDownloadResultsLink(resultsData.getJobId());
 	}
 
 	public void resizeContent() 
 	{
-		resultsGridContainer.setAssignedWidth(this.getWidth(true));
-		resultsGridContainer.resizeGrid();
-		identifierHeaderPanel.resize();
-		informationPanel.resize();
-		this.layout(true);
+		resultsGridContainer.resizeContent(ApplicationContext.getWindowData().getWindowWidth() - 180);
+		headerPanel.resizePanel(ApplicationContext.getWindowData().getWindowWidth() - 180);
+		informationPanel.resizePanel(ApplicationContext.getWindowData().getWindowWidth() - 180);
 	}
 	
 	/**

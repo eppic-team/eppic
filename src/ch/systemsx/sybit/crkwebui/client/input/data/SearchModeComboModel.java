@@ -1,24 +1,34 @@
 package ch.systemsx.sybit.crkwebui.client.input.data;
 
-import com.extjs.gxt.ui.client.data.BaseModel;
+import java.io.Serializable;
 
 /**
  * Data model for search mode combobox.
- * @author srebniak_a
+ * @author nikhil
  *
  */
-public class SearchModeComboModel extends BaseModel 
+public class SearchModeComboModel implements Serializable
 {
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+	
+	private int id;
+	private String searchMode;
+	
+	private static int COUNTER = 0;
 
 	public SearchModeComboModel(String searchMode) {
-		set("searchMode", searchMode);
+		this.id = COUNTER++;
+		this.searchMode = searchMode;
+	}
+	
+	public int getId(){
+		return id;
 	}
 
 	public String getSearchMode() {
-		return (String) get("searchMode");
+		return searchMode;
 	}
 }
