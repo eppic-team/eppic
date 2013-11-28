@@ -35,7 +35,7 @@ import com.sencha.gxt.widget.core.client.toolbar.PagingToolBar;
  */
 public class ResiduesPanel extends VerticalLayoutContainer
 {
-	private static final InterfaceResidueItemModelProperties props = GWT.create(InterfaceResidueItemModelProperties.class);
+    private static final InterfaceResidueItemModelProperties props = GWT.create(InterfaceResidueItemModelProperties.class);
 	
     private List<ColumnConfig<InterfaceResidueItemModel, ?>> residuesConfigs;
     private ListStore<InterfaceResidueItemModel> residuesStore;
@@ -71,7 +71,7 @@ public class ResiduesPanel extends VerticalLayoutContainer
     	//residuesStore.setStoreSorter(new ResiduesPanelSorter());
     	    	
     	loader = new PagingLoader<PagingLoadConfig, PagingLoadResult<InterfaceResidueItemModel>>(proxy);
-        //loader.setRemoteSort(true);
+        loader.setRemoteSort(true);
         loader.addLoadHandler(new LoadResultListStoreBinding<PagingLoadConfig, InterfaceResidueItemModel, PagingLoadResult<InterfaceResidueItemModel>>(residuesStore));
     	//loader.setSortField("residueNumber");
 

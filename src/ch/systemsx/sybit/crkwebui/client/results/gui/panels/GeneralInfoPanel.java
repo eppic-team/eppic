@@ -6,12 +6,12 @@ package ch.systemsx.sybit.crkwebui.client.results.gui.panels;
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
 
-import com.extjs.gxt.ui.client.widget.Label;
+import com.google.gwt.user.client.ui.Label;
+import com.sencha.gxt.core.client.dom.ScrollSupport.ScrollMode;
+import com.sencha.gxt.core.client.util.Margins;
 import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer;
 import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer.VerticalLayoutData;
 import com.sencha.gxt.widget.core.client.form.FieldSet;
-import com.sencha.gxt.core.client.util.Margins;
-import com.sencha.gxt.core.client.dom.ScrollSupport.ScrollMode;
 
 /**
  * Panel containing general information about the pdb

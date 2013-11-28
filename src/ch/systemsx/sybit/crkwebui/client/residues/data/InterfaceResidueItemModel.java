@@ -14,6 +14,7 @@ public class InterfaceResidueItemModel implements Serializable
 	 */
 	private static final long serialVersionUID = 1L;
 	
+	
 	private int structure;
 	private int residueNumber;
 	private String pdbResidueNumber;
@@ -108,5 +109,6 @@ public class InterfaceResidueItemModel implements Serializable
 	public void setEntropyScore(float entropyScore) {
 		this.entropyScore = entropyScore;
 	}
-
+	
+	
 }
