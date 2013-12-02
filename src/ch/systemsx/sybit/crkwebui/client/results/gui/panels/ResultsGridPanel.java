@@ -34,7 +34,6 @@ import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.NativeEvent;
-import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.sencha.gxt.core.client.ValueProvider;
@@ -58,8 +57,6 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 	private int panelWidth;
 	
 	private static final InterfaceItemModelProperties props = GWT.create(InterfaceItemModelProperties.class);
-	
-	final NumberFormat number = NumberFormat.getFormat("0.00");
 	
 	//Columns to be used later
 	ColumnConfig<InterfaceItemModel, String> thumbnailColumn;
@@ -305,7 +302,10 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 			}
 		};
 		
-		new QuickTip(resultsGrid);
+		QuickTip gridQT = new QuickTip(resultsGrid);
+		//Bug-Fix in GXt 3.0.1
+		//To fix the issue of blank Tooltips we set the delay
+		gridQT.getToolTipConfig().setShowDelay(10);
 		
 		return resultsGrid;
 	}

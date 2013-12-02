@@ -210,7 +210,10 @@ public class MyJobsPanel extends ContentPanel
 			}
 		};
 		
-		new QuickTip(myJobsGrid);
+		QuickTip gridQT = new QuickTip(myJobsGrid);
+		//Bug-Fix in GXt 3.0.1
+		//To fix the issue of blank Tooltips we set the delay
+		gridQT.getToolTipConfig().setShowDelay(10);
 		
 		return myJobsGrid;
 	}
