@@ -19,6 +19,7 @@ import ch.systemsx.sybit.crkwebui.client.commons.managers.EventBusManager;
 import ch.systemsx.sybit.crkwebui.client.commons.services.eppic.CrkWebServiceProvider;
 import ch.systemsx.sybit.crkwebui.client.input.listeners.SubmitKeyListener;
 import ch.systemsx.sybit.crkwebui.client.input.validators.EmailFieldValidator;
+import ch.systemsx.sybit.crkwebui.client.input.validators.PdbCodeFieldValidator;
 import ch.systemsx.sybit.crkwebui.shared.comparators.InputParametersComparator;
 import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
 import ch.systemsx.sybit.crkwebui.shared.validators.PdbCodeVerifier;
@@ -39,8 +40,11 @@ import com.sencha.gxt.widget.core.client.container.HorizontalLayoutContainer;
 import com.sencha.gxt.widget.core.client.container.HorizontalLayoutContainer.HorizontalLayoutData;
 import com.sencha.gxt.widget.core.client.container.SimpleContainer;
 import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer;
+import com.sencha.gxt.core.client.dom.ScrollSupport.ScrollMode;
 import com.sencha.gxt.core.client.util.Margins;
 import com.sencha.gxt.core.client.util.Padding;
+import com.sencha.gxt.widget.core.client.event.ExpandEvent;
+import com.sencha.gxt.widget.core.client.event.ExpandEvent.ExpandHandler;
 import com.sencha.gxt.widget.core.client.event.SelectEvent;
 import com.sencha.gxt.widget.core.client.event.SelectEvent.SelectHandler;
 import com.sencha.gxt.widget.core.client.event.SubmitCompleteEvent;
@@ -156,7 +160,8 @@ public class InputDataPanel extends DisplayPanel
 
 		panel.add(formPanel);
 
-		VerticalLayoutContainer formContainer = new VerticalLayoutContainer();
+		final VerticalLayoutContainer formContainer = new VerticalLayoutContainer();
+		formContainer.setScrollMode(ScrollMode.AUTOY);
 		formContainer.getElement().setPadding(new Padding(PADDING_WIDTH));
 
 		pdbCodeRadio = createPDBCodeFileRadioItem(AppPropertiesManager.CONSTANTS.input_pdb_code_radio());
@@ -197,6 +202,14 @@ public class InputDataPanel extends DisplayPanel
  		optionsInputPanel.fillDefaultValues(ApplicationContext.getSettings().getDefaultParametersValues());
  		formContainer.add(optionsInputPanel);
 		optionsInputPanel.collapse();
+		optionsInputPanel.addExpandHandler(new ExpandHandler() {
+			
+			@Override
+			public void onExpand(ExpandEvent event) {
+				formContainer.syncSize();
+				
+			}
+		});
 
 		if(ApplicationContext.getSettings().isUseCaptcha())
 		{
@@ -223,7 +236,7 @@ public class InputDataPanel extends DisplayPanel
 		panel.addButton(submitButton);
 
 		HorizontalLayoutContainer panelContainer = new HorizontalLayoutContainer();
-		panelContainer.setHeight(1000);
+		panelContainer.setScrollMode(ScrollMode.AUTOY);
 		panelContainer.add(new SimpleContainer(), new HorizontalLayoutData(0.5, -1, new Margins(0)));
 		panelContainer.add(panel, new HorizontalLayoutData(-1, -1, new Margins(0, 0, 0, 0)));
 
@@ -338,7 +351,7 @@ public class InputDataPanel extends DisplayPanel
 		    		file.setAllowBlank(true);
 		    		file.reset();
 		    		pdbCodeField.reset();
-		    		//pdbCodeField.setAllowBlank(false);
+		    		pdbCodeField.setAllowBlank(false);
 		    		pdbCodeFieldLabel.setVisible(true);
 		    		emailTextFieldLabel.setVisible(false);
 		        }
@@ -348,7 +361,7 @@ public class InputDataPanel extends DisplayPanel
 		    		file.reset();
 		    		pdbCodeField.reset();
 		    		pdbCodeFieldLabel.setVisible(false);
-		    		//pdbCodeField.setAllowBlank(true);
+		    		pdbCodeField.setAllowBlank(true);
 		    		emailTextFieldLabel.setVisible(true);
 		        }
 			}
@@ -390,8 +403,8 @@ public class InputDataPanel extends DisplayPanel
 		pdbCodeField = new TextField();
 		pdbCodeField.setWidth(FIELD_WIDTH);
 		pdbCodeField.setName("code");
-		//pdbCodeField.addValidator(new PdbCodeFieldValidator());
-		//pdbCodeField.setAllowBlank(false);
+		pdbCodeField.addValidator(new PdbCodeFieldValidator());
+		pdbCodeField.setAllowBlank(false);
 		pdbCodeField.addKeyDownHandler(new SubmitKeyListener());
 		
 		FieldLabel pdbCodeFieldLabel = new FieldLabel(pdbCodeField, label);

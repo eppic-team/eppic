@@ -5,6 +5,7 @@ import java.util.List;
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.input.data.SearchModeComboModel;
+import ch.systemsx.sybit.crkwebui.client.input.listeners.SubmitKeyListener;
 import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
 import ch.systemsx.sybit.crkwebui.shared.model.InputParameters;
 
@@ -152,7 +153,7 @@ public class OptionsInputPanel extends FieldSet
 		softIdentityCutOff.addValidator(new MaxNumberValidator<Integer>(100));
 		softIdentityCutOff.setToolTipConfig(
 				createToolTipConfig(AppPropertiesManager.CONSTANTS.parameters_soft_identity_cutoff_hint()));
-		//softIdentityCutOff.addKeyDownHandler(new SubmitKeyListener());
+		softIdentityCutOff.addKeyDownHandler(new SubmitKeyListener());
 		
 		return softIdentityCutOff;
 	}
@@ -167,7 +168,7 @@ public class OptionsInputPanel extends FieldSet
 		hardIdentityCutOff.addValidator(new MaxNumberValidator<Integer>(100));
 		hardIdentityCutOff.setToolTipConfig(
 				createToolTipConfig(AppPropertiesManager.CONSTANTS.parameters_hard_identity_cutoff_hint()));
-		//hardIdentityCutOff.addKeyDownHandler(new SubmitKeyListener());
+		hardIdentityCutOff.addKeyDownHandler(new SubmitKeyListener());
 		new FieldLabel(hardIdentityCutOff, AppPropertiesManager.CONSTANTS.parameters_hard_identity_cutoff());
 		
 		return hardIdentityCutOff;
@@ -182,7 +183,7 @@ public class OptionsInputPanel extends FieldSet
 		maxNrOfSequences.setName("maxNrOfSequences");
 		maxNrOfSequences.setToolTipConfig(
 				createToolTipConfig(AppPropertiesManager.CONSTANTS.parameters_max_num_sequences_hint()));
-		//maxNrOfSequences.addKeyDownHandler(new SubmitKeyListener());
+		maxNrOfSequences.addKeyDownHandler(new SubmitKeyListener());
 		new FieldLabel(maxNrOfSequences, AppPropertiesManager.CONSTANTS.parameters_max_num_sequences());
 		
 		return maxNrOfSequences;
