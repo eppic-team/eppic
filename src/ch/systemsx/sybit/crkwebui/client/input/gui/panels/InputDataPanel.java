@@ -33,6 +33,7 @@ import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasValue;
 import com.google.gwt.user.client.ui.Image;
+import com.google.gwt.user.client.ui.RadioButton;
 import com.sencha.gxt.widget.core.client.FramedPanel;
 import com.sencha.gxt.widget.core.client.container.BoxLayoutContainer.BoxLayoutPack;
 import com.sencha.gxt.widget.core.client.container.HBoxLayoutContainer;
@@ -51,7 +52,6 @@ import com.sencha.gxt.widget.core.client.event.SubmitCompleteEvent;
 import com.sencha.gxt.widget.core.client.event.SubmitCompleteEvent.SubmitCompleteHandler;
 import com.sencha.gxt.widget.core.client.form.FieldLabel;
 import com.sencha.gxt.widget.core.client.form.TextField;
-import com.sencha.gxt.widget.core.client.form.Radio;
 import com.sencha.gxt.widget.core.client.form.FormPanel;
 import com.sencha.gxt.widget.core.client.form.FormPanel.Encoding;
 import com.sencha.gxt.widget.core.client.form.FormPanel.Method;
@@ -75,8 +75,8 @@ public class InputDataPanel extends DisplayPanel
 	private FormPanel formPanel;
 
 	private HBoxLayoutContainer inputRadioGroupContainer;
-	private Radio pdbCodeRadio;
-	private Radio pdbFileRadio;
+	private RadioButton pdbCodeRadio;
+	private RadioButton pdbFileRadio;
 	private ToggleGroup inputRadioGroup;
 
 	private FileUploadField file;
@@ -311,7 +311,7 @@ public class InputDataPanel extends DisplayPanel
 	}
 
 	private void setUpReadOnlyMode() {
-		pdbFileRadio.disable();
+		pdbFileRadio.setEnabled(false);
 		optionsInputPanel.disable();
 	}
 
@@ -320,11 +320,10 @@ public class InputDataPanel extends DisplayPanel
 	 * @param label label of the radio item
 	 * @return radio item
 	 */
-	private Radio createPDBCodeFileRadioItem(String label)
+	private RadioButton createPDBCodeFileRadioItem(String label)
 	{
-		Radio pdbCodeRadio = new Radio();
-		pdbCodeRadio.setBoxLabel(label);
-		pdbCodeRadio.getElement().applyStyles("font-size: 14px;");
+		RadioButton pdbCodeRadio = new RadioButton("input-button", label);
+		pdbCodeRadio.addStyleName("eppic-default-right-padding");
 		return pdbCodeRadio;
 	}
 	
@@ -345,7 +344,7 @@ public class InputDataPanel extends DisplayPanel
 			@Override
 			public void onValueChange(ValueChangeEvent<HasValue<Boolean>> event) {
 				ToggleGroup group = (ToggleGroup)event.getSource();
-		        Radio radio = (Radio)group.getValue();
+		        RadioButton radio = (RadioButton)group.getValue();
 		        if(radio.equals(pdbCodeRadio)){
 		        	fileLabel.setVisible(false);
 		    		file.setAllowBlank(true);
