@@ -11,6 +11,8 @@ import com.sencha.gxt.widget.core.client.tips.ToolTipConfig;
  */
 public class LabelWithTooltip extends HTML
 {
+	private ToolTip tooltip;
+	
 	/**
 	 * Creates instance of label with assigned tooltip.
 	 * @param labelText text of the label
@@ -24,7 +26,15 @@ public class LabelWithTooltip extends HTML
 	    config.setBodyHtml(template);
 	    config.setTrackMouse(true);
 		
-	    new ToolTip(this, config);
+	    tooltip = new ToolTip(this, config);
+	}
+	
+	/**
+	 * Sets the text of the tool tip
+	 * @param tooltip text
+	 */
+	public void setToolTipText(String text){
+		tooltip.setToolTip(text);
 	}
 
 }

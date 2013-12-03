@@ -33,4 +33,17 @@ public class LinkWithTooltip extends LabelWithTooltip
 					String linkUrl){
 		this.setHTML("<a href=\"" + linkUrl + "\" target=\"_blank\" style='vertical-align:top;'>" + labelText + "</a>");
 	}
+	
+	/**
+	 * Resets the link and content
+	 * @param labelText
+	 * @param tooltipText
+	 * @param linkUrl
+	 */
+	public void setData(String labelText,
+					String tooltipText,
+					String linkUrl){
+		this.setToolTipText(tooltipText);
+		this.setHTML("<a href=\"" + linkUrl + "\" target=\"_blank\" style='vertical-align:top;'>" + labelText + "</a>");
+	}
 }
