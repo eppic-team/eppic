@@ -8,26 +8,38 @@ import ch.systemsx.sybit.crkwebui.client.commons.util.EscapedStringGenerator;
 import ch.systemsx.sybit.crkwebui.shared.model.InputType;
 
 import com.google.gwt.user.client.ui.HTML;
-import com.sencha.gxt.widget.core.client.container.HBoxLayoutContainer;
-import com.sencha.gxt.widget.core.client.container.SimpleContainer;
+import com.sencha.gxt.widget.core.client.container.HorizontalLayoutContainer;
 
 /**
  * Panel used to store pdb identifier.
  * @author AS
  *
  */
-public class PDBIdentifierPanel extends SimpleContainer
+public class PDBIdentifierPanel extends HorizontalLayoutContainer
 {
-	private HBoxLayoutContainer mainContainer;
-	private HTML informationLabel;
+	private HorizontalLayoutContainer informationLabel;
 	private LinkWithTooltip pdbNameLabel;
 	private LabelWithTooltip warningLabel;
 	
 	public PDBIdentifierPanel()
 	{
-		this.mainContainer =  new HBoxLayoutContainer();
 		this.addStyleName("eppic-pdb-identifier-label");
-		this.setWidget(mainContainer);
+		
+		informationLabel = new HorizontalLayoutContainer();
+		informationLabel.setWidth(200);
+		informationLabel.add(new HTML(
+				EscapedStringGenerator.generateSafeHtml(
+				EscapedStringGenerator.generateEscapedString(
+						AppPropertiesManager.CONSTANTS.info_panel_pdb_identifier() + ":"))));
+		this.add(informationLabel, new HorizontalLayoutData(-1,-1));
+		
+		pdbNameLabel = new LinkWithTooltip("","","");
+		this.add(pdbNameLabel);
+		
+		warningLabel = new LabelWithTooltip("", "");
+		warningLabel.addStyleName("eppic-header-warning");
+		this.add(warningLabel);
+		
 	}
 	
 	/**
@@ -45,49 +57,35 @@ public class PDBIdentifierPanel extends SimpleContainer
 			  			   double rfreeValue,
 			  			   int inputType)
 	{
-		mainContainer =  new HBoxLayoutContainer();
-		this.setWidget(mainContainer);
-		
-		informationLabel = new HTML(
-				EscapedStringGenerator.generateSafeHtml(AppPropertiesManager.CONSTANTS.info_panel_pdb_identifier() + ":&nbsp;"));
-		mainContainer.add(informationLabel);
 		
 		if(inputType == InputType.PDBCODE.getIndex())
 		{
-			pdbNameLabel = new LinkWithTooltip(EscapedStringGenerator.generateEscapedString(pdbName),
-											   AppPropertiesManager.CONSTANTS.pdb_identifier_panel_label_hint(),											  
-											   ApplicationContext.getSettings().getPdbLinkUrl() + pdbName);
+			pdbNameLabel.setData(EscapedStringGenerator.generateEscapedString(pdbName),
+								AppPropertiesManager.CONSTANTS.pdb_identifier_panel_label_hint(),
+								 ApplicationContext.getSettings().getPdbLinkUrl() + pdbName);
 		}
 		else
 		{
-			pdbNameLabel = new LinkWithTooltip(EscapedStringGenerator.generateEscapedString(pdbName),"","");
+			pdbNameLabel.setData(EscapedStringGenerator.generateEscapedString(pdbName),"","");
 		}
-		
-		mainContainer.add(pdbNameLabel);
 		
 		// TODO we should try to set a constant "always-low-res exp method=ELECTRON MICROSCOPY". 
 		// It's not ideal that the name is hard-coded
 		if (expMethod!=null && expMethod.equals("ELECTRON MICROSCOPY")) {
-			warningLabel = new LabelWithTooltip(
-					AppPropertiesManager.CONSTANTS.pdb_identifier_panel_warning_lowRes(),
-					AppPropertiesManager.CONSTANTS.pdb_identifier_panel_warning_lowRes_hint());			
+			warningLabel.setHTML(AppPropertiesManager.CONSTANTS.pdb_identifier_panel_warning_lowRes());
+			warningLabel.setToolTipText(AppPropertiesManager.CONSTANTS.pdb_identifier_panel_warning_lowRes_hint());			
 		}
 		else if(ApplicationContext.getSettings().getResolutionCutOff() > 0 && 
 				resolution > ApplicationContext.getSettings().getResolutionCutOff() && resolution > 0) {			
-			warningLabel = new LabelWithTooltip(
-					AppPropertiesManager.CONSTANTS.pdb_identifier_panel_warning_lowRes(),
-					AppPropertiesManager.CONSTANTS.pdb_identifier_panel_warning_lowRes_hint());
+			warningLabel.setHTML(AppPropertiesManager.CONSTANTS.pdb_identifier_panel_warning_lowRes());
+			warningLabel.setToolTipText(AppPropertiesManager.CONSTANTS.pdb_identifier_panel_warning_lowRes_hint());
 		}else if(ApplicationContext.getSettings().getRfreeCutOff() > 0 && 
 				rfreeValue > ApplicationContext.getSettings().getRfreeCutOff() && rfreeValue > 0){
-			warningLabel = new LabelWithTooltip(
-					AppPropertiesManager.CONSTANTS.pdb_identifier_panel_warning_highRfree(),
-					AppPropertiesManager.CONSTANTS.pdb_identifier_panel_warning_highRfree_hint());
-		}else
-			warningLabel = null;
-		
-		if(warningLabel != null){
-			warningLabel.addStyleName("eppic-header-warning");
-			mainContainer.add(warningLabel);
+			warningLabel.setHTML(AppPropertiesManager.CONSTANTS.pdb_identifier_panel_warning_highRfree());
+			warningLabel.setToolTipText(AppPropertiesManager.CONSTANTS.pdb_identifier_panel_warning_highRfree_hint());
+		}else{
+			warningLabel.setHTML("");
+			warningLabel.setToolTipText("");
 		}
 		
 	}

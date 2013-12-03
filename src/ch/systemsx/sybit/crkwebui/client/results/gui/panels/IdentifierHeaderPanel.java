@@ -32,10 +32,10 @@ public class IdentifierHeaderPanel extends HorizontalLayoutContainer
     	
     	pdbInfo = new VerticalLayoutContainer();
     	pdbIdentifierPanel = new PDBIdentifierPanel();
-    	pdbInfo.add(pdbIdentifierPanel, new VerticalLayoutData(-1, -1, new Margins(0, 0, 1, 0)));
+    	pdbInfo.add(pdbIdentifierPanel, new VerticalLayoutData(1, 25, new Margins(0, 0, 0, 0)));
 
     	pdbIdentifierSubtitlePanel = new PDBIdentifierSubtitlePanel();
-    	pdbInfo.add(pdbIdentifierSubtitlePanel, new VerticalLayoutData(-1, -1, new Margins(0, 0, 1, 0)));
+    	pdbInfo.add(pdbIdentifierSubtitlePanel, new VerticalLayoutData(1, -1, new Margins(0, 0, 0, 0)));
     	
     	downloadResultsPanel = new HorizontalLayoutContainer();
     	downloadResultsPanel.setBorders(false);
@@ -45,7 +45,7 @@ public class IdentifierHeaderPanel extends HorizontalLayoutContainer
 		downloadResultsLink.addStyleName("eppic-download-link");
 		
 		downloadResultsPanel.add(downloadResultsLink);
-    	pdbInfo.add(downloadResultsPanel, new VerticalLayoutData(-1, -1, new Margins(0, 0, 10, 0)));
+    	pdbInfo.add(downloadResultsPanel, new VerticalLayoutData(1, -1, new Margins(0, 0, 10, 0)));
 
     	this.add(pdbInfo,  new HorizontalLayoutData(1,-1));
 
