@@ -4,6 +4,7 @@
 package ch.systemsx.sybit.crkwebui.client.results.gui.panels;
 
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
+import ch.systemsx.sybit.crkwebui.client.commons.util.StyleGenerator;
 import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
 
 import com.google.gwt.user.client.ui.Label;
@@ -26,7 +27,8 @@ public class GeneralInfoPanel extends FieldSet {
 	private GeneralInfoRowContainer rFreeContainer;
 	
 	public GeneralInfoPanel(PDBScoreItem pdbScoreItem){
-		this.setHeadingHtml(AppPropertiesManager.CONSTANTS.info_panel_general_info());
+		this.setHeadingHtml(StyleGenerator.defaultFontStyleString(
+				AppPropertiesManager.CONSTANTS.info_panel_general_info()));
 		 
 		this.setBorders(true);
 

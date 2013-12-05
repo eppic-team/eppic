@@ -1,7 +1,5 @@
 package ch.systemsx.sybit.crkwebui.client.commons.gui.windows;
 
-import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
-
 import com.sencha.gxt.widget.core.client.container.HtmlLayoutContainer;
 
 public class Iframe extends HtmlLayoutContainer
@@ -13,6 +11,5 @@ public class Iframe extends HtmlLayoutContainer
 	public Iframe(String source)
 	{
 		super("<iframe src='" + source + "'" +" frameborder='0' width='100%' height='100%' />");
-		this.setHeight(ApplicationContext.getWindowData().getWindowHeight()- 80);
 	}
 }

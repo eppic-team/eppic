@@ -5,6 +5,7 @@ import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.panels.DisplayPanel;
 import ch.systemsx.sybit.crkwebui.client.commons.services.eppic.CrkWebServiceProvider;
 import ch.systemsx.sybit.crkwebui.client.commons.util.EscapedStringGenerator;
+import ch.systemsx.sybit.crkwebui.client.commons.util.StyleGenerator;
 import ch.systemsx.sybit.crkwebui.shared.model.InputType;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
 import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
@@ -39,6 +40,8 @@ import com.sencha.gxt.widget.core.client.toolbar.ToolBar;
  */
 public class StatusPanel extends DisplayPanel
 {
+	private static final int LABEL_WIDTH = 100;
+	
 	private FormPanel formPanel;
 
 	private IdentifierHeaderPanel identifierHeaderPanel;
@@ -65,6 +68,7 @@ public class StatusPanel extends DisplayPanel
 	{
 		
 		DockLayoutPanel dock = new DockLayoutPanel(Unit.PX);
+		dock.addStyleName("eppic-default-font");
 		
 		identifierHeaderPanel = new IdentifierHeaderPanel(ApplicationContext.getWindowData().getWindowWidth() - 180);
 		dock.addNorth(identifierHeaderPanel,50);
@@ -84,17 +88,16 @@ public class StatusPanel extends DisplayPanel
 		
 		formContainer.add(new SimpleContainer(), new VerticalLayoutData(-1,20));
 		
-		jobId = new HTML();
-		FieldLabel jobIdLabel = new FieldLabel(jobId, AppPropertiesManager.CONSTANTS.status_panel_jobId());
-		formContainer.add(jobIdLabel, new VerticalLayoutData(-1,-1));
-
-		status = new HTML();
-		FieldLabel statusLabel = new FieldLabel(status, AppPropertiesManager.CONSTANTS.status_panel_status());
-		formContainer.add(statusLabel, new VerticalLayoutData(-1,-1));
+		formContainer.add(createJobIdField(), new VerticalLayoutData(-1, 20));
+		
+		formContainer.add(createStatusField(), new VerticalLayoutData(-1, 20));
 
 		log = createLogTextarea();
-		FieldLabel logLabel = new FieldLabel(log, AppPropertiesManager.CONSTANTS.status_panel_log());
+		FieldLabel logLabel = new FieldLabel(log);
+		logLabel.getElement().applyStyles("font-weight:bold");
+		logLabel.setHTML(StyleGenerator.defaultFontStyle(AppPropertiesManager.CONSTANTS.status_panel_log()));
 		logLabel.setLabelAlign(LabelAlign.TOP);
+		logLabel.addStyleName("eppic-status-label");
 		formContainer.add(logLabel, new VerticalLayoutData(1,1));
 
 		killJob = createStopJobButton();
@@ -117,6 +120,38 @@ public class StatusPanel extends DisplayPanel
 		
 		this.setData(dock);
 
+	}
+	
+	/**
+	 * Create status field
+	 */
+	private HorizontalLayoutContainer createStatusField(){
+		HorizontalLayoutContainer con = new HorizontalLayoutContainer();
+		status = new HTML();
+		HTML statusLabel = new HTML(AppPropertiesManager.CONSTANTS.status_panel_status()+":");
+		statusLabel.setWidth(LABEL_WIDTH+"px");
+		statusLabel.addStyleName("eppic-status-label");
+		
+		con.add(statusLabel);
+		con.add(status);
+		
+		return con;
+	}
+	
+	/**
+	 * Create job id field
+	 */
+	private HorizontalLayoutContainer createJobIdField(){
+		HorizontalLayoutContainer con = new HorizontalLayoutContainer();
+		jobId = new HTML();
+		HTML jobIdLabel = new HTML(AppPropertiesManager.CONSTANTS.status_panel_jobId()+":");
+		jobIdLabel.setWidth(LABEL_WIDTH+"px");
+		jobIdLabel.addStyleName("eppic-status-label");
+		
+		con.add(jobIdLabel);
+		con.add(jobId);
+		
+		return con;
 	}
 	
 	/**

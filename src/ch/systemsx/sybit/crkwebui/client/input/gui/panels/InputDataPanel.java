@@ -17,6 +17,7 @@ import ch.systemsx.sybit.crkwebui.client.commons.handlers.GetFocusOnPdbCodeField
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.SubmitJobHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.managers.EventBusManager;
 import ch.systemsx.sybit.crkwebui.client.commons.services.eppic.CrkWebServiceProvider;
+import ch.systemsx.sybit.crkwebui.client.commons.util.StyleGenerator;
 import ch.systemsx.sybit.crkwebui.client.input.listeners.SubmitKeyListener;
 import ch.systemsx.sybit.crkwebui.client.input.validators.EmailFieldValidator;
 import ch.systemsx.sybit.crkwebui.client.input.validators.PdbCodeFieldValidator;
@@ -257,6 +258,7 @@ public class InputDataPanel extends DisplayPanel
 		LinkWithTooltip citationLink = new LinkWithTooltip(AppPropertiesManager.CONSTANTS.input_citation_link_text(), 
 				AppPropertiesManager.CONSTANTS.input_citation_link_tooltip(),
 				ApplicationContext.getSettings().getPublicationLinkUrl());
+		citationLink.addStyleName("eppic-citation");
 		
 		footerContainer.add(citationLink);
 
@@ -384,7 +386,8 @@ public class InputDataPanel extends DisplayPanel
 		file.setAllowBlank(true);
 		file.setName("uploadFormElement");
 
-		FieldLabel fileLabel = new FieldLabel(file, label);
+		FieldLabel fileLabel = new FieldLabel(file);
+		fileLabel.setHTML(StyleGenerator.defaultFontStyle(label));
 		fileLabel.setLabelWidth(LABEL_WIDTH);
 		fileLabel.getElement().applyStyles("font-size: 14px;");
 		fileLabel.setVisible(false);
@@ -406,7 +409,8 @@ public class InputDataPanel extends DisplayPanel
 		pdbCodeField.setAllowBlank(false);
 		pdbCodeField.addKeyDownHandler(new SubmitKeyListener());
 		
-		FieldLabel pdbCodeFieldLabel = new FieldLabel(pdbCodeField, label);
+		FieldLabel pdbCodeFieldLabel = new FieldLabel(pdbCodeField);
+		pdbCodeFieldLabel.setHTML(StyleGenerator.defaultFontStyle(label));
 		pdbCodeFieldLabel.setLabelWidth(LABEL_WIDTH);
 		pdbCodeFieldLabel.getElement().applyStyles("font-size:14px;");
 
@@ -426,7 +430,8 @@ public class InputDataPanel extends DisplayPanel
 		emailTextField.addValidator(new EmailFieldValidator());
 		emailTextField.addKeyDownHandler(new SubmitKeyListener());
 
-		FieldLabel emailTextFieldLabel = new FieldLabel(emailTextField, label);
+		FieldLabel emailTextFieldLabel = new FieldLabel(emailTextField);
+		emailTextFieldLabel.setHTML(StyleGenerator.defaultFontStyle(label));
 		emailTextFieldLabel.setLabelWidth(LABEL_WIDTH);
 		emailTextFieldLabel.getElement().applyStyles("font-size:14px;");
 		emailTextFieldLabel.setVisible(false);
@@ -482,14 +487,14 @@ public class InputDataPanel extends DisplayPanel
 		HorizontalLayoutContainer uniprotPanel = new HorizontalLayoutContainer();
 		uniprotPanel.getElement().applyStyles("text-align:center; padding-top:25px; height:22px; padding-bottom:1px;");
 
-		HTML uniprotVersionLabel = new HTML(AppPropertiesManager.CONSTANTS.input_uniprot_version() + ": ");
+		HTML uniprotVersionLabel = new HTML(AppPropertiesManager.CONSTANTS.input_uniprot_version() + ":&nbsp;");
 		uniprotVersionLabel.addStyleName("eppic-uniprot-version-header");
 
 		HTML uniprotVersion = new HTML(ApplicationContext.getSettings().getUniprotVersion());
 		uniprotVersion.addStyleName("eppic-uniprot-version");
 		
 		uniprotPanel.add(new SimpleContainer(), new HorizontalLayoutData(0.5, -1, new Margins(0)));
-		uniprotPanel.add(uniprotVersionLabel, new HorizontalLayoutData(-1,-1));
+		uniprotPanel.add(uniprotVersionLabel, new HorizontalLayoutData(-1,-1, new Margins(0, 2, 0, 0)));
 		uniprotPanel.add(uniprotVersion, new HorizontalLayoutData(-1,-1));
 		
 		return uniprotPanel;
@@ -505,11 +510,11 @@ public class InputDataPanel extends DisplayPanel
 		HorizontalLayoutContainer examplePanel = new HorizontalLayoutContainer();
 		examplePanel.getElement().applyStyles("height:22px; padding-bottom:10px;");
 
-		HTML exampleLinkLabel = new HTML(AppPropertiesManager.CONSTANTS.input_example() + ": ");
+		HTML exampleLinkLabel = new HTML(AppPropertiesManager.CONSTANTS.input_example() + ":&nbsp;");
 
 		EmptyLinkWithTooltip exampleLink = new EmptyLinkWithTooltip(ApplicationContext.getSettings().getExamplePdb(),
 				AppPropertiesManager.CONSTANTS.input_example_hint());
-		exampleLink.addStyleName("eppic-horizontal-nav");
+		exampleLink.addStyleName("eppic-action");
 		exampleLink.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {

@@ -5,6 +5,7 @@ import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
+import ch.systemsx.sybit.crkwebui.client.commons.util.StyleGenerator;
 import ch.systemsx.sybit.crkwebui.client.homologs.data.HomologsItemModel;
 import ch.systemsx.sybit.crkwebui.client.homologs.data.HomologsItemModelProperties;
 import ch.systemsx.sybit.crkwebui.client.homologs.gui.cells.PercentageBarCell;
@@ -70,30 +71,36 @@ public class HomologsGrid extends VerticalLayoutContainer
 		
 		ColumnConfig<HomologsItemModel, String> uniprotIdCol = 
 				new ColumnConfig<HomologsItemModel, String>(props.uniId(), 
-						Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("homologs_uniprot_width")),
-						ApplicationContext.getSettings().getGridProperties().get("homologs_uniprot_header"));
+						Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("homologs_uniprot_width")));
+		uniprotIdCol.setHeader(StyleGenerator.defaultFontStyle(
+				ApplicationContext.getSettings().getGridProperties().get("homologs_uniprot_header")));
 		uniprotIdCol.setCell(new UniprotIdCell());
 		
 		ColumnConfig<HomologsItemModel, Double> seqIdCol = 
 				new ColumnConfig<HomologsItemModel, Double>(props.seqIdToQuery(),
-						Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("homologs_identity_width")),
-						ApplicationContext.getSettings().getGridProperties().get("homologs_identity_header"));
+						Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("homologs_identity_width")));
+		seqIdCol.setHeader(StyleGenerator.defaultFontStyle(
+				ApplicationContext.getSettings().getGridProperties().get("homologs_identity_header")));
 		seqIdCol.setCell(new PercentageBarCell(AppPropertiesManager.CONSTANTS.homologs_window_grid_identity_bar_text()));
 
 		ColumnConfig<HomologsItemModel, Double> covCol = 
 				new ColumnConfig<HomologsItemModel, Double>(props.queryCov(), 
-						Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("homologs_coverage_width")),
-						ApplicationContext.getSettings().getGridProperties().get("homologs_coverage_header"));
+						Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("homologs_coverage_width")));
+		covCol.setHeader(StyleGenerator.defaultFontStyle(
+				ApplicationContext.getSettings().getGridProperties().get("homologs_coverage_header")));
 		covCol.setCell(new PercentageBarCell(AppPropertiesManager.CONSTANTS.homologs_window_grid_coverage_bar_text()));
 		
 		ColumnConfig<HomologsItemModel, String> firstTaxCol = 
 				new ColumnConfig<HomologsItemModel, String>(props.firstTaxon(), 
-						Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("homologs_firstTax_width")),
-						ApplicationContext.getSettings().getGridProperties().get("homologs_firstTax_header"));
+						Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("homologs_firstTax_width")));
+		firstTaxCol.setHeader(StyleGenerator.defaultFontStyle(
+				ApplicationContext.getSettings().getGridProperties().get("homologs_firstTax_header")));
+		
 		ColumnConfig<HomologsItemModel, String> lastTaxCol = 
 				new ColumnConfig<HomologsItemModel, String>(props.lastTaxon(), 
-						Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("homologs_lastTax_width")),
-						ApplicationContext.getSettings().getGridProperties().get("homologs_lastTax_header"));
+						Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("homologs_lastTax_width")));
+		lastTaxCol.setHeader(StyleGenerator.defaultFontStyle(
+				ApplicationContext.getSettings().getGridProperties().get("homologs_lastTax_header")));
 		
 		configs.add(uniprotIdCol);
 		configs.add(seqIdCol);

@@ -4,6 +4,7 @@ import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
+import ch.systemsx.sybit.crkwebui.client.commons.util.StyleGenerator;
 import ch.systemsx.sybit.crkwebui.client.input.data.SearchModeComboModel;
 import ch.systemsx.sybit.crkwebui.client.input.listeners.SubmitKeyListener;
 import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
@@ -57,7 +58,7 @@ public class OptionsInputPanel extends FieldSet
 	{
 		List<String> searchModeDefaultList = applicationSettings.getSearchModeList();
 		
-		this.setHeadingHtml(AppPropertiesManager.CONSTANTS.input_advanced());
+		this.setHeadingHtml(StyleGenerator.defaultFontStyleString(AppPropertiesManager.CONSTANTS.input_advanced()));
 		this.setCollapsible(true);
 		this.setBorders(false);
 		
@@ -78,7 +79,7 @@ public class OptionsInputPanel extends FieldSet
 	 */
 	private ToolTipConfig createToolTipConfig(String text){
 		ToolTipConfig config = new ToolTipConfig();
-	    config.setBodyHtml(text);
+	    config.setBodyHtml(StyleGenerator.defaultFontStyle(text));
 	    config.setMouseOffset(new int[] {0, 0});
 	    config.setAnchor(Side.LEFT);	    
 	    return config;
@@ -94,8 +95,8 @@ public class OptionsInputPanel extends FieldSet
 	private void createAlignmentsParametersPanel(List<String> searchModeDefaultList)
 	{
 		FieldSet alignmentsParametersFieldSet = new FieldSet();
-		alignmentsParametersFieldSet.setHeadingHtml(AppPropertiesManager.CONSTANTS
-				.parameters_allignment());
+		alignmentsParametersFieldSet.setHeadingHtml(
+				StyleGenerator.defaultFontStyleString(AppPropertiesManager.CONSTANTS.parameters_allignment()));
 		alignmentsParametersFieldSet.addStyleName("eppic-rounded-border");
 		
 		this.add(alignmentsParametersFieldSet);
@@ -105,20 +106,23 @@ public class OptionsInputPanel extends FieldSet
 		alignmentsParametersFieldSet.add(vlc);
 		
 		softIdentityCutOff = createSoftIdentityCutoff();
-		FieldLabel softIdentityCutOffLabel = 
-				new FieldLabel(softIdentityCutOff, AppPropertiesManager.CONSTANTS.parameters_soft_identity_cutoff());
+		FieldLabel softIdentityCutOffLabel = new FieldLabel(softIdentityCutOff); 
+		softIdentityCutOffLabel.setHTML(
+				StyleGenerator.defaultFontStyle(AppPropertiesManager.CONSTANTS.parameters_soft_identity_cutoff()));
 		softIdentityCutOffLabel.setLabelWidth(LABEL_WIDTH);
 		vlc.add(softIdentityCutOffLabel, new VerticalLayoutData(1, -1, new Margins(5,5,5,20)));
 		
 		hardIdentityCutOff = createHardIdentityCutoff();
-		FieldLabel hardIdentityCutOffLabel = 
-				new FieldLabel(hardIdentityCutOff, AppPropertiesManager.CONSTANTS.parameters_hard_identity_cutoff());
+		FieldLabel hardIdentityCutOffLabel = new FieldLabel(hardIdentityCutOff);
+		hardIdentityCutOffLabel.setHTML(
+				StyleGenerator.defaultFontStyle(AppPropertiesManager.CONSTANTS.parameters_hard_identity_cutoff()));
 		hardIdentityCutOffLabel.setLabelWidth(LABEL_WIDTH);
 		vlc.add(hardIdentityCutOffLabel, new VerticalLayoutData(1, -1, new Margins(5,5,5,20)));
 
 		maxNrOfSequences = createMaxNrOfSequences();
-		FieldLabel maxNrOfSeqLabel = 
-				new FieldLabel(maxNrOfSequences, AppPropertiesManager.CONSTANTS.parameters_max_num_sequences());
+		FieldLabel maxNrOfSeqLabel = new FieldLabel(maxNrOfSequences);
+		maxNrOfSeqLabel.setHTML(
+				StyleGenerator.defaultFontStyle(AppPropertiesManager.CONSTANTS.parameters_max_num_sequences()));
 		maxNrOfSeqLabel.setLabelWidth(LABEL_WIDTH);
 		vlc.add(maxNrOfSeqLabel, new VerticalLayoutData(1, -1, new Margins(5,5,5,20)));
 		
@@ -136,8 +140,8 @@ public class OptionsInputPanel extends FieldSet
 		}
 
 		searchModeCombo = createSearchModeComboBox();
-		FieldLabel searchModeComboLabel = 
-				new FieldLabel(searchModeCombo, AppPropertiesManager.CONSTANTS.parameters_search_mode());
+		FieldLabel searchModeComboLabel = new FieldLabel(searchModeCombo);
+		searchModeComboLabel.setHTML(StyleGenerator.defaultFontStyle(AppPropertiesManager.CONSTANTS.parameters_search_mode()));
 		searchModeComboLabel.setLabelWidth(LABEL_WIDTH);
 		vlc.add(searchModeComboLabel, new VerticalLayoutData(1, -1, new Margins(5,5,5,20)));
 		
@@ -146,6 +150,7 @@ public class OptionsInputPanel extends FieldSet
 	private NumberField<Integer> createSoftIdentityCutoff()
 	{
 		NumberField<Integer> softIdentityCutOff = new NumberField<Integer>(new IntegerPropertyEditor());
+		softIdentityCutOff.addStyleName("eppic-default-font");
 		softIdentityCutOff.setWidth(FIELD_WIDTH);
 		softIdentityCutOff.setAllowBlank(false);
 		softIdentityCutOff.setFormat(NumberFormat.getDecimalFormat());
@@ -195,6 +200,7 @@ public class OptionsInputPanel extends FieldSet
 		
 		ComboBox<SearchModeComboModel> searchModeCombo = 
 				new ComboBox<SearchModeComboModel>(searchModeValues, props.name());
+		searchModeCombo.getElement().applyStyles("eppic-default-font");
 		searchModeCombo.setWidth(FIELD_WIDTH);
 		searchModeCombo.setStore(searchModeValues);
 		searchModeCombo.setTypeAhead(true);

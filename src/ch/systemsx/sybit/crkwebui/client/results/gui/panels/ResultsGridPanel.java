@@ -19,7 +19,7 @@ import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowViewerHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.WindowHideHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.managers.EventBusManager;
 import ch.systemsx.sybit.crkwebui.client.commons.managers.ViewerRunner;
-import ch.systemsx.sybit.crkwebui.client.commons.util.EscapedStringGenerator;
+import ch.systemsx.sybit.crkwebui.client.commons.util.StyleGenerator;
 import ch.systemsx.sybit.crkwebui.client.results.data.InterfaceItemModel;
 import ch.systemsx.sybit.crkwebui.client.results.data.InterfaceItemModelProperties;
 import ch.systemsx.sybit.crkwebui.client.results.gui.cells.DetailsButtonCell;
@@ -34,7 +34,6 @@ import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.NativeEvent;
-import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.sencha.gxt.core.client.ValueProvider;
 import com.sencha.gxt.core.client.dom.ScrollSupport.ScrollMode;
@@ -123,7 +122,7 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 		ColumnConfig<InterfaceItemModel, String> column = new ColumnConfig<InterfaceItemModel, String>(props.warningsImagePath(),
 				Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("results_warnings_width")));
 		
-		column.setHeader(EscapedStringGenerator.generateEscapedString(
+		column.setHeader(StyleGenerator.defaultFontStyle(
 				ApplicationContext.getSettings().getGridProperties().get("results_warnings_header")));
 		
 		column.setCell(new WarningsCell(resultsStore));
@@ -137,7 +136,7 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 		ColumnConfig<InterfaceItemModel, String> column = new ColumnConfig<InterfaceItemModel, String>(props.detailsButtonText(),
 				Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("results_details_width")));
 		
-		column.setHeader(EscapedStringGenerator.generateEscapedString(
+		column.setHeader(StyleGenerator.defaultFontStyle(
 				ApplicationContext.getSettings().getGridProperties().get("results_details_header")));
 		column.setCell(new DetailsButtonCell());
 
@@ -151,7 +150,7 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 		ColumnConfig<InterfaceItemModel, String> column = new ColumnConfig<InterfaceItemModel, String>(props.finalCallName(),
 				Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("results_METHODS_width")));
 		
-		column.setHeader(EscapedStringGenerator.generateEscapedString(
+		column.setHeader(StyleGenerator.defaultFontStyle(
 				ApplicationContext.getSettings().getGridProperties().get("results_finalCallName_header")));
 		
 		column.setCell(new MethodCallCell(resultsStore, "finalCallName"));
@@ -167,7 +166,7 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 		ColumnConfig<InterfaceItemModel, String> column = new ColumnConfig<InterfaceItemModel, String>(vp,
 				Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("results_METHODS_width")));
 		
-		column.setHeader(EscapedStringGenerator.generateEscapedString(
+		column.setHeader(StyleGenerator.defaultFontStyle(
 				ApplicationContext.getSettings().getGridProperties().get("results_"+type+"_header")));
 		
 		MethodCallCell callCell = new MethodCallCell(resultsStore, type);
@@ -182,7 +181,7 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 		ColumnConfig<InterfaceItemModel, String> sizesColumn = new ColumnConfig<InterfaceItemModel, String>(props.sizes(),
 				Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("results_sizes_width")));
 		
-		sizesColumn.setHeader(EscapedStringGenerator.generateEscapedString(
+		sizesColumn.setHeader(StyleGenerator.defaultFontStyle(
 				ApplicationContext.getSettings().getGridProperties().get("results_sizes_header")));
 		
 		sizesColumn.setColumnTextClassName("eppic-results-grid-common-cells");
@@ -194,7 +193,7 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 		ColumnConfig<InterfaceItemModel, String> operatorColumn = new ColumnConfig<InterfaceItemModel, String>(props.operatorType(),
 				Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("results_operatorType_width")));
 		
-		operatorColumn.setHeader(EscapedStringGenerator.generateEscapedString(
+		operatorColumn.setHeader(StyleGenerator.defaultFontStyle(
 				ApplicationContext.getSettings().getGridProperties().get("results_operatorType_header")));
 		
 		operatorColumn.setCell(new OperatorTypeCell(resultsStore));
@@ -208,9 +207,8 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 		ColumnConfig<InterfaceItemModel, Double> areaColumn = new ColumnConfig<InterfaceItemModel, Double>(props.area(),
 				Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("results_area_width")));
 		
-		SafeHtmlBuilder sb = new SafeHtmlBuilder();
-		
-		areaColumn.setHeader(sb.appendHtmlConstant(ApplicationContext.getSettings().getGridProperties().get("results_area_header")).toSafeHtml());
+		areaColumn.setHeader(StyleGenerator.defaultFontStyle(
+				ApplicationContext.getSettings().getGridProperties().get("results_area_header")));
 		
 		areaColumn.setCell(new TwoDecimalDoubleCell());
 		
@@ -227,7 +225,7 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 		ColumnConfig<InterfaceItemModel, String> chainColumn = new ColumnConfig<InterfaceItemModel, String>(props.name(),
 				Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("results_name_width")));
 		
-		chainColumn.setHeader(EscapedStringGenerator.generateEscapedString(
+		chainColumn.setHeader(StyleGenerator.defaultFontStyle(
 				ApplicationContext.getSettings().getGridProperties().get("results_name_header")));
 		
 		chainColumn.setColumnTextClassName("eppic-results-grid-common-cells");
@@ -243,7 +241,7 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 		ColumnConfig<InterfaceItemModel, Integer> idColumn = new ColumnConfig<InterfaceItemModel, Integer>(props.id(),
 				Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("results_id_width")));
 		
-		idColumn.setHeader(EscapedStringGenerator.generateEscapedString(
+		idColumn.setHeader(StyleGenerator.defaultFontStyle(
 				ApplicationContext.getSettings().getGridProperties().get("results_id_header")));
 		
 		idColumn.setColumnTextClassName("eppic-results-grid-common-cells");
@@ -259,7 +257,7 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 		ColumnConfig<InterfaceItemModel, String> thumbnailColumn = new ColumnConfig<InterfaceItemModel, String>(props.thumbnailUrl(),
 				Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("results_thumbnail_width")));
 		
-		thumbnailColumn.setHeader(EscapedStringGenerator.generateEscapedString(
+		thumbnailColumn.setHeader(StyleGenerator.defaultFontStyle(
 				ApplicationContext.getSettings().getGridProperties().get("results_thumbnail_header")));
 		
 		thumbnailColumn.setCell(new ThumbnailCell(resultsStore));
@@ -305,8 +303,8 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 		QuickTip gridQT = new QuickTip(resultsGrid);
 		//Bug-Fix in GXt 3.0.1
 		//To fix the issue of blank Tooltips we set the delay
-		gridQT.getToolTipConfig().setShowDelay(10);
-		
+		gridQT.setQuickShowInterval(0);
+		gridQT.getToolTipConfig().setShowDelay(0);
 		return resultsGrid;
 	}
 	
@@ -418,7 +416,7 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 			{
 				if(resultsGrid.isVisible())
 				{
-					resultsGrid.focus();
+					//resultsGrid.focus();
 				}
 			}
 		});

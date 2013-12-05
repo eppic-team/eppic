@@ -10,7 +10,7 @@ import com.sencha.gxt.widget.core.client.tips.ToolTipConfig;
  *
  */
 public class LabelWithTooltip extends HTML
-{
+{	
 	private ToolTip tooltip;
 	
 	/**
@@ -21,12 +21,33 @@ public class LabelWithTooltip extends HTML
 	public LabelWithTooltip(String labelText,
 							final String template)
 	{
-		super(labelText);
-		ToolTipConfig config = new ToolTipConfig();
-	    config.setBodyHtml(template);
-	    config.setTrackMouse(true);
-		
-	    tooltip = new ToolTip(this, config);
+		super();
+		this.setData(labelText, template);
+	}
+
+	/**
+	 * Creates a Label with no text and no tooltip
+	 */
+	public LabelWithTooltip(){
+		super();
+	}
+	
+	/**
+	 * Sets the text and the tool tip
+	 * @param text
+	 * @param tool tip text  
+	 */
+	public void setData(String labelText, String template) {
+		this.setLabelText(labelText);
+		this.setToolTipText(template);
+	}
+	
+	/**
+	 * Sets the text of the Label
+	 * @param text to be set
+	 */
+	public void setLabelText(String text){
+		this.setHTML(text);
 	}
 	
 	/**
@@ -34,7 +55,17 @@ public class LabelWithTooltip extends HTML
 	 * @param tooltip text
 	 */
 	public void setToolTipText(String text){
-		tooltip.setToolTip(text);
+		if(!text.equals("")){
+			ToolTipConfig config = new ToolTipConfig();
+			config.setBodyHtml(text);
+			config.setTrackMouse(true);
+
+			tooltip = new ToolTip(this, config);
+		}
+		else{
+			if(tooltip != null)
+				tooltip.removeFromParent();
+		}
 	}
 
 }

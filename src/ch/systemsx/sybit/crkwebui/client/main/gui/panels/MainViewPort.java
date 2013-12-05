@@ -40,7 +40,6 @@ import com.sencha.gxt.widget.core.client.event.ExpandItemEvent.ExpandItemHandler
 import com.sencha.gxt.widget.core.client.ContentPanel;
 import com.sencha.gxt.core.client.Style.LayoutRegion;
 import com.sencha.gxt.core.client.util.Margins;
-import com.sencha.gxt.core.client.util.Padding;
 import com.sencha.gxt.widget.core.client.box.AlertMessageBox;
 import com.sencha.gxt.widget.core.client.box.AutoProgressMessageBox;
 import com.sencha.gxt.widget.core.client.box.MessageBox;
@@ -75,9 +74,7 @@ public class MainViewPort extends BorderLayoutContainer
 	
 	public MainViewPort(final MainController mainController)
 	{
-		//this.addStyleName("eppic-default-padding");
 		this.addStyleName("eppic-default-font");
-		this.getElement().setPadding(new Padding(0,0,10,0));
 		
 		this.addCollapseHandler(new CollapseItemHandler<ContentPanel>() {
 			@Override
@@ -106,7 +103,7 @@ public class MainViewPort extends BorderLayoutContainer
 		westData.setCollapsible(true);
 		westData.setFloatable(true);
 		westData.setSplit(true);
-		westData.setMargins(new Margins(0, 5, 10, 10));
+		westData.setMargins(new Margins(0, 10, 0, 10));
 
 		myJobsPanel = new MyJobsPanel();
 		this.setWestWidget(myJobsPanel, westData);
@@ -115,7 +112,7 @@ public class MainViewPort extends BorderLayoutContainer
 		centerData.setCollapsible(true);
 		centerData.setFloatable(true);
 		centerData.setSplit(true);
-		centerData.setMargins(new Margins(0));
+		centerData.setMargins(new Margins(0, 10, 0, 0));
 
 		centerPanel = new CenterPanel();
 		this.setCenterWidget(centerPanel, centerData);
@@ -127,9 +124,9 @@ public class MainViewPort extends BorderLayoutContainer
 		this.setNorthWidget(topPanel, northData);
 		
 		BorderLayoutData southData = new BorderLayoutData(15);
-		southData.setMargins(new Margins(0));
+		southData.setMargins(new Margins(10,0,5,0));
 		bottomPanel = new BottomPanel();
-		//this.setSouthWidget(bottomPanel, southData);
+		this.setSouthWidget(bottomPanel, southData);
 		
 		this.hide(LayoutRegion.EAST);
 		

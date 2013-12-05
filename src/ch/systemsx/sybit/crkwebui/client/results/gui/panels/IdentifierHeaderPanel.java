@@ -32,7 +32,7 @@ public class IdentifierHeaderPanel extends HorizontalLayoutContainer
     	
     	pdbInfo = new VerticalLayoutContainer();
     	pdbIdentifierPanel = new PDBIdentifierPanel();
-    	pdbInfo.add(pdbIdentifierPanel, new VerticalLayoutData(1, 25, new Margins(0, 0, 0, 0)));
+    	pdbInfo.add(pdbIdentifierPanel, new VerticalLayoutData(1, 30, new Margins(0, 0, 0, 0)));
 
     	pdbIdentifierSubtitlePanel = new PDBIdentifierSubtitlePanel();
     	pdbInfo.add(pdbIdentifierSubtitlePanel, new VerticalLayoutData(1, -1, new Margins(0, 0, 0, 0)));
@@ -40,8 +40,7 @@ public class IdentifierHeaderPanel extends HorizontalLayoutContainer
     	downloadResultsPanel = new HorizontalLayoutContainer();
     	downloadResultsPanel.setBorders(false);
 		
-		downloadResultsLink = new LinkWithTooltip(AppPropertiesManager.CONSTANTS.info_panel_download_results_link(), 
-				AppPropertiesManager.CONSTANTS.info_panel_download_results_link_hint(), "");
+		downloadResultsLink = new LinkWithTooltip();
 		downloadResultsLink.addStyleName("eppic-download-link");
 		
 		downloadResultsPanel.add(downloadResultsLink);
@@ -68,7 +67,8 @@ public class IdentifierHeaderPanel extends HorizontalLayoutContainer
 	 */
 	public void setDownloadResultsLink(String jobId){
 
-		downloadResultsLink .setData(AppPropertiesManager.CONSTANTS.info_panel_download_results_link(),
+		downloadResultsLink .setLinkData(AppPropertiesManager.CONSTANTS.info_panel_download_results_link(),
+				AppPropertiesManager.CONSTANTS.info_panel_download_results_link_hint(),
 				GWT.getModuleBaseURL() + "fileDownload?type=zip&id=" + jobId);
 
 	}
@@ -79,8 +79,7 @@ public class IdentifierHeaderPanel extends HorizontalLayoutContainer
 	 */
 	public void setEmptyDownloadResultsLink(){
 
-		downloadResultsLink.setData("", "");
-		downloadResultsLink.addStyleName("eppic-download-link");
+		downloadResultsLink.setLinkData("","", "");
 
 	}
 

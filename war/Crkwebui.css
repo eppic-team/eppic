@@ -16,7 +16,7 @@
 }
 
 .eppic-default-font, .eppic-default-font td {
-	font-family: 'Ubuntu', sans-serif;
+	font-family: 'Open Sans', sans-serif;
 }
 
 .eppic-default-label {
@@ -30,30 +30,42 @@
 	font-weight: bold;
 }
 
-.eppic-action A:link {vertical-align:top; text-decoration: none; font-weight:bold; font-size: 12px; color: #434350}
-.eppic-action A:visited {vertical-align:top; text-decoration: none; font-weight:bold; font-size: 12px; color: #434350}
-.eppic-action A:active {vertical-align:top; text-decoration: none; font-weight:bold; font-size: 12px; color: #434350}
-.eppic-action A:hover {vertical-align:top; text-decoration: underline; font-weight:bold; font-size: 12px; color: #1428bf}
+.eppic-action {vertical-align:top; text-decoration: none; font-weight:bold; font-size: 14px; color: #434350}
+.eppic-action A:link {vertical-align:top; text-decoration: none; font-weight:bold; font-size: 14px; color: #434350}
+.eppic-action A:visited {vertical-align:top; text-decoration: none; font-weight:bold; font-size: 14px; color: #434350}
+.eppic-action A:active {vertical-align:top; text-decoration: none; font-weight:bold; font-size: 14px; color: #434350}
+.eppic-action A:hover 
+{vertical-align:top; text-decoration: underline; font-weight:bold; font-size: 14px; color: #434350}
 
 .eppic-internal-link A:link {text-decoration: none; font-size: 14px}
 .eppic-internal-link A:visited {text-decoration: none; font-size: 14px}
 .eppic-internal-link A:active {text-decoration: none; font-size: 14px}
-.eppic-internal-link A:hover {text-decoration: underline; font-size: 14px}
+.eppic-internal-link A:hover 
+{text-decoration: underline; font-size: 14px}
 
-.eppic-download-link A:link {text-decoration: none; font-size: 12px}
-.eppic-download-link A:visited {text-decoration: none; font-size: 12px}
-.eppic-download-link A:active {text-decoration: none; font-size: 12px}
-.eppic-download-link A:hover {text-decoration: underline; font-size: 12px}
+.eppic-download-link A:link {color: #15428B; text-decoration: none; font-size: 12px}
+.eppic-download-link A:visited {color: #15428B; text-decoration: none; font-size: 12px}
+.eppic-download-link A:active {color: #15428B; text-decoration: none; font-size: 12px}
+.eppic-download-link A:hover {color: #15428B; text-decoration: underline; font-size: 12px}
 
-.eppic-external-link A:link {vertical-align:top; text-decoration: none; font-size: 12px; color: #434350}
-.eppic-external-link A:visited {vertical-align:top; text-decoration: none; font-size: 12px; color: #434350}
-.eppic-external-link A:active {vertical-align:top; text-decoration: none; font-size: 12px; color: #434350}
-.eppic-external-link A:hover {vertical-align:top; text-decoration: underline; font-size: 12px; color: #1428bf}
+.eppic-footer-link {color: #15428B;text-decoration: none; font-size: 10px}
+.eppic-footer-link A:link {color: #15428B; text-decoration: none; font-size: 10px}
+.eppic-footer-link A:visited {color: #15428B; text-decoration: none; font-size: 10px}
+.eppic-footer-link A:active {color: #15428B; text-decoration: none; font-size: 10px}
+.eppic-footer-link A:hover {color: #15428B; text-decoration: underline; font-size: 10px}
 
-.eppic-horizontal-nav A:link {text-decoration: none; font-weight:bold; font-size: 14px; color: #434350}
-.eppic-horizontal-nav A:visited {text-decoration: none; font-weight:bold; font-size: 14px; color: #434350}
-.eppic-horizontal-nav A:active {text-decoration: none; font-weight:bold; font-size: 14px; color: #434350}
-.eppic-horizontal-nav A:hover {text-decoration: none; border-bottom:2px solid #C5C5C5; font-weight:bold; font-size: 14px; color: #434350}
+.eppic-external-link A:link {color: #15428B; vertical-align:top; text-decoration: none; font-size: 14px;}
+.eppic-external-link A:visited {color: #15428B; vertical-align:top; text-decoration: none; font-size: 14px;}
+.eppic-external-link A:active {color: #15428B; vertical-align:top; text-decoration: none; font-size: 14px;}
+.eppic-external-link A:hover 
+{color: #15428B; vertical-align:top; text-decoration:underline; font-size: 14px;}
+
+.eppic-horizontal-nav{font-family: Arial, serif; text-decoration: none; font-weight:bold; font-size: 14px; color: #434350}
+.eppic-horizontal-nav A:link {font-family: Arial, serif; text-decoration: none; font-weight:bold; font-size: 14px; color: #434350}
+.eppic-horizontal-nav A:visited {font-family: Arial, serif; text-decoration: none; font-weight:bold; font-size: 14px; color: #434350}
+.eppic-horizontal-nav A:active {font-family: Arial, serif; text-decoration: none; font-weight:bold; font-size: 14px; color: #434350}
+.eppic-horizontal-nav A:hover 
+{font-family: Arial, serif; text-decoration: none; border-bottom:2px solid #C5C5C5; font-weight:bold; font-size: 14px; color: #434350}
 
 .eppic-monospaced-font {
 	font-size: 10pt;
@@ -61,7 +73,7 @@
 }
 
 .eppic-default-padding {
-	padding: 10px;
+	padding: 5px;
 }
 
 .eppic-default-top-padding {
@@ -118,10 +130,10 @@
 	font-size: 22px;
 	font-weight: bold;
 }
-.eppic-pdb-identifier-label A:link {text-decoration: none}
-.eppic-pdb-identifier-label A:visited {text-decoration: none}
-.eppic-pdb-identifier-label A:active {text-decoration: none}
-.eppic-pdb-identifier-label A:hover {text-decoration: underLine}
+.eppic-pdb-identifier-label A:link {text-decoration: none; color: #15428B;}
+.eppic-pdb-identifier-label A:visited {text-decoration: none; color: #15428B;}
+.eppic-pdb-identifier-label A:active {text-decoration: none; color: #15428B;}
+.eppic-pdb-identifier-label A:hover {text-decoration: underline; color: #15428B;}
 
 .eppic-header-warning {
 	font-weight: normal;
@@ -144,7 +156,6 @@
 
 .eppic-my-jobs-list-input {
 	font-size: 14;
-	font-weight: bold;
 }
 
 .eppic-results-grid td{
@@ -159,6 +170,10 @@
 .eppic-results-final-call {
 	font-weight: bold;
 	font-size: 16px;
+}
+
+.eppic-status-label{
+	font-weight:bold;
 }
 
 .eppic-status-log {
@@ -273,13 +288,13 @@
 .eppic-general-info-label{
 	text-decoration: none; 
 	font-weight:bold; 
-	font-size: 12px; 
+	font-size: 14px; 
 	color: #434350;
 }
 
 .eppic-general-info-label-value{
 	text-decoration: none;  
-	font-size: 12px; 
+	font-size: 14px; 
 	color: #434350;
 }
 
@@ -291,4 +306,14 @@
 
 .eppic-top-panel-search-button-over{
 	 background-color: #D7DDE8;
+}
+
+.eppic-seq-info-panel-more-button{
+	 background-image: url('resources/icons/info_icon.png');
+	 background-repeat:no-repeat;
+	 background-position:center;
+}
+
+.eppic-seq-info-panel-more-button-over{
+	 
 }

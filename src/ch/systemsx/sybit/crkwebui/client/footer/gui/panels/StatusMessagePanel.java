@@ -1,4 +1,4 @@
-package ch.systemsx.sybit.crkwebui.client.status.gui.panels;
+package ch.systemsx.sybit.crkwebui.client.footer.gui.panels;
 
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.commons.events.UpdateStatusLabelEvent;

@@ -1,8 +1,6 @@
 package ch.systemsx.sybit.crkwebui.client.alignment.gui.windows;
 
-import ch.systemsx.sybit.crkwebui.client.commons.events.WindowHideEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.windows.ResizableWindow;
-import ch.systemsx.sybit.crkwebui.client.commons.managers.EventBusManager;
 import ch.systemsx.sybit.crkwebui.shared.model.HomologsInfoItem;
 import ch.systemsx.sybit.crkwebui.shared.model.WindowData;
 
@@ -10,10 +8,9 @@ import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.user.client.ui.HTML;
 import com.sencha.gxt.widget.core.client.FramedPanel;
-import com.sencha.gxt.widget.core.client.event.HideEvent;
-import com.sencha.gxt.widget.core.client.event.HideEvent.HideHandler;
 import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer;
 import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer.VerticalLayoutData;
+import com.sencha.gxt.core.client.GXT;
 import com.sencha.gxt.core.client.dom.ScrollSupport.ScrollMode;
 import com.sencha.gxt.core.client.util.Margins;
 import com.sencha.gxt.core.client.util.TextMetrics;
@@ -27,7 +24,7 @@ public class AlignmentsWindow extends ResizableWindow
 	private static int ALIGNMENT_WINDOW_DEFAULT_WIDTH = 600;
 	private static int ALIGNMENT_WINDOW_DEFAULT_HEIGHT = 400;
 	
-	private static int LETTER_WIDTH_GXT3_CORRECTION = 2;
+	private static int LETTER_WIDTH_GXT3_CORRECTION;
 	
 	private HomologsInfoItem homologsInfoItem;
 	private String pdbName;
@@ -52,7 +49,6 @@ public class AlignmentsWindow extends ResizableWindow
 		this.homologsInfoItem = homologsInfoItem;
 		this.pdbName = pdbName;
 		this.setHideOnButtonClick(true);
-		this.getButtonBar().setVisible(false);
 		
 		this.addResizeHandler(new ResizeHandler()
 		{
@@ -62,15 +58,13 @@ public class AlignmentsWindow extends ResizableWindow
 
 			}
 		});
+		
+		//A correction used for different browsers
+		if(!GXT.isIE())
+			LETTER_WIDTH_GXT3_CORRECTION = 2;
+		else
+			LETTER_WIDTH_GXT3_CORRECTION = 6;
 
-		this.addHideHandler(new HideHandler()
-		{
-			@Override
-			public void onHide(HideEvent event) {
-				EventBusManager.EVENT_BUS.fireEvent(new WindowHideEvent());	
-
-			}
-		});
 	}
 
 	/**
@@ -201,7 +195,7 @@ public class AlignmentsWindow extends ResizableWindow
 			}
 			this.setMinWidth(minWindowWidth);
 		}
-		this.add(homologsContentPanel);
+		this.setWidget(homologsContentPanel);
 	}
 
 	public HomologsInfoItem getHomologsInfoItem()
@@ -234,7 +228,9 @@ public class AlignmentsWindow extends ResizableWindow
 											   String firstSequenceLeftAnnotation,
 											   String secondSequenceLeftAnnotation)
 	{
-		int widthOfCharacter = textMetrics.getWidth("A") - LETTER_WIDTH_GXT3_CORRECTION;
+		int widthOfCharacter;
+		
+		widthOfCharacter = textMetrics.getWidth("A") - LETTER_WIDTH_GXT3_CORRECTION;
 		
 		nrOfCharacterInFirstSequence = 0;
 		for(int i=0; i<homologsInfoItem.getAlignedSeq1().length(); i++)

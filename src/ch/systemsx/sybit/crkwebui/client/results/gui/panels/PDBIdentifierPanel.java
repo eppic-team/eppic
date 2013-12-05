@@ -26,17 +26,17 @@ public class PDBIdentifierPanel extends HorizontalLayoutContainer
 		this.addStyleName("eppic-pdb-identifier-label");
 		
 		informationLabel = new HorizontalLayoutContainer();
-		informationLabel.setWidth(200);
+		informationLabel.setWidth(235);
 		informationLabel.add(new HTML(
 				EscapedStringGenerator.generateSafeHtml(
 				EscapedStringGenerator.generateEscapedString(
-						AppPropertiesManager.CONSTANTS.info_panel_pdb_identifier() + ":"))));
+						AppPropertiesManager.CONSTANTS.info_panel_pdb_identifier() + ": "))));
 		this.add(informationLabel, new HorizontalLayoutData(-1,-1));
 		
-		pdbNameLabel = new LinkWithTooltip("","","");
+		pdbNameLabel = new LinkWithTooltip();
 		this.add(pdbNameLabel);
 		
-		warningLabel = new LabelWithTooltip("", "");
+		warningLabel = new LabelWithTooltip();
 		warningLabel.addStyleName("eppic-header-warning");
 		this.add(warningLabel);
 		
@@ -60,32 +60,31 @@ public class PDBIdentifierPanel extends HorizontalLayoutContainer
 		
 		if(inputType == InputType.PDBCODE.getIndex())
 		{
-			pdbNameLabel.setData(EscapedStringGenerator.generateEscapedString(pdbName),
+			pdbNameLabel.setLinkData(EscapedStringGenerator.generateEscapedString(pdbName),
 								AppPropertiesManager.CONSTANTS.pdb_identifier_panel_label_hint(),
 								 ApplicationContext.getSettings().getPdbLinkUrl() + pdbName);
 		}
 		else
 		{
-			pdbNameLabel.setData(EscapedStringGenerator.generateEscapedString(pdbName),"","");
+			pdbNameLabel.setLinkData(EscapedStringGenerator.generateEscapedString(pdbName),"","");
 		}
 		
 		// TODO we should try to set a constant "always-low-res exp method=ELECTRON MICROSCOPY". 
 		// It's not ideal that the name is hard-coded
 		if (expMethod!=null && expMethod.equals("ELECTRON MICROSCOPY")) {
-			warningLabel.setHTML(AppPropertiesManager.CONSTANTS.pdb_identifier_panel_warning_lowRes());
-			warningLabel.setToolTipText(AppPropertiesManager.CONSTANTS.pdb_identifier_panel_warning_lowRes_hint());			
+			warningLabel.setData(AppPropertiesManager.CONSTANTS.pdb_identifier_panel_warning_lowRes(),
+					AppPropertiesManager.CONSTANTS.pdb_identifier_panel_warning_lowRes_hint());			
 		}
 		else if(ApplicationContext.getSettings().getResolutionCutOff() > 0 && 
 				resolution > ApplicationContext.getSettings().getResolutionCutOff() && resolution > 0) {			
-			warningLabel.setHTML(AppPropertiesManager.CONSTANTS.pdb_identifier_panel_warning_lowRes());
-			warningLabel.setToolTipText(AppPropertiesManager.CONSTANTS.pdb_identifier_panel_warning_lowRes_hint());
+			warningLabel.setData(AppPropertiesManager.CONSTANTS.pdb_identifier_panel_warning_lowRes(),
+					AppPropertiesManager.CONSTANTS.pdb_identifier_panel_warning_lowRes_hint());
 		}else if(ApplicationContext.getSettings().getRfreeCutOff() > 0 && 
 				rfreeValue > ApplicationContext.getSettings().getRfreeCutOff() && rfreeValue > 0){
-			warningLabel.setHTML(AppPropertiesManager.CONSTANTS.pdb_identifier_panel_warning_highRfree());
-			warningLabel.setToolTipText(AppPropertiesManager.CONSTANTS.pdb_identifier_panel_warning_highRfree_hint());
+			warningLabel.setData(AppPropertiesManager.CONSTANTS.pdb_identifier_panel_warning_highRfree(),
+					AppPropertiesManager.CONSTANTS.pdb_identifier_panel_warning_highRfree_hint());
 		}else{
-			warningLabel.setHTML("");
-			warningLabel.setToolTipText("");
+			warningLabel.setData("","");
 		}
 		
 	}

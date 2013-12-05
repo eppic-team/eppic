@@ -9,7 +9,9 @@ import ch.systemsx.sybit.crkwebui.shared.model.HomologsInfoItem;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.ui.HTML;
+import com.sencha.gxt.core.client.util.Margins;
 import com.sencha.gxt.widget.core.client.container.HorizontalLayoutContainer;
+import com.sencha.gxt.widget.core.client.container.SimpleContainer;
 import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer;
 import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer.VerticalLayoutData;
 
@@ -36,7 +38,7 @@ public class HomologsHeaderPanel extends HorizontalLayoutContainer{
 		this.add(infoContainer, new HorizontalLayoutData(1,-1));
 		
 		downloadContainer = createDownloadContainer();
-		this.add(downloadContainer, new HorizontalLayoutData(40,-1));
+		this.add(downloadContainer, new HorizontalLayoutData(60,-1));
 		
 		updateContent(infoItem, jobId);
 	}
@@ -76,7 +78,7 @@ public class HomologsHeaderPanel extends HorizontalLayoutContainer{
 		String alignmentId = infoItem.getChains().substring(0, 1);
     	String downloadLink = GWT.getModuleBaseURL() + "fileDownload?type=fasta&id=" + jobId + "&alignment=" + alignmentId;
 		downloadImage.setData(source, 
-						32, 32, 
+						20, 20, 
 						AppPropertiesManager.CONSTANTS.homologs_window_downloads_tooltip(), 
 						downloadLink);
 	}
@@ -97,9 +99,13 @@ public class HomologsHeaderPanel extends HorizontalLayoutContainer{
 	private VerticalLayoutContainer createDownloadContainer() {
 		VerticalLayoutContainer vlc = new VerticalLayoutContainer();
 		
+		vlc.add(new SimpleContainer(), new VerticalLayoutData(0.5, -1, new Margins(0)));
+		
+		vlc.add(new HTML(AppPropertiesManager.CONSTANTS.homologs_window_downloads_text()));
+		
 		String source = "resources/icons/download.png";
 		downloadImage = new ImageLinkWithTooltip(source, 
-						32, 32, 
+						20, 20, 
 						AppPropertiesManager.CONSTANTS.homologs_window_downloads_tooltip(), 
 						"");
 		

@@ -1,9 +1,8 @@
 .eppic-iframe {
-	font-family: 'Ubuntu', sans-serif;
+	font-family: 'Open Sans', sans-serif;
 }
 
 .eppic-iframe h1 {
-	font-family: 'Ubuntu', sans-serif;
 	font-size:20px;
 	font-weight:bold;
 	margin-left: 15px;
@@ -13,7 +12,6 @@
 }
 
 .eppic-iframe h2 {
-	font-family: 'Ubuntu', sans-serif;
 	font-size:16px;
 	font-weight:bold;	
 	margin-left: 15px;
@@ -23,7 +21,6 @@
 }
 
 .eppic-iframe p {
-	font-family: 'Ubuntu', sans-serif;
 	font-size:14px;
 	line-height:125%;
 	margin-left: 15px;
@@ -43,7 +40,6 @@
 }
 
 .eppic-iframe ul {
-	font-family: 'Ubuntu', sans-serif;
 	font-size:14px;
 	margin-left: 15px;
 	margin-right: 20px;
@@ -100,6 +96,42 @@ The style for the list items in Release Log, apply it to enclosing ul element
 	margin-top: 50px;
 	margin-right: 20px;
 	margin-left: 20px;
+}
+
+.eppic-publication{
+	width:900px;
+	font-size:14px;
+	line-height:125%;
+	margin-left: 50px;
+	margin-right: 20px;
+	margin-top: 10px;
+	margin-bottom: 50px;
+}
+
+.eppic-publication h1{ 
+	font-size:16px;
+	font-weight:bold;	
+	margin-left: 50px;
+	margin-right: 20px;
+	margin-top: 20px;
+	margin-bottom: 0px;	
+	border-bottom: 1px solid black;
+}
+
+.eppic-publication p{ 
+	font-size:14px;	
+	margin-left: 100px;
+	margin-right: 20px;
+}
+
+.eppic-faq-header-table { 
+	border-collapse:collapse; 
+	border-radius: 5px;
+}
+	
+.eppic-faq-header-table td,  .eppic-faq-header-table th { 
+	border:1px solid black;
+	padding:10px; 
 }
 
 

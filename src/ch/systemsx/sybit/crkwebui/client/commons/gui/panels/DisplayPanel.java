@@ -18,9 +18,9 @@ public class DisplayPanel extends VerticalLayoutContainer
 	public DisplayPanel()
 	{
 		this.setScrollMode(ScrollMode.AUTOY);
-		this.setHeight(ApplicationContext.getWindowData().getWindowHeight() - 65);
+		this.setHeight(ApplicationContext.getWindowData().getWindowHeight() - 70);
 		this.setBorders(false);
-		this.addStyleName("eppic-default-padding");
+		//this.addStyleName("eppic-default-padding");
 		this.addStyleName("eppic-rounded-border");
 	}
 	

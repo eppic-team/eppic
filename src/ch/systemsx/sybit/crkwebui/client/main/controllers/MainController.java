@@ -50,10 +50,12 @@ import ch.systemsx.sybit.crkwebui.client.commons.managers.EventBusManager;
 import ch.systemsx.sybit.crkwebui.client.commons.services.eppic.CrkWebServiceProvider;
 import ch.systemsx.sybit.crkwebui.client.commons.util.EscapedStringGenerator;
 import ch.systemsx.sybit.crkwebui.client.downloads.gui.panels.DownloadsPanel;
+import ch.systemsx.sybit.crkwebui.client.faq.gui.panels.FAQPanel;
 import ch.systemsx.sybit.crkwebui.client.help.gui.panels.HelpPanel;
 import ch.systemsx.sybit.crkwebui.client.input.gui.panels.InputDataPanel;
 import ch.systemsx.sybit.crkwebui.client.main.gui.panels.MainViewPort;
 import ch.systemsx.sybit.crkwebui.client.main.gui.panels.MainViewScrollable;
+import ch.systemsx.sybit.crkwebui.client.publications.gui.panels.PublicationsPanel;
 import ch.systemsx.sybit.crkwebui.client.releases.gui.panels.ReleasesPanel;
 import ch.systemsx.sybit.crkwebui.client.results.gui.panels.ResultsPanel;
 import ch.systemsx.sybit.crkwebui.client.results.gui.panels.StatusPanel;
@@ -380,6 +382,14 @@ public class MainController
 		{
 			displayReleases();
 		}
+		else if((token != null) && (token.equals("publications") || token.equals("!publications")))
+		{
+			displayPublications();
+		}
+		else if((token != null) && (token.equals("faq") || token.equals("!faq")))
+		{
+			displayFAQ();
+		}
 		else
 		{
 			Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_input());
@@ -471,6 +481,28 @@ public class MainController
 		ApplicationContext.setSelectedJobId("");
 		ReleasesPanel releasesPanel = new ReleasesPanel();
 		displayPanelInCentralPanel(releasesPanel);
+	}
+	
+	/**
+	 * Displays publication panel.
+	 */
+	public void displayPublications()
+	{
+		Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_publications());
+		ApplicationContext.setSelectedJobId("");
+		PublicationsPanel publicationsPanel = new PublicationsPanel();
+		displayPanelInCentralPanel(publicationsPanel);
+	}
+	
+	/**
+	 * Displays faq panel.
+	 */
+	public void displayFAQ()
+	{
+		Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_faq());
+		ApplicationContext.setSelectedJobId("");
+		FAQPanel faqPanel = new FAQPanel();
+		displayPanelInCentralPanel(faqPanel);
 	}
 	
 	public void displayPanelInCentralPanel(DisplayPanel panel) {

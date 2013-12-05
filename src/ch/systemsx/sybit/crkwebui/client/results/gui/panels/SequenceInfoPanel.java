@@ -11,6 +11,7 @@ import ch.systemsx.sybit.crkwebui.client.commons.events.ShowAlignmentsEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowHomologsEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowQueryWarningsEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.images.ImageWithTooltip;
+import ch.systemsx.sybit.crkwebui.client.commons.gui.labels.LabelWithTooltip;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.links.EmptyLinkWithTooltip;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.links.ImageLinkWithTooltip;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.links.LinkWithTooltip;
@@ -19,6 +20,7 @@ import ch.systemsx.sybit.crkwebui.client.commons.handlers.HideAllWindowsHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowQueryWarningsHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.managers.EventBusManager;
 import ch.systemsx.sybit.crkwebui.client.commons.util.EscapedStringGenerator;
+import ch.systemsx.sybit.crkwebui.client.commons.util.StyleGenerator;
 import ch.systemsx.sybit.crkwebui.shared.model.HomologsInfoItem;
 import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
 import ch.systemsx.sybit.crkwebui.shared.model.QueryWarningItem;
@@ -30,7 +32,11 @@ import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Widget;
 import com.sencha.gxt.core.client.dom.ScrollSupport.ScrollMode;
+import com.sencha.gxt.widget.core.client.button.IconButton;
+import com.sencha.gxt.widget.core.client.button.IconButton.IconConfig;
 import com.sencha.gxt.widget.core.client.container.CssFloatLayoutContainer;
+import com.sencha.gxt.widget.core.client.event.SelectEvent;
+import com.sencha.gxt.widget.core.client.event.SelectEvent.SelectHandler;
 import com.sencha.gxt.widget.core.client.form.FieldSet;
 import com.sencha.gxt.widget.core.client.tips.ToolTip;
 import com.sencha.gxt.widget.core.client.tips.ToolTipConfig;
@@ -48,7 +54,7 @@ public class SequenceInfoPanel extends FieldSet
     private int homologsStartIndex;
     private FlexTable homologsTable;
     private ToolTip queryWarningsTooltip;
-
+    
     public SequenceInfoPanel(PDBScoreItem pdbScoreItem) 
     {
     	this.setBorders(true);
@@ -103,7 +109,8 @@ public class SequenceInfoPanel extends FieldSet
     		fullHeading = fullHeading+" ("+AppPropertiesManager.CONSTANTS.info_panel_uniprot() +" " +
             		EscapedStringGenerator.generateEscapedString(uniprot_version)+ ")";
     	
-    	this.setHeadingHtml(fullHeading);
+    	this.setHeadingHtml(
+    			StyleGenerator.defaultFontStyleString(fullHeading));
     }
 
     /**
@@ -284,31 +291,34 @@ public class SequenceInfoPanel extends FieldSet
     	ArrayList<Widget> items = new ArrayList<Widget>();
 
     	String chainStr = EscapedStringGenerator.generateEscapedString(homologsInfoItem.getChains());
-    	String chainHintStr = AppPropertiesManager.CONSTANTS.homologs_panel_chains_hint();
+    	String chainHintStr = "";
     	if(chainStr.length() > 13){
     		chainStr = chainStr.substring(0,12)+",..)";
-    		chainHintStr = "<b>Chain " + EscapedStringGenerator.generateEscapedString(homologsInfoItem.getChains())+
-    				"</b><br>"+AppPropertiesManager.CONSTANTS.homologs_panel_chains_hint();;
+    		chainHintStr = "Chain " + EscapedStringGenerator.generateEscapedString(homologsInfoItem.getChains());
     	}
 
-    	final EmptyLinkWithTooltip chainsLink = new EmptyLinkWithTooltip("Chain " + EscapedStringGenerator.generateEscapedString(chainStr), 
+    	final LabelWithTooltip chainsLink = new LabelWithTooltip("Chain " + EscapedStringGenerator.generateEscapedString(chainStr), 
     			chainHintStr);
 
     	chainsLink.addStyleName("eppic-action");
-
-    	chainsLink.addClickHandler(new ClickHandler() {
+    	items.add(chainsLink);
+    		
+    	IconButton chainsLinkButton = createMoreInfoButton(AppPropertiesManager.CONSTANTS.homologs_panel_chains_hint());		
+    	
+    	chainsLinkButton.addSelectHandler(new SelectHandler() {
+			
 			@Override
-			public void onClick(ClickEvent event) {
-    			EventBusManager.EVENT_BUS.fireEvent(new ShowAlignmentsEvent(
+			public void onSelect(SelectEvent event) {
+				EventBusManager.EVENT_BUS.fireEvent(new ShowAlignmentsEvent(
     					homologsInfoItem, 
     					pdbName,
     					chainsLink.getAbsoluteLeft() + chainsLink.getElement().getClientWidth(),
     					chainsLink.getAbsoluteTop() + chainsLink.getElement().getClientHeight() + 10));
     		}
 
-    	});
+		});
 
-    	items.add(chainsLink);
+    	items.add(chainsLinkButton);
 
     	LinkWithTooltip uniprotIdLabel = new LinkWithTooltip(" (" + EscapedStringGenerator.generateEscapedString(homologsInfoItem.getUniprotId()) + ") ", 
     			AppPropertiesManager.CONSTANTS.homologs_panel_uniprot_hint(),
@@ -326,24 +336,26 @@ public class SequenceInfoPanel extends FieldSet
 
     	String alignmentId = homologsInfoItem.getChains().substring(0, 1);
 
-    	final EmptyLinkWithTooltip nrHomologsLabel = new EmptyLinkWithTooltip(nrOfHomologsText, 
-    			AppPropertiesManager.CONSTANTS.homologs_panel_nrhomologs_hint());
+    	final HTML nrHomologsLabel = new HTML(nrOfHomologsText);
 
     	nrHomologsLabel.addStyleName("eppic-action");
-
-    	nrHomologsLabel.addClickHandler(new ClickHandler() {
+    	items.add(nrHomologsLabel);
+    	
+    	IconButton nrHoButton = createMoreInfoButton(AppPropertiesManager.CONSTANTS.homologs_panel_nrhomologs_hint());
+    	nrHoButton.addSelectHandler(new SelectHandler() {
+			
 			@Override
-			public void onClick(ClickEvent event) {
-    			EventBusManager.EVENT_BUS.fireEvent(new ShowHomologsEvent(
+			public void onSelect(SelectEvent event) {
+				EventBusManager.EVENT_BUS.fireEvent(new ShowHomologsEvent(
     					homologsInfoItem, 
     					selectedJobId,
     					nrHomologsLabel.getAbsoluteLeft() + nrHomologsLabel.getElement().getClientWidth(),
     					nrHomologsLabel.getAbsoluteTop() + nrHomologsLabel.getElement().getClientHeight() + 10));
-    		}
-
-    	});
+				
+			}
+		});
     	
-    	items.add(nrHomologsLabel);
+    	items.add(nrHoButton);
 
     	String downloadPseLink = GWT.getModuleBaseURL() + 
     			"fileDownload?type=entropiespse&id=" + selectedJobId + "&alignment=" + alignmentId; 
@@ -355,11 +367,25 @@ public class SequenceInfoPanel extends FieldSet
     	//String colorPseIconImgSrc = "resources/icons/entropies_pse_icon.png";
 
     	ImageLinkWithTooltip colorPseImg = 
-    			new ImageLinkWithTooltip(colorPseIconImgSrc, 12, 12, 
+    			new ImageLinkWithTooltip(colorPseIconImgSrc, 14, 14, 
     					AppPropertiesManager.CONSTANTS.homologs_panel_entropiespse_hint(),
     					downloadPseLink);
     	items.add(colorPseImg);
     	return items;
+    }
+    
+    /**
+     * Creates a more Icon Button
+     */
+    private static IconButton createMoreInfoButton(String tooltipText){
+    	IconConfig cnfg = new IconConfig("eppic-seq-info-panel-more-button", "eppic-seq-info-panel-more-button-over");
+    	IconButton button = new IconButton(cnfg);
+    	button.setPixelSize(14, 14);
+    	button.setBorders(false);
+    	
+    	new ToolTip(button, new ToolTipConfig(tooltipText));
+    	
+    	return button; 	
     }
 
     /**

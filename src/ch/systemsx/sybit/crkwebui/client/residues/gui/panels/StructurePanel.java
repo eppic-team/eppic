@@ -4,6 +4,7 @@ import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.commons.util.EscapedStringGenerator;
+import ch.systemsx.sybit.crkwebui.client.commons.util.StyleGenerator;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResidueItem;
 import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
 
@@ -28,7 +29,7 @@ public class StructurePanel extends FramedPanel
 		mainContainer.setScrollMode(ScrollMode.AUTOX);
 		
 		residuesSummaryPanel = new ResiduesSummaryPanel(structureNr);
-		residuesSummaryPanel.setHeight(70);
+		residuesSummaryPanel.setHeight(75);
 
 		mainContainer.add(residuesSummaryPanel, new VerticalLayoutData(-1, -1, new Margins(0)));
 		
@@ -76,8 +77,9 @@ public class StructurePanel extends FramedPanel
 	 */
 	public void fillHeader(String chainName) 
 	{
-		this.setHeadingHtml(AppPropertiesManager.CONSTANTS.interfaces_residues_panel_structure() + " " + 
-									 EscapedStringGenerator.generateEscapedString(chainName));
+		this.setHeadingHtml(StyleGenerator.defaultFontStyle(
+				AppPropertiesManager.CONSTANTS.interfaces_residues_panel_structure() + " " + 
+									 EscapedStringGenerator.generateEscapedString(chainName)));
 	}
 	
 	public void increaseActivePage()

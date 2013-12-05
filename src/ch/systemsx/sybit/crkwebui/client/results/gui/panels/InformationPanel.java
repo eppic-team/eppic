@@ -21,8 +21,8 @@ public class InformationPanel extends HorizontalLayoutContainer {
 		generalInfoPanel = new GeneralInfoPanel(pdbScoreItem);
 		sequenceInfoPanel = new SequenceInfoPanel(pdbScoreItem);
 		
-		this.add(generalInfoPanel, new HorizontalLayoutData(-1, 90,  new Margins(0, 5, 0, 0)));
-		this.add(sequenceInfoPanel, new HorizontalLayoutData(1, 90, new Margins(0, 5, 0, 5)));
+		this.add(generalInfoPanel, new HorizontalLayoutData(-1, 115,  new Margins(0, 5, 0, 0)));
+		this.add(sequenceInfoPanel, new HorizontalLayoutData(1, 115, new Margins(0, 5, 0, 5)));
 
 	}
 

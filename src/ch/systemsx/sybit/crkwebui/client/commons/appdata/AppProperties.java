@@ -21,6 +21,8 @@ public interface AppProperties extends Constants
 	String window_title_help();
 	String window_title_downloads();
 	String window_title_releases();
+	String window_title_publications();
+	String window_title_faq();
 	String window_title_processing();
 	String window_title_loading();
 	String window_title_results();
@@ -114,6 +116,7 @@ public interface AppProperties extends Constants
 	String homologs_window_title();
 	String homologs_window_query_text();
 	String homologs_window_subtitle_text();
+	String homologs_window_downloads_text();
 	String homologs_window_downloads_tooltip();
 	
 	String homologs_window_grid_identity_bar_text();
@@ -173,15 +176,18 @@ public interface AppProperties extends Constants
 	String interfaces_residues_summary_sizes_rims();
 	String interfaces_residues_summary_sizes_rims_hint();
 	
-	String bottom_panel_home_link_label();
+	String navigation_panel_home_link_label();
+	String navigation_panel_help_link_label();
+	String navigation_panel_faq_link_label();
+	String navigation_panel_publications_link_label();
+	String navigation_panel_downloads_link_label();
+	String navigation_panel_releases_link_label();
+	String navigation_panel_change_viewer_link_label();
+	
 	String bottom_panel_about_link_label();
-	String bottom_panel_help_link_label();
-	String bottom_panel_downloads_link_label();
-	String bottom_panel_releases_link_label();
 	String bottom_panel_contact_link();
 	String bottom_panel_contact_link_label();
 	String bottom_panel_status_error_refresh_page();
-	String bottom_panel_change_viewer_link_label();
 	
 	String about_window_title();
 	

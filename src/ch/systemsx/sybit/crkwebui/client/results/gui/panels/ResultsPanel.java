@@ -31,8 +31,8 @@ public class ResultsPanel extends DisplayPanel
 	{
 		DockLayoutPanel dock = new DockLayoutPanel(Unit.PX);
 
-		headerPanel = new IdentifierHeaderPanel(ApplicationContext.getWindowData().getWindowWidth() - 190);
-		dock.addNorth(headerPanel, 65);
+		headerPanel = new IdentifierHeaderPanel(ApplicationContext.getWindowData().getWindowWidth() - 180);
+		dock.addNorth(headerPanel, 70);
 		
 		resultsContainer = createResultsContainer(pdbScoreItem);
 		dock.add(resultsContainer);
@@ -50,7 +50,7 @@ public class ResultsPanel extends DisplayPanel
 		mainContainer.setScrollMode(ScrollMode.AUTOY);
 		
 		informationPanel = new InformationPanel(pdbScoreItem, ApplicationContext.getWindowData().getWindowWidth() - 180);
-		mainContainer.add(informationPanel, new VerticalLayoutData(-1, 110, new Margins(10,0,10,0)));
+		mainContainer.add(informationPanel, new VerticalLayoutData(-1, 135, new Margins(10,0,10,0)));
 
 		resultsGridContainer = new ResultsGridPanel(ApplicationContext.getWindowData().getWindowWidth() - 180);
 		mainContainer.add(resultsGridContainer, new VerticalLayoutData(-1, 1, new Margins(0)));

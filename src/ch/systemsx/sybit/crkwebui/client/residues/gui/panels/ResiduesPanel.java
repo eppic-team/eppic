@@ -5,6 +5,7 @@ import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.cell.TwoDecimalFloatCell;
+import ch.systemsx.sybit.crkwebui.client.commons.util.StyleGenerator;
 import ch.systemsx.sybit.crkwebui.client.residues.data.InterfaceResidueItemModel;
 import ch.systemsx.sybit.crkwebui.client.residues.data.InterfaceResidueItemModelProperties;
 import ch.systemsx.sybit.crkwebui.client.residues.gui.grid.utils.ResiduePagingMemoryProxy;
@@ -12,6 +13,8 @@ import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResidueItem;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResidueType;
 
 import com.google.gwt.core.shared.GWT;
+import com.google.gwt.event.logical.shared.ResizeEvent;
+import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.sencha.gxt.core.client.GXT;
 import com.sencha.gxt.core.client.ValueProvider;
@@ -59,6 +62,15 @@ public class ResiduesPanel extends VerticalLayoutContainer
     	}
 
     	this.setBorders(false);
+    	
+    	this.addResizeHandler(new ResizeHandler() {
+			
+			@Override
+			public void onResize(ResizeEvent event) {
+				resizeGrid();
+				
+			}
+		});
 
     	residuesConfigs = createColumnConfig();
 
@@ -100,47 +112,55 @@ public class ResiduesPanel extends VerticalLayoutContainer
     	
     	ColumnConfig<InterfaceResidueItemModel,Integer> residueNumberCol = 
     			new ColumnConfig<InterfaceResidueItemModel, Integer>(props.residueNumber(),
-    				Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("residues_residueNumber_width")),
-    				ApplicationContext.getSettings().getGridProperties().get("residues_residueNumber_header"));
+    				Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("residues_residueNumber_width")));
+    	residueNumberCol.setHeader(StyleGenerator.defaultFontStyle(
+    			ApplicationContext.getSettings().getGridProperties().get("residues_residueNumber_header")));
+    	
     	residueNumberCol.setAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
     	
     	ColumnConfig<InterfaceResidueItemModel,String> pdbResidueNumberCol = 
     			new ColumnConfig<InterfaceResidueItemModel, String>(props.pdbResidueNumber(),
-        				Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("residues_pdbResidueNumber_width")),
-        				ApplicationContext.getSettings().getGridProperties().get("residues_pdbResidueNumber_header"));
+        				Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("residues_pdbResidueNumber_width")));
+    	pdbResidueNumberCol.setHeader(StyleGenerator.defaultFontStyle(
+    			ApplicationContext.getSettings().getGridProperties().get("residues_pdbResidueNumber_header")));
     	pdbResidueNumberCol.setAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
     	
     	ColumnConfig<InterfaceResidueItemModel,String> residueTypeCol = 
     			new ColumnConfig<InterfaceResidueItemModel, String>(props.residueType(),
-        				Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("residues_residueType_width")),
-        				ApplicationContext.getSettings().getGridProperties().get("residues_residueType_header"));
+        				Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("residues_residueType_width")));
+        residueTypeCol.setHeader(StyleGenerator.defaultFontStyle(
+        		ApplicationContext.getSettings().getGridProperties().get("residues_residueType_header")));
     	residueTypeCol.setAlignment(HasHorizontalAlignment.ALIGN_CENTER);
     	
     	ColumnConfig<InterfaceResidueItemModel,Float> asaCol = 
     			new ColumnConfig<InterfaceResidueItemModel, Float>(props.asa(),
-        				Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("residues_asa_width")),
-        				ApplicationContext.getSettings().getGridProperties().get("residues_asa_header"));
+        				Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("residues_asa_width")));
+        asaCol.setHeader(StyleGenerator.defaultFontStyle(
+        		ApplicationContext.getSettings().getGridProperties().get("residues_asa_header")));
     	asaCol.setCell(new TwoDecimalFloatCell());
     	asaCol.setAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
     	
     	ColumnConfig<InterfaceResidueItemModel,Float> bsaCol = 
     			new ColumnConfig<InterfaceResidueItemModel, Float>(props.bsa(),
-        				Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("residues_bsa_width")),
-        				ApplicationContext.getSettings().getGridProperties().get("residues_bsa_header"));
+        				Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("residues_bsa_width")));
+        bsaCol.setHeader(StyleGenerator.defaultFontStyle(
+        		ApplicationContext.getSettings().getGridProperties().get("residues_bsa_header")));
     	bsaCol.setCell(new TwoDecimalFloatCell());
     	bsaCol.setAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
    
     	ColumnConfig<InterfaceResidueItemModel,Float> bsaPercentageCol = 
     			new ColumnConfig<InterfaceResidueItemModel, Float>(props.bsaPercentage(),
-        				Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("residues_bsaPercentage_width")),
-        				ApplicationContext.getSettings().getGridProperties().get("residues_bsaPercentage_header"));
+        				Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("residues_bsaPercentage_width")));
+        bsaPercentageCol.setHeader(StyleGenerator.defaultFontStyle(
+        		ApplicationContext.getSettings().getGridProperties().get("residues_bsaPercentage_header")));
     	bsaPercentageCol.setCell(new TwoDecimalFloatCell());
     	bsaPercentageCol.setAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
     	
     	ColumnConfig<InterfaceResidueItemModel,Float> entropyScoreCol = 
     			new ColumnConfig<InterfaceResidueItemModel, Float>(props.entropyScore(),
-        				Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("residues_entropyScore_width")),
-        				ApplicationContext.getSettings().getGridProperties().get("residues_entropyScore_header"));
+        				Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("residues_entropyScore_width")));
+        entropyScoreCol.setHeader(StyleGenerator.defaultFontStyle(
+        		ApplicationContext.getSettings().getGridProperties().get("residues_entropyScore_header")));
     	entropyScoreCol.setCell(new TwoDecimalFloatCell());
     	entropyScoreCol.setAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
     	
@@ -295,6 +315,7 @@ public class ResiduesPanel extends VerticalLayoutContainer
      */
     public void resizeGrid()
     {
+    	//A Correction of 22 to 26 was done in GXT 3.0.1
     	nrOfRows = this.getOffsetHeight() / 26;
 
     	if(!useBufferedView)

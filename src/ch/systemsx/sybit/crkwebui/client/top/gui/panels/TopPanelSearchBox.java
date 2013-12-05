@@ -74,11 +74,13 @@ public class TopPanelSearchBox extends HorizontalLayoutContainer {
 			if(PdbCodeVerifier.isTrimmedValid(pdbCode)){
 				ApplicationContext.setSelectedJobId(pdbCode);
 				History.newItem("id/" + pdbCode);
+				searchField.finishEditing();
 				searchField.reset();
 			}
 			else{
 				Info.display(AppPropertiesManager.CONSTANTS.pdb_code_box_wrong_code_header(),
 						 AppPropertiesManager.CONSTANTS.pdb_code_box_wrong_code_supporting_text()+ " " + pdbCode);
+				searchField.finishEditing();
 				searchField.reset();
 				searchField.focus();
 			}
@@ -87,7 +89,7 @@ public class TopPanelSearchBox extends HorizontalLayoutContainer {
 	}
 
 	private TextField createSearchField() {
-		TextField pdbCodeField = new TextField();
+		final TextField pdbCodeField = new TextField();
 		pdbCodeField.setWidth(FIELD_WIDTH);
 		pdbCodeField.setAllowBlank(true);
 		pdbCodeField.setEmptyText(AppPropertiesManager.CONSTANTS.top_search_panel_box_empty_text());

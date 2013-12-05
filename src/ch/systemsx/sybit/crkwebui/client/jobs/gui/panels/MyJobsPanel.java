@@ -15,6 +15,7 @@ import ch.systemsx.sybit.crkwebui.client.commons.handlers.GetFocusOnJobsListHand
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.JobListRetrievedHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.managers.EventBusManager;
 import ch.systemsx.sybit.crkwebui.client.commons.services.eppic.CrkWebServiceProvider;
+import ch.systemsx.sybit.crkwebui.client.commons.util.StyleGenerator;
 import ch.systemsx.sybit.crkwebui.client.jobs.data.MyJobsModel;
 import ch.systemsx.sybit.crkwebui.client.jobs.data.MyJobsModelProperties;
 import ch.systemsx.sybit.crkwebui.client.jobs.gui.cells.InputCell;
@@ -64,7 +65,7 @@ public class MyJobsPanel extends ContentPanel
 
 	public MyJobsPanel()
 	{
-		this.setHeadingHtml(AppPropertiesManager.CONSTANTS.myjobs_panel_head());
+		this.setHeadingHtml(StyleGenerator.defaultFontStyle(AppPropertiesManager.CONSTANTS.myjobs_panel_head()));
 		
 		VerticalLayoutContainer mainContainer = new VerticalLayoutContainer();
 
@@ -92,15 +93,17 @@ public class MyJobsPanel extends ContentPanel
 		List<ColumnConfig<MyJobsModel,?>> configs = new ArrayList<ColumnConfig<MyJobsModel,?>>();
 
 		ColumnConfig<MyJobsModel, String> inputColumn = new ColumnConfig<MyJobsModel, String>(props.input(),
-						Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("jobs_input_width")),
-						ApplicationContext.getSettings().getGridProperties().get("jobs_input_header"));
+						Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("jobs_input_width")));
+		inputColumn.setHeader(StyleGenerator.defaultFontStyle(
+				ApplicationContext.getSettings().getGridProperties().get("jobs_input_header")));
 		inputColumn.setCell(new InputCell());
 		inputColumn.setResizable(true);
 		inputColumn.setColumnTextClassName("eppic-my-jobs-list-input");
 		
 		ColumnConfig<MyJobsModel, String> statusColumn = new ColumnConfig<MyJobsModel, String>(props.status(),
-				Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("jobs_status_width")),
-				ApplicationContext.getSettings().getGridProperties().get("jobs_status_header"));
+				Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("jobs_status_width")));
+		statusColumn.setHeader(StyleGenerator.defaultFontStyle(
+				ApplicationContext.getSettings().getGridProperties().get("jobs_status_header")));
 		statusColumn.setCell(new JobStatusCell());
 		statusColumn.setResizable(false);
 		
@@ -213,7 +216,8 @@ public class MyJobsPanel extends ContentPanel
 		QuickTip gridQT = new QuickTip(myJobsGrid);
 		//Bug-Fix in GXt 3.0.1
 		//To fix the issue of blank Tooltips we set the delay
-		gridQT.getToolTipConfig().setShowDelay(10);
+		gridQT.setQuickShowInterval(0);
+		gridQT.getToolTipConfig().setShowDelay(0);
 		
 		return myJobsGrid;
 	}

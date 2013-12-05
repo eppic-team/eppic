@@ -19,8 +19,15 @@ public class LinkWithTooltip extends LabelWithTooltip
 							String tooltipText,
 							String linkUrl)
 	{
-		super(labelText, tooltipText);
-		this.setData(labelText, linkUrl);
+		super();
+		this.setLinkData(labelText, tooltipText, linkUrl);
+	}
+	
+	/**
+	 * Creates a blank link
+	 */
+	public LinkWithTooltip(){
+		super();
 	}
 	
 	/**
@@ -29,21 +36,10 @@ public class LinkWithTooltip extends LabelWithTooltip
 	 * @param tooltipText
 	 * @param linkUrl
 	 */
-	public void setData(String labelText,
-					String linkUrl){
-		this.setHTML("<a href=\"" + linkUrl + "\" target=\"_blank\" style='vertical-align:top;'>" + labelText + "</a>");
-	}
-	
-	/**
-	 * Resets the link and content
-	 * @param labelText
-	 * @param tooltipText
-	 * @param linkUrl
-	 */
-	public void setData(String labelText,
+	public void setLinkData(String labelText,
 					String tooltipText,
 					String linkUrl){
-		this.setToolTipText(tooltipText);
-		this.setHTML("<a href=\"" + linkUrl + "\" target=\"_blank\" style='vertical-align:top;'>" + labelText + "</a>");
+		super.setData("<a href=\"" + linkUrl + "\" target=\"_blank\" style='vertical-align:top;'>" + labelText + "</a>",
+						tooltipText);
 	}
 }
