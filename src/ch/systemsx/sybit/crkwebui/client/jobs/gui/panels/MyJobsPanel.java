@@ -26,6 +26,8 @@ import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.NativeEvent;
+import com.google.gwt.event.logical.shared.SelectionEvent;
+import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.safehtml.shared.UriUtils;
 import com.google.gwt.user.client.History;
 import com.sencha.gxt.widget.core.client.ContentPanel;
@@ -33,17 +35,18 @@ import com.sencha.gxt.widget.core.client.button.TextButton;
 import com.sencha.gxt.widget.core.client.button.ToolButton;
 import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer;
 import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer.VerticalLayoutData;
+import com.sencha.gxt.widget.core.client.event.CellClickEvent;
+import com.sencha.gxt.widget.core.client.event.CellClickEvent.CellClickHandler;
 import com.sencha.gxt.widget.core.client.event.SelectEvent;
 import com.sencha.gxt.widget.core.client.event.SelectEvent.SelectHandler;
 import com.sencha.gxt.widget.core.client.grid.ColumnConfig;
 import com.sencha.gxt.widget.core.client.grid.ColumnModel;
 import com.sencha.gxt.widget.core.client.grid.Grid;
-import com.sencha.gxt.widget.core.client.selection.SelectionChangedEvent;
-import com.sencha.gxt.widget.core.client.selection.SelectionChangedEvent.SelectionChangedHandler;
 import com.sencha.gxt.widget.core.client.tips.QuickTip;
 import com.sencha.gxt.widget.core.client.tips.ToolTipConfig;
 import com.sencha.gxt.widget.core.client.toolbar.FillToolItem;
 import com.sencha.gxt.widget.core.client.toolbar.ToolBar;
+import com.sencha.gxt.core.client.Style.SelectionMode;
 import com.sencha.gxt.core.client.util.IconHelper;
 import com.sencha.gxt.core.client.util.KeyNav;
 import com.sencha.gxt.core.client.util.Margins;
@@ -179,21 +182,28 @@ public class MyJobsPanel extends ContentPanel
 		myJobsGrid.getView().setStripeRows(true);
 		myJobsGrid.getView().setColumnLines(false);
 		myJobsGrid.getView().setForceFit(true);
+		myJobsGrid.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
 		
 		myJobsGrid.addStyleName("eppic-default-font");
 		
 		myJobsGrid.setContextMenu(new JobsPanelContextMenu(myJobsGrid));
+		
+		myJobsGrid.addCellClickHandler(new CellClickHandler() {
+			
+			@Override
+			public void onCellClick(CellClickEvent event) {
+				History.newItem("id/" + myJobsStore.get(event.getRowIndex()).getJobid());
+				
+			}
+		});
 
-		myJobsGrid.getSelectionModel().addSelectionChangedHandler(new SelectionChangedHandler<MyJobsModel>() {
+		myJobsGrid.getSelectionModel().addSelectionHandler(new SelectionHandler<MyJobsModel>() {
 
 			@Override
-			public void onSelectionChanged(SelectionChangedEvent<MyJobsModel> event) {
-				if(event.getSelection() != null && !event.getSelection().isEmpty())
+			public void onSelection(SelectionEvent<MyJobsModel> event) {
+				if(event.getSelectedItem() != null )
 				{
-					for(MyJobsModel m: event.getSelection()){
-						History.newItem("id/" + m.getJobid());
-						EventBusManager.EVENT_BUS.fireEvent(new GetFocusOnJobsListEvent());
-					}
+						History.newItem("id/" + event.getSelectedItem().getJobid());
 				}
 				
 			}
