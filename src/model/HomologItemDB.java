@@ -13,6 +13,8 @@ public class HomologItemDB implements Serializable {
 	private Double queryCov;
 	private String firstTaxon;
 	private String lastTaxon;
+	private int queryStart;
+	private int queryEnd;
 	
 	private HomologsInfoItemDB homologsInfoItem;
 	
@@ -25,7 +27,9 @@ public class HomologItemDB implements Serializable {
 						 double seqIdToQuery,
 						 double queryCov,
 						 String firstTaxon,
-						 String lastTaxon) {
+						 String lastTaxon,
+						 int queryStart,
+						 int queryEnd) {
 		
 		this.uid = uid;
 		this.uniId = uniId;
@@ -33,6 +37,8 @@ public class HomologItemDB implements Serializable {
 		this.queryCov = queryCov;
 		this.firstTaxon = firstTaxon;
 		this.lastTaxon = lastTaxon;
+		this.queryStart = queryStart;
+		this.queryEnd = queryEnd;
 		
 	}
 
@@ -91,7 +97,21 @@ public class HomologItemDB implements Serializable {
 	public void setHomologsInfoItem(HomologsInfoItemDB homologsInfoItem) {
 		this.homologsInfoItem = homologsInfoItem;
 	}
-	
-	
+
+	public int getQueryStart() {
+		return queryStart;
+	}
+
+	public void setQueryStart(int queryStart) {
+		this.queryStart = queryStart;
+	}
+
+	public int getQueryEnd() {
+		return queryEnd;
+	}
+
+	public void setQueryEnd(int queryEnd) {
+		this.queryEnd = queryEnd;
+	}
 	
 }

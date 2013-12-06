@@ -278,7 +278,8 @@ public class WebUIDataAdaptor {
 				homInfo.setNumHomologs(cec.getNumHomologs());
 				homInfo.setUniprotId(cec.getQuery().getUniId()); 
 				if (!cec.isSearchWithFullUniprot()) { 
-					homInfo.setSubInterval(cec.getQueryInterval().beg+"-"+cec.getQueryInterval().end);
+					homInfo.setRefUniProtStart(cec.getQueryInterval().beg);
+					homInfo.setRefUniProtEnd(cec.getQueryInterval().end);
 				}
 				homInfo.setAlignedSeq1(cec.getPdb2uniprotAln().getAlignedSequences()[0]);
 				homInfo.setMarkupLine(String.valueOf(cec.getPdb2uniprotAln().getMarkupLine()));
@@ -290,6 +291,8 @@ public class WebUIDataAdaptor {
 				for (Homolog hom:cec.getHomologs().getFilteredSubset()) {
 					HomologItemDB homologItemDB = new HomologItemDB();
 					homologItemDB.setUniId(hom.getUniId());
+					homologItemDB.setQueryStart(hom.getBlastHsp().getQueryStart());
+					homologItemDB.setQueryEnd(hom.getBlastHsp().getQueryEnd());
 					if (hom.getUnirefEntry().hasTaxons()) {
 						homologItemDB.setFirstTaxon(hom.getUnirefEntry().getFirstTaxon());
 						homologItemDB.setLastTaxon(hom.getUnirefEntry().getLastTaxon());
