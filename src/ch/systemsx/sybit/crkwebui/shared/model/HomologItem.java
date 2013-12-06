@@ -21,6 +21,8 @@ public class HomologItem implements Serializable {
 	private double queryCov;
 	private String firstTaxon;
 	private String lastTaxon;
+	private int queryStart;
+	private int queryEnd;
 	
 	public HomologItem() {
 		
@@ -75,6 +77,26 @@ public class HomologItem implements Serializable {
 		this.uid = uid;
 	}
 	
+	public int getQueryStart() {
+		return queryStart;
+	}
+
+
+	public void setQueryStart(int queryStart) {
+		this.queryStart = queryStart;
+	}
+
+
+	public int getQueryEnd() {
+		return queryEnd;
+	}
+
+
+	public void setQueryEnd(int queryEnd) {
+		this.queryEnd = queryEnd;
+	}
+
+
 	/**
 	 * Converts DB model item into DTO one.
 	 * @param homologItemDB model item to convert
@@ -89,6 +111,8 @@ public class HomologItem implements Serializable {
 		homologItem.setLastTaxon(homologItemDB.getLastTaxon());
 		homologItem.setSeqIdToQuery(homologItemDB.getSeqIdToQuery());
 		homologItem.setQueryCov(homologItemDB.getQueryCov());
+		homologItem.setQueryStart(homologItemDB.getQueryStart());
+		homologItem.setQueryEnd(homologItemDB.getQueryEnd());
 		return homologItem;
 	}
 }

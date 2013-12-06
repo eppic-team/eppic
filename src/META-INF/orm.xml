@@ -343,7 +343,8 @@
        		<basic name="chains"></basic>
        		<basic name="uniprotId"></basic>
        		<basic name="numHomologs"></basic>
-       		<basic name="subInterval"></basic>
+       		<basic name="refUniProtStart"></basic>
+       		<basic name="refUniProtEnd"></basic>
        		<basic name="hasQueryMatch"></basic>
        		<basic name="idCutoffUsed"><column nullable="true"/></basic>
        		<basic name="clusteringPercentIdUsed"></basic>
@@ -393,6 +394,8 @@
        		</basic>
        		<basic name="seqIdToQuery"><column nullable="true"/></basic>
        		<basic name="queryCov"><column nullable="true"/></basic>
+       		<basic name="queryStart"></basic>
+       		<basic name="queryEnd"></basic>
        		
        		<many-to-one name="homologsInfoItem" >  
             </many-to-one>

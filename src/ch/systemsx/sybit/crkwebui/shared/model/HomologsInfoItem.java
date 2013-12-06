@@ -24,7 +24,8 @@ public class HomologsInfoItem implements Serializable
 	private String chains;
 	private String uniprotId;
 	private int numHomologs;
-	private String subInterval;
+	private int refUniProtStart;
+	private int refUniProtEnd;
 	private String alignedSeq1;
 	private String alignedSeq2;
 	private String markupLine;
@@ -46,7 +47,8 @@ public class HomologsInfoItem implements Serializable
 							String chains,
 							String uniprotId,
 							int numHomologs,
-							String subInterval,
+							int refUniProtStart,
+							int refUniProtEnd,
 							String alignedSeq1,
 							String alignedSeq2,
 							String markupLine,
@@ -60,7 +62,8 @@ public class HomologsInfoItem implements Serializable
 		this.chains = chains;
 		this.uniprotId = uniprotId;
 		this.numHomologs = numHomologs;
-		this.subInterval = subInterval;
+		this.refUniProtStart = refUniProtStart;
+		this.refUniProtEnd = refUniProtEnd;
 		this.alignedSeq1 = alignedSeq1;
 		this.alignedSeq2 = alignedSeq2;
 		this.markupLine = markupLine;
@@ -103,12 +106,20 @@ public class HomologsInfoItem implements Serializable
 		this.numHomologs = numHomologs;
 	}
 
-	public String getSubInterval() {
-		return subInterval;
+	public int getRefUniProtStart() {
+		return refUniProtStart;
 	}
 
-	public void setSubInterval(String subInterval) {
-		this.subInterval = subInterval;
+	public void setRefUniProtStart(int refUniProtStart) {
+		this.refUniProtStart = refUniProtStart;
+	}
+
+	public int getRefUniProtEnd() {
+		return refUniProtEnd;
+	}
+
+	public void setRefUniProtEnd(int refUniProtEnd) {
+		this.refUniProtEnd = refUniProtEnd;
 	}
 
 	public String getAlignedSeq1() {
@@ -188,7 +199,8 @@ public class HomologsInfoItem implements Serializable
 		homologsInfoItem.setChains(homologsInfoItemDB.getChains());
 		homologsInfoItem.setMarkupLine(homologsInfoItemDB.getMarkupLine());
 		homologsInfoItem.setNumHomologs(homologsInfoItemDB.getNumHomologs());
-		homologsInfoItem.setSubInterval(homologsInfoItemDB.getSubInterval());
+		homologsInfoItem.setRefUniProtStart(homologsInfoItemDB.getRefUniProtStart());
+		homologsInfoItem.setRefUniProtEnd(homologsInfoItemDB.getRefUniProtEnd());
 		homologsInfoItem.setUniprotId(homologsInfoItemDB.getUniprotId());
 		homologsInfoItem.setUid(homologsInfoItemDB.getUid());
 		homologsInfoItem.setHasQueryMatch(homologsInfoItemDB.isHasQueryMatch());
