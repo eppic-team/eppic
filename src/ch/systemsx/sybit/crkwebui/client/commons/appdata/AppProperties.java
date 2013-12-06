@@ -59,8 +59,6 @@ public interface AppProperties extends Constants
 	String input_citation_link_text();
 	String input_news_header();
 
-	String parameters_entropy();
-	String parameters_geometry();
 	String parameters_reduced_alphabet();
 	String parameters_reduced_alphabet_hint();
 	String parameters_allignment();
@@ -72,8 +70,7 @@ public interface AppProperties extends Constants
 	String parameters_search_mode();
 	String parameters_search_mode_hint();
 	String parameters_others();
-	String parameters_max_num_sequences_hint();
-	String parameters_use_naccess_hint();
+ 	String parameters_max_num_sequences_hint();
 	
 	String status_panel_jobId();
 	String status_panel_log();
@@ -204,7 +201,6 @@ public interface AppProperties extends Constants
 	String callback_get_results_of_processing_error();
 	String callback_get_settings_error();
 	String callback_delete_job_error();
-	String callback_delete_job_message();
 	String callback_stop_job_error();
 	String callback_stop_job_message();
 	String callback_run_job_error();
