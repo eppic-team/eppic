@@ -49,7 +49,8 @@ public class HomologsHeaderPanel extends HorizontalLayoutContainer{
 	 * @param jobId
 	 */
 	public void updateContent(HomologsInfoItem infoItem, String jobId) {
-		fillQuery(infoItem.getUniprotId(), infoItem.getSubInterval());
+		String subInterval = infoItem.getRefUniProtStart()+"-"+infoItem.getRefUniProtEnd();
+		fillQuery(infoItem.getUniprotId(), subInterval);
 		fillSubtitle(infoItem.getIdCutoffUsed(), infoItem.getClusteringPercentIdUsed());
 		fillDownloadsLink(infoItem, jobId);
 	}
