@@ -94,7 +94,7 @@ public class StatusPanel extends DisplayPanel
 
 		log = createLogTextarea();
 		FieldLabel logLabel = new FieldLabel(log);
-		logLabel.getElement().applyStyles("font-weight:bold");
+		logLabel.getElement().applyStyles("fontWeight:bold");
 		logLabel.setHTML(StyleGenerator.defaultFontStyle(AppPropertiesManager.CONSTANTS.status_panel_log()));
 		logLabel.setLabelAlign(LabelAlign.TOP);
 		logLabel.addStyleName("eppic-status-label");

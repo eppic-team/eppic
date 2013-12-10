@@ -200,7 +200,6 @@ public class OptionsInputPanel extends FieldSet
 		
 		ComboBox<SearchModeComboModel> searchModeCombo = 
 				new ComboBox<SearchModeComboModel>(searchModeValues, props.name());
-		searchModeCombo.getElement().applyStyles("eppic-default-font");
 		searchModeCombo.setWidth(FIELD_WIDTH);
 		searchModeCombo.setStore(searchModeValues);
 		searchModeCombo.setTypeAhead(true);

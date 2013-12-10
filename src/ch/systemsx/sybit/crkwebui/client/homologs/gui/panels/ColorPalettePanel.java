@@ -34,7 +34,7 @@ public class ColorPalettePanel  extends HorizontalLayoutContainer{
 			SimpleContainer sc = new SimpleContainer();
 			sc.setPixelSize(20, 12);
 			String color = IdentityColorPicker.getColor((i+1)/10.0);
-			sc.getElement().applyStyles("background-color:"+color);
+			sc.getElement().applyStyles("backgroundColor:"+color);
 			colorTable.setWidget(0, i, sc);
 		}
 		

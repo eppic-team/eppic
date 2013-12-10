@@ -389,7 +389,7 @@ public class InputDataPanel extends DisplayPanel
 		FieldLabel fileLabel = new FieldLabel(file);
 		fileLabel.setHTML(StyleGenerator.defaultFontStyle(label));
 		fileLabel.setLabelWidth(LABEL_WIDTH);
-		fileLabel.getElement().applyStyles("font-size: 14px;");
+		fileLabel.getElement().applyStyles("fontSize: 14px;");
 		fileLabel.setVisible(false);
 
 		return fileLabel;
@@ -412,7 +412,7 @@ public class InputDataPanel extends DisplayPanel
 		FieldLabel pdbCodeFieldLabel = new FieldLabel(pdbCodeField);
 		pdbCodeFieldLabel.setHTML(StyleGenerator.defaultFontStyle(label));
 		pdbCodeFieldLabel.setLabelWidth(LABEL_WIDTH);
-		pdbCodeFieldLabel.getElement().applyStyles("font-size:14px;");
+		pdbCodeFieldLabel.getElement().applyStyles("fontSize:14px;");
 
 		return pdbCodeFieldLabel;
 	}
@@ -433,7 +433,7 @@ public class InputDataPanel extends DisplayPanel
 		FieldLabel emailTextFieldLabel = new FieldLabel(emailTextField);
 		emailTextFieldLabel.setHTML(StyleGenerator.defaultFontStyle(label));
 		emailTextFieldLabel.setLabelWidth(LABEL_WIDTH);
-		emailTextFieldLabel.getElement().applyStyles("font-size:14px;");
+		emailTextFieldLabel.getElement().applyStyles("fontSize:14px;");
 		emailTextFieldLabel.setVisible(false);
 
 		return emailTextFieldLabel;
@@ -485,7 +485,7 @@ public class InputDataPanel extends DisplayPanel
 	private HorizontalLayoutContainer createCurrentUniprotPanel()
 	{
 		HorizontalLayoutContainer uniprotPanel = new HorizontalLayoutContainer();
-		uniprotPanel.getElement().applyStyles("text-align:center; padding-top:25px; height:22px; padding-bottom:1px;");
+		uniprotPanel.getElement().applyStyles("textAlign:center; paddingTop:25px; height:22px; paddingBottom:1px;");
 
 		HTML uniprotVersionLabel = new HTML(AppPropertiesManager.CONSTANTS.input_uniprot_version() + ":&nbsp;");
 		uniprotVersionLabel.addStyleName("eppic-uniprot-version-header");
@@ -508,7 +508,7 @@ public class InputDataPanel extends DisplayPanel
 	private HorizontalLayoutContainer createExamplePanel()
 	{
 		HorizontalLayoutContainer examplePanel = new HorizontalLayoutContainer();
-		examplePanel.getElement().applyStyles("height:22px; padding-bottom:10px;");
+		examplePanel.getElement().applyStyles("height:22px; paddingBottom:10px;");
 
 		HTML exampleLinkLabel = new HTML(AppPropertiesManager.CONSTANTS.input_example() + ":&nbsp;");
 

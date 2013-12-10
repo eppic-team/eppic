@@ -22,7 +22,7 @@ public class StructurePanel extends FramedPanel
 	
 	public StructurePanel(int structureNr)
 	{	
-		this.getHeader().getElement().applyStyles("text-align:center; background:none;");
+		this.getHeader().getElement().applyStyles("textAlign:center; background:none;");
 		VerticalLayoutContainer mainContainer = new VerticalLayoutContainer();
 		this.setWidget(mainContainer);
 		
