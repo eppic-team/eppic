@@ -103,8 +103,8 @@ public class IdentityBarCell extends ResizeCell<HomologIdentityData> {
 	 */
 	private String generateComponent(HomologIdentityData data){		
 		
-		int matchLeftMargin = ((100*data.getQueryStart())/data.getQueryLength());
-		int matchWidth = ((100*(data.getQueryEnd()-data.getQueryStart()))/data.getQueryLength());
+		int matchLeftMargin = Math.round((100*(data.getQueryStart()-1))/data.getQueryLength());
+		int matchWidth = Math.round((100*(data.getQueryEnd()-data.getQueryStart()))/data.getQueryLength());
 		
 		String color = IdentityColorPicker.getColor(data.getSeqIdToQuery()/100.0);
 
