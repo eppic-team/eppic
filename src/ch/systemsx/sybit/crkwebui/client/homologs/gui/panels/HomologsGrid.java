@@ -1,15 +1,17 @@
 package ch.systemsx.sybit.crkwebui.client.homologs.gui.panels;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
-import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.commons.util.StyleGenerator;
 import ch.systemsx.sybit.crkwebui.client.homologs.data.HomologsItemModel;
 import ch.systemsx.sybit.crkwebui.client.homologs.data.HomologsItemModelProperties;
-import ch.systemsx.sybit.crkwebui.client.homologs.gui.cells.PercentageBarCell;
+import ch.systemsx.sybit.crkwebui.client.homologs.gui.cells.IdentityBarCell;
 import ch.systemsx.sybit.crkwebui.client.homologs.gui.cells.UniprotIdCell;
+import ch.systemsx.sybit.crkwebui.shared.model.HomologIdentityData;
 import ch.systemsx.sybit.crkwebui.shared.model.HomologItem;
 
 import com.google.gwt.core.client.GWT;
@@ -52,7 +54,7 @@ public class HomologsGrid extends VerticalLayoutContainer
     	Grid<HomologsItemModel> grid = new Grid<HomologsItemModel>(store, columnModel);
     	
     	grid.setBorders(false);
-    	grid.getView().setStripeRows(true);
+    	grid.getView().setStripeRows(false);
     	grid.getView().setColumnLines(false);
     	grid.setLoadMask(true);
 
@@ -76,20 +78,13 @@ public class HomologsGrid extends VerticalLayoutContainer
 				ApplicationContext.getSettings().getGridProperties().get("homologs_uniprot_header")));
 		uniprotIdCol.setCell(new UniprotIdCell());
 		
-		ColumnConfig<HomologsItemModel, Double> seqIdCol = 
-				new ColumnConfig<HomologsItemModel, Double>(props.seqIdToQuery(),
+		ColumnConfig<HomologsItemModel, HomologIdentityData> seqIdCol = 
+				new ColumnConfig<HomologsItemModel, HomologIdentityData>(props.idData(),
 						Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("homologs_identity_width")));
 		seqIdCol.setHeader(StyleGenerator.defaultFontStyle(
 				ApplicationContext.getSettings().getGridProperties().get("homologs_identity_header")));
-		seqIdCol.setCell(new PercentageBarCell(AppPropertiesManager.CONSTANTS.homologs_window_grid_identity_bar_text()));
+		seqIdCol.setCell(new IdentityBarCell());
 
-		ColumnConfig<HomologsItemModel, Double> covCol = 
-				new ColumnConfig<HomologsItemModel, Double>(props.queryCov(), 
-						Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("homologs_coverage_width")));
-		covCol.setHeader(StyleGenerator.defaultFontStyle(
-				ApplicationContext.getSettings().getGridProperties().get("homologs_coverage_header")));
-		covCol.setCell(new PercentageBarCell(AppPropertiesManager.CONSTANTS.homologs_window_grid_coverage_bar_text()));
-		
 		ColumnConfig<HomologsItemModel, String> firstTaxCol = 
 				new ColumnConfig<HomologsItemModel, String>(props.firstTaxon(), 
 						Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("homologs_firstTax_width")));
@@ -104,7 +99,6 @@ public class HomologsGrid extends VerticalLayoutContainer
 		
 		configs.add(uniprotIdCol);
 		configs.add(seqIdCol);
-		configs.add(covCol);
 		configs.add(firstTaxCol);
 		configs.add(lastTaxCol);
 		
@@ -115,7 +109,7 @@ public class HomologsGrid extends VerticalLayoutContainer
 	 * Fills in the grid
 	 * @param homologs
 	 */
-	public void fillHomologsGrid(List<HomologItem> homologs){
+	public void fillHomologsGrid(List<HomologItem> homologs, int queryLength){
 		
 		store.clear();
 		
@@ -123,16 +117,29 @@ public class HomologsGrid extends VerticalLayoutContainer
 		
 		if(homologs != null){
 			for(HomologItem homolog: homologs){
+				HomologIdentityData idData = new HomologIdentityData(
+						homolog.getSeqIdToQuery(), 
+						homolog.getQueryStart(), 
+						homolog.getQueryEnd(), 
+						queryLength);
+				
 				HomologsItemModel item = new HomologsItemModel(
 						homolog.getUid(), 
 						homolog.getUniId(), 
-						homolog.getSeqIdToQuery(), 
+						idData, 
 						homolog.getQueryCov(), 
 						homolog.getFirstTaxon(), 
 						homolog.getLastTaxon());
 				data.add(item);
 			}
-			
+			//Sort the list by identity
+			Collections.sort(data, new Comparator<HomologsItemModel>() {
+				@Override
+				public int compare(HomologsItemModel o1, HomologsItemModel o2) {
+					return -1*(o1.getIdData().compareTo(o2.getIdData()));
+				}
+
+			});
 			store.addAll(data);
 		}
 		

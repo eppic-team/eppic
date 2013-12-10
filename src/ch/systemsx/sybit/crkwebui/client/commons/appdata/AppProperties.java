@@ -115,9 +115,7 @@ public interface AppProperties extends Constants
 	String homologs_window_subtitle_text();
 	String homologs_window_downloads_text();
 	String homologs_window_downloads_tooltip();
-	
-	String homologs_window_grid_identity_bar_text();
-	String homologs_window_grid_coverage_bar_text();
+	String homologs_window_color_code_text();
 
 	String myjobs_clear_button();
 	String myjobs_panel_head();

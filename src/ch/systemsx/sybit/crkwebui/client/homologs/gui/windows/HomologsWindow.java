@@ -38,7 +38,7 @@ public class HomologsWindow extends ResizableWindow {
 		homologsGrid = new HomologsGrid();
 		
 		DockLayoutPanel dock = new DockLayoutPanel(Unit.PX);
-		dock.addNorth(headerPanel, 45);
+		dock.addNorth(headerPanel, 55);
 		
 		dock.add(homologsGrid);
 		
@@ -59,7 +59,8 @@ public class HomologsWindow extends ResizableWindow {
 	 */
 	public void updateWindowContent(){
 		headerPanel.updateContent(homologsInfoItem, jobId);
-		homologsGrid.fillHomologsGrid(homologsInfoItem.getHomologs());
+		homologsGrid.fillHomologsGrid(homologsInfoItem.getHomologs(),
+									homologsInfoItem.getRefUniProtEnd()-homologsInfoItem.getRefUniProtStart());
 	}
 	
 	/**

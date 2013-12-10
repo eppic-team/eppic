@@ -2,6 +2,8 @@ package ch.systemsx.sybit.crkwebui.client.homologs.data;
 
 import java.io.Serializable;
 
+import ch.systemsx.sybit.crkwebui.shared.model.HomologIdentityData;
+
 /**
  * Class used as a model for homologs info grid
  * @author nikhil
@@ -14,21 +16,21 @@ public class HomologsItemModel implements Serializable {
 	private int uid;
 	
 	private String uniId;
-	private double seqIdToQuery;
+	private HomologIdentityData idData;
 	private double queryCov;
 	private String firstTaxon;
 	private String lastTaxon;
 	
 	public HomologsItemModel(int uid,
 							String uniId,
-							double seqIdToQuery,
+							HomologIdentityData idData,
 							double queryCov,
 							String firstTaxon,
 							String lastTaxon)
 	{
 		this.uid = uid;
 		this.uniId = uniId;
-		this.seqIdToQuery = seqIdToQuery;
+		this.idData = idData;
 		this.queryCov = queryCov;
 		this.firstTaxon = firstTaxon;
 		this.lastTaxon = lastTaxon;
@@ -50,12 +52,12 @@ public class HomologsItemModel implements Serializable {
 		this.uniId = uniId;
 	}
 
-	public double getSeqIdToQuery() {
-		return seqIdToQuery/100;
+	public HomologIdentityData getIdData() {
+		return idData;
 	}
 
-	public void setSeqIdToQuery(double seqIdToQuery) {
-		this.seqIdToQuery = seqIdToQuery;
+	public void setIdData(HomologIdentityData idData) {
+		this.idData = idData;
 	}
 
 	public double getQueryCov() {

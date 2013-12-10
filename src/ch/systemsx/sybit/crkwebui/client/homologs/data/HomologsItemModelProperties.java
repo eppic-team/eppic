@@ -1,5 +1,7 @@
 package ch.systemsx.sybit.crkwebui.client.homologs.data;
 
+import ch.systemsx.sybit.crkwebui.shared.model.HomologIdentityData;
+
 import com.google.gwt.editor.client.Editor.Path;
 import com.sencha.gxt.core.client.ValueProvider;
 import com.sencha.gxt.data.shared.ModelKeyProvider;
@@ -17,7 +19,7 @@ public interface HomologsItemModelProperties extends PropertyAccess<HomologsItem
 	  
 	  ValueProvider<HomologsItemModel, String> uniId();
 	  
-	  ValueProvider<HomologsItemModel, Double> seqIdToQuery();
+	  ValueProvider<HomologsItemModel, HomologIdentityData> idData();
 	  
 	  ValueProvider<HomologsItemModel, Double> queryCov();
 	  

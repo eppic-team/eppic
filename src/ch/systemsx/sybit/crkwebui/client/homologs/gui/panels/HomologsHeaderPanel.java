@@ -28,6 +28,7 @@ public class HomologsHeaderPanel extends HorizontalLayoutContainer{
 	
 	private VerticalLayoutContainer downloadContainer;
 	private ImageLinkWithTooltip downloadImage;
+	private ColorPalettePanel colorPanel;
 	
 	public HomologsHeaderPanel(HomologsInfoItem infoItem, String jobId){
 		this.setBorders(false);
@@ -129,6 +130,9 @@ public class HomologsHeaderPanel extends HorizontalLayoutContainer{
 		
 		subtitleLabel = new HTML();
 		vlc.add(subtitleLabel, new VerticalLayoutData(1, -1));
+		
+		colorPanel = new ColorPalettePanel(AppPropertiesManager.CONSTANTS.homologs_window_color_code_text());
+		vlc.add(colorPanel, new VerticalLayoutData(1,-1));
 		
 		return vlc;
 		
