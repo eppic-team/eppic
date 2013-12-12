@@ -209,6 +209,9 @@ public interface AppProperties extends Constants
 	String viewer_jmol();
 	String viewer_local();
 	String viewer_pse();
+	String viewer_jmol_label();
+	String viewer_local_label();
+	String viewer_pse_label();
 	
 	String viewer_window_title();
 	String viewer_window_box_title();
