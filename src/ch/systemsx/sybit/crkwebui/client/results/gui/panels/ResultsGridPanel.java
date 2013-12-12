@@ -225,6 +225,7 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 		fillColumnSettings(column, "details");
 		column.setResizable(false);
 		column.setSortable(false);
+		column.setFixed(true);
 		return column;
 	}
 	
