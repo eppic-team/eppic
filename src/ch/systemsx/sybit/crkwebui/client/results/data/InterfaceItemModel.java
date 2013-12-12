@@ -20,6 +20,7 @@ public class InterfaceItemModel implements Serializable {
 	private static final long serialVersionUID = 1L;
 	
 	private int id;
+	private int clusterId;
 	private double area;
 	private String name;
 	private String sizes;
@@ -38,6 +39,7 @@ public class InterfaceItemModel implements Serializable {
 	public InterfaceItemModel()
 	{
 		id = 0;
+		clusterId = 0;
 		area = 0;
 		name = "";
 		sizes = "";
@@ -49,6 +51,14 @@ public class InterfaceItemModel implements Serializable {
 		operatorType = "";
 		isInfinite = false;
 		warnings = new ArrayList<WarningItem>();
+	}
+
+	public int getClusterId() {
+		return clusterId;
+	}
+
+	public void setClusterId(int clusterId) {
+		this.clusterId = clusterId;
 	}
 
 	public String getGeometryCall() {

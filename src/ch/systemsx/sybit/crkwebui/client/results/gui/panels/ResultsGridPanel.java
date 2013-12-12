@@ -2,6 +2,7 @@ package ch.systemsx.sybit.crkwebui.client.results.gui.panels;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
@@ -10,6 +11,7 @@ import ch.systemsx.sybit.crkwebui.client.commons.events.ShowDetailsEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowInterfaceResiduesEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowThumbnailEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowViewerEvent;
+import ch.systemsx.sybit.crkwebui.client.commons.events.ShowViewerSelectorEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.WindowHideEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.cell.TwoDecimalDoubleCell;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.SelectResultsRowHandler;
@@ -19,6 +21,7 @@ import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowViewerHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.WindowHideHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.managers.EventBusManager;
 import ch.systemsx.sybit.crkwebui.client.commons.managers.ViewerRunner;
+import ch.systemsx.sybit.crkwebui.client.commons.util.EscapedStringGenerator;
 import ch.systemsx.sybit.crkwebui.client.commons.util.StyleGenerator;
 import ch.systemsx.sybit.crkwebui.client.results.data.InterfaceItemModel;
 import ch.systemsx.sybit.crkwebui.client.results.data.InterfaceItemModelProperties;
@@ -27,6 +30,7 @@ import ch.systemsx.sybit.crkwebui.client.results.gui.cells.MethodCallCell;
 import ch.systemsx.sybit.crkwebui.client.results.gui.cells.OperatorTypeCell;
 import ch.systemsx.sybit.crkwebui.client.results.gui.cells.ThumbnailCell;
 import ch.systemsx.sybit.crkwebui.client.results.gui.cells.WarningsCell;
+import ch.systemsx.sybit.crkwebui.client.results.gui.grid.util.ClustersGridView;
 import ch.systemsx.sybit.crkwebui.client.results.gui.grids.contextmenus.ResultsPanelContextMenu;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceItem;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceScoreItem;
@@ -34,24 +38,44 @@ import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.NativeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.i18n.client.NumberFormat;
+import com.google.gwt.safehtml.shared.SafeHtml;
+import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.sencha.gxt.core.client.ValueProvider;
 import com.sencha.gxt.core.client.dom.ScrollSupport.ScrollMode;
-import com.sencha.gxt.core.client.resources.CommonStyles;
 import com.sencha.gxt.core.client.util.KeyNav;
 import com.sencha.gxt.widget.core.client.FramedPanel;
+import com.sencha.gxt.widget.core.client.button.TextButton;
 import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer;
+import com.sencha.gxt.widget.core.client.event.SelectEvent;
+import com.sencha.gxt.widget.core.client.event.SelectEvent.SelectHandler;
+import com.sencha.gxt.widget.core.client.form.CheckBox;
 import com.sencha.gxt.widget.core.client.grid.Grid;
 import com.sencha.gxt.widget.core.client.grid.ColumnConfig;
 import com.sencha.gxt.widget.core.client.grid.ColumnModel;
+import com.sencha.gxt.widget.core.client.grid.GridView;
+import com.sencha.gxt.widget.core.client.grid.SummaryColumnConfig;
+import com.sencha.gxt.widget.core.client.grid.SummaryRenderer;
+import com.sencha.gxt.widget.core.client.grid.SummaryType;
 import com.sencha.gxt.widget.core.client.tips.QuickTip;
+import com.sencha.gxt.widget.core.client.toolbar.FillToolItem;
+import com.sencha.gxt.widget.core.client.toolbar.ToolBar;
 import com.sencha.gxt.data.shared.ListStore;
 
 public class ResultsGridPanel extends VerticalLayoutContainer
 {
+	private VerticalLayoutContainer panelContainer;
+	
 	private ListStore<InterfaceItemModel> resultsStore;
 	private ColumnModel<InterfaceItemModel> resultsColumnModel;
 	private Grid<InterfaceItemModel> resultsGrid;
+	
+	//Two different views
+	private GridView<InterfaceItemModel> interfaceView;
+	private ClustersGridView clustersView;
 	
 	private int panelWidth;
 	
@@ -60,6 +84,7 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 	//Columns to be used later
 	ColumnConfig<InterfaceItemModel, String> thumbnailColumn;
 	ColumnConfig<InterfaceItemModel, String> warningsColumn;
+	SummaryColumnConfig<InterfaceItemModel, Integer> clusterIdColumn;
 	
 	public ResultsGridPanel(int width)
 	{
@@ -73,23 +98,65 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 		gridPanel.setBorders(true);
 		gridPanel.setBodyBorder(false);
 		
-		VerticalLayoutContainer panelContainer = new VerticalLayoutContainer();
-		
+		panelContainer = new VerticalLayoutContainer();
 		panelContainer.setScrollMode(ScrollMode.AUTO);
-		
 		gridPanel.setWidget(panelContainer);
 		
 		resultsStore = new ListStore<InterfaceItemModel>(props.key());
 		List<ColumnConfig<InterfaceItemModel, ?>> resultsConfigs = createColumnConfig();
-		
 		resultsColumnModel = new ColumnModel<InterfaceItemModel>(resultsConfigs);
+		interfaceView = new GridView<InterfaceItemModel>();
+		clustersView = createClusterView();
 		
-		resultsGrid = createResultsGrid();		
-		panelContainer.add(resultsGrid);
-		
+		resultsGrid = createResultsGrid(interfaceView);		
+		panelContainer.add(createSelectorToolBar(), new VerticalLayoutData(-1,-1));
+		panelContainer.add(resultsGrid, new VerticalLayoutData(-1,-1));
+
 		this.add(panelContainer, new VerticalLayoutData(-1,-1));
 		
 		initializeEventsListeners();
+	}
+	
+	private ToolBar createSelectorToolBar(){
+		ToolBar toolBar = new ToolBar();
+		
+		final CheckBox clustersViewButton = new CheckBox();
+		clustersViewButton.setBoxLabel(AppPropertiesManager.CONSTANTS.results_grid_clusters_label());
+		clustersViewButton.setToolTip(AppPropertiesManager.CONSTANTS.results_grid_clusters_tooltip());
+		clustersViewButton.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+
+			@Override
+			public void onValueChange(ValueChangeEvent<Boolean> event) {
+				if (event.getValue() == true) {
+					panelContainer.remove(resultsGrid);
+		        	resultsGrid = createResultsGrid(clustersView);
+		        	panelContainer.add(resultsGrid);
+				} else{
+					panelContainer.remove(resultsGrid);
+		        	resultsGrid = createResultsGrid(interfaceView);
+		        	panelContainer.add(resultsGrid);
+				}
+				
+			}
+		});
+		
+		toolBar.add(clustersViewButton);
+		
+		TextButton changeViewerButton = new TextButton(
+				AppPropertiesManager.CONSTANTS.results_grid_selector_button());
+		changeViewerButton.addSelectHandler(new SelectHandler() {
+			
+			@Override
+			public void onSelect(SelectEvent event) {
+				EventBusManager.EVENT_BUS.fireEvent(new ShowViewerSelectorEvent());
+				
+			}
+		});
+		
+		toolBar.add(new FillToolItem());
+		toolBar.add(changeViewerButton);
+		
+		return toolBar;
 	}
 	
 	/**
@@ -100,6 +167,8 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 	{
 		List<ColumnConfig<InterfaceItemModel, ?>> configs = new ArrayList<ColumnConfig<InterfaceItemModel, ?>>();
 		
+		clusterIdColumn = new SummaryColumnConfig<InterfaceItemModel, Integer>(props.clusterId());
+		configs.add(clusterIdColumn);
 		thumbnailColumn = getThumbnailColumn();
 		configs.add(thumbnailColumn);
 		configs.add(getIdColumn());
@@ -118,171 +187,172 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 		return configs;
 	}
 	
-	private ColumnConfig<InterfaceItemModel, String> getWarningsColumn() {
-		ColumnConfig<InterfaceItemModel, String> column = new ColumnConfig<InterfaceItemModel, String>(props.warningsImagePath(),
-				Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("results_warnings_width")));
-		
-		column.setHeader(StyleGenerator.defaultFontStyle(
-				ApplicationContext.getSettings().getGridProperties().get("results_warnings_header")));
-		
-		column.setCell(new WarningsCell(resultsStore));
-
-		column.setColumnTextClassName("eppic-results-grid-common-cells");
-		column.setAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-		return column;
-	}
-
-	private ColumnConfig<InterfaceItemModel, String> getDetailsColumn() {
-		ColumnConfig<InterfaceItemModel, String> column = new ColumnConfig<InterfaceItemModel, String>(props.detailsButtonText(),
-				Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("results_details_width")));
-		
-		column.setHeader(StyleGenerator.defaultFontStyle(
-				ApplicationContext.getSettings().getGridProperties().get("results_details_header")));
-		column.setCell(new DetailsButtonCell());
-
-		column.setColumnTextClassName(CommonStyles.get().inlineBlock());
-		column.setAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-		column.setResizable(false);
-		return column;
-	}
-
-	private ColumnConfig<InterfaceItemModel, String> getFinalCallColumn() {
-		ColumnConfig<InterfaceItemModel, String> column = new ColumnConfig<InterfaceItemModel, String>(props.finalCallName(),
-				Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("results_METHODS_width")));
-		
-		column.setHeader(StyleGenerator.defaultFontStyle(
-				ApplicationContext.getSettings().getGridProperties().get("results_finalCallName_header")));
-		
-		column.setCell(new MethodCallCell(resultsStore, "finalCallName"));
-
-		column.setColumnTextClassName("eppic-results-final-call");
-		column.setAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-		return column;
-	}
-
-	private ColumnConfig<InterfaceItemModel, ?> getMethodsColumn(
-			ValueProvider<InterfaceItemModel, String> vp,
-			String type) {
-		ColumnConfig<InterfaceItemModel, String> column = new ColumnConfig<InterfaceItemModel, String>(vp,
-				Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("results_METHODS_width")));
-		
+	/**
+	 * Fills in the column with following settings:
+	 * width - taken from grid.properties
+	 * header - taken from grid.properties
+	 * tooltip - taken from grid.properties
+	 * styles, alignment
+	 * @param column
+	 * @param type
+	 */
+	private void fillColumnSettings(ColumnConfig<InterfaceItemModel, ?> column, String type){
+		column.setWidth(Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("results_"+type+"_width")));
 		column.setHeader(StyleGenerator.defaultFontStyle(
 				ApplicationContext.getSettings().getGridProperties().get("results_"+type+"_header")));
 		
-		MethodCallCell callCell = new MethodCallCell(resultsStore, type);
-		column.setCell(callCell);
+		String tooltip = ApplicationContext.getSettings().getGridProperties().get("results_"+type+"_tooltip");
+		if(tooltip != null)
+			column.setToolTip(EscapedStringGenerator.generateSafeHtml(tooltip));
 		
 		column.setColumnTextClassName("eppic-results-grid-common-cells");
 		column.setAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+		
+	}
+	
+	private SummaryColumnConfig<InterfaceItemModel, String> getWarningsColumn() {
+		SummaryColumnConfig<InterfaceItemModel, String> column = 
+				new SummaryColumnConfig<InterfaceItemModel, String>(props.warningsImagePath());
+		column.setCell(new WarningsCell(resultsStore));
+		fillColumnSettings(column, "warnings");
 		return column;
 	}
 
-	private ColumnConfig<InterfaceItemModel, String> getSizesColumn() {
-		ColumnConfig<InterfaceItemModel, String> sizesColumn = new ColumnConfig<InterfaceItemModel, String>(props.sizes(),
-				Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("results_sizes_width")));
-		
-		sizesColumn.setHeader(StyleGenerator.defaultFontStyle(
-				ApplicationContext.getSettings().getGridProperties().get("results_sizes_header")));
-		
-		sizesColumn.setColumnTextClassName("eppic-results-grid-common-cells");
-		sizesColumn.setAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+	private SummaryColumnConfig<InterfaceItemModel, String> getDetailsColumn() {
+		SummaryColumnConfig<InterfaceItemModel, String> column = 
+				new SummaryColumnConfig<InterfaceItemModel, String>(props.detailsButtonText());
+		column.setCell(new DetailsButtonCell());
+		fillColumnSettings(column, "details");
+		column.setResizable(false);
+		column.setSortable(false);
+		return column;
+	}
+	
+	private SummaryColumnConfig<InterfaceItemModel, String> getFinalCallColumn() {
+		SummaryColumnConfig<InterfaceItemModel, String> column = 
+				new SummaryColumnConfig<InterfaceItemModel, String>(props.finalCallName());
+		column.setCell(new MethodCallCell(resultsStore, "finalCallName"));
+		fillColumnSettings(column, "finalCallName");
+		column.setColumnTextClassName("eppic-results-final-call");
+		return column;
+	}
+	
+	private SummaryColumnConfig<InterfaceItemModel, ?> getMethodsColumn(
+			ValueProvider<InterfaceItemModel, String> vp,
+			String type) {
+		SummaryColumnConfig<InterfaceItemModel, String> column = new SummaryColumnConfig<InterfaceItemModel, String>(vp);
+		column.setCell(new MethodCallCell(resultsStore, type));
+		fillColumnSettings(column, type);
+		return column;
+	}
+
+	private SummaryColumnConfig<InterfaceItemModel, String> getSizesColumn() {
+		SummaryColumnConfig<InterfaceItemModel, String> sizesColumn = 
+				new SummaryColumnConfig<InterfaceItemModel, String>(props.sizes());
+		fillColumnSettings(sizesColumn, "sizes");
 		return sizesColumn;
 	}
 
-	private ColumnConfig<InterfaceItemModel, String> getOperatorColumn() {
-		ColumnConfig<InterfaceItemModel, String> operatorColumn = new ColumnConfig<InterfaceItemModel, String>(props.operatorType(),
-				Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("results_operatorType_width")));
-		
-		operatorColumn.setHeader(StyleGenerator.defaultFontStyle(
-				ApplicationContext.getSettings().getGridProperties().get("results_operatorType_header")));
-		
+	private SummaryColumnConfig<InterfaceItemModel, String> getOperatorColumn() {
+		SummaryColumnConfig<InterfaceItemModel, String> operatorColumn = 
+				new SummaryColumnConfig<InterfaceItemModel, String>(props.operatorType());
 		operatorColumn.setCell(new OperatorTypeCell(resultsStore));
-		
-		operatorColumn.setColumnTextClassName("eppic-results-grid-common-cells");
-		operatorColumn.setAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+		fillColumnSettings(operatorColumn, "operatorType");
 		return operatorColumn;
 	}
 
-	private ColumnConfig<InterfaceItemModel, Double> getAreaColumn() {
-		ColumnConfig<InterfaceItemModel, Double> areaColumn = new ColumnConfig<InterfaceItemModel, Double>(props.area(),
-				Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("results_area_width")));
+	private SummaryColumnConfig<InterfaceItemModel, Double> getAreaColumn() {
+		SummaryColumnConfig<InterfaceItemModel, Double> areaColumn = 
+				new SummaryColumnConfig<InterfaceItemModel, Double>(props.area());
 		
-		areaColumn.setHeader(StyleGenerator.defaultFontStyle(
-				ApplicationContext.getSettings().getGridProperties().get("results_area_header")));
+		areaColumn.setSummaryType(new SummaryType.AvgSummaryType<Double>());
+		areaColumn.setSummaryRenderer(new SummaryRenderer<InterfaceItemModel>() {
+
+			@Override
+			public SafeHtml render(
+					Number value,
+					Map<ValueProvider<? super InterfaceItemModel, ?>, Number> data) {
+				return SafeHtmlUtils.fromTrustedString(NumberFormat.getFormat("0.00").format(value));
+			}
+		});
 		
+		fillColumnSettings(areaColumn, "area");
 		areaColumn.setCell(new TwoDecimalDoubleCell());
 		
-		areaColumn.setColumnTextClassName("eppic-results-grid-common-cells");
-		areaColumn.setAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 		return areaColumn;
 	}
 
-	/**
-	 * Creates the chains Column's config
-	 * @return column with it's columnconfig
-	 */
-	private ColumnConfig<InterfaceItemModel, String> getChainsColumn() {
-		ColumnConfig<InterfaceItemModel, String> chainColumn = new ColumnConfig<InterfaceItemModel, String>(props.name(),
-				Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("results_name_width")));
-		
-		chainColumn.setHeader(StyleGenerator.defaultFontStyle(
-				ApplicationContext.getSettings().getGridProperties().get("results_name_header")));
-		
-		chainColumn.setColumnTextClassName("eppic-results-grid-common-cells");
-		chainColumn.setAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+	private SummaryColumnConfig<InterfaceItemModel, String> getChainsColumn() {
+		SummaryColumnConfig<InterfaceItemModel, String> chainColumn = 
+				new SummaryColumnConfig<InterfaceItemModel, String>(props.name());
+		fillColumnSettings(chainColumn, "name");
 		return chainColumn;
 	}
 
-	/**
-	 * Creates the Id Column's config
-	 * @return column with it's columnconfig
-	 */
-	private ColumnConfig<InterfaceItemModel, Integer> getIdColumn() {
-		ColumnConfig<InterfaceItemModel, Integer> idColumn = new ColumnConfig<InterfaceItemModel, Integer>(props.id(),
-				Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("results_id_width")));
-		
-		idColumn.setHeader(StyleGenerator.defaultFontStyle(
-				ApplicationContext.getSettings().getGridProperties().get("results_id_header")));
-		
-		idColumn.setColumnTextClassName("eppic-results-grid-common-cells");
-		idColumn.setAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+	private SummaryColumnConfig<InterfaceItemModel, Integer> getIdColumn() {
+		SummaryColumnConfig<InterfaceItemModel, Integer> idColumn = 
+				new SummaryColumnConfig<InterfaceItemModel, Integer>(props.id());
+		fillColumnSettings(idColumn, "id");
 		return idColumn;
 	}
 	
-	/**
-	 * Creates the thumbnail Column's config
-	 * @return
-	 */
-	private ColumnConfig<InterfaceItemModel, String> getThumbnailColumn(){
-		ColumnConfig<InterfaceItemModel, String> thumbnailColumn = new ColumnConfig<InterfaceItemModel, String>(props.thumbnailUrl(),
-				Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("results_thumbnail_width")));
+	private SummaryColumnConfig<InterfaceItemModel, String> getThumbnailColumn(){
+		SummaryColumnConfig<InterfaceItemModel, String> thumbnailColumn = 
+				new SummaryColumnConfig<InterfaceItemModel, String>(props.thumbnailUrl());
+
+		thumbnailColumn.setSummaryType(new SummaryType.CountSummaryType<String>());
+		thumbnailColumn.setSummaryRenderer(new SummaryRenderer<InterfaceItemModel>() {
+
+			@Override
+			public SafeHtml render(
+					Number value,
+					Map<ValueProvider<? super InterfaceItemModel, ?>, Number> data) {
+				return SafeHtmlUtils.fromTrustedString(
+						value.intValue() > 1 ? "(" + value.intValue() + " Interfaces)" : "(1 Interface)");
+			}
+		});
 		
-		thumbnailColumn.setHeader(StyleGenerator.defaultFontStyle(
-				ApplicationContext.getSettings().getGridProperties().get("results_thumbnail_header")));
-		
-		thumbnailColumn.setCell(new ThumbnailCell(resultsStore));
-		
-		thumbnailColumn.setColumnTextClassName("eppic-results-grid-common-cells");
-		thumbnailColumn.setAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+		thumbnailColumn.setCell(new ThumbnailCell());
+		fillColumnSettings(thumbnailColumn, "thumbnail");
 		thumbnailColumn.setResizable(false);
-		
+
 		return thumbnailColumn;
+	}
+
+	/**
+	 * Creates the cluster view for the grid
+	 * @return view
+	 */
+	private ClustersGridView createClusterView()
+	{
+		ClustersGridView summary = new ClustersGridView();
+		summary.setShowGroupedColumn(false);
+		summary.setShowDirtyCells(false);
+		summary.setStartCollapsed(true);
+		summary.setEnableGroupingMenu(true);
+		summary.setEnableNoGroups(true);
+		summary.groupBy(clusterIdColumn);
+		return summary;
 	}
 	
 	/**
 	 * Creates grid storing results of calculations for each of the interfaces.
 	 * @return interfaces grid
 	 */
-	private Grid<InterfaceItemModel> createResultsGrid()
+	private Grid<InterfaceItemModel> createResultsGrid(GridView<InterfaceItemModel> view)
 	{
 		final Grid<InterfaceItemModel> resultsGrid = new Grid<InterfaceItemModel>(resultsStore, resultsColumnModel);
 		resultsGrid.setBorders(false);
+		resultsGrid.setView(view);
 		resultsGrid.getView().setStripeRows(true);
 		resultsGrid.getView().setColumnLines(false);
 		resultsGrid.getView().setForceFit(true);
 		resultsGrid.setContextMenu(new ResultsPanelContextMenu());
 		
 		resultsGrid.getView().setEmptyText(AppPropertiesManager.CONSTANTS.results_grid_empty_text());
+		
+		//Hide cluster id column
+		resultsGrid.getColumnModel().getColumn(0).setHidden(true);
 		
 		resultsGrid.addStyleName("eppic-results-grid");
 		resultsGrid.addStyleName("eppic-default-font");
@@ -353,6 +423,7 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 				}
 				
 				model.setId(interfaceItem.getId());
+				model.setClusterId(interfaceItem.getClusterId());
 				model.setName(interfaceItem.getChain1() + "+" + interfaceItem.getChain2());
 				model.setArea(interfaceItem.getArea());
 				model.setSizes(String.valueOf(interfaceItem.getSize1()) + " + " + String.valueOf(interfaceItem.getSize2()));
@@ -361,6 +432,11 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 				model.setOperatorType(interfaceItem.getOperatorType());
 				model.setIsInfinite(interfaceItem.getIsInfinite());
 				model.setWarnings(interfaceItem.getWarnings());
+				String thumbnailUrl = ApplicationContext.getSettings().getResultsLocation() +
+						ApplicationContext.getPdbScoreItem().getJobId() + 
+						"/" + ApplicationContext.getPdbScoreItem().getPdbName() +
+						"." + interfaceItem.getId() + ".75x75.png";
+				model.setThumbnailUrl(thumbnailUrl);
 
 				data.add(model);
 			}
@@ -399,7 +475,7 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 	public void resizeContent(int width) 
 	{
 		this.panelWidth = width;
-		this.setWidth(panelWidth);
+		this.setWidth(panelWidth);		
 		resultsGrid.clearSizeCache();
 		resultsGrid.getView().refresh(true);
 	}

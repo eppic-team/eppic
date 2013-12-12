@@ -16,6 +16,8 @@ public interface InterfaceItemModelProperties extends PropertyAccess<InterfaceIt
 	 
 	  ValueProvider<InterfaceItemModel, Integer> id();
 	  
+	  ValueProvider<InterfaceItemModel, Integer> clusterId();
+	  
 	  ValueProvider<InterfaceItemModel, Double> area();
 	  
 	  ValueProvider<InterfaceItemModel, String> name();
