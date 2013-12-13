@@ -1,21 +1,24 @@
 package ch.systemsx.sybit.crkwebui.client.commons.gui.windows;
 
+import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.shared.model.WindowData;
 
 import com.sencha.gxt.widget.core.client.Dialog;
 
 /**
  * Generic resizable window.
- * @author AS
+ * @author AS, nikhil
  */
 public class ResizableWindow extends Dialog
 {
 	private boolean resizeWindow;
+	private int defaultWidth;
+	private int defaultHeight;
 
 	public ResizableWindow(int defaultWidth,
 						   int defaultHeight,
 						   WindowData windowData)
-	{
+	{		
 		int windowWidth = defaultWidth;
 		int windowHeight = defaultHeight;
 
@@ -39,6 +42,8 @@ public class ResizableWindow extends Dialog
 			}
 		}
 		
+		this.defaultHeight = windowHeight;
+		this.defaultWidth = windowWidth;
 		this.setPixelSize(windowWidth, windowHeight);
 	}
 	
@@ -57,5 +62,33 @@ public class ResizableWindow extends Dialog
 	 */
 	public boolean isResizeWindow() {
 		return resizeWindow;
+	}
+	
+	public int getDefaultWidth() {
+		return defaultWidth;
+	}
+
+	public void setDefaultWidth(int defaultWidth) {
+		this.defaultWidth = defaultWidth;
+	}
+
+	public int getDefaultHeight() {
+		return defaultHeight;
+	}
+
+	public void setDefaultHeight(int defaultHeight) {
+		this.defaultHeight = defaultHeight;
+	}
+
+	@Override
+	public void setPagePosition(int x, int y) {
+		int browserWidth = ApplicationContext.getWindowData().getWindowWidth();
+		int windowWidth = this.defaultWidth;
+		
+		if((x + windowWidth) > browserWidth){
+			x = browserWidth - windowWidth;
+		}
+		
+		super.setPagePosition(x, y);
 	}
 }
