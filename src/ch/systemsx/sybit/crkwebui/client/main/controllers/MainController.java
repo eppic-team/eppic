@@ -3,7 +3,6 @@ package ch.systemsx.sybit.crkwebui.client.main.controllers;
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ApplicationInitEvent;
-import ch.systemsx.sybit.crkwebui.client.commons.events.ApplicationWindowResizeEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.GetFocusOnJobsListEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.GetFocusOnPdbCodeFieldEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.HideAllWindowsEvent;
@@ -28,7 +27,6 @@ import ch.systemsx.sybit.crkwebui.client.commons.events.UpdateStatusLabelEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.data.StatusMessageType;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.panels.DisplayPanel;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ApplicationInitHandler;
-import ch.systemsx.sybit.crkwebui.client.commons.handlers.ApplicationWindowResizeHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.HideAllWindowsHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.HideWaitingHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.InterfaceResiduesDataRetrievedHandler;
@@ -285,18 +283,6 @@ public class MainController
 			@Override
 			public void onHideAllWindows(HideAllWindowsEvent event) {
 				mainViewPort.hideAllWindows();
-			}
-		});
-		
-		EventBusManager.EVENT_BUS.addHandler(ApplicationWindowResizeEvent.TYPE, new ApplicationWindowResizeHandler() {
-			
-			@Override
-			public void onResizeApplicationWindow(ApplicationWindowResizeEvent event) 
-			{
-				if(mainViewPort != null)
-				{
-					mainViewPort.setAllWindowsToResize();
-				}
 			}
 		});
 	}

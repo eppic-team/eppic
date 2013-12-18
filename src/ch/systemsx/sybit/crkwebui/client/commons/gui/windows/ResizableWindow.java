@@ -11,7 +11,6 @@ import com.sencha.gxt.widget.core.client.Dialog;
  */
 public class ResizableWindow extends Dialog
 {
-	private boolean resizeWindow;
 	private int defaultWidth;
 	private int defaultHeight;
 
@@ -45,23 +44,6 @@ public class ResizableWindow extends Dialog
 		this.defaultHeight = windowHeight;
 		this.defaultWidth = windowWidth;
 		this.setPixelSize(windowWidth, windowHeight);
-	}
-	
-	/**
-	 * Sets flag pointing whether window should be resized.
-	 * @param resizeWindow flag pointing whether window should be resized
-	 */
-	public void setResizeWindow(boolean resizeWindow)
-	{
-		this.resizeWindow = resizeWindow;
-	}
-
-	/**
-	 * Retrieves information whether window should be resized.
-	 * @return flag pointing whether window should be resized
-	 */
-	public boolean isResizeWindow() {
-		return resizeWindow;
 	}
 	
 	public int getDefaultWidth() {

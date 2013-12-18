@@ -175,11 +175,12 @@ public class MainViewPort extends BorderLayoutContainer
 	{
 		ApplicationContext.setSelectedInterface(selectedInterface);
 		
-		if((interfacesResiduesWindow == null) ||
-		   (interfacesResiduesWindow.isResizeWindow()))
-		{
+		if(interfacesResiduesWindow != null && interfacesResiduesWindow.isVisible()){
+			interfacesResiduesWindow.getInterfacesResiduesPanel().cleanData();
+			interfacesResiduesWindow.setVisible(true);
+		}
+		else{
 			interfacesResiduesWindow = new InterfacesResiduesWindow(ApplicationContext.getWindowData());
-			interfacesResiduesWindow.setResizeWindow(false);
 			interfacesResiduesWindow.setVisible(true);
 			Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 				@Override
@@ -187,11 +188,6 @@ public class MainViewPort extends BorderLayoutContainer
 					interfacesResiduesWindow.getInterfacesResiduesPanel().resizeResiduesPanels();
 				}
 			});
-		}
-		else
-		{
-			interfacesResiduesWindow.getInterfacesResiduesPanel().cleanData();
-			interfacesResiduesWindow.setVisible(true);
 		}
 		
 		InterfaceItem interfaceItem = ApplicationContext.getPdbScoreItem().getInterfaceItem(selectedInterface - 1);
@@ -309,7 +305,6 @@ public class MainViewPort extends BorderLayoutContainer
 		}
 		
 		alignmentsWindow = new AlignmentsWindow(ApplicationContext.getWindowData(), homologsInfoItem, pdbName);
-		alignmentsWindow.setResizeWindow(false);
 		alignmentsWindow.updateWindowContent();
 		alignmentsWindow.setPagePosition(xPosition, yPosition);
 
@@ -342,7 +337,6 @@ public class MainViewPort extends BorderLayoutContainer
 		}
 		
 		homologsWindow = new HomologsWindow(ApplicationContext.getWindowData(), homologsInfoItem, pdbName);
-		homologsWindow.setResizeWindow(false);
 		homologsWindow.updateWindowContent();
 		homologsWindow.setPagePosition(xPosition, yPosition);
 
@@ -356,13 +350,11 @@ public class MainViewPort extends BorderLayoutContainer
 	 */
 	public void displayAboutWindow()
 	{
-		if((aboutWindow == null) ||
-		   (aboutWindow.isResizeWindow()))
+		if(aboutWindow != null && aboutWindow.isVisible())
 		{
-			aboutWindow = new AboutWindow(ApplicationContext.getWindowData());
-			aboutWindow.setResizeWindow(false);
+			return;
 		}
-
+		aboutWindow = new AboutWindow(ApplicationContext.getWindowData());
 		aboutWindow.setVisible(true);
 	}
 	
@@ -372,13 +364,11 @@ public class MainViewPort extends BorderLayoutContainer
 	 */
 	public void displayViewerSelectorWindow()
 	{
-		if((viewerWindow == null) ||
-		   (viewerWindow.isResizeWindow()))
+		if(viewerWindow != null && viewerWindow.isVisible())
 		{
-			viewerWindow = new ViewerSelectorWindow(ApplicationContext.getWindowData());
-			viewerWindow.setResizeWindow(false);
+			return;
 		}
-
+		viewerWindow = new ViewerSelectorWindow(ApplicationContext.getWindowData());
 		viewerWindow.setVisible(true);
 	}
 
@@ -412,33 +402,6 @@ public class MainViewPort extends BorderLayoutContainer
 			homologsWindow.setVisible(false);
 		}
 	}	
-	
-	/**
-	 * Sets flag of all internal windows to resize.
-	 */
-	public void setAllWindowsToResize()
-	{
-		if(aboutWindow != null)
-		{
-			aboutWindow.setResizeWindow(true);
-		}
-		
-		if(alignmentsWindow != null)
-		{
-			alignmentsWindow.setResizeWindow(true);
-		}
-		
-		if(interfacesResiduesWindow != null)
-		{
-			interfacesResiduesWindow.setResizeWindow(true);
-		}
-		
-		if(homologsWindow != null)
-		{
-			homologsWindow.setResizeWindow(true);
-		}
-		
-	}
 	
 	private void setJobsPanelVisibility(boolean visibility){
 		if(visibility) this.show(LayoutRegion.WEST);
