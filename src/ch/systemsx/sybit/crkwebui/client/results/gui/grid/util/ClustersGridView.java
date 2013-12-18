@@ -8,6 +8,17 @@ import com.sencha.gxt.widget.core.client.grid.GroupSummaryView;
 
 public class ClustersGridView extends GroupSummaryView<InterfaceItemModel> {
 	
+	public ClustersGridView(){
+		setShowGroupedColumn(false);
+		setShowDirtyCells(false);
+		setStartCollapsed(true);
+		setStripeRows(true);
+		setColumnLines(false);
+		setForceFit(true);
+		setEnableGroupingMenu(false);
+		setEnableNoGroups(false);
+	}
+	
 	@Override
 	public SafeHtml renderGroupHeader(GroupingData<InterfaceItemModel> groupInfo) {
 		String component = "<div>";
