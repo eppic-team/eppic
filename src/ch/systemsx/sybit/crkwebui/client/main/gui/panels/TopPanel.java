@@ -1,10 +1,12 @@
 package ch.systemsx.sybit.crkwebui.client.main.gui.panels;
 
-import ch.systemsx.sybit.crkwebui.client.commons.gui.links.ImageLinkWithTooltip;
+import ch.systemsx.sybit.crkwebui.client.commons.gui.links.ImageEmptyLink;
 import ch.systemsx.sybit.crkwebui.client.top.gui.panels.NavigationPanel;
 import ch.systemsx.sybit.crkwebui.client.top.gui.panels.TopPanelSearchBox;
 
-import com.google.gwt.core.client.GWT;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.History;
 import com.sencha.gxt.widget.core.client.FramedPanel;
 import com.sencha.gxt.widget.core.client.container.HBoxLayoutContainer;
 import com.sencha.gxt.widget.core.client.container.HorizontalLayoutContainer;
@@ -44,15 +46,16 @@ public class TopPanel extends FramedPanel
 		return eppicLogoPanel;
 	}
 	
-	private ImageLinkWithTooltip getLogo() {
+	private ImageEmptyLink getLogo() {
 		String logoIconSource = "resources/images/eppic-logo.png";
-		ImageLinkWithTooltip logo = 
-				new ImageLinkWithTooltip(logoIconSource,
-						50, 20,
-						"EPPIC",
-						GWT.getHostPageBaseURL());
-		logo.setWidth("50px");
-		logo.setHeight("20px");
+		ImageEmptyLink logo = new ImageEmptyLink(logoIconSource, 50, 20);
+		
+		logo.addClickHandler(new ClickHandler() {		
+			@Override
+			public void onClick(ClickEvent event) {
+				History.newItem("");				
+			}
+		});
 		return logo;
 	}
 }
