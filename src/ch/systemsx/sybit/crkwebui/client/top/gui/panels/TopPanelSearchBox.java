@@ -4,6 +4,7 @@ import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.commons.events.HideTopPanelSearchBoxEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowTopPanelSearchBoxEvent;
+import ch.systemsx.sybit.crkwebui.client.commons.gui.info.PopUpInfo;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.HideTopPanelSearchBoxHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowTopPanelSearchBoxHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.managers.EventBusManager;
@@ -19,7 +20,6 @@ import com.sencha.gxt.widget.core.client.button.IconButton;
 import com.sencha.gxt.widget.core.client.button.IconButton.IconConfig;
 import com.sencha.gxt.widget.core.client.container.HorizontalLayoutContainer;
 import com.sencha.gxt.widget.core.client.form.TextField;
-import com.sencha.gxt.widget.core.client.info.Info;
 
 public class TopPanelSearchBox extends HorizontalLayoutContainer {
 	
@@ -78,7 +78,7 @@ public class TopPanelSearchBox extends HorizontalLayoutContainer {
 				searchField.reset();
 			}
 			else{
-				Info.display(AppPropertiesManager.CONSTANTS.pdb_code_box_wrong_code_header(),
+				PopUpInfo.show(AppPropertiesManager.CONSTANTS.pdb_code_box_wrong_code_header(),
 						 AppPropertiesManager.CONSTANTS.pdb_code_box_wrong_code_supporting_text()+ " " + pdbCode);
 				searchField.finishEditing();
 				searchField.reset();

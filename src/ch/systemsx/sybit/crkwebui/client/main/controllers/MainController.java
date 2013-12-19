@@ -25,6 +25,7 @@ import ch.systemsx.sybit.crkwebui.client.commons.events.ShowWaitingEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.StopJobsListAutoRefreshEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.UpdateStatusLabelEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.data.StatusMessageType;
+import ch.systemsx.sybit.crkwebui.client.commons.gui.info.PopUpInfo;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.panels.DisplayPanel;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ApplicationInitHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.HideAllWindowsHandler;
@@ -68,7 +69,6 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HTMLPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.sencha.gxt.widget.core.client.Dialog;
-import com.sencha.gxt.widget.core.client.info.Info;
 import com.sencha.gxt.widget.core.client.container.FlowLayoutContainer;
 import com.sencha.gxt.widget.core.client.container.Viewport;
 import com.sencha.gxt.widget.core.client.event.HideEvent;
@@ -120,7 +120,7 @@ public class MainController
 			{
 				if(event.getMessageType() != StatusMessageType.NO_ERROR)
 				{
-					Info.display("Web-Application Error",event.getStatusText());
+					PopUpInfo.show("Web-Application Error",event.getStatusText());
 				}
 			}
 		});

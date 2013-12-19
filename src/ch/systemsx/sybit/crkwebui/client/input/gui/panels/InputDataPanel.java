@@ -10,6 +10,7 @@ import ch.systemsx.sybit.crkwebui.client.commons.events.HideWaitingEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowErrorEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowWaitingEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.SubmitJobEvent;
+import ch.systemsx.sybit.crkwebui.client.commons.gui.info.PopUpInfo;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.links.EmptyLinkWithTooltip;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.links.LinkWithTooltip;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.panels.DisplayPanel;
@@ -59,7 +60,6 @@ import com.sencha.gxt.widget.core.client.form.FormPanel.Method;
 import com.sencha.gxt.core.client.util.ToggleGroup;
 import com.sencha.gxt.widget.core.client.button.TextButton;
 import com.sencha.gxt.widget.core.client.form.FileUploadField;
-import com.sencha.gxt.widget.core.client.info.Info;
 
 /**
  * Panel used to submit new job.
@@ -581,7 +581,7 @@ public class InputDataPanel extends DisplayPanel
 		if(pdbCodeRadio.getValue() && pdbCodeField.getCurrentValue()!=null ){
 			String pdbCode = pdbCodeField.getCurrentValue().trim();
 			if(!PdbCodeVerifier.isTrimmedValid(pdbCode)){
-				Info.display(AppPropertiesManager.CONSTANTS.pdb_code_box_wrong_code_header(),
+				PopUpInfo.show(AppPropertiesManager.CONSTANTS.pdb_code_box_wrong_code_header(),
 						 AppPropertiesManager.CONSTANTS.pdb_code_box_wrong_code_supporting_text()+ " " + pdbCode);
 				pdbCodeField.reset();
 				pdbCodeField.focus();
@@ -613,7 +613,7 @@ public class InputDataPanel extends DisplayPanel
 		}
 		else
 		{
-			Info.display(AppPropertiesManager.CONSTANTS.input_submit_form_invalid_header(),
+			PopUpInfo.show(AppPropertiesManager.CONSTANTS.input_submit_form_invalid_header(),
 					AppPropertiesManager.CONSTANTS.input_submit_form_invalid_message());
 		}
 	}
