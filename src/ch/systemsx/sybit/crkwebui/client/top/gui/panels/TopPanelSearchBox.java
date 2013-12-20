@@ -91,6 +91,7 @@ public class TopPanelSearchBox extends HorizontalLayoutContainer {
 	private TextField createSearchField() {
 		final TextField pdbCodeField = new TextField();
 		pdbCodeField.setWidth(FIELD_WIDTH);
+		pdbCodeField.addStyleName("eppic-default-font");
 		pdbCodeField.setAllowBlank(true);
 		pdbCodeField.setEmptyText(AppPropertiesManager.CONSTANTS.top_search_panel_box_empty_text());
 		pdbCodeField.addKeyDownHandler(new KeyDownHandler() {

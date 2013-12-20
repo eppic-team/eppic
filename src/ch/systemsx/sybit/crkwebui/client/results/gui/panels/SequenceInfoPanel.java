@@ -32,6 +32,8 @@ import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Widget;
 import com.sencha.gxt.core.client.dom.ScrollSupport.ScrollMode;
+import com.sencha.gxt.core.client.dom.XElement;
+import com.sencha.gxt.core.client.util.Margins;
 import com.sencha.gxt.widget.core.client.button.IconButton;
 import com.sencha.gxt.widget.core.client.button.IconButton.IconConfig;
 import com.sencha.gxt.widget.core.client.container.CssFloatLayoutContainer;
@@ -147,7 +149,8 @@ public class SequenceInfoPanel extends FieldSet
     	{
     		HTML nothingFound = new HTML(AppPropertiesManager.CONSTANTS.info_panel_nothing_found());
     		nothingFound.addStyleName("eppic-general-info-label");
-    		this.add(nothingFound);
+    		homologsTable.clear();
+    		homologsTable.setWidget(0,0,nothingFound);
     		return;
     	}
     	
@@ -304,7 +307,7 @@ public class SequenceInfoPanel extends FieldSet
     	items.add(chainsLink);
     		
     	IconButton chainsLinkButton = createMoreInfoButton(AppPropertiesManager.CONSTANTS.homologs_panel_chains_hint());		
-    	
+    	chainsLinkButton.getElement().setMargins(new Margins(0, 10, 0, 0));
     	chainsLinkButton.addSelectHandler(new SelectHandler() {
 			
 			@Override
@@ -324,6 +327,7 @@ public class SequenceInfoPanel extends FieldSet
     			AppPropertiesManager.CONSTANTS.homologs_panel_uniprot_hint(),
     			ApplicationContext.getSettings().getUniprotLinkUrl() + homologsInfoItem.getUniprotId());
     	uniprotIdLabel.addStyleName("eppic-external-link");
+    	uniprotIdLabel.getElement().<XElement>cast().setMargins(new Margins(0, 10, 0, 0));
     	items.add(uniprotIdLabel);
 
     	int nrOfHomologs = homologsInfoItem.getNumHomologs();
@@ -342,6 +346,7 @@ public class SequenceInfoPanel extends FieldSet
     	items.add(nrHomologsLabel);
     	
     	IconButton nrHoButton = createMoreInfoButton(AppPropertiesManager.CONSTANTS.homologs_panel_nrhomologs_hint());
+    	nrHoButton.getElement().setMargins(new Margins(0, 10, 0, 0));
     	nrHoButton.addSelectHandler(new SelectHandler() {
 			
 			@Override

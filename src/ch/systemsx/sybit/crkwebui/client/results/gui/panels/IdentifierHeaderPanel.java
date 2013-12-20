@@ -9,6 +9,7 @@ import com.google.gwt.user.client.ui.Image;
 import com.sencha.gxt.widget.core.client.container.HorizontalLayoutContainer;
 import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer;
 import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer.VerticalLayoutData;
+import com.sencha.gxt.core.client.dom.ScrollSupport.ScrollMode;
 import com.sencha.gxt.core.client.util.Margins;
 
 public class IdentifierHeaderPanel extends HorizontalLayoutContainer
@@ -29,13 +30,14 @@ public class IdentifierHeaderPanel extends HorizontalLayoutContainer
     	
     	this.setWidth(width);
     	this.addStyleName("eppic-results-header-panel");
+    	this.setScrollMode(ScrollMode.AUTOY);
     	
     	pdbInfo = new VerticalLayoutContainer();
     	pdbIdentifierPanel = new PDBIdentifierPanel();
     	pdbInfo.add(pdbIdentifierPanel, new VerticalLayoutData(1, 30, new Margins(0, 0, 0, 0)));
 
     	pdbIdentifierSubtitlePanel = new PDBIdentifierSubtitlePanel();
-    	pdbInfo.add(pdbIdentifierSubtitlePanel, new VerticalLayoutData(1, -1, new Margins(0, 0, 0, 0)));
+    	pdbInfo.add(pdbIdentifierSubtitlePanel, new VerticalLayoutData(-1, -1, new Margins(0, 0, 0, 0)));
     	
     	downloadResultsPanel = new HorizontalLayoutContainer();
     	downloadResultsPanel.setBorders(false);
@@ -44,7 +46,7 @@ public class IdentifierHeaderPanel extends HorizontalLayoutContainer
 		downloadResultsLink.addStyleName("eppic-download-link");
 		
 		downloadResultsPanel.add(downloadResultsLink);
-    	pdbInfo.add(downloadResultsPanel, new VerticalLayoutData(1, -1, new Margins(0, 0, 10, 0)));
+    	pdbInfo.add(downloadResultsPanel, new VerticalLayoutData(-1, -1, new Margins(0, 0, 10, 0)));
 
     	this.add(pdbInfo,  new HorizontalLayoutData(1,-1));
 

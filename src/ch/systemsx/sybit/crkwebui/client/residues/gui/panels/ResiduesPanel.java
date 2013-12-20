@@ -5,7 +5,7 @@ import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.cell.TwoDecimalFloatCell;
-import ch.systemsx.sybit.crkwebui.client.commons.util.StyleGenerator;
+import ch.systemsx.sybit.crkwebui.client.commons.util.EscapedStringGenerator;
 import ch.systemsx.sybit.crkwebui.client.residues.data.InterfaceResidueItemModel;
 import ch.systemsx.sybit.crkwebui.client.residues.data.InterfaceResidueItemModelProperties;
 import ch.systemsx.sybit.crkwebui.client.residues.gui.grid.utils.ResiduePagingMemoryProxy;
@@ -103,6 +103,17 @@ public class ResiduesPanel extends VerticalLayoutContainer
     }
 
     /**
+     * Fills in with the general grid properties
+     */
+    private void fillColumnProperties(ColumnConfig<InterfaceResidueItemModel,?> column, String type){
+    	column.setColumnHeaderClassName("eppic-default-font");
+		column.setWidth(Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("residues_"+type+"_width")));
+		column.setHeader(EscapedStringGenerator.generateSafeHtml(
+				ApplicationContext.getSettings().getGridProperties().get("residues_"+type+"_header")));
+		
+    }
+    
+    /**
      * Creates columns configurations for residues grid.
      * @return list of columns configurations for residues grid
      */
@@ -111,56 +122,41 @@ public class ResiduesPanel extends VerticalLayoutContainer
     	List<ColumnConfig<InterfaceResidueItemModel,?>> configs = new ArrayList<ColumnConfig<InterfaceResidueItemModel, ?>>();
     	
     	ColumnConfig<InterfaceResidueItemModel,Integer> residueNumberCol = 
-    			new ColumnConfig<InterfaceResidueItemModel, Integer>(props.residueNumber(),
-    				Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("residues_residueNumber_width")));
-    	residueNumberCol.setHeader(StyleGenerator.defaultFontStyle(
-    			ApplicationContext.getSettings().getGridProperties().get("residues_residueNumber_header")));
-    	
+    			new ColumnConfig<InterfaceResidueItemModel, Integer>(props.residueNumber());
+    	fillColumnProperties(residueNumberCol, "residueNumber");
     	residueNumberCol.setAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
     	
     	ColumnConfig<InterfaceResidueItemModel,String> pdbResidueNumberCol = 
-    			new ColumnConfig<InterfaceResidueItemModel, String>(props.pdbResidueNumber(),
-        				Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("residues_pdbResidueNumber_width")));
-    	pdbResidueNumberCol.setHeader(StyleGenerator.defaultFontStyle(
-    			ApplicationContext.getSettings().getGridProperties().get("residues_pdbResidueNumber_header")));
+    			new ColumnConfig<InterfaceResidueItemModel, String>(props.pdbResidueNumber());
+    	fillColumnProperties(pdbResidueNumberCol, "pdbResidueNumber");
     	pdbResidueNumberCol.setAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
     	
     	ColumnConfig<InterfaceResidueItemModel,String> residueTypeCol = 
-    			new ColumnConfig<InterfaceResidueItemModel, String>(props.residueType(),
-        				Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("residues_residueType_width")));
-        residueTypeCol.setHeader(StyleGenerator.defaultFontStyle(
-        		ApplicationContext.getSettings().getGridProperties().get("residues_residueType_header")));
+    			new ColumnConfig<InterfaceResidueItemModel, String>(props.residueType());
+        fillColumnProperties(residueTypeCol, "residueType");
     	residueTypeCol.setAlignment(HasHorizontalAlignment.ALIGN_CENTER);
     	
     	ColumnConfig<InterfaceResidueItemModel,Float> asaCol = 
-    			new ColumnConfig<InterfaceResidueItemModel, Float>(props.asa(),
-        				Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("residues_asa_width")));
-        asaCol.setHeader(StyleGenerator.defaultFontStyle(
-        		ApplicationContext.getSettings().getGridProperties().get("residues_asa_header")));
+    			new ColumnConfig<InterfaceResidueItemModel, Float>(props.asa());
+        fillColumnProperties(asaCol, "asa");
     	asaCol.setCell(new TwoDecimalFloatCell());
     	asaCol.setAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
     	
     	ColumnConfig<InterfaceResidueItemModel,Float> bsaCol = 
-    			new ColumnConfig<InterfaceResidueItemModel, Float>(props.bsa(),
-        				Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("residues_bsa_width")));
-        bsaCol.setHeader(StyleGenerator.defaultFontStyle(
-        		ApplicationContext.getSettings().getGridProperties().get("residues_bsa_header")));
+    			new ColumnConfig<InterfaceResidueItemModel, Float>(props.bsa());
+        fillColumnProperties(bsaCol, "bsa");
     	bsaCol.setCell(new TwoDecimalFloatCell());
     	bsaCol.setAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
    
     	ColumnConfig<InterfaceResidueItemModel,Float> bsaPercentageCol = 
-    			new ColumnConfig<InterfaceResidueItemModel, Float>(props.bsaPercentage(),
-        				Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("residues_bsaPercentage_width")));
-        bsaPercentageCol.setHeader(StyleGenerator.defaultFontStyle(
-        		ApplicationContext.getSettings().getGridProperties().get("residues_bsaPercentage_header")));
+    			new ColumnConfig<InterfaceResidueItemModel, Float>(props.bsaPercentage());
+    	fillColumnProperties(bsaPercentageCol, "bsaPercentage");
     	bsaPercentageCol.setCell(new TwoDecimalFloatCell());
     	bsaPercentageCol.setAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
     	
     	ColumnConfig<InterfaceResidueItemModel,Float> entropyScoreCol = 
-    			new ColumnConfig<InterfaceResidueItemModel, Float>(props.entropyScore(),
-        				Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("residues_entropyScore_width")));
-        entropyScoreCol.setHeader(StyleGenerator.defaultFontStyle(
-        		ApplicationContext.getSettings().getGridProperties().get("residues_entropyScore_header")));
+    			new ColumnConfig<InterfaceResidueItemModel, Float>(props.entropyScore());
+    	fillColumnProperties(entropyScoreCol, "entropyScore");
     	entropyScoreCol.setCell(new TwoDecimalFloatCell());
     	entropyScoreCol.setAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
     	

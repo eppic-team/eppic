@@ -413,7 +413,7 @@ public class MainController
 		   (mainViewPort.getCenterPanel().getDisplayPanel() instanceof InputDataPanel))
 		{
 			inputDataPanel = (InputDataPanel)mainViewPort.getCenterPanel().getDisplayPanel();
-			inputDataPanel.resetValues();
+			inputDataPanel.resetToDefault();
 		}
 		else if(mainViewPort.getInputDataPanel() != null)
 		{

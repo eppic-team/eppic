@@ -21,7 +21,6 @@ import ch.systemsx.sybit.crkwebui.client.commons.services.eppic.CrkWebServicePro
 import ch.systemsx.sybit.crkwebui.client.commons.util.StyleGenerator;
 import ch.systemsx.sybit.crkwebui.client.input.listeners.SubmitKeyListener;
 import ch.systemsx.sybit.crkwebui.client.input.validators.EmailFieldValidator;
-import ch.systemsx.sybit.crkwebui.client.input.validators.PdbCodeFieldValidator;
 import ch.systemsx.sybit.crkwebui.shared.comparators.InputParametersComparator;
 import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
 import ch.systemsx.sybit.crkwebui.shared.validators.PdbCodeVerifier;
@@ -69,8 +68,8 @@ import com.sencha.gxt.widget.core.client.form.FileUploadField;
  */
 public class InputDataPanel extends DisplayPanel
 {
-	private static final int LABEL_WIDTH = 170;
-	private static final int FIELD_WIDTH = 280;
+	private static final int LABEL_WIDTH = 150;
+	private static final int FIELD_WIDTH = 250;
 	private static final int PADDING_WIDTH = 25;
 
 	private FormPanel formPanel;
@@ -88,6 +87,8 @@ public class InputDataPanel extends DisplayPanel
 	private FieldLabel pdbCodeFieldLabel;
 	private FieldLabel emailTextFieldLabel;
 
+	private HorizontalLayoutContainer examplePanel;
+	
 	private OptionsInputPanel optionsInputPanel;
 
 	public InputDataPanel()
@@ -172,22 +173,25 @@ public class InputDataPanel extends DisplayPanel
 
 		inputRadioGroupContainer = createInputRadioGroup();
 
-		formContainer.add(inputRadioGroupContainer, new VerticalLayoutData(-1, -1, new Margins(0, 0, 10, LABEL_WIDTH+10)));
+		formContainer.add(inputRadioGroupContainer, new VerticalLayoutData(-1, -1, new Margins(0, 0, 10, LABEL_WIDTH)));
 
 		fileLabel = createFileUploadField(AppPropertiesManager.CONSTANTS.input_file());
 		formContainer.add(fileLabel, new VerticalLayoutData(-1, -1, new Margins(0, 0, 0, 0)));
 
 		pdbCodeFieldLabel = createPDBCodeField(AppPropertiesManager.CONSTANTS.input_pdb_code_radio());
-		formContainer.add(pdbCodeFieldLabel, new VerticalLayoutData(-1, -1, new Margins(0, 0, 0, 0)));
+		formContainer.add(pdbCodeFieldLabel, new VerticalLayoutData(-1, -1, new Margins(0, 0, 5, 0)));
 
 		if(ApplicationContext.getSettings().getExamplePdb() != null)
 		{
-			HorizontalLayoutContainer examplePanel = createExamplePanel();
-			formContainer.add(examplePanel, new VerticalLayoutData(-1, -1, new Margins(5, 0, 10, LABEL_WIDTH+10)));
+			examplePanel = createExamplePanel();
+			formContainer.add(examplePanel, new VerticalLayoutData(-1, -1, new Margins(0, 0, 5, LABEL_WIDTH+10)));
+		}else
+		{
+			examplePanel = new HorizontalLayoutContainer();
 		}
 
 		emailTextFieldLabel = createEmailField(AppPropertiesManager.CONSTANTS.input_email());
-		formContainer.add(emailTextFieldLabel, new VerticalLayoutData(-1, -1, new Margins(0,0,10,0)));
+		formContainer.add(emailTextFieldLabel, new VerticalLayoutData(-1, -1, new Margins(15,0,10,0)));
 
 		if(ApplicationContext.getSettings().getUniprotVersion() != null)
 		{
@@ -348,22 +352,10 @@ public class InputDataPanel extends DisplayPanel
 				ToggleGroup group = (ToggleGroup)event.getSource();
 		        RadioButton radio = (RadioButton)group.getValue();
 		        if(radio.equals(pdbCodeRadio)){
-		        	fileLabel.setVisible(false);
-		    		file.setAllowBlank(true);
-		    		file.reset();
-		    		pdbCodeField.reset();
-		    		pdbCodeField.setAllowBlank(false);
-		    		pdbCodeFieldLabel.setVisible(true);
-		    		emailTextFieldLabel.setVisible(false);
+		        	selectCodeRadio();
 		        }
 		        else if(radio.equals(pdbFileRadio)){
-		        	fileLabel.setVisible(true);
-		    		file.setAllowBlank(false);
-		    		file.reset();
-		    		pdbCodeField.reset();
-		    		pdbCodeFieldLabel.setVisible(false);
-		    		pdbCodeField.setAllowBlank(true);
-		    		emailTextFieldLabel.setVisible(true);
+		        	selectUploadRadio();
 		        }
 			}
 		});
@@ -405,7 +397,7 @@ public class InputDataPanel extends DisplayPanel
 		pdbCodeField = new TextField();
 		pdbCodeField.setWidth(FIELD_WIDTH);
 		pdbCodeField.setName("code");
-		pdbCodeField.addValidator(new PdbCodeFieldValidator());
+		//pdbCodeField.addValidator(new PdbCodeFieldValidator());
 		pdbCodeField.setAllowBlank(false);
 		pdbCodeField.addKeyDownHandler(new SubmitKeyListener());
 		
@@ -528,6 +520,33 @@ public class InputDataPanel extends DisplayPanel
 	}
 
 	/**
+	 * method to trigger events after pdb code radio is selected
+	 */
+	private void selectCodeRadio(){
+		fileLabel.setVisible(false);
+		file.setAllowBlank(true);
+		file.reset();
+		pdbCodeField.reset();
+		pdbCodeField.setAllowBlank(false);
+		pdbCodeFieldLabel.setVisible(true);
+		emailTextFieldLabel.setVisible(false);
+		examplePanel.setVisible(true);
+	}
+	
+	/**
+	 *  method to trigger events after upload radio is selected
+	 */
+	private void selectUploadRadio(){
+		fileLabel.setVisible(true);
+		file.setAllowBlank(false);
+		file.reset();
+		pdbCodeField.reset();
+		pdbCodeFieldLabel.setVisible(false);
+		pdbCodeField.setAllowBlank(true);
+		emailTextFieldLabel.setVisible(true);
+		examplePanel.setVisible(false);
+	}
+	/**
 	 * Starts new job. If file is uploaded then jobId is used to identify uploaded file, otherwise jobId is null.
 	 * @param jobId identifier of the job
 	 */
@@ -589,7 +608,7 @@ public class InputDataPanel extends DisplayPanel
 			}
 		}
 		
-		if (formPanel.isValid())
+		if (formPanel.isValid(false))
 		{
 			EventBusManager.EVENT_BUS.fireEvent(new ShowWaitingEvent(AppPropertiesManager.CONSTANTS.input_submit_waiting_message()));
 
@@ -618,6 +637,20 @@ public class InputDataPanel extends DisplayPanel
 		}
 	}
 
+	/**
+	 * Resets values of the fields.
+	 */
+	public void resetToDefault()
+	{
+		emailTextField.reset();
+		pdbCodeField.reset();
+		file.reset();
+		optionsInputPanel.resetValues();
+		pdbCodeRadio.setValue(true);
+		pdbFileRadio.setValue(false);
+		selectCodeRadio();
+	}
+	
 	/**
 	 * Resets values of the fields.
 	 */

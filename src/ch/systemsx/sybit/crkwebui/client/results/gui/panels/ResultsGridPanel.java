@@ -22,7 +22,6 @@ import ch.systemsx.sybit.crkwebui.client.commons.handlers.WindowHideHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.managers.EventBusManager;
 import ch.systemsx.sybit.crkwebui.client.commons.managers.ViewerRunner;
 import ch.systemsx.sybit.crkwebui.client.commons.util.EscapedStringGenerator;
-import ch.systemsx.sybit.crkwebui.client.commons.util.StyleGenerator;
 import ch.systemsx.sybit.crkwebui.client.results.data.InterfaceItemModel;
 import ch.systemsx.sybit.crkwebui.client.results.data.InterfaceItemModelProperties;
 import ch.systemsx.sybit.crkwebui.client.results.gui.cells.DetailsButtonCell;
@@ -31,7 +30,6 @@ import ch.systemsx.sybit.crkwebui.client.results.gui.cells.OperatorTypeCell;
 import ch.systemsx.sybit.crkwebui.client.results.gui.cells.ThumbnailCell;
 import ch.systemsx.sybit.crkwebui.client.results.gui.cells.WarningsCell;
 import ch.systemsx.sybit.crkwebui.client.results.gui.grid.util.ClustersGridView;
-import ch.systemsx.sybit.crkwebui.client.results.gui.grids.contextmenus.ResultsPanelContextMenu;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceItem;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceScoreItem;
 import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
@@ -43,6 +41,8 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
+import com.google.gwt.user.client.ui.CheckBox;
+import com.google.gwt.user.client.ui.HTMLPanel;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.sencha.gxt.core.client.ValueProvider;
 import com.sencha.gxt.core.client.dom.ScrollSupport.ScrollMode;
@@ -52,7 +52,6 @@ import com.sencha.gxt.widget.core.client.button.TextButton;
 import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer;
 import com.sencha.gxt.widget.core.client.event.SelectEvent;
 import com.sencha.gxt.widget.core.client.event.SelectEvent.SelectHandler;
-import com.sencha.gxt.widget.core.client.form.CheckBox;
 import com.sencha.gxt.widget.core.client.grid.Grid;
 import com.sencha.gxt.widget.core.client.grid.ColumnConfig;
 import com.sencha.gxt.widget.core.client.grid.ColumnModel;
@@ -60,6 +59,8 @@ import com.sencha.gxt.widget.core.client.grid.SummaryColumnConfig;
 import com.sencha.gxt.widget.core.client.grid.SummaryRenderer;
 import com.sencha.gxt.widget.core.client.grid.SummaryType;
 import com.sencha.gxt.widget.core.client.tips.QuickTip;
+import com.sencha.gxt.widget.core.client.tips.ToolTip;
+import com.sencha.gxt.widget.core.client.tips.ToolTipConfig;
 import com.sencha.gxt.widget.core.client.toolbar.FillToolItem;
 import com.sencha.gxt.widget.core.client.toolbar.ToolBar;
 import com.sencha.gxt.data.shared.ListStore;
@@ -74,6 +75,8 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 	private ColumnModel<InterfaceItemModel> resultsColumnModel;
 	private Grid<InterfaceItemModel> resultsGrid;
 	private ClustersGridView clustersView;
+	
+	private HTMLPanel noInterfaceFoundLabel;
 	
 	private int panelWidth;
 	
@@ -106,10 +109,13 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 		clustersView = createClusterView();
 		
 		resultsGrid = createResultsGrid();		
-		panelContainer.add(createSelectorToolBar(), new VerticalLayoutData(-1,-1));
+		panelContainer.add(createSelectorToolBar(), new VerticalLayoutData(1,-1));
 		panelContainer.add(resultsGrid, new VerticalLayoutData(-1,-1));
-
-		this.add(panelContainer, new VerticalLayoutData(-1,-1));
+		
+		this.add(panelContainer, new VerticalLayoutData(1,-1));
+		
+		noInterfaceFoundLabel = new HTMLPanel(AppPropertiesManager.CONSTANTS.results_grid_empty_text());
+		noInterfaceFoundLabel.addStyleName("eppic-results-grid-empty-panel");
 		
 		initializeEventsListeners();
 	}
@@ -118,8 +124,8 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 		ToolBar toolBar = new ToolBar();
 		
 		final CheckBox clustersViewButton = new CheckBox();
-		clustersViewButton.setBoxLabel(AppPropertiesManager.CONSTANTS.results_grid_clusters_label());
-		clustersViewButton.setToolTip(AppPropertiesManager.CONSTANTS.results_grid_clusters_tooltip());
+		clustersViewButton.setHTML(AppPropertiesManager.CONSTANTS.results_grid_clusters_label());
+		new ToolTip(clustersViewButton, new ToolTipConfig(AppPropertiesManager.CONSTANTS.results_grid_clusters_tooltip()));
 		clustersViewButton.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
 
 			@Override
@@ -194,8 +200,9 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 	 * @param type
 	 */
 	private void fillColumnSettings(ColumnConfig<InterfaceItemModel, ?> column, String type){
+		column.setColumnHeaderClassName("eppic-default-font");
 		column.setWidth(Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("results_"+type+"_width")));
-		column.setHeader(StyleGenerator.defaultFontStyle(
+		column.setHeader(EscapedStringGenerator.generateSafeHtml(
 				ApplicationContext.getSettings().getGridProperties().get("results_"+type+"_header")));
 		
 		String tooltip = ApplicationContext.getSettings().getGridProperties().get("results_"+type+"_tooltip");
@@ -222,7 +229,6 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 		fillColumnSettings(column, "details");
 		column.setResizable(false);
 		column.setSortable(false);
-		column.setFixed(true);
 		return column;
 	}
 	
@@ -344,7 +350,7 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 		resultsGrid.getView().setStripeRows(true);
 		resultsGrid.getView().setColumnLines(false);
 		resultsGrid.getView().setForceFit(true);
-		resultsGrid.setContextMenu(new ResultsPanelContextMenu());
+		//resultsGrid.setContextMenu(new ResultsPanelContextMenu());
 		
 		resultsGrid.getView().setEmptyText(AppPropertiesManager.CONSTANTS.results_grid_empty_text());
 		
@@ -462,6 +468,14 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 		if(resizeGrid)
 		{
 			resizeContent(panelWidth);
+		}
+		
+		if(resultsStore.getAll().isEmpty()){
+			this.remove(panelContainer);
+			this.add(noInterfaceFoundLabel, new VerticalLayoutData(1,-1));
+		}else{
+			this.remove(noInterfaceFoundLabel);
+			this.add(panelContainer, new VerticalLayoutData(1,-1));
 		}
 	}
 	

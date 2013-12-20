@@ -97,18 +97,18 @@ public class MyJobsPanel extends ContentPanel
 
 		ColumnConfig<MyJobsModel, String> inputColumn = new ColumnConfig<MyJobsModel, String>(props.input(),
 						Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("jobs_input_width")));
-		inputColumn.setHeader(StyleGenerator.defaultFontStyle(
-				ApplicationContext.getSettings().getGridProperties().get("jobs_input_header")));
+		inputColumn.setHeader(ApplicationContext.getSettings().getGridProperties().get("jobs_input_header"));
 		inputColumn.setCell(new InputCell());
 		inputColumn.setResizable(true);
 		inputColumn.setColumnTextClassName("eppic-my-jobs-list-input");
+		inputColumn.setColumnHeaderClassName("eppic-default-font");
 		
 		ColumnConfig<MyJobsModel, String> statusColumn = new ColumnConfig<MyJobsModel, String>(props.status(),
 				Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("jobs_status_width")));
-		statusColumn.setHeader(StyleGenerator.defaultFontStyle(
-				ApplicationContext.getSettings().getGridProperties().get("jobs_status_header")));
+		statusColumn.setHeader(ApplicationContext.getSettings().getGridProperties().get("jobs_status_header"));
 		statusColumn.setCell(new JobStatusCell());
 		statusColumn.setResizable(false);
+		statusColumn.setColumnHeaderClassName("eppic-default-font");
 		
 		configs.add(inputColumn);
 		configs.add(statusColumn);
@@ -142,7 +142,7 @@ public class MyJobsPanel extends ContentPanel
 	private TextButton createClearAllButton()
 	{
 		TextButton clearAllButton = new TextButton(AppPropertiesManager.CONSTANTS.myjobs_clear_button());
-
+		clearAllButton.addStyleName("eppic-default-font");
 		clearAllButton.addSelectHandler(new SelectHandler() {
 			@Override
 			public void onSelect(SelectEvent event) {

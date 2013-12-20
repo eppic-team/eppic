@@ -26,6 +26,8 @@ public class GeneralInfoPanel extends FieldSet {
 	private GeneralInfoRowContainer resolutionContainer;
 	private GeneralInfoRowContainer rFreeContainer;
 	
+	private VerticalLayoutContainer mainContainer;
+	
 	public GeneralInfoPanel(PDBScoreItem pdbScoreItem){
 		this.setHeadingHtml(StyleGenerator.defaultFontStyleString(
 				AppPropertiesManager.CONSTANTS.info_panel_general_info()));
@@ -49,7 +51,7 @@ public class GeneralInfoPanel extends FieldSet {
 	 * Generates the General Info Panel
 	 */
 	public void generateGeneralInfoPanel(){
-		VerticalLayoutContainer mainContainer = new VerticalLayoutContainer();
+		mainContainer = new VerticalLayoutContainer();
 		mainContainer.setScrollMode(ScrollMode.NONE);
 		
 		experimentContainer = new GeneralInfoRowContainer();
@@ -80,6 +82,8 @@ public class GeneralInfoPanel extends FieldSet {
 			nothingFound.addStyleName("eppic-general-info-label");
 			this.setWidget(nothingFound);
 			return;
+		} else{
+			this.setWidget(mainContainer);
 		}
 		
 		this.generateGeneralInfoPanel();

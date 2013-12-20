@@ -6,7 +6,6 @@ import java.util.Comparator;
 import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
-import ch.systemsx.sybit.crkwebui.client.commons.util.StyleGenerator;
 import ch.systemsx.sybit.crkwebui.client.homologs.data.HomologsItemModel;
 import ch.systemsx.sybit.crkwebui.client.homologs.data.HomologsItemModelProperties;
 import ch.systemsx.sybit.crkwebui.client.homologs.gui.cells.IdentityBarCell;
@@ -74,33 +73,33 @@ public class HomologsGrid extends VerticalLayoutContainer
 		ColumnConfig<HomologsItemModel, String> uniprotIdCol = 
 				new ColumnConfig<HomologsItemModel, String>(props.uniId(), 
 						Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("homologs_uniprot_width")));
-		uniprotIdCol.setHeader(StyleGenerator.defaultFontStyle(
-				ApplicationContext.getSettings().getGridProperties().get("homologs_uniprot_header")));
+		uniprotIdCol.setHeader(ApplicationContext.getSettings().getGridProperties().get("homologs_uniprot_header"));
 		uniprotIdCol.setCell(new UniprotIdCell());
 		
 		ColumnConfig<HomologsItemModel, HomologIdentityData> seqIdCol = 
 				new ColumnConfig<HomologsItemModel, HomologIdentityData>(props.idData(),
 						Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("homologs_identity_width")));
-		seqIdCol.setHeader(StyleGenerator.defaultFontStyle(
-				ApplicationContext.getSettings().getGridProperties().get("homologs_identity_header")));
+		seqIdCol.setHeader(ApplicationContext.getSettings().getGridProperties().get("homologs_identity_header"));
 		seqIdCol.setCell(new IdentityBarCell());
 
 		ColumnConfig<HomologsItemModel, String> firstTaxCol = 
 				new ColumnConfig<HomologsItemModel, String>(props.firstTaxon(), 
 						Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("homologs_firstTax_width")));
-		firstTaxCol.setHeader(StyleGenerator.defaultFontStyle(
-				ApplicationContext.getSettings().getGridProperties().get("homologs_firstTax_header")));
+		firstTaxCol.setHeader(ApplicationContext.getSettings().getGridProperties().get("homologs_firstTax_header"));
 		
 		ColumnConfig<HomologsItemModel, String> lastTaxCol = 
 				new ColumnConfig<HomologsItemModel, String>(props.lastTaxon(), 
 						Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("homologs_lastTax_width")));
-		lastTaxCol.setHeader(StyleGenerator.defaultFontStyle(
-				ApplicationContext.getSettings().getGridProperties().get("homologs_lastTax_header")));
+		lastTaxCol.setHeader(ApplicationContext.getSettings().getGridProperties().get("homologs_lastTax_header"));
 		
 		configs.add(uniprotIdCol);
 		configs.add(seqIdCol);
 		configs.add(firstTaxCol);
 		configs.add(lastTaxCol);
+		
+		//add header style
+		for(ColumnConfig<HomologsItemModel, ?> col: configs)
+			col.setColumnHeaderClassName("eppic-default-font");
 		
 		return configs;
 	}

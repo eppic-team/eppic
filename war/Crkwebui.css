@@ -9,13 +9,7 @@
 	vertical-align:middle;
 }
 
-.x-grid-empty {
-  	padding: 10px;
-  	font-size: 20px;
-  	text-align: center;
-}
-
-.eppic-default-font, .eppic-default-font td {
+.eppic-default-font, .eppic-default-font td, .eppic-default-font tr, .eppic-default-font div, .eppic-default-font input{
 	font-family: 'Open Sans', sans-serif;
 }
 
@@ -67,7 +61,7 @@
 .eppic-horizontal-nav A:hover 
 {font-family: Arial, serif; text-decoration: none; border-bottom:2px solid #C5C5C5; font-weight:bold; font-size: 14px; color: #434350}
 
-.eppic-monospaced-font {
+.eppic-monospaced-font, .eppic-monospaced-font input, .eppic-monospaced-font textarea {
 	font-size: 10pt;
 	font-family: "Courier New", courier, monospace;
 }
@@ -159,6 +153,7 @@
 }
 
 .eppic-results-grid td{
+  	text-align: center;
 	vertical-align:middle;
 }
 
@@ -172,11 +167,17 @@
 	font-size: 16px;
 }
 
+.eppic-results-grid-empty-panel {
+  	padding: 10px;
+  	font-size: 20px;
+  	text-align: center;
+}
+
 .eppic-status-label{
 	font-weight:bold;
 }
 
-.eppic-status-log {
+.eppic-status-log, .eppic-status-log textarea {
 	font-family: "Courier New", courier, monospace;
 }
 
@@ -258,8 +259,13 @@
 	padding-right: 50px
 }
 
+.eppic-homologs-text-icon-panel-over{
+	background: #F1F1F1;
+	border-radius: 5px;
+}
+
 .eppic-homologstable td {
-	padding-right: 10px;
+	padding-right: 5px;
 }
 
 .eppic-residues-summary {
