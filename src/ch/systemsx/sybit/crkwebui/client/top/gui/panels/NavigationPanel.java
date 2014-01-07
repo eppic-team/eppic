@@ -1,9 +1,7 @@
 package ch.systemsx.sybit.crkwebui.client.top.gui.panels;
 
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
-import ch.systemsx.sybit.crkwebui.client.commons.events.ShowViewerSelectorEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.links.EmptyLink;
-import ch.systemsx.sybit.crkwebui.client.commons.managers.EventBusManager;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -35,12 +33,12 @@ public class NavigationPanel extends VBoxLayoutContainer
         this.setBorders(false);
 
         HorizontalLayoutContainer linksContainer = new HorizontalLayoutContainer();
-        linksContainer.setWidth(500);
+        linksContainer.setWidth(425);
         
         HTML homeLink = createHomeLink();
         HTML publicationsLink = createPublicationsLink();
         HTML helpLink = createHelpLink();
-        HTML changeViewerLink = createChangeViewerLink();
+       // HTML changeViewerLink = createChangeViewerLink();
         HTML downloadsLink = createDownloadsLink();
         HTML releasesLink = createReleasesLink();
         HTML fAQLink = createFAQLink();
@@ -49,8 +47,8 @@ public class NavigationPanel extends VBoxLayoutContainer
         linksContainer.add(createBreakLabel(), new HorizontalLayoutData(-1,1));
         linksContainer.add(downloadsLink, new HorizontalLayoutData(-1,1));
         linksContainer.add(createBreakLabel(), new HorizontalLayoutData(-1,1));
-        linksContainer.add(changeViewerLink, new HorizontalLayoutData(-1,1));
-        linksContainer.add(createBreakLabel(), new HorizontalLayoutData(-1,1));
+       // linksContainer.add(changeViewerLink, new HorizontalLayoutData(-1,1));
+       // linksContainer.add(createBreakLabel(), new HorizontalLayoutData(-1,1));
         linksContainer.add(helpLink, new HorizontalLayoutData(-1,1));
         linksContainer.add(createBreakLabel(), new HorizontalLayoutData(-1,1));
         linksContainer.add(fAQLink, new HorizontalLayoutData(-1,1));
@@ -146,24 +144,24 @@ public class NavigationPanel extends VBoxLayoutContainer
 		return helpLink;
 	}
 	
-	/**
-	 * Creates viewer change link.
-	 * @return link
-	 */
-	private HTML createChangeViewerLink()
-	{
-		HTML link = new EmptyLink(AppPropertiesManager.CONSTANTS.navigation_panel_change_viewer_link_label());
-		link.addStyleName("eppic-default-left-margin");
-		link.addStyleName("eppic-horizontal-nav");
-		link.addClickHandler(new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent event) {
-				EventBusManager.EVENT_BUS.fireEvent(new ShowViewerSelectorEvent());
-			}
-		});
-		
-		return link;
-	}
+//	/**
+//	 * Creates viewer change link.
+//	 * @return link
+//	 */
+//	private HTML createChangeViewerLink()
+//	{
+//		HTML link = new EmptyLink(AppPropertiesManager.CONSTANTS.navigation_panel_change_viewer_link_label());
+//		link.addStyleName("eppic-default-left-margin");
+//		link.addStyleName("eppic-horizontal-nav");
+//		link.addClickHandler(new ClickHandler() {
+//			@Override
+//			public void onClick(ClickEvent event) {
+//				EventBusManager.EVENT_BUS.fireEvent(new ShowViewerSelectorEvent());
+//			}
+//		});
+//		
+//		return link;
+//	}
 	
 	/**
 	 * Creates link to the view containing downloads.
