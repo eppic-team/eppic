@@ -12,12 +12,14 @@ import ch.systemsx.sybit.crkwebui.client.commons.events.ShowInterfaceResiduesEve
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowThumbnailEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowViewerEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowViewerSelectorEvent;
+import ch.systemsx.sybit.crkwebui.client.commons.events.UncheckClustersRadioEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.WindowHideEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.cell.TwoDecimalDoubleCell;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.SelectResultsRowHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowDetailsHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowThumbnailHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowViewerHandler;
+import ch.systemsx.sybit.crkwebui.client.commons.handlers.UncheckClustersRadioHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.WindowHideHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.managers.EventBusManager;
 import ch.systemsx.sybit.crkwebui.client.commons.managers.ViewerRunner;
@@ -76,6 +78,8 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 	private Grid<InterfaceItemModel> resultsGrid;
 	private ClustersGridView clustersView;
 	
+	private CheckBox clustersViewButton;
+	
 	private HTMLPanel noInterfaceFoundLabel;
 	
 	private int panelWidth;
@@ -123,22 +127,14 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 	private ToolBar createSelectorToolBar(){
 		ToolBar toolBar = new ToolBar();
 		
-		final CheckBox clustersViewButton = new CheckBox();
+		clustersViewButton = new CheckBox();
 		clustersViewButton.setHTML(AppPropertiesManager.CONSTANTS.results_grid_clusters_label());
 		new ToolTip(clustersViewButton, new ToolTipConfig(AppPropertiesManager.CONSTANTS.results_grid_clusters_tooltip()));
 		clustersViewButton.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
 
 			@Override
 			public void onValueChange(ValueChangeEvent<Boolean> event) {
-				if (event.getValue() == true) {
-		        	clustersView.groupBy(clusterIdColumn);
-				} else{
-					clustersView.groupBy(null);
-		        	resultsStore.addSortInfo(0, new StoreSortInfo<InterfaceItemModel>(props.id(), SortDir.ASC));
-		        	//Hide cluster id column
-		    		resultsGrid.getColumnModel().getColumn(0).setHidden(true);
-		    		resultsGrid.getView().refresh(true);
-				}
+				onClustersRadioValueChange(event.getValue());
 				
 			}
 		});
@@ -480,6 +476,30 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 	}
 	
 	/**
+	 * 
+	 */
+	private void onClustersRadioValueChange(boolean value){
+		if (value) {
+			clustersView.groupBy(clusterIdColumn);
+		} else{
+			clustersView.groupBy(null);
+			resultsStore.addSortInfo(0, new StoreSortInfo<InterfaceItemModel>(props.id(), SortDir.ASC));
+			//Hide cluster id column
+			resultsGrid.getColumnModel().getColumn(0).setHidden(true);
+			resultsGrid.getView().refresh(true);
+		}
+	}
+
+	/**
+	 * sets the value of the cluster similar interfaces radio
+	 * @param value
+	 */
+	public void setClustersRadioValue(boolean value){
+		clustersViewButton.setValue(value);
+		onClustersRadioValueChange(value);
+	}
+	
+	/**
 	 * Adjusts size of the results grid based on the current screen size and
 	 * initial settings for the columns.
 	 */
@@ -505,6 +525,15 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 				{
 					//resultsGrid.focus();
 				}
+			}
+		});
+		
+		EventBusManager.EVENT_BUS.addHandler(UncheckClustersRadioEvent.TYPE, new UncheckClustersRadioHandler() {
+			
+			@Override
+			public void onUncheckClustersRadio(UncheckClustersRadioEvent event) {
+				setClustersRadioValue(false);
+				
 			}
 		});
 		

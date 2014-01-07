@@ -23,6 +23,7 @@ import ch.systemsx.sybit.crkwebui.client.commons.events.ShowTopPanelSearchBoxEve
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowViewerSelectorEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowWaitingEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.StopJobsListAutoRefreshEvent;
+import ch.systemsx.sybit.crkwebui.client.commons.events.UncheckClustersRadioEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.UpdateStatusLabelEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.data.StatusMessageType;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.info.PopUpInfo;
@@ -502,6 +503,9 @@ public class MainController
 	public void displayResults()
 	{
 		mainViewPort.mask(AppPropertiesManager.CONSTANTS.defaultmask());
+		if(mainViewPort.getResultsPanel() != null){
+			EventBusManager.EVENT_BUS.fireEvent(new UncheckClustersRadioEvent());
+		}
 		CrkWebServiceProvider.getServiceController().getResultsOfProcessing(ApplicationContext.getSelectedJobId());
 	}
 
