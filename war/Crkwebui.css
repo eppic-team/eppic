@@ -204,14 +204,7 @@
 	color: red;
 }
 
-.eppic-uniprot-version-header {
-	font-size: 11px;
-	color: #15428B;
-	font-weight: bold;
-}
-
 .eppic-uniprot-version {
-	font-style: italic;
 	font-size: 11px;
 	color: #15428B;
 	font-weight: bold;

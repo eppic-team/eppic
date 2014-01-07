@@ -18,6 +18,7 @@ import ch.systemsx.sybit.crkwebui.client.commons.handlers.GetFocusOnPdbCodeField
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.SubmitJobHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.managers.EventBusManager;
 import ch.systemsx.sybit.crkwebui.client.commons.services.eppic.CrkWebServiceProvider;
+import ch.systemsx.sybit.crkwebui.client.commons.util.EscapedStringGenerator;
 import ch.systemsx.sybit.crkwebui.client.commons.util.StyleGenerator;
 import ch.systemsx.sybit.crkwebui.client.input.listeners.SubmitKeyListener;
 import ch.systemsx.sybit.crkwebui.client.input.validators.EmailFieldValidator;
@@ -32,6 +33,7 @@ import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.HTMLPanel;
 import com.google.gwt.user.client.ui.HasValue;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.RadioButton;
@@ -479,15 +481,14 @@ public class InputDataPanel extends DisplayPanel
 		HorizontalLayoutContainer uniprotPanel = new HorizontalLayoutContainer();
 		uniprotPanel.getElement().applyStyles("textAlign:center; paddingTop:25px; height:22px; paddingBottom:1px;");
 
-		HTML uniprotVersionLabel = new HTML(AppPropertiesManager.CONSTANTS.input_uniprot_version() + ":&nbsp;");
-		uniprotVersionLabel.addStyleName("eppic-uniprot-version-header");
-
-		HTML uniprotVersion = new HTML(ApplicationContext.getSettings().getUniprotVersion());
-		uniprotVersion.addStyleName("eppic-uniprot-version");
+		String uniprotVersionText = AppPropertiesManager.CONSTANTS.input_uniprot_version() + ":&nbsp;" +
+				                    "<i>"+ ApplicationContext.getSettings().getUniprotVersion() + "</i>" ;
+		
+		HTMLPanel uniprotVersionHtml = new HTMLPanel(EscapedStringGenerator.generateSafeHtml(uniprotVersionText));
+		uniprotVersionHtml.addStyleName("eppic-uniprot-version");
 		
 		uniprotPanel.add(new SimpleContainer(), new HorizontalLayoutData(0.5, -1, new Margins(0)));
-		uniprotPanel.add(uniprotVersionLabel, new HorizontalLayoutData(-1,-1, new Margins(0, 2, 0, 0)));
-		uniprotPanel.add(uniprotVersion, new HorizontalLayoutData(-1,-1));
+		uniprotPanel.add(uniprotVersionHtml, new HorizontalLayoutData(-1,-1, new Margins(0, 0, 0, 0)));
 		
 		return uniprotPanel;
 	}
