@@ -50,7 +50,7 @@
 <p>EPPIC lets one visualize the interfaces in 3D. By clicking on the thumbnails in the interface table one gets this interactive 3D view. 3D Viewer window allows you to change the type of viewer. The available options are: browser embedded Jmol viewer (no need for local viewer), a PDB file downloadable to a local molecular viewer, or PyMOL session file (.pse) to be opened in local PyMOL.</p>
 <h2>Method</h2>
 <h4>How does EPPIC work?</h4>
-<p>EPPIC relies on sequence evolution and geometry to detect the biological character of interfaces. The classifier uses a simple geometric measure, number of core residues, and two evolutionary indicators based on the sequence entropy of homolog sequences. Both aim at detecting differential selection pressure between interface core and rim or rest of surface. For further information please refer to <a href="http://www.biomedcentral.com/1471-2105/13/334">Duarte et al., BMC Bioinformatics 2012</a>.</p>
+<p>EPPIC relies on sequence evolution and geometry to detect the biological character of interfaces. The classifier uses a simple geometric measure, number of core residues, and two evolutionary indicators based on the sequence entropy of homolog sequences. Both aim at detecting differential selection pressure between interface core and rim or rest of surface. For further information please refer to <a href="http://www.biomedcentral.com/1471-2105/13/334"> Duarte JM, Srebniak A, Schaerer MA, Capitani G, BMC Bioinformatics 2012</a>.</p>
 <h4>What are core-surface and core-rim scores?</h4>
 <p>Core-surface and core-rim scores are the ones which rely on evolution to predict the biological nature of an interface. They are calculated as follows:</p>
 <ul>
@@ -68,6 +68,13 @@
 <p>Core-geometry residues are core residues at 95% burial and core-evolutionary are the core residues at 70% burial. To calculate the geometry score, cores at 95% burial are used and to calculate evolutionary scores, cores at 70% burial are used.</p>
 <h4>How is the final call predicted?</h4>
 <p>The final call is the consensus call from the evolution and geometry calls.</p>
+<h2>Limitations</h2>
+<h4>Does EPPIC work on membrane proteins?</h4>
+<p>Yes, we tested its performance on a validated dataset of membrane protein oligomerization interfaces and it exhibited satisfactory accuracy. For further details see <a href="http://www.biomedcentral.com/1472-6807/13/21"> Duarte JM, Biyani N, Baskaran, Capitani G, BMC Structural Biology 2013</a>.</p> 
+<h4>Does it work on antibody-antigen interactions?</h4>
+<p>Given the assumptions it rests on for evolutionary analysis, EPPIC will not reliably work on antibody-antigen interactions.</p> 
+<h4>Does it work on engineered and/or chimeric proteins?</h4>
+<p>EPPIC will "tolerate" a small number of point mutations compared to the reference UniProt sequence and will list them in a warning message at the relevant interface(s). If the number of point mutations in a certain interface is too high, the evolutionary calls will be "nopred". Chimeric proteins will also have "nopred" evolutionary calls. Users, however, can edit out of the chimeric PDB file the component that is not of interest, thus obtaining coordinates that correspond to one sequence only. Those coordinates can then be uploaded to EPPIC and be properly analyzed.</p> 
 <h2>Miscellaneous</h2>
 <h4>How should I cite EPPIC?</h4>
 <p>The main paper describing the EPPIC method is <a href="http://www.biomedcentral.com/1471-2105/13/334"> Duarte JM, Srebniak A, Schaerer MA, Capitani G, BMC Bioinformatics 2012</a>. As well as citing the paper it is important that one cites the EPPIC software version (top right below the logo in results page) and even more important the UniProt database version (monthly releases) used for the evolutionary analysis. Our predictions depend on the sequence homologs found by searching the UniProt database so with every release of the database the predictions can change. UniProt is growing very fast these days so a few months of UniProt releases between two runs can make a difference.</p>
