@@ -115,7 +115,7 @@ The style for the list items in Release Log, apply it to enclosing ul element
 	margin-right: 20px;
 	margin-top: 20px;
 	margin-bottom: 0px;	
-	border-bottom: 1px solid black;
+	border-bottom: 1px dotted #434350;
 }
 
 .eppic-publication p{ 
@@ -124,16 +124,28 @@ The style for the list items in Release Log, apply it to enclosing ul element
 	margin-right: 20px;
 }
 
-.eppic-faq-header-table { 
-	border-collapse:collapse; 
-	border-radius: 5px;
-}
-	
-.eppic-faq-header-table td,  .eppic-faq-header-table th { 
-	border:1px solid black;
-	padding:10px; 
+.eppic-faq h2{ 
+	font-size: 18px;
+	font-weight:bold;	
+	margin-left: 50px;
+	margin-top: 50px;
+	border-bottom: 1px dotted #434350;
 }
 
+.eppic-faq h4{ 
+	font-size: 14px;
+	font-weight:bold;	
+	margin-left: 50px;
+	margin-bottom: 5px;
+	margin-top:25px;
+}
+
+.eppic-faq p, .eppic-faq li{ 
+	font-size: 14px;
+	margin-left: 50px;
+	margin-top: 0px;
+	margin-bottom: 0px;
+}
 
 /*
 Displaying 3 images, third is the one in middle, not quite centered. 
