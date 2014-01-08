@@ -1,5 +1,7 @@
 .eppic-iframe {
 	font-family: 'Open Sans', sans-serif;
+	width: 80%;
+	margin: 0 auto;
 }
 
 .eppic-iframe h1 {
@@ -140,12 +142,42 @@ The style for the list items in Release Log, apply it to enclosing ul element
 	margin-top:25px;
 }
 
-.eppic-faq p, .eppic-faq li{ 
+.eppic-faq p, .eppic-faq ul{ 
 	font-size: 14px;
 	margin-left: 50px;
 	margin-top: 0px;
 	margin-bottom: 0px;
 }
+
+/*
+EPPIC HELP PAGE STYLES
+*/
+.eppic-help{ font-family: 'Open Sans', sans-serif; width:80%; margin: 0 auto; }
+
+.eppic-help h1{margin-top:70px; font-size:20px; font-weight:bold; border-bottom: 1px dotted #434350;}
+.eppic-help h2{margin-top:30px; font-size:18px; font-weight:bold; }
+.eppic-help h4{ font-size:16px; font-weight:bold; }
+.eppic-help p, .eppic-help ul{ font-size:16px; }
+
+.eppic-help-navigation{font-size:16px; width: 50%; margin: 0 auto; border-top:3px solid #C5C5C5; border-bottom:3px solid #C5C5C5;}
+.eppic-help-navigation h2 {margin-top:15px; margin-left: 60px; margin-right:10px; font-weight: normal;}
+.eppic-help-navigation p {font-size:14px; margin: 0 0 5px 70px;}
+.eppic-help-navigation li {font-size:14px; margin: 0 0 5px 100px;}
+.eppic-help-navigation a {color:#666;text-decoration:none;}
+.eppic-help-navigation a:hover {color:#FF9900;}
+.eppic-help-navigation-header {margin-left:10px; margin-top:10px; font-weight:bold; color:#434350;}
+
+.eppic-help-subtopic {width:100%; overflow: hidden; clear: both;}
+.eppic-help-subtopic-left-small {float:left; width:30%; }
+.eppic-help-subtopic-left-big {float:left; width:70%; }
+.eppic-help-subtopic-right-small {float: right; width:30%; }
+.eppic-help-subtopic-right-big {float: right; width:70%; }
+.eppic-help-subtopic-image{margin:10px; width:85%;}
+.eppic-help-subtopic-image-right{float:right; margin:10px; width:85%;}
+
+.eppic-help-features-table {width: 95%; margin-top: 50px; background: #FFFFFF; border: 1px solid #333333; border-collapse: collapse;}
+.eppic-help-features-table th { border-bottom: 1px solid #333333; padding: 6px 16px; text-align: left; background: #EEEEEE;}
+.eppic-help-features-table td { border-bottom: 1px solid #333333; padding: 6px 16px; text-align: left;}
 
 /*
 Displaying 3 images, third is the one in middle, not quite centered. 

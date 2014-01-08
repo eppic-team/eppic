@@ -1,354 +1,549 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <link rel="stylesheet" type="text/css" href="eppic-static.css">
-<link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+<link
+	href='http://fonts.googleapis.com/css?family=Open+Sans:400,700,400italic,700italic'
+	rel='stylesheet' type='text/css'>
 </head>
 
-<div class="eppic-iframe">
+<body>
 
-<img class="eppic-iframe-top-img" src="resources/images/eppic-logo.png">
+	<div class="eppic-help">
 
+		<img class="eppic-iframe-top-img"
+			src="resources/images/eppic-logo.png">
 
-<h1>
-The EPPIC server
-</h1>
+		<div class="eppic-help-topic" id="about">
 
-<p>
-EPPIC (Evolutionary Protein-Protein Interface Classifier) aims at classifying 
-the interfaces present in protein crystal structures in order to determine whether they are 
-biologically relevant or not.
-</p>
+			<h1>The EPPIC server</h1>
+			<h4>EPPIC (Evolutionary Protein-Protein Interface Classifier)
+				aims at classifying the interfaces present in protein crystal
+				structures in order to determine whether they are biologically
+				relevant or not.</h4>
+			<p>In addition to that it provides information of general use for
+				a number of structural biology applications:</p>
+			<ul>
+				<li>"Molecular Potato" - Surface representation of each chain
+					color coded by sequence entropy</li>
+				<li>Number, identity distribution and coverage of putative
+					homologs in the MSA used for entropy calculation</li>
+				<li>Number and distribution of core residues in interfaces</li>
+				<li>Symmetry features of interfaces: the crystallographic
+					operators generating each interface are provided and are depicted
+					in red if they are conducive to infinite assemblies. Also, one can
+					compare the left- and right-hand side of the Details table of each
+					interface to see if it is isologous or heterologous</li>
+			</ul>
+		</div>
 
-<p>
-After submitting your protein structure as a PDB/mmCIF file or typing a PDB code you will 
-get a view of all the protein-protein interfaces present in the crystal. We assess them 
-based on one geometrical and two evolutionary criteria:
-</p>
-
-<ul>
-<li>
-<b>geometry</b>: number of core residues (at <b>95% burial</b>), indicating how good the packing in 
-the interface is
-</li>
-<li>
-<b>core-rim score</b>: ratio of evolutionary signal (sequence entropy) of core residues (at 
-<b>70% burial</b>) versus rim residues
-</li>
-<li>
-<b>core-surface score</b>: a score (z-score like) of sequence entropy of core residues (at <b>70% 
-burial</b>) versus random samples of other surface residues
-</li>
-</ul>
-
-
-<p>
-Each of these indicators casts a vote based on predefined score thresholds. The possible calls are: 
-</p>
-
-<ul>
-<li>
-<font color="green">BIO</font>, the interface is biologically relevant
-</li>
-<li>
-<font color="red">XTAL</font>, the interface is only a crystal lattice contact
-</li>
-<li>
-NOPRED, there is not enough information available to make a decision (usually not enough sequence data)
-</li>
-</ul>
-  
-
-
-<p>
-You can see the actual scores for each of the indicators by hovering the mouse pointer 
-over the bio/xtal/nopred calls. Warnings may appear on the right side of the interfaces table
-marked by the icon <img src="resources/icons/warning_icon.png" style="vertical-align:middle" ></img>. By hovering the mouse over
-the icon, one can see different issues for which the prediction should be taken with care, e.g.
-engineered residues at the core or rim, metal ions mediating the interface, atom clashes in the interface etc. 
-</p>
-<p>
-From the 3 votes a final decision is made ("Final" column). <font color="green">BIO</font> will mean that a majority
-of the criteria indicated a biological interface and likewise for <font color="red">XTAL</font>.
-This is the final prediction column and what you need to look at first.
-</p>
-
-<h2>
-The main Interface table
-</h2>
-<p>
-The other columns in the interface table correspond to a few important parameters that describe
-the interfaces: the two chain codes of the partners (e.g. "A+B"), the Buried Surface Area upon 
-formation (the sorting of the interfaces is based on this value), the icon of the crystal operator used to 
-generate the second partner of the interface and the number of core residues in each side of 
-the interface (e.g. "4+5").
-</p>
-<p>
-The operators are represented as icons to show at a glance
-what kind of crystallographic symmetry is present at the interface. The actual full algebraic operator 
-(e.g. "-X+1,Y-1/2,-Z") can still be seen by hovering the mouse over the icon.
-The icons used for the operators are mostly the standard ones found in crystallographic tables:
-<img class="eppic-iframe-optype-img" src="resources/icons/optype_AU.png"></img> the identity operator (i.e. an interface in the asymmetric unit),
-<img class="eppic-iframe-optype-img" src="resources/icons/optype_XT.png"></img> a crystal translation (integer) without rotation,
-<img class="eppic-iframe-optype-img" src="resources/icons/optype_FT.png"></img> a re-centering translation without rotation,
-<img class="eppic-iframe-optype-img" src="resources/icons/optype_2.png"></img> a 2-fold axis, 
-<img class="eppic-iframe-optype-img" src="resources/icons/optype_2S.png"></img> a 2-fold screw axis,
-<img class="eppic-iframe-optype-img" src="resources/icons/optype_3.png"></img> a 3-fold axis, 
-<img class="eppic-iframe-optype-img" src="resources/icons/optype_3S.png"></img> a 3-fold screw axis,
-<img class="eppic-iframe-optype-img" src="resources/icons/optype_4.png"></img> a 4-fold axis, 
-<img class="eppic-iframe-optype-img" src="resources/icons/optype_4S.png"></img> a 4-fold screw axis,
-<img class="eppic-iframe-optype-img" src="resources/icons/optype_6.png"></img> a 6-fold axis, 
-<img class="eppic-iframe-optype-img" src="resources/icons/optype_6S.png"></img> a 6-fold screw axis.
-</p>
-<p>
-For the rare cases where a protein is crystallized in non-chiral space groups (e.g. racemic mixtures) there are
-additional operators:
-<img class="eppic-iframe-optype-img" src="resources/icons/optype_-1.png"></img> an inversion centre,
-<img class="eppic-iframe-optype-img" src="resources/icons/optype_-2.png"></img> a mirror plane,
-<img class="eppic-iframe-optype-img" src="resources/icons/optype_GL.png"></img> a glide plane,
-<img class="eppic-iframe-optype-img" src="resources/icons/optype_-3.png"></img> an improper 3-fold axis,
-<img class="eppic-iframe-optype-img" src="resources/icons/optype_-4.png"></img> an improper 4-fold axis,
-<img class="eppic-iframe-optype-img" src="resources/icons/optype_-6.png"></img> an improper 6-fold axis.
-</p>
-<p>
-Some of these operators lead to formation of infinite 
-interfaces if occurring between two crystallographically-related copies of the same molecule (e.g. A+A). 
-This happens for both the pure translations
-and for any of the screw rotations and it is generally a very strong indication of a crystal contact. 
-In those cases we color the operator icon in red.   
-In any case our final call ignores this at the moment but we might use that information in future versions.
-</p>
-
-
-<h2>
-Viewing the interfaces in 3D
-</h2>
-
-<p>
-<img class="eppic-iframe-right-img" src="resources/images/pse-withsurface-verysmall.png" 
- title="3D view of interface as it would appear in PyMOL using the pse mode (surface representation was added)">
-
-The thumbnails in the Interface table give a visual cartoon representation of the interfaces. By 
-clicking on them one gets an interactive 3D view, depending on the selected mode in the drop-down menu: 
-as browser embedded Jmol viewer (no need for local viewer), as a PDB file downloadable to a local 
-molecular viewer, or as PyMOL session file (.pse) to be opened in local PyMOL.
-In both the jmol and the pse modes the two protomers are represented as cartoons with interface 
-residues also shown as sticks. Core residues from both protomers are shown in two different shades 
-of red.
-</p> 
-<p>
-The PSE mode is particularly useful as it is already prepared with selections of the different parts of the 
-interface and nicely depicted. The entropy values for each residue are written as
-b-factors in the .pdb and .pse files so one can use the PyMOL "color by b-factor" functionality 
-(spectrum command) to show the selection pressure pattern mapped on the 3-dimensional structure: blue colors
-indicate low entropies and colors toward reds correspond to increasingly higher entropies. The surface
-representation is particularly helpful here in order to see surface residues only.   
-</p>
-
-
-<h2>
-Top panel: experimental information and sequence information 
-</h2>
-<p>
-The top panel is subdivided into two subpanels: on the left an <b>Experimental Information</b> panel
-and on the right a <b>Sequence Information</b> panel.
-</p>
-<p>
-The <b>Sequence Information</b> panel contains information about the sequences and their homologs. 
-There is a line for each of the distinct protein sequences present in the protein structure. 
-If too many chains are present in the structures,
-arrows will appear on the left of the panel to navigate to other chains. Each line is composed of 4 parts:
-</p>
- 
-<ul>
-<img class="eppic-iframe-right-img" src="resources/images/pse-color-entropies.png" 
- title="Protein surface rendering with colors representing sequence entropies, as one would get by clicking on the colored entropies icon">
-<li>
-<b>The chain identifier(s)</b>: first letter is the chain identifier of the representative sequence, in brackets 
-are the identifiers of identical sequences. Click on it to see the alignment of the chain to its reference 
-UniProt sequence (based on the <a href="http://www.ebi.ac.uk/pdbe/docs/sifts/" target="_blank">SIFTS</a> mapping 
-or found by blasting). Mismatching residues, normally engineering artifacts, are shown in red in the alignment.
-</li>
-<li>
-<b>The UniProt identifier of the reference sequence</b>: click on it to open its corresponding UniProt page.
-</li>
-<li>
-<b>The number of homologs</b>: click on it to download the multiple sequence alignment of all homolog sequences  
-(FASTA format). You will need an alignment viewer like <a href="http://www.jalview.org/" target="_blank">Jalview</a> to have it 
-nicely displayed. Whenever fewer than 10 homologs are found then you will see a NOPRED in the evolutionary
-predictor columns (core-rim and core-surface), indicating that the multiple sequence alignment is too small 
-to make a proper decision. The more sequences in the alignment the more reliable the evolutionary
-predictions will be, so looking at this number is important. 
-</li>
-<li>
-<b>The colored entropies icon</b>: click on it to get a PyMOL PSE file with the sequence entropy values from 
-the alignment color-mapped onto the protein surface. This is particularly useful in order to
-get a visual impression of the patterns of selection pressure on the surface of the particular chain. The 
-spectrum function of PyMOL is used in order to color the residues: the highest conservation appears in blue, 
-transitioning to yellow and orange for lower conservation values. Residues that could not be aligned (for 
-instance because they belong to an engineered tag) appear in red. Additionally magenta dots mark  
-the core residues of the largest interface in which this chain participates. PyMOL selections are also 
-prepared in order to select other interfaces different from the largest one. 
-</li>
-</ul>
-<p>
-By clicking the "Download results" link on the bottom right corner of the Top Panel, one gets a single zip file 
-containing the text output files with the results for all interfaces (as when running eppic from the command line). 
-</p>
-
-<h2>
-The UniProt database version: the sequence data
-</h2>
-<p>
-On the header of the <b>Sequence Information</b> panel the UniProt version is indicated. This is the UniProt 
-database version used to find homologs for the EPPIC multiple sequence alignments. A new UniProt database 
-release appears every month containing more and more sequences, in fact the growth is exponential thanks to 
-new sequencing technologies (growth statistics can be seen 
-<a href="http://www.ebi.ac.uk/uniprot/TrEMBLstats/" target="_blank">here</a>). With more 
-sequences we can do better predictions (see this 
-<a href="http://www.biomedcentral.com/1471-2105/13/334/figure/F6" target="_blank">figure</a>), 
-thus the growth of the UniProt sequence database has quite an important effect in our predictions. We will
-try to maintain the results as up-to-date as possible and to update the PDB-wide precomputed results every few 
-months and eventually every month (for every UniProt update). In any case if you use our results it is important to quote 
-the UniProt database version used.
-</p>
-
-
-<h2>
-The Residue Details window
-</h2>
-<p>
-<img class="eppic-iframe-left-img" src="resources/images/residue-details-table.png" 
-title="Screenshot of the residue details window">
-Clicking on the "Details" button in the last column of the main interfaces table will give you a detailed 
-view of scores and information per residue, divided into a top panel containing score details per side of 
-interface and two lower tables with details per residue.
-</p>
-<p>
-The scores are subdivided into 3 different panels: 
-<b>Counts</b> containing the number of core residues at 70% burial, i.e. those used for the evolutionary 
-predictions; <b>Core-Rim Score</b> showing average entropy of core and rim plus the ratio of both (final core-rim score);
-<b>Core-Surface Score</b> showing the mean and standard deviation of average entropies of surface samples and final
-core-surface score. 
-</p>
-<p> 
-In the residue tables, only the residues at the interface are shown by default. To 
-see all residues of the two chains one needs to switch the view with the drop down menu on the upper 
-right of the residue details window.
-</p>
-<p>
-The first 2 columns of the residue tables are the residue numbers: "Res Serial" for 
-the numbering based on the SEQRES sequence from 1 to n, "Pdb serial" for the numbering as it appears on the 
-ATOM lines of the PDB file. Four pieces of information are given for each residue: the total accessible surface 
-area (ASA), the total buried surface area (BSA) upon formation of interface, the ratio of burial (BSA/ASA) 
-upon formation of interface (the core/rim assignments are based on this) and finally the entropy value based on
-the multiple sequence alignments of homologs to the query sequence. More information about the homologs and 
-alignments can be found on the Top Panel.
-</p>
-<p> 
-At the bottom of the window the legend shows the color coding used for the residues in the tables. 
-Dark red is used for the core residues at <b>95% burial</b>, which are used for the geometry prediction. 
-Lighter red for the core residues at <b>70% burial</b>, used in the evolutionary core-rim and core-surface predictions. 
-Light blue for all other interface residues. 
-White for surface residues not at the interface and grey for fully buried (protein interior) residues.
-</p>
-
-
-<h2>
-Low resolution warnings
-</h2>
-<p>
-A low resolution/high R-free warning will appear in red next to the structure title on top. 
-Whenever this happens one should treat all results with care: in low resolution structures
-side chains can not always be trusted. Our predictions depend on the side chains to calculate burial 
-and find the interface core residues, thus they will be unreliable. 
-</p>
-
-
-<h2>
-A note on assemblies
-</h2>
-<p>
-At the moment EPPIC classifies only pairwise interfaces in protein
-crystals. It does not consider interfaces in the context of the full
-biological assembly and does not group single interface calls into a
-biological unit call. 
-We intend to implement that in future versions of the software. 
-In the meantime please keep in mind that some interfaces may be called <font color="red">XTAL</font> when they
-are actually <font color="green">BIO</font> if considered in the context of the assembly: they are
-"induced" by the topology or point-group symmetry of the assembly. 
-</p>
+		<div class="eppic-help-navigation">
+			<div class="eppic-help-navigation-header">Topics and features:</div>
+			<h2>
+				<a href="#input">Inputing data</a>
+			</h2>
+			<h2>
+				<a href="#interface-table">The main interface table</a>
+			</h2>
+			<h2>
+				<a href="#3D">Viewing interfaces in 3D</a>
+			</h2>
+			<h2>
+				<a href="#information-panel">Experimental and sequence
+					information</a>
+			</h2>
+			<h2>
+				<a href="#homologs-window">The homologs information window</a>
+			</h2>
+			<h2>
+				<a href="#job-identifiers">Job identifiers</a>
+			</h2>
+			<h2>
+				<a href="#residue-details">The Residue Details window</a>
+			</h2>
+			<h2>
+				<a href="#misc">Miscellaneous</a>
+			</h2>
+			<ul>
+				<li><a href="#low-resolution">Low resolution warnings</a></li>
+				<li><a href="#download-results">Download results</a></li>
+				<li><a href="#assembly-note">A note on assemblies</a></li>
+			</ul>
+		</div>
 
 
 
-<h2>
-Job identifiers
-</h2>
-<p>
-Every new job run on the server is assigned a unique job identifier, a long alpha numerical string 
-that is only known by the user that submits it and that is very hard to guess. 
-It is recommended that you give an email address while submitting so that you receive the URL with 
-the job identifier in your inbox. Otherwise you will have to bookmark it or keep a record of it yourself.  
-It is always possible to retrieve the job by using the URL http://www.eppic-web.org/ewui/#id/&lt;my_job_id&gt;.
-Whether the job is still running or already done, the URL will show its current status and 
-automatically display the final results whenever it is finished. You can even share the URL with 
-colleagues. The jobs will be stored in our servers for at least 1 month.
-</p>
-<p>
-The PDB-wide precomputed results can be accessed directly by using the permanent URLs: 
-</p>
-<p>
-<code>http://www.eppic-web.org/ewui/#id/&lt;PDB_code&gt;</code>
-</p>
+		<!--------------------- 
+		    Topics  start here
+		 ----------------------->
+
+		<!-- Input Data -->
+		<h1 id="input">Inputing data</h1>
+		<div class="eppic-help-subtopic">
+			<div class="eppic-help-subtopic-right-small">
+				<img class="eppic-help-subtopic-image-right"
+					src="resources/images/screenshots/input-parameters-upload-file.png"></img>
+			</div>
+			<div class="eppic-help-subtopic-left-big">
+				<p>You can submit your protein structure by uploading a
+					PDB/mmCIF file or by typing a PDB code. We have PDB-wide results
+					pre-calculated for our users. We use only the default parameters
+					for this calculation. If you use any parameters other than the
+					default ones or if you upload your own file, this triggers a
+					calculation that can take several minutes depending on the
+					structure.</p>
+
+				<p>The various input parameters can be changed via the advanced
+					tab in the input page. You would have following options:</p>
+				<ul>
+					<li><strong>Identity soft cut-off:</strong> The soft sequence
+						identity cut-off for BLAST hits to be used in the alignment. If
+						there are not enough sequences at this cut-off then the threshold
+						is relaxed until the hard cut-off is reached.</li>
+					<li><strong>Identity hard cut-off:</strong> The hard sequence
+						identity cut-off for BLAST hits to be used in the alignment. If
+						there are not enough sequences at soft cut-off then the threshold
+						is relaxed until this hard cut-off.</li>
+					<li><strong>Max num of sequences:</strong> The maximum number
+						of sequences to be taken from the BLAST hits.</li>
+					<li><strong>Search Mode:</strong> The PDB sequence is first
+						matched to its UniProt entry and that sequence is then used for
+						blasting. In Global mode the full length UniProt is used, in local
+						only the matching PDB part of the UniProt sequence is used.</li>
+				</ul>
+
+				<p>
+					Every new job run on the server is assigned a unique job
+					identifier, a long alpha numerical string that is only known by the
+					user that submits it and that is very hard to guess. This keeps the
+					privacy of your data (<a href="#job-identifiers">more</a>).
+				</p>
+			</div>
+		</div>
+
+		<!-- Main Interface table -->
+		<h1 id="interface-table">The main interface table</h1>
+		<p>EPPIC will get a view of all the protein-protein interfaces
+			present in the crystal and would assess their biological nature based
+			on one geometrical and two evolutionary criteria:
+		<ul>
+			<li><b>geometry</b>: number of core residues (at <b>95%
+					burial</b>), indicating how good the packing in the interface is</li>
+			<li><b>core-rim score</b>: ratio of evolutionary signal
+				(sequence entropy) of core residues (at <b>70% burial</b>) versus
+				rim residues</li>
+			<li><b>core-surface score</b>: a score (z-score like) of
+				sequence entropy of core residues (at <b>70% burial</b>) versus
+				random samples of other surface residues</li>
+		</ul>
 
 
-<br>
-<br>
-<br>
+		<div class="eppic-help-subtopic">
+			<div class="eppic-help-subtopic-left-small">
+				<img class="eppic-help-subtopic-image"
+					src="resources/images/screenshots/interface-table.png"></img>
+			</div>
+			<div class="eppic-help-subtopic-right-big">
 
-<p>
-Please cite 
-<a href="http://www.biomedcentral.com/1471-2105/13/334" target="_blank">
-Duarte JM, Srebniak A, Schaerer MA, Capitani G, BMC Bioinformatics 2012</a>
-if you use this service for your research. 
-See also 
-<a href="http://www.biomedcentral.com/1472-6807/13/21" target="_blank">this paper</a> 
-where we show that the method works well on membrane proteins. 
-</p>
+				<p>Each of these indicators casts a vote based on predefined
+					score thresholds. The possible calls are:</p>
 
-<p>
-Do get in <a href="mailto:eppic@systemsx.ch">contact</a> with us if you want to report 
-problems or send any kind of feedback.
-</p>
-
-<p>
-With support from:
-</p>
+				<ul>
+					<li><font color="green">BIO</font>, the interface is
+						biologically relevant</li>
+					<li><font color="red">XTAL</font>, the interface is only a
+						crystal lattice contact</li>
+					<li>NOPRED, there is not enough information available to make
+						a decision (usually not enough sequence data)</li>
+				</ul>
 
 
 
-<!-- <div class="eppic-iframe-bottom-logos"> -->
-<div class="first" >
-<a href="http://www.psi.ch" target="_blank">
-<img class="eppic-iframe-left-img" src="resources/images/psi-logo.png"></img>
-</a>
-</div>
+				<p>
+					You can see the actual scores for each of the indicators by
+					hovering the mouse pointer over the bio/xtal/nopred calls. Warnings
+					may appear on the right side of the interfaces table marked by the
+					icon <img src="resources/icons/warning_icon.png"
+						style="vertical-align: middle"></img>. By hovering the mouse over
+					the icon, one can see different issues for which the prediction
+					should be taken with care, e.g. engineered residues at the core or
+					rim, metal ions mediating the interface, atom clashes in the
+					interface etc.
+				</p>
+				<p>
+					From the 3 votes a final decision is made ("Final" column). <font
+						color="green">BIO</font> will mean that a majority of the criteria
+					indicated a biological interface and likewise for <font color="red">XTAL</font>.
+					This is the final prediction column and what you need to look at
+					first.
+				</p>
 
-<div class="second" >
-<a href="http://www.sybit.net" target="_blank">
-<img class="eppic-iframe-right-img" src="resources/images/sybit-logo.png"></img>
-</a>
-</div>
-
-<div class="third" >
-<a class="third" href="http://www.snf.ch" target="_blank">
-<img src="resources/images/SNSF_Logo.jpg"></img>
-</a>
-</div>
 
 
-<!--
+				<p>The other columns in the interface table correspond to a few
+					important parameters that describe the interfaces: the two chain
+					codes of the partners (e.g. "A+B"), the Buried Surface Area upon
+					formation (the sorting of the interfaces is based on this value),
+					the icon of the crystal operator used to generate the second
+					partner of the interface and the number of core residues in each
+					side of the interface (e.g. "4+5").</p>
+				<p>
+					The operators are represented as icons to show at a glance what
+					kind of crystallographic symmetry is present at the interface. The
+					actual full algebraic operator (e.g. "-X+1,Y-1/2,-Z") can still be
+					seen by hovering the mouse over the icon. The icons used for the
+					operators are mostly the standard ones found in crystallographic
+					tables: <img class="eppic-iframe-optype-img"
+						src="resources/icons/optype_AU.png"></img> the identity operator
+					(i.e. an interface in the asymmetric unit), <img
+						class="eppic-iframe-optype-img"
+						src="resources/icons/optype_XT.png"></img> a crystal translation
+					(integer) without rotation, <img class="eppic-iframe-optype-img"
+						src="resources/icons/optype_FT.png"></img> a re-centering
+					translation without rotation, <img class="eppic-iframe-optype-img"
+						src="resources/icons/optype_2.png"></img> a 2-fold axis, <img
+						class="eppic-iframe-optype-img"
+						src="resources/icons/optype_2S.png"></img> a 2-fold screw axis, <img
+						class="eppic-iframe-optype-img" src="resources/icons/optype_3.png"></img>
+					a 3-fold axis, <img class="eppic-iframe-optype-img"
+						src="resources/icons/optype_3S.png"></img> a 3-fold screw axis, <img
+						class="eppic-iframe-optype-img" src="resources/icons/optype_4.png"></img>
+					a 4-fold axis, <img class="eppic-iframe-optype-img"
+						src="resources/icons/optype_4S.png"></img> a 4-fold screw axis, <img
+						class="eppic-iframe-optype-img" src="resources/icons/optype_6.png"></img>
+					a 6-fold axis, <img class="eppic-iframe-optype-img"
+						src="resources/icons/optype_6S.png"></img> a 6-fold screw axis.
+				</p>
+				<p>
+					For the rare cases where a protein is crystallized in non-chiral
+					space groups (e.g. racemic mixtures) there are additional
+					operators: <img class="eppic-iframe-optype-img"
+						src="resources/icons/optype_-1.png"></img> an inversion centre, <img
+						class="eppic-iframe-optype-img"
+						src="resources/icons/optype_-2.png"></img> a mirror plane, <img
+						class="eppic-iframe-optype-img"
+						src="resources/icons/optype_GL.png"></img> a glide plane, <img
+						class="eppic-iframe-optype-img"
+						src="resources/icons/optype_-3.png"></img> an improper 3-fold
+					axis, <img class="eppic-iframe-optype-img"
+						src="resources/icons/optype_-4.png"></img> an improper 4-fold
+					axis, <img class="eppic-iframe-optype-img"
+						src="resources/icons/optype_-6.png"></img> an improper 6-fold
+					axis.
+				</p>
+				<p>Some of these operators lead to formation of infinite
+					interfaces if occurring between two crystallographically-related
+					copies of the same molecule (e.g. A+A). This happens for both the
+					pure translations and for any of the screw rotations and it is
+					generally a very strong indication of a crystal contact. In those
+					cases we color the operator icon in red. In any case our final call
+					ignores this at the moment but we might use that information in
+					future versions.</p>
+			</div>
+		</div>
+
+
+		<h2>Clustering similar interfaces</h2>
+		<div class="eppic-help-subtopic">
+			<div class="eppic-help-subtopic-left-big">
+
+
+				<p>The similar interfaces can be clustered using the check box
+					on the top of clusters grid. This would ensure that the clusters
+					which are within 2&#197; RMSD will be clustered together. The
+					clusters are ordered according to the average cluster area
+					mentioned in the summary row for each cluster. The header of the
+					cluster gives an graphical representation of all the interfaces
+					present in it.</p>
+			</div>
+			<div class="eppic-help-subtopic-right-small">
+				<img class="eppic-help-subtopic-image-right"
+					src="resources/images/screenshots/interface-table-with-clusters.png"></img>
+			</div>
+		</div>
+
+
+
+		<h1 id="3D">Viewing the interfaces in 3D</h1>
+		<div class="eppic-help-subtopic">
+			<div class="eppic-help-subtopic-left-small">
+				<img class="eppic-help-subtopic-image"
+					src="resources/images/pse-withsurface-verysmall.png"
+					title="3D view of interface as it would appear in PyMOL using the pse mode (surface representation was added)">
+			</div>
+
+			<div class="eppic-help-subtopic-right-big">
+				<p>The thumbnails in the Interface table give a visual cartoon
+					representation of the interfaces. By clicking on them one gets an
+					interactive 3D view, depending on the selected mode in the
+					drop-down menu: as browser embedded Jmol viewer (no need for local
+					viewer), as a PDB file downloadable to a local molecular viewer, or
+					as PyMOL session file (.pse) to be opened in local PyMOL. In both
+					the jmol and the pse modes the two protomers are represented as
+					cartoons with interface residues also shown as sticks. Core
+					residues from both protomers are shown in two different shades of
+					red.</p>
+				<p>The PSE mode is particularly useful as it is already prepared
+					with selections of the different parts of the interface and nicely
+					depicted. The entropy values for each residue are written as
+					b-factors in the .pdb and .pse files so one can use the PyMOL
+					"color by b-factor" functionality (spectrum command) to show the
+					selection pressure pattern mapped on the 3-dimensional structure:
+					blue colors indicate low entropies and colors toward reds
+					correspond to increasingly higher entropies. The surface
+					representation is particularly helpful here in order to see surface
+					residues only.</p>
+			</div>
+		</div>
+
+		<h1 id="information-panel">Experimental and sequence information
+		</h1>
+		<p>
+			The top panel is subdivided into two subpanels: on the left an <b>Experimental
+				Information</b> panel and on the right a <b>Sequence Information</b>
+			panel.
+		</p>
+		<p>
+			The <b>Sequence Information</b> panel contains information about the
+			sequences and their homologs. There is a line for each of the
+			distinct protein sequences present in the protein structure. If too
+			many chains are present in the structures, arrows will appear on the
+			left of the panel to navigate to other chains. Each line is composed
+			of 4 parts:
+		</p>
+
+
+
+		<ul>
+			<li><b>The chain identifier(s)</b>: first letter is the chain
+				identifier of the representative sequence, in brackets are the
+				identifiers of identical sequences. Click on it to see the alignment
+				of the chain to its reference UniProt sequence (based on the <a
+				href="http://www.ebi.ac.uk/pdbe/docs/sifts/" target="_blank">SIFTS</a>
+				mapping or found by blasting). Mismatching residues, normally
+				engineering artifacts, are shown in red in the alignment.</li>
+			<li><b>The UniProt identifier of the reference sequence</b>:
+				click on it to open its corresponding UniProt page.</li>
+			<li><b>The number of homologs</b>: click on it to download the
+				multiple sequence alignment of all homolog sequences (FASTA format).
+				You will need an alignment viewer like <a
+				href="http://www.jalview.org/" target="_blank">Jalview</a> to have
+				it nicely displayed. Whenever fewer than 10 homologs are found then
+				you will see a NOPRED in the evolutionary predictor columns
+				(core-rim and core-surface), indicating that the multiple sequence
+				alignment is too small to make a proper decision. The more sequences
+				in the alignment the more reliable the evolutionary predictions will
+				be, so looking at this number is important.</li>
+
+		</ul>
+		<div class="eppic-help-subtopic">
+
+			<div class="eppic-help-subtopic-right-small">
+				<img class="eppic-help-subtopic-image-right"
+					src="resources/images/pse-color-entropies.png"
+					title="Protein surface rendering with colors representing sequence entropies, as one would get by clicking on the colored entropies icon"></img>
+			</div>
+
+			<div class="eppic-help-subtopic-left-big">
+				<ul>
+					<li><b>The colored entropies icon</b>: click on it to get a
+						PyMOL PSE file with the sequence entropy values from the alignment
+						color-mapped onto the protein surface. This is particularly useful
+						in order to get a visual impression of the patterns of selection
+						pressure on the surface of the particular chain. The spectrum
+						function of PyMOL is used in order to color the residues: the
+						highest conservation appears in blue, transitioning to yellow and
+						orange for lower conservation values. Residues that could not be
+						aligned (for instance because they belong to an engineered tag)
+						appear in red. Additionally magenta dots mark the core residues of
+						the largest interface in which this chain participates. PyMOL
+						selections are also prepared in order to select other interfaces
+						different from the largest one.</li>
+				</ul>
+			</div>
+
+		</div>
+
+		<h2>The UniProt database version: the sequence data</h2>
+		<p>
+			On the header of the <b>Sequence Information</b> panel the UniProt
+			version is indicated. This is the UniProt database version used to
+			find homologs for the EPPIC multiple sequence alignments. A new
+			UniProt database release appears every month containing more and more
+			sequences, in fact the growth is exponential thanks to new sequencing
+			technologies (growth statistics can be seen <a
+				href="http://www.ebi.ac.uk/uniprot/TrEMBLstats/" target="_blank">here</a>).
+			With more sequences we can do better predictions (see this <a
+				href="http://www.biomedcentral.com/1471-2105/13/334/figure/F6"
+				target="_blank">figure</a>), thus the growth of the UniProt sequence
+			database has quite an important effect in our predictions. We will
+			try to maintain the results as up-to-date as possible and to update
+			the PDB-wide precomputed results every few months and eventually
+			every month (for every UniProt update). In any case if you use our
+			results it is important to quote the UniProt database version used.
+		</p>
+
+
+
+		<h1 id="homologs-window">The homologs information window</h1>
+		<div class="eppic-help-subtopic">
+			<div class="eppic-help-subtopic-left-small">
+				<img class="eppic-help-subtopic-image"
+					src="resources/images/screenshots/homologs-window.png"></img>
+			</div>
+			<div class="eppic-help-subtopic-right-big">Homologs window
+				contain number, identity distribution and coverage of putative
+				homologs in the MSA used for entropy calculation for all unique
+				chains in the structure. The coverage is provided as colored
+				segments in a rectangle corresponding to the covergae of query
+				sequence. The identity is colored by quantized bins with the color
+				coading such that green represents grater identity and red indicates
+				smaller identity. The exact percentage is of identity is also
+				provided as percentage number near the bar.</div>
+		</div>
+
+		<h1 id="job-identifiers">Job identifiers</h1>
+		<p>Every new job run on the server is assigned a unique job
+			identifier, a long alpha numerical string that is only known by the
+			user that submits it and that is very hard to guess. It is
+			recommended that you give an email address while submitting so that
+			you receive the URL with the job identifier in your inbox. Otherwise
+			you will have to bookmark it or keep a record of it yourself. It is
+			always possible to retrieve the job by using the URL
+			http://www.eppic-web.org/ewui/#id/&lt;my_job_id&gt;. Whether the job
+			is still running or already done, the URL will show its current
+			status and automatically display the final results whenever it is
+			finished. You can even share the URL with colleagues. The jobs will
+			be stored in our servers for at least 1 month.</p>
+		<p>The PDB-wide precomputed results can be accessed directly by
+			using the permanent URLs:</p>
+		<p>
+			<code>http://www.eppic-web.org/ewui/#id/&lt;PDB_code&gt;</code>
+		</p>
+
+		<h1 id="residue-details">The residue details window</h1>
+		<div class="eppic-help-subtopic">
+			<div class="eppic-help-subtopic-right-small">
+				<img class="eppic-help-subtopic-image-right"
+					src="resources/images/screenshots/residues-window.png"
+					title="Screenshot of the residue details window">
+			</div>
+
+			<div class="eppic-help-subtopic-left-big">
+				<p>Clicking on the "Details" button in the last column of the
+					main interfaces table will give you a detailed view of scores and
+					information per residue, divided into a top panel containing score
+					details per side of interface and two lower tables with details per
+					residue.</p>
+				<p>
+					The scores are subdivided into 3 different panels: <b>Counts</b>
+					containing the number of core residues at 70% burial, i.e. those
+					used for the evolutionary predictions; <b>Core-Rim Score</b>
+					showing average entropy of core and rim plus the ratio of both
+					(final core-rim score); <b>Core-Surface Score</b> showing the mean
+					and standard deviation of average entropies of surface samples and
+					final core-surface score.
+				</p>
+				<p>In the residue tables, only the residues at the interface are
+					shown by default. To see all residues of the two chains one needs
+					to switch the view with the drop down menu on the upper right of
+					the residue details window.</p>
+				<p>The first 2 columns of the residue tables are the residue
+					numbers: "Res Serial" for the numbering based on the SEQRES
+					sequence from 1 to n, "Pdb serial" for the numbering as it appears
+					on the ATOM lines of the PDB file. Four pieces of information are
+					given for each residue: the total accessible surface area (ASA),
+					the total buried surface area (BSA) upon formation of interface,
+					the ratio of burial (BSA/ASA) upon formation of interface (the
+					core/rim assignments are based on this) and finally the entropy
+					value based on the multiple sequence alignments of homologs to the
+					query sequence. More information about the homologs and alignments
+					can be found on the Top Panel.</p>
+				<p>
+					At the bottom of the window the legend shows the color coding used
+					for the residues in the tables. Dark red is used for the core
+					residues at <b>95% burial</b>, which are used for the geometry
+					prediction. Lighter red for the core residues at <b>70% burial</b>,
+					used in the evolutionary core-rim and core-surface predictions.
+					Light blue for all other interface residues. White for surface
+					residues not at the interface and grey for fully buried (protein
+					interior) residues.
+				</p>
+			</div>
+		</div>
+
+		<h1 id="misc">Miscellaneous</h1>
+		<h2 id="low-resolution">Low resolution warnings</h2>
+		<p>A low resolution/high R-free warning will appear in red next to
+			the structure title on top. Whenever this happens one should treat
+			all results with care: in low resolution structures side chains can
+			not always be trusted. Our predictions depend on the side chains to
+			calculate burial and find the interface core residues, thus they will
+			be unreliable.</p>
+
+
+		<h2 id="download-results">Download results</h2>
+		<p>By clicking the "Download results" link on the bottom right
+			corner of the Top Panel, one gets a single zip file containing the
+			text output files with the results for all interfaces (as when
+			running eppic from the command line).</p>
+
+		<h2 id="assembly-note">A note on assemblies</h2>
+		<p>
+			At the moment EPPIC classifies only pairwise interfaces in protein
+			crystals. It does not consider interfaces in the context of the full
+			biological assembly and does not group single interface calls into a
+			biological unit call. We intend to implement that in future versions
+			of the software. In the meantime please keep in mind that some
+			interfaces may be called <font color="red">XTAL</font> when they are
+			actually <font color="green">BIO</font> if considered in the context
+			of the assembly: they are "induced" by the topology or point-group
+			symmetry of the assembly.
+		</p>
+
+
+
+		<br> <br> <br>
+
+		<p>
+			Please cite <a href="http://www.biomedcentral.com/1471-2105/13/334"
+				target="_blank"> Duarte JM, Srebniak A, Schaerer MA, Capitani G,
+				BMC Bioinformatics 2012</a> if you use this service for your research.
+			See also <a href="http://www.biomedcentral.com/1472-6807/13/21"
+				target="_blank">this paper</a> where we show that the method works
+			well on membrane proteins.
+		</p>
+
+		<p>
+			Do get in <a href="mailto:eppic@systemsx.ch">contact</a> with us if
+			you want to report problems or send any kind of feedback.
+		</p>
+
+		<p>With support from:</p>
+
+
+
+		<!-- <div class="eppic-iframe-bottom-logos"> -->
+		<div class="first">
+			<a href="http://www.psi.ch" target="_blank"> <img
+				class="eppic-iframe-left-img" src="resources/images/psi-logo.png"></img>
+			</a>
+		</div>
+
+		<div class="second">
+			<a href="http://www.sybit.net" target="_blank"> <img
+				class="eppic-iframe-right-img" src="resources/images/sybit-logo.png"></img>
+			</a>
+		</div>
+
+		<div class="third">
+			<a class="third" href="http://www.snf.ch" target="_blank"> <img
+				src="resources/images/SNSF_Logo.jpg"></img>
+			</a>
+		</div>
+		<!--
 <a href="http://www.ethz.ch">
 <img class="eppic-iframe-bottom-img" src="resources/images/eth_logo.gif"></img>
 </a>
 -->
-
-</div>
+	</div>
