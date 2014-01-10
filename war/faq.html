@@ -1,82 +1,196 @@
 <head>
 <link rel="stylesheet" type="text/css" href="eppic-static.css">
-<link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+<link
+	href='http://fonts.googleapis.com/css?family=Open+Sans:400,700,400italic,700italic'
+	rel='stylesheet' type='text/css'>
 </head>
 
 <div class="eppic-iframe">
 
-<img class="eppic-iframe-top-img" src="resources/images/eppic-logo.png">
+	<img class="eppic-iframe-top-img" src="resources/images/eppic-logo.png">
 
-<div class='eppic-faq'>
+	<div class='eppic-faq'>
 
-<h1>EPPIC - Frequently Asked Questions</h1>
-<h2>General</h2>
-<h4>What does EPPIC stand for?</h4>
-<p>
-  <strong>E</strong>volutionary <strong>P</strong>rotein-<strong>P</strong>rotein <strong>I</strong>nterface <strong>C</strong>lassifier.</p>
-<h4>What can I use EPPIC for?</h4>
-<p>EPPIC mainly aims at classifying the interfaces present in protein crystal lattices in order to determine whether they are biologically relevant or not. In addition to that it provides information of general use for a number of structural biology applications:</p>
-<ul>
-  <li>"Molecular Potato" - Surface representation of each chain color coded by sequence entropy</li>
-  <li>Number, identity distribution and coverage of putative homologs in the MSA used for entropy calculation</li>
-  <li>Number and distribution of core residues in interfaces</li>
-  <li>Symmetry features of interfaces: the crystallographic operators generating each interface are provided and are depicted in red if they are conducive to infinite assemblies. Also, one can compare the left- and right-hand side of the Details table of each interface to see if it is isologous or heterologous</li>
-</ul>
-<h2>Usage</h2>
-<h4>What are the advanced input parameters for?</h4>
-<ul>
-  <li>
-    <strong>Identity soft cut-off:</strong> The soft sequence identity cut-off for BLAST hits to be used in the alignment. If there are not enough sequences at this cut-off then the threshold is relaxed until the hard cut-off is reached.</li>
-  <li>
-    <strong>Identity hard cut-off:</strong> The hard sequence identity cut-off for BLAST hits to be used in the alignment. If there are not enough sequences at soft cut-off then the threshold is relaxed until this hard cut-off.</li>
-  <li>
-    <strong>Max num of sequences:</strong> The maximum number of sequences to be taken from the BLAST hits.</li>
-  <li>
-    <strong>Search Mode:</strong> The PDB sequence is first matched to its UniProt entry and that sequence is then used for blasting. In Global mode the full length UniProt is used, in local only the matching PDB part of the UniProt sequence is used.</li>
-</ul>
-<h4>If I change the input parameters and submit any structure, why does it start calculating?</h4>
-<p>We have PDB-wide results precalculated for our users. We use only the default parameters for this calculation. If you use any parameters other than the default ones, this triggers a calculation that can take several minutes depending on the structure.</p>
-<h4>Can I access the results of a job in which I submitted my own PDB/mmCIF file later?</h4>
-<p>Every new job run on the server is assigned a unique job identifier, a long alpha numerical string that is only known by the user that submits it and that is very hard to guess. It is recommended that you give an email address while submitting so that you receive the URL with the job identifier in your inbox. Otherwise you will have to bookmark it or keep a record of it yourself. It is always possible to retrieve the job by using the URL <a href="http://www.eppic-web.org/ewui/#id/">http://www.eppic-web.org/ewui/#id/</a>&lt;my_job_id&gt;. Whether the job is still running or already done, the URL will show its current status and automatically display the final results whenever it is finished. You can even share the URL with colleagues. The jobs will be stored in our servers for at least 1 month.</p>
-<h4>Can I directly access the precomputed results of a PDB code?</h4>
-<p>The PDB-wide precomputed results can be accessed directly by using the permanent URLs: <a target="_blank" href="http://www.eppic-web.org/ewui/#id/">http://www.eppic-web.org/ewui/#id/</a>&lt;PDB_code&gt;</p>
-<h4>What does the UniProt version on the home page indicate?</h4>
-<p>The UniProt version (e.g. 2013_11) on the homepage denotes the UniProt version used to calculate the results of EPPIC. UniProt is used to blast for homologs of the input structure, which are then used to calculate entropy scores. These homologs can also slightly change from one version of UniProt to the next (monthly releases), so the results can vary over time. The UniProt version used for a calculation is also provided in the header of the Sequence Information panel in the results page.</p>
-<h4>What does the version below the EPPIC logo in results page indicate?</h4>
-<p>We always keep improving EPPIC with bug-fixes and added features. The version displayed below the EPPIC logo indicate the version of EPPIC used to calculate the results. To find out what has changed in various versions, please refer our Release Log page.</p>
-<h4>Where can I get the sequence entropy information?</h4>
-<p>A surface representation of each chain color coded by sequence entropy can be downloaded from the icon in the sequence information panel. This icon is adjacent to the homologs information icon. The downloaded file is in PSE format, which can be visualized with PyMol (www.pymol.org). To date we do not have an integrated viewer to visualize it in our server .</p>
-<h4>What is the 3D Viewer option in the navigation panel for?</h4>
-<p>EPPIC lets one visualize the interfaces in 3D. By clicking on the thumbnails in the interface table one gets this interactive 3D view. 3D Viewer window allows you to change the type of viewer. The available options are: browser embedded Jmol viewer (no need for local viewer), a PDB file downloadable to a local molecular viewer, or PyMOL session file (.pse) to be opened in local PyMOL.</p>
-<h2>Method</h2>
-<h4>How does EPPIC work?</h4>
-<p>EPPIC relies on sequence evolution and geometry to detect the biological character of interfaces. The classifier uses a simple geometric measure, number of core residues, and two evolutionary indicators based on the sequence entropy of homolog sequences. Both aim at detecting differential selection pressure between interface core and rim or rest of surface. For further information please refer to <a href="http://www.biomedcentral.com/1471-2105/13/334"> Duarte JM, Srebniak A, Schaerer MA, Capitani G, BMC Bioinformatics 2012</a>.</p>
-<h4>What are core-surface and core-rim scores?</h4>
-<p>Core-surface and core-rim scores are the ones which rely on evolution to predict the biological nature of an interface. They are calculated as follows:</p>
-<ul>
-  <li>
-    <strong>core-rim score: </strong>Ratio of evolutionary signal (sequence entropy) of core residues (at 70% burial) versus rim residues</li>
-  <li>
-    <strong>core-surface score: </strong>A score (z-score like) of sequence entropy of core residues (at 70% burial) versus random samples of other surface residues</li>
-</ul>
-<p>The scores are translated to calls using their cut-off values. This implies that if the calculated score is less than its cut-off value the call is XTAL or BIO otherwise.</p>
-<h4>What does nopred in interface table refer to?</h4>
-<p>The nopred (no prediction) call can occur when there is not enough information available for EPPIC to reach a decision (usually not enough sequence data).</p>
-<h4>What do the core sizes in the interface table indicate?</h4>
-<p>Number of core residues (at 95% burial) in each interface, indicating how good the interface packing is.</p>
-<h4>What is the difference between core-geometry and core-evolutionary residues?</h4>
-<p>Core-geometry residues are core residues at 95% burial and core-evolutionary are the core residues at 70% burial. To calculate the geometry score, cores at 95% burial are used and to calculate evolutionary scores, cores at 70% burial are used.</p>
-<h4>How is the final call predicted?</h4>
-<p>The final call is the consensus call from the evolution and geometry calls.</p>
-<h2>Limitations</h2>
-<h4>Does EPPIC work on membrane proteins?</h4>
-<p>Yes, we tested its performance on a validated dataset of membrane protein oligomerization interfaces and it exhibited satisfactory accuracy. For further details see <a href="http://www.biomedcentral.com/1472-6807/13/21"> Duarte JM, Biyani N, Baskaran, Capitani G, BMC Structural Biology 2013</a>.</p> 
-<h4>Does it work on antibody-antigen interactions?</h4>
-<p>Given the assumptions it rests on for evolutionary analysis, EPPIC will not reliably work on antibody-antigen interactions.</p> 
-<h4>Does it work on engineered and/or chimeric proteins?</h4>
-<p>EPPIC will "tolerate" a small number of point mutations compared to the reference UniProt sequence and will list them in a warning message at the relevant interface(s). If the number of point mutations in a certain interface is too high, the evolutionary calls will be "nopred". Chimeric proteins will also have "nopred" evolutionary calls. Users, however, can edit out of the chimeric PDB file the component that is not of interest, thus obtaining coordinates that correspond to one sequence only. Those coordinates can then be uploaded to EPPIC and be properly analyzed.</p> 
-<h2>Miscellaneous</h2>
-<h4>How should I cite EPPIC?</h4>
-<p>The main paper describing the EPPIC method is <a target="_blank" href="http://www.biomedcentral.com/1471-2105/13/334"> Duarte JM, Srebniak A, Schaerer MA, Capitani G, BMC Bioinformatics 2012</a>. As well as citing the paper it is important that one cites the EPPIC software version (top right below the logo in results page) and even more important the UniProt database version (monthly releases) used for the evolutionary analysis. Our predictions depend on the sequence homologs found by searching the UniProt database so with every release of the database the predictions can change. UniProt is growing very fast these days so a few months of UniProt releases between two runs can make a difference.</p>
-</div>
+		<h1>EPPIC - Frequently Asked Questions</h1>
+		<h2>General</h2>
+		<h4>What does EPPIC stand for?</h4>
+		<p>
+			<strong>E</strong>volutionary <strong>P</strong>rotein-<strong>P</strong>rotein
+			<strong>I</strong>nterface <strong>C</strong>lassifier.
+		</p>
+		<h4>What can I use EPPIC for?</h4>
+		<p>EPPIC mainly aims at classifying the interfaces present in
+			protein crystal lattices in order to determine whether they are
+			biologically relevant or not. In addition to that it provides
+			information of general use for a number of structural biology
+			applications:</p>
+		<ul>
+			<li>"Molecular Potato" - Surface representation of each chain
+				color coded by sequence entropy</li>
+			<li>Number, identity distribution and coverage of putative
+				homologs in the MSA used for entropy calculation</li>
+			<li>Number and distribution of core residues in interfaces</li>
+			<li>Symmetry features of interfaces: the crystallographic
+				operators generating each interface are provided and are depicted in
+				red if they are conducive to infinite assemblies. Also, one can
+				compare the left- and right-hand side of the Details table of each
+				interface to see if it is isologous or heterologous</li>
+		</ul>
+		<h2>Usage</h2>
+		<h4>What are the advanced input parameters for?</h4>
+		<ul>
+			<li><strong>Identity soft cut-off:</strong> The soft sequence
+				identity cut-off for BLAST hits to be used in the alignment. If
+				there are not enough sequences at this cut-off then the threshold is
+				relaxed until the hard cut-off is reached.</li>
+			<li><strong>Identity hard cut-off:</strong> The hard sequence
+				identity cut-off for BLAST hits to be used in the alignment. If
+				there are not enough sequences at soft cut-off then the threshold is
+				relaxed until this hard cut-off.</li>
+			<li><strong>Max num of sequences:</strong> The maximum number of
+				sequences to be taken from the BLAST hits.</li>
+			<li><strong>Search Mode:</strong> The PDB sequence is first
+				matched to its UniProt entry and that sequence is then used for
+				blasting. In Global mode the full length UniProt is used, in local
+				only the matching PDB part of the UniProt sequence is used.</li>
+		</ul>
+		<h4>If I change the input parameters and submit any structure,
+			why does it start calculating?</h4>
+		<p>We have PDB-wide results precalculated for our users. We use
+			only the default parameters for this calculation. If you use any
+			parameters other than the default ones, this triggers a calculation
+			that can take several minutes depending on the structure.</p>
+		<h4>Can I access the results of a job in which I submitted my own
+			PDB/mmCIF file later?</h4>
+		<p>
+			Every new job run on the server is assigned a unique job identifier,
+			a long alpha numerical string that is only known by the user that
+			submits it and that is very hard to guess. It is recommended that you
+			give an email address while submitting so that you receive the URL
+			with the job identifier in your inbox. Otherwise you will have to
+			bookmark it or keep a record of it yourself. It is always possible to
+			retrieve the job by using the URL <a
+				href="http://www.eppic-web.org/ewui/#id/" target="_blank">http://www.eppic-web.org/ewui/#id/</a>&lt;my_job_id&gt;.
+			Whether the job is still running or already done, the URL will show
+			its current status and automatically display the final results
+			whenever it is finished. You can even share the URL with colleagues.
+			The jobs will be stored in our servers for at least 1 month.
+		</p>
+		<h4>Can I directly access the precomputed results of a PDB code?</h4>
+		<p>
+			The PDB-wide precomputed results can be accessed directly by using
+			the permanent URLs: <a href="http://www.eppic-web.org/ewui/#id/"
+				target="_blank">http://www.eppic-web.org/ewui/#id/</a>&lt;PDB_code&gt;
+		</p>
+		<h4>What does the UniProt version on the home page indicate?</h4>
+		<p>The UniProt version (e.g. 2013_11) on the homepage denotes the
+			UniProt version used to calculate the results of EPPIC. UniProt is
+			used to blast for homologs of the input structure, which are then
+			used to calculate entropy scores. These homologs can also slightly
+			change from one version of UniProt to the next (monthly releases), so
+			the results can vary over time. The UniProt version used for a
+			calculation is also provided in the header of the Sequence
+			Information panel in the results page.</p>
+		<h4>What does the version below the EPPIC logo in results page
+			indicate?</h4>
+		<p>We always keep improving EPPIC with bug-fixes and added
+			features. The version displayed below the EPPIC logo indicate the
+			version of EPPIC used to calculate the results. To find out what has
+			changed in various versions, please refer our Release Log page.</p>
+		<h4>Where can I get the sequence entropy information?</h4>
+		<p>A surface representation of each chain color coded by sequence
+			entropy can be downloaded from the icon in the sequence information
+			panel. This icon is adjacent to the homologs information icon. The
+			downloaded file is in PSE format, which can be visualized with PyMol
+			(www.pymol.org). To date we do not have an integrated viewer to
+			visualize it in our server .</p>
+		<h4>What is the 3D Viewer option in the navigation panel for?</h4>
+		<p>EPPIC lets one visualize the interfaces in 3D. By clicking on
+			the thumbnails in the interface table one gets this interactive 3D
+			view. 3D Viewer window allows you to change the type of viewer. The
+			available options are: browser embedded Jmol viewer (no need for
+			local viewer), a PDB file downloadable to a local molecular viewer,
+			or PyMOL session file (.pse) to be opened in local PyMOL.</p>
+		<h2>Method</h2>
+		<h4>How does EPPIC work?</h4>
+		<p>
+			EPPIC relies on sequence evolution and geometry to detect the
+			biological character of interfaces. The classifier uses a simple
+			geometric measure, number of core residues, and two evolutionary
+			indicators based on the sequence entropy of homolog sequences. Both
+			aim at detecting differential selection pressure between interface
+			core and rim or rest of surface. For further information please refer
+			to <a href="http://www.biomedcentral.com/1471-2105/13/334" target="_blank">
+				Duarte JM, Srebniak A, Schaerer MA, Capitani G, BMC Bioinformatics
+				2012</a>.
+		</p>
+		<h4>What are core-surface and core-rim scores?</h4>
+		<p>Core-surface and core-rim scores are the ones which rely on
+			evolution to predict the biological nature of an interface. They are
+			calculated as follows:</p>
+		<ul>
+			<li><strong>core-rim score: </strong>Ratio of evolutionary
+				signal (sequence entropy) of core residues (at 70% burial) versus
+				rim residues</li>
+			<li><strong>core-surface score: </strong>A score (z-score like)
+				of sequence entropy of core residues (at 70% burial) versus random
+				samples of other surface residues</li>
+		</ul>
+		<p>The scores are translated to calls using their cut-off values.
+			This implies that if the calculated score is less than its cut-off
+			value the call is XTAL or BIO otherwise.</p>
+		<h4>What does nopred in interface table refer to?</h4>
+		<p>The nopred (no prediction) call can occur when there is not
+			enough information available for EPPIC to reach a decision (usually
+			not enough sequence data).</p>
+		<h4>What do the core sizes in the interface table indicate?</h4>
+		<p>Number of core residues (at 95% burial) in each interface,
+			indicating how good the interface packing is.</p>
+		<h4>What is the difference between core-geometry and
+			core-evolutionary residues?</h4>
+		<p>Core-geometry residues are core residues at 95% burial and
+			core-evolutionary are the core residues at 70% burial. To calculate
+			the geometry score, cores at 95% burial are used and to calculate
+			evolutionary scores, cores at 70% burial are used.</p>
+		<h4>How is the final call predicted?</h4>
+		<p>The final call is the consensus call from the evolution and
+			geometry calls.</p>
+		<h2>Limitations</h2>
+		<h4>Does EPPIC work on membrane proteins?</h4>
+		<p>
+			Yes, we tested its performance on a validated dataset of membrane
+			protein oligomerization interfaces and it exhibited satisfactory
+			accuracy. For further details see <a
+				href="http://www.biomedcentral.com/1472-6807/13/21" target="_blank"> Duarte JM,
+				Biyani N, Baskaran, Capitani G, BMC Structural Biology 2013</a>.
+		</p>
+		<h4>Does it work on antibody-antigen interactions?</h4>
+		<p>Given the assumptions it rests on for evolutionary analysis,
+			EPPIC will not reliably work on antibody-antigen interactions.</p>
+		<h4>Does it work on engineered and/or chimeric proteins?</h4>
+		<p>EPPIC will "tolerate" a small number of point mutations
+			compared to the reference UniProt sequence and will list them in a
+			warning message at the relevant interface(s). If the number of point
+			mutations in a certain interface is too high, the evolutionary calls
+			will be "nopred". Chimeric proteins will also have "nopred"
+			evolutionary calls. Users, however, can edit out of the chimeric PDB
+			file the component that is not of interest, thus obtaining
+			coordinates that correspond to one sequence only. Those coordinates
+			can then be uploaded to EPPIC and be properly analyzed.</p>
+		<h2>Miscellaneous</h2>
+		<h4>How should I cite EPPIC?</h4>
+		<p>
+			The main paper describing the EPPIC method is <a
+				href="http://www.biomedcentral.com/1471-2105/13/334" target="_blank">
+				Duarte JM, Srebniak A, Schaerer MA, Capitani G, BMC Bioinformatics
+				2012</a>. As well as citing the paper it is important that one cites the
+			EPPIC software version (top right below the logo in results page) and
+			even more important the UniProt database version (monthly releases)
+			used for the evolutionary analysis. Our predictions depend on the
+			sequence homologs found by searching the UniProt database so with
+			every release of the database the predictions can change. UniProt is
+			growing very fast these days so a few months of UniProt releases
+			between two runs can make a difference.
+		</p>
+	</div>
 </div>
