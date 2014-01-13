@@ -26,7 +26,6 @@
 							information</a></li>
 					<li><a href="#homologs-window">The homologs information
 							window</a></li>
-					<li><a href="#job-identifiers">Job identifiers</a></li>
 					<li><a href="#residue-details">The Details window</a></li>
 					<li><a href="#misc">Miscellaneous</a></li>
 				</ul>
@@ -41,15 +40,20 @@
 				for a number of structural biology applications:</p>
 			<ul>
 				<li>"Molecular Potato" - Surface representation of each chain
-					color coded by sequence entropy</li>
-				<li>Number, identity distribution and coverage of putative
-					homologs in the MSA used for entropy calculation</li>
+					color coded by sequence entropy (conservation), calculated from
+					a Multiple Sequence Alignment (MSA) of closely related homologs (within
+					60% sequence identity)</li>
+				<li>Precomputed MSAs for every protein in the PDB (or for user-uploaded structures). 
+					The number, identity distribution and sequence coverage of the homologs
+					can be easily visually inspected</li>
 				<li>Number and distribution of core residues in interfaces</li>
 				<li>Symmetry features of interfaces: the crystallographic
 					operators generating each interface are provided and are depicted
 					in red if they are conducive to infinite assemblies. Also, one can
 					compare the left- and right-hand side of the Details table of each
-					interface to see if it is isologous or heterologous</li>
+					interface to see if it is 
+					<a href="http://en.wikipedia.org/wiki/Heterologous" target="_blank">isologous</a> or 
+					<a href="http://en.wikipedia.org/wiki/Heterologous" target="_blank">heterologous</a></li>
 			</ul>
 		</div>
 
@@ -67,9 +71,8 @@
 			</div>
 			<div class="eppic-help-subtopic-left-big">
 				<p>You can submit your protein structure by uploading a
-					PDB/mmCIF file or by typing a PDB code. We have PDB-wide results
-					pre-calculated for our users. We use only the default parameters
-					for this calculation. If you use any parameters other than the
+					PDB/mmCIF file or by typing a PDB code. We have precalculated results 
+					PDB-wide using the default parameters. If you use any parameters other than the
 					default ones or if you upload your own file, this triggers a
 					calculation that can take several minutes depending on the
 					structure.</p>
@@ -143,7 +146,7 @@
 
 				<p>
 					You can see the actual scores for each of the indicators by
-					hovering the mouse pointer over the bio/xtal/nopred calls. Warnings
+					hovering the mouse pointer over the bio/xtal/nopred labels. Warnings
 					may appear on the right side of the interfaces table marked by the
 					icon <img src="resources/icons/warning_icon.png"
 						style="vertical-align: middle"></img>. By hovering the mouse over
@@ -275,7 +278,7 @@
 					representation is particularly helpful here in order to see surface
 					residues only.</p>
 				<h2>Changing 3D-Viewing mode:</h2>
-				<p>3D-Viewer can be changed using the button "Change 3D Viewer"
+				<p>The 3D-Viewer can be changed using the button "Change 3D Viewer"
 					on the top-right corner of the main interface table. Clicking the
 					button will open a window where one can select a mode from the
 					given list.</p>
@@ -296,7 +299,7 @@
 			The <b>Sequence Information</b> panel contains information about the
 			sequences and their homologs. There is a line for each of the
 			distinct protein sequences present in the protein structure. If too
-			many chains are present to show simultaneously, arrows will appear on
+			many chains are present, arrows will appear on
 			the left of the panel to navigate to other chains. Each line displays
 			4 items some of which are followed by <img
 				src="resources/icons/info_icon.png"></img> icon. Clicking this icon
@@ -327,9 +330,14 @@
 						engineering artifacts, are shown in red in the alignment.</li>
 					<li><b>UniProt identifier of the reference sequence</b>: click
 						on it to open its corresponding UniProt sequence page.</li>
-					<li><b>Number of homologs</b>: click on the <img
+					<li><b>Number of homologs</b>: whenever fewer than 10 homologs are found you
+						will see a NOPRED call in the evolutionary predictor columns
+						(core-rim and core-surface), indicating that the MSA is too small
+						for a proper decision to be reached. The more sequences in the
+						alignment the more reliable the evolutionary predictions will be,
+						so looking at this number is important. Click on the <img
 						src="resources/icons/info_icon.png"></img> icon next to this item
-						for more information about these homologs (<a
+						for more information about the homologs (<a
 						href="#homologs-window">more</a>).</li>
 
 					<li><b>"Molecular potato" (surface color-coded
@@ -354,8 +362,19 @@
 		<p>
 			The header of the <b>Sequence Information</b> panel shows which
 			version of the UniProt database version is used to find homologs for
-			the EPPIC multiple sequence alignments. We keep updating the results
-			with new UniProt versions (<a href="#data-policy">more</a>).
+			the EPPIC multiple sequence alignments. 
+			A new UniProt database release appears every month containing more
+			and more sequences, in fact the growth is exponential thanks to new
+			sequencing technologies (growth statistics can be seen <a
+				href="http://www.ebi.ac.uk/uniprot/TrEMBLstats/" target="_blank">here</a>).
+			With more sequences we can obtain better predictions (see this <a
+				href="http://www.biomedcentral.com/1471-2105/13/334/figure/F6"
+				target="_blank">figure</a>), thus the growth of the UniProt sequence
+			database has quite an important effect on the accuracy of our method.
+			We will try to maintain the results as up-to-date as possible and to
+			update the PDB-wide precomputed results every month (for every 
+			UniProt update). In any case if you	use our results <strong>it is important 
+			to quote the UniProt database version used</strong>.
 		</p>
 
 
@@ -368,52 +387,30 @@
 			</div>
 			<div class="eppic-help-subtopic-right-big">
 				<p>The homologs information window provides number, identity
-					distribution and coverage of the putative homologs in the MSA used
+					distribution and coverage of the sequence homologs in the MSA used
 					for entropy calculation. This information is given for all unique
 					chains in the structure. Coverage is depicted with colored segments
 					within a rectangle corresponding to the query sequence length.
 					Identity is color-coded in quantized bins, with green representing
 					higher identity and red lower identity. The exact percentage of
 					identity is also provided near the bar. The last two columns in the
-					table provied the taxonomy of the homolog. More details of the
-					sequence of a particular homolog can be found with the link
-					provided in the first column of the table.
+					table provide the taxonomy of the homolog. More details of the
+					sequence of a particular homolog can be found by clicking the UniProt
+					link in the first column of the table.
 				<p>
 				<p>
-					In the header one can find information of the query sequence, the
-					identity limit used. Link in the top-right corner of the window
-					enables you to download the MSA of all putative homolog sequences
+					In the header one can find information about the query sequence and the
+					identity threshold used. Together with that, the clustering threshold for 
+					redundancy elimination is also indicated: sequences are clustered so 
+					that no pair of sequences are more similar than
+					this value. The link in the top-right corner of the window
+					enables you to download the MSA of all homolog sequences
 					(FASTA format). You will need an alignment viewer like <a
 						href="http://www.jalview.org/" target="_blank">Jalview</a> to have
-					it nicely displayed. Whenever fewer than 10 homologs are found you
-					will see a NOPRED call in the evolutionary predictor columns
-					(core-rim and core-surface), indicating that the MSA is too small
-					for a proper decision to be reached. The more sequences in the
-					alignment the more reliable the evolutionary predictions will be,
-					so looking at this number is important.
+					it nicely displayed. 
 				</p>
 			</div>
 		</div>
-
-		<h1 id="job-identifiers">Job identifiers</h1>
-		<p>Every new job run on the server is assigned a unique job
-			identifier, a long alphanumerical string that is only known by the
-			user that submits it and that is very hard to guess. It is
-			recommended that you give an email address while submitting so that
-			you receive the URL with the job identifier in your inbox. Otherwise
-			you will have to bookmark it or keep a record of it yourself. It is
-			always possible to retrieve the job by using the URL
-			http://www.eppic-web.org/ewui/#id/&lt;my_job_id&gt;. Whether the job
-			is still running or already done, the URL will show its current
-			status and automatically display the final results whenever it is
-			finished. To share the results of a job with colleagues just send
-			them the corresponding URL. The jobs will be stored in our servers
-			for at least 1 month.</p>
-		<p>The PDB-wide precomputed results can be accessed directly by
-			using the permanent URLs:</p>
-		<p>
-			<code>http://www.eppic-web.org/ewui/#id/&lt;PDB_code&gt;</code>
-		</p>
 
 		<h1 id="residue-details">The Details window</h1>
 		<div class="eppic-help-subtopic">
@@ -449,7 +446,7 @@
 					on the ATOM lines of the PDB file. Four pieces of information are
 					given for each residue: total accessible surface area (ASA), total
 					buried surface area (BSA) upon interface formation, ratio of burial
-					(BSA/ASA) upon interface formation ( core/rim assignments are based
+					(BSA/ASA) upon interface formation (core/rim assignments are based
 					on this) and sequence entropy value from the MSA of homologs to the
 					query sequence. More information about the homologs and alignments
 					can be found on the Top Panel.</p>
@@ -468,21 +465,24 @@
 
 		<h1 id="misc">Miscellaneous</h1>
 
-		<h2 id="data-policy">Sequence data updating policy</h2>
+		<h2 id="job-identifiers">Job identifiers</h2>
+		<p>Every new job run on the server is assigned a unique job
+			identifier, a long alphanumerical string that is only known by the
+			user that submits it and that is very hard to guess. It is
+			recommended that you give an email address while submitting so that
+			you receive the URL with the job identifier in your inbox. Otherwise
+			you will have to bookmark it or keep a record of it yourself. It is
+			always possible to retrieve the job by using the URL
+			http://www.eppic-web.org/ewui/#id/&lt;my_job_id&gt;. Whether the job
+			is still running or already done, the URL will show its current
+			status and automatically display the final results whenever it is
+			finished. To share the results of a job with colleagues just send
+			them the corresponding URL. The jobs will be stored in our servers
+			for at least 1 month.</p>
+		<p>The PDB-wide precomputed results can be accessed directly by
+			using the permanent URLs:</p>
 		<p>
-			A new UniProt database release appears every month containing more
-			and more sequences, in fact the growth is exponential thanks to new
-			sequencing technologies (growth statistics can be seen <a
-				href="http://www.ebi.ac.uk/uniprot/TrEMBLstats/" target="_blank">here</a>).
-			With more sequences we can obtain better predictions (see this <a
-				href="http://www.biomedcentral.com/1471-2105/13/334/figure/F6"
-				target="_blank">figure</a>), thus the growth of the UniProt sequence
-			database has quite an important effect on the accuracy of our method.
-			We try to maintain the results as up-to-date as possible and to
-			update the PDB-wide precomputed results every few months and
-			eventually every month (for every UniProt update). In any case if you
-			use our results it is important to quote the UniProt database version
-			used.
+			<code>http://www.eppic-web.org/ewui/#id/&lt;PDB_code&gt;</code>
 		</p>
 
 		<h2 id="low-resolution">Low resolution and high R-Free warnings</h2>
