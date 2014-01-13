@@ -6,7 +6,6 @@ import ch.systemsx.sybit.crkwebui.client.commons.managers.EventBusManager;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
-import com.sencha.gxt.widget.core.client.form.TextField;
 import com.sencha.gxt.widget.core.client.form.ValueBaseField;
 
 /**

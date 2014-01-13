@@ -7,6 +7,7 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Image;
 import com.sencha.gxt.widget.core.client.container.HorizontalLayoutContainer;
+import com.sencha.gxt.widget.core.client.container.SimpleContainer;
 import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer;
 import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer.VerticalLayoutData;
 import com.sencha.gxt.core.client.dom.ScrollSupport.ScrollMode;
@@ -51,9 +52,9 @@ public class IdentifierHeaderPanel extends HorizontalLayoutContainer
     	this.add(pdbInfo,  new HorizontalLayoutData(1,-1));
 
     	eppicLogoPanel = new VerticalLayoutContainer();
-    	eppicLogoPanel.setWidth(100);
+    	eppicLogoPanel.setWidth(120);
 
-    	Image logo = getLogo();
+    	HorizontalLayoutContainer logo = getLogoContainer();
     	eppicLogoPanel.add(logo, new VerticalLayoutData(1, -1, new Margins(0, 0, 0, 0)));
 
     	eppicVersionLabel = new HTML("");
@@ -85,12 +86,19 @@ public class IdentifierHeaderPanel extends HorizontalLayoutContainer
 
 	}
 
-	private Image getLogo() {
+	private HorizontalLayoutContainer getLogoContainer() {
     	String logoIconSource = "resources/images/eppic-logo.png";
     	Image logo = new Image(logoIconSource);
     	logo.setWidth("100px");
     	logo.setHeight("40px");
-    	return logo;
+    	
+    	HorizontalLayoutContainer con = new HorizontalLayoutContainer();
+    	con.add(logo);
+    	con.setHeight(40);
+    	con.add(new SimpleContainer(), new HorizontalLayoutData(20,-1));
+    	
+    	return con;
+    	
     }
     
     public void setEppicLogoPanel(String eppicVersion){

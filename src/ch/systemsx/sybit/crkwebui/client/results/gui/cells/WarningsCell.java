@@ -51,7 +51,7 @@ public class WarningsCell extends AbstractCell<String> {
 	 */
 	private String generateWarningsTemplate(List<WarningItem> warnings)
 	{
-		String warningsList = "<div><ul class=\"eppic-tooltip-list\">";
+		String warningsList = "<div><ul class=\"eppic-default-font eppic-results-grid-tooltip eppic-tooltip-list\">";
 		
 		for(WarningItem warning : warnings)
 		{

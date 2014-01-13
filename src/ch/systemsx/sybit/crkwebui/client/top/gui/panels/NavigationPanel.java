@@ -33,7 +33,7 @@ public class NavigationPanel extends VBoxLayoutContainer
         this.setBorders(false);
 
         HorizontalLayoutContainer linksContainer = new HorizontalLayoutContainer();
-        linksContainer.setWidth(425);
+        linksContainer.setWidth(440);
         
         HTML homeLink = createHomeLink();
         HTML publicationsLink = createPublicationsLink();

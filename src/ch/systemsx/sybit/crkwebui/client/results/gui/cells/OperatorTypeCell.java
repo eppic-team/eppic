@@ -45,6 +45,7 @@ public class OperatorTypeCell extends AbstractCell<String> {
 			
 			String source = iconsDir+icon;
 			
+			tooltipText = "<div class=\"eppic-default-font eppic-results-grid-tooltip\">" + tooltipText + "</div>";
 			sb.appendHtmlConstant("<img src='"+ source + 
 					"' qtip='" + tooltipText + "' />");
 		

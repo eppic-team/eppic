@@ -9,7 +9,7 @@
 	vertical-align:middle;
 }
 
-.eppic-default-font, .eppic-default-font td, .eppic-default-font tr, .eppic-default-font div, .eppic-default-font input{
+.eppic-default-font, .eppic-default-font td, .eppic-default-font tr, .eppic-default-font input{
 	font-family: 'Open Sans', sans-serif;
 }
 
@@ -156,6 +156,10 @@
 	vertical-align:middle;
 }
 
+.eppic-results-grid-tooltip{
+	font-size:12px;
+}
+
 .eppic-results-grid-common-cells{
 	text-align: center;
 	font-size: 14px;
@@ -182,7 +186,7 @@
 
 .eppic-tooltip-list {
 	list-style: disc;
-	margin: 0px 0px 0px 15px;
+	margin: 0px 0px 0px 0px;
 }
 
 .eppic-text-panel {

@@ -6,6 +6,7 @@ package ch.systemsx.sybit.crkwebui.client.results.gui.cells;
 import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
+import ch.systemsx.sybit.crkwebui.client.commons.util.EscapedStringGenerator;
 import ch.systemsx.sybit.crkwebui.client.results.data.InterfaceItemModel;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceItem;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceScoreItem;
@@ -87,7 +88,8 @@ public class MethodCallCell extends AbstractCell<String> {
 		
 		if(type.equals("finalCallName")) value=value.toUpperCase();
 		
-		tooltipText = tooltipText.replaceAll("\'", "");
+		tooltipText = EscapedStringGenerator.generateEscapedString(tooltipText);
+		tooltipText = "<div class=\"eppic-default-font eppic-results-grid-tooltip\">" + tooltipText + "</div>";
 		sb.appendHtmlConstant("<span style='color:" + color + ";' qtip='" + tooltipText + "'>"+ value +"</span>");
 	}
 

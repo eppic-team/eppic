@@ -21,6 +21,8 @@ import com.sencha.gxt.core.client.util.Margins;
  */
 public class ResultsPanel extends DisplayPanel
 {	
+	private static final int MIN_WIDTH = 800;
+	
 	private IdentifierHeaderPanel headerPanel;
 	private VerticalLayoutContainer resultsContainer;
 	
@@ -31,7 +33,7 @@ public class ResultsPanel extends DisplayPanel
 	{
 		DockLayoutPanel dock = new DockLayoutPanel(Unit.PX);
 
-		headerPanel = new IdentifierHeaderPanel(ApplicationContext.getWindowData().getWindowWidth() - 180);
+		headerPanel = new IdentifierHeaderPanel(ApplicationContext.getWindowData().getWindowWidth() - 150);
 		dock.addNorth(headerPanel, 70);
 		
 		resultsContainer = createResultsContainer(pdbScoreItem);
@@ -83,9 +85,12 @@ public class ResultsPanel extends DisplayPanel
 
 	public void resizeContent() 
 	{
-		resultsGridContainer.resizeContent(ApplicationContext.getWindowData().getWindowWidth() - 180);
-		headerPanel.resizePanel(ApplicationContext.getWindowData().getWindowWidth() - 180);
-		informationPanel.resizePanel(ApplicationContext.getWindowData().getWindowWidth() - 180);
+		int width = ApplicationContext.getWindowData().getWindowWidth() - 180;
+		
+		if(width < MIN_WIDTH) width = MIN_WIDTH;
+		resultsGridContainer.resizeContent(width);
+		headerPanel.resizePanel(width + 30);
+		informationPanel.resizePanel(width);
 	}
 	
 	/**
