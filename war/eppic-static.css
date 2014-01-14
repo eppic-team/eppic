@@ -156,11 +156,6 @@ EPPIC HELP PAGE STYLES
 	font-size: 12px;
 	margin-top: 0px;
 	margin-bottom: 5px;
-	vertical-align: top;
-}
-
-.eppic-iframe-footer A{
-	vertical-align: top;
 }
 
 .eppic-iframe-footer img{
@@ -169,7 +164,7 @@ EPPIC HELP PAGE STYLES
 }
 
 .eppic-iframe-footer-left{
-	margin-top: 25px;
+	margin-top: 10px;
 	float:left;
 	text-align: left;
 }
