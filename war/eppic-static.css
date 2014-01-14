@@ -114,6 +114,21 @@ The style for the list items in Release Log, apply it to enclosing ul element
 	margin-left: 20px;
 }
 
+.eppic-faq h4:before{
+	color: #444;
+	font-weight:bold;
+	font-style: italic;
+	content:"Q: ";
+	margin-right:10px;
+}
+
+.eppic-faq p{
+	margin-left:35px;
+}
+
+.eppic-faq li{
+	margin-left:35px;
+}
 
 /*
 EPPIC HELP PAGE STYLES
