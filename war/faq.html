@@ -56,31 +56,31 @@
 		</p>
 		<h4>How do I know if a prediction is reliable? Does EPPIC produce confidence values?</h4>
 		<p>EPPIC does not produce confidence values for its prediction at the moment, 
-		though it is in our plans to have them. In any case there are a few things that one can
+		though we plan to have them. In any case there are a few things that one can
 		look at to understand if the prediction can be trusted or not:</p>
 		<ul>
 				<li>The more sequence homologs the better: look at the number of 
-				homologs on the Sequence Information panel on top. If below 10 we will 
+				homologs on the Sequence Information panel on top. If it is below 10 we will 
 				not even produce the evolutionary scores and the prediction will be purely 
-				geometrical (less reliable). If above 10 but the numbers are still small one 
+				geometrical (less reliable). If it is above 10 but not much larger than that one 
 				should be careful with the results.</li>
-				<li>The identities of the sequence homologs should cover a wide range of 
-				identities: look at the distribution by clicking on the 
+				<li>The sequence homologs should span a wide range of 
+				identities: look at their distribution by clicking on the 
 				<img src="resources/icons/info_icon.png"></img> icon next to the number 
-				of homologs. A typical case is that of archaeal and some bacterial 
-				proteins where only very close sequence homologs exist (&gt;90%) and then 
-				nothing else is found in sequence databases until &lt;40% identity. The alignment
-				resulting from them will contain less information and thus the prediction 
-				will be less reliable.</li>
-				<li>The more consensus the better: if the three indicators coincide in their calls
+				of homologs. A typical case is that of some microbial proteins where only very close 
+				sequence homologs exist (&gt;90%) and then nothing else is found in sequence databases 
+				until &lt;40% identity. The resulting alignment will contain less information,
+				thus the prediction will be less reliable.</li>
+				<li>The stronger the consensus the better: if the three indicators are unanimous in their calls
 				the prediction can be considered more reliable.</li>
 				<li>Non full-length proteins (domains or fragments) are less reliably predicted:
 				you can find out whether your protein is full-length or not by clicking on the 
 				<img src="resources/icons/info_icon.png"></img> icon next to the chain name 
 				in the Sequence Information panel.</li>
-				<li>Check for any other kind of warnings: low resolution warnings on top or per-interface
-				warnings in the last column of the Main Interface table: engineering artifacts (mutations, 
-				expression tags), possible artifactual mediating ions, engineered disulfide bridges etc.
+				<li>Check for any kind of warnings: low resolution or R-free warnings on top and various
+				per-interface warnings in the last column of the Main Interface table. This latter category
+				encompasses engineering artifacts (mutations, expression tags), possible artifactual mediating ions, 
+				engineered disulfide bridges etc.
 				If any of these warnings appear one should always treat the results with more care.</li>
 		</ul>
 		
