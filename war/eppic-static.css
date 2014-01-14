@@ -1,32 +1,45 @@
-.eppic-iframe {
+.eppic-iframe{
 	font-family: 'Open Sans', sans-serif;
+}
+
+.eppic-iframe-content {
 	width: 80%;
 	margin: 0 auto;
+	margin-bottom: 200px;
 }
 
 .eppic-iframe h1 {
-	font-size:20px;
+	font-size:28px;
 	font-weight:bold;
-	margin-left: 15px;
-	margin-right: 20px;
-	margin-top: 20px;	
-	margin-bottom: 5px;
+	margin-top: 40px;	
+	margin-bottom: 20px;
 }
 
 .eppic-iframe h2 {
-	font-size:16px;
+	font-size:20px;
 	font-weight:bold;	
-	margin-left: 15px;
-	margin-right: 20px;
+	margin-top: 70px;
+	margin-bottom: 10px;
+	border-bottom: 1px dotted #434350;
+}
+
+.eppic-iframe h3 {
+	font-size:18px;
+	font-weight:bold;
 	margin-top: 20px;
-	margin-bottom: 0px;	
+	margin-bottom: 0px;
+}
+
+.eppic-iframe h4{ 
+	font-size:16px; 
+	font-weight:bold;
+	margin-top: 20px;
+	margin-bottom: 0px;
 }
 
 .eppic-iframe p {
-	font-size:14px;
+	font-size:16px;
 	line-height:125%;
-	margin-left: 15px;
-	margin-right: 20px;
 	margin-top: 10px;
 	margin-bottom: 0px;
 }
@@ -34,24 +47,25 @@
 .eppic-iframe code {
 	font-size:14px;
 	font-family:monospace;
-	margin-left: 15px;
-	margin-right: 20px;
 	margin-top: 10px;
 	margin-bottom: 10px;
 	padding-left: 10px;
 }
 
 .eppic-iframe ul {
-	font-size:14px;
-	margin-left: 15px;
-	margin-right: 20px;
+	font-size:16px;
 	line-height:125%;
 }
 
-.eppic-iframe A:link {text-decoration: none}
-.eppic-iframe A:visited {text-decoration: none}
-.eppic-iframe A:active {text-decoration: none}
-.eppic-iframe A:hover {text-decoration: underline}
+.eppic-iframe li{ 
+	margin-bottom:15px; 
+}
+
+
+.eppic-iframe A:link {color: #15428B; text-decoration: none}
+.eppic-iframe A:visited {color: #15428B; text-decoration: none}
+.eppic-iframe A:active {color: #15428B; text-decoration: none}
+.eppic-iframe A:hover {color: #15428B; text-decoration: underline}
 
 /*
 The style for the list items in Release Log, apply it to enclosing ul element 
@@ -100,67 +114,10 @@ The style for the list items in Release Log, apply it to enclosing ul element
 	margin-left: 20px;
 }
 
-.eppic-publication{
-	width:900px;
-	font-size:14px;
-	line-height:125%;
-	margin-left: 50px;
-	margin-right: 20px;
-	margin-top: 10px;
-	margin-bottom: 50px;
-}
-
-.eppic-publication h1{ 
-	font-size:16px;
-	font-weight:bold;	
-	margin-left: 50px;
-	margin-right: 20px;
-	margin-top: 20px;
-	margin-bottom: 0px;	
-	border-bottom: 1px dotted #434350;
-}
-
-.eppic-publication p{ 
-	font-size:14px;	
-	margin-left: 100px;
-	margin-right: 20px;
-}
-
-.eppic-faq h2{ 
-	font-size: 18px;
-	font-weight:bold;	
-	margin-left: 50px;
-	margin-top: 50px;
-	border-bottom: 1px dotted #434350;
-}
-
-.eppic-faq h4{ 
-	font-size: 14px;
-	font-weight:bold;	
-	margin-left: 50px;
-	margin-bottom: 5px;
-	margin-top:25px;
-}
-
-.eppic-faq p, .eppic-faq ul{ 
-	font-size: 14px;
-	margin-left: 50px;
-	margin-top: 0px;
-	margin-bottom: 0px;
-}
 
 /*
 EPPIC HELP PAGE STYLES
 */
-.eppic-help{ font-family: 'Open Sans', sans-serif; width:80%; margin: 0 auto; }
-
-.eppic-help h1{margin-top:70px; font-size:20px; font-weight:bold; border-bottom: 1px dotted #434350;}
-.eppic-help h2{margin-top:30px; font-size:18px; font-weight:bold; }
-.eppic-help h3{font-size:28px; margin-bottom:30px; text-variant:small-caps;} /*For header of the page*/
-.eppic-help h4{ font-size:16px; font-weight:bold; }
-.eppic-help p{ font-size:16px; }
-.eppic-help ul{ font-size:16px; }
-.eppic-help li{ margin-bottom:15px; }
 
 .eppic-help-navigation{font-size:16px; float:right; width:350px; margin-left: 150px; margin-bottom: 50px;background-color:#F7F7F7; padding:10px;}
 .eppic-help-navigation p {font-size:16px; margin: 0 0 5px 70px;}
@@ -182,29 +139,46 @@ EPPIC HELP PAGE STYLES
 .eppic-help-subtopic-image-right:hover{float:right; width:150%; transition: all 0.3s; -webkit-transition: all 0.3s; box-shadow:4px -4px 10px 3px #888, inset 4px -4px 10px 3px #888;}
 .eppic-help-subtopic-image-no-animation{width:95%; margin:10px; box-shadow:2px -2px 10px 3px #888, inset 2px -2px 10px 3px #888;}
 
-/*
-Displaying 3 images, third is the one in middle, not quite centered. 
-In a 1280px-wide screen it should be centered
-*/
-.first {
-	display:block;
-    float:left;      
-    margin-right: 120px; /* this separates the middle image */
-	margin-left: 20px;
-	margin-top: 50px;
-    
+.eppic-iframe-footer{
+	width: 100%;
+	height: 70px;
+	font-size: 12px;
+	margin: 0 auto;
+	padding: 5px;
+	padding-top: 10px;
+    background: #FFFFFF; 
+    position: fixed;
+    bottom:0;
+    z-index: 2;
+    border-top: 3px solid #888;
 }
-.second {
-	display:block;
-    float:right;
-    margin-right: 20px;
-	margin-left: 20px;
-	margin-top: 50px;
-    
+
+.eppic-iframe-footer p{
+	font-size: 12px;
+	margin-top: 0px;
+	margin-bottom: 5px;
+	vertical-align: top;
 }
-.third {
-	display:block;
-    /*margin:0 auto;*/
-    margin-left: 20px;
-    margin-top: 50px;
+
+.eppic-iframe-footer A{
+	vertical-align: top;
 }
+
+.eppic-iframe-footer img{
+	width: 120px;
+	margin: 5px;
+}
+
+.eppic-iframe-footer-left{
+	margin-top: 25px;
+	float:left;
+	text-align: left;
+}
+
+.eppic-iframe-footer-right{
+	width:400px;
+	float:right;
+	text-align: center;
+	margin-right:30px;
+}
+
