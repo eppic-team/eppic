@@ -222,10 +222,10 @@
 	padding-left: 70px;
 }
 
-.eppic-citation A:link {text-decoration: none}
-.eppic-citation A:visited {text-decoration: none}
-.eppic-citation A:active {text-decoration: none}
-.eppic-citation A:hover {text-decoration: underline}
+.eppic-citation A:link {color: #15428B; text-decoration: none}
+.eppic-citation A:visited {color: #15428B; text-decoration: none}
+.eppic-citation A:active {color: #15428B; text-decoration: none}
+.eppic-citation A:hover {color: #15428B; text-decoration: underline}
 
 .eppic-rounded-border {
 	border-radius: 5px;

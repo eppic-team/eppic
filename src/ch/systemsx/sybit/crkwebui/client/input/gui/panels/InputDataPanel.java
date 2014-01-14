@@ -639,7 +639,7 @@ public class InputDataPanel extends DisplayPanel
 	}
 
 	/**
-	 * Resets values of the fields.
+	 * Resets values of the fields and resets the radios too.
 	 */
 	public void resetToDefault()
 	{
@@ -647,8 +647,7 @@ public class InputDataPanel extends DisplayPanel
 		pdbCodeField.reset();
 		file.reset();
 		optionsInputPanel.resetValues();
-		pdbCodeRadio.setValue(true);
-		pdbFileRadio.setValue(false);
+		inputRadioGroup.setValue(pdbCodeRadio);
 		selectCodeRadio();
 	}
 	
