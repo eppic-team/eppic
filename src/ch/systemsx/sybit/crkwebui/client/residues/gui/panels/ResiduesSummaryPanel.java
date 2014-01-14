@@ -55,7 +55,7 @@ public class ResiduesSummaryPanel extends HorizontalLayoutContainer
 		sizesFS.setHeadingHtml(StyleGenerator.defaultFontStyleString(
 				AppPropertiesManager.CONSTANTS.interfaces_residues_summary_sizes_heading()));
 		VerticalLayoutContainer sizesContainer = new VerticalLayoutContainer();
-		sizesContainer.setPixelSize(110, 50);
+		sizesContainer.setPixelSize(110, 55);
 		sizesFS.setWidget(sizesContainer);
 		sizesFS.addStyleName("eppic-rounded-border");
 		sizesFS.addStyleName("eppic-residues-summary");
@@ -69,7 +69,7 @@ public class ResiduesSummaryPanel extends HorizontalLayoutContainer
 		coreRimScoreFS.setHeadingHtml(StyleGenerator.defaultFontStyleString(
 						AppPropertiesManager.CONSTANTS.interfaces_residues_summary_corerim_heading()));
 		VerticalLayoutContainer coreRimScoreContainer = new VerticalLayoutContainer();
-		coreRimScoreContainer.setPixelSize(140, 50);
+		coreRimScoreContainer.setPixelSize(140, 55);
 		coreRimScoreFS.setWidget(coreRimScoreContainer);
 		coreRimScoreFS.addStyleName("eppic-rounded-border");
 		coreRimScoreFS.addStyleName("eppic-residues-summary");
@@ -84,7 +84,7 @@ public class ResiduesSummaryPanel extends HorizontalLayoutContainer
 		coreSurfaceScoreFS.setHeadingHtml(StyleGenerator.defaultFontStyleString(
 				AppPropertiesManager.CONSTANTS.interfaces_residues_summary_coresurface_heading()));
 		VerticalLayoutContainer coreSurfaceScoreContainer = new VerticalLayoutContainer();
-		coreSurfaceScoreContainer.setPixelSize(140, 50);
+		coreSurfaceScoreContainer.setPixelSize(140, 55);
 		coreSurfaceScoreFS.setWidget(coreSurfaceScoreContainer);
 		coreSurfaceScoreFS.addStyleName("eppic-rounded-border");
 		coreSurfaceScoreFS.addStyleName("eppic-residues-summary");
