@@ -51,6 +51,8 @@ public class CenterPanel extends SimpleContainer
 	 */
 	public void setDisplayPanel(DisplayPanel displayPanel)
 	{
+		displayPanel.clearSizeCache();
+		displayPanel.setPixelSize(this.getOffsetWidth(), this.getOffsetHeight());
 		this.displayPanel = displayPanel;
 		
 		if(displayPanel != null)

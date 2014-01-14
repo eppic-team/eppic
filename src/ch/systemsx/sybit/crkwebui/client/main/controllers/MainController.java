@@ -416,6 +416,12 @@ public class MainController
 			inputDataPanel = (InputDataPanel)mainViewPort.getCenterPanel().getDisplayPanel();
 			inputDataPanel.resetToDefault();
 		}
+		else if(mainViewPort.getInputDataPanel() != null)
+		{
+			inputDataPanel = mainViewPort.getInputDataPanel();
+			inputDataPanel.resetToDefault();
+			mainViewPort.getCenterPanel().setDisplayPanel(inputDataPanel);
+		}
 		else{
 			inputDataPanel = new InputDataPanel();
 			mainViewPort.setInputDataPanel(inputDataPanel);
@@ -518,6 +524,13 @@ public class MainController
 			resultsPanel = (ResultsPanel)mainViewPort.getCenterPanel().getDisplayPanel();
 			resultsPanel.fillResultsPanel(resultData);
 			//resultsPanel.layout();
+		}
+		else if(mainViewPort.getResultsPanel() != null)
+		{
+			resultsPanel = mainViewPort.getResultsPanel();
+			resultsPanel.fillResultsPanel(resultData);
+			mainViewPort.getCenterPanel().setDisplayPanel(resultsPanel);
+			resultsPanel.resizeContent();
 		}
 		else
 		{
