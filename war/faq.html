@@ -24,17 +24,65 @@
 			information of general use for a number of structural biology
 			applications:</p>
 		<ul>
-			<li>"Molecular Potato" - Surface representation of each chain
-				color coded by sequence entropy</li>
-			<li>Number, identity distribution and coverage of putative
-				homologs in the MSA used for entropy calculation</li>
-			<li>Number and distribution of core residues in interfaces</li>
-			<li>Symmetry features of interfaces: the crystallographic
-				operators generating each interface are provided and are depicted in
-				red if they are conducive to infinite assemblies. Also, one can
-				compare the left- and right-hand side of the Details table of each
-				interface to see if it is isologous or heterologous</li>
+				<li>Precomputed Multiple Sequence Alignments (MSAs) of closely related homologs 
+					(within 60% sequence identity)for every protein	in the PDB 
+					or for user-uploaded structures</li>
+				<li>Colored-by-sequence-entropy surface representation as PSE files.  
+					Very useful for looking at features	present at protein surfaces: 
+					interfaces, binding sites etc.</li>				
+				<li>Number and distribution of core residues in interfaces</li>
+				<li>Symmetry features of interfaces: the crystallographic
+					operators generating each interface are provided and are depicted
+					in red if they are conducive to infinite assemblies. Also, one can
+					compare the left- and right-hand side of the Details table of each
+					interface to see if it is 
+					<a href="http://en.wikipedia.org/wiki/Heterologous" target="_blank">isologous</a> or 
+					<a href="http://en.wikipedia.org/wiki/Heterologous" target="_blank">heterologous</a></li>
 		</ul>
+		<h4>How should I cite EPPIC?</h4>
+		<p>
+			The main paper describing the EPPIC method is <a
+				href="http://www.biomedcentral.com/1471-2105/13/334" target="_blank">
+				Duarte JM, Srebniak A, Schaerer MA, Capitani G, BMC Bioinformatics
+				2012</a>. As well as citing the paper it is important that one cites the
+			<strong>EPPIC software version</strong> (top right below the logo in results page) and
+			even more important the <strong>UniProt database version</strong> (monthly releases)
+			used for the evolutionary analysis. Our predictions depend on the
+			sequence homologs found by searching the UniProt database so with
+			every release of the database the predictions can change. UniProt is
+			growing very fast these days so a few months of UniProt releases
+			between two runs can make a difference.
+		</p>
+		<h4>How do I know if a prediction is reliable? Does EPPIC produce confidence values?</h4>
+		<p>EPPIC does not produce confidence values for its prediction at the moment, 
+		though it is in our plans to have them. In any case there are a few things that one can
+		look at to understand if the prediction can be trusted or not:</p>
+		<ul>
+				<li>The more sequence homologs the better: look at the number of 
+				homologs on the Sequence Information panel on top. If below 10 we will 
+				not even produce the evolutionary scores and the prediction will be purely 
+				geometrical (less reliable). If above 10 but the numbers are still small one 
+				should be careful with the results.</li>
+				<li>The identities of the sequence homologs should cover a wide range of 
+				identities: look at the distribution by clicking on the 
+				<img src="resources/icons/info_icon.png"></img> icon next to the number 
+				of homologs. A typical case is that of archaeal and some bacterial 
+				proteins where only very close sequence homologs exist (&gt;90%) and then 
+				nothing else is found in sequence databases until &lt;40% identity. The alignment
+				resulting from them will contain less information and thus the prediction 
+				will be less reliable.</li>
+				<li>The more consensus the better: if the three indicators coincide in their calls
+				the prediction can be considered more reliable.</li>
+				<li>Non full-length proteins (domains or fragments) are less reliably predicted:
+				you can find out whether your protein is full-length or not by clicking on the 
+				<img src="resources/icons/info_icon.png"></img> icon next to the chain name 
+				in the Sequence Information panel.</li>
+				<li>Check for any other kind of warnings: low resolution warnings on top or per-interface
+				warnings in the last column of the Main Interface table: engineering artifacts (mutations, 
+				expression tags), possible artifactual mediating ions, engineered disulfide bridges etc.
+				If any of these warnings appear one should always treat the results with more care.</li>
+		</ul>
+		
 		<h2>Usage</h2>
 		<h4>What are the advanced input parameters for?</h4>
 		<ul>
@@ -53,7 +101,18 @@
 				blasting. In Global mode the full length UniProt is used, in local
 				only the matching PDB part of the UniProt sequence is used.</li>
 		</ul>
-		<h4>If I change the input parameters and submit any structure,
+		<h4>Do I need to change the input parameters?</h4>
+		<p>We don't recommend that the users change these parameters. We have used as 
+			default values the optimal ones found by benchmarking the 
+			method on validated datasets of biological interfaces and crystal contacts. 
+			Our precomputed results for PDB entries use	always these defaults. 
+			A possible scenario where one would want to try other parameters
+			is in the case of lack of sequence data within the default identity cut-offs. Predictions
+			based on MSAs of too few sequences (&lt;10 as a rule of thumb) are not reliable. Lowering the
+			identity cut-off will find more sequences, but can at the same time introduce problems 
+			in the alignment and potentially affect the accuracy of predictions (see this 
+			<a href="http://www.biomedcentral.com/1471-2105/13/334/figure/F5" target="_blank">figure</a>) </p>
+		<h4>If I change the input parameters and submit any PDB structure by typing its PDB code,
 			why does it start calculating?</h4>
 		<p>We have PDB-wide results precalculated for our users. We use
 			only the default parameters for this calculation. If you use any
@@ -68,18 +127,16 @@
 			give an email address while submitting so that you receive the URL
 			with the job identifier in your inbox. Otherwise you will have to
 			bookmark it or keep a record of it yourself. It is always possible to
-			retrieve the job by using the URL <a
-				href="http://www.eppic-web.org/ewui/#id/" target="_blank">http://www.eppic-web.org/ewui/#id/</a>&lt;my_job_id&gt;.
+			retrieve the job by using the URL <code>http://www.eppic-web.org/ewui/#id/&lt;my_job_id&gt;</code>.
 			Whether the job is still running or already done, the URL will show
 			its current status and automatically display the final results
 			whenever it is finished. You can even share the URL with colleagues.
 			The jobs will be stored in our servers for at least 1 month.
 		</p>
-		<h4>Can I directly access the precomputed results of a PDB code?</h4>
+		<h4>Can I directly link to the precomputed results for a PDB entry?</h4>
 		<p>
 			The PDB-wide precomputed results can be accessed directly by using
-			the permanent URLs: <a href="http://www.eppic-web.org/ewui/#id/"
-				target="_blank">http://www.eppic-web.org/ewui/#id/</a>&lt;PDB_code&gt;
+			the permanent URLs: <code>http://www.eppic-web.org/ewui/#id/&lt;PDB_code&gt;</code>
 		</p>
 		<h4>What does the UniProt version on the home page indicate?</h4>
 		<p>The UniProt version (e.g. 2013_11) on the homepage denotes the
@@ -92,17 +149,18 @@
 			Information panel in the results page.</p>
 		<h4>What does the version below the EPPIC logo in results page
 			indicate?</h4>
-		<p>We always keep improving EPPIC with bug-fixes and added
-			features. The version displayed below the EPPIC logo indicate the
+		<p>We always keep improving EPPIC with bug-fixes and new
+			features. The number displayed below the logo indicates the
 			version of EPPIC used to calculate the results. To find out what has
-			changed in various versions, please refer our Release Log page.</p>
+			changed in various versions, please refer to our Release Log page.</p>
 		<h4>Where can I get the sequence entropy information?</h4>
 		<p>A surface representation of each chain color coded by sequence
 			entropy can be downloaded from the icon in the sequence information
 			panel. This icon is adjacent to the homologs information icon. The
-			downloaded file is in PSE format, which can be visualized with PyMol
-			(www.pymol.org). To date we do not have an integrated viewer to
-			visualize it in our server .</p>
+			downloadable file is in PSE format, which can be visualized with 
+			<a href="http://www.pymol.org" target="_blank">PyMol</a>. The actual entropy
+			values can be found in the Residue Details tables (opened when clicking
+			on the Details button in the Main Interface table).</p>
 		<h4>What is the 3D Viewer option in the navigation panel for?</h4>
 		<p>EPPIC lets one visualize the interfaces in 3D. By clicking on
 			the thumbnails in the interface table one gets this interactive 3D
@@ -110,6 +168,47 @@
 			available options are: browser embedded Jmol viewer (no need for
 			local viewer), a PDB file downloadable to a local molecular viewer,
 			or PyMOL session file (.pse) to be opened in local PyMOL.</p>
+		
+		<h4>Does EPPIC work on membrane proteins?</h4>
+		<p>
+			Yes, we tested its performance on a validated dataset of membrane
+			protein oligomerization interfaces and it exhibited satisfactory
+			accuracy, though below that of soluble proteins. For further details see <a
+				href="http://www.biomedcentral.com/1472-6807/13/21" target="_blank"> Duarte JM,
+				Biyani N, Baskaran, Capitani G, BMC Structural Biology 2013</a>.
+		</p>
+		<h4>Does it work on antibody-antigen interactions?</h4>
+		<p>Given the assumptions it rests on for evolutionary analysis,
+			EPPIC will not reliably work on antibody-antigen interactions.</p>
+		<h4>Does it work on engineered and/or chimeric proteins?</h4>
+		<p>EPPIC will tolerate a small number of point mutations
+			compared to the reference UniProt sequence and will list them in a
+			warning message at the relevant interface(s). If the number of point
+			mutations in a certain interface is too high, the evolutionary calls
+			will be "nopred". Chimeric proteins will also have "nopred"
+			evolutionary calls. Users, however, can edit out of the chimeric PDB
+			file the component that is not of interest, thus obtaining
+			coordinates that correspond to one sequence only. Those coordinates
+			can then be uploaded to EPPIC and be properly analyzed.
+			In any case it is not clear whether the evolutionary assumptions 
+			that EPPIC rests on hold in the case of chimeric proteins. So any
+			prediction for these cases has to be taken with care.</p>
+	    <h4>Does it work on multichain NMR structures?</h4>
+		<p>We expect EPPIC to work with reasonable accuracy on multichain NMR structures
+		   and we are currently benchmarking its performance in this respect.</p>
+		<h4>Does it work on low resolution structures?</h4>
+		<p>Predictions based on low resolution structures will be less reliable. 
+			Indeed if the X-ray resolution of a PDB entry is lower than 3.5 Å, a
+			low resolution warning will appear in red next to the structure
+			title on top. Whenever this happens one should treat all results
+			with caution, since our predictions depend on accurate side chain
+			positioning to calculate burial and assign interface core residues.
+			A warning also appears in case the R-Free factor is higher than 35%.
+			For structures with resolution worse than ~ 4.5 Å the results will not
+			be meaningful at all.</p>
+			
+		
+		
 		<h2>Method</h2>
 		<h4>How does EPPIC work?</h4>
 		<p>
@@ -135,8 +234,8 @@
 				of sequence entropy of core residues (at 70% burial) versus random
 				samples of other surface residues</li>
 		</ul>
-		<p>The scores are translated to calls using their cut-off values.
-			This implies that if the calculated score is less than its cut-off
+		<p>The scores are translated to calls using their cut-off values:
+			if the calculated score is below its cut-off
 			value the call is XTAL or BIO otherwise.</p>
 		<h4>What does nopred in interface table refer to?</h4>
 		<p>The nopred (no prediction) call can occur when there is not
@@ -154,46 +253,8 @@
 		<h4>How is the final call predicted?</h4>
 		<p>The final call is the consensus call from the evolution and
 			geometry calls.</p>
-		<h2>Limitations</h2>
-		<h4>Does EPPIC work on membrane proteins?</h4>
-		<p>
-			Yes, we tested its performance on a validated dataset of membrane
-			protein oligomerization interfaces and it exhibited satisfactory
-			accuracy. For further details see <a
-				href="http://www.biomedcentral.com/1472-6807/13/21" target="_blank"> Duarte JM,
-				Biyani N, Baskaran, Capitani G, BMC Structural Biology 2013</a>.
-		</p>
-		<h4>Does it work on antibody-antigen interactions?</h4>
-		<p>Given the assumptions it rests on for evolutionary analysis,
-			EPPIC will not reliably work on antibody-antigen interactions.</p>
-		<h4>Does it work on engineered and/or chimeric proteins?</h4>
-		<p>EPPIC will "tolerate" a small number of point mutations
-			compared to the reference UniProt sequence and will list them in a
-			warning message at the relevant interface(s). If the number of point
-			mutations in a certain interface is too high, the evolutionary calls
-			will be "nopred". Chimeric proteins will also have "nopred"
-			evolutionary calls. Users, however, can edit out of the chimeric PDB
-			file the component that is not of interest, thus obtaining
-			coordinates that correspond to one sequence only. Those coordinates
-			can then be uploaded to EPPIC and be properly analyzed.</p>
-	    <h4>Does it work on multichain NMR structures?</h4>
-		<p>We expect EPPIC to work with reasonable accuracy on multichain NMR structures
-		   and we are currently benchmarking its performance in this respect.</p>
-		<h2>Miscellaneous</h2>
-		<h4>How should I cite EPPIC?</h4>
-		<p>
-			The main paper describing the EPPIC method is <a
-				href="http://www.biomedcentral.com/1471-2105/13/334" target="_blank">
-				Duarte JM, Srebniak A, Schaerer MA, Capitani G, BMC Bioinformatics
-				2012</a>. As well as citing the paper it is important that one cites the
-			EPPIC software version (top right below the logo in results page) and
-			even more important the UniProt database version (monthly releases)
-			used for the evolutionary analysis. Our predictions depend on the
-			sequence homologs found by searching the UniProt database so with
-			every release of the database the predictions can change. UniProt is
-			growing very fast these days so a few months of UniProt releases
-			between two runs can make a difference.
-		</p>
+		
+
 </div>
 <div class="eppic-iframe-footer">
 			<div class="eppic-iframe-footer-left">

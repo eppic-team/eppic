@@ -40,27 +40,24 @@
 				<p>In addition to that, it provides information of general use
 					for a number of structural biology applications:</p>
 				<ul>
-					<li>"Molecular Potato" - Surface representation of each chain
-						color coded by sequence entropy (conservation), calculated from a
-						Multiple Sequence Alignment (MSA) of closely related homologs
-						(within 60% sequence identity)</li>
-					<li>Precomputed MSAs for every protein in the PDB (or for
-						user-uploaded structures). The number, identity distribution and
-						sequence coverage of the homologs can be easily visually inspected</li>
-					<li>Number and distribution of core residues in interfaces</li>
-					<li>Symmetry features of interfaces: the crystallographic
-						operators generating each interface are provided and are depicted
-						in red if they are conducive to infinite assemblies. Also, one can
-						compare the left- and right-hand side of the Details table of each
-						interface to see if it is <a
-						href="http://en.wikipedia.org/wiki/Heterologous" target="_blank">isologous</a>
-						or <a href="http://en.wikipedia.org/wiki/Heterologous"
-						target="_blank">heterologous</a>
-					</li>
+				<li>Precomputed Multiple Sequence Alignments (MSAs) of closely related homologs 
+					(within 60% sequence identity)for every protein	in the PDB 
+					or for user-uploaded structures</li>
+				<li>Colored-by-sequence-entropy surface representation as PSE files.  
+					Very useful for looking at features	present at protein surfaces: 
+					interfaces, binding sites etc. (<a href="#molecular-potato">more</a>)</li>				
+				<li>Number and distribution of core residues in interfaces</li>
+				<li>Symmetry features of interfaces: the crystallographic
+					operators generating each interface are provided and are depicted
+					in red if they are conducive to infinite assemblies. Also, one can
+					compare the left- and right-hand side of the Details table of each
+					interface to see if it is 
+					<a href="http://en.wikipedia.org/wiki/Heterologous" target="_blank">isologous</a> or 
+					<a href="http://en.wikipedia.org/wiki/Heterologous" target="_blank">heterologous</a></li>
 				</ul>
 			</div>
 
-			<!--------------------- 
+		<!--------------------- 
 		    Topics  start here
 		 ----------------------->
 
@@ -312,7 +309,6 @@
 				icon. Clicking this icon reveals more information about the item
 				adjacent to it. The items are explained below:
 			</p>
-
 			<div class="eppic-help-subtopic">
 
 				<div class="eppic-help-subtopic-right-small">
@@ -346,23 +342,20 @@
 							icon next to this item for more information about the homologs (<a
 							href="#homologs-window">more</a>).</li>
 
-						<li><b>"Molecular potato" (surface color-coded by
-								entropy) icon</b>: click on it to get a PyMOL PSE file with the MSA
-							sequence entropy values color-mapped onto the protein surface.
-							This is particularly useful in order to get a visual impression
-							of the patterns of selection pressure on the surface of a given
-							chain. The spectrum function of PyMOL is used to color the
-							residues: the highest conservation appears in blue, transitioning
-							to yellow and orange for lower conservation values. Residues that
-							could not be aligned (for instance because they belong to an
-							engineered tag) appear in red. Additionally, magenta dots mark
-							the core residues of the largest interface to which the chain
-							participates. PyMOL selections are also available in the PSE file
-							to let one select interfaces other than the default (largest)
-							one.</li>
-					</ol>
+					<li id="molecular-potato"><b>Surface color-coded by entropy icon</b>: click on it to get a PyMOL PSE file with the
+						MSA sequence entropy values color-mapped onto the protein surface.
+						This is particularly useful in order to get a visual impression of
+						the patterns of selection pressure on the surface of a given
+						chain. The spectrum function of PyMOL is used to color the
+						residues: the highest conservation appears in blue, transitioning
+						to yellow and orange for lower conservation values. Residues that
+						could not be aligned (for instance because they belong to an
+						engineered tag) appear in red. Additionally, magenta dots mark the
+						core residues of the largest interface to which the chain
+						participates. PyMOL selections are also available in the PSE file
+						to let one select interfaces other than the default (largest) one.</li>
+				</ol>
 				</div>
-
 			</div>
 
 			<h3>UniProt database version</h3>
@@ -493,7 +486,7 @@
 			</p>
 
 			<h3 id="low-resolution">Low resolution and high R-Free warnings</h3>
-			<p>If the X-ray resolution of a PDB entry is lower than 3.5 A, a
+			<p>If the X-ray resolution of a PDB entry is lower than 3.5 Å, a
 				low resolution warning will appear in red next to the structure
 				title on top. Whenever this happens one should treat all results
 				with caution, since our predictions depend on accurate side chain
