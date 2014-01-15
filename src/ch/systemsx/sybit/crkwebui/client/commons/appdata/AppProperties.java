@@ -49,7 +49,6 @@ public interface AppProperties extends Constants
 	String input_submit_waiting_message();
 	String input_submit_form_invalid_header();
 	String input_submit_form_invalid_message();
-	String input_submit_form_no_methods_selected();
 	String input_reset();
 	String input_upload_file_radio();
 	String input_pdb_code_radio();
@@ -59,8 +58,6 @@ public interface AppProperties extends Constants
 	String input_citation_link_text();
 	String input_news_header();
 
-	String parameters_reduced_alphabet();
-	String parameters_reduced_alphabet_hint();
 	String parameters_allignment();
 	String parameters_soft_identity_cutoff();
 	String parameters_soft_identity_cutoff_hint();

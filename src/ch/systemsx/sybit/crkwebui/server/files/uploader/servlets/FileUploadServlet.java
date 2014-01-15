@@ -103,7 +103,7 @@ public class FileUploadServlet extends BaseServlet {
 			}
 			catch(FileUploadException ex)
 			{
-				out.println("err:" + "Error during uploading the file - " + ex.getMessage());
+				out.println("err:" + "Error while uploading the file - " + ex.getMessage());
 			}
 			catch(Exception ex) 
 			{
