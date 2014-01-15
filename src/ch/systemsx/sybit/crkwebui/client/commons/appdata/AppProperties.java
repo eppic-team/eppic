@@ -178,8 +178,10 @@ public interface AppProperties extends Constants
 	String navigation_panel_change_viewer_link_label();
 	
 	String bottom_panel_about_link_label();
-	String bottom_panel_contact_link();
 	String bottom_panel_contact_link_label();
+	String bottom_panel_disclaimer_link_label();
+	String bottom_panel_about_link();
+	String bottom_panel_contact_email();
 	String bottom_panel_status_error_refresh_page();
 	
 	String about_window_title();

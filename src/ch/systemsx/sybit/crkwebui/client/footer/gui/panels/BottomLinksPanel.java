@@ -32,16 +32,19 @@ public class BottomLinksPanel extends HorizontalLayoutContainer
         this.setBorders(false);
 
         HorizontalLayoutContainer linksContainer = new HorizontalLayoutContainer();
-        linksContainer.setWidth(125);
+        linksContainer.setWidth(170);
         
+        HTML disclaimerLink = createDisclaimerLink();
         HTML aboutLink = createAboutLink();
         HTML contactLink = createContactLink();
    
+        linksContainer.add(disclaimerLink, new HorizontalLayoutData(-1,1, new Margins(0,10,0,0)));
+        linksContainer.add(createBreakLabel(), new HorizontalLayoutData(-1,1));
         linksContainer.add(aboutLink, new HorizontalLayoutData(-1,1, new Margins(0,10,0,10)));
         linksContainer.add(createBreakLabel(), new HorizontalLayoutData(-1,1));
         linksContainer.add(contactLink, new HorizontalLayoutData(-1,1));
         
-        this.add(new SimpleContainer(), new HorizontalLayoutData(0.5,-1, new Margins(0,10,0,10)));
+        this.add(new SimpleContainer(), new HorizontalLayoutData(0.5,-1));
         this.add(linksContainer);
     }
 	
@@ -54,14 +57,13 @@ public class BottomLinksPanel extends HorizontalLayoutContainer
     }
 	
 	/**
-	 * Creates link to open about window.
-	 * @return link to about window
+	 * Creates link to open disclaimer window.
+	 * @return link to disclaimer window
 	 */
-	private HTML createAboutLink()
+	private HTML createDisclaimerLink()
 	{
-		HTML aboutLink = new EmptyLink(AppPropertiesManager.CONSTANTS.bottom_panel_about_link_label());
+		HTML aboutLink = new EmptyLink(AppPropertiesManager.CONSTANTS.bottom_panel_disclaimer_link_label());
 	    aboutLink.addStyleName("eppic-footer-link");
-	    aboutLink.addStyleName("eppic-default-left-margin");
 	    aboutLink.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
@@ -73,17 +75,31 @@ public class BottomLinksPanel extends HorizontalLayoutContainer
 	}
 	
 	/**
+	 * Creates about link.
+	 * @return about link
+	 */
+	private HTML createAboutLink()
+	{
+		HTML contactLink = new HTML("<a href=\"" +
+				AppPropertiesManager.CONSTANTS.bottom_panel_about_link() +
+				"\" target=\"_blank\">" +
+				AppPropertiesManager.CONSTANTS.bottom_panel_about_link_label() +
+				"</a>");
+		contactLink.addStyleName("eppic-footer-link");
+
+		return contactLink;
+	}
+	
+	/**
 	 * Creates contact link.
 	 * @return contact link
 	 */
 	private HTML createContactLink()
 	{
-		HTML contactLink = new HTML("<a href=\"" +
-				AppPropertiesManager.CONSTANTS.bottom_panel_contact_link() +
-				"\" target=\"_blank\">" +
+		HTML contactLink = new HTML("<a href=\"mailto:"+AppPropertiesManager.CONSTANTS.bottom_panel_contact_email() +"\"" +
+				"\">" +
 				AppPropertiesManager.CONSTANTS.bottom_panel_contact_link_label() +
 				"</a>");
-		contactLink.addStyleName("eppic-default-left-margin");
 		contactLink.addStyleName("eppic-footer-link");
 
 		return contactLink;
