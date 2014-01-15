@@ -47,7 +47,7 @@ public class TopPanel extends FramedPanel
 	}
 	
 	private ImageEmptyLink getLogo() {
-		String logoIconSource = "resources/images/eppic-logo.png";
+		String logoIconSource = "resources/images/eppic-logo-small.png";
 		ImageEmptyLink logo = new ImageEmptyLink(logoIconSource, 50, 20);
 		
 		logo.addClickHandler(new ClickHandler() {		
