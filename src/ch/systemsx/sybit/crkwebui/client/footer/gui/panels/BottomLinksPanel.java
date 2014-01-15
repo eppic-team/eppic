@@ -42,7 +42,7 @@ public class BottomLinksPanel extends HorizontalLayoutContainer
         linksContainer.add(createBreakLabel(), new HorizontalLayoutData(-1,1));
         linksContainer.add(aboutLink, new HorizontalLayoutData(-1,1, new Margins(0,10,0,10)));
         linksContainer.add(createBreakLabel(), new HorizontalLayoutData(-1,1));
-        linksContainer.add(contactLink, new HorizontalLayoutData(-1,1));
+        linksContainer.add(contactLink, new HorizontalLayoutData(-1,1, new Margins(0,0,0,10)));
         
         this.add(new SimpleContainer(), new HorizontalLayoutData(0.5,-1));
         this.add(linksContainer);
