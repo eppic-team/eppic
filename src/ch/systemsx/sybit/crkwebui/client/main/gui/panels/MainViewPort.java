@@ -103,7 +103,7 @@ public class MainViewPort extends BorderLayoutContainer
 		westData.setCollapsible(true);
 		westData.setFloatable(true);
 		westData.setSplit(true);
-		westData.setMargins(new Margins(0, 10, 0, 0));
+		westData.setMargins(new Margins(0, 0, 0, 10));
 
 		myJobsPanel = new MyJobsPanel();
 		this.setWestWidget(myJobsPanel, westData);
