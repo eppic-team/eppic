@@ -80,9 +80,9 @@ public class GetResultsOfProcessingCallback implements AsyncCallback<ProcessingD
 				msg = "<div> <b>"
 						+ "Could not find PDB code '"+jobId+"' on the server!</b></br>"
 						+ "This can occur because:"
-						+ "<li>PDB code does not exist, or,</li>"
+						+ "<ul><li>PDB code does not exist, or,</li>"
 						+ "<li>If the PDB entry was released recently we might not have computed results for it yet. "
-						+ "<i>You can always try uploading the corresponding PDB/mmCIF file.</i></li>"
+						+ "You can always try uploading the corresponding PDB/mmCIF file.</li></ul>"
 						+ "</div>";
 			}
 			
