@@ -9,14 +9,14 @@
 }
 
 .eppic-iframe h1 {
-	font-size:28px;
+	font-size:24px;
 	font-weight:bold;
 	margin-top: 40px;	
 	margin-bottom: 20px;
 }
 
 .eppic-iframe h2 {
-	font-size:20px;
+	font-size:18px;
 	font-weight:bold;	
 	margin-top: 70px;
 	margin-bottom: 10px;
@@ -24,21 +24,21 @@
 }
 
 .eppic-iframe h3 {
-	font-size:18px;
+	font-size:16px;
 	font-weight:bold;
 	margin-top: 20px;
 	margin-bottom: 0px;
 }
 
 .eppic-iframe h4{ 
-	font-size:16px; 
+	font-size:14px; 
 	font-weight:bold;
 	margin-top: 20px;
 	margin-bottom: 0px;
 }
 
 .eppic-iframe p {
-	font-size:16px;
+	font-size:14px;
 	line-height:125%;
 	margin-top: 10px;
 	margin-bottom: 0px;
@@ -49,11 +49,15 @@
 	font-family:monospace;
 	margin-top: 10px;
 	margin-bottom: 10px;
-	padding-left: 10px;
 }
 
 .eppic-iframe ul {
-	font-size:16px;
+	font-size:14px;
+	line-height:125%;
+}
+
+.eppic-iframe ol {
+	font-size:14px;
 	line-height:125%;
 }
 
@@ -112,6 +116,10 @@ The style for the list items in Release Log, apply it to enclosing ul element
 	margin-top: 50px;
 	margin-right: 20px;
 	margin-left: 20px;
+}
+
+.eppic-faq {
+	margin-bottom: 200px;
 }
 
 .eppic-faq h4:before{
@@ -174,6 +182,7 @@ EPPIC HELP PAGE STYLES
 }
 
 .eppic-iframe-footer img{
+	border-style:none;
 	width: 120px;
 	margin: 5px;
 }
@@ -185,7 +194,7 @@ EPPIC HELP PAGE STYLES
 }
 
 .eppic-iframe-footer-right{
-	width:400px;
+	width:420px;
 	float:right;
 	text-align: center;
 	margin-right:30px;
