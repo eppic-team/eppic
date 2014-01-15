@@ -1,21 +1,15 @@
-.eppic-iframe{
+body{
 	font-family: 'Open Sans', sans-serif;
 }
 
-.eppic-iframe-content {
-	width: 80%;
-	margin: 0 auto;
-	margin-bottom: 200px;
-}
-
-.eppic-iframe h1 {
+h1 {
 	font-size:24px;
 	font-weight:bold;
 	margin-top: 40px;	
 	margin-bottom: 20px;
 }
 
-.eppic-iframe h2 {
+h2 {
 	font-size:18px;
 	font-weight:bold;	
 	margin-top: 70px;
@@ -23,53 +17,58 @@
 	border-bottom: 1px dotted #434350;
 }
 
-.eppic-iframe h3 {
+h3 {
 	font-size:16px;
 	font-weight:bold;
 	margin-top: 20px;
 	margin-bottom: 0px;
 }
 
-.eppic-iframe h4{ 
+h4{ 
 	font-size:14px; 
 	font-weight:bold;
 	margin-top: 20px;
 	margin-bottom: 0px;
 }
 
-.eppic-iframe p {
+p {
 	font-size:14px;
 	line-height:125%;
 	margin-top: 10px;
 	margin-bottom: 0px;
 }
 
-.eppic-iframe code {
+code {
 	font-size:14px;
 	font-family:monospace;
 	margin-top: 10px;
 	margin-bottom: 10px;
 }
 
-.eppic-iframe ul {
+ul {
 	font-size:14px;
 	line-height:125%;
 }
 
-.eppic-iframe ol {
+ol {
 	font-size:14px;
 	line-height:125%;
 }
 
-.eppic-iframe li{ 
+li{ 
 	margin-bottom:15px; 
 }
 
+A:link {color: #15428B; text-decoration: none}
+A:visited {color: #15428B; text-decoration: none}
+A:active {color: #15428B; text-decoration: none}
+A:hover {color: #15428B; text-decoration: underline}
 
-.eppic-iframe A:link {color: #15428B; text-decoration: none}
-.eppic-iframe A:visited {color: #15428B; text-decoration: none}
-.eppic-iframe A:active {color: #15428B; text-decoration: none}
-.eppic-iframe A:hover {color: #15428B; text-decoration: underline}
+.eppic-iframe-content {
+	width: 80%;
+	margin: 0 auto;
+	margin-bottom: 200px;
+}
 
 /*
 The style for the list items in Release Log, apply it to enclosing ul element 
@@ -116,10 +115,6 @@ The style for the list items in Release Log, apply it to enclosing ul element
 	margin-top: 50px;
 	margin-right: 20px;
 	margin-left: 20px;
-}
-
-.eppic-faq {
-	margin-bottom: 200px;
 }
 
 .eppic-faq h4:before{
@@ -171,7 +166,6 @@ EPPIC HELP PAGE STYLES
     background: #FFFFFF; 
     position: fixed;
     bottom:0;
-    z-index: 2;
     border-top: 3px solid #888;
 }
 
