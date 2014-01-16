@@ -20,9 +20,7 @@ import com.sencha.gxt.core.client.util.Margins;
  *
  */
 public class ResultsPanel extends DisplayPanel
-{	
-	private static final int MIN_WIDTH = 800;
-	
+{
 	private IdentifierHeaderPanel headerPanel;
 	private VerticalLayoutContainer resultsContainer;
 	
@@ -87,7 +85,7 @@ public class ResultsPanel extends DisplayPanel
 	{
 		int width = ApplicationContext.getWindowData().getWindowWidth() - 180;
 		
-		if(width < MIN_WIDTH) width = MIN_WIDTH;
+		if(width < MIN_WIDTH) width = MIN_WIDTH-20;
 		resultsGridContainer.resizeContent(width);
 		headerPanel.resizePanel(width + 30);
 		informationPanel.resizePanel(width);
