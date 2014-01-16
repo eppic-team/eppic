@@ -57,7 +57,8 @@ public class ViewerSelectorWindow extends ResizableWindow{
 					if(viewerCookie.equals(AppPropertiesManager.CONSTANTS.viewer_local())) local.setValue(true);
 					else if(viewerCookie.equals(AppPropertiesManager.CONSTANTS.viewer_jmol())) jmol.setValue(true);
 					else if(viewerCookie.equals(AppPropertiesManager.CONSTANTS.viewer_pse())) pse.setValue(true);
-				}
+				} else
+					jmol.setValue(true);
 				
 			}
 		});
