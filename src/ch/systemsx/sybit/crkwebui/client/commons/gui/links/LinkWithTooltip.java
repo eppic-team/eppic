@@ -42,4 +42,12 @@ public class LinkWithTooltip extends LabelWithTooltip
 		super.setData("<a href=\"" + linkUrl + "\" target=\"_blank\" style='vertical-align:top;'>" + labelText + "</a>",
 						tooltipText);
 	}
+	
+	/**
+	 * Sets a text with no link
+	 */
+	public void setNoLinkData(String labelText,
+					String tooltipText){
+		super.setData(labelText, tooltipText);
+	}
 }

@@ -15,7 +15,7 @@ import com.sencha.gxt.widget.core.client.container.CssFloatLayoutContainer;
  */
 public class GeneralInfoRowContainer extends CssFloatLayoutContainer {
 	private static final int FIELD_NAME_LENGTH = 100;
-	private static final int VALUE_LENGTH = 200;
+	private static final int VALUE_LENGTH = 230;
 	
 	private HTML fieldNameLabel;
 	private HTML valueLabel;

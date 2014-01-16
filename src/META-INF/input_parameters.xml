@@ -100,7 +100,7 @@
 	</run_parameters>
 	
 	<screen_settings>
-		<min_screen_width>950</min_screen_width>
+		<min_screen_width>1000</min_screen_width>
 		<min_screen_height>400</min_screen_height>
 	</screen_settings>
 </settings>

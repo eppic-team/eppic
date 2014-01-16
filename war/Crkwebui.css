@@ -9,6 +9,13 @@
 	vertical-align:middle;
 }
 
+.x-grid-row-summary, .x-grid-row-summary td{
+	text-align: center;
+	font-size: 14px;
+	font-style: italic;
+	color: #15428B;
+}
+
 .eppic-default-font, .eppic-default-font td, .eppic-default-font tr, .eppic-default-font input{
 	font-family: 'Open Sans', sans-serif;
 }
@@ -163,6 +170,12 @@
 .eppic-results-grid-common-cells{
 	text-align: center;
 	font-size: 14px;
+}
+
+.eppic-results-grid-summary-cells{
+	text-align: center;
+	font-size: 14px;
+	font-style: italics;
 }
 
 .eppic-results-final-call {

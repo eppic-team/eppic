@@ -66,7 +66,7 @@ public class PDBIdentifierPanel extends HorizontalLayoutContainer
 		}
 		else
 		{
-			pdbNameLabel.setLinkData(EscapedStringGenerator.generateEscapedString(pdbName),"","");
+			pdbNameLabel.setNoLinkData(EscapedStringGenerator.generateEscapedString(pdbName),"");
 		}
 		
 		// TODO we should try to set a constant "always-low-res exp method=ELECTRON MICROSCOPY". 
