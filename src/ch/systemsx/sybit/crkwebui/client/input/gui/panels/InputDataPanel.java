@@ -259,7 +259,7 @@ public class InputDataPanel extends DisplayPanel
 		HorizontalLayoutContainer footerContainer = new HorizontalLayoutContainer();
 
 		footerContainer.add(new SimpleContainer(), new HorizontalLayoutData(0.5, -1, new Margins(0)));
-		footerContainer.add(new HTML(AppPropertiesManager.CONSTANTS.input_citation() + " :&nbsp;"));
+		footerContainer.add(new HTML(AppPropertiesManager.CONSTANTS.input_citation() + ":&nbsp;"));
 		
 		LinkWithTooltip citationLink = new LinkWithTooltip(AppPropertiesManager.CONSTANTS.input_citation_link_text(), 
 				AppPropertiesManager.CONSTANTS.input_citation_link_tooltip(),
