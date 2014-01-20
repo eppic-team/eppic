@@ -6,6 +6,7 @@ import ch.systemsx.sybit.crkwebui.client.commons.gui.labels.EppicLabel;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.labels.LabelWithTooltip;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.links.LinkWithTooltip;
 import ch.systemsx.sybit.crkwebui.client.commons.util.EscapedStringGenerator;
+import ch.systemsx.sybit.crkwebui.shared.model.ExperimentalWarnings;
 import ch.systemsx.sybit.crkwebui.shared.model.InputType;
 
 import com.google.gwt.user.client.ui.FlexTable;
@@ -68,20 +69,15 @@ public class PDBIdentifierPanel extends HorizontalLayoutContainer
 			
 		}
 		
-		// TODO we should try to set a constant "always-low-res exp method=ELECTRON MICROSCOPY". 
-		// It's not ideal that the name is hard-coded
-		if (expMethod!=null && expMethod.equals("ELECTRON MICROSCOPY")) {
-			warningLabel = createWarningLabel(AppPropertiesManager.CONSTANTS.pdb_identifier_panel_warning_lowRes(),
-					AppPropertiesManager.CONSTANTS.pdb_identifier_panel_warning_lowRes_hint());			
+		//Check for warnings
+		ExperimentalWarnings warnings = new ExperimentalWarnings(spaceGroup, expMethod, resolution, rfreeValue);
+		if (warnings.isEmWarning()) {
+			warningLabel = createWarningLabel(AppPropertiesManager.CONSTANTS.warning_EM_title());			
 		}
-		else if(ApplicationContext.getSettings().getResolutionCutOff() > 0 && 
-				resolution > ApplicationContext.getSettings().getResolutionCutOff() && resolution > 0) {			
-			warningLabel = createWarningLabel(AppPropertiesManager.CONSTANTS.pdb_identifier_panel_warning_lowRes(),
-					AppPropertiesManager.CONSTANTS.pdb_identifier_panel_warning_lowRes_hint());
-		}else if(ApplicationContext.getSettings().getRfreeCutOff() > 0 && 
-				rfreeValue > ApplicationContext.getSettings().getRfreeCutOff() && rfreeValue > 0){
-			warningLabel = createWarningLabel(AppPropertiesManager.CONSTANTS.pdb_identifier_panel_warning_highRfree(),
-					AppPropertiesManager.CONSTANTS.pdb_identifier_panel_warning_highRfree_hint());
+		else if(warnings.isResolutionWarning()) {			
+			warningLabel = createWarningLabel(AppPropertiesManager.CONSTANTS.warning_LowRes_title());
+		}else if(warnings.isRfreeWarning()){
+			warningLabel = createWarningLabel(AppPropertiesManager.CONSTANTS.warning_HighRfree_title());
 		}else{
 			warningLabel = null;
 		}
@@ -94,8 +90,8 @@ public class PDBIdentifierPanel extends HorizontalLayoutContainer
 		
 	}
 	
-	private LabelWithTooltip createWarningLabel(String text, String tooltip){
-		LabelWithTooltip label = new LabelWithTooltip(text, tooltip);
+	private LabelWithTooltip createWarningLabel(String text){
+		LabelWithTooltip label = new LabelWithTooltip("*"+text+"*", AppPropertiesManager.CONSTANTS.pdb_identifier_panel_warning_hint());
 		label.addStyleName("eppic-header-warning");
 		label.addStyleName("eppic-pdb-identifier-label");
 		return label;

@@ -92,11 +92,14 @@ public interface AppProperties extends Constants
 	String info_panel_nothing_found();
 	
 	String pdb_identifier_panel_label_hint();
+	String pdb_identifier_panel_warning_hint();
 	
-	String pdb_identifier_panel_warning_lowRes_hint();
-	String pdb_identifier_panel_warning_lowRes();
-	String pdb_identifier_panel_warning_highRfree_hint();
-	String pdb_identifier_panel_warning_highRfree();
+	String warning_EM_title();
+	String warning_EM_text();
+	String warning_LowRes_title();
+	String warning_LowRes_text();
+	String warning_HighRfree_title();
+	String warning_HighRfree_text();
 
 	String homologs_panel_chains_hint();
 	String homologs_panel_uniprot_hint();
@@ -127,7 +130,6 @@ public interface AppProperties extends Constants
 	String myjobs_STOPPED();
 	String myjobs_WAITING();
 	
-	String results_grid_empty_text();
 	String results_grid_details_button();
 	String results_grid_details_button_tooltip();
 	String results_grid_selector_button();
@@ -138,6 +140,9 @@ public interface AppProperties extends Constants
 	String results_grid_warnings_tooltip_title();
 	String results_grid_clusters_label();
 	String results_grid_clusters_tooltip();
+	
+	String no_interfaces_found_text();
+	String no_interfaces_found_hint();
 	
 	String alignment_window_title();
 	

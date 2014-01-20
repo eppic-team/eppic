@@ -32,6 +32,7 @@ import ch.systemsx.sybit.crkwebui.client.results.gui.cells.OperatorTypeCell;
 import ch.systemsx.sybit.crkwebui.client.results.gui.cells.ThumbnailCell;
 import ch.systemsx.sybit.crkwebui.client.results.gui.cells.WarningsCell;
 import ch.systemsx.sybit.crkwebui.client.results.gui.grid.util.ClustersGridView;
+import ch.systemsx.sybit.crkwebui.shared.model.InputType;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceItem;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceScoreItem;
 import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
@@ -44,7 +45,7 @@ import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.user.client.ui.CheckBox;
-import com.google.gwt.user.client.ui.HTMLPanel;
+import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.sencha.gxt.core.client.ValueProvider;
 import com.sencha.gxt.core.client.dom.ScrollSupport.ScrollMode;
@@ -80,7 +81,7 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 	
 	private CheckBox clustersViewButton;
 	
-	private HTMLPanel noInterfaceFoundLabel;
+	private VerticalLayoutContainer noInterfaceFoundPanel;
 	
 	private int panelWidth;
 	
@@ -118,8 +119,8 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 		
 		this.add(panelContainer, new VerticalLayoutData(1,-1));
 		
-		noInterfaceFoundLabel = new HTMLPanel(AppPropertiesManager.CONSTANTS.results_grid_empty_text());
-		noInterfaceFoundLabel.addStyleName("eppic-results-grid-empty-panel");
+		//Panel to display if no interfaces found
+		noInterfaceFoundPanel = new VerticalLayoutContainer();
 		
 		initializeEventsListeners();
 	}
@@ -348,7 +349,7 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 		resultsGrid.getView().setForceFit(true);
 		//resultsGrid.setContextMenu(new ResultsPanelContextMenu());
 		
-		resultsGrid.getView().setEmptyText(AppPropertiesManager.CONSTANTS.results_grid_empty_text());
+		resultsGrid.getView().setEmptyText(AppPropertiesManager.CONSTANTS.no_interfaces_found_text());
 		
 		//Hide cluster id column
 		resultsGrid.getColumnModel().getColumn(0).setHidden(true);
@@ -468,9 +469,21 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 		
 		if(resultsStore.getAll().isEmpty()){
 			this.remove(panelContainer);
-			this.add(noInterfaceFoundLabel, new VerticalLayoutData(1,-1));
+			this.remove(noInterfaceFoundPanel);
+			noInterfaceFoundPanel = new VerticalLayoutContainer();
+			HTML noInterfaceFoundLabel = new HTML(AppPropertiesManager.CONSTANTS.no_interfaces_found_text());
+			noInterfaceFoundLabel.addStyleName("eppic-results-no-interfaces-found");
+			noInterfaceFoundPanel.add(noInterfaceFoundLabel);
+			
+			if(resultsData.getInputType() == InputType.FILE.getIndex()){
+				HTML noInterfaceFoundHint = new HTML(AppPropertiesManager.CONSTANTS.no_interfaces_found_hint());
+				noInterfaceFoundHint.addStyleName("eppic-results-no-interfaces-found-hint");
+				noInterfaceFoundPanel.add(noInterfaceFoundHint);
+			}
+			this.add(noInterfaceFoundPanel, new VerticalLayoutData(1,-1));
 		}else{
-			this.remove(noInterfaceFoundLabel);
+			this.remove(panelContainer);
+			this.remove(noInterfaceFoundPanel);
 			this.add(panelContainer, new VerticalLayoutData(1,-1));
 		}
 	}
