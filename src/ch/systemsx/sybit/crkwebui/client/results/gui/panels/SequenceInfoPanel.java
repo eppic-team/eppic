@@ -12,7 +12,6 @@ import ch.systemsx.sybit.crkwebui.client.commons.events.ShowHomologsEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowQueryWarningsEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.images.ImageWithTooltip;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.labels.LabelWithTooltip;
-import ch.systemsx.sybit.crkwebui.client.commons.gui.links.EmptyLinkWithTooltip;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.links.ImageLinkWithTooltip;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.links.LinkWithTooltip;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ApplicationWindowResizeHandler;
@@ -261,22 +260,24 @@ public class SequenceInfoPanel extends FieldSet
     	ArrayList<Widget> items = new ArrayList<Widget>();
 
     	String chainStr = EscapedStringGenerator.generateEscapedString(homologsInfoItem.getChains());
-    	String chainHintStr = AppPropertiesManager.CONSTANTS.homologs_panel_uniprot_no_query_match_hint();
+    	String chainHintStr = "";
     	if(chainStr.length() > 13){
     		chainStr = chainStr.substring(0,12)+",..)";
-    		chainHintStr = "<b>Chain " + EscapedStringGenerator.generateEscapedString(homologsInfoItem.getChains())+
-    				"</b><br>"+AppPropertiesManager.CONSTANTS.homologs_panel_chains_hint();;
+    		chainHintStr = "Chain " + EscapedStringGenerator.generateEscapedString(homologsInfoItem.getChains());
     	}
 
-    	final EmptyLinkWithTooltip chainsLink = new EmptyLinkWithTooltip("Chain " + EscapedStringGenerator.generateEscapedString(chainStr), 
+    	final LabelWithTooltip chainsLink = new LabelWithTooltip("Chain " + EscapedStringGenerator.generateEscapedString(chainStr), 
     			chainHintStr);
 
     	chainsLink.addStyleName("eppic-action");
+    	items.add(chainsLink);
 
-    	chainsLink.addClickHandler(new ClickHandler() {
+    	IconButton chainsLinkButton = createWarningButton(AppPropertiesManager.CONSTANTS.homologs_panel_uniprot_no_query_match_hint());		
+    	chainsLinkButton.getElement().setMargins(new Margins(0, 10, 0, 0));
+    	chainsLinkButton.addSelectHandler(new SelectHandler() {
 			
 			@Override
-			public void onClick(ClickEvent event) {
+			public void onSelect(SelectEvent event) {
 				EventBusManager.EVENT_BUS.fireEvent(new ShowQueryWarningsEvent(generateHomologsNoQueryMatchTemplate(homologsInfoItem.getQueryWarnings()),
     					chainsLink.getAbsoluteLeft() + chainsLink.getElement().getClientWidth(),
     					chainsLink.getAbsoluteTop() + chainsLink.getElement().getClientHeight() + 10));
@@ -284,7 +285,7 @@ public class SequenceInfoPanel extends FieldSet
 			}
 		});
 
-    	items.add(chainsLink);
+    	items.add(chainsLinkButton);
     	return items;
     }
 
@@ -383,7 +384,21 @@ public class SequenceInfoPanel extends FieldSet
      * Creates a more Icon Button
      */
     private static IconButton createMoreInfoButton(String tooltipText){
-    	IconConfig cnfg = new IconConfig("eppic-seq-info-panel-more-button", "eppic-seq-info-panel-more-button-over");
+    	IconConfig cnfg = new IconConfig("eppic-seq-info-panel-more-button");
+    	IconButton button = new IconButton(cnfg);
+    	button.setPixelSize(14, 14);
+    	button.setBorders(false);
+    	
+    	new ToolTip(button, new ToolTipConfig(tooltipText));
+    	
+    	return button; 	
+    }
+    
+    /**
+     * Creates a warning Icon Button
+     */
+    private static IconButton createWarningButton(String tooltipText){
+    	IconConfig cnfg = new IconConfig("eppic-seq-info-panel-warning-button");
     	IconButton button = new IconButton(cnfg);
     	button.setPixelSize(14, 14);
     	button.setBorders(false);

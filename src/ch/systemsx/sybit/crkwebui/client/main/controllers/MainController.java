@@ -317,7 +317,7 @@ public class MainController
 		infoMessageBox.add(new HTMLPanel(EscapedStringGenerator.generateSafeHtml(message)));
 		
 		infoMessageBox.setHideOnButtonClick(true);
-	    infoMessageBox.setPixelSize(350,170);
+	    infoMessageBox.setPixelSize(350,200);
 		
 		infoMessageBox.show();
 	    

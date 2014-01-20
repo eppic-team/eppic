@@ -130,6 +130,7 @@
 .eppic-pdb-identifier-label {
 	font-size: 22px;
 	font-weight: bold;
+	margin-right: 5px;
 }
 .eppic-pdb-identifier-label A:link {text-decoration: none; color: #15428B;}
 .eppic-pdb-identifier-label A:visited {text-decoration: none; color: #15428B;}
@@ -329,6 +330,8 @@
 	 background-position:center;
 }
 
-.eppic-seq-info-panel-more-button-over{
-	 
+.eppic-seq-info-panel-warning-button{
+	  background-image: url('resources/icons/warning_icon_14x14.png');
+	 background-repeat:no-repeat;
+	 background-position:center;
 }

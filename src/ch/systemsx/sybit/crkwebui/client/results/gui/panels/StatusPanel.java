@@ -213,7 +213,7 @@ public class StatusPanel extends DisplayPanel
 	{
 		Status statusProgress = new Status();
 		statusProgress.setText("");
-		statusProgress.setWidth(150);
+		statusProgress.setWidth(300);
 		return statusProgress;
 	}
 	

@@ -43,7 +43,8 @@ public class IdentifierHeaderPanel extends HorizontalLayoutContainer
     	downloadResultsPanel = new HorizontalLayoutContainer();
     	downloadResultsPanel.setBorders(false);
 		
-		downloadResultsLink = new LinkWithTooltip();
+		downloadResultsLink = new LinkWithTooltip(AppPropertiesManager.CONSTANTS.info_panel_download_results_link(),
+				AppPropertiesManager.CONSTANTS.info_panel_download_results_link_hint(), "");
 		downloadResultsLink.addStyleName("eppic-download-link");
 		
 		downloadResultsPanel.add(downloadResultsLink);
@@ -70,8 +71,7 @@ public class IdentifierHeaderPanel extends HorizontalLayoutContainer
 	 */
 	public void setDownloadResultsLink(String jobId){
 
-		downloadResultsLink .setLinkData(AppPropertiesManager.CONSTANTS.info_panel_download_results_link(),
-				AppPropertiesManager.CONSTANTS.info_panel_download_results_link_hint(),
+		downloadResultsLink .changeData(AppPropertiesManager.CONSTANTS.info_panel_download_results_link(),
 				GWT.getModuleBaseURL() + "fileDownload?type=zip&id=" + jobId);
 
 	}
@@ -82,7 +82,7 @@ public class IdentifierHeaderPanel extends HorizontalLayoutContainer
 	 */
 	public void setEmptyDownloadResultsLink(){
 
-		downloadResultsLink.setLinkData("","", "");
+		downloadResultsLink.changeData("","");
 
 	}
 
