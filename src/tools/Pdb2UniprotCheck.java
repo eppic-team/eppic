@@ -18,13 +18,11 @@ import owl.core.runners.blast.BlastXMLParser;
 import owl.core.sequence.alignment.PairwiseSequenceAlignment;
 import owl.core.structure.PdbChain;
 import owl.core.structure.PdbAsymUnit;
-import owl.core.structure.PdbCodeNotFoundException;
 import owl.core.structure.PdbLoadException;
-import owl.core.util.MySQLConnection;
 
 public class Pdb2UniprotCheck {
 	
-	private static final String PDBASE_DB ="pdbase";
+	private static final String CIFREPODIR ="/path/to/mmCIF/gz/all/repo/dir";
 	private static final String SIFTS_FILE = "/nfs/data/dbs/uniprot/current/pdb_chain_uniprot.lst";
 	private static final String LISTFILE = "/home/duarte_j/cullpdb/cullpdb_pc90_res3.0_R1.0_d100426_chains18209";//cullpdb_pc20_res1.6_R0.25_d100426_chains1673
 	
@@ -49,7 +47,6 @@ public class Pdb2UniprotCheck {
 		
 		System.setProperty("java.util.logging.config.file","/dev/null"); //get rid of logging from jaligner
 		
-		MySQLConnection conn = new MySQLConnection();
 		SiftsConnection siftsConn = new SiftsConnection(SIFTS_FILE);
 		System.out.println("Total SIFTS mappings for whole PDB: "+siftsConn.getMappingsCount());
 		
@@ -70,7 +67,11 @@ public class Pdb2UniprotCheck {
 			
 			PdbChain pdb = null;
 			try {
-				PdbAsymUnit fullpdb = new PdbAsymUnit(pdbCode,conn,PDBASE_DB);
+				File cifFile = new File(System.getProperty("java.io.tmpdir"),pdbCode+".cif");
+				cifFile.deleteOnExit();
+				PdbAsymUnit.grabCifFile(CIFREPODIR, null, pdbCode, cifFile, false);				
+				PdbAsymUnit fullpdb = new PdbAsymUnit(cifFile);
+
 				pdb = fullpdb.getChain(pdbChainCode);
 				if (pdb.getFullLength()<SHORT_SEQ_CUTOFF) continue; //we don't even consider very short chains, they are usually pathological cases
 				totalChains++;
@@ -96,9 +97,6 @@ public class Pdb2UniprotCheck {
 //					System.out.println();
 //				}
 
-			} catch (PdbCodeNotFoundException e) {
-				System.err.println(e.getMessage());
-				continue;
 			} catch (NoMatchFoundException e) {
 				System.err.println(e.getMessage());
 				missMappings++;
