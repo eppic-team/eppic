@@ -815,6 +815,7 @@ public class ChainEvolContext implements Serializable {
 		Matcher m = ALLX_SEQ_PATTERN.matcher(this.sequence);
 		if (m.matches()) {
 			LOGGER.info("Chain "+representativeChain+" is composed only of unknown or non-standard aminoacids. Won't try to find a UniProt reference for it.");
+			queryWarnings.add("Sequence is composed only of unknown or non-standard aminoacids, cannot find a UniProt reference for it");
 			return null;
 		}
 		
