@@ -1,7 +1,0 @@
-<chapter id="AppletUsage">
-  <title>Jmol Applet Usage</title>
-  <para>
-    Use the Jmol.js JavaScript library as documented
-    in <ulink url="http://www.jmol.org/jslibrary" />
-  </para>
-</chapter>

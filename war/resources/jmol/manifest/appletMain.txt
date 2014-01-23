@@ -1,5 +1,0 @@
-Manifest-Version: 1.0
-Sealed: true
-
-Name: org/jmol/api/
-Sealed: false

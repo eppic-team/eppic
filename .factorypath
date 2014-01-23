@@ -1,4 +1,0 @@
-<factorypath>
-    <factorypathentry kind="WKSPJAR" id="/crkwebui/libs/hibernate-jpa-2.0-api-1.0.0.Final.jar" enabled="true" runInBatchMode="false"/>
-    <factorypathentry kind="WKSPJAR" id="/crkwebui/libs/hibernate-jpamodelgen-1.1.1.Final.jar" enabled="true" runInBatchMode="false"/>
-</factorypath>
