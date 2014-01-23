@@ -1,0 +1,187 @@
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   <title>Jmol Developer's Guide</title><meta name="generator" content="DocBook XSL Stylesheets V1.75.2"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div lang="en" class="book" title="Jmol Developer's Guide"><div class="titlepage"><div><div><h1 class="title"><a name="jmol-devel-guide"></a>Jmol Developer's Guide</h1></div><div><div class="author"><h3 class="author"><span class="othername">The Jmol Development Team</span></h3><div class="affiliation"><div class="address"><p><br>
+				<code class="email">&lt;<a class="email" href="mailto:jmol-developers@lists.sourceforge.net">jmol-developers@lists.sourceforge.net</a>&gt;</code><br>
+			</p></div></div></div></div><div><p class="copyright">Copyright &copy; 2005, 2006 The Jmol Development Team</p></div></div><hr></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="chapter"><a href="#Prerequisites">1. Prerequisites</a></span></dt><dt><span class="chapter"><a href="#CheckingOutJmol">2. Checking Out Jmol from SVN</a></span></dt><dt><span class="chapter"><a href="#BuildingJmol">3. Building Jmol</a></span></dt><dt><span class="chapter"><a href="#RunningJmol">4. Running Jmol</a></span></dt><dt><span class="chapter"><a href="#CodingStandard">5. Coding Standard</a></span></dt><dt><span class="chapter"><a href="#Releasing">6. Making a release</a></span></dt><dt><span class="chapter"><a href="#Packaging">7. Packaging</a></span></dt><dt><span class="chapter"><a href="#CVS">8. DEPRECATED - Working with Jmol's CVS</a></span></dt><dt><span class="chapter"><a href="#Eclipse">9. Using Eclipse</a></span></dt></dl></div><div class="chapter" title="Chapter&nbsp;1.&nbsp;Prerequisites"><div class="titlepage"><div><div><h2 class="title"><a name="Prerequisites"></a>Chapter&nbsp;1.&nbsp;Prerequisites</h2></div></div></div><div class="itemizedlist"><p>
+			The following package are necessary:
+		</p><ul class="itemizedlist" type="disc"><li class="listitem"><p>
+				<span class="package">Java 2 JDK 1.4</span> or  <span class="package">Java 5 JDK 1.5</span>
+				(<a class="ulink" href="http://java.sun.com/" target="_top">http://java.sun.com/</a>).
+			</p></li><li class="listitem"><p>
+				<span class="package">Apache Ant</span>
+				(<a class="ulink" href="http://jakarta.apache.org/ant" target="_top">http://jakarta.apache.org/ant</a>) - not necessary if you
+				are using Eclipse with a Windows PC
+				(see <a class="link" href="#Eclipse" title="Chapter&nbsp;9.&nbsp;Using Eclipse">below</a>).
+			</p><p>
+				On Linux/Unix/OSX try to install <span class="package">Apache Ant</span> using
+				a package installer.
+			</p></li><li class="listitem"><p>
+				<span class="package">Subversion</span>
+				- The definitive svn documentation is at
+				<a class="ulink" href="http://svnbook.red-bean.com/" target="_top">http://svnbook.red-bean.com/</a>.
+			</p></li></ul></div></div><div class="chapter" title="Chapter&nbsp;2.&nbsp;Checking Out Jmol from SVN"><div class="titlepage"><div><div><h2 class="title"><a name="CheckingOutJmol"></a>Chapter&nbsp;2.&nbsp;Checking Out Jmol from SVN</h2></div></div></div><p>
+		If you are using Eclipse, see <a class="xref" href="#Eclipse" title="Chapter&nbsp;9.&nbsp;Using Eclipse">Chapter&nbsp;9, <i>Using Eclipse</i></a>.
+	</p><p>
+		In February 2006 Jmol converted to the <span class="command"><strong>subversion</strong></span> version control
+		system for our source code repository, frequently referred to as
+		<span class="command"><strong>svn</strong></span>. The <span class="command"><strong>svn</strong></span> repository is still hosted by SourceForge.
+	</p><p>
+		The current development version of the Jmol source code can be checked out using:
+		</p><pre class="screen">
+			<code class="prompt">~/workspace$</code>
+			svn checkout https://jmol.svn.sourceforge.net/svnroot/jmol/trunk/Jmol
+		</pre><p>
+	</p><p>
+		This creates a directory called <code class="filename">Jmol</code>
+		where we work on the source code:
+		</p><pre class="screen"><code class="prompt">~/workspace$</code> cd Jmol</pre><p>
+	</p><p>
+		To know the status of your workspace relative to the current
+		repository you can say:
+		</p><pre class="screen"><code class="prompt">~/workspace/Jmol$</code> svn status</pre><p>
+	</p><p>
+		To update your workspace to the current repository revision
+		use the update command
+		</p><pre class="screen"><code class="prompt">~/workspace/Jmol$</code> svn update</pre><p>
+	</p><p>
+		After modifying local files for testing, you can throw away
+		your local changes and revert your changes back to your
+		checkout revision:
+		</p><pre class="screen"><code class="prompt">~/workspace/Jmol$</code> svn revert</pre><p>
+	</p><p>
+		After developing, compiling, and testing changes locally,
+		you can commit your changes by saying:
+		</p><pre class="screen"><code class="prompt">~/workspace/Jmol$</code> svn commit</pre><p>
+	</p><p>
+		<span class="orgname">Sourceforge.net</span> provides basic instructions how to use
+		<span class="command"><strong>svn</strong></span> at this page <a class="ulink" href="http://sourceforge.net/docman/display_doc.php?docid=31070&amp;group_id=1" target="_top">http://sourceforge.net/docman/display_doc.php?docid=31070&amp;group_id=1</a>
+	</p><p>
+		The definitive documentation for <span class="command"><strong>subversion</strong></span> is at
+		<a class="ulink" href="http://svnbook.red-bean.com/" target="_top">http://svnbook.red-bean.com/</a>
+	</p><p>
+		The home page for subversion is at <a class="ulink" href="http://subversion.tigris.org/" target="_top">http://subversion.tigris.org/</a>.
+	</p></div><div class="chapter" title="Chapter&nbsp;3.&nbsp;Building Jmol"><div class="titlepage"><div><div><h2 class="title"><a name="BuildingJmol"></a>Chapter&nbsp;3.&nbsp;Building Jmol</h2></div></div></div><p>
+		If you are using Eclipse, see <a class="xref" href="#Eclipse" title="Chapter&nbsp;9.&nbsp;Using Eclipse">Chapter&nbsp;9, <i>Using Eclipse</i></a>. Otherwise read this
+		section carefully. In additon to the prerequisites mentioned
+		in <a class="xref" href="#Prerequisites" title="Chapter&nbsp;1.&nbsp;Prerequisites">Chapter&nbsp;1, <i>Prerequisites</i></a> you will of course need the Jmol source
+		code. It can be checked out from the <span class="command"><strong>subversion</strong></span>
+		repository as described above.
+	</p><p>
+		Once you have all the prerequisites, Jmol can be built from the top source
+		directory with the <span class="command"><strong>ant</strong></span> command.
+	</p><p>
+		On Linux/Unix/OSX type:
+		</p><pre class="screen"><code class="prompt">~/workspace/Jmol$</code> ant</pre><p>
+	</p><p>
+		Windows users not using Eclipse type:
+		</p><pre class="screen"><code class="prompt">C:\workspace\Jmol&gt;</code> ant</pre><p>
+	</p></div><div class="chapter" title="Chapter&nbsp;4.&nbsp;Running Jmol"><div class="titlepage"><div><div><h2 class="title"><a name="RunningJmol"></a>Chapter&nbsp;4.&nbsp;Running Jmol</h2></div></div></div><p>
+		The development version of the Jmol application is normally run by simply
+		executing the jmol script in the Jmol development directory. 
+	</p><p>
+		The development version of the Jmol applet is normally run by copying the
+		built <code class="filename">*.jar</code> files into a test
+		directory and then running a web page that accesses them.
+	</p><p>
+		On Linux/Unix/OSX:
+		</p><pre class="screen"><code class="prompt">~/workspace/Jmol$</code> ./jmol</pre><p>
+	</p><p>
+		On Windows (not using Eclipse):
+		</p><pre class="screen"><code class="prompt">C:\workspace\Jmol&gt;</code> jmol</pre><p>
+	</p><p>
+		If you are using the Eclipse <acronym class="acronym">IDE</acronym>, you can run the
+		application and/or the applet from within Eclipse. This allows for simpler
+		debugging. See <a class="xref" href="#Eclipse" title="Chapter&nbsp;9.&nbsp;Using Eclipse">Chapter&nbsp;9, <i>Using Eclipse</i></a> for more information.
+	</p></div><div class="chapter" title="Chapter&nbsp;5.&nbsp;Coding Standard"><div class="titlepage"><div><div><h2 class="title"><a name="CodingStandard"></a>Chapter&nbsp;5.&nbsp;Coding Standard</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>
+				Your text editor should indent for you. If it doesn't then either
+				learn how to enable it or get another editor.
+			</p></li><li class="listitem"><p>
+				Indentation level should be <span class="bold"><strong>two spaces</strong></span>.
+		    </p><pre class="programlisting">class Foo {
+  int someClassVariable;
+
+  Foo(int evenOrOdd) {
+    someClassVariable = 99;
+  }
+
+  ...
+}</pre><p>
+			</p></li><li class="listitem"><p>
+				Space characters should be used instead of tabs.
+			</p></li><li class="listitem"><p>
+				Assignment and arithmetic operators generally contain spaces on both
+				sides.
+				</p><pre class="programlisting">a = b + c;</pre><p>
+			</p><p>
+				You are allowed to eliminate the spaces within expressions in order
+				to make operator precedence more clear.
+				</p><pre class="programlisting">int cSquared = a*a + b*b;</pre><p>
+			</p></li><li class="listitem"><p>
+				Spaces follow commas in argument lists.
+				</p><pre class="programlisting">foo(a, 3.14159, "jmol");</pre><p>
+			</p></li><li class="listitem"><p>
+				Lines should be no more than <span class="bold"><strong>80</strong></span>
+				characters wide.
+			</p></li><li class="listitem"><p>
+				Open brace goes on the line that starts the block. Close brace goes
+				on a line by itself.
+				</p><pre class="programlisting">if (condition) {
+    ...
+  } else {
+    ...
+  }
+  
+  while (condition) {
+    ...
+  }</pre><p>
+			</p></li><li class="listitem"><p>
+				Loop indexes start at 0, not 1.
+			</p></li><li class="listitem"><p>
+				The <span class="bold"><strong>only</strong></span> valid comparison operators for loop
+				termination are <code class="code">&lt;</code> and <code class="code">&gt;=</code>
+				... anything else is probably a bug. If you are really
+				<span class="bold"><strong>sure</strong></span> that it is not a bug then put a comment in
+				the code.
+			</p></li><li class="listitem"><p>
+				Use long descriptive variable names and method names. Do not be
+				afraid of typing.
+			</p></li><li class="listitem"><p>
+				Line-by-line comments within the code are
+				<span class="bold"><strong>discouraged</strong></span> ... except in very special
+				circumstances. If you put in lots of comments like this then you may
+				find them deleted.
+			</p></li><li class="listitem"><p>
+				If you feel obligated to insert comments put them as javadoc before
+				the function body.
+			</p></li><li class="listitem"><p>
+				If your code is changing then do not put in comments. <span class="bold"><strong>Bad/outdated
+				comments are worse than no comments.</strong></span>
+			</p></li><li class="listitem"><p>
+				You may want to look
+				at <a class="ulink" href="http://www.amazon.com/exec/obidos/ASIN/0521777682" target="_top">The
+				Elements of Java Style by Vermeulen, et al</a>.
+			</p></li></ul></div></div><div class="chapter" title="Chapter&nbsp;6.&nbsp;Making a release"><div class="titlepage"><div><div><h2 class="title"><a name="Releasing"></a>Chapter&nbsp;6.&nbsp;Making a release</h2></div></div></div><p>
+		A Jmol release consists of both the application and the applet.
+		Presumably both will have been well tested. For release, we are generating
+		a number of <code class="filename">JAR</code> files using Java 1.1. This is to
+		provide compatibility with the Microsoft Java Runtime Environment.
+		
+	</p><p>
+		In the <code class="filename">Jmol-data</code> CVS module directory
+		a number of test files are located for the input filters. All files below
+		that module should be checked prior to a release.
+	</p></div><div class="chapter" title="Chapter&nbsp;7.&nbsp;Packaging"><div class="titlepage"><div><div><h2 class="title"><a name="Packaging"></a>Chapter&nbsp;7.&nbsp;Packaging</h2></div></div></div><p>
+		Distribution packages will be made for any platform for which a developer
+		promises to provide support. File used to create packages should be
+		commited to CVS under the Jmol/packaging directory. Currently the
+		following packages are available:
+	</p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>
+				<a class="ulink" href="http://www.debian.org" target="_top">Debian</a>
+				(by Daniel Leidert and Egon Willighagen)
+			</p></li><li class="listitem"><p>
+				RPM (by Miguel Howard)
+			</p></li></ul></div></div><div class="chapter" title="Chapter&nbsp;8.&nbsp;DEPRECATED - Working with Jmol's CVS"><div class="titlepage"><div><div><h2 class="title"><a name="CVS"></a>Chapter&nbsp;8.&nbsp;DEPRECATED - Working with Jmol's CVS</h2></div></div></div><p>
+		This section is deprecated since Jmol has moved to <span class="command"><strong>svn</strong></span>.
+	</p></div><div class="chapter" title="Chapter&nbsp;9.&nbsp;Using Eclipse"><div class="titlepage"><div><div><h2 class="title"><a name="Eclipse"></a>Chapter&nbsp;9.&nbsp;Using Eclipse</h2></div></div></div><p>
+		See the <a class="ulink" href="http://wiki.jmol.org/index.php/Eclipse" target="_top">Jmol Wiki</a>.
+	</p></div></div></body></html>

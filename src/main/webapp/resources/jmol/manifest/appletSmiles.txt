@@ -1,0 +1,7 @@
+Main-Class: JmolSmiles
+Sealed: true
+
+Name: org/jmol/api/
+Sealed: false
+
+

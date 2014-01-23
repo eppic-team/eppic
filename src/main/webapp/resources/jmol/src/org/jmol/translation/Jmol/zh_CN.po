@@ -1,0 +1,1617 @@
+# Copyright (c) 2009 Rosetta Contributors and Canonical Ltd 2009
+# This file is distributed under the same license as the jmol package.
+# FIRST AUTHOR yjjart <yjjart@gmail.com>, 2009.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: jmol\n"
+"Report-Msgid-Bugs-To: jmol-developers@lists.sourceforge.net\n"
+"POT-Creation-Date: 2010-08-04 19:52+0200\n"
+"PO-Revision-Date: 2011-01-14 18:36+0000\n"
+"Last-Translator: 英华 <wantinghard@gmail.com>\n"
+"Language-Team: Simplified Chinese <zh_CN@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Launchpad-Export-Date: 2011-01-15 13:08+0000\n"
+"X-Generator: Launchpad (build 12200)\n"
+
+#: org/openscience/jmol/app/JmolApp.java:102
+#: org/openscience/jmol/app/webexport/WebMaker.java:66
+msgid "Error starting Jmol: the property 'user.home' is not defined."
+msgstr "启动 Jmol 出错：未定义参数“user.home”"
+
+#: org/openscience/jmol/app/JmolApp.java:139
+msgid "transparent background"
+msgstr "透明背景"
+
+#: org/openscience/jmol/app/JmolApp.java:140
+msgid "give this help page"
+msgstr "显示此帮助页面"
+
+#: org/openscience/jmol/app/JmolApp.java:142
+msgid "no display (and also exit when done)"
+msgstr "无显示（并在完成后退出）"
+
+#: org/openscience/jmol/app/JmolApp.java:144
+msgid "check script syntax only - no file loading"
+msgstr "仅检查脚本语法 - 不载入文件"
+
+#: org/openscience/jmol/app/JmolApp.java:146
+msgid "check script syntax only - with file loading"
+msgstr "仅检查脚本语法 - 载入文件"
+
+#: org/openscience/jmol/app/JmolApp.java:147
+msgid "debug"
+msgstr "调试"
+
+#: org/openscience/jmol/app/JmolApp.java:148
+msgid "silent startup operation"
+msgstr "安静启动"
+
+#: org/openscience/jmol/app/JmolApp.java:150
+msgid "list commands during script execution"
+msgstr "脚本执行时列出命令"
+
+#: org/openscience/jmol/app/JmolApp.java:152
+msgid "start with no splash screen"
+msgstr "启动时不显示版权页"
+
+#: org/openscience/jmol/app/JmolApp.java:154
+msgid "no console -- all output to sysout"
+msgstr "无控制台-全部输出到系统输出"
+
+#: org/openscience/jmol/app/JmolApp.java:156
+msgid "send only output from print messages to console (implies -i)"
+msgstr "只把打印信息输出发送到控制台（隐含 -i 参数）"
+
+#: org/openscience/jmol/app/JmolApp.java:158
+msgid "independent command thread"
+msgstr "独立命令线程"
+
+#: org/openscience/jmol/app/JmolApp.java:160
+msgid "exit after script (implicit with -n)"
+msgstr "执行脚本后退出（隐含 -n 参数）"
+
+#: org/openscience/jmol/app/JmolApp.java:164
+msgid "script file to execute or '-' for System.in"
+msgstr "需执行的脚本文件，或“-”表示使用system.in"
+
+#: org/openscience/jmol/app/JmolApp.java:170
+msgid "use multitouch interface (requires \"sparshui\" parameter"
+msgstr "使用多点触控(multitouch)界面（需要“sparshui”参数）"
+
+#: org/openscience/jmol/app/JmolApp.java:177
+msgid "Jmol script to execute BEFORE -s option"
+msgstr "在 -s 选项之前运行的Jmol脚本"
+
+#: org/openscience/jmol/app/JmolApp.java:183
+msgid "Jmol script to execute AFTER -s option"
+msgstr "在 -s 选项之后运行的Jmol脚本"
+
+#: org/openscience/jmol/app/JmolApp.java:192
+msgid "property=value"
+msgstr "属性=值"
+
+#: org/openscience/jmol/app/JmolApp.java:195
+msgid "supported options are given below"
+msgstr "所支持的选项列出如下"
+
+#: org/openscience/jmol/app/JmolApp.java:201
+#, java-format
+msgid "window width x height, e.g. {0}"
+msgstr "窗口宽度×高度，例如 {0}"
+
+#: org/openscience/jmol/app/JmolApp.java:211
+msgid ""
+"JPG image quality (1-100; default 75) or PNG image compression (0-9; default "
+"2, maximum compression 9)"
+msgstr "JPG图像质量(1-100; 默认75)或PNG图像压缩率(0-9; 默认2，最大压缩率9)"
+
+#: org/openscience/jmol/app/JmolApp.java:216
+#, java-format
+msgid "{0} or {1}:filename"
+msgstr "{0} 或 {1}:文件名"
+
+#: org/openscience/jmol/app/JmolApp.java:230
+msgid "For example:"
+msgstr "例如:"
+
+#: org/openscience/jmol/app/JmolApp.java:236
+msgid ""
+"The -D options are as follows (defaults in parenthesis) and must be called "
+"preceding '-jar Jmol.jar':"
+msgstr "-D 选项如下(默认在圆括号中)且必须在'-jar Jmol.jar'之前调用:"
+
+#: org/openscience/jmol/app/JmolApp.java:466
+msgid "Executing script 1..."
+msgstr "执行脚本1..."
+
+#: org/openscience/jmol/app/JmolApp.java:476
+msgid "Executing script file..."
+msgstr "执行脚本..."
+
+#: org/openscience/jmol/app/JmolApp.java:497
+msgid "Executing script 2..."
+msgstr "执行脚本2..."
+
+#: org/openscience/jmol/app/jmolpanel/AboutDialog.java:57
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:180
+msgid "About Jmol"
+msgstr "关于 Jmol"
+
+#: org/openscience/jmol/app/jmolpanel/AboutDialog.java:67
+#: org/openscience/jmol/app/jmolpanel/HelpDialog.java:74
+#: org/openscience/jmol/app/jmolpanel/WhatsNewDialog.java:68
+#, java-format
+msgid "Unable to find url \"{0}\"."
+msgstr "无法找到网址 \"{0}\"。"
+
+#: org/openscience/jmol/app/jmolpanel/AboutDialog.java:95
+#: org/openscience/jmol/app/jmolpanel/HelpDialog.java:102
+#: org/openscience/jmol/app/jmolpanel/PreferencesDialog.java:177
+#: org/openscience/jmol/app/jmolpanel/WhatsNewDialog.java:96
+msgid "OK"
+msgstr "确定"
+
+#: org/openscience/jmol/app/jmolpanel/AppConsole.java:113
+msgid "Editor"
+msgstr "编辑器"
+
+#: org/openscience/jmol/app/jmolpanel/AppConsole.java:114
+msgid "Check"
+msgstr "检查"
+
+#: org/openscience/jmol/app/jmolpanel/AppConsole.java:115
+msgid "Top"
+msgstr "到顶层"
+
+#: org/openscience/jmol/app/jmolpanel/AppConsole.java:116
+msgid "Step"
+msgstr "步进"
+
+#: org/openscience/jmol/app/jmolpanel/AppConsole.java:123
+msgid "Variables"
+msgstr "变量"
+
+#: org/openscience/jmol/app/jmolpanel/AppConsole.java:124
+#: org/openscience/jmol/app/jmolpanel/JmolPanel.java:296
+msgid "Clear"
+msgstr "清除"
+
+#: org/openscience/jmol/app/jmolpanel/AppConsole.java:125
+msgid "Halt"
+msgstr "停止"
+
+#: org/openscience/jmol/app/jmolpanel/AppConsole.java:127
+msgid "History"
+msgstr "历史"
+
+#: org/openscience/jmol/app/jmolpanel/AppConsole.java:128
+msgid "State"
+msgstr "状态"
+
+#: org/openscience/jmol/app/jmolpanel/AppConsole.java:130
+msgid "Help"
+msgstr "帮助"
+
+#: org/openscience/jmol/app/jmolpanel/AppConsole.java:131
+msgid "Close"
+msgstr "关闭"
+
+#: org/openscience/jmol/app/jmolpanel/AppConsole.java:132
+msgid "Undo"
+msgstr "撤消"
+
+#: org/openscience/jmol/app/jmolpanel/AppConsole.java:133
+msgid "Redo"
+msgstr "重做"
+
+#: org/openscience/jmol/app/jmolpanel/AtomSetChooser.java:164
+msgid "AtomSetChooser"
+msgstr "原子集选择器"
+
+#: org/openscience/jmol/app/jmolpanel/AtomSetChooser.java:168
+msgid "No AtomSets"
+msgstr "无原子集"
+
+#: org/openscience/jmol/app/jmolpanel/AtomSetChooser.java:197
+msgid "Properties"
+msgstr "属性"
+
+#: org/openscience/jmol/app/jmolpanel/AtomSetChooser.java:205
+msgid "Atom Set Collection"
+msgstr "原子集集合"
+
+#: org/openscience/jmol/app/jmolpanel/AtomSetChooser.java:226
+msgid "Collection"
+msgstr "集合"
+
+#: org/openscience/jmol/app/jmolpanel/AtomSetChooser.java:231
+msgid "Info"
+msgstr "信息"
+
+#: org/openscience/jmol/app/jmolpanel/AtomSetChooser.java:238
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:176
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:459
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:608
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:629
+msgid "Select"
+msgstr "选取"
+
+#: org/openscience/jmol/app/jmolpanel/AtomSetChooser.java:253
+msgid "Repeat"
+msgstr "重复"
+
+#: org/openscience/jmol/app/jmolpanel/AtomSetChooser.java:265
+msgid "FPS"
+msgstr "每秒帧数"
+
+#: org/openscience/jmol/app/jmolpanel/AtomSetChooser.java:281
+msgid "Vector"
+msgstr "矢量"
+
+#: org/openscience/jmol/app/jmolpanel/AtomSetChooser.java:288
+msgid "Radius"
+msgstr "半径"
+
+#: org/openscience/jmol/app/jmolpanel/AtomSetChooser.java:301
+msgid "Scale"
+msgstr "缩放"
+
+#: org/openscience/jmol/app/jmolpanel/AtomSetChooser.java:315
+msgid "Amplitude"
+msgstr "振幅"
+
+#: org/openscience/jmol/app/jmolpanel/AtomSetChooser.java:325
+msgid "Period"
+msgstr "周期"
+
+#: org/openscience/jmol/app/jmolpanel/AtomSetChooser.java:354
+msgid "Controller"
+msgstr "控制器"
+
+#: org/openscience/jmol/app/jmolpanel/AtomSetChooser.java:362
+msgid "Go to first atom set in the collection"
+msgstr "跳转到收藏集中的第一个原子集合"
+
+#: org/openscience/jmol/app/jmolpanel/AtomSetChooser.java:363
+msgid "Go to previous atom set in the collection"
+msgstr "跳转到收藏集中的前一个原子集合"
+
+#: org/openscience/jmol/app/jmolpanel/AtomSetChooser.java:364
+msgid "Play the whole collection of atom sets"
+msgstr "播放整个原子集合收藏集"
+
+#: org/openscience/jmol/app/jmolpanel/AtomSetChooser.java:365
+#: org/openscience/jmol/app/jmolpanel/AtomSetChooser.java:374
+msgid "Pause playing"
+msgstr "暂停播放"
+
+#: org/openscience/jmol/app/jmolpanel/AtomSetChooser.java:366
+msgid "Go to next atom set in the collection"
+msgstr "跳转到收藏集中的下一个原子集合"
+
+#: org/openscience/jmol/app/jmolpanel/AtomSetChooser.java:367
+msgid "Jump to last atom set in the collection"
+msgstr "跳转到收藏集中的最后一个原子集合"
+
+#: org/openscience/jmol/app/jmolpanel/AtomSetChooser.java:371
+msgid "Go to first vector in the collection"
+msgstr "跳转到收藏集中的第一个向量"
+
+#: org/openscience/jmol/app/jmolpanel/AtomSetChooser.java:372
+msgid "Go to previous vector in the collection"
+msgstr "跳转到收藏集中的前一个向量"
+
+#: org/openscience/jmol/app/jmolpanel/AtomSetChooser.java:373
+msgid "Play the whole collection of vectors"
+msgstr "播放的整个向量收藏集"
+
+#: org/openscience/jmol/app/jmolpanel/AtomSetChooser.java:375
+msgid "Go to next vector in the collection"
+msgstr "跳转到收藏集中的下一个向量"
+
+#: org/openscience/jmol/app/jmolpanel/AtomSetChooser.java:376
+msgid "Jump to last vector in the collection"
+msgstr "跳转到收藏集中的最后一个向量"
+
+#: org/openscience/jmol/app/jmolpanel/ConsoleTextArea.java:87
+#, java-format
+msgid "Error reading from BufferedReader: {0}"
+msgstr "从缓冲阅读器读取错误：{0}"
+
+#: org/openscience/jmol/app/jmolpanel/DisplayPanel.java:206
+msgid "Delete atoms"
+msgstr "删除原子"
+
+#: org/openscience/jmol/app/jmolpanel/GaussianDialog.java:187
+msgid "Export Gaussian Input File"
+msgstr "导出高斯输入文件"
+
+#: org/openscience/jmol/app/jmolpanel/GaussianDialog.java:194
+msgid "Basic"
+msgstr "基本"
+
+#: org/openscience/jmol/app/jmolpanel/GaussianDialog.java:196
+msgid "Advanced"
+msgstr "高级"
+
+#: org/openscience/jmol/app/jmolpanel/GaussianDialog.java:224
+msgid "Checkpoint File: "
+msgstr "记录点文件： "
+
+#: org/openscience/jmol/app/jmolpanel/GaussianDialog.java:229
+msgid "Amount of Memory:"
+msgstr "存储容量："
+
+#: org/openscience/jmol/app/jmolpanel/GaussianDialog.java:235
+msgid "Number of Processors:"
+msgstr "处理器个数"
+
+#: org/openscience/jmol/app/jmolpanel/GaussianDialog.java:248
+msgid "Route"
+msgstr "路径"
+
+#: org/openscience/jmol/app/jmolpanel/GaussianDialog.java:254
+msgid "Method: "
+msgstr "方法: "
+
+#: org/openscience/jmol/app/jmolpanel/GaussianDialog.java:261
+msgid "Basis Set: "
+msgstr "基本设置: "
+
+#: org/openscience/jmol/app/jmolpanel/GaussianDialog.java:269
+msgid "Density Fitting Basis Set (DFT Only): "
+msgstr "密度拟合基本设置(只对DFT) "
+
+#: org/openscience/jmol/app/jmolpanel/GaussianDialog.java:275
+msgid "Job Options: "
+msgstr "工作选项: "
+
+#: org/openscience/jmol/app/jmolpanel/GaussianDialog.java:288
+msgid "Molecular Properties"
+msgstr "分子属性"
+
+#: org/openscience/jmol/app/jmolpanel/GaussianDialog.java:294
+msgid "Total Charge: "
+msgstr "总电荷： "
+
+#: org/openscience/jmol/app/jmolpanel/GaussianDialog.java:301
+msgid "Multiplicity: "
+msgstr "数量： "
+
+#: org/openscience/jmol/app/jmolpanel/GaussianDialog.java:308
+msgid "Selection: "
+msgstr "选择： "
+
+#: org/openscience/jmol/app/jmolpanel/GaussianDialog.java:343
+msgid "Gaussian Input File Name"
+msgstr "高斯输入文件名"
+
+#: org/openscience/jmol/app/jmolpanel/GaussianDialog.java:349
+msgid "File..."
+msgstr "文件..."
+
+#: org/openscience/jmol/app/jmolpanel/GaussianDialog.java:360
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:759
+msgid "Save"
+msgstr "保存"
+
+#: org/openscience/jmol/app/jmolpanel/GaussianDialog.java:364
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:501
+#: org/openscience/jmol/app/jmolpanel/PreferencesDialog.java:169
+#: org/openscience/jmol/app/jmolpanel/RecentFilesDialog.java:70
+msgid "Cancel"
+msgstr "取消"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:49
+msgid "&Macros"
+msgstr "宏命令(&M)"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:50
+msgid "&File"
+msgstr "文件(&F)"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:51
+msgid "&New"
+msgstr "新建(&N)"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:52
+msgid "&Open"
+msgstr "打开(&O)"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:53
+msgid "Open a file."
+msgstr "打开文件"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:54
+msgid "Open &URL"
+msgstr "打开 URL(&U)"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:55
+msgid "Scrip&t Editor..."
+msgstr "脚本编辑器(&T)..."
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:56
+msgid "Conso&le..."
+msgstr "控制台(&L)..."
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:57
+msgid "Jmol Java &Console"
+msgstr "Jmol Java 控制台(&C)"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:58
+msgid "AtomSet&Chooser..."
+msgstr "原子库选择器（&C）"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:59
+msgid "&Save As..."
+msgstr "另存为(&S)..."
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:60
+msgid "&Export"
+msgstr "导出(&E)"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:61
+msgid "Export &Image..."
+msgstr "导出图片(&I)"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:62
+msgid "Save current view as an image."
+msgstr "保存当前画面为图片"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:63
+msgid "Export to &Web Page..."
+msgstr "导出网页(&W)"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:64
+msgid "Export one or more views to a web page."
+msgstr "导出或转到网页"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:65
+msgid "Render in POV-&Ray..."
+msgstr "在 POV-&Ray 中渲染..."
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:66
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:114
+msgid "Render in POV-Ray"
+msgstr "在 POV-&Ray 中渲染"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:67
+msgid "Write &State..."
+msgstr "记下状态(&S)..."
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:68
+msgid "Save current view as a Jmol state script."
+msgstr "保存当前视图为 Jmol 状态脚本"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:69
+msgid "&Print..."
+msgstr "打印(&P)..."
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:70
+msgid "Print view."
+msgstr "打印当前视图"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:71
+msgid "&Close"
+msgstr "关闭(&C)"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:72
+msgid "E&xit"
+msgstr "退出(&x)"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:73
+msgid "Recent &Files..."
+msgstr "近期文件(F)..."
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:74
+msgid "&Edit"
+msgstr "编辑(&E)"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:76
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:82
+msgid "Select &All"
+msgstr "全选(&A)"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:77
+msgid "Deselect All"
+msgstr "全部取消选择"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:78
+msgid "Copy &Image"
+msgstr "复制图像(&I)"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:79
+msgid "Copy Script"
+msgstr "复制脚本"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:80
+msgid "Pr&eferences..."
+msgstr "选项(e)..."
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:81
+msgid "&Paste"
+msgstr "粘贴(&P)"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:83
+msgid "&Select"
+msgstr "选择(&S)"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:84
+msgid "&All"
+msgstr "全部(&A)"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:85
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:98
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:104
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:110
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:117
+msgid "&None"
+msgstr "无(&N)"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:86
+msgid "Hydrogen"
+msgstr "氢"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:87
+msgid "Carbon"
+msgstr "碳"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:88
+msgid "Nitrogen"
+msgstr "氮"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:89
+msgid "Oxygen"
+msgstr "氧"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:90
+msgid "Phosphorus"
+msgstr "磷"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:91
+msgid "Sulfur"
+msgstr "硫"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:92
+msgid "Amino"
+msgstr "氨基酸"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:93
+msgid "Nucleic"
+msgstr "核酸"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:94
+msgid "Water"
+msgstr "水"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:95
+msgid "Hetero"
+msgstr "杂原子"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:96
+msgid "&Display"
+msgstr "显示(&D)"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:97
+msgid "&Atom"
+msgstr "原子(&A)"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:99
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:100
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:101
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:102
+#, java-format
+msgid "{0}% van der Waals"
+msgstr "{0}% 范德华"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:103
+msgid "&Bond"
+msgstr "键(&B)"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:105
+msgid "&Wireframe"
+msgstr "线框(&W)"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:106
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:107
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:108
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:120
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:121
+#, java-format
+msgid "{0} Å"
+msgstr "{0} Å"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:109
+msgid "&Label"
+msgstr "标签(&L)"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:111
+msgid "&Symbol"
+msgstr "符号(&S)"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:112
+msgid "&Name"
+msgstr "名称(&N)"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:113
+msgid "&Number"
+msgstr "数量(&N)"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:114
+msgid "&Centered"
+msgstr "居中(&C)"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:115
+msgid "&Upper right"
+msgstr "右上角(&U)"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:116
+msgid "&Vector"
+msgstr "矢量(&V)"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:118
+msgid "&On"
+msgstr "开(&O)"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:119
+#, java-format
+msgid "{0} pixels"
+msgstr "{0} 像素"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:122
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:123
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:124
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:125
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:126
+#, java-format
+msgid "Scale {0}"
+msgstr "比例 {0}"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:127
+msgid "&Zoom"
+msgstr "缩放(&Z)"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:128
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:129
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:130
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:131
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:132
+#, java-format
+msgid "{0}%"
+msgstr "{0}%"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:133
+msgid "&Perspective Depth"
+msgstr "深度透视(&P)"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:134
+msgid "A&xes"
+msgstr "坐标轴(&X)"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:135
+msgid "B&ounding Box"
+msgstr "边界框(&O)"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:136
+msgid "&Hydrogens"
+msgstr "氢原子(&H)"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:137
+msgid "V&ectors"
+msgstr "矢量(&E)"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:138
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:150
+msgid "&Measurements"
+msgstr "测量(&M)"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:139
+msgid "Resi&ze"
+msgstr "调整大小(&Z)"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:140
+msgid "&View"
+msgstr "视图(&V)"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:141
+msgid "&Front"
+msgstr "正视(&F)"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:142
+msgid "&Top"
+msgstr "顶视(&T)"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:143
+msgid "&Bottom"
+msgstr "底视(&B)"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:144
+msgid "&Right"
+msgstr "右视(&R)"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:145
+msgid "&Left"
+msgstr "左视(&L)"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:146
+msgid "Tr&ansform..."
+msgstr "变形(&A)..."
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:147
+msgid "Define &Center"
+msgstr "确定中心点(&C)"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:148
+msgid "&Tools"
+msgstr "工具(&T)"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:149
+msgid "&Gaussian..."
+msgstr "高斯(&G)..."
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:151
+msgid "Distance &Units"
+msgstr "距离单位(&U)"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:152
+msgid "&Nanometers 1E-9"
+msgstr "纳米(&N) 1E-9"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:153
+msgid "&Angstroms 1E-10"
+msgstr "埃(&A) 1E-10"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:154
+msgid "&Picometers 1E-12"
+msgstr "皮米(&P) 1E-12"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:155
+msgid "&Animate..."
+msgstr "动画(&A)..."
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:156
+msgid "&Vibrate..."
+msgstr "震动(&V)..."
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:157
+msgid "&Graph..."
+msgstr "图像(&G)..."
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:158
+msgid "Calculate chemical &shifts..."
+msgstr "计算化学位移(&S)..."
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:159
+msgid "&Crystal Properties"
+msgstr "晶体性质(&C)"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:160
+msgid "&Once"
+msgstr "单次(&O)"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:161
+msgid "&Loop"
+msgstr "循环(&L)"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:162
+msgid "P&alindrome"
+msgstr "回文循环(&A)"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:163
+msgid "&Stop animation"
+msgstr "停止动画(&S)"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:164
+msgid "&Rewind to first frame"
+msgstr "回到第一帧(&R)"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:165
+msgid "Rewind to first frame"
+msgstr "回到第一帧"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:166
+msgid "Go to &next frame"
+msgstr "转到下一帧(&N)"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:167
+msgid "Go to next frame"
+msgstr "转到下一帧"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:168
+msgid "Go to &previous frame"
+msgstr "转到上一帧(&P)"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:169
+msgid "Go to previous frame"
+msgstr "转到上一帧"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:170
+msgid "All &frames"
+msgstr "全部框架(_F)"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:171
+msgid "All frames"
+msgstr "全部框架"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:172
+msgid "Go to &last frame"
+msgstr "转到最后一帧(&L)"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:173
+msgid "Go to last frame"
+msgstr "转到最后一帧"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:174
+msgid "Start &vibration"
+msgstr "开始振动(&V)"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:175
+msgid "&Stop vibration"
+msgstr "停止振动(&S)"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:176
+msgid "&First frequency"
+msgstr "第一频率(&F)"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:177
+msgid "&Next frequency"
+msgstr "下一频率(&N)"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:178
+msgid "&Previous frequency"
+msgstr "上一频率(&P)"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:179
+msgid "&Help"
+msgstr "帮助(&H)"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:181
+msgid "User Guide"
+msgstr "用户手册"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:182
+msgid "What's New"
+msgstr "新增内容"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:183
+msgid "Hydrogens"
+msgstr "氢原子"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:184
+#: org/openscience/jmol/app/jmolpanel/MeasurementTable.java:66
+msgid "Measurements"
+msgstr "量度"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:185
+msgid "Perspective Depth"
+msgstr "透视深度"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:186
+msgid "Axes"
+msgstr "坐标轴"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:187
+msgid "Bounding Box"
+msgstr "边框"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:189
+msgid "RasMol/Chime compatible axes orientation/rotations"
+msgstr "RasMol/Chime兼容的坐标轴方向/旋转"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:191
+msgid "File Preview (requires restarting Jmol)"
+msgstr "文件预览(需重启Jmol)"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:193
+msgid "Clear console button (requires restarting Jmol)"
+msgstr "清除控制台按钮（需重启Jmol）"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:194
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:195
+msgid "Use Atom Color"
+msgstr "使用原子颜色"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:196
+msgid "Rotate molecule."
+msgstr "旋转分子"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:198
+msgid "Select a set of atoms using SHIFT-LEFT-DRAG."
+msgstr "通过Shift-左键-拖拽框选原子"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:200
+msgid "Click atoms to measure distances"
+msgstr "点击原子以测距"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:201
+msgid "Return molecule to home position."
+msgstr "把分子归位"
+
+#: org/openscience/jmol/app/jmolpanel/GuiMap.java:202
+msgid "Open the model kit."
+msgstr "打开 model kit."
+
+#: org/openscience/jmol/app/jmolpanel/HelpDialog.java:64
+msgid "Jmol Help"
+msgstr "Jmol帮助"
+
+#: org/openscience/jmol/app/jmolpanel/JmolPanel.java:125
+msgid "Initializing 3D display..."
+msgstr "启动3D显示..."
+
+#: org/openscience/jmol/app/jmolpanel/JmolPanel.java:157
+msgid "Initializing Preferences..."
+msgstr "启动选项..."
+
+#: org/openscience/jmol/app/jmolpanel/JmolPanel.java:159
+msgid "Initializing Recent Files..."
+msgstr "启动最近的文件..."
+
+#: org/openscience/jmol/app/jmolpanel/JmolPanel.java:161
+msgid "Initializing Script Window..."
+msgstr "启动脚本窗口..."
+
+#: org/openscience/jmol/app/jmolpanel/JmolPanel.java:184
+msgid "Building Command Hooks..."
+msgstr "建立命令挂钩..."
+
+#: org/openscience/jmol/app/jmolpanel/JmolPanel.java:195
+msgid "Building Menubar..."
+msgstr "建立菜单栏..."
+
+#: org/openscience/jmol/app/jmolpanel/JmolPanel.java:213
+msgid "Starting display..."
+msgstr "启动显示..."
+
+#: org/openscience/jmol/app/jmolpanel/JmolPanel.java:257
+msgid "Setting up Drag-and-Drop..."
+msgstr "设置拖拽和放下..."
+
+#: org/openscience/jmol/app/jmolpanel/JmolPanel.java:259
+msgid "Launching main frame..."
+msgstr "启动主框架..."
+
+#: org/openscience/jmol/app/jmolpanel/JmolPanel.java:288
+#: org/openscience/jmol/app/webexport/Widgets.java:207
+msgid "Jmol Console"
+msgstr "Jmol控制台"
+
+#: org/openscience/jmol/app/jmolpanel/JmolPanel.java:310
+msgid "Could not create ConsoleTextArea: "
+msgstr "无法建立控制台文字区域: "
+
+#: org/openscience/jmol/app/jmolpanel/JmolPanel.java:327
+msgid "Creating main window..."
+msgstr "创建主窗口..."
+
+#: org/openscience/jmol/app/jmolpanel/JmolPanel.java:328
+msgid "Initializing Swing..."
+msgstr "启动摆动..."
+
+#: org/openscience/jmol/app/jmolpanel/JmolPanel.java:340
+msgid "Initializing Jmol..."
+msgstr "启动Jmol..."
+
+#: org/openscience/jmol/app/jmolpanel/JmolPanel.java:452
+msgid "Closing Jmol..."
+msgstr "关闭 Jmol..."
+
+#: org/openscience/jmol/app/jmolpanel/JmolPanel.java:1077
+msgid "Open URL"
+msgstr "打开网址(URL)"
+
+#: org/openscience/jmol/app/jmolpanel/JmolPanel.java:1078
+msgid "Enter URL of molecular model"
+msgstr "输入分子模型的网址(URL)"
+
+#: org/openscience/jmol/app/jmolpanel/JmolPanel.java:1252
+msgid "IO Exception:"
+msgstr "IO例外:"
+
+#: org/openscience/jmol/app/jmolpanel/JmolPanel.java:1345
+msgid "width height?"
+msgstr "宽度或高度？"
+
+#: org/openscience/jmol/app/jmolpanel/MeasurementTable.java:124
+msgid "Delete"
+msgstr "删除"
+
+#: org/openscience/jmol/app/jmolpanel/MeasurementTable.java:133
+msgid "DeleteAll"
+msgstr "删除全部"
+
+#: org/openscience/jmol/app/jmolpanel/MeasurementTable.java:151
+msgid "Dismiss"
+msgstr "取消"
+
+#: org/openscience/jmol/app/jmolpanel/MeasurementTable.java:201
+msgid "Value"
+msgstr "数值"
+
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:152
+msgid "Conversion from Jmol to POV-Ray"
+msgstr "从Jmol转换到POV-Ray"
+
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:156
+msgid "File Name:"
+msgstr "文件名:"
+
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:158
+msgid ""
+"'caffeine.pov' -> 'caffeine.pov', 'caffeine.pov.ini', 'caffeine.pov.spt'"
+msgstr ""
+"'caffeine.pov' -> 'caffeine.pov', 'caffeine.pov.ini', 'caffeine.pov.spt'"
+
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:168
+msgid "Working Directory"
+msgstr "工作目录"
+
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:170
+msgid "Where the .pov files will be saved"
+msgstr ".pov文件将要保存的位置"
+
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:190
+msgid "POV-Ray Runtime Options"
+msgstr "POV-Ray运行时的选项"
+
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:195
+msgid "Run POV-Ray directly"
+msgstr "直接运行POV-Ray"
+
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:197
+msgid "Launch POV-Ray from within Jmol"
+msgstr "从Jmol内部启动POV-Ray"
+
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:242
+msgid "Display While Rendering"
+msgstr "显示整个渲染"
+
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:244
+msgid "Should POV-Ray attempt to display while rendering?"
+msgstr "POV-Ray需要试图显示整个渲染吗？"
+
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:267
+msgid "width:"
+msgstr "宽度:"
+
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:269
+msgid "Image width"
+msgstr "图像宽度"
+
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:284
+#: org/openscience/jmol/app/webexport/PopInJmol.java:73
+msgid "height:"
+msgstr "高度:"
+
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:286
+msgid "Image height"
+msgstr "图像高度"
+
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:303
+msgid "Fixed ratio : "
+msgstr "固定的比率: "
+
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:305
+msgid "Use a fixed ratio for width:height"
+msgstr "使用固定宽高比"
+
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:316
+msgid "User defined"
+msgstr "用户自定义"
+
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:318
+msgid "Keep ratio of Jmol window"
+msgstr "保持Jmol窗口宽高比"
+
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:358
+msgid "N - PNG"
+msgstr "N -PNG图像"
+
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:361
+msgid "P - PPM"
+msgstr "P - PPM图像"
+
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:364
+msgid "C - Compressed Targa-24"
+msgstr "C - 压缩的Targa-24"
+
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:367
+msgid "T - Uncompressed Targa-24"
+msgstr "T - 未压缩的Targa-24"
+
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:383
+msgid "Alpha transparency"
+msgstr "Alpha 透明度"
+
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:385
+msgid "Output Alpha transparency data"
+msgstr "输出 Alpha 透明度数据"
+
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:398
+msgid "Mosaic preview"
+msgstr "马赛克预览"
+
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:400
+msgid "Render the image in several passes"
+msgstr "按多个步骤渲染图像"
+
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:410
+msgid "Start size : "
+msgstr "初始尺寸： "
+
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:412
+msgid "Initial size of the tiles"
+msgstr "平板的初始尺寸"
+
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:428
+msgid "End size : "
+msgstr "最终尺寸： "
+
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:430
+msgid "Final size of the tiles"
+msgstr "平板的最终尺寸"
+
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:451
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:453
+msgid "Location of the POV-Ray Executable"
+msgstr "POV-Ray可执行文件的位置"
+
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:490
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:757
+msgid "Go!"
+msgstr "运行！"
+
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:492
+msgid "Save file and possibly launch POV-Ray"
+msgstr "保存文件，有可能就启动POV-Ray"
+
+#: org/openscience/jmol/app/jmolpanel/PovrayDialog.java:503
+msgid "Cancel this dialog without saving"
+msgstr "不保存，取消此对话框"
+
+#: org/openscience/jmol/app/jmolpanel/PreferencesDialog.java:137
+msgid "Preferences"
+msgstr "首选项"
+
+#: org/openscience/jmol/app/jmolpanel/PreferencesDialog.java:154
+msgid "Display"
+msgstr "显示"
+
+#: org/openscience/jmol/app/jmolpanel/PreferencesDialog.java:155
+msgid "Atoms"
+msgstr "原子"
+
+#: org/openscience/jmol/app/jmolpanel/PreferencesDialog.java:156
+msgid "Bonds"
+msgstr "化学键"
+
+#: org/openscience/jmol/app/jmolpanel/PreferencesDialog.java:161
+msgid "Jmol Defaults"
+msgstr "Jmol 默认值"
+
+#: org/openscience/jmol/app/jmolpanel/PreferencesDialog.java:165
+msgid "RasMol Defaults"
+msgstr "RasMol 默认值"
+
+#: org/openscience/jmol/app/jmolpanel/PreferencesDialog.java:173
+msgid "Apply"
+msgstr "应用"
+
+#: org/openscience/jmol/app/jmolpanel/PreferencesDialog.java:201
+msgid "Show All"
+msgstr "显示全部"
+
+#: org/openscience/jmol/app/jmolpanel/PreferencesDialog.java:300
+msgid "Default atom size"
+msgstr "默认原子尺寸"
+
+#: org/openscience/jmol/app/jmolpanel/PreferencesDialog.java:301
+msgid "(percentage of vanDerWaals radius)"
+msgstr "(范德化华半径百分比)"
+
+#: org/openscience/jmol/app/jmolpanel/PreferencesDialog.java:354
+msgid "Compute Bonds"
+msgstr "计算化学键"
+
+#: org/openscience/jmol/app/jmolpanel/PreferencesDialog.java:356
+msgid "Automatically"
+msgstr "自动"
+
+#: org/openscience/jmol/app/jmolpanel/PreferencesDialog.java:357
+msgid "Don't Compute Bonds"
+msgstr "不计算化学键"
+
+#: org/openscience/jmol/app/jmolpanel/PreferencesDialog.java:387
+msgid "Default Bond Radius"
+msgstr "默认键半键"
+
+#: org/openscience/jmol/app/jmolpanel/PreferencesDialog.java:388
+#: org/openscience/jmol/app/jmolpanel/PreferencesDialog.java:426
+#: org/openscience/jmol/app/jmolpanel/PreferencesDialog.java:477
+msgid "(Angstroms)"
+msgstr "(埃)"
+
+#: org/openscience/jmol/app/jmolpanel/PreferencesDialog.java:425
+msgid "Bond Tolerance - sum of two covalent radii + this value"
+msgstr "键的容许误差：两个键的半径 + 这个值"
+
+#: org/openscience/jmol/app/jmolpanel/PreferencesDialog.java:476
+msgid "Minimum Bonding Distance"
+msgstr "最小成键距离"
+
+#: org/openscience/jmol/app/jmolpanel/RecentFilesDialog.java:61
+msgid "Recent Files"
+msgstr "最近用过的文件"
+
+#: org/openscience/jmol/app/jmolpanel/RecentFilesDialog.java:66
+msgid "Open"
+msgstr "打开"
+
+#: org/openscience/jmol/app/jmolpanel/Splash.java:46
+msgid "Loading..."
+msgstr "载入中..."
+
+#: org/openscience/jmol/app/jmolpanel/WhatsNewDialog.java:57
+msgid "What's New in Jmol"
+msgstr "Jmol 更新内容"
+
+#: org/openscience/jmol/app/webexport/JmolInstance.java:81
+msgid "Attempt to make scratch directory failed."
+msgstr "试图建立脚本路径时出错"
+
+#: org/openscience/jmol/app/webexport/LogPanel.java:56
+msgid "Log and Error Messages:"
+msgstr "日志和出错信息"
+
+#: org/openscience/jmol/app/webexport/LogPanel.java:64
+msgid "Messages (see Log tab for full history):"
+msgstr "信息（完整历史见“日志”）"
+
+#: org/openscience/jmol/app/webexport/PopInJmol.java:46
+msgid "These names will be used as filenames for the applets"
+msgstr "这些名字将被用于Java小程序的文件名"
+
+#: org/openscience/jmol/app/webexport/PopInJmol.java:71
+msgid "Applet width:"
+msgstr "Java小程序的宽度："
+
+#: org/openscience/jmol/app/webexport/PopInJmol.java:104
+#, java-format
+msgid "insert a caption for {0} here."
+msgstr "为此处的 {0} 插入一个标题"
+
+#: org/openscience/jmol/app/webexport/PopInJmol.java:107
+#, java-format
+msgid "insert a note for {0} here."
+msgstr "为此处的 {0} 插入说明"
+
+#: org/openscience/jmol/app/webexport/ScriptButtons.java:44
+msgid "These names will be used for button labels"
+msgstr "这些名字将被用于按钮标签"
+
+#: org/openscience/jmol/app/webexport/ScriptButtons.java:56
+msgid "% of window for applet width:"
+msgstr "用于小程序的窗口宽度百分比"
+
+#: org/openscience/jmol/app/webexport/WebExport.java:82
+#: org/openscience/jmol/app/webexport/WebExport.java:196
+#: org/openscience/jmol/app/webexport/WebExport.java:266
+msgid "Jmol Web Page Maker"
+msgstr "Jmol 网页制作器"
+
+#: org/openscience/jmol/app/webexport/WebExport.java:105
+msgid "Couldn't find file: {0}"
+msgstr "无法找到文件：{0}"
+
+#: org/openscience/jmol/app/webexport/WebExport.java:124
+msgid "Introduction"
+msgstr "介绍"
+
+#: org/openscience/jmol/app/webexport/WebExport.java:134
+msgid "Pop-In Jmol"
+msgstr "弹出式的 Jmol"
+
+#: org/openscience/jmol/app/webexport/WebExport.java:135
+msgid "ScriptButton Jmol"
+msgstr "Jmol 脚本按钮"
+
+#: org/openscience/jmol/app/webexport/WebExport.java:152
+msgid "Log"
+msgstr "日志"
+
+#: org/openscience/jmol/app/webexport/WebExport.java:167
+#, java-format
+msgid ""
+"Page skeleton and JavaScript generated by export to web function using {0} "
+"on {1}."
+msgstr "通过使用在 {1} 上使用 {0} 导出到网页函数，已生成页面骨架和JavaScript。"
+
+#: org/openscience/jmol/app/webexport/WebExport.java:349
+#, java-format
+msgid ""
+"To get a 3-D model you can manipulate, click {0}here{1}. Download time may "
+"be significant the first time the applet is loaded."
+msgstr "请点击 {0} 启动Jmol {1} 以显示可以操纵的三维模型。（Java 小程序首次载入时可能下载时间较长）"
+
+#: org/openscience/jmol/app/webexport/WebExport.java:351
+msgid "Insert the page TITLE here."
+msgstr "此处插入网页标题"
+
+#: org/openscience/jmol/app/webexport/WebExport.java:352
+msgid "Insert the page INTRODUCTION here."
+msgstr "此处插入网页简介"
+
+#: org/openscience/jmol/app/webexport/WebExport.java:354
+#, java-format
+msgid "Insert a caption for {0} here."
+msgstr "为此处的 {0} 插入标题"
+
+#: org/openscience/jmol/app/webexport/WebExport.java:355
+#, java-format
+msgid ""
+"Insert additional explanatory text here. Long text will wrap around Jmol "
+"model {0}."
+msgstr "此处插入额外的解释性文字。如果文字很长则会围绕Jmol模型 {0} 环绕。"
+
+#: org/openscience/jmol/app/webexport/WebExport.java:357
+msgid "Insert your TITLE and INTRODUCTION here."
+msgstr "此处插入你的标题和简介。"
+
+#: org/openscience/jmol/app/webexport/WebExport.java:359
+#, java-format
+msgid ""
+"The button {0} will appear in the box below.  Insert information for {0} "
+"here and below."
+msgstr "按钮 {0} 将出现在下方的盒子中，插入此处和入方的 {0} 的信息。"
+
+#: org/openscience/jmol/app/webexport/WebExport.java:360
+#, java-format
+msgid "Insert more information for {0} here."
+msgstr "此处插入 {0} 的更多信息。"
+
+#: org/openscience/jmol/app/webexport/WebPanel.java:151
+msgid "A web page containing Jmol applets"
+msgstr "一个包含Jmol小程序的网页"
+
+#: org/openscience/jmol/app/webexport/WebPanel.java:176
+msgid "click and drag to reorder"
+msgstr "点击并拖动来重新排序"
+
+#: org/openscience/jmol/app/webexport/WebPanel.java:181
+msgid "Add Present Jmol State as Instance..."
+msgstr "把当前的Jmol状态增加为一个实例"
+
+#: org/openscience/jmol/app/webexport/WebPanel.java:188
+msgid "Delete Selected"
+msgstr "删除所选对象"
+
+#: org/openscience/jmol/app/webexport/WebPanel.java:220
+msgid "Jmol Instances:"
+msgstr "Jmol 实例："
+
+#: org/openscience/jmol/app/webexport/WebPanel.java:226
+msgid "Select widgets:"
+msgstr "按钮与选项"
+
+#: org/openscience/jmol/app/webexport/WebPanel.java:323
+msgid "Help/Instructions"
+msgstr "帮助/指示"
+
+#: org/openscience/jmol/app/webexport/WebPanel.java:330
+#: org/openscience/jmol/app/webexport/WebPanel.java:338
+msgid "Cartoon of Page"
+msgstr "页面示例"
+
+#: org/openscience/jmol/app/webexport/WebPanel.java:344
+msgid "Save HTML as..."
+msgstr "命名保存网页"
+
+#: org/openscience/jmol/app/webexport/WebPanel.java:354
+msgid "Relative server path to jar files:"
+msgstr "jar 文件的服务器相对路径"
+
+#: org/openscience/jmol/app/webexport/WebPanel.java:360
+msgid "Relative local path to jar files:"
+msgstr "jar 文件的本地相对路径"
+
+#: org/openscience/jmol/app/webexport/WebPanel.java:366
+msgid "Author (your name):"
+msgstr "作者(您的名字)"
+
+#: org/openscience/jmol/app/webexport/WebPanel.java:373
+msgid "Browser window title for this web page:"
+msgstr "浏览此网页的窗口标题"
+
+#: org/openscience/jmol/app/webexport/WebPanel.java:459
+msgid "Give the occurrence of Jmol a name:"
+msgstr "给存在的 Jmol 命名："
+
+#: org/openscience/jmol/app/webexport/WebPanel.java:475
+msgid "Error creating new instance containing script(s) and image."
+msgstr "建立包含脚本和图像的新实例时出错。"
+
+#: org/openscience/jmol/app/webexport/WebPanel.java:486
+#, java-format
+msgid "added Instance {0}"
+msgstr "增加的实例 {0}"
+
+#: org/openscience/jmol/app/webexport/WebPanel.java:489
+#, java-format
+msgid "updated Instance {0}"
+msgstr "更新的实例 {0}"
+
+#: org/openscience/jmol/app/webexport/WebPanel.java:526
+msgid "Select a directory to create or an HTML file to save"
+msgstr "选择建立一个目录或HTML文件以保存"
+
+#: org/openscience/jmol/app/webexport/WebPanel.java:544
+#, java-format
+msgid "file {0} created"
+msgstr "已创建文件  {0}"
+
+#: org/openscience/jmol/app/webexport/WebPanel.java:546
+msgid "Call to FileWriter unsuccessful."
+msgstr "调用 FileWriter 不成功"
+
+#: org/openscience/jmol/app/webexport/WebPanel.java:621
+#, java-format
+msgid "Using directory {0}"
+msgstr "使用目录 {0}"
+
+#: org/openscience/jmol/app/webexport/WebPanel.java:622
+#: org/openscience/jmol/app/webexport/WebPanel.java:631
+#: org/openscience/jmol/app/webexport/WebPanel.java:653
+#: org/openscience/jmol/app/webexport/WebPanel.java:667
+#: org/openscience/jmol/app/webexport/WebPanel.java:694
+#, java-format
+msgid "adding {0}"
+msgstr "正在加入 {0}"
+
+#: org/openscience/jmol/app/webexport/WebPanel.java:682
+#, java-format
+msgid "Unable to load resource {0}"
+msgstr "无法载入资源 {0}"
+
+#: org/openscience/jmol/app/webexport/WebPanel.java:734
+msgid "Based on template by A. Herr&#x00E1;ez as modified by J. Gutow"
+msgstr "基于A.Herriez建立、J.Gutow修改的模板"
+
+#: org/openscience/jmol/app/webexport/WebPanel.java:737
+#, java-format
+msgid "creating {0}"
+msgstr "正在创建 {0}"
+
+#: org/openscience/jmol/app/webexport/WebPanel.java:771
+#, java-format
+msgid ""
+"Could not find or open:\n"
+"{0}"
+msgstr ""
+"无法找到或打开：\n"
+"{0}"
+
+#: org/openscience/jmol/app/webexport/WebPanel.java:774
+#, java-format
+msgid ""
+"copying\n"
+"{0}\n"
+"         to"
+msgstr ""
+"正在复制 \n"
+"{0}\n"
+"         到"
+
+#: org/openscience/jmol/app/webexport/WebPanel.java:781
+msgid "compressing large data file to"
+msgstr "把大数据文件压缩到"
+
+#: org/openscience/jmol/app/webexport/Widgets.java:60
+msgid "Spin on/off"
+msgstr "旋转"
+
+#: org/openscience/jmol/app/webexport/Widgets.java:75
+msgid "enable/disable spin"
+msgstr "启用/停用 旋转"
+
+#: org/openscience/jmol/app/webexport/Widgets.java:77
+msgid "Spin on"
+msgstr "旋转 开"
+
+#: org/openscience/jmol/app/webexport/Widgets.java:83
+msgid "Background Color"
+msgstr "背景颜色"
+
+#: org/openscience/jmol/app/webexport/Widgets.java:98
+msgid "background color:"
+msgstr "背景颜色"
+
+#: org/openscience/jmol/app/webexport/Widgets.java:111
+msgid "Stereo Viewing"
+msgstr "立体查看"
+
+#: org/openscience/jmol/app/webexport/Widgets.java:125
+msgid "select stereo type"
+msgstr "选择立体类型"
+
+#: org/openscience/jmol/app/webexport/Widgets.java:129
+msgid "Stereo Off"
+msgstr "立体 关"
+
+#: org/openscience/jmol/app/webexport/Widgets.java:130
+msgid "Red/Blue"
+msgstr "红色 / 蓝色"
+
+#: org/openscience/jmol/app/webexport/Widgets.java:132
+msgid "Red/Cyan"
+msgstr "红色 / 青色"
+
+#: org/openscience/jmol/app/webexport/Widgets.java:134
+msgid "Red/Green"
+msgstr "红色 / 绿色"
+
+#: org/openscience/jmol/app/webexport/Widgets.java:141
+msgid "Animation Control"
+msgstr "动画控制"
+
+#: org/openscience/jmol/app/webexport/Widgets.java:165
+msgid "Animation"
+msgstr "动画"
+
+#: org/openscience/jmol/app/webexport/Widgets.java:166
+msgid "First Frame"
+msgstr "第一帧"
+
+#: org/openscience/jmol/app/webexport/Widgets.java:168
+msgid "Previous Frame"
+msgstr "前一帧"
+
+#: org/openscience/jmol/app/webexport/Widgets.java:170
+msgid "Play"
+msgstr "播放"
+
+#: org/openscience/jmol/app/webexport/Widgets.java:172
+msgid "Next Frame"
+msgstr "下一帧"
+
+#: org/openscience/jmol/app/webexport/Widgets.java:174
+msgid "Pause"
+msgstr "暂停"
+
+#: org/openscience/jmol/app/webexport/Widgets.java:176
+msgid "Last Frame"
+msgstr "最后一帧"
+
+#: org/openscience/jmol/app/webexport/Widgets.java:178
+msgid "Mode:"
+msgstr "模式："
+
+#: org/openscience/jmol/app/webexport/Widgets.java:179
+msgid "Loop"
+msgstr "循环"
+
+#: org/openscience/jmol/app/webexport/Widgets.java:181
+msgid "Palindrome"
+msgstr "回文循环"
+
+#: org/openscience/jmol/app/webexport/Widgets.java:183
+msgid "Play Once"
+msgstr "播放一次"
+
+#: org/openscience/jmol/app/webexport/Widgets.java:192
+msgid "Open Console Button"
+msgstr "[打开控制台]按钮"
+
+#: org/openscience/jmol/app/webexport/Widgets.java:205
+msgid "launch Jmol console"
+msgstr "进入 Jmol 控制台"
+
+#: org/openscience/jmol/app/webexport/Widgets.java:212
+msgid "Download view"
+msgstr "下载视图"
+
+#: org/openscience/jmol/app/webexport/Widgets.java:227
+msgid "unimplemented"
+msgstr "功能尚未实现"

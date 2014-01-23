@@ -1,0 +1,73 @@
+<project name="Jmol releases" default="deploy" basedir="..">
+
+  <!--
+    To use this script, the scp task must be available.
+    The scp task requires the jsch jar in the class path.
+  -->
+
+  <!-- Contributions -->
+  <taskdef resource="net/sf/antcontrib/antlib.xml">
+    <classpath>
+      <pathelement location="tools/ant-contrib.jar" />
+    </classpath>
+  </taskdef>
+
+  <property name="dist.dir"        value="build/dist" />
+  <property name="src.dir"         value="src" />
+  <property name="temp.dir"        value="build/release" />
+  <property name="web.dir"         value="/home/frs/project/j/jm/jmol" />
+  <property name="web.host"        value="frs.sourceforge.net" />
+  <property name="path.release"    value="Jmol/Version 12.0" />
+  <property name="prefix.release"  value="Version " />
+
+  <property file="${src.dir}/org/jmol/viewer/Jmol.properties" prefix="Jmol.properties" />
+  <property name="version" value="${Jmol.properties.version}" />
+
+  <!-- Copying files to website -->
+  <target name="deploy" >
+
+    <!-- Ask user for confirmation -->
+    <input
+      message="Version ${version}. Do you really want to copy files to the website (y/n) ?"
+      validargs="y,n"
+      addproperty="do.scp"
+    />
+    <condition property="do.abort">
+      <equals arg1="n" arg2="${do.scp}"/>
+    </condition>
+    <fail if="do.abort">Build aborted by user.</fail>
+
+    <!-- Ask user for username and password -->
+    <input
+      message="Please enter username:"
+      addproperty="ssh.user"
+    />
+    <input
+      message="Please enter password:"
+      addproperty="ssh.password"
+    />
+
+    <!-- Prepare temporary image -->
+    <delete dir="${temp.dir}" />
+    <mkdir dir="${temp.dir}" />
+    <mkdir dir="${temp.dir}/${path.release}/${prefix.release}${version}" />
+    <copy todir="${temp.dir}/${path.release}/${prefix.release}${version}"
+          file="${dist.dir}/Jmol-${version}-binary.tar.gz" />
+    <copy todir="${temp.dir}/${path.release}/${prefix.release}${version}"
+          file="${dist.dir}/Jmol-${version}-binary.zip" />
+    <copy todir="${temp.dir}/${path.release}/${prefix.release}${version}"
+          file="${dist.dir}/Jmol-${version}-full.tar.gz" />
+    <copy tofile="${temp.dir}/${path.release}/${prefix.release}${version}/README-${version}.properties"
+          file="${src.dir}/org/jmol/viewer/Jmol.properties" />
+
+    <!-- Do the copy using scp -->
+    <echo message="Copying release files to Jmol website" level="info"/>
+    <scp todir="${ssh.user},jmol:${ssh.password}@${web.host}:${web.dir}"
+         trust="yes" failonerror="true">
+      <fileset dir="${temp.dir}">
+        <include name="**/*"/>
+      </fileset>
+    </scp>
+  </target>
+
+</project>
