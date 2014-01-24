@@ -194,11 +194,33 @@
   	padding: 5px;
   	font-size: 14px;
   	text-align: center;
-  	font-style: italic;
 }
 
-.eppic-status-label{
+.eppic-status-header{
+	font-size: 20px;
 	font-weight:bold;
+}
+
+.eppic-status-jobId{
+	font-size: 10px;
+	color: #A1A1A1;
+}
+
+.eppic-status-stop-button{
+	 background-image: url('resources/icons/stop_icon.png');
+	 background-repeat:no-repeat;
+	 background-position:center;
+}
+
+.eppic-status-panel-error-label{
+	padding-top: 50px;
+	padding-bottom: 10px;
+  	font-size: 20px;
+}
+
+.eppic-status-panel-error-message{
+	font-size: 14px;
+	color: red;
 }
 
 .eppic-status-log, .eppic-status-log textarea {

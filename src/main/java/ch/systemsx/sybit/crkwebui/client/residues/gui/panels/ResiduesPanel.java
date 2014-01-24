@@ -39,6 +39,9 @@ import com.sencha.gxt.widget.core.client.toolbar.PagingToolBar;
 public class ResiduesPanel extends VerticalLayoutContainer
 {
     private static final InterfaceResidueItemModelProperties props = GWT.create(InterfaceResidueItemModelProperties.class);
+    
+    private static final int ROW_HEIGHT = 22;
+    private static final int PAGING_TOOL_BAR_HEIGHT = 27;
 	
     private List<ColumnConfig<InterfaceResidueItemModel, ?>> residuesConfigs;
     private ListStore<InterfaceResidueItemModel> residuesStore;
@@ -97,7 +100,7 @@ public class ResiduesPanel extends VerticalLayoutContainer
     		pagingToolbar = new PagingToolBar(nrOfRows);
     		pagingToolbar.getElement().getStyle().setProperty("borderBottom", "none");
     		pagingToolbar.bind(loader);
-    		this.add(pagingToolbar, new VerticalLayoutData(1, -1));
+    		this.add(pagingToolbar, new VerticalLayoutData(1, PAGING_TOOL_BAR_HEIGHT));
     	}
 
     }
@@ -311,8 +314,8 @@ public class ResiduesPanel extends VerticalLayoutContainer
      */
     public void resizeGrid()
     {
-    	//A Correction of 22 to 26 was done in GXT 3.0.1
-    	nrOfRows = this.getOffsetHeight() / 26;
+    	//exclude one header row and one paging row and a bit more space to be on safe side
+    	nrOfRows = (this.getOffsetHeight()-ROW_HEIGHT-PAGING_TOOL_BAR_HEIGHT-2)/ ROW_HEIGHT;
 
     	if(!useBufferedView)
     	{

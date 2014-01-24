@@ -179,6 +179,7 @@ public class MyJobsPanel extends ContentPanel
 	{
 		final Grid<MyJobsModel> myJobsGrid = new Grid<MyJobsModel>(myJobsStore, myJobsColumnModel);
 		myJobsGrid.setBorders(false);
+		myJobsGrid.setHideHeaders(true);
 		myJobsGrid.getView().setStripeRows(true);
 		myJobsGrid.getView().setColumnLines(false);
 		myJobsGrid.getView().setForceFit(true);

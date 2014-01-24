@@ -70,11 +70,11 @@ public interface AppProperties extends Constants
  	String parameters_max_num_sequences_hint();
 	
 	String status_panel_jobId();
-	String status_panel_log();
-	String status_panel_status();
 	String status_panel_stop();
-	String status_panel_step_counter();
+	String status_panel_new_job();
+	String status_panel_stopped_text();
 	String status_panel_subtitle();
+	String status_panel_error_message();
 	
 	String info_panel_pdb_identifier();
 	String info_panel_input_parameters();
