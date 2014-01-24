@@ -1,3 +1,0 @@
-
-Name: org/jmol/translation/
-Sealed: true

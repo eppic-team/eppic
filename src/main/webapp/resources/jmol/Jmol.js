@@ -1,5 +1,14 @@
 /* Jmol 12.0 script library Jmol.js 9:48 PM 1/31/2011 Bob Hanson
 
+
+NOTE: THIS LIBRARY IS DEPRECATED STARTING WITH Jmol 13.0. 
+      IT STILL WORKS (AND ALWAYS WILL, PROBABLY).
+      PLEASE USE the set JmolCore.js/JmolApplet.js/JmolControls.js/JmolApi.js
+      WITH OPTIONAL JmolCD.js (ChemDoodle Canvas and Canvas2D options) and JmolJSV.js (JSpecView)
+
+      SEE http://chemapps.stolaf.edu/jmol/files/JmolCore.js for details
+      SEE http://chemapps.stolaf.edu/jmol/examples-12/simple2.htm for an example
+
  checkbox heirarchy -- see http://chemapps.stolaf.edu/jmol/docs/examples-11/check.htm
 
     based on:
@@ -46,12 +55,12 @@ try{if(typeof(_jmol)!="undefined")exit()
 // bob hanson -- fix for iframes not available for finding applet
 // bob hanson -- added applet fake ?NOAPPLET URL flag
 // bob hanson -- added jmolSetCallback(calbackName, funcName) 3:32 PM 6/13/2006
-//			used PRIOR to jmolApplet() or jmolAppletInline()
+//      used PRIOR to jmolApplet() or jmolAppletInline()
 //               added 4th array element in jmolRadioGroup -- title
 //               added <span> and id around link, checkbox, radio, menu
 //               fixing AJAX loads for MSIE/Opera-Mozilla incompatibility
 //            -- renamed Jmol-11.js from Jmol-new.js; JmolApplet.jar from JmolAppletProto.jar
-//	 	 renamed Jmol.js for Jmol 11 distribution
+//      renamed Jmol.js for Jmol 11 distribution
 //            -- modified jmolRestoreOrientation() to be immediate, no 1-second delay
 // bob hanson -- jmolScriptWait always returns a string -- 11:23 AM 9/16/2006
 // bh         -- jmolCommandInput()
@@ -73,13 +82,13 @@ try{if(typeof(_jmol)!="undefined")exit()
 // bh 12/2009 -- added PARAMS=name:value;name:value;name:value... for command line
 // bh 12/2009 -- overhaul of target checking
 // bh 1/2010  -- all _xxxx() methods ALWAYS have complete argument list
-// bh 1/2010  -- adds option to run a JavaScript function from any Jmol control. 
+// bh 1/2010  -- adds option to run a JavaScript function from any Jmol control.
 //               This is accomplished by passing an array rather than a script:
 //               jmolHref([myfunc,"my param 1", "my param 2"], "testing")
 //               function myfunc(jmolControlObject, [myfunc,"my param 1", "my param 2"], target){...}
 //               and allows much more flexibility with responding to controls
 // bh 4/2010  -- added jmolSetMemoryMb(nMb)
-// ah 1/2011  -- wider detection of browsers; more browsers now use the object tag instead of the applet tag; 
+// ah 1/2011  -- wider detection of browsers; more browsers now use the object tag instead of the applet tag;
 //               fix of object tag (removed classid) accounts for change of behavior in Chrome
 
 var defaultdir = "."
@@ -97,7 +106,7 @@ var defaultjar = "JmolApplet.jar"
 
 // If the JAR file is not in the current directory (has any sort of "/" in its name)
 // then the user is presented with a warning and asked whether it is OK to change Jar files.
-// The default action, if the user just presses "OK" is to NOT allow the change. 
+// The default action, if the user just presses "OK" is to NOT allow the change.
 // The user must type the word "yes" in the prompt box for the change to be approved.
 
 // If you don't want people to be able to switch in their own JAR file on your page,
@@ -123,7 +132,7 @@ function jmolInitialize(codebaseDirectory, fileNameOrUseSignedApplet) {
         codebaseDirectory = f.substring(0, f.lastIndexOf("/"));
         fileNameOrUseSignedApplet = f.substring(f.lastIndexOf("/") + 1);
       } else {
-	_jmolGetJarFilename(fileNameOrUseSignedApplet);
+  _jmolGetJarFilename(fileNameOrUseSignedApplet);
         alert("The web page URL was ignored. Continuing using " + _jmol.archivePath + ' in directory "' + codebaseDirectory + '"');
       }
     } else {
@@ -220,10 +229,10 @@ function jmolCheckbox(scriptWhenChecked, scriptWhenUnchecked,
           ")' onmouseover='_jmolCbOver(this," + indexChecked + "," +
           indexUnchecked +
           ");return true' onmouseout='_jmolMouseOut()' " +
-	  (isChecked ? "checked='true' " : "")+ _jmol.checkboxCssText + " />" 
+    (isChecked ? "checked='true' " : "")+ _jmol.checkboxCssText + " />"
   if (labelHtml.toLowerCase().indexOf("<td>")>=0) {
-	t += eospan
-	eospan = "";
+  t += eospan
+  eospan = "";
   }
   t += "<label for=\"" + id + "\">" + labelHtml + "</label>" +eospan;
   if (_jmol.debugAlert)
@@ -288,7 +297,7 @@ function jmolLink(script, label, id, title) {
   label != undefined && label != null || (label = script.substring(0, 32));
   ++_jmol.linkCount;
   var scriptIndex = _jmolAddScript(script);
-  var t = "<span id=\"span_"+id+"\""+(title ? " title=\"" + title + "\"":"")+"><a name='" + id + "' id='" + id + 
+  var t = "<span id=\"span_"+id+"\""+(title ? " title=\"" + title + "\"":"")+"><a name='" + id + "' id='" + id +
           "' href='javascript:_jmolClick(this," + scriptIndex + _jmol.targetText + ");' onmouseover='_jmolMouseOver(" + scriptIndex +
           ");return true;' onmouseout='_jmolMouseOut()' " +
           _jmol.linkCssText + ">" + label + "</a></span>";
@@ -303,7 +312,7 @@ function jmolCommandInput(label, size, id, title) {
   label != undefined && label != null || (label = "Execute");
   size != undefined && !isNaN(size) || (size = 60);
   ++_jmol.cmdCount;
-  var t = "<span id=\"span_"+id+"\""+(title ? " title=\"" + title + "\"":"")+"><input name='" + id + "' id='" + id + 
+  var t = "<span id=\"span_"+id+"\""+(title ? " title=\"" + title + "\"":"")+"><input name='" + id + "' id='" + id +
           "' size='"+size+"' onkeypress='_jmolCommandKeyPress(event,\""+id+"\"" + _jmol.targetText + ")'><input type=button value = '"+label+"' onclick='jmolScript(document.getElementById(\""+id+"\").value" + _jmol.targetText + ")' /></span>";
   if (_jmol.debugAlert)
     alert(t);
@@ -311,18 +320,20 @@ function jmolCommandInput(label, size, id, title) {
 }
 
 function _jmolCommandKeyPress(e, id, target) {
-	var keycode = (window.event ? window.event.keyCode : e ? e.which : 0);
-	if (keycode == 13) {
-		var inputBox = document.getElementById(id)
-		_jmolScriptExecute(inputBox, inputBox.value, target)
-	}
+  var keycode = (window.event ? window.event.keyCode : e ? e.which : 0);
+  if (keycode == 13) {
+    var inputBox = document.getElementById(id)
+    _jmolScriptExecute(inputBox, inputBox.value, target)
+  }
 }
 
 function _jmolScriptExecute(element,script,target) {
-	if (typeof(script) == "object")
-		script[0](element, script, target)
-	else
-		jmolScript(script, target) 
+  if (typeof(script) == "object")
+    script[0](element, script, target)
+	else if (typeof(script) == "function")
+	  script(target);
+  else
+    jmolScript(script, target)
 }
 
 function jmolMenu(arrayOfMenuItems, size, id, title) {
@@ -352,12 +363,12 @@ function jmolMenu(arrayOfMenuItems, size, id, title) {
       } else {
         script = text = menuItem;
       }
-      text != undefined && text != null || (text = script);		
+      text != undefined && text != null || (text = script);
       if (script=="#optgroup") {
-        t += "<optgroup label='" + text + "'>";	  
-	  } else if (script=="#optgroupEnd") {
-        t += "</optgroup>";	  
-	  } else {		
+        t += "<optgroup label='" + text + "'>";
+    } else if (script=="#optgroupEnd") {
+        t += "</optgroup>";
+    } else {
         var scriptIndex = _jmolAddScript(script);
         var selectedText = isSelected ? "' selected='true'>" : "'>";
         t += "<option value='" + scriptIndex + selectedText + text + "</option>";
@@ -402,8 +413,8 @@ function jmolScript(script, targetSuffix) {
     _jmolCheckBrowser();
     if (targetSuffix == "all") {
       with (_jmol) {
-	for (var i = 0; i < appletSuffixes.length; ++i) {
-	  var applet = _jmolGetApplet(appletSuffixes[i]);
+  for (var i = 0; i < appletSuffixes.length; ++i) {
+    var applet = _jmolGetApplet(appletSuffixes[i]);
           if (applet) applet.script(script);
         }
       }
@@ -541,18 +552,18 @@ var _jmol = {
   currentDocument: document,
 
   debugAlert: false,
-  
+
   codebase: "",
   modelbase: ".",
-  
+
   appletCount: 0,
   appletSuffixes: [],
   appletWindow: null,
   allowedJmolSize: [25, 2048, 300],   // min, max, default (pixels)
-	  /*  By setting the _jmol.allowedJmolSize[] variable in the webpage 
-	      before calling jmolApplet(), limits for applet size can be overriden.
-		    2048 standard for GeoWall (http://geowall.geo.lsa.umich.edu/home.html)
-	  */  
+    /*  By setting the _jmol.allowedJmolSize[] variable in the webpage
+        before calling jmolApplet(), limits for applet size can be overriden.
+        2048 standard for GeoWall (http://geowall.geo.lsa.umich.edu/home.html)
+    */
   buttonCount: 0,
   checkboxCount: 0,
   linkCount: 0,
@@ -560,7 +571,7 @@ var _jmol = {
   menuCount: 0,
   radioCount: 0,
   radioGroupCount: 0,
-  
+
   appletCssClass: null,
   appletCssText: "",
   buttonCssClass: null,
@@ -574,21 +585,21 @@ var _jmol = {
   linkCssText: "",
   menuCssClass: null,
   menuCssText: "",
-  
+
   targetSuffix: 0,
   targetText: ",0",
   scripts: [""],
   params: {
-	syncId: ("" + Math.random()).substring(3),
-	progressbar: "true",
-	progresscolor: "blue",
-	boxbgcolor: "black",
-	boxfgcolor: "white",
-	boxmessage: "Downloading JmolApplet ..."
+  syncId: ("" + Math.random()).substring(3),
+  progressbar: "true",
+  progresscolor: "blue",
+  boxbgcolor: "black",
+  boxfgcolor: "white",
+  boxmessage: "Downloading JmolApplet ..."
   },
   ua: navigator.userAgent.toLowerCase(),
   // uaVersion: parseFloat(navigator.appVersion),  // not used
-  
+
   os: "unknown",
   browser: "unknown",
   browserVersion: 0,
@@ -597,7 +608,7 @@ var _jmol = {
   // isNetscape47Win: false,  // not used, N4.7 is no longer supported even for detection
   useIEObject: false,
   useHtml4Object: false,
-  
+
   windowsClassId: "clsid:8AD9C840-044E-11D1-B3E9-00805F499D93",
   windowsCabUrl:
    "http://java.sun.com/update/1.6.0/jinstall-6u22-windows-i586.cab",
@@ -608,7 +619,7 @@ var _jmol = {
 
   initialized: false,
   initChecked: false,
-  
+
   browserChecked: false,
   checkBrowserAction: "alert",
   checkBrowserUrlOrMessage: null,
@@ -617,7 +628,7 @@ var _jmol = {
 
   previousOnloadHandler: null,
 
-  jmoljar: null,  
+  jmoljar: null,
   useNoApplet: false,
 
   ready: {}
@@ -633,14 +644,14 @@ with (_jmol) {
     _jmol.browserVersion = parseFloat(ua.substring(index+candidate.length+1));
     return true;
   }
-  
+
   function _jmolTestOS(candidate) {
     if (_jmol.ua.indexOf(candidate) < 0)
       return false;
     _jmol.os = candidate;
     return true;
   }
-  
+
   _jmolTestUA("konqueror") ||
   _jmolTestUA("webkit") ||
   _jmolTestUA("omniweb") ||
@@ -649,42 +660,20 @@ with (_jmol) {
   _jmolTestUA("icab") ||
   _jmolTestUA("msie") ||
   (_jmol.ua.indexOf("compatible") < 0 && _jmolTestUA("mozilla")); //Netscape, Mozilla, Seamonkey, Firefox and anything assimilated
-  
+
   _jmolTestOS("linux") ||
   _jmolTestOS("unix") ||
   _jmolTestOS("mac") ||
   _jmolTestOS("win");
 
-  /* not used:
-	isNetscape47Win = (os == "win" && browser == "mozilla" &&
-                     browserVersion >= 4.78 && browserVersion <= 4.8);
-	*/
-
-  if (os == "win") {
-    isBrowserCompliant = hasGetElementById;
-  } else if (os == "mac") { // mac is the problem child :-(
-    if (browser == "mozilla" && browserVersion >= 5) {
-      // miguel 2004 11 17
-      // checking the plugins array does not work because
-      // Netscape 7.2 OS X still has Java 1.3.1 listed even though
-      // javaplugin.sf.net is installed to upgrade to 1.4.2
-      eval("try {var v = java.lang.System.getProperty('java.version');" +
-           " _jmol.isBrowserCompliant = v >= '1.4.2';" +
-           " } catch (e) { }");
-    } else if (browser == "opera" && browserVersion <= 7.54) {
-      isBrowserCompliant = false;
-    } else {
-      isBrowserCompliant = hasGetElementById &&
-        !((browser == "msie") ||
-          (browser == "webkit" && browserVersion < 125.12));
-    }
-  } else if (os == "linux" || os == "unix") {
-    if (browser == "konqueror" && browserVersion <= 3.3)
-      isBrowserCompliant = false;
-    else
-      isBrowserCompliant = hasGetElementById;
-  } else { // other OS
-    isBrowserCompliant = hasGetElementById;
+  isBrowserCompliant = hasGetElementById;
+  // known exceptions (old browsers):
+  if (browser == "opera" && browserVersion <= 7.54 && os == "mac"
+      || browser == "webkit" && browserVersion < 125.12
+      || browser == "msie" && os == "mac"
+      || browser == "konqueror" && browserVersion <= 3.3
+    ) {
+    isBrowserCompliant = false;
   }
 
   // possibly more checks in the future for this
@@ -747,27 +736,27 @@ function jmolSetLogLevel(n) {
   _jmol.params.logLevel = ''+n;
 }
 
-	/*  AngelH, mar2007:
-		By (re)setting these variables in the webpage before calling jmolApplet(), 
-		a custom message can be provided (e.g. localized for user's language) when no Java is installed.
-	*/
-if (noJavaMsg==undefined) var noJavaMsg = 
+  /*  AngelH, mar2007:
+    By (re)setting these variables in the webpage before calling jmolApplet(),
+    a custom message can be provided (e.g. localized for user's language) when no Java is installed.
+  */
+if (noJavaMsg==undefined) var noJavaMsg =
         "You do not have Java applets enabled in your web browser, or your browser is blocking this applet.<br />\n" +
         "Check the warning message from your browser and/or enable Java applets in<br />\n" +
         "your web browser preferences, or install the Java Runtime Environment from <a href='http://www.java.com'>www.java.com</a><br />";
-if (noJavaMsg2==undefined) var noJavaMsg2 = 
+if (noJavaMsg2==undefined) var noJavaMsg2 =
         "You do not have the<br />\n" +
         "Java Runtime Environment<br />\n" +
         "installed for applet support.<br />\n" +
         "Visit <a href='http://www.java.com'>www.java.com</a>";
 function _jmolApplet(size, inlineModel, script, nameSuffix) {
-	/*  AngelH, mar2007
-		Fixed percent / pixel business, to avoid browser errors:
-		put "px" where needed, avoid where not.
+  /*  AngelH, mar2007
+    Fixed percent / pixel business, to avoid browser errors:
+    put "px" where needed, avoid where not.
 
-	    Bob Hanson, 1/2010
-		Fixed inline escape changing returns to |		
-	*/
+      Bob Hanson, 1/2010
+    Fixed inline escape changing returns to |
+  */
   with (_jmol) {
     nameSuffix == undefined && (nameSuffix = appletCount);
     appletSuffixes.push(nameSuffix);
@@ -777,15 +766,16 @@ function _jmolApplet(size, inlineModel, script, nameSuffix) {
     var widthAndHeight = " width='" + sz[0] + "' height='" + sz[1] + "' ";
     var tHeader, tFooter;
     codebase || jmolInitialize(".");
+    params.name = "jmolApplet" + nameSuffix
     if (useIEObject || useHtml4Object) {
       params.archive = archivePath;
       params.mayscript = 'true';
       params.codebase = codebase;
-      params.code = 'JmolApplet';
-      tHeader = 
+      params.code = 'JmolApplet.class';
+      tHeader =
         "<object name='jmolApplet" + nameSuffix +
         "' id='jmolApplet" + nameSuffix + "' " + appletCssText + "\n" +
-				widthAndHeight + "\n";
+        widthAndHeight + "\n";
       tFooter = "</object>";
     }
     if (java_arguments)
@@ -795,18 +785,18 @@ function _jmolApplet(size, inlineModel, script, nameSuffix) {
       (windowsCabUrl ? " codebase='" + windowsCabUrl + "'\n" : "") + ">\n";
     } else if (useHtml4Object) { // use HTML4 object tag
       tHeader += " type='application/x-java-applet'\n>\n";
-				/*	" classid='java:JmolApplet'\n" +	AH removed this
-				  Chromium Issue 62076: 	Java Applets using an <object> with a classid paramater don't load.
-					http://code.google.com/p/chromium/issues/detail?id=62076
-					They say this is the correct behavior according to the spec, and there's no indication at this point 
-					that WebKit will be changing the handling, so eventually Safari will acquire this behavior too.
-					Removing the classid parameter seems to be well tolerated by all browsers (even IE!).
-				*/
+        /*  " classid='java:JmolApplet'\n" +  AH removed this
+          Chromium Issue 62076:   Java Applets using an <object> with a classid paramater don't load.
+          http://code.google.com/p/chromium/issues/detail?id=62076
+          They say this is the correct behavior according to the spec, and there's no indication at this point
+          that WebKit will be changing the handling, so eventually Safari will acquire this behavior too.
+          Removing the classid parameter seems to be well tolerated by all browsers (even IE!).
+        */
     } else { // use applet tag
-      tHeader = 
+      tHeader =
         "<applet name='jmolApplet" + nameSuffix +
         "' id='jmolApplet" + nameSuffix + "' " + appletCssText + "\n" +
-				widthAndHeight + "\n" +
+        widthAndHeight + "\n" +
         " code='JmolApplet'" +
         " archive='" + archivePath + "' codebase='" + codebase + "'\n" +
         " mayscript='true'>\n";
@@ -814,22 +804,22 @@ function _jmolApplet(size, inlineModel, script, nameSuffix) {
     }
     var visitJava;
     if (useIEObject || useHtml4Object) {
-		var szX = "width:" + sz[0]
-		if ( szX.indexOf("%")==-1 ) szX+="px" 
-		var szY = "height:" + sz[1]
-		if ( szY.indexOf("%")==-1 ) szY+="px" 
+    var szX = "width:" + sz[0]
+    if ( szX.indexOf("%")==-1 ) szX+="px"
+    var szY = "height:" + sz[1]
+    if ( szY.indexOf("%")==-1 ) szY+="px"
       visitJava =
         "<p style='background-color:yellow; color:black; " +
-		szX + ";" + szY + ";" +
+    szX + ";" + szY + ";" +
         // why doesn't this vertical-align work?
-	"text-align:center;vertical-align:middle;'>\n" +
-		noJavaMsg +
+  "text-align:center;vertical-align:middle;'>\n" +
+    noJavaMsg +
         "</p>";
     } else {
       visitJava =
         "<table bgcolor='yellow'><tr>" +
         "<td align='center' valign='middle' " + widthAndHeight + "><font color='black'>\n" +
-		noJavaMsg2 +
+    noJavaMsg2 +
         "</font></td></tr></table>";
     }
     params.loadInline = (inlineModel ? inlineModel : "");
@@ -846,8 +836,8 @@ function _jmolApplet(size, inlineModel, script, nameSuffix) {
 function _jmolParams() {
  var t = "";
  for (var i in _jmol.params)
-	if(_jmol.params[i]!="")
-		 t+="  <param name='"+i+"' value='"+_jmol.params[i]+"' />\n";
+  if(_jmol.params[i]!="")
+     t+="  <param name='"+i+"' value='"+_jmol.params[i]+"' />\n";
  return t
 }
 
@@ -863,7 +853,7 @@ function _jmolCheckBrowser() {
     if (browserChecked)
       return;
     browserChecked = true;
-  
+
     if (isFullyCompliant)
       return true;
 
@@ -888,100 +878,100 @@ function _jmolCheckBrowser() {
 }
 
 function jmolSetXHTML(id) {
-	_jmol.isXHTML = true
-	_jmol.XhtmlElement = null
-	_jmol.XhtmlAppendChild = false
-	if (id){
-		_jmol.XhtmlElement = document.getElementById(id)
-		_jmol.XhtmlAppendChild = true
-	}
+  _jmol.isXHTML = true
+  _jmol.XhtmlElement = null
+  _jmol.XhtmlAppendChild = false
+  if (id){
+    _jmol.XhtmlElement = document.getElementById(id)
+    _jmol.XhtmlAppendChild = true
+  }
 }
 
 function _jmolDocumentWrite(text) {
-	if (_jmol.currentDocument) {
-		if (_jmol.isXHTML && !_jmol.XhtmlElement) {
-			var s = document.getElementsByTagName("script")
-			_jmol.XhtmlElement = s.item(s.length - 1)
-			_jmol.XhtmlAppendChild = false
-		}
-		if (_jmol.XhtmlElement) {
-			_jmolDomDocumentWrite(text)
-		} else {
-			_jmol.currentDocument.write(text);
-		}
-	}
-	return text;
+  if (_jmol.currentDocument) {
+    if (_jmol.isXHTML && !_jmol.XhtmlElement) {
+      var s = document.getElementsByTagName("script")
+      _jmol.XhtmlElement = s.item(s.length - 1)
+      _jmol.XhtmlAppendChild = false
+    }
+    if (_jmol.XhtmlElement) {
+      _jmolDomDocumentWrite(text)
+    } else {
+      _jmol.currentDocument.write(text);
+    }
+  }
+  return text;
 }
 
 function _jmolDomDocumentWrite(data) {
-	var pt = 0
-	var Ptr = []
-	Ptr[0] = 0
-	while (Ptr[0] < data.length) {
-		var child = _jmolGetDomElement(data, Ptr)
-		if (!child)break
-		if (_jmol.XhtmlAppendChild)
-			_jmol.XhtmlElement.appendChild(child)
-		else
-			_jmol.XhtmlElement.parentNode.insertBefore(child, _jmol.XhtmlElement); 
-	}
+  var pt = 0
+  var Ptr = []
+  Ptr[0] = 0
+  while (Ptr[0] < data.length) {
+    var child = _jmolGetDomElement(data, Ptr)
+    if (!child)break
+    if (_jmol.XhtmlAppendChild)
+      _jmol.XhtmlElement.appendChild(child)
+    else
+      _jmol.XhtmlElement.parentNode.insertBefore(child, _jmol.XhtmlElement);
+  }
 }
 function _jmolGetDomElement(data, Ptr, closetag, lvel) {
-	var e = document.createElement("span")
-	e.innerHTML = data
-	Ptr[0] = data.length
-	return e
+  var e = document.createElement("span")
+  e.innerHTML = data
+  Ptr[0] = data.length
+  return e
 
 //unnecessary?
 
-	closetag || (closetag = "")
-	lvel || (lvel = 0)
-	var pt0 = Ptr[0]
-	var pt = pt0
-	while (pt < data.length && data.charAt(pt) != "<") pt++
-	if (pt != pt0) {
-		var text = data.substring(pt0, pt)
-		Ptr[0] = pt
-		return document.createTextNode(text)
-	}	
-	pt0 = ++pt
-	var ch
-	while (pt < data.length && "\n\r\t >".indexOf(ch = data.charAt(pt)) < 0) pt++
-	var tagname = data.substring(pt0, pt)
-	var e = (tagname == closetag  || tagname == "/" ? "" 
-		: document.createElementNS ? document.createElementNS('http://www.w3.org/1999/xhtml', tagname)
-		: document.createElement(tagname));
-	if (ch == ">") {
-		Ptr[0] = ++pt
-		return e
-	}
-	while (pt < data.length && (ch = data.charAt(pt)) != ">") {
-		while (pt < data.length && "\n\r\t ".indexOf(ch = data.charAt(pt)) >= 0) pt++
-		pt0 = pt
-		while (pt < data.length && "\n\r\t =/>".indexOf(ch = data.charAt(pt)) < 0) pt++
-		var attrname = data.substring(pt0, pt).toLowerCase()
-		if (attrname && ch != "=") 
-			e.setAttribute(attrname, "true")
-		while (pt < data.length && "\n\r\t ".indexOf(ch = data.charAt(pt)) >= 0) pt++
-		if (ch == "/") {
-			Ptr[0] = pt + 2
-			return e
-		} else if (ch == "=") {
-			var quote = data.charAt(++pt)
-			pt0 = ++pt
-			while (pt < data.length && (ch = data.charAt(pt)) != quote) pt++
-			var attrvalue = data.substring(pt0, pt)
-			e.setAttribute(attrname, attrvalue)
-			pt++
-		}
-	}
-	Ptr[0] = ++pt
-	while (Ptr[0] < data.length) {
-		var child = _jmolGetDomElement(data, Ptr, "/" + tagname, lvel+1)
-		if (!child)break
-		e.appendChild(child)
-	}
-	return e
+  closetag || (closetag = "")
+  lvel || (lvel = 0)
+  var pt0 = Ptr[0]
+  var pt = pt0
+  while (pt < data.length && data.charAt(pt) != "<") pt++
+  if (pt != pt0) {
+    var text = data.substring(pt0, pt)
+    Ptr[0] = pt
+    return document.createTextNode(text)
+  }
+  pt0 = ++pt
+  var ch
+  while (pt < data.length && "\n\r\t >".indexOf(ch = data.charAt(pt)) < 0) pt++
+  var tagname = data.substring(pt0, pt)
+  var e = (tagname == closetag  || tagname == "/" ? ""
+    : document.createElementNS ? document.createElementNS('http://www.w3.org/1999/xhtml', tagname)
+    : document.createElement(tagname));
+  if (ch == ">") {
+    Ptr[0] = ++pt
+    return e
+  }
+  while (pt < data.length && (ch = data.charAt(pt)) != ">") {
+    while (pt < data.length && "\n\r\t ".indexOf(ch = data.charAt(pt)) >= 0) pt++
+    pt0 = pt
+    while (pt < data.length && "\n\r\t =/>".indexOf(ch = data.charAt(pt)) < 0) pt++
+    var attrname = data.substring(pt0, pt).toLowerCase()
+    if (attrname && ch != "=")
+      e.setAttribute(attrname, "true")
+    while (pt < data.length && "\n\r\t ".indexOf(ch = data.charAt(pt)) >= 0) pt++
+    if (ch == "/") {
+      Ptr[0] = pt + 2
+      return e
+    } else if (ch == "=") {
+      var quote = data.charAt(++pt)
+      pt0 = ++pt
+      while (pt < data.length && (ch = data.charAt(pt)) != quote) pt++
+      var attrvalue = data.substring(pt0, pt)
+      e.setAttribute(attrname, attrvalue)
+      pt++
+    }
+  }
+  Ptr[0] = ++pt
+  while (Ptr[0] < data.length) {
+    var child = _jmolGetDomElement(data, Ptr, "/" + tagname, lvel+1)
+    if (!child)break
+    e.appendChild(child)
+  }
+  return e
 }
 
 function _jmolPopup(url) {
@@ -1023,14 +1013,14 @@ function _jmolRadio(script, labelHtml, isChecked, separatorHtml, groupName, id, 
   separatorHtml || (separatorHtml = "")
   var scriptIndex = _jmolAddScript(script);
   var eospan = "</span>"
-  var t = "<span id=\"span_"+id+"\""+(title ? " title=\"" + title + "\"":"")+"><input name='" 
-	+ groupName + "' id='"+id+"' type='radio' onclick='_jmolClick(this," +
+  var t = "<span id=\"span_"+id+"\""+(title ? " title=\"" + title + "\"":"")+"><input name='"
+  + groupName + "' id='"+id+"' type='radio' onclick='_jmolClick(this," +
          scriptIndex + _jmol.targetText + ");return true;' onmouseover='_jmolMouseOver(" +
          scriptIndex + ");return true;' onmouseout='_jmolMouseOut()' " +
-	 (isChecked ? "checked='true' " : "") + _jmol.radioCssText + " />"
+   (isChecked ? "checked='true' " : "") + _jmol.radioCssText + " />"
   if (labelHtml.toLowerCase().indexOf("<td>")>=0) {
-	t += eospan
-	eospan = "";
+  t += eospan
+  eospan = "";
   }
   t += "<label for=\"" + id + "\">" + labelHtml + "</label>" +eospan + separatorHtml;
 
@@ -1069,8 +1059,8 @@ function _jmolSearchFrames(win, target) {
         return applet;
     }
    }catch(e) {
-	if (_jmol.debugAlert)
-		alert("Jmol.js _jmolSearchFrames cannot access " + win.name + ".frame[" + i + "] consider using jmolSetAppletWindow()") 
+  if (_jmol.debugAlert)
+    alert("Jmol.js _jmolSearchFrames cannot access " + win.name + ".frame[" + i + "] consider using jmolSetAppletWindow()")
    }
   }
   return applet = _jmolFindAppletInWindow(win, target)
@@ -1078,12 +1068,12 @@ function _jmolSearchFrames(win, target) {
 
 function _jmolFindAppletInWindow(win, target) {
     var doc = win.document;
-		if (doc.getElementById(target))
+    if (doc.getElementById(target))
       return doc.getElementById(target);
     else if (doc.applets)
       return doc.applets[target];
     else
-      return doc[target]; 
+      return doc[target];
 }
 
 function _jmolAddScript(script) {
@@ -1110,7 +1100,7 @@ function _jmolMenuSelected(menuObject, targetSuffix) {
     for (var i = 0; i < len; ++i) {
       if (menuObject[i].selected) {
         _jmolClick(menuObject[i], menuObject[i].value, targetSuffix);
-	return;
+  return;
       }
     }
   }
@@ -1122,56 +1112,56 @@ _jmol.checkboxMasters = {};
 _jmol.checkboxItems = {};
 
 function jmolSetCheckboxGroup(chkMaster,chkBox) {
-	var id = chkMaster;
-	if(typeof(id)=="number")id = "jmolCheckbox" + id;
-	chkMaster = document.getElementById(id);
-	if (!chkMaster)alert("jmolSetCheckboxGroup: master checkbox not found: " + id);
-	var m = _jmol.checkboxMasters[id] = {};
-	m.chkMaster = chkMaster;
-	m.chkGroup = {};
-	for (var i = 1; i < arguments.length; i++){
-		var id = arguments[i];
-		if(typeof(id)=="number")id = "jmolCheckbox" + id;
-		checkboxItem = document.getElementById(id);
-		if (!checkboxItem)alert("jmolSetCheckboxGroup: group checkbox not found: " + id);
-		m.chkGroup[id] = checkboxItem;
-		_jmol.checkboxItems[id] = m;
-	}
+  var id = chkMaster;
+  if(typeof(id)=="number")id = "jmolCheckbox" + id;
+  chkMaster = document.getElementById(id);
+  if (!chkMaster)alert("jmolSetCheckboxGroup: master checkbox not found: " + id);
+  var m = _jmol.checkboxMasters[id] = {};
+  m.chkMaster = chkMaster;
+  m.chkGroup = {};
+  for (var i = 1; i < arguments.length; i++){
+    var id = arguments[i];
+    if(typeof(id)=="number")id = "jmolCheckbox" + id;
+    checkboxItem = document.getElementById(id);
+    if (!checkboxItem)alert("jmolSetCheckboxGroup: group checkbox not found: " + id);
+    m.chkGroup[id] = checkboxItem;
+    _jmol.checkboxItems[id] = m;
+  }
 }
 
 function _jmolNotifyMaster(m){
-	//called when a group item is checked
-	var allOn = true;
-	var allOff = true;
-	for (var chkBox in m.chkGroup){
-		if(m.chkGroup[chkBox].checked)
-			allOff = false;
-		else
-			allOn = false;
-	}
-	if (allOn)m.chkMaster.checked = true;	
-	if (allOff)m.chkMaster.checked = false;
-	if ((allOn || allOff) && _jmol.checkboxItems[m.chkMaster.id])
-		_jmolNotifyMaster(_jmol.checkboxItems[m.chkMaster.id])
+  //called when a group item is checked
+  var allOn = true;
+  var allOff = true;
+  for (var chkBox in m.chkGroup){
+    if(m.chkGroup[chkBox].checked)
+      allOff = false;
+    else
+      allOn = false;
+  }
+  if (allOn)m.chkMaster.checked = true;
+  if (allOff)m.chkMaster.checked = false;
+  if ((allOn || allOff) && _jmol.checkboxItems[m.chkMaster.id])
+    _jmolNotifyMaster(_jmol.checkboxItems[m.chkMaster.id])
 }
 
 function _jmolNotifyGroup(m, isOn){
-	//called when a master item is checked
-	for (var chkBox in m.chkGroup){
-		var item = m.chkGroup[chkBox]
-		item.checked = isOn;
-		if (_jmol.checkboxMasters[item.id])
-			_jmolNotifyGroup(_jmol.checkboxMasters[item.id], isOn)
-	}
+  //called when a master item is checked
+  for (var chkBox in m.chkGroup){
+    var item = m.chkGroup[chkBox]
+    item.checked = isOn;
+    if (_jmol.checkboxMasters[item.id])
+      _jmolNotifyGroup(_jmol.checkboxMasters[item.id], isOn)
+  }
 }
 
 function _jmolCbClick(ckbox, whenChecked, whenUnchecked, targetSuffix) {
   _jmol.control = ckbox
   _jmolClick(ckbox, ckbox.checked ? whenChecked : whenUnchecked, targetSuffix);
   if(_jmol.checkboxMasters[ckbox.id])
-	_jmolNotifyGroup(_jmol.checkboxMasters[ckbox.id], ckbox.checked)
+  _jmolNotifyGroup(_jmol.checkboxMasters[ckbox.id], ckbox.checked)
   if(_jmol.checkboxItems[ckbox.id])
-	_jmolNotifyMaster(_jmol.checkboxItems[ckbox.id])
+  _jmolNotifyMaster(_jmol.checkboxItems[ckbox.id])
 }
 
 function _jmolCbOver(ckbox, whenChecked, whenUnchecked) {
@@ -1217,10 +1207,11 @@ function _jmolOnloadResetForms() {
 
 function _jmolEvalJSON(s,key){
  s=s+""
+
  if(!s)return []
  if(s.charAt(0)!="{"){
-	if(s.indexOf(" | ")>=0)s=s.replace(/\ \|\ /g, "\n")
-	return s
+  if(s.indexOf(" | ")>=0)s=s.replace(/\ \|\ /g, "\n")
+  return s
  }
  var A = eval("("+s+")")
  if(!A)return
@@ -1231,34 +1222,34 @@ function _jmolEvalJSON(s,key){
 function _jmolEnumerateObject(A,key){
  var sout=""
  if(typeof(A) == "string" && A!="null"){
-	sout+="\n"+key+"=\""+A+"\""
+  sout+="\n"+key+"=\""+A+"\""
  }else if(!isNaN(A)||A==null){
-	sout+="\n"+key+"="+(A+""==""?"null":A)
+  sout+="\n"+key+"="+(A+""==""?"null":A)
  }else if(A.length){
     sout+=key+"=[]"
     for(var i=0;i<A.length;i++){
-	sout+="\n"
-	if(typeof(A[i]) == "object"||typeof(A[i]) == "array"){
-		sout+=_jmolEnumerateObject(A[i],key+"["+i+"]")
-	}else{
-		sout+=key+"["+i+"]="+(typeof(A[i]) == "string" && A[i]!="null"?"\""+A[i].replace(/\"/g,"\\\"")+"\"":A[i])
-	}
+  sout+="\n"
+  if(typeof(A[i]) == "object"||typeof(A[i]) == "array"){
+    sout+=_jmolEnumerateObject(A[i],key+"["+i+"]")
+  }else{
+    sout+=key+"["+i+"]="+(typeof(A[i]) == "string" && A[i]!="null"?"\""+A[i].replace(/\"/g,"\\\"")+"\"":A[i])
+  }
     }
  }else{
     if(key != ""){
-	sout+=key+"={}"
-	key+="."
+  sout+=key+"={}"
+  key+="."
     }
-    
+
     for(var i in A){
-	sout+="\n"
-	if(typeof(A[i]) == "object"||typeof(A[i]) == "array"){
-		sout+=_jmolEnumerateObject(A[i],key+i)
-	}else{
-		sout+=key+i+"="+(typeof(A[i]) == "string" && A[i]!="null"?"\""+A[i].replace(/\"/g,"\\\"")+"\"":A[i])
-	}
+  sout+="\n"
+  if(typeof(A[i]) == "object"||typeof(A[i]) == "array"){
+    sout+=_jmolEnumerateObject(A[i],key+i)
+  }else{
+    sout+=key+i+"="+(typeof(A[i]) == "string" && A[i]!="null"?"\""+A[i].replace(/\"/g,"\\\"")+"\"":A[i])
+  }
     }
- } 
+ }
  return sout
 }
 
@@ -1303,9 +1294,9 @@ function _jmolExtractPostData(url){
  S=url.split("&POST:")
  var s=""
  for(var i=1;i<S.length;i++){
-	KV=S[i].split("=")
-	s+="&POSTKEY"+i+"="+KV[0]
-	s+="&POSTVALUE"+i+"="+KV[1]
+  KV=S[i].split("=")
+  s+="&POSTKEY"+i+"="+KV[0]
+  s+="&POSTVALUE"+i+"="+KV[1]
  }
  return "&url="+escape(S[0])+s
 }
@@ -1364,7 +1355,7 @@ function jmolScriptWait(script, targetSuffix) {
   var s = ""
   for(var i=Ret.length;--i>=0;)
   for(var j=0;j< Ret[i].length;j++)
-	s+=Ret[i][j]+"\n"
+  s+=Ret[i][j]+"\n"
   return s
 }
 
@@ -1429,7 +1420,7 @@ function jmolScriptWaitAsArray(script, targetSuffix) {
     if (applet) ret += applet.scriptWait(script);
     ret = _jmolEvalJSON(ret,"jmolStatus")
     if(typeof ret == "object")
-	return ret
+  return ret
   }
  }catch(e){
  }
@@ -1440,7 +1431,7 @@ function jmolScriptWaitAsArray(script, targetSuffix) {
 
 ////////////   save/restore orientation   /////////////
 
-function jmolSaveOrientation(id, targetSuffix) {  
+function jmolSaveOrientation(id, targetSuffix) {
  targetSuffix == undefined && (targetSuffix="0")
  return _jmol["savedOrientation"+id] = jmolGetPropertyAsArray("orientationInfo","info",targetSuffix).moveTo
 }
@@ -1471,7 +1462,7 @@ function jmolRestoreOrientationDelayed(id, delay, targetSuffix) {
    s = jmolAppletAddParam(s,"messageCallback", "myFunctionName")
    document.write(s)
    jmolSetDocument(document) // if you want to then write buttons and such normally
- 
+
  */
 
 function jmolAppletAddParam(appletCode,name,value){
@@ -1588,22 +1579,22 @@ function jmolSetAtomCoordRelative(i,x,y,z,targetSuffix){
 
 
 if(_jmol.useNoApplet){
-	jmolApplet = function(w){
-		var s="<table style='background-color:black' width="+w+"><tr height="+w+">"
-		+"<td align=center valign=center style='background-color:white'>"
-		+"Applet would be here"
-		+"<p><textarea id=fakeApplet rows=5 cols=50></textarea>"
-		+"</td></tr></table>"
-		return _jmolDocumentWrite(s)
-	}
+  jmolApplet = function(w){
+    var s="<table style='background-color:black' width="+w+"><tr height="+w+">"
+    +"<td align=center valign=center style='background-color:white'>"
+    +"Applet would be here"
+    +"<p><textarea id=fakeApplet rows=5 cols=50></textarea>"
+    +"</td></tr></table>"
+    return _jmolDocumentWrite(s)
+  }
 
-	_jmolFindApplet = function(){return jmolApplet0}
+  _jmolFindApplet = function(){return jmolApplet0}
 
-	jmolApplet0 = {
-	 script: function(script){document.getElementById("fakeApplet").value="\njmolScript:\n"+script}
-	,scriptWait: function(script){document.getElementById("fakeApplet").value="\njmolScriptWait:\n"+script}	
-	,loadInline: function(data,script){document.getElementById("fakeApplet").value="\njmolLoadInline data:\n"+data+"\n\nscript:\n"+script}
-	}
+  jmolApplet0 = {
+   script: function(script){document.getElementById("fakeApplet").value="\njmolScript:\n"+script}
+  ,scriptWait: function(script){document.getElementById("fakeApplet").value="\njmolScriptWait:\n"+script}
+  ,loadInline: function(data,script){document.getElementById("fakeApplet").value="\njmolLoadInline data:\n"+data+"\n\nscript:\n"+script}
+  }
 }
 
 
@@ -1611,14 +1602,14 @@ if(_jmol.useNoApplet){
 
   //  This should no longer be needed, jmolResizeApplet() is better; kept for backwards compatibility
   /*
-	Resizes absolutely (pixels) or by percent of window (w or h 0.5 means 50%).
-	targetSuffix is optional and defaults to zero (first applet in page).
-	Both w and h are optional, but needed if you want to use targetSuffix.
-		h defaults to w
-		w defaults to 100% of window
-	If either w or h is between 0 and 1, then it is taken as percent/100.
-	If either w or h is greater than 1, then it is taken as a size (pixels). 
-	*/
+  Resizes absolutely (pixels) or by percent of window (w or h 0.5 means 50%).
+  targetSuffix is optional and defaults to zero (first applet in page).
+  Both w and h are optional, but needed if you want to use targetSuffix.
+    h defaults to w
+    w defaults to 100% of window
+  If either w or h is between 0 and 1, then it is taken as percent/100.
+  If either w or h is greater than 1, then it is taken as a size (pixels).
+  */
 function jmolResize(w,h,targetSuffix) {
  _jmol.alerted = true;
  var percentW = (!w ? 100 : w <= 1  && w > 0 ? w * 100 : 0);
@@ -1651,11 +1642,11 @@ function jmolResizeApplet(size,targetSuffix) {
 }
 
 function _jmolGetAppletSize(size, units) {
-	/* Accepts single number or 2-value array, each one can be one of:
-	   percent (text string ending %), decimal 0 to 1 (percent/100), number, or text string (interpreted as nr.)
-	   [width, height] array of strings is returned, with units added if specified.
-	   Percent is relative to container div or element (which should have explicitly set size).
-	*/
+  /* Accepts single number or 2-value array, each one can be one of:
+     percent (text string ending %), decimal 0 to 1 (percent/100), number, or text string (interpreted as nr.)
+     [width, height] array of strings is returned, with units added if specified.
+     Percent is relative to container div or element (which should have explicitly set size).
+  */
   var width, height;
   if ( (typeof size) == "object" && size != null ) {
     width = size[0]; height = size[1];
@@ -1668,14 +1659,13 @@ function _jmolGetAppletSize(size, units) {
 function _jmolFixDim(x, units) {
   var sx = "" + x;
   return (sx.length == 0 ? (units ? "" : _jmol.allowedJmolSize[2])
-	: sx.indexOf("%") == sx.length-1 ? sx 
-  	: (x = parseFloat(x)) <= 1 && x > 0 ? x * 100 + "%"
-  	: (isNaN(x = Math.floor(x)) ? _jmol.allowedJmolSize[2]
-  		: x < _jmol.allowedJmolSize[0] ? _jmol.allowedJmolSize[0]
-  	    : x > _jmol.allowedJmolSize[1] ? _jmol.allowedJmolSize[1] 
+  : sx.indexOf("%") == sx.length-1 ? sx
+    : (x = parseFloat(x)) <= 1 && x > 0 ? x * 100 + "%"
+    : (isNaN(x = Math.floor(x)) ? _jmol.allowedJmolSize[2]
+      : x < _jmol.allowedJmolSize[0] ? _jmol.allowedJmolSize[0]
+        : x > _jmol.allowedJmolSize[1] ? _jmol.allowedJmolSize[1]
         : x) + (units ? units : ""));
 }
-
 
 
 
