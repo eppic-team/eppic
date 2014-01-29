@@ -3,7 +3,7 @@
                                      http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>ch.systemsx.sybit</groupId>
-	<artifactId>crkwebui-mvn</artifactId>
+	<artifactId>eppic-wui</artifactId>
 	<packaging>war</packaging>
 	<version>2.0.4</version>
 
