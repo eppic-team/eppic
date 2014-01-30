@@ -114,9 +114,9 @@ public class StatusPanel extends DisplayPanel
 		statusTitleContainer.add(status, new HorizontalLayoutData(-1, 30, new Margins(0, 20, 0, 0)));
 		
 		runningImage = createRunnungImage();
-		HorizontalLayoutContainer imageCon = new HorizontalLayoutContainer();
-		imageCon.add(runningImage, new HorizontalLayoutData(-1,-1, new Margins(10, 0, 0, 0)));
-		statusTitleContainer.add(imageCon, new HorizontalLayoutData(-1, 30));
+		//HorizontalLayoutContainer imageCon = new HorizontalLayoutContainer();
+		//imageCon.add(runningImage, new HorizontalLayoutData(-1,-1, new Margins(10, 0, 0, 0)));
+		//statusTitleContainer.add(imageCon, new HorizontalLayoutData(-1, 30));
 		
 		formContainer.add(statusTitleContainer, new VerticalLayoutData(-1, 30));
 		
@@ -167,7 +167,7 @@ public class StatusPanel extends DisplayPanel
 		VerticalLayoutContainer mainContainer = new VerticalLayoutContainer();
 		
 		statusBar = new ProgressBar();
-		statusBar.setPixelSize(300, 20);
+		statusBar.setPixelSize(350, 20);
 		
 		HTML jobIdLabel = new HTML(AppPropertiesManager.CONSTANTS.status_panel_jobId()+":&nbsp;");
 		jobIdLabel.addStyleName("eppic-status-jobId");
@@ -182,7 +182,7 @@ public class StatusPanel extends DisplayPanel
 		barAndIdCon.add(statusBar, new VerticalLayoutData(-1, -1, new Margins(0,10,5,0)));
 		barAndIdCon.add(jobIdPanel);
 		
-		mainContainer.add(barAndIdCon, new VerticalLayoutData(320, 40));
+		mainContainer.add(barAndIdCon, new VerticalLayoutData(370, 40));
 		
 		killJob = createStopJobButton();
 		newJob = createNewJobButton();
