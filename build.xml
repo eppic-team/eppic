@@ -2,9 +2,9 @@
 <!-- ====================================================================== 
      Aug 17, 2011 10:22:07 AM                                                        
 
-     crk    
+     An EPPIC ant build script    
      
-     	An ant script to build crk into a single crk.jar file in subdir build/jar
+     	An ant script to build eppic into a single eppic.jar file in subdir build/jar
      	The jar file contains all external jar dependencies repacked into it and it's executable.
      	Use "default" target to clean and build the jar  
      	Make sure to define the variable "owl.jar.location"
@@ -12,7 +12,7 @@
                    
      duarte_j                                                                
      ====================================================================== -->
-<project name="crk" default="default">
+<project name="eppic" default="default">
     <description>
             description
     </description>
