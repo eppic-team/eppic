@@ -200,7 +200,7 @@
 	font-size: 20px;
 	font-weight:bold;
 }
-
+ 
 .eppic-status-jobId{
 	font-size: 10px;
 	color: #A1A1A1;
@@ -309,7 +309,7 @@
 
 .eppic-alignment-blank{
 	display:inline-block;
-	color: red;
+	color: #FF4200;
 }
 
 .eppic-alignment-container{
@@ -322,8 +322,7 @@
 
 .eppic-alignment-mismatch{
 	display:inline-block;
-	color: white;
-	background: red;
+	color: #CA002A;
 }
 
 .eppic-residues-summary {
