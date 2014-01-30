@@ -29,6 +29,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Widget;
 import com.sencha.gxt.core.client.dom.ScrollSupport.ScrollMode;
 import com.sencha.gxt.core.client.dom.XElement;
@@ -272,18 +273,11 @@ public class SequenceInfoPanel extends FieldSet
     	chainsLink.addStyleName("eppic-action");
     	items.add(chainsLink);
 
-    	IconButton chainsLinkButton = createWarningButton(AppPropertiesManager.CONSTANTS.homologs_panel_uniprot_no_query_match_hint());		
-    	chainsLinkButton.getElement().setMargins(new Margins(0, 10, 0, 0));
-    	chainsLinkButton.addSelectHandler(new SelectHandler() {
-			
-			@Override
-			public void onSelect(SelectEvent event) {
-				EventBusManager.EVENT_BUS.fireEvent(new ShowQueryWarningsEvent(generateHomologsNoQueryMatchTemplate(homologsInfoItem.getQueryWarnings()),
-    					chainsLink.getAbsoluteLeft() + chainsLink.getElement().getClientWidth(),
-    					chainsLink.getAbsoluteTop() + chainsLink.getElement().getClientHeight() + 10));
-				
-			}
-		});
+    	Image chainsLinkButton = createWarningButton(AppPropertiesManager.CONSTANTS.homologs_panel_uniprot_no_query_match_hint());		
+    	chainsLinkButton.getElement().<XElement>cast().setMargins(new Margins(0, 10, 0, 0));
+    	ToolTipConfig ttConfig = new ToolTipConfig(AppPropertiesManager.CONSTANTS.homologs_panel_query_warnings_title(),
+    			generateHomologsNoQueryMatchTemplate(homologsInfoItem.getQueryWarnings()));
+    	new ToolTip(chainsLinkButton, ttConfig);
 
     	items.add(chainsLinkButton);
     	return items;
@@ -397,15 +391,12 @@ public class SequenceInfoPanel extends FieldSet
     /**
      * Creates a warning Icon Button
      */
-    private static IconButton createWarningButton(String tooltipText){
-    	IconConfig cnfg = new IconConfig("eppic-seq-info-panel-warning-button");
-    	IconButton button = new IconButton(cnfg);
-    	button.setPixelSize(14, 14);
-    	button.setBorders(false);
+    private static Image createWarningButton(String tooltipText){
     	
-    	new ToolTip(button, new ToolTipConfig(tooltipText));
+    	Image warningImage = new Image("resources/icons/warning_icon_14x14.png");
+		warningImage.getElement().<XElement>cast().applyStyles("verticalAlign:bottom;");
     	
-    	return button; 	
+    	return warningImage; 	
     }
 
     /**

@@ -14,6 +14,8 @@ import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.Image;
+import com.sencha.gxt.core.client.dom.XElement;
 import com.sencha.gxt.core.client.util.Margins;
 import com.sencha.gxt.core.client.util.Padding;
 import com.sencha.gxt.widget.core.client.FramedPanel;
@@ -51,6 +53,7 @@ public class StatusPanel extends DisplayPanel
 	//Elements from status container
 	private HTML jobId;
 	private HTML status;
+	private Image runningImage;
 	private TextArea log;
 	private TextButton killJob;
 	private TextButton newJob;
@@ -104,9 +107,18 @@ public class StatusPanel extends DisplayPanel
 		
 		VerticalLayoutContainer formContainer = new VerticalLayoutContainer();
 		
+		HorizontalLayoutContainer statusTitleContainer = new HorizontalLayoutContainer();
+		
 		status = new HTML();
 		status.addStyleName("eppic-status-header");
-		formContainer.add(status, new VerticalLayoutData(-1, 30));
+		statusTitleContainer.add(status, new HorizontalLayoutData(-1, 30, new Margins(0, 20, 0, 0)));
+		
+		runningImage = createRunnungImage();
+		HorizontalLayoutContainer imageCon = new HorizontalLayoutContainer();
+		imageCon.add(runningImage, new HorizontalLayoutData(-1,-1, new Margins(10, 0, 0, 0)));
+		statusTitleContainer.add(imageCon, new HorizontalLayoutData(-1, 30));
+		
+		formContainer.add(statusTitleContainer, new VerticalLayoutData(-1, 30));
 		
 		formContainer.add(createStatusDataPanel(), new VerticalLayoutData(-1, 120));		
 		
@@ -183,6 +195,16 @@ public class StatusPanel extends DisplayPanel
 		
 		return mainContainer;
 		
+	}
+	
+	/**
+	 * Creates running image 
+	 */
+	private Image createRunnungImage(){
+		Image img = new Image("resources/icons/running.gif");
+		img.getElement().<XElement>cast().applyStyles("verticalAlign:bottom;");
+		
+		return img;
 	}
 	
 	/**
@@ -271,6 +293,8 @@ public class StatusPanel extends DisplayPanel
 					 (status.getHTML().equals(StatusOfJob.WAITING.getName())) ||
 					 (status.getHTML().equals(StatusOfJob.QUEUING.getName())))
 			{
+				runningImage.setVisible(true);
+				
 				String message = AppPropertiesManager.CONSTANTS.status_panel_subtitle();
 				String link = GWT.getHostPageBaseURL() + "#id/" + 
 						EscapedStringGenerator.generateEscapedString(statusData.getJobId());
@@ -294,6 +318,7 @@ public class StatusPanel extends DisplayPanel
 			else if (status.getHTML().equals(StatusOfJob.STOPPED.getName())){
 				userMessage.setHTML(AppPropertiesManager.CONSTANTS.status_panel_stopped_text());
 				killJob.setVisible(false);
+				runningImage.setVisible(false);
 				statusBar.updateProgress(0.0, StatusOfJob.STOPPED.getName());
 			}
 		}
@@ -301,6 +326,7 @@ public class StatusPanel extends DisplayPanel
 		{
 			userMessage.setHTML("");
 			killJob.setVisible(false);
+			runningImage.setVisible(false);
 			statusBar.updateProgress(0.0, "");
 		}
 	}

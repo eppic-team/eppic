@@ -1,55 +1,80 @@
 package ch.systemsx.sybit.crkwebui.client.alignment.gui.windows;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import ch.systemsx.sybit.crkwebui.client.alignment.data.AlignmentDataModel;
+import ch.systemsx.sybit.crkwebui.client.alignment.data.AlignmentDataModelProperties;
+import ch.systemsx.sybit.crkwebui.client.alignment.gui.cell.AlignmentCell;
+import ch.systemsx.sybit.crkwebui.client.alignment.gui.cell.ChainHeaderCell;
+import ch.systemsx.sybit.crkwebui.client.alignment.gui.cell.IndexCell;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.windows.ResizableWindow;
 import ch.systemsx.sybit.crkwebui.shared.model.HomologsInfoItem;
 import ch.systemsx.sybit.crkwebui.shared.model.WindowData;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
-import com.google.gwt.user.client.ui.HTML;
-import com.sencha.gxt.widget.core.client.FramedPanel;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer;
 import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer.VerticalLayoutData;
-import com.sencha.gxt.core.client.GXT;
-import com.sencha.gxt.core.client.dom.ScrollSupport.ScrollMode;
-import com.sencha.gxt.core.client.util.Margins;
-import com.sencha.gxt.core.client.util.TextMetrics;
+import com.sencha.gxt.widget.core.client.grid.ColumnConfig;
+import com.sencha.gxt.widget.core.client.grid.ColumnModel;
+import com.sencha.gxt.widget.core.client.grid.Grid;
+import com.sencha.gxt.core.client.Style.SelectionMode;
+import com.sencha.gxt.data.shared.ListStore;
 
 /**
  * Window containing sequence alignments.
- * @author AS
+ * @author AS, nikhil
  */
 public class AlignmentsWindow extends ResizableWindow 
-{
+{	
 	private static int ALIGNMENT_WINDOW_DEFAULT_WIDTH = 600;
 	private static int ALIGNMENT_WINDOW_DEFAULT_HEIGHT = 400;
-	
-	private static int LETTER_WIDTH_GXT3_CORRECTION;
-	
+
+	VerticalLayoutContainer gridContainer;
+
 	private HomologsInfoItem homologsInfoItem;
 	private String pdbName;
-	
-	private int nrOfCharacterInFirstSequence;
-	private int nrOfCharacterInSecondSequence;
-	private int maxLengthOfLeftAnnotations;
-	private int maxLengthOfRightAnnotations;
-	private int maxLengthOfAnnotations;
-	
-	private int MIN_DISTANCE_BETWEEN_UNIPROTID_AND_POSITION = 6;
-	private int DISTANCE_BETWEEN_CURRENT_NR_AND_SEQUENCE = 2;
-	
+
+	private static final AlignmentDataModelProperties props = GWT.create(AlignmentDataModelProperties.class);
+
+	private List<ColumnConfig<AlignmentDataModel, ?>> configs;
+	private ListStore<AlignmentDataModel> store;
+	private ColumnModel<AlignmentDataModel> columnModel;
+	private Grid<AlignmentDataModel> grid;
+
+	//fixed widths for the columns
+	private static int headerColWidth = 80;
+	private static int startIndexWidth = 65;
+	private static int endIndexWidth = 65;
+
+	private static int characterWidth = 8;
+
 	public AlignmentsWindow(WindowData windowData,
-							HomologsInfoItem homologsInfoItem,
-							String pdbName) 
+			HomologsInfoItem homologsInfoItem,
+			String pdbName) 
 	{
 		super(ALIGNMENT_WINDOW_DEFAULT_WIDTH,
-			  ALIGNMENT_WINDOW_DEFAULT_HEIGHT,
-			  windowData);
-		
+				ALIGNMENT_WINDOW_DEFAULT_HEIGHT,
+				windowData);
+
 		this.homologsInfoItem = homologsInfoItem;
 		this.pdbName = pdbName;
 		this.setHideOnButtonClick(true);
 		
+		store = new ListStore<AlignmentDataModel>(props.key());
+    	configs = createColumnConfig();
+    	columnModel = new ColumnModel<AlignmentDataModel>(configs);
+    	grid = createHomologsGrid();
+    	
+    	gridContainer = new VerticalLayoutContainer();
+    	gridContainer.setPixelSize(ALIGNMENT_WINDOW_DEFAULT_WIDTH, ALIGNMENT_WINDOW_DEFAULT_HEIGHT);
+    	gridContainer.add(grid, new VerticalLayoutData(1, 1));
+    	
+    	this.setWidget(gridContainer);
+
 		this.addResizeHandler(new ResizeHandler()
 		{
 			@Override
@@ -58,156 +83,78 @@ public class AlignmentsWindow extends ResizableWindow
 
 			}
 		});
-		
-		//A correction used for different browsers
-		if(!GXT.isIE())
-			LETTER_WIDTH_GXT3_CORRECTION = 2;
-		else
-			LETTER_WIDTH_GXT3_CORRECTION = 6;
 
 	}
+	
+	/**
+     * Creates the alignments grid
+     * @return
+     */
+    private Grid<AlignmentDataModel> createHomologsGrid() {
+    	Grid<AlignmentDataModel> grid = new Grid<AlignmentDataModel>(store, columnModel);
+    	
+    	grid.setBorders(false);
+    	grid.getView().setStripeRows(true);
+    	grid.getView().setColumnLines(false);
+    	grid.setLoadMask(true);
+    	grid.setHideHeaders(true);
+    	grid.getView().setForceFit(true);
+    	grid.getView().setTrackMouseOver(false);
+    	grid.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+    	
+    	return grid;
+	}
+    
+    private List<ColumnConfig<AlignmentDataModel, ?>> createColumnConfig(){
+    	List<ColumnConfig<AlignmentDataModel, ?>> columns = new ArrayList<ColumnConfig<AlignmentDataModel,?>>();
+    	
+    	ColumnConfig<AlignmentDataModel, String[]> headerCol = 
+    			new ColumnConfig<AlignmentDataModel, String[]>(props.rowHeader(), headerColWidth);
+    	headerCol.setCell(new ChainHeaderCell());
+    	headerCol.setFixed(true);
+    	
+    	ColumnConfig<AlignmentDataModel, Integer[]> startIndexCol = 
+    			new ColumnConfig<AlignmentDataModel, Integer[]>(props.startIndex(), startIndexWidth);
+    	startIndexCol.setCell(new IndexCell());
+    	startIndexCol.setFixed(true);
+    	startIndexCol.setAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+    			
+    	ColumnConfig<AlignmentDataModel, String[]> alignmentCol = 
+    			new ColumnConfig<AlignmentDataModel, String[]>(props.alignment());
+    	alignmentCol.setCell(new AlignmentCell());
+    	
+    	ColumnConfig<AlignmentDataModel, Integer[]> endIndexCol = 
+    			new ColumnConfig<AlignmentDataModel, Integer[]>(props.endIndex(), endIndexWidth);
+    	endIndexCol.setCell(new IndexCell());
+    	endIndexCol.setFixed(true);
+    	
+    	columns.add(headerCol);
+    	columns.add(startIndexCol);
+    	columns.add(alignmentCol);
+    	columns.add(endIndexCol);
+    	
+    	return columns;
+    }
 
 	/**
 	 * Refreshes content of the alignments window.
 	 */
 	public void updateWindowContent()
 	{
-		FramedPanel homologsContentPanel = new FramedPanel();
-		homologsContentPanel.setBodyBorder(false);
-		homologsContentPanel.setBorders(false);
-		homologsContentPanel.getHeader().setVisible(false);
-		
-		homologsContentPanel.addStyleName("eppic-monospaced-font");
-		
-		VerticalLayoutContainer homologsContentPanelContainer = new VerticalLayoutContainer();
-		homologsContentPanel.setWidget(homologsContentPanelContainer);
-		
-		TextMetrics textMetrics = TextMetrics.get();
-		textMetrics.bind(homologsContentPanel.getElement());
-		
-		String pdbId = homologsInfoItem.getChains();
-		
-		if(pdbId.contains("("))
-		{
-			pdbId = pdbId.substring(0, pdbId.indexOf("("));
-		}
-		
-		pdbId = pdbName + pdbId;
-		
-		String uniprotId = homologsInfoItem.getUniprotId();
-		
-		int nrOfCharactersPerLine = calculateNrOfCharactersPerLine(this.getElement().getClientWidth(), textMetrics, pdbId, uniprotId); 
-		int totalNumberOfCharacters = homologsInfoItem.getAlignedSeq1().length();
-		
-		int firstSequenceIndex = 1;
-		int secondSequenceIndex = 1;
-		
-		if(nrOfCharactersPerLine > 0)
-		{
-			for(int i=0; i<totalNumberOfCharacters; i+=nrOfCharactersPerLine)
-			{
-				int firstSequenceStartIndex = firstSequenceIndex;
-				int secondSequenceStartIndex = secondSequenceIndex;
-				
-				int beginIndex = i;
-				int endIndex = i + nrOfCharactersPerLine;
-				if(endIndex > totalNumberOfCharacters)
-				{
-					endIndex = totalNumberOfCharacters;
-				}
-				
-				StringBuffer firstSequenceLine = new StringBuffer(homologsInfoItem.getAlignedSeq1().substring(beginIndex, endIndex));
-				StringBuffer secondSequenceLine = new StringBuffer(homologsInfoItem.getAlignedSeq2().substring(beginIndex, endIndex));
-				StringBuffer markup = new StringBuffer(homologsInfoItem.getMarkupLine().substring(beginIndex, endIndex));
-				
-				int lengthOfFirstSequenceBeforeStyling = firstSequenceLine.length();
-				int lengthOfSecondSequenceBeforeStyling = secondSequenceLine.length();
-				
-				for(int j=endIndex - beginIndex - 1; j>=0; j--)
-				{
-					if(firstSequenceLine.charAt(j) != '-')
-					{
-						firstSequenceIndex++;
-					}
-					
-					if(secondSequenceLine.charAt(j) != '-')
-					{
-						secondSequenceIndex++;
-					}
-					
-					if(markup.charAt(j) != '|')
-					{
-						firstSequenceLine.insert(j + 1, "</font>");
-						firstSequenceLine.insert(j, "<font color=\"red\">");
-						
-						secondSequenceLine.insert(j + 1, "</font>");
-						secondSequenceLine.insert(j, "<font color=\"red\">");
-					}
-				}
-				
-				int firstSequenceEndIndex = firstSequenceIndex;
-				if(firstSequenceIndex != firstSequenceStartIndex)
-				{
-					firstSequenceEndIndex--;
-				}
-				
-				int secondSequenceEndIndex = secondSequenceIndex;
-				if(secondSequenceIndex != secondSequenceStartIndex)
-				{
-					secondSequenceEndIndex--;
-				}
-				
-				String firstSequenceLineAnnotated = createAnnotatedSequenceLine(pdbId,
-																				firstSequenceStartIndex,
-																				firstSequenceEndIndex,
-																				nrOfCharactersPerLine,
-																				lengthOfFirstSequenceBeforeStyling,
-																				firstSequenceLine.toString()); 
-				
-				String secondSequenceLineAnnotated = createAnnotatedSequenceLine(uniprotId,
-																				 secondSequenceStartIndex,
-																				 secondSequenceEndIndex,
-																				 nrOfCharactersPerLine,
-																				 lengthOfSecondSequenceBeforeStyling,
-																				 secondSequenceLine.toString()); 
-				
-				for(int k=0; k<maxLengthOfLeftAnnotations + MIN_DISTANCE_BETWEEN_UNIPROTID_AND_POSITION + DISTANCE_BETWEEN_CURRENT_NR_AND_SEQUENCE; k++)
-				{
-					markup.insert(0, " ");
-				}
-				
-				HTML firstSequenceLabel = new HTML(firstSequenceLineAnnotated.toString());				
-				HTML markupLabel = new HTML(markup.toString().replaceAll(" ", "&nbsp;"));
-				HTML secondSequenceLabel = new HTML(secondSequenceLineAnnotated.toString());
-				
-				homologsContentPanelContainer.add(firstSequenceLabel, new VerticalLayoutData(1, -1, new Margins(0)));  
-				homologsContentPanelContainer.add(markupLabel, new VerticalLayoutData(1, -1, new Margins(0)));
-				homologsContentPanelContainer.add(secondSequenceLabel, new VerticalLayoutData(1, -1, new Margins(0)));
-				homologsContentPanelContainer.add(new HTML("&nbsp;"), new VerticalLayoutData(1, -1, new Margins(0)));
-				homologsContentPanelContainer.add(new HTML("&nbsp;"), new VerticalLayoutData(1, -1, new Margins(0)));
-				homologsContentPanelContainer.setScrollMode(ScrollMode.AUTOY);
-			}
-			
-			int minWindowWidth = 0;
-			for(int i=0; i<maxLengthOfAnnotations + 20; i++)
-			{
-				minWindowWidth += textMetrics.getWidth("A") - LETTER_WIDTH_GXT3_CORRECTION;
-			}
-			this.setMinWidth(minWindowWidth);
-		}
-		this.setWidget(homologsContentPanel);
+		store.clear();
+		store.addAll(createAlignmentData());
 	}
 
 	public HomologsInfoItem getHomologsInfoItem()
 	{
 		return homologsInfoItem;
 	}
-	
+
 	public void setHomologsInfoItem(HomologsInfoItem homologsInfoItem)
 	{
 		this.homologsInfoItem = homologsInfoItem;
 	}
-	
+
 	public String getPdbName() {
 		return pdbName;
 	}
@@ -217,109 +164,98 @@ public class AlignmentsWindow extends ResizableWindow
 	}
 
 	/**
-	 * Generates general sequence text settings.
-	 * @param textMetrics used text metrics
-	 * @param firstSequenceLeftAnnotation first sequence to annotate
-	 * @param secondSequenceLeftAnnotation second sequence to annotate
-	 * @return nr of characters of original sequences per line.
+	 * Calculates the number of characters to be fit in a row of alignments
 	 */
-	private int calculateNrOfCharactersPerLine(int width,
-											   TextMetrics textMetrics,
-											   String firstSequenceLeftAnnotation,
-											   String secondSequenceLeftAnnotation)
+	private int calculateNrOfCharactersPerLine()
 	{
-		int widthOfCharacter;
+		int availableWidth = this.getOffsetWidth(true) -
+				headerColWidth - startIndexWidth - endIndexWidth - 50;
+		int nrOfChars = (availableWidth/characterWidth);
 		
-		widthOfCharacter = textMetrics.getWidth("A") - LETTER_WIDTH_GXT3_CORRECTION;
+		if(nrOfChars <=0 ) nrOfChars = 1;
 		
-		nrOfCharacterInFirstSequence = 0;
-		for(int i=0; i<homologsInfoItem.getAlignedSeq1().length(); i++)
-		{
-			if(homologsInfoItem.getAlignedSeq1().charAt(i) != '-')
-			{
-				nrOfCharacterInFirstSequence++;
-			}
-		}
-		
-		nrOfCharacterInSecondSequence = 0;
-		for(int i=0; i<homologsInfoItem.getAlignedSeq2().length(); i++)
-		{
-			if(homologsInfoItem.getAlignedSeq2().charAt(i) != '-')
-			{
-				nrOfCharacterInSecondSequence++;
-			}
-		}
-		
-		int firstSequenceLeftAnnotationLength = firstSequenceLeftAnnotation.length() + String.valueOf(nrOfCharacterInFirstSequence).length();
-		int secondSequenceLeftAnnotationLength = secondSequenceLeftAnnotation.length() + String.valueOf(nrOfCharacterInSecondSequence).length();
-		
-		maxLengthOfLeftAnnotations = firstSequenceLeftAnnotationLength;
-		if(secondSequenceLeftAnnotationLength > maxLengthOfLeftAnnotations)
-		{
-			maxLengthOfLeftAnnotations = secondSequenceLeftAnnotationLength;
-		}
-		
-		maxLengthOfRightAnnotations = String.valueOf(nrOfCharacterInFirstSequence).length();
-		if(String.valueOf(nrOfCharacterInSecondSequence).length() > maxLengthOfRightAnnotations)
-		{
-			maxLengthOfRightAnnotations = String.valueOf(nrOfCharacterInSecondSequence).length();
-		}
-		
-		//include empty spaces
-		maxLengthOfAnnotations = maxLengthOfLeftAnnotations + 
-									 maxLengthOfRightAnnotations + 
-									 MIN_DISTANCE_BETWEEN_UNIPROTID_AND_POSITION +
-									 DISTANCE_BETWEEN_CURRENT_NR_AND_SEQUENCE * 2;
-		
-		int nrOfCharactersPerLine = (width) / widthOfCharacter;
-		nrOfCharactersPerLine -= maxLengthOfAnnotations;
-		return nrOfCharactersPerLine;
+		return nrOfChars;
 	}
 	
 	/**
-	 * Generates annotated sequence line.
-	 * @param leftAnnotation uniprot/pdb id.
-	 * @param sequenceStartIndex index of the first character of the sequence part which is going to be annotated.
-	 * @param sequenceEndIndex index of the last character of the sequence part which is going to be annotated.
-	 * @param nrOfCharactersPerLine nr of characters per line for sequence.
-	 * @param lengthOfSequenceBeforeStyling nr of characters in the sequence. 
-	 * @param sequence sequence part to annotate.
-	 * @return annotated sequence line.
+	 * Creates a list of Alignment Data to be placed in grid from homologs Item
+	 * @return
 	 */
-	private String createAnnotatedSequenceLine(String leftAnnotation,
-											   int sequenceStartIndex,
-											   int sequenceEndIndex,
-											   int nrOfCharactersPerLine,
-											   int lengthOfSequenceBeforeStyling,
-											   String sequence)
-	{
-		StringBuffer sequenceLineAnnotated = new StringBuffer(leftAnnotation);
-		int lengthOfSequenceStartIndex = String.valueOf(sequenceStartIndex).length();
-		int nrOfSpacesInSeq = maxLengthOfLeftAnnotations + MIN_DISTANCE_BETWEEN_UNIPROTID_AND_POSITION - sequenceLineAnnotated.length() - lengthOfSequenceStartIndex;
-		
-		for(int i=0; i<nrOfSpacesInSeq; i++)
+	public List<AlignmentDataModel> createAlignmentData(){
+
+		List<AlignmentDataModel> dataList =  new ArrayList<AlignmentDataModel>();
+
+		String pdbId = homologsInfoItem.getChains();
+
+		if(pdbId.contains("("))
 		{
-			sequenceLineAnnotated.append("&nbsp;");
+			pdbId = pdbId.substring(0, pdbId.indexOf("("));
+		}
+
+		pdbId = pdbName + pdbId;
+
+		String uniprotId = homologsInfoItem.getUniprotId();
+
+		int nrOfCharactersPerLine = calculateNrOfCharactersPerLine(); 
+		int totalNumberOfCharacters = homologsInfoItem.getAlignedSeq1().length();
+
+		int firstSequenceIndex = 1;
+		int secondSequenceIndex = 1;
+
+		for(int i=0; i<totalNumberOfCharacters; i+=nrOfCharactersPerLine)
+		{
+			int firstSequenceStartIndex = firstSequenceIndex;
+			int secondSequenceStartIndex = secondSequenceIndex;
+
+			int beginIndex = i;
+			int endIndex = i + nrOfCharactersPerLine;
+			if(endIndex > totalNumberOfCharacters)
+			{
+				endIndex = totalNumberOfCharacters;
+			}
+
+			StringBuffer firstSequenceLine = new StringBuffer(homologsInfoItem.getAlignedSeq1().substring(beginIndex, endIndex));
+			StringBuffer secondSequenceLine = new StringBuffer(homologsInfoItem.getAlignedSeq2().substring(beginIndex, endIndex));
+			StringBuffer markup = new StringBuffer(homologsInfoItem.getMarkupLine().substring(beginIndex, endIndex));
+
+			for(int j=endIndex - beginIndex - 1; j>=0; j--)
+			{
+				if(firstSequenceLine.charAt(j) != '-')
+				{
+					firstSequenceIndex++;
+				}
+
+				if(secondSequenceLine.charAt(j) != '-')
+				{
+					secondSequenceIndex++;
+				}
+			}
+			
+			int firstSequenceEndIndex = firstSequenceIndex;
+			if(firstSequenceIndex != firstSequenceStartIndex)
+			{
+				firstSequenceEndIndex--;
+			}
+
+			int secondSequenceEndIndex = secondSequenceIndex;
+			if(secondSequenceIndex != secondSequenceStartIndex)
+			{
+				secondSequenceEndIndex--;
+			}
+			
+			AlignmentDataModel data = new AlignmentDataModel(pdbId, uniprotId,
+											firstSequenceStartIndex,
+											secondSequenceStartIndex,
+											firstSequenceEndIndex,
+											secondSequenceEndIndex,
+											firstSequenceLine.toString(),
+											markup.toString(),
+											secondSequenceLine.toString()
+										  );
+			dataList.add(data);
 		}
 		
-		sequenceLineAnnotated.append(sequenceStartIndex);
-		
-		for(int i=0; i<DISTANCE_BETWEEN_CURRENT_NR_AND_SEQUENCE; i++)
-		{
-			sequenceLineAnnotated.append("&nbsp;");
-		}
-		
-		sequenceLineAnnotated.append(sequence);
-		
-		int nrOfSpacesInSeqRight = maxLengthOfRightAnnotations - String.valueOf(sequenceEndIndex).length();
-		
-		for(int i=0; i<nrOfCharactersPerLine - lengthOfSequenceBeforeStyling + DISTANCE_BETWEEN_CURRENT_NR_AND_SEQUENCE + nrOfSpacesInSeqRight; i++)
-		{
-			sequenceLineAnnotated.append("&nbsp;");
-		}
-		
-		sequenceLineAnnotated.append(sequenceEndIndex);
-		
-		return sequenceLineAnnotated.toString();
+		return dataList;
 	}
+
 }

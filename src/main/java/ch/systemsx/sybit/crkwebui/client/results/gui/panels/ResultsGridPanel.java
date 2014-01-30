@@ -11,7 +11,6 @@ import ch.systemsx.sybit.crkwebui.client.commons.events.ShowDetailsEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowInterfaceResiduesEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowThumbnailEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowViewerEvent;
-import ch.systemsx.sybit.crkwebui.client.commons.events.ShowViewerSelectorEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.UncheckClustersRadioEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.WindowHideEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.cell.TwoDecimalDoubleCell;
@@ -39,22 +38,24 @@ import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.NativeEvent;
+import com.google.gwt.event.logical.shared.SelectionEvent;
+import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
+import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
+import com.sencha.gxt.cell.core.client.form.ComboBoxCell.TriggerAction;
 import com.sencha.gxt.core.client.ValueProvider;
 import com.sencha.gxt.core.client.dom.ScrollSupport.ScrollMode;
 import com.sencha.gxt.core.client.util.KeyNav;
 import com.sencha.gxt.widget.core.client.FramedPanel;
-import com.sencha.gxt.widget.core.client.button.TextButton;
 import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer;
-import com.sencha.gxt.widget.core.client.event.SelectEvent;
-import com.sencha.gxt.widget.core.client.event.SelectEvent.SelectHandler;
+import com.sencha.gxt.widget.core.client.form.ComboBox;
 import com.sencha.gxt.widget.core.client.grid.Grid;
 import com.sencha.gxt.widget.core.client.grid.ColumnConfig;
 import com.sencha.gxt.widget.core.client.grid.ColumnModel;
@@ -64,9 +65,10 @@ import com.sencha.gxt.widget.core.client.grid.SummaryType;
 import com.sencha.gxt.widget.core.client.tips.QuickTip;
 import com.sencha.gxt.widget.core.client.tips.ToolTip;
 import com.sencha.gxt.widget.core.client.tips.ToolTipConfig;
-import com.sencha.gxt.widget.core.client.toolbar.FillToolItem;
 import com.sencha.gxt.widget.core.client.toolbar.ToolBar;
+import com.sencha.gxt.data.shared.LabelProvider;
 import com.sencha.gxt.data.shared.ListStore;
+import com.sencha.gxt.data.shared.ModelKeyProvider;
 import com.sencha.gxt.data.shared.SortDir;
 import com.sencha.gxt.data.shared.Store.StoreSortInfo;
 
@@ -128,6 +130,12 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 	private ToolBar createSelectorToolBar(){
 		ToolBar toolBar = new ToolBar();
 		
+		ComboBox<String> viewerSelectorBox = createViewerTypeCombobox();
+		viewerSelectorBox.setStyleName("eppic-default-label");
+		toolBar.add(new HTML(AppPropertiesManager.CONSTANTS.results_grid_viewer_combo_label()+":&nbsp;"));
+		toolBar.add(viewerSelectorBox);
+		toolBar.add(new HTML("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"));
+		
 		clustersViewButton = new CheckBox();
 		clustersViewButton.setHTML(AppPropertiesManager.CONSTANTS.results_grid_clusters_label());
 		new ToolTip(clustersViewButton, new ToolTipConfig(AppPropertiesManager.CONSTANTS.results_grid_clusters_tooltip()));
@@ -141,20 +149,6 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 		});
 		clustersViewButton.setValue(false);
 		toolBar.add(clustersViewButton);
-		
-		TextButton changeViewerButton = new TextButton(
-				AppPropertiesManager.CONSTANTS.results_grid_selector_button());
-		changeViewerButton.addSelectHandler(new SelectHandler() {
-			
-			@Override
-			public void onSelect(SelectEvent event) {
-				EventBusManager.EVENT_BUS.fireEvent(new ShowViewerSelectorEvent());
-				
-			}
-		});
-		
-		toolBar.add(new FillToolItem());
-		toolBar.add(changeViewerButton);
 		
 		return toolBar;
 	}
@@ -503,6 +497,87 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 		}
 	}
 
+	/**
+	 * Creates combobox used to select molecular viewer.
+	 * @return viewer selector
+	 */
+	private ComboBox<String> createViewerTypeCombobox()
+	{
+		ListStore<String> store = new ListStore<String>(new ModelKeyProvider<String>() {
+			@Override
+			public String getKey(String item) {
+				return item;
+			}
+		});
+
+		store.add(AppPropertiesManager.CONSTANTS.viewer_local());
+		store.add(AppPropertiesManager.CONSTANTS.viewer_jmol());
+		store.add(AppPropertiesManager.CONSTANTS.viewer_pse());
+
+		final ComboBox<String> viewerTypeComboBox = new ComboBox<String>(store, new LabelProvider<String>() {
+			@Override
+			public String getLabel(String item) {
+				return item;
+			}
+		});
+		
+		viewerTypeComboBox.setId("viewercombo");
+		viewerTypeComboBox.setTriggerAction(TriggerAction.ALL);
+		viewerTypeComboBox.setEditable(false);
+		viewerTypeComboBox.setWidth(100);
+
+		viewerTypeComboBox.setToolTipConfig(createViewerTypeComboBoxToolTipConfig());
+		
+		String viewerCookie = Cookies.getCookie("crkviewer");
+		if (viewerCookie != null) {
+			viewerTypeComboBox.setValue(viewerCookie);
+		} else {
+			viewerTypeComboBox.setValue(AppPropertiesManager.CONSTANTS.viewer_jmol());
+		}
+
+		ApplicationContext.setSelectedViewer(viewerTypeComboBox.getValue());
+
+		viewerTypeComboBox.addSelectionHandler(new SelectionHandler<String>() {	
+			@Override
+			public void onSelection(SelectionEvent<String> event) {
+				Cookies.setCookie("crkviewer", event.getSelectedItem());
+				ApplicationContext.setSelectedViewer(event.getSelectedItem());
+				
+			}
+		});
+		
+		return viewerTypeComboBox;
+	}
+	
+	/**
+	 * Creates configuration of the tooltip displayed over viewer type selector.
+	 * @return configuration of tooltip displayed over viewer type selector
+	 */
+	private ToolTipConfig createViewerTypeComboBoxToolTipConfig()
+	{
+		ToolTipConfig viewerTypeComboBoxToolTipConfig = new ToolTipConfig();  
+		viewerTypeComboBoxToolTipConfig.setTitleHtml("3D viewer selector");
+		viewerTypeComboBoxToolTipConfig.setBodyHtml(generateViewerTypeComboBoxTooltipTemplate());  
+		viewerTypeComboBoxToolTipConfig.setShowDelay(0);
+		viewerTypeComboBoxToolTipConfig.setDismissDelay(0);
+		return viewerTypeComboBoxToolTipConfig;
+	}
+	
+	/**
+	 * Generates content of viewer type tooltip.
+	 * @return content of viewer type tooltip
+	 */
+	private String generateViewerTypeComboBoxTooltipTemplate()
+	{
+		String viewerTypeDescription = "To run selected 3D viewer please click one of the thumbnails on the list below. The following options are provided: " +
+									   "<div><ul class=\"eppic-tooltip-list\">" +
+									   "<li>PDB file downloadable to a local molecular viewer</li>" +
+									   "<li>Browser embedded Jmol viewer (no need for local viewer)</li>" +
+									   "<li>PyMol session file (.pse) to be opened in local PyMol</li>" +
+									   "</ul></div>";
+		return viewerTypeDescription;
+	}
+	
 	/**
 	 * sets the value of the cluster similar interfaces radio
 	 * @param value
