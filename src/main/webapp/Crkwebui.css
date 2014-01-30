@@ -307,6 +307,25 @@
 	padding-right: 5px;
 }
 
+.eppic-alignment-blank{
+	display:inline-block;
+	color: red;
+}
+
+.eppic-alignment-container{
+	font-family: courier, monospace;
+}
+
+.eppic-alignment-match{
+	display:inline-block;
+}
+
+.eppic-alignment-mismatch{
+	display:inline-block;
+	color: white;
+	background: red;
+}
+
 .eppic-residues-summary {
 	float: center;
 	padding-top: 5px;
