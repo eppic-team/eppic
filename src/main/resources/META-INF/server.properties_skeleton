@@ -9,7 +9,7 @@ email_host=mail.psi.ch
 email_port=25
 
 # location of crk runnable jar
-crk_jar=/Users/hullarb/Work/workspace/eclipse projects/crk/build/jar/crk.jar
+crk_jar=/Users/hullarb/Work/workspace/eclipse projects/eppic/build/jar/eppic.jar
 assigned_memory=512
 
 # queuing system

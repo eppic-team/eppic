@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+  <groupId>ch.systemsx.sybit</groupId>
+  <artifactId>eppic</artifactId>
+  <versioning>
+    <release>v2.0.5</release>
+    <versions>
+      <version>v2.0.5</version>
+    </versions>
+    <lastUpdated>20140130153327</lastUpdated>
+  </versioning>
+</metadata>

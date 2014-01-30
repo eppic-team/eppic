@@ -108,8 +108,8 @@
 		</dependency>
 		<dependency>
 			<groupId>ch.systemsx.sybit</groupId>
-			<artifactId>crk</artifactId>
-			<version>rev594</version>
+			<artifactId>eppic</artifactId>
+			<version>v2.0.5</version>
 		</dependency>
 		<dependency>
 			<groupId>com.gwtplatform</groupId>
