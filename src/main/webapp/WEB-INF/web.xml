@@ -97,6 +97,8 @@
 	    <url-pattern>/ewui/jmolViewer</url-pattern>
  	</servlet-mapping>
  	
+ 	<!-- Session timeout: if the client is idle for more than this time (in minutes) 
+         then the session is lost. 1440min = 24x60min -->
  	 <session-config>
         <session-timeout>1440</session-timeout>
     </session-config>
