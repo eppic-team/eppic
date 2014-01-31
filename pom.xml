@@ -5,7 +5,7 @@
 	<groupId>ch.systemsx.sybit</groupId>
 	<artifactId>eppic-wui</artifactId>
 	<packaging>war</packaging>
-	<version>2.0.4</version>
+	<version>2.0.5</version>
 
 	<properties>
 		<gwt.version>2.5.1</gwt.version>
