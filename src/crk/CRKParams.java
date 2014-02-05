@@ -18,7 +18,7 @@ public class CRKParams {
 	
 	// CONSTANTS
 	public static final String     PROGRAM_NAME    = "eppic";
-	public static final String	   PROGRAM_VERSION = "2.0.5";
+	public static final String	   PROGRAM_VERSION = "2.0.6";
 	public static final String 	   CONTACT_EMAIL   = "eppic@systemsx.ch";
 	
 	private static final Pattern   PDBCODE_PATTERN = Pattern.compile("^\\d\\w\\w\\w$");
