@@ -540,10 +540,9 @@ public class ChainEvolContext implements Serializable {
 		File alnCacheFile = null;
 		// beware we only try to use cache file if we are in default mode: uniparc=true, filter by domain=false
 		if (params.getAlnCacheDir()!=null && params.isUseUniparc() && !params.isFilterByDomain()) {
-			String intervStr = "";
-			if (!isSearchWithFullUniprot()) {
-				intervStr = "."+getQueryInterval().beg+"-"+getQueryInterval().end;
-			}
+
+			String intervStr = "."+getQueryInterval().beg+"-"+getQueryInterval().end;
+			
 			// a cache file will look like  Q9UKX7.i60.c85.m60.1-109.aln (that corresponds to 3tj3C) 
 			//                              P52294.i60.c85.m60.aln       (that corresponds to 3tj3A)
 			// i=identity threshold used, c=query coverage, m=max num seqs, optional two last numbers are the subinterval

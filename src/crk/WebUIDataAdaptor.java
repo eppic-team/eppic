@@ -277,10 +277,10 @@ public class WebUIDataAdaptor {
 				
 				homInfo.setNumHomologs(cec.getNumHomologs());
 				homInfo.setUniprotId(cec.getQuery().getUniId()); 
-				if (!cec.isSearchWithFullUniprot()) { 
-					homInfo.setRefUniProtStart(cec.getQueryInterval().beg);
-					homInfo.setRefUniProtEnd(cec.getQueryInterval().end);
-				}
+				 
+				homInfo.setRefUniProtStart(cec.getQueryInterval().beg);
+				homInfo.setRefUniProtEnd(cec.getQueryInterval().end);
+				
 				homInfo.setAlignedSeq1(cec.getPdb2uniprotAln().getAlignedSequences()[0]);
 				homInfo.setMarkupLine(String.valueOf(cec.getPdb2uniprotAln().getMarkupLine()));
 				homInfo.setAlignedSeq2(cec.getPdb2uniprotAln().getAlignedSequences()[1]);
