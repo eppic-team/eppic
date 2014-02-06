@@ -6,11 +6,8 @@ import java.util.Date;
 import java.util.List;
 
 
-public class PDBScoreItemDB implements Serializable, ProcessingDataDB
-{
-	/**
-	 * 
-	 */
+public class PDBScoreItemDB implements Serializable {
+
 	private static final long serialVersionUID = 1L;
 	
 	private int uid;
