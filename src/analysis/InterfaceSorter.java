@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import crk.CRKParams;
+import eppic.EppicParams;
 import owl.core.structure.ChainInterface;
 import owl.core.structure.ChainInterfaceList;
 import owl.core.structure.PdbAsymUnit;
@@ -109,7 +109,7 @@ public class InterfaceSorter {
 			long start = System.currentTimeMillis();
 			ChainInterfaceList interfList = null;
 
-			interfList = pdb.getAllInterfaces(CRKParams.INTERFACE_DIST_CUTOFF, NSPHEREPOINTS, numThreads, false, false, -1, CRKParams.MIN_INTERFACE_AREA_TO_KEEP);
+			interfList = pdb.getAllInterfaces(EppicParams.INTERFACE_DIST_CUTOFF, NSPHEREPOINTS, numThreads, false, false, -1, EppicParams.MIN_INTERFACE_AREA_TO_KEEP);
 			
 			long end = System.currentTimeMillis();
 			System.out.printf("\t%4d\n",(end-start)/1000l);

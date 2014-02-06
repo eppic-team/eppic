@@ -1,4 +1,4 @@
-package crk;
+package eppic;
 
 import java.io.Serializable;
 

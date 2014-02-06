@@ -11,4 +11,4 @@ then
 	exit 1
 fi
 
-java -cp $dir/$uniprotjar:$dir/$eppicjar crk.CRKMain $*
+java -cp $dir/$uniprotjar:$dir/$eppicjar eppic.Main $*

@@ -1,4 +1,4 @@
-package crk;
+package eppic;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -116,7 +116,7 @@ public class ChainEvolContext implements Serializable {
 	 * @throws BlastException
 	 * @throws InterruptedException
 	 */
-	public void retrieveQueryData(CRKParams params) throws IOException, BlastException, InterruptedException {
+	public void retrieveQueryData(EppicParams params) throws IOException, BlastException, InterruptedException {
 		
 		String siftsLocation = params.getSiftsFile();
 		boolean useSifts = params.isUseSifts();
@@ -131,7 +131,7 @@ public class ChainEvolContext implements Serializable {
 		String queryUniprotId = null;
 		query = null;
 		
-		if (sequence.length()<=CRKParams.PEPTIDE_LENGTH_CUTOFF) {
+		if (sequence.length()<=EppicParams.PEPTIDE_LENGTH_CUTOFF) {
 			queryWarnings.add("Chain is a peptide ("+sequence.length()+" residues)");
 		}
 		
@@ -349,7 +349,7 @@ public class ChainEvolContext implements Serializable {
 				// checking for the gaps between the PDB segments: insertions in PDB sequence with respect to UniProt
 				Interval pdbInterv = sifts.getCifIntervalSet().iterator().next();
 				if (lastPdbEnd!=-1 && 
-					( (pdbInterv.beg-lastPdbEnd)>CRKParams.NUM_GAP_RES_FOR_CHIMERIC_FUSION ||
+					( (pdbInterv.beg-lastPdbEnd)>EppicParams.NUM_GAP_RES_FOR_CHIMERIC_FUSION ||
 					  (pdbInterv.beg-lastPdbEnd)<0	)) {
 					// if at least one of the gaps is long or an inversion then we consider the mapping unacceptable
 					unacceptableGaps = true;
@@ -359,7 +359,7 @@ public class ChainEvolContext implements Serializable {
 				// checking for the gaps between the uniprot segments: deletions in PDB sequence with respect to UniProt
 				Interval interv = sifts.getUniprotIntervalSet().iterator().next(); // there's always only 1 interval per SiftsFeature
 				if (lastUniprotEnd!=-1 && 
-					( (interv.beg-lastUniprotEnd)>CRKParams.NUM_GAP_RES_FOR_CHIMERIC_FUSION ||
+					( (interv.beg-lastUniprotEnd)>EppicParams.NUM_GAP_RES_FOR_CHIMERIC_FUSION ||
 					  (interv.beg-lastUniprotEnd)<0 )) {
 					// if at least 1 of the gaps is long or an inversion (e.g. circular permutants) 
 					// then we consider the mappings unacceptable
@@ -392,7 +392,7 @@ public class ChainEvolContext implements Serializable {
 				LOGGER.warn("More than one UniProt segment SIFTS mapping for chain "+representativeChain);
 				LOGGER.warn("PDB chain "+representativeChain+" vs UniProt ("+
 						mappings.iterator().next().getUniprotId()+") segments:"+msg);
-				LOGGER.warn("Gaps between segments are all below "+CRKParams.NUM_GAP_RES_FOR_CHIMERIC_FUSION+" residues. " +
+				LOGGER.warn("Gaps between segments are all below "+EppicParams.NUM_GAP_RES_FOR_CHIMERIC_FUSION+" residues. " +
 						"Will anyway proceed with this UniProt reference");
 				queryUniprotId = uniqUniIds.keySet().iterator().next();
 			}
@@ -406,7 +406,7 @@ public class ChainEvolContext implements Serializable {
 	}
 	
 	
-	public void blastForHomologs(CRKParams params) 
+	public void blastForHomologs(EppicParams params) 
 	throws IOException, BlastException, UniprotVerMisMatchException, InterruptedException {
 		
 		
@@ -439,7 +439,7 @@ public class ChainEvolContext implements Serializable {
 		File blastCacheFile = null;
 		if (params.getBlastCacheDir()!=null) {
 			blastCacheFile = new File(params.getBlastCacheDir(),getQuery().getUniId()+
-					"."+queryInterv.beg+"-"+queryInterv.end+CRKParams.BLAST_CACHE_FILE_SUFFIX);
+					"."+queryInterv.beg+"-"+queryInterv.end+EppicParams.BLAST_CACHE_FILE_SUFFIX);
 		}
 		
 		homologs.searchWithBlast(blastPlusBlastp, blastDbDir, blastDb, blastNumThreads, maxNumSeqs, blastCacheFile);
@@ -493,7 +493,7 @@ public class ChainEvolContext implements Serializable {
 				+" (chain "+getRepresentativeChainCode()+")");
 	}
 	
-	public void applyIdentityCutoff(CRKParams params) throws IOException, InterruptedException, BlastException {
+	public void applyIdentityCutoff(EppicParams params) throws IOException, InterruptedException, BlastException {
 
 		double homSoftIdCutoff = params.getHomSoftIdCutoff();
 		double homHardIdCutoff = params.getHomHardIdCutoff();
@@ -531,7 +531,7 @@ public class ChainEvolContext implements Serializable {
 				
 	}
 
-	public void align(CRKParams params) throws IOException, InterruptedException, UniprotVerMisMatchException { 
+	public void align(EppicParams params) throws IOException, InterruptedException, UniprotVerMisMatchException { 
 		File tcoffeeBin = params.getTcoffeeBin();
 		File clustaloBin = params.getClustaloBin();
 		int nThreads = params.getNumThreads();
@@ -561,7 +561,7 @@ public class ChainEvolContext implements Serializable {
 		homologs.writeAlignmentToFile(alnFile); 
 	}
 	
-	public void writeHomologSeqsToFile(File outFile, CRKParams params) throws FileNotFoundException {
+	public void writeHomologSeqsToFile(File outFile, EppicParams params) throws FileNotFoundException {
 		homologs.writeToFasta(outFile, false);
 	}
 	
@@ -804,7 +804,7 @@ public class ChainEvolContext implements Serializable {
 	private String findUniprotMapping(File blastPlusBlastp, String blastDbDir, String blastDb, int blastNumThreads, double pdb2uniprotIdThreshold, double pdb2uniprotQcovThreshold, boolean useUniparc) 
 			throws IOException, BlastException, InterruptedException {
 		// for too short sequence it doesn't make sense to blast
-		if (this.sequence.length()<CRKParams.MIN_SEQ_LENGTH_FOR_BLASTING) {
+		if (this.sequence.length()<EppicParams.MIN_SEQ_LENGTH_FOR_BLASTING) {
 			LOGGER.info("Chain "+representativeChain+" too short for blasting. Won't try to find a UniProt reference for it.");
 			// query warnings for peptides (with a higher cutoff than this) are already logged before, see above
 			// note that then as no reference is found, there won't be blasting for homologs either

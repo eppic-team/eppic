@@ -9,10 +9,8 @@ import java.util.List;
 import java.util.TreeMap;
 
 import analysis.Utils;
-
-import crk.CRKException;
-import crk.CRKParams;
-
+import eppic.EppicException;
+import eppic.EppicParams;
 import owl.core.structure.*;
 import owl.core.util.FileFormatException;
 
@@ -40,7 +38,7 @@ public class InterfaceResidueAnalysis {
 	private static String localCifDir;
 	
 	//Methods
-	public static PdbAsymUnit loadPdbFile(String pdbCode) throws CRKException, IOException, FileFormatException, PdbLoadException {
+	public static PdbAsymUnit loadPdbFile(String pdbCode) throws EppicException, IOException, FileFormatException, PdbLoadException {
 		System.out.println("Loading PDB data: " + pdbCode);
 		String pdbFtpCifUrl = "";
 		//String localCifDir = "/nfs/data/dbs/pdb/data/structures/all/mmCIF";
@@ -160,7 +158,7 @@ public class InterfaceResidueAnalysis {
 		br.close();
 	}
 	
-	public static void main(String[] args) throws IOException, CRKException, FileFormatException, PdbLoadException {		
+	public static void main(String[] args) throws IOException, EppicException, FileFormatException, PdbLoadException {		
 		System.out.println("Reading input from: "+args[0]);
 		File inputFile = new File(args[0]);
 		readInput(inputFile);
@@ -185,7 +183,7 @@ public class InterfaceResidueAnalysis {
 			//Calculate all the interfaces for the pdb structure
 			System.out.println("Calculating all Interfaces ....");
 			ChainInterfaceList allInterFaces = 
-					fullpdb.getAllInterfaces(CRKParams.INTERFACE_DIST_CUTOFF, CRKParams.DEF_NSPHEREPOINTS_ASA_CALC, 1, true, false, CRKParams.DEF_MIN_SIZE_COFACTOR_FOR_ASA, CRKParams.MIN_INTERFACE_AREA_TO_KEEP);
+					fullpdb.getAllInterfaces(EppicParams.INTERFACE_DIST_CUTOFF, EppicParams.DEF_NSPHEREPOINTS_ASA_CALC, 1, true, false, EppicParams.DEF_MIN_SIZE_COFACTOR_FOR_ASA, EppicParams.MIN_INTERFACE_AREA_TO_KEEP);
 			
 			//Get number of Bio Interfaces
 			int bioInterFaces = bioToAnalyse.get(pdbCode).size();

@@ -11,8 +11,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import crk.CRKParams;
-
+import eppic.EppicParams;
 import owl.core.structure.ChainInterface;
 import owl.core.structure.ChainInterfaceList;
 import owl.core.structure.PdbAsymUnit;
@@ -100,7 +99,7 @@ public class CoreDefinitionsStats {
 			long start = System.currentTimeMillis();
 			ChainInterfaceList interfList = null;
 
-			interfList = pdb.getAllInterfaces(CRKParams.INTERFACE_DIST_CUTOFF, NSPHEREPOINTS, 1, true, false, -1, CRKParams.MIN_INTERFACE_AREA_TO_KEEP);
+			interfList = pdb.getAllInterfaces(EppicParams.INTERFACE_DIST_CUTOFF, NSPHEREPOINTS, 1, true, false, -1, EppicParams.MIN_INTERFACE_AREA_TO_KEEP);
 			
 			long end = System.currentTimeMillis();
 			System.out.printf(pdbCode+"\t%4d\n",(end-start)/1000l);
@@ -135,7 +134,7 @@ public class CoreDefinitionsStats {
 			numThreads = Integer.parseInt(args[2]);
 		}
 		
-		CRKParams params = loadConfigFile(); 
+		EppicParams params = loadConfigFile(); 
 		LOCAL_CIF_DIR = params.getLocalCifDir();
 		
 		 
@@ -200,8 +199,8 @@ public class CoreDefinitionsStats {
 	
 	}
 
-	private static CRKParams loadConfigFile() {
-		CRKParams params = new CRKParams();
+	private static EppicParams loadConfigFile() {
+		EppicParams params = new EppicParams();
 		// loading settings from config file
 		File userConfigFile = new File(System.getProperty("user.home"),".eppic.conf");  
 		try {

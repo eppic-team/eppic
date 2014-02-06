@@ -1,4 +1,4 @@
-package crk;
+package eppic;
 
 import java.io.PrintStream;
 import java.io.Serializable;
@@ -8,9 +8,8 @@ import java.util.List;
 
 import org.apache.commons.math.random.RandomDataImpl;
 
-import crk.predictors.EvolInterfZPredictor;
-import crk.predictors.EvolRimCorePredictor;
-
+import eppic.predictors.EvolInterfZPredictor;
+import eppic.predictors.EvolRimCorePredictor;
 import owl.core.structure.ChainInterface;
 import owl.core.structure.ChainInterfaceList;
 import owl.core.structure.Residue;

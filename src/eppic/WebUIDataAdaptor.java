@@ -1,4 +1,4 @@
-package crk;
+package eppic;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -10,11 +10,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.TreeMap;
 
-import crk.predictors.CombinedPredictor;
-import crk.predictors.EvolInterfZPredictor;
-import crk.predictors.EvolRimCorePredictor;
-import crk.predictors.GeometryPredictor;
-
+import eppic.predictors.CombinedPredictor;
+import eppic.predictors.EvolInterfZPredictor;
+import eppic.predictors.EvolRimCorePredictor;
+import eppic.predictors.GeometryPredictor;
 import model.HomologItemDB;
 import model.InterfaceItemDB;
 import model.InterfaceResidueItemDB;
@@ -26,7 +25,6 @@ import model.PdbBioUnitItemDB;
 import model.QueryWarningItemDB;
 import model.RunParametersItemDB;
 import model.WarningItemDB;
-
 import owl.core.runners.PymolRunner;
 import owl.core.sequence.Homolog;
 import owl.core.structure.ChainInterface;
@@ -47,7 +45,7 @@ public class WebUIDataAdaptor {
 	
 	private PDBScoreItemDB pdbScoreItem;
 	
-	private CRKParams params;
+	private EppicParams params;
 	
 	private RunParametersItemDB runParametersItem;
 	
@@ -59,7 +57,7 @@ public class WebUIDataAdaptor {
 		interfId2Warnings = new HashMap<Integer, HashSet<String>>();
 	}
 	
-	public void setParams(CRKParams params) {
+	public void setParams(EppicParams params) {
 		this.params = params;
 		pdbScoreItem.setPdbName(params.getJobName());
 		runParametersItem = new RunParametersItemDB();
@@ -76,7 +74,7 @@ public class WebUIDataAdaptor {
 		runParametersItem.setzScoreCutoff(params.getCoreSurfScoreCutoff());
 		runParametersItem.setMinCoreSizeForBio(params.getMinCoreSizeForBio());
 		runParametersItem.setPdbScoreItem(pdbScoreItem);
-		runParametersItem.setCrkVersion(CRKParams.PROGRAM_VERSION);
+		runParametersItem.setCrkVersion(EppicParams.PROGRAM_VERSION);
 		pdbScoreItem.setRunParameters(runParametersItem);
 	}
 	
@@ -411,11 +409,11 @@ public class WebUIDataAdaptor {
 		}
 	}
 	
-	public void writePdbScoreItemFile(File file) throws CRKException {
+	public void writePdbScoreItemFile(File file) throws EppicException {
 		try {
 			Goodies.serialize(file,pdbScoreItem);
 		} catch (IOException e) {
-			throw new CRKException(e, e.getMessage(), true);
+			throw new EppicException(e, e.getMessage(), true);
 		}
 	}
 	

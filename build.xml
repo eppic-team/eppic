@@ -34,7 +34,7 @@
 	<property name="bin.dir" value="${build.dir}/bin"/>
 	<property name="jar.dir" value="${build.dir}/jar"/>
 	<property name="dist.dir" value="${build.dir}/${appname}"/>
-	<property name="main-class" value="crk.CRKMain"/>
+	<property name="main-class" value="eppic.Main"/>
 	<property name="owl.jar.name" value="owl.jar"/>
 
 	<path id="classpath">

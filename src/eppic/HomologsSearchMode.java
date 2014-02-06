@@ -1,4 +1,4 @@
-package crk;
+package eppic;
 
 public enum HomologsSearchMode {
 

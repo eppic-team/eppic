@@ -2,7 +2,7 @@ package analysis;
 
 import java.io.PrintStream;
 
-import crk.CallType;
+import eppic.CallType;
 
 /**
  * A class to store a full Interface Prediction with all 3 methods + combined.

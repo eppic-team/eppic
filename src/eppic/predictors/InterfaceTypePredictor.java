@@ -1,8 +1,8 @@
-package crk.predictors;
+package eppic.predictors;
 
 import java.util.List;
 
-import crk.CallType;
+import eppic.CallType;
 
 
 public interface InterfaceTypePredictor {

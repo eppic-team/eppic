@@ -1,4 +1,4 @@
-package crk;
+package eppic;
 
 import gnu.getopt.Getopt;
 
@@ -29,7 +29,7 @@ public class FindEvolContext {
 	
 	private static File inputFile;
 	private static ChainEvolContextList cecs;
-	private static CRKParams params;
+	private static EppicParams params;
 	
 	public static void main(String[] args) throws Exception {
 
@@ -40,7 +40,7 @@ public class FindEvolContext {
 		ROOTLOGGER.addAppender(errorAppender);
 		
 
-		params = new CRKParams();
+		params = new EppicParams();
 		loadConfigFile();		
 		parseCommandLine(args, FindEvolContext.class.getName());		
 
@@ -56,7 +56,7 @@ public class FindEvolContext {
 		try {
 			cecs = new ChainEvolContextList(sequences,params);
 		} catch (SQLException e) {
-			throw new CRKException(e,"Could not connect to local uniprot database server: "+e.getMessage(),true);
+			throw new EppicException(e,"Could not connect to local uniprot database server: "+e.getMessage(),true);
 		}
 
 		doFindEvolContext();
@@ -64,7 +64,7 @@ public class FindEvolContext {
 	}
 
 	
-	public static void doFindEvolContext() throws CRKException {
+	public static void doFindEvolContext() throws EppicException {
 		
 		cecs.retrieveQueryData(params);
 		
@@ -92,7 +92,7 @@ public class FindEvolContext {
 	
 	private static void loadConfigFile() {
 		// loading settings from config file
-		File userConfigFile = new File(System.getProperty("user.home"),CRKParams.CONFIG_FILE_NAME);  
+		File userConfigFile = new File(System.getProperty("user.home"),EppicParams.CONFIG_FILE_NAME);  
 		try {
 			if (userConfigFile.exists()) {
 				ROOTLOGGER.info("Loading user configuration file " + userConfigFile);
@@ -106,14 +106,14 @@ public class FindEvolContext {
 		} catch (IOException e) {
 			ROOTLOGGER.fatal("Error while reading from config file: " + e.getMessage());
 			System.exit(1);
-		} catch (CRKException e) {
+		} catch (EppicException e) {
 			ROOTLOGGER.error(e.getMessage());
 			System.exit(1);
 		}
 
 	}
 	
-	private static void parseCommandLine(String[] args, String programName) throws CRKException {
+	private static void parseCommandLine(String[] args, String programName) throws EppicException {
 		
 		String help = "Usage: "+programName+" \n" +
 				" -i : input FASTA file\n" +
@@ -127,7 +127,7 @@ public class FindEvolContext {
 				" -H : homologs search mode: either \"local\" (only Uniprot region covered\n" +
 				"      by PDB structure will be used to search homologs) or \"global\" (full\n" +
 				"      Uniprot entry will be used to search homologs)\n" +
-				"      Default "+CRKParams.DEF_HOMOLOGS_SEARCH_MODE.getName() + "\n"+
+				"      Default "+EppicParams.DEF_HOMOLOGS_SEARCH_MODE.getName() + "\n"+
 				" -O : restrict homologs search to those within the same domain of life as \n" +
 				"      query\n" +
 				" -h : print command line parameters help\n\n"
@@ -179,15 +179,15 @@ public class FindEvolContext {
 		}
 		
 		if (inputFile==null) {
-			throw new CRKException(null, "A FASTA input file must be provided with -i",true);
+			throw new EppicException(null, "A FASTA input file must be provided with -i",true);
 		}
 		
 		if (!inputFile.exists()){
-			throw new CRKException(null, "Given file "+inputFile+" does not exist!", true);
+			throw new EppicException(null, "Given file "+inputFile+" does not exist!", true);
 		}
 
 		if (!AminoAcid.isValidNumGroupsReducedAlphabet(params.getReducedAlphabet())) {
-			throw new CRKException(null, "Invalid number of amino acid groups specified ("+params.getReducedAlphabet()+")", true);
+			throw new EppicException(null, "Invalid number of amino acid groups specified ("+params.getReducedAlphabet()+")", true);
 		}
 
 		if (params.getBaseName()==null) {

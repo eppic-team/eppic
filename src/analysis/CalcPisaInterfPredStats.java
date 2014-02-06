@@ -1,5 +1,7 @@
 package analysis;
 
+import eppic.CallType;
+import eppic.ScoringType;
 import gnu.getopt.Getopt;
 
 import java.io.File;
@@ -10,9 +12,6 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.xml.sax.SAXException;
-
-import crk.CallType;
-import crk.ScoringType;
 
 import owl.core.connections.pisa.OligomericPrediction;
 import owl.core.connections.pisa.PisaAsmSetList;

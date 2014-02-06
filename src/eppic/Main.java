@@ -1,4 +1,4 @@
-package crk;
+package eppic;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -24,8 +24,8 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 
-import crk.predictors.CombinedPredictor;
-import crk.predictors.GeometryPredictor;
+import eppic.predictors.CombinedPredictor;
+import eppic.predictors.GeometryPredictor;
 import owl.core.runners.PymolRunner;
 import owl.core.structure.BioUnitAssignmentType;
 import owl.core.structure.ChainCluster;
@@ -43,17 +43,17 @@ import owl.core.util.FileFormatException;
 import owl.core.util.Goodies;
 import owl.core.util.RegexFileFilter;
 
-public class CRKMain {
+public class Main {
 	
 	
 	// THE ROOT LOGGER (log4j)
 	private static final Logger ROOTLOGGER = Logger.getRootLogger();
-	private static final Log LOGGER = LogFactory.getLog(CRKMain.class);
+	private static final Log LOGGER = LogFactory.getLog(Main.class);
 	
 	private static final int STEPS_TOTAL = 4;
 	
 	// fields
-	private CRKParams params;
+	private EppicParams params;
 	
 	private PdbAsymUnit pdb;
 	private ChainInterfaceList interfaces;
@@ -66,8 +66,8 @@ public class CRKMain {
 	
 	private WebUIDataAdaptor wuiAdaptor;
 		
-	public CRKMain() {
-		this.params = new CRKParams();
+	public Main() {
+		this.params = new EppicParams();
 		this.stepCount = 1;
 	}
 	
@@ -91,7 +91,7 @@ public class CRKMain {
 				//fileErrorAppender.setThreshold(Level.ERROR);
 				//ROOTLOGGER.addAppender(fileErrorAppender);
 				// the steps log file needed for the server, we only initialise it if a -L progress log file was passed (as that is only used by server)
-				stepsLogFile = new File(params.getOutDir(),params.getBaseName()+CRKParams.STEPS_LOG_FILE_SUFFIX);
+				stepsLogFile = new File(params.getOutDir(),params.getBaseName()+EppicParams.STEPS_LOG_FILE_SUFFIX);
 			}
 			if (params.getDebug())
 				ROOTLOGGER.addAppender(outAppender);
@@ -111,7 +111,7 @@ public class CRKMain {
 	
 	public void loadConfigFile() {
 		// loading settings from config file
-		File userConfigFile = new File(System.getProperty("user.home"),CRKParams.CONFIG_FILE_NAME);  
+		File userConfigFile = new File(System.getProperty("user.home"),EppicParams.CONFIG_FILE_NAME);  
 		try {
 			if (params.getConfigFile()!=null) {
 				LOGGER.info("Loading user configuration file given in command line " + params.getConfigFile());
@@ -129,14 +129,14 @@ public class CRKMain {
 		} catch (IOException e) {
 			LOGGER.fatal("Error while reading from config file: " + e.getMessage());
 			System.exit(1);
-		} catch (CRKException e) {
+		} catch (EppicException e) {
 			LOGGER.error(e.getMessage());
 			System.exit(1);
 		}
 
 	}
 
-	public void doLoadPdb() throws CRKException {
+	public void doLoadPdb() throws EppicException {
 		params.getProgressLog().println("Loading PDB data: "+(params.getInFile()==null?params.getPdbCode():params.getInFile().getName()));
 		writeStep("Calculating Interfaces");
 		pdb = null;
@@ -148,7 +148,7 @@ public class CRKMain {
 				try {
 					PdbAsymUnit.grabCifFile(params.getLocalCifDir(), params.getPdbFtpCifUrl(), params.getPdbCode(), cifFile, params.isUseOnlinePdb());
 				} catch(IOException e) {
-					throw new CRKException(e,"Couldn't get cif file for code "+params.getPdbCode()+" from ftp or couldn't uncompress it. Error: "+e.getMessage(),true);
+					throw new EppicException(e,"Couldn't get cif file for code "+params.getPdbCode()+" from ftp or couldn't uncompress it. Error: "+e.getMessage(),true);
 				}
 					
 			} else {
@@ -157,11 +157,11 @@ public class CRKMain {
 			// we parse PDB files with no X padding if no SEQRES is found. Otherwise matching to uniprot doesn't work in many cases
 			pdb = new PdbAsymUnit(cifFile, PdbAsymUnit.DEFAULT_MODEL, false);
 		} catch (FileFormatException e) {
-			throw new CRKException(e,"File format error: "+e.getMessage(),true);
+			throw new EppicException(e,"File format error: "+e.getMessage(),true);
 		} catch (PdbLoadException e) {
-			throw new CRKException(e,"Couldn't load file "+cifFile.getName()+". Error: "+e.getMessage(),true);
+			throw new EppicException(e,"Couldn't load file "+cifFile.getName()+". Error: "+e.getMessage(),true);
 		} catch (IOException e) {
-			throw new CRKException(e,"Problems reading PDB data from "+cifFile+". Error: "+e.getMessage(),true);
+			throw new EppicException(e,"Problems reading PDB data from "+cifFile+". Error: "+e.getMessage(),true);
 		}
 		
 		if (pdb.getCrystalCell()==null) {
@@ -181,36 +181,36 @@ public class CRKMain {
 		
 	}
 	
-	public void doLoadInterfacesFromFile() throws CRKException {
+	public void doLoadInterfacesFromFile() throws EppicException {
 		try {
 			params.getProgressLog().println("Loading interfaces enumeration from file "+params.getInterfSerFile());
 			LOGGER.info("Loading interfaces enumeration from file "+params.getInterfSerFile());
 			interfaces = (ChainInterfaceList)Goodies.readFromFile(params.getInterfSerFile());
 		} catch (ClassNotFoundException e) {
-			throw new CRKException(e,"Couldn't load interface enumeration binary file: "+e.getMessage(),true);
+			throw new EppicException(e,"Couldn't load interface enumeration binary file: "+e.getMessage(),true);
 		} catch (IOException e) {
-			throw new CRKException(e,"Couldn't load interface enumeration binary file: "+e.getMessage(),true);
+			throw new EppicException(e,"Couldn't load interface enumeration binary file: "+e.getMessage(),true);
 		}
 		
 		if (!pdb.getPdbCode().equals(interfaces.get(1).getFirstMolecule().getPdbCode())) {
-			throw new CRKException(null,"PDB codes of given PDB entry/file and given interface enumeration binary file don't match.",true);
+			throw new EppicException(null,"PDB codes of given PDB entry/file and given interface enumeration binary file don't match.",true);
 		}
 		
 	}
 
-	public void doFindInterfaces() throws CRKException {
+	public void doFindInterfaces() throws EppicException {
 
 		params.getProgressLog().println("Calculating possible interfaces...");
 		LOGGER.info("Calculating possible interfaces");
 		InterfacesFinder interfFinder = new InterfacesFinder(pdb);
-		interfaces = interfFinder.getAllInterfaces(CRKParams.INTERFACE_DIST_CUTOFF, 
+		interfaces = interfFinder.getAllInterfaces(EppicParams.INTERFACE_DIST_CUTOFF, 
 				params.getnSpherePointsASAcalc(), params.getNumThreads(), true, false, 
 				params.getMinSizeCofactorForAsa(),
-				CRKParams.MIN_INTERFACE_AREA_TO_KEEP);		
+				EppicParams.MIN_INTERFACE_AREA_TO_KEEP);		
 		LOGGER.info("Interfaces calculated with "+params.getnSpherePointsASAcalc()+" sphere points.");
 
 		LOGGER.info("Calculating interface clusters");
-		interfaces.initialiseClusters(pdb, CRKParams.CLUSTERING_RMSD_CUTOFF, CRKParams.CLUSTERING_MINATOMS, CRKParams.CLUSTERING_ATOM_TYPE);
+		interfaces.initialiseClusters(pdb, EppicParams.CLUSTERING_RMSD_CUTOFF, EppicParams.CLUSTERING_MINATOMS, EppicParams.CLUSTERING_ATOM_TYPE);
 
 		int clustersSize = interfaces.getClusters().size();
 		int numInterfaces = interfaces.size();
@@ -250,7 +250,7 @@ public class CRKMain {
 			boolean tooManyClashes = false;
 			for (ChainInterface clashyInterf:clashyInterfs) {
 				int numClashes = clashyInterf.getNumClashes();
-				if (numClashes>CRKParams.NUM_CLASHES_FOR_ERROR) tooManyClashes = true;
+				if (numClashes>EppicParams.NUM_CLASHES_FOR_ERROR) tooManyClashes = true;
 				msg+=("\nInterface: "+clashyInterf.getFirstMolecule().getPdbChainCode()+"+"
 						+clashyInterf.getSecondMolecule().getPdbChainCode()+" ("+
 						SpaceGroup.getAlgebraicFromMatrix(clashyInterf.getSecondTransf().getMatTransform())+
@@ -258,7 +258,7 @@ public class CRKMain {
 			}
 			
 			if (tooManyClashes) {
-				throw new CRKException(null, "Too many clashes in at least one interface, most likely there is an error in this structure. "+msg , true);				
+				throw new EppicException(null, "Too many clashes in at least one interface, most likely there is an error in this structure. "+msg , true);				
 			} else { 
 				LOGGER.warn(msg);
 			}
@@ -275,7 +275,7 @@ public class CRKMain {
 				interfLogPS.close();
 			}
 		} catch(IOException	e) {
-			throw new CRKException(e,"Couldn't log interfaces description to file: "+e.getMessage(),false);
+			throw new EppicException(e,"Couldn't log interfaces description to file: "+e.getMessage(),false);
 		}
 
 		if (!params.isGenerateWuiSerializedFile()) {
@@ -283,13 +283,13 @@ public class CRKMain {
 			try {
 				Goodies.serialize(params.getOutputFile(".interfaces.dat"),interfaces);
 			} catch (IOException e) {
-				throw new CRKException(e,"Couldn't write serialized ChainInterfaceList object to file: "+e.getMessage(),false);
+				throw new EppicException(e,"Couldn't write serialized ChainInterfaceList object to file: "+e.getMessage(),false);
 			}
 		}
 		
 	}
 	
-	public void doGeomScoring() throws CRKException {
+	public void doGeomScoring() throws EppicException {
 		if (interfaces.getNumInterfaces()==0) {
 			// no interfaces found at all, can happen e.g. in NMR structure with 1 chain, e.g. 1nmr
 			LOGGER.info("No interfaces found, nothing to analyse.");
@@ -300,7 +300,7 @@ public class CRKMain {
 		
 		try {
 			gps = new ArrayList<GeometryPredictor>();
-			PrintStream scoreGeomPS = new PrintStream(params.getOutputFile(CRKParams.GEOMETRY_FILE_SUFFIX));
+			PrintStream scoreGeomPS = new PrintStream(params.getOutputFile(EppicParams.GEOMETRY_FILE_SUFFIX));
 			GeometryPredictor.printScoringHeaders(scoreGeomPS);
 			for (ChainInterface interf:interfaces) {
 				GeometryPredictor gp = new GeometryPredictor(interf);
@@ -319,18 +319,18 @@ public class CRKMain {
 			wuiAdaptor.setGeometryScores(gps);
 			wuiAdaptor.addResidueDetails(interfaces);
 		} catch (IOException e) {
-			throw new CRKException(e, "Couldn't write interface geometry scores file. "+e.getMessage(),true);
+			throw new EppicException(e, "Couldn't write interface geometry scores file. "+e.getMessage(),true);
 		}
 	}
 	
-	private void writePdbAssignments() throws CRKException{
+	private void writePdbAssignments() throws EppicException{
 		if(this.interfaces.size()==0) return;
 		
 		PrintStream ps = null;
 		try {
-			ps = new PrintStream(params.getOutputFile(CRKParams.PDB_BIOUNIT_ASSIGN_FILE_SUFFIX));
+			ps = new PrintStream(params.getOutputFile(EppicParams.PDB_BIOUNIT_ASSIGN_FILE_SUFFIX));
 		} catch (FileNotFoundException e) {
-			throw new CRKException(e,"Could not write the PDB bio-unit assignments file: "+e.getMessage(),true);
+			throw new EppicException(e,"Could not write the PDB bio-unit assignments file: "+e.getMessage(),true);
 		}
 		PdbBioUnitList bioUnitList = this.pdb.getPdbBioUnitList();
 		
@@ -407,7 +407,7 @@ public class CRKMain {
 		ps.close();
 	}
 	
-	public void doWritePdbFiles() throws CRKException {
+	public void doWritePdbFiles() throws EppicException {
 
 		if (interfaces.getNumInterfaces()==0) return;
 		
@@ -428,13 +428,13 @@ public class CRKMain {
 			}
 			
 		} catch (IOException e) {
-			throw new CRKException(e, "Couldn't write interfaces PDB files. "+e.getMessage(), true);
+			throw new EppicException(e, "Couldn't write interfaces PDB files. "+e.getMessage(), true);
 		}
 
 
 	}
 	
-	public void doWritePymolFiles() throws CRKException {
+	public void doWritePymolFiles() throws EppicException {
 		
 		if (!params.isGenerateThumbnails()) return;
 		
@@ -446,11 +446,11 @@ public class CRKMain {
 		LOGGER.info("Generating PyMOL files");
 		try {
 			pr = new PymolRunner(params.getPymolExe());
-			pr.readColorsFromPropertiesFile(CRKParams.COLORS_PROPERTIES_IS);
-			pr.readColorMappingsFromResourceFile(CRKParams.PYMOL_COLOR_MAPPINGS_IS);
+			pr.readColorsFromPropertiesFile(EppicParams.COLORS_PROPERTIES_IS);
+			pr.readColorMappingsFromResourceFile(EppicParams.PYMOL_COLOR_MAPPINGS_IS);
 
 		} catch (IOException e) {
-			throw new CRKException(e,"Couldn't read colors file. Won't generate thumbnails or pse/pml files. "+e.getMessage(),true);
+			throw new EppicException(e,"Couldn't read colors file. Won't generate thumbnails or pse/pml files. "+e.getMessage(),true);
 		}		
 
 		try {
@@ -471,10 +471,10 @@ public class CRKMain {
 				for (ChainEvolContext cec:cecs.getAllChainEvolContext()) {
 					PdbChain chain = pdb.getChain(cec.getRepresentativeChainCode());
 					cec.setConservationScoresAsBfactors(chain);
-					File chainPdbFile = params.getOutputFile("."+cec.getRepresentativeChainCode()+CRKParams.ENTROPIES_FILE_SUFFIX+".pdb");
-					File chainPseFile = params.getOutputFile("."+cec.getRepresentativeChainCode()+CRKParams.ENTROPIES_FILE_SUFFIX+".pse");
-					File chainPmlFile = params.getOutputFile("."+cec.getRepresentativeChainCode()+CRKParams.ENTROPIES_FILE_SUFFIX+".pml");
-					File chainIconPngFile = params.getOutputFile("."+cec.getRepresentativeChainCode()+CRKParams.ENTROPIES_FILE_SUFFIX+".png");
+					File chainPdbFile = params.getOutputFile("."+cec.getRepresentativeChainCode()+EppicParams.ENTROPIES_FILE_SUFFIX+".pdb");
+					File chainPseFile = params.getOutputFile("."+cec.getRepresentativeChainCode()+EppicParams.ENTROPIES_FILE_SUFFIX+".pse");
+					File chainPmlFile = params.getOutputFile("."+cec.getRepresentativeChainCode()+EppicParams.ENTROPIES_FILE_SUFFIX+".pml");
+					File chainIconPngFile = params.getOutputFile("."+cec.getRepresentativeChainCode()+EppicParams.ENTROPIES_FILE_SUFFIX+".png");
 					chain.writeToPDBFileWithPdbChainCodes(chainPdbFile, params.isUsePdbResSer());
 					pr.generateChainPse(chain, interfaces, 
 							params.getCAcutoffForGeom(), params.getCAcutoffForZscore(), params.getMinAsaForSurface(),
@@ -482,22 +482,22 @@ public class CRKMain {
 							chainPseFile, 
 							chainPmlFile,
 							chainIconPngFile,
-							CRKParams.COLOR_ENTROPIES_ICON_WIDTH,
-							CRKParams.COLOR_ENTROPIES_ICON_HEIGHT,
+							EppicParams.COLOR_ENTROPIES_ICON_WIDTH,
+							EppicParams.COLOR_ENTROPIES_ICON_HEIGHT,
 							0,params.getMaxEntropy(),
 							params.isUsePdbResSer());
 				}
 			}
 			
 		} catch (IOException e) {
-			throw new CRKException(e, "Couldn't write thumbnails, PyMOL pse/pml files or jmol files. "+e.getMessage(),true);
+			throw new EppicException(e, "Couldn't write thumbnails, PyMOL pse/pml files or jmol files. "+e.getMessage(),true);
 		} catch (InterruptedException e) {
-			throw new CRKException(e, "Couldn't generate thumbnails, PyMOL pse/pml files or jmol files, pymol thread interrupted: "+e.getMessage(),true);
+			throw new EppicException(e, "Couldn't generate thumbnails, PyMOL pse/pml files or jmol files, pymol thread interrupted: "+e.getMessage(),true);
 		}
 
 	}
 
-	public void doCompressFiles() throws CRKException {
+	public void doCompressFiles() throws EppicException {
 		
 		if (interfaces.getNumInterfaces()==0) return;
 		
@@ -520,13 +520,13 @@ public class CRKMain {
 			if (params.isDoScoreEntropies()) {
 				for (ChainEvolContext cec:cecs.getAllChainEvolContext()) {
 					File pseFile = 
-							params.getOutputFile("."+cec.getRepresentativeChainCode()+CRKParams.ENTROPIES_FILE_SUFFIX+".pse");
+							params.getOutputFile("."+cec.getRepresentativeChainCode()+EppicParams.ENTROPIES_FILE_SUFFIX+".pse");
 					File gzipPseFile = 
-							params.getOutputFile("."+cec.getRepresentativeChainCode()+CRKParams.ENTROPIES_FILE_SUFFIX+".pse.gz");
+							params.getOutputFile("."+cec.getRepresentativeChainCode()+EppicParams.ENTROPIES_FILE_SUFFIX+".pse.gz");
 					File pdbFile = 
-							params.getOutputFile("."+cec.getRepresentativeChainCode()+CRKParams.ENTROPIES_FILE_SUFFIX+".pdb");
+							params.getOutputFile("."+cec.getRepresentativeChainCode()+EppicParams.ENTROPIES_FILE_SUFFIX+".pdb");
 					File gzipPdbFile = 
-							params.getOutputFile("."+cec.getRepresentativeChainCode()+CRKParams.ENTROPIES_FILE_SUFFIX+".pdb.gz");
+							params.getOutputFile("."+cec.getRepresentativeChainCode()+EppicParams.ENTROPIES_FILE_SUFFIX+".pdb.gz");
 					// pse
 					Goodies.gzipFile(pseFile, gzipPseFile);
 					pseFile.delete();
@@ -537,7 +537,7 @@ public class CRKMain {
 				}
 			}
 		} catch (IOException e) {
-			throw new CRKException(e, "PSE or PDB files could not be gzipped. "+e.getMessage(),true);
+			throw new EppicException(e, "PSE or PDB files could not be gzipped. "+e.getMessage(),true);
 		}
 		
 		try {
@@ -546,7 +546,7 @@ public class CRKMain {
 			File[] directoryContent = params.getOutDir().listFiles(new RegexFileFilter("^"+params.getBaseName()+"\\..*")); 
 
 			if (directoryContent==null) 
-				throw new CRKException(null, "Couldn't list files in dir "+params.getOutDir()+" for creating final .zip file", true);
+				throw new EppicException(null, "Couldn't list files in dir "+params.getOutDir()+" for creating final .zip file", true);
 			
 			byte[] buffer = new byte[1024];
 			ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream(zipFile));
@@ -586,14 +586,14 @@ public class CRKMain {
 				// also the main log file is needed to keep writing logs to it after compression and to check for errors in precomputing
 				if ( file.getName().endsWith(".pml") ||
 					 file.getName().endsWith(".interfaces") ||
-					 file.getName().endsWith(CRKParams.GEOMETRY_FILE_SUFFIX) ||
-					 file.getName().endsWith(CRKParams.CRSCORES_FILE_SUFFIX) ||
-					 file.getName().endsWith(CRKParams.CSSCORES_FILE_SUFFIX) ||
-					 file.getName().endsWith(CRKParams.COMBINED_FILE_SUFFIX) ||
-					 file.getName().endsWith(CRKParams.ENTROPIES_FILE_SUFFIX) ||
-					 file.getName().endsWith(CRKParams.PDB_BIOUNIT_ASSIGN_FILE_SUFFIX) ||
+					 file.getName().endsWith(EppicParams.GEOMETRY_FILE_SUFFIX) ||
+					 file.getName().endsWith(EppicParams.CRSCORES_FILE_SUFFIX) ||
+					 file.getName().endsWith(EppicParams.CSSCORES_FILE_SUFFIX) ||
+					 file.getName().endsWith(EppicParams.COMBINED_FILE_SUFFIX) ||
+					 file.getName().endsWith(EppicParams.ENTROPIES_FILE_SUFFIX) ||
+					 file.getName().endsWith(EppicParams.PDB_BIOUNIT_ASSIGN_FILE_SUFFIX) ||
 					 file.getName().endsWith(".fa") ||
-					 file.getName().endsWith(CRKParams.ENTROPIES_FILE_SUFFIX+".pdb.gz") ||
+					 file.getName().endsWith(EppicParams.ENTROPIES_FILE_SUFFIX+".pdb.gz") ||
 					 ( file.getName().endsWith(".log") && 
 					   !file.getName().substring(0, file.getName().lastIndexOf('.')).equals(params.getBaseName()) ) // i.e. .A.log but not main .log 
 						) {
@@ -606,16 +606,16 @@ public class CRKMain {
 			
 
 		} catch (IOException e) {
-			throw new CRKException(e, "Final .zip file couldn't be created. "+e.getMessage(),true);
+			throw new EppicException(e, "Final .zip file couldn't be created. "+e.getMessage(),true);
 		}
 	}
 	
-	private void writeFinishedFile() throws CRKException {
+	private void writeFinishedFile() throws EppicException {
 		try {
 			FileWriter fw = new FileWriter(new File(params.getOutDir(), "finished"));
 			fw.close();
 		} catch (IOException e) {
-			throw new CRKException(e, "Couldn't write the finished file", true);
+			throw new EppicException(e, "Couldn't write the finished file", true);
 		}
 	}
 	
@@ -629,7 +629,7 @@ public class CRKMain {
 		LOGGER.info(msg);
 	}
 	
-	public void doLoadEvolContextFromFile() throws CRKException {
+	public void doLoadEvolContextFromFile() throws EppicException {
 		if (interfaces.getNumInterfaces()==0) return;
 		
 		findUniqueChains();
@@ -639,15 +639,15 @@ public class CRKMain {
 			LOGGER.info("Loading chain evolutionary scores from file "+params.getChainEvContextSerFile());
 			cecs = (ChainEvolContextList)Goodies.readFromFile(params.getChainEvContextSerFile());
 		} catch (ClassNotFoundException e) {
-			throw new CRKException(e,"Couldn't load interface evolutionary context binary file: "+e.getMessage(),true);
+			throw new EppicException(e,"Couldn't load interface evolutionary context binary file: "+e.getMessage(),true);
 		} catch(IOException e) {
-			throw new CRKException(e,"Couldn't load interface evolutionary context binary file: "+e.getMessage(),true);
+			throw new EppicException(e,"Couldn't load interface evolutionary context binary file: "+e.getMessage(),true);
 		}
 
 		// TODO check whether this looks compatible with the interfaces that we have
 	}
 	
-	public void doFindEvolContext() throws CRKException {
+	public void doFindEvolContext() throws EppicException {
 		if (interfaces.getNumInterfaces()==0) return;
 		
 		findUniqueChains();
@@ -655,7 +655,7 @@ public class CRKMain {
 		try {
 			cecs = new ChainEvolContextList(pdb,params);
 		} catch (SQLException e) {
-			throw new CRKException(e,"Could not connect to local UniProt database server: "+e.getMessage(),true);
+			throw new EppicException(e,"Could not connect to local UniProt database server: "+e.getMessage(),true);
 		}
 		
 		// a) getting the uniprot ids corresponding to the query (the pdb sequence)
@@ -680,13 +680,13 @@ public class CRKMain {
 			try {
 				Goodies.serialize(params.getOutputFile(".chainevolcontext.dat"),cecs);
 			} catch (IOException e) {
-				throw new CRKException(e,"Couldn't write serialized ChainEvolContextList object to file: "+e.getMessage(),false);
+				throw new EppicException(e,"Couldn't write serialized ChainEvolContextList object to file: "+e.getMessage(),false);
 			}
 		}
 		
 	}
 	
-	public void doEvolScoring() throws CRKException {
+	public void doEvolScoring() throws EppicException {
 		if (interfaces.getNumInterfaces()==0) return;
 
 		iecList = new InterfaceEvolContextList(params.getJobName(), interfaces, cecs);
@@ -700,13 +700,13 @@ public class CRKMain {
 				iecList.setCoreRimScoreCutoff(params.getCoreRimScoreCutoff());
 				iecList.setCoreSurfScoreCutoff(params.getCoreSurfScoreCutoff());
 
-				PrintStream scoreEntrPS = new PrintStream(params.getOutputFile(CRKParams.CRSCORES_FILE_SUFFIX));
+				PrintStream scoreEntrPS = new PrintStream(params.getOutputFile(EppicParams.CRSCORES_FILE_SUFFIX));
 				iecList.scoreEntropy(false);
 				iecList.printScoresTable(scoreEntrPS);
 				scoreEntrPS.close();
 				
 				// z-scores
-				PrintStream scoreZscorePS = new PrintStream(params.getOutputFile(CRKParams.CSSCORES_FILE_SUFFIX));
+				PrintStream scoreZscorePS = new PrintStream(params.getOutputFile(EppicParams.CSSCORES_FILE_SUFFIX));
 				iecList.setZPredBsaToAsaCutoff(params.getCAcutoffForZscore(), params.getMinAsaForSurface()); // calls calcRimAndCores as well
 				iecList.scoreZscore();
 				iecList.printZscoresTable(scoreZscorePS);
@@ -716,14 +716,14 @@ public class CRKMain {
 				wuiAdaptor.add(iecList);
 				
 			} catch (IOException e) {
-				throw new CRKException(e, "Couldn't write interface evolutionary scores files. "+e.getMessage(),true);
+				throw new EppicException(e, "Couldn't write interface evolutionary scores files. "+e.getMessage(),true);
 			} 
 		}
 
 		
 	}
 	
-	public void doCombinedScoring() throws CRKException {
+	public void doCombinedScoring() throws EppicException {
 		if (interfaces.getNumInterfaces()==0) return;
 		
 		try {
@@ -731,7 +731,7 @@ public class CRKMain {
 
 			List<CombinedPredictor> cps = new ArrayList<CombinedPredictor>();
 
-			PrintStream scoreCombPS = new PrintStream(params.getOutputFile(CRKParams.COMBINED_FILE_SUFFIX));
+			PrintStream scoreCombPS = new PrintStream(params.getOutputFile(EppicParams.COMBINED_FILE_SUFFIX));
 			CombinedPredictor.printScoringHeaders(scoreCombPS);
 			for (int i=0;i<iecList.size();i++) {
 				CombinedPredictor cp = 
@@ -745,7 +745,7 @@ public class CRKMain {
 			wuiAdaptor.setCombinedPredictors(cps);
 
 		} catch (IOException e) {
-			throw new CRKException(e,"Couldn't write final combined scores file. "+e.getMessage(),true);
+			throw new EppicException(e,"Couldn't write final combined scores file. "+e.getMessage(),true);
 		}
 		params.getProgressLog().println("Done scoring");
 	}
@@ -771,12 +771,12 @@ public class CRKMain {
 		
 		long start = System.nanoTime();
 		
-		CRKMain crkMain = new CRKMain();
+		Main crkMain = new Main();
 
 		// we first parse command line and print errors to stderr (logging is not set up yet)
 		try {
 			crkMain.params.parseCommandLine(args);
-		} catch (CRKException e) {
+		} catch (EppicException e) {
 			System.err.println(e.getMessage());
 			e.exitIfFatal(1);
 		}
@@ -794,7 +794,7 @@ public class CRKMain {
 			
 			crkMain.setUpLogging();
 
-			LOGGER.info(CRKParams.PROGRAM_NAME+" version "+CRKParams.PROGRAM_VERSION);
+			LOGGER.info(EppicParams.PROGRAM_NAME+" version "+EppicParams.PROGRAM_VERSION);
 			
 			crkMain.loadConfigFile();
 			
@@ -854,7 +854,7 @@ public class CRKMain {
 			long end = System.nanoTime();
 			LOGGER.info("Finished successfully (total runtime "+((end-start)/1000000000L)+"s)");
 
-		} catch (CRKException e) {
+		} catch (EppicException e) {
 			e.log(LOGGER);
 			e.exitIfFatal(1);
 		} 
@@ -866,7 +866,7 @@ public class CRKMain {
 				stack+="\tat "+el.toString()+"\n";				
 			}
 			LOGGER.fatal("Unexpected error. Stack trace:\n"+e+"\n"+stack+
-					"\nPlease report a bug to "+CRKParams.CONTACT_EMAIL);
+					"\nPlease report a bug to "+EppicParams.CONTACT_EMAIL);
 			System.exit(1);
 		}
 		

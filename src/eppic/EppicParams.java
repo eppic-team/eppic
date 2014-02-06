@@ -1,4 +1,4 @@
-package crk;
+package eppic;
 
 import gnu.getopt.Getopt;
 
@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
 
 import owl.core.structure.AminoAcid;
 
-public class CRKParams {
+public class EppicParams {
 	
 	// CONSTANTS
 	public static final String     PROGRAM_NAME    = "eppic";
@@ -71,8 +71,8 @@ public class CRKParams {
 	public static final String     CLUSTERING_ATOM_TYPE = "CA";
 	
 	// PROPERTY FILES
-	protected static final InputStream COLORS_PROPERTIES_IS = CRKParams.class.getResourceAsStream("/resources/chain_colors.dat");
-	protected static final InputStream PYMOL_COLOR_MAPPINGS_IS = CRKParams.class.getResourceAsStream("/resources/pymol.colors");
+	protected static final InputStream COLORS_PROPERTIES_IS = EppicParams.class.getResourceAsStream("/resources/chain_colors.dat");
+	protected static final InputStream PYMOL_COLOR_MAPPINGS_IS = EppicParams.class.getResourceAsStream("/resources/pymol.colors");
 	
 	// DEFAULTS FOR COMMAND LINE PARAMETERS
 	public static final double    DEF_HOM_SOFT_ID_CUTOFF = 0.6;
@@ -250,7 +250,7 @@ public class CRKParams {
 	/**
 	 * 
 	 */
-	public CRKParams() {
+	public EppicParams() {
 		setDefaults();
 	}
 	
@@ -378,7 +378,7 @@ public class CRKParams {
 		}
 	}
 	
-	public void parseCommandLine(String[] args) throws CRKException {
+	public void parseCommandLine(String[] args) throws EppicException {
 		
 		String help = 
 		PROGRAM_NAME+" ver. "+PROGRAM_VERSION+"\n" +
@@ -446,14 +446,14 @@ public class CRKParams {
 
 	}
 
-	public void checkCommandLineInput() throws CRKException {
+	public void checkCommandLineInput() throws EppicException {
 		
 		if (pdbCode==null) {
-			throw new CRKException(null, "Missing argument -i", true);
+			throw new EppicException(null, "Missing argument -i", true);
 		}
 		
 		if (inFile!=null && !inFile.exists()){
-			throw new CRKException(null, "Given file "+inFile+" does not exist!", true);
+			throw new EppicException(null, "Given file "+inFile+" does not exist!", true);
 		}
 		
 		if (baseName==null) {
@@ -471,21 +471,21 @@ public class CRKParams {
 			try {
 				progressLog = new PrintStream(progressLogFile);
 			} catch (FileNotFoundException e) {
-				throw new CRKException(e, "Specified log file can not be written to: "+e.getMessage(), true);
+				throw new EppicException(e, "Specified log file can not be written to: "+e.getMessage(), true);
 			}
 		} 
 		
 		if (configFile!=null && !configFile.exists()) {
-			throw new CRKException(null, "Specified config file "+configFile+" doesn't exist",true);
+			throw new EppicException(null, "Specified config file "+configFile+" doesn't exist",true);
 		}
 		
 		if (!AminoAcid.isValidNumGroupsReducedAlphabet(reducedAlphabet)) {
-			throw new CRKException(null, "Invalid number of amino acid groups specified ("+reducedAlphabet+")", true);
+			throw new EppicException(null, "Invalid number of amino acid groups specified ("+reducedAlphabet+")", true);
 		}
 		
 		if (homologsSearchMode==null) {
 			// invalid string passed as homologs search mode
-			throw new CRKException(null, "Invalid string specified as homologs search mode (-H).", true);
+			throw new EppicException(null, "Invalid string specified as homologs search mode (-H).", true);
 		}
 		
 		if (homSoftIdCutoff<homHardIdCutoff) {
@@ -495,12 +495,12 @@ public class CRKParams {
 
 	}
 	
-	public void checkConfigFileInput() throws CRKException {
+	public void checkConfigFileInput() throws EppicException {
 		
 		if (!isInputAFile()) {
 			if (!isUseOnlinePdb()) {
 				if (localCifDir==null || ! new File(localCifDir).isDirectory()) {
-					throw new CRKException(null,
+					throw new EppicException(null,
 						"To be able to use PDB codes as input with -i option, a valid LOCAL_CIF_DIR must be set in config file. " +
 						"It must contain the PDB mmCIF compressed file repository as in "+DEF_PDB_FTP_CIF_URL+
 						". Alternatively you can set USE_ONLINE_PDB to true and the default PDB ftp server will be used (or the one set in PDB_FTP_CIF_URL)",true);
@@ -510,36 +510,36 @@ public class CRKParams {
 		
 		if (isDoScoreEntropies()) {
 			if (blastDbDir==null || ! new File(blastDbDir).isDirectory()) {
-				throw new CRKException(null,"BLAST_DB_DIR has not been set to a valid value in config file",true);
+				throw new EppicException(null,"BLAST_DB_DIR has not been set to a valid value in config file",true);
 			}
 			if (blastDb==null) {
-				throw new CRKException(null,"BLAST_DB has not been set to a valid value in config file",true);
+				throw new EppicException(null,"BLAST_DB has not been set to a valid value in config file",true);
 			} else {
 				// .00.xxx or .xxx with xxx one of phr, pin, psd, psi, psq
 				File dbFile1 = new File(blastDbDir,blastDb+".00.phr"); 
 				File dbFile2 = new File(blastDbDir,blastDb+".phr");
 				if (!dbFile1.exists() && !dbFile2.exists()){
-					throw new CRKException(null,dbFile1+" or "+dbFile2+" blast index files not present. Please set correct values of BLAST_DB_DIR and BLAST_DB in config file",true);
+					throw new EppicException(null,dbFile1+" or "+dbFile2+" blast index files not present. Please set correct values of BLAST_DB_DIR and BLAST_DB in config file",true);
 				}
 				
 			}
 			if (!blastpBin.exists()) {
-				throw new CRKException(null,"The BLASTP_BIN path given in config file does not exist: "+blastpBin,true);
+				throw new EppicException(null,"The BLASTP_BIN path given in config file does not exist: "+blastpBin,true);
 			}
 			if (!blastclustBin.exists()) {
-				throw new CRKException(null,"The BLASTCLUST_BIN path given in config file does not exist: "+blastclustBin,true);
+				throw new EppicException(null,"The BLASTCLUST_BIN path given in config file does not exist: "+blastclustBin,true);
 			}
 			if (! new File(blastDataDir).isDirectory()) {
-				throw new CRKException(null,"BLAST_DATA_DIR must be set to a valid value in config file. Directory "+blastDataDir+ " doesn't exist.",true);
+				throw new EppicException(null,"BLAST_DATA_DIR must be set to a valid value in config file. Directory "+blastDataDir+ " doesn't exist.",true);
 			} else if (! new File(blastDataDir,"BLOSUM62").exists()) {
-				throw new CRKException(null, "BLAST_DATA_DIR parameter in config file must be set to a dir containing a blast BLOSUM62 file. No BLOSUM62 file in "+blastDataDir, true);
+				throw new EppicException(null, "BLAST_DATA_DIR parameter in config file must be set to a dir containing a blast BLOSUM62 file. No BLOSUM62 file in "+blastDataDir, true);
 			}
 			
 			// alignment programs: we allow one and only one to be set
 			if (!tcoffeeBin.exists() && !clustaloBin.exists()) {
-				throw new CRKException(null,"Either TCOFFEE_BIN or CLUSTALO_BIN must be set to a valid value in config file.",true);
+				throw new EppicException(null,"Either TCOFFEE_BIN or CLUSTALO_BIN must be set to a valid value in config file.",true);
 			} else if (tcoffeeBin.exists() && clustaloBin.exists()){
-				throw new CRKException(null,"Both TCOFFEE_BIN and CLUSTALO_BIN are set in config file. Only one of the 2 programs can be set at the same time.",true);
+				throw new EppicException(null,"Both TCOFFEE_BIN and CLUSTALO_BIN are set in config file. Only one of the 2 programs can be set at the same time.",true);
 			}
 			if (tcoffeeBin.exists()) {
 				clustaloBin = null;

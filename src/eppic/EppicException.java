@@ -1,8 +1,8 @@
-package crk;
+package eppic;
 
 import org.apache.commons.logging.Log;
 
-public class CRKException extends Exception {
+public class EppicException extends Exception {
 
 	private static final long serialVersionUID = 1L;
 
@@ -10,7 +10,7 @@ public class CRKException extends Exception {
 	private String message;
 	private boolean fatal;
 	
-	public CRKException(Exception origException, String message, boolean fatal) {
+	public EppicException(Exception origException, String message, boolean fatal) {
 		this.origException = origException;
 		this.message = message;
 		this.fatal = fatal;

@@ -1,4 +1,4 @@
-package crk.predictors;
+package eppic.predictors;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,10 +11,9 @@ import org.apache.commons.math.stat.descriptive.moment.StandardDeviation;
 
 import owl.core.structure.InterfaceRimCore;
 import owl.core.structure.Residue;
-
-import crk.CRKParams;
-import crk.CallType;
-import crk.ScoringType;
+import eppic.EppicParams;
+import eppic.CallType;
+import eppic.ScoringType;
 
 public class EvolInterfZMemberPredictor implements InterfaceTypePredictor {
 	
@@ -90,22 +89,22 @@ public class EvolInterfZMemberPredictor implements InterfaceTypePredictor {
 			callReason = memberSerial+": there are only "+parent.getInterfaceEvolContext().getChainEvolContext(molecId).getNumHomologs()+
 					" homologs to calculate evolutionary scores (at least "+parent.getInterfaceEvolContext().getMinNumSeqs()+" required)";
 		}
-		else if (rimCore.getCoreSize()<CRKParams.MIN_NUMBER_CORE_RESIDUES_EVOL_SCORE) {
+		else if (rimCore.getCoreSize()<EppicParams.MIN_NUMBER_CORE_RESIDUES_EVOL_SCORE) {
 			call = CallType.NO_PREDICTION;
-			callReason = memberSerial+": not enough core residues to calculate evolutionary score (at least "+CRKParams.MIN_NUMBER_CORE_RESIDUES_EVOL_SCORE+" needed)";
+			callReason = memberSerial+": not enough core residues to calculate evolutionary score (at least "+EppicParams.MIN_NUMBER_CORE_RESIDUES_EVOL_SCORE+" needed)";
 		} 
 		else if (numSurfResidues<rimCore.getCoreSize()*NUM_RESIDUES_NOT_IN_INTERFACES_TOLERANCE) {
 			call = CallType.NO_PREDICTION;
 			callReason = memberSerial+": not enough residues in protein surface belonging to no interface, can't calculate the surface score distribution";
 		}
-		else if (((double)countsUnrelCoreRes/(double)rimCore.getCoreSize())>CRKParams.MAX_ALLOWED_UNREL_RES) {
+		else if (((double)countsUnrelCoreRes/(double)rimCore.getCoreSize())>EppicParams.MAX_ALLOWED_UNREL_RES) {
 			call = CallType.NO_PREDICTION;
 			LOGGER.info("Interface "+parent.getInterfaceEvolContext().getInterface().getId()+", member "+memberSerial+" calls NOPRED because there are not enough reliable core residues ("+
 					countsUnrelCoreRes+" unreliable residues out of "+rimCore.getCoreSize()+" residues in core)");
 			callReason = memberSerial+": there are not enough reliable core residues: "+
 					countsUnrelCoreRes+" unreliable out of "+rimCore.getCoreSize()+" in core";
 		}
-		else if (((double)countsUnrelNotInInterfacesRes/(double)numSurfResidues)>CRKParams.MAX_ALLOWED_UNREL_RES) {
+		else if (((double)countsUnrelNotInInterfacesRes/(double)numSurfResidues)>EppicParams.MAX_ALLOWED_UNREL_RES) {
 			call = CallType.NO_PREDICTION;
 			callReason = memberSerial+": not enough reliable residues in protein surface belonging to no interface: " +
 					countsUnrelNotInInterfacesRes+" unreliable residues out of "+
@@ -235,9 +234,9 @@ public class EvolInterfZMemberPredictor implements InterfaceTypePredictor {
 			zScore = (coreScore-mean)/sd;
 		} else {
 			if ((coreScore-mean)>0) {
-				zScore = CRKParams.SCORERATIO_INFINITY_VALUE;
+				zScore = EppicParams.SCORERATIO_INFINITY_VALUE;
 			} else if ((coreScore-mean)<0) {
-				zScore = -CRKParams.SCORERATIO_INFINITY_VALUE;
+				zScore = -EppicParams.SCORERATIO_INFINITY_VALUE;
 			} else {
 				zScore = Double.NaN;
 			}

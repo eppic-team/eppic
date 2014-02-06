@@ -1,5 +1,17 @@
 package analysis;
 
+import eppic.EppicParams;
+import eppic.CallType;
+import eppic.ChainEvolContextList;
+import eppic.InterfaceEvolContext;
+import eppic.InterfaceEvolContextList;
+import eppic.ScoringType;
+import eppic.predictors.CombinedCSGeomPredictor;
+import eppic.predictors.CombinedPredictor;
+import eppic.predictors.EvolInterfZPredictor;
+import eppic.predictors.EvolRimCorePredictor;
+import eppic.predictors.GeometryPredictor;
+import eppic.predictors.InterfaceTypePredictor;
 import gnu.getopt.Getopt;
 
 import java.io.File;
@@ -15,19 +27,6 @@ import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
-
-import crk.CRKParams;
-import crk.CallType;
-import crk.ChainEvolContextList;
-import crk.InterfaceEvolContext;
-import crk.InterfaceEvolContextList;
-import crk.ScoringType;
-import crk.predictors.CombinedCSGeomPredictor;
-import crk.predictors.CombinedPredictor;
-import crk.predictors.EvolInterfZPredictor;
-import crk.predictors.EvolRimCorePredictor;
-import crk.predictors.GeometryPredictor;
-import crk.predictors.InterfaceTypePredictor;
 
 import owl.core.structure.ChainInterface;
 import owl.core.structure.ChainInterfaceList;
@@ -53,19 +52,19 @@ public class CalcStats {
 	
 	private static final Logger ROOTLOGGER = Logger.getRootLogger();
 	
-	private static final int MIN_NUM_HOMOLOGS = CRKParams.DEF_MIN_NUM_SEQUENCES;
+	private static final int MIN_NUM_HOMOLOGS = EppicParams.DEF_MIN_NUM_SEQUENCES;
 	
-	private static final double DEFCORERIMCALLCUTOFF = CRKParams.DEF_CORERIM_SCORE_CUTOFF;
-	private static final int DEFMINNUMBERCORERESFORBIO = CRKParams.DEF_MIN_CORE_SIZE_FOR_BIO;
-	private static final double DEFZSCORECUTOFF = CRKParams.DEF_CORESURF_SCORE_CUTOFF;
+	private static final double DEFCORERIMCALLCUTOFF = EppicParams.DEF_CORERIM_SCORE_CUTOFF;
+	private static final int DEFMINNUMBERCORERESFORBIO = EppicParams.DEF_MIN_CORE_SIZE_FOR_BIO;
+	private static final double DEFZSCORECUTOFF = EppicParams.DEF_CORESURF_SCORE_CUTOFF;
 	
-	private static final double DEFCACUTOFF_FOR_G = CRKParams.DEF_CA_CUTOFF_FOR_GEOM;
-	private static final double DEFCACUTOFF_FOR_Z = CRKParams.DEF_CA_CUTOFF_FOR_ZSCORE;
-	private static final double DEFCACUTOFF_FOR_CR = CRKParams.DEF_CA_CUTOFF_FOR_RIMCORE;
+	private static final double DEFCACUTOFF_FOR_G = EppicParams.DEF_CA_CUTOFF_FOR_GEOM;
+	private static final double DEFCACUTOFF_FOR_Z = EppicParams.DEF_CA_CUTOFF_FOR_ZSCORE;
+	private static final double DEFCACUTOFF_FOR_CR = EppicParams.DEF_CA_CUTOFF_FOR_RIMCORE;
 	
-	private static final double DEF_MIN_ASA_FOR_SURFACE = CRKParams.DEF_MIN_ASA_FOR_SURFACE;
+	private static final double DEF_MIN_ASA_FOR_SURFACE = EppicParams.DEF_MIN_ASA_FOR_SURFACE;
 	
-	private static final boolean DEF_USE_PDB_RES_SER = CRKParams.DEF_USE_PDB_RES_SER;
+	private static final boolean DEF_USE_PDB_RES_SER = EppicParams.DEF_USE_PDB_RES_SER;
 		
 	private static final String UNKNOWN_TAXON = "Unknown";
 	

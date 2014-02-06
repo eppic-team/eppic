@@ -1,4 +1,4 @@
-package crk;
+package eppic;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -50,7 +50,7 @@ public class ChainEvolContextList implements Serializable {
 	private transient SiftsConnection siftsConn;
 
 	
-	public ChainEvolContextList(PdbAsymUnit pdb, CRKParams params) throws SQLException {
+	public ChainEvolContextList(PdbAsymUnit pdb, EppicParams params) throws SQLException {
 		this.pdb = pdb;
 		this.pdbName = params.getJobName();
 		
@@ -81,7 +81,7 @@ public class ChainEvolContextList implements Serializable {
 		
 	}
 	
-	public ChainEvolContextList(List<Sequence> sequences, CRKParams params) throws SQLException {
+	public ChainEvolContextList(List<Sequence> sequences, EppicParams params) throws SQLException {
 		this.pdb = null;
 		this.pdbName = null; // TODO check if this is correct, not tested
 		
@@ -184,7 +184,7 @@ public class ChainEvolContextList implements Serializable {
 		return this.siftsConn;
 	}
 	
-	public void retrieveQueryData(CRKParams params) throws CRKException {
+	public void retrieveQueryData(EppicParams params) throws EppicException {
 		params.getProgressLog().println("Finding query's UniProt mappings through SIFTS or blasting");
 		params.getProgressLog().print("chains: ");
 		for (ChainEvolContext chainEvCont:cecs.values()) {
@@ -193,11 +193,11 @@ public class ChainEvolContextList implements Serializable {
 				chainEvCont.retrieveQueryData(params);
 
 			} catch (BlastException e) {
-				throw new CRKException(e,"Couldn't run blast to retrieve query's UniProt mapping: "+e.getMessage(),true);
+				throw new EppicException(e,"Couldn't run blast to retrieve query's UniProt mapping: "+e.getMessage(),true);
 			} catch (IOException e) {
-				throw new CRKException(e,"Problems while retrieving query data: "+e.getMessage(),true);
+				throw new EppicException(e,"Problems while retrieving query data: "+e.getMessage(),true);
 			} catch (InterruptedException e) {
-				throw new CRKException(e,"Thread interrupted while running blast for retrieving query data: "+e.getMessage(),true);
+				throw new EppicException(e,"Thread interrupted while running blast for retrieving query data: "+e.getMessage(),true);
 			} catch (Exception e) { // for any kind of exceptions thrown while connecting through uniprot JAPI
 				String msg = null;
 				if (useLocalUniprot) {
@@ -205,13 +205,13 @@ public class ChainEvolContextList implements Serializable {
 				} else {
 					msg = "Problems while retrieving query data through UniProt JAPI. Make sure you have the latest UniProtJAPI jar, or otherwise that the UniProt server is up\n"+e.getMessage();
 				}
-				throw new CRKException(e, msg, true);
+				throw new EppicException(e, msg, true);
 			}
 		}
 		params.getProgressLog().println();
 	}
 	
-	public void retrieveHomologs(CRKParams params) throws CRKException {
+	public void retrieveHomologs(EppicParams params) throws EppicException {
 		
 		// 1) we find homologs by blasting
 		blastForHomologs(params);
@@ -234,7 +234,7 @@ public class ChainEvolContextList implements Serializable {
 
 	}
 	
-	private void blastForHomologs(CRKParams params) throws CRKException {
+	private void blastForHomologs(EppicParams params) throws EppicException {
 		params.getProgressLog().println("Blasting for homologs");
 		params.getProgressLog().print("chains: ");
 		for (ChainEvolContext chainEvCont:cecs.values()) {
@@ -248,20 +248,20 @@ public class ChainEvolContextList implements Serializable {
 				chainEvCont.blastForHomologs(params);
 
 			} catch (UniprotVerMisMatchException e) {
-				throw new CRKException(e, "Mismatch of Uniprot versions! "+e.getMessage(), true);
+				throw new EppicException(e, "Mismatch of Uniprot versions! "+e.getMessage(), true);
 			} catch (BlastException e) {
-				throw new CRKException(e,"Couldn't run blast to retrieve homologs: "+e.getMessage() ,true);
+				throw new EppicException(e,"Couldn't run blast to retrieve homologs: "+e.getMessage() ,true);
 			} catch (IOException e) {
-				throw new CRKException(e,"Problem while blasting for sequence homologs: "+e.getMessage(),true);
+				throw new EppicException(e,"Problem while blasting for sequence homologs: "+e.getMessage(),true);
 			} catch (InterruptedException e) {
-				throw new CRKException(e,"Thread interrupted while blasting for sequence homologs: "+e.getMessage(),true);
+				throw new EppicException(e,"Thread interrupted while blasting for sequence homologs: "+e.getMessage(),true);
 			}
 
 		}
 		params.getProgressLog().println();
 	}
 	
-	private void retrieveHomologsData(CRKParams params) throws CRKException {
+	private void retrieveHomologsData(EppicParams params) throws EppicException {
 		params.getProgressLog().println("Retrieving UniProtKB data");
 		params.getProgressLog().print("chains: ");
 		for (ChainEvolContext chainEvCont:cecs.values()) {
@@ -278,11 +278,11 @@ public class ChainEvolContextList implements Serializable {
 			try {
 				chainEvCont.retrieveHomologsData();
 			} catch (UniprotVerMisMatchException e) {
-				throw new CRKException(e, "Mismatch of UniProt versions! "+e.getMessage(), true);
+				throw new EppicException(e, "Mismatch of UniProt versions! "+e.getMessage(), true);
 			} catch (IOException e) {
-				throw new CRKException(e, "Problems while retrieving homologs data: "+e.getMessage(),true);
+				throw new EppicException(e, "Problems while retrieving homologs data: "+e.getMessage(),true);
 			} catch (SQLException e) {
-				throw new CRKException(e, "Problem while retrieving homologs data from UniProt local database: "+e.getMessage(), true);
+				throw new EppicException(e, "Problem while retrieving homologs data from UniProt local database: "+e.getMessage(), true);
 			} catch (Exception e) { // for any kind of exceptions thrown while connecting through uniprot JAPI
 				String msg = null;
 				if (useLocalUniprot) {
@@ -290,14 +290,14 @@ public class ChainEvolContextList implements Serializable {
 				} else {
 					msg = "Problems while retrieving homologs data through UniProt JAPI. Make sure you have the latest UniProtJAPI jar, or otherwise that the UniProt server is up\n"+e.getMessage();
 				}
-				throw new CRKException(e, msg, true);
+				throw new EppicException(e, msg, true);
 			}
 
 		}		
 		params.getProgressLog().println();
 	}
 	
-	private void applyIdentityCutoff(CRKParams params) throws CRKException {
+	private void applyIdentityCutoff(EppicParams params) throws EppicException {
 		
 		this.minNumSeqs = params.getMinNumSeqs();
 		this.maxNumSeqs = params.getMaxNumSeqs();
@@ -318,11 +318,11 @@ public class ChainEvolContextList implements Serializable {
 
 
 			} catch (IOException e) {
-				throw new CRKException(e, "Problems while running blastclust for redundancy reduction of homologs: "+e.getMessage(), true);
+				throw new EppicException(e, "Problems while running blastclust for redundancy reduction of homologs: "+e.getMessage(), true);
 			} catch (InterruptedException e) {
-				throw new CRKException(e, "Problems while running blastclust for redundancy reduction of homologs: "+e.getMessage(), true);
+				throw new EppicException(e, "Problems while running blastclust for redundancy reduction of homologs: "+e.getMessage(), true);
 			} catch (BlastException e) {
-				throw new CRKException(e, "Problems while running blastclust for redundancy reduction of homologs: "+e.getMessage(), true);
+				throw new EppicException(e, "Problems while running blastclust for redundancy reduction of homologs: "+e.getMessage(), true);
 			}
 
 			
@@ -340,7 +340,7 @@ public class ChainEvolContextList implements Serializable {
 		}
 	}
 	
-	private void filterIdenticalsToQuery(CRKParams params) {
+	private void filterIdenticalsToQuery(EppicParams params) {
 		for (ChainEvolContext chainEvCont:cecs.values()) {
 			if (!chainEvCont.hasQueryMatch()) {
 				// no query uniprot match, we do nothing with this sequence
@@ -352,7 +352,7 @@ public class ChainEvolContextList implements Serializable {
 		}
 	}
 	
-	public void align(CRKParams params) throws CRKException {
+	public void align(EppicParams params) throws EppicException {
 		
 		String alignProgram = params.getTcoffeeBin()==null?"clustalo":"t_coffee"; 
 		params.getProgressLog().println("Aligning protein sequences with "+ alignProgram);
@@ -367,18 +367,18 @@ public class ChainEvolContextList implements Serializable {
 			try {
 				chainEvCont.align(params);
 			} catch (IOException e) {
-				throw new CRKException(e, "Problems while running "+alignProgram+" to align protein sequences: "+e.getMessage(),true);
+				throw new EppicException(e, "Problems while running "+alignProgram+" to align protein sequences: "+e.getMessage(),true);
 			} catch (InterruptedException e) {
-				throw new CRKException(e, "Thread interrupted while running "+alignProgram+" to align protein sequences: "+e.getMessage(),true);
+				throw new EppicException(e, "Thread interrupted while running "+alignProgram+" to align protein sequences: "+e.getMessage(),true);
 			} catch (UniprotVerMisMatchException e) {
-				throw new CRKException(e, "Uniprot versions mismatch while trying to read cached alignment: "+e.getMessage(),true);
+				throw new EppicException(e, "Uniprot versions mismatch while trying to read cached alignment: "+e.getMessage(),true);
 			}
 
 		}
 		params.getProgressLog().println();
 	}
 	
-	public void writeSeqInfoToFiles(CRKParams params) {
+	public void writeSeqInfoToFiles(EppicParams params) {
 		for (ChainEvolContext chainEvCont:cecs.values()) {
 			if (!chainEvCont.hasQueryMatch()) {
 				// no query uniprot match, we do nothing with this sequence
@@ -407,7 +407,7 @@ public class ChainEvolContextList implements Serializable {
 		}
 	}
 	
-	public void computeEntropies(CRKParams params) {
+	public void computeEntropies(EppicParams params) {
 		for (ChainEvolContext chainEvCont:cecs.values()) {
 			if (!chainEvCont.hasQueryMatch()) {
 				// no query uniprot match, we do nothing with this sequence
@@ -418,7 +418,7 @@ public class ChainEvolContextList implements Serializable {
 		}
 	}
 	
-	public void writeEntropiesToFile(CRKParams params, PdbAsymUnit pdb) {
+	public void writeEntropiesToFile(EppicParams params, PdbAsymUnit pdb) {
 		for (ChainEvolContext chainEvCont:cecs.values()) {
 			if (!chainEvCont.hasQueryMatch()) {
 				// no query uniprot match, we do nothing with this sequence
@@ -428,7 +428,7 @@ public class ChainEvolContextList implements Serializable {
 			File outFile = null;
 			try {
 				// writing the conservation scores (entropies/kaks) log file
-				outFile = params.getOutputFile("."+chainEvCont.getRepresentativeChainCode()+CRKParams.ENTROPIES_FILE_SUFFIX);
+				outFile = params.getOutputFile("."+chainEvCont.getRepresentativeChainCode()+EppicParams.ENTROPIES_FILE_SUFFIX);
 				PrintStream conservScoLog = new PrintStream(outFile);
 				chainEvCont.printConservationScores(conservScoLog, ScoringType.ENTROPY, pdb);
 				conservScoLog.close();

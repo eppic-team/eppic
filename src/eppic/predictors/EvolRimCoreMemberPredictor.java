@@ -1,4 +1,4 @@
-package crk.predictors;
+package eppic.predictors;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,10 +8,9 @@ import org.apache.commons.logging.LogFactory;
 
 import owl.core.structure.InterfaceRimCore;
 import owl.core.structure.Residue;
-
-import crk.CRKParams;
-import crk.CallType;
-import crk.ScoringType;
+import eppic.EppicParams;
+import eppic.CallType;
+import eppic.ScoringType;
 
 public class EvolRimCoreMemberPredictor implements InterfaceTypePredictor {
 
@@ -86,18 +85,18 @@ public class EvolRimCoreMemberPredictor implements InterfaceTypePredictor {
 			call = CallType.NO_PREDICTION;
 			callReason = memberSerial+": could not calculate evolutionary scores";
 		}
-		else if (rimCore.getCoreSize()<CRKParams.MIN_NUMBER_CORE_RESIDUES_EVOL_SCORE) {
+		else if (rimCore.getCoreSize()<EppicParams.MIN_NUMBER_CORE_RESIDUES_EVOL_SCORE) {
 			call = CallType.NO_PREDICTION;
-			callReason = memberSerial+": not enough core residues to calculate evolutionary score (at least "+CRKParams.MIN_NUMBER_CORE_RESIDUES_EVOL_SCORE+" needed)";
+			callReason = memberSerial+": not enough core residues to calculate evolutionary score (at least "+EppicParams.MIN_NUMBER_CORE_RESIDUES_EVOL_SCORE+" needed)";
 		}
-		else if (((double)countsUnrelCoreRes/(double)rimCore.getCoreSize())>CRKParams.MAX_ALLOWED_UNREL_RES) {
+		else if (((double)countsUnrelCoreRes/(double)rimCore.getCoreSize())>EppicParams.MAX_ALLOWED_UNREL_RES) {
 			call = CallType.NO_PREDICTION;
 			LOGGER.info("Interface "+parent.getInterfaceEvolContext().getInterface().getId()+", member "+memberSerial+" calls NOPRED because there are not enough reliable core residues ("+
 					countsUnrelCoreRes+" unreliable residues out of "+rimCore.getCoreSize()+" residues in core)");
 			callReason = memberSerial+": there are not enough reliable core residues: "+
 					countsUnrelCoreRes+" unreliable out of "+rimCore.getCoreSize()+" in core";
 		}
-		else if (((double)countsUnrelRimRes/(double)rimCore.getRimSize())>CRKParams.MAX_ALLOWED_UNREL_RES) {
+		else if (((double)countsUnrelRimRes/(double)rimCore.getRimSize())>EppicParams.MAX_ALLOWED_UNREL_RES) {
 			call = CallType.NO_PREDICTION;
 			LOGGER.info("Interface "+parent.getInterfaceEvolContext().getInterface().getId()+", member "+memberSerial+" calls NOPRED because there are not enough reliable rim residues ("+
 					countsUnrelRimRes+" unreliable residues out of "+rimCore.getRimSize()+" residues in rim)");
@@ -152,7 +151,7 @@ public class EvolRimCoreMemberPredictor implements InterfaceTypePredictor {
 		rimScore  = parent.getInterfaceEvolContext().calcScore(rimCore.getRimResidues(), molecId, scoType, weighted);
 		coreScore = parent.getInterfaceEvolContext().calcScore(rimCore.getCoreResidues(),molecId, scoType, weighted);
 		if (rimScore==0) {
-			scoreRatio = CRKParams.SCORERATIO_INFINITY_VALUE;
+			scoreRatio = EppicParams.SCORERATIO_INFINITY_VALUE;
 		} else {
 			scoreRatio = coreScore/rimScore;
 		}

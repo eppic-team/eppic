@@ -1,5 +1,11 @@
 package analysis;
 
+import eppic.CallType;
+import eppic.ChainEvolContext;
+import eppic.ChainEvolContextList;
+import eppic.InterfaceEvolContext;
+import eppic.InterfaceEvolContextList;
+import eppic.ScoringType;
 import gnu.getopt.Getopt;
 
 import java.io.File;
@@ -16,13 +22,6 @@ import owl.core.structure.ChainInterface;
 import owl.core.structure.ChainInterfaceList;
 import owl.core.structure.PdbChain;
 import owl.core.structure.Residue;
-
-import crk.CallType;
-import crk.ChainEvolContext;
-import crk.ChainEvolContextList;
-import crk.InterfaceEvolContext;
-import crk.InterfaceEvolContextList;
-import crk.ScoringType;
 
 /**
  * Executable class to print ASA and entropies of a dataset in 

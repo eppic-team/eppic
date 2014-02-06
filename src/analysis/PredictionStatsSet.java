@@ -2,8 +2,8 @@ package analysis;
 
 import java.io.PrintStream;
 
-import crk.CallType;
-import crk.ScoringType;
+import eppic.CallType;
+import eppic.ScoringType;
 
 public class PredictionStatsSet {
 

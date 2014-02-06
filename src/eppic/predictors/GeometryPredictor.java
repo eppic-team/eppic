@@ -1,4 +1,4 @@
-package crk.predictors;
+package eppic.predictors;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -7,11 +7,9 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import crk.CRKParams;
-import crk.CallType;
-
 import edu.uci.ics.jung.graph.util.Pair;
-
+import eppic.EppicParams;
+import eppic.CallType;
 import owl.core.structure.AaResidue;
 import owl.core.structure.AminoAcid;
 import owl.core.structure.Atom;
@@ -59,7 +57,7 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 		List<Pair<Atom>> interactingPairs = getNonpolyInteractingPairs();
 		
 		// this will happen when we read from PISA, beware that the cutoff is similar to PISA's but not necessarily the same
-		if (interf.getAICGraph()==null) interf.calcAICGraph(CRKParams.INTERFACE_DIST_CUTOFF);
+		if (interf.getAICGraph()==null) interf.calcAICGraph(EppicParams.INTERFACE_DIST_CUTOFF);
 
 		// NOTE that we used to detect disulfide bridges here, but it is now moved to CombinedPredictor
 		// as we also need to check in the reference alignment whether the bridge is wild-type or artifact
@@ -266,9 +264,9 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 	private List<Pair<Atom>> getNonPolyContacts(PdbChain firstChain, PdbChain secondChain, PdbAsymUnit au) {
 		List<Pair<Atom>> pairs = new ArrayList<Pair<Atom>>();
 		for (PdbChain nonpoly:au.getNonPolyChains()) {
-			AICGraph graph1 = nonpoly.getAICGraph(firstChain, CRKParams.INTERFACE_DIST_CUTOFF);
+			AICGraph graph1 = nonpoly.getAICGraph(firstChain, EppicParams.INTERFACE_DIST_CUTOFF);
 			if (graph1.getEdgeCount()>0) {
-				AICGraph graph2 = nonpoly.getAICGraph(secondChain, CRKParams.INTERFACE_DIST_CUTOFF);
+				AICGraph graph2 = nonpoly.getAICGraph(secondChain, EppicParams.INTERFACE_DIST_CUTOFF);
 				if (graph2.getEdgeCount()>0) {
 					// the nonpoly chain is in contact with both firstChain and secondChain
 					// we check for atoms within a narrow cutoff in both sides -> electrostatic/covalent interactions
@@ -292,7 +290,7 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 		} else if (molecId==SECOND) {
 			molec = interf.getSecondMolecule();
 		}
-		if (molec.getFullLength()<=CRKParams.PEPTIDE_LENGTH_CUTOFF) {
+		if (molec.getFullLength()<=EppicParams.PEPTIDE_LENGTH_CUTOFF) {
 			double bsa = interf.getInterfaceArea();
 			String msg = "Ratio of interface area to ASA: "+
 					String.format("%4.2f", bsa/molec.getASA())+". "+

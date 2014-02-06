@@ -6,9 +6,8 @@ package analysis.pisa;
 import java.util.Map;
 import java.util.TreeMap;
 
-import crk.CRKParams;
-import crk.CallType;
-
+import eppic.EppicParams;
+import eppic.CallType;
 import owl.core.connections.pisa.PisaAsmSetList;
 import owl.core.connections.pisa.PisaAssembly;
 import owl.core.connections.pisa.PisaInterface;
@@ -62,10 +61,10 @@ public class PisaPdbData {
 
 	private void setEppicToPisaMap(){
 		pdb.removeHatoms();
-		ChainInterfaceList eppicInterfaces = pdb.getAllInterfaces(CRKParams.INTERFACE_DIST_CUTOFF, 
-				CRKParams.DEF_NSPHEREPOINTS_ASA_CALC, 1, true, false, 
-				CRKParams.DEF_MIN_SIZE_COFACTOR_FOR_ASA,
-				CRKParams.MIN_INTERFACE_AREA_TO_KEEP);
+		ChainInterfaceList eppicInterfaces = pdb.getAllInterfaces(EppicParams.INTERFACE_DIST_CUTOFF, 
+				EppicParams.DEF_NSPHEREPOINTS_ASA_CALC, 1, true, false, 
+				EppicParams.DEF_MIN_SIZE_COFACTOR_FOR_ASA,
+				EppicParams.MIN_INTERFACE_AREA_TO_KEEP);
 		
 		this.eppicToPisaInterfaceMap = createEppicToPisaMap(eppicInterfaces, this.pisaInterfaces);
 		
