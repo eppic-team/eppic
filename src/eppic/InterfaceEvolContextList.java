@@ -1,6 +1,5 @@
 package eppic;
 
-import java.io.PrintStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -18,17 +17,6 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 
 	private static final long serialVersionUID = 1L;
 	
-	private static final String IDENTIFIER_HEADER        = "# PDB identifier:";
-	private static final String SCORE_METHOD_HEADER 	 = "# Score method:";
-	private static final String MIN_NUM_SEQS_HEADER      = "# Min number homologs required:";
-	private static final String HOM_SOFT_ID_HEADER  	 = "# Sequence identity soft cutoff:";
-	private static final String HOM_HARD_ID_HEADER  	 = "# Sequence identity hard cutoff:";
-	private static final String QUERY_COV_HEADER    	 = "# Query coverage cutoff:";
-	private static final String MAX_NUM_SEQS_HEADER      = "# Max num sequences used:";
-	private static final String BIO_XTAL_CALL_HEADER     = "# Bio/xtal call core-rim cutoff:";
-	private static final String ZSCORE_CUTOFF_HEADER     = "# Bio/xtal call core-surface cutoff:";
-	private static final String BSA_TO_ASA_CUTOFF_HEADER = "# Core assignment cutoff:";
-	
 	
 	private List<InterfaceEvolContext> list;
 	private List<EvolRimCorePredictor> evolRimCorePredictors;
@@ -37,19 +25,9 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 	private ChainInterfaceList chainInterfList; // we keep the reference also to be able to call methods from it
 	private ChainEvolContextList cecs;
 		
-	private String pdbName;
 	private ScoringType scoType;
 
 	private int minNumSeqs;
-	private double homSoftIdCutoff;
-	private double homHardIdCutoff;
-	private double queryCovCutoff;
-	private int maxNumSeqs;
-	private double caCutoffForRimCore;
-	private double caCutoffForZscore;
-
-	private double coreRimScoreCutoff;
-	private double coreSurfScoreCutoff;
 	
 	private boolean usePdbResSer;
 	
@@ -62,12 +40,7 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 	 * @param cecs
 	 */
 	public InterfaceEvolContextList(String pdbName, ChainInterfaceList interfaces, ChainEvolContextList cecs) {
-		this.pdbName = pdbName;
 		this.minNumSeqs = cecs.getMinNumSeqs();
-		this.homSoftIdCutoff = cecs.getHomSoftIdCutoff();
-		this.homHardIdCutoff = cecs.getHomHardIdCutoff();
-		this.queryCovCutoff = cecs.getQueryCovCutoff();
-		this.maxNumSeqs = cecs.getMaxNumSeqs();
 				
 		
 		list = new ArrayList<InterfaceEvolContext>();
@@ -112,59 +85,33 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 		return list.iterator();
 	}
 	
-	public void scoreEntropy(boolean weighted) {
+	public void scoreEntropy() {
 		this.scoType = ScoringType.ENTROPY;
 		for (int i=0;i<list.size();i++) {
-			evolRimCorePredictors.get(i).scoreEntropy(weighted);
+			evolRimCorePredictors.get(i).computeScores();
 		}
 	}
 	
 	public void scoreZscore() {
 		this.scoType = ScoringType.ZSCORE;
 		for (int i=0;i<list.size();i++) {
-			evolInterfZPredictors.get(i).scoreEntropy();
+			evolInterfZPredictors.get(i).computeScores();
 		}
-	}
-	
-	public void printScoresTable(PrintStream ps) {
-		
-		printScoringParams(ps, false);
-		printScoringHeaders(ps);
-		
-		for (int i=0;i<list.size();i++) {
-			list.get(i).setMinNumSeqs(minNumSeqs);
-			evolRimCorePredictors.get(i).printScoresLine(ps);
-		}
-	}
-	
-	public void printZscoresTable(PrintStream ps) {
-		
-		printScoringParams(ps, true);
-		printZscoringHeaders(ps);
-		
-		for (int i=0;i<list.size();i++) {
-			list.get(i).setMinNumSeqs(minNumSeqs);
-			evolInterfZPredictors.get(i).printScoresLine(ps);
-		}
-		
 	}
 	
 	public void setCoreRimScoreCutoff(double coreRimScoreCutoff) {
-		this.coreRimScoreCutoff = coreRimScoreCutoff;
 		for (int i=0;i<list.size();i++) {
 			evolRimCorePredictors.get(i).setCallCutoff(coreRimScoreCutoff);	
 		}
 	}
 
 	public void setCoreSurfScoreCutoff(double coreSurfScoreCutoff) {
-		this.coreSurfScoreCutoff = coreSurfScoreCutoff;
 		for (int i=0;i<list.size();i++) {
 			evolInterfZPredictors.get(i).setCallCutoff(coreSurfScoreCutoff);
 		}
 	}
 
 	public void setRimCorePredBsaToAsaCutoff(double bsaToAsaCutoff, double minAsaForSurface) {
-		this.caCutoffForRimCore = bsaToAsaCutoff;
 		chainInterfList.calcRimAndCores(bsaToAsaCutoff, minAsaForSurface);
 		
 		for (int i=0;i<list.size();i++) {
@@ -173,7 +120,6 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 	}
 	
 	public void setZPredBsaToAsaCutoff(double bsaToAsaCutoff, double minAsaForSurface) {
-		this.caCutoffForZscore = bsaToAsaCutoff;
 		chainInterfList.calcRimAndCores(bsaToAsaCutoff, minAsaForSurface);
 		
 		for (int i=0;i<list.size();i++) {
@@ -219,42 +165,6 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 		}
 	}
 
-	private void printScoringParams(PrintStream ps, boolean zscore) {
-		ps.println(IDENTIFIER_HEADER+" "+pdbName);
-		ps.println(SCORE_METHOD_HEADER+" "+scoType.getName());
-		ps.println(MIN_NUM_SEQS_HEADER+" "+minNumSeqs);
-		ps.printf (HOM_SOFT_ID_HEADER+" %4.2f\n",homSoftIdCutoff);
-		ps.printf (HOM_HARD_ID_HEADER+" %4.2f\n",homHardIdCutoff);
-		ps.printf (QUERY_COV_HEADER+" %4.2f\n",queryCovCutoff);
-		ps.println(MAX_NUM_SEQS_HEADER+" "+maxNumSeqs);
-		if (!zscore) ps.printf (BIO_XTAL_CALL_HEADER+"  %4.2f\n",coreRimScoreCutoff);
-		if (zscore)  ps.printf (ZSCORE_CUTOFF_HEADER+" %5.2f\n",coreSurfScoreCutoff);
-		if (!zscore) ps.printf (BSA_TO_ASA_CUTOFF_HEADER+" %4.2f\n", caCutoffForRimCore);
-		if (zscore)  ps.printf (BSA_TO_ASA_CUTOFF_HEADER+" %4.2f\n", caCutoffForZscore);
-	}
-	
-	private static void printScoringHeaders(PrintStream ps) {
-		ps.printf("%15s\t%6s\t","interface","area");
-		ps.printf("%5s\t%5s\t%5s\t","size1", "size2","CA");
-		ps.printf("%2s\t%2s\t","n1","n2");
-		ps.printf("%5s\t%5s\t%5s\t%6s\t","core1","rim1","cr1","call1");
-		ps.printf("%5s\t%5s\t%5s\t%6s\t","core2","rim2","cr2","call2");
-		ps.printf("%6s\t%5s","call","score");
-		ps.println();
-	}
-	
-	private static void printZscoringHeaders(PrintStream ps) {
-		ps.printf("%15s\t%6s\t","interface","area");
-		ps.printf("%5s\t%5s\t%5s","size1", "size2","CA");
-		ps.print("\t");
-		ps.printf("%2s\t%2s\t","n1","n2");
-		ps.printf("%5s\t%5s\t%5s\t%5s\t%6s\t","core1","mean","sigma","cs1","call1");
-		ps.printf("%5s\t%5s\t%5s\t%5s\t%6s\t","core2","mean","sigma","cs2","call2");
-		ps.printf("%6s\t%5s","call","score");
-		ps.println();
-		
-	}
-	
 	public ChainEvolContextList getChainEvolContextList() {
 		return cecs;	
 	}

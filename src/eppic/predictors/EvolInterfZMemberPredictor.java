@@ -1,7 +1,9 @@
 package eppic.predictors;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -33,15 +35,17 @@ public class EvolInterfZMemberPredictor implements InterfaceTypePredictor {
 	private String callReason;
 	private List<String> warnings;
 
-	private double zScore; // cache of the last run scoreEntropy/scoreKaKs 
+	private double zScore;  
 	
-	//private ScoringType scoringType; // the type of the last scoring run (either kaks or entropy)
 	
 	private int molecId;
 
 	private double coreScore;
 	private double mean;
 	private double sd;
+	
+	private Map<String,Double> scoreDetails;
+
 	
 	public EvolInterfZMemberPredictor(EvolInterfZPredictor parent, int molecId) {
 		this.parent = parent;
@@ -139,25 +143,8 @@ public class EvolInterfZMemberPredictor implements InterfaceTypePredictor {
 		return warnings;
 	}
 	
-	/**
-	 * Calculates the entropy score for this interface member.
-	 * Subsequently use {@link #getCall()} and {@link #getScore()} to get the call and score
-	 */
-	public void scoreEntropy() {
+	public void computeScores() {
 		scoreInterfaceMember(ScoringType.ENTROPY);
-		//scoringType = ScoringType.ENTROPY;
-	}
-
-	public double getCoreScore() {
-		return coreScore;
-	}
-	
-	public double getMean() {
-		return mean;
-	}
-	
-	public double getSd() {
-		return sd;
 	}
 	
 	/**
@@ -167,6 +154,17 @@ public class EvolInterfZMemberPredictor implements InterfaceTypePredictor {
 	@Override
 	public double getScore() {
 		return zScore;
+	}
+	
+	public Map<String,Double> getScoreDetails() {
+		if (scoreDetails!=null) return scoreDetails;
+		
+		scoreDetails.put(EppicParams.SCORE_DETAIL_CS_AVG_CORE_SCORE, coreScore);
+		scoreDetails.put(EppicParams.SCORE_DETAIL_CS_SURFACE_MEAN, mean);
+		scoreDetails.put(EppicParams.SCORE_DETAIL_CS_SURFACE_SD, sd);
+		
+		scoreDetails = new HashMap<String,Double> ();
+		return scoreDetails;
 	}
 	
 	private double scoreInterfaceMember(ScoringType scoType) {

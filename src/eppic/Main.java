@@ -695,29 +695,19 @@ public class Main {
 		writeStep("Scoring Interfaces");
 		
 		if (params.isDoScoreEntropies()) {
-			try {
-				iecList.setRimCorePredBsaToAsaCutoff(params.getCAcutoffForRimCore(), params.getMinAsaForSurface()); // calls calcRimAndCores as well
-				iecList.setCoreRimScoreCutoff(params.getCoreRimScoreCutoff());
-				iecList.setCoreSurfScoreCutoff(params.getCoreSurfScoreCutoff());
+			
+			iecList.setRimCorePredBsaToAsaCutoff(params.getCAcutoffForRimCore(), params.getMinAsaForSurface()); // calls calcRimAndCores as well
+			iecList.setCoreRimScoreCutoff(params.getCoreRimScoreCutoff());
+			iecList.setCoreSurfScoreCutoff(params.getCoreSurfScoreCutoff());
+			iecList.scoreEntropy();
 
-				PrintStream scoreEntrPS = new PrintStream(params.getOutputFile(EppicParams.CRSCORES_FILE_SUFFIX));
-				iecList.scoreEntropy(false);
-				iecList.printScoresTable(scoreEntrPS);
-				scoreEntrPS.close();
+			// z-scores
+			iecList.setZPredBsaToAsaCutoff(params.getCAcutoffForZscore(), params.getMinAsaForSurface()); // calls calcRimAndCores as well
+			iecList.scoreZscore();
+
+			// note this adds also the entropies to the residue details
+			wuiAdaptor.add(iecList);
 				
-				// z-scores
-				PrintStream scoreZscorePS = new PrintStream(params.getOutputFile(EppicParams.CSSCORES_FILE_SUFFIX));
-				iecList.setZPredBsaToAsaCutoff(params.getCAcutoffForZscore(), params.getMinAsaForSurface()); // calls calcRimAndCores as well
-				iecList.scoreZscore();
-				iecList.printZscoresTable(scoreZscorePS);
-				scoreZscorePS.close();
-				
-				// note this adds also the entropies to the residue details
-				wuiAdaptor.add(iecList);
-				
-			} catch (IOException e) {
-				throw new EppicException(e, "Couldn't write interface evolutionary scores files. "+e.getMessage(),true);
-			} 
 		}
 
 		

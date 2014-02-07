@@ -14,77 +14,45 @@ public class InterfaceScoreItemDB implements Serializable
 	private String method;
 	private int id;
 	
-	private Double unweightedRim1Scores;
-	private Double unweightedCore1Scores;
-	private Double unweightedRatio1Scores;
-	private Double unweightedRim2Scores;
-	private Double unweightedCore2Scores;
-	private Double unweightedRatio2Scores;
-	private Double unweightedFinalScores; 
+	private Double score1;
 	
-	// we only have one call here: the one from the unweighted scores
+	private Double score2;
+	
+	private Double score; 
+	
 	private String callName;
 	private String callReason;
 	
 	private InterfaceItemDB interfaceItem;
 	
-	public InterfaceScoreItemDB()
-	{
-//		setUnweightedCore1Scores(0.0);
-//		setUnweightedCore2Scores(0.0);
-//		setUnweightedRim1Scores(0.0);
-//		setUnweightedRim2Scores(0.0);
-//		setUnweightedRatio1Scores(0.0);
-//		setUnweightedRatio2Scores(0.0);
-//		setUnweightedFinalScores(0.0);
+	public InterfaceScoreItemDB() {
 	}
 	
-	public InterfaceScoreItemDB(PDBScoreItemDB pdbScoreItem)
-	{
-//		this.pdbScoreItem = pdbScoreItem;
+	public InterfaceScoreItemDB(PDBScoreItemDB pdbScoreItem) {
 	}
 	
-	public Double getUnweightedRim1Scores() {
-		return unweightedRim1Scores;
+	public Double getScore1() {
+		return score1;
 	}
-	public void setUnweightedRim1Scores(Double unweightedRim1Scores) {
-		this.unweightedRim1Scores = unweightedRim1Scores;
+	
+	public void setScore1(Double score1) {
+		this.score1 = score1;
 	}
-	public Double getUnweightedCore1Scores() {
-		return unweightedCore1Scores;
+	
+	public Double getScore2() {
+		return score2;
 	}
-	public void setUnweightedCore1Scores(Double unweightedCore1Scores) {
-		this.unweightedCore1Scores = unweightedCore1Scores;
+	
+	public void setScore2(Double score2) {
+		this.score2 = score2;
 	}
-	public Double getUnweightedRatio1Scores() {
-		return unweightedRatio1Scores;
+	
+	public Double getScore() {
+		return score;
 	}
-	public void setUnweightedRatio1Scores(Double unweightedRatio1Scores) {
-		this.unweightedRatio1Scores = unweightedRatio1Scores;
-	}
-	public Double getUnweightedRim2Scores() {
-		return unweightedRim2Scores;
-	}
-	public void setUnweightedRim2Scores(Double unweightedRim2Scores) {
-		this.unweightedRim2Scores = unweightedRim2Scores;
-	}
-	public Double getUnweightedCore2Scores() {
-		return unweightedCore2Scores;
-	}
-	public void setUnweightedCore2Scores(Double unweightedCore2Scores) {
-		this.unweightedCore2Scores = unweightedCore2Scores;
-	}
-	public Double getUnweightedRatio2Scores() {
-		return unweightedRatio2Scores;
-	}
-	public void setUnweightedRatio2Scores(Double unweightedRatio2Scores) {
-		this.unweightedRatio2Scores = unweightedRatio2Scores;
-	}
-	public Double getUnweightedFinalScores() {
-		return unweightedFinalScores;
-	}
-	public void setUnweightedFinalScores(Double unweightedFinalScores) {
-		this.unweightedFinalScores = unweightedFinalScores;
+	
+	public void setScore(Double score) {
+		this.score = score;
 	}
 
 	public void setMethod(String method) {

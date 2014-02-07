@@ -1,7 +1,9 @@
 package eppic.predictors;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -26,6 +28,8 @@ public class EvolRimCoreMemberPredictor implements InterfaceTypePredictor {
 	private double coreScore;
 	private double rimScore;
 	private double scoreRatio;
+	
+	private Map<String,Double> scoreDetails;
 	
 	private CallType call;
 	
@@ -132,13 +136,9 @@ public class EvolRimCoreMemberPredictor implements InterfaceTypePredictor {
 		return warnings;
 	}
 	
-	/**
-	 * Calculates the entropy scores for this interface member.
-	 * Subsequently use {@link #getCall()} and {@link #getScore()} to get the call and score
-	 * @param weighted
-	 */
-	public void scoreEntropy(boolean weighted) {
-		scoreInterfaceMember(weighted, ScoringType.ENTROPY);
+	@Override
+	public void computeScores() {
+		scoreInterfaceMember(false, ScoringType.ENTROPY);
 	}
 	
 	private void scoreInterfaceMember(boolean weighted, ScoringType scoType) {	
@@ -166,12 +166,16 @@ public class EvolRimCoreMemberPredictor implements InterfaceTypePredictor {
 		return scoreRatio;
 	}
 	
-	public double getCoreScore() {
-		return coreScore;
-	}
-	
-	public double getRimScore() {
-		return rimScore;
+	@Override
+	public Map<String,Double> getScoreDetails() {
+		if (scoreDetails!=null) return scoreDetails; // we returned the cached one if already called 
+		
+		scoreDetails = new HashMap<String,Double>();
+		
+		scoreDetails.put(EppicParams.SCORE_DETAIL_CR_AVG_CORE_SCORE, coreScore);
+		scoreDetails.put(EppicParams.SCORE_DETAIL_CR_AVG_RIM_SCORE, rimScore);
+		
+		return scoreDetails;
 	}
 	
 	public void resetCall() {

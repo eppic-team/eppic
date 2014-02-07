@@ -1,8 +1,9 @@
 package eppic.predictors;
 
-import java.io.PrintStream;
+//import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import owl.core.structure.InterfaceRimCore;
 
@@ -29,16 +30,11 @@ public class EvolRimCorePredictor implements InterfaceTypePredictor {
 
 	private CallType call; // cached result of the last call to getCall(bioCutoff, xtalCutoff, homologsCutoff, minCoreSize, minMemberCoreSize)
 	
-	private ArrayList<Integer> bioCalls; // cache of the votes (lists of interface member indices)
-	private ArrayList<Integer> xtalCalls;
-	private ArrayList<Integer> noPredictCalls;
-
 	private double score; // cache of the last run final score (average of ratios of both sides) (filled by getCall)
 	
 	private double callCutoff;
 	
 	private ScoringType scoringType; // the type of the last scoring run (either kaks or entropy)
-	private boolean isScoreWeighted; // whether last scoring run was weighted/unweighted
 	
 	private double bsaToAsaCutoff;
 	private double minAsaForSurface;
@@ -82,44 +78,25 @@ public class EvolRimCorePredictor implements InterfaceTypePredictor {
 
 		if (call!=null) return call;
 		
-		// the votes with voters (no anonymous vote here!)
-		bioCalls = new ArrayList<Integer>();
-		xtalCalls = new ArrayList<Integer>();
-		noPredictCalls = new ArrayList<Integer>();
-
-		// cast your votes!
+		int countBio = 0;
+		int countXtal = 0;
+		int countNoPredict = 0;
+		
 		CallType member1Call = member1Pred.getCall();
 		CallType member2Call = member2Pred.getCall();
 		warnings.addAll(member1Pred.getWarnings());
 		warnings.addAll(member2Pred.getWarnings());
 		
 		// member1
-		if (member1Call == CallType.BIO) {
-			bioCalls.add(FIRST);
-		}
-		else if (member1Call == CallType.CRYSTAL) {
-			xtalCalls.add(FIRST);
-		}
-		else if (member1Call == CallType.NO_PREDICTION) {
-			noPredictCalls.add(FIRST);
-		}
+		if (member1Call == CallType.BIO) countBio++;
+		else if (member1Call == CallType.CRYSTAL) countXtal++;
+		else if (member1Call == CallType.NO_PREDICTION) countNoPredict++;
 		//member2
-		if (member2Call == CallType.BIO) {
-			bioCalls.add(SECOND);
-		}
-		else if (member2Call == CallType.CRYSTAL) {
-			xtalCalls.add(SECOND);
-		}
-		else if (member2Call == CallType.NO_PREDICTION) {
-			noPredictCalls.add(SECOND);
-		}
+		if (member2Call == CallType.BIO) countBio++;
+		else if (member2Call == CallType.CRYSTAL) countXtal++;
+		else if (member2Call == CallType.NO_PREDICTION) countNoPredict++;
 		
 
-		// decision time!
-		int countBio = bioCalls.size();
-		int countXtal = xtalCalls.size();
-		int countNoPredict = noPredictCalls.size();
-		
 		iec.getInterface().calcRimAndCore(bsaToAsaCutoff, minAsaForSurface);
 		InterfaceRimCore rimCore1 = iec.getInterface().getRimCore(0);
 		InterfaceRimCore rimCore2 = iec.getInterface().getRimCore(1);
@@ -139,9 +116,6 @@ public class EvolRimCorePredictor implements InterfaceTypePredictor {
 			call = CallType.NO_PREDICTION;
 			callReason = member1Pred.getCallReason()+"\n"+member2Pred.getCallReason();
 		} else if (countBio>countXtal) {
-			//TODO check the discrepancies among the 2 voters. The variance could be a measure of the confidence of the call
-			//TODO need to do a study about the correlation of scores in members of the same interface
-			//TODO it might be the case that there is good agreement and bad agreement would indicate things like a bio-mimicking crystal interface
 			call = CallType.BIO;
 			callReason = member1Pred.getCallReason()+"\n"+member2Pred.getCallReason();
 		} else if (countXtal>countBio) {
@@ -149,7 +123,6 @@ public class EvolRimCorePredictor implements InterfaceTypePredictor {
 			callReason = member1Pred.getCallReason()+"\n"+member2Pred.getCallReason(); 
 		} else if (countBio==countXtal) {
 			//TODO we are taking simply the average, is this the best solution?
-			// weighting is not done here, scores are calculated either weighted/non-weighted before
 			callReason = member1Pred.getCallReason()+"\n"+member2Pred.getCallReason();
 			if (score<=callCutoff) {
 				call = CallType.BIO;
@@ -178,15 +151,14 @@ public class EvolRimCorePredictor implements InterfaceTypePredictor {
 	/**
 	 * Calculates the entropy scores for this interface.
 	 * Subsequently use {@link #getCall()} and {@link #getScore()} to get the call and final score
-	 * @param weighted
 	 */
-	public void scoreEntropy(boolean weighted) {
+	public void computeScores() {
 		
-		member1Pred.scoreEntropy(weighted);
-		member2Pred.scoreEntropy(weighted);
+		member1Pred.computeScores();
+		member2Pred.computeScores();
 		
 		if (canDoFirstEntropyScoring() && canDoSecondEntropyScoring()) {
-			score = (member1Pred.getScore()+member2Pred.getScore())/2;
+			score = (member1Pred.getScore()+member2Pred.getScore())/2.0;
 		} else if (!canDoFirstEntropyScoring() && !canDoSecondEntropyScoring()) {
 			score = Double.NaN;
 		} else if (canDoFirstEntropyScoring()) {
@@ -195,7 +167,7 @@ public class EvolRimCorePredictor implements InterfaceTypePredictor {
 			score = member2Pred.getScore();
 		}
 		scoringType = ScoringType.ENTROPY;
-		isScoreWeighted = weighted;
+
 	}
 	
 	public ScoringType getScoringType() {
@@ -211,10 +183,12 @@ public class EvolRimCorePredictor implements InterfaceTypePredictor {
 		return score;
 	}
 	
-	public boolean isScoreWeighted() {
-		return this.isScoreWeighted;
+	@Override
+	public Map<String,Double> getScoreDetails() {
+		// no score details for this method (doesn't make so much sense to average core and rim scores)
+		return null;
 	}
-
+	
 	protected double getCallCutoff() {
 		return callCutoff;
 	}
@@ -236,52 +210,48 @@ public class EvolRimCorePredictor implements InterfaceTypePredictor {
 		return minAsaForSurface;
 	}
 	
-	private void printHomologsInfo(PrintStream ps) {
-		int numHoms1 = -1;
-		int numHoms2 = -1;
-		if (scoringType==ScoringType.ENTROPY) {
-			if (iec.isProtein(FIRST)) numHoms1 = iec.getFirstChainEvolContext().getNumHomologs();
-			if (iec.isProtein(SECOND)) numHoms2 = iec.getSecondChainEvolContext().getNumHomologs();
-		} 
-		ps.printf("%2d\t%2d\t",numHoms1,numHoms2);
-	}
+//	private void printHomologsInfo(PrintStream ps) {
+//		int numHoms1 = -1;
+//		int numHoms2 = -1;
+//		if (scoringType==ScoringType.ENTROPY) {
+//			if (iec.isProtein(FIRST)) numHoms1 = iec.getFirstChainEvolContext().getNumHomologs();
+//			if (iec.isProtein(SECOND)) numHoms2 = iec.getSecondChainEvolContext().getNumHomologs();
+//		} 
+//		ps.printf("%2d\t%2d\t",numHoms1,numHoms2);
+//	}
 	
-	private void printScores(PrintStream ps, CallType call) {
-		ps.printf("%5.2f\t%5.2f\t%5.2f\t%6s\t",
-				member1Pred.getCoreScore(), member1Pred.getRimScore(), member1Pred.getScore(),member1Pred.getCall().getName());
-		ps.printf("%5.2f\t%5.2f\t%5.2f\t%6s\t",
-				member2Pred.getCoreScore(), member2Pred.getRimScore(), member2Pred.getScore(),member2Pred.getCall().getName());
-		// call type, score, voters
-		ps.printf("%6s\t%5.2f", call.getName(),	this.getScore());
-		//ps.print(this.getVotersString());
-		String callReasonForPlainFileOutput = callReason.replace("\n", ", ");
-		ps.print("\t"+callReasonForPlainFileOutput);
-	}
+//	private void printScores(PrintStream ps, CallType call) {
+//		ps.printf("%5.2f\t%5.2f\t%5.2f\t%6s\t",
+//				member1Pred.getCoreScore(), member1Pred.getRimScore(), member1Pred.getScore(),member1Pred.getCall().getName());
+//		ps.printf("%5.2f\t%5.2f\t%5.2f\t%6s\t",
+//				member2Pred.getCoreScore(), member2Pred.getRimScore(), member2Pred.getScore(),member2Pred.getCall().getName());
+//		// call type, score, voters
+//		ps.printf("%6s\t%5.2f", call.getName(),	this.getScore());
+//		//ps.print(this.getVotersString());
+//		String callReasonForPlainFileOutput = callReason.replace("\n", ", ");
+//		ps.print("\t"+callReasonForPlainFileOutput);
+//	}
 	
-	public void printScoresLine(PrintStream ps) {
-		CallType call = getCall();
-		iec.getInterface().printRimCoreInfo(ps);
-		printHomologsInfo(ps);
-		printScores(ps, call);
-		ps.println();
-		if (!warnings.isEmpty()){
-			ps.println("  Warnings: ");
-			for (String warning:getWarnings()) {
-				ps.println("     "+warning);
-			}
-		}
-	}
+//	public void printScoresLine(PrintStream ps) {
+//		CallType call = getCall();
+//		iec.getInterface().printRimCoreInfo(ps);
+//		printHomologsInfo(ps);
+//		printScores(ps, call);
+//		ps.println();
+//		if (!warnings.isEmpty()){
+//			ps.println("  Warnings: ");
+//			for (String warning:getWarnings()) {
+//				ps.println("     "+warning);
+//			}
+//		}
+//	}
 	
 	public void resetCall() {
 		this.call = null;
 		this.scoringType = null;
 		this.warnings = new ArrayList<String>();
 		this.callReason = null;
-		this.bioCalls = new ArrayList<Integer>();
-		this.xtalCalls = new ArrayList<Integer>();
-		this.noPredictCalls = new ArrayList<Integer>();
 		this.score = -1;
-		this.isScoreWeighted = false;
 		this.member1Pred.resetCall();
 		this.member2Pred.resetCall();
 	}

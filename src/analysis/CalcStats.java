@@ -590,7 +590,7 @@ public class CalcStats {
 		ercp.setBsaToAsaCutoff(caCutoffsCR[i], minAsaForSurface);
 		
 		if (scoType==ScoringType.ENTROPY) {
-			ercp.scoreEntropy(false);
+			ercp.computeScores();
 		} 
 		
 		ercp.setCallCutoff(corerimCallCutoffs[k]);
@@ -631,7 +631,7 @@ public class CalcStats {
 		EvolInterfZPredictor eizp = new EvolInterfZPredictor(iec);
 		eizp.setBsaToAsaCutoff(caCutoffsZ[i], minAsaForSurface);
 		
-		eizp.scoreEntropy();
+		eizp.computeScores();
 		eizp.setCallCutoff(zscoreCutoffs[k]);
 		iec.setMinNumSeqs(MIN_NUM_HOMOLOGS);
 		
@@ -676,14 +676,14 @@ public class CalcStats {
 		//interf.calcRimAndCore(caCutoffsCR[i]);
 		EvolRimCorePredictor ercp = new EvolRimCorePredictor(iec);
 		ercp.setBsaToAsaCutoff(caCutoffsCR[i], minAsaForSurface);
-		ercp.scoreEntropy(false);
+		ercp.computeScores();
 		ercp.setCallCutoff(corerimCallCutoffs[k]);
 		iec.setMinNumSeqs(MIN_NUM_HOMOLOGS);
 		
 		//interf.calcRimAndCore(caCutoffsZ[l]);
 		EvolInterfZPredictor eizp = new EvolInterfZPredictor(iec);
 		eizp.setBsaToAsaCutoff(caCutoffsZ[l], minAsaForSurface);
-		eizp.scoreEntropy();
+		eizp.computeScores();
 		eizp.setCallCutoff(zscoreCutoffs[m]);
 		iec.setMinNumSeqs(MIN_NUM_HOMOLOGS);
 		

@@ -3,6 +3,7 @@ package eppic.predictors;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -45,20 +46,22 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 	}
 	
 	@Override
-	public CallType getCall() {
-		
-		if (call!=null) return call;
-		
+	public void computeScores() {
 		interf.calcRimAndCore(bsaToAsaCutoff, minAsaForSurface);
 		int size1 = interf.getFirstRimCore().getCoreSize();
 		int size2 = interf.getSecondRimCore().getCoreSize();
-		size = size1+size2;				
+		size = size1+size2;	
+	}
+	
+	@Override
+	public CallType getCall() {
+		
+		if (call!=null) return call;
+					
+		computeScores();
 		
 		List<Pair<Atom>> interactingPairs = getNonpolyInteractingPairs();
 		
-		// this will happen when we read from PISA, beware that the cutoff is similar to PISA's but not necessarily the same
-		if (interf.getAICGraph()==null) interf.calcAICGraph(EppicParams.INTERFACE_DIST_CUTOFF);
-
 		// NOTE that we used to detect disulfide bridges here, but it is now moved to CombinedPredictor
 		// as we also need to check in the reference alignment whether the bridge is wild-type or artifact
 		
@@ -166,6 +169,10 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 	@Override
 	public double getScore() {
 		return (double)size;
+	}
+	
+	public Map<String,Double> getScoreDetails() {
+		return null;
 	}
 	
 	private String getPairInteractionString(Pair<Atom> pair) {

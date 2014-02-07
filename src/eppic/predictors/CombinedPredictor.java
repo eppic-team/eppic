@@ -3,6 +3,7 @@ package eppic.predictors;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import owl.core.structure.Atom;
 import owl.core.structure.ChainInterface;
@@ -191,6 +192,17 @@ public class CombinedPredictor implements InterfaceTypePredictor {
 	@Override
 	public double getScore() {
 		return (double)votes;
+	}
+	
+	@Override
+	public void computeScores() {
+		// nothing to do here: count of votes is done in getCall 
+	}
+	
+	@Override
+	public Map<String,Double> getScoreDetails() {
+		// no details for this method
+		return null;
 	}
 
 	private int[] countCalls() {

@@ -343,17 +343,20 @@ public class WebUIDataAdaptor {
 
 			// In z-scores, core, rim and ratio scores don't make so much sense
 			// So we basically abuse them to carry all desired info to WUI:
-			// - core1/core2Scores: the surface sampling mean score for each side
-			// - rim1/rim2Scores: the surface sampling standard deviation for each side
-			// - ratio1/ratio2Scores: the z-scores for each side
+			// - core1/core2Score: the surface sampling mean score for each side
+			// - rim1/rim2Score: the surface sampling standard deviation for each side
+			// - score1/score2: the z-scores for each side
 			// - score: the average z-score
-			isiZ.setUnweightedCore1Scores(ezp.getMember1Predictor().getMean());
-			isiZ.setUnweightedCore2Scores(ezp.getMember2Predictor().getMean());
-			isiZ.setUnweightedRim1Scores(ezp.getMember1Predictor().getSd());
-			isiZ.setUnweightedRim2Scores(ezp.getMember2Predictor().getSd());
-			isiZ.setUnweightedRatio1Scores(ezp.getMember1Predictor().getScore());
-			isiZ.setUnweightedRatio2Scores(ezp.getMember2Predictor().getScore());
-			isiZ.setUnweightedFinalScores(ezp.getScore());				
+			
+			// TODO commenting out for now the extra info while we redo the model
+			//isiZ.setCore1Score(ezp.getMember1Predictor().getMean());
+			//isiZ.setCore2Score(ezp.getMember2Predictor().getMean());
+			//isiZ.setRim1Score(ezp.getMember1Predictor().getSd());
+			//isiZ.setRim2Score(ezp.getMember2Predictor().getSd());
+			
+			isiZ.setScore1(ezp.getMember1Predictor().getScore());
+			isiZ.setScore2(ezp.getMember2Predictor().getScore());
+			isiZ.setScore(ezp.getScore());				
 
 			
 			// 3) rim-core entropies
@@ -378,13 +381,15 @@ public class WebUIDataAdaptor {
 				}
 			}
 
-			isiRC.setUnweightedCore1Scores(ercp.getMember1Predictor().getCoreScore());
-			isiRC.setUnweightedCore2Scores(ercp.getMember2Predictor().getCoreScore());
-			isiRC.setUnweightedRim1Scores(ercp.getMember1Predictor().getRimScore());
-			isiRC.setUnweightedRim2Scores(ercp.getMember2Predictor().getRimScore());
-			isiRC.setUnweightedRatio1Scores(ercp.getMember1Predictor().getScore());
-			isiRC.setUnweightedRatio2Scores(ercp.getMember2Predictor().getScore());
-			isiRC.setUnweightedFinalScores(ercp.getScore());				
+			// TODO commenting out for now the extra info while we redo the model
+			//isiRC.setCore1Score(ercp.getMember1Predictor().getCoreScore());
+			//isiRC.setCore2Score(ercp.getMember2Predictor().getCoreScore());
+			//isiRC.setRim1Score(ercp.getMember1Predictor().getRimScore());
+			//isiRC.setRim2Score(ercp.getMember2Predictor().getRimScore());
+			
+			isiRC.setScore1(ercp.getMember1Predictor().getScore());
+			isiRC.setScore2(ercp.getMember2Predictor().getScore());
+			isiRC.setScore(ercp.getScore());				
 
 		}
 		
