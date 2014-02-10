@@ -136,6 +136,11 @@ public class ApplicationSettings implements Serializable {
 	 */
 	private double rfreeCutOff;
 	
+	/**
+	 * Cut off for max number of jobIds to be returned in one rest call
+	 */
+	private int maxXMLCalls;
+	
 	public ApplicationSettings()
 	{
 		this.scoresTypes = new ArrayList<SupportedMethod>();
@@ -509,6 +514,14 @@ public class ApplicationSettings implements Serializable {
 
 	public void setRfreeCutOff(double rfreeCutOff) {
 		this.rfreeCutOff = rfreeCutOff;
+	}
+
+	public int getMaxXMLCalls() {
+		return maxXMLCalls;
+	}
+
+	public void setMaxXMLCalls(int maxXMLCalls) {
+		this.maxXMLCalls = maxXMLCalls;
 	}
 
 	

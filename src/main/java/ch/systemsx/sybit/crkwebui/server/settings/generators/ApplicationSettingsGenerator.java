@@ -69,6 +69,16 @@ public class ApplicationSettingsGenerator
 			System.err.println("Warning: R-Free cut off value not found from the server properties file.");
 			rfreeCutOff = -2;
 		}
+		
+		int maxXMLCalls;
+		if(globalProperties.getProperty("max_jobs_in_one_call")!=null){
+			maxXMLCalls = Integer.parseInt(globalProperties.getProperty("max_jobs_in_one_call"));
+		}
+		else{
+			System.err.println("Warning: Max XML jobs value not found from the server properties file.");
+			maxXMLCalls = 1;
+		}
+		
 		settings.setCaptchaPublicKey(captchaPublicKey);
 		settings.setUseCaptcha(useCaptcha);
 		settings.setNrOfAllowedSubmissionsWithoutCaptcha(nrOfAllowedSubmissionsWithoutCaptcha);
@@ -85,6 +95,7 @@ public class ApplicationSettingsGenerator
 		settings.setDevelopmentMode(devMode);
 		settings.setResolutionCutOff(resolutionCutOff);
 		settings.setRfreeCutOff(rfreeCutOff);
+		settings.setMaxXMLCalls(maxXMLCalls);
 
 		settings.setResultsLocation(globalProperties.getProperty("results_location"));
 		return settings;

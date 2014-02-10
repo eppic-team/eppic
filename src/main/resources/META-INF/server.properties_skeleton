@@ -45,6 +45,9 @@ uniprot_version=2013_08
 resolution_cutoff=3.5
 rfree_cutoff=0.35
 
+#XML file settings
+max_jobs_in_one_call=5
+
 #Set true if you want to disable file upload and advanced input
 read_only_mode = true
 #Delete this property if you want to use queueing systems - in production 
