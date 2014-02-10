@@ -23,8 +23,8 @@
 
 	<filter>
 		<filter-name>GzipFilter</filter-name>
-		<filter-class>org.mortbay.servlet.jetty.IncludableGzipFilter</filter-class>
-		<!-- <filter-class>org.eclipse.jetty.servlets.GzipFilter</filter-class> -->
+		<!-- <filter-class>org.mortbay.servlet.jetty.IncludableGzipFilter</filter-class> -->
+		<filter-class>org.eclipse.jetty.servlets.GzipFilter</filter-class>
 		<!--  <filter-class>org.mortbay.servlet.GzipFilter</filter-class>  -->
 		<init-param>
 			<param-name>mimeTypes</param-name>
@@ -99,7 +99,7 @@
  	
  	<servlet-mapping>
 	    <servlet-name>DataDownloadService</servlet-name>
-	    <url-pattern>/ewui/dataDownload</url-pattern>
+	    <url-pattern>/dataDownload</url-pattern>
  	</servlet-mapping>
  	
  	<servlet-mapping>
