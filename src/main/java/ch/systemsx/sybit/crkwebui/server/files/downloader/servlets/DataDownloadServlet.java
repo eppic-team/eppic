@@ -88,7 +88,13 @@ public class DataDownloadServlet extends BaseServlet{
 				pdbList = new ArrayList<PDBScoreItem>();
 
 				for(String jobId:jobIds){
-					pdbList.add(getResultsOfProcessing(jobId));
+					if(jobId.contains("_")){
+						String[] splitStr = jobId.split("_");
+						List<Integer> interfaceIdList = createIntegerList(splitStr[1]);
+						pdbList.add(getResultsOfProcessing(splitStr[0], interfaceIdList));
+					} else {
+						pdbList.add(getResultsOfProcessing(jobId));
+					}
 				}
 
 			}
@@ -113,6 +119,29 @@ public class DataDownloadServlet extends BaseServlet{
 		}
 			}
 
+	/**
+	 * converts a string of integers separated by ':' to a list of integers
+	 * @param colonSeparatedString
+	 * @return list of integers
+	 * @throws ValidationException 
+	 */
+	private List<Integer> createIntegerList(String colonSeparatedString) throws ValidationException{
+		List<Integer> intList = new ArrayList<Integer>();
+		List<String> intStrList = Arrays.asList(colonSeparatedString.split("\\s*:\\s*"));
+		
+		for(String intStr: intStrList){
+			try{
+				int i = Integer.parseInt(intStr);
+				intList.add(i);
+			}catch(NumberFormatException e){
+				throw new ValidationException("Non-Integer interfaceId provided for some id");
+			}
+		}
+		
+		return intList;
+	}
+	
+	
 	/**
 	 * 
 	 * @param jobId
@@ -143,6 +172,37 @@ public class DataDownloadServlet extends BaseServlet{
 			throw new ValidationException("Nothing found with the provided id:"+ jobId);
 		}
 	}
+	
+	/**
+	 * 
+	 * @param jobId
+	 * @return
+	 * @throws Exception
+	 */
+	private PDBScoreItem getResultsOfProcessing(String jobId, List<Integer> interfaceIdList) throws Exception
+	{
+		String status = null;
+
+		JobDAO jobDAO = new JobDAOJpa();
+		status = jobDAO.getStatusForJob(jobId);
+
+		if(status != null)
+		{
+
+			if(status.equals(StatusOfJob.FINISHED.getName()))
+			{
+				return getResultData(jobId, interfaceIdList);
+			}
+			else
+			{
+				throw new ValidationException("Nothing found with the provided id:"+ jobId);
+			}
+		}
+		else
+		{
+			throw new ValidationException("Nothing found with the provided id:"+ jobId);
+		}
+	}
 
 	/**
 	 * Retrieves pdb score item for job.
@@ -160,6 +220,35 @@ public class DataDownloadServlet extends BaseServlet{
 
 		InterfaceItemDAO interfaceItemDAO = new InterfaceItemDAOJpa();
 		List<InterfaceItem> interfaceItems = interfaceItemDAO.getInterfacesWithScores(pdbScoreItem.getUid());
+		pdbScoreItem.setInterfaceItems(interfaceItems);
+
+		if(getSeqInfo){	
+			HomologsInfoItemDAO homologsInfoItemDAO = new HomologsInfoItemDAOJpa();
+			List<HomologsInfoItem> homologsInfoItems = homologsInfoItemDAO.getHomologsInfoItems(pdbScoreItem.getUid());
+			pdbScoreItem.setHomologsInfoItems(homologsInfoItems);
+		}
+		
+		pdbScoreItem.setInputType(inputType);
+
+		return pdbScoreItem;
+	}
+	
+	/**
+	 * Retrieves pdb score item for job.
+	 * @param jobId identifier of the job
+	 * @return pdb score item
+	 * @throws Exception when can not retrieve result of the job
+	 */
+	private PDBScoreItem getResultData(String jobId, List<Integer> interfaceIdList) throws Exception
+	{
+		JobDAO jobDAO = new JobDAOJpa();
+		int inputType = jobDAO.getInputTypeForJob(jobId);
+
+		PDBScoreDAO pdbScoreDAO = new PDBScoreDAOJpa();
+		PDBScoreItem pdbScoreItem = pdbScoreDAO.getPDBScore(jobId);
+
+		InterfaceItemDAO interfaceItemDAO = new InterfaceItemDAOJpa();
+		List<InterfaceItem> interfaceItems = interfaceItemDAO.getInterfacesWithScores(pdbScoreItem.getUid(), interfaceIdList);
 		pdbScoreItem.setInterfaceItems(interfaceItems);
 
 		if(getSeqInfo){	
