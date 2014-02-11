@@ -44,6 +44,7 @@ public class IPAllowedDAOJpa implements IPAllowedDAO
 //			Query query = entityManager.createQuery("SELECT nrOfAllowedSubmission from IPAllowed WHERE ip = :ip", Integer.class);
 //			query.setParameter("ip", ip);
 			
+			@SuppressWarnings("unchecked")
 			List<Integer> nrOfAllowedSubmissionsPerIPResult = query.getResultList();
 			
 			if((nrOfAllowedSubmissionsPerIPResult != null) && (nrOfAllowedSubmissionsPerIPResult.size() > 0))

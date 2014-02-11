@@ -93,6 +93,7 @@ public class UserSessionDAOJpa implements UserSessionDAO
 			criteriaQuery.select(sessionRoot);
 			
 			Query query = entityManager.createQuery(criteriaQuery);
+			@SuppressWarnings("unchecked")
 			List<UserSessionDB> sessions = query.getResultList();
 			
 			if((sessions != null) && (sessions.size() > 0))

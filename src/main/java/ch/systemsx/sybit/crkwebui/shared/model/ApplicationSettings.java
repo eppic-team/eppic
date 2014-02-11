@@ -482,8 +482,15 @@ public class ApplicationSettings implements Serializable {
 	public ScreenSettings getScreenSettings() {
 		return screenSettings;
 	}
-
 	
+	public String getSessionId() {
+		return sessionId;
+	}
+
+	public void setSessionId(String sessionId) {
+		this.sessionId = sessionId;
+	}
+
 	public void setReadOnlyMode(boolean readOnlyMode) {
 	    this.readOnlyMode = readOnlyMode;
 	}

@@ -4,7 +4,6 @@ import java.io.InputStream;
 import java.util.Map;
 import java.util.Properties;
 
-import ch.systemsx.sybit.crkwebui.server.commons.util.io.FileContentReader;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.ParsingException;
 import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
 
@@ -118,28 +117,6 @@ public class ApplicationSettingsGenerator
 		{
 			t.printStackTrace();
 			throw new ParsingException("Error during preparing input parameters");
-		}
-	}
-	
-	/**
-	 * Retrieves content of the page.
-	 * @param pageStream stream containing content of the page
-	 * @param pageName name of the page
-	 * @return content of the page
-	 * @throws ParsingException when can not properly prepare content of the page
-	 */
-	private String preparePageContent(InputStream pageStream,
-									  String pageName) throws ParsingException
-	{
-		try
-		{
-			String pageContent = FileContentReader.readContentOfFile(pageStream, true);
-			return pageContent;
-		}
-		catch(Throwable t)
-		{
-			t.printStackTrace();
-			throw new ParsingException("Error during preparing " + pageName + " page content");
 		}
 	}
 	

@@ -8,7 +8,6 @@ import javax.persistence.Query;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Path;
-import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
 import model.InterfaceItemDB;
@@ -47,6 +46,7 @@ public class InterfaceItemDAOJpa implements InterfaceItemDAO
 			
 			Query query = entityManager.createQuery(criteriaQuery);
 			
+			@SuppressWarnings("unchecked")
 			List<InterfaceItemDB> interfaceItemDBs = query.getResultList();
 			
 			for(InterfaceItemDB interfaceItemDB : interfaceItemDBs)
@@ -95,6 +95,7 @@ public class InterfaceItemDAOJpa implements InterfaceItemDAO
 			
 			Query query = entityManager.createQuery(criteriaQuery);
 			
+			@SuppressWarnings("unchecked")
 			List<InterfaceItemDB> interfaceItemDBs = query.getResultList();
 			
 			for(InterfaceItemDB interfaceItemDB : interfaceItemDBs)
@@ -146,6 +147,7 @@ public class InterfaceItemDAOJpa implements InterfaceItemDAO
 			
 			Query query = entityManager.createQuery(criteriaQuery);
 			
+			@SuppressWarnings("unchecked")
 			List<InterfaceItemDB> interfaceItemDBs = query.getResultList();
 			
 			for(InterfaceItemDB interfaceItemDB : interfaceItemDBs)
