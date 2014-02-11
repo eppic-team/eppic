@@ -99,7 +99,7 @@
  	
  	<servlet-mapping>
 	    <servlet-name>DataDownloadService</servlet-name>
-	    <url-pattern>/dataDownload</url-pattern>
+	    <url-pattern>/ewui/dataDownload</url-pattern>
  	</servlet-mapping>
  	
  	<servlet-mapping>
