@@ -3,9 +3,11 @@ package ch.systemsx.sybit.crkwebui.server.files.downloader.servlets;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
+import javax.persistence.PersistenceContext;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -15,37 +17,51 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 
 import ch.systemsx.sybit.crkwebui.server.commons.servlets.BaseServlet;
+import ch.systemsx.sybit.crkwebui.server.db.dao.DataDownloadIPDAO;
 import ch.systemsx.sybit.crkwebui.server.db.dao.HomologsInfoItemDAO;
 import ch.systemsx.sybit.crkwebui.server.db.dao.InterfaceItemDAO;
 import ch.systemsx.sybit.crkwebui.server.db.dao.JobDAO;
 import ch.systemsx.sybit.crkwebui.server.db.dao.PDBScoreDAO;
+import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.DataDownloadIPDAOJpa;
 import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.HomologsInfoItemDAOJpa;
 import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.InterfaceItemDAOJpa;
 import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.JobDAOJpa;
 import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.PDBScoreDAOJpa;
+import ch.systemsx.sybit.crkwebui.server.files.downloader.generators.JobListWithInterfacesGenerator;
+import ch.systemsx.sybit.crkwebui.server.files.downloader.validators.DataDownloadServletInputValidator;
+import ch.systemsx.sybit.crkwebui.server.ip.validators.IPVerifier;
+import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.ValidationException;
 import ch.systemsx.sybit.crkwebui.shared.model.HomologsInfoItem;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceItem;
 import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
-import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
 
+/**
+ * Servlet used to download results in xml format
+ * @author biyani_n
+ *
+ */
+@PersistenceContext(name="crkjpa", unitName="crkjpa")
 public class DataDownloadServlet extends BaseServlet{
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+	
 	private List<PDBScoreItem> pdbList;
-	private int maxXMLCalls;
-	private boolean getSeqInfo;
+	
+	//Parameters
+	private int maxNumJobIds;
+	private int defaultNrOfAllowedSubmissionsForIP;
 
 	@Override
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
-		if( (properties.getProperty("max_jobs_in_one_call")) != null)
-			maxXMLCalls = Integer.parseInt(properties.getProperty("max_jobs_in_one_call"));
-		else
-			maxXMLCalls = 1;
+		
+		maxNumJobIds = Integer.parseInt(properties.getProperty("max_jobs_in_one_call","1"));
+		defaultNrOfAllowedSubmissionsForIP = Integer.parseInt(properties.getProperty("nr_of_allowed_submissions_for_ip","100"));
+	
 	}
 
 	/**
@@ -56,59 +72,29 @@ public class DataDownloadServlet extends BaseServlet{
 			{
 		String type = request.getParameter("type");
 		String jobIdCommaSep = request.getParameter("id");
-		String getSeqInfoStr = request.getParameter("getSeqInfo");
+		String getSeqInfo = request.getParameter("getSeqInfo");
+		
+		String requestIP = request.getRemoteAddr();
 
 		try
 		{	
-			//Process download Sequence Info
-			if(getSeqInfoStr != null){
-				if (getSeqInfoStr.equals("f")){
-					getSeqInfo = false;
-				} else if(getSeqInfoStr.equals("t")){
-					getSeqInfo = true;
-				} else{
-					throw new ValidationException("Bad value provided with &getSeqInfo=  ; (allowed: t/f)");
-				}
-					
-			} else{
-				getSeqInfo = true;
-			}
+			addIPToDB(requestIP);
 			
-			//Process Job Id String
-			if(jobIdCommaSep==null) 
-				throw new ValidationException("Please provide comma seperated values of either PDB-Codes or EPPIC-JobIds with &id=");
-			else{
-				//Convert comma sep string to list
-				List<String> jobIds = Arrays.asList(jobIdCommaSep.split("\\s*,\\s*"));
-				
-				//Check for max number of jobs
-				if(jobIds.size() > maxXMLCalls)
-					throw new ValidationException("Exceded maximum number of jobs allowed to be retrived");
-				
-				pdbList = new ArrayList<PDBScoreItem>();
+			Map<String, List<Integer>> jobIdMap = JobListWithInterfacesGenerator.generateJobList(jobIdCommaSep);
+			
+			DataDownloadServletInputValidator.validateFileDownloadInput(type, jobIdMap, getSeqInfo, maxNumJobIds);
+			
+			IPVerifier.verifyIfCanBeSubmitted(requestIP, 
+										      defaultNrOfAllowedSubmissionsForIP, 
+										      true);
+			
+			pdbList = new ArrayList<PDBScoreItem>();
 
-				for(String jobId:jobIds){
-					if(jobId.contains("_")){
-						String[] splitStr = jobId.split("_");
-						List<Integer> interfaceIdList = createIntegerList(splitStr[1]);
-						pdbList.add(getResultsOfProcessing(splitStr[0], interfaceIdList));
-					} else {
-						pdbList.add(getResultsOfProcessing(jobId));
-					}
-				}
-
+			for(String jobId: jobIdMap.keySet()){
+				pdbList.add(getResultData(jobId, jobIdMap.get(jobId), getSeqInfo));
 			}
 
-			//Process Type of file
-			if(type == null){
-				throw new ValidationException("Please provide a value of file type to be downloaded with &type=");
-			}
-			else if(type.equals("xml")) {
-				createXMLFile(response);
-
-			} else {
-				throw new ValidationException("Data can not be downloaded in the format provided with &type=");
-			}
+			createXMLResponse(response);
 
 		}
 		catch(ValidationException e)
@@ -117,100 +103,26 @@ public class DataDownloadServlet extends BaseServlet{
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-			}
-
-	/**
-	 * converts a string of integers separated by ':' to a list of integers
-	 * @param colonSeparatedString
-	 * @return list of integers
-	 * @throws ValidationException 
-	 */
-	private List<Integer> createIntegerList(String colonSeparatedString) throws ValidationException{
-		List<Integer> intList = new ArrayList<Integer>();
-		List<String> intStrList = Arrays.asList(colonSeparatedString.split("\\s*:\\s*"));
-		
-		for(String intStr: intStrList){
-			try{
-				int i = Integer.parseInt(intStr);
-				intList.add(i);
-			}catch(NumberFormatException e){
-				throw new ValidationException("Non-Integer interfaceId provided for some id");
-			}
-		}
-		
-		return intList;
-	}
-	
-	
-	/**
-	 * 
-	 * @param jobId
-	 * @return
-	 * @throws Exception
-	 */
-	private PDBScoreItem getResultsOfProcessing(String jobId) throws Exception
-	{
-		String status = null;
-
-		JobDAO jobDAO = new JobDAOJpa();
-		status = jobDAO.getStatusForJob(jobId);
-
-		if(status != null)
-		{
-
-			if(status.equals(StatusOfJob.FINISHED.getName()))
-			{
-				return getResultData(jobId);
-			}
-			else
-			{
-				throw new ValidationException("Nothing found with the provided id:"+ jobId);
-			}
-		}
-		else
-		{
-			throw new ValidationException("Nothing found with the provided id:"+ jobId);
-		}
 	}
 	
 	/**
-	 * 
-	 * @param jobId
-	 * @return
-	 * @throws Exception
+	 * Inserts the ip to the DB
+	 * @param ip
+	 * @throws DaoException
 	 */
-	private PDBScoreItem getResultsOfProcessing(String jobId, List<Integer> interfaceIdList) throws Exception
-	{
-		String status = null;
-
-		JobDAO jobDAO = new JobDAOJpa();
-		status = jobDAO.getStatusForJob(jobId);
-
-		if(status != null)
-		{
-
-			if(status.equals(StatusOfJob.FINISHED.getName()))
-			{
-				return getResultData(jobId, interfaceIdList);
-			}
-			else
-			{
-				throw new ValidationException("Nothing found with the provided id:"+ jobId);
-			}
-		}
-		else
-		{
-			throw new ValidationException("Nothing found with the provided id:"+ jobId);
-		}
+	private void addIPToDB(String ip) throws DaoException{
+		DataDownloadIPDAO downloadDAO = new DataDownloadIPDAOJpa();
+		downloadDAO.insertNewIP(ip, new Date());
 	}
-
+	
 	/**
 	 * Retrieves pdb score item for job.
 	 * @param jobId identifier of the job
+	 * @param interfaceIdList list of interface ids to be retrieved (null for everything)
 	 * @return pdb score item
 	 * @throws Exception when can not retrieve result of the job
 	 */
-	private PDBScoreItem getResultData(String jobId) throws Exception
+	private PDBScoreItem getResultData(String jobId, List<Integer> interfaceIdList, String getSeqInfo) throws Exception
 	{
 		JobDAO jobDAO = new JobDAOJpa();
 		int inputType = jobDAO.getInputTypeForJob(jobId);
@@ -219,39 +131,15 @@ public class DataDownloadServlet extends BaseServlet{
 		PDBScoreItem pdbScoreItem = pdbScoreDAO.getPDBScore(jobId);
 
 		InterfaceItemDAO interfaceItemDAO = new InterfaceItemDAOJpa();
-		List<InterfaceItem> interfaceItems = interfaceItemDAO.getInterfacesWithScores(pdbScoreItem.getUid());
-		pdbScoreItem.setInterfaceItems(interfaceItems);
-
-		if(getSeqInfo){	
-			HomologsInfoItemDAO homologsInfoItemDAO = new HomologsInfoItemDAOJpa();
-			List<HomologsInfoItem> homologsInfoItems = homologsInfoItemDAO.getHomologsInfoItems(pdbScoreItem.getUid());
-			pdbScoreItem.setHomologsInfoItems(homologsInfoItems);
-		}
+		List<InterfaceItem> interfaceItems;
+		if(interfaceIdList != null)
+			interfaceItems = interfaceItemDAO.getInterfacesWithScores(pdbScoreItem.getUid(), interfaceIdList);
+		else
+			interfaceItems = interfaceItemDAO.getInterfacesWithScores(pdbScoreItem.getUid());
 		
-		pdbScoreItem.setInputType(inputType);
-
-		return pdbScoreItem;
-	}
-	
-	/**
-	 * Retrieves pdb score item for job.
-	 * @param jobId identifier of the job
-	 * @return pdb score item
-	 * @throws Exception when can not retrieve result of the job
-	 */
-	private PDBScoreItem getResultData(String jobId, List<Integer> interfaceIdList) throws Exception
-	{
-		JobDAO jobDAO = new JobDAOJpa();
-		int inputType = jobDAO.getInputTypeForJob(jobId);
-
-		PDBScoreDAO pdbScoreDAO = new PDBScoreDAOJpa();
-		PDBScoreItem pdbScoreItem = pdbScoreDAO.getPDBScore(jobId);
-
-		InterfaceItemDAO interfaceItemDAO = new InterfaceItemDAOJpa();
-		List<InterfaceItem> interfaceItems = interfaceItemDAO.getInterfacesWithScores(pdbScoreItem.getUid(), interfaceIdList);
 		pdbScoreItem.setInterfaceItems(interfaceItems);
 
-		if(getSeqInfo){	
+		if(getSeqInfo == null || getSeqInfo.equals("t")){	
 			HomologsInfoItemDAO homologsInfoItemDAO = new HomologsInfoItemDAOJpa();
 			List<HomologsInfoItem> homologsInfoItems = homologsInfoItemDAO.getHomologsInfoItems(pdbScoreItem.getUid());
 			pdbScoreItem.setHomologsInfoItems(homologsInfoItems);
@@ -264,10 +152,10 @@ public class DataDownloadServlet extends BaseServlet{
 
 	/**
 	 * converts the contents of the class to xml file
-	 * @param Stream to write xml file
+	 * @param response to write xml file
 	 * @throws IOException 
 	 */
-	public void createXMLFile(HttpServletResponse response) throws IOException{
+	public void createXMLResponse(HttpServletResponse response) throws IOException{
 
 		if(pdbList == null) return;
 
