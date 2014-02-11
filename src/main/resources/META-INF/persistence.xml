@@ -6,7 +6,7 @@
 		
 		<class>ch.systemsx.sybit.crkwebui.server.db.model.IPForbidden</class>
 		<class>ch.systemsx.sybit.crkwebui.server.db.model.IPAllowed</class>
-		<class>ch.systemsx.sybit.crkwebui.server.db.model.DataDownloadIP</class>
+		<class>ch.systemsx.sybit.crkwebui.server.db.model.DataDownloadTracking</class>
 		<validation-mode>NONE</validation-mode> 
 		<properties>
 			<property name="javax.persistence.jdbc.driver" value="com.mysql.jdbc.Driver" /> 
@@ -29,7 +29,7 @@
 
 		<class>ch.systemsx.sybit.crkwebui.server.db.model.IPForbidden</class>
 		<class>ch.systemsx.sybit.crkwebui.server.db.model.IPAllowed</class>
-		<class>ch.systemsx.sybit.crkwebui.server.db.model.DataDownloadIP</class>
+		<class>ch.systemsx.sybit.crkwebui.server.db.model.DataDownloadTracking</class>
 		<validation-mode>NONE</validation-mode>
 		<properties>
 			<property name="javax.persistence.jdbc.driver" value="com.mysql.jdbc.Driver" />

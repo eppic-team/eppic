@@ -9,8 +9,8 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Entity
-@Table(name="DataDownloadIP")
-public class DataDownloadIP{
+@Table(name="DataDownloadTracking")
+public class DataDownloadTracking{
 	
 	@Id
 	@GeneratedValue(strategy=GenerationType.AUTO)
@@ -20,7 +20,7 @@ public class DataDownloadIP{
 	private Date downloadDate;
 	
 	
-	public DataDownloadIP(String ip, Date downloadDate){
+	public DataDownloadTracking(String ip, Date downloadDate){
 		this.ip = ip;
 		this.downloadDate = downloadDate;
 	}

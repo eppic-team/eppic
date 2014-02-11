@@ -4,11 +4,11 @@ import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
-import ch.systemsx.sybit.crkwebui.server.db.dao.DataDownloadIPDAO;
+import ch.systemsx.sybit.crkwebui.server.db.dao.DataDownloadTrackingDAO;
 import ch.systemsx.sybit.crkwebui.server.db.dao.IPAllowedDAO;
 import ch.systemsx.sybit.crkwebui.server.db.dao.IPForbiddenDAO;
 import ch.systemsx.sybit.crkwebui.server.db.dao.JobDAO;
-import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.DataDownloadIPDAOJpa;
+import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.DataDownloadTrackingDAOJpa;
 import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.IPAllowedDAOJpa;
 import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.IPForbiddenDAOJpa;
 import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.JobDAOJpa;
@@ -72,7 +72,7 @@ public class IPVerifier
 				date = jobDAO.getOldestJobSubmissionDateDuringLastDay(ip);
 			}
 			else{
-				DataDownloadIPDAO downloadIPDAO = new DataDownloadIPDAOJpa();
+				DataDownloadTrackingDAO downloadIPDAO = new DataDownloadTrackingDAOJpa();
 				nrOfJobsForIPDuringLastDay = downloadIPDAO.getNrOfDownloadsForIPDuringLastDay(ip);
 				date = downloadIPDAO.getOldestJobDownloadDateDuringLastDay(ip);
 			}

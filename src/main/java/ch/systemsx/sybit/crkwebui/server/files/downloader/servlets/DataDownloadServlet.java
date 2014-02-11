@@ -17,12 +17,12 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 
 import ch.systemsx.sybit.crkwebui.server.commons.servlets.BaseServlet;
-import ch.systemsx.sybit.crkwebui.server.db.dao.DataDownloadIPDAO;
+import ch.systemsx.sybit.crkwebui.server.db.dao.DataDownloadTrackingDAO;
 import ch.systemsx.sybit.crkwebui.server.db.dao.HomologsInfoItemDAO;
 import ch.systemsx.sybit.crkwebui.server.db.dao.InterfaceItemDAO;
 import ch.systemsx.sybit.crkwebui.server.db.dao.JobDAO;
 import ch.systemsx.sybit.crkwebui.server.db.dao.PDBScoreDAO;
-import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.DataDownloadIPDAOJpa;
+import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.DataDownloadTrackingDAOJpa;
 import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.HomologsInfoItemDAOJpa;
 import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.InterfaceItemDAOJpa;
 import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.JobDAOJpa;
@@ -111,7 +111,7 @@ public class DataDownloadServlet extends BaseServlet{
 	 * @throws DaoException
 	 */
 	private void addIPToDB(String ip) throws DaoException{
-		DataDownloadIPDAO downloadDAO = new DataDownloadIPDAOJpa();
+		DataDownloadTrackingDAO downloadDAO = new DataDownloadTrackingDAOJpa();
 		downloadDAO.insertNewIP(ip, new Date());
 	}
 	

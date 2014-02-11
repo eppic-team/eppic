@@ -9,7 +9,7 @@ import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
  * @author biyani_n
  *
  */
-public interface DataDownloadIPDAO {
+public interface DataDownloadTrackingDAO {
 
 	/**
 	 * persists a new entry
