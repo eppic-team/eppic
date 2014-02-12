@@ -1,4 +1,4 @@
 <module>
   <inherits name='com.google.gwt.user.User'/>
-  <source path="model"></source>
+  <source path="eppic.model"></source>
 </module>
