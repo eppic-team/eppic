@@ -3,7 +3,7 @@ package ch.systemsx.sybit.crkwebui.server.db.entitylisteners;
 import javax.persistence.PostLoad;
 import javax.persistence.PrePersist;
 
-import model.InterfaceItemDB;
+import eppic.model.InterfaceItemDB;
 
 /**
  * Entity listener for InterfaceItem used to properly handle NaN and null values.

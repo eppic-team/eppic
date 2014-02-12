@@ -2,7 +2,7 @@ package ch.systemsx.sybit.crkwebui.shared.model;
 
 import java.io.Serializable;
 
-import model.WarningItemDB;
+import eppic.model.WarningItemDB;
 
 /**
  * DTO class for warning item entry.

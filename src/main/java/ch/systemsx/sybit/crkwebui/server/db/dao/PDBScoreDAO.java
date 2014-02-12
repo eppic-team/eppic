@@ -1,8 +1,8 @@
 package ch.systemsx.sybit.crkwebui.server.db.dao;
 
-import model.PDBScoreItemDB;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
 import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
+import eppic.model.PDBScoreItemDB;
 
 /**
  * DAO for PDBScore item.

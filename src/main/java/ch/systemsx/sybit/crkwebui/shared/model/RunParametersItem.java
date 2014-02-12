@@ -2,7 +2,7 @@ package ch.systemsx.sybit.crkwebui.shared.model;
 
 import java.io.Serializable;
 
-import model.RunParametersItemDB;
+import eppic.model.RunParametersItemDB;
 
 /**
  * DTO class for run parameters item entry.

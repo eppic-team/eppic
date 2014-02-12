@@ -5,7 +5,6 @@ import java.io.FileInputStream;
 import java.io.ObjectInputStream;
 import java.util.List;
 
-import model.PDBScoreItemDB;
 import ch.systemsx.sybit.crkwebui.server.commons.util.io.DirectoryContentReader;
 import ch.systemsx.sybit.crkwebui.server.commons.util.io.FileContentReader;
 import ch.systemsx.sybit.crkwebui.server.commons.util.log.LogHandler;
@@ -17,6 +16,7 @@ import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.DeserializationException;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.JobHandlerException;
 import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
+import eppic.model.PDBScoreItemDB;
 
 /**
  * Daemon used to update status of submitted jobs.

@@ -3,13 +3,13 @@ package ch.systemsx.sybit.crkwebui.server.db.dao;
 import java.util.Date;
 import java.util.List;
 
-import model.JobDB;
-import model.PDBScoreItemDB;
 import ch.systemsx.sybit.crkwebui.server.db.data.InputWithType;
 import ch.systemsx.sybit.crkwebui.server.db.data.JobStatusDetails;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
 import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
+import eppic.model.JobDB;
+import eppic.model.PDBScoreItemDB;
 
 /**
  * DAO interface for Job item.

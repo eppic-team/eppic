@@ -2,7 +2,7 @@ package ch.systemsx.sybit.crkwebui.shared.model;
 
 import java.io.Serializable;
 
-import model.QueryWarningItemDB;
+import eppic.model.QueryWarningItemDB;
 
 /**
  * DTO class for Query Warning item.

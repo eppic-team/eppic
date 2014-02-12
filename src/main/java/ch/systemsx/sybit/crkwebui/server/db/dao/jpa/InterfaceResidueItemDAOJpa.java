@@ -11,19 +11,19 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Root;
 
-import model.InterfaceItemDB;
 import model.InterfaceItemDB_;
-import model.InterfaceResidueItemDB;
 import model.InterfaceResidueItemDB_;
-import model.JobDB;
 import model.JobDB_;
-import model.PDBScoreItemDB;
 import model.PDBScoreItemDB_;
 import ch.systemsx.sybit.crkwebui.server.db.EntityManagerHandler;
 import ch.systemsx.sybit.crkwebui.server.db.dao.InterfaceResidueItemDAO;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResidueItem;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResiduesItemsList;
+import eppic.model.InterfaceItemDB;
+import eppic.model.InterfaceResidueItemDB;
+import eppic.model.JobDB;
+import eppic.model.PDBScoreItemDB;
 
 /**
  * Implementation of InterfaceResidueItemDAO.

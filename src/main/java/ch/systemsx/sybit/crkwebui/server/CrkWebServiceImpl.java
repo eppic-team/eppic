@@ -66,7 +66,7 @@ import ch.systemsx.sybit.crkwebui.shared.model.StepStatus;
 
 import com.google.gwt.user.server.rpc.XsrfProtectedServiceServlet;
 
-import crk.CRKParams;
+import eppic.EppicParams;
 
 /**
  * The server side implementation of the RPC service.
@@ -176,7 +176,7 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 
 		try
 		{
-			File crkPropertiesFile = new File(System.getProperty("user.home"), CRKParams.CONFIG_FILE_NAME);
+			File crkPropertiesFile = new File(System.getProperty("user.home"), EppicParams.CONFIG_FILE_NAME);
 			crkProperties.load(new FileInputStream(crkPropertiesFile));
 		}
 		catch (IOException e)

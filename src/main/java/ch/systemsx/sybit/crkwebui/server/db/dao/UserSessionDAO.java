@@ -2,8 +2,8 @@ package ch.systemsx.sybit.crkwebui.server.db.dao;
 
 import javax.persistence.EntityManager;
 
-import model.UserSessionDB;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
+import eppic.model.UserSessionDB;
 
 /**
  * DAO interface to manage sessions.

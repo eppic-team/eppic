@@ -2,7 +2,7 @@ package ch.systemsx.sybit.crkwebui.shared.model;
 
 import java.io.Serializable;
 
-import model.HomologItemDB;
+import eppic.model.HomologItemDB;
 
 /**
  * DTO class for HomologItem

@@ -11,14 +11,14 @@ import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
-import model.HomologsInfoItemDB;
 import model.HomologsInfoItemDB_;
-import model.PDBScoreItemDB;
 import model.PDBScoreItemDB_;
 import ch.systemsx.sybit.crkwebui.server.db.EntityManagerHandler;
 import ch.systemsx.sybit.crkwebui.server.db.dao.HomologsInfoItemDAO;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
 import ch.systemsx.sybit.crkwebui.shared.model.HomologsInfoItem;
+import eppic.model.HomologsInfoItemDB;
+import eppic.model.PDBScoreItemDB;
 
 /**
  * Implementation of HomologsInfoItemDAO.

@@ -13,10 +13,10 @@ import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
-import model.HomologsInfoItemDB;
-import model.InterfaceItemDB;
-import model.PDBScoreItemDB;
-import model.PdbBioUnitItemDB;
+import eppic.model.HomologsInfoItemDB;
+import eppic.model.InterfaceItemDB;
+import eppic.model.PDBScoreItemDB;
+import eppic.model.PdbBioUnitItemDB;
 
 /**
  * DTO class for PDBScore item.

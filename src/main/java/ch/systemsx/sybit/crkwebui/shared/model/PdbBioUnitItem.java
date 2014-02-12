@@ -2,7 +2,7 @@ package ch.systemsx.sybit.crkwebui.shared.model;
 
 import java.io.Serializable;
 
-import model.PdbBioUnitItemDB;
+import eppic.model.PdbBioUnitItemDB;
 
 
 public class PdbBioUnitItem implements Serializable {

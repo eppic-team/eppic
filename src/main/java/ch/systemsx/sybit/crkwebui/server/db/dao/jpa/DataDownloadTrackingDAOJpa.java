@@ -14,7 +14,7 @@ import javax.persistence.criteria.Root;
 import ch.systemsx.sybit.crkwebui.server.db.EntityManagerHandler;
 import ch.systemsx.sybit.crkwebui.server.db.dao.DataDownloadTrackingDAO;
 import ch.systemsx.sybit.crkwebui.server.db.model.DataDownloadTracking;
-import ch.systemsx.sybit.crkwebui.server.db.model.DataDownloadIP_;
+import ch.systemsx.sybit.crkwebui.server.db.model.DataDownloadTracking_;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
 
 public class DataDownloadTrackingDAOJpa implements DataDownloadTrackingDAO {
@@ -80,8 +80,8 @@ public class DataDownloadTrackingDAOJpa implements DataDownloadTrackingDAO {
 			CriteriaQuery<Long> criteriaQuery = criteriaBuilder.createQuery(Long.class);
 			Root<DataDownloadTracking> sessionRoot = criteriaQuery.from(DataDownloadTracking.class);
 			criteriaQuery.select(criteriaBuilder.count(sessionRoot));
-			Predicate ipCondition = criteriaBuilder.equal(sessionRoot.get(DataDownloadIP_.ip), ip);
-			Predicate dateCondition =  criteriaBuilder.greaterThan(sessionRoot.get(DataDownloadIP_.downloadDate), dayBeforeTimestamp);
+			Predicate ipCondition = criteriaBuilder.equal(sessionRoot.get(DataDownloadTracking_.ip), ip);
+			Predicate dateCondition =  criteriaBuilder.greaterThan(sessionRoot.get(DataDownloadTracking_.downloadDate), dayBeforeTimestamp);
 			Predicate condition = criteriaBuilder.and(ipCondition, dateCondition);
 			criteriaQuery.where(condition);
 			Query query = entityManager.createQuery(criteriaQuery);
@@ -125,10 +125,10 @@ public class DataDownloadTrackingDAOJpa implements DataDownloadTrackingDAO {
 			CriteriaQuery<Date> criteriaQuery = criteriaBuilder.createQuery(Date.class);
 			
 			Root<DataDownloadTracking> jobRoot = criteriaQuery.from(DataDownloadTracking.class);
-			criteriaQuery.select(criteriaBuilder.least(jobRoot.get(DataDownloadIP_.downloadDate)));
+			criteriaQuery.select(criteriaBuilder.least(jobRoot.get(DataDownloadTracking_.downloadDate)));
 			
-			Predicate ipCondition = criteriaBuilder.equal(jobRoot.get(DataDownloadIP_.ip), ip);
-			Predicate dateCondition = criteriaBuilder.greaterThan(jobRoot.get(DataDownloadIP_.downloadDate), dayBeforeTimestamp);
+			Predicate ipCondition = criteriaBuilder.equal(jobRoot.get(DataDownloadTracking_.ip), ip);
+			Predicate dateCondition = criteriaBuilder.greaterThan(jobRoot.get(DataDownloadTracking_.downloadDate), dayBeforeTimestamp);
 			Predicate condition = criteriaBuilder.and(ipCondition, dateCondition);
 			criteriaQuery.where(condition);
 			Query query = entityManager.createQuery(criteriaQuery);

@@ -2,7 +2,7 @@ package ch.systemsx.sybit.crkwebui.shared.model;
 
 import java.io.Serializable;
 
-import model.InterfaceScoreItemDB;
+import eppic.model.InterfaceScoreItemDB;
 
 /**
  * DTO class for InterfaceScore item.

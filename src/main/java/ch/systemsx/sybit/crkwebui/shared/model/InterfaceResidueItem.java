@@ -2,7 +2,7 @@ package ch.systemsx.sybit.crkwebui.shared.model;
 
 import java.io.Serializable;
 
-import model.InterfaceResidueItemDB;
+import eppic.model.InterfaceResidueItemDB;
 
 /**
  * DTO class for InterfaceResidue item.

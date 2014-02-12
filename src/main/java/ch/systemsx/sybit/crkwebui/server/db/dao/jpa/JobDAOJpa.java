@@ -16,10 +16,7 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.persistence.criteria.SetJoin;
 
-import model.JobDB;
 import model.JobDB_;
-import model.PDBScoreItemDB;
-import model.UserSessionDB;
 import model.UserSessionDB_;
 import ch.systemsx.sybit.crkwebui.server.db.EntityManagerHandler;
 import ch.systemsx.sybit.crkwebui.server.db.dao.JobDAO;
@@ -29,6 +26,9 @@ import ch.systemsx.sybit.crkwebui.server.db.data.JobStatusDetails;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
 import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
+import eppic.model.JobDB;
+import eppic.model.PDBScoreItemDB;
+import eppic.model.UserSessionDB;
 
 /**
  * Implementation of JobDAO.

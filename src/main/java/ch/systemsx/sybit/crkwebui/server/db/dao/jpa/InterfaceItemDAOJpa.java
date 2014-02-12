@@ -10,14 +10,14 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Root;
 
-import model.InterfaceItemDB;
 import model.InterfaceItemDB_;
-import model.PDBScoreItemDB;
 import model.PDBScoreItemDB_;
 import ch.systemsx.sybit.crkwebui.server.db.EntityManagerHandler;
 import ch.systemsx.sybit.crkwebui.server.db.dao.InterfaceItemDAO;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceItem;
+import eppic.model.InterfaceItemDB;
+import eppic.model.PDBScoreItemDB;
 
 /**
  * Implementation of InterfaceItemDAO.

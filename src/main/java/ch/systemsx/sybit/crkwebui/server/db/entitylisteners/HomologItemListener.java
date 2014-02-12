@@ -3,7 +3,7 @@ package ch.systemsx.sybit.crkwebui.server.db.entitylisteners;
 import javax.persistence.PostLoad;
 import javax.persistence.PrePersist;
 
-import model.HomologItemDB;
+import eppic.model.HomologItemDB;
 
 /**
  * Entity listener for HomologItem used to properly handle NaN and null values.

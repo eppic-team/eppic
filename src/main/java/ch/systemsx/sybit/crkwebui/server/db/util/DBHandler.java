@@ -19,12 +19,12 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
-import model.JobDB;
 import model.JobDB_;
-import model.PDBScoreItemDB;
 import model.PDBScoreItemDB_;
 import ch.systemsx.sybit.crkwebui.shared.model.InputType;
 import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
+import eppic.model.JobDB;
+import eppic.model.PDBScoreItemDB;
 
 /**
  * Class to perform operations on CRK database such as adding by job,

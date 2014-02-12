@@ -9,13 +9,13 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
-import model.JobDB;
 import model.JobDB_;
-import model.UserSessionDB;
 import model.UserSessionDB_;
 import ch.systemsx.sybit.crkwebui.server.db.EntityManagerHandler;
 import ch.systemsx.sybit.crkwebui.server.db.dao.UserSessionDAO;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
+import eppic.model.JobDB;
+import eppic.model.UserSessionDB;
 
 /**
  * Implementation of UserSessionDAO.

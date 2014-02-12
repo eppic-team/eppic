@@ -5,7 +5,7 @@ package ch.systemsx.sybit.crkwebui.shared.model;
 
 import java.io.Serializable;
 
-import model.PdbBioUnitAssignmentItemDB;
+import eppic.model.PdbBioUnitAssignmentItemDB;
 
 /**
  * @author biyani_n

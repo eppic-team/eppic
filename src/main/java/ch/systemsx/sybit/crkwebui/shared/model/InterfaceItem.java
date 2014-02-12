@@ -4,11 +4,11 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import model.InterfaceItemDB;
-import model.InterfaceResidueItemDB;
-import model.InterfaceScoreItemDB;
-import model.PdbBioUnitAssignmentItemDB;
-import model.WarningItemDB;
+import eppic.model.InterfaceItemDB;
+import eppic.model.InterfaceResidueItemDB;
+import eppic.model.InterfaceScoreItemDB;
+import eppic.model.PdbBioUnitAssignmentItemDB;
+import eppic.model.WarningItemDB;
 
 /**
  * DTO class for Interface item.

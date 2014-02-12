@@ -4,9 +4,9 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import model.HomologItemDB;
-import model.HomologsInfoItemDB;
-import model.QueryWarningItemDB;
+import eppic.model.HomologItemDB;
+import eppic.model.HomologsInfoItemDB;
+import eppic.model.QueryWarningItemDB;
 
 /**
  * DTO class for HomologsInfo item.
