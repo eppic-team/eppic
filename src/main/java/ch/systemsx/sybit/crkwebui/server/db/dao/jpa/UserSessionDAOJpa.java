@@ -9,8 +9,8 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
-import model.JobDB_;
-import model.UserSessionDB_;
+import eppic.model.JobDB_;
+import eppic.model.UserSessionDB_;
 import ch.systemsx.sybit.crkwebui.server.db.EntityManagerHandler;
 import ch.systemsx.sybit.crkwebui.server.db.dao.UserSessionDAO;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;

@@ -6,7 +6,7 @@
     <description>CRK JPA entities</description>
     <package>CRK entities</package>
 
-    <entity class="model.UserSessionDB" name="UserSession">
+    <entity class="eppic.model.UserSessionDB" name="UserSession">
         <table name="UserSession"/>
         <attributes>
         	<id name="uid">
@@ -24,7 +24,7 @@
         </attributes>
     </entity>
 
-    <entity class="model.JobDB" name="Job">
+    <entity class="eppic.model.JobDB" name="Job">
         <table name="Job"/>
         <attributes>
         	<id name="uid">
@@ -55,7 +55,7 @@
         </attributes>
     </entity>
 
-	<entity class="model.PDBScoreItemDB" name="PDBScoreItem">
+	<entity class="eppic.model.PDBScoreItemDB" name="PDBScoreItem">
         <table name="PdbScore"/>
         <attributes>
             <id name="uid">
@@ -111,7 +111,7 @@
         </attributes>
    </entity>
    
-   <entity class="model.PdbBioUnitItemDB" name="PdbBioUnitItem">
+   <entity class="eppic.model.PdbBioUnitItemDB" name="PdbBioUnitItem">
         <table name="PdbBioUnit"/>
         <attributes>
         	<id name="uid">
@@ -129,7 +129,7 @@
         </attributes>
    </entity>
 
-   <entity class="model.InterfaceItemDB" name="InterfaceItem">
+   <entity class="eppic.model.InterfaceItemDB" name="InterfaceItem">
         <table name="Interface"/>
         <entity-listeners>
         	<entity-listener class="ch.systemsx.sybit.crkwebui.server.db.entitylisteners.InterfaceItemListener">
@@ -202,7 +202,7 @@
         </attributes>
    </entity>
 
-   <entity class="model.InterfaceResidueItemDB" name="InterfaceResidueItem">
+   <entity class="eppic.model.InterfaceResidueItemDB" name="InterfaceResidueItem">
         <table name="InterfaceResidue"/>
         <entity-listeners>
         	<entity-listener class="ch.systemsx.sybit.crkwebui.server.db.entitylisteners.InterfaceResidueItemListener">
@@ -228,7 +228,7 @@
         </attributes>
    </entity>
 
-   <entity class="model.InterfaceScoreItemDB" name="InterfaceScoreItem">
+   <entity class="eppic.model.InterfaceScoreItemDB" name="InterfaceScoreItem">
         <table name="InterfaceScore"/>
         <entity-listeners>
         	<entity-listener class="ch.systemsx.sybit.crkwebui.server.db.entitylisteners.InterfaceScoreItemListener">
@@ -242,13 +242,9 @@
             	<column length="15"/>
             </basic>
             <basic name="id"></basic>
-            <basic name="unweightedRim1Scores"><column nullable="true"/></basic>
-            <basic name="unweightedCore1Scores"><column nullable="true"/></basic>
-            <basic name="unweightedRatio1Scores"><column nullable="true"/></basic>
-            <basic name="unweightedRim2Scores"><column nullable="true"/></basic>
-            <basic name="unweightedCore2Scores"><column nullable="true"/></basic>
-            <basic name="unweightedRatio2Scores"><column nullable="true"/></basic>
-            <basic name="unweightedFinalScores"><column nullable="true"/></basic>
+            <basic name="score1"><column nullable="true"/></basic>
+            <basic name="score2"><column nullable="true"/></basic>
+            <basic name="score"><column nullable="true"/></basic>
             <basic name="callName">
             	<column length="6"/>
             </basic>
@@ -262,7 +258,7 @@
         </attributes>
    </entity>
 
-   <entity class="model.PdbBioUnitAssignmentItemDB" name="PdbBioUnitAssignment">
+   <entity class="eppic.model.PdbBioUnitAssignmentItemDB" name="PdbBioUnitAssignment">
         <table name="PdbBioUnitAssignment"/>
         <attributes>
             <id name="uid">
@@ -282,7 +278,7 @@
         </attributes>
    </entity>
    
-   <entity class="model.WarningItemDB" name="WarningItem">
+   <entity class="eppic.model.WarningItemDB" name="WarningItem">
         <table name="Warning"/>
         <attributes>
             <id name="uid">
@@ -297,7 +293,7 @@
         </attributes>
    </entity>
 
-   <entity class="model.RunParametersItemDB" name="RunParametersItem">
+   <entity class="eppic.model.RunParametersItemDB" name="RunParametersItem">
         <table name="RunParameters"/>
         <attributes>
         	<id name="uid">
@@ -329,7 +325,7 @@
         </attributes>
    </entity>
 
-   <entity class="model.HomologsInfoItemDB" name="HomologsInfoItem">
+   <entity class="eppic.model.HomologsInfoItemDB" name="HomologsInfoItem">
         <table name="HomologsInfoItem"/>
         <entity-listeners>
         	<entity-listener class="ch.systemsx.sybit.crkwebui.server.db.entitylisteners.HomologsInfoItemListener">
@@ -374,7 +370,7 @@
         </attributes>
    </entity>
    
-   <entity class="model.HomologItemDB" name="HomologItem">
+   <entity class="eppic.model.HomologItemDB" name="HomologItem">
         <table name="HomologItem"/>
         <entity-listeners>
         	<entity-listener class="ch.systemsx.sybit.crkwebui.server.db.entitylisteners.HomologItemListener">
@@ -403,7 +399,7 @@
         </attributes>
    </entity>
 
-   <entity class="model.QueryWarningItemDB" name="QueryWarningItem">
+   <entity class="eppic.model.QueryWarningItemDB" name="QueryWarningItem">
         <table name="QueryWarning"/>
         <attributes>
             <id name="uid">

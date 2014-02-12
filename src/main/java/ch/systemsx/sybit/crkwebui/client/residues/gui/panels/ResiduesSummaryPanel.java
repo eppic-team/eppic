@@ -180,36 +180,38 @@ public class ResiduesSummaryPanel extends HorizontalLayoutContainer
 		coreSize = 0;
 		rimSize = 0;
 
+		// TODO:
+		// Once the model on how the scores are calculated is ready, refill the 0.0 with proper values
 		for (InterfaceScoreItem scoreItem : pdbScoreItem.getInterfaceItem(interfId).getInterfaceScores())
 		{
 			if(scoreItem.getMethod().equals("Entropy"))
 			{
 				if(structure == 1)
 				{
-					entropyCoreValue = scoreItem.getUnweightedCore1Scores();
-					entropyRimValue = scoreItem.getUnweightedRim1Scores();
-					entropyRatioValue = scoreItem.getUnweightedRatio1Scores();
+					entropyCoreValue = 0.0;
+					entropyRimValue = 0.0;
+					entropyRatioValue = scoreItem.getScore1();
 				}
 				else
 				{
-					entropyCoreValue = scoreItem.getUnweightedCore2Scores();
-					entropyRimValue = scoreItem.getUnweightedRim2Scores();
-					entropyRatioValue = scoreItem.getUnweightedRatio2Scores();
+					entropyCoreValue = 0.0;
+					entropyRimValue = 0.0;
+					entropyRatioValue = scoreItem.getScore2();
 				}
 			}
 			else if (scoreItem.getMethod().equals("Z-scores"))
 			{
 				if (structure == 1)
 				{
-					entropySurfSamplingMean = scoreItem.getUnweightedCore1Scores();
-					entropySurfSamplingSd = scoreItem.getUnweightedRim1Scores();
-					entropyZscore = scoreItem.getUnweightedRatio1Scores();
+					entropySurfSamplingMean = 0.0;
+					entropySurfSamplingSd = 0.0;
+					entropyZscore = scoreItem.getScore1();
 				} 
 				else 
 				{
-					entropySurfSamplingMean = scoreItem.getUnweightedCore2Scores();
-					entropySurfSamplingSd = scoreItem.getUnweightedRim2Scores();
-					entropyZscore = scoreItem.getUnweightedRatio2Scores();					
+					entropySurfSamplingMean = 0.0;
+					entropySurfSamplingSd = 0.0;
+					entropyZscore = scoreItem.getScore2();					
 				}
 
 			}

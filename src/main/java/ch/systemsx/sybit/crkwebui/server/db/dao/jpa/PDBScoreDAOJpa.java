@@ -8,8 +8,8 @@ import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
-import model.JobDB_;
-import model.PDBScoreItemDB_;
+import eppic.model.JobDB_;
+import eppic.model.PDBScoreItemDB_;
 import ch.systemsx.sybit.crkwebui.server.db.EntityManagerHandler;
 import ch.systemsx.sybit.crkwebui.server.db.dao.PDBScoreDAO;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;

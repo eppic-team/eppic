@@ -11,10 +11,10 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Root;
 
-import model.InterfaceItemDB_;
-import model.InterfaceResidueItemDB_;
-import model.JobDB_;
-import model.PDBScoreItemDB_;
+import eppic.model.InterfaceItemDB_;
+import eppic.model.InterfaceResidueItemDB_;
+import eppic.model.JobDB_;
+import eppic.model.PDBScoreItemDB_;
 import ch.systemsx.sybit.crkwebui.server.db.EntityManagerHandler;
 import ch.systemsx.sybit.crkwebui.server.db.dao.InterfaceResidueItemDAO;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
