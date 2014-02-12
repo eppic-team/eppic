@@ -46,6 +46,7 @@ public class InterfaceItemDAOJpa implements InterfaceItemDAO
 			
 			Query query = entityManager.createQuery(criteriaQuery);
 			
+			@SuppressWarnings("unchecked")
 			List<InterfaceItemDB> interfaceItemDBs = query.getResultList();
 			
 			for(InterfaceItemDB interfaceItemDB : interfaceItemDBs)
@@ -75,6 +76,58 @@ public class InterfaceItemDAOJpa implements InterfaceItemDAO
 	}
 	
 	@Override
+	public List<InterfaceItem> getInterfacesWithScores(int pdbScoreUid, List<Integer> interfaceIds)throws DaoException
+	{
+		EntityManager entityManager = null;
+		
+		try
+		{
+			List<InterfaceItem> result = new ArrayList<InterfaceItem>();
+			
+			entityManager = EntityManagerHandler.getEntityManager();
+			
+			CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+			CriteriaQuery<InterfaceItemDB> criteriaQuery = criteriaBuilder.createQuery(InterfaceItemDB.class);
+			
+			Root<InterfaceItemDB> interfaceItemRoot = criteriaQuery.from(InterfaceItemDB.class);
+			Path<PDBScoreItemDB> pdbScoreItemDB = interfaceItemRoot.get(InterfaceItemDB_.pdbScoreItem);
+			criteriaQuery.where(criteriaBuilder.equal(pdbScoreItemDB.get(PDBScoreItemDB_.uid), pdbScoreUid));
+			
+			Query query = entityManager.createQuery(criteriaQuery);
+			
+			@SuppressWarnings("unchecked")
+			List<InterfaceItemDB> interfaceItemDBs = query.getResultList();
+			
+			for(InterfaceItemDB interfaceItemDB : interfaceItemDBs)
+			{
+				interfaceItemDB.setInterfaceResidues(null);
+				if(interfaceIds.contains(interfaceItemDB.getId())){
+					result.add(InterfaceItem.create(interfaceItemDB));
+				}
+			}
+			
+			return result;
+		}
+		catch(Throwable e)
+		{
+			e.printStackTrace();
+			throw new DaoException(e);
+		}
+		finally
+		{
+			try
+			{
+				entityManager.close();
+			}
+			catch(Throwable t)
+			{
+				t.printStackTrace();
+			}
+		}
+		
+	}
+	
+	@Override
 	public List<InterfaceItem> getInterfacesWithResidues(int pdbScoreUid) throws DaoException
 	{
 		EntityManager entityManager = null;
@@ -94,6 +147,7 @@ public class InterfaceItemDAOJpa implements InterfaceItemDAO
 			
 			Query query = entityManager.createQuery(criteriaQuery);
 			
+			@SuppressWarnings("unchecked")
 			List<InterfaceItemDB> interfaceItemDBs = query.getResultList();
 			
 			for(InterfaceItemDB interfaceItemDB : interfaceItemDBs)

@@ -19,6 +19,7 @@ public class FileItemsGenerator
 		this.maxFileUploadSize = maxFileUploadSize;
 	}
 	
+	@SuppressWarnings("unchecked")
 	public List<FileItem> generateFileItems(HttpServletRequest request,
 			File localTmpDir) throws FileUploadException
 	{

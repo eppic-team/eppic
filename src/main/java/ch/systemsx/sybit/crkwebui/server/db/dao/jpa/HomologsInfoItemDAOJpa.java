@@ -46,6 +46,7 @@ public class HomologsInfoItemDAOJpa implements HomologsInfoItemDAO
 			criteriaQuery.where(condition);
 			
 			Query query = entityManager.createQuery(criteriaQuery);
+			@SuppressWarnings("unchecked")
 			List<HomologsInfoItemDB> numHomologsStringItemDBs = query.getResultList();
 			
 			for(HomologsInfoItemDB homologsInfoItemDB : numHomologsStringItemDBs)

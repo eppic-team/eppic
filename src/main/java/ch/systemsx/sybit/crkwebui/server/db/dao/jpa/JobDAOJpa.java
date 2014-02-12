@@ -165,6 +165,7 @@ public class JobDAOJpa implements JobDAO
 			criteriaQuery.select(sessionRoot);
 
 			Query query = entityManager.createQuery(criteriaQuery);
+			@SuppressWarnings("unchecked")
 			List<UserSessionDB> sessions = query.getResultList();
 
 			if(sessions != null)
@@ -225,6 +226,7 @@ public class JobDAOJpa implements JobDAO
 			criteriaQuery.select(jobRoot);
 
 			Query query = entityManager.createQuery(criteriaQuery);
+			@SuppressWarnings("unchecked")
 			List<JobDB> jobs = query.getResultList();
 
 			List<ProcessingInProgressData> processingInProgressDataList = null;
@@ -319,6 +321,7 @@ public class JobDAOJpa implements JobDAO
 //			Query query = entityManager.createQuery("SELECT status FROM Job WHERE jobId = :jobId", String.class);
 //			query.setParameter("jobId", jobId);
 			
+			@SuppressWarnings("unchecked")
 			List<String> result = query.getResultList();
 
 			if((result != null) && (result.size() > 0))
@@ -483,6 +486,7 @@ public class JobDAOJpa implements JobDAO
 
 			Date oldestJobSubmissionDateDuringLastDay  = new Date(dayBeforeTimestamp.getTime());
 
+			@SuppressWarnings("unchecked")
 			List<Date> oldestJobSubmissionDateDuringLastDayResult = query.getResultList();
 
 			if((oldestJobSubmissionDateDuringLastDayResult != null) &&
@@ -534,6 +538,7 @@ public class JobDAOJpa implements JobDAO
 			criteriaQuery.where(condition);
 
 			Query query = entityManager.createQuery(criteriaQuery);
+			@SuppressWarnings("unchecked")
 			List<UserSessionDB> sessionResult = query.getResultList();
 
 			if((sessionResult != null) && (sessionResult.size() > 0))
@@ -707,6 +712,7 @@ public class JobDAOJpa implements JobDAO
 			criteriaQuery.select(jobRoot);
 
 			Query query = entityManager.createQuery(criteriaQuery);
+			@SuppressWarnings("unchecked")
 			List<JobDB> jobs = query.getResultList();
 
 			List<JobStatusDetails> processingInProgressDataList = null;

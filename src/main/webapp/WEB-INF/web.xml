@@ -23,7 +23,7 @@
 
 	<filter>
 		<filter-name>GzipFilter</filter-name>
-		<!-- <filter-class>org.mortbay.servlet.jetty.IncludableGzipFilter</filter-class>  -->
+		<!-- <filter-class>org.mortbay.servlet.jetty.IncludableGzipFilter</filter-class> -->
 		<filter-class>org.eclipse.jetty.servlets.GzipFilter</filter-class>
 		<!--  <filter-class>org.mortbay.servlet.GzipFilter</filter-class>  -->
 		<init-param>
@@ -68,6 +68,11 @@
 	</servlet>
 	
 	<servlet>
+	    <servlet-name>DataDownloadService</servlet-name>
+	    <servlet-class>ch.systemsx.sybit.crkwebui.server.files.downloader.servlets.DataDownloadServlet</servlet-class>
+	</servlet>
+	
+	<servlet>
 	    <servlet-name>JmolViewerService</servlet-name>
 	    <servlet-class>ch.systemsx.sybit.crkwebui.server.jmol.servlets.JmolViewerServlet</servlet-class>
 	</servlet>
@@ -90,6 +95,11 @@
  	<servlet-mapping>
 	    <servlet-name>FileDownloadService</servlet-name>
 	    <url-pattern>/ewui/fileDownload</url-pattern>
+ 	</servlet-mapping>
+ 	
+ 	<servlet-mapping>
+	    <servlet-name>DataDownloadService</servlet-name>
+	    <url-pattern>/ewui/dataDownload</url-pattern>
  	</servlet-mapping>
  	
  	<servlet-mapping>

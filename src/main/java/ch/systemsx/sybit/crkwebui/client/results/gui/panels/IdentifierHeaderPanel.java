@@ -72,7 +72,7 @@ public class IdentifierHeaderPanel extends HorizontalLayoutContainer
 	public void setDownloadResultsLink(String jobId){
 
 		downloadResultsLink .changeData(AppPropertiesManager.CONSTANTS.info_panel_download_results_link(),
-				GWT.getModuleBaseURL() + "fileDownload?type=zip&id=" + jobId);
+				GWT.getModuleBaseURL() + "dataDownload?type=xml&id=" + jobId);
 
 	}
 	

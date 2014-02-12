@@ -136,6 +136,11 @@ public class ApplicationSettings implements Serializable {
 	 */
 	private double rfreeCutOff;
 	
+	/**
+	 * Cut off for max number of jobIds to be returned in one rest call
+	 */
+	private int maxXMLCalls;
+	
 	public ApplicationSettings()
 	{
 		this.scoresTypes = new ArrayList<SupportedMethod>();
@@ -477,8 +482,15 @@ public class ApplicationSettings implements Serializable {
 	public ScreenSettings getScreenSettings() {
 		return screenSettings;
 	}
-
 	
+	public String getSessionId() {
+		return sessionId;
+	}
+
+	public void setSessionId(String sessionId) {
+		this.sessionId = sessionId;
+	}
+
 	public void setReadOnlyMode(boolean readOnlyMode) {
 	    this.readOnlyMode = readOnlyMode;
 	}
@@ -509,6 +521,14 @@ public class ApplicationSettings implements Serializable {
 
 	public void setRfreeCutOff(double rfreeCutOff) {
 		this.rfreeCutOff = rfreeCutOff;
+	}
+
+	public int getMaxXMLCalls() {
+		return maxXMLCalls;
+	}
+
+	public void setMaxXMLCalls(int maxXMLCalls) {
+		this.maxXMLCalls = maxXMLCalls;
 	}
 
 	

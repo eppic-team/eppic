@@ -4,9 +4,11 @@ import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
+import ch.systemsx.sybit.crkwebui.server.db.dao.DataDownloadTrackingDAO;
 import ch.systemsx.sybit.crkwebui.server.db.dao.IPAllowedDAO;
 import ch.systemsx.sybit.crkwebui.server.db.dao.IPForbiddenDAO;
 import ch.systemsx.sybit.crkwebui.server.db.dao.JobDAO;
+import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.DataDownloadTrackingDAOJpa;
 import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.IPAllowedDAOJpa;
 import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.IPForbiddenDAOJpa;
 import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.JobDAOJpa;
@@ -21,13 +23,28 @@ public class IPVerifier
 {
 	/**
 	 * Checks whether job can be submitted from specified IP address
+	 * @param ip
+	 * @param defaultNrOfAllowedSubmissionsForIP
+	 * @throws ValidationException
+	 * @throws DaoException
+	 */
+	public static void verifyIfCanBeSubmitted(String ip,
+			  int defaultNrOfAllowedSubmissionsForIP) throws ValidationException, DaoException
+	{
+		verifyIfCanBeSubmitted(ip, defaultNrOfAllowedSubmissionsForIP, false);
+	}
+	
+	/**
+	 * Checks whether job can be submitted from specified IP address
 	 * @param ip ip address
-	 * @param defaultNrOfAllowedSubmissionsForIP default number of allowed submissions for IP address 
+	 * @param defaultNrOfAllowedSubmissionsForIP default number of allowed submissions for IP address 	 
+	 * @param verifyFromDownloads if the verification is to be done for datadownload servlet
 	 * @throws ValidationException when job can not be submitted
 	 * @throws DaoException when can not retrieve information from data storage
 	 */
 	public static void verifyIfCanBeSubmitted(String ip,
-											  int defaultNrOfAllowedSubmissionsForIP) throws ValidationException, DaoException
+											  int defaultNrOfAllowedSubmissionsForIP,
+											  boolean verifyFromDownloads) throws ValidationException, DaoException
 	{
 		IPForbiddenDAO ipForbiddenDAO = new IPForbiddenDAOJpa();
 		boolean isIpForbidden = ipForbiddenDAO.isIPForbidden(ip);
@@ -47,13 +64,23 @@ public class IPVerifier
 				nrOfAllowedSubmissionsForIPDuringOneDay = defaultNrOfAllowedSubmissionsForIP;
 			}
 			
-			JobDAO jobDAO = new JobDAOJpa();
-			long nrOfJobsForIPDuringLastDay = jobDAO.getNrOfJobsForIPDuringLastDay(ip);
+			long nrOfJobsForIPDuringLastDay;
+			Date date;
+			if(!verifyFromDownloads){
+				JobDAO jobDAO = new JobDAOJpa();
+				nrOfJobsForIPDuringLastDay = jobDAO.getNrOfJobsForIPDuringLastDay(ip);
+				date = jobDAO.getOldestJobSubmissionDateDuringLastDay(ip);
+			}
+			else{
+				DataDownloadTrackingDAO downloadIPDAO = new DataDownloadTrackingDAOJpa();
+				nrOfJobsForIPDuringLastDay = downloadIPDAO.getNrOfDownloadsForIPDuringLastDay(ip);
+				date = downloadIPDAO.getOldestJobDownloadDateDuringLastDay(ip);
+			}
 			
 			if(nrOfJobsForIPDuringLastDay >= nrOfAllowedSubmissionsForIPDuringOneDay)
 			{
 				Calendar calendar = Calendar.getInstance(); 
-				Date date = jobDAO.getOldestJobSubmissionDateDuringLastDay(ip);
+				
 				calendar.setTime(date);
 				calendar.add(Calendar.DATE, 1);
 				

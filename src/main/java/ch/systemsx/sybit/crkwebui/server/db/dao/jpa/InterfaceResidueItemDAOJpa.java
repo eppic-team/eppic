@@ -52,6 +52,7 @@ public class InterfaceResidueItemDAOJpa implements InterfaceResidueItemDAO
 			
 			Query query = entityManager.createQuery(criteriaQuery);
 			
+			@SuppressWarnings("unchecked")
 			List<InterfaceResidueItemDB> interfaceResidueItemDBs = query.getResultList();
 			
 			for(InterfaceResidueItemDB interfaceResidueItemDB : interfaceResidueItemDBs)
@@ -101,6 +102,7 @@ public class InterfaceResidueItemDAOJpa implements InterfaceResidueItemDAO
 			
 			Query query = entityManager.createQuery(criteriaQuery);
 			
+			@SuppressWarnings("unchecked")
 			List<InterfaceResidueItemDB> interfaceResidueItemDBs = query.getResultList();
 			
 			for(InterfaceResidueItemDB interfaceResidueItemDB : interfaceResidueItemDBs)

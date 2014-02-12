@@ -43,6 +43,7 @@ public class IPForbiddenDAOJpa implements IPForbiddenDAO
 			
 			boolean isIPForbidden = false;
 			
+			@SuppressWarnings("unchecked")
 			List<IPForbidden> ipForbidden = query.getResultList();
 			
 			if((ipForbidden != null) && (ipForbidden.size() > 0))

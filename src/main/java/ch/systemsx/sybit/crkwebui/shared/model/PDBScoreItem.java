@@ -5,6 +5,14 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlType;
+
 import model.HomologsInfoItemDB;
 import model.InterfaceItemDB;
 import model.PDBScoreItemDB;
@@ -14,6 +22,13 @@ import model.PdbBioUnitItemDB;
  * DTO class for PDBScore item.
  * @author AS
  */
+
+@XmlRootElement(name = "eppicAnalysis")
+@XmlType(propOrder = { "pdbName", "title", "releaseDate", "expMethod",
+						"spaceGroup", "resolution", "rfreeValue",
+						"homologsInfoItems", "interfaceItems",
+						"runParameters", "bioUnitItems"})
+@XmlAccessorType(XmlAccessType.FIELD)
 public class PDBScoreItem implements Serializable, ProcessingData
 {
 	/**
@@ -21,6 +36,7 @@ public class PDBScoreItem implements Serializable, ProcessingData
 	 */
 	private static final long serialVersionUID = 1L;
 	
+	@XmlAttribute
 	private int uid;
 	
 	private String pdbName;
@@ -32,13 +48,19 @@ public class PDBScoreItem implements Serializable, ProcessingData
 	private String expMethod;
 	private RunParametersItem runParameters;
 	
+	@XmlElementWrapper(name = "sequenceInfoList", required=false)
+	@XmlElement(name = "sequenceInfo")
 	private List<HomologsInfoItem> homologsInfoItems;
 
+	@XmlElementWrapper(name = "interfaceList")
+	@XmlElement(name = "interface")
 	private List<InterfaceItem> interfaceItems;
 	
 	private List<PdbBioUnitItem> bioUnitItems;
 
+	@XmlAttribute
 	private int inputType;
+	@XmlAttribute
 	private String jobId;
 	
 	public PDBScoreItem() 
