@@ -5,22 +5,23 @@
 	<groupId>ch.systemsx.sybit</groupId>
 	<artifactId>eppic-wui</artifactId>
 	<packaging>war</packaging>
-	<version>2.0.5</version>
+	<version>2.0.6-SNAPSHOT</version>
 
 	<properties>
 		<gwt.version>2.5.1</gwt.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
-	<repositories>
-		<repository>
-			<id>ProjectRepo</id>
-			<name>ProjectRepo</name>
-			<url>file://${project.basedir}/lib</url>
-		</repository>
-	</repositories>
-
 	<dependencies>
+	
+		<!-- main dependency: eppic package -->
+		<dependency>
+			<groupId>eppic</groupId>
+			<artifactId>eppic</artifactId>
+			<version>2.0.6-SNAPSHOT</version>
+			<scope>compile</scope>
+		</dependency>
+		
 		<dependency>
 			<groupId>com.google.gwt</groupId>
 			<artifactId>gwt-user</artifactId>
@@ -77,8 +78,8 @@
 
 		<dependency>
 			<groupId>us.levk</groupId>
-			<artifactId>drmaa</artifactId>
-			<version>static</version>
+			<artifactId>drmaa-common</artifactId>
+			<version>1.0</version>
 		</dependency>
     
 		<dependency>
@@ -105,11 +106,6 @@
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
 			<version>1.6.1</version>
-		</dependency>
-		<dependency>
-			<groupId>ch.systemsx.sybit</groupId>
-			<artifactId>eppic</artifactId>
-			<version>v2.0.5</version>
 		</dependency>
 		<dependency>
 			<groupId>com.gwtplatform</groupId>
