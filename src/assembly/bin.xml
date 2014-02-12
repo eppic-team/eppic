@@ -1,0 +1,39 @@
+<assembly>
+	<formats>
+		<format>tar.gz</format>
+		<format>zip</format>
+	</formats>
+
+	<fileSets>
+		<fileSet>
+			<includes>
+				<include>README*</include>
+				<include>${artifactId}.conf</include>
+			</includes>
+		</fileSet>
+		<fileSet>
+			<directory>src/bin</directory>
+			<outputDirectory>bin</outputDirectory>
+			<includes>
+				<include>*.bat</include>
+			</includes>
+			<lineEnding>dos</lineEnding>
+		</fileSet>
+		<fileSet>
+			<directory>src/bin</directory>
+			<outputDirectory>bin</outputDirectory>
+			<includes>
+				<include>eppic</include>
+			</includes>
+			<lineEnding>unix</lineEnding>
+			<fileMode>0755</fileMode>
+		</fileSet>
+		<fileSet>
+			<directory>target</directory>
+			<outputDirectory>lib</outputDirectory>
+			<includes>
+				<include>uber-${artifactId}-*.jar</include>
+			</includes>
+		</fileSet>
+	</fileSets>
+</assembly>

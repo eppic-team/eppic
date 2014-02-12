@@ -78,8 +78,8 @@ public class EppicParams {
 	public static final String     CLUSTERING_ATOM_TYPE = "CA";
 	
 	// PROPERTY FILES
-	protected static final InputStream COLORS_PROPERTIES_IS = EppicParams.class.getResourceAsStream("/resources/chain_colors.dat");
-	protected static final InputStream PYMOL_COLOR_MAPPINGS_IS = EppicParams.class.getResourceAsStream("/resources/pymol.colors");
+	protected static final InputStream COLORS_PROPERTIES_IS = EppicParams.class.getResourceAsStream("/eppic/chain_colors.dat");
+	protected static final InputStream PYMOL_COLOR_MAPPINGS_IS = EppicParams.class.getResourceAsStream("/eppic/pymol.colors");
 	
 	// DEFAULTS FOR COMMAND LINE PARAMETERS
 	public static final double    DEF_HOM_SOFT_ID_CUTOFF = 0.6;
