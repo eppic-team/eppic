@@ -8,7 +8,8 @@
 		<fileSet>
 			<includes>
 				<include>README*</include>
-				<include>${artifactId}.conf</include>
+				<include>${project.artifactId}.conf</include>
+				<include>LICENSE</include>
 			</includes>
 		</fileSet>
 		<fileSet>
