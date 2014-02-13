@@ -155,7 +155,7 @@
 				<executions>
 					<execution>
 						<goals>
-							<goal>compile</goal>
+							<goal>resources</goal>
 						</goals>
 					</execution>
 				</executions>
