@@ -7,6 +7,7 @@ import ch.systemsx.sybit.crkwebui.client.commons.callbacks.GetAllResiduesCallbac
 import ch.systemsx.sybit.crkwebui.client.commons.callbacks.GetCurrentStatusDataCallback;
 import ch.systemsx.sybit.crkwebui.client.commons.callbacks.GetInterfaceResiduesCallback;
 import ch.systemsx.sybit.crkwebui.client.commons.callbacks.GetJobsForCurrentSessionCallbackXsrf;
+import ch.systemsx.sybit.crkwebui.client.commons.callbacks.GetPdbForUniprotCallBackXsrf;
 import ch.systemsx.sybit.crkwebui.client.commons.callbacks.GetResultsOfProcessingCallback;
 import ch.systemsx.sybit.crkwebui.client.commons.callbacks.GetSettingsCallback;
 import ch.systemsx.sybit.crkwebui.client.commons.callbacks.RunJobCallbackXsrf;
@@ -21,6 +22,7 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.rpc.XsrfTokenServiceAsync;
 import com.sencha.gxt.core.client.GXT;
+import com.sencha.gxt.data.shared.loader.FilterPagingLoadConfig;
 
 /**
  * Implementation of service manager.
@@ -105,5 +107,13 @@ public class CrkWebServiceControllerImpl implements CrkWebServiceController
 		{
 			crkWebService.getAllResidues(jobId,new GetAllResiduesCallback(jobId));
 		}
+	}
+
+	@Override
+	public void getListOfPDBsHavingAUniProt(FilterPagingLoadConfig config,
+			String uniProtId) {
+		xsrfTokenService.getNewXsrfToken(
+				new GetPdbForUniprotCallBackXsrf(crkWebService, config, uniProtId));
+		
 	}
 }

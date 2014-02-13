@@ -7,6 +7,7 @@ import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResidueItem;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResiduesItemsList;
 import ch.systemsx.sybit.crkwebui.shared.model.JobsForSession;
+import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingData;
 import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
 
@@ -14,6 +15,8 @@ import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 import com.google.gwt.user.server.rpc.NoXsrfProtect;
 import com.google.gwt.user.server.rpc.XsrfProtect;
+import com.sencha.gxt.data.shared.loader.FilterPagingLoadConfig;
+import com.sencha.gxt.data.shared.loader.PagingLoadResult;
 
 /**
  * The client side stub for the RPC service.
@@ -99,4 +102,14 @@ public interface CrkWebService extends RemoteService
 	 */
 	@NoXsrfProtect
 	public InterfaceResiduesItemsList getAllResidues(String jobId) throws Exception;
+	
+	/**
+	 * gets a list of pdb having a seq with a particular UniProt Id
+	 * @param config
+	 * @param UniProtId
+	 * @return bean that holds the results
+	 * @throws Exception when an asynchronous call fails to complete normally
+	 */
+	@XsrfProtect
+	public PagingLoadResult<PDBScoreItem> getListOfPDBsHavingAUniProt(FilterPagingLoadConfig config, String uniProtId) throws Exception;
 }
