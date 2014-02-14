@@ -7,7 +7,7 @@ import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResidueItem;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResiduesItemsList;
 import ch.systemsx.sybit.crkwebui.shared.model.JobsForSession;
-import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
+import ch.systemsx.sybit.crkwebui.shared.model.PDBSearchResult;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingData;
 import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
 
@@ -111,5 +111,5 @@ public interface CrkWebService extends RemoteService
 	 * @throws Exception when an asynchronous call fails to complete normally
 	 */
 	@XsrfProtect
-	public PagingLoadResult<PDBScoreItem> getListOfPDBsHavingAUniProt(FilterPagingLoadConfig config, String uniProtId) throws Exception;
+	public PagingLoadResult<PDBSearchResult> getListOfPDBsHavingAUniProt(FilterPagingLoadConfig config, String uniProtId) throws Exception;
 }

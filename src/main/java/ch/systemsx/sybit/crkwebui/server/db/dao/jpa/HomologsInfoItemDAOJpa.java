@@ -17,6 +17,7 @@ import ch.systemsx.sybit.crkwebui.server.db.EntityManagerHandler;
 import ch.systemsx.sybit.crkwebui.server.db.dao.HomologsInfoItemDAO;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
 import ch.systemsx.sybit.crkwebui.shared.model.HomologsInfoItem;
+import ch.systemsx.sybit.crkwebui.shared.model.PDBSearchResult;
 import eppic.model.HomologsInfoItemDB;
 import eppic.model.PDBScoreItemDB;
 
@@ -72,5 +73,60 @@ public class HomologsInfoItemDAOJpa implements HomologsInfoItemDAO
 				t.printStackTrace();
 			}
 		}
+	}
+
+	@Override
+	public List<PDBSearchResult> getPdbSearchItemsForUniProt(String uniProtId)
+			throws DaoException {
+		EntityManager entityManager = null;
+	
+		try
+		{
+			List<PDBSearchResult> resultList = new ArrayList<PDBSearchResult>();
+			
+			entityManager = EntityManagerHandler.getEntityManager();
+			CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+			CriteriaQuery<PDBScoreItemDB> criteriaQuery = criteriaBuilder.createQuery(PDBScoreItemDB.class);
+			
+			Root<HomologsInfoItemDB> root = criteriaQuery.from(HomologsInfoItemDB.class);
+			criteriaQuery.select(root.get(HomologsInfoItemDB_.pdbScoreItem));
+			criteriaQuery.where(criteriaBuilder.equal(root.get(HomologsInfoItemDB_.uniprotId), uniProtId));
+			Query query = entityManager.createQuery(criteriaQuery);
+			
+			@SuppressWarnings("unchecked")
+			List<PDBScoreItemDB> pdbItemDBs = query.getResultList();
+			
+			for(PDBScoreItemDB pdbItemDB: pdbItemDBs){
+				PDBSearchResult result = new PDBSearchResult(pdbItemDB.getPdbName(), 
+															pdbItemDB.getTitle(), 
+															pdbItemDB.getReleaseDate(), 
+															pdbItemDB.getSpaceGroup(), 
+															pdbItemDB.getResolution(), 
+															pdbItemDB.getRfreeValue(), 
+															pdbItemDB.getExpMethod());
+				
+				resultList.add(result);
+			}
+			
+			return resultList;
+			
+		}
+		catch(Throwable e)
+		{
+			e.printStackTrace();
+			throw new DaoException(e);
+		}
+		finally
+		{
+			try
+			{
+				entityManager.close();
+			}
+			catch(Throwable t)
+			{
+				t.printStackTrace();
+			}
+		}
+		
 	}
 }

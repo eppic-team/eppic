@@ -7,7 +7,7 @@ import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResidueItem;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResiduesItemsList;
 import ch.systemsx.sybit.crkwebui.shared.model.JobsForSession;
-import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
+import ch.systemsx.sybit.crkwebui.shared.model.PDBSearchResult;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingData;
 import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
 
@@ -45,5 +45,5 @@ public interface CrkWebServiceAsync
 			AsyncCallback<InterfaceResiduesItemsList> getAllResiduesCallback);
 	
 	public void getListOfPDBsHavingAUniProt(FilterPagingLoadConfig config, 
-			String uniProtId, AsyncCallback<PagingLoadResult<PDBScoreItem>> callback);
+			String uniProtId, AsyncCallback<PagingLoadResult<PDBSearchResult>> callback);
 }
