@@ -2,30 +2,26 @@ package eppic.model;
 
 import java.io.Serializable;
 
-public class QueryWarningItemDB implements Serializable 
-{
-	/**
-	 * 
-	 */
+public class InterfaceWarningDB implements Serializable {
+	
 	private static final long serialVersionUID = 1L;
 	
 	private int uid;
 	
 	private String text;
 	
-	private HomologsInfoItemDB homologsInfoItem;
+	private InterfaceDB interfaceItem;
 	
-	public QueryWarningItemDB() 
-	{
+	public InterfaceWarningDB() {
 		
 	}
 	
-	public void setHomologsInfoItem(HomologsInfoItemDB homologsInfoItem) {
-		this.homologsInfoItem = homologsInfoItem;
+	public void setInterface(InterfaceDB interfaceItem) {
+		this.interfaceItem = interfaceItem;
 	}
 
-	public HomologsInfoItemDB getHomologsInfoItem() {
-		return homologsInfoItem;
+	public InterfaceDB getInterface() {
+		return interfaceItem;
 	}
 
 	public void setUid(int uid) {

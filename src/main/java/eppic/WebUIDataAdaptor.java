@@ -10,23 +10,23 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.TreeMap;
 
-import eppic.model.HomologItemDB;
-import eppic.model.HomologsInfoItemDB;
-import eppic.model.InterfaceItemDB;
-import eppic.model.InterfaceResidueItemDB;
-import eppic.model.InterfaceScoreItemDB;
-import eppic.model.PDBScoreItemDB;
-import eppic.model.PdbBioUnitAssignmentItemDB;
-import eppic.model.PdbBioUnitItemDB;
-import eppic.model.QueryWarningItemDB;
-import eppic.model.RunParametersItemDB;
-import eppic.model.WarningItemDB;
+import eppic.model.HomologDB;
+import eppic.model.ChainClusterDB;
+import eppic.model.InterfaceDB;
+import eppic.model.ResidueDB;
+import eppic.model.InterfaceScoreDB;
+import eppic.model.PdbInfoDB;
+import eppic.model.AssemblyDB;
+import eppic.model.UniProtRefWarningDB;
+import eppic.model.RunParametersDB;
+import eppic.model.InterfaceWarningDB;
 import eppic.predictors.CombinedPredictor;
 import eppic.predictors.EvolInterfZPredictor;
 import eppic.predictors.EvolRimCorePredictor;
 import eppic.predictors.GeometryPredictor;
 import owl.core.runners.PymolRunner;
 import owl.core.sequence.Homolog;
+import owl.core.structure.ChainCluster;
 import owl.core.structure.ChainInterface;
 import owl.core.structure.ChainInterfaceList;
 import owl.core.structure.PdbAsymUnit;
@@ -43,24 +43,24 @@ public class WebUIDataAdaptor {
 	private static final int FIRST = 0;
 	private static final int SECOND = 1;
 	
-	private PDBScoreItemDB pdbScoreItem;
+	private PdbInfoDB pdbScoreItem;
 	
 	private EppicParams params;
 	
-	private RunParametersItemDB runParametersItem;
+	private RunParametersDB runParametersItem;
 	
 	// a temp map to hold the warnings per interface, used in order to eliminate duplicate warnings
 	private HashMap<Integer,HashSet<String>> interfId2Warnings;
 	
 	public WebUIDataAdaptor() {
-		pdbScoreItem = new PDBScoreItemDB();
+		pdbScoreItem = new PdbInfoDB();
 		interfId2Warnings = new HashMap<Integer, HashSet<String>>();
 	}
 	
 	public void setParams(EppicParams params) {
 		this.params = params;
 		pdbScoreItem.setPdbName(params.getJobName());
-		runParametersItem = new RunParametersItemDB();
+		runParametersItem = new RunParametersDB();
 		runParametersItem.setHomologsCutoff(params.getMinNumSeqs());
 		runParametersItem.setHomSoftIdCutoff(params.getHomSoftIdCutoff());
 		runParametersItem.setHomHardIdCutoff(params.getHomHardIdCutoff());
@@ -68,13 +68,13 @@ public class WebUIDataAdaptor {
 		runParametersItem.setMaxNumSeqsCutoff(params.getMaxNumSeqs());
 		runParametersItem.setReducedAlphabet(params.getReducedAlphabet());
 		runParametersItem.setCaCutoffForGeom(params.getCAcutoffForGeom());
-		runParametersItem.setCaCutoffForRimCore(params.getCAcutoffForRimCore());
-		runParametersItem.setCaCutoffForZscore(params.getCAcutoffForZscore());
-		runParametersItem.setEntrCallCutoff(params.getCoreRimScoreCutoff());
-		runParametersItem.setzScoreCutoff(params.getCoreSurfScoreCutoff());
-		runParametersItem.setMinCoreSizeForBio(params.getMinCoreSizeForBio());
-		runParametersItem.setPdbScoreItem(pdbScoreItem);
-		runParametersItem.setCrkVersion(EppicParams.PROGRAM_VERSION);
+		runParametersItem.setCaCutoffForCoreRim(params.getCAcutoffForRimCore());
+		runParametersItem.setCaCutoffForCoreSurface(params.getCAcutoffForZscore());
+		runParametersItem.setCrCallCutoff(params.getCoreRimScoreCutoff());
+		runParametersItem.setCsCallCutoff(params.getCoreSurfScoreCutoff());
+		runParametersItem.setGeomCallCutoff(params.getMinCoreSizeForBio());
+		runParametersItem.setPdbInfo(pdbScoreItem);
+		runParametersItem.setEppicVersion(EppicParams.PROGRAM_VERSION);
 		pdbScoreItem.setRunParameters(runParametersItem);
 	}
 	
@@ -95,8 +95,8 @@ public class WebUIDataAdaptor {
 		TreeMap<Integer, List<Integer>> matchIds = bioUnitList.getInterfaceMatches(interfaces);
 		for (ChainInterface interf:interfaces) {
 			iInterface++;
-			InterfaceItemDB ii = new InterfaceItemDB();
-			ii.setId(interf.getId());
+			InterfaceDB ii = new InterfaceDB();
+			ii.setInterfaceId(interf.getId());
 			ii.setClusterId(interfaces.getCluster(interf.getId()).getId());
 			ii.setArea(interf.getInterfaceArea());
 			
@@ -107,25 +107,23 @@ public class WebUIDataAdaptor {
 			ii.setOperatorType(interf.getSecondTransf().getTransformType().getShortName());
 			ii.setIsInfinite(interf.isInfinite());
 			
-			ii.setSize1(interf.getFirstRimCore().getCoreSize());
-			ii.setSize2(interf.getSecondRimCore().getCoreSize());
 
 			for(int bioUnitId:matchIds.keySet()){
 				PdbBioUnit unit = bioUnitList.get(bioUnitId);
 				PdbBioUnitAssignmentItemDB assignDB = new PdbBioUnitAssignmentItemDB();
 				
 				assignDB.setSize(unit.getSize());
-				assignDB.setType(unit.getType().getType());
+				assignDB.setMethod(unit.getType().getType());
 				
-				if(matchIds.get(bioUnitId).contains(iInterface)) assignDB.setAssignment("bio");
-				else assignDB.setAssignment("xtal");
+				if(matchIds.get(bioUnitId).contains(iInterface)) assignDB.setRegion("bio");
+				else assignDB.setRegion("xtal");
 				
-				assignDB.setInterfaceItem(ii);
+				assignDB.setInterface(ii);
 				
 				ii.addBioUnitAssignment(assignDB);
 			}
 			
-			ii.setPdbScoreItem(pdbScoreItem);
+			ii.setPdbInfo(pdbScoreItem);
 			
 			pdbScoreItem.addInterfaceItem(ii);
 			
@@ -137,13 +135,13 @@ public class WebUIDataAdaptor {
 	public void setPdbBioUnits(PdbBioUnitList pdbBioUnitList) {
 		
 		for(PdbBioUnit unit:pdbBioUnitList){
-			PdbBioUnitItemDB unitDb = new PdbBioUnitItemDB();
-			unitDb.setSize(unit.getSize());
-			unitDb.setType(unit.getType().getType());
+			AssemblyDB unitDb = new AssemblyDB();
+			unitDb.setMmSize(unit.getSize());
+			unitDb.setMethod(unit.getType().getType());
 			
-			unitDb.setPdbScoreItem(pdbScoreItem);
+			unitDb.setPdbInfo(pdbScoreItem);
 			
-			pdbScoreItem.addPdbBioUnitItem(unitDb);
+			pdbScoreItem.addAssembly(unitDb);
 		}
 		
 	}
@@ -226,13 +224,13 @@ public class WebUIDataAdaptor {
 	
 	public void setGeometryScores(List<GeometryPredictor> gps) {
 		for (int i=0;i<gps.size();i++) {
-			InterfaceItemDB ii = pdbScoreItem.getInterfaceItem(i);
-			InterfaceScoreItemDB isi = new InterfaceScoreItemDB();
+			InterfaceDB ii = pdbScoreItem.getInterfaceItem(i);
+			InterfaceScoreDB isi = new InterfaceScoreDB();
 			ii.addInterfaceScore(isi);
-			isi.setInterfaceItem(ii);
-			isi.setId(gps.get(i).getInterface().getId());
+			isi.setInterface(ii);
+			isi.setInterfaceId(gps.get(i).getInterface().getId());
 			CallType call = gps.get(i).getCall();
-			isi.setCallName(call.getName());
+			isi.setCall(call.getName());
 			isi.setCallReason(gps.get(i).getCallReason());
 			isi.setMethod("Geometry");
 			
@@ -243,7 +241,7 @@ public class WebUIDataAdaptor {
 				{	
 					// we first add warning to the temp HashSets in order to eliminate duplicates, 
 					// in the end we fill the InterfaceItemDBs by calling addInterfaceWarnings
-					interfId2Warnings.get(ii.getId()).add(warning);
+					interfId2Warnings.get(ii.getInterfaceId()).add(warning);
 				}
 			}
 
@@ -252,84 +250,86 @@ public class WebUIDataAdaptor {
 	
 	public void add(InterfaceEvolContextList iecl) {
 		
-		List<HomologsInfoItemDB> homInfos = new ArrayList<HomologsInfoItemDB>();
+		List<ChainClusterDB> homInfos = new ArrayList<ChainClusterDB>();
 		
 		ChainEvolContextList cecl = iecl.getChainEvolContextList();
 		for (ChainEvolContext cec:cecl.getAllChainEvolContext()) {
-			HomologsInfoItemDB homInfo = new HomologsInfoItemDB();			
-			homInfo.setChains(cecl.getPdb().getProtChainCluster(cec.getRepresentativeChainCode()).getClusterString());
-			homInfo.setHasQueryMatch(cec.hasQueryMatch());
+			ChainClusterDB homInfo = new ChainClusterDB();
+			ChainCluster cc = cecl.getPdb().getProtChainCluster(cec.getRepresentativeChainCode());
+			homInfo.setRepChain(cc.getRepresentative().getPdbChainCode());
+			homInfo.setMemberChains(cc.getCommaSepMemberChainCodes());
+			homInfo.setHasUniProtRef(cec.hasQueryMatch());
 			
-			List<QueryWarningItemDB> queryWarningItemDBs = new ArrayList<QueryWarningItemDB>();
+			List<UniProtRefWarningDB> queryWarningItemDBs = new ArrayList<UniProtRefWarningDB>();
 			for(String queryWarning : cec.getQueryWarnings())
 			{
-				QueryWarningItemDB queryWarningItemDB = new QueryWarningItemDB();
-				queryWarningItemDB.setHomologsInfoItem(homInfo);
+				UniProtRefWarningDB queryWarningItemDB = new UniProtRefWarningDB();
+				queryWarningItemDB.setChainCluster(homInfo);
 				queryWarningItemDB.setText(queryWarning);
 				queryWarningItemDBs.add(queryWarningItemDB);
 			}
 			
-			homInfo.setQueryWarnings(queryWarningItemDBs);
+			homInfo.setUniProtRefWarnings(queryWarningItemDBs);
 			
 			if (cec.hasQueryMatch()) { //all other fields remain null otherwise
 				
 				homInfo.setNumHomologs(cec.getNumHomologs());
-				homInfo.setUniprotId(cec.getQuery().getUniId()); 
+				homInfo.setRefUniProtId(cec.getQuery().getUniId()); 
 				 
 				homInfo.setRefUniProtStart(cec.getQueryInterval().beg);
 				homInfo.setRefUniProtEnd(cec.getQueryInterval().end);
 				
-				homInfo.setAlignedSeq1(cec.getPdb2uniprotAln().getAlignedSequences()[0]);
-				homInfo.setMarkupLine(String.valueOf(cec.getPdb2uniprotAln().getMarkupLine()));
-				homInfo.setAlignedSeq2(cec.getPdb2uniprotAln().getAlignedSequences()[1]);
-				homInfo.setIdCutoffUsed(cec.getIdCutoff());
-				homInfo.setClusteringPercentIdUsed(cec.getUsedClusteringPercentId());
+				homInfo.setPdbAlignedSeq(cec.getPdb2uniprotAln().getAlignedSequences()[0]);
+				homInfo.setAliMarkupLine(String.valueOf(cec.getPdb2uniprotAln().getMarkupLine()));
+				homInfo.setRefAlignedSeq(cec.getPdb2uniprotAln().getAlignedSequences()[1]);
+				homInfo.setSeqIdCutoff(cec.getIdCutoff());
+				homInfo.setClusteringSeqId(cec.getUsedClusteringPercentId());
 				
-				List<HomologItemDB> homologItemDBs = new ArrayList<HomologItemDB>();
+				List<HomologDB> homologItemDBs = new ArrayList<HomologDB>();
 				for (Homolog hom:cec.getHomologs().getFilteredSubset()) {
-					HomologItemDB homologItemDB = new HomologItemDB();
-					homologItemDB.setUniId(hom.getUniId());
+					HomologDB homologItemDB = new HomologDB();
+					homologItemDB.setUniProtId(hom.getUniId());
 					homologItemDB.setQueryStart(hom.getBlastHsp().getQueryStart());
 					homologItemDB.setQueryEnd(hom.getBlastHsp().getQueryEnd());
 					if (hom.getUnirefEntry().hasTaxons()) {
 						homologItemDB.setFirstTaxon(hom.getUnirefEntry().getFirstTaxon());
 						homologItemDB.setLastTaxon(hom.getUnirefEntry().getLastTaxon());
 					}
-					homologItemDB.setSeqIdToQuery(hom.getPercentIdentity());
-					homologItemDB.setQueryCov(hom.getQueryCoverage()*100.0);
-					homologItemDB.setHomologsInfoItem(homInfo);
+					homologItemDB.setSeqId(hom.getPercentIdentity());
+					homologItemDB.setQueryCoverage(hom.getQueryCoverage()*100.0);
+					homologItemDB.setChainCluster(homInfo);
 					homologItemDBs.add(homologItemDB);
 				}
 				
 				homInfo.setHomologs(homologItemDBs);
 			} 
 
-			homInfo.setPdbScoreItem(pdbScoreItem);
+			homInfo.setPdbInfo(pdbScoreItem);
 			homInfos.add(homInfo);	
 		}
 		
-		pdbScoreItem.setHomologsInfoItems(homInfos);
+		pdbScoreItem.setChainClusters(homInfos);
 		
 
 		for (int i=0;i<iecl.size();i++) {
 			
 			InterfaceEvolContext iec = iecl.get(i);
-			InterfaceItemDB ii = pdbScoreItem.getInterfaceItem(i);
+			InterfaceDB ii = pdbScoreItem.getInterfaceItem(i);
 			
 			// 1) we add entropy values to the residue details
-			addEntropyToResidueDetails(ii.getInterfaceResidues(), iec);
+			addEntropyToResidueDetails(ii.getResidues(), iec);
 			
 			
 			// 2) z-scores
 			EvolInterfZPredictor ezp = iecl.getEvolInterfZPredictor(i);
-			InterfaceScoreItemDB isiZ = new InterfaceScoreItemDB();
+			InterfaceScoreDB isiZ = new InterfaceScoreDB();
 			ii.addInterfaceScore(isiZ);
-			isiZ.setInterfaceItem(ii);
-			isiZ.setId(iec.getInterface().getId());
+			isiZ.setInterface(ii);
+			isiZ.setInterfaceId(iec.getInterface().getId());
 			isiZ.setMethod("Z-scores");
 
 			CallType call = ezp.getCall();	
-			isiZ.setCallName(call.getName());
+			isiZ.setCall(call.getName());
 			isiZ.setCallReason(ezp.getCallReason());
 			
 			if(ezp.getWarnings() != null) {
@@ -337,7 +337,7 @@ public class WebUIDataAdaptor {
 				for(String warning: warnings) {
 					// we first add warning to the temp HashSets in order to eliminate duplicates, 
 					// in the end we fill the InterfaceItemDBs by calling addInterfaceWarnings
-					interfId2Warnings.get(ii.getId()).add(warning);
+					interfId2Warnings.get(ii.getInterfaceId()).add(warning);
 				}
 			}
 
@@ -362,14 +362,14 @@ public class WebUIDataAdaptor {
 			// 3) rim-core entropies
 			EvolRimCorePredictor ercp = iecl.getEvolRimCorePredictor(i);
 
-			InterfaceScoreItemDB isiRC = new InterfaceScoreItemDB();
-			isiRC.setInterfaceItem(ii);
+			InterfaceScoreDB isiRC = new InterfaceScoreDB();
+			isiRC.setInterface(ii);
 			ii.addInterfaceScore(isiRC);
-			isiRC.setId(iec.getInterface().getId());
+			isiRC.setInterfaceId(iec.getInterface().getId());
 			isiRC.setMethod("Entropy");
 
 			call = ercp.getCall();	
-			isiRC.setCallName(call.getName());
+			isiRC.setCall(call.getName());
 			isiRC.setCallReason(ercp.getCallReason());
 
 			if(ercp.getWarnings() != null) {
@@ -377,7 +377,7 @@ public class WebUIDataAdaptor {
 				for(String warning: warnings) {
 					// we first add warning to the temp HashSets in order to eliminate duplicates, 
 					// in the end we fill the InterfaceItemDBs by calling addInterfaceWarnings
-					interfId2Warnings.get(ii.getId()).add(warning);
+					interfId2Warnings.get(ii.getInterfaceId()).add(warning);
 				}
 			}
 
@@ -398,7 +398,7 @@ public class WebUIDataAdaptor {
 	
 	public void setCombinedPredictors(List<CombinedPredictor> cps) {
 		for (int i=0;i<cps.size();i++) {
-			InterfaceItemDB ii = pdbScoreItem.getInterfaceItem(i);
+			InterfaceDB ii = pdbScoreItem.getInterfaceItem(i);
 			ii.setFinalCallName(cps.get(i).getCall().getName());		
 			ii.setFinalCallReason(cps.get(i).getCallReason());
 			if(cps.get(i).getWarnings() != null)
@@ -408,7 +408,7 @@ public class WebUIDataAdaptor {
 				{
 					// we first add warning to the temp HashSets in order to eliminate duplicates, 
 					// in the end we fill the InterfaceItemDBs by calling addInterfaceWarnings
-					interfId2Warnings.get(ii.getId()).add(warning);
+					interfId2Warnings.get(ii.getInterfaceId()).add(warning);
 				}
 			}
 		}
@@ -426,38 +426,28 @@ public class WebUIDataAdaptor {
 		for (int i=0;i<interfaces.size();i++) {
 
 			ChainInterface interf = interfaces.get(i+1);
-			InterfaceItemDB ii = pdbScoreItem.getInterfaceItem(i);
+			InterfaceDB ii = pdbScoreItem.getInterfaceItem(i);
 
 			// we add the residue details
 			addResidueDetails(ii, interf, params.isDoScoreEntropies());
 		}
 	}
 	
-	private void addResidueDetails(InterfaceItemDB ii, ChainInterface interf, boolean includeEntropy) {
+	private void addResidueDetails(InterfaceDB ii, ChainInterface interf, boolean includeEntropy) {
 		
-		List<InterfaceResidueItemDB> iril = new ArrayList<InterfaceResidueItemDB>();
-		ii.setInterfaceResidues(iril);
-
-		//interf.calcRimAndCore(caCutoff, minAsaForSurface);
-		ii.setAsaC1(interf.getFirstRimCore().getAsaCore());
-		ii.setAsaR1(interf.getFirstRimCore().getAsaRim());
-		ii.setBsaC1(interf.getFirstRimCore().getBsaCore());
-		ii.setBsaR1(interf.getFirstRimCore().getBsaRim());
-		ii.setAsaC2(interf.getSecondRimCore().getAsaCore());
-		ii.setAsaR2(interf.getSecondRimCore().getAsaRim());
-		ii.setBsaC2(interf.getSecondRimCore().getBsaCore());
-		ii.setBsaR2(interf.getSecondRimCore().getBsaRim());
+		List<ResidueDB> iril = new ArrayList<ResidueDB>();
+		ii.setResidues(iril);
 
 		addResidueDetailsOfPartner(iril, interf, 0);
 		addResidueDetailsOfPartner(iril, interf, 1);
 
-		for(InterfaceResidueItemDB iri : iril)
+		for(ResidueDB iri : iril)
 		{
-			iri.setInterfaceItem(ii);
+			iri.setInterface(ii);
 		}
 	}
 	
-	private void addResidueDetailsOfPartner(List<InterfaceResidueItemDB> iril, ChainInterface interf, int molecId) {
+	private void addResidueDetailsOfPartner(List<ResidueDB> iril, ChainInterface interf, int molecId) {
 		if (interf.isProtein()) {
 			PdbChain mol = null;
 			if (molecId==FIRST) {
@@ -478,25 +468,25 @@ public class WebUIDataAdaptor {
 					// NOTE: we use here caCutoffForRimCore as the one and only for both evol methods
 					// NOTE2: we are assuming that caCutoffForRimCore<caCutoffForGeom, if that doesn't hold this won't work!
 					if (residue.getBsaToAsaRatio()<params.getCAcutoffForRimCore()) {
-						assignment = InterfaceResidueItemDB.RIM;
+						assignment = ResidueDB.RIM;
 					} else if (residue.getBsaToAsaRatio()<params.getCAcutoffForGeom()){
-						assignment = InterfaceResidueItemDB.CORE_EVOLUTIONARY; 
+						assignment = ResidueDB.CORE_EVOLUTIONARY; 
 					} else {
-						assignment = InterfaceResidueItemDB.CORE_GEOMETRY;
+						assignment = ResidueDB.CORE_GEOMETRY;
 					}
 				} else if (residue.getAsa()>params.getMinAsaForSurface()) {
-					assignment = InterfaceResidueItemDB.SURFACE;
+					assignment = ResidueDB.SURFACE;
 				}
 				
-				InterfaceResidueItemDB iri = new InterfaceResidueItemDB(residue.getSerial(),residue.getPdbSerial(),resType,asa,bsa,assignment,null);
-				iri.setStructure(molecId+1); // structure ids are 1 and 2 while molecId are 0 and 1
+				ResidueDB iri = new ResidueDB(residue.getSerial(),residue.getPdbSerial(),resType,asa,bsa,assignment,null);
+				iri.setSide(molecId+1); // structure ids are 1 and 2 while molecId are 0 and 1
 
 				iril.add(iri);
 			}
 		}
 	}
 
-	private void addEntropyToResidueDetails(List<InterfaceResidueItemDB> iril, InterfaceEvolContext iec) {
+	private void addEntropyToResidueDetails(List<ResidueDB> iril, InterfaceEvolContext iec) {
 		ChainInterface interf = iec.getInterface();
 		
 		
@@ -524,7 +514,7 @@ public class WebUIDataAdaptor {
 					entropies = cec.getConservationScores(ScoringType.ENTROPY);
 				for (Residue residue:mol) {
 
-	 				InterfaceResidueItemDB iri = iril.get(i);
+	 				ResidueDB iri = iril.get(i);
 					
 					int queryUniprotPos = -1;
 					if (!mol.isNonPolyChain() && mol.getSequence().isProtein() && cec.hasQueryMatch()) 
@@ -546,7 +536,7 @@ public class WebUIDataAdaptor {
 		
 	}
 
-	public RunParametersItemDB getRunParametersItem() {
+	public RunParametersDB getRunParametersItem() {
 		return runParametersItem;
 	}
 	
@@ -557,12 +547,12 @@ public class WebUIDataAdaptor {
 	public void addInterfaceWarnings() {
 		
 		for (int i=0;i<pdbScoreItem.getInterfaceItems().size();i++) {
-			InterfaceItemDB ii = pdbScoreItem.getInterfaceItem(i);
-			for (String warning : interfId2Warnings.get(ii.getId())) {
-				WarningItemDB warningItem = new WarningItemDB();
+			InterfaceDB ii = pdbScoreItem.getInterfaceItem(i);
+			for (String warning : interfId2Warnings.get(ii.getInterfaceId())) {
+				InterfaceWarningDB warningItem = new InterfaceWarningDB();
 				warningItem.setText(warning);
-				warningItem.setInterfaceItem(ii);
-				ii.getWarnings().add(warningItem);
+				warningItem.setInterface(ii);
+				ii.getInterfaceWarnings().add(warningItem);
 			}
 		}
 	}

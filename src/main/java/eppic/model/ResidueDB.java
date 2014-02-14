@@ -2,12 +2,9 @@ package eppic.model;
 
 import java.io.Serializable;
 
-public class InterfaceResidueItemDB implements Serializable
-{
+public class ResidueDB implements Serializable {
 
-	/**
-	 * 
-	 */
+
 	private static final long serialVersionUID = 1L;
 	
 	public static final int SURFACE = 0;
@@ -17,36 +14,30 @@ public class InterfaceResidueItemDB implements Serializable
 	
 	private int uid;
 	
-	private int structure;
+	private int side; // 1 or 2 for 1st or 2nd partner of interface
 	private int residueNumber;
 	private String pdbResidueNumber;
 	private String residueType;
-	private Float asa;
-	private Float bsa;
-	private int assignment; // one of the constants above: SURFACE, RIM, CORE
-	private Float entropyScore;
+	private double asa;
+	private double bsa;
+	private int region; // one of the constants above
+	private double entropyScore;
 
-	private InterfaceItemDB interfaceItem;
-	// residue number
-	// residue type
-	// ASA
-	// BSA
-	// % BSA
-	//entropy
-	//KaKs
+	private InterfaceDB interfaceItem;
 	
-	public InterfaceResidueItemDB(int residueNumber, String pdbResidueNumber, String residueType, Float asa, Float bsa, int assignment, Float entropyScore) {
+	public ResidueDB(int residueNumber, String pdbResidueNumber, String residueType, 
+			double asa, double bsa, int assignment, double entropyScore) {
+		
 		this.residueNumber = residueNumber;
 		this.pdbResidueNumber = pdbResidueNumber;
 		this.residueType = residueType;
 		this.asa = asa;
 		this.bsa = bsa;
-		this.assignment = assignment;
+		this.region = assignment;
 		this.setEntropyScore(entropyScore);
 	}
 	
-	public InterfaceResidueItemDB()
-	{
+	public ResidueDB() {
 		
 	}
 
@@ -74,15 +65,15 @@ public class InterfaceResidueItemDB implements Serializable
 		this.residueType = residueType;
 	}
 
-	public Float getAsa() {
+	public double getAsa() {
 		return asa;
 	}
 
-	public void setAsa(Float asa) {
+	public void setAsa(double asa) {
 		this.asa = asa;
 	}
 
-	public Float getBsa() {
+	public double getBsa() {
 		return bsa;
 	}
 
@@ -90,27 +81,27 @@ public class InterfaceResidueItemDB implements Serializable
 		this.bsa = bsa;
 	}
 	
-	public int getAssignment() {
-		return this.assignment;
+	public int getRegion() {
+		return this.region;
 	}
 	
-	public void setAssignment(int assignment) {
-		this.assignment = assignment;
+	public void setRegion(int region) {
+		this.region = region;
 	}
 
-	public void setStructure(int structure) {
-		this.structure = structure;
+	public void setSide(int side) {
+		this.side = side;
 	}
 
-	public int getStructure() {
-		return structure;
+	public int getSide() {
+		return side;
 	}
 
-	public void setInterfaceItem(InterfaceItemDB interfaceItem) {
+	public void setInterface (InterfaceDB interfaceItem) {
 		this.interfaceItem = interfaceItem;
 	}
 
-	public InterfaceItemDB getInterfaceItem() {
+	public InterfaceDB getInterface() {
 		return interfaceItem;
 	}
 
@@ -122,11 +113,11 @@ public class InterfaceResidueItemDB implements Serializable
 		return uid;
 	}
 
-	public void setEntropyScore(Float entropyScore) {
+	public void setEntropyScore(double entropyScore) {
 		this.entropyScore = entropyScore;
 	}
 
-	public Float getEntropyScore() {
+	public double getEntropyScore() {
 		return entropyScore;
 	}
 }

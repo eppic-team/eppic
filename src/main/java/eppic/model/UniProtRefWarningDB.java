@@ -2,30 +2,26 @@ package eppic.model;
 
 import java.io.Serializable;
 
-public class WarningItemDB implements Serializable 
-{
-	/**
-	 * 
-	 */
+public class UniProtRefWarningDB implements Serializable {
+
 	private static final long serialVersionUID = 1L;
 	
 	private int uid;
 	
 	private String text;
 	
-	private InterfaceItemDB interfaceItem;
+	private ChainClusterDB chainCluster;
 	
-	public WarningItemDB() 
-	{
+	public UniProtRefWarningDB() {
 		
 	}
 	
-	public void setInterfaceItem(InterfaceItemDB interfaceItem) {
-		this.interfaceItem = interfaceItem;
+	public void setChainCluster(ChainClusterDB chainCluster) {
+		this.chainCluster = chainCluster;
 	}
 
-	public InterfaceItemDB getInterfaceItem() {
-		return interfaceItem;
+	public ChainClusterDB getChainCluster() {
+		return chainCluster;
 	}
 
 	public void setUid(int uid) {

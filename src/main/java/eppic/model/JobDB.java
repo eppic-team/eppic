@@ -5,35 +5,31 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
-public class JobDB implements Serializable
-{
-	/**
-	 * 
-	 */
+public class JobDB implements Serializable {
+
 	private static final long serialVersionUID = 1L;
+	
 	private Long uid;
+	
 	private String jobId;
 	private String status;
 	private String email;
 	private String ip;
-	private String input;
+	private String inputName;
 	private int inputType;
 	private Date submissionDate;
 	private String submissionId;
 	
-	private PDBScoreItemDB pdbScoreItem;
+	private PdbInfoDB pdbInfo;
 	
 	private Set<UserSessionDB> userSessions;
 	
-	public JobDB()
-	{
+	public JobDB() {
 		this.userSessions = new HashSet<UserSessionDB>();
 	}
 	
-	public JobDB(String input,
-				 int inputType)
-	{
-		this.input = input;
+	public JobDB(String inputName, int inputType) {
+		this.inputName = inputName;
 		this.inputType = inputType;
 	}
 	
@@ -77,12 +73,12 @@ public class JobDB implements Serializable
 		this.ip = ip;
 	}
 
-	public String getInput() {
-		return input;
+	public String getInputName() {
+		return inputName;
 	}
 
-	public void setInput(String input) {
-		this.input = input;
+	public void setInputName(String inputName) {
+		this.inputName = inputName;
 	}
 
 	public void setSubmissionDate(Date submissionDate) {
@@ -93,12 +89,12 @@ public class JobDB implements Serializable
 		return submissionDate;
 	}
 
-	public void setPdbScoreItem(PDBScoreItemDB pdbScoreItem) {
-		this.pdbScoreItem = pdbScoreItem;
+	public void setPdbInfo(PdbInfoDB pdbInfo) {
+		this.pdbInfo = pdbInfo;
 	}
 
-	public PDBScoreItemDB getPdbScoreItem() {
-		return pdbScoreItem;
+	public PdbInfoDB getPdbInfo() {
+		return pdbInfo;
 	}
 
 	public void setUserSessions(Set<UserSessionDB> userSessions) {

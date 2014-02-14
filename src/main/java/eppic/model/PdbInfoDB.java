@@ -6,78 +6,69 @@ import java.util.Date;
 import java.util.List;
 
 
-public class PDBScoreItemDB implements Serializable {
+public class PdbInfoDB implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	
 	private int uid;
 	
-	private String pdbName;
 	private String title;
 	private Date releaseDate;
 	private String spaceGroup;
 	private double resolution;
 	private double rfreeValue;
 	private String expMethod;
-	private RunParametersItemDB runParameters;
 	
-	private List<HomologsInfoItemDB> homologsInfoItems;
+	private String pdbCode;
+	
+	private RunParametersDB runParameters;
+	
+	private List<ChainClusterDB> chainClusters;
 
-	private List<InterfaceItemDB> interfaceItems;
+	private List<InterfaceDB> interfaceItems;
 	
-	private List<PdbBioUnitItemDB> bioUnitItems;
+	private List<AssemblyDB> assemblies;
 	
-	private JobDB jobItem;
+	private JobDB job;
 	
-	public PDBScoreItemDB() 
-	{
-		interfaceItems = new ArrayList<InterfaceItemDB>();
-		homologsInfoItems = new ArrayList<HomologsInfoItemDB>();
-		bioUnitItems = new ArrayList<PdbBioUnitItemDB>();
+	public PdbInfoDB() {
+		interfaceItems = new ArrayList<InterfaceDB>();
+		chainClusters = new ArrayList<ChainClusterDB>();
+		assemblies = new ArrayList<AssemblyDB>();
 	}
 	
-	public PDBScoreItemDB(int uid,
+	public PdbInfoDB(int uid,
 						JobDB jobItem,
-						String pdbName,
 						String title,
 						String spaceGroup,
 						String expMethod,
 						double resolution,
 						double rfreeValue,
-						RunParametersItemDB runParameters) 
-	{
-		interfaceItems = new ArrayList<InterfaceItemDB>();
-		homologsInfoItems = new ArrayList<HomologsInfoItemDB>();
-		bioUnitItems = new ArrayList<PdbBioUnitItemDB>();
+						RunParametersDB runParameters) {
+		
+		interfaceItems = new ArrayList<InterfaceDB>();
+		chainClusters = new ArrayList<ChainClusterDB>();
+		assemblies = new ArrayList<AssemblyDB>();
 		this.uid = uid;
-		this.pdbName = pdbName;
 		this.title = title;
 		this.spaceGroup = spaceGroup;
 		this.expMethod = expMethod;
 		this.resolution = resolution;
 		this.runParameters = runParameters;
-		this.jobItem = jobItem;
+		this.job = jobItem;
 		this.rfreeValue = rfreeValue;
 	}
 	
-	public List<PdbBioUnitItemDB> getBioUnitItems() {
-		return bioUnitItems;
+	public List<AssemblyDB> getAssemblies() {
+		return assemblies;
 	}
 
-	public void setBioUnitItems(List<PdbBioUnitItemDB> bioUnitItems) {
-		this.bioUnitItems = bioUnitItems;
+	public void setAssemblies(List<AssemblyDB> assemblies) {
+		this.assemblies = assemblies;
 	}
 	
-	public void addPdbBioUnitItem(PdbBioUnitItemDB unitItem) {
-		this.bioUnitItems.add(unitItem);
-	}
-
-	public String getPdbName() {
-		return pdbName;
-	}
-
-	public void setPdbName(String pdbName) {
-		this.pdbName = pdbName;
+	public void addAssembly(AssemblyDB assembly) {
+		this.assemblies.add(assembly);
 	}
 
 	public Date getReleaseDate() {
@@ -88,28 +79,28 @@ public class PDBScoreItemDB implements Serializable {
 		this.releaseDate = releaseDate;
 	}
 
-	public void setInterfaceItems(List<InterfaceItemDB> interfaceItems) {
+	public void setInterfaceItems(List<InterfaceDB> interfaceItems) {
 		this.interfaceItems = interfaceItems;
 	}
 
-	public List<InterfaceItemDB> getInterfaceItems() {
+	public List<InterfaceDB> getInterfaceItems() {
 		return interfaceItems;
 	}
 	
-	public void addInterfaceItem(InterfaceItemDB interfaceItem) {
+	public void addInterfaceItem(InterfaceDB interfaceItem) {
 		this.interfaceItems.add(interfaceItem);
 	}
 	
-	public InterfaceItemDB getInterfaceItem(int i) {
+	public InterfaceDB getInterfaceItem(int i) {
 		return this.interfaceItems.get(i);
 	}
 
-	public void setHomologsInfoItems(List<HomologsInfoItemDB> homologsInfoItems) {
-		this.homologsInfoItems = homologsInfoItems;
+	public void setChainClusters(List<ChainClusterDB> chainClusters) {
+		this.chainClusters = chainClusters;
 	}
 	
-	public List<HomologsInfoItemDB> getHomologsInfoItems() {
-		return this.homologsInfoItems;
+	public List<ChainClusterDB> getChainClusters() {
+		return this.chainClusters;
 	}
 
 	public void setTitle(String title) {
@@ -128,11 +119,20 @@ public class PDBScoreItemDB implements Serializable {
 		this.spaceGroup = spaceGroup;
 	}
 
-	public void setRunParameters(RunParametersItemDB runParameters) {
+	public String getPdbCode() {
+		return pdbCode;
+	}
+	
+	public void setPdbCode(String pdbCode) {
+		this.pdbCode = pdbCode;
+	}
+	
+	
+	public void setRunParameters(RunParametersDB runParameters) {
 		this.runParameters = runParameters;
 	}
 
-	public RunParametersItemDB getRunParameters() {
+	public RunParametersDB getRunParameters() {
 		return runParameters;
 	}
 
@@ -144,12 +144,12 @@ public class PDBScoreItemDB implements Serializable {
 		return uid;
 	}
 
-	public void setJobItem(JobDB jobItem) {
-		this.jobItem = jobItem;
+	public void setJob(JobDB job) {
+		this.job = job;
 	}
 
-	public JobDB getJobItem() {
-		return jobItem;
+	public JobDB getJob() {
+		return job;
 	}
 
 	public double getResolution() {

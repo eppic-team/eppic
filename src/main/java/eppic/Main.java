@@ -661,7 +661,7 @@ public class Main {
 		// a) getting the uniprot ids corresponding to the query (the pdb sequence)
 		writeStep("Finding Homologs and Calculating Entropies");		
 		cecs.retrieveQueryData(params);
-		wuiAdaptor.getRunParametersItem().setUniprotVer(cecs.getUniprotVer());
+		wuiAdaptor.getRunParametersItem().setUniProtVersion(cecs.getUniprotVer());
 		
 		// b) getting the homologs and sequence data and filtering it
 		cecs.retrieveHomologs(params);

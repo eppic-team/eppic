@@ -2,39 +2,41 @@ package eppic.model;
 
 import java.io.Serializable;
 
-public class HomologItemDB implements Serializable {
+public class HomologDB implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
 	private int uid;
 	
-	private String uniId;
-	private Double seqIdToQuery;
-	private Double queryCov;
+	private String uniProtId;
+	private double seqId;
+	private double queryCoverage;
 	private String firstTaxon;
 	private String lastTaxon;
 	private int queryStart;
 	private int queryEnd;
 	
-	private HomologsInfoItemDB homologsInfoItem;
+	private String alignedSeq;
 	
-	public HomologItemDB() {
+	private ChainClusterDB chainCluster;
+	
+	public HomologDB() {
 		
 	}
 	
-	public HomologItemDB(int uid,
-						 String uniId,
-						 double seqIdToQuery,
-						 double queryCov,
+	public HomologDB(int uid,
+						 String uniProtId,
+						 double seqId,
+						 double queryCoverage,
 						 String firstTaxon,
 						 String lastTaxon,
 						 int queryStart,
 						 int queryEnd) {
 		
 		this.uid = uid;
-		this.uniId = uniId;
-		this.seqIdToQuery = seqIdToQuery;
-		this.queryCov = queryCov;
+		this.uniProtId = uniProtId;
+		this.seqId = seqId;
+		this.queryCoverage = queryCoverage;
 		this.firstTaxon = firstTaxon;
 		this.lastTaxon = lastTaxon;
 		this.queryStart = queryStart;
@@ -42,28 +44,28 @@ public class HomologItemDB implements Serializable {
 		
 	}
 
-	public String getUniId() {
-		return uniId;
+	public String getUniProtId() {
+		return uniProtId;
 	}
 
-	public void setUniId(String uniId) {
-		this.uniId = uniId;
+	public void setUniProtId(String uniProtId) {
+		this.uniProtId = uniProtId;
 	}
 
-	public Double getSeqIdToQuery() {
-		return seqIdToQuery;
+	public double getSeqId() {
+		return seqId;
 	}
 
-	public void setSeqIdToQuery(Double seqIdToQuery) {
-		this.seqIdToQuery = seqIdToQuery;
+	public void setSeqId(double seqId) {
+		this.seqId = seqId;
 	}
 
-	public Double getQueryCov() {
-		return queryCov;
+	public double getQueryCoverage() {
+		return queryCoverage;
 	}
 
-	public void setQueryCov(Double queryCov) {
-		this.queryCov = queryCov;
+	public void setQueryCoverage(double queryCoverage) {
+		this.queryCoverage = queryCoverage;
 	}
 
 	public String getFirstTaxon() {
@@ -90,12 +92,12 @@ public class HomologItemDB implements Serializable {
 		this.uid = uid;
 	}
 
-	public HomologsInfoItemDB getHomologsInfoItem() {
-		return homologsInfoItem;
+	public ChainClusterDB getChainCluster() {
+		return chainCluster;
 	}
 
-	public void setHomologsInfoItem(HomologsInfoItemDB homologsInfoItem) {
-		this.homologsInfoItem = homologsInfoItem;
+	public void setChainCluster(ChainClusterDB chainCluster) {
+		this.chainCluster = chainCluster;
 	}
 
 	public int getQueryStart() {
@@ -112,6 +114,14 @@ public class HomologItemDB implements Serializable {
 
 	public void setQueryEnd(int queryEnd) {
 		this.queryEnd = queryEnd;
+	}
+
+	public String getAlignedSeq() {
+		return alignedSeq;
+	}
+
+	public void setAlignedSeq(String alignedSeq) {
+		this.alignedSeq = alignedSeq;
 	}
 	
 }
