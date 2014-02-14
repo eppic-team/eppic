@@ -220,9 +220,9 @@ public class PDBScoreItem implements Serializable, ProcessingData
 	{
 		PDBScoreItem pdbScoreItem = new PDBScoreItem();
 		
-		if(pdbScoreItemDB.getInterfaceItems() != null)
+		if(pdbScoreItemDB.getInterfaces() != null)
 		{
-			List<InterfaceDB> interfaceItemDBs = pdbScoreItemDB.getInterfaceItems();
+			List<InterfaceDB> interfaceItemDBs = pdbScoreItemDB.getInterfaces();
 			
 			List<InterfaceItem> interfaceItems = new ArrayList<InterfaceItem>();
 			
