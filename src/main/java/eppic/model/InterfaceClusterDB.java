@@ -1,8 +1,9 @@
 package eppic.model;
 
 import java.io.Serializable;
+import java.util.List;
 
-public class InterfaceCluster implements Serializable {
+public class InterfaceClusterDB implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	
@@ -12,6 +13,8 @@ public class InterfaceCluster implements Serializable {
 	private String pdbCode;
 	
 	private double confidence;
+	
+	private List<InterfaceDB> interfaceItems;
 
 	public int getUid() {
 		return uid;
@@ -43,6 +46,14 @@ public class InterfaceCluster implements Serializable {
 
 	public void setConfidence(double confidence) {
 		this.confidence = confidence;
+	}
+
+	public List<InterfaceDB> getInterfaceItems() {
+		return interfaceItems;
+	}
+
+	public void setInterfaceItems(List<InterfaceDB> interfaceItems) {
+		this.interfaceItems = interfaceItems;
 	}
 	
 

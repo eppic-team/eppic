@@ -27,6 +27,8 @@ public class PdbInfoDB implements Serializable {
 
 	private List<InterfaceDB> interfaceItems;
 	
+	private List<InterfaceClusterDB> interfaceClusters;
+	
 	private List<AssemblyDB> assemblies;
 	
 	private JobDB job;
@@ -79,19 +81,19 @@ public class PdbInfoDB implements Serializable {
 		this.releaseDate = releaseDate;
 	}
 
-	public void setInterfaceItems(List<InterfaceDB> interfaceItems) {
-		this.interfaceItems = interfaceItems;
+	public void setInterfaces(List<InterfaceDB> interfaces) {
+		this.interfaceItems = interfaces;
 	}
 
-	public List<InterfaceDB> getInterfaceItems() {
+	public List<InterfaceDB> getInterfaces() {
 		return interfaceItems;
 	}
 	
-	public void addInterfaceItem(InterfaceDB interfaceItem) {
+	public void addInterface(InterfaceDB interfaceItem) {
 		this.interfaceItems.add(interfaceItem);
 	}
 	
-	public InterfaceDB getInterfaceItem(int i) {
+	public InterfaceDB getInterface(int i) {
 		return this.interfaceItems.get(i);
 	}
 
@@ -101,6 +103,14 @@ public class PdbInfoDB implements Serializable {
 	
 	public List<ChainClusterDB> getChainClusters() {
 		return this.chainClusters;
+	}
+
+	public List<InterfaceClusterDB> getInterfaceClusters() {
+		return interfaceClusters;
+	}
+
+	public void setInterfaceClusters(List<InterfaceClusterDB> interfaceClusters) {
+		this.interfaceClusters = interfaceClusters;
 	}
 
 	public void setTitle(String title) {

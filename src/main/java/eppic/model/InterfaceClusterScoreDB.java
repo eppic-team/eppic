@@ -2,7 +2,7 @@ package eppic.model;
 
 import java.io.Serializable;
 
-public class InterfaceClusterScore implements Serializable {
+public class InterfaceClusterScoreDB implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	
@@ -14,6 +14,8 @@ public class InterfaceClusterScore implements Serializable {
 	private double confidence;
 	
 	private String method;
+	
+	private InterfaceClusterDB interfaceCluster;
 
 	public int getUid() {
 		return uid;
@@ -53,6 +55,14 @@ public class InterfaceClusterScore implements Serializable {
 
 	public void setMethod(String method) {
 		this.method = method;
+	}
+
+	public InterfaceClusterDB getInterfaceCluster() {
+		return interfaceCluster;
+	}
+
+	public void setInterfaceCluster(InterfaceClusterDB interfaceCluster) {
+		this.interfaceCluster = interfaceCluster;
 	}
 
 }

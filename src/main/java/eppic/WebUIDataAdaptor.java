@@ -125,7 +125,7 @@ public class WebUIDataAdaptor {
 			
 			ii.setPdbInfo(pdbScoreItem);
 			
-			pdbScoreItem.addInterfaceItem(ii);
+			pdbScoreItem.addInterface(ii);
 			
 			interfId2Warnings.put(interf.getId(),new HashSet<String>());
 		}
@@ -224,7 +224,7 @@ public class WebUIDataAdaptor {
 	
 	public void setGeometryScores(List<GeometryPredictor> gps) {
 		for (int i=0;i<gps.size();i++) {
-			InterfaceDB ii = pdbScoreItem.getInterfaceItem(i);
+			InterfaceDB ii = pdbScoreItem.getInterface(i);
 			InterfaceScoreDB isi = new InterfaceScoreDB();
 			ii.addInterfaceScore(isi);
 			isi.setInterface(ii);
@@ -314,7 +314,7 @@ public class WebUIDataAdaptor {
 		for (int i=0;i<iecl.size();i++) {
 			
 			InterfaceEvolContext iec = iecl.get(i);
-			InterfaceDB ii = pdbScoreItem.getInterfaceItem(i);
+			InterfaceDB ii = pdbScoreItem.getInterface(i);
 			
 			// 1) we add entropy values to the residue details
 			addEntropyToResidueDetails(ii.getResidues(), iec);
@@ -398,7 +398,7 @@ public class WebUIDataAdaptor {
 	
 	public void setCombinedPredictors(List<CombinedPredictor> cps) {
 		for (int i=0;i<cps.size();i++) {
-			InterfaceDB ii = pdbScoreItem.getInterfaceItem(i);
+			InterfaceDB ii = pdbScoreItem.getInterface(i);
 			ii.setFinalCallName(cps.get(i).getCall().getName());		
 			ii.setFinalCallReason(cps.get(i).getCallReason());
 			if(cps.get(i).getWarnings() != null)
@@ -426,7 +426,7 @@ public class WebUIDataAdaptor {
 		for (int i=0;i<interfaces.size();i++) {
 
 			ChainInterface interf = interfaces.get(i+1);
-			InterfaceDB ii = pdbScoreItem.getInterfaceItem(i);
+			InterfaceDB ii = pdbScoreItem.getInterface(i);
 
 			// we add the residue details
 			addResidueDetails(ii, interf, params.isDoScoreEntropies());
@@ -546,8 +546,8 @@ public class WebUIDataAdaptor {
 	 */
 	public void addInterfaceWarnings() {
 		
-		for (int i=0;i<pdbScoreItem.getInterfaceItems().size();i++) {
-			InterfaceDB ii = pdbScoreItem.getInterfaceItem(i);
+		for (int i=0;i<pdbScoreItem.getInterfaces().size();i++) {
+			InterfaceDB ii = pdbScoreItem.getInterface(i);
 			for (String warning : interfId2Warnings.get(ii.getInterfaceId())) {
 				InterfaceWarningDB warningItem = new InterfaceWarningDB();
 				warningItem.setText(warning);
