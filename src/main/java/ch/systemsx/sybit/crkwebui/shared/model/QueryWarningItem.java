@@ -2,7 +2,7 @@ package ch.systemsx.sybit.crkwebui.shared.model;
 
 import java.io.Serializable;
 
-import eppic.model.QueryWarningItemDB;
+import eppic.model.UniProtRefWarningDB;
 
 /**
  * DTO class for Query Warning item.
@@ -45,7 +45,7 @@ public class QueryWarningItem implements Serializable
 	 * @param queryWarningItemDB model item to convert
 	 * @return DTO representation of model item
 	 */
-	public static QueryWarningItem create(QueryWarningItemDB queryWarningItemDB)
+	public static QueryWarningItem create(UniProtRefWarningDB queryWarningItemDB)
 	{
 		QueryWarningItem warningItem = new QueryWarningItem();
 		warningItem.setText(queryWarningItemDB.getText());

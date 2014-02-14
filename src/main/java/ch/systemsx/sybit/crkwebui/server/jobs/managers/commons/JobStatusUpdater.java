@@ -16,7 +16,7 @@ import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.DeserializationException;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.JobHandlerException;
 import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
-import eppic.model.PDBScoreItemDB;
+import eppic.model.PdbInfoDB;
 
 /**
  * Daemon used to update status of submitted jobs.
@@ -142,7 +142,7 @@ public class JobStatusUpdater implements Runnable
 
 	    File resultsDirectory = new File(generalDestinationDirectoryName, jobStatusDetails.getJobId());
 	    File resultsFile = new File(resultsDirectory, webuiFileName);
-		PDBScoreItemDB pdbScoreItem = retrieveResult(resultsFile);
+		PdbInfoDB pdbScoreItem = retrieveResult(resultsFile);
 		jobDAO.setPdbScoreItemForJob(jobStatusDetails.getJobId(), pdbScoreItem);
 
 		LogHandler.writeToLogFile(logFile, "Processing finished\n");
@@ -239,9 +239,9 @@ public class JobStatusUpdater implements Runnable
 	 * @return pdb score item
 	 * @throws DeserializationException when can not retrieve result from specified file
 	 */
-	private PDBScoreItemDB retrieveResult(File resultFile) throws DeserializationException
+	private PdbInfoDB retrieveResult(File resultFile) throws DeserializationException
 	{
-		PDBScoreItemDB pdbScoreItem = null;
+		PdbInfoDB pdbScoreItem = null;
 
 		if (resultFile.exists())
 		{
@@ -252,7 +252,7 @@ public class JobStatusUpdater implements Runnable
 			{
 				fileInputStream = new FileInputStream(resultFile);
 				inputStream = new ObjectInputStream(fileInputStream);
-				pdbScoreItem = (PDBScoreItemDB)inputStream.readObject();
+				pdbScoreItem = (PdbInfoDB)inputStream.readObject();
 			}
 			catch (Throwable e)
 			{

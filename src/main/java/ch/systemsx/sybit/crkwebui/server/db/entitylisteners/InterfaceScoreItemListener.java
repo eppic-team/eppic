@@ -3,7 +3,7 @@ package ch.systemsx.sybit.crkwebui.server.db.entitylisteners;
 import javax.persistence.PostLoad;
 import javax.persistence.PrePersist;
 
-import eppic.model.InterfaceScoreItemDB;
+import eppic.model.InterfaceScoreDB;
 
 /**
  * Entity listener for InterfaceScoreItem used to properly handle NaN and null values.
@@ -13,7 +13,7 @@ import eppic.model.InterfaceScoreItemDB;
 public class InterfaceScoreItemListener
 {
 	@PrePersist
-	public void prePersist(InterfaceScoreItemDB interfaceScoreItemDB)
+	public void prePersist(InterfaceScoreDB interfaceScoreItemDB)
 	{
 		if(interfaceScoreItemDB.getScore1() != null)
 		{
@@ -41,7 +41,7 @@ public class InterfaceScoreItemListener
 	}
 	
 	@PostLoad
-	public void postLoad(InterfaceScoreItemDB interfaceScoreItemDB)
+	public void postLoad(InterfaceScoreDB interfaceScoreItemDB)
 	{
 		if(interfaceScoreItemDB.getScore1() == null)
 		{

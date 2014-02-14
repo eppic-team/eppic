@@ -9,7 +9,7 @@ import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
 import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
 import eppic.model.JobDB;
-import eppic.model.PDBScoreItemDB;
+import eppic.model.PdbInfoDB;
 
 /**
  * DAO interface for Job item.
@@ -132,7 +132,7 @@ public interface JobDAO
 	 * @param pdbScoreItem pdb score item
 	 * @throws DaoException when can not retrieve information from data storage
 	 */
-	public void setPdbScoreItemForJob(String jobId, PDBScoreItemDB pdbScoreItem) throws DaoException;
+	public void setPdbScoreItemForJob(String jobId, PdbInfoDB pdbScoreItem) throws DaoException;
 
 	/**
 	 * Retrieves list of jobs which are not finished yet.

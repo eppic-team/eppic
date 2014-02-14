@@ -27,7 +27,7 @@ import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
 import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
 import eppic.model.JobDB;
-import eppic.model.PDBScoreItemDB;
+import eppic.model.PdbInfoDB;
 import eppic.model.UserSessionDB;
 
 /**
@@ -61,7 +61,7 @@ public class JobDAOJpa implements JobDAO
 			JobDB job = new JobDB();
 			job.setJobId(jobId);
 			job.setEmail(email);
-			job.setInput(input);
+			job.setInputName(input);
 			job.setIp(ip);
 			job.setStatus(status.getName());
 			job.setSubmissionDate(submissionDate);
@@ -397,7 +397,7 @@ public class JobDAOJpa implements JobDAO
 		{
 			processingInProgressData = new ProcessingInProgressData();
 			processingInProgressData.setJobId(job.getJobId());
-			processingInProgressData.setInput(job.getInput());
+			processingInProgressData.setInput(job.getInputName());
 			processingInProgressData.setStatus(job.getStatus());
 			processingInProgressData.setInputType(job.getInputType());
 		}
@@ -618,7 +618,7 @@ public class JobDAOJpa implements JobDAO
 			Query query = entityManager.createQuery(criteriaQuery);
 			JobDB job = (JobDB)query.getSingleResult();
 			
-			InputWithType inputWithType = new InputWithType(job.getInput(), 
+			InputWithType inputWithType = new InputWithType(job.getInputName(), 
 															job.getInputType());
 			return inputWithType;
 		}
@@ -641,7 +641,7 @@ public class JobDAOJpa implements JobDAO
 	}
 
 	@Override
-	public void setPdbScoreItemForJob(String jobId, PDBScoreItemDB pdbScoreItem)
+	public void setPdbScoreItemForJob(String jobId, PdbInfoDB pdbScoreItem)
 			throws DaoException
 	{
 		EntityManager entityManager = null;
@@ -656,8 +656,8 @@ public class JobDAOJpa implements JobDAO
 
 			if(job != null)
 			{
-				pdbScoreItem.setJobItem(job);
-				job.setPdbScoreItem(pdbScoreItem);
+				pdbScoreItem.setJob(job);
+				job.setPdbInfo(pdbScoreItem);
 				job.setStatus(StatusOfJob.FINISHED.getName());
 //				entityManager.merge(job);
 			}
@@ -793,7 +793,7 @@ public class JobDAOJpa implements JobDAO
 		{
 			jobStatusDetails = new JobStatusDetails(job.getJobId(),
 													job.getStatus(),
-													job.getInput(),
+													job.getInputName(),
 													job.getEmail(),
 													job.getSubmissionId());
 		}

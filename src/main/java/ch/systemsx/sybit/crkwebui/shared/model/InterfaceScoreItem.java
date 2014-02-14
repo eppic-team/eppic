@@ -2,7 +2,7 @@ package ch.systemsx.sybit.crkwebui.shared.model;
 
 import java.io.Serializable;
 
-import eppic.model.InterfaceScoreItemDB;
+import eppic.model.InterfaceScoreDB;
 
 /**
  * DTO class for InterfaceScore item.
@@ -99,12 +99,12 @@ public class InterfaceScoreItem implements Serializable
 	 * @param interfaceScoreItemDB model item to convert
 	 * @return DTO representation of model item
 	 */
-	public static InterfaceScoreItem create(InterfaceScoreItemDB interfaceScoreItemDB)
+	public static InterfaceScoreItem create(InterfaceScoreDB interfaceScoreItemDB)
 	{
 		InterfaceScoreItem interfaceScoreItem = new InterfaceScoreItem();
-		interfaceScoreItem.setCallName(interfaceScoreItemDB.getCallName());
+		interfaceScoreItem.setCallName(interfaceScoreItemDB.getCall());
 		interfaceScoreItem.setCallReason(interfaceScoreItemDB.getCallReason());
-		interfaceScoreItem.setId(interfaceScoreItemDB.getId());
+		interfaceScoreItem.setId(interfaceScoreItemDB.getInterfaceId());
 		interfaceScoreItem.setMethod(interfaceScoreItemDB.getMethod());
 		interfaceScoreItem.setUid(interfaceScoreItemDB.getUid());
 		interfaceScoreItem.setScore1(interfaceScoreItemDB.getScore1());

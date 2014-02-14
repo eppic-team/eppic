@@ -2,7 +2,7 @@ package ch.systemsx.sybit.crkwebui.shared.model;
 
 import java.io.Serializable;
 
-import eppic.model.InterfaceResidueItemDB;
+import eppic.model.ResidueDB;
 
 /**
  * DTO class for InterfaceResidue item.
@@ -121,11 +121,11 @@ public class InterfaceResidueItem implements Serializable
 	 * @param interfaceResidueItemDB model item to convert
 	 * @return DTO representation of model item
 	 */
-	public static InterfaceResidueItem create(InterfaceResidueItemDB interfaceResidueItemDB)
+	public static InterfaceResidueItem create(ResidueDB interfaceResidueItemDB)
 	{
 		InterfaceResidueItem interfaceResidueItem = new InterfaceResidueItem();
 		interfaceResidueItem.setAsa(interfaceResidueItemDB.getAsa());
-		interfaceResidueItem.setAssignment(interfaceResidueItemDB.getAssignment());
+		interfaceResidueItem.setAssignment(interfaceResidueItemDB.getRegion());
 		interfaceResidueItem.setBsa(interfaceResidueItemDB.getBsa());
 		interfaceResidueItem.setBsaPercentage(interfaceResidueItemDB.getBsa() / 
 											  interfaceResidueItemDB.getAsa());
@@ -133,7 +133,7 @@ public class InterfaceResidueItem implements Serializable
 		interfaceResidueItem.setResidueNumber(interfaceResidueItemDB.getResidueNumber());
 		interfaceResidueItem.setPdbResidueNumber(interfaceResidueItemDB.getPdbResidueNumber());
 		interfaceResidueItem.setResidueType(interfaceResidueItemDB.getResidueType());
-		interfaceResidueItem.setStructure(interfaceResidueItemDB.getStructure());
+		interfaceResidueItem.setStructure(interfaceResidueItemDB.getSide());
 		interfaceResidueItem.setUid(interfaceResidueItemDB.getUid());
 		return interfaceResidueItem;
 	}

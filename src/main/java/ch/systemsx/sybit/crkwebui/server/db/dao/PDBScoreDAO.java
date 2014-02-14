@@ -2,7 +2,7 @@ package ch.systemsx.sybit.crkwebui.server.db.dao;
 
 import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
 import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
-import eppic.model.PDBScoreItemDB;
+import eppic.model.PdbInfoDB;
 
 /**
  * DAO for PDBScore item.
@@ -24,5 +24,5 @@ public interface PDBScoreDAO
 	 * @param pdbScoreItem pdb score item to persist
 	 * @throws DaoException when can not insert pdb score item
 	 */
-	public void insertPDBScore(PDBScoreItemDB pdbScoreItem) throws DaoException;
+	public void insertPDBScore(PdbInfoDB pdbScoreItem) throws DaoException;
 }

@@ -3,7 +3,7 @@ package ch.systemsx.sybit.crkwebui.server.db.entitylisteners;
 import javax.persistence.PostLoad;
 import javax.persistence.PrePersist;
 
-import eppic.model.InterfaceResidueItemDB;
+import eppic.model.ResidueDB;
 
 /**
  * Entity listener for InterfaceResidueItem used to properly handle NaN and null values.
@@ -13,7 +13,7 @@ import eppic.model.InterfaceResidueItemDB;
 public class InterfaceResidueItemListener
 {
 	@PrePersist
-	public void prePersist(InterfaceResidueItemDB interfaceResidueItemDB)
+	public void prePersist(ResidueDB interfaceResidueItemDB)
 	{
 		if(interfaceResidueItemDB.getBsa() != null)
 		{
@@ -41,7 +41,7 @@ public class InterfaceResidueItemListener
 	}
 	
 	@PostLoad
-	public void postLoad(InterfaceResidueItemDB interfaceResidueItemDB)
+	public void postLoad(ResidueDB interfaceResidueItemDB)
 	{
 		if(interfaceResidueItemDB.getBsa() == null)
 		{

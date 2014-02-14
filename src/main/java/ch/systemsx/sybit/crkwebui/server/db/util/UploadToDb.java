@@ -1,6 +1,6 @@
 package ch.systemsx.sybit.crkwebui.server.db.util;
 
-import eppic.model.PDBScoreItemDB;
+import eppic.model.PdbInfoDB;
 import gnu.getopt.Getopt;
 
 import java.io.BufferedReader;
@@ -169,7 +169,7 @@ public class UploadToDb {
 				
 				if(isWuiPresent) {
 					ObjectInputStream in = new ObjectInputStream(new FileInputStream(webuiFile));
-					PDBScoreItemDB pdbScoreItem = (PDBScoreItemDB)in.readObject();
+					PdbInfoDB pdbScoreItem = (PdbInfoDB)in.readObject();
 					in.close();
 					
 					toAdd = pdbScoreItem;
@@ -183,7 +183,7 @@ public class UploadToDb {
 					boolean ifRemoved = dbh.removefromDB(currentPDB);
 					if (ifRemoved) System.out.print(" Found.. Removing and Updating.. ");
 					else System.out.print(" Not Found.. Adding.. ");
-					if(isWuiPresent) dbh.addToDB((PDBScoreItemDB) toAdd);
+					if(isWuiPresent) dbh.addToDB((PdbInfoDB) toAdd);
 					else dbh.addToDB((String) toAdd);
 					//continue;
 				}
@@ -193,7 +193,7 @@ public class UploadToDb {
 					boolean isPresent = dbh.checkfromDB(currentPDB);
 					if(!isPresent){
 						System.out.print(" Not Present.. Adding.. ");
-						if(isWuiPresent) dbh.addToDB((PDBScoreItemDB) toAdd);
+						if(isWuiPresent) dbh.addToDB((PdbInfoDB) toAdd);
 						else dbh.addToDB((String) toAdd);
 					}
 					else System.out.print(" Already Present.. Skipping.. ");

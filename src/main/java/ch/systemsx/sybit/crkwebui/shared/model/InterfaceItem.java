@@ -4,11 +4,11 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import eppic.model.InterfaceItemDB;
-import eppic.model.InterfaceResidueItemDB;
-import eppic.model.InterfaceScoreItemDB;
+import eppic.model.InterfaceDB;
+import eppic.model.ResidueDB;
+import eppic.model.InterfaceScoreDB;
 import eppic.model.PdbBioUnitAssignmentItemDB;
-import eppic.model.WarningItemDB;
+import eppic.model.InterfaceWarningDB;
 
 /**
  * DTO class for Interface item.
@@ -271,30 +271,22 @@ public class InterfaceItem implements Serializable, Comparable<InterfaceItem>
 	 * @param interfaceItemDB model item to convert
 	 * @return DTO representation of model item
 	 */
-	public static InterfaceItem create(InterfaceItemDB interfaceItemDB)
+	public static InterfaceItem create(InterfaceDB interfaceItemDB)
 	{
 		InterfaceItem interfaceItem = new InterfaceItem();
 		interfaceItem.setArea(interfaceItemDB.getArea());
-		interfaceItem.setAsaC1(interfaceItemDB.getAsaC1());
-		interfaceItem.setAsaC2(interfaceItemDB.getAsaC2());
-		interfaceItem.setAsaR1(interfaceItemDB.getAsaR1());
-		interfaceItem.setAsaR2(interfaceItemDB.getAsaR2());
-		interfaceItem.setBsaC1(interfaceItemDB.getBsaC1());
-		interfaceItem.setBsaC2(interfaceItemDB.getBsaC2());
-		interfaceItem.setBsaR1(interfaceItemDB.getBsaR1());
-		interfaceItem.setBsaR2(interfaceItemDB.getBsaR2());
 		interfaceItem.setFinalCallName(interfaceItemDB.getFinalCallName());
 		interfaceItem.setFinalCallReason(interfaceItemDB.getFinalCallReason());
-		interfaceItem.setId(interfaceItemDB.getId());
+		interfaceItem.setId(interfaceItemDB.getInterfaceId());
 		interfaceItem.setClusterId(interfaceItemDB.getClusterId());
 		
-		if(interfaceItemDB.getInterfaceResidues() != null)
+		if(interfaceItemDB.getResidues() != null)
 		{
-			List<InterfaceResidueItemDB> interfaceResidueItemDBs = interfaceItemDB.getInterfaceResidues();
+			List<ResidueDB> interfaceResidueItemDBs = interfaceItemDB.getResidues();
 			
 			List<InterfaceResidueItem> interfaceResidueItems = new ArrayList<InterfaceResidueItem>();
 			
-			for(InterfaceResidueItemDB interfaceResidueItemDB : interfaceResidueItemDBs)
+			for(ResidueDB interfaceResidueItemDB : interfaceResidueItemDBs)
 			{
 				interfaceResidueItems.add(InterfaceResidueItem.create(interfaceResidueItemDB));
 			}
@@ -304,11 +296,11 @@ public class InterfaceItem implements Serializable, Comparable<InterfaceItem>
 		
 		if(interfaceItemDB.getInterfaceScores() != null)
 		{
-			List<InterfaceScoreItemDB> interfaceScoreItemDBs = interfaceItemDB.getInterfaceScores();
+			List<InterfaceScoreDB> interfaceScoreItemDBs = interfaceItemDB.getInterfaceScores();
 			
 			List<InterfaceScoreItem> interfaceScoreItems = new ArrayList<InterfaceScoreItem>();
 			
-			for(InterfaceScoreItemDB interfaceScoreItemDB : interfaceScoreItemDBs)
+			for(InterfaceScoreDB interfaceScoreItemDB : interfaceScoreItemDBs)
 			{
 				interfaceScoreItems.add(InterfaceScoreItem.create(interfaceScoreItemDB));
 			}
@@ -339,13 +331,13 @@ public class InterfaceItem implements Serializable, Comparable<InterfaceItem>
 		interfaceItem.setSize2(interfaceItemDB.getSize2());
 		interfaceItem.setUid(interfaceItemDB.getUid());
 		
-		if(interfaceItemDB.getWarnings() != null)
+		if(interfaceItemDB.getInterfaceWarnings() != null)
 		{
-			List<WarningItemDB> warningItemDBs = interfaceItemDB.getWarnings();
+			List<InterfaceWarningDB> warningItemDBs = interfaceItemDB.getInterfaceWarnings();
 			
 			List<WarningItem> warningItems = new ArrayList<WarningItem>();
 			
-			for(WarningItemDB warningItemDB : warningItemDBs)
+			for(InterfaceWarningDB warningItemDB : warningItemDBs)
 			{
 				warningItems.add(WarningItem.create(warningItemDB));
 			}

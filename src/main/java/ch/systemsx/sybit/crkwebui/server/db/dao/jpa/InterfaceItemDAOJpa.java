@@ -16,8 +16,8 @@ import ch.systemsx.sybit.crkwebui.server.db.EntityManagerHandler;
 import ch.systemsx.sybit.crkwebui.server.db.dao.InterfaceItemDAO;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceItem;
-import eppic.model.InterfaceItemDB;
-import eppic.model.PDBScoreItemDB;
+import eppic.model.InterfaceDB;
+import eppic.model.PdbInfoDB;
 
 /**
  * Implementation of InterfaceItemDAO.
@@ -38,20 +38,20 @@ public class InterfaceItemDAOJpa implements InterfaceItemDAO
 			entityManager = EntityManagerHandler.getEntityManager();
 			
 			CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-			CriteriaQuery<InterfaceItemDB> criteriaQuery = criteriaBuilder.createQuery(InterfaceItemDB.class);
+			CriteriaQuery<InterfaceDB> criteriaQuery = criteriaBuilder.createQuery(InterfaceDB.class);
 			
-			Root<InterfaceItemDB> interfaceItemRoot = criteriaQuery.from(InterfaceItemDB.class);
-			Path<PDBScoreItemDB> pdbScoreItemDB = interfaceItemRoot.get(InterfaceItemDB_.pdbScoreItem);
+			Root<InterfaceDB> interfaceItemRoot = criteriaQuery.from(InterfaceDB.class);
+			Path<PdbInfoDB> pdbScoreItemDB = interfaceItemRoot.get(InterfaceItemDB_.pdbScoreItem);
 			criteriaQuery.where(criteriaBuilder.equal(pdbScoreItemDB.get(PDBScoreItemDB_.uid), pdbScoreUid));
 			
 			Query query = entityManager.createQuery(criteriaQuery);
 			
 			@SuppressWarnings("unchecked")
-			List<InterfaceItemDB> interfaceItemDBs = query.getResultList();
+			List<InterfaceDB> interfaceItemDBs = query.getResultList();
 			
-			for(InterfaceItemDB interfaceItemDB : interfaceItemDBs)
+			for(InterfaceDB interfaceItemDB : interfaceItemDBs)
 			{
-				interfaceItemDB.setInterfaceResidues(null);
+				interfaceItemDB.setResidues(null);
 				result.add(InterfaceItem.create(interfaceItemDB));
 			}
 			
@@ -87,21 +87,21 @@ public class InterfaceItemDAOJpa implements InterfaceItemDAO
 			entityManager = EntityManagerHandler.getEntityManager();
 			
 			CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-			CriteriaQuery<InterfaceItemDB> criteriaQuery = criteriaBuilder.createQuery(InterfaceItemDB.class);
+			CriteriaQuery<InterfaceDB> criteriaQuery = criteriaBuilder.createQuery(InterfaceDB.class);
 			
-			Root<InterfaceItemDB> interfaceItemRoot = criteriaQuery.from(InterfaceItemDB.class);
-			Path<PDBScoreItemDB> pdbScoreItemDB = interfaceItemRoot.get(InterfaceItemDB_.pdbScoreItem);
+			Root<InterfaceDB> interfaceItemRoot = criteriaQuery.from(InterfaceDB.class);
+			Path<PdbInfoDB> pdbScoreItemDB = interfaceItemRoot.get(InterfaceItemDB_.pdbScoreItem);
 			criteriaQuery.where(criteriaBuilder.equal(pdbScoreItemDB.get(PDBScoreItemDB_.uid), pdbScoreUid));
 			
 			Query query = entityManager.createQuery(criteriaQuery);
 			
 			@SuppressWarnings("unchecked")
-			List<InterfaceItemDB> interfaceItemDBs = query.getResultList();
+			List<InterfaceDB> interfaceItemDBs = query.getResultList();
 			
-			for(InterfaceItemDB interfaceItemDB : interfaceItemDBs)
+			for(InterfaceDB interfaceItemDB : interfaceItemDBs)
 			{
-				interfaceItemDB.setInterfaceResidues(null);
-				if(interfaceIds.contains(interfaceItemDB.getId())){
+				interfaceItemDB.setResidues(null);
+				if(interfaceIds.contains(interfaceItemDB.getInterfaceId())){
 					result.add(InterfaceItem.create(interfaceItemDB));
 				}
 			}
@@ -139,21 +139,21 @@ public class InterfaceItemDAOJpa implements InterfaceItemDAO
 			entityManager = EntityManagerHandler.getEntityManager();
 			
 			CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-			CriteriaQuery<InterfaceItemDB> criteriaQuery = criteriaBuilder.createQuery(InterfaceItemDB.class);
+			CriteriaQuery<InterfaceDB> criteriaQuery = criteriaBuilder.createQuery(InterfaceDB.class);
 			
-			Root<InterfaceItemDB> interfaceItemRoot = criteriaQuery.from(InterfaceItemDB.class);
-			Path<PDBScoreItemDB> pdbScoreItemDB = interfaceItemRoot.get(InterfaceItemDB_.pdbScoreItem);
+			Root<InterfaceDB> interfaceItemRoot = criteriaQuery.from(InterfaceDB.class);
+			Path<PdbInfoDB> pdbScoreItemDB = interfaceItemRoot.get(InterfaceItemDB_.pdbScoreItem);
 			criteriaQuery.where(criteriaBuilder.equal(pdbScoreItemDB.get(PDBScoreItemDB_.uid), pdbScoreUid));
 			
 			Query query = entityManager.createQuery(criteriaQuery);
 			
 			@SuppressWarnings("unchecked")
-			List<InterfaceItemDB> interfaceItemDBs = query.getResultList();
+			List<InterfaceDB> interfaceItemDBs = query.getResultList();
 			
-			for(InterfaceItemDB interfaceItemDB : interfaceItemDBs)
+			for(InterfaceDB interfaceItemDB : interfaceItemDBs)
 			{
 				interfaceItemDB.setInterfaceScores(null);
-				interfaceItemDB.setWarnings(null);
+				interfaceItemDB.setInterfaceWarnings(null);
 				result.add(InterfaceItem.create(interfaceItemDB));
 			}
 			

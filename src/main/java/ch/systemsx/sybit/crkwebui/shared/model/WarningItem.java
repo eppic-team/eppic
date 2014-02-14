@@ -2,7 +2,7 @@ package ch.systemsx.sybit.crkwebui.shared.model;
 
 import java.io.Serializable;
 
-import eppic.model.WarningItemDB;
+import eppic.model.InterfaceWarningDB;
 
 /**
  * DTO class for warning item entry.
@@ -41,7 +41,7 @@ public class WarningItem implements Serializable
 	 * @param warningItemDB model item to convert
 	 * @return DTO representation of model item
 	 */
-	public static WarningItem create(WarningItemDB warningItemDB)
+	public static WarningItem create(InterfaceWarningDB warningItemDB)
 	{
 		WarningItem warningItem = new WarningItem();
 		warningItem.setText(warningItemDB.getText());

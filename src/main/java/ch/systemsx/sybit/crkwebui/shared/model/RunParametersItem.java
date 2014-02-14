@@ -2,7 +2,7 @@ package ch.systemsx.sybit.crkwebui.shared.model;
 
 import java.io.Serializable;
 
-import eppic.model.RunParametersItemDB;
+import eppic.model.RunParametersDB;
 
 /**
  * DTO class for run parameters item entry.
@@ -162,24 +162,24 @@ public class RunParametersItem implements Serializable
 	 * @param runParametersItemDB model item to convert
 	 * @return DTO representation of model item
 	 */
-	public static RunParametersItem create(RunParametersItemDB runParametersItemDB)
+	public static RunParametersItem create(RunParametersDB runParametersItemDB)
 	{
 		RunParametersItem runParametersItem = new RunParametersItem();
 		runParametersItem.setCaCutoffForGeom(runParametersItemDB.getCaCutoffForGeom());
-		runParametersItem.setCaCutoffForRimCore(runParametersItemDB.getCaCutoffForRimCore());
-		runParametersItem.setCaCutoffForZscore(runParametersItemDB.getCaCutoffForZscore());
-		runParametersItem.setEntrCallCutoff(runParametersItemDB.getEntrCallCutoff());
+		runParametersItem.setCaCutoffForRimCore(runParametersItemDB.getCaCutoffForCoreRim());
+		runParametersItem.setCaCutoffForZscore(runParametersItemDB.getCaCutoffForCoreSurface());
+		runParametersItem.setEntrCallCutoff(runParametersItemDB.getCrCallCutoff());
 		runParametersItem.setHomologsCutoff(runParametersItemDB.getHomologsCutoff());
 		runParametersItem.setHomHardIdCutoff(runParametersItemDB.getHomHardIdCutoff());
 		runParametersItem.setHomSoftIdCutoff(runParametersItemDB.getHomSoftIdCutoff());
 		runParametersItem.setMaxNumSeqsCutoff(runParametersItemDB.getMaxNumSeqsCutoff());
-		runParametersItem.setMinCoreSizeForBio(runParametersItemDB.getMinCoreSizeForBio());
+		runParametersItem.setMinCoreSizeForBio(runParametersItemDB.getGeomCallCutoff());
 		runParametersItem.setQueryCovCutoff(runParametersItemDB.getQueryCovCutoff());
 		runParametersItem.setReducedAlphabet(runParametersItemDB.getReducedAlphabet());
 		runParametersItem.setUid(runParametersItemDB.getUid());
-		runParametersItem.setzScoreCutoff(runParametersItemDB.getzScoreCutoff());
-		runParametersItem.setUniprotVer(runParametersItemDB.getUniprotVer());
-		runParametersItem.setCrkVersion(runParametersItemDB.getCrkVersion());
+		runParametersItem.setzScoreCutoff(runParametersItemDB.getCsCallCutoff());
+		runParametersItem.setUniprotVer(runParametersItemDB.getUniProtVersion());
+		runParametersItem.setCrkVersion(runParametersItemDB.getEppicVersion());
 		return runParametersItem;
 	}
 

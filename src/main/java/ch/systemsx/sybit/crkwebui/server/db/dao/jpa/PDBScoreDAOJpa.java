@@ -15,7 +15,7 @@ import ch.systemsx.sybit.crkwebui.server.db.dao.PDBScoreDAO;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
 import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
 import eppic.model.JobDB;
-import eppic.model.PDBScoreItemDB;
+import eppic.model.PdbInfoDB;
 
 /**
  * Implementation of PDBScoreDAO.
@@ -40,9 +40,9 @@ public class PDBScoreDAOJpa implements PDBScoreDAO
 		{
 			entityManager = EntityManagerHandler.getEntityManager();
 			CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-			CriteriaQuery<PDBScoreItemDB> criteriaQuery = criteriaBuilder.createQuery(PDBScoreItemDB.class);
+			CriteriaQuery<PdbInfoDB> criteriaQuery = criteriaBuilder.createQuery(PdbInfoDB.class);
 			
-			Root<PDBScoreItemDB> pdbScoreItemRoot = criteriaQuery.from(PDBScoreItemDB.class);
+			Root<PdbInfoDB> pdbScoreItemRoot = criteriaQuery.from(PdbInfoDB.class);
 			Path<JobDB> jobItemPath = pdbScoreItemRoot.get(PDBScoreItemDB_.jobItem);
 			Predicate condition = criteriaBuilder.equal(jobItemPath.get(JobDB_.jobId), jobId);
 			criteriaQuery.where(condition);
@@ -57,7 +57,7 @@ public class PDBScoreDAOJpa implements PDBScoreDAO
 									  pdbScoreItemRoot.get(PDBScoreItemDB_.runParameters));
 			
 			Query query = entityManager.createQuery(criteriaQuery);
-			PDBScoreItemDB pdbScoreItemDB = (PDBScoreItemDB)query.getSingleResult();
+			PdbInfoDB pdbScoreItemDB = (PdbInfoDB)query.getSingleResult();
 			
 			result = PDBScoreItem.create(pdbScoreItemDB);
 			result.setJobId(jobId);
@@ -83,7 +83,7 @@ public class PDBScoreDAOJpa implements PDBScoreDAO
 	}
 	
 	@Override
-	public void insertPDBScore(PDBScoreItemDB pdbScoreItem) throws DaoException
+	public void insertPDBScore(PdbInfoDB pdbScoreItem) throws DaoException
 	{
 		EntityManager entityManager = null;
 		

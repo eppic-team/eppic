@@ -3,7 +3,7 @@ package ch.systemsx.sybit.crkwebui.server.db.entitylisteners;
 import javax.persistence.PostLoad;
 import javax.persistence.PrePersist;
 
-import eppic.model.HomologItemDB;
+import eppic.model.HomologDB;
 
 /**
  * Entity listener for HomologItem used to properly handle NaN and null values.
@@ -13,37 +13,37 @@ import eppic.model.HomologItemDB;
 public class HomologItemListener
 {
 	@PrePersist
-	public void prePersist(HomologItemDB homologItemDB)
+	public void prePersist(HomologDB homologItemDB)
 	{
-		if(homologItemDB.getSeqIdToQuery() != null)
+		if(homologItemDB.getSeqId() != null)
 		{
-			if(Double.isNaN(homologItemDB.getSeqIdToQuery()))
+			if(Double.isNaN(homologItemDB.getSeqId()))
 			{
-				homologItemDB.setSeqIdToQuery(null);
+				homologItemDB.setSeqId(null);
 			}
 		}
 		
-		if(homologItemDB.getQueryCov() != null)
+		if(homologItemDB.getQueryCoverage() != null)
 		{
-			if(Double.isNaN(homologItemDB.getQueryCov()))
+			if(Double.isNaN(homologItemDB.getQueryCoverage()))
 			{
-				homologItemDB.setQueryCov(null);
+				homologItemDB.setQueryCoverage(null);
 			}
 		}		
 		
 	}
 	
 	@PostLoad
-	public void postLoad(HomologItemDB homologItemDB)
+	public void postLoad(HomologDB homologItemDB)
 	{
-		if(homologItemDB.getSeqIdToQuery() == null)
+		if(homologItemDB.getSeqId() == null)
 		{
-			homologItemDB.setSeqIdToQuery(Double.NaN);
+			homologItemDB.setSeqId(Double.NaN);
 		}
 		
-		if(homologItemDB.getQueryCov() == null)
+		if(homologItemDB.getQueryCoverage() == null)
 		{
-			homologItemDB.setQueryCov(Double.NaN);
+			homologItemDB.setQueryCoverage(Double.NaN);
 		}
 		
 		

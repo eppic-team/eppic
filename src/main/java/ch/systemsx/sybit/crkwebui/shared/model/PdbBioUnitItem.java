@@ -2,7 +2,7 @@ package ch.systemsx.sybit.crkwebui.shared.model;
 
 import java.io.Serializable;
 
-import eppic.model.PdbBioUnitItemDB;
+import eppic.model.AssemblyDB;
 
 
 public class PdbBioUnitItem implements Serializable {
@@ -51,13 +51,13 @@ public class PdbBioUnitItem implements Serializable {
 	 * @param pdbBioUnitItemDB model item to convert
 	 * @return DTO representation of model item
 	 */
-	public static PdbBioUnitItem create(PdbBioUnitItemDB bioUnitItemDB) {
+	public static PdbBioUnitItem create(AssemblyDB bioUnitItemDB) {
 		PdbBioUnitItem bioUnitItem = new PdbBioUnitItem();
 		
 		bioUnitItem.setUid(bioUnitItemDB.getUid());
 		
-		bioUnitItem.setSize(bioUnitItemDB.getSize());
-		bioUnitItem.setType(bioUnitItemDB.getType());
+		bioUnitItem.setSize(bioUnitItemDB.getMmSize());
+		bioUnitItem.setType(bioUnitItemDB.getMethod());
 		
 		return bioUnitItem;
 	}

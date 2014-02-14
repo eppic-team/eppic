@@ -18,8 +18,8 @@ import ch.systemsx.sybit.crkwebui.server.db.dao.HomologsInfoItemDAO;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
 import ch.systemsx.sybit.crkwebui.shared.model.HomologsInfoItem;
 import ch.systemsx.sybit.crkwebui.shared.model.PDBSearchResult;
-import eppic.model.HomologsInfoItemDB;
-import eppic.model.PDBScoreItemDB;
+import eppic.model.ChainClusterDB;
+import eppic.model.PdbInfoDB;
 
 /**
  * Implementation of HomologsInfoItemDAO.
@@ -40,17 +40,17 @@ public class HomologsInfoItemDAOJpa implements HomologsInfoItemDAO
 			entityManager = EntityManagerHandler.getEntityManager();			
 			CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 			
-			CriteriaQuery<HomologsInfoItemDB> criteriaQuery = criteriaBuilder.createQuery(HomologsInfoItemDB.class);
-			Root<HomologsInfoItemDB> numHomologsStringItemRoot = criteriaQuery.from(HomologsInfoItemDB.class);
-			Path<PDBScoreItemDB> pdbScoreItemRoot = numHomologsStringItemRoot.get(HomologsInfoItemDB_.pdbScoreItem);
+			CriteriaQuery<ChainClusterDB> criteriaQuery = criteriaBuilder.createQuery(ChainClusterDB.class);
+			Root<ChainClusterDB> numHomologsStringItemRoot = criteriaQuery.from(ChainClusterDB.class);
+			Path<PdbInfoDB> pdbScoreItemRoot = numHomologsStringItemRoot.get(HomologsInfoItemDB_.pdbScoreItem);
 			Predicate condition = criteriaBuilder.equal(pdbScoreItemRoot.get(PDBScoreItemDB_.uid), pdbScoreUid);
 			criteriaQuery.where(condition);
 			
 			Query query = entityManager.createQuery(criteriaQuery);
 			@SuppressWarnings("unchecked")
-			List<HomologsInfoItemDB> numHomologsStringItemDBs = query.getResultList();
+			List<ChainClusterDB> numHomologsStringItemDBs = query.getResultList();
 			
-			for(HomologsInfoItemDB homologsInfoItemDB : numHomologsStringItemDBs)
+			for(ChainClusterDB homologsInfoItemDB : numHomologsStringItemDBs)
 			{
 				result.add(HomologsInfoItem.create(homologsInfoItemDB));
 			}
@@ -75,6 +75,7 @@ public class HomologsInfoItemDAOJpa implements HomologsInfoItemDAO
 		}
 	}
 
+
 	@Override
 	public List<PDBSearchResult> getPdbSearchItemsForUniProt(String uniProtId)
 			throws DaoException {
@@ -86,17 +87,17 @@ public class HomologsInfoItemDAOJpa implements HomologsInfoItemDAO
 			
 			entityManager = EntityManagerHandler.getEntityManager();
 			CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-			CriteriaQuery<PDBScoreItemDB> criteriaQuery = criteriaBuilder.createQuery(PDBScoreItemDB.class);
+			CriteriaQuery<PdbInfoDB> criteriaQuery = criteriaBuilder.createQuery(PdbInfoDB.class);
 			
-			Root<HomologsInfoItemDB> root = criteriaQuery.from(HomologsInfoItemDB.class);
+			Root<ChainClusterDB> root = criteriaQuery.from(ChainClusterDB.class);
 			criteriaQuery.select(root.get(HomologsInfoItemDB_.pdbScoreItem));
 			criteriaQuery.where(criteriaBuilder.equal(root.get(HomologsInfoItemDB_.uniprotId), uniProtId));
 			Query query = entityManager.createQuery(criteriaQuery);
 			
 			@SuppressWarnings("unchecked")
-			List<PDBScoreItemDB> pdbItemDBs = query.getResultList();
+			List<PdbInfoDB> pdbItemDBs = query.getResultList();
 			
-			for(PDBScoreItemDB pdbItemDB: pdbItemDBs){
+			for(PdbInfoDB pdbItemDB: pdbItemDBs){
 				PDBSearchResult result = new PDBSearchResult(pdbItemDB.getPdbName(), 
 															pdbItemDB.getTitle(), 
 															pdbItemDB.getReleaseDate(), 

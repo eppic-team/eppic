@@ -2,7 +2,7 @@ package ch.systemsx.sybit.crkwebui.shared.model;
 
 import java.io.Serializable;
 
-import eppic.model.HomologItemDB;
+import eppic.model.HomologDB;
 
 /**
  * DTO class for HomologItem
@@ -102,15 +102,15 @@ public class HomologItem implements Serializable {
 	 * @param homologItemDB model item to convert
 	 * @return DTO representation of model item
 	 */
-	public static HomologItem create(HomologItemDB homologItemDB)
+	public static HomologItem create(HomologDB homologItemDB)
 	{
 		HomologItem homologItem = new HomologItem();		
 		homologItem.setUid(homologItemDB.getUid());
-		homologItem.setUniId(homologItemDB.getUniId());
+		homologItem.setUniId(homologItemDB.getUniProtId());
 		homologItem.setFirstTaxon(homologItemDB.getFirstTaxon());
 		homologItem.setLastTaxon(homologItemDB.getLastTaxon());
-		homologItem.setSeqIdToQuery(homologItemDB.getSeqIdToQuery());
-		homologItem.setQueryCov(homologItemDB.getQueryCov());
+		homologItem.setSeqIdToQuery(homologItemDB.getSeqId());
+		homologItem.setQueryCov(homologItemDB.getQueryCoverage());
 		homologItem.setQueryStart(homologItemDB.getQueryStart());
 		homologItem.setQueryEnd(homologItemDB.getQueryEnd());
 		return homologItem;

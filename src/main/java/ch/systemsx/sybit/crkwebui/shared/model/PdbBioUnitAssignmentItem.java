@@ -66,8 +66,8 @@ public class PdbBioUnitAssignmentItem implements Serializable {
 		PdbBioUnitAssignmentItem bioUnitAssignmentItem = new PdbBioUnitAssignmentItem();
 		
 		bioUnitAssignmentItem.setSize(bioUnitAssignmentItemDB.getSize());
-		bioUnitAssignmentItem.setAssignment(bioUnitAssignmentItemDB.getAssignment());
-		bioUnitAssignmentItem.setType(bioUnitAssignmentItemDB.getType());
+		bioUnitAssignmentItem.setRegion(bioUnitAssignmentItemDB.getRegion());
+		bioUnitAssignmentItem.setMethod(bioUnitAssignmentItemDB.getType());
 		
 		bioUnitAssignmentItem.setUid(bioUnitAssignmentItemDB.getUid());
 		

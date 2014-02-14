@@ -4,9 +4,9 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import eppic.model.HomologItemDB;
-import eppic.model.HomologsInfoItemDB;
-import eppic.model.QueryWarningItemDB;
+import eppic.model.HomologDB;
+import eppic.model.ChainClusterDB;
+import eppic.model.UniProtRefWarningDB;
 
 /**
  * DTO class for HomologsInfo item.
@@ -191,38 +191,38 @@ public class HomologsInfoItem implements Serializable
 	 * @param homologsInfoItemDB model item to convert
 	 * @return DTO representation of model item
 	 */
-	public static HomologsInfoItem create(HomologsInfoItemDB homologsInfoItemDB)
+	public static HomologsInfoItem create(ChainClusterDB homologsInfoItemDB)
 	{
 		HomologsInfoItem homologsInfoItem = new HomologsInfoItem();
-		homologsInfoItem.setAlignedSeq1(homologsInfoItemDB.getAlignedSeq1());
-		homologsInfoItem.setAlignedSeq2(homologsInfoItemDB.getAlignedSeq2());
+		homologsInfoItem.setAlignedSeq1(homologsInfoItemDB.getPdbAlignedSeq());
+		homologsInfoItem.setAlignedSeq2(homologsInfoItemDB.getRefAlignedSeq());
 		homologsInfoItem.setChains(homologsInfoItemDB.getChains());
-		homologsInfoItem.setMarkupLine(homologsInfoItemDB.getMarkupLine());
+		homologsInfoItem.setMarkupLine(homologsInfoItemDB.getAliMarkupLine());
 		homologsInfoItem.setNumHomologs(homologsInfoItemDB.getNumHomologs());
 		homologsInfoItem.setRefUniProtStart(homologsInfoItemDB.getRefUniProtStart());
 		homologsInfoItem.setRefUniProtEnd(homologsInfoItemDB.getRefUniProtEnd());
-		homologsInfoItem.setUniprotId(homologsInfoItemDB.getUniprotId());
+		homologsInfoItem.setUniprotId(homologsInfoItemDB.getRefUniProtId());
 		homologsInfoItem.setUid(homologsInfoItemDB.getUid());
-		homologsInfoItem.setHasQueryMatch(homologsInfoItemDB.isHasQueryMatch());
+		homologsInfoItem.setHasQueryMatch(homologsInfoItemDB.isHasUniProtRef());
 		
 		List<QueryWarningItem> queryWarningItems = new ArrayList<QueryWarningItem>();
-		if(homologsInfoItemDB.getQueryWarnings() != null)
+		if(homologsInfoItemDB.getUniProtRefWarnings() != null)
 		{
-			for(QueryWarningItemDB queryWarningItemDB : homologsInfoItemDB.getQueryWarnings())
+			for(UniProtRefWarningDB queryWarningItemDB : homologsInfoItemDB.getUniProtRefWarnings())
 			{
 				QueryWarningItem queryWarningItem = QueryWarningItem.create(queryWarningItemDB);
 				queryWarningItems.add(queryWarningItem);
 			}
 		}
 		homologsInfoItem.setQueryWarnings(queryWarningItems);
-		homologsInfoItem.setIdCutoffUsed(homologsInfoItemDB.getIdCutoffUsed());
-		homologsInfoItem.setClusteringPercentIdUsed(homologsInfoItemDB.getClusteringPercentIdUsed());
+		homologsInfoItem.setIdCutoffUsed(homologsInfoItemDB.getSeqIdCutoff());
+		homologsInfoItem.setClusteringPercentIdUsed(homologsInfoItemDB.getClusteringSeqId());
 		
 		List<HomologItem> homologs = new ArrayList<HomologItem>();
 		if (homologsInfoItemDB.getHomologs()!=null) 
 		{
 			
-			for (HomologItemDB homologItemDB : homologsInfoItemDB.getHomologs()) 
+			for (HomologDB homologItemDB : homologsInfoItemDB.getHomologs()) 
 			{
 				HomologItem homologItem = HomologItem.create(homologItemDB);
 				homologs.add(homologItem);				

@@ -3,7 +3,7 @@ package ch.systemsx.sybit.crkwebui.server.db.entitylisteners;
 import javax.persistence.PostLoad;
 import javax.persistence.PrePersist;
 
-import eppic.model.HomologsInfoItemDB;
+import eppic.model.ChainClusterDB;
 
 /**
  * Entity listener for HomologsInfoItem used to properly handle NaN and null values.
@@ -13,24 +13,24 @@ import eppic.model.HomologsInfoItemDB;
 public class HomologsInfoItemListener
 {
 	@PrePersist
-	public void prePersist(HomologsInfoItemDB homologsInfoItemDB)
+	public void prePersist(ChainClusterDB homologsInfoItemDB)
 	{
-		if(homologsInfoItemDB.getIdCutoffUsed() != null)
+		if(homologsInfoItemDB.getSeqIdCutoff() != null)
 		{
-			if(Double.isNaN(homologsInfoItemDB.getIdCutoffUsed()))
+			if(Double.isNaN(homologsInfoItemDB.getSeqIdCutoff()))
 			{
-				homologsInfoItemDB.setIdCutoffUsed(null);
+				homologsInfoItemDB.setSeqIdCutoff(null);
 			}
 		}
 		
 	}
 	
 	@PostLoad
-	public void postLoad(HomologsInfoItemDB homologsInfoItemDB)
+	public void postLoad(ChainClusterDB homologsInfoItemDB)
 	{
-		if(homologsInfoItemDB.getIdCutoffUsed() == null)
+		if(homologsInfoItemDB.getSeqIdCutoff() == null)
 		{
-			homologsInfoItemDB.setIdCutoffUsed(Double.NaN);
+			homologsInfoItemDB.setSeqIdCutoff(Double.NaN);
 		}
 		
 	}

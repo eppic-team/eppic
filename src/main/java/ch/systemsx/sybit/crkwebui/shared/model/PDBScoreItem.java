@@ -13,10 +13,10 @@ import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
-import eppic.model.HomologsInfoItemDB;
-import eppic.model.InterfaceItemDB;
-import eppic.model.PDBScoreItemDB;
-import eppic.model.PdbBioUnitItemDB;
+import eppic.model.ChainClusterDB;
+import eppic.model.InterfaceDB;
+import eppic.model.PdbInfoDB;
+import eppic.model.AssemblyDB;
 
 /**
  * DTO class for PDBScore item.
@@ -216,17 +216,17 @@ public class PDBScoreItem implements Serializable, ProcessingData
 	 * @param pdbScoreItemDB model item to convert
 	 * @return DTO representation of model item
 	 */
-	public static PDBScoreItem create(PDBScoreItemDB pdbScoreItemDB)
+	public static PDBScoreItem create(PdbInfoDB pdbScoreItemDB)
 	{
 		PDBScoreItem pdbScoreItem = new PDBScoreItem();
 		
 		if(pdbScoreItemDB.getInterfaceItems() != null)
 		{
-			List<InterfaceItemDB> interfaceItemDBs = pdbScoreItemDB.getInterfaceItems();
+			List<InterfaceDB> interfaceItemDBs = pdbScoreItemDB.getInterfaceItems();
 			
 			List<InterfaceItem> interfaceItems = new ArrayList<InterfaceItem>();
 			
-			for(InterfaceItemDB interfaceResidueItemDB : interfaceItemDBs)
+			for(InterfaceDB interfaceResidueItemDB : interfaceItemDBs)
 			{
 				interfaceItems.add(InterfaceItem.create(interfaceResidueItemDB));
 			}
@@ -234,13 +234,13 @@ public class PDBScoreItem implements Serializable, ProcessingData
 			pdbScoreItem.setInterfaceItems(interfaceItems);
 		}
 		
-		if(pdbScoreItemDB.getBioUnitItems() != null)
+		if(pdbScoreItemDB.getAssemblies() != null)
 		{
-			List<PdbBioUnitItemDB> bioUnitItemDBs = pdbScoreItemDB.getBioUnitItems();
+			List<AssemblyDB> bioUnitItemDBs = pdbScoreItemDB.getAssemblies();
 			
 			List<PdbBioUnitItem> bioUnitItems = new ArrayList<PdbBioUnitItem>();
 			
-			for(PdbBioUnitItemDB bioUnitItemDB : bioUnitItemDBs)
+			for(AssemblyDB bioUnitItemDB : bioUnitItemDBs)
 			{
 				bioUnitItems.add(PdbBioUnitItem.create(bioUnitItemDB));
 			}
@@ -248,13 +248,13 @@ public class PDBScoreItem implements Serializable, ProcessingData
 			pdbScoreItem.setBioUnitItems(bioUnitItems);
 		}
 		
-		if(pdbScoreItemDB.getHomologsInfoItems() != null)
+		if(pdbScoreItemDB.getChainClusters() != null)
 		{
-			List<HomologsInfoItemDB> homologsInfoItemDBs = pdbScoreItemDB.getHomologsInfoItems();
+			List<ChainClusterDB> homologsInfoItemDBs = pdbScoreItemDB.getChainClusters();
 			
 			List<HomologsInfoItem> homologsStringItems = new ArrayList<HomologsInfoItem>();
 			
-			for(HomologsInfoItemDB homologsStringItemDB : homologsInfoItemDBs)
+			for(ChainClusterDB homologsStringItemDB : homologsInfoItemDBs)
 			{
 				homologsStringItems.add(HomologsInfoItem.create(homologsStringItemDB));
 			}

@@ -24,7 +24,7 @@ import eppic.model.PDBScoreItemDB_;
 import ch.systemsx.sybit.crkwebui.shared.model.InputType;
 import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
 import eppic.model.JobDB;
-import eppic.model.PDBScoreItemDB;
+import eppic.model.PdbInfoDB;
 
 /**
  * Class to perform operations on CRK database such as adding by job,
@@ -71,10 +71,10 @@ public class DBHandler {
 	/**
 	 * Adds entry to the DataBase when only PDBScoreItem specified.
 	 * Inserts a pseudo job
-	 * @param PDBScoreItemDB
+	 * @param PdbInfoDB
 	 * 
 	 */
-	public void addToDB(PDBScoreItemDB pdbScoreItem){
+	public void addToDB(PdbInfoDB pdbScoreItem){
 		EntityManager entityManager = this.getEntityManager();
 		entityManager.getTransaction().begin();
 		entityManager.persist(pdbScoreItem);
@@ -84,15 +84,15 @@ public class DBHandler {
 		JobDB job = new JobDB();
 		job.setJobId(pdbCode);
 		job.setEmail(null);
-		job.setInput(pdbCode);
+		job.setInputName(pdbCode);
 		job.setIp("localhost");
 		job.setStatus(StatusOfJob.FINISHED.getName());
 		job.setSubmissionDate(new Date());
 		job.setInputType(InputType.PDBCODE.getIndex());
 		job.setSubmissionId("-1");
 
-		pdbScoreItem.setJobItem(job);
-		job.setPdbScoreItem(pdbScoreItem);
+		pdbScoreItem.setJob(job);
+		job.setPdbInfo(pdbScoreItem);
 		entityManager.persist(job);
 		entityManager.getTransaction().commit();
 		
@@ -113,7 +113,7 @@ public class DBHandler {
 		JobDB job = new JobDB();
 		job.setJobId(pdbCode);
 		job.setEmail(null);
-		job.setInput(pdbCode);
+		job.setInputName(pdbCode);
 		job.setIp("localhost");
 		job.setStatus(StatusOfJob.ERROR.getName());
 		job.setSubmissionDate(new Date());
@@ -149,13 +149,13 @@ public class DBHandler {
 					// Remove the PdbScore entries related to the job
 					CriteriaBuilder cbPDB = entityManager.getCriteriaBuilder();
 
-					CriteriaQuery<PDBScoreItemDB> cqPDB = cbPDB.createQuery(PDBScoreItemDB.class);
-					Root<PDBScoreItemDB> rootPDB = cqPDB.from(PDBScoreItemDB.class);
+					CriteriaQuery<PdbInfoDB> cqPDB = cbPDB.createQuery(PdbInfoDB.class);
+					Root<PdbInfoDB> rootPDB = cqPDB.from(PdbInfoDB.class);
 					cqPDB.where(cbPDB.equal(rootPDB.get(PDBScoreItemDB_.jobItem), job));
 					cqPDB.select(rootPDB);
-					List<PDBScoreItemDB> queryPDBList = entityManager.createQuery(cqPDB).getResultList();
+					List<PdbInfoDB> queryPDBList = entityManager.createQuery(cqPDB).getResultList();
 					
-					if( queryPDBList != null) for(PDBScoreItemDB itemPDB : queryPDBList) entityManager.remove(itemPDB);
+					if( queryPDBList != null) for(PdbInfoDB itemPDB : queryPDBList) entityManager.remove(itemPDB);
 				
 					// Remove Job
 					entityManager.remove(job);
@@ -222,7 +222,7 @@ public class DBHandler {
 		JobDB queryJobOrig = orig.createQuery(cqJob).getSingleResult();
 				
 		//Create a new Job which is to be copied
-		JobDB queryJob = new JobDB(queryJobOrig.getInput(), queryJobOrig.getInputType());
+		JobDB queryJob = new JobDB(queryJobOrig.getInputName(), queryJobOrig.getInputType());
 		queryJob.setEmail(queryJobOrig.getEmail());
 		queryJob.setIp(queryJobOrig.getIp());
 		queryJob.setJobId(queryJobOrig.getJobId());
@@ -233,8 +233,8 @@ public class DBHandler {
 		
 		//Check if there is any PDBScoreItem entry 
 		CriteriaBuilder cbPDB = orig.getCriteriaBuilder();
-		CriteriaQuery<PDBScoreItemDB> cqPDB = cbPDB.createQuery(PDBScoreItemDB.class);
-		Root<PDBScoreItemDB> rootPDB = cqPDB.from(PDBScoreItemDB.class);
+		CriteriaQuery<PdbInfoDB> cqPDB = cbPDB.createQuery(PdbInfoDB.class);
+		Root<PdbInfoDB> rootPDB = cqPDB.from(PdbInfoDB.class);
 		cqPDB.where(cbPDB.equal(rootPDB.get(PDBScoreItemDB_.jobItem), queryJobOrig));
 		cqPDB.select(rootPDB);
 		int pdbScoreNum = orig.createQuery(cqPDB).getResultList().size();
@@ -245,11 +245,11 @@ public class DBHandler {
 		copier.getTransaction().begin();
 		
 		if( pdbScoreNum >= 1) {
-			PDBScoreItemDB queryPDB = this.readFromWebui(jobDir);
+			PdbInfoDB queryPDB = this.readFromWebui(jobDir);
 			copier.persist(queryPDB);
 						
-			queryPDB.setJobItem(queryJob);
-			queryJob.setPdbScoreItem(queryPDB);
+			queryPDB.setJob(queryJob);
+			queryJob.setPdbInfo(queryPDB);
 			copier.persist(queryJob);
 		}
 		else copier.persist(queryJob);
@@ -313,7 +313,7 @@ public class DBHandler {
 	 * @param Directory Path
 	 * @return PDBScoreItemDB Object
 	 */
-	public PDBScoreItemDB readFromWebui(File jobDir) throws IOException, ClassNotFoundException{		
+	public PdbInfoDB readFromWebui(File jobDir) throws IOException, ClassNotFoundException{		
 		EntityManager entityManager = this.getEntityManager();
 		
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
@@ -334,7 +334,7 @@ public class DBHandler {
 		File webuiFile = new File(jobDir, pdbID + ".webui.dat");
 		
 		ObjectInputStream in = new ObjectInputStream(new FileInputStream(webuiFile));
-		PDBScoreItemDB pdbScoreItem = (PDBScoreItemDB)in.readObject();
+		PdbInfoDB pdbScoreItem = (PdbInfoDB)in.readObject();
 		in.close();
 		return pdbScoreItem;
 	}
