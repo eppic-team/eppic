@@ -25,8 +25,6 @@ public class PdbInfoDB implements Serializable {
 	
 	private List<ChainClusterDB> chainClusters;
 
-	private List<InterfaceDB> interfaceItems;
-	
 	private List<InterfaceClusterDB> interfaceClusters;
 	
 	private List<AssemblyDB> assemblies;
@@ -34,7 +32,6 @@ public class PdbInfoDB implements Serializable {
 	private JobDB job;
 	
 	public PdbInfoDB() {
-		interfaceItems = new ArrayList<InterfaceDB>();
 		chainClusters = new ArrayList<ChainClusterDB>();
 		assemblies = new ArrayList<AssemblyDB>();
 	}
@@ -48,7 +45,6 @@ public class PdbInfoDB implements Serializable {
 						double rfreeValue,
 						RunParametersDB runParameters) {
 		
-		interfaceItems = new ArrayList<InterfaceDB>();
 		chainClusters = new ArrayList<ChainClusterDB>();
 		assemblies = new ArrayList<AssemblyDB>();
 		this.uid = uid;
@@ -79,22 +75,6 @@ public class PdbInfoDB implements Serializable {
 
 	public void setReleaseDate(Date releaseDate) {
 		this.releaseDate = releaseDate;
-	}
-
-	public void setInterfaces(List<InterfaceDB> interfaces) {
-		this.interfaceItems = interfaces;
-	}
-
-	public List<InterfaceDB> getInterfaces() {
-		return interfaceItems;
-	}
-	
-	public void addInterface(InterfaceDB interfaceItem) {
-		this.interfaceItems.add(interfaceItem);
-	}
-	
-	public InterfaceDB getInterface(int i) {
-		return this.interfaceItems.get(i);
 	}
 
 	public void setChainClusters(List<ChainClusterDB> chainClusters) {
