@@ -29,7 +29,7 @@ public class InterfaceDB implements Serializable {
 	private List<InterfaceScoreDB> interfaceScores;
 	private List<ResidueDB> residues;
 	
-	private PdbInfoDB pdbInfo;
+	private InterfaceClusterDB interfaceCluster;
 
 	public InterfaceDB() {
 		interfaceScores = new ArrayList<InterfaceScoreDB>();
@@ -131,12 +131,12 @@ public class InterfaceDB implements Serializable {
 		this.interfaceScores.add(interfaceScore);
 	}
 
-	public void setPdbInfo(PdbInfoDB pdbInfo) {
-		this.pdbInfo = pdbInfo;
+	public void setInterfaceCluster(InterfaceClusterDB interfaceCluster) {
+		this.interfaceCluster = interfaceCluster;
 	}
 
-	public PdbInfoDB getPdbInfo() {
-		return pdbInfo;
+	public InterfaceClusterDB getInterfaceCluster() {
+		return interfaceCluster;
 	}
 
 	public List<ResidueDB> getResidues() {
