@@ -15,6 +15,8 @@ public class InterfaceClusterDB implements Serializable {
 	private double confidence;
 	
 	private List<InterfaceDB> interfaceItems;
+	
+	private List<InterfaceClusterScoreDB> interfaceClusterScores;
 
 	public int getUid() {
 		return uid;
@@ -54,6 +56,15 @@ public class InterfaceClusterDB implements Serializable {
 
 	public void setInterfaceItems(List<InterfaceDB> interfaceItems) {
 		this.interfaceItems = interfaceItems;
+	}
+
+	public List<InterfaceClusterScoreDB> getInterfaceClusterScores() {
+		return interfaceClusterScores;
+	}
+
+	public void setInterfaceClusterScores(
+			List<InterfaceClusterScoreDB> interfaceClusterScores) {
+		this.interfaceClusterScores = interfaceClusterScores;
 	}
 	
 
