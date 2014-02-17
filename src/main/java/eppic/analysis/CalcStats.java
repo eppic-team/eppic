@@ -8,8 +8,8 @@ import eppic.InterfaceEvolContextList;
 import eppic.ScoringType;
 import eppic.predictors.CombinedCSGeomPredictor;
 import eppic.predictors.CombinedPredictor;
-import eppic.predictors.EvolInterfZPredictor;
-import eppic.predictors.EvolRimCorePredictor;
+import eppic.predictors.EvolCoreSurfacePredictor;
+import eppic.predictors.EvolCoreRimPredictor;
 import eppic.predictors.GeometryPredictor;
 import eppic.predictors.InterfaceTypePredictor;
 import gnu.getopt.Getopt;
@@ -586,7 +586,7 @@ public class CalcStats {
 		
 		//interf.calcRimAndCore(caCutoffsCR[i]);
 
-		EvolRimCorePredictor ercp = new EvolRimCorePredictor(iec);
+		EvolCoreRimPredictor ercp = new EvolCoreRimPredictor(iec);
 		ercp.setBsaToAsaCutoff(caCutoffsCR[i], minAsaForSurface);
 		
 		if (scoType==ScoringType.ENTROPY) {
@@ -628,7 +628,7 @@ public class CalcStats {
 		
 		//interf.calcRimAndCore(caCutoffsZ[i]);
 		
-		EvolInterfZPredictor eizp = new EvolInterfZPredictor(iec);
+		EvolCoreSurfacePredictor eizp = new EvolCoreSurfacePredictor(iec);
 		eizp.setBsaToAsaCutoff(caCutoffsZ[i], minAsaForSurface);
 		
 		eizp.computeScores();
@@ -674,14 +674,14 @@ public class CalcStats {
 		gp.setMinCoreSizeForBio(DEFMINNUMBERCORERESFORBIO);
 		
 		//interf.calcRimAndCore(caCutoffsCR[i]);
-		EvolRimCorePredictor ercp = new EvolRimCorePredictor(iec);
+		EvolCoreRimPredictor ercp = new EvolCoreRimPredictor(iec);
 		ercp.setBsaToAsaCutoff(caCutoffsCR[i], minAsaForSurface);
 		ercp.computeScores();
 		ercp.setCallCutoff(corerimCallCutoffs[k]);
 		iec.setMinNumSeqs(MIN_NUM_HOMOLOGS);
 		
 		//interf.calcRimAndCore(caCutoffsZ[l]);
-		EvolInterfZPredictor eizp = new EvolInterfZPredictor(iec);
+		EvolCoreSurfacePredictor eizp = new EvolCoreSurfacePredictor(iec);
 		eizp.setBsaToAsaCutoff(caCutoffsZ[l], minAsaForSurface);
 		eizp.computeScores();
 		eizp.setCallCutoff(zscoreCutoffs[m]);

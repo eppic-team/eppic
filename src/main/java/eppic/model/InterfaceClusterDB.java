@@ -1,6 +1,7 @@
 package eppic.model;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 public class InterfaceClusterDB implements Serializable {
@@ -12,11 +13,15 @@ public class InterfaceClusterDB implements Serializable {
 	
 	private String pdbCode;
 	
-	private double confidence;
-	
 	private List<InterfaceDB> interfaces;
 	
 	private List<InterfaceClusterScoreDB> interfaceClusterScores;
+	
+	private PdbInfoDB pdbInfo;
+	
+	public InterfaceClusterDB() {
+		this.interfaceClusterScores = new ArrayList<InterfaceClusterScoreDB>();
+	}
 
 	public int getUid() {
 		return uid;
@@ -42,14 +47,6 @@ public class InterfaceClusterDB implements Serializable {
 		this.pdbCode = pdbCode;
 	}
 
-	public double getConfidence() {
-		return confidence;
-	}
-
-	public void setConfidence(double confidence) {
-		this.confidence = confidence;
-	}
-
 	public List<InterfaceDB> getInterfaces() {
 		return interfaces;
 	}
@@ -62,9 +59,20 @@ public class InterfaceClusterDB implements Serializable {
 		return interfaceClusterScores;
 	}
 
-	public void setInterfaceClusterScores(
-			List<InterfaceClusterScoreDB> interfaceClusterScores) {
+	public void setInterfaceClusterScores(List<InterfaceClusterScoreDB> interfaceClusterScores) {
 		this.interfaceClusterScores = interfaceClusterScores;
+	}
+	
+	public void addInterfaceClusterScore(InterfaceClusterScoreDB interfaceClusterScore) {
+		this.interfaceClusterScores.add(interfaceClusterScore);
+	}
+
+	public PdbInfoDB getPdbInfo() {
+		return pdbInfo;
+	}
+
+	public void setPdbInfo(PdbInfoDB pdbInfo) {
+		this.pdbInfo = pdbInfo;
 	}
 	
 

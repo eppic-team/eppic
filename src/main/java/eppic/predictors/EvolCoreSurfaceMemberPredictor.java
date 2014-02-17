@@ -17,7 +17,7 @@ import eppic.EppicParams;
 import eppic.CallType;
 import eppic.ScoringType;
 
-public class EvolInterfZMemberPredictor implements InterfaceTypePredictor {
+public class EvolCoreSurfaceMemberPredictor implements InterfaceTypePredictor {
 	
 	private static final double  MIN_INTERF_FOR_RES_NOT_IN_INTERFACES = 500;
 	private static final double  NUM_RESIDUES_NOT_IN_INTERFACES_TOLERANCE = 1.20; // we require 20% more residues in surface than required sample size
@@ -27,9 +27,9 @@ public class EvolInterfZMemberPredictor implements InterfaceTypePredictor {
 	//   <0.05 using 100, <0.01 using 10000, and <0.005 using 100000
 	private static final int     NUM_SAMPLES_SCORE_DIST = 10000; 
 	
-	private static final Log LOGGER = LogFactory.getLog(EvolInterfZMemberPredictor.class);
+	private static final Log LOGGER = LogFactory.getLog(EvolCoreSurfaceMemberPredictor.class);
 	
-	private EvolInterfZPredictor parent;
+	private EvolCoreSurfacePredictor parent;
 	
 	private CallType call;
 	private String callReason;
@@ -47,7 +47,7 @@ public class EvolInterfZMemberPredictor implements InterfaceTypePredictor {
 	private Map<String,Double> scoreDetails;
 
 	
-	public EvolInterfZMemberPredictor(EvolInterfZPredictor parent, int molecId) {
+	public EvolCoreSurfaceMemberPredictor(EvolCoreSurfacePredictor parent, int molecId) {
 		this.parent = parent;
 		this.warnings = new ArrayList<String>();
 		this.molecId = molecId;

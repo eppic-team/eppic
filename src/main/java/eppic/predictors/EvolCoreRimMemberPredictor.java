@@ -14,14 +14,14 @@ import eppic.EppicParams;
 import eppic.CallType;
 import eppic.ScoringType;
 
-public class EvolRimCoreMemberPredictor implements InterfaceTypePredictor {
+public class EvolCoreRimMemberPredictor implements InterfaceTypePredictor {
 
-	private static final Log LOGGER = LogFactory.getLog(EvolRimCoreMemberPredictor.class);
+	private static final Log LOGGER = LogFactory.getLog(EvolCoreRimMemberPredictor.class);
 		
 	private String callReason;
 	private List<String> warnings;
 
-	private EvolRimCorePredictor parent;
+	private EvolCoreRimPredictor parent;
 	
 	private int molecId;
 	
@@ -33,7 +33,7 @@ public class EvolRimCoreMemberPredictor implements InterfaceTypePredictor {
 	
 	private CallType call;
 	
-	public EvolRimCoreMemberPredictor(EvolRimCorePredictor parent, int molecId) {
+	public EvolCoreRimMemberPredictor(EvolCoreRimPredictor parent, int molecId) {
 		this.parent = parent;
 		this.molecId = molecId;
 		this.warnings = new ArrayList<String>();

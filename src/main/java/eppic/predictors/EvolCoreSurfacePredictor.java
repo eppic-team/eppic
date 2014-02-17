@@ -15,7 +15,7 @@ import eppic.CallType;
 import eppic.InterfaceEvolContext;
 import eppic.ScoringType;
 
-public class EvolInterfZPredictor implements InterfaceTypePredictor {
+public class EvolCoreSurfacePredictor implements InterfaceTypePredictor {
 
 	protected static final int FIRST  = 0;
 	protected static final int SECOND = 1;	
@@ -33,8 +33,8 @@ public class EvolInterfZPredictor implements InterfaceTypePredictor {
 	private double bsaToAsaCutoff;
 	private double minAsaForSurface;
 
-	private EvolInterfZMemberPredictor member1Pred;
-	private EvolInterfZMemberPredictor member2Pred;
+	private EvolCoreSurfaceMemberPredictor member1Pred;
+	private EvolCoreSurfaceMemberPredictor member2Pred;
 	
 	private InterfaceEvolContext iec;
 	
@@ -42,18 +42,18 @@ public class EvolInterfZPredictor implements InterfaceTypePredictor {
 	
 
 	
-	public EvolInterfZPredictor(InterfaceEvolContext iec) {
+	public EvolCoreSurfacePredictor(InterfaceEvolContext iec) {
 		this.iec = iec;
 		this.warnings = new ArrayList<String>();
-		this.member1Pred = new EvolInterfZMemberPredictor(this, FIRST);
-		this.member2Pred = new EvolInterfZMemberPredictor(this, SECOND);
+		this.member1Pred = new EvolCoreSurfaceMemberPredictor(this, FIRST);
+		this.member2Pred = new EvolCoreSurfaceMemberPredictor(this, SECOND);
 	}
 	
-	public EvolInterfZMemberPredictor getMember1Predictor() {
+	public EvolCoreSurfaceMemberPredictor getMember1Predictor() {
 		return member1Pred;
 	}
 	
-	public EvolInterfZMemberPredictor getMember2Predictor() {
+	public EvolCoreSurfaceMemberPredictor getMember2Predictor() {
 		return member2Pred;
 	}
 	

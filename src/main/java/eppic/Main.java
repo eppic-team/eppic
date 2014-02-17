@@ -64,7 +64,7 @@ public class Main {
 	private File stepsLogFile;
 	private int stepCount;
 	
-	private WebUIDataAdaptor wuiAdaptor;
+	private DataModelAdaptor wuiAdaptor;
 		
 	public Main() {
 		this.params = new EppicParams();
@@ -172,7 +172,7 @@ public class Main {
 		pdb.removeHatoms();
 		
 		// for the webui
-		wuiAdaptor = new WebUIDataAdaptor();
+		wuiAdaptor = new DataModelAdaptor();
 		wuiAdaptor.setParams(params);
 		wuiAdaptor.setPdbMetadata(pdb);
 		//add biounit details to the db
@@ -834,7 +834,7 @@ public class Main {
 			if (crkMain.params.isGenerateWuiSerializedFile()) {
 				// 7 writing out the serialized file for web ui
 				crkMain.wuiAdaptor.addInterfaceWarnings(); // first we call this method to add all the cached warnings
-				crkMain.wuiAdaptor.writePdbScoreItemFile(crkMain.params.getOutputFile(".webui.dat"));
+				crkMain.wuiAdaptor.writeSerializedModelFile(crkMain.params.getOutputFile(".webui.dat"));
 
 				// finally we write a signal file for the wui to know that job is finished
 				crkMain.writeFinishedFile();

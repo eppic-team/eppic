@@ -7,8 +7,8 @@ import java.util.List;
 
 import org.apache.commons.math.random.RandomDataImpl;
 
-import eppic.predictors.EvolInterfZPredictor;
-import eppic.predictors.EvolRimCorePredictor;
+import eppic.predictors.EvolCoreSurfacePredictor;
+import eppic.predictors.EvolCoreRimPredictor;
 import owl.core.structure.ChainInterface;
 import owl.core.structure.ChainInterfaceList;
 import owl.core.structure.Residue;
@@ -19,8 +19,8 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 	
 	
 	private List<InterfaceEvolContext> list;
-	private List<EvolRimCorePredictor> evolRimCorePredictors;
-	private List<EvolInterfZPredictor> evolInterfZPredictors;
+	private List<EvolCoreRimPredictor> evolRimCorePredictors;
+	private List<EvolCoreSurfacePredictor> evolInterfZPredictors;
 	
 	private ChainInterfaceList chainInterfList; // we keep the reference also to be able to call methods from it
 	private ChainEvolContextList cecs;
@@ -44,8 +44,8 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 				
 		
 		list = new ArrayList<InterfaceEvolContext>();
-		evolRimCorePredictors = new ArrayList<EvolRimCorePredictor>();
-		evolInterfZPredictors = new ArrayList<EvolInterfZPredictor>();
+		evolRimCorePredictors = new ArrayList<EvolCoreRimPredictor>();
+		evolInterfZPredictors = new ArrayList<EvolCoreSurfacePredictor>();
 	
 		this.chainInterfList = interfaces;
 		this.cecs = cecs;
@@ -66,18 +66,18 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 		return this.list.get(i);
 	}
 	
-	public EvolRimCorePredictor getEvolRimCorePredictor(int i) {
+	public EvolCoreRimPredictor getEvolRimCorePredictor(int i) {
 		return this.evolRimCorePredictors.get(i);
 	}
 	
-	public EvolInterfZPredictor getEvolInterfZPredictor(int i) {
+	public EvolCoreSurfacePredictor getEvolInterfZPredictor(int i) {
 		return this.evolInterfZPredictors.get(i);
 	}
 	
 	private void add(InterfaceEvolContext iec) {
 		list.add(iec);
-		evolRimCorePredictors.add(new EvolRimCorePredictor(iec));
-		evolInterfZPredictors.add(new EvolInterfZPredictor(iec));
+		evolRimCorePredictors.add(new EvolCoreRimPredictor(iec));
+		evolInterfZPredictors.add(new EvolCoreSurfacePredictor(iec));
 	}
 	
 	@Override

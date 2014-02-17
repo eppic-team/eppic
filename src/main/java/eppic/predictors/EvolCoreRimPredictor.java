@@ -16,7 +16,7 @@ import eppic.InterfaceEvolContext;
 import eppic.ScoringType;
 
 
-public class EvolRimCorePredictor implements InterfaceTypePredictor {
+public class EvolCoreRimPredictor implements InterfaceTypePredictor {
 
 	protected static final int FIRST  = 0;
 	protected static final int SECOND = 1;
@@ -39,21 +39,21 @@ public class EvolRimCorePredictor implements InterfaceTypePredictor {
 	private double bsaToAsaCutoff;
 	private double minAsaForSurface;
 
-	private EvolRimCoreMemberPredictor member1Pred;
-	private EvolRimCoreMemberPredictor member2Pred;
+	private EvolCoreRimMemberPredictor member1Pred;
+	private EvolCoreRimMemberPredictor member2Pred;
 	
-	public EvolRimCorePredictor(InterfaceEvolContext iec) {
+	public EvolCoreRimPredictor(InterfaceEvolContext iec) {
 		this.iec = iec;
 		this.warnings = new ArrayList<String>();
-		this.member1Pred = new EvolRimCoreMemberPredictor(this, FIRST);
-		this.member2Pred = new EvolRimCoreMemberPredictor(this, SECOND);
+		this.member1Pred = new EvolCoreRimMemberPredictor(this, FIRST);
+		this.member2Pred = new EvolCoreRimMemberPredictor(this, SECOND);
 	}
 	
-	public EvolRimCoreMemberPredictor getMember1Predictor() {
+	public EvolCoreRimMemberPredictor getMember1Predictor() {
 		return member1Pred;
 	}
 	
-	public EvolRimCoreMemberPredictor getMember2Predictor() {
+	public EvolCoreRimMemberPredictor getMember2Predictor() {
 		return member2Pred;
 	}
 	

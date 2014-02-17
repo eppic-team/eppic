@@ -7,6 +7,7 @@ public class ResidueDB implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	
+	public static final int OTHER = -1;
 	public static final int SURFACE = 0;
 	public static final int RIM = 1;
 	public static final int CORE_EVOLUTIONARY = 2;
@@ -77,7 +78,7 @@ public class ResidueDB implements Serializable {
 		return bsa;
 	}
 
-	public void setBsa(Float bsa) {
+	public void setBsa(double bsa) {
 		this.bsa = bsa;
 	}
 	

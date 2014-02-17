@@ -22,8 +22,8 @@ public class CombinedPredictor implements InterfaceTypePredictor {
 
 	private InterfaceEvolContext iec;
 	private GeometryPredictor gp;
-	private EvolRimCorePredictor rp;
-	private EvolInterfZPredictor zp;
+	private EvolCoreRimPredictor rp;
+	private EvolCoreSurfacePredictor zp;
 	
 	private CallType call;
 	
@@ -31,7 +31,7 @@ public class CombinedPredictor implements InterfaceTypePredictor {
 	
 	private boolean usePdbResSer;
 	
-	public CombinedPredictor(InterfaceEvolContext iec, GeometryPredictor gp, EvolRimCorePredictor rp, EvolInterfZPredictor zp) {
+	public CombinedPredictor(InterfaceEvolContext iec, GeometryPredictor gp, EvolCoreRimPredictor rp, EvolCoreSurfacePredictor zp) {
 		this.iec=iec;
 		this.gp=gp;
 		this.rp=rp;

@@ -57,6 +57,34 @@ public class PdbInfoDB implements Serializable {
 		this.rfreeValue = rfreeValue;
 	}
 	
+	/**
+	 * Returns the InterfaceDB for the given interfaceId or null if no such interfaceId exists
+	 * @param interfaceId
+	 * @return
+	 */
+	public InterfaceDB getInterface (int interfaceId) {
+		for (InterfaceClusterDB ic:interfaceClusters) {
+			for (InterfaceDB ii:ic.getInterfaces()) {
+				if (ii.getInterfaceId()==interfaceId) {
+					return ii;
+				}
+			}
+		}
+		return null;
+	}
+	
+	/**
+	 * Returns the InterfaceClusterDB corresponding to the given clusterId or null if no such clusterId exists
+	 * @param interfaceId
+	 * @return
+	 */
+	public InterfaceClusterDB getInterfaceCluster(int clusterId) {
+		for (InterfaceClusterDB ic:interfaceClusters) {
+			if (ic.getClusterId()==clusterId) return ic;
+		}
+		return null;
+	}
+	
 	public List<AssemblyDB> getAssemblies() {
 		return assemblies;
 	}
