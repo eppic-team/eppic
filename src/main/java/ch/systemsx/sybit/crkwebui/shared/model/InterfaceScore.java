@@ -26,7 +26,7 @@ public class InterfaceScore implements Serializable
 	
 	private double confidence;
 	
-	private String call;
+	private String callName;
 	private String callReason;
 	
 	public InterfaceScore()
@@ -72,12 +72,12 @@ public class InterfaceScore implements Serializable
 		return interfaceId;
 	}
 
-	public void setCall(String call) {
-		this.call = call;
+	public void setCallName(String callName) {
+		this.callName = callName;
 	}
 
-	public String getCall() {
-		return call;
+	public String getCallName() {
+		return callName;
 	}
 	
 	public String getCallReason() {
@@ -112,7 +112,7 @@ public class InterfaceScore implements Serializable
 	public static InterfaceScore create(InterfaceScoreDB interfaceScoreDB)
 	{
 		InterfaceScore interfaceScore = new InterfaceScore();
-		interfaceScore.setCall(interfaceScoreDB.getCall());
+		interfaceScore.setCallName(interfaceScoreDB.getCallName());
 		interfaceScore.setCallReason(interfaceScoreDB.getCallReason());
 		interfaceScore.setInterfaceId(interfaceScoreDB.getInterfaceId());
 		interfaceScore.setMethod(interfaceScoreDB.getMethod());

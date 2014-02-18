@@ -15,49 +15,46 @@ public class InterfaceScoreListener
 	@PrePersist
 	public void prePersist(InterfaceScoreDB interfaceScoreItemDB)
 	{
-		//TODO 
-		// Check the other way of doing this !!
-//		if(interfaceScoreItemDB.getScore1() != null)
-//		{
-//			if(Double.isNaN(interfaceScoreItemDB.getScore1()))
-//			{
-//				interfaceScoreItemDB.setScore1(null);
-//			}
-//		}
-//		
-//		if(interfaceScoreItemDB.getScore2() != null)
-//		{
-//			if(Double.isNaN(interfaceScoreItemDB.getScore2()))
-//			{
-//				interfaceScoreItemDB.setScore2(null);
-//			}
-//		}
-//		
-//		if(interfaceScoreItemDB.getScore() != null)
-//		{
-//			if(Double.isNaN(interfaceScoreItemDB.getScore()))
-//			{
-//				interfaceScoreItemDB.setScore(null);
-//			}
-//		}
+//		 TODO 
+//		 Check the other way of doing this !!
+		
+			if(Double.isNaN(interfaceScoreItemDB.getScore1()))
+			{
+				interfaceScoreItemDB.setScore1(-1000000);
+			}
+		
+		
+		
+			if(Double.isNaN(interfaceScoreItemDB.getScore2()))
+			{
+				interfaceScoreItemDB.setScore2(-1000000);
+			}
+		
+		
+		
+			if(Double.isNaN(interfaceScoreItemDB.getScore()))
+			{
+				interfaceScoreItemDB.setScore(-1000000);
+			}
+		
 	}
 	
 	@PostLoad
 	public void postLoad(InterfaceScoreDB interfaceScoreItemDB)
 	{
-//		if(interfaceScoreItemDB.getScore1() == null)
-//		{
-//			interfaceScoreItemDB.setScore1(Double.NaN);
-//		}
-//		
-//		if(interfaceScoreItemDB.getScore2() == null)
-//		{
-//			interfaceScoreItemDB.setScore2(Double.NaN);
-//		}
-//		
-//		if(interfaceScoreItemDB.getScore() == null)
-//		{
-//			interfaceScoreItemDB.setScore(Double.NaN);
-//		}
+		if(interfaceScoreItemDB.getScore1() == -1000000)
+		{
+			interfaceScoreItemDB.setScore1(Double.NaN);
+		}
+		
+		if(interfaceScoreItemDB.getScore2() == -1000000)
+		{
+			interfaceScoreItemDB.setScore2(Double.NaN);
+		}
+		
+		if(interfaceScoreItemDB.getScore() == -1000000)
+		{
+			interfaceScoreItemDB.setScore(Double.NaN);
+		}
 	}
 }

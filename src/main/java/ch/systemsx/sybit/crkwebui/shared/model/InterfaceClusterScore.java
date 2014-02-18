@@ -11,7 +11,7 @@ public class InterfaceClusterScore implements Serializable {
 	
 	private int uid;
 	
-	private String call;
+	private String callName;
 	
 	private double score;	
 	private double confidence;
@@ -28,12 +28,12 @@ public class InterfaceClusterScore implements Serializable {
 		this.uid = uid;
 	}
 
-	public String getCall() {
-		return call;
+	public String getCallName() {
+		return callName;
 	}
 
-	public void setCall(String call) {
-		this.call = call;
+	public void setCallName(String callName) {
+		this.callName = callName;
 	}
 
 	public double getScore() {
@@ -76,7 +76,7 @@ public class InterfaceClusterScore implements Serializable {
 	public static InterfaceClusterScore create(InterfaceClusterScoreDB clusterScoreDB)
 	{
 		InterfaceClusterScore clusterScore = new InterfaceClusterScore();
-		clusterScore.setCall(clusterScoreDB.getCall());
+		clusterScore.setCallName(clusterScoreDB.getCallName());
 		clusterScore.setMethod(clusterScoreDB.getMethod());
 		clusterScore.setUid(clusterScoreDB.getUid());
 		clusterScore.setScore(clusterScoreDB.getScore());

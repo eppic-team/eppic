@@ -402,23 +402,23 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 				{
 					if(interfaceScore.getMethod().equals("Geometry"))
 					{
-						model.setGeometryCall(interfaceScore.getCall());
+						model.setGeometryCall(interfaceScore.getCallName());
 						model.setSizes(String.valueOf(interfaceScore.getScore1()) + " + " + String.valueOf(interfaceScore.getScore2()));
 					}
 
 					if(interfaceScore.getMethod().equals("Entropy"))
 					{
-						model.setCoreRimCall(interfaceScore.getCall());
+						model.setCoreRimCall(interfaceScore.getCallName());
 					}
 
 					if(interfaceScore.getMethod().equals("Z-scores"))
 					{
-						model.setCoreSurfaceCall(interfaceScore.getCall());
+						model.setCoreSurfaceCall(interfaceScore.getCallName());
 					}
 					
 					if(interfaceScore.getMethod().equals("eppic"))
 					{
-						model.setFinalCallName(interfaceScore.getCall());
+						model.setFinalCallName(interfaceScore.getCallName());
 					}
 				}
 				

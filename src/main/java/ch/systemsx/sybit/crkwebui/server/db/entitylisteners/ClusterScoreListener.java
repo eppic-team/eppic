@@ -17,22 +17,21 @@ public class ClusterScoreListener
 	{
 		//TODO 
 		// Check the other way of doing this !!
-//		if(interfaceClusterScoreDB.getScore() != null)
-//		{
-//			if(Double.isNaN(interfaceClusterScoreDB.getScore()))
-//			{
-//				interfaceClusterScoreDB.setScore(null);
-//			}
-//		}
+		
+			if(Double.isNaN(interfaceClusterScoreDB.getScore()))
+			{
+				interfaceClusterScoreDB.setScore(-1000000);
+			}
+		
 	}
 	
 	@PostLoad
 	public void postLoad(InterfaceClusterScoreDB interfaceClusterScoreDB)
 	{
-//		
-//		if(interfaceClusterScoreDB.getScore() == null)
-//		{
-//			interfaceClusterScoreDB.setScore(Double.NaN);
-//		}
+		
+		if(interfaceClusterScoreDB.getScore() == -1000000)
+		{
+			interfaceClusterScoreDB.setScore(Double.NaN);
+		}
 	}
 }
