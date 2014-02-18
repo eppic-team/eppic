@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <persistence xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd" version="2.0">
-	<persistence-unit name="crkjpa">
+	<persistence-unit name="eppicjpa">
 		<description>Persistence unit for the EPPIC WUI application</description>
 		<provider>org.hibernate.ejb.HibernatePersistence</provider>
 		
@@ -23,7 +23,7 @@
 		</properties>
 	</persistence-unit>
 
-	<persistence-unit name="crk-offline-jpa">
+	<persistence-unit name="eppic-offline-jpa">
 		<description>Persistence unit for the EPPIC WUI application - offline backup database</description>
 		<provider>org.hibernate.ejb.HibernatePersistence</provider>
 
