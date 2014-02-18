@@ -48,11 +48,11 @@ public class RunParametersDB implements Serializable {
 		this.reducedAlphabet = reducedAlphabet;
 	}
 	
-	public int getHomologsCutoff() {
+	public int getMinNumSeqsCutoff() {
 		return minNumSeqsCutoff;
 	}
 
-	public void setHomologsCutoff(int homologsCutoff) {
+	public void setMinNumSeqsCutoff(int homologsCutoff) {
 		this.minNumSeqsCutoff = homologsCutoff;
 	}
 
