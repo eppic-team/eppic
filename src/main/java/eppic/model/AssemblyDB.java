@@ -21,8 +21,6 @@ public class AssemblyDB implements Serializable {
 	private List<InterfaceClusterDB> interfaceClusters;
 
 	public AssemblyDB() {
-		this.mmSize=0;
-		this.method="none";
 	}
 
 	public String getPdbCode() {
