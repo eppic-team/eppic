@@ -64,7 +64,7 @@
 				<generated-value strategy="IDENTITY" />
 			</id>
 			<basic name="pdbCode">
-				<column length="255" />
+				<column length="4" />
 			</basic>
 			<basic name="title">
 				<column column-definition="text" />
@@ -119,6 +119,10 @@
 			<id name="uid">
 				<generated-value strategy="IDENTITY" />
 			</id>
+			
+			<basic name="pdbCode">
+				<column length="4" />
+			</basic>
 
 			<basic name="mmSize"></basic>
 
@@ -148,7 +152,9 @@
 			</id>
 
 			<basic name="clusterId"></basic>
-			<basic name="pdbCode"></basic>
+			<basic name="pdbCode">
+				<column length="4" />
+			</basic>
 
 			<many-to-one name="pdbInfo">
 			</many-to-one>
@@ -182,6 +188,9 @@
 			<id name="uid">
 				<generated-value strategy="IDENTITY" />
 			</id>
+			<basic name="pdbCode">
+				<column length="4" />
+			</basic>
 			<basic name="method">
 				<column length="15" />
 			</basic>
@@ -189,7 +198,7 @@
 			<basic name="score">
 				<column nullable="true" />
 			</basic>
-			<basic name="call">
+			<basic name="callName">
 				<column length="6" />
 			</basic>
 			<basic name="callReason">
@@ -213,12 +222,12 @@
 			<id name="uid">
 				<generated-value strategy="IDENTITY" />
 			</id>
-			<basic name="pdbCode"></basic>
+			<basic name="pdbCode">
+				<column length="4" />
+			</basic>
 			<basic name="interfaceId"></basic>
 			<basic name="clusterId"></basic>
-			<basic name="area">
-				<column nullable="true" />
-			</basic>
+			<basic name="area"></basic>
 			<basic name="chain1">
 				<column length="1" />
 			</basic>
@@ -281,9 +290,7 @@
 			<basic name="asa"></basic>
 			<basic name="bsa"></basic>
 			<basic name="region"></basic>
-			<basic name="entropyScore">
-				<column nullable="true" />
-			</basic>
+			<basic name="entropyScore"></basic>
 
 			<many-to-one name="interfaceItem">
 			</many-to-one>
@@ -301,6 +308,9 @@
 			<id name="uid">
 				<generated-value strategy="IDENTITY" />
 			</id>
+			<basic name="pdbCode">
+				<column length="4" />
+			</basic>
 			<basic name="method">
 				<column length="15" />
 			</basic>
@@ -314,7 +324,7 @@
 			<basic name="score">
 				<column nullable="true" />
 			</basic>
-			<basic name="call">
+			<basic name="callName">
 				<column length="6" />
 			</basic>
 			<basic name="callReason">
@@ -393,9 +403,7 @@
 			<basic name="refUniProtEnd"></basic>
 			
 			<basic name="hasUniProtRef"></basic>
-			<basic name="seqIdCutoff">
-				<column nullable="true" />
-			</basic>
+			<basic name="seqIdCutoff"></basic>
 			<basic name="clusteringSeqId"></basic>
 			
 			<basic name="pdbAlignedSeq">
@@ -408,13 +416,17 @@
 				<column column-definition="text" />
 			</basic>
 			
-			<basic name="msaAlignedSeq"></basic>
+			<basic name="msaAlignedSeq">
+				<column column-definition="text" />
+			</basic>
 			<basic name="numHomologs"></basic>
 			
 			<basic name="firstTaxon"></basic>
 			<basic name="lastTaxon"></basic>
 			
-			<basic name="pdbCode"></basic>
+			<basic name="pdbCode">
+				<column length="4" />
+			</basic>
 
 			<many-to-one name="pdbInfo">
 			</many-to-one>
@@ -451,16 +463,14 @@
 			<basic name="lastTaxon">
 				<column length="255" />
 			</basic>
-			<basic name="seqId">
-				<column nullable="true" />
-			</basic>
-			<basic name="queryCoverage">
-				<column nullable="true" />
-			</basic>
+			<basic name="seqId"></basic>
+			<basic name="queryCoverage"></basic>
 			<basic name="queryStart"></basic>
 			<basic name="queryEnd"></basic>
 			
-			<basic name="alignedSeq"></basic>
+			<basic name="alignedSeq">
+				<column column-definition="text" />
+			</basic>
 
 			<many-to-one name="chainCluster">
 			</many-to-one>
