@@ -32,9 +32,9 @@ import ch.systemsx.sybit.crkwebui.client.results.gui.cells.ThumbnailCell;
 import ch.systemsx.sybit.crkwebui.client.results.gui.cells.WarningsCell;
 import ch.systemsx.sybit.crkwebui.client.results.gui.grid.util.ClustersGridView;
 import ch.systemsx.sybit.crkwebui.shared.model.InputType;
-import ch.systemsx.sybit.crkwebui.shared.model.InterfaceItem;
-import ch.systemsx.sybit.crkwebui.shared.model.InterfaceScoreItem;
-import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
+import ch.systemsx.sybit.crkwebui.shared.model.Interface;
+import ch.systemsx.sybit.crkwebui.shared.model.InterfaceScore;
+import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.NativeEvent;
@@ -286,7 +286,7 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 
 	private SummaryColumnConfig<InterfaceItemModel, Integer> getIdColumn() {
 		SummaryColumnConfig<InterfaceItemModel, Integer> idColumn = 
-				new SummaryColumnConfig<InterfaceItemModel, Integer>(props.id());
+				new SummaryColumnConfig<InterfaceItemModel, Integer>(props.interfaceId());
 		fillColumnSettings(idColumn, "id");
 		return idColumn;
 	}
@@ -376,7 +376,7 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 	 * Sets content of results grid.
 	 * @param resultsData results data of selected job
 	 */
-	public void fillResultsGrid(PDBScoreItem resultsData)
+	public void fillResultsGrid(PdbInfo resultsData)
 	{
 		boolean hideWarnings = true;
 		
@@ -384,52 +384,56 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 
 		List<InterfaceItemModel> data = new ArrayList<InterfaceItemModel>();
 
-		List<InterfaceItem> interfaceItems = resultsData.getInterfaceItems();
+		List<Interface> interfaceItems = resultsData.getInterfaces();
 
 		if (interfaceItems != null)
 		{
-			for (InterfaceItem interfaceItem : interfaceItems) 
+			for (Interface interfaceItem : interfaceItems) 
 			{
-				if((interfaceItem.getWarnings() != null) &&
-				   (interfaceItem.getWarnings().size() > 0))
+				if((interfaceItem.getInterfaceWarnings() != null) &&
+				   (interfaceItem.getInterfaceWarnings().size() > 0))
 			    {
 					hideWarnings = false;
 			    }
 				
 				InterfaceItemModel model = new InterfaceItemModel();
 
-				for(InterfaceScoreItem interfaceScoreItem : interfaceItem.getInterfaceScores())
+				for(InterfaceScore interfaceScore : interfaceItem.getInterfaceScores())
 				{
-					if(interfaceScoreItem.getMethod().equals("Geometry"))
+					if(interfaceScore.getMethod().equals("Geometry"))
 					{
-						model.setGeometryCall(interfaceScoreItem.getCallName());
+						model.setGeometryCall(interfaceScore.getCall());
+						model.setSizes(String.valueOf(interfaceScore.getScore1()) + " + " + String.valueOf(interfaceScore.getScore2()));
 					}
 
-					if(interfaceScoreItem.getMethod().equals("Entropy"))
+					if(interfaceScore.getMethod().equals("Entropy"))
 					{
-						model.setCoreRimCall(interfaceScoreItem.getCallName());
+						model.setCoreRimCall(interfaceScore.getCall());
 					}
 
-					if(interfaceScoreItem.getMethod().equals("Z-scores"))
+					if(interfaceScore.getMethod().equals("Z-scores"))
 					{
-						model.setCoreSurfaceCall(interfaceScoreItem.getCallName());
+						model.setCoreSurfaceCall(interfaceScore.getCall());
+					}
+					
+					if(interfaceScore.getMethod().equals("eppic"))
+					{
+						model.setFinalCallName(interfaceScore.getCall());
 					}
 				}
 				
-				model.setId(interfaceItem.getId());
+				model.setInterfaceId(interfaceItem.getInterfaceId());
 				model.setClusterId(interfaceItem.getClusterId());
 				model.setName(interfaceItem.getChain1() + "+" + interfaceItem.getChain2());
 				model.setArea(interfaceItem.getArea());
-				model.setSizes(String.valueOf(interfaceItem.getSize1()) + " + " + String.valueOf(interfaceItem.getSize2()));
-				model.setFinalCallName(interfaceItem.getFinalCallName());
 				model.setOperator(interfaceItem.getOperator());
 				model.setOperatorType(interfaceItem.getOperatorType());
-				model.setIsInfinite(interfaceItem.getIsInfinite());
-				model.setWarnings(interfaceItem.getWarnings());
+				model.setInfinite(interfaceItem.getIsInfinite());
+				model.setWarnings(interfaceItem.getInterfaceWarnings());
 				String thumbnailUrl = ApplicationContext.getSettings().getResultsLocation() +
-						ApplicationContext.getPdbScoreItem().getJobId() + 
-						"/" + ApplicationContext.getPdbScoreItem().getPdbName() +
-						"." + interfaceItem.getId() + ".75x75.png";
+						ApplicationContext.getPdbInfo().getJobId() + 
+						"/" + ApplicationContext.getPdbInfo().getPdbCode() +
+						"." + interfaceItem.getInterfaceId() + ".75x75.png";
 				model.setThumbnailUrl(thumbnailUrl);
 
 				data.add(model);
@@ -490,7 +494,7 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 			clustersView.groupBy(clusterIdColumn);
 		} else{
 			clustersView.groupBy(null);
-			resultsStore.addSortInfo(0, new StoreSortInfo<InterfaceItemModel>(props.id(), SortDir.ASC));
+			resultsStore.addSortInfo(0, new StoreSortInfo<InterfaceItemModel>(props.interfaceId(), SortDir.ASC));
 			//Hide cluster id column
 			resultsGrid.getColumnModel().getColumn(0).setHidden(true);
 			resultsGrid.getView().refresh(true);
@@ -630,7 +634,7 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 			@Override
 			public void onShowViewer(ShowViewerEvent event) 
 			{
-				ViewerRunner.runViewer(String.valueOf(resultsGrid.getSelectionModel().getSelectedItem().getId()));
+				ViewerRunner.runViewer(String.valueOf(resultsGrid.getSelectionModel().getSelectedItem().getInterfaceId()));
 			}
 		}); 
 		
@@ -655,7 +659,7 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 			@Override
 			public void onShowDetails(ShowDetailsEvent event) 
 			{
-				EventBusManager.EVENT_BUS.fireEvent(new ShowInterfaceResiduesEvent((Integer)resultsGrid.getSelectionModel().getSelectedItem().getId()));
+				EventBusManager.EVENT_BUS.fireEvent(new ShowInterfaceResiduesEvent((Integer)resultsGrid.getSelectionModel().getSelectedItem().getInterfaceId()));
 			}
 		}); 
 		

@@ -11,39 +11,39 @@ import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
-import eppic.model.HomologsInfoItemDB_;
-import eppic.model.PDBScoreItemDB_;
+import eppic.model.ChainClusterDB_;
+import eppic.model.PdbInfoDB_;
 import ch.systemsx.sybit.crkwebui.server.db.EntityManagerHandler;
-import ch.systemsx.sybit.crkwebui.server.db.dao.HomologsInfoItemDAO;
+import ch.systemsx.sybit.crkwebui.server.db.dao.ChainClusterDAO;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
-import ch.systemsx.sybit.crkwebui.shared.model.HomologsInfoItem;
+import ch.systemsx.sybit.crkwebui.shared.model.ChainCluster;
 import ch.systemsx.sybit.crkwebui.shared.model.PDBSearchResult;
 import eppic.model.ChainClusterDB;
 import eppic.model.PdbInfoDB;
 
 /**
- * Implementation of HomologsInfoItemDAO.
+ * Implementation of ChainClusterDAO.
  * @author AS
  *
  */
-public class HomologsInfoItemDAOJpa implements HomologsInfoItemDAO
+public class ChainClusterDAOJpa implements ChainClusterDAO
 {
 	@Override
-	public List<HomologsInfoItem> getHomologsInfoItems(int pdbScoreUid) throws DaoException
+	public List<ChainCluster> getChainClusters(int pdbInfoUid) throws DaoException
 	{
 		EntityManager entityManager = null;
 		
 		try
 		{
-			List<HomologsInfoItem> result = new ArrayList<HomologsInfoItem>();
+			List<ChainCluster> result = new ArrayList<ChainCluster>();
 			
 			entityManager = EntityManagerHandler.getEntityManager();			
 			CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 			
 			CriteriaQuery<ChainClusterDB> criteriaQuery = criteriaBuilder.createQuery(ChainClusterDB.class);
-			Root<ChainClusterDB> numHomologsStringItemRoot = criteriaQuery.from(ChainClusterDB.class);
-			Path<PdbInfoDB> pdbScoreItemRoot = numHomologsStringItemRoot.get(HomologsInfoItemDB_.pdbScoreItem);
-			Predicate condition = criteriaBuilder.equal(pdbScoreItemRoot.get(PDBScoreItemDB_.uid), pdbScoreUid);
+			Root<ChainClusterDB> chainClusterRoot = criteriaQuery.from(ChainClusterDB.class);
+			Path<PdbInfoDB> pdbInfoPath = chainClusterRoot.get(ChainClusterDB_.pdbInfo);
+			Predicate condition = criteriaBuilder.equal(pdbInfoPath.get(PdbInfoDB_.uid), pdbInfoUid);
 			criteriaQuery.where(condition);
 			
 			Query query = entityManager.createQuery(criteriaQuery);
@@ -52,7 +52,7 @@ public class HomologsInfoItemDAOJpa implements HomologsInfoItemDAO
 			
 			for(ChainClusterDB homologsInfoItemDB : numHomologsStringItemDBs)
 			{
-				result.add(HomologsInfoItem.create(homologsInfoItemDB));
+				result.add(ChainCluster.create(homologsInfoItemDB));
 			}
 			
 			return result;
@@ -90,15 +90,15 @@ public class HomologsInfoItemDAOJpa implements HomologsInfoItemDAO
 			CriteriaQuery<PdbInfoDB> criteriaQuery = criteriaBuilder.createQuery(PdbInfoDB.class);
 			
 			Root<ChainClusterDB> root = criteriaQuery.from(ChainClusterDB.class);
-			criteriaQuery.select(root.get(HomologsInfoItemDB_.pdbScoreItem));
-			criteriaQuery.where(criteriaBuilder.equal(root.get(HomologsInfoItemDB_.uniprotId), uniProtId));
+			criteriaQuery.select(root.get(ChainClusterDB_.pdbInfo));
+			criteriaQuery.where(criteriaBuilder.equal(root.get(ChainClusterDB_.refUniProtId), uniProtId));
 			Query query = entityManager.createQuery(criteriaQuery);
 			
 			@SuppressWarnings("unchecked")
 			List<PdbInfoDB> pdbItemDBs = query.getResultList();
 			
 			for(PdbInfoDB pdbItemDB: pdbItemDBs){
-				PDBSearchResult result = new PDBSearchResult(pdbItemDB.getPdbName(), 
+				PDBSearchResult result = new PDBSearchResult(pdbItemDB.getPdbCode(), 
 															pdbItemDB.getTitle(), 
 															pdbItemDB.getReleaseDate(), 
 															pdbItemDB.getSpaceGroup(), 

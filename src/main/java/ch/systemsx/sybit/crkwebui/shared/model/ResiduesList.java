@@ -9,14 +9,14 @@ import java.util.List;
  * @author AS
  *
  */
-public class InterfaceResiduesItemsList extends HashMap<Integer, HashMap<Integer, List<InterfaceResidueItem>>> implements Serializable 
+public class ResiduesList extends HashMap<Integer, HashMap<Integer, List<Residue>>> implements Serializable 
 {
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
 
-	public InterfaceResiduesItemsList()
+	public ResiduesList()
 	{
 		
 	}

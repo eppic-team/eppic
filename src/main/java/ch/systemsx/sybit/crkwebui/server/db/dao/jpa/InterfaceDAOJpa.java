@@ -10,30 +10,30 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Root;
 
-import eppic.model.InterfaceItemDB_;
-import eppic.model.PDBScoreItemDB_;
+import eppic.model.InterfaceClusterDB;
+import eppic.model.InterfaceClusterDB_;
+import eppic.model.InterfaceDB_;
 import ch.systemsx.sybit.crkwebui.server.db.EntityManagerHandler;
-import ch.systemsx.sybit.crkwebui.server.db.dao.InterfaceItemDAO;
+import ch.systemsx.sybit.crkwebui.server.db.dao.InterfaceDAO;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
-import ch.systemsx.sybit.crkwebui.shared.model.InterfaceItem;
+import ch.systemsx.sybit.crkwebui.shared.model.Interface;
 import eppic.model.InterfaceDB;
-import eppic.model.PdbInfoDB;
 
 /**
- * Implementation of InterfaceItemDAO.
+ * Implementation of InterfaceDAO.
  * @author AS
  *
  */
-public class InterfaceItemDAOJpa implements InterfaceItemDAO 
+public class InterfaceDAOJpa implements InterfaceDAO 
 {
 	@Override
-	public List<InterfaceItem> getInterfacesWithScores(int pdbScoreUid) throws DaoException
+	public List<Interface> getInterfacesWithScores(int interfaceClusterUid) throws DaoException
 	{
 		EntityManager entityManager = null;
 		
 		try
 		{
-			List<InterfaceItem> result = new ArrayList<InterfaceItem>();
+			List<Interface> result = new ArrayList<Interface>();
 			
 			entityManager = EntityManagerHandler.getEntityManager();
 			
@@ -41,8 +41,8 @@ public class InterfaceItemDAOJpa implements InterfaceItemDAO
 			CriteriaQuery<InterfaceDB> criteriaQuery = criteriaBuilder.createQuery(InterfaceDB.class);
 			
 			Root<InterfaceDB> interfaceItemRoot = criteriaQuery.from(InterfaceDB.class);
-			Path<PdbInfoDB> pdbScoreItemDB = interfaceItemRoot.get(InterfaceItemDB_.pdbScoreItem);
-			criteriaQuery.where(criteriaBuilder.equal(pdbScoreItemDB.get(PDBScoreItemDB_.uid), pdbScoreUid));
+			Path<InterfaceClusterDB> interfaceClusterPath = interfaceItemRoot.get(InterfaceDB_.interfaceCluster);
+			criteriaQuery.where(criteriaBuilder.equal(interfaceClusterPath.get(InterfaceClusterDB_.uid), interfaceClusterUid));
 			
 			Query query = entityManager.createQuery(criteriaQuery);
 			
@@ -52,7 +52,7 @@ public class InterfaceItemDAOJpa implements InterfaceItemDAO
 			for(InterfaceDB interfaceItemDB : interfaceItemDBs)
 			{
 				interfaceItemDB.setResidues(null);
-				result.add(InterfaceItem.create(interfaceItemDB));
+				result.add(Interface.create(interfaceItemDB));
 			}
 			
 			return result;
@@ -76,13 +76,13 @@ public class InterfaceItemDAOJpa implements InterfaceItemDAO
 	}
 	
 	@Override
-	public List<InterfaceItem> getInterfacesWithScores(int pdbScoreUid, List<Integer> interfaceIds)throws DaoException
+	public List<Interface> getInterfacesWithScores(int interfaceClusterUid, List<Integer> interfaceIds)throws DaoException
 	{
 		EntityManager entityManager = null;
 		
 		try
 		{
-			List<InterfaceItem> result = new ArrayList<InterfaceItem>();
+			List<Interface> result = new ArrayList<Interface>();
 			
 			entityManager = EntityManagerHandler.getEntityManager();
 			
@@ -90,8 +90,8 @@ public class InterfaceItemDAOJpa implements InterfaceItemDAO
 			CriteriaQuery<InterfaceDB> criteriaQuery = criteriaBuilder.createQuery(InterfaceDB.class);
 			
 			Root<InterfaceDB> interfaceItemRoot = criteriaQuery.from(InterfaceDB.class);
-			Path<PdbInfoDB> pdbScoreItemDB = interfaceItemRoot.get(InterfaceItemDB_.pdbScoreItem);
-			criteriaQuery.where(criteriaBuilder.equal(pdbScoreItemDB.get(PDBScoreItemDB_.uid), pdbScoreUid));
+			Path<InterfaceClusterDB> interfaceClusterPath = interfaceItemRoot.get(InterfaceDB_.interfaceCluster);
+			criteriaQuery.where(criteriaBuilder.equal(interfaceClusterPath.get(InterfaceClusterDB_.uid), interfaceClusterUid));
 			
 			Query query = entityManager.createQuery(criteriaQuery);
 			
@@ -102,7 +102,7 @@ public class InterfaceItemDAOJpa implements InterfaceItemDAO
 			{
 				interfaceItemDB.setResidues(null);
 				if(interfaceIds.contains(interfaceItemDB.getInterfaceId())){
-					result.add(InterfaceItem.create(interfaceItemDB));
+					result.add(Interface.create(interfaceItemDB));
 				}
 			}
 			
@@ -128,13 +128,13 @@ public class InterfaceItemDAOJpa implements InterfaceItemDAO
 	}
 	
 	@Override
-	public List<InterfaceItem> getInterfacesWithResidues(int pdbScoreUid) throws DaoException
+	public List<Interface> getInterfacesWithResidues(int interfaceClusterUid) throws DaoException
 	{
 		EntityManager entityManager = null;
 		
 		try
 		{
-			List<InterfaceItem> result = new ArrayList<InterfaceItem>();
+			List<Interface> result = new ArrayList<Interface>();
 			
 			entityManager = EntityManagerHandler.getEntityManager();
 			
@@ -142,8 +142,8 @@ public class InterfaceItemDAOJpa implements InterfaceItemDAO
 			CriteriaQuery<InterfaceDB> criteriaQuery = criteriaBuilder.createQuery(InterfaceDB.class);
 			
 			Root<InterfaceDB> interfaceItemRoot = criteriaQuery.from(InterfaceDB.class);
-			Path<PdbInfoDB> pdbScoreItemDB = interfaceItemRoot.get(InterfaceItemDB_.pdbScoreItem);
-			criteriaQuery.where(criteriaBuilder.equal(pdbScoreItemDB.get(PDBScoreItemDB_.uid), pdbScoreUid));
+			Path<InterfaceClusterDB> interfaceClusterPath = interfaceItemRoot.get(InterfaceDB_.interfaceCluster);
+			criteriaQuery.where(criteriaBuilder.equal(interfaceClusterPath.get(InterfaceClusterDB_.uid), interfaceClusterUid));
 			
 			Query query = entityManager.createQuery(criteriaQuery);
 			
@@ -154,7 +154,7 @@ public class InterfaceItemDAOJpa implements InterfaceItemDAO
 			{
 				interfaceItemDB.setInterfaceScores(null);
 				interfaceItemDB.setInterfaceWarnings(null);
-				result.add(InterfaceItem.create(interfaceItemDB));
+				result.add(Interface.create(interfaceItemDB));
 			}
 			
 			return result;

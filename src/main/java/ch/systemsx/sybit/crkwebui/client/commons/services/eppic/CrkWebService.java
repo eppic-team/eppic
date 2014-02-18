@@ -4,8 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
-import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResidueItem;
-import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResiduesItemsList;
+import ch.systemsx.sybit.crkwebui.shared.model.Residue;
+import ch.systemsx.sybit.crkwebui.shared.model.ResiduesList;
 import ch.systemsx.sybit.crkwebui.shared.model.JobsForSession;
 import ch.systemsx.sybit.crkwebui.shared.model.PDBSearchResult;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingData;
@@ -67,7 +67,7 @@ public interface CrkWebService extends RemoteService
 	 * @throws Exception when an asynchronous call fails to complete normally
 	 */
 	@NoXsrfProtect
-	public HashMap<Integer, List<InterfaceResidueItem>> getInterfaceResidues(int interfaceUid) throws Exception;
+	public HashMap<Integer, List<Residue>> getInterfaceResidues(int interfaceUid) throws Exception;
 	
 	/**
 	 * Kills selected job.
@@ -101,7 +101,7 @@ public interface CrkWebService extends RemoteService
 	 * @throws Exception when an asynchronous call fails to complete normally
 	 */
 	@NoXsrfProtect
-	public InterfaceResiduesItemsList getAllResidues(String jobId) throws Exception;
+	public ResiduesList getAllResidues(String jobId) throws Exception;
 	
 	/**
 	 * gets a list of pdb having a seq with a particular UniProt Id

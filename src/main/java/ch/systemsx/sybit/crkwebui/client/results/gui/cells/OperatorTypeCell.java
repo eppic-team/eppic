@@ -2,7 +2,7 @@ package ch.systemsx.sybit.crkwebui.client.results.gui.cells;
 
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.results.data.InterfaceItemModel;
-import ch.systemsx.sybit.crkwebui.shared.model.InterfaceItem;
+import ch.systemsx.sybit.crkwebui.shared.model.Interface;
 
 import com.google.gwt.cell.client.AbstractCell;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
@@ -32,9 +32,9 @@ public class OperatorTypeCell extends AbstractCell<String> {
 			
 			int row = context.getIndex();
 			InterfaceItemModel item = itemsStore.get(row);
-			int interfaceId = item.getId();
+			int interfaceId = item.getInterfaceId();
 		
-			InterfaceItem interfaceItem = ApplicationContext.getPdbScoreItem().getInterfaceItem(interfaceId - 1);
+			Interface interfaceItem = ApplicationContext.getPdbInfo().getInterface(interfaceId);
 			if(interfaceItem != null)
 			{
 				tooltipText = interfaceItem.getOperator();
@@ -54,9 +54,9 @@ public class OperatorTypeCell extends AbstractCell<String> {
 		} else { 
 			int row = context.getIndex();
 			InterfaceItemModel item = itemsStore.get(row);
-			int interfaceId = item.getId();
+			int interfaceId = item.getInterfaceId();
 			
-			InterfaceItem interfaceItem = ApplicationContext.getPdbScoreItem().getInterfaceItem(interfaceId - 1);
+			Interface interfaceItem = ApplicationContext.getPdbInfo().getInterface(interfaceId);
 			if(interfaceItem != null)
 			{
 				String operator = interfaceItem.getOperator();

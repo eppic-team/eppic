@@ -6,29 +6,28 @@ import javax.persistence.PrePersist;
 import eppic.model.ChainClusterDB;
 
 /**
- * Entity listener for HomologsInfoItem used to properly handle NaN and null values.
+ * Entity listener for ChainCluster used to properly handle NaN and null values.
  * @author AS
  *
  */
-public class HomologsInfoItemListener
+public class ChainClusterListener
 {
 	@PrePersist
 	public void prePersist(ChainClusterDB homologsInfoItemDB)
 	{
-		if(homologsInfoItemDB.getSeqIdCutoff() != null)
+
+		if(Double.isNaN(homologsInfoItemDB.getSeqIdCutoff()))
 		{
-			if(Double.isNaN(homologsInfoItemDB.getSeqIdCutoff()))
-			{
-				homologsInfoItemDB.setSeqIdCutoff(null);
-			}
+			homologsInfoItemDB.setSeqIdCutoff(-1);
 		}
-		
+
+
 	}
 	
 	@PostLoad
 	public void postLoad(ChainClusterDB homologsInfoItemDB)
 	{
-		if(homologsInfoItemDB.getSeqIdCutoff() == null)
+		if(homologsInfoItemDB.getSeqIdCutoff() < 0)
 		{
 			homologsInfoItemDB.setSeqIdCutoff(Double.NaN);
 		}

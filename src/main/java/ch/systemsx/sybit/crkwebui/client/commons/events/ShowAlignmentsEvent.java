@@ -1,7 +1,7 @@
 package ch.systemsx.sybit.crkwebui.client.commons.events;
 
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowAlignmentsHandler;
-import ch.systemsx.sybit.crkwebui.shared.model.HomologsInfoItem;
+import ch.systemsx.sybit.crkwebui.shared.model.ChainCluster;
 
 import com.google.gwt.event.shared.GwtEvent;
 
@@ -16,7 +16,7 @@ public class ShowAlignmentsEvent extends GwtEvent<ShowAlignmentsHandler>
 	/**
 	 * Homologs info.
 	 */
-	private final HomologsInfoItem homologsInfoItem;
+	private final ChainCluster chainCluster;
 	
 	/**
 	 * Name of the pdb.
@@ -33,12 +33,12 @@ public class ShowAlignmentsEvent extends GwtEvent<ShowAlignmentsHandler>
 	 */
 	private final int yPostiton;
 	
-	public ShowAlignmentsEvent(HomologsInfoItem homologsInfoItem,
+	public ShowAlignmentsEvent(ChainCluster chainCluster,
 							   String pdbName,
 							   int xPosition,
 							   int yPosition)
 	{
-		this.homologsInfoItem = homologsInfoItem;
+		this.chainCluster = chainCluster;
 		this.pdbName = pdbName;
 		this.xPosition = xPosition;
 		this.yPostiton = yPosition;
@@ -60,8 +60,8 @@ public class ShowAlignmentsEvent extends GwtEvent<ShowAlignmentsHandler>
 	 * Retrieves homologs info to display.
 	 * @return homologs info
 	 */
-	public HomologsInfoItem getHomologsInfoItem() {
-		return homologsInfoItem;
+	public ChainCluster getHomologsInfoItem() {
+		return chainCluster;
 	}
 
 	/**

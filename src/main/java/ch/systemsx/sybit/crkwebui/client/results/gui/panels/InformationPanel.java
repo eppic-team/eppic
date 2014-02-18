@@ -1,6 +1,6 @@
 package ch.systemsx.sybit.crkwebui.client.results.gui.panels;
 
-import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
+import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 
 import com.sencha.gxt.widget.core.client.container.HorizontalLayoutContainer;
 import com.sencha.gxt.core.client.util.Margins;
@@ -15,7 +15,7 @@ public class InformationPanel extends HorizontalLayoutContainer {
 	private GeneralInfoPanel generalInfoPanel;
 	private SequenceInfoPanel sequenceInfoPanel;
 	
-	public InformationPanel(PDBScoreItem pdbScoreItem, int width){
+	public InformationPanel(PdbInfo pdbScoreItem, int width){
 		this.setWidth(width);
 		
 		generalInfoPanel = new GeneralInfoPanel(pdbScoreItem);
@@ -26,7 +26,7 @@ public class InformationPanel extends HorizontalLayoutContainer {
 
 	}
 
-	public void fillInfoPanel(PDBScoreItem pdbScoreItem) {
+	public void fillInfoPanel(PdbInfo pdbScoreItem) {
 		generalInfoPanel.fillGeneralInfoPanel(pdbScoreItem.getSpaceGroup(), 
 									pdbScoreItem.getExpMethod(), 
 									pdbScoreItem.getResolution(), 

@@ -4,8 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
-import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResidueItem;
-import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResiduesItemsList;
+import ch.systemsx.sybit.crkwebui.shared.model.Residue;
+import ch.systemsx.sybit.crkwebui.shared.model.ResiduesList;
 import ch.systemsx.sybit.crkwebui.shared.model.JobsForSession;
 import ch.systemsx.sybit.crkwebui.shared.model.PDBSearchResult;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingData;
@@ -31,7 +31,7 @@ public interface CrkWebServiceAsync
 	public void getJobsForCurrentSession(AsyncCallback<JobsForSession> callback);
 	
 	public void getInterfaceResidues(int interfaceUid,
-									 AsyncCallback<HashMap<Integer, List<InterfaceResidueItem>>> callback);
+									 AsyncCallback<HashMap<Integer, List<Residue>>> callback);
 	
 	public void stopJob(String jobToStop,
 			AsyncCallback<String> stopJobsCallback);
@@ -42,7 +42,7 @@ public interface CrkWebServiceAsync
 	public void untieJobsFromSession(AsyncCallback<Void> callback);
 
 	public void getAllResidues(String jobId,
-			AsyncCallback<InterfaceResiduesItemsList> getAllResiduesCallback);
+			AsyncCallback<ResiduesList> getAllResiduesCallback);
 	
 	public void getListOfPDBsHavingAUniProt(FilterPagingLoadConfig config, 
 			String uniProtId, AsyncCallback<PagingLoadResult<PDBSearchResult>> callback);

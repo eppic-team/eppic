@@ -17,7 +17,7 @@ import org.w3c.dom.NodeList;
 
 import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
 import ch.systemsx.sybit.crkwebui.shared.model.InputParameters;
-import ch.systemsx.sybit.crkwebui.shared.model.RunParametersItem;
+import ch.systemsx.sybit.crkwebui.shared.model.RunParameters;
 import ch.systemsx.sybit.crkwebui.shared.model.ScreenSettings;
 import ch.systemsx.sybit.crkwebui.shared.model.SupportedMethod;
 
@@ -160,7 +160,7 @@ public class InputParametersGenerator
 		}
 		
 		Map<String, String> runPropetiesMap = new HashMap<String, String>();
-		for (Field field : RunParametersItem.class.getDeclaredFields())
+		for (Field field : RunParameters.class.getDeclaredFields())
 		{
 			if(xmlParameters.get(field.getName()) != null)
 			{

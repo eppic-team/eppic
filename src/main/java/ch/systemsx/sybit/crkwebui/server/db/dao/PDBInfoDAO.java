@@ -1,7 +1,7 @@
 package ch.systemsx.sybit.crkwebui.server.db.dao;
 
 import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
-import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
+import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 import eppic.model.PdbInfoDB;
 
 /**
@@ -9,7 +9,7 @@ import eppic.model.PdbInfoDB;
  * @author AS
  *
  */
-public interface PDBScoreDAO 
+public interface PDBInfoDAO 
 {
 	/**
 	 * Retrieves pdb score item by job identifier.
@@ -17,7 +17,7 @@ public interface PDBScoreDAO
 	 * @return pdb score item
 	 * @throws DaoException when can not retrieve pdb score item for job
 	 */
-	public PDBScoreItem getPDBScore(String jobId) throws DaoException;
+	public PdbInfo getPDBScore(String jobId) throws DaoException;
 	
 	/**
 	 * Persists pdb score item.

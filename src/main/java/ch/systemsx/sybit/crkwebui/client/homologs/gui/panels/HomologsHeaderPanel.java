@@ -5,7 +5,7 @@ package ch.systemsx.sybit.crkwebui.client.homologs.gui.panels;
 
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.links.ImageLinkWithTooltip;
-import ch.systemsx.sybit.crkwebui.shared.model.HomologsInfoItem;
+import ch.systemsx.sybit.crkwebui.shared.model.ChainCluster;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.ui.HTML;
@@ -30,7 +30,7 @@ public class HomologsHeaderPanel extends HorizontalLayoutContainer{
 	private ImageLinkWithTooltip downloadImage;
 	private ColorPalettePanel colorPanel;
 	
-	public HomologsHeaderPanel(HomologsInfoItem infoItem, String jobId){
+	public HomologsHeaderPanel(ChainCluster infoItem, String jobId){
 		this.setBorders(false);
 		
 		this.addStyleName("eppic-default-font");
@@ -49,21 +49,21 @@ public class HomologsHeaderPanel extends HorizontalLayoutContainer{
 	 * @param infoItem
 	 * @param jobId
 	 */
-	public void updateContent(HomologsInfoItem infoItem, String jobId) {
+	public void updateContent(ChainCluster infoItem, String jobId) {
 		String subInterval = infoItem.getRefUniProtStart()+"-"+infoItem.getRefUniProtEnd();
-		fillQuery(infoItem.getUniprotId(), subInterval);
-		fillSubtitle(infoItem.getIdCutoffUsed(), infoItem.getClusteringPercentIdUsed());
+		fillQuery(infoItem.getRefUniProtId(), subInterval);
+		fillSubtitle(infoItem.getseqIdCutoff(), infoItem.getClusteringSeqId());
 		fillDownloadsLink(infoItem, jobId);
 	}
 
 	/**
 	 * Fills in the subtitle panel
 	 * @param idCutoff
-	 * @param clusteringPercent
+	 * @param clusteringId
 	 */
-	private void fillSubtitle(double idCutoff, int clusteringPercent) {
+	private void fillSubtitle(double idCutoff, double clusteringId) {
 		String identity = String.valueOf(Math.round(idCutoff*100));
-		String clusterPer = String.valueOf(Math.round(clusteringPercent));
+		String clusterPer = String.valueOf(Math.round(clusteringId*100));
 		String text = AppPropertiesManager.CONSTANTS.homologs_window_subtitle_text();
 		text = text.replaceFirst("%s", identity);
 		text = text.replaceFirst("%s", clusterPer);
@@ -75,9 +75,9 @@ public class HomologsHeaderPanel extends HorizontalLayoutContainer{
 	 * @param infoItem
 	 * @param jobId
 	 */
-	private void fillDownloadsLink(HomologsInfoItem infoItem, String jobId) {
+	private void fillDownloadsLink(ChainCluster infoItem, String jobId) {
 		String source = "resources/icons/download.png";
-		String alignmentId = infoItem.getChains().substring(0, 1);
+		String alignmentId = infoItem.getRepChain();
     	String downloadLink = GWT.getModuleBaseURL() + "fileDownload?type=fasta&id=" + jobId + "&alignment=" + alignmentId;
 		downloadImage.setData(source, 
 						20, 20, 

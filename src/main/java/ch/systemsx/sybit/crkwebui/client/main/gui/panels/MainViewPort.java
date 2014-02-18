@@ -25,10 +25,10 @@ import ch.systemsx.sybit.crkwebui.client.residues.gui.windows.InterfacesResidues
 import ch.systemsx.sybit.crkwebui.client.results.gui.panels.ResultsPanel;
 import ch.systemsx.sybit.crkwebui.client.results.gui.panels.StatusPanel;
 import ch.systemsx.sybit.crkwebui.client.viewer.gui.windows.ViewerSelectorWindow;
-import ch.systemsx.sybit.crkwebui.shared.model.HomologsInfoItem;
-import ch.systemsx.sybit.crkwebui.shared.model.InterfaceItem;
-import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResidueItem;
-import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
+import ch.systemsx.sybit.crkwebui.shared.model.ChainCluster;
+import ch.systemsx.sybit.crkwebui.shared.model.Interface;
+import ch.systemsx.sybit.crkwebui.shared.model.Residue;
+import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
@@ -171,7 +171,7 @@ public class MainViewPort extends BorderLayoutContainer
 	 * Displays window containing interface residues.
 	 * @param selectedInterface selected interface identifier
 	 */
-	public void displayInterfacesWindow(int selectedInterface)
+	public void displayResiduesWindow(int selectedInterface)
 	{
 		ApplicationContext.setSelectedInterface(selectedInterface);
 		
@@ -190,7 +190,7 @@ public class MainViewPort extends BorderLayoutContainer
 			});
 		}
 		
-		InterfaceItem interfaceItem = ApplicationContext.getPdbScoreItem().getInterfaceItem(selectedInterface - 1);
+		Interface interfaceItem = ApplicationContext.getPdbInfo().getInterface(selectedInterface);
 		interfacesResiduesWindow.setWindowHeaders(interfaceItem.getArea(),
 												  interfaceItem.getChain1(),
 												  interfaceItem.getChain2(),
@@ -213,8 +213,8 @@ public class MainViewPort extends BorderLayoutContainer
 	 * Fills content of interface residues window.
 	 * @param interfaceResidues interface residues
 	 */
-	public void fillInterfacesWindow(HashMap<Integer, List<InterfaceResidueItem>> interfaceResidues,
-									 PDBScoreItem pdbScoreItem,
+	public void fillInterfacesWindow(HashMap<Integer, List<Residue>> interfaceResidues,
+									 PdbInfo pdbScoreItem,
 									 int selectedInterface)
 	{
 		if(interfaceResidues.containsKey(1))
@@ -289,12 +289,12 @@ public class MainViewPort extends BorderLayoutContainer
 
 	/**
 	 * Displays alignments window.
-	 * @param homologsInfoItem homologs info item
+	 * @param chainCluster homologs info item
 	 * @param pdbName pdb name
 	 * @param xPosition left corner
 	 * @param yPosition top corner
 	 */
-	public void displayAlignmentsWindow(HomologsInfoItem homologsInfoItem,
+	public void displayAlignmentsWindow(ChainCluster chainCluster,
 										String pdbName,
 										int xPosition,
 										int yPosition)
@@ -304,13 +304,13 @@ public class MainViewPort extends BorderLayoutContainer
 			alignmentsWindow.setVisible(false);
 		}
 		
-		alignmentsWindow = new AlignmentsWindow(ApplicationContext.getWindowData(), homologsInfoItem, pdbName);
+		alignmentsWindow = new AlignmentsWindow(ApplicationContext.getWindowData(), chainCluster, pdbName);
 		alignmentsWindow.updateWindowContent();
 		alignmentsWindow.setPagePosition(xPosition, yPosition);
 
 		String alignmentWindowTitle = AppPropertiesManager.CONSTANTS.alignment_window_title();
-		alignmentWindowTitle = alignmentWindowTitle.replaceFirst("%s", homologsInfoItem.getChains().substring(0, 1));
-		alignmentWindowTitle = alignmentWindowTitle.replaceFirst("%s", homologsInfoItem.getUniprotId());
+		alignmentWindowTitle = alignmentWindowTitle.replaceFirst("%s", chainCluster.getRepChain());
+		alignmentWindowTitle = alignmentWindowTitle.replaceFirst("%s", chainCluster.getRefUniProtId());
 		alignmentsWindow.setHeadingHtml(EscapedStringGenerator.generateEscapedString(alignmentWindowTitle));
 		alignmentsWindow.setVisible(true);
 
@@ -321,12 +321,12 @@ public class MainViewPort extends BorderLayoutContainer
 
 	/**
 	 * Displays homologs window.
-	 * @param homologsInfoItem homologs info item
+	 * @param chainCluster homologs info item
 	 * @param pdbName pdb name
 	 * @param xPosition left corner
 	 * @param yPosition top corner
 	 */
-	public void displayHomologsWindow(HomologsInfoItem homologsInfoItem,
+	public void displayHomologsWindow(ChainCluster chainCluster,
 										String pdbName,
 										int xPosition,
 										int yPosition)
@@ -336,7 +336,7 @@ public class MainViewPort extends BorderLayoutContainer
 			homologsWindow.setVisible(false);
 		}
 		
-		homologsWindow = new HomologsWindow(ApplicationContext.getWindowData(), homologsInfoItem, pdbName);
+		homologsWindow = new HomologsWindow(ApplicationContext.getWindowData(), chainCluster, pdbName);
 		homologsWindow.updateWindowContent();
 		homologsWindow.setPagePosition(xPosition, yPosition);
 

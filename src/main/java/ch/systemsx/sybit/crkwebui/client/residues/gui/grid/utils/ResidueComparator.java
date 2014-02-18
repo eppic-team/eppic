@@ -2,35 +2,35 @@ package ch.systemsx.sybit.crkwebui.client.residues.gui.grid.utils;
 
 import java.util.Comparator;
 
-import ch.systemsx.sybit.crkwebui.client.residues.data.InterfaceResidueItemModel;
+import ch.systemsx.sybit.crkwebui.shared.model.Residue;
 
 import com.google.gwt.regexp.shared.MatchResult;
 import com.google.gwt.regexp.shared.RegExp;
 import com.sencha.gxt.data.shared.SortDir;
 
-public class InterfaceResidueItemModelComparator implements Comparator<InterfaceResidueItemModel> {
+public class ResidueComparator implements Comparator<Residue> {
 
     private String fieldName;
     private SortDir dir;
     private RegExp regExp = RegExp.compile("\\d+");
     
-    public InterfaceResidueItemModelComparator(String fieldName, SortDir dir) {
+    public ResidueComparator(String fieldName, SortDir dir) {
 	this.fieldName = fieldName;
 	this.dir = dir;
     }
 
 
     @Override
-    public int compare(InterfaceResidueItemModel o1, InterfaceResidueItemModel o2) {
+    public int compare(Residue o1, Residue o2) {
 	if(SortDir.ASC == dir)
 	    return compare(o1, o2, fieldName);
 	else
 	    return -1 * compare(o1, o2, fieldName);
     }
 
-    private int compare(InterfaceResidueItemModel a, InterfaceResidueItemModel b, String propertieName) {
-	if("structure".equals(propertieName))
-	    return new Integer(a.getStructure()).compareTo(b.getStructure());
+    private int compare(Residue a, Residue b, String propertieName) {
+	if("side".equals(propertieName))
+	    return new Integer(a.getSide()).compareTo(b.getSide());
 	if("residueNumber".equals(propertieName))
 	    return new Integer(a.getResidueNumber()).compareTo(b.getResidueNumber());
 	if("pdbResidueNumber".equals(propertieName))
@@ -38,15 +38,15 @@ public class InterfaceResidueItemModelComparator implements Comparator<Interface
 	if("residueType".equals(propertieName)) 
 	    return a.getResidueType().compareTo(b.getResidueType());
 	if("asa".equals(propertieName))
-	    return new Float(a.getAsa()).compareTo(b.getAsa());
+	    return new Double(a.getAsa()).compareTo(b.getAsa());
 	if("bsa".equals(propertieName))
-	    return new Float(a.getBsa()).compareTo(b.getBsa());
+	    return new Double(a.getBsa()).compareTo(b.getBsa());
 	if("bsaPercentage".equals(propertieName))
-	    return new Float(a.getBsaPercentage()).compareTo(b.getBsaPercentage());
-	if("assignment".equals(propertieName))
-	    return new Integer(a.getAssignment()).compareTo(b.getAssignment());
+	    return new Double(a.getBsaPercentage()).compareTo(b.getBsaPercentage());
+	if("region".equals(propertieName))
+	    return new Integer(a.getRegion()).compareTo(b.getRegion());
 	if("entropyScore".equals(propertieName))
-	    return new Float(a.getEntropyScore()).compareTo(b.getEntropyScore());
+	    return new Double(a.getEntropyScore()).compareTo(b.getEntropyScore());
 	return 0;
     }
 

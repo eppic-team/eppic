@@ -18,30 +18,34 @@ import javax.xml.bind.Marshaller;
 
 import ch.systemsx.sybit.crkwebui.server.commons.servlets.BaseServlet;
 import ch.systemsx.sybit.crkwebui.server.db.dao.DataDownloadTrackingDAO;
-import ch.systemsx.sybit.crkwebui.server.db.dao.HomologsInfoItemDAO;
-import ch.systemsx.sybit.crkwebui.server.db.dao.InterfaceItemDAO;
+import ch.systemsx.sybit.crkwebui.server.db.dao.ChainClusterDAO;
+import ch.systemsx.sybit.crkwebui.server.db.dao.InterfaceClusterDAO;
+import ch.systemsx.sybit.crkwebui.server.db.dao.InterfaceDAO;
 import ch.systemsx.sybit.crkwebui.server.db.dao.JobDAO;
-import ch.systemsx.sybit.crkwebui.server.db.dao.PDBScoreDAO;
+import ch.systemsx.sybit.crkwebui.server.db.dao.PDBInfoDAO;
 import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.DataDownloadTrackingDAOJpa;
-import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.HomologsInfoItemDAOJpa;
-import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.InterfaceItemDAOJpa;
+import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.ChainClusterDAOJpa;
+import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.InterfaceClusterDAOJpa;
+import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.InterfaceDAOJpa;
 import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.JobDAOJpa;
-import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.PDBScoreDAOJpa;
+import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.PDBInfoDAOJpa;
+import ch.systemsx.sybit.crkwebui.server.db.data.InputWithType;
 import ch.systemsx.sybit.crkwebui.server.files.downloader.generators.JobListWithInterfacesGenerator;
 import ch.systemsx.sybit.crkwebui.server.files.downloader.validators.DataDownloadServletInputValidator;
 import ch.systemsx.sybit.crkwebui.server.ip.validators.IPVerifier;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.ValidationException;
-import ch.systemsx.sybit.crkwebui.shared.model.HomologsInfoItem;
-import ch.systemsx.sybit.crkwebui.shared.model.InterfaceItem;
-import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
+import ch.systemsx.sybit.crkwebui.shared.model.ChainCluster;
+import ch.systemsx.sybit.crkwebui.shared.model.Interface;
+import ch.systemsx.sybit.crkwebui.shared.model.InterfaceCluster;
+import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 
 /**
  * Servlet used to download results in xml format
  * @author biyani_n
  *
  */
-@PersistenceContext(name="crkjpa", unitName="crkjpa")
+@PersistenceContext(name="eppicjpa", unitName="eppicjpa")
 public class DataDownloadServlet extends BaseServlet{
 
 	/**
@@ -49,7 +53,7 @@ public class DataDownloadServlet extends BaseServlet{
 	 */
 	private static final long serialVersionUID = 1L;
 	
-	private List<PDBScoreItem> pdbList;
+	private List<PdbInfo> pdbList;
 	
 	//Parameters
 	private int maxNumJobIds;
@@ -88,7 +92,7 @@ public class DataDownloadServlet extends BaseServlet{
 										      defaultNrOfAllowedSubmissionsForIP, 
 										      true);
 			
-			pdbList = new ArrayList<PDBScoreItem>();
+			pdbList = new ArrayList<PdbInfo>();
 
 			for(String jobId: jobIdMap.keySet()){
 				pdbList.add(getResultData(jobId, jobIdMap.get(jobId), getSeqInfo));
@@ -122,32 +126,40 @@ public class DataDownloadServlet extends BaseServlet{
 	 * @return pdb score item
 	 * @throws Exception when can not retrieve result of the job
 	 */
-	private PDBScoreItem getResultData(String jobId, List<Integer> interfaceIdList, String getSeqInfo) throws Exception
+	private PdbInfo getResultData(String jobId, List<Integer> interfaceIdList, String getSeqInfo) throws Exception
 	{
 		JobDAO jobDAO = new JobDAOJpa();
-		int inputType = jobDAO.getInputTypeForJob(jobId);
+		InputWithType input = jobDAO.getInputWithTypeForJob(jobId);
 
-		PDBScoreDAO pdbScoreDAO = new PDBScoreDAOJpa();
-		PDBScoreItem pdbScoreItem = pdbScoreDAO.getPDBScore(jobId);
-
-		InterfaceItemDAO interfaceItemDAO = new InterfaceItemDAOJpa();
-		List<InterfaceItem> interfaceItems;
-		if(interfaceIdList != null)
-			interfaceItems = interfaceItemDAO.getInterfacesWithScores(pdbScoreItem.getUid(), interfaceIdList);
-		else
-			interfaceItems = interfaceItemDAO.getInterfacesWithScores(pdbScoreItem.getUid());
+		PDBInfoDAO pdbInfoDAO = new PDBInfoDAOJpa();
+		PdbInfo pdbInfo = pdbInfoDAO.getPDBScore(jobId);
 		
-		pdbScoreItem.setInterfaceItems(interfaceItems);
+		InterfaceClusterDAO clusterDAO = new InterfaceClusterDAOJpa();
+		List<InterfaceCluster> clusters = clusterDAO.getInterfaceClustersWithoutInterfaces(pdbInfo.getUid());
+		pdbInfo.setInterfaceClusters(clusters);
+
+		InterfaceDAO interfaceDAO = new InterfaceDAOJpa();
+		for(InterfaceCluster cluster: clusters){
+			List<Interface> interfaceItems;
+			if(interfaceIdList != null){
+				interfaceItems = interfaceDAO.getInterfacesWithScores(cluster.getUid(), interfaceIdList);
+			}
+			else{
+				interfaceItems = interfaceDAO.getInterfacesWithScores(cluster.getUid());
+			}
+			cluster.setInterfaces(interfaceItems);
+		}
 
 		if(getSeqInfo == null || getSeqInfo.equals("t")){	
-			HomologsInfoItemDAO homologsInfoItemDAO = new HomologsInfoItemDAOJpa();
-			List<HomologsInfoItem> homologsInfoItems = homologsInfoItemDAO.getHomologsInfoItems(pdbScoreItem.getUid());
-			pdbScoreItem.setHomologsInfoItems(homologsInfoItems);
+			ChainClusterDAO chainClusterDAO = new ChainClusterDAOJpa();
+			List<ChainCluster> chainClusters = chainClusterDAO.getChainClusters(pdbInfo.getUid());
+			pdbInfo.setChainClusters(chainClusters);
 		}
 		
-		pdbScoreItem.setInputType(inputType);
-
-		return pdbScoreItem;
+		pdbInfo.setInputType(input.getInputType());
+		pdbInfo.setInputName(input.getInputName());
+		
+		return pdbInfo;
 	}
 
 	/**
@@ -167,7 +179,7 @@ public class DataDownloadServlet extends BaseServlet{
 			PrintWriter writer = response.getWriter();
 
 			// create JAXB context and initializing Marshaller
-			JAXBContext jaxbContext = JAXBContext.newInstance(PDBScoreItem.class);
+			JAXBContext jaxbContext = JAXBContext.newInstance(PdbInfo.class);
 			Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
 
 			// for getting nice formatted output
@@ -177,7 +189,7 @@ public class DataDownloadServlet extends BaseServlet{
 			// Writing to console
 			writer.append("<eppicAnalysisList>");
 			
-			for(PDBScoreItem pdb:pdbList){
+			for(PdbInfo pdb:pdbList){
 				jaxbMarshaller.marshal(pdb, writer);
 			}
 

@@ -7,7 +7,7 @@ import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.commons.util.EscapedStringGenerator;
 import ch.systemsx.sybit.crkwebui.client.commons.util.StyleGenerator;
 import ch.systemsx.sybit.crkwebui.shared.model.ExperimentalWarnings;
-import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
+import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.ui.FlexTable;
@@ -37,7 +37,7 @@ public class GeneralInfoPanel extends FieldSet {
 	
 	private FlexTable panelTable;
 	
-	public GeneralInfoPanel(PDBScoreItem pdbScoreItem){
+	public GeneralInfoPanel(PdbInfo pdbInfo){
 		
 		this.setHeadingHtml(StyleGenerator.defaultFontStyleString(
 				AppPropertiesManager.CONSTANTS.info_panel_general_info()));
@@ -59,10 +59,10 @@ public class GeneralInfoPanel extends FieldSet {
     	
     	this.setWidget(mainContainer);
 		
-		fillGeneralInfoPanel(pdbScoreItem.getSpaceGroup(), 
-									pdbScoreItem.getExpMethod(), 
-									pdbScoreItem.getResolution(), 
-									pdbScoreItem.getRfreeValue());
+		fillGeneralInfoPanel(pdbInfo.getSpaceGroup(), 
+									pdbInfo.getExpMethod(), 
+									pdbInfo.getResolution(), 
+									pdbInfo.getRfreeValue());
 	}
 	
 	/**

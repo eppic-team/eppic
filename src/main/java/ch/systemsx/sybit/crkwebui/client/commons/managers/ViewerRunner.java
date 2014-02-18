@@ -51,8 +51,8 @@ public class ViewerRunner
 		int jmolAppletSize = size - 40;
 		
 		String jmolViewerUrl = GWT.getModuleBaseURL() + "jmolViewer";
-		jmolViewerUrl += "?id=" + ApplicationContext.getPdbScoreItem().getJobId() + 
-						 "&input=" + ApplicationContext.getPdbScoreItem().getPdbName() + 
+		jmolViewerUrl += "?id=" + ApplicationContext.getPdbInfo().getJobId() + 
+						 "&input=" + ApplicationContext.getPdbInfo().getPdbCode() + 
 						 "&interface=" + interfaceNr +
 						 "&size=" + jmolAppletSize;
 		
@@ -69,7 +69,7 @@ public class ViewerRunner
 	private static void downloadFileFromServer(String type, String interfaceId)
 	{
 		String fileDownloadServletUrl = GWT.getModuleBaseURL() + "fileDownload";
-		fileDownloadServletUrl += "?type=" + type + "&id=" + ApplicationContext.getPdbScoreItem().getJobId() + "&interface=" + interfaceId;
+		fileDownloadServletUrl += "?type=" + type + "&id=" + ApplicationContext.getPdbInfo().getJobId() + "&interface=" + interfaceId;
 		Window.open(fileDownloadServletUrl, "", "");
 	}
 }

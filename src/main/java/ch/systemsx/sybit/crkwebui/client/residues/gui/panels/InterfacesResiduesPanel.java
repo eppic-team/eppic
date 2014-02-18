@@ -3,8 +3,8 @@ package ch.systemsx.sybit.crkwebui.client.residues.gui.panels;
 import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
-import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResidueItem;
-import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
+import ch.systemsx.sybit.crkwebui.shared.model.Residue;
+import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
@@ -149,20 +149,20 @@ public class InterfacesResiduesPanel extends VerticalLayoutContainer
 	 * @param structureNr nr of the structure
 	 * @param pdbScoreItem result of calculations
 	 * @param selectedInterface interface for which residues are to be displayed
-	 * @param interfaceResidueItems residues to display
+	 * @param residues residues to display
 	 */
 	public void fillStructurePanel(int structureNr,
-								   PDBScoreItem pdbScoreItem,
+								   PdbInfo pdbScoreItem,
 								   int selectedInterface,
-								   List<InterfaceResidueItem> interfaceResidueItems)
+								   List<Residue> residues)
 	{
 		if(structureNr == 1)
 		{
-			firstStructurePanel.fillStructurePanel(pdbScoreItem, selectedInterface, interfaceResidueItems);
+			firstStructurePanel.fillStructurePanel(pdbScoreItem, selectedInterface, residues);
 		}
 		else
 		{
-			secondStructurePanel.fillStructurePanel(pdbScoreItem, selectedInterface, interfaceResidueItems);
+			secondStructurePanel.fillStructurePanel(pdbScoreItem, selectedInterface, residues);
 		}
 	}
 	

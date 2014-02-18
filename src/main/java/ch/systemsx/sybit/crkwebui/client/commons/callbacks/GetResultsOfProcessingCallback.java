@@ -11,7 +11,7 @@ import ch.systemsx.sybit.crkwebui.client.commons.events.UpdateStatusLabelEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.data.StatusMessageType;
 import ch.systemsx.sybit.crkwebui.client.commons.managers.EventBusManager;
 import ch.systemsx.sybit.crkwebui.client.commons.services.eppic.CrkWebServiceProvider;
-import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
+import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingData;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
 
@@ -52,9 +52,9 @@ public class GetResultsOfProcessingCallback implements AsyncCallback<ProcessingD
 					ProcessingInProgressData statusData = (ProcessingInProgressData) result;
 					EventBusManager.EVENT_BUS.fireEvent(new ShowStatusDataEvent(statusData));
 				}
-				else if(result instanceof PDBScoreItem)
+				else if(result instanceof PdbInfo)
 				{
-					PDBScoreItem resultsData = (PDBScoreItem) result;
+					PdbInfo resultsData = (PdbInfo) result;
 					ApplicationContext.setPdbScoreItem(resultsData);
 					ApplicationContext.cleanResiduesForInterface();
 					

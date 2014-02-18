@@ -59,7 +59,7 @@ import ch.systemsx.sybit.crkwebui.client.publications.gui.panels.PublicationsPan
 import ch.systemsx.sybit.crkwebui.client.releases.gui.panels.ReleasesPanel;
 import ch.systemsx.sybit.crkwebui.client.results.gui.panels.ResultsPanel;
 import ch.systemsx.sybit.crkwebui.client.results.gui.panels.StatusPanel;
-import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
+import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
 import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
 
@@ -272,7 +272,7 @@ public class MainController
 					public void execute() 
 					{
 						mainViewPort.fillInterfacesWindow(event.getInterfaceResidues(),
-														  ApplicationContext.getPdbScoreItem(),
+														  ApplicationContext.getPdbInfo(),
 														  ApplicationContext.getSelectedInterface());
 					}
 				});
@@ -512,7 +512,7 @@ public class MainController
 	 * Displays results data panel.
 	 * @param resultData results of processing
 	 */
-	private void displayResultView(PDBScoreItem resultData)
+	private void displayResultView(PdbInfo resultData)
 	{
 		ApplicationContext.setDoStatusPanelRefreshing(false);
 
@@ -543,7 +543,7 @@ public class MainController
 
 		EventBusManager.EVENT_BUS.fireEvent(new GetFocusOnJobsListEvent());
 		Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_results() + " - " + 
-						resultData.getPdbName());
+						resultData.getPdbCode());
 	}
 
 	/**
@@ -629,12 +629,12 @@ public class MainController
 		}
 		else
 		{
-			CrkWebServiceProvider.getServiceController().getInterfaceResidues(ApplicationContext.getPdbScoreItem().getJobId(),
-												   ApplicationContext.getPdbScoreItem().getInterfaceItem(interfaceId - 1).getUid(),
+			CrkWebServiceProvider.getServiceController().getInterfaceResidues(ApplicationContext.getPdbInfo().getJobId(),
+												   ApplicationContext.getPdbInfo().getInterface(interfaceId).getUid(),
 												   interfaceId);
 		}
 		
-		mainViewPort.displayInterfacesWindow(interfaceId);
+		mainViewPort.displayResiduesWindow(interfaceId);
 	}
 	
 	/**

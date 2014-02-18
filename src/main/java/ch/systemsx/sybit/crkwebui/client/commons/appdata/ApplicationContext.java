@@ -3,8 +3,8 @@ package ch.systemsx.sybit.crkwebui.client.commons.appdata;
 import java.util.Collections;
 
 import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
-import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResiduesItemsList;
-import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
+import ch.systemsx.sybit.crkwebui.shared.model.ResiduesList;
+import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 import ch.systemsx.sybit.crkwebui.shared.model.WindowData;
 
 /**
@@ -43,12 +43,12 @@ public class ApplicationContext
 	/**
 	 * List of residues data for all interfaces for selected job.
 	 */
-	private static InterfaceResiduesItemsList residuesForInterface;
+	private static ResiduesList residuesForInterface;
 
 	/**
 	 * Selected pdb score item.
 	 */
-	private static PDBScoreItem pdbScoreItem;
+	private static PdbInfo pdbInfo;
 	
 	/**
 	 * Flag pointing whether content of the status panel should be refreshed using timer.
@@ -106,24 +106,24 @@ public class ApplicationContext
 	 * Retrieves selected pdb score item.
 	 * @return selected pdb score item
 	 */
-	public static PDBScoreItem getPdbScoreItem() {
-		return pdbScoreItem;
+	public static PdbInfo getPdbInfo() {
+		return pdbInfo;
 	}
 	
 	/**
 	 * Sets selected pdb score item.
-	 * @param pdbScoreItem selected pdb score item
+	 * @param pdbInfo selected pdb score item
 	 */
-	public static void setPdbScoreItem(PDBScoreItem pdbScoreItem) {
-		ApplicationContext.pdbScoreItem = pdbScoreItem;
-		Collections.sort(pdbScoreItem.getInterfaceItems());
+	public static void setPdbScoreItem(PdbInfo pdbScoreItem) {
+		ApplicationContext.pdbInfo = pdbScoreItem;
+		Collections.sort(pdbScoreItem.getInterfaceClusters());
 	}
 	
 	/**
 	 * Retrieves list of interface residues.
 	 * @return interface residues
 	 */
-	public static InterfaceResiduesItemsList getResiduesForInterface() {
+	public static ResiduesList getResiduesForInterface() {
 		return residuesForInterface;
 	}
 	
@@ -132,7 +132,7 @@ public class ApplicationContext
 	 * @param residuesForInterface residues list
 	 */
 	public static void setResiduesForInterface(
-			InterfaceResiduesItemsList residuesForInterface) {
+			ResiduesList residuesForInterface) {
 		ApplicationContext.residuesForInterface = residuesForInterface;
 	}
 	

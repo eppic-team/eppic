@@ -9,32 +9,32 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
 import eppic.model.JobDB_;
-import eppic.model.PDBScoreItemDB_;
+import eppic.model.PdbInfoDB_;
 import ch.systemsx.sybit.crkwebui.server.db.EntityManagerHandler;
-import ch.systemsx.sybit.crkwebui.server.db.dao.PDBScoreDAO;
+import ch.systemsx.sybit.crkwebui.server.db.dao.PDBInfoDAO;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
-import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
+import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 import eppic.model.JobDB;
 import eppic.model.PdbInfoDB;
 
 /**
- * Implementation of PDBScoreDAO.
+ * Implementation of PDBInfoDAO.
  * @author AS
  *
  */
-public class PDBScoreDAOJpa implements PDBScoreDAO 
+public class PDBInfoDAOJpa implements PDBInfoDAO 
 {
 	
-	public PDBScoreDAOJpa() 
+	public PDBInfoDAOJpa() 
 	{
 		
 	}
 
 	@Override
-	public PDBScoreItem getPDBScore(String jobId) throws DaoException
+	public PdbInfo getPDBScore(String jobId) throws DaoException
 	{
 		EntityManager entityManager = null;
-		PDBScoreItem result = null;
+		PdbInfo result = null;
 	
 		try
 		{
@@ -43,23 +43,23 @@ public class PDBScoreDAOJpa implements PDBScoreDAO
 			CriteriaQuery<PdbInfoDB> criteriaQuery = criteriaBuilder.createQuery(PdbInfoDB.class);
 			
 			Root<PdbInfoDB> pdbScoreItemRoot = criteriaQuery.from(PdbInfoDB.class);
-			Path<JobDB> jobItemPath = pdbScoreItemRoot.get(PDBScoreItemDB_.jobItem);
+			Path<JobDB> jobItemPath = pdbScoreItemRoot.get(PdbInfoDB_.job);
 			Predicate condition = criteriaBuilder.equal(jobItemPath.get(JobDB_.jobId), jobId);
 			criteriaQuery.where(condition);
-			criteriaQuery.multiselect(pdbScoreItemRoot.get(PDBScoreItemDB_.uid),
-									  pdbScoreItemRoot.get(PDBScoreItemDB_.jobItem),
-									  pdbScoreItemRoot.get(PDBScoreItemDB_.pdbName),
-									  pdbScoreItemRoot.get(PDBScoreItemDB_.title),
-									  pdbScoreItemRoot.get(PDBScoreItemDB_.spaceGroup),
-									  pdbScoreItemRoot.get(PDBScoreItemDB_.expMethod),
-									  pdbScoreItemRoot.get(PDBScoreItemDB_.resolution),
-									  pdbScoreItemRoot.get(PDBScoreItemDB_.rfreeValue),
-									  pdbScoreItemRoot.get(PDBScoreItemDB_.runParameters));
+			criteriaQuery.multiselect(pdbScoreItemRoot.get(PdbInfoDB_.uid),
+									  pdbScoreItemRoot.get(PdbInfoDB_.job),
+									  pdbScoreItemRoot.get(PdbInfoDB_.pdbCode),
+									  pdbScoreItemRoot.get(PdbInfoDB_.title),
+									  pdbScoreItemRoot.get(PdbInfoDB_.spaceGroup),
+									  pdbScoreItemRoot.get(PdbInfoDB_.expMethod),
+									  pdbScoreItemRoot.get(PdbInfoDB_.resolution),
+									  pdbScoreItemRoot.get(PdbInfoDB_.rfreeValue),
+									  pdbScoreItemRoot.get(PdbInfoDB_.runParameters));
 			
 			Query query = entityManager.createQuery(criteriaQuery);
 			PdbInfoDB pdbScoreItemDB = (PdbInfoDB)query.getSingleResult();
 			
-			result = PDBScoreItem.create(pdbScoreItemDB);
+			result = PdbInfo.create(pdbScoreItemDB);
 			result.setJobId(jobId);
 		}
 		catch(Throwable e)

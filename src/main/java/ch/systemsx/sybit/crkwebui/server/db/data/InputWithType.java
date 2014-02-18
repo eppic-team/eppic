@@ -8,9 +8,9 @@ package ch.systemsx.sybit.crkwebui.server.db.data;
 public class InputWithType
 {
 	/**
-	 * Job input.
+	 * Job inputName.
 	 */
-	private String input;
+	private String inputName;
 	
 	/**
 	 * Job input type.
@@ -18,26 +18,26 @@ public class InputWithType
 	private int inputType;
 
 	/**
-	 * Creates empty instance of input with type.
+	 * Creates empty instance of inputName with type.
 	 */
 	public InputWithType()
 	{
 
 	}
 
-	public InputWithType(String input,
+	public InputWithType(String inputName,
 						 int inputType)
 	{
-		this.input = input;
+		this.inputName = inputName;
 		this.inputType = inputType;
 	}
 
-	public String getInput() {
-		return input;
+	public String getInputName() {
+		return inputName;
 	}
 
-	public void setInput(String input) {
-		this.input = input;
+	public void setInputName(String inputName) {
+		this.inputName = inputName;
 	}
 
 	public void setInputType(int inputType) {

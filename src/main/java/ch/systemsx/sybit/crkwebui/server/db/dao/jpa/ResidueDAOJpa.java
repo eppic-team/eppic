@@ -11,33 +11,35 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Root;
 
-import eppic.model.InterfaceItemDB_;
-import eppic.model.InterfaceResidueItemDB_;
+import eppic.model.InterfaceClusterDB;
+import eppic.model.InterfaceClusterDB_;
+import eppic.model.InterfaceDB_;
+import eppic.model.ResidueDB_;
 import eppic.model.JobDB_;
-import eppic.model.PDBScoreItemDB_;
+import eppic.model.PdbInfoDB_;
 import ch.systemsx.sybit.crkwebui.server.db.EntityManagerHandler;
-import ch.systemsx.sybit.crkwebui.server.db.dao.InterfaceResidueItemDAO;
+import ch.systemsx.sybit.crkwebui.server.db.dao.ResidueDAO;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
-import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResidueItem;
-import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResiduesItemsList;
+import ch.systemsx.sybit.crkwebui.shared.model.Residue;
+import ch.systemsx.sybit.crkwebui.shared.model.ResiduesList;
 import eppic.model.InterfaceDB;
 import eppic.model.ResidueDB;
 import eppic.model.JobDB;
 import eppic.model.PdbInfoDB;
 
 /**
- * Implementation of InterfaceResidueItemDAO.
+ * Implementation of ResidueDAO.
  * @author AS
  *
  */
-public class InterfaceResidueItemDAOJpa implements InterfaceResidueItemDAO 
+public class ResidueDAOJpa implements ResidueDAO 
 {
 	@Override
-	public List<InterfaceResidueItem> getResiduesForInterface(int interfaceUid) throws DaoException
+	public List<Residue> getResiduesForInterface(int interfaceUid) throws DaoException
 	{
 		EntityManager entityManager = null;
 		
-		List<InterfaceResidueItem> result = new ArrayList<InterfaceResidueItem>();
+		List<Residue> result = new ArrayList<Residue>();
 		
 		try
 		{
@@ -46,9 +48,9 @@ public class InterfaceResidueItemDAOJpa implements InterfaceResidueItemDAO
 			CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 			CriteriaQuery<ResidueDB> criteriaQuery = criteriaBuilder.createQuery(ResidueDB.class);
 			
-			Root<ResidueDB> interfaceResidueItemRoot = criteriaQuery.from(ResidueDB.class);
-			Path<InterfaceDB> interfaceItem = interfaceResidueItemRoot.get(InterfaceResidueItemDB_.interfaceItem);
-			criteriaQuery.where(criteriaBuilder.equal(interfaceItem.get(InterfaceItemDB_.uid), interfaceUid));
+			Root<ResidueDB> residueRoot = criteriaQuery.from(ResidueDB.class);
+			Path<InterfaceDB> interfaceItem = residueRoot.get(ResidueDB_.interfaceItem);
+			criteriaQuery.where(criteriaBuilder.equal(interfaceItem.get(InterfaceDB_.uid), interfaceUid));
 			
 			Query query = entityManager.createQuery(criteriaQuery);
 			
@@ -57,7 +59,7 @@ public class InterfaceResidueItemDAOJpa implements InterfaceResidueItemDAO
 			
 			for(ResidueDB interfaceResidueItemDB : interfaceResidueItemDBs)
 			{
-				result.add(InterfaceResidueItem.create(interfaceResidueItemDB));
+				result.add(Residue.create(interfaceResidueItemDB));
 			}
 		}
 		catch(Throwable e)
@@ -81,11 +83,11 @@ public class InterfaceResidueItemDAOJpa implements InterfaceResidueItemDAO
 	}
 	
 	@Override
-	public InterfaceResiduesItemsList getResiduesForAllInterfaces(String jobId) throws DaoException
+	public ResiduesList getResiduesForAllInterfaces(String jobId) throws DaoException
 	{
 		EntityManager entityManager = null;
 		
-		InterfaceResiduesItemsList residuesForInterfaces = new InterfaceResiduesItemsList();
+		ResiduesList residuesForInterfaces = new ResiduesList();
 		
 		try
 		{
@@ -95,9 +97,10 @@ public class InterfaceResidueItemDAOJpa implements InterfaceResidueItemDAO
 			CriteriaQuery<ResidueDB> criteriaQuery = criteriaBuilder.createQuery(ResidueDB.class);
 			
 			Root<ResidueDB> interfaceResidueItemRoot = criteriaQuery.from(ResidueDB.class);
-			Path<InterfaceDB> interfaceItem = interfaceResidueItemRoot.get(InterfaceResidueItemDB_.interfaceItem);
-			Path<PdbInfoDB> pdbScoreItem = interfaceItem.get(InterfaceItemDB_.pdbScoreItem);
-			Path<JobDB> jobItem = pdbScoreItem.get(PDBScoreItemDB_.jobItem);
+			Path<InterfaceDB> interfaceItem = interfaceResidueItemRoot.get(ResidueDB_.interfaceItem);
+			Path<InterfaceClusterDB> interfaceClusterItem = interfaceItem.get(InterfaceDB_.interfaceCluster);
+			Path<PdbInfoDB> pdbScoreItem = interfaceClusterItem.get(InterfaceClusterDB_.pdbInfo);
+			Path<JobDB> jobItem = pdbScoreItem.get(PdbInfoDB_.job);
 			criteriaQuery.where(criteriaBuilder.equal(jobItem.get(JobDB_.jobId), jobId));
 			
 			Query query = entityManager.createQuery(criteriaQuery);
@@ -107,29 +110,29 @@ public class InterfaceResidueItemDAOJpa implements InterfaceResidueItemDAO
 			
 			for(ResidueDB interfaceResidueItemDB : interfaceResidueItemDBs)
 			{
-				if(residuesForInterfaces.get(interfaceResidueItemDB.getInterface().getInterfaceId()) == null)
+				if(residuesForInterfaces.get(interfaceResidueItemDB.getInterfaceItem().getInterfaceId()) == null)
 				{
-					HashMap<Integer, List<InterfaceResidueItem>> structures = new HashMap<Integer, List<InterfaceResidueItem>>();
-					List<InterfaceResidueItem> firstStructureResidues = new ArrayList<InterfaceResidueItem>();
-					List<InterfaceResidueItem> secondStructureResidues = new ArrayList<InterfaceResidueItem>();
+					HashMap<Integer, List<Residue>> structures = new HashMap<Integer, List<Residue>>();
+					List<Residue> firstStructureResidues = new ArrayList<Residue>();
+					List<Residue> secondStructureResidues = new ArrayList<Residue>();
 					structures.put(1, firstStructureResidues);
 					structures.put(2, secondStructureResidues);
 					
-					residuesForInterfaces.put(new Integer(interfaceResidueItemDB.getInterface().getInterfaceId()), 
+					residuesForInterfaces.put(new Integer(interfaceResidueItemDB.getInterfaceItem().getInterfaceId()), 
 											  structures);
 					
 					
 				}
 				
-				InterfaceResidueItem interfaceResidueItem = InterfaceResidueItem.create(interfaceResidueItemDB);
+				Residue residue = Residue.create(interfaceResidueItemDB);
 				
-				if(interfaceResidueItem.getStructure() == 1)
+				if(residue.getSide() == 1)
 				{
-					residuesForInterfaces.get(interfaceResidueItemDB.getInterface().getInterfaceId()).get(1).add(interfaceResidueItem);
+					residuesForInterfaces.get(interfaceResidueItemDB.getInterfaceItem().getInterfaceId()).get(1).add(residue);
 				}
-				else if(interfaceResidueItem.getStructure() == 2)
+				else if(residue.getSide() == 2)
 				{
-					residuesForInterfaces.get(interfaceResidueItemDB.getInterface().getInterfaceId()).get(2).add(interfaceResidueItem);
+					residuesForInterfaces.get(interfaceResidueItemDB.getInterfaceItem().getInterfaceId()).get(2).add(residue);
 				}
 				
 			}

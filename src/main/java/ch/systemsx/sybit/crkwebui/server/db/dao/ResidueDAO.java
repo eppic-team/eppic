@@ -3,15 +3,15 @@ package ch.systemsx.sybit.crkwebui.server.db.dao;
 import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
-import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResidueItem;
-import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResiduesItemsList;
+import ch.systemsx.sybit.crkwebui.shared.model.Residue;
+import ch.systemsx.sybit.crkwebui.shared.model.ResiduesList;
 
 /**
  * DAO for InterfaceResidue item.
  * @author AS
  *
  */
-public interface InterfaceResidueItemDAO {
+public interface ResidueDAO {
 
 	/**
 	 * Retrieves list of interface residue items for specified interface.
@@ -19,7 +19,7 @@ public interface InterfaceResidueItemDAO {
 	 * @return list of interface residue items for specified interface
 	 * @throws DaoException when can not retrieve list of residue items
 	 */
-	public List<InterfaceResidueItem> getResiduesForInterface(int interfaceUid) throws DaoException;
+	public List<Residue> getResiduesForInterface(int interfaceUid) throws DaoException;
 	
 	/**
 	 * Retrieves list of interface residue items for all interfaces.
@@ -27,5 +27,5 @@ public interface InterfaceResidueItemDAO {
 	 * @return list of interface residue items for all interfaces
 	 * @throws DaoException when can not retrieve list of residue items
 	 */
-	public InterfaceResiduesItemsList getResiduesForAllInterfaces(String jobId) throws DaoException;
+	public ResiduesList getResiduesForAllInterfaces(String jobId) throws DaoException;
 }

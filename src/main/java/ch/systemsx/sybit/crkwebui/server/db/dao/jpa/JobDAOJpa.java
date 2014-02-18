@@ -610,7 +610,7 @@ public class JobDAOJpa implements JobDAO
 			CriteriaQuery<JobDB> criteriaQuery = criteriaBuilder.createQuery(JobDB.class);
 
 			Root<JobDB> sessionRoot = criteriaQuery.from(JobDB.class);
-			criteriaQuery.multiselect(sessionRoot.get(JobDB_.input),
+			criteriaQuery.multiselect(sessionRoot.get(JobDB_.inputName),
 									  sessionRoot.get(JobDB_.inputType));
 			Predicate condition = criteriaBuilder.equal(sessionRoot.get(JobDB_.jobId), jobId);
 			criteriaQuery.where(condition);

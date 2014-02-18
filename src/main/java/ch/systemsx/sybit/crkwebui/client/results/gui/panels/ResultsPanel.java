@@ -6,7 +6,7 @@ import ch.systemsx.sybit.crkwebui.client.commons.gui.panels.DisplayPanel;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ApplicationWindowResizeHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.managers.EventBusManager;
 import ch.systemsx.sybit.crkwebui.client.commons.util.EscapedStringGenerator;
-import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
+import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
@@ -27,7 +27,7 @@ public class ResultsPanel extends DisplayPanel
 	private InformationPanel informationPanel;
 	private ResultsGridPanel resultsGridContainer;
 
-	public ResultsPanel(PDBScoreItem pdbScoreItem)
+	public ResultsPanel(PdbInfo pdbScoreItem)
 	{
 		DockLayoutPanel dock = new DockLayoutPanel(Unit.PX);
 
@@ -45,7 +45,7 @@ public class ResultsPanel extends DisplayPanel
 	/**
 	 * Creates the results container with information panel, grid panel
 	 */
-	private VerticalLayoutContainer createResultsContainer(PDBScoreItem pdbScoreItem){
+	private VerticalLayoutContainer createResultsContainer(PdbInfo pdbScoreItem){
 		VerticalLayoutContainer mainContainer = new VerticalLayoutContainer();
 		mainContainer.setScrollMode(ScrollMode.AUTOY);
 		
@@ -62,19 +62,19 @@ public class ResultsPanel extends DisplayPanel
 	 * Sets content of results panel.
 	 * @param resultsData results data of selected job
 	 */
-	public void fillResultsPanel(PDBScoreItem resultsData) 
+	public void fillResultsPanel(PdbInfo resultsData) 
 	{
 		resultsGridContainer.fillResultsGrid(resultsData);
 		informationPanel.fillInfoPanel(resultsData);
 		
-		headerPanel.setPDBText(resultsData.getPdbName(),
+		headerPanel.setPDBText(resultsData.getPdbCode(),
 							  	 	resultsData.getSpaceGroup(),
 							  	 	resultsData.getExpMethod(),
 							  	 	resultsData.getResolution(),
 							  	 	resultsData.getRfreeValue(),
 							  	 	resultsData.getInputType());
 		
-		headerPanel.setEppicLogoPanel(resultsData.getRunParameters().getCrkVersion());
+		headerPanel.setEppicLogoPanel(resultsData.getRunParameters().getEppicVersion());
 		
 		headerPanel.setPDBIdentifierSubtitle(EscapedStringGenerator.generateEscapedString(resultsData.getTitle()));
 		

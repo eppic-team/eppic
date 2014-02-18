@@ -5,7 +5,7 @@ import java.util.List;
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.commons.util.EscapedStringGenerator;
 import ch.systemsx.sybit.crkwebui.client.results.data.InterfaceItemModel;
-import ch.systemsx.sybit.crkwebui.shared.model.WarningItem;
+import ch.systemsx.sybit.crkwebui.shared.model.InterfaceWarning;
 
 import com.google.gwt.cell.client.AbstractCell;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
@@ -29,7 +29,7 @@ public class WarningsCell extends AbstractCell<String> {
 		int row = context.getIndex();
 		InterfaceItemModel item = itemsStore.get(row);
 		
-		final List<WarningItem> warnings = item.getWarnings();
+		final List<InterfaceWarning> warnings = item.getWarnings();
 		
 		if((warnings != null) && (warnings.size() > 0))
 		{
@@ -49,11 +49,11 @@ public class WarningsCell extends AbstractCell<String> {
 	 * @param warnings list of warnings to display
 	 * @return template containing list of warnings
 	 */
-	private String generateWarningsTemplate(List<WarningItem> warnings)
+	private String generateWarningsTemplate(List<InterfaceWarning> warnings)
 	{
 		String warningsList = "<div><ul class=\"eppic-default-font eppic-results-grid-tooltip eppic-tooltip-list\">";
 		
-		for(WarningItem warning : warnings)
+		for(InterfaceWarning warning : warnings)
 		{
 			if(!warning.getText().equals(""))
 			{

@@ -5,8 +5,8 @@ import java.util.List;
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.commons.util.EscapedStringGenerator;
 import ch.systemsx.sybit.crkwebui.client.commons.util.StyleGenerator;
-import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResidueItem;
-import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
+import ch.systemsx.sybit.crkwebui.shared.model.Residue;
+import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 
 import com.sencha.gxt.core.client.dom.ScrollSupport.ScrollMode;
 import com.sencha.gxt.core.client.util.Margins;
@@ -17,7 +17,7 @@ import com.sencha.gxt.widget.core.client.form.FormPanel;
 
 public class StructurePanel extends FramedPanel
 {
-	private ResiduesPanel residuesPanel;
+	private ResiduesGridPanel residuesGridPanel;
 	private ResiduesSummaryPanel residuesSummaryPanel;
 	
 	public StructurePanel(int structureNr)
@@ -36,8 +36,8 @@ public class StructurePanel extends FramedPanel
 		FormPanel breakPanel = createBreakPanel();
 		mainContainer.add(breakPanel, new VerticalLayoutData(-1, -1, new Margins(0)));
 		
-		residuesPanel = new ResiduesPanel();
-		mainContainer.add(residuesPanel, new VerticalLayoutData(-1, 1, new Margins(0)));
+		residuesGridPanel = new ResiduesGridPanel();
+		mainContainer.add(residuesGridPanel, new VerticalLayoutData(-1, 1, new Margins(0)));
 
 	}
 
@@ -57,18 +57,18 @@ public class StructurePanel extends FramedPanel
 	 * Fills content of structure panel
 	 * @param pdbScoreItem result of calculations
 	 * @param selectedInterface interface for which residues are to be displayed
-	 * @param interfaceResidueItems residues to display
+	 * @param residues residues to display
 	 */
-	public void fillStructurePanel(PDBScoreItem pdbScoreItem,
+	public void fillStructurePanel(PdbInfo pdbScoreItem,
 								   int selectedInterface,
-								   List<InterfaceResidueItem> interfaceResidueItems)
+								   List<Residue> residues)
 	{
-		residuesPanel.fillResiduesGrid(interfaceResidueItems);
-		residuesPanel.applyFilter(false);
+		residuesGridPanel.fillResiduesGrid(residues);
+		residuesGridPanel.applyFilter(false);
 		
 		residuesSummaryPanel.fillResultsSummary(pdbScoreItem,
 					 selectedInterface,
-					 interfaceResidueItems);
+					 residues);
 	}
 	
 	/**
@@ -84,12 +84,12 @@ public class StructurePanel extends FramedPanel
 	
 	public void increaseActivePage()
 	{
-		residuesPanel.increaseActivePage();
+		residuesGridPanel.increaseActivePage();
 	}
 	
 	public void decreaseActivePage()
 	{
-		residuesPanel.decreaseActivePage();
+		residuesGridPanel.decreaseActivePage();
 	}
 	
 	/**
@@ -97,7 +97,7 @@ public class StructurePanel extends FramedPanel
 	 */
 	public void resizeResiduesPanels() 
 	{
-		residuesPanel.resizeGrid();
+		residuesGridPanel.resizeGrid();
 	}
 	
 	/**
@@ -105,7 +105,7 @@ public class StructurePanel extends FramedPanel
 	 */
 	public void cleanData()
 	{
-		residuesPanel.cleanResiduesGrid();
+		residuesGridPanel.cleanResiduesGrid();
 		residuesSummaryPanel.cleanResiduesGrid();
 	}
 	
@@ -113,9 +113,9 @@ public class StructurePanel extends FramedPanel
 	 * Retrieves panel containing interface residues for structure.
 	 * @return panel containing interface residues for structure
 	 */
-	public ResiduesPanel getResiduesPanel() 
+	public ResiduesGridPanel getResiduesPanel() 
 	{
-		return residuesPanel;
+		return residuesGridPanel;
 	}
 	
 	/**

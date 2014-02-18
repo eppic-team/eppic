@@ -11,7 +11,7 @@ import ch.systemsx.sybit.crkwebui.client.homologs.data.HomologsItemModelProperti
 import ch.systemsx.sybit.crkwebui.client.homologs.gui.cells.IdentityBarCell;
 import ch.systemsx.sybit.crkwebui.client.homologs.gui.cells.UniprotIdCell;
 import ch.systemsx.sybit.crkwebui.shared.model.HomologIdentityData;
-import ch.systemsx.sybit.crkwebui.shared.model.HomologItem;
+import ch.systemsx.sybit.crkwebui.shared.model.Homolog;
 
 import com.google.gwt.core.client.GWT;
 import com.sencha.gxt.data.shared.ListStore;
@@ -108,25 +108,25 @@ public class HomologsGrid extends VerticalLayoutContainer
 	 * Fills in the grid
 	 * @param homologs
 	 */
-	public void fillHomologsGrid(List<HomologItem> homologs, int queryLength){
+	public void fillHomologsGrid(List<Homolog> homologs, int queryLength){
 		
 		store.clear();
 		
 		List<HomologsItemModel> data = new ArrayList<HomologsItemModel>();
 		
 		if(homologs != null){
-			for(HomologItem homolog: homologs){
+			for(Homolog homolog: homologs){
 				HomologIdentityData idData = new HomologIdentityData(
-						homolog.getSeqIdToQuery(), 
+						homolog.getSeqId(), 
 						homolog.getQueryStart(), 
 						homolog.getQueryEnd(), 
 						queryLength);
 				
 				HomologsItemModel item = new HomologsItemModel(
 						homolog.getUid(), 
-						homolog.getUniId(), 
+						homolog.getUniProtId(), 
 						idData, 
-						homolog.getQueryCov(), 
+						homolog.getQueryCoverage(), 
 						homolog.getFirstTaxon(), 
 						homolog.getLastTaxon());
 				data.add(item);

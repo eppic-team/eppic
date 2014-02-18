@@ -6,7 +6,7 @@ import ch.systemsx.sybit.crkwebui.client.commons.events.HideWaitingEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.UpdateStatusLabelEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.data.StatusMessageType;
 import ch.systemsx.sybit.crkwebui.client.commons.managers.EventBusManager;
-import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResiduesItemsList;
+import ch.systemsx.sybit.crkwebui.shared.model.ResiduesList;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
@@ -15,7 +15,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
  * @author srebniak_a
  *
  */
-public class GetAllResiduesCallback implements AsyncCallback<InterfaceResiduesItemsList>
+public class GetAllResiduesCallback implements AsyncCallback<ResiduesList>
 {
 	private String jobId;
 
@@ -31,7 +31,7 @@ public class GetAllResiduesCallback implements AsyncCallback<InterfaceResiduesIt
 	}
 
 	@Override
-	public void onSuccess(InterfaceResiduesItemsList result) 
+	public void onSuccess(ResiduesList result) 
 	{
 		if (result != null)
 		{

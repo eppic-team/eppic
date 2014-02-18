@@ -26,17 +26,19 @@ import ch.systemsx.sybit.crkwebui.server.commons.util.log.LogHandler;
 import ch.systemsx.sybit.crkwebui.server.commons.validators.PreSubmitValidator;
 import ch.systemsx.sybit.crkwebui.server.commons.validators.RunJobDataValidator;
 import ch.systemsx.sybit.crkwebui.server.commons.validators.SessionValidator;
-import ch.systemsx.sybit.crkwebui.server.db.dao.HomologsInfoItemDAO;
-import ch.systemsx.sybit.crkwebui.server.db.dao.InterfaceItemDAO;
-import ch.systemsx.sybit.crkwebui.server.db.dao.InterfaceResidueItemDAO;
+import ch.systemsx.sybit.crkwebui.server.db.dao.ChainClusterDAO;
+import ch.systemsx.sybit.crkwebui.server.db.dao.InterfaceClusterDAO;
+import ch.systemsx.sybit.crkwebui.server.db.dao.InterfaceDAO;
+import ch.systemsx.sybit.crkwebui.server.db.dao.ResidueDAO;
 import ch.systemsx.sybit.crkwebui.server.db.dao.JobDAO;
-import ch.systemsx.sybit.crkwebui.server.db.dao.PDBScoreDAO;
+import ch.systemsx.sybit.crkwebui.server.db.dao.PDBInfoDAO;
 import ch.systemsx.sybit.crkwebui.server.db.dao.UserSessionDAO;
-import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.HomologsInfoItemDAOJpa;
-import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.InterfaceItemDAOJpa;
-import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.InterfaceResidueItemDAOJpa;
+import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.ChainClusterDAOJpa;
+import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.InterfaceClusterDAOJpa;
+import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.InterfaceDAOJpa;
+import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.ResidueDAOJpa;
 import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.JobDAOJpa;
-import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.PDBScoreDAOJpa;
+import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.PDBInfoDAOJpa;
 import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.UserSessionDAOJpa;
 import ch.systemsx.sybit.crkwebui.server.db.data.InputWithType;
 import ch.systemsx.sybit.crkwebui.server.email.data.EmailData;
@@ -53,13 +55,14 @@ import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.JobHandlerException;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.JobManagerException;
 import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
-import ch.systemsx.sybit.crkwebui.shared.model.HomologsInfoItem;
+import ch.systemsx.sybit.crkwebui.shared.model.ChainCluster;
 import ch.systemsx.sybit.crkwebui.shared.model.InputType;
-import ch.systemsx.sybit.crkwebui.shared.model.InterfaceItem;
-import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResidueItem;
-import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResiduesItemsList;
+import ch.systemsx.sybit.crkwebui.shared.model.Interface;
+import ch.systemsx.sybit.crkwebui.shared.model.InterfaceCluster;
+import ch.systemsx.sybit.crkwebui.shared.model.Residue;
+import ch.systemsx.sybit.crkwebui.shared.model.ResiduesList;
 import ch.systemsx.sybit.crkwebui.shared.model.JobsForSession;
-import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
+import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 import ch.systemsx.sybit.crkwebui.shared.model.PDBSearchResult;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingData;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
@@ -81,7 +84,7 @@ import eppic.EppicParams;
  *
  * @author srebniak_a
  */
-@PersistenceContext(name="crkjpa", unitName="crkjpa")
+@PersistenceContext(name="eppicjpa", unitName="eppicjpa")
 @SuppressWarnings("serial")
 public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements CrkWebService
 {
@@ -110,18 +113,11 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 	private String resultsPathUrl;
 	
 	private EmailMessageData emailMessageData;
-	
-//	private JobDAO jobDao;
 
 	@Override
 	public void init(ServletConfig config) throws ServletException
 	{
 		super.init(config);
-		
-//		WebApplicationContext webContext = WebApplicationContextUtils.getRequiredWebApplicationContext(config.getServletContext());
-//		AutowireCapableBeanFactory beanFactory = ctx.getAutowireCapableBeanFactory();
-//		beanFactory.autowireBean(this);
-//		jobDao = (JobDAO)webContext.getBean("jobDao");
 
 		InputStream propertiesStream = getServletContext()
 				.getResourceAsStream(
@@ -147,8 +143,6 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 			throw new ServletException(generalTmpDirectoryName + " is not a directory");
 		}
 
-		// String realPath =
-		// getServletContext().getRealPath(properties.getProperty("destination_path"));
 		generalDestinationDirectoryName = properties.getProperty("destination_path");
 		File destinationDir = new File(generalDestinationDirectoryName);
 		if (!destinationDir.isDirectory())
@@ -196,9 +190,6 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 
 		if(!properties.containsKey(ApplicationSettingsGenerator.DEVELOPMENT_MODE))
 		    initializeJobManager(queuingSystem);
-
-//		String serverName =  getThreadLocalRequest().getServerName();
-//		int serverPort = getThreadLocalRequest().getServerPort();
 		
 		String serverName = getServletContext().getInitParameter("serverName");
 		
@@ -279,41 +270,7 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 		    jobDaemon = new Thread(jobStatusUpdater);
 		    jobDaemon.start();
 		}
-				
-		
-//		try
-//		{		
-//			ObjectInputStream in = new ObjectInputStream(new FileInputStream("c:/results/1smt/1smt.webui.dat"));
-//		
-//			PDBScoreItemDB pdbScoreItem = (PDBScoreItemDB)in.readObject();
-//
-//			EntityManager entityManager = EntityManagerHandler.getEntityManager();
-//
-//			entityManager.getTransaction().begin();
-//			entityManager.persist(pdbScoreItem);
-//	
-//			String pdbCode = pdbScoreItem.getPdbName();
-//
-//			JobDB job = new JobDB();
-//			job.setJobId(pdbCode);
-//			job.setEmail(null);
-//			job.setInput(pdbCode);
-//			job.setIp("localhost");
-//			job.setStatus(StatusOfJob.FINISHED.getName());
-//			job.setSubmissionDate(new Date());
-//			job.setInputType(InputType.PDBCODE.getIndex());
-//			job.setSubmissionId("-1");
-//
-//			pdbScoreItem.setJobItem(job);
-//			job.setPdbScoreItem(pdbScoreItem);
-//			entityManager.persist(job);
-//
-//			entityManager.getTransaction().commit();
-//		}
-//		catch(Exception e)
-//		{
-//			e.printStackTrace();
-//		}
+
 	}
 
 	private void initializeJobManager(String queuingSystem) throws ServletException {
@@ -500,7 +457,7 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 				
 				InputWithType inputWithType = jobDAO.getInputWithTypeForJob(jobId);
 				statusData.setInputType(inputWithType.getInputType());
-				statusData.setInput(inputWithType.getInput());
+				statusData.setInput(inputWithType.getInputName());
 				
 				statusData.setStep(new StepStatus());
 
@@ -608,55 +565,62 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 	 * @return pdb score item
 	 * @throws Exception when can not retrieve result of the job
 	 */
-	private PDBScoreItem getResultData(String jobId) throws Exception
+	private PdbInfo getResultData(String jobId) throws Exception
 	{
 		JobDAO jobDAO = new JobDAOJpa();
-		int inputType = jobDAO.getInputTypeForJob(jobId);
+		InputWithType input = jobDAO.getInputWithTypeForJob(jobId);
 
-		PDBScoreDAO pdbScoreDAO = new PDBScoreDAOJpa();
-		PDBScoreItem pdbScoreItem = pdbScoreDAO.getPDBScore(jobId);
+		PDBInfoDAO pdbInfoDAO = new PDBInfoDAOJpa();
+		PdbInfo pdbInfo = pdbInfoDAO.getPDBScore(jobId);
+		
+		InterfaceClusterDAO clusterDAO = new InterfaceClusterDAOJpa();
+		List<InterfaceCluster> clusters = clusterDAO.getInterfaceClustersWithoutInterfaces(pdbInfo.getUid());
+		pdbInfo.setInterfaceClusters(clusters);
 
-		InterfaceItemDAO interfaceItemDAO = new InterfaceItemDAOJpa();
-		List<InterfaceItem> interfaceItems = interfaceItemDAO.getInterfacesWithScores(pdbScoreItem.getUid());
-		pdbScoreItem.setInterfaceItems(interfaceItems);
+		InterfaceDAO interfaceDAO = new InterfaceDAOJpa();
+		for(InterfaceCluster cluster: clusters){
+			List<Interface> interfaceItems = interfaceDAO.getInterfacesWithScores(cluster.getUid());
+			cluster.setInterfaces(interfaceItems);
+		}
+		
+		ChainClusterDAO chainClusterDAO = new ChainClusterDAOJpa();
+		List<ChainCluster> chainClusters = chainClusterDAO.getChainClusters(pdbInfo.getUid());
+		pdbInfo.setChainClusters(chainClusters);
 
-		HomologsInfoItemDAO homologsInfoItemDAO = new HomologsInfoItemDAOJpa();
-		List<HomologsInfoItem> homologsInfoItems = homologsInfoItemDAO.getHomologsInfoItems(pdbScoreItem.getUid());
-		pdbScoreItem.setHomologsInfoItems(homologsInfoItems);
+		pdbInfo.setInputType(input.getInputType());
+		pdbInfo.setInputName(input.getInputName());
 
-		pdbScoreItem.setInputType(inputType);
-
-		return pdbScoreItem;
+		return pdbInfo;
 	}
 
 	@Override
-	public InterfaceResiduesItemsList getAllResidues(String jobId) throws Exception
+	public ResiduesList getAllResidues(String jobId) throws Exception
 	{
-		InterfaceResidueItemDAO interfaceResidueItemDAO = new InterfaceResidueItemDAOJpa();
-		InterfaceResiduesItemsList interfaceResiduesItemsList = interfaceResidueItemDAO.getResiduesForAllInterfaces(jobId);
-		return interfaceResiduesItemsList;
+		ResidueDAO residueDAO = new ResidueDAOJpa();
+		ResiduesList residuesList = residueDAO.getResiduesForAllInterfaces(jobId);
+		return residuesList;
 	}
 
 	@Override
-	public HashMap<Integer, List<InterfaceResidueItem>> getInterfaceResidues(int interfaceUid) throws Exception
+	public HashMap<Integer, List<Residue>> getInterfaceResidues(int interfaceUid) throws Exception
 	{
-		InterfaceResidueItemDAO interfaceResidueItemDAO = new InterfaceResidueItemDAOJpa();
-		List<InterfaceResidueItem> interfaceResidues = interfaceResidueItemDAO.getResiduesForInterface(interfaceUid);
+		ResidueDAO residueDAO = new ResidueDAOJpa();
+		List<Residue> interfaceResidues = residueDAO.getResiduesForInterface(interfaceUid);
 
-		HashMap<Integer, List<InterfaceResidueItem>> structures = new HashMap<Integer, List<InterfaceResidueItem>>();
+		HashMap<Integer, List<Residue>> structures = new HashMap<Integer, List<Residue>>();
 
-		List<InterfaceResidueItem> firstStructureResidues = new ArrayList<InterfaceResidueItem>();
-		List<InterfaceResidueItem> secondStructureResidues = new ArrayList<InterfaceResidueItem>();
+		List<Residue> firstStructureResidues = new ArrayList<Residue>();
+		List<Residue> secondStructureResidues = new ArrayList<Residue>();
 
-		for(InterfaceResidueItem interfaceResidueItem : interfaceResidues)
+		for(Residue residue : interfaceResidues)
 		{
-			if(interfaceResidueItem.getStructure() == 1)
+			if(residue.getSide() == 1)
 			{
-				firstStructureResidues.add(interfaceResidueItem);
+				firstStructureResidues.add(residue);
 			}
-			else if(interfaceResidueItem.getStructure() == 2)
+			else if(residue.getSide() == 2)
 			{
-				secondStructureResidues.add(interfaceResidueItem);
+				secondStructureResidues.add(residue);
 			}
 		}
 
@@ -783,7 +747,7 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 	public PagingLoadResult<PDBSearchResult> getListOfPDBsHavingAUniProt(
 			FilterPagingLoadConfig config, String uniProtId) throws Exception {
 
-		HomologsInfoItemDAO homologsDAO = new HomologsInfoItemDAOJpa();
+		ChainClusterDAO homologsDAO = new ChainClusterDAOJpa();
 		List<PDBSearchResult> resultList = homologsDAO.getPdbSearchItemsForUniProt(uniProtId);
 
 		//get all the comments from the data store  

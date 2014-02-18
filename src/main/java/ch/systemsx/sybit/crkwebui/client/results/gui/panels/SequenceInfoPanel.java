@@ -20,9 +20,9 @@ import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowQueryWarningsHandl
 import ch.systemsx.sybit.crkwebui.client.commons.managers.EventBusManager;
 import ch.systemsx.sybit.crkwebui.client.commons.util.EscapedStringGenerator;
 import ch.systemsx.sybit.crkwebui.client.commons.util.StyleGenerator;
-import ch.systemsx.sybit.crkwebui.shared.model.HomologsInfoItem;
-import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
-import ch.systemsx.sybit.crkwebui.shared.model.QueryWarningItem;
+import ch.systemsx.sybit.crkwebui.shared.model.ChainCluster;
+import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
+import ch.systemsx.sybit.crkwebui.shared.model.UniProtRefWarning;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -52,12 +52,12 @@ public class SequenceInfoPanel extends FieldSet
 {
     private final static int ROWS_PER_PAGE = 4;
 
-    PDBScoreItem pdbScoreItem;
+    PdbInfo pdbScoreItem;
     private int homologsStartIndex;
     private FlexTable homologsTable;
     private ToolTip queryWarningsTooltip;
     
-    public SequenceInfoPanel(PDBScoreItem pdbScoreItem) 
+    public SequenceInfoPanel(PdbInfo pdbScoreItem) 
     {
     	this.setBorders(true);
 
@@ -118,9 +118,9 @@ public class SequenceInfoPanel extends FieldSet
     /**
      * Creates info panel containing information about the sequence.
      */
-    public void generateSequenceInfoPanel(PDBScoreItem pdbScoreItem)
+    public void generateSequenceInfoPanel(PdbInfo pdbScoreItem)
     {
-    	this.fillHeading(pdbScoreItem.getRunParameters().getUniprotVer());
+    	this.fillHeading(pdbScoreItem.getRunParameters().getUniprotVersion());
     	
     	CssFloatLayoutContainer mainContainer = new CssFloatLayoutContainer();
     	mainContainer.setScrollMode(ScrollMode.AUTO);
@@ -144,7 +144,7 @@ public class SequenceInfoPanel extends FieldSet
     }
 
     private void fillePagedHomologsInfoTable() {
-    	List<HomologsInfoItem> homologsStrings = pdbScoreItem.getHomologsInfoItems();
+    	List<ChainCluster> homologsStrings = pdbScoreItem.getChainClusters();
     	if(homologsStrings == null || homologsStrings.isEmpty())
     	{
     		HTML nothingFound = new HTML(AppPropertiesManager.CONSTANTS.info_panel_nothing_found());
@@ -192,13 +192,13 @@ public class SequenceInfoPanel extends FieldSet
     	}
     }
 
-    private List<List<Widget>> loadHomologPanles(PDBScoreItem pdbScoreItem, List<HomologsInfoItem> homologsStrings) {
+    private List<List<Widget>> loadHomologPanles(PdbInfo pdbScoreItem, List<ChainCluster> homologsStrings) {
     	ArrayList<List<Widget>> homologsInfoPanels = new ArrayList<List<Widget>>();
     	for(int i=0; i<homologsStrings.size(); i++)
     	{
     		homologsInfoPanels.add(generateHomologsInfoPanelItems(pdbScoreItem.getJobId(),
     				homologsStrings.get(i),
-    				pdbScoreItem.getPdbName()));
+    				pdbScoreItem.getPdbCode()));
     	};
     	return homologsInfoPanels;
     }
@@ -216,11 +216,11 @@ public class SequenceInfoPanel extends FieldSet
      * @param warnings list of warnings
      * @return template for query warnings
      */
-    private static String generateHomologsNoQueryMatchTemplate(List<QueryWarningItem> warnings)
+    private static String generateHomologsNoQueryMatchTemplate(List<UniProtRefWarning> warnings)
     {
     	String warningsList = "<div><ul class=\"eppic-tooltip-list\">";
 
-    	for(QueryWarningItem warning : warnings)
+    	for(UniProtRefWarning warning : warnings)
     	{
     		if((warning.getText() != null) &&
     				(!warning.getText().equals("")))
@@ -237,34 +237,35 @@ public class SequenceInfoPanel extends FieldSet
     /**
      * Method to generate homologs in the sequence info panel
      * @param selectedJobId
-     * @param homologsInfoItem
+     * @param chainCluster
      * @param pdbName
      * @return
      */
     public static List<Widget>  generateHomologsInfoPanelItems(final String selectedJobId,
-    		final HomologsInfoItem homologsInfoItem,
+    		final ChainCluster chainCluster,
     		final String pdbName)
     		{
 
-    	if(homologsInfoItem.isHasQueryMatch())
+    	if(chainCluster.isHasUniProtRef())
     	{
-    		return createHomologsPanelItemsIfQueryMatch(selectedJobId, homologsInfoItem, pdbName);
+    		return createHomologsPanelItemsIfQueryMatch(selectedJobId, chainCluster, pdbName);
     	}
     	else
     	{
-    		return createHomologsPanelItemsIfNoQueryMatch(homologsInfoItem);
+    		return createHomologsPanelItemsIfNoQueryMatch(chainCluster);
     	}
     		}
 
-    private static List<Widget> createHomologsPanelItemsIfNoQueryMatch(final HomologsInfoItem homologsInfoItem)
+    private static List<Widget> createHomologsPanelItemsIfNoQueryMatch(final ChainCluster chainCluster)
     {
     	ArrayList<Widget> items = new ArrayList<Widget>();
 
-    	String chainStr = EscapedStringGenerator.generateEscapedString(homologsInfoItem.getChains());
+    	String chainStr = chainCluster.getRepChain();
+    	chainStr += "(" + EscapedStringGenerator.generateEscapedString(chainCluster.getMemberChains()) + ")";
     	String chainHintStr = "";
     	if(chainStr.length() > 13){
+    		chainHintStr = "Chain " + chainStr;
     		chainStr = chainStr.substring(0,12)+",..)";
-    		chainHintStr = "Chain " + EscapedStringGenerator.generateEscapedString(homologsInfoItem.getChains());
     	}
 
     	final LabelWithTooltip chainsLink = new LabelWithTooltip("Chain " + EscapedStringGenerator.generateEscapedString(chainStr), 
@@ -276,7 +277,7 @@ public class SequenceInfoPanel extends FieldSet
     	Image chainsLinkButton = createWarningButton(AppPropertiesManager.CONSTANTS.homologs_panel_uniprot_no_query_match_hint());		
     	chainsLinkButton.getElement().<XElement>cast().setMargins(new Margins(0, 10, 0, 0));
     	ToolTipConfig ttConfig = new ToolTipConfig(AppPropertiesManager.CONSTANTS.homologs_panel_query_warnings_title(),
-    			generateHomologsNoQueryMatchTemplate(homologsInfoItem.getQueryWarnings()));
+    			generateHomologsNoQueryMatchTemplate(chainCluster.getUniProtRefWarnings()));
     	new ToolTip(chainsLinkButton, ttConfig);
 
     	items.add(chainsLinkButton);
@@ -284,15 +285,16 @@ public class SequenceInfoPanel extends FieldSet
     }
 
     private static List<Widget> createHomologsPanelItemsIfQueryMatch(final String selectedJobId,
-    		final HomologsInfoItem homologsInfoItem,
+    		final ChainCluster chainCluster,
     		final String pdbName) {
     	ArrayList<Widget> items = new ArrayList<Widget>();
 
-    	String chainStr = EscapedStringGenerator.generateEscapedString(homologsInfoItem.getChains());
+    	String chainStr = chainCluster.getRepChain();
+    	chainStr += "(" + EscapedStringGenerator.generateEscapedString(chainCluster.getMemberChains()) + ")";
     	String chainHintStr = "";
     	if(chainStr.length() > 13){
+    		chainHintStr = "Chain " + chainStr;
     		chainStr = chainStr.substring(0,12)+",..)";
-    		chainHintStr = "Chain " + EscapedStringGenerator.generateEscapedString(homologsInfoItem.getChains());
     	}
 
     	final LabelWithTooltip chainsLink = new LabelWithTooltip("Chain " + EscapedStringGenerator.generateEscapedString(chainStr), 
@@ -308,7 +310,7 @@ public class SequenceInfoPanel extends FieldSet
 			@Override
 			public void onSelect(SelectEvent event) {
 				EventBusManager.EVENT_BUS.fireEvent(new ShowAlignmentsEvent(
-    					homologsInfoItem, 
+    					chainCluster, 
     					pdbName,
     					chainsLink.getAbsoluteLeft() + chainsLink.getElement().getClientWidth(),
     					chainsLink.getAbsoluteTop() + chainsLink.getElement().getClientHeight() + 10));
@@ -318,14 +320,14 @@ public class SequenceInfoPanel extends FieldSet
 
     	items.add(chainsLinkButton);
 
-    	LinkWithTooltip uniprotIdLabel = new LinkWithTooltip(" (" + EscapedStringGenerator.generateEscapedString(homologsInfoItem.getUniprotId()) + ") ", 
+    	LinkWithTooltip uniprotIdLabel = new LinkWithTooltip(" (" + EscapedStringGenerator.generateEscapedString(chainCluster.getRefUniProtId()) + ") ", 
     			AppPropertiesManager.CONSTANTS.homologs_panel_uniprot_hint(),
-    			ApplicationContext.getSettings().getUniprotLinkUrl() + homologsInfoItem.getUniprotId());
+    			ApplicationContext.getSettings().getUniprotLinkUrl() + chainCluster.getRefUniProtId());
     	uniprotIdLabel.addStyleName("eppic-external-link");
     	uniprotIdLabel.getElement().<XElement>cast().setMargins(new Margins(0, 10, 0, 0));
     	items.add(uniprotIdLabel);
 
-    	int nrOfHomologs = homologsInfoItem.getNumHomologs();
+    	int nrOfHomologs = chainCluster.getNumHomologs();
     	String nrOfHomologsText = String.valueOf(nrOfHomologs) + " homolog";
 
     	if(nrOfHomologs > 1)
@@ -333,7 +335,7 @@ public class SequenceInfoPanel extends FieldSet
     		nrOfHomologsText += "s";
     	}
 
-    	String alignmentId = homologsInfoItem.getChains().substring(0, 1);
+    	String alignmentId = chainCluster.getRepChain();
 
     	final HTML nrHomologsLabel = new HTML(nrOfHomologsText);
 
@@ -347,7 +349,7 @@ public class SequenceInfoPanel extends FieldSet
 			@Override
 			public void onSelect(SelectEvent event) {
 				EventBusManager.EVENT_BUS.fireEvent(new ShowHomologsEvent(
-    					homologsInfoItem, 
+    					chainCluster, 
     					selectedJobId,
     					nrHomologsLabel.getAbsoluteLeft() + nrHomologsLabel.getElement().getClientWidth(),
     					nrHomologsLabel.getAbsoluteTop() + nrHomologsLabel.getElement().getClientHeight() + 10));

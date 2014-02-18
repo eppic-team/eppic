@@ -20,7 +20,7 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
 import eppic.model.JobDB_;
-import eppic.model.PDBScoreItemDB_;
+import eppic.model.PdbInfoDB_;
 import ch.systemsx.sybit.crkwebui.shared.model.InputType;
 import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
 import eppic.model.JobDB;
@@ -34,8 +34,8 @@ import eppic.model.PdbInfoDB;
  */
 public class DBHandler {
 	
-	public static final String DEFAULT_ONLINE_JPA = "crkjpa";
-	public static final String DEFAULT_OFFLINE_JPA = "crk-offline-jpa";
+	public static final String DEFAULT_ONLINE_JPA = "eppicjpa";
+	public static final String DEFAULT_OFFLINE_JPA = "eppic-offline-jpa";
 	
 	
 	@PersistenceUnit
@@ -69,7 +69,7 @@ public class DBHandler {
 
 	
 	/**
-	 * Adds entry to the DataBase when only PDBScoreItem specified.
+	 * Adds entry to the DataBase when only PdbInfo specified.
 	 * Inserts a pseudo job
 	 * @param PdbInfoDB
 	 * 
@@ -79,7 +79,7 @@ public class DBHandler {
 		entityManager.getTransaction().begin();
 		entityManager.persist(pdbScoreItem);
 
-		String pdbCode = pdbScoreItem.getPdbName();
+		String pdbCode = pdbScoreItem.getPdbCode();
 
 		JobDB job = new JobDB();
 		job.setJobId(pdbCode);
@@ -151,7 +151,7 @@ public class DBHandler {
 
 					CriteriaQuery<PdbInfoDB> cqPDB = cbPDB.createQuery(PdbInfoDB.class);
 					Root<PdbInfoDB> rootPDB = cqPDB.from(PdbInfoDB.class);
-					cqPDB.where(cbPDB.equal(rootPDB.get(PDBScoreItemDB_.jobItem), job));
+					cqPDB.where(cbPDB.equal(rootPDB.get(PdbInfoDB_.job), job));
 					cqPDB.select(rootPDB);
 					List<PdbInfoDB> queryPDBList = entityManager.createQuery(cqPDB).getResultList();
 					
@@ -231,11 +231,11 @@ public class DBHandler {
 		queryJob.setSubmissionId(queryJobOrig.getSubmissionId());
 		
 		
-		//Check if there is any PDBScoreItem entry 
+		//Check if there is any PdbInfo entry 
 		CriteriaBuilder cbPDB = orig.getCriteriaBuilder();
 		CriteriaQuery<PdbInfoDB> cqPDB = cbPDB.createQuery(PdbInfoDB.class);
 		Root<PdbInfoDB> rootPDB = cqPDB.from(PdbInfoDB.class);
-		cqPDB.where(cbPDB.equal(rootPDB.get(PDBScoreItemDB_.jobItem), queryJobOrig));
+		cqPDB.where(cbPDB.equal(rootPDB.get(PdbInfoDB_.job), queryJobOrig));
 		cqPDB.select(rootPDB);
 		int pdbScoreNum = orig.createQuery(cqPDB).getResultList().size();
 		
@@ -320,7 +320,7 @@ public class DBHandler {
 		
 		CriteriaQuery<String> criteriaQuery = criteriaBuilder.createQuery(String.class);
 		Root<JobDB> jobRoot = criteriaQuery.from(JobDB.class);
-		criteriaQuery.select(jobRoot.get(JobDB_.input));
+		criteriaQuery.select(jobRoot.get(JobDB_.inputName));
 		Predicate condition = criteriaBuilder.equal(jobRoot.get(JobDB_.jobId), jobDir.getName());
 		criteriaQuery.where(condition);
 

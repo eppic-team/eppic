@@ -10,7 +10,7 @@ import javax.persistence.Persistence;
  */
 public class EntityManagerHandler 
 {
-   private final static EntityManagerFactory emf = Persistence.createEntityManagerFactory("crkjpa");
+   private final static EntityManagerFactory emf = Persistence.createEntityManagerFactory("eppicjpa");
 	   
    public static EntityManager getEntityManager() 
    {

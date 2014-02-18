@@ -9,7 +9,7 @@ import ch.systemsx.sybit.crkwebui.client.alignment.gui.cell.AlignmentCell;
 import ch.systemsx.sybit.crkwebui.client.alignment.gui.cell.ChainHeaderCell;
 import ch.systemsx.sybit.crkwebui.client.alignment.gui.cell.IndexCell;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.windows.ResizableWindow;
-import ch.systemsx.sybit.crkwebui.shared.model.HomologsInfoItem;
+import ch.systemsx.sybit.crkwebui.shared.model.ChainCluster;
 import ch.systemsx.sybit.crkwebui.shared.model.WindowData;
 
 import com.google.gwt.core.client.GWT;
@@ -35,7 +35,7 @@ public class AlignmentsWindow extends ResizableWindow
 
 	VerticalLayoutContainer gridContainer;
 
-	private HomologsInfoItem homologsInfoItem;
+	private ChainCluster chainCluster;
 	private String pdbName;
 
 	private static final AlignmentDataModelProperties props = GWT.create(AlignmentDataModelProperties.class);
@@ -53,14 +53,14 @@ public class AlignmentsWindow extends ResizableWindow
 	private static int characterWidth = 8;
 
 	public AlignmentsWindow(WindowData windowData,
-			HomologsInfoItem homologsInfoItem,
+			ChainCluster chainCluster,
 			String pdbName) 
 	{
 		super(ALIGNMENT_WINDOW_DEFAULT_WIDTH,
 				ALIGNMENT_WINDOW_DEFAULT_HEIGHT,
 				windowData);
 
-		this.homologsInfoItem = homologsInfoItem;
+		this.chainCluster = chainCluster;
 		this.pdbName = pdbName;
 		this.setHideOnButtonClick(true);
 		
@@ -145,14 +145,14 @@ public class AlignmentsWindow extends ResizableWindow
 		store.addAll(createAlignmentData());
 	}
 
-	public HomologsInfoItem getHomologsInfoItem()
+	public ChainCluster getHomologsInfoItem()
 	{
-		return homologsInfoItem;
+		return chainCluster;
 	}
 
-	public void setHomologsInfoItem(HomologsInfoItem homologsInfoItem)
+	public void setHomologsInfoItem(ChainCluster chainCluster)
 	{
-		this.homologsInfoItem = homologsInfoItem;
+		this.chainCluster = chainCluster;
 	}
 
 	public String getPdbName() {
@@ -185,19 +185,14 @@ public class AlignmentsWindow extends ResizableWindow
 
 		List<AlignmentDataModel> dataList =  new ArrayList<AlignmentDataModel>();
 
-		String pdbId = homologsInfoItem.getChains();
+		String chainId = chainCluster.getRepChain();
 
-		if(pdbId.contains("("))
-		{
-			pdbId = pdbId.substring(0, pdbId.indexOf("("));
-		}
+		String pdbId = pdbName + chainId;
 
-		pdbId = pdbName + pdbId;
-
-		String uniprotId = homologsInfoItem.getUniprotId();
+		String uniprotId = chainCluster.getRefUniProtId();
 
 		int nrOfCharactersPerLine = calculateNrOfCharactersPerLine(); 
-		int totalNumberOfCharacters = homologsInfoItem.getAlignedSeq1().length();
+		int totalNumberOfCharacters = chainCluster.getPdbAlignedSeq().length();
 
 		int firstSequenceIndex = 1;
 		int secondSequenceIndex = 1;
@@ -214,9 +209,9 @@ public class AlignmentsWindow extends ResizableWindow
 				endIndex = totalNumberOfCharacters;
 			}
 
-			StringBuffer firstSequenceLine = new StringBuffer(homologsInfoItem.getAlignedSeq1().substring(beginIndex, endIndex));
-			StringBuffer secondSequenceLine = new StringBuffer(homologsInfoItem.getAlignedSeq2().substring(beginIndex, endIndex));
-			StringBuffer markup = new StringBuffer(homologsInfoItem.getMarkupLine().substring(beginIndex, endIndex));
+			StringBuffer firstSequenceLine = new StringBuffer(chainCluster.getPdbAlignedSeq().substring(beginIndex, endIndex));
+			StringBuffer secondSequenceLine = new StringBuffer(chainCluster.getRefAlignedSeq().substring(beginIndex, endIndex));
+			StringBuffer markup = new StringBuffer(chainCluster.getAliMarkupLine().substring(beginIndex, endIndex));
 
 			for(int j=endIndex - beginIndex - 1; j>=0; j--)
 			{

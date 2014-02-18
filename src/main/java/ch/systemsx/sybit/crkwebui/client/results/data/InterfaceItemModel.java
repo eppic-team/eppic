@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
-import ch.systemsx.sybit.crkwebui.shared.model.WarningItem;
+import ch.systemsx.sybit.crkwebui.shared.model.InterfaceWarning;
 
 /**
  * Data model for interfaces grid.
@@ -19,26 +19,38 @@ public class InterfaceItemModel implements Serializable {
 	 */
 	private static final long serialVersionUID = 1L;
 	
-	private int id;
+	private int interfaceId;
 	private int clusterId;
+	
 	private double area;
 	private String name;
 	private String sizes;
+	
+	private String operator;
+	private String operatorType;
+	
+	private boolean isInfinite;
+	
+	//Interface Calls
 	private String geometryCall;
 	private String coreRimCall;
 	private String coreSurfaceCall;
 	private String finalCallName;
-	private String operator;
-	private String operatorType;
-	private boolean isInfinite;
-	private List<WarningItem> warnings;
+	
+	//Cluster Calls
+	private String clusterGeometryCall;
+	private String clusterCoreRimCall;
+	private String clusterCoreSurfaceCall;
+	private String clusterFinalCall;
+
+	private List<InterfaceWarning> warnings;
 	private String thumbnailUrl = "";
 	private String warningsImagePath = "resources/icons/warning_icon.png";
 	private String detailsButtonText = AppPropertiesManager.CONSTANTS.results_grid_details_button();
 
 	public InterfaceItemModel()
 	{
-		id = 0;
+		interfaceId = 0;
 		clusterId = 0;
 		area = 0;
 		name = "";
@@ -47,10 +59,14 @@ public class InterfaceItemModel implements Serializable {
 		coreRimCall = "";
 		coreSurfaceCall = "";
 		finalCallName = "";
+		clusterGeometryCall = "";
+		clusterCoreRimCall = "";
+		clusterCoreSurfaceCall = "";
+		clusterFinalCall = "";
 		operator = "";
 		operatorType = "";
 		isInfinite = false;
-		warnings = new ArrayList<WarningItem>();
+		warnings = new ArrayList<InterfaceWarning>();
 	}
 
 	public int getClusterId() {
@@ -93,12 +109,12 @@ public class InterfaceItemModel implements Serializable {
 		this.warningsImagePath = warningsImagePath;
 	}
 
-	public int getId() {
-		return id;
+	public int getInterfaceId() {
+		return interfaceId;
 	}
 
-	public void setId(int id) {
-		this.id = id;
+	public void setInterfaceId(int interfaceId) {
+		this.interfaceId = interfaceId;
 	}
 
 	public double getArea() {
@@ -107,6 +123,14 @@ public class InterfaceItemModel implements Serializable {
 
 	public void setArea(double area) {
 		this.area = area;
+	}
+
+	public boolean isInfinite() {
+		return isInfinite;
+	}
+
+	public void setInfinite(boolean isInfinite) {
+		this.isInfinite = isInfinite;
 	}
 
 	public String getName() {
@@ -149,19 +173,11 @@ public class InterfaceItemModel implements Serializable {
 		this.operatorType = operatorType;
 	}
 
-	public boolean isInfinite() {
-		return isInfinite;
-	}
-
-	public void setIsInfinite(boolean isInfinite) {
-		this.isInfinite = isInfinite;
-	}
-
-	public List<WarningItem> getWarnings() {
+	public List<InterfaceWarning> getWarnings() {
 		return warnings;
 	}
 
-	public void setWarnings(List<WarningItem> warnings) {
+	public void setWarnings(List<InterfaceWarning> warnings) {
 		this.warnings = warnings;
 	}
 
@@ -179,6 +195,38 @@ public class InterfaceItemModel implements Serializable {
 
 	public void setDetailsButtonText(String detailsButtonText) {
 		this.detailsButtonText = detailsButtonText;
+	}
+
+	public String getClusterGeometryCall() {
+		return clusterGeometryCall;
+	}
+
+	public void setClusterGeometryCall(String clusterGeometryCall) {
+		this.clusterGeometryCall = clusterGeometryCall;
+	}
+
+	public String getClusterCoreRimCall() {
+		return clusterCoreRimCall;
+	}
+
+	public void setClusterCoreRimCall(String clusterCoreRimCall) {
+		this.clusterCoreRimCall = clusterCoreRimCall;
+	}
+
+	public String getClusterCoreSurfaceCall() {
+		return clusterCoreSurfaceCall;
+	}
+
+	public void setClusterCoreSurfaceCall(String clusterCoreSurfaceCall) {
+		this.clusterCoreSurfaceCall = clusterCoreSurfaceCall;
+	}
+
+	public String getClusterFinalCall() {
+		return clusterFinalCall;
+	}
+
+	public void setClusterFinalCall(String clusterFinalCall) {
+		this.clusterFinalCall = clusterFinalCall;
 	}
 	
 }

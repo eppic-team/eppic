@@ -4,21 +4,22 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
-import ch.systemsx.sybit.crkwebui.client.commons.gui.cell.TwoDecimalFloatCell;
+import ch.systemsx.sybit.crkwebui.client.commons.gui.cell.TwoDecimalDoubleCell;
 import ch.systemsx.sybit.crkwebui.client.commons.util.EscapedStringGenerator;
-import ch.systemsx.sybit.crkwebui.client.residues.data.InterfaceResidueItemModel;
-import ch.systemsx.sybit.crkwebui.client.residues.data.InterfaceResidueItemModelProperties;
 import ch.systemsx.sybit.crkwebui.client.residues.gui.grid.utils.ResiduePagingMemoryProxy;
-import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResidueItem;
-import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResidueType;
+import ch.systemsx.sybit.crkwebui.shared.model.Residue;
+import ch.systemsx.sybit.crkwebui.shared.model.ResidueType;
 
 import com.google.gwt.core.shared.GWT;
+import com.google.gwt.editor.client.Editor.Path;
 import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.sencha.gxt.core.client.GXT;
 import com.sencha.gxt.core.client.ValueProvider;
 import com.sencha.gxt.data.shared.ListStore;
+import com.sencha.gxt.data.shared.ModelKeyProvider;
+import com.sencha.gxt.data.shared.PropertyAccess;
 import com.sencha.gxt.data.shared.loader.LoadResultListStoreBinding;
 import com.sencha.gxt.data.shared.loader.PagingLoadConfig;
 import com.sencha.gxt.data.shared.loader.PagingLoadResult;
@@ -36,28 +37,48 @@ import com.sencha.gxt.widget.core.client.toolbar.PagingToolBar;
  * @author srebniak_a
  *
  */
-public class ResiduesPanel extends VerticalLayoutContainer
+public class ResiduesGridPanel extends VerticalLayoutContainer
 {
-    private static final InterfaceResidueItemModelProperties props = GWT.create(InterfaceResidueItemModelProperties.class);
+    /**
+     * Interface used to project Residue class to Grid
+     * @author biyani_n
+     *
+     */
+	public interface ResidueProperties extends PropertyAccess<Residue> {
+		
+		  @Path("residueNumber")
+		  ModelKeyProvider<Residue> key();
+		 
+		  ValueProvider<Residue, Integer> residueNumber();	  
+		  ValueProvider<Residue, String> pdbResidueNumber();
+		  ValueProvider<Residue, String> residueType();
+		  ValueProvider<Residue, Double> asa();
+		  ValueProvider<Residue, Double> bsa();
+		  ValueProvider<Residue, Double> bsaPercentage();
+		  ValueProvider<Residue, Integer> region();
+		  ValueProvider<Residue, Double> entropyScore();
+	}
+	
+	private static final ResidueProperties props = GWT.create(ResidueProperties.class);
     
     private static final int ROW_HEIGHT = 22;
     private static final int PAGING_TOOL_BAR_HEIGHT = 27;
 	
-    private List<ColumnConfig<InterfaceResidueItemModel, ?>> residuesConfigs;
-    private ListStore<InterfaceResidueItemModel> residuesStore;
-    private ColumnModel<InterfaceResidueItemModel> residuesColumnModel;
-    private Grid<InterfaceResidueItemModel> residuesGrid;
+    private List<ColumnConfig<Residue, ?>> residuesConfigs;
+    private ListStore<Residue> residuesStore;
+    private ColumnModel<Residue> residuesColumnModel;
+    private Grid<Residue> residuesGrid;
 
     private ResiduePagingMemoryProxy proxy;
-    private PagingLoader<PagingLoadConfig, PagingLoadResult<InterfaceResidueItemModel>> loader;
+    private PagingLoader<PagingLoadConfig, PagingLoadResult<Residue>> loader;
     private PagingToolBar pagingToolbar;
     private boolean useBufferedView = false;
 
-    private List<InterfaceResidueItemModel> data;
+    private List<Residue> data;
 
     private int nrOfRows = 20;
 
-    public ResiduesPanel()
+    public ResiduesGridPanel()
     {
     	if(GXT.isIE8())
     	{
@@ -77,20 +98,17 @@ public class ResiduesPanel extends VerticalLayoutContainer
 
     	residuesConfigs = createColumnConfig();
 
-    	data = new ArrayList<InterfaceResidueItemModel>();
+    	data = new ArrayList<Residue>();
     	proxy = new ResiduePagingMemoryProxy(data);
     	
-    	//proxy.setComparator(new InterfaceResidueItemComparator());
-    	
-    	residuesStore = new ListStore<InterfaceResidueItemModel>(props.key());
-    	//residuesStore.setStoreSorter(new ResiduesPanelSorter());
+    	residuesStore = new ListStore<Residue>(props.key());
     	    	
-    	loader = new PagingLoader<PagingLoadConfig, PagingLoadResult<InterfaceResidueItemModel>>(proxy);
+    	loader = new PagingLoader<PagingLoadConfig, PagingLoadResult<Residue>>(proxy);
         loader.setRemoteSort(true);
-        loader.addLoadHandler(new LoadResultListStoreBinding<PagingLoadConfig, InterfaceResidueItemModel, PagingLoadResult<InterfaceResidueItemModel>>(residuesStore));
+        loader.addLoadHandler(new LoadResultListStoreBinding<PagingLoadConfig, Residue, PagingLoadResult<Residue>>(residuesStore));
     	//loader.setSortField("residueNumber");
 
-    	residuesColumnModel = new ColumnModel<InterfaceResidueItemModel>(residuesConfigs);
+    	residuesColumnModel = new ColumnModel<Residue>(residuesConfigs);
 
     	residuesGrid = createResiduesGrid();
     	this.add(residuesGrid, new VerticalLayoutData(1, 1));
@@ -108,7 +126,7 @@ public class ResiduesPanel extends VerticalLayoutContainer
     /**
      * Fills in with the general grid properties
      */
-    private void fillColumnProperties(ColumnConfig<InterfaceResidueItemModel,?> column, String type){
+    private void fillColumnProperties(ColumnConfig<Residue,?> column, String type){
     	column.setColumnHeaderClassName("eppic-default-font");
 		column.setWidth(Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("residues_"+type+"_width")));
 		column.setHeader(EscapedStringGenerator.generateSafeHtml(
@@ -120,47 +138,47 @@ public class ResiduesPanel extends VerticalLayoutContainer
      * Creates columns configurations for residues grid.
      * @return list of columns configurations for residues grid
      */
-    private List<ColumnConfig<InterfaceResidueItemModel,?>> createColumnConfig()
+    private List<ColumnConfig<Residue,?>> createColumnConfig()
     {
-    	List<ColumnConfig<InterfaceResidueItemModel,?>> configs = new ArrayList<ColumnConfig<InterfaceResidueItemModel, ?>>();
+    	List<ColumnConfig<Residue,?>> configs = new ArrayList<ColumnConfig<Residue, ?>>();
     	
-    	ColumnConfig<InterfaceResidueItemModel,Integer> residueNumberCol = 
-    			new ColumnConfig<InterfaceResidueItemModel, Integer>(props.residueNumber());
+    	ColumnConfig<Residue,Integer> residueNumberCol = 
+    			new ColumnConfig<Residue, Integer>(props.residueNumber());
     	fillColumnProperties(residueNumberCol, "residueNumber");
     	residueNumberCol.setAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
     	
-    	ColumnConfig<InterfaceResidueItemModel,String> pdbResidueNumberCol = 
-    			new ColumnConfig<InterfaceResidueItemModel, String>(props.pdbResidueNumber());
+    	ColumnConfig<Residue,String> pdbResidueNumberCol = 
+    			new ColumnConfig<Residue, String>(props.pdbResidueNumber());
     	fillColumnProperties(pdbResidueNumberCol, "pdbResidueNumber");
     	pdbResidueNumberCol.setAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
     	
-    	ColumnConfig<InterfaceResidueItemModel,String> residueTypeCol = 
-    			new ColumnConfig<InterfaceResidueItemModel, String>(props.residueType());
+    	ColumnConfig<Residue,String> residueTypeCol = 
+    			new ColumnConfig<Residue, String>(props.residueType());
         fillColumnProperties(residueTypeCol, "residueType");
     	residueTypeCol.setAlignment(HasHorizontalAlignment.ALIGN_CENTER);
     	
-    	ColumnConfig<InterfaceResidueItemModel,Float> asaCol = 
-    			new ColumnConfig<InterfaceResidueItemModel, Float>(props.asa());
+    	ColumnConfig<Residue, Double> asaCol = 
+    			new ColumnConfig<Residue, Double>(props.asa());
         fillColumnProperties(asaCol, "asa");
-    	asaCol.setCell(new TwoDecimalFloatCell());
+    	asaCol.setCell(new TwoDecimalDoubleCell());
     	asaCol.setAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
     	
-    	ColumnConfig<InterfaceResidueItemModel,Float> bsaCol = 
-    			new ColumnConfig<InterfaceResidueItemModel, Float>(props.bsa());
+    	ColumnConfig<Residue,Double> bsaCol = 
+    			new ColumnConfig<Residue, Double>(props.bsa());
         fillColumnProperties(bsaCol, "bsa");
-    	bsaCol.setCell(new TwoDecimalFloatCell());
+    	bsaCol.setCell(new TwoDecimalDoubleCell());
     	bsaCol.setAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
    
-    	ColumnConfig<InterfaceResidueItemModel,Float> bsaPercentageCol = 
-    			new ColumnConfig<InterfaceResidueItemModel, Float>(props.bsaPercentage());
+    	ColumnConfig<Residue,Double> bsaPercentageCol = 
+    			new ColumnConfig<Residue, Double>(props.bsaPercentage());
     	fillColumnProperties(bsaPercentageCol, "bsaPercentage");
-    	bsaPercentageCol.setCell(new TwoDecimalFloatCell());
+    	bsaPercentageCol.setCell(new TwoDecimalDoubleCell());
     	bsaPercentageCol.setAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
     	
-    	ColumnConfig<InterfaceResidueItemModel,Float> entropyScoreCol = 
-    			new ColumnConfig<InterfaceResidueItemModel, Float>(props.entropyScore());
+    	ColumnConfig<Residue,Double> entropyScoreCol = 
+    			new ColumnConfig<Residue, Double>(props.entropyScore());
     	fillColumnProperties(entropyScoreCol, "entropyScore");
-    	entropyScoreCol.setCell(new TwoDecimalFloatCell());
+    	entropyScoreCol.setCell(new TwoDecimalDoubleCell());
     	entropyScoreCol.setAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
     	
     	configs.add(residueNumberCol);
@@ -178,9 +196,9 @@ public class ResiduesPanel extends VerticalLayoutContainer
      * Generates grid used to store residues items.
      * @return residues grid
      */
-    private Grid<InterfaceResidueItemModel> createResiduesGrid()
+    private Grid<Residue> createResiduesGrid()
     {
-    	Grid<InterfaceResidueItemModel> residuesGrid = new Grid<InterfaceResidueItemModel>(residuesStore, residuesColumnModel);
+    	Grid<Residue> residuesGrid = new Grid<Residue>(residuesStore, residuesColumnModel);
     	
     	residuesGrid.setBorders(false);
     	residuesGrid.getView().setStripeRows(false);
@@ -194,29 +212,29 @@ public class ResiduesPanel extends VerticalLayoutContainer
 
     	if(useBufferedView)
     	{
-    		LiveGridView<InterfaceResidueItemModel> view = new LiveGridView<InterfaceResidueItemModel>();
+    		LiveGridView<Residue> view = new LiveGridView<Residue>();
     		view.setRowHeight(20);
     		residuesGrid.setView(view);
     	}
 
-    	residuesGrid.getView().setViewConfig(new GridViewConfig<InterfaceResidueItemModel>(){
+    	residuesGrid.getView().setViewConfig(new GridViewConfig<Residue>(){
     		@Override
-    		public String getRowStyle(InterfaceResidueItemModel model, int rowIndex) {
+    		public String getRowStyle(Residue model, int rowIndex) {
     			if (model != null)
     			{
-    				if (model.getAssignment() == InterfaceResidueType.SURFACE.getAssignment())
+    				if (model.getRegion() == ResidueType.SURFACE.getRegion())
     				{
     					return "eppic-grid-row-surface";
     				}
-    				else if(model.getAssignment() == InterfaceResidueType.CORE_EVOLUTIONARY.getAssignment())
+    				else if(model.getRegion() == ResidueType.CORE_EVOLUTIONARY.getRegion())
     				{
     					return "eppic-grid-row-core-evolutionary";
     				}
-    				else if(model.getAssignment() == InterfaceResidueType.CORE_GEOMETRY.getAssignment())
+    				else if(model.getRegion() == ResidueType.CORE_GEOMETRY.getRegion())
     				{
     					return "eppic-grid-row-core-geometry";
     				}
-    				else if(model.getAssignment() == InterfaceResidueType.RIM.getAssignment())
+    				else if(model.getRegion() == ResidueType.RIM.getRegion())
     				{
     					return "eppic-grid-row-rim";
     				}
@@ -231,8 +249,8 @@ public class ResiduesPanel extends VerticalLayoutContainer
 
 			@Override
 			public String getColStyle(
-					InterfaceResidueItemModel model,
-					ValueProvider<? super InterfaceResidueItemModel, ?> valueProvider,
+					Residue model,
+					ValueProvider<? super Residue, ?> valueProvider,
 					int rowIndex, int colIndex) {
 				return "";
 			}
@@ -245,26 +263,14 @@ public class ResiduesPanel extends VerticalLayoutContainer
      * Sets content of residues grid.
      * @param residueValues list of items to add to the grid
      */
-    public void fillResiduesGrid(List<InterfaceResidueItem> residueValues)
+    public void fillResiduesGrid(List<Residue> residueValues)
     {
     	residuesStore.clear();
 
-    	data = new ArrayList<InterfaceResidueItemModel>();
+    	data = new ArrayList<Residue>();
 
     	if (residueValues != null) {
-    		for (InterfaceResidueItem residueValue : residueValues) {
-    			InterfaceResidueItemModel model = new InterfaceResidueItemModel();
-    			model.setEntropyScore(residueValue.getEntropyScore());
-    			model.setStructure(residueValue.getStructure());
-    			model.setResidueNumber(residueValue.getResidueNumber());
-    			model.setPdbResidueNumber(residueValue.getPdbResidueNumber());
-    			model.setResidueType(residueValue.getResidueType());
-    			model.setAsa(residueValue.getAsa());
-    			model.setBsa(residueValue.getBsa());
-    			model.setBsaPercentage(residueValue.getBsaPercentage());
-    			model.setAssignment(residueValue.getAssignment());
-    			data.add(model);
-    		}
+    		data = residueValues;
     	}
     }
 
@@ -274,13 +280,13 @@ public class ResiduesPanel extends VerticalLayoutContainer
      */
     public void applyFilter(boolean isShowAll)
     {
-    	List<InterfaceResidueItemModel> dataToSet = new ArrayList<InterfaceResidueItemModel>();
-    	for(InterfaceResidueItemModel item : data)
+    	List<Residue> dataToSet = new ArrayList<Residue>();
+    	for(Residue item : data)
     	{
     		if((isShowAll) ||
-    				((item.getAssignment() == InterfaceResidueType.CORE_GEOMETRY.getAssignment()) ||
-    						(item.getAssignment() == InterfaceResidueType.CORE_EVOLUTIONARY.getAssignment()) ||
-    						(item.getAssignment() == InterfaceResidueType.RIM.getAssignment())))
+    				((item.getRegion() == ResidueType.CORE_GEOMETRY.getRegion()) ||
+    						(item.getRegion() == ResidueType.CORE_EVOLUTIONARY.getRegion()) ||
+    						(item.getRegion() == ResidueType.RIM.getRegion())))
     		{
     			dataToSet.add(item);
     		}

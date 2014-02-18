@@ -1,7 +1,7 @@
 package ch.systemsx.sybit.crkwebui.client.commons.events;
 
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowResultsDataHandler;
-import ch.systemsx.sybit.crkwebui.shared.model.PDBScoreItem;
+import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 
 import com.google.gwt.event.shared.GwtEvent;
 
@@ -16,9 +16,9 @@ public class ShowResultsDataEvent extends GwtEvent<ShowResultsDataHandler>
 	/**
 	 * Pdb score result item to display.
 	 */
-	private final PDBScoreItem pdbScoreItem;
+	private final PdbInfo pdbScoreItem;
 	
-	public ShowResultsDataEvent(PDBScoreItem pdbScoreItem)
+	public ShowResultsDataEvent(PdbInfo pdbScoreItem)
 	{
 		this.pdbScoreItem = pdbScoreItem;
 	}
@@ -39,7 +39,7 @@ public class ShowResultsDataEvent extends GwtEvent<ShowResultsDataHandler>
 	 * Retrieves pdb score results item to display.
 	 * @return retrieved pdb score item
 	 */
-	public PDBScoreItem getPdbScoreItem() {
+	public PdbInfo getPdbScoreItem() {
 		return pdbScoreItem;
 	}
 }

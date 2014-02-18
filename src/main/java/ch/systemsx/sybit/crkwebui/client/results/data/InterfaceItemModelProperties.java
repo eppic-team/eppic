@@ -2,7 +2,7 @@ package ch.systemsx.sybit.crkwebui.client.results.data;
 
 import java.util.List;
 
-import ch.systemsx.sybit.crkwebui.shared.model.WarningItem;
+import ch.systemsx.sybit.crkwebui.shared.model.InterfaceWarning;
 
 import com.google.gwt.editor.client.Editor.Path;
 import com.sencha.gxt.core.client.ValueProvider;
@@ -11,10 +11,10 @@ import com.sencha.gxt.data.shared.PropertyAccess;
 
 public interface InterfaceItemModelProperties extends PropertyAccess<InterfaceItemModel>  {
 	
-	  @Path("id")
+	  @Path("interfaceId")
 	  ModelKeyProvider<InterfaceItemModel> key();
 	 
-	  ValueProvider<InterfaceItemModel, Integer> id();
+	  ValueProvider<InterfaceItemModel, Integer> interfaceId();
 	  
 	  ValueProvider<InterfaceItemModel, Integer> clusterId();
 	  
@@ -36,9 +36,7 @@ public interface InterfaceItemModelProperties extends PropertyAccess<InterfaceIt
 	  
 	  ValueProvider<InterfaceItemModel, String> operatorType();
 	  
-	  ValueProvider<InterfaceItemModel, Boolean> isInfinite();
-	  
-	  ValueProvider<InterfaceItemModel, List<WarningItem>> warnings();
+	  ValueProvider<InterfaceItemModel, List<InterfaceWarning>> warnings();
 	  
 	  ValueProvider<InterfaceItemModel, String> thumbnailUrl();
 	  

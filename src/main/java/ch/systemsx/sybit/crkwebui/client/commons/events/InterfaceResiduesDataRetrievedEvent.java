@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.InterfaceResiduesDataRetrievedHandler;
-import ch.systemsx.sybit.crkwebui.shared.model.InterfaceResidueItem;
+import ch.systemsx.sybit.crkwebui.shared.model.Residue;
 
 import com.google.gwt.event.shared.GwtEvent;
 
@@ -19,9 +19,9 @@ public class InterfaceResiduesDataRetrievedEvent extends GwtEvent<InterfaceResid
 	/**
 	 * Retrieved interace residues data.
 	 */
-	private final HashMap<Integer, List<InterfaceResidueItem>> interfaceResidues;
+	private final HashMap<Integer, List<Residue>> interfaceResidues;
 	
-	public InterfaceResiduesDataRetrievedEvent(HashMap<Integer, List<InterfaceResidueItem>> interfaceResidues)
+	public InterfaceResiduesDataRetrievedEvent(HashMap<Integer, List<Residue>> interfaceResidues)
 	{
 		this.interfaceResidues = interfaceResidues;
 	}
@@ -42,7 +42,7 @@ public class InterfaceResiduesDataRetrievedEvent extends GwtEvent<InterfaceResid
 	 * Gets retrieved interface residues data.
 	 * @return retrieved interface residues data
 	 */
-	public HashMap<Integer, List<InterfaceResidueItem>> getInterfaceResidues() {
+	public HashMap<Integer, List<Residue>> getInterfaceResidues() {
 		return interfaceResidues;
 	}
 }

@@ -67,7 +67,7 @@ public class IdentifierHeaderPanel extends HorizontalLayoutContainer
 
     /**
 	 * sets the link in the Download Results 
-	 * @param PDBScoreItem
+	 * @param PdbInfo
 	 */
 	public void setDownloadResultsLink(String jobId){
 
@@ -78,7 +78,7 @@ public class IdentifierHeaderPanel extends HorizontalLayoutContainer
 	
 	/**
 	 * sets the link in the Download Results to empty value
-	 * @param PDBScoreItem
+	 * @param PdbInfo
 	 */
 	public void setEmptyDownloadResultsLink(){
 

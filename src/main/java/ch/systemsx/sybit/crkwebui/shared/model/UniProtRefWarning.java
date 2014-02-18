@@ -2,20 +2,24 @@ package ch.systemsx.sybit.crkwebui.shared.model;
 
 import java.io.Serializable;
 
-import eppic.model.InterfaceWarningDB;
+import eppic.model.UniProtRefWarningDB;
 
 /**
- * DTO class for warning item entry.
+ * DTO class for UniProt Ref Warning.
+ * @author AS
  */
-public class WarningItem implements Serializable 
+public class UniProtRefWarning implements Serializable 
 {
+	/**
+	 * 
+	 */
 	private static final long serialVersionUID = 1L;
 	
 	private int uid;
 	
 	private String text;
 	
-	public WarningItem() 
+	public UniProtRefWarning() 
 	{
 		
 	}
@@ -35,17 +39,18 @@ public class WarningItem implements Serializable
 	public String getText() {
 		return text;
 	}
-
+	
 	/**
 	 * Converts DB model item into DTO one.
-	 * @param warningItemDB model item to convert
+	 * @param uniProtRefWarningDB model item to convert
 	 * @return DTO representation of model item
 	 */
-	public static WarningItem create(InterfaceWarningDB warningItemDB)
+	public static UniProtRefWarning create(UniProtRefWarningDB uniProtRefWarningDB)
 	{
-		WarningItem warningItem = new WarningItem();
-		warningItem.setText(warningItemDB.getText());
-		warningItem.setUid(warningItemDB.getUid());
+		UniProtRefWarning warningItem = new UniProtRefWarning();
+		warningItem.setText(uniProtRefWarningDB.getText());
+		warningItem.setUid(uniProtRefWarningDB.getUid());
 		return warningItem;
 	}
+
 }
