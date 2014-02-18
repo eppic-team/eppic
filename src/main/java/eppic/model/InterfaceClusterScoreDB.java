@@ -8,7 +8,11 @@ public class InterfaceClusterScoreDB implements Serializable {
 	
 	private int uid;
 	
+	private int clusterId;
+	
 	private String call;
+	
+	private String callReason;
 	
 	private double score;	
 	private double confidence;
@@ -25,12 +29,28 @@ public class InterfaceClusterScoreDB implements Serializable {
 		this.uid = uid;
 	}
 
+	public int getClusterId() {
+		return clusterId;
+	}
+
+	public void setClusterId(int clusterId) {
+		this.clusterId = clusterId;
+	}
+
 	public String getCall() {
 		return call;
 	}
 
 	public void setCall(String call) {
 		this.call = call;
+	}
+
+	public String getCallReason() {
+		return callReason;
+	}
+
+	public void setCallReason(String callReason) {
+		this.callReason = callReason;
 	}
 
 	public double getScore() {

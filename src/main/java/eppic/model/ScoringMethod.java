@@ -11,12 +11,13 @@ package eppic.model;
  */
 public class ScoringMethod {
 
-	public static final String EPPIC_GEOMETRY 		= "eppic-geometry";		// was "Geometry"
-	public static final String EPPIC_CORERIM 		= "eppic-corerim";		// was "Entropy"
-	public static final String EPPIC_CORESURFACE 	= "eppic-coresurface";	// was "Z-scores"
+	public static final String EPPIC_GEOMETRY 		= "eppic-gm";	// was "Geometry"
+	public static final String EPPIC_CORERIM 		= "eppic-cr";	// was "Entropy"
+	public static final String EPPIC_CORESURFACE 	= "eppic-cs";	// was "Z-scores"
 	public static final String EPPIC_FINAL 			= "eppic"; 
 	
-	public static final String PISA 				= "pisa";
+	// NOTE: these 3 methods have to match the ones in enum owl.core.structureBioUnitAssignmentType
+	public static final String PISA 				= "pisa";				 
 	public static final String AUTHORS 				= "authors";
 	public static final String PQS 					= "pqs";
 	
