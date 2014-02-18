@@ -68,7 +68,7 @@ public class DataModelAdaptor {
 		this.params = params;
 		pdbInfo.setPdbCode(params.getPdbCode());
 		runParameters = new RunParametersDB();
-		runParameters.setHomologsCutoff(params.getMinNumSeqs());
+		runParameters.setMinNumSeqsCutoff(params.getMinNumSeqs());
 		runParameters.setHomSoftIdCutoff(params.getHomSoftIdCutoff());
 		runParameters.setHomHardIdCutoff(params.getHomHardIdCutoff());
 		runParameters.setQueryCovCutoff(params.getQueryCoverageCutoff());
