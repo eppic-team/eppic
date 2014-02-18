@@ -267,7 +267,7 @@ public class DataModelAdaptor {
 			InterfaceDB ii = pdbInfo.getInterface(i+1);
 			InterfaceScoreDB is = new InterfaceScoreDB();
 			ii.addInterfaceScore(is);
-			is.setInterface(ii);
+			is.setInterfaceItem(ii);
 			is.setInterfaceId(gps.get(i).getInterface().getId());
 			CallType call = gps.get(i).getCall();
 			is.setCall(call.getName());
@@ -372,7 +372,7 @@ public class DataModelAdaptor {
 			EvolCoreSurfacePredictor ezp = iecl.getEvolInterfZPredictor(i);
 			InterfaceScoreDB isCS = new InterfaceScoreDB();
 			ii.addInterfaceScore(isCS);
-			isCS.setInterface(ii);
+			isCS.setInterfaceItem(ii);
 			isCS.setInterfaceId(iec.getInterface().getId());
 			isCS.setMethod(ScoringMethod.EPPIC_CORESURFACE);
 
@@ -400,7 +400,7 @@ public class DataModelAdaptor {
 			EvolCoreRimPredictor ercp = iecl.getEvolRimCorePredictor(i);
 
 			InterfaceScoreDB isCR = new InterfaceScoreDB();
-			isCR.setInterface(ii);
+			isCR.setInterfaceItem(ii);
 			ii.addInterfaceScore(isCR);
 			isCR.setInterfaceId(iec.getInterface().getId());
 			isCR.setMethod(ScoringMethod.EPPIC_CORERIM);
@@ -454,7 +454,7 @@ public class DataModelAdaptor {
 			is.setCall(cps.get(i).getCall().getName());
 			is.setCallReason(cps.get(i).getCallReason());
 			is.setConfidence(CONFIDENCE_NOT_AVAILABLE);
-			is.setInterface(ii);
+			is.setInterfaceItem(ii);
 			is.setInterfaceId(ii.getInterfaceId());
 			is.setPdbCode(ii.getPdbCode());			
 			
@@ -498,7 +498,7 @@ public class DataModelAdaptor {
 		addResidueDetailsOfPartner(iril, interf, 1);
 
 		for(ResidueDB iri : iril) {
-			iri.setInterface(ii);
+			iri.setInterfaceItem(ii);
 		}
 	}
 	
@@ -606,7 +606,7 @@ public class DataModelAdaptor {
 				for (String warning : interfId2Warnings.get(ii.getInterfaceId())) {
 					InterfaceWarningDB warningItem = new InterfaceWarningDB();
 					warningItem.setText(warning);
-					warningItem.setInterface(ii);
+					warningItem.setInterfaceItem(ii);
 					ii.getInterfaceWarnings().add(warningItem);
 				}
 			}

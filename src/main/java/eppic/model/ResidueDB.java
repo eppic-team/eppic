@@ -98,11 +98,11 @@ public class ResidueDB implements Serializable {
 		return side;
 	}
 
-	public void setInterface (InterfaceDB interfaceItem) {
+	public void setInterfaceItem (InterfaceDB interfaceItem) {
 		this.interfaceItem = interfaceItem;
 	}
 
-	public InterfaceDB getInterface() {
+	public InterfaceDB getInterfaceItem() {
 		return interfaceItem;
 	}
 

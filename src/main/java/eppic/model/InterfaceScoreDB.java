@@ -106,11 +106,11 @@ public class InterfaceScoreDB implements Serializable {
 		this.callReason = callReason;
 	}
 
-	public void setInterface(InterfaceDB interfaceItem) {
+	public void setInterfaceItem(InterfaceDB interfaceItem) {
 		this.interfaceItem = interfaceItem;
 	}
 
-	public InterfaceDB getInterface() {
+	public InterfaceDB getInterfaceItem() {
 		return interfaceItem;
 	}
 	
