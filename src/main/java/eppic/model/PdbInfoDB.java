@@ -21,6 +21,14 @@ public class PdbInfoDB implements Serializable {
 	
 	private String pdbCode;
 	
+	// unit cell parameters
+	private double cellA;
+	private double cellB;
+	private double cellC;
+	private double cellAlpha;
+	private double cellBeta;
+	private double cellGamma;
+	
 	private RunParametersDB runParameters;
 	
 	private List<ChainClusterDB> chainClusters;
@@ -193,6 +201,54 @@ public class PdbInfoDB implements Serializable {
 
 	public void setExpMethod(String expMethod) {
 		this.expMethod = expMethod;
+	}
+
+	public double getCellA() {
+		return cellA;
+	}
+
+	public void setCellA(double cellA) {
+		this.cellA = cellA;
+	}
+
+	public double getCellB() {
+		return cellB;
+	}
+
+	public void setCellB(double cellB) {
+		this.cellB = cellB;
+	}
+
+	public double getCellC() {
+		return cellC;
+	}
+
+	public void setCellC(double cellC) {
+		this.cellC = cellC;
+	}
+
+	public double getCellAlpha() {
+		return cellAlpha;
+	}
+
+	public void setCellAlpha(double cellAlpha) {
+		this.cellAlpha = cellAlpha;
+	}
+
+	public double getCellBeta() {
+		return cellBeta;
+	}
+
+	public void setCellBeta(double cellBeta) {
+		this.cellBeta = cellBeta;
+	}
+
+	public double getCellGamma() {
+		return cellGamma;
+	}
+
+	public void setCellGamma(double cellGamma) {
+		this.cellGamma = cellGamma;
 	}
 	
 	

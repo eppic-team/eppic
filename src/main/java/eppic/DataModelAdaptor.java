@@ -32,6 +32,7 @@ import owl.core.sequence.Homolog;
 import owl.core.structure.ChainCluster;
 import owl.core.structure.ChainInterface;
 import owl.core.structure.ChainInterfaceList;
+import owl.core.structure.CrystalCell;
 import owl.core.structure.InterfaceCluster;
 import owl.core.structure.PdbAsymUnit;
 import owl.core.structure.PdbBioUnit;
@@ -95,6 +96,15 @@ public class DataModelAdaptor {
 		pdbInfo.setRfreeValue(pdb.getRfree());
 		pdbInfo.setExpMethod(pdb.getExpMethod());
 		
+		CrystalCell cc = pdb.getCrystalCell();
+		if (cc!=null) {
+			pdbInfo.setCellA(cc.getA());
+			pdbInfo.setCellB(cc.getB());
+			pdbInfo.setCellC(cc.getC());
+			pdbInfo.setCellAlpha(cc.getAlpha());
+			pdbInfo.setCellBeta(cc.getBeta());
+			pdbInfo.setCellGamma(cc.getGamma());			
+		}
 	}
 	
 	public void setInterfaces(ChainInterfaceList interfaces, PdbBioUnitList bioUnitList) {
@@ -274,7 +284,8 @@ public class DataModelAdaptor {
 			is.setPdbCode(ii.getPdbCode());
 			is.setConfidence(CONFIDENCE_NOT_AVAILABLE);
 			is.setScore(gps.get(i).getScore());
-			// TODO score1 and score2 not available since GeometryPredictor doesn't have both sides, what should we do?
+			is.setScore1(gps.get(i).getScore1());
+			is.setScore2(gps.get(i).getScore2());
 			
 			if(gps.get(i).getWarnings() != null) {
 				
@@ -338,7 +349,7 @@ public class DataModelAdaptor {
 					homologDB.setUniProtId(hom.getUniId());
 					homologDB.setQueryStart(hom.getBlastHsp().getQueryStart());
 					homologDB.setQueryEnd(hom.getBlastHsp().getQueryEnd());
-					homologDB.setAlignedSeq(cec.getHomologs().getAlignment().getAlignedSequence(hom.getUniId()));
+					homologDB.setAlignedSeq(cec.getAlignment().getAlignedSequence(hom.getIdentifier()));
 					if (hom.getUnirefEntry().hasTaxons()) {
 						homologDB.setFirstTaxon(hom.getUnirefEntry().getFirstTaxon());
 						homologDB.setLastTaxon(hom.getUnirefEntry().getLastTaxon());

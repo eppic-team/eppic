@@ -38,6 +38,9 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 	
 	private int size;
 	
+	private int size1;
+	private int size2;
+	
 	private boolean usePdbResSer;
 	
 	public GeometryPredictor(ChainInterface interf) {
@@ -48,8 +51,8 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 	@Override
 	public void computeScores() {
 		interf.calcRimAndCore(bsaToAsaCutoff, minAsaForSurface);
-		int size1 = interf.getFirstRimCore().getCoreSize();
-		int size2 = interf.getSecondRimCore().getCoreSize();
+		size1 = interf.getFirstRimCore().getCoreSize();
+		size2 = interf.getSecondRimCore().getCoreSize();
 		size = size1+size2;	
 	}
 	
@@ -169,6 +172,14 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 	@Override
 	public double getScore() {
 		return (double)size;
+	}
+	
+	public double getScore1() {
+		return (double)size1;
+	}
+	
+	public double getScore2() {
+		return (double)size2;
 	}
 	
 	public Map<String,Double> getScoreDetails() {
