@@ -178,6 +178,7 @@ public class DataModelAdaptor {
 				icsDB.setInterfaceCluster(icDB);
 				icDB.addInterfaceClusterScore(icsDB);
 				
+				icDB.setAssembly(assembly);
 			}
 		}
 
@@ -328,7 +329,8 @@ public class DataModelAdaptor {
 				chainClusterDB.setAliMarkupLine(String.valueOf(cec.getPdb2uniprotAln().getMarkupLine()));
 				chainClusterDB.setRefAlignedSeq(cec.getPdb2uniprotAln().getAlignedSequences()[1]);
 				chainClusterDB.setSeqIdCutoff(cec.getIdCutoff());
-				chainClusterDB.setClusteringSeqId(cec.getUsedClusteringPercentId());
+				chainClusterDB.setClusteringSeqId(cec.getUsedClusteringPercentId()/100.0);
+				chainClusterDB.setPdbCode(pdbInfo.getPdbCode());
 				
 				List<HomologDB> homologDBs = new ArrayList<HomologDB>();
 				for (Homolog hom:cec.getHomologs().getFilteredSubset()) {
@@ -336,12 +338,13 @@ public class DataModelAdaptor {
 					homologDB.setUniProtId(hom.getUniId());
 					homologDB.setQueryStart(hom.getBlastHsp().getQueryStart());
 					homologDB.setQueryEnd(hom.getBlastHsp().getQueryEnd());
+					homologDB.setAlignedSeq(cec.getHomologs().getAlignment().getAlignedSequence(hom.getUniId()));
 					if (hom.getUnirefEntry().hasTaxons()) {
 						homologDB.setFirstTaxon(hom.getUnirefEntry().getFirstTaxon());
 						homologDB.setLastTaxon(hom.getUnirefEntry().getLastTaxon());
 					}
-					homologDB.setSeqId(hom.getPercentIdentity());
-					homologDB.setQueryCoverage(hom.getQueryCoverage()*100.0);					
+					homologDB.setSeqId(hom.getPercentIdentity()/100.0);
+					homologDB.setQueryCoverage(hom.getQueryCoverage());					
 					
 					homologDBs.add(homologDB);
 					
@@ -439,6 +442,7 @@ public class DataModelAdaptor {
 			ics.setScore(SCORE_NOT_AVAILABLE);
 			ics.setConfidence(CONFIDENCE_NOT_AVAILABLE);
 			ics.setPdbCode(pdbInfo.getPdbCode());
+			ics.setClusterId(ic.getClusterId());
 
 			// setting relations child/parent
 			ics.setInterfaceCluster(ic); 
