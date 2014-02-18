@@ -104,11 +104,14 @@ public class DataModelAdaptor {
 		List<InterfaceClusterDB> icDBs = new ArrayList<InterfaceClusterDB>();
 		for (InterfaceCluster ic:interfaceClusters) {
 			InterfaceClusterDB icDB = new InterfaceClusterDB();
-			icDB.setClusterId(ic.getId());
-			
+			icDB.setClusterId(ic.getId());			
 			icDB.setPdbCode(pdbInfo.getPdbCode());
-			icDBs.add(icDB);
+			icDB.setPdbInfo(pdbInfo);
+			
 			List<InterfaceDB> iDBs = new ArrayList<InterfaceDB>();
+			
+			// setting relations parent/child
+			icDBs.add(icDB);
 			icDB.setInterfaces(iDBs);
 			
 			
@@ -127,8 +130,8 @@ public class DataModelAdaptor {
 				
 				interfaceDB.setPdbCode(pdbInfo.getPdbCode());
 				
-				iDBs.add(interfaceDB);
-				
+				// setting relations parent/child
+				iDBs.add(interfaceDB);				
 				interfaceDB.setInterfaceCluster(icDB);
 				
 				interfId2Warnings.put(interf.getId(),new HashSet<String>());
@@ -137,17 +140,22 @@ public class DataModelAdaptor {
 		pdbInfo.setInterfaceClusters(icDBs);
 		
 		
-		// biounits parsed from PDB
+		// assemblies (biounits) parsed from PDB
+		
+		// NOTE that getInterfaceClusterMatches removes duplicate assignments (when several biounits refer to same cluster)
 		TreeMap<Integer, List<Integer>> matchIds = bioUnitList.getInterfaceClusterMatches(interfaces);
 		for(int bioUnitId:matchIds.keySet()){
 			PdbBioUnit unit = bioUnitList.get(bioUnitId);
 			
-			
 			AssemblyDB assembly = new AssemblyDB();			
 			assembly.setMethod(unit.getType().getType());
 			assembly.setMmSize(unit.getSize());
-			assembly.setPdbCode(pdbInfo.getPdbCode());
+			assembly.setPdbCode(pdbInfo.getPdbCode());			
+			assembly.setConfidence(CONFIDENCE_NOT_AVAILABLE);
+			
+			// setting relations parent/child
 			assembly.setPdbInfo(pdbInfo);
+			pdbInfo.addAssembly(assembly);
 
 			List<Integer> memberClusterIds = matchIds.get(bioUnitId);
 			
@@ -156,34 +164,23 @@ public class DataModelAdaptor {
 			
 			for (int clusterId:memberClusterIds) {
 				InterfaceClusterDB icDB = pdbInfo.getInterfaceCluster(clusterId);
-				memberClustersDB.add(icDB);
+				memberClustersDB.add(icDB);				
 				
 				InterfaceClusterScoreDB icsDB = new InterfaceClusterScoreDB();
 				icsDB.setScore(SCORE_NOT_AVAILABLE);
 				icsDB.setCall(CallType.BIO.getName());
 				icsDB.setConfidence(CONFIDENCE_NOT_AVAILABLE);
-				icsDB.setMethod(unit.getType().getType());
-				icsDB.setInterfaceCluster(icDB);
+				icsDB.setMethod(unit.getType().getType());				
+				icsDB.setClusterId(clusterId);
+				icsDB.setPdbCode(pdbInfo.getPdbCode());
 				
+				// setting relations parent/child
+				icsDB.setInterfaceCluster(icDB);
+				icDB.addInterfaceClusterScore(icsDB);
 				
 			}
 		}
 
-
-	}
-	
-	public void setPdbBioUnits(PdbBioUnitList pdbBioUnitList) {
-		
-		for(PdbBioUnit unit:pdbBioUnitList){
-			AssemblyDB unitDb = new AssemblyDB();
-			unitDb.setMmSize(unit.getSize());
-			unitDb.setMethod(unit.getType().getType());
-			
-			unitDb.setPdbInfo(pdbInfo);
-			
-			pdbInfo.addAssembly(unitDb);
-		}
-		
 	}
 	
 	public void writeJmolScriptFile(ChainInterface interf, double caCutoff, double minAsaForSurface, PymolRunner pr, File dir, String prefix, boolean usePdbResSer) 
@@ -294,7 +291,7 @@ public class DataModelAdaptor {
 	
 	public void add(InterfaceEvolContextList iecl) {
 		
-		List<ChainClusterDB> homInfos = new ArrayList<ChainClusterDB>();
+		List<ChainClusterDB> chainClusterDBs = new ArrayList<ChainClusterDB>();
 		
 		ChainEvolContextList cecl = iecl.getChainEvolContextList();
 		for (ChainEvolContext cec:cecl.getAllChainEvolContext()) {
@@ -344,19 +341,22 @@ public class DataModelAdaptor {
 						homologDB.setLastTaxon(hom.getUnirefEntry().getLastTaxon());
 					}
 					homologDB.setSeqId(hom.getPercentIdentity());
-					homologDB.setQueryCoverage(hom.getQueryCoverage()*100.0);
-					homologDB.setChainCluster(chainClusterDB);
+					homologDB.setQueryCoverage(hom.getQueryCoverage()*100.0);					
+					
 					homologDBs.add(homologDB);
+					
+					homologDB.setChainCluster(chainClusterDB);
+					
 				}
 				
 				chainClusterDB.setHomologs(homologDBs);
 			} 
 
 			chainClusterDB.setPdbInfo(pdbInfo);
-			homInfos.add(chainClusterDB);	
+			chainClusterDBs.add(chainClusterDB);	
 		}
 		
-		pdbInfo.setChainClusters(homInfos);
+		pdbInfo.setChainClusters(chainClusterDBs);
 		
 
 		for (int i=0;i<iecl.size();i++) {
@@ -438,6 +438,9 @@ public class DataModelAdaptor {
 			ics.setCall(CallType.NO_PREDICTION.getName());
 			ics.setScore(SCORE_NOT_AVAILABLE);
 			ics.setConfidence(CONFIDENCE_NOT_AVAILABLE);
+			ics.setPdbCode(pdbInfo.getPdbCode());
+
+			// setting relations child/parent
 			ics.setInterfaceCluster(ic); 
 			ic.addInterfaceClusterScore(ics);
 		}
@@ -533,9 +536,17 @@ public class DataModelAdaptor {
 					assignment = ResidueDB.SURFACE;
 				}
 				
-				ResidueDB iri = new ResidueDB(residue.getSerial(),residue.getPdbSerial(),resType,asa,bsa,assignment,-1.0);
+				ResidueDB iri = new ResidueDB();
+				iri.setResidueNumber(residue.getSerial());
+				iri.setPdbResidueNumber(residue.getPdbSerial());
+				iri.setResidueType(resType);
+				iri.setAsa(asa);
+				iri.setBsa(bsa);
+				iri.setRegion(assignment);
+				iri.setEntropyScore(-1.0);
 				iri.setSide(molecId+1); // structure ids are 1 and 2 while molecId are 0 and 1
 
+				iri.setInterfaceItem(pdbInfo.getInterface(interf.getId()));
 				iril.add(iri);
 			}
 		}

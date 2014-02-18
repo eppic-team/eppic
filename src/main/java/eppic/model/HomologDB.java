@@ -24,26 +24,6 @@ public class HomologDB implements Serializable {
 		
 	}
 	
-	public HomologDB(int uid,
-						 String uniProtId,
-						 double seqId,
-						 double queryCoverage,
-						 String firstTaxon,
-						 String lastTaxon,
-						 int queryStart,
-						 int queryEnd) {
-		
-		this.uid = uid;
-		this.uniProtId = uniProtId;
-		this.seqId = seqId;
-		this.queryCoverage = queryCoverage;
-		this.firstTaxon = firstTaxon;
-		this.lastTaxon = lastTaxon;
-		this.queryStart = queryStart;
-		this.queryEnd = queryEnd;
-		
-	}
-
 	public String getUniProtId() {
 		return uniProtId;
 	}

@@ -43,39 +43,6 @@ public class ChainClusterDB implements Serializable {
 		
 	}
 	
-	public ChainClusterDB(int uid,
-							  String repChain,
-							  String memberChains,
-							  String refUniProtId, 
-							  int numHomologs,
-							  int refUniProtStart,
-							  int refUniProtEnd,
-							  String pdbAlignedSeq,
-							  String refAlignedSeq,
-							  String aliMarkupLine,
-							  boolean hasUniProtRef, 
-							  List<UniProtRefWarningDB> uniProtRefWarnings,
-							  double seqIdCutoff,
-							  double clusteringSeqId,
-							  List<HomologDB> homologs)	{
-		
-		this.uid = uid;
-		this.repChain = repChain;
-		this.memberChains = memberChains;
-		this.refUniProtId = refUniProtId;
-		this.numHomologs = numHomologs;
-		this.refUniProtStart = refUniProtStart;
-		this.refUniProtEnd = refUniProtEnd;
-		this.pdbAlignedSeq = pdbAlignedSeq;
-		this.refAlignedSeq = refAlignedSeq;
-		this.aliMarkupLine = aliMarkupLine;
-		this.hasUniProtRef = hasUniProtRef;
-		this.uniProtRefWarnings = uniProtRefWarnings;
-		this.seqIdCutoff = seqIdCutoff;
-		this.clusteringSeqId = clusteringSeqId;
-		this.homologs = homologs;
-	}
-	
 	public void setPdbInfo(PdbInfoDB pdbInfo) {
 		this.pdbInfo = pdbInfo;
 	}

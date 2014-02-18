@@ -64,7 +64,7 @@ public class Main {
 	private File stepsLogFile;
 	private int stepCount;
 	
-	private DataModelAdaptor wuiAdaptor;
+	private DataModelAdaptor modelAdaptor;
 		
 	public Main() {
 		this.params = new EppicParams();
@@ -172,11 +172,9 @@ public class Main {
 		pdb.removeHatoms();
 		
 		// for the webui
-		wuiAdaptor = new DataModelAdaptor();
-		wuiAdaptor.setParams(params);
-		wuiAdaptor.setPdbMetadata(pdb);
-		//add biounit details to the db
-		wuiAdaptor.setPdbBioUnits(pdb.getPdbBioUnitList());
+		modelAdaptor = new DataModelAdaptor();
+		modelAdaptor.setParams(params);
+		modelAdaptor.setPdbMetadata(pdb);
 		
 		
 	}
@@ -315,9 +313,9 @@ public class Main {
 			scoreGeomPS.close();
 						
 			// for the webui
-			wuiAdaptor.setInterfaces(interfaces, this.pdb.getPdbBioUnitList());
-			wuiAdaptor.setGeometryScores(gps);
-			wuiAdaptor.addResidueDetails(interfaces);
+			modelAdaptor.setInterfaces(interfaces, this.pdb.getPdbBioUnitList());
+			modelAdaptor.setGeometryScores(gps);
+			modelAdaptor.addResidueDetails(interfaces);
 		} catch (IOException e) {
 			throw new EppicException(e, "Couldn't write interface geometry scores file. "+e.getMessage(),true);
 		}
@@ -463,7 +461,7 @@ public class Main {
 						params.getBaseName()+"."+interf.getId(), 
 						params.isUsePdbResSer());
 				LOGGER.info("Generated PyMOL files for interface "+interf.getId());
-				wuiAdaptor.writeJmolScriptFile(interf, params.getCAcutoffForGeom(), params.getMinAsaForSurface(), pr, 
+				modelAdaptor.writeJmolScriptFile(interf, params.getCAcutoffForGeom(), params.getMinAsaForSurface(), pr, 
 						params.getOutDir(), params.getBaseName(), params.isUsePdbResSer());
 			}
 
@@ -661,7 +659,7 @@ public class Main {
 		// a) getting the uniprot ids corresponding to the query (the pdb sequence)
 		writeStep("Finding Homologs and Calculating Entropies");		
 		cecs.retrieveQueryData(params);
-		wuiAdaptor.getRunParametersItem().setUniProtVersion(cecs.getUniprotVer());
+		modelAdaptor.getRunParametersItem().setUniProtVersion(cecs.getUniprotVer());
 		
 		// b) getting the homologs and sequence data and filtering it
 		cecs.retrieveHomologs(params);
@@ -706,7 +704,7 @@ public class Main {
 			iecList.scoreZscore();
 
 			// note this adds also the entropies to the residue details
-			wuiAdaptor.add(iecList);
+			modelAdaptor.add(iecList);
 				
 		}
 
@@ -732,7 +730,7 @@ public class Main {
 			}
 			scoreCombPS.close();
 
-			wuiAdaptor.setCombinedPredictors(cps);
+			modelAdaptor.setCombinedPredictors(cps);
 
 		} catch (IOException e) {
 			throw new EppicException(e,"Couldn't write final combined scores file. "+e.getMessage(),true);
@@ -833,8 +831,8 @@ public class Main {
 
 			if (crkMain.params.isGenerateWuiSerializedFile()) {
 				// 7 writing out the serialized file for web ui
-				crkMain.wuiAdaptor.addInterfaceWarnings(); // first we call this method to add all the cached warnings
-				crkMain.wuiAdaptor.writeSerializedModelFile(crkMain.params.getOutputFile(".webui.dat"));
+				crkMain.modelAdaptor.addInterfaceWarnings(); // first we call this method to add all the cached warnings
+				crkMain.modelAdaptor.writeSerializedModelFile(crkMain.params.getOutputFile(".webui.dat"));
 
 				// finally we write a signal file for the wui to know that job is finished
 				crkMain.writeFinishedFile();

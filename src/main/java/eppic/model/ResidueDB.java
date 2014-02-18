@@ -26,18 +26,6 @@ public class ResidueDB implements Serializable {
 
 	private InterfaceDB interfaceItem;
 	
-	public ResidueDB(int residueNumber, String pdbResidueNumber, String residueType, 
-			double asa, double bsa, int assignment, double entropyScore) {
-		
-		this.residueNumber = residueNumber;
-		this.pdbResidueNumber = pdbResidueNumber;
-		this.residueType = residueType;
-		this.asa = asa;
-		this.bsa = bsa;
-		this.region = assignment;
-		this.setEntropyScore(entropyScore);
-	}
-	
 	public ResidueDB() {
 		
 	}

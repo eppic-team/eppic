@@ -8,6 +8,7 @@ public class InterfaceClusterScoreDB implements Serializable {
 	
 	private int uid;
 	
+	private String pdbCode;
 	private int clusterId;
 	
 	private String call;
@@ -27,6 +28,14 @@ public class InterfaceClusterScoreDB implements Serializable {
 
 	public void setUid(int uid) {
 		this.uid = uid;
+	}
+
+	public String getPdbCode() {
+		return pdbCode;
+	}
+
+	public void setPdbCode(String pdbCode) {
+		this.pdbCode = pdbCode;
 	}
 
 	public int getClusterId() {

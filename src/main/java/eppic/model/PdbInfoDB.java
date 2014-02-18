@@ -32,7 +32,6 @@ public class PdbInfoDB implements Serializable {
 	private JobDB job;
 	
 	public PdbInfoDB() {
-		chainClusters = new ArrayList<ChainClusterDB>();
 		assemblies = new ArrayList<AssemblyDB>();
 	}
 	
