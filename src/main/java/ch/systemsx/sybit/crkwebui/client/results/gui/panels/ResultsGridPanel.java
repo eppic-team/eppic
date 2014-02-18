@@ -72,6 +72,8 @@ import com.sencha.gxt.data.shared.ModelKeyProvider;
 import com.sencha.gxt.data.shared.SortDir;
 import com.sencha.gxt.data.shared.Store.StoreSortInfo;
 
+import eppic.model.ScoringMethod;
+
 public class ResultsGridPanel extends VerticalLayoutContainer
 {
 	private VerticalLayoutContainer panelContainer;
@@ -170,9 +172,9 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 		configs.add(getAreaColumn());
 		configs.add(getOperatorColumn());
 		configs.add(getSizesColumn());
-		configs.add(getMethodsColumn(props.geometryCall(),"Geometry"));
-		configs.add(getMethodsColumn(props.coreRimCall(),"Entropy"));
-		configs.add(getMethodsColumn(props.coreSurfaceCall(),"Z-scores"));
+		configs.add(getMethodsColumn(props.geometryCall(),ScoringMethod.EPPIC_GEOMETRY));
+		configs.add(getMethodsColumn(props.coreRimCall(),ScoringMethod.EPPIC_CORERIM));
+		configs.add(getMethodsColumn(props.coreSurfaceCall(),ScoringMethod.EPPIC_CORESURFACE));
 		configs.add(getFinalCallColumn());
 		configs.add(getDetailsColumn());
 		warningsColumn = getWarningsColumn();
@@ -400,23 +402,25 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 
 				for(InterfaceScore interfaceScore : interfaceItem.getInterfaceScores())
 				{
-					if(interfaceScore.getMethod().equals("Geometry"))
+					if(interfaceScore.getMethod().equals(ScoringMethod.EPPIC_GEOMETRY))
 					{
+						String size1 = String.valueOf(Math.round(interfaceScore.getScore1()));
+						String size2 = String.valueOf(Math.round(interfaceScore.getScore2()));
 						model.setGeometryCall(interfaceScore.getCallName());
-						model.setSizes(String.valueOf(interfaceScore.getScore1()) + " + " + String.valueOf(interfaceScore.getScore2()));
+						model.setSizes(size1 + " + " + size2);
 					}
 
-					if(interfaceScore.getMethod().equals("Entropy"))
+					if(interfaceScore.getMethod().equals(ScoringMethod.EPPIC_CORERIM))
 					{
 						model.setCoreRimCall(interfaceScore.getCallName());
 					}
 
-					if(interfaceScore.getMethod().equals("Z-scores"))
+					if(interfaceScore.getMethod().equals(ScoringMethod.EPPIC_CORESURFACE))
 					{
 						model.setCoreSurfaceCall(interfaceScore.getCallName());
 					}
 					
-					if(interfaceScore.getMethod().equals("eppic"))
+					if(interfaceScore.getMethod().equals(ScoringMethod.EPPIC_FINAL))
 					{
 						model.setFinalCallName(interfaceScore.getCallName());
 					}

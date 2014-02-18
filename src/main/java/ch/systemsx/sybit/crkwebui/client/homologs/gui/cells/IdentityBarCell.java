@@ -106,7 +106,7 @@ public class IdentityBarCell extends ResizeCell<HomologIdentityData> {
 		int matchLeftMargin = Math.round((100*(data.getQueryStart()-1))/data.getQueryLength());
 		int matchWidth = Math.round((100*(data.getQueryEnd()-data.getQueryStart()))/data.getQueryLength());
 		
-		String color = IdentityColorPicker.getColor(data.getSeqIdToQuery()/100.0);
+		String color = IdentityColorPicker.getColor(data.getSeqIdToQuery());
 
 		String draw = 
 						"<div style='width=100%; height=100%;'>"
@@ -126,7 +126,7 @@ public class IdentityBarCell extends ResizeCell<HomologIdentityData> {
 						+ 			  "display:inline-block; text-align:center; vertical-align:middle; "
 						+ 			  "width="+ (100-options.getBarWidthPercent()) +"%; "
 						+             "height=100%;'>"
-						+ 		Math.round(data.getSeqIdToQuery()) + "% "
+						+ 		Math.round(data.getSeqIdToQuery()*100) + "% "
 						+ "</div>"
 						+"</div>";
 		

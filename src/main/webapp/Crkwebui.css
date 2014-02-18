@@ -337,10 +337,14 @@
 	color: #434350;
 }
 
+.eppic-residues-summary-table{
+	margin-top: 10px;
+	margin-left: 20px;
+}
+
 .eppic-residues-summary-table td {
-	text-align: center;
 	vertical-align: top;
-	padding-right: 5px;
+	padding-right: 15px;
 }
 
 .eppic-info-panel {

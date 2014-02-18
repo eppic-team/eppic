@@ -241,7 +241,9 @@ public class PdbInfo implements Serializable, ProcessingData
 		
 		if(this.getInterfaces() == null) return null;
 		
-		return getInterfaces().get(interfaceId - 1);
+		if(interfaceId > 0)
+			return getInterfaces().get(interfaceId - 1);
+		else return null;
 	}
 	
 

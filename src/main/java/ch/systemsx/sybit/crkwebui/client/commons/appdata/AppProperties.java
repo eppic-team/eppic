@@ -152,8 +152,6 @@ public interface AppProperties extends Constants
 	String interfaces_residues_combo_rimcore();
 	String interfaces_residues_combo_title();
 	
-	String interfaces_residues_summary_heading();
-	
 	String interfaces_residues_summary_corerim_heading();
 	String interfaces_residues_summary_corerim_avgcore();
 	String interfaces_residues_summary_corerim_avgcore_hint();

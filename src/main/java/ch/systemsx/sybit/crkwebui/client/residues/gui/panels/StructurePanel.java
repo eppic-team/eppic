@@ -29,7 +29,7 @@ public class StructurePanel extends FramedPanel
 		mainContainer.setScrollMode(ScrollMode.AUTOX);
 		
 		residuesSummaryPanel = new ResiduesSummaryPanel(structureNr);
-		residuesSummaryPanel.setHeight(80);
+		residuesSummaryPanel.setHeight(70);
 
 		mainContainer.add(residuesSummaryPanel, new VerticalLayoutData(-1, -1, new Margins(0)));
 		
