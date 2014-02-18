@@ -21,7 +21,7 @@ public class InterfaceScoreDB implements Serializable {
 	
 	private double confidence;
 	
-	private String call;
+	private String callName;
 	private String callReason;
 	
 	private InterfaceDB interfaceItem;
@@ -90,12 +90,12 @@ public class InterfaceScoreDB implements Serializable {
 		return interfaceId;
 	}
 
-	public void setCall(String call) {
-		this.call = call;
+	public void setCallName(String callName) {
+		this.callName = callName;
 	}
 
-	public String getCall() {
-		return call;
+	public String getCallName() {
+		return callName;
 	}
 	
 	public String getCallReason() {

@@ -11,7 +11,7 @@ public class InterfaceClusterScoreDB implements Serializable {
 	private String pdbCode;
 	private int clusterId;
 	
-	private String call;
+	private String callName;
 	
 	private String callReason;
 	
@@ -46,12 +46,12 @@ public class InterfaceClusterScoreDB implements Serializable {
 		this.clusterId = clusterId;
 	}
 
-	public String getCall() {
-		return call;
+	public String getCallName() {
+		return callName;
 	}
 
-	public void setCall(String call) {
-		this.call = call;
+	public void setCallName(String callName) {
+		this.callName = callName;
 	}
 
 	public String getCallReason() {

@@ -168,7 +168,7 @@ public class DataModelAdaptor {
 				
 				InterfaceClusterScoreDB icsDB = new InterfaceClusterScoreDB();
 				icsDB.setScore(SCORE_NOT_AVAILABLE);
-				icsDB.setCall(CallType.BIO.getName());
+				icsDB.setCallName(CallType.BIO.getName());
 				icsDB.setConfidence(CONFIDENCE_NOT_AVAILABLE);
 				icsDB.setMethod(unit.getType().getType());				
 				icsDB.setClusterId(clusterId);
@@ -267,7 +267,7 @@ public class DataModelAdaptor {
 			is.setInterfaceItem(ii);
 			is.setInterfaceId(gps.get(i).getInterface().getId());
 			CallType call = gps.get(i).getCall();
-			is.setCall(call.getName());
+			is.setCallName(call.getName());
 			is.setCallReason(gps.get(i).getCallReason());
 			is.setMethod(ScoringMethod.EPPIC_GEOMETRY);
 			is.setPdbCode(ii.getPdbCode());
@@ -377,7 +377,7 @@ public class DataModelAdaptor {
 			isCS.setMethod(ScoringMethod.EPPIC_CORESURFACE);
 
 			CallType call = ezp.getCall();	
-			isCS.setCall(call.getName());
+			isCS.setCallName(call.getName());
 			isCS.setCallReason(ezp.getCallReason());
 			
 			if(ezp.getWarnings() != null) {
@@ -406,7 +406,7 @@ public class DataModelAdaptor {
 			isCR.setMethod(ScoringMethod.EPPIC_CORERIM);
 
 			call = ercp.getCall();	
-			isCR.setCall(call.getName());
+			isCR.setCallName(call.getName());
 			isCR.setCallReason(ercp.getCallReason());
 			
 			if(ercp.getWarnings() != null) {
@@ -435,7 +435,7 @@ public class DataModelAdaptor {
 			// TODO the cluster score is empty right now: we need to fill it!
 			InterfaceClusterScoreDB ics = new InterfaceClusterScoreDB();
 			ics.setMethod(ScoringMethod.EPPIC_FINAL);
-			ics.setCall(CallType.NO_PREDICTION.getName());
+			ics.setCallName(CallType.NO_PREDICTION.getName());
 			ics.setScore(SCORE_NOT_AVAILABLE);
 			ics.setConfidence(CONFIDENCE_NOT_AVAILABLE);
 			ics.setPdbCode(pdbInfo.getPdbCode());
@@ -454,7 +454,7 @@ public class DataModelAdaptor {
 			InterfaceScoreDB is = new InterfaceScoreDB();
 			ii.addInterfaceScore(is);
 			is.setMethod(ScoringMethod.EPPIC_FINAL);
-			is.setCall(cps.get(i).getCall().getName());
+			is.setCallName(cps.get(i).getCall().getName());
 			is.setCallReason(cps.get(i).getCallReason());
 			is.setConfidence(CONFIDENCE_NOT_AVAILABLE);
 			is.setInterfaceItem(ii);
