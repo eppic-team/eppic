@@ -36,7 +36,8 @@ public class PdbInfoDB implements Serializable {
 	}
 	
 	public PdbInfoDB(int uid,
-						JobDB jobItem,
+						JobDB job,
+						String pdbCode,
 						String title,
 						String spaceGroup,
 						String expMethod,
@@ -47,12 +48,13 @@ public class PdbInfoDB implements Serializable {
 		chainClusters = new ArrayList<ChainClusterDB>();
 		assemblies = new ArrayList<AssemblyDB>();
 		this.uid = uid;
+		this.pdbCode = pdbCode;
 		this.title = title;
 		this.spaceGroup = spaceGroup;
 		this.expMethod = expMethod;
 		this.resolution = resolution;
 		this.runParameters = runParameters;
-		this.job = jobItem;
+		this.job = job;
 		this.rfreeValue = rfreeValue;
 	}
 	
