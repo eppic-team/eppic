@@ -31,8 +31,12 @@ import ch.systemsx.sybit.crkwebui.client.results.gui.cells.OperatorTypeCell;
 import ch.systemsx.sybit.crkwebui.client.results.gui.cells.ThumbnailCell;
 import ch.systemsx.sybit.crkwebui.client.results.gui.cells.WarningsCell;
 import ch.systemsx.sybit.crkwebui.client.results.gui.grid.util.ClustersGridView;
+import ch.systemsx.sybit.crkwebui.client.results.gui.grid.util.MethodSummaryType;
+import ch.systemsx.sybit.crkwebui.client.results.gui.grid.util.MethodsSummaryRenderer;
 import ch.systemsx.sybit.crkwebui.shared.model.InputType;
 import ch.systemsx.sybit.crkwebui.shared.model.Interface;
+import ch.systemsx.sybit.crkwebui.shared.model.InterfaceCluster;
+import ch.systemsx.sybit.crkwebui.shared.model.InterfaceClusterScore;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceScore;
 import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 
@@ -229,6 +233,8 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 		SummaryColumnConfig<InterfaceItemModel, String> column = 
 				new SummaryColumnConfig<InterfaceItemModel, String>(props.finalCallName());
 		column.setCell(new MethodCallCell(resultsStore, "finalCallName"));
+		column.setSummaryType(new MethodSummaryType.FinalCallSummaryType());
+		column.setSummaryRenderer(new MethodsSummaryRenderer());
 		fillColumnSettings(column, "finalCallName");
 		column.setColumnTextClassName("eppic-results-final-call");
 		return column;
@@ -239,6 +245,21 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 			String type) {
 		SummaryColumnConfig<InterfaceItemModel, String> column = new SummaryColumnConfig<InterfaceItemModel, String>(vp);
 		column.setCell(new MethodCallCell(resultsStore, type));
+		
+		boolean isSummarySet = false;
+		if(type.equals(ScoringMethod.EPPIC_CORERIM)){
+			column.setSummaryType(new MethodSummaryType.CoreRimSummaryType());
+			isSummarySet = true;
+		} else if(type.equals(ScoringMethod.EPPIC_CORESURFACE)){
+			column.setSummaryType(new MethodSummaryType.CoreSurfaceSummaryType());
+			isSummarySet = true;
+		} else if(type.equals(ScoringMethod.EPPIC_GEOMETRY)){
+			column.setSummaryType(new MethodSummaryType.GeometrySummaryType());
+			isSummarySet = true;
+		}
+		
+		if(isSummarySet) column.setSummaryRenderer(new MethodsSummaryRenderer());
+		
 		fillColumnSettings(column, type);
 		return column;
 	}
@@ -385,11 +406,16 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 		resultsStore.clear();
 
 		List<InterfaceItemModel> data = new ArrayList<InterfaceItemModel>();
+		
+		List<InterfaceCluster> interfaceClusters = resultsData.getInterfaceClusters();
 
-		List<Interface> interfaceItems = resultsData.getInterfaces();
+		
 
-		if (interfaceItems != null)
+		if (interfaceClusters != null)
 		{
+			for(InterfaceCluster cluster:interfaceClusters)
+			{
+			List<Interface> interfaceItems = cluster.getInterfaces();
 			for (Interface interfaceItem : interfaceItems) 
 			{
 				if((interfaceItem.getInterfaceWarnings() != null) &&
@@ -400,6 +426,7 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 				
 				InterfaceItemModel model = new InterfaceItemModel();
 
+				//Set interface scores
 				for(InterfaceScore interfaceScore : interfaceItem.getInterfaceScores())
 				{
 					if(interfaceScore.getMethod().equals(ScoringMethod.EPPIC_GEOMETRY))
@@ -426,6 +453,30 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 					}
 				}
 				
+				//Set interface cluster score
+				for(InterfaceClusterScore clusterScore: cluster.getInterfaceClusterScores())
+				{
+					if(clusterScore.getMethod().equals(ScoringMethod.EPPIC_GEOMETRY))
+					{
+						model.setClusterGeometryCall(clusterScore.getCallName());
+					}
+
+					if(clusterScore.getMethod().equals(ScoringMethod.EPPIC_CORERIM))
+					{
+						model.setClusterCoreRimCall(clusterScore.getCallName());
+					}
+
+					if(clusterScore.getMethod().equals(ScoringMethod.EPPIC_CORESURFACE))
+					{
+						model.setClusterCoreSurfaceCall(clusterScore.getCallName());
+					}
+					
+					if(clusterScore.getMethod().equals(ScoringMethod.EPPIC_FINAL))
+					{
+						model.setClusterFinalCall(clusterScore.getCallName());
+					}
+				}
+				
 				model.setInterfaceId(interfaceItem.getInterfaceId());
 				model.setClusterId(interfaceItem.getClusterId());
 				model.setName(interfaceItem.getChain1() + "+" + interfaceItem.getChain2());
@@ -441,6 +492,7 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 				model.setThumbnailUrl(thumbnailUrl);
 
 				data.add(model);
+			}
 			}
 		}
 		
