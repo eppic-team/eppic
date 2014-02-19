@@ -8,7 +8,6 @@ import org.ggf.drmaa.JobTemplate;
 import org.ggf.drmaa.Session;
 import org.ggf.drmaa.SessionFactory;
 
-import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.server.jobs.generators.queuing.NativeSpecificationGenerator;
 import ch.systemsx.sybit.crkwebui.server.jobs.generators.queuing.NativeSpecificationGeneratorFactory;
 import ch.systemsx.sybit.crkwebui.server.jobs.managers.commons.JobManager;
@@ -57,7 +56,8 @@ public class DrmaaJobManager implements JobManager
 	}
 
 	@Override
-	public String startJob(String jobId,
+	public String startJob(String javaVMExec,
+			               String jobId,
 						   List<String> command,
 						   String jobDirectory,
 						   int nrOfThreadsForSubmission) throws JobHandlerException
@@ -65,7 +65,7 @@ public class DrmaaJobManager implements JobManager
 		try
 		{
 			JobTemplate jobTemplate = session.createJobTemplate();
-			jobTemplate.setRemoteCommand(ApplicationContext.getSettings().getJavaVMExec());
+			jobTemplate.setRemoteCommand(javaVMExec);
 			jobTemplate.setArgs(command);
 			jobTemplate.setJobName(jobId);
 			jobTemplate.setErrorPath(":" + jobDirectory);

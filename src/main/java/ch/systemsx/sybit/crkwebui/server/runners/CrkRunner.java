@@ -19,16 +19,19 @@ public class CrkRunner
 	private String crkApplicationLocation;
 	private int nrOfThreadsForSubmission;
 	private int assignedMemory;
+	private String javaVMExec;
 
 	public CrkRunner(JobManager jobManager,
 					 String crkApplicationLocation,
 					 int nrOfThreadsForSubmission,
-					 int assignedMemory)
+					 int assignedMemory,
+					 String javaVMExec)
 	{
 		this.jobManager = jobManager;
 		this.crkApplicationLocation = crkApplicationLocation;
 		this.nrOfThreadsForSubmission = nrOfThreadsForSubmission;
 		this.assignedMemory = assignedMemory;
+		this.javaVMExec = javaVMExec;
 	}
 
 	/**
@@ -58,7 +61,8 @@ public class CrkRunner
 															  nrOfThreadsForSubmission,
 															  assignedMemory);
 
-	    return jobManager.startJob(runJobData.getJobId(), 
+	    return jobManager.startJob(javaVMExec,
+	    		                   runJobData.getJobId(), 
 	    						   crkCommand, 
 	    						   destinationDirectoryName,
 	    						   nrOfThreadsForSubmission);

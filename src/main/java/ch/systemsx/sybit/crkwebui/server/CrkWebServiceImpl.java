@@ -93,6 +93,8 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 
 	private String generalTmpDirectoryName;
 	private String generalDestinationDirectoryName;
+	
+	private String javaVMExec;
 
 	private String crkApplicationLocation;
 
@@ -155,6 +157,12 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 		if (crkApplicationLocation == null)
 		{
 			throw new ServletException("Location of crk application not specified");
+		}
+		
+		if(properties.getProperty("java_VM_exec") != null && !properties.getProperty("java_VM_exec").equals("")){
+			javaVMExec = properties.getProperty("java_VM_exec");
+		} else{
+			javaVMExec = "java";
 		}
 
 		if(properties.getProperty("protocol") != null)
@@ -259,7 +267,8 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 		crkRunner = new CrkRunner(jobManager, 
 								  crkApplicationLocation,
 								  nrOfThreadForSubmission,
-								  assignedMemory);
+								  assignedMemory,
+								  javaVMExec);
 		if(!properties.containsKey(ApplicationSettingsGenerator.DEVELOPMENT_MODE)) {
 		    jobStatusUpdater = new JobStatusUpdater(jobManager,
 			    new JobDAOJpa(),
