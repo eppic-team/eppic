@@ -13,7 +13,6 @@ import owl.core.structure.InterfaceRimCore;
 import eppic.EppicParams;
 import eppic.CallType;
 import eppic.InterfaceEvolContext;
-import eppic.ScoringType;
 
 
 public class EvolCoreRimPredictor implements InterfaceTypePredictor {
@@ -33,8 +32,6 @@ public class EvolCoreRimPredictor implements InterfaceTypePredictor {
 	private double score; // cache of the last run final score (average of ratios of both sides) (filled by getCall)
 	
 	private double callCutoff;
-	
-	private ScoringType scoringType; // the type of the last scoring run (either kaks or entropy)
 	
 	private double bsaToAsaCutoff;
 	private double minAsaForSurface;
@@ -166,14 +163,9 @@ public class EvolCoreRimPredictor implements InterfaceTypePredictor {
 		} else if (canDoSecondEntropyScoring()) {
 			score = member2Pred.getScore();
 		}
-		scoringType = ScoringType.CORERIM;
 
 	}
 	
-	public ScoringType getScoringType() {
-		return this.scoringType;
-	}
-
 	/**
 	 * Gets the final score computed from both members of the interface.
 	 * @return
@@ -248,7 +240,6 @@ public class EvolCoreRimPredictor implements InterfaceTypePredictor {
 	
 	public void resetCall() {
 		this.call = null;
-		this.scoringType = null;
 		this.warnings = new ArrayList<String>();
 		this.callReason = null;
 		this.score = -1;

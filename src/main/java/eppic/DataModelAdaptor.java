@@ -445,12 +445,57 @@ public class DataModelAdaptor {
 
 		// 4) interface cluster scores
 		for (InterfaceClusterDB ic:pdbInfo.getInterfaceClusters()) {
-
-			// TODO we need to fill cluster scores per method: eppic-gm, eppic-cs, eppic-cr and eppic
 			
-			// TODO the cluster score is empty right now: we need to fill it!
+			// TODO the cluster scores are empty right now: we need to fill them!
+			
+			// method eppic (final)
 			InterfaceClusterScoreDB ics = new InterfaceClusterScoreDB();
 			ics.setMethod(ScoringMethod.EPPIC_FINAL);
+			ics.setCallName(CallType.NO_PREDICTION.getName());
+			ics.setScore(SCORE_NOT_AVAILABLE);
+			ics.setScore1(SCORE_NOT_AVAILABLE);
+			ics.setScore2(SCORE_NOT_AVAILABLE);
+			ics.setConfidence(CONFIDENCE_NOT_AVAILABLE);
+			ics.setPdbCode(pdbInfo.getPdbCode());
+			ics.setClusterId(ic.getClusterId());
+
+			// setting relations child/parent
+			ics.setInterfaceCluster(ic); 
+			ic.addInterfaceClusterScore(ics);
+
+			// method eppic-gm
+			ics = new InterfaceClusterScoreDB();
+			ics.setMethod(ScoringMethod.EPPIC_GEOMETRY);
+			ics.setCallName(CallType.NO_PREDICTION.getName());
+			ics.setScore(SCORE_NOT_AVAILABLE);
+			ics.setScore1(SCORE_NOT_AVAILABLE);
+			ics.setScore2(SCORE_NOT_AVAILABLE);
+			ics.setConfidence(CONFIDENCE_NOT_AVAILABLE);
+			ics.setPdbCode(pdbInfo.getPdbCode());
+			ics.setClusterId(ic.getClusterId());
+
+			// setting relations child/parent
+			ics.setInterfaceCluster(ic); 
+			ic.addInterfaceClusterScore(ics);
+
+			// method eppic-cr
+			ics = new InterfaceClusterScoreDB();
+			ics.setMethod(ScoringMethod.EPPIC_CORERIM);
+			ics.setCallName(CallType.NO_PREDICTION.getName());
+			ics.setScore(SCORE_NOT_AVAILABLE);
+			ics.setScore1(SCORE_NOT_AVAILABLE);
+			ics.setScore2(SCORE_NOT_AVAILABLE);
+			ics.setConfidence(CONFIDENCE_NOT_AVAILABLE);
+			ics.setPdbCode(pdbInfo.getPdbCode());
+			ics.setClusterId(ic.getClusterId());
+
+			// setting relations child/parent
+			ics.setInterfaceCluster(ic); 
+			ic.addInterfaceClusterScore(ics);
+			
+			// method eppic-cs
+			ics = new InterfaceClusterScoreDB();
+			ics.setMethod(ScoringMethod.EPPIC_CORESURFACE);
 			ics.setCallName(CallType.NO_PREDICTION.getName());
 			ics.setScore(SCORE_NOT_AVAILABLE);
 			ics.setScore1(SCORE_NOT_AVAILABLE);

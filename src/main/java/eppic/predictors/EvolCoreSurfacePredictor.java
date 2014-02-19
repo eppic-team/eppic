@@ -13,7 +13,6 @@ import owl.core.structure.InterfaceRimCore;
 import eppic.EppicParams;
 import eppic.CallType;
 import eppic.InterfaceEvolContext;
-import eppic.ScoringType;
 
 public class EvolCoreSurfacePredictor implements InterfaceTypePredictor {
 
@@ -27,8 +26,6 @@ public class EvolCoreSurfacePredictor implements InterfaceTypePredictor {
 	private List<String> warnings;
 
 	private double score; // last run cached averaged score
-	
-	private ScoringType scoringType; // the type of the last scoring run (either kaks or entropy)
 	
 	private double bsaToAsaCutoff;
 	private double minAsaForSurface;
@@ -165,11 +162,6 @@ public class EvolCoreSurfacePredictor implements InterfaceTypePredictor {
 			score = member2Pred.getScore();
 		}
 		
-		scoringType = ScoringType.CORERIM;
-	}
-	
-	public ScoringType getScoringType() {
-		return this.scoringType;
 	}
 	
 	@Override
@@ -242,7 +234,6 @@ public class EvolCoreSurfacePredictor implements InterfaceTypePredictor {
 	
 	public void resetCall() {
 		this.call = null;
-		this.scoringType = null;
 		this.warnings = new ArrayList<String>();
 		this.callReason = null;
 		this.score = -1;
