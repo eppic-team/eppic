@@ -145,6 +145,8 @@ public interface AppProperties extends Constants
 	String no_interfaces_found_hint();
 	
 	String alignment_window_title();
+	String alignment_window_uniprot_label();
+	String alignment_window_chains_label();
 	
 	String interfaces_residues_window_title();
 	String interfaces_residues_panel_structure();
