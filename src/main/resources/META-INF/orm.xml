@@ -78,6 +78,13 @@
 			</basic>
 			<basic name="resolution"></basic>
 			<basic name="rfreeValue"></basic>
+			
+			<basic name="cellA"></basic>
+			<basic name="cellB"></basic>
+			<basic name="cellC"></basic>
+			<basic name="cellAlpha"></basic>
+			<basic name="cellBeta"></basic>
+			<basic name="cellGamma"></basic>
 
 			<one-to-many name="interfaceClusters" mapped-by="pdbInfo">
 				<cascade>
@@ -198,6 +205,12 @@
 			<basic name="score">
 				<column nullable="true" />
 			</basic>
+			<basic name="score1">
+				<column nullable="true" />
+			</basic>
+			<basic name="score2">
+				<column nullable="true" />
+			</basic>			
 			<basic name="callName">
 				<column length="6" />
 			</basic>
