@@ -13,7 +13,6 @@ import ch.systemsx.sybit.crkwebui.client.commons.events.ShowQueryWarningsEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.images.ImageWithTooltip;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.labels.LabelWithTooltip;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.links.ImageLinkWithTooltip;
-import ch.systemsx.sybit.crkwebui.client.commons.gui.links.LinkWithTooltip;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ApplicationWindowResizeHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.HideAllWindowsHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowQueryWarningsHandler;
@@ -261,7 +260,9 @@ public class SequenceInfoPanel extends FieldSet
     	ArrayList<Widget> items = new ArrayList<Widget>();
 
     	String chainStr = chainCluster.getRepChain();
-    	chainStr += "(" + EscapedStringGenerator.generateEscapedString(chainCluster.getMemberChains()) + ")";
+    	if(chainCluster.getMemberChains() != null){
+    		chainStr += "(" + EscapedStringGenerator.generateEscapedString(chainCluster.getMemberChains()) + ")";
+    	}
     	String chainHintStr = "";
     	if(chainStr.length() > 13){
     		chainHintStr = "Chain " + chainStr;
@@ -290,7 +291,9 @@ public class SequenceInfoPanel extends FieldSet
     	ArrayList<Widget> items = new ArrayList<Widget>();
 
     	String chainStr = chainCluster.getRepChain();
-    	chainStr += "(" + EscapedStringGenerator.generateEscapedString(chainCluster.getMemberChains()) + ")";
+    	if(chainCluster.getMemberChains() != null){
+    		chainStr += "(" + EscapedStringGenerator.generateEscapedString(chainCluster.getMemberChains()) + ")";
+    	}
     	String chainHintStr = "";
     	if(chainStr.length() > 13){
     		chainHintStr = "Chain " + chainStr;
@@ -319,13 +322,6 @@ public class SequenceInfoPanel extends FieldSet
 		});
 
     	items.add(chainsLinkButton);
-
-    	LinkWithTooltip uniprotIdLabel = new LinkWithTooltip(" (" + EscapedStringGenerator.generateEscapedString(chainCluster.getRefUniProtId()) + ") ", 
-    			AppPropertiesManager.CONSTANTS.homologs_panel_uniprot_hint(),
-    			ApplicationContext.getSettings().getUniprotLinkUrl() + chainCluster.getRefUniProtId());
-    	uniprotIdLabel.addStyleName("eppic-external-link");
-    	uniprotIdLabel.getElement().<XElement>cast().setMargins(new Margins(0, 10, 0, 0));
-    	items.add(uniprotIdLabel);
 
     	int nrOfHomologs = chainCluster.getNumHomologs();
     	String nrOfHomologsText = String.valueOf(nrOfHomologs) + " homolog";
