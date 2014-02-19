@@ -19,8 +19,8 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 	
 	
 	private List<InterfaceEvolContext> list;
-	private List<EvolCoreRimPredictor> evolRimCorePredictors;
-	private List<EvolCoreSurfacePredictor> evolInterfZPredictors;
+	private List<EvolCoreRimPredictor> evolCoreRimPredictors;
+	private List<EvolCoreSurfacePredictor> evolCoreSurfacePredictors;
 	
 	private ChainInterfaceList chainInterfList; // we keep the reference also to be able to call methods from it
 	private ChainEvolContextList cecs;
@@ -44,8 +44,8 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 				
 		
 		list = new ArrayList<InterfaceEvolContext>();
-		evolRimCorePredictors = new ArrayList<EvolCoreRimPredictor>();
-		evolInterfZPredictors = new ArrayList<EvolCoreSurfacePredictor>();
+		evolCoreRimPredictors = new ArrayList<EvolCoreRimPredictor>();
+		evolCoreSurfacePredictors = new ArrayList<EvolCoreSurfacePredictor>();
 	
 		this.chainInterfList = interfaces;
 		this.cecs = cecs;
@@ -66,18 +66,18 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 		return this.list.get(i);
 	}
 	
-	public EvolCoreRimPredictor getEvolRimCorePredictor(int i) {
-		return this.evolRimCorePredictors.get(i);
+	public EvolCoreRimPredictor getEvolCoreRimPredictor(int i) {
+		return this.evolCoreRimPredictors.get(i);
 	}
 	
-	public EvolCoreSurfacePredictor getEvolInterfZPredictor(int i) {
-		return this.evolInterfZPredictors.get(i);
+	public EvolCoreSurfacePredictor getEvolCoreSurfacePredictor(int i) {
+		return this.evolCoreSurfacePredictors.get(i);
 	}
 	
 	private void add(InterfaceEvolContext iec) {
 		list.add(iec);
-		evolRimCorePredictors.add(new EvolCoreRimPredictor(iec));
-		evolInterfZPredictors.add(new EvolCoreSurfacePredictor(iec));
+		evolCoreRimPredictors.add(new EvolCoreRimPredictor(iec));
+		evolCoreSurfacePredictors.add(new EvolCoreSurfacePredictor(iec));
 	}
 	
 	@Override
@@ -86,28 +86,28 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 	}
 	
 	public void scoreEntropy() {
-		this.scoType = ScoringType.ENTROPY;
+		this.scoType = ScoringType.CORERIM;
 		for (int i=0;i<list.size();i++) {
-			evolRimCorePredictors.get(i).computeScores();
+			evolCoreRimPredictors.get(i).computeScores();
 		}
 	}
 	
 	public void scoreZscore() {
-		this.scoType = ScoringType.ZSCORE;
+		this.scoType = ScoringType.CORESURFACE;
 		for (int i=0;i<list.size();i++) {
-			evolInterfZPredictors.get(i).computeScores();
+			evolCoreSurfacePredictors.get(i).computeScores();
 		}
 	}
 	
 	public void setCoreRimScoreCutoff(double coreRimScoreCutoff) {
 		for (int i=0;i<list.size();i++) {
-			evolRimCorePredictors.get(i).setCallCutoff(coreRimScoreCutoff);	
+			evolCoreRimPredictors.get(i).setCallCutoff(coreRimScoreCutoff);	
 		}
 	}
 
 	public void setCoreSurfScoreCutoff(double coreSurfScoreCutoff) {
 		for (int i=0;i<list.size();i++) {
-			evolInterfZPredictors.get(i).setCallCutoff(coreSurfScoreCutoff);
+			evolCoreSurfacePredictors.get(i).setCallCutoff(coreSurfScoreCutoff);
 		}
 	}
 
@@ -115,7 +115,7 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 		chainInterfList.calcRimAndCores(bsaToAsaCutoff, minAsaForSurface);
 		
 		for (int i=0;i<list.size();i++) {
-			evolRimCorePredictors.get(i).setBsaToAsaCutoff(bsaToAsaCutoff, minAsaForSurface);
+			evolCoreRimPredictors.get(i).setBsaToAsaCutoff(bsaToAsaCutoff, minAsaForSurface);
 		}		
 	}
 	
@@ -123,7 +123,7 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 		chainInterfList.calcRimAndCores(bsaToAsaCutoff, minAsaForSurface);
 		
 		for (int i=0;i<list.size();i++) {
-			evolInterfZPredictors.get(i).setBsaToAsaCutoff(bsaToAsaCutoff, minAsaForSurface);
+			evolCoreSurfacePredictors.get(i).setBsaToAsaCutoff(bsaToAsaCutoff, minAsaForSurface);
 		}		
 	}
 	
@@ -160,8 +160,8 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 	 */
 	public void resetCalls() {
 		for (int i=0;i<list.size();i++) {
-			evolRimCorePredictors.get(i).resetCall();
-			evolInterfZPredictors.get(i).resetCall();
+			evolCoreRimPredictors.get(i).resetCall();
+			evolCoreSurfacePredictors.get(i).resetCall();
 		}
 	}
 

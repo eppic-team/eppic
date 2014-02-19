@@ -430,7 +430,7 @@ public class ChainEvolContextList implements Serializable {
 				// writing the conservation scores (entropies/kaks) log file
 				outFile = params.getOutputFile("."+chainEvCont.getRepresentativeChainCode()+EppicParams.ENTROPIES_FILE_SUFFIX);
 				PrintStream conservScoLog = new PrintStream(outFile);
-				chainEvCont.printConservationScores(conservScoLog, ScoringType.ENTROPY, pdb);
+				chainEvCont.printConservationScores(conservScoLog, ScoringType.CORERIM, pdb);
 				conservScoLog.close();
 			} catch (FileNotFoundException e) {
 				LOGGER.error("Could not write the scores log file "+outFile);

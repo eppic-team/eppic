@@ -165,7 +165,7 @@ public class EvolCoreSurfacePredictor implements InterfaceTypePredictor {
 			score = member2Pred.getScore();
 		}
 		
-		scoringType = ScoringType.ENTROPY;
+		scoringType = ScoringType.CORERIM;
 	}
 	
 	public ScoringType getScoringType() {

@@ -345,7 +345,7 @@ public class Main {
 		if(params.isDoScoreEntropies()){
 			for (int i=0; i<iecList.size(); i++) {
 				CombinedPredictor cp = 
-						new CombinedPredictor(iecList.get(i), gps.get(i), iecList.getEvolRimCorePredictor(i), iecList.getEvolInterfZPredictor(i));
+						new CombinedPredictor(iecList.get(i), gps.get(i), iecList.getEvolCoreRimPredictor(i), iecList.getEvolCoreSurfacePredictor(i));
 				cp.setUsePdbResSer(params.isUsePdbResSer());
 				int callIdx = cp.getCall().getIndex();
 				if(callIdx == 0) eppicResults[i] = 0;
@@ -421,7 +421,7 @@ public class Main {
 			} else {
 				// writing PDB files with entropies as bfactors
 				for (InterfaceEvolContext iec:iecList) {
-					iec.writePdbFile(params.getOutputFile("."+iec.getInterface().getId()+".pdb.gz"),ScoringType.ENTROPY, params.isUsePdbResSer());			
+					iec.writePdbFile(params.getOutputFile("."+iec.getInterface().getId()+".pdb.gz"),ScoringType.CORERIM, params.isUsePdbResSer());			
 				}
 			}
 			
@@ -723,7 +723,7 @@ public class Main {
 			CombinedPredictor.printScoringHeaders(scoreCombPS);
 			for (int i=0;i<iecList.size();i++) {
 				CombinedPredictor cp = 
-						new CombinedPredictor(iecList.get(i), gps.get(i), iecList.getEvolRimCorePredictor(i), iecList.getEvolInterfZPredictor(i));
+						new CombinedPredictor(iecList.get(i), gps.get(i), iecList.getEvolCoreRimPredictor(i), iecList.getEvolCoreSurfacePredictor(i));
 				cp.setUsePdbResSer(params.isUsePdbResSer());
 				cps.add(cp);
 				cp.printScoresLine(scoreCombPS);

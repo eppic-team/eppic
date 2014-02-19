@@ -138,7 +138,7 @@ public class EvolCoreRimMemberPredictor implements InterfaceTypePredictor {
 	
 	@Override
 	public void computeScores() {
-		scoreInterfaceMember(false, ScoringType.ENTROPY);
+		scoreInterfaceMember(false, ScoringType.CORERIM);
 	}
 	
 	private void scoreInterfaceMember(boolean weighted, ScoringType scoType) {	

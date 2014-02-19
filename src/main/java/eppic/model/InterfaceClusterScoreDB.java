@@ -18,6 +18,9 @@ public class InterfaceClusterScoreDB implements Serializable {
 	private double score;	
 	private double confidence;
 	
+	private double score1;
+	private double score2;
+	
 	private String method;
 	
 	private InterfaceClusterDB interfaceCluster;
@@ -76,6 +79,22 @@ public class InterfaceClusterScoreDB implements Serializable {
 
 	public void setConfidence(double confidence) {
 		this.confidence = confidence;
+	}
+
+	public double getScore1() {
+		return score1;
+	}
+
+	public void setScore1(double score1) {
+		this.score1 = score1;
+	}
+
+	public double getScore2() {
+		return score2;
+	}
+
+	public void setScore2(double score2) {
+		this.score2 = score2;
 	}
 
 	public String getMethod() {

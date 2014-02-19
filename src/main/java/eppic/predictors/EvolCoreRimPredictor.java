@@ -166,7 +166,7 @@ public class EvolCoreRimPredictor implements InterfaceTypePredictor {
 		} else if (canDoSecondEntropyScoring()) {
 			score = member2Pred.getScore();
 		}
-		scoringType = ScoringType.ENTROPY;
+		scoringType = ScoringType.CORERIM;
 
 	}
 	

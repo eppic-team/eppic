@@ -5,9 +5,9 @@ import java.io.Serializable;
 public enum ScoringType implements Serializable
 {
 	GEOMETRY("geometry"), 
-	ENTROPY("entropy core-rim"), 
+	CORERIM("entropy core-rim"), 
 	KAKS("Ka/Ks core-rim"), 
-	ZSCORE("entropy core-surface"), 
+	CORESURFACE("entropy core-surface"), 
 	COMBINED("combined"), 
 	PISA("pisa");
 	
@@ -22,13 +22,13 @@ public enum ScoringType implements Serializable
 	
 	public static ScoringType getByName(String name) {
 		if (name.equals("entropy core-rim")) {
-			return ScoringType.ENTROPY;
+			return ScoringType.CORERIM;
 		} else if (name.equals("Ka/Ks core-rim")) {
 			return ScoringType.KAKS;
 		} else if (name.equals("geometry")) {
 			return ScoringType.GEOMETRY;
 		} else if (name.equals("entropy core-surface")) {
-			return ScoringType.ZSCORE;
+			return ScoringType.CORESURFACE;
 		} else if (name.equals("combined")) {
 			return ScoringType.COMBINED;
 		}  else if (name.equals("pisa")) {

@@ -233,7 +233,7 @@ public class InterfaceEvolContext implements Serializable {
 	 * @throws NullPointerException if evolutionary scores are not calculated yet
 	 */
 	private void setConservationScoresAsBfactors(int molecId, ScoringType scoType) {
-		if (scoType!=ScoringType.ENTROPY) 
+		if (scoType!=ScoringType.CORERIM) 
 			throw new IllegalArgumentException("Only entropy scoring supported at the moment as evolutionary scoring");
 		
 		// do nothing (i.e. keep original b-factors) if there's no query match for this sequence and thus no evol scores calculated 
@@ -254,14 +254,14 @@ public class InterfaceEvolContext implements Serializable {
 			//if (!(residue instanceof AaResidue)) continue;
 			int resser = residue.getSerial();
 			int queryPos = -2;
-			if (scoType==ScoringType.ENTROPY) {
+			if (scoType==ScoringType.CORERIM) {
 				queryPos = getChainEvolContext(molecId).getQueryUniprotPosForPDBPos(resser); 
 			} 
 			if (queryPos!=-1) {   
 				map.put(resser, conservationScores.get(queryPos));	
 			} else {
 				
-				if (scoType==ScoringType.ENTROPY) {
+				if (scoType==ScoringType.CORERIM) {
 					// when no entropy info is available for a residue we still want to assign a value for it
 					// or otherwise the residue would keep its original real bfactor and then possibly screw up the
 					// scaling of colors for the rest

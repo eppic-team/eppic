@@ -144,7 +144,7 @@ public class EvolCoreSurfaceMemberPredictor implements InterfaceTypePredictor {
 	}
 	
 	public void computeScores() {
-		scoreInterfaceMember(ScoringType.ENTROPY);
+		scoreInterfaceMember(ScoringType.CORERIM);
 	}
 	
 	/**

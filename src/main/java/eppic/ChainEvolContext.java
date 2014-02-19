@@ -595,7 +595,7 @@ public class ChainEvolContext implements Serializable {
 	 * @return
 	 */
 	public List<Double> getConservationScores(ScoringType scoType) {
-		if (scoType.equals(ScoringType.ENTROPY)) {
+		if (scoType.equals(ScoringType.CORERIM)) {
 			return homologs.getEntropies();
 		}
 		throw new IllegalArgumentException("Given scoring type "+scoType+" is not recognized ");
@@ -630,7 +630,7 @@ public class ChainEvolContext implements Serializable {
 			int resSer = res.getSerial(); 
 
 			int queryPos = -2;
-			if (scoType==ScoringType.ENTROPY) {
+			if (scoType==ScoringType.CORERIM) {
 				queryPos = getQueryUniprotPosForPDBPos(resSer); 
 			} 
 			if (queryPos!=-1) {   
@@ -690,7 +690,7 @@ public class ChainEvolContext implements Serializable {
 	}
 	
 	public void printConservationScores(PrintStream ps, ScoringType scoType, PdbAsymUnit pdb) {
-		if (scoType.equals(ScoringType.ENTROPY)) {
+		if (scoType.equals(ScoringType.CORERIM)) {
 			ps.println("# Entropies for all query sequence positions (reference UniProt: "+query.getUniId()+") based on a "+homologs.getReducedAlphabet()+" letters alphabet.");
 			ps.println("# seqres\tpdb\tuniprot\tuniprot_res\tentropy");
 		} 
@@ -699,7 +699,7 @@ public class ChainEvolContext implements Serializable {
 		List<Double> conservationScores = getConservationScores(scoType);		
 		for (int i=0;i<conservationScores.size();i++) {
 			int resser = 0;
-			if (scoType.equals(ScoringType.ENTROPY)) {
+			if (scoType.equals(ScoringType.CORERIM)) {
 				resser = getPDBPosForQueryUniprotPos(i+queryInterv.beg-1);
 			}
 			String pdbresser = "NA";
@@ -722,7 +722,7 @@ public class ChainEvolContext implements Serializable {
 		// do nothing (i.e. keep original b-factors) if there's no query match for this sequence and thus no evol scores calculated 
 		if (!hasQueryMatch()) return;
 		
-		List<Double> conservationScores = getConservationScores(ScoringType.ENTROPY);
+		List<Double> conservationScores = getConservationScores(ScoringType.CORERIM);
 		
 		HashMap<Integer,Double> map = new HashMap<Integer, Double>();
 		for (Residue residue:chain) {

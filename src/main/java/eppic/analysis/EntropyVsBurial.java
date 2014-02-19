@@ -175,7 +175,7 @@ public class EntropyVsBurial {
 			double rsa = res.getRsa();
 			int uniprotPos = cec.getQueryUniprotPosForPDBPos(res.getSerial());
 			if (uniprotPos==-1) continue;
-			double entropy = cec.getConservationScores(ScoringType.ENTROPY).get(uniprotPos);
+			double entropy = cec.getConservationScores(ScoringType.CORERIM).get(uniprotPos);
 			
 			// the idea is to print the "real" ASAs, i.e. if it is more than a monomer, we have to print the ASAs in the complex
 			if (truth==CallType.BIO) {

@@ -516,7 +516,7 @@ public class CalcStats {
 				// evol core/rim scoring
 				for (int i=0;i<caCutoffsCR.length;i++) {
 					for (int k=0;k<corerimCallCutoffs.length;k++) {
-						doSingleEvolCRScoring(iec, interf, ScoringType.ENTROPY, countersCR, i, k, dol, perInterfPred);
+						doSingleEvolCRScoring(iec, interf, ScoringType.CORERIM, countersCR, i, k, dol, perInterfPred);
 					}
 				}
 				
@@ -546,7 +546,7 @@ public class CalcStats {
 		for (int i=0;i<caCutoffsCR.length;i++) {
 			for (int k=0;k<corerimCallCutoffs.length;k++) {
 				
-				list.add(new PredictionStatsSet(dir.getName(),truth,ScoringType.ENTROPY, 
+				list.add(new PredictionStatsSet(dir.getName(),truth,ScoringType.CORERIM, 
 						String.format("%4.2f",caCutoffsCR[i]),String.format("%4.2f",corerimCallCutoffs[k]),
 						countersCR[i][k]));
 				
@@ -555,7 +555,7 @@ public class CalcStats {
 		
 		for (int i=0;i<caCutoffsZ.length;i++) {
 			for (int k=0;k<zscoreCutoffs.length;k++) {
-				list.add(new PredictionStatsSet(dir.getName(),truth,ScoringType.ZSCORE, 
+				list.add(new PredictionStatsSet(dir.getName(),truth,ScoringType.CORESURFACE, 
 						String.format("%4.2f",caCutoffsZ[i]),String.format("%+5.2f",zscoreCutoffs[k]),
 						countersZ[i][k]));
 			}
@@ -589,7 +589,7 @@ public class CalcStats {
 		EvolCoreRimPredictor ercp = new EvolCoreRimPredictor(iec);
 		ercp.setBsaToAsaCutoff(caCutoffsCR[i], minAsaForSurface);
 		
-		if (scoType==ScoringType.ENTROPY) {
+		if (scoType==ScoringType.CORERIM) {
 			ercp.computeScores();
 		} 
 		

@@ -314,8 +314,8 @@ public class DataModelAdaptor {
 			chainClusterDB.setHasUniProtRef(cec.hasQueryMatch());
 			
 			List<UniProtRefWarningDB> queryWarningItemDBs = new ArrayList<UniProtRefWarningDB>();
-			for(String queryWarning : cec.getQueryWarnings())
-			{
+			for(String queryWarning : cec.getQueryWarnings()) {
+				
 				UniProtRefWarningDB queryWarningItemDB = new UniProtRefWarningDB();
 				queryWarningItemDB.setChainCluster(chainClusterDB);
 				queryWarningItemDB.setText(queryWarning);
@@ -383,19 +383,19 @@ public class DataModelAdaptor {
 			
 			
 			// 2) core-surface scores
-			EvolCoreSurfacePredictor ezp = iecl.getEvolInterfZPredictor(i);
+			EvolCoreSurfacePredictor ecsp = iecl.getEvolCoreSurfacePredictor(i);
 			InterfaceScoreDB isCS = new InterfaceScoreDB();
 			ii.addInterfaceScore(isCS);
 			isCS.setInterfaceItem(ii);
 			isCS.setInterfaceId(iec.getInterface().getId());
 			isCS.setMethod(ScoringMethod.EPPIC_CORESURFACE);
 
-			CallType call = ezp.getCall();	
+			CallType call = ecsp.getCall();	
 			isCS.setCallName(call.getName());
-			isCS.setCallReason(ezp.getCallReason());
+			isCS.setCallReason(ecsp.getCallReason());
 			
-			if(ezp.getWarnings() != null) {
-				List<String> warnings = ezp.getWarnings();
+			if(ecsp.getWarnings() != null) {
+				List<String> warnings = ecsp.getWarnings();
 				for(String warning: warnings) {
 					// we first add warning to the temp HashSets in order to eliminate duplicates, 
 					// in the end we fill the InterfaceItemDBs by calling addInterfaceWarnings
@@ -403,15 +403,15 @@ public class DataModelAdaptor {
 				}
 			}
 
-			isCS.setScore1(ezp.getMember1Predictor().getScore());
-			isCS.setScore2(ezp.getMember2Predictor().getScore());
-			isCS.setScore(ezp.getScore());	
+			isCS.setScore1(ecsp.getMember1Predictor().getScore());
+			isCS.setScore2(ecsp.getMember2Predictor().getScore());
+			isCS.setScore(ecsp.getScore());	
 			
 			isCS.setConfidence(CONFIDENCE_NOT_AVAILABLE);
 			isCS.setPdbCode(ii.getPdbCode());
 			
 			// 3) core-rim scores
-			EvolCoreRimPredictor ercp = iecl.getEvolRimCorePredictor(i);
+			EvolCoreRimPredictor ecrp = iecl.getEvolCoreRimPredictor(i);
 
 			InterfaceScoreDB isCR = new InterfaceScoreDB();
 			isCR.setInterfaceItem(ii);
@@ -419,12 +419,12 @@ public class DataModelAdaptor {
 			isCR.setInterfaceId(iec.getInterface().getId());
 			isCR.setMethod(ScoringMethod.EPPIC_CORERIM);
 
-			call = ercp.getCall();	
+			call = ecrp.getCall();	
 			isCR.setCallName(call.getName());
-			isCR.setCallReason(ercp.getCallReason());
+			isCR.setCallReason(ecrp.getCallReason());
 			
-			if(ercp.getWarnings() != null) {
-				List<String> warnings = ercp.getWarnings();
+			if(ecrp.getWarnings() != null) {
+				List<String> warnings = ecrp.getWarnings();
 				for(String warning: warnings) {
 					// we first add warning to the temp HashSets in order to eliminate duplicates, 
 					// in the end we fill the InterfaceItemDBs by calling addInterfaceWarnings
@@ -432,9 +432,9 @@ public class DataModelAdaptor {
 				}
 			}
 
-			isCR.setScore1(ercp.getMember1Predictor().getScore());
-			isCR.setScore2(ercp.getMember2Predictor().getScore());
-			isCR.setScore(ercp.getScore());				
+			isCR.setScore1(ecrp.getMember1Predictor().getScore());
+			isCR.setScore2(ecrp.getMember2Predictor().getScore());
+			isCR.setScore(ecrp.getScore());				
 
 			isCR.setConfidence(CONFIDENCE_NOT_AVAILABLE);
 			isCR.setPdbCode(ii.getPdbCode());
@@ -451,6 +451,8 @@ public class DataModelAdaptor {
 			ics.setMethod(ScoringMethod.EPPIC_FINAL);
 			ics.setCallName(CallType.NO_PREDICTION.getName());
 			ics.setScore(SCORE_NOT_AVAILABLE);
+			ics.setScore1(SCORE_NOT_AVAILABLE);
+			ics.setScore2(SCORE_NOT_AVAILABLE);
 			ics.setConfidence(CONFIDENCE_NOT_AVAILABLE);
 			ics.setPdbCode(pdbInfo.getPdbCode());
 			ics.setClusterId(ic.getClusterId());
@@ -592,7 +594,7 @@ public class DataModelAdaptor {
 				 
 				List<Double> entropies = null;
 				if (cec.hasQueryMatch()) 
-					entropies = cec.getConservationScores(ScoringType.ENTROPY);
+					entropies = cec.getConservationScores(ScoringType.CORERIM);
 				for (Residue residue:mol) {
 
 	 				ResidueDB iri = iril.get(i);
