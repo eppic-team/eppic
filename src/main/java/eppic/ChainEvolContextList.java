@@ -32,8 +32,6 @@ public class ChainEvolContextList implements Serializable {
 	
 	private PdbAsymUnit pdb;
 	
-	private String pdbName; // the job name
-	
 	private TreeMap<String, ChainEvolContext> cecs; // one per representative chain
 	
 	private String uniprotVer;
@@ -52,7 +50,6 @@ public class ChainEvolContextList implements Serializable {
 	
 	public ChainEvolContextList(PdbAsymUnit pdb, EppicParams params) throws SQLException {
 		this.pdb = pdb;
-		this.pdbName = params.getJobName();
 		
 		this.cecs = new TreeMap<String, ChainEvolContext>();
 		
@@ -83,7 +80,6 @@ public class ChainEvolContextList implements Serializable {
 	
 	public ChainEvolContextList(List<Sequence> sequences, EppicParams params) throws SQLException {
 		this.pdb = null;
-		this.pdbName = null; // TODO check if this is correct, not tested
 		
 		this.cecs = new TreeMap<String, ChainEvolContext>();
 
@@ -134,10 +130,6 @@ public class ChainEvolContextList implements Serializable {
 	
 	public PdbAsymUnit getPdb() {
 		return this.pdb;
-	}
-	
-	public String getPdbName() {
-		return this.pdbName;
 	}
 	
 	public String getUniprotVer() {

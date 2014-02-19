@@ -138,7 +138,7 @@ public class EntropyVsBurial {
 
 			ChainInterfaceList cil = Utils.readChainInterfaceList(interfdatFile);
 			ChainEvolContextList cecl = Utils.readChainEvolContextList(chainevolcontextdatFile);
-			InterfaceEvolContextList iecList = new InterfaceEvolContextList(pdbCode, cil, cecl);
+			InterfaceEvolContextList iecList = new InterfaceEvolContextList(cil, cecl);
 			
 			
 			for (int id:toAnalyse.get(pdbCode)) {

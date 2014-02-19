@@ -37,7 +37,7 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 	 * @param interfaces
 	 * @param cecs
 	 */
-	public InterfaceEvolContextList(String pdbName, ChainInterfaceList interfaces, ChainEvolContextList cecs) {
+	public InterfaceEvolContextList(ChainInterfaceList interfaces, ChainEvolContextList cecs) {
 		this.minNumSeqs = cecs.getMinNumSeqs();
 				
 		

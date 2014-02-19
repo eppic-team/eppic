@@ -177,10 +177,10 @@ public class ChainEvolContext implements Serializable {
 				}
 
 				// and finally we align the 2 sequences (in case of mapping from SIFTS we rather do this than trusting the SIFTS alignment info)
-				alnPdb2Uniprot = new PairwiseSequenceAlignment(sequence, query.getSequence(), parent.getPdbName()+representativeChain, query.getUniId());
+				alnPdb2Uniprot = new PairwiseSequenceAlignment(sequence, query.getSequence(), "chain"+representativeChain, query.getUniId());
 				
 				LOGGER.info("Chain "+representativeChain+" PDB SEQRES to UniProt alignmnent:\n"+getQueryPdbToUniprotAlnString());
-				LOGGER.info("Query ("+parent.getPdbName()+representativeChain+") length: "+sequence.length());
+				LOGGER.info("Query (chain "+representativeChain+") length: "+sequence.length());
 				LOGGER.info("UniProt ("+query.getUniId()+") length: "+query.getLength());
 				LOGGER.info("Alignment length: "+alnPdb2Uniprot.getLength());
 				int shortestSeqLength = Math.min(query.getLength(), sequence.length());
@@ -573,7 +573,7 @@ public class ChainEvolContext implements Serializable {
 	 * Returns the query's PDB SEQRES to uniprot alignment as a nicely formatted
 	 * aligmnent string in several lines with a middle line of matching characters,
 	 * e.g. 
-	 * 1abcA   AAAA--BCDEFGICCC
+	 * chainA  AAAA--BCDEFGICCC
 	 *         ||.|  ||.|||:|||
 	 * QABCD1  AABALCBCJEFGLCCC
 	 * @return
@@ -663,7 +663,7 @@ public class ChainEvolContext implements Serializable {
 	 */
 	public void printSummary(PrintStream ps) {
 		
-		ps.println("Query: "+parent.getPdbName()+representativeChain);
+		ps.println("Query: chain "+representativeChain);
 		ps.println("UniProt id for query:");
 		ps.print(this.query.getUniId());
 		if (this.query.hasTaxons()) ps.println("\t"+this.query.getFirstTaxon()+"\t"+this.query.getLastTaxon());
@@ -825,7 +825,7 @@ public class ChainEvolContext implements Serializable {
 			inputSeqFile.deleteOnExit();
 		}
 		
-		new Sequence(parent.getPdbName(),this.sequence).writeToFastaFile(inputSeqFile);
+		new Sequence("chain"+representativeChain,this.sequence).writeToFastaFile(inputSeqFile);
 
 		BlastRunner blastRunner = new BlastRunner(blastDbDir);
 		blastRunner.runBlastp(blastPlusBlastp, inputSeqFile, blastDb, outBlast, BlastRunner.BLASTPLUS_XML_OUTPUT_TYPE, BLAST_NO_FILTERING, blastNumThreads, 500);
@@ -850,7 +850,7 @@ public class ChainEvolContext implements Serializable {
 				best = blastList.get(i);
 				if (isHitUniprot(best)) break;
 				if (i==blastList.size()-1) { // if not a single hit is uniprot then we get to here and we have to catch it
-					LOGGER.warn("No UniProt match could be found for the query "+parent.getPdbName()+representativeChain+
+					LOGGER.warn("No UniProt match could be found for the query chain "+representativeChain+
 							": no blast hit was a UniProt match (total "+blastList.size()+" blast hits)");
 					queryWarnings.add("Blast didn't find a UniProt match for the chain. All blast hits were non-UniProt matches (total "+blastList.size()+" blast hits).");
 					return null;
@@ -862,7 +862,7 @@ public class ChainEvolContext implements Serializable {
 				LOGGER.info("Blast found UniProt id "+uniprotMapping+" as best hit with "+
 						String.format("%5.2f%% id and %4.2f coverage",bestHsp.getPercentIdentity(),bestHsp.getQueryCoverage()));
 			} else {
-				LOGGER.warn("No UniProt match could be found for the query "+parent.getPdbName()+representativeChain+" within cutoffs "+
+				LOGGER.warn("No UniProt match could be found for the query chain "+representativeChain+" within cutoffs "+
 						String.format("%5.2f%% id and %4.2f coverage",pdb2uniprotIdThreshold,pdb2uniprotQcovThreshold));
 				LOGGER.warn("Best match was "+best.getSubjectId()+", with "+
 						String.format("%5.2f%% id and %4.2f coverage",bestHsp.getPercentIdentity(),bestHsp.getQueryCoverage()));
@@ -872,7 +872,7 @@ public class ChainEvolContext implements Serializable {
 						String.format("%5.2f%% id and %4.2f coverage",bestHsp.getPercentIdentity(),bestHsp.getQueryCoverage()));
 			}			
 		} else {
-			LOGGER.warn("No UniProt match could be found for the query "+parent.getPdbName()+representativeChain+". Blast returned no hits.");
+			LOGGER.warn("No UniProt match could be found for the query chain "+representativeChain+". Blast returned no hits.");
 			queryWarnings.add("Blast didn't find a UniProt match for the chain (no hits returned by blast)");
 		}
 

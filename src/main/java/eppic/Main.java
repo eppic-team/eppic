@@ -269,7 +269,7 @@ public class Main {
 			// if no interfaces found (e.g. NMR) we don't want to write the file
 			if (interfaces.getNumInterfaces()>0) {
 				PrintStream interfLogPS = new PrintStream(params.getOutputFile(".interfaces"));
-				interfaces.printTabular(interfLogPS, params.getJobName(), params.isUsePdbResSer());
+				interfaces.printTabular(interfLogPS, params.isUsePdbResSer());
 				interfLogPS.close();
 			}
 		} catch(IOException	e) {
@@ -618,7 +618,7 @@ public class Main {
 	}
 	
 	private void findUniqueChains() {
-		String msg = "Unique sequences for "+params.getJobName()+": ";
+		String msg = "Unique sequences: ";
 		
 		for (ChainCluster chainCluster:pdb.getProtChainClusters()) {
 			msg += chainCluster.getClusterString()+" ";
@@ -687,7 +687,7 @@ public class Main {
 	public void doEvolScoring() throws EppicException {
 		if (interfaces.getNumInterfaces()==0) return;
 
-		iecList = new InterfaceEvolContextList(params.getJobName(), interfaces, cecs);
+		iecList = new InterfaceEvolContextList(interfaces, cecs);
 		iecList.setUsePdbResSer(params.isUsePdbResSer());
 
 		writeStep("Scoring Interfaces");

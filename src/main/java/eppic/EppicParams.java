@@ -160,6 +160,7 @@ public class EppicParams {
 	// FIELDS
 	
 	// the parameters
+	private String inputStr;
 	private String pdbCode;
 	private boolean doScoreEntropies;
 	private double homSoftIdCutoff;
@@ -204,7 +205,6 @@ public class EppicParams {
 	
 	// some other fields
 	private File inFile;
-	private String jobName;
 	
 	// fields assignable from config file
 	private String   localCifDir;
@@ -263,6 +263,7 @@ public class EppicParams {
 	
 	private void setDefaults() {
 		
+		this.inputStr = null;
 		this.pdbCode = null;
 		this.doScoreEntropies = false;
 		this.homSoftIdCutoff = DEF_HOM_SOFT_ID_CUTOFF;
@@ -299,7 +300,8 @@ public class EppicParams {
 		while ((c = g.getopt()) != -1) {
 			switch(c){
 			case 'i':
-				setInput(g.getOptarg());
+				inputStr = g.getOptarg();
+				setInput();
 				break;
 			case 's':
 				doScoreEntropies = true;
@@ -455,7 +457,7 @@ public class EppicParams {
 
 	public void checkCommandLineInput() throws EppicException {
 		
-		if (pdbCode==null) {
+		if (inputStr==null) {
 			throw new EppicException(null, "Missing argument -i", true);
 		}
 		
@@ -556,27 +558,6 @@ public class EppicParams {
 		}
 	}
 	
-	/**
-	 * Returns the job name of this CRK parameter set. The job name will be the PDB 
-	 * code given or if a file given the file name without the extension (everything
-	 * after last dot).
-	 * @return
-	 */
-	public String getJobName() {
-		if (jobName!=null) {
-			return jobName;
-		}
-		jobName = pdbCode; // the name to be used in many of the output files
-		if (inFile!=null) {
-			if (inFile.getName().contains(".")) {
-				jobName = inFile.getName().substring(0, inFile.getName().lastIndexOf('.'));
-			} else {
-				jobName = inFile.getName();
-			}
-		}
-		return jobName;
-	}
-	
 	public boolean isInputAFile() {
 		return inFile!=null;
 	}
@@ -593,13 +574,22 @@ public class EppicParams {
 		return pdbCode;
 	}
 	
-	public void setInput(String pdbCode) {
-		inFile = new File(pdbCode);
-		Matcher m = PDBCODE_PATTERN.matcher(pdbCode);
+	/**
+	 * Sets the values of inFile and pdbCode from input string given in -i
+	 * - if inputStr matches a PDB code (i.e. regex \d\w\w\w) then inFile is null and input considered to be PDB code
+	 * - if inputStr does not match a PDB code then inFile gets initialised to inputStr and pdbCode remains null
+	 */
+	public void setInput() {
+
+		Matcher m = PDBCODE_PATTERN.matcher(inputStr);
 		if (m.matches()) {
-			inFile = null;
+			this.inFile = null;
+			this.pdbCode = inputStr.toLowerCase();
+		} else {
+			this.inFile = new File(inputStr);
+			this.pdbCode = null;
 		}
-		this.pdbCode = pdbCode.toLowerCase();
+		
 	}
 	
 	public boolean isDoScoreEntropies() {

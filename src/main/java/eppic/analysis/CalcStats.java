@@ -488,7 +488,7 @@ public class CalcStats {
 
 			ChainInterfaceList cil = Utils.readChainInterfaceList(interfdatFile);
 			ChainEvolContextList cecl = Utils.readChainEvolContextList(chainevolcontextdatFile);
-			InterfaceEvolContextList iecList = new InterfaceEvolContextList(pdbCode, cil, cecl);
+			InterfaceEvolContextList iecList = new InterfaceEvolContextList(cil, cecl);
 			iecList.setUsePdbResSer(DEF_USE_PDB_RES_SER);
 			
 			String dol = cecl.getDomainOfLife();
