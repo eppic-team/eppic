@@ -19,6 +19,6 @@ public interface MyJobsModelProperties extends PropertyAccess<MyJobsModel> {
 	   
 	  ValueProvider<MyJobsModel, String> status();
 	  
-	  ValueProvider<MyJobsModel, String> input();
+	  ValueProvider<MyJobsModel, String> inputName();
 
 }

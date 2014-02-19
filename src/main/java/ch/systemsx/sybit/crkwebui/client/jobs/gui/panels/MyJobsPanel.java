@@ -95,7 +95,7 @@ public class MyJobsPanel extends ContentPanel
 	{		
 		List<ColumnConfig<MyJobsModel,?>> configs = new ArrayList<ColumnConfig<MyJobsModel,?>>();
 
-		ColumnConfig<MyJobsModel, String> inputColumn = new ColumnConfig<MyJobsModel, String>(props.input(),
+		ColumnConfig<MyJobsModel, String> inputColumn = new ColumnConfig<MyJobsModel, String>(props.inputName(),
 						Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("jobs_input_width")));
 		inputColumn.setHeader(ApplicationContext.getSettings().getGridProperties().get("jobs_input_header"));
 		inputColumn.setCell(new InputCell());
@@ -275,7 +275,7 @@ public class MyJobsPanel extends ContentPanel
 			{
 				MyJobsModel myJobsModel = new MyJobsModel(statusData.getJobId(),
 														  statusData.getStatus(),
-														  statusData.getInput());
+														  statusData.getInputName());
 
 				if((selectedJobId != null) &&
 				   (statusData.getJobId().equals(selectedJobId)))
@@ -289,7 +289,7 @@ public class MyJobsPanel extends ContentPanel
 				if(existingModel != null)
 				{
 					existingModel.setStatus(statusData.getStatus());
-					existingModel.setInput(statusData.getInput());
+					existingModel.setInputName(statusData.getInputName());
 					myJobsStore.update(existingModel);
 				}
 				else

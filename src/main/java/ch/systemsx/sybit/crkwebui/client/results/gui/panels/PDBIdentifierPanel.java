@@ -42,13 +42,13 @@ public class PDBIdentifierPanel extends HorizontalLayoutContainer
 	
 	/**
 	 * Sets values of pdb identifier.
-	 * @param pdbName pdb name
+	 * @param inputName pdb/file name
 	 * @param spaceGroup space group
 	 * @param expMethod method
 	 * @param resolution resolution
 	 * @param inputType type of the input - this information is used to determine whether link to pdb description should be added
 	 */
-	public void setPDBText(String pdbName,
+	public void setPDBText(String inputName,
 			  			   String spaceGroup,
 			  			   String expMethod,
 			  			   double resolution,
@@ -59,13 +59,13 @@ public class PDBIdentifierPanel extends HorizontalLayoutContainer
 		
 		if(inputType == InputType.PDBCODE.getIndex())
 		{
-			pdbNameLabel = new LinkWithTooltip(EscapedStringGenerator.generateEscapedString(pdbName),
+			pdbNameLabel = new LinkWithTooltip(EscapedStringGenerator.generateEscapedString(inputName),
 								AppPropertiesManager.CONSTANTS.pdb_identifier_panel_label_hint(),
-								 ApplicationContext.getSettings().getPdbLinkUrl() + pdbName);
+								 ApplicationContext.getSettings().getPdbLinkUrl() + inputName);
 		}
 		else
 		{
-			pdbNameLabel = new EppicLabel(EscapedStringGenerator.generateEscapedString(pdbName));
+			pdbNameLabel = new EppicLabel(EscapedStringGenerator.generateEscapedString(inputName));
 			
 		}
 		

@@ -67,7 +67,7 @@ public class ResultsPanel extends DisplayPanel
 		resultsGridContainer.fillResultsGrid(resultsData);
 		informationPanel.fillInfoPanel(resultsData);
 		
-		headerPanel.setPDBText(resultsData.getPdbCode(),
+		headerPanel.setPDBText(resultsData.getInputName(),
 							  	 	resultsData.getSpaceGroup(),
 							  	 	resultsData.getExpMethod(),
 							  	 	resultsData.getResolution(),
