@@ -345,7 +345,7 @@ public class Main {
 		if(params.isDoScoreEntropies()){
 			for (int i=0; i<iecList.size(); i++) {
 				CombinedPredictor cp = 
-						new CombinedPredictor(iecList.get(i), gps.get(i), iecList.getEvolCoreRimPredictor(i), iecList.getEvolCoreSurfacePredictor(i));
+						new CombinedPredictor(iecList.get(i), gps.get(i), iecList.get(i).getEvolCoreRimPredictor(), iecList.get(i).getEvolCoreSurfacePredictor());
 				cp.setUsePdbResSer(params.isUsePdbResSer());
 				int callIdx = cp.getCall().getIndex();
 				if(callIdx == 0) eppicResults[i] = 0;
@@ -694,14 +694,14 @@ public class Main {
 		
 		if (params.isDoScoreEntropies()) {
 			
-			iecList.setRimCorePredBsaToAsaCutoff(params.getCAcutoffForRimCore(), params.getMinAsaForSurface()); // calls calcRimAndCores as well
+			iecList.setCoreRimPredBsaToAsaCutoff(params.getCAcutoffForRimCore(), params.getMinAsaForSurface()); // calls calcRimAndCores as well
 			iecList.setCoreRimScoreCutoff(params.getCoreRimScoreCutoff());
 			iecList.setCoreSurfScoreCutoff(params.getCoreSurfScoreCutoff());
-			iecList.scoreEntropy();
+			iecList.scoreCoreRim();
 
 			// z-scores
-			iecList.setZPredBsaToAsaCutoff(params.getCAcutoffForZscore(), params.getMinAsaForSurface()); // calls calcRimAndCores as well
-			iecList.scoreZscore();
+			iecList.setCoreSurfacePredBsaToAsaCutoff(params.getCAcutoffForZscore(), params.getMinAsaForSurface()); // calls calcRimAndCores as well
+			iecList.scoreCoreSurface();
 
 			// note this adds also the entropies to the residue details
 			modelAdaptor.add(iecList);
@@ -723,7 +723,7 @@ public class Main {
 			CombinedPredictor.printScoringHeaders(scoreCombPS);
 			for (int i=0;i<iecList.size();i++) {
 				CombinedPredictor cp = 
-						new CombinedPredictor(iecList.get(i), gps.get(i), iecList.getEvolCoreRimPredictor(i), iecList.getEvolCoreSurfacePredictor(i));
+						new CombinedPredictor(iecList.get(i), gps.get(i), iecList.get(i).getEvolCoreRimPredictor(), iecList.get(i).getEvolCoreSurfacePredictor());
 				cp.setUsePdbResSer(params.isUsePdbResSer());
 				cps.add(cp);
 				cp.printScoresLine(scoreCombPS);

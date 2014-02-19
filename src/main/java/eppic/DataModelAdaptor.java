@@ -383,7 +383,7 @@ public class DataModelAdaptor {
 			
 			
 			// 2) core-surface scores
-			EvolCoreSurfacePredictor ecsp = iecl.getEvolCoreSurfacePredictor(i);
+			EvolCoreSurfacePredictor ecsp = iec.getEvolCoreSurfacePredictor();
 			InterfaceScoreDB isCS = new InterfaceScoreDB();
 			ii.addInterfaceScore(isCS);
 			isCS.setInterfaceItem(ii);
@@ -411,7 +411,7 @@ public class DataModelAdaptor {
 			isCS.setPdbCode(ii.getPdbCode());
 			
 			// 3) core-rim scores
-			EvolCoreRimPredictor ecrp = iecl.getEvolCoreRimPredictor(i);
+			EvolCoreRimPredictor ecrp = iec.getEvolCoreRimPredictor();
 
 			InterfaceScoreDB isCR = new InterfaceScoreDB();
 			isCR.setInterfaceItem(ii);
@@ -446,6 +446,8 @@ public class DataModelAdaptor {
 		// 4) interface cluster scores
 		for (InterfaceClusterDB ic:pdbInfo.getInterfaceClusters()) {
 
+			// TODO we need to fill cluster scores per method: eppic-gm, eppic-cs, eppic-cr and eppic
+			
 			// TODO the cluster score is empty right now: we need to fill it!
 			InterfaceClusterScoreDB ics = new InterfaceClusterScoreDB();
 			ics.setMethod(ScoringMethod.EPPIC_FINAL);

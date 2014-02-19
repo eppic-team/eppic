@@ -19,8 +19,6 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 	
 	
 	private List<InterfaceEvolContext> list;
-	private List<EvolCoreRimPredictor> evolCoreRimPredictors;
-	private List<EvolCoreSurfacePredictor> evolCoreSurfacePredictors;
 	
 	private ChainInterfaceList chainInterfList; // we keep the reference also to be able to call methods from it
 	private ChainEvolContextList cecs;
@@ -44,8 +42,6 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 				
 		
 		list = new ArrayList<InterfaceEvolContext>();
-		evolCoreRimPredictors = new ArrayList<EvolCoreRimPredictor>();
-		evolCoreSurfacePredictors = new ArrayList<EvolCoreSurfacePredictor>();
 	
 		this.chainInterfList = interfaces;
 		this.cecs = cecs;
@@ -53,6 +49,8 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 		for (ChainInterface pi:interfaces) {
 			if (pi.isProtein()) {
 				InterfaceEvolContext iec = new InterfaceEvolContext(pi, this);
+				iec.setEvolCoreRimPredictor(new EvolCoreRimPredictor(iec));
+				iec.setEvolCoreSurfacePredictor(new EvolCoreSurfacePredictor(iec));
 				this.add(iec);
 			}
 		}
@@ -66,18 +64,8 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 		return this.list.get(i);
 	}
 	
-	public EvolCoreRimPredictor getEvolCoreRimPredictor(int i) {
-		return this.evolCoreRimPredictors.get(i);
-	}
-	
-	public EvolCoreSurfacePredictor getEvolCoreSurfacePredictor(int i) {
-		return this.evolCoreSurfacePredictors.get(i);
-	}
-	
 	private void add(InterfaceEvolContext iec) {
 		list.add(iec);
-		evolCoreRimPredictors.add(new EvolCoreRimPredictor(iec));
-		evolCoreSurfacePredictors.add(new EvolCoreSurfacePredictor(iec));
 	}
 	
 	@Override
@@ -85,45 +73,45 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 		return list.iterator();
 	}
 	
-	public void scoreEntropy() {
+	public void scoreCoreRim() {
 		this.scoType = ScoringType.CORERIM;
 		for (int i=0;i<list.size();i++) {
-			evolCoreRimPredictors.get(i).computeScores();
+			list.get(i).getEvolCoreRimPredictor().computeScores();
 		}
 	}
 	
-	public void scoreZscore() {
+	public void scoreCoreSurface() {
 		this.scoType = ScoringType.CORESURFACE;
 		for (int i=0;i<list.size();i++) {
-			evolCoreSurfacePredictors.get(i).computeScores();
+			list.get(i).getEvolCoreSurfacePredictor().computeScores();
 		}
 	}
 	
 	public void setCoreRimScoreCutoff(double coreRimScoreCutoff) {
 		for (int i=0;i<list.size();i++) {
-			evolCoreRimPredictors.get(i).setCallCutoff(coreRimScoreCutoff);	
+			list.get(i).getEvolCoreRimPredictor().setCallCutoff(coreRimScoreCutoff);	
 		}
 	}
 
 	public void setCoreSurfScoreCutoff(double coreSurfScoreCutoff) {
 		for (int i=0;i<list.size();i++) {
-			evolCoreSurfacePredictors.get(i).setCallCutoff(coreSurfScoreCutoff);
+			list.get(i).getEvolCoreSurfacePredictor().setCallCutoff(coreSurfScoreCutoff);
 		}
 	}
 
-	public void setRimCorePredBsaToAsaCutoff(double bsaToAsaCutoff, double minAsaForSurface) {
+	public void setCoreRimPredBsaToAsaCutoff(double bsaToAsaCutoff, double minAsaForSurface) {
 		chainInterfList.calcRimAndCores(bsaToAsaCutoff, minAsaForSurface);
 		
 		for (int i=0;i<list.size();i++) {
-			evolCoreRimPredictors.get(i).setBsaToAsaCutoff(bsaToAsaCutoff, minAsaForSurface);
+			list.get(i).getEvolCoreRimPredictor().setBsaToAsaCutoff(bsaToAsaCutoff, minAsaForSurface);
 		}		
 	}
 	
-	public void setZPredBsaToAsaCutoff(double bsaToAsaCutoff, double minAsaForSurface) {
+	public void setCoreSurfacePredBsaToAsaCutoff(double bsaToAsaCutoff, double minAsaForSurface) {
 		chainInterfList.calcRimAndCores(bsaToAsaCutoff, minAsaForSurface);
 		
 		for (int i=0;i<list.size();i++) {
-			evolCoreSurfacePredictors.get(i).setBsaToAsaCutoff(bsaToAsaCutoff, minAsaForSurface);
+			list.get(i).getEvolCoreSurfacePredictor().setBsaToAsaCutoff(bsaToAsaCutoff, minAsaForSurface);
 		}		
 	}
 	
@@ -160,8 +148,8 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 	 */
 	public void resetCalls() {
 		for (int i=0;i<list.size();i++) {
-			evolCoreRimPredictors.get(i).resetCall();
-			evolCoreSurfacePredictors.get(i).resetCall();
+			list.get(i).getEvolCoreRimPredictor().resetCall();
+			list.get(i).getEvolCoreSurfacePredictor().resetCall();
 		}
 	}
 

@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import eppic.predictors.EvolCoreRimPredictor;
+import eppic.predictors.EvolCoreSurfacePredictor;
 import owl.core.structure.ChainInterface;
 import owl.core.structure.PdbChain;
 import owl.core.structure.Residue;
@@ -24,6 +26,9 @@ public class InterfaceEvolContext implements Serializable {
 
 	private int minNumSeqs;
 	
+	private EvolCoreRimPredictor evolCoreRimPredictor;
+	private EvolCoreSurfacePredictor evolCoreSurfacePredictor;
+
 
 	
 	
@@ -48,6 +53,22 @@ public class InterfaceEvolContext implements Serializable {
 		if (molecId==FIRST) return getFirstChainEvolContext();
 		if (molecId==SECOND) return getSecondChainEvolContext();
 		return null;
+	}
+	
+	public EvolCoreRimPredictor getEvolCoreRimPredictor() {
+		return evolCoreRimPredictor;
+	}
+	
+	public void setEvolCoreRimPredictor(EvolCoreRimPredictor evolCoreRimPredictor) {
+		this.evolCoreRimPredictor = evolCoreRimPredictor;
+	}
+	
+	public EvolCoreSurfacePredictor getEvolCoreSurfacePredictor() {
+		return evolCoreSurfacePredictor;
+	}
+	
+	public void setEvolCoreSurfacePredictor(EvolCoreSurfacePredictor evolCoreSurfacePredictor) {
+		this.evolCoreSurfacePredictor = evolCoreSurfacePredictor;
 	}
 	
 	private PdbChain getMolecule(int molecId) {
