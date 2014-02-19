@@ -8,6 +8,7 @@ import org.ggf.drmaa.JobTemplate;
 import org.ggf.drmaa.Session;
 import org.ggf.drmaa.SessionFactory;
 
+import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.server.jobs.generators.queuing.NativeSpecificationGenerator;
 import ch.systemsx.sybit.crkwebui.server.jobs.generators.queuing.NativeSpecificationGeneratorFactory;
 import ch.systemsx.sybit.crkwebui.server.jobs.managers.commons.JobManager;
@@ -64,7 +65,7 @@ public class DrmaaJobManager implements JobManager
 		try
 		{
 			JobTemplate jobTemplate = session.createJobTemplate();
-			jobTemplate.setRemoteCommand("java");
+			jobTemplate.setRemoteCommand(ApplicationContext.getSettings().getJavaVMExec());
 			jobTemplate.setArgs(command);
 			jobTemplate.setJobName(jobId);
 			jobTemplate.setErrorPath(":" + jobDirectory);

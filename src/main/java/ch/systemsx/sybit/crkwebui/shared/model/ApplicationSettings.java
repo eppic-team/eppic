@@ -141,6 +141,11 @@ public class ApplicationSettings implements Serializable {
 	 */
 	private int maxXMLCalls;
 	
+	/**
+	 * path to java VM
+	 */
+	private String javaVMExec;
+	
 	public ApplicationSettings()
 	{
 		this.scoresTypes = new ArrayList<SupportedMethod>();
@@ -529,6 +534,14 @@ public class ApplicationSettings implements Serializable {
 
 	public void setMaxXMLCalls(int maxXMLCalls) {
 		this.maxXMLCalls = maxXMLCalls;
+	}
+
+	public String getJavaVMExec() {
+		return javaVMExec;
+	}
+
+	public void setJavaVMExec(String javaVMExec) {
+		this.javaVMExec = javaVMExec;
 	}
 
 	

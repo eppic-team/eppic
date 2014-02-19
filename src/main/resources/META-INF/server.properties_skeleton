@@ -8,6 +8,9 @@ email_password=testcrk
 email_host=mail.psi.ch
 email_port=25
 
+#java exec command
+java_VM_exec=java
+
 # location of crk runnable jar
 crk_jar=/Users/hullarb/Work/workspace/eclipse projects/eppic/build/jar/eppic.jar
 assigned_memory=512

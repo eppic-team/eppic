@@ -78,6 +78,15 @@ public class ApplicationSettingsGenerator
 			maxXMLCalls = 1;
 		}
 		
+		String javaVM;
+		if(globalProperties.getProperty("java_VM_exec")!=null && !globalProperties.getProperty("java_VM_exec").equals("")){
+			javaVM = globalProperties.getProperty("java_VM_exec");
+		}
+		else{
+			System.err.println("Warning: java VM not found from the server properties file using default value 'java'");
+			javaVM = "java";
+		}
+		
 		settings.setCaptchaPublicKey(captchaPublicKey);
 		settings.setUseCaptcha(useCaptcha);
 		settings.setNrOfAllowedSubmissionsWithoutCaptcha(nrOfAllowedSubmissionsWithoutCaptcha);
@@ -95,6 +104,7 @@ public class ApplicationSettingsGenerator
 		settings.setResolutionCutOff(resolutionCutOff);
 		settings.setRfreeCutOff(rfreeCutOff);
 		settings.setMaxXMLCalls(maxXMLCalls);
+		settings.setJavaVMExec(javaVM);
 
 		settings.setResultsLocation(globalProperties.getProperty("results_location"));
 		return settings;
