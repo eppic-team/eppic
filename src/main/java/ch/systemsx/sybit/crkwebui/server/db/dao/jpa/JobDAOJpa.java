@@ -397,7 +397,7 @@ public class JobDAOJpa implements JobDAO
 		{
 			processingInProgressData = new ProcessingInProgressData();
 			processingInProgressData.setJobId(job.getJobId());
-			processingInProgressData.setInput(job.getInputName());
+			processingInProgressData.setInputName(job.getInputName());
 			processingInProgressData.setStatus(job.getStatus());
 			processingInProgressData.setInputType(job.getInputType());
 		}

@@ -457,7 +457,7 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 				
 				InputWithType inputWithType = jobDAO.getInputWithTypeForJob(jobId);
 				statusData.setInputType(inputWithType.getInputType());
-				statusData.setInput(inputWithType.getInputName());
+				statusData.setInputName(inputWithType.getInputName());
 				
 				statusData.setStep(new StepStatus());
 
@@ -496,7 +496,7 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 					   (status.equals(StatusOfJob.WAITING.getName())) ||
 					   (status.equals(StatusOfJob.QUEUING.getName())))
 					{
-						statusData.setStep(retrieveCurrentStep(jobId, statusData.getInput()));
+						statusData.setStep(retrieveCurrentStep(jobId, statusData.getInputName()));
 					}
 				}
 				catch (Throwable e)

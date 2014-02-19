@@ -13,19 +13,19 @@ public class MyJobsModel implements Serializable
 
 	private String jobid;
 	private String status;
-	private String input;
+	private String inputName;
 	
 	public MyJobsModel() {
 		this.jobid = "";
 		this.status = "";
-		this.input = "";
+		this.inputName = "";
 	}
 
 	public MyJobsModel(String inputData, String status, String input) 
 	{
 		this.jobid = inputData;
 		this.status = status;
-		this.input = input;
+		this.inputName = input;
 	}
 
 	public String getJobid() {
@@ -44,12 +44,12 @@ public class MyJobsModel implements Serializable
 		this.status = status;
 	}
 
-	public String getInput() {
-		return input;
+	public String getInputName() {
+		return inputName;
 	}
 	
-	public void setInput(String input) {
-		this.input = input;
+	public void setInputName(String inputName) {
+		this.inputName = inputName;
 	}
 	
 }

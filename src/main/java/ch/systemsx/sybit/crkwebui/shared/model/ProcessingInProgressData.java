@@ -31,10 +31,10 @@ public class ProcessingInProgressData implements ProcessingData
 	/**
 	 * Pdb code or name of the file submitted.
 	 */
-	private String input;
+	private String inputName;
 	
 	/**
-	 * Type of the input - pdb code or file.
+	 * Type of the inputName - pdb code or file.
 	 */
 	private int inputType;
 	
@@ -93,18 +93,18 @@ public class ProcessingInProgressData implements ProcessingData
 
 	/**
 	 * Sets pdb code or name of submitted file.
-	 * @param input pdb code or name of submitted file
+	 * @param inputName pdb code or name of submitted file
 	 */
-	public void setInput(String input) {
-		this.input = input;
+	public void setInputName(String inputName) {
+		this.inputName = inputName;
 	}
 
 	/**
 	 * Retrieves pdb code or name of submitted file
 	 * @return pdb code or name of submitted file
 	 */
-	public String getInput() {
-		return input;
+	public String getInputName() {
+		return inputName;
 	}
 
 	/**
@@ -124,16 +124,16 @@ public class ProcessingInProgressData implements ProcessingData
 	}
 
 	/**
-	 * Sets type of the input
-	 * @param inputType type of the input
+	 * Sets type of the inputName
+	 * @param inputType type of the inputName
 	 */
 	public void setInputType(int inputType) {
 		this.inputType = inputType;
 	}
 
 	/**
-	 * Retrieves type of the input.
-	 * @return type of the input
+	 * Retrieves type of the inputName.
+	 * @return type of the inputName
 	 */
 	public int getInputType() {
 		return inputType;

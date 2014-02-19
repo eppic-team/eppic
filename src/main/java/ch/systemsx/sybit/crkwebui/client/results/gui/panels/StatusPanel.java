@@ -277,7 +277,7 @@ public class StatusPanel extends DisplayPanel
 
 		status.setHTML(String.valueOf(statusData.getStatus()));
 		jobId.setHTML(statusData.getJobId());
-		identifierHeaderPanel.setPDBText(statusData.getInput(), null, null, 0, 0, statusData.getInputType());
+		identifierHeaderPanel.setPDBText(statusData.getInputName(), null, null, 0, 0, statusData.getInputType());
 		identifierHeaderPanel.setEmptyDownloadResultsLink();
 
 		if(status.getHTML() != null){
