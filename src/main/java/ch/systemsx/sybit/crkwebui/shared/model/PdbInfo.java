@@ -24,8 +24,8 @@ import eppic.model.AssemblyDB;
 @XmlRootElement(name = "eppicAnalysis")
 @XmlType(propOrder = { "pdbCode", "title", "releaseDate", "expMethod",
 						"spaceGroup", "resolution", "rfreeValue",
-						"chainClusters", "interfaces",
-						"runParameters", "assemblies"})
+						"chainClusters", "interfaceClusters",  "assemblies",
+						"runParameters"})
 @XmlAccessorType(XmlAccessType.FIELD)
 public class PdbInfo implements Serializable, ProcessingData
 {
