@@ -76,13 +76,20 @@
 			<artifactId>c3p0</artifactId>
 			<version>0.9.2</version>
 		</dependency>
-
+		 
 		<dependency>
 			<groupId>us.levk</groupId>
 			<artifactId>drmaa-common</artifactId>
 			<version>1.0</version>
+		</dependency>		
+		
+		<dependency>
+			<groupId>us.levk</groupId>
+			<artifactId>drmaa-gridengine</artifactId>
+			<version>6.2u5</version>
 		</dependency>
-    
+            
+            
 		<dependency>
 			<groupId>javax.mail</groupId>
 			<artifactId>mail</artifactId>
