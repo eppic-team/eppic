@@ -7,8 +7,6 @@ import ch.systemsx.sybit.crkwebui.shared.model.ChainCluster;
 import ch.systemsx.sybit.crkwebui.shared.model.WindowData;
 
 import com.google.gwt.dom.client.Style.Unit;
-import com.google.gwt.event.logical.shared.ResizeEvent;
-import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
 
 
@@ -49,15 +47,6 @@ public class AlignmentsWindow extends ResizableWindow
 		dock.add(gridContainer);
 		
 		this.setWidget(dock);
-
-		this.addResizeHandler(new ResizeHandler()
-		{
-			@Override
-			public void onResize(ResizeEvent event) {
-				updateWindowContent();
-
-			}
-		});
 
 	}
 	
