@@ -58,6 +58,7 @@ public class PDBSearchResult implements Serializable {
 
 	}
 	
+	private int uid;
 	private String pdbCode;
 	private String title;
 	private Date releaseDate;
@@ -66,7 +67,8 @@ public class PDBSearchResult implements Serializable {
 	private double rfreeValue;
 	private String expMethod;
 
-	public PDBSearchResult(String pdbCode,
+	public PDBSearchResult(int uid,
+			String pdbCode,
 			String title,
 			Date releaseDate,
 			String spaceGroup,
@@ -90,6 +92,14 @@ public class PDBSearchResult implements Serializable {
 
 	public void setPdbCode(String pdbCode) {
 		this.pdbCode = pdbCode;
+	}
+
+	public int getUid() {
+		return uid;
+	}
+
+	public void setUid(int uid) {
+		this.uid = uid;
 	}
 
 	public String getTitle() {
