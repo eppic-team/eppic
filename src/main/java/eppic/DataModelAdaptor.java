@@ -178,6 +178,8 @@ public class DataModelAdaptor {
 				
 				InterfaceClusterScoreDB icsDB = new InterfaceClusterScoreDB();
 				icsDB.setScore(SCORE_NOT_AVAILABLE);
+				icsDB.setScore1(SCORE_NOT_AVAILABLE);
+				icsDB.setScore2(SCORE_NOT_AVAILABLE);
 				icsDB.setCallName(CallType.BIO.getName());
 				icsDB.setConfidence(CONFIDENCE_NOT_AVAILABLE);
 				icsDB.setMethod(unit.getType().getType());				
