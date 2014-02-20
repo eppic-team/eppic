@@ -24,6 +24,7 @@ import ch.systemsx.sybit.crkwebui.client.main.controllers.MainController;
 import ch.systemsx.sybit.crkwebui.client.residues.gui.windows.InterfacesResiduesWindow;
 import ch.systemsx.sybit.crkwebui.client.results.gui.panels.ResultsPanel;
 import ch.systemsx.sybit.crkwebui.client.results.gui.panels.StatusPanel;
+import ch.systemsx.sybit.crkwebui.client.search.gui.panels.SearchPanel;
 import ch.systemsx.sybit.crkwebui.client.viewer.gui.windows.ViewerSelectorWindow;
 import ch.systemsx.sybit.crkwebui.shared.model.ChainCluster;
 import ch.systemsx.sybit.crkwebui.shared.model.Interface;
@@ -71,6 +72,7 @@ public class MainViewPort extends BorderLayoutContainer
 	private ResultsPanel resultsPanel;
 	private StatusPanel statusPanel;
 	private InputDataPanel inputDataPanel;
+	private SearchPanel searchPanel;
 	
 	public MainViewPort(final MainController mainController)
 	{
@@ -426,6 +428,14 @@ public class MainViewPort extends BorderLayoutContainer
 
 	public void setStatusPanel(StatusPanel statusPanel) {
 		this.statusPanel = statusPanel;
+	}
+
+	public SearchPanel getSearchPanel() {
+		return searchPanel;
+	}
+
+	public void setSearchPanel(SearchPanel searchPanel) {
+		this.searchPanel = searchPanel;
 	}
 
 	public void setInputDataPanel(InputDataPanel inputDataPanel) {

@@ -9,7 +9,6 @@ import ch.systemsx.sybit.crkwebui.client.commons.services.eppic.CrkWebServiceAsy
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.rpc.HasRpcToken;
 import com.google.gwt.user.client.rpc.XsrfToken;
-import com.sencha.gxt.data.shared.loader.FilterPagingLoadConfig;
 
 /**
  * call back after getting pdb list for a uniport
@@ -19,13 +18,10 @@ import com.sencha.gxt.data.shared.loader.FilterPagingLoadConfig;
 public class GetPdbForUniprotCallBackXsrf implements AsyncCallback<XsrfToken>{
 
 	private CrkWebServiceAsync crkWebService;
-	private FilterPagingLoadConfig config;
 	private String uniProtId;
 	
-	public GetPdbForUniprotCallBackXsrf(CrkWebServiceAsync crkWebService,
-			FilterPagingLoadConfig config, String uniProtId) {
+	public GetPdbForUniprotCallBackXsrf(CrkWebServiceAsync crkWebService, String uniProtId) {
 		this.crkWebService = crkWebService;
-		this.config = config;
 		this.uniProtId = uniProtId;
 	}
 
@@ -40,7 +36,7 @@ public class GetPdbForUniprotCallBackXsrf implements AsyncCallback<XsrfToken>{
 		if (token != null)
 		{
 			((HasRpcToken)crkWebService).setRpcToken(token);
-			crkWebService.getListOfPDBsHavingAUniProt(config, uniProtId, new GetPdbForUniprotCallBack());
+			crkWebService.getListOfPDBsHavingAUniProt(uniProtId, new GetPdbForUniprotCallBack(uniProtId));
 		}
 		else 
 		{

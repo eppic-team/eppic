@@ -66,6 +66,10 @@ public class PDBSearchResult implements Serializable {
 	private double resolution;
 	private double rfreeValue;
 	private String expMethod;
+	
+	public PDBSearchResult(){
+		
+	}
 
 	public PDBSearchResult(int uid,
 			String pdbCode,

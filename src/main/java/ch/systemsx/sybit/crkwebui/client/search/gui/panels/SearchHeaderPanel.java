@@ -33,7 +33,7 @@ public class SearchHeaderPanel extends VerticalLayoutContainer{
 		table.setCellPadding(0);
 		table.setCellSpacing(0);
 		
-		table.setWidget(0, 0, subtitlePanel);
+		table.setWidget(0, 0, subtitleLabel);
 		table.setWidget(0, 1, subtitleText);
 		
 		return table;

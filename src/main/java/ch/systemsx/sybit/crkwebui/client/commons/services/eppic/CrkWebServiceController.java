@@ -2,8 +2,6 @@ package ch.systemsx.sybit.crkwebui.client.commons.services.eppic;
 
 import java.util.List;
 
-import com.sencha.gxt.data.shared.loader.FilterPagingLoadConfig;
-
 import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
 
 /**
@@ -80,8 +78,7 @@ public interface CrkWebServiceController
 	
 	/**
 	 * gets a list of pdb having a seq with a particular UniProt Id
-	 * @param config
 	 * @param UniProtId
 	 */
-	public abstract void getListOfPDBsHavingAUniProt(FilterPagingLoadConfig config, String uniProtId);
+	public abstract void getListOfPDBsHavingAUniProt(String uniProtId);
 }

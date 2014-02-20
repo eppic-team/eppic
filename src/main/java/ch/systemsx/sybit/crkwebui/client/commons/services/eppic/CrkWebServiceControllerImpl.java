@@ -22,7 +22,6 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.rpc.XsrfTokenServiceAsync;
 import com.sencha.gxt.core.client.GXT;
-import com.sencha.gxt.data.shared.loader.FilterPagingLoadConfig;
 
 /**
  * Implementation of service manager.
@@ -110,10 +109,9 @@ public class CrkWebServiceControllerImpl implements CrkWebServiceController
 	}
 
 	@Override
-	public void getListOfPDBsHavingAUniProt(FilterPagingLoadConfig config,
-			String uniProtId) {
+	public void getListOfPDBsHavingAUniProt(String uniProtId) {
 		xsrfTokenService.getNewXsrfToken(
-				new GetPdbForUniprotCallBackXsrf(crkWebService, config, uniProtId));
+				new GetPdbForUniprotCallBackXsrf(crkWebService, uniProtId));
 		
 	}
 }

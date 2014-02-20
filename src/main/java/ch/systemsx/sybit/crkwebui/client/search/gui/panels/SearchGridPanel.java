@@ -4,24 +4,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.client.commons.gui.cell.TwoDecimalDoubleCell;
-import ch.systemsx.sybit.crkwebui.client.commons.services.eppic.CrkWebServiceProvider;
 import ch.systemsx.sybit.crkwebui.shared.model.PDBSearchResult;
 
-import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.core.shared.GWT;
 import com.google.gwt.editor.client.Editor.Path;
-import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.event.logical.shared.ResizeEvent;
+import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.sencha.gxt.core.client.ValueProvider;
-import com.sencha.gxt.data.client.loader.RpcProxy;
 import com.sencha.gxt.data.shared.ListStore;
 import com.sencha.gxt.data.shared.ModelKeyProvider;
 import com.sencha.gxt.data.shared.PropertyAccess;
-import com.sencha.gxt.data.shared.loader.FilterPagingLoadConfig;
-import com.sencha.gxt.data.shared.loader.FilterPagingLoadConfigBean;
-import com.sencha.gxt.data.shared.loader.LoadResultListStoreBinding;
-import com.sencha.gxt.data.shared.loader.PagingLoadResult;
-import com.sencha.gxt.data.shared.loader.PagingLoader;
 import com.sencha.gxt.widget.core.client.form.NumberPropertyEditor.DoublePropertyEditor;
 import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer;
 import com.sencha.gxt.widget.core.client.grid.ColumnConfig;
@@ -30,7 +22,6 @@ import com.sencha.gxt.widget.core.client.grid.Grid;
 import com.sencha.gxt.widget.core.client.grid.filters.GridFilters;
 import com.sencha.gxt.widget.core.client.grid.filters.NumericFilter;
 import com.sencha.gxt.widget.core.client.grid.filters.StringFilter;
-import com.sencha.gxt.widget.core.client.toolbar.PagingToolBar;
 
 public class SearchGridPanel extends VerticalLayoutContainer
 {
@@ -59,37 +50,21 @@ public class SearchGridPanel extends VerticalLayoutContainer
 	private ColumnModel<PDBSearchResult> cm;
 	private final Grid<PDBSearchResult> resultsGrid;
 
-	private RpcProxy<FilterPagingLoadConfig, PagingLoadResult<PDBSearchResult>> proxy;
-	private final PagingLoader<FilterPagingLoadConfig, PagingLoadResult<PDBSearchResult>> remoteLoader;
-	private PagingToolBar pagingToolbar;
-
-	private int resultsPerPage = 25;
-	
 	/**
 	 * Constructor
 	 */
-	public SearchGridPanel(final String uniProtId){
-		
+	public SearchGridPanel(){
+
+		this.addResizeHandler(new ResizeHandler() {
+
+			@Override
+			public void onResize(ResizeEvent event) {
+				resizeGrid();
+
+			}
+		});
+
 		store = new ListStore<PDBSearchResult>(props.key());
-
-		proxy = new RpcProxy<FilterPagingLoadConfig, PagingLoadResult<PDBSearchResult>>() {
-			@Override
-			public void load(FilterPagingLoadConfig loadConfig,
-					AsyncCallback<PagingLoadResult<PDBSearchResult>> callback) {
-				CrkWebServiceProvider.getServiceController().getListOfPDBsHavingAUniProt(loadConfig, uniProtId);
-				
-			}
-		};
-
-		remoteLoader = new PagingLoader<FilterPagingLoadConfig, PagingLoadResult<PDBSearchResult>>(proxy) {
-			@Override
-			protected FilterPagingLoadConfig newLoadConfig() {
-				return new FilterPagingLoadConfigBean();
-			}
-		};
-
-		remoteLoader.setRemoteSort(true);
-		remoteLoader.addLoadHandler(new LoadResultListStoreBinding<FilterPagingLoadConfig, PDBSearchResult, PagingLoadResult<PDBSearchResult>>(store));
 
 		ColumnConfig<PDBSearchResult, String> pdbCol = new ColumnConfig<PDBSearchResult, String>(props.pdbCode(), 50, "PDB Code");
 		ColumnConfig<PDBSearchResult, String> titleCol = new ColumnConfig<PDBSearchResult, String>(props.title(), 200, "Title");
@@ -110,37 +85,27 @@ public class SearchGridPanel extends VerticalLayoutContainer
 
 		cm = new ColumnModel<PDBSearchResult>(resultsConfig);
 
-		resultsGrid = new Grid<PDBSearchResult>(store, cm) {
-			@Override
-			protected void onAfterFirstAttach() {
-				super.onAfterFirstAttach();
-				Scheduler.get().scheduleDeferred(new ScheduledCommand() {
-					@Override
-					public void execute() {
-						remoteLoader.load();
-					}
-				});
-			}
-		};
-		
-		resultsGrid.setLoader(remoteLoader);
+		resultsGrid = new Grid<PDBSearchResult>(store, cm);
+
 		resultsGrid.getView().setAutoExpandColumn(pdbCol);
 		resultsGrid.setBorders(false);
 		resultsGrid.getView().setStripeRows(true);
 		resultsGrid.getView().setColumnLines(true);
+		resultsGrid.getView().setForceFit(true);
 
 		NumericFilter<PDBSearchResult, Double> resFilter = 
 				new NumericFilter<PDBSearchResult, Double>(props.resolution(), new DoublePropertyEditor());
 		NumericFilter<PDBSearchResult, Double> rFreeFilter = 
 				new NumericFilter<PDBSearchResult, Double>(props.rfreeValue(), new DoublePropertyEditor());
-		
+
 		StringFilter<PDBSearchResult> pdbFilter = new StringFilter<PDBSearchResult>(props.pdbCode());
 		StringFilter<PDBSearchResult> titleFilter = new StringFilter<PDBSearchResult>(props.title());
 		StringFilter<PDBSearchResult> expMethodFilter = new StringFilter<PDBSearchResult>(props.expMethod());
 		StringFilter<PDBSearchResult> spaceGroupFilter = new StringFilter<PDBSearchResult>(props.spaceGroup());
 
-		GridFilters<PDBSearchResult> filters = new GridFilters<PDBSearchResult>(remoteLoader);
+		GridFilters<PDBSearchResult> filters = new GridFilters<PDBSearchResult>();
 		filters.initPlugin(resultsGrid);
+		filters.setLocal(true);
 		filters.addFilter(pdbFilter);
 		filters.addFilter(titleFilter);
 		filters.addFilter(expMethodFilter);
@@ -148,11 +113,31 @@ public class SearchGridPanel extends VerticalLayoutContainer
 		filters.addFilter(resFilter);
 		filters.addFilter(rFreeFilter);
 
-		pagingToolbar = new PagingToolBar(resultsPerPage);
-		pagingToolbar.bind(remoteLoader);
-
 		this.add(resultsGrid, new VerticalLayoutData(1, 1));
-		this.add(pagingToolbar, new VerticalLayoutData(1, -1));
 
+	}
+
+	/**
+	 * Sets content of grid.
+	 * @param values list of items to add to the grid
+	 */
+	public void fillGrid(List<PDBSearchResult> values)
+	{
+		store.clear();
+
+		if (values != null) {
+			store.addAll(values);
+		}
+		
+		resultsGrid.reconfigure(store, cm);
+	}
+
+	/**
+	 * Adjusts size of the grid
+	 */
+	public void resizeGrid()
+	{		
+		resultsGrid.clearSizeCache();
+		resultsGrid.getView().refresh(true);
 	}
 }

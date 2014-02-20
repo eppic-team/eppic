@@ -1,5 +1,7 @@
 package ch.systemsx.sybit.crkwebui.client.main.controllers;
 
+import java.util.List;
+
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ApplicationInitEvent;
@@ -10,6 +12,7 @@ import ch.systemsx.sybit.crkwebui.client.commons.events.HideTopPanelSearchBoxEve
 import ch.systemsx.sybit.crkwebui.client.commons.events.HideWaitingEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.InterfaceResiduesDataRetrievedEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.RefreshStatusDataEvent;
+import ch.systemsx.sybit.crkwebui.client.commons.events.SearchResultsDataRetrievedEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowAboutEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowAlignmentsEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowErrorEvent;
@@ -33,6 +36,7 @@ import ch.systemsx.sybit.crkwebui.client.commons.handlers.HideAllWindowsHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.HideWaitingHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.InterfaceResiduesDataRetrievedHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.RefreshStatusDataHandler;
+import ch.systemsx.sybit.crkwebui.client.commons.handlers.SearchResultsDataRetrievedHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowAboutHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowAlignmentsHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowErrorHandler;
@@ -59,6 +63,8 @@ import ch.systemsx.sybit.crkwebui.client.publications.gui.panels.PublicationsPan
 import ch.systemsx.sybit.crkwebui.client.releases.gui.panels.ReleasesPanel;
 import ch.systemsx.sybit.crkwebui.client.results.gui.panels.ResultsPanel;
 import ch.systemsx.sybit.crkwebui.client.results.gui.panels.StatusPanel;
+import ch.systemsx.sybit.crkwebui.client.search.gui.panels.SearchPanel;
+import ch.systemsx.sybit.crkwebui.shared.model.PDBSearchResult;
 import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
 import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
@@ -134,6 +140,21 @@ public class MainController
 			}
 		});
 		
+		EventBusManager.EVENT_BUS.addHandler(SearchResultsDataRetrievedEvent.TYPE, new SearchResultsDataRetrievedHandler() {
+			
+			@Override
+			public void onSearchResultsDataRetrieved(final SearchResultsDataRetrievedEvent event) {
+				Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+					@Override
+					public void execute() 
+					{
+						displaySearchView(event.getUniProtId(), event.getResults());
+					}
+				});
+			}
+		});
+		
+
 		EventBusManager.EVENT_BUS.addHandler(ShowStatusDataEvent.TYPE, new ShowStatusDataHandler() {
 			
 			@Override
@@ -357,6 +378,11 @@ public class MainController
 			ApplicationContext.setSelectedJobId(token.substring(3));
 			displayResults();
 		}
+		if ((token != null) && (token.length() > 3) && (token.startsWith("search")))
+		{
+			Window.setTitle("Test Loading");
+			displaySearch(token.substring(7));
+		}
 		else if((token != null) && (token.equals("help") || token.equals("!help")))
 		{
 			displayHelp();
@@ -544,6 +570,51 @@ public class MainController
 		EventBusManager.EVENT_BUS.fireEvent(new GetFocusOnJobsListEvent());
 		Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_results() + " - " + 
 						resultData.getPdbCode());
+	}
+	
+	/**
+	 * Retrieves results of search for displaying central panel content.
+	 */
+	public void displaySearch(String uniProtId)
+	{
+		mainViewPort.mask(AppPropertiesManager.CONSTANTS.defaultmask());
+		CrkWebServiceProvider.getServiceController().getListOfPDBsHavingAUniProt(uniProtId);
+	}
+	
+	/**
+	 * Displays search panel.
+	 */
+	private void displaySearchView(String uniProtId, List<PDBSearchResult> resultList)
+	{
+		ApplicationContext.setDoStatusPanelRefreshing(false);
+
+		SearchPanel searchPanel = null;
+		
+		String label = "test for now";
+		
+		if((mainViewPort.getCenterPanel().getDisplayPanel() != null) &&
+		   (mainViewPort.getCenterPanel().getDisplayPanel() instanceof SearchPanel))
+		{
+			searchPanel = (SearchPanel)mainViewPort.getCenterPanel().getDisplayPanel();
+			searchPanel.fillSearchPanel(uniProtId, label, resultList);
+		}
+		else if(mainViewPort.getSearchPanel() != null)
+		{
+			searchPanel = mainViewPort.getSearchPanel();
+			searchPanel.fillSearchPanel(uniProtId, label, resultList);
+			mainViewPort.getCenterPanel().setDisplayPanel(searchPanel);
+			//searchPanel.resizeContent();
+		}
+		else
+		{
+			searchPanel = new SearchPanel();
+			searchPanel.fillSearchPanel(uniProtId, label, resultList);
+			mainViewPort.setSearchPanel(searchPanel);
+			mainViewPort.getCenterPanel().setDisplayPanel(searchPanel);
+			//searchPanel.resizeContent();
+		}
+
+		Window.setTitle("Test" + " - " + uniProtId);
 	}
 
 	/**

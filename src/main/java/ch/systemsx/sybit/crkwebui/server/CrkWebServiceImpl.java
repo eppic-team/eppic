@@ -5,8 +5,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -71,11 +69,6 @@ import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
 import ch.systemsx.sybit.crkwebui.shared.model.StepStatus;
 
 import com.google.gwt.user.server.rpc.XsrfProtectedServiceServlet;
-import com.sencha.gxt.data.shared.SortDir;
-import com.sencha.gxt.data.shared.SortInfo;
-import com.sencha.gxt.data.shared.loader.FilterPagingLoadConfig;
-import com.sencha.gxt.data.shared.loader.PagingLoadResult;
-import com.sencha.gxt.data.shared.loader.PagingLoadResultBean;
 
 import eppic.EppicParams;
 
@@ -753,64 +746,11 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 	}
 
 	@Override
-	public PagingLoadResult<PDBSearchResult> getListOfPDBsHavingAUniProt(
-			FilterPagingLoadConfig config, String uniProtId) throws Exception {
+	public List<PDBSearchResult> getListOfPDBsHavingAUniProt(String uniProtId) throws Exception {
 
 		ChainClusterDAO homologsDAO = new ChainClusterDAOJpa();
 		List<PDBSearchResult> resultList = homologsDAO.getPdbSearchItemsForUniProt(uniProtId);
-
-		//get all the comments from the data store  
-		//and sort this list according to sorting info  
-
-		if (config.getSortInfo() != null && config.getSortInfo().size() > 0 ) {  
-			SortInfo sortinfo = config.getSortInfo().get(0);
-			final String propertyName = sortinfo.getSortField();
-			final SortDir sortDir = sortinfo.getSortDir(); 
-			if (propertyName != null) {  
-				Collections.sort(resultList, new Comparator<PDBSearchResult>() {
-					@Override
-					public int compare(PDBSearchResult a, PDBSearchResult b) {
-						int returnValue = 0;
-						if("pdbCode".equals(propertyName))
-							returnValue = new String(a.getPdbCode()).compareTo(b.getPdbCode());
-						if("title".equals(propertyName))
-							returnValue = new String(a.getTitle()).compareTo(b.getTitle());
-						if("releaseDate".equals(propertyName))
-							returnValue = (a.getReleaseDate().compareTo(b.getReleaseDate()));
-						if("spaceGroup".equals(propertyName))
-							returnValue = new String(a.getSpaceGroup()).compareTo(b.getSpaceGroup());
-						if("resolution".equals(propertyName))
-							returnValue = new Double(a.getResolution()).compareTo(b.getResolution());
-						if("rfreeValue".equals(propertyName))
-							returnValue = new Double(a.getRfreeValue()).compareTo(b.getRfreeValue());
-						if("expMethod".equals(propertyName))
-							returnValue = new String(a.getExpMethod()).compareTo(b.getExpMethod());
-						
-						if(SortDir.ASC == sortDir)
-							return returnValue;
-						else
-							return -1 * returnValue;
-					}
-
-				});  
-			}  
-		}  
-
-		//Create a sublist and add data to list according  
-		//to the limit and offset value of the config  
-
-		ArrayList<PDBSearchResult> sublist = new ArrayList<PDBSearchResult>();  
-		int start = config.getOffset();  
-		int limit = resultList.size();  
-		if (config.getLimit() > 0) {  
-			limit = Math.min(start + config.getLimit(), limit);  
-		}  
-		
-		for (int i = config.getOffset(); i < limit; i++) {         
-			sublist.add(resultList.get(i));       
-		}         
-		
-		return new PagingLoadResultBean<PDBSearchResult>(sublist, resultList.size(),config.getOffset());  
+		return resultList;
 	} 
 }
 
