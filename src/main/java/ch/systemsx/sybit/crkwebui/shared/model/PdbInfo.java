@@ -8,6 +8,8 @@ import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
@@ -54,10 +56,14 @@ public class PdbInfo implements Serializable, ProcessingData
 	
 	private RunParameters runParameters;
 	
+	@XmlElementWrapper(name = "chainClusters")
+	@XmlElement(name = "chainCluster")
 	private List<ChainCluster> chainClusters;
 	
+	@XmlElementWrapper(name = "interfaceClusters")
+	@XmlElement(name = "interfaceCluster")
 	private List<InterfaceCluster> interfaceClusters;
-	
+
 	private List<Assembly> assemblies;
 	
 	public PdbInfo() 

@@ -4,6 +4,9 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
+
 import eppic.model.InterfaceDB;
 import eppic.model.ResidueDB;
 import eppic.model.InterfaceScoreDB;
@@ -37,6 +40,8 @@ public class Interface implements Serializable, Comparable<Interface>
 	private List<InterfaceWarning> interfaceWarnings;
 	
 	//things from the interface Score table
+	@XmlElementWrapper(name = "interfaceScores")
+	@XmlElement(name = "interfaceScore")
 	private List<InterfaceScore> interfaceScores;
 	
 	private List<Residue> residues;
