@@ -76,6 +76,7 @@ public class PDBSearchResult implements Serializable {
 			double rfreeValue,
 			String expMethod){
 
+		this.uid = uid;
 		this.pdbCode = pdbCode;
 		this.title = title;
 		this.releaseDate = releaseDate;
