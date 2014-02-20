@@ -22,7 +22,7 @@ public class MethodsSummaryRenderer implements SummaryRenderer<InterfaceItemMode
 		return SafeHtmlUtils.fromSafeConstant(convertIntToCall((Integer)value));
 	}
 	
-	private static String convertIntToCall(int callInt){
+	protected String convertIntToCall(int callInt){
 		if(callInt == 0){
 			return "nopred";
 		} else if(callInt == 1){

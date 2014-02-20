@@ -12,8 +12,14 @@
 .x-grid-row-summary, .x-grid-row-summary td{
 	text-align: center;
 	font-size: 14px;
-	font-style: italic;
-	color: black;
+}
+
+.eppic-results-grid-cell-bio{
+	color: green;
+}
+
+.eppic-results-grid-cell-xtal{
+	color: red;
 }
 
 .eppic-default-font, .eppic-default-font td, .eppic-default-font tr, .eppic-default-font input{
