@@ -233,7 +233,7 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 	private SummaryColumnConfig<InterfaceItemModel, String> getFinalCallColumn() {
 		SummaryColumnConfig<InterfaceItemModel, String> column = 
 				new SummaryColumnConfig<InterfaceItemModel, String>(props.finalCallName());
-		column.setCell(new MethodCallCell(resultsStore, "finalCallName"));
+		column.setCell(new MethodCallCell(resultsStore, ScoringMethod.EPPIC_FINAL));
 		column.setSummaryType(new MethodSummaryType.FinalCallSummaryType());
 		column.setSummaryRenderer(new FinalCallSummaryRenderer());
 		fillColumnSettings(column, "finalCallName");
