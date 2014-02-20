@@ -13,6 +13,8 @@ import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.Label;
 import com.sencha.gxt.core.client.dom.ScrollSupport.ScrollMode;
+import com.sencha.gxt.core.client.dom.XElement;
+import com.sencha.gxt.core.client.util.Margins;
 import com.sencha.gxt.widget.core.client.container.CssFloatLayoutContainer;
 
 import eppic.model.ScoringMethod;
@@ -64,8 +66,8 @@ public class ResiduesSummaryPanel extends CssFloatLayoutContainer
 		
 		summaryTable.setWidget(0, 1, new Label(Integer.toString(coreSize)));
 		summaryTable.setWidget(1, 1, new Label(Integer.toString(rimSize)));
-		summaryTable.setWidget(2, 1, new Label(number.format(entropyRatioValue)));
-		summaryTable.setWidget(3, 1, new Label(number.format(entropyZscore)));
+		summaryTable.setWidget(0, 3, new Label(number.format(entropyRatioValue)));
+		summaryTable.setWidget(1, 3, new Label(number.format(entropyZscore)));
 		
 	}
 
@@ -86,13 +88,15 @@ public class ResiduesSummaryPanel extends CssFloatLayoutContainer
 		
 		LabelWithTooltip crHead = new LabelWithTooltip(AppPropertiesManager.CONSTANTS.interfaces_residues_summary_corerim_final(), 
 				AppPropertiesManager.CONSTANTS.interfaces_residues_summary_corerim_final_hint());
+		crHead.getElement().<XElement>cast().setMargins(new Margins(0, 0, 0, 30));
 		crHead.addStyleName("eppic-residues-summary-fields");
-		summaryTable.setWidget(2, 0, crHead);
+		summaryTable.setWidget(0, 2, crHead);
 		
 		LabelWithTooltip csHead = new LabelWithTooltip(AppPropertiesManager.CONSTANTS.interfaces_residues_summary_coresurface_final(), 
 				AppPropertiesManager.CONSTANTS.interfaces_residues_summary_coresurface_final_hint());
+		csHead.getElement().<XElement>cast().setMargins(new Margins(0, 0, 0, 30));
 		csHead.addStyleName("eppic-residues-summary-fields");
-		summaryTable.setWidget(3, 0, csHead);
+		summaryTable.setWidget(1, 2, csHead);
 	}
 	
 	private void calculateData(PdbInfo pdbScoreItem,
@@ -156,8 +160,8 @@ public class ResiduesSummaryPanel extends CssFloatLayoutContainer
 	{
 		summaryTable.setWidget(0, 1, new Label(" "));
 		summaryTable.setWidget(1, 1, new Label(" "));
-		summaryTable.setWidget(2, 1, new Label(" "));
-		summaryTable.setWidget(3, 1, new Label(" "));
+		summaryTable.setWidget(0, 3, new Label(" "));
+		summaryTable.setWidget(1, 3, new Label(" "));
 	}
 	
 	

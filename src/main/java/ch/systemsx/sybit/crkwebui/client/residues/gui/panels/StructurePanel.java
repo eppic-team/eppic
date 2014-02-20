@@ -29,7 +29,7 @@ public class StructurePanel extends FramedPanel
 		mainContainer.setScrollMode(ScrollMode.AUTOX);
 		
 		residuesSummaryPanel = new ResiduesSummaryPanel(structureNr);
-		residuesSummaryPanel.setHeight(70);
+		residuesSummaryPanel.setHeight(50);
 
 		mainContainer.add(residuesSummaryPanel, new VerticalLayoutData(-1, -1, new Margins(0)));
 		
@@ -49,7 +49,7 @@ public class StructurePanel extends FramedPanel
 	{
 		FormPanel breakPanel = new FormPanel();
 		breakPanel.setBorders(false);
-		breakPanel.setHeight(20);
+		breakPanel.setHeight(5);
 		return breakPanel;
 	}
 	
