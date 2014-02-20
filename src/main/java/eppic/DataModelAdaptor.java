@@ -194,6 +194,8 @@ public class DataModelAdaptor {
 	}
 	
 	public void setGeometryScores(List<GeometryPredictor> gps) {
+		
+		// geometry scores per interface
 		for (int i=0;i<gps.size();i++) {
 			InterfaceDB ii = pdbInfo.getInterface(i+1);
 			InterfaceScoreDB is = new InterfaceScoreDB();
@@ -222,9 +224,31 @@ public class DataModelAdaptor {
 			}
 
 		}
+
+		// geometry scores per interface cluster
+		for (InterfaceClusterDB ic:pdbInfo.getInterfaceClusters()) {
+
+			// TODO the cluster scores are empty right now: we need to fill them!
+
+			// method eppic-gm
+			InterfaceClusterScoreDB ics = new InterfaceClusterScoreDB();
+			ics.setMethod(ScoringMethod.EPPIC_GEOMETRY);
+			ics.setCallName(CallType.NO_PREDICTION.getName());
+			ics.setScore(SCORE_NOT_AVAILABLE);
+			ics.setScore1(SCORE_NOT_AVAILABLE);
+			ics.setScore2(SCORE_NOT_AVAILABLE);
+			ics.setConfidence(CONFIDENCE_NOT_AVAILABLE);
+			ics.setPdbCode(pdbInfo.getPdbCode());
+			ics.setClusterId(ic.getClusterId());
+
+			// setting relations child/parent
+			ics.setInterfaceCluster(ic); 
+			ic.addInterfaceClusterScore(ics);
+		}
+
 	}
-	
-	public void add(InterfaceEvolContextList iecl) {
+
+	public void setEvolScores(InterfaceEvolContextList iecl) {
 		
 		List<ChainClusterDB> chainClusterDBs = new ArrayList<ChainClusterDB>();
 		
@@ -386,21 +410,6 @@ public class DataModelAdaptor {
 			ics.setInterfaceCluster(ic); 
 			ic.addInterfaceClusterScore(ics);
 
-			// method eppic-gm
-			ics = new InterfaceClusterScoreDB();
-			ics.setMethod(ScoringMethod.EPPIC_GEOMETRY);
-			ics.setCallName(CallType.NO_PREDICTION.getName());
-			ics.setScore(SCORE_NOT_AVAILABLE);
-			ics.setScore1(SCORE_NOT_AVAILABLE);
-			ics.setScore2(SCORE_NOT_AVAILABLE);
-			ics.setConfidence(CONFIDENCE_NOT_AVAILABLE);
-			ics.setPdbCode(pdbInfo.getPdbCode());
-			ics.setClusterId(ic.getClusterId());
-
-			// setting relations child/parent
-			ics.setInterfaceCluster(ic); 
-			ic.addInterfaceClusterScore(ics);
-
 			// method eppic-cr
 			ics = new InterfaceClusterScoreDB();
 			ics.setMethod(ScoringMethod.EPPIC_CORERIM);
@@ -469,7 +478,7 @@ public class DataModelAdaptor {
 		}
 	}
 	
-	public void addResidueDetails(ChainInterfaceList interfaces) {
+	public void setResidueDetails(ChainInterfaceList interfaces) {
 		for (ChainInterface interf:interfaces) {
 			
 			InterfaceDB ii = pdbInfo.getInterface(interf.getId());
@@ -588,16 +597,16 @@ public class DataModelAdaptor {
 		
 		
 	}
-
-	public RunParametersDB getRunParametersItem() {
-		return runParameters;
+	
+	public void setUniProtVersion(String uniProtVersion) {
+		this.runParameters.setUniProtVersion(uniProtVersion);
 	}
 	
 	/**
 	 * Add to the pdbInfo member the cached warnings interfId2Warnings, compiled in
-	 * {@link #setGeometryScores(List)}, {@link #setCombinedPredictors(List)} and {@link #add(InterfaceEvolContextList)} 
+	 * {@link #setGeometryScores(List)}, {@link #setCombinedPredictors(List)} and {@link #setEvolScores(InterfaceEvolContextList)} 
 	 */
-	public void addInterfaceWarnings() {
+	public void setInterfaceWarnings() {
 		
 		for (InterfaceClusterDB ic:pdbInfo.getInterfaceClusters()) {
 			for (InterfaceDB ii:ic.getInterfaces()) {

@@ -314,7 +314,7 @@ public class Main {
 			// for the webui
 			modelAdaptor.setInterfaces(interfaces, this.pdb.getPdbBioUnitList());
 			modelAdaptor.setGeometryScores(gps);
-			modelAdaptor.addResidueDetails(interfaces);
+			modelAdaptor.setResidueDetails(interfaces);
 		} catch (IOException e) {
 			throw new EppicException(e, "Couldn't write interface geometry scores file. "+e.getMessage(),true);
 		}
@@ -658,7 +658,7 @@ public class Main {
 		// a) getting the uniprot ids corresponding to the query (the pdb sequence)
 		writeStep("Finding Homologs and Calculating Entropies");		
 		cecs.retrieveQueryData(params);
-		modelAdaptor.getRunParametersItem().setUniProtVersion(cecs.getUniprotVer());
+		modelAdaptor.setUniProtVersion(cecs.getUniprotVer());
 		
 		// b) getting the homologs and sequence data and filtering it
 		cecs.retrieveHomologs(params);
@@ -703,7 +703,7 @@ public class Main {
 			iecList.scoreCoreSurface();
 
 			// note this adds also the entropies to the residue details
-			modelAdaptor.add(iecList);
+			modelAdaptor.setEvolScores(iecList);
 				
 		}
 
@@ -830,7 +830,7 @@ public class Main {
 
 			if (crkMain.params.isGenerateWuiSerializedFile()) {
 				// 7 writing out the serialized file for web ui
-				crkMain.modelAdaptor.addInterfaceWarnings(); // first we call this method to add all the cached warnings
+				crkMain.modelAdaptor.setInterfaceWarnings(); // first we call this method to add all the cached warnings
 				crkMain.modelAdaptor.writeSerializedModelFile(crkMain.params.getOutputFile(".webui.dat"));
 
 				// finally we write a signal file for the wui to know that job is finished
