@@ -37,6 +37,19 @@ public class InterfaceDB implements Serializable {
 		residues = new ArrayList<ResidueDB>();
 
 	}
+	
+	/**
+	 * Returns the InterfaceScoreDB corresponding to the given method or null if no 
+	 * InterfaceScoreDB exists for the method
+	 * @param method
+	 * @return
+	 */
+	public InterfaceScoreDB getInterfaceScore(String method) {
+		for (InterfaceScoreDB is:interfaceScores) {
+			if (is.getMethod().equals(method)) return is;
+		}
+		return null;
+	}
 
 	
 	public String getPdbCode() {

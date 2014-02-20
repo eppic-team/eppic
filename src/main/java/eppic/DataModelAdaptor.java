@@ -459,7 +459,10 @@ public class DataModelAdaptor {
 			is.setConfidence(CONFIDENCE_NOT_AVAILABLE);
 			is.setInterfaceItem(ii);
 			is.setInterfaceId(ii.getInterfaceId());
-			is.setPdbCode(ii.getPdbCode());			
+			is.setPdbCode(ii.getPdbCode());
+			is.setScore(cps.get(i).getScore());
+			is.setScore1(SCORE_NOT_AVAILABLE);
+			is.setScore2(SCORE_NOT_AVAILABLE);
 			
 			if(cps.get(i).getWarnings() != null)
 			{

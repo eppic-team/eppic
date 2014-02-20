@@ -1,6 +1,5 @@
 package eppic.predictors;
 
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -205,30 +204,6 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 		secondResSer+"("+pair.getSecond().getParentResidue().getLongCode()+")-"+
 		pair.getSecond().getCode()+
 		" (distance: "+String.format("%3.1f",pair.getFirst().getCoords().distance(pair.getSecond().getCoords()))+" A)";
-	}
-
-	public void printScores(PrintStream ps) {
-		
-		CallType call = getCall();
-		interf.printRimCoreInfo(ps);
-		
-		ps.println(call.getName()+"\t"+getCallReason());
-		if (!getWarnings().isEmpty()) {
-			ps.println("  Warnings: ");
-			for (String warning:getWarnings()) {
-				ps.println("     "+warning);
-			}
-		}
-	}
-	
-	public static void printScoringHeaders(PrintStream ps) {
-		ps.printf("%15s\t%6s\t","interface","area");
-		ps.printf("%5s\t%5s\t%5s","size1", "size2","CA");
-		ps.print("\t");
-		ps.printf("%6s","call");
-		ps.print("\t");
-		ps.printf("%6s","reason");
-		ps.println();
 	}
 	
 	public void setBsaToAsaCutoff(double bsaToAsaCutoff) {

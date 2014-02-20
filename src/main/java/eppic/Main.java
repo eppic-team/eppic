@@ -283,30 +283,22 @@ public class Main {
 			// we still continue so that the web interface can pick it up too
 			return;
 		}
-		
-		try {
-			gps = new ArrayList<GeometryPredictor>();
-			PrintStream scoreGeomPS = new PrintStream(params.getOutputFile(EppicParams.GEOMETRY_FILE_SUFFIX));
-			GeometryPredictor.printScoringHeaders(scoreGeomPS);
-			for (ChainInterface interf:interfaces) {
-				GeometryPredictor gp = new GeometryPredictor(interf);
-				gp.setUsePdbResSer(params.isUsePdbResSer());
-				gps.add(gp);
-				gp.setBsaToAsaCutoff(params.getCAcutoffForGeom());
-				gp.setMinAsaForSurface(params.getMinAsaForSurface());
-				gp.setMinCoreSizeForBio(params.getMinCoreSizeForBio());
-				gp.printScores(scoreGeomPS);
-				
-			}
-			scoreGeomPS.close();
-						
-			// for the webui
-			modelAdaptor.setInterfaces(interfaces, this.pdb.getPdbBioUnitList());
-			modelAdaptor.setGeometryScores(gps);
-			modelAdaptor.setResidueDetails(interfaces);
-		} catch (IOException e) {
-			throw new EppicException(e, "Couldn't write interface geometry scores file. "+e.getMessage(),true);
+
+		gps = new ArrayList<GeometryPredictor>();
+		for (ChainInterface interf:interfaces) {
+			GeometryPredictor gp = new GeometryPredictor(interf);
+			gp.setUsePdbResSer(params.isUsePdbResSer());
+			gps.add(gp);
+			gp.setBsaToAsaCutoff(params.getCAcutoffForGeom());
+			gp.setMinAsaForSurface(params.getMinAsaForSurface());
+			gp.setMinCoreSizeForBio(params.getMinCoreSizeForBio());
 		}
+
+		// for the webui
+		modelAdaptor.setInterfaces(interfaces, this.pdb.getPdbBioUnitList());
+		modelAdaptor.setGeometryScores(gps);
+		modelAdaptor.setResidueDetails(interfaces);
+		
 	}
 	
 	public void doWriteCsvOutputFiles() throws EppicException {
@@ -321,12 +313,14 @@ public class Main {
 		} catch(IOException	e) {
 			throw new EppicException(e,"Couldn't log interfaces description to file: "+e.getMessage(),false);
 		}
+
+		// 2 scores file: geom, core-rim, core-surface and combine all in one file
+		try {
+			csvOw.writeScoresFile();
+		} catch (IOException e) {
+			throw new EppicException(e, "Couldn't write interface scores file. "+e.getMessage(),true);
+		}
 		
-		// 2 geometry scores file
-		// TODO
-		
-		// 3 evol scores files
-		// TODO
 		
 		// TODO what else?
 	}
@@ -594,10 +588,7 @@ public class Main {
 				// also the main log file is needed to keep writing logs to it after compression and to check for errors in precomputing
 				if ( file.getName().endsWith(".pml") ||
 					 file.getName().endsWith(EppicParams.INTERFACES_FILE_SUFFIX) ||
-					 file.getName().endsWith(EppicParams.GEOMETRY_FILE_SUFFIX) ||
-					 file.getName().endsWith(EppicParams.CRSCORES_FILE_SUFFIX) ||
-					 file.getName().endsWith(EppicParams.CSSCORES_FILE_SUFFIX) ||
-					 file.getName().endsWith(EppicParams.COMBINED_FILE_SUFFIX) ||
+					 file.getName().endsWith(EppicParams.SCORES_FILE_SUFFIX) ||
 					 file.getName().endsWith(EppicParams.ENTROPIES_FILE_SUFFIX) ||
 					 file.getName().endsWith(EppicParams.PDB_BIOUNIT_ASSIGN_FILE_SUFFIX) ||
 					 file.getName().endsWith(".fa") ||
@@ -724,27 +715,17 @@ public class Main {
 	public void doCombinedScoring() throws EppicException {
 		if (interfaces.getNumInterfaces()==0) return;
 		
-		try {
-		
+		List<CombinedPredictor> cps = new ArrayList<CombinedPredictor>();
 
-			List<CombinedPredictor> cps = new ArrayList<CombinedPredictor>();
-
-			PrintStream scoreCombPS = new PrintStream(params.getOutputFile(EppicParams.COMBINED_FILE_SUFFIX));
-			CombinedPredictor.printScoringHeaders(scoreCombPS);
-			for (int i=0;i<iecList.size();i++) {
-				CombinedPredictor cp = 
-						new CombinedPredictor(iecList.get(i), gps.get(i), iecList.get(i).getEvolCoreRimPredictor(), iecList.get(i).getEvolCoreSurfacePredictor());
-				cp.setUsePdbResSer(params.isUsePdbResSer());
-				cps.add(cp);
-				cp.printScoresLine(scoreCombPS);
-			}
-			scoreCombPS.close();
-
-			modelAdaptor.setCombinedPredictors(cps);
-
-		} catch (IOException e) {
-			throw new EppicException(e,"Couldn't write final combined scores file. "+e.getMessage(),true);
+		for (int i=0;i<iecList.size();i++) {
+			CombinedPredictor cp = 
+					new CombinedPredictor(iecList.get(i), gps.get(i), iecList.get(i).getEvolCoreRimPredictor(), iecList.get(i).getEvolCoreSurfacePredictor());
+			cp.setUsePdbResSer(params.isUsePdbResSer());
+			cps.add(cp);
 		}
+
+		modelAdaptor.setCombinedPredictors(cps);
+
 		params.getProgressLog().println("Done scoring");
 	}
 	
@@ -828,8 +809,9 @@ public class Main {
 				crkMain.doCombinedScoring();
 			}
 			
-			// 5 write CSV files 			
-			crkMain.doWriteCsvOutputFiles();			
+			// 5 write CSV files 	
+			// TODO put an if here, do we always want to write the csv files?
+			crkMain.doWriteCsvOutputFiles();		
 			
 			//4.5 Write the pdb BioUnits file
 			crkMain.writePdbAssignments();

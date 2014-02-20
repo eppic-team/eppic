@@ -27,10 +27,7 @@ public class EppicParams {
 	protected static final String  ENTROPIES_FILE_SUFFIX = ".entropies";
 	protected static final String  INTERFACES_FILE_SUFFIX = ".interfaces";
 	protected static final String  INTERFACESDAT_FILE_SUFFIX = ".interfaces.dat";
-	protected static final String  GEOMETRY_FILE_SUFFIX = ".geometry.scores";
-	protected static final String  CRSCORES_FILE_SUFFIX = ".corerim.scores";
-	protected static final String  CSSCORES_FILE_SUFFIX = ".coresurface.scores";
-	protected static final String  COMBINED_FILE_SUFFIX = ".combined.scores";
+	protected static final String  SCORES_FILE_SUFFIX = ".scores";
 	protected static final String  STEPS_LOG_FILE_SUFFIX = ".steps.log";
 	protected static final String  BLAST_CACHE_FILE_SUFFIX = ".blast.xml.gz";
 	protected static final String  PDB_BIOUNIT_ASSIGN_FILE_SUFFIX = ".pdb-biounit.list";

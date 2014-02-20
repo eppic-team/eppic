@@ -1,12 +1,10 @@
 package eppic.predictors;
 
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import owl.core.structure.Atom;
-import owl.core.structure.ChainInterface;
 import edu.uci.ics.jung.graph.util.Pair;
 import eppic.EppicParams;
 import eppic.CallType;
@@ -220,30 +218,6 @@ public class CombinedPredictor implements InterfaceTypePredictor {
 		else if (zp.getCall()==CallType.NO_PREDICTION) counts[2]++;
 
 		return counts;
-	}
-	
-	public static void printScoringHeaders(PrintStream ps) {
-		ps.printf("%15s\t%6s\t","interface","area");
-		ps.printf("%6s\t%6s\t%6s\t%6s\t%6s","geom","c-r","c-s","call","reason");
-		ps.println();
-		
-	}
-	
-	public void printScoresLine(PrintStream ps) {
-		getCall();// in case it's not calculated yet
-		ChainInterface interf = iec.getInterface();
-		ps.printf("%15s\t%6.1f\t",
-				interf.getId()+"("+interf.getFirstMolecule().getPdbChainCode()+"+"+interf.getSecondMolecule().getPdbChainCode()+")",
-				interf.getInterfaceArea());
-		ps.printf("%6s\t%6s\t%6s\t%6s\t%s", gp.getCall().getName(),rp.getCall().getName(),zp.getCall().getName(),call.getName(),getCallReason());
-		
-		ps.println();
-		if (!warnings.isEmpty()){
-			ps.println("  Warnings: ");
-			for (String warning:getWarnings()) {
-				ps.println("     "+warning);
-			}
-		}
 	}
 	
 	private String getPairInteractionsString(List<Pair<Atom>> pairs) {
