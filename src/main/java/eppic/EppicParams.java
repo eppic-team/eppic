@@ -25,6 +25,8 @@ public class EppicParams {
 	public static final String     CONFIG_FILE_NAME = ".eppic.conf";
 	
 	protected static final String  ENTROPIES_FILE_SUFFIX = ".entropies";
+	protected static final String  INTERFACES_FILE_SUFFIX = ".interfaces";
+	protected static final String  INTERFACESDAT_FILE_SUFFIX = ".interfaces.dat";
 	protected static final String  GEOMETRY_FILE_SUFFIX = ".geometry.scores";
 	protected static final String  CRSCORES_FILE_SUFFIX = ".corerim.scores";
 	protected static final String  CSSCORES_FILE_SUFFIX = ".coresurface.scores";
@@ -190,7 +192,7 @@ public class EppicParams {
 	
 	private boolean generateThumbnails;
 	
-	private boolean generateWuiSerializedFile;
+	private boolean generateModelSerializedFile;
 	
 	private File progressLogFile;
 	private PrintStream progressLog;
@@ -284,7 +286,7 @@ public class EppicParams {
 		this.interfSerFile = null;
 		this.chainEvContextSerFile = null;
 		this.generateThumbnails = false;
-		this.generateWuiSerializedFile = false;
+		this.generateModelSerializedFile = false;
 		this.progressLog = System.out;
 		this.debug = false;
 		this.homologsSearchMode = DEF_HOMOLOGS_SEARCH_MODE;
@@ -364,7 +366,7 @@ public class EppicParams {
 				generateThumbnails = true;
 				break;
 			case 'w':
-				generateWuiSerializedFile = true;
+				generateModelSerializedFile = true;
 				break;
 			case 'L':
 				progressLogFile = new File(g.getOptarg());
@@ -749,8 +751,8 @@ public class EppicParams {
 		return generateThumbnails;
 	}
 	
-	public boolean isGenerateWuiSerializedFile() {
-		return generateWuiSerializedFile;
+	public boolean isGenerateModelSerializedFile() {
+		return generateModelSerializedFile;
 	}
 	
 	public PrintStream getProgressLog() {

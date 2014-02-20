@@ -62,6 +62,10 @@ public class DataModelAdaptor {
 		interfId2Warnings = new HashMap<Integer, HashSet<String>>();
 	}
 	
+	public PdbInfoDB getPdbInfo() {
+		return pdbInfo;
+	}
+	
 	public void setParams(EppicParams params) {
 		this.params = params;
 		pdbInfo.setPdbCode(params.getPdbCode());
@@ -515,22 +519,33 @@ public class DataModelAdaptor {
 				String resType = residue.getLongCode();
 				int assignment = ResidueDB.OTHER;
 				
-				float asa = (float) residue.getAsa();
-				float bsa = (float) residue.getBsa();
+				double asa = residue.getAsa();
+				double bsa = residue.getBsa();
 				
+				// NOTE the regions are mutually exclusive (one and only one assignment per region)
+
+				// For the case of CORE_EVOL/CORE_GEOM we are assuming that CORE_EVOL is a superset of CORE_GEOM 
+				// (i.e. that caCutoffForRimCore<caCutoffForGeom)
+				// thus, as groups are exclusive, to get the actual full subset of CORE_EVOL one needs to get
+				// the union of CORE_EVOL and CORE_GEOM
+				
+				// this should match the condition in owl.core.structure.PdbChain.getRimAndCore()
 				if (residue.getAsa()>params.getMinAsaForSurface() && residue.getBsa()>0) {
 					// NOTE: we use here caCutoffForRimCore as the one and only for both evol methods
 					// NOTE2: we are assuming that caCutoffForRimCore<caCutoffForGeom, if that doesn't hold this won't work!
 					if (residue.getBsaToAsaRatio()<params.getCAcutoffForRimCore()) {
-						assignment = ResidueDB.RIM;
+						assignment = ResidueDB.RIM_EVOLUTIONARY;
 					} else if (residue.getBsaToAsaRatio()<params.getCAcutoffForGeom()){
 						assignment = ResidueDB.CORE_EVOLUTIONARY; 
 					} else {
 						assignment = ResidueDB.CORE_GEOMETRY;
-					}
+					} 
+					
+				// residues not in interface but still with more ASA than minimum required are called surface
 				} else if (residue.getAsa()>params.getMinAsaForSurface()) {
 					assignment = ResidueDB.SURFACE;
 				}
+				
 				
 				ResidueDB iri = new ResidueDB();
 				iri.setResidueNumber(residue.getSerial());

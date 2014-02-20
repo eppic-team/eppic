@@ -9,7 +9,7 @@ public class ResidueDB implements Serializable {
 	
 	public static final int OTHER = -1;
 	public static final int SURFACE = 0;
-	public static final int RIM = 1;
+	public static final int RIM_EVOLUTIONARY = 1;
 	public static final int CORE_EVOLUTIONARY = 2;
 	public static final int CORE_GEOMETRY = 3;
 	

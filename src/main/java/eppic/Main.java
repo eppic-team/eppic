@@ -264,21 +264,10 @@ public class Main {
 
 		interfaces.calcRimAndCores(params.getCAcutoffForGeom(), params.getMinAsaForSurface());
 		
-		try {
-			// if no interfaces found (e.g. NMR) we don't want to write the file
-			if (interfaces.getNumInterfaces()>0) {
-				PrintStream interfLogPS = new PrintStream(params.getOutputFile(".interfaces"));
-				interfaces.printTabular(interfLogPS, params.isUsePdbResSer());
-				interfLogPS.close();
-			}
-		} catch(IOException	e) {
-			throw new EppicException(e,"Couldn't log interfaces description to file: "+e.getMessage(),false);
-		}
-
-		if (!params.isGenerateWuiSerializedFile()) {
+		if (!params.isGenerateModelSerializedFile()) {
 			// we only produce the interfaces.dat file if not in -w mode (for WUI not to produce so many files)
 			try {
-				Goodies.serialize(params.getOutputFile(".interfaces.dat"),interfaces);
+				Goodies.serialize(params.getOutputFile(EppicParams.INTERFACESDAT_FILE_SUFFIX),interfaces);
 			} catch (IOException e) {
 				throw new EppicException(e,"Couldn't write serialized ChainInterfaceList object to file: "+e.getMessage(),false);
 			}
@@ -318,6 +307,28 @@ public class Main {
 		} catch (IOException e) {
 			throw new EppicException(e, "Couldn't write interface geometry scores file. "+e.getMessage(),true);
 		}
+	}
+	
+	public void doWriteCsvOutputFiles() throws EppicException {
+		CsvOutputWriter csvOw = new CsvOutputWriter(modelAdaptor.getPdbInfo(), params);
+		
+		// 1 interfaces info file
+		try {
+			// if no interfaces found (e.g. NMR) we don't want to write the file
+			if (interfaces.getNumInterfaces()>0) {
+				csvOw.writeInterfacesInfoFile();
+			}
+		} catch(IOException	e) {
+			throw new EppicException(e,"Couldn't log interfaces description to file: "+e.getMessage(),false);
+		}
+		
+		// 2 geometry scores file
+		// TODO
+		
+		// 3 evol scores files
+		// TODO
+		
+		// TODO what else?
 	}
 	
 	private void writePdbAssignments() throws EppicException{
@@ -582,7 +593,7 @@ public class Main {
 				// png, jmol, <interface_id>.pdb.gz, <interface_id>.pse.gz, entropies.pse.gz, aln and of course zip
 				// also the main log file is needed to keep writing logs to it after compression and to check for errors in precomputing
 				if ( file.getName().endsWith(".pml") ||
-					 file.getName().endsWith(".interfaces") ||
+					 file.getName().endsWith(EppicParams.INTERFACES_FILE_SUFFIX) ||
 					 file.getName().endsWith(EppicParams.GEOMETRY_FILE_SUFFIX) ||
 					 file.getName().endsWith(EppicParams.CRSCORES_FILE_SUFFIX) ||
 					 file.getName().endsWith(EppicParams.CSSCORES_FILE_SUFFIX) ||
@@ -672,7 +683,7 @@ public class Main {
 		cecs.computeEntropies(params);
 		cecs.writeEntropiesToFile(params, pdb);
 		
-		if (!params.isGenerateWuiSerializedFile()) {
+		if (!params.isGenerateModelSerializedFile()) {
 			// we only produce the chainevolcontext.dat file if not in -w mode (for WUI not to produce so many files)
 			try {
 				Goodies.serialize(params.getOutputFile(".chainevolcontext.dat"),cecs);
@@ -817,6 +828,9 @@ public class Main {
 				crkMain.doCombinedScoring();
 			}
 			
+			// 5 write CSV files 			
+			crkMain.doWriteCsvOutputFiles();			
+			
 			//4.5 Write the pdb BioUnits file
 			crkMain.writePdbAssignments();
 			
@@ -828,7 +842,7 @@ public class Main {
 			// 6 compressing files
 			crkMain.doCompressFiles();
 
-			if (crkMain.params.isGenerateWuiSerializedFile()) {
+			if (crkMain.params.isGenerateModelSerializedFile()) {
 				// 7 writing out the serialized file for web ui
 				crkMain.modelAdaptor.setInterfaceWarnings(); // first we call this method to add all the cached warnings
 				crkMain.modelAdaptor.writeSerializedModelFile(crkMain.params.getOutputFile(".webui.dat"));
