@@ -5,7 +5,6 @@ import java.util.List;
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.labels.LabelWithTooltip;
 import ch.systemsx.sybit.crkwebui.shared.model.Residue;
-import ch.systemsx.sybit.crkwebui.shared.model.ResidueType;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceScore;
 import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 
@@ -17,6 +16,7 @@ import com.sencha.gxt.core.client.dom.XElement;
 import com.sencha.gxt.core.client.util.Margins;
 import com.sencha.gxt.widget.core.client.container.CssFloatLayoutContainer;
 
+import eppic.model.ResidueDB;
 import eppic.model.ScoringMethod;
 
 /**
@@ -140,12 +140,12 @@ public class ResiduesSummaryPanel extends CssFloatLayoutContainer
 
 		for(Residue interfResItem : residues) {
 
-			if ((interfResItem.getRegion() == ResidueType.CORE_EVOLUTIONARY.getRegion()) ||
-					(interfResItem.getRegion() == ResidueType.CORE_GEOMETRY.getRegion()))
+			if ((interfResItem.getRegion() == ResidueDB.CORE_EVOLUTIONARY) ||
+				(interfResItem.getRegion() == ResidueDB.CORE_GEOMETRY)	)
 			{
 				coreSize++;
 			}
-			else if (interfResItem.getRegion() == ResidueType.RIM.getRegion()) 
+			else if (interfResItem.getRegion() == ResidueDB.RIM_EVOLUTIONARY) 
 			{
 				rimSize++;
 			}

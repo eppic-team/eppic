@@ -8,7 +8,6 @@ import ch.systemsx.sybit.crkwebui.client.commons.gui.cell.TwoDecimalDoubleCell;
 import ch.systemsx.sybit.crkwebui.client.commons.util.EscapedStringGenerator;
 import ch.systemsx.sybit.crkwebui.client.residues.gui.grid.utils.ResiduePagingMemoryProxy;
 import ch.systemsx.sybit.crkwebui.shared.model.Residue;
-import ch.systemsx.sybit.crkwebui.shared.model.ResidueType;
 
 import com.google.gwt.core.shared.GWT;
 import com.google.gwt.editor.client.Editor.Path;
@@ -31,6 +30,8 @@ import com.sencha.gxt.widget.core.client.grid.Grid;
 import com.sencha.gxt.widget.core.client.grid.GridViewConfig;
 import com.sencha.gxt.widget.core.client.grid.LiveGridView;
 import com.sencha.gxt.widget.core.client.toolbar.PagingToolBar;
+
+import eppic.model.ResidueDB;
 
 /**
  * Panel used to display residues data for one structure.
@@ -222,19 +223,19 @@ public class ResiduesGridPanel extends VerticalLayoutContainer
     		public String getRowStyle(Residue model, int rowIndex) {
     			if (model != null)
     			{
-    				if (model.getRegion() == ResidueType.SURFACE.getRegion())
+    				if (model.getRegion() == ResidueDB.SURFACE)
     				{
     					return "eppic-grid-row-surface";
     				}
-    				else if(model.getRegion() == ResidueType.CORE_EVOLUTIONARY.getRegion())
+    				else if(model.getRegion() == ResidueDB.CORE_EVOLUTIONARY)
     				{
     					return "eppic-grid-row-core-evolutionary";
     				}
-    				else if(model.getRegion() == ResidueType.CORE_GEOMETRY.getRegion())
+    				else if(model.getRegion() == ResidueDB.CORE_GEOMETRY)
     				{
     					return "eppic-grid-row-core-geometry";
     				}
-    				else if(model.getRegion() == ResidueType.RIM.getRegion())
+    				else if(model.getRegion() == ResidueDB.RIM_EVOLUTIONARY)
     				{
     					return "eppic-grid-row-rim";
     				}
@@ -284,9 +285,9 @@ public class ResiduesGridPanel extends VerticalLayoutContainer
     	for(Residue item : data)
     	{
     		if((isShowAll) ||
-    				((item.getRegion() == ResidueType.CORE_GEOMETRY.getRegion()) ||
-    						(item.getRegion() == ResidueType.CORE_EVOLUTIONARY.getRegion()) ||
-    						(item.getRegion() == ResidueType.RIM.getRegion())))
+    				((item.getRegion() == ResidueDB.CORE_GEOMETRY) ||
+    						(item.getRegion() == ResidueDB.CORE_EVOLUTIONARY) ||
+    						(item.getRegion() == ResidueDB.RIM_EVOLUTIONARY)))
     		{
     			dataToSet.add(item);
     		}
