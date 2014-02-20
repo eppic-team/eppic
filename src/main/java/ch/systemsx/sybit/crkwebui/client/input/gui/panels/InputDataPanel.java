@@ -217,7 +217,8 @@ public class InputDataPanel extends DisplayPanel
 				
 			}
 		});
-
+		optionsInputPanel.setVisible(false);
+		
 		if(ApplicationContext.getSettings().isUseCaptcha())
 		{
 			RecaptchaPanel recaptchaPanel = new RecaptchaPanel(ApplicationContext.getSettings().getCaptchaPublicKey());
@@ -532,6 +533,8 @@ public class InputDataPanel extends DisplayPanel
 		pdbCodeFieldLabel.setVisible(true);
 		emailTextFieldLabel.setVisible(false);
 		examplePanel.setVisible(true);
+		optionsInputPanel.setVisible(false);
+		optionsInputPanel.resetValues();
 	}
 	
 	/**
@@ -546,6 +549,7 @@ public class InputDataPanel extends DisplayPanel
 		pdbCodeField.setAllowBlank(true);
 		emailTextFieldLabel.setVisible(true);
 		examplePanel.setVisible(false);
+		optionsInputPanel.setVisible(true);
 	}
 	/**
 	 * Starts new job. If file is uploaded then jobId is used to identify uploaded file, otherwise jobId is null.
