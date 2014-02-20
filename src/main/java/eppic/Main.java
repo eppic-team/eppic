@@ -26,7 +26,6 @@ import org.apache.log4j.PatternLayout;
 
 import eppic.predictors.CombinedPredictor;
 import eppic.predictors.GeometryPredictor;
-import owl.core.runners.PymolRunner;
 import owl.core.structure.BioUnitAssignmentType;
 import owl.core.structure.ChainCluster;
 import owl.core.structure.ChainInterface;
@@ -461,7 +460,7 @@ public class Main {
 						params.getBaseName()+"."+interf.getId(), 
 						params.isUsePdbResSer());
 				LOGGER.info("Generated PyMOL files for interface "+interf.getId());
-				modelAdaptor.writeJmolScriptFile(interf, params.getCAcutoffForGeom(), params.getMinAsaForSurface(), pr, 
+				MolViewersAdaptor.writeJmolScriptFile(interf, params.getCAcutoffForGeom(), params.getMinAsaForSurface(), pr, 
 						params.getOutDir(), params.getBaseName(), params.isUsePdbResSer());
 			}
 
