@@ -1,9 +1,7 @@
 package eppic;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -12,9 +10,6 @@ import java.net.UnknownHostException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.TreeMap;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -26,21 +21,18 @@ import org.apache.log4j.PatternLayout;
 
 import eppic.predictors.CombinedPredictor;
 import eppic.predictors.GeometryPredictor;
-import owl.core.structure.BioUnitAssignmentType;
 import owl.core.structure.ChainCluster;
 import owl.core.structure.ChainInterface;
 import owl.core.structure.ChainInterfaceList;
 import owl.core.structure.InterfaceCluster;
 import owl.core.structure.InterfacesFinder;
 import owl.core.structure.PdbAsymUnit;
-import owl.core.structure.PdbBioUnitList;
 import owl.core.structure.PdbChain;
 import owl.core.structure.PdbLoadException;
 import owl.core.structure.SpaceGroup;
 import owl.core.structure.graphs.AICGraph;
 import owl.core.util.FileFormatException;
 import owl.core.util.Goodies;
-import owl.core.util.RegexFileFilter;
 
 public class Main {
 	
@@ -302,6 +294,10 @@ public class Main {
 	}
 	
 	public void doWriteCsvOutputFiles() throws EppicException {
+		
+		// we don't write csv files if in -w
+		if (params.isGenerateModelSerializedFile()) return;
+		
 		CsvOutputWriter csvOw = new CsvOutputWriter(modelAdaptor.getPdbInfo(), params);
 		
 		// 1 interfaces info file
@@ -321,92 +317,23 @@ public class Main {
 			throw new EppicException(e, "Couldn't write interface scores file. "+e.getMessage(),true);
 		}
 		
-		
-		// TODO what else?
-	}
-	
-	private void writePdbAssignments() throws EppicException{
-		if(this.interfaces.size()==0) return;
-		
-		PrintStream ps = null;
+		// 3 write pdb biounit list file
 		try {
-			ps = new PrintStream(params.getOutputFile(EppicParams.PDB_BIOUNIT_ASSIGN_FILE_SUFFIX));
-		} catch (FileNotFoundException e) {
-			throw new EppicException(e,"Could not write the PDB bio-unit assignments file: "+e.getMessage(),true);
+			csvOw.writePdbAssignments();
+		} catch (IOException e) {
+			throw new EppicException(e, "Could not write the PDB bio-unit assignments file: "+e.getMessage(), false);
 		}
-		PdbBioUnitList bioUnitList = this.pdb.getPdbBioUnitList();
-		
-		//Get the full details on biounits
-		TreeMap<Integer, List<Integer>> matchIds = bioUnitList.getInterfaceMatches(this.interfaces);
 		
 		
-		//Get the summary
-		TreeMap<BioUnitAssignmentType, int[]> matchSummary = bioUnitList.gatherBioUnits(this.interfaces);
+		// TODO write A.log file from model
 		
-		//Add eppic results to the matchSummary
-		int[] eppicResults = new int[this.interfaces.size()];
+		// TODO write A.aln file from model
+		
+		// TODO write A.fa file from model
+		
+		// TODO write A.entropies file from model
+		
 
-		if(params.isDoScoreEntropies()){
-			for (int i=0; i<iecList.size(); i++) {
-				CombinedPredictor cp = 
-						new CombinedPredictor(iecList.get(i), gps.get(i), iecList.get(i).getEvolCoreRimPredictor(), iecList.get(i).getEvolCoreSurfacePredictor());
-				cp.setUsePdbResSer(params.isUsePdbResSer());
-				int callIdx = cp.getCall().getIndex();
-				if(callIdx == 0) eppicResults[i] = 0;
-				else if(callIdx == 1) eppicResults[i] = 1;
-				else eppicResults[i] = -1;
-			}
-		} else{
-			for (int i=0; i<this.interfaces.size(); i++) {
-				GeometryPredictor gp = new GeometryPredictor(this.interfaces.get(i+1));
-				gp.setUsePdbResSer(params.isUsePdbResSer());
-				gp.setBsaToAsaCutoff(params.getCAcutoffForGeom());
-				gp.setMinAsaForSurface(params.getMinAsaForSurface());
-				gp.setMinCoreSizeForBio(params.getMinCoreSizeForBio());
-				int callIdx = gp.getCall().getIndex();
-				if(callIdx == 0) eppicResults[i] = 0;
-				else if(callIdx == 1) eppicResults[i] = 1;
-				else eppicResults[i] = -1;
-			}
-		}
-	
-		matchSummary.put(BioUnitAssignmentType.eppic, eppicResults);
-		
-		//Print Headers--------
-		ps.printf("#%15s\t%36s\t\t\t%12s\n","Interfaces","Gathered BioUnits","Details");
-		
-		ps.printf("%15s\t","");
-				
-		for(BioUnitAssignmentType type:matchSummary.keySet()){
-			ps.printf("%12s\t",type.getType()+"(Final)");
-		}
-		
-		//ps.printf("%1s", "|");
-		
-		for(int iUnit:matchIds.keySet()) 
-			ps.printf("%12s\t",bioUnitList.get(iUnit).getType().getType()+"("+bioUnitList.get(iUnit).getSize()+")");
-		
-		ps.print("\n");
-		
-		//Print rest------
-		for (int i=1; i<=this.interfaces.getNumInterfaces(); i++) {
-			ChainInterface interf = this.interfaces.get(i);
-			ps.printf("%15s\t", interf.getId()+"("+interf.getFirstMolecule().getPdbChainCode()+"+"+interf.getSecondMolecule().getPdbChainCode()+")");
-			
-			for(BioUnitAssignmentType type:matchSummary.keySet()){
-				if(matchSummary.get(type)[i-1] == 0) ps.printf("%12s\t","bio");
-				else if(matchSummary.get(type)[i-1] == 1) ps.printf("%12s\t","xtal");
-				else ps.printf("%12s\t","nopred");
-			}
-			//ps.printf("%1s", "|");
-			
-			for(int iUnit:matchIds.keySet()){
-				if(matchIds.get(iUnit).contains(i)) ps.printf("%12s\t","bio");
-				else ps.printf("%12s\t","xtal");
-			}
-			ps.print("\n");
-		}
-		ps.close();
 	}
 	
 	public void doWritePdbFiles() throws EppicException {
@@ -542,80 +469,24 @@ public class Main {
 			throw new EppicException(e, "PSE or PDB files could not be gzipped. "+e.getMessage(),true);
 		}
 		
-		try {
-			LOGGER.info("Generating zip results file");
-			File zipFile = params.getOutputFile(".zip");
-			File[] directoryContent = params.getOutDir().listFiles(new RegexFileFilter("^"+params.getBaseName()+"\\..*")); 
-
-			if (directoryContent==null) 
-				throw new EppicException(null, "Couldn't list files in dir "+params.getOutDir()+" for creating final .zip file", true);
-			
-			byte[] buffer = new byte[1024];
-			ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream(zipFile));
-
-			for (int i=0; i<directoryContent.length; i++) {
-				File file = new File(params.getOutDir(), directoryContent[i].getName());
-				
-				// we exclude the pse, pngs, jmols, dats and zip file (if there was one from an old run it would go into a self-reference and grow forever)
-				if (file.getName().endsWith(".pse.gz") || 
-						file.getName().endsWith(".png") || 
-						file.getName().endsWith(".jmol") || 
-						file.getName().endsWith(".dat") || // this includes chainevolcontext.dat and interfaces.dat
-						file.getName().endsWith(".zip")) 
-					continue;
-				
-				if (!params.isInputAFile()) { // i.e. PDB code from local cif repo
-					// we don't want to store the cif file in zip
-					if (file.getName().endsWith(".cif")) continue;
-				}
-
-				if(file.isFile())	{
-					FileInputStream in = new FileInputStream(file);
-					zipOutputStream.putNextEntry(new ZipEntry(directoryContent[i].getName()));
-
-					int length;
-					while ((length = in.read(buffer)) > 0) {						
-						zipOutputStream.write(buffer, 0, length);
-					}
-					zipOutputStream.closeEntry();
-					in.close();
-				}
-				
-				// finally we mark for removal files that we've zipped and that we don't need explicitely for the WUI
-				// in order to save space and increase transfer times between servers for PDB-wide precomputation
-				// Files needed by WUI explicitly are: 
-				// png, jmol, <interface_id>.pdb.gz, <interface_id>.pse.gz, entropies.pse.gz, aln and of course zip
-				// also the main log file is needed to keep writing logs to it after compression and to check for errors in precomputing
-				if ( file.getName().endsWith(".pml") ||
-					 file.getName().endsWith(EppicParams.INTERFACES_FILE_SUFFIX) ||
-					 file.getName().endsWith(EppicParams.SCORES_FILE_SUFFIX) ||
-					 file.getName().endsWith(EppicParams.ENTROPIES_FILE_SUFFIX) ||
-					 file.getName().endsWith(EppicParams.PDB_BIOUNIT_ASSIGN_FILE_SUFFIX) ||
-					 file.getName().endsWith(".fa") ||
-					 file.getName().endsWith(EppicParams.ENTROPIES_FILE_SUFFIX+".pdb.gz") ||
-					 ( file.getName().endsWith(".log") && 
-					   !file.getName().substring(0, file.getName().lastIndexOf('.')).equals(params.getBaseName()) ) // i.e. .A.log but not main .log 
-						) {
-					
-					file.deleteOnExit();
-				}
-			}
- 
-			zipOutputStream.close();
-			
-
-		} catch (IOException e) {
-			throw new EppicException(e, "Final .zip file couldn't be created. "+e.getMessage(),true);
-		}
 	}
 	
-	private void writeFinishedFile() throws EppicException {
-		try {
-			FileWriter fw = new FileWriter(new File(params.getOutDir(), "finished"));
-			fw.close();
-		} catch (IOException e) {
-			throw new EppicException(e, "Couldn't write the finished file", true);
+	public void doWriteFinalFiles() throws EppicException {
+		
+		if (params.isGenerateModelSerializedFile()) {
+			
+			modelAdaptor.setInterfaceWarnings(); // first we call this method to add all the cached warnings
+			modelAdaptor.writeSerializedModelFile(params.getOutputFile(EppicParams.SERIALIZED_MODEL_FILE_SUFFIX));
+
+			// finally we write a signal file for the wui to know that job is finished
+			try {
+				FileWriter fw = new FileWriter(new File(params.getOutDir(), "finished"));
+				fw.close();
+			} catch (IOException e) {
+				throw new EppicException(e, "Couldn't write the finished file", true);
+			}
 		}
+
 	}
 	
 	private void findUniqueChains() {
@@ -677,7 +548,7 @@ public class Main {
 		if (!params.isGenerateModelSerializedFile()) {
 			// we only produce the chainevolcontext.dat file if not in -w mode (for WUI not to produce so many files)
 			try {
-				Goodies.serialize(params.getOutputFile(".chainevolcontext.dat"),cecs);
+				Goodies.serialize(params.getOutputFile(EppicParams.CHAINEVCONTEXTDAT_FILE_SUFFIX),cecs);
 			} catch (IOException e) {
 				throw new EppicException(e,"Couldn't write serialized ChainEvolContextList object to file: "+e.getMessage(),false);
 			}
@@ -809,30 +680,22 @@ public class Main {
 				crkMain.doCombinedScoring();
 			}
 			
-			// 5 write CSV files 	
-			// TODO put an if here, do we always want to write the csv files?
+			// 5 write CSV files (only if not in -w) 	
 			crkMain.doWriteCsvOutputFiles();		
 			
-			//4.5 Write the pdb BioUnits file
-			crkMain.writePdbAssignments();
-			
+			// 6 write pdb files 
 			crkMain.doWritePdbFiles();
 						
-			// 5 writing pymol files
+			// 7 writing pymol files (only if in -l)
 			crkMain.doWritePymolFiles();
 			
-			// 6 compressing files
+			// 8 compressing files (only if in -l)
 			crkMain.doCompressFiles();
+			
+			// 9 writing out the model serialized file and "finish" file for web ui (only if in -w)
+			crkMain.doWriteFinalFiles();
 
-			if (crkMain.params.isGenerateModelSerializedFile()) {
-				// 7 writing out the serialized file for web ui
-				crkMain.modelAdaptor.setInterfaceWarnings(); // first we call this method to add all the cached warnings
-				crkMain.modelAdaptor.writeSerializedModelFile(crkMain.params.getOutputFile(".webui.dat"));
-
-				// finally we write a signal file for the wui to know that job is finished
-				crkMain.writeFinishedFile();
-			}
-
+			
 
 			long end = System.nanoTime();
 			LOGGER.info("Finished successfully (total runtime "+((end-start)/1000000000L)+"s)");

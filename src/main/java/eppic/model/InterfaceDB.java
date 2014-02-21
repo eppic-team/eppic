@@ -39,8 +39,9 @@ public class InterfaceDB implements Serializable {
 	}
 	
 	/**
-	 * Returns the InterfaceScoreDB corresponding to the given method or null if no 
-	 * InterfaceScoreDB exists for the method
+	 * Returns the first InterfaceScoreDB corresponding to the given method or null if no 
+	 * InterfaceScoreDB exists for the method. 
+	 * Note if multiple InterfaceScoreDB correspond to the method, only the first one is returned.
 	 * @param method
 	 * @return
 	 */

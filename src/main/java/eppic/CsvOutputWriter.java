@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import eppic.model.InterfaceClusterDB;
+import eppic.model.InterfaceClusterScoreDB;
 import eppic.model.InterfaceDB;
 import eppic.model.InterfaceScoreDB;
 import eppic.model.PdbInfoDB;
@@ -118,12 +119,12 @@ public class CsvOutputWriter {
 	}
 	
 	private static void printScoresHeaders(PrintStream ps) {
-		ps.printf("%7s\t%7s\t%7s\t%7s\t","id","cluster","chains","area");
+		ps.printf("%7s\t%7s\t%7s\t%7s\t%9s\t","cluster","id","chains","optype","area");
 		
-		ps.printf("%7s\t%7s\t%7s\t%7s\t", "sc1-gm","sc2-gm","sc-gm","call-gm");
-		ps.printf("%7s\t%7s\t%7s\t%7s\t", "sc1-cr","sc2-cr","sc-cr","call-cr");
-		ps.printf("%7s\t%7s\t%7s\t%7s\t", "sc1-cs","sc2-cs","sc-cs","call-cs");
-		ps.printf("%7s\t%7s",             "sc","call");
+		ps.printf("\t%7s\t%7s\t%7s\t%7s\t", "sc1-gm","sc2-gm","sc-gm","call-gm");
+		ps.printf("\t%7s\t%7s\t%7s\t%7s\t", "sc1-cr","sc2-cr","sc-cr","call-cr");
+		ps.printf("\t%7s\t%7s\t%7s\t%7s\t", "sc1-cs","sc2-cs","sc-cs","call-cs");
+		ps.printf("\t%7s\t%7s",             "sc","call");
 		
 		ps.println();
 	}
@@ -131,10 +132,11 @@ public class CsvOutputWriter {
 	private void printScores(PrintStream ps, InterfaceDB interfaceItem) {
 
 		// common info
-		ps.printf("%7d\t%7d\t%7s\t%7.2f\t",
-				interfaceItem.getInterfaceId(), 
-				interfaceItem.getClusterId(), 
+		ps.printf("%7d\t%7d\t%7s\t%7s\t%9.2f\t",
+				interfaceItem.getClusterId(),
+				interfaceItem.getInterfaceId(), 				 
 				interfaceItem.getChain1()+"+"+interfaceItem.getChain2(),
+				interfaceItem.getOperatorType(),
 				interfaceItem.getArea());
 		
 		InterfaceScoreDB interfaceScoreGm = interfaceItem.getInterfaceScore(ScoringMethod.EPPIC_GEOMETRY);
@@ -144,7 +146,7 @@ public class CsvOutputWriter {
 		
 		// geometry
 		// there should always be geometry scores available, no check for null
-		ps.printf("%7.0f\t%7.0f\t%7.0f\t%7s\t",
+		ps.printf("\t%7.0f\t%7.0f\t%7.0f\t%7s\t",
 				interfaceScoreGm.getScore1(),
 				interfaceScoreGm.getScore2(),
 				interfaceScoreGm.getScore(),
@@ -152,9 +154,9 @@ public class CsvOutputWriter {
 		
 		// core-rim
 		if (interfaceScoreCr==null) {
-			ps.printf("%7s\t%7s\t%7s\t%7s\t","","","","");
+			ps.printf("\t%7s\t%7s\t%7s\t%7s\t","","","","");
 		} else {
-			ps.printf("%7.2f\t%7.2f\t%7.2f\t%7s\t",
+			ps.printf("\t%7.2f\t%7.2f\t%7.2f\t%7s\t",
 					interfaceScoreCr.getScore1(),
 					interfaceScoreCr.getScore2(),
 					interfaceScoreCr.getScore(),
@@ -163,9 +165,9 @@ public class CsvOutputWriter {
 		
 		// core-surface
 		if (interfaceScoreCs==null) {
-			ps.printf("%7s\t%7s\t%7s\t%7s\t","","","","");
+			ps.printf("\t%7s\t%7s\t%7s\t%7s\t","","","","");
 		} else {
-			ps.printf("%7.2f\t%7.2f\t%7.2f\t%7s\t",
+			ps.printf("\t%7.2f\t%7.2f\t%7.2f\t%7s\t",
 					interfaceScoreCs.getScore1(),
 					interfaceScoreCs.getScore2(),
 					interfaceScoreCs.getScore(),
@@ -175,9 +177,9 @@ public class CsvOutputWriter {
 		
 		// final
 		if (interfaceScoreFn==null) {
-			ps.printf("%7s\t%7s","","");
+			ps.printf("\t%7s\t%7s","","");
 		} else {
-			ps.printf("%7.0f\t%7s",
+			ps.printf("\t%7.0f\t%7s",
 					interfaceScoreFn.getScore(),
 					interfaceScoreFn.getCallName());			
 		}
@@ -187,4 +189,52 @@ public class CsvOutputWriter {
 		// TODO should we display warnings? they are per InterfaceDB and not per InterfaceScoreDB
 	}
 
+	
+	public void writePdbAssignments() throws IOException{
+		
+		PrintStream ps = new PrintStream(params.getOutputFile(EppicParams.PDB_BIOUNIT_ASSIGN_FILE_SUFFIX));
+		
+		List<InterfaceClusterDB> interfaceClusters = pdbInfo.getInterfaceClusters();
+		
+		
+		//TODO only one assembly per method (first one present) is output now
+		//TODO the size of the assemblies is not output yet
+		
+		ps.printf("%8s\t%8s\t%8s\t%8s\t%8s\n","clusterId","members","eppic","pisa","authors");
+		
+		for (InterfaceClusterDB interfaceCluster:interfaceClusters) {
+			String membersStr = "";
+			for (InterfaceDB interfaceItem:interfaceCluster.getInterfaces()) {
+				membersStr += interfaceItem.getInterfaceId()+" ";
+			}
+			ps.printf("%8d\t%8s\t",interfaceCluster.getClusterId(),membersStr);
+
+			
+			InterfaceClusterScoreDB icsPisa = interfaceCluster.getInterfaceClusterScore(ScoringMethod.PISA);
+			InterfaceClusterScoreDB icsEppic = interfaceCluster.getInterfaceClusterScore(ScoringMethod.EPPIC_FINAL);
+			InterfaceClusterScoreDB icsAuthors = interfaceCluster.getInterfaceClusterScore(ScoringMethod.AUTHORS);
+			
+			if (icsEppic==null) {
+				ps.printf("%8s\t","");
+			} else {
+				ps.printf("%8s\t",icsEppic.getCallName());
+			}
+			if (icsPisa==null) {
+				ps.printf("%8s\t","");
+			} else {
+				ps.printf("%8s\t",icsPisa.getCallName());
+			}
+			if (icsAuthors==null) {
+				ps.printf("%8s","");
+			} else {
+				ps.printf("%8s",icsAuthors.getCallName());
+			}
+			
+			
+			ps.println();
+			
+		}
+		
+		ps.close();
+	}
 }
