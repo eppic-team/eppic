@@ -28,6 +28,8 @@ import com.sencha.gxt.data.shared.ListStore;
 import com.sencha.gxt.data.shared.ModelKeyProvider;
 import com.sencha.gxt.data.shared.PropertyAccess;
 import com.sencha.gxt.widget.core.client.event.CellClickEvent;
+import com.sencha.gxt.widget.core.client.event.CellDoubleClickEvent;
+import com.sencha.gxt.widget.core.client.event.CellDoubleClickEvent.CellDoubleClickHandler;
 import com.sencha.gxt.widget.core.client.event.SelectEvent;
 import com.sencha.gxt.widget.core.client.event.CellClickEvent.CellClickHandler;
 import com.sencha.gxt.widget.core.client.event.SelectEvent.SelectHandler;
@@ -201,6 +203,18 @@ public class SearchGridPanel extends VerticalLayoutContainer
 			@Override
 			public void onCellClick(CellClickEvent event) {
 				selectedPdbCode = store.get(event.getRowIndex()).getPdbCode();	
+			}
+		});
+		
+		resultsGrid.addCellDoubleClickHandler(new CellDoubleClickHandler() {
+			
+			@Override
+			public void onCellClick(CellDoubleClickEvent event) {
+				selectedPdbCode = store.get(event.getRowIndex()).getPdbCode();
+				if(selectedPdbCode != null)
+				{
+					History.newItem("id/" + selectedPdbCode.toLowerCase() );
+				}
 			}
 		});
 

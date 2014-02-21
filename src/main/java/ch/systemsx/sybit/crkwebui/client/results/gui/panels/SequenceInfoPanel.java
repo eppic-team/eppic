@@ -377,7 +377,7 @@ public class SequenceInfoPanel extends FieldSet
     					AppPropertiesManager.CONSTANTS.homologs_panel_search_tip());
 
     	searchLink.addStyleName("eppic-action");
-
+    	searchLink.getElement().<XElement>cast().applyStyles("marginLeft:5px");
     	searchLink.addClickHandler(new ClickHandler() {
 			
 			@Override
