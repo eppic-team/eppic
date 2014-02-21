@@ -629,17 +629,22 @@ public class Main {
 	}
 	
 	/**
-	 * The main of EPPIC (formerly known as CRK) 
+	 * The main of EPPIC  
 	 */
 	public static void main(String[] args){
 		
-		long start = System.nanoTime();
-		
 		Main crkMain = new Main();
+		
+		crkMain.run(args);
+	}
+	
+	public void run(String[] args) {
+		
+		long start = System.nanoTime();
 
 		// we first parse command line and print errors to stderr (logging is not set up yet)
 		try {
-			crkMain.params.parseCommandLine(args);
+			params.parseCommandLine(args);
 		} catch (EppicException e) {
 			System.err.println(e.getMessage());
 			e.exitIfFatal(1);
@@ -656,11 +661,11 @@ public class Main {
 			//java.util.logging.Logger jalLogger = java.util.logging.Logger.getLogger("NeedlemanWunschGotoh");
 			//jalLogger.setLevel(java.util.logging.Level.OFF);
 			
-			crkMain.setUpLogging();
+			setUpLogging();
 
 			LOGGER.info(EppicParams.PROGRAM_NAME+" version "+EppicParams.PROGRAM_VERSION);
 			
-			crkMain.loadConfigFile();
+			loadConfigFile();
 			
 			try {
 				LOGGER.info("Running in host "+InetAddress.getLocalHost().getHostName());
@@ -669,45 +674,45 @@ public class Main {
 			}
 			
 			// 0 load pdb
-			crkMain.doLoadPdb();
+			doLoadPdb();
 
 			// 1 finding interfaces
-			if (crkMain.params.getInterfSerFile()!=null) {
-				crkMain.doLoadInterfacesFromFile();
+			if (params.getInterfSerFile()!=null) {
+				doLoadInterfacesFromFile();
 			} else {
-				crkMain.doFindInterfaces();
+				doFindInterfaces();
 			}
-			crkMain.doGeomScoring(); 
+			doGeomScoring(); 
 			
-			if (crkMain.params.isDoEvolScoring()) {
+			if (params.isDoEvolScoring()) {
 				// 2 finding evolutionary context
-				if (crkMain.params.getChainEvContextSerFile()!=null) {
-					crkMain.doLoadEvolContextFromFile();
+				if (params.getChainEvContextSerFile()!=null) {
+					doLoadEvolContextFromFile();
 				} else {
-					crkMain.doFindEvolContext();
+					doFindEvolContext();
 				}
 
 				// 3 scoring
-				crkMain.doEvolScoring();
+				doEvolScoring();
 				
 				// 4 combined scoring
-				crkMain.doCombinedScoring();
+				doCombinedScoring();
 			}
 			
 			// 5 write CSV files (only if not in -w) 	
-			crkMain.doWriteTextOutputFiles();		
+			doWriteTextOutputFiles();		
 			
 			// 6 write pdb files (only if in -l)
-			crkMain.doWritePdbFiles();
+			doWritePdbFiles();
 						
 			// 7 writing pymol files (only if in -l)
-			crkMain.doWritePymolFiles();
+			doWritePymolFiles();
 			
 			// 8 compressing files (only if in -l)
-			crkMain.doCompressFiles();
+			doCompressFiles();
 			
 			// 9 writing out the model serialized file and "finish" file for web ui (only if in -w)
-			crkMain.doWriteFinalFiles();
+			doWriteFinalFiles();
 
 			
 
