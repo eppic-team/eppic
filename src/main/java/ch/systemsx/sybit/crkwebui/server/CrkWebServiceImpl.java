@@ -750,7 +750,18 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 
 		ChainClusterDAO homologsDAO = new ChainClusterDAOJpa();
 		List<PDBSearchResult> resultList = homologsDAO.getPdbSearchItemsForUniProt(uniProtId);
-		return resultList;
+		
+		List<PDBSearchResult> data = new ArrayList<PDBSearchResult>();
+
+		if (resultList != null) {
+			for(PDBSearchResult result: resultList){
+				if(result.getPdbCode() != null){
+					data.add(result);
+				}
+			}
+		}
+		
+		return data;
 	} 
 }
 

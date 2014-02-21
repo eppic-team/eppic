@@ -24,6 +24,7 @@ import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.sencha.gxt.core.client.ValueProvider;
 import com.sencha.gxt.core.client.Style.SelectionMode;
 import com.sencha.gxt.core.client.util.KeyNav;
+import com.sencha.gxt.core.client.util.Margins;
 import com.sencha.gxt.data.shared.ListStore;
 import com.sencha.gxt.data.shared.ModelKeyProvider;
 import com.sencha.gxt.data.shared.PropertyAccess;
@@ -101,7 +102,7 @@ public class SearchGridPanel extends VerticalLayoutContainer
 		selectorToolBar = createSelectorToolBar();
 		filterTextPanel = createFilterPanel();
 		
-		this.add(filterTextPanel, new VerticalLayoutData(1, -1));
+		this.add(filterTextPanel, new VerticalLayoutData(1, -1, new Margins(10,0,15,0)));
 		this.add(selectorToolBar, new VerticalLayoutData(1, -1));
 		this.add(resultsGrid, new VerticalLayoutData(1, 1));
 
@@ -115,16 +116,9 @@ public class SearchGridPanel extends VerticalLayoutContainer
 	{
 		store.clear();
 		selectedPdbCode = null;
-		
-		List<PDBSearchResult> data = new ArrayList<PDBSearchResult>();
 
 		if (values != null) {
-			for(PDBSearchResult result: values){
-				if(result.getPdbCode() != null){
-					data.add(result);
-				}
-			}
-			store.addAll(data);
+			store.addAll(values);
 		}
 		
 		if(store.getAll().size() <= 0){
