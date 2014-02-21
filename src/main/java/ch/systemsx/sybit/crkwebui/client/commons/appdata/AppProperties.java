@@ -26,6 +26,17 @@ public interface AppProperties extends Constants
 	String window_title_processing();
 	String window_title_loading();
 	String window_title_results();
+	String window_title_searching();
+	String window_title_searced();
+	
+	String search_panel_results_count();
+	String search_panel_load_button();
+	String search_panel_load_button_no_selection_title();
+	String search_panel_load_button_no_selection_text();
+	String search_panel_filter_header();
+	String search_panel_filter_text();
+	
+	String search_panel_uniprot_subtitle();
 	
 	String top_panel_title();
 	
@@ -109,6 +120,8 @@ public interface AppProperties extends Constants
 	String homologs_panel_query_warnings_title();
 	String homologs_panel_next_homologs_button();
 	String homologs_panel_prev_homologs_button();
+	String homologs_panel_search_text();
+	String homologs_panel_search_tip();
 	
 	String homologs_window_title();
 	String homologs_window_query_text();

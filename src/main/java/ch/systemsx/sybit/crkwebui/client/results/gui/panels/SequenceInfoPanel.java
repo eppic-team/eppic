@@ -12,6 +12,7 @@ import ch.systemsx.sybit.crkwebui.client.commons.events.ShowHomologsEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowQueryWarningsEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.images.ImageWithTooltip;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.labels.LabelWithTooltip;
+import ch.systemsx.sybit.crkwebui.client.commons.gui.links.EmptyLinkWithTooltip;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.links.ImageLinkWithTooltip;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ApplicationWindowResizeHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.HideAllWindowsHandler;
@@ -26,6 +27,7 @@ import ch.systemsx.sybit.crkwebui.shared.model.UniProtRefWarning;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Image;
@@ -369,6 +371,22 @@ public class SequenceInfoPanel extends FieldSet
     					AppPropertiesManager.CONSTANTS.homologs_panel_entropiespse_hint(),
     					downloadPseLink);
     	items.add(colorPseImg);
+    	
+    	final EmptyLinkWithTooltip searchLink = 
+    			new EmptyLinkWithTooltip(AppPropertiesManager.CONSTANTS.homologs_panel_search_text(),
+    					AppPropertiesManager.CONSTANTS.homologs_panel_search_tip());
+
+    	searchLink.addStyleName("eppic-action");
+
+    	searchLink.addClickHandler(new ClickHandler() {
+			
+			@Override
+			public void onClick(ClickEvent event) {
+				History.newItem("search/"+chainCluster.getRefUniProtId());
+			}
+		});
+    	items.add(searchLink);
+    		
     	return items;
     }
     

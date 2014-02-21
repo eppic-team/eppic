@@ -5,6 +5,7 @@ import java.util.List;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
 
+import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.panels.DisplayPanel;
 import ch.systemsx.sybit.crkwebui.shared.model.PDBSearchResult;
 
@@ -24,18 +25,23 @@ public class SearchPanel extends DisplayPanel
 		
 		DockLayoutPanel dock = new DockLayoutPanel(Unit.PX);
 		
-		dock.addNorth(headerPanel, 50);
+		dock.addNorth(headerPanel, 80);
 		dock.add(gridPanel);
 		
 		this.setData(dock);
 	}
 	
-	public void fillSearchPanel(String uniProtId, String searchResultLabel, List<PDBSearchResult> list){
-		headerPanel.updateContent(searchResultLabel, uniProtId);
+	public void fillSearchPanel(String uniProtId, String searchResultLabel, List<PDBSearchResult> list){		
+		headerPanel.updateContent(searchResultLabel, uniProtId, list.size());
 		gridPanel.fillGrid(list);
 	}
 	
 	public void resizePanel(){
-		gridPanel.resizeGrid();
+		int width = ApplicationContext.getWindowData().getWindowWidth() - 180;
+		
+		if(width < MIN_WIDTH) width = MIN_WIDTH-20;
+		
+		gridPanel.resizeGrid(width);
+		headerPanel.resizePanel(width + 30);
 	}
 }

@@ -378,9 +378,9 @@ public class MainController
 			ApplicationContext.setSelectedJobId(token.substring(3));
 			displayResults();
 		}
-		if ((token != null) && (token.length() > 3) && (token.startsWith("search")))
+		else if ((token != null) && (token.length() > 7) && (token.startsWith("search")))
 		{
-			Window.setTitle("Test Loading");
+			Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_searching());
 			displaySearch(token.substring(7));
 		}
 		else if((token != null) && (token.equals("help") || token.equals("!help")))
@@ -590,7 +590,7 @@ public class MainController
 
 		SearchPanel searchPanel = null;
 		
-		String label = "test for now";
+		String label = AppPropertiesManager.CONSTANTS.search_panel_uniprot_subtitle();
 		
 		if((mainViewPort.getCenterPanel().getDisplayPanel() != null) &&
 		   (mainViewPort.getCenterPanel().getDisplayPanel() instanceof SearchPanel))
@@ -603,7 +603,7 @@ public class MainController
 			searchPanel = mainViewPort.getSearchPanel();
 			searchPanel.fillSearchPanel(uniProtId, label, resultList);
 			mainViewPort.getCenterPanel().setDisplayPanel(searchPanel);
-			//searchPanel.resizeContent();
+			searchPanel.resizePanel();
 		}
 		else
 		{
@@ -611,10 +611,10 @@ public class MainController
 			searchPanel.fillSearchPanel(uniProtId, label, resultList);
 			mainViewPort.setSearchPanel(searchPanel);
 			mainViewPort.getCenterPanel().setDisplayPanel(searchPanel);
-			//searchPanel.resizeContent();
+			searchPanel.resizePanel();
 		}
 
-		Window.setTitle("Test" + " - " + uniProtId);
+		Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_searced() + " - " + uniProtId);
 	}
 
 	/**

@@ -1,16 +1,14 @@
 package ch.systemsx.sybit.crkwebui.client.commons.callbacks;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.commons.events.SearchResultsDataRetrievedEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowErrorEvent;
-import ch.systemsx.sybit.crkwebui.client.commons.events.ShowMessageEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.UnmaskMainViewEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.managers.EventBusManager;
 import ch.systemsx.sybit.crkwebui.shared.model.PDBSearchResult;
 
-import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public class GetPdbForUniprotCallBack implements AsyncCallback<List<PDBSearchResult>>{
@@ -37,10 +35,7 @@ public class GetPdbForUniprotCallBack implements AsyncCallback<List<PDBSearchRes
 		}
 		else
 		{
-			History.newItem("");
-			String msg = "Id=" + uniProtId + " not found on the server";
-			
-			EventBusManager.EVENT_BUS.fireEvent(new ShowMessageEvent(AppPropertiesManager.CONSTANTS.callback_job_not_found_error(), msg));
+			result = new ArrayList<PDBSearchResult>();
 		}
 		
 		EventBusManager.EVENT_BUS.fireEvent(new UnmaskMainViewEvent());

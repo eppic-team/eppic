@@ -123,6 +123,33 @@
 	background-color:#CDCDCD;
 }
 
+.eppic-search-panel-header{
+	font-size: 22px;
+	font-weight: bold;
+}
+
+.eppic-search-panel-results-count{
+	font-style: italic;
+}
+
+.eppic-search-grid-pdb-code A:link {text-decoration: none; color: #15428B;}
+.eppic-search-grid-pdb-code A:visited {text-decoration: none; color: #15428B;}
+.eppic-search-grid-pdb-code A:active {text-decoration: none; color: #15428B;}
+.eppic-search-grid-pdb-code A:hover {text-decoration: underline; color: #15428B;}
+
+.eppic-search-panel-filter-panel{
+	width: 300px;
+	text-align: center;
+	border-bottom: 2px solid #C5C5C5;
+	border-top: 2px solid #C5C5C5;
+	font-size: 10px;
+}
+
+.eppic-filter-panel-header{
+	color: #15428B;
+	font-style:italic;
+}
+
 .eppic-results-header-panel{
 	border-bottom: 3px solid #C5C5C5;
 }
@@ -192,7 +219,7 @@
 .eppic-results-grid-summary-cells{
 	text-align: center;
 	font-size: 14px;
-	font-style: italics;
+	font-style: italic;
 }
 
 .eppic-results-final-call {
