@@ -4,6 +4,11 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
+
 import eppic.model.InterfaceDB;
 import eppic.model.ResidueDB;
 import eppic.model.InterfaceScoreDB;
@@ -13,6 +18,7 @@ import eppic.model.InterfaceWarningDB;
  * DTO class for Interface.
  * @author AS
  */
+@XmlAccessorType(XmlAccessType.FIELD)
 public class Interface implements Serializable, Comparable<Interface> 
 {
 	/**
@@ -37,6 +43,8 @@ public class Interface implements Serializable, Comparable<Interface>
 	private List<InterfaceWarning> interfaceWarnings;
 	
 	//things from the interface Score table
+	@XmlElementWrapper(name = "interfaceScores")
+	@XmlElement(name = "interfaceScore")
 	private List<InterfaceScore> interfaceScores;
 	
 	private List<Residue> residues;

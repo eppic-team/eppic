@@ -31,6 +31,7 @@ import ch.systemsx.sybit.crkwebui.client.results.gui.cells.OperatorTypeCell;
 import ch.systemsx.sybit.crkwebui.client.results.gui.cells.ThumbnailCell;
 import ch.systemsx.sybit.crkwebui.client.results.gui.cells.WarningsCell;
 import ch.systemsx.sybit.crkwebui.client.results.gui.grid.util.ClustersGridView;
+import ch.systemsx.sybit.crkwebui.client.results.gui.grid.util.FinalCallSummaryRenderer;
 import ch.systemsx.sybit.crkwebui.client.results.gui.grid.util.MethodSummaryType;
 import ch.systemsx.sybit.crkwebui.client.results.gui.grid.util.MethodsSummaryRenderer;
 import ch.systemsx.sybit.crkwebui.shared.model.InputType;
@@ -232,9 +233,9 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 	private SummaryColumnConfig<InterfaceItemModel, String> getFinalCallColumn() {
 		SummaryColumnConfig<InterfaceItemModel, String> column = 
 				new SummaryColumnConfig<InterfaceItemModel, String>(props.finalCallName());
-		column.setCell(new MethodCallCell(resultsStore, "finalCallName"));
+		column.setCell(new MethodCallCell(resultsStore, ScoringMethod.EPPIC_FINAL));
 		column.setSummaryType(new MethodSummaryType.FinalCallSummaryType());
-		column.setSummaryRenderer(new MethodsSummaryRenderer());
+		column.setSummaryRenderer(new FinalCallSummaryRenderer());
 		fillColumnSettings(column, "finalCallName");
 		column.setColumnTextClassName("eppic-results-final-call");
 		return column;

@@ -4,6 +4,11 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
+
 import eppic.model.HomologDB;
 import eppic.model.ChainClusterDB;
 import eppic.model.UniProtRefWarningDB;
@@ -12,6 +17,7 @@ import eppic.model.UniProtRefWarningDB;
  * DTO class for HomologsInfo item.
  * @author AS
  */
+@XmlAccessorType(XmlAccessType.FIELD)
 public class ChainCluster implements Serializable 
 {
 	/**
@@ -31,7 +37,7 @@ public class ChainCluster implements Serializable
 	private String refAlignedSeq;
 	private String aliMarkupLine;
 	
-	private boolean hasUniProtRef;	
+	private boolean hasUniProtRef;
 	private List<UniProtRefWarning> uniProtRefWarnings;
 	
 	private int numHomologs;
@@ -43,6 +49,8 @@ public class ChainCluster implements Serializable
 	private String firstTaxon;
 	private String lastTaxon;
 	
+	@XmlElementWrapper(name = "homologs")
+	@XmlElement(name = "homolog")
 	private List<Homolog> homologs;
 	
 	private String pdbCode;

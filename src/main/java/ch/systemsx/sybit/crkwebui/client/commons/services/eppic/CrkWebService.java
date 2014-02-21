@@ -15,8 +15,6 @@ import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 import com.google.gwt.user.server.rpc.NoXsrfProtect;
 import com.google.gwt.user.server.rpc.XsrfProtect;
-import com.sencha.gxt.data.shared.loader.FilterPagingLoadConfig;
-import com.sencha.gxt.data.shared.loader.PagingLoadResult;
 
 /**
  * The client side stub for the RPC service.
@@ -111,5 +109,5 @@ public interface CrkWebService extends RemoteService
 	 * @throws Exception when an asynchronous call fails to complete normally
 	 */
 	@XsrfProtect
-	public PagingLoadResult<PDBSearchResult> getListOfPDBsHavingAUniProt(FilterPagingLoadConfig config, String uniProtId) throws Exception;
+	public List<PDBSearchResult> getListOfPDBsHavingAUniProt(String uniProtId) throws Exception;
 }

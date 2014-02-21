@@ -15,6 +15,8 @@ import com.google.gwt.cell.client.AbstractCell;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.sencha.gxt.data.shared.ListStore;
 
+import eppic.model.ScoringMethod;
+
 /**
  * Cell used to used to style the results of calculations for each of the method call (xtal/bio).
  * @author nikhil
@@ -71,7 +73,7 @@ public class MethodCallCell extends AbstractCell<String> {
 			color = "red";
 		}
 
-		if(type.equals("finalCallName")) value=value.toUpperCase();
+		if(type.equals(ScoringMethod.EPPIC_FINAL)) value=value.toUpperCase();
 
 		tooltipText = EscapedStringGenerator.generateEscapedString(tooltipText);
 		tooltipText = "<div class=\"eppic-default-font eppic-results-grid-tooltip\">" + tooltipText + "</div>";

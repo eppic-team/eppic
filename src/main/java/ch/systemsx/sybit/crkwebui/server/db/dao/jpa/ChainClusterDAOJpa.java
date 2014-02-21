@@ -98,7 +98,8 @@ public class ChainClusterDAOJpa implements ChainClusterDAO
 			List<PdbInfoDB> pdbItemDBs = query.getResultList();
 			
 			for(PdbInfoDB pdbItemDB: pdbItemDBs){
-				PDBSearchResult result = new PDBSearchResult(pdbItemDB.getPdbCode(), 
+				PDBSearchResult result = new PDBSearchResult(pdbItemDB.getUid(),
+															pdbItemDB.getPdbCode(), 
 															pdbItemDB.getTitle(), 
 															pdbItemDB.getReleaseDate(), 
 															pdbItemDB.getSpaceGroup(), 

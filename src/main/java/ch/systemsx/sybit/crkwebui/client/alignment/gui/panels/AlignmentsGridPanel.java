@@ -11,6 +11,8 @@ import ch.systemsx.sybit.crkwebui.client.alignment.gui.cell.IndexCell;
 import ch.systemsx.sybit.crkwebui.shared.model.ChainCluster;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.event.logical.shared.ResizeEvent;
+import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.sencha.gxt.core.client.Style.SelectionMode;
 import com.sencha.gxt.data.shared.ListStore;
@@ -53,6 +55,14 @@ public class AlignmentsGridPanel extends VerticalLayoutContainer{
     	this.setPixelSize(gridWidth, gridHeight);
     	this.add(grid, new VerticalLayoutData(1, 1));
     	
+    	this.addResizeHandler(new ResizeHandler()
+		{
+			@Override
+			public void onResize(ResizeEvent event) {
+				updatePanelContent();
+
+			}
+		});
 	}
 	
 	/**

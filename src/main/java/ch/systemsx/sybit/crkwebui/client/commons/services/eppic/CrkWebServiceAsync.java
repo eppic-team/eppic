@@ -12,8 +12,6 @@ import ch.systemsx.sybit.crkwebui.shared.model.ProcessingData;
 import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.sencha.gxt.data.shared.loader.FilterPagingLoadConfig;
-import com.sencha.gxt.data.shared.loader.PagingLoadResult;
 
 /**
  * The async counterpart of <code>CrkWebService</code>.
@@ -44,6 +42,5 @@ public interface CrkWebServiceAsync
 	public void getAllResidues(String jobId,
 			AsyncCallback<ResiduesList> getAllResiduesCallback);
 	
-	public void getListOfPDBsHavingAUniProt(FilterPagingLoadConfig config, 
-			String uniProtId, AsyncCallback<PagingLoadResult<PDBSearchResult>> callback);
+	public void getListOfPDBsHavingAUniProt(String uniProtId, AsyncCallback<List<PDBSearchResult>> callback);
 }

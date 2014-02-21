@@ -4,10 +4,16 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
+
 import eppic.model.InterfaceClusterDB;
 import eppic.model.InterfaceClusterScoreDB;
 import eppic.model.InterfaceDB;
 
+@XmlAccessorType(XmlAccessType.FIELD)
 public class InterfaceCluster implements Serializable, Comparable<InterfaceCluster>{
 
 	/**
@@ -20,8 +26,12 @@ public class InterfaceCluster implements Serializable, Comparable<InterfaceClust
 	
 	private String pdbCode;
 	
+	@XmlElementWrapper(name = "interfaces")
+	@XmlElement(name = "interface")
 	private List<Interface> interfaces;
 	
+	@XmlElementWrapper(name = "interfaceClusterScores")
+	@XmlElement(name = "interfaceClusterScore")
 	private List<InterfaceClusterScore> interfaceClusterScores;
 	
 	public InterfaceCluster()
