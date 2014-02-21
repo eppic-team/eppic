@@ -414,6 +414,8 @@
 			<basic name="refUniProtId"></basic>
 			<basic name="refUniProtStart"></basic>
 			<basic name="refUniProtEnd"></basic>
+			<basic name="pdbStart"></basic>
+			<basic name="pdbEnd"></basic>
 			
 			<basic name="hasUniProtRef"></basic>
 			<basic name="seqIdCutoff"></basic>
@@ -478,8 +480,12 @@
 			</basic>
 			<basic name="seqId"></basic>
 			<basic name="queryCoverage"></basic>
+			
 			<basic name="queryStart"></basic>
 			<basic name="queryEnd"></basic>
+
+			<basic name="subjectStart"></basic>
+			<basic name="subjectEnd"></basic>			
 			
 			<basic name="alignedSeq">
 				<column column-definition="text" />
