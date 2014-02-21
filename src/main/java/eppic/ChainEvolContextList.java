@@ -1,9 +1,6 @@
 package eppic;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.io.Serializable;
 import java.sql.SQLException;
 import java.util.Collection;
@@ -370,35 +367,6 @@ public class ChainEvolContextList implements Serializable {
 		params.getProgressLog().println();
 	}
 	
-	public void writeSeqInfoToFiles(EppicParams params) {
-		for (ChainEvolContext chainEvCont:cecs.values()) {
-			if (!chainEvCont.hasQueryMatch()) {
-				// no query uniprot match, we do nothing with this sequence
-				continue;
-			}
-
-			File outFile = null;
-			try {
-				// writing homolog sequences to file
-				outFile = params.getOutputFile("."+chainEvCont.getRepresentativeChainCode()+".fa");
-				chainEvCont.writeHomologSeqsToFile(outFile, params);
-
-				// printing summary to file
-				outFile = params.getOutputFile("."+chainEvCont.getRepresentativeChainCode()+".log");
-				PrintStream log = new PrintStream(outFile);
-				chainEvCont.printSummary(log);
-				log.close();
-				// writing the alignment to file
-				outFile = params.getOutputFile("."+chainEvCont.getRepresentativeChainCode()+".aln");
-				chainEvCont.writeAlignmentToFile(outFile);
-
-			} catch(FileNotFoundException e){
-				LOGGER.error("Couldn't write file "+outFile);
-				LOGGER.error(e.getMessage());
-			}
-		}
-	}
-	
 	public void computeEntropies(EppicParams params) {
 		for (ChainEvolContext chainEvCont:cecs.values()) {
 			if (!chainEvCont.hasQueryMatch()) {
@@ -407,27 +375,6 @@ public class ChainEvolContextList implements Serializable {
 			}
 			
 			chainEvCont.computeEntropies(params.getReducedAlphabet());
-		}
-	}
-	
-	public void writeEntropiesToFile(EppicParams params, PdbAsymUnit pdb) {
-		for (ChainEvolContext chainEvCont:cecs.values()) {
-			if (!chainEvCont.hasQueryMatch()) {
-				// no query uniprot match, we do nothing with this sequence
-				continue;
-			}
-			
-			File outFile = null;
-			try {
-				// writing the conservation scores (entropies/kaks) log file
-				outFile = params.getOutputFile("."+chainEvCont.getRepresentativeChainCode()+EppicParams.ENTROPIES_FILE_SUFFIX);
-				PrintStream conservScoLog = new PrintStream(outFile);
-				chainEvCont.printConservationScores(conservScoLog, ScoringType.CORERIM, pdb);
-				conservScoLog.close();
-			} catch (FileNotFoundException e) {
-				LOGGER.error("Could not write the scores log file "+outFile);
-				LOGGER.error(e.getMessage());
-			}
 		}
 	}
 	

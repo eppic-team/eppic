@@ -5,6 +5,8 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import eppic.model.ChainClusterDB;
+import eppic.model.HomologDB;
 import eppic.model.InterfaceClusterDB;
 import eppic.model.InterfaceClusterScoreDB;
 import eppic.model.InterfaceDB;
@@ -13,12 +15,12 @@ import eppic.model.PdbInfoDB;
 import eppic.model.ResidueDB;
 import eppic.model.ScoringMethod;
 
-public class CsvOutputWriter {
+public class TextOutputWriter {
 	
 	private PdbInfoDB pdbInfo;
 	private EppicParams params;
 	
-	public CsvOutputWriter (PdbInfoDB pdbInfo, EppicParams params) {
+	public TextOutputWriter (PdbInfoDB pdbInfo, EppicParams params) {
 		this.pdbInfo = pdbInfo;
 		this.params = params;
 	}
@@ -235,6 +237,165 @@ public class CsvOutputWriter {
 			
 		}
 		
+		ps.close();
+	}
+	
+	/**
+	 * Writes to files (one per ChainCluster) a summary of the query and uniprot/cds identifiers and homologs with 
+	 * their uniprot/cds identifiers
+	 */
+	public void writeHomologsSummaries() throws IOException {
+		List<ChainClusterDB> chainClusters = pdbInfo.getChainClusters();
+		
+		for (ChainClusterDB cc:chainClusters) {
+			if (cc.isHasUniProtRef()) {
+				writeHomologsSummaryPerChain(cc);
+			}
+		}
+	}
+	
+	private void writeHomologsSummaryPerChain(ChainClusterDB chainCluster) throws IOException {
+		PrintStream ps = new PrintStream(params.getOutputFile("."+chainCluster.getRepChain()+".log"));
+		ps.println("Query: chain "+chainCluster.getRepChain());
+		ps.println("UniProt id for query:");
+		ps.print(chainCluster.getRefUniProtId());
+		
+		if (chainCluster.getFirstTaxon()!=null && chainCluster.getLastTaxon()!=null) 
+			ps.println("\t"+chainCluster.getFirstTaxon()+"\t"+chainCluster.getLastTaxon());
+		else ps.println("\tunknown taxonomy");
+		ps.println();
+		
+		ps.println("UniProt version: "+pdbInfo.getRunParameters().getUniProtVersion());
+		ps.println("Homologs: "+chainCluster.getNumHomologs()+" with minimum "+
+				String.format("%4.2f",chainCluster.getSeqIdCutoff())+" identity and "+
+				String.format("%4.2f",pdbInfo.getRunParameters().getQueryCovCutoff())+" query coverage");
+
+		double clusteringPercentId = chainCluster.getClusteringSeqId();		
+		if (clusteringPercentId>0) 
+			ps.println("List is redundancy reduced through clustering on "+clusteringPercentId+" sequence identity");
+		
+		for (HomologDB hom:chainCluster.getHomologs()) {
+			ps.printf("%-13s",hom.getUniProtId());
+			ps.printf("\t%5.1f",hom.getSeqId()*100.0);
+			ps.printf("\t%5.1f",hom.getQueryCoverage()*100.0);
+			if (hom.getFirstTaxon()!=null && hom.getLastTaxon()!=null) 
+				ps.print("\t"+hom.getFirstTaxon()+"\t"+hom.getLastTaxon());
+			ps.println();
+		}
+		ps.close();
+	}
+	
+	public void writeEntropyFiles() throws IOException {
+		
+		List<ChainClusterDB> chainClusters = pdbInfo.getChainClusters();
+		
+		for (ChainClusterDB cc:chainClusters) {
+			if (cc.isHasUniProtRef()) {
+				writeEntropyFile(cc);
+			}
+		}
+
+	}
+	
+	private void writeEntropyFile(ChainClusterDB chainCluster) throws IOException {
+		
+		
+		PrintStream ps = new PrintStream(params.getOutputFile("."+chainCluster.getRepChain()+EppicParams.ENTROPIES_FILE_SUFFIX));
+
+		ps.println("# Entropies for all observed residues of query sequence (reference UniProt: " +
+				chainCluster.getRefUniProtId()+") based on a " + pdbInfo.getRunParameters().getReducedAlphabet()+" letters alphabet.");
+		ps.println("# seqres\tpdb\tuniprot\tuniprot_res\tentropy");
+ 
+		List<ResidueDB> list = getResidueListForChain(chainCluster);
+
+		
+		int uniProtStart = chainCluster.getRefUniProtStart();
+		int pdbStart = chainCluster.getPdbStart();
+		
+		
+		for (int i=0;i<list.size();i++) {
+			
+			ps.printf("%4d\t%4s\t%4d\t%3s\t%5.2f\n",
+					list.get(i).getResidueNumber(), 
+					list.get(i).getPdbResidueNumber(),  
+					list.get(i).getResidueNumber()+uniProtStart-pdbStart, 
+					list.get(i).getResidueType(), 
+					list.get(i).getEntropyScore());
+		}
+		
+		
+		ps.close();
+	}
+	
+	private List<ResidueDB> getResidueListForChain (ChainClusterDB chainCluster) {
+		List<ResidueDB> list = new ArrayList<ResidueDB>();
+		
+		String repChain = chainCluster.getRepChain();
+		
+		cluster:
+		for (InterfaceClusterDB interfaceCluster: pdbInfo.getInterfaceClusters()) {
+			
+			for (InterfaceDB interfaceItem:interfaceCluster.getInterfaces()) {
+				int side = 0;
+				if (interfaceItem.getChain1().equals(repChain)) {
+					side = 1;
+				} else if (interfaceItem.getChain2().equals(repChain)) {
+					side = 2;
+				} else {
+					continue;
+				}
+				
+				List<ResidueDB> residues = interfaceItem.getResidues();
+				for (ResidueDB residue:residues) {
+					if (residue.getSide()==side) list.add(residue);
+				}
+				break cluster;
+
+			}
+		}
+		
+		return list;
+	}
+	
+	public void writeAlnFiles() throws IOException {
+		
+		List<ChainClusterDB> chainClusters = pdbInfo.getChainClusters();
+		
+		for (ChainClusterDB cc:chainClusters) {
+			if (cc.isHasUniProtRef()) {
+				writeAlnFile(cc);
+			}
+		}
+		
+	}
+	
+	private void writeAlnFile(ChainClusterDB chainCluster) throws IOException {
+		PrintStream ps = new PrintStream(params.getOutputFile("."+chainCluster.getRepChain()+".aln"));
+		
+		
+		int len = 80;
+
+		// query sequence
+		String seq = chainCluster.getMsaAlignedSeq();
+		String name = chainCluster.getRefUniProtId()+"_"+chainCluster.getRefUniProtStart()+"-"+chainCluster.getRefUniProtEnd();
+		ps.print('>' + name+"\n");
+		for(int i=0; i<seq.length(); i+=len) {
+			ps.print(seq.substring(i, Math.min(i+len,seq.length()))+"\n");
+		}
+		
+		// homologs sequences
+		for ( HomologDB hom:chainCluster.getHomologs() ) {
+			
+			seq = hom.getAlignedSeq();
+			
+			ps.print ('>' + hom.getUniProtId()+"_"+hom.getSubjectStart()+"-"+hom.getSubjectEnd() +"\n");
+			
+			for(int i=0; i<seq.length(); i+=len) {
+				ps.print(seq.substring(i, Math.min(i+len,seq.length()))+"\n");
+			}
+		}
+		
+
 		ps.close();
 	}
 }

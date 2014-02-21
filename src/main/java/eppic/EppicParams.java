@@ -163,7 +163,7 @@ public class EppicParams {
 	// the parameters
 	private String inputStr;
 	private String pdbCode;
-	private boolean doScoreEntropies;
+	private boolean doEvolScoring;
 	private double homSoftIdCutoff;
 	private double homHardIdCutoff;
 	private double homIdStep;
@@ -189,6 +189,7 @@ public class EppicParams {
 	private File interfSerFile;
 	private File chainEvContextSerFile;
 	
+	private boolean generateInterfacesPdbFiles;
 	private boolean generateThumbnails;
 	
 	private boolean generateModelSerializedFile;
@@ -266,7 +267,7 @@ public class EppicParams {
 		
 		this.inputStr = null;
 		this.pdbCode = null;
-		this.doScoreEntropies = false;
+		this.doEvolScoring = false;
 		this.homSoftIdCutoff = DEF_HOM_SOFT_ID_CUTOFF;
 		this.homHardIdCutoff = DEF_HOM_HARD_ID_CUTOFF;
 		this.homIdStep = DEF_HOM_ID_STEP;
@@ -284,6 +285,7 @@ public class EppicParams {
 		this.coreSurfScoreCutoff = DEF_CORESURF_SCORE_CUTOFF;
 		this.interfSerFile = null;
 		this.chainEvContextSerFile = null;
+		this.generateInterfacesPdbFiles = false;
 		this.generateThumbnails = false;
 		this.generateModelSerializedFile = false;
 		this.progressLog = System.out;
@@ -296,7 +298,7 @@ public class EppicParams {
 	public void parseCommandLine(String[] args, String programName, String help) {
 	
 
-		Getopt g = new Getopt(programName, args, "i:sa:b:o:r:e:c:z:m:x:y:d:D:q:H:G:OA:I:C:lwL:g:uh?");
+		Getopt g = new Getopt(programName, args, "i:sa:b:o:r:e:c:z:m:x:y:d:D:q:H:G:OA:I:C:plwL:g:uh?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
@@ -305,7 +307,7 @@ public class EppicParams {
 				setInput();
 				break;
 			case 's':
-				doScoreEntropies = true;
+				doEvolScoring = true;
 				break;
 			case 'a':
 				numThreads = Integer.parseInt(g.getOptarg());
@@ -361,7 +363,11 @@ public class EppicParams {
 			case 'C':
 				chainEvContextSerFile = new File(g.getOptarg());
 				break;
+			case 'p':
+				generateInterfacesPdbFiles = true;
+				break;
 			case 'l':
+				generateInterfacesPdbFiles = true;
 				generateThumbnails = true;
 				break;
 			case 'w':
@@ -441,8 +447,10 @@ public class EppicParams {
 		"                  previous run of "+PROGRAM_NAME+"\n" +
 		"  [-C <file>]  :  binary file containing the evolutionary scores for a particular \n" +
 		"                  sequence output of a previous run of "+PROGRAM_NAME+"\n" +
-		"  [-l]         :  if specified thumbnail images will be generated for each interface \n" +
-		"                  (requires pymol)\n" +
+		"  [-p]         :  if specified PDB files for each interface will be generated\n"+
+		"  [-l]         :  if specified PyMOL files (thumbnail pngs, pse files) will be generated \n"+ 
+		"                  for each interface and for each chain cluster (requires PyMOL).\n"+
+		"                  This option will force the -p option\n" +
 		"  [-w]         :  if specified a serialized webui.dat file will be produced\n" +
 		"  [-L <file>]  :  a file where progress log will be written to. Default: progress\n" +
 		"                  log written to std output\n" +
@@ -518,7 +526,7 @@ public class EppicParams {
 			} 		
 		}
 		
-		if (isDoScoreEntropies()) {
+		if (isDoEvolScoring()) {
 			if (blastDbDir==null || ! new File(blastDbDir).isDirectory()) {
 				throw new EppicException(null,"BLAST_DB_DIR has not been set to a valid value in config file",true);
 			}
@@ -557,6 +565,10 @@ public class EppicParams {
 				tcoffeeBin = null;
 			}
 		}
+		
+		if (isGenerateThumbnails()) {
+			//TODO check for Pymol
+		}
 	}
 	
 	public boolean isInputAFile() {
@@ -593,8 +605,8 @@ public class EppicParams {
 		
 	}
 	
-	public boolean isDoScoreEntropies() {
-		return doScoreEntropies;
+	public boolean isDoEvolScoring() {
+		return doEvolScoring;
 	}
 	
 	public double getHomSoftIdCutoff() {
@@ -744,6 +756,10 @@ public class EppicParams {
 
 	public void setInFile(File inFile) {
 		this.inFile = inFile;
+	}
+	
+	public boolean isGenerateInterfacesPdbFiles(){
+		return generateInterfacesPdbFiles;
 	}
 	
 	public boolean isGenerateThumbnails() {

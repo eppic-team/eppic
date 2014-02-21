@@ -1,9 +1,7 @@
 package eppic;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.io.Serializable;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -27,15 +25,12 @@ import owl.core.runners.blast.BlastHsp;
 import owl.core.runners.blast.BlastRunner;
 import owl.core.runners.blast.BlastXMLParser;
 import owl.core.sequence.Sequence;
-import owl.core.sequence.Homolog;
 import owl.core.sequence.HomologList;
 import owl.core.sequence.UniprotVerMisMatchException;
 import owl.core.sequence.UnirefEntry;
 import owl.core.sequence.alignment.MultipleSequenceAlignment;
 import owl.core.sequence.alignment.PairwiseSequenceAlignment;
 import owl.core.sequence.alignment.PairwiseSequenceAlignment.PairwiseSequenceAlignmentException;
-import owl.core.structure.AminoAcid;
-import owl.core.structure.PdbAsymUnit;
 import owl.core.structure.PdbChain;
 import owl.core.structure.Residue;
 import owl.core.util.Interval;
@@ -557,14 +552,6 @@ public class ChainEvolContext implements Serializable {
 		homologs.computeAlignment(tcoffeeBin, clustaloBin, nThreads, alnCacheFile);
 	}
 	
-	public void writeAlignmentToFile(File alnFile) throws FileNotFoundException {
-		homologs.writeAlignmentToFile(alnFile); 
-	}
-	
-	public void writeHomologSeqsToFile(File outFile, EppicParams params) throws FileNotFoundException {
-		homologs.writeToFasta(outFile, false);
-	}
-	
 	public MultipleSequenceAlignment getAlignment() {
 		return homologs.getAlignment();
 	}
@@ -657,63 +644,6 @@ public class ChainEvolContext implements Serializable {
 	}
 	
 	/**
-	 * Prints a summary of the query and uniprot/cds identifiers and homologs with 
-	 * their uniprot/cds identifiers
-	 * @param ps
-	 */
-	public void printSummary(PrintStream ps) {
-		
-		ps.println("Query: chain "+representativeChain);
-		ps.println("UniProt id for query:");
-		ps.print(this.query.getUniId());
-		if (this.query.hasTaxons()) ps.println("\t"+this.query.getFirstTaxon()+"\t"+this.query.getLastTaxon());
-		else ps.println("\tunknown taxonomy");
-		ps.println();
-		
-		ps.println("UniProt version: "+getUniprotVer());
-		ps.println("Homologs: "+homologs.getSizeFilteredSubset()+" with minimum "+
-				String.format("%4.2f",homologs.getIdCutoff())+" identity and "+
-				String.format("%4.2f",homologs.getQCovCutoff())+" query coverage");
-
-		int clusteringPercentId = homologs.getUsedClusteringPercentId();		
-		if (clusteringPercentId>0) 
-			ps.println("List is redundancy reduced through clustering on "+clusteringPercentId+"% sequence identity");
-		
-		for (Homolog hom:homologs.getFilteredSubset()) {
-			ps.printf("%-13s",hom.getUniId());
-			ps.printf("\t%5.1f",hom.getPercentIdentity());
-			ps.printf("\t%5.1f",hom.getQueryCoverage()*100.0);
-			if (hom.getUnirefEntry().hasTaxons()) 
-				ps.print("\t"+hom.getUnirefEntry().getFirstTaxon()+"\t"+hom.getUnirefEntry().getLastTaxon());
-			ps.println();
-		}
-	}
-	
-	public void printConservationScores(PrintStream ps, ScoringType scoType, PdbAsymUnit pdb) {
-		if (scoType.equals(ScoringType.CORERIM)) {
-			ps.println("# Entropies for all query sequence positions (reference UniProt: "+query.getUniId()+") based on a "+homologs.getReducedAlphabet()+" letters alphabet.");
-			ps.println("# seqres\tpdb\tuniprot\tuniprot_res\tentropy");
-		} 
-		PdbChain chain = null;
-		if (pdb!=null) chain = pdb.getChain(representativeChain);
-		List<Double> conservationScores = getConservationScores(scoType);		
-		for (int i=0;i<conservationScores.size();i++) {
-			int resser = 0;
-			if (scoType.equals(ScoringType.CORERIM)) {
-				resser = getPDBPosForQueryUniprotPos(i+queryInterv.beg-1);
-			}
-			String pdbresser = "NA";
-			if (chain!=null) pdbresser = chain.getPdbResSerFromResSer(resser);
-			ps.printf("%4d\t%4s\t%4d\t%3s\t%5.2f\n",
-					resser, 
-					pdbresser, 
-					i+queryInterv.beg, 
-					AminoAcid.one2three(query.getSequence().charAt(i+queryInterv.beg-1)), 
-					conservationScores.get(i));
-		}
-	}
-	
-	/**
 	 * Set the b-factors of the given pdb chain to conservation score values.
 	 * @param chain
 	 */
@@ -792,7 +722,7 @@ public class ChainEvolContext implements Serializable {
 	}
 	
 	/**
-	 * Given a sequence index of the query Uniprot sequence (starting at 0), returns its
+	 * Given a sequence index of the query UniProt sequence (starting at 0), returns its
 	 * corresponding PDB SEQRES position (starting at 1)
 	 * @param queryPos
 	 * @return the mapped PDB SEQRES sequence position or -1 if it maps to a gap

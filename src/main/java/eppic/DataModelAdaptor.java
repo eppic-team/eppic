@@ -287,6 +287,9 @@ public class DataModelAdaptor {
 				chainClusterDB.setRefUniProtStart(cec.getQueryInterval().beg);
 				chainClusterDB.setRefUniProtEnd(cec.getQueryInterval().end);
 				
+				chainClusterDB.setPdbStart(cec.getPDBPosForQueryUniprotPos(cec.getQueryInterval().beg-1));
+				chainClusterDB.setPdbEnd(cec.getPDBPosForQueryUniprotPos(cec.getQueryInterval().end-1));
+				
 				chainClusterDB.setPdbAlignedSeq(cec.getPdb2uniprotAln().getAlignedSequences()[0]);
 				chainClusterDB.setAliMarkupLine(String.valueOf(cec.getPdb2uniprotAln().getMarkupLine()));
 				chainClusterDB.setRefAlignedSeq(cec.getPdb2uniprotAln().getAlignedSequences()[1]);
@@ -300,6 +303,8 @@ public class DataModelAdaptor {
 					homologDB.setUniProtId(hom.getUniId());
 					homologDB.setQueryStart(hom.getBlastHsp().getQueryStart());
 					homologDB.setQueryEnd(hom.getBlastHsp().getQueryEnd());
+					homologDB.setSubjectStart(hom.getBlastHsp().getSubjectStart());
+					homologDB.setSubjectEnd(hom.getBlastHsp().getSubjectEnd());
 					homologDB.setAlignedSeq(cec.getAlignment().getAlignedSequence(hom.getIdentifier()));
 					if (hom.getUnirefEntry().hasTaxons()) {
 						homologDB.setFirstTaxon(hom.getUnirefEntry().getFirstTaxon());
@@ -491,7 +496,7 @@ public class DataModelAdaptor {
 			InterfaceDB ii = pdbInfo.getInterface(interf.getId());
 
 			// we add the residue details
-			addResidueDetails(ii, interf, params.isDoScoreEntropies());
+			addResidueDetails(ii, interf, params.isDoEvolScoring());
 		}
 	}
 	

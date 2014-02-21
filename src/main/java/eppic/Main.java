@@ -112,7 +112,7 @@ public class Main {
 				LOGGER.info("Loading user configuration file " + userConfigFile);
 				params.readConfigFile(userConfigFile);
 				params.checkConfigFileInput();
-			} else if (!params.isInputAFile() || params.isDoScoreEntropies()) {
+			} else if (!params.isInputAFile() || params.isDoEvolScoring()) {
 				LOGGER.error("No config file could be read at "+userConfigFile+
 						". Please set one if you want to run the program using PDB codes as input with -i or if you want to run evolutionary predictions (-s).");
 				System.exit(1);
@@ -293,55 +293,72 @@ public class Main {
 		
 	}
 	
-	public void doWriteCsvOutputFiles() throws EppicException {
+	public void doWriteTextOutputFiles() throws EppicException {
 		
-		// we don't write csv files if in -w
+		TextOutputWriter toW = new TextOutputWriter(modelAdaptor.getPdbInfo(), params);
+		
+		// 0 write .A.aln file : always write it, with our without -w 
+		try {
+			toW.writeAlnFiles();
+		} catch (IOException e) {
+			throw new EppicException(e, "Could not write the homologs alignment files: "+e.getMessage(), true);
+		}
+		
+		
+		// we don't write text files if in -w
 		if (params.isGenerateModelSerializedFile()) return;
 		
-		CsvOutputWriter csvOw = new CsvOutputWriter(modelAdaptor.getPdbInfo(), params);
+
 		
 		// 1 interfaces info file
 		try {
 			// if no interfaces found (e.g. NMR) we don't want to write the file
 			if (interfaces.getNumInterfaces()>0) {
-				csvOw.writeInterfacesInfoFile();
+				toW.writeInterfacesInfoFile();
 			}
 		} catch(IOException	e) {
-			throw new EppicException(e,"Couldn't log interfaces description to file: "+e.getMessage(),false);
+			throw new EppicException(e,"Could not log interfaces description to file: "+e.getMessage(),false);
 		}
 
 		// 2 scores file: geom, core-rim, core-surface and combine all in one file
 		try {
-			csvOw.writeScoresFile();
+			toW.writeScoresFile();
 		} catch (IOException e) {
-			throw new EppicException(e, "Couldn't write interface scores file. "+e.getMessage(),true);
+			throw new EppicException(e, "Could not write interface scores file. "+e.getMessage(),true);
 		}
 		
 		// 3 write pdb biounit list file
 		try {
-			csvOw.writePdbAssignments();
+			toW.writePdbAssignments();
 		} catch (IOException e) {
 			throw new EppicException(e, "Could not write the PDB bio-unit assignments file: "+e.getMessage(), false);
 		}
 		
+		// 4 write .A.log file
+		try {
+			toW.writeHomologsSummaries();
+		} catch (IOException e) {
+			throw new EppicException(e, "Could not write the homologs summaries files: "+e.getMessage(), false);
+		}
 		
-		// TODO write A.log file from model
+		// 5 write .A.entropies file  
+		try {
+			toW.writeEntropyFiles();
+		} catch (IOException e) {
+			throw new EppicException(e, "Could not write the homologs entropies files: "+e.getMessage(), false);
+		}
+	
 		
-		// TODO write A.aln file from model
-		
-		// TODO write A.fa file from model
-		
-		// TODO write A.entropies file from model
-		
-
 	}
 	
 	public void doWritePdbFiles() throws EppicException {
 
 		if (interfaces.getNumInterfaces()==0) return;
 		
+		if (!params.isGenerateInterfacesPdbFiles()) return;
+		
 		try {
-			if (!params.isDoScoreEntropies()) {
+			if (!params.isDoEvolScoring()) {
 				// no evol scoring: plain PDB files without altered bfactors
 				for (ChainInterface interf:interfaces) {
 					if (interf.isFirstProtein() && interf.isSecondProtein()) {
@@ -396,7 +413,7 @@ public class Main {
 						params.getOutDir(), params.getBaseName(), params.isUsePdbResSer());
 			}
 
-			if (params.isDoScoreEntropies()) {
+			if (params.isDoEvolScoring()) {
 				for (ChainEvolContext cec:cecs.getAllChainEvolContext()) {
 					PdbChain chain = pdb.getChain(cec.getRepresentativeChainCode());
 					cec.setConservationScoresAsBfactors(chain);
@@ -446,7 +463,7 @@ public class Main {
 				pseFile.delete();				
 			}
 			
-			if (params.isDoScoreEntropies()) {
+			if (params.isDoEvolScoring()) {
 				for (ChainEvolContext cec:cecs.getAllChainEvolContext()) {
 					File pseFile = 
 							params.getOutputFile("."+cec.getRepresentativeChainCode()+EppicParams.ENTROPIES_FILE_SUFFIX+".pse");
@@ -539,11 +556,8 @@ public class Main {
 		// c) align
 		cecs.align(params);
 		
-		cecs.writeSeqInfoToFiles(params);
-
 		// d) computing entropies
 		cecs.computeEntropies(params);
-		cecs.writeEntropiesToFile(params, pdb);
 		
 		if (!params.isGenerateModelSerializedFile()) {
 			// we only produce the chainevolcontext.dat file if not in -w mode (for WUI not to produce so many files)
@@ -564,7 +578,7 @@ public class Main {
 
 		writeStep("Scoring Interfaces");
 		
-		if (params.isDoScoreEntropies()) {
+		if (params.isDoEvolScoring()) {
 			
 			iecList.setCoreRimPredBsaToAsaCutoff(params.getCAcutoffForRimCore(), params.getMinAsaForSurface()); // calls calcRimAndCores as well
 			iecList.setCoreRimScoreCutoff(params.getCoreRimScoreCutoff());
@@ -665,7 +679,7 @@ public class Main {
 			}
 			crkMain.doGeomScoring(); 
 			
-			if (crkMain.params.isDoScoreEntropies()) {
+			if (crkMain.params.isDoEvolScoring()) {
 				// 2 finding evolutionary context
 				if (crkMain.params.getChainEvContextSerFile()!=null) {
 					crkMain.doLoadEvolContextFromFile();
@@ -681,9 +695,9 @@ public class Main {
 			}
 			
 			// 5 write CSV files (only if not in -w) 	
-			crkMain.doWriteCsvOutputFiles();		
+			crkMain.doWriteTextOutputFiles();		
 			
-			// 6 write pdb files 
+			// 6 write pdb files (only if in -l)
 			crkMain.doWritePdbFiles();
 						
 			// 7 writing pymol files (only if in -l)

@@ -74,11 +74,8 @@ public class FindEvolContext {
 		// c) align
 		cecs.align(params);
 		
-		cecs.writeSeqInfoToFiles(params);
-
 		// d) computing entropies
 		cecs.computeEntropies(params);
-		cecs.writeEntropiesToFile(params, null);
 		
 		
 		//try {

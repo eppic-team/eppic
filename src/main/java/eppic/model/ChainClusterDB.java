@@ -14,8 +14,13 @@ public class ChainClusterDB implements Serializable {
 	
 	// if any of the following is null then there's no homologs and thus no info to display	
 	private String refUniProtId;
-	private int refUniProtStart;
+	
+	private int refUniProtStart;	
 	private int refUniProtEnd;
+	
+	private int pdbStart;
+	private int pdbEnd;
+	
 	private String pdbAlignedSeq;
 	private String refAlignedSeq;
 	private String aliMarkupLine;
@@ -113,6 +118,22 @@ public class ChainClusterDB implements Serializable {
 
 	public void setRefUniProtEnd(int refUniProtEnd) {
 		this.refUniProtEnd = refUniProtEnd;
+	}
+
+	public int getPdbStart() {
+		return pdbStart;
+	}
+
+	public void setPdbStart(int pdbStart) {
+		this.pdbStart = pdbStart;
+	}
+
+	public int getPdbEnd() {
+		return pdbEnd;
+	}
+
+	public void setPdbEnd(int pdbEnd) {
+		this.pdbEnd = pdbEnd;
 	}
 
 	public String getPdbAlignedSeq() {

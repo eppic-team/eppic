@@ -15,6 +15,8 @@ public class HomologDB implements Serializable {
 	private String lastTaxon;
 	private int queryStart;
 	private int queryEnd;
+	private int subjectStart;
+	private int subjectEnd;
 	
 	private String alignedSeq;
 	
@@ -94,6 +96,22 @@ public class HomologDB implements Serializable {
 
 	public void setQueryEnd(int queryEnd) {
 		this.queryEnd = queryEnd;
+	}
+
+	public int getSubjectStart() {
+		return subjectStart;
+	}
+
+	public void setSubjectStart(int subjectStart) {
+		this.subjectStart = subjectStart;
+	}
+
+	public int getSubjectEnd() {
+		return subjectEnd;
+	}
+
+	public void setSubjectEnd(int subjectEnd) {
+		this.subjectEnd = subjectEnd;
 	}
 
 	public String getAlignedSeq() {
