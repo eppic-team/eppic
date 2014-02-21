@@ -488,7 +488,7 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 				model.setWarnings(interfaceItem.getInterfaceWarnings());
 				String thumbnailUrl = ApplicationContext.getSettings().getResultsLocation() +
 						ApplicationContext.getPdbInfo().getJobId() + 
-						"/" + ApplicationContext.getPdbInfo().getPdbCode() +
+						"/" + ApplicationContext.getPdbInfo().getTruncatedInputName() +
 						"." + interfaceItem.getInterfaceId() + ".75x75.png";
 				model.setThumbnailUrl(thumbnailUrl);
 

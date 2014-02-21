@@ -52,7 +52,7 @@ public class ViewerRunner
 		
 		String jmolViewerUrl = GWT.getModuleBaseURL() + "jmolViewer";
 		jmolViewerUrl += "?id=" + ApplicationContext.getPdbInfo().getJobId() + 
-						 "&input=" + ApplicationContext.getPdbInfo().getPdbCode() + 
+						 "&input=" + ApplicationContext.getPdbInfo().getTruncatedInputName() + 
 						 "&interface=" + interfaceNr +
 						 "&size=" + jmolAppletSize;
 		

@@ -239,6 +239,25 @@ public class PdbInfo implements Serializable, ProcessingData
 	}
 	
 	/**
+	 * Returns the truncated extension input name of the job
+	 * This method should be used to read in files like thumbnails etc..
+	 * @return
+	 */
+	public String getTruncatedInputName(){
+		String pdbID = inputName;
+		
+		//TODO Check if things are truncated in the same way while writing files
+		
+		int lastPeriodPos = pdbID.lastIndexOf('.');
+		if (lastPeriodPos >= 0)
+	    {
+			pdbID = pdbID.substring(0, lastPeriodPos);
+	    }
+		return pdbID;
+	}
+
+	
+	/**
 	 * return an interface with the id
 	 * @param interfaceId
 	 * @return the interface

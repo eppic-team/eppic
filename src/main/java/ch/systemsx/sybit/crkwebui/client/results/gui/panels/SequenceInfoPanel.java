@@ -199,7 +199,7 @@ public class SequenceInfoPanel extends FieldSet
     	{
     		homologsInfoPanels.add(generateHomologsInfoPanelItems(pdbScoreItem.getJobId(),
     				homologsStrings.get(i),
-    				pdbScoreItem.getPdbCode()));
+    				pdbScoreItem.getTruncatedInputName()));
     	};
     	return homologsInfoPanels;
     }
