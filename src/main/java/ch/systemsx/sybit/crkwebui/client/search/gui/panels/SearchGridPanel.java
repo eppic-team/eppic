@@ -18,11 +18,13 @@ import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
+import com.google.gwt.safehtml.shared.UriUtils;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.sencha.gxt.core.client.ValueProvider;
 import com.sencha.gxt.core.client.Style.SelectionMode;
+import com.sencha.gxt.core.client.util.IconHelper;
 import com.sencha.gxt.core.client.util.KeyNav;
 import com.sencha.gxt.core.client.util.Margins;
 import com.sencha.gxt.data.shared.ListStore;
@@ -286,6 +288,9 @@ public class SearchGridPanel extends VerticalLayoutContainer
 				}
 			}
 		});
+		
+		String iconSource = "resources/icons/load_result_icon.png";
+		loadButton.setIcon(IconHelper.getImageResource(UriUtils.fromSafeConstant(iconSource), 12, 12));
 		
 		tb.add(loadButton);
 		
