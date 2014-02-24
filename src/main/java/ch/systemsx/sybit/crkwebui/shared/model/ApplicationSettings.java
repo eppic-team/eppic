@@ -1,7 +1,6 @@
 package ch.systemsx.sybit.crkwebui.shared.model;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -15,11 +14,6 @@ public class ApplicationSettings implements Serializable {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-
-	/**
-	 * Supported scoring methods.
-	 */
-	private List<SupportedMethod> scoresTypes;
 
 	/**
 	 * Grid settings - columns specifications.
@@ -54,11 +48,6 @@ public class ApplicationSettings implements Serializable {
 	 * Location where generated files are stored.
 	 */
 	private String resultsLocation;
-	
-	/**
-	 * Human readable names of the run parameters.
-	 */
-	private Map<String, String> runParametersNames;
 	
 	/**
 	 * Information which will be displayed in the bottom panel when accessing the page - e.g. when the server will not be accessible
@@ -148,23 +137,7 @@ public class ApplicationSettings implements Serializable {
 	
 	public ApplicationSettings()
 	{
-		this.scoresTypes = new ArrayList<SupportedMethod>();
-	}
 
-	/**
-	 * Sets list of supported methods.
-	 * @param scoresTypes list of supported methods
-	 */
-	public void setScoresTypes(List<SupportedMethod> scoresTypes) {
-		this.scoresTypes = scoresTypes;
-	}
-
-	/**
-	 * Retrieves list of supported methods.
-	 * @return list of supported methods
-	 */
-	public List<SupportedMethod> getScoresTypes() {
-		return scoresTypes;
 	}
 
 	/**
@@ -295,22 +268,6 @@ public class ApplicationSettings implements Serializable {
 	 */
 	public int getNrOfAllowedSubmissionsWithoutCaptcha() {
 		return nrOfAllowedSubmissionsWithoutCaptcha;
-	}
-
-	/**
-	 * Sets human readable names of run parameters.
-	 * @param runParametersNames human readable names of run parameters
-	 */
-	public void setRunParametersNames(Map<String, String> runParametersNames) {
-		this.runParametersNames = runParametersNames;
-	}
-
-	/**
-	 * Retrieves human readable names of run parameters.
-	 * @return human readable names of run parameters
-	 */
-	public Map<String, String> getRunParametersNames() {
-		return runParametersNames;
 	}
 
 	/**

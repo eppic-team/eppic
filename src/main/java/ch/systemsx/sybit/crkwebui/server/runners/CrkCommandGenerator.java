@@ -6,6 +6,7 @@ import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.shared.model.InputParameters;
 import ch.systemsx.sybit.crkwebui.shared.model.InputType;
+import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 
 /**
  * Crk command generator.
@@ -41,14 +42,18 @@ public class CrkCommandGenerator
 
 		String inputLocation = input;
 
+		String baseName = input;
 		if(inputType == InputType.FILE.getIndex())
 		{
+			baseName = PdbInfo.truncateFileName(input);
 			inputLocation = destinationDirectoryName + File.separator + input;
 		}
 
 		command.add(inputLocation);
 		command.add("-o");
 		command.add(destinationDirectoryName);
+		command.add("-b");
+		command.add(baseName);
 		command.add("-q");
 		command.add(String.valueOf(inputParameters.getMaxNrOfSequences()));
 
@@ -63,20 +68,12 @@ public class CrkCommandGenerator
 		command.add("-a");
 		command.add(String.valueOf(nrOfThreadsForSubmission));
 
-		if(inputParameters.getMethods() != null)
-		{
-			for(String method : inputParameters.getMethods())
-			{
-				if(method.equals("Entropy"))
-				{
-					command.add("-s");
-				}
-			}
-		}
+		// we always run evolutionary calculations (we used to be able to choose that from input, not anymore)
+		command.add("-s");
 
 		command.add("-L");
 		command.add(destinationDirectoryName + File.separator + "crklog");
-		command.add("-l"); // for thumbnails and pse files
+		command.add("-l"); // for thumbnails, jmol, pdb and pse files
 		command.add("-w"); // for webui.dat file
 
 		return command;

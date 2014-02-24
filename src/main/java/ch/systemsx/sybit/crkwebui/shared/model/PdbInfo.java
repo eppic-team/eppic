@@ -244,18 +244,25 @@ public class PdbInfo implements Serializable, ProcessingData
 	 * @return
 	 */
 	public String getTruncatedInputName(){
-		String pdbID = inputName;
-		
-		//TODO Check if things are truncated in the same way while writing files
-		
-		int lastPeriodPos = pdbID.lastIndexOf('.');
-		if (lastPeriodPos >= 0)
-	    {
-			pdbID = pdbID.substring(0, lastPeriodPos);
-	    }
-		return pdbID;
+		return truncateFileName(inputName);
 	}
 
+	/**
+	 * Truncates the given fileName by removing anything after the last dot.
+	 * If no dot present in fileName then nothing is truncated.
+	 * @param fileName
+	 * @return
+	 */
+	public static String truncateFileName(String fileName) {
+		String newName = fileName;
+		int lastPeriodPos = fileName.lastIndexOf('.');
+		if (lastPeriodPos >= 0)
+	    {
+			newName = fileName.substring(0, lastPeriodPos);
+	    }
+		return newName;
+		
+	}
 	
 	/**
 	 * return an interface with the id

@@ -235,7 +235,6 @@ public class OptionsInputPanel extends FieldSet
 	public InputParameters getCurrentInputParameters() 
 	{
 		InputParameters currentInputParameters = new InputParameters();
-		currentInputParameters.setMethods(ApplicationContext.getSettings().getDefaultParametersValues().getMethods());
 		currentInputParameters.setReducedAlphabet(ApplicationContext.getSettings().getDefaultParametersValues().getReducedAlphabet());
 		currentInputParameters.setSoftIdentityCutoff((float)(softIdentityCutOff.getValue()/100.0));
 		currentInputParameters.setHardIdentityCutoff((float)(hardIdentityCutOff.getValue()/100.0));

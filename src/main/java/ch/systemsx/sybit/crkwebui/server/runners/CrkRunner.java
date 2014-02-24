@@ -61,6 +61,13 @@ public class CrkRunner
 															  nrOfThreadsForSubmission,
 															  assignedMemory);
 
+		// logging to stdout: we should this with proper logging
+		System.out.print("Running user job: ");
+		for (String token:crkCommand) {
+			System.out.print(token+" ");
+		}
+		System.out.println();
+
 	    return jobManager.startJob(javaVMExec,
 	    		                   runJobData.getJobId(), 
 	    						   crkCommand, 

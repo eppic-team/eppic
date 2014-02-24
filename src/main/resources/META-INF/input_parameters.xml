@@ -1,24 +1,6 @@
 <settings>
-	<supported_methods>
-		<method>
-			<name>Geometry</name>
-			<input_field>true</input_field>
-		</method>
-		<method>
-			<name>Entropy</name>
-			<input_field>true</input_field>
-		</method>
-		<method>
-			<name>Z-scores</name>
-			<input_field>false</input_field>
-		</method>
-	</supported_methods>
 	
 	<input_parameters>
-		<default_methods>
-			<method>Geometry</method>
-			<method>Entropy</method>
-		</default_methods>
 		
 		<default_parameters>
 			<max_nr_of_sequences>100</max_nr_of_sequences>
@@ -42,65 +24,16 @@
 			<value>Local</value>
 			<value>Global</value>
 		</search_mode>
+		
 	</input_parameters>
 	
 	<notification>Ok</notification>
 	
 	<news>This is example news. This is example news. This is example news. This is example news. This is example news.</news>
 	
-	<run_parameters>
-		<parameter>
-			<name>homSoftIdCutoff</name>
-			<value>Sequence identity soft cutoff</value>
-		</parameter>
-		<parameter>
-			<name>homHardIdCutoff</name>
-			<value>Sequence identity hard cutoff</value>
-		</parameter>
-		<parameter>
-			<name>queryCovCutoff</name>
-			<value>Query coverage cutoff</value>
-		</parameter>
-		<parameter>
-			<name>homologsCutoff</name>
-			<value>Min number homologs required</value>
-		</parameter>
-		<parameter>
-			<name>maxNumSeqsCutoff</name>
-			<value>Max number sequences used</value>
-		</parameter>
-		<parameter>
-			<name>reducedAlphabet</name>
-			<value>Number of aminoacid classes for entropy calculation</value>
-		</parameter>  
-		<parameter>
-			<name>caCutoffForGeom</name>
-			<value>Core assignment BSA/ASA ratio cutoff for geometry</value>
-		</parameter>
-		<parameter>
-			<name>caCutoffForRimCore</name>
-			<value>Core assignment BSA/ASA ratio cutoff for core-rim score</value>
-		</parameter>
-		<parameter>
-			<name>caCutoffForZscore</name>
-			<value>Core assignment BSA/ASA ratio cutoff for core-surface score</value>
-		</parameter>
-		<parameter>
-			<name>minCoreSizeForBio</name>
-			<value>Geometry core size bio-xtal call cutoff</value>
-		</parameter>
-		<parameter>
-			<name>entrCallCutoff</name>
-			<value>Entropy core-rim bio-xtal call cutoff</value>
-		</parameter>
-		<parameter>
-			<name>zScoreCutoff</name>
-			<value>Entropy core-surface bio-xtal call cutoff</value>
-		</parameter>
-	</run_parameters>
-	
 	<screen_settings>
 		<min_screen_width>1000</min_screen_width>
 		<min_screen_height>400</min_screen_height>
 	</screen_settings>
+	
 </settings>

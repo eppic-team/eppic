@@ -1,11 +1,8 @@
 package ch.systemsx.sybit.crkwebui.server.settings.generators;
 
 import java.io.InputStream;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -17,9 +14,7 @@ import org.w3c.dom.NodeList;
 
 import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
 import ch.systemsx.sybit.crkwebui.shared.model.InputParameters;
-import ch.systemsx.sybit.crkwebui.shared.model.RunParameters;
 import ch.systemsx.sybit.crkwebui.shared.model.ScreenSettings;
-import ch.systemsx.sybit.crkwebui.shared.model.SupportedMethod;
 
 /**
  * This class is used to parse input parameters file.
@@ -44,11 +39,6 @@ public class InputParametersGenerator
 		
 		Element documentRootNode = (Element)xmlDocument.getElementsByTagName("settings").item(0);
 		
-		NodeList supportedMethodsRootNodeList = documentRootNode.getElementsByTagName("supported_methods");
-		Node supportedMethodsRootNode = (Node)supportedMethodsRootNodeList.item(0);
-		List<SupportedMethod> supportedMethods = prepareSupportedMethods(supportedMethodsRootNode);
-		applicationSettings.setScoresTypes(supportedMethods);
-		
 		InputParameters inputParameters = new InputParameters();
 		
 		NodeList inputParametersRootNodeList = documentRootNode.getElementsByTagName("input_parameters");
@@ -62,12 +52,7 @@ public class InputParametersGenerator
 			
 			if(inputParametersNode.getNodeType() == Node.ELEMENT_NODE)
 			{
-				if(inputParametersNode.getNodeName().equals("default_methods"))
-				{
-					List<String> defaultMethods = prepareList(inputParametersNode);
-					inputParameters.setMethods(defaultMethods);
-				}
-				else if(inputParametersNode.getNodeName().equals("default_parameters"))
+				if(inputParametersNode.getNodeName().equals("default_parameters"))
 				{
 					setDefaultParameters(inputParametersNode, inputParameters);
 				}
@@ -92,83 +77,11 @@ public class InputParametersGenerator
 		String newsMessage = getNodeText(documentRootNode, "news");
 		applicationSettings.setNewsMessage(newsMessage);
 		
-		Node runParametersNode = documentRootNode.getElementsByTagName("run_parameters").item(0);
-		Map<String, String> runPropetiesMap = prepareRunParameters(runParametersNode);
-		applicationSettings.setRunParametersNames(runPropetiesMap);
-		
 		Node screenSettingsNode = documentRootNode.getElementsByTagName("screen_settings").item(0);
 		ScreenSettings screenSettings = prepareScreenSettings(screenSettingsNode);
 		applicationSettings.setScreenSettings(screenSettings);
 		
 		return applicationSettings;
-	}
-	
-	/**
-	 * Retrieves list of supported methods.
-	 * @param supportedMethodsRootNode methods root node
-	 * @return list of supported methods
-	 */
-	private static List<SupportedMethod> prepareSupportedMethods(Node supportedMethodsRootNode)
-	{
-		List<SupportedMethod> supportedMethods = new ArrayList<SupportedMethod>();
-		
-		NodeList supportedMethodsNodeList = supportedMethodsRootNode.getChildNodes();
-		
-		for(int i=0; i<supportedMethodsNodeList.getLength(); i++)
-		{
-			Node supportedMethodNode = supportedMethodsNodeList.item(i);
-			
-			if(supportedMethodNode.getNodeType() == Node.ELEMENT_NODE)
-			{
-				Element supportedMethodElement = (Element)supportedMethodNode;
-				Node methodNameNode = supportedMethodElement.getElementsByTagName("name").item(0).getFirstChild();
-				Node methodInputFieldNode = supportedMethodElement.getElementsByTagName("input_field").item(0).getFirstChild();
-				
-				SupportedMethod supportedMethod = new SupportedMethod();
-				supportedMethod.setName(methodNameNode.getNodeValue());
-				supportedMethod.setHasFieldSet(Boolean.parseBoolean(methodInputFieldNode.getNodeValue()));
-				supportedMethods.add(supportedMethod);
-			}
-		}
-		
-		return supportedMethods;
-	}
-
-	/**
-	 * Retrieves human readable names of run parameters.
-	 * @param runParametersRootNode run parameters node
-	 * @return human readable names of run parameters
-	 */
-	private static Map<String, String> prepareRunParameters(Node runParametersRootNode)
-	{
-		NodeList runParametersRootNodeList = runParametersRootNode.getChildNodes();
-		
-		Map<String, String> xmlParameters = new HashMap<String, String>();
-		
-		for(int i=0; i<runParametersRootNodeList.getLength(); i++)
-		{
-			Node runParameterNode = runParametersRootNodeList.item(i);
-			
-			if(runParameterNode.getNodeType() == Node.ELEMENT_NODE)
-			{
-				Element runParameterElement = (Element)runParameterNode;
-				Node parameterNameNode = runParameterElement.getElementsByTagName("name").item(0).getFirstChild();
-				Node parameterValueNode = runParameterElement.getElementsByTagName("value").item(0).getFirstChild();
-				
-				xmlParameters.put(parameterNameNode.getNodeValue(), parameterValueNode.getNodeValue());
-			}
-		}
-		
-		Map<String, String> runPropetiesMap = new HashMap<String, String>();
-		for (Field field : RunParameters.class.getDeclaredFields())
-		{
-			if(xmlParameters.get(field.getName()) != null)
-			{
-				runPropetiesMap.put(field.getName(), (String) xmlParameters.get(field.getName()));
-			}
-		}
-		
-		return runPropetiesMap;
 	}
 	
 	/**

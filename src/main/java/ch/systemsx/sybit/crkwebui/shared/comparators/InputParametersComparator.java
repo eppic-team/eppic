@@ -55,24 +55,6 @@ public class InputParametersComparator
 			}
 		}
 		
-		if((first.getMethods() == null) && (second.getMethods() != null))
-		{
-			return false;
-		}
-		
-		if((first.getMethods() != null) && (second.getMethods() == null))
-		{
-			return false;
-		}
-		
-		if((first.getMethods() != null) && (second.getMethods() != null))
-		{
-			if(!first.getMethods().equals(second.getMethods()))
-			{
-				return false;
-			}
-		}
-		
 		return true;
 	}
 }
