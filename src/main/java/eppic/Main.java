@@ -19,7 +19,9 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 
+import eppic.predictors.CombinedClusterPredictor;
 import eppic.predictors.CombinedPredictor;
+import eppic.predictors.GeometryClusterPredictor;
 import eppic.predictors.GeometryPredictor;
 import owl.core.structure.ChainCluster;
 import owl.core.structure.ChainInterface;
@@ -51,6 +53,7 @@ public class Main {
 	private ChainEvolContextList cecs;
 	private InterfaceEvolContextList iecList;
 	private List<GeometryPredictor> gps;
+	private List<GeometryClusterPredictor> gcps;
 	
 	private File stepsLogFile;
 	private int stepCount;
@@ -276,6 +279,7 @@ public class Main {
 			return;
 		}
 
+		// interface scoring
 		gps = new ArrayList<GeometryPredictor>();
 		for (ChainInterface interf:interfaces) {
 			GeometryPredictor gp = new GeometryPredictor(interf);
@@ -286,10 +290,28 @@ public class Main {
 			gp.setMinCoreSizeForBio(params.getMinCoreSizeForBio());
 			gp.computeScores();
 		}
+		
+		// interface cluster scoring
+		gcps = new ArrayList<GeometryClusterPredictor>();
+		for (InterfaceCluster interfaceCluster:interfaces.getClusters()) {
+			List<GeometryPredictor> gpsForCluster = new ArrayList<GeometryPredictor>();
+			
+			for (int i=0;i<interfaces.size();i++) {
+				if ( interfaces.getCluster(i+1).getId()==interfaceCluster.getId()) {
+					gpsForCluster.add(gps.get(i));
+				}
+			}
+			
+			GeometryClusterPredictor gcp = new GeometryClusterPredictor(gpsForCluster);
+
+			gcp.setMinCoreSizeForBio(params.getMinCoreSizeForBio());
+			gcp.computeScores();			
+			gcps.add(gcp);
+		}
 
 		// for the webui
 		modelAdaptor.setInterfaces(interfaces, this.pdb.getPdbBioUnitList());
-		modelAdaptor.setGeometryScores(gps);
+		modelAdaptor.setGeometryScores(gps, gcps);
 		modelAdaptor.setResidueDetails(interfaces);
 		
 	}
@@ -611,8 +633,22 @@ public class Main {
 			cp.computeScores();
 			cps.add(cp);
 		}
+		
+		List<CombinedClusterPredictor> ccps = new ArrayList<CombinedClusterPredictor>();		
+		int i = 0;
+		for (InterfaceCluster ic:interfaces.getClusters()) {
+			int clusterId = ic.getId();
+			CombinedClusterPredictor ccp = 
+					new CombinedClusterPredictor(ic,
+							gcps.get(i),
+							iecList.getEvolCoreRimClusterPredictor(clusterId),
+							iecList.getEvolCoreSurfaceClusterPredictor(clusterId));
+			ccp.computeScores();
+			ccps.add(ccp);
+			i++;
+		}
 
-		modelAdaptor.setCombinedPredictors(cps);
+		modelAdaptor.setCombinedPredictors(cps, ccps);
 
 		params.getProgressLog().println("Done scoring");
 	}

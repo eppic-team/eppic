@@ -4,13 +4,18 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import org.apache.commons.math.random.RandomDataImpl;
 
+import eppic.predictors.EvolCoreRimClusterPredictor;
+import eppic.predictors.EvolCoreSurfaceClusterPredictor;
 import eppic.predictors.EvolCoreSurfacePredictor;
 import eppic.predictors.EvolCoreRimPredictor;
 import owl.core.structure.ChainInterface;
 import owl.core.structure.ChainInterfaceList;
+import owl.core.structure.InterfaceCluster;
 import owl.core.structure.Residue;
 
 public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>, Serializable {
@@ -20,14 +25,15 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 	
 	private List<InterfaceEvolContext> list;
 	
-	private ChainInterfaceList chainInterfList; // we keep the reference also to be able to call methods from it
+	private ChainInterfaceList chainInterfList; 
 	private ChainEvolContextList cecs;
 		
-	private ScoringType scoType;
-
 	private int minNumSeqs;
 	
 	private boolean usePdbResSer;
+	
+	private Map<Integer,EvolCoreRimClusterPredictor> ecrcPredictors;
+	private Map<Integer,EvolCoreSurfaceClusterPredictor> ecscPredictors;
 	
 	/**
 	 * Constructs a InterfaceEvolContextList given a ChainInterfaceList with all 
@@ -38,22 +44,38 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 	 * @param cecs
 	 */
 	public InterfaceEvolContextList(ChainInterfaceList interfaces, ChainEvolContextList cecs) {
-		this.minNumSeqs = cecs.getMinNumSeqs();
-				
 		
-		list = new ArrayList<InterfaceEvolContext>();
+		this.minNumSeqs = cecs.getMinNumSeqs();
+		
+		this.list = new ArrayList<InterfaceEvolContext>();
 	
 		this.chainInterfList = interfaces;
 		this.cecs = cecs;
+
+		this.ecrcPredictors = new TreeMap<Integer, EvolCoreRimClusterPredictor>();
+		this.ecscPredictors = new TreeMap<Integer, EvolCoreSurfaceClusterPredictor>();
+		
 		
 		for (ChainInterface pi:interfaces) {
-			if (pi.isProtein()) {
-				InterfaceEvolContext iec = new InterfaceEvolContext(pi, this);
-				iec.setEvolCoreRimPredictor(new EvolCoreRimPredictor(iec));
-				iec.setEvolCoreSurfacePredictor(new EvolCoreSurfacePredictor(iec));
-				this.add(iec);
-			}
+			InterfaceEvolContext iec = new InterfaceEvolContext(pi, this);
+			iec.setEvolCoreRimPredictor(new EvolCoreRimPredictor(iec));
+			iec.setEvolCoreSurfacePredictor(new EvolCoreSurfacePredictor(iec));
+			this.add(iec);
 		}
+		
+		for (InterfaceCluster ic:interfaces.getClusters()) {
+			List<EvolCoreRimPredictor> ecrMembers = new ArrayList<EvolCoreRimPredictor>();
+			List<EvolCoreSurfacePredictor> ecsMembers = new ArrayList<EvolCoreSurfacePredictor>();
+			for (int i=0;i<interfaces.size();i++) {
+				if ( interfaces.getCluster(i+1).getId()==ic.getId()) {
+					ecrMembers.add(list.get(i).getEvolCoreRimPredictor());
+					ecsMembers.add(list.get(i).getEvolCoreSurfacePredictor());
+				}
+			}
+			ecrcPredictors.put(ic.getId(), new EvolCoreRimClusterPredictor(ecrMembers));
+			ecscPredictors.put(ic.getId(), new EvolCoreSurfaceClusterPredictor(ecsMembers));
+		}
+		
 	}
 	
 	public int size() {
@@ -74,16 +96,20 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 	}
 	
 	public void scoreCoreRim() {
-		this.scoType = ScoringType.CORERIM;
 		for (int i=0;i<list.size();i++) {
 			list.get(i).getEvolCoreRimPredictor().computeScores();
+		}
+		for (EvolCoreRimClusterPredictor ecrcp:this.ecrcPredictors.values()) {
+			ecrcp.computeScores();; 
 		}
 	}
 	
 	public void scoreCoreSurface() {
-		this.scoType = ScoringType.CORESURFACE;
 		for (int i=0;i<list.size();i++) {
 			list.get(i).getEvolCoreSurfacePredictor().computeScores();
+		}
+		for (EvolCoreSurfaceClusterPredictor ecscp:this.ecscPredictors.values()) {
+			ecscp.computeScores(); 
 		}
 	}
 	
@@ -91,11 +117,17 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 		for (int i=0;i<list.size();i++) {
 			list.get(i).getEvolCoreRimPredictor().setCallCutoff(coreRimScoreCutoff);	
 		}
+		for (EvolCoreRimClusterPredictor ecrcp:this.ecrcPredictors.values()) {
+			ecrcp.setCallCutoff(coreRimScoreCutoff); 
+		}
 	}
 
 	public void setCoreSurfScoreCutoff(double coreSurfScoreCutoff) {
 		for (int i=0;i<list.size();i++) {
 			list.get(i).getEvolCoreSurfacePredictor().setCallCutoff(coreSurfScoreCutoff);
+		}
+		for (EvolCoreSurfaceClusterPredictor ecscp:this.ecscPredictors.values()) {
+			ecscp.setCallCutoff(coreSurfScoreCutoff); 
 		}
 	}
 
@@ -115,6 +147,14 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 		}		
 	}
 	
+	public EvolCoreRimClusterPredictor getEvolCoreRimClusterPredictor(int clusterId) {
+		return this.ecrcPredictors.get(clusterId);
+	}
+	
+	public EvolCoreSurfaceClusterPredictor getEvolCoreSurfaceClusterPredictor(int clusterId) {
+		return this.ecscPredictors.get(clusterId);
+	}
+
 	/**
 	 * Whether the output warnings and PDB files are to be written with
 	 * PDB residue serials or CIF (SEQRES) residue serials
@@ -139,10 +179,6 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 		return minNumSeqs;
 	}
 
-	public ScoringType getScoringType() {
-		return scoType;
-	}
-	
 	public ChainEvolContextList getChainEvolContextList() {
 		return cecs;	
 	}

@@ -21,9 +21,13 @@ import eppic.model.ScoringMethod;
 import eppic.model.UniProtRefWarningDB;
 import eppic.model.RunParametersDB;
 import eppic.model.InterfaceWarningDB;
+import eppic.predictors.CombinedClusterPredictor;
 import eppic.predictors.CombinedPredictor;
+import eppic.predictors.EvolCoreRimClusterPredictor;
+import eppic.predictors.EvolCoreSurfaceClusterPredictor;
 import eppic.predictors.EvolCoreSurfacePredictor;
 import eppic.predictors.EvolCoreRimPredictor;
+import eppic.predictors.GeometryClusterPredictor;
 import eppic.predictors.GeometryPredictor;
 import owl.core.sequence.Homolog;
 import owl.core.structure.ChainCluster;
@@ -117,6 +121,7 @@ public class DataModelAdaptor {
 			InterfaceClusterDB icDB = new InterfaceClusterDB();
 			icDB.setClusterId(ic.getId());			
 			icDB.setPdbCode(pdbInfo.getPdbCode());
+			icDB.setAvgArea(ic.getMeanArea());
 			icDB.setPdbInfo(pdbInfo);
 			
 			List<InterfaceDB> iDBs = new ArrayList<InterfaceDB>();
@@ -197,7 +202,7 @@ public class DataModelAdaptor {
 
 	}
 	
-	public void setGeometryScores(List<GeometryPredictor> gps) {
+	public void setGeometryScores(List<GeometryPredictor> gps, List<GeometryClusterPredictor> gcps) {
 		
 		// geometry scores per interface
 		for (int i=0;i<gps.size();i++) {
@@ -230,17 +235,18 @@ public class DataModelAdaptor {
 		}
 
 		// geometry scores per interface cluster
-		for (InterfaceClusterDB ic:pdbInfo.getInterfaceClusters()) {
+		for (int i=0;i<gcps.size();i++) {
 
-			// TODO the cluster scores are empty right now: we need to fill them!
-
+			InterfaceClusterDB ic = pdbInfo.getInterfaceClusters().get(i);
+			GeometryClusterPredictor gcp = gcps.get(i);
+			
 			// method eppic-gm
 			InterfaceClusterScoreDB ics = new InterfaceClusterScoreDB();
 			ics.setMethod(ScoringMethod.EPPIC_GEOMETRY);
-			ics.setCallName(CallType.NO_PREDICTION.getName());
-			ics.setScore(SCORE_NOT_AVAILABLE);
-			ics.setScore1(SCORE_NOT_AVAILABLE);
-			ics.setScore2(SCORE_NOT_AVAILABLE);
+			ics.setCallName(gcp.getCall().getName());
+			ics.setScore(gcp.getScore());
+			ics.setScore1(gcp.getScore1());
+			ics.setScore2(gcp.getScore2());
 			ics.setConfidence(CONFIDENCE_NOT_AVAILABLE);
 			ics.setPdbCode(pdbInfo.getPdbCode());
 			ics.setClusterId(ic.getClusterId());
@@ -401,31 +407,15 @@ public class DataModelAdaptor {
 
 		// 4) interface cluster scores
 		for (InterfaceClusterDB ic:pdbInfo.getInterfaceClusters()) {
-			
-			// TODO the cluster scores are empty right now: we need to fill them!
-			
-			// method eppic (final)
-			InterfaceClusterScoreDB ics = new InterfaceClusterScoreDB();
-			ics.setMethod(ScoringMethod.EPPIC_FINAL);
-			ics.setCallName(CallType.NO_PREDICTION.getName());
-			ics.setScore(SCORE_NOT_AVAILABLE);
-			ics.setScore1(SCORE_NOT_AVAILABLE);
-			ics.setScore2(SCORE_NOT_AVAILABLE);
-			ics.setConfidence(CONFIDENCE_NOT_AVAILABLE);
-			ics.setPdbCode(pdbInfo.getPdbCode());
-			ics.setClusterId(ic.getClusterId());
-
-			// setting relations child/parent
-			ics.setInterfaceCluster(ic); 
-			ic.addInterfaceClusterScore(ics);
 
 			// method eppic-cr
-			ics = new InterfaceClusterScoreDB();
+			EvolCoreRimClusterPredictor ecrcp = iecl.getEvolCoreRimClusterPredictor(ic.getClusterId());
+			InterfaceClusterScoreDB ics = new InterfaceClusterScoreDB();
 			ics.setMethod(ScoringMethod.EPPIC_CORERIM);
-			ics.setCallName(CallType.NO_PREDICTION.getName());
-			ics.setScore(SCORE_NOT_AVAILABLE);
-			ics.setScore1(SCORE_NOT_AVAILABLE);
-			ics.setScore2(SCORE_NOT_AVAILABLE);
+			ics.setCallName(ecrcp.getCall().getName());
+			ics.setScore(ecrcp.getScore());
+			ics.setScore1(ecrcp.getScore1());
+			ics.setScore2(ecrcp.getScore2());
 			ics.setConfidence(CONFIDENCE_NOT_AVAILABLE);
 			ics.setPdbCode(pdbInfo.getPdbCode());
 			ics.setClusterId(ic.getClusterId());
@@ -435,12 +425,13 @@ public class DataModelAdaptor {
 			ic.addInterfaceClusterScore(ics);
 			
 			// method eppic-cs
+			EvolCoreSurfaceClusterPredictor ecscp = iecl.getEvolCoreSurfaceClusterPredictor(ic.getClusterId());
 			ics = new InterfaceClusterScoreDB();
 			ics.setMethod(ScoringMethod.EPPIC_CORESURFACE);
-			ics.setCallName(CallType.NO_PREDICTION.getName());
-			ics.setScore(SCORE_NOT_AVAILABLE);
-			ics.setScore1(SCORE_NOT_AVAILABLE);
-			ics.setScore2(SCORE_NOT_AVAILABLE);
+			ics.setCallName(ecscp.getCall().getName());
+			ics.setScore(ecscp.getScore());
+			ics.setScore1(ecscp.getScore1());
+			ics.setScore2(ecscp.getScore2());
 			ics.setConfidence(CONFIDENCE_NOT_AVAILABLE);
 			ics.setPdbCode(pdbInfo.getPdbCode());
 			ics.setClusterId(ic.getClusterId());
@@ -453,7 +444,9 @@ public class DataModelAdaptor {
 
 	}
 	
-	public void setCombinedPredictors(List<CombinedPredictor> cps) {
+	public void setCombinedPredictors(List<CombinedPredictor> cps, List<CombinedClusterPredictor> ccps) {
+
+		// per interface combined scores
 		for (int i=0;i<cps.size();i++) {
 			InterfaceDB ii = pdbInfo.getInterface(i+1);
 			InterfaceScoreDB is = new InterfaceScoreDB();
@@ -469,16 +462,37 @@ public class DataModelAdaptor {
 			is.setScore1(SCORE_NOT_AVAILABLE);
 			is.setScore2(SCORE_NOT_AVAILABLE);
 			
-			if(cps.get(i).getWarnings() != null)
-			{
+			if(cps.get(i).getWarnings() != null) {
+				
 				List<String> warnings = cps.get(i).getWarnings();
-				for(String warning: warnings)
-				{
+				for(String warning: warnings) {
+					
 					// we first add warning to the temp HashSets in order to eliminate duplicates, 
 					// in the end we fill the InterfaceItemDBs by calling addInterfaceWarnings
 					interfId2Warnings.get(ii.getInterfaceId()).add(warning);
 				}
 			}
+		}
+		
+		// per cluster combined scores
+		for (int i=0;i<ccps.size();i++) {
+			
+			InterfaceClusterDB ic = pdbInfo.getInterfaceClusters().get(i);
+			
+			InterfaceClusterScoreDB ics = new InterfaceClusterScoreDB();
+			
+			ics.setMethod(ScoringMethod.EPPIC_FINAL);
+			ics.setCallName(ccps.get(i).getCall().getName());
+			ics.setScore(ccps.get(i).getScore());
+			ics.setScore1(SCORE_NOT_AVAILABLE);
+			ics.setScore2(SCORE_NOT_AVAILABLE);
+			ics.setConfidence(CONFIDENCE_NOT_AVAILABLE);
+			ics.setPdbCode(pdbInfo.getPdbCode());
+			ics.setClusterId(ic.getClusterId());
+
+			// setting relations child/parent
+			ics.setInterfaceCluster(ic); 
+			ic.addInterfaceClusterScore(ics);
 		}
 	}
 	

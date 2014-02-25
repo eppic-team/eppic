@@ -20,9 +20,10 @@ public class CombinedPredictor implements InterfaceTypePredictor {
 	private List<String> warnings;
 
 	private InterfaceEvolContext iec;
-	private GeometryPredictor gp;
-	private EvolCoreRimPredictor ecrp;
-	private EvolCoreSurfacePredictor ecsp;
+	
+	private InterfaceTypePredictor gp;
+	private InterfaceTypePredictor ecrp;
+	private InterfaceTypePredictor ecsp;
 	
 	private CallType call;
 	
@@ -32,11 +33,12 @@ public class CombinedPredictor implements InterfaceTypePredictor {
 	
 	private boolean usePdbResSer;
 	
-	public CombinedPredictor(InterfaceEvolContext iec, GeometryPredictor gp, EvolCoreRimPredictor rp, EvolCoreSurfacePredictor zp) {
+	public CombinedPredictor(InterfaceEvolContext iec, 
+			GeometryPredictor gp, EvolCoreRimPredictor ecrp, EvolCoreSurfacePredictor ecsp) {
 		this.iec=iec;
 		this.gp=gp;
-		this.ecrp=rp;
-		this.ecsp=zp;
+		this.ecrp=ecrp;
+		this.ecsp=ecsp;
 		this.warnings = new ArrayList<String>();
 		
 		this.veto = null;
@@ -153,7 +155,7 @@ public class CombinedPredictor implements InterfaceTypePredictor {
 	}
 	
 	private boolean checkInterface() {
-
+		
 		// first we gather any possible wild-type disulfide bridges present
 		// This is more of a geom feature but as we need to check whether it's wild-type or artifactual it needs to be here
 		List<Pair<Atom>> wildTypeDisulfides = new ArrayList<Pair<Atom>>();

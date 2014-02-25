@@ -13,6 +13,8 @@ public class InterfaceClusterDB implements Serializable {
 	
 	private String pdbCode;
 	
+	private double avgArea;
+	
 	private List<InterfaceDB> interfaces;
 	
 	private List<InterfaceClusterScoreDB> interfaceClusterScores;
@@ -62,6 +64,14 @@ public class InterfaceClusterDB implements Serializable {
 		this.pdbCode = pdbCode;
 	}
 
+	public double getAvgArea() {
+		return avgArea;
+	}
+
+	public void setAvgArea(double avgArea) {
+		this.avgArea = avgArea;
+	}
+
 	public List<InterfaceDB> getInterfaces() {
 		return interfaces;
 	}
@@ -98,5 +108,7 @@ public class InterfaceClusterDB implements Serializable {
 		this.assembly = assembly;
 	}
 	
-
+	public int size() {
+		return this.interfaces.size();
+	}
 }

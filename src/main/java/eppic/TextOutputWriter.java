@@ -111,9 +111,13 @@ public class TextOutputWriter {
 	public void writeScoresFile() throws IOException {
 		PrintStream ps = new PrintStream(params.getOutputFile(EppicParams.SCORES_FILE_SUFFIX));
 		printScoresHeaders(ps);
-		for (InterfaceClusterDB interfaceCluster: pdbInfo.getInterfaceClusters()) {
+		for (InterfaceClusterDB interfaceCluster: pdbInfo.getInterfaceClusters()) {			
 			for (InterfaceDB interfaceItem:interfaceCluster.getInterfaces()) {
-				printScores(ps, interfaceItem);
+				printInterfaceScores(ps, interfaceItem);
+				ps.println();
+			}
+			if (interfaceCluster.size()>1) {
+				printInterfaceClusterScores(ps, interfaceCluster);
 				ps.println();
 			}
 		}
@@ -131,7 +135,7 @@ public class TextOutputWriter {
 		ps.println();
 	}
 	
-	private void printScores(PrintStream ps, InterfaceDB interfaceItem) {
+	private void printInterfaceScores(PrintStream ps, InterfaceDB interfaceItem) {
 
 		// common info
 		ps.printf("%7d\t%7d\t%7s\t%7s\t%9.2f\t",
@@ -191,6 +195,64 @@ public class TextOutputWriter {
 		// TODO should we display warnings? they are per InterfaceDB and not per InterfaceScoreDB
 	}
 
+	private void printInterfaceClusterScores(PrintStream ps, InterfaceClusterDB interfaceCluster) {
+		// common info
+		ps.printf("%7d\t%7s\t%7s\t%7s\t%9.2f\t",
+				interfaceCluster.getClusterId(),
+				"-------", 				 
+				"-------",
+				"------>",
+				interfaceCluster.getAvgArea());
+		
+		InterfaceClusterScoreDB interfaceScoreGm = interfaceCluster.getInterfaceClusterScore(ScoringMethod.EPPIC_GEOMETRY);
+		InterfaceClusterScoreDB interfaceScoreCr = interfaceCluster.getInterfaceClusterScore(ScoringMethod.EPPIC_CORERIM);
+		InterfaceClusterScoreDB interfaceScoreCs = interfaceCluster.getInterfaceClusterScore(ScoringMethod.EPPIC_CORESURFACE);
+		InterfaceClusterScoreDB interfaceScoreFn = interfaceCluster.getInterfaceClusterScore(ScoringMethod.EPPIC_FINAL);
+		
+		// geometry
+		// there should always be geometry scores available, no check for null
+		ps.printf("\t%7.0f\t%7.0f\t%7.0f\t%7s\t",
+				interfaceScoreGm.getScore1(),
+				interfaceScoreGm.getScore2(),
+				interfaceScoreGm.getScore(),
+				interfaceScoreGm.getCallName());
+		
+		// core-rim
+		if (interfaceScoreCr==null) {
+			ps.printf("\t%7s\t%7s\t%7s\t%7s\t","","","","");
+		} else {
+			ps.printf("\t%7.2f\t%7.2f\t%7.2f\t%7s\t",
+					interfaceScoreCr.getScore1(),
+					interfaceScoreCr.getScore2(),
+					interfaceScoreCr.getScore(),
+					interfaceScoreCr.getCallName());			
+		}
+		
+		// core-surface
+		if (interfaceScoreCs==null) {
+			ps.printf("\t%7s\t%7s\t%7s\t%7s\t","","","","");
+		} else {
+			ps.printf("\t%7.2f\t%7.2f\t%7.2f\t%7s\t",
+					interfaceScoreCs.getScore1(),
+					interfaceScoreCs.getScore2(),
+					interfaceScoreCs.getScore(),
+					interfaceScoreCs.getCallName());			
+		}
+		
+		
+		// final
+		if (interfaceScoreFn==null) {
+			ps.printf("\t%7s\t%7s","","");
+		} else {
+			ps.printf("\t%7.0f\t%7s",
+					interfaceScoreFn.getScore(),
+					interfaceScoreFn.getCallName());			
+		}
+		
+		
+		// TODO should we display reasons? if the call does not come from score (hard areas, disulfides, etc) the call reason is useful
+		// TODO should we display warnings? they are per InterfaceDB and not per InterfaceScoreDB
+	}
 	
 	public void writePdbAssignments() throws IOException{
 		
