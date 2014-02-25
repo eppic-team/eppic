@@ -1,5 +1,6 @@
 package ch.systemsx.sybit.crkwebui.server.db.dao.jpa;
 
+import java.util.Date;
 import java.util.List;
 
 import javax.persistence.EntityManager;
@@ -104,6 +105,7 @@ public class UserSessionDAOJpa implements UserSessionDAO
 			{
 				session = new UserSessionDB();
 				session.setSessionId(sessionId);
+				session.setTimeStamp(new Date());
 				entityManager.persist(session);
 			}
 		}

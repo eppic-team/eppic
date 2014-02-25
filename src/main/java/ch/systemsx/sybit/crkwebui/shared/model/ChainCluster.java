@@ -33,6 +33,8 @@ public class ChainCluster implements Serializable
 	private String refUniProtId;
 	private int refUniProtStart;
 	private int refUniProtEnd;
+	private int pdbStart;
+	private int pdbEnd;
 	private String pdbAlignedSeq;
 	private String refAlignedSeq;
 	private String aliMarkupLine;
@@ -67,6 +69,8 @@ public class ChainCluster implements Serializable
 							int numHomologs,
 							int refUniProtStart,
 							int refUniProtEnd,
+							int pdbStart,
+							int pdbEnd,
 							String alignedSeq1,
 							String alignedSeq2,
 							String markupLine,
@@ -83,6 +87,8 @@ public class ChainCluster implements Serializable
 		this.numHomologs = numHomologs;
 		this.refUniProtStart = refUniProtStart;
 		this.refUniProtEnd = refUniProtEnd;
+		this.pdbStart = pdbStart;
+		this.pdbEnd = pdbEnd;
 		this.pdbAlignedSeq = alignedSeq1;
 		this.refAlignedSeq = alignedSeq2;
 		this.aliMarkupLine = markupLine;
@@ -133,6 +139,22 @@ public class ChainCluster implements Serializable
 		this.refUniProtEnd = refUniProtEnd;
 	}
 
+	public int getPdbStart() {
+		return pdbStart;
+	}
+
+	public void setPdbStart(int pdbStart) {
+		this.pdbStart = pdbStart;
+	}
+
+	public int getPdbEnd() {
+		return pdbEnd;
+	}
+
+	public void setPdbEnd(int pdbEnd) {
+		this.pdbEnd = pdbEnd;
+	}
+
 	public String getPdbAlignedSeq() {
 		return pdbAlignedSeq;
 	}
@@ -173,7 +195,7 @@ public class ChainCluster implements Serializable
 		this.uniProtRefWarnings = uniProtRefWarnings;
 	}
 
-	public double getseqIdCutoff() {
+	public double getSeqIdCutoff() {
 		return seqIdCutoff;
 	}
 
@@ -270,6 +292,8 @@ public class ChainCluster implements Serializable
 		chainCluster.setRefUniProtStart(chainClusterDB.getRefUniProtStart());
 		chainCluster.setRefUniProtEnd(chainClusterDB.getRefUniProtEnd());
 		chainCluster.setRefUniProtId(chainClusterDB.getRefUniProtId());
+		chainCluster.setPdbStart(chainClusterDB.getPdbStart());
+		chainCluster.setPdbEnd(chainClusterDB.getPdbEnd());
 		
 		chainCluster.setHasUniProtRef(chainClusterDB.isHasUniProtRef());
 		

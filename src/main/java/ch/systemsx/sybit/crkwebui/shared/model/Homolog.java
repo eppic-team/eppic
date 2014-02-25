@@ -23,6 +23,8 @@ public class Homolog implements Serializable {
 	private String lastTaxon;
 	private int queryStart;
 	private int queryEnd;
+	private int subjectStart;
+	private int subjectEnd;
 	
 	private String alignedSeq;
 	
@@ -99,6 +101,26 @@ public class Homolog implements Serializable {
 	}
 
 
+	public int getSubjectStart() {
+		return subjectStart;
+	}
+
+
+	public void setSubjectStart(int subjectStart) {
+		this.subjectStart = subjectStart;
+	}
+
+
+	public int getSubjectEnd() {
+		return subjectEnd;
+	}
+
+
+	public void setSubjectEnd(int subjectEnd) {
+		this.subjectEnd = subjectEnd;
+	}
+
+
 	public String getAlignedSeq() {
 		return alignedSeq;
 	}
@@ -125,6 +147,8 @@ public class Homolog implements Serializable {
 		homolog.setQueryCoverage(homologDB.getQueryCoverage());
 		homolog.setQueryStart(homologDB.getQueryStart());
 		homolog.setQueryEnd(homologDB.getQueryEnd());
+		homolog.setSubjectStart(homologDB.getSubjectStart());
+		homolog.setSubjectEnd(homologDB.getSubjectEnd());
 		homolog.setAlignedSeq(homologDB.getAlignedSeq());
 		return homolog;
 	}

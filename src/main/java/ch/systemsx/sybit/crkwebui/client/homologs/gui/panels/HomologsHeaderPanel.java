@@ -52,7 +52,7 @@ public class HomologsHeaderPanel extends HorizontalLayoutContainer{
 	public void updateContent(ChainCluster infoItem, String jobId) {
 		String subInterval = infoItem.getRefUniProtStart()+"-"+infoItem.getRefUniProtEnd();
 		fillQuery(infoItem.getRefUniProtId(), subInterval);
-		fillSubtitle(infoItem.getseqIdCutoff(), infoItem.getClusteringSeqId());
+		fillSubtitle(infoItem.getSeqIdCutoff(), infoItem.getClusteringSeqId());
 		fillDownloadsLink(infoItem, jobId);
 	}
 
