@@ -159,7 +159,8 @@ public class EvolCoreRimPredictor implements InterfaceTypePredictor {
 
 			// a special condition for core size, we don't want that if one side has too few cores, 
 			// then the prediction is based only on the other side. We veto the whole interface scoring in this case
-			callReason = "Not enough core residues (in at least 1 side) to calculate "+scoreType+" score. At least "+EppicParams.MIN_NUMBER_CORE_RESIDUES_EVOL_SCORE+" needed)";
+			callReason = "Not enough core residues (in at least 1 side) to calculate "+scoreType+
+					" score. At least "+EppicParams.MIN_NUMBER_CORE_RESIDUES_EVOL_SCORE+" needed";
 			veto = CallType.NO_PREDICTION;
 			return false;
 		}
