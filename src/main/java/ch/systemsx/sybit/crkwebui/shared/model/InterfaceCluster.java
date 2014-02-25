@@ -25,6 +25,7 @@ public class InterfaceCluster implements Serializable, Comparable<InterfaceClust
 	private int clusterId;
 	
 	private String pdbCode;
+	private double avgArea;
 	
 	@XmlElementWrapper(name = "interfaces")
 	@XmlElement(name = "interface")
@@ -34,8 +35,7 @@ public class InterfaceCluster implements Serializable, Comparable<InterfaceClust
 	@XmlElement(name = "interfaceClusterScore")
 	private List<InterfaceClusterScore> interfaceClusterScores;
 	
-	public InterfaceCluster()
-	{
+	public InterfaceCluster() {
 	}
 
 	public int getUid() {
@@ -62,6 +62,14 @@ public class InterfaceCluster implements Serializable, Comparable<InterfaceClust
 		this.pdbCode = pdbCode;
 	}
 
+	public double getAvgArea() {
+		return avgArea;
+	}
+
+	public void setAvgArea(double avgArea) {
+		this.avgArea = avgArea;
+	}
+
 	public List<Interface> getInterfaces() {
 		return interfaces;
 	}
@@ -84,12 +92,14 @@ public class InterfaceCluster implements Serializable, Comparable<InterfaceClust
 	 * @param interfaceClusterDB model item to convert
 	 * @return DTO representation of model item
 	 */
-	public static InterfaceCluster create(InterfaceClusterDB clusterDB)
-	{
+	public static InterfaceCluster create(InterfaceClusterDB clusterDB) {
+		
 		InterfaceCluster cluster = new InterfaceCluster();
 		
 		cluster.setUid(clusterDB.getUid());
 		cluster.setClusterId(clusterDB.getClusterId());
+		
+		cluster.setAvgArea(clusterDB.getAvgArea());
 		
 		if(clusterDB.getInterfaceClusterScores() != null)
 		{

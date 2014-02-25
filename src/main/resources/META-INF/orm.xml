@@ -165,6 +165,7 @@
 			<basic name="pdbCode">
 				<column length="4" />
 			</basic>
+			<basic name="avgArea"></basic>
 
 			<many-to-one name="pdbInfo">
 			</many-to-one>
