@@ -2,7 +2,9 @@ package eppic.predictors;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import owl.core.structure.Atom;
 import edu.uci.ics.jung.graph.util.Pair;
@@ -11,30 +13,33 @@ import eppic.CallType;
 import eppic.InterfaceEvolContext;
 
 public class CombinedPredictor implements InterfaceTypePredictor {
-	
-	protected static final int FIRST  = 0;
-	protected static final int SECOND = 1;
+
+	private static final Log LOGGER = LogFactory.getLog(CombinedPredictor.class);
 	
 	private String callReason;
 	private List<String> warnings;
 
 	private InterfaceEvolContext iec;
 	private GeometryPredictor gp;
-	private EvolCoreRimPredictor rp;
-	private EvolCoreSurfacePredictor zp;
+	private EvolCoreRimPredictor ecrp;
+	private EvolCoreSurfacePredictor ecsp;
 	
 	private CallType call;
 	
 	private int votes;
+	
+	private CallType veto;
 	
 	private boolean usePdbResSer;
 	
 	public CombinedPredictor(InterfaceEvolContext iec, GeometryPredictor gp, EvolCoreRimPredictor rp, EvolCoreSurfacePredictor zp) {
 		this.iec=iec;
 		this.gp=gp;
-		this.rp=rp;
-		this.zp=zp;
+		this.ecrp=rp;
+		this.ecsp=zp;
 		this.warnings = new ArrayList<String>();
+		
+		this.veto = null;
 	}
 	
 	public void setUsePdbResSer(boolean usePdbResSer) {
@@ -44,101 +49,72 @@ public class CombinedPredictor implements InterfaceTypePredictor {
 	@Override
 	public CallType getCall() {
 		
-		// before making the call we gather any possible wild-type disulfide bridges present
-		// This is more of a geom prediction but as we need to check whether it's wild-type or artifactual it needs to be here
-		List<Pair<Atom>> wildTypeDisulfides = new ArrayList<Pair<Atom>>();
-		List<Pair<Atom>> engineeredDisulfides = new ArrayList<Pair<Atom>>();
-		if (iec.getInterface().getAICGraph().hasDisulfideBridges()) {
-			// we can only check whether they are not engineered if we have query matches for both sides
-			if (iec.getChainEvolContext(FIRST).hasQueryMatch() && iec.getChainEvolContext(SECOND).hasQueryMatch()) {				
-				for (Pair<Atom> pair:iec.getInterface().getAICGraph().getDisulfidePairs()) {	
-					if (iec.isReferenceMismatch(pair.getFirst().getParentResidue(),FIRST) || 
-						iec.isReferenceMismatch(pair.getSecond().getParentResidue(),SECOND)) {
-						engineeredDisulfides.add(pair);
-					} else {
-						wildTypeDisulfides.add(pair);
-					}
-				}
-			} else { // we can't tell whether they are engineered or not, we simply warn they are present
-				String msg = iec.getInterface().getAICGraph().getDisulfidePairs().size()+" disulfide bridges present, can't determine whether they are wild-type or not.";
-				msg += " Between CYS residues: ";
-				msg += getPairInteractionsString(iec.getInterface().getAICGraph().getDisulfidePairs());
-				warnings.add(msg);
-			}
-		}
-		// engineered disulfides: they are only warnings
-		if (!engineeredDisulfides.isEmpty()) {
-			String msg = engineeredDisulfides.size()+" engineered disulfide bridges present.";
-			msg += " Between CYS residues: ";
-			msg += getPairInteractionsString(engineeredDisulfides);
-			warnings.add(msg);
-		}
+		return call;
+	}
 
+	@Override
+	public String getCallReason() {
+		return callReason;
+	}
+
+	@Override
+	public List<String> getWarnings() {
+		return warnings;
+	}
+	
+	@Override
+	public double getScore() {
+		return (double)votes;
+	}
+	
+	@Override
+	public double getScore1() {
+		return -1;
+	}
+	
+	@Override
+	public double getScore2() {
+		return -1;
+	}
+	
+	@Override
+	public void computeScores() {
+			
+		checkInterface();
 		
-		// THE CALL
-		
-		// 0 if peptide, we don't use hard area limits
-		// for some cases this works nicely (e.g. 1w9q interface 4)
-		boolean useHardLimits = true;
-		if (iec.getInterface().getFirstMolecule().getFullLength()<=EppicParams.PEPTIDE_LENGTH_CUTOFF || 
-			iec.getInterface().getSecondMolecule().getFullLength()<=EppicParams.PEPTIDE_LENGTH_CUTOFF){
-			useHardLimits = false;
-		}
-		String reasonMsgPrefix = "";
-		if (!useHardLimits) reasonMsgPrefix = "Peptide-protein interface, not checking minimum area hard limit. ";
-				
-		
-		// 1st if wild-type disulfide bridges present we call bio
-		if (!wildTypeDisulfides.isEmpty()) {
-			callReason = wildTypeDisulfides.size()+" wild-type disulfide bridges present.";
-			callReason += " Between CYS residues: ";
-			callReason += getPairInteractionsString(wildTypeDisulfides);
-			call = CallType.BIO;
-			votes = 0;
-		}
-		// 2nd the hard area limits
-		else if (useHardLimits && iec.getInterface().getInterfaceArea()<EppicParams.MIN_AREA_BIOCALL) {
-			callReason = "Area below hard limit "+String.format("%4.0f", EppicParams.MIN_AREA_BIOCALL);
-			call = CallType.CRYSTAL;
-			votes = 0;
-		} 
-		else if (iec.getInterface().getInterfaceArea()>EppicParams.MAX_AREA_XTALCALL) {
-			callReason = "Area above hard limit "+String.format("%4.0f", EppicParams.MAX_AREA_XTALCALL);
-			call = CallType.BIO;
-			votes = 0;
-		}
-		else {
+		if (veto!=null) {
+			call = veto;
+			votes = -1;
+			// callReason has to be assigned when assigning the veto
+		} else {
 			// STRATEGY 1: consensus, when no evolution take geometry, when no consensus take evol
 			int[] counts = countCalls();
 			// 1) 2 bio calls
 			if (counts[0]>=2) {
-				callReason = reasonMsgPrefix+"BIO consensus ("+counts[0]+" votes)";
+				callReason = "BIO consensus ("+counts[0]+" votes)";
 				call = CallType.BIO;
 				votes = counts[0];
 			} 
 			// 2) 2 xtal calls
 			else if (counts[1]>=2) {
-				callReason = reasonMsgPrefix+"XTAL consensus ("+counts[1]+" votes)";
+				callReason = "XTAL consensus ("+counts[1]+" votes)";
 				call = CallType.CRYSTAL;
 				votes = counts[1];
 			}
 			// 3) 2 nopreds (necessarily from the evol methods): we take geometry as the call
 			else if (counts[2]==2) {
-				callReason = reasonMsgPrefix+"Prediction purely geometrical (no evolutionary prediction could be made): "+gp.getCallReason();
+				callReason = "Prediction purely geometrical (no evolutionary prediction could be made)";
 				call = gp.getCall();
 				votes = 1;
 			}
 			// 4) 1 nopred (an evol method), 1 xtal, 1 bio
 			else {
-				// sub-strategy a) take geometry call
-				//callReason ="No consensus. Z-score "+zp.getCall().getName()+", core/rim "+rp.getCall().getName()+". Taking geometrical call as final: "+gp.getCallReason();
-				//call = gp.getCall();
-				// sub-strategy b) take evol call
-				InterfaceTypePredictor validPred = null;
-				if (rp.getCall()!=CallType.NO_PREDICTION) validPred = rp;
-				else validPred = zp;
-				callReason = reasonMsgPrefix+"No consensus. Core-surface "+zp.getCall().getName()+", core-rim "+rp.getCall().getName()+". Taking evolutionary call as final: "+validPred.getCallReason();
-				call = validPred.getCall();
+				// take evol call
+				if (ecrp.getCall()!=CallType.NO_PREDICTION) call = ecrp.getCall();
+				else if (ecsp.getCall()!=CallType.NO_PREDICTION) call = ecsp.getCall();
+				else System.err.println("Warning! both core-surface and core-rim called nopred. Something went wrong in vote counts");
+				
+				callReason = "No consensus. Taking evolutionary call as final";
 				votes = 1;
 			}
 //			// STRATEGY 2: trust more evolution when we can
@@ -161,8 +137,8 @@ public class CombinedPredictor implements InterfaceTypePredictor {
 //			else if (rp.getCall()==CallType.NO_PREDICTION || zp.getCall()==CallType.NO_PREDICTION) {
 //				InterfaceTypePredictor validPred = null;
 //				if (rp.getCall()!=CallType.NO_PREDICTION) validPred = rp;
-//				else validPred = zp;
-//				
+//					else validPred = zp;
+//						
 //				if (gp.getCall()==validPred.getCall()) {
 //					call = validPred.getCall();
 //					callReason = "One evolutionary could not predict and the other evol measure and geometry agree";
@@ -173,49 +149,90 @@ public class CombinedPredictor implements InterfaceTypePredictor {
 //				}
 //			}
 		}
-	
-		return call;
+		
 	}
+	
+	private boolean checkInterface() {
 
-	@Override
-	public String getCallReason() {
-		return callReason;
-	}
+		// first we gather any possible wild-type disulfide bridges present
+		// This is more of a geom feature but as we need to check whether it's wild-type or artifactual it needs to be here
+		List<Pair<Atom>> wildTypeDisulfides = new ArrayList<Pair<Atom>>();
+		List<Pair<Atom>> engineeredDisulfides = new ArrayList<Pair<Atom>>();
+		if (iec.getInterface().getAICGraph().hasDisulfideBridges()) {
+			// we can only check whether they are not engineered if we have query matches for both sides
+			if (iec.getChainEvolContext(InterfaceEvolContext.FIRST).hasQueryMatch() && iec.getChainEvolContext(InterfaceEvolContext.SECOND).hasQueryMatch()) {				
+				for (Pair<Atom> pair:iec.getInterface().getAICGraph().getDisulfidePairs()) {	
+					if (iec.isReferenceMismatch(pair.getFirst().getParentResidue(),InterfaceEvolContext.FIRST) || 
+							iec.isReferenceMismatch(pair.getSecond().getParentResidue(),InterfaceEvolContext.SECOND)) {
+						engineeredDisulfides.add(pair);
+					} else {
+						wildTypeDisulfides.add(pair);
+					}
+				}
+			} else { // we can't tell whether they are engineered or not, we simply warn they are present
+				String msg = iec.getInterface().getAICGraph().getDisulfidePairs().size()+" disulfide bridges present, can't determine whether they are wild-type or not.";
+				msg += " Between CYS residues: ";
+				msg += getPairInteractionsString(iec.getInterface().getAICGraph().getDisulfidePairs());
+				warnings.add(msg);
+			}
+		}
+		// engineered disulfides: they are only warnings
+		if (!engineeredDisulfides.isEmpty()) {
+			String msg = engineeredDisulfides.size()+" engineered disulfide bridges present.";
+			msg += " Between CYS residues: ";
+			msg += getPairInteractionsString(engineeredDisulfides);
+			warnings.add(msg);
+		}
 
-	@Override
-	public List<String> getWarnings() {
-		return warnings;
+		// 0 if peptide, we don't use minimum hard area limits
+		// for some cases this works nicely (e.g. 1w9q interface 4)
+		boolean useHardLimits = true;
+		if (iec.getInterface().getFirstMolecule().getFullLength()<=EppicParams.PEPTIDE_LENGTH_CUTOFF || 
+				iec.getInterface().getSecondMolecule().getFullLength()<=EppicParams.PEPTIDE_LENGTH_CUTOFF){
+			useHardLimits = false;
+			LOGGER.info("Interface "+iec.getInterface().getId()+": peptide-protein interface, not checking minimum area hard limit. ");
+		}
+		
+		// 1st if wild-type disulfide bridges present we call bio
+		if (!wildTypeDisulfides.isEmpty()) {
+			
+			callReason = wildTypeDisulfides.size()+" wild-type disulfide bridges present.";
+			callReason += " Between CYS residues: ";
+			callReason += getPairInteractionsString(wildTypeDisulfides);
+			
+			veto = CallType.BIO;
+		}
+		// 2nd the hard area limits
+		else if (useHardLimits && iec.getInterface().getInterfaceArea()<EppicParams.MIN_AREA_BIOCALL) {
+			
+			callReason = "Area below hard limit "+String.format("%4.0f", EppicParams.MIN_AREA_BIOCALL);
+			
+			veto = CallType.CRYSTAL;
+		} 
+		else if (iec.getInterface().getInterfaceArea()>EppicParams.MAX_AREA_XTALCALL) {
+			
+			callReason = "Area above hard limit "+String.format("%4.0f", EppicParams.MAX_AREA_XTALCALL);
+			
+			veto = CallType.BIO;
+		}
+		
+		
+		return true; // for the moment there's no conditions to reject a score
 	}
 	
-	@Override
-	public double getScore() {
-		return (double)votes;
-	}
-	
-	@Override
-	public void computeScores() {
-		// nothing to do here: count of votes is done in getCall 
-	}
-	
-	@Override
-	public Map<String,Double> getScoreDetails() {
-		// no details for this method
-		return null;
-	}
-
 	private int[] countCalls() {
 		int[] counts = new int[3]; // biocalls, xtalcalls, nopredcalls
 		if (gp.getCall()==CallType.BIO) counts[0]++;
 		else if (gp.getCall()==CallType.CRYSTAL) counts[1]++;
 		else if (gp.getCall()==CallType.NO_PREDICTION) counts[2]++; // this can't happen in principle, there's always a geom prediction
 
-		if (rp.getCall()==CallType.BIO) counts[0]++;
-		else if (rp.getCall()==CallType.CRYSTAL) counts[1]++;
-		else if (rp.getCall()==CallType.NO_PREDICTION) counts[2]++;
+		if (ecrp.getCall()==CallType.BIO) counts[0]++;
+		else if (ecrp.getCall()==CallType.CRYSTAL) counts[1]++;
+		else if (ecrp.getCall()==CallType.NO_PREDICTION) counts[2]++;
 
-		if (zp.getCall()==CallType.BIO) counts[0]++;
-		else if (zp.getCall()==CallType.CRYSTAL) counts[1]++;
-		else if (zp.getCall()==CallType.NO_PREDICTION) counts[2]++;
+		if (ecsp.getCall()==CallType.BIO) counts[0]++;
+		else if (ecsp.getCall()==CallType.CRYSTAL) counts[1]++;
+		else if (ecsp.getCall()==CallType.NO_PREDICTION) counts[2]++;
 
 		return counts;
 	}

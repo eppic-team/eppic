@@ -17,8 +17,9 @@ public class InterfaceEvolContext implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	protected static final int FIRST  = 0;
-	protected static final int SECOND = 1;
+	// the 2 sides of the interface
+	public static final int FIRST  = 0;
+	public static final int SECOND = 1;
 
 	private InterfaceEvolContextList parent;
 	
@@ -188,12 +189,11 @@ public class InterfaceEvolContext implements Serializable {
 	 * scores per residue and averaging (optionally weighted by BSA)
 	 * @param residues
 	 * @param molecId
-	 * @param scoType
 	 * @param weighted
 	 * @return
 	 */
-	public double calcScore(List<Residue> residues, int molecId, ScoringType scoType, boolean weighted) {
-		return getChainEvolContext(molecId).calcScoreForResidueSet(residues, scoType, weighted);
+	public double calcScore(List<Residue> residues, int molecId, boolean weighted) {
+		return getChainEvolContext(molecId).calcScoreForResidueSet(residues, weighted);
 	}
 	
 	/**
@@ -204,12 +204,11 @@ public class InterfaceEvolContext implements Serializable {
 	 * @param minInterfArea the residues considered will be those that are not in interfaces above this area value
 	 * @param numSamples number of samples of size sampleSize to be taken from the surface
 	 * @param sampleSize number of residues in each sample
-	 * @param scoType
 	 * @param minAsaForSurface the minimum ASA for a residue to be considered surface
 	 * @return
 	 */
-	public double[] getSurfaceScoreDist(int molecId, double minInterfArea, int numSamples, int sampleSize, ScoringType scoType, double minAsaForSurface) {		
-		return parent.getSurfaceScoreDist(getMolecule(molecId).getPdbChainCode(), minInterfArea, numSamples, sampleSize, scoType, minAsaForSurface); 
+	public double[] getSurfaceScoreDist(int molecId, double minInterfArea, int numSamples, int sampleSize, double minAsaForSurface) {		
+		return parent.getSurfaceScoreDist(getMolecule(molecId).getPdbChainCode(), minInterfArea, numSamples, sampleSize, minAsaForSurface); 
 	}
 	
 	/**
@@ -231,17 +230,16 @@ public class InterfaceEvolContext implements Serializable {
 	 * chains have the same code we rename the second one to the next letter in alphabet.
 	 * PDB chain codes are used for the output, not CIF codes.  
 	 * @param file
-	 * @param scoringType
 	 * @param usePdbResSer if true PDB residue serials are written, if false CIF residue 
 	 * serials are written 
 	 * @throws IOException
 	 */
-	public void writePdbFile(File file, ScoringType scoringType, boolean usePdbResSer) throws IOException {
+	public void writePdbFile(File file, boolean usePdbResSer) throws IOException {
 
 		if (interf.isFirstProtein() && interf.isSecondProtein()) {
 
-			setConservationScoresAsBfactors(FIRST,scoringType);
-			setConservationScoresAsBfactors(SECOND,scoringType);
+			setConservationScoresAsBfactors(FIRST);
+			setConservationScoresAsBfactors(SECOND);
 			
 			this.interf.writeToPdbFile(file, usePdbResSer, true);
 		}
@@ -253,9 +251,7 @@ public class InterfaceEvolContext implements Serializable {
 	 * @param molecId
 	 * @throws NullPointerException if evolutionary scores are not calculated yet
 	 */
-	private void setConservationScoresAsBfactors(int molecId, ScoringType scoType) {
-		if (scoType!=ScoringType.CORERIM) 
-			throw new IllegalArgumentException("Only entropy scoring supported at the moment as evolutionary scoring");
+	private void setConservationScoresAsBfactors(int molecId) {
 		
 		// do nothing (i.e. keep original b-factors) if there's no query match for this sequence and thus no evol scores calculated 
 		if (!getChainEvolContext(molecId).hasQueryMatch()) return;
@@ -267,32 +263,26 @@ public class InterfaceEvolContext implements Serializable {
 		} else if (molecId==SECOND) {
 			pdb = interf.getSecondMolecule();
 		}
-		conservationScores = getChainEvolContext(molecId).getConservationScores(scoType);
+		conservationScores = getChainEvolContext(molecId).getConservationScores();
 		
 		HashMap<Integer,Double> map = new HashMap<Integer, Double>();
 		for (Residue residue:pdb) {
 			// we don't need to take care of het residues, as we use the uniprot ref for the calc of entropies entropies will always be asigned even for hets
 			//if (!(residue instanceof AaResidue)) continue;
 			int resser = residue.getSerial();
-			int queryPos = -2;
-			if (scoType==ScoringType.CORERIM) {
-				queryPos = getChainEvolContext(molecId).getQueryUniprotPosForPDBPos(resser); 
-			} 
+			int queryPos = getChainEvolContext(molecId).getQueryUniprotPosForPDBPos(resser); 
+			 
 			if (queryPos!=-1) {   
 				map.put(resser, conservationScores.get(queryPos));	
 			} else {
 				
-				if (scoType==ScoringType.CORERIM) {
-					// when no entropy info is available for a residue we still want to assign a value for it
-					// or otherwise the residue would keep its original real bfactor and then possibly screw up the
-					// scaling of colors for the rest
-					// The most sensible value we can use is the max entropy so that it looks like a poorly conserved residue
-					double maxEntropy = Math.log(this.getChainEvolContext(molecId).getHomologs().getReducedAlphabet())/Math.log(2);
-					map.put(resser, maxEntropy);
-				} else {
-					// if not in ENTROPY, we assign 0 (just as placeholder, only scoring supported at the moment is entropy)
-					map.put(resser, 0.0);
-				}
+				// when no entropy info is available for a residue we still want to assign a value for it
+				// or otherwise the residue would keep its original real bfactor and then possibly screw up the
+				// scaling of colors for the rest
+				// The most sensible value we can use is the max entropy so that it looks like a poorly conserved residue
+				double maxEntropy = Math.log(this.getChainEvolContext(molecId).getHomologs().getReducedAlphabet())/Math.log(2);
+				map.put(resser, maxEntropy);
+				
 			}
 		}
 		pdb.setBFactorsPerResidue(map);		

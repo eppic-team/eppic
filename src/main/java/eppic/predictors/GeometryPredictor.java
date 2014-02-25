@@ -2,7 +2,6 @@ package eppic.predictors;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -10,21 +9,15 @@ import org.apache.commons.logging.LogFactory;
 import edu.uci.ics.jung.graph.util.Pair;
 import eppic.EppicParams;
 import eppic.CallType;
-import owl.core.structure.AaResidue;
-import owl.core.structure.AminoAcid;
+import eppic.InterfaceEvolContext;
 import owl.core.structure.Atom;
 import owl.core.structure.ChainInterface;
-import owl.core.structure.InterfaceRimCore;
 import owl.core.structure.PdbAsymUnit;
 import owl.core.structure.PdbChain;
-import owl.core.structure.Residue;
 import owl.core.structure.graphs.AICGraph;
 
 public class GeometryPredictor implements InterfaceTypePredictor {
 
-	private static final int FIRST = 0;
-	private static final int SECOND = 1;
-	
 	private static final Log LOGGER = LogFactory.getLog(GeometryPredictor.class);
 	
 	private ChainInterface interf;
@@ -44,28 +37,19 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 	
 	public GeometryPredictor(ChainInterface interf) {
 		this.interf = interf;
-		warnings = new ArrayList<String>();
+		this.warnings = new ArrayList<String>();
 	}
 	
 	@Override
 	public void computeScores() {
+		
+		generateWarnings();
+		
 		interf.calcRimAndCore(bsaToAsaCutoff, minAsaForSurface);
 		size1 = interf.getFirstRimCore().getCoreSize();
 		size2 = interf.getSecondRimCore().getCoreSize();
-		size = size1+size2;	
-	}
-	
-	@Override
-	public CallType getCall() {
+		size = size1+size2;
 		
-		if (call!=null) return call;
-					
-		computeScores();
-		
-		List<Pair<Atom>> interactingPairs = getNonpolyInteractingPairs();
-		
-		// NOTE that we used to detect disulfide bridges here, but it is now moved to CombinedPredictor
-		// as we also need to check in the reference alignment whether the bridge is wild-type or artifact
 		
 		// CALL
 		if (size<minCoreSizeForBio) {
@@ -76,6 +60,48 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 			callReason = "Total core size "+size+" above cutoff ("+minCoreSizeForBio+")";
 			call = CallType.BIO;
 		}
+		
+
+	}
+	
+	@Override
+	public CallType getCall() {
+		
+		return call;
+	}
+	
+	@Override
+	public String getCallReason() {
+		return callReason;
+	}
+	
+	@Override
+	public List<String> getWarnings() {
+		return warnings;
+	}
+	
+	@Override
+	public double getScore() {
+		return (double)size;
+	}
+	
+	@Override
+	public double getScore1() {
+		return (double)size1;
+	}
+	
+	@Override
+	public double getScore2() {
+		return (double)size2;
+	}
+	
+	private void generateWarnings() {
+		
+		List<Pair<Atom>> interactingPairs = getNonpolyInteractingPairs();
+		
+		// NOTE that we used to detect disulfide bridges here, but it is now moved to CombinedPredictor
+		// as we also need to check in the reference alignment whether the bridge is wild-type or artifact
+
 		
 		// WARNINGS
 		// 1) clashes
@@ -121,8 +147,8 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 			LOGGER.warn("Interface "+interf.getId()+" has closely interacting atoms: "+warning);
 		}
 		// 4) checking whether either first or second member of interface are peptides
-		checkForPeptides(FIRST);
-		checkForPeptides(SECOND);
+		checkForPeptides(InterfaceEvolContext.FIRST);
+		checkForPeptides(InterfaceEvolContext.SECOND);
 		// 5) if interactions mediated by a non-polymer are found we warn 
 		// In some cases it can be a natural thing, we believe it is so for 2o3b (interface is small but strong because of the Mg2+)
 		// but we think this are mostly artifacts of crystallization:
@@ -154,35 +180,7 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 			warnings.add(warning);
 			LOGGER.warn("Interface "+interf.getId()+": "+warning);
 		}
-		
-		return call;
-	}
-	
-	@Override
-	public String getCallReason() {
-		return callReason;
-	}
-	
-	@Override
-	public List<String> getWarnings() {
-		return warnings;
-	}
-	
-	@Override
-	public double getScore() {
-		return (double)size;
-	}
-	
-	public double getScore1() {
-		return (double)size1;
-	}
-	
-	public double getScore2() {
-		return (double)size2;
-	}
-	
-	public Map<String,Double> getScoreDetails() {
-		return null;
+
 	}
 	
 	private String getPairInteractionString(Pair<Atom> pair) {
@@ -228,16 +226,6 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 		this.usePdbResSer = usePdbResSer;
 	}
 	
-	public int countGlycines(InterfaceRimCore rimcore) {
-		int count = 0;
-		for (Residue res:rimcore.getCoreResidues()) {
-			if (res instanceof AaResidue && (((AaResidue)res).getAaType()==AminoAcid.GLY)) {
-				count++;
-			}
-		}
-		return count;
-	}
-
 	private List<Pair<Atom>> getNonpolyInteractingPairs() {
 		PdbChain firstChain = this.interf.getFirstMolecule();
 		PdbChain secondChain = this.interf.getSecondMolecule();
@@ -278,9 +266,9 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 		// will have too small an interface core and we'd call crystal based on core size
 		// But still for some cases (e.g. 3bfw) the prediction is correct (the core size is big enough) 
 		PdbChain molec = null;
-		if (molecId==FIRST) {
+		if (molecId==InterfaceEvolContext.FIRST) {
 			molec = interf.getFirstMolecule();
-		} else if (molecId==SECOND) {
+		} else if (molecId==InterfaceEvolContext.SECOND) {
 			molec = interf.getSecondMolecule();
 		}
 		if (molec.getFullLength()<=EppicParams.PEPTIDE_LENGTH_CUTOFF) {
@@ -295,7 +283,4 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 
 	}
 
-	public ChainInterface getInterface() {
-		return this.interf;
-	}
 }

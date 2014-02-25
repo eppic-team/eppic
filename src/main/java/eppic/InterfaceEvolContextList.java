@@ -143,16 +143,6 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 		return scoType;
 	}
 	
-	/**
-	 * Resets to null all calls, callReasons and warnings of all InterfaceEvolContext in this list.
-	 */
-	public void resetCalls() {
-		for (int i=0;i<list.size();i++) {
-			list.get(i).getEvolCoreRimPredictor().resetCall();
-			list.get(i).getEvolCoreSurfacePredictor().resetCall();
-		}
-	}
-
 	public ChainEvolContextList getChainEvolContextList() {
 		return cecs;	
 	}
@@ -186,11 +176,10 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 	 * @param minInterfArea the residues considered will be those that are not in interfaces above this area value
 	 * @param numSamples number of samples of size sampleSize to be taken from the surface
 	 * @param sampleSize number of residues in each sample
-	 * @param scoType
 	 * @param minAsaForSurface the minimum ASA for a residue to be considered surface
 	 * @return
 	 */
-	public double[] getSurfaceScoreDist(String pdbChainCode, double minInterfArea, int numSamples, int sampleSize, ScoringType scoType, double minAsaForSurface) {
+	public double[] getSurfaceScoreDist(String pdbChainCode, double minInterfArea, int numSamples, int sampleSize, double minAsaForSurface) {
 		if (sampleSize==0) return new double[0];
 		
 		double[] dist = new double[numSamples];
@@ -203,7 +192,7 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 				residues.add((Residue)sample[j]);
 			}
 			// note that we must pass weighted=false as the weighting is done on bsas which doesn't make sense at all here 
-			dist[i] = getChainEvolContext(pdbChainCode).calcScoreForResidueSet(residues, scoType, false);
+			dist[i] = getChainEvolContext(pdbChainCode).calcScoreForResidueSet(residues, false);
 			
 			//Collections.sort(residues, new Comparator<Residue>() {
 			//	public int compare(Residue o1, Residue o2) {

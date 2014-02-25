@@ -574,18 +574,14 @@ public class ChainEvolContext implements Serializable {
 	}
 	
 	/**
-	 * Returns a list of the conservation scores values, i.e. entropy or ka/ks ratios 
-	 * depending on scoType.
-	 * The sequence to which the list refers is the query Uniprot/CDS translated sequence, 
+	 * Returns a list of the conservation scores values (only entropy in current implementation)
+	 * The sequence to which the list refers is the reference UniProt one, 
 	 * not the PDB SEQRES.   
-	 * @param scoType
 	 * @return
 	 */
-	public List<Double> getConservationScores(ScoringType scoType) {
-		if (scoType.equals(ScoringType.CORERIM)) {
-			return homologs.getEntropies();
-		}
-		throw new IllegalArgumentException("Given scoring type "+scoType+" is not recognized ");
+	public List<Double> getConservationScores() {
+
+		return homologs.getEntropies();
 
 	}
 	
@@ -603,23 +599,20 @@ public class ChainEvolContext implements Serializable {
 	 * If a residue does not have a mapping to the reference UniProt (i.e. aligns to a gap) 
 	 * then it is ignored and not counted in the average. 
 	 * @param residues
-	 * @param scoType whether the evolutionary score should be entropy or Ka/Ks
 	 * @param weighted whether the scores should be weighted by BSA of each residue
 	 * @return the average (optionally BSA weighted) evolutionary score for the given set 
 	 * of residues or NaN if all residues do not have a mapping to the reference UniProt or 
 	 * if the input residue list is empty.
 	 */
-	public double calcScoreForResidueSet(List<Residue> residues, ScoringType scoType, boolean weighted) {
+	public double calcScoreForResidueSet(List<Residue> residues, boolean weighted) {
 		double totalScore = 0.0;
 		double totalWeight = 0.0;
-		List<Double> conservScores = getConservationScores(scoType);
+		List<Double> conservScores = getConservationScores();
 		for (Residue res:residues){
 			int resSer = res.getSerial(); 
 
-			int queryPos = -2;
-			if (scoType==ScoringType.CORERIM) {
-				queryPos = getQueryUniprotPosForPDBPos(resSer); 
-			} 
+			int queryPos = getQueryUniprotPosForPDBPos(resSer); 
+			 
 			if (queryPos!=-1) {   
 				double weight = 1.0;
 				if (weighted) {
@@ -652,7 +645,7 @@ public class ChainEvolContext implements Serializable {
 		// do nothing (i.e. keep original b-factors) if there's no query match for this sequence and thus no evol scores calculated 
 		if (!hasQueryMatch()) return;
 		
-		List<Double> conservationScores = getConservationScores(ScoringType.CORERIM);
+		List<Double> conservationScores = getConservationScores();
 		
 		HashMap<Integer,Double> map = new HashMap<Integer, Double>();
 		for (Residue residue:chain) {

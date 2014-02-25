@@ -205,7 +205,7 @@ public class DataModelAdaptor {
 			InterfaceScoreDB is = new InterfaceScoreDB();
 			ii.addInterfaceScore(is);
 			is.setInterfaceItem(ii);
-			is.setInterfaceId(gps.get(i).getInterface().getId());
+			is.setInterfaceId(ii.getInterfaceId());
 			CallType call = gps.get(i).getCall();
 			is.setCallName(call.getName());
 			is.setCallReason(gps.get(i).getCallReason());
@@ -359,8 +359,8 @@ public class DataModelAdaptor {
 				}
 			}
 
-			isCS.setScore1(ecsp.getMember1Predictor().getScore());
-			isCS.setScore2(ecsp.getMember2Predictor().getScore());
+			isCS.setScore1(ecsp.getScore1());
+			isCS.setScore2(ecsp.getScore2());
 			isCS.setScore(ecsp.getScore());	
 			
 			isCS.setConfidence(CONFIDENCE_NOT_AVAILABLE);
@@ -388,8 +388,8 @@ public class DataModelAdaptor {
 				}
 			}
 
-			isCR.setScore1(ecrp.getMember1Predictor().getScore());
-			isCR.setScore2(ecrp.getMember2Predictor().getScore());
+			isCR.setScore1(ecrp.getScore1());
+			isCR.setScore2(ecrp.getScore2());
 			isCR.setScore(ecrp.getScore());				
 
 			isCR.setConfidence(CONFIDENCE_NOT_AVAILABLE);
@@ -596,7 +596,7 @@ public class DataModelAdaptor {
 				 
 				List<Double> entropies = null;
 				if (cec.hasQueryMatch()) 
-					entropies = cec.getConservationScores(ScoringType.CORERIM);
+					entropies = cec.getConservationScores();
 				for (Residue residue:mol) {
 
 	 				ResidueDB iri = iril.get(i);

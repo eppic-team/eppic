@@ -3,7 +3,6 @@ package eppic.predictors;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import owl.core.structure.Atom;
 import owl.core.structure.ChainInterface;
@@ -12,6 +11,8 @@ import eppic.EppicParams;
 import eppic.CallType;
 import eppic.InterfaceEvolContext;
 
+// this was more of an experiment, needs to be rewritten or merged into CombinedPredictor  if we want to use it again
+@Deprecated
 public class CombinedCSGeomPredictor implements InterfaceTypePredictor {
 	
 	protected static final int FIRST  = 0;
@@ -142,11 +143,15 @@ public class CombinedCSGeomPredictor implements InterfaceTypePredictor {
 	public double getScore() {
 		return (double)votes;
 	}
+
+	@Override
+	public double getScore1() {
+		return -1;
+	}
 	
 	@Override
-	public Map<String, Double> getScoreDetails() {
-		// no details for this method
-		return null;
+	public double getScore2() {
+		return -1;
 	}
 	
 	@Override

@@ -284,6 +284,7 @@ public class Main {
 			gp.setBsaToAsaCutoff(params.getCAcutoffForGeom());
 			gp.setMinAsaForSurface(params.getMinAsaForSurface());
 			gp.setMinCoreSizeForBio(params.getMinCoreSizeForBio());
+			gp.computeScores();
 		}
 
 		// for the webui
@@ -369,7 +370,7 @@ public class Main {
 			} else {
 				// writing PDB files with entropies as bfactors
 				for (InterfaceEvolContext iec:iecList) {
-					iec.writePdbFile(params.getOutputFile("."+iec.getInterface().getId()+".pdb.gz"),ScoringType.CORERIM, params.isUsePdbResSer());			
+					iec.writePdbFile(params.getOutputFile("."+iec.getInterface().getId()+".pdb.gz"), params.isUsePdbResSer());			
 				}
 			}
 			
@@ -580,12 +581,13 @@ public class Main {
 		
 		if (params.isDoEvolScoring()) {
 			
+			// core-rim
 			iecList.setCoreRimPredBsaToAsaCutoff(params.getCAcutoffForRimCore(), params.getMinAsaForSurface()); // calls calcRimAndCores as well
 			iecList.setCoreRimScoreCutoff(params.getCoreRimScoreCutoff());
 			iecList.setCoreSurfScoreCutoff(params.getCoreSurfScoreCutoff());
 			iecList.scoreCoreRim();
 
-			// z-scores
+			// core-surface
 			iecList.setCoreSurfacePredBsaToAsaCutoff(params.getCAcutoffForZscore(), params.getMinAsaForSurface()); // calls calcRimAndCores as well
 			iecList.scoreCoreSurface();
 
@@ -606,6 +608,7 @@ public class Main {
 			CombinedPredictor cp = 
 					new CombinedPredictor(iecList.get(i), gps.get(i), iecList.get(i).getEvolCoreRimPredictor(), iecList.get(i).getEvolCoreSurfacePredictor());
 			cp.setUsePdbResSer(params.isUsePdbResSer());
+			cp.computeScores();
 			cps.add(cp);
 		}
 
@@ -633,9 +636,9 @@ public class Main {
 	 */
 	public static void main(String[] args){
 		
-		Main crkMain = new Main();
+		Main eppicMain = new Main();
 		
-		crkMain.run(args);
+		eppicMain.run(args);
 	}
 	
 	public void run(String[] args) {

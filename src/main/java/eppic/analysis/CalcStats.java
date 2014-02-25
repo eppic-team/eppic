@@ -45,6 +45,7 @@ import owl.core.structure.ChainInterfaceList;
  * @author duarte_j
  *
  */
+@SuppressWarnings("deprecation")
 public class CalcStats {
 
 
@@ -619,7 +620,6 @@ public class CalcStats {
 			}						
 		}
 		
-		ercp.resetCall();
 
 	}
 	
@@ -656,7 +656,6 @@ public class CalcStats {
 			}						
 		}
 		
-		eizp.resetCall();
 		
 	}
 	
@@ -672,6 +671,7 @@ public class CalcStats {
 		gp.setMinAsaForSurface(minAsaForSurface);
 		//gp.setMinCoreSizeForBio(minNumberCoreResForBios[j]);
 		gp.setMinCoreSizeForBio(DEFMINNUMBERCORERESFORBIO);
+		gp.computeScores();
 		
 		//interf.calcRimAndCore(caCutoffsCR[i]);
 		EvolCoreRimPredictor ercp = new EvolCoreRimPredictor(iec);
@@ -698,6 +698,7 @@ public class CalcStats {
 			casted.setUsePdbResSer(DEF_USE_PDB_RES_SER);
 		}
 
+		cp.computeScores();
 		CallType call = cp.getCall();
 		if (call==CallType.BIO) counters[i][k][l][m].countBio(dol);
 		else if (call==CallType.CRYSTAL) counters[i][k][l][m].countXtal(dol);
