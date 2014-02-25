@@ -1,23 +1,21 @@
 package eppic.model;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
-public class UserSessionDB implements Serializable 
-{
-	/**
-	 * 
-	 */
+public class UserSessionDB implements Serializable {
+	
 	private static final long serialVersionUID = 1L;
 	
 	private int uid;
 	private String sessionId;
+	private Date timeStamp;
 	
 	private Set<JobDB> jobs;
 	
-	public UserSessionDB()
-	{
+	public UserSessionDB() {
 		jobs = new HashSet<JobDB>();
 	}
 	
@@ -40,6 +38,14 @@ public class UserSessionDB implements Serializable
 
 	public Set<JobDB> getJobs() {
 		return jobs;
+	}
+
+	public Date getTimeStamp() {
+		return timeStamp;
+	}
+
+	public void setTimeStamp(Date timeStamp) {
+		this.timeStamp = timeStamp;
 	}
 	
 }
