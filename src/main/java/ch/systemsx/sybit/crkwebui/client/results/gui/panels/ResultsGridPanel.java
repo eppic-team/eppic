@@ -495,6 +495,15 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 				data.add(model);
 			}
 			}
+			
+			// TODO: Check if this is working for sorting
+			Collections.sort(data, new Comparator<InterfaceItemModel>() {
+
+				@Override
+				public int compare(InterfaceItemModel o1, InterfaceItemModel o2) {
+					return new Integer(o1.getInterfaceId()).compareTo(o2.getInterfaceId());
+				}
+			});
 		}
 		
 		resultsStore.addAll(data);
