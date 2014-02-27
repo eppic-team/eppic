@@ -14,9 +14,6 @@ import ch.systemsx.sybit.crkwebui.shared.model.InterfaceWarning;
  */
 public class InterfaceItemModel implements Serializable {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 	
 	private int interfaceId;

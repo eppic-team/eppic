@@ -1,8 +1,10 @@
 package ch.systemsx.sybit.crkwebui.client.results.gui.panels;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Collections;
 
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
@@ -416,87 +418,86 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 		{
 			for(InterfaceCluster cluster:interfaceClusters)
 			{
-			List<Interface> interfaceItems = cluster.getInterfaces();
-			for (Interface interfaceItem : interfaceItems) 
-			{
-				if((interfaceItem.getInterfaceWarnings() != null) &&
-				   (interfaceItem.getInterfaceWarnings().size() > 0))
-			    {
-					hideWarnings = false;
-			    }
-				
-				InterfaceItemModel model = new InterfaceItemModel();
-
-				//Set interface scores
-				for(InterfaceScore interfaceScore : interfaceItem.getInterfaceScores())
+				List<Interface> interfaceItems = cluster.getInterfaces();
+				for (Interface interfaceItem : interfaceItems) 
 				{
-					if(interfaceScore.getMethod().equals(ScoringMethod.EPPIC_GEOMETRY))
+					if((interfaceItem.getInterfaceWarnings() != null) &&
+							(interfaceItem.getInterfaceWarnings().size() > 0))
 					{
-						String size1 = String.valueOf(Math.round(interfaceScore.getScore1()));
-						String size2 = String.valueOf(Math.round(interfaceScore.getScore2()));
-						model.setGeometryCall(interfaceScore.getCallName());
-						model.setSizes(size1 + " + " + size2);
+						hideWarnings = false;
 					}
 
-					if(interfaceScore.getMethod().equals(ScoringMethod.EPPIC_CORERIM))
+					InterfaceItemModel model = new InterfaceItemModel();
+
+					//Set interface scores
+					for(InterfaceScore interfaceScore : interfaceItem.getInterfaceScores())
 					{
-						model.setCoreRimCall(interfaceScore.getCallName());
+						if(interfaceScore.getMethod().equals(ScoringMethod.EPPIC_GEOMETRY))
+						{
+							String size1 = String.valueOf(Math.round(interfaceScore.getScore1()));
+							String size2 = String.valueOf(Math.round(interfaceScore.getScore2()));
+							model.setGeometryCall(interfaceScore.getCallName());
+							model.setSizes(size1 + " + " + size2);
+						}
+
+						if(interfaceScore.getMethod().equals(ScoringMethod.EPPIC_CORERIM))
+						{
+							model.setCoreRimCall(interfaceScore.getCallName());
+						}
+
+						if(interfaceScore.getMethod().equals(ScoringMethod.EPPIC_CORESURFACE))
+						{
+							model.setCoreSurfaceCall(interfaceScore.getCallName());
+						}
+
+						if(interfaceScore.getMethod().equals(ScoringMethod.EPPIC_FINAL))
+						{
+							model.setFinalCallName(interfaceScore.getCallName());
+						}
 					}
 
-					if(interfaceScore.getMethod().equals(ScoringMethod.EPPIC_CORESURFACE))
+					//Set interface cluster score
+					for(InterfaceClusterScore clusterScore: cluster.getInterfaceClusterScores())
 					{
-						model.setCoreSurfaceCall(interfaceScore.getCallName());
+						if(clusterScore.getMethod().equals(ScoringMethod.EPPIC_GEOMETRY))
+						{
+							model.setClusterGeometryCall(clusterScore.getCallName());
+						}
+
+						if(clusterScore.getMethod().equals(ScoringMethod.EPPIC_CORERIM))
+						{
+							model.setClusterCoreRimCall(clusterScore.getCallName());
+						}
+
+						if(clusterScore.getMethod().equals(ScoringMethod.EPPIC_CORESURFACE))
+						{
+							model.setClusterCoreSurfaceCall(clusterScore.getCallName());
+						}
+
+						if(clusterScore.getMethod().equals(ScoringMethod.EPPIC_FINAL))
+						{
+							model.setClusterFinalCall(clusterScore.getCallName());
+						}
 					}
-					
-					if(interfaceScore.getMethod().equals(ScoringMethod.EPPIC_FINAL))
-					{
-						model.setFinalCallName(interfaceScore.getCallName());
-					}
+
+					model.setInterfaceId(interfaceItem.getInterfaceId());
+					model.setClusterId(interfaceItem.getClusterId());
+					model.setName(interfaceItem.getChain1() + "+" + interfaceItem.getChain2());
+					model.setArea(interfaceItem.getArea());
+					model.setOperator(interfaceItem.getOperator());
+					model.setOperatorType(interfaceItem.getOperatorType());
+					model.setInfinite(interfaceItem.getIsInfinite());
+					model.setWarnings(interfaceItem.getInterfaceWarnings());
+					String thumbnailUrl = ApplicationContext.getSettings().getResultsLocation() +
+							ApplicationContext.getPdbInfo().getJobId() + 
+							"/" + ApplicationContext.getPdbInfo().getTruncatedInputName() +
+							"." + interfaceItem.getInterfaceId() + ".75x75.png";
+					model.setThumbnailUrl(thumbnailUrl);
+
+					data.add(model);
 				}
-				
-				//Set interface cluster score
-				for(InterfaceClusterScore clusterScore: cluster.getInterfaceClusterScores())
-				{
-					if(clusterScore.getMethod().equals(ScoringMethod.EPPIC_GEOMETRY))
-					{
-						model.setClusterGeometryCall(clusterScore.getCallName());
-					}
-
-					if(clusterScore.getMethod().equals(ScoringMethod.EPPIC_CORERIM))
-					{
-						model.setClusterCoreRimCall(clusterScore.getCallName());
-					}
-
-					if(clusterScore.getMethod().equals(ScoringMethod.EPPIC_CORESURFACE))
-					{
-						model.setClusterCoreSurfaceCall(clusterScore.getCallName());
-					}
-					
-					if(clusterScore.getMethod().equals(ScoringMethod.EPPIC_FINAL))
-					{
-						model.setClusterFinalCall(clusterScore.getCallName());
-					}
-				}
-				
-				model.setInterfaceId(interfaceItem.getInterfaceId());
-				model.setClusterId(interfaceItem.getClusterId());
-				model.setName(interfaceItem.getChain1() + "+" + interfaceItem.getChain2());
-				model.setArea(interfaceItem.getArea());
-				model.setOperator(interfaceItem.getOperator());
-				model.setOperatorType(interfaceItem.getOperatorType());
-				model.setInfinite(interfaceItem.getIsInfinite());
-				model.setWarnings(interfaceItem.getInterfaceWarnings());
-				String thumbnailUrl = ApplicationContext.getSettings().getResultsLocation() +
-						ApplicationContext.getPdbInfo().getJobId() + 
-						"/" + ApplicationContext.getPdbInfo().getTruncatedInputName() +
-						"." + interfaceItem.getInterfaceId() + ".75x75.png";
-				model.setThumbnailUrl(thumbnailUrl);
-
-				data.add(model);
-			}
 			}
 			
-			// TODO: Check if this is working for sorting
 			Collections.sort(data, new Comparator<InterfaceItemModel>() {
 
 				@Override
