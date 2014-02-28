@@ -25,14 +25,11 @@ then find homologs in UniProt by using BLAST and finally align them to
 produce evolutionary scores (core-rim score and core-surface score) for all
 interfaces found. The geometry scores will also be output.
 
-Many output files are produced. The most important ones are the .scores 
-files containing the scoring for the 3 indicators and for the combined 
+Many output files are produced. The most important one is the .scores 
+file containing the scoring for the 3 indicators and for the combined 
 consensus calls:
   
-  1smt.geometry.scores    -  The geometry scores
-  1smt.corerim.scores     -  The core-rim scores
-  1smt.coresurface.scores -  The core-surface scores
-  1smt.combined.scores    -  The combined scores and calls (bio/xtal)
+  1smt.scores             -  The scores table
 
 Also interesting are the sequence-related files, one per chain (the chain 
 code e.g. 'A' is used for the extension):
@@ -42,10 +39,10 @@ code e.g. 'A' is used for the extension):
                              positions
   1smt.A.log              -  The list of homologs used with some taxonomy info
   
-Additionally some PDB files per interface are produced (interface identified 
+With the -p option PDB files per interface are produced (interface identified 
 by a serial number from 1 to n going from largest interface to smallest).
 
-  1smt.1.pdb              -  The structure of interface 1: first partner of 
+  1smt.1.pdb.gz           -  The structure of interface 1: first partner of 
                              interface is in the original PDB file position, 
                              second partner is the one transformed with a 
                              crystal operator (unless it is in asymmetric 
@@ -54,8 +51,8 @@ by a serial number from 1 to n going from largest interface to smallest).
                              b-factors (useful for PyMOL coloring) 
 
 Note that more structure files can be produced per interface by running with 
-the -l switch: PyMOL session files (pse), PyMOL script files (pml), thumbnail 
-png images of interfaces, etc.
+the -l switch (requires PyMOL): PyMOL session files (pse), PyMOL script files 
+(pml), thumbnail png images of interfaces, etc.
 
 
 
@@ -65,7 +62,7 @@ INSTALLATION
         It has only been tested in Linux but there is no reason why it should
         not work in MacOSX.
         
-        You need Java 1.6 or newer. Most systems will have java already 
+        You need Java 1.7 or newer. Most systems will have java already 
         installed. Otherwise get it by installing the OpenJDK package in 
         Linux or downloading java from http://java.com/en/download/index.jsp
 

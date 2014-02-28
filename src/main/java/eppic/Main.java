@@ -602,11 +602,14 @@ public class Main {
 		writeStep("Scoring Interfaces");
 		
 		if (params.isDoEvolScoring()) {
+
+			// setting cut-offs
+			iecList.setCoreRimScoreCutoff(params.getCoreRimScoreCutoff());
+			iecList.setCoreSurfScoreCutoff(params.getCoreSurfScoreCutoff());
+			iecList.setMinNumSeqs(params.getMinNumSeqs());
 			
 			// core-rim
 			iecList.setCoreRimPredBsaToAsaCutoff(params.getCAcutoffForRimCore(), params.getMinAsaForSurface()); // calls calcRimAndCores as well
-			iecList.setCoreRimScoreCutoff(params.getCoreRimScoreCutoff());
-			iecList.setCoreSurfScoreCutoff(params.getCoreSurfScoreCutoff());
 			iecList.scoreCoreRim();
 
 			// core-surface

@@ -25,8 +25,6 @@ public class InterfaceEvolContext implements Serializable {
 	
 	private ChainInterface interf;
 
-	private int minNumSeqs;
-	
 	private EvolCoreRimPredictor evolCoreRimPredictor;
 	private EvolCoreSurfacePredictor evolCoreSurfacePredictor;
 
@@ -80,14 +78,6 @@ public class InterfaceEvolContext implements Serializable {
 			return getInterface().getSecondMolecule();
 		}
 		return null;		
-	}
-	
-	public int getMinNumSeqs() {
-		return minNumSeqs;
-	}
-	
-	public void setMinNumSeqs(int minNumSeqs) {
-		this.minNumSeqs = minNumSeqs;
 	}
 	
 	/**
@@ -289,9 +279,13 @@ public class InterfaceEvolContext implements Serializable {
 	}
 	
 	public boolean hasEnoughHomologs(int molecId){
-		return this.getChainEvolContext(molecId).getNumHomologs()>=minNumSeqs;
+		return this.getChainEvolContext(molecId).getNumHomologs()>=parent.getMinNumSeqs(); 
 	}
 
+	public int getMinNumSeqs() {
+		return this.parent.getMinNumSeqs();
+	}
+	
 	public boolean isProtein(int molecId) {
 		if (molecId==FIRST) {
 			return this.interf.isFirstProtein();

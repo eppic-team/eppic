@@ -491,6 +491,7 @@ public class CalcStats {
 			ChainEvolContextList cecl = Utils.readChainEvolContextList(chainevolcontextdatFile);
 			InterfaceEvolContextList iecList = new InterfaceEvolContextList(cil, cecl);
 			iecList.setUsePdbResSer(DEF_USE_PDB_RES_SER);
+			iecList.setMinNumSeqs(MIN_NUM_HOMOLOGS);
 			
 			String dol = cecl.getDomainOfLife();
 			if (dol==null) dol = UNKNOWN_TAXON;
@@ -595,7 +596,6 @@ public class CalcStats {
 		} 
 		
 		ercp.setCallCutoff(corerimCallCutoffs[k]);
-		iec.setMinNumSeqs(MIN_NUM_HOMOLOGS);
 
 		CallType call = ercp.getCall();
 		if (call==CallType.BIO) counters[i][k].countBio(dol);
@@ -633,7 +633,6 @@ public class CalcStats {
 		
 		eizp.computeScores();
 		eizp.setCallCutoff(zscoreCutoffs[k]);
-		iec.setMinNumSeqs(MIN_NUM_HOMOLOGS);
 		
 		CallType call = eizp.getCall();
 		if (call==CallType.BIO) counters[i][k].countBio(dol);
@@ -678,14 +677,12 @@ public class CalcStats {
 		ercp.setBsaToAsaCutoff(caCutoffsCR[i], minAsaForSurface);
 		ercp.computeScores();
 		ercp.setCallCutoff(corerimCallCutoffs[k]);
-		iec.setMinNumSeqs(MIN_NUM_HOMOLOGS);
 		
 		//interf.calcRimAndCore(caCutoffsZ[l]);
 		EvolCoreSurfacePredictor eizp = new EvolCoreSurfacePredictor(iec);
 		eizp.setBsaToAsaCutoff(caCutoffsZ[l], minAsaForSurface);
 		eizp.computeScores();
 		eizp.setCallCutoff(zscoreCutoffs[m]);
-		iec.setMinNumSeqs(MIN_NUM_HOMOLOGS);
 		
 		InterfaceTypePredictor cp = null;
 		if (combinedCSG) {

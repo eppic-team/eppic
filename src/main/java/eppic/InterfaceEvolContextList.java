@@ -154,6 +154,14 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 	public EvolCoreSurfaceClusterPredictor getEvolCoreSurfaceClusterPredictor(int clusterId) {
 		return this.ecscPredictors.get(clusterId);
 	}
+	
+	protected int getMinNumSeqs() {
+		return this.minNumSeqs;
+	}
+	
+	public void setMinNumSeqs(int minNumSeqs) {
+		this.minNumSeqs = minNumSeqs;
+	}
 
 	/**
 	 * Whether the output warnings and PDB files are to be written with
