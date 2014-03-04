@@ -674,11 +674,21 @@ public class PymolRunner {
 			
 		}
 	//	return sb.toString(); //to write pymol selection 3+4+5+6+11+15+16+17
-		return cs.toString(); // to write pymol selection 3-6+11+15-17
+		int strlen=cs.length();
+		int maxlen=800; //greater than maxlen will be split with "or resi" in the middle to avoid pymol buffer overflow
+		if (strlen>maxlen){
+			int m=strlen%maxlen;
+			for (int i=0;i<m;i++){
+				int startidx=cs.indexOf("+", maxlen*(i+1)); 
+				if (startidx>0) cs.replace(startidx, startidx+1, " or resi " );//to fix pymol buffer overflow error
+				
+			}
+		}
+		return cs.toString(); // to write pymol selection 3-6+11+15-17 or resi 34-45,47,78
 	}
 
 	private String getSelString(String namePrefix, char chainName, List<Residue> list, boolean usePdbResSer) {
-		return "select "+namePrefix+chainName+", chain "+chainName+" and resi "+getResiSelString(list, usePdbResSer);
+		return "select "+namePrefix+chainName+", chain "+chainName+" and ( resi "+getResiSelString(list, usePdbResSer)+")";
 	}
 
 	private void writeCommand(String cmd, PrintStream ps) {
