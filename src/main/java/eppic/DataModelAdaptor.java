@@ -3,11 +3,15 @@ package eppic;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.TreeMap;
 
+import edu.uci.ics.jung.graph.util.Pair;
+import eppic.model.ContactDB;
 import eppic.model.HomologDB;
 import eppic.model.ChainClusterDB;
 import eppic.model.InterfaceClusterDB;
@@ -30,6 +34,7 @@ import eppic.predictors.EvolCoreRimPredictor;
 import eppic.predictors.GeometryClusterPredictor;
 import eppic.predictors.GeometryPredictor;
 import owl.core.sequence.Homolog;
+import owl.core.structure.AminoAcid;
 import owl.core.structure.ChainCluster;
 import owl.core.structure.ChainInterface;
 import owl.core.structure.ChainInterfaceList;
@@ -41,6 +46,9 @@ import owl.core.structure.PdbBioUnitList;
 import owl.core.structure.PdbChain;
 import owl.core.structure.Residue;
 import owl.core.structure.SpaceGroup;
+import owl.core.structure.graphs.RICGEdge;
+import owl.core.structure.graphs.RICGNode;
+import owl.core.structure.graphs.RICGraph;
 import owl.core.util.Goodies;
 
 
@@ -151,6 +159,66 @@ public class DataModelAdaptor {
 				interfaceDB.setInterfaceCluster(icDB);
 				
 				interfId2Warnings.put(interf.getId(),new HashSet<String>());
+				
+				
+				// the contacts table
+				List<ContactDB> contacts = new ArrayList<ContactDB>();
+				
+				interfaceDB.setContacts(contacts);
+				
+				RICGraph graph = new RICGraph(interf.getAICGraph());
+				
+				for (RICGEdge edge:graph.getEdges()) {
+					
+					Pair<RICGNode> pair = graph.getEndpoints(edge);
+					
+					ContactDB contact = new ContactDB();
+					contact.setiResNumber(pair.getFirst().getResidueSerial());
+					contact.setjResNumber(pair.getSecond().getResidueSerial());
+					contact.setiResType(AminoAcid.three2one(pair.getFirst().getResidueType()));
+					contact.setjResType(AminoAcid.three2one(pair.getSecond().getResidueType()));
+					Residue iRes = interf.getFirstMolecule().getResidue(pair.getFirst().getResidueSerial());
+					Residue jRes = interf.getSecondMolecule().getResidue(pair.getSecond().getResidueSerial());
+					contact.setiBurial(iRes.getBsaToAsaRatio());
+					contact.setjBurial(jRes.getBsaToAsaRatio());
+					
+					contact.setClash(edge.isClash());
+					contact.setDisulfide(edge.isDisulfide());
+					contact.setnAtomsInContact(edge.getnAtoms());
+					contact.setnHBonds(edge.getnHBonds()); 
+					
+					contact.setInterfaceId(interf.getId()); 
+					contact.setPdbCode(pdbInfo.getPdbCode());
+					
+					contacts.add(contact);
+					
+					// parent/child
+					contact.setInterfaceItem(interfaceDB);
+					
+				}
+				
+				// sorting so that at least in text files we'll get a nice sorting
+				Collections.sort(contacts, new Comparator<ContactDB>() {
+
+					@Override
+					public int compare(ContactDB first, ContactDB second) {
+						int iFirst = first.getiResNumber();
+						int jFirst = first.getjResNumber();
+						int iSecond = second.getiResNumber();
+						int jSecond = second.getjResNumber();
+						
+						if (iFirst>iSecond) return 1;
+						if (iFirst<iSecond) return -1;
+						
+						if (jFirst>jSecond) return 1;
+						if (jFirst<jSecond) return -1;
+						
+						return 0;
+					}
+					
+				}); 
+				
+				
 			}
 		}
 		pdbInfo.setInterfaceClusters(icDBs);

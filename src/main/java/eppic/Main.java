@@ -333,14 +333,15 @@ public class Main {
 		
 
 		
-		// 1 interfaces info file
+		// 1 interfaces info file and contacts info file
 		try {
 			// if no interfaces found (e.g. NMR) we don't want to write the file
 			if (interfaces.getNumInterfaces()>0) {
 				toW.writeInterfacesInfoFile();
+				toW.writeContactsInfoFile();
 			}
 		} catch(IOException	e) {
-			throw new EppicException(e,"Could not log interfaces description to file: "+e.getMessage(),false);
+			throw new EppicException(e,"Could not write interfaces description or contact list to file: "+e.getMessage(),false);
 		}
 
 		// 2 scores file: geom, core-rim, core-surface and combine all in one file

@@ -28,6 +28,7 @@ public class InterfaceDB implements Serializable {
 	
 	private List<InterfaceScoreDB> interfaceScores;
 	private List<ResidueDB> residues;
+	private List<ContactDB> contacts;
 	
 	private InterfaceClusterDB interfaceCluster;
 
@@ -159,6 +160,14 @@ public class InterfaceDB implements Serializable {
 
 	public void setResidues(List<ResidueDB> interfaceResidues) {
 		this.residues = interfaceResidues;
+	}
+
+	public List<ContactDB> getContacts() {
+		return contacts;
+	}
+
+	public void setContacts(List<ContactDB> contacts) {
+		this.contacts = contacts;
 	}
 
 	public void setUid(int uid) {

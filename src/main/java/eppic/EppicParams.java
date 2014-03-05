@@ -26,6 +26,7 @@ public class EppicParams {
 	
 	protected static final String  ENTROPIES_FILE_SUFFIX = ".entropies";
 	protected static final String  INTERFACES_FILE_SUFFIX = ".interfaces";
+	protected static final String  CONTACTS_FILE_SUFFIX = ".contacts";
 	protected static final String  INTERFACESDAT_FILE_SUFFIX = ".interfaces.dat";
 	protected static final String  CHAINEVCONTEXTDAT_FILE_SUFFIX = ".chainevolcontext.dat";
 	protected static final String  SERIALIZED_MODEL_FILE_SUFFIX = ".webui.dat";

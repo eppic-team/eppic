@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import eppic.model.ChainClusterDB;
+import eppic.model.ContactDB;
 import eppic.model.HomologDB;
 import eppic.model.InterfaceClusterDB;
 import eppic.model.InterfaceClusterScoreDB;
@@ -460,4 +461,41 @@ public class TextOutputWriter {
 
 		ps.close();
 	}
+	
+	public void writeContactsInfoFile() throws IOException {
+		PrintStream ps = new PrintStream(params.getOutputFile(EppicParams.CONTACTS_FILE_SUFFIX));
+		ps.println("Contacts per interface for input structure "+(params.isInputAFile()?params.getInFile().getName():params.getPdbCode()));
+		ps.printf("Distance cut-off %5.2f\n",EppicParams.INTERFACE_DIST_CUTOFF);
+		
+		// NOTE the residue numbers for contacts are written ALWAYS with SEQRES residue serials 
+		printContactsInfo(ps);
+		ps.close();
+	}
+	
+	private void printContactsInfo(PrintStream ps) {
+		
+		ps.println("# iRes\tiType\tiBurial\tjRes\tjType\tjBurial\tnAtoms\tnHBonds\tdisulf\tclash");
+		
+		for (InterfaceClusterDB interfaceCluster: pdbInfo.getInterfaceClusters()) {
+			for (InterfaceDB interfaceItem:interfaceCluster.getInterfaces()) {
+
+				ps.print("# ");
+				ps.printf("%d\t%9.2f\t%s\t%s\n",interfaceItem.getInterfaceId(),interfaceItem.getArea(), 
+						interfaceItem.getChain1()+"+"+interfaceItem.getChain2(),interfaceItem.getOperator());
+				
+				
+				for (ContactDB contact: interfaceItem.getContacts()) {
+					ps.printf("%d\t%s\t%4.2f\t%d\t%s\t%4.2f\t%d\t%d\t%3s\t%1s\n",
+							contact.getiResNumber(),contact.getiResType(),contact.getiBurial(),
+							contact.getjResNumber(),contact.getjResType(),contact.getjBurial(),
+							contact.getnAtomsInContact(),
+							contact.getnHBonds(),
+							(contact.isDisulfide()?"S-S":""),
+							(contact.isClash()?"x":""));			
+				}
+				
+			}
+		}
+	}
+	
 }
