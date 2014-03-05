@@ -274,6 +274,12 @@
 				</cascade>
 			</one-to-many>
 
+			<one-to-many name="contacts" mapped-by="interfaceItem">
+				<cascade>
+					<cascade-all/>
+				</cascade>
+			</one-to-many>
+			
 			<one-to-many name="interfaceWarnings" mapped-by="interfaceItem">
 				<cascade>
 					<cascade-all />
@@ -308,6 +314,38 @@
 			<basic name="bsa"></basic>
 			<basic name="region"></basic>
 			<basic name="entropyScore"></basic>
+
+			<many-to-one name="interfaceItem">
+			</many-to-one>
+		</attributes>
+	</entity>
+	
+	<entity class="eppic.model.ContactDB" name="Contact">
+		<table name="Contact" />		
+		<attributes>
+			<id name="uid">
+				<generated-value strategy="IDENTITY" />
+			</id>
+			<basic name="iResNumber"></basic>
+			<basic name="iResType">
+				<column length="1" />
+			</basic>
+			<basic name="iBurial"></basic>			
+			<basic name="jResNumber"></basic>
+			<basic name="jResType">
+				<column length="1" />
+			</basic>
+			<basic name="jBurial"></basic>
+			
+			<basic name="nAtomsInContact"></basic>
+			<basic name="nHBonds"></basic>
+			<basic name="isDisulfide"></basic>
+			<basic name="isClash"></basic>			
+
+			<basic name="pdbCode">
+				<column length="4" />
+			</basic>
+			<basic name="interfaceId"></basic>			
 
 			<many-to-one name="interfaceItem">
 			</many-to-one>
