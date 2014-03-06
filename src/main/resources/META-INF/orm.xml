@@ -326,21 +326,22 @@
 			<id name="uid">
 				<generated-value strategy="IDENTITY" />
 			</id>
-			<basic name="iResNumber"></basic>
-			<basic name="iResType">
-				<column length="1" />
+			<basic name="firstResNumber"></basic>
+			<basic name="firstResType">
+				<column length="3" />
 			</basic>
-			<basic name="iBurial"></basic>			
-			<basic name="jResNumber"></basic>
-			<basic name="jResType">
-				<column length="1" />
+			<basic name="firstBurial"></basic>			
+			<basic name="secondResNumber"></basic>
+			<basic name="secondResType">
+				<column length="3" />
 			</basic>
-			<basic name="jBurial"></basic>
+			<basic name="secondBurial"></basic>
 			
-			<basic name="nAtomsInContact"></basic>
-			<basic name="nHBonds"></basic>
-			<basic name="isDisulfide"></basic>
-			<basic name="isClash"></basic>			
+			<basic name="minDistance"></basic>
+			<basic name="numAtoms"></basic>
+			<basic name="numHBonds"></basic>
+			<basic name="disulfide"></basic>
+			<basic name="clash"></basic>			
 
 			<basic name="pdbCode">
 				<column length="4" />
