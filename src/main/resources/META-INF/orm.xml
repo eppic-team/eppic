@@ -321,7 +321,12 @@
 	</entity>
 	
 	<entity class="eppic.model.ContactDB" name="Contact">
-		<table name="Contact" />		
+		<table name="Contact" />
+		<entity-listeners>
+			<entity-listener
+				class="ch.systemsx.sybit.crkwebui.server.db.entitylisteners.ContactListener">
+			</entity-listener>
+		</entity-listeners>			
 		<attributes>
 			<id name="uid">
 				<generated-value strategy="IDENTITY" />
