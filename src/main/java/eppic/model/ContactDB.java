@@ -8,19 +8,21 @@ public class ContactDB implements Serializable {
 	
 	private int uid;
 	
-	private int iResNumber;
-	private int jResNumber;
-	private char iResType;
-	private char jResType;
+	private int firstResNumber;
+	private int secondResNumber;
+	private String firstResType;
+	private String secondResType;
 	
-	private double iBurial;
-	private double jBurial;
+	private double firstBurial;
+	private double secondBurial;
 	
-	private int nAtomsInContact;
+	private double minDistance;
+	
+	private int numAtoms;
 	
 	private boolean isClash;
 	
-	private int nHBonds;
+	private int numHBonds;
 	private boolean isDisulfide;
 	
 	private int interfaceId;
@@ -36,60 +38,68 @@ public class ContactDB implements Serializable {
 		this.uid = uid;
 	}
 
-	public int getiResNumber() {
-		return iResNumber;
+	public int getFirstResNumber() {
+		return firstResNumber;
 	}
 
-	public void setiResNumber(int iResNumber) {
-		this.iResNumber = iResNumber;
+	public void setFirstResNumber(int iResNumber) {
+		this.firstResNumber = iResNumber;
 	}
 
-	public int getjResNumber() {
-		return jResNumber;
+	public int getSecondResNumber() {
+		return secondResNumber;
 	}
 
-	public void setjResNumber(int jResNumber) {
-		this.jResNumber = jResNumber;
+	public void setSecondResNumber(int jResNumber) {
+		this.secondResNumber = jResNumber;
 	}
 
-	public char getiResType() {
-		return iResType;
+	public String getFirstResType() {
+		return firstResType;
 	}
 
-	public void setiResType(char iResType) {
-		this.iResType = iResType;
+	public void setFirstResType(String iResType) {
+		this.firstResType = iResType;
 	}
 
-	public char getjResType() {
-		return jResType;
+	public String getSecondResType() {
+		return secondResType;
 	}
 
-	public void setjResType(char jResType) {
-		this.jResType = jResType;
+	public void setSecondResType(String jResType) {
+		this.secondResType = jResType;
 	}
 
-	public double getiBurial() {
-		return iBurial;
+	public double getFirstBurial() {
+		return firstBurial;
 	}
 
-	public void setiBurial(double iBurial) {
-		this.iBurial = iBurial;
+	public void setFirstBurial(double iBurial) {
+		this.firstBurial = iBurial;
 	}
 
-	public double getjBurial() {
-		return jBurial;
+	public double getSecondBurial() {
+		return secondBurial;
 	}
 
-	public void setjBurial(double jBurial) {
-		this.jBurial = jBurial;
+	public void setSecondBurial(double jBurial) {
+		this.secondBurial = jBurial;
 	}
 
-	public int getnAtomsInContact() {
-		return nAtomsInContact;
+	public double getMinDistance() {
+		return minDistance;
 	}
 
-	public void setnAtomsInContact(int nAtomsInContact) {
-		this.nAtomsInContact = nAtomsInContact;
+	public void setMinDistance(double minDistance) {
+		this.minDistance = minDistance;
+	}
+
+	public int getNumAtoms() {
+		return numAtoms;
+	}
+
+	public void setNumAtoms(int nAtomsInContact) {
+		this.numAtoms = nAtomsInContact;
 	}
 
 	public boolean isClash() {
@@ -100,12 +110,12 @@ public class ContactDB implements Serializable {
 		this.isClash = isClash;
 	}
 
-	public int getnHBonds() {
-		return nHBonds;
+	public int getNumHBonds() {
+		return numHBonds;
 	}
 
-	public void setnHBonds(int nHBonds) {
-		this.nHBonds = nHBonds;
+	public void setNumHBonds(int nHBonds) {
+		this.numHBonds = nHBonds;
 	}
 
 	public boolean isDisulfide() {

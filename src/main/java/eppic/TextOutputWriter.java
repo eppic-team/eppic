@@ -474,7 +474,7 @@ public class TextOutputWriter {
 	
 	private void printContactsInfo(PrintStream ps) {
 		
-		ps.println("# iRes\tiType\tiBurial\tjRes\tjType\tjBurial\tnAtoms\tnHBonds\tdisulf\tclash");
+		ps.println("# iRes\tiType\tiBurial\tjRes\tjType\tjBurial\tminDist\tnAtoms\tnHBonds\tdisulf\tclash");
 		
 		for (InterfaceClusterDB interfaceCluster: pdbInfo.getInterfaceClusters()) {
 			for (InterfaceDB interfaceItem:interfaceCluster.getInterfaces()) {
@@ -485,11 +485,12 @@ public class TextOutputWriter {
 				
 				
 				for (ContactDB contact: interfaceItem.getContacts()) {
-					ps.printf("%d\t%s\t%4.2f\t%d\t%s\t%4.2f\t%d\t%d\t%3s\t%1s\n",
-							contact.getiResNumber(),contact.getiResType(),contact.getiBurial(),
-							contact.getjResNumber(),contact.getjResType(),contact.getjBurial(),
-							contact.getnAtomsInContact(),
-							contact.getnHBonds(),
+					ps.printf("%d\t%s\t%4.2f\t%d\t%s\t%4.2f\t%5.2f\t%d\t%d\t%3s\t%1s\n",
+							contact.getFirstResNumber(),contact.getFirstResType(),contact.getFirstBurial(),
+							contact.getSecondResNumber(),contact.getSecondResType(),contact.getSecondBurial(),
+							contact.getMinDistance(),
+							contact.getNumAtoms(),
+							contact.getNumHBonds(),
 							(contact.isDisulfide()?"S-S":""),
 							(contact.isClash()?"x":""));			
 				}

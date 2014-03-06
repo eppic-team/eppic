@@ -34,7 +34,6 @@ import eppic.predictors.EvolCoreRimPredictor;
 import eppic.predictors.GeometryClusterPredictor;
 import eppic.predictors.GeometryPredictor;
 import owl.core.sequence.Homolog;
-import owl.core.structure.AminoAcid;
 import owl.core.structure.ChainCluster;
 import owl.core.structure.ChainInterface;
 import owl.core.structure.ChainInterfaceList;
@@ -173,19 +172,20 @@ public class DataModelAdaptor {
 					Pair<RICGNode> pair = graph.getEndpoints(edge);
 					
 					ContactDB contact = new ContactDB();
-					contact.setiResNumber(pair.getFirst().getResidueSerial());
-					contact.setjResNumber(pair.getSecond().getResidueSerial());
-					contact.setiResType(AminoAcid.three2one(pair.getFirst().getResidueType()));
-					contact.setjResType(AminoAcid.three2one(pair.getSecond().getResidueType()));
+					contact.setFirstResNumber(pair.getFirst().getResidueSerial());
+					contact.setSecondResNumber(pair.getSecond().getResidueSerial());
+					contact.setFirstResType(pair.getFirst().getResidueType());
+					contact.setSecondResType(pair.getSecond().getResidueType());
 					Residue iRes = interf.getFirstMolecule().getResidue(pair.getFirst().getResidueSerial());
 					Residue jRes = interf.getSecondMolecule().getResidue(pair.getSecond().getResidueSerial());
-					contact.setiBurial(iRes.getBsaToAsaRatio());
-					contact.setjBurial(jRes.getBsaToAsaRatio());
+					contact.setFirstBurial(iRes.getBsaToAsaRatio());
+					contact.setSecondBurial(jRes.getBsaToAsaRatio());
 					
+					contact.setMinDistance(edge.getMinDistance());
 					contact.setClash(edge.isClash());
 					contact.setDisulfide(edge.isDisulfide());
-					contact.setnAtomsInContact(edge.getnAtoms());
-					contact.setnHBonds(edge.getnHBonds()); 
+					contact.setNumAtoms(edge.getnAtoms());
+					contact.setNumHBonds(edge.getnHBonds()); 
 					
 					contact.setInterfaceId(interf.getId()); 
 					contact.setPdbCode(pdbInfo.getPdbCode());
@@ -202,10 +202,10 @@ public class DataModelAdaptor {
 
 					@Override
 					public int compare(ContactDB first, ContactDB second) {
-						int iFirst = first.getiResNumber();
-						int jFirst = first.getjResNumber();
-						int iSecond = second.getiResNumber();
-						int jSecond = second.getjResNumber();
+						int iFirst = first.getFirstResNumber();
+						int jFirst = first.getSecondResNumber();
+						int iSecond = second.getFirstResNumber();
+						int jSecond = second.getSecondResNumber();
 						
 						if (iFirst>iSecond) return 1;
 						if (iFirst<iSecond) return -1;
