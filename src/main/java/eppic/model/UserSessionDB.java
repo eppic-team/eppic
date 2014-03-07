@@ -12,6 +12,7 @@ public class UserSessionDB implements Serializable {
 	private int uid;
 	private String sessionId;
 	private Date timeStamp;
+	private String ip;
 	
 	private Set<JobDB> jobs;
 	
@@ -46,6 +47,14 @@ public class UserSessionDB implements Serializable {
 
 	public void setTimeStamp(Date timeStamp) {
 		this.timeStamp = timeStamp;
+	}
+
+	public String getIp() {
+		return ip;
+	}
+
+	public void setIp(String ip) {
+		this.ip = ip;
 	}
 	
 }
