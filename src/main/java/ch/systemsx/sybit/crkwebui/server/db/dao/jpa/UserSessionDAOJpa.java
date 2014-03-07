@@ -25,7 +25,7 @@ import eppic.model.UserSessionDB;
 public class UserSessionDAOJpa implements UserSessionDAO 
 {
 	@Override
-	public void insertSessionForJob(String sessionId, String jobId) throws DaoException
+	public void insertSessionForJob(String sessionId, String jobId, String ip) throws DaoException
 	{
 		EntityManager entityManager = null;
 		
@@ -44,7 +44,7 @@ public class UserSessionDAOJpa implements UserSessionDAO
 			Query query = entityManager.createQuery(criteriaQuery);
 			JobDB job = (JobDB)query.getSingleResult();
 			
-			UserSessionDB session = getSession(entityManager, sessionId);
+			UserSessionDB session = getSession(entityManager, sessionId, ip);
 			session.getJobs().add(job);
 //			entityManager.merge(session);
 			entityManager.getTransaction().commit();
@@ -80,7 +80,7 @@ public class UserSessionDAOJpa implements UserSessionDAO
 	
 	@Override
 	public UserSessionDB getSession(EntityManager entityManager,
-									String sessionId) throws DaoException
+									String sessionId, String ip) throws DaoException
 	{
 		UserSessionDB session = null; 
 		
@@ -106,6 +106,7 @@ public class UserSessionDAOJpa implements UserSessionDAO
 				session = new UserSessionDB();
 				session.setSessionId(sessionId);
 				session.setTimeStamp(new Date());
+				session.setIp(ip);
 				entityManager.persist(session);
 			}
 		}

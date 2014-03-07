@@ -423,7 +423,7 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 		if(status != null)
 		{
 			UserSessionDAO sessionDAO = new UserSessionDAOJpa();
-			sessionDAO.insertSessionForJob(getThreadLocalRequest().getSession().getId(), jobId);
+			sessionDAO.insertSessionForJob(getThreadLocalRequest().getSession().getId(), jobId, getThreadLocalRequest().getRemoteAddr());
 
 			if(status.equals(StatusOfJob.FINISHED.getName()))
 			{

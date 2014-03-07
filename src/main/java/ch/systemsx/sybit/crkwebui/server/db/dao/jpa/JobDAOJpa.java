@@ -56,7 +56,7 @@ public class JobDAOJpa implements JobDAO
 			entityManager.getTransaction().begin();
 
 			UserSessionDAO sessionDAO = new UserSessionDAOJpa();
-			UserSessionDB session = sessionDAO.getSession(entityManager, sessionId);
+			UserSessionDB session = sessionDAO.getSession(entityManager, sessionId, ip);
 
 			JobDB job = new JobDB();
 			job.setJobId(jobId);

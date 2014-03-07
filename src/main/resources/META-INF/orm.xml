@@ -17,6 +17,7 @@
 			<basic name="timeStamp">
 				<temporal>TIMESTAMP</temporal>
 			</basic>
+			<basic name="ip"></basic>
 
 			<many-to-many name="jobs">
 				<join-table name="UserSessionJob">
