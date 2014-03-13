@@ -129,6 +129,7 @@ public class DataModelAdaptor {
 			icDB.setClusterId(ic.getId());			
 			icDB.setPdbCode(pdbInfo.getPdbCode());
 			icDB.setAvgArea(ic.getMeanArea());
+			icDB.setNumMembers(ic.getMembers().size());
 			icDB.setPdbInfo(pdbInfo);
 			
 			List<InterfaceDB> iDBs = new ArrayList<InterfaceDB>();

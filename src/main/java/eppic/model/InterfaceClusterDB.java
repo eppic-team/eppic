@@ -15,6 +15,8 @@ public class InterfaceClusterDB implements Serializable {
 	
 	private double avgArea;
 	
+	private int numMembers;
+	
 	private List<InterfaceDB> interfaces;
 	
 	private List<InterfaceClusterScoreDB> interfaceClusterScores;
@@ -70,6 +72,14 @@ public class InterfaceClusterDB implements Serializable {
 
 	public void setAvgArea(double avgArea) {
 		this.avgArea = avgArea;
+	}
+
+	public int getNumMembers() {
+		return numMembers;
+	}
+
+	public void setNumMembers(int numMembers) {
+		this.numMembers = numMembers;
 	}
 
 	public List<InterfaceDB> getInterfaces() {
