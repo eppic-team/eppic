@@ -167,6 +167,7 @@
 				<column length="4" />
 			</basic>
 			<basic name="avgArea"></basic>
+			<basic name="numMembers"></basic>
 
 			<many-to-one name="pdbInfo">
 			</many-to-one>
@@ -458,7 +459,9 @@
 				<generated-value strategy="IDENTITY" />
 			</id>
 
-			<basic name="repChain"></basic>
+			<basic name="repChain">
+				<column length="4" />
+			</basic>
 			<basic name="memberChains"></basic>
 			<basic name="refUniProtId"></basic>
 			<basic name="refUniProtStart"></basic>
