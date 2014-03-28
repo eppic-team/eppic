@@ -508,6 +508,45 @@
 					<cascade-all />
 				</cascade>
 			</one-to-many>
+			
+			<one-to-one name="seqCluster" mapped-by="chainCluster">
+				<cascade>
+					<cascade-all />
+				</cascade>
+			</one-to-one>
+			
+		</attributes>
+	</entity>
+
+	<entity class="eppic.model.SeqClusterDB" name="SeqCluster">
+		<table name="SeqCluster" />
+		<attributes>
+			<id name="uid">
+				<generated-value strategy="IDENTITY" />
+			</id>
+
+			<basic name="pdbCode">
+				<column length="4" />
+			</basic>
+
+			<basic name="repChain">
+				<column length="4" />
+			</basic>
+			
+			<basic name="c100"></basic>
+			<basic name="c95"></basic>
+			<basic name="c90"></basic>
+			<basic name="c80"></basic>
+			<basic name="c70"></basic>
+			<basic name="c60"></basic>
+			<basic name="c50"></basic>
+
+			<one-to-one name="chainCluster" mapped-by="seqCluster">
+				<cascade>
+					<cascade-all />
+				</cascade>
+			</one-to-one>
+			
 		</attributes>
 	</entity>
 

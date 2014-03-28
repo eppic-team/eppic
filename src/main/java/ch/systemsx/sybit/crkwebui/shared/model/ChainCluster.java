@@ -18,11 +18,8 @@ import eppic.model.UniProtRefWarningDB;
  * @author AS
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-public class ChainCluster implements Serializable 
-{
-	/**
-	 * 
-	 */
+public class ChainCluster implements Serializable {
+
 	private static final long serialVersionUID = 1L;
 	
 	private int uid;
@@ -57,8 +54,9 @@ public class ChainCluster implements Serializable
 	
 	private String pdbCode;
 	
-	public ChainCluster() 
-	{
+	private SeqCluster seqCluster;
+	
+	public ChainCluster() {
 		
 	}
 	
@@ -78,8 +76,8 @@ public class ChainCluster implements Serializable
 							List<UniProtRefWarning> queryWarnings,
 							double idCutoffUsed,
 							int clusteringPercentIdUsed,
-							List<Homolog> homologs) 
-	{
+							List<Homolog> homologs) {
+		
 		this.uid = uid;
 		this.repChain = repChain;
 		this.memberChains = memberChains;
@@ -267,13 +265,21 @@ public class ChainCluster implements Serializable
 		this.pdbCode = pdbCode;
 	}
 
+	public SeqCluster getSeqCluster() {
+		return seqCluster;
+	}
+
+	public void setSeqCluster(SeqCluster seqCluster) {
+		this.seqCluster = seqCluster;
+	}
+
 	/**
 	 * Converts DB model item into DTO one.
 	 * @param chainClusterDB model item to convert
 	 * @return DTO representation of model item
 	 */
-	public static ChainCluster create(ChainClusterDB chainClusterDB)
-	{
+	public static ChainCluster create(ChainClusterDB chainClusterDB) {
+		
 		ChainCluster chainCluster = new ChainCluster();
 		
 		chainCluster.setUid(chainClusterDB.getUid());
@@ -324,6 +330,8 @@ public class ChainCluster implements Serializable
 			}
 		}
 		chainCluster.setHomologs(homologs);
+		
+		chainCluster.setSeqCluster(new SeqCluster(chainClusterDB.getSeqCluster()));
 		
 		return chainCluster;
 	}
