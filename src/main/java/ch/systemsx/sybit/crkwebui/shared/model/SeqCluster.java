@@ -20,8 +20,7 @@ public class SeqCluster implements Serializable {
 	private int c60;
 	private int c50;
 	
-	// TODO do we need the chainCluster here?
-	//private ChainCluster chainCluster;
+	private ChainCluster chainCluster;
 
 	public SeqCluster() {
 		
@@ -122,6 +121,14 @@ public class SeqCluster implements Serializable {
 	}
 
 	
+	public ChainCluster getChainCluster() {
+		return chainCluster;
+	}
+
+	public void setChainCluster(ChainCluster chainCluster) {
+		this.chainCluster = chainCluster;
+	}
+
 	/**
 	 * Converts DB model item into DTO one.
 	 * @param seqClusterDB model item to convert

@@ -509,11 +509,6 @@
 				</cascade>
 			</one-to-many>
 			
-			<one-to-one name="seqCluster" mapped-by="chainCluster">
-				<cascade>
-					<cascade-all />
-				</cascade>
-			</one-to-one>
 			
 		</attributes>
 	</entity>
@@ -541,10 +536,7 @@
 			<basic name="c60"></basic>
 			<basic name="c50"></basic>
 
-			<one-to-one name="chainCluster" mapped-by="seqCluster">
-				<cascade>
-					<cascade-all />
-				</cascade>
+			<one-to-one name="chainCluster">
 			</one-to-one>
 			
 		</attributes>
