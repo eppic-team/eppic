@@ -44,6 +44,8 @@ public class ChainClusterDB implements Serializable {
 	
 	private PdbInfoDB pdbInfo;
 	
+	private SeqClusterDB seqCluster;
+	
 	public ChainClusterDB() {
 		
 	}
@@ -222,6 +224,14 @@ public class ChainClusterDB implements Serializable {
 
 	public void setPdbCode(String pdbCode) {
 		this.pdbCode = pdbCode;
+	}
+
+	public SeqClusterDB getSeqCluster() {
+		return seqCluster;
+	}
+
+	public void setSeqCluster(SeqClusterDB seqCluster) {
+		this.seqCluster = seqCluster;
 	}
 
 }
