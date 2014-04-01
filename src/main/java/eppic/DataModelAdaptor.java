@@ -313,6 +313,7 @@ public class DataModelAdaptor {
 			InterfaceClusterScoreDB ics = new InterfaceClusterScoreDB();
 			ics.setMethod(ScoringMethod.EPPIC_GEOMETRY);
 			ics.setCallName(gcp.getCall().getName());
+			ics.setCallReason(gcp.getCallReason());
 			ics.setScore(gcp.getScore());
 			ics.setScore1(gcp.getScore1());
 			ics.setScore2(gcp.getScore2());
@@ -482,6 +483,7 @@ public class DataModelAdaptor {
 			InterfaceClusterScoreDB ics = new InterfaceClusterScoreDB();
 			ics.setMethod(ScoringMethod.EPPIC_CORERIM);
 			ics.setCallName(ecrcp.getCall().getName());
+			ics.setCallReason(ecrcp.getCallReason());
 			ics.setScore(ecrcp.getScore());
 			ics.setScore1(ecrcp.getScore1());
 			ics.setScore2(ecrcp.getScore2());
@@ -496,8 +498,9 @@ public class DataModelAdaptor {
 			// method eppic-cs
 			EvolCoreSurfaceClusterPredictor ecscp = iecl.getEvolCoreSurfaceClusterPredictor(ic.getClusterId());
 			ics = new InterfaceClusterScoreDB();
-			ics.setMethod(ScoringMethod.EPPIC_CORESURFACE);
+			ics.setMethod(ScoringMethod.EPPIC_CORESURFACE);			
 			ics.setCallName(ecscp.getCall().getName());
+			ics.setCallReason(ecscp.getCallReason());
 			ics.setScore(ecscp.getScore());
 			ics.setScore1(ecscp.getScore1());
 			ics.setScore2(ecscp.getScore2());
@@ -552,6 +555,7 @@ public class DataModelAdaptor {
 			
 			ics.setMethod(ScoringMethod.EPPIC_FINAL);
 			ics.setCallName(ccps.get(i).getCall().getName());
+			ics.setCallReason(ccps.get(i).getCallReason());
 			ics.setScore(ccps.get(i).getScore());
 			ics.setScore1(SCORE_NOT_AVAILABLE);
 			ics.setScore2(SCORE_NOT_AVAILABLE);

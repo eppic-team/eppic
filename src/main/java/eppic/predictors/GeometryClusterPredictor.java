@@ -40,8 +40,10 @@ public class GeometryClusterPredictor implements InterfaceTypePredictor {
 		score2 = Double.NaN;
 		
 		if (score<minCoreSizeForBio) {
+			callReason = "Average total core size "+score+" below cutoff ("+minCoreSizeForBio+")";
 			call = CallType.CRYSTAL;
 		} else {
+			callReason = "Average total core size "+score+" above cutoff ("+minCoreSizeForBio+")";
 			call = CallType.BIO;
 		}
 		

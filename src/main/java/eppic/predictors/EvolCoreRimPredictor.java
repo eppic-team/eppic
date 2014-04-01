@@ -111,11 +111,6 @@ public class EvolCoreRimPredictor implements InterfaceTypePredictor {
 		}
 		else {
 
-			String reason = "Score "+String.format("%4.2f", score)+" is below cutoff ("+String.format("%4.2f", callCutoff)+")";
-			if (check1 && !check2) reason += ". Based on side 1 only";
-			else if (!check1 && check2) reason += ". Based on side 2 only";
-
-			callReason = reason;
 
 			if (score<=callCutoff) {
 				call = CallType.BIO;
@@ -124,6 +119,15 @@ public class EvolCoreRimPredictor implements InterfaceTypePredictor {
 			} else if (Double.isNaN(score)) {
 				call = CallType.NO_PREDICTION;
 			} 		
+
+			String belowAboveStr;
+			if (call==CallType.BIO) belowAboveStr = "below";
+			else belowAboveStr = "above";
+			String reason = "Score "+String.format("%4.2f", score)+" is "+belowAboveStr+" cutoff ("+String.format("%4.2f", callCutoff)+")";
+			if (check1 && !check2) reason += ". Based on side 1 only";
+			else if (!check1 && check2) reason += ". Based on side 2 only";
+
+			callReason = reason;
 
 		}
 	}
