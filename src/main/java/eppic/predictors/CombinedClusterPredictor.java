@@ -2,12 +2,18 @@ package eppic.predictors;
 
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import owl.core.structure.ChainInterface;
 import owl.core.structure.InterfaceCluster;
 import eppic.CallType;
 import eppic.EppicParams;
 
 public class CombinedClusterPredictor implements InterfaceTypePredictor {
 
+	private static final Log LOGGER = LogFactory.getLog(CombinedClusterPredictor.class);
+	
 	private InterfaceCluster ic;
 	private InterfaceTypePredictor gcp;
 	private InterfaceTypePredictor ecrcp;
@@ -106,31 +112,24 @@ public class CombinedClusterPredictor implements InterfaceTypePredictor {
 
 	private boolean checkInterface() {
 
-		// TODO write this condition properly for clusters
+		// veto from hard area limits
 
-		// 0 if peptide, we don't use minimum hard area limits
-		// for some cases this works nicely (e.g. 1w9q interface 4)
-		//boolean useHardLimits = true;
-		//if (iec.getInterface().getFirstMolecule().getFullLength()<=EppicParams.PEPTIDE_LENGTH_CUTOFF || 
-		//		iec.getInterface().getSecondMolecule().getFullLength()<=EppicParams.PEPTIDE_LENGTH_CUTOFF){
-		//	useHardLimits = false;
-		//	LOGGER.info("Interface "+iec.getInterface().getId()+": peptide-protein interface, not checking minimum area hard limit. ");
-		//}
+		// if peptide, we don't use minimum hard area limits
+		// for some cases this works nicely (e.g. 1w9q interface 4)		
+		boolean useHardLimits = true;
+		for (ChainInterface interf:ic.getMembers()) {
+			if (interf.getFirstMolecule().getFullLength()<=EppicParams.PEPTIDE_LENGTH_CUTOFF ||
+				interf.getSecondMolecule().getFullLength()<=EppicParams.PEPTIDE_LENGTH_CUTOFF) {
+				useHardLimits = false;				
+			}
+			// break after one iteration: all interfaces in the cluster should have the peptide
+			break;
+		}
+		if (useHardLimits==false) {
+			LOGGER.info("Interface cluster "+ic.getId()+": peptide-protein interface, not checking minimum area hard limit. ");
+		}
 		
-		// TODO write this condition properly for clusters
-
-		// 1st if wild-type disulfide bridges present we call bio
-		//if (!wildTypeDisulfides.isEmpty()) {
-		//	
-		//	callReason = wildTypeDisulfides.size()+" wild-type disulfide bridges present.";
-		//	callReason += " Between CYS residues: ";
-		//	callReason += getPairInteractionsString(wildTypeDisulfides);
-		//	
-		//	veto = CallType.BIO;
-		//}
-		
-		// hard area limits
-		if (ic.getMeanArea()<EppicParams.MIN_AREA_BIOCALL) {
+		if (useHardLimits && ic.getMeanArea()<EppicParams.MIN_AREA_BIOCALL) {
 			
 			callReason = "Area below hard limit "+String.format("%4.0f", EppicParams.MIN_AREA_BIOCALL);
 			

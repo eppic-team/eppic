@@ -178,15 +178,24 @@ public class CombinedPredictor implements InterfaceTypePredictor {
 				warnings.add(msg);
 			}
 		}
-		// engineered disulfides: they are only warnings
+		// disulfides: they are only warnings
 		if (!engineeredDisulfides.isEmpty()) {
 			String msg = engineeredDisulfides.size()+" engineered disulfide bridges present.";
 			msg += " Between CYS residues: ";
 			msg += getPairInteractionsString(engineeredDisulfides);
 			warnings.add(msg);
 		}
+		
+		if (!wildTypeDisulfides.isEmpty()) {
+			String msg = wildTypeDisulfides.size()+" wild-type disulfide bridges present.";
+			msg += " Between CYS residues: ";
+			msg += getPairInteractionsString(wildTypeDisulfides);			
+			warnings.add(msg);
+		}
 
-		// 0 if peptide, we don't use minimum hard area limits
+		// veto from the hard area limits
+		
+		// if peptide, we don't use minimum hard area limits
 		// for some cases this works nicely (e.g. 1w9q interface 4)
 		boolean useHardLimits = true;
 		if (iec.getInterface().getFirstMolecule().getFullLength()<=EppicParams.PEPTIDE_LENGTH_CUTOFF || 
@@ -194,18 +203,8 @@ public class CombinedPredictor implements InterfaceTypePredictor {
 			useHardLimits = false;
 			LOGGER.info("Interface "+iec.getInterface().getId()+": peptide-protein interface, not checking minimum area hard limit. ");
 		}
-		
-		// 1st if wild-type disulfide bridges present we call bio
-		if (!wildTypeDisulfides.isEmpty()) {
-			
-			callReason = wildTypeDisulfides.size()+" wild-type disulfide bridges present.";
-			callReason += " Between CYS residues: ";
-			callReason += getPairInteractionsString(wildTypeDisulfides);
-			
-			veto = CallType.BIO;
-		}
-		// 2nd the hard area limits
-		else if (useHardLimits && iec.getInterface().getInterfaceArea()<EppicParams.MIN_AREA_BIOCALL) {
+
+		if (useHardLimits && iec.getInterface().getInterfaceArea()<EppicParams.MIN_AREA_BIOCALL) {
 			
 			callReason = "Area below hard limit "+String.format("%4.0f", EppicParams.MIN_AREA_BIOCALL);
 			
