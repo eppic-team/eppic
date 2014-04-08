@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
+import javax.xml.bind.PropertyException;
 
 import ch.systemsx.sybit.crkwebui.server.commons.servlets.BaseServlet;
 import ch.systemsx.sybit.crkwebui.server.db.dao.DataDownloadTrackingDAO;
@@ -52,9 +53,7 @@ public class DataDownloadServlet extends BaseServlet{
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	
-	private List<PdbInfo> pdbList;
-	
+		
 	//Parameters
 	private int maxNumJobIds;
 	private int defaultNrOfAllowedSubmissionsForIP;
@@ -92,13 +91,13 @@ public class DataDownloadServlet extends BaseServlet{
 										      defaultNrOfAllowedSubmissionsForIP, 
 										      true);
 			
-			pdbList = new ArrayList<PdbInfo>();
+			List<PdbInfo> pdbList = new ArrayList<PdbInfo>();
 
 			for(String jobId: jobIdMap.keySet()){
 				pdbList.add(getResultData(jobId, jobIdMap.get(jobId), getSeqInfo));
 			}
 
-			createXMLResponse(response);
+			createXMLResponse(response, pdbList);
 
 		}
 		catch(ValidationException e)
@@ -167,7 +166,7 @@ public class DataDownloadServlet extends BaseServlet{
 	 * @param response to write xml file
 	 * @throws IOException 
 	 */
-	public void createXMLResponse(HttpServletResponse response) throws IOException{
+	void createXMLResponse(HttpServletResponse response, List<PdbInfo> pdbList) throws IOException{
 
 		if(pdbList == null) return;
 
@@ -178,26 +177,29 @@ public class DataDownloadServlet extends BaseServlet{
 			
 			PrintWriter writer = response.getWriter();
 
-			// create JAXB context and initializing Marshaller
-			JAXBContext jaxbContext = JAXBContext.newInstance(PdbInfo.class);
-			Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
-
-			// for getting nice formatted output
-			jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-			jaxbMarshaller.setProperty(Marshaller.JAXB_FRAGMENT, Boolean.TRUE);
-
-			// Writing to console
-			writer.append("<eppicAnalysisList>");
-			
-			for(PdbInfo pdb:pdbList){
-				jaxbMarshaller.marshal(pdb, writer);
-			}
-
-			writer.append("</eppicAnalysisList>");
+			serializePdbInfoList(pdbList, writer);
 
 		} catch (JAXBException e) {
 			// some exception occured
 			e.printStackTrace();
 		}
+	}
+
+	void serializePdbInfoList(List<PdbInfo> pdbList, PrintWriter writer) throws JAXBException, PropertyException {
+	    // create JAXB context and initializing Marshaller
+	    JAXBContext jaxbContext = JAXBContext.newInstance(PdbInfo.class);
+	    Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
+
+	    // for getting nice formatted output
+	    jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+	    jaxbMarshaller.setProperty(Marshaller.JAXB_FRAGMENT, Boolean.TRUE);
+
+	    // Writing to console
+	    writer.append("<eppicAnalysisList>");
+	    
+	    for(PdbInfo pdb:pdbList){
+	    	jaxbMarshaller.marshal(pdb, writer);
+	    }
+	    writer.append("</eppicAnalysisList>");
 	}
 }
