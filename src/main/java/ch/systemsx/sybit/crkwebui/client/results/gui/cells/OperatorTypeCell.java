@@ -1,8 +1,6 @@
 package ch.systemsx.sybit.crkwebui.client.results.gui.cells;
 
-import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.results.data.InterfaceItemModel;
-import ch.systemsx.sybit.crkwebui.shared.model.Interface;
 
 import com.google.gwt.cell.client.AbstractCell;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
@@ -32,14 +30,10 @@ public class OperatorTypeCell extends AbstractCell<String> {
 			
 			int row = context.getIndex();
 			InterfaceItemModel item = itemsStore.get(row);
-			int interfaceId = item.getInterfaceId();
 		
-			Interface interfaceItem = ApplicationContext.getPdbInfo().getInterface(interfaceId);
-			if(interfaceItem != null)
-			{
-				tooltipText = interfaceItem.getOperator();
-				if (interfaceItem.getIsInfinite()) icon += "_inf";
-			}
+			tooltipText = item.getOperator();
+			if (item.isInfinite())
+			    icon += "_inf";
 			
 			icon+=".png"; // either optype_2S.png or optype_2S_red.png
 			
@@ -54,14 +48,7 @@ public class OperatorTypeCell extends AbstractCell<String> {
 		} else { 
 			int row = context.getIndex();
 			InterfaceItemModel item = itemsStore.get(row);
-			int interfaceId = item.getInterfaceId();
-			
-			Interface interfaceItem = ApplicationContext.getPdbInfo().getInterface(interfaceId);
-			if(interfaceItem != null)
-			{
-				String operator = interfaceItem.getOperator();
-				value = operator;
-			}
+			value = item.getOperator();
 		}	
 
 	}

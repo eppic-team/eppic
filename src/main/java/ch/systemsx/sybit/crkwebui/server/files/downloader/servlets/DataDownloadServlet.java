@@ -136,7 +136,6 @@ public class DataDownloadServlet extends BaseServlet{
 		
 		InterfaceClusterDAO clusterDAO = new InterfaceClusterDAOJpa();
 		List<InterfaceCluster> clusters = clusterDAO.getInterfaceClustersWithoutInterfaces(pdbInfo.getUid());
-		pdbInfo.setInterfaceClusters(clusters);
 
 		InterfaceDAO interfaceDAO = new InterfaceDAOJpa();
 		for(InterfaceCluster cluster: clusters){
@@ -149,6 +148,7 @@ public class DataDownloadServlet extends BaseServlet{
 			}
 			cluster.setInterfaces(interfaceItems);
 		}
+		pdbInfo.setInterfaceClusters(clusters);
 
 		if(getSeqInfo == null || getSeqInfo.equals("t")){	
 			ChainClusterDAO chainClusterDAO = new ChainClusterDAOJpa();
