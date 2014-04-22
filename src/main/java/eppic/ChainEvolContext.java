@@ -31,6 +31,7 @@ import owl.core.sequence.UnirefEntry;
 import owl.core.sequence.alignment.MultipleSequenceAlignment;
 import owl.core.sequence.alignment.PairwiseSequenceAlignment;
 import owl.core.sequence.alignment.PairwiseSequenceAlignment.PairwiseSequenceAlignmentException;
+import owl.core.structure.PdbAsymUnit;
 import owl.core.structure.PdbChain;
 import owl.core.structure.Residue;
 import owl.core.util.Interval;
@@ -133,27 +134,36 @@ public class ChainEvolContext implements Serializable {
 		// two possible cases: 
 		// 1) PDB code known and so SiftsFeatures can be taken from SiftsConnection (unless useSifts is set to false)
 		List<SiftsFeature> mappings = null;
-		if (!params.isInputAFile()) {
+		
+		if (!params.isInputAFile() || params.isUsePdbCodeFromFile()) {
 			String pdbCode = parent.getPdb().getPdbCode();
 			if (useSifts) {
-				SiftsConnection siftsConn = parent.getSiftsConn(siftsLocation);
-				try {
-					mappings = siftsConn.getMappings(pdbCode, representativeChain);
-					
-					queryUniprotId = checkSiftsMappings(mappings, params.isAllowChimeras());
-					 
-				} catch (NoMatchFoundException e) {
-					LOGGER.warn("No SIFTS mapping could be found for "+pdbCode+representativeChain);
-					LOGGER.info("Trying blasting to find one.");
-					queryUniprotId = findUniprotMapping(blastPlusBlastp, blastDbDir, blastDb, blastNumThreads, pdb2uniprotIdThreshold, pdb2uniprotQcovThreshold, useUniparc);  
+				if (pdbCode==null || pdbCode.equals(PdbAsymUnit.NO_PDB_CODE)) {
+					LOGGER.info("Could not read a PDB code in file. Will blast to find query-to-uniprot mapping.");
+					queryUniprotId = findUniprotMapping(blastPlusBlastp, blastDbDir, blastDb, blastNumThreads, pdb2uniprotIdThreshold, pdb2uniprotQcovThreshold, useUniparc);
+				} else {
+
+					SiftsConnection siftsConn = parent.getSiftsConn(siftsLocation);
+					try {
+						mappings = siftsConn.getMappings(pdbCode, representativeChain);
+
+						queryUniprotId = checkSiftsMappings(mappings, params.isAllowChimeras());
+
+					} catch (NoMatchFoundException e) {
+						LOGGER.warn("No SIFTS mapping could be found for "+pdbCode+representativeChain);
+						LOGGER.info("Trying blasting to find one.");
+						queryUniprotId = findUniprotMapping(blastPlusBlastp, blastDbDir, blastDb, blastNumThreads, pdb2uniprotIdThreshold, pdb2uniprotQcovThreshold, useUniparc);  
+					}
 				}
+				
 			} else {
-				LOGGER.info("Using SIFTS feature is turned off. Will blast to find query-to-uniprot mapping");
+				LOGGER.info("Using SIFTS feature is turned off. Will blast to find query-to-uniprot mapping.");
 				queryUniprotId = findUniprotMapping(blastPlusBlastp, blastDbDir, blastDb, blastNumThreads, pdb2uniprotIdThreshold, pdb2uniprotQcovThreshold, useUniparc);
 			}
 		// 2) PDB code not known and so SiftsFeatures have to be found by blasting, aligning etc.
 		} else {
-			LOGGER.info("No PDB code available. Can't use SIFTS. Blasting to find the query's Uniprot mapping.");
+			LOGGER.info("Input is from file, won't use SIFTS. Blasting to find the query-to-uniprot mapping. "
+					+ "Set the property USE_PDB_CODE_FROM_FILE to true if you want to change this behavior.");
 			queryUniprotId = findUniprotMapping(blastPlusBlastp, blastDbDir, blastDb, blastNumThreads, pdb2uniprotIdThreshold, pdb2uniprotQcovThreshold, useUniparc);
 		}
 		
@@ -161,7 +171,7 @@ public class ChainEvolContext implements Serializable {
 		
 		if (hasQueryMatch) {
 
-			LOGGER.info("UniProt id for chain "+representativeChain+": "+queryUniprotId);
+			LOGGER.info("UniProt id for chain "+representativeChain+": "+queryUniprotId);			
 
 			// once we have the identifier we get the data from uniprot
 			try {
@@ -194,6 +204,23 @@ public class ChainEvolContext implements Serializable {
 					query = null;
 					hasQueryMatch = false;
 				}
+
+				// a nice goody for the log: outputting our mapping in SIFTS tab format
+				// e.g.: 1dan	L	P08709	1	152	1	152	61	212
+				int uniprotStart = alnPdb2Uniprot.getFirstMatchingPos(false)+1;
+				int uniprotEnd   = alnPdb2Uniprot.getLastMatchingPos(false)+1;
+				int seqresStart = getPDBPosForQueryUniprotPos(uniprotStart-1);
+				int seqresEnd = getPDBPosForQueryUniprotPos(uniprotEnd-1);
+				String pdbStart = parent.getPdb().getChain(representativeChain).getPdbResSerFromResSer(seqresStart);
+				String pdbEnd = parent.getPdb().getChain(representativeChain).getPdbResSerFromResSer(seqresEnd);
+				
+				LOGGER.info("Our mapping in SIFTS format: "+parent.getPdb().getPdbCode()+"\t"+
+															representativeChain+"\t"+
+															queryUniprotId+"\t"+
+															seqresStart+"\t"+seqresEnd+"\t"+
+															pdbStart+"\t"+pdbEnd+"\t"+
+															uniprotStart+"\t"+uniprotEnd);
+				
 			} catch (PairwiseSequenceAlignmentException e1) {
 				LOGGER.fatal("Problem aligning PDB sequence for chain "+representativeChain+" to its UniProt match "+query.getUniId());
 				LOGGER.fatal(e1.getMessage());

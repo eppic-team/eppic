@@ -141,6 +141,8 @@ public class EppicParams {
 	private static final double   DEF_PDB2UNIPROT_QCOV_THRESHOLD = 0.85;
 	
 	private static final boolean  DEF_ALLOW_CHIMERAS = false;
+	
+	private static final boolean  DEF_USE_PDB_CODE_FROM_FILE = false;
 
 	// default cache dirs
 	private static final String   DEF_BLAST_CACHE_DIR = null;
@@ -236,6 +238,8 @@ public class EppicParams {
 	private double   pdb2uniprotQcovThreshold;
 	
 	private boolean  allowChimeras;
+	
+	private boolean  usePdbCodeFromFile;
 			
 	private String   blastCacheDir;
 	private String   alnCacheDir;
@@ -843,6 +847,8 @@ public class EppicParams {
 			
 			allowChimeras = Boolean.parseBoolean(p.getProperty("ALLOW_CHIMERAS", new Boolean(DEF_ALLOW_CHIMERAS).toString()));
 			
+			usePdbCodeFromFile = Boolean.parseBoolean(p.getProperty("USE_PDB_CODE_FROM_FILE", new Boolean(DEF_USE_PDB_CODE_FROM_FILE).toString()));
+			
 			blastCacheDir    = p.getProperty("BLAST_CACHE_DIR", DEF_BLAST_CACHE_DIR);
 			alnCacheDir		 = p.getProperty("ALN_CACHE_DIR", DEF_ALN_CACHE_DIR);
 			
@@ -927,6 +933,10 @@ public class EppicParams {
 	
 	public boolean isAllowChimeras() {
 		return allowChimeras;
+	}
+	
+	public boolean isUsePdbCodeFromFile() {
+		return usePdbCodeFromFile;
 	}
 
 	public String getBlastCacheDir() {

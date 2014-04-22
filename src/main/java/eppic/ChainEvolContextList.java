@@ -190,7 +190,8 @@ public class ChainEvolContextList implements Serializable {
 			} catch (Exception e) { // for any kind of exceptions thrown while connecting through uniprot JAPI
 				String msg = null;
 				if (useLocalUniprot) {
-					msg = "Problems while retrieving query data from UniProt local database. Error "+e.getMessage();;
+					// we don't want to catch unexpected exceptions in this case, only the JAPI case is problematic
+					throw e;
 				} else {
 					msg = "Problems while retrieving query data through UniProt JAPI. Make sure you have the latest UniProtJAPI jar, or otherwise that the UniProt server is up\n"+e.getMessage();
 				}
