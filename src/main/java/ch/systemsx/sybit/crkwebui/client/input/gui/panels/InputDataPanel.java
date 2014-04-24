@@ -483,7 +483,7 @@ public class InputDataPanel extends DisplayPanel
 		uniprotPanel.getElement().applyStyles("textAlign:center; paddingTop:25px; height:22px; paddingBottom:1px;");
 
 		String uniprotVersionText = AppPropertiesManager.CONSTANTS.input_uniprot_version() + ":&nbsp;" +
-				                    "<i>"+ ApplicationContext.getSettings().getUniprotVersion() + "</i>" ;
+				                    ApplicationContext.getSettings().getUniprotVersion() ;
 		
 		HTMLPanel uniprotVersionHtml = new HTMLPanel(EscapedStringGenerator.generateSafeHtml(uniprotVersionText));
 		uniprotVersionHtml.addStyleName("eppic-uniprot-version");

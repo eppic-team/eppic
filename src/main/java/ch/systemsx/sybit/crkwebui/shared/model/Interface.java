@@ -40,6 +40,12 @@ public class Interface implements Serializable, Comparable<Interface>
 	private String operatorType;
 	
 	private boolean isInfinite;
+	
+	private int operatorId;
+	private int xtalTrans_x;
+	private int xtalTrans_y;
+	private int xtalTrans_z; 
+	
 	private List<InterfaceWarning> interfaceWarnings;
 	
 	//things from the interface Score table
@@ -121,6 +127,38 @@ public class Interface implements Serializable, Comparable<Interface>
 		this.isInfinite = isInfinite;
 	}
 	
+	public int getOperatorId() {
+		return operatorId;
+	}
+
+	public void setOperatorId(int operatorId) {
+		this.operatorId = operatorId;
+	}
+
+	public int getXtalTrans_x() {
+		return xtalTrans_x;
+	}
+
+	public void setXtalTrans_x(int xtalTrans_x) {
+		this.xtalTrans_x = xtalTrans_x;
+	}
+
+	public int getXtalTrans_y() {
+		return xtalTrans_y;
+	}
+
+	public void setXtalTrans_y(int xtalTrans_y) {
+		this.xtalTrans_y = xtalTrans_y;
+	}
+
+	public int getXtalTrans_z() {
+		return xtalTrans_z;
+	}
+
+	public void setXtalTrans_z(int xtalTrans_z) {
+		this.xtalTrans_z = xtalTrans_z;
+	}
+
 	public List<InterfaceWarning> getInterfaceWarnings() {
 		return interfaceWarnings;
 	}
@@ -175,6 +213,10 @@ public class Interface implements Serializable, Comparable<Interface>
 		interfaceItem.setOperator(interfaceDB.getOperator());
 		interfaceItem.setOperatorType(interfaceDB.getOperatorType());
 		interfaceItem.setIsInfinite(interfaceDB.getIsInfinite());
+		interfaceItem.setOperatorId(interfaceDB.getOperatorId());
+		interfaceItem.setXtalTrans_x(interfaceDB.getXtalTrans_x());
+		interfaceItem.setXtalTrans_y(interfaceDB.getXtalTrans_y());
+		interfaceItem.setXtalTrans_z(interfaceDB.getXtalTrans_z());
 		
 		if(interfaceDB.getResidues() != null)
 		{
