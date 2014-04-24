@@ -50,7 +50,7 @@ public class EvolCoreRimClusterPredictor implements InterfaceTypePredictor {
 			call = CallType.NO_PREDICTION;
 		} 		
 
-		// TODO handle callReason for NOPRED cases
+
 		if (call == CallType.BIO || call == CallType.CRYSTAL) {
 			String belowAboveStr;
 			if (call==CallType.BIO) belowAboveStr = "below";
@@ -58,6 +58,10 @@ public class EvolCoreRimClusterPredictor implements InterfaceTypePredictor {
 			callReason = "Average score "+String.format("%4.2f", score)+" is "+belowAboveStr+" cutoff ("+String.format("%4.2f", callCutoff)+")";			
 		}
 
+		if (call == CallType.NO_PREDICTION) {
+			// TODO what to say in nopred case? 
+			callReason = "No prediction"; 
+		}
 
 	}
 
