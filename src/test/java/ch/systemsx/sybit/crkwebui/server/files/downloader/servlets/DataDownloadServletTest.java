@@ -129,6 +129,10 @@ public class DataDownloadServletTest {
 	int1.setInterfaceId(1);
 	int1.setOperator("XXX");
 	int1.setOperatorType("OP");
+	int1.setOperatorId(1);
+	int1.setXtalTrans_x(1);
+	int1.setXtalTrans_y(-1);
+	int1.setXtalTrans_z(0);
 	List<Residue> residues = new ArrayList<Residue>();
 	Residue residue = new Residue();
 	residue.setAsa(3.33);
