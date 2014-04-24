@@ -24,6 +24,12 @@ public class InterfaceDB implements Serializable {
 	// the types are the short names of the owl.core.structure.TransformType enum
 	private String operatorType;
 	private boolean isInfinite;
+	
+	private int operatorId;
+	private int xtalTrans_x;
+	private int xtalTrans_y;
+	private int xtalTrans_z;
+	
 	private List<InterfaceWarningDB> interfaceWarnings;
 	
 	private List<InterfaceScoreDB> interfaceScores;
@@ -126,6 +132,38 @@ public class InterfaceDB implements Serializable {
 		return isInfinite;
 	}
 	
+	public int getOperatorId() {
+		return operatorId;
+	}
+
+	public void setOperatorId(int operatorId) {
+		this.operatorId = operatorId;
+	}
+
+	public int getXtalTrans_x() {
+		return xtalTrans_x;
+	}
+
+	public void setXtalTrans_x(int xtalTrans_x) {
+		this.xtalTrans_x = xtalTrans_x;
+	}
+
+	public int getXtalTrans_y() {
+		return xtalTrans_y;
+	}
+
+	public void setXtalTrans_y(int xtalTrans_y) {
+		this.xtalTrans_y = xtalTrans_y;
+	}
+
+	public int getXtalTrans_z() {
+		return xtalTrans_z;
+	}
+
+	public void setXtalTrans_z(int xtalTrans_z) {
+		this.xtalTrans_z = xtalTrans_z;
+	}
+
 	public List<InterfaceWarningDB> getInterfaceWarnings() {
 		return interfaceWarnings;
 	}

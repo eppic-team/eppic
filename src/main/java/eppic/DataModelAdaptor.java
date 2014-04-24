@@ -151,6 +151,10 @@ public class DataModelAdaptor {
 				interfaceDB.setOperator(SpaceGroup.getAlgebraicFromMatrix(interf.getSecondTransf().getMatTransform()));
 				interfaceDB.setOperatorType(interf.getSecondTransf().getTransformType().getShortName());
 				interfaceDB.setIsInfinite(interf.isInfinite());
+				interfaceDB.setOperatorId(interf.getSecondTransf().getTransformId());
+				interfaceDB.setXtalTrans_x(interf.getSecondTransf().getCrystalTranslation().x);
+				interfaceDB.setXtalTrans_y(interf.getSecondTransf().getCrystalTranslation().y);
+				interfaceDB.setXtalTrans_z(interf.getSecondTransf().getCrystalTranslation().z);
 				
 				interfaceDB.setPdbCode(pdbInfo.getPdbCode());
 				
