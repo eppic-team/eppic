@@ -110,5 +110,17 @@ public class MethodSummaryType {
 			return -1;
 		}
 	}
+	
+	public static String methodTypeStringFromSummaryType(SummaryType<?, ?> type) {
+	    if(type instanceof CoreRimSummaryType)
+		return ScoringMethod.EPPIC_CORERIM;
+	    if(type instanceof CoreSurfaceSummaryType)
+		return ScoringMethod.EPPIC_CORESURFACE;
+	    if(type instanceof GeometrySummaryType)
+		return ScoringMethod.EPPIC_GEOMETRY;
+	    if(type instanceof FinalCallSummaryType)
+		return ScoringMethod.EPPIC_FINAL;
+	    return "unknown";
+	}
 
 }

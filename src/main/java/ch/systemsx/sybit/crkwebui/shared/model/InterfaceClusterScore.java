@@ -10,16 +10,13 @@ public class InterfaceClusterScore implements Serializable {
 	private static final long serialVersionUID = 1L;
 	
 	private int uid;
-	
 	private String callName;
-	
+	private String callReason;
 	private double score;
 	private double score1;
 	private double score2;
 	private double confidence;
-	
 	private String method;
-	
 	private InterfaceClusterDB interfaceCluster;
 
 	public int getUid() {
@@ -85,6 +82,15 @@ public class InterfaceClusterScore implements Serializable {
 	public void setScore2(double score2) {
 		this.score2 = score2;
 	}
+	
+	public String getCallReason() {
+	    return callReason;
+	}
+
+	public void setCallReason(String callReason) {
+	    this.callReason = callReason;
+	}
+
 
 	/**
 	 * Converts DB model item into DTO one
@@ -95,6 +101,7 @@ public class InterfaceClusterScore implements Serializable {
 	{
 		InterfaceClusterScore clusterScore = new InterfaceClusterScore();
 		clusterScore.setCallName(clusterScoreDB.getCallName());
+		clusterScore.setCallReason(clusterScoreDB.getCallReason());
 		clusterScore.setMethod(clusterScoreDB.getMethod());
 		clusterScore.setUid(clusterScoreDB.getUid());
 		clusterScore.setScore(clusterScoreDB.getScore());

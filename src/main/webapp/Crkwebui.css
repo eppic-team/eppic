@@ -12,6 +12,7 @@
 .x-grid-row-summary, .x-grid-row-summary td{
 	text-align: center;
 	font-size: 16px;
+	cursor: default;
 }
 
 .eppic-results-grid-cell-bio{
