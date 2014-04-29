@@ -74,7 +74,7 @@ public class GetResultsOfProcessingCallback implements AsyncCallback<ProcessingD
 		else
 		{
 			History.newItem("");
-			String msg = "Id=" + jobId + " not found on the server";
+			String msg = "Job with id=" + jobId + " not found on the server. Please beware that old jobs are periodically removed from the server.";
 			
 			if (jobId!=null && jobId.length()==4 && Character.isDigit(jobId.charAt(0))) {
 				msg = "<div> <b>"
