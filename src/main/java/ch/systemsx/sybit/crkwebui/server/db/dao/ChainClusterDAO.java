@@ -19,7 +19,7 @@ public interface ChainClusterDAO
 	 * @return list of chain cluster for pdb score item
 	 * @throws DaoException when can not retrieve chain clusters
 	 */
-	public List<ChainCluster> getChainClusters(int pdbInfoUid) throws DaoException;
+    	List<ChainCluster> getChainClusters(int pdbInfoUid) throws DaoException;
 	
 	/**
 	 * Retrieves a list of pdb search items from ChainCluster table having a particular uniprot id
@@ -27,5 +27,14 @@ public interface ChainClusterDAO
 	 * @return list of results
 	 * @throws DaoException when can not retrieve items
 	 */
-	public List<PDBSearchResult> getPdbSearchItemsForUniProt(String uniProtId) throws DaoException;
+	List<PDBSearchResult> getPdbSearchItemsForUniProt(String uniProtId) throws DaoException;
+	
+	/**
+	 * Retrieves a list of pdb search items from ChainCluster table having a particular pdb id and cluster id
+	 * @param pdbId the pdb id
+	 * @param clusterId the cluster id
+	 * @return list of results
+	 * @throws DaoException when can not retrieve items
+	 */
+	List<PDBSearchResult> getPdbSearchItems(String pdbId, String clusterId) throws DaoException;
 }
