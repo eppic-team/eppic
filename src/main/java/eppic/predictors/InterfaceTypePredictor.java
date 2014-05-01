@@ -7,6 +7,13 @@ import eppic.CallType;
 
 public interface InterfaceTypePredictor {
 
+	public static final double SCORE_UNASSIGNED = -1.0;
+	
+	public static final double CONFIDENCE_HIGH = 0.8;
+	public static final double CONFIDENCE_MEDIUM = 0.5;
+	public static final double CONFIDENCE_LOW = 0.2;
+	public static final double CONFIDENCE_UNASSIGNED = -1.0;
+	
 	/**
 	 * Triggers the calculation of scores, subsequently they can be 
 	 * retrieved through {@link #getScore()}, {@link #getScore1()} and {@link #getScore2()}
@@ -53,4 +60,10 @@ public interface InterfaceTypePredictor {
 	 */
 	public double getScore2();
 	
+	/**
+	 * Returns the confidence level for the given call. Ranging from 0 to 1, i.e.
+	 * this value represents a probability that the call is right or not.
+	 * @return
+	 */
+	public double getConfidence();
 }

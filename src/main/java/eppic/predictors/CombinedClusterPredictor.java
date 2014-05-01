@@ -9,10 +9,13 @@ import owl.core.structure.ChainInterface;
 import owl.core.structure.InterfaceCluster;
 import eppic.CallType;
 import eppic.EppicParams;
+import eppic.InterfaceEvolContextList;
 
 public class CombinedClusterPredictor implements InterfaceTypePredictor {
 
 	private static final Log LOGGER = LogFactory.getLog(CombinedClusterPredictor.class);
+	
+	private InterfaceEvolContextList iecl;
 	
 	private InterfaceCluster ic;
 	private InterfaceTypePredictor gcp;
@@ -24,13 +27,17 @@ public class CombinedClusterPredictor implements InterfaceTypePredictor {
 	
 	private int votes;
 	
+	private double confidence;
+	
 	private CallType veto;
 	
 	public CombinedClusterPredictor(InterfaceCluster interfaceCluster,
+			InterfaceEvolContextList iecl,
 			GeometryClusterPredictor gcp,
 			EvolCoreRimClusterPredictor ecrcp,
 			EvolCoreSurfaceClusterPredictor ecscp) {
 		
+		this.iecl = iecl;
 		this.ic = interfaceCluster;
 		this.gcp = gcp;
 		this.ecrcp = ecrcp;
@@ -41,6 +48,8 @@ public class CombinedClusterPredictor implements InterfaceTypePredictor {
 	public void computeScores() {
 		
 		checkInterface();
+		
+		calcConfidence();
 		
 		if (veto!=null) {
 			call = veto;
@@ -102,14 +111,19 @@ public class CombinedClusterPredictor implements InterfaceTypePredictor {
 
 	@Override
 	public double getScore1() {		
-		return -1;
+		return SCORE_UNASSIGNED;
 	}
 
 	@Override
 	public double getScore2() {
-		return -1;
+		return SCORE_UNASSIGNED;
 	}
 
+	@Override
+	public double getConfidence() {
+		return confidence;
+	}
+	
 	private boolean checkInterface() {
 
 		// veto from hard area limits
@@ -162,4 +176,27 @@ public class CombinedClusterPredictor implements InterfaceTypePredictor {
 
 		return counts;
 	}
+	
+	private void calcConfidence() {
+		
+		// we simply take the first member of the cluster and check if there enough homologs for it, other members should have same composition
+		
+		String firstPdbChainCode = ic.getMembers().get(0).getFirstMolecule().getPdbChainCode();
+		String secondPdbChainCode = ic.getMembers().get(0).getSecondMolecule().getPdbChainCode();
+		
+		int firstNumHomologs = iecl.getChainEvolContext(firstPdbChainCode).getNumHomologs();
+		int secondNumHomologs = iecl.getChainEvolContext(secondPdbChainCode).getNumHomologs();
+		
+		
+		if ( firstNumHomologs<iecl.getMinNumSeqs() && secondNumHomologs<iecl.getMinNumSeqs()) {
+			confidence = CONFIDENCE_LOW;
+		} else if (firstNumHomologs<iecl.getMinNumSeqs()) {
+			confidence = CONFIDENCE_MEDIUM;
+		} else if (secondNumHomologs<iecl.getMinNumSeqs()) {
+			confidence = CONFIDENCE_MEDIUM;
+		} else {
+			confidence = CONFIDENCE_HIGH;
+		}
+	}
+
 }

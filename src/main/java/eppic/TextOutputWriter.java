@@ -131,7 +131,7 @@ public class TextOutputWriter {
 		ps.printf("\t%7s\t%7s\t%7s\t%7s\t", "sc1-gm","sc2-gm","sc-gm","call-gm");
 		ps.printf("\t%7s\t%7s\t%7s\t%7s\t", "sc1-cr","sc2-cr","sc-cr","call-cr");
 		ps.printf("\t%7s\t%7s\t%7s\t%7s\t", "sc1-cs","sc2-cs","sc-cs","call-cs");
-		ps.printf("\t%7s\t%7s",             "sc","call");
+		ps.printf("\t%7s\t%7s\t%7s",        "sc","conf","call");
 		
 		ps.println();
 	}
@@ -184,10 +184,11 @@ public class TextOutputWriter {
 		
 		// final
 		if (interfaceScoreFn==null) {
-			ps.printf("\t%7s\t%7s","","");
+			ps.printf("\t%7s\t%7s\t%7s","","","");
 		} else {
-			ps.printf("\t%7.0f\t%7s",
+			ps.printf("\t%7.0f\t%7.2f\t%7s",
 					interfaceScoreFn.getScore(),
+					interfaceScoreFn.getConfidence(),
 					interfaceScoreFn.getCallName());			
 		}
 		
@@ -243,10 +244,11 @@ public class TextOutputWriter {
 		
 		// final
 		if (interfaceScoreFn==null) {
-			ps.printf("\t%7s\t%7s","","");
+			ps.printf("\t%7s\t%7s\t%7s","","","");
 		} else {
-			ps.printf("\t%7.0f\t%7s",
+			ps.printf("\t%7.0f\t%7.2f\t%7s",
 					interfaceScoreFn.getScore(),
+					interfaceScoreFn.getConfidence(),
 					interfaceScoreFn.getCallName());			
 		}
 		

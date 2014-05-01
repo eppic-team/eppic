@@ -95,6 +95,11 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 		return (double)size2;
 	}
 	
+	@Override
+	public double getConfidence() {
+		return CONFIDENCE_UNASSIGNED;
+	}
+	
 	private void generateWarnings() {
 		
 		List<Pair<Atom>> interactingPairs = getNonpolyInteractingPairs();

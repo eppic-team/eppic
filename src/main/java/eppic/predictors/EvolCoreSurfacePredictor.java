@@ -160,6 +160,11 @@ public class EvolCoreSurfacePredictor implements InterfaceTypePredictor {
 		return score2;
 	}
 	
+	@Override
+	public double getConfidence() {
+		return CONFIDENCE_UNASSIGNED;
+	}
+	
 	private boolean checkInterfaceSide(int molecId) {
 	
 		String scoreType = "core-surface";

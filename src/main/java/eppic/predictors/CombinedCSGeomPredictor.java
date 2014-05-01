@@ -155,6 +155,11 @@ public class CombinedCSGeomPredictor implements InterfaceTypePredictor {
 	}
 	
 	@Override
+	public double getConfidence() {
+		return CONFIDENCE_UNASSIGNED;
+	}
+	
+	@Override
 	public void computeScores() {
 		// nothing to do here, count of votes is done in getCall
 	}

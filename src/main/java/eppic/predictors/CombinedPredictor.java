@@ -31,6 +31,8 @@ public class CombinedPredictor implements InterfaceTypePredictor {
 	
 	private CallType veto;
 	
+	private double confidence;
+	
 	private boolean usePdbResSer;
 	
 	public CombinedPredictor(InterfaceEvolContext iec, 
@@ -71,18 +73,25 @@ public class CombinedPredictor implements InterfaceTypePredictor {
 	
 	@Override
 	public double getScore1() {
-		return -1;
+		return SCORE_UNASSIGNED;
 	}
 	
 	@Override
 	public double getScore2() {
-		return -1;
+		return SCORE_UNASSIGNED;
+	}
+	
+	@Override
+	public double getConfidence() {
+		return confidence;
 	}
 	
 	@Override
 	public void computeScores() {
 			
 		checkInterface();
+		
+		calcConfidence();
 		
 		if (veto!=null) {
 			call = veto;
@@ -219,6 +228,18 @@ public class CombinedPredictor implements InterfaceTypePredictor {
 		
 		
 		return true; // for the moment there's no conditions to reject a score
+	}
+	
+	private void calcConfidence() {
+		if (!iec.hasEnoughHomologs(InterfaceEvolContext.FIRST) && !iec.hasEnoughHomologs(InterfaceEvolContext.SECOND)) {
+			confidence = CONFIDENCE_LOW;
+		} else if (!iec.hasEnoughHomologs(InterfaceEvolContext.FIRST)) {
+			confidence = CONFIDENCE_MEDIUM;
+		} else if (!iec.hasEnoughHomologs(InterfaceEvolContext.SECOND)) {
+			confidence = CONFIDENCE_MEDIUM;
+		} else {
+			confidence = CONFIDENCE_HIGH;
+		}
 	}
 	
 	private int[] countCalls() {

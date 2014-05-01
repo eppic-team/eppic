@@ -155,7 +155,7 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 		return this.ecscPredictors.get(clusterId);
 	}
 	
-	protected int getMinNumSeqs() {
+	public int getMinNumSeqs() {
 		return this.minNumSeqs;
 	}
 	

@@ -289,7 +289,7 @@ public class DataModelAdaptor {
 			is.setCallReason(gps.get(i).getCallReason());
 			is.setMethod(ScoringMethod.EPPIC_GEOMETRY);
 			is.setPdbCode(ii.getPdbCode());
-			is.setConfidence(CONFIDENCE_NOT_AVAILABLE);
+			is.setConfidence(gps.get(i).getConfidence());
 			is.setScore(gps.get(i).getScore());
 			is.setScore1(gps.get(i).getScore1());
 			is.setScore2(gps.get(i).getScore2());
@@ -321,7 +321,7 @@ public class DataModelAdaptor {
 			ics.setScore(gcp.getScore());
 			ics.setScore1(gcp.getScore1());
 			ics.setScore2(gcp.getScore2());
-			ics.setConfidence(CONFIDENCE_NOT_AVAILABLE);
+			ics.setConfidence(gcp.getConfidence());
 			ics.setPdbCode(pdbInfo.getPdbCode());
 			ics.setClusterId(ic.getClusterId());
 
@@ -443,7 +443,7 @@ public class DataModelAdaptor {
 			isCS.setScore2(ecsp.getScore2());
 			isCS.setScore(ecsp.getScore());	
 			
-			isCS.setConfidence(CONFIDENCE_NOT_AVAILABLE);
+			isCS.setConfidence(ecsp.getConfidence());
 			isCS.setPdbCode(ii.getPdbCode());
 			
 			// 3) core-rim scores
@@ -472,7 +472,7 @@ public class DataModelAdaptor {
 			isCR.setScore2(ecrp.getScore2());
 			isCR.setScore(ecrp.getScore());				
 
-			isCR.setConfidence(CONFIDENCE_NOT_AVAILABLE);
+			isCR.setConfidence(ecrp.getConfidence());
 			isCR.setPdbCode(ii.getPdbCode());
 
 			
@@ -491,7 +491,7 @@ public class DataModelAdaptor {
 			ics.setScore(ecrcp.getScore());
 			ics.setScore1(ecrcp.getScore1());
 			ics.setScore2(ecrcp.getScore2());
-			ics.setConfidence(CONFIDENCE_NOT_AVAILABLE);
+			ics.setConfidence(ecrcp.getConfidence());
 			ics.setPdbCode(pdbInfo.getPdbCode());
 			ics.setClusterId(ic.getClusterId());
 
@@ -508,7 +508,7 @@ public class DataModelAdaptor {
 			ics.setScore(ecscp.getScore());
 			ics.setScore1(ecscp.getScore1());
 			ics.setScore2(ecscp.getScore2());
-			ics.setConfidence(CONFIDENCE_NOT_AVAILABLE);
+			ics.setConfidence(ecscp.getConfidence());
 			ics.setPdbCode(pdbInfo.getPdbCode());
 			ics.setClusterId(ic.getClusterId());
 
@@ -530,13 +530,13 @@ public class DataModelAdaptor {
 			is.setMethod(ScoringMethod.EPPIC_FINAL);
 			is.setCallName(cps.get(i).getCall().getName());
 			is.setCallReason(cps.get(i).getCallReason());
-			is.setConfidence(CONFIDENCE_NOT_AVAILABLE);
+			is.setConfidence(cps.get(i).getConfidence());
 			is.setInterfaceItem(ii);
 			is.setInterfaceId(ii.getInterfaceId());
 			is.setPdbCode(ii.getPdbCode());
 			is.setScore(cps.get(i).getScore());
-			is.setScore1(SCORE_NOT_AVAILABLE);
-			is.setScore2(SCORE_NOT_AVAILABLE);
+			is.setScore1(cps.get(i).getScore1());
+			is.setScore2(cps.get(i).getScore2());
 			
 			if(cps.get(i).getWarnings() != null) {
 				
@@ -561,9 +561,9 @@ public class DataModelAdaptor {
 			ics.setCallName(ccps.get(i).getCall().getName());
 			ics.setCallReason(ccps.get(i).getCallReason());
 			ics.setScore(ccps.get(i).getScore());
-			ics.setScore1(SCORE_NOT_AVAILABLE);
-			ics.setScore2(SCORE_NOT_AVAILABLE);
-			ics.setConfidence(CONFIDENCE_NOT_AVAILABLE);
+			ics.setScore1(ccps.get(i).getScore1());
+			ics.setScore2(ccps.get(i).getScore2());
+			ics.setConfidence(ccps.get(i).getConfidence());
 			ics.setPdbCode(pdbInfo.getPdbCode());
 			ics.setClusterId(ic.getClusterId());
 

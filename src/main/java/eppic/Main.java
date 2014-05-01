@@ -643,7 +643,7 @@ public class Main {
 		for (InterfaceCluster ic:interfaces.getClusters()) {
 			int clusterId = ic.getId();
 			CombinedClusterPredictor ccp = 
-					new CombinedClusterPredictor(ic,
+					new CombinedClusterPredictor(ic,iecList,
 							gcps.get(i),
 							iecList.getEvolCoreRimClusterPredictor(clusterId),
 							iecList.getEvolCoreSurfaceClusterPredictor(clusterId));

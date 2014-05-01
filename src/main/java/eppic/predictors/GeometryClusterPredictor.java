@@ -86,6 +86,11 @@ public class GeometryClusterPredictor implements InterfaceTypePredictor {
 		return score2;
 	}
 
+	@Override
+	public double getConfidence() {
+		return CONFIDENCE_UNASSIGNED;
+	}
+
 	public void setMinCoreSizeForBio(int minCoreSizeForBio) {
 		this.minCoreSizeForBio = minCoreSizeForBio;
 	}

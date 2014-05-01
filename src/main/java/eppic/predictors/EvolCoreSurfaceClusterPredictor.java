@@ -94,6 +94,11 @@ public class EvolCoreSurfaceClusterPredictor implements InterfaceTypePredictor {
 	public double getScore2() {
 		return score2;
 	}
+	
+	@Override
+	public double getConfidence() {
+		return CONFIDENCE_UNASSIGNED;
+	}
 
 	public void setCallCutoff(double callCutoff) {
 		this.callCutoff = callCutoff;

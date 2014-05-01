@@ -7,7 +7,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import owl.core.structure.InterfaceRimCore;
-
 import owl.core.structure.Residue;
 import eppic.EppicParams;
 import eppic.CallType;
@@ -254,6 +253,11 @@ public class EvolCoreRimPredictor implements InterfaceTypePredictor {
 	@Override
 	public double getScore1() {
 		return score1;
+	}
+	
+	@Override
+	public double getConfidence() {
+		return CONFIDENCE_UNASSIGNED;
 	}
 	
 	@Override
