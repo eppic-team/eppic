@@ -203,23 +203,25 @@ public class ChainEvolContext implements Serializable {
 					queryWarnings.add(msg);
 					query = null;
 					hasQueryMatch = false;
-				}
+				} 
+				else {
 
-				// a nice goody for the log: outputting our mapping in SIFTS tab format
-				// e.g.: 1dan	L	P08709	1	152	1	152	61	212
-				int uniprotStart = alnPdb2Uniprot.getFirstMatchingPos(false)+1;
-				int uniprotEnd   = alnPdb2Uniprot.getLastMatchingPos(false)+1;
-				int seqresStart = getPDBPosForQueryUniprotPos(uniprotStart-1);
-				int seqresEnd = getPDBPosForQueryUniprotPos(uniprotEnd-1);
-				String pdbStart = parent.getPdb().getChain(representativeChain).getPdbResSerFromResSer(seqresStart);
-				String pdbEnd = parent.getPdb().getChain(representativeChain).getPdbResSerFromResSer(seqresEnd);
-				
-				LOGGER.info("Our mapping in SIFTS format: "+parent.getPdb().getPdbCode()+"\t"+
-															representativeChain+"\t"+
-															queryUniprotId+"\t"+
-															seqresStart+"\t"+seqresEnd+"\t"+
-															pdbStart+"\t"+pdbEnd+"\t"+
-															uniprotStart+"\t"+uniprotEnd);
+					// a nice goody for the log: outputting our mapping in SIFTS tab format
+					// e.g.: 1dan	L	P08709	1	152	1	152	61	212
+					int uniprotStart = alnPdb2Uniprot.getFirstMatchingPos(false)+1;
+					int uniprotEnd   = alnPdb2Uniprot.getLastMatchingPos(false)+1;
+					int seqresStart = getPDBPosForQueryUniprotPos(uniprotStart-1);
+					int seqresEnd = getPDBPosForQueryUniprotPos(uniprotEnd-1);
+					String pdbStart = parent.getPdb().getChain(representativeChain).getPdbResSerFromResSer(seqresStart);
+					String pdbEnd = parent.getPdb().getChain(representativeChain).getPdbResSerFromResSer(seqresEnd);
+
+					LOGGER.info("Our mapping in SIFTS format: "+parent.getPdb().getPdbCode()+"\t"+
+							representativeChain+"\t"+
+							queryUniprotId+"\t"+
+							seqresStart+"\t"+seqresEnd+"\t"+
+							pdbStart+"\t"+pdbEnd+"\t"+
+							uniprotStart+"\t"+uniprotEnd);
+				}
 				
 			} catch (PairwiseSequenceAlignmentException e1) {
 				LOGGER.fatal("Problem aligning PDB sequence for chain "+representativeChain+" to its UniProt match "+query.getUniId());
