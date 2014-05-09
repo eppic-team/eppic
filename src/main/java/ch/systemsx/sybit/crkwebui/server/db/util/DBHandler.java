@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -27,7 +28,7 @@ import eppic.model.JobDB;
 import eppic.model.PdbInfoDB;
 
 /**
- * Class to perform operations on CRK database such as adding by job,
+ * Class to perform operations on the EPPIC database, such as adding by job,
  * removing a job or checking if a job is present in the database
  * @author biyani_n
  *
@@ -42,7 +43,7 @@ public class DBHandler {
 	private EntityManagerFactory emf;
 	
 	/**
-	 * Default Constructor : Initializes factory with "crk" databse
+	 * Default Constructor : Initializes factory with {@value #DEFAULT_ONLINE_JPA} database
 	 */
 	public DBHandler(){
 		this.emf = Persistence.createEntityManagerFactory(DEFAULT_ONLINE_JPA);
@@ -74,12 +75,12 @@ public class DBHandler {
 	 * @param PdbInfoDB
 	 * 
 	 */
-	public void addToDB(PdbInfoDB pdbScoreItem){
+	public void addToDB(PdbInfoDB pdbInfo){
 		EntityManager entityManager = this.getEntityManager();
 		entityManager.getTransaction().begin();
-		entityManager.persist(pdbScoreItem);
+		entityManager.persist(pdbInfo);
 
-		String pdbCode = pdbScoreItem.getPdbCode();
+		String pdbCode = pdbInfo.getPdbCode();
 
 		JobDB job = new JobDB();
 		job.setJobId(pdbCode);
@@ -91,8 +92,8 @@ public class DBHandler {
 		job.setInputType(InputType.PDBCODE.getIndex());
 		job.setSubmissionId("-1");
 
-		pdbScoreItem.setJob(job);
-		job.setPdbInfo(pdbScoreItem);
+		pdbInfo.setJob(job);
+		job.setPdbInfo(pdbInfo);
 		entityManager.persist(job);
 		entityManager.getTransaction().commit();
 		
@@ -102,7 +103,7 @@ public class DBHandler {
 	
 	/**
 	 * Adds entry to the DataBase when only pdbCode specified.
-	 * Inserts a pseudo job and no pdbScoreItem
+	 * Inserts a pseudo job and no pdbInfo
 	 * @param String pdbCode
 	 * 
 	 */
@@ -178,7 +179,7 @@ public class DBHandler {
 	}
 	
 	/**
-	 * checks for a entry in the DataBase of a specific JobID
+	 * checks for an entry in the DataBase of a specific JobID
 	 * @param String jobID
 	 * @return TRUE: if present; FALSE: if not
 	 */
@@ -339,5 +340,38 @@ public class DBHandler {
 		return pdbScoreItem;
 	}
 
+	public PdbInfoDB deserializePdb(String pdbCode) {
+		CriteriaBuilder cbPDB = this.getEntityManager().getCriteriaBuilder();
 
+		CriteriaQuery<PdbInfoDB> cqPDB = cbPDB.createQuery(PdbInfoDB.class);
+		Root<PdbInfoDB> rootPDB = cqPDB.from(PdbInfoDB.class);
+		cqPDB.where(cbPDB.equal(rootPDB.get(PdbInfoDB_.pdbCode), pdbCode));
+		cqPDB.select(rootPDB);
+		List<PdbInfoDB> queryPDBList = this.getEntityManager().createQuery(cqPDB).getResultList();
+		if (queryPDBList.size()==0) return null;
+		else if (queryPDBList.size()>1) {
+			System.err.println("More than 1 PdbInfoDB returned for given PDB code: "+pdbCode);
+			return null;
+		}
+		
+		return queryPDBList.get(0);
+	}
+
+	public List<PdbInfoDB> deserializePdb(List<String> pdbCodes) {
+		
+		List<PdbInfoDB> list = new ArrayList<PdbInfoDB>();
+		
+
+		for (String pdbCode:pdbCodes) {
+			
+			PdbInfoDB pdbInfo = deserializePdb(pdbCode);
+			if (pdbInfo!=null) {
+				list.add(pdbInfo);
+			}
+		}
+		
+		return list;
+	}
+
+	
 }

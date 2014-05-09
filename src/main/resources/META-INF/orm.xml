@@ -509,6 +509,11 @@
 				</cascade>
 			</one-to-many>
 			
+			<one-to-one name="seqCluster" mapped-by="chainCluster">
+ 				<cascade>
+ 					<cascade-all />
+ 				</cascade>
+ 			</one-to-one>
 			
 		</attributes>
 	</entity>
