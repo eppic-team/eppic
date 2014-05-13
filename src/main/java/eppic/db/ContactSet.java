@@ -9,29 +9,42 @@ import eppic.model.ContactDB;
 
 public class ContactSet {
 	
-	private HashSet<Pair<SimpleResidue>> set;  
+	private HashSet<Pair<SimpleResidue>> directSet;
+	private HashSet<Pair<SimpleResidue>> inverseSet;
 
 	public ContactSet(List<ContactDB> contacts) {
-		set = new HashSet<Pair<SimpleResidue>>();
+		directSet = new HashSet<Pair<SimpleResidue>>();
+		inverseSet = new HashSet<Pair<SimpleResidue>>();
 		for (ContactDB contact:contacts) {
-			set.add(pairFromContact(contact));
+			directSet.add(pairFromContact(contact,false));
+			inverseSet.add(pairFromContact(contact,true));
 		}
 	}
 	
-	public boolean contains(Pair<SimpleResidue> contact) {
-		return set.contains(contact);
+	public boolean contains(Pair<SimpleResidue> contact, boolean inverse) {
+		if (!inverse)
+			return directSet.contains(contact);
+		else
+			return inverseSet.contains(contact);
 	}
 	
-	public static Pair<SimpleResidue> pairFromContact(ContactDB contact) {
-		return new Pair<SimpleResidue>(
+	private static Pair<SimpleResidue> pairFromContact(ContactDB contact, boolean inverse) {
+		if (!inverse)
+			return new Pair<SimpleResidue>(
 				new SimpleResidue(AminoAcid.getByThreeLetterCode(contact.getFirstResType()),contact.getFirstResNumber()),
 				new SimpleResidue(AminoAcid.getByThreeLetterCode(contact.getSecondResType()),contact.getSecondResNumber()));
+		
+		else 
+			return new Pair<SimpleResidue>(
+				new SimpleResidue(AminoAcid.getByThreeLetterCode(contact.getSecondResType()),contact.getSecondResNumber()),
+				new SimpleResidue(AminoAcid.getByThreeLetterCode(contact.getFirstResType()),contact.getFirstResNumber()));
+			
 	}
 	
-	public double calcOverlap(ContactSet o) {
+	public double calcOverlap(ContactSet o, boolean inverse) {
 		ContactSet large = null;
 		ContactSet small = null;
-		if (this.set.size()>=o.set.size()) {
+		if (this.directSet.size()>=o.directSet.size()) {
 			large = this;
 			small = o;
 		} else {
@@ -39,12 +52,12 @@ public class ContactSet {
 			small = this;
 		}
 		int common = 0;
-		for (Pair<SimpleResidue> contact:large.set) {
-			if (small.contains(contact)) {
+		for (Pair<SimpleResidue> contact:large.directSet) {
+			if (small.contains(contact,inverse)) {
 				common++;
 			} 
 		}
-		return (2.0*common)/(this.set.size()+o.set.size());
+		return (2.0*common)/(this.directSet.size()+o.directSet.size());
 	}
 	
 	public static void main(String[] args) {
