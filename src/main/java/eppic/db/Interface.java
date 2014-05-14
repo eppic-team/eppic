@@ -89,9 +89,10 @@ public class Interface {
 		return null;
 	}
 	
-	public double calcInterfaceOverlap(Interface other, Map<Pair<String>,PairwiseSequenceAlignment> alnPool, SeqClusterLevel seqClusterLevel) {
+	public double calcInterfaceOverlap(Interface other, Map<Pair<String>,PairwiseSequenceAlignment> alnPool, SeqClusterLevel seqClusterLevel, boolean debug) {
 		
 		InterfaceComparator csComp = new InterfaceComparator(this,other,alnPool,seqClusterLevel);
+		csComp.setDebug(debug);
 		
 		return csComp.calcOverlap();
 		

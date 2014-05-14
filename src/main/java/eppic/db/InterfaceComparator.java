@@ -9,6 +9,8 @@ import owl.core.structure.AminoAcid;
 
 public class InterfaceComparator {
 
+	private boolean debug;
+	
 	private Interface interf1;
 	private Interface interf2;
 	private ContactSet cs1;
@@ -41,6 +43,10 @@ public class InterfaceComparator {
 		
 	}
 	
+	public void setDebug(boolean debug) {
+		this.debug = debug;
+	}
+	
 	private void initialiseContactSets() {
 		
 		String interf1FirstChain = interf1.getChainCluster(Interface.FIRST).getChainCluster().getRepChain();
@@ -65,11 +71,6 @@ public class InterfaceComparator {
 			}
 		}
 		
-		if (interf1.getInterface().getInterfaceId()==1 && interf2.getInterface().getInterfaceId()==1) {
-			if (aln1!=null) aln1.printAlignment();
-			if (aln2!=null) aln2.printAlignment();
-		}
-		
 		cs1 = new ContactSet();
 		cs2 = new ContactSet();
 		
@@ -83,8 +84,6 @@ public class InterfaceComparator {
 	}
 	
 	private Pair<SimpleResidue> pairFromContact(ContactDB contact, PairwiseSequenceAlignment aln1, PairwiseSequenceAlignment aln2) {
-		
-		//TODO check whether we need to invert or not, and whether addContact above is correct (it adds both directed and inverted)
 		
 		int resSerial1 = contact.getFirstResNumber();
 		int resSerial2 = contact.getSecondResNumber();
@@ -104,7 +103,9 @@ public class InterfaceComparator {
 		
 		if (! sameContent) {
 			// not same content: overlap value is 0 
-			System.out.println("different content: "+interf1.getInterface().getInterfaceId()+"-"+interf2.getInterface().getInterfaceId());
+			if (debug) 
+				System.out.println("different content: "+interf1.getInterface().getInterfaceId()+"-"+interf2.getInterface().getInterfaceId());
+			
 			return 0.0;
 		}
 
@@ -119,7 +120,7 @@ public class InterfaceComparator {
 			double coDirect = calcOverlap(false);
 			double coInverse = calcOverlap(true);
 
-			if (coInverse>coDirect) 
+			if (debug && coInverse>coDirect) 
 				System.out.println("inverse homo-interface: "+interf1.getInterface().getInterfaceId()+"-"+interf2.getInterface().getInterfaceId()+" direct value: "+String.format("%5.3f",coDirect));
 			
 			return Math.max(coDirect, coInverse);
@@ -128,10 +129,12 @@ public class InterfaceComparator {
 			
 			// we check if we need to reverse the order of chains in the comparison
 
-			if (invertedOrder) 
-				System.out.println("inverse hetero-interface: "+interf1.getInterface().getInterfaceId()+"-"+interf2.getInterface().getInterfaceId());
-			else 
-				System.out.println("direct hetero-interface: "+interf1.getInterface().getInterfaceId()+"-"+interf2.getInterface().getInterfaceId());
+			if (debug) {
+				if (invertedOrder) 
+					System.out.println("inverse hetero-interface: "+interf1.getInterface().getInterfaceId()+"-"+interf2.getInterface().getInterfaceId());
+				else 
+					System.out.println("direct hetero-interface: "+interf1.getInterface().getInterfaceId()+"-"+interf2.getInterface().getInterfaceId());
+			}
 			
 			return calcOverlap(invertedOrder);
 		}

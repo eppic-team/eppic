@@ -22,7 +22,7 @@ import eppic.model.PdbInfoDB;
  */
 public class PdbInfo {
 
-	public static final double MIN_AREA_LATTICE_COMPARISON = 100;
+	//public static final double MIN_AREA_LATTICE_COMPARISON = 10;
 	
 	private PdbInfoDB pdbInfo;
 	
@@ -97,25 +97,34 @@ public class PdbInfo {
 		return list;
 	}
 	
-	public double[][] calcLatticeOverlapMatrix(PdbInfo other, SeqClusterLevel seqClusterLevel) 
+	public LatticeMatchMatrix calcLatticeOverlapMatrix(PdbInfo other, SeqClusterLevel seqClusterLevel, double minArea, boolean debug) 
 			throws PairwiseSequenceAlignmentException {
 	
 		Map<Pair<String>,PairwiseSequenceAlignment> map = getAlignmentsPool(other, seqClusterLevel);
 		
-		int interfCount1 = this.getNumInterfacesAboveArea(MIN_AREA_LATTICE_COMPARISON);
-		int interfCount2 = other.getNumInterfacesAboveArea(MIN_AREA_LATTICE_COMPARISON);
+		if (debug) {
+			for (Pair<String> pair:map.keySet()) {
+				System.out.println(pair.getFirst()+"-"+pair.getSecond());
+				map.get(pair).printAlignment();
+			}
+		}
+		
+		int interfCount1 = this.getNumInterfacesAboveArea(minArea);
+		int interfCount2 = other.getNumInterfacesAboveArea(minArea);
 	
 		double[][] matrix = new double[interfCount1][interfCount2];
 
-		for (Interface thisInterf : this.getInterfacesAboveArea(MIN_AREA_LATTICE_COMPARISON)) {
-			for (Interface otherInterf : other.getInterfacesAboveArea(MIN_AREA_LATTICE_COMPARISON)) {
+		for (Interface thisInterf : this.getInterfacesAboveArea(minArea)) {
+			for (Interface otherInterf : other.getInterfacesAboveArea(minArea)) {
 								
-				double co = thisInterf.calcInterfaceOverlap(otherInterf, map, seqClusterLevel);
+				double co = thisInterf.calcInterfaceOverlap(otherInterf, map, seqClusterLevel, debug);
 				matrix[thisInterf.getInterface().getInterfaceId()-1][otherInterf.getInterface().getInterfaceId()-1] = co;
 			}
 		}	
 		
-		return matrix;
+		LatticeMatchMatrix lmm = new LatticeMatchMatrix(matrix);
+		
+		return lmm;
 	}
 	
 	private Map<Pair<String>,PairwiseSequenceAlignment> getAlignmentsPool(PdbInfo other, SeqClusterLevel seqClusterLevel) 
