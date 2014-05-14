@@ -3,7 +3,11 @@ package eppic.db;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import owl.core.sequence.alignment.PairwiseSequenceAlignment;
+import owl.core.sequence.alignment.PairwiseSequenceAlignment.PairwiseSequenceAlignmentException;
+import edu.uci.ics.jung.graph.util.Pair;
 import eppic.model.ChainClusterDB;
 import eppic.model.InterfaceClusterDB;
 import eppic.model.InterfaceDB;
@@ -93,7 +97,10 @@ public class PdbInfo {
 		return list;
 	}
 	
-	public double[][] calcLatticeOverlapMatrix(PdbInfo other, SeqClusterLevel seqClusterLevel) {
+	public double[][] calcLatticeOverlapMatrix(PdbInfo other, SeqClusterLevel seqClusterLevel) 
+			throws PairwiseSequenceAlignmentException {
+	
+		Map<Pair<String>,PairwiseSequenceAlignment> map = getAlignmentsPool(other, seqClusterLevel);
 		
 		int interfCount1 = this.getNumInterfacesAboveArea(MIN_AREA_LATTICE_COMPARISON);
 		int interfCount2 = other.getNumInterfacesAboveArea(MIN_AREA_LATTICE_COMPARISON);
@@ -103,12 +110,32 @@ public class PdbInfo {
 		for (Interface thisInterf : this.getInterfacesAboveArea(MIN_AREA_LATTICE_COMPARISON)) {
 			for (Interface otherInterf : other.getInterfacesAboveArea(MIN_AREA_LATTICE_COMPARISON)) {
 								
-				double co = thisInterf.calcInterfaceOverlap(otherInterf, seqClusterLevel);
+				double co = thisInterf.calcInterfaceOverlap(otherInterf, map, seqClusterLevel);
 				matrix[thisInterf.getInterface().getInterfaceId()-1][otherInterf.getInterface().getInterfaceId()-1] = co;
 			}
 		}	
 		
 		return matrix;
+	}
+	
+	private Map<Pair<String>,PairwiseSequenceAlignment> getAlignmentsPool(PdbInfo other, SeqClusterLevel seqClusterLevel) 
+			throws PairwiseSequenceAlignmentException {
+		
+		Map<Pair<String>,PairwiseSequenceAlignment> map = new HashMap<Pair<String>,PairwiseSequenceAlignment>();
+		for (ChainCluster thisChainCluster:this.getChainClusters()) {
+			String thisSeq = thisChainCluster.getChainCluster().getPdbAlignedSeq().replace("-", "");
+			for (ChainCluster otherChainCluster:other.getChainClusters()) {
+				
+				if (thisChainCluster.isSameSeqCluster(otherChainCluster, seqClusterLevel)) {
+					String otherSeq = otherChainCluster.getChainCluster().getPdbAlignedSeq().replace("-", "");
+					PairwiseSequenceAlignment aln = new PairwiseSequenceAlignment(thisSeq, otherSeq, "first" , "second");
+					Pair<String> pair = new Pair<String>(thisChainCluster.getChainCluster().getRepChain(),
+														 otherChainCluster.getChainCluster().getRepChain());
+					map.put(pair, aln);
+				}
+			}
+		}
+		return map;
 	}
 	
 	public boolean haveSameContent(PdbInfo other, SeqClusterLevel seqClusterLevel) {

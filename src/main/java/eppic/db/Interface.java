@@ -1,5 +1,9 @@
 package eppic.db;
 
+import java.util.Map;
+
+import owl.core.sequence.alignment.PairwiseSequenceAlignment;
+import edu.uci.ics.jung.graph.util.Pair;
 import eppic.model.InterfaceDB;
 
 public class Interface {
@@ -10,14 +14,10 @@ public class Interface {
 	private InterfaceDB interf;
 	private PdbInfo pdb;
 	
-	private ContactSet contactSet;
-	
-	
 	public Interface(InterfaceDB interf, PdbInfo pdb) {
 		this.interf = interf;
 		this.pdb = pdb;
-		
-		this.contactSet = new ContactSet(this.interf.getContacts());
+				
 	}
 	
 	public InterfaceDB getInterface() {
@@ -26,10 +26,6 @@ public class Interface {
 	
 	public PdbInfo getPdbInfo() {
 		return pdb;
-	}
-	
-	public ContactSet getContactSet() {
-		return contactSet;
 	}
 	
 	/**
@@ -93,40 +89,12 @@ public class Interface {
 		return null;
 	}
 	
-	public double calcInterfaceOverlap(Interface other, SeqClusterLevel seqClusterLevel) {
+	public double calcInterfaceOverlap(Interface other, Map<Pair<String>,PairwiseSequenceAlignment> alnPool, SeqClusterLevel seqClusterLevel) {
 		
-		if (! this.isSameContent(other, seqClusterLevel)) {
-			// not same content: overlap value is 0 
-			System.out.println("different content: "+this.getInterface().getInterfaceId()+"-"+other.getInterface().getInterfaceId());
-			return 0.0;
-		}
-
-		// now we know we have same content in both interfaces
+		InterfaceComparator csComp = new InterfaceComparator(this,other,alnPool,seqClusterLevel);
 		
-		// we then branch here on the 2 cases: homo-interface or hetero-interface
+		return csComp.calcOverlap();
 		
-		boolean homoInterface = this.isHomoContent(seqClusterLevel);		
-		
-		if (homoInterface) {
-
-			// in this case we need to check both direct and inverse, because the contacts might be stored in opposite order
-			double coDirect = this.contactSet.calcOverlap(other.getContactSet(), false);
-			double coInverse = this.contactSet.calcOverlap(other.getContactSet(), true);
-
-			if (coInverse>coDirect) 
-				System.out.println("inverse homo-interface: "+this.getInterface().getInterfaceId()+"-"+other.getInterface().getInterfaceId()+" direct value: "+String.format("%5.3f",coDirect));
-			
-			return Math.max(coDirect, coInverse);
-			
-		} else {		
-			// we check if we need to reverse the order of chains in the comparison
-			boolean inverse = this.isInvertedContent(other, seqClusterLevel);				
-
-			if (inverse) 
-				System.out.println("inverse hetero-interface: "+this.getInterface().getInterfaceId()+"-"+other.getInterface().getInterfaceId());
-			
-			return this.contactSet.calcOverlap(other.getContactSet(), inverse);
-		}
 	}
 	
 }
