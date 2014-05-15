@@ -16,6 +16,8 @@ public class SeqClusterDB implements Serializable {
 	private int c70;
 	private int c60;
 	private int c50;
+	private int c40;
+	private int c30;
 	 
 	private ChainClusterDB chainCluster;
 
@@ -97,6 +99,22 @@ public class SeqClusterDB implements Serializable {
 
 	public void setC50(int c50) {
 		this.c50 = c50;
+	}
+
+	public int getC40() {
+		return c40;
+	}
+
+	public void setC40(int c40) {
+		this.c40 = c40;
+	}
+
+	public int getC30() {
+		return c30;
+	}
+
+	public void setC30(int c30) {
+		this.c30 = c30;
 	}
 
 	public ChainClusterDB getChainCluster() {

@@ -58,6 +58,12 @@ public class ChainCluster {
 		case C50:
 			seqClusterId = seqCluster.getC50(); 
 			break;
+		case C40:
+			seqClusterId = seqCluster.getC40();
+			break;
+		case C30:
+			seqClusterId = seqCluster.getC30();
+			break;			
 
 		}
 		return seqClusterId;
