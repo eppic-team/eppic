@@ -18,9 +18,10 @@ public class ClusterCrystalForms {
 
 		String help = 
 				"Usage: ClusterCrystalForms \n" +
-				" -i : c50 id\n"+
+				" -i : cluster id\n"+
 				" -c : contact overlap score cutoff\n"+
-				" -a : minimum area cutoff\n";
+				" -a : minimum area cutoff\n"+
+				" -l : sequence cluster level\n";
 				//" -d : print some debug output\n"; 
 
 		int clusterId = -1;
@@ -31,7 +32,7 @@ public class ClusterCrystalForms {
 		double minArea = DEFAULT_MIN_AREA;
 		SeqClusterLevel seqClusterLevel = DEFAULT_SEQ_CLUSTER_LEVEL;
 
-		Getopt g = new Getopt("ClusterCrystalForms", args, "i:c:a:dh?");
+		Getopt g = new Getopt("ClusterCrystalForms", args, "i:c:a:l:h?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
@@ -44,6 +45,9 @@ public class ClusterCrystalForms {
 			case 'a':
 				minArea = Double.parseDouble(g.getOptarg());
 				break;
+			case 'l':
+				seqClusterLevel = SeqClusterLevel.getByLevel(Integer.parseInt(g.getOptarg())); 
+				break;				
 			//case 'd':
 			//	debug = true;
 			//	break;
@@ -60,17 +64,17 @@ public class ClusterCrystalForms {
 		
 		
 		if (clusterId<=0) {
-			System.err.println("A valid sequence cluster id (c50) has to be provided with -i");
+			System.err.println("A valid sequence cluster id (default C50 id, otherwise use -c) has to be provided with -i");
 			System.exit(1);
 		}
 		
 		
 		DBHandler dbh = new DBHandler();
 		
-		List<PdbInfoDB> pdbInfoList = dbh.deserializeC50SeqCluster(clusterId);
+		List<PdbInfoDB> pdbInfoList = dbh.deserializeSeqCluster(clusterId, seqClusterLevel.getLevel());
 		
 		PdbInfoList pdbList = new PdbInfoList(pdbInfoList);
-		System.out.println ("C50 cluster "+clusterId+" ("+pdbList.size()+" members)");
+		System.out.println ("Sequence cluster id ("+seqClusterLevel.getLevel()+"%): "+clusterId+" ("+pdbList.size()+" members)");
 		
 		long start = System.currentTimeMillis();
 		CFCompareMatrix cfMatrix = pdbList.calcLatticeOverlapMatrix(seqClusterLevel, coCutoff, minArea);

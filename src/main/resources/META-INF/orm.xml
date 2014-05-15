@@ -540,6 +540,8 @@
 			<basic name="c70"></basic>
 			<basic name="c60"></basic>
 			<basic name="c50"></basic>
+			<basic name="c40"></basic>
+			<basic name="c30"></basic>
 
 			<one-to-one name="chainCluster">
 			</one-to-one>

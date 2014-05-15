@@ -22,6 +22,7 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import javax.persistence.metamodel.SingularAttribute;
 
 import eppic.model.JobDB_;
 import eppic.model.PdbInfoDB_;
@@ -378,14 +379,45 @@ public class DBHandler {
 		return list;
 	}
 
-	public List<PdbInfoDB> deserializeC50SeqCluster(int clusterId) {
+	public List<PdbInfoDB> deserializeSeqCluster(int clusterId, int clusterLevel) {
 		Set<String> pdbCodes = new HashSet<String>();
 		
 		CriteriaBuilder cb = this.getEntityManager().getCriteriaBuilder();
 
 		CriteriaQuery<SeqClusterDB> cq = cb.createQuery(SeqClusterDB.class);
 		Root<SeqClusterDB> root = cq.from(SeqClusterDB.class);
-		cq.where(cb.equal(root.get(SeqClusterDB_.c50), clusterId));
+		SingularAttribute<SeqClusterDB, Integer> attribute = null;
+		switch (clusterLevel) {
+		case 100:
+			attribute = SeqClusterDB_.c100;
+			break;
+		case 95:
+			attribute = SeqClusterDB_.c95;
+			break;
+		case 90:
+			attribute = SeqClusterDB_.c90;
+			break;
+		case 80:
+			attribute = SeqClusterDB_.c80;
+			break;
+		case 70:
+			attribute = SeqClusterDB_.c70;
+			break;
+		case 60:
+			attribute = SeqClusterDB_.c60;
+			break;
+		case 50:
+			attribute = SeqClusterDB_.c50;
+			break;
+		case 40:
+			attribute = SeqClusterDB_.c40;
+			break;
+		case 30:
+			attribute = SeqClusterDB_.c30;
+			break;
+			
+		}
+		cq.where(cb.equal(root.get(attribute), clusterId));
 		cq.select(root);
 		
 		List<SeqClusterDB> results = this.getEntityManager().createQuery(cq).getResultList();

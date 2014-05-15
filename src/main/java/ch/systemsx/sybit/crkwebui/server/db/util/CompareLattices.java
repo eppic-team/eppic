@@ -21,7 +21,8 @@ public class CompareLattices {
 				" -s : second PDB code\n"+
 				" -c : contact overlap score cutoff\n"+
 				" -a : minimum area cutoff\n"+
-				" -d : print some debug output\nn"; 
+				" -l : sequence cluster level to be used\n"+
+				" -d : print some debug output\n"; 
 		
 		boolean debug = false;
 		
@@ -32,7 +33,7 @@ public class CompareLattices {
 		double minArea = DEFAULT_MIN_AREA;
 		SeqClusterLevel seqClusterLevel = DEFAULT_SEQ_CLUSTER_LEVEL;
 
-		Getopt g = new Getopt("CompareLattices", args, "f:s:c:a:dh?");
+		Getopt g = new Getopt("CompareLattices", args, "f:s:c:a:l:dh?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
@@ -47,6 +48,9 @@ public class CompareLattices {
 				break;
 			case 'a':
 				minArea = Double.parseDouble(g.getOptarg());
+				break;
+			case 'l':
+				seqClusterLevel = SeqClusterLevel.getByLevel(Integer.parseInt(g.getOptarg())); 
 				break;
 			case 'd':
 				debug = true;
