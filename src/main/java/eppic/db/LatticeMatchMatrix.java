@@ -58,7 +58,11 @@ public class LatticeMatchMatrix {
 		return matches;
 	}
 	
-	public double getTotalOverlapFirstSecond(double coCutoff) {
+	public LatticeOverlapScore getLatticeOverlapScore(double coCutoff) {
+		return new LatticeOverlapScore(getTotalOverlapFirstSecond(coCutoff),getTotalOverlapSecondFirst(coCutoff));
+	}
+	
+	private double getTotalOverlapFirstSecond(double coCutoff) {
 		int matchCount = 0;
 		List<Integer> firstMatches = getFirstMatches(getMatchingPairs(coCutoff));
 		for (int i=0;i<numInterfacesFirst;i++) {
@@ -68,7 +72,7 @@ public class LatticeMatchMatrix {
 		return (double)matchCount/(double)numInterfacesFirst;
 	}
 	
-	public double getTotalOverlapSecondFirst(double coCutoff) {
+	private double getTotalOverlapSecondFirst(double coCutoff) {
 		int matchCount = 0;
 		List<Integer> secondMatches = getSecondMatches(getMatchingPairs(coCutoff));
 		for (int i=0;i<numInterfacesSecond;i++) {

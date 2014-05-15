@@ -127,15 +127,28 @@ public class PdbInfo {
 		return lmm;
 	}
 	
+	/**
+	 * 
+	 * @param other
+	 * @param seqClusterLevel
+	 * @return
+	 * @throws PairwiseSequenceAlignmentException
+	 */
 	private Map<Pair<String>,PairwiseSequenceAlignment> getAlignmentsPool(PdbInfo other, SeqClusterLevel seqClusterLevel) 
 			throws PairwiseSequenceAlignmentException {
 		
 		Map<Pair<String>,PairwiseSequenceAlignment> map = new HashMap<Pair<String>,PairwiseSequenceAlignment>();
 		for (ChainCluster thisChainCluster:this.getChainClusters()) {
+			
+			if (thisChainCluster.getChainCluster().getPdbAlignedSeq()==null) continue;
+			
 			String thisSeq = thisChainCluster.getChainCluster().getPdbAlignedSeq().replace("-", "");
 			for (ChainCluster otherChainCluster:other.getChainClusters()) {
 				
 				if (thisChainCluster.isSameSeqCluster(otherChainCluster, seqClusterLevel)) {
+					
+					if (otherChainCluster.getChainCluster().getPdbAlignedSeq()==null) continue;
+					
 					String otherSeq = otherChainCluster.getChainCluster().getPdbAlignedSeq().replace("-", "");
 					PairwiseSequenceAlignment aln = new PairwiseSequenceAlignment(thisSeq, otherSeq, "first" , "second");
 					Pair<String> pair = new Pair<String>(thisChainCluster.getChainCluster().getRepChain(),
@@ -147,6 +160,15 @@ public class PdbInfo {
 		return map;
 	}
 	
+	/**
+	 * Tells whether this and other PdbInfo have the same content at the given seqClusterLevel.
+	 * Same content means: same number of chain clusters, each of this' chains having a 
+	 * match (i.e. belonging to same sequence cluster within seqClusterLevel) in other's chains
+	 * @param other
+	 * @param seqClusterLevel true if same content, false if different content or if any of the chains
+	 * in either entry is an engineered chain without a UniProt reference
+	 * @return
+	 */
 	public boolean haveSameContent(PdbInfo other, SeqClusterLevel seqClusterLevel) {
 		
 		int numChainClusters1 = this.getPdbInfo().getChainClusters().size();
@@ -161,8 +183,13 @@ public class PdbInfo {
 			
 			int seqClusterId1 = chainCluster1.getSeqClusterId(seqClusterLevel);
 			
+			if (seqClusterId1==-1) return false;
+			
 			for (ChainCluster chainCluster2:other.getChainClusters()) {
 				int seqClusterId2 = chainCluster2.getSeqClusterId(seqClusterLevel);
+				
+				if (seqClusterId2 == -1) return false;
+				
 				if (seqClusterId1==seqClusterId2) {
 					match = true;
 					break;
