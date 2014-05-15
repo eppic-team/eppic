@@ -8,8 +8,11 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -22,6 +25,8 @@ import javax.persistence.criteria.Root;
 
 import eppic.model.JobDB_;
 import eppic.model.PdbInfoDB_;
+import eppic.model.SeqClusterDB;
+import eppic.model.SeqClusterDB_;
 import ch.systemsx.sybit.crkwebui.shared.model.InputType;
 import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
 import eppic.model.JobDB;
@@ -357,7 +362,7 @@ public class DBHandler {
 		return queryPDBList.get(0);
 	}
 
-	public List<PdbInfoDB> deserializePdb(List<String> pdbCodes) {
+	public List<PdbInfoDB> deserializePdbList(Collection<String> pdbCodes) {
 		
 		List<PdbInfoDB> list = new ArrayList<PdbInfoDB>();
 		
@@ -373,5 +378,21 @@ public class DBHandler {
 		return list;
 	}
 
-	
+	public List<PdbInfoDB> deserializeC50SeqCluster(int clusterId) {
+		Set<String> pdbCodes = new HashSet<String>();
+		
+		CriteriaBuilder cb = this.getEntityManager().getCriteriaBuilder();
+
+		CriteriaQuery<SeqClusterDB> cq = cb.createQuery(SeqClusterDB.class);
+		Root<SeqClusterDB> root = cq.from(SeqClusterDB.class);
+		cq.where(cb.equal(root.get(SeqClusterDB_.c50), clusterId));
+		cq.select(root);
+		
+		List<SeqClusterDB> results = this.getEntityManager().createQuery(cq).getResultList();
+		for (SeqClusterDB result:results) {
+			pdbCodes.add(result.getPdbCode());
+		}
+		
+		return deserializePdbList(pdbCodes);
+	}
 }

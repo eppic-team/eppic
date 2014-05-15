@@ -2,6 +2,7 @@ package ch.systemsx.sybit.crkwebui.server.db.util;
 
 import edu.uci.ics.jung.graph.util.Pair;
 import eppic.db.LatticeMatchMatrix;
+import eppic.db.LatticeOverlapScore;
 import eppic.db.PdbInfo;
 import eppic.db.SeqClusterLevel;
 import gnu.getopt.Getopt;
@@ -97,8 +98,8 @@ public class CompareLattices {
 			System.out.println(pair.getFirst()+"-"+pair.getSecond());
 		}
 	
-		System.out.printf("Total overlaps fAB: %5.3f, fBA: %5.3f\n",
-				llm.getTotalOverlapFirstSecond(coCutoff),llm.getTotalOverlapSecondFirst(coCutoff));
+		LatticeOverlapScore s = llm.getLatticeOverlapScore(coCutoff);
+		System.out.printf("Total overlaps fAB: %5.3f, fBA: %5.3f\n", s.getfAB(), s.getfBA());
 	}
 
 }
