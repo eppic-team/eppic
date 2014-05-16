@@ -486,7 +486,7 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 					model.setArea(interfaceItem.getArea());
 					model.setOperator(interfaceItem.getOperator());
 					model.setOperatorType(interfaceItem.getOperatorType());
-					model.setInfinite(interfaceItem.getIsInfinite());
+					model.setInfinite(interfaceItem.isInfinite());
 					model.setWarnings(interfaceItem.getInterfaceWarnings());
 					String thumbnailUrl = ApplicationContext.getSettings().getResultsLocation() +
 							ApplicationContext.getPdbInfo().getJobId() + 
