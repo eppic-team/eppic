@@ -46,6 +46,8 @@ public class Interface implements Serializable, Comparable<Interface>
 	private int xtalTrans_y;
 	private int xtalTrans_z; 
 	
+	private int globalInterfClusterId;
+	
 	private List<InterfaceWarning> interfaceWarnings;
 	
 	//things from the interface Score table
@@ -159,6 +161,14 @@ public class Interface implements Serializable, Comparable<Interface>
 		this.xtalTrans_z = xtalTrans_z;
 	}
 
+	public int getGlobalInterfClusterId() {
+		return globalInterfClusterId;
+	}
+
+	public void setGlobalInterfClusterId(int globalInterfClusterId) {
+		this.globalInterfClusterId = globalInterfClusterId;
+	}
+
 	public List<InterfaceWarning> getInterfaceWarnings() {
 		return interfaceWarnings;
 	}
@@ -217,6 +227,7 @@ public class Interface implements Serializable, Comparable<Interface>
 		interfaceItem.setXtalTrans_x(interfaceDB.getXtalTrans_x());
 		interfaceItem.setXtalTrans_y(interfaceDB.getXtalTrans_y());
 		interfaceItem.setXtalTrans_z(interfaceDB.getXtalTrans_z());
+		interfaceItem.setGlobalInterfClusterId(interfaceDB.getGlobalInterfClusterId());
 		
 		if(interfaceDB.getResidues() != null)
 		{

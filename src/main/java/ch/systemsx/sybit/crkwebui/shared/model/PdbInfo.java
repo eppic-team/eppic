@@ -29,6 +29,8 @@ import eppic.model.PdbInfoDB;
 @XmlRootElement(name = "eppicAnalysis")
 @XmlType(propOrder = { "pdbCode", "title", "releaseDate", "expMethod",
 	"spaceGroup", "resolution", "rfreeValue",
+	"cellA","cellB","cellC","cellAlpha","cellBeta","cellGamma",
+	"crystalFormId",
 	"chainClusters", "interfaceClusters",  "assemblies",
 "runParameters"})
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -56,6 +58,15 @@ public class PdbInfo implements Serializable, ProcessingData
     private double resolution;
     private double rfreeValue;
     private String expMethod;
+    
+    private double cellA;
+	private double cellB;
+	private double cellC;
+	private double cellAlpha;
+	private double cellBeta;
+	private double cellGamma;
+	
+	private int crystalFormId;
 
     private RunParameters runParameters;
 
@@ -80,24 +91,38 @@ public class PdbInfo implements Serializable, ProcessingData
     }
 
     public PdbInfo(int uid,
-	    String pdbName,
+	    String pdbCode,
 	    String title,
 	    String spaceGroup,
 	    String expMethod,
 	    double resolution,
 	    double rfreeValue,
+	    double cellA,
+	    double cellB,
+	    double cellC,
+	    double cellAlpha,
+	    double cellBeta,
+	    double cellGamma,
+	    int crystalFormId,
 	    RunParameters runParameters) 
     {
 	this.interfaceClusters = new ArrayList<InterfaceCluster>();
 	this.chainClusters = new ArrayList<ChainCluster>();
 	this.assemblies = new ArrayList<Assembly>();
 	this.uid = uid;
-	this.pdbCode = pdbName;
+	this.pdbCode = pdbCode;
 	this.title = title;
 	this.spaceGroup = spaceGroup;
 	this.expMethod = expMethod;
 	this.resolution = resolution;
 	this.rfreeValue = rfreeValue;
+	this.cellA = cellA;
+	this.cellB = cellB;
+	this.cellC = cellC;
+	this.cellAlpha = cellAlpha;
+	this.cellBeta = cellBeta;
+	this.cellGamma = cellGamma;
+	this.crystalFormId = crystalFormId;
 	this.runParameters = runParameters;
     }
 
@@ -189,7 +214,63 @@ public class PdbInfo implements Serializable, ProcessingData
 	this.rfreeValue = rfreeValue;
     }
 
-    public void setRunParameters(RunParameters runParameters) {
+    public double getCellA() {
+		return cellA;
+	}
+
+	public void setCellA(double cellA) {
+		this.cellA = cellA;
+	}
+
+	public double getCellB() {
+		return cellB;
+	}
+
+	public void setCellB(double cellB) {
+		this.cellB = cellB;
+	}
+
+	public double getCellC() {
+		return cellC;
+	}
+
+	public void setCellC(double cellC) {
+		this.cellC = cellC;
+	}
+
+	public double getCellAlpha() {
+		return cellAlpha;
+	}
+
+	public void setCellAlpha(double cellAlpha) {
+		this.cellAlpha = cellAlpha;
+	}
+
+	public double getCellBeta() {
+		return cellBeta;
+	}
+
+	public void setCellBeta(double cellBeta) {
+		this.cellBeta = cellBeta;
+	}
+
+	public double getCellGamma() {
+		return cellGamma;
+	}
+
+	public void setCellGamma(double cellGamma) {
+		this.cellGamma = cellGamma;
+	}
+
+	public int getCrystalFormId() {
+		return crystalFormId;
+	}
+
+	public void setCrystalFormId(int crystalFormId) {
+		this.crystalFormId = crystalFormId;
+	}
+
+	public void setRunParameters(RunParameters runParameters) {
 	this.runParameters = runParameters;
     }
 
@@ -269,16 +350,16 @@ public class PdbInfo implements Serializable, ProcessingData
 
     /**
      * Converts DB model item into DTO one.
-     * @param pdbScoreItemDB model item to convert
+     * @param pdbInfoDB model item to convert
      * @return DTO representation of model item
      */
-    public static PdbInfo create(PdbInfoDB pdbScoreItemDB)
+    public static PdbInfo create(PdbInfoDB pdbInfoDB)
     {
 	PdbInfo pdbInfo = new PdbInfo();
 
-	if(pdbScoreItemDB.getInterfaceClusters() != null)
+	if(pdbInfoDB.getInterfaceClusters() != null)
 	{
-	    List<InterfaceClusterDB> interfaceClusterDBs = pdbScoreItemDB.getInterfaceClusters();
+	    List<InterfaceClusterDB> interfaceClusterDBs = pdbInfoDB.getInterfaceClusters();
 
 	    List<InterfaceCluster> interfaceClusters = new ArrayList<InterfaceCluster>();
 
@@ -290,9 +371,9 @@ public class PdbInfo implements Serializable, ProcessingData
 	    pdbInfo.setInterfaceClusters(interfaceClusters);
 	}
 
-	if(pdbScoreItemDB.getAssemblies() != null)
+	if(pdbInfoDB.getAssemblies() != null)
 	{
-	    List<AssemblyDB> assemblyDBs = pdbScoreItemDB.getAssemblies();
+	    List<AssemblyDB> assemblyDBs = pdbInfoDB.getAssemblies();
 
 	    List<Assembly> assemblies = new ArrayList<Assembly>();
 
@@ -304,9 +385,9 @@ public class PdbInfo implements Serializable, ProcessingData
 	    pdbInfo.setAssemblies(assemblies);
 	}
 
-	if(pdbScoreItemDB.getChainClusters() != null)
+	if(pdbInfoDB.getChainClusters() != null)
 	{
-	    List<ChainClusterDB> homologsInfoItemDBs = pdbScoreItemDB.getChainClusters();
+	    List<ChainClusterDB> homologsInfoItemDBs = pdbInfoDB.getChainClusters();
 
 	    List<ChainCluster> homologsStringItems = new ArrayList<ChainCluster>();
 
@@ -318,15 +399,22 @@ public class PdbInfo implements Serializable, ProcessingData
 	    pdbInfo.setChainClusters(homologsStringItems);
 	}
 
-	pdbInfo.setPdbCode(pdbScoreItemDB.getPdbCode());
-	pdbInfo.setReleaseDate(pdbScoreItemDB.getReleaseDate());
-	pdbInfo.setRunParameters(RunParameters.create(pdbScoreItemDB.getRunParameters()));
-	pdbInfo.setSpaceGroup(pdbScoreItemDB.getSpaceGroup());
-	pdbInfo.setExpMethod(pdbScoreItemDB.getExpMethod());
-	pdbInfo.setResolution(pdbScoreItemDB.getResolution());
-	pdbInfo.setRfreeValue(pdbScoreItemDB.getRfreeValue());
-	pdbInfo.setTitle(pdbScoreItemDB.getTitle());
-	pdbInfo.setUid(pdbScoreItemDB.getUid());
+	pdbInfo.setPdbCode(pdbInfoDB.getPdbCode());
+	pdbInfo.setReleaseDate(pdbInfoDB.getReleaseDate());
+	pdbInfo.setRunParameters(RunParameters.create(pdbInfoDB.getRunParameters()));
+	pdbInfo.setSpaceGroup(pdbInfoDB.getSpaceGroup());
+	pdbInfo.setExpMethod(pdbInfoDB.getExpMethod());
+	pdbInfo.setResolution(pdbInfoDB.getResolution());
+	pdbInfo.setRfreeValue(pdbInfoDB.getRfreeValue());
+	pdbInfo.setTitle(pdbInfoDB.getTitle());
+	pdbInfo.setUid(pdbInfoDB.getUid());
+	pdbInfo.setCellA(pdbInfoDB.getCellA());
+	pdbInfo.setCellB(pdbInfoDB.getCellB());
+	pdbInfo.setCellC(pdbInfoDB.getCellC());
+	pdbInfo.setCellAlpha(pdbInfoDB.getCellAlpha());
+	pdbInfo.setCellBeta(pdbInfoDB.getCellBeta());
+	pdbInfo.setCellGamma(pdbInfoDB.getCellGamma());
+	pdbInfo.setCrystalFormId(pdbInfo.getCrystalFormId());
 	return pdbInfo;
     }
 }

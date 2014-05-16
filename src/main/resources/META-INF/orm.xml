@@ -89,6 +89,8 @@
 			<basic name="cellAlpha"></basic>
 			<basic name="cellBeta"></basic>
 			<basic name="cellGamma"></basic>
+			
+			<basic name="crystalFormId"></basic>
 
 			<one-to-many name="interfaceClusters" mapped-by="pdbInfo">
 				<cascade>
@@ -168,6 +170,8 @@
 			</basic>
 			<basic name="avgArea"></basic>
 			<basic name="numMembers"></basic>
+			
+			<basic name="globalInterfClusterId"></basic>
 
 			<many-to-one name="pdbInfo">
 			</many-to-one>
@@ -260,6 +264,8 @@
 				<column length="5" />
 			</basic>
 			<basic name="isInfinite"></basic>
+			
+			<basic name="globalInterfClusterId"></basic>
 
 			<many-to-one name="interfaceCluster">
 			</many-to-one>

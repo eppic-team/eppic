@@ -12,17 +12,17 @@ import eppic.model.PdbInfoDB;
 public interface PDBInfoDAO 
 {
 	/**
-	 * Retrieves pdb score item by job identifier.
+	 * Retrieves pdb info item by job identifier.
 	 * @param jobId identifier of the job
-	 * @return pdb score item
-	 * @throws DaoException when can not retrieve pdb score item for job
+	 * @return pdb info item
+	 * @throws DaoException when can not retrieve pdb info item for job
 	 */
-	public PdbInfo getPDBScore(String jobId) throws DaoException;
+	public PdbInfo getPDBInfo(String jobId) throws DaoException;
 	
 	/**
-	 * Persists pdb score item.
-	 * @param pdbScoreItem pdb score item to persist
-	 * @throws DaoException when can not insert pdb score item
+	 * Persists pdb info item.
+	 * @param pdbInfo pdb info item to persist
+	 * @throws DaoException when can not insert pdb info item
 	 */
-	public void insertPDBScore(PdbInfoDB pdbScoreItem) throws DaoException;
+	public void insertPDBInfo(PdbInfoDB pdbInfo) throws DaoException;
 }
