@@ -17,6 +17,8 @@ public class InterfaceClusterDB implements Serializable {
 	
 	private int numMembers;
 	
+	private int globalInterfClusterId;
+	
 	private List<InterfaceDB> interfaces;
 	
 	private List<InterfaceClusterScoreDB> interfaceClusterScores;
@@ -80,6 +82,14 @@ public class InterfaceClusterDB implements Serializable {
 
 	public void setNumMembers(int numMembers) {
 		this.numMembers = numMembers;
+	}
+
+	public int getGlobalInterfClusterId() {
+		return globalInterfClusterId;
+	}
+
+	public void setGlobalInterfClusterId(int globalInterfClusterId) {
+		this.globalInterfClusterId = globalInterfClusterId;
 	}
 
 	public List<InterfaceDB> getInterfaces() {

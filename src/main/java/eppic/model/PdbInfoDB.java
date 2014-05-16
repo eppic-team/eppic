@@ -29,6 +29,8 @@ public class PdbInfoDB implements Serializable {
 	private double cellBeta;
 	private double cellGamma;
 	
+	private int crystalFormId;
+	
 	private RunParametersDB runParameters;
 	
 	private List<ChainClusterDB> chainClusters;
@@ -53,6 +55,13 @@ public class PdbInfoDB implements Serializable {
 						String expMethod,
 						double resolution,
 						double rfreeValue,
+						double cellA,
+						double cellB,
+						double cellC,
+						double cellAlpha,
+						double cellBeta,
+						double cellGamma,
+						int crystalFormId,
 						RunParametersDB runParameters) {
 		
 		chainClusters = new ArrayList<ChainClusterDB>();
@@ -66,6 +75,13 @@ public class PdbInfoDB implements Serializable {
 		this.runParameters = runParameters;
 		this.job = job;
 		this.rfreeValue = rfreeValue;
+		this.cellA = cellA;
+		this.cellB = cellB;
+		this.cellC = cellC;
+		this.cellAlpha = cellAlpha;
+		this.cellBeta = cellBeta;
+		this.cellGamma = cellGamma;
+		this.crystalFormId = crystalFormId;
 	}
 	
 	/**
@@ -251,6 +267,14 @@ public class PdbInfoDB implements Serializable {
 
 	public void setCellGamma(double cellGamma) {
 		this.cellGamma = cellGamma;
+	}
+
+	public int getCrystalFormId() {
+		return crystalFormId;
+	}
+
+	public void setCrystalFormId(int crystalFormId) {
+		this.crystalFormId = crystalFormId;
 	}
 	
 	

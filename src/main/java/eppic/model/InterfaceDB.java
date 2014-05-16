@@ -30,6 +30,8 @@ public class InterfaceDB implements Serializable {
 	private int xtalTrans_y;
 	private int xtalTrans_z;
 	
+	private int globalInterfClusterId;
+	
 	private List<InterfaceWarningDB> interfaceWarnings;
 	
 	private List<InterfaceScoreDB> interfaceScores;
@@ -162,6 +164,14 @@ public class InterfaceDB implements Serializable {
 
 	public void setXtalTrans_z(int xtalTrans_z) {
 		this.xtalTrans_z = xtalTrans_z;
+	}
+
+	public int getGlobalInterfClusterId() {
+		return globalInterfClusterId;
+	}
+
+	public void setGlobalInterfClusterId(int globalInterfClusterId) {
+		this.globalInterfClusterId = globalInterfClusterId;
 	}
 
 	public List<InterfaceWarningDB> getInterfaceWarnings() {
