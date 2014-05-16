@@ -36,7 +36,7 @@ public class PdbInfoList {
 			}
 
 		}
-		return new CFCompareMatrix(matrix);
+		return new CFCompareMatrix(this,matrix);
 	}
 	
 	public int size() {

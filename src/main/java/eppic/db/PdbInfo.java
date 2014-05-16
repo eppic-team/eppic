@@ -201,4 +201,15 @@ public class PdbInfo {
 		// if all chains have matches, then we have same content
 		return true;
 	}
+	
+	public boolean equals(Object o) {
+		if (!(o instanceof PdbInfo)) return false;
+		
+		PdbInfo other = (PdbInfo)o;
+		return this.getPdbInfo().getPdbCode().equals(other.getPdbInfo().getPdbCode());
+	}
+	
+	public int hashCode() {
+		return this.getPdbInfo().getPdbCode().hashCode();
+	}
 }
