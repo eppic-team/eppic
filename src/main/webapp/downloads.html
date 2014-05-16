@@ -50,6 +50,24 @@
 			Please <a href="mailto:eppic@systemsx.ch">contact</a> us if you have
 			problems with it or if you want to send any kind of feedback.
 		</p>
+			
+		<h2>EPPIC Interface Loader plug-in for PyMOL</h2>
+
+		<p>
+			The EPPIC Interface Loader plug-in for PyMOL allows 
+			direct download of precalculated EPPIC interfaces into PyMOL. It works in Linux, Windows and Mac.
+			To request a specific interface (according to EPPIC numbering) just type a PDB code 
+			followed by a dash and by the interface number in the plug-in dialog window.
+			To request all EPPIC interfaces for that entry, just input the PDB code.
+		</p>
+		<p>
+			Interfaces are displayed by default as lines; by typing a PDB code followed by a dash, 
+			interface number, another dash and a chain ID (e.g.: 2trx-1-A) the interface will 
+			be shown in hybrid mode. In this mode the chain given in the input will be shown as 
+			sequence entropy-mapped surface and its interface partner will appear as cartoon.
+			The latest version of the plugin is available <a
+				href="../downloads/pymol_plugin.zip">here</a>. 			
+		</p>
 
 		<h2>Datasets</h2>
 
@@ -95,6 +113,25 @@
 			<li><a href="../downloads/TMPbio.txt"  target="_blank">TMPbio set</a>: a set of
 				biological interfaces spanning the transmembrane region, from both
 				alpha and beta TMP subclasses</li>
+		</ul>
+		
+		<p>
+			Please note that the original publications also contain the datasets including 
+			our full annotations. However we cannot update those if we find any mistakes.
+			The downloadable datasets here represent the most up-to-date and best
+			validated sets. Please use these ones and not the ones available in the 
+			original publications.
+		</p>
+		<p>
+			For completeness this is a full changelog of any mistakes that we have found 
+			since publication:
+			
+		</p>
+		<ul>
+			<li>
+			DCbio set: 3f3e was removed because it is a membrane protein and additionally the experimental evidence 
+			was not sufficiently clear; 1ytq was removed because it is a domain swap
+			</li>
 		</ul>
 
 	</div>

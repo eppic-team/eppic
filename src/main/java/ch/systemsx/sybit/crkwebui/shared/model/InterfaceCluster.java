@@ -28,6 +28,8 @@ public class InterfaceCluster implements Serializable, Comparable<InterfaceClust
 	private double avgArea;
 	private int numMembers;
 	
+	private int globalInterfClusterId;
+	
 	@XmlElementWrapper(name = "interfaces")
 	@XmlElement(name = "interface")
 	private List<Interface> interfaces;
@@ -79,6 +81,14 @@ public class InterfaceCluster implements Serializable, Comparable<InterfaceClust
 		this.numMembers = numMembers;
 	}
 
+	public int getGlobalInterfClusterId() {
+		return globalInterfClusterId;
+	}
+
+	public void setGlobalInterfClusterId(int globalInterfClusterId) {
+		this.globalInterfClusterId = globalInterfClusterId;
+	}
+
 	public List<Interface> getInterfaces() {
 		return interfaces;
 	}
@@ -110,6 +120,7 @@ public class InterfaceCluster implements Serializable, Comparable<InterfaceClust
 		
 		cluster.setAvgArea(clusterDB.getAvgArea());
 		cluster.setNumMembers(clusterDB.getNumMembers());
+		cluster.setGlobalInterfClusterId(clusterDB.getGlobalInterfClusterId()); 
 		
 		if(clusterDB.getInterfaceClusterScores() != null)
 		{

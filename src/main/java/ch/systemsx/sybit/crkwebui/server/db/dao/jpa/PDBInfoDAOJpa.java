@@ -31,7 +31,7 @@ public class PDBInfoDAOJpa implements PDBInfoDAO
 	}
 
 	@Override
-	public PdbInfo getPDBScore(String jobId) throws DaoException
+	public PdbInfo getPDBInfo(String jobId) throws DaoException
 	{
 		EntityManager entityManager = null;
 		PdbInfo result = null;
@@ -54,6 +54,13 @@ public class PDBInfoDAOJpa implements PDBInfoDAO
 									  pdbScoreItemRoot.get(PdbInfoDB_.expMethod),
 									  pdbScoreItemRoot.get(PdbInfoDB_.resolution),
 									  pdbScoreItemRoot.get(PdbInfoDB_.rfreeValue),
+									  pdbScoreItemRoot.get(PdbInfoDB_.cellA),
+									  pdbScoreItemRoot.get(PdbInfoDB_.cellB),
+									  pdbScoreItemRoot.get(PdbInfoDB_.cellC),
+									  pdbScoreItemRoot.get(PdbInfoDB_.cellAlpha),
+									  pdbScoreItemRoot.get(PdbInfoDB_.cellBeta),
+									  pdbScoreItemRoot.get(PdbInfoDB_.cellGamma),
+									  pdbScoreItemRoot.get(PdbInfoDB_.crystalFormId),
 									  pdbScoreItemRoot.get(PdbInfoDB_.runParameters));
 			
 			Query query = entityManager.createQuery(criteriaQuery);
@@ -83,7 +90,7 @@ public class PDBInfoDAOJpa implements PDBInfoDAO
 	}
 	
 	@Override
-	public void insertPDBScore(PdbInfoDB pdbScoreItem) throws DaoException
+	public void insertPDBInfo(PdbInfoDB pdbScoreItem) throws DaoException
 	{
 		EntityManager entityManager = null;
 		

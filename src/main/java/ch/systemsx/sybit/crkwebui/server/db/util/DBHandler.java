@@ -7,8 +7,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -18,16 +22,19 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import javax.persistence.metamodel.SingularAttribute;
 
 import eppic.model.JobDB_;
 import eppic.model.PdbInfoDB_;
+import eppic.model.SeqClusterDB;
+import eppic.model.SeqClusterDB_;
 import ch.systemsx.sybit.crkwebui.shared.model.InputType;
 import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
 import eppic.model.JobDB;
 import eppic.model.PdbInfoDB;
 
 /**
- * Class to perform operations on CRK database such as adding by job,
+ * Class to perform operations on the EPPIC database, such as adding by job,
  * removing a job or checking if a job is present in the database
  * @author biyani_n
  *
@@ -42,7 +49,7 @@ public class DBHandler {
 	private EntityManagerFactory emf;
 	
 	/**
-	 * Default Constructor : Initializes factory with "crk" databse
+	 * Default Constructor : Initializes factory with {@value #DEFAULT_ONLINE_JPA} database
 	 */
 	public DBHandler(){
 		this.emf = Persistence.createEntityManagerFactory(DEFAULT_ONLINE_JPA);
@@ -74,12 +81,12 @@ public class DBHandler {
 	 * @param PdbInfoDB
 	 * 
 	 */
-	public void addToDB(PdbInfoDB pdbScoreItem){
+	public void addToDB(PdbInfoDB pdbInfo){
 		EntityManager entityManager = this.getEntityManager();
 		entityManager.getTransaction().begin();
-		entityManager.persist(pdbScoreItem);
+		entityManager.persist(pdbInfo);
 
-		String pdbCode = pdbScoreItem.getPdbCode();
+		String pdbCode = pdbInfo.getPdbCode();
 
 		JobDB job = new JobDB();
 		job.setJobId(pdbCode);
@@ -91,8 +98,8 @@ public class DBHandler {
 		job.setInputType(InputType.PDBCODE.getIndex());
 		job.setSubmissionId("-1");
 
-		pdbScoreItem.setJob(job);
-		job.setPdbInfo(pdbScoreItem);
+		pdbInfo.setJob(job);
+		job.setPdbInfo(pdbInfo);
 		entityManager.persist(job);
 		entityManager.getTransaction().commit();
 		
@@ -102,7 +109,7 @@ public class DBHandler {
 	
 	/**
 	 * Adds entry to the DataBase when only pdbCode specified.
-	 * Inserts a pseudo job and no pdbScoreItem
+	 * Inserts a pseudo job and no pdbInfo
 	 * @param String pdbCode
 	 * 
 	 */
@@ -178,7 +185,7 @@ public class DBHandler {
 	}
 	
 	/**
-	 * checks for a entry in the DataBase of a specific JobID
+	 * checks for an entry in the DataBase of a specific JobID
 	 * @param String jobID
 	 * @return TRUE: if present; FALSE: if not
 	 */
@@ -339,5 +346,85 @@ public class DBHandler {
 		return pdbScoreItem;
 	}
 
+	public PdbInfoDB deserializePdb(String pdbCode) {
+		CriteriaBuilder cbPDB = this.getEntityManager().getCriteriaBuilder();
 
+		CriteriaQuery<PdbInfoDB> cqPDB = cbPDB.createQuery(PdbInfoDB.class);
+		Root<PdbInfoDB> rootPDB = cqPDB.from(PdbInfoDB.class);
+		cqPDB.where(cbPDB.equal(rootPDB.get(PdbInfoDB_.pdbCode), pdbCode));
+		cqPDB.select(rootPDB);
+		List<PdbInfoDB> queryPDBList = this.getEntityManager().createQuery(cqPDB).getResultList();
+		if (queryPDBList.size()==0) return null;
+		else if (queryPDBList.size()>1) {
+			System.err.println("More than 1 PdbInfoDB returned for given PDB code: "+pdbCode);
+			return null;
+		}
+		
+		return queryPDBList.get(0);
+	}
+
+	public List<PdbInfoDB> deserializePdbList(Collection<String> pdbCodes) {
+		
+		List<PdbInfoDB> list = new ArrayList<PdbInfoDB>();
+		
+
+		for (String pdbCode:pdbCodes) {
+			
+			PdbInfoDB pdbInfo = deserializePdb(pdbCode);
+			if (pdbInfo!=null) {
+				list.add(pdbInfo);
+			}
+		}
+		
+		return list;
+	}
+
+	public List<PdbInfoDB> deserializeSeqCluster(int clusterId, int clusterLevel) {
+		Set<String> pdbCodes = new HashSet<String>();
+		
+		CriteriaBuilder cb = this.getEntityManager().getCriteriaBuilder();
+
+		CriteriaQuery<SeqClusterDB> cq = cb.createQuery(SeqClusterDB.class);
+		Root<SeqClusterDB> root = cq.from(SeqClusterDB.class);
+		SingularAttribute<SeqClusterDB, Integer> attribute = null;
+		switch (clusterLevel) {
+		case 100:
+			attribute = SeqClusterDB_.c100;
+			break;
+		case 95:
+			attribute = SeqClusterDB_.c95;
+			break;
+		case 90:
+			attribute = SeqClusterDB_.c90;
+			break;
+		case 80:
+			attribute = SeqClusterDB_.c80;
+			break;
+		case 70:
+			attribute = SeqClusterDB_.c70;
+			break;
+		case 60:
+			attribute = SeqClusterDB_.c60;
+			break;
+		case 50:
+			attribute = SeqClusterDB_.c50;
+			break;
+		case 40:
+			attribute = SeqClusterDB_.c40;
+			break;
+		case 30:
+			attribute = SeqClusterDB_.c30;
+			break;
+			
+		}
+		cq.where(cb.equal(root.get(attribute), clusterId));
+		cq.select(root);
+		
+		List<SeqClusterDB> results = this.getEntityManager().createQuery(cq).getResultList();
+		for (SeqClusterDB result:results) {
+			pdbCodes.add(result.getPdbCode());
+		}
+		
+		return deserializePdbList(pdbCodes);
+	}
 }

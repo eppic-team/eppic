@@ -19,6 +19,8 @@ public class SeqCluster implements Serializable {
 	private int c70;
 	private int c60;
 	private int c50;
+	private int c40;
+	private int c30;
 	
 	private ChainCluster chainCluster;
 
@@ -37,7 +39,8 @@ public class SeqCluster implements Serializable {
 		this.setC70(seqClusterDB.getC70());
 		this.setC60(seqClusterDB.getC60());
 		this.setC50(seqClusterDB.getC50());
-		
+		this.setC40(seqClusterDB.getC40());
+		this.setC30(seqClusterDB.getC30());
 	}
 	
 	public int getUid() {
@@ -121,6 +124,22 @@ public class SeqCluster implements Serializable {
 	}
 
 	
+	public int getC40() {
+		return c40;
+	}
+
+	public void setC40(int c40) {
+		this.c40 = c40;
+	}
+
+	public int getC30() {
+		return c30;
+	}
+
+	public void setC30(int c30) {
+		this.c30 = c30;
+	}
+
 	public ChainCluster getChainCluster() {
 		return chainCluster;
 	}
@@ -148,6 +167,8 @@ public class SeqCluster implements Serializable {
 		seqCluster.setC70(seqClusterDB.getC70());
 		seqCluster.setC60(seqClusterDB.getC60());
 		seqCluster.setC50(seqClusterDB.getC50());
+		seqCluster.setC40(seqClusterDB.getC40());
+		seqCluster.setC30(seqClusterDB.getC30());
 
 		return seqCluster;
 	}

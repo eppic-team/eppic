@@ -66,6 +66,13 @@ public class DataDownloadServletTest {
 	pdbInfo.setInterfaceClusters(clusters);
 	List<ChainCluster> chainClusters = getChainCluster();
 	pdbInfo.setChainClusters(chainClusters);
+	pdbInfo.setCellA(1);
+	pdbInfo.setCellA(1);
+	pdbInfo.setCellA(1);
+	pdbInfo.setCellAlpha(90);
+	pdbInfo.setCellBeta(90);
+	pdbInfo.setCellGamma(90);
+	pdbInfo.setCrystalFormId(1);
 	return Arrays.asList(pdbInfo);
     }
 
