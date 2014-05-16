@@ -81,4 +81,9 @@ public interface CrkWebServiceController
 	 * @param UniProtId
 	 */
 	public abstract void getListOfPDBsHavingAUniProt(String uniProtId);
+	/**
+	 * gets a list of pdb having a seq with a particular PdbCode and chain
+	 * @param UniProtId
+	 */
+	public abstract void getListOfPDBsbyPdbCode(String pdbCode, String chain);
 }

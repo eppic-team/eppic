@@ -7,6 +7,7 @@ import ch.systemsx.sybit.crkwebui.client.commons.callbacks.GetAllResiduesCallbac
 import ch.systemsx.sybit.crkwebui.client.commons.callbacks.GetCurrentStatusDataCallback;
 import ch.systemsx.sybit.crkwebui.client.commons.callbacks.GetInterfaceResiduesCallback;
 import ch.systemsx.sybit.crkwebui.client.commons.callbacks.GetJobsForCurrentSessionCallbackXsrf;
+import ch.systemsx.sybit.crkwebui.client.commons.callbacks.GetPdbForPdbChainCallBackXsrf;
 import ch.systemsx.sybit.crkwebui.client.commons.callbacks.GetPdbForUniprotCallBackXsrf;
 import ch.systemsx.sybit.crkwebui.client.commons.callbacks.GetResultsOfProcessingCallback;
 import ch.systemsx.sybit.crkwebui.client.commons.callbacks.GetSettingsCallback;
@@ -113,5 +114,11 @@ public class CrkWebServiceControllerImpl implements CrkWebServiceController
 		xsrfTokenService.getNewXsrfToken(
 				new GetPdbForUniprotCallBackXsrf(crkWebService, uniProtId));
 		
+	}
+
+	@Override
+	public void getListOfPDBsbyPdbCode(String pdbCode, String chain) {
+	   xsrfTokenService.getNewXsrfToken(new GetPdbForPdbChainCallBackXsrf(crkWebService, pdbCode, chain));
+	    
 	}
 }

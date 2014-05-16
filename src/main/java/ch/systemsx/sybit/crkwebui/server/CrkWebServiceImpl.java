@@ -762,6 +762,24 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 		}
 		
 		return data;
+	}
+
+	@Override
+	public List<PDBSearchResult> getListOfPDBs(String pdbCode, String chain) throws Exception {
+	    ChainClusterDAO homologsDAO = new ChainClusterDAOJpa();
+		List<PDBSearchResult> resultList = homologsDAO.getPdbSearchItems(pdbCode, chain, 100);
+		
+		List<PDBSearchResult> data = new ArrayList<PDBSearchResult>();
+
+		if (resultList != null) {
+			for(PDBSearchResult result: resultList){
+				if(result.getPdbCode() != null){
+					data.add(result);
+				}
+			}
+		}
+		
+		return data;
 	} 
 }
 

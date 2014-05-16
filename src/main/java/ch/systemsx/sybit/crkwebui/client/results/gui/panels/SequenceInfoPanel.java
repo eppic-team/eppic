@@ -382,7 +382,7 @@ public class SequenceInfoPanel extends FieldSet
 			
 			@Override
 			public void onClick(ClickEvent event) {
-				History.newItem("search/"+chainCluster.getRefUniProtId());
+				History.newItem("searchPdb/"+chainCluster.getPdbCode() + "/" + chainCluster.getRepChain());
 			}
 		});
     	items.add(searchLink);

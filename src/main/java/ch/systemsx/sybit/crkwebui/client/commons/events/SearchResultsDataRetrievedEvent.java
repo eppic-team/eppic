@@ -16,11 +16,23 @@ public class SearchResultsDataRetrievedEvent extends GwtEvent<SearchResultsDataR
 	 */
 	private final List<PDBSearchResult> results;
 	private final String uniProtId;
+	private final String pdbCode;
+	private final String chain;
 	
 	public SearchResultsDataRetrievedEvent(String uniProtId, List<PDBSearchResult> results)
 	{
 		this.uniProtId = uniProtId;
 		this.results = results;
+		this.pdbCode = null;
+		this.chain = null;
+	}
+	
+	public SearchResultsDataRetrievedEvent(String pdbCode, String chain, List<PDBSearchResult> results)
+	{
+		this.uniProtId = null;
+		this.results = results;
+		this.pdbCode = pdbCode;
+		this.chain = chain;
 	}
 	
 	@Override

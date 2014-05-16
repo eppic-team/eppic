@@ -11,6 +11,7 @@ import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.persistence.criteria.Subquery;
+import javax.persistence.metamodel.SingularAttribute;
 
 import ch.systemsx.sybit.crkwebui.server.db.EntityManagerHandler;
 import ch.systemsx.sybit.crkwebui.server.db.dao.ChainClusterDAO;
@@ -136,7 +137,7 @@ public class ChainClusterDAOJpa implements ChainClusterDAO
     }
     
     @Override
-    public List<PDBSearchResult> getPdbSearchItems(String pdbId, String clusterId)
+    public List<PDBSearchResult> getPdbSearchItems(String pdbCode, String repChain, int certanity)
 	    throws DaoException {
 	EntityManager entityManager = null;
 
@@ -150,13 +151,16 @@ public class ChainClusterDAOJpa implements ChainClusterDAO
 	    
 	    Root<ChainClusterDB> root = criteriaQuery.from(ChainClusterDB.class);
 
+	    SingularAttribute<SeqClusterDB, Integer> certanityColumn = getCertanityColumn(certanity);
+	    long clusteId = getClusterId(pdbCode, repChain, certanityColumn);
+	    
 	    Subquery<Integer> chainClusterIdsQuery = criteriaQuery.subquery(Integer.class);
 	    Root<SeqClusterDB> seqRoot = chainClusterIdsQuery.from(SeqClusterDB.class);
-	    chainClusterIdsQuery.select(seqRoot.get(SeqClusterDB_.c100));
-	    chainClusterIdsQuery.where(criteriaBuilder.equal(seqRoot.get(SeqClusterDB_.pdbCode), pdbId));
+	    chainClusterIdsQuery.select(seqRoot.get(SeqClusterDB_.chainCluster).get(ChainClusterDB_.uid));
+	    chainClusterIdsQuery.where(criteriaBuilder.equal(seqRoot.get(certanityColumn), clusteId));
 	    
 	    criteriaQuery.select(root.get(ChainClusterDB_.pdbInfo));
-	    criteriaQuery.where(criteriaBuilder.in(root.get(ChainClusterDB_.uid)).in(chainClusterIdsQuery));
+	    criteriaQuery.where(criteriaBuilder.in(root.get(ChainClusterDB_.uid)).value(chainClusterIdsQuery));
 	    Query query = entityManager.createQuery(criteriaQuery);
 
 	    @SuppressWarnings("unchecked")
@@ -195,5 +199,66 @@ public class ChainClusterDAOJpa implements ChainClusterDAO
 	    }
 	}
 
+    }
+
+
+    SingularAttribute<SeqClusterDB, Integer> getCertanityColumn(int certanity) {
+	switch (certanity) {
+	    case 100:
+		return SeqClusterDB_.c100;
+	    case 95:
+		return SeqClusterDB_.c95;
+	    case 90:
+		return SeqClusterDB_.c90;
+	    case 80:
+		return SeqClusterDB_.c80;
+	    case 70:
+		return SeqClusterDB_.c70;
+	    case 60:
+		return SeqClusterDB_.c60;
+	    case 50:
+		return SeqClusterDB_.c50;
+	    case 40:
+		return SeqClusterDB_.c40;
+	    case 30:
+		return SeqClusterDB_.c30;
+	    default:
+		throw new IllegalArgumentException("Certanity should be one of the following values: 100, 95, 90, 80, 70, 60 ,50, 40 ,30");
+	    }
+    }
+
+
+    private int getClusterId(String pdbCode, String repChain, SingularAttribute<SeqClusterDB, Integer> certanityColumn) throws DaoException {
+	EntityManager entityManager = null;
+
+	try
+	{
+	    entityManager = EntityManagerHandler.getEntityManager();
+	    CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+	    CriteriaQuery<Integer> criteriaQuery = criteriaBuilder.createQuery(Integer.class);
+	    Root<SeqClusterDB> root = criteriaQuery.from(SeqClusterDB.class);
+	    criteriaQuery.select(root.get(certanityColumn));
+	    criteriaQuery.where(criteriaBuilder.equal(root.get(SeqClusterDB_.pdbCode), pdbCode),
+		    criteriaBuilder.equal(root.get(SeqClusterDB_.repChain), repChain));
+	    Query query = entityManager.createQuery(criteriaQuery);
+	    
+	    return (Integer)query.getSingleResult();
+	    
+	}catch(Throwable e)
+	{
+	    e.printStackTrace();
+	    throw new DaoException(e);
+	}
+	finally
+	{
+	    try
+	    {
+		entityManager.close();
+	    }
+	    catch(Throwable t)
+	    {
+		t.printStackTrace();
+	    }
+	}
     }
 }

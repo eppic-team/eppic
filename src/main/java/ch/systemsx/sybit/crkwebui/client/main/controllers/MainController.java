@@ -378,10 +378,16 @@ public class MainController
 			ApplicationContext.setSelectedJobId(token.substring(3));
 			displayResults();
 		}
-		else if ((token != null) && (token.length() > 7) && (token.startsWith("search")))
+		else if ((token != null) && (token.length() > 14) && (token.startsWith("searchUniprot")))
 		{
 			Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_searching());
-			displaySearch(token.substring(7));
+			displayUniprotSearch(token.substring(14));
+		}
+		else if ((token != null) && (token.length() > 10) && (token.startsWith("searchPdb")))
+		{
+			Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_searching());
+			String[] tokenParts = token.split("/");
+			displayPdbSearch(tokenParts[1], tokenParts[2]);
 		}
 		else if((token != null) && (token.equals("help") || token.equals("!help")))
 		{
@@ -573,12 +579,21 @@ public class MainController
 	}
 	
 	/**
-	 * Retrieves results of search for displaying central panel content.
+	 * Retrieves results of search by uniprot id for displaying central panel content.
 	 */
-	public void displaySearch(String uniProtId)
+	public void displayUniprotSearch(String uniProtId)
 	{
 		mainViewPort.mask(AppPropertiesManager.CONSTANTS.defaultmask());
 		CrkWebServiceProvider.getServiceController().getListOfPDBsHavingAUniProt(uniProtId);
+	}
+	
+	/**
+	 * Retrieves results of search by pdbCode and chainId for displaying central panel content.
+	 */
+	public void displayPdbSearch(String pdbCode, String chain)
+	{
+		mainViewPort.mask(AppPropertiesManager.CONSTANTS.defaultmask());
+		CrkWebServiceProvider.getServiceController().getListOfPDBsbyPdbCode(pdbCode, chain);
 	}
 	
 	/**

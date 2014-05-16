@@ -31,10 +31,10 @@ public interface ChainClusterDAO
 	
 	/**
 	 * Retrieves a list of pdb search items from ChainCluster table having a particular pdb id and cluster id
-	 * @param pdbId the pdb id
-	 * @param clusterId the cluster id
+	 * @param pdbCode 
+	 * @param repChain 
 	 * @return list of results
 	 * @throws DaoException when can not retrieve items
 	 */
-	List<PDBSearchResult> getPdbSearchItems(String pdbId, String clusterId) throws DaoException;
+	List<PDBSearchResult> getPdbSearchItems(String pdbCode, String repChain, int certanity) throws DaoException;
 }
