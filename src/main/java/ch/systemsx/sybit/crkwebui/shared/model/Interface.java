@@ -39,7 +39,9 @@ public class Interface implements Serializable, Comparable<Interface>
 	// the types are the short names of the owl.core.structure.TransformType enum
 	private String operatorType;
 	
-	private boolean isInfinite;
+	private boolean infinite;
+	
+	private boolean isologous;
 	
 	private int operatorId;
 	private int xtalTrans_x;
@@ -121,14 +123,22 @@ public class Interface implements Serializable, Comparable<Interface>
 		return operatorType;
 	}
 	
-	public boolean getIsInfinite() {
-		return this.isInfinite;
+	public boolean isInfinite() {
+		return this.infinite;
 	}
 	
-	public void setIsInfinite(boolean isInfinite) {
-		this.isInfinite = isInfinite;
+	public void setInfinite(boolean infinite) {
+		this.infinite = infinite;
 	}
 	
+	public boolean isIsologous() {
+		return isologous;
+	}
+
+	public void setIsologous(boolean isologous) {
+		this.isologous = isologous;
+	}
+
 	public int getOperatorId() {
 		return operatorId;
 	}
@@ -222,7 +232,8 @@ public class Interface implements Serializable, Comparable<Interface>
 		interfaceItem.setChain2(interfaceDB.getChain2());
 		interfaceItem.setOperator(interfaceDB.getOperator());
 		interfaceItem.setOperatorType(interfaceDB.getOperatorType());
-		interfaceItem.setIsInfinite(interfaceDB.getIsInfinite());
+		interfaceItem.setInfinite(interfaceDB.isInfinite());
+		interfaceItem.setIsologous(interfaceDB.isIsologous());
 		interfaceItem.setOperatorId(interfaceDB.getOperatorId());
 		interfaceItem.setXtalTrans_x(interfaceDB.getXtalTrans_x());
 		interfaceItem.setXtalTrans_y(interfaceDB.getXtalTrans_y());

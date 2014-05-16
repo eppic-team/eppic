@@ -263,7 +263,8 @@
 			<basic name="operatorType">
 				<column length="5" />
 			</basic>
-			<basic name="isInfinite"></basic>
+			<basic name="infinite"></basic>
+			<basic name="isologous"></basic>
 			
 			<basic name="globalInterfClusterId"></basic>
 
