@@ -1,8 +1,11 @@
 package ch.systemsx.sybit.crkwebui.server.db.util;
 
+import java.util.Collection;
 import java.util.List;
 
 import eppic.db.CFCompareMatrix;
+import eppic.db.PdbInfo;
+import eppic.db.PdbInfoCluster;
 import eppic.db.PdbInfoList;
 import eppic.db.SeqClusterLevel;
 import eppic.model.PdbInfoDB;
@@ -13,6 +16,7 @@ public class ClusterCrystalForms {
 	private static final SeqClusterLevel DEFAULT_SEQ_CLUSTER_LEVEL = SeqClusterLevel.C50;
 	private static final double DEFAULT_MIN_AREA = 10;
 	private static final double DEFAULT_CO_CUTOFF = 0.2;
+	private static final double DEFAULT_LOS_CLUSTER_CUTOFF = 0.8;
 
 	public static void main(String[] args) throws Exception {
 
@@ -31,6 +35,7 @@ public class ClusterCrystalForms {
 		double coCutoff = DEFAULT_CO_CUTOFF;
 		double minArea = DEFAULT_MIN_AREA;
 		SeqClusterLevel seqClusterLevel = DEFAULT_SEQ_CLUSTER_LEVEL;
+		double losClusterCutoff = DEFAULT_LOS_CLUSTER_CUTOFF;
 
 		Getopt g = new Getopt("ClusterCrystalForms", args, "i:c:a:l:h?");
 		int c;
@@ -100,6 +105,17 @@ public class ClusterCrystalForms {
 		System.out.println();
 		System.out.println();
 		System.out.println("Done in "+((end - start)/1000)+" s");
+		
+		
+		Collection<PdbInfoCluster> clusters = cfMatrix.getClusters(losClusterCutoff);
+		System.out.println("Total number of clusters: "+clusters.size());
+		for (PdbInfoCluster cluster:clusters) {
+			System.out.print("Cluster "+cluster.getId()+": ");
+			for (PdbInfo member:cluster.getMembers()) {
+				System.out.print(member.getPdbInfo().getPdbCode()+" ");
+			}
+			System.out.println();
+		}
 	}
 
 }
