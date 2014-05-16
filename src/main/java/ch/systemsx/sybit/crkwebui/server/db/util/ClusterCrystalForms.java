@@ -22,13 +22,16 @@ public class ClusterCrystalForms {
 
 		String help = 
 				"Usage: ClusterCrystalForms \n" +
-				" -i : cluster id\n"+
-				" -c : contact overlap score cutoff\n"+
-				" -a : minimum area cutoff\n"+
-				" -l : sequence cluster level\n";
+				" -i : PDB code and chain e.g. 1abcA, all members in its same sequence cluster will be clustered\n"+
+				" -l : sequence cluster level (default "+DEFAULT_SEQ_CLUSTER_LEVEL+")\n"+
+				" -c : contact overlap score cutoff (default "+String.format("%3.1f",DEFAULT_CO_CUTOFF)+")\n"+
+				" -a : minimum area cutoff (default "+String.format("%3.0f",DEFAULT_MIN_AREA)+")\n"+
+				" -o : lattice overlap score cutoff for crystal-form clustering (default "+String.format("%3.1f",DEFAULT_LOS_CLUSTER_CUTOFF)+")\n";
+				//" -A : ignore -i and calculate crystal-form clusters for all sequence clusters in db\n";
 				//" -d : print some debug output\n"; 
 
-		int clusterId = -1;
+
+		String pdbString = null;
 		
 		//boolean debug = false;
 		
@@ -37,12 +40,14 @@ public class ClusterCrystalForms {
 		SeqClusterLevel seqClusterLevel = DEFAULT_SEQ_CLUSTER_LEVEL;
 		double losClusterCutoff = DEFAULT_LOS_CLUSTER_CUTOFF;
 
-		Getopt g = new Getopt("ClusterCrystalForms", args, "i:c:a:l:h?");
+		//boolean calcAllClusters = false;
+		
+		Getopt g = new Getopt("ClusterCrystalForms", args, "i:c:a:l:o:h?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
 			case 'i':
-				clusterId = Integer.parseInt(g.getOptarg());
+				pdbString = g.getOptarg();
 				break;
 			case 'c':
 				coCutoff = Double.parseDouble(g.getOptarg());
@@ -52,9 +57,12 @@ public class ClusterCrystalForms {
 				break;
 			case 'l':
 				seqClusterLevel = SeqClusterLevel.getByLevel(Integer.parseInt(g.getOptarg())); 
-				break;				
-			//case 'd':
-			//	debug = true;
+				break;		
+			case 'o':
+				losClusterCutoff = Double.parseDouble(g.getOptarg());
+				break;
+			//case 'A':
+			//	calcAllClusters = true;
 			//	break;
 			case 'h':
 				System.out.println(help);
@@ -68,14 +76,20 @@ public class ClusterCrystalForms {
 		}
 		
 		
-		if (clusterId<=0) {
-			System.err.println("A valid sequence cluster id (default C50 id, otherwise use -c) has to be provided with -i");
+		if (pdbString == null) {
+			System.err.println("A PDB code has to be provided with -i");
 			System.exit(1);
 		}
 		
+		String pdbCode = pdbString.substring(0, 4);		
+		String repChain = pdbString.substring(4); 
+
 		
 		DBHandler dbh = new DBHandler();
 		
+		//System.out.println(dbh.getAllClusterIds(50).size());
+		
+		int clusterId = dbh.getClusteIdForPdbCode(pdbCode, repChain, seqClusterLevel.getLevel());
 		List<PdbInfoDB> pdbInfoList = dbh.deserializeSeqCluster(clusterId, seqClusterLevel.getLevel());
 		
 		PdbInfoList pdbList = new PdbInfoList(pdbInfoList);

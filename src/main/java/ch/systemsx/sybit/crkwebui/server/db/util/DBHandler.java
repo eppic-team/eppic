@@ -386,7 +386,116 @@ public class DBHandler {
 
 		CriteriaQuery<SeqClusterDB> cq = cb.createQuery(SeqClusterDB.class);
 		Root<SeqClusterDB> root = cq.from(SeqClusterDB.class);
+		
+		SingularAttribute<SeqClusterDB, Integer> attribute = getSeqClusterDBAttribute(clusterLevel);
+		
+		cq.where(cb.equal(root.get(attribute), clusterId));
+		cq.select(root);
+		
+		List<SeqClusterDB> results = this.getEntityManager().createQuery(cq).getResultList();
+		for (SeqClusterDB result:results) {
+			pdbCodes.add(result.getPdbCode());
+		}
+		
+		return deserializePdbList(pdbCodes);
+	}
+	
+	public int getClusteIdForPdbCode(String pdbCode, String repChain, int clusterLevel) {
+		
+		CriteriaBuilder cb = this.getEntityManager().getCriteriaBuilder();
+
+		CriteriaQuery<SeqClusterDB> cq = cb.createQuery(SeqClusterDB.class);
+		Root<SeqClusterDB> root = cq.from(SeqClusterDB.class);
+		
+		cq.where(cb.equal(root.get(SeqClusterDB_.pdbCode), pdbCode), cb.equal(root.get(SeqClusterDB_.repChain),repChain));
+		cq.select(root);
+		
+		List<SeqClusterDB> results = this.getEntityManager().createQuery(cq).getResultList();
+		
+		if (results.size()==0) return -1;
+		else if (results.size()>1) {
+			System.err.println("More than 1 SeqClusterDB returned for given PDB code and chain: "+pdbCode+repChain);
+			return -1;
+		}
+		
+		switch (clusterLevel) {
+		case 100:
+			return results.get(0).getC100();
+		case 95:
+			return results.get(0).getC95();
+		case 90:
+			return results.get(0).getC90();
+		case 80:
+			return results.get(0).getC80();
+		case 70:
+			return results.get(0).getC70();
+		case 60:
+			return results.get(0).getC60();
+		case 50:
+			return results.get(0).getC50();
+		case 40:
+			return results.get(0).getC40();
+		case 30:
+			return results.get(0).getC30();
+
+		}
+		
+		return -1;
+	}
+	
+	public List<Integer> getAllClusterIds(int clusterLevel) {
+		CriteriaBuilder cb = this.getEntityManager().getCriteriaBuilder();
+
+		CriteriaQuery<SeqClusterDB> cq = cb.createQuery(SeqClusterDB.class);
+		Root<SeqClusterDB> root = cq.from(SeqClusterDB.class);
+		
+		cq.select(root);
+		
+		List<SeqClusterDB> results = this.getEntityManager().createQuery(cq).getResultList();
+		
+		List<Integer> list = new ArrayList<Integer>();
+		
+		int clusterId = -1;
+		for (SeqClusterDB result:results) {
+			switch (clusterLevel) {
+			case 100:
+				clusterId = result.getC100();
+				break;
+			case 95:
+				clusterId = result.getC95();
+				break;
+			case 90:
+				clusterId = result.getC90();
+				break;
+			case 80:
+				clusterId = result.getC80();
+				break;
+			case 70:
+				clusterId = result.getC70();
+				break;
+			case 60:
+				clusterId = result.getC60();
+				break;
+			case 50:				
+				clusterId = result.getC50();
+				break;
+			case 40:
+				clusterId = result.getC40();
+				break;
+			case 30:
+				clusterId = result.getC30();
+				break;
+
+			}
+			if (clusterId>0) list.add(clusterId);
+		}
+		
+		return list;
+	}
+	
+	private SingularAttribute<SeqClusterDB, Integer> getSeqClusterDBAttribute(int clusterLevel) {
 		SingularAttribute<SeqClusterDB, Integer> attribute = null;
+		
 		switch (clusterLevel) {
 		case 100:
 			attribute = SeqClusterDB_.c100;
@@ -417,14 +526,6 @@ public class DBHandler {
 			break;
 			
 		}
-		cq.where(cb.equal(root.get(attribute), clusterId));
-		cq.select(root);
-		
-		List<SeqClusterDB> results = this.getEntityManager().createQuery(cq).getResultList();
-		for (SeqClusterDB result:results) {
-			pdbCodes.add(result.getPdbCode());
-		}
-		
-		return deserializePdbList(pdbCodes);
+		return attribute;
 	}
 }
