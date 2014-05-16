@@ -23,7 +23,9 @@ public class InterfaceDB implements Serializable {
 	private String operator; 
 	// the types are the short names of the owl.core.structure.TransformType enum
 	private String operatorType;
-	private boolean isInfinite;
+	private boolean infinite;
+	
+	private boolean isologous;
 	
 	private int operatorId;
 	private int xtalTrans_x;
@@ -126,14 +128,22 @@ public class InterfaceDB implements Serializable {
 		return operatorType;
 	}
 	
-	public void setIsInfinite(boolean isInfinite) {
-		this.isInfinite = isInfinite;
+	public void setInfinite(boolean infinite) {
+		this.infinite = infinite;
 	}
 	
-	public boolean getIsInfinite() {
-		return isInfinite;
+	public boolean isInfinite() {
+		return infinite;
 	}
 	
+	public boolean isIsologous() {
+		return isologous;
+	}
+
+	public void setIsologous(boolean isologous) {
+		this.isologous = isologous;
+	}
+
 	public int getOperatorId() {
 		return operatorId;
 	}
