@@ -21,6 +21,22 @@ public class SeqClusterDB implements Serializable {
 	 
 	private ChainClusterDB chainCluster;
 
+	public SeqClusterDB() {
+		
+	}
+	
+	public SeqClusterDB(int c100, int c95, int c90, int c80, int c70, int c60, int c50, int c40, int c30) {
+		this.c100 = c100;
+		this.c95 = c95;
+		this.c90 = c90;
+		this.c80 = c80;
+		this.c70 = c70;
+		this.c60 = c60;
+		this.c50 = c50;
+		this.c40 = c40;
+		this.c30 = c30;
+	}
+	
 	public int getUid() {
 		return uid;
 	}
