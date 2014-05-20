@@ -13,6 +13,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -443,18 +444,22 @@ public class DBHandler {
 		return -1;
 	}
 	
-	public List<Integer> getAllClusterIds(int clusterLevel) {
+	public Set<Integer> getAllClusterIds(int clusterLevel) {
 		CriteriaBuilder cb = this.getEntityManager().getCriteriaBuilder();
 
 		CriteriaQuery<SeqClusterDB> cq = cb.createQuery(SeqClusterDB.class);
 		Root<SeqClusterDB> root = cq.from(SeqClusterDB.class);
-		
-		cq.select(root);
-		
+
+		cq.where(cb.greaterThan(root.get(SeqClusterDB_.c100), 0)); 
+
+		cq.multiselect(root.get(SeqClusterDB_.c100),root.get(SeqClusterDB_.c95),root.get(SeqClusterDB_.c90),
+				root.get(SeqClusterDB_.c80),root.get(SeqClusterDB_.c70),root.get(SeqClusterDB_.c60),
+				root.get(SeqClusterDB_.c50),root.get(SeqClusterDB_.c40),root.get(SeqClusterDB_.c30));
+
+		Set<Integer> list = new TreeSet<Integer>();
+
 		List<SeqClusterDB> results = this.getEntityManager().createQuery(cq).getResultList();
-		
-		List<Integer> list = new ArrayList<Integer>();
-		
+
 		int clusterId = -1;
 		for (SeqClusterDB result:results) {
 			switch (clusterLevel) {
@@ -489,7 +494,6 @@ public class DBHandler {
 			}
 			if (clusterId>0) list.add(clusterId);
 		}
-		
 		return list;
 	}
 	
