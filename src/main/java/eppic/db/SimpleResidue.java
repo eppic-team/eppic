@@ -1,20 +1,20 @@
 package eppic.db;
 
-import owl.core.structure.AminoAcid;
+//import owl.core.structure.AminoAcid;
 
 public class SimpleResidue implements Comparable<SimpleResidue> {
 
-	private AminoAcid aa;
+	//private AminoAcid aa;
 	private int serial;
 	
-	public SimpleResidue(AminoAcid aa, int serial) {
-		this.aa = aa;
+	public SimpleResidue(int serial) {
+		//this.aa = aa;
 		this.serial = serial;
 	}
 	
-	public AminoAcid getAminoAcid() {
-		return aa;
-	}
+	//public AminoAcid getAminoAcid() {
+	//	return aa;
+	//}
 	
 	public int getSerial() {
 		return serial;

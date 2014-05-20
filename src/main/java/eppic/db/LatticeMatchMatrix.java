@@ -30,6 +30,14 @@ public class LatticeMatchMatrix {
 		return this.coMatrix;
 	}
 	
+	public int getNumRows() {
+		return this.coMatrix.length;
+	}
+	
+	public int getNumColumns() {
+		return this.coMatrix[0].length;
+	}
+	
 	public List<Pair<Integer>> getMatchingPairs(double coCutoff) {
 		List<Pair<Integer>> list = new ArrayList<Pair<Integer>>();
 		for (int i=0;i<coMatrix.length;i++) {

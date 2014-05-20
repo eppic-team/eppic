@@ -98,4 +98,20 @@ public class Interface {
 		
 	}
 	
+	public boolean equals(Object o) {
+		if (!(o instanceof Interface)) return false;
+		
+		Interface other = (Interface)o;
+		return (this.pdb.getPdbInfo().getPdbCode().equals(other.pdb.getPdbInfo().getPdbCode()) &&
+				this.interf.getInterfaceId()==other.interf.getInterfaceId());
+	}
+	
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((this.pdb.getPdbInfo().getPdbCode() == null) ? 0 : this.pdb.getPdbInfo().getPdbCode().hashCode());
+		result = prime * result + ((this.interf == null) ? 0 : new Integer(this.interf.getInterfaceId()).hashCode());
+		return result;
+	}
+	
 }

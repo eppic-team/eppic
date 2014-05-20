@@ -4,7 +4,6 @@ import java.util.HashSet;
 import java.util.List;
 
 import owl.core.sequence.alignment.PairwiseSequenceAlignment;
-import owl.core.structure.AminoAcid;
 import edu.uci.ics.jung.graph.util.Pair;
 import eppic.model.ContactDB;
 
@@ -71,8 +70,8 @@ public class ContactSet {
 
 			
 			Pair<SimpleResidue> directPair = new Pair<SimpleResidue>(
-					new SimpleResidue(AminoAcid.getByThreeLetterCode(contact.getFirstResType()),resSerial1),
-					new SimpleResidue(AminoAcid.getByThreeLetterCode(contact.getSecondResType()),resSerial2));
+					new SimpleResidue(resSerial1),
+					new SimpleResidue(resSerial2));
 
 			directSet.add(directPair);
 			
@@ -84,8 +83,8 @@ public class ContactSet {
 
 			
 			Pair<SimpleResidue> invertedPair = new Pair<SimpleResidue>(
-					new SimpleResidue(AminoAcid.getByThreeLetterCode(contact.getSecondResType()),resSerial2),
-					new SimpleResidue(AminoAcid.getByThreeLetterCode(contact.getFirstResType()),resSerial1));
+					new SimpleResidue(resSerial2),
+					new SimpleResidue(resSerial1));
 			
 			inverseSet.add(invertedPair);
 			
@@ -94,8 +93,8 @@ public class ContactSet {
 			// first contact in comparison: we need no inverse set, and no mapping through alignment
 			
 			Pair<SimpleResidue> directPair = new Pair<SimpleResidue>(
-					new SimpleResidue(AminoAcid.getByThreeLetterCode(contact.getFirstResType()),contact.getFirstResNumber()),
-					new SimpleResidue(AminoAcid.getByThreeLetterCode(contact.getSecondResType()),contact.getSecondResNumber()));
+					new SimpleResidue(contact.getFirstResNumber()),
+					new SimpleResidue(contact.getSecondResNumber()));
 			
 			directSet.add(directPair);
 		
@@ -107,8 +106,8 @@ public class ContactSet {
 	}
 	
 	public static void main(String[] args) {
-		Pair<SimpleResidue> pair1 = new Pair<SimpleResidue>(new SimpleResidue(AminoAcid.ALA,1), new SimpleResidue(AminoAcid.ALA,2));
-		Pair<SimpleResidue> pair2 = new Pair<SimpleResidue>(new SimpleResidue(AminoAcid.ALA,1), new SimpleResidue(AminoAcid.ALA,2));
+		Pair<SimpleResidue> pair1 = new Pair<SimpleResidue>(new SimpleResidue(1), new SimpleResidue(2));
+		Pair<SimpleResidue> pair2 = new Pair<SimpleResidue>(new SimpleResidue(1), new SimpleResidue(2));
 		if (pair1.equals(pair2)) System.out.println("equals");
 		else System.out.println("not equals");
 	}
