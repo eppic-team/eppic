@@ -250,26 +250,45 @@ public class DataModelAdaptor {
 			
 			List<InterfaceClusterDB> memberClustersDB = new ArrayList<InterfaceClusterDB>();
 			assembly.setInterfaceClusters(memberClustersDB);
-			
-			for (int clusterId:memberClusterIds) {
-				InterfaceClusterDB icDB = pdbInfo.getInterfaceCluster(clusterId);
-				memberClustersDB.add(icDB);				
-				
-				InterfaceClusterScoreDB icsDB = new InterfaceClusterScoreDB();
-				icsDB.setScore(SCORE_NOT_AVAILABLE);
-				icsDB.setScore1(SCORE_NOT_AVAILABLE);
-				icsDB.setScore2(SCORE_NOT_AVAILABLE);
-				icsDB.setCallName(CallType.BIO.getName());
-				icsDB.setConfidence(CONFIDENCE_NOT_AVAILABLE);
-				icsDB.setMethod(unit.getType().getType());				
-				icsDB.setClusterId(clusterId);
-				icsDB.setPdbCode(pdbInfo.getPdbCode());
-				
-				// setting relations parent/child
-				icsDB.setInterfaceCluster(icDB);
-				icDB.addInterfaceClusterScore(icsDB);
-				
-				icDB.setAssembly(assembly);
+			for (InterfaceClusterDB icDB:icDBs) {
+				if (memberClusterIds.contains(icDB.getClusterId())) {
+					// all member interface clusters are assigned bio
+					memberClustersDB.add(icDB);				
+
+					InterfaceClusterScoreDB icsDB = new InterfaceClusterScoreDB();
+					icsDB.setScore(SCORE_NOT_AVAILABLE);
+					icsDB.setScore1(SCORE_NOT_AVAILABLE);
+					icsDB.setScore2(SCORE_NOT_AVAILABLE);
+					icsDB.setCallName(CallType.BIO.getName());
+					icsDB.setConfidence(CONFIDENCE_NOT_AVAILABLE);
+					icsDB.setMethod(unit.getType().getType());				
+					icsDB.setClusterId(icDB.getClusterId());
+					icsDB.setPdbCode(pdbInfo.getPdbCode());
+
+					// setting relations parent/child
+					icsDB.setInterfaceCluster(icDB);
+					icDB.addInterfaceClusterScore(icsDB);
+
+					icDB.setAssembly(assembly);
+				} else {
+					// The rest (not members) are assigned xtal
+					// We need to do this otherwise there's no distinction between 
+					// missing annotations and real xtal annotations
+					InterfaceClusterScoreDB icsDB = new InterfaceClusterScoreDB();
+					icsDB.setScore(SCORE_NOT_AVAILABLE);
+					icsDB.setScore1(SCORE_NOT_AVAILABLE);
+					icsDB.setScore2(SCORE_NOT_AVAILABLE);
+					icsDB.setCallName(CallType.CRYSTAL.getName());
+					icsDB.setConfidence(CONFIDENCE_NOT_AVAILABLE);
+					icsDB.setMethod(unit.getType().getType());				
+					icsDB.setClusterId(icDB.getClusterId());
+					icsDB.setPdbCode(pdbInfo.getPdbCode());
+
+					// setting relations parent/child
+					icsDB.setInterfaceCluster(icDB);
+					icDB.addInterfaceClusterScore(icsDB);
+
+				}
 			}
 		}
 
