@@ -15,6 +15,7 @@ import org.xml.sax.SAXException;
 
 import owl.core.connections.pisa.OligomericPrediction;
 import owl.core.connections.pisa.PisaAsmSetList;
+import owl.core.connections.pisa.PisaAssembliesXMLParser;
 import owl.core.connections.pisa.PisaConnection;
 import owl.core.connections.pisa.PisaInterfaceList;
 
@@ -91,7 +92,7 @@ public class CalcPisaInterfPredStats {
 		List<String> pdbCodes = new ArrayList<String>();
 		pdbCodes.addAll(interfList.keySet());
 		
-		Map<String, PisaAsmSetList> asms = pc.getAssembliesDescription(pdbCodes);
+		Map<String, PisaAsmSetList> asms = pc.getAssembliesDescription(pdbCodes, PisaAssembliesXMLParser.VERSION1);
 		Map<String, PisaInterfaceList> interfs = pc.getInterfacesDescription(pdbCodes);
 
 		int countBioCalls = 0;

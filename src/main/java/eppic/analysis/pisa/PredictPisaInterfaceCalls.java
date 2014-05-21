@@ -44,15 +44,15 @@ public class PredictPisaInterfaceCalls {
 	
 	private List<PisaPdbData> pisaDatas;
 	
-	public PredictPisaInterfaceCalls(File interfaceFile, File assemblyFile, String cifDirPath) throws FileNotFoundException, SAXException, IOException, FileFormatException, PdbLoadException{
+	public PredictPisaInterfaceCalls(File interfaceFile, File assemblyFile, String cifDirPath, int pisaVersion) throws SAXException, IOException, FileFormatException, PdbLoadException{
 		this.interfaceFile = interfaceFile;
 		this.assemblyFile = assemblyFile;
 		this.cifDir = cifDirPath;
-		this.pisaDatas = createPisaDatafromFiles(assemblyFile, interfaceFile);
+		this.pisaDatas = createPisaDatafromFiles(assemblyFile, interfaceFile, pisaVersion);
 	}
 	
-	public PredictPisaInterfaceCalls(File interfaceFile, File assemblyFile) throws FileNotFoundException, SAXException, IOException, FileFormatException, PdbLoadException{
-		this(interfaceFile, assemblyFile, DEFAULT_CIF_DIR);
+	public PredictPisaInterfaceCalls(File interfaceFile, File assemblyFile, int pisaVersion) throws SAXException, IOException, FileFormatException, PdbLoadException{
+		this(interfaceFile, assemblyFile, DEFAULT_CIF_DIR, pisaVersion);
 	}
 	
 	public String getCifDir() {
@@ -87,11 +87,11 @@ public class PredictPisaInterfaceCalls {
 		this.pisaDatas = pisaDatas;
 	}
 
-	public List<PisaPdbData> createPisaDatafromFiles(File assemblyFile, File interfaceFile) throws FileNotFoundException, SAXException, IOException, PdbLoadException, FileFormatException{
+	public List<PisaPdbData> createPisaDatafromFiles(File assemblyFile, File interfaceFile, int pisaVersion) throws SAXException, IOException, PdbLoadException, FileFormatException{
 		List<PisaPdbData> pisaDataList = new ArrayList<PisaPdbData>();
 		
 		//Parse Assemblies
-		PisaAssembliesXMLParser assemblyParser = new PisaAssembliesXMLParser(new GZIPInputStream(new FileInputStream(assemblyFile)));
+		PisaAssembliesXMLParser assemblyParser = new PisaAssembliesXMLParser(new GZIPInputStream(new FileInputStream(assemblyFile)), pisaVersion);
 		Map<String,PisaAsmSetList> assemblySetListMap = assemblyParser.getAllAssemblies();		
 		
 		//Parse Interfaces
@@ -142,19 +142,23 @@ public class PredictPisaInterfaceCalls {
 	 * @throws SAXException 
 	 * @throws FileNotFoundException 
 	 */
-	public static void main(String[] args) throws FileNotFoundException, SAXException, IOException, FileFormatException, PdbLoadException {
+	public static void main(String[] args) throws SAXException, IOException, FileFormatException, PdbLoadException {
 		
 		File assemFile = null;
 		File interfFile = null;
 		String cifPath = DEFAULT_CIF_DIR;
+		int pisaVersion = PisaAssembliesXMLParser.VERSION2;
 
 		String help = "Usage: \n" +
 				PROGRAM_NAME+"\n" +
 				"   -a         :  Path to the assemblies gzipped xml file\n"+
 				"   -i         :  Path to the interfaces gzipped xml file\n" +
-				" [-c]         :  Path to cif files directory\n";
+				" [-c]         :  Path to cif files directory\n"+
+				" [-v]         :  PISA version, either "+PisaAssembliesXMLParser.VERSION1+
+				" for web PISA or "+PisaAssembliesXMLParser.VERSION2+
+				" for ccp4 package's command line PISA (default "+PisaAssembliesXMLParser.VERSION2+")\n";
 
-		Getopt g = new Getopt(PROGRAM_NAME, args, "a:i:c:h?");
+		Getopt g = new Getopt(PROGRAM_NAME, args, "a:i:c:v:h?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
@@ -166,6 +170,9 @@ public class PredictPisaInterfaceCalls {
 				break;
 			case 'c':
 				cifPath = g.getOptarg();
+				break;
+			case 'v':
+				pisaVersion = Integer.parseInt(g.getOptarg());
 				break;
 			case 'h':
 			case '?':
@@ -188,7 +195,7 @@ public class PredictPisaInterfaceCalls {
 		}
 		
 
-		PredictPisaInterfaceCalls predictor = new PredictPisaInterfaceCalls(interfFile,assemFile,cifPath);
+		PredictPisaInterfaceCalls predictor = new PredictPisaInterfaceCalls(interfFile,assemFile,cifPath,pisaVersion);
 		predictor.printData(System.out);
 		
 
