@@ -5,9 +5,11 @@ package eppic.analysis.pisa;
 
 import gnu.getopt.Getopt;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -119,13 +121,14 @@ public class PredictPisaInterfaceCalls {
 		return pisaDataList;
 		
 	}
+
+	public static void printHeaders(PrintStream out) {
+		//Print Header
+		out.printf("#%4s %8s %8s %8s\n","PDB","EPPIC_ID","PISA_ID","PisaCall");
+
+	}
 	
 	public void printData(PrintStream out){
-		//Print Header
-		out.print("#Contains PDB's: ");
-		for(PisaPdbData data:this.pisaDatas) out.print(data.getPdbCode()+" ");
-		out.print("\n");
-		if(!this.pisaDatas.isEmpty()) out.printf("#%4s %8s %8s %8s\n","PDB","EPPIC_ID","PISA_ID","PisaCall");
 		for(PisaPdbData data:this.pisaDatas){
 			for(int eppicI:data.getEppicToPisaInterfaceMap().keySet()){
 				out.printf("%5s %8s %8s %8s\n",data.getPdbCode(),eppicI,data.getPisaIdForEppicInterface(eppicI),data.getPisaCallFromEppicInterface(eppicI).getName() );
@@ -142,23 +145,30 @@ public class PredictPisaInterfaceCalls {
 	 * @throws SAXException 
 	 * @throws FileNotFoundException 
 	 */
-	public static void main(String[] args) throws SAXException, IOException, FileFormatException, PdbLoadException {
+	public static void main(String[] args) throws Exception {
 		
 		File assemFile = null;
 		File interfFile = null;
 		String cifPath = DEFAULT_CIF_DIR;
 		int pisaVersion = PisaAssembliesXMLParser.VERSION2;
-
+		
+		File listFile = null;
+		File dir = null;
+		
 		String help = "Usage: \n" +
 				PROGRAM_NAME+"\n" +
-				"   -a         :  Path to the assemblies gzipped xml file\n"+
-				"   -i         :  Path to the interfaces gzipped xml file\n" +
-				" [-c]         :  Path to cif files directory\n"+
-				" [-v]         :  PISA version, either "+PisaAssembliesXMLParser.VERSION1+
+				"   -a         :  PISA assemblies gzipped xml file\n"+
+				"   -i         :  PISA interfaces gzipped xml file\n" +
+				"   -l         :  file with list of PDB codes, use in combination with -d (-a and -i"+
+				"                 will be ignored)\n"+
+				"   -d         :  dir containing PISA <pdb>.assemblies.xml.gz and <pdb>.interfaces.xml.gz\n"+
+				"                 files. Use in combination with -l (-a and -i will be ignored)\n"+
+				"  [-c]        :  Path to cif files directory\n"+
+				"  [-v]        :  PISA version, either "+PisaAssembliesXMLParser.VERSION1+
 				" for web PISA or "+PisaAssembliesXMLParser.VERSION2+
 				" for ccp4 package's command line PISA (default "+PisaAssembliesXMLParser.VERSION2+")\n";
 
-		Getopt g = new Getopt(PROGRAM_NAME, args, "a:i:c:v:h?");
+		Getopt g = new Getopt(PROGRAM_NAME, args, "a:i:l:d:c:v:h?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
@@ -167,6 +177,12 @@ public class PredictPisaInterfaceCalls {
 				break;
 			case 'i':
 				interfFile = new File(g.getOptarg());
+				break;
+			case 'l':
+				listFile = new File(g.getOptarg());
+				break;
+			case 'd':
+				dir = new File(g.getOptarg());
 				break;
 			case 'c':
 				cifPath = g.getOptarg();
@@ -182,23 +198,62 @@ public class PredictPisaInterfaceCalls {
 			}
 		}
 		
-		if(assemFile==null || interfFile==null){
-			System.err.println("Must specify both assembly and interface files");
-			System.err.println(help);
-			System.exit(1);
-		}
-		
-		if(!assemFile.isFile() || !interfFile.isFile()){
-			System.err.println("Either of assembly or interface file not present");
+		if ((assemFile == null || interfFile == null) && (listFile == null || dir == null)){
+			System.err.println("Must specify either: -a/-i (single files) or -l/-d (list file and dir)");
 			System.err.println(help);
 			System.exit(1);
 		}
 		
 
-		PredictPisaInterfaceCalls predictor = new PredictPisaInterfaceCalls(interfFile,assemFile,cifPath,pisaVersion);
-		predictor.printData(System.out);
-		
+		if (assemFile!=null) {
+			// single files
+			PredictPisaInterfaceCalls predictor = new PredictPisaInterfaceCalls(interfFile,assemFile,cifPath,pisaVersion);
+			printHeaders(System.out); 
+			predictor.printData(System.out);
+			
+		} else {
+			printHeaders(System.out); 
+			// list file and dir
+			List<String> list = readListFile(listFile);
+			for (String pdbCode:list) {
+				
+				interfFile = new File(dir,pdbCode+".interfaces.xml.gz");
+				assemFile = new File(dir,pdbCode+".assemblies.xml.gz"); 
 
+				try {
+					PredictPisaInterfaceCalls predictor = 
+						new PredictPisaInterfaceCalls(interfFile,assemFile,cifPath,pisaVersion);
+					predictor.printData(System.out);
+				} catch (IOException e) {
+					System.err.println("Problem reading file for pdb "+pdbCode+", error: "+e.getMessage());
+					continue;
+				} catch (SAXException e) {
+					System.err.println("Problem reading xml file for pdb "+pdbCode+", error: "+e.getMessage());
+					continue;
+				} catch (PdbLoadException e) {
+					System.err.println("Problem reading file for pdb "+pdbCode+", error: "+e.getMessage());
+					continue;
+				} catch (FileFormatException e) {
+					System.err.println("Problem reading file for pdb "+pdbCode+", error: "+e.getMessage());
+					continue;
+				}
+			}
+			
+		}
+
+	}
+	
+	private static List<String> readListFile(File listFile) throws IOException {
+		List<String> list = new ArrayList<String>();
+		BufferedReader br = new BufferedReader(new FileReader(listFile));
+		String line;
+		while((line = br.readLine())!=null) {
+			if (line.startsWith("#")) continue;
+			if (line.isEmpty()) continue;
+			list.add(line);
+		}
+		br.close();
+		return list;
 	}
 
 }
