@@ -3,6 +3,9 @@
  */
 package eppic.analysis.pisa;
 
+import eppic.DataModelAdaptor;
+import eppic.EppicParams;
+import eppic.model.PdbInfoDB;
 import gnu.getopt.Getopt;
 
 import java.io.BufferedReader;
@@ -23,9 +26,11 @@ import owl.core.connections.pisa.PisaAsmSetList;
 import owl.core.connections.pisa.PisaAssembliesXMLParser;
 import owl.core.connections.pisa.PisaInterfaceList;
 import owl.core.connections.pisa.PisaInterfaceXMLParser;
+import owl.core.structure.ChainInterfaceList;
 import owl.core.structure.PdbAsymUnit;
 import owl.core.structure.PdbLoadException;
 import owl.core.util.FileFormatException;
+import owl.core.util.Goodies;
 
 
 /**
@@ -41,20 +46,19 @@ public class PredictPisaInterfaceCalls {
 	
 	private String cifDir;
 	
+	private File serializedFilesDir;
+	
 	private File interfaceFile;
 	private File assemblyFile;
 	
 	private List<PisaPdbData> pisaDatas;
 	
-	public PredictPisaInterfaceCalls(File interfaceFile, File assemblyFile, String cifDirPath, int pisaVersion) throws SAXException, IOException, FileFormatException, PdbLoadException{
+	public PredictPisaInterfaceCalls(File interfaceFile, File assemblyFile, String cifDirPath, File serializedFilesDir, int pisaVersion) throws SAXException, IOException, FileFormatException, PdbLoadException{
 		this.interfaceFile = interfaceFile;
 		this.assemblyFile = assemblyFile;
 		this.cifDir = cifDirPath;
+		this.serializedFilesDir = serializedFilesDir;
 		this.pisaDatas = createPisaDatafromFiles(assemblyFile, interfaceFile, pisaVersion);
-	}
-	
-	public PredictPisaInterfaceCalls(File interfaceFile, File assemblyFile, int pisaVersion) throws SAXException, IOException, FileFormatException, PdbLoadException{
-		this(interfaceFile, assemblyFile, DEFAULT_CIF_DIR, pisaVersion);
 	}
 	
 	public String getCifDir() {
@@ -105,21 +109,58 @@ public class PredictPisaInterfaceCalls {
 				System.err.println("Warning: Assembly file different from interface file; Interface file does not contain data for pdb:"+pdbCode);
 			else{
 				try{
-					File cifFile = File.createTempFile(pdbCode, "cif");
-					PdbAsymUnit.grabCifFile(this.cifDir, null, pdbCode, cifFile, false);
-					PisaPdbData local = new PisaPdbData(new PdbAsymUnit(cifFile),assemblySetListMap.get(pdbCode), interfaceListMap.get(pdbCode));
-					cifFile.deleteOnExit();
+					PdbInfoDB pdbInfo = null;
+					if (serializedFilesDir!=null) {
+						pdbInfo = getPdbInfoFromFile(pdbCode);
+					} else {
+						pdbInfo = getPdbInfo(getPdb(pdbCode));						
+					}
+					PisaPdbData local = new PisaPdbData(pdbInfo, assemblySetListMap.get(pdbCode), interfaceListMap.get(pdbCode));					
 					pisaDataList.add(local);
-				}catch(PdbLoadException e){
+				} catch(PdbLoadException e){
 					System.err.println("ERROR: Unable to load pdb file: "+pdbCode+"; "+e.getMessage());
-				}catch(FileNotFoundException e){
+				} catch(FileNotFoundException e){
 					System.err.println("ERROR: Unable to find the file "+e.getMessage());
+				} catch(IOException e) {
+					System.err.println("ERROR: Unable to deserialize from file "+e.getMessage());
+				} catch (ClassNotFoundException e) {
+					System.err.println("ERROR: Unable to deserialize from file "+e.getMessage());
 				}
 			}
 		}
 		
 		return pisaDataList;
 		
+	}
+	
+	private PdbAsymUnit getPdb(String pdbCode) throws IOException, FileFormatException, PdbLoadException {
+		File cifFile = File.createTempFile(pdbCode, "cif");
+		PdbAsymUnit.grabCifFile(this.cifDir, null, pdbCode, cifFile, false);
+		
+		cifFile.deleteOnExit();
+		return new PdbAsymUnit(cifFile);
+	}
+	
+	private PdbInfoDB getPdbInfo(PdbAsymUnit pdb) {
+		DataModelAdaptor dma = new DataModelAdaptor();
+		
+		pdb.removeHatoms();
+		ChainInterfaceList eppicInterfaces = pdb.getAllInterfaces(EppicParams.INTERFACE_DIST_CUTOFF, 
+				EppicParams.DEF_NSPHEREPOINTS_ASA_CALC, 1, true, false, 
+				EppicParams.DEF_MIN_SIZE_COFACTOR_FOR_ASA,
+				EppicParams.MIN_INTERFACE_AREA_TO_KEEP);
+		eppicInterfaces.initialiseClusters(pdb, EppicParams.CLUSTERING_RMSD_CUTOFF, EppicParams.CLUSTERING_MINATOMS, EppicParams.CLUSTERING_ATOM_TYPE);
+		dma.setInterfaces(eppicInterfaces, null);
+		PdbInfoDB pdbInfo = dma.getPdbInfo();
+		pdbInfo.setPdbCode(pdb.getPdbCode());
+		return pdbInfo;
+	}
+	
+	private PdbInfoDB getPdbInfoFromFile(String pdbCode) throws ClassNotFoundException, IOException {
+		String midIndex = pdbCode.substring(1,3);
+		File subdir = new File(serializedFilesDir,"divided"+File.separator+midIndex+File.separator+pdbCode);
+		File webuidatFile = new File(subdir,pdbCode+".webui.dat");
+		return (PdbInfoDB)Goodies.readFromFile(webuidatFile);
 	}
 
 	public static void printHeaders(PrintStream out) {
@@ -154,6 +195,7 @@ public class PredictPisaInterfaceCalls {
 		
 		File listFile = null;
 		File dir = null;
+		File serializedFilesDir = null;
 		
 		String help = "Usage: \n" +
 				PROGRAM_NAME+"\n" +
@@ -163,12 +205,16 @@ public class PredictPisaInterfaceCalls {
 				"                 will be ignored)\n"+
 				"   -d         :  dir containing PISA <pdb>.assemblies.xml.gz and <pdb>.interfaces.xml.gz\n"+
 				"                 files. Use in combination with -l (-a and -i will be ignored)\n"+
+				"  [-w]        :  dir containing webui.dat files for each PDB (in the usual divided layout).\n"+
+				"                 Will only be used if -l/-d specified\n."+
+				"                 If -w not specified, then interfaces will be calculated on the fly from mmCIF \n"+
+				"                 files read from dir given in -c\n"+
 				"  [-c]        :  Path to cif files directory\n"+
 				"  [-v]        :  PISA version, either "+PisaAssembliesXMLParser.VERSION1+
 				" for web PISA or "+PisaAssembliesXMLParser.VERSION2+
 				" for ccp4 package's command line PISA (default "+PisaAssembliesXMLParser.VERSION2+")\n";
 
-		Getopt g = new Getopt(PROGRAM_NAME, args, "a:i:l:d:c:v:h?");
+		Getopt g = new Getopt(PROGRAM_NAME, args, "a:i:l:d:w:c:v:h?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
@@ -183,6 +229,9 @@ public class PredictPisaInterfaceCalls {
 				break;
 			case 'd':
 				dir = new File(g.getOptarg());
+				break;
+			case 'w':
+				serializedFilesDir = new File(g.getOptarg());
 				break;
 			case 'c':
 				cifPath = g.getOptarg();
@@ -207,7 +256,7 @@ public class PredictPisaInterfaceCalls {
 
 		if (assemFile!=null) {
 			// single files
-			PredictPisaInterfaceCalls predictor = new PredictPisaInterfaceCalls(interfFile,assemFile,cifPath,pisaVersion);
+			PredictPisaInterfaceCalls predictor = new PredictPisaInterfaceCalls(interfFile,assemFile,cifPath,null,pisaVersion);
 			printHeaders(System.out); 
 			predictor.printData(System.out);
 			
@@ -222,7 +271,7 @@ public class PredictPisaInterfaceCalls {
 
 				try {
 					PredictPisaInterfaceCalls predictor = 
-						new PredictPisaInterfaceCalls(interfFile,assemFile,cifPath,pisaVersion);
+						new PredictPisaInterfaceCalls(interfFile,assemFile,cifPath,serializedFilesDir,pisaVersion);
 					predictor.printData(System.out);
 				} catch (IOException e) {
 					System.err.println("Problem reading file for pdb "+pdbCode+", error: "+e.getMessage());

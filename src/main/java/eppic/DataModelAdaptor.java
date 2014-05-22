@@ -230,6 +230,7 @@ public class DataModelAdaptor {
 		
 		
 		// assemblies (biounits) parsed from PDB
+		if (bioUnitList==null) return;
 		
 		// NOTE that getInterfaceClusterMatches removes duplicate assignments (when several biounits refer to same cluster)
 		TreeMap<Integer, List<Integer>> matchIds = bioUnitList.getInterfaceClusterMatches(interfaces);
