@@ -12,8 +12,8 @@ import eppic.CallType;
 import eppic.model.InterfaceClusterDB;
 import eppic.model.InterfaceDB;
 import eppic.model.PdbInfoDB;
+import owl.core.connections.pisa.OligomericPrediction;
 import owl.core.connections.pisa.PisaAsmSetList;
-import owl.core.connections.pisa.PisaAssembly;
 import owl.core.connections.pisa.PisaInterface;
 import owl.core.connections.pisa.PisaInterfaceList;
 import owl.core.structure.SpaceGroup;
@@ -50,17 +50,8 @@ public class PisaPdbData {
 		return eppicToPisaInterfaceMap;
 	}
 
-	public void setEppicToPisaInterfaceMap(
-			Map<Integer, PisaInterface> eppicToPisaInterface) {
-		this.eppicToPisaInterfaceMap = eppicToPisaInterface;
-	}
-
 	public Map<Integer, CallType> getPisaCalls() {
 		return pisaCalls;
-	}
-
-	public void setPisaCalls(Map<Integer, CallType> pisaCalls) {
-		this.pisaCalls = pisaCalls;
 	}
 
 	/**
@@ -83,7 +74,7 @@ public class PisaPdbData {
 
 				} else {
 					// if not we check if the contacts are too far away and warn that it's impossible
-					// to match PISA interfaces in these cases (PISA only calculates up to 3)
+					// to match PISA interfaces in these cases (PISA only calculates up to 3 neighbors)
 					int xTrans = eppicI.getXtalTrans_x();
 					int yTrans = eppicI.getXtalTrans_y();
 					int zTrans = eppicI.getXtalTrans_z();
@@ -98,6 +89,14 @@ public class PisaPdbData {
 				}
 			}
 		}
+		
+		// last sanity check: are all PISA interfaces matched?		
+		for (PisaInterface pi: pisaInterfaces) {
+			if (pi.getInterfaceArea()>50 && pi.isProtein() && !map.values().contains(pi)) {
+				System.err.println("Warning: PISA interface id "+pi.getId()+" was not mapped to any EPPIC interface (pdb "+pdbCode+")");	
+			}
+		}
+		
 		
 		return map;
 	}
@@ -152,36 +151,39 @@ public class PisaPdbData {
 
 		Matrix4d pisaTransf1 = pisaI.getFirstMolecule().getTransf().getMatTransform();
 		Matrix4d pisaTransf2 = pisaI.getSecondMolecule().getTransf().getMatTransform();
-		if (invertedChains) {
-			pisaTransf1 = pisaI.getSecondMolecule().getTransf().getMatTransform();
-			pisaTransf2 = pisaI.getFirstMolecule().getTransf().getMatTransform();
-		}
 		// in case pisa does not have the first chain on identity, we first find the transf12
 		// T12 = T02 * T01_inv
 		Matrix4d pisaTransf1inv = new Matrix4d();
 		pisaTransf1inv.invert(pisaTransf1);
 		Matrix4d pisaTransf12 = new Matrix4d();
 		pisaTransf12.mul(pisaTransf2, pisaTransf1inv);
+
+		if (invertedChains) {
+			pisaTransf12.invert();
+		}
+
 		
 		// now we can compare the two transf12
 		// a) first direct
 		if (eppicTransf12.epsilonEquals(pisaTransf12, 0.00001)) {
 			return true;
 		}
-		// b) then inverse
-		pisaTransf12.invert();
-		if (eppicTransf12.epsilonEquals(pisaTransf12, 0.00001)) {
-			//System.err.println("Warning: inverse transform matches (EPPIC interface id "+eppicI.getInterfaceId()+", PISA interface id "+pisaI.getId()+", pdb "+pdbCode+")");
-			return true;
+		// b) then we need to check the inverse if the two chains are the same
+		if (eppicChain1.equals(eppicChain2)) {
+			pisaTransf12.invert();
+			if (eppicTransf12.epsilonEquals(pisaTransf12, 0.00001)) {
+				//System.err.println("Warning: inverse transform matches (EPPIC interface id "+eppicI.getInterfaceId()+", PISA interface id "+pisaI.getId()+", pdb "+pdbCode+")");
+				return true;
+			}
 		}
-		
 		return false;
 	}
 	
 	private Map<Integer, CallType> setPisaCalls(){
 		Map<Integer, CallType> map = new TreeMap<Integer, CallType>();
 
-		int assemSize = this.assemblySetList.getOligomericPred().getMmSize();
+		OligomericPrediction op = this.assemblySetList.getOligomericPred();
+		int assemSize = op.getMmSize();
 
 		if(assemSize == -1){
 			for(PisaInterface interf:this.pisaInterfaces){
@@ -190,13 +192,11 @@ public class PisaPdbData {
 		}
 		else{
 			for(PisaInterface interf:this.pisaInterfaces){
-				for(PisaAssembly assembly:this.assemblySetList.getOligomericPred().getPisaAsmSet()){
-					if(assembly.getInterfaceIds().contains(interf.getId())){
-						map.put(interf.getId(), CallType.BIO);
-						break;
-					}
-				}
-				if(!map.containsKey(interf.getId())) map.put(interf.getId(), CallType.CRYSTAL);
+				if (op.containProtInterface(interf.getId())) {
+					map.put(interf.getId(), CallType.BIO);
+				} else {
+					map.put(interf.getId(), CallType.CRYSTAL);
+				}				
 			}
 		}
 		return map;

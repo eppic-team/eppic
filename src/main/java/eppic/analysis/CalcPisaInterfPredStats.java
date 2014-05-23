@@ -131,7 +131,7 @@ public class CalcPisaInterfPredStats {
 			// now we report about interfaces
 			for (int interfId:interfList.get(pdbCode)) {
 				int id = pil.getByProtProtId(interfId).getId();
-				if (op.containProtInterface(pil, id)) {
+				if (op.containProtInterface(id)) {
 					System.out.println("  "+interfId+" bio");
 					countBioCalls++;
 				} else {

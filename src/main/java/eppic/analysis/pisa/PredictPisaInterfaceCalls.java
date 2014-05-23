@@ -118,13 +118,11 @@ public class PredictPisaInterfaceCalls {
 					PisaPdbData local = new PisaPdbData(pdbInfo, assemblySetListMap.get(pdbCode), interfaceListMap.get(pdbCode));					
 					pisaDataList.add(local);
 				} catch(PdbLoadException e){
-					System.err.println("ERROR: Unable to load pdb file: "+pdbCode+"; "+e.getMessage());
-				} catch(FileNotFoundException e){
-					System.err.println("ERROR: Unable to find the file "+e.getMessage());
+					System.err.println("ERROR: Unable to load pdb file: "+pdbCode+", error: "+e.getMessage());
 				} catch(IOException e) {
-					System.err.println("ERROR: Unable to deserialize from file "+e.getMessage());
+					System.err.println("ERROR: Unable to deserialize from file for pdb "+pdbCode+", error: "+e.getMessage());
 				} catch (ClassNotFoundException e) {
-					System.err.println("ERROR: Unable to deserialize from file "+e.getMessage());
+					System.err.println("ERROR: Unable to deserialize from file for pdb "+pdbCode+", error: "+e.getMessage());
 				}
 			}
 		}
@@ -186,7 +184,7 @@ public class PredictPisaInterfaceCalls {
 	 * @throws SAXException 
 	 * @throws FileNotFoundException 
 	 */
-	public static void main(String[] args) throws Exception {
+	public static void main(String[] args) {
 		
 		File assemFile = null;
 		File interfFile = null;
@@ -206,7 +204,6 @@ public class PredictPisaInterfaceCalls {
 				"   -d         :  dir containing PISA <pdb>.assemblies.xml.gz and <pdb>.interfaces.xml.gz\n"+
 				"                 files. Use in combination with -l (-a and -i will be ignored)\n"+
 				"  [-w]        :  dir containing webui.dat files for each PDB (in the usual divided layout).\n"+
-				"                 Will only be used if -l/-d specified\n."+
 				"                 If -w not specified, then interfaces will be calculated on the fly from mmCIF \n"+
 				"                 files read from dir given in -c\n"+
 				"  [-c]        :  Path to cif files directory\n"+
@@ -256,9 +253,21 @@ public class PredictPisaInterfaceCalls {
 
 		if (assemFile!=null) {
 			// single files
-			PredictPisaInterfaceCalls predictor = new PredictPisaInterfaceCalls(interfFile,assemFile,cifPath,null,pisaVersion);
-			printHeaders(System.out); 
-			predictor.printData(System.out);
+			PredictPisaInterfaceCalls predictor;
+			try {
+				predictor = new PredictPisaInterfaceCalls(interfFile,assemFile,cifPath,serializedFilesDir,pisaVersion);
+				printHeaders(System.out); 
+				predictor.printData(System.out);
+
+			} catch (SAXException e) {
+				System.err.println("Problem reading pisa files, error: "+e.getMessage());				
+			} catch (IOException e) {
+				System.err.println("Problem reading pisa files, error: "+e.getMessage());
+			} catch (FileFormatException e) {
+				System.err.println("Problem reading pisa files, error: "+e.getMessage());
+			} catch (PdbLoadException e) {
+				System.err.println("Problem reading pisa files, error: "+e.getMessage());
+			}
 			
 		} else {
 			printHeaders(System.out); 
@@ -285,6 +294,10 @@ public class PredictPisaInterfaceCalls {
 				} catch (FileFormatException e) {
 					System.err.println("Problem reading file for pdb "+pdbCode+", error: "+e.getMessage());
 					continue;
+				} catch (Exception e) {
+					System.err.println("Unexpected problem ["+e.getClass().getCanonicalName()+"] for pdb "+pdbCode+", error: "+
+										e.getMessage());
+					continue;
 				}
 			}
 			
@@ -292,16 +305,23 @@ public class PredictPisaInterfaceCalls {
 
 	}
 	
-	private static List<String> readListFile(File listFile) throws IOException {
+	private static List<String> readListFile(File listFile) {
 		List<String> list = new ArrayList<String>();
-		BufferedReader br = new BufferedReader(new FileReader(listFile));
-		String line;
-		while((line = br.readLine())!=null) {
-			if (line.startsWith("#")) continue;
-			if (line.isEmpty()) continue;
-			list.add(line);
+		BufferedReader br;
+		try {
+			br = new BufferedReader(new FileReader(listFile));
+
+			String line;
+			while((line = br.readLine())!=null) {
+				if (line.startsWith("#")) continue;
+				if (line.isEmpty()) continue;
+				list.add(line);
+			}
+			br.close();
+		} catch (IOException e) {
+			System.err.println("Problem while reading list file "+listFile+", error: "+e.getMessage());
+			System.exit(1);
 		}
-		br.close();
 		return list;
 	}
 
