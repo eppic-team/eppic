@@ -9,7 +9,9 @@ import ch.systemsx.sybit.crkwebui.client.commons.gui.info.PopUpInfo;
 import ch.systemsx.sybit.crkwebui.client.commons.util.EscapedStringGenerator;
 import ch.systemsx.sybit.crkwebui.client.search.gui.cells.PdbCodeCell;
 import ch.systemsx.sybit.crkwebui.client.search.gui.cells.PdbDataDoubleCell;
+import ch.systemsx.sybit.crkwebui.client.search.gui.cells.SequenceClusterTypeCell;
 import ch.systemsx.sybit.crkwebui.shared.model.PDBSearchResult;
+import ch.systemsx.sybit.crkwebui.shared.model.SequenceClusterType;
 
 import com.google.gwt.core.shared.GWT;
 import com.google.gwt.dom.client.NativeEvent;
@@ -22,23 +24,23 @@ import com.google.gwt.safehtml.shared.UriUtils;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
-import com.sencha.gxt.core.client.ValueProvider;
 import com.sencha.gxt.core.client.Style.SelectionMode;
+import com.sencha.gxt.core.client.ValueProvider;
 import com.sencha.gxt.core.client.util.IconHelper;
 import com.sencha.gxt.core.client.util.KeyNav;
 import com.sencha.gxt.core.client.util.Margins;
 import com.sencha.gxt.data.shared.ListStore;
 import com.sencha.gxt.data.shared.ModelKeyProvider;
 import com.sencha.gxt.data.shared.PropertyAccess;
+import com.sencha.gxt.widget.core.client.button.TextButton;
+import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer;
 import com.sencha.gxt.widget.core.client.event.CellClickEvent;
+import com.sencha.gxt.widget.core.client.event.CellClickEvent.CellClickHandler;
 import com.sencha.gxt.widget.core.client.event.CellDoubleClickEvent;
 import com.sencha.gxt.widget.core.client.event.CellDoubleClickEvent.CellDoubleClickHandler;
 import com.sencha.gxt.widget.core.client.event.SelectEvent;
-import com.sencha.gxt.widget.core.client.event.CellClickEvent.CellClickHandler;
 import com.sencha.gxt.widget.core.client.event.SelectEvent.SelectHandler;
 import com.sencha.gxt.widget.core.client.form.NumberPropertyEditor.DoublePropertyEditor;
-import com.sencha.gxt.widget.core.client.button.TextButton;
-import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer;
 import com.sencha.gxt.widget.core.client.grid.ColumnConfig;
 import com.sencha.gxt.widget.core.client.grid.ColumnModel;
 import com.sencha.gxt.widget.core.client.grid.Grid;
@@ -58,13 +60,20 @@ public class SearchGridPanel extends VerticalLayoutContainer
 
 		@Path("uid")
 		ModelKeyProvider<PDBSearchResult> key();
-
+		ValueProvider<PDBSearchResult, SequenceClusterType> sequenceClusterType();
 		ValueProvider<PDBSearchResult, String> pdbCode();	  
 		ValueProvider<PDBSearchResult, String> title();
 		ValueProvider<PDBSearchResult, String> spaceGroup();
+		ValueProvider<PDBSearchResult, Double> cellA();
+		ValueProvider<PDBSearchResult, Double> cellB();
+		ValueProvider<PDBSearchResult, Double> cellC();
+		ValueProvider<PDBSearchResult, Double> cellAlpha();
+		ValueProvider<PDBSearchResult, Double> cellBeta();
+		ValueProvider<PDBSearchResult, Double> cellGamma();
 		ValueProvider<PDBSearchResult, Double> resolution();
 		ValueProvider<PDBSearchResult, Double> rfreeValue();
 		ValueProvider<PDBSearchResult, String> expMethod();
+		ValueProvider<PDBSearchResult, Integer> crystalFormId();
 	}
 
 	private static final PDBSearchResultProperties props = GWT.create(PDBSearchResultProperties.class);
@@ -136,37 +145,69 @@ public class SearchGridPanel extends VerticalLayoutContainer
 	private List<ColumnConfig<PDBSearchResult, ?>> createColumnConfigs(){
 		List<ColumnConfig<PDBSearchResult, ?>> resultsConfig;
 		
+		ColumnConfig<PDBSearchResult, SequenceClusterType> sequenceClusterTypeCol = new ColumnConfig<PDBSearchResult, SequenceClusterType>(props.sequenceClusterType());
 		ColumnConfig<PDBSearchResult, String> pdbCol = new ColumnConfig<PDBSearchResult, String>(props.pdbCode());
 		ColumnConfig<PDBSearchResult, String> titleCol = new ColumnConfig<PDBSearchResult, String>(props.title());
 		ColumnConfig<PDBSearchResult, String> spaceGroupCol = new ColumnConfig<PDBSearchResult, String>(props.spaceGroup());
+		ColumnConfig<PDBSearchResult, Double> cellACol = new ColumnConfig<PDBSearchResult, Double>(props.cellA());
+		ColumnConfig<PDBSearchResult, Double> cellBCol = new ColumnConfig<PDBSearchResult, Double>(props.cellB());
+		ColumnConfig<PDBSearchResult, Double> cellCCol = new ColumnConfig<PDBSearchResult, Double>(props.cellC());
+		ColumnConfig<PDBSearchResult, Double> cellAlphaCol = new ColumnConfig<PDBSearchResult, Double>(props.cellAlpha());
+		ColumnConfig<PDBSearchResult, Double> cellBetaCol = new ColumnConfig<PDBSearchResult, Double>(props.cellBeta());
+		ColumnConfig<PDBSearchResult, Double> cellGammaCol = new ColumnConfig<PDBSearchResult, Double>(props.cellGamma());
 		ColumnConfig<PDBSearchResult, String> expMethodCol = new ColumnConfig<PDBSearchResult, String>(props.expMethod());
 		ColumnConfig<PDBSearchResult, Double> resolutionCol = new ColumnConfig<PDBSearchResult, Double>(props.resolution());
 		ColumnConfig<PDBSearchResult, Double> rFreeCol = new ColumnConfig<PDBSearchResult, Double>(props.rfreeValue());
+		ColumnConfig<PDBSearchResult, Integer> crystalFormIdCol = new ColumnConfig<PDBSearchResult, Integer>(props.crystalFormId());
 		
+		sequenceClusterTypeCol.setCell(new SequenceClusterTypeCell());
 		pdbCol.setCell(new PdbCodeCell());
+		cellACol.setCell(new PdbDataDoubleCell());
+		cellBCol.setCell(new PdbDataDoubleCell());
+		cellCCol.setCell(new PdbDataDoubleCell());
+		cellAlphaCol.setCell(new PdbDataDoubleCell());
+		cellBetaCol.setCell(new PdbDataDoubleCell());
+		cellGammaCol.setCell(new PdbDataDoubleCell());
 		resolutionCol.setCell(new PdbDataDoubleCell());
 		rFreeCol.setCell(new PdbDataDoubleCell());
 		
+		fillColumnSettings(sequenceClusterTypeCol, "sequenceClusterType");
 		fillColumnSettings(pdbCol, "pdbCode");
 		fillColumnSettings(titleCol, "title");
 		fillColumnSettings(spaceGroupCol, "spaceGroup");
+		fillColumnSettings(cellACol, "cellA");
+		fillColumnSettings(cellBCol,"cellB");
+		fillColumnSettings(cellCCol, "cellC");
+		fillColumnSettings(cellAlphaCol, "cellAlpha");
+		fillColumnSettings(cellBetaCol, "cellBeta");		
+		fillColumnSettings(cellGammaCol, "cellGamma");
 		fillColumnSettings(expMethodCol, "expMethod");
 		fillColumnSettings(resolutionCol, "res");
 		fillColumnSettings(rFreeCol, "rfree");
+		fillColumnSettings(crystalFormIdCol, "crystalFormId");
 		
+		sequenceClusterTypeCol.setAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 		expMethodCol.setAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 		spaceGroupCol.setAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 		resolutionCol.setAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 		rFreeCol.setAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 		
 		resultsConfig = new ArrayList<ColumnConfig<PDBSearchResult, ?>>();
+		resultsConfig.add(sequenceClusterTypeCol);
 		resultsConfig.add(pdbCol);
 		resultsConfig.add(titleCol);
 		resultsConfig.add(expMethodCol);
 		resultsConfig.add(spaceGroupCol);
+		resultsConfig.add(cellACol);
+		resultsConfig.add(cellBCol);
+		resultsConfig.add(cellCCol);
+		resultsConfig.add(cellAlphaCol);
+		resultsConfig.add(cellBetaCol);
+		resultsConfig.add(cellGammaCol);
 		resultsConfig.add(resolutionCol);
 		resultsConfig.add(rFreeCol);
-		
+		resultsConfig.add(crystalFormIdCol);
+
 		return resultsConfig;
 	}
 	

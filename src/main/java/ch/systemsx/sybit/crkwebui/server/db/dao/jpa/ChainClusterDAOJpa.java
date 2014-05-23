@@ -13,9 +13,13 @@ import javax.persistence.criteria.Root;
 import javax.persistence.criteria.Subquery;
 import javax.persistence.metamodel.SingularAttribute;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import ch.systemsx.sybit.crkwebui.server.db.EntityManagerHandler;
 import ch.systemsx.sybit.crkwebui.server.db.dao.ChainClusterDAO;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
+import ch.systemsx.sybit.crkwebui.shared.model.SequenceClusterType;
 import ch.systemsx.sybit.crkwebui.shared.model.ChainCluster;
 import ch.systemsx.sybit.crkwebui.shared.model.PDBSearchResult;
 import eppic.model.ChainClusterDB;
@@ -30,8 +34,11 @@ import eppic.model.SeqClusterDB_;
  * @author AS
  *
  */
-public class ChainClusterDAOJpa implements ChainClusterDAO
-{
+public class ChainClusterDAOJpa implements ChainClusterDAO {
+    
+    private static final Logger log = LoggerFactory.getLogger(ChainClusterDAOJpa.class);
+
+    
     @Override
     public List<ChainCluster> getChainClusters(int pdbInfoUid) throws DaoException
     {
@@ -137,7 +144,7 @@ public class ChainClusterDAOJpa implements ChainClusterDAO
     }
     
     @Override
-    public List<PDBSearchResult> getPdbSearchItems(String pdbCode, String repChain, int certanity)
+    public List<PDBSearchResult> getPdbSearchItems(String pdbCode, String repChain, SequenceClusterType sequenceClusterType)
 	    throws DaoException {
 	EntityManager entityManager = null;
 
@@ -151,13 +158,17 @@ public class ChainClusterDAOJpa implements ChainClusterDAO
 	    
 	    Root<ChainClusterDB> root = criteriaQuery.from(ChainClusterDB.class);
 
-	    SingularAttribute<SeqClusterDB, Integer> certanityColumn = getCertanityColumn(certanity);
-	    long clusteId = getClusterId(pdbCode, repChain, certanityColumn);
+	    SingularAttribute<SeqClusterDB, Integer> sequenceClusterTypeColumn = getSequenceClusterTypeColumn(sequenceClusterType);
+	    long clusterId = getClusterId(pdbCode, repChain, sequenceClusterTypeColumn);
+	    if(clusterId == 0 || clusterId == -1) {
+		log.warn("clusterId is " + clusterId + " for pdbCode " + pdbCode + " repChain " + repChain + " sequenceClusterType " + sequenceClusterType);
+		return null;
+	    }
 	    
 	    Subquery<Integer> chainClusterIdsQuery = criteriaQuery.subquery(Integer.class);
 	    Root<SeqClusterDB> seqRoot = chainClusterIdsQuery.from(SeqClusterDB.class);
 	    chainClusterIdsQuery.select(seqRoot.get(SeqClusterDB_.chainCluster).get(ChainClusterDB_.uid));
-	    chainClusterIdsQuery.where(criteriaBuilder.equal(seqRoot.get(certanityColumn), clusteId));
+	    chainClusterIdsQuery.where(criteriaBuilder.equal(seqRoot.get(sequenceClusterTypeColumn), clusterId));
 	    
 	    criteriaQuery.select(root.get(ChainClusterDB_.pdbInfo));
 	    criteriaQuery.where(criteriaBuilder.in(root.get(ChainClusterDB_.uid)).value(chainClusterIdsQuery));
@@ -171,10 +182,18 @@ public class ChainClusterDAOJpa implements ChainClusterDAO
 			pdbItemDB.getPdbCode(), 
 			pdbItemDB.getTitle(), 
 			pdbItemDB.getReleaseDate(), 
-			pdbItemDB.getSpaceGroup(), 
+			pdbItemDB.getSpaceGroup(),
+			pdbItemDB.getCellA(),
+			pdbItemDB.getCellB(),
+			pdbItemDB.getCellC(),
+			pdbItemDB.getCellAlpha(),
+			pdbItemDB.getCellBeta(),
+			pdbItemDB.getCellGamma(),
 			pdbItemDB.getResolution(), 
 			pdbItemDB.getRfreeValue(), 
-			pdbItemDB.getExpMethod());
+			pdbItemDB.getExpMethod(),
+			pdbItemDB.getCrystalFormId(),
+			sequenceClusterType);
 
 		resultList.add(result);
 	    }
@@ -202,28 +221,28 @@ public class ChainClusterDAOJpa implements ChainClusterDAO
     }
 
 
-    SingularAttribute<SeqClusterDB, Integer> getCertanityColumn(int certanity) {
-	switch (certanity) {
-	    case 100:
+    SingularAttribute<SeqClusterDB, Integer> getSequenceClusterTypeColumn(SequenceClusterType sequenceClusterType) {
+	switch (sequenceClusterType) {
+	    case C100:
 		return SeqClusterDB_.c100;
-	    case 95:
+	    case C95:
 		return SeqClusterDB_.c95;
-	    case 90:
+	    case C90:
 		return SeqClusterDB_.c90;
-	    case 80:
+	    case C80:
 		return SeqClusterDB_.c80;
-	    case 70:
+	    case C70:
 		return SeqClusterDB_.c70;
-	    case 60:
+	    case C60:
 		return SeqClusterDB_.c60;
-	    case 50:
+	    case C50:
 		return SeqClusterDB_.c50;
-	    case 40:
+	    case C40:
 		return SeqClusterDB_.c40;
-	    case 30:
+	    case C30:
 		return SeqClusterDB_.c30;
 	    default:
-		throw new IllegalArgumentException("Certanity should be one of the following values: 100, 95, 90, 80, 70, 60 ,50, 40 ,30");
+		throw new IllegalArgumentException("SequenceClusterType should be one of the following values: 100, 95, 90, 80, 70, 60 ,50, 40 ,30");
 	    }
     }
 

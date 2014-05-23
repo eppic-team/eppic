@@ -7,6 +7,7 @@ import java.util.List;
 import org.junit.Test;
 
 import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
+import ch.systemsx.sybit.crkwebui.shared.model.SequenceClusterType;
 import ch.systemsx.sybit.crkwebui.shared.model.PDBSearchResult;
 
 
@@ -16,7 +17,7 @@ public class ChainClusterDAOJpaTest {
     public void testGetPdbSearchItems() throws DaoException {
 	ChainClusterDAOJpa dao = new ChainClusterDAOJpa();
 	List<PDBSearchResult> results = dao.getPdbSearchItemsForUniProt("P30340");
-	List<PDBSearchResult> results2 = dao.getPdbSearchItems("1smt", "A", 100);
+	List<PDBSearchResult> results2 = dao.getPdbSearchItems("1smt", "A", SequenceClusterType.C100);
 	
 	assertEquals("the length of the two result lists are not the same", results2.size(), results.size());
 	for(int i = 0; i < results.size(); i++)
