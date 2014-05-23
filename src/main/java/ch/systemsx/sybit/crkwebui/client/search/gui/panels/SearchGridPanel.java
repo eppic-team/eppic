@@ -5,7 +5,6 @@ import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
-import ch.systemsx.sybit.crkwebui.client.commons.gui.info.PopUpInfo;
 import ch.systemsx.sybit.crkwebui.client.commons.util.EscapedStringGenerator;
 import ch.systemsx.sybit.crkwebui.client.search.gui.cells.PdbCodeCell;
 import ch.systemsx.sybit.crkwebui.client.search.gui.cells.PdbDataDoubleCell;
@@ -14,32 +13,20 @@ import ch.systemsx.sybit.crkwebui.shared.model.PDBSearchResult;
 import ch.systemsx.sybit.crkwebui.shared.model.SequenceClusterType;
 
 import com.google.gwt.core.shared.GWT;
-import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.editor.client.Editor.Path;
 import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
-import com.google.gwt.event.logical.shared.SelectionEvent;
-import com.google.gwt.event.logical.shared.SelectionHandler;
-import com.google.gwt.safehtml.shared.UriUtils;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
-import com.sencha.gxt.core.client.Style.SelectionMode;
 import com.sencha.gxt.core.client.ValueProvider;
-import com.sencha.gxt.core.client.util.IconHelper;
-import com.sencha.gxt.core.client.util.KeyNav;
 import com.sencha.gxt.core.client.util.Margins;
 import com.sencha.gxt.data.shared.ListStore;
 import com.sencha.gxt.data.shared.ModelKeyProvider;
 import com.sencha.gxt.data.shared.PropertyAccess;
-import com.sencha.gxt.widget.core.client.button.TextButton;
 import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer;
-import com.sencha.gxt.widget.core.client.event.CellClickEvent;
-import com.sencha.gxt.widget.core.client.event.CellClickEvent.CellClickHandler;
 import com.sencha.gxt.widget.core.client.event.CellDoubleClickEvent;
 import com.sencha.gxt.widget.core.client.event.CellDoubleClickEvent.CellDoubleClickHandler;
-import com.sencha.gxt.widget.core.client.event.SelectEvent;
-import com.sencha.gxt.widget.core.client.event.SelectEvent.SelectHandler;
 import com.sencha.gxt.widget.core.client.form.NumberPropertyEditor.DoublePropertyEditor;
 import com.sencha.gxt.widget.core.client.grid.ColumnConfig;
 import com.sencha.gxt.widget.core.client.grid.ColumnModel;
@@ -47,7 +34,6 @@ import com.sencha.gxt.widget.core.client.grid.Grid;
 import com.sencha.gxt.widget.core.client.grid.filters.GridFilters;
 import com.sencha.gxt.widget.core.client.grid.filters.NumericFilter;
 import com.sencha.gxt.widget.core.client.grid.filters.StringFilter;
-import com.sencha.gxt.widget.core.client.toolbar.ToolBar;
 
 public class SearchGridPanel extends VerticalLayoutContainer
 {
@@ -83,7 +69,6 @@ public class SearchGridPanel extends VerticalLayoutContainer
 	private ColumnModel<PDBSearchResult> cm;
 	
 	private Grid<PDBSearchResult> resultsGrid;
-	private ToolBar selectorToolBar;
 	private VerticalLayoutContainer filterTextPanel;
 	
 	private String selectedPdbCode;
@@ -110,11 +95,9 @@ public class SearchGridPanel extends VerticalLayoutContainer
 
 		createGrid();
 
-		selectorToolBar = createSelectorToolBar();
 		filterTextPanel = createFilterPanel();
 		
 		this.add(filterTextPanel, new VerticalLayoutData(1, -1, new Margins(10,0,15,0)));
-		this.add(selectorToolBar, new VerticalLayoutData(1, -1));
 		this.add(resultsGrid, new VerticalLayoutData(1, 1));
 
 	}
@@ -189,9 +172,16 @@ public class SearchGridPanel extends VerticalLayoutContainer
 		sequenceClusterTypeCol.setAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 		expMethodCol.setAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 		spaceGroupCol.setAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+		cellACol.setAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+		cellBCol.setAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+		cellCCol.setAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+		cellAlphaCol.setAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+		cellBetaCol.setAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+		cellGammaCol.setAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 		resolutionCol.setAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 		rFreeCol.setAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-		
+		crystalFormIdCol.setAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+
 		resultsConfig = new ArrayList<ColumnConfig<PDBSearchResult, ?>>();
 		resultsConfig.add(sequenceClusterTypeCol);
 		resultsConfig.add(pdbCol);
@@ -233,16 +223,7 @@ public class SearchGridPanel extends VerticalLayoutContainer
 		resultsGrid.getView().setStripeRows(true);
 		resultsGrid.getView().setColumnLines(true);
 		resultsGrid.getView().setForceFit(true);
-		resultsGrid.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
 		resultsGrid.addStyleName("eppic-default-font");
-		
-		resultsGrid.addCellClickHandler(new CellClickHandler() {
-			@Override
-			public void onCellClick(CellClickEvent event) {
-				selectedPdbCode = store.get(event.getRowIndex()).getPdbCode();	
-			}
-		});
-		
 		resultsGrid.addCellDoubleClickHandler(new CellDoubleClickHandler() {
 			
 			@Override
@@ -254,29 +235,6 @@ public class SearchGridPanel extends VerticalLayoutContainer
 				}
 			}
 		});
-
-		resultsGrid.getSelectionModel().addSelectionHandler(new SelectionHandler<PDBSearchResult>() {
-			@Override
-			public void onSelection(SelectionEvent<PDBSearchResult> event) {
-				if(event.getSelectedItem() != null )
-				{
-						selectedPdbCode = event.getSelectedItem().getPdbCode();
-				}	
-			}
-		});
-
-		new KeyNav(resultsGrid)
-		{
-			@Override
-            public void onEnter(NativeEvent event)
-			{
-				if(selectedPdbCode != null)
-				{
-					History.newItem("id/" + selectedPdbCode.toLowerCase() );
-				}
-			}
-		};
-
 		NumericFilter<PDBSearchResult, Double> resFilter = 
 				new NumericFilter<PDBSearchResult, Double>(props.resolution(), new DoublePropertyEditor());
 		NumericFilter<PDBSearchResult, Double> rFreeFilter = 
@@ -313,34 +271,8 @@ public class SearchGridPanel extends VerticalLayoutContainer
 		return filterPanel;
 	}
 	
-	private ToolBar createSelectorToolBar(){
-		ToolBar tb = new ToolBar();
-
-		TextButton loadButton = new TextButton(AppPropertiesManager.CONSTANTS.search_panel_load_button());
-		loadButton.addStyleName("eppic-default-font");
-		loadButton.addSelectHandler(new SelectHandler() {
-			@Override
-			public void onSelect(SelectEvent event) {
-				if(selectedPdbCode != null){
-					History.newItem("id/" + selectedPdbCode.toLowerCase() );
-				} else{
-					PopUpInfo.show(AppPropertiesManager.CONSTANTS.search_panel_load_button_no_selection_title(),
-							AppPropertiesManager.CONSTANTS.search_panel_load_button_no_selection_text());
-				}
-			}
-		});
-		
-		String iconSource = "resources/icons/load_result_icon.png";
-		loadButton.setIcon(IconHelper.getImageResource(UriUtils.fromSafeConstant(iconSource), 12, 12));
-		
-		tb.add(loadButton);
-		
-		return tb;
-	}
-	
 	private void setGridVisibility(boolean visibility){
 		resultsGrid.setVisible(visibility);
-		selectorToolBar.setVisible(visibility);
 		filterTextPanel.setVisible(visibility);
 	}
 	
