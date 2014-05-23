@@ -110,4 +110,15 @@ public interface CrkWebService extends RemoteService
 	 */
 	@XsrfProtect
 	public List<PDBSearchResult> getListOfPDBsHavingAUniProt(String uniProtId) throws Exception;
-}
+	
+	/**
+	 * gets a list of pdb having a seq with a particular pdb code and chain
+	 * @param config
+	 * @param prdbCode
+	 * @param chain
+	 * @return bean that holds the results
+	 * @throws Exception when an asynchronous call fails to complete normally
+	 */
+	@XsrfProtect
+	List<PDBSearchResult> getListOfPDBs(String pdbCode, String chain) throws Exception;
+} 

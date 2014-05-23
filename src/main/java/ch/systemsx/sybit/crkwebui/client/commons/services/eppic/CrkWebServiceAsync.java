@@ -3,6 +3,7 @@ package ch.systemsx.sybit.crkwebui.client.commons.services.eppic;
 import java.util.HashMap;
 import java.util.List;
 
+import ch.systemsx.sybit.crkwebui.client.commons.callbacks.GetPdbForPdbChainCallBack;
 import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
 import ch.systemsx.sybit.crkwebui.shared.model.Residue;
 import ch.systemsx.sybit.crkwebui.shared.model.ResiduesList;
@@ -43,4 +44,6 @@ public interface CrkWebServiceAsync
 			AsyncCallback<ResiduesList> getAllResiduesCallback);
 	
 	public void getListOfPDBsHavingAUniProt(String uniProtId, AsyncCallback<List<PDBSearchResult>> callback);
+
+	public void getListOfPDBs(String pdbCode, String chain, AsyncCallback<List<PDBSearchResult>> callback);
 }
