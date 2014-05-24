@@ -40,6 +40,8 @@ import owl.core.util.Goodies;
  *
  */
 public class PredictPisaInterfaceCalls {
+
+	private static final double MIN_AREA_PISA = 10;
 	
 	private static final String PROGRAM_NAME = "PredictPisaInterfaceCalls";
 	private static final String DEFAULT_CIF_DIR = "/nfs/data/dbs/pdb/data/structures/all/mmCIF";
@@ -53,7 +55,8 @@ public class PredictPisaInterfaceCalls {
 	
 	private List<PisaPdbData> pisaDatas;
 	
-	public PredictPisaInterfaceCalls(File interfaceFile, File assemblyFile, String cifDirPath, File serializedFilesDir, int pisaVersion) throws SAXException, IOException, FileFormatException, PdbLoadException{
+	public PredictPisaInterfaceCalls(File interfaceFile, File assemblyFile, String cifDirPath, File serializedFilesDir, int pisaVersion) 
+			throws SAXException, IOException, FileFormatException, PdbLoadException, OneToManyMatchException {
 		this.interfaceFile = interfaceFile;
 		this.assemblyFile = assemblyFile;
 		this.cifDir = cifDirPath;
@@ -93,7 +96,8 @@ public class PredictPisaInterfaceCalls {
 		this.pisaDatas = pisaDatas;
 	}
 
-	public List<PisaPdbData> createPisaDatafromFiles(File assemblyFile, File interfaceFile, int pisaVersion) throws SAXException, IOException, PdbLoadException, FileFormatException{
+	public List<PisaPdbData> createPisaDatafromFiles(File assemblyFile, File interfaceFile, int pisaVersion) 
+			throws SAXException, IOException, PdbLoadException, FileFormatException, OneToManyMatchException {
 		List<PisaPdbData> pisaDataList = new ArrayList<PisaPdbData>();
 		
 		//Parse Assemblies
@@ -115,7 +119,7 @@ public class PredictPisaInterfaceCalls {
 					} else {
 						pdbInfo = getPdbInfo(getPdb(pdbCode));						
 					}
-					PisaPdbData local = new PisaPdbData(pdbInfo, assemblySetListMap.get(pdbCode), interfaceListMap.get(pdbCode));					
+					PisaPdbData local = new PisaPdbData(pdbInfo, assemblySetListMap.get(pdbCode), interfaceListMap.get(pdbCode), MIN_AREA_PISA);					
 					pisaDataList.add(local);
 				} catch(PdbLoadException e){
 					System.err.println("ERROR: Unable to load pdb file: "+pdbCode+", error: "+e.getMessage());
@@ -123,7 +127,7 @@ public class PredictPisaInterfaceCalls {
 					System.err.println("ERROR: Unable to deserialize from file for pdb "+pdbCode+", error: "+e.getMessage());
 				} catch (ClassNotFoundException e) {
 					System.err.println("ERROR: Unable to deserialize from file for pdb "+pdbCode+", error: "+e.getMessage());
-				}
+				} 
 			}
 		}
 		
@@ -148,7 +152,7 @@ public class PredictPisaInterfaceCalls {
 				EppicParams.DEF_MIN_SIZE_COFACTOR_FOR_ASA,
 				EppicParams.MIN_INTERFACE_AREA_TO_KEEP);
 		eppicInterfaces.initialiseClusters(pdb, EppicParams.CLUSTERING_RMSD_CUTOFF, EppicParams.CLUSTERING_MINATOMS, EppicParams.CLUSTERING_ATOM_TYPE);
-		dma.setInterfaces(eppicInterfaces, null);
+		dma.setInterfaces(eppicInterfaces);
 		PdbInfoDB pdbInfo = dma.getPdbInfo();
 		pdbInfo.setPdbCode(pdb.getPdbCode());
 		return pdbInfo;
@@ -169,7 +173,7 @@ public class PredictPisaInterfaceCalls {
 	
 	public void printData(PrintStream out){
 		for(PisaPdbData data:this.pisaDatas){
-			for(int eppicI:data.getEppicToPisaInterfaceMap().keySet()){
+			for(int eppicI:data.getEppicInterfaceIds()){
 				out.printf("%5s %8s %8s %8s\n",data.getPdbCode(),eppicI,data.getPisaIdForEppicInterface(eppicI),data.getPisaCallFromEppicInterface(eppicI).getName() );
 			}
 		}
@@ -267,6 +271,8 @@ public class PredictPisaInterfaceCalls {
 				System.err.println("Problem reading pisa files, error: "+e.getMessage());
 			} catch (PdbLoadException e) {
 				System.err.println("Problem reading pisa files, error: "+e.getMessage());
+			} catch (OneToManyMatchException e) {
+				System.err.println("ERROR: One to many match: "+e.getMessage());
 			}
 			
 		} else {
@@ -293,6 +299,9 @@ public class PredictPisaInterfaceCalls {
 					continue;
 				} catch (FileFormatException e) {
 					System.err.println("Problem reading file for pdb "+pdbCode+", error: "+e.getMessage());
+					continue;
+				} catch (OneToManyMatchException e) {
+					System.err.println("ERROR: One to many match for pdb "+pdbCode+": "+e.getMessage());
 					continue;
 				} catch (Exception e) {
 					System.err.println("Unexpected problem ["+e.getClass().getCanonicalName()+"] for pdb "+pdbCode+", error: "+

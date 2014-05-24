@@ -119,7 +119,7 @@ public class DataModelAdaptor {
 		}
 	}
 	
-	public void setInterfaces(ChainInterfaceList interfaces, PdbBioUnitList bioUnitList) {
+	public void setInterfaces(ChainInterfaceList interfaces) {
 
 		
 		List<InterfaceCluster> interfaceClusters = interfaces.getClusters();
@@ -228,30 +228,31 @@ public class DataModelAdaptor {
 		}
 		pdbInfo.setInterfaceClusters(icDBs);
 		
-		
+	}
+	
+	public void setPdbBioUnits(PdbBioUnitList bioUnitList, ChainInterfaceList interfaces) {
 		// assemblies (biounits) parsed from PDB
-		if (bioUnitList==null) return;
-		
+
 		// NOTE that getInterfaceClusterMatches removes duplicate assignments (when several biounits refer to same cluster)
-		TreeMap<Integer, List<Integer>> matchIds = bioUnitList.getInterfaceClusterMatches(interfaces);
+		TreeMap<Integer, List<Integer>> matchIds = bioUnitList.getInterfaceClusterMatches(interfaces); 
 		for(int bioUnitId:matchIds.keySet()){
 			PdbBioUnit unit = bioUnitList.get(bioUnitId);
-			
+
 			AssemblyDB assembly = new AssemblyDB();			
 			assembly.setMethod(unit.getType().getType());
 			assembly.setMmSize(unit.getSize());
 			assembly.setPdbCode(pdbInfo.getPdbCode());			
 			assembly.setConfidence(CONFIDENCE_NOT_AVAILABLE);
-			
+
 			// setting relations parent/child
 			assembly.setPdbInfo(pdbInfo);
 			pdbInfo.addAssembly(assembly);
 
 			List<Integer> memberClusterIds = matchIds.get(bioUnitId);
-			
+
 			List<InterfaceClusterDB> memberClustersDB = new ArrayList<InterfaceClusterDB>();
 			assembly.setInterfaceClusters(memberClustersDB);
-			for (InterfaceClusterDB icDB:icDBs) {
+			for (InterfaceClusterDB icDB:pdbInfo.getInterfaceClusters()) {
 				if (memberClusterIds.contains(icDB.getClusterId())) {
 					// all member interface clusters are assigned bio
 					memberClustersDB.add(icDB);				

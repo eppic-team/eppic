@@ -310,7 +310,8 @@ public class Main {
 		}
 
 		// for the webui
-		modelAdaptor.setInterfaces(interfaces, this.pdb.getPdbBioUnitList());
+		modelAdaptor.setInterfaces(interfaces);
+		modelAdaptor.setPdbBioUnits(this.pdb.getPdbBioUnitList(), interfaces);
 		modelAdaptor.setGeometryScores(gps, gcps);
 		modelAdaptor.setResidueDetails(interfaces);
 		
