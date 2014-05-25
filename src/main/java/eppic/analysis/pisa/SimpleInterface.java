@@ -2,11 +2,13 @@ package eppic.analysis.pisa;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TreeMap;
 
 import javax.vecmath.Matrix4d;
 
 import owl.core.connections.pisa.PisaInterface;
 import owl.core.connections.pisa.PisaInterfaceList;
+import owl.core.structure.PdbBioUnit;
 
 public class SimpleInterface {
 
@@ -97,6 +99,31 @@ public class SimpleInterface {
 			}
 		}
 		
+		return list;
+	}
+	
+	public static List<SimpleInterface> createSimpleInterfaceListFromPdbBioUnit(PdbBioUnit bioUnit) {
+	
+		List<SimpleInterface> list = new ArrayList<SimpleInterface>();
+		TreeMap<String,List<Matrix4d>> ops = bioUnit.getOperators();
+		int id = 1;
+		for (String iChain:ops.keySet()) {
+			for (Matrix4d iOp:ops.get(iChain)) {
+
+				for (String jChain:ops.keySet()) {
+					for (Matrix4d jOp:ops.get(jChain)) {
+						SimpleInterface si = new SimpleInterface();
+						si.setChain1(iChain);
+						si.setChain2(jChain);
+						si.setOperator1(iOp);
+						si.setOperator2(jOp);
+						si.setId(id);
+						list.add(si);
+						id++;
+					}
+				}
+			}
+		}
 		return list;
 	}
 }
