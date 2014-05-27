@@ -50,51 +50,16 @@ public class PredictPisaInterfaceCalls {
 	
 	private File serializedFilesDir;
 	
-	private File interfaceFile;
-	private File assemblyFile;
-	
 	private List<PisaPdbData> pisaDatas;
 	
 	public PredictPisaInterfaceCalls(File interfaceFile, File assemblyFile, String cifDirPath, File serializedFilesDir, int pisaVersion) 
 			throws SAXException, IOException, FileFormatException, PdbLoadException, OneToManyMatchException {
-		this.interfaceFile = interfaceFile;
-		this.assemblyFile = assemblyFile;
+		
 		this.cifDir = cifDirPath;
 		this.serializedFilesDir = serializedFilesDir;
 		this.pisaDatas = createPisaDatafromFiles(assemblyFile, interfaceFile, pisaVersion);
 	}
 	
-	public String getCifDir() {
-		return cifDir;
-	}
-
-	public void setCifDir(String cifDir) {
-		this.cifDir = cifDir;
-	}
-
-	public File getInterfaceFile() {
-		return interfaceFile;
-	}
-
-	public void setInterfaceFile(File interfaceFile) {
-		this.interfaceFile = interfaceFile;
-	}
-
-	public File getAssemblyFile() {
-		return assemblyFile;
-	}
-
-	public void setAssemblyFile(File assemblyFile) {
-		this.assemblyFile = assemblyFile;
-	}
-
-	public List<PisaPdbData> getPisaDatas() {
-		return pisaDatas;
-	}
-
-	public void setPisaDatas(List<PisaPdbData> pisaDatas) {
-		this.pisaDatas = pisaDatas;
-	}
 
 	public List<PisaPdbData> createPisaDatafromFiles(File assemblyFile, File interfaceFile, int pisaVersion) 
 			throws SAXException, IOException, PdbLoadException, FileFormatException, OneToManyMatchException {
@@ -165,17 +130,9 @@ public class PredictPisaInterfaceCalls {
 		return (PdbInfoDB)Goodies.readFromFile(webuidatFile);
 	}
 
-	public static void printHeaders(PrintStream out) {
-		//Print Header
-		out.printf("#%4s %8s %8s %8s\n","PDB","EPPIC_ID","PISA_ID","PisaCall");
-
-	}
-	
-	public void printData(PrintStream out){
+	public void printData(PrintStream out, PrintStream err){
 		for(PisaPdbData data:this.pisaDatas){
-			for(int eppicI:data.getEppicInterfaceIds()){
-				out.printf("%5s %8s %8s %8s\n",data.getPdbCode(),eppicI,data.getPisaIdForEppicInterface(eppicI),data.getPisaCallFromEppicInterface(eppicI).getName() );
-			}
+			data.printTabular(out, err);
 		}
 	}
 
@@ -260,8 +217,8 @@ public class PredictPisaInterfaceCalls {
 			PredictPisaInterfaceCalls predictor;
 			try {
 				predictor = new PredictPisaInterfaceCalls(interfFile,assemFile,cifPath,serializedFilesDir,pisaVersion);
-				printHeaders(System.out); 
-				predictor.printData(System.out);
+				PisaPdbData.printHeaders(System.out); 
+				predictor.printData(System.out, System.err);
 
 			} catch (SAXException e) {
 				System.err.println("Problem reading pisa files, error: "+e.getMessage());				
@@ -276,7 +233,7 @@ public class PredictPisaInterfaceCalls {
 			}
 			
 		} else {
-			printHeaders(System.out); 
+			PisaPdbData.printHeaders(System.out); 
 			// list file and dir
 			List<String> list = readListFile(listFile);
 			for (String pdbCode:list) {
@@ -287,7 +244,7 @@ public class PredictPisaInterfaceCalls {
 				try {
 					PredictPisaInterfaceCalls predictor = 
 						new PredictPisaInterfaceCalls(interfFile,assemFile,cifPath,serializedFilesDir,pisaVersion);
-					predictor.printData(System.out);
+					predictor.printData(System.out, System.err);
 				} catch (IOException e) {
 					System.err.println("Problem reading file for pdb "+pdbCode+", error: "+e.getMessage());
 					continue;

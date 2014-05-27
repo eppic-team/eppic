@@ -1,5 +1,6 @@
 package eppic.analysis.pisa;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -14,7 +15,6 @@ import eppic.model.InterfaceDB;
 
 public class InterfaceMatcher {
 	
-	public static final int MIN_CRYSTAL_TRANSLATION_FOR_WARNING = 4;
 	
 	private List<InterfaceClusterDB> ourInterfaceClusters;
 	private List<SimpleInterface> theirInterfaces;
@@ -50,47 +50,72 @@ public class InterfaceMatcher {
 	}
 	
 	public boolean hasMatch(int ourId) {
-		return (ours2theirs.get(ourId) != null);
+		return ours2theirs.containsKey(ourId);
 	}
 	
-	public boolean checkAllMatch(boolean verbose) {
-		
+	/**
+	 * Returns true if all 'our' interfaces match 1 and only 1 'their' interfaces
+	 * and if all 'their' interfaces match 1 and only 1 'our' interfaces
+	 * @return
+	 */
+	public boolean checkAllMatch() {		
+		return (checkOursMatch() && checkTheirsMatch());		
+	}
+	
+	/**
+	 * Returns true if all 'our' interfaces match 1 and only 1 'their' interfaces
+	 * @return
+	 */
+	public boolean checkOursMatch() {
 		// 1) all ours are matched to one of theirs
 		for (InterfaceClusterDB ic:ourInterfaceClusters) {
 			for (InterfaceDB ourI:ic.getInterfaces()) {
-				SimpleInterface theirI = ours2theirs.get(ourI.getInterfaceId());
-				if (theirI==null) {
-					// if not we check if the contacts are too far away and warn that it's impossible
-					// to match their interfaces in these cases (PISA only calculates up to 3 neighbors)
-					int xTrans = ourI.getXtalTrans_x();
-					int yTrans = ourI.getXtalTrans_y();
-					int zTrans = ourI.getXtalTrans_z();
-					int maxTrans = Math.max(Math.max(xTrans, yTrans), zTrans);
-					
-					if(maxTrans >= MIN_CRYSTAL_TRANSLATION_FOR_WARNING){
-						if (verbose)
-							System.err.println("Warning: our interface id "+ourI.getInterfaceId()+" has a maximum translation of "+maxTrans+" cells. No matching 'their' interface should be expected");
-					}
-					else {
-						if (verbose)
-							System.err.println("Warning: no matching 'their' interface found for 'our' interface id "+ourI.getInterfaceId());
-					}
-					
+				if (! ours2theirs.containsKey(ourI.getInterfaceId())) {
 					return false;
 				}
 			}
 		}
-		
+		return true;
+	}
+
+	public List<InterfaceDB> getOursNotMatching() {
+		List<InterfaceDB> nonmatching = new ArrayList<InterfaceDB>();
+		// 1) all ours are matched to one of theirs
+		for (InterfaceClusterDB ic:ourInterfaceClusters) {
+			for (InterfaceDB ourI:ic.getInterfaces()) {
+				if (! ours2theirs.containsKey(ourI.getInterfaceId())) {
+					nonmatching.add(ourI);
+				}
+			}
+		}
+		return nonmatching;
+	}
+	
+	/**
+	 * Returns true if all 'their' interfaces match 1 and only 1 'our' interfaces
+	 * @return
+	 */
+	public boolean checkTheirsMatch() {
 		// 2) all theirs are matched to one of ours	
 		for (SimpleInterface theirI: theirInterfaces) {
-			if (!ours2theirs.values().contains(theirI)) {
-				if (verbose)
-					System.err.println("Warning: no matching 'our' interface found for 'their' interface id "+theirI.getId());
+			if (! theirs2ours.containsKey(theirI.getId())) {
 				return false;
 			}
 		} 
-		
+
 		return true;
+	}
+	
+	public List<SimpleInterface> getTheirsNotMatching() {
+		List<SimpleInterface> nonmatching = new ArrayList<SimpleInterface>();
+		// 2) all theirs are matched to one of ours	
+		for (SimpleInterface theirI: theirInterfaces) {
+			if (! theirs2ours.containsKey(theirI.getId())) {
+				nonmatching.add(theirI);
+			}
+		} 
+
+		return nonmatching;
 	}
 	
 	private void matchThem() throws OneToManyMatchException {
@@ -170,7 +195,10 @@ public class InterfaceMatcher {
 		Matrix4d theirTransf1inv = new Matrix4d();
 		theirTransf1inv.invert(theirTransf1);
 		Matrix4d theirTransf12 = new Matrix4d();
-		theirTransf12.mul(theirTransf2, theirTransf1inv);
+		// Following my understanding, it should be T02*T01_inv as indicated above, but that didn't work 
+		// and for some reason inverting the order in mul does work. Most likely my understanding is 
+		// wrong, but need to check this better at some point
+		theirTransf12.mul(theirTransf1inv, theirTransf2);
 
 		if (invertedChains) {
 			theirTransf12.invert();
