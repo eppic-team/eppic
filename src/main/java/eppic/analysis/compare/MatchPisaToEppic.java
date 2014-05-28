@@ -39,7 +39,7 @@ import owl.core.util.Goodies;
  * @author biyani_n
  *
  */
-public class PredictPisaInterfaceCalls {
+public class MatchPisaToEppic {
 
 	private static final double MIN_AREA_PISA = 10;
 	
@@ -52,7 +52,7 @@ public class PredictPisaInterfaceCalls {
 	
 	private List<PisaPdbData> pisaDatas;
 	
-	public PredictPisaInterfaceCalls(File interfaceFile, File assemblyFile, String cifDirPath, File serializedFilesDir, int pisaVersion) 
+	public MatchPisaToEppic(File interfaceFile, File assemblyFile, String cifDirPath, File serializedFilesDir, int pisaVersion) 
 			throws SAXException, IOException, FileFormatException, PdbLoadException, OneToManyMatchException {
 		
 		this.cifDir = cifDirPath;
@@ -214,9 +214,9 @@ public class PredictPisaInterfaceCalls {
 
 		if (assemFile!=null) {
 			// single files
-			PredictPisaInterfaceCalls predictor;
+			MatchPisaToEppic predictor;
 			try {
-				predictor = new PredictPisaInterfaceCalls(interfFile,assemFile,cifPath,serializedFilesDir,pisaVersion);
+				predictor = new MatchPisaToEppic(interfFile,assemFile,cifPath,serializedFilesDir,pisaVersion);
 				PisaPdbData.printHeaders(System.out); 
 				predictor.printData(System.out, System.err);
 
@@ -242,8 +242,8 @@ public class PredictPisaInterfaceCalls {
 				assemFile = new File(dir,pdbCode+".assemblies.xml.gz"); 
 
 				try {
-					PredictPisaInterfaceCalls predictor = 
-						new PredictPisaInterfaceCalls(interfFile,assemFile,cifPath,serializedFilesDir,pisaVersion);
+					MatchPisaToEppic predictor = 
+						new MatchPisaToEppic(interfFile,assemFile,cifPath,serializedFilesDir,pisaVersion);
 					predictor.printData(System.out, System.err);
 				} catch (IOException e) {
 					System.err.println("Problem reading file for pdb "+pdbCode+", error: "+e.getMessage());
