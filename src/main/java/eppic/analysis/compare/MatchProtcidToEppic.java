@@ -1,4 +1,4 @@
-package eppic.analysis.pisa;
+package eppic.analysis.compare;
 
 import eppic.model.InterfaceDB;
 import eppic.model.PdbInfoDB;

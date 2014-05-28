@@ -1,4 +1,4 @@
-package eppic.analysis.pisa;
+package eppic.analysis.compare;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -49,8 +49,12 @@ public class InterfaceMatcher {
 		return theirs2ours.get(theirId);
 	}
 	
-	public boolean hasMatch(int ourId) {
+	public boolean oursMatch(int ourId) {
 		return ours2theirs.containsKey(ourId);
+	}
+	
+	public boolean theirsMatch(int theirId) {
+		return theirs2ours.containsKey(theirId);
 	}
 	
 	/**

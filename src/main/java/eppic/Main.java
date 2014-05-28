@@ -311,7 +311,7 @@ public class Main {
 
 		// for the webui
 		modelAdaptor.setInterfaces(interfaces);
-		modelAdaptor.setPdbBioUnits(this.pdb.getPdbBioUnitList(), interfaces);
+		modelAdaptor.setPdbBioUnits(this.pdb.getPdbBioUnitList());
 		modelAdaptor.setGeometryScores(gps, gcps);
 		modelAdaptor.setResidueDetails(interfaces);
 		

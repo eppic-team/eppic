@@ -8,9 +8,16 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.TreeMap;
+import java.util.Set;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import edu.uci.ics.jung.graph.util.Pair;
+import eppic.analysis.compare.BioUnitView;
+import eppic.analysis.compare.InterfaceMatcher;
+import eppic.analysis.compare.OneToManyMatchException;
+import eppic.analysis.compare.SimpleInterface;
 import eppic.model.ContactDB;
 import eppic.model.HomologDB;
 import eppic.model.ChainClusterDB;
@@ -53,6 +60,8 @@ import owl.core.util.Goodies;
 
 public class DataModelAdaptor {
 
+	private static final Log LOGGER = LogFactory.getLog(DataModelAdaptor.class);
+	
 	private static final int FIRST = 0;
 	private static final int SECOND = 1;
 	
@@ -230,17 +239,17 @@ public class DataModelAdaptor {
 		
 	}
 	
-	public void setPdbBioUnits(PdbBioUnitList bioUnitList, ChainInterfaceList interfaces) {
+	public void setPdbBioUnits(PdbBioUnitList bioUnitList) {
 		// assemblies (biounits) parsed from PDB
 
-		// NOTE that getInterfaceClusterMatches removes duplicate assignments (when several biounits refer to same cluster)
-		TreeMap<Integer, List<Integer>> matchIds = bioUnitList.getInterfaceClusterMatches(interfaces); 
-		for(int bioUnitId:matchIds.keySet()){
-			PdbBioUnit unit = bioUnitList.get(bioUnitId);
+		List<BioUnitView> reducedBioUnits = matchToInterfaceClusters(bioUnitList);		
+		
+		for(BioUnitView reducedBioUnit: reducedBioUnits){
+			//PdbBioUnit unit = bioUnitList.get(bioUnitId);
 
 			AssemblyDB assembly = new AssemblyDB();			
-			assembly.setMethod(unit.getType().getType());
-			assembly.setMmSize(unit.getSize());
+			assembly.setMethod(reducedBioUnit.getType().getType());
+			assembly.setMmSize(reducedBioUnit.getMmSize());
 			assembly.setPdbCode(pdbInfo.getPdbCode());			
 			assembly.setConfidence(CONFIDENCE_NOT_AVAILABLE);
 
@@ -248,7 +257,7 @@ public class DataModelAdaptor {
 			assembly.setPdbInfo(pdbInfo);
 			pdbInfo.addAssembly(assembly);
 
-			List<Integer> memberClusterIds = matchIds.get(bioUnitId);
+			Set<Integer> memberClusterIds = reducedBioUnit.getClusterIds();
 
 			List<InterfaceClusterDB> memberClustersDB = new ArrayList<InterfaceClusterDB>();
 			assembly.setInterfaceClusters(memberClustersDB);
@@ -263,7 +272,7 @@ public class DataModelAdaptor {
 					icsDB.setScore2(SCORE_NOT_AVAILABLE);
 					icsDB.setCallName(CallType.BIO.getName());
 					icsDB.setConfidence(CONFIDENCE_NOT_AVAILABLE);
-					icsDB.setMethod(unit.getType().getType());				
+					icsDB.setMethod(reducedBioUnit.getType().getType());				
 					icsDB.setClusterId(icDB.getClusterId());
 					icsDB.setPdbCode(pdbInfo.getPdbCode());
 
@@ -282,7 +291,7 @@ public class DataModelAdaptor {
 					icsDB.setScore2(SCORE_NOT_AVAILABLE);
 					icsDB.setCallName(CallType.CRYSTAL.getName());
 					icsDB.setConfidence(CONFIDENCE_NOT_AVAILABLE);
-					icsDB.setMethod(unit.getType().getType());				
+					icsDB.setMethod(reducedBioUnit.getType().getType());				
 					icsDB.setClusterId(icDB.getClusterId());
 					icsDB.setPdbCode(pdbInfo.getPdbCode());
 
@@ -294,6 +303,61 @@ public class DataModelAdaptor {
 			}
 		}
 
+	}
+	
+	/**
+	 * For each PDB bio unit in the given list, map the PDB-annotated interfaces to our interface cluster ids
+	 * and "reduce" the list by removing PDB bio units having same type, mmSize and set of interface cluster ids
+	 * @param bioUnitList
+	 * @return
+	 */
+	private List<BioUnitView> matchToInterfaceClusters(PdbBioUnitList bioUnitList) {
+
+		List<BioUnitView> reducedBioUnits = new ArrayList<BioUnitView>();
+		int serial = 0;
+		for (PdbBioUnit bioUnit:bioUnitList) {
+			serial++;
+			BioUnitView reducedBioUnit = new BioUnitView();
+			reducedBioUnit.setMmSize(bioUnit.getSize());
+			reducedBioUnit.setType(bioUnit.getType());
+
+			//System.out.println("Biounit "+bioUnit.getType().getType());
+			try {
+				List<SimpleInterface> bioUnitInterfaces = SimpleInterface.createSimpleInterfaceListFromPdbBioUnit(bioUnit);
+				InterfaceMatcher im = new InterfaceMatcher(pdbInfo.getInterfaceClusters(),bioUnitInterfaces);
+				for (InterfaceClusterDB ic:pdbInfo.getInterfaceClusters()) {
+					for (InterfaceDB i:ic.getInterfaces()) {
+						if (im.oursMatch(i.getInterfaceId())) {
+							reducedBioUnit.addInterfClusterId(ic.getClusterId()); 							 
+						} 
+					}
+				}
+				// this will depend on the BioUnitView.equals implementation:
+				// essentially through this we remove redundant biounits (same size, type and set of cluster ids)
+				if (!reducedBioUnits.contains(reducedBioUnit)) {
+					reducedBioUnits.add(reducedBioUnit);
+				}
+				
+				if (!im.checkTheirsMatch()) {
+					String msg = "";
+					for (SimpleInterface theirI:im.getTheirsNotMatching()) {
+						msg += theirI.toString()+"\t";
+					}
+					
+					LOGGER.warn("Some interfaces of PDB bio unit "+serial+" of "+bioUnitList.size()+
+							" (type="+bioUnit.getType()+", size="+bioUnit.getSize()+") do not match any of the EPPIC interfaes."
+									+ " Non-matching interfaces are: "+msg);
+
+				}
+			} catch(OneToManyMatchException e) {
+				LOGGER.warn("Multiple match for an interface of PDB bio unit "+serial+" of "+bioUnitList.size()+
+						" (type="+bioUnit.getType()+", size="+bioUnit.getSize()+
+						"). Error: "+e.getMessage()+". This PDB bio unit will be ignored.");
+				
+			}
+		}
+		
+		return reducedBioUnits;
 	}
 	
 	public void setGeometryScores(List<GeometryPredictor> gps, List<GeometryClusterPredictor> gcps) {

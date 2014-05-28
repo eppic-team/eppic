@@ -1,4 +1,4 @@
-package eppic.analysis.pisa;
+package eppic.analysis.compare;
 
 public class OneToManyMatchException extends Exception {
 

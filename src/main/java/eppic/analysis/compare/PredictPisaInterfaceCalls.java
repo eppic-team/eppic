@@ -1,7 +1,7 @@
 /**
  * 
  */
-package eppic.analysis.pisa;
+package eppic.analysis.compare;
 
 import eppic.DataModelAdaptor;
 import eppic.EppicParams;

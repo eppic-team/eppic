@@ -1,14 +1,14 @@
-package eppic.analysis.pisa;
+package eppic.analysis.compare;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.TreeMap;
 
 import javax.vecmath.Matrix4d;
 
 import owl.core.connections.pisa.PisaInterface;
 import owl.core.connections.pisa.PisaInterfaceList;
 import owl.core.structure.PdbBioUnit;
+import owl.core.structure.SpaceGroup;
 
 public class SimpleInterface {
 
@@ -76,6 +76,10 @@ public class SimpleInterface {
 		this.operator2 = operator2;
 	}
 	
+	public String toString() {
+		return id+":"+chain1+"|"+chain2+"("+SpaceGroup.getAlgebraicFromMatrix(operator1)+"|"+SpaceGroup.getAlgebraicFromMatrix(operator2)+")"; 
+	}
+
 	
 	public static SimpleInterface createSimpleInterfaceFromPisaInterface(PisaInterface pisaI) {
 		SimpleInterface i = new SimpleInterface();
@@ -105,25 +109,57 @@ public class SimpleInterface {
 	public static List<SimpleInterface> createSimpleInterfaceListFromPdbBioUnit(PdbBioUnit bioUnit) {
 	
 		List<SimpleInterface> list = new ArrayList<SimpleInterface>();
-		TreeMap<String,List<Matrix4d>> ops = bioUnit.getOperators();
+		
+		// first building all the possible chain-operator pairs
+		List<ChainOperator> chainOperators = new ArrayList<ChainOperator>();
+		for (String chain:bioUnit.getMemberPdbChainCodes()) {		
+			for (Matrix4d operator:bioUnit.getOperators(chain)) {
+				chainOperators.add(new SimpleInterface().new ChainOperator(chain,operator)); 
+			}
+		}
+		
 		int id = 1;
-		for (String iChain:ops.keySet()) {
-			for (Matrix4d iOp:ops.get(iChain)) {
-
-				for (String jChain:ops.keySet()) {
-					for (Matrix4d jOp:ops.get(jChain)) {
-						SimpleInterface si = new SimpleInterface();
-						si.setChain1(iChain);
-						si.setChain2(jChain);
-						si.setOperator1(iOp);
-						si.setOperator2(jOp);
-						si.setId(id);
-						list.add(si);
-						id++;
-					}
+		
+		for (int i = 0; i<chainOperators.size(); i++) {
+			for (int j = 0; j<chainOperators.size(); j++) {
+				if (j>i) {
+					String iChain = chainOperators.get(i).getChainId();
+					Matrix4d iOp = chainOperators.get(i).getOperator();
+					String jChain = chainOperators.get(j).getChainId();
+					Matrix4d jOp = chainOperators.get(j).getOperator();
+					SimpleInterface si = new SimpleInterface();
+					si.setChain1(iChain);
+					si.setChain2(jChain);
+					si.setOperator1(iOp);
+					si.setOperator2(jOp);
+					si.setId(id);
+					list.add(si);
+					id++;
+					//System.out.println(i+" "+j+" "+si);
 				}
 			}
 		}
+
 		return list;
+	}
+
+	private class ChainOperator {
+
+		private String chainId;
+		private Matrix4d operator;
+		
+		public ChainOperator(String chainId, Matrix4d operator) {
+			this.chainId = chainId;
+			this.operator = operator;
+		}
+
+		public String getChainId() {
+			return chainId;
+		}
+
+		public Matrix4d getOperator() {
+			return operator;
+		}
+
 	}
 }

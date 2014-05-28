@@ -1,7 +1,7 @@
 /**
  * 
  */
-package eppic.analysis.pisa;
+package eppic.analysis.compare;
 
 import java.io.PrintStream;
 import java.util.List;
@@ -87,7 +87,7 @@ public class PisaPdbData {
 
 		for(int eppicInterfId:matcher.getOurIds()) {
 
-			if (matcher.hasMatch(eppicInterfId)) {
+			if (matcher.oursMatch(eppicInterfId)) {
 				int pisaId = matcher.getTheirs(eppicInterfId).getId();
 				CallType pisaCall = pisaCalls.get(pisaId);
 				
