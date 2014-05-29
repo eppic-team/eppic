@@ -262,8 +262,8 @@ public class SequenceInfoPanel extends FieldSet
     	ArrayList<Widget> items = new ArrayList<Widget>();
 
     	String chainStr = chainCluster.getRepChain();
-    	if(chainCluster.getMemberChains() != null){
-    		chainStr += "(" + EscapedStringGenerator.generateEscapedString(chainCluster.getMemberChains()) + ")";
+    	if(chainCluster.getMemberChainsNoRepresentative() != null){
+    		chainStr += "(" + EscapedStringGenerator.generateEscapedString(chainCluster.getMemberChainsNoRepresentative()) + ")";
     	}
     	String chainHintStr = "";
     	if(chainStr.length() > 13){
@@ -293,8 +293,8 @@ public class SequenceInfoPanel extends FieldSet
     	ArrayList<Widget> items = new ArrayList<Widget>();
 
     	String chainStr = chainCluster.getRepChain();
-    	if(chainCluster.getMemberChains() != null){
-    		chainStr += "(" + EscapedStringGenerator.generateEscapedString(chainCluster.getMemberChains()) + ")";
+    	if(chainCluster.getMemberChainsNoRepresentative() != null){
+    		chainStr += "(" + EscapedStringGenerator.generateEscapedString(chainCluster.getMemberChainsNoRepresentative()) + ")";
     	}
     	String chainHintStr = "";
     	if(chainStr.length() > 13){

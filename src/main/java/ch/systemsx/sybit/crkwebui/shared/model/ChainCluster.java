@@ -226,6 +226,19 @@ public class ChainCluster implements Serializable {
 	public String getMemberChains() {
 		return memberChains;
 	}
+	
+	public String getMemberChainsNoRepresentative() {
+		
+		if (memberChains==null || repChain==null) return null;
+
+		// length==1 means only member is the rep chain: return null 
+		if (memberChains.length()<2) return null;			
+		
+		String chainsStr = null;
+		chainsStr = memberChains.replaceAll(repChain+",", ""); // if the rep chain is not the last one
+		chainsStr = chainsStr.replaceAll(repChain, ""); // in case the rep chain was the last one 
+		return chainsStr;
+	}
 
 	public void setMemberChains(String memberChains) {
 		this.memberChains = memberChains;

@@ -55,7 +55,7 @@ public class AlignmentsWindow extends ResizableWindow
 								  chainCluster.getFirstTaxon(),
 								  chainCluster.getLastTaxon(),
 								  chainCluster.getRepChain(), 
-								  chainCluster.getMemberChains());
+								  chainCluster.getMemberChainsNoRepresentative());
 		gridContainer.updatePanelContent();
 	}
 	
