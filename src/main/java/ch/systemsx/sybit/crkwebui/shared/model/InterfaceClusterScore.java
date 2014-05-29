@@ -2,7 +2,6 @@ package ch.systemsx.sybit.crkwebui.shared.model;
 
 import java.io.Serializable;
 
-import eppic.model.InterfaceClusterDB;
 import eppic.model.InterfaceClusterScoreDB;
 
 public class InterfaceClusterScore implements Serializable {
@@ -17,7 +16,6 @@ public class InterfaceClusterScore implements Serializable {
 	private double score2;
 	private double confidence;
 	private String method;
-	private InterfaceClusterDB interfaceCluster;
 
 	public int getUid() {
 		return uid;
@@ -59,14 +57,6 @@ public class InterfaceClusterScore implements Serializable {
 		this.method = method;
 	}
 
-	public InterfaceClusterDB getInterfaceCluster() {
-		return interfaceCluster;
-	}
-
-	public void setInterfaceCluster(InterfaceClusterDB interfaceCluster) {
-		this.interfaceCluster = interfaceCluster;
-	}
-
 	public double getScore1() {
 		return score1;
 	}
@@ -90,7 +80,6 @@ public class InterfaceClusterScore implements Serializable {
 	public void setCallReason(String callReason) {
 	    this.callReason = callReason;
 	}
-
 
 	/**
 	 * Converts DB model item into DTO one

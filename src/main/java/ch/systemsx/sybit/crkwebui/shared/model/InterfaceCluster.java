@@ -16,9 +16,6 @@ import eppic.model.InterfaceDB;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class InterfaceCluster implements Serializable, Comparable<InterfaceCluster>{
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 	
 	private int uid;

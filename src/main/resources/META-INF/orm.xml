@@ -148,7 +148,7 @@
 			<many-to-one name="pdbInfo">
 			</many-to-one>
 
-			<one-to-many name="interfaceClusters" mapped-by="assembly">
+			<one-to-many name="interfaceClusterScores" mapped-by="assembly">
 				<cascade>
 					<cascade-all />
 				</cascade>
@@ -174,9 +174,6 @@
 			<basic name="globalInterfClusterId"></basic>
 
 			<many-to-one name="pdbInfo">
-			</many-to-one>
-
-			<many-to-one name="assembly">
 			</many-to-one>
 
 			<one-to-many name="interfaces" mapped-by="interfaceCluster">
@@ -228,6 +225,9 @@
 				<column column-definition="text" />
 			</basic>
 			<basic name="confidence"></basic>
+			
+			<many-to-one name="assembly">
+			</many-to-one>
 
 			<many-to-one name="interfaceCluster">
 			</many-to-one>

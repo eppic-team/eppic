@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import eppic.model.AssemblyDB;
-import eppic.model.InterfaceClusterDB;
+import eppic.model.InterfaceClusterScoreDB;
 
 
 public class Assembly implements Serializable {
@@ -22,10 +22,10 @@ public class Assembly implements Serializable {
 	
 	private double confidence;
 	
-	private List<InterfaceCluster> interfaceClusters;
+	private List<InterfaceClusterScore> interfaceClusterScores;
 
 	public Assembly() {
-		this.interfaceClusters = new ArrayList<InterfaceCluster>();
+		this.interfaceClusterScores = new ArrayList<InterfaceClusterScore>();
 	}
 
 	public int getUid() {
@@ -60,12 +60,12 @@ public class Assembly implements Serializable {
 		this.confidence = confidence;
 	}
 
-	public List<InterfaceCluster> getInterfaceClusters() {
-		return interfaceClusters;
+	public List<InterfaceClusterScore> getInterfaceClusterScores() {
+		return interfaceClusterScores;
 	}
 
-	public void setInterfaceClusters(List<InterfaceCluster> interfaceClusters) {
-		this.interfaceClusters = interfaceClusters;
+	public void setInterfaceClusterScores(List<InterfaceClusterScore> interfaceClusterScores) {
+		this.interfaceClusterScores = interfaceClusterScores;
 	}
 
 	/**
@@ -82,18 +82,18 @@ public class Assembly implements Serializable {
 		assembly.setMethod(assemblyDB.getMethod());
 		assembly.setConfidence(assemblyDB.getConfidence());
 		
-		if(assemblyDB.getInterfaceClusters() != null)
+		if(assemblyDB.getInterfaceClusterScores() != null)
 		{
-			List<InterfaceClusterDB> clusterDBs = assemblyDB.getInterfaceClusters();
+			List<InterfaceClusterScoreDB> interfClusterScoreDBs = assemblyDB.getInterfaceClusterScores();
 			
-			List<InterfaceCluster> clusters = new ArrayList<InterfaceCluster>();
+			List<InterfaceClusterScore> clusterScores = new ArrayList<InterfaceClusterScore>();
 			
-			for(InterfaceClusterDB clusterDB : clusterDBs)
+			for(InterfaceClusterScoreDB interfClusterScoreDB : interfClusterScoreDBs)
 			{
-				clusters.add(InterfaceCluster.create(clusterDB));
+				clusterScores.add(InterfaceClusterScore.create(interfClusterScoreDB));
 			}
 			
-			assembly.setInterfaceClusters(clusters);
+			assembly.setInterfaceClusterScores(clusterScores);
 		}
 		
 		return assembly;
