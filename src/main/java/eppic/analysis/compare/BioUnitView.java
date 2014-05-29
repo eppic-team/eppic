@@ -6,12 +6,16 @@ import java.util.TreeSet;
 import owl.core.structure.BioUnitAssignmentType;
 
 /**
- * A class to reduce a list of PdbBioUnits to a single one 
- * with unique type, mmSize and list of interface-cluster ids  
+ * A class needed to compare a list of PdbBioUnits, in order reduce to a single one 
+ * with unique type, mmSize and list of interface-cluster ids  or to get the 
+ * one with the maximal size within a type.
+ * Implements:
+ *  equals: same mmSize, type and clusterIds
+ * 	Comparable interface: based only on mmSize 
  * @author duarte_j
  *
  */
-public class BioUnitView {
+public class BioUnitView implements Comparable<BioUnitView> {
 	
 	//private int index;
 	private BioUnitAssignmentType type;
@@ -78,5 +82,10 @@ public class BioUnitView {
 
 	public void setClusterIds(Set<Integer> clusterIds) {
 		this.clusterIds = clusterIds;
+	}
+
+	@Override
+	public int compareTo(BioUnitView o) {
+		return new Integer(this.mmSize).compareTo(o.mmSize);
 	}
 }

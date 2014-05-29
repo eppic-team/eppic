@@ -41,6 +41,7 @@ import eppic.predictors.EvolCoreRimPredictor;
 import eppic.predictors.GeometryClusterPredictor;
 import eppic.predictors.GeometryPredictor;
 import owl.core.sequence.Homolog;
+import owl.core.structure.BioUnitAssignmentType;
 import owl.core.structure.ChainCluster;
 import owl.core.structure.ChainInterface;
 import owl.core.structure.ChainInterfaceList;
@@ -259,14 +260,16 @@ public class DataModelAdaptor {
 
 			Set<Integer> memberClusterIds = reducedBioUnit.getClusterIds();
 
-			List<InterfaceClusterDB> memberClustersDB = new ArrayList<InterfaceClusterDB>();
-			assembly.setInterfaceClusters(memberClustersDB);
+			List<InterfaceClusterScoreDB> memberClusterScoresDB = new ArrayList<InterfaceClusterScoreDB>();
+			assembly.setInterfaceClusterScores(memberClusterScoresDB);
 			for (InterfaceClusterDB icDB:pdbInfo.getInterfaceClusters()) {
+				
 				if (memberClusterIds.contains(icDB.getClusterId())) {
 					// all member interface clusters are assigned bio
-					memberClustersDB.add(icDB);				
-
+					
 					InterfaceClusterScoreDB icsDB = new InterfaceClusterScoreDB();
+					memberClusterScoresDB.add(icsDB);				
+					
 					icsDB.setScore(SCORE_NOT_AVAILABLE);
 					icsDB.setScore1(SCORE_NOT_AVAILABLE);
 					icsDB.setScore2(SCORE_NOT_AVAILABLE);
@@ -280,7 +283,9 @@ public class DataModelAdaptor {
 					icsDB.setInterfaceCluster(icDB);
 					icDB.addInterfaceClusterScore(icsDB);
 
-					icDB.setAssembly(assembly);
+					// only the bio interfaces are part of the assembly
+					icsDB.setAssembly(assembly);
+					
 				} else {
 					// The rest (not members) are assigned xtal
 					// We need to do this otherwise there's no distinction between 
@@ -301,41 +306,44 @@ public class DataModelAdaptor {
 
 				}
 			}
+
 		}
 
 	}
 	
 	/**
 	 * For each PDB bio unit in the given list, map the PDB-annotated interfaces to our interface cluster ids
-	 * and "reduce" the list by removing PDB bio units having same type, mmSize and set of interface cluster ids
+	 * and cull the list by:
+	 * 1) removing PDB bio units having same type, mmSize and set of interface cluster ids
+	 * 2) from those left, choosing the one with maximal mmSize within each type
 	 * @param bioUnitList
 	 * @return
 	 */
 	private List<BioUnitView> matchToInterfaceClusters(PdbBioUnitList bioUnitList) {
 
-		List<BioUnitView> reducedBioUnits = new ArrayList<BioUnitView>();
+		List<BioUnitView> culledBioUnits = new ArrayList<BioUnitView>();
 		int serial = 0;
 		for (PdbBioUnit bioUnit:bioUnitList) {
 			serial++;
-			BioUnitView reducedBioUnit = new BioUnitView();
-			reducedBioUnit.setMmSize(bioUnit.getSize());
-			reducedBioUnit.setType(bioUnit.getType());
-
-			//System.out.println("Biounit "+bioUnit.getType().getType());
+			BioUnitView bu = new BioUnitView();
+			bu.setMmSize(bioUnit.getSize());
+			bu.setType(bioUnit.getType());
+			
 			try {
 				List<SimpleInterface> bioUnitInterfaces = SimpleInterface.createSimpleInterfaceListFromPdbBioUnit(bioUnit);
 				InterfaceMatcher im = new InterfaceMatcher(pdbInfo.getInterfaceClusters(),bioUnitInterfaces);
 				for (InterfaceClusterDB ic:pdbInfo.getInterfaceClusters()) {
 					for (InterfaceDB i:ic.getInterfaces()) {
 						if (im.oursMatch(i.getInterfaceId())) {
-							reducedBioUnit.addInterfClusterId(ic.getClusterId()); 							 
+							bu.addInterfClusterId(ic.getClusterId()); 							 
 						} 
 					}
 				}
+				// 1st culling
 				// this will depend on the BioUnitView.equals implementation:
 				// essentially through this we remove redundant biounits (same size, type and set of cluster ids)
-				if (!reducedBioUnits.contains(reducedBioUnit)) {
-					reducedBioUnits.add(reducedBioUnit);
+				if (!culledBioUnits.contains(bu)) {
+					culledBioUnits.add(bu);
 				}
 				
 				if (!im.checkTheirsMatch()) {
@@ -357,7 +365,40 @@ public class DataModelAdaptor {
 			}
 		}
 		
-		return reducedBioUnits;
+		// 2nd culling: now we need to make sure that there's only 1 biounit per method (pisa, pqs, authors)
+		// multiplicity of assemblies per method is not fitting into our eppic data model
+		List<BioUnitView> finalList = new ArrayList<BioUnitView>(BioUnitAssignmentType.values().length);
+		
+		for (BioUnitAssignmentType type:BioUnitAssignmentType.values()) {
+			List<BioUnitView> sorted = getSortedBiounitsForType(culledBioUnits, type);
+			if (sorted.isEmpty()) continue;
+			// we get the largest (if more than 1 of same size, then largest will be randomly chosen from there)
+			BioUnitView bu = sorted.get(sorted.size()-1);
+			finalList.add(bu);
+			if (sorted.size()>1) {
+				int maxSize = bu.getMmSize();
+				LOGGER.info("More than 1 PDB bio unit annotation of type "+bu.getType().getType()+". Will only use the first one of size "+bu.getMmSize());
+				for (int i=0;i<sorted.size()-1;i++) {
+					if (sorted.get(i).getMmSize()<maxSize) {
+						LOGGER.info("PDB bio unit of size "+sorted.get(i).getMmSize()+", type "+sorted.get(i).getType().getType()+" will be discarded");
+					} else {
+						LOGGER.warn("PDB bio unit of same size as maximal one ("+sorted.get(i).getMmSize()+", type "+sorted.get(i).getType().getType()+") will be discarded");
+					}
+				}
+			}
+
+		}
+		
+		return finalList;
+	}
+	
+	private static List<BioUnitView> getSortedBiounitsForType(List<BioUnitView> bioUnits, BioUnitAssignmentType type) {
+		List<BioUnitView> list = new ArrayList<BioUnitView>();
+		for (BioUnitView bu:bioUnits) {
+			if (bu.getType()==type) list.add(bu);
+		}
+		Collections.sort(list);
+		return list;
 	}
 	
 	public void setGeometryScores(List<GeometryPredictor> gps, List<GeometryClusterPredictor> gcps) {

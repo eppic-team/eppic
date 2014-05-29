@@ -25,25 +25,22 @@ public class InterfaceClusterDB implements Serializable {
 	
 	private PdbInfoDB pdbInfo;
 	
-	private AssemblyDB assembly;
-	
 	public InterfaceClusterDB() {
 		this.interfaceClusterScores = new ArrayList<InterfaceClusterScoreDB>();
 	}
 
 	/**
-	 * Returns the list of InterfaceClusterScoreDB corresponding to the given method or an empty list
+	 * Returns the InterfaceClusterScoreDB corresponding to the given method or null
 	 * if no InterfaceClusterScoreDB exists for the method
 	 * @param method
 	 * @return
 	 */
-	public List<InterfaceClusterScoreDB> getInterfaceClusterScores(String method) {
-		List<InterfaceClusterScoreDB> list = new ArrayList<InterfaceClusterScoreDB>();
+	public InterfaceClusterScoreDB getInterfaceClusterScore(String method) {
+		
 		for (InterfaceClusterScoreDB ics:interfaceClusterScores) {
-			if (ics.getMethod().equals(method)) 
-				list.add(ics);
+			if (ics.getMethod().equals(method)) return ics;				
 		}
-		return list;
+		return null;
 	}
 	
 	public int getUid() {
@@ -122,14 +119,6 @@ public class InterfaceClusterDB implements Serializable {
 		this.pdbInfo = pdbInfo;
 	}
 
-	public AssemblyDB getAssembly() {
-		return assembly;
-	}
-
-	public void setAssembly(AssemblyDB assembly) {
-		this.assembly = assembly;
-	}
-	
 	public int size() {
 		return this.interfaces.size();
 	}

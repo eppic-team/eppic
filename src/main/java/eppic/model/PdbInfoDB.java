@@ -112,6 +112,18 @@ public class PdbInfoDB implements Serializable {
 		return null;
 	}
 	
+	/**
+	 * Returns the AssemblyDB corresponding to the given method (eppic, pisa, pqs, authors)
+	 * @param method
+	 * @return
+	 */
+	public AssemblyDB getAssembly(String method) {
+		for (AssemblyDB assembly:assemblies) {
+			if (assembly.getMethod().equals(method)) return assembly;
+		}
+		return null;
+	}
+	
 	public List<AssemblyDB> getAssemblies() {
 		return assemblies;
 	}

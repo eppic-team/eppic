@@ -18,7 +18,7 @@ public class AssemblyDB implements Serializable {
 	
 	private PdbInfoDB pdbInfo;
 	
-	private List<InterfaceClusterDB> interfaceClusters;
+	private List<InterfaceClusterScoreDB> interfaceClusterScores;
 
 	public AssemblyDB() {
 	}
@@ -71,12 +71,12 @@ public class AssemblyDB implements Serializable {
 		this.pdbInfo = pdbInfo;
 	}
 
-	public List<InterfaceClusterDB> getInterfaceClusters() {
-		return interfaceClusters;
+	public List<InterfaceClusterScoreDB> getInterfaceClusterScores() {
+		return interfaceClusterScores;
 	}
 
-	public void setInterfaceClusters(List<InterfaceClusterDB> interfaceClusters) {
-		this.interfaceClusters = interfaceClusters;
+	public void setInterfaceClusterScores(List<InterfaceClusterScoreDB> interfaceClusterScores) {
+		this.interfaceClusterScores = interfaceClusterScores;
 	}
 	
 	

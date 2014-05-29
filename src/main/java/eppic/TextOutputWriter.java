@@ -5,6 +5,7 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import eppic.model.AssemblyDB;
 import eppic.model.ChainClusterDB;
 import eppic.model.ContactDB;
 import eppic.model.HomologDB;
@@ -206,23 +207,13 @@ public class TextOutputWriter {
 				"------>",
 				interfaceCluster.getAvgArea());
 		
-		List<InterfaceClusterScoreDB> interfaceScoresGm = interfaceCluster.getInterfaceClusterScores(ScoringMethod.EPPIC_GEOMETRY);
-		List<InterfaceClusterScoreDB> interfaceScoresCr = interfaceCluster.getInterfaceClusterScores(ScoringMethod.EPPIC_CORERIM);
-		List<InterfaceClusterScoreDB> interfaceScoresCs = interfaceCluster.getInterfaceClusterScores(ScoringMethod.EPPIC_CORESURFACE);
-		List<InterfaceClusterScoreDB> interfaceScoresFn = interfaceCluster.getInterfaceClusterScores(ScoringMethod.EPPIC_FINAL);
-		
-		InterfaceClusterScoreDB interfaceScoreGm = null;
-		InterfaceClusterScoreDB interfaceScoreCr = null;
-		InterfaceClusterScoreDB interfaceScoreCs = null;
-		InterfaceClusterScoreDB interfaceScoreFn = null;
-		
-		if (!interfaceScoresGm.isEmpty()) interfaceScoreGm = interfaceScoresGm.get(0);
-		if (!interfaceScoresCr.isEmpty()) interfaceScoreCr = interfaceScoresCr.get(0);
-		if (!interfaceScoresCs.isEmpty()) interfaceScoreCs = interfaceScoresCs.get(0);
-		if (!interfaceScoresFn.isEmpty()) interfaceScoreFn = interfaceScoresFn.get(0);
-		
+		InterfaceClusterScoreDB interfaceScoreGm = interfaceCluster.getInterfaceClusterScore(ScoringMethod.EPPIC_GEOMETRY);
+		InterfaceClusterScoreDB interfaceScoreCr = interfaceCluster.getInterfaceClusterScore(ScoringMethod.EPPIC_CORERIM);
+		InterfaceClusterScoreDB interfaceScoreCs = interfaceCluster.getInterfaceClusterScore(ScoringMethod.EPPIC_CORESURFACE);
+		InterfaceClusterScoreDB interfaceScoreFn = interfaceCluster.getInterfaceClusterScore(ScoringMethod.EPPIC_FINAL);
+
 		// geometry
-		// there should always be geometry scores available, no check for null
+		// there should always be geometry scores available, anyway we check for nulls in case
 		if (interfaceScoreGm==null) {
 			ps.printf("\t%7s\t%7s\t%7s\t%7s\t","","","","");
 		} else {
@@ -277,50 +268,27 @@ public class TextOutputWriter {
 		
 		List<InterfaceClusterDB> interfaceClusters = pdbInfo.getInterfaceClusters();
 		
-		ps.printf("%7s\t%12s\t","clustId","members");
+		AssemblyDB eppicAssembly = pdbInfo.getAssembly(ScoringMethod.EPPIC_FINAL);
+		AssemblyDB pisaAssembly = pdbInfo.getAssembly(ScoringMethod.PISA);
+		AssemblyDB authorsAssembly = pdbInfo.getAssembly(ScoringMethod.AUTHORS);
+		AssemblyDB pqsAssembly = pdbInfo.getAssembly(ScoringMethod.PQS);
 		
-		int numEppicAssemblies = -1;
-		int numPisaAssemblies = -1;
-		int numAuthorsAssemblies = -1;
-		for (InterfaceClusterDB interfaceCluster:interfaceClusters) {
-			
-			// size eppic should always be 1, but anyway just in case...
-			int currentNumEppic = interfaceCluster.getInterfaceClusterScores(ScoringMethod.EPPIC_FINAL).size();
-			if (numEppicAssemblies==-1) {
-				numEppicAssemblies = currentNumEppic;
-			} else if (numEppicAssemblies!=currentNumEppic) {
-				numEppicAssemblies = -2; // mark as dirty
-			}
-			int currentNumPisa  = interfaceCluster.getInterfaceClusterScores(ScoringMethod.PISA).size();
-			if (numPisaAssemblies==-1) {
-				numPisaAssemblies = currentNumPisa;
-			} else if (numPisaAssemblies!=currentNumPisa) {
-				numPisaAssemblies = -2; // mark as dirty
-			}
-			int currentNumAuthors = interfaceCluster.getInterfaceClusterScores(ScoringMethod.AUTHORS).size();
-			if (numAuthorsAssemblies==-1) {
-				numAuthorsAssemblies = currentNumAuthors;
-			} else if (numAuthorsAssemblies!=currentNumAuthors) {
-				numAuthorsAssemblies = -2; // mark as dirty
-			}
-		}
+		int eppicAssemblySize = 0;
+		int pisaAssemblySize = 0;
+		int authorsAssemblySize = 0;
+		int pqsAssemblySize = 0;
 		
-		//TODO the size of the assemblies is not output yet (it should go in the parenthesis of the column titles below)
-
-		if (numEppicAssemblies>0) {
-			for (int i=0;i<numEppicAssemblies;i++)
-				ps.printf("%10s\t","eppic(?)");
-		}
-		if (numPisaAssemblies>0) {
-			for (int i=0;i<numPisaAssemblies;i++)
-				ps.printf("%10s\t","pisa(n)");
-		}
-		if (numAuthorsAssemblies>0) {
-			for (int i=0;i<numAuthorsAssemblies;i++)
-				ps.printf("%10s\t","authors(n)");
-		}
-
-		ps.println();
+		if (eppicAssembly!=null) eppicAssemblySize = eppicAssembly.getMmSize();
+		if (pisaAssembly!=null) pisaAssemblySize = pisaAssembly.getMmSize();
+		if (authorsAssembly!=null) authorsAssemblySize = authorsAssembly.getMmSize();
+		if (pqsAssembly!=null) pqsAssemblySize = pqsAssembly.getMmSize();
+		
+		ps.printf("%7s\t%12s\t%10s\t%10s\t%10s\t%10s\n",
+				"clustId","members",
+				ScoringMethod.EPPIC_FINAL + "("+eppicAssemblySize+")",
+				ScoringMethod.PISA        + "("+pisaAssemblySize+")",
+				ScoringMethod.AUTHORS     + "("+authorsAssemblySize+")",
+				ScoringMethod.PQS         + "("+pqsAssemblySize+")"); 
 		
 		for (InterfaceClusterDB interfaceCluster:interfaceClusters) {
 			String membersStr = "";
@@ -330,27 +298,30 @@ public class TextOutputWriter {
 			ps.printf("%7d\t%12s\t",interfaceCluster.getClusterId(),membersStr);
 
 			
-			List<InterfaceClusterScoreDB> icslEppic = interfaceCluster.getInterfaceClusterScores(ScoringMethod.EPPIC_FINAL);
-			List<InterfaceClusterScoreDB> icslPisa = interfaceCluster.getInterfaceClusterScores(ScoringMethod.PISA);			
-			List<InterfaceClusterScoreDB> icslAuthors = interfaceCluster.getInterfaceClusterScores(ScoringMethod.AUTHORS);
+			InterfaceClusterScoreDB icsEppic = interfaceCluster.getInterfaceClusterScore(ScoringMethod.EPPIC_FINAL);
+			InterfaceClusterScoreDB icsPisa = interfaceCluster.getInterfaceClusterScore(ScoringMethod.PISA);			
+			InterfaceClusterScoreDB icsAuthors = interfaceCluster.getInterfaceClusterScore(ScoringMethod.AUTHORS);
+			InterfaceClusterScoreDB icsPqs = interfaceCluster.getInterfaceClusterScore(ScoringMethod.PQS);
 			
-			if (icslEppic==null || numEppicAssemblies<0) {
+			if (icsEppic==null) {
 				ps.printf("%10s\t","");
 			} else {
-				for (int i=0;i<numEppicAssemblies;i++)
-					ps.printf("%10s\t",icslEppic.get(i).getCallName());
+				ps.printf("%10s\t",icsEppic.getCallName());
 			}
-			if (icslPisa==null || numPisaAssemblies<0) {
+			if (icsPisa==null) {
 				ps.printf("%10s\t","");
 			} else {
-				for (int i=0;i<numPisaAssemblies;i++)
-					ps.printf("%10s\t",icslPisa.get(i).getCallName());
+				ps.printf("%10s\t",icsPisa.getCallName());
 			}
-			if (icslAuthors==null || numAuthorsAssemblies<0) {
+			if (icsAuthors==null) {
+				ps.printf("%10s\t","");
+			} else {
+				ps.printf("%10s\t",icsAuthors.getCallName());
+			}
+			if (icsPqs==null) {
 				ps.printf("%10s","");
 			} else {
-				for (int i=0;i<numAuthorsAssemblies;i++)
-					ps.printf("%10s",icslAuthors.get(i).getCallName());
+				ps.printf("%10s",icsPqs.getCallName());
 			}
 			
 			

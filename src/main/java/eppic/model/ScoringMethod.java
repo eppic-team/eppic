@@ -16,7 +16,7 @@ public class ScoringMethod {
 	public static final String EPPIC_CORESURFACE 	= "eppic-cs";	// was "Z-scores"
 	public static final String EPPIC_FINAL 			= "eppic"; 
 	
-	// NOTE: these 3 methods have to match the ones in enum owl.core.structureBioUnitAssignmentType
+	// NOTE: these 3 methods have to match the ones in enum owl.core.structure.BioUnitAssignmentType
 	public static final String PISA 				= "pisa";				 
 	public static final String AUTHORS 				= "authors";
 	public static final String PQS 					= "pqs";
