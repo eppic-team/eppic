@@ -32,16 +32,18 @@ public class InterfaceClusterDB implements Serializable {
 	}
 
 	/**
-	 * Returns the first InterfaceClusterScoreDB corresponding to the given method or null
+	 * Returns the list of InterfaceClusterScoreDB corresponding to the given method or an empty list
 	 * if no InterfaceClusterScoreDB exists for the method
 	 * @param method
 	 * @return
 	 */
-	public InterfaceClusterScoreDB getInterfaceClusterScore(String method) {		
+	public List<InterfaceClusterScoreDB> getInterfaceClusterScores(String method) {
+		List<InterfaceClusterScoreDB> list = new ArrayList<InterfaceClusterScoreDB>();
 		for (InterfaceClusterScoreDB ics:interfaceClusterScores) {
-			if (ics.getMethod().equals(method)) return ics;
+			if (ics.getMethod().equals(method)) 
+				list.add(ics);
 		}
-		return null;
+		return list;
 	}
 	
 	public int getUid() {

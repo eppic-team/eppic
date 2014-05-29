@@ -345,7 +345,7 @@ public class DataModelAdaptor {
 					}
 					
 					LOGGER.warn("Some interfaces of PDB bio unit "+serial+" of "+bioUnitList.size()+
-							" (type="+bioUnit.getType()+", size="+bioUnit.getSize()+") do not match any of the EPPIC interfaes."
+							" (type="+bioUnit.getType()+", size="+bioUnit.getSize()+") do not match any of the EPPIC interfaces."
 									+ " Non-matching interfaces are: "+msg);
 
 				}

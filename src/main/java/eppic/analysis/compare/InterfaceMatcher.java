@@ -189,20 +189,13 @@ public class InterfaceMatcher {
 			return false;
 		}
 		
-		// eppic always has 1st chain with identity, thus the transf12 coincides with transf2
+		// 'ours' always has 1st chain with identity, thus the transf12 coincides with transf2
+		// of course we could also put this through findTransf12() as it would return the same matrix but there's no point
 		Matrix4d ourTransf12 = SpaceGroup.getMatrixFromAlgebraic(ourI.getOperator());
 
 		Matrix4d theirTransf1 = theirI.getOperator1();
 		Matrix4d theirTransf2 = theirI.getOperator2();
-		// in case they don't have the first chain on identity, we first find the transf12
-		// T12 = T02 * T01_inv
-		Matrix4d theirTransf1inv = new Matrix4d();
-		theirTransf1inv.invert(theirTransf1);
-		Matrix4d theirTransf12 = new Matrix4d();
-		// Following my understanding, it should be T02*T01_inv as indicated above, but that didn't work 
-		// and for some reason inverting the order in mul does work. Most likely my understanding is 
-		// wrong, but need to check this better at some point
-		theirTransf12.mul(theirTransf1inv, theirTransf2);
+		Matrix4d theirTransf12 = findTransf12(theirTransf1, theirTransf2); 
 
 		if (invertedChains) {
 			theirTransf12.invert();
@@ -223,5 +216,20 @@ public class InterfaceMatcher {
 			}
 		}
 		return false;
+	}
+	
+	public static Matrix4d findTransf12(Matrix4d transf1, Matrix4d transf2) {
+		
+		// if first chain is not on identity, we first need to find the transf12
+		// T12 = T02 * T01_inv
+		Matrix4d transf1inv = new Matrix4d();
+		transf1inv.invert(transf1);
+		Matrix4d transf12 = new Matrix4d();
+		// Following my understanding, it should be T02*T01_inv as indicated above, but that didn't work 
+		// and for some reason inverting the order in mul does work. Most likely my understanding is 
+		// wrong, but need to check this better at some point
+		transf12.mul(transf1inv, transf2);
+		
+		return transf12;
 	}
 }

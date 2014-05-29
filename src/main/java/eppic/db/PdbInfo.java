@@ -45,7 +45,8 @@ public class PdbInfo {
 	private HashMap<String,ChainCluster> getChainIdLookup() {
 		HashMap<String,ChainCluster> lookup = new HashMap<String,ChainCluster>();
 		for (ChainCluster cc:getChainClusters()) {
-			lookup.put(cc.getChainCluster().getRepChain(), cc);
+			// NOTE: this is not needed anymore since now the members also include the representative, leaving it here for backwards db compatibility
+			lookup.put(cc.getChainCluster().getRepChain(), cc); 
 			if (cc.getChainCluster().getMemberChains()!=null) {
 				for (String chain:cc.getChainCluster().getMemberChains().split(",")) {
 					lookup.put(chain,cc);

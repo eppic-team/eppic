@@ -133,14 +133,43 @@ public class SimpleInterface {
 					si.setOperator1(iOp);
 					si.setOperator2(jOp);
 					si.setId(id);
-					list.add(si);
-					id++;
+					
+					// we take care of not adding duplicates arising from transforming the two chains with the same operator
+					// e.g. 11bg with pisa biounit of size 4, A0-B0 (both identity) is first added, then A1-B1 (which is equivalent to A0-B0) 
+					boolean alreadyPresent = false;
+					for (SimpleInterface member:list) {
+						if (areMatching(member,si)) {
+							alreadyPresent = true;
+							break;
+						}
+					}
+					if (!alreadyPresent) {
+						list.add(si);
+						id++;
+					}
+
 					//System.out.println(i+" "+j+" "+si);
 				}
 			}
 		}
 
 		return list;
+	}
+	
+	private static boolean areMatching(SimpleInterface firstI, SimpleInterface secondI) {
+		
+		if (! (firstI.getChain1().equals(secondI.getChain1()) && firstI.getChain2().equals(secondI.getChain2()))) {
+			return false;
+		}
+		
+		Matrix4d secondTransf12 = InterfaceMatcher.findTransf12(secondI.getOperator1(), secondI.getOperator2());
+		Matrix4d firstTransf12 = InterfaceMatcher.findTransf12(firstI.getOperator1(), firstI.getOperator2()); 
+		
+		// now we can compare the two transf12
+		if (secondTransf12.epsilonEquals(firstTransf12, 0.00001)) {
+			return true;
+		}
+		return false;
 	}
 
 	private class ChainOperator {
@@ -160,6 +189,6 @@ public class SimpleInterface {
 		public Matrix4d getOperator() {
 			return operator;
 		}
-
+		
 	}
 }
