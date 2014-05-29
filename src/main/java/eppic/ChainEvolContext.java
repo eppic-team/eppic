@@ -180,6 +180,11 @@ public class ChainEvolContext implements Serializable {
 				} else {
 					query = parent.getUniProtJapiConnection().getUnirefEntry(queryUniprotId);
 				}
+				
+				if (query.replaceNonStandardByX()) {
+					// TODO we have to replace 'O' by 'X' because the jaligner package does not support it, revise this if we change aligner
+					LOGGER.warn("Replacing 'O' by 'X' in UniProt reference "+query.getUniId());
+				}
 
 				// and finally we align the 2 sequences (in case of mapping from SIFTS we rather do this than trusting the SIFTS alignment info)
 				alnPdb2Uniprot = new PairwiseSequenceAlignment(sequence, query.getSequence(), "chain"+representativeChain, query.getUniId());
