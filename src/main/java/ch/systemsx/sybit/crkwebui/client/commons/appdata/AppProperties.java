@@ -37,6 +37,7 @@ public interface AppProperties extends Constants
 	String search_panel_filter_text();
 	
 	String search_panel_uniprot_subtitle();
+	String search_panel_pdb_subtitle();
 	
 	String top_panel_title();
 	
