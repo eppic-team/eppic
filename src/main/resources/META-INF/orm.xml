@@ -266,6 +266,11 @@
 			<basic name="infinite"></basic>
 			<basic name="isologous"></basic>
 			
+			<basic name="xtalTrans_x"></basic>
+			<basic name="xtalTrans_y"></basic>
+			<basic name="xtalTrans_z"></basic>
+			<basic name="operatorId"></basic>
+			
 			<basic name="globalInterfClusterId"></basic>
 
 			<many-to-one name="interfaceCluster">
