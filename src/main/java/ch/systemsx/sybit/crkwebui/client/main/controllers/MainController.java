@@ -606,8 +606,7 @@ public class MainController
 
 		SearchPanel searchPanel = null;
 		
-		String label = AppPropertiesManager.CONSTANTS.search_panel_uniprot_subtitle();
-		String searchParameter;
+		String label = AppPropertiesManager.CONSTANTS.search_panel_pdb_subtitle();
 
 		if((mainViewPort.getCenterPanel().getDisplayPanel() != null) &&
 		   (mainViewPort.getCenterPanel().getDisplayPanel() instanceof SearchPanel))

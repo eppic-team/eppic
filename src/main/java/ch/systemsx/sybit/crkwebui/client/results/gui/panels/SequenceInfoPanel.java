@@ -57,18 +57,18 @@ public class SequenceInfoPanel extends FieldSet
     private int homologsStartIndex;
     private FlexTable homologsTable;
     private ToolTip queryWarningsTooltip;
-    
+
     public SequenceInfoPanel(PdbInfo pdbScoreItem) 
     {
-    	this.setBorders(true);
+	this.setBorders(true);
 
-    	this.addStyleName("eppic-rounded-border");
-    	this.addStyleName("eppic-info-panel");
+	this.addStyleName("eppic-rounded-border");
+	this.addStyleName("eppic-info-panel");
 
-    	queryWarningsTooltip = createHomologsInfoTooltip();
-    	generateSequenceInfoPanel(pdbScoreItem);
+	queryWarningsTooltip = createHomologsInfoTooltip();
+	generateSequenceInfoPanel(pdbScoreItem);
 
-    	initializeEventsListeners();
+	initializeEventsListeners();
     }
 
     /**
@@ -76,44 +76,44 @@ public class SequenceInfoPanel extends FieldSet
      */
     private ToolTip createHomologsInfoTooltip() 
     {
-    	ToolTipConfig toolTipConfig = new ToolTipConfig();  
-    	toolTipConfig.setTitleHtml(AppPropertiesManager.CONSTANTS.homologs_panel_query_warnings_title());
-    	toolTipConfig.setMouseOffset(new int[] {0, 0});  
-    	toolTipConfig.setCloseable(true); 
-    	toolTipConfig.setDismissDelay(0);
-    	toolTipConfig.setShowDelay(100);
-    	toolTipConfig.setMaxWidth(calculateTooltipMaxWidth());
-    	return new ToolTip(null, toolTipConfig);
+	ToolTipConfig toolTipConfig = new ToolTipConfig();  
+	toolTipConfig.setTitleHtml(AppPropertiesManager.CONSTANTS.homologs_panel_query_warnings_title());
+	toolTipConfig.setMouseOffset(new int[] {0, 0});  
+	toolTipConfig.setCloseable(true); 
+	toolTipConfig.setDismissDelay(0);
+	toolTipConfig.setShowDelay(100);
+	toolTipConfig.setMaxWidth(calculateTooltipMaxWidth());
+	return new ToolTip(null, toolTipConfig);
     }
-    
+
     /**
      * Creates tooltip displayed over homologs query warnings.
      */
     private ToolTip createHomologsInfoTooltip(String bodyString) 
     {
-    	ToolTipConfig toolTipConfig = new ToolTipConfig(
-    			AppPropertiesManager.CONSTANTS.homologs_panel_query_warnings_title(),
-    			bodyString);
-    	toolTipConfig.setMouseOffset(new int[] {0, 0});  
-    	toolTipConfig.setCloseable(true); 
-    	toolTipConfig.setDismissDelay(0);
-    	toolTipConfig.setShowDelay(100);
-    	toolTipConfig.setMaxWidth(calculateTooltipMaxWidth());
-    	return new ToolTip(null, toolTipConfig);
+	ToolTipConfig toolTipConfig = new ToolTipConfig(
+		AppPropertiesManager.CONSTANTS.homologs_panel_query_warnings_title(),
+		bodyString);
+	toolTipConfig.setMouseOffset(new int[] {0, 0});  
+	toolTipConfig.setCloseable(true); 
+	toolTipConfig.setDismissDelay(0);
+	toolTipConfig.setShowDelay(100);
+	toolTipConfig.setMaxWidth(calculateTooltipMaxWidth());
+	return new ToolTip(null, toolTipConfig);
     }
-    
+
     /**
      * Sets the heading of the toolbar
      */
     public void fillHeading(String uniprot_version){
-    	String fullHeading = AppPropertiesManager.CONSTANTS.info_panel_homologs_info();
-    	
-    	if(uniprot_version != null)
-    		fullHeading = fullHeading+" ("+AppPropertiesManager.CONSTANTS.info_panel_uniprot() +" " +
-            		EscapedStringGenerator.generateEscapedString(uniprot_version)+ ")";
-    	
-    	this.setHeadingHtml(
-    			StyleGenerator.defaultFontStyleString(fullHeading));
+	String fullHeading = AppPropertiesManager.CONSTANTS.info_panel_homologs_info();
+
+	if(uniprot_version != null)
+	    fullHeading = fullHeading+" ("+AppPropertiesManager.CONSTANTS.info_panel_uniprot() +" " +
+		    EscapedStringGenerator.generateEscapedString(uniprot_version)+ ")";
+
+	this.setHeadingHtml(
+		StyleGenerator.defaultFontStyleString(fullHeading));
     }
 
     /**
@@ -121,87 +121,87 @@ public class SequenceInfoPanel extends FieldSet
      */
     public void generateSequenceInfoPanel(PdbInfo pdbScoreItem)
     {
-    	this.fillHeading(pdbScoreItem.getRunParameters().getUniprotVersion());
-    	
-    	CssFloatLayoutContainer mainContainer = new CssFloatLayoutContainer();
-    	mainContainer.setScrollMode(ScrollMode.AUTO);
+	this.fillHeading(pdbScoreItem.getRunParameters().getUniprotVersion());
 
-    	FlexTable flexTable = new FlexTable();
-    	flexTable.addStyleName("eppic-homologs-infopanel");
+	CssFloatLayoutContainer mainContainer = new CssFloatLayoutContainer();
+	mainContainer.setScrollMode(ScrollMode.AUTO);
 
-    	this.pdbScoreItem = pdbScoreItem; 
+	FlexTable flexTable = new FlexTable();
+	flexTable.addStyleName("eppic-homologs-infopanel");
 
-    	homologsTable = new FlexTable();
-    	homologsTable.setCellSpacing(0);
-    	homologsTable.setCellPadding(0);
-    	homologsTable.addStyleName("eppic-homologstable");
-    	homologsStartIndex = 0;
-    	fillePagedHomologsInfoTable();
+	this.pdbScoreItem = pdbScoreItem; 
 
-    	mainContainer.add(homologsTable);
-    	mainContainer.add(flexTable);
-    	
-    	this.setWidget(mainContainer);
+	homologsTable = new FlexTable();
+	homologsTable.setCellSpacing(0);
+	homologsTable.setCellPadding(0);
+	homologsTable.addStyleName("eppic-homologstable");
+	homologsStartIndex = 0;
+	fillePagedHomologsInfoTable();
+
+	mainContainer.add(homologsTable);
+	mainContainer.add(flexTable);
+
+	this.setWidget(mainContainer);
     }
 
     private void fillePagedHomologsInfoTable() {
-    	List<ChainCluster> homologsStrings = pdbScoreItem.getChainClusters();
-    	if(homologsStrings == null || homologsStrings.isEmpty())
-    	{
-    		HTML nothingFound = new HTML(AppPropertiesManager.CONSTANTS.info_panel_nothing_found());
-    		nothingFound.addStyleName("eppic-general-info-label");
-    		homologsTable.clear();
-    		homologsTable.setWidget(0,0,nothingFound);
-    		return;
-    	}
-    	
-    	List<List<Widget>> homologsInfoPanels = loadHomologPanles(pdbScoreItem, homologsStrings);
-    	homologsTable.clear();
-    	for(int i = homologsStartIndex; i < Math.min(homologsStartIndex + ROWS_PER_PAGE, homologsInfoPanels.size()); i++) {
-    		final List<Widget> homologsContainer = homologsInfoPanels.get(i);
-    		for(int j = 0; j < homologsContainer.size(); j++)
-    			homologsTable.setWidget(i - homologsStartIndex, j + 1, homologsContainer.get(j));
-    	}
-    	
-    	if(homologsInfoPanels.size() > homologsStartIndex + ROWS_PER_PAGE) {
-    		String downIcon = "resources/icons/down-arrow.png";
-    		ImageWithTooltip nextButton = new ImageWithTooltip(downIcon, null,
-    				AppPropertiesManager.CONSTANTS.homologs_panel_next_homologs_button());
-    		nextButton.addStyleName("eppic-homologs-infopanel-buttons");
-    		nextButton.addClickHandler(new ClickHandler() {
-    			@Override
-    			public void onClick(ClickEvent event) {
-    				homologsStartIndex += ROWS_PER_PAGE;
-    				fillePagedHomologsInfoTable();
-    			}
-    		});
-    		homologsTable.setWidget(3, 0, nextButton);
-    	}
-    	if(homologsStartIndex > 0) {
-    		String downIcon = "resources/icons/up-arrow.png";
-    		ImageWithTooltip prevButton = new ImageWithTooltip(downIcon, null,
-    				AppPropertiesManager.CONSTANTS.homologs_panel_prev_homologs_button());
-    		prevButton.addStyleName("eppic-homologs-infopanel-buttons");
-    		prevButton.addClickHandler(new ClickHandler() {
-    			@Override
-    			public void onClick(ClickEvent event) {
-    				homologsStartIndex -= ROWS_PER_PAGE;
-    				fillePagedHomologsInfoTable();
-    			}
-    		});
-    		homologsTable.setWidget(0, 0, prevButton);
-    	}
+	List<ChainCluster> homologsStrings = pdbScoreItem.getChainClusters();
+	if(homologsStrings == null || homologsStrings.isEmpty())
+	{
+	    HTML nothingFound = new HTML(AppPropertiesManager.CONSTANTS.info_panel_nothing_found());
+	    nothingFound.addStyleName("eppic-general-info-label");
+	    homologsTable.clear();
+	    homologsTable.setWidget(0,0,nothingFound);
+	    return;
+	}
+
+	List<List<Widget>> homologsInfoPanels = loadHomologPanles(pdbScoreItem, homologsStrings);
+	homologsTable.clear();
+	for(int i = homologsStartIndex; i < Math.min(homologsStartIndex + ROWS_PER_PAGE, homologsInfoPanels.size()); i++) {
+	    final List<Widget> homologsContainer = homologsInfoPanels.get(i);
+	    for(int j = 0; j < homologsContainer.size(); j++)
+		homologsTable.setWidget(i - homologsStartIndex, j + 1, homologsContainer.get(j));
+	}
+
+	if(homologsInfoPanels.size() > homologsStartIndex + ROWS_PER_PAGE) {
+	    String downIcon = "resources/icons/down-arrow.png";
+	    ImageWithTooltip nextButton = new ImageWithTooltip(downIcon, null,
+		    AppPropertiesManager.CONSTANTS.homologs_panel_next_homologs_button());
+	    nextButton.addStyleName("eppic-homologs-infopanel-buttons");
+	    nextButton.addClickHandler(new ClickHandler() {
+		@Override
+		public void onClick(ClickEvent event) {
+		    homologsStartIndex += ROWS_PER_PAGE;
+		    fillePagedHomologsInfoTable();
+		}
+	    });
+	    homologsTable.setWidget(3, 0, nextButton);
+	}
+	if(homologsStartIndex > 0) {
+	    String downIcon = "resources/icons/up-arrow.png";
+	    ImageWithTooltip prevButton = new ImageWithTooltip(downIcon, null,
+		    AppPropertiesManager.CONSTANTS.homologs_panel_prev_homologs_button());
+	    prevButton.addStyleName("eppic-homologs-infopanel-buttons");
+	    prevButton.addClickHandler(new ClickHandler() {
+		@Override
+		public void onClick(ClickEvent event) {
+		    homologsStartIndex -= ROWS_PER_PAGE;
+		    fillePagedHomologsInfoTable();
+		}
+	    });
+	    homologsTable.setWidget(0, 0, prevButton);
+	}
     }
 
     private List<List<Widget>> loadHomologPanles(PdbInfo pdbScoreItem, List<ChainCluster> homologsStrings) {
-    	ArrayList<List<Widget>> homologsInfoPanels = new ArrayList<List<Widget>>();
-    	for(int i=0; i<homologsStrings.size(); i++)
-    	{
-    		homologsInfoPanels.add(generateHomologsInfoPanelItems(pdbScoreItem.getJobId(),
-    				homologsStrings.get(i),
-    				pdbScoreItem.getTruncatedInputName()));
-    	};
-    	return homologsInfoPanels;
+	ArrayList<List<Widget>> homologsInfoPanels = new ArrayList<List<Widget>>();
+	for(int i=0; i<homologsStrings.size(); i++)
+	{
+	    homologsInfoPanels.add(generateHomologsInfoPanelItems(pdbScoreItem.getJobId(),
+		    homologsStrings.get(i),
+		    pdbScoreItem.getTruncatedInputName(), pdbScoreItem.getInputType() == 0));
+	};
+	return homologsInfoPanels;
     }
 
     /**
@@ -209,7 +209,7 @@ public class SequenceInfoPanel extends FieldSet
      * @return tooltip displayed over query warnings label
      */
     public ToolTip getQueryWarningsTooltip() {
-    	return queryWarningsTooltip;
+	return queryWarningsTooltip;
     }
 
     /**
@@ -219,20 +219,20 @@ public class SequenceInfoPanel extends FieldSet
      */
     private static String generateHomologsNoQueryMatchTemplate(List<UniProtRefWarning> warnings)
     {
-    	String warningsList = "<div><ul class=\"eppic-tooltip-list\">";
+	String warningsList = "<div><ul class=\"eppic-tooltip-list\">";
 
-    	for(UniProtRefWarning warning : warnings)
-    	{
-    		if((warning.getText() != null) &&
-    				(!warning.getText().equals("")))
-    		{
-    			warningsList += "<li>" + EscapedStringGenerator.generateSanitizedString(warning.getText()) + "</li>";
-    		}
-    	}
+	for(UniProtRefWarning warning : warnings)
+	{
+	    if((warning.getText() != null) &&
+		    (!warning.getText().equals("")))
+	    {
+		warningsList += "<li>" + EscapedStringGenerator.generateSanitizedString(warning.getText()) + "</li>";
+	    }
+	}
 
-    	warningsList += "</ul></div>";
+	warningsList += "</ul></div>";
 
-    	return warningsList;
+	return warningsList;
     }
 
     /**
@@ -240,179 +240,175 @@ public class SequenceInfoPanel extends FieldSet
      * @param selectedJobId
      * @param chainCluster
      * @param pdbName
+     * @param precomputed 
      * @return
      */
     public static List<Widget>  generateHomologsInfoPanelItems(final String selectedJobId,
-    		final ChainCluster chainCluster,
-    		final String pdbName)
-    		{
+	    final ChainCluster chainCluster,
+	    final String pdbName, boolean precomputed) {
 
-    	if(chainCluster.isHasUniProtRef())
-    	{
-    		return createHomologsPanelItemsIfQueryMatch(selectedJobId, chainCluster, pdbName);
-    	}
-    	else
-    	{
-    		return createHomologsPanelItemsIfNoQueryMatch(chainCluster);
-    	}
-    		}
+	if(chainCluster.isHasUniProtRef())
+	{
+	    return createHomologsPanelItemsIfQueryMatch(selectedJobId, chainCluster, pdbName, precomputed);
+	}
+	else
+	{
+	    return createHomologsPanelItemsIfNoQueryMatch(chainCluster);
+	}
+    }
 
-    private static List<Widget> createHomologsPanelItemsIfNoQueryMatch(final ChainCluster chainCluster)
-    {
-    	ArrayList<Widget> items = new ArrayList<Widget>();
+    private static List<Widget> createHomologsPanelItemsIfNoQueryMatch(final ChainCluster chainCluster) {
+	ArrayList<Widget> items = new ArrayList<Widget>();
 
-    	String chainStr = chainCluster.getRepChain();
-    	if(chainCluster.getMemberChainsNoRepresentative() != null){
-    		chainStr += "(" + EscapedStringGenerator.generateEscapedString(chainCluster.getMemberChainsNoRepresentative()) + ")";
-    	}
-    	String chainHintStr = "";
-    	if(chainStr.length() > 13){
-    		chainHintStr = "Chain " + chainStr;
-    		chainStr = chainStr.substring(0,12)+",..)";
-    	}
+	final LabelWithTooltip chainsLink = createChainLink(chainCluster);
+	items.add(chainsLink);
 
-    	final LabelWithTooltip chainsLink = new LabelWithTooltip("Chain " + EscapedStringGenerator.generateEscapedString(chainStr), 
-    			chainHintStr);
+	Image chainsLinkButton = createWarningButton(AppPropertiesManager.CONSTANTS.homologs_panel_uniprot_no_query_match_hint());		
+	chainsLinkButton.getElement().<XElement>cast().setMargins(new Margins(0, 10, 0, 0));
+	ToolTipConfig ttConfig = new ToolTipConfig(AppPropertiesManager.CONSTANTS.homologs_panel_query_warnings_title(),
+		generateHomologsNoQueryMatchTemplate(chainCluster.getUniProtRefWarnings()));
+	new ToolTip(chainsLinkButton, ttConfig);
 
-    	chainsLink.addStyleName("eppic-action");
-    	items.add(chainsLink);
-
-    	Image chainsLinkButton = createWarningButton(AppPropertiesManager.CONSTANTS.homologs_panel_uniprot_no_query_match_hint());		
-    	chainsLinkButton.getElement().<XElement>cast().setMargins(new Margins(0, 10, 0, 0));
-    	ToolTipConfig ttConfig = new ToolTipConfig(AppPropertiesManager.CONSTANTS.homologs_panel_query_warnings_title(),
-    			generateHomologsNoQueryMatchTemplate(chainCluster.getUniProtRefWarnings()));
-    	new ToolTip(chainsLinkButton, ttConfig);
-
-    	items.add(chainsLinkButton);
-    	return items;
+	items.add(chainsLinkButton);
+	return items;
     }
 
     private static List<Widget> createHomologsPanelItemsIfQueryMatch(final String selectedJobId,
-    		final ChainCluster chainCluster,
-    		final String pdbName) {
-    	ArrayList<Widget> items = new ArrayList<Widget>();
+	    final ChainCluster chainCluster,
+	    final String pdbName, boolean precomputed) {
+	ArrayList<Widget> items = new ArrayList<Widget>();
 
-    	String chainStr = chainCluster.getRepChain();
-    	if(chainCluster.getMemberChainsNoRepresentative() != null){
-    		chainStr += "(" + EscapedStringGenerator.generateEscapedString(chainCluster.getMemberChainsNoRepresentative()) + ")";
-    	}
-    	String chainHintStr = "";
-    	if(chainStr.length() > 13){
-    		chainHintStr = "Chain " + chainStr;
-    		chainStr = chainStr.substring(0,12)+",..)";
-    	}
+	final LabelWithTooltip chainsLink = createChainLink(chainCluster);
+	items.add(chainsLink);
 
-    	final LabelWithTooltip chainsLink = new LabelWithTooltip("Chain " + EscapedStringGenerator.generateEscapedString(chainStr), 
-    			chainHintStr);
+	IconButton chainsLinkButton = createMoreInfoButton(AppPropertiesManager.CONSTANTS.homologs_panel_chains_hint());		
+	chainsLinkButton.getElement().setMargins(new Margins(0, 10, 0, 0));
+	chainsLinkButton.addSelectHandler(new SelectHandler() {
 
-    	chainsLink.addStyleName("eppic-action");
-    	items.add(chainsLink);
-    		
-    	IconButton chainsLinkButton = createMoreInfoButton(AppPropertiesManager.CONSTANTS.homologs_panel_chains_hint());		
-    	chainsLinkButton.getElement().setMargins(new Margins(0, 10, 0, 0));
-    	chainsLinkButton.addSelectHandler(new SelectHandler() {
-			
-			@Override
-			public void onSelect(SelectEvent event) {
-				EventBusManager.EVENT_BUS.fireEvent(new ShowAlignmentsEvent(
-    					chainCluster, 
-    					pdbName,
-    					chainsLink.getAbsoluteLeft() + chainsLink.getElement().getClientWidth(),
-    					chainsLink.getAbsoluteTop() + chainsLink.getElement().getClientHeight() + 10));
-    		}
+	    @Override
+	    public void onSelect(SelectEvent event) {
+		EventBusManager.EVENT_BUS.fireEvent(new ShowAlignmentsEvent(
+			chainCluster, 
+			pdbName,
+			chainsLink.getAbsoluteLeft() + chainsLink.getElement().getClientWidth(),
+			chainsLink.getAbsoluteTop() + chainsLink.getElement().getClientHeight() + 10));
+	    }
 
-		});
+	});
 
-    	items.add(chainsLinkButton);
+	items.add(chainsLinkButton);
 
-    	int nrOfHomologs = chainCluster.getNumHomologs();
-    	String nrOfHomologsText = String.valueOf(nrOfHomologs) + " homolog";
+	int nrOfHomologs = chainCluster.getNumHomologs();
+	String nrOfHomologsText = String.valueOf(nrOfHomologs) + " homolog";
 
-    	if(nrOfHomologs > 1)
-    	{
-    		nrOfHomologsText += "s";
-    	}
+	if(nrOfHomologs > 1)
+	{
+	    nrOfHomologsText += "s";
+	}
 
-    	String alignmentId = chainCluster.getRepChain();
+	String alignmentId = chainCluster.getRepChain();
 
-    	final HTML nrHomologsLabel = new HTML(nrOfHomologsText);
+	final HTML nrHomologsLabel = new HTML(nrOfHomologsText);
 
-    	nrHomologsLabel.addStyleName("eppic-action");
-    	items.add(nrHomologsLabel);
-    	
-    	IconButton nrHoButton = createMoreInfoButton(AppPropertiesManager.CONSTANTS.homologs_panel_nrhomologs_hint());
-    	nrHoButton.getElement().setMargins(new Margins(0, 10, 0, 0));
-    	nrHoButton.addSelectHandler(new SelectHandler() {
-			
-			@Override
-			public void onSelect(SelectEvent event) {
-				EventBusManager.EVENT_BUS.fireEvent(new ShowHomologsEvent(
-    					chainCluster, 
-    					selectedJobId,
-    					nrHomologsLabel.getAbsoluteLeft() + nrHomologsLabel.getElement().getClientWidth(),
-    					nrHomologsLabel.getAbsoluteTop() + nrHomologsLabel.getElement().getClientHeight() + 10));
-				
-			}
-		});
-    	
-    	items.add(nrHoButton);
+	nrHomologsLabel.addStyleName("eppic-action");
+	items.add(nrHomologsLabel);
 
-    	String downloadPseLink = GWT.getModuleBaseURL() + 
-    			"fileDownload?type=entropiespse&id=" + selectedJobId + "&alignment=" + alignmentId; 
+	IconButton nrHoButton = createMoreInfoButton(AppPropertiesManager.CONSTANTS.homologs_panel_nrhomologs_hint());
+	nrHoButton.getElement().setMargins(new Margins(0, 10, 0, 0));
+	nrHoButton.addSelectHandler(new SelectHandler() {
 
-    	String colorPseIconImgSrc = 
-    			ApplicationContext.getSettings().getResultsLocation() + 
-    			selectedJobId+"/"+
-    			pdbName +"."+alignmentId+".entropies.png";
-    	//String colorPseIconImgSrc = "resources/icons/entropies_pse_icon.png";
+	    @Override
+	    public void onSelect(SelectEvent event) {
+		EventBusManager.EVENT_BUS.fireEvent(new ShowHomologsEvent(
+			chainCluster, 
+			selectedJobId,
+			nrHomologsLabel.getAbsoluteLeft() + nrHomologsLabel.getElement().getClientWidth(),
+			nrHomologsLabel.getAbsoluteTop() + nrHomologsLabel.getElement().getClientHeight() + 10));
 
-    	ImageLinkWithTooltip colorPseImg = 
-    			new ImageLinkWithTooltip(colorPseIconImgSrc, 14, 14, 
-    					AppPropertiesManager.CONSTANTS.homologs_panel_entropiespse_hint(),
-    					downloadPseLink);
-    	items.add(colorPseImg);
-    	
-    	final EmptyLinkWithTooltip searchLink = 
-    			new EmptyLinkWithTooltip(AppPropertiesManager.CONSTANTS.homologs_panel_search_text(),
-    					AppPropertiesManager.CONSTANTS.homologs_panel_search_tip());
+	    }
+	});
 
-    	searchLink.addStyleName("eppic-action");
-    	searchLink.getElement().<XElement>cast().applyStyles("marginLeft:5px");
-    	searchLink.addClickHandler(new ClickHandler() {
-			
-			@Override
-			public void onClick(ClickEvent event) {
-				History.newItem("searchPdb/"+chainCluster.getPdbCode() + "/" + chainCluster.getRepChain());
-			}
-		});
-    	items.add(searchLink);
-    		
-    	return items;
+	items.add(nrHoButton);
+
+	String downloadPseLink = GWT.getModuleBaseURL() + 
+		"fileDownload?type=entropiespse&id=" + selectedJobId + "&alignment=" + alignmentId; 
+
+	String colorPseIconImgSrc = 
+		ApplicationContext.getSettings().getResultsLocation() + 
+		selectedJobId+"/"+
+		pdbName +"."+alignmentId+".entropies.png";
+
+	ImageLinkWithTooltip colorPseImg = 
+		new ImageLinkWithTooltip(colorPseIconImgSrc, 14, 14, 
+			AppPropertiesManager.CONSTANTS.homologs_panel_entropiespse_hint(),
+			downloadPseLink);
+	items.add(colorPseImg);
+
+	if(precomputed) {
+	    final EmptyLinkWithTooltip searchLink = createSearchLink(chainCluster);
+	    items.add(searchLink);
+	}
+	return items;
     }
-    
+
+    private static EmptyLinkWithTooltip createSearchLink(final ChainCluster chainCluster) {
+	final EmptyLinkWithTooltip searchLink = 
+		new EmptyLinkWithTooltip(AppPropertiesManager.CONSTANTS.homologs_panel_search_text(),
+			AppPropertiesManager.CONSTANTS.homologs_panel_search_tip());
+
+	searchLink.addStyleName("eppic-action");
+	searchLink.getElement().<XElement>cast().applyStyles("marginLeft:5px");
+	searchLink.addClickHandler(new ClickHandler() {
+
+	    @Override
+	    public void onClick(ClickEvent event) {
+		History.newItem("searchPdb/"+chainCluster.getPdbCode() + "/" + chainCluster.getRepChain());
+	    }
+	});
+	return searchLink;
+    }
+
+    static LabelWithTooltip createChainLink(final ChainCluster chainCluster) {
+	String chainStr = chainCluster.getRepChain();
+	if(chainCluster.getMemberChainsNoRepresentative() != null){
+	    chainStr += "(" + EscapedStringGenerator.generateEscapedString(chainCluster.getMemberChainsNoRepresentative()) + ")";
+	}
+	String chainHintStr = "";
+	if(chainStr.length() > 13){
+	    chainHintStr = "Chain " + chainStr;
+	    chainStr = chainStr.substring(0,12)+",..)";
+	}
+
+	final LabelWithTooltip chainsLink = new LabelWithTooltip("Chain " + EscapedStringGenerator.generateEscapedString(chainStr), 
+		chainHintStr);
+
+	chainsLink.addStyleName("eppic-action");
+	return chainsLink;
+    }
+
     /**
      * Creates a more Icon Button
      */
     private static IconButton createMoreInfoButton(String tooltipText){
-    	IconConfig cnfg = new IconConfig("eppic-seq-info-panel-more-button");
-    	IconButton button = new IconButton(cnfg);
-    	button.setPixelSize(14, 14);
-    	button.setBorders(false);
-    	
-    	new ToolTip(button, new ToolTipConfig(tooltipText));
-    	
-    	return button; 	
+	IconConfig cnfg = new IconConfig("eppic-seq-info-panel-more-button");
+	IconButton button = new IconButton(cnfg);
+	button.setPixelSize(14, 14);
+	button.setBorders(false);
+
+	new ToolTip(button, new ToolTipConfig(tooltipText));
+
+	return button; 	
     }
-    
+
     /**
      * Creates a warning Icon Button
      */
     private static Image createWarningButton(String tooltipText){
-    	
-    	Image warningImage = new Image("resources/icons/warning_icon_14x14.png");
-		warningImage.getElement().<XElement>cast().applyStyles("verticalAlign:bottom;");
-    	
-    	return warningImage; 	
+
+	Image warningImage = new Image("resources/icons/warning_icon_14x14.png");
+	warningImage.getElement().<XElement>cast().applyStyles("verticalAlign:bottom;");
+
+	return warningImage; 	
     }
 
     /**
@@ -420,39 +416,39 @@ public class SequenceInfoPanel extends FieldSet
      */
     private void initializeEventsListeners()
     {
-    	EventBusManager.EVENT_BUS.addHandler(HideAllWindowsEvent.TYPE, new HideAllWindowsHandler() {
+	EventBusManager.EVENT_BUS.addHandler(HideAllWindowsEvent.TYPE, new HideAllWindowsHandler() {
 
-    		@Override
-    		public void onHideAllWindows(HideAllWindowsEvent event) 
-    		{
-    			if(queryWarningsTooltip != null)
-    			{
-    				queryWarningsTooltip.setVisible(false);
-    			}
-    		}
-    	});
+	    @Override
+	    public void onHideAllWindows(HideAllWindowsEvent event) 
+	    {
+		if(queryWarningsTooltip != null)
+		{
+		    queryWarningsTooltip.setVisible(false);
+		}
+	    }
+	});
 
-    	EventBusManager.EVENT_BUS.addHandler(ShowQueryWarningsEvent.TYPE, new ShowQueryWarningsHandler() {
+	EventBusManager.EVENT_BUS.addHandler(ShowQueryWarningsEvent.TYPE, new ShowQueryWarningsHandler() {
 
-    		@Override
-    		public void onShowQueryWarnings(ShowQueryWarningsEvent event) {
-    			queryWarningsTooltip = createHomologsInfoTooltip(event.getTooltipTemplate());
-    			queryWarningsTooltip.showAt(event.getxCoordinate(),
-    					event.getyCoordinate());
-    		}
-    	});
+	    @Override
+	    public void onShowQueryWarnings(ShowQueryWarningsEvent event) {
+		queryWarningsTooltip = createHomologsInfoTooltip(event.getTooltipTemplate());
+		queryWarningsTooltip.showAt(event.getxCoordinate(),
+			event.getyCoordinate());
+	    }
+	});
 
-    	EventBusManager.EVENT_BUS.addHandler(ApplicationWindowResizeEvent.TYPE, new ApplicationWindowResizeHandler() {
+	EventBusManager.EVENT_BUS.addHandler(ApplicationWindowResizeEvent.TYPE, new ApplicationWindowResizeHandler() {
 
-    		@Override
-    		public void onResizeApplicationWindow(ApplicationWindowResizeEvent event) {
+	    @Override
+	    public void onResizeApplicationWindow(ApplicationWindowResizeEvent event) {
 
-    			if(queryWarningsTooltip != null)
-    			{
-    				queryWarningsTooltip.setMaxWidth(calculateTooltipMaxWidth());
-    			}
-    		}
-    	});
+		if(queryWarningsTooltip != null)
+		{
+		    queryWarningsTooltip.setMaxWidth(calculateTooltipMaxWidth());
+		}
+	    }
+	});
     }
 
     /**
@@ -461,13 +457,13 @@ public class SequenceInfoPanel extends FieldSet
      */
     private int calculateTooltipMaxWidth()
     {
-    	int width = 500;
+	int width = 500;
 
-    	if(width > ApplicationContext.getWindowData().getWindowWidth() - 20)
-    	{
-    		width = ApplicationContext.getWindowData().getWindowWidth() - 20;
-    	}
+	if(width > ApplicationContext.getWindowData().getWindowWidth() - 20)
+	{
+	    width = ApplicationContext.getWindowData().getWindowWidth() - 20;
+	}
 
-    	return width;
+	return width;
     }
 }
