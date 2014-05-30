@@ -791,7 +791,7 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 		    data.add(p);
 	    }
 	}
-	System.out.println("Length of data: " + data.size());
+	log.debug("Length of data: " + data.size());
 	return data;
     } 
 }
