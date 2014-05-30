@@ -59,4 +59,12 @@ public class SearchResultsDataRetrievedEvent extends GwtEvent<SearchResultsDataR
 		return uniProtId;
 	}
 
+	public String getPdbCode() {
+	    return pdbCode;
+	}
+
+	public String getChain() {
+	    return chain;
+	}
+
 }

@@ -31,9 +31,9 @@ public class SearchPanel extends DisplayPanel
 		this.setData(dock);
 	}
 	
-	public void fillSearchPanel(String uniProtId, String searchResultLabel, List<PDBSearchResult> list){		
-		headerPanel.updateContent(searchResultLabel, uniProtId, list.size());
-		gridPanel.fillGrid(list);
+	public void fillSearchPanel(String pdBCode, String chain, String searchResultLabel, List<PDBSearchResult> list){		
+		headerPanel.updateContent(searchResultLabel, pdBCode + " Chain " + chain, list.size());
+		gridPanel.fillGrid(list, pdBCode);
 	}
 	
 	public void resizePanel(){

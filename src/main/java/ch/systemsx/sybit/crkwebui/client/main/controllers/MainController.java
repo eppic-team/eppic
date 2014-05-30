@@ -148,7 +148,7 @@ public class MainController
 					@Override
 					public void execute() 
 					{
-						displaySearchView(event.getUniProtId(), event.getResults());
+						displaySearchView(event.getPdbCode(), event.getChain(), event.getResults());
 					}
 				});
 			}
@@ -598,38 +598,40 @@ public class MainController
 	
 	/**
 	 * Displays search panel.
+	 * @param string 
 	 */
-	private void displaySearchView(String uniProtId, List<PDBSearchResult> resultList)
+	private void displaySearchView(String pdbCode, String chain, List<PDBSearchResult> resultList)
 	{
 		ApplicationContext.setDoStatusPanelRefreshing(false);
 
 		SearchPanel searchPanel = null;
 		
 		String label = AppPropertiesManager.CONSTANTS.search_panel_uniprot_subtitle();
-		
+		String searchParameter;
+
 		if((mainViewPort.getCenterPanel().getDisplayPanel() != null) &&
 		   (mainViewPort.getCenterPanel().getDisplayPanel() instanceof SearchPanel))
 		{
 			searchPanel = (SearchPanel)mainViewPort.getCenterPanel().getDisplayPanel();
-			searchPanel.fillSearchPanel(uniProtId, label, resultList);
+			searchPanel.fillSearchPanel(pdbCode, chain,  label, resultList);
 		}
 		else if(mainViewPort.getSearchPanel() != null)
 		{
 			searchPanel = mainViewPort.getSearchPanel();
-			searchPanel.fillSearchPanel(uniProtId, label, resultList);
+			searchPanel.fillSearchPanel(pdbCode, chain, label, resultList);
 			mainViewPort.getCenterPanel().setDisplayPanel(searchPanel);
 			searchPanel.resizePanel();
 		}
 		else
 		{
 			searchPanel = new SearchPanel();
-			searchPanel.fillSearchPanel(uniProtId, label, resultList);
+			searchPanel.fillSearchPanel(pdbCode, chain, label, resultList);
 			mainViewPort.setSearchPanel(searchPanel);
 			mainViewPort.getCenterPanel().setDisplayPanel(searchPanel);
 			searchPanel.resizePanel();
 		}
 
-		Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_searced() + " - " + uniProtId);
+		Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_searced() + " - " + pdbCode + " Chain " + chain);
 	}
 
 	/**

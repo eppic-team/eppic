@@ -432,3 +432,11 @@
 	 background-repeat:no-repeat;
 	 background-position:center;
 }
+
+.searchOriginal {
+ color: rgb(0,104,55);
+}
+
+.searchOriginal td div {
+ font-weight: bold;
+}
