@@ -87,7 +87,6 @@ public class ClustersGridView extends GroupSummaryView<InterfaceItemModel> {
 		value = cf.getSummaryRenderer().render(n, data).asString();
 	    }
 	    SafeHtml cellContentInHtml = null;
-	    //cf.getSummarType a mappinghez!!!!!!!
 	    String cellInnerClasses = cellInner;
 	    if(cf.getCell() instanceof MethodCallCell) {
 		String tooltip = null;
