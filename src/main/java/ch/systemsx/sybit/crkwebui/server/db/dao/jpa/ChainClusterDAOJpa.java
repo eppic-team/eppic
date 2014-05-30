@@ -1,6 +1,7 @@
 package ch.systemsx.sybit.crkwebui.server.db.dao.jpa;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.persistence.EntityManager;
@@ -19,9 +20,9 @@ import org.slf4j.LoggerFactory;
 import ch.systemsx.sybit.crkwebui.server.db.EntityManagerHandler;
 import ch.systemsx.sybit.crkwebui.server.db.dao.ChainClusterDAO;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
-import ch.systemsx.sybit.crkwebui.shared.model.SequenceClusterType;
 import ch.systemsx.sybit.crkwebui.shared.model.ChainCluster;
 import ch.systemsx.sybit.crkwebui.shared.model.PDBSearchResult;
+import ch.systemsx.sybit.crkwebui.shared.model.SequenceClusterType;
 import eppic.model.ChainClusterDB;
 import eppic.model.ChainClusterDB_;
 import eppic.model.PdbInfoDB;
@@ -203,8 +204,8 @@ public class ChainClusterDAOJpa implements ChainClusterDAO {
 	}
 	catch(Throwable e)
 	{
-	    e.printStackTrace();
-	    throw new DaoException(e);
+	    log.error("Query failed:", e);
+	    return Collections.emptyList();
 	}
 	finally
 	{
