@@ -35,8 +35,7 @@ public class PisaPdbData {
 	
 	private InterfaceMatcher matcher;
 	
-	public PisaPdbData(PdbInfoDB pdbInfo, PisaAsmSetList assemblySetList, PisaInterfaceList pisaInterfaceList, double minArea) 
-	 throws OneToManyMatchException {
+	public PisaPdbData(PdbInfoDB pdbInfo, PisaAsmSetList assemblySetList, PisaInterfaceList pisaInterfaceList, double minArea) {
 		
 		
 		this.pdbInfo = pdbInfo;
@@ -84,6 +83,15 @@ public class PisaPdbData {
 	}
 	
 	public void printTabular (PrintStream out, PrintStream err) {
+		
+		if (!matcher.checkOneToOneMapping()) {
+			
+			err.printf("Failed to match pisa:eppic interfaces (not a 1:1 mapping): %5s "
+					+ "(totals: %d our interfaces, %d their interfaces)\n", 
+					pdbInfo.getPdbCode(), matcher.getNumOurInterfaces(), matcher.getNumTheirInterfaces());
+			return;
+		}
+
 
 		for(int eppicInterfId:matcher.getOurIds()) {
 

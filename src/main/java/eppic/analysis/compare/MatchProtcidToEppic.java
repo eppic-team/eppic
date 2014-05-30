@@ -109,6 +109,12 @@ public class MatchProtcidToEppic {
 				continue;
 			} 
 			
+			//TODO do we need to check for not 1:1 mapping??
+			//if (!im.checkOneToOneMapping()) {
+			//	// do something
+			//	continue;
+			//}
+			
 			System.out.print(pdbCode+"\t"+interfaceId+"\t"+chain1+"\t"+chain2+"\t"+op1+"\t"+op2+"\t"+String.format("%7.2f",area));
 			
 			System.out.println("\t"+ourI.getInterfaceId()+"\t"+ourI.getChain1()+"\t"+ourI.getChain2()+"\t"+ourI.getOperator()+"\t"+String.format("%7.2f",ourI.getArea()));

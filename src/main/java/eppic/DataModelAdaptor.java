@@ -16,7 +16,6 @@ import org.apache.commons.logging.LogFactory;
 import edu.uci.ics.jung.graph.util.Pair;
 import eppic.analysis.compare.BioUnitView;
 import eppic.analysis.compare.InterfaceMatcher;
-import eppic.analysis.compare.OneToManyMatchException;
 import eppic.analysis.compare.SimpleInterface;
 import eppic.model.ContactDB;
 import eppic.model.HomologDB;
@@ -328,41 +327,49 @@ public class DataModelAdaptor {
 			BioUnitView bu = new BioUnitView();
 			bu.setMmSize(bioUnit.getSize());
 			bu.setType(bioUnit.getType());
-			
-			try {
-				List<SimpleInterface> bioUnitInterfaces = SimpleInterface.createSimpleInterfaceListFromPdbBioUnit(bioUnit);
-				InterfaceMatcher im = new InterfaceMatcher(pdbInfo.getInterfaceClusters(),bioUnitInterfaces);
-				for (InterfaceClusterDB ic:pdbInfo.getInterfaceClusters()) {
-					for (InterfaceDB i:ic.getInterfaces()) {
-						if (im.oursMatch(i.getInterfaceId())) {
-							bu.addInterfClusterId(ic.getClusterId()); 							 
-						} 
-					}
-				}
-				// 1st culling
-				// this will depend on the BioUnitView.equals implementation:
-				// essentially through this we remove redundant biounits (same size, type and set of cluster ids)
-				if (!culledBioUnits.contains(bu)) {
-					culledBioUnits.add(bu);
-				}
-				
-				if (!im.checkTheirsMatch()) {
-					String msg = "";
-					for (SimpleInterface theirI:im.getTheirsNotMatching()) {
-						msg += theirI.toString()+"\t";
-					}
-					
-					LOGGER.warn("Some interfaces of PDB bio unit "+serial+" of "+bioUnitList.size()+
-							" (type="+bioUnit.getType()+", size="+bioUnit.getSize()+") do not match any of the EPPIC interfaces."
-									+ " Non-matching interfaces are: "+msg);
 
+			List<SimpleInterface> bioUnitInterfaces = SimpleInterface.createSimpleInterfaceListFromPdbBioUnit(bioUnit);
+			InterfaceMatcher im = new InterfaceMatcher(pdbInfo.getInterfaceClusters(),bioUnitInterfaces);
+			for (InterfaceClusterDB ic:pdbInfo.getInterfaceClusters()) {
+				for (InterfaceDB i:ic.getInterfaces()) {
+					if (im.oursMatch(i.getInterfaceId())) {
+						bu.addInterfClusterId(ic.getClusterId()); 							 
+					} 
 				}
-			} catch(OneToManyMatchException e) {
-				LOGGER.warn("Multiple match for an interface of PDB bio unit "+serial+" of "+bioUnitList.size()+
-						" (type="+bioUnit.getType()+", size="+bioUnit.getSize()+
-						"). Error: "+e.getMessage()+". This PDB bio unit will be ignored.");
-				
 			}
+			// 1st culling
+			// this will depend on the BioUnitView.equals implementation:
+			// essentially through this we remove redundant biounits (same size, type and set of cluster ids)
+			if (!culledBioUnits.contains(bu)) {
+				culledBioUnits.add(bu);
+			}
+
+			if (!im.checkTheirsMatch()) {
+				String msg = "";
+				for (SimpleInterface theirI:im.getTheirsNotMatching()) {
+					msg += theirI.toString()+"\t";
+				}
+
+				// This actually happens even if the mapping is fine. That's because we enumerate the biounit 
+				// interfaces exhaustively, and thus sometimes an interface might not happen in reality because 
+				// 2 molecules don't make a contact. 
+				LOGGER.info("Some interfaces of PDB bio unit "+serial+" of "+bioUnitList.size()+
+						" (type="+bioUnit.getType()+", size="+bioUnit.getSize()+") do not match any of the EPPIC interfaces."
+						+ " Non-matching interfaces are: "+msg);
+
+			}
+			
+			if (!im.checkOneToOneMapping()) {
+				// This is not really a mapping problem, that's why it is only logged INFO
+				// It will happen in many bona-fide proper mappings:
+				// e.g. 2a7n or 1ae9 (the bio interfaces are in 4-fold or 3-fold xtal axes and thus 
+				//      the operators given in bio-unit are repeated, for instance for 3-fold the operator 
+				//      appears twice to construct the 2 symmetry partners, while in eppic it appears only once)
+				LOGGER.info("Multiple match for an interface of PDB bio unit "+serial+" of "+bioUnitList.size()+
+					" (type="+bioUnit.getType()+", size="+bioUnit.getSize()+").");
+			}
+
+
 		}
 		
 		// 2nd culling: now we need to make sure that there's only 1 biounit per method (pisa, pqs, authors)

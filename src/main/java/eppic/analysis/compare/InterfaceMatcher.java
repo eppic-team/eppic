@@ -2,8 +2,10 @@ package eppic.analysis.compare;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
@@ -22,8 +24,7 @@ public class InterfaceMatcher {
 	private Map<Integer,SimpleInterface> ours2theirs;
 	private Map<Integer,InterfaceDB> theirs2ours;
 	
-	public InterfaceMatcher(List<InterfaceClusterDB> ourInterfaceClusters, List<SimpleInterface> theirInterfaces)
-	 throws OneToManyMatchException {
+	public InterfaceMatcher(List<InterfaceClusterDB> ourInterfaceClusters, List<SimpleInterface> theirInterfaces) {
 		
 		this.ourInterfaceClusters = ourInterfaceClusters;
 		this.theirInterfaces = theirInterfaces;
@@ -31,6 +32,18 @@ public class InterfaceMatcher {
 		matchThem();
 	}
 	
+	public int getNumOurInterfaces() {
+		return this.ourInterfaceClusters.size();
+	}
+	
+	public int getNumTheirInterfaces() {
+		return this.theirInterfaces.size();
+	}
+	
+	/**
+	 * Returns the sorted set of 'our' interface ids
+	 * @return
+	 */
 	public Collection<Integer> getOurIds() {
 		Collection<Integer> ourIds = new TreeSet<Integer>();
 		for (InterfaceClusterDB ic:ourInterfaceClusters) {
@@ -82,6 +95,10 @@ public class InterfaceMatcher {
 		return true;
 	}
 
+	/**
+	 * Returns a list of all interfaces from 'our' list that don't match one of 'theirs'
+	 * @return
+	 */
 	public List<InterfaceDB> getOursNotMatching() {
 		List<InterfaceDB> nonmatching = new ArrayList<InterfaceDB>();
 		// 1) all ours are matched to one of theirs
@@ -110,6 +127,10 @@ public class InterfaceMatcher {
 		return true;
 	}
 	
+	/**
+	 * Returns a list of all interfaces from 'their' list that don't match one of 'ours'
+	 * @return
+	 */
 	public List<SimpleInterface> getTheirsNotMatching() {
 		List<SimpleInterface> nonmatching = new ArrayList<SimpleInterface>();
 		// 2) all theirs are matched to one of ours	
@@ -122,7 +143,28 @@ public class InterfaceMatcher {
 		return nonmatching;
 	}
 	
-	private void matchThem() throws OneToManyMatchException {
+	/**
+	 * Returns true if and only if the mapping 'ours'<->'theirs' is one-to-one,
+	 * false if one-to-many, many-to-one or many-to-many
+	 * @return
+	 */
+	public boolean checkOneToOneMapping() {
+		// a necessary condition is that both maps have the same size
+		if (ours2theirs.size()!=theirs2ours.size()) return false;
+		
+		// and sufficient when neither side map to many on the other side
+		Set<Integer> theirIds = new HashSet<Integer>();
+		for (int ourId:ours2theirs.keySet()) {
+			if (!theirIds.add(ours2theirs.get(ourId).getId())) {
+				// the mapped element is repeated: not a one-to-one mapping
+				return false;
+			}
+		}
+		return true;
+		
+	}
+	
+	private void matchThem() {
 		
 		ours2theirs = new TreeMap<Integer, SimpleInterface>();
 		theirs2ours = new TreeMap<Integer, InterfaceDB>();
@@ -130,44 +172,18 @@ public class InterfaceMatcher {
 		for (InterfaceClusterDB ic:ourInterfaceClusters) {
 			for (InterfaceDB ourI:ic.getInterfaces()) {
 				
-				SimpleInterface theirI = getMatchingInterface(ourI);
 				
-				if (theirI!=null) {
-				
-					ours2theirs.put(ourI.getInterfaceId(), theirI);
-					theirs2ours.put(theirI.getId(), ourI);
-
-				} 
-			}
-		}
-		
-	}
-	
-	/**
-	 * Returns the corresponding "theirs" matching interface to "ours" interface, or null if no match found
-	 * @param ourI
-	 * @return
-	 * @throws OneToManyMatchException
-	 */
-	private SimpleInterface getMatchingInterface(InterfaceDB ourI) throws OneToManyMatchException {
-
-		SimpleInterface match = null;
-		
-		for(SimpleInterface theirI:theirInterfaces){
-			
-			if (areMatching(theirI,ourI)) {
-				if (match!=null) {
-					throw new OneToManyMatchException("More than one matching interface (id "+theirI.getId()+", "+match.getId()+
-							") found for interface id "+ourI.getInterfaceId());
+				for(SimpleInterface theirI:theirInterfaces){
 					
-				} else {
-					match = theirI;
+					if (areMatching(theirI,ourI)) {
+						ours2theirs.put(ourI.getInterfaceId(), theirI);
+						theirs2ours.put(theirI.getId(), ourI);
+					}
+					
 				}
 			}
-			
 		}
-
-		return match;
+		
 	}
 	
 	private boolean areMatching(SimpleInterface theirI, InterfaceDB ourI) {

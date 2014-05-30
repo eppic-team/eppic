@@ -11,7 +11,6 @@ import gnu.getopt.Getopt;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -53,7 +52,7 @@ public class MatchPisaToEppic {
 	private List<PisaPdbData> pisaDatas;
 	
 	public MatchPisaToEppic(File interfaceFile, File assemblyFile, String cifDirPath, File serializedFilesDir, int pisaVersion) 
-			throws SAXException, IOException, FileFormatException, PdbLoadException, OneToManyMatchException {
+			throws SAXException, IOException, FileFormatException, PdbLoadException {
 		
 		this.cifDir = cifDirPath;
 		this.serializedFilesDir = serializedFilesDir;
@@ -62,7 +61,7 @@ public class MatchPisaToEppic {
 	
 
 	public List<PisaPdbData> createPisaDatafromFiles(File assemblyFile, File interfaceFile, int pisaVersion) 
-			throws SAXException, IOException, PdbLoadException, FileFormatException, OneToManyMatchException {
+			throws SAXException, IOException, PdbLoadException, FileFormatException {
 		List<PisaPdbData> pisaDataList = new ArrayList<PisaPdbData>();
 		
 		//Parse Assemblies
@@ -135,15 +134,10 @@ public class MatchPisaToEppic {
 			data.printTabular(out, err);
 		}
 	}
-
+	
 	/**
-	 * Test method to take input assembly and interfaces gzipped xml files and produce the output
+	 * Main method to take input assembly and interfaces gzipped xml files and produce the output
 	 * @param args
-	 * @throws PdbLoadException 
-	 * @throws FileFormatException 
-	 * @throws IOException 
-	 * @throws SAXException 
-	 * @throws FileNotFoundException 
 	 */
 	public static void main(String[] args) {
 		
@@ -228,9 +222,7 @@ public class MatchPisaToEppic {
 				System.err.println("Problem reading pisa files, error: "+e.getMessage());
 			} catch (PdbLoadException e) {
 				System.err.println("Problem reading pisa files, error: "+e.getMessage());
-			} catch (OneToManyMatchException e) {
-				System.err.println("ERROR: One to many match: "+e.getMessage());
-			}
+			} 
 			
 		} else {
 			PisaPdbData.printHeaders(System.out); 
@@ -242,9 +234,12 @@ public class MatchPisaToEppic {
 				assemFile = new File(dir,pdbCode+".assemblies.xml.gz"); 
 
 				try {
+
 					MatchPisaToEppic predictor = 
 						new MatchPisaToEppic(interfFile,assemFile,cifPath,serializedFilesDir,pisaVersion);
+					
 					predictor.printData(System.out, System.err);
+					
 				} catch (IOException e) {
 					System.err.println("Problem reading file for pdb "+pdbCode+", error: "+e.getMessage());
 					continue;
@@ -256,9 +251,6 @@ public class MatchPisaToEppic {
 					continue;
 				} catch (FileFormatException e) {
 					System.err.println("Problem reading file for pdb "+pdbCode+", error: "+e.getMessage());
-					continue;
-				} catch (OneToManyMatchException e) {
-					System.err.println("ERROR: One to many match for pdb "+pdbCode+": "+e.getMessage());
 					continue;
 				} catch (Exception e) {
 					System.err.println("Unexpected problem ["+e.getClass().getCanonicalName()+"] for pdb "+pdbCode+", error: "+
