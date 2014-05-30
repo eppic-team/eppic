@@ -3,7 +3,6 @@ package ch.systemsx.sybit.crkwebui.client.search.gui.panels;
 import java.util.ArrayList;
 import java.util.List;
 
-import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.commons.util.EscapedStringGenerator;
 import ch.systemsx.sybit.crkwebui.client.search.gui.cells.PdbCodeCell;
@@ -17,10 +16,8 @@ import com.google.gwt.editor.client.Editor.Path;
 import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.user.client.History;
-import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.sencha.gxt.core.client.ValueProvider;
-import com.sencha.gxt.core.client.util.Margins;
 import com.sencha.gxt.data.shared.ListStore;
 import com.sencha.gxt.data.shared.ModelKeyProvider;
 import com.sencha.gxt.data.shared.PropertyAccess;
@@ -70,7 +67,6 @@ public class SearchGridPanel extends VerticalLayoutContainer
     private ColumnModel<PDBSearchResult> cm;
 
     private Grid<PDBSearchResult> resultsGrid;
-    private VerticalLayoutContainer filterTextPanel;
 
     private String selectedPdbCode;
 
@@ -96,9 +92,7 @@ public class SearchGridPanel extends VerticalLayoutContainer
 
 	createGrid();
 
-	filterTextPanel = createFilterPanel();
 
-	this.add(filterTextPanel, new VerticalLayoutData(1, -1, new Margins(10,0,15,0)));
 	this.add(resultsGrid, new VerticalLayoutData(1, 1));
 
     }
@@ -286,24 +280,8 @@ public class SearchGridPanel extends VerticalLayoutContainer
 	filters.addFilter(rFreeFilter);
     }
 
-    private VerticalLayoutContainer createFilterPanel(){
-	VerticalLayoutContainer filterPanel = new VerticalLayoutContainer();
-	filterPanel.addStyleName("eppic-search-panel-filter-panel");
-
-	HTML header = new HTML(AppPropertiesManager.CONSTANTS.search_panel_filter_header());
-	header.addStyleName("eppic-filter-panel-header");
-
-	HTML text = new HTML(AppPropertiesManager.CONSTANTS.search_panel_filter_text());
-
-	filterPanel.add(header);
-	filterPanel.add(text);
-
-	return filterPanel;
-    }
-
     private void setGridVisibility(boolean visibility){
 	resultsGrid.setVisible(visibility);
-	filterTextPanel.setVisible(visibility);
     }
 
     /**
