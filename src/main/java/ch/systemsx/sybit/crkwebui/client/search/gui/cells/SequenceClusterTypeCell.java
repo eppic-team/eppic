@@ -29,7 +29,7 @@ public class SequenceClusterTypeCell extends AbstractCell<SequenceClusterType>
 	}
 	String v = value.toString().replace("C", "") + "%";
 	String color = getColorForSequenceCluster(value);
-	sb.appendHtmlConstant("<span style=\"color: " + color + "; font-weight:bold;\">"+ v +"</span>");
+	sb.appendHtmlConstant("<span style=\"font-weight:bold;\"><div class=\"clusterCircle\" style=\"background-color: " + color + ";\"></div>"+ v +"</span>");
     }
 
     private String getColorForSequenceCluster(SequenceClusterType value) {
