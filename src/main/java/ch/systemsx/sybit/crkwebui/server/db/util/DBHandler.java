@@ -12,7 +12,9 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 import javax.persistence.EntityManager;
@@ -25,6 +27,8 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.persistence.metamodel.SingularAttribute;
 
+import eppic.model.ChainClusterDB;
+import eppic.model.ChainClusterDB_;
 import eppic.model.JobDB_;
 import eppic.model.PdbInfoDB_;
 import eppic.model.SeqClusterDB;
@@ -71,7 +75,7 @@ public class DBHandler {
 		}
 	}
 	
-	private EntityManager getEntityManager(){
+	protected EntityManager getEntityManager(){
 		return this.emf.createEntityManager();
 	}
 
@@ -531,5 +535,34 @@ public class DBHandler {
 			
 		}
 		return attribute;
+	}
+	
+	public Map<Integer, ChainClusterDB> getAllChainsWithRef() {
+			
+		CriteriaBuilder cb = this.getEntityManager().getCriteriaBuilder();
+
+		CriteriaQuery<ChainClusterDB> cq = cb.createQuery(ChainClusterDB.class);
+		Root<ChainClusterDB> root = cq.from(ChainClusterDB.class);
+
+		cq.where(cb.isNotNull(root.get(ChainClusterDB_.pdbCode)));
+		cq.where(cb.isTrue(root.get(ChainClusterDB_.hasUniProtRef)));
+
+		cq.multiselect(
+				root.get(ChainClusterDB_.uid),
+				root.get(ChainClusterDB_.pdbCode),
+				root.get(ChainClusterDB_.repChain),
+				root.get(ChainClusterDB_.pdbAlignedSeq),
+				root.get(ChainClusterDB_.msaAlignedSeq),
+				root.get(ChainClusterDB_.refAlignedSeq));
+
+		List<ChainClusterDB> results = this.getEntityManager().createQuery(cq).getResultList();
+		
+		Map<Integer, ChainClusterDB> map = new TreeMap<Integer, ChainClusterDB>();
+		
+		for (ChainClusterDB result:results) {
+			int uid = result.getUid();
+			map.put(uid, result);
+		}
+		return map;
 	}
 }
