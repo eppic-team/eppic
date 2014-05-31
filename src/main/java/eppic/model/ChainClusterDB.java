@@ -50,6 +50,15 @@ public class ChainClusterDB implements Serializable {
 		
 	}
 	
+	public ChainClusterDB(int uid, String pdbCode, String repChain, String pdbAlignedSeq, String msaAlignedSeq, String refAlignedSeq) {
+		this.uid = uid;
+		this.pdbCode = pdbCode;
+		this.repChain = repChain;
+		this.pdbAlignedSeq = pdbAlignedSeq;
+		this.msaAlignedSeq = msaAlignedSeq;
+		this.refAlignedSeq = refAlignedSeq;
+	}
+	
 	public void setPdbInfo(PdbInfoDB pdbInfo) {
 		this.pdbInfo = pdbInfo;
 	}
