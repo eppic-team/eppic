@@ -82,6 +82,9 @@ public class SeqClusterer {
 			long end = System.currentTimeMillis();
 			System.out.println("Run initial blastclust ("+((end-start)/1000)+"s): "+blastRunner.getLastBlastCommand());
 			saveFileComputed = true;
+			
+			System.out.println("Clustering with "+clusteringId+"% id resulted in "+clusterslist.size()+" clusters");
+
 
 		} else {
 			
