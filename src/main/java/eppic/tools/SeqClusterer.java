@@ -122,17 +122,19 @@ public class SeqClusterer {
 	
 	public void writeFastaFile(Map<Integer, ChainClusterDB> allChains, int minLength) throws FileNotFoundException {
 		PrintWriter pw = new PrintWriter(inFastaFile);
+		int count = 0;
 		for (int uid:allChains.keySet()) {
 			ChainClusterDB chain = allChains.get(uid);
 			String seq = chain.getPdbAlignedSeq().replaceAll("-", "");
 			if (seq.length()>minLength) {
 				pw.println(">"+uid);
 				pw.println(seq);
+				count++;
 			}
 		}
 		pw.close();
 		
-		System.out.println("Wrote all chains (length greater than "+minLength+") FASTA file: "+inFastaFile);
+		System.out.println("Wrote "+count+" chains (length greater than "+minLength+") to FASTA file: "+inFastaFile);
 	}
 	
 	private EppicParams loadConfigFile() {
