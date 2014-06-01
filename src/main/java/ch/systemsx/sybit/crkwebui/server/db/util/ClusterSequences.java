@@ -1,6 +1,5 @@
 package ch.systemsx.sybit.crkwebui.server.db.util;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,15 +21,15 @@ public class ClusterSequences {
 		String help = 
 				"Usage: ClusterSequences \n" +
 				" [-l]: sequence cluster levels to do (comma separated) \n"+
-				"  -o : output directory \n"+
+				"  -o : write output to database (by default nothing is written) \n"+
 				" [-a]: number of threads (default 1)\n"; 
 		
 		
 		int numThreads = 1;
-		File outDir = null;
+		boolean writeToDb = false;
 		int[] clusteringIds = {100,95,90,80,70,60,50,40,30};
 
-		Getopt g = new Getopt("ClusterSequences", args, "l:o:a:h?");
+		Getopt g = new Getopt("ClusterSequences", args, "l:a:oh?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
@@ -42,7 +41,7 @@ public class ClusterSequences {
 				}
 				break;
 			case 'o':
-				outDir = new File(g.getOptarg());
+				writeToDb = true;
 				break;
 			case 'a':
 				numThreads = Integer.parseInt(g.getOptarg());
@@ -58,10 +57,6 @@ public class ClusterSequences {
 			}
 		}
 		
-		if (outDir==null) {
-			System.err.println("An outdir must be provided with -o");
-			System.exit(1);
-		}
 		
 		DBHandler dbh = new DBHandler();
 	
@@ -81,7 +76,13 @@ public class ClusterSequences {
 			//sc.writeClustersToFile(clustersList, new File(outDir,"clusters"+clusteringId+".table")); 
 		}
 		
-		//List<SeqClusterDB> seqClusters = new ArrayList<SeqClusterDB>();
+		
+		if (!writeToDb) return;
+		
+		
+		System.out.println("Writing to db...");
+		
+		EntityManager entityManager = dbh.getEntityManager();
 		
 		for (int chainClusterId:allChains.keySet()) {
 			SeqClusterDB seqCluster = new SeqClusterDB(
@@ -100,17 +101,19 @@ public class ClusterSequences {
 			seqCluster.setPdbCode(chainCluster.getPdbCode());
 			seqCluster.setRepChain(chainCluster.getRepChain());
 			
-			System.out.println(seqCluster.getC100()+" "+seqCluster.getC95()+" "+seqCluster.getC90()+" "+seqCluster.getC80()
-					+" "+seqCluster.getC70()+" "+seqCluster.getC60()+" "+seqCluster.getC50()+" "+seqCluster.getC40()
-					+" "+seqCluster.getC30()+" "+seqCluster.getPdbCode()+" "+seqCluster.getRepChain()+" "+seqCluster.getChainCluster().getUid());
+			//System.out.println(seqCluster.getC100()+" "+seqCluster.getC95()+" "+seqCluster.getC90()+" "+seqCluster.getC80()
+			//		+" "+seqCluster.getC70()+" "+seqCluster.getC60()+" "+seqCluster.getC50()+" "+seqCluster.getC40()
+			//		+" "+seqCluster.getC30()+" "+seqCluster.getPdbCode()+" "+seqCluster.getRepChain()+" "+seqCluster.getChainCluster().getUid());
 			//seqClusters.add(seqCluster);
-			EntityManager entityManager = dbh.getEntityManager();
+			
 			entityManager.getTransaction().begin();
 			entityManager.persist(seqCluster);
 			entityManager.getTransaction().commit();
 			
 		}
 		
+		entityManager.close();
+		System.out.println("Done writing "+allChains.size()+" SeqCluster records");
 	}
 
 	private static Map<Integer, Integer> getMapFromList(List<List<String>> clustersList) {

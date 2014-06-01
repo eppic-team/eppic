@@ -26,26 +26,27 @@ public class UploadToDb {
 		
 		String help = 
 				"Usage: UploadToDB\n" +
-				"Uploads a set of eppic output files to database specified in "+DBHandler.DEFAULT_OFFLINE_JPA+" persistence unit\n" +
-				"  -d <dir>  	: Root Directory of eppic output files with subdirectories as pdb names \n" +
+				"Uploads a set of eppic output serialized files to database specified in "+DBHandler.DEFAULT_OFFLINE_JPA+" persistence unit\n" +
+				"  -d <dir>  	: Root Directory of eppic output files with subdirectories as PDB codes \n" +
 				" [-f <file>] 	: File specifying the sub-directories to be used from output directory \n" +
 				"                 (Default: Uses all files in the root directory) \n" +
 				" [-o]          : Use the "+DBHandler.DEFAULT_ONLINE_JPA+" persistence unit instead of "+DBHandler.DEFAULT_OFFLINE_JPA+" \n" +
 				" OPERATION MODE\n" +
-				" (In conflicting cases, options you specify later override the earlier ones)\n" +
-				" [-i]          : Inserts only the entries which are not in the database (Default mode)\n" +
+				" Default operation: only entries not already present in database will be inserted \n"+
 				" [-F]          : Forces everything chosen to be inserted, deletes previous entries if present\n " +
-				" [-r]          : Removes the specified files from database\n";
+				" [-r]          : Removes the specified entries from database\n";
 
 		File jobDirectoriesRoot = null;
 		File choosefromFile = null;
 		boolean choosefrom = false;
+		
 		boolean modeNew = true;
 		boolean modeEverything = false;
 		boolean modeRemove = false;
+		
 		boolean useOnlineJpa = false;
 
-		Getopt g = new Getopt("UploadToDB", args, "d:f:oiFrh?");
+		Getopt g = new Getopt("UploadToDB", args, "d:f:oFrh?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
@@ -58,11 +59,6 @@ public class UploadToDb {
 				break;
 			case 'o':
 				useOnlineJpa = true;
-				break;
-			case 'i':
-				modeNew = true;
-				modeEverything = false;
-				modeRemove = false;
 				break;
 			case 'F':
 				modeEverything = true;
@@ -101,7 +97,7 @@ public class UploadToDb {
 		if(!( ( (modeNew) && !(modeEverything) && !(modeRemove) ) || 
 			  (!(modeNew) &&   modeEverything &&  !(modeRemove) ) ||
 			  (!(modeNew) && !(modeEverything) &&   modeRemove  ) ) ){
-			System.err.println("\n\nHey Jim, Combinations of MODE ( -n / -F / -r ) not acceptable! \n");
+			System.err.println("\n\nHey Jim, Combinations of MODE -F / -r not acceptable! \n");
 			System.err.println(help);
 			System.exit(1);
 		}
@@ -127,7 +123,7 @@ public class UploadToDb {
 		//Print the MODE of usage
 		if(modeNew) System.out.println("\n\nMODE SELECTED: Insert New Entries\n");
 		if(modeEverything) System.out.println("\n\nMODE SELECTED: Force Insert, which will insert everything in DB\n");
-		if(modeRemove) System.out.println("\n\nMODE SELECTED: Remove entried from DB\n");
+		if(modeRemove) System.out.println("\n\nMODE SELECTED: Remove entries from DB\n");
 		
 		// starting the db handler
 		if (!useOnlineJpa) {
@@ -217,6 +213,8 @@ public class UploadToDb {
 				t.printStackTrace();
 			}
 		}
+		
+		dbh.getEntityManager().close();
 
 
 

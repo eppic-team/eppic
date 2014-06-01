@@ -269,6 +269,8 @@ public class UserJobDBHandler {
 			System.out.print(((end-start)/1000)+"s\n");
 
 		}
+		dbhOffline.getEntityManager().close();
+		dbhOnline.getEntityManager().clear();
 
 	}//end Main
 

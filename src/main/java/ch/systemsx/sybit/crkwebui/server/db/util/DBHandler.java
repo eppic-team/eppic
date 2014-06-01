@@ -52,12 +52,14 @@ public class DBHandler {
 	
 	@PersistenceUnit
 	private EntityManagerFactory emf;
+	private EntityManager em;
 	
 	/**
 	 * Default Constructor : Initializes factory with {@value #DEFAULT_ONLINE_JPA} database
 	 */
 	public DBHandler(){
 		this.emf = Persistence.createEntityManagerFactory(DEFAULT_ONLINE_JPA);
+		this.em = this.emf.createEntityManager();
 	}
 	
 	/**
@@ -66,6 +68,7 @@ public class DBHandler {
 	public DBHandler(String persistenceUnitName){
 		try{
 			this.emf = Persistence.createEntityManagerFactory(persistenceUnitName);
+			this.em = this.emf.createEntityManager();
 		}
 		catch(Throwable e){
 			System.err.println(e.getMessage());
@@ -76,7 +79,7 @@ public class DBHandler {
 	}
 	
 	protected EntityManager getEntityManager(){
-		return this.emf.createEntityManager();
+		return this.em;
 	}
 
 	
@@ -108,7 +111,7 @@ public class DBHandler {
 		entityManager.persist(job);
 		entityManager.getTransaction().commit();
 		
-		entityManager.close();
+		//entityManager.close();
 	
 	}
 	
@@ -134,7 +137,7 @@ public class DBHandler {
 		entityManager.persist(job);
 		entityManager.getTransaction().commit();
 		
-		entityManager.close();
+		//entityManager.close();
 	}
 	
 	/**
@@ -179,11 +182,11 @@ public class DBHandler {
 				}
 			}
 			entityManager.getTransaction().commit();
-			entityManager.close();
+			//entityManager.close();
 			return true;
 		}
 		else {
-			entityManager.close();
+			//entityManager.close();
 			return false;
 		}	
 		
@@ -206,7 +209,7 @@ public class DBHandler {
 		List<JobDB> queryJobList = entityManager.createQuery(cqJob).getResultList();
 		int querySize = queryJobList.size();
 		
-		entityManager.close();
+		//entityManager.close();
 		
 		if(querySize>0) return true;
 		else return false;
@@ -251,7 +254,7 @@ public class DBHandler {
 		cqPDB.select(rootPDB);
 		int pdbScoreNum = orig.createQuery(cqPDB).getResultList().size();
 		
-		orig.close();		
+		//orig.close();		
 		
 		// Add Job to Copier database
 		copier.getTransaction().begin();
@@ -267,7 +270,7 @@ public class DBHandler {
 		else copier.persist(queryJob);
 		
 		copier.getTransaction().commit();	
-		copier.close();
+		//copier.close();
 		
 	}
 	
@@ -288,7 +291,7 @@ public class DBHandler {
 
 		List<String> queryJobList = entityManager.createQuery(criteriaQuery).getResultList();
 		
-		entityManager.close();
+		//entityManager.close();
 		
 		return queryJobList;
 		
@@ -314,7 +317,7 @@ public class DBHandler {
 
 		List<String> queryJobList = entityManager.createQuery(criteriaQuery).getResultList();
 		
-		entityManager.close();
+		//entityManager.close();
 		
 		return queryJobList;
 		
