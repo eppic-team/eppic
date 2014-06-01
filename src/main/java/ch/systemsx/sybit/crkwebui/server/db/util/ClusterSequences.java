@@ -20,13 +20,13 @@ public class ClusterSequences {
 
 		String help = 
 				"Usage: ClusterSequences \n" +
-				" [-l]: sequence cluster levels to do (comma separated) \n"+
-				"  -o : write output to database (by default nothing is written) \n"+
-				" [-a]: number of threads (default 1)\n"; 
+				" [-l]: sequence cluster levels to do (comma separated), default is all levels \n"+
+				" [-a]: number of threads (default 1)\n"+
+				" [-o]: use "+DBHandler.DEFAULT_ONLINE_JPA+" persistence unit instead of "+DBHandler.DEFAULT_OFFLINE_JPA+"\n"; 
 		
 		
 		int numThreads = 1;
-		boolean writeToDb = false;
+		boolean useOnlineJpa = false;
 		int[] clusteringIds = {100,95,90,80,70,60,50,40,30};
 
 		Getopt g = new Getopt("ClusterSequences", args, "l:a:oh?");
@@ -40,11 +40,11 @@ public class ClusterSequences {
 					clusteringIds[i]=Integer.parseInt(levelsStr[i]);
 				}
 				break;
-			case 'o':
-				writeToDb = true;
-				break;
 			case 'a':
 				numThreads = Integer.parseInt(g.getOptarg());
+				break;
+			case 'o':
+				useOnlineJpa = true;
 				break;
 			case 'h':
 				System.out.println(help);
@@ -58,10 +58,20 @@ public class ClusterSequences {
 		}
 		
 		
-		DBHandler dbh = new DBHandler();
+		DBHandler dbh = null;
+		if (useOnlineJpa) {
+			dbh = new DBHandler(DBHandler.DEFAULT_ONLINE_JPA);
+		} else {
+			dbh = new DBHandler(DBHandler.DEFAULT_OFFLINE_JPA);
+		}
 	
-		Map<Integer, ChainClusterDB> allChains = dbh.getAllChainsWithRef();
+		if (!dbh.checkSeqClusterEmpty()) {
+			System.err.println("SeqCluster table is not empty. Exiting.");
+			System.exit(1);
+		}
 		
+		Map<Integer, ChainClusterDB> allChains = dbh.getAllChainsWithRef();
+		System.out.println("Read "+allChains.size()+" chains having pdbCode and UniProt reference");
 		
 		
 		SeqClusterer sc = new SeqClusterer(allChains, numThreads);
@@ -76,8 +86,6 @@ public class ClusterSequences {
 			//sc.writeClustersToFile(clustersList, new File(outDir,"clusters"+clusteringId+".table")); 
 		}
 		
-		
-		if (!writeToDb) return;
 		
 		
 		System.out.println("Writing to db...");
@@ -116,6 +124,10 @@ public class ClusterSequences {
 		System.out.println("Done writing "+allChains.size()+" SeqCluster records");
 	}
 
+	/**
+	 * Converts a list of clusters into a Map of member ids (chainCluster_uid) to 
+	 * cluster ids (1 to n, index of list + 1)  
+	 */
 	private static Map<Integer, Integer> getMapFromList(List<List<String>> clustersList) {
 		Map<Integer, Integer> map = new HashMap<Integer,Integer>();
 		

@@ -73,7 +73,7 @@ public class CompareLattices {
 		}
 		
 		
-		DBHandler dbh = new DBHandler();
+		DBHandler dbh = new DBHandler(DBHandler.DEFAULT_ONLINE_JPA);
 		
 		PdbInfo pdb1 = new PdbInfo(dbh.deserializePdb(pdbCode1));
 		PdbInfo pdb2 = new PdbInfo(dbh.deserializePdb(pdbCode2));

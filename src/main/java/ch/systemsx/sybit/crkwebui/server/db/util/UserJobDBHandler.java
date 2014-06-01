@@ -12,7 +12,7 @@ import java.util.List;
 
 public class UserJobDBHandler {
 
-	private static DBHandler dbhOnline = new DBHandler();
+	private static DBHandler dbhOnline = new DBHandler(DBHandler.DEFAULT_ONLINE_JPA);
 	private static DBHandler dbhOffline = new DBHandler(DBHandler.DEFAULT_OFFLINE_JPA);
 
 	public static boolean isUserJob(String str){
@@ -191,8 +191,8 @@ public class UserJobDBHandler {
 			}
 
 			//Check if jobs are present in the DB
-			if( ((backup || remove) && !dbhOnline.checkfromDB(job) ) ||
-					((restore || removeBackup) && !dbhOffline.checkfromDB(job)) ){
+			if( ((backup || remove) && !dbhOnline.checkJobExist(job) ) ||
+					((restore || removeBackup) && !dbhOffline.checkJobExist(job)) ){
 				System.out.println(" Not present in Database.. Skipping..");
 				continue;
 			}
@@ -200,11 +200,11 @@ public class UserJobDBHandler {
 			try{
 				//MODE BACKUP
 				if(backup){
-					if(dbhOffline.checkfromDB(job)){
+					if(dbhOffline.checkJobExist(job)){
 						System.out.print(" Already present in Offline DB.. ");
 						if (force){
 							System.out.print(" Removing and Copying.. ");
-							dbhOffline.removefromDB(job);
+							dbhOffline.removeJob(job);
 							dbhOnline.copytoDB(dbhOffline, jobDir);
 						}
 						else System.out.print(" Skipping.. ");
@@ -219,11 +219,11 @@ public class UserJobDBHandler {
 
 				//MODE RESTORE
 				if(restore){
-					if(dbhOnline.checkfromDB(job)){
+					if(dbhOnline.checkJobExist(job)){
 						System.out.print(" Already present in Online DB.. ");
 						if (force){
 							System.out.print(" Removing and Copying.. ");
-							dbhOnline.removefromDB(job);
+							dbhOnline.removeJob(job);
 							dbhOffline.copytoDB(dbhOnline, jobDir);
 						}
 						else System.out.print(" Skipping.. ");
@@ -237,9 +237,9 @@ public class UserJobDBHandler {
 
 				//MODE REMOVE
 				if(remove){
-					if(dbhOnline.checkfromDB(job)){
+					if(dbhOnline.checkJobExist(job)){
 						System.out.print(" Present in Online DB.. Removing.. ");
-						dbhOnline.removefromDB(job);
+						dbhOnline.removeJob(job);
 					}
 					else{
 						System.out.print(" Not present in Online DB.. Skipping.. ");
@@ -249,9 +249,9 @@ public class UserJobDBHandler {
 
 				//MODE REMOVE BACKUP
 				if(removeBackup){
-					if(dbhOffline.checkfromDB(job)){
+					if(dbhOffline.checkJobExist(job)){
 						System.out.print(" Present in Offline DB.. Removing.. ");
-						dbhOffline.removefromDB(job);
+						dbhOffline.removeJob(job);
 					}
 					else{
 						System.out.print(" Not present in Offline DB.. Skipping.. ");

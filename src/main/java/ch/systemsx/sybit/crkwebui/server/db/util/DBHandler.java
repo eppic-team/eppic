@@ -55,14 +55,6 @@ public class DBHandler {
 	private EntityManager em;
 	
 	/**
-	 * Default Constructor : Initializes factory with {@value #DEFAULT_ONLINE_JPA} database
-	 */
-	public DBHandler(){
-		this.emf = Persistence.createEntityManagerFactory(DEFAULT_ONLINE_JPA);
-		this.em = this.emf.createEntityManager();
-	}
-	
-	/**
 	 * Constructor
 	 */
 	public DBHandler(String persistenceUnitName){
@@ -72,8 +64,8 @@ public class DBHandler {
 		}
 		catch(Throwable e){
 			System.err.println(e.getMessage());
-			System.err.println("Error in Initializing Entity Manager Factory with persistenceUnit: "+persistenceUnitName);
-			System.err.println("Can you check if the database is really present, and the persistence.xml file contains the unit");
+			System.err.println("Error initializing Entity Manager Factory with persistence unit: "+persistenceUnitName);
+			System.err.println("Please check if the database is really present, and the persistence.xml file contains the unit");
 			System.exit(1);
 		}
 	}
@@ -84,12 +76,11 @@ public class DBHandler {
 
 	
 	/**
-	 * Adds entry to the DataBase when only PdbInfo specified.
-	 * Inserts a pseudo job
+	 * Persists the given PdbInfoDB, using an empty place-holder job
 	 * @param PdbInfoDB
 	 * 
 	 */
-	public void addToDB(PdbInfoDB pdbInfo){
+	public void persistPdbInfo(PdbInfoDB pdbInfo){
 		EntityManager entityManager = this.getEntityManager();
 		entityManager.getTransaction().begin();
 		entityManager.persist(pdbInfo);
@@ -116,12 +107,10 @@ public class DBHandler {
 	}
 	
 	/**
-	 * Adds entry to the DataBase when only pdbCode specified.
-	 * Inserts a pseudo job and no pdbInfo
+	 * Persists a JobDB with given pdbCode, assigning error status to it
 	 * @param String pdbCode
-	 * 
 	 */
-	public void addToDB(String pdbCode){
+	public void persistJob(String pdbCode){
 		EntityManager entityManager = this.getEntityManager();
 		entityManager.getTransaction().begin();
 	
@@ -141,11 +130,11 @@ public class DBHandler {
 	}
 	
 	/**
-	 * Removes entry from the DataBase of a specific JobID
+	 * Removes entry from the DataBase for the given jobID
 	 * @param String jobID
-	 * @return TRUE: if removed; FALSE: if not
+	 * @return true if removed; false if not
 	 */
-	public boolean removefromDB(String jobID){
+	public boolean removeJob(String jobID){
 		EntityManager entityManager = this.getEntityManager();
 
 		CriteriaBuilder cbJob = entityManager.getCriteriaBuilder();
@@ -177,8 +166,8 @@ public class DBHandler {
 					
 				}
 				catch (Throwable e){
-					System.err.println("Error in Removing Job from DB");
-					e.printStackTrace();
+					System.err.println("Error in Removing Job from DB: "+e.getMessage());
+					//e.printStackTrace();
 				}
 			}
 			entityManager.getTransaction().commit();
@@ -193,11 +182,11 @@ public class DBHandler {
 	}
 	
 	/**
-	 * checks for an entry in the DataBase of a specific JobID
+	 * Checks if an entry with the given jobID exists in the DataBase
 	 * @param String jobID
-	 * @return TRUE: if present; FALSE: if not
+	 * @return true if present; false if not
 	 */
-	public boolean checkfromDB(String jobID){
+	public boolean checkJobExist(String jobID){
 		EntityManager entityManager = this.getEntityManager();
 		
 		CriteriaBuilder cbJob = entityManager.getCriteriaBuilder();
@@ -217,8 +206,9 @@ public class DBHandler {
 	}
 	
 	/**
-	 * copies a job from this database to another database
-	 * @param DBHandler object to be copied in; JobID of the job to be copied
+	 * Copies a job from this database to another database
+	 * @param dbhCopier DBHandler object to copy to
+	 * @param jobDir the directory where the webui.dat files for the job resides
 	 * @throws ClassNotFoundException 
 	 * @throws IOException 
 	 * 
@@ -260,7 +250,7 @@ public class DBHandler {
 		copier.getTransaction().begin();
 		
 		if( pdbScoreNum >= 1) {
-			PdbInfoDB queryPDB = this.readFromWebui(jobDir);
+			PdbInfoDB queryPDB = this.readFromSerializedFile(jobDir);
 			copier.persist(queryPDB);
 						
 			queryPDB.setJob(queryJob);
@@ -277,7 +267,7 @@ public class DBHandler {
 	/**
 	 * Returns a list of user-jobs from the database
 	 * @param 
-	 * @return List<String>
+	 * @return 
 	 */
 	public List<String> getUserJobList(){
 		EntityManager entityManager = this.getEntityManager();
@@ -300,7 +290,7 @@ public class DBHandler {
 	/**
 	 * Returns a list of user-jobs from the database after a specified submission date
 	 * @param Date subDate
-	 * @return List<String>
+	 * @return 
 	 */
 	public List<String> getUserJobList(Date afterDate){
 		EntityManager entityManager = this.getEntityManager();
@@ -324,11 +314,11 @@ public class DBHandler {
 	}
 	
 	/**
-	 * Returns a PDBScoreItemDB object after reading it from the job's *.webui.dat file
-	 * @param Directory Path
-	 * @return PDBScoreItemDB Object
+	 * Returns a PdbInfoDB object after reading it from the serialized .webui.dat file
+	 * @param jobDir directory containing the webui.dat file
+	 * @return 
 	 */
-	public PdbInfoDB readFromWebui(File jobDir) throws IOException, ClassNotFoundException{		
+	private PdbInfoDB readFromSerializedFile(File jobDir) throws IOException, ClassNotFoundException{		
 		EntityManager entityManager = this.getEntityManager();
 		
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
@@ -354,6 +344,11 @@ public class DBHandler {
 		return pdbScoreItem;
 	}
 
+	/**
+	 * Deserialize a PdbInfoDB object given its pdbCode
+	 * @param pdbCode
+	 * @return
+	 */
 	public PdbInfoDB deserializePdb(String pdbCode) {
 		CriteriaBuilder cbPDB = this.getEntityManager().getCriteriaBuilder();
 
@@ -371,6 +366,11 @@ public class DBHandler {
 		return queryPDBList.get(0);
 	}
 
+	/**
+	 * Deserialize a List of PdbInfoDB objects given their pdbCodes
+	 * @param pdbCodes
+	 * @return
+	 */
 	public List<PdbInfoDB> deserializePdbList(Collection<String> pdbCodes) {
 		
 		List<PdbInfoDB> list = new ArrayList<PdbInfoDB>();
@@ -387,6 +387,13 @@ public class DBHandler {
 		return list;
 	}
 
+	/**
+	 * Deserialize all PdbInfoDB objects belonging to given clusterId of given 
+	 * clusterLevel 
+	 * @param clusterId
+	 * @param clusterLevel one of the available levels: 100, 95, 90, 80, 70, 60, 50, 40, 30
+	 * @return
+	 */
 	public List<PdbInfoDB> deserializeSeqCluster(int clusterId, int clusterLevel) {
 		Set<String> pdbCodes = new HashSet<String>();
 		
@@ -408,6 +415,13 @@ public class DBHandler {
 		return deserializePdbList(pdbCodes);
 	}
 	
+	/**
+	 * Gets the sequence cluster id for given pdbCode and clusterLevel
+	 * @param pdbCode
+	 * @param repChain
+	 * @param clusterLevel
+	 * @return
+	 */
 	public int getClusteIdForPdbCode(String pdbCode, String repChain, int clusterLevel) {
 		
 		CriteriaBuilder cb = this.getEntityManager().getCriteriaBuilder();
@@ -451,6 +465,11 @@ public class DBHandler {
 		return -1;
 	}
 	
+	/**
+	 * Gets all sequence cluster ids in the database
+	 * @param clusterLevel
+	 * @return
+	 */
 	public Set<Integer> getAllClusterIds(int clusterLevel) {
 		CriteriaBuilder cb = this.getEntityManager().getCriteriaBuilder();
 
@@ -540,6 +559,12 @@ public class DBHandler {
 		return attribute;
 	}
 	
+	/**
+	 * Gets a Map (chainCluster_uids to ChainClusterDB) of all chains in database
+	 * that have non-null pdbCode and hasUniProtRef==true,
+	 * only the pdbCode, repChain, pdbAlignedSeq, msaAlignedSeq and refAlignedSeq fields are read.
+	 * @return
+	 */
 	public Map<Integer, ChainClusterDB> getAllChainsWithRef() {
 			
 		CriteriaBuilder cb = this.getEntityManager().getCriteriaBuilder();
@@ -567,5 +592,31 @@ public class DBHandler {
 			map.put(uid, result);
 		}
 		return map;
+	}
+	
+	/**
+	 * Returns true if SeqCluster table is empty, false otherwise.
+	 * @return
+	 */
+	public boolean checkSeqClusterEmpty() {
+		EntityManager entityManager = this.getEntityManager();
+
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+
+		CriteriaQuery<SeqClusterDB> cq = cb.createQuery(SeqClusterDB.class);
+		Root<SeqClusterDB> root = cq.from(SeqClusterDB.class);
+		
+		cq.multiselect(root.get(SeqClusterDB_.c100),root.get(SeqClusterDB_.c95),root.get(SeqClusterDB_.c90),
+				root.get(SeqClusterDB_.c80),root.get(SeqClusterDB_.c70),root.get(SeqClusterDB_.c60),
+				root.get(SeqClusterDB_.c50),root.get(SeqClusterDB_.c40),root.get(SeqClusterDB_.c30));
+
+		List<SeqClusterDB> results = entityManager.createQuery(cq).getResultList();
+		int size = results.size();
+		
+		if(size==0) 
+			return true;
+	
+		return false;
+
 	}
 }

@@ -129,7 +129,7 @@ public class UploadToDb {
 		if (!useOnlineJpa) {
 			dbh = new DBHandler(DBHandler.DEFAULT_OFFLINE_JPA);
 		} else {
-			dbh = new DBHandler();
+			dbh = new DBHandler(DBHandler.DEFAULT_ONLINE_JPA);
 		}
 		
 		// Start the Process
@@ -159,11 +159,11 @@ public class UploadToDb {
 								
 				// Get the PDB-Score Item to be read
 				File webuiFile = new File(jobDirectory, currentPDB + ".webui.dat");
-				boolean isWuiPresent = webuiFile.isFile();
+				boolean isSerializedFilePresent = webuiFile.isFile();
 				
 				Object toAdd = null;
 				
-				if(isWuiPresent) {
+				if(isSerializedFilePresent) {
 					ObjectInputStream in = new ObjectInputStream(new FileInputStream(webuiFile));
 					PdbInfoDB pdbScoreItem = (PdbInfoDB)in.readObject();
 					in.close();
@@ -176,21 +176,21 @@ public class UploadToDb {
 					
 				//MODE FORCE
 				if (modeEverything) {
-					boolean ifRemoved = dbh.removefromDB(currentPDB);
+					boolean ifRemoved = dbh.removeJob(currentPDB);
 					if (ifRemoved) System.out.print(" Found.. Removing and Updating.. ");
 					else System.out.print(" Not Found.. Adding.. ");
-					if(isWuiPresent) dbh.addToDB((PdbInfoDB) toAdd);
-					else dbh.addToDB((String) toAdd);
+					if(isSerializedFilePresent) dbh.persistPdbInfo((PdbInfoDB) toAdd);
+					else dbh.persistJob((String) toAdd);
 					//continue;
 				}
 				
 				//MODE NEW INSERT
 				if (modeNew){
-					boolean isPresent = dbh.checkfromDB(currentPDB);
+					boolean isPresent = dbh.checkJobExist(currentPDB);
 					if(!isPresent){
 						System.out.print(" Not Present.. Adding.. ");
-						if(isWuiPresent) dbh.addToDB((PdbInfoDB) toAdd);
-						else dbh.addToDB((String) toAdd);
+						if(isSerializedFilePresent) dbh.persistPdbInfo((PdbInfoDB) toAdd);
+						else dbh.persistJob((String) toAdd);
 					}
 					else System.out.print(" Already Present.. Skipping.. ");
 					//continue;
@@ -198,7 +198,7 @@ public class UploadToDb {
 				
 				//MODE REMOVE
 				if (modeRemove) {
-					boolean ifRemoved = dbh.removefromDB(currentPDB);
+					boolean ifRemoved = dbh.removeJob(currentPDB);
 					if (ifRemoved) System.out.print(" Removed.. ");
 					else System.out.print(" Not Found.. ");
 					//continue;

@@ -114,7 +114,7 @@ public class ClusterCrystalForms {
 		}
 
 		
-		DBHandler dbh = new DBHandler();
+		DBHandler dbh = new DBHandler(DBHandler.DEFAULT_ONLINE_JPA);
 
 
 		PrintWriter cfcPw = null;
