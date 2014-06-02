@@ -52,7 +52,6 @@ public class DBHandler {
 	
 	@PersistenceUnit
 	private EntityManagerFactory emf;
-	private EntityManager em;
 	
 	/**
 	 * Constructor
@@ -60,7 +59,7 @@ public class DBHandler {
 	public DBHandler(String persistenceUnitName){
 		try{
 			this.emf = Persistence.createEntityManagerFactory(persistenceUnitName);
-			this.em = this.emf.createEntityManager();
+			
 		}
 		catch(Throwable e){
 			System.err.println(e.getMessage());
@@ -70,8 +69,8 @@ public class DBHandler {
 		}
 	}
 	
-	protected EntityManager getEntityManager(){
-		return this.em;
+	private EntityManager getEntityManager(){
+		return this.emf.createEntityManager();
 	}
 
 	
@@ -102,7 +101,7 @@ public class DBHandler {
 		entityManager.persist(job);
 		entityManager.getTransaction().commit();
 		
-		//entityManager.close();
+		entityManager.close();
 	
 	}
 	
@@ -126,7 +125,7 @@ public class DBHandler {
 		entityManager.persist(job);
 		entityManager.getTransaction().commit();
 		
-		//entityManager.close();
+		entityManager.close();
 	}
 	
 	/**
@@ -171,11 +170,11 @@ public class DBHandler {
 				}
 			}
 			entityManager.getTransaction().commit();
-			//entityManager.close();
+			entityManager.close();
 			return true;
 		}
 		else {
-			//entityManager.close();
+			entityManager.close();
 			return false;
 		}	
 		
@@ -198,7 +197,7 @@ public class DBHandler {
 		List<JobDB> queryJobList = entityManager.createQuery(cqJob).getResultList();
 		int querySize = queryJobList.size();
 		
-		//entityManager.close();
+		entityManager.close();
 		
 		if(querySize>0) return true;
 		else return false;
@@ -244,7 +243,7 @@ public class DBHandler {
 		cqPDB.select(rootPDB);
 		int pdbScoreNum = orig.createQuery(cqPDB).getResultList().size();
 		
-		//orig.close();		
+		orig.close();		
 		
 		// Add Job to Copier database
 		copier.getTransaction().begin();
@@ -260,7 +259,7 @@ public class DBHandler {
 		else copier.persist(queryJob);
 		
 		copier.getTransaction().commit();	
-		//copier.close();
+		copier.close();
 		
 	}
 	
@@ -281,7 +280,7 @@ public class DBHandler {
 
 		List<String> queryJobList = entityManager.createQuery(criteriaQuery).getResultList();
 		
-		//entityManager.close();
+		entityManager.close();
 		
 		return queryJobList;
 		
@@ -307,7 +306,7 @@ public class DBHandler {
 
 		List<String> queryJobList = entityManager.createQuery(criteriaQuery).getResultList();
 		
-		//entityManager.close();
+		entityManager.close();
 		
 		return queryJobList;
 		
@@ -319,9 +318,9 @@ public class DBHandler {
 	 * @return 
 	 */
 	private PdbInfoDB readFromSerializedFile(File jobDir) throws IOException, ClassNotFoundException{		
-		EntityManager entityManager = this.getEntityManager();
+		EntityManager em = this.getEntityManager();
 		
-		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+		CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
 		
 		CriteriaQuery<String> criteriaQuery = criteriaBuilder.createQuery(String.class);
 		Root<JobDB> jobRoot = criteriaQuery.from(JobDB.class);
@@ -329,7 +328,7 @@ public class DBHandler {
 		Predicate condition = criteriaBuilder.equal(jobRoot.get(JobDB_.jobId), jobDir.getName());
 		criteriaQuery.where(condition);
 
-		String pdbID = entityManager.createQuery(criteriaQuery).getSingleResult();
+		String pdbID = em.createQuery(criteriaQuery).getSingleResult();
 		int lastPeriodPos = pdbID.lastIndexOf('.');
 		if (lastPeriodPos >= 0)
 	    {
@@ -341,6 +340,9 @@ public class DBHandler {
 		ObjectInputStream in = new ObjectInputStream(new FileInputStream(webuiFile));
 		PdbInfoDB pdbScoreItem = (PdbInfoDB)in.readObject();
 		in.close();
+		
+		em.close();
+		
 		return pdbScoreItem;
 	}
 
@@ -350,18 +352,20 @@ public class DBHandler {
 	 * @return
 	 */
 	public PdbInfoDB deserializePdb(String pdbCode) {
-		CriteriaBuilder cbPDB = this.getEntityManager().getCriteriaBuilder();
+		EntityManager em = this.getEntityManager();
+		CriteriaBuilder cbPDB = em.getCriteriaBuilder();
 
 		CriteriaQuery<PdbInfoDB> cqPDB = cbPDB.createQuery(PdbInfoDB.class);
 		Root<PdbInfoDB> rootPDB = cqPDB.from(PdbInfoDB.class);
 		cqPDB.where(cbPDB.equal(rootPDB.get(PdbInfoDB_.pdbCode), pdbCode));
 		cqPDB.select(rootPDB);
-		List<PdbInfoDB> queryPDBList = this.getEntityManager().createQuery(cqPDB).getResultList();
+		List<PdbInfoDB> queryPDBList = em.createQuery(cqPDB).getResultList();
 		if (queryPDBList.size()==0) return null;
 		else if (queryPDBList.size()>1) {
 			System.err.println("More than 1 PdbInfoDB returned for given PDB code: "+pdbCode);
 			return null;
 		}
+		em.close();
 		
 		return queryPDBList.get(0);
 	}
@@ -397,7 +401,9 @@ public class DBHandler {
 	public List<PdbInfoDB> deserializeSeqCluster(int clusterId, int clusterLevel) {
 		Set<String> pdbCodes = new HashSet<String>();
 		
-		CriteriaBuilder cb = this.getEntityManager().getCriteriaBuilder();
+		EntityManager em = this.getEntityManager();
+		
+		CriteriaBuilder cb = em.getCriteriaBuilder();
 
 		CriteriaQuery<SeqClusterDB> cq = cb.createQuery(SeqClusterDB.class);
 		Root<SeqClusterDB> root = cq.from(SeqClusterDB.class);
@@ -407,10 +413,12 @@ public class DBHandler {
 		cq.where(cb.equal(root.get(attribute), clusterId));
 		cq.select(root);
 		
-		List<SeqClusterDB> results = this.getEntityManager().createQuery(cq).getResultList();
+		List<SeqClusterDB> results = em.createQuery(cq).getResultList();
 		for (SeqClusterDB result:results) {
 			pdbCodes.add(result.getPdbCode());
 		}
+		
+		em.close();
 		
 		return deserializePdbList(pdbCodes);
 	}
@@ -424,7 +432,9 @@ public class DBHandler {
 	 */
 	public int getClusteIdForPdbCode(String pdbCode, String repChain, int clusterLevel) {
 		
-		CriteriaBuilder cb = this.getEntityManager().getCriteriaBuilder();
+		EntityManager em = this.getEntityManager();
+		
+		CriteriaBuilder cb = em.getCriteriaBuilder();
 
 		CriteriaQuery<SeqClusterDB> cq = cb.createQuery(SeqClusterDB.class);
 		Root<SeqClusterDB> root = cq.from(SeqClusterDB.class);
@@ -432,7 +442,9 @@ public class DBHandler {
 		cq.where(cb.equal(root.get(SeqClusterDB_.pdbCode), pdbCode), cb.equal(root.get(SeqClusterDB_.repChain),repChain));
 		cq.select(root);
 		
-		List<SeqClusterDB> results = this.getEntityManager().createQuery(cq).getResultList();
+		List<SeqClusterDB> results = em.createQuery(cq).getResultList();
+		
+		em.close();
 		
 		if (results.size()==0) return -1;
 		else if (results.size()>1) {
@@ -471,7 +483,10 @@ public class DBHandler {
 	 * @return
 	 */
 	public Set<Integer> getAllClusterIds(int clusterLevel) {
-		CriteriaBuilder cb = this.getEntityManager().getCriteriaBuilder();
+		
+		EntityManager em = this.getEntityManager();
+		
+		CriteriaBuilder cb = em.getCriteriaBuilder();
 
 		CriteriaQuery<SeqClusterDB> cq = cb.createQuery(SeqClusterDB.class);
 		Root<SeqClusterDB> root = cq.from(SeqClusterDB.class);
@@ -484,8 +499,10 @@ public class DBHandler {
 
 		Set<Integer> list = new TreeSet<Integer>();
 
-		List<SeqClusterDB> results = this.getEntityManager().createQuery(cq).getResultList();
+		List<SeqClusterDB> results = em.createQuery(cq).getResultList();
 
+		em.close();
+		
 		int clusterId = -1;
 		for (SeqClusterDB result:results) {
 			switch (clusterLevel) {
@@ -566,8 +583,10 @@ public class DBHandler {
 	 * @return
 	 */
 	public Map<Integer, ChainClusterDB> getAllChainsWithRef() {
-			
-		CriteriaBuilder cb = this.getEntityManager().getCriteriaBuilder();
+		
+		EntityManager em = this.getEntityManager();
+		
+		CriteriaBuilder cb = em.getCriteriaBuilder();
 
 		CriteriaQuery<ChainClusterDB> cq = cb.createQuery(ChainClusterDB.class);
 		Root<ChainClusterDB> root = cq.from(ChainClusterDB.class);
@@ -583,7 +602,9 @@ public class DBHandler {
 				root.get(ChainClusterDB_.msaAlignedSeq),
 				root.get(ChainClusterDB_.refAlignedSeq));
 
-		List<ChainClusterDB> results = this.getEntityManager().createQuery(cq).getResultList();
+		List<ChainClusterDB> results = em.createQuery(cq).getResultList();
+		
+		em.close();
 		
 		Map<Integer, ChainClusterDB> map = new TreeMap<Integer, ChainClusterDB>();
 		
@@ -599,9 +620,9 @@ public class DBHandler {
 	 * @return
 	 */
 	public boolean checkSeqClusterEmpty() {
-		EntityManager entityManager = this.getEntityManager();
+		EntityManager em = this.getEntityManager();
 
-		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaBuilder cb = em.getCriteriaBuilder();
 
 		CriteriaQuery<SeqClusterDB> cq = cb.createQuery(SeqClusterDB.class);
 		Root<SeqClusterDB> root = cq.from(SeqClusterDB.class);
@@ -610,7 +631,10 @@ public class DBHandler {
 				root.get(SeqClusterDB_.c80),root.get(SeqClusterDB_.c70),root.get(SeqClusterDB_.c60),
 				root.get(SeqClusterDB_.c50),root.get(SeqClusterDB_.c40),root.get(SeqClusterDB_.c30));
 
-		List<SeqClusterDB> results = entityManager.createQuery(cq).getResultList();
+		List<SeqClusterDB> results = em.createQuery(cq).getResultList();
+		
+		em.close();
+		
 		int size = results.size();
 		
 		if(size==0) 
@@ -618,5 +642,18 @@ public class DBHandler {
 	
 		return false;
 
+	}
+	
+	/**
+	 * Persists the given SeqClusterDB
+	 * @param seqCluster
+	 */
+	public void persistSeqCluster(SeqClusterDB seqCluster) {
+		EntityManager em = this.getEntityManager();
+				
+		em.getTransaction().begin();
+		em.persist(seqCluster);
+		em.getTransaction().commit();
+		em.close();
 	}
 }

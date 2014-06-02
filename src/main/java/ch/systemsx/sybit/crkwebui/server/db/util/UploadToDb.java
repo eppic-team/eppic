@@ -16,29 +16,30 @@ public class UploadToDb {
 
 	private static DBHandler dbh;
 	
+	// the name of the dir that is the root of the divided dirs (indexed by the pdbCode middle 2-letters) 
+	private static final String DIVIDED_ROOT = "divided";
 	
-	/**
-	 * @param args
-	 * @throws IOException 
-	 */
-
 	public static void main(String[] args) throws IOException {
 		
 		String help = 
 				"Usage: UploadToDB\n" +
 				"Uploads a set of eppic output serialized files to database specified in "+DBHandler.DEFAULT_OFFLINE_JPA+" persistence unit\n" +
-				"  -d <dir>  	: Root Directory of eppic output files with subdirectories as PDB codes \n" +
-				" [-f <file>] 	: File specifying the sub-directories to be used from output directory \n" +
-				"                 (Default: Uses all files in the root directory) \n" +
-				" [-o]          : Use the "+DBHandler.DEFAULT_ONLINE_JPA+" persistence unit instead of "+DBHandler.DEFAULT_OFFLINE_JPA+" \n" +
+				"  -d <dir>     : root directory of eppic output files with subdirectories as PDB codes \n" +
+				" [-l]          : if specified subdirs under root (-d) are considered to be in PDB divided layout\n"+
+				"                 (this affects the behaviour of -d and -f).\n"+
+				"                 Default: subdirs under root are taken directly as PDB codes \n"+
+				" [-f <file>]   : file specifying a list of PDB codes indicating subdirs of root \n"+
+				"                 directory to take (default: uses all subdirs in the root directory) \n" +
+				" [-o]          : use the "+DBHandler.DEFAULT_ONLINE_JPA+" persistence unit instead of "+DBHandler.DEFAULT_OFFLINE_JPA+" \n" +
 				" OPERATION MODE\n" +
 				" Default operation: only entries not already present in database will be inserted \n"+
-				" [-F]          : Forces everything chosen to be inserted, deletes previous entries if present\n " +
-				" [-r]          : Removes the specified entries from database\n";
+				" [-F]          : forces everything chosen to be inserted, deletes previous entries if present\n" +
+				" [-r]          : removes the specified entries from database\n";
 
+		boolean isDividedLayout = false;
+		
 		File jobDirectoriesRoot = null;
-		File choosefromFile = null;
-		boolean choosefrom = false;
+		File choosefromFile = null;		
 		
 		boolean modeNew = true;
 		boolean modeEverything = false;
@@ -46,15 +47,17 @@ public class UploadToDb {
 		
 		boolean useOnlineJpa = false;
 
-		Getopt g = new Getopt("UploadToDB", args, "d:f:oFrh?");
+		Getopt g = new Getopt("UploadToDB", args, "d:lf:oFrh?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
 			case 'd':
 				jobDirectoriesRoot = new File(g.getOptarg());
 				break;
+			case 'l':
+				isDividedLayout = true;
+				break;
 			case 'f':
-				choosefrom = true;
 				choosefromFile = new File(g.getOptarg());
 				break;
 			case 'o':
@@ -87,11 +90,6 @@ public class UploadToDb {
 			System.exit(1);
 		}
 		
-		if ( choosefrom && choosefromFile == null ){
-			System.err.println("\n\nHey Jim, Option -f not specified correctly! \n");
-			System.err.println(help);
-			System.exit(1);
-		}
 		
 		//only one of the three should be true
 		if(!( ( (modeNew) && !(modeEverything) && !(modeRemove) ) || 
@@ -104,26 +102,34 @@ public class UploadToDb {
 		
 		// Get the Directories to be processed
 		File[] jobsDirectories;
-		if(choosefrom == true){
-			BufferedReader choosefromFileRead = new BufferedReader(new FileReader(choosefromFile));
+		if(choosefromFile!=null){
+			BufferedReader br = new BufferedReader(new FileReader(choosefromFile));
 			String line;
 			List<File> chosenFilesList = new ArrayList<File>();
-			while ((line=choosefromFileRead.readLine())!=null) {
-				File chosenFile = new File(jobDirectoriesRoot, line);
-				chosenFilesList.add(chosenFile);
+			while ((line=br.readLine())!=null) {
+				if (line.trim().isEmpty()) continue;
+				if (line.startsWith("#")) continue; // comments are allowed in file
+				
+				chosenFilesList.add(getDirectory(isDividedLayout, jobDirectoriesRoot, line));
 			}
-			choosefromFileRead.close();
+			br.close();
 			
 			jobsDirectories = chosenFilesList.toArray(new File[chosenFilesList.size()]);
 		}
 		else {
-			jobsDirectories = jobDirectoriesRoot.listFiles();
+			jobsDirectories = listAllDirs(isDividedLayout, jobDirectoriesRoot);
 		}
 		
 		//Print the MODE of usage
 		if(modeNew) System.out.println("\n\nMODE SELECTED: Insert New Entries\n");
 		if(modeEverything) System.out.println("\n\nMODE SELECTED: Force Insert, which will insert everything in DB\n");
 		if(modeRemove) System.out.println("\n\nMODE SELECTED: Remove entries from DB\n");
+		
+		if (isDividedLayout) {
+			System.out.println("Directories under "+jobDirectoriesRoot+" will be considered to have PDB divided layout, i.e. "+jobDirectoriesRoot+File.separatorChar+DIVIDED_ROOT+File.separatorChar+"<PDB-code-middle-2-letters>");
+		} else {
+			System.out.println("Directories under "+jobDirectoriesRoot+" will be considered to be PDB codes directly, no PDB divided layout will be used. ");
+		}
 		
 		// starting the db handler
 		if (!useOnlineJpa) {
@@ -133,18 +139,19 @@ public class UploadToDb {
 		}
 		
 		// Start the Process
-		for (File jobDirectory : jobsDirectories)
-		{	
+		for (File jobDirectory : jobsDirectories) {
+			
 			//Check if it really is a directory
 			if (!jobDirectory.isDirectory()){
-				if(choosefrom == true)	System.err.println("Warning: "+jobDirectory.getName()+" specified in JobsFile, " +
+				if(choosefromFile!=null) 
+					System.err.println("Warning: "+jobDirectory.getName()+" specified in JobsFile, " +
 															"but directory is not present, Skipping");
 				continue;
 			}
 			
 			//Check for 4 letter code directories starting with a number
 			if (!jobDirectory.getName().matches("^\\d\\w\\w\\w$")){
-				System.out.println("Skipping Directory: " + jobDirectory.getName());
+				System.out.println("Dir name doesn't look like a PDB code, skipping directory " + jobDirectory);
 				continue; 
 			}
 			
@@ -214,14 +221,34 @@ public class UploadToDb {
 			}
 		}
 		
-		dbh.getEntityManager().close();
-
-
-
-		
-
 
 	}
+	
+	private static File[] listAllDirs(boolean isDividedLayout, File rootDir) {
+		if (isDividedLayout) {
+			File dividedRoot = new File(rootDir,DIVIDED_ROOT);
+			
+			List<File> allDirs = new ArrayList<File>();
+			
+			for (File indexDir:dividedRoot.listFiles()) {
+				for (File dir:indexDir.listFiles()) {
+					allDirs.add(dir);
+				}
+			}
+						
+			return allDirs.toArray(new File[allDirs.size()]);
+			
+		} else {
+			return rootDir.listFiles();
+		}
+	}
 
-
+	private static File getDirectory(boolean isDividedLayout, File rootDir, String pdbCode) {
+		if (isDividedLayout) {		
+			String index = pdbCode.substring(1,	3);
+			return new File(rootDir, DIVIDED_ROOT+File.separatorChar+index+File.separatorChar+pdbCode);
+		} else {			
+			return new File(rootDir, pdbCode);
+		}
+	}
 }

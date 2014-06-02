@@ -5,8 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import javax.persistence.EntityManager;
-
 import eppic.model.ChainClusterDB;
 import eppic.model.SeqClusterDB;
 import eppic.tools.SeqClusterer;
@@ -90,9 +88,10 @@ public class ClusterSequences {
 		
 		System.out.println("Writing to db...");
 		
-		EntityManager entityManager = dbh.getEntityManager();
+		
 		
 		for (int chainClusterId:allChains.keySet()) {
+			
 			SeqClusterDB seqCluster = new SeqClusterDB(
 					allMaps.get(100).get(chainClusterId),
 					allMaps.get(95).get(chainClusterId),
@@ -114,13 +113,11 @@ public class ClusterSequences {
 			//		+" "+seqCluster.getC30()+" "+seqCluster.getPdbCode()+" "+seqCluster.getRepChain()+" "+seqCluster.getChainCluster().getUid());
 			//seqClusters.add(seqCluster);
 			
-			entityManager.getTransaction().begin();
-			entityManager.persist(seqCluster);
-			entityManager.getTransaction().commit();
+			dbh.persistSeqCluster(seqCluster);
 			
 		}
 		
-		entityManager.close();
+		
 		System.out.println("Done writing "+allChains.size()+" SeqCluster records");
 	}
 
