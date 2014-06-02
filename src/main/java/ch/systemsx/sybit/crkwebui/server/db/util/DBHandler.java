@@ -182,22 +182,29 @@ public class DBHandler {
 	
 	/**
 	 * Checks if an entry with the given jobID exists in the DataBase
+	 * Note this returns true whenever the query returns at least 1 record, i.e. it doesn't guarantee
+	 * that the entry is complete with data present in all cascading tables
 	 * @param String jobID
 	 * @return true if present; false if not
 	 */
 	public boolean checkJobExist(String jobID){
-		EntityManager entityManager = this.getEntityManager();
+		EntityManager em = this.getEntityManager();
 		
-		CriteriaBuilder cbJob = entityManager.getCriteriaBuilder();
+		CriteriaBuilder cbJob = em.getCriteriaBuilder();
 
 		CriteriaQuery<JobDB> cqJob = cbJob.createQuery(JobDB.class);
 		Root<JobDB> rootJob = cqJob.from(JobDB.class);
 		cqJob.where(cbJob.equal(rootJob.get(JobDB_.jobId), jobID));
-		cqJob.select(rootJob);
-		List<JobDB> queryJobList = entityManager.createQuery(cqJob).getResultList();
+		//cqJob.select(rootJob);
+		
+		// in order to make the query light-weight we only take these 2 fields for which there is 
+		// a corresponding constructor in JobDB
+		// with the simple 'select' above the query is a monster with many joins (following the full hierarchy of Job, PdbInfo etc) 
+		cqJob.multiselect(rootJob.get(JobDB_.inputName), rootJob.get(JobDB_.inputType));
+		List<JobDB> queryJobList = em.createQuery(cqJob).getResultList();
 		int querySize = queryJobList.size();
 		
-		entityManager.close();
+		em.close();
 		
 		if(querySize>0) return true;
 		else return false;

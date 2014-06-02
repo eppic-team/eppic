@@ -19,6 +19,9 @@ public class UploadToDb {
 	// the name of the dir that is the root of the divided dirs (indexed by the pdbCode middle 2-letters) 
 	private static final String DIVIDED_ROOT = "divided";
 	
+	// after this number of entry uploads time statistics will be produced
+	private static final int TIME_STATS_EVERY = 100;
+	
 	public static void main(String[] args) throws IOException {
 		
 		String help = 
@@ -139,13 +142,18 @@ public class UploadToDb {
 		}
 		
 		// Start the Process
+		int i = -1;
+		long avgTimeStart = 0;
+		long avgTimeEnd = 0;
+		
 		for (File jobDirectory : jobsDirectories) {
+			i++;
 			
 			//Check if it really is a directory
 			if (!jobDirectory.isDirectory()){
 				if(choosefromFile!=null) 
-					System.err.println("Warning: "+jobDirectory.getName()+" specified in JobsFile, " +
-															"but directory is not present, Skipping");
+					System.err.println("Warning: "+jobDirectory.getName()+" specified in list file (-f), " +
+															"but directory "+jobDirectory+"is not present, Skipping");
 				continue;
 			}
 			
@@ -213,6 +221,15 @@ public class UploadToDb {
 				
 				long end = System.currentTimeMillis();
 				System.out.print(((end-start)/1000)+"s\n");
+				
+				if (i%TIME_STATS_EVERY==0) {
+					avgTimeEnd = System.currentTimeMillis();
+					
+					if (i!=0) // no statistics before starting
+						System.out.println("Last "+TIME_STATS_EVERY+" entries in "+((avgTimeEnd-avgTimeStart)/1000)+" s");
+					
+					avgTimeStart = System.currentTimeMillis();
+				}
 				
 			}
 			catch(Throwable t)
