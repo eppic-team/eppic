@@ -20,15 +20,16 @@ public class UploadToDb {
 	private static final String DIVIDED_ROOT = "divided";
 	
 	// after this number of entry uploads time statistics will be produced
-	private static final int TIME_STATS_EVERY = 100;
+	private static final int TIME_STATS_EVERY1 = 100;
+	private static final int TIME_STATS_EVERY2 = 1000;
 	
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) {
 		
 		String help = 
 				"Usage: UploadToDB\n" +
 				"Uploads a set of eppic output serialized files to database specified in "+DBHandler.DEFAULT_OFFLINE_JPA+" persistence unit\n" +
 				"  -d <dir>     : root directory of eppic output files with subdirectories as PDB codes \n" +
-				" [-l]          : if specified subdirs under root (-d) are considered to be in PDB divided layout\n"+
+				" [-l]          : if specified subdirs under root dir (-d) are considered to be in PDB divided layout\n"+
 				"                 (this affects the behaviour of -d and -f).\n"+
 				"                 Default: subdirs under root are taken directly as PDB codes \n"+
 				" [-f <file>]   : file specifying a list of PDB codes indicating subdirs of root \n"+
@@ -95,9 +96,9 @@ public class UploadToDb {
 		
 		
 		//only one of the three should be true
-		if(!( ( (modeNew) && !(modeEverything) && !(modeRemove) ) || 
-			  (!(modeNew) &&   modeEverything &&  !(modeRemove) ) ||
-			  (!(modeNew) && !(modeEverything) &&   modeRemove  ) ) ){
+		if(!( ( modeNew && !modeEverything && !modeRemove ) || 
+			  (!modeNew &&  modeEverything && !modeRemove ) ||
+			  (!modeNew && !modeEverything &&  modeRemove ) ) ){
 			System.err.println("\n\nHey Jim, Combinations of MODE -F / -r not acceptable! \n");
 			System.err.println(help);
 			System.exit(1);
@@ -106,17 +107,11 @@ public class UploadToDb {
 		// Get the Directories to be processed
 		File[] jobsDirectories;
 		if(choosefromFile!=null){
-			BufferedReader br = new BufferedReader(new FileReader(choosefromFile));
-			String line;
+			List<String> pdbCodes = readListFile(choosefromFile);
 			List<File> chosenFilesList = new ArrayList<File>();
-			while ((line=br.readLine())!=null) {
-				if (line.trim().isEmpty()) continue;
-				if (line.startsWith("#")) continue; // comments are allowed in file
-				
-				chosenFilesList.add(getDirectory(isDividedLayout, jobDirectoriesRoot, line));
+			for (String pdbCode:pdbCodes) {
+				chosenFilesList.add(getDirectory(isDividedLayout, jobDirectoriesRoot, pdbCode));
 			}
-			br.close();
-			
 			jobsDirectories = chosenFilesList.toArray(new File[chosenFilesList.size()]);
 		}
 		else {
@@ -143,8 +138,12 @@ public class UploadToDb {
 		
 		// Start the Process
 		int i = -1;
-		long avgTimeStart = 0;
-		long avgTimeEnd = 0;
+		long avgTimeStart1 = 0;
+		long avgTimeEnd1 = 0;
+		long avgTimeStart2 = 0;
+		long avgTimeEnd2 = 0;
+		
+		long totalStart = System.currentTimeMillis();
 		
 		for (File jobDirectory : jobsDirectories) {
 			i++;
@@ -162,82 +161,99 @@ public class UploadToDb {
 				System.out.println("Dir name doesn't look like a PDB code, skipping directory " + jobDirectory);
 				continue; 
 			}
-			
-			try 
-			{
-				System.out.print(jobDirectory.getName()+" ");
+
+
+			System.out.print(jobDirectory.getName()+" ");
+
+			long start = System.currentTimeMillis();
+
+			String currentPDB = jobDirectory.getName();
+
+
+			// Get the PDB-Score Item to be read
+			File webuiFile = new File(jobDirectory, currentPDB + ".webui.dat");
+			boolean isSerializedFilePresent = webuiFile.isFile();
+
+			Object toAdd = null;
+
+			if(isSerializedFilePresent) {
 				
-				long start = System.currentTimeMillis();
-				
-				String currentPDB = jobDirectory.getName();
-				
-								
-				// Get the PDB-Score Item to be read
-				File webuiFile = new File(jobDirectory, currentPDB + ".webui.dat");
-				boolean isSerializedFilePresent = webuiFile.isFile();
-				
-				Object toAdd = null;
-				
-				if(isSerializedFilePresent) {
+				PdbInfoDB pdbScoreItem = null;
+				try {
 					ObjectInputStream in = new ObjectInputStream(new FileInputStream(webuiFile));
-					PdbInfoDB pdbScoreItem = (PdbInfoDB)in.readObject();
+					pdbScoreItem = (PdbInfoDB)in.readObject();
 					in.close();
-					
-					toAdd = pdbScoreItem;
+				} catch (IOException e) {
+					System.err.println("Problem reading serialized file, skipping entry"+webuiFile+". Error: "+e.getMessage());
+					continue;
+				} catch (ClassNotFoundException e) {
+					System.err.println("Problem reading serialized file, skipping entry"+webuiFile+". Error: "+e.getMessage());					
+					continue;
 				}
-				else {
-					toAdd = currentPDB;
-				}
-					
-				//MODE FORCE
-				if (modeEverything) {
-					boolean ifRemoved = dbh.removeJob(currentPDB);
-					if (ifRemoved) System.out.print(" Found.. Removing and Updating.. ");
-					else System.out.print(" Not Found.. Adding.. ");
+
+				toAdd = pdbScoreItem;
+			}
+			else {
+				toAdd = currentPDB;
+			}
+
+			//MODE FORCE
+			if (modeEverything) {
+				boolean ifRemoved = dbh.removeJob(currentPDB);
+				if (ifRemoved) System.out.print(" Found.. Removing and Updating.. ");
+				else System.out.print(" Not Found.. Adding.. ");
+				if(isSerializedFilePresent) dbh.persistPdbInfo((PdbInfoDB) toAdd);
+				else dbh.persistJob((String) toAdd);
+				//continue;
+			}
+
+			//MODE NEW INSERT
+			if (modeNew){
+				boolean isPresent = dbh.checkJobExist(currentPDB);
+				if(!isPresent){
+					System.out.print(" Not Present.. Adding.. ");
 					if(isSerializedFilePresent) dbh.persistPdbInfo((PdbInfoDB) toAdd);
 					else dbh.persistJob((String) toAdd);
-					//continue;
 				}
-				
-				//MODE NEW INSERT
-				if (modeNew){
-					boolean isPresent = dbh.checkJobExist(currentPDB);
-					if(!isPresent){
-						System.out.print(" Not Present.. Adding.. ");
-						if(isSerializedFilePresent) dbh.persistPdbInfo((PdbInfoDB) toAdd);
-						else dbh.persistJob((String) toAdd);
-					}
-					else System.out.print(" Already Present.. Skipping.. ");
-					//continue;
-				}
-				
-				//MODE REMOVE
-				if (modeRemove) {
-					boolean ifRemoved = dbh.removeJob(currentPDB);
-					if (ifRemoved) System.out.print(" Removed.. ");
-					else System.out.print(" Not Found.. ");
-					//continue;
-				}
-				
-				long end = System.currentTimeMillis();
-				System.out.print(((end-start)/1000)+"s\n");
-				
-				if (i%TIME_STATS_EVERY==0) {
-					avgTimeEnd = System.currentTimeMillis();
-					
-					if (i!=0) // no statistics before starting
-						System.out.println("Last "+TIME_STATS_EVERY+" entries in "+((avgTimeEnd-avgTimeStart)/1000)+" s");
-					
-					avgTimeStart = System.currentTimeMillis();
-				}
-				
+				else System.out.print(" Already Present.. Skipping.. ");
+				//continue;
 			}
-			catch(Throwable t)
-			{
-				t.printStackTrace();
+
+			//MODE REMOVE
+			if (modeRemove) {
+				boolean ifRemoved = dbh.removeJob(currentPDB);
+				if (ifRemoved) System.out.print(" Removed.. ");
+				else System.out.print(" Not Found.. ");
+				//continue;
 			}
+
+			long end = System.currentTimeMillis();
+			System.out.print(((end-start)/1000)+"s\n");
+
+			if (i%TIME_STATS_EVERY1==0) {
+				avgTimeEnd1 = System.currentTimeMillis();
+
+				if (i!=0) // no statistics before starting
+					System.out.println("Last "+TIME_STATS_EVERY1+" entries in "+((avgTimeEnd1-avgTimeStart1)/1000)+" s");
+
+				avgTimeStart1 = System.currentTimeMillis();
+			}
+
+			if (i%TIME_STATS_EVERY2==0) {
+				avgTimeEnd2 = System.currentTimeMillis();
+
+				if (i!=0) // no statistics before starting
+					System.out.println("Last "+TIME_STATS_EVERY2+" entries in "+((avgTimeEnd2-avgTimeStart2)/1000)+" s");
+
+				avgTimeStart2 = System.currentTimeMillis();
+			}
+
 		}
 		
+		long totalEnd = System.currentTimeMillis();
+		
+		System.out.println("Completed all "+jobsDirectories.length+" entries in "+((totalEnd-totalStart)/1000)+" s");
+
 
 	}
 	
@@ -267,5 +283,27 @@ public class UploadToDb {
 		} else {			
 			return new File(rootDir, pdbCode);
 		}
+	}
+	
+	private static List<String> readListFile(File file) {
+		
+		List<String> pdbCodes = new ArrayList<String>();
+
+		try {
+			BufferedReader br = new BufferedReader(new FileReader(file));
+			String line;
+
+			while ((line=br.readLine())!=null) {
+				if (line.trim().isEmpty()) continue;
+				if (line.startsWith("#")) continue; // comments are allowed in file
+				pdbCodes.add(line);
+
+			}
+			br.close();
+		} catch (IOException e) {
+			System.err.println("Problem reading list file "+file+", can't continue");
+			System.exit(1);
+		}
+		return pdbCodes;
 	}
 }
