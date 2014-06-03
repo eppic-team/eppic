@@ -17,7 +17,7 @@ public class ChainClusterDAOJpaTest {
     public void testGetPdbSearchItems() throws DaoException {
 	ChainClusterDAOJpa dao = new ChainClusterDAOJpa();
 	List<PDBSearchResult> results = dao.getPdbSearchItemsForUniProt("P30340");
-	List<PDBSearchResult> results2 = dao.getPdbSearchItems("1smt", "A", SequenceClusterType.C100);
+	List<PDBSearchResult> results2 = dao.getPdbSearchItems("1smt", "A", SequenceClusterType.C95);
 	
 	assertEquals("the length of the two result lists are not the same", results2.size(), results.size());
 	for(int i = 0; i < results.size(); i++)
