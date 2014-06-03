@@ -21,9 +21,7 @@ public class SeqClusterer {
 	private static final String 	BLASTCLUST_SAVE_SUFFIX = ".blastclust.save";
 	private static final String		IN_FASTA_SUFFIX = "all_seqs.fa";
 	
-	// blastclust complains about too short sequences
-	private static final int MIN_LENGTH = 8;
-
+	
 	
 	private static final boolean	DEBUG = true;
 	
@@ -44,7 +42,8 @@ public class SeqClusterer {
 	public SeqClusterer(Map<Integer,ChainClusterDB> allChains, int numThreads) throws IOException {
 		
 		inFastaFile = File.createTempFile(BLASTCLUST_BASENAME, IN_FASTA_SUFFIX);
-		writeFastaFile(allChains, MIN_LENGTH);
+		writeFastaFile(allChains);
+		System.out.println("Wrote FASTA file "+inFastaFile);
 		
 		this.numThreads = numThreads;
 		this.params = loadConfigFile();
@@ -60,6 +59,14 @@ public class SeqClusterer {
 		
 	}
 	
+	public SeqClusterer(Map<Integer,ChainClusterDB> allChains, File saveFile) throws IOException {
+		
+		this.params = loadConfigFile();
+		this.blastRunner = new BlastRunner(null);
+		this.saveFileComputed = true;
+		
+		this.saveFile = saveFile;
+	}
 	
 	
 	public List<List<String>> clusterThem(int clusteringId) throws IOException, InterruptedException, BlastException {
@@ -122,21 +129,21 @@ public class SeqClusterer {
 		pw.close();
 	}
 	
-	public void writeFastaFile(Map<Integer, ChainClusterDB> allChains, int minLength) throws FileNotFoundException {
+	public void writeFastaFile(Map<Integer, ChainClusterDB> allChains) throws FileNotFoundException {
 		PrintWriter pw = new PrintWriter(inFastaFile);
-		int count = 0;
+		
 		for (int uid:allChains.keySet()) {
 			ChainClusterDB chain = allChains.get(uid);
 			String seq = chain.getPdbAlignedSeq().replaceAll("-", "");
-			if (seq.length()>minLength) {
-				pw.println(">"+uid);
-				pw.println(seq);
-				count++;
-			}
+			
+			pw.println(">"+uid);
+			pw.println(seq);
+		
+			
 		}
 		pw.close();
 		
-		System.out.println("Wrote "+count+" chains (length greater than "+minLength+") to FASTA file: "+inFastaFile);
+		
 	}
 	
 	private EppicParams loadConfigFile() {
