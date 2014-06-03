@@ -252,11 +252,7 @@ public class MatchPisaToEppic {
 				} catch (FileFormatException e) {
 					System.err.println("Problem reading file for pdb "+pdbCode+", error: "+e.getMessage());
 					continue;
-				} catch (Exception e) {
-					System.err.println("Unexpected problem ["+e.getClass().getCanonicalName()+"] for pdb "+pdbCode+", error: "+
-										e.getMessage());
-					continue;
-				}
+				} 
 			}
 			
 		}

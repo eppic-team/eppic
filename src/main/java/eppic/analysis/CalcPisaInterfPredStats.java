@@ -104,7 +104,7 @@ public class CalcPisaInterfPredStats {
 			PisaAsmSetList pal = asms.get(pdbCode);
 			PisaInterfaceList pil = interfs.get(pdbCode);
 			
-			OligomericPrediction op = pal.getOligomericPred();
+			OligomericPrediction op = pal.getOligomericPred(pil);
 			
 			// we first report about oligomeric prediction
 			System.out.println(pdbCode+"\t"+op.getMmSize());

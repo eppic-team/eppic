@@ -73,6 +73,8 @@ public class SeqClusterer {
 
 		if (!saveFileComputed) {
 			
+			System.out.println("Running initial blastclust, this will take long...");
+			
 			long start = System.currentTimeMillis();
 			
 			clusterslist = blastRunner.runBlastclust(

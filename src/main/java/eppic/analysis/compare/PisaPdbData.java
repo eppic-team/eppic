@@ -56,7 +56,7 @@ public class PisaPdbData {
 	private Map<Integer, CallType> setPisaCalls(){
 		Map<Integer, CallType> map = new TreeMap<Integer, CallType>();
 
-		OligomericPrediction op = this.assemblySetList.getOligomericPred();
+		OligomericPrediction op = this.assemblySetList.getOligomericPred(this.pisaInterfaces );
 		int assemSize = op.getMmSize();
 
 		if(assemSize == -1){
