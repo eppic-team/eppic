@@ -236,7 +236,7 @@ public class ChainCluster implements Serializable {
 		
 		String chainsStr = null;
 		chainsStr = memberChains.replaceAll(repChain+",", ""); // if the rep chain is not the last one
-		chainsStr = chainsStr.replaceAll(repChain, ""); // in case the rep chain was the last one 
+		chainsStr = chainsStr.replaceAll(","+repChain, ""); // in case the rep chain was the last one 
 		return chainsStr;
 	}
 
