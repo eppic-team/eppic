@@ -33,7 +33,11 @@ public class InterfaceMatcher {
 	}
 	
 	public int getNumOurInterfaces() {
-		return this.ourInterfaceClusters.size();
+		int count = 0;
+		for (InterfaceClusterDB ic:ourInterfaceClusters) {
+			count+=ic.getInterfaces().size();
+		}
+		return count;
 	}
 	
 	public int getNumTheirInterfaces() {
