@@ -50,7 +50,7 @@ public class EnumerateInterfaces {
 	
 	private static final int N_SPHERE_POINTS = 3000;
 	
-	private static final double MIN_AREA_TO_KEEP = 35;
+	private static final double MIN_AREA_TO_KEEP = 0;
 	
 	private static final double CLUSTERING_CUTOFF = 2.0;
 	private static final int MINATOMS_CLUSTERING = 10;
@@ -74,7 +74,6 @@ public class EnumerateInterfaces {
 			" [-s]        : write a serialized interfaces.dat file to output dir given\n" +
 			"               in -w\n" +
 			" [-n]        : non-polymer chains will also be considered\n" +
-			" [-r]        : don't use redundancy elimination\n" +
 			" [-d]        : more verbose output for debugging\n\n";
 		
 		String pdbStr = null;
@@ -84,8 +83,7 @@ public class EnumerateInterfaces {
 		boolean debug = false;
 		boolean serialize = false;
 		boolean nonPoly = false;
-		boolean withRedundancyElimination = true;
-
+		
 		Getopt g = new Getopt("enumerateInterfaces", args, "i:w:t:lsnrdh?");
 		int c;
 		while ((c = g.getopt()) != -1) {
@@ -107,9 +105,6 @@ public class EnumerateInterfaces {
 				break;
 			case 'n':
 				nonPoly = true;
-				break;
-			case 'r':
-				withRedundancyElimination = false;
 				break;
 			case 'd':
 				debug = true;
@@ -185,7 +180,6 @@ public class EnumerateInterfaces {
 		long start = System.currentTimeMillis();
 		InterfacesFinder interfFinder = new InterfacesFinder(pdb);
 		interfFinder.setDebug(debug);
-		interfFinder.setWithRedundancyElimination(withRedundancyElimination);
 
 		ChainInterfaceList interfaces = interfFinder.getAllInterfaces(CUTOFF, N_SPHERE_POINTS, nThreads, true, nonPoly, CONSIDER_COFACTORS, MIN_AREA_TO_KEEP);
 		
