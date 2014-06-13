@@ -250,7 +250,13 @@ public class Main {
 			}
 			
 			if (tooManyClashes) {
-				throw new EppicException(null, "Too many clashes in at least one interface, most likely there is an error in this structure. "+msg , true);				
+				String excptionMsg = null;
+				if (params.isInputAFile()) {
+					excptionMsg = "Too many clashes in at least one interface, most likely there is an error in this structure. Please check that the CRYST1 record is correct. "+msg;
+				} else {
+					excptionMsg = "Too many clashes in at least one interface, most likely there is an error in this structure. "+msg; 
+				}
+				throw new EppicException(null, excptionMsg, true);				
 			} else { 
 				LOGGER.warn(msg);
 			}
