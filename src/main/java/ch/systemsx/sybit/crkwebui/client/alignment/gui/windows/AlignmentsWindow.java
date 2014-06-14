@@ -27,20 +27,18 @@ public class AlignmentsWindow extends ResizableWindow
 	private AlignmentsGridPanel gridContainer;
 
 	
-	public AlignmentsWindow(WindowData windowData,
-			ChainCluster chainCluster,
-			String pdbName) 
-	{
-		super(ALIGNMENT_WINDOW_DEFAULT_WIDTH,
-				ALIGNMENT_WINDOW_DEFAULT_HEIGHT,
-				windowData);
+	public AlignmentsWindow(WindowData windowData, ChainCluster chainCluster) {
+		
+		super(ALIGNMENT_WINDOW_DEFAULT_WIDTH, ALIGNMENT_WINDOW_DEFAULT_HEIGHT, windowData);
 		
 		this.chainCluster = chainCluster;
 		this.setHideOnButtonClick(true);
 		
 		headerPanel = new AlignmentHeaderPanel();		
-		gridContainer = new AlignmentsGridPanel(chainCluster, pdbName, 
-												ALIGNMENT_WINDOW_DEFAULT_WIDTH, ALIGNMENT_WINDOW_DEFAULT_HEIGHT - HEADER_HEIGHT);
+		gridContainer = new AlignmentsGridPanel(chainCluster, 
+												ALIGNMENT_WINDOW_DEFAULT_WIDTH, 
+												ALIGNMENT_WINDOW_DEFAULT_HEIGHT - HEADER_HEIGHT);
+		
 		DockLayoutPanel dock = new DockLayoutPanel(Unit.PX);
 		dock.addNorth(headerPanel, HEADER_HEIGHT);
 		

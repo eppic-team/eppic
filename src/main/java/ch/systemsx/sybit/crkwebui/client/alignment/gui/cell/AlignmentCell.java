@@ -1,23 +1,24 @@
 package ch.systemsx.sybit.crkwebui.client.alignment.gui.cell;
 
+import ch.systemsx.sybit.crkwebui.shared.model.PairwiseAlignmentData;
+
 import com.google.gwt.cell.client.AbstractCell;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 
-public class AlignmentCell extends AbstractCell<String[]> {
+public class AlignmentCell extends AbstractCell<PairwiseAlignmentData> {
 
 	@Override
-	public void render(com.google.gwt.cell.client.Cell.Context context,
-			String[] value, SafeHtmlBuilder sb) {
+	public void render(Context context, PairwiseAlignmentData value, SafeHtmlBuilder sb) {
 		
 		sb.appendHtmlConstant(createHtmlString(value));
 		
 	}
 	
-	private String createHtmlString(String[] value){
-		StringBuffer firstSequenceLine = new StringBuffer(value[0]);
-		StringBuffer secondSequenceLine = new StringBuffer(value[2]);
-		StringBuffer markupLine = new StringBuffer(value[1]);
-		String markup = value[1];
+	private String createHtmlString(PairwiseAlignmentData value){
+		StringBuffer firstSequenceLine = new StringBuffer(value.getFirstSequence());
+		StringBuffer secondSequenceLine = new StringBuffer(value.getSecondSequence());
+		StringBuffer markupLine = new StringBuffer(value.getMarkupLine());
+		String markup = value.getMarkupLine();
 		
 		int beginIndex = 0;
 		int endIndex = firstSequenceLine.length() -1;

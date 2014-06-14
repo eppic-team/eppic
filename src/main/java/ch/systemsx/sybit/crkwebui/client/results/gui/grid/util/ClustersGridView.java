@@ -73,10 +73,10 @@ public class ClustersGridView extends GroupSummaryView<InterfaceItemModel> {
 	    String cellClasses = cellClass;
 	    cellClasses += (i == 0 ? cellFirstClass : (i == last ? cellLastClass : ""));
 
-	    String id = cf.getColumnClassSuffix();
-	    if (id != null && !id.equals("")) {
-		cellClasses += " x-grid-td-" + id;
-	    }
+	    //String id = cf.getColumnClassSuffix();
+	    //if (id != null && !id.equals("")) {
+		//cellClasses += " x-grid-td-" + id;
+	    //}
 
 	    Number n = data.get(cm.getValueProvider(i));
 	    String value = "";

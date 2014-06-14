@@ -146,41 +146,41 @@ public class ResiduesGridPanel extends VerticalLayoutContainer
     	ColumnConfig<Residue,Integer> residueNumberCol = 
     			new ColumnConfig<Residue, Integer>(props.residueNumber());
     	fillColumnProperties(residueNumberCol, "residueNumber");
-    	residueNumberCol.setAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+    	residueNumberCol.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
     	
     	ColumnConfig<Residue,String> pdbResidueNumberCol = 
     			new ColumnConfig<Residue, String>(props.pdbResidueNumber());
     	fillColumnProperties(pdbResidueNumberCol, "pdbResidueNumber");
-    	pdbResidueNumberCol.setAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+    	pdbResidueNumberCol.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
     	
     	ColumnConfig<Residue,String> residueTypeCol = 
     			new ColumnConfig<Residue, String>(props.residueType());
         fillColumnProperties(residueTypeCol, "residueType");
-    	residueTypeCol.setAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+    	residueTypeCol.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
     	
     	ColumnConfig<Residue, Double> asaCol = 
     			new ColumnConfig<Residue, Double>(props.asa());
         fillColumnProperties(asaCol, "asa");
     	asaCol.setCell(new TwoDecimalDoubleCell());
-    	asaCol.setAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+    	asaCol.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
     	
     	ColumnConfig<Residue,Double> bsaCol = 
     			new ColumnConfig<Residue, Double>(props.bsa());
         fillColumnProperties(bsaCol, "bsa");
     	bsaCol.setCell(new TwoDecimalDoubleCell());
-    	bsaCol.setAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+    	bsaCol.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
    
     	ColumnConfig<Residue,Double> bsaPercentageCol = 
     			new ColumnConfig<Residue, Double>(props.bsaPercentage());
     	fillColumnProperties(bsaPercentageCol, "bsaPercentage");
     	bsaPercentageCol.setCell(new TwoDecimalDoubleCell());
-    	bsaPercentageCol.setAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+    	bsaPercentageCol.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
     	
     	ColumnConfig<Residue,Double> entropyScoreCol = 
     			new ColumnConfig<Residue, Double>(props.entropyScore());
     	fillColumnProperties(entropyScoreCol, "entropyScore");
     	entropyScoreCol.setCell(new TwoDecimalDoubleCell());
-    	entropyScoreCol.setAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+    	entropyScoreCol.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
     	
     	configs.add(residueNumberCol);
     	configs.add(pdbResidueNumberCol);
@@ -214,7 +214,7 @@ public class ResiduesGridPanel extends VerticalLayoutContainer
     	if(useBufferedView)
     	{
     		LiveGridView<Residue> view = new LiveGridView<Residue>();
-    		view.setRowHeight(20);
+    		//view.setRowHeight(20);
     		residuesGrid.setView(view);
     	}
 

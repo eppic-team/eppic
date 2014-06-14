@@ -1,5 +1,8 @@
 package ch.systemsx.sybit.crkwebui.client.alignment.data;
 
+import ch.systemsx.sybit.crkwebui.shared.model.PairwiseAlignmentData;
+import ch.systemsx.sybit.crkwebui.shared.model.PairwiseAlignmentInfo;
+
 import com.google.gwt.editor.client.Editor.Path;
 import com.sencha.gxt.core.client.ValueProvider;
 import com.sencha.gxt.data.shared.ModelKeyProvider;
@@ -10,13 +13,13 @@ public interface AlignmentDataModelProperties extends PropertyAccess<AlignmentDa
 	  @Path("uid")
 	  ModelKeyProvider<AlignmentDataModel> key();
 	  
-	  ValueProvider<AlignmentDataModel, String[]> rowHeader();
+	  ValueProvider<AlignmentDataModel, PairwiseAlignmentInfo> rowHeader();
 	  
-	  ValueProvider<AlignmentDataModel, Integer[]> startIndex();
+	  ValueProvider<AlignmentDataModel, PairwiseAlignmentInfo> startIndex();
 	  
-	  ValueProvider<AlignmentDataModel, Integer[]> endIndex();
+	  ValueProvider<AlignmentDataModel, PairwiseAlignmentInfo> endIndex();
 	  
-	  ValueProvider<AlignmentDataModel, String[]> alignment();
+	  ValueProvider<AlignmentDataModel, PairwiseAlignmentData> alignment();
 	  
 
 }

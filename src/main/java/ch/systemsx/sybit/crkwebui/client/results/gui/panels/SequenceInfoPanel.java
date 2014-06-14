@@ -78,7 +78,8 @@ public class SequenceInfoPanel extends FieldSet
     {
 	ToolTipConfig toolTipConfig = new ToolTipConfig();  
 	toolTipConfig.setTitleHtml(AppPropertiesManager.CONSTANTS.homologs_panel_query_warnings_title());
-	toolTipConfig.setMouseOffset(new int[] {0, 0});  
+	toolTipConfig.setMouseOffsetX(0);
+	toolTipConfig.setMouseOffsetY(0);
 	toolTipConfig.setCloseable(true); 
 	toolTipConfig.setDismissDelay(0);
 	toolTipConfig.setShowDelay(100);
@@ -94,7 +95,8 @@ public class SequenceInfoPanel extends FieldSet
 	ToolTipConfig toolTipConfig = new ToolTipConfig(
 		AppPropertiesManager.CONSTANTS.homologs_panel_query_warnings_title(),
 		bodyString);
-	toolTipConfig.setMouseOffset(new int[] {0, 0});  
+	toolTipConfig.setMouseOffsetX(0);
+	toolTipConfig.setMouseOffsetY(0);
 	toolTipConfig.setCloseable(true); 
 	toolTipConfig.setDismissDelay(0);
 	toolTipConfig.setShowDelay(100);

@@ -14,6 +14,9 @@
 
   <inherits name='com.sencha.gxt.ui.GXT' />
   <inherits name="com.sencha.gxt.theme.gray.Gray" />
+  <!-- for neptune theme (available since GXT 3.1), also needs an additional jar dependency -->
+  <!--<inherits name="com.sencha.gxt.theme.neptune.Theme"/>-->
+
   <!-- Other module inherits                                      -->
   <inherits name='eppic.model'/>
 

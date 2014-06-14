@@ -292,7 +292,6 @@ public class MainViewPort extends BorderLayoutContainer
 	/**
 	 * Displays alignments window.
 	 * @param chainCluster homologs info item
-	 * @param pdbName pdb name
 	 * @param xPosition left corner
 	 * @param yPosition top corner
 	 */
@@ -306,7 +305,7 @@ public class MainViewPort extends BorderLayoutContainer
 			alignmentsWindow.setVisible(false);
 		}
 		
-		alignmentsWindow = new AlignmentsWindow(ApplicationContext.getWindowData(), chainCluster, pdbName);
+		alignmentsWindow = new AlignmentsWindow(ApplicationContext.getWindowData(), chainCluster);
 		alignmentsWindow.updateWindowContent();
 		alignmentsWindow.setPagePosition(xPosition, yPosition);
 

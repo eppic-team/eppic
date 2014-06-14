@@ -210,7 +210,7 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 			column.setToolTip(EscapedStringGenerator.generateSafeHtml(tooltip));
 		
 		column.setColumnTextClassName("eppic-results-grid-common-cells");
-		column.setAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+		column.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 		
 	}
 	

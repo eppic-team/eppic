@@ -6,9 +6,10 @@ import java.util.List;
 import ch.systemsx.sybit.crkwebui.client.alignment.data.AlignmentDataModel;
 import ch.systemsx.sybit.crkwebui.client.alignment.data.AlignmentDataModelProperties;
 import ch.systemsx.sybit.crkwebui.client.alignment.gui.cell.AlignmentCell;
-import ch.systemsx.sybit.crkwebui.client.alignment.gui.cell.ChainHeaderCell;
-import ch.systemsx.sybit.crkwebui.client.alignment.gui.cell.IndexCell;
+import ch.systemsx.sybit.crkwebui.client.alignment.gui.cell.PairwiseAlignmentInfoCell;
 import ch.systemsx.sybit.crkwebui.shared.model.ChainCluster;
+import ch.systemsx.sybit.crkwebui.shared.model.PairwiseAlignmentData;
+import ch.systemsx.sybit.crkwebui.shared.model.PairwiseAlignmentInfo;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.logical.shared.ResizeEvent;
@@ -24,7 +25,6 @@ import com.sencha.gxt.widget.core.client.grid.Grid;
 public class AlignmentsGridPanel extends VerticalLayoutContainer{
 	
 	private ChainCluster chainCluster;
-	private String pdbName;
 
 	private static final AlignmentDataModelProperties props = GWT.create(AlignmentDataModelProperties.class);
 
@@ -40,12 +40,9 @@ public class AlignmentsGridPanel extends VerticalLayoutContainer{
 
 	private static int characterWidth = 8;
 	
-	public AlignmentsGridPanel(ChainCluster chainCluster,
-								String pdbName,
-								int gridWidth,
-								int gridHeight){
+	public AlignmentsGridPanel(ChainCluster chainCluster, int gridWidth, int gridHeight) {
+		
 		this.chainCluster = chainCluster;
-		this.pdbName = pdbName;
 		
 		store = new ListStore<AlignmentDataModel>(props.key());
     	configs = createColumnConfig();
@@ -87,24 +84,24 @@ public class AlignmentsGridPanel extends VerticalLayoutContainer{
     private List<ColumnConfig<AlignmentDataModel, ?>> createColumnConfig(){
     	List<ColumnConfig<AlignmentDataModel, ?>> columns = new ArrayList<ColumnConfig<AlignmentDataModel,?>>();
     	
-    	ColumnConfig<AlignmentDataModel, String[]> headerCol = 
-    			new ColumnConfig<AlignmentDataModel, String[]>(props.rowHeader(), headerColWidth);
-    	headerCol.setCell(new ChainHeaderCell());
+    	ColumnConfig<AlignmentDataModel, PairwiseAlignmentInfo> headerCol = 
+    			new ColumnConfig<AlignmentDataModel, PairwiseAlignmentInfo>(props.rowHeader(), headerColWidth);
+    	headerCol.setCell(new PairwiseAlignmentInfoCell());
     	headerCol.setFixed(true);
     	
-    	ColumnConfig<AlignmentDataModel, Integer[]> startIndexCol = 
-    			new ColumnConfig<AlignmentDataModel, Integer[]>(props.startIndex(), startIndexWidth);
-    	startIndexCol.setCell(new IndexCell());
+    	ColumnConfig<AlignmentDataModel, PairwiseAlignmentInfo> startIndexCol = 
+    			new ColumnConfig<AlignmentDataModel, PairwiseAlignmentInfo>(props.startIndex(), startIndexWidth);
+    	startIndexCol.setCell(new PairwiseAlignmentInfoCell());
     	startIndexCol.setFixed(true);
-    	startIndexCol.setAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+    	startIndexCol.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
     			
-    	ColumnConfig<AlignmentDataModel, String[]> alignmentCol = 
-    			new ColumnConfig<AlignmentDataModel, String[]>(props.alignment());
+    	ColumnConfig<AlignmentDataModel, PairwiseAlignmentData> alignmentCol = 
+    			new ColumnConfig<AlignmentDataModel, PairwiseAlignmentData>(props.alignment());
     	alignmentCol.setCell(new AlignmentCell());
     	
-    	ColumnConfig<AlignmentDataModel, Integer[]> endIndexCol = 
-    			new ColumnConfig<AlignmentDataModel, Integer[]>(props.endIndex(), endIndexWidth);
-    	endIndexCol.setCell(new IndexCell());
+    	ColumnConfig<AlignmentDataModel, PairwiseAlignmentInfo> endIndexCol = 
+    			new ColumnConfig<AlignmentDataModel, PairwiseAlignmentInfo>(props.endIndex(), endIndexWidth);
+    	endIndexCol.setCell(new PairwiseAlignmentInfoCell());
     	endIndexCol.setFixed(true);
     	
     	columns.add(headerCol);
@@ -134,14 +131,6 @@ public class AlignmentsGridPanel extends VerticalLayoutContainer{
 		this.chainCluster = chainCluster;
 	}
 
-	public String getPdbName() {
-		return pdbName;
-	}
-
-	public void setPdbName(String pdbName) {
-		this.pdbName = pdbName;
-	}
-
 	/**
 	 * Calculates the number of characters to be fit in a row of alignments
 	 */
@@ -164,9 +153,7 @@ public class AlignmentsGridPanel extends VerticalLayoutContainer{
 
 		List<AlignmentDataModel> dataList =  new ArrayList<AlignmentDataModel>();
 
-		String chainId = chainCluster.getRepChain();
-
-		String pdbId = "Chain" + chainId;
+		String pdbId = "Chain" + chainCluster.getRepChain();
 
 		String uniprotId = chainCluster.getRefUniProtId();
 

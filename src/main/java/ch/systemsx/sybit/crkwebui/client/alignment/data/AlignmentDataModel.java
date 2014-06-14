@@ -2,6 +2,9 @@ package ch.systemsx.sybit.crkwebui.client.alignment.data;
 
 import java.io.Serializable;
 
+import ch.systemsx.sybit.crkwebui.shared.model.PairwiseAlignmentData;
+import ch.systemsx.sybit.crkwebui.shared.model.PairwiseAlignmentInfo;
+
 /**
  * Class used to store the alignment data
  * @author biyani_n
@@ -12,10 +15,10 @@ public class AlignmentDataModel implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private int uid;
-	private String[] rowHeader;
-	private Integer[] startIndex;
-	private Integer[] endIndex;
-	private String[] alignment;
+	private PairwiseAlignmentInfo rowHeader;
+	private PairwiseAlignmentInfo startIndex;
+	private PairwiseAlignmentInfo endIndex;
+	private PairwiseAlignmentData alignment;
 	
 	private static int COUNTER = 0;
 	
@@ -32,22 +35,24 @@ public class AlignmentDataModel implements Serializable {
 		COUNTER++;
 		uid = COUNTER;
 		
-		rowHeader = new String[2];
-		rowHeader[0] = firstChainHeader;
-		rowHeader[1] = secondChainHeader;
+		rowHeader = new PairwiseAlignmentInfo();
 		
-		startIndex = new Integer[2];
-		startIndex[0] = firstStartIndex;
-		startIndex[1] = secondStartIndex;
+		rowHeader.setFirstValue(firstChainHeader);
+		rowHeader.setSecondValue(secondChainHeader);
 		
-		endIndex = new Integer[2];
-		endIndex[0] = firstEndIndex;
-		endIndex[1] = secondEndIndex;
+		startIndex = new PairwiseAlignmentInfo();
+		startIndex.setFirstValue(Integer.toString(firstStartIndex));
+		startIndex.setSecondValue(Integer.toString(secondStartIndex));
 		
-		alignment = new String[3];
-		alignment[0] = firstAlignment;
-		alignment[1] = markup;
-		alignment[2] = secondAlignment;
+		endIndex = new PairwiseAlignmentInfo();
+		endIndex.setFirstValue(Integer.toString(firstEndIndex));
+		endIndex.setSecondValue(Integer.toString(secondEndIndex));
+		
+		alignment = new PairwiseAlignmentData();
+		alignment.setFirstSequence(firstAlignment);
+		alignment.setSecondSequence(secondAlignment);
+		alignment.setMarkupLine(markup);
+
 	}
 
 	public int getUid() {
@@ -58,35 +63,35 @@ public class AlignmentDataModel implements Serializable {
 		this.uid = uid;
 	}
 
-	public String[] getRowHeader() {
+	public PairwiseAlignmentInfo getRowHeader() {
 		return rowHeader;
 	}
 
-	public void setRowHeader(String[] rowHeader) {
+	public void setRowHeader(PairwiseAlignmentInfo rowHeader) {
 		this.rowHeader = rowHeader;
 	}
 
-	public Integer[] getStartIndex() {
+	public PairwiseAlignmentInfo getStartIndex() {
 		return startIndex;
 	}
 
-	public void setStartIndex(Integer[] startIndex) {
+	public void setStartIndex(PairwiseAlignmentInfo startIndex) {
 		this.startIndex = startIndex;
 	}
 
-	public Integer[] getEndIndex() {
+	public PairwiseAlignmentInfo getEndIndex() {
 		return endIndex;
 	}
 
-	public void setEndIndex(Integer[] endIndex) {
+	public void setEndIndex(PairwiseAlignmentInfo endIndex) {
 		this.endIndex = endIndex;
 	}
 
-	public String[] getAlignment() {
+	public PairwiseAlignmentData getAlignment() {
 		return alignment;
 	}
 
-	public void setAlignment(String[] alignment) {
+	public void setAlignment(PairwiseAlignmentData alignment) {
 		this.alignment = alignment;
 	}
 	
