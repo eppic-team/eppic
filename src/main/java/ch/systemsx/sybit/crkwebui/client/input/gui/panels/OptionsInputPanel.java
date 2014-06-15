@@ -44,8 +44,12 @@ public class OptionsInputPanel extends FieldSet
 	private ComboBox<SearchModeComboModel> searchModeCombo;
 	private NumberField<Integer> maxNrOfSequences;
 		
-	private int LABEL_WIDTH = 150;
-	private int FIELD_WIDTH = 200;
+	private static final int LABEL_WIDTH = 150;
+	private static final int FIELD_WIDTH = 140;
+	
+	private static final int PANEL_HEIGHT = 150;
+	
+	private static final Margins LABEL_MARGINS = new Margins(5,5,5,5);
 
 	interface SearchModeProperties extends PropertyAccess<SearchModeComboModel> {
 		@Path("id")
@@ -61,13 +65,14 @@ public class OptionsInputPanel extends FieldSet
 		this.setHeadingHtml(StyleGenerator.defaultFontStyleString(AppPropertiesManager.CONSTANTS.input_advanced()));
 		this.setCollapsible(true);
 		this.setBorders(false);
-		
-		int height = 400;
-		
-		if(height > ApplicationContext.getAdjustedWindowData().getWindowHeight() * 0.4)
-		{
-			height = (int) (ApplicationContext.getAdjustedWindowData().getWindowHeight() * 0.4);
-		}		
+			
+		// following code seems to be useless, commenting out JD 14.06.2014
+//		int height = 400;
+//		
+//		if(height > ApplicationContext.getAdjustedWindowData().getWindowHeight() * 0.4)
+//		{
+//			height = (int) (ApplicationContext.getAdjustedWindowData().getWindowHeight() * 0.4);
+//		}		
 
 		createAlignmentsParametersPanel(searchModeDefaultList);
 	}
@@ -80,7 +85,7 @@ public class OptionsInputPanel extends FieldSet
 	private ToolTipConfig createToolTipConfig(String text){
 		ToolTipConfig config = new ToolTipConfig();
 	    config.setBodyHtml(StyleGenerator.defaultFontStyle(text));
-	    config.setMouseOffsetX(0);
+	    config.setMouseOffsetX(FIELD_WIDTH);
 	    config.setMouseOffsetY(0);
 	    config.setAnchor(Side.LEFT);	    
 	    return config;
@@ -104,6 +109,8 @@ public class OptionsInputPanel extends FieldSet
 		
 		VerticalLayoutContainer vlc = new VerticalLayoutContainer();
 		
+		vlc.setHeight(PANEL_HEIGHT);
+		
 		alignmentsParametersFieldSet.add(vlc);
 		
 		softIdentityCutOff = createSoftIdentityCutoff();
@@ -111,21 +118,21 @@ public class OptionsInputPanel extends FieldSet
 		softIdentityCutOffLabel.setHTML(
 				StyleGenerator.defaultFontStyle(AppPropertiesManager.CONSTANTS.parameters_soft_identity_cutoff()));
 		softIdentityCutOffLabel.setLabelWidth(LABEL_WIDTH);
-		vlc.add(softIdentityCutOffLabel, new VerticalLayoutData(1, -1, new Margins(5,5,5,20)));
+		vlc.add(softIdentityCutOffLabel, new VerticalLayoutData(1, -1, LABEL_MARGINS));
 		
 		hardIdentityCutOff = createHardIdentityCutoff();
 		FieldLabel hardIdentityCutOffLabel = new FieldLabel(hardIdentityCutOff);
 		hardIdentityCutOffLabel.setHTML(
 				StyleGenerator.defaultFontStyle(AppPropertiesManager.CONSTANTS.parameters_hard_identity_cutoff()));
 		hardIdentityCutOffLabel.setLabelWidth(LABEL_WIDTH);
-		vlc.add(hardIdentityCutOffLabel, new VerticalLayoutData(1, -1, new Margins(5,5,5,20)));
+		vlc.add(hardIdentityCutOffLabel, new VerticalLayoutData(1, -1, LABEL_MARGINS));
 
 		maxNrOfSequences = createMaxNrOfSequences();
 		FieldLabel maxNrOfSeqLabel = new FieldLabel(maxNrOfSequences);
 		maxNrOfSeqLabel.setHTML(
 				StyleGenerator.defaultFontStyle(AppPropertiesManager.CONSTANTS.parameters_max_num_sequences()));
 		maxNrOfSeqLabel.setLabelWidth(LABEL_WIDTH);
-		vlc.add(maxNrOfSeqLabel, new VerticalLayoutData(1, -1, new Margins(5,5,5,20)));
+		vlc.add(maxNrOfSeqLabel, new VerticalLayoutData(1, -1, LABEL_MARGINS));
 		
 		searchModeValues = new ListStore<SearchModeComboModel>(new ModelKeyProvider<SearchModeComboModel>(){
 		    @Override
@@ -144,7 +151,7 @@ public class OptionsInputPanel extends FieldSet
 		FieldLabel searchModeComboLabel = new FieldLabel(searchModeCombo);
 		searchModeComboLabel.setHTML(StyleGenerator.defaultFontStyle(AppPropertiesManager.CONSTANTS.parameters_search_mode()));
 		searchModeComboLabel.setLabelWidth(LABEL_WIDTH);
-		vlc.add(searchModeComboLabel, new VerticalLayoutData(1, -1, new Margins(5,5,5,20)));
+		vlc.add(searchModeComboLabel, new VerticalLayoutData(1, -1, LABEL_MARGINS));
 		
 	}
 	
@@ -239,11 +246,9 @@ public class OptionsInputPanel extends FieldSet
 		currentInputParameters.setReducedAlphabet(ApplicationContext.getSettings().getDefaultParametersValues().getReducedAlphabet());
 		currentInputParameters.setSoftIdentityCutoff((float)(softIdentityCutOff.getValue()/100.0));
 		currentInputParameters.setHardIdentityCutoff((float)(hardIdentityCutOff.getValue()/100.0));
-		currentInputParameters.setMaxNrOfSequences(maxNrOfSequences.getValue()
-				.intValue());
+		currentInputParameters.setMaxNrOfSequences(maxNrOfSequences.getValue().intValue());
 		
-		currentInputParameters.setSearchMode(searchModeCombo
-				.getValue().getSearchMode());
+		currentInputParameters.setSearchMode(searchModeCombo.getValue().getSearchMode());
 
 		return currentInputParameters;
 	}

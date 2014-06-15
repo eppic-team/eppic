@@ -74,6 +74,8 @@ public class InputDataPanel extends DisplayPanel
 	private static final int FIELD_WIDTH = 250;
 	private static final int PADDING_WIDTH = 25;
 
+	private static final int PANEL_HEIGHT = 300;
+	
 	private FormPanel formPanel;
 
 	private HBoxLayoutContainer inputRadioGroupContainer;
@@ -159,7 +161,9 @@ public class InputDataPanel extends DisplayPanel
 		panel.getHeader().setVisible(false);
 		panel.setButtonAlign(BoxLayoutPack.CENTER);
 		panel.setWidth(LABEL_WIDTH+FIELD_WIDTH+2*PADDING_WIDTH+20);
-
+		//panel.setDeferHeight(true);
+		panel.setHeight(PANEL_HEIGHT);
+		
 		formPanel = createFormPanel();
 
 		panel.add(formPanel);
@@ -284,6 +288,7 @@ public class InputDataPanel extends DisplayPanel
 		formPanel.setEncoding(Encoding.MULTIPART);
 		formPanel.setMethod(Method.POST);
 		formPanel.setWidth(LABEL_WIDTH+FIELD_WIDTH);
+		//formPanel.setDeferHeight(true); 
 
 		formPanel.addStyleName("eppic-rounded-border");
 
@@ -550,6 +555,7 @@ public class InputDataPanel extends DisplayPanel
 		emailTextFieldLabel.setVisible(true);
 		examplePanel.setVisible(false);
 		optionsInputPanel.setVisible(true);
+		optionsInputPanel.resetValues();
 	}
 	/**
 	 * Starts new job. If file is uploaded then jobId is used to identify uploaded file, otherwise jobId is null.
