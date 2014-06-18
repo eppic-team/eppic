@@ -3,8 +3,9 @@ package eppic.db;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.TreeSet;
+
+import owl.core.util.SingleLinkageClusterer;
 
 
 /**
@@ -63,86 +64,58 @@ public class LatticeComparisonGroup {
 	
 	public Collection<PdbInfoCluster> getCFClusters(double losCutoff) {
 		
-		Map<Integer, PdbInfoCluster> clusters = new TreeMap<Integer, PdbInfoCluster>();
 		
-		int clusterId = 1;
-		
+		// first we convert the latticeOverlapMatrix into a double matrix
+		double[][] matrix = new double[pdbInfoList.size()][pdbInfoList.size()];
 		for (int i=0;i<latticeOverlapMatrix.length;i++) {
 			for (int j=i+1;j<latticeOverlapMatrix[i].length;j++) {
-				if (latticeOverlapMatrix[i][j].getAvgScore() > losCutoff) {
-					if (clusters.containsKey(i)) {
-						PdbInfoCluster pdbInfoCluster = clusters.get(i);
-						pdbInfoCluster.addMember(pdbInfoList.get(j));
-						
-						clusters.put(j, pdbInfoCluster);
-					} else {
-						PdbInfoCluster pdbInfoCluster = new PdbInfoCluster(clusterId);
-						pdbInfoCluster.addMember(pdbInfoList.get(i));
-						pdbInfoCluster.addMember(pdbInfoList.get(j));
-						clusters.put(i, pdbInfoCluster);
-						clusters.put(j, pdbInfoCluster);
-						clusterId++;
-					}
-				} 
+				matrix[i][j] = latticeOverlapMatrix[i][j].getAvgScore();
 			}
 		}
 		
-		// anything not clustered is assigned to a singleton cluster (cluster with one member)
-		for (int i=0;i<pdbInfoList.size();i++) {
-			if (!clusters.containsKey(i)) {
-				PdbInfoCluster pdbInfoCluster = new PdbInfoCluster(clusterId);
-				pdbInfoCluster.addMember(pdbInfoList.get(i));
-				clusters.put(i,pdbInfoCluster);
-				clusterId++;
-			}
-		}
+		// note that the clusterer alters the matrix, keep that in mind if we wanted to use the matrix down the line
+		SingleLinkageClusterer cl = new SingleLinkageClusterer(matrix, true);
+		//cl.setDebug();
+		Map<Integer,Set<Integer>> cls = cl.getClusters(losCutoff);
 		
 		// return the unique list sorted by ids (thanks to equals, hashCode and compareTo)
 		Set<PdbInfoCluster> set = new TreeSet<PdbInfoCluster>();
-		set.addAll(clusters.values());
+		
+		for (int clusterId:cls.keySet()) {
+			PdbInfoCluster pdbInfoCluster = new PdbInfoCluster(clusterId);
+			for (int member:cls.get(clusterId)) {
+				
+				pdbInfoCluster.addMember(pdbInfoList.get(member));
+				
+			}
+			set.add(pdbInfoCluster);
+			
+		}
 		
 		return set;
 	}
 	
 	public Collection<InterfaceCluster> getInterfClusters(double coCutoff) {
 		
-		Map<Integer, InterfaceCluster> clusters = new TreeMap<Integer, InterfaceCluster>();
+		// note that the clusterer alters the matrix, keep that in mind if we wanted to use the matrix down the line
+		SingleLinkageClusterer cl = new SingleLinkageClusterer(interfCompMatrix, true);
 		
-		int clusterId = 1;
+		Map<Integer, Set<Integer>> cls = cl.getClusters(coCutoff);
 		
-		for (int i=0;i<interfCompMatrix.length;i++) {
-			for (int j=i+1;j<interfCompMatrix[i].length;j++) {
-				if (interfCompMatrix[i][j] > coCutoff) {
-					if (clusters.containsKey(i)) {
-						InterfaceCluster interfCluster = clusters.get(i);
-						interfCluster.addMember(pdbInfoList.getInterface(this.minArea,j));
-						
-						clusters.put(j, interfCluster);
-					} else {
-						InterfaceCluster interfCluster = new InterfaceCluster(clusterId);
-						interfCluster.addMember(pdbInfoList.getInterface(this.minArea,i));
-						interfCluster.addMember(pdbInfoList.getInterface(this.minArea,j));
-						clusters.put(i, interfCluster);
-						clusters.put(j, interfCluster);
-						clusterId++;
-					}
-				} 
-			}
-		}
-		
-		// anything not clustered is assigned to a singleton cluster (cluster with one member)
-		for (int i=0;i<pdbInfoList.size();i++) {
-			if (!clusters.containsKey(i)) {
-				InterfaceCluster interfCluster = new InterfaceCluster(clusterId);
-				interfCluster.addMember(pdbInfoList.getInterface(this.minArea,i));
-				clusters.put(i,interfCluster);
-				clusterId++;
-			}
-		}
 		
 		// return the unique list sorted by ids (thanks to equals, hashCode and compareTo)
 		Set<InterfaceCluster> set = new TreeSet<InterfaceCluster>();
-		set.addAll(clusters.values());
+		
+		for (int clusterId:cls.keySet()) {
+			InterfaceCluster interfCluster = new InterfaceCluster(clusterId);
+			for (int member:cls.get(clusterId)) {
+				
+				interfCluster.addMember(pdbInfoList.getInterface(this.minArea, member)); 
+				
+			}
+			set.add(interfCluster);
+			
+		}
 		
 		return set;
 	}
