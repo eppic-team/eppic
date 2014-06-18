@@ -19,7 +19,8 @@ import eppic.InterfaceEvolContext;
 public class EvolCoreSurfacePredictor implements InterfaceTypePredictor {
 
 	private static final double  MIN_INTERF_FOR_RES_NOT_IN_INTERFACES = 500;
-	private static final double  NUM_RESIDUES_NOT_IN_INTERFACES_TOLERANCE = 1.20; // we require 20% more residues in surface than required sample size
+	// we require 50% more residues in surface than required sample size (changed from 20% to 50%, JD 2014-06-18)
+	private static final double  NUM_RESIDUES_NOT_IN_INTERFACES_TOLERANCE = 1.50; 
 	
 	// we used to do only 100, but that was too unstable: we want a predictor as deterministic as possible! 10000 seems a good compromise
 	// Tested on DCbio/DCxtal datasets: cs-scores have a mean standard deviation on 10 runs of:
