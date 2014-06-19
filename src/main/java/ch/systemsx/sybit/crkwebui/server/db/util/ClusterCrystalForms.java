@@ -41,7 +41,7 @@ public class ClusterCrystalForms {
 				" -A : ignore -i and calculate crystal-form clusters for all sequence clusters in DB\n"+
 				" -f : file to write the crystal form cluster identifiers (only used in -A)\n"+
 				" -F : file to write the global interface cluster identifiers (only used in -A)\n"+
-				" -d : print some debug output (full all-to-all interfaces matrix)\n"; 
+				" -d : print some debug output (full lattice comparison and interfaces comparison matrices)\n"; 
 
 
 		String pdbString = null;
@@ -170,30 +170,36 @@ public class ClusterCrystalForms {
 
 		
 		// the lattice comparison matrix
-		System.out.printf("%4s","");
-		for (int i=0;i<pdbList.size();i++) {
-			System.out.printf("%11s\t",pdbList.get(i).getPdbInfo().getPdbCode());
-		}
-		System.out.println();
-		
-		for (int i=0;i<cfMatrix.getLatticeComparisonMatrix().length;i++) {
-			System.out.print(pdbList.get(i).getPdbInfo().getPdbCode());
-			for (int j=0;j<cfMatrix.getLatticeComparisonMatrix()[i].length;j++) {
-				if (cfMatrix.getLatticeComparisonMatrix()[i][j]==null) 
-					System.out.printf("%11s\t","NA");
-				else
-					System.out.printf("%5.3f:%5.3f\t",cfMatrix.getLatticeComparisonMatrix()[i][j].getfAB(),cfMatrix.getLatticeComparisonMatrix()[i][j].getfBA());
+		if (debug) {
+			System.out.printf("%4s","");
+			for (int i=0;i<pdbList.size();i++) {
+				System.out.printf("%11s\t",pdbList.get(i).getPdbInfo().getPdbCode());
 			}
 			System.out.println();
-		}
 
-		System.out.println();
+			for (int i=0;i<cfMatrix.getLatticeComparisonMatrix().length;i++) {
+				System.out.print(pdbList.get(i).getPdbInfo().getPdbCode());
+				for (int j=0;j<cfMatrix.getLatticeComparisonMatrix()[i].length;j++) {
+					if (cfMatrix.getLatticeComparisonMatrix()[i][j]==null) 
+						System.out.printf("%11s\t","NA");
+					else
+						System.out.printf("%5.3f:%5.3f\t",cfMatrix.getLatticeComparisonMatrix()[i][j].getfAB(),cfMatrix.getLatticeComparisonMatrix()[i][j].getfBA());
+				}
+				System.out.println();
+			}
+
+			System.out.println();
+		}
 		System.out.println("Done comparison in "+((end - start)/1000)+" s");
 
 		
 		
 		// crystal form clusters
+		System.out.println("Calculating crystal form clusters...");
+		start = System.currentTimeMillis();
 		Collection<PdbInfoCluster> clusters = cfMatrix.getCFClusters(losClusterCutoff);
+		end = System.currentTimeMillis();
+		System.out.println("Crystal form clusters calculated in "+((end - start)/1000)+" s");
 		System.out.println("Total number of crystal form clusters: "+clusters.size());
 		for (PdbInfoCluster cluster:clusters) {
 			System.out.print("Cluster "+cluster.getId()+": ");			
@@ -232,7 +238,11 @@ public class ClusterCrystalForms {
 		}
 		
 		// interface clusters
+		System.out.println("Calculating interface clusters...");
+		start = System.currentTimeMillis();
 		Collection<InterfaceCluster> interfClusters = cfMatrix.getInterfClusters(coCutoff);
+		end = System.currentTimeMillis();
+		System.out.println("Interfaces clusters calculated in "+((end - start)/1000)+" s");
 		System.out.println("Total number of interface clusters: "+interfClusters.size());
 		for (InterfaceCluster cluster:interfClusters) {	
 			if (debug) System.out.print("Cluster "+cluster.getId()+": ");
