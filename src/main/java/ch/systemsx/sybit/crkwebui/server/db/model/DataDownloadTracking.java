@@ -19,6 +19,7 @@ public class DataDownloadTracking{
 	private String ip;
 	private Date downloadDate;
 	
+	public DataDownloadTracking() {}
 	
 	public DataDownloadTracking(String ip, Date downloadDate){
 		this.ip = ip;
