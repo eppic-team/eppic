@@ -390,11 +390,17 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 			}
 		};
 		
-		QuickTip gridQT = new QuickTip(resultsGrid);
+
+		new QuickTip(resultsGrid);
+		// Since upgrade to GXT 3.1, the "blank tooltip" issue is gone (see CRK-148 in jira 
+		// and http://www.sencha.com/forum/showthread.php?194571-Use-of-QuickTip-leads-to-empty-tooltips)
+		// Thus the code below (needed to fix the issue in 3.0.1) is not needed anymore
+		//QuickTip gridQT = new QuickTip(resultsGrid);
 		//Bug-Fix in GXt 3.0.1
 		//To fix the issue of blank Tooltips we set the delay
-		gridQT.setQuickShowInterval(0);
-		gridQT.getToolTipConfig().setShowDelay(0);
+		//gridQT.setQuickShowInterval(0);
+		//gridQT.getToolTipConfig().setShowDelay(0);
+		
 		return resultsGrid;
 	}
 	
