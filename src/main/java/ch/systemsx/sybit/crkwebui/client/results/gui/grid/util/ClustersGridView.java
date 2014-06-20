@@ -22,7 +22,7 @@ public class ClustersGridView extends GroupSummaryView<InterfaceItemModel> {
     public ClustersGridView(){
 	setShowGroupedColumn(false);
 	setShowDirtyCells(false);
-	setStartCollapsed(true);
+	setStartCollapsed(false);
 	setStripeRows(true);
 	setColumnLines(false);
 	setForceFit(true);

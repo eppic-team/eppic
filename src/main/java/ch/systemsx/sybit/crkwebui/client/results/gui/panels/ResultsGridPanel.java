@@ -349,7 +349,7 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 		ClustersGridView summary = new ClustersGridView();
 		summary.setShowGroupedColumn(false);
 		summary.setShowDirtyCells(false);
-		summary.setStartCollapsed(true);
+		summary.setStartCollapsed(false);
 		summary.setEnableGroupingMenu(true);
 		summary.setEnableNoGroups(true);
 		return summary;
