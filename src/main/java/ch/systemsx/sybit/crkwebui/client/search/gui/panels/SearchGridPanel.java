@@ -8,6 +8,7 @@ import ch.systemsx.sybit.crkwebui.client.commons.util.EscapedStringGenerator;
 import ch.systemsx.sybit.crkwebui.client.search.gui.cells.PdbCodeCell;
 import ch.systemsx.sybit.crkwebui.client.search.gui.cells.PdbDataDoubleCell;
 import ch.systemsx.sybit.crkwebui.client.search.gui.cells.SequenceClusterTypeCell;
+import ch.systemsx.sybit.crkwebui.client.search.gui.util.PagingMemoryProxy;
 import ch.systemsx.sybit.crkwebui.shared.model.PDBSearchResult;
 import ch.systemsx.sybit.crkwebui.shared.model.SequenceClusterType;
 
@@ -21,6 +22,9 @@ import com.sencha.gxt.core.client.ValueProvider;
 import com.sencha.gxt.data.shared.ListStore;
 import com.sencha.gxt.data.shared.ModelKeyProvider;
 import com.sencha.gxt.data.shared.PropertyAccess;
+import com.sencha.gxt.data.shared.loader.PagingLoadConfig;
+import com.sencha.gxt.data.shared.loader.PagingLoadResult;
+import com.sencha.gxt.data.shared.loader.PagingLoader;
 import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer;
 import com.sencha.gxt.widget.core.client.event.CellDoubleClickEvent;
 import com.sencha.gxt.widget.core.client.event.CellDoubleClickEvent.CellDoubleClickHandler;
@@ -29,6 +33,7 @@ import com.sencha.gxt.widget.core.client.grid.ColumnConfig;
 import com.sencha.gxt.widget.core.client.grid.ColumnModel;
 import com.sencha.gxt.widget.core.client.grid.Grid;
 import com.sencha.gxt.widget.core.client.grid.GridViewConfig;
+import com.sencha.gxt.widget.core.client.grid.LiveGridView;
 import com.sencha.gxt.widget.core.client.grid.filters.GridFilters;
 import com.sencha.gxt.widget.core.client.grid.filters.NumericFilter;
 import com.sencha.gxt.widget.core.client.grid.filters.StringFilter;
@@ -70,6 +75,9 @@ public class SearchGridPanel extends VerticalLayoutContainer
 
     private String selectedPdbCode;
 
+    LiveGridView<PDBSearchResult> liveGridView;
+    PagingLoader<PagingLoadConfig, PagingLoadResult<PDBSearchResult>> loader;
+    //PagingToolBar toolBar;
     /**
      * Constructor
      */
@@ -90,11 +98,15 @@ public class SearchGridPanel extends VerticalLayoutContainer
 
 	cm = new ColumnModel<PDBSearchResult>(resultsConfig);
 
+	liveGridView = new LiveGridView<PDBSearchResult>();
+	liveGridView.setCacheSize(400);
 	createGrid();
 
-
 	this.add(resultsGrid, new VerticalLayoutData(1, 1));
-
+//	toolBar = new PagingToolBar(50);
+//	toolBar.getElement().getStyle().setProperty("borderBottom", "none");
+//	toolBar.bind(loader);
+//	this.add(toolBar, new VerticalLayoutData(1, -1));
     }
 
     /**
@@ -105,20 +117,35 @@ public class SearchGridPanel extends VerticalLayoutContainer
     public void fillGrid(List<PDBSearchResult> values, String pdBCode)
     {
 	moveOriginaltoTop(values, pdBCode);
-	store.clear();
+	//	store.clear();
 	selectedPdbCode = null;
 
-	if (values != null) {
-	    store.addAll(values);
-	}
+	//	if (values != null) {
+	//	    store.addAll(values);
+	//	}
 
-	if(store.getAll().size() <= 0){
-	    setGridVisibility(false);
-	} else{
-	    setGridVisibility(true);
-	}
+	//	if(store.getAll().size() <= 0){
+	//	    setGridVisibility(false);
+	//	} else{
+	//	    setGridVisibility(true);
+	//	}
 	highlightOriginal(pdBCode);
+	loader = createLoader(values);
+	loader.setRemoteSort(true);
+//	loader.addLoadHandler(new LoadResultListStoreBinding<PagingLoadConfig, PDBSearchResult, PagingLoadResult<PDBSearchResult>>(store));
+	resultsGrid.setLoader(loader);
+//	toolBar.bind(loader);
+//	toolBar.first();
+//	liveGridView.setForceFit(true);
+	loader.load(0, 200);
+//	resultsGrid.setView(liveGridView);
 	resultsGrid.reconfigure(store, cm);
+	//	loader.load(0, 200);
+	//	if(values.size() <= 0){
+	//	    setGridVisibility(false);
+	//	} else{
+	//	    setGridVisibility(true);
+	//	}
     }
 
     private void highlightOriginal(final String pdBCode) {
@@ -241,12 +268,18 @@ public class SearchGridPanel extends VerticalLayoutContainer
     }
 
     private void createGrid(){
-	resultsGrid = new Grid<PDBSearchResult>(store, cm);
-
+	resultsGrid = new Grid<PDBSearchResult>(store, cm){
+	    @Override
+	    protected void onAfterFirstAttach() {
+		super.onAfterFirstAttach();
+		loader.load(0, liveGridView.getCacheSize());
+	    }
+	};
+	resultsGrid.setView(liveGridView);
 	resultsGrid.setBorders(false);
 	resultsGrid.getView().setStripeRows(true);
 	resultsGrid.getView().setColumnLines(true);
-	resultsGrid.getView().setForceFit(true);
+	resultsGrid.getView().setAutoFill(true);
 	resultsGrid.addStyleName("eppic-default-font");
 	resultsGrid.addCellDoubleClickHandler(new CellDoubleClickHandler() {
 
@@ -278,6 +311,12 @@ public class SearchGridPanel extends VerticalLayoutContainer
 	filters.addFilter(spaceGroupFilter);
 	filters.addFilter(resFilter);
 	filters.addFilter(rFreeFilter);
+    }
+
+    private PagingLoader<PagingLoadConfig, PagingLoadResult<PDBSearchResult>> createLoader(List<PDBSearchResult> values) {
+	final PagingMemoryProxy proxy = new PagingMemoryProxy(values);
+	final PagingLoader<PagingLoadConfig, PagingLoadResult<PDBSearchResult>> gridLoader = new PagingLoader<PagingLoadConfig, PagingLoadResult<PDBSearchResult>>(proxy);
+	return gridLoader;
     }
 
     private void setGridVisibility(boolean visibility){

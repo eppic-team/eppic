@@ -771,6 +771,7 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 
     @Override
     public List<PDBSearchResult> getListOfPDBs(String pdbCode, String chain) throws Exception {
+	long start = System.currentTimeMillis();
 	ChainClusterDAO homologsDAO = new ChainClusterDAOJpa();
 	List<PDBSearchResult> data = new ArrayList<PDBSearchResult>();
 	for(SequenceClusterType cl : SequenceClusterType.values()) {
@@ -791,7 +792,8 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 		    data.add(p);
 	    }
 	}
-	log.debug("Length of data: " + data.size());
+	long durration = System.currentTimeMillis() - start;
+	log.debug("Length of data: " + data.size() + " (fetching took " + durration + "ms)");
 	return data;
     } 
 }
