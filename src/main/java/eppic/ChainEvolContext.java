@@ -294,8 +294,8 @@ public class ChainEvolContext implements Serializable {
 	 *  - more than one UniProt id: chimera case. 
 	 *    If allow chimeras is true then the longest length match will be used
 	 *  - one UniProt id but several segments: deletion or insertion case.
-	 *    If the gaps are above EppicParams.NUM_GAP_RES_FOR_CHIMERIC_FUSION then the 
-	 *    mapping is rejected
+	 *    All deletions are allowed, insertions are only allowed if below
+	 *    EppicParams.NUM_GAP_RES_FOR_CHIMERIC_FUSION 
 	 *     
 	 * @param mappings
 	 * @param allowChimeras
