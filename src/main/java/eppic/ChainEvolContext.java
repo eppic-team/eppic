@@ -195,8 +195,8 @@ public class ChainEvolContext implements Serializable {
 				LOGGER.info("Alignment length: "+alnPdb2Uniprot.getLength());
 				int shortestSeqLength = Math.min(query.getLength(), sequence.length());
 				double id = (double)alnPdb2Uniprot.getIdentity()/(double)shortestSeqLength;
-				LOGGER.info("Query to reference UniProt percent identity: "+String.format("%6.2f%%",id*100.0));
-				LOGGER.info("UniProt reference coverage of query's sequence: "+
+				LOGGER.info("Query (chain "+representativeChain+") to reference UniProt percent identity: "+String.format("%6.2f%%",id*100.0));
+				LOGGER.info("UniProt reference coverage of query's (chain "+representativeChain+") sequence: "+
 						String.format("%6.2f%%",100.0*(double)sequence.length()/(double)query.getLength()));
 				// in strange cases like 3try (a racemic mixture with a chain composed of L and D aminoacids) the SIFTS-mapped
 				// UniProt entry does not align at all to the PDB SEQRES (mostly 'X'), we have to check for this
@@ -286,7 +286,7 @@ public class ChainEvolContext implements Serializable {
 	}
 	
 	/**
-	 * Checks the PDB to UniProt mapping parsed out from the SIFTS resource and 
+	 * Checks the PDB to UniProt mapping obtained from the SIFTS resource and 
 	 * returns a single UniProt id decided to be the valid mapping. 
 	 * If any of the intervals is of 0 or negative length the mapping is rejected.
 	 * 
@@ -294,12 +294,12 @@ public class ChainEvolContext implements Serializable {
 	 *  - more than one UniProt id: chimera case. 
 	 *    If allow chimeras is true then the longest length match will be used
 	 *  - one UniProt id but several segments: deletion or insertion case.
-	 *    If the gaps are above CRKParams.NUM_GAP_RES_FOR_CHIMERIC_FUSION then the 
+	 *    If the gaps are above EppicParams.NUM_GAP_RES_FOR_CHIMERIC_FUSION then the 
 	 *    mapping is rejected
 	 *     
 	 * @param mappings
 	 * @param allowChimeras
-	 * @return
+	 * @return the UniProt id decided to be the valid mapping or null if mapping is rejected
 	 */
 	private String checkSiftsMappings(List<SiftsFeature> mappings, boolean allowChimeras) {
 		
@@ -366,8 +366,8 @@ public class ChainEvolContext implements Serializable {
 				}
 				warning+=". This is most likely a chimeric chain";
 				queryWarnings.add(warning);
-				// we continue with a null query, i.e. we treat it in the same way as no match
-				queryUniprotId = null;
+
+				return null;
 			}
 
 		// b) 1 uniprot id but with more than 1 mapping: deletions or insertions in the construct 
@@ -375,8 +375,12 @@ public class ChainEvolContext implements Serializable {
 			boolean unacceptableGaps = false;
 			String msg = "";
 			
+			// common logging for all deletion/insertion cases
+			LOGGER.warn("The SIFTS PDB-to-UniProt mapping of chain "+representativeChain+
+					" is composed of several segments of a single UniProt sequence ("+mappings.iterator().next().getUniprotId()+")");
+			
 			int lastUniprotEnd = -1;
-			int lastPdbEnd = -1;
+			int lastPdbEnd = -1;			
 			
 			for (SiftsFeature sifts:mappings) {
 				// checking for the gaps between the PDB segments: insertions in PDB sequence with respect to UniProt
@@ -384,20 +388,25 @@ public class ChainEvolContext implements Serializable {
 				if (lastPdbEnd!=-1 && 
 					( (pdbInterv.beg-lastPdbEnd)>EppicParams.NUM_GAP_RES_FOR_CHIMERIC_FUSION ||
 					  (pdbInterv.beg-lastPdbEnd)<0	)) {
-					// if at least one of the gaps is long or an inversion then we consider the mapping unacceptable
+					// if at least one of the gaps is long or an inversion then we consider the mappings unacceptable
 					unacceptableGaps = true;
 				}
 				lastPdbEnd = pdbInterv.end;
 				
 				// checking for the gaps between the uniprot segments: deletions in PDB sequence with respect to UniProt
 				Interval interv = sifts.getUniprotIntervalSet().iterator().next(); // there's always only 1 interval per SiftsFeature
-				if (lastUniprotEnd!=-1 && 
-					( (interv.beg-lastUniprotEnd)>EppicParams.NUM_GAP_RES_FOR_CHIMERIC_FUSION ||
-					  (interv.beg-lastUniprotEnd)<0 )) {
-					// if at least 1 of the gaps is long or an inversion (e.g. circular permutants) 
-					// then we consider the mappings unacceptable
+				if ( lastUniprotEnd!=-1 && 
+					 (interv.beg-lastUniprotEnd)<0 ) {
+					// if at least 1 of the gaps is an inversion (e.g. circular permutants) then we consider the mappings unacceptable
 					// Note: for this to work properly the intervals have to be sorted as they appear in the PDB chain (getMappings above sorts them)
 					unacceptableGaps = true;
+				} else if (lastUniprotEnd!=-1 && 
+						   (interv.beg-lastUniprotEnd)>1) {
+					// we only warn that deletion exists, we then proceed with the mapping unless unacceptableGaps goes to true elsewhere
+					// esentially a deletion is like removing a domain from a terminal, so as we do allow removing domains from terminals
+					// we should also allow this (see JIRA issue CRK-139)
+					// e.g. 4cofA: a whole loop is deleted (and a few residues inserted to replace it too) 
+					LOGGER.warn("Deletion of length "+(interv.beg-lastUniprotEnd)+" in sequence of PDB chain "+representativeChain+" with respect to its UniProt reference");
 				}
 				lastUniprotEnd = interv.end;
 				
@@ -405,10 +414,14 @@ public class ChainEvolContext implements Serializable {
 				msg+=" "+pdbInterv.beg+"-"+pdbInterv.end+","+interv.beg+"-"+interv.end;
 				
 			}
-			if (unacceptableGaps) {
-				LOGGER.warn("More than one UniProt segment SIFTS mapping for chain "+representativeChain);
-				LOGGER.warn("PDB chain "+representativeChain+" vs UniProt ("+
-							mappings.iterator().next().getUniprotId()+") segments:"+msg);
+
+			// common logging for all deletion/insertion cases
+			LOGGER.warn("PDB chain "+representativeChain+" vs UniProt ("+
+					mappings.iterator().next().getUniprotId()+") segments:"+msg);
+
+			
+			if (unacceptableGaps) {				
+				// insertions exist and they are too long: reject mapping
 				LOGGER.warn("Check if the PDB entry is biologically reasonable (likely to be an engineered entry). Won't do evolution analysis on this chain.");
 
 				String warning = "More than one UniProt segment of id "+mappings.iterator().next().getUniprotId()+
@@ -416,16 +429,15 @@ public class ChainEvolContext implements Serializable {
 						". This is most likely an engineered chain";
 				queryWarnings.add(warning);
 
-				// we continue with a null query, i.e. we treat it in the same way as no match
-				queryUniprotId = null;
+				return null;
+				
 			} else {
-				// this we need to do because sometimes the gaps are of only 2-3 residues and 
-				// it is a bit over the top to reject it plainly
-				// for some cases the gaps are even 0 length! (I guess a SIFTS error) e.g. 2jdi chain D
-				LOGGER.warn("More than one UniProt segment SIFTS mapping for chain "+representativeChain);
-				LOGGER.warn("PDB chain "+representativeChain+" vs UniProt ("+
-						mappings.iterator().next().getUniprotId()+") segments:"+msg);
-				LOGGER.warn("Gaps between segments are all below "+EppicParams.NUM_GAP_RES_FOR_CHIMERIC_FUSION+" residues. " +
+				// two cases here: 
+				// a) all deletions 
+				// b) insertions exist but they are within the allowed margins: warn only and continue using the mapping
+				//    (sometimes the gaps are of only 2-3 residues and it is a bit over the top to reject it plainly)
+				//    for some cases the gaps are even 0 length! (I guess a SIFTS error) e.g. 2jdi chain D				
+				LOGGER.warn("All segments are deletions or insertions are all below "+EppicParams.NUM_GAP_RES_FOR_CHIMERIC_FUSION+" residues. " +
 						"Will anyway proceed with this UniProt reference");
 				queryUniprotId = uniqUniIds.keySet().iterator().next();
 			}
