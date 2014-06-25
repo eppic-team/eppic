@@ -12,6 +12,8 @@ import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.persistence.EntityManager;
+
 public class UploadToDb {
 
 	private static DBHandler dbh;
@@ -145,6 +147,9 @@ public class UploadToDb {
 		
 		long totalStart = System.currentTimeMillis();
 		
+		EntityManager em = dbh.getEntityManager();
+		em.getTransaction().begin();
+		
 		for (File jobDirectory : jobsDirectories) {
 			i++;
 			
@@ -174,27 +179,23 @@ public class UploadToDb {
 			File webuiFile = new File(jobDirectory, currentPDB + ".webui.dat");
 			boolean isSerializedFilePresent = webuiFile.isFile();
 
-			Object toAdd = null;
+			PdbInfoDB pdbScoreItem = null;
+			if (isSerializedFilePresent) {
+				//long deserStart = System.currentTimeMillis();
+				pdbScoreItem = readFromSerializedFile(webuiFile);
+				//long deserEnd = System.currentTimeMillis();
+				//System.out.println(webuiFile.getName()+" deserialized in "+((deserEnd-deserStart)/1000)+" s");
+				// if something goes wrong while reading the file (a warning message is already printed in readFromSerializedFile)
+				if (pdbScoreItem == null) 
+					continue;				
+			} 
 
-			if(isSerializedFilePresent) {
-				
-				PdbInfoDB pdbScoreItem = null;
-				try {
-					ObjectInputStream in = new ObjectInputStream(new FileInputStream(webuiFile));
-					pdbScoreItem = (PdbInfoDB)in.readObject();
-					in.close();
-				} catch (IOException e) {
-					System.err.println("Problem reading serialized file, skipping entry"+webuiFile+". Error: "+e.getMessage());
-					continue;
-				} catch (ClassNotFoundException e) {
-					System.err.println("Problem reading serialized file, skipping entry"+webuiFile+". Error: "+e.getMessage());					
-					continue;
-				}
-
-				toAdd = pdbScoreItem;
-			}
-			else {
-				toAdd = currentPDB;
+			
+			// committing transaction only every 10 entries, hoping this speeds things up
+			if ((i % 10) == 0) {
+				em.getTransaction().commit();
+				em.clear();          
+				em.getTransaction().begin();
 			}
 
 			//MODE FORCE
@@ -202,8 +203,12 @@ public class UploadToDb {
 				boolean ifRemoved = dbh.removeJob(currentPDB);
 				if (ifRemoved) System.out.print(" Found.. Removing and Updating.. ");
 				else System.out.print(" Not Found.. Adding.. ");
-				if(isSerializedFilePresent) dbh.persistPdbInfo((PdbInfoDB) toAdd);
-				else dbh.persistJob((String) toAdd);
+				if(isSerializedFilePresent) {
+					dbh.persistFinishedJob(pdbScoreItem);
+				}
+				else {
+					dbh.persistErrorJob(currentPDB);
+				}
 				//continue;
 			}
 
@@ -212,8 +217,12 @@ public class UploadToDb {
 				boolean isPresent = dbh.checkJobExist(currentPDB);
 				if(!isPresent){
 					System.out.print(" Not Present.. Adding.. ");
-					if(isSerializedFilePresent) dbh.persistPdbInfo((PdbInfoDB) toAdd);
-					else dbh.persistJob((String) toAdd);
+					if(isSerializedFilePresent) {						
+						dbh.persistFinishedJob(pdbScoreItem);
+					}
+					else {
+						dbh.persistErrorJob(currentPDB);
+					}
 				}
 				else System.out.print(" Already Present.. Skipping.. ");
 				//continue;
@@ -250,11 +259,30 @@ public class UploadToDb {
 
 		}
 		
+		// committing the last bunch
+		em.getTransaction().commit();
+		em.close();
+		
 		long totalEnd = System.currentTimeMillis();
 		
 		System.out.println("Completed all "+jobsDirectories.length+" entries in "+((totalEnd-totalStart)/1000)+" s");
 
 
+	}
+	
+	private static PdbInfoDB readFromSerializedFile(File webuiFile) {
+		PdbInfoDB pdbScoreItem = null;
+		try {
+			ObjectInputStream in = new ObjectInputStream(new FileInputStream(webuiFile));
+			pdbScoreItem = (PdbInfoDB)in.readObject();
+			in.close();
+		} catch (IOException e) {
+			System.err.println("Problem reading serialized file, skipping entry"+webuiFile+". Error: "+e.getMessage());
+		} catch (ClassNotFoundException e) {
+			System.err.println("Problem reading serialized file, skipping entry"+webuiFile+". Error: "+e.getMessage());					
+		}
+		// will be null if an exception occurs
+		return pdbScoreItem;
 	}
 	
 	private static File[] listAllDirs(boolean isDividedLayout, File rootDir) {

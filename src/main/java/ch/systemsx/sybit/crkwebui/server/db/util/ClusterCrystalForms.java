@@ -37,11 +37,12 @@ public class ClusterCrystalForms {
 				" -l : sequence cluster level (default "+DEFAULT_SEQ_CLUSTER_LEVEL+")\n"+
 				" -c : contact overlap score cutoff (default "+String.format("%3.1f",DEFAULT_CO_CUTOFF)+")\n"+
 				" -a : minimum area cutoff (default "+String.format("%3.0f",DEFAULT_MIN_AREA)+")\n"+
-				" -o : lattice overlap score cutoff for crystal-form clustering (default "+String.format("%3.1f",DEFAULT_LOS_CLUSTER_CUTOFF)+")\n"+
+				" -s : lattice overlap score cutoff for crystal-form clustering (default "+String.format("%3.1f",DEFAULT_LOS_CLUSTER_CUTOFF)+")\n"+
 				" -A : ignore -i and calculate crystal-form clusters for all sequence clusters in DB\n"+
 				" -f : file to write the crystal form cluster identifiers (only used in -A)\n"+
 				" -F : file to write the global interface cluster identifiers (only used in -A)\n"+
-				" -d : print some debug output (full lattice comparison and interfaces comparison matrices)\n"; 
+				" -d : print some debug output (full lattice comparison and interfaces comparison matrices)\n"+
+				" -o : use "+DBHandler.DEFAULT_ONLINE_JPA+" persistence unit instead of "+DBHandler.DEFAULT_OFFLINE_JPA+"\n"; 
 
 
 		String pdbString = null;
@@ -55,7 +56,9 @@ public class ClusterCrystalForms {
 		File cfClustersFile = null;
 		File interfClustersFile = null;
 		
-		Getopt g = new Getopt("ClusterCrystalForms", args, "i:c:a:l:o:Af:F:dh?");
+		boolean useOnlineJpa = false;
+		
+		Getopt g = new Getopt("ClusterCrystalForms", args, "i:c:a:l:s:Af:F:doh?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
@@ -71,7 +74,7 @@ public class ClusterCrystalForms {
 			case 'l':
 				seqClusterLevel = SeqClusterLevel.getByLevel(Integer.parseInt(g.getOptarg())); 
 				break;		
-			case 'o':
+			case 's':
 				losClusterCutoff = Double.parseDouble(g.getOptarg());
 				break;
 			case 'A':
@@ -85,6 +88,9 @@ public class ClusterCrystalForms {
 				break;
 			case 'd':
 				debug = true;
+				break;
+			case 'o':
+				useOnlineJpa = true;
 				break;
 			case 'h':
 				System.out.println(help);
@@ -114,7 +120,12 @@ public class ClusterCrystalForms {
 		}
 
 		
-		DBHandler dbh = new DBHandler(DBHandler.DEFAULT_ONLINE_JPA);
+		DBHandler dbh = null;
+		if (useOnlineJpa) {
+			dbh = new DBHandler(DBHandler.DEFAULT_ONLINE_JPA);	
+		} else {
+			dbh = new DBHandler(DBHandler.DEFAULT_OFFLINE_JPA);
+		}
 
 
 		PrintWriter cfcPw = null;
@@ -245,9 +256,9 @@ public class ClusterCrystalForms {
 		System.out.println("Interfaces clusters calculated in "+((end - start)/1000)+" s");
 		System.out.println("Total number of interface clusters: "+interfClusters.size());
 		for (InterfaceCluster cluster:interfClusters) {	
-			if (debug) System.out.print("Cluster "+cluster.getId()+": ");
+			System.out.print("Cluster "+cluster.getId()+": ");
 			for (Interface member:cluster.getMembers()) {
-				if (debug) System.out.print(member.getInterface().getPdbCode()+"-"+member.getInterface().getInterfaceId()+" ");
+				System.out.print(member.getInterface().getPdbCode()+"-"+member.getInterface().getInterfaceId()+" ");
 				
 				if (icPw !=null ) icPw.println( member.getInterface().getUid()+"\t"+
 												member.getInterface().getPdbCode()+"\t"+
@@ -256,7 +267,7 @@ public class ClusterCrystalForms {
 												cluster.getId()+"\t"+
 												interfClusterGlobalId);
 			}
-			if (debug) System.out.println();
+			System.out.println();
 			interfClusterGlobalId++;
 			
 			if (icPw !=null ) icPw.flush();

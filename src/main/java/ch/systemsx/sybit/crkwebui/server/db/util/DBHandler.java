@@ -53,6 +53,9 @@ public class DBHandler {
 	@PersistenceUnit
 	private EntityManagerFactory emf;
 	
+	// TODO recheck how the EntityManager is handled
+	private EntityManager em;
+	
 	/**
 	 * Constructor
 	 */
@@ -69,21 +72,21 @@ public class DBHandler {
 		}
 	}
 	
-	private EntityManager getEntityManager(){
-		return this.emf.createEntityManager();
+	protected EntityManager getEntityManager(){
+		if (em==null)
+			em = this.emf.createEntityManager();
+		
+		return em;
 	}
 
 	
 	/**
 	 * Persists the given PdbInfoDB, using an empty place-holder job
-	 * @param PdbInfoDB
+	 * @param pdbInfo
 	 * 
 	 */
-	public void persistPdbInfo(PdbInfoDB pdbInfo){
-		EntityManager entityManager = this.getEntityManager();
-		entityManager.getTransaction().begin();
-		entityManager.persist(pdbInfo);
-
+	public void persistFinishedJob(PdbInfoDB pdbInfo){
+		
 		String pdbCode = pdbInfo.getPdbCode();
 
 		JobDB job = new JobDB();
@@ -98,21 +101,16 @@ public class DBHandler {
 
 		pdbInfo.setJob(job);
 		job.setPdbInfo(pdbInfo);
-		entityManager.persist(job);
-		entityManager.getTransaction().commit();
-		
-		entityManager.close();
-	
+				
+		em.persist(job);
 	}
 	
 	/**
 	 * Persists a JobDB with given pdbCode, assigning error status to it
-	 * @param String pdbCode
+	 * @param pdbCode
 	 */
-	public void persistJob(String pdbCode){
-		EntityManager entityManager = this.getEntityManager();
-		entityManager.getTransaction().begin();
-	
+	public void persistErrorJob(String pdbCode){
+		
 		JobDB job = new JobDB();
 		job.setJobId(pdbCode);
 		job.setEmail(null);
@@ -122,15 +120,13 @@ public class DBHandler {
 		job.setSubmissionDate(new Date());
 		job.setInputType(InputType.PDBCODE.getIndex());
 		job.setSubmissionId("-1");
-		entityManager.persist(job);
-		entityManager.getTransaction().commit();
+		em.persist(job);
 		
-		entityManager.close();
 	}
 	
 	/**
 	 * Removes entry from the DataBase for the given jobID
-	 * @param String jobID
+	 * @param jobID
 	 * @return true if removed; false if not
 	 */
 	public boolean removeJob(String jobID){
@@ -184,7 +180,7 @@ public class DBHandler {
 	 * Checks if an entry with the given jobID exists in the DataBase
 	 * Note this returns true whenever the query returns at least 1 record, i.e. it doesn't guarantee
 	 * that the entry is complete with data present in all cascading tables
-	 * @param String jobID
+	 * @param jobID
 	 * @return true if present; false if not
 	 */
 	public boolean checkJobExist(String jobID){
@@ -202,6 +198,43 @@ public class DBHandler {
 		// with the simple 'select' above the query is a monster with many joins (following the full hierarchy of Job, PdbInfo etc) 
 		cqJob.multiselect(rootJob.get(JobDB_.inputName), rootJob.get(JobDB_.inputType));
 		List<JobDB> queryJobList = em.createQuery(cqJob).getResultList();
+		int querySize = queryJobList.size();
+		
+		
+		
+		if(querySize>0) return true;
+		else return false;
+		
+	}
+	
+	/**
+	 * Checks if entries with the given jobIds exist in the DataBase
+	 * Note this returns true whenever the query returns at least 1 record, i.e. it doesn't guarantee
+	 * that the entries are complete with data present in all cascading tables
+	 * @param jobIds
+	 * @return true if present; false if not
+	 */
+	public boolean checkJobsExist(List<String> jobIds){
+		EntityManager em = this.getEntityManager();
+		
+		CriteriaBuilder cb = em.getCriteriaBuilder();
+
+		CriteriaQuery<JobDB> cq = cb.createQuery(JobDB.class);
+		Root<JobDB> rootJob = cq.from(JobDB.class);
+		
+		Predicate predicate = cb.conjunction();
+		for (String jobId:jobIds) {
+		    Predicate newPredicate = cb.equal(rootJob.get(JobDB_.jobId), jobId);
+		    predicate = cb.and(predicate, newPredicate);
+		}
+		cq.where(predicate);
+		
+		
+		// in order to make the query light-weight we only take these 2 fields for which there is 
+		// a corresponding constructor in JobDB
+		// with the simple 'select' above the query is a monster with many joins (following the full hierarchy of Job, PdbInfo etc) 
+		cq.multiselect(rootJob.get(JobDB_.inputName), rootJob.get(JobDB_.inputType));
+		List<JobDB> queryJobList = em.createQuery(cq).getResultList();
 		int querySize = queryJobList.size();
 		
 		em.close();
@@ -294,8 +327,8 @@ public class DBHandler {
 	}
 	
 	/**
-	 * Returns a list of user-jobs from the database after a specified submission date
-	 * @param Date subDate
+	 * Returns a list of user-jobs from the database newer than the specified date
+	 * @param afterDate
 	 * @return 
 	 */
 	public List<String> getUserJobList(Date afterDate){
@@ -372,7 +405,9 @@ public class DBHandler {
 			System.err.println("More than 1 PdbInfoDB returned for given PDB code: "+pdbCode);
 			return null;
 		}
-		em.close();
+
+		// the em can't be close here: because of LAZY fetching there can be later requests to db, should it be closed elsewhere? 
+		//em.close();
 		
 		return queryPDBList.get(0);
 	}
@@ -425,7 +460,7 @@ public class DBHandler {
 			pdbCodes.add(result.getPdbCode());
 		}
 		
-		em.close();
+		//em.close();
 		
 		return deserializePdbList(pdbCodes);
 	}
@@ -451,7 +486,7 @@ public class DBHandler {
 		
 		List<SeqClusterDB> results = em.createQuery(cq).getResultList();
 		
-		em.close();
+		//em.close();
 		
 		if (results.size()==0) return -1;
 		else if (results.size()>1) {
@@ -508,7 +543,7 @@ public class DBHandler {
 
 		List<SeqClusterDB> results = em.createQuery(cq).getResultList();
 
-		em.close();
+		//em.close();
 		
 		int clusterId = -1;
 		for (SeqClusterDB result:results) {
@@ -611,7 +646,7 @@ public class DBHandler {
 
 		List<ChainClusterDB> results = em.createQuery(cq).getResultList();
 		
-		em.close();
+		//em.close();
 		
 		Map<Integer, ChainClusterDB> map = new TreeMap<Integer, ChainClusterDB>();
 		
@@ -640,7 +675,7 @@ public class DBHandler {
 
 		List<SeqClusterDB> results = em.createQuery(cq).getResultList();
 		
-		em.close();
+		//em.close();
 		
 		int size = results.size();
 		
@@ -656,7 +691,7 @@ public class DBHandler {
 	 * @param seqCluster
 	 */
 	public void persistSeqCluster(SeqClusterDB seqCluster) {
-		EntityManager em = this.getEntityManager();
+		EntityManager em = this.emf.createEntityManager();
 				
 		em.getTransaction().begin();
 		em.persist(seqCluster);

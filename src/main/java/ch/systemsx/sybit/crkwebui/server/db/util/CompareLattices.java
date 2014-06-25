@@ -22,7 +22,8 @@ public class CompareLattices {
 				" -c : contact overlap score cutoff\n"+
 				" -a : minimum area cutoff\n"+
 				" -l : sequence cluster level to be used\n"+
-				" -d : print some debug output\n"; 
+				" -d : print some debug output\n"+
+				" -o : use "+DBHandler.DEFAULT_ONLINE_JPA+" persistence unit instead of "+DBHandler.DEFAULT_OFFLINE_JPA+"\n";
 		
 		boolean debug = false;
 		
@@ -33,7 +34,10 @@ public class CompareLattices {
 		double minArea = DEFAULT_MIN_AREA;
 		SeqClusterLevel seqClusterLevel = DEFAULT_SEQ_CLUSTER_LEVEL;
 
-		Getopt g = new Getopt("CompareLattices", args, "f:s:c:a:l:dh?");
+		boolean useOnlineJpa = false;
+		
+		
+		Getopt g = new Getopt("CompareLattices", args, "f:s:c:a:l:doh?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
@@ -59,6 +63,9 @@ public class CompareLattices {
 				System.out.println(help);
 				System.exit(0);
 				break;
+			case 'o':
+				useOnlineJpa = true;
+				break;
 			case '?':
 				System.err.println(help);
 				System.exit(1);
@@ -73,7 +80,12 @@ public class CompareLattices {
 		}
 		
 		
-		DBHandler dbh = new DBHandler(DBHandler.DEFAULT_ONLINE_JPA);
+		DBHandler dbh = null;
+		if (useOnlineJpa) {
+			dbh = new DBHandler(DBHandler.DEFAULT_ONLINE_JPA);	
+		} else {
+			dbh = new DBHandler(DBHandler.DEFAULT_OFFLINE_JPA);
+		}
 		
 		PdbInfo pdb1 = new PdbInfo(dbh.deserializePdb(pdbCode1));
 		PdbInfo pdb2 = new PdbInfo(dbh.deserializePdb(pdbCode2));
