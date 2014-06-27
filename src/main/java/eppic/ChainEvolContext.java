@@ -139,7 +139,7 @@ public class ChainEvolContext implements Serializable {
 			String pdbCode = parent.getPdb().getPdbCode();
 			if (useSifts) {
 				if (pdbCode==null || pdbCode.equals(PdbAsymUnit.NO_PDB_CODE)) {
-					LOGGER.info("Could not read a PDB code in file. Will blast to find query-to-uniprot mapping.");
+					LOGGER.info("Could not read a PDB code in file. Will blast to find query-to-UniProt mapping.");
 					queryUniprotId = findUniprotMapping(blastPlusBlastp, blastDbDir, blastDb, blastNumThreads, pdb2uniprotIdThreshold, pdb2uniprotQcovThreshold, useUniparc);
 				} else {
 
@@ -157,12 +157,12 @@ public class ChainEvolContext implements Serializable {
 				}
 				
 			} else {
-				LOGGER.info("Using SIFTS feature is turned off. Will blast to find query-to-uniprot mapping.");
+				LOGGER.info("Using SIFTS feature is turned off. Will blast to find query-to-UniProt mapping.");
 				queryUniprotId = findUniprotMapping(blastPlusBlastp, blastDbDir, blastDb, blastNumThreads, pdb2uniprotIdThreshold, pdb2uniprotQcovThreshold, useUniparc);
 			}
 		// 2) PDB code not known and so SiftsFeatures have to be found by blasting, aligning etc.
 		} else {
-			LOGGER.info("Input is from file, won't use SIFTS. Blasting to find the query-to-uniprot mapping. "
+			LOGGER.info("Input is from file, won't use SIFTS. Blasting to find the query-to-UniProt mapping. "
 					+ "Set the property USE_PDB_CODE_FROM_FILE to true if you want to change this behavior.");
 			queryUniprotId = findUniprotMapping(blastPlusBlastp, blastDbDir, blastDb, blastNumThreads, pdb2uniprotIdThreshold, pdb2uniprotQcovThreshold, useUniparc);
 		}
@@ -830,19 +830,19 @@ public class ChainEvolContext implements Serializable {
 				}
 			}
 			BlastHsp bestHsp = best.getMaxScoringHsp();
-			if ((bestHsp.getPercentIdentity()/100.0)>pdb2uniprotIdThreshold && bestHsp.getQueryCoverage()>pdb2uniprotQcovThreshold) {
+			if ((bestHsp.getQueryPercentIdentity()/100.0)>pdb2uniprotIdThreshold && bestHsp.getQueryCoverage()>pdb2uniprotQcovThreshold) {
 				uniprotMapping = getDeflineAccession(best);
 				LOGGER.info("Blast found UniProt id "+uniprotMapping+" as best hit with "+
-						String.format("%5.2f%% id and %4.2f coverage",bestHsp.getPercentIdentity(),bestHsp.getQueryCoverage()));
+						String.format("%5.2f%% id and %4.2f coverage",bestHsp.getQueryPercentIdentity(),bestHsp.getQueryCoverage()));
 			} else {
 				LOGGER.warn("No UniProt match could be found for the query chain "+representativeChain+" within cutoffs "+
 						String.format("%5.2f%% id and %4.2f coverage",pdb2uniprotIdThreshold,pdb2uniprotQcovThreshold));
 				LOGGER.warn("Best match was "+best.getSubjectId()+", with "+
-						String.format("%5.2f%% id and %4.2f coverage",bestHsp.getPercentIdentity(),bestHsp.getQueryCoverage()));
+						String.format("%5.2f%% id and %4.2f coverage",bestHsp.getQueryPercentIdentity(),bestHsp.getQueryCoverage()));
 				LOGGER.warn("Alignment: ");
 				LOGGER.warn(bestHsp.getAlignment().getFastaString(null, true));
 				queryWarnings.add("Blast didn't find a UniProt match for the chain. Best match was "+getDeflineAccession(best)+", with "+
-						String.format("%5.2f%% id and %4.2f coverage",bestHsp.getPercentIdentity(),bestHsp.getQueryCoverage()));
+						String.format("%5.2f%% id and %4.2f coverage",bestHsp.getQueryPercentIdentity(),bestHsp.getQueryCoverage()));
 			}			
 		} else {
 			LOGGER.warn("No UniProt match could be found for the query chain "+representativeChain+". Blast returned no hits.");

@@ -137,7 +137,7 @@ public class EppicParams {
 	private static final double   DEF_MIN_QUERY_COV_FOR_IDENTICALS_REMOVAL = 0.85;
 	
 	// default pdb2uniprot mapping blast thresholds
-	private static final double   DEF_PDB2UNIPROT_ID_THRESHOLD = 0.75;
+	private static final double   DEF_PDB2UNIPROT_ID_THRESHOLD = 0.90;
 	private static final double   DEF_PDB2UNIPROT_QCOV_THRESHOLD = 0.85;
 	
 	private static final boolean  DEF_ALLOW_CHIMERAS = false;
