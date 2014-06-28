@@ -24,6 +24,14 @@ import com.sencha.gxt.widget.core.client.grid.Grid;
 
 public class AlignmentsGridPanel extends VerticalLayoutContainer{
 	
+	//fixed widths for the columns
+	private static final int HEADER_COL_WIDTH = 85;
+	private static final int START_INDEX_COL_WIDTH = 65;
+	private static final int END_INDEX_COL_WIDTH = 65;
+
+	private static final int CHARACTER_WIDTH = 8;
+	
+	
 	private ChainCluster chainCluster;
 
 	private static final AlignmentDataModelProperties props = GWT.create(AlignmentDataModelProperties.class);
@@ -33,13 +41,7 @@ public class AlignmentsGridPanel extends VerticalLayoutContainer{
 	private ColumnModel<AlignmentDataModel> columnModel;
 	private Grid<AlignmentDataModel> grid;
 
-	//fixed widths for the columns
-	private static int headerColWidth = 80;
-	private static int startIndexWidth = 65;
-	private static int endIndexWidth = 65;
 
-	private static int characterWidth = 8;
-	
 	public AlignmentsGridPanel(ChainCluster chainCluster, int gridWidth, int gridHeight) {
 		
 		this.chainCluster = chainCluster;
@@ -85,12 +87,12 @@ public class AlignmentsGridPanel extends VerticalLayoutContainer{
     	List<ColumnConfig<AlignmentDataModel, ?>> columns = new ArrayList<ColumnConfig<AlignmentDataModel,?>>();
     	
     	ColumnConfig<AlignmentDataModel, PairwiseAlignmentInfo> headerCol = 
-    			new ColumnConfig<AlignmentDataModel, PairwiseAlignmentInfo>(props.rowHeader(), headerColWidth);
+    			new ColumnConfig<AlignmentDataModel, PairwiseAlignmentInfo>(props.rowHeader(), HEADER_COL_WIDTH);
     	headerCol.setCell(new PairwiseAlignmentInfoCell());
     	headerCol.setFixed(true);
     	
     	ColumnConfig<AlignmentDataModel, PairwiseAlignmentInfo> startIndexCol = 
-    			new ColumnConfig<AlignmentDataModel, PairwiseAlignmentInfo>(props.startIndex(), startIndexWidth);
+    			new ColumnConfig<AlignmentDataModel, PairwiseAlignmentInfo>(props.startIndex(), START_INDEX_COL_WIDTH);
     	startIndexCol.setCell(new PairwiseAlignmentInfoCell());
     	startIndexCol.setFixed(true);
     	startIndexCol.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
@@ -100,7 +102,7 @@ public class AlignmentsGridPanel extends VerticalLayoutContainer{
     	alignmentCol.setCell(new AlignmentCell());
     	
     	ColumnConfig<AlignmentDataModel, PairwiseAlignmentInfo> endIndexCol = 
-    			new ColumnConfig<AlignmentDataModel, PairwiseAlignmentInfo>(props.endIndex(), endIndexWidth);
+    			new ColumnConfig<AlignmentDataModel, PairwiseAlignmentInfo>(props.endIndex(), END_INDEX_COL_WIDTH);
     	endIndexCol.setCell(new PairwiseAlignmentInfoCell());
     	endIndexCol.setFixed(true);
     	
@@ -137,8 +139,8 @@ public class AlignmentsGridPanel extends VerticalLayoutContainer{
 	private int calculateNrOfCharactersPerLine()
 	{
 		int availableWidth = this.getOffsetWidth(true) -
-				headerColWidth - startIndexWidth - endIndexWidth - 50;
-		int nrOfChars = (availableWidth/characterWidth);
+				HEADER_COL_WIDTH - START_INDEX_COL_WIDTH - END_INDEX_COL_WIDTH - 50;
+		int nrOfChars = (availableWidth/CHARACTER_WIDTH);
 		
 		if(nrOfChars <=0 ) nrOfChars = 1;
 		
