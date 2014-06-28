@@ -9,6 +9,7 @@ import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.homologs.data.HomologsItemModel;
 import ch.systemsx.sybit.crkwebui.client.homologs.data.HomologsItemModelProperties;
 import ch.systemsx.sybit.crkwebui.client.homologs.gui.cells.IdentityBarCell;
+import ch.systemsx.sybit.crkwebui.client.homologs.gui.cells.LastTaxonCell;
 import ch.systemsx.sybit.crkwebui.client.homologs.gui.cells.UniprotIdCell;
 import ch.systemsx.sybit.crkwebui.shared.model.HomologIdentityData;
 import ch.systemsx.sybit.crkwebui.shared.model.Homolog;
@@ -91,6 +92,7 @@ public class HomologsGrid extends VerticalLayoutContainer
 				new ColumnConfig<HomologsItemModel, String>(props.lastTaxon(), 
 						Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("homologs_lastTax_width")));
 		lastTaxCol.setHeader(ApplicationContext.getSettings().getGridProperties().get("homologs_lastTax_header"));
+		lastTaxCol.setCell(new LastTaxonCell());
 		
 		configs.add(uniprotIdCol);
 		configs.add(seqIdCol);

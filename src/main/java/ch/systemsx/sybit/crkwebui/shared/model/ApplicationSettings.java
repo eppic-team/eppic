@@ -76,6 +76,11 @@ public class ApplicationSettings implements Serializable {
 	private String uniprotLinkUrl;
 	
 	/**
+	 * Base url for wikipedia search
+	 */
+	private String wikipediaLinkUrl;
+	
+	/**
 	 * Url to published paper.
 	 */
 	private String publicationLinkUrl;
@@ -356,13 +361,21 @@ public class ApplicationSettings implements Serializable {
 	public void setUniprotLinkUrl(String uniprotLinkUrl) {
 		this.uniprotLinkUrl = uniprotLinkUrl;
 	}
-
+	
 	/**
 	 * Retrieves base url to uniprot.
 	 * @return base url to uniprot
 	 */
 	public String getUniprotLinkUrl() {
 		return uniprotLinkUrl;
+	}
+	
+	public void setWikipediaUrl(String wikipediaLinkUrl) {
+		this.wikipediaLinkUrl = wikipediaLinkUrl;
+	}
+
+	public String getWikipediaLinkUrl() {
+		return wikipediaLinkUrl;
 	}
 	
 	/**

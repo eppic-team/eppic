@@ -49,6 +49,7 @@ public class ApplicationSettingsGenerator
 		String pdbLinkUrl = globalProperties.getProperty("pdb_link_url");
 		String uniparcLinkUrl = globalProperties.getProperty("uniparc_link_url");
 		String uniprotLinkUrl = globalProperties.getProperty("uniprot_link_url");
+		String wikipediaLinkUrl = globalProperties.getProperty("wikipedia_link_url");
 		String publicationLinkUrl = globalProperties.getProperty("publication_link_url");
 		boolean usePrecompiledResults = Boolean.parseBoolean(globalProperties.getProperty("use_precompiled","true"));
 		String uniprotVersion = globalProperties.getProperty("uniprot_version");
@@ -93,6 +94,7 @@ public class ApplicationSettingsGenerator
 		settings.setPdbLinkUrl(pdbLinkUrl);
 		settings.setUniparcLinkUrl(uniparcLinkUrl);
 		settings.setUniprotLinkUrl(uniprotLinkUrl);
+		settings.setWikipediaUrl(wikipediaLinkUrl);
 		settings.setPublicationLinkUrl(publicationLinkUrl);
 		settings.setUsePrecompiledResults(usePrecompiledResults);
 		settings.setUniprotVersion(uniprotVersion);
