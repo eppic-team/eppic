@@ -4,8 +4,10 @@
 package ch.systemsx.sybit.crkwebui.client.homologs.gui.panels;
 
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
+import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.links.ImageLinkWithTooltip;
 import ch.systemsx.sybit.crkwebui.shared.model.ChainCluster;
+import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.ui.HTML;
@@ -27,10 +29,12 @@ public class HomologsHeaderPanel extends HorizontalLayoutContainer{
 	private HTML subtitleLabel;
 	
 	private VerticalLayoutContainer downloadContainer;
+	private SimpleContainer potatoContainer;
+	private ImageLinkWithTooltip potatoImage;
 	private ImageLinkWithTooltip downloadImage;
 	private ColorPalettePanel colorPanel;
 	
-	public HomologsHeaderPanel(ChainCluster infoItem, String jobId){
+	public HomologsHeaderPanel(ChainCluster chainCluster, String jobId, PdbInfo pdbInfo){
 		this.setBorders(false);
 		
 		this.addStyleName("eppic-default-font");
@@ -38,10 +42,13 @@ public class HomologsHeaderPanel extends HorizontalLayoutContainer{
 		infoContainer = createInfoContainer();
 		this.add(infoContainer, new HorizontalLayoutData(1,-1));
 		
+		potatoContainer = createPotatoContainer(chainCluster, jobId, pdbInfo);
+		this.add(potatoContainer, new HorizontalLayoutData(60,-1));
+		
 		downloadContainer = createDownloadContainer();
 		this.add(downloadContainer, new HorizontalLayoutData(60,-1));
 		
-		updateContent(infoItem, jobId);
+		updateContent(chainCluster, jobId);
 	}
 
 	/**
@@ -75,9 +82,9 @@ public class HomologsHeaderPanel extends HorizontalLayoutContainer{
 	 * @param infoItem
 	 * @param jobId
 	 */
-	private void fillDownloadsLink(ChainCluster infoItem, String jobId) {
+	private void fillDownloadsLink(ChainCluster chainCluster, String jobId) {
 		String source = "resources/icons/download.png";
-		String alignmentId = infoItem.getRepChain();
+		String alignmentId = chainCluster.getRepChain();
     	String downloadLink = GWT.getModuleBaseURL() + "fileDownload?type=fasta&id=" + jobId + "&alignment=" + alignmentId;
 		downloadImage.setData(source, 
 						20, 20, 
@@ -112,6 +119,34 @@ public class HomologsHeaderPanel extends HorizontalLayoutContainer{
 						"");
 		
 		vlc.add(downloadImage);
+		
+		return vlc;
+		
+	}
+	
+	/**
+	 * Creates the potato container
+	 * @return container
+	 */
+	private SimpleContainer createPotatoContainer(ChainCluster chainCluster, String jobId, PdbInfo pdbInfo) {
+		SimpleContainer vlc = new SimpleContainer();
+		
+		// from SequenceInfoPanel
+		String alignmentId = chainCluster.getRepChain();
+		String pdbName = pdbInfo.getTruncatedInputName();
+		String downloadPseLink = GWT.getModuleBaseURL() + 
+				"fileDownload?type=entropiespse&id=" + jobId + "&alignment=" + alignmentId; 
+		String colorPseIconImgSrc = 
+				ApplicationContext.getSettings().getResultsLocation() + 
+				jobId+"/"+
+				pdbName +"."+alignmentId+".entropies.png";
+
+		potatoImage = new ImageLinkWithTooltip(colorPseIconImgSrc, 
+						40, 40, 
+						AppPropertiesManager.CONSTANTS.homologs_panel_entropiespse_hint(), 
+						downloadPseLink);
+		
+		vlc.add(potatoImage);
 		
 		return vlc;
 		

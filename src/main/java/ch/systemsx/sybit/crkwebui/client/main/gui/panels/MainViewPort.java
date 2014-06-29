@@ -329,6 +329,7 @@ public class MainViewPort extends BorderLayoutContainer
 	 */
 	public void displayHomologsWindow(ChainCluster chainCluster,
 										String pdbName,
+										PdbInfo pdbInfo,
 										int xPosition,
 										int yPosition)
 	{
@@ -337,7 +338,7 @@ public class MainViewPort extends BorderLayoutContainer
 			homologsWindow.setVisible(false);
 		}
 		
-		homologsWindow = new HomologsWindow(ApplicationContext.getWindowData(), chainCluster, pdbName);
+		homologsWindow = new HomologsWindow(ApplicationContext.getWindowData(), chainCluster, pdbName, pdbInfo);
 		homologsWindow.updateWindowContent();
 		homologsWindow.setPagePosition(xPosition, yPosition);
 

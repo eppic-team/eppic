@@ -9,6 +9,7 @@ import ch.systemsx.sybit.crkwebui.client.commons.gui.windows.ResizableWindow;
 import ch.systemsx.sybit.crkwebui.client.homologs.gui.panels.HomologsGrid;
 import ch.systemsx.sybit.crkwebui.client.homologs.gui.panels.HomologsHeaderPanel;
 import ch.systemsx.sybit.crkwebui.shared.model.ChainCluster;
+import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 import ch.systemsx.sybit.crkwebui.shared.model.WindowData;
 
 /**
@@ -18,8 +19,8 @@ import ch.systemsx.sybit.crkwebui.shared.model.WindowData;
  */
 public class HomologsWindow extends ResizableWindow {
 
-	private static int ALIGNMENT_WINDOW_DEFAULT_WIDTH = 600;
-	private static int ALIGNMENT_WINDOW_DEFAULT_HEIGHT = 400;
+	private final static int ALIGNMENT_WINDOW_DEFAULT_WIDTH  = 600;
+	private final static int ALIGNMENT_WINDOW_DEFAULT_HEIGHT = 400;
 	
 	private ChainCluster chainCluster;
 	private String jobId;
@@ -27,14 +28,14 @@ public class HomologsWindow extends ResizableWindow {
 	private HomologsHeaderPanel headerPanel;
 	private HomologsGrid homologsGrid;
 	
-	public HomologsWindow(WindowData windowData, ChainCluster chainCluster, String jobId){
+	public HomologsWindow(WindowData windowData, ChainCluster chainCluster, String jobId, PdbInfo pdbInfo){
 		super(ALIGNMENT_WINDOW_DEFAULT_WIDTH, ALIGNMENT_WINDOW_DEFAULT_HEIGHT, windowData);
 		this.chainCluster = chainCluster;
 		this.jobId = jobId;
 		
 		this.setHideOnButtonClick(true);
 		
-		headerPanel = new HomologsHeaderPanel(chainCluster, jobId);
+		headerPanel = new HomologsHeaderPanel(chainCluster, jobId, pdbInfo);
 		homologsGrid = new HomologsGrid();
 		
 		DockLayoutPanel dock = new DockLayoutPanel(Unit.PX);

@@ -2,6 +2,7 @@ package ch.systemsx.sybit.crkwebui.client.commons.events;
 
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowHomologsHandler;
 import ch.systemsx.sybit.crkwebui.shared.model.ChainCluster;
+import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 
 import com.google.gwt.event.shared.GwtEvent;
 
@@ -17,6 +18,8 @@ public class ShowHomologsEvent extends GwtEvent<ShowHomologsHandler> {
 	 * homologs Info Item
 	 */
 	private final ChainCluster chainCluster;
+	
+	private final PdbInfo pdbInfo;
 	
 	/**
 	 * Name of the job id
@@ -35,10 +38,12 @@ public class ShowHomologsEvent extends GwtEvent<ShowHomologsHandler> {
 	
 	public ShowHomologsEvent(ChainCluster chainCluster,
 			String jobId,
+			PdbInfo pdbInfo,
 			int xPosition,
 			int yPosition)
 	{
 		this.chainCluster = chainCluster;
+		this.pdbInfo = pdbInfo;
 		this.jobId = jobId;
 		this.xPosition = xPosition;
 		this.yPosition = yPosition;
@@ -55,8 +60,12 @@ public class ShowHomologsEvent extends GwtEvent<ShowHomologsHandler> {
 		
 	}
 
-	public ChainCluster getHomologsInfoItem() {
+	public ChainCluster getChainCluster() {
 		return chainCluster;
+	}
+	
+	public PdbInfo getPdbInfo() {
+		return pdbInfo;
 	}
 
 	public String getJobId() {

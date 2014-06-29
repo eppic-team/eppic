@@ -229,8 +229,9 @@ public class MainController
 			
 			@Override
 			public void onShowHomologs(ShowHomologsEvent event) {
-				mainViewPort.displayHomologsWindow(event.getHomologsInfoItem(),
+				mainViewPort.displayHomologsWindow(event.getChainCluster(),
 						event.getJobId(), 
+						event.getPdbInfo(),
 						event.getxPosition(), 
 						event.getyPosition());
 				
