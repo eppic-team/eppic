@@ -224,15 +224,16 @@ public class SearchGridPanel extends VerticalLayoutContainer
 	sequenceClusterTypeCol.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 	expMethodCol.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 	spaceGroupCol.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-	cellACol.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-	cellBCol.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-	cellCCol.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-	cellAlphaCol.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-	cellBetaCol.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-	cellGammaCol.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-	resolutionCol.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-	rFreeCol.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-	crystalFormIdCol.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+	cellACol.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+	cellBCol.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+	cellCCol.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+	cellAlphaCol.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+	cellBetaCol.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+	cellGammaCol.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+	resolutionCol.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+	rFreeCol.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+	crystalFormIdCol.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+	crystalFormIdCol.setHidden(true);
 
 	resultsConfig = new ArrayList<ColumnConfig<PDBSearchResult, ?>>();
 	resultsConfig.add(sequenceClusterTypeCol);
