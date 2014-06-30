@@ -129,9 +129,9 @@
 	font-weight: bold;
 }
 
-.eppic-search-panel-results-count{
-	font-style: italic;
-}
+/* .eppic-search-panel-results-count{ */
+/* 	font-style: italic; */
+/* } */
 
 .eppic-search-grid-pdb-code A:link {text-decoration: none; color: #15428B;}
 .eppic-search-grid-pdb-code A:visited {text-decoration: none; color: #15428B;}
