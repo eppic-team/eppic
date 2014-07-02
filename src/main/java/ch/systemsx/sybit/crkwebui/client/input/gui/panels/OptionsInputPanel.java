@@ -66,14 +66,6 @@ public class OptionsInputPanel extends FieldSet
 		this.setCollapsible(true);
 		this.setBorders(false);
 			
-		// following code seems to be useless, commenting out JD 14.06.2014
-//		int height = 400;
-//		
-//		if(height > ApplicationContext.getAdjustedWindowData().getWindowHeight() * 0.4)
-//		{
-//			height = (int) (ApplicationContext.getAdjustedWindowData().getWindowHeight() * 0.4);
-//		}		
-
 		createAlignmentsParametersPanel(searchModeDefaultList);
 	}
 	
@@ -85,7 +77,6 @@ public class OptionsInputPanel extends FieldSet
 	private ToolTipConfig createToolTipConfig(String text){
 		ToolTipConfig config = new ToolTipConfig();
 	    config.setBodyHtml(StyleGenerator.defaultFontStyle(text));
-	  //  config.setMouseOffsetX(FIELD_WIDTH);
 	    config.setMouseOffsetY(0);
 	    config.setAnchor(Side.LEFT);	    
 	    return config;
