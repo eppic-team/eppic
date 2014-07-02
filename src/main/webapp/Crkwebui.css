@@ -89,7 +89,7 @@
 }
 
 .eppic-default-right-padding {
-	padding-right: 10px;
+	padding-right: 8px;
 }
 
 .eppic-no-padding {
@@ -313,6 +313,13 @@
 .eppic-citation A:visited {color: #15428B; text-decoration: none}
 .eppic-citation A:active {color: #15428B; text-decoration: none}
 .eppic-citation A:hover {color: #15428B; text-decoration: underline}
+
+.eppic-input-form {
+	min-height: 200px;
+}
+.eppic-input-pannel {
+	min-height: 450px;
+}
 
 .eppic-rounded-border {
 	border-radius: 5px;

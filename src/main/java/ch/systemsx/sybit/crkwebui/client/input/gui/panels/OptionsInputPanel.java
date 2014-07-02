@@ -85,7 +85,7 @@ public class OptionsInputPanel extends FieldSet
 	private ToolTipConfig createToolTipConfig(String text){
 		ToolTipConfig config = new ToolTipConfig();
 	    config.setBodyHtml(StyleGenerator.defaultFontStyle(text));
-	    config.setMouseOffsetX(FIELD_WIDTH);
+	  //  config.setMouseOffsetX(FIELD_WIDTH);
 	    config.setMouseOffsetY(0);
 	    config.setAnchor(Side.LEFT);	    
 	    return config;

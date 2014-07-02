@@ -37,16 +37,18 @@ import com.google.gwt.user.client.ui.HTMLPanel;
 import com.google.gwt.user.client.ui.HasValue;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.RadioButton;
+import com.sencha.gxt.core.client.dom.ScrollSupport.ScrollMode;
+import com.sencha.gxt.core.client.util.Margins;
+import com.sencha.gxt.core.client.util.Padding;
+import com.sencha.gxt.core.client.util.ToggleGroup;
 import com.sencha.gxt.widget.core.client.FramedPanel;
+import com.sencha.gxt.widget.core.client.button.TextButton;
 import com.sencha.gxt.widget.core.client.container.BoxLayoutContainer.BoxLayoutPack;
 import com.sencha.gxt.widget.core.client.container.HBoxLayoutContainer;
 import com.sencha.gxt.widget.core.client.container.HorizontalLayoutContainer;
 import com.sencha.gxt.widget.core.client.container.HorizontalLayoutContainer.HorizontalLayoutData;
 import com.sencha.gxt.widget.core.client.container.SimpleContainer;
 import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer;
-import com.sencha.gxt.core.client.dom.ScrollSupport.ScrollMode;
-import com.sencha.gxt.core.client.util.Margins;
-import com.sencha.gxt.core.client.util.Padding;
 import com.sencha.gxt.widget.core.client.event.ExpandEvent;
 import com.sencha.gxt.widget.core.client.event.ExpandEvent.ExpandHandler;
 import com.sencha.gxt.widget.core.client.event.SelectEvent;
@@ -54,13 +56,11 @@ import com.sencha.gxt.widget.core.client.event.SelectEvent.SelectHandler;
 import com.sencha.gxt.widget.core.client.event.SubmitCompleteEvent;
 import com.sencha.gxt.widget.core.client.event.SubmitCompleteEvent.SubmitCompleteHandler;
 import com.sencha.gxt.widget.core.client.form.FieldLabel;
-import com.sencha.gxt.widget.core.client.form.TextField;
+import com.sencha.gxt.widget.core.client.form.FileUploadField;
 import com.sencha.gxt.widget.core.client.form.FormPanel;
 import com.sencha.gxt.widget.core.client.form.FormPanel.Encoding;
 import com.sencha.gxt.widget.core.client.form.FormPanel.Method;
-import com.sencha.gxt.core.client.util.ToggleGroup;
-import com.sencha.gxt.widget.core.client.button.TextButton;
-import com.sencha.gxt.widget.core.client.form.FileUploadField;
+import com.sencha.gxt.widget.core.client.form.TextField;
 
 /**
  * Panel used to submit new job.
@@ -108,7 +108,7 @@ public class InputDataPanel extends DisplayPanel
 	{
 		VerticalLayoutContainer mainContainer = new VerticalLayoutContainer();
 		
-		mainContainer.add(new SimpleContainer(), new VerticalLayoutData(1, 50, new Margins(0)));
+		mainContainer.add(new SimpleContainer(), new VerticalLayoutData(1, 20, new Margins(0)));
 
 		HorizontalLayoutContainer headerContainer = createHeaderRowContainer();
 		mainContainer.add(headerContainer, new VerticalLayoutData(1, 90, new Margins(0,0,0,0)));
@@ -158,12 +158,13 @@ public class InputDataPanel extends DisplayPanel
 	 */
 	private HorizontalLayoutContainer createFieldsetRowContainer()
 	{
-		FramedPanel panel = new FramedPanel();
+		final FramedPanel panel = new FramedPanel();
 		panel.getHeader().setVisible(false);
 		panel.setButtonAlign(BoxLayoutPack.CENTER);
 		panel.setWidth(LABEL_WIDTH+FIELD_WIDTH+2*PADDING_WIDTH+20);
-		//panel.setDeferHeight(true);
-		panel.setHeight(PANEL_HEIGHT);
+		panel.setDeferHeight(true);
+		panel.addStyleName("eppic-input-pannel");
+		//panel.setHeight(PANEL_HEIGHT);
 		
 		formPanel = createFormPanel();
 
@@ -172,7 +173,7 @@ public class InputDataPanel extends DisplayPanel
 		final VerticalLayoutContainer formContainer = new VerticalLayoutContainer();
 		formContainer.setScrollMode(ScrollMode.AUTOY);
 		formContainer.getElement().setPadding(new Padding(PADDING_WIDTH));
-
+		formContainer.addStyleName("eppic-input-form");
 		pdbCodeRadio = createPDBCodeFileRadioItem(AppPropertiesManager.CONSTANTS.input_pdb_code_radio());
 		pdbCodeRadio.setValue(true);
 
@@ -219,7 +220,8 @@ public class InputDataPanel extends DisplayPanel
 			@Override
 			public void onExpand(ExpandEvent event) {
 				formContainer.syncSize();
-				
+				panel.forceLayout();
+				panel.syncSize();
 			}
 		});
 		optionsInputPanel.setVisible(false);
@@ -289,7 +291,7 @@ public class InputDataPanel extends DisplayPanel
 		formPanel.setEncoding(Encoding.MULTIPART);
 		formPanel.setMethod(Method.POST);
 		formPanel.setWidth(LABEL_WIDTH+FIELD_WIDTH);
-		//formPanel.setDeferHeight(true); 
+		formPanel.setDeferHeight(true); 
 
 		formPanel.addStyleName("eppic-rounded-border");
 
@@ -488,7 +490,7 @@ public class InputDataPanel extends DisplayPanel
 	private HorizontalLayoutContainer createCurrentUniprotPanel()
 	{
 		HorizontalLayoutContainer uniprotPanel = new HorizontalLayoutContainer();
-		uniprotPanel.getElement().applyStyles("textAlign:center; paddingTop:25px; height:22px; paddingBottom:1px;");
+		//uniprotPanel.getElement().applyStyles("textAlign:center; paddingTop:25px; height:22px; paddingBottom:1px;");
 
 		String uniprotVersionText = AppPropertiesManager.CONSTANTS.input_uniprot_version() + ":&nbsp;" +
 				                    ApplicationContext.getSettings().getUniprotVersion() ;
