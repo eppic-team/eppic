@@ -70,6 +70,7 @@ import com.sencha.gxt.widget.core.client.form.FileUploadField;
  */
 public class InputDataPanel extends DisplayPanel
 {
+	private static final int RADIOGROUP_WIDTH = 200;
 	private static final int LABEL_WIDTH = 150;
 	private static final int FIELD_WIDTH = 250;
 	private static final int PADDING_WIDTH = 25;
@@ -178,7 +179,7 @@ public class InputDataPanel extends DisplayPanel
 		pdbFileRadio = createPDBCodeFileRadioItem(AppPropertiesManager.CONSTANTS.input_upload_file_radio());
 
 		inputRadioGroupContainer = createInputRadioGroup();
-
+		
 		formContainer.add(inputRadioGroupContainer, new VerticalLayoutData(-1, -1, new Margins(0, 0, 10, LABEL_WIDTH)));
 
 		fileLabel = createFileUploadField(AppPropertiesManager.CONSTANTS.input_file());
@@ -371,6 +372,8 @@ public class InputDataPanel extends DisplayPanel
 		HBoxLayoutContainer radioContainer = new HBoxLayoutContainer();
 		radioContainer.add(pdbCodeRadio);
 		radioContainer.add(pdbFileRadio);
+		radioContainer.setWidth(RADIOGROUP_WIDTH);
+
 		return radioContainer;
 	}
 
