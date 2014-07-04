@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.Query;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -264,7 +265,11 @@ public class ChainClusterDAOJpa implements ChainClusterDAO {
 	    
 	    return (Integer)query.getSingleResult();
 	    
-	}catch(Throwable e)
+	}catch(NoResultException e) {
+	    log.warn("No cluster id.");
+	    return -1;
+	}
+	catch(Throwable e)
 	{
 	    e.printStackTrace();
 	    throw new DaoException(e);
