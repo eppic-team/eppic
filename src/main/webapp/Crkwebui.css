@@ -377,6 +377,10 @@
 	color: #CA002A;
 }
 
+.eppic-residuespanel-rightaligned {
+	text-align: right;
+}
+
 .eppic-residues-summary {
 	float: center;
 	padding-top: 5px;

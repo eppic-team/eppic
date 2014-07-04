@@ -4,9 +4,9 @@ import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.labels.LabelWithTooltip;
-import ch.systemsx.sybit.crkwebui.shared.model.Residue;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceScore;
 import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
+import ch.systemsx.sybit.crkwebui.shared.model.Residue;
 
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.ui.FlexTable;
@@ -64,11 +64,17 @@ public class ResiduesSummaryPanel extends CssFloatLayoutContainer
 			 List<Residue> residues){
 		calculateData(pdbScoreItem, selectedInterfaceId, residues);
 		
-		summaryTable.setWidget(0, 1, new Label(Integer.toString(coreSize)));
-		summaryTable.setWidget(1, 1, new Label(Integer.toString(rimSize)));
-		summaryTable.setWidget(0, 3, new Label(number.format(entropyRatioValue)));
-		summaryTable.setWidget(1, 3, new Label(number.format(entropyZscore)));
+		summaryTable.setWidget(0, 1, createRightAlignedLabel(Integer.toString(coreSize)));
+		summaryTable.setWidget(1, 1, createRightAlignedLabel(Integer.toString(rimSize)));
+		summaryTable.setWidget(0, 3, createRightAlignedLabel(number.format(entropyRatioValue)));
+		summaryTable.setWidget(1, 3, createRightAlignedLabel(number.format(entropyZscore)));
 		
+	}
+
+	Label createRightAlignedLabel(String labelText) {
+	    Label coreSizeLabel = new Label(labelText);
+	    coreSizeLabel.addStyleName("eppic-residuespanel-rightaligned");
+	    return coreSizeLabel;
 	}
 
 	/**
