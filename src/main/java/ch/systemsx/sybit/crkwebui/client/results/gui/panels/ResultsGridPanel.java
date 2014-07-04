@@ -211,7 +211,7 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 		
 		column.setColumnTextClassName("eppic-results-grid-common-cells");
 		column.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-		
+		column.setMenuDisabled(true);
 	}
 	
 	private SummaryColumnConfig<InterfaceItemModel, String> getWarningsColumn() {
@@ -264,6 +264,7 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 		if(isSummarySet) column.setSummaryRenderer(new MethodsSummaryRenderer());
 		
 		fillColumnSettings(column, type);
+		
 		return column;
 	}
 
@@ -299,7 +300,6 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 		
 		fillColumnSettings(areaColumn, "area");
 		areaColumn.setCell(new TwoDecimalDoubleCell());
-		
 		return areaColumn;
 	}
 
