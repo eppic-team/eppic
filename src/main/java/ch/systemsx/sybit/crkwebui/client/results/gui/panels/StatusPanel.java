@@ -2,9 +2,7 @@ package ch.systemsx.sybit.crkwebui.client.results.gui.panels;
 
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
-import ch.systemsx.sybit.crkwebui.client.commons.events.ShowErrorEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.panels.DisplayPanel;
-import ch.systemsx.sybit.crkwebui.client.commons.managers.EventBusManager;
 import ch.systemsx.sybit.crkwebui.client.commons.services.eppic.CrkWebServiceProvider;
 import ch.systemsx.sybit.crkwebui.client.commons.util.EscapedStringGenerator;
 import ch.systemsx.sybit.crkwebui.shared.model.InputType;
@@ -23,11 +21,11 @@ import com.sencha.gxt.core.client.util.Padding;
 import com.sencha.gxt.widget.core.client.FramedPanel;
 import com.sencha.gxt.widget.core.client.ProgressBar;
 import com.sencha.gxt.widget.core.client.button.TextButton;
+import com.sencha.gxt.widget.core.client.container.BoxLayoutContainer.BoxLayoutPack;
 import com.sencha.gxt.widget.core.client.container.HorizontalLayoutContainer;
 import com.sencha.gxt.widget.core.client.container.HorizontalLayoutContainer.HorizontalLayoutData;
 import com.sencha.gxt.widget.core.client.container.SimpleContainer;
 import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer;
-import com.sencha.gxt.widget.core.client.container.BoxLayoutContainer.BoxLayoutPack;
 import com.sencha.gxt.widget.core.client.event.SelectEvent;
 import com.sencha.gxt.widget.core.client.event.SelectEvent.SelectHandler;
 import com.sencha.gxt.widget.core.client.form.FormPanel;
@@ -50,7 +48,6 @@ public class StatusPanel extends DisplayPanel
 	private HorizontalLayoutContainer statusContainer;
 	
 	//Displays when error occurs while loading
-	private HorizontalLayoutContainer errorContainer;
 	
 	//Elements from status container
 	private HTML jobId;
@@ -62,9 +59,6 @@ public class StatusPanel extends DisplayPanel
 	private ProgressBar statusBar;
 	private HTML userMessage;
 	
-	//Elements from error container
-	private HTML errorLog;
-
 	public StatusPanel()
 	{
 		init();
@@ -83,7 +77,6 @@ public class StatusPanel extends DisplayPanel
 		dock.addNorth(identifierHeaderPanel,50);
 		
 		statusContainer = createStatusContainer();
-		errorContainer = createErrorContainer();
 		
 		dock.add(statusContainer);
 		
@@ -139,27 +132,10 @@ public class StatusPanel extends DisplayPanel
 		return statusContainer;
 	}
 	
-	/**
-	 * creates the panel to be displayed in cases of error
-	 * @return the container
-	 */
-	private HorizontalLayoutContainer createErrorContainer(){
-		HorizontalLayoutContainer mainContainer = new HorizontalLayoutContainer();
-		mainContainer.addStyleName("eppic-default-font");
-		
-		HTML errorLogLabel = new HTML(AppPropertiesManager.CONSTANTS.status_panel_error_message());
-		errorLogLabel.addStyleName("eppic-status-panel-error-message");
-		
-//		errorLog = new HTML();
-//		errorLog.addStyleName("eppic-status-panel-error-message");
-		
-		VerticalLayoutContainer errorMessage = new VerticalLayoutContainer();
-		errorMessage.add(errorLogLabel);
-		//errorMessage.add(errorLog);
-		
-		mainContainer.add(errorMessage, new HorizontalLayoutData(0.80,1, new Margins(10, 100, 10, 100)));
-		
-		return mainContainer;
+	private HTML createErrorMessage() {
+	    HTML errorLogLabel = new HTML(AppPropertiesManager.CONSTANTS.status_panel_error_message());
+	    errorLogLabel.addStyleName("eppic-status-panel-error-message");
+	    return errorLogLabel;
 	}
 	
 	/**
@@ -269,7 +245,6 @@ public class StatusPanel extends DisplayPanel
 	 */
 	public void fillData(ProcessingInProgressData statusData)
 	{
-		dock.remove(errorContainer);
 		dock.remove(statusContainer);
 		dock.add(statusContainer);
 		enableControls();
@@ -291,13 +266,14 @@ public class StatusPanel extends DisplayPanel
 			{
 				runningImage.setVisible(true);
 				
-				String message = AppPropertiesManager.CONSTANTS.status_panel_subtitle();
-				String link = GWT.getHostPageBaseURL() + "#id/" + 
-						EscapedStringGenerator.generateEscapedString(statusData.getJobId());
-				message = message.replaceFirst("%s", "<a href='"+link+"'>");
-				message = message.replaceFirst("%s", "</a>");
-				userMessage.setHTML(message);
-
+				if(!status.getHTML().equals(StatusOfJob.ERROR.getName())) {
+        				String message = AppPropertiesManager.CONSTANTS.status_panel_subtitle();
+        				String link = GWT.getHostPageBaseURL() + "#id/" + 
+        						EscapedStringGenerator.generateEscapedString(statusData.getJobId());
+        				message = message.replaceFirst("%s", "<a href='"+link+"'>");
+        				message = message.replaceFirst("%s", "</a>");
+        				userMessage.setHTML(message);
+				}
 				killJob.setVisible(true);
 
 				double processCompleted =  (statusData.getStep().getCurrentStepNumber()*1.0)/
@@ -311,8 +287,7 @@ public class StatusPanel extends DisplayPanel
 				statusBar.updateProgress(processCompleted, progressText);
 				if(status.getHTML().equals(StatusOfJob.ERROR.getName())){
 				    	disableControls();
-					dock.add(errorContainer);
-				
+					userMessage.setHTML(createErrorMessage().toString());
 				}
 
 			}
