@@ -98,9 +98,9 @@ public class ClustersGridView extends GroupSummaryView<InterfaceItemModel> {
 		    tooltip = tooltip.replaceAll("\n", "<br/>");
 		cellContentInHtml = prepareMethodCallCellContent(value, tooltip);
 		cellInnerClasses += " eppic-results-final-call";
-		if(value.toLowerCase().equals("bio")){
+		if(value.toLowerCase().startsWith("bio")){
 		    cellInnerClasses += " eppic-results-grid-cell-bio";
-		} else if(value.toLowerCase().equals("xtal")){
+		} else if(value.toLowerCase().startsWith("xtal")){
 		    cellInnerClasses += " eppic-results-grid-cell-xtal";
 		}
 	    } else {

@@ -262,7 +262,6 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 		}
 		
 		if(isSummarySet) column.setSummaryRenderer(new MethodsSummaryRenderer());
-		
 		fillColumnSettings(column, type);
 		
 		return column;
@@ -459,6 +458,7 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 						if(interfaceScore.getMethod().equals(ScoringMethod.EPPIC_FINAL))
 						{
 							model.setFinalCallName(interfaceScore.getCallName());
+							model.setFinalConfidence(interfaceScore.getConfidence());
 						}
 					}
 
@@ -483,6 +483,7 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 						if(clusterScore.getMethod().equals(ScoringMethod.EPPIC_FINAL))
 						{
 							model.setClusterFinalCall(clusterScore.getCallName());
+							model.setClusterFinalConfidence(clusterScore.getConfidence());
 						}
 					}
 

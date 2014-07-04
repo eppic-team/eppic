@@ -45,6 +45,9 @@ public class InterfaceItemModel implements Serializable {
 	private String warningsImagePath = "resources/icons/warning_icon.png";
 	private String detailsButtonText = AppPropertiesManager.CONSTANTS.results_grid_details_button();
 
+	private double confidence;
+	private double clusterConfidence;
+
 	public InterfaceItemModel()
 	{
 		interfaceId = 0;
@@ -225,5 +228,20 @@ public class InterfaceItemModel implements Serializable {
 	public void setClusterFinalCall(String clusterFinalCall) {
 		this.clusterFinalCall = clusterFinalCall;
 	}
+
+	public void setFinalConfidence(double confidence) {
+	    this.confidence = confidence;
+	}
 	
+	public double getConfidence() {
+	    return confidence;
+	}
+	
+	public void setClusterFinalConfidence(double confidence) {
+	    this.clusterConfidence = confidence;
+	}
+	
+	public double getClusterConfidence() {
+	    return clusterConfidence;
+	}
 }

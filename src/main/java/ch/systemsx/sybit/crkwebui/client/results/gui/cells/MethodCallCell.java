@@ -73,11 +73,22 @@ public class MethodCallCell extends AbstractCell<String> {
 			color = "red";
 		}
 
-		if(type.equals(ScoringMethod.EPPIC_FINAL)) value=value.toUpperCase();
+		if(type.equals(ScoringMethod.EPPIC_FINAL)) {
+		    value = value.toUpperCase();
+		    value += addIcon(item.getConfidence());
+		}
 
 		tooltipText = EscapedStringGenerator.generateEscapedString(tooltipText);
 		tooltipText = "<div class=\"eppic-default-font eppic-results-grid-tooltip\">" + tooltipText + "</div>";
 		sb.appendHtmlConstant("<span style='color:" + color + ";' qtip='" + tooltipText + "'>"+ value +"</span>");
+	}
+
+	private String addIcon(double d) {
+	    if(d > .66)
+		return "<img src=\"resources/icons/excellent.png\" width=\"16\">";
+	    if(d > .33)
+		return "</img><img src=\"resources/icons/good.png\" width=\"16\"></img>";
+	    return "";
 	}
 
 }

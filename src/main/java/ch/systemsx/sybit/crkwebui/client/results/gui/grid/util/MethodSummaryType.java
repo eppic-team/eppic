@@ -86,12 +86,20 @@ public class MethodSummaryType {
 		} else if(method.equals(ScoringMethod.EPPIC_GEOMETRY)){
 			return convertCallToInt(representative.getClusterGeometryCall());
 		} else if(method.equals(ScoringMethod.EPPIC_FINAL)){
-			return convertCallToInt(representative.getClusterFinalCall());
+			return convertCallToInt(representative.getClusterFinalCall()) + convertConfidenceToInt(representative.getClusterConfidence());
 		} else{
 			return -2;
 		}
 	}
 	
+	private static int convertConfidenceToInt(double clusterConfidence) {
+	    if(clusterConfidence > .66)
+		return 100;
+	    if(clusterConfidence > .33)
+		return 10;
+	    return 0;
+	}
+
 	/**
 	 * Converts calls to int
 	 * @param callName
