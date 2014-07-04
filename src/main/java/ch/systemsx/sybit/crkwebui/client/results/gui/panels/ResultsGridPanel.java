@@ -1,10 +1,11 @@
 package ch.systemsx.sybit.crkwebui.client.results.gui.panels;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Collections;
 
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
@@ -60,12 +61,17 @@ import com.sencha.gxt.cell.core.client.form.ComboBoxCell.TriggerAction;
 import com.sencha.gxt.core.client.ValueProvider;
 import com.sencha.gxt.core.client.dom.ScrollSupport.ScrollMode;
 import com.sencha.gxt.core.client.util.KeyNav;
+import com.sencha.gxt.data.shared.LabelProvider;
+import com.sencha.gxt.data.shared.ListStore;
+import com.sencha.gxt.data.shared.ModelKeyProvider;
+import com.sencha.gxt.data.shared.SortDir;
+import com.sencha.gxt.data.shared.Store.StoreSortInfo;
 import com.sencha.gxt.widget.core.client.FramedPanel;
 import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer;
 import com.sencha.gxt.widget.core.client.form.ComboBox;
-import com.sencha.gxt.widget.core.client.grid.Grid;
 import com.sencha.gxt.widget.core.client.grid.ColumnConfig;
 import com.sencha.gxt.widget.core.client.grid.ColumnModel;
+import com.sencha.gxt.widget.core.client.grid.Grid;
 import com.sencha.gxt.widget.core.client.grid.SummaryColumnConfig;
 import com.sencha.gxt.widget.core.client.grid.SummaryRenderer;
 import com.sencha.gxt.widget.core.client.grid.SummaryType;
@@ -73,11 +79,6 @@ import com.sencha.gxt.widget.core.client.tips.QuickTip;
 import com.sencha.gxt.widget.core.client.tips.ToolTip;
 import com.sencha.gxt.widget.core.client.tips.ToolTipConfig;
 import com.sencha.gxt.widget.core.client.toolbar.ToolBar;
-import com.sencha.gxt.data.shared.LabelProvider;
-import com.sencha.gxt.data.shared.ListStore;
-import com.sencha.gxt.data.shared.ModelKeyProvider;
-import com.sencha.gxt.data.shared.SortDir;
-import com.sencha.gxt.data.shared.Store.StoreSortInfo;
 
 import eppic.model.ScoringMethod;
 
@@ -496,6 +497,11 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 					model.setWarnings(interfaceItem.getInterfaceWarnings());
 					String thumbnailUrl = ApplicationContext.getSettings().getResultsLocation() +
 							ApplicationContext.getPdbInfo().getJobId() + 
+							"/" + ApplicationContext.getPdbInfo().getTruncatedInputName() +
+							"." + interfaceItem.getInterfaceId() + ".75x75.png";
+					if(ApplicationContext.getPdbInfo().getJobId().length() == 4)
+						thumbnailUrl = ApplicationContext.getSettings().getResultsLocation() +
+							ApplicationContext.getPdbInfo().getJobId().toLowerCase() + 
 							"/" + ApplicationContext.getPdbInfo().getTruncatedInputName() +
 							"." + interfaceItem.getInterfaceId() + ".75x75.png";
 					model.setThumbnailUrl(thumbnailUrl);
