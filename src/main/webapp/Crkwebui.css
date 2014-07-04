@@ -266,6 +266,7 @@
 .eppic-status-panel-error-message{
 	font-size: 14px;
 	color: red;
+	padding-left: 150px;
 }
 
 .eppic-status-log, .eppic-status-log textarea {

@@ -2,7 +2,9 @@ package ch.systemsx.sybit.crkwebui.client.results.gui.panels;
 
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
+import ch.systemsx.sybit.crkwebui.client.commons.events.ShowErrorEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.panels.DisplayPanel;
+import ch.systemsx.sybit.crkwebui.client.commons.managers.EventBusManager;
 import ch.systemsx.sybit.crkwebui.client.commons.services.eppic.CrkWebServiceProvider;
 import ch.systemsx.sybit.crkwebui.client.commons.util.EscapedStringGenerator;
 import ch.systemsx.sybit.crkwebui.shared.model.InputType;
@@ -146,14 +148,14 @@ public class StatusPanel extends DisplayPanel
 		mainContainer.addStyleName("eppic-default-font");
 		
 		HTML errorLogLabel = new HTML(AppPropertiesManager.CONSTANTS.status_panel_error_message());
-		errorLogLabel.addStyleName("eppic-status-panel-error-label");
+		errorLogLabel.addStyleName("eppic-status-panel-error-message");
 		
-		errorLog = new HTML();
-		errorLog.addStyleName("eppic-status-panel-error-message");
+//		errorLog = new HTML();
+//		errorLog.addStyleName("eppic-status-panel-error-message");
 		
 		VerticalLayoutContainer errorMessage = new VerticalLayoutContainer();
 		errorMessage.add(errorLogLabel);
-		errorMessage.add(errorLog);
+		//errorMessage.add(errorLog);
 		
 		mainContainer.add(errorMessage, new HorizontalLayoutData(0.80,1, new Margins(10, 100, 10, 100)));
 		
@@ -270,6 +272,7 @@ public class StatusPanel extends DisplayPanel
 		dock.remove(errorContainer);
 		dock.remove(statusContainer);
 		dock.add(statusContainer);
+		enableControls();
 		
 		int scrollBefore = log.getElement().getFirstChildElement().getScrollTop();
 		log.setValue(statusData.getLog());
@@ -281,17 +284,10 @@ public class StatusPanel extends DisplayPanel
 		identifierHeaderPanel.setEmptyDownloadResultsLink();
 
 		if(status.getHTML() != null){
-			if(status.getHTML().equals(StatusOfJob.ERROR.getName())){
-				errorLog.setHTML(statusData.getLog());
-			
-				dock.remove(errorContainer);
-				dock.remove(statusContainer);
-				dock.add(errorContainer);
-			
-			}
-			else if ((status.getHTML().equals(StatusOfJob.RUNNING.getName())) ||
+			if ((status.getHTML().equals(StatusOfJob.RUNNING.getName())) ||
 					 (status.getHTML().equals(StatusOfJob.WAITING.getName())) ||
-					 (status.getHTML().equals(StatusOfJob.QUEUING.getName())))
+					 (status.getHTML().equals(StatusOfJob.QUEUING.getName())) ||
+					  status.getHTML().equals(StatusOfJob.ERROR.getName()))
 			{
 				runningImage.setVisible(true);
 				
@@ -313,6 +309,11 @@ public class StatusPanel extends DisplayPanel
 					"/" + statusData.getStep().getTotalNumberOfSteps() + ")";
 				
 				statusBar.updateProgress(processCompleted, progressText);
+				if(status.getHTML().equals(StatusOfJob.ERROR.getName())){
+				    	disableControls();
+					dock.add(errorContainer);
+				
+				}
 
 			}
 			else if (status.getHTML().equals(StatusOfJob.STOPPED.getName())){
@@ -329,6 +330,18 @@ public class StatusPanel extends DisplayPanel
 			runningImage.setVisible(false);
 			statusBar.updateProgress(0.0, "");
 		}
+	}
+
+	private void enableControls() {
+	    statusBar.setVisible(true);
+	    killJob.setVisible(true);
+	    newJob.setVisible(true);
+	}
+	
+	private void disableControls() {
+	    statusBar.setVisible(false);
+	    killJob.setVisible(false);
+	    newJob.setVisible(false);
 	}
 
 	/**
