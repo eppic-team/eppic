@@ -54,7 +54,7 @@ public class DBHandler {
 	private EntityManagerFactory emf;
 	
 	// TODO recheck how the EntityManager is handled
-	private EntityManager em;
+	//private EntityManager em;
 	
 	/**
 	 * Constructor
@@ -73,10 +73,10 @@ public class DBHandler {
 	}
 	
 	protected EntityManager getEntityManager(){
-		if (em==null)
-			em = this.emf.createEntityManager();
+		//if (em==null)
+		//	em = this.emf.createEntityManager();
 		
-		return em;
+		return this.emf.createEntityManager();
 	}
 
 	
@@ -85,7 +85,7 @@ public class DBHandler {
 	 * @param pdbInfo
 	 * 
 	 */
-	public void persistFinishedJob(PdbInfoDB pdbInfo){
+	public void persistFinishedJob(EntityManager em, PdbInfoDB pdbInfo){
 		
 		String pdbCode = pdbInfo.getPdbCode();
 
@@ -109,7 +109,7 @@ public class DBHandler {
 	 * Persists a JobDB with given pdbCode, assigning error status to it
 	 * @param pdbCode
 	 */
-	public void persistErrorJob(String pdbCode){
+	public void persistErrorJob(EntityManager em, String pdbCode){
 		
 		JobDB job = new JobDB();
 		job.setJobId(pdbCode);

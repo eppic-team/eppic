@@ -204,10 +204,10 @@ public class UploadToDb {
 				if (ifRemoved) System.out.print(" Found.. Removing and Updating.. ");
 				else System.out.print(" Not Found.. Adding.. ");
 				if(isSerializedFilePresent) {
-					dbh.persistFinishedJob(pdbScoreItem);
+					dbh.persistFinishedJob(em,pdbScoreItem);
 				}
 				else {
-					dbh.persistErrorJob(currentPDB);
+					dbh.persistErrorJob(em, currentPDB);
 				}
 				//continue;
 			}
@@ -218,10 +218,10 @@ public class UploadToDb {
 				if(!isPresent){
 					System.out.print(" Not Present.. Adding.. ");
 					if(isSerializedFilePresent) {						
-						dbh.persistFinishedJob(pdbScoreItem);
+						dbh.persistFinishedJob(em,pdbScoreItem);
 					}
 					else {
-						dbh.persistErrorJob(currentPDB);
+						dbh.persistErrorJob(em, currentPDB);
 					}
 				}
 				else System.out.print(" Already Present.. Skipping.. ");
