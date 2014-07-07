@@ -53,7 +53,7 @@ public class SeqClusterer {
 		this.saveFile = File.createTempFile(BLASTCLUST_BASENAME,BLASTCLUST_SAVE_SUFFIX);
 		
 		if (!DEBUG) {
-			saveFile.deleteOnExit();
+			//saveFile.deleteOnExit();
 			inFastaFile.deleteOnExit();
 		}
 		
@@ -68,6 +68,9 @@ public class SeqClusterer {
 		this.saveFile = saveFile;
 	}
 	
+	public File getBlastclustSaveFile() {
+		return saveFile;
+	}
 	
 	public List<List<String>> clusterThem(int clusteringId) throws IOException, InterruptedException, BlastException {
 		
