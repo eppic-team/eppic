@@ -316,7 +316,7 @@ public class StatusPanel extends DisplayPanel
 	private void disableControls() {
 	    statusBar.setVisible(false);
 	    killJob.setVisible(false);
-	    newJob.setVisible(false);
+	    //newJob.setVisible(false);
 	}
 
 	/**
