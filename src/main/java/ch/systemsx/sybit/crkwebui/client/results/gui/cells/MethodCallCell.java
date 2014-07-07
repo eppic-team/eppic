@@ -75,7 +75,8 @@ public class MethodCallCell extends AbstractCell<String> {
 
 		if(type.equals(ScoringMethod.EPPIC_FINAL)) {
 		    value = value.toUpperCase();
-		    value += addIcon(item.getConfidence());
+		    // disabling this for 2.1.0 release, put back when confidence calculation implementation is better - JD 07.07.2014
+		    //value += addIcon(item.getConfidence());
 		}
 
 		tooltipText = EscapedStringGenerator.generateEscapedString(tooltipText);
@@ -83,6 +84,7 @@ public class MethodCallCell extends AbstractCell<String> {
 		sb.appendHtmlConstant("<span style='color:" + color + ";' qtip='" + tooltipText + "'>"+ value +"</span>");
 	}
 
+	@SuppressWarnings("unused")
 	private String addIcon(double d) {
 	    if(d > .66)
 		return "<img src=\"resources/icons/excellent.png\" width=\"16\">";
