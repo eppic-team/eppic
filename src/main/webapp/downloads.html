@@ -11,6 +11,28 @@
 		<img class="eppic-iframe-top-img"
 			src="resources/images/eppic-logo.png">
 
+		<h2>Downloading data in XML format</h2>
+		<p>
+			From version 2.1.0 on, it is possible to download the results data in XML format
+			which can then be parsed and used for further analysis. 
+			Simply click on the "Download XML" link in any result page and you will get the XML data.
+			You will just need to use this kind of URL:
+		</p>
+		<p>
+			<code>http://www.eppic-web.org/ewui/ewui/dataDownload?type=xml&amp;id=PDB_code</code>
+		</p>
+		<p> 
+			for precomputed PDB entries. Several PDB codes (comma-separated) are also allowed for the id
+			parameter. For your own uploaded files you will have to use:			
+		</p>
+		<p>
+			<code>http://www.eppic-web.org/ewui/ewui/dataDownload?type=xml&amp;id=My_job_id</code>
+		</p>
+		<p>
+			where you need to give your long alphanumeric job id. 
+			Please note that we have download limits per IP. If you need to do bulk 
+			downloads, please contact us. We can then place an exception for you.
+		</p>
 
 		<h2>Software and source code</h2>
 
@@ -26,15 +48,14 @@
 				href="http://www.clustal.org/omega/" target="_blank">Clustal
 				Omega</a> are required for it to work.
 		</p>
-		<p>
-			Please beware that since UniProt release 2013_09 the <a
-				href="http://www.ebi.ac.uk/uniprot/remotingAPI/" target="_blank">UniProt
-				JAPI</a> (used by EPPIC) requires java 7 to run. Thus from September
-			2013 you will need java 7 to be able to run the command-line EPPIC
-			program.
+		<p>			
+			You will need Java 7 (or newer) to be able to run the command-line EPPIC
+			program. The program also uses the  
+			<a href="http://www.ebi.ac.uk/uniprot/remotingAPI/" target="_blank">UniProt	JAPI</a>,
+			which you will need to download separately.
 		</p>
-		<p>The source code is <a href="https://github.com/eppic-team/eppic" target="_blank">available</a> under the GPL license. You can get
-			it with the following GIT command:</p>
+		<p>The source code is <a href="https://github.com/eppic-team/eppic" target="_blank">available</a> 
+			under the GPL license. You can get it with the following GIT command:</p>
 
 		<p>
 			<code> git clone https://github.com/eppic-team/eppic </code>
@@ -119,7 +140,7 @@
 			Please note that the original publications also contain the datasets including 
 			our full annotations. However we cannot update those if we find any mistakes.
 			The downloadable datasets here represent the most up-to-date and best
-			validated sets. Please use these ones and not the ones available in the 
+			validated sets. Please use these ones preferentially to the ones available in the 
 			original publications.
 		</p>
 		<p>
@@ -130,7 +151,7 @@
 		<ul>
 			<li>
 			DCbio set: 3f3e was removed because it is a membrane protein and additionally the experimental evidence 
-			was not sufficiently clear; 1ytq was removed because it is a domain swap
+			was not sufficiently clear; 1ytq was removed because it has a clear domain swap
 			</li>
 		</ul>
 

@@ -138,13 +138,7 @@
 				accuracy of predictions (see this <a
 					href="http://www.biomedcentral.com/1471-2105/13/334/figure/F5"
 					target="_blank">figure</a>)
-			</p>
-			<h4>If I change the input parameters and submit a PDB
-				structure by typing its PDB code, why does it start calculating?</h4>
-			<p>We have PDB-wide results precalculated for our users. We use
-				only the default parameters for this calculation. If you use any
-				parameters other than the default ones, this triggers a calculation
-				that can take several minutes depending on the structure.</p>
+			</p>			
 			<h4>When submitting my own PDB/mmCIF file, can I later access
 				the results for the job? How about data privacy?</h4>
 			<p>
@@ -187,11 +181,11 @@
 			<h4>Where can I get the sequence entropy information?</h4>
 			<p>
 				A surface representation of each chain color coded by sequence
-				entropy can be downloaded from the icon in the sequence information
-				panel. This icon is adjacent to the homologs information icon. The
+				entropy can be downloaded from the icon in the Homolog Information
+				window. This icon is adjacent to the alignment download link. The
 				downloadable file is in PSE format, which can be visualized with <a
-					href="http://www.pymol.org" target="_blank">PyMol</a>. The actual
-				entropy values can be found in the Residue Details tables (opened
+					href="http://www.pymol.org" target="_blank">PyMOL</a>. The actual
+				entropy values can be found in the Residue Detail tables (opened
 				when clicking on the Details button in the Main Interface table).
 			</p>
 			<h4>What is the "Change 3D Viewer" option above the interface table for?</h4>
@@ -223,9 +217,9 @@
 				evolutionary calls. Users, however, can edit out of the chimeric PDB
 				file the component that is not of interest, thus obtaining
 				coordinates that correspond to one sequence only. Those coordinates
-				can then be uploaded to EPPIC and be properly analyzed. In any case
+				can then be uploaded to EPPIC and be analyzed. In any case
 				it is not clear whether the evolutionary assumptions that EPPIC
-				rests on hold in the case of chimeric proteins. So predictions
+				rests on, hold in the case of chimeric proteins. So predictions
 				for these cases have to be taken with care.</p>
 			<h4>Does it work on multichain NMR structures?</h4>
 			<p>We expect EPPIC to work with reasonable accuracy on multichain
@@ -241,13 +235,17 @@
 				residues. A warning also appears in case the R-Free factor is higher
 				than 35%. For structures with resolution worse than ~ 4.5 Å the
 				results will not be meaningful at all.</p>
+			<h4>Can I download the results data for my own analysis?</h4>
+			<p>Yes. Since version 2.1.0 we provide XML data downloads. Find 
+				more details about it in the Downloads page.				
+			</p>
 
 
 
 			<h2>Method</h2>
 			<h4>How does EPPIC work?</h4>
 			<p>
-				EPPIC relies on sequence evolution and geometry to detect the
+				EPPIC relies on sequence evolution and packing of the interface to detect the
 				biological character of interfaces. The classifier uses a simple
 				geometric measure, number of core residues, and two evolutionary
 				indicators based on the sequence entropy of homolog sequences. Both

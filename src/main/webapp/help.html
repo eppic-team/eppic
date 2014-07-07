@@ -25,6 +25,7 @@
 					<li><a href="#homologs-window">The homologs information
 							window</a></li>
 					<li><a href="#residue-details">The Details window</a></li>
+					<li><a href="#seq-clusters">Searching similar structures</a></li>
 					<li><a href="#misc">Miscellaneous</a></li>
 				</ul>
 			</div>
@@ -43,7 +44,7 @@
 				<li>Colored-by-sequence-entropy surface representation as PSE
 					files. Very useful for looking at features present at protein
 					surfaces: interfaces, binding sites etc. (<a
-					href="#molecular-potato">more</a>)
+					href="#homologs-window">more</a>)
 				</li>
 				<li>Number and distribution of core residues in interfaces</li>
 				<li>Symmetry features of interfaces: the crystallographic
@@ -73,13 +74,12 @@
 			<div class="eppic-help-subtopic-left-big">
 				<p>You can submit your protein structure by uploading a
 					PDB/mmCIF file or by typing a PDB code. We have precalculated
-					results PDB-wide using the default parameters. If you use any
-					parameters other than the default ones or if you upload your own
+					results PDB-wide using the default parameters. If you upload your own
 					file, this triggers a calculation that can take several minutes
 					depending on the structure.</p>
 
-				<p>The various input parameters can be changed via the Advanced
-					tab in the input page. You have following options:</p>
+				<p>When you upload a file, the various input parameters can be changed via the Advanced
+					tab in the input page. You have the following options:</p>
 				<ul>
 					<li><strong>Identity soft cut-off:</strong> The soft sequence
 						identity cut-off for BLAST hits to be used in the alignment. If
@@ -235,11 +235,15 @@
 
 
 				<p>Clusters of similar interfaces can be shown by checking the
-					"Cluster similar interfaces" box. This ensures that interfaces
+					"Group similar interfaces" box. This ensures that interfaces
 					within 2&#197; RMSD from each other will be clustered together. For
 					each cluster, a header row displays a thumbnail representation of
-					all contributing interfaces, while a bottom row reports the number
-					of contributing interfaces and their average area.</p>
+					all member interfaces, while a bottom row reports the number
+					of contributing interfaces and their average area. Additionally
+					for each of the scores an average is calculated and a call
+					produced based on these averaged scores. This should provide a better
+					prediction than individual interface scores, since the possible 
+					differences between the chains are averaged out.</p>
 			</div>
 			<div class="eppic-help-subtopic-right-small">
 				<img class="eppic-help-subtopic-image-right"
@@ -326,9 +330,9 @@
 						UniProt sequence (based on <a
 						href="http://www.ebi.ac.uk/pdbe/docs/sifts/" target="_blank">SIFTS</a>
 						mapping or found by blasting). Mismatching residues, normally
-						engineering artifacts, are shown in red in the alignment.</li>
-					<li><b>UniProt identifier of the reference sequence</b>: click
-						on it to open its corresponding UniProt sequence page.</li>
+						engineering artifacts, are shown in red in the alignment.
+						A link to the reference UniProt record is provided on the top,
+						as well as the organism to which the entry belongs.</li>
 					<li><b>Number of homologs</b>: whenever fewer than 10 homologs
 						are found you will see a NOPRED call in the evolutionary predictor
 						columns (core-rim and core-surface), indicating that the MSA is
@@ -338,20 +342,11 @@
 						src="resources/icons/info_icon.png"></img> icon next to this item
 						for more information about the homologs (<a
 						href="#homologs-window">more</a>).</li>
-
-					<li id="molecular-potato"><b>Surface color-coded by
-							entropy icon</b>: click on it to get a PyMOL PSE file with the MSA
-						sequence entropy values color-mapped onto the protein surface.
-						This is particularly useful in order to get a visual impression of
-						the patterns of selection pressure on the surface of a given
-						chain. The spectrum function of PyMOL is used to color the
-						residues: the highest conservation appears in blue, transitioning
-						to yellow and orange for lower conservation values. Residues that
-						could not be aligned (for instance because they belong to an
-						engineered tag) appear in red. Additionally, magenta dots mark the
-						core residues of the largest interface to which the chain
-						participates. PyMOL selections are also available in the PSE file
-						to let one select interfaces other than the default (largest) one.</li>
+					<li><b>Similar structures in PDB</b>: click here to find
+						other PDB entries that contain chains similar in sequence (down to 30% 
+						sequence identity) to this one (<a href="#seq-clusters">more</a>). 
+						
+					</li>
 				</ol>
 			</div>
 		</div>
@@ -377,7 +372,7 @@
 
 
 
-		<h2 id="homologs-window">The homologs information window</h2>
+		<h2 id="homologs-window">The Homolog Information window</h2>
 		<div class="eppic-help-subtopic">
 			<div class="eppic-help-subtopic-left-small">
 				<img class="eppic-help-subtopic-image"
@@ -394,7 +389,9 @@
 					identity is also provided near the bar. The last two columns in the
 					table provide the taxonomy of the homolog. More details of the
 					sequence of a particular homolog can be found by clicking the
-					UniProt link in the first column of the table.
+					UniProt link in the first column of the table. Clicking on the 
+					links provided on the Genus names will open their corresponding 
+					Wikipedia pages.
 				<p>
 				<p>
 					In the header one can find information about the query sequence and
@@ -406,11 +403,25 @@
 					You will need an alignment viewer like <a
 						href="http://www.jalview.org/" target="_blank">Jalview</a> to have
 					it nicely displayed.
+					Additionally cliking on the icon with the colored molecule will download
+					a PyMOL session file (.pse file) where the molecule is shown in surface 
+					representation with the sequence entropy values from the MSA color-mapped 
+					onto it. This is particularly useful in order to get a visual impression of
+					the patterns of selection pressure on the surface of a given
+					chain. The spectrum function of PyMOL is used to color the
+					residues: the highest conservation appears in blue, transitioning
+					to yellow and orange for lower conservation values. Residues that
+					could not be aligned (for instance because they belong to an
+					engineered tag) appear in red. Magenta dots mark the
+					core residues of the largest interface in which the chain
+					participates. PyMOL selections are also available in the PSE file
+					to let one select interfaces other than the default (largest) one.
 				</p>
+				
 			</div>
 		</div>
 
-		<h2 id="residue-details">The Details window</h2>
+		<h2 id="residue-details">The Residue Detail window</h2>
 		<div class="eppic-help-subtopic">
 			<div class="eppic-help-subtopic-right-small">
 				<img class="eppic-help-subtopic-image-right"
@@ -427,20 +438,18 @@
 					identifier, score details are provided. Underneath those, a table
 					(residue table) gives per-residue information.</p>
 				<p>
-					Score information is shown in three different panels: <b>Counts</b>
-					containing the number of core residues at 70% burial, i.e. those
-					used for the evolutionary predictions; <b>Core-Rim Score</b>
-					showing the average core and rim entropy plus their ratio (final
-					core-rim score); <b>Core-Surface Score</b> showing the mean and
-					standard deviation of average entropies of surface samples and the
-					final core-surface score.
+					Score details are shown on top of the two grids for each side of the
+					interface: number of core residues at 70% burial (i.e. the core
+					residues used for calculating the evolutionary scores), number of 
+					rim residues (i.e. all other interface residues), core-rim 
+					score and core-surface score.
 				</p>
-				<p>By default, residue tables show only interface residues. To
+				<p>By default, the two residue tables show only interface residues. To
 					see all residues of the two chains one needs to switch the view in
 					the drop down menu in the upper right corner of the window.</p>
 				<p>The first two columns of the residue tables are the residue
-					numbers: "Res Serial" for the numbering based on the SEQRES
-					sequence from 1 to n, "Pdb serial" for the numbering as it appears
+					numbers: "Serial" for the numbering based on the SEQRES
+					sequence from 1 to n, "PDB Serial" for the numbering as it appears
 					on the ATOM lines of the PDB file. Four pieces of information are
 					given for each residue: total accessible surface area (ASA), total
 					buried surface area (BSA) upon interface formation, ratio of burial
@@ -460,7 +469,33 @@
 				</p>
 			</div>
 		</div>
-
+		
+		<h2 id="seq-clusters">Searching similar structures (sequence clusters)</h2>
+		<div class="eppic-help-subtopic">
+			<div class="eppic-help-subtopic-left-small">
+				<img class="eppic-help-subtopic-image"
+					src="resources/images/screenshots/seq-clusters.png"></img>
+			</div>
+			<div class="eppic-help-subtopic-right-big">
+				<p>You can search for PDB structures that contain sequences similar to
+				a given chain. The results will be displayed sorted from the structures
+				containing the most similar sequences on top, to structures containing 
+				more disimilar sequences. The sequence identity level is given in the 
+				first column together with a color code, which facilitates the search.
+				Crystallographic quality parameters and crystal cell parameters are shown 
+				in separate columns. One can sort the structures using any of these columns, 
+				which for instance can be useful to find the highest resolution structure
+				within a set.  
+				<p>
+				<p>
+				Double clicking on a row or on the PDB code will open the analysis page 
+				for that structure.
+				</p>
+			</div>
+		</div>
+		
+		
+		
 		<h2 id="misc">Miscellaneous</h2>
 
 		<h3 id="job-identifiers">Job identifiers</h3>
@@ -477,7 +512,7 @@
 			its current status and automatically display the final results
 			whenever it is finished. To share the results of a job with
 			colleagues just send them the corresponding URL. The jobs will be
-			stored in our servers for at least 1 month.
+			stored in our servers for 1 month and then deleted.
 		</p>
 		<p>The PDB-wide precomputed results can be accessed directly by
 			using the permanent URLs:</p>
@@ -494,11 +529,15 @@
 			warning also appears in case the R-Free factor is higher than 35%.</p>
 
 
-		<h3 id="download-results">Download results</h3>
-		<p>By clicking the "Download results" link at the bottom right
-			corner of the Top Panel, one gets a single zip file containing the
-			text output files with the results for all interfaces (as when
-			running eppic from the command line).</p>
+		<h3 id="download-results">Downloading results in XML format</h3>
+		<p>By clicking the "Download XML" link below the main title in the 
+			Top Panel, one gets an XML file containing all the information 
+			about interfaces and scoring (including the MSA) for the currently 
+			analysed structure. This is useful to process the data further.
+			It is possible to script these downloads for precomputed PDB entries
+			by using URLs like:
+			<code>http://www.eppic-web.org/ewui/ewui/dataDownload?type=xml&amp;id=PDB_code</code>
+		</p>
 
 		<h3 id="assembly-note">A note on assemblies</h3>
 		<p>
