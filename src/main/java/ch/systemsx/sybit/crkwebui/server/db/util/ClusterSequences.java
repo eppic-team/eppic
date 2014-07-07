@@ -70,10 +70,13 @@ public class ClusterSequences {
 		} else {
 			dbh = new DBHandler(DBHandler.DEFAULT_OFFLINE_JPA);
 		}
-	
+		
+		boolean canDoUpdate = true;
+		
 		if (!dbh.checkSeqClusterEmpty()) {
-			System.err.println("SeqCluster table is not empty. Exiting.");
-			System.exit(1);
+			System.err.println("Warning! SeqCluster table is not empty. Will continue calculating clusters but won't be able to update database");
+			//System.exit(1);
+			canDoUpdate = false;
 		}
 		
 		Map<Integer, ChainClusterDB> allChains = dbh.getAllChainsWithRef();
@@ -86,6 +89,7 @@ public class ClusterSequences {
 			sc =new SeqClusterer(allChains, saveFile);
 		} else {
 			sc =new SeqClusterer(allChains, numThreads);
+			System.out.println("blastclust save file stored in "+sc.getBlastclustSaveFile());
 		}
 		
 		Map<Integer,Map<Integer,Integer>> allMaps = new TreeMap<Integer,Map<Integer,Integer>>();
@@ -107,7 +111,12 @@ public class ClusterSequences {
 			 
 		}
 		
-		
+		if (!canDoUpdate) {			
+			System.out.println("Can't do database update because SeqCluster table is not empty.");
+			System.out.println("Remove all records in SeqCluster table and then run again using the computed blastclust save file: -s "+sc.getBlastclustSaveFile());
+			System.out.println("Exiting");
+			System.exit(1);
+		}
 		
 		System.out.println("Writing to db...");
 		
