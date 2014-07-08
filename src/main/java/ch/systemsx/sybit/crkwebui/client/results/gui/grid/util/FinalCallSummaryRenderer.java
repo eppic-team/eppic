@@ -5,12 +5,16 @@ public class FinalCallSummaryRenderer extends MethodsSummaryRenderer
     @Override
     protected String convertIntToCall(int callInt)
     {
-	String icon = addIcon(callInt);
+    	
+	//String icon = addIcon(callInt);
 	callInt = removeIconMarker(callInt);
-	return super.convertIntToCall(callInt).toUpperCase() + icon;
+
+    // commented out while the confidence calculation implementation is improved - JD 08.07.2014 
+	//return super.convertIntToCall(callInt).toUpperCase() + icon;
+	return super.convertIntToCall(callInt).toUpperCase() ;
     }
 
-    private int removeIconMarker(int i) {
+	private int removeIconMarker(int i) {
 	if(i > 90)
 	    return i - 100;
 	if(i > 9)
@@ -18,7 +22,8 @@ public class FinalCallSummaryRenderer extends MethodsSummaryRenderer
 	return i;
     }
 
-    private String addIcon(int i) {
+    @SuppressWarnings("unused")
+	private String addIcon(int i) {
 	if(i > 90)
 	    return "<img src=\"resources/icons/excellent.png\" width=\"16\">";
 	if(i > 9)
