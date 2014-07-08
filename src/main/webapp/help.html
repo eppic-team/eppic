@@ -407,9 +407,9 @@
 					a PyMOL session file (.pse file) where the molecule is shown in surface 
 					representation with the sequence entropy values from the MSA color-mapped 
 					onto it. This is particularly useful in order to get a visual impression of
-					the patterns of selection pressure on the surface of a given
+					the selection pressure patterns on the surface of a given
 					chain. The spectrum function of PyMOL is used to color the
-					residues: the highest conservation appears in blue, transitioning
+					residues: highest conservation is denoted by blue, transitioning
 					to yellow and orange for lower conservation values. Residues that
 					could not be aligned (for instance because they belong to an
 					engineered tag) appear in red. Magenta dots mark the
@@ -478,14 +478,12 @@
 			</div>
 			<div class="eppic-help-subtopic-right-big">
 				<p>You can search for PDB structures that contain sequences similar to
-				a given chain. The results will be displayed sorted from the structures
-				containing the most similar sequences on top, to structures containing 
-				more disimilar sequences. The sequence identity level is given in the 
-				first column together with a color code, which facilitates the search.
-				Crystallographic quality parameters and crystal cell parameters are shown 
-				in separate columns. One can sort the structures using any of these columns, 
-				which for instance can be useful to find the highest resolution structure
-				within a set.  
+				a given chain. Results are sorted from the structures with the most similar 
+				sequences (top) to structures containing more dissimilar sequences. The sequence 
+				identity level given in the first column is color-coded to facilitates the search.
+				Crystallographic quality and crystal cell parameters are shown in separate columns. 
+				Structures can be sorted using any of these columns, which for instance can be useful 
+				to find the highest resolution structure within a set.  
 				<p>
 				<p>
 				Double clicking on a row or on the PDB code will open the analysis page 
@@ -532,10 +530,9 @@
 		<h3 id="download-results">Downloading results in XML format</h3>
 		<p>By clicking the "Download XML" link below the main title in the 
 			Top Panel, one gets an XML file containing all the information 
-			about interfaces and scoring (including the MSA) for the currently 
-			analysed structure. This is useful to process the data further.
-			It is possible to script these downloads for precomputed PDB entries
-			by using URLs like:
+			about interfaces and scoring (including the MSA) for the structure
+			being analyzed. This is useful for further data processing. XML
+			downloads of precomputed PDB entries can be scripted by using URLs like:
 			<code>http://www.eppic-web.org/ewui/ewui/dataDownload?type=xml&amp;id=PDB_code</code>
 		</p>
 
