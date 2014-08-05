@@ -538,11 +538,11 @@
 			</id>
 
 			<basic name="pdbCode">
-				<column length="4" />
+				<column column-definition="varchar(4) COLLATE latin1_general_cs"/>
 			</basic>
 
 			<basic name="repChain">
-				<column length="4" />
+				<column column-definition="varchar(4) COLLATE latin1_general_cs"/>
 			</basic>
 			
 			<basic name="c100"></basic>
