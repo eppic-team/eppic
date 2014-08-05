@@ -92,9 +92,10 @@ INSTALLATION
         2. Configuring it: 
            
            - Unzip the eppic.zip file. This will produce an eppic directory with 
-             a few files in it (including this README).
+             a few files in it (including this README) and two subdirectories bin
+             and lib.
              
-           - Copy the downloaded uniprotjapi.jar to the eppic directory.
+           - Copy the downloaded uniprotjapi.jar to the lib subdirectory.
            
            - Copy the eppic.conf file provided to your home directory with the 
              name .eppic.conf. Edit it and set the parameters:
@@ -112,13 +113,13 @@ INSTALLATION
 
         3. Now you can run eppic:
            
-           ./eppic
+           ./bin/eppic
            
            In order to run it from anywhere in your system you will need to
            add the directory containing it to your path or simply add an alias
            to your .bashrc:
            
-           alias eppic='/path/to/unpacked/eppic/eppic'  
+           alias eppic='/path/to/unpacked/eppic/bin/eppic'  
 
 
 

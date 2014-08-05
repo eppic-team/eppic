@@ -133,11 +133,7 @@
 		
 		
 		
-			<!-- the shade plugin to repack all jars into one uber-jar -->
-			<!-- TODO: the uniprot japi will be packed also within the uber-jar, but
-				its version will be the one hard-coded in the owl pom.xml,
-				so we still need a solution to keep the uniprot japi properly updated.
-				The eppic command line program will fail if uniprot japi is not up-to-date -->
+			<!-- the shade plugin to repack all jars into one uber-jar -->			
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
@@ -153,8 +149,12 @@
 	                			<excludes>
 	                  				<!-- excluding jars that are only needed for some non-core owl packages and not for eppic CLI -->
 	                  				<exclude>batik</exclude>	                  				
-	                  				<exclude>us.levk</exclude> <!-- drmaa -->	                  				
+	                  				<exclude>us.levk</exclude> <!-- drmaa -->
 	                  				
+	                  				<!--  excluding the uniprot japi jar, there's no point in including it in the uber-jar for 
+	                  				      distribution, since it gets updated every month. It has to be downloaded by the user -->	                  				
+	                  				<exclude>uk.ac.ebi.uniprot.kraken</exclude>
+
 	                  				<!-- these 2 jars have signature repackaging problems!!! -->
 	                  				<!-- <exclude>java3d</exclude> -->	                  				
 	                  				<!-- <exclude>gnu.getopt</exclude> -->
@@ -196,6 +196,13 @@
   				<configuration>
     				<descriptor>src/assembly/bin.xml</descriptor>
     				<finalName>${project.artifactId}-${project.version}</finalName>
+    
+					<archiverConfig>
+						<fileMode>0644</fileMode>
+						<directoryMode>0755</directoryMode>
+						<defaultDirectoryMode>0755</defaultDirectoryMode>
+					</archiverConfig>
+					
   				</configuration>
   				
   				<executions>
