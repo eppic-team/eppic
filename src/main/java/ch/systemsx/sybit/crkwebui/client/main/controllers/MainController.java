@@ -31,6 +31,7 @@ import ch.systemsx.sybit.crkwebui.client.commons.events.UpdateStatusLabelEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.data.StatusMessageType;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.info.PopUpInfo;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.panels.DisplayPanel;
+import ch.systemsx.sybit.crkwebui.client.commons.gui.windows.IFramePanel;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ApplicationInitHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.HideAllWindowsHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.HideWaitingHandler;
@@ -53,14 +54,9 @@ import ch.systemsx.sybit.crkwebui.client.commons.handlers.UpdateStatusLabelHandl
 import ch.systemsx.sybit.crkwebui.client.commons.managers.EventBusManager;
 import ch.systemsx.sybit.crkwebui.client.commons.services.eppic.CrkWebServiceProvider;
 import ch.systemsx.sybit.crkwebui.client.commons.util.EscapedStringGenerator;
-import ch.systemsx.sybit.crkwebui.client.downloads.gui.panels.DownloadsPanel;
-import ch.systemsx.sybit.crkwebui.client.faq.gui.panels.FAQPanel;
-import ch.systemsx.sybit.crkwebui.client.help.gui.panels.HelpPanel;
 import ch.systemsx.sybit.crkwebui.client.input.gui.panels.InputDataPanel;
 import ch.systemsx.sybit.crkwebui.client.main.gui.panels.MainViewPort;
 import ch.systemsx.sybit.crkwebui.client.main.gui.panels.MainViewScrollable;
-import ch.systemsx.sybit.crkwebui.client.publications.gui.panels.PublicationsPanel;
-import ch.systemsx.sybit.crkwebui.client.releases.gui.panels.ReleasesPanel;
 import ch.systemsx.sybit.crkwebui.client.results.gui.panels.ResultsPanel;
 import ch.systemsx.sybit.crkwebui.client.results.gui.panels.StatusPanel;
 import ch.systemsx.sybit.crkwebui.client.search.gui.panels.SearchPanel;
@@ -406,6 +402,10 @@ public class MainController
 		{
 			displayPublications();
 		}
+		else if((token != null) && (token.equals("statistics") || token.equals("!statistics")))
+		{
+			displayStatistics();
+		}
 		else if((token != null) && (token.equals("faq") || token.equals("!faq")))
 		{
 			displayFAQ();
@@ -476,7 +476,7 @@ public class MainController
 	{
 	    Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_help());
 		ApplicationContext.setSelectedJobId("");
-		HelpPanel helpPanel = new HelpPanel();
+		IFramePanel helpPanel = new IFramePanel("help.html");
 		displayPanelInCentralPanel(helpPanel);
 	}
 	
@@ -487,7 +487,7 @@ public class MainController
 	{
 		Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_downloads());
 		ApplicationContext.setSelectedJobId("");
-		DownloadsPanel downloadsPanel = new DownloadsPanel();
+		IFramePanel downloadsPanel = new IFramePanel("downloads.html");
 		displayPanelInCentralPanel(downloadsPanel);
 	}
 
@@ -498,7 +498,7 @@ public class MainController
 	{
 		Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_releases());
 		ApplicationContext.setSelectedJobId("");
-		ReleasesPanel releasesPanel = new ReleasesPanel();
+		IFramePanel releasesPanel = new IFramePanel("releases.html");
 		displayPanelInCentralPanel(releasesPanel);
 	}
 	
@@ -509,7 +509,7 @@ public class MainController
 	{
 		Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_publications());
 		ApplicationContext.setSelectedJobId("");
-		PublicationsPanel publicationsPanel = new PublicationsPanel();
+		IFramePanel publicationsPanel = new IFramePanel("publications.html");
 		displayPanelInCentralPanel(publicationsPanel);
 	}
 	
@@ -520,7 +520,18 @@ public class MainController
 	{
 		Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_faq());
 		ApplicationContext.setSelectedJobId("");
-		FAQPanel faqPanel = new FAQPanel();
+		IFramePanel faqPanel = new IFramePanel("faq.html");
+		displayPanelInCentralPanel(faqPanel);
+	}
+	
+	/**
+	 * Displays statistics panel.
+	 */
+	public void displayStatistics()
+	{
+		Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_statistics());
+		ApplicationContext.setSelectedJobId("");
+		IFramePanel faqPanel = new IFramePanel("statistics.html");
 		displayPanelInCentralPanel(faqPanel);
 	}
 	
