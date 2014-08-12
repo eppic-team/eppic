@@ -189,7 +189,7 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 	}
 	catch (IOException e)
 	{
-	    throw new ServletException("Crk properties file can not be read");
+	    throw new ServletException("EPPIC config file ("+EppicParams.CONFIG_FILE_NAME+") can not be read in home directory");
 	}
 
 	localCifDir = crkProperties.getProperty("LOCAL_CIF_DIR");
