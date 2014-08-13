@@ -98,8 +98,10 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
     private static final String GRID_PROPERTIES_FILE 	= CONFIG_FILES_RESOURCE_LOCATION+"/grid.properties";
     private static final String QUEUING_SYSTEM_PROPERTIES_FILE_SUFFIX = "_queuing_system.properties";
     
-    // the file where the progress log of the eppic CLI program is written to (using -L option)
+    // the file where the progress log of the eppic CLI program is written to (using -L option), used to be called 'crklog'
     public static final String PROGRESS_LOG_FILE_NAME 	= "eppic_wui_progress.log";
+    // the file to signal that a job is running, used to be called 'crkrun'
+    public static final String RUN_FILE_NAME 			= "eppic_run";
     
     // the file to signal a killed job
     public static final String KILLED_FILE_NAME 		= "killed";
@@ -222,7 +224,7 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 	localCifDir = crkProperties.getProperty("LOCAL_CIF_DIR");
 	
 	if (localCifDir==null || !new File(localCifDir).isDirectory()) {
-		log.warn("The LOCAL_CIF_DIR path is either not set or not a pointing to a readable directory.");	
+		log.warn("The LOCAL_CIF_DIR path is either not set or not pointing to a readable directory.");	
 	}
 
 	if(!properties.containsKey(ApplicationSettingsGenerator.DEVELOPMENT_MODE))

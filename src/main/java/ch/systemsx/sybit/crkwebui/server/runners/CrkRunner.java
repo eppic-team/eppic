@@ -10,7 +10,7 @@ import ch.systemsx.sybit.crkwebui.server.jobs.managers.commons.JobManager;
 import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
 
 /**
- * This class is used to start crk application.
+ * This class is used to start the EPPIC CLI application (formerly known as CRK).
  * @author srebniak_a
  *
  */
@@ -47,7 +47,7 @@ public class CrkRunner
 		File logFile = new File(destinationDirectoryName, CrkWebServiceImpl.PROGRESS_LOG_FILE_NAME);
 		LogHandler.writeToLogFile(logFile, "Job submitted - please wait\n");
 
-		File runFile = new File(destinationDirectoryName, "crkrun");
+		File runFile = new File(destinationDirectoryName, CrkWebServiceImpl.RUN_FILE_NAME);
 		runFile.createNewFile();
 
 		RunJobDataValidator.validateJobId(runJobData.getJobId());
