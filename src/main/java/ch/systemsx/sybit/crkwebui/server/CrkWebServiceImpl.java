@@ -86,6 +86,32 @@ import eppic.EppicParams;
 public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements CrkWebService
 {
     private static final Logger log = LoggerFactory.getLogger(CrkWebServiceImpl.class);
+    
+    // NOTE for the unaware reader: the EPPIC program used to be call CRK, thus the prevalence of that name in the code
+    
+    // config file locations
+    private static final String CONFIG_FILES_RESOURCE_LOCATION = "/WEB-INF/classes/META-INF";
+    
+    private static final String SERVER_PROPERTIES_FILE 	= CONFIG_FILES_RESOURCE_LOCATION+"/server.properties";
+    private static final String EMAIL_PROPERTIES_FILE 	= CONFIG_FILES_RESOURCE_LOCATION+"/email.properties";
+    private static final String INPUT_PARAMS_FILE 		= CONFIG_FILES_RESOURCE_LOCATION+"/input_parameters.xml";
+    private static final String GRID_PROPERTIES_FILE 	= CONFIG_FILES_RESOURCE_LOCATION+"/grid.properties";
+    private static final String QUEUING_SYSTEM_PROPERTIES_FILE_SUFFIX = "_queuing_system.properties";
+    
+    // the file where the progress log of the eppic CLI program is written to (using -L option)
+    public static final String PROGRESS_LOG_FILE_NAME 	= "eppic_wui_progress.log";
+    
+    // the file to signal a killed job
+    public static final String KILLED_FILE_NAME 		= "killed";
+    
+    // the file that the eppic CLI writes upon successful completion, used to signal that the queuing job finished successfully
+    public static final String FINISHED_FILE_NAME 		= EppicParams.FINISHED_FILE_NAME;
+    
+    // the suffix of the filename used for writing the steps for the progress animation
+    public static final String STEPS_FILE_NAME_SUFFIX 	= ".steps.log";
+    
+    
+    
     // general server settings
     private Properties properties;
 
@@ -120,8 +146,7 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 	super.init(config);
 
 	InputStream propertiesStream = getServletContext()
-		.getResourceAsStream(
-			"/WEB-INF/classes/META-INF/server.properties");
+		.getResourceAsStream(SERVER_PROPERTIES_FILE);
 
 	properties = new Properties();
 
@@ -131,8 +156,8 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 	}
 	catch (IOException e)
 	{
-	    e.printStackTrace();
-	    throw new ServletException("Properties file can not be read");
+	    //e.printStackTrace();
+	    throw new ServletException("Properties file '"+SERVER_PROPERTIES_FILE+"' can not be read. Error: "+e.getMessage());
 	}
 
 	generalTmpDirectoryName = properties.getProperty("tmp_path");
@@ -140,26 +165,28 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 
 	if (!tmpDir.isDirectory())
 	{
-	    throw new ServletException(generalTmpDirectoryName + " is not a directory");
+	    throw new ServletException("Temp path set in config file ('tmp_path' option): "+ generalTmpDirectoryName + " is not a directory");
 	}
 
 	generalDestinationDirectoryName = properties.getProperty("destination_path");
 	File destinationDir = new File(generalDestinationDirectoryName);
 	if (!destinationDir.isDirectory())
 	{
-	    throw new ServletException(generalDestinationDirectoryName + " is not a directory");
+	    throw new ServletException("Destination path set in config file ('destination_path' option): "+generalDestinationDirectoryName + " is not a directory");
 	}
 
 	crkApplicationLocation = properties.getProperty("crk_jar");
 
 	if (crkApplicationLocation == null)
 	{
-	    throw new ServletException("Location of crk application not specified");
+	    throw new ServletException("Location of EPPIC jar file not specified (set the 'crk_jar' option in config file)");
 	}
 
 	if(properties.getProperty("java_VM_exec") != null && !properties.getProperty("java_VM_exec").equals("")){
 	    javaVMExec = properties.getProperty("java_VM_exec");
+	    log.info("Using java VM given in config file ('java_VM_exec' option): "+javaVMExec);
 	} else{
+		log.info("No 'java_VM_exec' option specified in config file, using system's default java");
 	    javaVMExec = "java";
 	}
 
@@ -189,10 +216,14 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 	}
 	catch (IOException e)
 	{
-	    throw new ServletException("EPPIC config file ("+EppicParams.CONFIG_FILE_NAME+") can not be read in home directory");
+	    throw new ServletException("EPPIC config file ("+EppicParams.CONFIG_FILE_NAME+") can not be read in home directory. Error: "+e.getMessage());
 	}
 
 	localCifDir = crkProperties.getProperty("LOCAL_CIF_DIR");
+	
+	if (localCifDir==null || !new File(localCifDir).isDirectory()) {
+		log.warn("The LOCAL_CIF_DIR path is either not set or not a pointing to a readable directory.");	
+	}
 
 	if(!properties.containsKey(ApplicationSettingsGenerator.DEVELOPMENT_MODE))
 	    initializeJobManager(queuingSystem);
@@ -221,8 +252,7 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 
 
 	InputStream emailPropertiesStream = getServletContext()
-		.getResourceAsStream(
-			"/WEB-INF/classes/META-INF/email.properties");
+		.getResourceAsStream(EMAIL_PROPERTIES_FILE);
 
 	Properties emailProperties = new Properties();
 
@@ -234,8 +264,8 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 	}
 	catch (IOException e)
 	{
-	    e.printStackTrace();
-	    throw new ServletException("Email properties file can not be read. "+e.getMessage());
+	    //e.printStackTrace();
+	    throw new ServletException("Email properties file '"+EMAIL_PROPERTIES_FILE+"' can not be read. Error: "+e.getMessage());
 	}
 
 	emailMessageData.setEmailJobSubmittedTitle(emailProperties.getProperty("email_job_submitted_title"));
@@ -281,20 +311,20 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
     }
 
     private void initializeJobManager(String queuingSystem) throws ServletException {
-	String queueingSystemConfigFile = "/WEB-INF/classes/META-INF/" + queuingSystem + "_queuing_system.properties";
-	InputStream queuingSystemPropertiesStream = getServletContext().getResourceAsStream(queueingSystemConfigFile );
-	Properties queuingSystemProperties = new Properties();
-	try {
-	    queuingSystemProperties.load(queuingSystemPropertiesStream);
-	}catch (IOException e) {
-	    e.printStackTrace();
-	    throw new ServletException("Properties file for " + queuingSystem + " can not be read");
-	}
-	try {
-	    jobManager = JobManagerFactory.getJobManager(queuingSystem, queuingSystemProperties, generalDestinationDirectoryName);
-	}catch(JobManagerException e) {
-	    throw new ServletException(e);
-	}
+    	String queueingSystemConfigFile = CONFIG_FILES_RESOURCE_LOCATION+"/" + queuingSystem + QUEUING_SYSTEM_PROPERTIES_FILE_SUFFIX;
+    	InputStream queuingSystemPropertiesStream = getServletContext().getResourceAsStream(queueingSystemConfigFile );
+    	Properties queuingSystemProperties = new Properties();
+    	try {
+    		queuingSystemProperties.load(queuingSystemPropertiesStream);
+    	}catch (IOException e) {
+    		//e.printStackTrace();
+    		throw new ServletException("Properties file '"+queueingSystemConfigFile+"' for " + queuingSystem + " can not be read. Error: "+e.getMessage());
+    	}
+    	try {
+    		jobManager = JobManagerFactory.getJobManager(queuingSystem, queuingSystemProperties, generalDestinationDirectoryName);
+    	}catch(JobManagerException e) {
+    		throw new ServletException(e);
+    	}
     }
 
     @Override
@@ -303,10 +333,10 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 	ApplicationSettingsGenerator applicationSettingsGenerator = new ApplicationSettingsGenerator(properties);
 
 	InputStream inputParametersStream = getServletContext()
-		.getResourceAsStream("/WEB-INF/classes/META-INF/input_parameters.xml");
+		.getResourceAsStream(INPUT_PARAMS_FILE);
 
 	InputStream gridPropertiesInputStream = getServletContext()
-		.getResourceAsStream("/WEB-INF/classes/META-INF/grid.properties");
+		.getResourceAsStream(GRID_PROPERTIES_FILE);
 
 	ApplicationSettings settings = applicationSettingsGenerator.generateApplicationSettings(inputParametersStream, 
 		gridPropertiesInputStream);
@@ -349,15 +379,16 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 
 	    JobDAO jobDAO = new JobDAOJpa();
 
-	    File logFile = new File(localDestinationDirName, "crklog");
+	    File logFile = new File(localDestinationDirName, PROGRESS_LOG_FILE_NAME);
 
 	    try
 	    {
-		logFile.createNewFile();
+	    	logFile.createNewFile();
 	    }
 	    catch(IOException e)
 	    {
-		e.printStackTrace();
+	    	log.warn("Problems creating progress log file "+logFile+". Error: "+e.getMessage());
+	    	//e.printStackTrace();
 	    }
 
 	    String submissionId = null;
@@ -472,11 +503,11 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 		{
 		    List<File> filesToRead = new ArrayList<File>();
 
-		    File logFile = new File(dataDirectory, "crklog");
+		    File logFile = new File(dataDirectory, PROGRESS_LOG_FILE_NAME);
 
 		    if (IOUtil.checkIfFileExist(logFile))
 		    {
-			filesToRead.add(new File(dataDirectory, "crklog"));
+			filesToRead.add(logFile);
 		    }
 
 		    File[] directoryContent = DirectoryContentReader.getFilesNamesWithPrefix(dataDirectory, jobId + ".e");
@@ -544,7 +575,7 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 		    stepFileName = stepFileName.substring(0, stepFileName.lastIndexOf("."));
 		}
 
-		File stepFile = new File(dataDirectory, stepFileName + ".steps.log");
+		File stepFile = new File(dataDirectory, stepFileName + STEPS_FILE_NAME_SUFFIX);
 
 		if(stepFile.exists())
 		{
@@ -668,8 +699,8 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 	    String submissionId = jobDAO.getSubmissionIdForJobId(jobId);
 
 	    File jobDirectory = new File(generalDestinationDirectoryName, jobId);
-	    File logFile = new File(jobDirectory, "crklog");
-	    File killFile = new File(jobDirectory, "killed");
+	    File logFile = new File(jobDirectory, PROGRESS_LOG_FILE_NAME);
+	    File killFile = new File(jobDirectory, KILLED_FILE_NAME);
 	    killFile.createNewFile();
 
 	    jobManager.stopJob(submissionId);
@@ -682,7 +713,8 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 	}
 	catch(IOException e)
 	{
-	    e.printStackTrace();
+	    //e.printStackTrace();
+		log.warn("The kill file ("+KILLED_FILE_NAME+") to signal the job stopping could not be written. Error: "+e.getMessage()); 
 	    result = "Job: " + jobId + " was not stopped";
 	}
 	catch(DaoException e)

@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import ch.systemsx.sybit.crkwebui.server.CrkWebServiceImpl;
 import ch.systemsx.sybit.crkwebui.shared.model.InputParameters;
 import ch.systemsx.sybit.crkwebui.shared.model.InputType;
 import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
@@ -72,7 +73,7 @@ public class CrkCommandGenerator
 		command.add("-s");
 
 		command.add("-L");
-		command.add(destinationDirectoryName + File.separator + "crklog");
+		command.add(destinationDirectoryName + File.separator + CrkWebServiceImpl.PROGRESS_LOG_FILE_NAME);
 		command.add("-l"); // for thumbnails, jmol, pdb and pse files
 		command.add("-w"); // for webui.dat file
 

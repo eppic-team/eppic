@@ -8,6 +8,7 @@ import org.ggf.drmaa.JobTemplate;
 import org.ggf.drmaa.Session;
 import org.ggf.drmaa.SessionFactory;
 
+import ch.systemsx.sybit.crkwebui.server.CrkWebServiceImpl;
 import ch.systemsx.sybit.crkwebui.server.jobs.generators.queuing.NativeSpecificationGenerator;
 import ch.systemsx.sybit.crkwebui.server.jobs.generators.queuing.NativeSpecificationGeneratorFactory;
 import ch.systemsx.sybit.crkwebui.server.jobs.managers.commons.JobManager;
@@ -238,7 +239,7 @@ public class DrmaaJobManager implements JobManager
 		boolean wasJobFinishedSuccessfully = false;
 
 		File finishedJobDirectory = new File(jobsDirectory, jobId);
-		File finishedJobFile = new File(finishedJobDirectory, "finished");
+		File finishedJobFile = new File(finishedJobDirectory, CrkWebServiceImpl.FINISHED_FILE_NAME);
 
 		if(finishedJobFile.exists())
 		{
@@ -260,7 +261,7 @@ public class DrmaaJobManager implements JobManager
 		boolean wasStopped = false;
 
 		File stoppedJobDirectory = new File(jobsDirectory, jobId);
-		File stoppedJobFile = new File(stoppedJobDirectory, "killed");
+		File stoppedJobFile = new File(stoppedJobDirectory, CrkWebServiceImpl.KILLED_FILE_NAME);
 
 		if(stoppedJobFile.exists())
 		{

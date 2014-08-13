@@ -3,6 +3,7 @@ package ch.systemsx.sybit.crkwebui.server.runners;
 import java.io.File;
 import java.util.List;
 
+import ch.systemsx.sybit.crkwebui.server.CrkWebServiceImpl;
 import ch.systemsx.sybit.crkwebui.server.commons.util.log.LogHandler;
 import ch.systemsx.sybit.crkwebui.server.commons.validators.RunJobDataValidator;
 import ch.systemsx.sybit.crkwebui.server.jobs.managers.commons.JobManager;
@@ -43,7 +44,7 @@ public class CrkRunner
 					  String destinationDirectoryName,
 					  int inputType) throws Exception
 	{
-		File logFile = new File(destinationDirectoryName, "crklog");
+		File logFile = new File(destinationDirectoryName, CrkWebServiceImpl.PROGRESS_LOG_FILE_NAME);
 		LogHandler.writeToLogFile(logFile, "Job submitted - please wait\n");
 
 		File runFile = new File(destinationDirectoryName, "crkrun");

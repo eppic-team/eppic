@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.ObjectInputStream;
 import java.util.List;
 
+import ch.systemsx.sybit.crkwebui.server.CrkWebServiceImpl;
 import ch.systemsx.sybit.crkwebui.server.commons.util.io.DirectoryContentReader;
 import ch.systemsx.sybit.crkwebui.server.commons.util.io.FileContentReader;
 import ch.systemsx.sybit.crkwebui.server.commons.util.log.LogHandler;
@@ -72,7 +73,7 @@ public class JobStatusUpdater implements Runnable
 						if(savedStatus != currentStatus)
 						{
 							File logFileDirectory = new File(generalDestinationDirectoryName, unfinishedJob.getJobId());
-							File logFile = new File(logFileDirectory, "crklog");
+							File logFile = new File(logFileDirectory, CrkWebServiceImpl.PROGRESS_LOG_FILE_NAME);
 
 							if(currentStatus == StatusOfJob.FINISHED)
 							{
