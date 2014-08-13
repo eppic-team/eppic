@@ -3,6 +3,9 @@ package ch.systemsx.sybit.crkwebui.server.runners;
 import java.io.File;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import ch.systemsx.sybit.crkwebui.server.CrkWebServiceImpl;
 import ch.systemsx.sybit.crkwebui.server.commons.util.log.LogHandler;
 import ch.systemsx.sybit.crkwebui.server.commons.validators.RunJobDataValidator;
@@ -16,6 +19,9 @@ import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
  */
 public class CrkRunner
 {
+	
+	private static final Logger log = LoggerFactory.getLogger(CrkRunner.class);
+	
 	private JobManager jobManager;
 	private String crkApplicationLocation;
 	private int nrOfThreadsForSubmission;
@@ -62,13 +68,13 @@ public class CrkRunner
 															  nrOfThreadsForSubmission,
 															  assignedMemory);
 
-		// logging to stdout: we should this with proper logging
-		System.out.print("Running user job: ");
+		// logging the command
+		StringBuffer sb = new StringBuffer();
 		for (String token:crkCommand) {
-			System.out.print(token+" ");
+			sb.append(token+" ");
 		}
-		System.out.println();
-
+		log.info("Running user job: "+sb.toString());
+		
 	    return jobManager.startJob(javaVMExec,
 	    		                   runJobData.getJobId(), 
 	    						   crkCommand, 

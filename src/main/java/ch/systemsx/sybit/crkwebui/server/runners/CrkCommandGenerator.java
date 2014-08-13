@@ -10,15 +10,15 @@ import ch.systemsx.sybit.crkwebui.shared.model.InputType;
 import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 
 /**
- * Crk command generator.
+ * EPPIC command generator.
  * @author AS
  *
  */
 public class CrkCommandGenerator
 {
 	/**
-	 * Creates crk command to execute.
-	 * @param crkApplicationLocation location of crk executable
+	 * Creates EPPIC command to execute.
+	 * @param crkApplicationLocation location of EPPIC executable jar
 	 * @param input input
 	 * @param inputType type of the input
 	 * @param inputParameters input parameters
