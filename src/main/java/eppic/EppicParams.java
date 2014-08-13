@@ -24,6 +24,8 @@ public class EppicParams {
 	private static final Pattern   PDBCODE_PATTERN = Pattern.compile("^\\d\\w\\w\\w$");
 	public static final String     CONFIG_FILE_NAME = ".eppic.conf";
 	
+	public static final String	   FINISHED_FILE_NAME = "finished";
+	
 	protected static final String  ENTROPIES_FILE_SUFFIX = ".entropies";
 	protected static final String  INTERFACES_FILE_SUFFIX = ".interfaces";
 	protected static final String  CONTACTS_FILE_SUFFIX = ".contacts";

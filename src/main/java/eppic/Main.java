@@ -528,7 +528,7 @@ public class Main {
 
 			// finally we write a signal file for the wui to know that job is finished
 			try {
-				FileWriter fw = new FileWriter(new File(params.getOutDir(), "finished"));
+				FileWriter fw = new FileWriter(new File(params.getOutDir(), EppicParams.FINISHED_FILE_NAME));
 				fw.close();
 			} catch (IOException e) {
 				throw new EppicException(e, "Couldn't write the finished file", true);
