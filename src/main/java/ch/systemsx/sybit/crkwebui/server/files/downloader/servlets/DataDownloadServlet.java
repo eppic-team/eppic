@@ -15,7 +15,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
-import javax.xml.bind.PropertyException;
 
 import ch.systemsx.sybit.crkwebui.server.commons.servlets.BaseServlet;
 import ch.systemsx.sybit.crkwebui.server.db.dao.DataDownloadTrackingDAO;
@@ -49,9 +48,7 @@ import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 @PersistenceContext(name="eppicjpa", unitName="eppicjpa")
 public class DataDownloadServlet extends BaseServlet{
 
-	/**
-	 * 
-	 */
+	
 	private static final long serialVersionUID = 1L;
 		
 	//Parameters
@@ -100,11 +97,12 @@ public class DataDownloadServlet extends BaseServlet{
 			createXMLResponse(response, pdbList);
 
 		}
-		catch(ValidationException e)
-		{
+		catch(ValidationException e) {
 			response.sendError(HttpServletResponse.SC_PRECONDITION_FAILED, "Input values are incorrect: " + e.getMessage());
-		} catch (Exception e) {
-			e.printStackTrace();
+		} catch (DaoException e) {
+			throw new ServletException(e);
+		} catch (JAXBException e) {
+			throw new ServletException(e);
 		}
 	}
 	
@@ -125,7 +123,7 @@ public class DataDownloadServlet extends BaseServlet{
 	 * @return pdb score item
 	 * @throws Exception when can not retrieve result of the job
 	 */
-	private PdbInfo getResultData(String jobId, List<Integer> interfaceIdList, String getSeqInfo) throws Exception
+	private PdbInfo getResultData(String jobId, List<Integer> interfaceIdList, String getSeqInfo) throws DaoException
 	{
 		JobDAO jobDAO = new JobDAOJpa();
 		InputWithType input = jobDAO.getInputWithTypeForJob(jobId);
@@ -165,27 +163,22 @@ public class DataDownloadServlet extends BaseServlet{
 	 * converts the contents of the class to xml file
 	 * @param response to write xml file
 	 * @throws IOException 
+	 * @throws JAXBException 
 	 */
-	void createXMLResponse(HttpServletResponse response, List<PdbInfo> pdbList) throws IOException{
+	void createXMLResponse(HttpServletResponse response, List<PdbInfo> pdbList) throws IOException, JAXBException{
 
 		if(pdbList == null) return;
 
-		try {
+		response.setContentType("text/xml");
+		response.setCharacterEncoding("UTF-8");
 
-			response.setContentType("text/xml");
-			response.setCharacterEncoding("UTF-8");
-			
-			PrintWriter writer = response.getWriter();
+		PrintWriter writer = response.getWriter();
 
-			serializePdbInfoList(pdbList, writer);
+		serializePdbInfoList(pdbList, writer);
 
-		} catch (JAXBException e) {
-			// some exception occured
-			e.printStackTrace();
-		}
 	}
 
-	void serializePdbInfoList(List<PdbInfo> pdbList, PrintWriter writer) throws JAXBException, PropertyException {
+	void serializePdbInfoList(List<PdbInfo> pdbList, PrintWriter writer) throws JAXBException {
 	    // create JAXB context and initializing Marshaller
 	    JAXBContext jaxbContext = JAXBContext.newInstance(PdbInfo.class);
 	    Marshaller jaxbMarshaller = jaxbContext.createMarshaller();

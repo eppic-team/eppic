@@ -8,6 +8,8 @@ import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 
+import ch.systemsx.sybit.crkwebui.server.CrkWebServiceImpl;
+
 /**
  * Base class for other servlets.
  * @author srebniak_a
@@ -27,8 +29,7 @@ public class BaseServlet extends HttpServlet {
 		super.init(config);
 
 		InputStream propertiesStream = getServletContext()
-				.getResourceAsStream(
-						"/WEB-INF/classes/META-INF/server.properties");
+				.getResourceAsStream(CrkWebServiceImpl.SERVER_PROPERTIES_FILE);
 
 		properties = new Properties();
 
@@ -38,8 +39,8 @@ public class BaseServlet extends HttpServlet {
 		}
 		catch (IOException e) 
 		{
-			e.printStackTrace();
-			throw new ServletException("Properties file can not be read");
+			//e.printStackTrace();
+			throw new ServletException("Properties file '"+CrkWebServiceImpl.SERVER_PROPERTIES_FILE+"' can not be read. Error: "+e.getMessage());
 		}
 	}
 

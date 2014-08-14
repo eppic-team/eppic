@@ -92,7 +92,7 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
     // config file locations
     private static final String CONFIG_FILES_RESOURCE_LOCATION = "/WEB-INF/classes/META-INF";
     
-    private static final String SERVER_PROPERTIES_FILE 	= CONFIG_FILES_RESOURCE_LOCATION+"/server.properties";
+    public static final String SERVER_PROPERTIES_FILE 	= CONFIG_FILES_RESOURCE_LOCATION+"/server.properties";
     private static final String EMAIL_PROPERTIES_FILE 	= CONFIG_FILES_RESOURCE_LOCATION+"/email.properties";
     private static final String INPUT_PARAMS_FILE 		= CONFIG_FILES_RESOURCE_LOCATION+"/input_parameters.xml";
     private static final String GRID_PROPERTIES_FILE 	= CONFIG_FILES_RESOURCE_LOCATION+"/grid.properties";
@@ -715,18 +715,17 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 	}
 	catch(IOException e)
 	{
-	    //e.printStackTrace();
 		log.warn("The kill file ("+KILLED_FILE_NAME+") to signal the job stopping could not be written. Error: "+e.getMessage()); 
 	    result = "Job: " + jobId + " was not stopped";
 	}
 	catch(DaoException e)
 	{
-	    e.printStackTrace();
+		log.warn("Job could not be stopped due to a DaoException. Error: "+e.getMessage());	    
 	    result = "Job: " + jobId + " was not stopped";
 	}
 	catch(JobHandlerException e)
 	{
-	    e.printStackTrace();
+		log.warn("Job could not be stopped due to a JobHandlerException. Error: "+e.getMessage());
 	    result = "Job: " + jobId + " was not stopped";
 	}
 
