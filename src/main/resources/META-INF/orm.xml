@@ -92,31 +92,31 @@
 			
 			<basic name="crystalFormId"></basic>
 
-			<one-to-many name="interfaceClusters" mapped-by="pdbInfo">
+			<one-to-many name="interfaceClusters" mapped-by="pdbInfo" fetch="LAZY">
 				<cascade>
 					<cascade-all />
 				</cascade>
 			</one-to-many>
 
-			<one-to-many name="chainClusters" mapped-by="pdbInfo">
+			<one-to-many name="chainClusters" mapped-by="pdbInfo" fetch="LAZY">
 				<cascade>
 					<cascade-all />
 				</cascade>
 			</one-to-many>
 
-			<one-to-many name="assemblies" mapped-by="pdbInfo">
+			<one-to-many name="assemblies" mapped-by="pdbInfo" fetch="LAZY">
 				<cascade>
 					<cascade-all />
 				</cascade>
 			</one-to-many>
 
-			<one-to-one name="runParameters">
+			<one-to-one name="runParameters" fetch="LAZY">
 				<cascade>
 					<cascade-all />
 				</cascade>
 			</one-to-one>
 
-			<one-to-one name="job">
+			<one-to-one name="job" fetch="LAZY">
 			</one-to-one>
 
 			<!-- element-collection name="homologsInfoItems" -->

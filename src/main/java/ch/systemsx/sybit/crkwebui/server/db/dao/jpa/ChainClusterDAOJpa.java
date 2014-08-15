@@ -37,10 +37,10 @@ import eppic.model.SeqClusterDB_;
  *
  */
 public class ChainClusterDAOJpa implements ChainClusterDAO {
-    
+
     private static final Logger log = LoggerFactory.getLogger(ChainClusterDAOJpa.class);
 
-    
+
     @Override
     public List<ChainCluster> getChainClusters(int pdbInfoUid) throws DaoException
     {
@@ -144,12 +144,12 @@ public class ChainClusterDAOJpa implements ChainClusterDAO {
 	}
 
     }
-    
+
     @Override
     public List<PDBSearchResult> getPdbSearchItems(String pdbCode, String repChain, SequenceClusterType sequenceClusterType)
 	    throws DaoException {
 	EntityManager entityManager = null;
-
+	long start = System.currentTimeMillis();
 	try
 	{
 	    List<PDBSearchResult> resultList = new ArrayList<PDBSearchResult>();
@@ -157,7 +157,7 @@ public class ChainClusterDAOJpa implements ChainClusterDAO {
 	    entityManager = EntityManagerHandler.getEntityManager();
 	    CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 	    CriteriaQuery<PdbInfoDB> criteriaQuery = criteriaBuilder.createQuery(PdbInfoDB.class);
-	    
+
 	    Root<ChainClusterDB> root = criteriaQuery.from(ChainClusterDB.class);
 
 	    SingularAttribute<SeqClusterDB, Integer> sequenceClusterTypeColumn = getSequenceClusterTypeColumn(sequenceClusterType);
@@ -166,19 +166,18 @@ public class ChainClusterDAOJpa implements ChainClusterDAO {
 		log.warn("clusterId is " + clusterId + " for pdbCode " + pdbCode + " repChain " + repChain + " sequenceClusterType " + sequenceClusterType);
 		return null;
 	    }
-	    
-	    Subquery<Integer> chainClusterIdsQuery = criteriaQuery.subquery(Integer.class);
-	    Root<SeqClusterDB> seqRoot = chainClusterIdsQuery.from(SeqClusterDB.class);
-	    chainClusterIdsQuery.select(seqRoot.get(SeqClusterDB_.chainCluster).get(ChainClusterDB_.uid));
-	    chainClusterIdsQuery.where(criteriaBuilder.equal(seqRoot.get(sequenceClusterTypeColumn), clusterId));
-	    
+
+	    List<Integer> chainClusterIds = getChainCluserIds(clusterId, sequenceClusterTypeColumn);
+
 	    criteriaQuery.select(root.get(ChainClusterDB_.pdbInfo));
-	    criteriaQuery.where(criteriaBuilder.in(root.get(ChainClusterDB_.uid)).value(chainClusterIdsQuery));
+	    criteriaQuery.where(root.get(ChainClusterDB_.uid).in(chainClusterIds));
 	    Query query = entityManager.createQuery(criteriaQuery);
 
 	    @SuppressWarnings("unchecked")
 	    List<PdbInfoDB> pdbItemDBs = query.getResultList();
-
+	    long duration = System.currentTimeMillis() - start;
+	    log.debug("Querying pdbitems for pdb " + pdbCode + " and seq " + sequenceClusterType + " with level " + sequenceClusterType + " took: " + duration + " ms");
+	    start = System.currentTimeMillis();
 	    for(PdbInfoDB pdbItemDB: pdbItemDBs){
 		PDBSearchResult result = new PDBSearchResult(pdbItemDB.getUid(),
 			pdbItemDB.getPdbCode(), 
@@ -199,7 +198,8 @@ public class ChainClusterDAOJpa implements ChainClusterDAO {
 
 		resultList.add(result);
 	    }
-
+	    duration = System.currentTimeMillis() - start;
+	    log.debug("Converting pdbitems for pdb " + pdbCode + " and seq " + sequenceClusterType + " with level " + sequenceClusterType + " took: " + duration + " ms");
 	    return resultList;
 
 	}
@@ -223,35 +223,77 @@ public class ChainClusterDAOJpa implements ChainClusterDAO {
     }
 
 
+    private List<Integer> getChainCluserIds(long clusterId, SingularAttribute<SeqClusterDB, Integer> sequenceClusterTypeColumn) {
+	EntityManager entityManager = null;
+	long start = System.currentTimeMillis();
+	try
+	{
+	entityManager = EntityManagerHandler.getEntityManager();
+	CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+	CriteriaQuery<Integer> criteriaQuery = criteriaBuilder.createQuery(Integer.class);
+
+	Root<SeqClusterDB> root = criteriaQuery.from(SeqClusterDB.class);
+
+	criteriaQuery.select(root.get(SeqClusterDB_.chainCluster).get(ChainClusterDB_.uid));
+	criteriaQuery.where(criteriaBuilder.equal(root.get(sequenceClusterTypeColumn), clusterId));
+	
+	Query query = entityManager.createQuery(criteriaQuery);
+
+	@SuppressWarnings("unchecked")
+	List<Integer> res = query.getResultList();
+	
+	long duration = System.currentTimeMillis() - start;
+	log.debug("Getting chain cluster ids for cluster id " + clusterId + "  with level " + sequenceClusterTypeColumn + " took: " + duration + " ms");
+
+	return res;
+	}catch(Throwable e)
+	{
+	    log.error("Query failed:", e);
+	    return Collections.emptyList();
+	}
+	finally
+	{
+	    try
+	    {
+		entityManager.close();
+	    }
+	    catch(Throwable t)
+	    {
+		t.printStackTrace();
+	    }
+	}
+    }
+
+
     SingularAttribute<SeqClusterDB, Integer> getSequenceClusterTypeColumn(SequenceClusterType sequenceClusterType) {
 	switch (sequenceClusterType) {
-	    case C100:
-		return SeqClusterDB_.c100;
-	    case C95:
-		return SeqClusterDB_.c95;
-	    case C90:
-		return SeqClusterDB_.c90;
-	    case C80:
-		return SeqClusterDB_.c80;
-	    case C70:
-		return SeqClusterDB_.c70;
-	    case C60:
-		return SeqClusterDB_.c60;
-	    case C50:
-		return SeqClusterDB_.c50;
-	    case C40:
-		return SeqClusterDB_.c40;
-	    case C30:
-		return SeqClusterDB_.c30;
-	    default:
-		throw new IllegalArgumentException("SequenceClusterType should be one of the following values: 100, 95, 90, 80, 70, 60 ,50, 40 ,30");
-	    }
+	case C100:
+	    return SeqClusterDB_.c100;
+	case C95:
+	    return SeqClusterDB_.c95;
+	case C90:
+	    return SeqClusterDB_.c90;
+	case C80:
+	    return SeqClusterDB_.c80;
+	case C70:
+	    return SeqClusterDB_.c70;
+	case C60:
+	    return SeqClusterDB_.c60;
+	case C50:
+	    return SeqClusterDB_.c50;
+	case C40:
+	    return SeqClusterDB_.c40;
+	case C30:
+	    return SeqClusterDB_.c30;
+	default:
+	    throw new IllegalArgumentException("SequenceClusterType should be one of the following values: 100, 95, 90, 80, 70, 60 ,50, 40 ,30");
+	}
     }
 
 
     private int getClusterId(String pdbCode, String repChain, SingularAttribute<SeqClusterDB, Integer> certanityColumn) throws DaoException {
 	EntityManager entityManager = null;
-
+	long start = System.currentTimeMillis();
 	try
 	{
 	    entityManager = EntityManagerHandler.getEntityManager();
@@ -262,9 +304,13 @@ public class ChainClusterDAOJpa implements ChainClusterDAO {
 	    criteriaQuery.where(criteriaBuilder.equal(root.get(SeqClusterDB_.pdbCode), pdbCode),
 		    criteriaBuilder.equal(root.get(SeqClusterDB_.repChain), repChain));
 	    Query query = entityManager.createQuery(criteriaQuery);
-	   
-	    return (Integer)query.getSingleResult();
-	    
+
+	    Integer res = (Integer)query.getSingleResult();
+	    long duration = System.currentTimeMillis() - start;
+	    log.debug("Querying clusterid for pdb " + pdbCode + " and seq " + repChain + " with level " + certanityColumn + " took: " + duration + " ms");
+
+	    return res;
+
 	}catch(NoResultException e) {
 	    log.warn("No cluster id.");
 	    return -1;
