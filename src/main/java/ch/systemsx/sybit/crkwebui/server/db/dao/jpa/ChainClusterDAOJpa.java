@@ -262,7 +262,7 @@ public class ChainClusterDAOJpa implements ChainClusterDAO {
 	    criteriaQuery.where(criteriaBuilder.equal(root.get(SeqClusterDB_.pdbCode), pdbCode),
 		    criteriaBuilder.equal(root.get(SeqClusterDB_.repChain), repChain));
 	    Query query = entityManager.createQuery(criteriaQuery);
-	    
+	   
 	    return (Integer)query.getSingleResult();
 	    
 	}catch(NoResultException e) {
