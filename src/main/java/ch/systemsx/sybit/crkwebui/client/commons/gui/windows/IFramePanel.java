@@ -15,7 +15,7 @@ import com.sencha.gxt.widget.core.client.container.Viewport;
 public class IFramePanel extends DisplayPanel {
 
     public interface HtmlLayoutContainerTemplate extends XTemplates {
-	@XTemplate("<div class='main'></div><div class='footer'></div>")
+	@XTemplate("<div class='main' style=\"height:100%;\"></div><div class='footer'></div>")
 	SafeHtml getTemplate();
     }
 
