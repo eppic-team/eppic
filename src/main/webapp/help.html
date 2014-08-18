@@ -7,6 +7,12 @@
 
 <body>
 
+	<script type="text/javascript">
+		function reloadPage(url) {
+			window.top.location=url;
+		}
+	</script>
+	
 	<div class="eppic-iframe-content">
 
 		<img class="eppic-iframe-top-img"
@@ -533,7 +539,8 @@
 			about interfaces and scoring (including the MSA) for the structure
 			being analyzed. This is useful for further data processing. XML
 			downloads of precomputed PDB entries can be scripted by using URLs like:
-			<code>http://www.eppic-web.org/ewui/ewui/dataDownload?type=xml&amp;id=PDB_code</code>
+			<code>http://www.eppic-web.org/ewui/ewui/dataDownload?type=xml&amp;id=PDB_code</code>.
+			See the <a href="http://www.eppic-web.org/ewui/#downloads" onclick="reloadPage('http://www.eppic-web.org/ewui/#downloads');">Downloads page</a> for more information.
 		</p>
 
 		<h3 id="assembly-note">A note on assemblies</h3>

@@ -6,6 +6,13 @@
 </head>
 
 <body>
+
+	<script type="text/javascript">
+		function reloadPage(url) {
+			window.top.location=url;
+		}
+	</script>
+	
 	<div class="eppic-iframe-content">
 		<div class="eppic-faq">
 
@@ -237,7 +244,7 @@
 				results will not be meaningful at all.</p>
 			<h4>Can I download the results data for my own analysis?</h4>
 			<p>Yes. Since version 2.1.0 we provide XML data downloads. Find 
-				more details about it in the Downloads page.				
+				more details about it in the <a href="http://www.eppic-web.org/ewui/#downloads" onclick="reloadPage('http://www.eppic-web.org/ewui/#downloads');">Downloads page</a>.				
 			</p>
 
 

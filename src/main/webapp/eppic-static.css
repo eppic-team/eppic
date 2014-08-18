@@ -60,24 +60,28 @@ li {
 	margin-bottom: 15px;
 }
 
+A {
+	cursor: pointer;
+}
+
 A:link {
 	color: #15428B;
-	text-decoration: none
+	text-decoration: none;
 }
 
 A:visited {
 	color: #15428B;
-	text-decoration: none
+	text-decoration: none;
 }
 
 A:active {
 	color: #15428B;
-	text-decoration: none
+	text-decoration: none;
 }
 
 A:hover {
 	color: #15428B;
-	text-decoration: underline
+	text-decoration: underline;
 }
 
 .eppic-iframe-content {
@@ -313,4 +317,25 @@ EPPIC HELP PAGE STYLES
 
 .eppic-iframe-footer-image-snf {
 	width: 100px;
+}
+
+.eppic-statistics table {
+	width: 800px;
+}
+
+.eppic-statistics th {
+	font-weight: bold;
+	text-align: left;
+}
+
+td.numeric {
+	text-align: right;
+}
+
+th.numeric {
+	text-align: right;
+}
+
+td.text {
+	text-align: left;
 }
