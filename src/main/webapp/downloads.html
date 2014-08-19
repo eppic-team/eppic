@@ -75,17 +75,19 @@
 		<h2>EPPIC Interface Loader plug-in for PyMOL</h2>
 
 		<p>
-			The EPPIC Interface Loader plug-in for PyMOL allows 
-			direct download of precalculated EPPIC interfaces into PyMOL. It works in Linux, Windows and Mac.
-			To request a specific interface (according to EPPIC numbering) just type a PDB code 
-			followed by a dash and by the interface number in the plug-in dialog window.
-			To request all EPPIC interfaces for that entry, just input the PDB code.
+			The EPPIC Interface Loader plug-in for PyMOL allows direct
+			download of precalculated EPPIC interfaces into PyMOL. It works in
+			Linux, Windows and Mac. Entering a PDB code will load all interfaces
+			for that PDB entry. Single interfaces can also be selected.
+			Interfaces are numbered according to the EPPIC website. By default,
+			each interface is loaded as its own object. They can also be loaded
+			as multiple states in a single object, which can then be navigated
+			using the state navigation at the bottom right.
 		</p>
 		<p>
-			Interfaces are displayed by default as lines; by typing a PDB code followed by a dash, 
-			interface number, another dash and a chain ID (e.g.: 2trx-1-A) the interface will 
-			be shown in hybrid mode. In this mode the chain given in the input will be shown as 
-			sequence entropy-mapped surface and its interface partner will appear as cartoon.
+			Interfaces are displayed by default with the two molecules in "lines" 
+			representation. One can otherwise choose to show the molecules in 
+			surface representation with sequence entropies color-coded onto it. 			 
 			The latest version of the plugin is available <a
 				href="../downloads/pymol_plugin.zip">here</a>. 			
 		</p>
