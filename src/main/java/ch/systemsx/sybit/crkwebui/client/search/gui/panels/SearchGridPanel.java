@@ -77,7 +77,6 @@ public class SearchGridPanel extends VerticalLayoutContainer
 
     LiveGridView<PDBSearchResult> liveGridView;
     PagingLoader<PagingLoadConfig, PagingLoadResult<PDBSearchResult>> loader;
-    //PagingToolBar toolBar;
     /**
      * Constructor
      */
@@ -103,10 +102,6 @@ public class SearchGridPanel extends VerticalLayoutContainer
 	createGrid();
 
 	this.add(resultsGrid, new VerticalLayoutData(1, 1));
-//	toolBar = new PagingToolBar(50);
-//	toolBar.getElement().getStyle().setProperty("borderBottom", "none");
-//	toolBar.bind(loader);
-//	this.add(toolBar, new VerticalLayoutData(1, -1));
     }
 
     /**
@@ -117,35 +112,13 @@ public class SearchGridPanel extends VerticalLayoutContainer
     public void fillGrid(List<PDBSearchResult> values, String pdBCode)
     {
 	moveOriginaltoTop(values, pdBCode);
-	//	store.clear();
 	selectedPdbCode = null;
-
-	//	if (values != null) {
-	//	    store.addAll(values);
-	//	}
-
-	//	if(store.getAll().size() <= 0){
-	//	    setGridVisibility(false);
-	//	} else{
-	//	    setGridVisibility(true);
-	//	}
 	highlightOriginal(pdBCode);
 	loader = createLoader(values);
 	loader.setRemoteSort(true);
-//	loader.addLoadHandler(new LoadResultListStoreBinding<PagingLoadConfig, PDBSearchResult, PagingLoadResult<PDBSearchResult>>(store));
 	resultsGrid.setLoader(loader);
-//	toolBar.bind(loader);
-//	toolBar.first();
-//	liveGridView.setForceFit(true);
-	loader.load(0, 200);
-//	resultsGrid.setView(liveGridView);
 	resultsGrid.reconfigure(store, cm);
-	//	loader.load(0, 200);
-	//	if(values.size() <= 0){
-	//	    setGridVisibility(false);
-	//	} else{
-	//	    setGridVisibility(true);
-	//	}
+	loader.load(0, 200);
     }
 
     private void highlightOriginal(final String pdBCode) {
@@ -320,9 +293,6 @@ public class SearchGridPanel extends VerticalLayoutContainer
 	return gridLoader;
     }
 
-    private void setGridVisibility(boolean visibility){
-	resultsGrid.setVisible(visibility);
-    }
 
     /**
      * Adjusts size of the grid
