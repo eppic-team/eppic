@@ -2,5 +2,13 @@
 
 dir=`dirname $0`
 
+uniprotjar=$dir/../lib/uniprotjapi.jar
+eppicjar=`ls $dir/../lib/uber-eppic*.jar`
 
-java -cp $dir/../lib/*eppic*.jar eppic.Main $*
+if [ ! -f "$uniprotjar" ]
+then
+        echo "$uniprotjar is missing in $dir/../lib directory. Can't run eppic without it."
+        exit 1
+fi
+
+java -cp $uniprotjar:$eppicjar eppic.Main $*

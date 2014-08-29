@@ -5,6 +5,12 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import owl.core.sequence.Sequence;
+import owl.core.sequence.alignment.AlignmentConstructionException;
+import owl.core.sequence.alignment.MultipleSequenceAlignment;
 import eppic.model.AssemblyDB;
 import eppic.model.ChainClusterDB;
 import eppic.model.ContactDB;
@@ -18,6 +24,9 @@ import eppic.model.ResidueDB;
 import eppic.model.ScoringMethod;
 
 public class TextOutputWriter {
+	
+	private static final Log LOGGER = LogFactory.getLog(TextOutputWriter.class);
+	
 	
 	private PdbInfoDB pdbInfo;
 	private EppicParams params;
@@ -396,21 +405,33 @@ public class TextOutputWriter {
 
 		ps.println("# Entropies for all observed residues of query sequence (reference UniProt: " +
 				chainCluster.getRefUniProtId()+") based on a " + pdbInfo.getRunParameters().getReducedAlphabet()+" letters alphabet.");
-		ps.println("# seqres\tpdb\tuniprot\tuniprot_res\tentropy");
+		ps.println("# seqres\tpdb\tuniprot\tpdb_res\tentropy");
  
 		List<ResidueDB> list = getResidueListForChain(chainCluster);
 
+				
+		List<Sequence> sequences = new ArrayList<Sequence>(2);
+		sequences.add(new Sequence("pdb",chainCluster.getPdbAlignedSeq()));
+		sequences.add(new Sequence("uniprot",chainCluster.getRefAlignedSeq()));
 		
-		int uniProtStart = chainCluster.getRefUniProtStart();
-		int pdbStart = chainCluster.getPdbStart();
-		
+		MultipleSequenceAlignment aln = null;
+		try {
+			aln = new MultipleSequenceAlignment(sequences);
+		} catch (AlignmentConstructionException e) {
+			LOGGER.warn("Could not create alignment from PDB aligned sequence and UniProt reference aligned sequence. Entropies file will contain no UniProt numbering, error: "+e.getMessage());			
+		}
 		
 		for (int i=0;i<list.size();i++) {
+			
+			int uniprotSerial = 0;
+			if (aln!=null) {
+				uniprotSerial = aln.al2seq("uniprot", aln.seq2al("pdb", list.get(i).getResidueNumber()));
+			}
 			
 			ps.printf("%4d\t%4s\t%4d\t%3s\t%5.2f\n",
 					list.get(i).getResidueNumber(), 
 					list.get(i).getPdbResidueNumber(),  
-					list.get(i).getResidueNumber()+uniProtStart-pdbStart, 
+					uniprotSerial, 
 					list.get(i).getResidueType(), 
 					list.get(i).getEntropyScore());
 		}
