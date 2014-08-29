@@ -125,6 +125,9 @@ public class EppicParams {
 	// default pymol exec
 	private static final File	  DEF_PYMOL_EXE = new File("/usr/bin/pymol");
 	
+	// default hbplus exec
+	private static final File     DEF_HBPLUS_EXE = new File("/usr/bin/hbplus");
+	
 	// default minimum ASA for calling a residue surface
 	public static final double    DEF_MIN_ASA_FOR_SURFACE = 5;
 	// default minimum number of atoms for a cofactor to be considered for ASA calculations purposes, if -1 all ignored
@@ -253,6 +256,7 @@ public class EppicParams {
 	private String   blastDb;    // no default
 	
 	private String   localUniprotDbName; // no default
+	private File hbplusExe;
 	
 	/**
 	 * 
@@ -831,6 +835,8 @@ public class EppicParams {
 			
 			pymolExe		= new File(p.getProperty("PYMOL_EXE", DEF_PYMOL_EXE.toString()));
 			
+			hbplusExe       = new File(p.getProperty("HBPLUS_EXE", DEF_HBPLUS_EXE.toString()));
+			
 			minAsaForSurface = Double.parseDouble(p.getProperty("MIN_ASA_FOR_SURFACE", new Double(DEF_MIN_ASA_FOR_SURFACE).toString()));
 			
 			minSizeCofactorForAsa = Integer.parseInt(p.getProperty("MIN_SIZE_COFACTOR_FOR_ASA", new Integer(DEF_MIN_SIZE_COFACTOR_FOR_ASA).toString()));
@@ -909,6 +915,10 @@ public class EppicParams {
 
 	public File getPymolExe() {
 		return pymolExe;
+	}
+	
+	public File getHbplusExe() {
+		return hbplusExe;
 	}
 
 	public double getQueryCoverageCutoff() {

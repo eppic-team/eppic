@@ -19,10 +19,6 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 
-import eppic.predictors.CombinedClusterPredictor;
-import eppic.predictors.CombinedPredictor;
-import eppic.predictors.GeometryClusterPredictor;
-import eppic.predictors.GeometryPredictor;
 import owl.core.structure.ChainCluster;
 import owl.core.structure.ChainInterface;
 import owl.core.structure.ChainInterfaceList;
@@ -35,6 +31,10 @@ import owl.core.structure.SpaceGroup;
 import owl.core.structure.graphs.AICGraph;
 import owl.core.util.FileFormatException;
 import owl.core.util.Goodies;
+import eppic.predictors.CombinedClusterPredictor;
+import eppic.predictors.CombinedPredictor;
+import eppic.predictors.GeometryClusterPredictor;
+import eppic.predictors.GeometryPredictor;
 
 public class Main {
 	
@@ -384,38 +384,46 @@ public class Main {
 	
 	public void doWritePdbFiles() throws EppicException {
 
-		if (interfaces.getNumInterfaces()==0) return;
+		if (interfaces.getNumInterfaces() == 0) return;
 		
 		if (!params.isGenerateInterfacesPdbFiles()) return;
 		
 		try {
 			if (!params.isDoEvolScoring()) {
 				// no evol scoring: plain PDB files without altered bfactors
-				for (ChainInterface interf:interfaces) {
+				for (ChainInterface interf : interfaces) {
 					if (interf.isFirstProtein() && interf.isSecondProtein()) {
-						interf.writeToPdbFile(params.getOutputFile("."+interf.getId()+".pdb.gz"), params.isUsePdbResSer(), true);
+						File pdbFile = params.getOutputFile("." + interf.getId() + ".pdb.gz");
+						interf.writeToPdbFile(pdbFile, params.isUsePdbResSer(), true);
+						if (params.getHbplusExe() != null && params.getHbplusExe().exists()) {
+							interf.runHBPlus(params.getHbplusExe(), pdbFile);
+						}
+						else {
+							System.out.println("Interface " + interf.getId() + ": Couldn't run HBPlus. Falling back to alternate method.");
+						}
 					}
 
 				}
 			} else {
 				// writing PDB files with entropies as bfactors
 				for (InterfaceEvolContext iec:iecList) {
-					iec.writePdbFile(params.getOutputFile("."+iec.getInterface().getId()+".pdb.gz"), params.isUsePdbResSer());			
+					File pdbFile = params.getOutputFile("." + iec.getInterface().getId() + ".pdb.gz");
+					iec.writePdbFile(pdbFile, params.isUsePdbResSer());
 				}
 			}
 			
 		} catch (IOException e) {
-			throw new EppicException(e, "Couldn't write interfaces PDB files. "+e.getMessage(), true);
+			throw new EppicException(e, "Couldn't write interface PDB files. " + e.getMessage(), true);
+		} catch (InterruptedException e) {
+			throw new EppicException(e, "Problems while running HBPlus. " + e.getMessage(), true);
 		}
-
-
 	}
 	
 	public void doWritePymolFiles() throws EppicException {
 		
 		if (!params.isGenerateThumbnails()) return;
 		
-		if (interfaces.getNumInterfaces()==0) return;
+		if (interfaces.getNumInterfaces() == 0) return;
 		
 		PymolRunner pr = null;
 		params.getProgressLog().println("Writing PyMOL files");
@@ -427,7 +435,7 @@ public class Main {
 			pr.readColorMappingsFromResourceFile(EppicParams.PYMOL_COLOR_MAPPINGS_IS);
 
 		} catch (IOException e) {
-			throw new EppicException(e,"Couldn't read colors file. Won't generate thumbnails or pse/pml files. "+e.getMessage(),true);
+			throw new EppicException(e,"Couldn't read colors file. Won't generate thumbnails or pse/pml files. " + e.getMessage(),true);
 		}		
 
 		try {
@@ -732,7 +740,8 @@ public class Main {
 			} else {
 				doFindInterfaces();
 			}
-			doGeomScoring(); 
+			doWritePdbFiles();
+			doGeomScoring();
 			
 			if (params.isDoEvolScoring()) {
 				// 2 finding evolutionary context
@@ -749,11 +758,8 @@ public class Main {
 				doCombinedScoring();
 			}
 			
-			// 5 write CSV files (only if not in -w) 	
-			doWriteTextOutputFiles();		
-			
-			// 6 write pdb files (only if in -l)
-			doWritePdbFiles();
+			// 6 write CSV files (only if not in -w) 	
+			doWriteTextOutputFiles();
 						
 			// 7 writing pymol files (only if in -l)
 			doWritePymolFiles();

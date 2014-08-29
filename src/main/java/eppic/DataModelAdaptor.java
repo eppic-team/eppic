@@ -147,8 +147,9 @@ public class DataModelAdaptor {
 			icDBs.add(icDB);
 			icDB.setInterfaces(iDBs);
 			
-			
 			for (ChainInterface interf:ic.getMembers()) {
+				//System.out.println("Interface " + interf.getId());
+				
 				InterfaceDB interfaceDB = new InterfaceDB();
 				interfaceDB.setInterfaceId(interf.getId());
 				interfaceDB.setClusterId(interfaces.getCluster(interf.getId()).getId());
