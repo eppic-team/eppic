@@ -32,6 +32,7 @@
 							window</a></li>
 					<li><a href="#residue-details">The Details window</a></li>
 					<li><a href="#seq-clusters">Searching similar structures</a></li>
+					<li><a href="#known-issues">Known issues</a></li>
 					<li><a href="#misc">Miscellaneous</a></li>
 				</ul>
 			</div>
@@ -498,6 +499,20 @@
 			</div>
 		</div>
 		
+		<h2 id="known-issues">Known issues</h2>
+		
+		<ul>
+			<li>
+			<b>MTRIXn records not used</b>: for some PDB entries, usually viral capsid proteins, extra 
+			operators are required for reconstructing the full Asymmetric Unit. At the moment
+			EPPIC does not take these operators into account. This results in missing interfaces for
+			those structures (e.g. 
+			<a href="http://www.pdb.org/pdb/explore/explore.do?structureId=1AUY" target="_blank">1auy</a>, 
+			<a href="http://www.pdb.org/pdb/explore/explore.do?structureId=3RA2" target="_blank">3ra2</a>). 
+			This applies also to a few non-capsid entries like 
+			<a href="http://www.pdb.org/pdb/explore/explore.do?structureId=1A37" target="_blank">1a37</a>.  
+			</li>
+		</ul>
 		
 		
 		<h2 id="misc">Miscellaneous</h2>
