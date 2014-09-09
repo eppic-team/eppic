@@ -4,6 +4,9 @@ import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import ch.systemsx.sybit.crkwebui.server.db.dao.DataDownloadTrackingDAO;
 import ch.systemsx.sybit.crkwebui.server.db.dao.IPAllowedDAO;
 import ch.systemsx.sybit.crkwebui.server.db.dao.IPForbiddenDAO;
@@ -21,6 +24,9 @@ import ch.systemsx.sybit.crkwebui.shared.exceptions.ValidationException;
  */
 public class IPVerifier 
 {
+	
+	private static final Logger log = LoggerFactory.getLogger(IPVerifier.class);
+	
 	/**
 	 * Checks whether job can be submitted from specified IP address
 	 * @param ip
@@ -86,11 +92,15 @@ public class IPVerifier
 				
 				String formattedDate = (DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT).format(calendar.getTime()));
 				
-				throw new ValidationException("Submitting jobs from IP: " + ip + " is not allowed - too many submissions " +
-									" - current nr of submissions: " + nrOfJobsForIPDuringLastDay + 
-									" equals allowed nr of allowed submissions per 24h: " + nrOfAllowedSubmissionsForIPDuringOneDay + 
-									" - Please contact the administrator if you want to increase number of allowed submissions or try after: " +
-									formattedDate);
+				log.info("Number of submissions per IP exceeded for IP="+ip+
+						" (max allowed per IP and day is "+nrOfAllowedSubmissionsForIPDuringOneDay+")");
+				
+				throw new ValidationException(
+						"Too many submissions for IP=" + ip + 
+						" - current number of submissions: " + nrOfJobsForIPDuringLastDay + 
+						" equals allowed submissions per 24h: " + nrOfAllowedSubmissionsForIPDuringOneDay + 
+						" - Please contact the administrator if you want to increase number of allowed submissions or try after: " +
+						formattedDate);
 			}
 		}
 	}

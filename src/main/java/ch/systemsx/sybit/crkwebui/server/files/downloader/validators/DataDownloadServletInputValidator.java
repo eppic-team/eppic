@@ -3,6 +3,9 @@ package ch.systemsx.sybit.crkwebui.server.files.downloader.validators;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import ch.systemsx.sybit.crkwebui.server.db.dao.JobDAO;
 import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.JobDAOJpa;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
@@ -11,6 +14,8 @@ import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
 
 public class DataDownloadServletInputValidator {
 
+	private static final Logger log = LoggerFactory.getLogger(DataDownloadServletInputValidator.class);
+	
 	/**
 	 * Validates correctness of input data necessary to produce xml file.
 	 * @param type type of the file
@@ -30,6 +35,7 @@ public class DataDownloadServletInputValidator {
 		}
 		
 		if(jobIdMap.size() > maxXMLJobs){
+			log.info("Number of XML jobs limit exceeded, requested: "+jobIdMap.size()+", max is: "+maxXMLJobs);
 			throw new ValidationException("Exceeded maximum number of jobs allowed ("+maxXMLJobs+") to be retrieved in one call");
 		}
 		
