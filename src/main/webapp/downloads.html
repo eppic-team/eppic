@@ -33,6 +33,21 @@
 			Please note that we have download limits per IP. If you need to do bulk 
 			downloads, please contact us. We can then place an exception for you.
 		</p>
+		
+		<h2>Downloading PDB files of interfaces</h2>
+		<p>
+			Downloads of individual PDB files per interface is also possible by using the following URL:
+		</p>
+		<p>			 
+			<code>http://www.eppic-web.org/ewui/ewui/fileDownload?type=interface&amp;id=PDB_code&amp;interface=Interface_id</code>
+		</p>
+		<p>
+			The interface IDs are those calculated by EPPIC from largest (1) to smallest (n). 
+			Note that the downloaded PDB files contain both partners of the interface with the b-factors replaced
+			by the corresponding sequence entropy values per residue. If the interface happens between two 
+			symmetry-related chains with the same identifier (A + A), then the second chain is renamed to 
+			next letter in alphabet.
+		</p>
 
 		<h2>Software and source code</h2>
 
