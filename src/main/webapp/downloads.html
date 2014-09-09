@@ -42,10 +42,10 @@
 			<code>http://www.eppic-web.org/ewui/ewui/fileDownload?type=interface&amp;id=PDB_code&amp;interface=Interface_id</code>
 		</p>
 		<p>
-			The interface IDs are those calculated by EPPIC from largest (1) to smallest (n). 
+			The interface ids are those calculated by EPPIC from largest (1) to smallest (n). 
 			Note that the downloaded PDB files contain both partners of the interface with the b-factors replaced
 			by the corresponding sequence entropy values per residue. If the interface happens between two 
-			symmetry-related chains with the same identifier (A + A), then the second chain is renamed to 
+			symmetry-related chains with the same identifier (e.g. A + A), then the second chain is renamed to 
 			next letter in alphabet.
 		</p>
 
@@ -158,8 +158,9 @@
 			contacts, called XtalMany and BioMany, respectively (Baskaran et al., under review),
 			which contain nearly 3000 entries each. XtalMany is based on the concept of operators
 			leading to infinite assemblies. BioMany is mainly based on the concept of shared interfaces
-			across crystal forms: it is a subset of PROTCID from the Dunbrack group with very stringent 
-			parameters. In addition it contains interfaces from dimeric structures that were solved both
+			across crystal forms: it is a subset of <a href="http://dunbrack2.fccc.edu/protcid/" target="_blank">ProtCID</a> 
+			from the Dunbrack group with very stringent	parameters. 
+			In addition it contains interfaces from dimeric structures that were solved both
 			by crystallography and NMR: here the idea is that an NMR dimer validates the dimeric biounit 
 			of the corresponding crystal structure.
 			XtalMany and BioMany can be downloaded as text files here:
