@@ -30,7 +30,7 @@ public class DataDownloadServletInputValidator {
 		}
 		
 		if(jobIdMap.size() > maxXMLJobs){
-			throw new ValidationException("Exceded maximum number of jobs allowed to be retrived in one call");
+			throw new ValidationException("Exceeded maximum number of jobs allowed ("+maxXMLJobs+") to be retrieved in one call");
 		}
 		
 		for(String jobId: jobIdMap.keySet()){
