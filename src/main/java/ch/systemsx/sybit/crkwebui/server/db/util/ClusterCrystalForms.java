@@ -3,6 +3,7 @@ package ch.systemsx.sybit.crkwebui.server.db.util;
 import java.io.File;
 import java.io.PrintWriter;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -216,6 +217,9 @@ public class ClusterCrystalForms {
 			System.out.print("Cluster "+cluster.getId()+": ");			
 			
 			for (PdbInfo member:cluster.getMembers()) {
+				
+				member.getPdbInfo().setCrystalFormId(crystalFormId);
+				
 				System.out.print(member.getPdbInfo().getPdbCode()+" ");
 				
 				if (cfcPw !=null ) cfcPw.println( member.getPdbInfo().getUid()+"\t"+
@@ -255,9 +259,21 @@ public class ClusterCrystalForms {
 		end = System.currentTimeMillis();
 		System.out.println("Interfaces clusters calculated in "+((end - start)/1000)+" s");
 		System.out.println("Total number of interface clusters: "+interfClusters.size());
-		for (InterfaceCluster cluster:interfClusters) {	
-			System.out.print("Cluster "+cluster.getId()+": ");
+		for (InterfaceCluster cluster:interfClusters) {
+
+			// first we find the number of distinct crystal forms in cluster to print it in the header of each cluster
+			Set<Integer> distinctCFsInCluster = new HashSet<Integer>();
 			for (Interface member:cluster.getMembers()) {
+				distinctCFsInCluster.add(member.getInterface().getInterfaceCluster().getPdbInfo().getCrystalFormId());
+			}
+			
+			System.out.printf("Cluster %3d, in %2d/%2d (%4.2f) of CFs: ",
+					cluster.getId(), 
+					distinctCFsInCluster.size(), clusters.size(), 
+					(double)distinctCFsInCluster.size()/(double)clusters.size() );
+
+			for (Interface member:cluster.getMembers()) {
+				distinctCFsInCluster.add(member.getInterface().getInterfaceCluster().getPdbInfo().getCrystalFormId());
 				System.out.print(member.getInterface().getPdbCode()+"-"+member.getInterface().getInterfaceId()+" ");
 				
 				if (icPw !=null ) icPw.println( member.getInterface().getUid()+"\t"+
