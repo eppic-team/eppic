@@ -331,6 +331,18 @@ EPPIC HELP PAGE STYLES
 td.numeric {
 	text-align: right;
 }
+td.pos_numeric {
+        text-align: right;
+	color: green;
+}
+td.neg_numeric {
+        text-align: right;
+	color: red;
+}
+td.zero_numeric {
+        text-align: right;
+	color: black;
+}
 
 th.numeric {
 	text-align: right;
