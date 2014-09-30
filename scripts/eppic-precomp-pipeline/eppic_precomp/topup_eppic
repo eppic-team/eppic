@@ -1,0 +1,67 @@
+#!/bin/sh
+
+# --------------------------------------------------------------
+# Configuration file for eppic precalculation on merlin
+#
+# Author: Kumaran Baskaran
+# Date: 14-06-2013
+#
+# 
+# ----------------------------------------------------------------
+
+EPPIC=/gpfs/home/baskaran_k/software/bin/eppic
+EPPICCONF=/gpfs/home/baskaran_k/.eppic.conf
+MMCIF_DIR=/gpfs/home/baskaran_k/data/pdb/data/structures/all/mmCIF
+WORKDIR=`pwd`
+DATE=`date +%F`
+
+
+
+# soft and hard run time limits (default is 1 hour)
+SRT="03:00:00"
+HRT="03:00:30"
+MAXRAM="8G"
+
+if [ ! -f "$EPPIC" ] 
+then
+	echo "Missing file $EPPIC"
+	exit 1
+fi
+
+if [ ! -f "$EPPICCONF" ] 
+then
+	echo "Missing config file $EPPIC_CONF"
+	exit 1
+fi
+
+if [ ! -d $MMCIF_DIR ]
+then 
+	echo "Can't open dir $MMCIF_DIR"
+	exit 1
+fi
+
+if [ -d $WORKDIR/input ]; then echo "WARNING: Directory $WORKDIR/input already exists"; else mkdir $WORKDIR/input; fi
+if [ -d $WORKDIR/qsubscripts ]; then echo "WARNING: Directory $WORKDIR/qsubscripts already exists"; else mkdir $WORKDIR/qsubscripts; fi
+if [ -d $WORKDIR/output ]; then echo "WARNING: Directory $WORKDIR/output already exists"; else mkdir $WORKDIR/output; fi
+
+
+
+#Creating full list of pdbs
+find $MMCIF_DIR -mtime -$1 -name "*.cif.gz" -exec basename {} \; | sed s/.cif.gz//g > $CURRENT_DIR/topup_$DATE.list || exit 1
+PDBLIST=$WORKDIR/input/topup_$DATE.list
+MAXJOBS=`grep -v "^#" $PDBLIST | wc -l`
+	if [ -d $WORKDIR/output/topup_$DATE ]; then echo "WARNING: Directory $WORKDIR/output/topup_$DATE already exists"; else mkdir $WORKDIR/output/topup_$DATE; fi
+	if [ -d $WORKDIR/output/topup_$DATE/data ]; then echo "WARNING: Directory $WORKDIR/output/topup_$DATE/data already exists"; else mkdir $WORKDIR/output/topup_$DATE/data; fi
+	if [ -d $WORKDIR/output/topup_$DATE/logs ]; then echo "WARNING: Directory $WORKDIR/output/topup_$DATE/logs already exists"; else mkdir $WORKDIR/output/topup_$DATE/logs; fi
+	if [ -d $WORKDIR/output/topup_$DATE/data/all ]; then echo "WARNING: Directory $WORKDIR/output/topup_$DATE/data/all already exists"; else mkdir $WORKDIR/output/topup_$DATE/data/all; fi
+	if [ -d $WORKDIR/output/topup_$DATE/data/divided ]; then echo "WARNING: Directory $WORKDIR/output/topup_$DATE/data/divided already exists"; else mkdir $WORKDIR/output/topup_$DATE/data/divided; fi
+	ERRORDIR=$WORKDIR/output/topup_$DATE/logs
+	ER_ESC="${ERRORDIR//\//\\/}"
+	IN_ESC="${PDBCHUNK//\//\\/}"
+	OUTFOLDER=$WORKDIR/output/topup_$DATE
+	OUT_ESC="${OUTFOLDER//\//\\/}"
+	EPPIC_ESC="${EPPIC//\//\\/}"
+	EPPICCONF_ESC="${EPPICCONF//\//\\/}"
+	sed s/JOBNAME/$JOBNAME/g template.sh | sed s/LOGDIR/$ER_ESC/g |sed s/MAXTASK/$JOB_SIZE/g | sed s/MAXRAM/$MAXRAM/g | sed s/TIMEMIN/$SRT/g | sed s/TIMEMAX/$HRT/g | sed s/INPUTLIST/$IN_ESC/g | sed s/OUTFOLDER/$OUT_ESC/g | sed s/EPPIC/$EPPIC_ESC/g |sed s/CONF/$EPPICCONF_ESC/g > $WORKDIR/qsubscripts/eppic_topup_$DATE.sh
+	chmod a+x $WORKDIR/qsubscripts/eppic_topup_$DATE.sh
+

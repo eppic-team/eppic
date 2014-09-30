@@ -1,0 +1,291 @@
+package eppic.predictors;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import edu.uci.ics.jung.graph.util.Pair;
+import eppic.EppicParams;
+import eppic.CallType;
+import eppic.InterfaceEvolContext;
+import owl.core.structure.Atom;
+import owl.core.structure.ChainInterface;
+import owl.core.structure.PdbAsymUnit;
+import owl.core.structure.PdbChain;
+import owl.core.structure.graphs.AICGraph;
+
+public class GeometryPredictor implements InterfaceTypePredictor {
+
+	private static final Log LOGGER = LogFactory.getLog(GeometryPredictor.class);
+	
+	private ChainInterface interf;
+	private double bsaToAsaCutoff;
+	private double minAsaForSurface;
+	private int minCoreSizeForBio;
+	private CallType call;
+	private String callReason;
+	private List<String> warnings;
+	
+	private int size;
+	
+	private int size1;
+	private int size2;
+	
+	private boolean usePdbResSer;
+	
+	public GeometryPredictor(ChainInterface interf) {
+		this.interf = interf;
+		this.warnings = new ArrayList<String>();
+	}
+	
+	@Override
+	public void computeScores() {
+		
+		generateWarnings();
+		
+		interf.calcRimAndCore(bsaToAsaCutoff, minAsaForSurface);
+		size1 = interf.getFirstRimCore().getCoreSize();
+		size2 = interf.getSecondRimCore().getCoreSize();
+		size = size1+size2;
+		
+		
+		// CALL
+		if (size<minCoreSizeForBio) {
+			callReason = "Total core size "+size+" below cutoff ("+minCoreSizeForBio+")";
+			call = CallType.CRYSTAL;
+		} 
+		else {
+			callReason = "Total core size "+size+" above cutoff ("+minCoreSizeForBio+")";
+			call = CallType.BIO;
+		}
+		
+
+	}
+	
+	@Override
+	public CallType getCall() {
+		
+		return call;
+	}
+	
+	@Override
+	public String getCallReason() {
+		return callReason;
+	}
+	
+	@Override
+	public List<String> getWarnings() {
+		return warnings;
+	}
+	
+	@Override
+	public double getScore() {
+		return (double)size;
+	}
+	
+	@Override
+	public double getScore1() {
+		return (double)size1;
+	}
+	
+	@Override
+	public double getScore2() {
+		return (double)size2;
+	}
+	
+	@Override
+	public double getConfidence() {
+		return CONFIDENCE_UNASSIGNED;
+	}
+	
+	private void generateWarnings() {
+		
+		List<Pair<Atom>> interactingPairs = getNonpolyInteractingPairs();
+		
+		// NOTE that we used to detect disulfide bridges here, but it is now moved to CombinedPredictor
+		// as we also need to check in the reference alignment whether the bridge is wild-type or artifact
+
+		
+		// WARNINGS
+		// 1) clashes
+		if (interf.hasClashes()) {
+			List<Pair<Atom>> pairs = interf.getAICGraph().getClashingPairs();
+			String warning = "";
+			for (int i=0;i<pairs.size();i++) {
+				Pair<Atom> pair = pairs.get(i);
+				warning +=  getPairInteractionString(pair);
+				if (i!=pairs.size()-1) warning+=", ";
+			}
+			
+			warnings.add("Clashes found between: "+warning);
+			LOGGER.warn("Interface "+interf.getId()+" has "+pairs.size()+" clashes: "+warning);
+		} 
+		// if no clashes then we report on any other kind of short distances
+		// 2) hydrogen bonds -- commented out for now: 
+		// our algorithm for finding them was depending on H atoms (which was bad anyway, because it was
+		// ignoring H bonds in structures without H) and we now remove all Hs, in order to be consistent in surface calc, AICgraphs etc 
+//		else if (interf.getAICGraph().hasHbonds()) {
+//			List<Pair<Atom>> pairs = interf.getAICGraph().getHbondPairs();
+//			String warning = pairs.size()+" Hydrogen bonds: ";
+//			for (int i=0;i<pairs.size();i++) {
+//				Pair<Atom> pair = pairs.get(i);
+//				warning +=  getPairInteractionString(pair);
+//				if (i!=pairs.size()-1) warning+=", ";
+//			}
+//			
+//			warnings.add(warning);
+//			LOGGER.warn("Interface "+interf.getId()+" has Hydrogen bonds: "+warning);			
+//		}
+		// 3) any other kind of close interaction
+		else if (interf.getAICGraph().hasCloselyInteractingPairs()) {
+			List<Pair<Atom>> pairs = interf.getAICGraph().getCloselyInteractingPairs();
+			String warning = pairs.size()+" closely interacting atoms: ";
+			for (int i=0;i<pairs.size();i++) {
+				Pair<Atom> pair = pairs.get(i);
+				warning +=  getPairInteractionString(pair);
+				if (i!=pairs.size()-1) warning+=", ";
+			}
+			
+			warnings.add(warning);
+			LOGGER.warn("Interface "+interf.getId()+" has closely interacting atoms: "+warning);
+		}
+		// 4) checking whether either first or second member of interface are peptides
+		checkForPeptides(InterfaceEvolContext.FIRST);
+		checkForPeptides(InterfaceEvolContext.SECOND);
+		// 5) if interactions mediated by a non-polymer are found we warn 
+		// In some cases it can be a natural thing, we believe it is so for 2o3b (interface is small but strong because of the Mg2+)
+		// but we think this are mostly artifacts of crystallization:
+		// e.g. 1s1q interface 4: mediated by a Cu but it's a crystallization artifact. In this case area is very small and falls under hard limit
+		// e.g. 2vis interfaces 5 and 8. Also very small area both		
+		if (!interactingPairs.isEmpty()) {
+			String warning = "Close interactions mediated by a non-polymer chain exist in interface. Between : ";
+			for (int i=0;i<interactingPairs.size();i++) {
+				Pair<Atom> pair = interactingPairs.get(i);
+				String firstResSer = null;
+				String secondResSer = null;
+				if (usePdbResSer) {
+					firstResSer = pair.getFirst().getParentResidue().getPdbSerial();	
+					secondResSer = pair.getSecond().getParentResidue().getPdbSerial();
+				} else {
+					firstResSer = ""+pair.getFirst().getParentResidue().getSerial();
+					secondResSer = ""+pair.getSecond().getParentResidue().getSerial();
+				}
+				// first atom is always from nonpoly chain, second atom from either poly chain of interface
+				warning+=firstResSer+
+						"("+pair.getFirst().getCode()+ ") and "+
+							pair.getSecond().getParentResidue().getParent().getPdbChainCode()+"-"+
+							secondResSer+"("+pair.getSecond().getParentResidue().getLongCode()+")-"+
+							pair.getSecond().getCode()+
+							" (distance: "+String.format("%3.1f",pair.getFirst().getCoords().distance(pair.getSecond().getCoords()))+" A)";
+				if (i!=interactingPairs.size()-1) warning+=", ";
+			}
+
+			warnings.add(warning);
+			LOGGER.warn("Interface "+interf.getId()+": "+warning);
+		}
+
+	}
+	
+	private String getPairInteractionString(Pair<Atom> pair) {
+		String firstResSer = null;
+		String secondResSer = null;
+		if (usePdbResSer) {
+			firstResSer = pair.getFirst().getParentResidue().getPdbSerial();	
+			secondResSer = pair.getSecond().getParentResidue().getPdbSerial();
+		} else {
+			firstResSer = ""+pair.getFirst().getParentResidue().getSerial();
+			secondResSer = ""+pair.getSecond().getParentResidue().getSerial();
+		}
+		
+		return
+		pair.getFirst().getParentResidue().getParent().getPdbChainCode()+"-"+
+		firstResSer+"("+pair.getFirst().getParentResidue().getLongCode()+")-"+
+		pair.getFirst().getCode()+" and "+ 	
+		pair.getSecond().getParentResidue().getParent().getPdbChainCode()+"-"+
+		secondResSer+"("+pair.getSecond().getParentResidue().getLongCode()+")-"+
+		pair.getSecond().getCode()+
+		" (distance: "+String.format("%3.1f",pair.getFirst().getCoords().distance(pair.getSecond().getCoords()))+" A)";
+	}
+	
+	public void setBsaToAsaCutoff(double bsaToAsaCutoff) {
+		this.bsaToAsaCutoff = bsaToAsaCutoff;
+	}
+	
+	public void setMinAsaForSurface(double minAsaForSurface) {
+		this.minAsaForSurface = minAsaForSurface;
+	}
+	
+	public void setMinCoreSizeForBio(int minCoreSizeForBio) {
+		this.minCoreSizeForBio = minCoreSizeForBio;
+	}
+	
+	/**
+	 * Sets whether the output warnings and PDB files are to be written with
+	 * PDB residue serials or CIF (SEQRES) residue serials
+	 * @param usePdbResSer if true PDB residue serials are used, if false CIF
+	 * residue serials are used
+	 */
+	public void setUsePdbResSer(boolean usePdbResSer) {
+		this.usePdbResSer = usePdbResSer;
+	}
+	
+	private List<Pair<Atom>> getNonpolyInteractingPairs() {
+		PdbChain firstChain = this.interf.getFirstMolecule();
+		PdbChain secondChain = this.interf.getSecondMolecule();
+		PdbAsymUnit firstAU = firstChain.getParent();
+		PdbAsymUnit secondAU = secondChain.getParent();
+		
+		List<Pair<Atom>> interactingPairs = new ArrayList<Pair<Atom>>();
+		interactingPairs.addAll(getNonPolyContacts(firstChain, secondChain, firstAU));
+		if (firstAU!=secondAU) {
+			// in the case they are identical, then both chains come from same AU, there's no transformation between them
+			// we don't need to check the poly chains of the second one
+			interactingPairs.addAll(getNonPolyContacts(firstChain, secondChain, secondAU));
+		}
+		return interactingPairs;
+	}
+	
+	private List<Pair<Atom>> getNonPolyContacts(PdbChain firstChain, PdbChain secondChain, PdbAsymUnit au) {
+		List<Pair<Atom>> pairs = new ArrayList<Pair<Atom>>();
+		for (PdbChain nonpoly:au.getNonPolyChains()) {
+			AICGraph graph1 = nonpoly.getAICGraph(firstChain, EppicParams.INTERFACE_DIST_CUTOFF);
+			if (graph1.getEdgeCount()>0) {
+				AICGraph graph2 = nonpoly.getAICGraph(secondChain, EppicParams.INTERFACE_DIST_CUTOFF);
+				if (graph2.getEdgeCount()>0) {
+					// the nonpoly chain is in contact with both firstChain and secondChain
+					// we check for atoms within a narrow cutoff in both sides -> electrostatic/covalent interactions
+					if (graph1.hasCloselyInteractingPairs() && graph2.hasCloselyInteractingPairs()) {
+						pairs.addAll(graph1.getCloselyInteractingPairs());
+						pairs.addAll(graph2.getCloselyInteractingPairs());
+					}
+				}
+			}
+		}
+		return pairs;
+	}
+
+	private void checkForPeptides(int molecId) {
+		// In most cases our predictions for peptides will be bad because not only the peptide but also the protein partner
+		// will have too small an interface core and we'd call crystal based on core size
+		// But still for some cases (e.g. 3bfw) the prediction is correct (the core size is big enough) 
+		PdbChain molec = null;
+		if (molecId==InterfaceEvolContext.FIRST) {
+			molec = interf.getFirstMolecule();
+		} else if (molecId==InterfaceEvolContext.SECOND) {
+			molec = interf.getSecondMolecule();
+		}
+		if (molec.getFullLength()<=EppicParams.PEPTIDE_LENGTH_CUTOFF) {
+			double bsa = interf.getInterfaceArea();
+			String msg = "Ratio of interface area to ASA: "+
+					String.format("%4.2f", bsa/molec.getASA())+". "+
+					"Ratio of buried residues to total residues: "+
+					String.format("%4.2f",(double)molec.getNumResiduesWithBsaAbove(0)/(double)molec.getObsLength());
+			LOGGER.info("Chain "+molec.getPdbChainCode()+" of interface "+interf.getId()+" is a peptide. "+msg);
+			warnings.add("Chain "+molec.getPdbChainCode()+" is a peptide.");
+		}
+
+	}
+
+}

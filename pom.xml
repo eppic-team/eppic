@@ -1,0 +1,259 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	
+	<groupId>eppic</groupId>
+	<artifactId>eppic</artifactId>
+	<packaging>jar</packaging>
+	<version>2.1.1-SNAPSHOT</version>
+	<name>eppic</name>
+	<url>http://www.eppic-web.org</url>
+	
+	<properties>
+		<java.version>1.7</java.version>
+		<gwt.version>2.6.1</gwt.version>	
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+		
+	<repositories>
+		<!-- 
+		<repository>
+			<id>maven2-repository.dev.java.net</id>
+			<name>Java.net Maven 2 Repository</name>
+			<url>http://download.java.net/maven/2</url>
+		</repository>	
+		 -->
+		 
+	</repositories>
+	
+	
+	<dependencies>
+	
+		<!-- main dependency: owl package -->
+		<dependency>
+			<groupId>org.owl</groupId>
+			<artifactId>owl</artifactId>
+			<version>2.1.1-SNAPSHOT</version>
+			<scope>compile</scope>
+		</dependency>
+	
+		<!-- junit -->
+		
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.11</version>
+			<scope>test</scope>
+		</dependency>
+
+		
+		<!-- org apache -->
+
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>1.2.16</version>		
+		</dependency>		            		
+		
+		<!-- others -->
+
+		<dependency>
+			<groupId>gnu.getopt</groupId>
+			<artifactId>java-getopt</artifactId>
+			<version>1.0.13</version>
+		</dependency>
+                        
+		
+	</dependencies>
+	
+	<build>
+		
+		<!-- one possible way to include sources in jar for gwt compiler to be able to work in eppic-wui -->
+		<!-- 
+     	<resources>
+        	<resource>
+            <directory>src/main/java</directory>
+            <includes>
+                <include>**/*.java</include>
+            </includes>
+        	</resource>
+        	<resource>
+            <directory>src/main/resources</directory>
+            <includes>
+                <include>**/*.*xml</include>
+                <include>**/*.*properties</include>
+            </includes>
+        	</resource>
+    	</resources>
+    	-->
+    			
+		<plugins>
+			<!-- jar plugin to add eppic's main class, so that the jar is executable -->
+			<plugin>
+        		<groupId>org.apache.maven.plugins</groupId>
+        		<artifactId>maven-jar-plugin</artifactId>
+        		<version>2.4</version>
+        		<configuration>
+			    	<archive>
+            			<manifest>
+              				<addClasspath>true</addClasspath>
+							<mainClass>eppic.Main</mainClass>
+            			</manifest>
+          			</archive>
+		        </configuration>
+			</plugin>
+
+       		<plugin>
+             		<groupId>org.apache.maven.plugins</groupId>
+              		<artifactId>maven-compiler-plugin</artifactId>
+               		<version>3.1</version>
+               		<configuration>
+                    		<source>${java.version}</source>
+                    		<target>${java.version}</target>
+               		</configuration>
+          	</plugin>
+
+			<!-- the gwt plugin so that sources are understood by eppic-wui -->
+			<!-- This is apparently a better solution than the one above, -->
+			<!-- see http://mojo.codehaus.org/gwt-maven-plugin/user-guide/multiproject.html -->		
+			 
+	    	<plugin>
+	        	<groupId>org.codehaus.mojo</groupId>
+	        	<artifactId>gwt-maven-plugin</artifactId>
+	        	<version>${gwt.version}</version>
+	        	<executions>
+	        		<execution>
+	            		<goals>
+	              			<goal>resources</goal>
+	            		</goals>
+	          		</execution>
+	        	</executions>
+	      	</plugin>
+			
+		
+		
+		
+			<!-- the shade plugin to repack all jars into one uber-jar -->			
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>2.2</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+						<configuration>
+	              			<artifactSet>
+	                			<excludes>
+	                  				<!-- excluding jars that are only needed for some non-core owl packages and not for eppic CLI -->
+	                  				<exclude>batik</exclude>	                  				
+	                  				<exclude>us.levk</exclude> <!-- drmaa -->
+	                  				
+	                  				<!--  excluding the uniprot japi jar, there's no point in including it in the uber-jar for 
+	                  				      distribution, since it gets updated every month. It has to be downloaded by the user -->	                  				
+	                  				<exclude>uk.ac.ebi.uniprot.kraken</exclude>
+
+	                  				<!-- these 2 jars have signature repackaging problems!!! -->
+	                  				<!-- <exclude>java3d</exclude> -->	                  				
+	                  				<!-- <exclude>gnu.getopt</exclude> -->
+	                  				
+	                  				<!-- all these don't have signature repackaging problems -->
+	                  				<!-- <exclude>net.sf.jung</exclude> -->
+	                  				<!-- <exclude>org.springframework</exclude> -->
+	                  				<!-- <exclude>aopalliance</exclude> -->
+	                  				<!-- <exclude>commons-*</exclude> -->
+	                  				<!-- <exclude>org.apache.commons</exclude> -->
+	                  				<!-- <exclude>log4j</exclude> -->
+	                  				<!-- <exclude>net.sourceforge.collections</exclude> -->
+	                  				
+	                			</excludes>
+	              			</artifactSet>
+	              			<filters>
+        						<filter>
+        							<!-- solution to the signature repackaging problem is this filter: exclude the signatures!  -->
+            						<artifact>*:*</artifact>
+            						<excludes>
+                						<exclude>META-INF/*.SF</exclude>
+                						<exclude>META-INF/*.DSA</exclude>
+                						<exclude>META-INF/*.RSA</exclude>
+            						</excludes>
+        						</filter>
+    						</filters>
+           				</configuration>
+					</execution>
+				</executions>
+				<configuration>
+					<finalName>uber-${project.artifactId}-${project.version}</finalName>
+				</configuration>
+			</plugin>
+			
+			<!-- assembly plugin for final packaging -->
+			<plugin>
+  				<groupId>org.apache.maven.plugins</groupId>
+  				<artifactId>maven-assembly-plugin</artifactId>
+  				<configuration>
+    				<descriptor>src/assembly/bin.xml</descriptor>
+    				<finalName>${project.artifactId}-${project.version}</finalName>
+    
+					<archiverConfig>
+						<fileMode>0644</fileMode>
+						<directoryMode>0755</directoryMode>
+						<defaultDirectoryMode>0755</defaultDirectoryMode>
+					</archiverConfig>
+					
+  				</configuration>
+  				
+  				<executions>
+    				<execution>
+      					<phase>package</phase>
+      					<goals>
+        					<goal>single</goal>
+      					</goals>
+    				</execution>
+  				</executions>
+			</plugin>
+			
+		</plugins>
+
+		<pluginManagement>
+			<plugins>
+				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+				<plugin>
+					<groupId>org.eclipse.m2e</groupId>
+					<artifactId>lifecycle-mapping</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<lifecycleMappingMetadata>
+							<pluginExecutions>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>
+											org.codehaus.mojo
+										</groupId>
+										<artifactId>
+											gwt-maven-plugin
+										</artifactId>
+										<versionRange>
+											[2.6.1,)
+										</versionRange>
+										<goals>
+											<goal>resources</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore></ignore>
+									</action>
+								</pluginExecution>
+							</pluginExecutions>
+						</lifecycleMappingMetadata>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
+	
+	
+	
+</project>

@@ -1,0 +1,61 @@
+#!/bin/bash
+#**************************************************************
+#  EPPIC Pre-Computation Script
+#  Author : Kumaran Baskaran
+#  Date   : 05/07/2013
+#***************************************************************
+
+
+
+#==================== Files and Paths ==========================
+CURRENT=`pwd`
+DOWNLOAD=$CURRENT/download
+EPPIC_JAR=/home/baskaran_k/Downloads/eppic/eppic.jar
+DATABASE_NAME=uniprot_2013_07
+BLASTDB=$CURRENT/blastdb
+UNIQUE_FASTA=$CURRENT/unique_fasta
+USER=baskaran_k
+#===============================================================
+
+echo "`date +%d/%m/%y-%H:%M:%S` INFO: Started downloading script "
+./DownloadFiles -o $DOWNLOAD 1>>eppic_precomp.out 2>>eppic_precomp.err
+echo "`date +%d/%m/%y-%H:%M:%S` INFO: Finished downloading "
+
+echo "`date +%d/%m/%y-%H:%M:%S` INFO: Started uploading data into MySql database "
+./UploadToDatabase -d $DOWNLOAD -j $EPPIC_JAR -n $DATABASE_NAME 1>>eppic_precomp.out 2>>eppic_precomp.err
+echo "`date +%d/%m/%y-%H:%M:%S` INFO: Finished uploading data into MySql database "
+
+echo "`date +%d/%m/%y-%H:%M:%S` INFO: Started updating blast db "
+./UpdateBlastDB -d $BLASTDB 1>>eppic_precomp.out 2>>eppic_precomp.err
+echo "`date +%d/%m/%y-%H:%M:%S` INFO: Finished updating blast db"
+
+echo "`date +%d/%m/%y-%H:%M:%S` INFO: Started to create unique fasta "
+./CreateUniqueFasta -s $DOWNLOAD/pdb_chain_uniprot.lst -n $DATABASE_NAME -o $UNIQUE_FASTA -j $EPPIC_JAR 1>>eppic_precomp.out 2>>eppic_precomp.err
+echo "`date +%d/%m/%y-%H:%M:%S` INFO: Finished creating unique fasta "
+
+echo "`date +%d/%m/%y-%H:%M:%S` INFO: Preparing files for Merlin run"
+DATE=`date +%F`
+TO_MERLIN=eppic-precomp-$DATE
+
+if [ -d $TO_MERLIN ]
+then
+	rm -rf $TO_MERLIN
+fi
+
+mkdir -p $TO_MERLIN
+
+mv $BLASTDB/$DATABASE_NAME $TO_MERLIN/
+mv $UNIQUE_FASTA $TO_MERLIN/
+cp BlastPDB $TO_MERLIN/
+cp Cp2Nodes $TO_MERLIN/
+cp hosts.list $TO_MERLIN/
+cp eppic-precomp-merlin $TO_MERLIN/
+cp $DOWNLOAD/pdb_chain_uniprot.lst $TO_MERLIN/$DATABASE_NAME/
+mv eppic_precomp $TO_MERLIN
+echo "`date +%d/%m/%y-%H:%M:%S` INFO: Started file transfer to Merlin"
+rsync -avz $TO_MERLIN $USER@merlinl01.psi.ch: 1>>eppic_precomp.out 2>>eppic_precomp.err
+
+echo "`date +%d/%m/%y-%H:%M:%S` INFO: File transfered to Merlin"
+echo "`date +%d/%m/%y-%H:%M:%S` INFO: Folder named $TO_MERLIN transfered to merlin home folder"
+echo "`date +%d/%m/%y-%H:%M:%S` INFO: Start the script eppic-precomp-merlin from Merlin"
+echo "`date +%d/%m/%y-%H:%M:%S` INFO: Local computing finished successfully"
