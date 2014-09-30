@@ -1,0 +1,197 @@
+<head>
+<link rel="stylesheet" type="text/css" href="eppic-static.css">
+<link
+	href='http://fonts.googleapis.com/css?family=Open+Sans:400,700,400italic,700italic'
+	rel='stylesheet' type='text/css'>
+</head>
+
+<body>
+	<div class="eppic-iframe-content">
+
+		<img class="eppic-iframe-top-img"
+			src="resources/images/eppic-logo.png">
+
+		<h2>Downloading data in XML format</h2>
+		<p>
+			From version 2.1.0 on, it is possible to download the results data in XML format
+			which can then be parsed and used for further analysis. 
+			Simply click on the "Download XML" link in any result page and you will get the XML data.
+			You will just need to use this kind of URL:
+		</p>
+		<p>
+			<code>http://www.eppic-web.org/ewui/ewui/dataDownload?type=xml&amp;id=PDB_code</code>
+		</p>
+		<p> 
+			for precomputed PDB entries. Several PDB codes (comma-separated) are also allowed for the id
+			parameter. For your own uploaded files you will have to use:			
+		</p>
+		<p>
+			<code>http://www.eppic-web.org/ewui/ewui/dataDownload?type=xml&amp;id=My_job_id</code>
+		</p>
+		<p>
+			where you need to give your long alphanumeric job id. 
+			Please note that we have download limits per IP. If you need to do bulk 
+			downloads, please contact us. We can then place an exception for you.
+		</p>
+		
+		<h2>Downloading PDB files of interfaces</h2>
+		<p>
+			Downloads of individual PDB files per interface is also possible by using the following URL:
+		</p>
+		<p>			 
+			<code>http://www.eppic-web.org/ewui/ewui/fileDownload?type=interface&amp;id=PDB_code&amp;interface=Interface_id</code>
+		</p>
+		<p>
+			The interface ids are those calculated by EPPIC from largest (1) to smallest (n). 
+			Note that the downloaded PDB files contain both partners of the interface with the b-factors replaced
+			by the corresponding sequence entropy values per residue. If the interface happens between two 
+			symmetry-related chains with the same identifier (e.g. A + A), then the second chain is renamed to 
+			next letter in alphabet.
+		</p>
+
+		<h2>Software and source code</h2>
+
+		<p>
+			The EPPIC web server is a web GUI to the EPPIC command line program,
+			written in Java. The latest version of it is available <a
+				href="../downloads/eppic.zip">here</a>. If you need to run it often
+			or want to tweak the parameters we recommend that you use the command
+			line version. It has been tested in Linux only but it should work
+			also in MacOSX. <a
+				href="http://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Download"
+				target="_blank">Blast</a> and <a
+				href="http://www.clustal.org/omega/" target="_blank">Clustal
+				Omega</a> are required for it to work.
+		</p>
+		<p>			
+			You will need Java 7 (or newer) to be able to run the command-line EPPIC
+			program. The program also uses the  
+			<a href="http://www.ebi.ac.uk/uniprot/remotingAPI/" target="_blank">UniProt	JAPI</a>,
+			which you will need to download separately.
+		</p>
+		<p>The source code is <a href="https://github.com/eppic-team/eppic" target="_blank">available</a> 
+			under the GPL license. You can get it with the following GIT command:</p>
+
+		<p>
+			<code> git clone https://github.com/eppic-team/eppic </code>
+		</p>
+
+		<p>
+			EPPIC uses as well the open source <a
+				href="http://www.bioinformatics.org/owl" target="_blank">OWL
+				java library</a> for structural bioinformatics.
+		</p>
+
+		<p>
+			Please <a href="mailto:eppic@systemsx.ch">contact</a> us if you have
+			problems with it or if you want to send any kind of feedback.
+		</p>
+			
+		<h2>EPPIC Interface Loader plug-in for PyMOL</h2>
+
+		<p>
+			The EPPIC Interface Loader plug-in for PyMOL allows direct
+			download of precalculated EPPIC interfaces into PyMOL. It works in
+			Linux, Windows and Mac. Entering a PDB code will load all interfaces
+			for that PDB entry. Single interfaces can also be selected.
+			Interfaces are numbered according to the EPPIC website. By default,
+			each interface is loaded as its own object. They can also be loaded
+			as multiple states in a single object, which can then be navigated
+			using the state navigation at the bottom right.
+		</p>
+		<p>
+			Interfaces are displayed by default with the two molecules in "lines" 
+			representation. One can otherwise choose to show the molecules in 
+			surface representation with sequence entropies color-coded onto it. 			 
+			The latest version of the plugin is available <a
+				href="../downloads/pymol_plugin.zip">here</a>. 			
+		</p>
+
+		<h2>Datasets</h2>
+
+		<p>
+			The datasets used for developing the EPPIC method (see the <a
+				href="http://www.biomedcentral.com/1471-2105/13/334" target="_blank">paper</a>)
+			can be downloaded as plain text files:
+		</p>
+
+		<ul>
+			<li><a href="../downloads/DCxtal.txt"  target="_blank">DCxtal set</a>: a set of
+				crystal contacts with large interface areas (&gt;1000Å<sup>2</sup>)
+			</li>
+			<li><a href="../downloads/DCbio.txt"  target="_blank">DCbio set</a>: a set of
+				biologically relevant interfaces with relatively small interface
+				areas (&lt;2000Å<sup>2</sup>)</li>
+		</ul>
+
+
+		<p>
+			The area distributions of the DCxtal and DCbio interfaces, as seen in
+			<a href="http://www.biomedcentral.com/1471-2105/13/334/figure/F1"
+				target="_blank">this plot</a>, overlap substantially. This is a
+			distinctive feature of the sets, as crystal interfaces tend to be
+			small and biologically relevant ones tend to be large. Also note that
+			all entries in the sets are selected for crystallographic quality by
+			resolution and Rfree filtering.
+		</p>
+
+		<p>The files contain lists of PDB codes with lists of interface
+			identifiers as calculated by EPPIC, i.e. id 1 corresponding to
+			largest interface in crystal, and increasing ids for smaller
+			interfaces. If no interface id is given in a line then interface 1 is
+			implied. Lines starting with "#" are comments.</p>
+
+		<p>
+			We further compiled (see <a
+				href="http://www.biomedcentral.com/1472-6807/13/21" target="_blank">paper</a>)
+			a new dataset of experimentally validated transmembrane protein
+			oligomeric structures. It can also be downloaded as text file here:
+		</p>
+		<ul>
+			<li><a href="../downloads/TMPbio.txt"  target="_blank">TMPbio set</a>: a set of
+				biological interfaces spanning the transmembrane region, from both
+				alpha and beta TMP subclasses</li>
+		</ul>
+		
+		<p>
+			We next automatically obtained two large-scale datasets of crystal and biological 
+			contacts, called XtalMany and BioMany, respectively (Baskaran et al., under review),
+			which contain nearly 3000 entries each. XtalMany is based on the concept of operators
+			leading to infinite assemblies. BioMany is mainly based on the concept of shared interfaces
+			across crystal forms: it is a subset of <a href="http://dunbrack2.fccc.edu/protcid/" target="_blank">ProtCID</a> 
+			from the Dunbrack group with very stringent	parameters. 
+			In addition it contains interfaces from dimeric structures that were solved both
+			by crystallography and NMR: here the idea is that an NMR dimer validates the dimeric biounit 
+			of the corresponding crystal structure.
+			XtalMany and BioMany can be downloaded as text files here:
+		</p>
+		<ul>
+			<li><a href="../downloads/ManyXtal.txt"  target="_blank">XtalMany set</a>: a large
+				dataset of crystal contacts</li>
+		</ul>
+		<ul>
+			<li><a href="../downloads/ManyBio.txt"  target="_blank">BioMany set</a>: a large
+				dataset of biological interfaces</li>
+		</ul>
+
+		<p>
+			Please note that the original publications also contain the datasets including 
+			our full annotations. However we cannot update those if we find any mistakes.
+			The downloadable datasets here represent the most up-to-date and best
+			validated sets. Please use these ones preferentially to the ones available in the 
+			original publications.
+		</p>
+		<p>
+			For completeness this is a full changelog of any mistakes that we have found 
+			since publication:
+			
+		</p>
+		<ul>
+			<li>
+			DCbio set: 3f3e was removed because it is a membrane protein and additionally the experimental evidence 
+			was not sufficiently clear; 1ytq was removed because it has a clear domain swap
+			</li>
+		</ul>
+
+	</div>
+</body>

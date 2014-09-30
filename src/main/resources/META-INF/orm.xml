@@ -1,0 +1,617 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<entity-mappings xmlns="http://java.sun.com/xml/ns/persistence/orm"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/persistence/orm http://java.sun.com/xml/ns/persistence/orm_2_0.xsd"
+	version="2.0">
+	<description>EPPIC JPA entities</description>
+	<package>EPPIC entities</package>
+
+	<entity class="eppic.model.UserSessionDB" name="UserSession">
+		<table name="UserSession" />
+		<attributes>
+			<id name="uid">
+				<generated-value strategy="IDENTITY" />
+			</id>
+
+			<basic name="sessionId"></basic>
+			<basic name="timeStamp">
+				<temporal>TIMESTAMP</temporal>
+			</basic>
+			<basic name="ip"></basic>
+
+			<many-to-many name="jobs">
+				<join-table name="UserSessionJob">
+					<join-column name="userSession_uid"
+						referenced-column-name="uid" />
+					<inverse-join-column name="job_uid"
+						referenced-column-name="uid" />
+				</join-table>
+			</many-to-many>
+		</attributes>
+	</entity>
+
+	<entity class="eppic.model.JobDB" name="Job">
+		<table name="Job" />
+		<attributes>
+			<id name="uid">
+				<generated-value strategy="IDENTITY" />
+			</id>
+			<basic name="jobId"></basic>
+			<basic name="status"></basic>
+			<basic name="email"></basic>
+			<basic name="ip"></basic>
+			<basic name="inputName"></basic>
+			<basic name="submissionDate">
+				<temporal>TIMESTAMP</temporal>
+			</basic>
+			<basic name="inputType"></basic>
+			<basic name="submissionId"></basic>
+
+			<one-to-one name="pdbInfo" mapped-by="job">
+				<cascade>
+					<cascade-all />
+				</cascade>
+			</one-to-one>
+
+			<many-to-many name="userSessions" mapped-by="jobs">
+				<cascade>
+					<cascade-all />
+				</cascade>
+			</many-to-many>
+		</attributes>
+	</entity>
+
+	<entity class="eppic.model.PdbInfoDB" name="PdbInfo">
+		<table name="PdbInfo" />
+		<attributes>
+			<id name="uid">
+				<generated-value strategy="IDENTITY" />
+			</id>
+			<basic name="pdbCode">
+				<column length="4" />
+			</basic>
+			<basic name="title">
+				<column column-definition="text" />
+			</basic>
+			<basic name="releaseDate"></basic>
+			<basic name="spaceGroup">
+				<column length="10" />
+			</basic>
+			<basic name="expMethod">
+				<column length="255" />
+			</basic>
+			<basic name="resolution"></basic>
+			<basic name="rfreeValue"></basic>
+			
+			<basic name="cellA"></basic>
+			<basic name="cellB"></basic>
+			<basic name="cellC"></basic>
+			<basic name="cellAlpha"></basic>
+			<basic name="cellBeta"></basic>
+			<basic name="cellGamma"></basic>
+			
+			<basic name="crystalFormId"></basic>
+
+			<one-to-many name="interfaceClusters" mapped-by="pdbInfo" fetch="LAZY">
+				<cascade>
+					<cascade-all />
+				</cascade>
+			</one-to-many>
+
+			<one-to-many name="chainClusters" mapped-by="pdbInfo" fetch="LAZY">
+				<cascade>
+					<cascade-all />
+				</cascade>
+			</one-to-many>
+
+			<one-to-many name="assemblies" mapped-by="pdbInfo" fetch="LAZY">
+				<cascade>
+					<cascade-all />
+				</cascade>
+			</one-to-many>
+
+			<one-to-one name="runParameters" fetch="LAZY">
+				<cascade>
+					<cascade-all />
+				</cascade>
+			</one-to-one>
+
+			<one-to-one name="job" fetch="LAZY">
+			</one-to-one>
+
+			<!-- element-collection name="homologsInfoItems" -->
+			<!-- collection-table name="NUMHOMOLOGSSTRINGS" -->
+			<!-- /collection-table -->
+			<!-- /element-collection -->
+		</attributes>
+	</entity>
+
+	<entity class="eppic.model.AssemblyDB" name="Assembly">
+		<table name="Assembly" />
+		<attributes>
+			<id name="uid">
+				<generated-value strategy="IDENTITY" />
+			</id>
+			
+			<basic name="pdbCode">
+				<column length="4" />
+			</basic>
+
+			<basic name="mmSize"></basic>
+
+			<basic name="method">
+				<column length="15" />
+			</basic>
+
+			<basic name="confidence"></basic>
+
+			<many-to-one name="pdbInfo">
+			</many-to-one>
+
+			<one-to-many name="interfaceClusterScores" mapped-by="assembly">
+				<cascade>
+					<cascade-all />
+				</cascade>
+			</one-to-many>
+
+		</attributes>
+	</entity>
+
+	<entity class="eppic.model.InterfaceClusterDB" name="InterfaceCluster">
+		<table name="InterfaceCluster" />
+		<attributes>
+			<id name="uid">
+				<generated-value strategy="IDENTITY" />
+			</id>
+
+			<basic name="clusterId"></basic>
+			<basic name="pdbCode">
+				<column length="4" />
+			</basic>
+			<basic name="avgArea"></basic>
+			<basic name="numMembers"></basic>
+			
+			<basic name="globalInterfClusterId"></basic>
+
+			<many-to-one name="pdbInfo">
+			</many-to-one>
+
+			<one-to-many name="interfaces" mapped-by="interfaceCluster">
+				<cascade>
+					<cascade-all />
+				</cascade>
+			</one-to-many>
+
+			<one-to-many name="interfaceClusterScores" mapped-by="interfaceCluster">
+				<cascade>
+					<cascade-all />
+				</cascade>
+			</one-to-many>
+
+		</attributes>
+	</entity>
+
+	<entity class="eppic.model.InterfaceClusterScoreDB" name="InterfaceClusterScore">
+		<table name="InterfaceClusterScore" />
+		<entity-listeners>
+			<entity-listener
+				class="ch.systemsx.sybit.crkwebui.server.db.entitylisteners.ClusterScoreListener">
+			</entity-listener>
+		</entity-listeners>
+		<attributes>
+			<id name="uid">
+				<generated-value strategy="IDENTITY" />
+			</id>
+			<basic name="pdbCode">
+				<column length="4" />
+			</basic>
+			<basic name="method">
+				<column length="15" />
+			</basic>
+			<basic name="clusterId"></basic>
+			<basic name="score">
+				<column nullable="true" />
+			</basic>
+			<basic name="score1">
+				<column nullable="true" />
+			</basic>
+			<basic name="score2">
+				<column nullable="true" />
+			</basic>			
+			<basic name="callName">
+				<column length="6" />
+			</basic>
+			<basic name="callReason">
+				<column column-definition="text" />
+			</basic>
+			<basic name="confidence"></basic>
+			
+			<many-to-one name="assembly">
+			</many-to-one>
+
+			<many-to-one name="interfaceCluster">
+			</many-to-one>
+		</attributes>
+	</entity>
+
+	<entity class="eppic.model.InterfaceDB" name="Interface">
+		<table name="Interface" />
+		<entity-listeners>
+			<entity-listener
+				class="ch.systemsx.sybit.crkwebui.server.db.entitylisteners.InterfaceListener">
+			</entity-listener>
+		</entity-listeners>
+		<attributes>
+			<id name="uid">
+				<generated-value strategy="IDENTITY" />
+			</id>
+			<basic name="pdbCode">
+				<column length="4" />
+			</basic>
+			<basic name="interfaceId"></basic>
+			<basic name="clusterId"></basic>
+			<basic name="area"></basic>
+			<basic name="chain1">
+				<column length="1" />
+			</basic>
+			<basic name="chain2">
+				<column length="1" />
+			</basic>
+			<basic name="operator">
+				<column length="25" />
+			</basic>
+			<basic name="operatorType">
+				<column length="5" />
+			</basic>
+			<basic name="infinite"></basic>
+			<basic name="isologous"></basic>
+			
+			<basic name="xtalTrans_x"></basic>
+			<basic name="xtalTrans_y"></basic>
+			<basic name="xtalTrans_z"></basic>
+			<basic name="operatorId"></basic>
+			
+			<basic name="globalInterfClusterId"></basic>
+
+			<many-to-one name="interfaceCluster">
+			</many-to-one>
+
+			<one-to-many name="interfaceScores" mapped-by="interfaceItem">
+				<cascade>
+					<cascade-all />
+				</cascade>
+			</one-to-many>
+
+			<one-to-many name="residues" mapped-by="interfaceItem">
+				<cascade>
+					<cascade-all />
+				</cascade>
+			</one-to-many>
+
+			<one-to-many name="contacts" mapped-by="interfaceItem">
+				<cascade>
+					<cascade-all/>
+				</cascade>
+			</one-to-many>
+			
+			<one-to-many name="interfaceWarnings" mapped-by="interfaceItem">
+				<cascade>
+					<cascade-all />
+				</cascade>
+			</one-to-many>
+
+			<!-- element-collection name="warnings" -->
+			<!-- collection-table name="WARNINGS" -->
+			<!-- /collection-table -->
+			<!-- /element-collection -->
+		</attributes>
+	</entity>
+
+	<entity class="eppic.model.ResidueDB" name="Residue">
+		<table name="Residue" />
+		<entity-listeners>
+			<entity-listener
+				class="ch.systemsx.sybit.crkwebui.server.db.entitylisteners.ResidueListener">
+			</entity-listener>
+		</entity-listeners>
+		<attributes>
+			<id name="uid">
+				<generated-value strategy="IDENTITY" />
+			</id>
+			<basic name="side"></basic>
+			<basic name="residueNumber"></basic>
+			<basic name="pdbResidueNumber"></basic>
+			<basic name="residueType">
+				<column length="3" />
+			</basic>
+			<basic name="asa"></basic>
+			<basic name="bsa"></basic>
+			<basic name="region"></basic>
+			<basic name="entropyScore"></basic>
+
+			<many-to-one name="interfaceItem">
+			</many-to-one>
+		</attributes>
+	</entity>
+	
+	<entity class="eppic.model.ContactDB" name="Contact">
+		<table name="Contact" />
+		<entity-listeners>
+			<entity-listener
+				class="ch.systemsx.sybit.crkwebui.server.db.entitylisteners.ContactListener">
+			</entity-listener>
+		</entity-listeners>			
+		<attributes>
+			<id name="uid">
+				<generated-value strategy="IDENTITY" />
+			</id>
+			<basic name="firstResNumber"></basic>
+			<basic name="firstResType">
+				<column length="3" />
+			</basic>
+			<basic name="firstBurial"></basic>			
+			<basic name="secondResNumber"></basic>
+			<basic name="secondResType">
+				<column length="3" />
+			</basic>
+			<basic name="secondBurial"></basic>
+			
+			<basic name="minDistance"></basic>
+			<basic name="numAtoms"></basic>
+			<basic name="numHBonds"></basic>
+			<basic name="disulfide"></basic>
+			<basic name="clash"></basic>			
+
+			<basic name="pdbCode">
+				<column length="4" />
+			</basic>
+			<basic name="interfaceId"></basic>			
+
+			<many-to-one name="interfaceItem">
+			</many-to-one>
+		</attributes>
+	</entity>
+
+	<entity class="eppic.model.InterfaceScoreDB" name="InterfaceScore">
+		<table name="InterfaceScore" />
+		<entity-listeners>
+			<entity-listener
+				class="ch.systemsx.sybit.crkwebui.server.db.entitylisteners.InterfaceScoreListener">
+			</entity-listener>
+		</entity-listeners>
+		<attributes>
+			<id name="uid">
+				<generated-value strategy="IDENTITY" />
+			</id>
+			<basic name="pdbCode">
+				<column length="4" />
+			</basic>
+			<basic name="method">
+				<column length="15" />
+			</basic>
+			<basic name="interfaceId"></basic>
+			<basic name="score1">
+				<column nullable="true" />
+			</basic>
+			<basic name="score2">
+				<column nullable="true" />
+			</basic>
+			<basic name="score">
+				<column nullable="true" />
+			</basic>
+			<basic name="callName">
+				<column length="6" />
+			</basic>
+			<basic name="callReason">
+				<column column-definition="text" />
+			</basic>
+			<basic name="confidence"></basic>
+
+			<many-to-one name="interfaceItem">
+			</many-to-one>
+		</attributes>
+	</entity>
+
+	<entity class="eppic.model.InterfaceWarningDB" name="InterfaceWarning">
+		<table name="InterfaceWarning" />
+		<attributes>
+			<id name="uid">
+				<generated-value strategy="IDENTITY" />
+			</id>
+			<basic name="text">
+				<column column-definition="text" />
+			</basic>
+
+			<many-to-one name="interfaceItem">
+			</many-to-one>
+		</attributes>
+	</entity>
+
+	<entity class="eppic.model.RunParametersDB" name="RunParameters">
+		<table name="RunParameters" />
+		<attributes>
+			<id name="uid">
+				<generated-value strategy="IDENTITY" />
+			</id>
+			<basic name="homSoftIdCutoff"></basic>
+			<basic name="homHardIdCutoff"></basic>
+			<basic name="queryCovCutoff"></basic>
+			<basic name="minNumSeqsCutoff"></basic>
+			<basic name="maxNumSeqsCutoff"></basic>
+			<basic name="reducedAlphabet"></basic>
+			<basic name="caCutoffForGeom"></basic>
+			<basic name="caCutoffForCoreRim"></basic>
+			<basic name="caCutoffForCoreSurface"></basic>
+			<basic name="geomCallCutoff"></basic>
+			<basic name="crCallCutoff"></basic>
+			<basic name="csCallCutoff"></basic>
+			<basic name="searchMode"></basic>
+
+			<basic name="uniProtVersion">
+				<column length="10" />
+			</basic>
+			<basic name="eppicVersion">
+				<column length="15" />
+			</basic>
+
+			<one-to-one name="pdbInfo" mapped-by="runParameters">
+			</one-to-one>
+		</attributes>
+	</entity>
+
+	<entity class="eppic.model.ChainClusterDB" name="ChainCluster">
+		<table name="ChainCluster" />
+		<entity-listeners>
+			<entity-listener
+				class="ch.systemsx.sybit.crkwebui.server.db.entitylisteners.ChainClusterListener">
+			</entity-listener>
+		</entity-listeners>
+		<attributes>
+			<id name="uid">
+				<generated-value strategy="IDENTITY" />
+			</id>
+
+			<basic name="repChain">
+				<column length="4" />
+			</basic>
+			<basic name="memberChains"></basic>
+			<basic name="refUniProtId"></basic>
+			<basic name="refUniProtStart"></basic>
+			<basic name="refUniProtEnd"></basic>
+			<basic name="pdbStart"></basic>
+			<basic name="pdbEnd"></basic>
+			
+			<basic name="hasUniProtRef"></basic>
+			<basic name="seqIdCutoff"></basic>
+			<basic name="clusteringSeqId"></basic>
+			
+			<basic name="pdbAlignedSeq">
+				<column column-definition="text" />
+			</basic>
+			<basic name="refAlignedSeq">
+				<column column-definition="text" />
+			</basic>
+			<basic name="aliMarkupLine">
+				<column column-definition="text" />
+			</basic>
+			
+			<basic name="msaAlignedSeq">
+				<column column-definition="text" />
+			</basic>
+			<basic name="numHomologs"></basic>
+			
+			<basic name="firstTaxon"></basic>
+			<basic name="lastTaxon"></basic>
+			
+			<basic name="pdbCode">
+				<column length="4" />
+			</basic>
+
+			<many-to-one name="pdbInfo">
+			</many-to-one>
+
+			<one-to-many name="uniProtRefWarnings" mapped-by="chainCluster">
+				<cascade>
+					<cascade-all />
+				</cascade>
+			</one-to-many>
+			<one-to-many name="homologs" mapped-by="chainCluster">
+				<cascade>
+					<cascade-all />
+				</cascade>
+			</one-to-many>
+			
+			<one-to-one name="seqCluster" mapped-by="chainCluster">
+ 				<cascade>
+ 					<cascade-all />
+ 				</cascade>
+ 			</one-to-one>
+			
+		</attributes>
+	</entity>
+
+	<entity class="eppic.model.SeqClusterDB" name="SeqCluster">
+		<table name="SeqCluster" />
+		<attributes>
+			<id name="uid">
+				<generated-value strategy="IDENTITY" />
+			</id>
+
+			<basic name="pdbCode">
+				<column column-definition="varchar(4) COLLATE latin1_general_cs"/>
+			</basic>
+
+			<basic name="repChain">
+				<column column-definition="varchar(4) COLLATE latin1_general_cs"/>
+			</basic>
+			
+			<basic name="c100"></basic>
+			<basic name="c95"></basic>
+			<basic name="c90"></basic>
+			<basic name="c80"></basic>
+			<basic name="c70"></basic>
+			<basic name="c60"></basic>
+			<basic name="c50"></basic>
+			<basic name="c40"></basic>
+			<basic name="c30"></basic>
+
+			<one-to-one name="chainCluster">
+			</one-to-one>
+			
+		</attributes>
+	</entity>
+
+	<entity class="eppic.model.HomologDB" name="Homolog">
+		<table name="Homolog" />
+		<entity-listeners>
+			<entity-listener
+				class="ch.systemsx.sybit.crkwebui.server.db.entitylisteners.HomologListener">
+			</entity-listener>
+		</entity-listeners>
+		<attributes>
+			<id name="uid">
+				<generated-value strategy="IDENTITY" />
+			</id>
+
+			<basic name="uniProtId"></basic>
+			<basic name="firstTaxon">
+				<column length="255" />
+			</basic>
+			<basic name="lastTaxon">
+				<column length="255" />
+			</basic>
+			<basic name="seqId"></basic>
+			<basic name="queryCoverage"></basic>
+			
+			<basic name="queryStart"></basic>
+			<basic name="queryEnd"></basic>
+
+			<basic name="subjectStart"></basic>
+			<basic name="subjectEnd"></basic>			
+			
+			<basic name="alignedSeq">
+				<column column-definition="text" />
+			</basic>
+
+			<many-to-one name="chainCluster">
+			</many-to-one>
+
+		</attributes>
+	</entity>
+
+	<entity class="eppic.model.UniProtRefWarningDB" name="UniProtRefWarning">
+		<table name="UniProtRefWarning" />
+		<attributes>
+			<id name="uid">
+				<generated-value strategy="IDENTITY" />
+			</id>
+			<basic name="text">
+				<column column-definition="text" />
+			</basic>
+
+			<many-to-one name="chainCluster">
+			</many-to-one>
+		</attributes>
+	</entity>
+
+</entity-mappings>
