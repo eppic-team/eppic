@@ -8,6 +8,7 @@
 	<packaging>pom</packaging>
 
 	<modules>
+	    <module>eppic-model</module>
 		<module>eppic-cli</module>
 		<module>eppic-wui</module>
 	</modules>

@@ -23,6 +23,12 @@
 	
 	<dependencies>
 	
+	    <dependency>
+			<groupId>ch.systemsx.sybit</groupId>
+			<artifactId>eppic-model</artifactId>
+			<version>${project.version}</version>
+			<scope>compile</scope>
+		</dependency>
 		<!-- main dependency: owl package -->
 		<dependency>
 			<groupId>org.owl</groupId>
@@ -107,25 +113,6 @@
                		</configuration>
           	</plugin>
 
-			<!-- the gwt plugin so that sources are understood by eppic-wui -->
-			<!-- This is apparently a better solution than the one above, -->
-			<!-- see http://mojo.codehaus.org/gwt-maven-plugin/user-guide/multiproject.html -->		
-			 
-	    	<plugin>
-	        	<groupId>org.codehaus.mojo</groupId>
-	        	<artifactId>gwt-maven-plugin</artifactId>
-	        	<version>${gwt.version}</version>
-	        	<executions>
-	        		<execution>
-	            		<goals>
-	              			<goal>resources</goal>
-	            		</goals>
-	          		</execution>
-	        	</executions>
-	      	</plugin>
-			
-		
-		
 		
 			<!-- the shade plugin to repack all jars into one uber-jar -->			
 			<plugin>
@@ -210,42 +197,6 @@
 			</plugin>
 			
 		</plugins>
-
-		<pluginManagement>
-			<plugins>
-				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
-				<plugin>
-					<groupId>org.eclipse.m2e</groupId>
-					<artifactId>lifecycle-mapping</artifactId>
-					<version>1.0.0</version>
-					<configuration>
-						<lifecycleMappingMetadata>
-							<pluginExecutions>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>
-											org.codehaus.mojo
-										</groupId>
-										<artifactId>
-											gwt-maven-plugin
-										</artifactId>
-										<versionRange>
-											[2.6.1,)
-										</versionRange>
-										<goals>
-											<goal>resources</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<ignore></ignore>
-									</action>
-								</pluginExecution>
-							</pluginExecutions>
-						</lifecycleMappingMetadata>
-					</configuration>
-				</plugin>
-			</plugins>
-		</pluginManagement>
 	</build>
 	
 	
