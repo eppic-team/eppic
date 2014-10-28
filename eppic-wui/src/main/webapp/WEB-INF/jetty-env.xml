@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<!DOCTYPE Configure PUBLIC "-//Mort Bay Consulting//DTD Configure//EN" "http://www.eclipse.org/jetty/configure.dtd">
+<Configure id='wac' class="org.eclipse.jetty.webapp.WebAppContext">
+	<New id="eppicdb" class="org.eclipse.jetty.plus.jndi.Resource">
+		<Arg></Arg>
+		<Arg>jdbc/eppicDB</Arg>
+		<Arg>
+			<New class="com.mchange.v2.c3p0.ComboPooledDataSource">
+				<Set name="driverClass">com.mysql.jdbc.Driver</Set>
+				<Set name="jdbcUrl">jdbc:mysql://localhost:3306/DATABASE_NAME</Set>
+				<Set name="user">DB_USER</Set>
+				<Set name="password">DB_PASSWORD</Set>
+				
+				<Set name="minPoolSize">5</Set>
+				<Set name="maxPoolSize">20</Set>
+				<Set name="checkoutTimeout">1800</Set>
+				<Set name="maxStatements">50</Set>
+			</New>
+		</Arg>
+	</New>
+</Configure>

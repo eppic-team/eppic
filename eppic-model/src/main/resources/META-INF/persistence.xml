@@ -3,30 +3,14 @@
 	<persistence-unit name="eppicjpa">
 		<description>Persistence unit for the EPPIC WUI application</description>
 		<provider>org.hibernate.ejb.HibernatePersistence</provider>
-		
+		<non-jta-data-source>java:comp/env/jdbc/eppicDB</non-jta-data-source>
 		<class>ch.systemsx.sybit.crkwebui.server.db.model.IPForbidden</class>
 		<class>ch.systemsx.sybit.crkwebui.server.db.model.IPAllowed</class>
 		<class>ch.systemsx.sybit.crkwebui.server.db.model.DataDownloadTracking</class>
 		<validation-mode>NONE</validation-mode> 
 		<properties>
-			<property name="javax.persistence.jdbc.driver" value="com.mysql.jdbc.Driver" /> 
-			<!-- Local 
-			<property name="javax.persistence.jdbc.url" value="jdbc:mysql://localhost:3306/crk_test	" /> 
-			<property name="javax.persistence.jdbc.user" value="root" /> 
-			<property name="javax.persistence.jdbc.password" value="root" /> 
-			-->
-			<!--  test server -->
-			<property name="javax.persistence.jdbc.url" value="jdbc:mysql://mpc1153.psi.ch:3306/eppic_2_1_0_2014_05" />
-            <property name="javax.persistence.jdbc.user" value="root" />
-            <property name="javax.persistence.jdbc.password" value="edb+1153" />
-                        
 			<property name="hibernate.show_sql" value="false" /> 
 			<property name="hibernate.hbm2ddl.auto" value="update" /> 
-			
-			<property name="hibernate.c3p0.min_size" value="5" /> 
-			<property name="hibernate.c3p0.max_size" value="20" /> 
-			<property name="hibernate.c3p0.timeout" value="1800" /> 
-			<property name="hibernate.c3p0.max_statements" value="50" /> 
 		</properties>
 	</persistence-unit>
 
