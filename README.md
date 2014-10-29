@@ -1,7 +1,7 @@
 eppic
 =====
 
-EPPIC is a software package for the analysis of interfaces present in protein crystal structures. It uses mainly evolutionary criteria to try the assess whether interfaces are biologically relevant or simply crystal contacts.
+EPPIC is a software package for the analysis of interfaces present in protein crystal structures. It uses mainly evolutionary criteria to try to assess whether interfaces are biologically relevant or simply crystal contacts.
 
 The software is divided into submodules: 
 * eppic-cli: the command line interface
