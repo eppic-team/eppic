@@ -5,7 +5,7 @@ EPPIC is a software package for the analysis of interfaces present in protein cr
 
 The software is divided into submodules: 
 * eppic-cli: the command line interface
-* eppic-wui: the web graphical user interface, a front-end to the command line tool. Tou can see it working live at http://www.eppic-web.org
+* eppic-wui: the web graphical user interface, a front-end to the command line tool. You can see it working live at http://www.eppic-web.org
 
 Please note that the project was previously in two separate repositories (eppic-cli and eppic-wui) and has now been unified into a single repository here.
 
