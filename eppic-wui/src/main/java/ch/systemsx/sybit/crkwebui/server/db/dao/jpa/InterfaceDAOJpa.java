@@ -76,7 +76,7 @@ public class InterfaceDAOJpa implements InterfaceDAO
 	}
 	
 	@Override
-	public List<Interface> getInterfacesWithScores(int interfaceClusterUid, List<Integer> interfaceIds)throws DaoException
+	public List<Interface> getInterfacesWithResidues(int interfaceClusterUid, List<Integer> interfaceIds)throws DaoException
 	{
 		EntityManager entityManager = null;
 		
@@ -100,7 +100,6 @@ public class InterfaceDAOJpa implements InterfaceDAO
 			
 			for(InterfaceDB interfaceItemDB : interfaceItemDBs)
 			{
-				interfaceItemDB.setResidues(null);
 				if(interfaceIds.contains(interfaceItemDB.getInterfaceId())){
 					result.add(Interface.create(interfaceItemDB));
 				}
@@ -152,7 +151,6 @@ public class InterfaceDAOJpa implements InterfaceDAO
 			
 			for(InterfaceDB interfaceItemDB : interfaceItemDBs)
 			{
-				interfaceItemDB.setInterfaceScores(null);
 				interfaceItemDB.setInterfaceWarnings(null);
 				result.add(Interface.create(interfaceItemDB));
 			}

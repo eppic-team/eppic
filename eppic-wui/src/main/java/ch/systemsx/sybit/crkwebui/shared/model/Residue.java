@@ -2,12 +2,16 @@ package ch.systemsx.sybit.crkwebui.shared.model;
 
 import java.io.Serializable;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+
 import eppic.model.ResidueDB;
 
 /**
  * DTO class for Residue.
  * @author AS
  */
+@XmlAccessorType(XmlAccessType.FIELD)
 public class Residue implements Serializable
 {
 

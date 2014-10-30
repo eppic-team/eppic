@@ -56,7 +56,9 @@ public class Interface implements Serializable, Comparable<Interface>
 	@XmlElementWrapper(name = "interfaceScores")
 	@XmlElement(name = "interfaceScore")
 	private List<InterfaceScore> interfaceScores;
-	
+
+	@XmlElementWrapper(name = "residues")
+	@XmlElement(name = "residue")
 	private List<Residue> residues;
 	
 	

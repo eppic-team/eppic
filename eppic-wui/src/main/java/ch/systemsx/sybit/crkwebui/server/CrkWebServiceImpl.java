@@ -85,7 +85,7 @@ import eppic.EppicParams;
 @SuppressWarnings("serial")
 public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements CrkWebService
 {
-    private static final Logger log = LoggerFactory.getLogger(CrkWebServiceImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(CrkWebServiceImpl.class);
     
     // NOTE for the unaware reader: the EPPIC program used to be call CRK, thus the prevalence of that name in the code
     
@@ -186,9 +186,9 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 
 	if(properties.getProperty("java_VM_exec") != null && !properties.getProperty("java_VM_exec").equals("")){
 	    javaVMExec = properties.getProperty("java_VM_exec");
-	    log.info("Using java VM given in config file ('java_VM_exec' option): "+javaVMExec);
+	    logger.info("Using java VM given in config file ('java_VM_exec' option): "+javaVMExec);
 	} else{
-		log.info("No 'java_VM_exec' option specified in config file, using system's default java");
+		logger.info("No 'java_VM_exec' option specified in config file, using system's default java");
 	    javaVMExec = "java";
 	}
 
@@ -224,7 +224,7 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 	localCifDir = crkProperties.getProperty("LOCAL_CIF_DIR");
 	
 	if (localCifDir==null || !new File(localCifDir).isDirectory()) {
-		log.warn("The LOCAL_CIF_DIR path is either not set or not pointing to a readable directory.");	
+		logger.warn("The LOCAL_CIF_DIR path is either not set or not pointing to a readable directory.");	
 	}
 
 	if(!properties.containsKey(ApplicationSettingsGenerator.DEVELOPMENT_MODE))
@@ -389,7 +389,7 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 	    }
 	    catch(IOException e)
 	    {
-	    	log.warn("Problems creating progress log file "+logFile+". Error: "+e.getMessage());
+	    	logger.warn("Problems creating progress log file "+logFile+". Error: "+e.getMessage());
 	    	//e.printStackTrace();
 	    }
 
@@ -715,17 +715,17 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 	}
 	catch(IOException e)
 	{
-		log.warn("The kill file ("+KILLED_FILE_NAME+") to signal the job stopping could not be written. Error: "+e.getMessage()); 
+		logger.warn("The kill file ("+KILLED_FILE_NAME+") to signal the job stopping could not be written. Error: "+e.getMessage()); 
 	    result = "Job: " + jobId + " was not stopped";
 	}
 	catch(DaoException e)
 	{
-		log.warn("Job could not be stopped due to a DaoException. Error: "+e.getMessage());	    
+		logger.warn("Job could not be stopped due to a DaoException. Error: "+e.getMessage());	    
 	    result = "Job: " + jobId + " was not stopped";
 	}
 	catch(JobHandlerException e)
 	{
-		log.warn("Job could not be stopped due to a JobHandlerException. Error: "+e.getMessage());
+		logger.warn("Job could not be stopped due to a JobHandlerException. Error: "+e.getMessage());
 	    result = "Job: " + jobId + " was not stopped";
 	}
 
@@ -819,14 +819,14 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 			results.remove(p.getUid());
 		    else {
 			p.setSuspicious(true);
-			log.warn("PDBSearchResult with uid " + p.getUid() + " and pdbCode " + p.getPdbCode() + " is not in the " + cl + " sequenceClusterType level but it's present in the stricter levels.");
+			logger.warn("PDBSearchResult with uid " + p.getUid() + " and pdbCode " + p.getPdbCode() + " is not in the " + cl + " sequenceClusterType level but it's present in the stricter levels.");
 		    }
 		for(PDBSearchResult p : results.values())
 		    data.add(p);
 	    }
 	}
 	long durration = System.currentTimeMillis() - start;
-	log.debug("Length of data: " + data.size() + " (fetching took " + durration + "ms)");
+	logger.debug("Length of data: " + data.size() + " (fetching took " + durration + "ms)");
 	return data;
     } 
 }

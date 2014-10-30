@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -15,6 +16,9 @@ import javax.servlet.http.HttpServletResponse;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import ch.systemsx.sybit.crkwebui.server.commons.servlets.BaseServlet;
 import ch.systemsx.sybit.crkwebui.server.db.dao.DataDownloadTrackingDAO;
@@ -50,6 +54,8 @@ public class DataDownloadServlet extends BaseServlet{
 
 	
 	private static final long serialVersionUID = 1L;
+	
+	private static final Logger logger = LoggerFactory.getLogger(DataDownloadServlet.class);
 		
 	//Parameters
 	private int maxNumJobIds;
@@ -117,11 +123,11 @@ public class DataDownloadServlet extends BaseServlet{
 	}
 	
 	/**
-	 * Retrieves pdb score item for job.
+	 * Retrieves pdbInfo item for job.
 	 * @param jobId identifier of the job
 	 * @param interfaceIdList list of interface ids to be retrieved (null for everything)
-	 * @return pdb score item
-	 * @throws Exception when can not retrieve result of the job
+	 * @return pdb info item
+	 * @throws DaoException when can not retrieve result of the job
 	 */
 	private PdbInfo getResultData(String jobId, List<Integer> interfaceIdList, String getSeqInfo) throws DaoException
 	{
@@ -136,15 +142,30 @@ public class DataDownloadServlet extends BaseServlet{
 
 		InterfaceDAO interfaceDAO = new InterfaceDAOJpa();
 		for(InterfaceCluster cluster: clusters){
+			logger.debug("Getting data for interface cluster uid {}", cluster.getUid());
 			List<Interface> interfaceItems;
 			if(interfaceIdList != null){
-				interfaceItems = interfaceDAO.getInterfacesWithScores(cluster.getUid(), interfaceIdList);
+				logger.debug("Interface id list requested: {}", interfaceIdList.toString()); 
+				interfaceItems = interfaceDAO.getInterfacesWithResidues(cluster.getUid(), interfaceIdList);
 			}
 			else{
-				interfaceItems = interfaceDAO.getInterfacesWithScores(cluster.getUid());
+				interfaceItems = interfaceDAO.getInterfacesWithResidues(cluster.getUid());
 			}
 			cluster.setInterfaces(interfaceItems);
 		}
+
+		// now we remove interface clusters with no interfaces, which can happen when interfaceIdList is provided
+		if (interfaceIdList!=null) {
+			Iterator<InterfaceCluster> it = clusters.iterator();
+			while (it.hasNext()) {
+				InterfaceCluster cluster = it.next();
+				if (cluster.getInterfaces().size()==0) {
+					it.remove();
+					logger.debug("Removing cluster uid="+cluster.getUid()+", clusterId="+cluster.getClusterId()+" since none of its interfaces was requested");
+				}
+			}
+		}
+		
 		pdbInfo.setInterfaceClusters(clusters);
 
 		if(getSeqInfo == null || getSeqInfo.equals("t")){	
