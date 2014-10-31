@@ -3,6 +3,10 @@ package ch.systemsx.sybit.crkwebui.client.results.gui.panels;
 import java.util.ArrayList;
 import java.util.List;
 
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
+
+
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ApplicationWindowResizeEvent;
@@ -23,6 +27,8 @@ import ch.systemsx.sybit.crkwebui.client.commons.util.StyleGenerator;
 import ch.systemsx.sybit.crkwebui.shared.model.ChainCluster;
 import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 import ch.systemsx.sybit.crkwebui.shared.model.UniProtRefWarning;
+
+
 
 //import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -52,6 +58,8 @@ import com.sencha.gxt.widget.core.client.tips.ToolTipConfig;
 public class SequenceInfoPanel extends FieldSet 
 {
 	private final static int ROWS_PER_PAGE = 4;
+	
+	//private static final Logger logger = LoggerFactory.getLogger(SequenceInfoPanel.class);
 
 	private PdbInfo pdbScoreItem;
 	private int homologsStartIndex;
@@ -195,13 +203,13 @@ public class SequenceInfoPanel extends FieldSet
 		}
 	}
 
-	private List<List<Widget>> loadHomologPanles(PdbInfo pdbScoreItem, List<ChainCluster> homologsStrings) {
+	private List<List<Widget>> loadHomologPanles(PdbInfo pdbInfoItem, List<ChainCluster> homologsStrings) {
 		ArrayList<List<Widget>> homologsInfoPanels = new ArrayList<List<Widget>>();
 		for(int i=0; i<homologsStrings.size(); i++)
 		{
-			homologsInfoPanels.add(generateHomologsInfoPanelItems(pdbScoreItem.getJobId(),
+			homologsInfoPanels.add(generateHomologsInfoPanelItems(pdbInfoItem.getJobId(),
 					homologsStrings.get(i),
-					pdbScoreItem.getTruncatedInputName(), pdbScoreItem.getInputType() == 0));
+					pdbInfoItem.getTruncatedInputName(), pdbInfoItem.getInputType() == 0));
 		};
 		return homologsInfoPanels;
 	}
@@ -334,21 +342,9 @@ public class SequenceInfoPanel extends FieldSet
 
 		items.add(nrHoButton);
 
-//		String downloadPseLink = GWT.getModuleBaseURL() + 
-//				"fileDownload?type=entropiespse&id=" + selectedJobId + "&alignment=" + alignmentId; 
-//
-//		String colorPseIconImgSrc = 
-//				ApplicationContext.getSettings().getResultsLocation() + 
-//				selectedJobId+"/"+
-//				pdbName +"."+alignmentId+".entropies.png";
-//
-//		ImageLinkWithTooltip colorPseImg = 
-//				new ImageLinkWithTooltip(colorPseIconImgSrc, 14, 14, 
-//						AppPropertiesManager.CONSTANTS.homologs_panel_entropiespse_hint(),
-//						downloadPseLink);
-//		items.add(colorPseImg);
-
-		if(precomputed) {
+		
+		// we only add the search link if a precomputed entry & not null chain cluster & we have sequence clusters for it
+		if (precomputed && chainCluster!=null && chainCluster.getSeqCluster()!=null) {
 			final EmptyLinkWithTooltip searchLink = createSearchLink(chainCluster);
 			items.add(searchLink);
 		}

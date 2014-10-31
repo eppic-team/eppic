@@ -82,6 +82,8 @@ public class DataDownloadServlet extends BaseServlet{
 		
 		String requestIP = request.getRemoteAddr();
 
+		logger.info("XML data download requested for '{}'",jobIdCommaSep);
+		
 		try
 		{	
 			addIPToDB(requestIP);

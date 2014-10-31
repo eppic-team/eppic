@@ -54,6 +54,8 @@ public class ChainCluster implements Serializable {
 	
 	private String pdbCode;
 	
+	private SeqCluster seqCluster;
+	
 	public ChainCluster() {
 		
 	}
@@ -276,6 +278,14 @@ public class ChainCluster implements Serializable {
 		this.pdbCode = pdbCode;
 	}
 
+	public SeqCluster getSeqCluster() {
+		return seqCluster;
+	}
+	
+	public void setSeqCluster(SeqCluster seqCluster) {
+		this.seqCluster = seqCluster;
+	}
+	
 	/**
 	 * Converts DB model item into DTO one.
 	 * @param chainClusterDB model item to convert
@@ -333,6 +343,10 @@ public class ChainCluster implements Serializable {
 			}
 		}
 		chainCluster.setHomologs(homologs);
+		
+		if (chainClusterDB.getSeqCluster()!=null) {
+			chainCluster.setSeqCluster(SeqCluster.create(chainClusterDB.getSeqCluster()));
+		}
 		
 		return chainCluster;
 	}
