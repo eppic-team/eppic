@@ -586,8 +586,8 @@ public class MainController
 		}
 
 		EventBusManager.EVENT_BUS.fireEvent(new GetFocusOnJobsListEvent());
-		Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_results() + " - " + 
-						resultData.getTruncatedInputName());
+		Window.setTitle(resultData.getTruncatedInputName() + " - " +
+						AppPropertiesManager.CONSTANTS.window_title_results() );
 	}
 	
 	/**
