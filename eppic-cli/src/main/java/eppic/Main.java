@@ -315,8 +315,8 @@ public class Main {
 			gcps.add(gcp);
 		}
 
-		// for the webui
-		modelAdaptor.setInterfaces(interfaces);
+		// writing to the model: for the webui and csv output files
+		modelAdaptor.setInterfaces(interfaces); // this writes all interface geom info, including h-bonds, disulfides etc
 		modelAdaptor.setPdbBioUnits(this.pdb.getPdbBioUnitList());
 		modelAdaptor.setGeometryScores(gps, gcps);
 		modelAdaptor.setResidueDetails(interfaces);
@@ -395,12 +395,6 @@ public class Main {
 					if (interf.isFirstProtein() && interf.isSecondProtein()) {
 						File pdbFile = params.getOutputFile("." + interf.getId() + ".pdb.gz");
 						interf.writeToPdbFile(pdbFile, params.isUsePdbResSer(), true);
-						if (params.getHbplusExe() != null && params.getHbplusExe().exists()) {
-							interf.runHBPlus(params.getHbplusExe(), pdbFile);
-						}
-						else {
-							System.out.println("Interface " + interf.getId() + ": Couldn't run HBPlus. Falling back to alternate method.");
-						}
 					}
 
 				}
@@ -414,8 +408,43 @@ public class Main {
 			
 		} catch (IOException e) {
 			throw new EppicException(e, "Couldn't write interface PDB files. " + e.getMessage(), true);
-		} catch (InterruptedException e) {
-			throw new EppicException(e, "Problems while running HBPlus. " + e.getMessage(), true);
+		} 
+	}
+	
+	public void doHBPlus() throws EppicException {
+
+		if (interfaces.getNumInterfaces() == 0) return;
+		
+		if (params.getHbplusExe() != null && params.getHbplusExe().exists()) {
+
+			if (!params.isGenerateInterfacesPdbFiles()) {
+				LOGGER.info("HBPlus is set in config file but -l was not used, will not do H-bond calculation with HBPlus");
+				return;
+			}
+
+			try {
+
+				for (ChainInterface interf : interfaces) {
+					if (interf.isFirstProtein() && interf.isSecondProtein()) {
+						// note this file will be overwritten later by doWritePdbFiles()
+						File pdbFile = params.getOutputFile("." + interf.getId() + ".pdb.gz");
+						try {
+							interf.writeToPdbFile(pdbFile, true, true);
+						} catch (IOException e) {
+							throw new EppicException(e, "Couldn't write interface PDB files. " + e.getMessage(), true);
+						}
+						LOGGER.info("Running HBPlus for interface "+interf.getId());
+						interf.runHBPlus(params.getHbplusExe(), pdbFile);						
+					}
+				}
+
+			} catch (IOException e) {
+				throw new EppicException(e, "Couldn't run HBPlus. Error: " + e.getMessage(), true);
+			} catch (InterruptedException e) {
+				throw new EppicException(e, "Problems while running HBPlus. " + e.getMessage(), true);
+			}
+		} else {
+			LOGGER.info("HBPlus is not set or set to an invalid path. Will do H-bond calculation with internal algorithm.");
 		}
 	}
 	
@@ -740,7 +769,10 @@ public class Main {
 			} else {
 				doFindInterfaces();
 			}
-			doWritePdbFiles();
+			
+			// try hbplus if executable is set, writes pdb files needed for it (which then are overwritten in doWritePdbFiles)
+			doHBPlus();
+			
 			doGeomScoring();
 			
 			if (params.isDoEvolScoring()) {
@@ -758,8 +790,11 @@ public class Main {
 				doCombinedScoring();
 			}
 			
-			// 6 write CSV files (only if not in -w) 	
+			// 5 write TSV files (only if not in -w) 	
 			doWriteTextOutputFiles();
+			
+			// 6 write pdb files (only if in -l)
+			doWritePdbFiles();
 						
 			// 7 writing pymol files (only if in -l)
 			doWritePymolFiles();
