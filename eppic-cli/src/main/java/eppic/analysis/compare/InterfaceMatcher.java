@@ -248,6 +248,9 @@ public class InterfaceMatcher {
 		// Following my understanding, it should be T02*T01_inv as indicated above, but that didn't work 
 		// and for some reason inverting the order in mul does work. Most likely my understanding is 
 		// wrong, but need to check this better at some point
+		// A possible explanation for this is that vecmath treats transform() as a pre-multiplication
+		// rather than a post-multiplication as I was assuming, i.e. x1 = x0 * T01 instead of x1 = T01 * x0,
+		// in that case then it is true that: T12 = T01_inv * T02, which would explain the expression below
 		transf12.mul(transf1inv, transf2);
 		
 		return transf12;
