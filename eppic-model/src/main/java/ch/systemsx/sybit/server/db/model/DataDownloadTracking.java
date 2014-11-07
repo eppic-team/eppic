@@ -1,4 +1,4 @@
-package ch.systemsx.sybit.crkwebui.server.db.model;
+package ch.systemsx.sybit.server.db.model;
 
 import java.util.Date;
 

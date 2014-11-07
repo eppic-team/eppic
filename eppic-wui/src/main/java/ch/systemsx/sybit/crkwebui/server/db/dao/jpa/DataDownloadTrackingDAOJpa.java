@@ -13,9 +13,9 @@ import javax.persistence.criteria.Root;
 
 import ch.systemsx.sybit.crkwebui.server.db.EntityManagerHandler;
 import ch.systemsx.sybit.crkwebui.server.db.dao.DataDownloadTrackingDAO;
-import ch.systemsx.sybit.crkwebui.server.db.model.DataDownloadTracking;
-import ch.systemsx.sybit.crkwebui.server.db.model.DataDownloadTracking_;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
+import ch.systemsx.sybit.server.db.model.DataDownloadTracking;
+import ch.systemsx.sybit.server.db.model.DataDownloadTracking_;
 
 public class DataDownloadTrackingDAOJpa implements DataDownloadTrackingDAO {
 
