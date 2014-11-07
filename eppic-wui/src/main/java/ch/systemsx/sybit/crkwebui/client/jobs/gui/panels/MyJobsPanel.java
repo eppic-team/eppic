@@ -22,7 +22,7 @@ import ch.systemsx.sybit.crkwebui.client.jobs.gui.cells.InputCell;
 import ch.systemsx.sybit.crkwebui.client.jobs.gui.cells.JobStatusCell;
 import ch.systemsx.sybit.crkwebui.client.jobs.gui.grids.contextmenus.JobsPanelContextMenu;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
-import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
+import ch.systemsx.sybit.shared.model.StatusOfJob;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.NativeEvent;
@@ -30,6 +30,11 @@ import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.safehtml.shared.UriUtils;
 import com.google.gwt.user.client.History;
+import com.sencha.gxt.core.client.Style.SelectionMode;
+import com.sencha.gxt.core.client.util.IconHelper;
+import com.sencha.gxt.core.client.util.KeyNav;
+import com.sencha.gxt.core.client.util.Margins;
+import com.sencha.gxt.data.shared.ListStore;
 import com.sencha.gxt.widget.core.client.ContentPanel;
 import com.sencha.gxt.widget.core.client.button.TextButton;
 import com.sencha.gxt.widget.core.client.button.ToolButton;
@@ -46,11 +51,6 @@ import com.sencha.gxt.widget.core.client.tips.QuickTip;
 import com.sencha.gxt.widget.core.client.tips.ToolTipConfig;
 import com.sencha.gxt.widget.core.client.toolbar.FillToolItem;
 import com.sencha.gxt.widget.core.client.toolbar.ToolBar;
-import com.sencha.gxt.core.client.Style.SelectionMode;
-import com.sencha.gxt.core.client.util.IconHelper;
-import com.sencha.gxt.core.client.util.KeyNav;
-import com.sencha.gxt.core.client.util.Margins;
-import com.sencha.gxt.data.shared.ListStore;
 
 /**
  * Panel used to display the list of all jobs connected to the current session.

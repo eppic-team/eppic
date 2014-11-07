@@ -10,7 +10,7 @@ import ch.systemsx.sybit.crkwebui.server.db.dao.JobDAO;
 import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.JobDAOJpa;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.ValidationException;
-import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
+import ch.systemsx.sybit.shared.model.StatusOfJob;
 
 public class DataDownloadServletInputValidator {
 
@@ -60,12 +60,12 @@ public class DataDownloadServletInputValidator {
 	 */
 	private static void checkIfResultsExist(String jobId) throws ValidationException, DaoException
 	{
-		String status = null;
+		StatusOfJob status = null;
 
 		JobDAO jobDAO = new JobDAOJpa();
 		status = jobDAO.getStatusForJob(jobId);
 
-		if(status == null || !status.equals(StatusOfJob.FINISHED.getName()))
+		if(status == null || !status.equals(StatusOfJob.FINISHED))
 		{
 				throw new ValidationException("Nothing found with the provided id:"+ jobId);
 		}

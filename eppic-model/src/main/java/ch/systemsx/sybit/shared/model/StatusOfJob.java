@@ -1,4 +1,4 @@
-package ch.systemsx.sybit.crkwebui.shared.model;
+package ch.systemsx.sybit.shared.model;
 
 /**
  * This enum is used to represent current status of processing for the job.
