@@ -252,7 +252,7 @@ public class EvolCoreSurfacePredictor implements InterfaceTypePredictor {
 	private int[] generateInterfaceWarnings(int molecId) {
 		
 		int countUnrelCoreRes = -1;
-		int countUnrelNotInInterfacesRes = -1;
+		int countUnrelSurfaceRes = -1;
 		
 		if (canDoEntropyScoring(molecId)) {
 			List<Residue> unreliableCoreRes = iec.getUnreliableCoreRes(molecId);
@@ -263,8 +263,17 @@ public class EvolCoreSurfacePredictor implements InterfaceTypePredictor {
 				warnings.add(msg);
 			}			
 			
-			List<Residue> unreliableSurfaceRes = iec.getUnreliableNotInInterfacesRes(molecId, MIN_INTERF_FOR_RES_NOT_IN_INTERFACES, minAsaForSurface);
-			countUnrelNotInInterfacesRes = unreliableSurfaceRes.size();
+			List<Residue> unreliableSurfaceRes = new ArrayList<Residue>();
+			if (coreSurfaceScoreStrategy == EppicParams.CORE_SURFACE_SCORE_STRATEGY_CLASSIC) {
+				unreliableSurfaceRes = iec.getUnreliableNotInInterfacesRes(molecId, MIN_INTERF_FOR_RES_NOT_IN_INTERFACES, minAsaForSurface);
+				countUnrelSurfaceRes = unreliableSurfaceRes.size();
+				
+			} else if (coreSurfaceScoreStrategy == EppicParams.CORE_SURFACE_SCORE_STRATEGY_ZSCORE) {
+				unreliableSurfaceRes = iec.getUnreliableSurfaceRes(molecId, minAsaForSurface);
+				countUnrelSurfaceRes = unreliableSurfaceRes.size();
+			} else {
+				LOGGER.error("Unsupported core-surface score strategy! : "+coreSurfaceScoreStrategy);
+			}
 			msg = iec.getReferenceMismatchWarningMsg(unreliableSurfaceRes,"surface");
 			if (msg!=null) {
 				LOGGER.warn(msg);
@@ -272,7 +281,7 @@ public class EvolCoreSurfacePredictor implements InterfaceTypePredictor {
 			}
 		}
 		
-		int[] unrelRes = {countUnrelCoreRes, countUnrelNotInInterfacesRes};
+		int[] unrelRes = {countUnrelCoreRes, countUnrelSurfaceRes};
 		return unrelRes;
 	}
 

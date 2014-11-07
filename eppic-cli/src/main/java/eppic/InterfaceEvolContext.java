@@ -118,6 +118,18 @@ public class InterfaceEvolContext implements Serializable {
 	}
 	
 	/**
+	 * Finds all unreliable residues that belong to the surface and returns them in a list.
+	 * Unreliable are all residues for which the alignment from reference UniProt to PDB doesn't match
+	 * @param molecId
+	 * @param minAsaForSurface
+	 * @return
+	 */
+	public List<Residue> getUnreliableSurfaceRes(int molecId, double minAsaForSurface) {
+		List<Residue> surfResidues = interf.getMolecule(molecId).getSurfaceResidues(minAsaForSurface);
+		return getReferenceMismatchResidues(surfResidues, molecId);
+	}
+	
+	/**
 	 * Given a list of residues returns the subset of those that are unreliable 
 	 * because of mismatch of PDB sequence to UniProt reference matching (thus indicating
 	 * engineered residues).
