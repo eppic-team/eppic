@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.commons.math.random.RandomDataImpl;
 
 import eppic.predictors.EvolCoreRimClusterPredictor;
@@ -22,6 +24,7 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 
 	private static final long serialVersionUID = 1L;
 	
+	private static final Log LOGGER = LogFactory.getLog(InterfaceEvolContextList.class);
 	
 	private List<InterfaceEvolContext> list;
 	
@@ -145,6 +148,13 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 		for (int i=0;i<list.size();i++) {
 			list.get(i).getEvolCoreSurfacePredictor().setBsaToAsaCutoff(bsaToAsaCutoff, minAsaForSurface);
 		}		
+	}
+	
+	public void setCoreSurfaceScoreStrategy(int coreSurfaceScoreStrategy) {
+		LOGGER.info("Using core surface score strategy: "+coreSurfaceScoreStrategy);
+		for (int i=0;i<list.size();i++) {
+			list.get(i).getEvolCoreSurfacePredictor().setCoreSurfaceScoreStrategy(coreSurfaceScoreStrategy);
+		}				
 	}
 	
 	public EvolCoreRimClusterPredictor getEvolCoreRimClusterPredictor(int clusterId) {
