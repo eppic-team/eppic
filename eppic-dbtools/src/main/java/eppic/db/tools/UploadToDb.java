@@ -1,4 +1,4 @@
-package ch.systemsx.sybit.crkwebui.server.db.util;
+package eppic.db.tools;
 
 import eppic.model.PdbInfoDB;
 import gnu.getopt.Getopt;

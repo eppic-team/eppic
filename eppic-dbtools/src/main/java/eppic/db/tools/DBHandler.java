@@ -1,7 +1,7 @@
 /**
  * 
  */
-package ch.systemsx.sybit.crkwebui.server.db.util;
+package eppic.db.tools;
 
 import java.io.File;
 import java.io.FileInputStream;
