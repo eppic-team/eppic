@@ -117,5 +117,4 @@ public class CompareLattices {
 		LatticeOverlapScore s = llm.getLatticeOverlapScore(coCutoff);
 		System.out.printf("Total overlaps fAB: %5.3f, fBA: %5.3f\n", s.getfAB(), s.getfBA());
 	}
-
 }

@@ -27,16 +27,16 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.persistence.metamodel.SingularAttribute;
 
+import ch.systemsx.sybit.shared.model.InputType;
+import ch.systemsx.sybit.shared.model.StatusOfJob;
 import eppic.model.ChainClusterDB;
 import eppic.model.ChainClusterDB_;
+import eppic.model.JobDB;
 import eppic.model.JobDB_;
+import eppic.model.PdbInfoDB;
 import eppic.model.PdbInfoDB_;
 import eppic.model.SeqClusterDB;
 import eppic.model.SeqClusterDB_;
-import ch.systemsx.sybit.crkwebui.shared.model.InputType;
-import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
-import eppic.model.JobDB;
-import eppic.model.PdbInfoDB;
 
 /**
  * Class to perform operations on the EPPIC database, such as adding by job,

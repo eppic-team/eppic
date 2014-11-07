@@ -14,8 +14,8 @@ import eppic.db.InterfaceCluster;
 import eppic.db.PdbInfo;
 import eppic.db.PdbInfoCluster;
 import eppic.db.PdbInfoList;
-import eppic.db.SeqClusterLevel;
 import eppic.model.PdbInfoDB;
+import eppic.db.SeqClusterLevel;
 import gnu.getopt.Getopt;
 
 public class ClusterCrystalForms {

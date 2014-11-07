@@ -8,9 +8,10 @@
 	<packaging>pom</packaging>
 
 	<modules>
-	    <module>eppic-model</module>
+	    	<module>eppic-model</module>
 		<module>eppic-cli</module>
 		<module>eppic-wui</module>
+		<module>eppic-dbtools</module>
 	</modules>
 
 	<name>eppic</name>
