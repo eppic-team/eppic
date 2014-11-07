@@ -5,14 +5,17 @@ package eppic.db.tools;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -48,23 +51,25 @@ public class DBHandler {
 	
 	public static final String DEFAULT_ONLINE_JPA = "eppicjpa";
 	public static final String DEFAULT_OFFLINE_JPA = "eppic-offline-jpa";
+	private static final String CONFIG_FILE_NAME = "eppic-db.properties";
 	
 	
 	@PersistenceUnit
 	private EntityManagerFactory emf;
-	
-	// TODO recheck how the EntityManager is handled
-	//private EntityManager em;
 	
 	/**
 	 * Constructor
 	 */
 	public DBHandler(String persistenceUnitName){
 		try{
-			this.emf = Persistence.createEntityManagerFactory(persistenceUnitName);
+			File configurationFile = new File(System.getProperty("user.home"),
+					CONFIG_FILE_NAME);;
+			Map<String, String> properties = createDatabaseProperties(configurationFile);
+			this.emf = Persistence.createEntityManagerFactory(persistenceUnitName, properties);
 			
 		}
 		catch(Throwable e){
+			e.printStackTrace();
 			System.err.println(e.getMessage());
 			System.err.println("Error initializing Entity Manager Factory with persistence unit: "+persistenceUnitName);
 			System.err.println("Please check if the database is really present, and the persistence.xml file contains the unit");
@@ -72,6 +77,20 @@ public class DBHandler {
 		}
 	}
 	
+	private Map<String, String> createDatabaseProperties(File configurationFile) throws IOException {
+		Properties properties = new Properties();
+		properties.load(new FileInputStream(configurationFile));
+		Map<String, String> map = new HashMap<>();
+		map.put("javax.persistence.jdbc.driver", "com.mysql.jdbc.Driver");
+		map.put("hibernate.c3p0.min_size", "5");
+		map.put("hibernate.c3p0.max_size", "20");
+		map.put("hibernate.c3p0.timeout", "1800");
+		map.put("hibernate.c3p0.max_statements", "50");
+		for(String pn : properties.stringPropertyNames())
+			map.put(pn, properties.getProperty(pn));
+		return map;
+	}
+
 	protected EntityManager getEntityManager(){
 		//if (em==null)
 		//	em = this.emf.createEntityManager();
