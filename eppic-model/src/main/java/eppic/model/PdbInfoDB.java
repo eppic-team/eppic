@@ -21,6 +21,9 @@ public class PdbInfoDB implements Serializable {
 	
 	private String pdbCode;
 	
+	// the stoichiometry of the pdb structure
+	private int numChainClusters;
+	
 	// unit cell parameters
 	private double cellA;
 	private double cellB;
@@ -233,6 +236,14 @@ public class PdbInfoDB implements Serializable {
 		this.expMethod = expMethod;
 	}
 
+	public int getNumChainClusters() {
+		return numChainClusters;
+	}
+	
+	public void setNumChainClusters(int numChainClusters) {
+		this.numChainClusters = numChainClusters;
+	}
+	
 	public double getCellA() {
 		return cellA;
 	}

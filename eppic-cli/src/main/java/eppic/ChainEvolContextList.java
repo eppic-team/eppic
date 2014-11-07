@@ -153,6 +153,15 @@ public class ChainEvolContextList implements Serializable {
 		return homHardIdCutoff;
 	}
 	
+	/**
+	 * Returns the number of representative chains or -1 if not set 
+	 * @return
+	 */
+	public int size() {
+		if (cecs==null) return -1;
+		return cecs.size();
+	}
+	
 	public boolean isUseLocalUniprot() {
 		return useLocalUniprot;
 	}

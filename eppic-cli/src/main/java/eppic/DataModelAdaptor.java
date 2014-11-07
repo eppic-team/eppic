@@ -471,6 +471,8 @@ public class DataModelAdaptor {
 		List<ChainClusterDB> chainClusterDBs = new ArrayList<ChainClusterDB>();
 		
 		ChainEvolContextList cecl = iecl.getChainEvolContextList();
+		pdbInfo.setNumChainClusters(cecl.size());
+		
 		for (ChainEvolContext cec:cecl.getAllChainEvolContext()) {
 			ChainClusterDB chainClusterDB = new ChainClusterDB();
 			ChainCluster cc = cecl.getPdb().getProtChainCluster(cec.getRepresentativeChainCode());
@@ -488,6 +490,7 @@ public class DataModelAdaptor {
 			}
 			
 			chainClusterDB.setUniProtRefWarnings(queryWarningItemDBs);
+			chainClusterDB.setPdbCode(pdbInfo.getPdbCode());
 			
 			if (cec.hasQueryMatch()) { //all other fields remain null otherwise
 				
@@ -509,7 +512,6 @@ public class DataModelAdaptor {
 				chainClusterDB.setRefAlignedSeq(cec.getPdb2uniprotAln().getAlignedSequences()[1]);
 				chainClusterDB.setSeqIdCutoff(cec.getIdCutoff());
 				chainClusterDB.setClusteringSeqId(cec.getUsedClusteringPercentId()/100.0);
-				chainClusterDB.setPdbCode(pdbInfo.getPdbCode());
 				
 				List<HomologDB> homologDBs = new ArrayList<HomologDB>();
 				for (Homolog hom:cec.getHomologs().getFilteredSubset()) {

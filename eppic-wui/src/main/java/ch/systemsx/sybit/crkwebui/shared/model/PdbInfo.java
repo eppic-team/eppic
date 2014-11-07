@@ -28,7 +28,7 @@ import eppic.model.PdbInfoDB;
 
 @XmlRootElement(name = "eppicAnalysis")
 @XmlType(propOrder = { "pdbCode", "title", "releaseDate", "expMethod",
-	"spaceGroup", "resolution", "rfreeValue",
+	"spaceGroup", "resolution", "rfreeValue", "numChainClusters",
 	"cellA","cellB","cellC","cellAlpha","cellBeta","cellGamma",
 	"crystalFormId",
 	"chainClusters", "interfaceClusters",  "assemblies",
@@ -58,6 +58,8 @@ public class PdbInfo implements Serializable, ProcessingData
     private double resolution;
     private double rfreeValue;
     private String expMethod;
+    
+    private int numChainClusters;
     
     private double cellA;
 	private double cellB;
@@ -97,6 +99,7 @@ public class PdbInfo implements Serializable, ProcessingData
 	    String expMethod,
 	    double resolution,
 	    double rfreeValue,
+	    int numChainClusters,
 	    double cellA,
 	    double cellB,
 	    double cellC,
@@ -116,6 +119,7 @@ public class PdbInfo implements Serializable, ProcessingData
 	this.expMethod = expMethod;
 	this.resolution = resolution;
 	this.rfreeValue = rfreeValue;
+	this.numChainClusters = numChainClusters;
 	this.cellA = cellA;
 	this.cellB = cellB;
 	this.cellC = cellC;
@@ -212,6 +216,14 @@ public class PdbInfo implements Serializable, ProcessingData
 
     public void setRfreeValue(double rfreeValue) {
 	this.rfreeValue = rfreeValue;
+    }
+    
+    public int getNumChainClusters() {
+    	return numChainClusters;
+    }
+    
+    public void setNumChainClusters(int numChainClusters) {
+    	this.numChainClusters = numChainClusters;
     }
 
     public double getCellA() {
@@ -407,6 +419,7 @@ public class PdbInfo implements Serializable, ProcessingData
 	pdbInfo.setResolution(pdbInfoDB.getResolution());
 	pdbInfo.setRfreeValue(pdbInfoDB.getRfreeValue());
 	pdbInfo.setTitle(pdbInfoDB.getTitle());
+	pdbInfo.setNumChainClusters(pdbInfoDB.getNumChainClusters());
 	pdbInfo.setUid(pdbInfoDB.getUid());
 	pdbInfo.setCellA(pdbInfoDB.getCellA());
 	pdbInfo.setCellB(pdbInfoDB.getCellB());
