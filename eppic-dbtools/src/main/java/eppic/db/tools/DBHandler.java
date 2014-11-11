@@ -5,7 +5,6 @@ package eppic.db.tools;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.ArrayList;
@@ -63,12 +62,12 @@ public class DBHandler {
 	public DBHandler(String persistenceUnitName){
 		try{
 			File configurationFile = new File(System.getProperty("user.home"),
-					CONFIG_FILE_NAME);;
+					CONFIG_FILE_NAME);
 			Map<String, String> properties = createDatabaseProperties(configurationFile);
 			this.emf = Persistence.createEntityManagerFactory(persistenceUnitName, properties);
 			
 		}
-		catch(Throwable e){
+		catch(Exception e){	
 			e.printStackTrace();
 			System.err.println(e.getMessage());
 			System.err.println("Error initializing Entity Manager Factory with persistence unit: "+persistenceUnitName);
@@ -77,18 +76,24 @@ public class DBHandler {
 		}
 	}
 	
-	private Map<String, String> createDatabaseProperties(File configurationFile) throws IOException {
-		Properties properties = new Properties();
-		properties.load(new FileInputStream(configurationFile));
-		Map<String, String> map = new HashMap<>();
-		map.put("javax.persistence.jdbc.driver", "com.mysql.jdbc.Driver");
-		map.put("hibernate.c3p0.min_size", "5");
-		map.put("hibernate.c3p0.max_size", "20");
-		map.put("hibernate.c3p0.timeout", "1800");
-		map.put("hibernate.c3p0.max_statements", "50");
-		for(String pn : properties.stringPropertyNames())
-			map.put(pn, properties.getProperty(pn));
-		return map;
+	private Map<String, String> createDatabaseProperties(File configurationFile) {
+		try {
+			Properties properties = new Properties();
+			properties.load(new FileInputStream(configurationFile));
+			Map<String, String> map = new HashMap<>();
+			map.put("javax.persistence.jdbc.driver", "com.mysql.jdbc.Driver");
+			map.put("hibernate.c3p0.min_size", "5");
+			map.put("hibernate.c3p0.max_size", "20");
+			map.put("hibernate.c3p0.timeout", "1800");
+			map.put("hibernate.c3p0.max_statements", "50");
+			for(String pn : properties.stringPropertyNames())
+				map.put(pn, properties.getProperty(pn));
+			return map;
+		} catch (IOException e) {
+			System.err.println("Could not read the configuration file "+configurationFile+". Error: "+e.getMessage());
+			System.exit(1);
+			return null;
+		}
 	}
 
 	protected EntityManager getEntityManager(){
