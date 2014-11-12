@@ -91,6 +91,8 @@
 			<basic name="cellGamma"></basic>
 			
 			<basic name="crystalFormId"></basic>
+			
+			<basic name="numChainClusters"></basic>
 
 			<one-to-many name="interfaceClusters" mapped-by="pdbInfo" fetch="LAZY">
 				<cascade>
