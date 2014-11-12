@@ -12,8 +12,8 @@ import java.util.List;
 
 public class UserJobDBHandler {
 
-	private static DBHandler dbhOnline = new DBHandler(DBHandler.DEFAULT_ONLINE_JPA);
-	private static DBHandler dbhOffline = new DBHandler(DBHandler.DEFAULT_OFFLINE_JPA);
+	private static DBHandler dbhOnline = new DBHandler(false);
+	private static DBHandler dbhOffline = new DBHandler(true);
 
 	public static boolean isUserJob(String str){
 		return str.matches("^[a-zA-Z]\\w{29}$");

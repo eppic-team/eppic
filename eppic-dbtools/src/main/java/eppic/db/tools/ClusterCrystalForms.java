@@ -43,8 +43,7 @@ public class ClusterCrystalForms {
 				" -f : file to write the crystal form cluster identifiers (only used in -A)\n"+
 				" -F : file to write the global interface cluster identifiers (only used in -A)\n"+
 				" -d : print some debug output (full lattice comparison and interfaces comparison matrices)\n"+
-				" -o : use "+DBHandler.DEFAULT_ONLINE_JPA+" persistence unit instead of "+DBHandler.DEFAULT_OFFLINE_JPA+"\n"; 
-
+				"The database access must be set in file "+DBHandler.CONFIG_FILE_NAME+" in home dir\n";
 
 		String pdbString = null;
 		
@@ -57,9 +56,8 @@ public class ClusterCrystalForms {
 		File cfClustersFile = null;
 		File interfClustersFile = null;
 		
-		boolean useOnlineJpa = false;
 		
-		Getopt g = new Getopt("ClusterCrystalForms", args, "i:c:a:l:s:Af:F:doh?");
+		Getopt g = new Getopt("ClusterCrystalForms", args, "i:c:a:l:s:Af:F:dh?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
@@ -90,9 +88,6 @@ public class ClusterCrystalForms {
 			case 'd':
 				debug = true;
 				break;
-			case 'o':
-				useOnlineJpa = true;
-				break;
 			case 'h':
 				System.out.println(help);
 				System.exit(0);
@@ -121,13 +116,7 @@ public class ClusterCrystalForms {
 		}
 
 		
-		DBHandler dbh = null;
-		if (useOnlineJpa) {
-			dbh = new DBHandler(DBHandler.DEFAULT_ONLINE_JPA);	
-		} else {
-			dbh = new DBHandler(DBHandler.DEFAULT_OFFLINE_JPA);
-		}
-
+		DBHandler dbh = new DBHandler(false);	
 
 		PrintWriter cfcPw = null;
 		PrintWriter icPw = null;
