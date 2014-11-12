@@ -22,6 +22,7 @@ public class Main {
 			Method main = toolClass.getMethod("main", String[].class);
 			main.invoke(null, new Object[] { toolParams });
 		} catch (ClassNotFoundException | NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+			e.printStackTrace();
 			printUsageAndExit();
 		}
 	}
