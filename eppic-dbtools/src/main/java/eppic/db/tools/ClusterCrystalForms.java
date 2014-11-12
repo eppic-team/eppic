@@ -29,7 +29,7 @@ public class ClusterCrystalForms {
 	private static int interfClusterGlobalId = 1;
 
 	private static boolean debug = false;
-	
+
 	public static void main(String[] args) throws Exception {
 
 		String help = 
