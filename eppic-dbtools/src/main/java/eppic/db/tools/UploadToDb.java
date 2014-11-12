@@ -29,14 +29,13 @@ public class UploadToDb {
 		
 		String help = 
 				"Usage: UploadToDB\n" +
-				"Uploads a set of eppic output serialized files to database specified in "+DBHandler.DEFAULT_OFFLINE_JPA+" persistence unit\n" +
+				"Uploads a set of eppic output serialized files to database specified in "+DBHandler.CONFIG_FILE_NAME+" file in home dir\n" +
 				"  -d <dir>     : root directory of eppic output files with subdirectories as PDB codes \n" +
 				" [-l]          : if specified subdirs under root dir (-d) are considered to be in PDB divided layout\n"+
 				"                 (this affects the behaviour of -d and -f).\n"+
 				"                 Default: subdirs under root are taken directly as PDB codes \n"+
 				" [-f <file>]   : file specifying a list of PDB codes indicating subdirs of root \n"+
 				"                 directory to take (default: uses all subdirs in the root directory) \n" +
-				" [-o]          : use the "+DBHandler.DEFAULT_ONLINE_JPA+" persistence unit instead of "+DBHandler.DEFAULT_OFFLINE_JPA+" \n" +
 				" OPERATION MODE\n" +
 				" Default operation: only entries not already present in database will be inserted \n"+
 				" [-F]          : forces everything chosen to be inserted, deletes previous entries if present\n" +
@@ -51,9 +50,7 @@ public class UploadToDb {
 		boolean modeEverything = false;
 		boolean modeRemove = false;
 		
-		boolean useOnlineJpa = false;
-
-		Getopt g = new Getopt("UploadToDB", args, "d:lf:oFrh?");
+		Getopt g = new Getopt("UploadToDB", args, "d:lf:Frh?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
@@ -65,9 +62,6 @@ public class UploadToDb {
 				break;
 			case 'f':
 				choosefromFile = new File(g.getOptarg());
-				break;
-			case 'o':
-				useOnlineJpa = true;
 				break;
 			case 'F':
 				modeEverything = true;
@@ -131,12 +125,7 @@ public class UploadToDb {
 			System.out.println("Directories under "+jobDirectoriesRoot+" will be considered to be PDB codes directly, no PDB divided layout will be used. ");
 		}
 		
-		// starting the db handler
-		if (!useOnlineJpa) {
-			dbh = new DBHandler(DBHandler.DEFAULT_OFFLINE_JPA);
-		} else {
-			dbh = new DBHandler(DBHandler.DEFAULT_ONLINE_JPA);
-		}
+		dbh = new DBHandler(false);
 		
 		// Start the Process
 		int i = -1;

@@ -30,24 +30,20 @@ public class ClusterSequences {
 		String help = 
 				"Usage: ClusterSequences \n" +				
 				" [-a]        : number of threads (default 1)\n"+
-				" [-o]        : use "+DBHandler.DEFAULT_ONLINE_JPA+" persistence unit instead of "+DBHandler.DEFAULT_OFFLINE_JPA+"\n"+
-				" [-s <file>] : a blastclust save file with precomputed blast for all chains\n" ;
+				" [-s <file>] : a blastclust save file with precomputed blast for all chains\n"+
+				"The database access must be set in file "+DBHandler.CONFIG_FILE_NAME+" in home dir\n";
 		
 		
 		int numThreads = 1;
-		boolean useOnlineJpa = false;
 		
 		File saveFile = null;
 
-		Getopt g = new Getopt("ClusterSequences", args, "a:os:h?");
+		Getopt g = new Getopt("ClusterSequences", args, "a:s:h?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){			
 			case 'a':
 				numThreads = Integer.parseInt(g.getOptarg());
-				break;
-			case 'o':
-				useOnlineJpa = true;
 				break;
 			case 'h':
 				System.out.println(help);
@@ -64,12 +60,7 @@ public class ClusterSequences {
 		}
 		
 		
-		DBHandler dbh = null;
-		if (useOnlineJpa) {
-			dbh = new DBHandler(DBHandler.DEFAULT_ONLINE_JPA);
-		} else {
-			dbh = new DBHandler(DBHandler.DEFAULT_OFFLINE_JPA);
-		}
+		DBHandler dbh = new DBHandler(false);
 		
 		boolean canDoUpdate = true;
 		

@@ -48,9 +48,8 @@ import eppic.model.SeqClusterDB_;
  */
 public class DBHandler {
 	
-	public static final String DEFAULT_ONLINE_JPA = "eppicjpa";
-	public static final String DEFAULT_OFFLINE_JPA = "eppic-offline-jpa";
-	private static final String CONFIG_FILE_NAME = "eppic-db.properties";
+	public static final String PERSISTENCE_UNIT_NAME = "eppicjpa";
+	public static final String CONFIG_FILE_NAME = "eppic-db.properties";
 	
 	
 	@PersistenceUnit
@@ -59,24 +58,24 @@ public class DBHandler {
 	/**
 	 * Constructor
 	 */
-	public DBHandler(String persistenceUnitName){
-		try{
-			File configurationFile = new File(System.getProperty("user.home"),
-					CONFIG_FILE_NAME);
-			Map<String, String> properties = createDatabaseProperties(configurationFile);
-			this.emf = Persistence.createEntityManagerFactory(persistenceUnitName, properties);
-			
-		}
-		catch(Exception e){	
+	public DBHandler(boolean useOfflineDbName){
+
+		File configurationFile = new File(System.getProperty("user.home"), CONFIG_FILE_NAME);
+		Map<String, String> properties = createDatabaseProperties(configurationFile, useOfflineDbName);
+		
+		try {
+			this.emf = Persistence.createEntityManagerFactory(PERSISTENCE_UNIT_NAME, properties);
+
+		} catch (Exception e){	
 			e.printStackTrace();
 			System.err.println(e.getMessage());
-			System.err.println("Error initializing Entity Manager Factory with persistence unit: "+persistenceUnitName);
-			System.err.println("Please check if the database is really present, and the persistence.xml file contains the unit");
+			System.err.println("Error initializing Entity Manager Factory");
+			System.err.println("Please check if the database is really present and that the logging parameters are correct in file "+configurationFile);
 			System.exit(1);
 		}
 	}
-	
-	private Map<String, String> createDatabaseProperties(File configurationFile) {
+
+	private Map<String, String> createDatabaseProperties(File configurationFile, boolean useOfflineDbName) {
 		try {
 			Properties properties = new Properties();
 			properties.load(new FileInputStream(configurationFile));
@@ -86,11 +85,58 @@ public class DBHandler {
 			map.put("hibernate.c3p0.max_size", "20");
 			map.put("hibernate.c3p0.timeout", "1800");
 			map.put("hibernate.c3p0.max_statements", "50");
-			for(String pn : properties.stringPropertyNames())
-				map.put(pn, properties.getProperty(pn));
+			
+			String port = "3306"; // default mysql port
+			String host = null;
+			String dbName = null;
+			String user = null;
+			String pwd = null;
+			
+			// port is the only optional property
+			if (properties.getProperty("port")!=null && !properties.getProperty("port").isEmpty()) 
+				port = properties.getProperty("port").trim();
+
+			if (properties.getProperty("user")!=null && !properties.getProperty("user").isEmpty()) {
+				user = properties.getProperty("user").trim();
+			} else {
+				throw new IOException("Missing property 'user' in config file "+configurationFile);
+			}
+			if (properties.getProperty("password")!=null && !properties.getProperty("password").isEmpty()) {
+				pwd = properties.getProperty("password").trim();
+			} else {
+				throw new IOException("Missing property 'password' in config file "+configurationFile);
+			}
+			if (properties.getProperty("host")!=null && !properties.getProperty("host").isEmpty()) {
+				host = properties.getProperty("host").trim();
+			} else {
+				throw new IOException("Missing property 'host' in config file "+configurationFile);
+			}
+			
+			if (!useOfflineDbName) {
+				if (properties.getProperty("onlinedb")!=null && !properties.getProperty("onlinedb").isEmpty()) {			
+					dbName = properties.getProperty("onlinedb").trim();
+				} else {
+					throw new IOException("Missing property 'onlinedb' in config file "+configurationFile);
+				}
+			} else {
+				if (properties.getProperty("offlinedb")!=null && !properties.getProperty("offlinedb").isEmpty()) {			
+					dbName = properties.getProperty("offlinedb").trim();
+				} else {
+					throw new IOException("Missing property 'offlinedb' in config file "+configurationFile);
+				}
+			}
+			
+			System.out.println("Using database "+dbName+" in host "+host);
+			
+			String url = "jdbc:mysql://"+host+":"+port+"/"+dbName;
+			map.put("javax.persistence.jdbc.url", url);
+			map.put("javax.persistence.jdbc.user", user); 
+			map.put("javax.persistence.jdbc.password", pwd);
+
 			return map;
+			
 		} catch (IOException e) {
-			System.err.println("Could not read the configuration file "+configurationFile+". Error: "+e.getMessage());
+			System.err.println("Problems while reading the configuration file "+configurationFile+". Error: "+e.getMessage());
 			System.exit(1);
 			return null;
 		}
