@@ -672,7 +672,7 @@ public class EppicParams {
 	 * @return
 	 */
 	public double getMaxEntropy() {
-		return Math.log(reducedAlphabet)/Math.log(2);
+		return Math.log(AminoAcid.getAlphabetSize(reducedAlphabet))/Math.log(2);
 	}
 	
 	public double getCAcutoffForGeom() {
