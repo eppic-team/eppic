@@ -73,6 +73,10 @@ public class EppicParams {
 	public static final double 	   CLUSTERING_RMSD_CUTOFF = 2.0;
 	public static final int 	   CLUSTERING_MINATOMS = 10;
 	public static final String     CLUSTERING_ATOM_TYPE = "CA";
+	// the strategies for core-surface scoring
+	public static final int 	   CORE_SURFACE_SCORE_STRATEGY_CLASSIC = 0;
+	public static final int 	   CORE_SURFACE_SCORE_STRATEGY_ZSCORE = 1;
+
 	
 	// PROPERTY FILES
 	protected static final InputStream COLORS_PROPERTIES_IS = EppicParams.class.getResourceAsStream("/eppic/chain_colors.dat");
@@ -158,6 +162,9 @@ public class EppicParams {
 	
 	// default use pdb res serials for output
 	public static final boolean   DEF_USE_PDB_RES_SER = true;
+	
+	// default core-surface score strategy: 0 for classic, 1 for straight z-scores
+	private static final int 	  DEF_CORE_SURFACE_SCORE_STRATEGY = CORE_SURFACE_SCORE_STRATEGY_CLASSIC;
 	
 	// FIELDS
 	
@@ -252,6 +259,8 @@ public class EppicParams {
 	private boolean  useUniparc;
 	
 	private boolean  usePdbResSer;
+	
+	private int coreSurfaceScoreStrategy;
 	
 	// and finally the ones with no defaults
 	private String   blastDbDir; // no default
@@ -864,6 +873,8 @@ public class EppicParams {
 			
 			usePdbResSer	 = Boolean.parseBoolean(p.getProperty("USE_PDB_RES_SER",new Boolean(DEF_USE_PDB_RES_SER).toString()));
 			
+			coreSurfaceScoreStrategy = Integer.parseInt(p.getProperty("CORE_SURFACE_SCORE_STRATEGY", new Integer(DEF_CORE_SURFACE_SCORE_STRATEGY).toString()));
+			
 		} catch (NumberFormatException e) {
 			System.err.println("A numerical value in the config file was incorrectly specified: "+e.getMessage()+".\n" +
 					"Please check the config file.");
@@ -977,6 +988,10 @@ public class EppicParams {
 	
 	public boolean isUsePdbResSer() {
 		return usePdbResSer;
+	}
+	
+	public int getCoreSurfaceScoreStrategy() {
+		return coreSurfaceScoreStrategy;
 	}
 
 }

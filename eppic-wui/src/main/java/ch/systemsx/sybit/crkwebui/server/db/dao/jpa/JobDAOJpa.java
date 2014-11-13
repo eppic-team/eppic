@@ -16,8 +16,6 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.persistence.criteria.SetJoin;
 
-import eppic.model.JobDB_;
-import eppic.model.UserSessionDB_;
 import ch.systemsx.sybit.crkwebui.server.db.EntityManagerHandler;
 import ch.systemsx.sybit.crkwebui.server.db.dao.JobDAO;
 import ch.systemsx.sybit.crkwebui.server.db.dao.UserSessionDAO;
@@ -25,10 +23,12 @@ import ch.systemsx.sybit.crkwebui.server.db.data.InputWithType;
 import ch.systemsx.sybit.crkwebui.server.db.data.JobStatusDetails;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
-import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
+import ch.systemsx.sybit.shared.model.StatusOfJob;
 import eppic.model.JobDB;
+import eppic.model.JobDB_;
 import eppic.model.PdbInfoDB;
 import eppic.model.UserSessionDB;
+import eppic.model.UserSessionDB_;
 
 /**
  * Implementation of JobDAO.
@@ -103,7 +103,7 @@ public class JobDAOJpa implements JobDAO
 	}
 
 	@Override
-	public void updateStatusOfJob(String jobId, String status) throws DaoException
+	public void updateStatusOfJob(String jobId, StatusOfJob status) throws DaoException
 	{
 		EntityManager entityManager = null;
 
@@ -113,7 +113,7 @@ public class JobDAOJpa implements JobDAO
 			entityManager.getTransaction().begin();
 
 			JobDB job = getJob(entityManager, jobId);
-			job.setStatus(status);
+			job.setStatus(status.getName());
 //			entityManager.merge(job);
 //			entityManager.flush();
 			entityManager.getTransaction().commit();
@@ -301,7 +301,7 @@ public class JobDAOJpa implements JobDAO
 	}
 
 	@Override
-	public String getStatusForJob(String jobId) throws DaoException
+	public StatusOfJob getStatusForJob(String jobId) throws DaoException
 	{
 		String status = null;
 		EntityManager entityManager = null;
@@ -346,7 +346,7 @@ public class JobDAOJpa implements JobDAO
 			}
 		}
 
-		return status;
+		return StatusOfJob.getByName(status);
 	}
 
 	@Override

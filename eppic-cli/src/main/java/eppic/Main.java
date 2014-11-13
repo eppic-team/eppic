@@ -659,6 +659,7 @@ public class Main {
 
 			// core-surface
 			iecList.setCoreSurfacePredBsaToAsaCutoff(params.getCAcutoffForZscore(), params.getMinAsaForSurface()); // calls calcRimAndCores as well
+			iecList.setCoreSurfaceScoreStrategy(params.getCoreSurfaceScoreStrategy());
 			iecList.scoreCoreSurface();
 
 			// note this adds also the entropies to the residue details

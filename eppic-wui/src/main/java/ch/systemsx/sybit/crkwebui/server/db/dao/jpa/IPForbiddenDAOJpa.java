@@ -11,9 +11,9 @@ import javax.persistence.criteria.Root;
 
 import ch.systemsx.sybit.crkwebui.server.db.EntityManagerHandler;
 import ch.systemsx.sybit.crkwebui.server.db.dao.IPForbiddenDAO;
-import ch.systemsx.sybit.crkwebui.server.db.model.IPForbidden;
-import ch.systemsx.sybit.crkwebui.server.db.model.IPForbidden_;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
+import ch.systemsx.sybit.server.db.model.IPForbidden;
+import ch.systemsx.sybit.server.db.model.IPForbidden_;
 
 /**
  * Implementation of IPForbiddenDAO.

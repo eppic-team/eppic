@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import org.apache.commons.math.random.RandomDataImpl;
+
 import eppic.predictors.EvolCoreRimPredictor;
 import eppic.predictors.EvolCoreSurfacePredictor;
 import owl.core.structure.AminoAcid;
@@ -117,6 +119,18 @@ public class InterfaceEvolContext implements Serializable {
 	}
 	
 	/**
+	 * Finds all unreliable residues that belong to the surface and returns them in a list.
+	 * Unreliable are all residues for which the alignment from reference UniProt to PDB doesn't match
+	 * @param molecId
+	 * @param minAsaForSurface
+	 * @return
+	 */
+	public List<Residue> getUnreliableSurfaceRes(int molecId, double minAsaForSurface) {
+		List<Residue> surfResidues = interf.getMolecule(molecId).getSurfaceResidues(minAsaForSurface);
+		return getReferenceMismatchResidues(surfResidues, molecId);
+	}
+	
+	/**
 	 * Given a list of residues returns the subset of those that are unreliable 
 	 * because of mismatch of PDB sequence to UniProt reference matching (thus indicating
 	 * engineered residues).
@@ -189,8 +203,7 @@ public class InterfaceEvolContext implements Serializable {
 	
 	/**
 	 * Returns the distribution of evolutionary scores of random subsets of residues in the surface (not belonging 
-	 * to any interface above minInterfArea) for given pdbChainCode and scoType.
-	 * The result is cached in a map and taken from there upon subsequent call.
+	 * to any interface above minInterfArea) for given molecId.
 	 * @param molecId the molecule id: either {@link #FIRST} or {@link #SECOND}
 	 * @param minInterfArea the residues considered will be those that are not in interfaces above this area value
 	 * @param numSamples number of samples of size sampleSize to be taken from the surface
@@ -203,6 +216,34 @@ public class InterfaceEvolContext implements Serializable {
 	}
 	
 	/**
+	 * Returns the distribution of evolutionary scores of random subsets of residues in the surface for
+	 * given molecId
+	 * @param molecId the molecule id: either {@link #FIRST} or {@link #SECOND}
+	 * @param numSamples number of samples of size sampleSize to be taken from the surface
+	 * @param sampleSize number of residues in each sample
+	 * @param minAsaForSurface the minimum ASA for a residue to be considered surface
+	 * @return
+	 */
+	public double[] getSurfaceScoreDist(int molecId, int numSamples, int sampleSize, double minAsaForSurface) {
+		if (sampleSize==0) return new double[0];
+
+		double[] dist = new double[numSamples];
+		
+		RandomDataImpl rd = new RandomDataImpl();
+		for (int i=0;i<numSamples;i++) {
+			Object[] sample = rd.nextSample(interf.getMolecule(molecId).getSurfaceResidues(minAsaForSurface), sampleSize);
+			List<Residue> residues = new ArrayList<Residue>(sample.length);
+			for (int j=0;j<sample.length;j++){
+				residues.add((Residue)sample[j]);
+			}
+			ChainEvolContext cec = this.parent.getChainEvolContext(getMolecule(molecId).getPdbChainCode());
+			dist[i] = cec.calcScoreForResidueSet(residues, false);
+		}		
+
+		return dist;
+	}
+	
+	/**
 	 * Returns the number of residues that belong to the surface of the protein but 
 	 * are not member of any interface above minInterfArea 
 	 * @param molecId the molecule id: either {@link #FIRST} or {@link #SECOND}
@@ -212,6 +253,16 @@ public class InterfaceEvolContext implements Serializable {
 	 */
 	public int getNumResiduesNotInInterfaces(int molecId, double minInterfArea, double minAsaForSurface) {
 		return parent.getResiduesNotInInterfaces(getMolecule(molecId).getPdbChainCode(), minInterfArea, minAsaForSurface).size();
+	}
+	
+	/**
+	 * Returns the number of residues that belong to the surface of the protein
+	 * @param molecId the molecule id: either {@link #FIRST} or {@link #SECOND}
+	 * @param minAsaForSurface the minimum ASA for a residue to be considered surface
+	 * @return
+	 */
+	public int getNumSurfaceResidues(int molecId, double minAsaForSurface) {
+		return interf.getMolecule(molecId).getSurfaceResidues(minAsaForSurface).size();
 	}
 	
 	/**

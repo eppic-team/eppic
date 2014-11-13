@@ -7,7 +7,7 @@ import ch.systemsx.sybit.crkwebui.server.db.data.InputWithType;
 import ch.systemsx.sybit.crkwebui.server.db.data.JobStatusDetails;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
-import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
+import ch.systemsx.sybit.shared.model.StatusOfJob;
 import eppic.model.JobDB;
 import eppic.model.PdbInfoDB;
 
@@ -43,10 +43,10 @@ public interface JobDAO
 	/**
 	 * Updates status of selected job.
 	 * @param jobId identifier of the job
-	 * @param status status of the job
+	 * @param stopped status of the job
 	 * @throws DaoException when can not update information in data storage
 	 */
-	public void updateStatusOfJob(String jobId, String status) throws DaoException;
+	public void updateStatusOfJob(String jobId, StatusOfJob stopped) throws DaoException;
 
 	/**
 	 * Removes links between jobs and selected session.
@@ -77,7 +77,7 @@ public interface JobDAO
 	 * @return status of selected job
 	 * @throws DaoException when can not retrieve information from data storage
 	 */
-	public String getStatusForJob(String jobId) throws DaoException;
+	public StatusOfJob getStatusForJob(String jobId) throws DaoException;
 
 	/**
 	 * Retrieves type of the input for specified job identifier.

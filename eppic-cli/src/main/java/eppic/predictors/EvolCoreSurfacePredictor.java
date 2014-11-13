@@ -20,7 +20,9 @@ public class EvolCoreSurfacePredictor implements InterfaceTypePredictor {
 
 	private static final double  MIN_INTERF_FOR_RES_NOT_IN_INTERFACES = 500;
 	// we require 50% more residues in surface than required sample size (changed from 20% to 50%, JD 2014-06-18)
-	private static final double  NUM_RESIDUES_NOT_IN_INTERFACES_TOLERANCE = 1.50; 
+	private static final double  NUM_RESIDUES_NOT_IN_INTERFACES_TOLERANCE = 1.50;
+	// as the straight z-score strategy samples from the whole surface, we should really ask for more residues as a minimum
+	private static final double  NUM_RESIDUES_IN_SURFACE_TOLERANCE = 2.00;
 	
 	// we used to do only 100, but that was too unstable: we want a predictor as deterministic as possible! 10000 seems a good compromise
 	// Tested on DCbio/DCxtal datasets: cs-scores have a mean standard deviation on 10 runs of:
@@ -51,6 +53,8 @@ public class EvolCoreSurfacePredictor implements InterfaceTypePredictor {
 	private InterfaceEvolContext iec;
 	
 	private double callCutoff;
+	
+	private int coreSurfaceScoreStrategy;
 	
 
 	
@@ -174,7 +178,14 @@ public class EvolCoreSurfacePredictor implements InterfaceTypePredictor {
 		
 		int[] unrelRes = generateInterfaceWarnings(molecId);		
 		
-		int numSurfResidues = iec.getNumResiduesNotInInterfaces(molecId, MIN_INTERF_FOR_RES_NOT_IN_INTERFACES, minAsaForSurface);
+		int numSurfResidues = -1;
+		if (coreSurfaceScoreStrategy == EppicParams.CORE_SURFACE_SCORE_STRATEGY_CLASSIC) {
+			numSurfResidues = iec.getNumResiduesNotInInterfaces(molecId, MIN_INTERF_FOR_RES_NOT_IN_INTERFACES, minAsaForSurface);
+		} else if (coreSurfaceScoreStrategy == EppicParams.CORE_SURFACE_SCORE_STRATEGY_ZSCORE) {
+			numSurfResidues = iec.getNumSurfaceResidues(molecId, minAsaForSurface); 
+		} else {
+			LOGGER.error("Unsupported core-surface score strategy! : "+coreSurfaceScoreStrategy);
+		}
 		
 		int interfaceId = iec.getInterface().getId();
 		int memberSerial = molecId + 1;
@@ -204,9 +215,16 @@ public class EvolCoreSurfacePredictor implements InterfaceTypePredictor {
 			veto = CallType.NO_PREDICTION;
 			return false;
 		}
-		if (numSurfResidues<rimCore.getCoreSize()*NUM_RESIDUES_NOT_IN_INTERFACES_TOLERANCE) {
-			callReasonSides[molecId] = "Side "+memberSerial+" has not enough residues in protein surface belonging to no interface, can't calculate "+scoreType+" score";
-			return false;
+		if (coreSurfaceScoreStrategy == EppicParams.CORE_SURFACE_SCORE_STRATEGY_CLASSIC) {
+			if (numSurfResidues<rimCore.getCoreSize()*NUM_RESIDUES_NOT_IN_INTERFACES_TOLERANCE) {
+				callReasonSides[molecId] = "Side "+memberSerial+" has not enough residues in protein surface belonging to no interface, can't calculate "+scoreType+" score";
+				return false;
+			}
+		} else if (coreSurfaceScoreStrategy == EppicParams.CORE_SURFACE_SCORE_STRATEGY_ZSCORE) {
+			if (numSurfResidues<rimCore.getCoreSize()*NUM_RESIDUES_IN_SURFACE_TOLERANCE) {
+				callReasonSides[molecId] = "Side "+memberSerial+" has not enough residues in protein surface, can't calculate "+scoreType+" score";
+				return false;
+			}
 		}
 		if (((double)unrelRes[0]/(double)rimCore.getCoreSize())>EppicParams.MAX_ALLOWED_UNREL_RES) {
 			LOGGER.info("Interface "+interfaceId+", member "+memberSerial+
@@ -217,7 +235,7 @@ public class EvolCoreSurfacePredictor implements InterfaceTypePredictor {
 			return false;
 		}
 		if (((double)unrelRes[1]/(double)numSurfResidues)>EppicParams.MAX_ALLOWED_UNREL_RES) {
-			callReasonSides[molecId] = "Side "+memberSerial+" has not enough reliable residues in protein surface belonging to no interface: " +
+			callReasonSides[molecId] = "Side "+memberSerial+" has not enough reliable residues in protein surface: " +
 					unrelRes[1]+" unreliable residues out of "+
 					numSurfResidues+" residues in surface";			
 			return false;
@@ -234,7 +252,7 @@ public class EvolCoreSurfacePredictor implements InterfaceTypePredictor {
 	private int[] generateInterfaceWarnings(int molecId) {
 		
 		int countUnrelCoreRes = -1;
-		int countUnrelNotInInterfacesRes = -1;
+		int countUnrelSurfaceRes = -1;
 		
 		if (canDoEntropyScoring(molecId)) {
 			List<Residue> unreliableCoreRes = iec.getUnreliableCoreRes(molecId);
@@ -245,8 +263,17 @@ public class EvolCoreSurfacePredictor implements InterfaceTypePredictor {
 				warnings.add(msg);
 			}			
 			
-			List<Residue> unreliableSurfaceRes = iec.getUnreliableNotInInterfacesRes(molecId, MIN_INTERF_FOR_RES_NOT_IN_INTERFACES, minAsaForSurface);
-			countUnrelNotInInterfacesRes = unreliableSurfaceRes.size();
+			List<Residue> unreliableSurfaceRes = new ArrayList<Residue>();
+			if (coreSurfaceScoreStrategy == EppicParams.CORE_SURFACE_SCORE_STRATEGY_CLASSIC) {
+				unreliableSurfaceRes = iec.getUnreliableNotInInterfacesRes(molecId, MIN_INTERF_FOR_RES_NOT_IN_INTERFACES, minAsaForSurface);
+				countUnrelSurfaceRes = unreliableSurfaceRes.size();
+				
+			} else if (coreSurfaceScoreStrategy == EppicParams.CORE_SURFACE_SCORE_STRATEGY_ZSCORE) {
+				unreliableSurfaceRes = iec.getUnreliableSurfaceRes(molecId, minAsaForSurface);
+				countUnrelSurfaceRes = unreliableSurfaceRes.size();
+			} else {
+				LOGGER.error("Unsupported core-surface score strategy! : "+coreSurfaceScoreStrategy);
+			}
 			msg = iec.getReferenceMismatchWarningMsg(unreliableSurfaceRes,"surface");
 			if (msg!=null) {
 				LOGGER.warn(msg);
@@ -254,7 +281,7 @@ public class EvolCoreSurfacePredictor implements InterfaceTypePredictor {
 			}
 		}
 		
-		int[] unrelRes = {countUnrelCoreRes, countUnrelNotInInterfacesRes};
+		int[] unrelRes = {countUnrelCoreRes, countUnrelSurfaceRes};
 		return unrelRes;
 	}
 
@@ -273,22 +300,49 @@ public class EvolCoreSurfacePredictor implements InterfaceTypePredictor {
 		}
 
 		double coreScore = iec.calcScore(rimCore.getCoreResidues(), molecId, false);
-		// we need to check, before trying to sample residues in surface for getting 
-		// the background distribution, whether there are enough residues at all for sampling
-		// it can happen for small proteins that the number of residues in surface is really small (e.g. 3jsd with only 1)
-		int numSurfResNotInInterfaces = iec.getNumResiduesNotInInterfaces(molecId, MIN_INTERF_FOR_RES_NOT_IN_INTERFACES, minAsaForSurface);
+		
+		double[] surfScoreDist = null;
+		
+		// TWO POSSIBLE STRATEGIES SUPPORTED AT THE MOMENT
+		// 1) The "classic" strategy: we compare average of core versus rest of surface, excluding large contacts
+		if (coreSurfaceScoreStrategy == EppicParams.CORE_SURFACE_SCORE_STRATEGY_CLASSIC) {
+			// we need to check, before trying to sample residues in surface for getting 
+			// the background distribution, whether there are enough residues at all for sampling
+			// it can happen for small proteins that the number of residues in surface is really small (e.g. 3jsd with only 1)
+			int numSurfResNotInInterfaces = iec.getNumResiduesNotInInterfaces(molecId, MIN_INTERF_FOR_RES_NOT_IN_INTERFACES, minAsaForSurface);
 
-		LOGGER.info("Interface "+iec.getInterface().getId()+", member "+(molecId+1)+":");
-		LOGGER.info("Residues on surface not belonging to any crystal interface (above "+
-				String.format("%3.0f",MIN_INTERF_FOR_RES_NOT_IN_INTERFACES)+" A2): "+numSurfResNotInInterfaces);			
-		if (numSurfResNotInInterfaces<rimCore.getCoreSize()*NUM_RESIDUES_NOT_IN_INTERFACES_TOLERANCE) {
-			LOGGER.info("There are only "+numSurfResNotInInterfaces+
-					" residues in surface not belonging to any crystal interface (above "+String.format("%3.0f",MIN_INTERF_FOR_RES_NOT_IN_INTERFACES)+
-					" A2). Can't do core-surface scoring for interface "+iec.getInterface().getId()+", member "+(molecId+1));
-			return Double.NaN;
+			LOGGER.info("Interface "+iec.getInterface().getId()+", member "+(molecId+1)+":");
+			LOGGER.info("Residues on surface not belonging to any crystal interface (above "+
+					String.format("%3.0f",MIN_INTERF_FOR_RES_NOT_IN_INTERFACES)+" A2): "+numSurfResNotInInterfaces);			
+			if (numSurfResNotInInterfaces<rimCore.getCoreSize()*NUM_RESIDUES_NOT_IN_INTERFACES_TOLERANCE) {
+				LOGGER.info("There are only "+numSurfResNotInInterfaces+
+						" residues in surface not belonging to any crystal interface (above "+String.format("%3.0f",MIN_INTERF_FOR_RES_NOT_IN_INTERFACES)+
+						" A2). Can't do core-surface scoring for interface "+iec.getInterface().getId()+", member "+(molecId+1));
+				return Double.NaN;
+			}
+			surfScoreDist = iec.getSurfaceScoreDist(molecId, MIN_INTERF_FOR_RES_NOT_IN_INTERFACES, NUM_SAMPLES_SCORE_DIST, rimCore.getCoreSize(), minAsaForSurface);		
+
+		// 2) The straight z-scores approach: we sample from the whole surface
+		} else if (coreSurfaceScoreStrategy == EppicParams.CORE_SURFACE_SCORE_STRATEGY_ZSCORE) {
+			// we need to check, before trying to sample residues in surface for getting 
+			// the background distribution, whether there are enough residues at all for sampling
+			// it can happen for small proteins that the number of residues in surface is really small 
+			int numSurfRes = iec.getNumSurfaceResidues(molecId, minAsaForSurface);
+
+			LOGGER.info("Interface "+iec.getInterface().getId()+", member "+(molecId+1)+":");
+			LOGGER.info("Residues on surface: "+numSurfRes);			
+			if (numSurfRes<rimCore.getCoreSize()*NUM_RESIDUES_IN_SURFACE_TOLERANCE) {
+				LOGGER.info("There are only "+numSurfRes+
+						" residues in surface. Can't do core-surface scoring for interface "+iec.getInterface().getId()+", member "+(molecId+1));
+				return Double.NaN;
+			}
+			surfScoreDist = iec.getSurfaceScoreDist(molecId, NUM_SAMPLES_SCORE_DIST, rimCore.getCoreSize(), minAsaForSurface);		
+
+		} else {
+			LOGGER.error("Unsupported core-surface score strategy! : "+coreSurfaceScoreStrategy);
 		}
-		double[] surfScoreDist = iec.getSurfaceScoreDist(molecId, MIN_INTERF_FOR_RES_NOT_IN_INTERFACES, NUM_SAMPLES_SCORE_DIST, rimCore.getCoreSize(), minAsaForSurface);		
 
+		
 		UnivariateStatistic stat = new Mean();		
 		mean = stat.evaluate(surfScoreDist);
 		stat = new StandardDeviation();
@@ -337,6 +391,10 @@ public class EvolCoreSurfacePredictor implements InterfaceTypePredictor {
 	public void setBsaToAsaCutoff(double bsaToAsaCutoff, double minAsaForSurface) {
 		this.bsaToAsaCutoff = bsaToAsaCutoff;
 		this.minAsaForSurface = minAsaForSurface;
+	}
+	
+	public void setCoreSurfaceScoreStrategy(int coreSurfaceScoreStrategy) {
+		this.coreSurfaceScoreStrategy = coreSurfaceScoreStrategy;
 	}
 	
 }

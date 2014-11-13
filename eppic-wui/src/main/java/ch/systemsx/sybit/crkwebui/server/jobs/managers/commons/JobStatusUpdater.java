@@ -16,7 +16,7 @@ import ch.systemsx.sybit.crkwebui.server.email.managers.EmailSender;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.DeserializationException;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.JobHandlerException;
-import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
+import ch.systemsx.sybit.shared.model.StatusOfJob;
 import eppic.model.PdbInfoDB;
 
 /**
@@ -191,7 +191,7 @@ public class JobStatusUpdater implements Runnable
 	        }
 		}
 
-		jobDAO.updateStatusOfJob(jobStatusDetails.getJobId(), StatusOfJob.ERROR.getName());
+		jobDAO.updateStatusOfJob(jobStatusDetails.getJobId(), StatusOfJob.ERROR);
 		
 		String emailTitle = emailMessageData.getEmailJobErrorTitle().replaceFirst("%s", jobStatusDetails.getInput());
 		String emailMessage = emailMessageData.getEmailJobErrorMessage().replaceFirst("%s", errorMsg);
@@ -210,7 +210,7 @@ public class JobStatusUpdater implements Runnable
 	 */
 	private void handleRunningJob(String jobId) throws DaoException
 	{
-		jobDAO.updateStatusOfJob(jobId, StatusOfJob.RUNNING.getName());
+		jobDAO.updateStatusOfJob(jobId, StatusOfJob.RUNNING);
 	}
 	
 	/**
@@ -220,7 +220,7 @@ public class JobStatusUpdater implements Runnable
 	 */
 	private void handleWaitingJob(String jobId) throws DaoException
 	{
-		jobDAO.updateStatusOfJob(jobId, StatusOfJob.WAITING.getName());
+		jobDAO.updateStatusOfJob(jobId, StatusOfJob.WAITING);
 	}
 	
 	/**
@@ -230,7 +230,7 @@ public class JobStatusUpdater implements Runnable
 	 */
 	private void handleStoppedJob(String jobId) throws DaoException
 	{
-		jobDAO.updateStatusOfJob(jobId, StatusOfJob.STOPPED.getName());
+		jobDAO.updateStatusOfJob(jobId, StatusOfJob.STOPPED);
 	}
 
 

@@ -30,16 +30,16 @@ import ch.systemsx.sybit.crkwebui.server.commons.validators.SessionValidator;
 import ch.systemsx.sybit.crkwebui.server.db.dao.ChainClusterDAO;
 import ch.systemsx.sybit.crkwebui.server.db.dao.InterfaceClusterDAO;
 import ch.systemsx.sybit.crkwebui.server.db.dao.InterfaceDAO;
-import ch.systemsx.sybit.crkwebui.server.db.dao.ResidueDAO;
 import ch.systemsx.sybit.crkwebui.server.db.dao.JobDAO;
 import ch.systemsx.sybit.crkwebui.server.db.dao.PDBInfoDAO;
+import ch.systemsx.sybit.crkwebui.server.db.dao.ResidueDAO;
 import ch.systemsx.sybit.crkwebui.server.db.dao.UserSessionDAO;
 import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.ChainClusterDAOJpa;
 import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.InterfaceClusterDAOJpa;
 import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.InterfaceDAOJpa;
-import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.ResidueDAOJpa;
 import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.JobDAOJpa;
 import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.PDBInfoDAOJpa;
+import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.ResidueDAOJpa;
 import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.UserSessionDAOJpa;
 import ch.systemsx.sybit.crkwebui.server.db.data.InputWithType;
 import ch.systemsx.sybit.crkwebui.server.email.data.EmailData;
@@ -56,21 +56,21 @@ import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.JobHandlerException;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.JobManagerException;
 import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
-import ch.systemsx.sybit.crkwebui.shared.model.SequenceClusterType;
 import ch.systemsx.sybit.crkwebui.shared.model.ChainCluster;
-import ch.systemsx.sybit.crkwebui.shared.model.InputType;
 import ch.systemsx.sybit.crkwebui.shared.model.Interface;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceCluster;
-import ch.systemsx.sybit.crkwebui.shared.model.Residue;
-import ch.systemsx.sybit.crkwebui.shared.model.ResiduesList;
 import ch.systemsx.sybit.crkwebui.shared.model.JobsForSession;
-import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 import ch.systemsx.sybit.crkwebui.shared.model.PDBSearchResult;
+import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingData;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
+import ch.systemsx.sybit.crkwebui.shared.model.Residue;
+import ch.systemsx.sybit.crkwebui.shared.model.ResiduesList;
 import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
-import ch.systemsx.sybit.crkwebui.shared.model.StatusOfJob;
+import ch.systemsx.sybit.crkwebui.shared.model.SequenceClusterType;
 import ch.systemsx.sybit.crkwebui.shared.model.StepStatus;
+import ch.systemsx.sybit.shared.model.InputType;
+import ch.systemsx.sybit.shared.model.StatusOfJob;
 
 import com.google.gwt.user.server.rpc.XsrfProtectedServiceServlet;
 
@@ -453,7 +453,7 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
     @Override
     public ProcessingData getResultsOfProcessing(String jobId) throws Exception
     {
-	String status = null;
+	StatusOfJob status = null;
 
 	JobDAO jobDAO = new JobDAOJpa();
 	status = jobDAO.getStatusForJob(jobId);
@@ -463,7 +463,7 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 	    UserSessionDAO sessionDAO = new UserSessionDAOJpa();
 	    sessionDAO.insertSessionForJob(getThreadLocalRequest().getSession().getId(), jobId, getThreadLocalRequest().getRemoteAddr());
 
-	    if(status.equals(StatusOfJob.FINISHED.getName()))
+	    if(status.equals(StatusOfJob.FINISHED))
 	    {
 		return getResultData(jobId);
 	    }
@@ -478,7 +478,7 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 	}
     }
 
-    private ProcessingInProgressData getStatusData(final String jobId, String status) throws Exception
+    private ProcessingInProgressData getStatusData(final String jobId, StatusOfJob status) throws Exception
     {
 	JobDAO jobDAO = new JobDAOJpa();
 
@@ -493,7 +493,7 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 		statusData = new ProcessingInProgressData();
 
 		statusData.setJobId(jobId);
-		statusData.setStatus(status);
+		statusData.setStatus(status.getName());
 
 		InputWithType inputWithType = jobDAO.getInputWithTypeForJob(jobId);
 		statusData.setInputType(inputWithType.getInputType());
@@ -532,9 +532,9 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 
 		    statusData.setLog(log.toString());
 
-		    if((status.equals(StatusOfJob.RUNNING.getName())) ||
-			    (status.equals(StatusOfJob.WAITING.getName())) ||
-			    (status.equals(StatusOfJob.QUEUING.getName())))
+		    if((status.equals(StatusOfJob.RUNNING)) ||
+			    (status.equals(StatusOfJob.WAITING)) ||
+			    (status.equals(StatusOfJob.QUEUING)))
 		    {
 			statusData.setStep(retrieveCurrentStep(jobId, statusData.getInputName()));
 		    }
@@ -711,7 +711,7 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 
 	    LogHandler.writeToLogFile(logFile, result);
 
-	    jobDAO.updateStatusOfJob(jobId, StatusOfJob.STOPPED.getName());
+	    jobDAO.updateStatusOfJob(jobId, StatusOfJob.STOPPED);
 	}
 	catch(IOException e)
 	{
@@ -738,11 +738,11 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 	String sessionId = getThreadLocalRequest().getSession().getId();
 
 	JobDAO jobDAO = new JobDAOJpa();
-	String status = jobDAO.getStatusForJob(jobId);
+	StatusOfJob status = jobDAO.getStatusForJob(jobId);
 
-	if((status.equals(StatusOfJob.RUNNING.getName())) ||
-		(status.equals(StatusOfJob.WAITING.getName())) ||
-		(status.equals(StatusOfJob.QUEUING.getName())))
+	if((status.equals(StatusOfJob.RUNNING)) ||
+		(status.equals(StatusOfJob.WAITING)) ||
+		(status.equals(StatusOfJob.QUEUING)))
 	{
 	    stopJob(jobId);
 	}

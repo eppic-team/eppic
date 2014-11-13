@@ -11,9 +11,9 @@ import javax.persistence.criteria.Root;
 
 import ch.systemsx.sybit.crkwebui.server.db.EntityManagerHandler;
 import ch.systemsx.sybit.crkwebui.server.db.dao.IPAllowedDAO;
-import ch.systemsx.sybit.crkwebui.server.db.model.IPAllowed;
-import ch.systemsx.sybit.crkwebui.server.db.model.IPAllowed_;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
+import ch.systemsx.sybit.server.db.model.IPAllowed;
+import ch.systemsx.sybit.server.db.model.IPAllowed_;
 
 /**
  * Implementation of IPAllowedDAO.

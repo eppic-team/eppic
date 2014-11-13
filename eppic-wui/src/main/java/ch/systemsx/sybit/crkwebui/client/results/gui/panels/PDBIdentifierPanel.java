@@ -7,7 +7,7 @@ import ch.systemsx.sybit.crkwebui.client.commons.gui.labels.LabelWithTooltip;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.links.LinkWithTooltip;
 import ch.systemsx.sybit.crkwebui.client.commons.util.EscapedStringGenerator;
 import ch.systemsx.sybit.crkwebui.shared.model.ExperimentalWarnings;
-import ch.systemsx.sybit.crkwebui.shared.model.InputType;
+import ch.systemsx.sybit.shared.model.InputType;
 
 import com.google.gwt.user.client.ui.FlexTable;
 import com.sencha.gxt.widget.core.client.container.HorizontalLayoutContainer;
