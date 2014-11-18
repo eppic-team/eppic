@@ -28,20 +28,25 @@ public class ClusterSequences {
 	public static void main(String[] args) throws Exception {
 
 		String help = 
-				"Usage: ClusterSequences \n" +				
+				"Usage: ClusterSequences \n" +		
+				"  -D         : the database name to use\n"+
 				" [-a]        : number of threads (default 1)\n"+
 				" [-s <file>] : a blastclust save file with precomputed blast for all chains\n"+
-				"The database access must be set in file "+DBHandler.CONFIG_FILE_NAME+" in home dir\n";
+				"The database access parameters must be set in file "+DBHandler.CONFIG_FILE_NAME+" in home dir\n";
 		
 		
 		int numThreads = 1;
-		
 		File saveFile = null;
+		String dbName = null;
 
-		Getopt g = new Getopt("ClusterSequences", args, "a:s:h?");
+		
+		Getopt g = new Getopt("ClusterSequences", args, "D:a:s:h?");
 		int c;
 		while ((c = g.getopt()) != -1) {
-			switch(c){			
+			switch(c){
+			case 'D':
+				dbName = g.getOptarg();
+				break;
 			case 'a':
 				numThreads = Integer.parseInt(g.getOptarg());
 				break;
@@ -59,8 +64,12 @@ public class ClusterSequences {
 			}
 		}
 		
+		if (dbName == null) {
+			System.err.println("A database name must be provided with -D");
+			System.exit(1);
+		}
 		
-		DBHandler dbh = new DBHandler(false);
+		DBHandler dbh = new DBHandler(dbName);
 		
 		boolean canDoUpdate = true;
 		

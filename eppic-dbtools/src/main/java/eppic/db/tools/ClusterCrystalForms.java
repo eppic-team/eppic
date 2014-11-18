@@ -34,6 +34,7 @@ public class ClusterCrystalForms {
 
 		String help = 
 				"Usage: ClusterCrystalForms \n" +
+				" -D : the database name to use\n"+
 				" -i : PDB code and chain e.g. 1abcA, all members in its same sequence cluster will be clustered\n"+
 				" -l : sequence cluster level (default "+DEFAULT_SEQ_CLUSTER_LEVEL+")\n"+
 				" -c : contact overlap score cutoff (default "+String.format("%3.1f",DEFAULT_CO_CUTOFF)+")\n"+
@@ -43,7 +44,7 @@ public class ClusterCrystalForms {
 				" -f : file to write the crystal form cluster identifiers (only used in -A)\n"+
 				" -F : file to write the global interface cluster identifiers (only used in -A)\n"+
 				" -d : print some debug output (full lattice comparison and interfaces comparison matrices)\n"+
-				"The database access must be set in file "+DBHandler.CONFIG_FILE_NAME+" in home dir\n";
+				"The database access parameters must be set in file "+DBHandler.CONFIG_FILE_NAME+" in home dir\n";
 
 		String pdbString = null;
 		
@@ -55,12 +56,16 @@ public class ClusterCrystalForms {
 		boolean calcAllClusters = false;
 		File cfClustersFile = null;
 		File interfClustersFile = null;
+		String dbName = null;
 		
 		
-		Getopt g = new Getopt("ClusterCrystalForms", args, "i:c:a:l:s:Af:F:dh?");
+		Getopt g = new Getopt("ClusterCrystalForms", args, "D:i:c:a:l:s:Af:F:dh?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
+			case 'D':
+				dbName = g.getOptarg();
+				break;
 			case 'i':
 				pdbString = g.getOptarg();
 				break;
@@ -99,6 +104,10 @@ public class ClusterCrystalForms {
 			}
 		}
 		
+		if (dbName == null) {
+			System.err.println("A database name must be provided with -D");
+			System.exit(1);
+		}
 		
 		if (calcAllClusters == false && pdbString == null) {
 			System.err.println("A PDB code/chain code have to be provided with -i");
@@ -116,7 +125,7 @@ public class ClusterCrystalForms {
 		}
 
 		
-		DBHandler dbh = new DBHandler(false);	
+		DBHandler dbh = new DBHandler(dbName);	
 
 		PrintWriter cfcPw = null;
 		PrintWriter icPw = null;

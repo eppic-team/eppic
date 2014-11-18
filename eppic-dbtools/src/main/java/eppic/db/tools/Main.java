@@ -29,7 +29,7 @@ public class Main {
 
 	private static void printUsageAndExit() {
 		System.err
-				.println("The first parameter must be the name of a tool.\n Available tools: ClusterCrystalForms, ClusterSequences, CompareLattices, UploadToDb, UserJobDBHandler");
+				.println("The first parameter must be the name of a tool.\n Available tools: ClusterCrystalForms, ClusterSequences, CompareLattices, UploadToDb, UserJobCopier");
 		System.exit(1);
 	}
 
