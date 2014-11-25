@@ -14,6 +14,7 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 
 import owl.core.sequence.Sequence;
+import owl.core.structure.AAAlphabet;
 import owl.core.structure.AminoAcid;
 
 /**
@@ -183,8 +184,8 @@ public class FindEvolContext {
 			throw new EppicException(null, "Given file "+inputFile+" does not exist!", true);
 		}
 
-		if (!AminoAcid.isValidNumGroupsReducedAlphabet(params.getReducedAlphabet())) {
-			throw new EppicException(null, "Invalid number of amino acid groups specified ("+params.getReducedAlphabet()+")", true);
+		if (!AAAlphabet.isValidAlphabetIdentifier((params.getAlphabet().getNumLetters()))) {
+			throw new EppicException(null, "Invalid number of amino acid groups specified ("+params.getAlphabet().getNumLetters()+")", true);
 		}
 
 		if (params.getBaseName()==null) {

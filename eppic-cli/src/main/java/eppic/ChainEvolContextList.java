@@ -17,7 +17,6 @@ import owl.core.runners.blast.BlastException;
 import owl.core.sequence.HomologList;
 import owl.core.sequence.Sequence;
 import owl.core.sequence.UniprotVerMisMatchException;
-import owl.core.structure.AminoAcid;
 import owl.core.structure.ChainCluster;
 import owl.core.structure.PdbAsymUnit;
 import owl.core.structure.PdbChain;
@@ -385,7 +384,7 @@ public class ChainEvolContextList implements Serializable {
 				continue;
 			}
 			
-			chainEvCont.computeEntropies(params.getReducedAlphabet());
+			chainEvCont.computeEntropies(params.getAlphabet());
 		}
 	}
 	
