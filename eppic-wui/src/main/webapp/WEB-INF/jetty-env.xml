@@ -12,7 +12,7 @@
 				<Set name="password">edb+1153</Set>
 				<Set name="minPoolSize">5</Set>
 				<Set name="maxPoolSize">20</Set>
-				<Set name="checkoutTimeout">1800</Set>
+				<Set name="maxIdleTime">1800</Set>
 				<Set name="maxStatements">50</Set>
 			</New>
 		</Arg>
