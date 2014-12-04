@@ -17,16 +17,21 @@ public class AlphabetOptimisation {
 	public static void main(String[] args) throws Exception {
 
 		String help = 
-				"Usage: AlphabetOptimisation \n" +
+				"Usage: AlphabetOptimisation\n" +
+				" -D : the database name to use\n"+
 				" -i : a list file of PDB codes\n"+
-				"The database access must be set in file "+DBHandler.CONFIG_FILE_NAME+" in home dir\n";
+				"The database access must be set in file " + DBHandler.CONFIG_FILE_NAME + " in home dir\n";
 
+		String dbName = null;
 		String listFileName = null;
 		
-		Getopt g = new Getopt("ClusterCrystalForms", args, "i:h?");
+		Getopt g = new Getopt("AlphabetOptimisation", args, "D:i:h?");
 		int c;
 		while ((c = g.getopt()) != -1) {
-			switch(c){
+			switch (c) {
+			case 'D':
+				dbName = g.getOptarg();
+				break;
 			case 'i':
 				listFileName = g.getOptarg();
 				break;
@@ -53,14 +58,14 @@ public class AlphabetOptimisation {
 			System.exit(1);
 		}
 		
-		DBHandler dbh = new DBHandler(false);
+		DBHandler dbh = new DBHandler(dbName);
 		
 		List<String> pdbCodes = readList(listFile);
 
 		List<PdbInfoDB> pdbInfos = dbh.deserializePdbList(pdbCodes);
 		
-		for (PdbInfoDB pdbInfo: pdbInfos) {
-			System.out.println(pdbInfo.getPdbCode()+" "+pdbInfo.getChainClusters().size()+" chains");
+		for (PdbInfoDB pdbInfo : pdbInfos) {
+			System.out.println(pdbInfo.getPdbCode() + " " + pdbInfo.getChainClusters().size() + " chains");
 		}
 		
 		
@@ -70,11 +75,11 @@ public class AlphabetOptimisation {
 		List<String> pdbs = new ArrayList<String>();
 		BufferedReader br = new BufferedReader(new FileReader(file));
 		String line;
-		while ((line=br.readLine())!=null) {
+		while ((line = br.readLine()) != null) {
 			if (line.startsWith("#")) continue;
 			if (line.trim().isEmpty()) continue;
 			String pdbCode = line.trim(); 
-			if (pdbCode.length()==4) pdbs.add(pdbCode);
+			if (pdbCode.length() == 4) pdbs.add(pdbCode);
 		}
 		br.close();
 		return pdbs;
