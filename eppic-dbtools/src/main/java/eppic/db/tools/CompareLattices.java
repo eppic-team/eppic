@@ -17,13 +17,14 @@ public class CompareLattices {
 
 		String help = 
 				"Usage: CompareLattices \n" +
+				" -D : the database name to use\n"+
 				" -f : first PDB code\n" +
 				" -s : second PDB code\n"+
 				" -c : contact overlap score cutoff\n"+
 				" -a : minimum area cutoff\n"+
 				" -l : sequence cluster level to be used\n"+
 				" -d : print some debug output\n"+
-				"The database access must be set in file "+DBHandler.CONFIG_FILE_NAME+" in home dir\n";
+				"The database access parameters must be set in file "+DBHandler.CONFIG_FILE_NAME+" in home dir\n";
 		
 		boolean debug = false;
 		
@@ -34,11 +35,16 @@ public class CompareLattices {
 		double minArea = DEFAULT_MIN_AREA;
 		SeqClusterLevel seqClusterLevel = DEFAULT_SEQ_CLUSTER_LEVEL;
 		
+		String dbName = null;
 		
-		Getopt g = new Getopt("CompareLattices", args, "f:s:c:a:l:dh?");
+		
+		Getopt g = new Getopt("CompareLattices", args, "D:f:s:c:a:l:dh?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
+			case 'D':
+				dbName = g.getOptarg();
+				break;
 			case 'f':
 				pdbCode1 = g.getOptarg();
 				break;
@@ -68,6 +74,11 @@ public class CompareLattices {
 			}
 		}
 		
+		if (dbName == null) {
+			System.err.println("A database name must be provided with -D");
+			System.exit(1);
+		}
+		
 		
 		if (pdbCode1 == null || pdbCode2 == null) {
 			System.err.println("At least options -f and -s are needed");
@@ -75,7 +86,7 @@ public class CompareLattices {
 		}
 		
 		
-		DBHandler dbh = new DBHandler(false);	
+		DBHandler dbh = new DBHandler(dbName);	
 		
 		PdbInfo pdb1 = new PdbInfo(dbh.deserializePdb(pdbCode1));
 		PdbInfo pdb2 = new PdbInfo(dbh.deserializePdb(pdbCode2));

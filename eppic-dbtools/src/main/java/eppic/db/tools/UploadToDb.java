@@ -29,7 +29,7 @@ public class UploadToDb {
 		
 		String help = 
 				"Usage: UploadToDB\n" +
-				"Uploads a set of eppic output serialized files to database specified in "+DBHandler.CONFIG_FILE_NAME+" file in home dir\n" +
+				"  -D           : the database name to use\n"+
 				"  -d <dir>     : root directory of eppic output files with subdirectories as PDB codes \n" +
 				" [-l]          : if specified subdirs under root dir (-d) are considered to be in PDB divided layout\n"+
 				"                 (this affects the behaviour of -d and -f).\n"+
@@ -39,7 +39,8 @@ public class UploadToDb {
 				" OPERATION MODE\n" +
 				" Default operation: only entries not already present in database will be inserted \n"+
 				" [-F]          : forces everything chosen to be inserted, deletes previous entries if present\n" +
-				" [-r]          : removes the specified entries from database\n";
+				" [-r]          : removes the specified entries from database\n"+
+				"The database access parameters must be set in file "+DBHandler.CONFIG_FILE_NAME+" in home dir\n";
 
 		boolean isDividedLayout = false;
 		
@@ -50,10 +51,15 @@ public class UploadToDb {
 		boolean modeEverything = false;
 		boolean modeRemove = false;
 		
-		Getopt g = new Getopt("UploadToDB", args, "d:lf:Frh?");
+		String dbName = null;
+		
+		Getopt g = new Getopt("UploadToDB", args, "D:d:lf:Frh?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
+			case 'D':
+				dbName = g.getOptarg();
+				break;
 			case 'd':
 				jobDirectoriesRoot = new File(g.getOptarg());
 				break;
@@ -84,6 +90,11 @@ public class UploadToDb {
 			}
 		}
 
+		if (dbName == null) {
+			System.err.println("A database name must be provided with -D");
+			System.exit(1);
+		}
+		
 		if (jobDirectoriesRoot == null || ! jobDirectoriesRoot.isDirectory() ){
 			System.err.println("\n\nHey Jim, Output Directory not specified correctly! \n");
 			System.err.println(help);
@@ -125,7 +136,7 @@ public class UploadToDb {
 			System.out.println("Directories under "+jobDirectoriesRoot+" will be considered to be PDB codes directly, no PDB divided layout will be used. ");
 		}
 		
-		dbh = new DBHandler(false);
+		dbh = new DBHandler(dbName);
 		
 		// Start the Process
 		int i = -1;

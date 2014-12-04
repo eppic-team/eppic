@@ -213,6 +213,11 @@
 	font-size:12px;
 }
 
+.eppic-operator-tooltip{
+	font-size:12px;
+	white-space: nowrap;
+}
+
 .eppic-results-grid-common-cells{
 	text-align: center;
 	font-size: 14px;

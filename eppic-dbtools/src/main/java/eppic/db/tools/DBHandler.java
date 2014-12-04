@@ -22,6 +22,7 @@ import java.util.TreeSet;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
+import javax.persistence.PersistenceException;
 import javax.persistence.PersistenceUnit;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -58,29 +59,30 @@ public class DBHandler {
 	/**
 	 * Constructor
 	 */
-	public DBHandler(boolean useOfflineDbName){
+	public DBHandler(String dbName) {
 
 		File configurationFile = new File(System.getProperty("user.home"), CONFIG_FILE_NAME);
-		Map<String, String> properties = createDatabaseProperties(configurationFile, useOfflineDbName);
+		Map<String, String> properties = createDatabaseProperties(configurationFile, dbName);
 		
 		try {
 			this.emf = Persistence.createEntityManagerFactory(PERSISTENCE_UNIT_NAME, properties);
 
-		} catch (Exception e){	
-			e.printStackTrace();
+		} catch (PersistenceException e){	
+			//e.printStackTrace();
 			System.err.println(e.getMessage());
 			System.err.println("Error initializing Entity Manager Factory");
-			System.err.println("Please check if the database is really present and that the logging parameters are correct in file "+configurationFile);
+			System.err.println("Please check that the database '"+dbName+"' is really present and that the login parameters are correct in file "+configurationFile);
 			System.exit(1);
 		}
 	}
 
-	private Map<String, String> createDatabaseProperties(File configurationFile, boolean useOfflineDbName) {
+	private Map<String, String> createDatabaseProperties(File configurationFile, String dbName) {
 		try {
 			Properties properties = new Properties();
 			properties.load(new FileInputStream(configurationFile));
 			Map<String, String> map = new HashMap<>();
 			map.put("javax.persistence.jdbc.driver", "com.mysql.jdbc.Driver");
+			map.put("javax.persistence.nonJtaDataSource", "");
 			map.put("hibernate.c3p0.min_size", "5");
 			map.put("hibernate.c3p0.max_size", "20");
 			map.put("hibernate.c3p0.timeout", "1800");
@@ -88,7 +90,7 @@ public class DBHandler {
 			
 			String port = "3306"; // default mysql port
 			String host = null;
-			String dbName = null;
+			
 			String user = null;
 			String pwd = null;
 			
@@ -112,27 +114,13 @@ public class DBHandler {
 				throw new IOException("Missing property 'host' in config file "+configurationFile);
 			}
 			
-			if (!useOfflineDbName) {
-				if (properties.getProperty("onlinedb")!=null && !properties.getProperty("onlinedb").isEmpty()) {			
-					dbName = properties.getProperty("onlinedb").trim();
-				} else {
-					throw new IOException("Missing property 'onlinedb' in config file "+configurationFile);
-				}
-			} else {
-				if (properties.getProperty("offlinedb")!=null && !properties.getProperty("offlinedb").isEmpty()) {			
-					dbName = properties.getProperty("offlinedb").trim();
-				} else {
-					throw new IOException("Missing property 'offlinedb' in config file "+configurationFile);
-				}
-			}
-			
 			System.out.println("Using database "+dbName+" in host "+host);
 			
 			String url = "jdbc:mysql://"+host+":"+port+"/"+dbName;
 			map.put("javax.persistence.jdbc.url", url);
 			map.put("javax.persistence.jdbc.user", user); 
 			map.put("javax.persistence.jdbc.password", pwd);
-
+			
 			return map;
 			
 		} catch (IOException e) {

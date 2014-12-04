@@ -6,6 +6,7 @@
 	<persistence-unit name="eppicjpa">
 		<description>Persistence unit for the EPPIC WUI application</description>
 		<provider>org.hibernate.ejb.HibernatePersistence</provider>
+		<non-jta-data-source>java:comp/env/jdbc/eppicDB</non-jta-data-source>
 		<class>ch.systemsx.sybit.server.db.model.IPForbidden</class>
 		<class>ch.systemsx.sybit.server.db.model.IPAllowed</class>
 		<class>ch.systemsx.sybit.server.db.model.DataDownloadTracking</class>
@@ -16,16 +17,4 @@
 		</properties>
 	</persistence-unit>
 
-	<persistence-unit name="eppic-offline-jpa">
-		<description>Persistence unit for the EPPIC WUI application - offline backup database</description>
-		<provider>org.hibernate.ejb.HibernatePersistence</provider>
-		<class>ch.systemsx.sybit.server.db.model.IPForbidden</class>
-		<class>ch.systemsx.sybit.server.db.model.IPAllowed</class>
-		<class>ch.systemsx.sybit.server.db.model.DataDownloadTracking</class>
-		<validation-mode>NONE</validation-mode>
-		<properties>
-			<property name="hibernate.show_sql" value="false" />
-			<property name="hibernate.hbm2ddl.auto" value="update" />
-		</properties>
-	</persistence-unit>
 </persistence>

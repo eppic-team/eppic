@@ -7,12 +7,12 @@
 		<Arg>
 			<New class="com.mchange.v2.c3p0.ComboPooledDataSource">
 				<Set name="driverClass">com.mysql.jdbc.Driver</Set>
-				<<Set name="jdbcUrl">jdbc:mysql://localhost:3306/eppic_2014_06</Set>
+				<Set name="jdbcUrl">jdbc:mysql://localhost:3306/eppic_2014_06</Set>
 				<Set name="user">root</Set>
 				<Set name="password">edb+1153</Set>
 				<Set name="minPoolSize">5</Set>
 				<Set name="maxPoolSize">20</Set>
-				<Set name="checkoutTimeout">1800</Set>
+				<Set name="maxIdleTime">1800</Set>
 				<Set name="maxStatements">50</Set>
 			</New>
 		</Arg>
