@@ -4,8 +4,9 @@ import java.io.File;
 import java.util.List;
 import java.util.TreeMap;
 
-import owl.core.connections.PiqsiAnnotation;
-import owl.core.connections.PiqsiConnection;
+import eppic.commons.piqsi.PiqsiAnnotation;
+import eppic.commons.piqsi.PiqsiConnection;
+
 
 public class CompareToPiqsi {
 

@@ -11,7 +11,8 @@ import java.util.TreeSet;
 
 import javax.vecmath.Matrix4d;
 
-import owl.core.structure.SpaceGroup;
+import org.biojava.bio.structure.xtal.SpaceGroup;
+
 import eppic.model.InterfaceClusterDB;
 import eppic.model.InterfaceDB;
 

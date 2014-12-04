@@ -9,18 +9,18 @@ import gnu.getopt.Getopt;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 import java.util.TreeMap;
 
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
+import org.biojava.bio.structure.Group;
+import org.biojava.bio.structure.asa.GroupAsa;
+import org.biojava.bio.structure.contact.StructureInterface;
+import org.biojava.bio.structure.contact.StructureInterfaceList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import owl.core.structure.ChainInterface;
-import owl.core.structure.ChainInterfaceList;
-import owl.core.structure.PdbChain;
-import owl.core.structure.Residue;
+
 
 /**
  * Executable class to print ASA and entropies of a dataset in 
@@ -33,8 +33,10 @@ public class EntropyVsBurial {
 
 	private static final String PROGRAM_NAME = "EntropyVsBurial";
 	
-	private static final Logger ROOTLOGGER = Logger.getRootLogger();
+	private static final Logger LOGGER = LoggerFactory.getLogger(EntropyVsBurial.class);
 
+	private static final int FIRST = 0;
+	private static final int SECOND = 1;
 
 	private static File bioDir    = null;
 	private static File xtalDir   = null;
@@ -95,12 +97,6 @@ public class EntropyVsBurial {
 
 		
 
-		// initialising logging
-		ConsoleAppender errorAppender = new ConsoleAppender(new PatternLayout("%5p - %m%n"),ConsoleAppender.SYSTEM_ERR);
-		errorAppender.setThreshold(Level.WARN);
-		ROOTLOGGER.addAppender(errorAppender);
-
-		
 		if (bioDir!=null) {
 			
 			TreeMap<String,List<Integer>> bioToAnalyse = Utils.readListFile(bioList);
@@ -125,24 +121,24 @@ public class EntropyVsBurial {
 			File chainevolcontextdatFile = new File(dir,pdbCode+".chainevolcontext.dat");
 			File interfdatFile = new File(dir,pdbCode+".interfaces.dat");
 			if (!chainevolcontextdatFile.exists() && !interfdatFile.exists()) {
-				ROOTLOGGER.warn("Both chainevolcontext.dat and interf.dat files missing for "+pdbCode);
+				LOGGER.warn("Both chainevolcontext.dat and interf.dat files missing for "+pdbCode);
 				continue; // failed predictions
 			} else if (!chainevolcontextdatFile.exists()) {
-				ROOTLOGGER.warn("chainevolcontext.dat missing but interf.dat file present for "+pdbCode);
+				LOGGER.warn("chainevolcontext.dat missing but interf.dat file present for "+pdbCode);
 				continue;
 			} else if (!interfdatFile.exists()) {
-				ROOTLOGGER.warn("interf.dat missing but chainevolcontext.dat file present for "+pdbCode);
+				LOGGER.warn("interf.dat missing but chainevolcontext.dat file present for "+pdbCode);
 				continue;				
 			}
 
-			ChainInterfaceList cil = Utils.readChainInterfaceList(interfdatFile);
+			StructureInterfaceList cil = Utils.readChainInterfaceList(interfdatFile);
 			ChainEvolContextList cecl = Utils.readChainEvolContextList(chainevolcontextdatFile);
 			InterfaceEvolContextList iecList = new InterfaceEvolContextList(cil, cecl);
 			
 			
 			for (int id:toAnalyse.get(pdbCode)) {
 				
-				ChainInterface interf = cil.get(id);
+				StructureInterface interf = cil.get(id);
 				InterfaceEvolContext iec = iecList.get(id-1);
 				ChainEvolContext cec1 = iec.getChainEvolContext(0);
 				ChainEvolContext cec2 = iec.getChainEvolContext(1);
@@ -151,39 +147,44 @@ public class EntropyVsBurial {
 				if (cec1.getNumHomologs()<10 || cec2.getNumHomologs()<10) continue;
 
 
-				printTabular(interf.getFirstMolecule(),cec1,truth);
+				printTabular(FIRST, interf, cec1, truth, pdbCode);
 				
 				if (cec2.getRepresentativeChainCode().equals(cec1.getRepresentativeChainCode())) continue;
 				
-				printTabular(interf.getSecondMolecule(),cec2,truth);
+				printTabular(SECOND, interf, cec2, truth, pdbCode);
 				
 			}
 		}
 
 	}
 	
-	private static void printTabular(PdbChain chain, ChainEvolContext cec, CallType truth) {
+	private static void printTabular(int molecId, StructureInterface interf, ChainEvolContext cec, CallType truth, String pdbCode) {
 		
 		System.out.printf("%s\t%s\t%s\t%s\t%6s\t%4s\t%6s\t%4s\n","pdb","resser","pdbser","res","asa","rsa","bsa","s"); 
-				
-		String pdbCode = chain.getParent().getPdbCode();
+		Collection<GroupAsa> groupAsas = null;
+		if (molecId==FIRST) groupAsas = interf.getFirstGroupAsas().values();
+		if (molecId==SECOND) groupAsas = interf.getSecondGroupAsas().values();
 		
-		for (Residue res:chain) {
-			double asa = res.getAsa();
-			double bsa = res.getBsa();
-			double rsa = res.getRsa();
+		for (GroupAsa groupAsa:groupAsas) {
+			double asa = groupAsa.getAsaU();
+			double bsa = groupAsa.getBsa();
+			double rsa = groupAsa.getRelativeAsaU();
 			int uniprotPos = cec.getQueryUniprotPosForPDBPos(res.getSerial());
 			if (uniprotPos==-1) continue;
 			double entropy = cec.getConservationScores().get(uniprotPos);
-			
+
 			// the idea is to print the "real" ASAs, i.e. if it is more than a monomer, we have to print the ASAs in the complex
 			if (truth==CallType.BIO) {
 				asa = asa - bsa;
 			}
-			
-			System.out.printf("%s\t%d\t%s\t%s\t%6.2f\t%4.2f\t%6.2f\t%5.2f\n",
-					pdbCode,res.getSerial(),res.getPdbSerial(),res.getLongCode(),asa,rsa,bsa,entropy);
+			Group g = groupAsa.getGroup();
+
+			System.out.printf("%s\t%s\t%s\t%6.2f\t%4.2f\t%6.2f\t%5.2f\n",
+					pdbCode,g.getResidueNumber().toString(),g.getPDBName(),asa,rsa,bsa,entropy);
+
 		}
+
+
 	}
 	
 }

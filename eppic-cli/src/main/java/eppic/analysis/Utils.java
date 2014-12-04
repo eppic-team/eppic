@@ -8,9 +8,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
 
+import org.biojava.bio.structure.contact.StructureInterfaceList;
+
 import eppic.ChainEvolContextList;
-import owl.core.structure.ChainInterfaceList;
-import owl.core.util.Goodies;
+import eppic.commons.util.Goodies;
 
 public class Utils {
 
@@ -50,8 +51,8 @@ public class Utils {
 		return map;
 	}
 	
-	public static ChainInterfaceList readChainInterfaceList(File file) throws IOException, ClassNotFoundException {
-		return (ChainInterfaceList)Goodies.readFromFile(file);
+	public static StructureInterfaceList readChainInterfaceList(File file) throws IOException, ClassNotFoundException {
+		return (StructureInterfaceList)Goodies.readFromFile(file);
 	}
 	
 	public static ChainEvolContextList readChainEvolContextList(File file) throws IOException, ClassNotFoundException {

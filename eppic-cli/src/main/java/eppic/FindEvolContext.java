@@ -1,5 +1,7 @@
 package eppic;
 
+import eppic.commons.sequence.Sequence;
+import eppic.commons.sequence.AminoAcid;
 import gnu.getopt.Getopt;
 
 import java.io.File;
@@ -7,14 +9,9 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.FileAppender;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import owl.core.sequence.Sequence;
-import owl.core.structure.AminoAcid;
 
 /**
  * An executable class that given a FASTA file with sequences
@@ -25,20 +22,13 @@ import owl.core.structure.AminoAcid;
  */
 public class FindEvolContext {
 
-	private static final Logger ROOTLOGGER = Logger.getRootLogger();
+	private static final Logger LOGGER = LoggerFactory.getLogger(FindEvolContext.class);
 	
 	private static File inputFile;
 	private static ChainEvolContextList cecs;
 	private static EppicParams params;
 	
 	public static void main(String[] args) throws Exception {
-
-
-		// initialising error logging to stderr
-		ConsoleAppender errorAppender = new ConsoleAppender(new PatternLayout("%5p - %m%n"),ConsoleAppender.SYSTEM_ERR);
-		errorAppender.setThreshold(Level.ERROR);
-		ROOTLOGGER.addAppender(errorAppender);
-		
 
 		params = new EppicParams();
 		loadConfigFile();		
@@ -47,7 +37,7 @@ public class FindEvolContext {
 		// initialising info logging to log file
 		FileAppender logAppender = new FileAppender(new PatternLayout("%d{ABSOLUTE} %5p - %m%n"),params.getOutDir()+"/"+params.getBaseName()+".log",false);
 		logAppender.setThreshold(Level.INFO);
-		ROOTLOGGER.addAppender(logAppender);
+		LOGGER.addAppender(logAppender);
 
 		
 		
@@ -92,19 +82,19 @@ public class FindEvolContext {
 		File userConfigFile = new File(System.getProperty("user.home"),EppicParams.CONFIG_FILE_NAME);  
 		try {
 			if (userConfigFile.exists()) {
-				ROOTLOGGER.info("Loading user configuration file " + userConfigFile);
+				LOGGER.info("Loading user configuration file " + userConfigFile);
 				params.readConfigFile(userConfigFile);
 				params.checkConfigFileInput();
 			} else {
-				ROOTLOGGER.error("No config file could be read at "+userConfigFile+
+				LOGGER.error("No config file could be read at "+userConfigFile+
 						". Please set one in order to be able to read blast directories and blast/t_coffee/clustalo binaries.");
 				System.exit(1);
 			}
 		} catch (IOException e) {
-			ROOTLOGGER.fatal("Error while reading from config file: " + e.getMessage());
+			LOGGER.error("Error while reading from config file: " + e.getMessage());
 			System.exit(1);
 		} catch (EppicException e) {
-			ROOTLOGGER.error(e.getMessage());
+			LOGGER.error(e.getMessage());
 			System.exit(1);
 		}
 

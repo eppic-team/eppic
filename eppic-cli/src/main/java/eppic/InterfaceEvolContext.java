@@ -8,12 +8,11 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.apache.commons.math.random.RandomDataImpl;
+import org.biojava.bio.structure.Group;
+import org.biojava.bio.structure.contact.StructureInterface;
 
 import eppic.predictors.EvolCoreRimPredictor;
 import eppic.predictors.EvolCoreSurfacePredictor;
-import owl.core.structure.ChainInterface;
-import owl.core.structure.PdbChain;
-import owl.core.structure.Residue;
 
 public class InterfaceEvolContext implements Serializable {
 
@@ -25,7 +24,7 @@ public class InterfaceEvolContext implements Serializable {
 
 	private InterfaceEvolContextList parent;
 	
-	private ChainInterface interf;
+	private StructureInterface interf;
 
 	private EvolCoreRimPredictor evolCoreRimPredictor;
 	private EvolCoreSurfacePredictor evolCoreSurfacePredictor;
@@ -33,21 +32,21 @@ public class InterfaceEvolContext implements Serializable {
 
 	
 	
-	public InterfaceEvolContext(ChainInterface interf, InterfaceEvolContextList parent) {
+	public InterfaceEvolContext(StructureInterface interf, InterfaceEvolContextList parent) {
 		this.interf = interf;
 		this.parent = parent;
 	}
 
-	public ChainInterface getInterface() {
+	public StructureInterface getInterface() {
 		return interf;
 	}
 	
 	public ChainEvolContext getFirstChainEvolContext() {
-		return parent.getChainEvolContext(interf.getFirstMolecule().getPdbChainCode());
+		return parent.getChainEvolContext(interf.getMoleculeIds().getFirst());
 	}
 	
 	public ChainEvolContext getSecondChainEvolContext() {
-		return parent.getChainEvolContext(interf.getSecondMolecule().getPdbChainCode());
+		return parent.getChainEvolContext(interf.getMoleculeIds().getSecond());
 	}
 	
 	public ChainEvolContext getChainEvolContext(int molecId) {
@@ -82,39 +81,14 @@ public class InterfaceEvolContext implements Serializable {
 		return null;		
 	}
 	
-	/**
-	 * Finds all unreliable core residues and returns them in a list.
-	 * Unreliable are all residues for which the alignment from reference UniProt to PDB doesn't match
-	 * @param molecId
-	 * @return
-	 */
-	public List<Residue> getUnreliableCoreRes(int molecId) {
-		List<Residue> coreResidues = getInterface().getRimCore(molecId).getCoreResidues();
-		return getReferenceMismatchResidues(coreResidues, molecId);
-	}
-	
-	/**
-	 * Finds all unreliable rim residues and returns them in a list.
-	 * Unreliable are all residues for which the alignment from reference UniProt to PDB doesn't match
-	 * @param molecId
-	 * @return
-	 */
-	public List<Residue> getUnreliableRimRes(int molecId) {
-		List<Residue> rimResidues = getInterface().getRimCore(molecId).getRimResidues();
-		return getReferenceMismatchResidues(rimResidues, molecId);
-	}
-
-	/**
-	 * Finds all unreliable residues that belong to no crystal interface above given minInterfArea and returns them in a list.
-	 * Unreliable are all residues for which the alignment from reference UniProt to PDB doesn't match
-	 * @param molecId
-	 * @param minInterfArea
-	 * @param minAsaForSurface
-	 * @return
-	 */
-	public List<Residue> getUnreliableNotInInterfacesRes(int molecId, double minInterfArea, double minAsaForSurface) {
-		List<Residue> notInInterfacesResidues = parent.getResiduesNotInInterfaces(getMolecule(molecId).getPdbChainCode(), minInterfArea, minAsaForSurface);
-		return getReferenceMismatchResidues(notInInterfacesResidues, molecId);
+	private String getChainId (int molecId) {
+		if (molecId==FIRST) {
+			return getInterface().getMoleculeIds().getFirst();
+		}
+		if (molecId==SECOND) {
+			return getInterface().getMoleculeIds().getSecond();
+		}
+		return null;	
 	}
 	
 	/**
@@ -124,8 +98,13 @@ public class InterfaceEvolContext implements Serializable {
 	 * @param minAsaForSurface
 	 * @return
 	 */
-	public List<Residue> getUnreliableSurfaceRes(int molecId, double minAsaForSurface) {
-		List<Residue> surfResidues = interf.getMolecule(molecId).getSurfaceResidues(minAsaForSurface);
+	public List<Group> getUnreliableSurfaceRes(int molecId, double minAsaForSurface) {
+		List<Group> surfResidues = null;
+		if (molecId==FIRST) {
+			surfResidues = interf.getSurfaceResidues(minAsaForSurface).getFirst();
+		} else if (molecId == SECOND) {
+			surfResidues = interf.getSurfaceResidues(minAsaForSurface).getSecond();
+		}
 		return getReferenceMismatchResidues(surfResidues, molecId);
 	}
 	
@@ -137,9 +116,9 @@ public class InterfaceEvolContext implements Serializable {
 	 * @param molecId
 	 * @return
 	 */
-	public List<Residue> getReferenceMismatchResidues(List<Residue> residues, int molecId) {
-		List<Residue> unreliableResidues = new ArrayList<Residue>();
-		for (Residue res:residues){
+	public List<Group> getReferenceMismatchResidues(List<Group> residues, int molecId) {
+		List<Group> unreliableResidues = new ArrayList<Group>();
+		for (Group res:residues){
 			if (isReferenceMismatch(res, molecId)) {
 				unreliableResidues.add(res);
 			}
@@ -154,7 +133,7 @@ public class InterfaceEvolContext implements Serializable {
 	 * @param molecId
 	 * @return
 	 */
-	public boolean isReferenceMismatch(Residue residue, int molecId) {
+	public boolean isReferenceMismatch(Group residue, int molecId) {
 		ChainEvolContext chain = getChainEvolContext(molecId);
 		int resSer = residue.getSerial();
 		if (resSer!=-1 && !chain.isPdbSeqPositionMatchingUniprot(resSer)) {
@@ -163,7 +142,7 @@ public class InterfaceEvolContext implements Serializable {
 		return false;
 	}
 	
-	public String getReferenceMismatchWarningMsg(List<Residue> unreliableResidues, String typeOfResidues) {
+	public String getReferenceMismatchWarningMsg(List<Group> unreliableResidues, String typeOfResidues) {
 		String msg = null;
 		if (!unreliableResidues.isEmpty()) {
 			
@@ -196,22 +175,8 @@ public class InterfaceEvolContext implements Serializable {
 	 * @param weighted
 	 * @return
 	 */
-	public double calcScore(List<Residue> residues, int molecId, boolean weighted) {
+	public double calcScore(List<Group> residues, int molecId, boolean weighted) {
 		return getChainEvolContext(molecId).calcScoreForResidueSet(residues, weighted);
-	}
-	
-	/**
-	 * Returns the distribution of evolutionary scores of random subsets of residues in the surface (not belonging 
-	 * to any interface above minInterfArea) for given molecId.
-	 * @param molecId the molecule id: either {@link #FIRST} or {@link #SECOND}
-	 * @param minInterfArea the residues considered will be those that are not in interfaces above this area value
-	 * @param numSamples number of samples of size sampleSize to be taken from the surface
-	 * @param sampleSize number of residues in each sample
-	 * @param minAsaForSurface the minimum ASA for a residue to be considered surface
-	 * @return
-	 */
-	public double[] getSurfaceScoreDist(int molecId, double minInterfArea, int numSamples, int sampleSize, double minAsaForSurface) {		
-		return parent.getSurfaceScoreDist(getMolecule(molecId).getPdbChainCode(), minInterfArea, numSamples, sampleSize, minAsaForSurface); 
 	}
 	
 	/**
@@ -228,30 +193,22 @@ public class InterfaceEvolContext implements Serializable {
 
 		double[] dist = new double[numSamples];
 		
+		List<Group> surfResidues = null;
+		if (molecId==FIRST) surfResidues = interf.getSurfaceResidues(minAsaForSurface).getFirst();
+		if (molecId==SECOND) surfResidues = interf.getSurfaceResidues(minAsaForSurface).getSecond();
+		
 		RandomDataImpl rd = new RandomDataImpl();
 		for (int i=0;i<numSamples;i++) {
-			Object[] sample = rd.nextSample(interf.getMolecule(molecId).getSurfaceResidues(minAsaForSurface), sampleSize);
-			List<Residue> residues = new ArrayList<Residue>(sample.length);
+			Object[] sample = rd.nextSample(surfResidues, sampleSize);
+			List<Group> residues = new ArrayList<Group>(sample.length);
 			for (int j=0;j<sample.length;j++){
-				residues.add((Residue)sample[j]);
+				residues.add((Group)sample[j]);
 			}
-			ChainEvolContext cec = this.parent.getChainEvolContext(getMolecule(molecId).getPdbChainCode());
+			ChainEvolContext cec = this.parent.getChainEvolContext(getChainId(molecId));
 			dist[i] = cec.calcScoreForResidueSet(residues, false);
 		}		
 
 		return dist;
-	}
-	
-	/**
-	 * Returns the number of residues that belong to the surface of the protein but 
-	 * are not member of any interface above minInterfArea 
-	 * @param molecId the molecule id: either {@link #FIRST} or {@link #SECOND}
-	 * @param minInterfArea the residues considered will be those that are not in interfaces above this area value
-	 * @param minAsaForSurface the minimum ASA for a residue to be considered surface
-	 * @return
-	 */
-	public int getNumResiduesNotInInterfaces(int molecId, double minInterfArea, double minAsaForSurface) {
-		return parent.getResiduesNotInInterfaces(getMolecule(molecId).getPdbChainCode(), minInterfArea, minAsaForSurface).size();
 	}
 	
 	/**
@@ -261,7 +218,9 @@ public class InterfaceEvolContext implements Serializable {
 	 * @return
 	 */
 	public int getNumSurfaceResidues(int molecId, double minAsaForSurface) {
-		return interf.getMolecule(molecId).getSurfaceResidues(minAsaForSurface).size();
+		if (molecId==FIRST) return interf.getSurfaceResidues(minAsaForSurface).getFirst().size();
+		if (molecId==SECOND) return interf.getSurfaceResidues(minAsaForSurface).getSecond().size();
+		return -1;
 	}
 	
 	/**
@@ -298,12 +257,7 @@ public class InterfaceEvolContext implements Serializable {
 		if (!getChainEvolContext(molecId).hasQueryMatch()) return;
 		
 		List<Double> conservationScores = null;
-		PdbChain pdb = null;
-		if (molecId==FIRST) {
-			pdb = interf.getFirstMolecule();
-		} else if (molecId==SECOND) {
-			pdb = interf.getSecondMolecule();
-		}
+		PdbChain pdb = getMolecule(molecId);
 		conservationScores = getChainEvolContext(molecId).getConservationScores();
 		
 		HashMap<Integer,Double> map = new HashMap<Integer, Double>();

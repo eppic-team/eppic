@@ -12,7 +12,7 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import owl.core.structure.AminoAcid;
+import eppic.commons.sequence.AminoAcid;
 
 public class EppicParams {
 	
@@ -76,6 +76,17 @@ public class EppicParams {
 	// the strategies for core-surface scoring
 	public static final int 	   CORE_SURFACE_SCORE_STRATEGY_CLASSIC = 0;
 	public static final int 	   CORE_SURFACE_SCORE_STRATEGY_ZSCORE = 1;
+	
+	// the distance for two atoms between chains to be considered a clashing pair
+	public static final double 	   CLASH_DISTANCE = 1.5;
+	// a generic low distance for a close interaction (electrostatic, salt bridge, semi-covalent, covalent) for 2 atoms between chains
+	// see review Harding MM, Acta Crystallographica 2006 - 
+	// actually distances can be up to 2.4 (or even more) in some cases, taking a conservative approach here 
+	public static final double 	   CLOSE_INTERACTION_DIST = 2.1;
+	// disulfide bridges
+	public static final double 	   DISULFIDE_BRIDGE_DIST = 2.05;
+	public static final double     DISULFIDE_BRIDGE_DIST_SIGMA = 0.1;
+
 
 	
 	// PROPERTY FILES

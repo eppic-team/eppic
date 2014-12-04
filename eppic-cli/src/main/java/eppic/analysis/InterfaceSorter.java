@@ -7,21 +7,19 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.biojava.bio.structure.Structure;
+import org.biojava.bio.structure.StructureException;
+import org.biojava.bio.structure.align.util.AtomCache;
+import org.biojava.bio.structure.contact.StructureInterface;
+import org.biojava.bio.structure.contact.StructureInterfaceList;
+import org.biojava.bio.structure.xtal.CrystalBuilder;
+import org.biojava.bio.structure.xtal.SpaceGroup;
+import org.biojava3.structure.StructureIO;
+
 import eppic.EppicParams;
-import owl.core.structure.ChainInterface;
-import owl.core.structure.ChainInterfaceList;
-import owl.core.structure.PdbAsymUnit;
-import owl.core.structure.PdbLoadException;
-import owl.core.structure.SpaceGroup;
-import owl.core.util.FileFormatException;
 
 public class InterfaceSorter {
 
-	private static final String   LOCAL_CIF_DIR = "/nfs/data/dbs/pdb/data/structures/all/mmCIF";
-	
-	private static final String BASENAME = "interf_sort";
-	private static final String TMPDIR = System.getProperty("java.io.tmpdir");
-	
 	private static final int NSPHEREPOINTS =9600;
 	private static final int NTHREADS = Runtime.getRuntime().availableProcessors();
 
@@ -34,11 +32,10 @@ public class InterfaceSorter {
 		String pdbChainCode2;
 		double resolution;
 		double rFree;
-		double rSym;
 		
 		int clashes;
 		
-		public SimpleInterface(String pdbCode,double area, String operator, String pdbChainCode1, String pdbChainCode2, int clashes, double resolution, double rFree, double rSym) {
+		public SimpleInterface(String pdbCode,double area, String operator, String pdbChainCode1, String pdbChainCode2, int clashes, double resolution, double rFree) {
 			this.pdbCode = pdbCode;
 			this.area = area;
 			this.operator = operator;
@@ -47,7 +44,6 @@ public class InterfaceSorter {
 			this.clashes = clashes;
 			this.resolution = resolution;
 			this.rFree = rFree;
-			this.rSym = rSym;
 		}
 
 		@Override
@@ -72,6 +68,10 @@ public class InterfaceSorter {
 			numThreads = Integer.parseInt(args[2]);
 		}
 		
+		AtomCache cache = new AtomCache();		
+		cache.setUseMmCif(true);		
+		StructureIO.setAtomCache(cache); 
+
 		
 		List<String> pdbCodes = new ArrayList<String>(); 
 		pdbCodes.addAll(Utils.readListFile(listFile).keySet());
@@ -81,35 +81,26 @@ public class InterfaceSorter {
 		System.out.println("Calculating interfaces...");
 		for (String pdbCode:pdbCodes) {
 			System.out.print(pdbCode);
-			File cifFile = new File(TMPDIR,BASENAME+"_"+pdbCode+".cif");
-			try {
-				PdbAsymUnit.grabCifFile(LOCAL_CIF_DIR, null, pdbCode, cifFile, false);
-			} catch (IOException e) {
-				System.out.println("\nError while reading cif.gz file ("+new File(LOCAL_CIF_DIR,pdbCode+".cif.gz").toString()+") or writing temp cif file: "+e.getMessage());
-				continue;
-			}
-			PdbAsymUnit pdb = null;
-			try {
-				pdb = new PdbAsymUnit(cifFile);
-			} catch (PdbLoadException e) {
-				System.out.println("\nError. Couldn't load cif file "+cifFile+". Error: "+e.getMessage());
-				continue;
-			} catch (IOException e) {
-				System.out.println("\nError. Couldn't load cif file "+cifFile+". Error: "+e.getMessage());
-				continue;
-			} catch (FileFormatException e) {
-				System.out.println("\nError. Couldn't load cif file "+cifFile+". Error: "+e.getMessage());
-				continue;
-			}
-			cifFile.delete();
 			
-			// very important indeed: remove the H atoms! otherwise we get uncomparable areas!!!!
-			pdb.removeHatoms();
+			Structure pdb = null;
+			try {
+				pdb = StructureIO.getStructure(pdbCode);
+			} catch (IOException|StructureException e) {
+				System.out.println("\nError. Couldn't load PDB "+pdbCode+". Error: "+e.getMessage());
+				continue;
+			} 
+			
+			
 			
 			long start = System.currentTimeMillis();
-			ChainInterfaceList interfList = null;
-
-			interfList = pdb.getAllInterfaces(EppicParams.INTERFACE_DIST_CUTOFF, NSPHEREPOINTS, numThreads, false, false, -1, EppicParams.MIN_INTERFACE_AREA_TO_KEEP);
+							
+			CrystalBuilder cb = new CrystalBuilder(pdb);
+			
+			StructureInterfaceList interfList = cb.getUniqueInterfaces(EppicParams.INTERFACE_DIST_CUTOFF);
+			
+			interfList.calcAsas(NSPHEREPOINTS, numThreads, -1);
+			interfList.removeInterfacesBelowArea(EppicParams.MIN_INTERFACE_AREA_TO_KEEP);
+		
 			
 			long end = System.currentTimeMillis();
 			System.out.printf("\t%4d\n",(end-start)/1000l);
@@ -118,19 +109,19 @@ public class InterfaceSorter {
 				System.out.println("\nEmpty interface list!");
 				continue;
 			}
-			ChainInterface firstInterf = interfList.get(1);
+			StructureInterface firstInterf = interfList.get(1);
 			
 			
-			String pdbChainCode1 = firstInterf.getFirstMolecule().getPdbChainCode();
-			String pdbChainCode2 = firstInterf.getSecondMolecule().getPdbChainCode();
-			String op = SpaceGroup.getAlgebraicFromMatrix(firstInterf.getSecondTransf().getMatTransform());
-			double area = firstInterf.getInterfaceArea();
-			int clashes = firstInterf.getAICGraph().getNumClashes();
+			String pdbChainCode1 = firstInterf.getMoleculeIds().getFirst();
+			String pdbChainCode2 = firstInterf.getMoleculeIds().getSecond();
+			String op = SpaceGroup.getAlgebraicFromMatrix(firstInterf.getTransforms().getSecond().getMatTransform());
+			double area = firstInterf.getTotalArea();
+			int clashes = firstInterf.getContacts().getContactsWithinDistance(EppicParams.CLASH_DISTANCE).size();
 			
 			firstInterfaces.add(new InterfaceSorter().new SimpleInterface(pdbCode, area, op, pdbChainCode1, pdbChainCode2, clashes,
-					firstInterf.getFirstMolecule().getParent().getResolution(),
-					firstInterf.getFirstMolecule().getParent().getRfree(),
-					firstInterf.getFirstMolecule().getParent().getRsym()));
+					pdb.getPDBHeader().getResolution(),
+					pdb.getPDBHeader().getRfree()
+					));
 		}
 		System.out.println();
 		
@@ -140,11 +131,11 @@ public class InterfaceSorter {
 			PrintWriter pw = new PrintWriter(outFile);
 
 			for (SimpleInterface interf:firstInterfaces) {
-				pw.printf("%4s\t%4s\t%20s\t%8.2f\t%3d\t%3.1f\t%4.2f\t%4.2f\n",
+				pw.printf("%4s\t%4s\t%20s\t%8.2f\t%3d\t%3.1f\t%4.2f\n",
 						interf.pdbCode,
 						interf.pdbChainCode1+"+"+interf.pdbChainCode2,
 						interf.operator,interf.area,interf.clashes,
-						interf.resolution,interf.rFree,interf.rSym);
+						interf.resolution,interf.rFree);
 			}
 			pw.close();
 		} catch (IOException e) {

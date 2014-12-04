@@ -1,8 +1,15 @@
 package eppic.tools;
+import eppic.EppicParams;
 import eppic.PymolRunner;
+import eppic.commons.util.FileTypeGuesser;
+import eppic.commons.util.Goodies;
 import gnu.getopt.Getopt;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -12,24 +19,28 @@ import javax.vecmath.Matrix3d;
 import javax.vecmath.Matrix4d;
 import javax.vecmath.Vector3d;
 
-import owl.core.structure.ChainCluster;
-import owl.core.structure.ChainInterface;
-import owl.core.structure.ChainInterfaceList;
-import owl.core.structure.InterfaceCluster;
-import owl.core.structure.InterfacesFinder;
-import owl.core.structure.PdbAsymUnit;
-import owl.core.structure.PdbChain;
-import owl.core.structure.SpaceGroup;
-import owl.core.util.GeometryTools;
-import owl.core.util.Goodies;
-import owl.core.util.OptSuperposition;
+import org.biojava.bio.structure.Chain;
+import org.biojava.bio.structure.Group;
+import org.biojava.bio.structure.PDBCrystallographicInfo;
+import org.biojava.bio.structure.Structure;
+import org.biojava.bio.structure.StructureException;
+import org.biojava.bio.structure.align.util.AtomCache;
+import org.biojava.bio.structure.contact.Pair;
+import org.biojava.bio.structure.contact.StructureInterface;
+import org.biojava.bio.structure.contact.StructureInterfaceList;
+import org.biojava.bio.structure.io.FileParsingParameters;
+import org.biojava.bio.structure.io.PDBFileParser;
+import org.biojava.bio.structure.io.mmcif.MMcifParser;
+import org.biojava.bio.structure.io.mmcif.SimpleMMcifConsumer;
+import org.biojava.bio.structure.io.mmcif.SimpleMMcifParser;
+import org.biojava.bio.structure.xtal.CrystalBuilder;
+import org.biojava.bio.structure.xtal.SpaceGroup;
+import org.biojava3.structure.StructureIO;
+
 
 
 public class EnumerateInterfaces {
 
-	private static final String LOCAL_CIF_DIR = "/nfs/data/dbs/pdb/data/structures/all/mmCIF";
-	private static final String BASENAME = "interf_enum";
-	private static final String TMPDIR = System.getProperty("java.io.tmpdir");
 	private static final File   PYMOL_EXE = new File("/usr/bin/pymol");
 	
 	private static final double BSATOASA_CUTOFF = 0.95;
@@ -143,46 +154,87 @@ public class EnumerateInterfaces {
 		}
 
 		String outBaseName = pdbStr;
+
 		
-		PdbAsymUnit pdb = null;
-		if (inputFile==null) {
-			inputFile = new File(TMPDIR,BASENAME+"_"+pdbStr+".cif");
-			PdbAsymUnit.grabCifFile(LOCAL_CIF_DIR, null, pdbStr, inputFile, false);
-			pdb = new PdbAsymUnit(inputFile);
+		Structure pdb = null;
+
+		if (inputFile == null) {
+
+			AtomCache cache = new AtomCache();		
+			cache.setUseMmCif(true);		
+			StructureIO.setAtomCache(cache); 
+
+			try {
+				pdb = StructureIO.getStructure(pdbStr);
+			} catch (IOException|StructureException e) {
+				System.out.println("Error. Couldn't load PDB "+pdbStr+". Error: "+e.getMessage());
+				System.exit(0);
+			} 		
 		} else {
-			pdb = new PdbAsymUnit(inputFile);
+			
+			int fileType = FileTypeGuesser.guessFileType(inputFile);
+			
+			if (fileType==FileTypeGuesser.CIF_FILE) {
+
+				MMcifParser parser = new SimpleMMcifParser();
+
+				SimpleMMcifConsumer consumer = new SimpleMMcifConsumer();
+
+				FileParsingParameters fileParsingParams = new FileParsingParameters();
+				// TODO we should parse PDB files with no X padding if no SEQRES is found. Otherwise matching to uniprot doesn't work in many cases
+				//fileParsingParams.set????
+
+				consumer.setFileParsingParameters(fileParsingParams);
+
+				parser.addMMcifConsumer(consumer);
+
+				parser.parse(new BufferedReader(new InputStreamReader(new FileInputStream(inputFile)))); 
+
+				pdb = consumer.getStructure();
+				
+			} else if (fileType==FileTypeGuesser.PDB_FILE || fileType==FileTypeGuesser.RAW_PDB_FILE) {
+
+				PDBFileParser parser = new PDBFileParser();
+				
+				FileParsingParameters fileParsingParams = new FileParsingParameters();
+				// TODO we should parse PDB files with no X padding if no SEQRES is found. Otherwise matching to uniprot doesn't work in many cases
+				//fileParsingParams.set????
+				parser.setFileParsingParameters(fileParsingParams);
+				
+				pdb = parser.parsePDBFile(new FileInputStream(inputFile));
+				
+			}
+			
 			outBaseName = inputFile.getName().substring(0, inputFile.getName().lastIndexOf("."));
 		}
 
-		// we remove H atoms
-		pdb.removeHatoms();
-		
-		System.out.println(pdb.getPdbCode()+" - "+pdb.getNumPolyChains()+" polymer chains ("+pdb.getProtChainClusters().size()+" sequence unique), " +
-				pdb.getNumNonPolyChains()+" non-polymer chains.");
+
+		System.out.println(pdb.getPdbId()+" - "+pdb.getChains()+" chains ("+pdb.getProtChainClusters().size()+" sequence unique) ");
 
 		for (ChainCluster chainCluster:pdb.getProtChainClusters()) {
 			System.out.println(chainCluster.getClusterString());
 		}
-		System.out.println("Polymer chains: ");
-		for (PdbChain chain:pdb.getPolyChains()) {
-			System.out.println(chain.getChainCode()+"("+chain.getPdbChainCode()+")");
-		}
-		System.out.println("Non-polymer chains: ");
-		for (PdbChain chain:pdb.getNonPolyChains()) {
-			System.out.println(chain.getChainCode()+"("+chain.getPdbChainCode()+") "+" residues: "+chain.getObsLength()+
-					" ("+chain.getFirstResidue().getLongCode()+"-"+chain.getFirstResidue().getSerial()+")");
+		System.out.println("Chains: ");
+		for (Chain chain:pdb.getChains()) {
+			System.out.println(chain.getInternalChainID()+"("+chain.getChainID()+")");
 		}
 		
-		System.out.println(pdb.getSpaceGroup().getShortSymbol()+" ("+pdb.getSpaceGroup().getId()+")");
-		if (debug) System.out.println("Symmetry operators: "+pdb.getSpaceGroup().getNumOperators());
+		PDBCrystallographicInfo xtalInfo = pdb.getCrystallographicInfo();
+		SpaceGroup sg = (xtalInfo==null?null:xtalInfo.getSpaceGroup());
+		if (sg!=null) {
+			System.out.println(sg.getShortSymbol()+" ("+sg.getId()+")");
+			if (debug) System.out.println("Symmetry operators: "+sg.getNumOperators());
+		}
 		
 		System.out.println("Calculating possible interfaces... (using "+nThreads+" CPUs for ASA calculation)");
 		long start = System.currentTimeMillis();
-		InterfacesFinder interfFinder = new InterfacesFinder(pdb);
-		interfFinder.setDebug(debug);
-
-		ChainInterfaceList interfaces = interfFinder.getAllInterfaces(CUTOFF, N_SPHERE_POINTS, nThreads, true, nonPoly, CONSIDER_COFACTORS, MIN_AREA_TO_KEEP);
 		
+		CrystalBuilder interfFinder = new CrystalBuilder(pdb);
+		StructureInterfaceList interfaces = interfFinder.getUniqueInterfaces(CUTOFF);
+		interfaces.calcAsas(N_SPHERE_POINTS, nThreads, CONSIDER_COFACTORS);
+		interfaces.removeInterfacesBelowArea(MIN_AREA_TO_KEEP);
+		
+
 		interfaces.initialiseClusters(pdb, CLUSTERING_CUTOFF, MINATOMS_CLUSTERING, "CA");
 		
 		long end = System.currentTimeMillis();
@@ -195,28 +247,28 @@ public class EnumerateInterfaces {
 		File[] interfPdbFiles = new File[interfaces.size()];
 					
 		for (int i=0;i<interfaces.size();i++) {
-			ChainInterface interf = interfaces.get(i+1);
-			interf.calcRimAndCore(BSATOASA_CUTOFF, MIN_ASA_FOR_SURFACE);
+			StructureInterface interf = interfaces.get(i+1);			
 			
 			String infiniteStr = "";
 			if (interf.isInfinite()) infiniteStr = " -- INFINITE interface";
 			System.out.println("\n##Interface "+(i+1)+" "+
-					interf.getFirstSubunitId()+"-"+
-					interf.getSecondSubunitId()+infiniteStr);
-			if (interf.hasClashes()) System.out.println("CLASHES!!!");
+					getFirstSubunitId(interf)+"-"+
+					getSecondSubunitId(interf)+infiniteStr);
+			if (interf.getContacts().getContactsWithinDistance(EppicParams.CLASH_DISTANCE).size()>0) 
+				System.out.println("CLASHES!!!");
 			
 			
-			System.out.println("Transf1: "+SpaceGroup.getAlgebraicFromMatrix(interf.getFirstTransf().getMatTransform())+
-					". Transf2: "+SpaceGroup.getAlgebraicFromMatrix(interf.getSecondTransf().getMatTransform()));
+			System.out.println("Transf1: "+SpaceGroup.getAlgebraicFromMatrix(interf.getTransforms().getFirst().getMatTransform())+
+					". Transf2: "+SpaceGroup.getAlgebraicFromMatrix(interf.getTransforms().getSecond().getMatTransform()));
 	 		
-			int foldType = pdb.getSpaceGroup().getAxisFoldType(interf.getSecondTransf().getTransformId());
-			AxisAngle4d axisAngle = pdb.getSpaceGroup().getRotAxisAngle(interf.getSecondTransf().getTransformId());
+			int foldType = sg.getAxisFoldType(interf.getTransforms().getSecond().getTransformId());
+			AxisAngle4d axisAngle = sg.getRotAxisAngle(interf.getTransforms().getSecond().getTransformId());
 			
 			String screwStr = "";
-			if (interf.getSecondTransf().getTransformType().isScrew()) {
+			if (interf.getTransforms().getSecond().getTransformType().isScrew()) {
 				Vector3d screwTransl = 
-						interf.getSecondTransf().getTranslScrewComponent();
-				screwStr = " -- "+interf.getSecondTransf().getTransformType().getShortName()+" with translation "+
+						interf.getTransforms().getSecond().getTranslScrewComponent();
+				screwStr = " -- "+interf.getTransforms().getSecond().getTransformType().getShortName()+" with translation "+
 				String.format("(%5.2f,%5.2f,%5.2f)",screwTransl.x,screwTransl.y,screwTransl.z);
 
 			}
@@ -228,49 +280,53 @@ public class EnumerateInterfaces {
 			
 			System.out.println(" "+foldType+"-fold on axis "+String.format("(%5.2f,%5.2f,%5.2f)",axisAngle.x,axisAngle.y,axisAngle.z)+screwStr);
 			
-			System.out.println("Number of contacts: "+interf.getNumContacts());
-			System.out.println("Number of contacting atoms (from both molecules): "+interf.getNumAtomsInContact());
+			System.out.println("Number of atom contacts: "+interf.getContacts().size());
+			Pair<List<Group>> cores = interf.getCoreResidues(BSATOASA_CUTOFF, MIN_ASA_FOR_SURFACE);
 			System.out.println("Number of core residues at "+String.format("%4.2f", BSATOASA_CUTOFF)+
-					" bsa to asa cutoff: "+interf.getFirstRimCore().getCoreSize()+" "+interf.getSecondRimCore().getCoreSize());
-			System.out.printf("Interface area: %8.2f\n",interf.getInterfaceArea());
+					" bsa to asa cutoff: "+
+					cores.getFirst().size()+" "+
+					cores.getSecond().size());
 			
-			if (!interf.getFirstMolecule().getPdbChainCode().equals(interf.getSecondMolecule().getPdbChainCode()) && 
-					pdb.areChainsInSameCluster(interf.getFirstMolecule().getPdbChainCode(), 
-										interf.getSecondMolecule().getPdbChainCode())){
-
-				System.out.println("Chains are NCS related, trying to find pseudo-symmetric relationship: ");
-				//System.out.println("Superposition matrix in orthonormal: ");
-
-				OptSuperposition os = interf.getOptimalSuperposition();
-				
-				Matrix3d optSuperposition = os.getSupMatrix();
-				System.out.printf("%5.2f %5.2f %5.2f\n%5.2f %5.2f %5.2f\n%5.2f %5.2f %5.2f\n",
-						optSuperposition.m00, optSuperposition.m01, optSuperposition.m12,
-						optSuperposition.m10, optSuperposition.m11, optSuperposition.m12,
-						optSuperposition.m20, optSuperposition.m21, optSuperposition.m22);
-				
-				Vector3d transl = os.getCentroidsTranslation();
-				System.out.printf("translation: (%5.2f, %5.2f, %5.2f)\n",transl.x,transl.y,transl.z);
-				Vector3d translXtal = new Vector3d(transl);
-				pdb.getCrystalCell().transfToCrystal(translXtal);
-				System.out.printf("translation (xtal): (%5.2f, %5.2f, %5.2f)\n",translXtal.x,translXtal.y,translXtal.z);
-								
-				System.out.printf("rmsd: %7.4f\n",os.getRmsd());
-
-				double trace = optSuperposition.m00+optSuperposition.m11+optSuperposition.m22; 
-				System.out.printf("Trace: %5.2f\n",trace);
-
-				AxisAngle4d angleAndAxis = GeometryTools.getRotAxisAndAngle(optSuperposition);
-				System.out.printf("Angle: %5.2f (%6.2f deg)\n",angleAndAxis.angle,angleAndAxis.angle*180.0/Math.PI);
-				System.out.printf("Axis: %5.2f, %5.2f, %5.2f \n",angleAndAxis.x,angleAndAxis.y,angleAndAxis.z);
-
-				Matrix4d optSuperPosWithTransl = os.getTransformMatrix();
-				
-				Matrix4d optSuperPosWithTranslXtal = pdb.getCrystalCell().transfToCrystal(optSuperPosWithTransl);
-				
-				Vector3d screwComp = GeometryTools.getTranslScrewComponent(optSuperPosWithTranslXtal);
-				System.out.printf("screw comp: (%5.2f, %5.2f, %5.2f)\n",screwComp.x,screwComp.y,screwComp.z);
-			}
+			System.out.printf("Interface area: %8.2f\n",interf.getTotalArea());
+			
+			// TODO following code to report on rmsds needs to be rewritten for biojava at some point
+//			if (!interf.getMoleculeIds().getFirst().equals(interf.getMoleculeIds().getSecond()) && 
+//					pdb.areChainsInSameCluster(interf.getMoleculeIds().getFirst(), 
+//										interf.getMoleculeIds().getSecond())){
+//
+//				System.out.println("Chains are NCS related, trying to find pseudo-symmetric relationship: ");
+//				//System.out.println("Superposition matrix in orthonormal: ");
+//
+//				OptSuperposition os = interf.getOptimalSuperposition();
+//				
+//				Matrix3d optSuperposition = os.getSupMatrix();
+//				System.out.printf("%5.2f %5.2f %5.2f\n%5.2f %5.2f %5.2f\n%5.2f %5.2f %5.2f\n",
+//						optSuperposition.m00, optSuperposition.m01, optSuperposition.m12,
+//						optSuperposition.m10, optSuperposition.m11, optSuperposition.m12,
+//						optSuperposition.m20, optSuperposition.m21, optSuperposition.m22);
+//				
+//				Vector3d transl = os.getCentroidsTranslation();
+//				System.out.printf("translation: (%5.2f, %5.2f, %5.2f)\n",transl.x,transl.y,transl.z);
+//				Vector3d translXtal = new Vector3d(transl);
+//				xtalInfo.getCrystalCell().transfToCrystal(translXtal);
+//				System.out.printf("translation (xtal): (%5.2f, %5.2f, %5.2f)\n",translXtal.x,translXtal.y,translXtal.z);
+//								
+//				System.out.printf("rmsd: %7.4f\n",os.getRmsd());
+//
+//				double trace = optSuperposition.m00+optSuperposition.m11+optSuperposition.m22; 
+//				System.out.printf("Trace: %5.2f\n",trace);
+//
+//				AxisAngle4d angleAndAxis = GeometryTools.getRotAxisAndAngle(optSuperposition);
+//				System.out.printf("Angle: %5.2f (%6.2f deg)\n",angleAndAxis.angle,angleAndAxis.angle*180.0/Math.PI);
+//				System.out.printf("Axis: %5.2f, %5.2f, %5.2f \n",angleAndAxis.x,angleAndAxis.y,angleAndAxis.z);
+//
+//				Matrix4d optSuperPosWithTransl = os.getTransformMatrix();
+//				
+//				Matrix4d optSuperPosWithTranslXtal = xtalInfo.getCrystalCell().transfToCrystal(optSuperPosWithTransl);
+//				
+//				Vector3d screwComp = GeometryTools.getTranslScrewComponent(optSuperPosWithTranslXtal);
+//				System.out.printf("screw comp: (%5.2f, %5.2f, %5.2f)\n",screwComp.x,screwComp.y,screwComp.z);
+//			}
 			
 			
 			
@@ -334,6 +390,20 @@ public class EnumerateInterfaces {
 //		}
 
 
+	}
+
+	private static String getFirstSubunitId(StructureInterface interf) {
+		return 
+				interf.getMoleculeIds().getFirst()+""+
+				interf.getTransforms().getFirst().getTransformId()+
+				interf.getTransforms().getFirst().getCrystalTranslation().toString();
+	}
+	
+	private static String getSecondSubunitId(StructureInterface interf) {
+		return 
+				interf.getMoleculeIds().getSecond()+""+
+				interf.getTransforms().getSecond().getTransformId()+
+				interf.getTransforms().getSecond().getCrystalTranslation().toString();
 	}
 
 }

@@ -10,19 +10,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.biojava.bio.structure.Chain;
+import org.biojava.bio.structure.Structure;
+import org.biojava.bio.structure.StructureException;
+import org.biojava.bio.structure.align.util.AtomCache;
+import org.biojava.bio.structure.asa.AsaCalculator;
+import org.biojava.bio.structure.contact.StructureInterfaceList;
+import org.biojava.bio.structure.xtal.CrystalBuilder;
+import org.biojava.bio.structure.xtal.SpaceGroup;
+import org.biojava3.structure.StructureIO;
 import org.xml.sax.SAXException;
 
 import eppic.EppicParams;
-import owl.core.connections.pisa.PisaConnection;
-import owl.core.connections.pisa.PisaInterfaceList;
-import owl.core.structure.AsaCalculator;
-import owl.core.structure.ChainInterface;
-import owl.core.structure.ChainInterfaceList;
-import owl.core.structure.PdbAsymUnit;
-import owl.core.structure.PdbChain;
-import owl.core.structure.PdbLoadException;
-import owl.core.structure.SpaceGroup;
-import owl.core.util.FileFormatException;
+import eppic.commons.pisa.PisaConnection;
+import eppic.commons.pisa.PisaInterfaceList;
 
 /**
  * Script to print side by side a comparison of the interfaces calculated 
@@ -34,11 +35,7 @@ import owl.core.util.FileFormatException;
  */
 public class CompToPisaInterf {
 	
-	private static final String   LOCAL_CIF_DIR = "/nfs/data/dbs/pdb/data/structures/all/mmCIF";
-
 	private static final int NTHREADS = Runtime.getRuntime().availableProcessors(); // number of threads for ASA calculation
-
-	private static final String TMPDIR = System.getProperty("java.io.tmpdir");
 
 	
 	public static void main (String[] args) {
@@ -80,27 +77,21 @@ public class CompToPisaInterf {
 		}
 
 		System.out.println("Computing interfaces...");
+
+		AtomCache cache = new AtomCache();
+		cache.setUseMmCif(true);
+		StructureIO.setAtomCache(cache); 
 		
 		for (String pdbCode: pdbCodes) {
-		
 			
-			PdbAsymUnit pdb = null;
+			Structure pdb = null;
 			try {
-				File cifFile = new File(TMPDIR,pdbCode+".cif");
-				PdbAsymUnit.grabCifFile(LOCAL_CIF_DIR, null, pdbCode, cifFile, false);
-				pdb = new PdbAsymUnit(cifFile);
-				cifFile.delete();
-			} catch (IOException e) {
-				System.err.println("Problems reading cif file for "+pdbCode+". Error: "+e.getMessage());
+				pdb = StructureIO.getStructure(pdbCode);
+			} catch (IOException|StructureException e) {
+				System.out.println("\nError. Couldn't load PDB "+pdbCode+". Error: "+e.getMessage());
 				continue;
-			} catch (PdbLoadException e) {
-				System.err.println("PDB load error, cause: "+e.getMessage());
-				continue;
-			} catch (FileFormatException e) {
-				System.err.println("File format error: "+e.getMessage());
-				continue;
-			}
-
+			} 
+			
 			
 			System.out.println("##"+pdbCode);
 
@@ -108,17 +99,22 @@ public class CompToPisaInterf {
 			// we sort them on interface area because pisa doesn't always sort them like that (it does some kind of grouping)
 			pisaInterfaces.sort();
 			
-			ChainInterfaceList interfaces = null;
-
+			
+			CrystalBuilder cb = new CrystalBuilder(pdb);
+			
+			StructureInterfaceList interfaces = cb.getUniqueInterfaces(EppicParams.INTERFACE_DIST_CUTOFF);
+			
+			interfaces.calcAsas(AsaCalculator.DEFAULT_N_SPHERE_POINTS, NTHREADS, -1);
 			// not we use 0 as min interface area so that we compare to pisa better (since they keep all interfaces)
-			interfaces = pdb.getAllInterfaces(EppicParams.INTERFACE_DIST_CUTOFF, AsaCalculator.DEFAULT_N_SPHERE_POINTS, NTHREADS, true, true, -1, 0);
+			interfaces.removeInterfacesBelowArea(0);
 
+			
 			System.out.print("Number of interfaces: ours "+interfaces.size()+", pisa "+pisaInterfaces.getNumInterfaces());
 			if (pisaInterfaces.getNumInterfaces()!=interfaces.size()) {
 				System.out.print("\t disagreement");
 			}
 			System.out.println();
-			for (PdbChain chain:pdb.getAllChains()) {
+			for (Chain chain:pdb.getChains()) {
 				System.out.print(chain.getChainCode()+": "+chain.getPdbChainCode());
 				if (chain.isNonPolyChain()) {
 					System.out.print("("+chain.getFirstResidue().getLongCode()+"-"+chain.getFirstResidue().getSerial()+")");

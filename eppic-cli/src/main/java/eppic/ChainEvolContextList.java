@@ -7,27 +7,26 @@ import java.util.Collection;
 import java.util.List;
 import java.util.TreeMap;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.biojava.bio.structure.Structure;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import owl.core.connections.SiftsConnection;
-import owl.core.connections.UniProtConnection;
-import owl.core.connections.UniprotLocalConnection;
-import owl.core.runners.blast.BlastException;
-import owl.core.sequence.HomologList;
-import owl.core.sequence.Sequence;
-import owl.core.sequence.UniprotVerMisMatchException;
-import owl.core.structure.ChainCluster;
-import owl.core.structure.PdbAsymUnit;
-import owl.core.structure.PdbChain;
+import eppic.commons.blast.BlastException;
+import eppic.commons.sequence.HomologList;
+import eppic.commons.sequence.Sequence;
+import eppic.commons.sequence.SiftsConnection;
+import eppic.commons.sequence.UniProtConnection;
+import eppic.commons.sequence.UniprotLocalConnection;
+import eppic.commons.sequence.UniprotVerMisMatchException;
+
 
 public class ChainEvolContextList implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	private static final Log LOGGER = LogFactory.getLog(ChainEvolContextList.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(ChainEvolContextList.class);
 	
-	private PdbAsymUnit pdb;
+	private Structure pdb;
 	
 	private TreeMap<String, ChainEvolContext> cecs; // one per representative chain
 	
@@ -45,7 +44,7 @@ public class ChainEvolContextList implements Serializable {
 	private transient SiftsConnection siftsConn;
 
 	
-	public ChainEvolContextList(PdbAsymUnit pdb, EppicParams params) throws SQLException {
+	public ChainEvolContextList(Structure pdb, EppicParams params) throws SQLException {
 		this.pdb = pdb;
 		
 		this.cecs = new TreeMap<String, ChainEvolContext>();
@@ -125,7 +124,7 @@ public class ChainEvolContextList implements Serializable {
 		return cecs.values();
 	}
 	
-	public PdbAsymUnit getPdb() {
+	public Structure getPdb() {
 		return this.pdb;
 	}
 	

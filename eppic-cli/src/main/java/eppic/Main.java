@@ -1,9 +1,13 @@
 package eppic;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -11,26 +15,26 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.FileAppender;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
+import org.biojava.bio.structure.Chain;
+import org.biojava.bio.structure.Structure;
+import org.biojava.bio.structure.StructureException;
+import org.biojava.bio.structure.align.util.AtomCache;
+import org.biojava.bio.structure.contact.AtomContact;
+import org.biojava.bio.structure.contact.StructureInterface;
+import org.biojava.bio.structure.contact.StructureInterfaceList;
+import org.biojava.bio.structure.io.FileParsingParameters;
+import org.biojava.bio.structure.io.PDBFileParser;
+import org.biojava.bio.structure.io.mmcif.MMcifParser;
+import org.biojava.bio.structure.io.mmcif.SimpleMMcifConsumer;
+import org.biojava.bio.structure.io.mmcif.SimpleMMcifParser;
+import org.biojava.bio.structure.xtal.CrystalBuilder;
+import org.biojava.bio.structure.xtal.SpaceGroup;
+import org.biojava3.structure.StructureIO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import owl.core.structure.ChainCluster;
-import owl.core.structure.ChainInterface;
-import owl.core.structure.ChainInterfaceList;
-import owl.core.structure.InterfaceCluster;
-import owl.core.structure.InterfacesFinder;
-import owl.core.structure.PdbAsymUnit;
-import owl.core.structure.PdbChain;
-import owl.core.structure.PdbLoadException;
-import owl.core.structure.SpaceGroup;
-import owl.core.structure.graphs.AICGraph;
-import owl.core.util.FileFormatException;
-import owl.core.util.Goodies;
+import eppic.commons.util.FileTypeGuesser;
+import eppic.commons.util.Goodies;
 import eppic.predictors.CombinedClusterPredictor;
 import eppic.predictors.CombinedPredictor;
 import eppic.predictors.GeometryClusterPredictor;
@@ -39,17 +43,15 @@ import eppic.predictors.GeometryPredictor;
 public class Main {
 	
 	
-	// THE ROOT LOGGER (log4j)
-	private static final Logger ROOTLOGGER = Logger.getRootLogger();
-	private static final Log LOGGER = LogFactory.getLog(Main.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
 	
 	private static final int STEPS_TOTAL = 4;
 	
 	// fields
 	private EppicParams params;
 	
-	private PdbAsymUnit pdb;
-	private ChainInterfaceList interfaces;
+	private Structure pdb;
+	private StructureInterfaceList interfaces;
 	private ChainEvolContextList cecs;
 	private InterfaceEvolContextList iecList;
 	private List<GeometryPredictor> gps;
@@ -69,37 +71,35 @@ public class Main {
 		
 	public void setUpLogging() {
 		
+		// TODO set it up as it used to be, 
+		// can it be done only with the config file? I suppose not, we have to set the name and location of the log file here
+		
 		// setting up the file logger for log4j
-		try {
-			FileAppender fullLogAppender = new FileAppender(new PatternLayout("%d{ABSOLUTE} %5p - %m%n"),params.getOutDir()+"/"+params.getBaseName()+".log",false);
-			fullLogAppender.setThreshold(Level.INFO);
-			ConsoleAppender errorAppender = new ConsoleAppender(new PatternLayout("%5p - %m%n"),ConsoleAppender.SYSTEM_ERR);
-			errorAppender.setThreshold(Level.ERROR);
-			ConsoleAppender outAppender = new ConsoleAppender(new PatternLayout("%d{ABSOLUTE} %5p - %m%n"),ConsoleAppender.SYSTEM_OUT);
-			outAppender.setThreshold(Level.DEBUG);
-			ROOTLOGGER.addAppender(fullLogAppender);
-			ROOTLOGGER.addAppender(errorAppender);
-			if (params.getProgressLogFile()!=null) {
-				// commenting out the error logging to progress file (was needed for server, but now it will read stderr from sge file)
-				//FileAppender fileErrorAppender = new FileAppender(new PatternLayout("%5p - %m%n"),params.getProgressLogFile().getAbsolutePath(),true);
-				//fileErrorAppender.setThreshold(Level.ERROR);
-				//ROOTLOGGER.addAppender(fileErrorAppender);
-				// the steps log file needed for the server, we only initialise it if a -L progress log file was passed (as that is only used by server)
-				stepsLogFile = new File(params.getOutDir(),params.getBaseName()+EppicParams.STEPS_LOG_FILE_SUFFIX);
-			}
-			if (params.getDebug())
-				ROOTLOGGER.addAppender(outAppender);
-		} catch (IOException e) {
-			System.err.println("Couldn't open log file "+params.getOutDir()+"/"+params.getBaseName()+".log"+" for writing.");
-			System.err.println(e.getMessage());
-			System.exit(1);
-		}
-	    ROOTLOGGER.setLevel(Level.INFO);
-
-	    // TODO now using the apache common logging framework which acts as a meta framework for other frameworks such
-	    //      as log4j or java logging. We always should instantiate loggers from apache commons (LogFactory.getLog()).
-	    //      Left to do is still configure the logging in CRK properly by using the apache commons mechanism. At the moment
-	    //      the logging configuration is done using log4j/java logger mechanisms.
+//		try {
+//			FileAppender fullLogAppender = new FileAppender(new PatternLayout("%d{ABSOLUTE} %5p - %m%n"),params.getOutDir()+"/"+params.getBaseName()+".log",false);
+//			fullLogAppender.setThreshold(Level.INFO);
+//			ConsoleAppender errorAppender = new ConsoleAppender(new PatternLayout("%5p - %m%n"),ConsoleAppender.SYSTEM_ERR);
+//			errorAppender.setThreshold(Level.ERROR);
+//			ConsoleAppender outAppender = new ConsoleAppender(new PatternLayout("%d{ABSOLUTE} %5p - %m%n"),ConsoleAppender.SYSTEM_OUT);
+//			outAppender.setThreshold(Level.DEBUG);
+//			ROOTLOGGER.addAppender(fullLogAppender);
+//			ROOTLOGGER.addAppender(errorAppender);
+//			if (params.getProgressLogFile()!=null) {
+//				// commenting out the error logging to progress file (was needed for server, but now it will read stderr from sge file)
+//				//FileAppender fileErrorAppender = new FileAppender(new PatternLayout("%5p - %m%n"),params.getProgressLogFile().getAbsolutePath(),true);
+//				//fileErrorAppender.setThreshold(Level.ERROR);
+//				//ROOTLOGGER.addAppender(fileErrorAppender);
+//				// the steps log file needed for the server, we only initialise it if a -L progress log file was passed (as that is only used by server)
+//				stepsLogFile = new File(params.getOutDir(),params.getBaseName()+EppicParams.STEPS_LOG_FILE_SUFFIX);
+//			}
+//			if (params.getDebug())
+//				ROOTLOGGER.addAppender(outAppender);
+//		} catch (IOException e) {
+//			System.err.println("Couldn't open log file "+params.getOutDir()+"/"+params.getBaseName()+".log"+" for writing.");
+//			System.err.println(e.getMessage());
+//			System.exit(1);
+//		}
+//	    ROOTLOGGER.setLevel(Level.INFO);
 
 	}
 	
@@ -121,7 +121,7 @@ public class Main {
 				System.exit(1);
 			}
 		} catch (IOException e) {
-			LOGGER.fatal("Error while reading from config file: " + e.getMessage());
+			LOGGER.error("Error while reading from config file: " + e.getMessage());
 			System.exit(1);
 		} catch (EppicException e) {
 			LOGGER.error(e.getMessage());
@@ -130,40 +130,79 @@ public class Main {
 
 	}
 
-	public void doLoadPdb() throws EppicException {
+	public void doLoadPdb() throws EppicException {	
+		
 		params.getProgressLog().println("Loading PDB data: "+(params.getInFile()==null?params.getPdbCode():params.getInFile().getName()));
 		writeStep("Calculating Interfaces");
 		pdb = null;
-		File cifFile = null; // if given a pdb code in command line we will store the cif file here
 		try {
 			if (!params.isInputAFile()) {
-				cifFile = new File(params.getOutDir(),params.getPdbCode() + ".cif");
-				cifFile.deleteOnExit();
+				
+				AtomCache cache = new AtomCache();
+								
+				cache.setUseMmCif(true);
+				FileParsingParameters fileParsingParams = new FileParsingParameters();
+				fileParsingParams.setAlignSeqRes(true);
+				cache.setFileParsingParams(fileParsingParams);
+				
+				StructureIO.setAtomCache(cache); 
+				
+				
 				try {
-					PdbAsymUnit.grabCifFile(params.getLocalCifDir(), params.getPdbFtpCifUrl(), params.getPdbCode(), cifFile, params.isUseOnlinePdb());
+					pdb = StructureIO.getStructure(params.getPdbCode());
 				} catch(IOException e) {
-					throw new EppicException(e,"Couldn't get cif file for code "+params.getPdbCode()+" from ftp or couldn't uncompress it. Error: "+e.getMessage(),true);
+					throw new EppicException(e,"Couldn't get cif file from AtomCache for code "+params.getPdbCode()+". Error: "+e.getMessage(),true);
 				}
 					
 			} else {
-				cifFile = params.getInFile();
+
+				int fileType = FileTypeGuesser.guessFileType(params.getInFile());
+				
+				if (fileType==FileTypeGuesser.CIF_FILE) {
+
+					MMcifParser parser = new SimpleMMcifParser();
+
+					SimpleMMcifConsumer consumer = new SimpleMMcifConsumer();
+
+					FileParsingParameters fileParsingParams = new FileParsingParameters();
+					// TODO we should parse PDB files with no X padding if no SEQRES is found. Otherwise matching to uniprot doesn't work in many cases
+					//fileParsingParams.set????					
+					fileParsingParams.setAlignSeqRes(true);
+
+					consumer.setFileParsingParameters(fileParsingParams);
+
+					parser.addMMcifConsumer(consumer);
+
+					parser.parse(new BufferedReader(new InputStreamReader(new FileInputStream(params.getInFile())))); 
+
+					pdb = consumer.getStructure();
+					
+				} else if (fileType==FileTypeGuesser.PDB_FILE || fileType==FileTypeGuesser.RAW_PDB_FILE) {
+
+					PDBFileParser parser = new PDBFileParser();
+					
+					FileParsingParameters fileParsingParams = new FileParsingParameters();
+					// TODO we should parse PDB files with no X padding if no SEQRES is found. Otherwise matching to uniprot doesn't work in many cases
+					//fileParsingParams.set????
+					fileParsingParams.setAlignSeqRes(true);
+					
+					parser.setFileParsingParameters(fileParsingParams);
+					
+					pdb = parser.parsePDBFile(new FileInputStream(params.getInFile()));
+					
+				}
+
+
 			}
-			// we parse PDB files with no X padding if no SEQRES is found. Otherwise matching to uniprot doesn't work in many cases
-			pdb = new PdbAsymUnit(cifFile, PdbAsymUnit.DEFAULT_MODEL, false);
-		} catch (FileFormatException e) {
-			throw new EppicException(e,"File format error: "+e.getMessage(),true);
-		} catch (PdbLoadException e) {
-			throw new EppicException(e,"Couldn't load file "+cifFile.getName()+". Error: "+e.getMessage(),true);
+		} catch (StructureException e) {
+			throw new EppicException(e,"Couldn't load file PDB/mmCIF file. Error: "+e.getMessage(),true);
 		} catch (IOException e) {
-			throw new EppicException(e,"Problems reading PDB data from "+cifFile+". Error: "+e.getMessage(),true);
+			throw new EppicException(e,"Problems reading PDB data from "+params.getInFile()+". Error: "+e.getMessage(),true);
 		}
 		
-		if (pdb.getCrystalCell()==null) {
+		if (pdb.getCrystallographicInfo()==null || pdb.getCrystallographicInfo().getCrystalCell()==null) {
 			LOGGER.warn("No crystal information found in source "+params.getPdbCode()+". Only asymmetric unit interfaces will be calculated.");
 		}
-		
-		// we strip the H atoms: surface calculations should not have them (otherwise comparisons of structures with/without H arn't good)
-		pdb.removeHatoms();
 		
 		// for the webui
 		modelAdaptor = new DataModelAdaptor();
@@ -177,16 +216,13 @@ public class Main {
 		try {
 			params.getProgressLog().println("Loading interfaces enumeration from file "+params.getInterfSerFile());
 			LOGGER.info("Loading interfaces enumeration from file "+params.getInterfSerFile());
-			interfaces = (ChainInterfaceList)Goodies.readFromFile(params.getInterfSerFile());
+			interfaces = (StructureInterfaceList)Goodies.readFromFile(params.getInterfSerFile());
 		} catch (ClassNotFoundException e) {
 			throw new EppicException(e,"Couldn't load interface enumeration binary file: "+e.getMessage(),true);
 		} catch (IOException e) {
 			throw new EppicException(e,"Couldn't load interface enumeration binary file: "+e.getMessage(),true);
 		}
-		
-		if (!pdb.getPdbCode().equals(interfaces.get(1).getFirstMolecule().getPdbCode())) {
-			throw new EppicException(null,"PDB codes of given PDB entry/file and given interface enumeration binary file don't match.",true);
-		}
+		// TODO check that the input from serialized file matches the PDB input 
 		
 	}
 
@@ -194,59 +230,90 @@ public class Main {
 
 		params.getProgressLog().println("Calculating possible interfaces...");
 		LOGGER.info("Calculating possible interfaces");
-		InterfacesFinder interfFinder = new InterfacesFinder(pdb);
-		interfaces = interfFinder.getAllInterfaces(EppicParams.INTERFACE_DIST_CUTOFF, 
-				params.getnSpherePointsASAcalc(), params.getNumThreads(), true, false, 
-				params.getMinSizeCofactorForAsa(),
-				EppicParams.MIN_INTERFACE_AREA_TO_KEEP);		
+		CrystalBuilder interfFinder = new CrystalBuilder(pdb);
+		interfaces = interfFinder.getUniqueInterfaces(EppicParams.INTERFACE_DIST_CUTOFF);
+		interfaces.calcAsas(params.getnSpherePointsASAcalc(), params.getNumThreads(), params.getMinSizeCofactorForAsa());
+		interfaces.removeInterfacesBelowArea(EppicParams.MIN_INTERFACE_AREA_TO_KEEP);
+		
 		LOGGER.info("Interfaces calculated with "+params.getnSpherePointsASAcalc()+" sphere points.");
 
-		LOGGER.info("Calculating interface clusters");
-		interfaces.initialiseClusters(pdb, EppicParams.CLUSTERING_RMSD_CUTOFF, EppicParams.CLUSTERING_MINATOMS, EppicParams.CLUSTERING_ATOM_TYPE);
+		// TODO calculate clusters
+		//LOGGER.info("Calculating interface clusters");
+		//interfaces.initialiseClusters(pdb, EppicParams.CLUSTERING_RMSD_CUTOFF, EppicParams.CLUSTERING_MINATOMS, EppicParams.CLUSTERING_ATOM_TYPE);
 
-		int clustersSize = interfaces.getClusters().size();
-		int numInterfaces = interfaces.size();
-		LOGGER.info("Interface clustering done: "+numInterfaces+" interfaces - "+clustersSize+" clusters");
-		String msg = "Interface clusters: ";
-		for (int i=0; i<clustersSize;i++) {
-			InterfaceCluster cluster = interfaces.getClusters().get(i);
-			msg += cluster.toString();
-			if (i!=clustersSize-1) msg += ", "; 
-		}
-		LOGGER.info(msg); 
+		//int clustersSize = interfaces.getClusters().size();
+		//int numInterfaces = interfaces.size();
+		//LOGGER.info("Interface clustering done: "+numInterfaces+" interfaces - "+clustersSize+" clusters");
+		//String msg = "Interface clusters: ";
+		//for (int i=0; i<clustersSize;i++) {
+		//	InterfaceCluster cluster = interfaces.getClusters().get(i);
+		//	msg += cluster.toString();
+		//	if (i!=clustersSize-1) msg += ", "; 
+		//}
+		//LOGGER.info(msg); 
 
-		if (interfFinder.hasCofactors()) {
-			LOGGER.info("Cofactors of more than "+params.getMinSizeCofactorForAsa()+" atoms present: they will be taken into account for ASA calculations");
-			for (String pdbChainCode:pdb.getPdbChainCodes()) {
-				LOGGER.info("Chain "+pdbChainCode+": "+interfFinder.getNumCofactorsForPdbChainCode(pdbChainCode)+" cofactor(s) - "+
-						interfFinder.getCofactorsInfoString(pdbChainCode));
-			}
-		} else {
-			if (params.getMinSizeCofactorForAsa()<0) {
-				LOGGER.info("No minimum size for cofactors set. All cofactors will be ignored for ASA calculations");
-			} else {
-				LOGGER.info("No cofactors of more than "+params.getMinSizeCofactorForAsa()+" atoms present. Cofactors will be ignored for ASA calculations");
-			}
-		}
+		// TODO how to do the cofactors logging now?
+		//if (interfFinder.hasCofactors()) {
+		//	LOGGER.info("Cofactors of more than "+params.getMinSizeCofactorForAsa()+" atoms present: they will be taken into account for ASA calculations");
+		//	for (String pdbChainCode:pdb.getPdbChainCodes()) {
+		//		LOGGER.info("Chain "+pdbChainCode+": "+interfFinder.getNumCofactorsForPdbChainCode(pdbChainCode)+" cofactor(s) - "+
+		//				interfFinder.getCofactorsInfoString(pdbChainCode));
+		//	}
+		//} else {
+		//	if (params.getMinSizeCofactorForAsa()<0) {
+		//		LOGGER.info("No minimum size for cofactors set. All cofactors will be ignored for ASA calculations");
+		//	} else {
+		//		LOGGER.info("No cofactors of more than "+params.getMinSizeCofactorForAsa()+" atoms present. Cofactors will be ignored for ASA calculations");
+		//	}
+		//}
 
 
 		LOGGER.info("Minimum ASA for a residue to be considered surface: "+String.format("%2.0f",params.getMinAsaForSurface()));
 		
 		params.getProgressLog().println("Done");
 
+		checkClashes();
 
-		// checking for clashes
-		if (interfaces.hasInterfacesWithClashes()) {
-			msg = "Clashes (atoms distance below "+AICGraph.CLASH_DISTANCE+") found in:";
-			List<ChainInterface> clashyInterfs = interfaces.getInterfacesWithClashes();
-			boolean tooManyClashes = false;
-			for (ChainInterface clashyInterf:clashyInterfs) {
-				int numClashes = clashyInterf.getNumClashes();
-				if (numClashes>EppicParams.NUM_CLASHES_FOR_ERROR) tooManyClashes = true;
-				msg+=("\nInterface: "+clashyInterf.getFirstMolecule().getPdbChainCode()+"+"
-						+clashyInterf.getSecondMolecule().getPdbChainCode()+" ("+
-						SpaceGroup.getAlgebraicFromMatrix(clashyInterf.getSecondTransf().getMatTransform())+
-						") Clashes: "+numClashes); 
+		// TODO we used to calculate rim and cores here (and cache them in interfaces object), we should not do that anymore: just calculate them on the fly when needed
+		//interfaces.calcRimAndCores(params.getCAcutoffForGeom(), params.getMinAsaForSurface());
+		
+		if (!params.isGenerateModelSerializedFile()) {
+			// we only produce the interfaces.dat file if not in -w mode (for WUI not to produce so many files)
+			try {
+				Goodies.serialize(params.getOutputFile(EppicParams.INTERFACESDAT_FILE_SUFFIX),interfaces);
+			} catch (IOException e) {
+				throw new EppicException(e,"Couldn't write serialized ChainInterfaceList object to file: "+e.getMessage(),false);
+			}
+		}
+		
+	}
+	
+	private void checkClashes() throws EppicException {
+		
+		// getting the number of clashes per interface
+		int[] numClashesPerInterface = new int[interfaces.size()];
+		boolean hasInterfacesWithClashes = false;
+		boolean tooManyClashes = false;
+		int i = 0;
+		for (StructureInterface interf:interfaces) {
+			numClashesPerInterface[i] = interf.getContacts().getContactsWithinDistance(EppicParams.CLASH_DISTANCE).size();
+			if (numClashesPerInterface[i]>0) hasInterfacesWithClashes = true;
+			if (numClashesPerInterface[i]>EppicParams.NUM_CLASHES_FOR_ERROR) tooManyClashes = true;
+			i++;
+		}
+		
+		if (hasInterfacesWithClashes) {
+		
+			String msg = "Clashes (atoms distance below "+EppicParams.CLASH_DISTANCE+") found in:";			
+			i = 0;
+			for (StructureInterface interf:interfaces) {
+				if (numClashesPerInterface[i]>0) {		
+					msg+=("\nInterface "+interf.getId()+": "+interf.getMoleculeIds().getFirst()+"+"
+							+interf.getMoleculeIds().getSecond()+" ("+
+							SpaceGroup.getAlgebraicFromMatrix(interf.getTransforms().getSecond().getMatTransform())+
+							") Clashes: "+numClashesPerInterface[i]);
+				}
+				i++;
 			}
 			
 			if (tooManyClashes) {
@@ -262,22 +329,11 @@ public class Main {
 			}
 
 		}
-
-		interfaces.calcRimAndCores(params.getCAcutoffForGeom(), params.getMinAsaForSurface());
-		
-		if (!params.isGenerateModelSerializedFile()) {
-			// we only produce the interfaces.dat file if not in -w mode (for WUI not to produce so many files)
-			try {
-				Goodies.serialize(params.getOutputFile(EppicParams.INTERFACESDAT_FILE_SUFFIX),interfaces);
-			} catch (IOException e) {
-				throw new EppicException(e,"Couldn't write serialized ChainInterfaceList object to file: "+e.getMessage(),false);
-			}
-		}
 		
 	}
 	
 	public void doGeomScoring() throws EppicException {
-		if (interfaces.getNumInterfaces()==0) {
+		if (interfaces.size()==0) {
 			// no interfaces found at all, can happen e.g. in NMR structure with 1 chain, e.g. 1nmr
 			LOGGER.info("No interfaces found, nothing to analyse.");
 			params.getProgressLog().println("No interfaces found, nothing to analyse.");
@@ -287,9 +343,8 @@ public class Main {
 
 		// interface scoring
 		gps = new ArrayList<GeometryPredictor>();
-		for (ChainInterface interf:interfaces) {
+		for (StructureInterface interf:interfaces) {
 			GeometryPredictor gp = new GeometryPredictor(interf);
-			gp.setUsePdbResSer(params.isUsePdbResSer());
 			gps.add(gp);
 			gp.setBsaToAsaCutoff(params.getCAcutoffForGeom());
 			gp.setMinAsaForSurface(params.getMinAsaForSurface());
@@ -317,7 +372,8 @@ public class Main {
 
 		// writing to the model: for the webui and csv output files
 		modelAdaptor.setInterfaces(interfaces); // this writes all interface geom info, including h-bonds, disulfides etc
-		modelAdaptor.setPdbBioUnits(this.pdb.getPdbBioUnitList());
+		// TODO pass the biounit annotation to the model adaptor
+		//modelAdaptor.setPdbBioUnits(this.pdb.getPdbBioUnitList());
 		modelAdaptor.setGeometryScores(gps, gcps);
 		modelAdaptor.setResidueDetails(interfaces);
 		
@@ -343,7 +399,7 @@ public class Main {
 		// 1 interfaces info file and contacts info file
 		try {
 			// if no interfaces found (e.g. NMR) we don't want to write the file
-			if (interfaces.getNumInterfaces()>0) {
+			if (interfaces.size()>0) {
 				toW.writeInterfacesInfoFile();
 				toW.writeContactsInfoFile();
 			}
@@ -384,14 +440,14 @@ public class Main {
 	
 	public void doWritePdbFiles() throws EppicException {
 
-		if (interfaces.getNumInterfaces() == 0) return;
+		if (interfaces.size() == 0) return;
 		
 		if (!params.isGenerateInterfacesPdbFiles()) return;
 		
 		try {
 			if (!params.isDoEvolScoring()) {
 				// no evol scoring: plain PDB files without altered bfactors
-				for (ChainInterface interf : interfaces) {
+				for (StructureInterface interf : interfaces) {
 					if (interf.isFirstProtein() && interf.isSecondProtein()) {
 						File pdbFile = params.getOutputFile("." + interf.getId() + ".pdb.gz");
 						interf.writeToPdbFile(pdbFile, params.isUsePdbResSer(), true);
@@ -411,48 +467,49 @@ public class Main {
 		} 
 	}
 	
-	public void doHBPlus() throws EppicException {
-
-		if (interfaces.getNumInterfaces() == 0) return;
-		
-		if (params.getHbplusExe() != null && params.getHbplusExe().exists()) {
-
-			if (!params.isGenerateInterfacesPdbFiles()) {
-				LOGGER.info("HBPlus is set in config file but -l was not used, will not do H-bond calculation with HBPlus");
-				return;
-			}
-
-			try {
-
-				for (ChainInterface interf : interfaces) {
-					if (interf.isFirstProtein() && interf.isSecondProtein()) {
-						// note this file will be overwritten later by doWritePdbFiles()
-						File pdbFile = params.getOutputFile("." + interf.getId() + ".pdb.gz");
-						try {
-							interf.writeToPdbFile(pdbFile, true, true);
-						} catch (IOException e) {
-							throw new EppicException(e, "Couldn't write interface PDB files. " + e.getMessage(), true);
-						}
-						LOGGER.info("Running HBPlus for interface "+interf.getId());
-						interf.runHBPlus(params.getHbplusExe(), pdbFile);						
-					}
-				}
-
-			} catch (IOException e) {
-				throw new EppicException(e, "Couldn't run HBPlus. Error: " + e.getMessage(), true);
-			} catch (InterruptedException e) {
-				throw new EppicException(e, "Problems while running HBPlus. " + e.getMessage(), true);
-			}
-		} else {
-			LOGGER.info("HBPlus is not set or set to an invalid path. Will do H-bond calculation with internal algorithm.");
-		}
-	}
+	// TODO implement the HBplus stuff
+//	public void doHBPlus() throws EppicException {
+//
+//		if (interfaces.size() == 0) return;
+//		
+//		if (params.getHbplusExe() != null && params.getHbplusExe().exists()) {
+//
+//			if (!params.isGenerateInterfacesPdbFiles()) {
+//				LOGGER.info("HBPlus is set in config file but -l was not used, will not do H-bond calculation with HBPlus");
+//				return;
+//			}
+//
+//			try {
+//
+//				for (StructureInterface interf : interfaces) {
+//					if (interf.isFirstProtein() && interf.isSecondProtein()) {
+//						// note this file will be overwritten later by doWritePdbFiles()
+//						File pdbFile = params.getOutputFile("." + interf.getId() + ".pdb.gz");
+//						try {
+//							interf.writeToPdbFile(pdbFile, true, true);
+//						} catch (IOException e) {
+//							throw new EppicException(e, "Couldn't write interface PDB files. " + e.getMessage(), true);
+//						}
+//						LOGGER.info("Running HBPlus for interface "+interf.getId());
+//						interf.runHBPlus(params.getHbplusExe(), pdbFile);						
+//					}
+//				}
+//
+//			} catch (IOException e) {
+//				throw new EppicException(e, "Couldn't run HBPlus. Error: " + e.getMessage(), true);
+//			} catch (InterruptedException e) {
+//				throw new EppicException(e, "Problems while running HBPlus. " + e.getMessage(), true);
+//			}
+//		} else {
+//			LOGGER.info("HBPlus is not set or set to an invalid path. Will do H-bond calculation with internal algorithm.");
+//		}
+//	}
 	
 	public void doWritePymolFiles() throws EppicException {
 		
 		if (!params.isGenerateThumbnails()) return;
 		
-		if (interfaces.getNumInterfaces() == 0) return;
+		if (interfaces.size() == 0) return;
 		
 		PymolRunner pr = null;
 		params.getProgressLog().println("Writing PyMOL files");
@@ -468,7 +525,7 @@ public class Main {
 		}		
 
 		try {
-			for (ChainInterface interf:interfaces) {
+			for (StructureInterface interf:interfaces) {
 				pr.generateInterfPngPsePml(interf, 
 						params.getCAcutoffForGeom(), params.getMinAsaForSurface(), 
 						params.getOutputFile("."+interf.getId()+".pdb.gz"), 
@@ -483,7 +540,7 @@ public class Main {
 
 			if (params.isDoEvolScoring()) {
 				for (ChainEvolContext cec:cecs.getAllChainEvolContext()) {
-					PdbChain chain = pdb.getChain(cec.getRepresentativeChainCode());
+					Chain chain = pdb.getChainByPDB(cec.getRepresentativeChainCode());
 					cec.setConservationScoresAsBfactors(chain);
 					File chainPdbFile = params.getOutputFile("."+cec.getRepresentativeChainCode()+EppicParams.ENTROPIES_FILE_SUFFIX+".pdb");
 					File chainPseFile = params.getOutputFile("."+cec.getRepresentativeChainCode()+EppicParams.ENTROPIES_FILE_SUFFIX+".pse");
@@ -513,7 +570,7 @@ public class Main {
 
 	public void doCompressFiles() throws EppicException {
 		
-		if (interfaces.getNumInterfaces()==0) return;
+		if (interfaces.size()==0) return;
 		
 		if (!params.isGenerateThumbnails()) return;
 		// from here only if in -l mode: compress pse, chain pses and pdbs, create zip
@@ -522,7 +579,7 @@ public class Main {
 		LOGGER.info("Compressing files");
 		
 		try {
-			for (ChainInterface interf:interfaces) {
+			for (StructureInterface interf:interfaces) {
 				File pseFile = params.getOutputFile("."+interf.getId()+".pse");
 				File gzipPseFile = params.getOutputFile("."+interf.getId()+".pse.gz");
 
@@ -585,7 +642,7 @@ public class Main {
 	}
 	
 	public void doLoadEvolContextFromFile() throws EppicException {
-		if (interfaces.getNumInterfaces()==0) return;
+		if (interfaces.size()==0) return;
 		
 		findUniqueChains();
 		
@@ -603,7 +660,7 @@ public class Main {
 	}
 	
 	public void doFindEvolContext() throws EppicException {
-		if (interfaces.getNumInterfaces()==0) return;
+		if (interfaces.size()==0) return;
 		
 		findUniqueChains();
 		
@@ -639,7 +696,7 @@ public class Main {
 	}
 	
 	public void doEvolScoring() throws EppicException {
-		if (interfaces.getNumInterfaces()==0) return;
+		if (interfaces.size()==0) return;
 
 		iecList = new InterfaceEvolContextList(interfaces, cecs);
 		iecList.setUsePdbResSer(params.isUsePdbResSer());
@@ -671,14 +728,13 @@ public class Main {
 	}
 	
 	public void doCombinedScoring() throws EppicException {
-		if (interfaces.getNumInterfaces()==0) return;
+		if (interfaces.size()==0) return;
 		
 		List<CombinedPredictor> cps = new ArrayList<CombinedPredictor>();
 
 		for (int i=0;i<iecList.size();i++) {
 			CombinedPredictor cp = 
 					new CombinedPredictor(iecList.get(i), gps.get(i), iecList.get(i).getEvolCoreRimPredictor(), iecList.get(i).getEvolCoreSurfacePredictor());
-			cp.setUsePdbResSer(params.isUsePdbResSer());
 			cp.computeScores();
 			cps.add(cp);
 		}
@@ -771,8 +827,9 @@ public class Main {
 				doFindInterfaces();
 			}
 			
+			// TODO call doHBPlus when fixed
 			// try hbplus if executable is set, writes pdb files needed for it (which then are overwritten in doWritePdbFiles)
-			doHBPlus();
+			//doHBPlus();
 			
 			doGeomScoring();
 			
@@ -812,7 +869,7 @@ public class Main {
 			LOGGER.info("Finished successfully (total runtime "+((end-start)/1000000000L)+"s)");
 
 		} catch (EppicException e) {
-			e.log(LOGGER);
+			LOGGER.error(e.getMessage());
 			e.exitIfFatal(1);
 		} 
 		catch (Exception e) {
@@ -822,7 +879,7 @@ public class Main {
 			for (StackTraceElement el:e.getStackTrace()) {
 				stack+="\tat "+el.toString()+"\n";				
 			}
-			LOGGER.fatal("Unexpected error. Stack trace:\n"+e+"\n"+stack+
+			LOGGER.error("Unexpected error. Stack trace:\n"+e+"\n"+stack+
 					"\nPlease report a bug to "+EppicParams.CONTACT_EMAIL);
 			System.exit(1);
 		}

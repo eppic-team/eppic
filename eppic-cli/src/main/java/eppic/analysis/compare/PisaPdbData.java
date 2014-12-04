@@ -9,12 +9,12 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import eppic.CallType;
+import eppic.commons.pisa.OligomericPrediction;
+import eppic.commons.pisa.PisaAsmSetList;
+import eppic.commons.pisa.PisaInterface;
+import eppic.commons.pisa.PisaInterfaceList;
 import eppic.model.InterfaceDB;
 import eppic.model.PdbInfoDB;
-import owl.core.connections.pisa.OligomericPrediction;
-import owl.core.connections.pisa.PisaAsmSetList;
-import owl.core.connections.pisa.PisaInterface;
-import owl.core.connections.pisa.PisaInterfaceList;
 
 /**
  * Class to store the pisa data of a pdb entry

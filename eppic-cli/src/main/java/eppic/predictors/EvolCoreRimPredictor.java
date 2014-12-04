@@ -3,11 +3,10 @@ package eppic.predictors;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.biojava.bio.structure.Group;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import owl.core.structure.InterfaceRimCore;
-import owl.core.structure.Residue;
 import eppic.EppicParams;
 import eppic.CallType;
 import eppic.InterfaceEvolContext;
@@ -15,7 +14,7 @@ import eppic.InterfaceEvolContext;
 
 public class EvolCoreRimPredictor implements InterfaceTypePredictor {
 
-	private static final Log LOGGER = LogFactory.getLog(EvolCoreRimPredictor.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(EvolCoreRimPredictor.class);
 	
 	private InterfaceEvolContext iec;
 	
@@ -72,9 +71,7 @@ public class EvolCoreRimPredictor implements InterfaceTypePredictor {
 	public void computeScores() {
 		
 		// pre-check and calculating scores
-		
-		iec.getInterface().calcRimAndCore(bsaToAsaCutoff, minAsaForSurface);
-		
+				
 		check1 = checkInterfaceSide(InterfaceEvolContext.FIRST);
 		check2 = checkInterfaceSide(InterfaceEvolContext.SECOND);
 		
@@ -135,9 +132,20 @@ public class EvolCoreRimPredictor implements InterfaceTypePredictor {
 		
 		String scoreType = "core-rim";
 		
-		InterfaceRimCore rimCore = iec.getInterface().getRimCore(molecId);
+		List<Group> cores = null;
+		if (molecId == InterfaceEvolContext.FIRST) {
+			cores = iec.getInterface().getCoreResidues(bsaToAsaCutoff, minAsaForSurface).getFirst();
+		} else if (molecId == InterfaceEvolContext.SECOND) {
+			cores = iec.getInterface().getCoreResidues(bsaToAsaCutoff, minAsaForSurface).getSecond();
+		}
+		List<Group> rims = null;
+		if (molecId == InterfaceEvolContext.FIRST) {
+			rims = iec.getInterface().getRimResidues(bsaToAsaCutoff, minAsaForSurface).getFirst();
+		} else if (molecId == InterfaceEvolContext.SECOND) {
+			rims = iec.getInterface().getRimResidues(bsaToAsaCutoff, minAsaForSurface).getSecond();
+		}
 		
-		int[] unrelRes = generateInterfaceWarnings(molecId);		
+		int[] unrelRes = generateInterfaceWarnings(cores,rims,molecId);		
 		
 		int interfaceId = iec.getInterface().getId();
 		int memberSerial = molecId + 1;
@@ -158,7 +166,7 @@ public class EvolCoreRimPredictor implements InterfaceTypePredictor {
 					" homologs (at least "+iec.getMinNumSeqs()+" required)";
 			return false;
 		} 
-		if (rimCore.getCoreSize()<EppicParams.MIN_NUMBER_CORE_RESIDUES_EVOL_SCORE) {
+		if (cores.size()<EppicParams.MIN_NUMBER_CORE_RESIDUES_EVOL_SCORE) {
 
 			// a special condition for core size, we don't want that if one side has too few cores, 
 			// then the prediction is based only on the other side. We veto the whole interface scoring in this case
@@ -167,20 +175,20 @@ public class EvolCoreRimPredictor implements InterfaceTypePredictor {
 			veto = CallType.NO_PREDICTION;
 			return false;
 		}
-		if (((double)unrelRes[0]/(double)rimCore.getCoreSize())>EppicParams.MAX_ALLOWED_UNREL_RES) {
+		if (((double)unrelRes[0]/(double)cores.size())>EppicParams.MAX_ALLOWED_UNREL_RES) {
 			LOGGER.info("Interface "+interfaceId+", member "+memberSerial+
 					": there are not enough reliable core residues to calculate "+scoreType+" score ("+
-					unrelRes[0]+" unreliable residues out of "+rimCore.getCoreSize()+" residues in core)");
+					unrelRes[0]+" unreliable residues out of "+cores.size()+" residues in core)");
 			callReasonSides[molecId] = "Side "+memberSerial+" has not enough reliable core residues: "+
-					unrelRes[0]+" unreliable out of "+rimCore.getCoreSize()+" in core";
+					unrelRes[0]+" unreliable out of "+cores.size()+" in core";
 			return false;
 		}
-		if (((double)unrelRes[1]/(double)rimCore.getRimSize())>EppicParams.MAX_ALLOWED_UNREL_RES) {
+		if (((double)unrelRes[1]/(double)rims.size())>EppicParams.MAX_ALLOWED_UNREL_RES) {
 			LOGGER.info("Interface "+interfaceId+", member "+memberSerial+
 					" there are not enough reliable rim residues to calculate "+scoreType+" score ("+
-					unrelRes[1]+" unreliable residues out of "+rimCore.getRimSize()+" residues in rim)");
+					unrelRes[1]+" unreliable residues out of "+rims.size()+" residues in rim)");
 			callReasonSides[molecId] = "Side "+memberSerial+" has not enough reliable rim residues: "+
-					unrelRes[1]+" unreliable out of "+rimCore.getRimSize()+" in rim";
+					unrelRes[1]+" unreliable out of "+rims.size()+" in rim";
 			return false;
 		}
 		
@@ -190,16 +198,18 @@ public class EvolCoreRimPredictor implements InterfaceTypePredictor {
 	
 	/**
 	 * Generates warnings (to LOGGER and member variable) for given side of interface.
+	 * @param cores
+	 * @param rims
 	 * @param molecId
 	 * @return an array of size 2 with counts of unreliable core (index 0) and rim (index 1) residues
 	 */
-	private int[] generateInterfaceWarnings(int molecId) {
+	private int[] generateInterfaceWarnings(List<Group>cores, List<Group> rims, int molecId) {
 		
 		int countUnrelCoreRes = -1;
 		int countUnrelRimRes = -1;
 		if (canDoEntropyScoring(molecId)) {
-			List<Residue> unreliableCoreRes = iec.getUnreliableCoreRes(molecId);
-			List<Residue> unreliableRimRes = iec.getUnreliableRimRes(molecId);
+			List<Group> unreliableCoreRes = iec.getReferenceMismatchResidues(cores, molecId);
+			List<Group> unreliableRimRes = iec.getReferenceMismatchResidues(rims, molecId);
 			countUnrelCoreRes = unreliableCoreRes.size();
 			countUnrelRimRes = unreliableRimRes.size();
 			String msg = iec.getReferenceMismatchWarningMsg(unreliableCoreRes,"core");
@@ -222,11 +232,22 @@ public class EvolCoreRimPredictor implements InterfaceTypePredictor {
 			return Double.NaN;
 		}
 		double scoreRatio = Double.NaN;
-		iec.getInterface().calcRimAndCore(bsaToAsaCutoff, minAsaForSurface);
-		InterfaceRimCore rimCore = iec.getInterface().getRimCore(molecId);
 		
-		double rimScore  = iec.calcScore(rimCore.getRimResidues(), molecId, false);
-		double coreScore = iec.calcScore(rimCore.getCoreResidues(),molecId, false);
+		List<Group> cores = null;
+		if (molecId == InterfaceEvolContext.FIRST) {
+			cores = iec.getInterface().getCoreResidues(bsaToAsaCutoff, minAsaForSurface).getFirst();
+		} else if (molecId == InterfaceEvolContext.SECOND) {
+			cores = iec.getInterface().getCoreResidues(bsaToAsaCutoff, minAsaForSurface).getSecond();
+		}
+		List<Group> rims = null;
+		if (molecId == InterfaceEvolContext.FIRST) {
+			rims = iec.getInterface().getRimResidues(bsaToAsaCutoff, minAsaForSurface).getFirst();
+		} else if (molecId == InterfaceEvolContext.SECOND) {
+			rims = iec.getInterface().getRimResidues(bsaToAsaCutoff, minAsaForSurface).getSecond();
+		}
+		
+		double rimScore  = iec.calcScore(rims, molecId, false);
+		double coreScore = iec.calcScore(cores,molecId, false);
 		
 		int interfaceId = iec.getInterface().getId();
 		LOGGER.info("Interface "+interfaceId+", member "+(molecId+1)+": average entropy of core "+String.format("%4.2f", coreScore));

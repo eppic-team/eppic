@@ -9,13 +9,15 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import owl.core.runners.blast.BlastException;
-import owl.core.runners.blast.BlastRunner;
-import owl.core.sequence.Sequence;
-import owl.core.structure.ChainCluster;
-import owl.core.structure.PdbAsymUnit;
-import owl.core.structure.PdbLoadException;
-import owl.core.util.FileFormatException;
+import org.biojava.bio.structure.Structure;
+import org.biojava.bio.structure.StructureException;
+import org.biojava.bio.structure.align.util.AtomCache;
+import org.biojava3.structure.StructureIO;
+
+import eppic.commons.blast.BlastException;
+import eppic.commons.blast.BlastRunner;
+import eppic.commons.sequence.Sequence;
+
 
 /**
  * Script to find sequence redundant entries in a list of PDB codes
@@ -27,9 +29,7 @@ public class FindRedundantEntries {
 
 	private static final int NTHREADS = 1;
 	
-	private static final String LOCAL_CIF_DIR = new File(System.getProperty("user.home"),"cifrepo").getAbsolutePath();
 	private static final String BASENAME = "find_redundant_entries";
-	private static final String TMPDIR = System.getProperty("java.io.tmpdir");
 
 	private static final File BLASTCLUST_BIN = new File("/home/duarte_j/bin/blastclust");
 	private static final String BLAST_DATA_DIR = "/nfs/data/software/packages/blast-2.2.18/data";
@@ -91,25 +91,23 @@ public class FindRedundantEntries {
 		
 	}
 	
-	private static void writeFastaFile(Set<String> pdbCodes, File file) throws IOException, FileFormatException, PdbLoadException {
+	private static void writeFastaFile(Set<String> pdbCodes, File file) throws IOException {
 		
 		PrintStream ps = new PrintStream(file);
-		
+
+		AtomCache cache = new AtomCache();		
+		cache.setUseMmCif(true);		
+		StructureIO.setAtomCache(cache); 
+
 		for (String pdbCode:pdbCodes) {
-			File cifFile = new File(TMPDIR,BASENAME+"_"+pdbCode+".cif");
+			
+			Structure pdb = null;
 			try {
-				PdbAsymUnit.grabCifFile(LOCAL_CIF_DIR, null, pdbCode, cifFile, false);
-			} catch (IOException e) {
-				System.out.println("\nError while reading cif.gz file ("+new File(LOCAL_CIF_DIR,pdbCode+".cif.gz").toString()+") or writing temp cif file: "+e.getMessage());
+				pdb = StructureIO.getStructure(pdbCode);
+			} catch (IOException|StructureException e) {
+				System.out.println("\nError. Couldn't load PDB "+pdbCode+". Error: "+e.getMessage());
 				continue;
-			}
-			PdbAsymUnit pdb = null;
-			try {
-				pdb = new PdbAsymUnit(cifFile);
-			} catch (PdbLoadException e) {
-				System.err.println("Could not load "+pdbCode+": "+e.getMessage());
-				continue;
-			}
+			} 
 			
 			for (ChainCluster chainCluster:pdb.getProtChainClusters()) {
 				Sequence seq = chainCluster.getRepresentative().getSequence();
@@ -118,9 +116,6 @@ public class FindRedundantEntries {
 				if (seq.isNucleotide()) continue; // some sets (like Bahadur's monomers) contain DNA/RNA: ignore
 				seq.writeToPrintStream(ps);
 			}
-			
-			cifFile.delete();
-			
 			
 		}
 		ps.close();

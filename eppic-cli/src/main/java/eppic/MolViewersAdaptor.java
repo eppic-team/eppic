@@ -5,12 +5,11 @@ import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.util.List;
 
-import owl.core.structure.ChainInterface;
-import owl.core.structure.Residue;
+import org.biojava.bio.structure.contact.StructureInterface;
 
 public class MolViewersAdaptor {
 
-	public static void writeJmolScriptFile(ChainInterface interf, double caCutoff, double minAsaForSurface, PymolRunner pr, File dir, String prefix, boolean usePdbResSer) 
+	public static void writeJmolScriptFile(StructureInterface interf, double caCutoff, double minAsaForSurface, PymolRunner pr, File dir, String prefix, boolean usePdbResSer) 
 			throws FileNotFoundException {
 
 		File file = new File(dir,prefix+"."+interf.getId()+".jmol");
@@ -20,7 +19,7 @@ public class MolViewersAdaptor {
 
 	}
 
-	private static String createJmolScript(ChainInterface interf, double caCutoff, double minAsaForSurface, PymolRunner pr, boolean usePdbResSer) {
+	private static String createJmolScript(StructureInterface interf, double caCutoff, double minAsaForSurface, PymolRunner pr, boolean usePdbResSer) {
 		char chain1 = interf.getFirstMolecule().getPdbChainCode().charAt(0);
 		char chain2 = interf.getSecondPdbChainCodeForOutput().charAt(0);
 		

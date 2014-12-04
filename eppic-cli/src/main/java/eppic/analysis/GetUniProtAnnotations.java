@@ -7,8 +7,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import owl.core.connections.NoMatchFoundException;
-import owl.core.connections.UniProtConnection;
+import eppic.commons.sequence.NoMatchFoundException;
+import eppic.commons.sequence.UniProtConnection;
 //import uk.ac.ebi.kraken.interfaces.uniprot.Keyword;
 import uk.ac.ebi.kraken.interfaces.uniprot.UniProtEntry;
 //import uk.ac.ebi.kraken.interfaces.uniprot.dbx.go.Go;

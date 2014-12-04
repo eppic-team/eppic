@@ -12,13 +12,10 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import owl.core.structure.ChainInterface;
-import owl.core.structure.ChainInterfaceList;
-import owl.core.structure.InterfaceRimCore;
-import owl.core.structure.PdbChain;
-import owl.core.structure.PdbLoadException;
-import owl.core.structure.PdbfileParser;
-import owl.core.structure.Residue;
+import org.biojava.bio.structure.Chain;
+import org.biojava.bio.structure.contact.StructureInterface;
+import org.biojava.bio.structure.contact.StructureInterfaceList;
+
 
 public class PymolRunner {
 	
@@ -150,7 +147,7 @@ public class PymolRunner {
 	 * @throws IOException 
 	 * @throws InterruptedException 
 	 */
-	public void generateInterfPngPsePml(ChainInterface interf, double caCutoff, double minAsaForSurface, 
+	public void generateInterfPngPsePml(StructureInterface interf, double caCutoff, double minAsaForSurface, 
 			File pdbFile, File pseFile, File pmlFile, String base, boolean usePdbResSer) 
 	throws IOException, InterruptedException {
 		
@@ -297,7 +294,7 @@ public class PymolRunner {
 	
 	public void generateInterfacesPse(File asuPdbFile, Set<String> chains, 
 			File pmlFile, File pseFile, File[] interfacePdbFiles, 
-			ChainInterfaceList interfaces) 
+			StructureInterfaceList interfaces) 
 		throws IOException, InterruptedException {
 		
 		String molecName = getPymolMolecName(asuPdbFile);
@@ -354,7 +351,7 @@ public class PymolRunner {
 		
 		i = 1;
 		for (File interfPdbFile:interfacePdbFiles) {
-			ChainInterface interf = interfaces.get(i);
+			StructureInterface interf = interfaces.get(i);
 			char chain1 = interf.getFirstMolecule().getPdbChainCode().charAt(0);
 			char chain2 = interf.getSecondPdbChainCodeForOutput().charAt(0);
 			
@@ -423,7 +420,7 @@ public class PymolRunner {
 	 * @throws IOException 
 	 * @throws InterruptedException 
 	 */
-	public void generateChainPse(PdbChain chain, ChainInterfaceList interfaces, 
+	public void generateChainPse(Chain chain, StructureInterfaceList interfaces, 
 			double caCutoffGeom, double caCutoffCoreSurf, double minAsaForSurface, 
 			File pdbFile, File pseFile, File pmlFile,
 			File iconPngFile, int iconWidth, int iconHeight,
@@ -489,7 +486,7 @@ public class PymolRunner {
 		
 		List<Integer> interfaceIds = new ArrayList<Integer>();
 		
-		for (ChainInterface interf:interfaces) {
+		for (StructureInterface interf:interfaces) {
 			if (interf.getInterfaceArea()<MIN_INTERF_AREA_TO_DISPLAY) continue;
 			
 			InterfaceRimCore rimCore = null;

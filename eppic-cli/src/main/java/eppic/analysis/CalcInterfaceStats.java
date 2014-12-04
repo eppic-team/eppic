@@ -6,13 +6,16 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.biojava.bio.structure.Structure;
+import org.biojava.bio.structure.StructureException;
+import org.biojava.bio.structure.align.util.AtomCache;
+import org.biojava.bio.structure.contact.StructureInterface;
+import org.biojava.bio.structure.contact.StructureInterfaceList;
+import org.biojava.bio.structure.xtal.CrystalBuilder;
+import org.biojava.bio.structure.xtal.SpaceGroup;
+import org.biojava3.structure.StructureIO;
+
 import eppic.EppicParams;
-import owl.core.structure.ChainInterface;
-import owl.core.structure.ChainInterfaceList;
-import owl.core.structure.PdbAsymUnit;
-import owl.core.structure.PdbLoadException;
-import owl.core.structure.SpaceGroup;
-import owl.core.util.FileFormatException;
 
 /**
  * Script to calculate all interfaces of given PDB entries and output a table 
@@ -24,14 +27,9 @@ import owl.core.util.FileFormatException;
  *
  */
 public class CalcInterfaceStats extends Thread {
-
-	private static final String   LOCAL_CIF_DIR = new File(System.getProperty("user.home"),"cifrepo").getAbsolutePath();
 	
 	private static final double CA_CUTOFF = 0.95;
 	private static final double MIN_ASA_FOR_SURFACE = 5;
-	
-	private static final String BASENAME = "interf_sort";
-	private static final String TMPDIR = System.getProperty("java.io.tmpdir");
 	
 	private static final int NSPHEREPOINTS = 3000;
 	private static final int NTHREADS = 1;
@@ -75,35 +73,24 @@ public class CalcInterfaceStats extends Thread {
 		entries:
 			for (String pdbCode:pdbCodes) {
 				
-				File cifFile = new File(TMPDIR,BASENAME+"_"+pdbCode+".cif");
+				Structure pdb = null;
 				try {
-					PdbAsymUnit.grabCifFile(LOCAL_CIF_DIR, null, pdbCode, cifFile, false);
-				} catch (IOException e) {
-					System.out.println("\nError while reading cif.gz file ("+new File(LOCAL_CIF_DIR,pdbCode+".cif.gz").toString()+") or writing temp cif file: "+e.getMessage());
+					pdb = StructureIO.getStructure(pdbCode);
+				} catch (IOException|StructureException e) {
+					System.out.println("\nError. Couldn't load PDB "+pdbCode+". Error: "+e.getMessage());
 					continue;
-				}
-				PdbAsymUnit pdb = null;
-				try {
-					pdb = new PdbAsymUnit(cifFile);
-				} catch (PdbLoadException e) {
-					System.out.println("\nError. Couldn't load cif file "+cifFile+". Error: "+e.getMessage());
-					continue;
-				} catch (IOException e) {
-					System.out.println("\nError. Couldn't load cif file "+cifFile+". Error: "+e.getMessage());
-					continue;
-				} catch (FileFormatException e) {
-					System.out.println("\nError. Couldn't load cif file "+cifFile+". Error: "+e.getMessage());
-					continue;
-				}
-				cifFile.delete();
+				} 
 				
-				// very important indeed: remove the H atoms! otherwise we get uncomparable areas/core sizes!!!!
-				pdb.removeHatoms();
+				
 				
 				long start = System.currentTimeMillis();
-				ChainInterfaceList interfList = null;
+								
+				CrystalBuilder cb = new CrystalBuilder(pdb);
 				
-				interfList = pdb.getAllInterfaces(EppicParams.INTERFACE_DIST_CUTOFF, NSPHEREPOINTS, NTHREADS, false, false, -1, EppicParams.MIN_INTERFACE_AREA_TO_KEEP);
+				StructureInterfaceList interfList = cb.getUniqueInterfaces(EppicParams.INTERFACE_DIST_CUTOFF);
+				
+				interfList.calcAsas(NSPHEREPOINTS, NTHREADS, -1);
+				interfList.removeInterfacesBelowArea(EppicParams.MIN_INTERFACE_AREA_TO_KEEP);
 				 
 				long end = System.currentTimeMillis();
 				System.out.printf(pdbCode+"\t%4d\n",(end-start)/1000l);
@@ -113,30 +100,31 @@ public class CalcInterfaceStats extends Thread {
 					continue;
 				}
 				
-				for (ChainInterface interf:interfList) {
-					if (interf.getNumClashes()>5) continue entries;
+				for (StructureInterface interf:interfList) {
+					if ( interf.getContacts().getContactsWithinDistance(EppicParams.CLASH_DISTANCE).size() > 5 ) 
+						continue entries;
 				}
 				
-				for (ChainInterface interf:interfList) {
+				for (StructureInterface interf:interfList) {
 				
 					int interfId = interf.getId();
-					String pdbChainCode1 = interf.getFirstMolecule().getPdbChainCode();
-					String pdbChainCode2 = interf.getSecondMolecule().getPdbChainCode();
-					String op = SpaceGroup.getAlgebraicFromMatrix(interf.getSecondTransf().getMatTransform());
-					double area = interf.getInterfaceArea();
-					int clashes = interf.getAICGraph().getNumClashes();
+					String pdbChainCode1 = interf.getMoleculeIds().getFirst();
+					String pdbChainCode2 = interf.getMoleculeIds().getSecond();
+					String op = SpaceGroup.getAlgebraicFromMatrix(interf.getTransforms().getSecond().getMatTransform());
+					double area = interf.getTotalArea();
+					int clashes = interf.getContacts().getContactsWithinDistance(EppicParams.CLASH_DISTANCE).size();
 					
-					interf.calcRimAndCore(CA_CUTOFF, MIN_ASA_FOR_SURFACE);
-					int core1 = interf.getFirstRimCore().getCoreSize();
-					int core2 = interf.getSecondRimCore().getCoreSize();
+					int core1 = interf.getCoreResidues(CA_CUTOFF, MIN_ASA_FOR_SURFACE).getFirst().size();
+					int core2 = interf.getCoreResidues(CA_CUTOFF, MIN_ASA_FOR_SURFACE).getSecond().size();
 
 
 					
-					outputStrings.add(String.format("%4s\t%2d\t%4s\t%20s\t%8.2f\t%3d\t%3.1f\t%4.2f\t%4.2f\t%3d\t%3d",
+					outputStrings.add(String.format("%4s\t%2d\t%4s\t%20s\t%8.2f\t%3d\t%3.1f\t%4.2f\t%3d\t%3d",
 							pdbCode,interfId,
 							pdbChainCode1+"+"+pdbChainCode2,
 							op,area,clashes,
-							pdb.getResolution(),pdb.getRfree(),pdb.getRsym(),
+							pdb.getPDBHeader().getResolution(),
+							pdb.getPDBHeader().getRfree(),
 							core1,core2));
 				}
 				doneEntries++;
@@ -159,6 +147,11 @@ public class CalcInterfaceStats extends Thread {
 		if (args.length>2) {
 			numThreads = Integer.parseInt(args[2]);
 		}
+		
+		AtomCache cache = new AtomCache();		
+		cache.setUseMmCif(true);		
+		StructureIO.setAtomCache(cache); 
+
 		
 		List<String> pdbCodes = new ArrayList<String>(); 
 		pdbCodes.addAll(Utils.readListFile(listFile).keySet());

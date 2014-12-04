@@ -11,12 +11,19 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import org.biojava.bio.structure.Group;
+import org.biojava.bio.structure.GroupType;
+import org.biojava.bio.structure.Structure;
+import org.biojava.bio.structure.StructureException;
+import org.biojava.bio.structure.align.util.AtomCache;
+import org.biojava.bio.structure.asa.GroupAsa;
+import org.biojava.bio.structure.contact.Pair;
+import org.biojava.bio.structure.contact.StructureInterface;
+import org.biojava.bio.structure.contact.StructureInterfaceList;
+import org.biojava.bio.structure.xtal.CrystalBuilder;
+import org.biojava3.structure.StructureIO;
+
 import eppic.EppicParams;
-import owl.core.structure.ChainInterface;
-import owl.core.structure.ChainInterfaceList;
-import owl.core.structure.PdbAsymUnit;
-import owl.core.structure.PdbLoadException;
-import owl.core.util.FileFormatException;
 
 /**
  * Executable to produce statistics of different core definitions for a set of interfaces.
@@ -31,14 +38,9 @@ import owl.core.util.FileFormatException;
  */
 public class CoreDefinitionsStats {
 
-	private static String   LOCAL_CIF_DIR;
-	
 	private static final double CA_CUTOFF = 0.95;
 	private static final double RASA_CUTOFF = 0.25;
 	private static final double MIN_ASA_FOR_SURFACE = 5;
-	
-	private static final String BASENAME = "interf_coredef";
-	private static final String TMPDIR = System.getProperty("java.io.tmpdir");
 	
 	private static final int NSPHEREPOINTS = 3000;
 	private static final int NTHREADS = 1;
@@ -46,13 +48,13 @@ public class CoreDefinitionsStats {
 	
 	private class InterfList {
 		public String pdbCode;
-		public List<ChainInterface> interfaces;
-		public InterfList(String pdbCode, List<ChainInterface> interfaces) {
+		public List<StructureInterface> interfaces;
+		public InterfList(String pdbCode, List<StructureInterface> interfaces) {
 			this.pdbCode = pdbCode;
 			this.interfaces = interfaces;
 		}
 		
-		public List<ChainInterface> getInterfaces() {
+		public List<StructureInterface> getInterfaces() {
 			return interfaces;
 		}
 
@@ -71,40 +73,27 @@ public class CoreDefinitionsStats {
 		@Override
 		public InterfList call() throws Exception {
 			
-			File cifFile = new File(TMPDIR,BASENAME+"_"+pdbCode+".cif");
+			Structure pdb = null;
 			try {
-				PdbAsymUnit.grabCifFile(LOCAL_CIF_DIR, null, pdbCode, cifFile, false);
-			} catch (IOException e) {
-				System.out.println("\nError while reading cif.gz file ("+new File(LOCAL_CIF_DIR,pdbCode+".cif.gz").toString()+") or writing temp cif file: "+e.getMessage());
+				pdb = StructureIO.getStructure(pdbCode);
+			} catch (IOException|StructureException e) {
+				System.out.println("\nError. Couldn't load PDB "+pdbCode+". Error: "+e.getMessage());
 				return null;
-			}
-			PdbAsymUnit pdb = null;
-			try {
-				pdb = new PdbAsymUnit(cifFile);
-			} catch (PdbLoadException e) {
-				System.out.println("\nError. Couldn't load cif file "+cifFile+". Error: "+e.getMessage());
-				return null;
-			} catch (IOException e) {
-				System.out.println("\nError. Couldn't load cif file "+cifFile+". Error: "+e.getMessage());
-				return null;
-			} catch (FileFormatException e) {
-				System.out.println("\nError. Couldn't load cif file "+cifFile+". Error: "+e.getMessage());
-				return null;
-			} finally {
-				cifFile.delete();
-			}
-			// very important indeed: remove the H atoms! otherwise we get uncomparable core sizes!!!!
-			pdb.removeHatoms();
+			} 
 			
 			long start = System.currentTimeMillis();
-			ChainInterfaceList interfList = null;
 
-			interfList = pdb.getAllInterfaces(EppicParams.INTERFACE_DIST_CUTOFF, NSPHEREPOINTS, 1, true, false, -1, EppicParams.MIN_INTERFACE_AREA_TO_KEEP);
+			CrystalBuilder cb = new CrystalBuilder(pdb);
+			
+			StructureInterfaceList interfList = cb.getUniqueInterfaces(EppicParams.INTERFACE_DIST_CUTOFF);
+			
+			interfList.calcAsas(NSPHEREPOINTS, 1, -1);
+			interfList.removeInterfacesBelowArea(EppicParams.MIN_INTERFACE_AREA_TO_KEEP);
 			
 			long end = System.currentTimeMillis();
 			System.out.printf(pdbCode+"\t%4d\n",(end-start)/1000l);
 
-			List<ChainInterface> list = new ArrayList<ChainInterface>();
+			List<StructureInterface> list = new ArrayList<StructureInterface>();
 			for (int interfId:interfaceIds) {
 				list.add(interfList.get(interfId));
 			}
@@ -134,10 +123,10 @@ public class CoreDefinitionsStats {
 			numThreads = Integer.parseInt(args[2]);
 		}
 		
-		EppicParams params = loadConfigFile(); 
-		LOCAL_CIF_DIR = params.getLocalCifDir();
+		AtomCache cache = new AtomCache();
+		cache.setUseMmCif(true);
+		StructureIO.setAtomCache(cache); 
 		
-		 
 		TreeMap<String,List<Integer>> entries2interfaces = Utils.readListFile(listFile);
 		
 		System.out.println("Calculating interfaces...");		
@@ -166,17 +155,16 @@ public class CoreDefinitionsStats {
 			InterfList interfList = future.get();
 			if (interfList!=null) {
 				
-				for (ChainInterface interf:interfList.getInterfaces()) {
-					double area = interf.getInterfaceArea();
-					interf.calcRimAndCore(CA_CUTOFF, MIN_ASA_FOR_SURFACE);
-					int core1Schaerer = interf.getFirstRimCore().getCoreSize();
-					int core2Schaerer = interf.getSecondRimCore().getCoreSize();
-					interf.calcRimAndCoreChakrabarti(MIN_ASA_FOR_SURFACE);
-					int core1Chak = interf.getFirstRimCore().getCoreSize();
-					int core2Chak = interf.getSecondRimCore().getCoreSize();
-					interf.calcRimAndCoreLevy(RASA_CUTOFF);
-					int core1Levy = interf.getFirstRimCore().getCoreSize();
-					int core2Levy = interf.getSecondRimCore().getCoreSize();
+				for (StructureInterface interf:interfList.getInterfaces()) {
+					double area = interf.getTotalArea();
+					int core1Schaerer = interf.getCoreResidues(CA_CUTOFF, MIN_ASA_FOR_SURFACE).getFirst().size();
+					int core2Schaerer = interf.getCoreResidues(CA_CUTOFF, MIN_ASA_FOR_SURFACE).getSecond().size();
+					Pair<List<Group>> coresChak = getCoreChakrabarti(interf, MIN_ASA_FOR_SURFACE); 
+					int core1Chak = coresChak.getFirst().size();
+					int core2Chak = coresChak.getSecond().size();
+					Pair<List<Group>> coresLevy = getCoreLevy(interf, RASA_CUTOFF);
+					int core1Levy = coresLevy.getFirst().size();
+					int core2Levy = coresLevy.getSecond().size();
 
 					
 					out.printf("%s_%d %2d %2d %2d %2d %2d %2d %7.2f\n",
@@ -199,22 +187,98 @@ public class CoreDefinitionsStats {
 	
 	}
 
-	private static EppicParams loadConfigFile() {
-		EppicParams params = new EppicParams();
-		// loading settings from config file
-		File userConfigFile = new File(System.getProperty("user.home"),".eppic.conf");  
-		try {
-			if (userConfigFile.exists()) {
-				System.out.println("Loading user configuration file " + userConfigFile);
-				params.readConfigFile(userConfigFile);
-			} else {
-				System.err.println("Warning! No config file found. Using default locations");
+	/**
+	 * Returns 2 lists of core residues in the Chakrabarti definition.
+	 * Following the Chakrabarti definition (see Chakrabarti, Janin Proteins 2002):
+	 * core residues have at least one atom fully buried (bsa/asa=1) and rim residues are all the
+	 * rest still with bsa>0 but bsa/asa<1 (all atoms partially accessible)
+	 * Residues will be considered at interface surface only if their ASA is above 
+	 * given minAsaForSurface 
+	 * @param interf  
+	 * @param minAsaForSurface
+	 * @return
+	 */
+	public static Pair<List<Group>> getCoreChakrabarti(StructureInterface interf, double minAsaForSurface) {
+		List<Group> core1 = new ArrayList<Group>();
+		List<Group> core2 = new ArrayList<Group>();
+		
+		for (GroupAsa groupAsa:interf.getFirstGroupAsas().values()) {
+			
+			if (groupAsa.getAsaU()>minAsaForSurface && groupAsa.getBsa()>0) {
+				boolean iscore = false;
+				for (int i=0; i<groupAsa.getAtomAsaCs().size();i++) {
+					double atomAsaC = groupAsa.getAtomAsaCs().get(i);
+					double atomAsaU = groupAsa.getAtomAsaUs().get(i);
+					if ( ( (atomAsaU-atomAsaC)/atomAsaU ) > 0.999 ) {
+						iscore = true;
+						break;
+					}
+				}
+				if (iscore) core1.add(groupAsa.getGroup());
 			}
-		} catch (IOException e) {
-			System.err.println("Error while reading from config file " + userConfigFile + ": " + e.getMessage());
-			System.exit(1);
 		}
-		return params;
+		
+		for (GroupAsa groupAsa:interf.getSecondGroupAsas().values()) {
+			
+			if (groupAsa.getAsaU()>minAsaForSurface && groupAsa.getBsa()>0) {
+				boolean iscore = false;
+				for (int i=0; i<groupAsa.getAtomAsaCs().size();i++) {
+					double atomAsaC = groupAsa.getAtomAsaCs().get(i);
+					double atomAsaU = groupAsa.getAtomAsaUs().get(i);
+					if ( ( (atomAsaU-atomAsaC)/atomAsaU ) > 0.999 ) {
+						iscore = true;
+						break;
+					}
+				}
+				if (iscore) core2.add(groupAsa.getGroup());
+			}
+		}
+
+		return new Pair<List<Group>>(core1,core2);
+	}
+	
+	/**
+	 * Returns 2 lists of core residues in the Levy definition. 
+	 * Following the Levy definition (see Levy JMB 2010):
+	 * core residues have rASA(c) below 25% while rASA(u) was above 25%, 
+	 * rim residues have rASA(c) above 25%
+	 * The paper also introduces a third class of residues: support residues, 
+	 * those with rASA(u)<25% 
+	 * @param interf
+	 * @param rASAcutoff
+	 * @return
+	 */
+	public static Pair<List<Group>> getCoreLevy(StructureInterface interf, double rASAcutoff) {
+		List<Group> core1 = new ArrayList<Group>();
+		List<Group> core2 = new ArrayList<Group>();
+
+		for (GroupAsa groupAsa:interf.getFirstGroupAsas().values()) {
+			Group g = groupAsa.getGroup();
+			if (!g.getType().equals(GroupType.AMINOACID)) continue;
+			
+			if (groupAsa.getBsa()>0) {
+				double rasau = groupAsa.getRelativeAsaU();
+				double rasac = groupAsa.getRelativeAsaC();
+				if ( rasac<rASAcutoff && rasau>rASAcutoff) {  
+					core1.add(g);
+				}				
+			}
+		}
+		
+		for (GroupAsa groupAsa:interf.getSecondGroupAsas().values()) {
+			Group g = groupAsa.getGroup();
+			if (!g.getType().equals(GroupType.AMINOACID)) continue;
+			
+			if (groupAsa.getBsa()>0) {
+				double rasau = groupAsa.getRelativeAsaU();
+				double rasac = groupAsa.getRelativeAsaC();
+				if ( rasac<rASAcutoff && rasau>rASAcutoff) {  
+					core2.add(g);
+				}				
+			}
+		}
+		
+		return new Pair<List<Group>>(core1,core2);
 	}
 	
 }

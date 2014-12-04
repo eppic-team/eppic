@@ -4,16 +4,13 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 
-import owl.core.structure.PdbAsymUnit;
-import owl.core.structure.PdbLoadException;
-import owl.core.util.FileFormatException;
+import org.biojava.bio.structure.Structure;
+import org.biojava.bio.structure.StructureException;
+import org.biojava3.structure.StructureIO;
+
 
 public class BlancoEntry implements Comparable<BlancoEntry> {
 
-	private static final String BASENAME = "ciftemp";
-	private static final String TMPDIR = System.getProperty("java.io.tmpdir");
-
-	
 	private BlancoCluster parent;
 	private String pdbCode;
 	
@@ -29,35 +26,18 @@ public class BlancoEntry implements Comparable<BlancoEntry> {
 	
 	public void retrievePdbData(File cifDir) {
 
-		File cifFile = new File(TMPDIR,BASENAME+"_"+pdbCode+".cif");
-		cifFile.deleteOnExit();
+		Structure pdb = null;
 		try {
-			PdbAsymUnit.grabCifFile(cifDir.getAbsolutePath(), null, pdbCode, cifFile, false);
-		} catch (IOException e) {
-			System.err.println("Warning: error while reading cif.gz file ("+new File(cifDir,pdbCode+".cif.gz").toString()+") or writing temp cif file: "+e.getMessage());
+			pdb = StructureIO.getStructure(pdbCode);
+		} catch (IOException|StructureException e) {
+			System.err.println("Warning: couldn't load PDB "+pdbCode+". Error: "+e.getMessage());
 			hasPdbData = false;
 			return;
-		}
+		} 
 		
-		PdbAsymUnit pdb = null;
-		try {
-			pdb = new PdbAsymUnit(cifFile);
-		} catch (PdbLoadException e) {
-			System.err.println("Warning: couldn't load cif file "+cifFile+". Error: "+e.getMessage());
-			hasPdbData = false;
-			return;
-		} catch (IOException e) {
-			System.err.println("Warning: couldn't load cif file "+cifFile+". Error: "+e.getMessage());
-			hasPdbData = false;
-			return;
-		} catch (FileFormatException e) {
-			System.err.println("Warning: couldn't load cif file "+cifFile+". Error: "+e.getMessage());
-			hasPdbData = false;
-			return;
-		}
 		
-		this.resolution = pdb.getResolution();
-		this.expMethod = pdb.getExpMethod();
+		this.resolution = pdb.getPDBHeader().getResolution();
+		this.expMethod = pdb.getPDBHeader().getExperimentalTechniques().iterator().next().getName();
 		this.rFree = pdb.getRfree();
 		
 		hasPdbData = true;

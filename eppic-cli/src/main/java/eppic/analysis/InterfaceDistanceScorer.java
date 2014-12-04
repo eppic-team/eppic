@@ -4,6 +4,7 @@ import gnu.getopt.Getopt;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -16,19 +17,21 @@ import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import owl.core.structure.AaResidue;
-import owl.core.structure.AminoAcid;
-import owl.core.structure.Atom;
-import owl.core.structure.AtomType;
-//import owl.core.structure.ChainInterface;
-import owl.core.structure.PdbChain;
-import owl.core.structure.PdbAsymUnit;
-import owl.core.structure.PdbLoadException;
-import owl.core.structure.graphs.AICGEdge;
-import owl.core.structure.graphs.AICGraph;
-import owl.core.util.FileFormatException;
-import owl.core.util.MySQLConnection;
+import org.biojava.bio.structure.Atom;
+import org.biojava.bio.structure.Chain;
+import org.biojava.bio.structure.Element;
+import org.biojava.bio.structure.GroupType;
+import org.biojava.bio.structure.Structure;
+import org.biojava.bio.structure.StructureException;
+import org.biojava.bio.structure.StructureTools;
+import org.biojava.bio.structure.contact.AtomContact;
+import org.biojava.bio.structure.contact.AtomContactSet;
+import org.biojava.bio.structure.io.FileParsingParameters;
+import org.biojava.bio.structure.io.PDBFileParser;
 
+import eppic.commons.sequence.AminoAcid;
+import eppic.commons.sequence.FileFormatException;
+import eppic.commons.util.MySQLConnection;
 
 public class InterfaceDistanceScorer {
 
@@ -115,45 +118,39 @@ public class InterfaceDistanceScorer {
 				continue;
 			}
 			
-			PdbAsymUnit fullpdb = null;
-			try {
-				fullpdb = new PdbAsymUnit(pdbFile);
+			
+			PDBFileParser parser = new PDBFileParser();
+			
+			Structure pdb = parser.parsePDBFile(new FileInputStream(pdbFile));
+			
+			System.out.println(line);
+			this.structureIds.add(line);
 				
-				System.out.println(line);
-				this.structureIds.add(line);
-				
-			} catch (PdbLoadException e) {
-				System.err.println("Couldn't load file "+line+": "+e.getMessage());
-				continue;
-			} catch (FileFormatException e) {
-				System.err.println("Couldn't load file "+line+": "+e.getMessage());
-				continue;
-			}
 
-			PdbChain chain1 = null;
-			PdbChain chain2 = null;
+			Chain chain1 = null;
+			Chain chain2 = null;
 			int i = 0;
-			for (PdbChain chain:fullpdb.getAllChains()) {
+			for (Chain chain:pdb.getChains()) {
 				if (i==0) chain1 = chain;
 				if (i==1) chain2 = chain;
 				i++;
 			}
-			AICGraph graph = chain1.getAICGraph(chain2, cutoff);
+			AtomContactSet graph = StructureTools.getAtomsInContact(chain1, chain2, cutoff, false);
 			//ChainInterface interf = new ChainInterface(chain1, chain2, graph, null, null);
 			//interf.calcSurfAccess(NSPHEREPOINTS, 1, true);
 			//interf.calcRimAndCore(BSATOASACUTOFF);
 			
-			for (AICGEdge edge:graph.getEdges()) {
-				Atom inode = graph.getEndpoints(edge).getFirst();
-				Atom jnode = graph.getEndpoints(edge).getSecond();
-				int distBin = getDistanceBin(edge.getDistance());
+			for (AtomContact contact:graph) {
+				Atom inode = contact.getPair().getFirst();
+				Atom jnode = contact.getPair().getSecond();
+				int distBin = getDistanceBin(contact.getDistance());
 				// we have to avoid OXT atoms, they are not in the map
-				if (inode.getCode().equals("OXT") || jnode.getCode().equals("OXT")) continue;
-				if (inode.getType()==AtomType.H || jnode.getType()==AtomType.H) continue;
-				if (!(inode.getParentResidue() instanceof AaResidue) || 
-					!(jnode.getParentResidue() instanceof AaResidue)) continue;
-				countPair(types2indices.get(inode.getParentResidue().getLongCode()+inode.getCode()),
-						types2indices.get(jnode.getParentResidue().getLongCode()+jnode.getCode()),
+				if (inode.getName().equals("OXT") || jnode.getName().equals("OXT")) continue;
+				if (inode.getElement()==Element.H || jnode.getElement()==Element.H) continue;
+				if ( !(inode.getGroup().getType().equals(GroupType.AMINOACID) ) || 
+					 !(jnode.getGroup().getType().equals(GroupType.AMINOACID) ) ) continue;
+				countPair(types2indices.get(inode.getGroup().getPDBName()+inode.getName()),
+						types2indices.get(jnode.getGroup().getPDBName()+jnode.getName()),
 						distBin);
 			}
 		}
@@ -254,35 +251,36 @@ public class InterfaceDistanceScorer {
 		}
 	}
 	
-	public double scoreIt(PdbAsymUnit pdb) {
+	public double scoreIt(Structure pdb) {
 		
-		PdbChain chain1 = null;
-		PdbChain chain2 = null;
+		Chain chain1 = null;
+		Chain chain2 = null;
 		int i = 0;
-		for (PdbChain chain:pdb.getAllChains()) {
+		for (Chain chain:pdb.getChains()) {
 			if (i==0) chain1 = chain;
 			if (i==1) chain2 = chain;
 			i++;
 		}
-		AICGraph graph = chain1.getAICGraph(chain2, cutoff);
-		return scoreIt(graph);
+		AtomContactSet contacts = StructureTools.getAtomsInContact(chain1, chain2, cutoff, false);
+		return scoreIt(contacts);
 	}
 
-	private double scoreIt(AICGraph graph) {
+	private double scoreIt(AtomContactSet graph) {
 		double totalScore = 0;
 		//int edgeCount = 0;
-		for (AICGEdge edge:graph.getEdges()) {
-			Atom inode = graph.getEndpoints(edge).getFirst();
-			Atom jnode = graph.getEndpoints(edge).getSecond();
-			if (inode.getCode().equals("OXT") || jnode.getCode().equals("OXT")) continue;
-			if (inode.getType()==AtomType.H || jnode.getType()==AtomType.H) continue;
-			if (!(inode.getParentResidue() instanceof AaResidue) || 
-				!(jnode.getParentResidue() instanceof AaResidue)) continue;
+		for (AtomContact contact: graph) {
+			Atom inode = contact.getPair().getFirst();
+			Atom jnode = contact.getPair().getSecond();
+			if (inode.getName().equals("OXT") || jnode.getName().equals("OXT")) continue;
+			if (inode.getElement()==Element.H || jnode.getElement()==Element.H) continue;
+
+			if (!(inode.getGroup().getType().equals(GroupType.AMINOACID)) || 
+				!(jnode.getGroup().getType().equals(GroupType.AMINOACID))) continue;
 
 			//edgeCount++;
-			int i = types2indices.get(inode.getParentResidue().getLongCode()+inode.getCode());
-			int j = types2indices.get(jnode.getParentResidue().getLongCode()+jnode.getCode());
-			int k = getDistanceBin(edge.getDistance());
+			int i = types2indices.get(inode.getGroup().getPDBName()+inode.getName());
+			int j = types2indices.get(jnode.getGroup().getPDBName()+jnode.getName());
+			int k = getDistanceBin(contact.getDistance());
 			if (j>=i) {
 				totalScore+=scoringMat[i][j][k];
 			} else {
@@ -528,7 +526,10 @@ public class InterfaceDistanceScorer {
 						System.err.println("Warning: can't read "+pdbFile);
 						continue;
 					}
-					double score = sc.scoreIt(new PdbAsymUnit(pdbFile));
+					
+					PDBFileParser parser = new PDBFileParser();					
+					Structure pdb = parser.parsePDBFile(new FileInputStream(pdbFile));
+					double score = sc.scoreIt(pdb);
 					System.out.printf("%s %7.3f\n",pdbFile,score);
 				}
 				br.close();

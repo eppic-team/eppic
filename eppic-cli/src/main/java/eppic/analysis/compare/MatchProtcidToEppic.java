@@ -1,5 +1,7 @@
 package eppic.analysis.compare;
 
+import eppic.commons.util.Goodies;
+import eppic.commons.util.MySQLConnection;
 import eppic.model.InterfaceDB;
 import eppic.model.PdbInfoDB;
 import gnu.getopt.Getopt;
@@ -10,9 +12,8 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
-import owl.core.structure.SpaceGroup;
-import owl.core.util.Goodies;
-import owl.core.util.MySQLConnection;
+import org.biojava.bio.structure.xtal.SpaceGroup;
+
 
 
 public class MatchProtcidToEppic {

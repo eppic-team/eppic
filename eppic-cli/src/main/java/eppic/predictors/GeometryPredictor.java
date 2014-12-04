@@ -3,24 +3,23 @@ package eppic.predictors;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.biojava.bio.structure.Calc;
+import org.biojava.bio.structure.Group;
+import org.biojava.bio.structure.contact.AtomContact;
+import org.biojava.bio.structure.contact.Pair;
+import org.biojava.bio.structure.contact.StructureInterface;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import edu.uci.ics.jung.graph.util.Pair;
 import eppic.EppicParams;
 import eppic.CallType;
 import eppic.InterfaceEvolContext;
-import owl.core.structure.Atom;
-import owl.core.structure.ChainInterface;
-import owl.core.structure.PdbAsymUnit;
-import owl.core.structure.PdbChain;
-import owl.core.structure.graphs.AICGraph;
 
 public class GeometryPredictor implements InterfaceTypePredictor {
 
-	private static final Log LOGGER = LogFactory.getLog(GeometryPredictor.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(GeometryPredictor.class);
 	
-	private ChainInterface interf;
+	private StructureInterface interf;
 	private double bsaToAsaCutoff;
 	private double minAsaForSurface;
 	private int minCoreSizeForBio;
@@ -32,10 +31,8 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 	
 	private int size1;
 	private int size2;
-	
-	private boolean usePdbResSer;
-	
-	public GeometryPredictor(ChainInterface interf) {
+		
+	public GeometryPredictor(StructureInterface interf) {
 		this.interf = interf;
 		this.warnings = new ArrayList<String>();
 	}
@@ -45,9 +42,9 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 		
 		generateWarnings();
 		
-		interf.calcRimAndCore(bsaToAsaCutoff, minAsaForSurface);
-		size1 = interf.getFirstRimCore().getCoreSize();
-		size2 = interf.getSecondRimCore().getCoreSize();
+		Pair<List<Group>> cores = interf.getCoreResidues(bsaToAsaCutoff, minAsaForSurface);
+		size1 = cores.getFirst().size();
+		size2 = cores.getSecond().size();
 		size = size1+size2;
 		
 		
@@ -102,25 +99,28 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 	
 	private void generateWarnings() {
 		
-		List<Pair<Atom>> interactingPairs = getNonpolyInteractingPairs();
+		List<AtomContact> interactingPairs = getNonpolyInteractingPairs();
 		
 		// NOTE that we used to detect disulfide bridges here, but it is now moved to CombinedPredictor
 		// as we also need to check in the reference alignment whether the bridge is wild-type or artifact
 
+		List<AtomContact> clashes = interf.getContacts().getContactsWithinDistance(EppicParams.CLASH_DISTANCE);
+		List<AtomContact> closeInteracting = 
+				interf.getContacts().getContactsWithinDistance(EppicParams.CLOSE_INTERACTION_DIST); 
+
 		
 		// WARNINGS
 		// 1) clashes
-		if (interf.hasClashes()) {
-			List<Pair<Atom>> pairs = interf.getAICGraph().getClashingPairs();
+		if (!clashes.isEmpty()) {			
 			String warning = "";
-			for (int i=0;i<pairs.size();i++) {
-				Pair<Atom> pair = pairs.get(i);
+			for (int i=0;i<clashes.size();i++) {
+				AtomContact pair = clashes.get(i);
 				warning +=  getPairInteractionString(pair);
-				if (i!=pairs.size()-1) warning+=", ";
+				if (i!=clashes.size()-1) warning+=", ";
 			}
 			
 			warnings.add("Clashes found between: "+warning);
-			LOGGER.warn("Interface "+interf.getId()+" has "+pairs.size()+" clashes: "+warning);
+			LOGGER.warn("Interface "+interf.getId()+" has "+clashes.size()+" clashes: "+warning);
 		} 
 		// if no clashes then we report on any other kind of short distances
 		// 2) hydrogen bonds -- commented out for now: 
@@ -139,13 +139,12 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 //			LOGGER.warn("Interface "+interf.getId()+" has Hydrogen bonds: "+warning);			
 //		}
 		// 3) any other kind of close interaction
-		else if (interf.getAICGraph().hasCloselyInteractingPairs()) {
-			List<Pair<Atom>> pairs = interf.getAICGraph().getCloselyInteractingPairs();
-			String warning = pairs.size()+" closely interacting atoms: ";
-			for (int i=0;i<pairs.size();i++) {
-				Pair<Atom> pair = pairs.get(i);
+		else if (!closeInteracting.isEmpty()) {
+			String warning = closeInteracting.size()+" closely interacting atoms: ";
+			for (int i=0;i<closeInteracting.size();i++) {
+				AtomContact pair = closeInteracting.get(i);
 				warning +=  getPairInteractionString(pair);
-				if (i!=pairs.size()-1) warning+=", ";
+				if (i!=closeInteracting.size()-1) warning+=", ";
 			}
 			
 			warnings.add(warning);
@@ -162,23 +161,20 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 		if (!interactingPairs.isEmpty()) {
 			String warning = "Close interactions mediated by a non-polymer chain exist in interface. Between : ";
 			for (int i=0;i<interactingPairs.size();i++) {
-				Pair<Atom> pair = interactingPairs.get(i);
+				AtomContact pair = interactingPairs.get(i);
 				String firstResSer = null;
 				String secondResSer = null;
-				if (usePdbResSer) {
-					firstResSer = pair.getFirst().getParentResidue().getPdbSerial();	
-					secondResSer = pair.getSecond().getParentResidue().getPdbSerial();
-				} else {
-					firstResSer = ""+pair.getFirst().getParentResidue().getSerial();
-					secondResSer = ""+pair.getSecond().getParentResidue().getSerial();
-				}
+				
+				firstResSer = pair.getPair().getFirst().getGroup().getResidueNumber().toString();	
+				secondResSer = pair.getPair().getSecond().getGroup().getResidueNumber().toString();
+				
 				// first atom is always from nonpoly chain, second atom from either poly chain of interface
 				warning+=firstResSer+
-						"("+pair.getFirst().getCode()+ ") and "+
-							pair.getSecond().getParentResidue().getParent().getPdbChainCode()+"-"+
-							secondResSer+"("+pair.getSecond().getParentResidue().getLongCode()+")-"+
-							pair.getSecond().getCode()+
-							" (distance: "+String.format("%3.1f",pair.getFirst().getCoords().distance(pair.getSecond().getCoords()))+" A)";
+						"("+pair.getPair().getFirst().getName()+ ") and "+
+							pair.getPair().getSecond().getGroup().getChainId()+"-"+
+							secondResSer+"("+pair.getPair().getSecond().getGroup().getPDBName()+")-"+
+							pair.getPair().getSecond().getName()+
+							" (distance: "+String.format("%3.1f A",Calc.getDistance(pair.getPair().getFirst(),pair.getPair().getSecond()) );
 				if (i!=interactingPairs.size()-1) warning+=", ";
 			}
 
@@ -188,25 +184,22 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 
 	}
 	
-	private String getPairInteractionString(Pair<Atom> pair) {
+	private String getPairInteractionString(AtomContact pair) {
 		String firstResSer = null;
 		String secondResSer = null;
-		if (usePdbResSer) {
-			firstResSer = pair.getFirst().getParentResidue().getPdbSerial();	
-			secondResSer = pair.getSecond().getParentResidue().getPdbSerial();
-		} else {
-			firstResSer = ""+pair.getFirst().getParentResidue().getSerial();
-			secondResSer = ""+pair.getSecond().getParentResidue().getSerial();
-		}
+		
+		firstResSer = pair.getPair().getFirst().getGroup().getResidueNumber().toString();	
+		secondResSer = pair.getPair().getSecond().getGroup().getResidueNumber().toString();
+		
 		
 		return
-		pair.getFirst().getParentResidue().getParent().getPdbChainCode()+"-"+
-		firstResSer+"("+pair.getFirst().getParentResidue().getLongCode()+")-"+
-		pair.getFirst().getCode()+" and "+ 	
-		pair.getSecond().getParentResidue().getParent().getPdbChainCode()+"-"+
-		secondResSer+"("+pair.getSecond().getParentResidue().getLongCode()+")-"+
-		pair.getSecond().getCode()+
-		" (distance: "+String.format("%3.1f",pair.getFirst().getCoords().distance(pair.getSecond().getCoords()))+" A)";
+		pair.getPair().getFirst().getGroup().getChainId()+"-"+
+		firstResSer+"("+pair.getPair().getFirst().getGroup().getPDBName()+")-"+
+		pair.getPair().getFirst().getName()+" and "+ 	
+		pair.getPair().getSecond().getGroup().getChainId()+"-"+
+		secondResSer+"("+pair.getPair().getSecond().getGroup().getPDBName()+")-"+
+		pair.getPair().getSecond().getName()+
+		" (distance: "+String.format("%3.1f A)",Calc.getDistance(pair.getPair().getFirst(),pair.getPair().getSecond()) );
 	}
 	
 	public void setBsaToAsaCutoff(double bsaToAsaCutoff) {
@@ -220,18 +213,8 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 	public void setMinCoreSizeForBio(int minCoreSizeForBio) {
 		this.minCoreSizeForBio = minCoreSizeForBio;
 	}
-	
-	/**
-	 * Sets whether the output warnings and PDB files are to be written with
-	 * PDB residue serials or CIF (SEQRES) residue serials
-	 * @param usePdbResSer if true PDB residue serials are used, if false CIF
-	 * residue serials are used
-	 */
-	public void setUsePdbResSer(boolean usePdbResSer) {
-		this.usePdbResSer = usePdbResSer;
-	}
-	
-	private List<Pair<Atom>> getNonpolyInteractingPairs() {
+		
+	private List<AtomContact> getNonpolyInteractingPairs() {
 		PdbChain firstChain = this.interf.getFirstMolecule();
 		PdbChain secondChain = this.interf.getSecondMolecule();
 		PdbAsymUnit firstAU = firstChain.getParent();

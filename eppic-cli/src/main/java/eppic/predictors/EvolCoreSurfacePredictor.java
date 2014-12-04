@@ -3,14 +3,12 @@ package eppic.predictors;
 import java.util.ArrayList;
 import java.util.List;
 
-import owl.core.structure.InterfaceRimCore;
-import owl.core.structure.Residue;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.commons.math.stat.descriptive.UnivariateStatistic;
 import org.apache.commons.math.stat.descriptive.moment.Mean;
 import org.apache.commons.math.stat.descriptive.moment.StandardDeviation;
+import org.biojava.bio.structure.Group;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import eppic.EppicParams;
 import eppic.CallType;
@@ -29,8 +27,7 @@ public class EvolCoreSurfacePredictor implements InterfaceTypePredictor {
 	//   <0.05 using 100, <0.01 using 10000, and <0.005 using 100000
 	private static final int     NUM_SAMPLES_SCORE_DIST = 10000; 
 
-	
-	private static final Log LOGGER = LogFactory.getLog(EvolCoreSurfacePredictor.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(EvolCoreSurfacePredictor.class);
 
 	private CallType call;
 	private String callReason;
@@ -91,8 +88,6 @@ public class EvolCoreSurfacePredictor implements InterfaceTypePredictor {
 		
 		// pre-check and calculating scores
 		
-		iec.getInterface().calcRimAndCore(bsaToAsaCutoff, minAsaForSurface);
-
 		check1 = checkInterfaceSide(InterfaceEvolContext.FIRST);
 		check2 = checkInterfaceSide(InterfaceEvolContext.SECOND);
 		
@@ -174,13 +169,18 @@ public class EvolCoreSurfacePredictor implements InterfaceTypePredictor {
 	
 		String scoreType = "core-surface";
 		
-		InterfaceRimCore rimCore = iec.getInterface().getRimCore(molecId);
+		List<Group> cores = null;
+		if (molecId == InterfaceEvolContext.FIRST) {
+			cores = iec.getInterface().getCoreResidues(bsaToAsaCutoff, minAsaForSurface).getFirst();
+		} else if (molecId == InterfaceEvolContext.SECOND) {
+			cores = iec.getInterface().getCoreResidues(bsaToAsaCutoff, minAsaForSurface).getSecond();
+		}
 		
-		int[] unrelRes = generateInterfaceWarnings(molecId);		
+		int[] unrelRes = generateInterfaceWarnings(cores, molecId);		
 		
 		int numSurfResidues = -1;
 		if (coreSurfaceScoreStrategy == EppicParams.CORE_SURFACE_SCORE_STRATEGY_CLASSIC) {
-			numSurfResidues = iec.getNumResiduesNotInInterfaces(molecId, MIN_INTERF_FOR_RES_NOT_IN_INTERFACES, minAsaForSurface);
+			numSurfResidues = -1;
 		} else if (coreSurfaceScoreStrategy == EppicParams.CORE_SURFACE_SCORE_STRATEGY_ZSCORE) {
 			numSurfResidues = iec.getNumSurfaceResidues(molecId, minAsaForSurface); 
 		} else {
@@ -206,7 +206,7 @@ public class EvolCoreSurfacePredictor implements InterfaceTypePredictor {
 					" homologs (at least "+iec.getMinNumSeqs()+" required)";
 			return false;
 		} 
-		if (rimCore.getCoreSize()<EppicParams.MIN_NUMBER_CORE_RESIDUES_EVOL_SCORE) {
+		if (cores.size()<EppicParams.MIN_NUMBER_CORE_RESIDUES_EVOL_SCORE) {
 
 			// a special condition for core size, we don't want that if one side has too few cores, 
 			// then the prediction is based only on the other side. We veto the whole interface scoring in this case
@@ -216,22 +216,22 @@ public class EvolCoreSurfacePredictor implements InterfaceTypePredictor {
 			return false;
 		}
 		if (coreSurfaceScoreStrategy == EppicParams.CORE_SURFACE_SCORE_STRATEGY_CLASSIC) {
-			if (numSurfResidues<rimCore.getCoreSize()*NUM_RESIDUES_NOT_IN_INTERFACES_TOLERANCE) {
+			if (numSurfResidues<cores.size()*NUM_RESIDUES_NOT_IN_INTERFACES_TOLERANCE) {
 				callReasonSides[molecId] = "Side "+memberSerial+" has not enough residues in protein surface belonging to no interface, can't calculate "+scoreType+" score";
 				return false;
 			}
 		} else if (coreSurfaceScoreStrategy == EppicParams.CORE_SURFACE_SCORE_STRATEGY_ZSCORE) {
-			if (numSurfResidues<rimCore.getCoreSize()*NUM_RESIDUES_IN_SURFACE_TOLERANCE) {
+			if (numSurfResidues<cores.size()*NUM_RESIDUES_IN_SURFACE_TOLERANCE) {
 				callReasonSides[molecId] = "Side "+memberSerial+" has not enough residues in protein surface, can't calculate "+scoreType+" score";
 				return false;
 			}
 		}
-		if (((double)unrelRes[0]/(double)rimCore.getCoreSize())>EppicParams.MAX_ALLOWED_UNREL_RES) {
+		if (((double)unrelRes[0]/(double)cores.size())>EppicParams.MAX_ALLOWED_UNREL_RES) {
 			LOGGER.info("Interface "+interfaceId+", member "+memberSerial+
 					": there are not enough reliable core residues to calculate "+scoreType+" score ("+
-					unrelRes[0]+" unreliable residues out of "+rimCore.getCoreSize()+" residues in core)");
+					unrelRes[0]+" unreliable residues out of "+cores.size()+" residues in core)");
 			callReasonSides[molecId] = "Side "+memberSerial+" has not enough reliable core residues: "+
-					unrelRes[0]+" unreliable out of "+rimCore.getCoreSize()+" in core";
+					unrelRes[0]+" unreliable out of "+cores.size()+" in core";
 			return false;
 		}
 		if (((double)unrelRes[1]/(double)numSurfResidues)>EppicParams.MAX_ALLOWED_UNREL_RES) {
@@ -246,16 +246,17 @@ public class EvolCoreSurfacePredictor implements InterfaceTypePredictor {
 	
 	/**
 	 * Generates warnings (to LOGGER and member variable) for given side of interface.
+	 * @param cores
 	 * @param molecId
 	 * @return an array of size 2 with counts of unreliable core (index 0) and surface (index 1) residues
 	 */
-	private int[] generateInterfaceWarnings(int molecId) {
+	private int[] generateInterfaceWarnings(List<Group> cores, int molecId) {
 		
 		int countUnrelCoreRes = -1;
 		int countUnrelSurfaceRes = -1;
 		
 		if (canDoEntropyScoring(molecId)) {
-			List<Residue> unreliableCoreRes = iec.getUnreliableCoreRes(molecId);
+			List<Group> unreliableCoreRes = iec.getReferenceMismatchResidues(cores, molecId);
 			countUnrelCoreRes = unreliableCoreRes.size();
 			String msg = iec.getReferenceMismatchWarningMsg(unreliableCoreRes,"core");
 			if (msg!=null) {
@@ -263,10 +264,12 @@ public class EvolCoreSurfacePredictor implements InterfaceTypePredictor {
 				warnings.add(msg);
 			}			
 			
-			List<Residue> unreliableSurfaceRes = new ArrayList<Residue>();
+			List<Group> unreliableSurfaceRes = new ArrayList<Group>();
 			if (coreSurfaceScoreStrategy == EppicParams.CORE_SURFACE_SCORE_STRATEGY_CLASSIC) {
-				unreliableSurfaceRes = iec.getUnreliableNotInInterfacesRes(molecId, MIN_INTERF_FOR_RES_NOT_IN_INTERFACES, minAsaForSurface);
-				countUnrelSurfaceRes = unreliableSurfaceRes.size();
+				
+				throw new UnsupportedOperationException("Core-surface classic strategy not supported!");
+				//unreliableSurfaceRes = iec.getUnreliableNotInInterfacesRes(molecId, MIN_INTERF_FOR_RES_NOT_IN_INTERFACES, minAsaForSurface);
+				//countUnrelSurfaceRes = unreliableSurfaceRes.size();
 				
 			} else if (coreSurfaceScoreStrategy == EppicParams.CORE_SURFACE_SCORE_STRATEGY_ZSCORE) {
 				unreliableSurfaceRes = iec.getUnreliableSurfaceRes(molecId, minAsaForSurface);
@@ -293,13 +296,18 @@ public class EvolCoreSurfacePredictor implements InterfaceTypePredictor {
 		double mean = Double.NaN;
 		double sd = Double.NaN;
 		
-		InterfaceRimCore rimCore = iec.getInterface().getRimCore(molecId);
+		List<Group> cores = null;
+		if (molecId == InterfaceEvolContext.FIRST) {
+			cores = iec.getInterface().getCoreResidues(bsaToAsaCutoff, minAsaForSurface).getFirst();
+		} else if (molecId == InterfaceEvolContext.SECOND) {
+			cores = iec.getInterface().getCoreResidues(bsaToAsaCutoff, minAsaForSurface).getSecond();
+		}
 
-		if (rimCore.getCoreSize()==0) {
+		if (cores.size()==0) {
 			return Double.NaN;
 		}
 
-		double coreScore = iec.calcScore(rimCore.getCoreResidues(), molecId, false);
+		double coreScore = iec.calcScore(cores, molecId, false);
 		
 		double[] surfScoreDist = null;
 		
@@ -309,18 +317,18 @@ public class EvolCoreSurfacePredictor implements InterfaceTypePredictor {
 			// we need to check, before trying to sample residues in surface for getting 
 			// the background distribution, whether there are enough residues at all for sampling
 			// it can happen for small proteins that the number of residues in surface is really small (e.g. 3jsd with only 1)
-			int numSurfResNotInInterfaces = iec.getNumResiduesNotInInterfaces(molecId, MIN_INTERF_FOR_RES_NOT_IN_INTERFACES, minAsaForSurface);
+			int numSurfResNotInInterfaces = -1;
 
 			LOGGER.info("Interface "+iec.getInterface().getId()+", member "+(molecId+1)+":");
 			LOGGER.info("Residues on surface not belonging to any crystal interface (above "+
 					String.format("%3.0f",MIN_INTERF_FOR_RES_NOT_IN_INTERFACES)+" A2): "+numSurfResNotInInterfaces);			
-			if (numSurfResNotInInterfaces<rimCore.getCoreSize()*NUM_RESIDUES_NOT_IN_INTERFACES_TOLERANCE) {
+			if (numSurfResNotInInterfaces<cores.size()*NUM_RESIDUES_NOT_IN_INTERFACES_TOLERANCE) {
 				LOGGER.info("There are only "+numSurfResNotInInterfaces+
 						" residues in surface not belonging to any crystal interface (above "+String.format("%3.0f",MIN_INTERF_FOR_RES_NOT_IN_INTERFACES)+
 						" A2). Can't do core-surface scoring for interface "+iec.getInterface().getId()+", member "+(molecId+1));
 				return Double.NaN;
 			}
-			surfScoreDist = iec.getSurfaceScoreDist(molecId, MIN_INTERF_FOR_RES_NOT_IN_INTERFACES, NUM_SAMPLES_SCORE_DIST, rimCore.getCoreSize(), minAsaForSurface);		
+			surfScoreDist = null;		
 
 		// 2) The straight z-scores approach: we sample from the whole surface
 		} else if (coreSurfaceScoreStrategy == EppicParams.CORE_SURFACE_SCORE_STRATEGY_ZSCORE) {
@@ -331,12 +339,12 @@ public class EvolCoreSurfacePredictor implements InterfaceTypePredictor {
 
 			LOGGER.info("Interface "+iec.getInterface().getId()+", member "+(molecId+1)+":");
 			LOGGER.info("Residues on surface: "+numSurfRes);			
-			if (numSurfRes<rimCore.getCoreSize()*NUM_RESIDUES_IN_SURFACE_TOLERANCE) {
+			if (numSurfRes<cores.size()*NUM_RESIDUES_IN_SURFACE_TOLERANCE) {
 				LOGGER.info("There are only "+numSurfRes+
 						" residues in surface. Can't do core-surface scoring for interface "+iec.getInterface().getId()+", member "+(molecId+1));
 				return Double.NaN;
 			}
-			surfScoreDist = iec.getSurfaceScoreDist(molecId, NUM_SAMPLES_SCORE_DIST, rimCore.getCoreSize(), minAsaForSurface);		
+			surfScoreDist = iec.getSurfaceScoreDist(molecId, NUM_SAMPLES_SCORE_DIST, cores.size(), minAsaForSurface);		
 
 		} else {
 			LOGGER.error("Unsupported core-surface score strategy! : "+coreSurfaceScoreStrategy);
@@ -349,7 +357,7 @@ public class EvolCoreSurfacePredictor implements InterfaceTypePredictor {
 		sd = stat.evaluate(surfScoreDist);
 
 
-		LOGGER.info("Sampled "+NUM_SAMPLES_SCORE_DIST+" surface evolutionary scores of size "+rimCore.getCoreSize()+": "+
+		LOGGER.info("Sampled "+NUM_SAMPLES_SCORE_DIST+" surface evolutionary scores of size "+cores.size()+": "+
 				"mean= "+String.format("%5.2f",mean)+", sd= "+String.format("%5.2f",sd));
 		
 		if (Double.isNaN(mean)) {

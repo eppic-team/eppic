@@ -5,10 +5,11 @@ import java.util.List;
 
 import javax.vecmath.Matrix4d;
 
-import owl.core.connections.pisa.PisaInterface;
-import owl.core.connections.pisa.PisaInterfaceList;
-import owl.core.structure.PdbBioUnit;
-import owl.core.structure.SpaceGroup;
+import org.biojava.bio.structure.xtal.SpaceGroup;
+
+import eppic.commons.pisa.PisaInterface;
+import eppic.commons.pisa.PisaInterfaceList;
+
 
 public class SimpleInterface {
 

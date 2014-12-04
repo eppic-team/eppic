@@ -10,14 +10,12 @@
 
 	
 	<repositories>
-		<!-- 
+		<!-- for uniprot japi -->
 		<repository>
-			<id>maven2-repository.dev.java.net</id>
-			<name>Java.net Maven 2 Repository</name>
-			<url>http://download.java.net/maven/2</url>
-		</repository>	
-		 -->
-		 
+        	<id>ebi-repo</id>
+        	<name>ebi-repo</name>
+        	<url>http://www.ebi.ac.uk/~maven/m2repo</url>
+    	</repository>		 
 	</repositories>
 	
 	
@@ -29,12 +27,26 @@
 			<version>${project.version}</version>
 			<scope>compile</scope>
 		</dependency>
-		<!-- main dependency: owl package -->
+		
+		<!-- main dependency: owl package 
 		<dependency>
 			<groupId>org.owl</groupId>
 			<artifactId>owl</artifactId>
 			<version>2.1.2-SNAPSHOT</version>
 			<scope>compile</scope>
+		</dependency>
+		-->
+		
+		<dependency>
+			<groupId>org.biojava</groupId>
+       		<artifactId>biojava3-core</artifactId>
+        	<version>4.0.0-SNAPSHOT</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.biojava</groupId>
+       		<artifactId>biojava3-structure</artifactId>
+        	<version>4.0.0-SNAPSHOT</version>
 		</dependency>
 	
 		<!-- junit -->
@@ -46,15 +58,38 @@
 			<scope>test</scope>
 		</dependency>
 
-		
-		<!-- org apache -->
+
+		<!-- logging -->
 
 		<dependency>
-			<groupId>log4j</groupId>
-			<artifactId>log4j</artifactId>
-			<version>1.2.16</version>		
-		</dependency>		            		
-		
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>${slf4j.version}</version>
+		</dependency>
+		<!-- binding for log4j 2 -->
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-slf4j-impl</artifactId>
+			<version>${log4j.version}</version>
+			<!-- runtime scope includes the test scope as well -->
+			<scope>runtime</scope>
+		</dependency>
+		<!-- Log4j API and Core implementation required for binding -->
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-api</artifactId>
+			<version>${log4j.version}</version>
+			<!-- runtime scope includes the test scope as well -->
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-core</artifactId>
+			<version>${log4j.version}</version>
+			<!-- runtime scope includes the test scope as well -->
+			<scope>runtime</scope>
+		</dependency>
+	
 		<!-- others -->
 
 		<dependency>
@@ -64,10 +99,19 @@
 		</dependency>
                         
 		<dependency>
-			<groupId>net.sf.jung</groupId>
-			<artifactId>jung-api</artifactId>
-			<version>2.0.1</version>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-math</artifactId>
+			<version>2.2</version>
 		</dependency>
+
+		<!-- uniprot -->
+		<dependency>
+        	<groupId>uk.ac.ebi.uniprot.kraken</groupId>
+        	<artifactId>uniprotjapi</artifactId>   
+        	<version>2014.10</version>     	
+    	</dependency>
+		
+				
 	</dependencies>
 	
 	<build>

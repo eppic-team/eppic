@@ -2,33 +2,35 @@ package eppic;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.commons.math.random.RandomDataImpl;
+import org.biojava.bio.structure.Group;
+import org.biojava.bio.structure.ResidueNumber;
+import org.biojava.bio.structure.contact.StructureInterface;
+import org.biojava.bio.structure.contact.StructureInterfaceList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import eppic.predictors.EvolCoreRimClusterPredictor;
 import eppic.predictors.EvolCoreSurfaceClusterPredictor;
 import eppic.predictors.EvolCoreSurfacePredictor;
 import eppic.predictors.EvolCoreRimPredictor;
-import owl.core.structure.ChainInterface;
-import owl.core.structure.ChainInterfaceList;
-import owl.core.structure.InterfaceCluster;
-import owl.core.structure.Residue;
 
 public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>, Serializable {
 
 	private static final long serialVersionUID = 1L;
-	
-	private static final Log LOGGER = LogFactory.getLog(InterfaceEvolContextList.class);
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(InterfaceEvolContextList.class);
 	
 	private List<InterfaceEvolContext> list;
 	
-	private ChainInterfaceList chainInterfList; 
+	private StructureInterfaceList chainInterfList; 
 	private ChainEvolContextList cecs;
 		
 	private int minNumSeqs;
@@ -46,7 +48,7 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 	 * @param interfaces
 	 * @param cecs
 	 */
-	public InterfaceEvolContextList(ChainInterfaceList interfaces, ChainEvolContextList cecs) {
+	public InterfaceEvolContextList(StructureInterfaceList interfaces, ChainEvolContextList cecs) {
 		
 		this.minNumSeqs = cecs.getMinNumSeqs();
 		
@@ -59,7 +61,7 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 		this.ecscPredictors = new TreeMap<Integer, EvolCoreSurfaceClusterPredictor>();
 		
 		
-		for (ChainInterface pi:interfaces) {
+		for (StructureInterface pi:interfaces) {
 			InterfaceEvolContext iec = new InterfaceEvolContext(pi, this);
 			iec.setEvolCoreRimPredictor(new EvolCoreRimPredictor(iec));
 			iec.setEvolCoreSurfacePredictor(new EvolCoreSurfacePredictor(iec));
@@ -135,7 +137,6 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 	}
 
 	public void setCoreRimPredBsaToAsaCutoff(double bsaToAsaCutoff, double minAsaForSurface) {
-		chainInterfList.calcRimAndCores(bsaToAsaCutoff, minAsaForSurface);
 		
 		for (int i=0;i<list.size();i++) {
 			list.get(i).getEvolCoreRimPredictor().setBsaToAsaCutoff(bsaToAsaCutoff, minAsaForSurface);
@@ -143,7 +144,6 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 	}
 	
 	public void setCoreSurfacePredBsaToAsaCutoff(double bsaToAsaCutoff, double minAsaForSurface) {
-		chainInterfList.calcRimAndCores(bsaToAsaCutoff, minAsaForSurface);
 		
 		for (int i=0;i<list.size();i++) {
 			list.get(i).getEvolCoreSurfacePredictor().setBsaToAsaCutoff(bsaToAsaCutoff, minAsaForSurface);
@@ -202,17 +202,6 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 	}
 	
 	/**
-	 * Given a PDB chain code returns the Set of residues that are in the surface but belong to NO
-	 * interface (above given minInterfArea) 
-	 * @param pdbChainCode
-	 * @param minInterfArea
-	 * @return
-	 */
-	public List<Residue> getResiduesNotInInterfaces(String pdbChainCode, double minInterfArea, double minAsaForSurface) {
-		return this.chainInterfList.getResiduesNotInInterfaces(pdbChainCode, minInterfArea, minAsaForSurface);
-	}
-	
-	/**
 	 * Gets the ChainEvolContext corresponding to the given PDB chain code (can be 
 	 * any PDB chain code, representative or not)
 	 * 
@@ -223,45 +212,7 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 		return getChainEvolContextList().getChainEvolContext(pdbChainCode);
 	}
 	
-	/**
-	 * Returns the distribution of evolutionary scores of random subsets of residues in the surface (not belonging 
-	 * to any interface above minInterfArea) for given pdbChainCode and scoType.
-	 * @param pdbChainCode
-	 * @param minInterfArea the residues considered will be those that are not in interfaces above this area value
-	 * @param numSamples number of samples of size sampleSize to be taken from the surface
-	 * @param sampleSize number of residues in each sample
-	 * @param minAsaForSurface the minimum ASA for a residue to be considered surface
-	 * @return
-	 */
-	public double[] getSurfaceScoreDist(String pdbChainCode, double minInterfArea, int numSamples, int sampleSize, double minAsaForSurface) {
-		if (sampleSize==0) return new double[0];
-		
-		double[] dist = new double[numSamples];
 
-		RandomDataImpl rd = new RandomDataImpl();
-		for (int i=0;i<numSamples;i++) {
-			Object[] sample = rd.nextSample(getResiduesNotInInterfaces(pdbChainCode, minInterfArea, minAsaForSurface), sampleSize);
-			List<Residue> residues = new ArrayList<Residue>(sample.length);
-			for (int j=0;j<sample.length;j++){
-				residues.add((Residue)sample[j]);
-			}
-			// note that we must pass weighted=false as the weighting is done on bsas which doesn't make sense at all here 
-			dist[i] = getChainEvolContext(pdbChainCode).calcScoreForResidueSet(residues, false);
-			
-			//Collections.sort(residues, new Comparator<Residue>() {
-			//	public int compare(Residue o1, Residue o2) {
-			//		if (o1.getSerial()<o2.getSerial()) return -1;
-			//		if (o1.getSerial()>o2.getSerial()) return 1;
-			//		return 0;
-			//	}
-			//});
-			//System.out.print("draw "+i+": [");
-			//for (Residue res:residues) {
-			//	System.out.print(res.getSerial()+" ");
-			//}
-			//System.out.println("]");
-		}		
-		
-		return dist;
-	}
+	
+
 }

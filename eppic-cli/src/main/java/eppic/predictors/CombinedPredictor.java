@@ -3,18 +3,18 @@ package eppic.predictors;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.biojava.bio.structure.Atom;
+import org.biojava.bio.structure.contact.AtomContact;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import owl.core.structure.Atom;
-import edu.uci.ics.jung.graph.util.Pair;
 import eppic.EppicParams;
 import eppic.CallType;
 import eppic.InterfaceEvolContext;
 
 public class CombinedPredictor implements InterfaceTypePredictor {
 
-	private static final Log LOGGER = LogFactory.getLog(CombinedPredictor.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(CombinedPredictor.class);
 	
 	private String callReason;
 	private List<String> warnings;
@@ -33,8 +33,6 @@ public class CombinedPredictor implements InterfaceTypePredictor {
 	
 	private double confidence;
 	
-	private boolean usePdbResSer;
-	
 	public CombinedPredictor(InterfaceEvolContext iec, 
 			GeometryPredictor gp, EvolCoreRimPredictor ecrp, EvolCoreSurfacePredictor ecsp) {
 		this.iec=iec;
@@ -44,10 +42,6 @@ public class CombinedPredictor implements InterfaceTypePredictor {
 		this.warnings = new ArrayList<String>();
 		
 		this.veto = null;
-	}
-	
-	public void setUsePdbResSer(boolean usePdbResSer) {
-		this.usePdbResSer = usePdbResSer;
 	}
 	
 	@Override
@@ -167,23 +161,24 @@ public class CombinedPredictor implements InterfaceTypePredictor {
 		
 		// first we gather any possible wild-type disulfide bridges present
 		// This is more of a geom feature but as we need to check whether it's wild-type or artifactual it needs to be here
-		List<Pair<Atom>> wildTypeDisulfides = new ArrayList<Pair<Atom>>();
-		List<Pair<Atom>> engineeredDisulfides = new ArrayList<Pair<Atom>>();
-		if (iec.getInterface().getAICGraph().hasDisulfideBridges()) {
+		List<AtomContact> wildTypeDisulfides = new ArrayList<AtomContact>();
+		List<AtomContact> engineeredDisulfides = new ArrayList<AtomContact>();
+		List<AtomContact> disulfides = getDisulfidePairs();
+		if (!disulfides.isEmpty()) {
 			// we can only check whether they are not engineered if we have query matches for both sides
 			if (iec.getChainEvolContext(InterfaceEvolContext.FIRST).hasQueryMatch() && iec.getChainEvolContext(InterfaceEvolContext.SECOND).hasQueryMatch()) {				
-				for (Pair<Atom> pair:iec.getInterface().getAICGraph().getDisulfidePairs()) {	
-					if (iec.isReferenceMismatch(pair.getFirst().getParentResidue(),InterfaceEvolContext.FIRST) || 
-							iec.isReferenceMismatch(pair.getSecond().getParentResidue(),InterfaceEvolContext.SECOND)) {
+				for (AtomContact pair:disulfides) {	
+					if (iec.isReferenceMismatch(pair.getPair().getFirst().getGroup(),InterfaceEvolContext.FIRST) || 
+						iec.isReferenceMismatch(pair.getPair().getSecond().getGroup(),InterfaceEvolContext.SECOND)) {
 						engineeredDisulfides.add(pair);
 					} else {
 						wildTypeDisulfides.add(pair);
 					}
 				}
 			} else { // we can't tell whether they are engineered or not, we simply warn they are present
-				String msg = iec.getInterface().getAICGraph().getDisulfidePairs().size()+" disulfide bridges present, can't determine whether they are wild-type or not.";
+				String msg = disulfides.size()+" disulfide bridges present, can't determine whether they are wild-type or not.";
 				msg += " Between CYS residues: ";
-				msg += getPairInteractionsString(iec.getInterface().getAICGraph().getDisulfidePairs());
+				msg += getPairInteractionsString(disulfides);
 				warnings.add(msg);
 			}
 		}
@@ -207,19 +202,19 @@ public class CombinedPredictor implements InterfaceTypePredictor {
 		// if peptide, we don't use minimum hard area limits
 		// for some cases this works nicely (e.g. 1w9q interface 4)
 		boolean useHardLimits = true;
-		if (iec.getInterface().getFirstMolecule().getFullLength()<=EppicParams.PEPTIDE_LENGTH_CUTOFF || 
-				iec.getInterface().getSecondMolecule().getFullLength()<=EppicParams.PEPTIDE_LENGTH_CUTOFF){
+		if (iec.getInterface().getFirstGroupAsas().size()<=EppicParams.PEPTIDE_LENGTH_CUTOFF || 
+			iec.getInterface().getSecondGroupAsas().size()<=EppicParams.PEPTIDE_LENGTH_CUTOFF){
 			useHardLimits = false;
 			LOGGER.info("Interface "+iec.getInterface().getId()+": peptide-protein interface, not checking minimum area hard limit. ");
 		}
 
-		if (useHardLimits && iec.getInterface().getInterfaceArea()<EppicParams.MIN_AREA_BIOCALL) {
+		if (useHardLimits && iec.getInterface().getTotalArea()<EppicParams.MIN_AREA_BIOCALL) {
 			
 			callReason = "Area below hard limit "+String.format("%4.0f", EppicParams.MIN_AREA_BIOCALL);
 			
 			veto = CallType.CRYSTAL;
 		} 
-		else if (iec.getInterface().getInterfaceArea()>EppicParams.MAX_AREA_XTALCALL) {
+		else if (iec.getInterface().getTotalArea()>EppicParams.MAX_AREA_XTALCALL) {
 			
 			callReason = "Area above hard limit "+String.format("%4.0f", EppicParams.MAX_AREA_XTALCALL);
 			
@@ -259,7 +254,7 @@ public class CombinedPredictor implements InterfaceTypePredictor {
 		return counts;
 	}
 	
-	private String getPairInteractionsString(List<Pair<Atom>> pairs) {
+	private String getPairInteractionsString(List<AtomContact> pairs) {
 		String msg = "";
 		
 		for (int i=0;i<pairs.size();i++) {
@@ -272,23 +267,41 @@ public class CombinedPredictor implements InterfaceTypePredictor {
 		return msg;
 	}	
 	
-	private String getPairInteractionString(Pair<Atom> pair) {
+	private String getPairInteractionString(AtomContact pair) {
 		String firstResSer = null;
 		String secondResSer = null;
-		if (usePdbResSer) {
-			firstResSer = pair.getFirst().getParentResidue().getPdbSerial();	
-			secondResSer = pair.getSecond().getParentResidue().getPdbSerial();
-		} else {
-			firstResSer = ""+pair.getFirst().getParentResidue().getSerial();
-			secondResSer = ""+pair.getSecond().getParentResidue().getSerial();
-		}
+		firstResSer = pair.getPair().getFirst().getGroup().getResidueNumber().toString();	
+		secondResSer = pair.getPair().getSecond().getGroup().getResidueNumber().toString();
 		
 		return
-		pair.getFirst().getParentResidue().getParent().getPdbChainCode()+"-"+
+		pair.getPair().getFirst().getGroup().getChainId()+"-"+
 		firstResSer+" and "+
-		pair.getSecond().getParentResidue().getParent().getPdbChainCode()+"-"+
+		pair.getPair().getSecond().getGroup().getChainId()+"-"+
 		secondResSer;
 		
+	}
+	
+	private List<AtomContact> getDisulfidePairs() {
+		List<AtomContact> list = new ArrayList<AtomContact>();
+		for (AtomContact contact:iec.getInterface().getContacts()) {
+			if (isDisulfideInteraction(contact)) 
+				list.add(contact);
+		}
+		return list;
+	}
+	
+	private static boolean isDisulfideInteraction(AtomContact contact) {
+		Atom atomi = contact.getPair().getFirst();
+		Atom atomj = contact.getPair().getSecond();
+		if (atomi.getGroup().getPDBName().equals("CYS") &&
+			atomj.getGroup().getPDBName().equals("CYS") &&
+			atomi.getName().equals("SG") &&
+			atomj.getName().equals("SG") &&
+			contact.getDistance()<(EppicParams.DISULFIDE_BRIDGE_DIST+EppicParams.DISULFIDE_BRIDGE_DIST_SIGMA) && 
+			contact.getDistance()>(EppicParams.DISULFIDE_BRIDGE_DIST-EppicParams.DISULFIDE_BRIDGE_DIST_SIGMA)) {
+				return true;
+		}
+		return false;
 	}
 	
 }

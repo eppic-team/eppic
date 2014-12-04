@@ -5,12 +5,12 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import owl.core.sequence.Sequence;
-import owl.core.sequence.alignment.AlignmentConstructionException;
-import owl.core.sequence.alignment.MultipleSequenceAlignment;
+import eppic.commons.sequence.AlignmentConstructionException;
+import eppic.commons.sequence.MultipleSequenceAlignment;
+import eppic.commons.sequence.Sequence;
 import eppic.model.AssemblyDB;
 import eppic.model.ChainClusterDB;
 import eppic.model.ContactDB;
@@ -25,8 +25,7 @@ import eppic.model.ScoringMethod;
 
 public class TextOutputWriter {
 	
-	private static final Log LOGGER = LogFactory.getLog(TextOutputWriter.class);
-	
+	private static final Logger LOGGER = LoggerFactory.getLogger(TextOutputWriter.class);
 	
 	private PdbInfoDB pdbInfo;
 	private EppicParams params;

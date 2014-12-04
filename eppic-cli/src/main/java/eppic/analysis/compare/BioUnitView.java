@@ -3,7 +3,6 @@ package eppic.analysis.compare;
 import java.util.Set;
 import java.util.TreeSet;
 
-import owl.core.structure.BioUnitAssignmentType;
 
 /**
  * A class needed to compare a list of PdbBioUnits, in order reduce to a single one 

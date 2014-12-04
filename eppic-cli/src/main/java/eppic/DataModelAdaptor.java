@@ -10,13 +10,22 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.biojava.bio.structure.PDBCrystallographicInfo;
+import org.biojava.bio.structure.Structure;
+import org.biojava.bio.structure.contact.GroupContact;
+import org.biojava.bio.structure.contact.GroupContactSet;
+import org.biojava.bio.structure.contact.StructureInterface;
+import org.biojava.bio.structure.contact.StructureInterfaceList;
+import org.biojava.bio.structure.xtal.CrystalCell;
+import org.biojava.bio.structure.xtal.SpaceGroup;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import edu.uci.ics.jung.graph.util.Pair;
 import eppic.analysis.compare.BioUnitView;
 import eppic.analysis.compare.InterfaceMatcher;
 import eppic.analysis.compare.SimpleInterface;
+import eppic.commons.sequence.Homolog;
+import eppic.commons.util.Goodies;
 import eppic.model.ContactDB;
 import eppic.model.HomologDB;
 import eppic.model.ChainClusterDB;
@@ -39,28 +48,11 @@ import eppic.predictors.EvolCoreSurfacePredictor;
 import eppic.predictors.EvolCoreRimPredictor;
 import eppic.predictors.GeometryClusterPredictor;
 import eppic.predictors.GeometryPredictor;
-import owl.core.sequence.Homolog;
-import owl.core.structure.BioUnitAssignmentType;
-import owl.core.structure.ChainCluster;
-import owl.core.structure.ChainInterface;
-import owl.core.structure.ChainInterfaceList;
-import owl.core.structure.CrystalCell;
-import owl.core.structure.InterfaceCluster;
-import owl.core.structure.PdbAsymUnit;
-import owl.core.structure.PdbBioUnit;
-import owl.core.structure.PdbBioUnitList;
-import owl.core.structure.PdbChain;
-import owl.core.structure.Residue;
-import owl.core.structure.SpaceGroup;
-import owl.core.structure.graphs.RICGEdge;
-import owl.core.structure.graphs.RICGNode;
-import owl.core.structure.graphs.RICGraph;
-import owl.core.util.Goodies;
 
 
 public class DataModelAdaptor {
 
-	private static final Log LOGGER = LogFactory.getLog(DataModelAdaptor.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(DataModelAdaptor.class);
 	
 	private static final int FIRST = 0;
 	private static final int SECOND = 1;
@@ -108,16 +100,18 @@ public class DataModelAdaptor {
 		pdbInfo.setRunParameters(runParameters);
 	}
 	
-	public void setPdbMetadata(PdbAsymUnit pdb) {
-		pdbInfo.setTitle(pdb.getTitle());
-		pdbInfo.setReleaseDate(pdb.getReleaseDate());
-		SpaceGroup sg = pdb.getSpaceGroup();
+	public void setPdbMetadata(Structure pdb) {
+		pdbInfo.setTitle(pdb.getPDBHeader().getTitle());
+		// TODO here we used to have the release date but it doesn't seem to be in biojava, do we want it?
+		pdbInfo.setReleaseDate(pdb.getPDBHeader().getDepDate());
+		PDBCrystallographicInfo pdbXtallographicInfo = pdb.getCrystallographicInfo();
+		SpaceGroup sg = (pdbXtallographicInfo==null?null:pdbXtallographicInfo.getSpaceGroup());
 		pdbInfo.setSpaceGroup(sg==null?null:sg.getShortSymbol());
-		pdbInfo.setResolution(pdb.getResolution());
-		pdbInfo.setRfreeValue(pdb.getRfree());
-		pdbInfo.setExpMethod(pdb.getExpMethod());
+		pdbInfo.setResolution(pdb.getPDBHeader().getResolution());
+		pdbInfo.setRfreeValue(pdb.getPDBHeader().getRfree());
+		pdbInfo.setExpMethod(pdb.getPDBHeader().getExperimentalTechniques().iterator().next().getName());
 		
-		CrystalCell cc = pdb.getCrystalCell();
+		CrystalCell cc = (pdbXtallographicInfo==null?null:pdbXtallographicInfo.getCrystalCell());
 		if (cc!=null) {
 			pdbInfo.setCellA(cc.getA());
 			pdbInfo.setCellB(cc.getB());
@@ -128,7 +122,7 @@ public class DataModelAdaptor {
 		}
 	}
 	
-	public void setInterfaces(ChainInterfaceList interfaces) {
+	public void setInterfaces(StructureInterfaceList interfaces) {
 
 		
 		List<InterfaceCluster> interfaceClusters = interfaces.getClusters();
@@ -147,24 +141,24 @@ public class DataModelAdaptor {
 			icDBs.add(icDB);
 			icDB.setInterfaces(iDBs);
 			
-			for (ChainInterface interf:ic.getMembers()) {
+			for (StructureInterface interf:ic.getMembers()) {
 				//System.out.println("Interface " + interf.getId());
 				
 				InterfaceDB interfaceDB = new InterfaceDB();
 				interfaceDB.setInterfaceId(interf.getId());
 				interfaceDB.setClusterId(interfaces.getCluster(interf.getId()).getId());
-				interfaceDB.setArea(interf.getInterfaceArea());
+				interfaceDB.setArea(interf.getTotalArea());
 				
-				interfaceDB.setChain1(interf.getFirstMolecule().getPdbChainCode());
-				interfaceDB.setChain2(interf.getSecondMolecule().getPdbChainCode());
+				interfaceDB.setChain1(interf.getMoleculeIds().getFirst());
+				interfaceDB.setChain2(interf.getMoleculeIds().getSecond());
 				
-				interfaceDB.setOperator(SpaceGroup.getAlgebraicFromMatrix(interf.getSecondTransf().getMatTransform()));
-				interfaceDB.setOperatorType(interf.getSecondTransf().getTransformType().getShortName());
+				interfaceDB.setOperator(SpaceGroup.getAlgebraicFromMatrix(interf.getTransforms().getSecond().getMatTransform()));
+				interfaceDB.setOperatorType(interf.getTransforms().getSecond().getTransformType().getShortName());
 				interfaceDB.setInfinite(interf.isInfinite());
-				interfaceDB.setOperatorId(interf.getSecondTransf().getTransformId());
-				interfaceDB.setXtalTrans_x(interf.getSecondTransf().getCrystalTranslation().x);
-				interfaceDB.setXtalTrans_y(interf.getSecondTransf().getCrystalTranslation().y);
-				interfaceDB.setXtalTrans_z(interf.getSecondTransf().getCrystalTranslation().z);
+				interfaceDB.setOperatorId(interf.getTransforms().getSecond().getTransformId());
+				interfaceDB.setXtalTrans_x(interf.getTransforms().getSecond().getCrystalTranslation().x);
+				interfaceDB.setXtalTrans_y(interf.getTransforms().getSecond().getCrystalTranslation().y);
+				interfaceDB.setXtalTrans_z(interf.getTransforms().getSecond().getCrystalTranslation().z);
 				
 				interfaceDB.setPdbCode(pdbInfo.getPdbCode());
 				
@@ -179,24 +173,21 @@ public class DataModelAdaptor {
 				List<ContactDB> contacts = new ArrayList<ContactDB>();
 				
 				interfaceDB.setContacts(contacts);
+							
+				GroupContactSet groupContacts = new GroupContactSet(interf.getContacts());
 				
-				RICGraph graph = new RICGraph(interf.getAICGraph());
-				
-				for (RICGEdge edge:graph.getEdges()) {
-					
-					Pair<RICGNode> pair = graph.getEndpoints(edge);
-					
+				for (GroupContact groupContact:groupContacts) {
+										
 					ContactDB contact = new ContactDB();
+					// TODO here we are storing the SEQRES residuse serials, how to get them with biojava?
 					contact.setFirstResNumber(pair.getFirst().getResidueSerial());
 					contact.setSecondResNumber(pair.getSecond().getResidueSerial());
-					contact.setFirstResType(pair.getFirst().getResidueType());
-					contact.setSecondResType(pair.getSecond().getResidueType());
-					Residue iRes = interf.getFirstMolecule().getResidue(pair.getFirst().getResidueSerial());
-					Residue jRes = interf.getSecondMolecule().getResidue(pair.getSecond().getResidueSerial());
+					contact.setFirstResType(groupContact.getPair().getFirst().getPDBName());
+					contact.setSecondResType(groupContact.getPair().getSecond().getPDBName());
 					contact.setFirstBurial(iRes.getBsaToAsaRatio());
 					contact.setSecondBurial(jRes.getBsaToAsaRatio());
 					
-					contact.setMinDistance(edge.getMinDistance());
+					contact.setMinDistance(groupContact.getMinDistance());
 					contact.setClash(edge.isClash());
 					contact.setDisulfide(edge.isDisulfide());
 					contact.setNumAtoms(edge.getnAtoms());
@@ -717,8 +708,8 @@ public class DataModelAdaptor {
 		}
 	}
 	
-	public void setResidueDetails(ChainInterfaceList interfaces) {
-		for (ChainInterface interf:interfaces) {
+	public void setResidueDetails(StructureInterfaceList interfaces) {
+		for (StructureInterface interf:interfaces) {
 			
 			InterfaceDB ii = pdbInfo.getInterface(interf.getId());
 
@@ -727,7 +718,7 @@ public class DataModelAdaptor {
 		}
 	}
 	
-	private void addResidueDetails(InterfaceDB ii, ChainInterface interf, boolean includeEntropy) {
+	private void addResidueDetails(InterfaceDB ii, StructureInterface interf, boolean includeEntropy) {
 		
 		List<ResidueDB> iril = new ArrayList<ResidueDB>();
 		ii.setResidues(iril);
@@ -740,7 +731,7 @@ public class DataModelAdaptor {
 		}
 	}
 	
-	private void addResidueDetailsOfPartner(List<ResidueDB> iril, ChainInterface interf, int molecId) {
+	private void addResidueDetailsOfPartner(List<ResidueDB> iril, StructureInterface interf, int molecId) {
 		if (interf.isProtein()) {
 			PdbChain mol = null;
 			if (molecId==FIRST) {
@@ -799,7 +790,7 @@ public class DataModelAdaptor {
 	}
 
 	private void addEntropyToResidueDetails(List<ResidueDB> iril, InterfaceEvolContext iec) {
-		ChainInterface interf = iec.getInterface();
+		StructureInterface interf = iec.getInterface();
 		
 		
 		int[] molecIds = new int[2];

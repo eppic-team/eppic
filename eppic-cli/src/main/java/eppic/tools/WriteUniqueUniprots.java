@@ -3,6 +3,11 @@
  */
 package eppic.tools;
 
+import eppic.commons.sequence.NoMatchFoundException;
+import eppic.commons.sequence.SiftsConnection;
+import eppic.commons.sequence.UniprotLocalConnection;
+import eppic.commons.sequence.UnirefEntry;
+import eppic.commons.util.Interval;
 import gnu.getopt.Getopt;
 
 import java.io.File;
@@ -12,11 +17,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import owl.core.connections.NoMatchFoundException;
-import owl.core.connections.SiftsConnection;
-import owl.core.connections.UniprotLocalConnection;
-import owl.core.sequence.UnirefEntry;
-import owl.core.util.Interval;
 
 /**
  * @author biyani_n

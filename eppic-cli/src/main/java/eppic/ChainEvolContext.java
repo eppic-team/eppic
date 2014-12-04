@@ -11,37 +11,35 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.biojava.bio.structure.Chain;
+import org.biojava.bio.structure.Group;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
-import owl.core.connections.NoMatchFoundException;
-import owl.core.connections.SiftsConnection;
-import owl.core.features.SiftsFeature;
-import owl.core.runners.blast.BlastException;
-import owl.core.runners.blast.BlastHit;
-import owl.core.runners.blast.BlastHitList;
-import owl.core.runners.blast.BlastHsp;
-import owl.core.runners.blast.BlastRunner;
-import owl.core.runners.blast.BlastXMLParser;
-import owl.core.sequence.Sequence;
-import owl.core.sequence.HomologList;
-import owl.core.sequence.UniprotVerMisMatchException;
-import owl.core.sequence.UnirefEntry;
-import owl.core.sequence.alignment.MultipleSequenceAlignment;
-import owl.core.sequence.alignment.PairwiseSequenceAlignment;
-import owl.core.sequence.alignment.PairwiseSequenceAlignment.PairwiseSequenceAlignmentException;
-import owl.core.structure.PdbAsymUnit;
-import owl.core.structure.PdbChain;
-import owl.core.structure.Residue;
-import owl.core.util.Interval;
+import eppic.commons.blast.BlastException;
+import eppic.commons.blast.BlastHit;
+import eppic.commons.blast.BlastHitList;
+import eppic.commons.blast.BlastHsp;
+import eppic.commons.blast.BlastRunner;
+import eppic.commons.blast.BlastXMLParser;
+import eppic.commons.sequence.HomologList;
+import eppic.commons.sequence.MultipleSequenceAlignment;
+import eppic.commons.sequence.NoMatchFoundException;
+import eppic.commons.sequence.Sequence;
+import eppic.commons.sequence.SiftsConnection;
+import eppic.commons.sequence.SiftsFeature;
+import eppic.commons.sequence.UniprotVerMisMatchException;
+import eppic.commons.sequence.UnirefEntry;
+import eppic.commons.util.Interval;
+
 
 public class ChainEvolContext implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
 
-	private static final Log LOGGER = LogFactory.getLog(ChainEvolContext.class);
-
+	private static final Logger LOGGER = LoggerFactory.getLogger(ChainEvolContext.class);
+	
 	private static final double ROUNDING_MARGIN = 0.0001;
 	
 	private static final double MAX_QUERY_TO_UNIPROT_DISAGREEMENT = 0.1;
@@ -229,9 +227,9 @@ public class ChainEvolContext implements Serializable {
 				}
 				
 			} catch (PairwiseSequenceAlignmentException e1) {
-				LOGGER.fatal("Problem aligning PDB sequence for chain "+representativeChain+" to its UniProt match "+query.getUniId());
-				LOGGER.fatal(e1.getMessage());
-				LOGGER.fatal("Can't continue");
+				LOGGER.error("Problem aligning PDB sequence for chain "+representativeChain+" to its UniProt match "+query.getUniId());
+				LOGGER.error(e1.getMessage());
+				LOGGER.error("Can't continue");
 				System.exit(1);
 			}  catch (NoMatchFoundException e) {
 				if (parent.isUseLocalUniprot()) {
@@ -577,7 +575,6 @@ public class ChainEvolContext implements Serializable {
 	}
 
 	public void align(EppicParams params) throws IOException, InterruptedException, UniprotVerMisMatchException { 
-		File tcoffeeBin = params.getTcoffeeBin();
 		File clustaloBin = params.getClustaloBin();
 		int nThreads = params.getNumThreads();
 		
@@ -599,7 +596,7 @@ public class ChainEvolContext implements Serializable {
 					".aln"); 
 		}
 		
-		homologs.computeAlignment(tcoffeeBin, clustaloBin, nThreads, alnCacheFile);
+		homologs.computeAlignment(clustaloBin, nThreads, alnCacheFile);
 	}
 	
 	public MultipleSequenceAlignment getAlignment() {
@@ -607,8 +604,8 @@ public class ChainEvolContext implements Serializable {
 	}
 	
 	/**
-	 * Returns the query's PDB SEQRES to uniprot alignment as a nicely formatted
-	 * aligmnent string in several lines with a middle line of matching characters,
+	 * Returns the query's PDB SEQRES to UniProt alignment as a nicely formatted
+	 * alignment string in several lines with a middle line of matching characters,
 	 * e.g. 
 	 * chainA  AAAA--BCDEFGICCC
 	 *         ||.|  ||.|||:|||
@@ -654,11 +651,11 @@ public class ChainEvolContext implements Serializable {
 	 * of residues or NaN if all residues do not have a mapping to the reference UniProt or 
 	 * if the input residue list is empty.
 	 */
-	public double calcScoreForResidueSet(List<Residue> residues, boolean weighted) {
+	public double calcScoreForResidueSet(List<Group> residues, boolean weighted) {
 		double totalScore = 0.0;
 		double totalWeight = 0.0;
 		List<Double> conservScores = getConservationScores();
-		for (Residue res:residues){
+		for (Group res:residues){
 			int resSer = res.getSerial(); 
 
 			int queryPos = getQueryUniprotPosForPDBPos(resSer); 
@@ -690,7 +687,7 @@ public class ChainEvolContext implements Serializable {
 	 * Set the b-factors of the given pdb chain to conservation score values.
 	 * @param chain
 	 */
-	protected void setConservationScoresAsBfactors(PdbChain chain) {
+	protected void setConservationScoresAsBfactors(Chain chain) {
 		
 		// do nothing (i.e. keep original b-factors) if there's no query match for this sequence and thus no evol scores calculated 
 		if (!hasQueryMatch()) return;
@@ -810,7 +807,7 @@ public class ChainEvolContext implements Serializable {
 			blastList = blastParser.getHits();
 		} catch (SAXException e) {
 			// if this happens it means that blast doesn't format correctly its XML, i.e. has a bug
-			LOGGER.fatal("Unexpected error: "+e.getMessage());
+			LOGGER.error("Unexpected error: "+e.getMessage());
 			System.exit(1);
 		}
 

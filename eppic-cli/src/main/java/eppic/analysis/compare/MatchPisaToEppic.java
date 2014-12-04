@@ -5,6 +5,11 @@ package eppic.analysis.compare;
 
 import eppic.DataModelAdaptor;
 import eppic.EppicParams;
+import eppic.commons.pisa.PisaAsmSetList;
+import eppic.commons.pisa.PisaAssembliesXMLParser;
+import eppic.commons.pisa.PisaInterfaceList;
+import eppic.commons.pisa.PisaInterfaceXMLParser;
+import eppic.commons.util.Goodies;
 import eppic.model.PdbInfoDB;
 import gnu.getopt.Getopt;
 
@@ -19,17 +24,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
 
+import org.biojava.bio.structure.Structure;
+import org.biojava.bio.structure.StructureException;
+import org.biojava.bio.structure.align.util.AtomCache;
+import org.biojava.bio.structure.contact.StructureInterfaceList;
+import org.biojava.bio.structure.xtal.CrystalBuilder;
+import org.biojava3.structure.StructureIO;
 import org.xml.sax.SAXException;
 
-import owl.core.connections.pisa.PisaAsmSetList;
-import owl.core.connections.pisa.PisaAssembliesXMLParser;
-import owl.core.connections.pisa.PisaInterfaceList;
-import owl.core.connections.pisa.PisaInterfaceXMLParser;
-import owl.core.structure.ChainInterfaceList;
-import owl.core.structure.PdbAsymUnit;
-import owl.core.structure.PdbLoadException;
-import owl.core.util.FileFormatException;
-import owl.core.util.Goodies;
 
 
 /**
@@ -43,25 +45,21 @@ public class MatchPisaToEppic {
 	private static final double MIN_AREA_PISA = 10;
 	
 	private static final String PROGRAM_NAME = "PredictPisaInterfaceCalls";
-	private static final String DEFAULT_CIF_DIR = "/nfs/data/dbs/pdb/data/structures/all/mmCIF";
-	
-	private String cifDir;
 	
 	private File serializedFilesDir;
 	
 	private List<PisaPdbData> pisaDatas;
 	
-	public MatchPisaToEppic(File interfaceFile, File assemblyFile, String cifDirPath, File serializedFilesDir, int pisaVersion) 
-			throws SAXException, IOException, FileFormatException, PdbLoadException {
+	public MatchPisaToEppic(File interfaceFile, File assemblyFile, File serializedFilesDir, int pisaVersion) 
+			throws SAXException, IOException {
 		
-		this.cifDir = cifDirPath;
 		this.serializedFilesDir = serializedFilesDir;
 		this.pisaDatas = createPisaDatafromFiles(assemblyFile, interfaceFile, pisaVersion);
 	}
 	
 
 	public List<PisaPdbData> createPisaDatafromFiles(File assemblyFile, File interfaceFile, int pisaVersion) 
-			throws SAXException, IOException, PdbLoadException, FileFormatException {
+			throws SAXException, IOException {
 		List<PisaPdbData> pisaDataList = new ArrayList<PisaPdbData>();
 		
 		//Parse Assemblies
@@ -85,7 +83,7 @@ public class MatchPisaToEppic {
 					}
 					PisaPdbData local = new PisaPdbData(pdbInfo, assemblySetListMap.get(pdbCode), interfaceListMap.get(pdbCode), MIN_AREA_PISA);					
 					pisaDataList.add(local);
-				} catch(PdbLoadException e){
+				} catch(StructureException e){
 					System.err.println("ERROR: Unable to load pdb file: "+pdbCode+", error: "+e.getMessage());
 				} catch(IOException e) {
 					System.err.println("ERROR: Unable to deserialize from file for pdb "+pdbCode+", error: "+e.getMessage());
@@ -99,26 +97,24 @@ public class MatchPisaToEppic {
 		
 	}
 	
-	private PdbAsymUnit getPdb(String pdbCode) throws IOException, FileFormatException, PdbLoadException {
-		File cifFile = File.createTempFile(pdbCode, "cif");
-		PdbAsymUnit.grabCifFile(this.cifDir, null, pdbCode, cifFile, false);
-		
-		cifFile.deleteOnExit();
-		return new PdbAsymUnit(cifFile);
+	private Structure getPdb(String pdbCode) throws IOException, StructureException { 
+		return StructureIO.getStructure(pdbCode);
 	}
 	
-	private PdbInfoDB getPdbInfo(PdbAsymUnit pdb) {
+	private PdbInfoDB getPdbInfo(Structure pdb) {
 		DataModelAdaptor dma = new DataModelAdaptor();
 		
-		pdb.removeHatoms();
-		ChainInterfaceList eppicInterfaces = pdb.getAllInterfaces(EppicParams.INTERFACE_DIST_CUTOFF, 
-				EppicParams.DEF_NSPHEREPOINTS_ASA_CALC, 1, true, false, 
-				EppicParams.DEF_MIN_SIZE_COFACTOR_FOR_ASA,
-				EppicParams.MIN_INTERFACE_AREA_TO_KEEP);
+		CrystalBuilder cb = new CrystalBuilder(pdb);
+		
+		StructureInterfaceList eppicInterfaces = cb.getUniqueInterfaces(EppicParams.INTERFACE_DIST_CUTOFF);
+		
+		eppicInterfaces.calcAsas(EppicParams.DEF_NSPHEREPOINTS_ASA_CALC, 1, EppicParams.DEF_MIN_SIZE_COFACTOR_FOR_ASA);
+		eppicInterfaces.removeInterfacesBelowArea(EppicParams.MIN_INTERFACE_AREA_TO_KEEP);
+		 
 		eppicInterfaces.initialiseClusters(pdb, EppicParams.CLUSTERING_RMSD_CUTOFF, EppicParams.CLUSTERING_MINATOMS, EppicParams.CLUSTERING_ATOM_TYPE);
 		dma.setInterfaces(eppicInterfaces);
 		PdbInfoDB pdbInfo = dma.getPdbInfo();
-		pdbInfo.setPdbCode(pdb.getPdbCode());
+		pdbInfo.setPdbCode(pdb.getPdbId());
 		return pdbInfo;
 	}
 	
@@ -143,7 +139,6 @@ public class MatchPisaToEppic {
 		
 		File assemFile = null;
 		File interfFile = null;
-		String cifPath = DEFAULT_CIF_DIR;
 		int pisaVersion = PisaAssembliesXMLParser.VERSION2;
 		
 		File listFile = null;
@@ -161,12 +156,11 @@ public class MatchPisaToEppic {
 				"  [-w]        :  dir containing webui.dat files for each PDB (in the usual divided layout).\n"+
 				"                 If -w not specified, then interfaces will be calculated on the fly from mmCIF \n"+
 				"                 files read from dir given in -c\n"+
-				"  [-c]        :  Path to cif files directory\n"+
 				"  [-v]        :  PISA version, either "+PisaAssembliesXMLParser.VERSION1+
 				" for web PISA or "+PisaAssembliesXMLParser.VERSION2+
 				" for ccp4 package's command line PISA (default "+PisaAssembliesXMLParser.VERSION2+")\n";
 
-		Getopt g = new Getopt(PROGRAM_NAME, args, "a:i:l:d:w:c:v:h?");
+		Getopt g = new Getopt(PROGRAM_NAME, args, "a:i:l:d:w:v:h?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
@@ -185,9 +179,6 @@ public class MatchPisaToEppic {
 			case 'w':
 				serializedFilesDir = new File(g.getOptarg());
 				break;
-			case 'c':
-				cifPath = g.getOptarg();
-				break;
 			case 'v':
 				pisaVersion = Integer.parseInt(g.getOptarg());
 				break;
@@ -205,22 +196,22 @@ public class MatchPisaToEppic {
 			System.exit(1);
 		}
 		
+		AtomCache cache = new AtomCache();		
+		cache.setUseMmCif(true);		
+		StructureIO.setAtomCache(cache); 
+
 
 		if (assemFile!=null) {
 			// single files
 			MatchPisaToEppic predictor;
 			try {
-				predictor = new MatchPisaToEppic(interfFile,assemFile,cifPath,serializedFilesDir,pisaVersion);
+				predictor = new MatchPisaToEppic(interfFile,assemFile,serializedFilesDir,pisaVersion);
 				PisaPdbData.printHeaders(System.out); 
 				predictor.printData(System.out, System.err);
 
 			} catch (SAXException e) {
 				System.err.println("Problem reading pisa files, error: "+e.getMessage());				
 			} catch (IOException e) {
-				System.err.println("Problem reading pisa files, error: "+e.getMessage());
-			} catch (FileFormatException e) {
-				System.err.println("Problem reading pisa files, error: "+e.getMessage());
-			} catch (PdbLoadException e) {
 				System.err.println("Problem reading pisa files, error: "+e.getMessage());
 			} 
 			
@@ -236,7 +227,7 @@ public class MatchPisaToEppic {
 				try {
 
 					MatchPisaToEppic predictor = 
-						new MatchPisaToEppic(interfFile,assemFile,cifPath,serializedFilesDir,pisaVersion);
+						new MatchPisaToEppic(interfFile,assemFile,serializedFilesDir,pisaVersion);
 					
 					predictor.printData(System.out, System.err);
 					
@@ -245,12 +236,6 @@ public class MatchPisaToEppic {
 					continue;
 				} catch (SAXException e) {
 					System.err.println("Problem reading xml file for pdb "+pdbCode+", error: "+e.getMessage());
-					continue;
-				} catch (PdbLoadException e) {
-					System.err.println("Problem reading file for pdb "+pdbCode+", error: "+e.getMessage());
-					continue;
-				} catch (FileFormatException e) {
-					System.err.println("Problem reading file for pdb "+pdbCode+", error: "+e.getMessage());
 					continue;
 				} 
 			}

@@ -2,18 +2,17 @@ package eppic.predictors;
 
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.biojava.bio.structure.contact.StructureInterface;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import owl.core.structure.ChainInterface;
-import owl.core.structure.InterfaceCluster;
 import eppic.CallType;
 import eppic.EppicParams;
 import eppic.InterfaceEvolContextList;
 
 public class CombinedClusterPredictor implements InterfaceTypePredictor {
 
-	private static final Log LOGGER = LogFactory.getLog(CombinedClusterPredictor.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(CombinedClusterPredictor.class);
 	
 	private InterfaceEvolContextList iecl;
 	
@@ -131,7 +130,7 @@ public class CombinedClusterPredictor implements InterfaceTypePredictor {
 		// if peptide, we don't use minimum hard area limits
 		// for some cases this works nicely (e.g. 1w9q interface 4)		
 		boolean useHardLimits = true;
-		for (ChainInterface interf:ic.getMembers()) {
+		for (StructureInterface interf:ic.getMembers()) {
 			if (interf.getFirstMolecule().getFullLength()<=EppicParams.PEPTIDE_LENGTH_CUTOFF ||
 				interf.getSecondMolecule().getFullLength()<=EppicParams.PEPTIDE_LENGTH_CUTOFF) {
 				useHardLimits = false;				

@@ -6,7 +6,6 @@ import eppic.ChainEvolContextList;
 import eppic.InterfaceEvolContext;
 import eppic.InterfaceEvolContextList;
 import eppic.ScoringType;
-import eppic.predictors.CombinedCSGeomPredictor;
 import eppic.predictors.CombinedPredictor;
 import eppic.predictors.EvolCoreSurfacePredictor;
 import eppic.predictors.EvolCoreRimPredictor;
@@ -23,13 +22,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
 
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
+import org.biojava.bio.structure.contact.StructureInterface;
+import org.biojava.bio.structure.contact.StructureInterfaceList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import owl.core.structure.ChainInterface;
-import owl.core.structure.ChainInterfaceList;
 
 /**
  * Script to calculate statistics for sets of bio/xtal interfaces
@@ -45,13 +42,12 @@ import owl.core.structure.ChainInterfaceList;
  * @author duarte_j
  *
  */
-@SuppressWarnings("deprecation")
 public class CalcStats {
 
 
 	private static final String   PROGRAM_NAME ="CalcStats";
 	
-	private static final Logger ROOTLOGGER = Logger.getRootLogger();
+	private static final Logger LOGGER = LoggerFactory.getLogger(CalcStats.class);
 	
 	private static final int MIN_NUM_HOMOLOGS = EppicParams.DEF_MIN_NUM_SEQUENCES;
 	
@@ -96,8 +92,6 @@ public class CalcStats {
 	private static File perInterfPredBioFile = null;
 	private static File perInterfPredXtalFile = null;
 	
-	private static boolean combinedCSG = false;
-	
 		
 	
 	/**
@@ -134,11 +128,9 @@ public class CalcStats {
 		"   [-f]       :  file to write bio interfaces summary table of scores and calls \n" +
 		"                 per interface\n" +
 		"   [-F]       :  file to write xtal interfaces summary table of scores and calls \n" +
-		"                 per interface\n" +
-		"   [-C]       :  use combined core-surface/geometry predictor instead of consensus \n" +
-		"                 geometry/core-rim/core-surface predictor\n\n";
+		"                 per interface\n\n";
 
-		Getopt g = new Getopt(PROGRAM_NAME, args, "B:X:b:x:e:c:z:s:m:t:y:w:df:F:Ch?");
+		Getopt g = new Getopt(PROGRAM_NAME, args, "B:X:b:x:e:c:z:s:m:t:y:w:df:F:h?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
@@ -211,9 +203,6 @@ public class CalcStats {
 			case 'F':
 				perInterfPredXtalFile = new File(g.getOptarg());
 				break;
-			case 'C':
-				combinedCSG = true;
-				break;				
 			case 'h':
 			case '?':
 				System.out.println(help);
@@ -240,15 +229,7 @@ public class CalcStats {
 			crPredicted = new TreeMap<String, List<Integer>>();
 			zPredicted = new TreeMap<String, List<Integer>>();
 		}
-		
-		
 
-		// initialising logging
-		ConsoleAppender errorAppender = new ConsoleAppender(new PatternLayout("%5p - %m%n"),ConsoleAppender.SYSTEM_ERR);
-		errorAppender.setThreshold(Level.WARN);
-		ROOTLOGGER.addAppender(errorAppender);
-		
-		
 		ArrayList<PredictionStatsSet> bioPreds = null;
 		if (bioDir!=null) {
 			
@@ -396,7 +377,7 @@ public class CalcStats {
 		for (String pdbCode:toAnalyse.keySet()) {
 			File interfdatFile = new File(dir,pdbCode+".interfaces.dat");
 			if (!interfdatFile.exists()) continue;
-			ChainInterfaceList interfaces = Utils.readChainInterfaceList(interfdatFile);
+			StructureInterfaceList interfaces = Utils.readChainInterfaceList(interfdatFile);
 			
 			for (int id:toAnalyse.get(pdbCode)) {
 				
@@ -413,14 +394,12 @@ public class CalcStats {
 				for (int i=0;i<caCutoffsG.length;i++) {
 					for (int j=0;j<minNumberCoreResForBios.length;j++) {											
 						
-						ChainInterface interf = interfaces.get(id);
+						StructureInterface interf = interfaces.get(id);
 						GeometryPredictor gp = new GeometryPredictor(interf);
-						gp.setUsePdbResSer(DEF_USE_PDB_RES_SER);
 						gp.setBsaToAsaCutoff(caCutoffsG[i]);
 						gp.setMinAsaForSurface(minAsaForSurface);
 						gp.setMinCoreSizeForBio(minNumberCoreResForBios[j]);
 
-						interf.calcRimAndCore(caCutoffsG[i], minAsaForSurface);
 						CallType call = gp.getCall();
 
 						if (call==CallType.BIO) counters[i][j].countBio(UNKNOWN_TAXON);
@@ -428,7 +407,7 @@ public class CalcStats {
 						
 						if (i==0 && j==0) {
 							// only using first pair of cutoffs for the per interface predictions file
-							perInterfPred.setArea(interf.getInterfaceArea());
+							perInterfPred.setArea(interf.getTotalArea());
 							perInterfPred.setGeomCall(call);
 							perInterfPred.setGeomScore(gp.getScore());
 						}						
@@ -477,17 +456,17 @@ public class CalcStats {
 			File chainevolcontextdatFile = new File(dir,pdbCode+".chainevolcontext.dat");
 			File interfdatFile = new File(dir,pdbCode+".interfaces.dat");
 			if (!chainevolcontextdatFile.exists() && !interfdatFile.exists()) {
-				ROOTLOGGER.warn("Both chainevolcontext.dat and interf.dat files missing for "+pdbCode);
+				LOGGER.warn("Both chainevolcontext.dat and interf.dat files missing for "+pdbCode);
 				continue; // failed predictions
 			} else if (!chainevolcontextdatFile.exists()) {
-				ROOTLOGGER.warn("chainevolcontext.dat missing but interf.dat file present for "+pdbCode);
+				LOGGER.warn("chainevolcontext.dat missing but interf.dat file present for "+pdbCode);
 				continue;
 			} else if (!interfdatFile.exists()) {
-				ROOTLOGGER.warn("interf.dat missing but chainevolcontext.dat file present for "+pdbCode);
+				LOGGER.warn("interf.dat missing but chainevolcontext.dat file present for "+pdbCode);
 				continue;				
 			}
 
-			ChainInterfaceList cil = Utils.readChainInterfaceList(interfdatFile);
+			StructureInterfaceList cil = Utils.readChainInterfaceList(interfdatFile);
 			ChainEvolContextList cecl = Utils.readChainEvolContextList(chainevolcontextdatFile);
 			InterfaceEvolContextList iecList = new InterfaceEvolContextList(cil, cecl);
 			iecList.setUsePdbResSer(DEF_USE_PDB_RES_SER);
@@ -512,20 +491,20 @@ public class CalcStats {
 				countSubTotal(countersZ, dol);
 				countSubTotal(countersComb, dol);
 				
-				ChainInterface interf = cil.get(id);
+				StructureInterface interf = cil.get(id);
 				InterfaceEvolContext iec = iecList.get(id-1);
 
 				// evol core/rim scoring
 				for (int i=0;i<caCutoffsCR.length;i++) {
 					for (int k=0;k<corerimCallCutoffs.length;k++) {
-						doSingleEvolCRScoring(iec, interf, ScoringType.CORERIM, countersCR, i, k, dol, perInterfPred);
+						doSingleEvolCRScoring(pdbCode, iec, interf, ScoringType.CORERIM, countersCR, i, k, dol, perInterfPred);
 					}
 				}
 				
 				// evol z-score scoring
 				for (int i=0;i<caCutoffsZ.length;i++) {
 					for (int k=0;k<zscoreCutoffs.length;k++) {						
-						doSingleEvolZScoring(iec, interf, countersZ, i, k, dol, perInterfPred);
+						doSingleEvolZScoring(pdbCode, iec, interf, countersZ, i, k, dol, perInterfPred);
 					}
 				}
 				
@@ -581,13 +560,11 @@ public class CalcStats {
 		return list;
 	}
 	
-	private static void doSingleEvolCRScoring(InterfaceEvolContext iec, ChainInterface interf, ScoringType scoType,   
+	private static void doSingleEvolCRScoring(String pdbCode, InterfaceEvolContext iec, StructureInterface interf, ScoringType scoType,   
 			PredCounter[][] counters, int i, int k, String dol, InterfacePrediction perInterfPred) {
 
 		
 		
-		//interf.calcRimAndCore(caCutoffsCR[i]);
-
 		EvolCoreRimPredictor ercp = new EvolCoreRimPredictor(iec);
 		ercp.setBsaToAsaCutoff(caCutoffsCR[i], minAsaForSurface);
 		
@@ -609,7 +586,7 @@ public class CalcStats {
 		
 		if (outFile!=null) {
 			if (call==CallType.BIO || call==CallType.CRYSTAL) {
-				String key = interf.getFirstMolecule().getPdbCode();
+				String key = pdbCode;
 				if (crPredicted.containsKey(key)) {
 					crPredicted.get(key).add(interf.getId());
 				} else {
@@ -623,7 +600,7 @@ public class CalcStats {
 
 	}
 	
-	private static void doSingleEvolZScoring(InterfaceEvolContext iec, ChainInterface interf, 
+	private static void doSingleEvolZScoring(String pdbCode, InterfaceEvolContext iec, StructureInterface interf, 
 			PredCounter[][] counters, int i, int k, String dol, InterfacePrediction perInterfPred) {
 		
 		//interf.calcRimAndCore(caCutoffsZ[i]);
@@ -644,7 +621,7 @@ public class CalcStats {
 		
 		if (outFile!=null) {
 			if (call==CallType.BIO || call==CallType.CRYSTAL) {
-				String key = interf.getFirstMolecule().getPdbCode();
+				String key = pdbCode;
 				if (zPredicted.containsKey(key)) {
 					zPredicted.get(key).add(interf.getId());
 				} else {
@@ -658,13 +635,10 @@ public class CalcStats {
 		
 	}
 	
-	private static void doSingleCombinedScoring(InterfaceEvolContext iec, ChainInterface interf, 
+	private static void doSingleCombinedScoring(InterfaceEvolContext iec, StructureInterface interf, 
 			PredCounter[][][][] counters, int i, int k, int l, int m, String dol, InterfacePrediction perInterfPred) {
 
-		//interf.calcRimAndCore(caCutoffsG[i]);
-		interf.calcRimAndCore(DEFCACUTOFF_FOR_G, minAsaForSurface);
 		GeometryPredictor gp = new GeometryPredictor(interf);
-		gp.setUsePdbResSer(DEF_USE_PDB_RES_SER);
 		//gp.setBsaToAsaCutoff(caCutoffsG[i]);
 		gp.setBsaToAsaCutoff(DEFCACUTOFF_FOR_G);
 		gp.setMinAsaForSurface(minAsaForSurface);
@@ -672,28 +646,17 @@ public class CalcStats {
 		gp.setMinCoreSizeForBio(DEFMINNUMBERCORERESFORBIO);
 		gp.computeScores();
 		
-		//interf.calcRimAndCore(caCutoffsCR[i]);
 		EvolCoreRimPredictor ercp = new EvolCoreRimPredictor(iec);
 		ercp.setBsaToAsaCutoff(caCutoffsCR[i], minAsaForSurface);
 		ercp.computeScores();
 		ercp.setCallCutoff(corerimCallCutoffs[k]);
 		
-		//interf.calcRimAndCore(caCutoffsZ[l]);
 		EvolCoreSurfacePredictor eizp = new EvolCoreSurfacePredictor(iec);
 		eizp.setBsaToAsaCutoff(caCutoffsZ[l], minAsaForSurface);
 		eizp.computeScores();
 		eizp.setCallCutoff(zscoreCutoffs[m]);
 		
-		InterfaceTypePredictor cp = null;
-		if (combinedCSG) {
-			cp = new CombinedCSGeomPredictor(iec, gp, ercp, eizp);
-			CombinedCSGeomPredictor casted = (CombinedCSGeomPredictor)cp;
-			casted.setUsePdbResSer(DEF_USE_PDB_RES_SER);			
-		} else {
-			cp = new CombinedPredictor(iec, gp, ercp, eizp);
-			CombinedPredictor casted = (CombinedPredictor)cp;
-			casted.setUsePdbResSer(DEF_USE_PDB_RES_SER);
-		}
+		InterfaceTypePredictor cp = new CombinedPredictor(iec, gp, ercp, eizp);
 
 		cp.computeScores();
 		CallType call = cp.getCall();

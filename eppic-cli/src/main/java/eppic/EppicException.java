@@ -1,7 +1,5 @@
 package eppic;
 
-import org.apache.commons.logging.Log;
-
 public class EppicException extends Exception {
 
 	private static final long serialVersionUID = 1L;
@@ -26,14 +24,6 @@ public class EppicException extends Exception {
 	
 	public Exception getOrigException() {
 		return origException;
-	}
-	
-	public void log (Log logger) {
-		if (fatal) {
-			logger.fatal(message);
-		} else {
-			logger.error(message);
-		}
 	}
 	
 	public void exitIfFatal(int exitStatus) {
