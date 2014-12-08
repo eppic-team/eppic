@@ -38,7 +38,7 @@ public class BlancoEntry implements Comparable<BlancoEntry> {
 		
 		this.resolution = pdb.getPDBHeader().getResolution();
 		this.expMethod = pdb.getPDBHeader().getExperimentalTechniques().iterator().next().getName();
-		this.rFree = pdb.getRfree();
+		this.rFree = pdb.getPDBHeader().getRfree();
 		
 		hasPdbData = true;
 		return;

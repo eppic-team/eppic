@@ -10,11 +10,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.biojava.bio.structure.Chain;
+import org.biojava.bio.structure.Compound;
 import org.biojava.bio.structure.PDBCrystallographicInfo;
 import org.biojava.bio.structure.Structure;
 import org.biojava.bio.structure.contact.GroupContact;
 import org.biojava.bio.structure.contact.GroupContactSet;
 import org.biojava.bio.structure.contact.StructureInterface;
+import org.biojava.bio.structure.contact.StructureInterfaceCluster;
 import org.biojava.bio.structure.contact.StructureInterfaceList;
 import org.biojava.bio.structure.xtal.CrystalCell;
 import org.biojava.bio.structure.xtal.SpaceGroup;
@@ -125,13 +128,13 @@ public class DataModelAdaptor {
 	public void setInterfaces(StructureInterfaceList interfaces) {
 
 		
-		List<InterfaceCluster> interfaceClusters = interfaces.getClusters();
+		List<StructureInterfaceCluster> interfaceClusters = interfaces.getClusters();
 		List<InterfaceClusterDB> icDBs = new ArrayList<InterfaceClusterDB>();
-		for (InterfaceCluster ic:interfaceClusters) {
+		for (StructureInterfaceCluster ic:interfaceClusters) {
 			InterfaceClusterDB icDB = new InterfaceClusterDB();
 			icDB.setClusterId(ic.getId());			
 			icDB.setPdbCode(pdbInfo.getPdbCode());
-			icDB.setAvgArea(ic.getMeanArea());
+			icDB.setAvgArea(ic.getTotalArea());
 			icDB.setNumMembers(ic.getMembers().size());
 			icDB.setPdbInfo(pdbInfo);
 			
@@ -146,7 +149,7 @@ public class DataModelAdaptor {
 				
 				InterfaceDB interfaceDB = new InterfaceDB();
 				interfaceDB.setInterfaceId(interf.getId());
-				interfaceDB.setClusterId(interfaces.getCluster(interf.getId()).getId());
+				interfaceDB.setClusterId(interf.getCluster().getId());
 				interfaceDB.setArea(interf.getTotalArea());
 				
 				interfaceDB.setChain1(interf.getMoleculeIds().getFirst());
@@ -179,7 +182,7 @@ public class DataModelAdaptor {
 				for (GroupContact groupContact:groupContacts) {
 										
 					ContactDB contact = new ContactDB();
-					// TODO here we are storing the SEQRES residuse serials, how to get them with biojava?
+					// TODO here we are storing the SEQRES residue serials, how to get them with biojava?
 					contact.setFirstResNumber(pair.getFirst().getResidueSerial());
 					contact.setSecondResNumber(pair.getSecond().getResidueSerial());
 					contact.setFirstResType(groupContact.getPair().getFirst().getPDBName());
@@ -231,174 +234,175 @@ public class DataModelAdaptor {
 		
 	}
 	
-	public void setPdbBioUnits(PdbBioUnitList bioUnitList) {
-		// assemblies (biounits) parsed from PDB
-
-		List<BioUnitView> reducedBioUnits = matchToInterfaceClusters(bioUnitList);		
-		
-		for(BioUnitView reducedBioUnit: reducedBioUnits){
-			//PdbBioUnit unit = bioUnitList.get(bioUnitId);
-
-			AssemblyDB assembly = new AssemblyDB();			
-			assembly.setMethod(reducedBioUnit.getType().getType());
-			assembly.setMmSize(reducedBioUnit.getMmSize());
-			assembly.setPdbCode(pdbInfo.getPdbCode());			
-			assembly.setConfidence(CONFIDENCE_NOT_AVAILABLE);
-
-			// setting relations parent/child
-			assembly.setPdbInfo(pdbInfo);
-			pdbInfo.addAssembly(assembly);
-
-			Set<Integer> memberClusterIds = reducedBioUnit.getClusterIds();
-
-			List<InterfaceClusterScoreDB> memberClusterScoresDB = new ArrayList<InterfaceClusterScoreDB>();
-			assembly.setInterfaceClusterScores(memberClusterScoresDB);
-			for (InterfaceClusterDB icDB:pdbInfo.getInterfaceClusters()) {
-				
-				if (memberClusterIds.contains(icDB.getClusterId())) {
-					// all member interface clusters are assigned bio
-					
-					InterfaceClusterScoreDB icsDB = new InterfaceClusterScoreDB();
-					memberClusterScoresDB.add(icsDB);				
-					
-					icsDB.setScore(SCORE_NOT_AVAILABLE);
-					icsDB.setScore1(SCORE_NOT_AVAILABLE);
-					icsDB.setScore2(SCORE_NOT_AVAILABLE);
-					icsDB.setCallName(CallType.BIO.getName());
-					icsDB.setConfidence(CONFIDENCE_NOT_AVAILABLE);
-					icsDB.setMethod(reducedBioUnit.getType().getType());				
-					icsDB.setClusterId(icDB.getClusterId());
-					icsDB.setPdbCode(pdbInfo.getPdbCode());
-
-					// setting relations parent/child
-					icsDB.setInterfaceCluster(icDB);
-					icDB.addInterfaceClusterScore(icsDB);
-
-					// only the bio interfaces are part of the assembly
-					icsDB.setAssembly(assembly);
-					
-				} else {
-					// The rest (not members) are assigned xtal
-					// We need to do this otherwise there's no distinction between 
-					// missing annotations and real xtal annotations
-					InterfaceClusterScoreDB icsDB = new InterfaceClusterScoreDB();
-					icsDB.setScore(SCORE_NOT_AVAILABLE);
-					icsDB.setScore1(SCORE_NOT_AVAILABLE);
-					icsDB.setScore2(SCORE_NOT_AVAILABLE);
-					icsDB.setCallName(CallType.CRYSTAL.getName());
-					icsDB.setConfidence(CONFIDENCE_NOT_AVAILABLE);
-					icsDB.setMethod(reducedBioUnit.getType().getType());				
-					icsDB.setClusterId(icDB.getClusterId());
-					icsDB.setPdbCode(pdbInfo.getPdbCode());
-
-					// setting relations parent/child
-					icsDB.setInterfaceCluster(icDB);
-					icDB.addInterfaceClusterScore(icsDB);
-
-				}
-			}
-
-		}
-
-	}
+	// TODO we need to port biounit stuff from Biojava properly, do it later
+//	public void setPdbBioUnits(PdbBioUnitList bioUnitList) {
+//		// assemblies (biounits) parsed from PDB
+//
+//		List<BioUnitView> reducedBioUnits = matchToInterfaceClusters(bioUnitList);		
+//		
+//		for(BioUnitView reducedBioUnit: reducedBioUnits){
+//			//PdbBioUnit unit = bioUnitList.get(bioUnitId);
+//
+//			AssemblyDB assembly = new AssemblyDB();			
+//			assembly.setMethod(reducedBioUnit.getType().getType());
+//			assembly.setMmSize(reducedBioUnit.getMmSize());
+//			assembly.setPdbCode(pdbInfo.getPdbCode());			
+//			assembly.setConfidence(CONFIDENCE_NOT_AVAILABLE);
+//
+//			// setting relations parent/child
+//			assembly.setPdbInfo(pdbInfo);
+//			pdbInfo.addAssembly(assembly);
+//
+//			Set<Integer> memberClusterIds = reducedBioUnit.getClusterIds();
+//
+//			List<InterfaceClusterScoreDB> memberClusterScoresDB = new ArrayList<InterfaceClusterScoreDB>();
+//			assembly.setInterfaceClusterScores(memberClusterScoresDB);
+//			for (InterfaceClusterDB icDB:pdbInfo.getInterfaceClusters()) {
+//				
+//				if (memberClusterIds.contains(icDB.getClusterId())) {
+//					// all member interface clusters are assigned bio
+//					
+//					InterfaceClusterScoreDB icsDB = new InterfaceClusterScoreDB();
+//					memberClusterScoresDB.add(icsDB);				
+//					
+//					icsDB.setScore(SCORE_NOT_AVAILABLE);
+//					icsDB.setScore1(SCORE_NOT_AVAILABLE);
+//					icsDB.setScore2(SCORE_NOT_AVAILABLE);
+//					icsDB.setCallName(CallType.BIO.getName());
+//					icsDB.setConfidence(CONFIDENCE_NOT_AVAILABLE);
+//					icsDB.setMethod(reducedBioUnit.getType().getType());				
+//					icsDB.setClusterId(icDB.getClusterId());
+//					icsDB.setPdbCode(pdbInfo.getPdbCode());
+//
+//					// setting relations parent/child
+//					icsDB.setInterfaceCluster(icDB);
+//					icDB.addInterfaceClusterScore(icsDB);
+//
+//					// only the bio interfaces are part of the assembly
+//					icsDB.setAssembly(assembly);
+//					
+//				} else {
+//					// The rest (not members) are assigned xtal
+//					// We need to do this otherwise there's no distinction between 
+//					// missing annotations and real xtal annotations
+//					InterfaceClusterScoreDB icsDB = new InterfaceClusterScoreDB();
+//					icsDB.setScore(SCORE_NOT_AVAILABLE);
+//					icsDB.setScore1(SCORE_NOT_AVAILABLE);
+//					icsDB.setScore2(SCORE_NOT_AVAILABLE);
+//					icsDB.setCallName(CallType.CRYSTAL.getName());
+//					icsDB.setConfidence(CONFIDENCE_NOT_AVAILABLE);
+//					icsDB.setMethod(reducedBioUnit.getType().getType());				
+//					icsDB.setClusterId(icDB.getClusterId());
+//					icsDB.setPdbCode(pdbInfo.getPdbCode());
+//
+//					// setting relations parent/child
+//					icsDB.setInterfaceCluster(icDB);
+//					icDB.addInterfaceClusterScore(icsDB);
+//
+//				}
+//			}
+//
+//		}
+//
+//	}
 	
-	/**
-	 * For each PDB bio unit in the given list, map the PDB-annotated interfaces to our interface cluster ids
-	 * and cull the list by:
-	 * 1) removing PDB bio units having same type, mmSize and set of interface cluster ids
-	 * 2) from those left, choosing the one with maximal mmSize within each type
-	 * @param bioUnitList
-	 * @return
-	 */
-	private List<BioUnitView> matchToInterfaceClusters(PdbBioUnitList bioUnitList) {
-
-		List<BioUnitView> culledBioUnits = new ArrayList<BioUnitView>();
-		int serial = 0;
-		for (PdbBioUnit bioUnit:bioUnitList) {
-			serial++;
-			BioUnitView bu = new BioUnitView();
-			bu.setMmSize(bioUnit.getSize());
-			bu.setType(bioUnit.getType());
-
-			List<SimpleInterface> bioUnitInterfaces = SimpleInterface.createSimpleInterfaceListFromPdbBioUnit(bioUnit);
-			InterfaceMatcher im = new InterfaceMatcher(pdbInfo.getInterfaceClusters(),bioUnitInterfaces);
-			for (InterfaceClusterDB ic:pdbInfo.getInterfaceClusters()) {
-				for (InterfaceDB i:ic.getInterfaces()) {
-					if (im.oursMatch(i.getInterfaceId())) {
-						bu.addInterfClusterId(ic.getClusterId()); 							 
-					} 
-				}
-			}
-			// 1st culling
-			// this will depend on the BioUnitView.equals implementation:
-			// essentially through this we remove redundant biounits (same size, type and set of cluster ids)
-			if (!culledBioUnits.contains(bu)) {
-				culledBioUnits.add(bu);
-			}
-
-			if (!im.checkTheirsMatch()) {
-				String msg = "";
-				for (SimpleInterface theirI:im.getTheirsNotMatching()) {
-					msg += theirI.toString()+"\t";
-				}
-
-				// This actually happens even if the mapping is fine. That's because we enumerate the biounit 
-				// interfaces exhaustively, and thus sometimes an interface might not happen in reality because 
-				// 2 molecules don't make a contact. 
-				LOGGER.info("Some interfaces of PDB bio unit "+serial+" of "+bioUnitList.size()+
-						" (type="+bioUnit.getType()+", size="+bioUnit.getSize()+") do not match any of the EPPIC interfaces."
-						+ " Non-matching interfaces are: "+msg);
-
-			}
-			
-			if (!im.checkOneToOneMapping()) {
-				// This is not really a mapping problem, that's why it is only logged INFO
-				// It will happen in many bona-fide proper mappings:
-				// e.g. 2a7n or 1ae9 (the bio interfaces are in 4-fold or 3-fold xtal axes and thus 
-				//      the operators given in bio-unit are repeated, for instance for 3-fold the operator 
-				//      appears twice to construct the 2 symmetry partners, while in eppic it appears only once)
-				LOGGER.info("Multiple match for an interface of PDB bio unit "+serial+" of "+bioUnitList.size()+
-					" (type="+bioUnit.getType()+", size="+bioUnit.getSize()+").");
-			}
-
-
-		}
-		
-		// 2nd culling: now we need to make sure that there's only 1 biounit per method (pisa, pqs, authors)
-		// multiplicity of assemblies per method is not fitting into our eppic data model
-		List<BioUnitView> finalList = new ArrayList<BioUnitView>(BioUnitAssignmentType.values().length);
-		
-		for (BioUnitAssignmentType type:BioUnitAssignmentType.values()) {
-			List<BioUnitView> sorted = getSortedBiounitsForType(culledBioUnits, type);
-			if (sorted.isEmpty()) continue;
-			// we get the largest (if more than 1 of same size, then largest will be randomly chosen from there)
-			BioUnitView bu = sorted.get(sorted.size()-1);
-			finalList.add(bu);
-			if (sorted.size()>1) {
-				int maxSize = bu.getMmSize();
-				LOGGER.info("More than 1 PDB bio unit annotation of type "+bu.getType().getType()+". Will only use the first one of size "+bu.getMmSize());
-				for (int i=0;i<sorted.size()-1;i++) {
-					if (sorted.get(i).getMmSize()<maxSize) {
-						LOGGER.info("PDB bio unit of size "+sorted.get(i).getMmSize()+", type "+sorted.get(i).getType().getType()+" will be discarded");
-					} else {
-						LOGGER.warn("PDB bio unit of same size as maximal one ("+sorted.get(i).getMmSize()+", type "+sorted.get(i).getType().getType()+") will be discarded");
-					}
-				}
-			}
-
-		}
-		
-		return finalList;
-	}
+//	/**
+//	 * For each PDB bio unit in the given list, map the PDB-annotated interfaces to our interface cluster ids
+//	 * and cull the list by:
+//	 * 1) removing PDB bio units having same type, mmSize and set of interface cluster ids
+//	 * 2) from those left, choosing the one with maximal mmSize within each type
+//	 * @param bioUnitList
+//	 * @return
+//	 */
+//	private List<BioUnitView> matchToInterfaceClusters(PdbBioUnitList bioUnitList) {
+//
+//		List<BioUnitView> culledBioUnits = new ArrayList<BioUnitView>();
+//		int serial = 0;
+//		for (PdbBioUnit bioUnit:bioUnitList) {
+//			serial++;
+//			BioUnitView bu = new BioUnitView();
+//			bu.setMmSize(bioUnit.getSize());
+//			bu.setType(bioUnit.getType());
+//
+//			List<SimpleInterface> bioUnitInterfaces = SimpleInterface.createSimpleInterfaceListFromPdbBioUnit(bioUnit);
+//			InterfaceMatcher im = new InterfaceMatcher(pdbInfo.getInterfaceClusters(),bioUnitInterfaces);
+//			for (InterfaceClusterDB ic:pdbInfo.getInterfaceClusters()) {
+//				for (InterfaceDB i:ic.getInterfaces()) {
+//					if (im.oursMatch(i.getInterfaceId())) {
+//						bu.addInterfClusterId(ic.getClusterId()); 							 
+//					} 
+//				}
+//			}
+//			// 1st culling
+//			// this will depend on the BioUnitView.equals implementation:
+//			// essentially through this we remove redundant biounits (same size, type and set of cluster ids)
+//			if (!culledBioUnits.contains(bu)) {
+//				culledBioUnits.add(bu);
+//			}
+//
+//			if (!im.checkTheirsMatch()) {
+//				String msg = "";
+//				for (SimpleInterface theirI:im.getTheirsNotMatching()) {
+//					msg += theirI.toString()+"\t";
+//				}
+//
+//				// This actually happens even if the mapping is fine. That's because we enumerate the biounit 
+//				// interfaces exhaustively, and thus sometimes an interface might not happen in reality because 
+//				// 2 molecules don't make a contact. 
+//				LOGGER.info("Some interfaces of PDB bio unit "+serial+" of "+bioUnitList.size()+
+//						" (type="+bioUnit.getType()+", size="+bioUnit.getSize()+") do not match any of the EPPIC interfaces."
+//						+ " Non-matching interfaces are: "+msg);
+//
+//			}
+//			
+//			if (!im.checkOneToOneMapping()) {
+//				// This is not really a mapping problem, that's why it is only logged INFO
+//				// It will happen in many bona-fide proper mappings:
+//				// e.g. 2a7n or 1ae9 (the bio interfaces are in 4-fold or 3-fold xtal axes and thus 
+//				//      the operators given in bio-unit are repeated, for instance for 3-fold the operator 
+//				//      appears twice to construct the 2 symmetry partners, while in eppic it appears only once)
+//				LOGGER.info("Multiple match for an interface of PDB bio unit "+serial+" of "+bioUnitList.size()+
+//					" (type="+bioUnit.getType()+", size="+bioUnit.getSize()+").");
+//			}
+//
+//
+//		}
+//		
+//		// 2nd culling: now we need to make sure that there's only 1 biounit per method (pisa, pqs, authors)
+//		// multiplicity of assemblies per method is not fitting into our eppic data model
+//		List<BioUnitView> finalList = new ArrayList<BioUnitView>(BioUnitAssignmentType.values().length);
+//		
+//		for (BioUnitAssignmentType type:BioUnitAssignmentType.values()) {
+//			List<BioUnitView> sorted = getSortedBiounitsForType(culledBioUnits, type);
+//			if (sorted.isEmpty()) continue;
+//			// we get the largest (if more than 1 of same size, then largest will be randomly chosen from there)
+//			BioUnitView bu = sorted.get(sorted.size()-1);
+//			finalList.add(bu);
+//			if (sorted.size()>1) {
+//				int maxSize = bu.getMmSize();
+//				LOGGER.info("More than 1 PDB bio unit annotation of type "+bu.getType().getType()+". Will only use the first one of size "+bu.getMmSize());
+//				for (int i=0;i<sorted.size()-1;i++) {
+//					if (sorted.get(i).getMmSize()<maxSize) {
+//						LOGGER.info("PDB bio unit of size "+sorted.get(i).getMmSize()+", type "+sorted.get(i).getType().getType()+" will be discarded");
+//					} else {
+//						LOGGER.warn("PDB bio unit of same size as maximal one ("+sorted.get(i).getMmSize()+", type "+sorted.get(i).getType().getType()+") will be discarded");
+//					}
+//				}
+//			}
+//
+//		}
+//		
+//		return finalList;
+//	}
 	
-	private static List<BioUnitView> getSortedBiounitsForType(List<BioUnitView> bioUnits, BioUnitAssignmentType type) {
-		List<BioUnitView> list = new ArrayList<BioUnitView>();
-		for (BioUnitView bu:bioUnits) {
-			if (bu.getType()==type) list.add(bu);
-		}
-		Collections.sort(list);
-		return list;
-	}
+//	private static List<BioUnitView> getSortedBiounitsForType(List<BioUnitView> bioUnits, BioUnitAssignmentType type) {
+//		List<BioUnitView> list = new ArrayList<BioUnitView>();
+//		for (BioUnitView bu:bioUnits) {
+//			if (bu.getType()==type) list.add(bu);
+//		}
+//		Collections.sort(list);
+//		return list;
+//	}
 	
 	public void setGeometryScores(List<GeometryPredictor> gps, List<GeometryClusterPredictor> gcps) {
 		
@@ -466,9 +470,19 @@ public class DataModelAdaptor {
 		
 		for (ChainEvolContext cec:cecl.getAllChainEvolContext()) {
 			ChainClusterDB chainClusterDB = new ChainClusterDB();
-			ChainCluster cc = cecl.getPdb().getProtChainCluster(cec.getRepresentativeChainCode());
-			chainClusterDB.setRepChain(cc.getRepresentative().getPdbChainCode());
-			chainClusterDB.setMemberChains(cc.getCommaSepMemberPdbChainCodes());
+			Compound cc = null;
+			for (Compound compound:cecl.getPdb().getCompounds()) {
+				if (compound.getRepresentative().getChainID().equals(cec.getRepresentativeChainCode())) {
+					cc = compound;
+				}
+			}
+			chainClusterDB.setRepChain(cc.getRepresentative().getChainID());
+			StringBuilder sb = new StringBuilder();
+			for (int i=0;i<cc.getChains().size();i++) {
+				sb.append(cc.getChains().get(i).getChainID());
+				if (i!=cc.getChains().size()-1) sb.append(",");
+			}
+			chainClusterDB.setMemberChains(sb.toString());
 			chainClusterDB.setHasUniProtRef(cec.hasQueryMatch());
 			
 			List<UniProtRefWarningDB> queryWarningItemDBs = new ArrayList<UniProtRefWarningDB>();
@@ -495,12 +509,12 @@ public class DataModelAdaptor {
 				chainClusterDB.setRefUniProtStart(cec.getQueryInterval().beg);
 				chainClusterDB.setRefUniProtEnd(cec.getQueryInterval().end);
 				
-				chainClusterDB.setPdbStart(cec.getPDBPosForQueryUniprotPos(cec.getQueryInterval().beg-1));
-				chainClusterDB.setPdbEnd(cec.getPDBPosForQueryUniprotPos(cec.getQueryInterval().end-1));
+				chainClusterDB.setPdbStart(cec.getPDBPosForQueryUniprotPos(cec.getQueryInterval().beg));
+				chainClusterDB.setPdbEnd(cec.getPDBPosForQueryUniprotPos(cec.getQueryInterval().end));
 				
-				chainClusterDB.setPdbAlignedSeq(cec.getPdb2uniprotAln().getAlignedSequences()[0]);
+				chainClusterDB.setPdbAlignedSeq(cec.getPdb2uniprotAln().getAlignedSequence(1).getSequenceAsString());
 				chainClusterDB.setAliMarkupLine(String.valueOf(cec.getPdb2uniprotAln().getMarkupLine()));
-				chainClusterDB.setRefAlignedSeq(cec.getPdb2uniprotAln().getAlignedSequences()[1]);
+				chainClusterDB.setRefAlignedSeq(cec.getPdb2uniprotAln().getAlignedSequence(2).getSequenceAsString());
 				chainClusterDB.setSeqIdCutoff(cec.getIdCutoff());
 				chainClusterDB.setClusteringSeqId(cec.getUsedClusteringPercentId()/100.0);
 				
@@ -827,7 +841,7 @@ public class DataModelAdaptor {
 					// we used to have here: "&& residue instanceof AaResidue" but that was preventing entropy values of mismatch-to-ref-uniprot-residues to be passed
 					// for het residues we do have entropy values too as the entropy values are calculated on the reference uniprot sequence (where no het residues are present)
 					if (entropies!=null) {	
-						if (queryUniprotPos!=-1) entropy = (float) entropies.get(queryUniprotPos).doubleValue();
+						if (queryUniprotPos!=-1) entropy = (float) entropies.get(queryUniprotPos-1).doubleValue();
 					}
 
 					iri.setEntropyScore(entropy); 
@@ -859,6 +873,32 @@ public class DataModelAdaptor {
 				}
 			}
 		}
+	}
+	
+	public static String getChainClusterString(Compound compound) {
+
+		StringBuilder sb = new StringBuilder();
+
+		sb.append(compound.getRepresentative().getChainID());
+
+		if (compound.getChains().size()>1) {
+
+			sb.append(" (");
+			for (int i=0;i<compound.getChains().size();i++) {
+
+				if (compound.getChains().get(i)==compound.getRepresentative()) {
+					continue;
+				}
+
+				sb.append(compound.getChains().get(i).getChainID()+",");
+
+			}
+
+			sb.deleteCharAt(sb.length()-1);
+			sb.append(")");
+		}
+
+		return sb.toString();
 	}
 	
 }

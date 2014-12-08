@@ -7,7 +7,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.TreeMap;
 
+import org.biojava.bio.structure.Chain;
+import org.biojava.bio.structure.Compound;
 import org.biojava.bio.structure.Structure;
+import org.biojava.bio.structure.StructureException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,13 +66,13 @@ public class ChainEvolContextList implements Serializable {
 			LOGGER.info("Using remote UniProt JAPI connection to retrieve UniProtKB data");
 		}
 		
-		for (ChainCluster chainCluster:pdb.getProtChainClusters()) {
+		for (Compound chainCluster:pdb.getCompounds()) {
 						
-			PdbChain chain = chainCluster.getRepresentative();
+			Chain chain = chainCluster.getRepresentative();
 			
-			ChainEvolContext cec = new ChainEvolContext(this, chain.getSequenceMSEtoMET(), chain.getPdbChainCode());
+			ChainEvolContext cec = new ChainEvolContext(this, chain.getSequenceMSEtoMET(), chain.getChainID());
 			
-			cecs.put(chain.getPdbChainCode(), cec);
+			cecs.put(chain.getChainID(), cec);
 		}
 		
 	}
@@ -113,7 +116,13 @@ public class ChainEvolContextList implements Serializable {
 	 * @return
 	 */
 	public ChainEvolContext getChainEvolContext(String pdbChainCode) {
-		return cecs.get(pdb.getProtChainCluster(pdbChainCode).getRepresentative().getPdbChainCode());
+		try {
+			Compound compound = pdb.getChainByPDB(pdbChainCode).getCompound();
+			return cecs.get( compound.getRepresentative().getChainID() );
+		} catch (StructureException e) {
+			LOGGER.error("Unexpected exception",e);
+			return null;
+		}
 	}
 	
 	/**

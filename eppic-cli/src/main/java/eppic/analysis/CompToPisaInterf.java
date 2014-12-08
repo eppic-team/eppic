@@ -10,11 +10,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.biojava.bio.structure.Chain;
 import org.biojava.bio.structure.Structure;
 import org.biojava.bio.structure.StructureException;
 import org.biojava.bio.structure.align.util.AtomCache;
 import org.biojava.bio.structure.asa.AsaCalculator;
+import org.biojava.bio.structure.contact.StructureInterface;
 import org.biojava.bio.structure.contact.StructureInterfaceList;
 import org.biojava.bio.structure.xtal.CrystalBuilder;
 import org.biojava.bio.structure.xtal.SpaceGroup;
@@ -28,7 +28,7 @@ import eppic.commons.pisa.PisaInterfaceList;
 /**
  * Script to print side by side a comparison of the interfaces calculated 
  * by PISA (automatically downloaded from the PISA web site as xml files) and
- * the interfaces calculated with owl's implementation.
+ * the interfaces calculated with Biojava's implementation.
  * 
  * @author duarte_j
  *
@@ -95,7 +95,7 @@ public class CompToPisaInterf {
 			
 			System.out.println("##"+pdbCode);
 
-			ChainInterfaceList pisaInterfaces = allPisaInterfaces.get(pdbCode).convertToChainInterfaceList(pdb);
+			StructureInterfaceList pisaInterfaces = allPisaInterfaces.get(pdbCode).convertToChainInterfaceList(pdb);
 			// we sort them on interface area because pisa doesn't always sort them like that (it does some kind of grouping)
 			pisaInterfaces.sort();
 			
@@ -109,32 +109,33 @@ public class CompToPisaInterf {
 			interfaces.removeInterfacesBelowArea(0);
 
 			
-			System.out.print("Number of interfaces: ours "+interfaces.size()+", pisa "+pisaInterfaces.getNumInterfaces());
-			if (pisaInterfaces.getNumInterfaces()!=interfaces.size()) {
+			System.out.print("Number of interfaces: ours "+interfaces.size()+", pisa "+pisaInterfaces.size());
+			if (pisaInterfaces.size()!=interfaces.size()) {
 				System.out.print("\t disagreement");
 			}
 			System.out.println();
-			for (Chain chain:pdb.getChains()) {
-				System.out.print(chain.getChainCode()+": "+chain.getPdbChainCode());
-				if (chain.isNonPolyChain()) {
-					System.out.print("("+chain.getFirstResidue().getLongCode()+"-"+chain.getFirstResidue().getSerial()+")");
-				}
-				System.out.print(", ");
-			}
+			// TODO since the move to Biojava, we don't have poly/non-poly chains anymore so we can't do the following anymore:
+			//for (Chain chain:pdb.getChains()) {
+			//	System.out.print(chain.getChainCode()+": "+chain.getPdbChainCode());
+			//	if (chain.isNonPolyChain()) {
+			//		System.out.print("("+chain.getFirstResidue().getLongCode()+"-"+chain.getFirstResidue().getSerial()+")");
+			//	}
+			//	System.out.print(", ");
+			//}
 			System.out.println();
 			
 			for (int i=0;i<Math.max(interfaces.size(), pisaInterfaces.size());i++) {
 				if (i<pisaInterfaces.size()) {
-					ChainInterface pisaInterf = pisaInterfaces.get(i+1);
-					String name = pisaInterf.getFirstMolecule().getChainCode()+"+"+pisaInterf.getSecondMolecule().getChainCode();
-					System.out.printf("%2d\t%8.2f\t%20s\t%20s",i+1,pisaInterf.getInterfaceArea(),name,SpaceGroup.getAlgebraicFromMatrix(pisaInterf.getSecondTransf().getMatTransform()));
+					StructureInterface pisaInterf = pisaInterfaces.get(i+1);
+					String name = pisaInterf.getMoleculeIds().getFirst()+"+"+pisaInterf.getMoleculeIds().getSecond();
+					System.out.printf("%2d\t%8.2f\t%20s\t%20s",i+1,pisaInterf.getTotalArea(),name,SpaceGroup.getAlgebraicFromMatrix(pisaInterf.getTransforms().getSecond().getMatTransform()));
 				} else {
 					System.out.printf("%2s\t%8s\t%20s\t%20s","","","","");
 				}
 				if (i<interfaces.size()) {
-					ChainInterface ourInterf = interfaces.get(i+1);
-					String name = ourInterf.getFirstMolecule().getChainCode()+"+"+ourInterf.getSecondMolecule().getChainCode();
-					System.out.printf("\t%8.2f\t%20s\t%20s\n",ourInterf.getInterfaceArea(),name,SpaceGroup.getAlgebraicFromMatrix(ourInterf.getSecondTransf().getMatTransform()));
+					StructureInterface ourInterf = interfaces.get(i+1);
+					String name = ourInterf.getMoleculeIds().getFirst()+"+"+ourInterf.getMoleculeIds().getSecond();
+					System.out.printf("\t%8.2f\t%20s\t%20s\n",ourInterf.getTotalArea(),name,SpaceGroup.getAlgebraicFromMatrix(ourInterf.getTransforms().getSecond().getMatTransform()));
 				} else {
 					System.out.printf("\t%8s\t%20s\t%20s\n","","","");
 				}

@@ -1,4 +1,5 @@
 package eppic.tools;
+import eppic.DataModelAdaptor;
 import eppic.EppicParams;
 import eppic.PymolRunner;
 import eppic.commons.util.FileTypeGuesser;
@@ -10,7 +11,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -20,6 +24,7 @@ import javax.vecmath.Matrix4d;
 import javax.vecmath.Vector3d;
 
 import org.biojava.bio.structure.Chain;
+import org.biojava.bio.structure.Compound;
 import org.biojava.bio.structure.Group;
 import org.biojava.bio.structure.PDBCrystallographicInfo;
 import org.biojava.bio.structure.Structure;
@@ -27,6 +32,7 @@ import org.biojava.bio.structure.StructureException;
 import org.biojava.bio.structure.align.util.AtomCache;
 import org.biojava.bio.structure.contact.Pair;
 import org.biojava.bio.structure.contact.StructureInterface;
+import org.biojava.bio.structure.contact.StructureInterfaceCluster;
 import org.biojava.bio.structure.contact.StructureInterfaceList;
 import org.biojava.bio.structure.io.FileParsingParameters;
 import org.biojava.bio.structure.io.PDBFileParser;
@@ -62,9 +68,6 @@ public class EnumerateInterfaces {
 	private static final int N_SPHERE_POINTS = 3000;
 	
 	private static final double MIN_AREA_TO_KEEP = 0;
-	
-	private static final double CLUSTERING_CUTOFF = 2.0;
-	private static final int MINATOMS_CLUSTERING = 10;
 	
 	private static final int NTHREADS = Runtime.getRuntime().availableProcessors();
 	
@@ -209,10 +212,10 @@ public class EnumerateInterfaces {
 		}
 
 
-		System.out.println(pdb.getPdbId()+" - "+pdb.getChains()+" chains ("+pdb.getProtChainClusters().size()+" sequence unique) ");
+		System.out.println(pdb.getPdbId()+" - "+pdb.getChains()+" chains ("+pdb.getCompounds().size()+" sequence unique) ");
 
-		for (ChainCluster chainCluster:pdb.getProtChainClusters()) {
-			System.out.println(chainCluster.getClusterString());
+		for (Compound chainCluster:pdb.getCompounds()) {
+			System.out.println(DataModelAdaptor.getChainClusterString(chainCluster));
 		}
 		System.out.println("Chains: ");
 		for (Chain chain:pdb.getChains()) {
@@ -235,8 +238,6 @@ public class EnumerateInterfaces {
 		interfaces.removeInterfacesBelowArea(MIN_AREA_TO_KEEP);
 		
 
-		interfaces.initialiseClusters(pdb, CLUSTERING_CUTOFF, MINATOMS_CLUSTERING, "CA");
-		
 		long end = System.currentTimeMillis();
 		long total = (end-start)/1000;
 		System.out.println("Total time for interface calculation: "+total+"s");
@@ -338,17 +339,17 @@ public class EnumerateInterfaces {
 				if (generatePngs) {
 					pr.generateInterfPngPsePml(interf, BSATOASA_CUTOFF, MIN_ASA_FOR_SURFACE, pdbFile, 
 							new File(writeDir,outBaseName+"."+(i+1)+".pse"), 
-							new File(writeDir,outBaseName+"."+(i+1)+".pml"), outBaseName, true);
+							new File(writeDir,outBaseName+"."+(i+1)+".pml"), outBaseName);
 				}
 			}
 		}
 		
 				
-		List<InterfaceCluster> clusters = interfaces.getClusters();
+		List<StructureInterfaceCluster> clusters = interfaces.getClusters();
 		System.out.println("\nClusters: ");
-		for (InterfaceCluster cluster:clusters) {
+		for (StructureInterfaceCluster cluster:clusters) {
 			System.out.print(cluster.getId()+":");
-			for (ChainInterface member:cluster.getMembers()) {
+			for (StructureInterface member:cluster.getMembers()) {
 				System.out.print(" "+member.getId());
 			}
 			System.out.println();
@@ -356,7 +357,11 @@ public class EnumerateInterfaces {
 		System.out.println();
 		
 		if (writeDir!=null) {
-			pr.generateInterfacesPse(inputFile, pdb.getPdbChainCodes(),
+			Set<String> chainIds = new TreeSet<String>();
+			for (Chain chain:pdb.getChains()) {
+				chainIds.add(chain.getChainID());
+			}
+			pr.generateInterfacesPse(inputFile, chainIds,
 					new File(writeDir,outBaseName+".allinterfaces.pml"), 
 					new File(writeDir,outBaseName+".allinterfaces.pse"), 
 					interfPdbFiles,interfaces);

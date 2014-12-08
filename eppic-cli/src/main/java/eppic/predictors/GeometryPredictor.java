@@ -1,10 +1,12 @@
 package eppic.predictors;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.biojava.bio.structure.Calc;
 import org.biojava.bio.structure.Group;
+import org.biojava.bio.structure.asa.GroupAsa;
 import org.biojava.bio.structure.contact.AtomContact;
 import org.biojava.bio.structure.contact.Pair;
 import org.biojava.bio.structure.contact.StructureInterface;
@@ -253,20 +255,31 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 		// In most cases our predictions for peptides will be bad because not only the peptide but also the protein partner
 		// will have too small an interface core and we'd call crystal based on core size
 		// But still for some cases (e.g. 3bfw) the prediction is correct (the core size is big enough) 
-		PdbChain molec = null;
+		Collection<GroupAsa> groupAsas = null;
+		String chainId = null;
 		if (molecId==InterfaceEvolContext.FIRST) {
-			molec = interf.getFirstMolecule();
+			groupAsas = interf.getFirstGroupAsas().values();
+			chainId = interf.getMoleculeIds().getFirst();
+			
 		} else if (molecId==InterfaceEvolContext.SECOND) {
-			molec = interf.getSecondMolecule();
+			groupAsas = interf.getSecondGroupAsas().values();
+			chainId = interf.getMoleculeIds().getSecond();
 		}
-		if (molec.getFullLength()<=EppicParams.PEPTIDE_LENGTH_CUTOFF) {
-			double bsa = interf.getInterfaceArea();
+		double asa = 0;
+		int numResWitBsaAbove0 = 0;
+		for (GroupAsa gAsa:groupAsas) {
+			asa += gAsa.getAsaU();
+			if (gAsa.getBsa()>0) numResWitBsaAbove0++;
+		}
+		
+		if (groupAsas.size()<=EppicParams.PEPTIDE_LENGTH_CUTOFF) {
+			double bsa = interf.getTotalArea();
 			String msg = "Ratio of interface area to ASA: "+
-					String.format("%4.2f", bsa/molec.getASA())+". "+
+					String.format("%4.2f", bsa/asa)+". "+
 					"Ratio of buried residues to total residues: "+
-					String.format("%4.2f",(double)molec.getNumResiduesWithBsaAbove(0)/(double)molec.getObsLength());
-			LOGGER.info("Chain "+molec.getPdbChainCode()+" of interface "+interf.getId()+" is a peptide. "+msg);
-			warnings.add("Chain "+molec.getPdbChainCode()+" is a peptide.");
+					String.format("%4.2f",(double)numResWitBsaAbove0/(double)groupAsas.size());
+			LOGGER.info("Chain "+chainId+" of interface "+interf.getId()+" is a peptide. "+msg);
+			warnings.add("Chain "+chainId+" is a peptide.");
 		}
 
 	}

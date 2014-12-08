@@ -147,18 +147,14 @@ public class InterfaceEvolContext implements Serializable {
 		if (!unreliableResidues.isEmpty()) {
 			
 			msg = unreliableResidues.size()+" "+typeOfResidues+
-					" residues of chain "+unreliableResidues.get(0).getParent().getPdbChainCode()+
+					" residues of chain "+unreliableResidues.get(0).getChainId()+
 					" are unreliable because of mismatch of PDB sequence to UniProt reference: ";
 			
 			for (int i=0;i<unreliableResidues.size();i++) {
-				String serial = null;
-				if (parent.isUsePdbResSer()) {
-					serial = unreliableResidues.get(i).getPdbSerial();
-				} else {
-					serial = "" + unreliableResidues.get(i).getSerial();
-				}
+				String serial = unreliableResidues.get(i).getResidueNumber().toString();
+				 
 				msg+= serial +
-					  "("+unreliableResidues.get(i).getLongCode()+")";
+					  "("+unreliableResidues.get(i).getPDBName()+")";
 				
 				if (i!=unreliableResidues.size()-1) msg+=", ";				
 			}
@@ -268,7 +264,7 @@ public class InterfaceEvolContext implements Serializable {
 			int queryPos = getChainEvolContext(molecId).getQueryUniprotPosForPDBPos(resser); 
 			 
 			if (queryPos!=-1) {   
-				map.put(resser, conservationScores.get(queryPos));	
+				map.put(resser, conservationScores.get(queryPos-1));	
 			} else {
 				
 				// when no entropy info is available for a residue we still want to assign a value for it

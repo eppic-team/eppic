@@ -3,6 +3,7 @@ package eppic.predictors;
 import java.util.List;
 
 import org.biojava.bio.structure.contact.StructureInterface;
+import org.biojava.bio.structure.contact.StructureInterfaceCluster;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,7 +17,7 @@ public class CombinedClusterPredictor implements InterfaceTypePredictor {
 	
 	private InterfaceEvolContextList iecl;
 	
-	private InterfaceCluster ic;
+	private StructureInterfaceCluster ic;
 	private InterfaceTypePredictor gcp;
 	private InterfaceTypePredictor ecrcp;
 	private InterfaceTypePredictor ecscp;
@@ -30,7 +31,7 @@ public class CombinedClusterPredictor implements InterfaceTypePredictor {
 	
 	private CallType veto;
 	
-	public CombinedClusterPredictor(InterfaceCluster interfaceCluster,
+	public CombinedClusterPredictor(StructureInterfaceCluster interfaceCluster,
 			InterfaceEvolContextList iecl,
 			GeometryClusterPredictor gcp,
 			EvolCoreRimClusterPredictor ecrcp,
@@ -131,8 +132,8 @@ public class CombinedClusterPredictor implements InterfaceTypePredictor {
 		// for some cases this works nicely (e.g. 1w9q interface 4)		
 		boolean useHardLimits = true;
 		for (StructureInterface interf:ic.getMembers()) {
-			if (interf.getFirstMolecule().getFullLength()<=EppicParams.PEPTIDE_LENGTH_CUTOFF ||
-				interf.getSecondMolecule().getFullLength()<=EppicParams.PEPTIDE_LENGTH_CUTOFF) {
+			if (interf.getFirstGroupAsas().keySet().size()<=EppicParams.PEPTIDE_LENGTH_CUTOFF ||
+				interf.getSecondGroupAsas().keySet().size()<=EppicParams.PEPTIDE_LENGTH_CUTOFF) {
 				useHardLimits = false;				
 			}
 			// break after one iteration: all interfaces in the cluster should have the peptide
@@ -142,13 +143,13 @@ public class CombinedClusterPredictor implements InterfaceTypePredictor {
 			LOGGER.info("Interface cluster "+ic.getId()+": peptide-protein interface, not checking minimum area hard limit. ");
 		}
 		
-		if (useHardLimits && ic.getMeanArea()<EppicParams.MIN_AREA_BIOCALL) {
+		if (useHardLimits && ic.getTotalArea()<EppicParams.MIN_AREA_BIOCALL) {
 			
 			callReason = "Area below hard limit "+String.format("%4.0f", EppicParams.MIN_AREA_BIOCALL);
 			
 			veto = CallType.CRYSTAL;
 		} 
-		else if (ic.getMeanArea()>EppicParams.MAX_AREA_XTALCALL) {
+		else if (ic.getTotalArea()>EppicParams.MAX_AREA_XTALCALL) {
 			
 			callReason = "Area above hard limit "+String.format("%4.0f", EppicParams.MAX_AREA_XTALCALL);
 			
@@ -180,8 +181,8 @@ public class CombinedClusterPredictor implements InterfaceTypePredictor {
 		
 		// we simply take the first member of the cluster and check if there enough homologs for it, other members should have same composition
 		
-		String firstPdbChainCode = ic.getMembers().get(0).getFirstMolecule().getPdbChainCode();
-		String secondPdbChainCode = ic.getMembers().get(0).getSecondMolecule().getPdbChainCode();
+		String firstPdbChainCode = ic.getMembers().get(0).getMoleculeIds().getFirst();
+		String secondPdbChainCode = ic.getMembers().get(0).getMoleculeIds().getSecond();
 		
 		int firstNumHomologs = iecl.getChainEvolContext(firstPdbChainCode).getNumHomologs();
 		int secondNumHomologs = iecl.getChainEvolContext(secondPdbChainCode).getNumHomologs();

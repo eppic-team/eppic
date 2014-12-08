@@ -13,6 +13,7 @@ import org.apache.commons.math.random.RandomDataImpl;
 import org.biojava.bio.structure.Group;
 import org.biojava.bio.structure.ResidueNumber;
 import org.biojava.bio.structure.contact.StructureInterface;
+import org.biojava.bio.structure.contact.StructureInterfaceCluster;
 import org.biojava.bio.structure.contact.StructureInterfaceList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,11 +69,11 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 			this.add(iec);
 		}
 		
-		for (InterfaceCluster ic:interfaces.getClusters()) {
+		for (StructureInterfaceCluster ic:interfaces.getClusters()) {
 			List<EvolCoreRimPredictor> ecrMembers = new ArrayList<EvolCoreRimPredictor>();
 			List<EvolCoreSurfacePredictor> ecsMembers = new ArrayList<EvolCoreSurfacePredictor>();
 			for (int i=0;i<interfaces.size();i++) {
-				if ( interfaces.getCluster(i+1).getId()==ic.getId()) {
+				if ( interfaces.get(i+1).getCluster().getId()==ic.getId()) {
 					ecrMembers.add(list.get(i).getEvolCoreRimPredictor());
 					ecsMembers.add(list.get(i).getEvolCoreSurfacePredictor());
 				}

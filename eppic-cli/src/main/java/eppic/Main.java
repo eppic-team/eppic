@@ -16,11 +16,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.biojava.bio.structure.Chain;
+import org.biojava.bio.structure.Compound;
 import org.biojava.bio.structure.Structure;
 import org.biojava.bio.structure.StructureException;
 import org.biojava.bio.structure.align.util.AtomCache;
 import org.biojava.bio.structure.contact.AtomContact;
 import org.biojava.bio.structure.contact.StructureInterface;
+import org.biojava.bio.structure.contact.StructureInterfaceCluster;
 import org.biojava.bio.structure.contact.StructureInterfaceList;
 import org.biojava.bio.structure.io.FileParsingParameters;
 import org.biojava.bio.structure.io.PDBFileParser;
@@ -354,11 +356,11 @@ public class Main {
 		
 		// interface cluster scoring
 		gcps = new ArrayList<GeometryClusterPredictor>();
-		for (InterfaceCluster interfaceCluster:interfaces.getClusters()) {
+		for (StructureInterfaceCluster interfaceCluster:interfaces.getClusters()) {
 			List<GeometryPredictor> gpsForCluster = new ArrayList<GeometryPredictor>();
 			
 			for (int i=0;i<interfaces.size();i++) {
-				if ( interfaces.getCluster(i+1).getId()==interfaceCluster.getId()) {
+				if ( interfaces.get(i+1).getCluster().getId()==interfaceCluster.getId()) {
 					gpsForCluster.add(gps.get(i));
 				}
 			}
@@ -448,11 +450,8 @@ public class Main {
 			if (!params.isDoEvolScoring()) {
 				// no evol scoring: plain PDB files without altered bfactors
 				for (StructureInterface interf : interfaces) {
-					if (interf.isFirstProtein() && interf.isSecondProtein()) {
-						File pdbFile = params.getOutputFile("." + interf.getId() + ".pdb.gz");
-						interf.writeToPdbFile(pdbFile, params.isUsePdbResSer(), true);
-					}
-
+					File pdbFile = params.getOutputFile("." + interf.getId() + ".pdb.gz");
+					interf.writeToPdbFile(pdbFile, params.isUsePdbResSer(), true);
 				}
 			} else {
 				// writing PDB files with entropies as bfactors
@@ -535,7 +534,7 @@ public class Main {
 						params.isUsePdbResSer());
 				LOGGER.info("Generated PyMOL files for interface "+interf.getId());
 				MolViewersAdaptor.writeJmolScriptFile(interf, params.getCAcutoffForGeom(), params.getMinAsaForSurface(), pr, 
-						params.getOutDir(), params.getBaseName(), params.isUsePdbResSer());
+						params.getOutDir(), params.getBaseName());
 			}
 
 			if (params.isDoEvolScoring()) {
@@ -632,13 +631,15 @@ public class Main {
 	}
 	
 	private void findUniqueChains() {
-		String msg = "Unique sequences: ";
+		StringBuilder sb = new StringBuilder();
+		sb.append("Unique sequences: ");
 		
-		for (ChainCluster chainCluster:pdb.getProtChainClusters()) {
-			msg += chainCluster.getClusterString()+" ";
+		for (Compound chainCluster:pdb.getCompounds()) {
+			sb.append(DataModelAdaptor.getChainClusterString(chainCluster));
+			sb.append(" ");
 		}
 		
-		LOGGER.info(msg);
+		LOGGER.info(sb.toString());
 	}
 	
 	public void doLoadEvolContextFromFile() throws EppicException {
@@ -741,7 +742,7 @@ public class Main {
 		
 		List<CombinedClusterPredictor> ccps = new ArrayList<CombinedClusterPredictor>();		
 		int i = 0;
-		for (InterfaceCluster ic:interfaces.getClusters()) {
+		for (StructureInterfaceCluster ic:interfaces.getClusters()) {
 			int clusterId = ic.getId();
 			CombinedClusterPredictor ccp = 
 					new CombinedClusterPredictor(ic,iecList,

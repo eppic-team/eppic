@@ -111,7 +111,7 @@ public class MatchPisaToEppic {
 		eppicInterfaces.calcAsas(EppicParams.DEF_NSPHEREPOINTS_ASA_CALC, 1, EppicParams.DEF_MIN_SIZE_COFACTOR_FOR_ASA);
 		eppicInterfaces.removeInterfacesBelowArea(EppicParams.MIN_INTERFACE_AREA_TO_KEEP);
 		 
-		eppicInterfaces.initialiseClusters(pdb, EppicParams.CLUSTERING_RMSD_CUTOFF, EppicParams.CLUSTERING_MINATOMS, EppicParams.CLUSTERING_ATOM_TYPE);
+		eppicInterfaces.getClusters();
 		dma.setInterfaces(eppicInterfaces);
 		PdbInfoDB pdbInfo = dma.getPdbInfo();
 		pdbInfo.setPdbCode(pdb.getPdbId());

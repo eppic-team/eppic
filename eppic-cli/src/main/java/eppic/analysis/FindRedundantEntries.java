@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.biojava.bio.structure.Compound;
 import org.biojava.bio.structure.Structure;
 import org.biojava.bio.structure.StructureException;
 import org.biojava.bio.structure.align.util.AtomCache;
@@ -109,12 +110,14 @@ public class FindRedundantEntries {
 				continue;
 			} 
 			
-			for (ChainCluster chainCluster:pdb.getProtChainClusters()) {
-				Sequence seq = chainCluster.getRepresentative().getSequence();
-				if (seq.getSeq().matches("X+")) continue; // if it's an all X sequence we don't want it (blastclust doesn't like them)
-				if (seq.getLength()<12) continue; // we ignore too small sequences (blastclust doesn't like them)
-				if (seq.isNucleotide()) continue; // some sets (like Bahadur's monomers) contain DNA/RNA: ignore
-				seq.writeToPrintStream(ps);
+			for (Compound chainCluster:pdb.getCompounds()) {
+				String seq = chainCluster.getRepresentative().getSeqResSequence();
+				if (seq.matches("X+")) continue; // if it's an all X sequence we don't want it (blastclust doesn't like them)
+				if (seq.length()<12) continue; // we ignore too small sequences (blastclust doesn't like them)
+				// at the moment Biojava's getSeqResSequence uses XXXX for nucleotides, so the above condition captures this already
+				//if (seq.isNucleotide()) continue; // some sets (like Bahadur's monomers) contain DNA/RNA: ignore
+				Sequence s = new Sequence(pdbCode+chainCluster.getRepresentative().getChainID(),seq);
+				s.writeToPrintStream(ps);
 			}
 			
 		}
