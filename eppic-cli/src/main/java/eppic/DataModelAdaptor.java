@@ -3,30 +3,28 @@ package eppic;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.biojava.bio.structure.Chain;
 import org.biojava.bio.structure.Compound;
+import org.biojava.bio.structure.Group;
 import org.biojava.bio.structure.PDBCrystallographicInfo;
 import org.biojava.bio.structure.Structure;
+import org.biojava.bio.structure.asa.GroupAsa;
 import org.biojava.bio.structure.contact.GroupContact;
 import org.biojava.bio.structure.contact.GroupContactSet;
 import org.biojava.bio.structure.contact.StructureInterface;
 import org.biojava.bio.structure.contact.StructureInterfaceCluster;
 import org.biojava.bio.structure.contact.StructureInterfaceList;
+import org.biojava.bio.structure.io.CompoundFinder;
 import org.biojava.bio.structure.xtal.CrystalCell;
 import org.biojava.bio.structure.xtal.SpaceGroup;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import eppic.analysis.compare.BioUnitView;
-import eppic.analysis.compare.InterfaceMatcher;
-import eppic.analysis.compare.SimpleInterface;
 import eppic.commons.sequence.Homolog;
 import eppic.commons.util.Goodies;
 import eppic.model.ContactDB;
@@ -38,7 +36,6 @@ import eppic.model.InterfaceDB;
 import eppic.model.ResidueDB;
 import eppic.model.InterfaceScoreDB;
 import eppic.model.PdbInfoDB;
-import eppic.model.AssemblyDB;
 import eppic.model.ScoringMethod;
 import eppic.model.UniProtRefWarningDB;
 import eppic.model.RunParametersDB;
@@ -52,16 +49,19 @@ import eppic.predictors.EvolCoreRimPredictor;
 import eppic.predictors.GeometryClusterPredictor;
 import eppic.predictors.GeometryPredictor;
 
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
+
 
 public class DataModelAdaptor {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(DataModelAdaptor.class);
+	//private static final Logger LOGGER = LoggerFactory.getLogger(DataModelAdaptor.class);
 	
 	private static final int FIRST = 0;
 	private static final int SECOND = 1;
 	
-	private static final double CONFIDENCE_NOT_AVAILABLE = -1.0;
-	private static final double SCORE_NOT_AVAILABLE = -1.0;
+	//private static final double CONFIDENCE_NOT_AVAILABLE = -1.0;
+	//private static final double SCORE_NOT_AVAILABLE = -1.0;
 	
 	private PdbInfoDB pdbInfo;
 	
@@ -183,18 +183,19 @@ public class DataModelAdaptor {
 										
 					ContactDB contact = new ContactDB();
 					// TODO here we are storing the SEQRES residue serials, how to get them with biojava?
-					contact.setFirstResNumber(pair.getFirst().getResidueSerial());
-					contact.setSecondResNumber(pair.getSecond().getResidueSerial());
+					//contact.setFirstResNumber(pair.getFirst().getResidueSerial());
+					//contact.setSecondResNumber(pair.getSecond().getResidueSerial());
 					contact.setFirstResType(groupContact.getPair().getFirst().getPDBName());
 					contact.setSecondResType(groupContact.getPair().getSecond().getPDBName());
-					contact.setFirstBurial(iRes.getBsaToAsaRatio());
-					contact.setSecondBurial(jRes.getBsaToAsaRatio());
+					//contact.setFirstBurial(iRes.getBsaToAsaRatio());
+					//contact.setSecondBurial(jRes.getBsaToAsaRatio());
 					
+					// TODO fill the missing data with Biojava
 					contact.setMinDistance(groupContact.getMinDistance());
-					contact.setClash(edge.isClash());
-					contact.setDisulfide(edge.isDisulfide());
-					contact.setNumAtoms(edge.getnAtoms());
-					contact.setNumHBonds(edge.getnHBonds()); 
+					//contact.setClash(edge.isClash());
+					//contact.setDisulfide(edge.isDisulfide());
+					contact.setNumAtoms(groupContact.getNumAtomContacts());
+					//contact.setNumHBonds(edge.getnHBonds()); 
 					
 					contact.setInterfaceId(interf.getId()); 
 					contact.setPdbCode(pdbInfo.getPdbCode());
@@ -513,7 +514,8 @@ public class DataModelAdaptor {
 				chainClusterDB.setPdbEnd(cec.getPDBPosForQueryUniprotPos(cec.getQueryInterval().end));
 				
 				chainClusterDB.setPdbAlignedSeq(cec.getPdb2uniprotAln().getAlignedSequence(1).getSequenceAsString());
-				chainClusterDB.setAliMarkupLine(String.valueOf(cec.getPdb2uniprotAln().getMarkupLine()));
+				// TODO fill the markup line using Biojava
+				//chainClusterDB.setAliMarkupLine(String.valueOf(cec.getPdb2uniprotAln().getMarkupLine()));
 				chainClusterDB.setRefAlignedSeq(cec.getPdb2uniprotAln().getAlignedSequence(2).getSequenceAsString());
 				chainClusterDB.setSeqIdCutoff(cec.getIdCutoff());
 				chainClusterDB.setClusteringSeqId(cec.getUsedClusteringPercentId()/100.0);
@@ -746,21 +748,23 @@ public class DataModelAdaptor {
 	}
 	
 	private void addResidueDetailsOfPartner(List<ResidueDB> iril, StructureInterface interf, int molecId) {
-		if (interf.isProtein()) {
-			PdbChain mol = null;
+		if (CompoundFinder.isProtein(interf.getMolecules().getFirst()[0].getGroup().getChain()) &&
+			CompoundFinder.isProtein(interf.getMolecules().getSecond()[0].getGroup().getChain())) {
+			
+			Collection<GroupAsa> mol = null;
 			if (molecId==FIRST) {
-				mol = interf.getFirstMolecule();
+				mol = interf.getFirstGroupAsas().values();
 			}
 			else if (molecId==SECOND) {
-				mol = interf.getSecondMolecule();
+				mol = interf.getSecondGroupAsas().values();;
 			}
 			
-			for (Residue residue:mol) {
-				String resType = residue.getLongCode();
+			for (GroupAsa groupAsa:mol) {
+				String resType = groupAsa.getGroup().getPDBName();
 				int assignment = ResidueDB.OTHER;
 				
-				double asa = residue.getAsa();
-				double bsa = residue.getBsa();
+				double asa = groupAsa.getAsaU();
+				double bsa = groupAsa.getBsa();
 				
 				// NOTE the regions are mutually exclusive (one and only one assignment per region)
 
@@ -770,26 +774,26 @@ public class DataModelAdaptor {
 				// the union of CORE_EVOL and CORE_GEOM
 				
 				// this should match the condition in owl.core.structure.PdbChain.getRimAndCore()
-				if (residue.getAsa()>params.getMinAsaForSurface() && residue.getBsa()>0) {
+				if (groupAsa.getAsaU()>params.getMinAsaForSurface() && groupAsa.getBsa()>0) {
 					// NOTE: we use here caCutoffForRimCore as the one and only for both evol methods
 					// NOTE2: we are assuming that caCutoffForRimCore<caCutoffForGeom, if that doesn't hold this won't work!
-					if (residue.getBsaToAsaRatio()<params.getCAcutoffForRimCore()) {
+					if (groupAsa.getBsaToAsaRatio()<params.getCAcutoffForRimCore()) {
 						assignment = ResidueDB.RIM_EVOLUTIONARY;
-					} else if (residue.getBsaToAsaRatio()<params.getCAcutoffForGeom()){
+					} else if (groupAsa.getBsaToAsaRatio()<params.getCAcutoffForGeom()){
 						assignment = ResidueDB.CORE_EVOLUTIONARY; 
 					} else {
 						assignment = ResidueDB.CORE_GEOMETRY;
 					} 
 					
 				// residues not in interface but still with more ASA than minimum required are called surface
-				} else if (residue.getAsa()>params.getMinAsaForSurface()) {
+				} else if (groupAsa.getAsaU()>params.getMinAsaForSurface()) {
 					assignment = ResidueDB.SURFACE;
 				}
 				
 				
 				ResidueDB iri = new ResidueDB();
-				iri.setResidueNumber(residue.getSerial());
-				iri.setPdbResidueNumber(residue.getPdbSerial());
+				iri.setResidueNumber(getSeqresSerial(groupAsa.getGroup(),groupAsa.getGroup().getChain()));
+				iri.setPdbResidueNumber(groupAsa.getGroup().getResidueNumber().toString());
 				iri.setResidueType(resType);
 				iri.setAsa(asa);
 				iri.setBsa(bsa);
@@ -816,26 +820,28 @@ public class DataModelAdaptor {
 
 		for (int molecId:molecIds) { 
 			ChainEvolContext cec = iec.getChainEvolContext(molecId);
-			PdbChain mol = null;
+			Chain mol = null;
 			if (molecId==FIRST) {
-				mol = interf.getFirstMolecule();
+				mol = interf.getMolecules().getFirst()[0].getGroup().getChain();
 			}
 			else if (molecId==SECOND) {
-				mol = interf.getSecondMolecule();
+				mol = interf.getMolecules().getSecond()[0].getGroup().getChain();
 			}
 
-			if (interf.isProtein()) {
+			if (CompoundFinder.isProtein(interf.getMolecules().getFirst()[0].getGroup().getChain()) &&
+				CompoundFinder.isProtein(interf.getMolecules().getSecond()[0].getGroup().getChain())) {
 				 
 				List<Double> entropies = null;
 				if (cec.hasQueryMatch()) 
 					entropies = cec.getConservationScores();
-				for (Residue residue:mol) {
+				for (Group residue:mol.getAtomGroups()) {
 
 	 				ResidueDB iri = iril.get(i);
 					
 					int queryUniprotPos = -1;
-					if (!mol.isNonPolyChain() && mol.getSequence().isProtein() && cec.hasQueryMatch()) 
-						queryUniprotPos = cec.getQueryUniprotPosForPDBPos(residue.getSerial());
+					// TODO before Biojava move we used to have here !mol.isNonPolyChain() as first condition, how do we do that now?
+					if (cec.hasQueryMatch()) // && !mol.isNonPolyChain() 
+						queryUniprotPos = cec.getQueryUniprotPosForPDBPos(cec.getSeqresSerial(residue));
 
 					float entropy = -1;
 					// we used to have here: "&& residue instanceof AaResidue" but that was preventing entropy values of mismatch-to-ref-uniprot-residues to be passed
@@ -900,5 +906,22 @@ public class DataModelAdaptor {
 
 		return sb.toString();
 	}
-	
+
+	/**
+	 * Returns the SEQRES serial of the Group g in the Chain c
+	 * @param g
+	 * @param c
+	 * @return the SEQRES serial (1 to n) or -1 if not found
+	 */
+	public static int getSeqresSerial(Group g, Chain c) {
+		
+		// this is not very efficient, it would be nice to store the mapping in a cached map somewhere 
+		List<Group> seqresGroups = c.getSeqResGroups();
+		for (int i=0;i<seqresGroups.size();i++) {
+			if (seqresGroups.get(i) == g) 
+				return i+1;
+		}
+		// not found, return -1
+		return -1;
+	}
 }

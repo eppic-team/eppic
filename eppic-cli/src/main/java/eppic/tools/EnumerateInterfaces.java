@@ -11,7 +11,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
+import java.io.PrintWriter;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -19,8 +19,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.vecmath.AxisAngle4d;
-import javax.vecmath.Matrix3d;
-import javax.vecmath.Matrix4d;
 import javax.vecmath.Vector3d;
 
 import org.biojava.bio.structure.Chain;
@@ -96,7 +94,7 @@ public class EnumerateInterfaces {
 		boolean generatePngs = false;
 		boolean debug = false;
 		boolean serialize = false;
-		boolean nonPoly = false;
+		//boolean nonPoly = false;
 		
 		Getopt g = new Getopt("enumerateInterfaces", args, "i:w:t:lsnrdh?");
 		int c;
@@ -118,7 +116,7 @@ public class EnumerateInterfaces {
 				serialize = true;
 				break;
 			case 'n':
-				nonPoly = true;
+				//nonPoly = true;
 				break;
 			case 'd':
 				debug = true;
@@ -334,7 +332,9 @@ public class EnumerateInterfaces {
 			
 			if (writeDir!=null) {
 				File pdbFile = new File(writeDir,outBaseName+"."+(i+1)+".interface.pdb");
-				interf.writeToPdbFile(pdbFile, true, false);
+				PrintWriter pw = new PrintWriter(pdbFile);
+				pw.print(interf.toPDB());
+				pw.close();
 				interfPdbFiles[i] = pdbFile; 
 				if (generatePngs) {
 					pr.generateInterfPngPsePml(interf, BSATOASA_CUTOFF, MIN_ASA_FOR_SURFACE, pdbFile, 

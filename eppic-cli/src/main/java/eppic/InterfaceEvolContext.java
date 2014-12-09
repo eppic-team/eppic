@@ -1,15 +1,20 @@
 package eppic;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+import java.util.zip.GZIPOutputStream;
 
 import org.apache.commons.math.random.RandomDataImpl;
+import org.biojava.bio.structure.Atom;
+import org.biojava.bio.structure.Chain;
 import org.biojava.bio.structure.Group;
 import org.biojava.bio.structure.contact.StructureInterface;
+import org.biojava.bio.structure.io.CompoundFinder;
 
 import eppic.predictors.EvolCoreRimPredictor;
 import eppic.predictors.EvolCoreSurfacePredictor;
@@ -71,12 +76,12 @@ public class InterfaceEvolContext implements Serializable {
 		this.evolCoreSurfacePredictor = evolCoreSurfacePredictor;
 	}
 	
-	private PdbChain getMolecule(int molecId) {
+	private Chain getMolecule(int molecId) {
 		if (molecId==FIRST) {
-			return getInterface().getFirstMolecule();
+			return getInterface().getMolecules().getFirst()[0].getGroup().getChain();
 		}
 		if (molecId==SECOND) {
-			return getInterface().getSecondMolecule();
+			return getInterface().getMolecules().getSecond()[0].getGroup().getChain();
 		}
 		return null;		
 	}
@@ -135,7 +140,7 @@ public class InterfaceEvolContext implements Serializable {
 	 */
 	public boolean isReferenceMismatch(Group residue, int molecId) {
 		ChainEvolContext chain = getChainEvolContext(molecId);
-		int resSer = residue.getSerial();
+		int resSer = chain.getSeqresSerial(residue);
 		if (resSer!=-1 && !chain.isPdbSeqPositionMatchingUniprot(resSer)) {
 			return true;
 		}
@@ -168,11 +173,10 @@ public class InterfaceEvolContext implements Serializable {
 	 * scores per residue and averaging (optionally weighted by BSA)
 	 * @param residues
 	 * @param molecId
-	 * @param weighted
 	 * @return
 	 */
-	public double calcScore(List<Group> residues, int molecId, boolean weighted) {
-		return getChainEvolContext(molecId).calcScoreForResidueSet(residues, weighted);
+	public double calcScore(List<Group> residues, int molecId) {
+		return getChainEvolContext(molecId).calcScoreForResidueSet(residues);
 	}
 	
 	/**
@@ -201,7 +205,7 @@ public class InterfaceEvolContext implements Serializable {
 				residues.add((Group)sample[j]);
 			}
 			ChainEvolContext cec = this.parent.getChainEvolContext(getChainId(molecId));
-			dist[i] = cec.calcScoreForResidueSet(residues, false);
+			dist[i] = cec.calcScoreForResidueSet(residues);
 		}		
 
 		return dist;
@@ -226,18 +230,20 @@ public class InterfaceEvolContext implements Serializable {
 	 * chains have the same code we rename the second one to the next letter in alphabet.
 	 * PDB chain codes are used for the output, not CIF codes.  
 	 * @param file
-	 * @param usePdbResSer if true PDB residue serials are written, if false CIF residue 
-	 * serials are written 
 	 * @throws IOException
 	 */
-	public void writePdbFile(File file, boolean usePdbResSer) throws IOException {
-
-		if (interf.isFirstProtein() && interf.isSecondProtein()) {
+	public void writePdbFile(File file) throws IOException {
+		
+		
+		if (CompoundFinder.isProtein(interf.getMolecules().getFirst()[0].getGroup().getChain()) && 
+			CompoundFinder.isProtein(interf.getMolecules().getSecond()[0].getGroup().getChain())) {
 
 			setConservationScoresAsBfactors(FIRST);
 			setConservationScoresAsBfactors(SECOND);
 			
-			this.interf.writeToPdbFile(file, usePdbResSer, true);
+			PrintStream ps = new PrintStream(new GZIPOutputStream(new FileOutputStream(file)));
+			ps.print(interf.toPDB());
+			ps.close();
 		}
 	}
 	
@@ -253,18 +259,19 @@ public class InterfaceEvolContext implements Serializable {
 		if (!getChainEvolContext(molecId).hasQueryMatch()) return;
 		
 		List<Double> conservationScores = null;
-		PdbChain pdb = getMolecule(molecId);
+		Chain pdb = getMolecule(molecId);
 		conservationScores = getChainEvolContext(molecId).getConservationScores();
 		
-		HashMap<Integer,Double> map = new HashMap<Integer, Double>();
-		for (Residue residue:pdb) {
+		for (Group residue:pdb.getAtomGroups()) {
 			// we don't need to take care of het residues, as we use the uniprot ref for the calc of entropies entropies will always be asigned even for hets
 			//if (!(residue instanceof AaResidue)) continue;
-			int resser = residue.getSerial();
+			int resser = getChainEvolContext(molecId).getSeqresSerial(residue);
 			int queryPos = getChainEvolContext(molecId).getQueryUniprotPosForPDBPos(resser); 
 			 
-			if (queryPos!=-1) {   
-				map.put(resser, conservationScores.get(queryPos-1));	
+			if (queryPos!=-1) {
+				for (Atom atom:residue.getAtoms()) {
+					atom.setTempFactor(conservationScores.get(queryPos-1));
+				}
 			} else {
 				
 				// when no entropy info is available for a residue we still want to assign a value for it
@@ -272,11 +279,11 @@ public class InterfaceEvolContext implements Serializable {
 				// scaling of colors for the rest
 				// The most sensible value we can use is the max entropy so that it looks like a poorly conserved residue
 				double maxEntropy = Math.log(this.getChainEvolContext(molecId).getHomologs().getReducedAlphabet())/Math.log(2);
-				map.put(resser, maxEntropy);
-				
+				for (Atom atom:residue.getAtoms()) {
+					atom.setTempFactor(maxEntropy);
+				}
 			}
 		}
-		pdb.setBFactorsPerResidue(map);		
 	}
 	
 	public boolean hasEnoughHomologs(int molecId){
@@ -289,9 +296,9 @@ public class InterfaceEvolContext implements Serializable {
 	
 	public boolean isProtein(int molecId) {
 		if (molecId==FIRST) {
-			return this.interf.isFirstProtein();
+			return CompoundFinder.isProtein(interf.getMolecules().getFirst()[0].getGroup().getChain());
 		} else if (molecId==SECOND) {
-			return this.interf.isSecondProtein();
+			return CompoundFinder.isProtein(interf.getMolecules().getSecond()[0].getGroup().getChain());
 		} else {
 			throw new IllegalArgumentException("Fatal error! Wrong molecId "+molecId);
 		}

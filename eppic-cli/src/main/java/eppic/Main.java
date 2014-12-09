@@ -4,23 +4,25 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.zip.GZIPOutputStream;
 
 import org.biojava.bio.structure.Chain;
 import org.biojava.bio.structure.Compound;
 import org.biojava.bio.structure.Structure;
 import org.biojava.bio.structure.StructureException;
+import org.biojava.bio.structure.StructureImpl;
 import org.biojava.bio.structure.align.util.AtomCache;
-import org.biojava.bio.structure.contact.AtomContact;
 import org.biojava.bio.structure.contact.StructureInterface;
 import org.biojava.bio.structure.contact.StructureInterfaceCluster;
 import org.biojava.bio.structure.contact.StructureInterfaceList;
@@ -73,8 +75,8 @@ public class Main {
 		
 	public void setUpLogging() {
 		
-		// TODO set it up as it used to be, 
-		// can it be done only with the config file? I suppose not, we have to set the name and location of the log file here
+		// TODO set it up as it used to be before Biojava move, 
+		// TODO can it be done only with the config file? I suppose not, we have to set the name and location of the log file here
 		
 		// setting up the file logger for log4j
 //		try {
@@ -239,20 +241,18 @@ public class Main {
 		
 		LOGGER.info("Interfaces calculated with "+params.getnSpherePointsASAcalc()+" sphere points.");
 
-		// TODO calculate clusters
-		//LOGGER.info("Calculating interface clusters");
-		//interfaces.initialiseClusters(pdb, EppicParams.CLUSTERING_RMSD_CUTOFF, EppicParams.CLUSTERING_MINATOMS, EppicParams.CLUSTERING_ATOM_TYPE);
+		LOGGER.info("Calculating interface clusters");
 
-		//int clustersSize = interfaces.getClusters().size();
-		//int numInterfaces = interfaces.size();
-		//LOGGER.info("Interface clustering done: "+numInterfaces+" interfaces - "+clustersSize+" clusters");
-		//String msg = "Interface clusters: ";
-		//for (int i=0; i<clustersSize;i++) {
-		//	InterfaceCluster cluster = interfaces.getClusters().get(i);
-		//	msg += cluster.toString();
-		//	if (i!=clustersSize-1) msg += ", "; 
-		//}
-		//LOGGER.info(msg); 
+		int clustersSize = interfaces.getClusters().size();
+		int numInterfaces = interfaces.size();
+		LOGGER.info("Interface clustering done: "+numInterfaces+" interfaces - "+clustersSize+" clusters");
+		String msg = "Interface clusters: ";
+		for (int i=0; i<clustersSize;i++) {
+			StructureInterfaceCluster cluster = interfaces.getClusters().get(i);
+			msg += cluster.toString();
+			if (i!=clustersSize-1) msg += ", "; 
+		}
+		LOGGER.info(msg); 
 
 		// TODO how to do the cofactors logging now?
 		//if (interfFinder.hasCofactors()) {
@@ -276,9 +276,6 @@ public class Main {
 
 		checkClashes();
 
-		// TODO we used to calculate rim and cores here (and cache them in interfaces object), we should not do that anymore: just calculate them on the fly when needed
-		//interfaces.calcRimAndCores(params.getCAcutoffForGeom(), params.getMinAsaForSurface());
-		
 		if (!params.isGenerateModelSerializedFile()) {
 			// we only produce the interfaces.dat file if not in -w mode (for WUI not to produce so many files)
 			try {
@@ -451,13 +448,15 @@ public class Main {
 				// no evol scoring: plain PDB files without altered bfactors
 				for (StructureInterface interf : interfaces) {
 					File pdbFile = params.getOutputFile("." + interf.getId() + ".pdb.gz");
-					interf.writeToPdbFile(pdbFile, params.isUsePdbResSer(), true);
+					PrintStream ps = new PrintStream(new GZIPOutputStream(new FileOutputStream(pdbFile)));
+					ps.print(interf.toPDB());
+					ps.close();
 				}
 			} else {
 				// writing PDB files with entropies as bfactors
 				for (InterfaceEvolContext iec:iecList) {
 					File pdbFile = params.getOutputFile("." + iec.getInterface().getId() + ".pdb.gz");
-					iec.writePdbFile(pdbFile, params.isUsePdbResSer());
+					iec.writePdbFile(pdbFile);
 				}
 			}
 			
@@ -530,8 +529,7 @@ public class Main {
 						params.getOutputFile("."+interf.getId()+".pdb.gz"), 
 						params.getOutputFile("."+interf.getId()+".pse"),
 						params.getOutputFile("."+interf.getId()+".pml"),
-						params.getBaseName()+"."+interf.getId(), 
-						params.isUsePdbResSer());
+						params.getBaseName()+"."+interf.getId()	);
 				LOGGER.info("Generated PyMOL files for interface "+interf.getId());
 				MolViewersAdaptor.writeJmolScriptFile(interf, params.getCAcutoffForGeom(), params.getMinAsaForSurface(), pr, 
 						params.getOutDir(), params.getBaseName());
@@ -545,7 +543,12 @@ public class Main {
 					File chainPseFile = params.getOutputFile("."+cec.getRepresentativeChainCode()+EppicParams.ENTROPIES_FILE_SUFFIX+".pse");
 					File chainPmlFile = params.getOutputFile("."+cec.getRepresentativeChainCode()+EppicParams.ENTROPIES_FILE_SUFFIX+".pml");
 					File chainIconPngFile = params.getOutputFile("."+cec.getRepresentativeChainCode()+EppicParams.ENTROPIES_FILE_SUFFIX+".png");
-					chain.writeToPDBFileWithPdbChainCodes(chainPdbFile, params.isUsePdbResSer());
+					// TODO check that the file is written correctly like this with biojava
+					Structure s = new StructureImpl();
+					s.addChain(chain);
+					PrintWriter pw = new PrintWriter(chainPdbFile);
+					pw.write(s.toPDB());
+					pw.close();
 					pr.generateChainPse(chain, interfaces, 
 							params.getCAcutoffForGeom(), params.getCAcutoffForZscore(), params.getMinAsaForSurface(),
 							chainPdbFile, 
@@ -554,15 +557,16 @@ public class Main {
 							chainIconPngFile,
 							EppicParams.COLOR_ENTROPIES_ICON_WIDTH,
 							EppicParams.COLOR_ENTROPIES_ICON_HEIGHT,
-							0,params.getMaxEntropy(),
-							params.isUsePdbResSer());
+							0,params.getMaxEntropy() );
 				}
 			}
 			
 		} catch (IOException e) {
 			throw new EppicException(e, "Couldn't write thumbnails, PyMOL pse/pml files or jmol files. "+e.getMessage(),true);
 		} catch (InterruptedException e) {
-			throw new EppicException(e, "Couldn't generate thumbnails, PyMOL pse/pml files or jmol files, pymol thread interrupted: "+e.getMessage(),true);
+			throw new EppicException(e, "Couldn't generate thumbnails, PyMOL pse/pml files or jmol files, PyMOL thread interrupted: "+e.getMessage(),true);
+		} catch (StructureException e) {
+			throw new EppicException(e, "Couldn't find chain id in input structure, something is wrong! "+e.getMessage(), true);
 		}
 
 	}

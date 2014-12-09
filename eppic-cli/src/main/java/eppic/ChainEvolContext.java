@@ -1,7 +1,5 @@
 package eppic;
 
-import jaligner.Alignment;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -13,14 +11,18 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.biojava.bio.structure.Atom;
 import org.biojava.bio.structure.Chain;
 import org.biojava.bio.structure.Group;
+import org.biojava.bio.structure.ResidueNumber;
+import org.biojava.bio.structure.StructureException;
 import org.biojava3.alignment.NeedlemanWunsch;
 import org.biojava3.alignment.SimpleGapPenalty;
 import org.biojava3.alignment.SubstitutionMatrixHelper;
 import org.biojava3.alignment.template.GapPenalty;
 import org.biojava3.alignment.template.SequencePair;
 import org.biojava3.alignment.template.SubstitutionMatrix;
+import org.biojava3.core.exceptions.CompoundNotFoundException;
 import org.biojava3.core.sequence.ProteinSequence;
 import org.biojava3.core.sequence.compound.AminoAcidCompound;
 import org.slf4j.Logger;
@@ -108,6 +110,9 @@ public class ChainEvolContext implements Serializable {
 	private List<String> queryWarnings;
 	
 	private ChainEvolContextList parent;
+	
+	private HashMap<ResidueNumber,Integer> resNumbers2SeqresSerials;
+	
 
 	public ChainEvolContext(ChainEvolContextList parent, String sequence, String representativeChain) {
 		this.parent = parent;		
@@ -196,19 +201,22 @@ public class ChainEvolContext implements Serializable {
 				
 				if (query.replaceNonStandardByX()) {
 					// TODO we have to replace 'O' by 'X' because the jaligner package does not support it, revise this if we change aligner
+					// TODO now we use Biojava and I'm not sure if this is needed anymore...
 					LOGGER.warn("Replacing 'O' by 'X' in UniProt reference "+query.getUniId());
 				}
 
 				// and finally we align the 2 sequences (in case of mapping from SIFTS we rather do this than trusting the SIFTS alignment info)
 				SubstitutionMatrix<AminoAcidCompound> matrix = SubstitutionMatrixHelper.getBlosum50();
 				GapPenalty penalty = new SimpleGapPenalty((short)8,(short)1);
+
 				// before move to Biojava, we had as tags of the sequences:  "chain"+representativeChain and query.getUniId()
 				ProteinSequence s1 = new ProteinSequence(sequence);
 				ProteinSequence s2 = new ProteinSequence(query.getSequence());
+
 				NeedlemanWunsch<ProteinSequence,AminoAcidCompound> nw = 
-		                new NeedlemanWunsch<ProteinSequence,AminoAcidCompound>(s1,s2, penalty, matrix);
+						new NeedlemanWunsch<ProteinSequence,AminoAcidCompound>(s1,s2, penalty, matrix);
 				alnPdb2Uniprot = nw.getPair();
-				
+
 				LOGGER.info("Chain "+representativeChain+" PDB SEQRES to UniProt alignmnent:\n"+getQueryPdbToUniprotAlnString());
 				LOGGER.info("Query (chain "+representativeChain+") length: "+sequence.length());
 				LOGGER.info("UniProt ("+query.getUniId()+") length: "+query.getLength());
@@ -222,8 +230,8 @@ public class ChainEvolContext implements Serializable {
 				// UniProt entry does not align at all to the PDB SEQRES (mostly 'X'), we have to check for this
 				if (id<MAX_QUERY_TO_UNIPROT_DISAGREEMENT) {
 					String msg = "Identity of PDB to UniProt reference alignment is below maximum allowed threshold ("+
-								String.format("%2.0f%%", 100.0*MAX_QUERY_TO_UNIPROT_DISAGREEMENT)+"). " +
-								"Will not use the UniProt reference "+query.getUniId();
+							String.format("%2.0f%%", 100.0*MAX_QUERY_TO_UNIPROT_DISAGREEMENT)+"). " +
+							"Will not use the UniProt reference "+query.getUniId();
 					LOGGER.warn(msg);
 					queryWarnings.add(msg);
 					query = null;
@@ -237,17 +245,23 @@ public class ChainEvolContext implements Serializable {
 					int uniprotEnd   = getLastMatchingPos(alnPdb2Uniprot, false);
 					int seqresStart = getPDBPosForQueryUniprotPos(uniprotStart);
 					int seqresEnd = getPDBPosForQueryUniprotPos(uniprotEnd);
-					String pdbStart = parent.getPdb().getChainByPDB(representativeChain).getPdbResSerFromResSer(seqresStart);
-					String pdbEnd = parent.getPdb().getChainByPDB(representativeChain).getPdbResSerFromResSer(seqresEnd);
+					try {
+						Chain chain = parent.getPdb().getChainByPDB(representativeChain);
+						//TODO check if the below is right in Biojava, i.e. is the getSeqResGroups(resser-1) getting the right residue??
+						String pdbStart = chain.getSeqResGroups().get(seqresStart-1).getResidueNumber().toString();
+						String pdbEnd = chain.getSeqResGroups().get(seqresEnd-1).getResidueNumber().toString();
 
-					LOGGER.info("Our mapping in SIFTS format: "+parent.getPdb().getPdbId()+"\t"+
-							representativeChain+"\t"+
-							queryUniprotId+"\t"+
-							seqresStart+"\t"+seqresEnd+"\t"+
-							pdbStart+"\t"+pdbEnd+"\t"+
-							uniprotStart+"\t"+uniprotEnd);
+						LOGGER.info("Our mapping in SIFTS format: "+parent.getPdb().getPdbId()+"\t"+
+								representativeChain+"\t"+
+								queryUniprotId+"\t"+
+								seqresStart+"\t"+seqresEnd+"\t"+
+								pdbStart+"\t"+pdbEnd+"\t"+
+								uniprotStart+"\t"+uniprotEnd);
+					} catch (StructureException e) {
+						LOGGER.info("Could not get chain {}", representativeChain+" to log the SIFTS mappings. No SIFTS mapping logging will be done.");
+					}
 				}
-				
+
 			}  catch (NoMatchFoundException e) {
 				if (parent.isUseLocalUniprot()) {
 					LOGGER.error("Couldn't find UniProt id "+queryUniprotId+" (reference for chain "+representativeChain+") in local database. Obsolete?");
@@ -262,7 +276,15 @@ public class ChainEvolContext implements Serializable {
 				LOGGER.error("Won't do evolution analysis for chain "+representativeChain);
 				query = null;
 				hasQueryMatch = false;
+			} catch (CompoundNotFoundException e) {
+				LOGGER.error("Some unknown compounds in PDB or UniProt protein sequences, error: "+e.getMessage());
+				LOGGER.error("Sequences: ");
+				LOGGER.error("PDB: {}",sequence);
+				LOGGER.error("UniProt ({}): {}",query.getUniId(), query.getSequence());
+				query = null;
+				hasQueryMatch = false;
 			}
+
 		}
 		
 		// In case we did get the mappings from SIFTS and that we could align properly 
@@ -672,7 +694,7 @@ public class ChainEvolContext implements Serializable {
 		double totalWeight = 0.0;
 		List<Double> conservScores = getConservationScores();
 		for (Group res:residues){
-			int resSer = res.getSerial(); 
+			int resSer = getSeqresSerial(res); 
 
 			int queryPos = getQueryUniprotPosForPDBPos(resSer); 
 			 
@@ -707,25 +729,27 @@ public class ChainEvolContext implements Serializable {
 		
 		List<Double> conservationScores = getConservationScores();
 		
-		HashMap<Integer,Double> map = new HashMap<Integer, Double>();
-		for (Residue residue:chain) {
+		for (Group residue:chain.getAtomGroups()) {
 			// we don't need to take care of het residues, as we use the uniprot ref for the calc of entropies entropies will always be asigned even for hets
 			//if (!(residue instanceof AaResidue)) continue;
-			int resser = residue.getSerial();
+			int resser = getSeqresSerial(residue);
 			int queryPos = getQueryUniprotPosForPDBPos(resser); 
  
-			if (queryPos!=-1) {   
-				map.put(resser, conservationScores.get(queryPos-1));	
+			if (queryPos!=-1) { 
+				for (Atom atom:residue.getAtoms()) {
+					atom.setTempFactor(conservationScores.get(queryPos-1));
+				}	
 			} else {
 				// when no entropy info is available for a residue we still want to assign a value for it
 				// or otherwise the residue would keep its original real bfactor and then possibly screw up the
 				// scaling of colors for the rest
 				// The most sensible value we can use is the max entropy so that it looks like a poorly conserved residue
 				double maxEntropy = Math.log(this.homologs.getReducedAlphabet())/Math.log(2);
-				map.put(resser, maxEntropy);
+				for (Atom atom:residue.getAtoms()) {
+					atom.setTempFactor(maxEntropy);
+				}	
 			}
 		}
-		chain.setBFactorsPerResidue(map);		
 	}
 	
 	public int getNumHomologs() {
@@ -994,6 +1018,32 @@ public class ChainEvolContext implements Serializable {
 	 */
 	public HomologList getHomologs() {
 		return homologs;
+	}
+	
+	/**
+	 * Returns the SEQRES serial of the Group g in the Chain c
+	 * @param g
+	 * @return the SEQRES serial (1 to n) or -1 if not found
+	 */
+	public int getSeqresSerial(Group g) {
+		
+		if (resNumbers2SeqresSerials !=null) {
+			Integer resSerial = resNumbers2SeqresSerials.get(g.getResidueNumber());
+			if (resSerial==null) return -1;
+			return (int)resSerial;			
+		}
+		
+		resNumbers2SeqresSerials = new HashMap<ResidueNumber, Integer>();
+		
+		Chain c = g.getChain();
+		List<Group> seqresGroups = c.getSeqResGroups();
+		for (int i=0;i<seqresGroups.size();i++) {			
+			resNumbers2SeqresSerials.put(seqresGroups.get(i).getResidueNumber(),i+1);
+		}
+
+		Integer resSerial = resNumbers2SeqresSerials.get(g.getResidueNumber());
+		if (resSerial==null) return -1;
+		return (int)resSerial;			
 	}
 	
 	/**

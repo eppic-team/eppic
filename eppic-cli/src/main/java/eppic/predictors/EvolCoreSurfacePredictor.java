@@ -307,7 +307,7 @@ public class EvolCoreSurfacePredictor implements InterfaceTypePredictor {
 			return Double.NaN;
 		}
 
-		double coreScore = iec.calcScore(cores, molecId, false);
+		double coreScore = iec.calcScore(cores, molecId);
 		
 		double[] surfScoreDist = null;
 		

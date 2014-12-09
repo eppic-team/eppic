@@ -70,7 +70,8 @@ public class ChainEvolContextList implements Serializable {
 						
 			Chain chain = chainCluster.getRepresentative();
 			
-			ChainEvolContext cec = new ChainEvolContext(this, chain.getSequenceMSEtoMET(), chain.getChainID());
+			// TODO before Biojava move, here we used to call chain.getSequenceMSEtoMET(). How do we do that in Biojava?
+			ChainEvolContext cec = new ChainEvolContext(this, chain.getSeqResSequence(), chain.getChainID());
 			
 			cecs.put(chain.getChainID(), cec);
 		}

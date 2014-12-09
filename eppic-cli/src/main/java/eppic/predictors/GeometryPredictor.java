@@ -101,7 +101,8 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 	
 	private void generateWarnings() {
 		
-		List<AtomContact> interactingPairs = getNonpolyInteractingPairs();
+		// TODO non-poly interacting stuff needs to be rewritten using Biojava
+		//List<AtomContact> interactingPairs = getNonpolyInteractingPairs();
 		
 		// NOTE that we used to detect disulfide bridges here, but it is now moved to CombinedPredictor
 		// as we also need to check in the reference alignment whether the bridge is wild-type or artifact
@@ -160,29 +161,29 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 		// but we think this are mostly artifacts of crystallization:
 		// e.g. 1s1q interface 4: mediated by a Cu but it's a crystallization artifact. In this case area is very small and falls under hard limit
 		// e.g. 2vis interfaces 5 and 8. Also very small area both		
-		if (!interactingPairs.isEmpty()) {
-			String warning = "Close interactions mediated by a non-polymer chain exist in interface. Between : ";
-			for (int i=0;i<interactingPairs.size();i++) {
-				AtomContact pair = interactingPairs.get(i);
-				String firstResSer = null;
-				String secondResSer = null;
-				
-				firstResSer = pair.getPair().getFirst().getGroup().getResidueNumber().toString();	
-				secondResSer = pair.getPair().getSecond().getGroup().getResidueNumber().toString();
-				
-				// first atom is always from nonpoly chain, second atom from either poly chain of interface
-				warning+=firstResSer+
-						"("+pair.getPair().getFirst().getName()+ ") and "+
-							pair.getPair().getSecond().getGroup().getChainId()+"-"+
-							secondResSer+"("+pair.getPair().getSecond().getGroup().getPDBName()+")-"+
-							pair.getPair().getSecond().getName()+
-							" (distance: "+String.format("%3.1f A",Calc.getDistance(pair.getPair().getFirst(),pair.getPair().getSecond()) );
-				if (i!=interactingPairs.size()-1) warning+=", ";
-			}
-
-			warnings.add(warning);
-			LOGGER.warn("Interface "+interf.getId()+": "+warning);
-		}
+//		if (!interactingPairs.isEmpty()) {
+//			String warning = "Close interactions mediated by a non-polymer chain exist in interface. Between : ";
+//			for (int i=0;i<interactingPairs.size();i++) {
+//				AtomContact pair = interactingPairs.get(i);
+//				String firstResSer = null;
+//				String secondResSer = null;
+//				
+//				firstResSer = pair.getPair().getFirst().getGroup().getResidueNumber().toString();	
+//				secondResSer = pair.getPair().getSecond().getGroup().getResidueNumber().toString();
+//				
+//				// first atom is always from nonpoly chain, second atom from either poly chain of interface
+//				warning+=firstResSer+
+//						"("+pair.getPair().getFirst().getName()+ ") and "+
+//							pair.getPair().getSecond().getGroup().getChainId()+"-"+
+//							secondResSer+"("+pair.getPair().getSecond().getGroup().getPDBName()+")-"+
+//							pair.getPair().getSecond().getName()+
+//							" (distance: "+String.format("%3.1f A",Calc.getDistance(pair.getPair().getFirst(),pair.getPair().getSecond()) );
+//				if (i!=interactingPairs.size()-1) warning+=", ";
+//			}
+//
+//			warnings.add(warning);
+//			LOGGER.warn("Interface "+interf.getId()+": "+warning);
+//		}
 
 	}
 	
@@ -216,40 +217,40 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 		this.minCoreSizeForBio = minCoreSizeForBio;
 	}
 		
-	private List<AtomContact> getNonpolyInteractingPairs() {
-		PdbChain firstChain = this.interf.getFirstMolecule();
-		PdbChain secondChain = this.interf.getSecondMolecule();
-		PdbAsymUnit firstAU = firstChain.getParent();
-		PdbAsymUnit secondAU = secondChain.getParent();
-		
-		List<Pair<Atom>> interactingPairs = new ArrayList<Pair<Atom>>();
-		interactingPairs.addAll(getNonPolyContacts(firstChain, secondChain, firstAU));
-		if (firstAU!=secondAU) {
-			// in the case they are identical, then both chains come from same AU, there's no transformation between them
-			// we don't need to check the poly chains of the second one
-			interactingPairs.addAll(getNonPolyContacts(firstChain, secondChain, secondAU));
-		}
-		return interactingPairs;
-	}
-	
-	private List<Pair<Atom>> getNonPolyContacts(PdbChain firstChain, PdbChain secondChain, PdbAsymUnit au) {
-		List<Pair<Atom>> pairs = new ArrayList<Pair<Atom>>();
-		for (PdbChain nonpoly:au.getNonPolyChains()) {
-			AICGraph graph1 = nonpoly.getAICGraph(firstChain, EppicParams.INTERFACE_DIST_CUTOFF);
-			if (graph1.getEdgeCount()>0) {
-				AICGraph graph2 = nonpoly.getAICGraph(secondChain, EppicParams.INTERFACE_DIST_CUTOFF);
-				if (graph2.getEdgeCount()>0) {
-					// the nonpoly chain is in contact with both firstChain and secondChain
-					// we check for atoms within a narrow cutoff in both sides -> electrostatic/covalent interactions
-					if (graph1.hasCloselyInteractingPairs() && graph2.hasCloselyInteractingPairs()) {
-						pairs.addAll(graph1.getCloselyInteractingPairs());
-						pairs.addAll(graph2.getCloselyInteractingPairs());
-					}
-				}
-			}
-		}
-		return pairs;
-	}
+//	private List<AtomContact> getNonpolyInteractingPairs() {
+//		PdbChain firstChain = this.interf.getFirstMolecule();
+//		PdbChain secondChain = this.interf.getSecondMolecule();
+//		PdbAsymUnit firstAU = firstChain.getParent();
+//		PdbAsymUnit secondAU = secondChain.getParent();
+//		
+//		List<Pair<Atom>> interactingPairs = new ArrayList<Pair<Atom>>();
+//		interactingPairs.addAll(getNonPolyContacts(firstChain, secondChain, firstAU));
+//		if (firstAU!=secondAU) {
+//			// in the case they are identical, then both chains come from same AU, there's no transformation between them
+//			// we don't need to check the poly chains of the second one
+//			interactingPairs.addAll(getNonPolyContacts(firstChain, secondChain, secondAU));
+//		}
+//		return interactingPairs;
+//	}
+//	
+//	private List<Pair<Atom>> getNonPolyContacts(PdbChain firstChain, PdbChain secondChain, PdbAsymUnit au) {
+//		List<Pair<Atom>> pairs = new ArrayList<Pair<Atom>>();
+//		for (PdbChain nonpoly:au.getNonPolyChains()) {
+//			AICGraph graph1 = nonpoly.getAICGraph(firstChain, EppicParams.INTERFACE_DIST_CUTOFF);
+//			if (graph1.getEdgeCount()>0) {
+//				AICGraph graph2 = nonpoly.getAICGraph(secondChain, EppicParams.INTERFACE_DIST_CUTOFF);
+//				if (graph2.getEdgeCount()>0) {
+//					// the nonpoly chain is in contact with both firstChain and secondChain
+//					// we check for atoms within a narrow cutoff in both sides -> electrostatic/covalent interactions
+//					if (graph1.hasCloselyInteractingPairs() && graph2.hasCloselyInteractingPairs()) {
+//						pairs.addAll(graph1.getCloselyInteractingPairs());
+//						pairs.addAll(graph2.getCloselyInteractingPairs());
+//					}
+//				}
+//			}
+//		}
+//		return pairs;
+//	}
 
 	private void checkForPeptides(int molecId) {
 		// In most cases our predictions for peptides will be bad because not only the peptide but also the protein partner

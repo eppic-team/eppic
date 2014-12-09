@@ -246,8 +246,8 @@ public class EvolCoreRimPredictor implements InterfaceTypePredictor {
 			rims = iec.getInterface().getRimResidues(bsaToAsaCutoff, minAsaForSurface).getSecond();
 		}
 		
-		double rimScore  = iec.calcScore(rims, molecId, false);
-		double coreScore = iec.calcScore(cores,molecId, false);
+		double rimScore  = iec.calcScore(rims, molecId);
+		double coreScore = iec.calcScore(cores,molecId);
 		
 		int interfaceId = iec.getInterface().getId();
 		LOGGER.info("Interface "+interfaceId+", member "+(molecId+1)+": average entropy of core "+String.format("%4.2f", coreScore));

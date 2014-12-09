@@ -2,16 +2,11 @@ package eppic;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
 
-import org.apache.commons.math.random.RandomDataImpl;
-import org.biojava.bio.structure.Group;
-import org.biojava.bio.structure.ResidueNumber;
 import org.biojava.bio.structure.contact.StructureInterface;
 import org.biojava.bio.structure.contact.StructureInterfaceCluster;
 import org.biojava.bio.structure.contact.StructureInterfaceList;
@@ -31,7 +26,7 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 	
 	private List<InterfaceEvolContext> list;
 	
-	private StructureInterfaceList chainInterfList; 
+	//private StructureInterfaceList chainInterfList; 
 	private ChainEvolContextList cecs;
 		
 	private int minNumSeqs;
@@ -55,7 +50,7 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 		
 		this.list = new ArrayList<InterfaceEvolContext>();
 	
-		this.chainInterfList = interfaces;
+		//this.chainInterfList = interfaces;
 		this.cecs = cecs;
 
 		this.ecrcPredictors = new TreeMap<Integer, EvolCoreRimClusterPredictor>();

@@ -18,7 +18,6 @@ import org.biojava.bio.structure.Group;
 import org.biojava.bio.structure.Structure;
 import org.biojava.bio.structure.contact.StructureInterface;
 import org.biojava.bio.structure.contact.StructureInterfaceList;
-import org.biojava.bio.structure.io.FileParsingParameters;
 import org.biojava.bio.structure.io.PDBFileParser;
 
 
@@ -164,8 +163,9 @@ public class PymolRunner {
 			pngFiles[i] = new File(pdbFile.getParent(),base+"."+DEF_TN_WIDTHS[i]+"x"+DEF_TN_HEIGHTS[i]+".png");
 		}
 		
-		char chain1 = interf.getFirstMolecule().getPdbChainCode().charAt(0);
-		char chain2 = interf.getSecondPdbChainCodeForOutput().charAt(0);
+		// TODO before Biojava move, for second chain we used to have getSecondPdbChainCodeForOutput (i.e. the next one from first if they were equal)
+		char chain1 = interf.getMoleculeIds().getFirst().charAt(0);
+		char chain2 = interf.getMoleculeIds().getSecond().charAt(0);
 		
 		String color1 = getChainColor(chain1, 0, interf.isSymRelated());
 		String color2 = getChainColor(chain2, 1, interf.isSymRelated());
@@ -242,12 +242,13 @@ public class PymolRunner {
 		//writeCommand(cmd, pml);
 		//pymolScriptBuilder.append("zoom bothinterf"+";");
 		
-		if (interf.hasCofactors()) {
-			cmd = "select cofactors, org;";
-			writeCommand(cmd, pml);
-			cmd = "show sticks, cofactors;";
-			writeCommand(cmd, pml);
-		}
+		// TODO do we need to check something before issuing the cofactors command???
+		//if (interf.hasCofactors()) {
+		cmd = "select cofactors, org;";
+		writeCommand(cmd, pml);
+		cmd = "show sticks, cofactors;";
+		writeCommand(cmd, pml);
+		//}
 		
 		cmd = "select none";// so that the last selection is deactivated
 		writeCommand(cmd, pml);
@@ -263,9 +264,10 @@ public class PymolRunner {
 		
 		pymolScriptBuilder.append("as "+DEF_TN_STYLE+";");
 		
-		if (interf.hasCofactors()) {
-			pymolScriptBuilder.append("show sticks, org;");
-		}
+		// TODO do we need to check something before issuing the cofactors command???
+		//if (interf.hasCofactors()) {
+		pymolScriptBuilder.append("show sticks, org;");
+		//}
 		
 		pymolScriptBuilder.append("color "+color1+", "+molecName+" and chain "+chain1+";");
 		pymolScriptBuilder.append("color "+color2+", "+molecName+" and chain "+chain2+";");
@@ -356,8 +358,10 @@ public class PymolRunner {
 		i = 1;
 		for (File interfPdbFile:interfacePdbFiles) {
 			StructureInterface interf = interfaces.get(i);
+			
+			// TODO before Biojava move, for second chain we used to have getSecondPdbChainCodeForOutput (i.e. the next one from first if they were equal)
 			char chain1 = interf.getMoleculeIds().getFirst().charAt(0); // TODO this won't work for new mega files, we need to write mmCIF!
-			char chain2 = interf.getSecondPdbChainCodeForOutput().charAt(0);
+			char chain2 = interf.getMoleculeIds().getSecond().charAt(0);
 			
 			String symMolecName = getPymolMolecName(interfPdbFile);
 			
@@ -625,33 +629,40 @@ public class PymolRunner {
 	private String getResiSelString(List<Group> list) {
 		if (list.isEmpty()) return "none"; // the keyword for an empty selection in pymol
 		StringBuffer sb = new StringBuffer();
-		int serialLast=-9999;
+		int lastSerial = -9999;
 		// we write selection ranges in the style: 5-14+18+23-34 (to make shorter strings, pymol has issues with very long strings)
-		StringBuilder cs = new StringBuilder();
+		StringBuilder cs = new StringBuilder();		
 		for (int i=0;i<list.size();i++) {
+		
+			Chain c = list.get(i).getChain();
 			
 			String pdbSerial = list.get(i).getResidueNumber().toString();
 			// we need to escape the negative residues in pymol with a backslash
 			if (pdbSerial.startsWith("-")) pdbSerial = "\\"+pdbSerial;
+			
+			int currentSerial = DataModelAdaptor.getSeqresSerial(list.get(i), c);
+			int prevSerial = DataModelAdaptor.getSeqresSerial(list.get(i-1),c);
+			
 			if (i==0) {
-				serialLast =  list.get(i).getSerial();
+				lastSerial =  currentSerial;
 				cs.append(pdbSerial);
 			}
-			if ((i > 0) && (list.get(i).getSerial()-list.get(i-1).getSerial() != 1)) {
-				if (serialLast == list.get(i-1).getSerial()){
+			if ((i > 0) && (currentSerial-prevSerial != 1)) {
+				if (lastSerial == prevSerial){
 					cs.append("+");
 					cs.append(pdbSerial);
-					serialLast=list.get(i).getSerial();
+					lastSerial = currentSerial;
 				} else {
 					cs.append("-");
 					String cs2e = list.get(i-1).getResidueNumber().toString();
 					if (cs2e.startsWith("-")) cs2e = "\\"+cs2e;
 					cs.append(cs2e);
-					serialLast=list.get(i).getSerial();
+					lastSerial = currentSerial;
 					cs.append("+");
 					cs.append(pdbSerial);
 				}
 			}
+			
 			sb.append(pdbSerial);
 
 			if (i!=list.size()-1) sb.append("+");

@@ -34,12 +34,11 @@ public class FindEvolContext {
 		loadConfigFile();		
 		parseCommandLine(args, FindEvolContext.class.getName());		
 
-		// initialising info logging to log file
-		FileAppender logAppender = new FileAppender(new PatternLayout("%d{ABSOLUTE} %5p - %m%n"),params.getOutDir()+"/"+params.getBaseName()+".log",false);
-		logAppender.setThreshold(Level.INFO);
-		LOGGER.addAppender(logAppender);
+		// TODO set up slf4j/log4j2 logging to go to the log file we specify 
+		//FileAppender logAppender = new FileAppender(new PatternLayout("%d{ABSOLUTE} %5p - %m%n"),params.getOutDir()+"/"+params.getBaseName()+".log",false);
+		//logAppender.setThreshold(Level.INFO);
+		//LOGGER.addAppender(logAppender);
 
-		
 		
 		List<Sequence> sequences = Sequence.readSeqs(inputFile, null);
 		

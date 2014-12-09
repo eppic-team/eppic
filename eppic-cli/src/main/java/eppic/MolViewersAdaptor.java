@@ -21,8 +21,9 @@ public class MolViewersAdaptor {
 	}
 
 	private static String createJmolScript(StructureInterface interf, double caCutoff, double minAsaForSurface, PymolRunner pr) {
-		char chain1 = interf.getFirstMolecule().getPdbChainCode().charAt(0);
-		char chain2 = interf.getSecondPdbChainCodeForOutput().charAt(0);
+		// TODO before Biojava move, for second chain we used to have getSecondPdbChainCodeForOutput (i.e. the next one from first if they were equal)
+		char chain1 = interf.getMoleculeIds().getFirst().charAt(0);
+		char chain2 = interf.getMoleculeIds().getSecond().charAt(0);
 		
 		String color1 = pr.getHexColorCode(pr.getChainColor(chain1, 0, interf.isSymRelated()));
 		String color2 = pr.getHexColorCode(pr.getChainColor(chain2, 1, interf.isSymRelated()));
@@ -51,9 +52,11 @@ public class MolViewersAdaptor {
 		sb.append("select interface"+chain2+";wireframe 0.3;\n");
 		sb.append("select core"+chain1+";"+"color "+colorInterf1+";wireframe 0.3;\n");
 		sb.append("select core"+chain2+";"+"color "+colorInterf2+";wireframe 0.3;\n");
-		if (interf.hasCofactors()) {
-			sb.append("select ligand;wireframe 0.3;\n");
-		}
+		
+		// TODO do we need to check something before issuing the "select ligand" command??
+		//if (interf.hasCofactors()) {
+		sb.append("select ligand;wireframe 0.3;\n");
+		//}
 		return sb.toString();
 	}
 	
