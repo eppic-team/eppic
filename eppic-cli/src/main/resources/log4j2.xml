@@ -1,13 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration status="WARN">
 	<appenders>
-		<Console name="Console" target="SYSTEM_ERR">
+		<Console name="ConsoleStdErr" target="SYSTEM_ERR">
 			<PatternLayout pattern="%d{HH:mm:ss} [%t] %-5level %logger{36} - %msg%n"/>
 		</Console>
+		<File name="EppicLogFile" fileName="${sys:logFilename}" append="false">
+        	<PatternLayout pattern="%d{HH:mm:ss} [%t] %-5level %logger{36} - %msg%n"/>
+    	</File>		
 	</appenders>
 	<loggers>
-		<root level="info">
-			<appender-ref ref="Console"/>
+		<root level="debug">
+			<appender-ref ref="ConsoleStdErr" level="warn"/>
+			<appender-ref ref="EppicLogFile" level="info"/>
 		</root>
 	</loggers>
 </configuration>

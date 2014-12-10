@@ -17,6 +17,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.GZIPOutputStream;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.LoggerContext;
 import org.biojava.bio.structure.Chain;
 import org.biojava.bio.structure.Compound;
 import org.biojava.bio.structure.Structure;
@@ -75,35 +77,23 @@ public class Main {
 		
 	public void setUpLogging() {
 		
-		// TODO set it up as it used to be before Biojava move, 
-		// TODO can it be done only with the config file? I suppose not, we have to set the name and location of the log file here
+		// the log4j2 log file configuration at runtime, note that elsewhere we use the slf4j interface only
+		// see http://stackoverflow.com/questions/14862770/log4j2-assigning-file-appender-filename-at-runtime
+		System.setProperty("logFilename", new File(params.getOutDir(),params.getBaseName()+".log").toString());
 		
-		// setting up the file logger for log4j
-//		try {
-//			FileAppender fullLogAppender = new FileAppender(new PatternLayout("%d{ABSOLUTE} %5p - %m%n"),params.getOutDir()+"/"+params.getBaseName()+".log",false);
-//			fullLogAppender.setThreshold(Level.INFO);
-//			ConsoleAppender errorAppender = new ConsoleAppender(new PatternLayout("%5p - %m%n"),ConsoleAppender.SYSTEM_ERR);
-//			errorAppender.setThreshold(Level.ERROR);
-//			ConsoleAppender outAppender = new ConsoleAppender(new PatternLayout("%d{ABSOLUTE} %5p - %m%n"),ConsoleAppender.SYSTEM_OUT);
-//			outAppender.setThreshold(Level.DEBUG);
-//			ROOTLOGGER.addAppender(fullLogAppender);
-//			ROOTLOGGER.addAppender(errorAppender);
-//			if (params.getProgressLogFile()!=null) {
-//				// commenting out the error logging to progress file (was needed for server, but now it will read stderr from sge file)
-//				//FileAppender fileErrorAppender = new FileAppender(new PatternLayout("%5p - %m%n"),params.getProgressLogFile().getAbsolutePath(),true);
-//				//fileErrorAppender.setThreshold(Level.ERROR);
-//				//ROOTLOGGER.addAppender(fileErrorAppender);
-//				// the steps log file needed for the server, we only initialise it if a -L progress log file was passed (as that is only used by server)
-//				stepsLogFile = new File(params.getOutDir(),params.getBaseName()+EppicParams.STEPS_LOG_FILE_SUFFIX);
-//			}
-//			if (params.getDebug())
-//				ROOTLOGGER.addAppender(outAppender);
-//		} catch (IOException e) {
-//			System.err.println("Couldn't open log file "+params.getOutDir()+"/"+params.getBaseName()+".log"+" for writing.");
-//			System.err.println(e.getMessage());
-//			System.exit(1);
-//		}
-//	    ROOTLOGGER.setLevel(Level.INFO);
+		LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+		ctx.reconfigure();
+
+
+		if (params.getProgressLogFile()!=null) {
+			// the steps log file needed for the server, we only initialise it if a -L progress log file was passed (as that is only used by server)
+			stepsLogFile = new File(params.getOutDir(),params.getBaseName()+EppicParams.STEPS_LOG_FILE_SUFFIX);
+		}
+		
+		// TODO what about the debug logging? we used to do it from command line param -u, should we do it from xml file?
+//		if (params.getDebug())
+//			ROOTLOGGER.addAppender(outAppender);
+
 
 	}
 	

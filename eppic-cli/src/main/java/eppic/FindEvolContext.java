@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.LoggerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,11 +36,13 @@ public class FindEvolContext {
 		loadConfigFile();		
 		parseCommandLine(args, FindEvolContext.class.getName());		
 
-		// TODO set up slf4j/log4j2 logging to go to the log file we specify 
-		//FileAppender logAppender = new FileAppender(new PatternLayout("%d{ABSOLUTE} %5p - %m%n"),params.getOutDir()+"/"+params.getBaseName()+".log",false);
-		//logAppender.setThreshold(Level.INFO);
-		//LOGGER.addAppender(logAppender);
+		// log4j2 setup for loggint to our basename.log file name
+		System.setProperty("logFilename", new File(params.getOutDir(),params.getBaseName()+".log").toString());
+		LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+		ctx.reconfigure();
 
+
+		
 		
 		List<Sequence> sequences = Sequence.readSeqs(inputFile, null);
 		
