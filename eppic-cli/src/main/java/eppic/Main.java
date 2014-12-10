@@ -249,8 +249,11 @@ public class Main {
 		String msg = "Interface clusters: ";
 		for (int i=0; i<clustersSize;i++) {
 			StructureInterfaceCluster cluster = interfaces.getClusters().get(i);
-			msg += cluster.toString();
-			if (i!=clustersSize-1) msg += ", "; 
+			msg += cluster.getId()+": ";
+			for (StructureInterface interf:cluster.getMembers()) {
+				msg += interf.getId()+" ";
+			}
+			if (i!=clustersSize-1) msg += ", ";
 		}
 		LOGGER.info(msg); 
 
@@ -278,11 +281,12 @@ public class Main {
 
 		if (!params.isGenerateModelSerializedFile()) {
 			// we only produce the interfaces.dat file if not in -w mode (for WUI not to produce so many files)
-			try {
-				Goodies.serialize(params.getOutputFile(EppicParams.INTERFACESDAT_FILE_SUFFIX),interfaces);
-			} catch (IOException e) {
-				throw new EppicException(e,"Couldn't write serialized ChainInterfaceList object to file: "+e.getMessage(),false);
-			}
+			// TODO need everything in Biojava to be serializable for this to work
+//			try {
+//				Goodies.serialize(params.getOutputFile(EppicParams.INTERFACESDAT_FILE_SUFFIX),interfaces);
+//			} catch (IOException e) {
+//				throw new EppicException(e,"Couldn't write serialized ChainInterfaceList object to file: "+e.getMessage(),false);
+//			}
 		}
 		
 	}
@@ -877,17 +881,17 @@ public class Main {
 			LOGGER.error(e.getMessage());
 			e.exitIfFatal(1);
 		} 
-		catch (Exception e) {
-			//e.printStackTrace();
-
-			String stack = "";
-			for (StackTraceElement el:e.getStackTrace()) {
-				stack+="\tat "+el.toString()+"\n";				
-			}
-			LOGGER.error("Unexpected error. Stack trace:\n"+e+"\n"+stack+
-					"\nPlease report a bug to "+EppicParams.CONTACT_EMAIL);
-			System.exit(1);
-		}
+//		catch (Exception e) {
+//			//e.printStackTrace();
+//
+//			String stack = "";
+//			for (StackTraceElement el:e.getStackTrace()) {
+//				stack+="\tat "+el.toString()+"\n";				
+//			}
+//			LOGGER.error("Unexpected error. Stack trace:\n"+e+"\n"+stack+
+//					"\nPlease report a bug to "+EppicParams.CONTACT_EMAIL);
+//			System.exit(1);
+//		}
 		
 		
 	}

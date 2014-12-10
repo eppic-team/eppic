@@ -641,7 +641,8 @@ public class PymolRunner {
 			if (pdbSerial.startsWith("-")) pdbSerial = "\\"+pdbSerial;
 			
 			int currentSerial = DataModelAdaptor.getSeqresSerial(list.get(i), c);
-			int prevSerial = DataModelAdaptor.getSeqresSerial(list.get(i-1),c);
+			int prevSerial = -1;
+			if (i>0) prevSerial = DataModelAdaptor.getSeqresSerial(list.get(i-1),c);
 			
 			if (i==0) {
 				lastSerial =  currentSerial;
