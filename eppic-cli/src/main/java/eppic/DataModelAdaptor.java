@@ -62,6 +62,8 @@ public class DataModelAdaptor {
 	//private static final double CONFIDENCE_NOT_AVAILABLE = -1.0;
 	//private static final double SCORE_NOT_AVAILABLE = -1.0;
 	
+	private static final double NO_BURIAL_AVAILABLE = -1.0;
+	
 	private PdbInfoDB pdbInfo;
 	
 	private EppicParams params;
@@ -181,17 +183,22 @@ public class DataModelAdaptor {
 				for (GroupContact groupContact:groupContacts) {
 										
 					ContactDB contact = new ContactDB();
-					// TODO here we are storing the SEQRES residue serials, how to get them with biojava?
-					//contact.setFirstResNumber(pair.getFirst().getResidueSerial());
-					//contact.setSecondResNumber(pair.getSecond().getResidueSerial());
-					contact.setFirstResType(groupContact.getPair().getFirst().getPDBName());
-					contact.setSecondResType(groupContact.getPair().getSecond().getPDBName());
-					//contact.setFirstBurial(iRes.getBsaToAsaRatio());
-					//contact.setSecondBurial(jRes.getBsaToAsaRatio());
+					Group firstGroup = groupContact.getPair().getFirst();
+					Group secondGroup = groupContact.getPair().getSecond();
+					contact.setFirstResNumber(getSeqresSerial(firstGroup, firstGroup.getChain()) );
+					contact.setSecondResNumber(getSeqresSerial(secondGroup, secondGroup.getChain()) );
+					contact.setFirstResType(firstGroup.getPDBName());
+					contact.setSecondResType(secondGroup.getPDBName());
+					GroupAsa firstGroupAsa = interf.getFirstGroupAsa(firstGroup.getResidueNumber());
+					GroupAsa secondGroupAsa = interf.getSecondGroupAsa(secondGroup.getResidueNumber());
+					if (firstGroupAsa!=null) contact.setFirstBurial(firstGroupAsa.getBsaToAsaRatio());
+					else contact.setFirstBurial(NO_BURIAL_AVAILABLE);
+					if (secondGroupAsa!=null) contact.setSecondBurial(secondGroupAsa.getBsaToAsaRatio());
+					else contact.setSecondBurial(NO_BURIAL_AVAILABLE);
 					
 					// TODO fill the missing data with Biojava
-					contact.setMinDistance(groupContact.getMinDistance());
-					//contact.setClash(edge.isClash());
+					contact.setMinDistance(groupContact.getMinDistance());					
+					contact.setClash(groupContact.getContactsWithinDistance(EppicParams.CLASH_DISTANCE).size()>0);
 					//contact.setDisulfide(edge.isDisulfide());
 					contact.setNumAtoms(groupContact.getNumAtomContacts());
 					//contact.setNumHBonds(edge.getnHBonds()); 
