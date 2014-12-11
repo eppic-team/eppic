@@ -154,7 +154,7 @@ public class ChainEvolContext implements Serializable {
 		List<SiftsFeature> mappings = null;
 		
 		if (!params.isInputAFile() || params.isUsePdbCodeFromFile()) {
-			String pdbCode = parent.getPdb().getPdbId();
+			String pdbCode = parent.getPdb().getPdbId().toLowerCase();
 			if (useSifts) {
 				if (pdbCode==null || !pdbCode.matches("\\d\\w\\w\\w")) {
 					LOGGER.info("Could not read a PDB code in file. Will blast to find query-to-UniProt mapping.");
@@ -248,6 +248,7 @@ public class ChainEvolContext implements Serializable {
 					try {
 						Chain chain = parent.getPdb().getChainByPDB(representativeChain);
 						//TODO check if the below is right in Biojava, i.e. is the getSeqResGroups(resser-1) getting the right residue??
+						// note: with chain.getSeqResGroups() it doesn't work because the ResidueNumbers are null for those
 						String pdbStart = chain.getSeqResGroups().get(seqresStart-1).getResidueNumber().toString();
 						String pdbEnd = chain.getSeqResGroups().get(seqresEnd-1).getResidueNumber().toString();
 

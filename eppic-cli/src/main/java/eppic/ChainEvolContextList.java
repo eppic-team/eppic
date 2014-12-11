@@ -205,7 +205,8 @@ public class ChainEvolContextList implements Serializable {
 				throw new EppicException(e,"Problems while retrieving query data: "+e.getMessage(),true);
 			} catch (InterruptedException e) {
 				throw new EppicException(e,"Thread interrupted while running blast for retrieving query data: "+e.getMessage(),true);
-			} catch (Exception e) { // for any kind of exceptions thrown while connecting through uniprot JAPI
+			} 
+			catch (Exception e) { // for any kind of exceptions thrown while connecting through uniprot JAPI
 				String msg = null;
 				if (useLocalUniprot) {
 					// we don't want to catch unexpected exceptions in this case, only the JAPI case is problematic

@@ -172,11 +172,7 @@ public class MySQLConnection {
 			System.err.println("An exception occurred while loading the mysql jdbc driver, exiting.");
 			System.exit(1);			
 		}
-		catch(Exception e) {
-			e.printStackTrace();
-			System.err.println("An exception occurred while loading the mysql jdbc driver, exiting.");
-			System.exit(1);			
-		}		
+			
 	}
 
 	/**
