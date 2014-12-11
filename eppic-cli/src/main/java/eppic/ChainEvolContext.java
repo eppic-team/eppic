@@ -13,9 +13,9 @@ import java.util.regex.Pattern;
 
 import org.biojava.bio.structure.Atom;
 import org.biojava.bio.structure.Chain;
+import org.biojava.bio.structure.Compound;
 import org.biojava.bio.structure.Group;
 import org.biojava.bio.structure.ResidueNumber;
-import org.biojava.bio.structure.StructureException;
 import org.biojava3.alignment.NeedlemanWunsch;
 import org.biojava3.alignment.SimpleGapPenalty;
 import org.biojava3.alignment.SubstitutionMatrixHelper;
@@ -87,7 +87,12 @@ public class ChainEvolContext implements Serializable {
 
 	
 	// members 
-	private String representativeChain;		// the pdb chain code of the representative chain
+	
+	/**
+	 * An identifier for the sequence, usually the chain id of the representative Chain
+	 * It must uniquely identify the ChainEvolContext in a ChainEvolContextList
+	 */
+	private String sequenceId;
 	private String sequence;
 	
 	private UnirefEntry query;							// the uniprot info (id,seq) corresponding to this chain's sequence
@@ -112,16 +117,45 @@ public class ChainEvolContext implements Serializable {
 	private ChainEvolContextList parent;
 	
 	private HashMap<ResidueNumber,Integer> resNumbers2SeqresSerials;
+	private HashMap<Integer, ResidueNumber> seqresSerials2resNumbers;
 	
 
-	public ChainEvolContext(ChainEvolContextList parent, String sequence, String representativeChain) {
+	/**
+	 * Construct a ChainEvolContext from a Sequence
+	 * @param parent
+	 * @param sequence
+	 */
+	public ChainEvolContext(ChainEvolContextList parent, String sequence, String sequenceName) {
 		this.parent = parent;		
 		this.sequence = sequence;
-		this.representativeChain = representativeChain;
+		this.sequenceId = sequenceName;
 		this.hasQueryMatch = false;
 		this.searchWithFullUniprot = true;
 		this.queryWarnings = new ArrayList<String>();
 		
+	}
+	
+	/**
+	 * Construct a ChainEvolContext from a Chain
+	 * @param parent
+	 * @param chain
+	 */
+	public ChainEvolContext(ChainEvolContextList parent, Compound compound) {
+		this.parent = parent;
+		Chain chain = compound.getRepresentative();
+		// TODO before Biojava move, here we used to call chain.getSequenceMSEtoMET(). How do we do that in Biojava?
+		this.sequence = chain.getSeqResSequence();
+		this.sequenceId = chain.getChainID();
+		this.hasQueryMatch = false;
+		this.searchWithFullUniprot = true;
+		this.queryWarnings = new ArrayList<String>();
+		
+		// we only do this mapping in the case that the input is from chain
+		initResNumberMaps(compound);
+	}
+	
+	public String getSequenceId() {
+		return sequenceId;
 	}
 	
 	/**
@@ -163,12 +197,12 @@ public class ChainEvolContext implements Serializable {
 
 					SiftsConnection siftsConn = parent.getSiftsConn(siftsLocation);
 					try {
-						mappings = siftsConn.getMappings(pdbCode, representativeChain);
+						mappings = siftsConn.getMappings(pdbCode, sequenceId);
 
 						queryUniprotId = checkSiftsMappings(mappings, params.isAllowChimeras());
 
 					} catch (NoMatchFoundException e) {
-						LOGGER.warn("No SIFTS mapping could be found for "+pdbCode+representativeChain);
+						LOGGER.warn("No SIFTS mapping could be found for "+pdbCode+sequenceId);
 						LOGGER.info("Trying blasting to find one.");
 						queryUniprotId = findUniprotMapping(blastPlusBlastp, blastDbDir, blastDb, blastNumThreads, pdb2uniprotIdThreshold, pdb2uniprotQcovThreshold, useUniparc);  
 					}
@@ -189,7 +223,7 @@ public class ChainEvolContext implements Serializable {
 		
 		if (hasQueryMatch) {
 
-			LOGGER.info("UniProt id for chain "+representativeChain+": "+queryUniprotId);			
+			LOGGER.info("UniProt id for chain "+sequenceId+": "+queryUniprotId);			
 
 			// once we have the identifier we get the data from uniprot
 			try {
@@ -217,14 +251,14 @@ public class ChainEvolContext implements Serializable {
 						new NeedlemanWunsch<ProteinSequence,AminoAcidCompound>(s1,s2, penalty, matrix);
 				alnPdb2Uniprot = nw.getPair();
 
-				LOGGER.info("Chain "+representativeChain+" PDB SEQRES to UniProt alignmnent:\n"+getQueryPdbToUniprotAlnString());
-				LOGGER.info("Query (chain "+representativeChain+") length: "+sequence.length());
+				LOGGER.info("Chain "+sequenceId+" PDB SEQRES to UniProt alignmnent:\n"+getQueryPdbToUniprotAlnString());
+				LOGGER.info("Query (chain "+sequenceId+") length: "+sequence.length());
 				LOGGER.info("UniProt ("+query.getUniId()+") length: "+query.getLength());
 				LOGGER.info("Alignment length: "+alnPdb2Uniprot.getLength());
 				int shortestSeqLength = Math.min(query.getLength(), sequence.length());
 				double id = (double)alnPdb2Uniprot.getNumIdenticals()/(double)shortestSeqLength;
-				LOGGER.info("Query (chain "+representativeChain+") to reference UniProt percent identity: "+String.format("%6.2f%%",id*100.0));
-				LOGGER.info("UniProt reference coverage of query's (chain "+representativeChain+") sequence: "+
+				LOGGER.info("Query (chain "+sequenceId+") to reference UniProt percent identity: "+String.format("%6.2f%%",id*100.0));
+				LOGGER.info("UniProt reference coverage of query's (chain "+sequenceId+") sequence: "+
 						String.format("%6.2f%%",100.0*(double)sequence.length()/(double)query.getLength()));
 				// in strange cases like 3try (a racemic mixture with a chain composed of L and D aminoacids) the SIFTS-mapped
 				// UniProt entry does not align at all to the PDB SEQRES (mostly 'X'), we have to check for this
@@ -239,42 +273,38 @@ public class ChainEvolContext implements Serializable {
 				} 
 				else {
 
-					// a nice goody for the log: outputting our mapping in SIFTS tab format
-					// e.g.: 1dan	L	P08709	1	152	1	152	61	212
-					int uniprotStart = getFirstMatchingPos(alnPdb2Uniprot,false);
-					int uniprotEnd   = getLastMatchingPos(alnPdb2Uniprot, false);
-					int seqresStart = getPDBPosForQueryUniprotPos(uniprotStart);
-					int seqresEnd = getPDBPosForQueryUniprotPos(uniprotEnd);
-					try {
-						Chain chain = parent.getPdb().getChainByPDB(representativeChain);
-						//TODO check if the below is right in Biojava, i.e. is the getSeqResGroups(resser-1) getting the right residue??
-						// note: with chain.getSeqResGroups() it doesn't work because the ResidueNumbers are null for those
-						String pdbStart = chain.getSeqResGroups().get(seqresStart-1).getResidueNumber().toString();
-						String pdbEnd = chain.getSeqResGroups().get(seqresEnd-1).getResidueNumber().toString();
+					// TODO there's no easy way to do this with Biojava right now, let's drop the feature for now
+					// (the issue is that PDB serials are only defined for AtomGroups and not for something that is only in the SEQRES, e.g. it fails for 1smtA residue 1)
 
-						LOGGER.info("Our mapping in SIFTS format: "+parent.getPdb().getPdbId()+"\t"+
-								representativeChain+"\t"+
-								queryUniprotId+"\t"+
-								seqresStart+"\t"+seqresEnd+"\t"+
-								pdbStart+"\t"+pdbEnd+"\t"+
-								uniprotStart+"\t"+uniprotEnd);
-					} catch (StructureException e) {
-						LOGGER.info("Could not get chain {}", representativeChain+" to log the SIFTS mappings. No SIFTS mapping logging will be done.");
-					}
+//					// a nice goody for the log: outputting our mapping in SIFTS tab format
+//					// e.g.: 1dan	L	P08709	1	152	1	152	61	212
+//					int uniprotStart = getFirstMatchingPos(alnPdb2Uniprot,false);
+//					int uniprotEnd   = getLastMatchingPos(alnPdb2Uniprot, false);
+//					int seqresStart = getPDBPosForQueryUniprotPos(uniprotStart);
+//					int seqresEnd = getPDBPosForQueryUniprotPos(uniprotEnd);
+//					String pdbStart = getResNumFromSerial(seqresStart).toString();
+//					String pdbEnd = getResNumFromSerial(seqresEnd).toString(); 
+//
+//					LOGGER.info("Our mapping in SIFTS format: "+parent.getPdb().getPdbId()+"\t"+
+//							sequenceName+"\t"+
+//							queryUniprotId+"\t"+
+//							seqresStart+"\t"+seqresEnd+"\t"+
+//							pdbStart+"\t"+pdbEnd+"\t"+
+//							uniprotStart+"\t"+uniprotEnd);
 				}
 
 			}  catch (NoMatchFoundException e) {
 				if (parent.isUseLocalUniprot()) {
-					LOGGER.error("Couldn't find UniProt id "+queryUniprotId+" (reference for chain "+representativeChain+") in local database. Obsolete?");
+					LOGGER.error("Couldn't find UniProt id "+queryUniprotId+" (reference for chain "+sequenceId+") in local database. Obsolete?");
 				} else {
-					LOGGER.error("Couldn't find UniProt id "+queryUniprotId+" (reference for chain "+representativeChain+") through UniProt JAPI. Obsolete?");	
+					LOGGER.error("Couldn't find UniProt id "+queryUniprotId+" (reference for chain "+sequenceId+") through UniProt JAPI. Obsolete?");	
 				}				
-				LOGGER.error("Won't do evolution analysis for chain "+representativeChain);
+				LOGGER.error("Won't do evolution analysis for chain "+sequenceId);
 				query = null;
 				hasQueryMatch = false;
 			} catch (SQLException e) {
 				LOGGER.error("Could not retrieve the UniProt data for UniProt id "+queryUniprotId+" from local database "+params.getLocalUniprotDbName()+", error: "+e.getMessage());
-				LOGGER.error("Won't do evolution analysis for chain "+representativeChain);
+				LOGGER.error("Won't do evolution analysis for chain "+sequenceId);
 				query = null;
 				hasQueryMatch = false;
 			} catch (CompoundNotFoundException e) {
@@ -306,14 +336,14 @@ public class ChainEvolContext implements Serializable {
 					// This is a problem only if we use our local UniProt database (which contains the Uniref100 clustering)
 					// but not if we use the UniProt JAPI
 					LOGGER.warn("The retrieved sequence for UniProt "+query.getUniId()+
-							" seems to be shorter than the mapping coordinates in SIFTS (for chain "+representativeChain+")." +
+							" seems to be shorter than the mapping coordinates in SIFTS (for chain "+sequenceId+")." +
 							" This is likely to be a problem with Uniref100 clustering. Sequence length is "+query.getSequence().length()+
 							", SIFTS mapping is "+interv.beg+"-"+interv.end);
 
 					// For any other case we check that our mappings coincide and warn if not
 				} else if ( (getFirstMatchingPos(alnPdb2Uniprot,false))!=interv.beg ||
 						(getLastMatchingPos(alnPdb2Uniprot,false))!=interv.end) {
-					LOGGER.warn("The SIFTS mapping does not coincide with our mapping for chain "+representativeChain+", UniProt id "+query.getUniId()+
+					LOGGER.warn("The SIFTS mapping does not coincide with our mapping for chain "+sequenceId+", UniProt id "+query.getUniId()+
 							": ours is "+
 							(getFirstMatchingPos(alnPdb2Uniprot,false))+"-"+(getLastMatchingPos(alnPdb2Uniprot,false))+
 							", SIFTS is "+interv.beg+"-"+interv.end);
@@ -362,7 +392,7 @@ public class ChainEvolContext implements Serializable {
 		
 		//we do a sanity check on the SIFTS data: negative intervals are surely errors, we need to reject
 		if (hasNegativeLength) {
-			LOGGER.warn("Negative intervals present in SIFTS mapping for chain "+representativeChain+". Will not use the SIFTS mapping.");
+			LOGGER.warn("Negative intervals present in SIFTS mapping for chain "+sequenceId+". Will not use the SIFTS mapping.");
 			queryWarnings.add("Problem with SIFTS PDB to UniProt mapping: negative intervals present in mapping");
 			// We continue with a null query, i.e. no match, of course we could try to still find a mapping ourselves
 			// by calling findUniprotMapping if we return a null, but for the chimera case below there's also null returned
@@ -372,7 +402,7 @@ public class ChainEvolContext implements Serializable {
 		}
 		// second sanity check: negative or 0 coordinates are surely errors: reject
 		if (hasNegatives) {
-			LOGGER.warn("0 or negative coordinates present in SIFTS mapping for chain "+representativeChain+". Will not use the SIFTS mapping.");
+			LOGGER.warn("0 or negative coordinates present in SIFTS mapping for chain "+sequenceId+". Will not use the SIFTS mapping.");
 			queryWarnings.add("Problem with SIFTS PDB to UniProt mapping: 0 or negative coordinates present in mapping");
 			// We continue with a null query, i.e. no match, of course we could try to still find a mapping ourselves
 			// by calling findUniprotMapping if we return a null, but for the chimera case below there's also null returned
@@ -386,7 +416,7 @@ public class ChainEvolContext implements Serializable {
 						
 			String largestCoverageUniprotId = Collections.max(uniqUniIds.values()).uniprotId;
 			
-			LOGGER.warn("More than one UniProt SIFTS mapping for chain "+representativeChain);
+			LOGGER.warn("More than one UniProt SIFTS mapping for chain "+sequenceId);
 			String msg = "UniProt IDs are: ";
 			for (String uniId:uniqUniIds.keySet()){
 				msg+=(uniId+" (total coverage "+uniqUniIds.get(uniId).totalCoverage+") ");
@@ -398,7 +428,7 @@ public class ChainEvolContext implements Serializable {
 				queryUniprotId = largestCoverageUniprotId;
 			} else {
 				LOGGER.warn("This is likely to be a chimeric chain. Won't do evolution analysis on this chain.");
-				String warning = "More than one UniProt id correspond to chain "+representativeChain+": ";
+				String warning = "More than one UniProt id correspond to chain "+sequenceId+": ";
 				for (String uniId:uniqUniIds.keySet()){
 					warning+=(uniId+" (total coverage "+uniqUniIds.get(uniId).totalCoverage+") ");
 				}
@@ -414,7 +444,7 @@ public class ChainEvolContext implements Serializable {
 			String msg = "";
 			
 			// common logging for all deletion/insertion cases
-			LOGGER.warn("The SIFTS PDB-to-UniProt mapping of chain "+representativeChain+
+			LOGGER.warn("The SIFTS PDB-to-UniProt mapping of chain "+sequenceId+
 					" is composed of several segments of a single UniProt sequence ("+mappings.iterator().next().getUniprotId()+")");
 			
 			int lastUniprotEnd = -1;
@@ -444,7 +474,7 @@ public class ChainEvolContext implements Serializable {
 					// esentially a deletion is like removing a domain from a terminal, so as we do allow removing domains from terminals
 					// we should also allow this (see JIRA issue CRK-139)
 					// e.g. 4cofA: a whole loop is deleted (and a few residues inserted to replace it too) 
-					LOGGER.warn("Deletion of length "+(interv.beg-lastUniprotEnd)+" in sequence of PDB chain "+representativeChain+" with respect to its UniProt reference");
+					LOGGER.warn("Deletion of length "+(interv.beg-lastUniprotEnd)+" in sequence of PDB chain "+sequenceId+" with respect to its UniProt reference");
 				}
 				lastUniprotEnd = interv.end;
 				
@@ -454,7 +484,7 @@ public class ChainEvolContext implements Serializable {
 			}
 
 			// common logging for all deletion/insertion cases
-			LOGGER.warn("PDB chain "+representativeChain+" vs UniProt ("+
+			LOGGER.warn("PDB chain "+sequenceId+" vs UniProt ("+
 					mappings.iterator().next().getUniprotId()+") segments:"+msg);
 
 			
@@ -463,7 +493,7 @@ public class ChainEvolContext implements Serializable {
 				LOGGER.warn("Check if the PDB entry is biologically reasonable (likely to be an engineered entry). Won't do evolution analysis on this chain.");
 
 				String warning = "More than one UniProt segment of id "+mappings.iterator().next().getUniprotId()+
-						" correspond to chain "+representativeChain+":"+msg+
+						" correspond to chain "+sequenceId+":"+msg+
 						". This is most likely an engineered chain";
 				queryWarnings.add(warning);
 
@@ -481,7 +511,7 @@ public class ChainEvolContext implements Serializable {
 			}
 		// c) 1 uniprot id and 1 mapping: vanilla case
 		} else {
-			LOGGER.info("Getting UniProt reference mapping for chain "+representativeChain+" from SIFTS");
+			LOGGER.info("Getting UniProt reference mapping for chain "+sequenceId+" from SIFTS");
 			queryUniprotId = uniqUniIds.keySet().iterator().next();
 		}
 		
@@ -759,7 +789,7 @@ public class ChainEvolContext implements Serializable {
 	}
 	
 	public String getRepresentativeChainCode() {
-		return representativeChain;
+		return sequenceId;
 	}
 	
 	public String getPdbSequence() {
@@ -828,7 +858,7 @@ public class ChainEvolContext implements Serializable {
 			throws IOException, BlastException, InterruptedException {
 		// for too short sequence it doesn't make sense to blast
 		if (this.sequence.length()<EppicParams.MIN_SEQ_LENGTH_FOR_BLASTING) {
-			LOGGER.info("Chain "+representativeChain+" too short for blasting. Won't try to find a UniProt reference for it.");
+			LOGGER.info("Chain "+sequenceId+" too short for blasting. Won't try to find a UniProt reference for it.");
 			// query warnings for peptides (with a higher cutoff than this) are already logged before, see above
 			// note that then as no reference is found, there won't be blasting for homologs either
 			return null;
@@ -836,7 +866,7 @@ public class ChainEvolContext implements Serializable {
 		// we have to skip sequences composed of all unknown/non-standard (all Xs), blast fails otherwise
 		Matcher m = ALLX_SEQ_PATTERN.matcher(this.sequence);
 		if (m.matches()) {
-			LOGGER.info("Chain "+representativeChain+" is composed only of unknown or non-standard aminoacids. Won't try to find a UniProt reference for it.");
+			LOGGER.info("Chain "+sequenceId+" is composed only of unknown or non-standard aminoacids. Won't try to find a UniProt reference for it.");
 			queryWarnings.add("Sequence is composed only of unknown or non-standard aminoacids, cannot find a UniProt reference for it");
 			return null;
 		}
@@ -848,7 +878,7 @@ public class ChainEvolContext implements Serializable {
 			inputSeqFile.deleteOnExit();
 		}
 		
-		new Sequence("chain"+representativeChain,this.sequence).writeToFastaFile(inputSeqFile);
+		new Sequence("chain"+sequenceId,this.sequence).writeToFastaFile(inputSeqFile);
 
 		BlastRunner blastRunner = new BlastRunner(blastDbDir);
 		blastRunner.runBlastp(blastPlusBlastp, inputSeqFile, blastDb, outBlast, BlastRunner.BLASTPLUS_XML_OUTPUT_TYPE, BLAST_NO_FILTERING, blastNumThreads, 500);
@@ -873,7 +903,7 @@ public class ChainEvolContext implements Serializable {
 				best = blastList.get(i);
 				if (isHitUniprot(best)) break;
 				if (i==blastList.size()-1) { // if not a single hit is uniprot then we get to here and we have to catch it
-					LOGGER.warn("No UniProt match could be found for the query chain "+representativeChain+
+					LOGGER.warn("No UniProt match could be found for the query chain "+sequenceId+
 							": no blast hit was a UniProt match (total "+blastList.size()+" blast hits)");
 					queryWarnings.add("Blast didn't find a UniProt match for the chain. All blast hits were non-UniProt matches (total "+blastList.size()+" blast hits).");
 					return null;
@@ -885,7 +915,7 @@ public class ChainEvolContext implements Serializable {
 				LOGGER.info("Blast found UniProt id "+uniprotMapping+" as best hit with "+
 						String.format("%5.2f%% id and %4.2f coverage",bestHsp.getQueryPercentIdentity(),bestHsp.getQueryCoverage()));
 			} else {
-				LOGGER.warn("No UniProt match could be found for the query chain "+representativeChain+" within cutoffs "+
+				LOGGER.warn("No UniProt match could be found for the query chain "+sequenceId+" within cutoffs "+
 						String.format("%5.2f%% id and %4.2f coverage",pdb2uniprotIdThreshold,pdb2uniprotQcovThreshold));
 				LOGGER.warn("Best match was "+best.getSubjectId()+", with "+
 						String.format("%5.2f%% id and %4.2f coverage",bestHsp.getQueryPercentIdentity(),bestHsp.getQueryCoverage()));
@@ -895,7 +925,7 @@ public class ChainEvolContext implements Serializable {
 						String.format("%5.2f%% id and %4.2f coverage",bestHsp.getQueryPercentIdentity(),bestHsp.getQueryCoverage()));
 			}			
 		} else {
-			LOGGER.warn("No UniProt match could be found for the query chain "+representativeChain+". Blast returned no hits.");
+			LOGGER.warn("No UniProt match could be found for the query chain "+sequenceId+". Blast returned no hits.");
 			queryWarnings.add("Blast didn't find a UniProt match for the chain (no hits returned by blast)");
 		}
 
@@ -1022,29 +1052,51 @@ public class ChainEvolContext implements Serializable {
 	}
 	
 	/**
-	 * Returns the SEQRES serial of the Group g in the Chain c
+	 * Return the SEQRES serial of the Group g in the Chain c
 	 * @param g
 	 * @return the SEQRES serial (1 to n) or -1 if not found
 	 */
 	public int getSeqresSerial(Group g) {
-		
-		if (resNumbers2SeqresSerials !=null) {
-			Integer resSerial = resNumbers2SeqresSerials.get(g.getResidueNumber());
-			if (resSerial==null) return -1;
-			return (int)resSerial;			
-		}
-		
-		resNumbers2SeqresSerials = new HashMap<ResidueNumber, Integer>();
-		
-		Chain c = g.getChain();
-		List<Group> seqresGroups = c.getSeqResGroups();
-		for (int i=0;i<seqresGroups.size();i++) {			
-			resNumbers2SeqresSerials.put(seqresGroups.get(i).getResidueNumber(),i+1);
-		}
-
 		Integer resSerial = resNumbers2SeqresSerials.get(g.getResidueNumber());
 		if (resSerial==null) return -1;
 		return (int)resSerial;			
+	}
+	
+	/**
+	 * Returns the ResidueNumber given the SEQRES serial
+	 * @param resser
+	 * @return the ResidueNumber or null if not found (for instance for any residue that has no AtomGroup)
+	 */
+	public ResidueNumber getResNumFromSerial(int resser) {
+		return seqresSerials2resNumbers.get(resser);
+	}
+	
+	/**
+	 * Return the SEQRES serial corresponding to the given ResidueNumber 
+	 * @param resNum
+	 * @return the SEQRES serial (1 to n) or -1 if not found
+	 */
+	public int getSerialFromResNum(ResidueNumber resNum) {
+		Integer resSerial = resNumbers2SeqresSerials.get(resNum);
+		if (resSerial==null) return -1;
+		return (int)resSerial;			
+	}
+	
+	private void initResNumberMaps(Compound compound) {
+		resNumbers2SeqresSerials = new HashMap<ResidueNumber, Integer>();
+		seqresSerials2resNumbers = new HashMap<Integer, ResidueNumber>();
+
+		// TODO revise it this would work for raw PDB files without an actual SEQRES: we choose the seqresGroups from each chain but I'm not sure it that would be valid in raw PDB file case
+		// we have to go through every Chain in the Compound to be sure that every observed residue in the whole Compound
+		// is included in the map
+		for (Chain c:compound.getChains()) {
+
+			List<Group> seqresGroups = c.getSeqResGroups();
+			for (int i=0;i<seqresGroups.size();i++) {			
+				resNumbers2SeqresSerials.put(seqresGroups.get(i).getResidueNumber(),i+1);
+				seqresSerials2resNumbers.put(i+1, seqresGroups.get(i).getResidueNumber());
+			}
+		}
 	}
 	
 	/**

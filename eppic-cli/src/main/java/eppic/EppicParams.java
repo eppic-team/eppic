@@ -175,7 +175,7 @@ public class EppicParams {
 	public static final boolean   DEF_USE_PDB_RES_SER = true;
 	
 	// default core-surface score strategy: 0 for classic, 1 for straight z-scores
-	private static final int 	  DEF_CORE_SURFACE_SCORE_STRATEGY = CORE_SURFACE_SCORE_STRATEGY_CLASSIC;
+	private static final int 	  DEF_CORE_SURFACE_SCORE_STRATEGY = CORE_SURFACE_SCORE_STRATEGY_ZSCORE;
 	
 	// FIELDS
 	

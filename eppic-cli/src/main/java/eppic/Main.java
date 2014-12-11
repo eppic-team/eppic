@@ -684,12 +684,13 @@ public class Main {
 		cecs.computeEntropies(params);
 		
 		if (!params.isGenerateModelSerializedFile()) {
+			// TODO to write the serialized file with Biojava we need to make everything Serializable
 			// we only produce the chainevolcontext.dat file if not in -w mode (for WUI not to produce so many files)
-			try {
-				Goodies.serialize(params.getOutputFile(EppicParams.CHAINEVCONTEXTDAT_FILE_SUFFIX),cecs);
-			} catch (IOException e) {
-				throw new EppicException(e,"Couldn't write serialized ChainEvolContextList object to file: "+e.getMessage(),false);
-			}
+			//try {
+			//	Goodies.serialize(params.getOutputFile(EppicParams.CHAINEVCONTEXTDAT_FILE_SUFFIX),cecs);
+			//} catch (IOException e) {
+			//	throw new EppicException(e,"Couldn't write serialized ChainEvolContextList object to file: "+e.getMessage(),false);
+			//}
 		}
 		
 	}

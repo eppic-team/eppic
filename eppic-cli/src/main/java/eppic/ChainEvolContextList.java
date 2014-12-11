@@ -7,7 +7,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.TreeMap;
 
-import org.biojava.bio.structure.Chain;
 import org.biojava.bio.structure.Compound;
 import org.biojava.bio.structure.Structure;
 import org.biojava.bio.structure.StructureException;
@@ -31,6 +30,9 @@ public class ChainEvolContextList implements Serializable {
 	
 	private Structure pdb;
 	
+	/**
+	 * A map of sequence identifier (usually representative chain identifier) to its corresponding ChainEvolContext
+	 */
 	private TreeMap<String, ChainEvolContext> cecs; // one per representative chain
 	
 	private String uniprotVer;
@@ -68,12 +70,9 @@ public class ChainEvolContextList implements Serializable {
 		
 		for (Compound chainCluster:pdb.getCompounds()) {
 						
-			Chain chain = chainCluster.getRepresentative();
+			ChainEvolContext cec = new ChainEvolContext(this, chainCluster);
 			
-			// TODO before Biojava move, here we used to call chain.getSequenceMSEtoMET(). How do we do that in Biojava?
-			ChainEvolContext cec = new ChainEvolContext(this, chain.getSeqResSequence(), chain.getChainID());
-			
-			cecs.put(chain.getChainID(), cec);
+			cecs.put(cec.getSequenceId(), cec);
 		}
 		
 	}
