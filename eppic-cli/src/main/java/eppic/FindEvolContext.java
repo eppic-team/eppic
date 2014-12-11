@@ -36,10 +36,12 @@ public class FindEvolContext {
 		loadConfigFile();		
 		parseCommandLine(args, FindEvolContext.class.getName());		
 
-		// log4j2 setup for loggint to our basename.log file name
+		// log4j2 setup for logging to our basename.log file name
 		System.setProperty("logFilename", new File(params.getOutDir(),params.getBaseName()+".log").toString());
 		LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
 		ctx.reconfigure();
+		// TODO for some reason (bug?) log4j2 2.1 produces a file named with the log4j2.xml $pointer, the only fix I know for now is to remove it manually
+		new File("${sys:logFilename}").deleteOnExit();
 
 
 		

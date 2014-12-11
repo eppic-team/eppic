@@ -84,6 +84,8 @@ public class Main {
 		LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
 		ctx.reconfigure();
 
+		// TODO for some reason (bug?) log4j2 2.1 produces a file named with the log4j2.xml $pointer, the only fix I know for now is to remove it manually
+		new File("${sys:logFilename}").deleteOnExit();
 
 		if (params.getProgressLogFile()!=null) {
 			// the steps log file needed for the server, we only initialise it if a -L progress log file was passed (as that is only used by server)
