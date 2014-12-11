@@ -3,7 +3,6 @@ package eppic;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -748,19 +747,25 @@ public class DataModelAdaptor {
 	}
 	
 	private void addResidueDetailsOfPartner(List<ResidueDB> iril, StructureInterface interf, int molecId) {
-		if (CompoundFinder.isProtein(interf.getMolecules().getFirst()[0].getGroup().getChain()) &&
-			CompoundFinder.isProtein(interf.getMolecules().getSecond()[0].getGroup().getChain())) {
+
+		Chain chain = null;
+		if (molecId == FIRST) chain =  interf.getMolecules().getFirst()[0].getGroup().getChain();
+		else if (molecId == SECOND) chain = interf.getMolecules().getSecond()[0].getGroup().getChain();
+		
+		if (CompoundFinder.isProtein(chain)) {
 			
-			Collection<GroupAsa> mol = null;
-			if (molecId==FIRST) {
-				mol = interf.getFirstGroupAsas().values();
-			}
-			else if (molecId==SECOND) {
-				mol = interf.getSecondGroupAsas().values();;
-			}
-			
-			for (GroupAsa groupAsa:mol) {
-				String resType = groupAsa.getGroup().getPDBName();
+			for (Group group:chain.getAtomGroups()) {
+				
+				if (group.isWater()) continue;
+				
+				GroupAsa groupAsa = null;
+				if (molecId==FIRST) groupAsa = interf.getFirstGroupAsa(group.getResidueNumber());
+				else if (molecId==SECOND) groupAsa = interf.getSecondGroupAsa(group.getResidueNumber());
+				
+				// if we have no groupAsa that means that this is a Residue for which we don't calculate ASA (most likely HETATM)
+				if (groupAsa==null) continue;
+				
+				String resType = group.getPDBName();
 				int assignment = ResidueDB.OTHER;
 				
 				double asa = groupAsa.getAsaU();
@@ -792,8 +797,8 @@ public class DataModelAdaptor {
 				
 				
 				ResidueDB iri = new ResidueDB();
-				iri.setResidueNumber(getSeqresSerial(groupAsa.getGroup(),groupAsa.getGroup().getChain()));
-				iri.setPdbResidueNumber(groupAsa.getGroup().getResidueNumber().toString());
+				iri.setResidueNumber(getSeqresSerial(group, chain));
+				iri.setPdbResidueNumber(group.getResidueNumber().toString());
 				iri.setResidueType(resType);
 				iri.setAsa(asa);
 				iri.setBsa(bsa);
@@ -828,19 +833,26 @@ public class DataModelAdaptor {
 				mol = interf.getMolecules().getSecond()[0].getGroup().getChain();
 			}
 
-			if (CompoundFinder.isProtein(interf.getMolecules().getFirst()[0].getGroup().getChain()) &&
-				CompoundFinder.isProtein(interf.getMolecules().getSecond()[0].getGroup().getChain())) {
+			if ( CompoundFinder.isProtein(mol) ) {
 				 
 				List<Double> entropies = null;
 				if (cec.hasQueryMatch()) 
 					entropies = cec.getConservationScores();
 				for (Group residue:mol.getAtomGroups()) {
+					
+					// skipping of residues: we follow exact same procedure as in addResidueDetailsOfPartner(), otherwise indices won't match
+					if (residue.isWater()) continue;
+					GroupAsa groupAsa = null;
+					if (molecId==FIRST) groupAsa = interf.getFirstGroupAsa(residue.getResidueNumber());
+					else if (molecId==SECOND) groupAsa = interf.getSecondGroupAsa(residue.getResidueNumber());
+					
+					if (groupAsa==null) continue;
 
 	 				ResidueDB iri = iril.get(i);
 					
 					int queryUniprotPos = -1;
 					// TODO before Biojava move we used to have here !mol.isNonPolyChain() as first condition, how do we do that now?
-					if (cec.hasQueryMatch()) // && !mol.isNonPolyChain() 
+					if (cec.hasQueryMatch())  
 						queryUniprotPos = cec.getQueryUniprotPosForPDBPos(cec.getSeqresSerial(residue));
 
 					float entropy = -1;
