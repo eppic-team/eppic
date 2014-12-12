@@ -14,6 +14,7 @@ import java.util.List;
 
 import javax.persistence.EntityManager;
 
+
 public class UploadToDb {
 
 	private static DBHandler dbh;
@@ -148,7 +149,7 @@ public class UploadToDb {
 		long totalStart = System.currentTimeMillis();
 		
 		EntityManager em = dbh.getEntityManager();
-		em.getTransaction().begin();
+		
 		
 		for (File jobDirectory : jobsDirectories) {
 			i++;
@@ -190,78 +191,79 @@ public class UploadToDb {
 					continue;				
 			} 
 
-			
-			// committing transaction only every 10 entries, hoping this speeds things up
-			if ((i % 10) == 0) {
-				em.getTransaction().commit();
-				em.clear();          
-				em.getTransaction().begin();
-			}
+			try {				
 
-			//MODE FORCE
-			if (modeEverything) {
-				boolean ifRemoved = dbh.removeJob(currentPDB);
-				if (ifRemoved) System.out.print(" Found.. Removing and Updating.. ");
-				else System.out.print(" Not Found.. Adding.. ");
-				if(isSerializedFilePresent) {
-					dbh.persistFinishedJob(em,pdbScoreItem);
-				}
-				else {
-					dbh.persistErrorJob(em, currentPDB);
-				}
-				//continue;
-			}
 
-			//MODE NEW INSERT
-			if (modeNew){
-				boolean isPresent = dbh.checkJobExist(currentPDB);
-				if(!isPresent){
-					System.out.print(" Not Present.. Adding.. ");
-					if(isSerializedFilePresent) {						
+				//MODE FORCE
+				if (modeEverything) {
+					boolean ifRemoved = dbh.removeJob(currentPDB);
+					if (ifRemoved) System.out.print(" Found.. Removing and Updating.. ");
+					else System.out.print(" Not Found.. Adding.. ");
+					if(isSerializedFilePresent) {
 						dbh.persistFinishedJob(em,pdbScoreItem);
 					}
 					else {
 						dbh.persistErrorJob(em, currentPDB);
 					}
+					//continue;
 				}
-				else System.out.print(" Already Present.. Skipping.. ");
-				//continue;
-			}
 
-			//MODE REMOVE
-			if (modeRemove) {
-				boolean ifRemoved = dbh.removeJob(currentPDB);
-				if (ifRemoved) System.out.print(" Removed.. ");
-				else System.out.print(" Not Found.. ");
-				//continue;
-			}
+				//MODE NEW INSERT
+				if (modeNew){
+					boolean isPresent = dbh.checkJobExist(currentPDB);
+					if(!isPresent){
+						System.out.print(" Not Present.. Adding.. ");
+						if(isSerializedFilePresent) {						
+							dbh.persistFinishedJob(em,pdbScoreItem);
+						}
+						else {
+							dbh.persistErrorJob(em, currentPDB);
+						}
+					}
+					else System.out.print(" Already Present.. Skipping.. ");
+					//continue;
+				}
 
-			long end = System.currentTimeMillis();
-			System.out.print(((end-start)/1000)+"s\n");
+				//MODE REMOVE
+				if (modeRemove) {
+					boolean ifRemoved = dbh.removeJob(currentPDB);
+					if (ifRemoved) System.out.print(" Removed.. ");
+					else System.out.print(" Not Found.. ");
+					//continue;
+				}
 
-			if (i%TIME_STATS_EVERY1==0) {
-				avgTimeEnd1 = System.currentTimeMillis();
+				long end = System.currentTimeMillis();
+				System.out.print(((end-start)/1000)+"s\n");
 
-				if (i!=0) // no statistics before starting
-					System.out.println("Last "+TIME_STATS_EVERY1+" entries in "+((avgTimeEnd1-avgTimeStart1)/1000)+" s");
+				if (i%TIME_STATS_EVERY1==0) {
+					avgTimeEnd1 = System.currentTimeMillis();
 
-				avgTimeStart1 = System.currentTimeMillis();
-			}
+					if (i!=0) // no statistics before starting
+						System.out.println("Last "+TIME_STATS_EVERY1+" entries in "+((avgTimeEnd1-avgTimeStart1)/1000)+" s");
 
-			if (i%TIME_STATS_EVERY2==0) {
-				avgTimeEnd2 = System.currentTimeMillis();
+					avgTimeStart1 = System.currentTimeMillis();
+				}
 
-				if (i!=0) // no statistics before starting
-					System.out.println("Last "+TIME_STATS_EVERY2+" entries in "+((avgTimeEnd2-avgTimeStart2)/1000)+" s");
+				if (i%TIME_STATS_EVERY2==0) {
+					avgTimeEnd2 = System.currentTimeMillis();
 
-				avgTimeStart2 = System.currentTimeMillis();
-			}
+					if (i!=0) // no statistics before starting
+						System.out.println("Last "+TIME_STATS_EVERY2+" entries in "+((avgTimeEnd2-avgTimeStart2)/1000)+" s");
+
+					avgTimeStart2 = System.currentTimeMillis();
+				}
+
+				
+			} catch (Exception e) {
+				if (em.getTransaction().isActive()) {
+					em.getTransaction().rollback();
+				}
+				System.err.println("WARNING: problems while inserting "+currentPDB+". Error: "+e.getMessage());
+				continue;
+			} 
 
 		}
 		
-		// committing the last bunch
-		em.getTransaction().commit();
-		em.close();
 		
 		long totalEnd = System.currentTimeMillis();
 		

@@ -151,6 +151,8 @@ public class DBHandler {
 	 */
 	public void persistFinishedJob(EntityManager em, PdbInfoDB pdbInfo){
 		
+		em.getTransaction().begin(); 
+		
 		String pdbCode = pdbInfo.getPdbCode();
 
 		JobDB job = new JobDB();
@@ -167,6 +169,9 @@ public class DBHandler {
 		job.setPdbInfo(pdbInfo);
 				
 		em.persist(job);
+		
+		em.getTransaction().commit();
+		em.clear(); 
 	}
 	
 	/**
@@ -174,6 +179,8 @@ public class DBHandler {
 	 * @param pdbCode
 	 */
 	public void persistErrorJob(EntityManager em, String pdbCode){
+
+		em.getTransaction().begin(); 
 		
 		JobDB job = new JobDB();
 		job.setJobId(pdbCode);
@@ -185,6 +192,9 @@ public class DBHandler {
 		job.setInputType(InputType.PDBCODE.getIndex());
 		job.setSubmissionId("-1");
 		em.persist(job);
+		
+		em.getTransaction().commit();
+		em.clear();   
 		
 	}
 	
