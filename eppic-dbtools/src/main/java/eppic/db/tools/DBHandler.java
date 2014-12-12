@@ -59,7 +59,7 @@ public class DBHandler {
 	/**
 	 * Constructor
 	 */
-	public DBHandler(String dbName){
+	public DBHandler(String dbName) {
 
 		File configurationFile = new File(System.getProperty("user.home"), CONFIG_FILE_NAME);
 		Map<String, String> properties = createDatabaseProperties(configurationFile, dbName);
@@ -82,6 +82,7 @@ public class DBHandler {
 			properties.load(new FileInputStream(configurationFile));
 			Map<String, String> map = new HashMap<>();
 			map.put("javax.persistence.jdbc.driver", "com.mysql.jdbc.Driver");
+			map.put("javax.persistence.nonJtaDataSource", "");
 			map.put("hibernate.c3p0.min_size", "5");
 			map.put("hibernate.c3p0.max_size", "20");
 			map.put("hibernate.c3p0.timeout", "1800");
@@ -120,13 +121,6 @@ public class DBHandler {
 			map.put("javax.persistence.jdbc.user", user); 
 			map.put("javax.persistence.jdbc.password", pwd);
 			
-			//System.out.println("Connection URL: "+url);
-			
-			map.put("hibernate.connection.driver_class", "com.mysql.jdbc.Driver");
-			map.put("hibernate.connection.url", url);
-			map.put("hibernate.connection.username", user);
-			map.put("hibernate.connection.password", pwd);
-
 			return map;
 			
 		} catch (IOException e) {
