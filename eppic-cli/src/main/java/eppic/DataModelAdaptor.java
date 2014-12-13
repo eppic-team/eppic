@@ -163,6 +163,8 @@ public class DataModelAdaptor {
 				interfaceDB.setXtalTrans_x(interf.getTransforms().getSecond().getCrystalTranslation().x);
 				interfaceDB.setXtalTrans_y(interf.getTransforms().getSecond().getCrystalTranslation().y);
 				interfaceDB.setXtalTrans_z(interf.getTransforms().getSecond().getCrystalTranslation().z);
+				interfaceDB.setIsologous(interf.isIsologous());
+				
 				
 				interfaceDB.setPdbCode(pdbInfo.getPdbCode());
 				
