@@ -493,9 +493,6 @@
 			<basic name="refAlignedSeq">
 				<column column-definition="text" />
 			</basic>
-			<basic name="aliMarkupLine">
-				<column column-definition="text" />
-			</basic>
 			
 			<basic name="msaAlignedSeq">
 				<column column-definition="text" />
