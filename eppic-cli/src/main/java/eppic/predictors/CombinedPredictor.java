@@ -3,11 +3,11 @@ package eppic.predictors;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.biojava.bio.structure.Atom;
 import org.biojava.bio.structure.contact.AtomContact;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import eppic.DataModelAdaptor;
 import eppic.EppicParams;
 import eppic.CallType;
 import eppic.InterfaceEvolContext;
@@ -284,24 +284,10 @@ public class CombinedPredictor implements InterfaceTypePredictor {
 	private List<AtomContact> getDisulfidePairs() {
 		List<AtomContact> list = new ArrayList<AtomContact>();
 		for (AtomContact contact:iec.getInterface().getContacts()) {
-			if (isDisulfideInteraction(contact)) 
+			if (DataModelAdaptor.isDisulfideInteraction(contact)) 
 				list.add(contact);
 		}
 		return list;
-	}
-	
-	private static boolean isDisulfideInteraction(AtomContact contact) {
-		Atom atomi = contact.getPair().getFirst();
-		Atom atomj = contact.getPair().getSecond();
-		if (atomi.getGroup().getPDBName().equals("CYS") &&
-			atomj.getGroup().getPDBName().equals("CYS") &&
-			atomi.getName().equals("SG") &&
-			atomj.getName().equals("SG") &&
-			contact.getDistance()<(EppicParams.DISULFIDE_BRIDGE_DIST+EppicParams.DISULFIDE_BRIDGE_DIST_SIGMA) && 
-			contact.getDistance()>(EppicParams.DISULFIDE_BRIDGE_DIST-EppicParams.DISULFIDE_BRIDGE_DIST_SIGMA)) {
-				return true;
-		}
-		return false;
 	}
 	
 }

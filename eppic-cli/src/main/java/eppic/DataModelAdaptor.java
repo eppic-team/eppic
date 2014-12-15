@@ -9,12 +9,14 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
+import org.biojava.bio.structure.Atom;
 import org.biojava.bio.structure.Chain;
 import org.biojava.bio.structure.Compound;
 import org.biojava.bio.structure.Group;
 import org.biojava.bio.structure.PDBCrystallographicInfo;
 import org.biojava.bio.structure.Structure;
 import org.biojava.bio.structure.asa.GroupAsa;
+import org.biojava.bio.structure.contact.AtomContact;
 import org.biojava.bio.structure.contact.GroupContact;
 import org.biojava.bio.structure.contact.GroupContactSet;
 import org.biojava.bio.structure.contact.StructureInterface;
@@ -198,11 +200,11 @@ public class DataModelAdaptor {
 					if (secondGroupAsa!=null) contact.setSecondBurial(secondGroupAsa.getBsaToAsaRatio());
 					else contact.setSecondBurial(NO_BURIAL_AVAILABLE);
 					
-					// TODO fill the missing data with Biojava
 					contact.setMinDistance(groupContact.getMinDistance());					
 					contact.setClash(groupContact.getContactsWithinDistance(EppicParams.CLASH_DISTANCE).size()>0);
-					//contact.setDisulfide(edge.isDisulfide());
+					contact.setDisulfide(isDisulfideInteraction(groupContact));
 					contact.setNumAtoms(groupContact.getNumAtomContacts());
+					// TODO transfer h-bonds stuff to Biojava and fill this field
 					//contact.setNumHBonds(edge.getnHBonds()); 
 					
 					contact.setInterfaceId(interf.getId()); 
@@ -944,5 +946,26 @@ public class DataModelAdaptor {
 		}
 		// not found, return -1
 		return -1;
+	}
+	
+	public static boolean isDisulfideInteraction(AtomContact contact) {
+		Atom atomi = contact.getPair().getFirst();
+		Atom atomj = contact.getPair().getSecond();
+		if (atomi.getGroup().getPDBName().equals("CYS") &&
+			atomj.getGroup().getPDBName().equals("CYS") &&
+			atomi.getName().equals("SG") &&
+			atomj.getName().equals("SG") &&
+			contact.getDistance()<(EppicParams.DISULFIDE_BRIDGE_DIST+EppicParams.DISULFIDE_BRIDGE_DIST_SIGMA) && 
+			contact.getDistance()>(EppicParams.DISULFIDE_BRIDGE_DIST-EppicParams.DISULFIDE_BRIDGE_DIST_SIGMA)) {
+				return true;
+		}
+		return false;
+	}
+	
+	public static boolean isDisulfideInteraction(GroupContact groupContact) {
+		for (AtomContact contact:groupContact.getAtomContacts()) {
+			if (isDisulfideInteraction(contact)) return true;
+		}
+		return false;
 	}
 }
