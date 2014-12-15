@@ -16,8 +16,8 @@ import java.util.TreeSet;
  */
 public class BioUnitView implements Comparable<BioUnitView> {
 	
-	//private int index;
-	private BioUnitAssignmentType type;
+	// TODO commenting out references to BioUnitAssignmentType: need to convert all this to Biojava if needed at some point
+//	private BioUnitAssignmentType type;
 	private int mmSize;
 	private Set<Integer> clusterIds;
 	
@@ -25,47 +25,38 @@ public class BioUnitView implements Comparable<BioUnitView> {
 		clusterIds = new TreeSet<Integer>();
 	}
 	
-	public BioUnitView(BioUnitAssignmentType type, int mmSize, Set<Integer> clusterIds) {
-		//this.setIndex(index);
-		this.type = type;
-		this.mmSize = mmSize;
-		this.clusterIds = clusterIds;
-	}
-	
-	public boolean equals(Object o) {
-		if (!(o instanceof BioUnitView)) return false;
-		BioUnitView other = (BioUnitView) o;
-		
-		if (other.type!=this.type) return false;
-		if (other.mmSize!=this.mmSize) return false;
-		if (other.clusterIds.size()!=this.clusterIds.size()) return false;
-				
-		for (int thisClusterId:this.clusterIds) {
-			if (!other.clusterIds.contains(thisClusterId)) return false;
-		}
-		
-		return true;
-	}
+//	public BioUnitView(BioUnitAssignmentType type, int mmSize, Set<Integer> clusterIds) {
+//		this.type = type;
+//		this.mmSize = mmSize;
+//		this.clusterIds = clusterIds;
+//	}
+//	
+//	public boolean equals(Object o) {
+//		if (!(o instanceof BioUnitView)) return false;
+//		BioUnitView other = (BioUnitView) o;
+//		
+//		if (other.type!=this.type) return false;
+//		if (other.mmSize!=this.mmSize) return false;
+//		if (other.clusterIds.size()!=this.clusterIds.size()) return false;
+//				
+//		for (int thisClusterId:this.clusterIds) {
+//			if (!other.clusterIds.contains(thisClusterId)) return false;
+//		}
+//		
+//		return true;
+//	}
 
 	public void addInterfClusterId(int interfClusterId) {
 		this.clusterIds.add(interfClusterId);
 	}
-	
-//	public int getIndex() {
-//		return index;
+
+//	public BioUnitAssignmentType getType() {
+//		return type;
 //	}
 //
-//	public void setIndex(int index) {
-//		this.index = index;
+//	public void setType(BioUnitAssignmentType type) {
+//		this.type = type;
 //	}
-
-	public BioUnitAssignmentType getType() {
-		return type;
-	}
-
-	public void setType(BioUnitAssignmentType type) {
-		this.type = type;
-	}
 
 	public int getMmSize() {
 		return mmSize;
