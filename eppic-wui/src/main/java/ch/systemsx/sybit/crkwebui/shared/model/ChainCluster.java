@@ -34,7 +34,6 @@ public class ChainCluster implements Serializable {
 	private int pdbEnd;
 	private String pdbAlignedSeq;
 	private String refAlignedSeq;
-	private String aliMarkupLine;
 	
 	private boolean hasUniProtRef;
 	private List<UniProtRefWarning> uniProtRefWarnings;
@@ -70,8 +69,7 @@ public class ChainCluster implements Serializable {
 							int pdbStart,
 							int pdbEnd,
 							String alignedSeq1,
-							String alignedSeq2,
-							String markupLine,
+							String alignedSeq2,							
 							boolean hasQueryMatch,
 							List<UniProtRefWarning> queryWarnings,
 							double idCutoffUsed,
@@ -89,7 +87,6 @@ public class ChainCluster implements Serializable {
 		this.pdbEnd = pdbEnd;
 		this.pdbAlignedSeq = alignedSeq1;
 		this.refAlignedSeq = alignedSeq2;
-		this.aliMarkupLine = markupLine;
 		this.hasUniProtRef = hasQueryMatch;
 		this.uniProtRefWarnings = queryWarnings;
 		this.seqIdCutoff = idCutoffUsed;
@@ -169,14 +166,6 @@ public class ChainCluster implements Serializable {
 		this.refAlignedSeq = refAlignedSeq;
 	}
 
-	public String getAliMarkupLine() {
-		return aliMarkupLine;
-	}
-
-	public void setAliMarkupLine(String aliMarkupLine) {
-		this.aliMarkupLine = aliMarkupLine;
-	}
-	
 	public boolean isHasUniProtRef() {
 		return hasUniProtRef;
 	}
@@ -299,7 +288,6 @@ public class ChainCluster implements Serializable {
 		
 		chainCluster.setPdbAlignedSeq(chainClusterDB.getPdbAlignedSeq());
 		chainCluster.setRefAlignedSeq(chainClusterDB.getRefAlignedSeq());
-		chainCluster.setAliMarkupLine(chainClusterDB.getAliMarkupLine());
 		
 		chainCluster.setRepChain(chainClusterDB.getRepChain());
 		chainCluster.setMemberChains(chainClusterDB.getMemberChains());

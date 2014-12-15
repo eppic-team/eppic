@@ -23,7 +23,6 @@ public class ChainClusterDB implements Serializable {
 	
 	private String pdbAlignedSeq;
 	private String refAlignedSeq;
-	private String aliMarkupLine;
 	
 	private boolean hasUniProtRef;
 		
@@ -161,14 +160,6 @@ public class ChainClusterDB implements Serializable {
 
 	public void setRefAlignedSeq(String refAlignedSeq) {
 		this.refAlignedSeq = refAlignedSeq;
-	}
-
-	public String getAliMarkupLine() {
-		return aliMarkupLine;
-	}
-
-	public void setAliMarkupLine(String aliMarkupLine) {
-		this.aliMarkupLine = aliMarkupLine;
 	}
 
 	public boolean isHasUniProtRef() {

@@ -524,8 +524,6 @@ public class DataModelAdaptor {
 				chainClusterDB.setPdbEnd(cec.getPDBPosForQueryUniprotPos(cec.getQueryInterval().end));
 				
 				chainClusterDB.setPdbAlignedSeq(cec.getPdb2uniprotAln().getAlignedSequence(1).getSequenceAsString());
-				// TODO fill the markup line using Biojava
-				//chainClusterDB.setAliMarkupLine(String.valueOf(cec.getPdb2uniprotAln().getMarkupLine()));
 				chainClusterDB.setRefAlignedSeq(cec.getPdb2uniprotAln().getAlignedSequence(2).getSequenceAsString());
 				chainClusterDB.setSeqIdCutoff(cec.getIdCutoff());
 				chainClusterDB.setClusteringSeqId(cec.getUsedClusteringPercentId()/100.0);

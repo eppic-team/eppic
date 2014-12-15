@@ -159,12 +159,14 @@ public class AlignmentsGridPanel extends VerticalLayoutContainer{
 
 		String uniprotId = chainCluster.getRefUniProtId();
 
+		String markupLine = getMarkupLine(chainCluster.getPdbAlignedSeq(), chainCluster.getRefAlignedSeq());
+		
 		int nrOfCharactersPerLine = calculateNrOfCharactersPerLine(); 
 		int totalNumberOfCharacters = chainCluster.getPdbAlignedSeq().length();
 
 		int firstSequenceIndex = 1;
 		int secondSequenceIndex = 1;
-
+		
 		for(int i=0; i<totalNumberOfCharacters; i+=nrOfCharactersPerLine)
 		{
 			int firstSequenceStartIndex = firstSequenceIndex;
@@ -179,7 +181,7 @@ public class AlignmentsGridPanel extends VerticalLayoutContainer{
 
 			StringBuffer firstSequenceLine = new StringBuffer(chainCluster.getPdbAlignedSeq().substring(beginIndex, endIndex));
 			StringBuffer secondSequenceLine = new StringBuffer(chainCluster.getRefAlignedSeq().substring(beginIndex, endIndex));
-			StringBuffer markup = new StringBuffer(chainCluster.getAliMarkupLine().substring(beginIndex, endIndex));
+			StringBuffer markup = new StringBuffer(markupLine.substring(beginIndex, endIndex));
 
 			for(int j=endIndex - beginIndex - 1; j>=0; j--)
 			{
@@ -221,4 +223,32 @@ public class AlignmentsGridPanel extends VerticalLayoutContainer{
 		return dataList;
 	}
 
+	private static String getMarkupLine(String seq1, String seq2) {
+		
+		// TODO we could do all this much better with colors, dropping the markup line altogether
+		
+		// we can't do much in the client if there's an issue at this point, let's return an empty string... 
+		// TODO is there a better solution??
+		if (seq1.length()!=seq2.length()) return ""; 
+			
+		StringBuffer sb = new StringBuffer();
+		
+		for (int i=0;i<seq1.length();i++) {
+			
+			char seq1Char = seq1.charAt(i);
+			char seq2Char = seq2.charAt(i);
+			
+			if (seq1Char == '-' || seq2Char == '-') sb.append(' ');
+			
+			else if (seq1Char == seq2Char) sb.append('|');
+			
+			// we used to have 2 kind of characters here ':' or '.', with this implementation we 
+			// are thus dropping the distinction of positive match and normal match, but I think we can live with that
+
+			else sb.append('.'); 
+			
+		}
+		
+		return sb.toString();
+	}
 }
