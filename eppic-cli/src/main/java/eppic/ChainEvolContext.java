@@ -761,9 +761,17 @@ public class ChainEvolContext implements Serializable {
 		List<Double> conservationScores = getConservationScores();
 		
 		for (Group residue:chain.getAtomGroups()) {
-			// we don't need to take care of het residues, as we use the uniprot ref for the calc of entropies entropies will always be asigned even for hets
-			//if (!(residue instanceof AaResidue)) continue;
+			
+			if (residue.getPDBName().equals("HOH")) continue;
+			
 			int resser = getSeqresSerial(residue);
+			if (resser == -1) {
+				LOGGER.info("Residue {} ({}) of chain {} could not be mapped to a serial, will not set its b-factor to an entropy value",
+						residue.getResidueNumber().toString(), residue.getPDBName(), residue.getChainId());
+				continue;
+			}
+			
+			
 			int queryPos = getQueryUniprotPosForPDBPos(resser); 
  
 			if (queryPos!=-1) { 
@@ -776,6 +784,8 @@ public class ChainEvolContext implements Serializable {
 				// scaling of colors for the rest
 				// The most sensible value we can use is the max entropy so that it looks like a poorly conserved residue
 				double maxEntropy = Math.log(this.homologs.getReducedAlphabet())/Math.log(2);
+				LOGGER.info("Residue {} ({}) of chain {} has no entropy value associated to it, will set its b-factor to max entropy ({})",
+						residue.getResidueNumber().toString(), residue.getPDBName(), residue.getChainId(), maxEntropy);
 				for (Atom atom:residue.getAtoms()) {
 					atom.setTempFactor(maxEntropy);
 				}	

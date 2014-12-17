@@ -23,7 +23,6 @@ import org.biojava.bio.structure.Chain;
 import org.biojava.bio.structure.Compound;
 import org.biojava.bio.structure.Structure;
 import org.biojava.bio.structure.StructureException;
-import org.biojava.bio.structure.StructureImpl;
 import org.biojava.bio.structure.align.util.AtomCache;
 import org.biojava.bio.structure.contact.StructureInterface;
 import org.biojava.bio.structure.contact.StructureInterfaceCluster;
@@ -540,10 +539,9 @@ public class Main {
 					File chainPmlFile = params.getOutputFile("."+cec.getRepresentativeChainCode()+EppicParams.ENTROPIES_FILE_SUFFIX+".pml");
 					File chainIconPngFile = params.getOutputFile("."+cec.getRepresentativeChainCode()+EppicParams.ENTROPIES_FILE_SUFFIX+".png");
 					// TODO check that the file is written correctly like this with biojava
-					Structure s = new StructureImpl();
-					s.addChain(chain);
+										
 					PrintWriter pw = new PrintWriter(chainPdbFile);
-					pw.write(s.toPDB());
+					pw.write(chain.toPDB());
 					pw.close();
 					pr.generateChainPse(chain, interfaces, 
 							params.getCAcutoffForGeom(), params.getCAcutoffForZscore(), params.getMinAsaForSurface(),

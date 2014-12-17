@@ -15,6 +15,8 @@ import org.biojava.bio.structure.Chain;
 import org.biojava.bio.structure.Group;
 import org.biojava.bio.structure.contact.StructureInterface;
 import org.biojava.bio.structure.io.CompoundFinder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import eppic.predictors.EvolCoreRimPredictor;
 import eppic.predictors.EvolCoreSurfacePredictor;
@@ -22,6 +24,9 @@ import eppic.predictors.EvolCoreSurfacePredictor;
 public class InterfaceEvolContext implements Serializable {
 
 	private static final long serialVersionUID = 1L;
+	
+	private static final Logger LOGGER = LoggerFactory.getLogger(InterfaceEvolContext.class);
+	
 
 	// the 2 sides of the interface
 	public static final int FIRST  = 0;
@@ -263,9 +268,17 @@ public class InterfaceEvolContext implements Serializable {
 		conservationScores = getChainEvolContext(molecId).getConservationScores();
 		
 		for (Group residue:pdb.getAtomGroups()) {
-			// we don't need to take care of het residues, as we use the uniprot ref for the calc of entropies entropies will always be asigned even for hets
-			//if (!(residue instanceof AaResidue)) continue;
+			
+			if (residue.getPDBName().equals("HOH")) continue;
+
 			int resser = getChainEvolContext(molecId).getSeqresSerial(residue);
+			
+			if (resser == -1) {
+				LOGGER.info("Residue {} ({}) of chain {} could not be mapped to a serial, will not set its b-factor to an entropy value",
+						residue.getResidueNumber().toString(), residue.getPDBName(), residue.getChainId());
+				continue;
+			}
+				
 			int queryPos = getChainEvolContext(molecId).getQueryUniprotPosForPDBPos(resser); 
 			 
 			if (queryPos!=-1) {
@@ -279,6 +292,8 @@ public class InterfaceEvolContext implements Serializable {
 				// scaling of colors for the rest
 				// The most sensible value we can use is the max entropy so that it looks like a poorly conserved residue
 				double maxEntropy = Math.log(this.getChainEvolContext(molecId).getHomologs().getReducedAlphabet())/Math.log(2);
+				LOGGER.info("Residue {} ({}) of chain {} has no entropy value associated to it, will set its b-factor to max entropy ({})",
+						residue.getResidueNumber().toString(), residue.getPDBName(), residue.getChainId(), maxEntropy);
 				for (Atom atom:residue.getAtoms()) {
 					atom.setTempFactor(maxEntropy);
 				}
