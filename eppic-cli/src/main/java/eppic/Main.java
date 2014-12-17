@@ -538,7 +538,6 @@ public class Main {
 					File chainPseFile = params.getOutputFile("."+cec.getRepresentativeChainCode()+EppicParams.ENTROPIES_FILE_SUFFIX+".pse");
 					File chainPmlFile = params.getOutputFile("."+cec.getRepresentativeChainCode()+EppicParams.ENTROPIES_FILE_SUFFIX+".pml");
 					File chainIconPngFile = params.getOutputFile("."+cec.getRepresentativeChainCode()+EppicParams.ENTROPIES_FILE_SUFFIX+".png");
-					// TODO check that the file is written correctly like this with biojava
 										
 					PrintWriter pw = new PrintWriter(chainPdbFile);
 					pw.write(chain.toPDB());

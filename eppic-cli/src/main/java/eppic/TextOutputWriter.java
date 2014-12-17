@@ -135,7 +135,7 @@ public class TextOutputWriter {
 	}
 	
 	private static void printScoresHeaders(PrintStream ps) {
-		ps.printf("%7s\t%7s\t%7s\t%7s\t%9s\t","cluster","id","chains","optype","area");
+		ps.printf("%7s\t%7s\t%7s\t%7s\t%7s\t%9s\t","cluster","id","chains","optype","topo","area");
 		
 		ps.printf("\t%7s\t%7s\t%7s\t%7s\t", "sc1-gm","sc2-gm","sc-gm","call-gm");
 		ps.printf("\t%7s\t%7s\t%7s\t%7s\t", "sc1-cr","sc2-cr","sc-cr","call-cr");
@@ -147,12 +147,18 @@ public class TextOutputWriter {
 	
 	private void printInterfaceScores(PrintStream ps, InterfaceDB interfaceItem) {
 
+		String topology = "";
+		// the 2 conditions can't be true at the same time
+		if (interfaceItem.isInfinite()) topology = "inf";
+		if (interfaceItem.isIsologous()) topology ="iso";
+		
 		// common info
-		ps.printf("%7d\t%7d\t%7s\t%7s\t%9.2f\t",
+		ps.printf("%7d\t%7d\t%7s\t%7s\t%7s\t%9.2f\t",
 				interfaceItem.getClusterId(),
 				interfaceItem.getInterfaceId(), 				 
 				interfaceItem.getChain1()+"+"+interfaceItem.getChain2(),
 				interfaceItem.getOperatorType(),
+				topology,
 				interfaceItem.getArea());
 		
 		InterfaceScoreDB interfaceScoreGm = interfaceItem.getInterfaceScore(ScoringMethod.EPPIC_GEOMETRY);
@@ -208,9 +214,10 @@ public class TextOutputWriter {
 
 	private void printInterfaceClusterScores(PrintStream ps, InterfaceClusterDB interfaceCluster) {
 		// common info
-		ps.printf("%7d\t%7s\t%7s\t%7s\t%9.2f\t",
+		ps.printf("%7d\t%7s\t%7s\t%7s\t%7s\t%9.2f\t",
 				interfaceCluster.getClusterId(),
 				"-------", 				 
+				"-------",
 				"-------",
 				"------>",
 				interfaceCluster.getAvgArea());
