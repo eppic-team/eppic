@@ -13,8 +13,8 @@ import org.apache.commons.math.random.RandomDataImpl;
 import org.biojava.bio.structure.Atom;
 import org.biojava.bio.structure.Chain;
 import org.biojava.bio.structure.Group;
+import org.biojava.bio.structure.StructureTools;
 import org.biojava.bio.structure.contact.StructureInterface;
-import org.biojava.bio.structure.io.CompoundFinder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -240,8 +240,8 @@ public class InterfaceEvolContext implements Serializable {
 	public void writePdbFile(File file) throws IOException {
 		
 		
-		if (CompoundFinder.isProtein(interf.getMolecules().getFirst()[0].getGroup().getChain()) && 
-			CompoundFinder.isProtein(interf.getMolecules().getSecond()[0].getGroup().getChain())) {
+		if (StructureTools.isProtein(interf.getMolecules().getFirst()[0].getGroup().getChain()) && 
+				StructureTools.isProtein(interf.getMolecules().getSecond()[0].getGroup().getChain())) {
 
 			setConservationScoresAsBfactors(FIRST);
 			setConservationScoresAsBfactors(SECOND);
@@ -311,9 +311,9 @@ public class InterfaceEvolContext implements Serializable {
 	
 	public boolean isProtein(int molecId) {
 		if (molecId==FIRST) {
-			return CompoundFinder.isProtein(interf.getMolecules().getFirst()[0].getGroup().getChain());
+			return StructureTools.isProtein(interf.getMolecules().getFirst()[0].getGroup().getChain());
 		} else if (molecId==SECOND) {
-			return CompoundFinder.isProtein(interf.getMolecules().getSecond()[0].getGroup().getChain());
+			return StructureTools.isProtein(interf.getMolecules().getSecond()[0].getGroup().getChain());
 		} else {
 			throw new IllegalArgumentException("Fatal error! Wrong molecId "+molecId);
 		}

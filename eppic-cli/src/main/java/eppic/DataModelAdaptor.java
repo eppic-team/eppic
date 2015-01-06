@@ -15,6 +15,7 @@ import org.biojava.bio.structure.Compound;
 import org.biojava.bio.structure.Group;
 import org.biojava.bio.structure.PDBCrystallographicInfo;
 import org.biojava.bio.structure.Structure;
+import org.biojava.bio.structure.StructureTools;
 import org.biojava.bio.structure.asa.GroupAsa;
 import org.biojava.bio.structure.contact.AtomContact;
 import org.biojava.bio.structure.contact.GroupContact;
@@ -22,7 +23,6 @@ import org.biojava.bio.structure.contact.GroupContactSet;
 import org.biojava.bio.structure.contact.StructureInterface;
 import org.biojava.bio.structure.contact.StructureInterfaceCluster;
 import org.biojava.bio.structure.contact.StructureInterfaceList;
-import org.biojava.bio.structure.io.CompoundFinder;
 import org.biojava.bio.structure.xtal.CrystalCell;
 import org.biojava.bio.structure.xtal.SpaceGroup;
 
@@ -761,7 +761,7 @@ public class DataModelAdaptor {
 		if (molecId == FIRST) chain =  interf.getMolecules().getFirst()[0].getGroup().getChain();
 		else if (molecId == SECOND) chain = interf.getMolecules().getSecond()[0].getGroup().getChain();
 		
-		if (CompoundFinder.isProtein(chain)) {
+		if (StructureTools.isProtein(chain)) {
 			
 			for (Group group:chain.getAtomGroups()) {
 				
@@ -842,7 +842,7 @@ public class DataModelAdaptor {
 				mol = interf.getMolecules().getSecond()[0].getGroup().getChain();
 			}
 
-			if ( CompoundFinder.isProtein(mol) ) {
+			if ( StructureTools.isProtein(mol) ) {
 				 
 				List<Double> entropies = null;
 				if (cec.hasQueryMatch()) 
