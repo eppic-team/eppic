@@ -762,7 +762,7 @@ public class ChainEvolContext implements Serializable {
 		
 		for (Group residue:chain.getAtomGroups()) {
 			
-			if (residue.getPDBName().equals("HOH")) continue;
+			if (residue.isWater()) continue;
 			
 			int resser = getSeqresSerial(residue);
 			if (resser == -1) {

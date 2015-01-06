@@ -269,7 +269,7 @@ public class InterfaceEvolContext implements Serializable {
 		
 		for (Group residue:pdb.getAtomGroups()) {
 			
-			if (residue.getPDBName().equals("HOH")) continue;
+			if (residue.isWater()) continue;
 
 			int resser = getChainEvolContext(molecId).getSeqresSerial(residue);
 			
