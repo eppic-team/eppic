@@ -366,8 +366,8 @@ public class Main {
 
 		// writing to the model: for the webui and csv output files
 		modelAdaptor.setInterfaces(interfaces); // this writes all interface geom info, including h-bonds, disulfides etc
-		// TODO pass the biounit annotation to the model adaptor
-		//modelAdaptor.setPdbBioUnits(this.pdb.getPdbBioUnitList());
+		// since the move to Biojava, we have decided to take the first PDB-annotated biounit ONLY, whatever its type
+		modelAdaptor.setPdbBioUnits(this.pdb.getPDBHeader().getBioUnitTranformationMap().get(EppicParams.PDB_BIOUNIT_TO_USE));
 		modelAdaptor.setGeometryScores(gps, gcps);
 		modelAdaptor.setResidueDetails(interfaces);
 		
