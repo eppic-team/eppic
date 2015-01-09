@@ -284,26 +284,18 @@ public class TextOutputWriter {
 		List<InterfaceClusterDB> interfaceClusters = pdbInfo.getInterfaceClusters();
 		
 		AssemblyDB eppicAssembly = pdbInfo.getAssembly(ScoringMethod.EPPIC_FINAL);
-		AssemblyDB pisaAssembly = pdbInfo.getAssembly(ScoringMethod.PISA);
-		AssemblyDB authorsAssembly = pdbInfo.getAssembly(ScoringMethod.AUTHORS);
-		AssemblyDB pqsAssembly = pdbInfo.getAssembly(ScoringMethod.PQS);
+		AssemblyDB pdb1Assembly = pdbInfo.getAssembly(DataModelAdaptor.PDB_BIOUNIT_METHOD);
 		
 		int eppicAssemblySize = 0;
-		int pisaAssemblySize = 0;
-		int authorsAssemblySize = 0;
-		int pqsAssemblySize = 0;
+		int pdb1AssemblySize = 0;
 		
 		if (eppicAssembly!=null) eppicAssemblySize = eppicAssembly.getMmSize();
-		if (pisaAssembly!=null) pisaAssemblySize = pisaAssembly.getMmSize();
-		if (authorsAssembly!=null) authorsAssemblySize = authorsAssembly.getMmSize();
-		if (pqsAssembly!=null) pqsAssemblySize = pqsAssembly.getMmSize();
+		if (pdb1Assembly!=null) pdb1AssemblySize = pdb1Assembly.getMmSize();
 		
-		ps.printf("%7s\t%12s\t%10s\t%10s\t%10s\t%10s\n",
+		ps.printf("%7s\t%12s\t%10s\t%10s\n",
 				"clustId","members",
 				ScoringMethod.EPPIC_FINAL + "("+eppicAssemblySize+")",
-				ScoringMethod.PISA        + "("+pisaAssemblySize+")",
-				ScoringMethod.AUTHORS     + "("+authorsAssemblySize+")",
-				ScoringMethod.PQS         + "("+pqsAssemblySize+")"); 
+				DataModelAdaptor.PDB_BIOUNIT_METHOD         + "("+pdb1AssemblySize+")"); 
 		
 		for (InterfaceClusterDB interfaceCluster:interfaceClusters) {
 			String membersStr = "";
@@ -314,24 +306,12 @@ public class TextOutputWriter {
 
 			
 			InterfaceClusterScoreDB icsEppic = interfaceCluster.getInterfaceClusterScore(ScoringMethod.EPPIC_FINAL);
-			InterfaceClusterScoreDB icsPisa = interfaceCluster.getInterfaceClusterScore(ScoringMethod.PISA);			
-			InterfaceClusterScoreDB icsAuthors = interfaceCluster.getInterfaceClusterScore(ScoringMethod.AUTHORS);
-			InterfaceClusterScoreDB icsPqs = interfaceCluster.getInterfaceClusterScore(ScoringMethod.PQS);
+			InterfaceClusterScoreDB icsPqs = interfaceCluster.getInterfaceClusterScore(DataModelAdaptor.PDB_BIOUNIT_METHOD);
 			
 			if (icsEppic==null) {
 				ps.printf("%10s\t","");
 			} else {
 				ps.printf("%10s\t",icsEppic.getCallName());
-			}
-			if (icsPisa==null) {
-				ps.printf("%10s\t","");
-			} else {
-				ps.printf("%10s\t",icsPisa.getCallName());
-			}
-			if (icsAuthors==null) {
-				ps.printf("%10s\t","");
-			} else {
-				ps.printf("%10s\t",icsAuthors.getCallName());
 			}
 			if (icsPqs==null) {
 				ps.printf("%10s","");
@@ -554,5 +534,6 @@ public class TextOutputWriter {
 			}
 		}
 	}
+
 	
 }

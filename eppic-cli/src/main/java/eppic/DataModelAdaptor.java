@@ -72,7 +72,7 @@ public class DataModelAdaptor {
 	
 	private static final double NO_BURIAL_AVAILABLE = -1.0;
 	
-	private static final String PDB_BIOUNIT_METHOD = "pdb1";
+	public static final String PDB_BIOUNIT_METHOD = "pdb1";
 	
 	private PdbInfoDB pdbInfo;
 	
