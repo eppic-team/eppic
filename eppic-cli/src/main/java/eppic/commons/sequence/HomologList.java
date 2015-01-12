@@ -211,8 +211,7 @@ public class HomologList implements  Serializable {//Iterable<UniprotHomolog>,
 					Goodies.gzipFile(outBlast, cacheFile);
 					cacheFile.setWritable(true, false);
 				} catch (IOException e) {
-					LOGGER.error("Couldn't write the blast cache file "+cacheFile);
-					LOGGER.error(e.getMessage());
+					LOGGER.warn("Couldn't write the blast cache file "+cacheFile+". Error: "+e.getMessage());
 				}
 			} 
 			try {
@@ -246,11 +245,11 @@ public class HomologList implements  Serializable {//Iterable<UniprotHomolog>,
 								uniref.setUniparcId(uniId);
 								list.add(new Homolog(hsp,uniref));
 							} else {
-								LOGGER.warn("Ignoring blast hit "+uniId+" because it is a UniParc id.");
+								LOGGER.info("Ignoring blast hit "+uniId+" because it is a UniParc id.");
 							}
 						}
 						else if (uniId.contains("-")) {
-							LOGGER.warn("Ignoring blast hit "+uniId+" because it is a UniProt isoform id.");
+							LOGGER.info("Ignoring blast hit "+uniId+" because it is a UniProt isoform id.");
 						}
 						else {	
 							UnirefEntry uniref = new UnirefEntry();
@@ -541,7 +540,7 @@ public class HomologList implements  Serializable {//Iterable<UniprotHomolog>,
 				writeAlignmentToFile(alnCacheFile);
 				LOGGER.info("Writing alignment cache file "+alnCacheFile);
 			} catch(FileNotFoundException e) {
-				LOGGER.error("Couldn't write alignment cache file "+alnCacheFile);
+				LOGGER.warn("Couldn't write alignment cache file "+alnCacheFile+". Error: "+e.getMessage());
 			}
 		}
 
