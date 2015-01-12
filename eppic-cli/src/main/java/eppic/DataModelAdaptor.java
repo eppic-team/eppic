@@ -25,7 +25,7 @@ import org.biojava.bio.structure.contact.GroupContactSet;
 import org.biojava.bio.structure.contact.StructureInterface;
 import org.biojava.bio.structure.contact.StructureInterfaceCluster;
 import org.biojava.bio.structure.contact.StructureInterfaceList;
-import org.biojava.bio.structure.quaternary.BiologicalAssemblyTransformation;
+import org.biojava.bio.structure.quaternary.BioAssemblyInfo;
 import org.biojava.bio.structure.xtal.CrystalCell;
 import org.biojava.bio.structure.xtal.SpaceGroup;
 
@@ -253,18 +253,16 @@ public class DataModelAdaptor {
 		
 	}
 	
-	public void setPdbBioUnits(List<BiologicalAssemblyTransformation> bioAssemblyTransfs, CrystalCell cell) {
+	public void setPdbBioUnits(BioAssemblyInfo bioAssembly, CrystalCell cell) {
 		
 		// since the move to Biojava, we have decided to take the first PDB-annotated biounit ONLY whatever its type
 
-		Set<Integer> matchingClusterIds = matchToInterfaceClusters(bioAssemblyTransfs, cell);		
+		Set<Integer> matchingClusterIds = matchToInterfaceClusters(bioAssembly, cell);		
 		
 
 		AssemblyDB assembly = new AssemblyDB();			
 		assembly.setMethod(PDB_BIOUNIT_METHOD);
-		// TODO is the size of the assembly correctly found like this???
-		//      Since there is a transformation per chain, I think it should be fine, but we have to double-check
-		assembly.setMmSize(bioAssemblyTransfs.size());
+		assembly.setMmSize(bioAssembly.getMacromolecularSize());
 		assembly.setPdbCode(pdbInfo.getPdbCode());			
 		assembly.setConfidence(CONFIDENCE_NOT_AVAILABLE);
 
@@ -329,7 +327,7 @@ public class DataModelAdaptor {
 	 * @param bioUnit
 	 * @return the list of matching cluster ids
 	 */
-	private Set<Integer> matchToInterfaceClusters(List<BiologicalAssemblyTransformation> bioUnit, CrystalCell cell) {
+	private Set<Integer> matchToInterfaceClusters(BioAssemblyInfo bioUnit, CrystalCell cell) {
 
 		// the Set will eliminate duplicates if any found, I'm not sure if duplicates are even possible really...
 		Set<Integer> matchingClusterIds = new TreeSet<Integer>();

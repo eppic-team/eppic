@@ -5,7 +5,7 @@ import java.util.List;
 
 import javax.vecmath.Matrix4d;
 
-import org.biojava.bio.structure.quaternary.BiologicalAssemblyTransformation;
+import org.biojava.bio.structure.quaternary.BioAssemblyInfo;
 import org.biojava.bio.structure.xtal.CrystalCell;
 import org.biojava.bio.structure.xtal.SpaceGroup;
 
@@ -110,23 +110,23 @@ public class SimpleInterface {
 	}
 	
 	public static List<SimpleInterface> createSimpleInterfaceListFromPdbBioUnit(
-			List<BiologicalAssemblyTransformation> bioUnit, CrystalCell cell) {
+			BioAssemblyInfo bioUnit, CrystalCell cell) {
 	
 		List<SimpleInterface> list = new ArrayList<SimpleInterface>();
 		
 		int id = 1;
 		
-		for (int i = 0; i<bioUnit.size(); i++) {
-			for (int j = 0; j<bioUnit.size(); j++) {
+		for (int i = 0; i<bioUnit.getTransforms().size(); i++) {
+			for (int j = 0; j<bioUnit.getTransforms().size(); j++) {
 				if (j>i) {
-					String iChain = bioUnit.get(i).getChainId();
-					String jChain = bioUnit.get(j).getChainId();
-					Matrix4d iOp = bioUnit.get(i).getTransformationMatrix();
-					Matrix4d jOp = bioUnit.get(j).getTransformationMatrix();
+					String iChain = bioUnit.getTransforms().get(i).getChainId();
+					String jChain = bioUnit.getTransforms().get(j).getChainId();
+					Matrix4d iOp = bioUnit.getTransforms().get(i).getTransformationMatrix();
+					Matrix4d jOp = bioUnit.getTransforms().get(j).getTransformationMatrix();
 					if (cell!=null) {
 						// note: the Biojava provided transf matrix is in orthonormal frame (as it is in PDB/mmCIF files)
-						iOp = cell.transfToCrystal(bioUnit.get(i).getTransformationMatrix());
-						jOp = cell.transfToCrystal(bioUnit.get(j).getTransformationMatrix());
+						iOp = cell.transfToCrystal(bioUnit.getTransforms().get(i).getTransformationMatrix());
+						jOp = cell.transfToCrystal(bioUnit.getTransforms().get(j).getTransformationMatrix());
 					}
 					SimpleInterface si = new SimpleInterface();
 					si.setChain1(iChain);

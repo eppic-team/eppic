@@ -85,6 +85,8 @@ public class Main {
 
 		// TODO for some reason (bug?) log4j2 2.1 produces a file named with the log4j2.xml $pointer, the only fix I know for now is to remove it manually
 		new File("${sys:logFilename}").deleteOnExit();
+		// some program that we run (which one???) produces an empty error.log file, let's also remove it here
+		new File("error.log").deleteOnExit();
 
 		if (params.getProgressLogFile()!=null) {
 			// the steps log file needed for the server, we only initialise it if a -L progress log file was passed (as that is only used by server)
@@ -369,7 +371,7 @@ public class Main {
 		// writing to the model: for the webui and csv output files
 		modelAdaptor.setInterfaces(interfaces); // this writes all interface geom info, including h-bonds, disulfides etc
 		// since the move to Biojava, we have decided to take the first PDB-annotated biounit ONLY, whatever its type
-		modelAdaptor.setPdbBioUnits(pdb.getPDBHeader().getBioUnitTranformationMap().get(EppicParams.PDB_BIOUNIT_TO_USE),
+		modelAdaptor.setPdbBioUnits(pdb.getPDBHeader().getBioAssemblies().get(EppicParams.PDB_BIOUNIT_TO_USE),
 				(pdb.getCrystallographicInfo()==null?null:pdb.getCrystallographicInfo().getCrystalCell()) );
 		modelAdaptor.setGeometryScores(gps, gcps);
 		modelAdaptor.setResidueDetails(interfaces);
