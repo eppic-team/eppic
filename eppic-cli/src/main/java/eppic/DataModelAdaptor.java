@@ -253,11 +253,11 @@ public class DataModelAdaptor {
 		
 	}
 	
-	public void setPdbBioUnits(List<BiologicalAssemblyTransformation> bioAssemblyTransfs) {
+	public void setPdbBioUnits(List<BiologicalAssemblyTransformation> bioAssemblyTransfs, CrystalCell cell) {
 		
 		// since the move to Biojava, we have decided to take the first PDB-annotated biounit ONLY whatever its type
 
-		Set<Integer> matchingClusterIds = matchToInterfaceClusters(bioAssemblyTransfs);		
+		Set<Integer> matchingClusterIds = matchToInterfaceClusters(bioAssemblyTransfs, cell);		
 		
 
 		AssemblyDB assembly = new AssemblyDB();			
@@ -329,12 +329,12 @@ public class DataModelAdaptor {
 	 * @param bioUnit
 	 * @return the list of matching cluster ids
 	 */
-	private Set<Integer> matchToInterfaceClusters(List<BiologicalAssemblyTransformation> bioUnit) {
+	private Set<Integer> matchToInterfaceClusters(List<BiologicalAssemblyTransformation> bioUnit, CrystalCell cell) {
 
 		// the Set will eliminate duplicates if any found, I'm not sure if duplicates are even possible really...
 		Set<Integer> matchingClusterIds = new TreeSet<Integer>();
 
-		List<SimpleInterface> bioUnitInterfaces = SimpleInterface.createSimpleInterfaceListFromPdbBioUnit(bioUnit);
+		List<SimpleInterface> bioUnitInterfaces = SimpleInterface.createSimpleInterfaceListFromPdbBioUnit(bioUnit, cell);
 		InterfaceMatcher im = new InterfaceMatcher(pdbInfo.getInterfaceClusters(),bioUnitInterfaces);
 		for (InterfaceClusterDB ic:pdbInfo.getInterfaceClusters()) {
 			for (InterfaceDB i:ic.getInterfaces()) {

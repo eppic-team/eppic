@@ -369,7 +369,8 @@ public class Main {
 		// writing to the model: for the webui and csv output files
 		modelAdaptor.setInterfaces(interfaces); // this writes all interface geom info, including h-bonds, disulfides etc
 		// since the move to Biojava, we have decided to take the first PDB-annotated biounit ONLY, whatever its type
-		modelAdaptor.setPdbBioUnits(this.pdb.getPDBHeader().getBioUnitTranformationMap().get(EppicParams.PDB_BIOUNIT_TO_USE));
+		modelAdaptor.setPdbBioUnits(pdb.getPDBHeader().getBioUnitTranformationMap().get(EppicParams.PDB_BIOUNIT_TO_USE),
+				(pdb.getCrystallographicInfo()==null?null:pdb.getCrystallographicInfo().getCrystalCell()) );
 		modelAdaptor.setGeometryScores(gps, gcps);
 		modelAdaptor.setResidueDetails(interfaces);
 		
