@@ -3,8 +3,11 @@ package eppic.db;
 import java.util.HashSet;
 import java.util.List;
 
-import owl.core.sequence.alignment.PairwiseSequenceAlignment;
-import edu.uci.ics.jung.graph.util.Pair;
+import org.biojava.bio.structure.contact.Pair;
+import org.biojava3.alignment.template.SequencePair;
+import org.biojava3.core.sequence.ProteinSequence;
+import org.biojava3.core.sequence.compound.AminoAcidCompound;
+
 import eppic.model.ContactDB;
 
 public class ContactSet {
@@ -12,14 +15,14 @@ public class ContactSet {
 	private HashSet<Pair<SimpleResidue>> directSet;
 	private HashSet<Pair<SimpleResidue>> inverseSet;
 
-	private PairwiseSequenceAlignment aln11;
-	private PairwiseSequenceAlignment aln22;
-	private PairwiseSequenceAlignment aln12;
-	private PairwiseSequenceAlignment aln21;
+	private SequencePair<ProteinSequence,AminoAcidCompound> aln11;
+	private SequencePair<ProteinSequence,AminoAcidCompound> aln22;
+	private SequencePair<ProteinSequence,AminoAcidCompound> aln12;
+	private SequencePair<ProteinSequence,AminoAcidCompound> aln21;
 	
 	public ContactSet(List<ContactDB> contacts, 
-			PairwiseSequenceAlignment aln11, PairwiseSequenceAlignment aln22,
-			PairwiseSequenceAlignment aln12, PairwiseSequenceAlignment aln21 ) {
+			SequencePair<ProteinSequence,AminoAcidCompound> aln11, SequencePair<ProteinSequence,AminoAcidCompound> aln22,
+			SequencePair<ProteinSequence,AminoAcidCompound> aln12, SequencePair<ProteinSequence,AminoAcidCompound> aln21 ) {
 		
 		this.directSet = new HashSet<Pair<SimpleResidue>>();
 		this.inverseSet = new HashSet<Pair<SimpleResidue>>();
@@ -63,9 +66,9 @@ public class ContactSet {
 			// second contact in comparison: we need both direct and inverted contact and mapping via alignments 
 			// in both direct and inverse cases
 			
-			// direct
-			int resSerial1 = aln11.getMapping2To1(contact.getFirstResNumber()-1) + 1 ;
-			int resSerial2 = aln22.getMapping2To1(contact.getSecondResNumber()-1) + 1 ;
+			// direct			
+			int resSerial1 = getMapping2To1(aln11, contact.getFirstResNumber());
+			int resSerial2 = getMapping2To1(aln22, contact.getSecondResNumber());
 			//TODO if they map to -1 that means they map to gap: what to do then?
 
 			
@@ -77,8 +80,8 @@ public class ContactSet {
 			
 			
 			// inverse
-			resSerial1 = aln21.getMapping2To1(contact.getFirstResNumber()-1) + 1 ;
-			resSerial2 = aln12.getMapping2To1(contact.getSecondResNumber()-1) + 1 ;
+			resSerial1 = getMapping2To1(aln21, contact.getFirstResNumber());
+			resSerial2 = getMapping2To1(aln12, contact.getSecondResNumber());
 			//TODO if they map to -1 that means they map to gap: what to do then?
 
 			
@@ -103,6 +106,17 @@ public class ContactSet {
 		
 		
 		
+	}
+	
+	private static int getMapping2To1(SequencePair<ProteinSequence, AminoAcidCompound> aln, int resNumber) {
+		
+		int alnIdx = aln.getTarget().getAlignmentIndexAt(resNumber);
+		if (aln.hasGap(alnIdx)) {
+			return -1;
+		} else {
+			return aln.getIndexInQueryAt(alnIdx);
+		}
+
 	}
 	
 	public static void main(String[] args) {

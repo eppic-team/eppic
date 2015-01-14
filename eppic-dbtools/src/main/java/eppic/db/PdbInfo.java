@@ -5,9 +5,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import owl.core.sequence.alignment.PairwiseSequenceAlignment;
-import owl.core.sequence.alignment.PairwiseSequenceAlignment.PairwiseSequenceAlignmentException;
-import edu.uci.ics.jung.graph.util.Pair;
+import org.biojava.bio.structure.contact.Pair;
+import org.biojava3.alignment.NeedlemanWunsch;
+import org.biojava3.alignment.SimpleGapPenalty;
+import org.biojava3.alignment.SubstitutionMatrixHelper;
+import org.biojava3.alignment.template.GapPenalty;
+import org.biojava3.alignment.template.SequencePair;
+import org.biojava3.alignment.template.SubstitutionMatrix;
+import org.biojava3.core.exceptions.CompoundNotFoundException;
+import org.biojava3.core.sequence.ProteinSequence;
+import org.biojava3.core.sequence.compound.AminoAcidCompound;
+
 import eppic.model.ChainClusterDB;
 import eppic.model.InterfaceClusterDB;
 import eppic.model.InterfaceDB;
@@ -99,14 +107,14 @@ public class PdbInfo {
 	}
 	
 	public LatticeMatchMatrix calcLatticeOverlapMatrix(PdbInfo other, SeqClusterLevel seqClusterLevel, double minArea, boolean debug) 
-			throws PairwiseSequenceAlignmentException {
+			 {
 	
-		Map<Pair<String>,PairwiseSequenceAlignment> map = getAlignmentsPool(other, seqClusterLevel);
+		Map<Pair<String>,SequencePair<ProteinSequence,AminoAcidCompound>> map = getAlignmentsPool(other, seqClusterLevel);
 		
 		if (debug) {
 			for (Pair<String> pair:map.keySet()) {
 				System.out.println(pair.getFirst()+"-"+pair.getSecond());
-				map.get(pair).printAlignment();
+				System.out.println(map.get(pair).toString(100));
 			}
 		}
 		
@@ -133,12 +141,11 @@ public class PdbInfo {
 	 * @param other
 	 * @param seqClusterLevel
 	 * @return
-	 * @throws PairwiseSequenceAlignmentException
 	 */
-	private Map<Pair<String>,PairwiseSequenceAlignment> getAlignmentsPool(PdbInfo other, SeqClusterLevel seqClusterLevel) 
-			throws PairwiseSequenceAlignmentException {
+	private Map<Pair<String>,SequencePair<ProteinSequence,AminoAcidCompound>> getAlignmentsPool(PdbInfo other, SeqClusterLevel seqClusterLevel) 
+		 {
 		
-		Map<Pair<String>,PairwiseSequenceAlignment> map = new HashMap<Pair<String>,PairwiseSequenceAlignment>();
+		Map<Pair<String>,SequencePair<ProteinSequence,AminoAcidCompound>> map = new HashMap<Pair<String>,SequencePair<ProteinSequence,AminoAcidCompound>>();
 		for (ChainCluster thisChainCluster:this.getChainClusters()) {
 			
 			if (thisChainCluster.getChainCluster().getPdbAlignedSeq()==null) continue;
@@ -151,7 +158,35 @@ public class PdbInfo {
 					if (otherChainCluster.getChainCluster().getPdbAlignedSeq()==null) continue;
 					
 					String otherSeq = otherChainCluster.getChainCluster().getPdbAlignedSeq().replace("-", "");
-					PairwiseSequenceAlignment aln = new PairwiseSequenceAlignment(thisSeq, otherSeq, "first" , "second");
+					
+					
+					SubstitutionMatrix<AminoAcidCompound> matrix = SubstitutionMatrixHelper.getBlosum50();
+					GapPenalty penalty = new SimpleGapPenalty((short)8,(short)1);
+
+					// before move to Biojava, we had as tags of the sequences:  "first" and "second"
+					ProteinSequence s1 = null; 
+					ProteinSequence s2 = null; 
+					try {
+						s1 = new ProteinSequence(thisSeq);
+						s2 = new ProteinSequence(otherSeq);
+					} catch (CompoundNotFoundException e) {
+						System.err.println("Non-protein characters in one of the sequences! "+e.getMessage());
+						System.err.println("Sequences are: ");
+						System.err.println(
+								thisChainCluster.getChainCluster().getPdbCode() + 
+								thisChainCluster.getChainCluster().getRepChain()+ ": "+thisSeq);
+						System.err.println(
+								otherChainCluster.getChainCluster().getPdbCode() + 
+								otherChainCluster.getChainCluster().getRepChain()+ ": "+otherSeq);
+						System.err.println("This should not happen. Exiting...");
+						System.exit(1);
+					}
+
+					NeedlemanWunsch<ProteinSequence,AminoAcidCompound> nw = 
+							new NeedlemanWunsch<ProteinSequence,AminoAcidCompound>(s1,s2, penalty, matrix);
+					
+					SequencePair<ProteinSequence,AminoAcidCompound> aln = nw.getPair(); 
+
 					Pair<String> pair = new Pair<String>(thisChainCluster.getChainCluster().getRepChain(),
 														 otherChainCluster.getChainCluster().getRepChain());
 					map.put(pair, aln);

@@ -2,8 +2,11 @@ package eppic.db;
 
 import java.util.Map;
 
-import owl.core.sequence.alignment.PairwiseSequenceAlignment;
-import edu.uci.ics.jung.graph.util.Pair;
+import org.biojava.bio.structure.contact.Pair;
+import org.biojava3.alignment.template.SequencePair;
+import org.biojava3.core.sequence.ProteinSequence;
+import org.biojava3.core.sequence.compound.AminoAcidCompound;
+
 import eppic.model.InterfaceDB;
 
 public class Interface {
@@ -89,7 +92,7 @@ public class Interface {
 		return null;
 	}
 	
-	public double calcInterfaceOverlap(Interface other, Map<Pair<String>,PairwiseSequenceAlignment> alnPool, SeqClusterLevel seqClusterLevel, boolean debug) {
+	public double calcInterfaceOverlap(Interface other, Map<Pair<String>,SequencePair<ProteinSequence,AminoAcidCompound>> alnPool, SeqClusterLevel seqClusterLevel, boolean debug) {
 		
 		InterfaceComparator csComp = new InterfaceComparator(this,other,alnPool,seqClusterLevel);
 		csComp.setDebug(debug);

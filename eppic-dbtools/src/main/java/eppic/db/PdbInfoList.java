@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import owl.core.sequence.alignment.PairwiseSequenceAlignment.PairwiseSequenceAlignmentException;
 import eppic.model.PdbInfoDB;
 
 public class PdbInfoList {
@@ -22,7 +21,7 @@ public class PdbInfoList {
 		}		
 	}
 	
-	public LatticeComparisonGroup calcLatticeOverlapMatrix(SeqClusterLevel seqClusterLevel, double coCutoff, double minArea) throws PairwiseSequenceAlignmentException {
+	public LatticeComparisonGroup calcLatticeOverlapMatrix(SeqClusterLevel seqClusterLevel, double coCutoff, double minArea) {
 		
 		LatticeComparisonGroup cfCompare = new LatticeComparisonGroup(this, minArea);
 		

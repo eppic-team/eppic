@@ -3,7 +3,8 @@ package eppic.db;
 import java.util.ArrayList;
 import java.util.List;
 
-import edu.uci.ics.jung.graph.util.Pair;
+import org.biojava.bio.structure.contact.Pair;
+
 
 public class LatticeMatchMatrix {
 

@@ -5,7 +5,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import owl.core.util.SingleLinkageClusterer;
+import org.biojava3.core.util.SingleLinkageClusterer;
+
 
 
 /**

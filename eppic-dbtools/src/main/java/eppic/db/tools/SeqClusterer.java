@@ -1,4 +1,4 @@
-package eppic.tools;
+package eppic.db.tools;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -9,8 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import owl.core.runners.blast.BlastException;
-import owl.core.runners.blast.BlastRunner;
+import eppic.commons.blast.BlastException;
+import eppic.commons.blast.BlastRunner;
 import eppic.model.ChainClusterDB;
 
 public class SeqClusterer {

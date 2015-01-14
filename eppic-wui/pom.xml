@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>ch.systemsx.sybit</groupId>
+		<groupId>org.eppic-web</groupId>
 		<artifactId>eppic</artifactId>
 		<version>3.0-SNAPSHOT</version>
 	</parent>
@@ -16,13 +16,13 @@
 
 		<!-- main dependency: eppic package -->
 		<dependency>
-			<groupId>ch.systemsx.sybit</groupId>
+			<groupId>org.eppic-web</groupId>
 			<artifactId>eppic-model</artifactId>
 			<version>${project.version}</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
-			<groupId>ch.systemsx.sybit</groupId>
+			<groupId>org.eppic-web</groupId>
 			<artifactId>eppic-cli</artifactId>
 			<version>${project.version}</version>
 			<scope>compile</scope>

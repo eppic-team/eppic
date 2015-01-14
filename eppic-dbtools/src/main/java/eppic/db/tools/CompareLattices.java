@@ -1,6 +1,7 @@
 package eppic.db.tools;
 
-import edu.uci.ics.jung.graph.util.Pair;
+import org.biojava.bio.structure.contact.Pair;
+
 import eppic.db.LatticeMatchMatrix;
 import eppic.db.LatticeOverlapScore;
 import eppic.db.PdbInfo;

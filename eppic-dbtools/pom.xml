@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>ch.systemsx.sybit</groupId>
+		<groupId>org.eppic-web</groupId>
 		<artifactId>eppic</artifactId>
 		<version>3.0-SNAPSHOT</version>
 	</parent>
@@ -14,10 +14,17 @@
 
 	<dependencies>
 
-		<!-- main dependency: eppic package -->
+		<!-- main dependency: eppic model package -->
 		<dependency>
-			<groupId>ch.systemsx.sybit</groupId>
+			<groupId>org.eppic-web</groupId>
 			<artifactId>eppic-model</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<!-- some other things are needed from eppic-cli package (including some of biojava) -->
+		<dependency>
+			<groupId>org.eppic-web</groupId>
+			<artifactId>eppic-cli</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
@@ -49,30 +56,40 @@
 		</dependency>
 
 
-		<dependency>
-			<groupId>log4j</groupId>
-			<artifactId>log4j</artifactId>
-			<version>1.2.16</version>
-		</dependency>
+		<!-- logging -->
+
 		<dependency>
 			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-log4j12</artifactId>
-			<version>1.6.1</version>
+			<artifactId>slf4j-api</artifactId>
+			<version>${slf4j.version}</version>
+		</dependency>
+		<!-- binding for log4j 2 -->
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-slf4j-impl</artifactId>
+			<version>${log4j.version}</version>
+			<scope>compile</scope>
+		</dependency>
+		<!-- Log4j API and Core implementation required for binding -->
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-api</artifactId>
+			<version>${log4j.version}</version>
+			<scope>compile</scope>
 		</dependency>
 		<dependency>
-			<groupId>net.sf.jung</groupId>
-			<artifactId>jung-api</artifactId>
-			<version>2.0.1</version>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-core</artifactId>
+			<version>${log4j.version}</version>
+			<scope>compile</scope>
 		</dependency>
+		
+		
+		
 		<dependency>
 			<groupId>gnu.getopt</groupId>
 			<artifactId>java-getopt</artifactId>
 			<version>1.0.13</version>
-		</dependency>
-		<dependency>
-			<groupId>org.owl</groupId>
-			<artifactId>owl</artifactId>
-			<version>2.1.2-SNAPSHOT</version>
 		</dependency>
 		<!-- Test dependencies -->
 		<dependency>
@@ -128,26 +145,10 @@
 						<configuration>
 	              			<artifactSet>
 	                			<excludes>
-	                  				<!-- excluding jars that are only needed for some non-core owl packages and not for eppic CLI -->
-	                  				<exclude>batik</exclude>	                  				
-	                  				<exclude>us.levk</exclude> <!-- drmaa -->
 	                  				
 	                  				<!--  excluding the uniprot japi jar, there's no point in including it in the uber-jar for 
 	                  				      distribution, since it gets updated every month. It has to be downloaded by the user -->	                  				
 	                  				<exclude>uk.ac.ebi.uniprot.kraken</exclude>
-
-	                  				<!-- these 2 jars have signature repackaging problems!!! -->
-	                  				<!-- <exclude>java3d</exclude> -->	                  				
-	                  				<!-- <exclude>gnu.getopt</exclude> -->
-	                  				
-	                  				<!-- all these don't have signature repackaging problems -->
-	                  				<!-- <exclude>net.sf.jung</exclude> -->
-	                  				<!-- <exclude>org.springframework</exclude> -->
-	                  				<!-- <exclude>aopalliance</exclude> -->
-	                  				<!-- <exclude>commons-*</exclude> -->
-	                  				<!-- <exclude>org.apache.commons</exclude> -->
-	                  				<!-- <exclude>log4j</exclude> -->
-	                  				<!-- <exclude>net.sourceforge.collections</exclude> -->
 	                  				
 	                			</excludes>
 	              			</artifactSet>

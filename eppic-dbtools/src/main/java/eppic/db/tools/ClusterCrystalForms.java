@@ -7,7 +7,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import owl.core.sequence.alignment.PairwiseSequenceAlignment.PairwiseSequenceAlignmentException;
 import eppic.db.LatticeComparisonGroup;
 import eppic.db.Interface;
 import eppic.db.InterfaceCluster;
@@ -164,7 +163,7 @@ public class ClusterCrystalForms {
 	
 	private static void calcCluster(int clusterId, DBHandler dbh, SeqClusterLevel seqClusterLevel, double coCutoff, double minArea, double losClusterCutoff,
 			PrintWriter cfcPw, PrintWriter icPw) 
-			throws PairwiseSequenceAlignmentException {
+			{
 		
 		long start = System.currentTimeMillis();
 		List<PdbInfoDB> pdbInfoList = dbh.deserializeSeqCluster(clusterId, seqClusterLevel.getLevel());

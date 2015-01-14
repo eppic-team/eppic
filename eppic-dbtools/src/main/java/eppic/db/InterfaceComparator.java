@@ -2,8 +2,11 @@ package eppic.db;
 
 import java.util.Map;
 
-import edu.uci.ics.jung.graph.util.Pair;
-import owl.core.sequence.alignment.PairwiseSequenceAlignment;
+import org.biojava.bio.structure.contact.Pair;
+import org.biojava3.alignment.template.SequencePair;
+import org.biojava3.core.sequence.ProteinSequence;
+import org.biojava3.core.sequence.compound.AminoAcidCompound;
+
 
 public class InterfaceComparator {
 
@@ -18,10 +21,10 @@ public class InterfaceComparator {
 	//private boolean homoInterface;
 	//private boolean invertedOrder;
 	
-	private Map<Pair<String>,PairwiseSequenceAlignment> alignmentsPool;
+	private Map<Pair<String>,SequencePair<ProteinSequence,AminoAcidCompound>> alignmentsPool;
 	
 	public InterfaceComparator(Interface interf1, Interface interf2, 
-			Map<Pair<String>, PairwiseSequenceAlignment> alignmentsPool, SeqClusterLevel seqClusterLevel) {
+			Map<Pair<String>, SequencePair<ProteinSequence,AminoAcidCompound>> alignmentsPool, SeqClusterLevel seqClusterLevel) {
 		
 		this.interf1 = interf1;
 		this.interf2 = interf2;
@@ -54,13 +57,13 @@ public class InterfaceComparator {
 
 		// we get all the 4 possible alignments
 		// 1st chain to 1st chain
-		PairwiseSequenceAlignment aln11 = alignmentsPool.get(new Pair<String>(interf1FirstChain,interf2FirstChain));
+		SequencePair<ProteinSequence,AminoAcidCompound> aln11 = alignmentsPool.get(new Pair<String>(interf1FirstChain,interf2FirstChain));
 		// 2nd chain to 2nd chain
-		PairwiseSequenceAlignment aln22 = alignmentsPool.get(new Pair<String>(interf1SecondChain,interf2SecondChain));
+		SequencePair<ProteinSequence,AminoAcidCompound> aln22 = alignmentsPool.get(new Pair<String>(interf1SecondChain,interf2SecondChain));
 		// 1st chain to 2nd chain
-		PairwiseSequenceAlignment aln12 = alignmentsPool.get(new Pair<String>(interf1FirstChain,interf2SecondChain));
+		SequencePair<ProteinSequence,AminoAcidCompound> aln12 = alignmentsPool.get(new Pair<String>(interf1FirstChain,interf2SecondChain));
 		// 2nd chain to 1st chain
-		PairwiseSequenceAlignment aln21 = alignmentsPool.get(new Pair<String>(interf1SecondChain,interf2FirstChain));
+		SequencePair<ProteinSequence,AminoAcidCompound> aln21 = alignmentsPool.get(new Pair<String>(interf1SecondChain,interf2FirstChain));
 		
 				
 		cs1 = new ContactSet(interf1.getInterface().getContacts(),null,null,null,null);

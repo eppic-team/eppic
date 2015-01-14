@@ -9,7 +9,6 @@ import java.util.TreeMap;
 
 import eppic.model.ChainClusterDB;
 import eppic.model.SeqClusterDB;
-import eppic.tools.SeqClusterer;
 import gnu.getopt.Getopt;
 
 public class ClusterSequences {
