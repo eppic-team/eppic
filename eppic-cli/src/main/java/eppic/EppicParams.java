@@ -89,7 +89,7 @@ public class EppicParams {
 	
 	// the PDB biounit that we take as the PDB biounit annotation: since introduction of Biojava 
 	// we have decided to use biounit 1 (whatever its type) and ignore the rest
-	public static final String	   PDB_BIOUNIT_TO_USE = "1";
+	public static final int		   PDB_BIOUNIT_TO_USE = 1;
 	
 	// PROPERTY FILES
 	protected static final InputStream COLORS_PROPERTIES_IS = EppicParams.class.getResourceAsStream("/eppic/chain_colors.dat");
