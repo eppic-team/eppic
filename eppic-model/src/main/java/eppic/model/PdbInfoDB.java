@@ -24,6 +24,9 @@ public class PdbInfoDB implements Serializable {
 	// the stoichiometry of the pdb structure
 	private int numChainClusters;
 	
+	// whether ncs ops are present in this entry
+	private boolean ncsOpsPresent;
+	
 	// unit cell parameters
 	private double cellA;
 	private double cellB;
@@ -244,6 +247,14 @@ public class PdbInfoDB implements Serializable {
 		this.numChainClusters = numChainClusters;
 	}
 	
+	public boolean isNcsOpsPresent() {
+		return ncsOpsPresent;
+	}
+
+	public void setNcsOpsPresent(boolean ncsOpsPresent) {
+		this.ncsOpsPresent = ncsOpsPresent;
+	}
+
 	public double getCellA() {
 		return cellA;
 	}

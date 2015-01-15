@@ -125,6 +125,8 @@ public class DataModelAdaptor {
 		pdbInfo.setRfreeValue(pdb.getPDBHeader().getRfree());
 		pdbInfo.setExpMethod(pdb.getPDBHeader().getExperimentalTechniques().iterator().next().getName());
 		
+		pdbInfo.setNcsOpsPresent(pdb.getCrystallographicInfo().getNcsOperators()!=null);
+		
 		CrystalCell cc = (pdbXtallographicInfo==null?null:pdbXtallographicInfo.getCrystalCell());
 		if (cc!=null) {
 			pdbInfo.setCellA(cc.getA());
