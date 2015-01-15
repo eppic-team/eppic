@@ -29,6 +29,7 @@ import org.biojava.bio.structure.contact.StructureInterfaceCluster;
 import org.biojava.bio.structure.contact.StructureInterfaceList;
 import org.biojava.bio.structure.io.FileParsingParameters;
 import org.biojava.bio.structure.io.PDBFileParser;
+import org.biojava.bio.structure.io.LocalPDBDirectory.FetchBehavior;
 import org.biojava.bio.structure.io.mmcif.MMcifParser;
 import org.biojava.bio.structure.io.mmcif.SimpleMMcifConsumer;
 import org.biojava.bio.structure.io.mmcif.SimpleMMcifParser;
@@ -138,6 +139,8 @@ public class Main {
 				AtomCache cache = new AtomCache();
 								
 				cache.setUseMmCif(true);
+				// we set default fetch behavior to FETCH_IF_OUTDATED which is the closest to rsync
+				cache.setFetchBehavior(FetchBehavior.FETCH_IF_OUTDATED);
 				FileParsingParameters fileParsingParams = new FileParsingParameters();
 				fileParsingParams.setAlignSeqRes(true);
 				fileParsingParams.setParseBioAssembly(true);
