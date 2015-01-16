@@ -819,8 +819,11 @@ public class DataModelAdaptor {
 					
 					int queryUniprotPos = -1;
 					// TODO before Biojava move we used to have here !mol.isNonPolyChain() as first condition, how do we do that now?
-					if (cec.hasQueryMatch())  
-						queryUniprotPos = cec.getQueryUniprotPosForPDBPos(cec.getSeqresSerial(residue));
+					if (cec.hasQueryMatch()) {
+						int resser = cec.getSeqresSerial(residue);
+						if (resser!=-1) 
+							queryUniprotPos = cec.getQueryUniprotPosForPDBPos(resser);
+					}
 
 					float entropy = -1;
 					// we used to have here: "&& residue instanceof AaResidue" but that was preventing entropy values of mismatch-to-ref-uniprot-residues to be passed

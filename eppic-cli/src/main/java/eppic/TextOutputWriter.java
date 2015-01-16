@@ -411,7 +411,9 @@ public class TextOutputWriter {
 			
 			int uniprotSerial = 0;
 			if (aln!=null) {
-				uniprotSerial = aln.al2seq("uniprot", aln.seq2al("pdb", list.get(i).getResidueNumber()));
+				int resser = list.get(i).getResidueNumber();
+				if (resser==-1) continue; // most likely a het atom, we skip or otherwise al2seq below would fail as the hetatm would not be in alignment
+				uniprotSerial = aln.al2seq("uniprot", aln.seq2al("pdb", resser));
 			}
 			
 			ps.printf("%4d\t%4s\t%4d\t%3s\t%5.2f\n",

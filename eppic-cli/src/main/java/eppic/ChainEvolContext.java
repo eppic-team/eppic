@@ -726,6 +726,8 @@ public class ChainEvolContext implements Serializable {
 		List<Double> conservScores = getConservationScores();
 		for (Group res:residues){
 			int resSer = getSeqresSerial(res); 
+			
+			if (resSer==-1) continue;
 
 			int queryPos = getQueryUniprotPosForPDBPos(resSer); 
 			 
