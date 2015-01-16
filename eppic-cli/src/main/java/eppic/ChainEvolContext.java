@@ -1140,8 +1140,8 @@ public class ChainEvolContext implements Serializable {
 	 * @return the position or -1 if there are no matches
 	 */
 	private static int getLastMatchingPos(SequencePair<ProteinSequence,AminoAcidCompound> pair, boolean first) {
-		int pos1 = pair.getQuery().getLength();
-		int pos2 = pair.getTarget().getLength();
+		int pos1 = pair.getQuery().getOriginalSequence().getLength();
+		int pos2 = pair.getTarget().getOriginalSequence().getLength();
 		for (int i=pair.getLength();i>0;i--) {
 			AminoAcidCompound current1 = pair.getCompoundAt(1, i);
 			AminoAcidCompound current2 = pair.getCompoundAt(2, i);
