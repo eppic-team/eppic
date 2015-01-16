@@ -260,7 +260,7 @@ public class EvolCoreSurfacePredictor implements InterfaceTypePredictor {
 			countUnrelCoreRes = unreliableCoreRes.size();
 			String msg = iec.getReferenceMismatchWarningMsg(unreliableCoreRes,"core");
 			if (msg!=null) {
-				LOGGER.warn(msg);
+				LOGGER.info(msg);
 				warnings.add(msg);
 			}			
 			
@@ -279,7 +279,7 @@ public class EvolCoreSurfacePredictor implements InterfaceTypePredictor {
 			}
 			msg = iec.getReferenceMismatchWarningMsg(unreliableSurfaceRes,"surface");
 			if (msg!=null) {
-				LOGGER.warn(msg);
+				LOGGER.info(msg);
 				warnings.add(msg);
 			}
 		}

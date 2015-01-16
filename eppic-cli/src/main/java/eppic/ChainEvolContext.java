@@ -977,10 +977,10 @@ public class ChainEvolContext implements Serializable {
 			if (m2.matches()) {
 				String uniId = m2.group(1);
 				if (uniId.contains("-")) {
-					LOGGER.warn("Blast hit "+uniId+" is a UniProt isoform id. Skipping it");
+					LOGGER.info("Blast hit "+uniId+" is a UniProt isoform id. Skipping it");
 					return false;
 				} else if (uniId.startsWith("UPI")) {
-					LOGGER.warn("Blast hit "+uniId+" is a UniParc id. Skipping it");
+					LOGGER.info("Blast hit "+uniId+" is a UniParc id. Skipping it");
 					return false;
 				} else {
 					return true;

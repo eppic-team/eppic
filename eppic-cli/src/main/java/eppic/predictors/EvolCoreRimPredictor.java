@@ -214,12 +214,12 @@ public class EvolCoreRimPredictor implements InterfaceTypePredictor {
 			countUnrelRimRes = unreliableRimRes.size();
 			String msg = iec.getReferenceMismatchWarningMsg(unreliableCoreRes,"core");
 			if (msg!=null) {
-				LOGGER.warn(msg);
+				LOGGER.info(msg);
 				warnings.add(msg);
 			}
 			msg = iec.getReferenceMismatchWarningMsg(unreliableRimRes,"rim");
 			if (msg!=null) {
-				LOGGER.warn(msg);
+				LOGGER.info(msg);
 				warnings.add(msg);
 			}
 		}
