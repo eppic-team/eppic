@@ -640,6 +640,9 @@ public class Main {
 		sb.append("Unique sequences: ");
 		
 		for (Compound chainCluster:pdb.getCompounds()) {
+			// in mmCIF files some sugars are annotated as compounds with no chains linked to them, e.g. 3s26
+			if (chainCluster.getChains().isEmpty()) continue;
+
 			sb.append(DataModelAdaptor.getChainClusterString(chainCluster));
 			sb.append(" ");
 		}

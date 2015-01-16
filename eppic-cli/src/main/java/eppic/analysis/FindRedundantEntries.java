@@ -111,6 +111,9 @@ public class FindRedundantEntries {
 			} 
 			
 			for (Compound chainCluster:pdb.getCompounds()) {
+				// in mmCIF files some sugars are annotated as compounds with no chains linked to them, e.g. 3s26
+				if (chainCluster.getChains().isEmpty()) continue;
+				
 				String seq = chainCluster.getRepresentative().getSeqResSequence();
 				if (seq.matches("X+")) continue; // if it's an all X sequence we don't want it (blastclust doesn't like them)
 				if (seq.length()<12) continue; // we ignore too small sequences (blastclust doesn't like them)

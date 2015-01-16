@@ -441,6 +441,9 @@ public class DataModelAdaptor {
 			ChainClusterDB chainClusterDB = new ChainClusterDB();
 			Compound cc = null;
 			for (Compound compound:cecl.getPdb().getCompounds()) {
+				// in mmCIF files some sugars are annotated as compounds with no chains linked to them, e.g. 3s26
+				if (compound.getChains().isEmpty()) continue;
+
 				if (compound.getRepresentative().getChainID().equals(cec.getRepresentativeChainCode())) {
 					cc = compound;
 				}

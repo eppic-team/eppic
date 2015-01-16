@@ -69,7 +69,10 @@ public class ChainEvolContextList implements Serializable {
 		}
 		
 		for (Compound chainCluster:pdb.getCompounds()) {
-						
+			
+			// in mmCIF files some sugars are annotated as compounds with no chains linked to them, e.g. 3s26
+			if (chainCluster.getChains().isEmpty()) continue;
+			
 			ChainEvolContext cec = new ChainEvolContext(this, chainCluster);
 			
 			cecs.put(cec.getSequenceId(), cec);
