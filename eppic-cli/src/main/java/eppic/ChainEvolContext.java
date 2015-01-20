@@ -234,16 +234,14 @@ public class ChainEvolContext implements Serializable {
 				}
 				
 				if (query.replaceNonStandardByX()) {
-					// TODO we have to replace 'O' by 'X' because the jaligner package does not support it, revise this if we change aligner
-					// TODO now we use Biojava and I'm not sure if this is needed anymore...
+					// TODO for jaligner we needed to replace 'O' by 'X', with Biojava and I'm not sure if this is needed anymore...
 					LOGGER.warn("Replacing 'O' by 'X' in UniProt reference "+query.getUniId());
 				}
 
 				// and finally we align the 2 sequences (in case of mapping from SIFTS we rather do this than trusting the SIFTS alignment info)
 				SubstitutionMatrix<AminoAcidCompound> matrix = SubstitutionMatrixHelper.getBlosum50();
-				// setting (18,1) to have a large enough difference: see for 
-				// instance 2y9r where (10,1) would not align the n-terminal tail of 3 letters properly 
-				GapPenalty penalty = new SimpleGapPenalty(18, 1);
+				// setting (20,1) to have a large enough difference so that behaviour is like eppic 2  
+				GapPenalty penalty = new SimpleGapPenalty(20, 1);
 
 				// before move to Biojava, we had as tags of the sequences:  "chain"+representativeChain and query.getUniId()
 				ProteinSequence s1 = new ProteinSequence(sequence);
