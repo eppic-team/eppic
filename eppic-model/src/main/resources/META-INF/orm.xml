@@ -483,6 +483,8 @@
 			<basic name="pdbStart"></basic>
 			<basic name="pdbEnd"></basic>
 			
+			<basic name="protein"></basic>
+			
 			<basic name="hasUniProtRef"></basic>
 			<basic name="seqIdCutoff"></basic>
 			<basic name="clusteringSeqId"></basic>

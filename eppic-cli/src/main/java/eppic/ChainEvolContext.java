@@ -15,7 +15,9 @@ import org.biojava.bio.structure.Atom;
 import org.biojava.bio.structure.Chain;
 import org.biojava.bio.structure.Compound;
 import org.biojava.bio.structure.Group;
+import org.biojava.bio.structure.GroupType;
 import org.biojava.bio.structure.ResidueNumber;
+import org.biojava.bio.structure.StructureTools;
 import org.biojava3.alignment.NeedlemanWunsch;
 import org.biojava3.alignment.SimpleGapPenalty;
 import org.biojava3.alignment.SubstitutionMatrixHelper;
@@ -119,9 +121,12 @@ public class ChainEvolContext implements Serializable {
 	private HashMap<ResidueNumber,Integer> resNumbers2SeqresSerials;
 	private HashMap<Integer, ResidueNumber> seqresSerials2resNumbers;
 	
+	private boolean isProtein;
+	
 
 	/**
-	 * Construct a ChainEvolContext from a Sequence
+	 * Construct a ChainEvolContext from a Sequence. 
+	 * The sequence is assumed to be a protein sequence, it is not checked.
 	 * @param parent
 	 * @param sequence
 	 */
@@ -132,7 +137,7 @@ public class ChainEvolContext implements Serializable {
 		this.hasQueryMatch = false;
 		this.searchWithFullUniprot = true;
 		this.queryWarnings = new ArrayList<String>();
-		
+		this.isProtein = true;
 	}
 	
 	/**
@@ -150,12 +155,24 @@ public class ChainEvolContext implements Serializable {
 		this.searchWithFullUniprot = true;
 		this.queryWarnings = new ArrayList<String>();
 		
+		GroupType type = StructureTools.getPredominantGroupType(chain);
+		
+		if (type != GroupType.AMINOACID) {
+			this.isProtein = false;
+		} else {
+			this.isProtein = true;
+		}
+		
 		// we only do this mapping in the case that the input is from chain
 		initResNumberMaps(compound);
 	}
 	
 	public String getSequenceId() {
 		return sequenceId;
+	}
+	
+	public boolean isProtein() {
+		return isProtein;
 	}
 	
 	/**
@@ -178,6 +195,13 @@ public class ChainEvolContext implements Serializable {
 		
 		String queryUniprotId = null;
 		query = null;
+		
+		
+		if (!isProtein) {
+			// nothing to do if it is not protein: query will remain null and hasQueryMatch will remain false
+			LOGGER.info("Chain {} is not a protein, will not do evolutionary analysis for it", sequenceId);
+			return;
+		}
 		
 		if (sequence.length()<=EppicParams.PEPTIDE_LENGTH_CUTOFF) {
 			queryWarnings.add("Chain is a peptide ("+sequence.length()+" residues)");

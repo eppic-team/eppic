@@ -12,6 +12,8 @@ public class ChainClusterDB implements Serializable {
 	private String repChain;	 // the PDB chain code of representative chain
 	private String memberChains; // comma separated list of member PDB chain codes
 	
+	private boolean protein;	// whether the chain is a protein chain or not, if not all the below will be null
+	
 	// if any of the following is null then there's no homologs and thus no info to display	
 	private String refUniProtId;
 	
@@ -88,6 +90,14 @@ public class ChainClusterDB implements Serializable {
 	
 	public void setMemberChains(String memberChains) {
 		this.memberChains = memberChains;
+	}
+	
+	public boolean isProtein() {
+		return protein;
+	}
+	
+	public void setProtein(boolean protein) {
+		this.protein = protein;
 	}
 
 	public String getRefUniProtId() {

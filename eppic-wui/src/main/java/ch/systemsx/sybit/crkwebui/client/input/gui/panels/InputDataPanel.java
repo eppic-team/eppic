@@ -75,7 +75,7 @@ public class InputDataPanel extends DisplayPanel
 	private static final int FIELD_WIDTH = 250;
 	private static final int PADDING_WIDTH = 25;
 
-	private static final int PANEL_HEIGHT = 300;
+	//private static final int PANEL_HEIGHT = 300;
 	
 	private FormPanel formPanel;
 

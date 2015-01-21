@@ -455,6 +455,7 @@ public class DataModelAdaptor {
 				if (i!=cc.getChains().size()-1) sb.append(",");
 			}
 			chainClusterDB.setMemberChains(sb.toString());
+			chainClusterDB.setProtein(cec.isProtein());
 			chainClusterDB.setHasUniProtRef(cec.hasQueryMatch());
 			
 			List<UniProtRefWarningDB> queryWarningItemDBs = new ArrayList<UniProtRefWarningDB>();
