@@ -951,12 +951,11 @@ public class ChainEvolContext implements Serializable {
 				LOGGER.info("Blast found UniProt id "+uniprotMapping+" as best hit with "+
 						String.format("%5.2f%% id and %4.2f coverage",bestHsp.getQueryPercentIdentity(),bestHsp.getQueryCoverage()));
 			} else {
-				LOGGER.warn("No UniProt match could be found for the query chain "+sequenceId+" within cutoffs "+
+				LOGGER.warn("No UniProt match could be found with blast for the query chain "+sequenceId+" within cutoffs "+
 						String.format("%5.2f%% id and %4.2f coverage",pdb2uniprotIdThreshold,pdb2uniprotQcovThreshold));
 				LOGGER.warn("Best match was "+best.getSubjectId()+", with "+
 						String.format("%5.2f%% id and %4.2f coverage",bestHsp.getQueryPercentIdentity(),bestHsp.getQueryCoverage()));
-				LOGGER.warn("Alignment: ");
-				LOGGER.warn(bestHsp.getAlignment().getFastaString(null, true));
+				LOGGER.info("Alignment of best UniProt match found by blast: \n"+bestHsp.getAlignment().getFastaString(null, true));
 				queryWarnings.add("Blast didn't find a UniProt match for the chain. Best match was "+getDeflineAccession(best)+", with "+
 						String.format("%5.2f%% id and %4.2f coverage",bestHsp.getQueryPercentIdentity(),bestHsp.getQueryCoverage()));
 			}			
