@@ -34,6 +34,7 @@ import org.biojava.bio.structure.io.mmcif.MMcifParser;
 import org.biojava.bio.structure.io.mmcif.SimpleMMcifConsumer;
 import org.biojava.bio.structure.io.mmcif.SimpleMMcifParser;
 import org.biojava.bio.structure.xtal.CrystalBuilder;
+import org.biojava.bio.structure.xtal.CrystalCell;
 import org.biojava.bio.structure.xtal.SpaceGroup;
 import org.biojava3.structure.StructureIO;
 import org.slf4j.Logger;
@@ -374,8 +375,11 @@ public class Main {
 		// writing to the model: for the webui and csv output files
 		modelAdaptor.setInterfaces(interfaces); // this writes all interface geom info, including h-bonds, disulfides etc
 		// since the move to Biojava, we have decided to take the first PDB-annotated biounit ONLY, whatever its type
-		modelAdaptor.setPdbBioUnits(pdb.getPDBHeader().getBioAssemblies().get(EppicParams.PDB_BIOUNIT_TO_USE),
-				(pdb.getCrystallographicInfo()==null?null:pdb.getCrystallographicInfo().getCrystalCell()) );
+		CrystalCell cell = null;
+		if (pdb.getCrystallographicInfo()!=null && pdb.isCrystallographic()) {
+			cell = pdb.getCrystallographicInfo().getCrystalCell();
+		}
+		modelAdaptor.setPdbBioUnits(pdb.getPDBHeader().getBioAssemblies().get(EppicParams.PDB_BIOUNIT_TO_USE),cell);
 		modelAdaptor.setGeometryScores(gps, gcps);
 		modelAdaptor.setResidueDetails(interfaces);
 		
