@@ -150,7 +150,7 @@ public class HomologList implements  Serializable {//Iterable<UniprotHomolog>,
 
 			outBlast = cacheFile;
 			fromCache = true;
-			LOGGER.warn("Reading blast results from cache file "+cacheFile);
+			LOGGER.info("Reading blast results from cache file "+cacheFile);
 
 			try {
 				// note that by setting second parameter to true we are ignoring the DTD url to avoid unnecessary network connections
