@@ -239,17 +239,17 @@ public class InterfaceEvolContext implements Serializable {
 	 */
 	public void writePdbFile(File file) throws IOException {
 		
-		
-		if (StructureTools.isProtein(interf.getMolecules().getFirst()[0].getGroup().getChain()) && 
-				StructureTools.isProtein(interf.getMolecules().getSecond()[0].getGroup().getChain())) {
-
+		if (StructureTools.isProtein(interf.getMolecules().getFirst()[0].getGroup().getChain()) ) {
 			setConservationScoresAsBfactors(FIRST);
-			setConservationScoresAsBfactors(SECOND);
-			
-			PrintStream ps = new PrintStream(new GZIPOutputStream(new FileOutputStream(file)));
-			ps.print(interf.toPDB());
-			ps.close();
 		}
+		if (StructureTools.isProtein(interf.getMolecules().getSecond()[0].getGroup().getChain()) ) {
+			setConservationScoresAsBfactors(SECOND);
+		}
+		
+		PrintStream ps = new PrintStream(new GZIPOutputStream(new FileOutputStream(file)));
+		ps.print(interf.toPDB());
+		ps.close();
+		
 	}
 	
 	/**
