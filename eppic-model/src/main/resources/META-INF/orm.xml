@@ -90,6 +90,8 @@
 			<basic name="cellBeta"></basic>
 			<basic name="cellGamma"></basic>
 			
+			<basic name="ncsOpsPresent"></basic>
+			
 			<basic name="crystalFormId"></basic>
 			
 			<basic name="numChainClusters"></basic>
