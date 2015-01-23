@@ -200,6 +200,7 @@ public class ChainEvolContext implements Serializable {
 		if (!isProtein) {
 			// nothing to do if it is not protein: query will remain null and hasQueryMatch will remain false
 			LOGGER.info("Chain {} is not a protein, will not do evolutionary analysis for it", sequenceId);
+			queryWarnings.add("Chain is not a protein, no evolutionary analysis is performed for this chain");
 			return;
 		}
 		
