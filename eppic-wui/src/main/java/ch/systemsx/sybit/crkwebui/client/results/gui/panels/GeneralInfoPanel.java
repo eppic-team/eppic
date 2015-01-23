@@ -75,7 +75,7 @@ public class GeneralInfoPanel extends FieldSet {
 		
 		panelTable.clear();
 		
-		if(expMethod == null && spaceGroup == null && resolution <=0 && rFree <=0){
+		if(expMethod == null && spaceGroup == null && (resolution <=0 || resolution >=99) && (rFree <=0 || rFree>=1.0)){
 			Label nothingFound = new Label(AppPropertiesManager.CONSTANTS.info_panel_nothing_found());
 			nothingFound.addStyleName("eppic-general-info-label");
 			panelTable.setWidget(0, 0, nothingFound);
@@ -87,9 +87,9 @@ public class GeneralInfoPanel extends FieldSet {
 			fillContent(EXPERIMENT_ROW, AppPropertiesManager.CONSTANTS.info_panel_experiment(), expMethod);
 		if(spaceGroup != null)
 			fillContent(SPACEGROUP_ROW, AppPropertiesManager.CONSTANTS.info_panel_spacegroup(), spaceGroup);
-		if(resolution > 0)
-			fillContent(RESOLUTION_ROW, AppPropertiesManager.CONSTANTS.info_panel_resolution(), resolution+" Å");
-		if(rFree > 0)
+		if(resolution > 0 && resolution<99)
+			fillContent(RESOLUTION_ROW, AppPropertiesManager.CONSTANTS.info_panel_resolution(), NumberFormat.getFormat("0.0").format(resolution)+" Å");
+		if(rFree > 0 && rFree<1.0)
 			fillContent(RFREE_ROW, AppPropertiesManager.CONSTANTS.info_panel_rfree(), NumberFormat.getFormat("0.00").format(rFree));
 		
 		}

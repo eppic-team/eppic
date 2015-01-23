@@ -20,11 +20,11 @@ public class ExperimentalWarnings {
 		
 		// TODO we should try to set a constant "always-low-res exp method=ELECTRON MICROSCOPY". 
 		// It's not ideal that the name is hard-coded
-		emWarning = (expMethod!=null && expMethod.equals("ELECTRON MICROSCOPY") && resolution <=0);
+		emWarning = (expMethod!=null && expMethod.equals("ELECTRON MICROSCOPY") && (resolution <=0 || resolution>=99));
 		resolutionWarning = (ApplicationContext.getSettings().getResolutionCutOff() > 0 && 
-				             resolution > ApplicationContext.getSettings().getResolutionCutOff() && resolution > 0);
+				             resolution > ApplicationContext.getSettings().getResolutionCutOff() && resolution > 0 && resolution<99);
 		rfreeWarning = (ApplicationContext.getSettings().getRfreeCutOff() > 0 && 
-				        rFree > ApplicationContext.getSettings().getRfreeCutOff() && rFree > 0);
+				        rFree > ApplicationContext.getSettings().getRfreeCutOff() && rFree > 0 && rFree<1);
 	}
 
 	public boolean isEmWarning() {
