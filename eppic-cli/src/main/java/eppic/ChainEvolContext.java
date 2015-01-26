@@ -869,7 +869,7 @@ public class ChainEvolContext implements Serializable {
 		int uniprotPos = alnPdb2Uniprot.getIndexInTargetAt(alnIdx);
 
 		// the position in the subsequence that was used for blasting
-		int pos = uniprotPos - queryInterv.beg; 
+		int pos = uniprotPos - (queryInterv.beg -1); 
 		// check if it is out of the subsequence: can happen when his tags or other engineered residues at termini 
 		// in n-terminal (pos<0), e.g. 3n1e
 		// or c-terminal (pos>=subsequence length) e.g. 2eyi
