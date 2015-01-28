@@ -139,6 +139,8 @@ public class UploadToDb {
 		
 		dbh = new DBHandler(dbName);
 		
+		List<String> pdbsWithWarnings = new ArrayList<String>();
+		
 		// Start the Process
 		int i = -1;
 		long avgTimeStart1 = 0;
@@ -259,6 +261,7 @@ public class UploadToDb {
 					em.getTransaction().rollback();
 				}
 				System.err.println("WARNING: problems while inserting "+currentPDB+". Error: "+e.getMessage());
+				pdbsWithWarnings.add(currentPDB);
 				continue;
 			} 
 
@@ -269,6 +272,13 @@ public class UploadToDb {
 		
 		System.out.println("Completed all "+jobsDirectories.length+" entries in "+((totalEnd-totalStart)/1000)+" s");
 
+		if (!pdbsWithWarnings.isEmpty()) {
+			System.out.println("These PDBs had problems while inserting to db: ");
+			for (String pdb:pdbsWithWarnings) {
+				System.out.print(pdb+" ");
+			}
+			System.out.println();
+		}
 
 	}
 	
