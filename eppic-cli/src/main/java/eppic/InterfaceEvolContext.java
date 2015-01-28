@@ -309,7 +309,7 @@ public class InterfaceEvolContext implements Serializable {
 		return this.parent.getMinNumSeqs();
 	}
 	
-	public boolean isProtein(int molecId) {
+	public static boolean isProtein(StructureInterface interf, int molecId) {
 		if (molecId==FIRST) {
 			return StructureTools.isProtein(interf.getMolecules().getFirst()[0].getGroup().getChain());
 		} else if (molecId==SECOND) {
@@ -319,4 +319,16 @@ public class InterfaceEvolContext implements Serializable {
 		}
 	}
 
+	/**
+	 * Tells whether the given interface is a protein-protein interface
+	 * @param interf
+	 * @return true if both partners of the interface are protein, false otherwise
+	 */
+	public static boolean isProtProt(StructureInterface interf) {
+		return 
+			isProtein(interf, FIRST) &&
+			isProtein(interf, SECOND);
+			//StructureTools.isProtein(interf.getMolecules().getFirst()[0].getGroup().getChain()) &&
+			//StructureTools.isProtein(interf.getMolecules().getSecond()[0].getGroup().getChain());		
+	}
 }

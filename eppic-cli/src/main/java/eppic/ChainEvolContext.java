@@ -204,7 +204,7 @@ public class ChainEvolContext implements Serializable {
 			return;
 		}
 		
-		if (sequence.length()<=EppicParams.PEPTIDE_LENGTH_CUTOFF) {
+		if (isProtein && sequence.length()<=EppicParams.PEPTIDE_LENGTH_CUTOFF) {
 			queryWarnings.add("Chain is a peptide ("+sequence.length()+" residues)");
 		}
 		

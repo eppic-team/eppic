@@ -20,12 +20,26 @@ public class InterfaceDB implements Serializable {
 	private String chain1;
 	private String chain2;
 
-	private String operator; 
-	// the types are the short names of the owl.core.structure.TransformType enum
+	private String operator;
+	
+	/**
+	 * The types are the short names of {@link org.biojava.bio.structure.xtal.TransformType} enum
+	 */
 	private String operatorType;
+	
 	private boolean infinite;
 	
 	private boolean isologous;
+	
+	/**
+	 * Whether first chain is a protein
+	 */
+	private boolean prot1;
+	
+	/**
+	 * Whether second chain is a protein
+	 */
+	private boolean prot2;
 	
 	private int operatorId;
 	private int xtalTrans_x;
@@ -142,6 +156,22 @@ public class InterfaceDB implements Serializable {
 
 	public void setIsologous(boolean isologous) {
 		this.isologous = isologous;
+	}
+	
+	public boolean isProt1() {
+		return prot1;
+	}
+	
+	public void setProt1(boolean prot1) {
+		this.prot1 = prot1;
+	}
+	
+	public boolean isProt2() {
+		return prot2;
+	}
+
+	public void setProt2(boolean prot2) {
+		this.prot2 = prot2;
 	}
 
 	public int getOperatorId() {

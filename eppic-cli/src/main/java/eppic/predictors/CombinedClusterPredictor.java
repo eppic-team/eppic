@@ -7,8 +7,10 @@ import org.biojava.bio.structure.contact.StructureInterfaceCluster;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
+
 import eppic.CallType;
-import eppic.EppicParams;
+import eppic.InterfaceEvolContext;
 import eppic.InterfaceEvolContextList;
 
 public class CombinedClusterPredictor implements InterfaceTypePredictor {
@@ -29,7 +31,6 @@ public class CombinedClusterPredictor implements InterfaceTypePredictor {
 	
 	private double confidence;
 	
-	private CallType veto;
 	
 	public CombinedClusterPredictor(StructureInterfaceCluster interfaceCluster,
 			InterfaceEvolContextList iecl,
@@ -51,42 +52,54 @@ public class CombinedClusterPredictor implements InterfaceTypePredictor {
 		
 		calcConfidence();
 		
-		if (veto!=null) {
-			call = veto;
-			votes = -1;
-			// callReason has to be assigned when assigning the veto
-		} else {
-			// STRATEGY 1: consensus, when no evolution take geometry, when no consensus take evol
-			int[] counts = countCalls();
-			// 1) 2 bio calls
-			if (counts[0]>=2) {
-				callReason = "BIO consensus ("+counts[0]+" votes)";
-				call = CallType.BIO;
-				votes = counts[0];
-			} 
-			// 2) 2 xtal calls
-			else if (counts[1]>=2) {
-				callReason = "XTAL consensus ("+counts[1]+" votes)";
-				call = CallType.CRYSTAL;
-				votes = counts[1];
+		boolean isNonProt = false;
+		for (StructureInterface interf:ic.getMembers()) {
+			if (!InterfaceEvolContext.isProtein(interf, InterfaceEvolContext.FIRST) &&
+				!InterfaceEvolContext.isProtein(interf, InterfaceEvolContext.SECOND)) {
+				isNonProt = true;
 			}
-			// 3) 2 nopreds (necessarily from the evol methods): we take geometry as the call
-			else if (counts[2]==2) {
-				callReason = "Prediction purely geometrical (no evolutionary prediction could be made)";
-				call = gcp.getCall();
-				votes = 1;
-			}
-			// 4) 1 nopred (an evol method), 1 xtal, 1 bio
-			else {
-				// take evol call
-				if (ecrcp.getCall()!=CallType.NO_PREDICTION) call = ecrcp.getCall();
-				else if (ecscp.getCall()!=CallType.NO_PREDICTION) call = ecscp.getCall();
-				else System.err.println("Warning! both core-surface and core-rim called nopred. Something went wrong in vote counts");
-				
-				callReason = "No consensus. Taking evolutionary call as final";
-				votes = 1;
-			}
+			// break after one iteration: all interfaces in the cluster should be either prot or non-prot 
+			break;
 		}
+		if (isNonProt) {
+			LOGGER.info("Interface cluster {} is not protein in either side, can't score it",ic.getId());
+			callReason = "Both sides are not protein, can't score";
+			call = CallType.NO_PREDICTION;
+			votes = -1;
+			return;
+		}
+
+		// STRATEGY 1: consensus, when no evolution take geometry, when no consensus take evol
+		int[] counts = countCalls();
+		// 1) 2 bio calls
+		if (counts[0]>=2) {
+			callReason = "BIO consensus ("+counts[0]+" votes)";
+			call = CallType.BIO;
+			votes = counts[0];
+		} 
+		// 2) 2 xtal calls
+		else if (counts[1]>=2) {
+			callReason = "XTAL consensus ("+counts[1]+" votes)";
+			call = CallType.CRYSTAL;
+			votes = counts[1];
+		}
+		// 3) 2 nopreds (necessarily from the evol methods): we take geometry as the call
+		else if (counts[2]==2) {
+			callReason = "Prediction purely geometrical (no evolutionary prediction could be made)";
+			call = gcp.getCall();
+			votes = 1;
+		}
+		// 4) 1 nopred (an evol method), 1 xtal, 1 bio
+		else {
+			// take evol call
+			if (ecrcp.getCall()!=CallType.NO_PREDICTION) call = ecrcp.getCall();
+			else if (ecscp.getCall()!=CallType.NO_PREDICTION) call = ecscp.getCall();
+			else System.err.println("Warning! both core-surface and core-rim called nopred. Something went wrong in vote counts");
+
+			callReason = "No consensus. Taking evolutionary call as final";
+			votes = 1;
+		}
+
 	}
 
 	@Override
@@ -126,36 +139,7 @@ public class CombinedClusterPredictor implements InterfaceTypePredictor {
 	
 	private boolean checkInterface() {
 
-		// veto from hard area limits
-
-		// if peptide, we don't use minimum hard area limits
-		// for some cases this works nicely (e.g. 1w9q interface 4)		
-		boolean useHardLimits = true;
-		for (StructureInterface interf:ic.getMembers()) {
-			if (interf.getFirstGroupAsas().keySet().size()<=EppicParams.PEPTIDE_LENGTH_CUTOFF ||
-				interf.getSecondGroupAsas().keySet().size()<=EppicParams.PEPTIDE_LENGTH_CUTOFF) {
-				useHardLimits = false;				
-			}
-			// break after one iteration: all interfaces in the cluster should have the peptide
-			break;
-		}
-		if (useHardLimits==false) {
-			LOGGER.info("Interface cluster "+ic.getId()+": peptide-protein interface, not checking minimum area hard limit. ");
-		}
-		
-		if (useHardLimits && ic.getTotalArea()<EppicParams.MIN_AREA_BIOCALL) {
-			
-			callReason = "Area below hard limit "+String.format("%4.0f", EppicParams.MIN_AREA_BIOCALL);
-			
-			veto = CallType.CRYSTAL;
-		} 
-		else if (ic.getTotalArea()>EppicParams.MAX_AREA_XTALCALL) {
-			
-			callReason = "Area above hard limit "+String.format("%4.0f", EppicParams.MAX_AREA_XTALCALL);
-			
-			veto = CallType.BIO;
-		}
-		
+		// we used to do hard area limits here, but thats' gone now		
 		
 		return true; // for the moment there's no conditions to reject a score
 	}
@@ -178,6 +162,8 @@ public class CombinedClusterPredictor implements InterfaceTypePredictor {
 	}
 	
 	private void calcConfidence() {
+		
+		// TODO possible idea: if within hard area limits, give high confidence to the call
 		
 		// we simply take the first member of the cluster and check if there enough homologs for it, other members should have same composition
 		

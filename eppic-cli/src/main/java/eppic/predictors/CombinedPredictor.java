@@ -8,7 +8,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import eppic.DataModelAdaptor;
-import eppic.EppicParams;
 import eppic.CallType;
 import eppic.InterfaceEvolContext;
 
@@ -29,8 +28,6 @@ public class CombinedPredictor implements InterfaceTypePredictor {
 	
 	private int votes;
 	
-	private CallType veto;
-	
 	private double confidence;
 	
 	public CombinedPredictor(InterfaceEvolContext iec, 
@@ -41,7 +38,6 @@ public class CombinedPredictor implements InterfaceTypePredictor {
 		this.ecsp=ecsp;
 		this.warnings = new ArrayList<String>();
 		
-		this.veto = null;
 	}
 	
 	@Override
@@ -86,74 +82,79 @@ public class CombinedPredictor implements InterfaceTypePredictor {
 		checkInterface();
 		
 		calcConfidence();
-		
-		if (veto!=null) {
-			call = veto;
+
+
+		if (!InterfaceEvolContext.isProtein(iec.getInterface(), InterfaceEvolContext.FIRST) &&
+			!InterfaceEvolContext.isProtein(iec.getInterface(), InterfaceEvolContext.SECOND)  ) {
+			LOGGER.info("Interface {} is not protein in either side, can't score it",iec.getInterface().getId());
+			callReason = "Both sides are not protein, can't score";
+			call = CallType.NO_PREDICTION;
 			votes = -1;
-			// callReason has to be assigned when assigning the veto
-		} else {
-			// STRATEGY 1: consensus, when no evolution take geometry, when no consensus take evol
-			int[] counts = countCalls();
-			// 1) 2 bio calls
-			if (counts[0]>=2) {
-				callReason = "BIO consensus ("+counts[0]+" votes)";
-				call = CallType.BIO;
-				votes = counts[0];
-			} 
-			// 2) 2 xtal calls
-			else if (counts[1]>=2) {
-				callReason = "XTAL consensus ("+counts[1]+" votes)";
-				call = CallType.CRYSTAL;
-				votes = counts[1];
-			}
-			// 3) 2 nopreds (necessarily from the evol methods): we take geometry as the call
-			else if (counts[2]==2) {
-				callReason = "Prediction purely geometrical (no evolutionary prediction could be made)";
-				call = gp.getCall();
-				votes = 1;
-			}
-			// 4) 1 nopred (an evol method), 1 xtal, 1 bio
-			else {
-				// take evol call
-				if (ecrp.getCall()!=CallType.NO_PREDICTION) call = ecrp.getCall();
-				else if (ecsp.getCall()!=CallType.NO_PREDICTION) call = ecsp.getCall();
-				else System.err.println("Warning! both core-surface and core-rim called nopred. Something went wrong in vote counts");
-				
-				callReason = "No consensus. Taking evolutionary call as final";
-				votes = 1;
-			}
-//			// STRATEGY 2: trust more evolution when we can
-//			// 1) there is evolutionary prediction from both methods
-//			if (rp.getCall()!=CallType.NO_PREDICTION && zp.getCall()!=CallType.NO_PREDICTION) {
-//				if (rp.getCall()==zp.getCall()) {
-//					call = rp.getCall();
-//					callReason = "Consensus of evol predictions";
-//				} else {
-//					// each evol prediction votes in a different direction, geometry has to give the last word (so in total 2 votes go for it)
-//					call = gp.getCall();
-//					callReason = "One evolutionary measure and geometry agree";
-//				}
-//			// 2) there's no evol predictions at all
-//			} else if (rp.getCall()==CallType.NO_PREDICTION && zp.getCall()==CallType.NO_PREDICTION) {
-//				call = gp.getCall();
-//				callReason = "Couldn't do evol predictions. Taking geometry as final prediction";				
-//			}
-//			// 3) only one of the evol predicts
-//			else if (rp.getCall()==CallType.NO_PREDICTION || zp.getCall()==CallType.NO_PREDICTION) {
-//				InterfaceTypePredictor validPred = null;
-//				if (rp.getCall()!=CallType.NO_PREDICTION) validPred = rp;
-//					else validPred = zp;
-//						
-//				if (gp.getCall()==validPred.getCall()) {
-//					call = validPred.getCall();
-//					callReason = "One evolutionary could not predict and the other evol measure and geometry agree";
-//				} else {
-//					// no agreement: we trust evolution
-//					call = validPred.getCall();
-//					callReason = "Only one evol measure predicts and disagrees with geometry: taking evol prediction";
-//				}
-//			}
+			return;
 		}
+		
+		// STRATEGY 1: consensus, when no evolution take geometry, when no consensus take evol
+		int[] counts = countCalls();
+		// 1) 2 bio calls
+		if (counts[0]>=2) {
+			callReason = "BIO consensus ("+counts[0]+" votes)";
+			call = CallType.BIO;
+			votes = counts[0];
+		} 
+		// 2) 2 xtal calls
+		else if (counts[1]>=2) {
+			callReason = "XTAL consensus ("+counts[1]+" votes)";
+			call = CallType.CRYSTAL;
+			votes = counts[1];
+		}
+		// 3) 2 nopreds (necessarily from the evol methods): we take geometry as the call
+		else if (counts[2]==2) {
+			callReason = "Prediction purely geometrical (no evolutionary prediction could be made)";
+			call = gp.getCall();
+			votes = 1;
+		}
+		// 4) 1 nopred (an evol method), 1 xtal, 1 bio
+		else {
+			// take evol call
+			if (ecrp.getCall()!=CallType.NO_PREDICTION) call = ecrp.getCall();
+			else if (ecsp.getCall()!=CallType.NO_PREDICTION) call = ecsp.getCall();
+			else System.err.println("Warning! both core-surface and core-rim called nopred. Something went wrong in vote counts");
+
+			callReason = "No consensus. Taking evolutionary call as final";
+			votes = 1;
+		}
+		//			// STRATEGY 2: trust more evolution when we can
+		//			// 1) there is evolutionary prediction from both methods
+		//			if (rp.getCall()!=CallType.NO_PREDICTION && zp.getCall()!=CallType.NO_PREDICTION) {
+		//				if (rp.getCall()==zp.getCall()) {
+		//					call = rp.getCall();
+		//					callReason = "Consensus of evol predictions";
+		//				} else {
+		//					// each evol prediction votes in a different direction, geometry has to give the last word (so in total 2 votes go for it)
+		//					call = gp.getCall();
+		//					callReason = "One evolutionary measure and geometry agree";
+		//				}
+		//			// 2) there's no evol predictions at all
+		//			} else if (rp.getCall()==CallType.NO_PREDICTION && zp.getCall()==CallType.NO_PREDICTION) {
+		//				call = gp.getCall();
+		//				callReason = "Couldn't do evol predictions. Taking geometry as final prediction";				
+		//			}
+		//			// 3) only one of the evol predicts
+		//			else if (rp.getCall()==CallType.NO_PREDICTION || zp.getCall()==CallType.NO_PREDICTION) {
+		//				InterfaceTypePredictor validPred = null;
+		//				if (rp.getCall()!=CallType.NO_PREDICTION) validPred = rp;
+		//					else validPred = zp;
+		//						
+		//				if (gp.getCall()==validPred.getCall()) {
+		//					call = validPred.getCall();
+		//					callReason = "One evolutionary could not predict and the other evol measure and geometry agree";
+		//				} else {
+		//					// no agreement: we trust evolution
+		//					call = validPred.getCall();
+		//					callReason = "Only one evol measure predicts and disagrees with geometry: taking evol prediction";
+		//				}
+		//			}
+
 		
 	}
 	
@@ -197,35 +198,14 @@ public class CombinedPredictor implements InterfaceTypePredictor {
 			warnings.add(msg);
 		}
 
-		// veto from the hard area limits
-		
-		// if peptide, we don't use minimum hard area limits
-		// for some cases this works nicely (e.g. 1w9q interface 4)
-		boolean useHardLimits = true;
-		if (iec.getInterface().getFirstGroupAsas().size()<=EppicParams.PEPTIDE_LENGTH_CUTOFF || 
-			iec.getInterface().getSecondGroupAsas().size()<=EppicParams.PEPTIDE_LENGTH_CUTOFF){
-			useHardLimits = false;
-			LOGGER.info("Interface "+iec.getInterface().getId()+": peptide-protein interface, not checking minimum area hard limit. ");
-		}
-
-		if (useHardLimits && iec.getInterface().getTotalArea()<EppicParams.MIN_AREA_BIOCALL) {
-			
-			callReason = "Area below hard limit "+String.format("%4.0f", EppicParams.MIN_AREA_BIOCALL);
-			
-			veto = CallType.CRYSTAL;
-		} 
-		else if (iec.getInterface().getTotalArea()>EppicParams.MAX_AREA_XTALCALL) {
-			
-			callReason = "Area above hard limit "+String.format("%4.0f", EppicParams.MAX_AREA_XTALCALL);
-			
-			veto = CallType.BIO;
-		}
-		
 		
 		return true; // for the moment there's no conditions to reject a score
 	}
 	
 	private void calcConfidence() {
+		
+		// TODO possible idea: if within hard area limits, give high confidence to the call
+		
 		if (!iec.hasEnoughHomologs(InterfaceEvolContext.FIRST) && !iec.hasEnoughHomologs(InterfaceEvolContext.SECOND)) {
 			confidence = CONFIDENCE_LOW;
 		} else if (!iec.hasEnoughHomologs(InterfaceEvolContext.FIRST)) {

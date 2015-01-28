@@ -36,12 +36,15 @@ public class Interface implements Serializable, Comparable<Interface>
 	private String chain2;
 
 	private String operator; 
-	// the types are the short names of the owl.core.structure.TransformType enum
+	// The types are the short names of {@link org.biojava.bio.structure.xtal.TransformType} enum
 	private String operatorType;
 	
 	private boolean infinite;
 	
 	private boolean isologous;
+	
+	private boolean prot1;
+	private boolean prot2;
 	
 	private int operatorId;
 	private int xtalTrans_x;
@@ -140,6 +143,22 @@ public class Interface implements Serializable, Comparable<Interface>
 	public void setIsologous(boolean isologous) {
 		this.isologous = isologous;
 	}
+	
+	public boolean isProt1() {
+		return prot1;
+	}
+	
+	public void setProt1(boolean prot1) {
+		this.prot1 = prot1;
+	}
+	
+	public boolean isProt2() {
+		return prot2;
+	}
+
+	public void setProt2(boolean prot2) {
+		this.prot2 = prot2;
+	}
 
 	public int getOperatorId() {
 		return operatorId;
@@ -236,6 +255,8 @@ public class Interface implements Serializable, Comparable<Interface>
 		interfaceItem.setOperatorType(interfaceDB.getOperatorType());
 		interfaceItem.setInfinite(interfaceDB.isInfinite());
 		interfaceItem.setIsologous(interfaceDB.isIsologous());
+		interfaceItem.setProt1(interfaceDB.isProt1());
+		interfaceItem.setProt2(interfaceDB.isProt2());
 		interfaceItem.setOperatorId(interfaceDB.getOperatorId());
 		interfaceItem.setXtalTrans_x(interfaceDB.getXtalTrans_x());
 		interfaceItem.setXtalTrans_y(interfaceDB.getXtalTrans_y());

@@ -172,6 +172,7 @@
 			<basic name="pdbCode">
 				<column length="4" />
 			</basic>
+			
 			<basic name="avgArea"></basic>
 			<basic name="numMembers"></basic>
 			
@@ -269,6 +270,9 @@
 			</basic>
 			<basic name="infinite"></basic>
 			<basic name="isologous"></basic>
+			
+			<basic name="prot1"></basic>
+			<basic name="prot2"></basic>
 			
 			<basic name="xtalTrans_x"></basic>
 			<basic name="xtalTrans_y"></basic>

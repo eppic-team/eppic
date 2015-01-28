@@ -65,10 +65,10 @@ public class EppicParams {
 	public static final int		   MIN_SEQ_LENGTH_FOR_BLASTING = 10;
 	// the maximum length of an engineered insertion when a single chain maps to multiple segments with a single UniProt reference
 	public static final int		   NUM_GAP_RES_FOR_CHIMERIC_FUSION = 10;
-	// the hard limits aka "duarte" limits
+	// the hard limits aka "duarte" limits: areas above/below which it is very unlikely to have xtal/bio interfaces
 	// max limit based on 1pre (bio with 2290 and 0+2 cores) and 2vg5 interface 2 (xtal with 2070 and 0+0 cores) 
-	public static final double	   MAX_AREA_XTALCALL = 2200; 
-	public static final double 	   MIN_AREA_BIOCALL  = 400;   
+	public static final double	   HIGH_CONFIDENCE_BIOCALL_AREA = 2200; 
+	public static final double 	   HIGH_CONFIDENCE_XTALCALL_AREA  = 400;   
 	// interface clustering constants
 	public static final double 	   CLUSTERING_RMSD_CUTOFF = 2.0;
 	public static final int 	   CLUSTERING_MINATOMS = 10;

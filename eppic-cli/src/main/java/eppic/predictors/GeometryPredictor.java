@@ -258,9 +258,10 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 		// But still for some cases (e.g. 3bfw) the prediction is correct (the core size is big enough) 
 		Collection<GroupAsa> groupAsas = null;
 		String chainId = null;
+		boolean isProt = InterfaceEvolContext.isProtein(interf, molecId);
 		if (molecId==InterfaceEvolContext.FIRST) {
 			groupAsas = interf.getFirstGroupAsas().values();
-			chainId = interf.getMoleculeIds().getFirst();
+			chainId = interf.getMoleculeIds().getFirst();			
 			
 		} else if (molecId==InterfaceEvolContext.SECOND) {
 			groupAsas = interf.getSecondGroupAsas().values();
@@ -273,12 +274,17 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 			if (gAsa.getBsa()>0) numResWitBsaAbove0++;
 		}
 		
+		
+		// if the chain is not a protein we don't want to warna about peptides
+		if (!isProt) return;
+		
+		
 		if (groupAsas.size()<=EppicParams.PEPTIDE_LENGTH_CUTOFF) {
 			double bsa = interf.getTotalArea();
 			String msg = "Ratio of interface area to ASA: "+
 					String.format("%4.2f", bsa/asa)+". "+
 					"Ratio of buried residues to total residues: "+
-					String.format("%4.2f",(double)numResWitBsaAbove0/(double)groupAsas.size());
+					String.format("%4.2f",(double)numResWitBsaAbove0/(double)groupAsas.size());			
 			LOGGER.info("Chain "+chainId+" of interface "+interf.getId()+" is a peptide. "+msg);
 			warnings.add("Chain "+chainId+" is a peptide.");
 		}

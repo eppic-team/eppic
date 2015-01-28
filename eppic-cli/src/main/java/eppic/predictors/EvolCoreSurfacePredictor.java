@@ -190,7 +190,7 @@ public class EvolCoreSurfacePredictor implements InterfaceTypePredictor {
 		int interfaceId = iec.getInterface().getId();
 		int memberSerial = molecId + 1;
 
-		if (!iec.isProtein(molecId)) {
+		if (!InterfaceEvolContext.isProtein(iec.getInterface(), molecId)) {
 			LOGGER.info("Interface "+interfaceId+", member "+memberSerial+": can't calculate "+scoreType+" score because it is not a protein");
 			callReasonSides[molecId] = "Side "+ memberSerial+" is not a protein";
 			return false;
