@@ -14,6 +14,7 @@ import java.util.TreeSet;
 import org.biojava.bio.structure.Atom;
 import org.biojava.bio.structure.Chain;
 import org.biojava.bio.structure.Compound;
+import org.biojava.bio.structure.ExperimentalTechnique;
 import org.biojava.bio.structure.Group;
 import org.biojava.bio.structure.PDBCrystallographicInfo;
 import org.biojava.bio.structure.Structure;
@@ -119,7 +120,19 @@ public class DataModelAdaptor {
 		pdbInfo.setSpaceGroup(sg==null?null:sg.getShortSymbol());
 		pdbInfo.setResolution(pdb.getPDBHeader().getResolution());
 		pdbInfo.setRfreeValue(pdb.getPDBHeader().getRfree());
-		pdbInfo.setExpMethod(pdb.getPDBHeader().getExperimentalTechniques().iterator().next().getName());
+		Set<ExperimentalTechnique> expTecs = pdb.getPDBHeader().getExperimentalTechniques();
+		// if there's nothing in header we 
+		String exp = null;
+		if (expTecs!=null) {
+			exp = expTecs.iterator().next().getName();			
+		} else {
+			if (pdb.isCrystallographic()) {
+				exp = ExperimentalTechnique.XRAY_DIFFRACTION.getName();
+			} else {
+				exp = "UNKNOWN";
+			}
+		}
+		pdbInfo.setExpMethod(exp);
 		
 		pdbInfo.setNcsOpsPresent(pdb.getCrystallographicInfo().getNcsOperators()!=null);
 		
@@ -254,6 +267,11 @@ public class DataModelAdaptor {
 	}
 	
 	public void setPdbBioUnits(BioAssemblyInfo bioAssembly, CrystalCell cell) {
+
+		if (bioAssembly == null) {
+			LOGGER.info("No bio assembly annotation present, will not add bio assembly info to data model");
+			return;
+		}
 		
 		// since the move to Biojava, we have decided to take the first PDB-annotated biounit ONLY whatever its type
 

@@ -147,8 +147,27 @@ public class ChainEvolContext implements Serializable {
 	public ChainEvolContext(ChainEvolContextList parent, Compound compound) {
 		this.parent = parent;
 		Chain chain = compound.getRepresentative();
-		// TODO before Biojava move, here we used to call chain.getSequenceMSEtoMET(). How do we do that in Biojava?
+		// it looks like biojava interprets MSEs as METs, at least for the sequence, so no issues here
 		this.sequence = chain.getSeqResSequence();
+		// for files without a SEQRES, it will be empty, we get it from atom groups
+		if (this.sequence.isEmpty()) {
+			LOGGER.warn("Could not get a sequence from SEQRES for chain {}. Getting it from ATOM instead",chain.getChainID());
+			int maxLength = 0;
+			Chain chainWithMaxAtomSeqLength = null;
+			for (Chain c:compound.getChains()) {
+				this.sequence = c.getAtomSequence();
+				if (this.sequence.length()>=maxLength) {
+					chainWithMaxAtomSeqLength = c;
+				}
+				maxLength = this.sequence.length();
+			}
+			LOGGER.info("ATOM sequence for chain cluster {} will come from chain {} since it is the chain with max length",
+					chain.getChainID(), chainWithMaxAtomSeqLength.getChainID());
+			
+			if (this.sequence.isEmpty()) {
+				LOGGER.warn("Sequence from ATOM records for chain {} has length 0",chain.getChainID());
+			}
+		}
 		this.sequenceId = chain.getChainID();
 		this.hasQueryMatch = false;
 		this.searchWithFullUniprot = true;

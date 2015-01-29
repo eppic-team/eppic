@@ -170,7 +170,6 @@ public class Main {
 					// TODO we should parse PDB files with no X padding if no SEQRES is found. Otherwise matching to uniprot doesn't work in many cases
 					//fileParsingParams.set????					
 					fileParsingParams.setAlignSeqRes(true);
-					fileParsingParams.setParseBioAssembly(true);
 
 					consumer.setFileParsingParameters(fileParsingParams);
 
