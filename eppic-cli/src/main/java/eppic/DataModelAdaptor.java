@@ -448,6 +448,7 @@ public class DataModelAdaptor {
 			}
 			chainClusterDB.setRepChain(cc.getRepresentative().getChainID());
 			chainClusterDB.setMemberChains(getMemberChainsString(cc));
+			chainClusterDB.setNumMembers(getUniqueChainIds(cc).size());
 			chainClusterDB.setProtein(cec.isProtein());
 			chainClusterDB.setHasUniProtRef(cec.hasQueryMatch());
 			

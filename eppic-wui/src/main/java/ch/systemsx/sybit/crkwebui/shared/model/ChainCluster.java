@@ -26,6 +26,7 @@ public class ChainCluster implements Serializable {
 	
 	private String repChain;	 // the PDB chain code of representative chain
 	private String memberChains; // comma separated list of member PDB chain codes
+	private int numMembers;
 	
 	private boolean protein;
 	
@@ -64,6 +65,7 @@ public class ChainCluster implements Serializable {
 	public ChainCluster(int uid,
 							String repChain,
 							String memberChains,
+							int numMembers,
 							boolean protein,
 							String uniprotId,
 							int numHomologs,
@@ -82,6 +84,7 @@ public class ChainCluster implements Serializable {
 		this.uid = uid;
 		this.repChain = repChain;
 		this.memberChains = memberChains;
+		this.numMembers = numMembers;
 		this.protein = protein;
 		this.refUniProtId = uniprotId;
 		this.numHomologs = numHomologs;
@@ -247,6 +250,14 @@ public class ChainCluster implements Serializable {
 		this.memberChains = memberChains;
 	}
 
+	public int getNumMembers() {
+		return numMembers;
+	}
+
+	public void setNumMembers(int numMembers) {
+		this.numMembers = numMembers;
+	}
+
 	public String getMsaAlignedSeq() {
 		return msaAlignedSeq;
 	}
@@ -305,6 +316,7 @@ public class ChainCluster implements Serializable {
 		
 		chainCluster.setRepChain(chainClusterDB.getRepChain());
 		chainCluster.setMemberChains(chainClusterDB.getMemberChains());
+		chainCluster.setNumMembers(chainClusterDB.getNumMembers());
 		
 		chainCluster.setSeqIdCutoff(chainClusterDB.getSeqIdCutoff());
 		chainCluster.setClusteringSeqId(chainClusterDB.getClusteringSeqId());

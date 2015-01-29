@@ -483,6 +483,7 @@
 				<column length="4" />
 			</basic>
 			<basic name="memberChains"></basic>
+			<basic name="numMembers"></basic>
 			<basic name="refUniProtId"></basic>
 			<basic name="refUniProtStart"></basic>
 			<basic name="refUniProtEnd"></basic>
