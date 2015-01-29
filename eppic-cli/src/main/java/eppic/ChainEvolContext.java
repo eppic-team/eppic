@@ -15,7 +15,6 @@ import org.biojava.bio.structure.Atom;
 import org.biojava.bio.structure.Chain;
 import org.biojava.bio.structure.Compound;
 import org.biojava.bio.structure.Group;
-import org.biojava.bio.structure.GroupType;
 import org.biojava.bio.structure.ResidueNumber;
 import org.biojava.bio.structure.StructureTools;
 import org.biojava3.alignment.NeedlemanWunsch;
@@ -143,7 +142,7 @@ public class ChainEvolContext implements Serializable {
 	/**
 	 * Construct a ChainEvolContext from a Chain
 	 * @param parent
-	 * @param chain
+	 * @param compound
 	 */
 	public ChainEvolContext(ChainEvolContextList parent, Compound compound) {
 		this.parent = parent;
@@ -155,13 +154,7 @@ public class ChainEvolContext implements Serializable {
 		this.searchWithFullUniprot = true;
 		this.queryWarnings = new ArrayList<String>();
 		
-		GroupType type = StructureTools.getPredominantGroupType(chain);
-		
-		if (type != GroupType.AMINOACID) {
-			this.isProtein = false;
-		} else {
-			this.isProtein = true;
-		}
+		this.isProtein = StructureTools.isProtein(chain);
 		
 		// we only do this mapping in the case that the input is from chain
 		initResNumberMaps(compound);

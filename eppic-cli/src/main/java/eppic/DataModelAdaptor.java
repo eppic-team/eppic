@@ -17,7 +17,6 @@ import org.biojava.bio.structure.Compound;
 import org.biojava.bio.structure.Group;
 import org.biojava.bio.structure.PDBCrystallographicInfo;
 import org.biojava.bio.structure.Structure;
-import org.biojava.bio.structure.StructureTools;
 import org.biojava.bio.structure.asa.GroupAsa;
 import org.biojava.bio.structure.contact.AtomContact;
 import org.biojava.bio.structure.contact.GroupContact;
@@ -63,9 +62,6 @@ import org.slf4j.LoggerFactory;
 public class DataModelAdaptor {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(DataModelAdaptor.class);
-	
-	private static final int FIRST = 0;
-	private static final int SECOND = 1;
 	
 	private static final double CONFIDENCE_NOT_AVAILABLE = -1.0;
 	private static final double SCORE_NOT_AVAILABLE = -1.0;
@@ -706,8 +702,8 @@ public class DataModelAdaptor {
 		List<ResidueDB> iril = new ArrayList<ResidueDB>();
 		ii.setResidues(iril);
 
-		addResidueDetailsOfPartner(iril, interf, 0);
-		addResidueDetailsOfPartner(iril, interf, 1);
+		addResidueDetailsOfPartner(iril, interf, InterfaceEvolContext.FIRST);
+		addResidueDetailsOfPartner(iril, interf, InterfaceEvolContext.SECOND);
 
 		for(ResidueDB iri : iril) {
 			iri.setInterfaceItem(ii);
@@ -717,66 +713,63 @@ public class DataModelAdaptor {
 	private void addResidueDetailsOfPartner(List<ResidueDB> iril, StructureInterface interf, int molecId) {
 
 		Chain chain = null;
-		if (molecId == FIRST) chain =  interf.getMolecules().getFirst()[0].getGroup().getChain();
-		else if (molecId == SECOND) chain = interf.getMolecules().getSecond()[0].getGroup().getChain();
+		if (molecId == InterfaceEvolContext.FIRST) chain =  interf.getMolecules().getFirst()[0].getGroup().getChain();
+		else if (molecId == InterfaceEvolContext.SECOND) chain = interf.getMolecules().getSecond()[0].getGroup().getChain();
 		
-		if (StructureTools.isProtein(chain)) {
-			
-			for (Group group:chain.getAtomGroups()) {
-				
-				if (group.isWater()) continue;
-				
-				GroupAsa groupAsa = null;
-				if (molecId==FIRST) groupAsa = interf.getFirstGroupAsa(group.getResidueNumber());
-				else if (molecId==SECOND) groupAsa = interf.getSecondGroupAsa(group.getResidueNumber());
-				
-				// if we have no groupAsa that means that this is a Residue for which we don't calculate ASA (most likely HETATM)
-				if (groupAsa==null) continue;
-				
-				String resType = group.getPDBName();
-				int assignment = ResidueDB.OTHER;
-				
-				double asa = groupAsa.getAsaU();
-				double bsa = groupAsa.getBsa();
-				
-				// NOTE the regions are mutually exclusive (one and only one assignment per region)
+		for (Group group:chain.getAtomGroups()) {
 
-				// For the case of CORE_EVOL/CORE_GEOM we are assuming that CORE_EVOL is a superset of CORE_GEOM 
-				// (i.e. that caCutoffForRimCore<caCutoffForGeom)
-				// thus, as groups are exclusive, to get the actual full subset of CORE_EVOL one needs to get
-				// the union of CORE_EVOL and CORE_GEOM
-				
-				// this should match the condition in owl.core.structure.PdbChain.getRimAndCore()
-				if (groupAsa.getAsaU()>params.getMinAsaForSurface() && groupAsa.getBsa()>0) {
-					// NOTE: we use here caCutoffForRimCore as the one and only for both evol methods
-					// NOTE2: we are assuming that caCutoffForRimCore<caCutoffForGeom, if that doesn't hold this won't work!
-					if (groupAsa.getBsaToAsaRatio()<params.getCAcutoffForRimCore()) {
-						assignment = ResidueDB.RIM_EVOLUTIONARY;
-					} else if (groupAsa.getBsaToAsaRatio()<params.getCAcutoffForGeom()){
-						assignment = ResidueDB.CORE_EVOLUTIONARY; 
-					} else {
-						assignment = ResidueDB.CORE_GEOMETRY;
-					} 
-					
+			if (group.isWater()) continue;
+
+			GroupAsa groupAsa = null;
+			if (molecId==InterfaceEvolContext.FIRST) groupAsa = interf.getFirstGroupAsa(group.getResidueNumber());
+			else if (molecId==InterfaceEvolContext.SECOND) groupAsa = interf.getSecondGroupAsa(group.getResidueNumber());
+
+			// if we have no groupAsa that means that this is a Residue for which we don't calculate ASA (most likely HETATM)
+			if (groupAsa==null) continue;
+
+			String resType = group.getPDBName();
+			int assignment = ResidueDB.OTHER;
+
+			double asa = groupAsa.getAsaU();
+			double bsa = groupAsa.getBsa();
+
+			// NOTE the regions are mutually exclusive (one and only one assignment per region)
+
+			// For the case of CORE_EVOL/CORE_GEOM we are assuming that CORE_EVOL is a superset of CORE_GEOM 
+			// (i.e. that caCutoffForRimCore<caCutoffForGeom)
+			// thus, as groups are exclusive, to get the actual full subset of CORE_EVOL one needs to get
+			// the union of CORE_EVOL and CORE_GEOM
+
+			// this should match the condition in owl.core.structure.PdbChain.getRimAndCore()
+			if (groupAsa.getAsaU()>params.getMinAsaForSurface() && groupAsa.getBsa()>0) {
+				// NOTE: we use here caCutoffForRimCore as the one and only for both evol methods
+				// NOTE2: we are assuming that caCutoffForRimCore<caCutoffForGeom, if that doesn't hold this won't work!
+				if (groupAsa.getBsaToAsaRatio()<params.getCAcutoffForRimCore()) {
+					assignment = ResidueDB.RIM_EVOLUTIONARY;
+				} else if (groupAsa.getBsaToAsaRatio()<params.getCAcutoffForGeom()){
+					assignment = ResidueDB.CORE_EVOLUTIONARY; 
+				} else {
+					assignment = ResidueDB.CORE_GEOMETRY;
+				} 
+
 				// residues not in interface but still with more ASA than minimum required are called surface
-				} else if (groupAsa.getAsaU()>params.getMinAsaForSurface()) {
-					assignment = ResidueDB.SURFACE;
-				}
-				
-				
-				ResidueDB iri = new ResidueDB();
-				iri.setResidueNumber(getSeqresSerial(group, chain));
-				iri.setPdbResidueNumber(group.getResidueNumber().toString());
-				iri.setResidueType(resType);
-				iri.setAsa(asa);
-				iri.setBsa(bsa);
-				iri.setRegion(assignment);
-				iri.setEntropyScore(-1.0);
-				iri.setSide(molecId+1); // structure ids are 1 and 2 while molecId are 0 and 1
-
-				iri.setInterfaceItem(pdbInfo.getInterface(interf.getId()));
-				iril.add(iri);
+			} else if (groupAsa.getAsaU()>params.getMinAsaForSurface()) {
+				assignment = ResidueDB.SURFACE;
 			}
+
+
+			ResidueDB iri = new ResidueDB();
+			iri.setResidueNumber(getSeqresSerial(group, chain));
+			iri.setPdbResidueNumber(group.getResidueNumber().toString());
+			iri.setResidueType(resType);
+			iri.setAsa(asa);
+			iri.setBsa(bsa);
+			iri.setRegion(assignment);
+			iri.setEntropyScore(-1.0);
+			iri.setSide(molecId+1); // structure ids are 1 and 2 while molecId are 0 and 1
+
+			iri.setInterfaceItem(pdbInfo.getInterface(interf.getId()));
+			iril.add(iri);
 		}
 	}
 
@@ -785,8 +778,8 @@ public class DataModelAdaptor {
 		
 		
 		int[] molecIds = new int[2];
-		molecIds[0] = 0;
-		molecIds[1] = 1;
+		molecIds[0] = InterfaceEvolContext.FIRST;
+		molecIds[1] = InterfaceEvolContext.SECOND;
 
 		// beware the counter is global for both molecule 1 and 2 (as the List<ResidueDB> contains both, identified by a structure id 1 or 2)
 		int i = 0;  
@@ -794,14 +787,14 @@ public class DataModelAdaptor {
 		for (int molecId:molecIds) { 
 			ChainEvolContext cec = iec.getChainEvolContext(molecId);
 			Chain mol = null;
-			if (molecId==FIRST) {
+			if (molecId==InterfaceEvolContext.FIRST) {
 				mol = interf.getMolecules().getFirst()[0].getGroup().getChain();
 			}
-			else if (molecId==SECOND) {
+			else if (molecId==InterfaceEvolContext.SECOND) {
 				mol = interf.getMolecules().getSecond()[0].getGroup().getChain();
 			}
 
-			if ( StructureTools.isProtein(mol) ) {
+			if ( cec!=null && cec.isProtein() ) {
 				 
 				List<Double> entropies = null;
 				if (cec.hasQueryMatch()) 
@@ -811,8 +804,8 @@ public class DataModelAdaptor {
 					// skipping of residues: we follow exact same procedure as in addResidueDetailsOfPartner(), otherwise indices won't match
 					if (residue.isWater()) continue;
 					GroupAsa groupAsa = null;
-					if (molecId==FIRST) groupAsa = interf.getFirstGroupAsa(residue.getResidueNumber());
-					else if (molecId==SECOND) groupAsa = interf.getSecondGroupAsa(residue.getResidueNumber());
+					if (molecId==InterfaceEvolContext.FIRST) groupAsa = interf.getFirstGroupAsa(residue.getResidueNumber());
+					else if (molecId==InterfaceEvolContext.SECOND) groupAsa = interf.getSecondGroupAsa(residue.getResidueNumber());
 					
 					if (groupAsa==null) continue;
 
