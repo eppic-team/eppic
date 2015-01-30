@@ -2,18 +2,18 @@ package eppic.commons.pisa;
 
 import java.io.PrintStream;
 
-import org.biojava.bio.structure.Atom;
-import org.biojava.bio.structure.Calc;
-import org.biojava.bio.structure.Chain;
-import org.biojava.bio.structure.Group;
-import org.biojava.bio.structure.ResidueNumber;
-import org.biojava.bio.structure.Structure;
-import org.biojava.bio.structure.StructureException;
-import org.biojava.bio.structure.StructureTools;
-import org.biojava.bio.structure.asa.GroupAsa;
-import org.biojava.bio.structure.contact.Pair;
-import org.biojava.bio.structure.contact.StructureInterface;
-import org.biojava.bio.structure.xtal.CrystalTransform;
+import org.biojava.nbio.structure.Atom;
+import org.biojava.nbio.structure.Calc;
+import org.biojava.nbio.structure.Chain;
+import org.biojava.nbio.structure.Group;
+import org.biojava.nbio.structure.ResidueNumber;
+import org.biojava.nbio.structure.Structure;
+import org.biojava.nbio.structure.StructureException;
+import org.biojava.nbio.structure.StructureTools;
+import org.biojava.nbio.structure.asa.GroupAsa;
+import org.biojava.nbio.structure.contact.Pair;
+import org.biojava.nbio.structure.contact.StructureInterface;
+import org.biojava.nbio.structure.xtal.CrystalTransform;
 
 
 public class PisaInterface implements Comparable<PisaInterface> {

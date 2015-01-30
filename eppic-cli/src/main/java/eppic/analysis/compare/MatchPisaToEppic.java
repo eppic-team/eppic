@@ -3,16 +3,6 @@
  */
 package eppic.analysis.compare;
 
-import eppic.DataModelAdaptor;
-import eppic.EppicParams;
-import eppic.commons.pisa.PisaAsmSetList;
-import eppic.commons.pisa.PisaAssembliesXMLParser;
-import eppic.commons.pisa.PisaInterfaceList;
-import eppic.commons.pisa.PisaInterfaceXMLParser;
-import eppic.commons.util.Goodies;
-import eppic.model.PdbInfoDB;
-import gnu.getopt.Getopt;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -24,13 +14,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
 
-import org.biojava.bio.structure.Structure;
-import org.biojava.bio.structure.StructureException;
-import org.biojava.bio.structure.align.util.AtomCache;
-import org.biojava.bio.structure.contact.StructureInterfaceList;
-import org.biojava.bio.structure.xtal.CrystalBuilder;
-import org.biojava3.structure.StructureIO;
+import org.biojava.nbio.structure.Structure;
+import org.biojava.nbio.structure.StructureException;
+import org.biojava.nbio.structure.StructureIO;
+import org.biojava.nbio.structure.align.util.AtomCache;
+import org.biojava.nbio.structure.contact.StructureInterfaceList;
+import org.biojava.nbio.structure.xtal.CrystalBuilder;
 import org.xml.sax.SAXException;
+
+import eppic.DataModelAdaptor;
+import eppic.EppicParams;
+import eppic.commons.pisa.PisaAsmSetList;
+import eppic.commons.pisa.PisaAssembliesXMLParser;
+import eppic.commons.pisa.PisaInterfaceList;
+import eppic.commons.pisa.PisaInterfaceXMLParser;
+import eppic.commons.util.Goodies;
+import eppic.model.PdbInfoDB;
+import gnu.getopt.Getopt;
 
 
 

@@ -3,12 +3,12 @@ package eppic.predictors;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.biojava.bio.structure.Group;
+import org.biojava.nbio.structure.Group;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import eppic.EppicParams;
 import eppic.CallType;
+import eppic.EppicParams;
 import eppic.InterfaceEvolContext;
 
 

@@ -3,19 +3,19 @@
  */
 package eppic.tools;
 
-import eppic.commons.sequence.NoMatchFoundException;
-import eppic.commons.sequence.SiftsConnection;
-import eppic.commons.sequence.UniprotLocalConnection;
-import eppic.commons.sequence.UnirefEntry;
-import eppic.commons.util.Interval;
-import gnu.getopt.Getopt;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+
+import eppic.commons.sequence.NoMatchFoundException;
+import eppic.commons.sequence.SiftsConnection;
+import eppic.commons.sequence.UniprotLocalConnection;
+import eppic.commons.sequence.UnirefEntry;
+import eppic.commons.util.Interval;
+import gnu.getopt.Getopt;
 
 
 /**

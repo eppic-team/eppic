@@ -13,10 +13,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.TreeMap;
 
-import org.biojava.bio.structure.Group;
-import org.biojava.bio.structure.asa.GroupAsa;
-import org.biojava.bio.structure.contact.StructureInterface;
-import org.biojava.bio.structure.contact.StructureInterfaceList;
+import org.biojava.nbio.structure.Group;
+import org.biojava.nbio.structure.asa.GroupAsa;
+import org.biojava.nbio.structure.contact.StructureInterface;
+import org.biojava.nbio.structure.contact.StructureInterfaceList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

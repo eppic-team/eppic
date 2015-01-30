@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
 
-import org.biojava.bio.structure.contact.StructureInterfaceList;
+import org.biojava.nbio.structure.contact.StructureInterfaceList;
 
 import eppic.ChainEvolContextList;
 import eppic.commons.util.Goodies;

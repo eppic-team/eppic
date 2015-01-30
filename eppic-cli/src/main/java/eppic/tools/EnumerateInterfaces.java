@@ -21,25 +21,25 @@ import java.util.regex.Pattern;
 import javax.vecmath.AxisAngle4d;
 import javax.vecmath.Vector3d;
 
-import org.biojava.bio.structure.Chain;
-import org.biojava.bio.structure.Compound;
-import org.biojava.bio.structure.Group;
-import org.biojava.bio.structure.PDBCrystallographicInfo;
-import org.biojava.bio.structure.Structure;
-import org.biojava.bio.structure.StructureException;
-import org.biojava.bio.structure.align.util.AtomCache;
-import org.biojava.bio.structure.contact.Pair;
-import org.biojava.bio.structure.contact.StructureInterface;
-import org.biojava.bio.structure.contact.StructureInterfaceCluster;
-import org.biojava.bio.structure.contact.StructureInterfaceList;
-import org.biojava.bio.structure.io.FileParsingParameters;
-import org.biojava.bio.structure.io.PDBFileParser;
-import org.biojava.bio.structure.io.mmcif.MMcifParser;
-import org.biojava.bio.structure.io.mmcif.SimpleMMcifConsumer;
-import org.biojava.bio.structure.io.mmcif.SimpleMMcifParser;
-import org.biojava.bio.structure.xtal.CrystalBuilder;
-import org.biojava.bio.structure.xtal.SpaceGroup;
-import org.biojava3.structure.StructureIO;
+import org.biojava.nbio.structure.Chain;
+import org.biojava.nbio.structure.Compound;
+import org.biojava.nbio.structure.Group;
+import org.biojava.nbio.structure.PDBCrystallographicInfo;
+import org.biojava.nbio.structure.Structure;
+import org.biojava.nbio.structure.StructureException;
+import org.biojava.nbio.structure.StructureIO;
+import org.biojava.nbio.structure.align.util.AtomCache;
+import org.biojava.nbio.structure.contact.Pair;
+import org.biojava.nbio.structure.contact.StructureInterface;
+import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
+import org.biojava.nbio.structure.contact.StructureInterfaceList;
+import org.biojava.nbio.structure.io.FileParsingParameters;
+import org.biojava.nbio.structure.io.PDBFileParser;
+import org.biojava.nbio.structure.io.mmcif.MMcifParser;
+import org.biojava.nbio.structure.io.mmcif.SimpleMMcifConsumer;
+import org.biojava.nbio.structure.io.mmcif.SimpleMMcifParser;
+import org.biojava.nbio.structure.xtal.CrystalBuilder;
+import org.biojava.nbio.structure.xtal.SpaceGroup;
 
 
 

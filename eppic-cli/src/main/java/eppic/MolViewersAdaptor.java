@@ -5,8 +5,8 @@ import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.util.List;
 
-import org.biojava.bio.structure.Group;
-import org.biojava.bio.structure.contact.StructureInterface;
+import org.biojava.nbio.structure.Group;
+import org.biojava.nbio.structure.contact.StructureInterface;
 
 public class MolViewersAdaptor {
 

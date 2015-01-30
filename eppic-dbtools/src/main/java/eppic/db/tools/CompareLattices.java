@@ -1,6 +1,6 @@
 package eppic.db.tools;
 
-import org.biojava.bio.structure.contact.Pair;
+import org.biojava.nbio.structure.contact.Pair;
 
 import eppic.db.LatticeMatchMatrix;
 import eppic.db.LatticeOverlapScore;

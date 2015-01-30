@@ -1,5 +1,6 @@
 package eppic;
 
+import eppic.commons.sequence.AminoAcid;
 import gnu.getopt.Getopt;
 
 import java.io.File;
@@ -11,8 +12,6 @@ import java.io.PrintStream;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import eppic.commons.sequence.AminoAcid;
 
 public class EppicParams {
 	

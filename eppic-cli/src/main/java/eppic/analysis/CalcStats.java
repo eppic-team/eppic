@@ -1,18 +1,5 @@
 package eppic.analysis;
 
-import eppic.EppicParams;
-import eppic.CallType;
-import eppic.ChainEvolContextList;
-import eppic.InterfaceEvolContext;
-import eppic.InterfaceEvolContextList;
-import eppic.ScoringType;
-import eppic.predictors.CombinedPredictor;
-import eppic.predictors.EvolCoreSurfacePredictor;
-import eppic.predictors.EvolCoreRimPredictor;
-import eppic.predictors.GeometryPredictor;
-import eppic.predictors.InterfaceTypePredictor;
-import gnu.getopt.Getopt;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -22,10 +9,23 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
 
-import org.biojava.bio.structure.contact.StructureInterface;
-import org.biojava.bio.structure.contact.StructureInterfaceList;
+import org.biojava.nbio.structure.contact.StructureInterface;
+import org.biojava.nbio.structure.contact.StructureInterfaceList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import eppic.CallType;
+import eppic.ChainEvolContextList;
+import eppic.EppicParams;
+import eppic.InterfaceEvolContext;
+import eppic.InterfaceEvolContextList;
+import eppic.ScoringType;
+import eppic.predictors.CombinedPredictor;
+import eppic.predictors.EvolCoreRimPredictor;
+import eppic.predictors.EvolCoreSurfacePredictor;
+import eppic.predictors.GeometryPredictor;
+import eppic.predictors.InterfaceTypePredictor;
+import gnu.getopt.Getopt;
 
 
 /**

@@ -6,12 +6,12 @@ import java.util.List;
 import org.apache.commons.math.stat.descriptive.UnivariateStatistic;
 import org.apache.commons.math.stat.descriptive.moment.Mean;
 import org.apache.commons.math.stat.descriptive.moment.StandardDeviation;
-import org.biojava.bio.structure.Group;
+import org.biojava.nbio.structure.Group;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import eppic.EppicParams;
 import eppic.CallType;
+import eppic.EppicParams;
 import eppic.InterfaceEvolContext;
 
 public class EvolCoreSurfacePredictor implements InterfaceTypePredictor {

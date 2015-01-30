@@ -7,16 +7,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.biojava.bio.structure.contact.StructureInterface;
-import org.biojava.bio.structure.contact.StructureInterfaceCluster;
-import org.biojava.bio.structure.contact.StructureInterfaceList;
+import org.biojava.nbio.structure.contact.StructureInterface;
+import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
+import org.biojava.nbio.structure.contact.StructureInterfaceList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import eppic.predictors.EvolCoreRimClusterPredictor;
+import eppic.predictors.EvolCoreRimPredictor;
 import eppic.predictors.EvolCoreSurfaceClusterPredictor;
 import eppic.predictors.EvolCoreSurfacePredictor;
-import eppic.predictors.EvolCoreRimPredictor;
 
 public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>, Serializable {
 

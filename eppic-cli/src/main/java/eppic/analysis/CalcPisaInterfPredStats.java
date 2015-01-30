@@ -1,14 +1,5 @@
 package eppic.analysis;
 
-import eppic.CallType;
-import eppic.ScoringType;
-import eppic.commons.pisa.OligomericPrediction;
-import eppic.commons.pisa.PisaAsmSetList;
-import eppic.commons.pisa.PisaAssembliesXMLParser;
-import eppic.commons.pisa.PisaConnection;
-import eppic.commons.pisa.PisaInterfaceList;
-import gnu.getopt.Getopt;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -17,6 +8,15 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.xml.sax.SAXException;
+
+import eppic.CallType;
+import eppic.ScoringType;
+import eppic.commons.pisa.OligomericPrediction;
+import eppic.commons.pisa.PisaAsmSetList;
+import eppic.commons.pisa.PisaAssembliesXMLParser;
+import eppic.commons.pisa.PisaConnection;
+import eppic.commons.pisa.PisaInterfaceList;
+import gnu.getopt.Getopt;
 
 
 

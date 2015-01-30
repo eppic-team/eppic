@@ -3,12 +3,12 @@ package eppic.predictors;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.biojava.bio.structure.contact.AtomContact;
+import org.biojava.nbio.structure.contact.AtomContact;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import eppic.DataModelAdaptor;
 import eppic.CallType;
+import eppic.DataModelAdaptor;
 import eppic.InterfaceEvolContext;
 
 public class CombinedPredictor implements InterfaceTypePredictor {

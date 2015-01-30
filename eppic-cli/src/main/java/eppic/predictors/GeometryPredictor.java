@@ -4,17 +4,17 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.biojava.bio.structure.Calc;
-import org.biojava.bio.structure.Group;
-import org.biojava.bio.structure.asa.GroupAsa;
-import org.biojava.bio.structure.contact.AtomContact;
-import org.biojava.bio.structure.contact.Pair;
-import org.biojava.bio.structure.contact.StructureInterface;
+import org.biojava.nbio.structure.Calc;
+import org.biojava.nbio.structure.Group;
+import org.biojava.nbio.structure.asa.GroupAsa;
+import org.biojava.nbio.structure.contact.AtomContact;
+import org.biojava.nbio.structure.contact.Pair;
+import org.biojava.nbio.structure.contact.StructureInterface;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import eppic.EppicParams;
 import eppic.CallType;
+import eppic.EppicParams;
 import eppic.InterfaceEvolContext;
 
 public class GeometryPredictor implements InterfaceTypePredictor {

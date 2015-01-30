@@ -7,9 +7,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.TreeMap;
 
-import org.biojava.bio.structure.Compound;
-import org.biojava.bio.structure.Structure;
-import org.biojava.bio.structure.StructureException;
+import org.biojava.nbio.structure.Compound;
+import org.biojava.nbio.structure.Structure;
+import org.biojava.nbio.structure.StructureException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

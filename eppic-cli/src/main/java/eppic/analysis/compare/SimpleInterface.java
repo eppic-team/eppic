@@ -5,9 +5,9 @@ import java.util.List;
 
 import javax.vecmath.Matrix4d;
 
-import org.biojava.bio.structure.quaternary.BioAssemblyInfo;
-import org.biojava.bio.structure.xtal.CrystalCell;
-import org.biojava.bio.structure.xtal.SpaceGroup;
+import org.biojava.nbio.structure.quaternary.BioAssemblyInfo;
+import org.biojava.nbio.structure.xtal.CrystalCell;
+import org.biojava.nbio.structure.xtal.SpaceGroup;
 
 import eppic.commons.pisa.PisaInterface;
 import eppic.commons.pisa.PisaInterfaceList;

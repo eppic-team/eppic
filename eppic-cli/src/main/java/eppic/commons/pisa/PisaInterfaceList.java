@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.biojava.bio.structure.Structure;
-import org.biojava.bio.structure.contact.StructureInterfaceList;
+import org.biojava.nbio.structure.Structure;
+import org.biojava.nbio.structure.contact.StructureInterfaceList;
 
 public class PisaInterfaceList implements Iterable<PisaInterface> {
 

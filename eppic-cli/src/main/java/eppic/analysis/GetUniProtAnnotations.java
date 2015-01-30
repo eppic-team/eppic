@@ -7,14 +7,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import eppic.commons.sequence.NoMatchFoundException;
-import eppic.commons.sequence.UniProtConnection;
 //import uk.ac.ebi.kraken.interfaces.uniprot.Keyword;
 import uk.ac.ebi.kraken.interfaces.uniprot.UniProtEntry;
 //import uk.ac.ebi.kraken.interfaces.uniprot.dbx.go.Go;
 import uk.ac.ebi.kraken.interfaces.uniprot.description.Field;
 import uk.ac.ebi.kraken.interfaces.uniprot.description.FieldType;
 import uk.ac.ebi.kraken.interfaces.uniprot.description.Name;
+import eppic.commons.sequence.NoMatchFoundException;
+import eppic.commons.sequence.UniProtConnection;
 
 /**
  * A script to get UniProt annotations (all names) from UniProt JAPI

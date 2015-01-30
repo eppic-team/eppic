@@ -9,11 +9,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import org.biojava.bio.structure.Compound;
-import org.biojava.bio.structure.Structure;
-import org.biojava.bio.structure.StructureException;
-import org.biojava.bio.structure.align.util.AtomCache;
-import org.biojava3.structure.StructureIO;
+import org.biojava.nbio.structure.Compound;
+import org.biojava.nbio.structure.Structure;
+import org.biojava.nbio.structure.StructureException;
+import org.biojava.nbio.structure.StructureIO;
+import org.biojava.nbio.structure.align.util.AtomCache;
 
 import eppic.commons.blast.BlastException;
 import eppic.commons.blast.BlastRunner;

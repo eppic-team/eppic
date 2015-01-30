@@ -1,6 +1,5 @@
 package eppic.commons.util;
 import java.io.Serializable;
-import java.lang.Comparable;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

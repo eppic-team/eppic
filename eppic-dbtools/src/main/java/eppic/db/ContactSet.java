@@ -3,10 +3,10 @@ package eppic.db;
 import java.util.HashSet;
 import java.util.List;
 
-import org.biojava.bio.structure.contact.Pair;
-import org.biojava3.alignment.template.SequencePair;
-import org.biojava3.core.sequence.ProteinSequence;
-import org.biojava3.core.sequence.compound.AminoAcidCompound;
+import org.biojava.nbio.alignment.template.SequencePair;
+import org.biojava.nbio.core.sequence.ProteinSequence;
+import org.biojava.nbio.core.sequence.compound.AminoAcidCompound;
+import org.biojava.nbio.structure.contact.Pair;
 
 import eppic.model.ContactDB;
 

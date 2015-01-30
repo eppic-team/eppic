@@ -12,7 +12,7 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.biojava.bio.structure.xtal.SpaceGroup;
+import org.biojava.nbio.structure.xtal.SpaceGroup;
 
 
 

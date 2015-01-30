@@ -10,11 +10,11 @@ import java.util.List;
 import java.util.zip.GZIPOutputStream;
 
 import org.apache.commons.math.random.RandomDataImpl;
-import org.biojava.bio.structure.Atom;
-import org.biojava.bio.structure.Chain;
-import org.biojava.bio.structure.Group;
-import org.biojava.bio.structure.StructureTools;
-import org.biojava.bio.structure.contact.StructureInterface;
+import org.biojava.nbio.structure.Atom;
+import org.biojava.nbio.structure.Chain;
+import org.biojava.nbio.structure.Group;
+import org.biojava.nbio.structure.StructureTools;
+import org.biojava.nbio.structure.contact.StructureInterface;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -7,14 +7,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import eppic.db.LatticeComparisonGroup;
 import eppic.db.Interface;
 import eppic.db.InterfaceCluster;
+import eppic.db.LatticeComparisonGroup;
 import eppic.db.PdbInfo;
 import eppic.db.PdbInfoCluster;
 import eppic.db.PdbInfoList;
-import eppic.model.PdbInfoDB;
 import eppic.db.SeqClusterLevel;
+import eppic.model.PdbInfoDB;
 import gnu.getopt.Getopt;
 
 public class ClusterCrystalForms {

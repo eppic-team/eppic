@@ -13,12 +13,12 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import org.biojava.bio.structure.Chain;
-import org.biojava.bio.structure.Group;
-import org.biojava.bio.structure.Structure;
-import org.biojava.bio.structure.contact.StructureInterface;
-import org.biojava.bio.structure.contact.StructureInterfaceList;
-import org.biojava.bio.structure.io.PDBFileParser;
+import org.biojava.nbio.structure.Chain;
+import org.biojava.nbio.structure.Group;
+import org.biojava.nbio.structure.Structure;
+import org.biojava.nbio.structure.contact.StructureInterface;
+import org.biojava.nbio.structure.contact.StructureInterfaceList;
+import org.biojava.nbio.structure.io.PDBFileParser;
 
 
 public class PymolRunner {

@@ -7,7 +7,7 @@ import java.util.List;
 
 import javax.vecmath.Matrix4d;
 
-import org.biojava.bio.structure.xtal.CrystalTransform;
+import org.biojava.nbio.structure.xtal.CrystalTransform;
 
 public class PisaMolecule implements Iterable<PisaResidue> {
 	

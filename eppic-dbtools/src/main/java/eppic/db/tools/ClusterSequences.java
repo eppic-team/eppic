@@ -1,15 +1,15 @@
 package eppic.db.tools;
 
+import eppic.model.ChainClusterDB;
+import eppic.model.SeqClusterDB;
+import gnu.getopt.Getopt;
+
 import java.io.File;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-
-import eppic.model.ChainClusterDB;
-import eppic.model.SeqClusterDB;
-import gnu.getopt.Getopt;
 
 public class ClusterSequences {
 	

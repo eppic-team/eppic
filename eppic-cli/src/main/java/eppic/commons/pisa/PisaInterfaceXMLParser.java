@@ -7,8 +7,8 @@ import java.util.Map;
 
 import javax.vecmath.Matrix4d;
 
-import org.biojava.bio.structure.xtal.CrystalTransform;
-import org.biojava.bio.structure.xtal.SpaceGroup;
+import org.biojava.nbio.structure.xtal.CrystalTransform;
+import org.biojava.nbio.structure.xtal.SpaceGroup;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;

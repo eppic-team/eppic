@@ -2,12 +2,10 @@ package eppic.predictors;
 
 import java.util.List;
 
-import org.biojava.bio.structure.contact.StructureInterface;
-import org.biojava.bio.structure.contact.StructureInterfaceCluster;
+import org.biojava.nbio.structure.contact.StructureInterface;
+import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-
 
 import eppic.CallType;
 import eppic.InterfaceEvolContext;
