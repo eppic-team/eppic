@@ -40,6 +40,7 @@ import org.biojava.nbio.structure.xtal.SpaceGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import eppic.assembly.LatticeGraph;
 import eppic.commons.util.FileTypeGuesser;
 import eppic.commons.util.Goodies;
 import eppic.predictors.CombinedClusterPredictor;
@@ -59,6 +60,7 @@ public class Main {
 	
 	private Structure pdb;
 	private StructureInterfaceList interfaces;
+	private LatticeGraph latticeGraph;
 	private ChainEvolContextList cecs;
 	private InterfaceEvolContextList iecList;
 	private List<GeometryPredictor> gps;
@@ -334,6 +336,10 @@ public class Main {
 
 		}
 		
+	}
+	
+	public void doConstructLatticeGraph() {
+		latticeGraph = new LatticeGraph(this.pdb, this.interfaces);
 	}
 	
 	public void doGeomScoring() throws EppicException {
@@ -831,6 +837,8 @@ public class Main {
 			} else {
 				doFindInterfaces();
 			}
+			
+			doConstructLatticeGraph();
 			
 			// TODO call doHBPlus when fixed
 			// try hbplus if executable is set, writes pdb files needed for it (which then are overwritten in doWritePdbFiles)

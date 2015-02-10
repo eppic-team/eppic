@@ -1,17 +1,17 @@
 package eppic.assembly;
 
-import javax.vecmath.Point3d;
 
 public class InterfaceVertex implements LatticeGraphVertex {
+	
 	private int opId; //assymetric unit
 	private int interfaceId; // interface
-	private Point3d perpendicularPoint;
+	private int clusterId;
 	
+
 	public InterfaceVertex(int opId, int interfaceId) {
 		super();
 		this.opId = opId;
 		this.interfaceId = interfaceId;
-		this.setPerpendicularPoint(null);
 	}
 
 	@Override
@@ -51,12 +51,20 @@ public class InterfaceVertex implements LatticeGraphVertex {
 			return false;
 		return true;
 	}
-
-	public Point3d getPerpendicularPoint() {
-		return perpendicularPoint;
+	
+	public int getClusterId() {
+		return clusterId;
 	}
 
-	public void setPerpendicularPoint(Point3d perpendicularPoint) {
-		this.perpendicularPoint = perpendicularPoint;
+	public void setClusterId(int clusterId) {
+		this.clusterId = clusterId;
+	}
+
+	public void setOpId(int opId) {
+		this.opId = opId;
+	}
+
+	public void setInterfaceId(int interfaceId) {
+		this.interfaceId = interfaceId;
 	}
 }

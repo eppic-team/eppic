@@ -1,7 +1,5 @@
 package eppic.assembly;
 
-import javax.vecmath.Point3d;
-
 
 /**
  * A vertex representing a single chain.
@@ -16,14 +14,12 @@ public class ChainVertex implements LatticeGraphVertex {
 	private String chainId;
 	
 	// Metadata
-	private int entity; //TODO
-	private Point3d auPosition;
+	private int entity; 
 	
 	public ChainVertex(String chainId, int opId) {
 		super();
 		this.chainId = chainId;
 		this.opId = opId;
-		this.auPosition = null;
 	}
 
 	public String getChainId() {
@@ -70,11 +66,11 @@ public class ChainVertex implements LatticeGraphVertex {
 		return true;
 	}
 
-	public void setAUPosition(Point3d centroidAU) {
-		this.auPosition = centroidAU;
+	public int getEntity() {
+		return entity;
 	}
-	
-	public Point3d getAUPosition() {
-		return this.auPosition;
+
+	public void setEntity(int entity) {
+		this.entity = entity;
 	}
 }
