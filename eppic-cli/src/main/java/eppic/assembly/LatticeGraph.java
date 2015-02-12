@@ -1,12 +1,9 @@
 package eppic.assembly;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.vecmath.Matrix4d;
-import javax.vecmath.Point3i;
 
 import org.biojava.nbio.structure.Chain;
 import org.biojava.nbio.structure.Structure;
@@ -20,7 +17,6 @@ import org.slf4j.LoggerFactory;
 import edu.uci.ics.jung.graph.DirectedOrderedSparseMultigraph;
 import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.graph.util.EdgeType;
-import eppic.analysis.compare.InterfaceMatcher;
 
 
 
@@ -125,74 +121,90 @@ public class LatticeGraph {
 	private void initLatticeGraph(Structure struct, StructureInterfaceList interfaces) {
 		
 		SpaceGroup sg = struct.getCrystallographicInfo().getSpaceGroup();
-		
-		for (int a=-1;a<=1;a++) {
-			for (int b=-1;b<=1;b++) {
-				for (int c=-1;c<=1;c++) {
-					
-					if (a==0 && b==0 && c==0) continue;
-					
-					for (ChainIdTransform iChainIdTransf : getChainIdTransforms(sg, struct, a, b, c)) {
-						for (ChainIdTransform jChainIdTransf : getChainIdTransforms(sg, struct, 0, 0, 0)) {
-					
-							int interfaceId = getMatchingInterfaceId(iChainIdTransf, jChainIdTransf, interfaces);
-							if (interfaceId>0) {
-								logger.info("Interface id {} matched for pair {}  {}",
-										interfaceId, iChainIdTransf.toString(), jChainIdTransf.toString());
-								
-								if (iChainIdTransf.transform.getTransformId()!=jChainIdTransf.transform.getTransformId()) {
-									logger.warn("Transform ids are not matching ({}, {}) for matched interface id {}, ",
-											iChainIdTransf.toString(), jChainIdTransf.toString(),
-											interfaceId);
+
+		for (int i=0;i<sg.getNumOperators();i++) {
+			//CrystalTransform t0i = new CrystalTransform(sg, i);
+			Matrix4d t0i = sg.getTransformation(i);
+
+			for (int a=-1;a<=1;a++) {
+				for (int b=-1;b<=1;b++) {
+					for (int c=-1;c<=1;c++) {
+
+						if (a==0 && b==0 && c==0) continue;
+
+						for (int j=0;j<sg.getNumOperators();j++) {
+							//CrystalTransform t0j = new CrystalTransform(sg, j);
+							Matrix4d t0j = (Matrix4d)sg.getTransformation(j).clone();
+							t0j.m03 += a;
+							t0j.m13 += b;
+							t0j.m23 += c;
+
+							//CrystalTransform t0k = t0i.getEquivalentAuTransform(t0j);
+							Matrix4d t0k = getEquivalentAuTransform(t0i, t0j);
+
+							for (Chain iChain:struct.getChains()) {
+								String iChainId = iChain.getChainID();
+								for (Chain jChain:struct.getChains()) {
+									String jChainId = jChain.getChainID();
+
+									int interfaceId = 
+											getMatchingInterfaceId(iChainId, jChainId, t0k, interfaces);
+
+									if (interfaceId>0) {
+										logger.info("Interface id {} matched for pair \n{}\n{}{}\n{}",
+												interfaceId, iChainId, t0i.toString(), jChainId, t0j.toString());
+
+										//if (iChainIdTransf.transform.getTransformId()!=jChainIdTransf.transform.getTransformId()) {
+										//	logger.warn("Transform ids are not matching ({}, {}) for matched interface id {}, ",
+										//			iChainIdTransf.toString(), jChainIdTransf.toString(),
+										//			interfaceId);
+										//}
+										
+										// TODO review this, what exactly is an opId for an interface vertex? how can that be defined?
+										// setting it to -1 for the moment
+										InterfaceVertex ivert = new InterfaceVertex(-1, interfaceId);
+										graph.addVertex(ivert);
+
+										ChainVertex vertA = chainNodes.get(new ChainVertexKey(iChainId, i));
+										ChainVertex vertB = chainNodes.get(new ChainVertexKey(jChainId, j));
+
+										InterfaceEdge edgeA = new InterfaceEdge(interfaceId);
+										InterfaceEdge edgeB = new InterfaceEdge(interfaceId);
+
+										graph.addEdge(edgeA, vertA, ivert, EdgeType.DIRECTED);
+										graph.addEdge(edgeB, vertB, ivert, EdgeType.DIRECTED);
+									} else {
+										//logger.info("No interface id matched for pair {}  {}",
+										//		iChainId+"-"+t0i.toString(), jChainId+"-"+t0j.toString());
+
+									}
 								}
-								InterfaceVertex ivert = 
-									new InterfaceVertex(iChainIdTransf.transform.getTransformId(), interfaceId);
-								graph.addVertex(ivert);
-								
-								ChainVertex vertA = chainNodes.get(new ChainVertexKey(iChainIdTransf.chainId, iChainIdTransf.transform.getTransformId()));
-								ChainVertex vertB = chainNodes.get(new ChainVertexKey(jChainIdTransf.chainId, jChainIdTransf.transform.getTransformId()));
-
-								InterfaceEdge edgeA = new InterfaceEdge(interfaceId);
-								InterfaceEdge edgeB = new InterfaceEdge(interfaceId);
-								
-								graph.addEdge(edgeA, vertA, ivert, EdgeType.DIRECTED);
-								graph.addEdge(edgeB, vertB, ivert, EdgeType.DIRECTED);
-							} else {
-								//logger.info("No interface id matched for pair {}  {}",
-								//		iChainIdTransf.toString(), jChainIdTransf.toString());
-								
 							}
-
-						}
-					}
+						}						
+					}					
 				}
 			}
 		}
 	}
 	
-	private int getMatchingInterfaceId(ChainIdTransform iChainIdTransform, ChainIdTransform jChainIdTransform, 
+	private int getMatchingInterfaceId(String iChainId, String jChainId, Matrix4d t0k,  
 			StructureInterfaceList interfaces) {
 		
-		// 1 find Tij transform from given T0i and T0j
-		Matrix4d m = InterfaceMatcher.findTransf12(
-				iChainIdTransform.transform.getMatTransform(),
-				jChainIdTransform.transform.getMatTransform());
-		
-		// 2 find matching interface id from given list
+		// find matching interface id from given list
 		
 		for (StructureInterface interf:interfaces) {
 			
-			if ( (interf.getMoleculeIds().getFirst().equals(iChainIdTransform.chainId) && 
-				  interf.getMoleculeIds().getSecond().equals(jChainIdTransform.chainId)   )  ||
-				 (interf.getMoleculeIds().getFirst().equals(jChainIdTransform.chainId) && 
-				  interf.getMoleculeIds().getSecond().equals(iChainIdTransform.chainId)   )) {
+			if ( (interf.getMoleculeIds().getFirst().equals(iChainId) && 
+				  interf.getMoleculeIds().getSecond().equals(jChainId)   )  ||
+				 (interf.getMoleculeIds().getFirst().equals(jChainId) && 
+				  interf.getMoleculeIds().getSecond().equals(iChainId)   )) {
 
-				if (interf.getTransforms().getSecond().getMatTransform().epsilonEquals(m, 0.0001)) {
+				if (interf.getTransforms().getSecond().getMatTransform().epsilonEquals(t0k, 0.0001)) {
 					return interf.getId();
 				}
 
 				Matrix4d mul = new Matrix4d();
-				mul.mul(interf.getTransforms().getSecond().getMatTransform(), m);
+				mul.mul(interf.getTransforms().getSecond().getMatTransform(), t0k);
 
 				if (mul.epsilonEquals(CrystalTransform.IDENTITY, 0.0001)) {
 					return interf.getId();
@@ -206,37 +218,31 @@ public class LatticeGraph {
 		return -1;
 	}
 	
-	private List<ChainIdTransform> getChainIdTransforms(SpaceGroup sg, Structure struct, int a, int b, int c) {
-		List<ChainIdTransform> list = new ArrayList<ChainIdTransform>();
-		for (int j=0;j<sg.getNumOperators();j++) {
-			
-			for (Chain jChain:struct.getChains()) {
-				String jChainId = jChain.getChainID();
-				
-				CrystalTransform tij = new CrystalTransform(sg, j);
-				tij.translate(new Point3i(a,b,c));
-				
-				list.add(new ChainIdTransform(jChainId, tij));
-			}
-		}
-		return list;
-	}
-	
-	private class ChainIdTransform {
-		String chainId;
-		CrystalTransform transform;
-		public ChainIdTransform(String chainId, CrystalTransform transform) {
-			this.chainId = chainId;
-			this.transform = transform;
-		}
-		
-		public String toString() {
-			return chainId+transform.getTransformId()+
-					"("+
-					transform.getCrystalTranslation().x+","+
-					transform.getCrystalTranslation().y+","+
-					transform.getCrystalTranslation().z+")";
-		}
+	/**
+	 * Finds the equivalent m0k operator given 2 operators m0i and m0j.
+	 * That is, this will find the operator mij expressed in terms of an 
+	 * original-AU operator (what we call m0k)
+	 * @param m0i
+	 * @param m0j
+	 * @return the m0k original-AU operator
+	 */
+	public static Matrix4d getEquivalentAuTransform(Matrix4d m0i, Matrix4d m0j) {
+		Matrix4d m0k = new Matrix4d();
+
+		// we first need to find the mij
+		// mij = m0j * m0i_inv
+		Matrix4d m0iinv = new Matrix4d();
+		m0iinv.invert(m0i);
+
+		// Following my understanding, it should be m0j*m0i_inv as indicated above, but that didn't work 
+		// and for some reason inverting the order in mul does work. Most likely my understanding is 
+		// wrong, but need to check this better at some point
+		// A possible explanation for this is that vecmath treats transform() as a pre-multiplication
+		// rather than a post-multiplication as I was assuming, i.e. x1 = x0 * m0i instead of x1 = m0i * x0,
+		// in that case then it is true that: mij = m0i_inv * m0j, which would explain the expression below
+		m0k.mul(m0iinv, m0j);
+
+		return m0k;
 	}
 	
 }
