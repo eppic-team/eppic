@@ -545,13 +545,24 @@
 				<generated-value strategy="IDENTITY" />
 			</id>
 
-			<basic name="pdbCode">
-				<column column-definition="varchar(4) COLLATE latin1_general_cs"/>
-			</basic>
+			
+			<basic name="pdbCode"></basic>
 
-			<basic name="repChain">
-				<column column-definition="varchar(4) COLLATE latin1_general_cs"/>
-			</basic>
+			<!-- 
+			The chain code is actually case sensitive but MySQL by default uses a case insensitive 
+			collation (ci). The WUI actually needs it to be case sensitive since the repChain is 
+			part of the primary key when the sequence clusters are queried by providing a 
+			pdbCode+repChain in the URL. 
+			Instead of explicitly defining a case sensitive	collation for this column only, we do 
+			it for the whole server using the 'collation-server=latin1_general_cs' setting. Otherwise
+			other things break while trying to query (in offline analyses), e.g. one needs to use binary
+			comparisons to be case sensitive but the binary comparisons don't use indexes and thus they 
+			are slow.
+			See issues 
+			https://github.com/eppic-team/eppic-wui/issues/4 
+			https://github.com/eppic-team/eppic/issues/36 
+			-->
+			<basic name="repChain"></basic>
 			
 			<basic name="c100"></basic>
 			<basic name="c95"></basic>
