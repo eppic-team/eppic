@@ -13,6 +13,8 @@ class InterfaceEdge {
 	// annotation data
 	private int interfaceId;
 	private int clusterId;
+	private boolean isIsologous;
+	private boolean isInfinite;
 	
 	public InterfaceEdge(int interfaceId) {
 		this.interfaceId = interfaceId;
@@ -35,5 +37,21 @@ class InterfaceEdge {
 
 	public void setClusterId(int clusterId) {
 		this.clusterId = clusterId;
+	}
+
+	public boolean isIsologous() {
+		return isIsologous;
+	}
+
+	public void setIsologous(boolean isIsologous) {
+		this.isIsologous = isIsologous;
+	}
+
+	public boolean isInfinite() {
+		return isInfinite;
+	}
+
+	public void setInfinite(boolean isInfinite) {
+		this.isInfinite = isInfinite;
 	}
 }

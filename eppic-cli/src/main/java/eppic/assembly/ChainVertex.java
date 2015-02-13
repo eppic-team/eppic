@@ -8,7 +8,7 @@ package eppic.assembly;
  * @author spencer
  *
  */
-public class ChainVertex implements LatticeGraphVertex {
+public class ChainVertex {
 	// Primary Key:
 	private int opId; // operator to generate this position within the unit cell
 	private String chainId;
