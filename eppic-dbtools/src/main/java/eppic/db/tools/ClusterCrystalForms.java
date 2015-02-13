@@ -109,7 +109,7 @@ public class ClusterCrystalForms {
 		}
 		
 		if (calcAllClusters == false && pdbString == null) {
-			System.err.println("A PDB code/chain code have to be provided with -i");
+			System.err.println("A PDB code + chain id have to be provided with -i, e.g. 1b8gA");
 			System.exit(1);
 		}
 		
@@ -121,6 +121,10 @@ public class ClusterCrystalForms {
 		if (!calcAllClusters) {
 			cfClustersFile = null;
 			interfClustersFile = null;
+			if (pdbString.length()<5) {
+				System.err.println("A PDB code + chain id have to be provided with -i, e.g. 1b8gA");
+				System.exit(1);
+			}
 		}
 
 		
@@ -142,7 +146,15 @@ public class ClusterCrystalForms {
 			String repChain = pdbString.substring(4); 
 
 			int clusterId = dbh.getClusteIdForPdbCode(pdbCode, repChain, seqClusterLevel.getLevel());
-			calcCluster(clusterId, dbh, seqClusterLevel, coCutoff, minArea, losClusterCutoff, null, null);
+			
+			if (clusterId==-1) {
+				System.err.println("Could not find sequence cluster (at "+seqClusterLevel.getLevel()+"%) for "+pdbCode+" and representative chain "+repChain);
+				System.err.println("Make sure that the PDB code is in the database and that the representative chain id is valid");
+			} else {
+			
+				calcCluster(clusterId, dbh, seqClusterLevel, coCutoff, minArea, losClusterCutoff, null, null);
+			}
+			
 		} else {
 			Set<Integer> clusterIds = dbh.getAllClusterIds(seqClusterLevel.getLevel());
 

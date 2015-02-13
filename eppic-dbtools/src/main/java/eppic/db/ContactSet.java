@@ -55,6 +55,12 @@ public class ContactSet {
 	
 	public void addContact(ContactDB contact) {
 		
+		// first we check if the contact is with a hetatom residue not part of the polymer (they have -1 as res number)
+		// we don't want those at all in our contact set
+		// e.g. 2f9q (interface 6, B+D), contact between SO4(-1) and GLU(74)
+		if (contact.getFirstResNumber()==-1 || contact.getSecondResNumber()==-1) 
+			return;
+		
 		// 2 cases:
 		// a) alignments passed are null: that means we are in first contact of the comparison: 
 		//    for those we take original coordinates
