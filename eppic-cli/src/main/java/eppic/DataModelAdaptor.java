@@ -280,6 +280,8 @@ public class DataModelAdaptor {
 		AssemblyDB assembly = new AssemblyDB();			
 		assembly.setMethod(PDB_BIOUNIT_METHOD);
 		assembly.setMmSize(bioAssembly.getMacromolecularSize());
+		// TODO fill the symmetry! from PDB biounits we can do already by running the biojava algos on them
+		//assembly.setSymmetry(symmetry);
 		assembly.setPdbCode(pdbInfo.getPdbCode());			
 		assembly.setConfidence(CONFIDENCE_NOT_AVAILABLE);
 

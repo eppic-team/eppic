@@ -142,6 +142,7 @@
 			</basic>
 
 			<basic name="mmSize"></basic>
+			<basic name="symmetry"></basic>
 
 			<basic name="method">
 				<column length="15" />

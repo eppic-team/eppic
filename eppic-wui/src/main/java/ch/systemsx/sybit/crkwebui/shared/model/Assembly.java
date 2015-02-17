@@ -19,6 +19,7 @@ public class Assembly implements Serializable {
 
 	private String method;
 	private int mmSize;
+	private String symmetry;
 	
 	private double confidence;
 	
@@ -52,6 +53,14 @@ public class Assembly implements Serializable {
 		this.mmSize = mMSize;
 	}
 
+	public String getSymmetry() {
+		return symmetry;
+	}
+
+	public void setSymmetry(String symmetry) {
+		this.symmetry = symmetry;
+	}
+
 	public double getConfidence() {
 		return confidence;
 	}
@@ -79,6 +88,7 @@ public class Assembly implements Serializable {
 		assembly.setUid(assemblyDB.getUid());
 		
 		assembly.setMmSize(assemblyDB.getMmSize());
+		assembly.setSymmetry(assemblyDB.getSymmetry());
 		assembly.setMethod(assemblyDB.getMethod());
 		assembly.setConfidence(assemblyDB.getConfidence());
 		
