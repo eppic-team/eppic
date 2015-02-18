@@ -20,6 +20,9 @@ public class Assembly implements Serializable {
 	private String method;
 	private int mmSize;
 	private String symmetry;
+	private String stoichiometry;
+	private String pseudoSymmetry;
+	private String pseudoStoichiometry;
 	
 	private double confidence;
 	
@@ -61,6 +64,30 @@ public class Assembly implements Serializable {
 		this.symmetry = symmetry;
 	}
 
+	public String getPseudoSymmetry() {
+		return pseudoSymmetry;
+	}
+
+	public void setPseudoSymmetry(String pseudoSymmetry) {
+		this.pseudoSymmetry = pseudoSymmetry;
+	}
+
+	public String getStoichiometry() {
+		return stoichiometry;
+	}
+
+	public void setStoichiometry(String stoichiometry) {
+		this.stoichiometry = stoichiometry;
+	}
+
+	public String getPseudoStoichiometry() {
+		return pseudoStoichiometry;
+	}
+
+	public void setPseudoStoichiometry(String pseudoStoichiometry) {
+		this.pseudoStoichiometry = pseudoStoichiometry;
+	}
+
 	public double getConfidence() {
 		return confidence;
 	}
@@ -89,6 +116,9 @@ public class Assembly implements Serializable {
 		
 		assembly.setMmSize(assemblyDB.getMmSize());
 		assembly.setSymmetry(assemblyDB.getSymmetry());
+		assembly.setStoichiometry(assemblyDB.getStoichiometry());		
+		assembly.setPseudoSymmetry(assemblyDB.getPseudoSymmetry());
+		assembly.setPseudoStoichiometry(assemblyDB.getPseudoStoichiometry());
 		assembly.setMethod(assemblyDB.getMethod());
 		assembly.setConfidence(assemblyDB.getConfidence());
 		

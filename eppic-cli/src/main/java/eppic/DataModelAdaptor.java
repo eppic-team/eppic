@@ -265,7 +265,7 @@ public class DataModelAdaptor {
 		
 	}
 	
-	public void setPdbBioUnits(BioAssemblyInfo bioAssembly, CrystalCell cell) {
+	public void setPdbBioUnits(BioAssemblyInfo bioAssembly, CrystalCell cell, String[] symmetries) {
 
 		if (bioAssembly == null) {
 			LOGGER.info("No bio assembly annotation present, will not add bio assembly info to data model");
@@ -280,8 +280,10 @@ public class DataModelAdaptor {
 		AssemblyDB assembly = new AssemblyDB();			
 		assembly.setMethod(PDB_BIOUNIT_METHOD);
 		assembly.setMmSize(bioAssembly.getMacromolecularSize());
-		// TODO fill the symmetry! from PDB biounits we can do already by running the biojava algos on them
-		//assembly.setSymmetry(symmetry);
+		assembly.setSymmetry(symmetries[0]);
+		assembly.setStoichiometry(symmetries[1]);
+		assembly.setPseudoSymmetry(symmetries[2]);
+		assembly.setPseudoStoichiometry(symmetries[3]);
 		assembly.setPdbCode(pdbInfo.getPdbCode());			
 		assembly.setConfidence(CONFIDENCE_NOT_AVAILABLE);
 

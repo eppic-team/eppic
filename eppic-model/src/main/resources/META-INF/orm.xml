@@ -143,6 +143,9 @@
 
 			<basic name="mmSize"></basic>
 			<basic name="symmetry"></basic>
+			<basic name="stoichiometry"></basic>
+			<basic name="pseudoSymmetry"></basic>
+			<basic name="pseudoStoichiometry"></basic>
 
 			<basic name="method">
 				<column length="15" />
