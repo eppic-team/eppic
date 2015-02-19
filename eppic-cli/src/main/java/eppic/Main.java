@@ -413,6 +413,7 @@ public class Main {
 
 		QuatSymmetryParameters parameters = new QuatSymmetryParameters();
         parameters.setOnTheFly(true);
+        parameters.setLocalSymmetry(false);
 		parameters.setVerbose(false);
 
 		QuatSymmetryDetector detector = new QuatSymmetryDetector(bioAssembly, parameters);

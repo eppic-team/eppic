@@ -469,7 +469,7 @@ public class DataModelAdaptor {
 			}
 			chainClusterDB.setRepChain(cc.getRepresentative().getChainID());
 			chainClusterDB.setMemberChains(getMemberChainsString(cc));
-			chainClusterDB.setNumMembers(getUniqueChainIds(cc).size());
+			chainClusterDB.setNumMembers(cc.getChainIds().size());
 			chainClusterDB.setProtein(cec.isProtein());
 			chainClusterDB.setHasUniProtRef(cec.hasQueryMatch());
 			
@@ -885,7 +885,7 @@ public class DataModelAdaptor {
 
 		sb.append(compound.getRepresentative().getChainID());
 		
-		Set<String> uniqChainIds = getUniqueChainIds(compound);
+		List<String> uniqChainIds = compound.getChainIds();
 
 		if (uniqChainIds.size()>1) {
 
@@ -907,7 +907,7 @@ public class DataModelAdaptor {
 	}
 
 	public static String getMemberChainsString(Compound compound) {
-		Set<String> uniqChainIds = getUniqueChainIds(compound);
+		List<String> uniqChainIds = compound.getChainIds();
 		
 		StringBuilder sb = new StringBuilder();
 		int i = 0;
@@ -917,14 +917,6 @@ public class DataModelAdaptor {
 			i++;
 		}
 		return sb.toString();
-	}
-	
-	private static Set<String> getUniqueChainIds(Compound compound) {
-		Set<String> uniqChainIds = new TreeSet<String>();
-		for (int i=0;i<compound.getChains().size();i++) {
-			uniqChainIds.add(compound.getChains().get(i).getChainID());
-		}
-		return uniqChainIds;
 	}
 	
 	/**
