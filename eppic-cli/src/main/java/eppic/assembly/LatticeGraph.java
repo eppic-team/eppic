@@ -70,77 +70,64 @@ public class LatticeGraph {
 
 	private void initLatticeGraph(Structure struct, StructureInterfaceList interfaces) {
 		
-		SpaceGroup sg = struct.getCrystallographicInfo().getSpaceGroup();
+		// we compare all chains of 0 unit cell to all chains of itself and 1 neighboring cell around
+		List<UnitCellChain> iChains = listUnitCells(struct, 0);
+		List<UnitCellChain> jChains = listUnitCells(struct, 1);
+		
+		for (int i=0;i<iChains.size();i++) {
+			for (int j=0;j<jChains.size();j++) {
+				if (j<=i) continue;
+				
+				Chain iChain = iChains.get(i).chain;
+				Chain jChain = jChains.get(j).chain;
+				String iChainId = iChains.get(i).chain.getChainID();
+				String jChainId = jChains.get(j).chain.getChainID();
+				
+				Matrix4d m0k = getEquivalentAuTransform(iChains.get(i).m, jChains.get(j).m);
+				
+				int interfaceId = 
+						getMatchingInterfaceId(iChainId, jChainId, m0k, interfaces);
 
-		for (int i=0;i<sg.getNumOperators();i++) {
+				if (interfaceId>0) {
+					logger.info("Interface id {} matched for pair \n{}\n{}{}\n{}",
+							interfaceId, iChainId, iChains.get(i).m.toString(), jChainId, jChains.get(j).m.toString());
 
-			Matrix4d t0i = sg.getTransformation(i);
+					ChainVertex ivert = new ChainVertex(iChainId, iChains.get(i).opId);
+					ivert.setEntity(iChain.getCompound().getMolId());
+					ChainVertex jvert = new ChainVertex(jChainId, jChains.get(j).opId);
+					jvert.setEntity(jChain.getCompound().getMolId());
+					
+					List<ChainVertex> vertexPair = new ArrayList<ChainVertex>();
+					vertexPair.add(ivert);
+					vertexPair.add(jvert);
+					ChainVertex maxVert = Collections.max(vertexPair,new Comparator<ChainVertex>() {
+						@Override
+						public int compare(ChainVertex o1, ChainVertex o2) {
+							if (o1.getChainId().compareTo(o2.getChainId())==0) {
+								return new Integer(o1.getOpId()).compareTo(new Integer(o2.getOpId()));
+							} 
+							return o1.getChainId().compareTo(o2.getChainId());
+						}
+					});
+					ChainVertex minVert = (ivert==maxVert)?jvert:ivert;
+					
+					InterfaceEdge edge = new InterfaceEdge(interfaceId);
+					edge.setClusterId(interfaces.get(interfaceId).getCluster().getId());
+					edge.setIsologous(interfaces.get(interfaceId).isIsologous());
+					edge.setInfinite(interfaces.get(interfaceId).isInfinite());
 
-			for (int a=-1;a<=1;a++) {
-				for (int b=-1;b<=1;b++) {
-					for (int c=-1;c<=1;c++) {
+					graph.addEdge(edge, minVert, maxVert, EdgeType.UNDIRECTED);
+					
+				} else {
+					//logger.info("No interface id matched for pair \n{}\n{}{}\n{}",
+					//		iChainId, iChains.get(i).m.toString(), jChainId, jChains.get(j).m.toString());
 
-						//if (a==0 && b==0 && c==0) continue;
-
-						for (int j=0;j<sg.getNumOperators();j++) {
-
-							Matrix4d t0j = (Matrix4d)sg.getTransformation(j).clone();
-							t0j.m03 += a;
-							t0j.m13 += b;
-							t0j.m23 += c;
-
-							Matrix4d t0k = getEquivalentAuTransform(t0i, t0j);
-
-							for (Chain iChain:struct.getChains()) {
-								String iChainId = iChain.getChainID();
-								for (Chain jChain:struct.getChains()) {
-									String jChainId = jChain.getChainID();
-
-									int interfaceId = 
-											getMatchingInterfaceId(iChainId, jChainId, t0k, interfaces);
-
-									if (interfaceId>0) {
-										logger.info("Interface id {} matched for pair \n{}\n{}{}\n{}",
-												interfaceId, iChainId, t0i.toString(), jChainId, t0j.toString());
-
-										ChainVertex ivert = new ChainVertex(iChainId, i);
-										ivert.setEntity(iChain.getCompound().getMolId());
-										ChainVertex jvert = new ChainVertex(jChainId, j);
-										jvert.setEntity(jChain.getCompound().getMolId());
-										
-										List<ChainVertex> vertexPair = new ArrayList<ChainVertex>();
-										vertexPair.add(ivert);
-										vertexPair.add(jvert);
-										ChainVertex maxVert = Collections.max(vertexPair,new Comparator<ChainVertex>() {
-											@Override
-											public int compare(ChainVertex o1, ChainVertex o2) {
-												if (o1.getChainId().compareTo(o2.getChainId())==0) {
-													return new Integer(o1.getOpId()).compareTo(new Integer(o2.getOpId()));
-												} 
-												return o1.getChainId().compareTo(o2.getChainId());
-											}
-										});
-										ChainVertex minVert = (ivert==maxVert)?jvert:ivert;
-										
-										InterfaceEdge edge = new InterfaceEdge(interfaceId);
-										edge.setClusterId(interfaces.get(interfaceId).getCluster().getId());
-										edge.setIsologous(interfaces.get(interfaceId).isIsologous());
-										edge.setInfinite(interfaces.get(interfaceId).isInfinite());
-
-										graph.addEdge(edge, minVert, maxVert, EdgeType.UNDIRECTED);
-										
-									} else {
-										//logger.info("No interface id matched for pair {}  {}",
-										//		iChainId+"-"+t0i.toString(), jChainId+"-"+t0j.toString());
-
-									}
-								}
-							}
-						}						
-					}					
 				}
+				
 			}
 		}
+		
+		
 	}
 	
 	private int getMatchingInterfaceId(String iChainId, String jChainId, Matrix4d t0k,  
@@ -202,28 +189,36 @@ public class LatticeGraph {
 	}
 	
 	private class UnitCellChain {
-		public Chain c;
+		public Chain chain;
 		public Matrix4d m;
 		public int opId;
-		public UnitCellChain(Chain c, Matrix4d m, int opId) { this.c=c;this.m=m;this.opId=opId; };
+		public int a;
+		public int b;
+		public int c;
+		
+		public UnitCellChain(Chain chain, Matrix4d m, int opId, int a, int b, int c) { 
+			this.chain=chain;this.m=m;this.opId=opId;this.a=a;this.b=b;this.c=c; 
+		};
+		public String toString() { return chain.getChainID()+opId+"("+a+","+b+","+c+")" ;};
 	}
 	
 	private List<UnitCellChain> listUnitCells(Structure struct, int numCells) {
 		List<UnitCellChain> list = new ArrayList<LatticeGraph.UnitCellChain>();
 		SpaceGroup sg = struct.getCrystallographicInfo().getSpaceGroup();
 
-		for (int opId=0;opId<sg.getNumOperators();opId++) {
+		for (int a=-numCells;a<=numCells;a++) {
+			for (int b=-numCells;b<=numCells;b++) {
+				for (int c=-numCells;c<=numCells;c++) {
 
-			Matrix4d m = sg.getTransformation(opId);
+					for (int opId=0;opId<sg.getNumOperators();opId++) {
 
-			for (int a=-numCells;a<=numCells;a++) {
-				for (int b=-numCells;b<=numCells;b++) {
-					for (int c=-numCells;c<=numCells;c++) {
+						Matrix4d m = (Matrix4d) sg.getTransformation(opId).clone();
 						m.m03 += a;
 						m.m13 += b;
 						m.m23 += c;
+						
 						for (Chain chain:struct.getChains()) {
-							list.add(new UnitCellChain(chain, m, opId));
+							list.add(new UnitCellChain(chain, m, opId, a, b, c));
 						}
 					}
 				}

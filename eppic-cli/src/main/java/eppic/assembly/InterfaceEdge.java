@@ -54,4 +54,18 @@ class InterfaceEdge {
 	public void setInfinite(boolean isInfinite) {
 		this.isInfinite = isInfinite;
 	}
+	
+//	@Override
+//	public boolean equals(Object other) {
+//		if (!(other instanceof InterfaceEdge)) return false;
+//		InterfaceEdge o = (InterfaceEdge) other;
+//		
+//		return this.interfaceId == o.interfaceId;
+//				
+//	}
+//	
+//	@Override
+//	public int hashCode() {
+//		return this.interfaceId;
+//	}
 }
