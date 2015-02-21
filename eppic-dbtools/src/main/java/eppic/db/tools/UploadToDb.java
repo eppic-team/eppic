@@ -182,17 +182,6 @@ public class UploadToDb {
 			File webuiFile = new File(jobDirectory, currentPDB + ".webui.dat");
 			boolean isSerializedFilePresent = webuiFile.isFile();
 
-			PdbInfoDB pdbScoreItem = null;
-			if (isSerializedFilePresent) {
-				//long deserStart = System.currentTimeMillis();
-				pdbScoreItem = readFromSerializedFile(webuiFile);
-				//long deserEnd = System.currentTimeMillis();
-				//System.out.println(webuiFile.getName()+" deserialized in "+((deserEnd-deserStart)/1000)+" s");
-				// if something goes wrong while reading the file (a warning message is already printed in readFromSerializedFile)
-				if (pdbScoreItem == null) 
-					continue;				
-			} 
-
 			try {				
 
 
@@ -202,6 +191,10 @@ public class UploadToDb {
 					if (ifRemoved) System.out.print(" Found.. Removing and Updating.. ");
 					else System.out.print(" Not Found.. Adding.. ");
 					if(isSerializedFilePresent) {
+						PdbInfoDB pdbScoreItem = readFromSerializedFile(webuiFile);
+						// if something goes wrong while reading the file (a warning message is already printed in readFromSerializedFile)
+						if (pdbScoreItem == null) continue;				
+
 						dbh.persistFinishedJob(em,pdbScoreItem);
 					}
 					else {
@@ -215,7 +208,11 @@ public class UploadToDb {
 					boolean isPresent = dbh.checkJobExist(currentPDB);
 					if(!isPresent){
 						System.out.print(" Not Present.. Adding.. ");
-						if(isSerializedFilePresent) {						
+						if(isSerializedFilePresent) {
+							PdbInfoDB pdbScoreItem = readFromSerializedFile(webuiFile);
+							// if something goes wrong while reading the file (a warning message is already printed in readFromSerializedFile)
+							if (pdbScoreItem == null) continue;				
+
 							dbh.persistFinishedJob(em,pdbScoreItem);
 						}
 						else {
