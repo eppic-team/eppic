@@ -3,7 +3,9 @@ package eppic.assembly;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.vecmath.Matrix4d;
 
@@ -30,10 +32,17 @@ public class LatticeGraph {
 
 	private Graph<ChainVertex,InterfaceEdge> graph;
 	
+	// We need this to keep track of duplicate edges (i.e. same interface id edges) between 2 chain vertices.
+	// The jung implementation of multigraph is not so flexible in what you can do with it:
+	// adding equals and hashCode to InterfaceEdge (based on interfaceId) does not do it because
+	// the UndirectedOrderedSparseMultigraph implementation requires edges to be globally unique
+	private Set<ChainPairInterfaceId> chainpairsInterfaceIds; 
+	
 	
 	public LatticeGraph(Structure struct, StructureInterfaceList interfaces) {
 		
 		graph = new UndirectedOrderedSparseMultigraph<ChainVertex, InterfaceEdge>();
+		chainpairsInterfaceIds = new HashSet<ChainPairInterfaceId>();
 
 		// init the graph
 		initLatticeGraph(struct, interfaces);
@@ -63,6 +72,46 @@ public class LatticeGraph {
 		}
 		
 	}
+	
+	/**
+	 * A triplet of 2 chain vertices and an interface id to be able to track duplicate edges.
+	 * The 2 chain vertices must occur in same order to be equal.
+	 * @author duarte_j 
+	 *
+	 */
+	private class ChainPairInterfaceId {
+		public ChainVertex c1;
+		public ChainVertex c2;
+		public int interfId;
+		public ChainPairInterfaceId(ChainVertex c1, ChainVertex c2, int interfId) {
+			this.c1 = c1;
+			this.c2 = c2;
+			this.interfId = interfId;
+		}
+		@Override
+		public boolean equals(Object other) {
+			if (!(other instanceof ChainPairInterfaceId)) return false;
+			ChainPairInterfaceId o = (ChainPairInterfaceId) other;
+			if (!o.c1.equals(this.c1)) {
+				return false;
+			}
+			if (!o.c2.equals(this.c2)) {
+				return false;
+			}
+			if (o.interfId != this.interfId) return false;
+			
+			return true;
+		}
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + ((c1 == null) ? 0 : c1.hashCode());
+			result = prime * result + ((c2 == null) ? 0 : c2.hashCode());
+			result = prime * result + interfId;
+			return result;
+		}
+	}
 
 	public Graph<ChainVertex, InterfaceEdge> getGraph() {
 		return graph;
@@ -89,7 +138,7 @@ public class LatticeGraph {
 						getMatchingInterfaceId(iChainId, jChainId, m0k, interfaces);
 
 				if (interfaceId>0) {
-					logger.info("Interface id {} matched for pair \n{}\n{}{}\n{}",
+					logger.debug("Interface id {} matched for pair \n{}\n{}{}\n{}",
 							interfaceId, iChainId, iChains.get(i).m.toString(), jChainId, jChains.get(j).m.toString());
 
 					ChainVertex ivert = new ChainVertex(iChainId, iChains.get(i).opId);
@@ -116,11 +165,22 @@ public class LatticeGraph {
 					edge.setIsologous(interfaces.get(interfaceId).isIsologous());
 					edge.setInfinite(interfaces.get(interfaceId).isInfinite());
 
-					graph.addEdge(edge, minVert, maxVert, EdgeType.UNDIRECTED);
+					// The jung implementation of multigraph is not so flexible in what you can do with it:
+					// adding equals and hashCode to InterfaceEdge (based on interfaceId) does not do it because
+					// the UndirectedOrderedSparseMultigraph implementation requires edges to be globally unique
+
+					// Like this we track that no chain pair has 2 edges with the same interface id
+					ChainPairInterfaceId triplet = new ChainPairInterfaceId(minVert, maxVert, edge.getInterfaceId());
+					if (!chainpairsInterfaceIds.contains(triplet)) {
+						graph.addEdge(edge, minVert, maxVert, EdgeType.UNDIRECTED);
+						chainpairsInterfaceIds.add(triplet);
+					}
+					
+					
 					
 				} else {
-					//logger.info("No interface id matched for pair \n{}\n{}{}\n{}",
-					//		iChainId, iChains.get(i).m.toString(), jChainId, jChains.get(j).m.toString());
+					logger.debug("No interface id matched for pair \n{}\n{}{}\n{}",
+							iChainId, iChains.get(i).m.toString(), jChainId, jChains.get(j).m.toString());
 
 				}
 				
