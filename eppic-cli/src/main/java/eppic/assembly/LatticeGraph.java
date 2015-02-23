@@ -13,6 +13,7 @@ import org.biojava.nbio.structure.Chain;
 import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.contact.StructureInterface;
 import org.biojava.nbio.structure.contact.StructureInterfaceList;
+import org.biojava.nbio.structure.xtal.CrystalBuilder;
 import org.biojava.nbio.structure.xtal.CrystalTransform;
 import org.biojava.nbio.structure.xtal.SpaceGroup;
 import org.slf4j.Logger;
@@ -121,7 +122,7 @@ public class LatticeGraph {
 		
 		// we compare all chains of 0 unit cell to all chains of itself and 1 neighboring cell around
 		List<UnitCellChain> iChains = listUnitCells(struct, 0);
-		List<UnitCellChain> jChains = listUnitCells(struct, 1);
+		List<UnitCellChain> jChains = listUnitCells(struct, CrystalBuilder.DEF_NUM_CELLS);
 		
 		for (int i=0;i<iChains.size();i++) {
 			for (int j=0;j<jChains.size();j++) {
