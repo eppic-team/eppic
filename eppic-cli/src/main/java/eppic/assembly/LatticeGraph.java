@@ -61,14 +61,13 @@ public class LatticeGraph {
 		
 		for (InterfaceEdge edge:sortedEdges) {
 			Pair<ChainVertex> vertices = graph.getEndpoints(edge);
-			//logger.info("Edge {} (cluster {}) between {} (entity {}) and {} (entity {})", 
-			//		edge.getInterfaceId(), edge.getClusterId(),
-			//		vertices.getFirst().getChainId()+vertices.getFirst().getOpId(), vertices.getFirst().getEntity(),
-			//		vertices.getSecond().getChainId()+vertices.getSecond().getOpId(), vertices.getSecond().getEntity());
-			logger.info("Edge {} between {} - {} ", 
-					edge.getInterfaceId(), 
+			logger.info("Edge {} ({}) between {} ({}) - {} ({})", 
+					edge.getInterfaceId(),
+					edge.getClusterId(),
 					vertices.getFirst().getChainId()+vertices.getFirst().getOpId(), 
-					vertices.getSecond().getChainId()+vertices.getSecond().getOpId());
+					vertices.getFirst().getEntity(),
+					vertices.getSecond().getChainId()+vertices.getSecond().getOpId(),
+					vertices.getSecond().getEntity());
 
 		}
 		
@@ -170,7 +169,8 @@ public class LatticeGraph {
 					// adding equals and hashCode to InterfaceEdge (based on interfaceId) does not do it because
 					// the UndirectedOrderedSparseMultigraph implementation requires edges to be globally unique
 
-					// Like this we track that no chain pair has 2 edges with the same interface id
+					// Like this we track that no chain pair has 2 edges with the same interface id, and 
+					// overcome the limitations of the jung implementation requiring all edges to be unique
 					ChainPairInterfaceId triplet = new ChainPairInterfaceId(minVert, maxVert, edge.getInterfaceId());
 					if (!chainpairsInterfaceIds.contains(triplet)) {
 						graph.addEdge(edge, minVert, maxVert, EdgeType.UNDIRECTED);
