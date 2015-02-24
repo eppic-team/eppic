@@ -32,6 +32,9 @@ public class AlphabetOptimisation {
 	public static final int CARRYING_CAPACITY = 10;
 	public static final int INITIAL_POPULATION_SIZE = 10;
 	public static final int ROUNDS_OF_EVOLUTION = 50;
+	
+	public static ArrayList<ArrayList<MultipleSequenceAlignment>> MSAs;
+	public static ArrayList<ArrayList<Integer>> classes;
 
 	public static void main(String[] args) throws Exception {
 		String help = 
@@ -84,13 +87,12 @@ public class AlphabetOptimisation {
 		List<String> interfaceNumbers = listList.get(3);
 		List<String> trueCalls = listList.get(4);
 		
-		ArrayList<ArrayList<MultipleSequenceAlignment>> MSAs = new ArrayList<ArrayList<MultipleSequenceAlignment>>();
-		
-		ArrayList<ArrayList<Integer>> allResidueTypes = new ArrayList<ArrayList<Integer>>();
+		MSAs = new ArrayList<ArrayList<MultipleSequenceAlignment>>();
+		classes = new ArrayList<ArrayList<Integer>>();
 
 		List<PdbInfoDB> pdbInfos = dbh.deserializePdbList(pdbCodes);
 		
-		//for (int i = 0; i < pdbInfos.size(); i++) {
+//		for (int i = 0; i < pdbInfos.size(); i++) {
 		for (int i = 0; i < 1; i++) {
 			System.out.println(i);
 			PdbInfoDB pdbInfo = pdbInfos.get(i);
@@ -104,20 +106,23 @@ public class AlphabetOptimisation {
 			ChainClusterDB secondChainCluster = getChainClusterFromChainClustersByChain(chainClusters, secondChain);
 			
 			List<InterfaceClusterDB> interfaceClusters = pdbInfo.getInterfaceClusters();
-			InterfaceDB theInterface = getInterfaceFromInterfaceClustersByChainsAndId(interfaceClusters, interfaceNumber);
+			InterfaceDB theInterface = getInterfaceFromInterfaceClustersByInterfaceId(interfaceClusters, interfaceNumber);
 			List<ResidueDB> residues = theInterface.getResidues();
 			
-			for (ResidueDB testRes : residues) {
-				System.out.println(testRes.getPdbResidueNumber() + " " + testRes.getResidueNumber() + " " + testRes.getResidueType() + " " + testRes.getAsa() + " " + testRes.getBsa() + " " + getRegion(testRes.getAsa(), testRes.getBsa()) + " " + testRes.getSide());
-			}
+//			for (ResidueDB testRes : residues) {
+//				System.out.println(testRes.getPdbResidueNumber() + " " +
+//						testRes.getResidueNumber() + " " + testRes.getResidueType() + " " +
+//						testRes.getAsa() + " " + testRes.getBsa() + " " +
+//						getRegion(testRes.getAsa(), testRes.getBsa()) + " " + testRes.getSide());
+//			}
 			
-			ArrayList<Integer> residueTypes = new ArrayList<Integer>();
-			for (int j = 0; j < residues.size(); j++) {
-				ResidueDB residue = residues.get(j);
-				residueTypes.add(getRegion(residue.getAsa(), residue.getBsa()));
-			}
-			System.out.println("residues.size() = " + residues.size());
-			allResidueTypes.add(residueTypes);
+//			ArrayList<Integer> residueTypes = new ArrayList<Integer>();
+//			for (int j = 0; j < residues.size(); j++) {
+//				ResidueDB residue = residues.get(j);
+//				residueTypes.add(getRegion(residue.getAsa(), residue.getBsa()));
+//			}
+//			System.out.println("residues.size() = " + residues.size());
+//			allResidueTypes.add(residueTypes);
 			
 			List<HomologDB> firstHomologs = firstChainCluster.getHomologs();
 			List<HomologDB> secondHomologs = secondChainCluster.getHomologs();
@@ -132,10 +137,9 @@ public class AlphabetOptimisation {
 			secondHomologTags[0] = secondChainCluster.getRefUniProtId() + "_" + secondChainCluster.getRefUniProtStart() + "-" + secondChainCluster.getRefUniProtEnd();
 			secondHomologSeqs[0] = secondChainCluster.getMsaAlignedSeq();
 			
-			System.out.println("first PDB = " + firstChainCluster.getPdbStart() + "-" + firstChainCluster.getPdbEnd());
-			System.out.println("first REF = " + firstChainCluster.getRefUniProtStart() + "-" + firstChainCluster.getRefUniProtEnd());
-			
-			System.out.println("msa length = " + firstChainCluster.getMsaAlignedSeq().length());
+//			System.out.println("first PDB = " + firstChainCluster.getPdbStart() + "-" + firstChainCluster.getPdbEnd());
+//			System.out.println("first REF = " + firstChainCluster.getRefUniProtStart() + "-" + firstChainCluster.getRefUniProtEnd());
+//			System.out.println("msa length = " + firstChainCluster.getMsaAlignedSeq().length());
 			
 			for (int j = 0; j < firstHomologs.size(); j++) {
 				HomologDB homolog = firstHomologs.get(j);
@@ -148,35 +152,41 @@ public class AlphabetOptimisation {
 				secondHomologSeqs[j + 1] = homolog.getAlignedSeq();
 			}
 			
-			ArrayList<MultipleSequenceAlignment> pair = new ArrayList<MultipleSequenceAlignment>();
-			pair.add(new MultipleSequenceAlignment(firstHomologTags, firstHomologSeqs));
-			pair.add(new MultipleSequenceAlignment(secondHomologTags, secondHomologSeqs));
+			ArrayList<MultipleSequenceAlignment> MSAPair = new ArrayList<MultipleSequenceAlignment>();
+			MSAPair.add(new MultipleSequenceAlignment(firstHomologTags, firstHomologSeqs));
+			MSAPair.add(new MultipleSequenceAlignment(secondHomologTags, secondHomologSeqs));
 			
-			MSAs.add(pair);
+			MSAs.add(MSAPair);
 			
-			int firstLowestPdb = Integer.MAX_VALUE;
-			for (ResidueDB aResidue : residues) {
-				if (aResidue.getSide() == 1 && Integer.parseInt(aResidue.getPdbResidueNumber()) < firstLowestPdb) {
-					firstLowestPdb = Integer.parseInt(aResidue.getPdbResidueNumber());
+			for (ArrayList<MultipleSequenceAlignment> aPair : MSAs) {
+				for (MultipleSequenceAlignment anMSA : aPair) {
+					anMSA.printSimple();
 				}
 			}
-			int firstHighestPdb = Integer.MIN_VALUE;
-			for (ResidueDB aResidue : residues) {
-				if (aResidue.getSide() == 1 && Integer.parseInt(aResidue.getPdbResidueNumber()) > firstLowestPdb) {
-					firstHighestPdb = Integer.parseInt(aResidue.getPdbResidueNumber());
-				}
-			}
-			for (int j = firstLowestPdb; j <= firstHighestPdb; j++) {
-				int msaResSeqIndex = j - (firstChainCluster.getRefUniProtStart() - firstChainCluster.getPdbStart());
-				char msaChar = pair.get(0).getColumn(pair.get(0).seq2al(pair.get(0).getTagFromIndex(0), msaResSeqIndex)).charAt(0);
-				ResidueDB jRes = null;
-				for (ResidueDB aRes : residues) {
-					if (Integer.parseInt(aRes.getPdbResidueNumber()) == j && aRes.getSide() == 1) {
-						jRes = aRes;
-					}
-				}
-				System.out.println(msaChar + "\t" + jRes.getResidueType());
-			}
+						
+//			int firstLowestPdb = Integer.MAX_VALUE;
+//			for (ResidueDB aResidue : residues) {
+//				if (aResidue.getSide() == 1 && Integer.parseInt(aResidue.getPdbResidueNumber()) < firstLowestPdb) {
+//					firstLowestPdb = Integer.parseInt(aResidue.getPdbResidueNumber());
+//				}
+//			}
+//			int firstHighestPdb = Integer.MIN_VALUE;
+//			for (ResidueDB aResidue : residues) {
+//				if (aResidue.getSide() == 1 && Integer.parseInt(aResidue.getPdbResidueNumber()) > firstLowestPdb) {
+//					firstHighestPdb = Integer.parseInt(aResidue.getPdbResidueNumber());
+//				}
+//			}
+//			for (int j = firstLowestPdb; j <= firstHighestPdb; j++) {
+//				int msaResSeqIndex = j - (firstChainCluster.getRefUniProtStart() - firstChainCluster.getPdbStart());
+//				char msaChar = MSAPair.get(0).getColumn(MSAPair.get(0).seq2al(MSAPair.get(0).getTagFromIndex(0), msaResSeqIndex)).charAt(0);
+//				ResidueDB jRes = null;
+//				for (ResidueDB aRes : residues) {
+//					if (Integer.parseInt(aRes.getPdbResidueNumber()) == j && aRes.getSide() == 1) {
+//						jRes = aRes;
+//					}
+//				}
+//				System.out.println(msaChar + "\t" + jRes.getResidueType());
+//			}
 		}
 		
 		/*
@@ -202,38 +212,32 @@ public class AlphabetOptimisation {
 		 * okay also note that the region labels are a bit odd...anything "2" is also "3", since the geom
 		 * cutoff is higher (more stringent) than the evol one...so if you want to look at core vs surface
 		 * need to look at 0 vs 2+3
-		 * 
 		 */
 		
+//		for (int i = 0; i < 1; i++) {
+//			System.out.println(pdbCodes.get(i) + " " + interfaceNumbers.get(i) + " left");
+//			MSAs.get(i).get(0).printSimple();
+//			System.out.println(pdbCodes.get(i) + " " + interfaceNumbers.get(i) + " right");
+//			MSAs.get(i).get(1).printSimple();
+//		}
 		
-		
-		
-		
-		
-		for (int i = 0; i < 1; i++) {
-			System.out.println(pdbCodes.get(i) + " " + interfaceNumbers.get(i) + " left");
-			MSAs.get(i).get(0).printSimple();
-			System.out.println(pdbCodes.get(i) + " " + interfaceNumbers.get(i) + " right");
-			MSAs.get(i).get(1).printSimple();
-		}
-		
-		Set<AAAlphabet> alphabetPool = initialisePool();
-		for (AAAlphabet alphabet : alphabetPool) {
-			System.out.println(alphabet + "\t" + testFitness(alphabet));
-		}
-		for (int i = 1; i <= ROUNDS_OF_EVOLUTION; i++) {
-			alphabetPool = evolve(alphabetPool);
-			System.out.println("\nAfter " + i + " rounds of evolution...");
-			for (AAAlphabet alphabet : alphabetPool) {
-				System.out.println(alphabet + "\t" + testFitness(alphabet));
-			}
-		}
+//		Set<AAAlphabet> alphabetPool = initialisePool();
+//		for (AAAlphabet alphabet : alphabetPool) {
+//			System.out.println(alphabet + "\t" + testFitness(alphabet));
+//		}
+//		for (int i = 1; i <= ROUNDS_OF_EVOLUTION; i++) {
+//			alphabetPool = evolve(alphabetPool);
+//			System.out.println("\nAfter " + i + " rounds of evolution...");
+//			for (AAAlphabet alphabet : alphabetPool) {
+//				System.out.println(alphabet + "\t" + testFitness(alphabet));
+//			}
+//		}
 	}
 	
 	private static Set<AAAlphabet> initialisePool() {
 		Set<AAAlphabet> pool = new HashSet<AAAlphabet>();
 		for (int i = 0; i < INITIAL_POPULATION_SIZE; i++) {
-			pool.add(new AAAlphabet(AAAlphabet.MURPHY_20));
+			pool.add(new AAAlphabet(AAAlphabet.STANDARD_20));
 		}
 		return pool;
 	}
@@ -311,10 +315,10 @@ public class AlphabetOptimisation {
 		return toReturn;
 	}
 	
-	private static InterfaceDB getInterfaceFromInterfaceClustersByChainsAndId(List<InterfaceClusterDB> clusters, int interfaceId) {
+	private static InterfaceDB getInterfaceFromInterfaceClustersByInterfaceId(List<InterfaceClusterDB> clusters, int interfaceId) {
 		InterfaceDB toReturn = null;
-		for (InterfaceClusterDB interfaceCluster : clusters) {
-			for (InterfaceDB anInterface : interfaceCluster.getInterfaces()) {
+		for (InterfaceClusterDB cluster : clusters) {
+			for (InterfaceDB anInterface : cluster.getInterfaces()) {
 				if (anInterface.getInterfaceId() == interfaceId) {
 					toReturn = anInterface;
 				}

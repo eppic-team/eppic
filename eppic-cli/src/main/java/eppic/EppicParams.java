@@ -351,7 +351,7 @@ public class EppicParams {
 					this.alphabet = new AAAlphabet(AAAlphabet.MURPHY_8);
 					break;
 				case 6:
-					this.alphabet = new AAAlphabet(AAAlphabet.MURPHY_6);
+					this.alphabet = new AAAlphabet(AAAlphabet.MIRNY_6);
 					break;
 				case 4:
 					this.alphabet = new AAAlphabet(AAAlphabet.MURPHY_4);
