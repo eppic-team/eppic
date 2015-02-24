@@ -116,6 +116,18 @@ public class LatticeGraph {
 	public Graph<ChainVertex, InterfaceEdge> getGraph() {
 		return graph;
 	}
+	
+//	public Graph<ChainVertex, InterfaceClusterEdge> getReducedGraph() {
+//		Graph<ChainVertex, InterfaceClusterEdge> reducedGraph = 
+//				new UndirectedOrderedSparseMultigraph<ChainVertex, InterfaceClusterEdge>();
+//		
+//		for (InterfaceEdge edge:graph.getEdges()) {
+//			Pair<ChainVertex> pair = graph.getEndpoints(edge);
+//			reducedGraph.addEdge(new InterfaceClusterEdge(edge.getInterface().getCluster()), pair.getFirst(), pair.getSecond(), EdgeType.UNDIRECTED);
+//		}
+//		
+//		return reducedGraph;
+//	}
 
 	private void initLatticeGraph(Structure struct, StructureInterfaceList interfaces) {
 		
@@ -160,10 +172,7 @@ public class LatticeGraph {
 					});
 					ChainVertex minVert = (ivert==maxVert)?jvert:ivert;
 					
-					InterfaceEdge edge = new InterfaceEdge(interfaceId);
-					edge.setClusterId(interfaces.get(interfaceId).getCluster().getId());
-					edge.setIsologous(interfaces.get(interfaceId).isIsologous());
-					edge.setInfinite(interfaces.get(interfaceId).isInfinite());
+					InterfaceEdge edge = new InterfaceEdge(interfaces.get(interfaceId));
 
 					// The jung implementation of multigraph is not so flexible in what you can do with it:
 					// adding equals and hashCode to InterfaceEdge (based on interfaceId) does not do it because

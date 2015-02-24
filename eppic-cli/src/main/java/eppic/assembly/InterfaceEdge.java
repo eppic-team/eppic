@@ -1,71 +1,54 @@
 package eppic.assembly;
 
+import org.biojava.nbio.structure.contact.StructureInterface;
+import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
+
 /**
- * Edge between an InterfaceVertex and an AtomVertex.
+ * Edge between two ChainVertices
  * 
- * By default, this will be positioned between its endpoints, but the layout
- * can also be overridden by defining one or more segments.
  * 
  * @author spencer
  *
  */
-class InterfaceEdge {
-	// annotation data
-	private int interfaceId;
-	private int clusterId;
-	private boolean isIsologous;
-	private boolean isInfinite;
-	
-	public InterfaceEdge(int interfaceId) {
-		this.interfaceId = interfaceId;
+public class InterfaceEdge {
+
+	private StructureInterface interf;
+		
+	public InterfaceEdge(StructureInterface interf) {
+		this.interf = interf;
 		
 	}
 	
-	public int getInterfaceId() {
-		return interfaceId;
-	}
 	
 	
 	@Override
 	public String toString() {
-		return String.format("-%d-",interfaceId);
+		return String.format("-%d-",interf.getId());
+	}
+
+	public StructureInterface getInterface() {
+		return interf;
+	}
+	
+	public StructureInterfaceCluster getInterfaceCluster() {
+		return interf.getCluster();
+	}
+	
+	public int getInterfaceId() {
+		return interf.getId();
 	}
 
 	public int getClusterId() {
-		return clusterId;
-	}
-
-	public void setClusterId(int clusterId) {
-		this.clusterId = clusterId;
+		return interf.getCluster().getId();
 	}
 
 	public boolean isIsologous() {
-		return isIsologous;
-	}
-
-	public void setIsologous(boolean isIsologous) {
-		this.isIsologous = isIsologous;
+		return interf.isIsologous();
 	}
 
 	public boolean isInfinite() {
-		return isInfinite;
+		return interf.isInfinite();
 	}
 
-	public void setInfinite(boolean isInfinite) {
-		this.isInfinite = isInfinite;
-	}
 	
-//	@Override
-//	public boolean equals(Object other) {
-//		if (!(other instanceof InterfaceEdge)) return false;
-//		InterfaceEdge o = (InterfaceEdge) other;
-//		
-//		return this.interfaceId == o.interfaceId;
-//				
-//	}
-//	
-//	@Override
-//	public int hashCode() {
-//		return this.interfaceId;
-//	}
 }
