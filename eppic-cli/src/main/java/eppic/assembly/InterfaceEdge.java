@@ -1,5 +1,7 @@
 package eppic.assembly;
 
+import javax.vecmath.Point3i;
+
 import org.biojava.nbio.structure.contact.StructureInterface;
 import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
 
@@ -13,10 +15,13 @@ import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
 public class InterfaceEdge {
 
 	private StructureInterface interf;
-		
-	public InterfaceEdge(StructureInterface interf) {
+	
+	private Point3i xtalTrans;
+
+
+	public InterfaceEdge(StructureInterface interf, Point3i xtalTrans) {
 		this.interf = interf;
-		
+		this.xtalTrans = xtalTrans;
 	}
 	
 	
@@ -50,5 +55,8 @@ public class InterfaceEdge {
 		return interf.isInfinite();
 	}
 
+	public Point3i getXtalTrans() {
+		return xtalTrans;
+	}
 	
 }

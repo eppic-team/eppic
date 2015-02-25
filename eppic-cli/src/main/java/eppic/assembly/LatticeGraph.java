@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Set;
 
 import javax.vecmath.Matrix4d;
+import javax.vecmath.Point3d;
+import javax.vecmath.Point3i;
 
 import org.biojava.nbio.structure.Chain;
 import org.biojava.nbio.structure.Structure;
@@ -61,7 +63,9 @@ public class LatticeGraph {
 		
 		for (InterfaceEdge edge:sortedEdges) {
 			Pair<ChainVertex> vertices = graph.getEndpoints(edge);
-			logger.info("Edge {} ({}) between {} ({}) - {} ({})", 
+			Point3i xtalT = edge.getXtalTrans();
+			logger.info("Edge {} ({}) between {} ({}) - {} ({})"+
+					String.format(" [%2d,%2d,%2d]", xtalT.x,xtalT.y,xtalT.z), 
 					edge.getInterfaceId(),
 					edge.getClusterId(),
 					vertices.getFirst().getChainId()+vertices.getFirst().getOpId(), 
@@ -83,10 +87,12 @@ public class LatticeGraph {
 		public ChainVertex c1;
 		public ChainVertex c2;
 		public int interfId;
-		public ChainPairInterfaceId(ChainVertex c1, ChainVertex c2, int interfId) {
+		public Point3i xtalTrans;
+		public ChainPairInterfaceId(ChainVertex c1, ChainVertex c2, int interfId, Point3i xtalTrans) {
 			this.c1 = c1;
 			this.c2 = c2;
 			this.interfId = interfId;
+			this.xtalTrans = xtalTrans;
 		}
 		@Override
 		public boolean equals(Object other) {
@@ -100,6 +106,8 @@ public class LatticeGraph {
 			}
 			if (o.interfId != this.interfId) return false;
 			
+			if (!o.xtalTrans.equals(this.xtalTrans)) return false;
+			
 			return true;
 		}
 		@Override
@@ -109,6 +117,7 @@ public class LatticeGraph {
 			result = prime * result + ((c1 == null) ? 0 : c1.hashCode());
 			result = prime * result + ((c2 == null) ? 0 : c2.hashCode());
 			result = prime * result + interfId;
+			result = prime * result + xtalTrans.hashCode();
 			return result;
 		}
 	}
@@ -130,6 +139,8 @@ public class LatticeGraph {
 //	}
 
 	private void initLatticeGraph(Structure struct, StructureInterfaceList interfaces) {
+		
+		SpaceGroup sg = struct.getCrystallographicInfo().getSpaceGroup();
 		
 		// we compare all chains of 0 unit cell to all chains of itself and 1 neighboring cell around
 		List<UnitCellChain> iChains = listUnitCells(struct, 0);
@@ -171,16 +182,24 @@ public class LatticeGraph {
 						}
 					});
 					ChainVertex minVert = (ivert==maxVert)?jvert:ivert;
+
+					Point3d trans = new Point3d(m0k.m03,m0k.m13,m0k.m23);
+					Matrix4d sgOp = sg.getTransformation(interfaces.get(interfaceId).getTransforms().getSecond().getTransformId());
+					trans.sub(new Point3d(sgOp.m03,sgOp.m13,sgOp.m23));
+					if ((trans.x % 1) != 0) logger.warn("x translation is not integer!");
+					if ((trans.y % 1) != 0) logger.warn("y translation is not integer!");
+					if ((trans.z % 1) != 0) logger.warn("z translation is not integer!");
+					Point3i xtalTrans = new Point3i((int)trans.x,(int)trans.y,(int)trans.z);
 					
-					InterfaceEdge edge = new InterfaceEdge(interfaces.get(interfaceId));
+					InterfaceEdge edge = new InterfaceEdge(interfaces.get(interfaceId), xtalTrans);
 
 					// The jung implementation of multigraph is not so flexible in what you can do with it:
 					// adding equals and hashCode to InterfaceEdge (based on interfaceId) does not do it because
 					// the UndirectedOrderedSparseMultigraph implementation requires edges to be globally unique
 
-					// Like this we track that no chain pair has 2 edges with the same interface id, and 
+					// Like this we track that no chain pair has 2 edges with the same interface id and xtalTrans, and 
 					// overcome the limitations of the jung implementation requiring all edges to be unique
-					ChainPairInterfaceId triplet = new ChainPairInterfaceId(minVert, maxVert, edge.getInterfaceId());
+					ChainPairInterfaceId triplet = new ChainPairInterfaceId(minVert, maxVert, interfaceId, xtalTrans);
 					if (!chainpairsInterfaceIds.contains(triplet)) {
 						graph.addEdge(edge, minVert, maxVert, EdgeType.UNDIRECTED);
 						chainpairsInterfaceIds.add(triplet);
