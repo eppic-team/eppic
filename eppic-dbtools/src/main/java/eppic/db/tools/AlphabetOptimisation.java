@@ -22,6 +22,7 @@ import java.util.Set;
 
 import owl.core.sequence.alignment.MultipleSequenceAlignment;
 import owl.core.structure.AAAlphabet;
+import owl.core.structure.AminoAcid;
 
 public class AlphabetOptimisation {
 	
@@ -36,7 +37,8 @@ public class AlphabetOptimisation {
 	public static ArrayList<Boolean> truths; // THIS IS A LIST OF BOOLEANS (TRUE IFF BIO)
 	public static ArrayList<ArrayList<MultipleSequenceAlignment>> MSAs; // THIS IS A LIST OF PAIRS OF MSAS
 	public static ArrayList<ArrayList<ArrayList<Integer>>> regions; // THIS IS A LIST OF PAIRS OF LISTS OF REGIO_INTS
-	public static ArrayList<ArrayList<HashMap<Integer, Integer>>> mappings; // THIS IS A LIST OF PAIRS OF MAPPINGS FROM MSA_COL TO RES_ID
+	public static ArrayList<ArrayList<HashMap<Integer, Integer>>> mappings; // THIS IS A LIST OF PAIRS OF MAPPINGS FROM RES_ID TO MSA_COL
+	public static ArrayList<ArrayList<Integer>> resids;
 
 	public static void main(String[] args) throws Exception {
 		String help = 
@@ -97,9 +99,9 @@ public class AlphabetOptimisation {
 		MSAs = new ArrayList<ArrayList<MultipleSequenceAlignment>>();
 		regions = new ArrayList<ArrayList<ArrayList<Integer>>>();
 		mappings = new ArrayList<ArrayList<HashMap<Integer, Integer>>>();
+		resids = new ArrayList<ArrayList<Integer>>();
 		
-//		for (int i = 0; i < pdbInfos.size(); i++) {
-		for (int i = 0; i < 1; i++) {
+		for (int i = 0; i < pdbInfos.size(); i++) {
 			System.out.println(i);
 			PdbInfoDB pdbInfo = pdbInfos.get(i);
 			String firstChain = firstChains.get(i);
@@ -127,23 +129,10 @@ public class AlphabetOptimisation {
 			// CREATE TAGS AND SEQUENCES FOR LEFT AND RIGHT QUERIES AND ADD TO ARRAY
 			firstHomologTags[0] = firstChainCluster.getRefUniProtId() + "_" + firstChainCluster.getRefUniProtStart() + "-" + firstChainCluster.getRefUniProtEnd();
 			firstHomologSeqs[0] = firstChainCluster.getMsaAlignedSeq();
-			System.out.println("query-first-seq " + firstChainCluster.getMsaAlignedSeq());
+//			System.out.println("query-first-seq " + firstHomologTags[0] + " " + firstChainCluster.getMsaAlignedSeq());
 			secondHomologTags[0] = secondChainCluster.getRefUniProtId() + "_" + secondChainCluster.getRefUniProtStart() + "-" + secondChainCluster.getRefUniProtEnd();
 			secondHomologSeqs[0] = secondChainCluster.getMsaAlignedSeq();
-			//System.out.println("query-second-seq " + secondChainCluster.getMsaAlignedSeq());
-			
-			// CREATE LEFT AND RIGHT MAPPINGS FROM MULTIPLESEQUENCEALIGNMENT COLUMN NUMBERS TO INTERFACE RESIDUE NUMBERS
-			HashMap<Integer, Integer> firstMapping = new HashMap<Integer, Integer>();
-			HashMap<Integer, Integer> secondMapping = new HashMap<Integer, Integer>();
-			// populate mappings here :P
-			
-			// CREATE PAIR (LEFT, RIGHT) OF MAPPINGS
-			ArrayList<HashMap<Integer, Integer>> mappingPair = new ArrayList<HashMap<Integer, Integer>>();
-			mappingPair.add(firstMapping);
-			mappingPair.add(secondMapping);
-			
-			// ADD PAIR OF LISTS OF REGIONS TO LIST OF PAIRS OF LISTS OF REGIONS
-			mappings.add(mappingPair);
+//			System.out.println("query-second-seq " + secondChainCluster.getMsaAlignedSeq());
 			
 			// ADD LEFT AND RIGHT HOMOLOGUE TAGS AND SEQUENCES TO ARRAY
 			for (int j = 0; j < firstHomologs.size(); j++) {
@@ -173,8 +162,7 @@ public class AlphabetOptimisation {
 			ArrayList<Integer> secondRegions = new ArrayList<Integer>();
 			for (ResidueDB aResidue : residues) {
 				if (aResidue.getSide() == 1) {
-					firstRegions.add(getRegion(aResidue.getAsa(), aResidue.getBsa()));					
-					System.out.println(aResidue.getResidueType() + aResidue.getResidueNumber() + " ");
+					firstRegions.add(getRegion(aResidue.getAsa(), aResidue.getBsa()));
 				}
 				else if (aResidue.getSide() == 2) {
 					secondRegions.add(getRegion(aResidue.getAsa(), aResidue.getBsa()));
@@ -188,17 +176,72 @@ public class AlphabetOptimisation {
 			
 			// ADD PAIR OF LISTS OF REGIONS TO LIST OF PAIRS OF LISTS OF REGIONS
 			regions.add(regionPair);
+			
+			// CREATE LEFT AND RIGHT MAPPINGS FROM INTERFACE RESIDUE NUMBERS TO CHAINCLUSTER MSA COLUMN NUMBERS
+			HashMap<Integer, Integer> firstMapping = new HashMap<Integer, Integer>();
+			HashMap<Integer, Integer> secondMapping = new HashMap<Integer, Integer>();
+			String firstPDB = firstChainCluster.getPdbAlignedSeq();
+			String firstREF = firstChainCluster.getRefAlignedSeq();
+			String secondPDB = secondChainCluster.getPdbAlignedSeq();
+			String secondREF = secondChainCluster.getRefAlignedSeq();
+			MultipleSequenceAlignment firstPairwise = new MultipleSequenceAlignment(new String[] {"firstPDB", "firstREF"}, new String[] {firstPDB, firstREF});
+			MultipleSequenceAlignment secondPairwise = new MultipleSequenceAlignment(new String[] {"secondPDB", "secondREF"}, new String[] {secondPDB, secondREF});
+			for (ResidueDB aResidue : residues) {
+				if (aResidue.getSide() == 1) {
+//					if (firstChainCluster.getPdbAlignedSeq().charAt(aResidue.getResidueNumber() - 1) != AminoAcid.three2one(aResidue.getResidueType())) {
+//						System.out.println(firstChainCluster.getPdbAlignedSeq().charAt(aResidue.getResidueNumber() - 1) + "\t!=\t" + aResidue.getResidueType() + aResidue.getResidueNumber());
+//					}
+					int mapFrom = aResidue.getResidueNumber();
+					int correspondingRefIndex = firstPairwise.al2seq("firstREF", firstPairwise.seq2al("firstPDB", mapFrom)) - 1;
+					if (correspondingRefIndex > 0) {
+						int withOffsets = correspondingRefIndex - firstChainCluster.getRefUniProtStart() + 1;
+						int mapTo = MSAPair.get(0).seq2al(firstHomologTags[0], withOffsets + 1);
+//						System.out.println(aResidue.getResidueType() + mapFrom + "\t" + correspondingRefIndex + "\t" + withOffsets + "\t" + mapTo + "\t" + MSAPair.get(0).getColumn(mapTo).charAt(0));
+//						if (MSAPair.get(0).getColumn(mapTo).charAt(0) != AminoAcid.three2one(aResidue.getResidueType())) {
+//							System.out.println(MSAPair.get(0).getColumn(mapTo).charAt(0) + "\t!=\t" + aResidue.getResidueType() + aResidue.getResidueNumber());
+//						}
+						firstMapping.put(mapFrom, mapTo);
+					}
+				}
+				else if (aResidue.getSide() == 2) {
+//					if (secondChainCluster.getPdbAlignedSeq().charAt(aResidue.getResidueNumber() - 1) != AminoAcid.three2one(aResidue.getResidueType())) {
+//						System.out.println(secondChainCluster.getPdbAlignedSeq().charAt(aResidue.getResidueNumber() - 1) + "\t!=\t" + aResidue.getResidueType() + aResidue.getResidueNumber());
+//					}
+					int mapFrom = aResidue.getResidueNumber();
+					int correspondingRefIndex = secondPairwise.al2seq("secondREF", secondPairwise.seq2al("secondPDB", mapFrom)) - 1;
+					if (correspondingRefIndex > 0) {
+						int withOffsets = correspondingRefIndex - secondChainCluster.getRefUniProtStart() + 1;
+						int mapTo = MSAPair.get(1).seq2al(secondHomologTags[0], withOffsets + 1);
+//						System.out.println(aResidue.getResidueType() + mapFrom + "\t" + correspondingRefIndex + "\t" + withOffsets + "\t" + mapTo + "\t" + MSAPair.get(1).getColumn(mapTo).charAt(0));
+//						if (MSAPair.get(1).getColumn(mapTo).charAt(0) != AminoAcid.three2one(aResidue.getResidueType())) {
+//						System.out.println(MSAPair.get(1).getColumn(mapTo).charAt(0) + "\t!=\t" + aResidue.getResidueType() + aResidue.getResidueNumber());
+//						}
+						secondMapping.put(mapFrom, mapTo);
+					}
+				}
+			}
+			
+			// CREATE PAIR (LEFT, RIGHT) OF MAPPINGS
+			ArrayList<HashMap<Integer, Integer>> mappingPair = new ArrayList<HashMap<Integer, Integer>>();
+			mappingPair.add(firstMapping);
+			mappingPair.add(secondMapping);
+
+			// ADD PAIR OF LISTS OF REGIONS TO LIST OF PAIRS OF LISTS OF REGIONS
+			mappings.add(mappingPair);
 		}
 		
 		// RUN ALPHABET OPTIMISATION
-		System.out.println(truths);
-//		for (ArrayList<MultipleSequenceAlignment> msaPair : MSAs) {
-//			for (MultipleSequenceAlignment msa : msaPair) {
-//				msa.printSimple();
-//			}
-//		}
-		System.out.println(regions);
-		//optimiseAlphabet();
+		optimiseAlphabet();
+	}
+	
+	private static String removeGaps(String input) {
+		String output = "";
+		for (char c : input.toCharArray()) {
+			if (c != MultipleSequenceAlignment.GAPCHARACTER) {
+				output += c;
+			}
+		}
+		return output;
 	}
 	
 	private static ArrayList<ArrayList<String>> readList(File file) throws IOException {
@@ -277,18 +320,51 @@ public class AlphabetOptimisation {
 		return assignment;
 	}
 	
-	private static void optimiseAlphabet() {
-		Set<AAAlphabet> alphabetPool = initialisePool();
-		for (AAAlphabet alphabet : alphabetPool) {
-			System.out.println(alphabet + "\t" + testFitness(alphabet));
-		}
-		for (int i = 1; i <= ROUNDS_OF_EVOLUTION; i++) {
-			alphabetPool = evolve(alphabetPool);
-			System.out.println("\nAfter " + i + " rounds of evolution...");
-			for (AAAlphabet alphabet : alphabetPool) {
-				System.out.println(alphabet + "\t" + testFitness(alphabet));
+	private static ArrayList<ArrayList<Double>> getEntropies(int whichDatapoint, int whichSide, AAAlphabet whichAlphabet) {
+		ArrayList<Double> coreEntropies = new ArrayList<Double>();
+		ArrayList<Double> surfaceEntropies = new ArrayList<Double>();
+		ArrayList<Integer> thisRegions = regions.get(whichDatapoint).get(whichSide);
+		for (int i = 0; i < thisRegions.size(); i++) {
+			int thisRegion = thisRegions.get(i);
+			if (thisRegion == ResidueDB.CORE_EVOLUTIONARY || thisRegion == ResidueDB.CORE_GEOMETRY) {
+				int mapped = mappings.get(whichDatapoint).get(whichSide).get(i);
+				coreEntropies.add(MSAs.get(whichDatapoint).get(whichSide).getColumnEntropy(mapped, whichAlphabet));
+			}
+			else if (thisRegion == ResidueDB.SURFACE) {
+				surfaceEntropies.add(null);
 			}
 		}
+		ArrayList<ArrayList<Double>> entropiesPair = new ArrayList<ArrayList<Double>>();
+		entropiesPair.add(coreEntropies);
+		entropiesPair.add(surfaceEntropies);
+		return entropiesPair;
+	}
+	
+	private static void optimiseAlphabet() {
+//		System.out.println(truths.size());
+//		System.out.println(MSAs.size());
+//		System.out.println(regions.size());
+//		System.out.println(mappings.size());
+		
+		/*
+		 * overall strategy here:
+		 * this function should create alphabets and call another function to get their fitness (testFitness())
+		 * testFitness() should simply be the sampling of appropriate entropy values
+		 * testFitness() should call a third function (getEntropies()), which returns entropy values separated by region 
+		 */
+		
+		
+//		Set<AAAlphabet> alphabetPool = initialisePool();
+//		for (AAAlphabet alphabet : alphabetPool) {
+//			System.out.println(alphabet + "\t" + testFitness(alphabet));
+//		}
+//		for (int i = 1; i <= ROUNDS_OF_EVOLUTION; i++) {
+//			alphabetPool = evolve(alphabetPool);
+//			System.out.println("\nAfter " + i + " rounds of evolution...");
+//			for (AAAlphabet alphabet : alphabetPool) {
+//				System.out.println(alphabet + "\t" + testFitness(alphabet));
+//			}
+//		}
 	}
 	
 	private static Set<AAAlphabet> initialisePool() {
