@@ -288,14 +288,18 @@ public class TextOutputWriter {
 		
 		int eppicAssemblySize = 0;
 		int pdb1AssemblySize = 0;
+		String pdb1SymmetryStr = "";
 		
 		if (eppicAssembly!=null) eppicAssemblySize = eppicAssembly.getMmSize();
-		if (pdb1Assembly!=null) pdb1AssemblySize = pdb1Assembly.getMmSize();
+		if (pdb1Assembly!=null) {
+			pdb1AssemblySize = pdb1Assembly.getMmSize();
+			pdb1SymmetryStr = ","+pdb1Assembly.getSymmetry();
+		}
 		
 		ps.printf("%7s\t%12s\t%10s\t%10s\n",
 				"clustId","members",
 				ScoringMethod.EPPIC_FINAL + "("+eppicAssemblySize+")",
-				DataModelAdaptor.PDB_BIOUNIT_METHOD         + "("+pdb1AssemblySize+")"); 
+				DataModelAdaptor.PDB_BIOUNIT_METHOD         + "("+pdb1AssemblySize+pdb1SymmetryStr+")"); 
 		
 		for (InterfaceClusterDB interfaceCluster:interfaceClusters) {
 			String membersStr = "";
