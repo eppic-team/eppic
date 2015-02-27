@@ -35,28 +35,31 @@ public class AlphabetOptimisation {
 	public static final double CALL_THRESHOLD = -0.90;
 	public static final double MIN_ASA_FOR_SURFACE = 5;
 	public static final String[] AMINO_ACIDS = {"A", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "P", "Q", "R", "S", "T", "V", "W", "Y"};
-	public static final int CARRYING_CAPACITY = 30;
-	public static final int INITIAL_POPULATION_SIZE = 10;
-	public static final int ROUNDS_OF_EVOLUTION = 2;
+	public static final int CARRYING_CAPACITY = 20; // >=4
+	public static final int INITIAL_POPULATION_SIZE = 10; // >=4
+	public static final int ROUNDS_OF_EVOLUTION = 10000;
 	public static final double SCORE_INFINITY_VALUE = 1000.00;
 	public static final double NUM_SURF_RES_TOLERANCE = 2.00;
 	public static final int NUMBER_OF_SURFACE_SAMPLES = 10000;
 	public static final int MINIMUM_NUM_HOMOLOGUES = 30;
 	public static final double MINIMUM_HOMOLOGY = 0.60;
 	
-	public static ArrayList<Boolean> truths; // THIS IS A LIST OF BOOLEANS (TRUE IFF BIO)
-	public static ArrayList<ArrayList<MultipleSequenceAlignment>> MSAs; // THIS IS A LIST OF PAIRS OF MSAS
-	public static ArrayList<ArrayList<ArrayList<Integer>>> regions; // THIS IS A LIST OF PAIRS OF LISTS OF REGIO_INTS
-	public static ArrayList<ArrayList<HashMap<Integer, Integer>>> mappings; // THIS IS A LIST OF PAIRS OF MAPPINGS FROM RES_ID TO MSA_COL
-	public static ArrayList<ArrayList<ArrayList<Integer>>> resids;
-	public static ArrayList<ArrayList<Boolean>> stringencies;
+	public static ArrayList<Boolean> truths; // LIST OF BOOLEANS (TRUE IFF BIO), ONE PER DATAPOINT
+	public static ArrayList<ArrayList<MultipleSequenceAlignment>> MSAs; // LIST OF PAIRS OF MSAS, ONE PAIR PER DATAPOINT, PAIR = (LEFT, RIGHT)
+	public static ArrayList<ArrayList<ArrayList<Integer>>> regions; // LIST OF PAIRS OF LISTS OF REGIO_INTS, ONE PER DATAPOINT, PAIR = (LEFT LIST OF REGIONS, RIGHT)
+	public static ArrayList<ArrayList<HashMap<Integer, Integer>>> mappings; // LIST OF PAIRS OF MAPPINGS FROM RES_ID TO MSA_COL, ONE PER DATAPOINT, PAIR = (LEFT MAPPING, RIGHT)
+	public static ArrayList<ArrayList<ArrayList<Integer>>> resids; // LIST OF PAIRS OF LISTS OF RESIDUE NUMBERS, ONE PER DATAPOINT, PAIR = (LEFT CHAIN RESID#S, RIGHT)
+	public static ArrayList<ArrayList<Boolean>> stringencies; // LIST OF PAIRS OF BOOLEANS, ONE PER DATAPOINT, PAIR = (LEFT SUFF_STRING?, RIGHT SUFF_STRING?)
 	
 	public static void main(String[] args) throws Exception {
 		// COLLECT DATA
 		collectData(args);
-
-		// RUN ALPHABET OPTIMISATION
-		optimiseAlphabet();
+		
+		// RUN ALPHABET OPTIMISATION BY EVOLUTIONARY ALGORITHM
+//		optimiseAlphabet();
+		
+		// RUN ALPHABET OPTIMISATION BY BRUTE FORCE
+		optimiseAlphabet2();
 	}
 	
 	private static void collectData(String[] args) throws Exception {
@@ -206,23 +209,27 @@ public class AlphabetOptimisation {
 			for (ResidueDB aResidue : residues) {
 				if (aResidue.getSide() == 1) {
 					int mapFrom = aResidue.getResidueNumber();
-					int correspondingRefIndex = firstPairwise.al2seq("firstREF", firstPairwise.seq2al("firstPDB", mapFrom)) - 1;
-					if (correspondingRefIndex > 0) {
-						int withOffsets = correspondingRefIndex - firstChainCluster.getRefUniProtStart() + 1;
-						int mapTo = MSAPair.get(0).seq2al(firstHomologTags[0], withOffsets + 1);
-						firstRegions.add(getRegion(aResidue.getAsa(), aResidue.getBsa()));
-						firstResids.add(aResidue.getResidueNumber());
-						firstMapping.put(mapFrom, mapTo);
+					if (mapFrom >= firstChainCluster.getPdbStart() && mapFrom <= firstChainCluster.getPdbEnd()) {
+						int correspondingRefIndex = firstPairwise.al2seq("firstREF", firstPairwise.seq2al("firstPDB", mapFrom)) - 1;
+						if (correspondingRefIndex > 0) {
+							int withOffsets = correspondingRefIndex - firstChainCluster.getRefUniProtStart() + 1;
+							int mapTo = MSAPair.get(0).seq2al(firstHomologTags[0], withOffsets + 1);
+							firstRegions.add(getRegion(aResidue.getAsa(), aResidue.getBsa()));
+							firstResids.add(aResidue.getResidueNumber());
+							firstMapping.put(mapFrom, mapTo);
+						}
 					}
 				} else if (aResidue.getSide() == 2) {
 					int mapFrom = aResidue.getResidueNumber();
-					int correspondingRefIndex = secondPairwise.al2seq("secondREF", secondPairwise.seq2al("secondPDB", mapFrom)) - 1;
-					if (correspondingRefIndex > 0) {
-						int withOffsets = correspondingRefIndex - secondChainCluster.getRefUniProtStart() + 1;
-						int mapTo = MSAPair.get(1).seq2al(secondHomologTags[0], withOffsets + 1);
-						secondRegions.add(getRegion(aResidue.getAsa(), aResidue.getBsa()));
-						secondResids.add(aResidue.getResidueNumber());
-						secondMapping.put(mapFrom, mapTo);
+					if (mapFrom >= secondChainCluster.getPdbStart() && mapFrom <= secondChainCluster.getPdbEnd()) {
+						int correspondingRefIndex = secondPairwise.al2seq("secondREF", secondPairwise.seq2al("secondPDB", mapFrom)) - 1;
+						if (correspondingRefIndex > 0) {
+							int withOffsets = correspondingRefIndex - secondChainCluster.getRefUniProtStart() + 1;
+							int mapTo = MSAPair.get(1).seq2al(secondHomologTags[0], withOffsets + 1);
+							secondRegions.add(getRegion(aResidue.getAsa(), aResidue.getBsa()));
+							secondResids.add(aResidue.getResidueNumber());
+							secondMapping.put(mapFrom, mapTo);
+						}
 					}
 				}
 			}
@@ -344,16 +351,71 @@ public class AlphabetOptimisation {
 	
 	private static void optimiseAlphabet() {
 		Set<AAAlphabet> alphabetPool = initialisePool();
-		for (AAAlphabet alphabet : alphabetPool) {
-			System.out.println(alphabet + "\t" + testFitness(alphabet));
-		}
+//		for (AAAlphabet alphabet : alphabetPool) {
+//			System.out.println(alphabet); // + "\t" + testFitness(alphabet));
+//		}
 		for (int i = 1; i <= ROUNDS_OF_EVOLUTION; i++) {
 			alphabetPool = evolve(alphabetPool);
-			System.out.println("\nAfter " + i + " rounds of evolution...");
-			for (AAAlphabet alphabet : alphabetPool) {
-				System.out.println(alphabet + "\t" + testFitness(alphabet));
+			System.out.println("Just finished round " + i + " of evolution...\n");
+//			System.out.println("\nAfter " + i + " rounds of evolution...");
+//			for (AAAlphabet alphabet : alphabetPool) {
+//				System.out.println(alphabet); // + "\t" + testFitness(alphabet));
+//			}
+		}
+	}
+	
+	private static void optimiseAlphabet2() {
+		HashSet<String> tried = new HashSet<String>();
+		Random rand = new Random();
+		for (int trial = 0; trial < 5; trial++) {
+			String alphabet = "";
+			ArrayList<String> left = new ArrayList<String>(Arrays.asList(AMINO_ACIDS));
+			while (left.size() > 0) {
+				if (left.size() == 1) {
+					alphabet += left.get(0);
+					alphabet += ":";
+					break;
+				}
+				int number = rand.nextInt(left.size() - 1) + 1;
+				String thisGroup = "";
+				for (int i = 0; i < number; i++) {
+					int anIndex = rand.nextInt(left.size());
+					thisGroup += left.get(anIndex);
+					left.remove(anIndex);
+				}
+				alphabet += thisGroup;
+				alphabet += ":";
+			}
+			String finalAlphabet = simplifyAlphabetString(alphabet.substring(0, alphabet.length() - 1));
+			if (!tried.contains(finalAlphabet)) {
+				System.out.println(finalAlphabet + "\t\t" + testFitness(new AAAlphabet(finalAlphabet)));
+			} else {
+				System.out.println(finalAlphabet + "\t\t" + "ALREADY TESTED!");
 			}
 		}
+	}
+	
+	
+	private static String simplifyAlphabetString(String input) {
+		String[] inputArray = input.split(":");
+		for (int i = 0; i < inputArray.length; i++) {
+			char[] chars = inputArray[i].toCharArray();
+			Arrays.sort(chars);
+			String newString = "";
+			for (int j = 0; j < chars.length; j++) {
+				newString += chars[j];
+			}
+			inputArray[i] = newString;
+		}
+		Arrays.sort(inputArray);
+		String output = "";
+		for (int i = 0; i < inputArray.length; i++) {
+			if (inputArray[i].length() > 0) {
+				output += inputArray[i];
+				output += ":";
+			}
+		}
+		return output.substring(0, output.length() - 1);
 	}
 	
 	private static Set<AAAlphabet> initialisePool() {
@@ -363,6 +425,7 @@ public class AlphabetOptimisation {
 		}
 		return pool;
 	}
+	
 	
 	private static double testFitness(AAAlphabet whichAlphabet) {
 		double fitness = 0.00;
@@ -383,18 +446,21 @@ public class AlphabetOptimisation {
 					finalScore = leftScore;
 				} // otherwise, both are NaN, final stays NaN
 				boolean finalCall = Boolean.FALSE;
-				//WHAT'S BELOW HERE IS WRONG
-//				if (!Double.isNaN(finalScore)) {
-//					finalCall = finalScore < CALL_THRESHOLD;
-//					System.out.println(i + " prediction: bio, since " + finalScore + " < " + CALL_THRESHOLD);
-//				} else {
-//					System.out.println(i + " prediction: xtal, since " + finalScore + " >= " + CALL_THRESHOLD);
-//				}
+				if (!Double.isNaN(finalScore)) {
+					finalCall = finalScore < CALL_THRESHOLD;
+					if (finalCall) {
+//						System.out.println(i + " prediction: bio, since " + finalScore + " < " + CALL_THRESHOLD);
+					} else {
+//						System.out.println(i + " prediction: xtal, since " + finalScore + " >= " + CALL_THRESHOLD);
+					}
+				} else {
+					System.out.println(i + " prediction: xtal, since " + finalScore + " is NaN");
+				}
 				if (finalCall == truths.get(i)) {
 					fitness += 1.0;
-					System.out.println("prediction was correct! fitness++");
+//					System.out.println("prediction was correct! fitness++");
 				} else {
-					System.out.println("prediction incorrect :( :(");
+//					System.out.println("prediction incorrect :( :(");
 				}
 			}
 		}
@@ -454,27 +520,26 @@ public class AlphabetOptimisation {
 	}
 	
 	private static Set<AAAlphabet> evolve(Set<AAAlphabet> oldPool) {
-		Set<AAAlphabet> newPool = new HashSet<AAAlphabet>();
+		AAAlphabet[] arrayAlphabets = new AAAlphabet[oldPool.size()];
+		int i = 0;
 		for (AAAlphabet alphabet : oldPool) {
-			//int fitness = (int)(testFitness(alphabet));
-			int fitness = 1;
-			for (int i = 0; i < fitness; i++) {
-				newPool.add(mutateAlphabet(alphabet));
-			}
+			double fitness = testFitness(alphabet);
+			System.out.println(alphabet + "\t" + fitness);
+			alphabet.setFitness(fitness);
+			arrayAlphabets[i] = alphabet;
+			i++;			
 		}
-//		while (newPool.size() > CARRYING_CAPACITY) {
-//			AAAlphabet worstAlphabet = null;
-//			int worstFitness = Integer.MAX_VALUE;
-//			for (AAAlphabet anAlphabet : newPool) {
-//				if (testFitness(anAlphabet) < worstFitness) {
-//					worstAlphabet = anAlphabet;
-//					worstFitness = (int)(testFitness(anAlphabet) * 5);
-//				}
-//			}
-//			newPool.remove(worstAlphabet);
-//		}
+		Arrays.sort(arrayAlphabets);
+		Set<AAAlphabet> newPool = new HashSet<AAAlphabet>();
+		for (int j = (arrayAlphabets.length / 2); j < arrayAlphabets.length; j++) {
+			newPool.add(mutateAlphabet(arrayAlphabets[j]));
+			newPool.add(mutateAlphabet(arrayAlphabets[j]));
+		}
+//		newPool.add(mutateAlphabet(arrayAlphabets[arrayAlphabets.length - 2]));
+//		newPool.add(mutateAlphabet(arrayAlphabets[arrayAlphabets.length - 1]));
 		return newPool;
 	}
+	
 	
 	private static AAAlphabet mutateAlphabet(AAAlphabet alphabet) {
 		ArrayList<String> groups = new ArrayList<String>(Arrays.asList(alphabet.getGroups()));
