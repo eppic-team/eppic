@@ -1,11 +1,11 @@
 package eppic.assembly;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.collections15.Predicate;
 import org.biojava.nbio.structure.Structure;
-import org.biojava.nbio.structure.contact.StructureInterface;
-import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
 import org.biojava.nbio.structure.contact.StructureInterfaceList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,12 +21,14 @@ public class AssemblyFinder {
 	private StructureInterfaceList interfaces;
 	
 	private int numEntities;
+	private int numInterfClusters;
 	
 	public AssemblyFinder(LatticeGraph lattice, StructureInterfaceList interfaces, Structure structure) {
 		this.lattice = lattice;
 		this.interfaces = interfaces;
 		
 		this.numEntities = structure.getCompounds().size();
+		this.numInterfClusters = interfaces.getClusters().size();
 	}
 	
 	public int getNumEntities() {
@@ -38,28 +40,71 @@ public class AssemblyFinder {
 	 * @return
 	 */
 	public List<Assembly> getValidAssemblies() {
-		// TODO implement: return all topologically valid assemblies
 		
-		for (StructureInterfaceCluster interf:interfaces.getClusters()) {
-			if (isValidAssemblyInterface(interf)) {
-				logger.info("Interface cluster {} is a valid assembly interface", interf.getId());
+		List<Assembly> validAssemblies = new ArrayList<Assembly>();
+
+		Map<Integer,List<boolean[]>> combinations = PowerSet.powerSetBinary(numInterfClusters);
+		
+		List<boolean[]> invalidGroups = new ArrayList<boolean[]>();		
+		
+		
+		for (int k = 1; k<=numInterfClusters;k++) {
+			
+			List<boolean[]> kSizeGroups = combinations.get(k);			
+			
+			for (int i = 0;i<kSizeGroups.size();i++) {
+				boolean[] g = kSizeGroups.get(i);
+				
+				
+				if (isInvalidGroup(invalidGroups, g)) continue;
+				
+				if (!isValidEngagedSet(g)) {
+					
+					invalidGroups.add(g);
+					
+				} else {
+					
+					// add assembly as valid
+					validAssemblies.add(new Assembly(interfaces, g));
+				}
 			}
+			
 		}
-		return null;
+		
+		
+
+		return validAssemblies;
 	}
 	
-	private boolean isValidAssemblyInterface(StructureInterfaceCluster cluster) {
-		// pure infinite interfaces (translations and screw rotations between same chains)
-		if (isInfinite(cluster)) return false;
+	/**
+	 * Returns true if given group is a child of any of the given invalidGroups, false otherwise
+	 * @param invalidGroups
+	 * @param g
+	 * @return
+	 */
+	private boolean isInvalidGroup(List<boolean[]> invalidGroups, boolean[] g) {
+
+		for (boolean[] invalidGroup:invalidGroups) {
+			if (isChild(invalidGroup, g)) return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * Tells whether a particular set of engaged interface clusters is the child of another set.
+	 * 
+	 * @param potentialParent the set of engaged interfaces potentially parent of potentialChild
+	 * @param potentialChild the set of engaged interfaces potentially child of potentialParent
+	 * @return true if is a child false if not
+	 */
+	private boolean isChild(boolean[] potentialParent, boolean[] potentialChild) {
 		
-		// isologous is always a valid interface
-		if (isIsologous(cluster)) return true;
-		
-		// all other cases: heterelogous interfaces
-		
-		// is it forming a closed symmetry? if yes it is valid, otherwise it's not usable
-		
-		return isCycle(getSubgraph(cluster.getId()));
+		for (int i=0;i<numInterfClusters;i++) {
+			if (potentialParent[i]	&& potentialChild[i]) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	/**
@@ -67,13 +112,18 @@ public class AssemblyFinder {
 	 * @param clusterId
 	 * @return
 	 */
-	private Graph<ChainVertex, InterfaceEdge> getSubgraph(final int clusterId) {
+	private Graph<ChainVertex, InterfaceEdge> getSubgraph(final boolean[] engagedClusters) {
 		EdgePredicateFilter<ChainVertex, InterfaceEdge> edgeFilter = 
 				new EdgePredicateFilter<ChainVertex, InterfaceEdge>(new Predicate<InterfaceEdge>() {
 
 					@Override
 					public boolean evaluate(InterfaceEdge edge) {
-						return edge.getClusterId()==clusterId;
+						for (int i=0;i<engagedClusters.length;i++) {
+							if (engagedClusters[i]  && edge.getClusterId()==i+1) {							
+								return true;							
+							}
+						}
+						return false;
 					}
 					
 				});
@@ -82,46 +132,16 @@ public class AssemblyFinder {
 		return edgeFilter.transform(graph);		
 	}
 	
-	private boolean isCycle(Graph<ChainVertex, InterfaceEdge> subgraph) {
-		int vertexCount= subgraph.getVertexCount();
-		int edgeCount = subgraph.getEdgeCount();
+	private boolean isValidEngagedSet(boolean[] g) {
+		Graph<ChainVertex,InterfaceEdge> subgraph = getSubgraph(g);
 		
-		// necessary but not sufficient condition
-		if (vertexCount!=edgeCount) return false;
-		
-		for (ChainVertex vertex:subgraph.getVertices()) {
-			if (subgraph.getNeighborCount(vertex)!=2) return false;
-		}
+		// just a test case
+		if (g[2]) return false;
+		if (g[3]) return false;
 		return true;
+		
+		// TODO implement based on rules iii and iv
+		
 	}
 	
-	private static boolean isInfinite(StructureInterfaceCluster cluster) {
-		int infiniteCount = 0;
-		for (StructureInterface interf:cluster.getMembers()) {
-			if (interf.isInfinite()) infiniteCount++;
-		}
-		if (infiniteCount>0) {			
-			if (infiniteCount!=cluster.getMembers().size()) {
-				// as infinites are detected only for perfect CS, this can happen often: info
-				logger.info("Interface cluster {} contains both infinite and non-infinite interfaces, considering it infinite.",cluster.getId());
-			}
-			return true;
-		}
-		return false;
-	}
-	
-	private static boolean isIsologous(StructureInterfaceCluster cluster) {
-		int isologousCount = 0;
-		for (StructureInterface interf:cluster.getMembers()) {
-			if (interf.isIsologous()) isologousCount++;
-		}
-		if (isologousCount>0) {			
-			if (isologousCount!=cluster.getMembers().size()) {
-				// isologous are detected through aproximate matching of interfaces, thus this should not really happen: warn!
-				logger.warn("Found a mix of isologous and heterologous interfaces in cluster {}. Considering it isologous.",cluster.getId());
-			}
-			return true;
-		}
-		return false;
-	}
 }

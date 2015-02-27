@@ -45,6 +45,7 @@ import org.biojava.nbio.structure.xtal.SpaceGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import eppic.assembly.Assembly;
 import eppic.assembly.AssemblyFinder;
 import eppic.assembly.LatticeGraph;
 import eppic.commons.util.FileTypeGuesser;
@@ -347,7 +348,8 @@ public class Main {
 	public void doConstructLatticeGraph() {
 		latticeGraph = new LatticeGraph(this.pdb, this.interfaces);
 		AssemblyFinder aFinder = new AssemblyFinder(latticeGraph, interfaces, pdb);
-		aFinder.getValidAssemblies();
+		List<Assembly> validAssemblies = aFinder.getValidAssemblies();
+		LOGGER.info("There are {} topological possible assemblies", validAssemblies.size());
 	}
 	
 	public void doGeomScoring() throws EppicException {

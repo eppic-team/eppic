@@ -1,23 +1,38 @@
 package eppic.assembly;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import org.biojava.nbio.structure.contact.StructureInterface;
+import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
+import org.biojava.nbio.structure.contact.StructureInterfaceList;
+
 
 public class Assembly {
 
-	private List<StructureInterface> interfaces;
+	private List<StructureInterfaceCluster> interfaceClusters;
 	
 	private int size;
 	private String symmetry;
 	private String stoichiometry;
 	
-	public List<StructureInterface> getInterfaces() {
-		return interfaces;
+	public Assembly(StructureInterfaceList interfaces, boolean[] engagedSet) {
+		interfaceClusters = new ArrayList<StructureInterfaceCluster>();
+		
+		for (StructureInterfaceCluster cluster:interfaces.getClusters()) {
+			for (int i=0;i<engagedSet.length;i++) {
+				if (engagedSet[i] && cluster.getId() == i+1) {
+					interfaceClusters.add(cluster);
+				}
+			}
+		}
 	}
 	
-	public void setInterfaces(List<StructureInterface> interfaces) {
-		this.interfaces = interfaces;
+	public List<StructureInterfaceCluster> getInterfaceClusters() {
+		return interfaceClusters;
+	}
+	
+	public void setInterfaces(List<StructureInterfaceCluster> interfaceClusters) {
+		this.interfaceClusters = interfaceClusters;
 	}
 	
 	public int getSize() {
