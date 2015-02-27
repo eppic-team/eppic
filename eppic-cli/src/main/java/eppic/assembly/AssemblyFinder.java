@@ -1,10 +1,12 @@
 package eppic.assembly;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.collections15.Predicate;
+import org.biojava.nbio.structure.Chain;
 import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.contact.StructureInterfaceList;
 import org.slf4j.Logger;
@@ -22,13 +24,21 @@ public class AssemblyFinder {
 	
 	private int numEntities;
 	private int numInterfClusters;
+	private int[] xtalStoichiometry;
 	
-	public AssemblyFinder(LatticeGraph lattice, StructureInterfaceList interfaces, Structure structure) {
-		this.lattice = lattice;
+	public AssemblyFinder(Structure structure, StructureInterfaceList interfaces) {
+		this.lattice = new LatticeGraph(structure, interfaces);;
 		this.interfaces = interfaces;
 		
 		this.numEntities = structure.getCompounds().size();
 		this.numInterfClusters = interfaces.getClusters().size();
+		this.xtalStoichiometry = new int[numEntities];
+		
+		for (Chain c: structure.getChains()) {
+			// this relies on molId being 1 to n (we have to check that actually it is like that in the PDB)
+			xtalStoichiometry[c.getCompound().getMolId() - 1] ++;
+		}
+		logger.info ("The stoichiometry of the crystal is {}", Arrays.toString(xtalStoichiometry));
 	}
 	
 	public int getNumEntities() {
@@ -134,6 +144,9 @@ public class AssemblyFinder {
 	
 	private boolean isValidEngagedSet(boolean[] g) {
 		Graph<ChainVertex,InterfaceEdge> subgraph = getSubgraph(g);
+		
+		int numVertices = subgraph.getVertexCount();
+		int numEdges = subgraph.getEdgeCount();
 		
 		// just a test case
 		if (g[2]) return false;
