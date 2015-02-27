@@ -4,15 +4,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.commons.collections15.Predicate;
 import org.biojava.nbio.structure.Chain;
 import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.contact.StructureInterfaceList;
+import org.jgrapht.Graph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.uci.ics.jung.algorithms.filters.EdgePredicateFilter;
-import edu.uci.ics.jung.graph.Graph;
 
 public class AssemblyFinder {
 
@@ -120,31 +118,31 @@ public class AssemblyFinder {
 	 * @param clusterId
 	 * @return
 	 */
-	private Graph<ChainVertex, InterfaceEdge> getSubgraph(final boolean[] engagedClusters) {
-		EdgePredicateFilter<ChainVertex, InterfaceEdge> edgeFilter = 
-				new EdgePredicateFilter<ChainVertex, InterfaceEdge>(new Predicate<InterfaceEdge>() {
-
-					@Override
-					public boolean evaluate(InterfaceEdge edge) {
-						for (int i=0;i<engagedClusters.length;i++) {
-							if (engagedClusters[i]  && edge.getClusterId()==i+1) {							
-								return true;							
-							}
-						}
-						return false;
-					}
-					
-				});
-		
-		Graph<ChainVertex,InterfaceEdge> graph = lattice.getGraph();
-		return edgeFilter.transform(graph);		
-	}
+//	private Graph<ChainVertex, InterfaceEdge> getSubgraph(final boolean[] engagedClusters) {
+//		EdgePredicateFilter<ChainVertex, InterfaceEdge> edgeFilter = 
+//				new EdgePredicateFilter<ChainVertex, InterfaceEdge>(new Predicate<InterfaceEdge>() {
+//
+//					@Override
+//					public boolean evaluate(InterfaceEdge edge) {
+//						for (int i=0;i<engagedClusters.length;i++) {
+//							if (engagedClusters[i]  && edge.getClusterId()==i+1) {							
+//								return true;							
+//							}
+//						}
+//						return false;
+//					}
+//					
+//				});
+//		
+//		Graph<ChainVertex,InterfaceEdge> graph = lattice.getGraph();
+//		return edgeFilter.transform(graph);		
+//	}
 	
 	private boolean isValidEngagedSet(boolean[] g) {
-		Graph<ChainVertex,InterfaceEdge> subgraph = getSubgraph(g);
-		
-		int numVertices = subgraph.getVertexCount();
-		int numEdges = subgraph.getEdgeCount();
+//		Graph<ChainVertex,InterfaceEdge> subgraph = getSubgraph(g);
+//		
+//		int numVertices = subgraph.vertexSet().size();
+//		int numEdges = subgraph.edgeSet().size();
 		
 		// just a test case
 		if (g[2]) return false;

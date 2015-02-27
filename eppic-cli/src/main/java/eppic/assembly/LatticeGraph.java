@@ -18,13 +18,11 @@ import org.biojava.nbio.structure.contact.StructureInterfaceList;
 import org.biojava.nbio.structure.xtal.CrystalBuilder;
 import org.biojava.nbio.structure.xtal.CrystalTransform;
 import org.biojava.nbio.structure.xtal.SpaceGroup;
+import org.jgrapht.Graph;
+import org.jgrapht.graph.Pseudograph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.uci.ics.jung.graph.Graph;
-import edu.uci.ics.jung.graph.UndirectedOrderedSparseMultigraph;
-import edu.uci.ics.jung.graph.util.EdgeType;
-import edu.uci.ics.jung.graph.util.Pair;
 
 
 
@@ -43,17 +41,17 @@ public class LatticeGraph {
 	
 	
 	public LatticeGraph(Structure struct, StructureInterfaceList interfaces) {
-		
-		graph = new UndirectedOrderedSparseMultigraph<ChainVertex, InterfaceEdge>();
+				
+		graph = new Pseudograph<ChainVertex, InterfaceEdge>(InterfaceEdge.class);
 		chainpairsInterfaceIds = new HashSet<ChainPairInterfaceId>();
 
 		// init the graph
 		initLatticeGraph(struct, interfaces);
 		
-		logger.info("Found {} vertices and {} edges in unit cell", graph.getVertexCount(), graph.getEdgeCount());
+		logger.info("Found {} vertices and {} edges in unit cell", graph.vertexSet().size(), graph.edgeSet().size());
 		
 		List<InterfaceEdge> sortedEdges = new ArrayList<InterfaceEdge>();
-		sortedEdges.addAll(graph.getEdges());
+		sortedEdges.addAll(graph.edgeSet());
 		Collections.sort(sortedEdges, new Comparator<InterfaceEdge>() {
 			@Override
 			public int compare(InterfaceEdge o1, InterfaceEdge o2) {
@@ -62,16 +60,17 @@ public class LatticeGraph {
 		});
 		
 		for (InterfaceEdge edge:sortedEdges) {
-			Pair<ChainVertex> vertices = graph.getEndpoints(edge);
+			ChainVertex first = graph.getEdgeSource(edge);
+			ChainVertex second = graph.getEdgeTarget(edge);
 			Point3i xtalT = edge.getXtalTrans();
 			logger.info("Edge {} ({}) between {} ({}) - {} ({})"+
 					String.format(" [%2d,%2d,%2d]", xtalT.x,xtalT.y,xtalT.z), 
 					edge.getInterfaceId(),
 					edge.getClusterId(),
-					vertices.getFirst().getChainId()+vertices.getFirst().getOpId(), 
-					vertices.getFirst().getEntity(),
-					vertices.getSecond().getChainId()+vertices.getSecond().getOpId(),
-					vertices.getSecond().getEntity());
+					first.getChainId()+first.getOpId(), 
+					first.getEntity(),
+					second.getChainId()+second.getOpId(),
+					second.getEntity());
 
 		}
 		
@@ -142,6 +141,12 @@ public class LatticeGraph {
 		
 		SpaceGroup sg = struct.getCrystallographicInfo().getSpaceGroup();
 		
+		for (Chain c:struct.getChains()) {
+			for (int i=0;i<sg.getNumOperators();i++) {
+				graph.addVertex(new ChainVertex(c.getChainID(),i));
+			}
+		}
+		
 		// we compare all chains of 0 unit cell to all chains of itself and 1 neighboring cell around
 		List<UnitCellChain> iChains = listUnitCells(struct, 0);
 		List<UnitCellChain> jChains = listUnitCells(struct, CrystalBuilder.DEF_NUM_CELLS);
@@ -201,7 +206,7 @@ public class LatticeGraph {
 					// overcome the limitations of the jung implementation requiring all edges to be unique
 					ChainPairInterfaceId triplet = new ChainPairInterfaceId(minVert, maxVert, interfaceId, xtalTrans);
 					if (!chainpairsInterfaceIds.contains(triplet)) {
-						graph.addEdge(edge, minVert, maxVert, EdgeType.UNDIRECTED);
+						graph.addEdge(minVert, maxVert, edge);
 						chainpairsInterfaceIds.add(triplet);
 					}
 					
