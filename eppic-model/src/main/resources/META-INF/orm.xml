@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<entity-mappings xmlns="http://java.sun.com/xml/ns/persistence/orm"
+<entity-mappings xmlns="http://xmlns.jcp.org/xml/ns/persistence/orm"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://java.sun.com/xml/ns/persistence/orm http://java.sun.com/xml/ns/persistence/orm_2_0.xsd"
-	version="2.0">
+	xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence/orm http://xmlns.jcp.org/xml/ns/persistence/orm_2_1.xsd"
+	version="2.1">
 	<description>EPPIC JPA entities</description>
 	<package>EPPIC entities</package>
 
@@ -58,7 +58,13 @@
 					<cascade-all />
 				</cascade>
 			</many-to-many>
-		</attributes>
+			
+			<!-- 
+			<indexes>
+				<index name="jobId_idx" columns="jobId"></index>
+			</indexes>
+			-->
+		</attributes>		
 	</entity>
 
 	<entity class="eppic.model.PdbInfoDB" name="PdbInfo">

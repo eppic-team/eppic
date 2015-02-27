@@ -68,7 +68,7 @@ public class DBHandler {
 			this.emf = Persistence.createEntityManagerFactory(PERSISTENCE_UNIT_NAME, properties);
 
 		} catch (PersistenceException e){	
-			//e.printStackTrace();
+			e.printStackTrace();
 			System.err.println(e.getMessage());
 			System.err.println("Error initializing Entity Manager Factory");
 			System.err.println("Please check that the database '"+dbName+"' is really present and that the login parameters are correct in file "+configurationFile);

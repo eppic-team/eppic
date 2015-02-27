@@ -5,6 +5,10 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.Index;
+import javax.persistence.Table;
+
+@Table(indexes={@Index(columnList="jobId")})
 public class JobDB implements Serializable {
 
 	private static final long serialVersionUID = 1L;
