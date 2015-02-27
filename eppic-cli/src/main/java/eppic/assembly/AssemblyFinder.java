@@ -2,12 +2,16 @@ package eppic.assembly;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.biojava.nbio.structure.Chain;
 import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.contact.StructureInterfaceList;
 import org.jgrapht.Graph;
+import org.jgrapht.alg.cycle.PatonCycleBase;
+import org.jgrapht.graph.Subgraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -118,31 +122,47 @@ public class AssemblyFinder {
 	 * @param clusterId
 	 * @return
 	 */
-//	private Graph<ChainVertex, InterfaceEdge> getSubgraph(final boolean[] engagedClusters) {
-//		EdgePredicateFilter<ChainVertex, InterfaceEdge> edgeFilter = 
-//				new EdgePredicateFilter<ChainVertex, InterfaceEdge>(new Predicate<InterfaceEdge>() {
-//
-//					@Override
-//					public boolean evaluate(InterfaceEdge edge) {
-//						for (int i=0;i<engagedClusters.length;i++) {
-//							if (engagedClusters[i]  && edge.getClusterId()==i+1) {							
-//								return true;							
-//							}
-//						}
-//						return false;
-//					}
-//					
-//				});
-//		
-//		Graph<ChainVertex,InterfaceEdge> graph = lattice.getGraph();
-//		return edgeFilter.transform(graph);		
-//	}
+	private Graph<ChainVertex, InterfaceEdge> getSubgraph(final boolean[] engagedClusters) {
+		
+		Set<ChainVertex> vertexSet = lattice.getGraph().vertexSet();
+		Set<InterfaceEdge> edgeSubset = new HashSet<InterfaceEdge>();
+		for(InterfaceEdge edge:lattice.getGraph().edgeSet()) {
+			for (int i=0;i<engagedClusters.length;i++) {
+				if (engagedClusters[i]  && edge.getClusterId()==i+1) {
+					edgeSubset.add(edge);
+				}
+			}
+		}
+		
+		Graph<ChainVertex, InterfaceEdge> subgraph = 
+				new Subgraph<ChainVertex, InterfaceEdge, Graph<ChainVertex,InterfaceEdge>>(
+						lattice.getGraph(), vertexSet, edgeSubset);
+				
+		
+		return subgraph;		
+	}
 	
 	private boolean isValidEngagedSet(boolean[] g) {
-//		Graph<ChainVertex,InterfaceEdge> subgraph = getSubgraph(g);
-//		
-//		int numVertices = subgraph.vertexSet().size();
-//		int numEdges = subgraph.edgeSet().size();
+		Graph<ChainVertex,InterfaceEdge> subgraph = getSubgraph(g);
+		
+		int numVertices = subgraph.vertexSet().size();
+		int numEdges = subgraph.edgeSet().size();
+		
+		logger.info("subgraph has {} vertices and {} edges",numVertices, numEdges); 
+		
+		PatonCycleBase<ChainVertex, InterfaceEdge> paton = new PatonCycleBase<ChainVertex, InterfaceEdge>(lattice.getGraph());
+		
+		List<List<ChainVertex>> cycles = paton.findCycleBase();
+		logger.info("{} cycles in total",cycles.size());
+		for (List<ChainVertex> cycle:cycles) {
+			logger.info("Cycle of size {}", cycle.size());
+			StringBuilder sb = new StringBuilder();
+			for (ChainVertex c:cycle) {
+				sb.append(c.getChainId()+" ");
+			}
+			sb.append("\n");
+			logger.info(sb.toString());
+		}
 		
 		// just a test case
 		if (g[2]) return false;

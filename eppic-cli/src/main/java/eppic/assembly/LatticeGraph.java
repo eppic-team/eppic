@@ -18,7 +18,7 @@ import org.biojava.nbio.structure.contact.StructureInterfaceList;
 import org.biojava.nbio.structure.xtal.CrystalBuilder;
 import org.biojava.nbio.structure.xtal.CrystalTransform;
 import org.biojava.nbio.structure.xtal.SpaceGroup;
-import org.jgrapht.Graph;
+import org.jgrapht.UndirectedGraph;
 import org.jgrapht.graph.Pseudograph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +31,7 @@ public class LatticeGraph {
 	private static final Logger logger = LoggerFactory.getLogger(LatticeGraph.class);
 
 
-	private Graph<ChainVertex,InterfaceEdge> graph;
+	private UndirectedGraph<ChainVertex,InterfaceEdge> graph;
 	
 	// We need this to keep track of duplicate edges (i.e. same interface id edges) between 2 chain vertices.
 	// The jung implementation of multigraph is not so flexible in what you can do with it:
@@ -121,22 +121,10 @@ public class LatticeGraph {
 		}
 	}
 
-	public Graph<ChainVertex, InterfaceEdge> getGraph() {
+	public UndirectedGraph<ChainVertex, InterfaceEdge> getGraph() {
 		return graph;
 	}
 	
-//	public Graph<ChainVertex, InterfaceClusterEdge> getReducedGraph() {
-//		Graph<ChainVertex, InterfaceClusterEdge> reducedGraph = 
-//				new UndirectedOrderedSparseMultigraph<ChainVertex, InterfaceClusterEdge>();
-//		
-//		for (InterfaceEdge edge:graph.getEdges()) {
-//			Pair<ChainVertex> pair = graph.getEndpoints(edge);
-//			reducedGraph.addEdge(new InterfaceClusterEdge(edge.getInterface().getCluster()), pair.getFirst(), pair.getSecond(), EdgeType.UNDIRECTED);
-//		}
-//		
-//		return reducedGraph;
-//	}
-
 	private void initLatticeGraph(Structure struct, StructureInterfaceList interfaces) {
 		
 		SpaceGroup sg = struct.getCrystallographicInfo().getSpaceGroup();
