@@ -109,23 +109,24 @@ public class PowerSet {
 	 * Finds the power set (all combinations) of a set of integers {0,...,n-1} representing the result as a boolean array,
 	 * e.g. for n=3 (set {0,1,2}), the result is (in binary):
 	 * [0,0,0] [1,0,0] [0,1,0] [0,0,1] [1,1,0] [1,0,1] [0,1,1] [1,1,1]
-	 * The results are sorted in group sizes (the key of the map)
+	 * The results are sorted in group sizes (the index of the outer array)
 	 * See 
 	 * http://en.wikipedia.org/wiki/Combination
 	 * http://en.wikipedia.org/wiki/Power_set
 	 * @param n an integer with max value 31
 	 * @return
 	 */
-	public static Map<Integer,List<boolean[]>> powerSetBinary(int n) {
+	public static List<boolean[]>[] powerSetBinary(int n) {
 		
 		
 		if (n>=32) throw new IllegalArgumentException("Can't enumerate all combinations for more than 32 elements!");
 		
 		int numGroups = (int) Math.pow(2,n);
 		
-		Map<Integer,List<boolean[]>> groups = new TreeMap<Integer, List<boolean[]>>();
+		@SuppressWarnings("unchecked")
+		List<boolean[]>[] groups = (List<boolean[]>[]) new List[n+1];
 		for (int k=0;k<=n;k++) {
-			groups.put(k, new ArrayList<boolean[]>());
+			groups[k] = new ArrayList<boolean[]>();
 		}
 		
 		// the set of all combinations corresponds to a boolean array of size n with number of nodes 2^n (including the empty set)
@@ -143,9 +144,7 @@ public class PowerSet {
 			
 			int k = countGroupSize(v);
 			
-			List<boolean[]> sizeKGroups = groups.get(k);
-			
-			sizeKGroups.add(v);
+			groups[k].add(v);
 			
 		}
 		return groups;

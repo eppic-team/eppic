@@ -3,7 +3,6 @@ package eppic.assembly;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.collections15.Predicate;
 import org.biojava.nbio.structure.Chain;
@@ -53,17 +52,16 @@ public class AssemblyFinder {
 		
 		List<Assembly> validAssemblies = new ArrayList<Assembly>();
 
-		Map<Integer,List<boolean[]>> combinations = PowerSet.powerSetBinary(numInterfClusters);
+		List<boolean[]>[] combinations = PowerSet.powerSetBinary(numInterfClusters);
 		
 		List<boolean[]> invalidGroups = new ArrayList<boolean[]>();		
 		
 		
 		for (int k = 1; k<=numInterfClusters;k++) {
 			
-			List<boolean[]> kSizeGroups = combinations.get(k);			
-			
-			for (int i = 0;i<kSizeGroups.size();i++) {
-				boolean[] g = kSizeGroups.get(i);
+			for (int i = 0;i<combinations[k].size();i++) {
+				
+				boolean[] g = combinations[k].get(i);
 				
 				
 				if (isInvalidGroup(invalidGroups, g)) continue;
