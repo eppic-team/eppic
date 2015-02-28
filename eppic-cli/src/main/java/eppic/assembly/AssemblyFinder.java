@@ -63,7 +63,7 @@ public class AssemblyFinder {
 		
 		Set<Assembly> validSet = new HashSet<Assembly>();
 
-		// the list of node in the tree found to be invalid: all of their children will also be invalid
+		// the list of nodes in the tree found to be invalid: all of their children will also be invalid
 		List<Assembly> invalidNodes = new ArrayList<Assembly>();		
 		
 		Assembly emptyAssembly = new Assembly(interfaces, lattice.getGraph(), new boolean[numInterfClusters]);

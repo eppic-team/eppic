@@ -14,7 +14,12 @@ import org.jgrapht.graph.Subgraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
+/**
+ * An Assembly of molecules within a crystal, represented by a set of engaged interface clusters.
+ * 
+ * @author jose
+ *
+ */
 public class Assembly {
 	
 	private static final Logger logger = LoggerFactory.getLogger(Assembly.class);
@@ -171,7 +176,7 @@ public class Assembly {
 		int numVertices = subgraph.vertexSet().size();
 		int numEdges = subgraph.edgeSet().size();
 		
-		logger.info("subgraph has {} vertices and {} edges",numVertices, numEdges); 
+		logger.info("Subgraph of assembly {} has {} vertices and {} edges",this.toString(),numVertices, numEdges); 
 		
 //		PatonCycleBase<ChainVertex, InterfaceEdge> paton = new PatonCycleBase<ChainVertex, InterfaceEdge>(lattice.getGraph());
 //		
