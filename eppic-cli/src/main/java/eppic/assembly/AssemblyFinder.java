@@ -9,9 +9,7 @@ import java.util.Set;
 import org.biojava.nbio.structure.Chain;
 import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.contact.StructureInterfaceList;
-import org.jgrapht.Graph;
-import org.jgrapht.alg.cycle.PatonCycleBase;
-import org.jgrapht.graph.Subgraph;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,129 +46,62 @@ public class AssemblyFinder {
 	
 	/**
 	 * Returns all topologically valid assemblies present in the crystal.
+	 * The method traverses the tree of all possible combinations of n interface
+	 * clusters (2^n in total), e.g. for a structure with 3 clusters {0,1,2} the tree looks like:
+	 * <pre>
+	 *         {}
+	 *       /  |  \
+	 *    {0}  {1}  {2}
+	 *    |  X     X   |
+	 *  {0,1} {0,2} {1,2}
+	 *      \   |   /
+	 *       {0,1,2}   
+	 * </pre>
 	 * @return
 	 */
-	public List<Assembly> getValidAssemblies() {
+	public Set<Assembly> getValidAssemblies() {
 		
-		List<Assembly> validAssemblies = new ArrayList<Assembly>();
+		Set<Assembly> validSet = new HashSet<Assembly>();
 
-		List<boolean[]>[] combinations = PowerSet.powerSetBinary(numInterfClusters);
+		// the list of node in the tree found to be invalid: all of their children will also be invalid
+		List<Assembly> invalidNodes = new ArrayList<Assembly>();		
 		
-		List<boolean[]> invalidGroups = new ArrayList<boolean[]>();		
+		Assembly emptyAssembly = new Assembly(interfaces, lattice.getGraph(), new boolean[numInterfClusters]);
 		
+		Set<Assembly> prevLevel = new HashSet<Assembly>();
+		prevLevel.add(emptyAssembly);
+		Set<Assembly> nextLevel = null;
 		
 		for (int k = 1; k<=numInterfClusters;k++) {
 			
-			for (int i = 0;i<combinations[k].size();i++) {
-				
-				boolean[] g = combinations[k].get(i);
-				
-				
-				if (isInvalidGroup(invalidGroups, g)) continue;
-				
-				if (!isValidEngagedSet(g)) {
+			nextLevel = new HashSet<Assembly>();
 					
-					invalidGroups.add(g);
+			for (Assembly p:prevLevel) {
+				List<Assembly> children = p.getChildren(invalidNodes);
+				
+				for (Assembly c:children) {
 					
-				} else {
-					
-					// add assembly as valid
-					validAssemblies.add(new Assembly(interfaces, g));
+					if (!c.isValid()) {
+						invalidNodes.add(c);
+					} else {
+						// we only add a child for next level if we know it's valid, if it wasn't valid 
+						// then it's not added and thus the whole branch is pruned
+						nextLevel.add(c);
+						// add assembly as valid
+						validSet.add(c);
+					}
 				}
 			}
+			prevLevel = new HashSet<Assembly>(nextLevel); 
 			
 		}
 		
 		
 
-		return validAssemblies;
+		return validSet;
 	}
 	
-	/**
-	 * Returns true if given group is a child of any of the given invalidGroups, false otherwise
-	 * @param invalidGroups
-	 * @param g
-	 * @return
-	 */
-	private boolean isInvalidGroup(List<boolean[]> invalidGroups, boolean[] g) {
+	
 
-		for (boolean[] invalidGroup:invalidGroups) {
-			if (isChild(invalidGroup, g)) return true;
-		}
-		return false;
-	}
-	
-	/**
-	 * Tells whether a particular set of engaged interface clusters is the child of another set.
-	 * 
-	 * @param potentialParent the set of engaged interfaces potentially parent of potentialChild
-	 * @param potentialChild the set of engaged interfaces potentially child of potentialParent
-	 * @return true if is a child false if not
-	 */
-	private boolean isChild(boolean[] potentialParent, boolean[] potentialChild) {
-		
-		for (int i=0;i<numInterfClusters;i++) {
-			if (potentialParent[i]	&& potentialChild[i]) {
-				return true;
-			}
-		}
-		return false;
-	}
-	
-	/**
-	 * Gets the subgraph containing only the given cluster id edges
-	 * @param clusterId
-	 * @return
-	 */
-	private Graph<ChainVertex, InterfaceEdge> getSubgraph(final boolean[] engagedClusters) {
-		
-		Set<ChainVertex> vertexSet = lattice.getGraph().vertexSet();
-		Set<InterfaceEdge> edgeSubset = new HashSet<InterfaceEdge>();
-		for(InterfaceEdge edge:lattice.getGraph().edgeSet()) {
-			for (int i=0;i<engagedClusters.length;i++) {
-				if (engagedClusters[i]  && edge.getClusterId()==i+1) {
-					edgeSubset.add(edge);
-				}
-			}
-		}
-		
-		Graph<ChainVertex, InterfaceEdge> subgraph = 
-				new Subgraph<ChainVertex, InterfaceEdge, Graph<ChainVertex,InterfaceEdge>>(
-						lattice.getGraph(), vertexSet, edgeSubset);
-				
-		
-		return subgraph;		
-	}
-	
-	private boolean isValidEngagedSet(boolean[] g) {
-		Graph<ChainVertex,InterfaceEdge> subgraph = getSubgraph(g);
-		
-		int numVertices = subgraph.vertexSet().size();
-		int numEdges = subgraph.edgeSet().size();
-		
-		logger.info("subgraph has {} vertices and {} edges",numVertices, numEdges); 
-		
-		PatonCycleBase<ChainVertex, InterfaceEdge> paton = new PatonCycleBase<ChainVertex, InterfaceEdge>(lattice.getGraph());
-		
-		List<List<ChainVertex>> cycles = paton.findCycleBase();
-		logger.info("{} cycles in total",cycles.size());
-		for (List<ChainVertex> cycle:cycles) {
-			logger.info("Cycle of size {}", cycle.size());
-			StringBuilder sb = new StringBuilder();
-			for (ChainVertex c:cycle) {
-				sb.append(c.getChainId()+" ");
-			}
-			sb.append("\n");
-			logger.info(sb.toString());
-		}
-		
-		// just a test case
-		if (g[2]) return false;
-		if (g[3]) return false;
-		return true;
-		
-		// TODO implement based on rules iii and iv
-		
-	}
-	
+
 }

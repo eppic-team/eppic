@@ -15,6 +15,7 @@ import java.net.UnknownHostException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.zip.GZIPOutputStream;
 
 import org.apache.logging.log4j.LogManager;
@@ -345,7 +346,7 @@ public class Main {
 	
 	public void doFindAssemblies() { 
 		AssemblyFinder aFinder = new AssemblyFinder(pdb, interfaces);
-		List<Assembly> validAssemblies = aFinder.getValidAssemblies();
+		Set<Assembly> validAssemblies = aFinder.getValidAssemblies();
 		LOGGER.info("There are {} topologically possible assemblies", validAssemblies.size());
 	}
 	
