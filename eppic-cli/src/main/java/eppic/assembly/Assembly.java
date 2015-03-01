@@ -10,6 +10,7 @@ import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
 import org.biojava.nbio.structure.contact.StructureInterfaceList;
 import org.jgrapht.Graph;
 import org.jgrapht.UndirectedGraph;
+import org.jgrapht.alg.cycle.PatonCycleBase;
 import org.jgrapht.graph.Subgraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +25,9 @@ public class Assembly {
 	
 	private static final Logger logger = LoggerFactory.getLogger(Assembly.class);
 
+	/**
+	 * The set of engaged interface clusters, represented as a boolean vector.
+	 */
 	private boolean[] engagedSet;
 	
 	private StructureInterfaceList interfaces;
@@ -141,7 +145,7 @@ public class Assembly {
 	}
 	
 	/**
-	 * Gets the subgraph containing only the given cluster id edges
+	 * Gets the subgraph containing only this assembly's engaged interface clusters
 	 * @param clusterId
 	 * @return
 	 */
@@ -178,7 +182,7 @@ public class Assembly {
 		
 		logger.info("Subgraph of assembly {} has {} vertices and {} edges",this.toString(),numVertices, numEdges); 
 		
-//		PatonCycleBase<ChainVertex, InterfaceEdge> paton = new PatonCycleBase<ChainVertex, InterfaceEdge>(lattice.getGraph());
+//		PatonCycleBase<ChainVertex, InterfaceEdge> paton = new PatonCycleBase<ChainVertex, InterfaceEdge>(graph);
 //		
 //		List<List<ChainVertex>> cycles = paton.findCycleBase();
 //		logger.info("{} cycles in total",cycles.size());

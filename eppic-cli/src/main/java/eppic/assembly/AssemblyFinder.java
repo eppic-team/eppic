@@ -57,6 +57,9 @@ public class AssemblyFinder {
 	 *      \   |   /
 	 *       {0,1,2}   
 	 * </pre>
+	 * As the tree is traversed, if a node is found to be an invalid assembly, then all of its children
+	 * are pruned off and not tried. Thus the number of combinations reduces very quickly with a few
+	 * pruned top nodes.
 	 * @return
 	 */
 	public Set<Assembly> getValidAssemblies() {
@@ -74,6 +77,8 @@ public class AssemblyFinder {
 		
 		for (int k = 1; k<=numInterfClusters;k++) {
 			
+			logger.debug("Traversing level {} of tree: {} parent nodes",k,prevLevel.size());
+			
 			nextLevel = new HashSet<Assembly>();
 					
 			for (Assembly p:prevLevel) {
@@ -82,6 +87,7 @@ public class AssemblyFinder {
 				for (Assembly c:children) {
 					
 					if (!c.isValid()) {
+						logger.debug("Node {} is invalid, will prune off all of its children",c.toString());
 						invalidNodes.add(c);
 					} else {
 						// we only add a child for next level if we know it's valid, if it wasn't valid 
