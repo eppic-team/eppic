@@ -6,12 +6,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.biojava.nbio.structure.contact.StructureInterface;
 import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
 import org.biojava.nbio.structure.contact.StructureInterfaceList;
-import org.jgrapht.Graph;
 import org.jgrapht.UndirectedGraph;
 import org.jgrapht.alg.cycle.PatonCycleBase;
-import org.jgrapht.graph.Subgraph;
+import org.jgrapht.graph.UndirectedSubgraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -149,7 +149,7 @@ public class Assembly {
 	 * @param clusterId
 	 * @return
 	 */
-	private Graph<ChainVertex, InterfaceEdge> getSubgraph() {
+	private UndirectedGraph<ChainVertex, InterfaceEdge> getSubgraph() {
 		
 		Set<ChainVertex> vertexSet = graph.vertexSet();
 		Set<InterfaceEdge> edgeSubset = new HashSet<InterfaceEdge>();
@@ -161,8 +161,8 @@ public class Assembly {
 			}
 		}
 		
-		Graph<ChainVertex, InterfaceEdge> subgraph = 
-				new Subgraph<ChainVertex, InterfaceEdge, Graph<ChainVertex,InterfaceEdge>>(
+		UndirectedGraph<ChainVertex, InterfaceEdge> subgraph = 
+				new UndirectedSubgraph<ChainVertex, InterfaceEdge>(
 						graph, vertexSet, edgeSubset);
 				
 		
@@ -175,36 +175,52 @@ public class Assembly {
 	 * @return
 	 */
 	public boolean isValid() {
-		Graph<ChainVertex,InterfaceEdge> subgraph = getSubgraph();
+		
+		// TODO implement based on rules iii and iv
+
+		
+		// first we check for infinites, like that we save to compute the graph cycles for infinite cases
+		if (containsInfinites()) {
+			logger.info("Discarding assembly {} because it contains infinite interfaces", toString());
+			return false;
+		}
+		
+		// then we check the cycles in the graph
+		
+		UndirectedGraph<ChainVertex,InterfaceEdge> subgraph = getSubgraph();
 		
 		int numVertices = subgraph.vertexSet().size();
 		int numEdges = subgraph.edgeSet().size();
 		
 		logger.info("Subgraph of assembly {} has {} vertices and {} edges",this.toString(),numVertices, numEdges); 
 		
-//		PatonCycleBase<ChainVertex, InterfaceEdge> paton = new PatonCycleBase<ChainVertex, InterfaceEdge>(graph);
-//		
-//		List<List<ChainVertex>> cycles = paton.findCycleBase();
-//		logger.info("{} cycles in total",cycles.size());
-//		for (List<ChainVertex> cycle:cycles) {
-//			logger.info("Cycle of size {}", cycle.size());
-//			StringBuilder sb = new StringBuilder();
-//			for (ChainVertex c:cycle) {
-//				sb.append(c.getChainId()+" ");
-//			}
-//			sb.append("\n");
-//			logger.info(sb.toString());
-//		}
+		PatonCycleBase<ChainVertex, InterfaceEdge> paton = new PatonCycleBase<ChainVertex, InterfaceEdge>(subgraph);
 		
-		// just a test case
-		if (this.engagedSet[2]) return false;
-		if (this.engagedSet[3]) return false;
-		return true;
+		List<List<ChainVertex>> cycles = paton.findCycleBase();
+		logger.info("{} cycles in total",cycles.size());
+		for (List<ChainVertex> cycle:cycles) {
+			logger.info("Cycle of size {}", cycle.size());
+			StringBuilder sb = new StringBuilder();
+			for (ChainVertex c:cycle) {
+				sb.append(c.toString()+" -> ");
+			}
+			logger.info(sb.toString());
+		}
 		
-		// TODO implement based on rules iii and iv
-		
+		// TODO just a place holder for testing: remove!
+		return false;
 	}
 	
+	private boolean containsInfinites() {
+		for (StructureInterfaceCluster cluster: getInterfaceClusters()) {
+			
+			for (StructureInterface interf:cluster.getMembers()) {
+				// if a single member of cluster is infinite we consider the cluster infinite
+				if (interf.isInfinite()) return true;
+			}
+		}
+		return false;
+	}
 	
 	@Override
 	public boolean equals(Object other) {
