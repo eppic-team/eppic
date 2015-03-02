@@ -6,6 +6,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.vecmath.Point3i;
+
 import org.biojava.nbio.structure.contact.StructureInterface;
 import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
 import org.biojava.nbio.structure.contact.StructureInterfaceList;
@@ -176,7 +178,7 @@ public class Assembly {
 	 */
 	public boolean isValid() {
 		
-		// TODO implement based on rules iii and iv
+		// TODO rule iii is still missing here
 
 		
 		// first we check for infinites, like that we save to compute the graph cycles for infinite cases
@@ -185,30 +187,7 @@ public class Assembly {
 			return false;
 		}
 		
-		// then we check the cycles in the graph
-		
-		UndirectedGraph<ChainVertex,InterfaceEdge> subgraph = getSubgraph();
-		
-		int numVertices = subgraph.vertexSet().size();
-		int numEdges = subgraph.edgeSet().size();
-		
-		logger.info("Subgraph of assembly {} has {} vertices and {} edges",this.toString(),numVertices, numEdges); 
-		
-		PatonCycleBase<ChainVertex, InterfaceEdge> paton = new PatonCycleBase<ChainVertex, InterfaceEdge>(subgraph);
-		
-		List<List<ChainVertex>> cycles = paton.findCycleBase();
-		logger.info("{} cycles in total",cycles.size());
-		for (List<ChainVertex> cycle:cycles) {
-			logger.info("Cycle of size {}", cycle.size());
-			StringBuilder sb = new StringBuilder();
-			for (ChainVertex c:cycle) {
-				sb.append(c.toString()+" -> ");
-			}
-			logger.info(sb.toString());
-		}
-		
-		// TODO just a place holder for testing: remove!
-		return false;
+		return isClosedSymmetry();
 	}
 	
 	private boolean containsInfinites() {
@@ -220,6 +199,73 @@ public class Assembly {
 			}
 		}
 		return false;
+	}
+
+	private boolean isClosedSymmetry() {
+		
+		// pre-check for assemblies with 1 engaged interface that is isologous: the cycle detection doesn't work for isologous
+		if (getNumEngagedInterfaceClusters()==1) {
+			for (StructureInterface interf : getInterfaceClusters().get(0).getMembers()) {
+				// with a single interface in cluster isologous, we call the whole isologous
+				if (interf.isIsologous()) {
+					logger.info("Assembly {} contains just 1 isologous interface cluster: closed symmetry, won't check cycles",toString());
+					return true;
+				}
+			}
+		}
+		
+		// we check the cycles in the graph and whether they stay in same cell
+
+		UndirectedGraph<ChainVertex,InterfaceEdge> subgraph = getSubgraph();
+
+		int numVertices = subgraph.vertexSet().size();
+		int numEdges = subgraph.edgeSet().size();
+
+		logger.info("Subgraph of assembly {} has {} vertices and {} edges",this.toString(),numVertices, numEdges); 
+
+		PatonCycleBase<ChainVertex, InterfaceEdge> paton = new PatonCycleBase<ChainVertex, InterfaceEdge>(subgraph);
+
+		List<List<ChainVertex>> cycles = paton.findCycleBase();
+		
+		if (cycles.size()==0) {
+			// no cycles at all: can't be closed!
+			logger.info("No cycles in assembly {}: discarding because it can't be a closed-symmetry", toString());
+			return false;
+		}
+		
+		logger.info("{} cycles in total",cycles.size());
+		for (List<ChainVertex> cycle:cycles) {
+			logger.info("Cycle of size {}", cycle.size());
+			StringBuilder sb = new StringBuilder();
+			for (ChainVertex c:cycle) {
+				sb.append(c.toString()+" -> ");
+			}
+			logger.info(sb.toString());
+			
+			Point3i trans = getTranslation(subgraph, cycle);
+			if (trans.equals(new Point3i(0,0,0))) {
+				logger.info("Total translation is 0");
+				return true;
+			} else {
+				logger.info("Total translation is [{}, {}, {}] ",trans.x, trans.y, trans.z);
+				return false;
+			}
+		}
+		
+
+		// TODO just a place holder for testing: remove!
+		return true;
+	}
+	
+	private Point3i getTranslation(UndirectedGraph<ChainVertex, InterfaceEdge> subgraph, List<ChainVertex> cycle) {
+		Point3i p = new Point3i(0,0,0);
+		for (int i=0;i<cycle.size()-1;i++) {
+			Set<InterfaceEdge> edges = subgraph.getAllEdges(cycle.get(i), cycle.get(i+1));
+			for (InterfaceEdge edge:edges) {
+				p.add(edge.getXtalTrans());
+			}
+		}
+		return p;
 	}
 	
 	@Override
