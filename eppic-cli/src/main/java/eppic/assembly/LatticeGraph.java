@@ -131,7 +131,7 @@ public class LatticeGraph {
 		
 		for (Chain c:struct.getChains()) {
 			for (int i=0;i<sg.getNumOperators();i++) {
-				graph.addVertex(new ChainVertex(c.getChainID(),i));
+				graph.addVertex(new ChainVertex(c.getChainID(), i, c.getCompound().getMolId()));
 			}
 		}
 		
@@ -157,10 +157,8 @@ public class LatticeGraph {
 					logger.debug("Interface id {} matched for pair \n{}\n{}{}\n{}",
 							interfaceId, iChainId, iChains.get(i).m.toString(), jChainId, jChains.get(j).m.toString());
 
-					ChainVertex ivert = new ChainVertex(iChainId, iChains.get(i).opId);
-					ivert.setEntity(iChain.getCompound().getMolId());
-					ChainVertex jvert = new ChainVertex(jChainId, jChains.get(j).opId);
-					jvert.setEntity(jChain.getCompound().getMolId());
+					ChainVertex ivert = new ChainVertex(iChainId, iChains.get(i).opId, iChain.getCompound().getMolId());
+					ChainVertex jvert = new ChainVertex(jChainId, jChains.get(j).opId, jChain.getCompound().getMolId());
 					
 					List<ChainVertex> vertexPair = new ArrayList<ChainVertex>();
 					vertexPair.add(ivert);

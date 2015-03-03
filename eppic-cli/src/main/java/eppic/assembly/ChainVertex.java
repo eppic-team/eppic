@@ -3,8 +3,9 @@ package eppic.assembly;
 
 /**
  * A vertex representing a single chain.
- * Uniquely identified by cell (assumed to be [0,0,0]), asymmetric unit (given
- * by an operator ID relative to the enclosing CrystalCell), and chain ID.
+ * Uniquely identified by opId and chainId
+ * 
+ * 
  * @author spencer
  *
  */
@@ -16,10 +17,10 @@ public class ChainVertex {
 	// Metadata
 	private int entity; 
 	
-	public ChainVertex(String chainId, int opId) {
-		super();
+	public ChainVertex(String chainId, int opId, int entity) {
 		this.chainId = chainId;
 		this.opId = opId;
+		this.entity = entity;
 	}
 
 	public String getChainId() {

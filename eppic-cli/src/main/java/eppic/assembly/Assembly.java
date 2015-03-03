@@ -3,6 +3,7 @@ package eppic.assembly;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -12,6 +13,7 @@ import org.biojava.nbio.structure.contact.StructureInterface;
 import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
 import org.biojava.nbio.structure.contact.StructureInterfaceList;
 import org.jgrapht.UndirectedGraph;
+import org.jgrapht.alg.ConnectivityInspector;
 import org.jgrapht.alg.cycle.PatonCycleBase;
 import org.jgrapht.graph.UndirectedSubgraph;
 import org.slf4j.Logger;
@@ -35,15 +37,22 @@ public class Assembly {
 	private StructureInterfaceList interfaces;
 	private UndirectedGraph<ChainVertex,InterfaceEdge> graph;
 	
+	private int totalNumEntities;
+	
 	private int size;
 	private String symmetry;
-	private String stoichiometry;
+	private int[] stoichiometry;
 	
 	public Assembly(StructureInterfaceList interfaces, 
-			UndirectedGraph<ChainVertex,InterfaceEdge> graph, boolean[] engagedSet) {
+			UndirectedGraph<ChainVertex,InterfaceEdge> graph, boolean[] engagedSet, int totalNumEntities) {
 		this.engagedSet = engagedSet;
 		this.interfaces = interfaces;
 		this.graph = graph;
+		this.totalNumEntities = totalNumEntities;
+		
+		this.size = -1;
+		this.symmetry = null;
+		this.stoichiometry = null;
 	}
 	
 	public List<StructureInterfaceCluster> getInterfaceClusters() {
@@ -63,26 +72,44 @@ public class Assembly {
 		return size;
 	}
 	
-	public void setSize(int size) {
-		this.size = size;
-	}
-	
 	public String getSymmetry() {
 		return symmetry;
 	}
-	
-	public void setSymmetry(String symmetry) {
-		this.symmetry = symmetry;
-	}
-	
-	public String getStoichiometry() {
+		
+	public int[] getStoichiometry() {
+		if (stoichiometry!=null) return stoichiometry;
+		
+		UndirectedGraph<ChainVertex, InterfaceEdge> subgraph = getSubgraph();
+		
+		ConnectivityInspector<ChainVertex, InterfaceEdge> ci = new ConnectivityInspector<ChainVertex, InterfaceEdge>(subgraph);
+		
+		List<Set<ChainVertex>> ccs = ci.connectedSets();
+		
+		logger.info("Total of {} connected components", ccs.size());
+		List<int[]> stoichiometries = new ArrayList<int[]>();
+		for (Set<ChainVertex> cc:ccs) {			
+			int [] s = new int[totalNumEntities];
+			stoichiometries.add(s);
+			for (ChainVertex v:cc) {
+				// note: this relies on mol ids in the PDB being 1 to n, that might not be true, we need to check!
+				s[v.getEntity()-1]++;
+			}
+			logger.info("Stoichiometry of connected component: {}", Arrays.toString(s));
+		}
+		
+		// we assign the first stoichiometry found, and check and warn if the others are different 
+		stoichiometry = stoichiometries.get(0);
+		for (int i=1;i<stoichiometries.size();i++) {
+			if (!Arrays.equals(stoichiometry, stoichiometries.get(i))) {
+				logger.warn("Stoichiometry {} ({}) does not coincide with stoichiometry 0 ({})",
+						i, Arrays.toString(stoichiometries.get(i)), Arrays.toString(stoichiometry));
+			}
+		}
+		
+		
 		return stoichiometry;
 	}
-	
-	public void setStoichiometry(String stoichiometry) {
-		this.stoichiometry = stoichiometry;
-	}
-	
+		
 	public int getNumEngagedInterfaceClusters() {
 		int count=0;
 		for (int i=0;i<engagedSet.length;i++) {
@@ -135,7 +162,7 @@ public class Assembly {
 			if (!this.engagedSet[i]) {
 				boolean[] c = this.engagedSet.clone();
 				c[i] = true;
-				Assembly a = new Assembly(interfaces, graph, c);
+				Assembly a = new Assembly(interfaces, graph, c, totalNumEntities);
 				// first we need to check that this is not a child of another parent already known to be invalid
 				if (a.isChild(invalidParents)) continue;
 				
@@ -222,6 +249,8 @@ public class Assembly {
 		int numEdges = subgraph.edgeSet().size();
 
 		logger.info("Subgraph of assembly {} has {} vertices and {} edges",this.toString(),numVertices, numEdges); 
+		
+		getStoichiometry();
 
 		PatonCycleBase<ChainVertex, InterfaceEdge> paton = new PatonCycleBase<ChainVertex, InterfaceEdge>(subgraph);
 
@@ -234,6 +263,9 @@ public class Assembly {
 		}
 		
 		logger.info("{} cycles in total",cycles.size());
+		
+		// TODO check that all cycles are isomorphous, if they aren't this can't be an assembly
+		
 		for (List<ChainVertex> cycle:cycles) {
 			logger.info("Cycle of size {}", cycle.size());
 			StringBuilder sb = new StringBuilder();
@@ -242,32 +274,62 @@ public class Assembly {
 			}
 			logger.info(sb.toString());
 			
-			Point3i trans = getTranslation(subgraph, cycle);
-			if (trans.equals(new Point3i(0,0,0))) {
-				logger.info("Total translation is 0");
-				return true;
+			if (isZeroTranslation(subgraph, cycle)) {
+				logger.info("Closed cycle (0 translation)");
+				// we continue to next cycle, if all cycles are translation 0, then we'll return true below
 			} else {
-				logger.info("Total translation is [{}, {}, {}] ",trans.x, trans.y, trans.z);
+				//logger.info("Total translation is [{}, {}, {}] ",trans.x, trans.y, trans.z);
+				logger.info("Non-closed cycle (non-0 translation)");
+				// one cycle has non-zero translation: we abort straight away: return false
 				return false;
 			}
 		}
 		
 
-		// TODO just a place holder for testing: remove!
+		
 		return true;
 	}
 	
-	private Point3i getTranslation(UndirectedGraph<ChainVertex, InterfaceEdge> subgraph, List<ChainVertex> cycle) {
+	private boolean isZeroTranslation(UndirectedGraph<ChainVertex, InterfaceEdge> subgraph, List<ChainVertex> cycle) {
+
 		Point3i p = new Point3i(0,0,0);
-		for (int i=0;i<cycle.size()-1;i++) {
-			Set<InterfaceEdge> edges = subgraph.getAllEdges(cycle.get(i), cycle.get(i+1));
-			for (InterfaceEdge edge:edges) {
-				p.add(edge.getXtalTrans());
+		// Each edge sequentially
+		for (int i=0;i<cycle.size();i++) {
+			ChainVertex s = cycle.get(i);
+			ChainVertex t = cycle.get( (i+1)%cycle.size());
+			Set<InterfaceEdge> edges = subgraph.getAllEdges(s,t);
+			Iterator<InterfaceEdge> edgeIt = edges.iterator();
+			InterfaceEdge edge = edgeIt.next();
+			Point3i trans = edge.getXtalTrans();
+			if(!s.equals(subgraph.getEdgeSource(edge))) {
+				if (!s.equals(subgraph.getEdgeTarget(edge))) {
+					// a sanity check
+					logger.warn("Something is wrong: edge {} hasn't got expected vertex source {} or target {}",
+							edge.toString(), s.toString(), t.toString());
+				}
+				trans.negate();
 			}
+
+			// Check that any other edges have same xtaltrans
+			while (edgeIt.hasNext()) {
+				InterfaceEdge edge2 = edgeIt.next();
+				Point3i trans2 = edge2.getXtalTrans();
+				if(!s.equals(subgraph.getEdgeSource(edge2))) {
+					trans2.negate();
+				}
+				if(!trans.equals(trans2)) {
+					logger.info("Multiple edges with unequal translation");
+					return false;
+				}
+			}
+			
+			p.add(trans);
 		}
-		return p;
+		
+		logger.info("Total translation is [{}, {}, {}] ",p.x, p.y, p.z);
+		return p.equals(new Point3i(0,0,0));
 	}
-	
+
 	@Override
 	public boolean equals(Object other) {
 		if (! (other instanceof Assembly)) return false;
