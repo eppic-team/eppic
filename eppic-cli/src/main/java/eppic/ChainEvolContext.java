@@ -31,6 +31,7 @@ import owl.core.sequence.UnirefEntry;
 import owl.core.sequence.alignment.MultipleSequenceAlignment;
 import owl.core.sequence.alignment.PairwiseSequenceAlignment;
 import owl.core.sequence.alignment.PairwiseSequenceAlignment.PairwiseSequenceAlignmentException;
+import owl.core.structure.AAAlphabet;
 import owl.core.structure.PdbAsymUnit;
 import owl.core.structure.PdbChain;
 import owl.core.structure.Residue;
@@ -637,10 +638,10 @@ public class ChainEvolContext implements Serializable {
 	
 	/**
 	 * Compute the sequence entropies for all reference sequence (uniprot) positions
-	 * @param reducedAlphabet
+	 * @param alphabetIdentifier
 	 */
-	public void computeEntropies(int reducedAlphabet) {
-		homologs.computeEntropies(reducedAlphabet);
+	public void computeEntropies(AAAlphabet alphabet) {
+		homologs.computeEntropies(alphabet);
 	}
 	
 	/**
@@ -678,13 +679,13 @@ public class ChainEvolContext implements Serializable {
 		return totalScore/totalWeight;
 	}
 	
-	/**
-	 * Gets the size of the reduced alphabet used for calculating entropies
-	 * @return the size of the reduced alphabet or 0 if no entropies have been computed
-	 */
-	public int getReducedAlphabet() {
-		return homologs.getReducedAlphabet();
-	}
+//	/**
+//	 * Gets the size of the reduced alphabet used for calculating entropies
+//	 * @return the size of the reduced alphabet or 0 if no entropies have been computed
+//	 */
+//	public AAAlphabet getReducedAlphabet() {
+//		return homologs.getReducedAlphabet();
+//	}
 	
 	/**
 	 * Set the b-factors of the given pdb chain to conservation score values.
@@ -711,7 +712,7 @@ public class ChainEvolContext implements Serializable {
 				// or otherwise the residue would keep its original real bfactor and then possibly screw up the
 				// scaling of colors for the rest
 				// The most sensible value we can use is the max entropy so that it looks like a poorly conserved residue
-				double maxEntropy = Math.log(this.homologs.getReducedAlphabet())/Math.log(2);
+				double maxEntropy = Math.log(this.homologs.getReducedAlphabet().getNumLetters())/Math.log(2);
 				map.put(resser, maxEntropy);
 			}
 		}

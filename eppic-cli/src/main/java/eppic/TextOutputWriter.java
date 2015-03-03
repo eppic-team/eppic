@@ -11,6 +11,7 @@ import org.apache.commons.logging.LogFactory;
 import owl.core.sequence.Sequence;
 import owl.core.sequence.alignment.AlignmentConstructionException;
 import owl.core.sequence.alignment.MultipleSequenceAlignment;
+import owl.core.structure.AminoAcid;
 import eppic.model.AssemblyDB;
 import eppic.model.ChainClusterDB;
 import eppic.model.ContactDB;
@@ -404,7 +405,7 @@ public class TextOutputWriter {
 		PrintStream ps = new PrintStream(params.getOutputFile("."+chainCluster.getRepChain()+EppicParams.ENTROPIES_FILE_SUFFIX));
 
 		ps.println("# Entropies for all observed residues of query sequence (reference UniProt: " +
-				chainCluster.getRefUniProtId()+") based on a " + pdbInfo.getRunParameters().getReducedAlphabet()+" letters alphabet.");
+				chainCluster.getRefUniProtId()+") based on a(n) " + pdbInfo.getRunParameters().getReducedAlphabet() + "-letter alphabet.");
 		ps.println("# seqres\tpdb\tuniprot\tpdb_res\tentropy");
  
 		List<ResidueDB> list = getResidueListForChain(chainCluster);

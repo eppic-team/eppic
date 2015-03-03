@@ -321,7 +321,7 @@ public class InterfaceEvolContext implements Serializable {
 				// or otherwise the residue would keep its original real bfactor and then possibly screw up the
 				// scaling of colors for the rest
 				// The most sensible value we can use is the max entropy so that it looks like a poorly conserved residue
-				double maxEntropy = Math.log(this.getChainEvolContext(molecId).getHomologs().getReducedAlphabet())/Math.log(2);
+				double maxEntropy = Math.log(this.getChainEvolContext(molecId).getHomologs().getReducedAlphabet().getNumLetters())/Math.log(2);
 				map.put(resser, maxEntropy);
 				
 			}

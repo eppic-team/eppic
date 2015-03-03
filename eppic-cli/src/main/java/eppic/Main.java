@@ -110,7 +110,7 @@ public class Main {
 			if (params.getConfigFile()!=null) {
 				LOGGER.info("Loading user configuration file given in command line " + params.getConfigFile());
 				params.readConfigFile(params.getConfigFile());
-				params.checkConfigFileInput();				
+				params.checkConfigFileInput();
 			} else if (userConfigFile.exists()) {
 				LOGGER.info("Loading user configuration file " + userConfigFile);
 				params.readConfigFile(userConfigFile);
@@ -421,9 +421,7 @@ public class Main {
 				LOGGER.info("HBPlus is set in config file but -l was not used, will not do H-bond calculation with HBPlus");
 				return;
 			}
-
 			try {
-
 				for (ChainInterface interf : interfaces) {
 					if (interf.isFirstProtein() && interf.isSecondProtein()) {
 						// note this file will be overwritten later by doWritePdbFiles()
@@ -434,10 +432,9 @@ public class Main {
 							throw new EppicException(e, "Couldn't write interface PDB files. " + e.getMessage(), true);
 						}
 						LOGGER.info("Running HBPlus for interface "+interf.getId());
-						interf.runHBPlus(params.getHbplusExe(), pdbFile);						
+						interf.runHBPlus(params.getHbplusExe(), pdbFile);
 					}
 				}
-
 			} catch (IOException e) {
 				throw new EppicException(e, "Couldn't run HBPlus. Error: " + e.getMessage(), true);
 			} catch (InterruptedException e) {

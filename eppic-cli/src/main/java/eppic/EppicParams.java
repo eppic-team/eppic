@@ -12,7 +12,7 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import owl.core.structure.AminoAcid;
+import owl.core.structure.AAAlphabet;
 
 public class EppicParams {
 	
@@ -179,12 +179,14 @@ public class EppicParams {
 	private File outDir;
 	private int numThreads;
 	private int reducedAlphabet;
+	private boolean useCustomAlphabet;
+	private AAAlphabet alphabet;
 	
 	private double caCutoffForGeom;
 	private double caCutoffForRimCore;
 	private double caCutoffForZscore;
 	
-	private int    minCoreSizeForBio;
+	private int minCoreSizeForBio;
 	
 	private int maxNumSeqs;
 	
@@ -305,6 +307,8 @@ public class EppicParams {
 		this.debug = false;
 		this.homologsSearchMode = DEF_HOMOLOGS_SEARCH_MODE;
 		this.filterByDomain = false;
+		this.useCustomAlphabet = false;
+		this.alphabet = null;
 
 	}
 	
@@ -314,7 +318,7 @@ public class EppicParams {
 		Getopt g = new Getopt(programName, args, "i:sa:b:o:r:e:c:z:m:x:y:d:D:q:H:G:OA:I:C:plwL:g:uh?");
 		int c;
 		while ((c = g.getopt()) != -1) {
-			switch(c){
+			switch (c) {
 			case 'i':
 				inputStr = g.getOptarg();
 				setInput();
@@ -332,7 +336,33 @@ public class EppicParams {
 				outDir = new File(g.getOptarg());
 				break;
 			case 'r':
-				reducedAlphabet = Integer.parseInt(g.getOptarg()); 
+				reducedAlphabet = Integer.parseInt(g.getOptarg());
+				switch (reducedAlphabet) {
+				case 20:
+					this.alphabet = new AAAlphabet(AAAlphabet.MURPHY_20);
+					break;
+				case 15:
+					this.alphabet = new AAAlphabet(AAAlphabet.MURPHY_15);
+					break;
+				case 10:
+					this.alphabet = new AAAlphabet(AAAlphabet.MURPHY_10);
+					break;
+				case 8:
+					this.alphabet = new AAAlphabet(AAAlphabet.MURPHY_8);
+					break;
+				case 6:
+					this.alphabet = new AAAlphabet(AAAlphabet.MIRNY_6);
+					break;
+				case 4:
+					this.alphabet = new AAAlphabet(AAAlphabet.MURPHY_4);
+					break;
+				case 2:
+					this.alphabet = new AAAlphabet(AAAlphabet.MURPHY_2);
+					break;
+				case 0:
+					useCustomAlphabet = true;
+					break;
+				}
 				break;
 			case 'e':
 				caCutoffForGeom = Double.parseDouble(g.getOptarg());
@@ -510,7 +540,7 @@ public class EppicParams {
 			throw new EppicException(null, "Specified config file "+configFile+" doesn't exist",true);
 		}
 		
-		if (!AminoAcid.isValidNumGroupsReducedAlphabet(reducedAlphabet)) {
+		if (!AAAlphabet.isValidAlphabetIdentifier(reducedAlphabet)) {
 			throw new EppicException(null, "Invalid number of amino acid groups specified ("+reducedAlphabet+")", true);
 		}
 		
@@ -581,6 +611,15 @@ public class EppicParams {
 		
 		if (isGenerateThumbnails()) {
 			//TODO check for Pymol
+		}
+		
+		if (alphabet == null) {
+			if (isUseCustomAlphabet()) {
+				throw new EppicException(null, "Custom amino-acid alphabet requested but not defined in configuration file.", true);
+			}
+			else {
+				throw new EppicException(null, "Requested amino-acid alphabet not valid.", true);
+			}
 		}
 	}
 	
@@ -666,14 +705,6 @@ public class EppicParams {
 		this.numThreads = numThreads;
 	}
 	
-	public int getReducedAlphabet() {
-		return reducedAlphabet;
-	}
-	
-	public void setReducedAlphabet(int reducedAlphabet) {
-		this.reducedAlphabet = reducedAlphabet;
-	}
-	
 	/**
 	 * Returns the maximum theoretical value that entropy can have for an 
 	 * alignment column (for entropies defined with log base 2). 
@@ -681,7 +712,7 @@ public class EppicParams {
 	 * @return
 	 */
 	public double getMaxEntropy() {
-		return Math.log(reducedAlphabet)/Math.log(2);
+		return Math.log(alphabet.getNumLetters())/Math.log(2);
 	}
 	
 	public double getCAcutoffForGeom() {
@@ -874,6 +905,10 @@ public class EppicParams {
 			usePdbResSer	 = Boolean.parseBoolean(p.getProperty("USE_PDB_RES_SER",new Boolean(DEF_USE_PDB_RES_SER).toString()));
 			
 			coreSurfaceScoreStrategy = Integer.parseInt(p.getProperty("CORE_SURFACE_SCORE_STRATEGY", new Integer(DEF_CORE_SURFACE_SCORE_STRATEGY).toString()));
+
+			if (isUseCustomAlphabet()) {
+				alphabet = new AAAlphabet(p.getProperty("CUSTOM_ALPHABET", ""));
+			}
 			
 		} catch (NumberFormatException e) {
 			System.err.println("A numerical value in the config file was incorrectly specified: "+e.getMessage()+".\n" +
@@ -992,6 +1027,18 @@ public class EppicParams {
 	
 	public int getCoreSurfaceScoreStrategy() {
 		return coreSurfaceScoreStrategy;
+	}
+	
+	public boolean isUseCustomAlphabet() {
+		return useCustomAlphabet;
+	}
+	
+	public AAAlphabet getAlphabet() {
+		return alphabet;
+	}
+
+	public void setReducedAlphabet(int reducedAlphabet) {
+		this.reducedAlphabet = reducedAlphabet;
 	}
 
 }
