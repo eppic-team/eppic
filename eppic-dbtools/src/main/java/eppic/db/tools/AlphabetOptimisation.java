@@ -10,10 +10,15 @@ import gnu.getopt.Getopt;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -30,6 +35,8 @@ import owl.core.structure.AAAlphabet;
 
 public class AlphabetOptimisation {
 	
+	//public static final String SAVE_FILE_PATH = "/home/somody_j/Thesis/savefile";
+	public static final String SAVE_FILE_PATH = "savefile";
 	public static final double EVOL_CUTOFF = 0.80;
 	public static final double GEOM_CUTOFF = 0.90;
 	public static final double CALL_THRESHOLD = -0.90;
@@ -43,6 +50,7 @@ public class AlphabetOptimisation {
 	public static final int NUMBER_OF_SURFACE_SAMPLES = 10000;
 	public static final int MINIMUM_NUM_HOMOLOGUES = 30;
 	public static final double MINIMUM_HOMOLOGY = 0.60;
+	public static final int NUM_TRIALS = 1000; // for optimise2
 	
 	public static ArrayList<Boolean> truths; // LIST OF BOOLEANS (TRUE IFF BIO), ONE PER DATAPOINT
 	public static ArrayList<ArrayList<MultipleSequenceAlignment>> MSAs; // LIST OF PAIRS OF MSAS, ONE PAIR PER DATAPOINT, PAIR = (LEFT, RIGHT)
@@ -51,9 +59,26 @@ public class AlphabetOptimisation {
 	public static ArrayList<ArrayList<ArrayList<Integer>>> resids; // LIST OF PAIRS OF LISTS OF RESIDUE NUMBERS, ONE PER DATAPOINT, PAIR = (LEFT CHAIN RESID#S, RIGHT)
 	public static ArrayList<ArrayList<Boolean>> stringencies; // LIST OF PAIRS OF BOOLEANS, ONE PER DATAPOINT, PAIR = (LEFT SUFF_STRING?, RIGHT SUFF_STRING?)
 	
+	@SuppressWarnings("unchecked")
 	public static void main(String[] args) throws Exception {
-		// COLLECT DATA
-		collectData(args);
+		File file = new File(SAVE_FILE_PATH);
+		if (file.exists() && file.isFile()) {
+			System.out.println("Data has been saved, loading from file...");
+			FileInputStream fis = new FileInputStream(file);
+			ObjectInputStream ois = new ObjectInputStream(fis);
+			ArrayList<Object> fileData = (ArrayList<Object>) ois.readObject();
+			truths = (ArrayList<Boolean>) fileData.get(0);
+			MSAs = (ArrayList<ArrayList<MultipleSequenceAlignment>>) fileData.get(1);
+			regions = (ArrayList<ArrayList<ArrayList<Integer>>>) fileData.get(2);
+			mappings = (ArrayList<ArrayList<HashMap<Integer, Integer>>>) fileData.get(3);
+			resids = (ArrayList<ArrayList<ArrayList<Integer>>>) fileData.get(4);
+			stringencies = (ArrayList<ArrayList<Boolean>>) fileData.get(5);
+			ois.close();
+			System.out.println("Done loading from file...");
+		} else {
+			System.out.println("No saved data found, computing from scratch...");
+			collectData(args);
+		}
 		
 		// RUN ALPHABET OPTIMISATION BY EVOLUTIONARY ALGORITHM
 //		optimiseAlphabet();
@@ -114,6 +139,7 @@ public class AlphabetOptimisation {
 		List<String> interfaceNumbers = listList.get(3);
 		List<String> trueCalls = listList.get(4);
 		List<PdbInfoDB> pdbInfos = dbh.deserializePdbList(pdbCodes);
+		assert pdbCodes.size() == pdbInfos.size();
 		
 		// INITIALISE STATIC CLASS VARIABLES
 		truths = new ArrayList<Boolean>();
@@ -124,11 +150,13 @@ public class AlphabetOptimisation {
 		stringencies = new ArrayList<ArrayList<Boolean>>();
 		
 		for (int i = 0; i < pdbInfos.size(); i++) {
+//		for (int i = 2850; i < 2860; i++) {
 			System.out.println(i);
 			PdbInfoDB pdbInfo = pdbInfos.get(i);
 			String firstChain = firstChains.get(i);
 			String secondChain = secondChains.get(i);
 			int interfaceNumber = Integer.parseInt(interfaceNumbers.get(i));
+//			System.out.println(pdbCodes.get(i) + " " + pdbInfo.getPdbCode() + " " + firstChain + " " + secondChain + " " + interfaceNumber);
 			
 			// ADD TRUE CALL TO LIST OF TRUE CALLS
 			truths.add(trueCalls.get(i).equals("bio"));
@@ -137,6 +165,11 @@ public class AlphabetOptimisation {
 			List<ChainClusterDB> chainClusters = pdbInfo.getChainClusters();
 			ChainClusterDB firstChainCluster = getChainClusterFromChainClustersByChain(chainClusters, firstChain);
 			ChainClusterDB secondChainCluster = getChainClusterFromChainClustersByChain(chainClusters, secondChain);
+			
+			if (!firstChainCluster.isHasUniProtRef() || !secondChainCluster.isHasUniProtRef()) {
+				System.out.println(i + "\t" + pdbInfo.getPdbCode() + "\t" + "HAS NO HOMOLOGUES");
+				continue;
+			}
 			
 			// CHECK AND LOG REQUIREMENTS FOR HOMOLOGUE STRINGENCY
 			ArrayList<Boolean> stringencyPair = new ArrayList<Boolean>();
@@ -250,6 +283,19 @@ public class AlphabetOptimisation {
 			resids.add(residPair);
 			mappings.add(mappingPair);
 		}
+		System.out.println("Done computing from scratch...saving data to file");
+		File file = new File(SAVE_FILE_PATH);
+		ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file));
+		ArrayList<Object> toWrite = new ArrayList<Object>();
+		toWrite.add(truths);
+		toWrite.add(MSAs);
+		toWrite.add(regions);
+		toWrite.add(mappings);
+		toWrite.add(resids);
+		toWrite.add(stringencies);
+		oos.writeObject(toWrite);
+		oos.close();
+		System.out.println("Done saving to file...");
 	}
 	
 	private static ArrayList<ArrayList<String>> readList(File file) throws IOException {
@@ -281,6 +327,10 @@ public class AlphabetOptimisation {
 		toReturn.add(twos);
 		toReturn.add(ints);
 		toReturn.add(trueCalls);
+		assert pdbs.size() == ones.size();
+		assert ones.size() == twos.size();
+		assert twos.size() == ints.size();
+		assert ints.size() == trueCalls.size();
 		return toReturn;
 	}
 	
@@ -367,6 +417,67 @@ public class AlphabetOptimisation {
 	private static void optimiseAlphabet2() {
 		HashSet<String> tried = new HashSet<String>();
 		Random rand = new Random();
+		System.out.println("Testing preset alphabets...");
+		System.out.println("Wang2" + "\t" + AAAlphabet.WANG_2 + "\t" + testFitness(new AAAlphabet(AAAlphabet.WANG_2)));
+		System.out.println("Murphy2" + "\t" + AAAlphabet.MURPHY_2 + "\t" + testFitness(new AAAlphabet(AAAlphabet.MURPHY_2)));
+		System.out.println("Murphy4" + "\t" + AAAlphabet.MURPHY_4 + "\t" + testFitness(new AAAlphabet(AAAlphabet.MURPHY_4)));
+		System.out.println("Mirny6" + "\t" + AAAlphabet.MIRNY_6 + "\t" + testFitness(new AAAlphabet(AAAlphabet.MIRNY_6)));
+		System.out.println("Murphy8" + "\t" + AAAlphabet.MURPHY_8 + "\t" + testFitness(new AAAlphabet(AAAlphabet.MURPHY_8)));
+		System.out.println("Murphy10" + "\t" + AAAlphabet.MURPHY_10 + "\t" + testFitness(new AAAlphabet(AAAlphabet.MURPHY_10)));
+		System.out.println("Murphy15" + "\t" + AAAlphabet.MURPHY_15 + "\t" + testFitness(new AAAlphabet(AAAlphabet.MURPHY_15)));
+		System.out.println("Standard20" + "\t" + AAAlphabet.STANDARD_20 + "\t" + testFitness(new AAAlphabet(AAAlphabet.STANDARD_20)));
+		
+		System.out.println("Testing " + NUM_TRIALS + " random alphabets...");
+		for (int trial = 0; trial < NUM_TRIALS; trial++) {
+			String alphabet = "";
+			ArrayList<String> left = new ArrayList<String>(Arrays.asList(AMINO_ACIDS));
+			Collections.shuffle(left);
+			int groups = rand.nextInt(19) + 2;
+			int[] dist = new int[groups];
+			int currentSum = 0;
+			for (int i = 0; i < dist.length; i++) {
+				dist[i] = rand.nextInt(20) + 1;
+				currentSum += dist[i];
+			}
+			while (currentSum != 20) {
+				int somegroup = rand.nextInt(dist.length);
+				if (currentSum > 20) {
+					dist[somegroup]--;
+					currentSum--;
+				} else if (currentSum < 20) {
+					dist[somegroup]++;
+					currentSum++;
+				}
+				for (int i = 0; i < dist.length; i++) {
+					if (dist[i] < 1) {
+						dist[i] += 2;
+						currentSum += 2;
+					} else if (dist[i] > 20) {
+						dist[i] -= 2;
+						currentSum -= 2;
+					}
+				}
+			}
+			for (int i = 0; i < dist.length; i++) {
+				for (int j = 0; j < dist[i]; j++) {
+					alphabet += left.get(0);
+					left.remove(0);
+				}
+				alphabet += ":";
+			}
+//			System.out.println(alphabet);
+			String finalAlphabet = simplifyAlphabetString(alphabet.substring(0, alphabet.length() - 1));
+			if (!tried.contains(finalAlphabet)) {
+				System.out.println(finalAlphabet + "\t\t" + testFitness(new AAAlphabet(finalAlphabet)));
+			} else {
+				System.out.println(finalAlphabet + "\t\t" + "ALREADY TESTED!");
+			}
+		}
+	}
+	
+	private static void optimiseAlphabet3() { // old version
+		HashSet<String> tried = new HashSet<String>();
+		Random rand = new Random();
 		for (int trial = 0; trial < 5; trial++) {
 			String alphabet = "";
 			ArrayList<String> left = new ArrayList<String>(Arrays.asList(AMINO_ACIDS));
@@ -398,6 +509,11 @@ public class AlphabetOptimisation {
 	
 	private static String simplifyAlphabetString(String input) {
 		String[] inputArray = input.split(":");
+		int sum = 0;
+		for (int i = 0; i < inputArray.length; i++) {
+			sum += inputArray[i].length();
+		}
+		assert sum == 20;
 		for (int i = 0; i < inputArray.length; i++) {
 			char[] chars = inputArray[i].toCharArray();
 			Arrays.sort(chars);
@@ -427,12 +543,13 @@ public class AlphabetOptimisation {
 	}
 	
 	
-	private static double testFitness(AAAlphabet whichAlphabet) {
-		double fitness = 0.00;
-		double count = 0.00;
+	private static double testFitness(AAAlphabet whichAlphabet) { // balanced accuracy
+		double truePositives = 0.0;
+		double falsePositives = 0.0;
+		double trueNegatives = 0.0;
+		double falseNegatives = 0.0;
 		for (int i = 0; i < truths.size(); i++) { // loop through all datapoints
 			if (stringencies.get(i).get(0) && stringencies.get(i).get(1)) {
-				count += 1.0;
 				ArrayList<ArrayList<Double>> leftEntropiesPair = getEntropies(i, 0, whichAlphabet); // get left entropies
 				Double leftScore = doEntropySamplingAndCalculation(leftEntropiesPair.get(0), leftEntropiesPair.get(1)); // and calculate the score
 				ArrayList<ArrayList<Double>> rightEntropiesPair = getEntropies(i, 1, whichAlphabet); // get right entropies
@@ -454,20 +571,29 @@ public class AlphabetOptimisation {
 //						System.out.println(i + " prediction: xtal, since " + finalScore + " >= " + CALL_THRESHOLD);
 					}
 				} else {
-					System.out.println(i + " prediction: xtal, since " + finalScore + " is NaN");
+//					System.out.println(i + " prediction: xtal, since " + finalScore + " is NaN");
 				}
-				if (finalCall == truths.get(i)) {
-					fitness += 1.0;
-//					System.out.println("prediction was correct! fitness++");
-				} else {
-//					System.out.println("prediction incorrect :( :(");
+				boolean truth = truths.get(i);
+				if (finalCall && truth) {
+					truePositives++;
+				} else if (!finalCall && !truth) {
+					trueNegatives++;
+				} else if (finalCall && !truth) {
+					falsePositives++;
+				} else if (!finalCall && truth) {
+					falseNegatives++;
 				}
 			}
 		}
-		if (count == 0.0) {
+		if (truePositives + falseNegatives < 1) {
 			return 0.0;
 		}
-		return (fitness / count);
+		if (trueNegatives + falsePositives < 1) {
+			return 0.0;
+		}
+		double sensitivity = truePositives / (truePositives + falseNegatives);
+		double specificity = trueNegatives / (falsePositives + trueNegatives);
+		return (sensitivity + specificity) / 2.0;
 	}
 	
 	private static double doEntropySamplingAndCalculation(ArrayList<Double> coreEntropies, ArrayList<Double> surfaceEntropies) {
