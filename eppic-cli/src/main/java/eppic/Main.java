@@ -347,7 +347,11 @@ public class Main {
 	public void doFindAssemblies() { 
 		AssemblyFinder aFinder = new AssemblyFinder(pdb, interfaces);
 		Set<Assembly> validAssemblies = aFinder.getValidAssemblies();
-		LOGGER.info("There are {} topologically possible assemblies", validAssemblies.size());
+		StringBuilder sb = new StringBuilder();
+		for (Assembly a: validAssemblies) {
+			sb.append(a.toString()+" ");
+		}
+		LOGGER.info("There are {} topologically possible assemblies: {}", validAssemblies.size(), sb.toString());
 	}
 	
 	public void doGeomScoring() throws EppicException {
