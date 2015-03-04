@@ -36,7 +36,7 @@ import owl.core.structure.AAAlphabet;
 public class AlphabetOptimisation {
 	
 	//public static final String SAVE_FILE_PATH = "/home/somody_j/Thesis/savefile";
-	public static final String SAVE_FILE_PATH = "savefile";
+	public static final String SAVE_FILE_PATH = "/gpfs/home/somody_j/veryrandom/savefile";
 	public static final double EVOL_CUTOFF = 0.80;
 	public static final double GEOM_CUTOFF = 0.90;
 	public static final double CALL_THRESHOLD = -0.90;
@@ -59,10 +59,15 @@ public class AlphabetOptimisation {
 	public static ArrayList<ArrayList<ArrayList<Integer>>> resids; // LIST OF PAIRS OF LISTS OF RESIDUE NUMBERS, ONE PER DATAPOINT, PAIR = (LEFT CHAIN RESID#S, RIGHT)
 	public static ArrayList<ArrayList<Boolean>> stringencies; // LIST OF PAIRS OF BOOLEANS, ONE PER DATAPOINT, PAIR = (LEFT SUFF_STRING?, RIGHT SUFF_STRING?)
 	
+	public static String dbName;
+	public static File listFile;
+	public static File specifiedAlphabets;
+	
 	@SuppressWarnings("unchecked")
 	public static void main(String[] args) throws Exception {
 		File file = new File(SAVE_FILE_PATH);
 		if (file.exists() && file.isFile()) {
+			parseCommandLine(args);
 			System.out.println("Data has been saved, loading from file...");
 			FileInputStream fis = new FileInputStream(file);
 			ObjectInputStream ois = new ObjectInputStream(fis);
@@ -77,34 +82,41 @@ public class AlphabetOptimisation {
 			System.out.println("Done loading from file...");
 		} else {
 			System.out.println("No saved data found, computing from scratch...");
-			collectData(args);
+			parseCommandLine(args);
+			collectData();
 		}
+		
+		testSpecifiedAlphabets();
 		
 		// RUN ALPHABET OPTIMISATION BY EVOLUTIONARY ALGORITHM
 //		optimiseAlphabet();
 		
 		// RUN ALPHABET OPTIMISATION BY BRUTE FORCE
-		optimiseAlphabet2();
+//		optimiseAlphabet2();
 	}
 	
-	private static void collectData(String[] args) throws Exception {
+	private static void parseCommandLine(String[] args) throws Exception {
 		String help = 
 				"Usage: AlphabetOptimisation\n" +
 						" -D : the database name to use\n" +
 						" -i : a list file of PDB codes\n" +
 						"The database access must be set in file " + DBHandler.CONFIG_FILE_NAME + " in home dir\n";
 
-		String dbName = null;
+		String localDbName = null;
 		String listFileName = null;
-		Getopt g = new Getopt("AlphabetOptimisation", args, "D:i:h?");
+		String alphabetsFileName = null;
+		Getopt g = new Getopt("AlphabetOptimisation", args, "D:i:A:h?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch (c) {
 			case 'D':
-				dbName = g.getOptarg();
+				localDbName = g.getOptarg();
 				break;
 			case 'i':
 				listFileName = g.getOptarg();
+				break;
+			case 'A':
+				alphabetsFileName = g.getOptarg();
 				break;
 			case 'h':
 				System.out.println(help);
@@ -117,17 +129,24 @@ public class AlphabetOptimisation {
 			}
 		}
 		
+		dbName = localDbName;
 		if (listFileName == null) {
 			System.err.println("A file with a list of PDB codes have to be provided with -i");
 			System.exit(1);
 		}
 		
-		File listFile = new File(listFileName);
+		listFile = new File(listFileName);
 		if (!listFile.exists()) {
 			System.err.println("Input string " + listFileName + " does not seem to be a file");
 			System.exit(1);
 		}
 		
+		if (alphabetsFileName != null) {
+			specifiedAlphabets = new File(alphabetsFileName);
+		}
+	}
+	
+	private static void collectData() throws Exception {
 		// START DATABASE HANDLER
 		DBHandler dbh = new DBHandler(dbName);
 		
@@ -504,6 +523,18 @@ public class AlphabetOptimisation {
 				System.out.println(finalAlphabet + "\t\t" + "ALREADY TESTED!");
 			}
 		}
+	}
+	
+	private static void testSpecifiedAlphabets() throws IOException {
+		BufferedReader br = new BufferedReader(new FileReader(specifiedAlphabets));
+		String line;
+		while ((line = br.readLine()) != null) {
+			if (line.startsWith("#")) continue;
+			if (line.trim().isEmpty()) continue;
+			AAAlphabet specifiedAlphabet = new AAAlphabet(line.trim());
+			System.out.println("RESULT:\t" + line.trim() + "\t" + testFitness(specifiedAlphabet));
+		}
+		br.close();
 	}
 	
 	
