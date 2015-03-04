@@ -135,13 +135,15 @@ public class LatticeGraph {
 				endAuCell[2] = (int) Math.round(Tj.m13 - m.m13);
 				endAuCell[3] = (int) Math.round(Tj.m23 - m.m23);
 				return endAuCell;
-			} else if (epsilonEqualsModulusXtal(Tj, mInv)) {
-				endAuCell[0] = j;
-				endAuCell[1] = (int) Math.round(Tj.m03 - mInv.m03);
-				endAuCell[2] = (int) Math.round(Tj.m13 - mInv.m13);
-				endAuCell[3] = (int) Math.round(Tj.m23 - mInv.m23);
-				return endAuCell;				
 			}
+			// inverse does not seem to be necessary
+			//else if (epsilonEqualsModulusXtal(Tj, mInv)) {
+			//	endAuCell[0] = j;
+			//	endAuCell[1] = (int) Math.round(Tj.m03 - mInv.m03);
+			//	endAuCell[2] = (int) Math.round(Tj.m13 - mInv.m13);
+			//	endAuCell[3] = (int) Math.round(Tj.m23 - mInv.m23);
+			//	return endAuCell;				
+			//}
 		}
 		
 		logger.warn("No matching basic operator found for operator {}", m.toString());
