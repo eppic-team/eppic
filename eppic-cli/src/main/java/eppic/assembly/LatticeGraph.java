@@ -121,39 +121,58 @@ public class LatticeGraph {
 	private int[] getEndAuCell(Matrix4d m) {
 		int[] endAuCell = new int[4];
 		
-		Matrix4d mModulusXtal = new Matrix4d(m);
-		mModulusXtal.m03 = m.m03 % 1;
-		mModulusXtal.m13 = m.m13 % 1;
-		mModulusXtal.m23 = m.m23 % 1;
 		
 		Matrix4d mInv = new Matrix4d(m);
 		mInv.invert();
-		Matrix4d mInvModulusXtal = new Matrix4d(mInv);
-		mInvModulusXtal.m03 = mInv.m03 % 1;
-		mInvModulusXtal.m13 = mInv.m13 % 1;
-		mInvModulusXtal.m23 = mInv.m23 % 1;
 		
 		
 		for (int j=0;j<sg.getNumOperators();j++) {
 			Matrix4d Tj = sg.getTransformation(j);
 			
-			if (Tj.epsilonEquals(mModulusXtal, 0.0001)) {
+			if (epsilonEqualsModulusXtal(Tj, m)) {
 				endAuCell[0] = j;
-				endAuCell[1] = (int) m.m03;
-				endAuCell[2] = (int) m.m13;
-				endAuCell[3] = (int) m.m23;
+				endAuCell[1] = (int) Math.round(Tj.m03 - m.m03);
+				endAuCell[2] = (int) Math.round(Tj.m13 - m.m13);
+				endAuCell[3] = (int) Math.round(Tj.m23 - m.m23);
 				return endAuCell;
-			} else if (Tj.epsilonEquals(mInvModulusXtal, 0.0001)) {
+			} else if (epsilonEqualsModulusXtal(Tj, mInv)) {
 				endAuCell[0] = j;
-				endAuCell[1] = (int) mInv.m03;
-				endAuCell[2] = (int) mInv.m13;
-				endAuCell[3] = (int) mInv.m23;
+				endAuCell[1] = (int) Math.round(Tj.m03 - mInv.m03);
+				endAuCell[2] = (int) Math.round(Tj.m13 - mInv.m13);
+				endAuCell[3] = (int) Math.round(Tj.m23 - mInv.m23);
 				return endAuCell;				
 			}
 		}
 		
 		logger.warn("No matching basic operator found for operator {}", m.toString());
 		return endAuCell;
+	}
+	
+	private static boolean epsilonEqualsModulusXtal(Matrix4d T, Matrix4d m) {
+		
+		Matrix4d sub = new Matrix4d(T);
+		sub.sub(m);
+		
+		for (int i=0;i<3;i++) {
+			for (int j=0;j<3;j++) {
+				if (Math.abs(sub.getElement(i, j))>0.0001) {
+					return false;
+				}
+			}
+		}
+		
+		for (int i=0;i<3;i++) {
+
+			// making sure we are numerically stable with the modulo operator
+			
+			double x = sub.getElement(i,3) % 1;
+
+			if (x+(x<0?1:0) > .0001) {
+				return false;
+			}
+		}
+		
+		return true;
 	}
 	
 }
