@@ -298,6 +298,13 @@ public class Assembly {
 			ChainVertex s = cycle.get(i);
 			ChainVertex t = cycle.get( (i+1)%cycle.size());
 			Set<InterfaceEdge> edges = subgraph.getAllEdges(s,t);
+			
+			if (edges.isEmpty()) {
+				logger.warn("Empty list of edges between 2 vertices {} and {} belonging to same cycle {}",
+						s.toString(),t.toString(), cycle.toString());
+				continue;
+			}
+			
 			Iterator<InterfaceEdge> edgeIt = edges.iterator();
 			InterfaceEdge edge = edgeIt.next();
 			Point3i trans = edge.getXtalTrans();

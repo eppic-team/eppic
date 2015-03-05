@@ -96,7 +96,25 @@ public class LatticeGraph {
 				
 				int[] endAuCell = getEndAuCell(Cij);
 				int endOpId = endAuCell[0];
-				Point3i xtalTrans = new Point3i(endAuCell[1], endAuCell[2], endAuCell[3]);
+				
+				Point3i transfromAuCellSearch = new Point3i(endAuCell[1], endAuCell[2], endAuCell[3]);
+				
+				// we calculate translation by obtaining the matrix Ci
+				// expressed in basis Tj, see for instance http://en.wikipedia.org/wiki/Change_of_basis#The_matrix_of_an_endomorphism
+				// Ciprime = Tj * Ci * Tjinv
+				Matrix4d Tjinv = new Matrix4d(Tj);				
+				Matrix4d Ciprime = new Matrix4d();
+				Ciprime.mul(Tj, Ci);
+				Ciprime.mul(Tjinv);
+				
+				Point3i xtalTrans = new Point3i(
+						(int) Math.round(Ciprime.m03), (int) Math.round(Ciprime.m13), (int) Math.round(Ciprime.m23));
+				
+				if (!xtalTrans.equals(transfromAuCellSearch)) {
+					logger.warn("Different translation found from au cell search ({}) and change of basis ({})",
+							transfromAuCellSearch.toString(), xtalTrans.toString());
+					
+				}
 				
 				InterfaceEdge edge = new InterfaceEdge(interf, xtalTrans);
 				
