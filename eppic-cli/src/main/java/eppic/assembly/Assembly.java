@@ -292,21 +292,24 @@ public class Assembly {
 	private boolean isZeroTranslation(UndirectedGraph<ChainVertex, InterfaceEdge> subgraph, List<ChainVertex> cycle) {
 			
 		Point3i p = new Point3i(0,0,0);
-		// Each edge sequentially
 		for (int i=0;i<cycle.size();i++) {
 			ChainVertex s = cycle.get(i);
 			ChainVertex t = cycle.get( (i+1)%cycle.size());
 			Set<InterfaceEdge> edges = subgraph.getAllEdges(s,t);
 			
 			if (edges.isEmpty()) {
-				logger.warn("Empty list of edges between 2 vertices {} and {} belonging to same cycle {}",
+				// this should not happen, but there's a bug in jgrapht Paton's implementation
+				// where cycles between 2 vertices are reported with a duplicate vertex,
+				// e.g. for graph A0=A1 the vertices given as belonging to cycle are A0,A1,A0, when it should be just A0,A1
+				logger.warn("Empty list of edges between vertices {},{} belonging to cycle {}",
 						s.toString(),t.toString(), cycle.toString());
 				continue;
 			}
 			
 			Iterator<InterfaceEdge> edgeIt = edges.iterator();
 			InterfaceEdge edge = edgeIt.next();
-			Point3i trans = edge.getXtalTrans();
+			Point3i trans = new Point3i(edge.getXtalTrans());
+			// this is a way to decide an arbitrary directionality and invert if the directionality is not the right one
 			if(!s.equals(subgraph.getEdgeSource(edge))) {
 				if (!s.equals(subgraph.getEdgeTarget(edge))) {
 					// a sanity check: should not happen unless there is a bug in jgrapht
@@ -319,12 +322,13 @@ public class Assembly {
 			// Check that any other edges have same xtaltrans
 			while (edgeIt.hasNext()) {
 				InterfaceEdge edge2 = edgeIt.next();
-				Point3i trans2 = edge2.getXtalTrans();
+				Point3i trans2 = new Point3i(edge2.getXtalTrans());
 				if(!s.equals(subgraph.getEdgeSource(edge2))) {
 					trans2.negate();
 				}
 				if(!trans.equals(trans2)) {
-					logger.info("Multiple edges with unequal translation");
+					logger.info("Multiple edges with unequal translation between vertices {},{} of cycle {}",
+							s.toString(),t.toString(),cycle.toString());
 					return false;
 				}
 			}
