@@ -278,7 +278,6 @@ public class Assembly {
 				logger.info("Closed cycle (0 translation)");
 				// we continue to next cycle, if all cycles are translation 0, then we'll return true below
 			} else {
-				//logger.info("Total translation is [{}, {}, {}] ",trans.x, trans.y, trans.z);
 				logger.info("Non-closed cycle (non-0 translation)");
 				// one cycle has non-zero translation: we abort straight away: return false
 				return false;
@@ -291,7 +290,7 @@ public class Assembly {
 	}
 	
 	private boolean isZeroTranslation(UndirectedGraph<ChainVertex, InterfaceEdge> subgraph, List<ChainVertex> cycle) {
-
+			
 		Point3i p = new Point3i(0,0,0);
 		// Each edge sequentially
 		for (int i=0;i<cycle.size();i++) {
@@ -310,7 +309,7 @@ public class Assembly {
 			Point3i trans = edge.getXtalTrans();
 			if(!s.equals(subgraph.getEdgeSource(edge))) {
 				if (!s.equals(subgraph.getEdgeTarget(edge))) {
-					// a sanity check
+					// a sanity check: should not happen unless there is a bug in jgrapht
 					logger.warn("Something is wrong: edge {} hasn't got expected vertex source {} or target {}",
 							edge.toString(), s.toString(), t.toString());
 				}

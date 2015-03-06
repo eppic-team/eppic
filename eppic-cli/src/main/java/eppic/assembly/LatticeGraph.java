@@ -94,14 +94,11 @@ public class LatticeGraph {
 				Matrix4d Cij = new Matrix4d(Ci);
 				Cij.mul(Tj);
 				
-				int[] endAuCell = getEndAuCell(Cij);
-				int endOpId = endAuCell[0];
+				int endOpId = getEndAuCell(Cij);
 				
-				Point3i transfromAuCellSearch = new Point3i(endAuCell[1], endAuCell[2], endAuCell[3]);
-				
-				// we calculate translation by obtaining the matrix Ci
-				// expressed in basis Tj, see for instance http://en.wikipedia.org/wiki/Change_of_basis#The_matrix_of_an_endomorphism
+				// we calculate translation by obtaining the matrix Ci expressed in basis Tj: 
 				// Ciprime = Tj * Ci * Tjinv
+				// see for instance http://en.wikipedia.org/wiki/Change_of_basis#The_matrix_of_an_endomorphism
 				Matrix4d Tjinv = new Matrix4d(Tj);				
 				Matrix4d Ciprime = new Matrix4d();
 				Ciprime.mul(Tj, Ci);
@@ -109,12 +106,6 @@ public class LatticeGraph {
 				
 				Point3i xtalTrans = new Point3i(
 						(int) Math.round(Ciprime.m03), (int) Math.round(Ciprime.m13), (int) Math.round(Ciprime.m23));
-				
-				if (!xtalTrans.equals(transfromAuCellSearch)) {
-					logger.warn("Different translation found from au cell search ({}) and change of basis ({})",
-							transfromAuCellSearch.toString(), xtalTrans.toString());
-					
-				}
 				
 				InterfaceEdge edge = new InterfaceEdge(interf, xtalTrans);
 				
@@ -131,41 +122,26 @@ public class LatticeGraph {
 	}
 	
 	/**
-	 * Returns an array of size 4: index 0 contains the end point operator id,
-	 * indices 1 to 3 the crystal translation of the end point
+	 * Given an operator, returns the operator id of the matching generator
 	 * @param m
 	 * @return
 	 */
-	private int[] getEndAuCell(Matrix4d m) {
-		int[] endAuCell = new int[4];
-		
-		
-		Matrix4d mInv = new Matrix4d(m);
-		mInv.invert();
-		
+	private int getEndAuCell(Matrix4d m) {
 		
 		for (int j=0;j<sg.getNumOperators();j++) {
 			Matrix4d Tj = sg.getTransformation(j);
 			
 			if (epsilonEqualsModulusXtal(Tj, m)) {
-				endAuCell[0] = j;
-				endAuCell[1] = (int) Math.round(Tj.m03 - m.m03);
-				endAuCell[2] = (int) Math.round(Tj.m13 - m.m13);
-				endAuCell[3] = (int) Math.round(Tj.m23 - m.m23);
-				return endAuCell;
+				return j;
 			}
 			// inverse does not seem to be necessary
 			//else if (epsilonEqualsModulusXtal(Tj, mInv)) {
-			//	endAuCell[0] = j;
-			//	endAuCell[1] = (int) Math.round(Tj.m03 - mInv.m03);
-			//	endAuCell[2] = (int) Math.round(Tj.m13 - mInv.m13);
-			//	endAuCell[3] = (int) Math.round(Tj.m23 - mInv.m23);
-			//	return endAuCell;				
+			//	return j;
 			//}
 		}
 		
-		logger.warn("No matching basic operator found for operator {}", m.toString());
-		return endAuCell;
+		logger.warn("No matching generator found for operator {}", m.toString());
+		return -1;
 	}
 	
 	private static boolean epsilonEqualsModulusXtal(Matrix4d T, Matrix4d m) {
