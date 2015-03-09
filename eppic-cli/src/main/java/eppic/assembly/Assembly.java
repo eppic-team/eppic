@@ -123,7 +123,7 @@ public class Assembly {
 	 * @param parents
 	 * @return
 	 */
-	private boolean isChild(List<Assembly> parents) {
+	public boolean isChild(List<Assembly> parents) {
 
 		for (Assembly invalidGroup:parents) {
 			if (this.isChild(invalidGroup)) return true;
@@ -137,14 +137,14 @@ public class Assembly {
 	 * @param potentialParent
 	 * @return true if is a child false if not
 	 */
-	private boolean isChild(Assembly potentialParent) {
+	public boolean isChild(Assembly potentialParent) {
 		
 		for (int i=0;i<this.engagedSet.length;i++) {
-			if (potentialParent.engagedSet[i]	&& this.engagedSet[i]) {
-				return true;
+			if (potentialParent.engagedSet[i]) {
+				if (!this.engagedSet[i]) return false;
 			}
 		}
-		return false;
+		return true;
 	}
 
 	/**
@@ -250,7 +250,7 @@ public class Assembly {
 
 		logger.info("Subgraph of assembly {} has {} vertices and {} edges",this.toString(),numVertices, numEdges); 
 		
-		getStoichiometry();
+		//getStoichiometry();
 
 		PatonCycleBase<ChainVertex, InterfaceEdge> paton = new PatonCycleBase<ChainVertex, InterfaceEdge>(subgraph);
 
@@ -267,12 +267,12 @@ public class Assembly {
 		// TODO check that all cycles are isomorphous, if they aren't this can't be an assembly
 		
 		for (List<ChainVertex> cycle:cycles) {
-			logger.info("Cycle of size {}", cycle.size());
+			
 			StringBuilder sb = new StringBuilder();
 			for (ChainVertex c:cycle) {
 				sb.append(c.toString()+" -> ");
 			}
-			logger.info(sb.toString());
+			logger.info("Cycle of size {}: {}", cycle.size(),sb.toString());
 			
 			if (isZeroTranslation(subgraph, cycle)) {
 				logger.info("Closed cycle (0 translation)");
@@ -280,12 +280,13 @@ public class Assembly {
 			} else {
 				logger.info("Non-closed cycle (non-0 translation)");
 				// one cycle has non-zero translation: we abort straight away: return false
+				logger.info("Assembly {} has a non-closed cycle: discarding", toString());
 				return false;
 			}
 		}
 		
 
-		
+		logger.info("All cycles of assembly {} are closed: valid assembly",toString());
 		return true;
 	}
 	
