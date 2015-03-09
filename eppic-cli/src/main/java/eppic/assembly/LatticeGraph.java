@@ -99,7 +99,8 @@ public class LatticeGraph {
 				// we calculate translation by obtaining the matrix Ci expressed in basis Tj: 
 				// Ciprime = Tj * Ci * Tjinv
 				// see for instance http://en.wikipedia.org/wiki/Change_of_basis#The_matrix_of_an_endomorphism
-				Matrix4d Tjinv = new Matrix4d(Tj);				
+				Matrix4d Tjinv = new Matrix4d(Tj);
+				Tjinv.invert();
 				Matrix4d Ciprime = new Matrix4d();
 				Ciprime.mul(Tj, Ci);
 				Ciprime.mul(Tjinv);
