@@ -102,7 +102,7 @@ public class Assembly {
 			for (int i=0;i<s.length;i++) {
 				s[i] = s[i] / divisor;
 			}
-			logger.info("Stoichiometry of connected component: {}", Arrays.toString(s));
+			logger.debug("Stoichiometry of connected component: {}", Arrays.toString(s));
 		}
 		
 		// we assign the first stoichiometry found, and check and warn if the others are different 
@@ -114,7 +114,7 @@ public class Assembly {
 			}
 		}
 		
-		
+		logger.info("Stoichiometry of assembly {} is: {}",toString(),Arrays.toString(stoichiometry));
 		return stoichiometry;
 	}
 		
