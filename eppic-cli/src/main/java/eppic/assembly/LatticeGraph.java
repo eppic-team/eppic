@@ -159,17 +159,18 @@ public class LatticeGraph {
 		}
 		
 		for (int i=0;i<3;i++) {
-
-			// making sure we are numerically stable with the modulo operator
 			
-			double x = sub.getElement(i,3) % 1;
-
-			if (x+(x<0?1:0) > .0001) {
+			if (!isInteger(sub.getElement(i,3))) {
 				return false;
 			}
 		}
 		
 		return true;
+	}
+	
+	public static boolean isInteger(double x) {
+		// note that (x%1)==0 would not work, see test TestModuloIssues
+		return Math.abs(Math.round(x)-x) < 0.0001;
 	}
 	
 }
