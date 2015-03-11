@@ -37,6 +37,12 @@ public class AssemblyFinder {
 			// this relies on molId being 1 to n (we have to check that actually it is like that in the PDB)
 			xtalStoichiometry[c.getCompound().getMolId() - 1] ++;
 		}
+		
+		int divisor = Assembly.gcd(xtalStoichiometry);
+		for (int i=0;i<xtalStoichiometry.length;i++) {
+			xtalStoichiometry[i] = xtalStoichiometry[i] / divisor;
+		}		
+		
 		logger.info ("The stoichiometry of the crystal is {}", Arrays.toString(xtalStoichiometry));
 	}
 	

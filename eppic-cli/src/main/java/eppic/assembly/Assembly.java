@@ -93,6 +93,14 @@ public class Assembly {
 			for (ChainVertex v:cc) {
 				// note: this relies on mol ids in the PDB being 1 to n, that might not be true, we need to check!
 				s[v.getEntity()-1]++;
+			}			
+		}
+		
+		// now we reduce to the common divisor
+		for (int[] s:stoichiometries) {
+			int divisor = gcd(s);
+			for (int i=0;i<s.length;i++) {
+				s[i] = s[i] / divisor;
 			}
 			logger.info("Stoichiometry of connected component: {}", Arrays.toString(s));
 		}
@@ -250,7 +258,7 @@ public class Assembly {
 
 		logger.info("Subgraph of assembly {} has {} vertices and {} edges",this.toString(),numVertices, numEdges); 
 		
-		//getStoichiometry();
+		getStoichiometry();
 
 		PatonCycleBase<ChainVertex, InterfaceEdge> paton = new PatonCycleBase<ChainVertex, InterfaceEdge>(subgraph);
 
@@ -372,5 +380,36 @@ public class Assembly {
 		sb.append("}");
 		return sb.toString();
 	}
-	
+
+	/**
+	 * Return the greatest common divisor (GCD, aka greatest common factor GCF) for the given ints
+	 * This is an implementation of the Euclidean algorithm:
+	 * http://en.wikipedia.org/wiki/Euclidean_algorithm
+	 * Thanks to this SO question: 
+	 * http://stackoverflow.com/questions/4009198/java-get-greatest-common-divisor
+	 * @param a
+	 * @param b
+	 * @return
+	 */
+	public static int gcd(int a, int b) {		
+		if (b==0) return a;
+		return gcd(b,a%b);
+	}
+
+	/**
+	 * Return the greatest common divisor (GCD) of the given array of ints
+	 * @param values
+	 * @return
+	 */
+	public static int gcd(int[] values) {
+		if (values.length==0) throw new IllegalArgumentException("Can't calculate GCD for an empty array");
+		
+		// we go recursively		
+		int result = values[0];
+		for(int i = 1; i < values.length; i++){
+		    result = gcd(result, values[i]);
+		}
+		return result;
+		
+	}
 }
