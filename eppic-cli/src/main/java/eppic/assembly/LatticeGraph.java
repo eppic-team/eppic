@@ -4,8 +4,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.vecmath.Matrix4d;
 import javax.vecmath.Point3i;
@@ -141,7 +144,7 @@ public class LatticeGraph {
 			//}
 		}
 		
-		logger.warn("No matching generator found for operator {}", m.toString());
+		logger.warn("No matching generator found for operator:\n {}", m.toString());
 		return -1;
 	}
 	
@@ -171,6 +174,83 @@ public class LatticeGraph {
 	public static boolean isInteger(double x) {
 		// note that (x%1)==0 would not work, see test TestModuloIssues
 		return Math.abs(Math.round(x)-x) < 0.0001;
+	}
+	
+	/**
+	 * For any 2 vertices in the graph that contain 2 or more edges with the same 
+	 * interface id, remove all but first edges. 
+	 */
+	public void removeDuplicateEdges() {
+		
+		Set<InterfaceEdge> toRemove = new HashSet<InterfaceEdge>();
+		
+		int i = -1;
+		for (ChainVertex iVertex:graph.vertexSet()) {
+			i++;
+			int j = -1;
+			for (ChainVertex jVertex:graph.vertexSet()) {
+				j++;
+				if (j<i) continue; // i.e. we include i==j (to remove loop edges)
+				
+				Set<InterfaceEdge> edges = graph.getAllEdges(iVertex, jVertex);
+				Map<Integer,Set<InterfaceEdge>> groups = groupIntoTypes(edges);
+				
+				for (int interfaceId:groups.keySet()){
+					Set<InterfaceEdge> group = groups.get(interfaceId);
+					
+					if (group.size()==0) {
+						continue;
+					} else if (group.size()==1) {
+						continue;
+					} else if (group.size()>2) {
+						// we warn for more than 2 edges, that should not occur
+						logger.warn("More than 2 edges with interface id {} between vertices {},{}",
+								interfaceId,iVertex.toString(),jVertex.toString()); 
+					}
+					// now we are in case 2 or more edges 
+					// we keep first and remove the rest
+					Iterator<InterfaceEdge> it = group.iterator();
+					it.next(); // first edge: we keep it
+					while (it.hasNext()) {						
+						InterfaceEdge edge = it.next();
+						toRemove.add(edge);
+						logger.info("Removed edge with interface id {} between vertices {},{} ", 
+								interfaceId,iVertex.toString(),jVertex.toString());
+					}
+
+				}
+				
+								
+			}
+			
+		}
+		// now we do the removal
+		for (InterfaceEdge edge:toRemove) {
+			graph.removeEdge(edge);
+		}
+		
+	}
+	
+	/**
+	 * Given a set of edges groups them into interface id groups
+	 * @param edges
+	 * @return a map of interface ids to sets of edges with the corresponding interface id
+	 */
+	private Map<Integer,Set<InterfaceEdge>> groupIntoTypes(Set<InterfaceEdge> edges) {
+		Map<Integer,Set<InterfaceEdge>> map = new HashMap<Integer,Set<InterfaceEdge>>();
+		
+		for (InterfaceEdge edge:edges) {
+			Set<InterfaceEdge> set = null;
+			if (!map.containsKey(edge.getInterfaceId())) {
+				set = new HashSet<InterfaceEdge>();
+				map.put(edge.getInterfaceId(), set);
+			} else {
+				set = map.get(edge.getInterfaceId());
+			}
+			set.add(edge);
+			
+		}
+		return map;
 	}
 	
 }

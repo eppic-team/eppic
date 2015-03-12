@@ -188,6 +188,9 @@ public class Assembly {
 	 */
 	private UndirectedGraph<ChainVertex, InterfaceEdge> getSubgraph() {
 		
+		// note that the subgraph will contain all vertices even if they are not connected to the rest by any interface
+		// TODO do we want that? or do we want a subgraph with no orphan vertices?
+		
 		Set<ChainVertex> vertexSet = graph.vertexSet();
 		Set<InterfaceEdge> edgeSubset = new HashSet<InterfaceEdge>();
 		for(InterfaceEdge edge:graph.edgeSet()) {

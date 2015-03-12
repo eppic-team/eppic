@@ -26,7 +26,7 @@ public class AssemblyFinder {
 	private int[] xtalStoichiometry;
 	
 	public AssemblyFinder(Structure structure, StructureInterfaceList interfaces) {
-		this.lattice = new LatticeGraph(structure, interfaces);;
+		this.lattice = new LatticeGraph(structure, interfaces);
 		this.interfaces = interfaces;
 		
 		this.numEntities = structure.getCompounds().size();
@@ -69,6 +69,8 @@ public class AssemblyFinder {
 	 * @return
 	 */
 	public Set<Assembly> getValidAssemblies() {
+		
+		lattice.removeDuplicateEdges();
 		
 		Set<Assembly> validSet = new HashSet<Assembly>();
 
