@@ -345,6 +345,11 @@ public class Main {
 	}
 	
 	public void doFindAssemblies() { 
+		
+		if (!pdb.isCrystallographic()) {
+			LOGGER.info("The input structure is not crystallographic: won't do analysis of assemblies");
+			return;
+		}
 		AssemblyFinder aFinder = new AssemblyFinder(pdb, interfaces);
 		Set<Assembly> validAssemblies = aFinder.getValidAssemblies();
 		StringBuilder sb = new StringBuilder();
