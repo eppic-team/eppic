@@ -94,12 +94,18 @@ public class LatticeGraph {
 			for (int j=0;j<sg.getNumOperators();j++) {
 				Matrix4d Tj = sg.getTransformation(j);
 				
-				Matrix4d Cij = new Matrix4d(Ci);
-				Cij.mul(Tj);
+				// Cij = Tj * Ci
+				// Note: if we use the opposite order Cij = Ci * Tj then the ids don't match
+				// the ids that we get in the geometric implementation of the graph, 
+				// see for instance 1ble: with this order we get for interface 1 (a C3 interface): A1-A10-A4, whilst 
+				// with the opposite order we get A1-A7-A8
+				Matrix4d Cij = new Matrix4d(Tj);
+				Cij.mul(Ci);
 				
+				// with Cij we obtain the end operator id
 				int endOpId = getEndAuCell(Cij);
 				
-				// we calculate translation by obtaining the matrix Ci expressed in basis Tj: 
+				// Now we calculate translation by obtaining the matrix Ci expressed in basis Tj: 
 				// Ciprime = Tj * Ci * Tjinv
 				// see for instance http://en.wikipedia.org/wiki/Change_of_basis#The_matrix_of_an_endomorphism
 				Matrix4d Tjinv = new Matrix4d(Tj);
@@ -110,7 +116,7 @@ public class LatticeGraph {
 				
 				Point3i xtalTrans = new Point3i(
 						(int) Math.round(Ciprime.m03), (int) Math.round(Ciprime.m13), (int) Math.round(Ciprime.m23));
-				
+
 				InterfaceEdge edge = new InterfaceEdge(interf, xtalTrans);
 				
 				String sourceChainId = interf.getMoleculeIds().getFirst();
