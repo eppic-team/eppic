@@ -31,20 +31,37 @@ public class LatticeGraph {
 	private static final Logger logger = LoggerFactory.getLogger(LatticeGraph.class);
 
 
+	private Structure struct;
+	private StructureInterfaceList interfaces;
+	
 	private UndirectedGraph<ChainVertex,InterfaceEdge> graph;
 	
 	private SpaceGroup sg;
 	
+	private Map<String, Integer> chainIds2entityIds;
+	
 	
 	public LatticeGraph(Structure struct, StructureInterfaceList interfaces) {
-				
-		graph = new Pseudograph<ChainVertex, InterfaceEdge>(InterfaceEdge.class);
+			
+		this.struct = struct;
+		this.interfaces = interfaces;		
 		
-		sg = struct.getCrystallographicInfo().getSpaceGroup();
+		this.graph = new Pseudograph<ChainVertex, InterfaceEdge>(InterfaceEdge.class);
+		
+		this.sg = struct.getCrystallographicInfo().getSpaceGroup();
 
-		// init the graph
-		initLatticeGraph(struct, interfaces);
+		this.chainIds2entityIds = new HashMap<String, Integer>();
 		
+		initLatticeGraphTopologically();
+		logGraph();
+		
+	}
+	
+	public UndirectedGraph<ChainVertex, InterfaceEdge> getGraph() {
+		return graph;
+	}
+	
+	private void logGraph() {
 		logger.info("Found {} vertices and {} edges in unit cell", graph.vertexSet().size(), graph.edgeSet().size());
 		
 		List<InterfaceEdge> sortedEdges = new ArrayList<InterfaceEdge>();
@@ -70,16 +87,12 @@ public class LatticeGraph {
 					second.getEntity());
 
 		}
-		
+
 	}
 	
-	public UndirectedGraph<ChainVertex, InterfaceEdge> getGraph() {
-		return graph;
-	}
-	
-	private void initLatticeGraph(Structure struct, StructureInterfaceList interfaces) {		
+	private void initLatticeGraphTopologically() {		
 		
-		Map<String, Integer> chainIds2entityIds = new HashMap<String, Integer>();
+		
 		
 		for (Chain c:struct.getChains()) {
 			for (int i=0;i<sg.getNumOperators();i++) {
