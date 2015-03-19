@@ -196,6 +196,28 @@ public class TestLatticeGraph {
 
 	}
 
+	@Test
+	public void testCycleDetection4b29() throws IOException, StructureException {
+
+		// 4b29 (I 21 3 with 1 entity and 1 molecule A): high symmetry with lots of in-cell translations  
+		AssemblyFinder ab = getLatticeGraph("4b29");
+		
+		// cluster 1: isologous
+		Assembly a = generateAssembly(ab, 1);		
+		assertTrue(a.isValid());
+		assertTrue(a.isClosedSymmetry());
+		
+		// cluster 2: closed C3 cycle
+		a = generateAssembly(ab, 2);
+		assertTrue(a.isValid());
+		assertTrue(a.isClosedSymmetry());		
+		
+		// cluster 3: open C3 cycle (classic infinite)
+		a = generateAssembly(ab, 3);
+		assertFalse(a.isValid());
+		assertFalse(a.isClosedSymmetry());		
+
+	}
 
 	private AssemblyFinder getLatticeGraph(String pdbId) throws IOException, StructureException {
 		
