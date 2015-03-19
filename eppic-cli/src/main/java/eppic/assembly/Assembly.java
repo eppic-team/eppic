@@ -239,7 +239,7 @@ public class Assembly {
 		return false;
 	}
 
-	private boolean isClosedSymmetry() {
+	public boolean isClosedSymmetry() {
 		
 		// pre-check for assemblies with 1 engaged interface that is isologous: the cycle detection doesn't work for isologous
 		if (getNumEngagedInterfaceClusters()==1) {
@@ -261,7 +261,7 @@ public class Assembly {
 
 		logger.info("Subgraph of assembly {} has {} vertices and {} edges",this.toString(),numVertices, numEdges); 
 		
-		getStoichiometry();
+		//getStoichiometry();
 
 		PatonCycleBase<ChainVertex, InterfaceEdge> paton = new PatonCycleBase<ChainVertex, InterfaceEdge>(subgraph);
 

@@ -50,6 +50,18 @@ public class AssemblyFinder {
 		return numEntities;
 	}
 	
+	public int getNumInterfClusters() {
+		return numInterfClusters;
+	}
+	
+	public LatticeGraph getLatticeGraph() {
+		return lattice;
+	}
+	
+	public StructureInterfaceList getInterfaces() {
+		return interfaces;
+	}
+	
 	/**
 	 * Returns all topologically valid assemblies present in the crystal.
 	 * The method traverses the tree of all possible combinations of n interface
