@@ -195,6 +195,40 @@ public class TestLatticeGraph {
 		assertFalse(a.isClosedSymmetry());
 
 	}
+	
+	@Test
+	public void testCycleDetection3riq() throws IOException, StructureException {
+
+		// 3riq (I 21 3 with 1 entity and 1 molecule A): high symmetry with lots of in-cell translations  
+		AssemblyFinder ab = getLatticeGraph("3riq");
+		
+		// cluster 1: a C3 cycle
+		Assembly a = generateAssembly(ab, 1);		
+		assertTrue(a.isValid());
+		assertTrue(a.isClosedSymmetry());
+		
+		// cluster 2: isologous
+		a = generateAssembly(ab, 2);
+		assertTrue(a.isValid());
+		assertTrue(a.isClosedSymmetry());		
+		
+		// cluster 3: open cycle, classic infinite
+		a = generateAssembly(ab, 3);
+		assertFalse(a.isValid());
+		assertFalse(a.isClosedSymmetry());
+
+		// cluster 4: isologous
+		a = generateAssembly(ab, 4);
+		assertTrue(a.isValid());
+		assertTrue(a.isClosedSymmetry());
+		
+		// cluster 5: pure fractional translation, classic infinite
+		a = generateAssembly(ab, 5);
+		assertFalse(a.isValid());
+		assertFalse(a.isClosedSymmetry());
+		
+
+	}
 
 	@Test
 	public void testCycleDetection4b29() throws IOException, StructureException {
@@ -216,6 +250,40 @@ public class TestLatticeGraph {
 		a = generateAssembly(ab, 3);
 		assertFalse(a.isValid());
 		assertFalse(a.isClosedSymmetry());		
+
+	}
+	
+	@Test
+	public void testCycleDetection4nla() throws IOException, StructureException {
+
+		// 4nla (I 2 3 with 1 entity and 1 molecule A): high symmetry with lots of in-cell translations  
+		AssemblyFinder ab = getLatticeGraph("4nla");
+		
+		// cluster 1: a C3 cycle
+		Assembly a = generateAssembly(ab, 1);		
+		assertTrue(a.isValid());
+		assertTrue(a.isClosedSymmetry());
+		
+		// cluster 2: open 3 cycle
+		a = generateAssembly(ab, 2);
+		assertFalse(a.isValid());
+		assertFalse(a.isClosedSymmetry());		
+
+		// cluster 3: isologous
+		a = generateAssembly(ab, 3);
+		assertTrue(a.isValid());
+		assertTrue(a.isClosedSymmetry());
+
+		// cluster 4: isologous
+		a = generateAssembly(ab, 4);
+		assertTrue(a.isValid());
+		assertTrue(a.isClosedSymmetry());
+		
+		// cluster 5: closed C3 cycle
+		a = generateAssembly(ab, 5);
+		assertTrue(a.isValid());
+		assertTrue(a.isClosedSymmetry());
+		
 
 	}
 
