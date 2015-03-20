@@ -286,6 +286,36 @@ public class TestLatticeGraph {
 		
 
 	}
+	
+	@Test
+	public void testCycleDetection3iue() throws IOException, StructureException {
+
+		// 3iue (P 1 21 1 with 1 entity and 2 molecules A,B)
+		// see issue https://jira-bsse.ethz.ch/browse/CRK-121
+		AssemblyFinder ab = getLatticeGraph("3iue");
+		
+		// cluster 1: isologous through NCS
+		Assembly a = generateAssembly(ab, 1);		
+		assertTrue(a.isValid());
+		assertTrue(a.isClosedSymmetry());
+		
+		// cluster 2: isologous
+		a = generateAssembly(ab, 2);
+		assertTrue(a.isValid());
+		assertTrue(a.isClosedSymmetry());		
+		
+		// cluster 3: classic infinite
+		a = generateAssembly(ab, 3);
+		assertFalse(a.isValid());
+		assertFalse(a.isClosedSymmetry());
+		
+		// clusters 1+2: open cycle
+		a = generateAssembly(ab, new int[]{1,2});
+		assertFalse(a.isValid());
+		assertFalse(a.isClosedSymmetry());
+		
+
+	}
 
 	private AssemblyFinder getLatticeGraph(String pdbId) throws IOException, StructureException {
 		
