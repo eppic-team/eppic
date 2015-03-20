@@ -127,6 +127,10 @@ public class LatticeGraph {
 				Ciprime.mul(Tj, Ci);
 				Ciprime.mul(Tjinv);
 				
+				// Gives zero cycles (tests pass), but too high xtalTrans
+				Ciprime = new Matrix4d(sg.getTransformation(endOpId));
+				Ciprime.sub(Cij);
+				
 				Point3i xtalTrans = new Point3i(
 						(int) Math.round(Ciprime.m03), (int) Math.round(Ciprime.m13), (int) Math.round(Ciprime.m23));
 
