@@ -79,22 +79,19 @@ public class LatticeGUI {
 
 	private Structure structure;
 	private CrystalCell cell;
-	private Matrix4d[] unitCellOps;
-	private Point3d refPoint;
 	private StructureInterfaceList interfaces;
 
 	private LatticeGraph graph;
 
 	// Position of each chain in the asymmetric unit
 	private Map<String,Point3d> chainCentroid;
-	//	private VertexPositioner positioner;
 
 	private WrappingPolicy policy;
 
-	public LatticeGUI(Structure struc) {
+	public LatticeGUI(Structure struc) throws StructureException {
 		this(struc,null);
 	}
-	public LatticeGUI(Structure struc, StructureInterfaceList interfaces) {
+	public LatticeGUI(Structure struc, StructureInterfaceList interfaces) throws StructureException {
 		this.structure = struc;
 		this.policy = WrappingPolicy.DUPLICATE;
 
@@ -119,10 +116,6 @@ public class LatticeGUI {
 		// This could also be done for each chain separately, to match Jmol positions
 		Atom[] ca = StructureTools.getRepresentativeAtomArray(structure);
 		Atom centroidAtom = Calc.getCentroid(ca);
-		refPoint = new Point3d(centroidAtom.getCoords());
-
-		unitCellOps = cell.transfToOriginCell(spaceOps, refPoint);
-
 		// Compute AU positions for each vertex
 		//		this.positioner = new GlobalCentroidPositioner(structure,cell,spaceOps);
 		chainCentroid = new HashMap<String,Point3d>();
@@ -154,7 +147,7 @@ public class LatticeGUI {
 		return interfaces;
 	}
 
-	public BiojavaJmol display(String filename) {
+	public BiojavaJmol display(String filename) throws StructureException {
 		BiojavaJmol jmol = new BiojavaJmol();
 		jmol.setTitle(filename);
 		//jmol.setStructure(struc);
@@ -173,7 +166,7 @@ public class LatticeGUI {
 		return jmol;
 	}
 
-	private String drawEdges() {
+	private String drawEdges() throws StructureException {
 		StringBuilder jmol = new StringBuilder();
 
 //		jmol.append( drawSphere("Centroid",Color.RED,chainCentroid.get("A"),"Centroid"));
@@ -191,16 +184,24 @@ public class LatticeGUI {
 		UndirectedGraph<ChainVertex, InterfaceEdge> g = graph.getGraph();
 		Set<InterfaceEdge> edges = g.edgeSet();
 		for(InterfaceEdge edge : edges) {
+			ChainVertex source = g.getEdgeSource(edge);
+			ChainVertex target = g.getEdgeTarget(edge);
+			
 			if(debugInterfaceNum != null && edge.getInterfaceId() != debugInterfaceNum) {
 				continue;
 			}
-			if(debugAUNum != null && g.getEdgeSource(edge).getOpId() != debugAUNum) {
+			if(debugAUNum != null && source.getOpId() != debugAUNum) {
 				continue;
 			}
+
+			logger.info("Edge {}{} -{}- {}{} translation: {}",
+					source.getChainId(),source.getOpId(),
+					edge.getInterfaceId(),
+					target.getChainId(),target.getOpId(),
+					edge.getXtalTrans() );
+			
 			switch(this.policy) {
 			case DUPLICATE: {
-				ChainVertex source = g.getEdgeSource(edge);
-				ChainVertex target = g.getEdgeTarget(edge);
 
 				// Transform matrix for the interface
 				Pair<CrystalTransform> transforms = edge.getInterface().getTransforms();
@@ -215,6 +216,7 @@ public class LatticeGUI {
 				// Vertex positions within the unit cell
 				Point3d sourcePos = getPosition(source);
 				Point3d targetPos = getPosition(target);
+//				jmol.append( drawSphere("TargetPos",Color.DARK_GRAY,targetPos,"TargetPos"));
 
 				// Calculate target position before wrapping
 				Point3d unwrappedTarget = new Point3d(chainCentroid.get(target.getChainId()));
@@ -222,8 +224,7 @@ public class LatticeGUI {
 				transBOrtho.transform(unwrappedTarget);
 //				jmol.append( drawSphere("Target0",Color.PINK,chainCentroid.get(target.getChainId()),"Target0"));
 //				jmol.append( drawSphere("Unwrapped",Color.DARK_GRAY,unwrappedTarget,"Unwrapped"));
-				int au = source.getOpId();
-				unitCellOps[au].transform(unwrappedTarget);
+				graph.getUnitCellTransformationOrthonormal(source.getChainId(), source.getOpId()).transform(unwrappedTarget);
 
 				// Location of interface circle
 				Point3d midPoint = new Point3d();
@@ -231,11 +232,11 @@ public class LatticeGUI {
 				midPoint.scale(.5);
 
 				// wrap to source
-				Point3d sourceAU = new Point3d(refPoint);
-				unitCellOps[au].transform(sourceAU);
-//				jmol.append( drawSphere("sourceAU"+source.getOpId(), Color.ORANGE, sourceAU, "sourceAU"+source.getOpId()));
+				Point3d sourceReference = new Point3d(graph.getReferenceCoordinate(source.getChainId()));
+				graph.getUnitCellTransformationOrthonormal(source.getChainId(), source.getOpId()).transform(sourceReference);
+//				jmol.append( drawSphere("sourceAU"+source.getOpId(), Color.ORANGE, sourceReference, "sourceAU"+source.getOpId()));
 				Point3d[] sourceEdgePos = new Point3d[] {new Point3d(sourcePos),new Point3d(midPoint), new Point3d(unwrappedTarget)};
-				cell.transfToOriginCell(sourceEdgePos,sourceAU);
+				cell.transfToOriginCell(sourceEdgePos,sourceReference);
 //				jmol.append( drawSphere("Source"+source.getOpId(),Color.CYAN,sourceEdgePos[0],"Source"+source.getOpId()));
 //				jmol.append( drawSphere("Mid"+source.getOpId(),Color.MAGENTA,sourceEdgePos[1],"Mid"+source.getOpId()));
 //				jmol.append( drawSphere("Target"+source.getOpId(),Color.GREEN,sourceEdgePos[2],"Target"+source.getOpId()));
@@ -245,12 +246,12 @@ public class LatticeGUI {
 				jmol.append( drawEdgeSegment(edge, 1, sourceEdgePos[1], sourceEdgePos[2]) );
 
 				// wrap to target
-				Point3d targetAU = new Point3d(refPoint);
-				transBOrtho.transform(targetAU);
-				unitCellOps[au].transform(targetAU);
-//				jmol.append( drawSphere("targetAU"+target.getOpId(), Color.RED, targetAU, "targetAU"+target.getOpId()));
+				Point3d targetReference = new Point3d(graph.getReferenceCoordinate(target.getChainId()));
+				transBOrtho.transform(targetReference);
+				graph.getUnitCellTransformationOrthonormal(source.getChainId(), source.getOpId()).transform(targetReference);
+//				jmol.append( drawSphere("targetAU"+target.getOpId(), Color	.RED, targetReference, "targetAU"+target.getOpId()));
 				Point3d[] targetEdgePos = new Point3d[] {new Point3d(sourcePos),new Point3d(midPoint), new Point3d(unwrappedTarget)};
-				cell.transfToOriginCell(targetEdgePos,targetAU);
+				cell.transfToOriginCell(targetEdgePos,targetReference);
 //				jmol.append( drawSphere("SourceT"+target.getOpId(),Color.CYAN.darker(),targetEdgePos[0],"SourceT"+target.getOpId()));
 //				jmol.append( drawSphere("MidT"+target.getOpId(),Color.MAGENTA.darker(),targetEdgePos[1],"MidT"+target.getOpId()));
 //				jmol.append( drawSphere("TargetT"+target.getOpId(),Color.GREEN.darker(),targetEdgePos[2],"TargetT"+target.getOpId()));
@@ -352,7 +353,7 @@ public class LatticeGUI {
 		}
 		return uid;
 	}
-	private String drawVertices() {
+	private String drawVertices() throws StructureException {
 		StringBuilder jmol = new StringBuilder();
 
 		Set<ChainVertex> vertices = graph.getGraph().vertexSet();
@@ -377,14 +378,14 @@ public class LatticeGUI {
 	}
 
 
-	private Point3d getPosition(ChainVertex v) {
+	private Point3d getPosition(ChainVertex v) throws StructureException {
 		String chainId = v.getChainId();
 		int au = v.getOpId();
 
 		// AU pos
 		Point3d pos = new Point3d( chainCentroid.get(chainId) );
 		// Unit cell pos
-		unitCellOps[au].transform(pos);
+		graph.getUnitCellTransformationOrthonormal(chainId, au).transform(pos);
 		return pos;
 	}
 
@@ -404,7 +405,8 @@ public class LatticeGUI {
 		String filename = null;
 		String name;
 		name = "1xyy";
-		name = "1a99";
+//		name = "1a99";
+//		name = "3vkx";
 
 		Structure struc;
 		if( filename == null ) {

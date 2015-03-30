@@ -8,8 +8,8 @@ import java.util.Set;
 
 import org.biojava.nbio.structure.Chain;
 import org.biojava.nbio.structure.Structure;
+import org.biojava.nbio.structure.StructureException;
 import org.biojava.nbio.structure.contact.StructureInterfaceList;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,7 +25,7 @@ public class AssemblyFinder {
 	private int numInterfClusters;
 	private int[] xtalStoichiometry;
 	
-	public AssemblyFinder(Structure structure, StructureInterfaceList interfaces) {
+	public AssemblyFinder(Structure structure, StructureInterfaceList interfaces) throws StructureException {
 		this.lattice = new LatticeGraph(structure, interfaces);
 		this.interfaces = interfaces;
 		

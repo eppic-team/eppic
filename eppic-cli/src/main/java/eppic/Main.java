@@ -344,7 +344,7 @@ public class Main {
 		
 	}
 	
-	public void doFindAssemblies() { 
+	public void doFindAssemblies() throws StructureException { 
 		
 		if (!pdb.isCrystallographic()) {
 			LOGGER.info("The input structure is not crystallographic: won't do analysis of assemblies");
@@ -1001,6 +1001,9 @@ public class Main {
 //					"\nPlease report a bug to "+EppicParams.CONTACT_EMAIL);
 //			System.exit(1);
 //		}
+		catch (StructureException e) {
+			LOGGER.error(e.getLocalizedMessage());
+		}
 		
 		
 	}

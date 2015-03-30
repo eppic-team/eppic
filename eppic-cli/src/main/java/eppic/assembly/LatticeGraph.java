@@ -11,12 +11,19 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.vecmath.Matrix4d;
+import javax.vecmath.Point3d;
 import javax.vecmath.Point3i;
 
+import org.biojava.nbio.structure.Atom;
+import org.biojava.nbio.structure.Calc;
 import org.biojava.nbio.structure.Chain;
+import org.biojava.nbio.structure.PDBCrystallographicInfo;
 import org.biojava.nbio.structure.Structure;
+import org.biojava.nbio.structure.StructureException;
+import org.biojava.nbio.structure.StructureTools;
 import org.biojava.nbio.structure.contact.StructureInterface;
 import org.biojava.nbio.structure.contact.StructureInterfaceList;
+import org.biojava.nbio.structure.xtal.CrystalCell;
 import org.biojava.nbio.structure.xtal.SpaceGroup;
 import org.jgrapht.UndirectedGraph;
 import org.jgrapht.graph.Pseudograph;
@@ -31,24 +38,26 @@ public class LatticeGraph {
 	private static final Logger logger = LoggerFactory.getLogger(LatticeGraph.class);
 
 
-	private Structure struct;
+	private final Structure struct;
 	private StructureInterfaceList interfaces;
 	
 	private UndirectedGraph<ChainVertex,InterfaceEdge> graph;
 	
-	private SpaceGroup sg;
-	
 	private Map<String, Integer> chainIds2entityIds;
 	
-	
-	public LatticeGraph(Structure struct, StructureInterfaceList interfaces) {
+	private boolean globalReferencePoint;
+	private Map<String,Matrix4d[]> unitCellOperators = new HashMap<>(); // In crystal coordinates
+	private Map<String,Point3d> referencePoints = new HashMap<>(); // Chain ID -> centroid coordinate
+
+	public LatticeGraph(Structure struct, StructureInterfaceList interfaces) throws StructureException {
 			
 		this.struct = struct;
-		this.interfaces = interfaces;		
+		this.interfaces = interfaces;
 		
 		this.graph = new Pseudograph<ChainVertex, InterfaceEdge>(InterfaceEdge.class);
 		
-		this.sg = struct.getCrystallographicInfo().getSpaceGroup();
+		globalReferencePoint = true;
+		
 
 		this.chainIds2entityIds = new HashMap<String, Integer>();
 		
@@ -56,6 +65,93 @@ public class LatticeGraph {
 		logGraph();
 		
 	}
+
+	/**
+	 * Get the reference coordinate for a particular chain.
+	 * 
+	 * This is either the chain centroid or the asymmetric unit centroid,
+	 * depending on the value of {@link #isGlobalReferencePoint()}.
+	 * @param chainId
+	 * @return
+	 * @throws StructureException
+	 */
+	public Point3d getReferenceCoordinate(String chainId) throws StructureException {
+		if( globalReferencePoint ) {
+			// null is AU centroid
+			if( ! referencePoints.containsKey(null) ) {
+				Point3d globalCentroid = getCentroid(struct);
+				referencePoints.put(null, globalCentroid);
+				return globalCentroid;
+			}
+			return referencePoints.get(null);
+		} else {
+			if( ! referencePoints.containsKey(chainId)) {
+				Point3d centroid = getCentroid(struct.getChainByPDB(chainId));
+				referencePoints.put(chainId,centroid);
+				return centroid;
+			}
+			return referencePoints.get(chainId);
+		}
+	}
+	public Matrix4d getUnitCellTransformationOrthonormal(String chainId, int opId) throws StructureException {
+		return getUnitCellTransformationsOrthonormal(chainId)[opId];
+	}
+	public Matrix4d[] getUnitCellTransformationsOrthonormal(String chainId) throws StructureException {
+		PDBCrystallographicInfo crystalInfo = struct.getCrystallographicInfo();
+		CrystalCell cell = crystalInfo.getCrystalCell();
+
+		Matrix4d[] crystalTrnsf = getUnitCellTransformationsCrystal(chainId);
+
+		Matrix4d[] orthoTrnsf = new Matrix4d[crystalTrnsf.length];
+		for(int i=0;i<crystalTrnsf.length;i++) {
+			orthoTrnsf[i] = cell.transfToOrthonormal(crystalTrnsf[i]);
+		}
+
+		return orthoTrnsf;
+	}
+	public Matrix4d getUnitCellTransformationCrystal(String chainId, int opId) throws StructureException {
+		return getUnitCellTransformationsCrystal(chainId)[opId];
+	}
+	public Matrix4d[] getUnitCellTransformationsCrystal(String chainId) throws StructureException {
+		Matrix4d[] chainTransformations;
+		synchronized(unitCellOperators) {
+			if( ! unitCellOperators.containsKey(chainId) ) {
+				PDBCrystallographicInfo crystalInfo = struct.getCrystallographicInfo();
+				SpaceGroup sg = crystalInfo.getSpaceGroup();
+				CrystalCell cell = crystalInfo.getCrystalCell();
+
+				// Transformations in crystal coords
+				Matrix4d[] transfs = new Matrix4d[sg.getNumOperators()];
+				for (int i=0;i<sg.getNumOperators();i++) {
+					transfs[i] = sg.getTransformation(i);
+				}
+
+
+				// Reference in crystal coords
+				Point3d reference = new Point3d(getReferenceCoordinate(chainId));
+				cell.transfToCrystal(reference);
+
+				chainTransformations = cell.transfToOriginCellCrystal(transfs, reference);
+				unitCellOperators.put(chainId, chainTransformations);
+			} else {
+				chainTransformations = unitCellOperators.get(chainId);
+			}
+		}
+		return chainTransformations;
+	}
+
+	
+	private static Point3d getCentroid(Chain c) {
+		Atom[] ca = StructureTools.getRepresentativeAtomArray(c);
+		Atom centroidAtom = Calc.getCentroid(ca);
+		return new Point3d(centroidAtom.getCoords());
+	}
+	private static Point3d getCentroid(Structure c) {
+		Atom[] ca = StructureTools.getRepresentativeAtomArray(c);
+		Atom centroidAtom = Calc.getCentroid(ca);
+		return new Point3d(centroidAtom.getCoords());
+	}
+
 	
 	public UndirectedGraph<ChainVertex, InterfaceEdge> getGraph() {
 		return graph;
@@ -90,32 +186,42 @@ public class LatticeGraph {
 
 	}
 	
-	private void initLatticeGraphTopologically() {		
+	private void initLatticeGraphTopologically() throws StructureException {		
 		
-		
+		final int numOps = struct.getCrystallographicInfo().getSpaceGroup().getNumOperators();
 		
 		for (Chain c:struct.getChains()) {
-			for (int i=0;i<sg.getNumOperators();i++) {
+			for (int i=0;i<numOps;i++) {
 				graph.addVertex(new ChainVertex(c.getChainID(), i, c.getCompound().getMolId()));
 				chainIds2entityIds.put(c.getChainID(), c.getCompound().getMolId());
 			}
 		}
 		
+		CrystalCell cell = struct.getCrystallographicInfo().getCrystalCell();
+
 		for (StructureInterface interf:interfaces) {
-			Matrix4d Ci = interf.getTransforms().getSecond().getMatTransform();
+			Matrix4d Ci = interf.getTransforms().getSecond().getMatTransform(); // crystal operator
 			
-			for (int j=0;j<sg.getNumOperators();j++) {
-				Matrix4d Tj = sg.getTransformation(j);
+			String sourceChainId = interf.getMoleculeIds().getFirst();
+			String targetChainId = interf.getMoleculeIds().getSecond();
+			for (int j=0;j<numOps;j++) {
+				Matrix4d Tj = getUnitCellTransformationCrystal(sourceChainId, j);
 				
-				// Cij = Ci * Tj
-				Matrix4d Cij = new Matrix4d(Ci);
-				Cij.mul(Tj);
+				// Cij = Tj * Ci
+//				Matrix4d Cij = new Matrix4d(Ci);
+//				Cij.mul(Tj);
+				Matrix4d Cij = new Matrix4d(Tj);
+				Cij.mul(Ci);
 				
 				// with Cij we obtain the end operator id
-				int k = getEndAuCell(Cij);
+				int k = getEndAuCell(Cij,targetChainId);
+				if( k < 0) {
+					logger.error("No matching operator found for:\n{}",Cij);
+					continue;
+				}
 				
-				// translation is given by: X = Tkinv * Ci * Tj
-				Matrix4d X = new Matrix4d(sg.getTransformation(k));
+				// translation is given by: X = Tkinv * Tj * Ci
+				Matrix4d X = new Matrix4d(getUnitCellTransformationCrystal(targetChainId, k));
 				X.invert(); // Tkinv
 				X.mul(Cij);
 				
@@ -124,8 +230,6 @@ public class LatticeGraph {
 
 				InterfaceEdge edge = new InterfaceEdge(interf, xtalTrans);
 				
-				String sourceChainId = interf.getMoleculeIds().getFirst();
-				String targetChainId = interf.getMoleculeIds().getSecond();
 				ChainVertex sVertex = new ChainVertex(sourceChainId, j, chainIds2entityIds.get(sourceChainId));
 				ChainVertex tVertex = new ChainVertex(targetChainId, k, chainIds2entityIds.get(targetChainId));
 				
@@ -140,17 +244,18 @@ public class LatticeGraph {
 	 * Given an operator, returns the operator id of the matching generator
 	 * @param m
 	 * @return
+	 * @throws StructureException 
 	 */
-	private int getEndAuCell(Matrix4d m) {
-		
-		for (int j=0;j<sg.getNumOperators();j++) {
-			Matrix4d Tj = sg.getTransformation(j);
-			
+	private int getEndAuCell(Matrix4d m, String chainId) throws StructureException {
+		Matrix4d[] ops = getUnitCellTransformationsCrystal(chainId);
+		for (int j=0;j<ops.length;j++) {
+			Matrix4d Tj = ops[j];
+
 			if (epsilonEqualsModulusXtal(Tj, m)) {
 				return j;
-			}			
+			}
 		}
-		
+
 		logger.warn("No matching generator found for operator:\n {}", m.toString());
 		return -1;
 	}
@@ -261,4 +366,15 @@ public class LatticeGraph {
 		return map;
 	}
 	
+	public boolean isGlobalReferencePoint() {
+		return globalReferencePoint;
+	}
+	public void setGlobalReferencePoint(boolean globalReferencePoint) {
+		if(this.globalReferencePoint != globalReferencePoint) {
+			referencePoints = new HashMap<String, Point3d>();
+			unitCellOperators = new HashMap<String, Matrix4d[]>();
+			this.globalReferencePoint = globalReferencePoint;
+		}
+	}
+
 }
