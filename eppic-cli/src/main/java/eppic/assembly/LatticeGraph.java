@@ -93,9 +93,25 @@ public class LatticeGraph {
 			return referencePoints.get(chainId);
 		}
 	}
+
+	/**
+	 * Get the set of transformations (in orthonormal coordinates) needed
+	 * to transform the specified chain to the specified position in the unit cell
+	 * @param chainId Chain ID
+	 * @param opId operator number, relative to the space group transformations
+	 * @return An array of transformation matrices
+	 * @throws StructureException if an error occurs calculating the centroid
+	 */
 	public Matrix4d getUnitCellTransformationOrthonormal(String chainId, int opId) throws StructureException {
 		return getUnitCellTransformationsOrthonormal(chainId)[opId];
 	}
+	/**
+	 * Get the set of transformations (in orthonormal coordinates) needed
+	 * to transform the specified chain to all locations in the unit cell
+	 * @param chainId Chain ID
+	 * @return An array of transformation matrices
+	 * @throws StructureException if an error occurs calculating the centroid
+	 */
 	public Matrix4d[] getUnitCellTransformationsOrthonormal(String chainId) throws StructureException {
 		PDBCrystallographicInfo crystalInfo = struct.getCrystallographicInfo();
 		CrystalCell cell = crystalInfo.getCrystalCell();
@@ -109,9 +125,24 @@ public class LatticeGraph {
 
 		return orthoTrnsf;
 	}
+	/**
+	 * Get the set of transformations (in crystal coordinates) needed
+	 * to transform the specified chain to the specified position in the unit cell
+	 * @param chainId Chain ID
+	 * @param opId operator number, relative to the space group transformations
+	 * @return An array of transformation matrices
+	 * @throws StructureException if an error occurs calculating the centroid
+	 */
 	public Matrix4d getUnitCellTransformationCrystal(String chainId, int opId) throws StructureException {
 		return getUnitCellTransformationsCrystal(chainId)[opId];
 	}
+	/**
+	 * Get the set of transformations (in crystal coordinates) needed
+	 * to transform the specified chain to all locations in the unit cell
+	 * @param chainId Chain ID
+	 * @return An array of transformation matrices
+	 * @throws StructureException if an error occurs calculating the centroid
+	 */
 	public Matrix4d[] getUnitCellTransformationsCrystal(String chainId) throws StructureException {
 		Matrix4d[] chainTransformations;
 		synchronized(unitCellOperators) {
@@ -140,12 +171,21 @@ public class LatticeGraph {
 		return chainTransformations;
 	}
 
-	
+	/**
+	 * Calculate the centroid for a chain
+	 * @param c
+	 * @return
+	 */
 	private static Point3d getCentroid(Chain c) {
 		Atom[] ca = StructureTools.getRepresentativeAtomArray(c);
 		Atom centroidAtom = Calc.getCentroid(ca);
 		return new Point3d(centroidAtom.getCoords());
 	}
+	/**
+	 * Calculate the centroid for a whole structure
+	 * @param c
+	 * @return
+	 */
 	private static Point3d getCentroid(Structure c) {
 		Atom[] ca = StructureTools.getRepresentativeAtomArray(c);
 		Atom centroidAtom = Calc.getCentroid(ca);
@@ -196,8 +236,6 @@ public class LatticeGraph {
 				chainIds2entityIds.put(c.getChainID(), c.getCompound().getMolId());
 			}
 		}
-		
-		CrystalCell cell = struct.getCrystallographicInfo().getCrystalCell();
 
 		for (StructureInterface interf:interfaces) {
 			Matrix4d Ci = interf.getTransforms().getSecond().getMatTransform(); // crystal operator
@@ -260,6 +298,13 @@ public class LatticeGraph {
 		return -1;
 	}
 	
+	/**
+	 * Test whether two matrices have the same rotational component and an
+	 * integer translational component.
+	 * @param T First matrix, in crystal coordinates
+	 * @param m Second matrix, in crystal coordinates
+	 * @return
+	 */
 	private static boolean epsilonEqualsModulusXtal(Matrix4d T, Matrix4d m) {
 		
 		// T == m  <=>  T - m = 0
@@ -366,9 +411,20 @@ public class LatticeGraph {
 		return map;
 	}
 	
+	/**
+	 * @return True if the centroid of the whole structure will be used,
+	 *  or false if the chain centroids should be used individually
+	 */
 	public boolean isGlobalReferencePoint() {
 		return globalReferencePoint;
 	}
+	/**
+	 * Set the behavior for choosing a reference point which will stay in the unit
+	 * cell upon any of the transformations returned by
+	 * {@link #getUnitCellTransformationsOrthonormal(String)}
+	 * @param globalReferencePoint True if the centroid of the whole structure will be used,
+	 *  or false if the chain centroids should be used individually
+	 */
 	public void setGlobalReferencePoint(boolean globalReferencePoint) {
 		if(this.globalReferencePoint != globalReferencePoint) {
 			referencePoints = new HashMap<String, Point3d>();
