@@ -44,6 +44,8 @@ public class InterfaceEdge {
 	}
 
 	public int getClusterId() {
+		if(interf.getCluster() == null)
+			return -1;
 		return interf.getCluster().getId();
 	}
 
