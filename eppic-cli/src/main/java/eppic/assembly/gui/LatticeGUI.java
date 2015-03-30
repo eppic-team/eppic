@@ -79,7 +79,6 @@ public class LatticeGUI {
 
 	private Structure structure;
 	private CrystalCell cell;
-	private StructureInterfaceList interfaces;
 
 	private LatticeGraph graph;
 
@@ -99,7 +98,6 @@ public class LatticeGUI {
 		if(interfaces == null) {
 			interfaces = calculateInterfaces(struc);
 		}
-		this.interfaces = interfaces;
 
 		this.graph = new LatticeGraph(struc, interfaces);
 
@@ -109,15 +107,9 @@ public class LatticeGUI {
 			logger.error("No crystallographic info set for this structure.");
 			// leads to NullPointer
 		}
-		Matrix4d[] spaceOps = crystalInfo.getTransformationsOrthonormal();
 		cell = crystalInfo.getCrystalCell();
 
-		// Compute reference point to locate in unit cell
-		// This could also be done for each chain separately, to match Jmol positions
-		Atom[] ca = StructureTools.getRepresentativeAtomArray(structure);
-		Atom centroidAtom = Calc.getCentroid(ca);
 		// Compute AU positions for each vertex
-		//		this.positioner = new GlobalCentroidPositioner(structure,cell,spaceOps);
 		chainCentroid = new HashMap<String,Point3d>();
 		for(Chain c: structure.getChains() ) {
 			chainCentroid.put(c.getChainID(), getCentroid(c));
