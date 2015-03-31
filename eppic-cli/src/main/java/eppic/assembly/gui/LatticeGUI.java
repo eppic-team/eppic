@@ -5,12 +5,15 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import javax.swing.JFrame;
 import javax.vecmath.Matrix4d;
 import javax.vecmath.Point3d;
+import javax.vecmath.Point3i;
 import javax.vecmath.Vector3d;
 
 import org.biojava.nbio.structure.Atom;
@@ -92,8 +95,7 @@ public class LatticeGUI {
 	}
 	public LatticeGUI(Structure struc, StructureInterfaceList interfaces) throws StructureException {
 		this.structure = struc;
-		//this.policy = WrappingPolicy.DUPLICATE;
-		this.policy = WrappingPolicy.DONT_WRAP;
+		this.policy = WrappingPolicy.DUPLICATE;
 
 		// calculate interfaces
 		if(interfaces == null) {
@@ -172,9 +174,6 @@ public class LatticeGUI {
 //		cell.transfToOrthonormal(bXtal).transform(b);
 //		jmol.append( drawSphere("B",Color.WHITE,b,"B"));
 
-		final Integer debugInterfaceNum = null; // For debugging, single interface to display or null for all
-		final Integer debugAUNum = null; // single AU to display or null for all
-		
 		UndirectedGraph<ChainVertex, InterfaceEdge> g = graph.getGraph();
 		Set<InterfaceEdge> edges = g.edgeSet();
 		for(InterfaceEdge edge : edges) {
@@ -202,7 +201,7 @@ public class LatticeGUI {
 				mid.interpolate(sourcePos, targetPos, .5);
 				
 				jmol.append( drawEdge(edge, sourcePos, targetPos));
-				jmol.append( drawLabel("edge"+edge,getEdgeColor(edge),mid,""+edge.getInterfaceId()));
+				jmol.append( drawLabel("edge"+edge,getEdgeColor(edge),mid,getEdgeLabel(edge)));
 				
 				break;
 			}
@@ -277,6 +276,37 @@ public class LatticeGUI {
 		logger.debug("Edge Jmol commands:\n{}",jmol.toString());
 		return jmol.toString();
 	}
+	
+	private String getXtalTransString(InterfaceEdge edge) {
+		int[] coords = new int[3];
+		edge.getXtalTrans().get(coords);
+		final String[] letters = new String[] {"a","b","c"};
+
+		StringBuilder str = new StringBuilder();
+		for(int i=0;i<3;i++) {
+			if( coords[i] != 0) {
+				if( Math.abs(coords[i]) == 1 ) {
+					if(str.length()>0)
+						str.append(',');
+					String sign = coords[i] > 0 ? "+" : "-";
+					str.append(sign+letters[i]);
+				} else {
+					if(str.length()>0)
+						str.append(',');
+					str.append(String.format("%d%s",coords[i],letters[i]));
+				}
+			}
+		}
+		return str.toString();
+	}
+	private String getEdgeLabel(InterfaceEdge edge) {
+		String xtal = getXtalTransString(edge);
+		if(xtal != null && !xtal.isEmpty()) {
+			return String.format("%d: %s", edge.getInterfaceId(),xtal );
+		} else {
+			return String.valueOf(edge.getInterfaceId());
+		}
+	}
 
 	private String drawInterfaceCircle(InterfaceEdge edge, Point3d pos, Point3d perpendicular) {
 		// draw interface circle
@@ -287,7 +317,7 @@ public class LatticeGUI {
 		String name = toUniqueJmolID(String.format("interface%s_%d",
 				edge.getInterfaceId(), graph.getGraph().getEdgeSource(edge).getOpId()));
 		String jmol = String.format("draw ID \"%s\" \"%s\" CIRCLE {%f,%f,%f} {%f,%f,%f} DIAMETER 5.0 COLOR %s;%n",
-				name,edge.getInterfaceId(),
+				name,getEdgeLabel(edge),
 				pos.x,pos.y,pos.z,
 				perpendicular.x,perpendicular.y,perpendicular.z,
 				color );
@@ -326,10 +356,12 @@ public class LatticeGUI {
 		ChainVertex source = graph.getGraph().getEdgeSource(edge);
 		ChainVertex target = graph.getGraph().getEdgeTarget(edge);
 		String name = toUniqueJmolID(String.format("edge_%s_%s", source,target ));
-		return String.format("draw ID \"%s\" ARROW {%f,%f,%f} {%f,%f,%f} {%f,%f,%f} COLOR %s;\n",
+		String jmol = String.format("draw ID \"%s\" ARROW {%f,%f,%f} {%f,%f,%f} {%f,%f,%f} COLOR %s;\n",
 				name,
 				start.x,start.y,start.z, mid.x,mid.y,mid.z, end.x,end.y,end.z,
 				color );
+		
+		return jmol;
 	}
 	
 	/**
@@ -441,14 +473,17 @@ public class LatticeGUI {
 		return String.format("[%f,%f,%f]", color.getRed()/256f,color.getGreen()/256f,color.getBlue()/256f);
 	}
 
+	private final Integer debugInterfaceNum = null; // For debugging, single interface to display or null for all
+	private final Integer debugAUNum = null; // single AU to display or null for all
 
 	public static void main(String[] args) throws IOException, StructureException {
 		String filename = null;
 		String name;
 		name = "1xyy";
-		name = "1a99";
+		//name = "1a99";
 //		name = "3vkx";
-
+//		name = "1ble";
+//		name = "2d3e";
 		Structure struc;
 		if( filename == null ) {
 			AtomCache cache = new AtomCache();

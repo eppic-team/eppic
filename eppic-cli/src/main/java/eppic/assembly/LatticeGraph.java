@@ -34,36 +34,36 @@ import org.slf4j.LoggerFactory;
 
 
 public class LatticeGraph {
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(LatticeGraph.class);
 
 
 	private final Structure struct;
 	private StructureInterfaceList interfaces;
-	
+
 	private UndirectedGraph<ChainVertex,InterfaceEdge> graph;
-	
+
 	private Map<String, Integer> chainIds2entityIds;
-	
+
 	private boolean globalReferencePoint;
 	private Map<String,Matrix4d[]> unitCellOperators = new HashMap<>(); // In crystal coordinates
 	private Map<String,Point3d> referencePoints = new HashMap<>(); // Chain ID -> centroid coordinate
 
 	public LatticeGraph(Structure struct, StructureInterfaceList interfaces) throws StructureException {
-			
+
 		this.struct = struct;
 		this.interfaces = interfaces;
-		
+
 		this.graph = new Pseudograph<ChainVertex, InterfaceEdge>(InterfaceEdge.class);
-		
+
 		globalReferencePoint = true;
-		
+
 
 		this.chainIds2entityIds = new HashMap<String, Integer>();
-		
+
 		initLatticeGraphTopologically();
 		logGraph();
-		
+
 	}
 
 	/**
@@ -192,14 +192,14 @@ public class LatticeGraph {
 		return new Point3d(centroidAtom.getCoords());
 	}
 
-	
+
 	public UndirectedGraph<ChainVertex, InterfaceEdge> getGraph() {
 		return graph;
 	}
-	
+
 	private void logGraph() {
 		logger.info("Found {} vertices and {} edges in unit cell", graph.vertexSet().size(), graph.edgeSet().size());
-		
+
 		List<InterfaceEdge> sortedEdges = new ArrayList<InterfaceEdge>();
 		sortedEdges.addAll(graph.edgeSet());
 		Collections.sort(sortedEdges, new Comparator<InterfaceEdge>() {
@@ -208,7 +208,7 @@ public class LatticeGraph {
 				return new Integer(o1.getInterfaceId()).compareTo(new Integer(o2.getInterfaceId()));
 			}			
 		});
-		
+
 		for (InterfaceEdge edge:sortedEdges) {
 			ChainVertex first = graph.getEdgeSource(edge);
 			ChainVertex second = graph.getEdgeTarget(edge);
@@ -225,11 +225,11 @@ public class LatticeGraph {
 		}
 
 	}
-	
+
 	private void initLatticeGraphTopologically() throws StructureException {		
-		
+
 		final int numOps = struct.getCrystallographicInfo().getSpaceGroup().getNumOperators();
-		
+
 		for (Chain c:struct.getChains()) {
 			for (int i=0;i<numOps;i++) {
 				graph.addVertex(new ChainVertex(c.getChainID(), i, c.getCompound().getMolId()));
@@ -239,45 +239,45 @@ public class LatticeGraph {
 
 		for (StructureInterface interf:interfaces) {
 			Matrix4d Ci = interf.getTransforms().getSecond().getMatTransform(); // crystal operator
-			
+
 			String sourceChainId = interf.getMoleculeIds().getFirst();
 			String targetChainId = interf.getMoleculeIds().getSecond();
 			for (int j=0;j<numOps;j++) {
 				Matrix4d Tj = getUnitCellTransformationCrystal(sourceChainId, j);
-				
+
 				// Cij = Tj * Ci
-//				Matrix4d Cij = new Matrix4d(Ci);
-//				Cij.mul(Tj);
 				Matrix4d Cij = new Matrix4d(Tj);
 				Cij.mul(Ci);
-				
+
 				// with Cij we obtain the end operator id
 				int k = getEndAuCell(Cij,targetChainId);
 				if( k < 0) {
 					logger.error("No matching operator found for:\n{}",Cij);
 					continue;
 				}
-				
-				// translation is given by: X = Tkinv * Tj * Ci
-				Matrix4d X = new Matrix4d(getUnitCellTransformationCrystal(targetChainId, k));
-				X.invert(); // Tkinv
-				X.mul(Cij);
-				
+
+				// translation is given by: X =  Tj * Ci * Tkinv
+				Matrix4d Tk = getUnitCellTransformationCrystal(targetChainId, k);
+				Matrix4d Tkinv = new Matrix4d(Tk);
+				Tkinv.invert(); // Tkinv
+				Matrix4d X = new Matrix4d(Cij);
+				X.mul(Tkinv);
+
 				Point3i xtalTrans = new Point3i(
 						(int) Math.round(X.m03), (int) Math.round(X.m13), (int) Math.round(X.m23));
 
 				InterfaceEdge edge = new InterfaceEdge(interf, xtalTrans);
-				
+
 				ChainVertex sVertex = new ChainVertex(sourceChainId, j, chainIds2entityIds.get(sourceChainId));
 				ChainVertex tVertex = new ChainVertex(targetChainId, k, chainIds2entityIds.get(targetChainId));
-				
+
 				graph.addEdge(sVertex, tVertex, edge);
-				
+
 			}
 		}
-		
+
 	}
-	
+
 	/**
 	 * Given an operator, returns the operator id of the matching generator
 	 * @param m
@@ -297,7 +297,7 @@ public class LatticeGraph {
 		logger.warn("No matching generator found for operator:\n {}", m.toString());
 		return -1;
 	}
-	
+
 	/**
 	 * Test whether two matrices have the same rotational component and an
 	 * integer translational component.
@@ -306,11 +306,11 @@ public class LatticeGraph {
 	 * @return
 	 */
 	private static boolean epsilonEqualsModulusXtal(Matrix4d T, Matrix4d m) {
-		
+
 		// T == m  <=>  T - m = 0
 		Matrix4d sub = new Matrix4d(T);
 		sub.sub(m);
-		
+
 		for (int i=0;i<3;i++) {
 			for (int j=0;j<3;j++) {
 				if (Math.abs(sub.getElement(i, j))>0.0001) {
@@ -318,30 +318,30 @@ public class LatticeGraph {
 				}
 			}
 		}
-		
+
 		for (int i=0;i<3;i++) {
-			
+
 			if (!isInteger(sub.getElement(i,3))) {
 				return false;
 			}
 		}
-		
+
 		return true;
 	}
-	
+
 	public static boolean isInteger(double x) {
 		// note that (x%1)==0 would not work, see test TestModuloIssues
 		return Math.abs(Math.round(x)-x) < 0.0001;
 	}
-	
+
 	/**
 	 * For any 2 vertices in the graph that contain 2 or more edges with the same 
 	 * interface id, remove all but first edges. 
 	 */
 	public void removeDuplicateEdges() {
-		
+
 		Set<InterfaceEdge> toRemove = new HashSet<InterfaceEdge>();
-		
+
 		int i = -1;
 		for (ChainVertex iVertex:graph.vertexSet()) {
 			i++;
@@ -349,13 +349,13 @@ public class LatticeGraph {
 			for (ChainVertex jVertex:graph.vertexSet()) {
 				j++;
 				if (j<i) continue; // i.e. we include i==j (to remove loop edges)
-				
+
 				Set<InterfaceEdge> edges = graph.getAllEdges(iVertex, jVertex);
 				Map<Integer,Set<InterfaceEdge>> groups = groupIntoTypes(edges);
-				
+
 				for (int interfaceId:groups.keySet()){
 					Set<InterfaceEdge> group = groups.get(interfaceId);
-					
+
 					if (group.size()==0) {
 						continue;
 					} else if (group.size()==1) {
@@ -377,18 +377,18 @@ public class LatticeGraph {
 					}
 
 				}
-				
-								
+
+
 			}
-			
+
 		}
 		// now we do the removal
 		for (InterfaceEdge edge:toRemove) {
 			graph.removeEdge(edge);
 		}
-		
+
 	}
-	
+
 	/**
 	 * Given a set of edges groups them into interface id groups
 	 * @param edges
@@ -396,7 +396,7 @@ public class LatticeGraph {
 	 */
 	private Map<Integer,Set<InterfaceEdge>> groupIntoTypes(Set<InterfaceEdge> edges) {
 		Map<Integer,Set<InterfaceEdge>> map = new HashMap<Integer,Set<InterfaceEdge>>();
-		
+
 		for (InterfaceEdge edge:edges) {
 			Set<InterfaceEdge> set = null;
 			if (!map.containsKey(edge.getInterfaceId())) {
@@ -406,11 +406,11 @@ public class LatticeGraph {
 				set = map.get(edge.getInterfaceId());
 			}
 			set.add(edge);
-			
+
 		}
 		return map;
 	}
-	
+
 	/**
 	 * @return True if the centroid of the whole structure will be used,
 	 *  or false if the chain centroids should be used individually
