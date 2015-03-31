@@ -92,7 +92,8 @@ public class LatticeGUI {
 	}
 	public LatticeGUI(Structure struc, StructureInterfaceList interfaces) throws StructureException {
 		this.structure = struc;
-		this.policy = WrappingPolicy.DUPLICATE;
+		//this.policy = WrappingPolicy.DUPLICATE;
+		this.policy = WrappingPolicy.DONT_WRAP;
 
 		// calculate interfaces
 		if(interfaces == null) {
@@ -194,6 +195,17 @@ public class LatticeGUI {
 					edge.getXtalTrans() );
 			
 			switch(this.policy) {
+			case DONT_WRAP: {
+				Point3d sourcePos = getPosition(source);
+				Point3d targetPos = getPosition(target);
+				Point3d mid = new Point3d();
+				mid.interpolate(sourcePos, targetPos, .5);
+				
+				jmol.append( drawEdge(edge, sourcePos, targetPos));
+				jmol.append( drawLabel("edge"+edge,getEdgeColor(edge),mid,""+edge.getInterfaceId()));
+				
+				break;
+			}
 			case DUPLICATE: {
 
 				// Transform matrix for the interface
@@ -350,9 +362,16 @@ public class LatticeGUI {
 		String colorStr = toJmolColor(color);
 		String jmol = String.format("isosurface ID \"%s\" COLOR %s CENTER {%f,%f,%f} SPHERE 5.0;\n",
 				name, colorStr, pos.x,pos.y,pos.z );
-		jmol += String.format("set echo ID \"%s\" {%f,%f,%f}; color echo %s; echo \"  %s\";\n",
-				echoName, pos.x,pos.y,pos.z,colorStr, label);
+		jmol += drawLabel(echoName,color,pos,label);
 		return jmol;
+	}
+	
+	private String drawLabel(String name, Color color, Point3d pos, String label) {
+		if(color == null) color = Color.WHITE;
+		String colorStr = toJmolColor(color);
+		name = toUniqueJmolID(name);
+		return String.format("set echo ID \"%s\" {%f,%f,%f}; color echo %s; echo \"  %s\";\n",
+				name, pos.x,pos.y,pos.z,colorStr, label);
 	}
 	
 	private Set<String> jmolIDs = new HashSet<String>();
