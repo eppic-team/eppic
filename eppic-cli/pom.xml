@@ -29,6 +29,12 @@
 		</dependency>
 		
 		<dependency>
+			<groupId>java3d</groupId>
+			<artifactId>vecmath</artifactId>
+			<version>1.3.1</version>
+		</dependency>
+		
+		<dependency>
 			<groupId>org.biojava</groupId>
        		<artifactId>biojava-core</artifactId>
         	<version>${biojava.version}</version>
