@@ -161,6 +161,7 @@ public class LatticeGUI {
 	private String drawEdges() throws StructureException {
 		StringBuilder jmol = new StringBuilder();
 
+		jmol.append( "set defaultDrawArrowScale 8\n");
 //		jmol.append( drawSphere("Centroid",Color.RED,chainCentroid.get("A"),"Centroid"));
 //		Point3d a0 = new Point3d(chainCentroid.get("A"));
 //		structure.getCrystallographicInfo().getTransformationsOrthonormal()[7].transform(a0);
@@ -207,7 +208,7 @@ public class LatticeGUI {
 
 				// Vertex positions within the unit cell
 				Point3d sourcePos = getPosition(source);
-				Point3d targetPos = getPosition(target);
+//				Point3d targetPos = getPosition(target);
 //				jmol.append( drawSphere("TargetPos",Color.DARK_GRAY,targetPos,"TargetPos"));
 
 				// Calculate target position before wrapping
@@ -234,8 +235,7 @@ public class LatticeGUI {
 //				jmol.append( drawSphere("Target"+source.getOpId(),Color.GREEN,sourceEdgePos[2],"Target"+source.getOpId()));
 
 				jmol.append( drawInterfaceCircle(edge, sourceEdgePos[1], sourceEdgePos[0] ) );
-				jmol.append( drawEdgeSegment(edge, 0, sourceEdgePos[0], sourceEdgePos[1]) );
-				jmol.append( drawEdgeSegment(edge, 1, sourceEdgePos[1], sourceEdgePos[2]) );
+				jmol.append( drawEdge(edge, sourceEdgePos[0], sourceEdgePos[2]) );
 
 				// wrap to target
 				Point3d targetReference = new Point3d(graph.getReferenceCoordinate(target.getChainId()));
@@ -251,8 +251,7 @@ public class LatticeGUI {
 
 				if( ! sourceEdgePos[2].epsilonEquals(targetEdgePos[2], 1e-4)) {
 					jmol.append( drawInterfaceCircle(edge, targetEdgePos[1], targetEdgePos[0] ) );
-					jmol.append( drawEdgeSegment(edge, 0, targetEdgePos[0], targetEdgePos[1]) );
-					jmol.append( drawEdgeSegment(edge, 1, targetEdgePos[1], targetEdgePos[2]) );
+					jmol.append( drawEdge(edge, targetEdgePos[0], targetEdgePos[2]) );
 				} else {
 					logger.debug("Source and target for {} within unit cell",edge);
 				}
@@ -285,32 +284,63 @@ public class LatticeGUI {
 		//				color, edge.getInterfaceId());
 		return jmol;
 	}
-	private String drawEdgeSegment(InterfaceEdge edge,int segmentNum, Point3d posA, Point3d posB) {
-		final double jitter = 2.0;//amount of jitter to add to edge positions
-		double xjitter = (Math.random()*2-1.0) * jitter;
-		double yjitter = (Math.random()*2-1.0) * jitter;
-		double zjitter = (Math.random()*2-1.0) * jitter;
+	private String drawEdge(InterfaceEdge edge, Point3d posA, Point3d posB) {
+		Vector3d ab = new Vector3d();
+		ab.sub(posB, posA);
+
+		// Start and end a fixed distance from the end
+		final double gapDist = 5.5; // Angstroms; slightly more than drawSphere radius
+		Point3d start = new Point3d();
+		start.scaleAdd(gapDist/ab.length(), ab, posA);
+		Point3d end = new Point3d();
+		end.scaleAdd(1 - gapDist/ab.length(), ab, posA);
+		
+		// Midpoint is offset by a small amount in a random direction
+		final double midOffset = 4.;
+		// Random vector orthogonal to the line between the two points
+		Vector3d orthogonal = randomOrthogonalVector(ab);
+		
+		Point3d mid = new Point3d();
+		mid.scaleAdd(.5, ab, posA);
+		mid.scaleAdd(midOffset,orthogonal,mid);//orthogonal is normalized
+		
 
 		String color;
-		//color = toJmolColor(getEdgeColor(edge));
-		color = segmentNum == 1 ? "gray" : "white";
+		color = toJmolColor(getEdgeColor(edge));
 		if( color == null ) {
 			color = "white";
 		}
 
 		ChainVertex source = graph.getGraph().getEdgeSource(edge);
 		ChainVertex target = graph.getGraph().getEdgeTarget(edge);
-//		return String.format("draw ID edge_%s_%s_%s_%d VECTOR {%f,%f,%f} {%f,%f,%f} COLOR %s;\n",
-//				source,target,"a"+segmentNum,edge.hashCode(),
-//				posA.x+xjitter,posA.y+yjitter,posA.z+zjitter,
-//				posB.x-posA.x,posB.y-posA.y,posB.z-posA.z,
-//				color );
-		String name = toUniqueJmolID(String.format("edge_%s_%s_%s_%d", source,target,"a"+segmentNum,edge.hashCode()));
-		return String.format("draw ID \"%s\" ARROW {%f,%f,%f} {%f,%f,%f} COLOR %s;\n",
+		String name = toUniqueJmolID(String.format("edge_%s_%s", source,target ));
+		return String.format("draw ID \"%s\" ARROW {%f,%f,%f} {%f,%f,%f} {%f,%f,%f} COLOR %s;\n",
 				name,
-				posA.x+xjitter,posA.y+yjitter,posA.z+zjitter,
-				posB.x+xjitter,posB.y+yjitter,posB.z+zjitter,
+				start.x,start.y,start.z, mid.x,mid.y,mid.z, end.x,end.y,end.z,
 				color );
+	}
+	
+	/**
+	 * 
+	 * @param n The plane normal
+	 * @return A random normalized vector orthogonal to n
+	 */
+	private Vector3d randomOrthogonalVector(Vector3d n) {
+		Vector3d random;
+		do {
+			// Sample uniformly at random from unit sphere
+			random = new Vector3d( Math.random()*2-1.0, Math.random()*2-1.0, Math.random()*2-1.0 );
+		} while( random.lengthSquared() > 1);
+		
+		// Project random onto the plane defined by n and the origin
+		Vector3d vecToPlane = new Vector3d(n);
+		vecToPlane.normalize();
+		vecToPlane.scale( random.dot(vecToPlane) );
+		random.sub(vecToPlane);
+
+		// Normalize
+		random.normalize();
+		return random;
 	}
 	
 	private String drawSphere(String name, Color color, Point3d pos, String label) {
@@ -385,7 +415,7 @@ public class LatticeGUI {
 		return Color.yellow;
 	}
 	private Color getEdgeColor(InterfaceEdge e) {
-		return Color.orange;
+		return Color.GRAY;
 	}
 	private static String toJmolColor(Color color) {
 		if(color == null) return null;
@@ -397,7 +427,7 @@ public class LatticeGUI {
 		String filename = null;
 		String name;
 		name = "1xyy";
-//		name = "1a99";
+		name = "1a99";
 //		name = "3vkx";
 
 		Structure struc;
