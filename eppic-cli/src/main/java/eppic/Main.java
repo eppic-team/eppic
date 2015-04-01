@@ -15,6 +15,7 @@ import java.net.UnknownHostException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.zip.GZIPOutputStream;
 
 import org.apache.logging.log4j.LogManager;
@@ -45,6 +46,8 @@ import org.biojava.nbio.structure.xtal.SpaceGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import eppic.assembly.Assembly;
+import eppic.assembly.AssemblyFinder;
 import eppic.commons.util.FileTypeGuesser;
 import eppic.commons.util.Goodies;
 import eppic.predictors.CombinedClusterPredictor;
@@ -339,6 +342,21 @@ public class Main {
 
 		}
 		
+	}
+	
+	public void doFindAssemblies() throws StructureException { 
+		
+		if (!pdb.isCrystallographic()) {
+			LOGGER.info("The input structure is not crystallographic: won't do analysis of assemblies");
+			return;
+		}
+		AssemblyFinder aFinder = new AssemblyFinder(pdb, interfaces);
+		Set<Assembly> validAssemblies = aFinder.getValidAssemblies();
+		StringBuilder sb = new StringBuilder();
+		for (Assembly a: validAssemblies) {
+			sb.append(a.toString()+" ");
+		}
+		LOGGER.info("There are {} topologically possible assemblies: {}", validAssemblies.size(), sb.toString());
 	}
 	
 	public void doGeomScoring() throws EppicException {
@@ -922,6 +940,7 @@ public class Main {
 			} else {
 				doFindInterfaces();
 			}
+						
 			
 			// TODO call doHBPlus when fixed
 			// try hbplus if executable is set, writes pdb files needed for it (which then are overwritten in doWritePdbFiles)
@@ -944,19 +963,22 @@ public class Main {
 				doCombinedScoring();
 			}
 			
-			// 5 write TSV files (only if not in -w) 	
+			// 5 find the assemblies!
+			doFindAssemblies();
+			
+			// 6 write TSV files (only if not in -w) 	
 			doWriteTextOutputFiles();
 			
-			// 6 write pdb files (only if in -l)
+			// 7 write pdb files (only if in -l)
 			doWritePdbFiles();
 						
-			// 7 writing pymol files (only if in -l)
+			// 8 writing pymol files (only if in -l)
 			doWritePymolFiles();
 			
-			// 8 compressing files (only if in -l)
+			// 9 compressing files (only if in -l)
 			doCompressFiles();
 			
-			// 9 writing out the model serialized file and "finish" file for web ui (only if in -w)
+			// 10 writing out the model serialized file and "finish" file for web ui (only if in -w)
 			doWriteFinalFiles();
 
 			
@@ -979,6 +1001,9 @@ public class Main {
 //					"\nPlease report a bug to "+EppicParams.CONTACT_EMAIL);
 //			System.exit(1);
 //		}
+		catch (StructureException e) {
+			LOGGER.error(e.getLocalizedMessage());
+		}
 		
 		
 	}
