@@ -325,6 +325,7 @@ public class TestLatticeGraph {
 		FileParsingParameters params = new FileParsingParameters();
 		params.setAlignSeqRes(true); 
 		cache.setFileParsingParams(params);
+		StructureIO.setAtomCache(cache);
 		
 		Structure s =  StructureIO.getStructure(pdbId);
 		

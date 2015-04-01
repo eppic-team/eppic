@@ -8,6 +8,9 @@
         </parent>
         <artifactId>eppic-cli</artifactId>
 
+	<properties>
+		<biojava.version>4.1.0-SNAPSHOT</biojava.version>
+	</properties>
 	
 	<repositories>
 		<!-- for uniprot japi -->
@@ -246,7 +249,5 @@
 	
 	
 	
-	<properties>
-		<biojava.version>4.1.0-SNAPSHOT</biojava.version>
-	</properties>
+	
 </project>

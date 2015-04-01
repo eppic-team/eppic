@@ -5,15 +5,12 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import javax.swing.JFrame;
 import javax.vecmath.Matrix4d;
 import javax.vecmath.Point3d;
-import javax.vecmath.Point3i;
 import javax.vecmath.Vector3d;
 
 import org.biojava.nbio.structure.Atom;
@@ -539,6 +536,7 @@ public class LatticeGUI {
 	 * @param origin
 	 * @param normal
 	 */
+	@SuppressWarnings("unused")
 	private Point3d planeIntersection(Point3d segA, Point3d segB, Point3d origin, Vector3d normal) {
 		double tol = 1e-6; //tolerance for equality
 
