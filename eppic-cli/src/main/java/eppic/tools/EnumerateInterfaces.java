@@ -347,7 +347,7 @@ public class EnumerateInterfaces {
 		}
 		
 				
-		List<StructureInterfaceCluster> clusters = interfaces.getClusters();
+		List<StructureInterfaceCluster> clusters = interfaces.getClusters(EppicParams.CLUSTERING_CONTACT_OVERLAP_SCORE_CUTOFF);
 		System.out.println("\nClusters: ");
 		for (StructureInterfaceCluster cluster:clusters) {
 			System.out.print(cluster.getId()+":");

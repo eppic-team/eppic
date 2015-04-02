@@ -151,7 +151,7 @@ public class DataModelAdaptor {
 	public void setInterfaces(StructureInterfaceList interfaces) {
 
 		
-		List<StructureInterfaceCluster> interfaceClusters = interfaces.getClusters();
+		List<StructureInterfaceCluster> interfaceClusters = interfaces.getClusters(EppicParams.CLUSTERING_CONTACT_OVERLAP_SCORE_CUTOFF);
 		List<InterfaceClusterDB> icDBs = new ArrayList<InterfaceClusterDB>();
 		for (StructureInterfaceCluster ic:interfaceClusters) {
 			InterfaceClusterDB icDB = new InterfaceClusterDB();

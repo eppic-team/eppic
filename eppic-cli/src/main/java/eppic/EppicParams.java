@@ -72,6 +72,7 @@ public class EppicParams {
 	public static final double 	   CLUSTERING_RMSD_CUTOFF = 2.0;
 	public static final int 	   CLUSTERING_MINATOMS = 10;
 	public static final String     CLUSTERING_ATOM_TYPE = "CA";
+	public static final double	   CLUSTERING_CONTACT_OVERLAP_SCORE_CUTOFF = 0.2;
 	// the strategies for core-surface scoring
 	public static final int 	   CORE_SURFACE_SCORE_STRATEGY_CLASSIC = 0;
 	public static final int 	   CORE_SURFACE_SCORE_STRATEGY_ZSCORE = 1;

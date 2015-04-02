@@ -13,6 +13,8 @@ import org.biojava.nbio.structure.contact.StructureInterfaceList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import eppic.EppicParams;
+
 
 public class AssemblyFinder {
 
@@ -30,7 +32,7 @@ public class AssemblyFinder {
 		this.interfaces = interfaces;
 		
 		this.numEntities = structure.getCompounds().size();
-		this.numInterfClusters = interfaces.getClusters().size();
+		this.numInterfClusters = interfaces.getClusters(EppicParams.CLUSTERING_CONTACT_OVERLAP_SCORE_CUTOFF).size();
 		this.xtalStoichiometry = new int[numEntities];
 		
 		for (Chain c: structure.getChains()) {

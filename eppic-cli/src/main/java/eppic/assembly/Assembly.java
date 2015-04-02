@@ -19,6 +19,8 @@ import org.jgrapht.graph.UndirectedSubgraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import eppic.EppicParams;
+
 /**
  * An Assembly of molecules within a crystal, represented by a set of engaged interface clusters.
  * 
@@ -58,7 +60,7 @@ public class Assembly {
 	public List<StructureInterfaceCluster> getInterfaceClusters() {
 		List<StructureInterfaceCluster> interfaceClusters = new ArrayList<StructureInterfaceCluster>();
 		
-		for (StructureInterfaceCluster cluster:interfaces.getClusters()) {
+		for (StructureInterfaceCluster cluster:interfaces.getClusters(EppicParams.CLUSTERING_CONTACT_OVERLAP_SCORE_CUTOFF)) {
 			for (int i=0;i<engagedSet.length;i++) {
 				if (engagedSet[i] && cluster.getId() == i+1) {
 					interfaceClusters.add(cluster);

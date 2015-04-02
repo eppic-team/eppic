@@ -64,7 +64,7 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 			this.add(iec);
 		}
 		
-		for (StructureInterfaceCluster ic:interfaces.getClusters()) {
+		for (StructureInterfaceCluster ic:interfaces.getClusters(EppicParams.CLUSTERING_CONTACT_OVERLAP_SCORE_CUTOFF)) {
 			List<EvolCoreRimPredictor> ecrMembers = new ArrayList<EvolCoreRimPredictor>();
 			List<EvolCoreSurfacePredictor> ecsMembers = new ArrayList<EvolCoreSurfacePredictor>();
 			for (int i=0;i<interfaces.size();i++) {

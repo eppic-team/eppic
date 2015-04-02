@@ -252,12 +252,12 @@ public class Main {
 
 		LOGGER.info("Calculating interface clusters");
 
-		int clustersSize = interfaces.getClusters().size();
+		int clustersSize = interfaces.getClusters(EppicParams.CLUSTERING_CONTACT_OVERLAP_SCORE_CUTOFF).size();
 		int numInterfaces = interfaces.size();
 		LOGGER.info("Interface clustering done: "+numInterfaces+" interfaces - "+clustersSize+" clusters");
 		String msg = "Interface clusters: ";
 		for (int i=0; i<clustersSize;i++) {
-			StructureInterfaceCluster cluster = interfaces.getClusters().get(i);
+			StructureInterfaceCluster cluster = interfaces.getClusters(EppicParams.CLUSTERING_CONTACT_OVERLAP_SCORE_CUTOFF).get(i);
 			msg += cluster.getId()+": ";
 			for (StructureInterface interf:cluster.getMembers()) {
 				msg += interf.getId()+" ";
@@ -381,7 +381,7 @@ public class Main {
 		
 		// interface cluster scoring
 		gcps = new ArrayList<GeometryClusterPredictor>();
-		for (StructureInterfaceCluster interfaceCluster:interfaces.getClusters()) {
+		for (StructureInterfaceCluster interfaceCluster:interfaces.getClusters(EppicParams.CLUSTERING_CONTACT_OVERLAP_SCORE_CUTOFF)) {
 			List<GeometryPredictor> gpsForCluster = new ArrayList<GeometryPredictor>();
 			
 			for (int i=0;i<interfaces.size();i++) {
@@ -866,7 +866,7 @@ public class Main {
 		
 		List<CombinedClusterPredictor> ccps = new ArrayList<CombinedClusterPredictor>();		
 		int i = 0;
-		for (StructureInterfaceCluster ic:interfaces.getClusters()) {
+		for (StructureInterfaceCluster ic:interfaces.getClusters(EppicParams.CLUSTERING_CONTACT_OVERLAP_SCORE_CUTOFF)) {
 			int clusterId = ic.getId();
 			CombinedClusterPredictor ccp = 
 					new CombinedClusterPredictor(ic,iecList,

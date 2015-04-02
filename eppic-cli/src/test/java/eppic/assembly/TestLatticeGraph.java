@@ -17,6 +17,8 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import eppic.EppicParams;
+
 public class TestLatticeGraph {
 
 	private static final Logger logger = LoggerFactory.getLogger(TestLatticeGraph.class);
@@ -333,7 +335,7 @@ public class TestLatticeGraph {
 		StructureInterfaceList interfaces = cb.getUniqueInterfaces();
 		interfaces.calcAsas();
 		interfaces.removeInterfacesBelowArea();
-		interfaces.getClusters();
+		interfaces.getClusters(EppicParams.CLUSTERING_CONTACT_OVERLAP_SCORE_CUTOFF);
 		
 		AssemblyFinder ab = new AssemblyFinder(s, interfaces);
 		
