@@ -158,6 +158,7 @@ public class DataModelAdaptor {
 			icDB.setClusterId(ic.getId());			
 			icDB.setPdbCode(pdbInfo.getPdbCode());
 			icDB.setAvgArea(ic.getTotalArea());
+			icDB.setAvgContactOverlapScore(ic.getAverageScore());
 			icDB.setNumMembers(ic.getMembers().size());
 			icDB.setPdbInfo(pdbInfo);
 			

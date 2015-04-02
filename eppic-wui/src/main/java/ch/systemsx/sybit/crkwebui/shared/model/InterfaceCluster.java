@@ -23,6 +23,9 @@ public class InterfaceCluster implements Serializable, Comparable<InterfaceClust
 	
 	private String pdbCode;
 	private double avgArea;
+	private double avgContactOverlapScore;
+	
+
 	private int numMembers;
 	
 	private int globalInterfClusterId;
@@ -70,6 +73,14 @@ public class InterfaceCluster implements Serializable, Comparable<InterfaceClust
 		this.avgArea = avgArea;
 	}
 
+	public double getAvgContactOverlapScore() {
+		return avgContactOverlapScore;
+	}
+
+	public void setAvgContactOverlapScore(double avgContactOverlapScore) {
+		this.avgContactOverlapScore = avgContactOverlapScore;
+	}
+	
 	public int getNumMembers() {
 		return numMembers;
 	}
@@ -116,6 +127,7 @@ public class InterfaceCluster implements Serializable, Comparable<InterfaceClust
 		cluster.setClusterId(clusterDB.getClusterId());
 		
 		cluster.setAvgArea(clusterDB.getAvgArea());
+		cluster.setAvgContactOverlapScore(clusterDB.getAvgContactOverlapScore());
 		cluster.setNumMembers(clusterDB.getNumMembers());
 		cluster.setGlobalInterfClusterId(clusterDB.getGlobalInterfClusterId()); 
 		

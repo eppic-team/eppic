@@ -14,7 +14,10 @@ public class InterfaceClusterDB implements Serializable {
 	private String pdbCode;
 	
 	private double avgArea;
+	private double avgContactOverlapScore;
 	
+	
+
 	private int numMembers;
 	
 	private int globalInterfClusterId;
@@ -73,6 +76,14 @@ public class InterfaceClusterDB implements Serializable {
 
 	public void setAvgArea(double avgArea) {
 		this.avgArea = avgArea;
+	}
+	
+	public double getAvgContactOverlapScore() {
+		return avgContactOverlapScore;
+	}
+
+	public void setAvgContactOverlapScore(double avgContactOverlapScore) {
+		this.avgContactOverlapScore = avgContactOverlapScore;
 	}
 
 	public int getNumMembers() {

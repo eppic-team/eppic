@@ -182,6 +182,7 @@
 			</basic>
 			
 			<basic name="avgArea"></basic>
+			<basic name="avgContactOverlapScore"></basic>
 			<basic name="numMembers"></basic>
 			
 			<basic name="globalInterfClusterId"></basic>
