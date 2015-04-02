@@ -68,6 +68,8 @@ public class DataModelAdaptor {
 	
 	private static final double NO_BURIAL_AVAILABLE = -1.0;
 	
+	private static final int UNKNOWN_RESIDUE_INDEX = -1;
+	
 	public static final String PDB_BIOUNIT_METHOD = "pdb1";
 	
 	private PdbInfoDB pdbInfo;
@@ -209,8 +211,14 @@ public class DataModelAdaptor {
 					ContactDB contact = new ContactDB();
 					Group firstGroup = groupContact.getPair().getFirst();
 					Group secondGroup = groupContact.getPair().getSecond();
-					contact.setFirstResNumber(getSeqresSerial(firstGroup, firstGroup.getChain()) );
-					contact.setSecondResNumber(getSeqresSerial(secondGroup, secondGroup.getChain()) );
+					if (firstGroup.getChain().getCompound()==null)
+						contact.setFirstResNumber(UNKNOWN_RESIDUE_INDEX);
+					else 
+						contact.setFirstResNumber(firstGroup.getChain().getCompound().getAlignedResIndex(firstGroup, firstGroup.getChain()) );
+					if (secondGroup.getChain().getCompound()==null)
+						contact.setSecondResNumber(UNKNOWN_RESIDUE_INDEX);
+					else
+						contact.setSecondResNumber(secondGroup.getChain().getCompound().getAlignedResIndex(secondGroup, secondGroup.getChain()) );
 					contact.setFirstResType(firstGroup.getPDBName());
 					contact.setSecondResType(secondGroup.getPDBName());
 					GroupAsa firstGroupAsa = interf.getFirstGroupAsa(firstGroup.getResidueNumber());
@@ -781,7 +789,10 @@ public class DataModelAdaptor {
 
 
 			ResidueDB iri = new ResidueDB();
-			iri.setResidueNumber(getSeqresSerial(group, chain));
+			if (chain.getCompound()==null)
+				iri.setResidueNumber(UNKNOWN_RESIDUE_INDEX);
+			else 
+				iri.setResidueNumber(chain.getCompound().getAlignedResIndex(group, chain));
 			iri.setPdbResidueNumber(group.getResidueNumber().toString());
 			iri.setResidueType(resType);
 			iri.setAsa(asa);
@@ -917,24 +928,6 @@ public class DataModelAdaptor {
 			i++;
 		}
 		return sb.toString();
-	}
-	
-	/**
-	 * Returns the SEQRES serial of the Group g in the Chain c
-	 * @param g
-	 * @param c
-	 * @return the SEQRES serial (1 to n) or -1 if not found
-	 */
-	public static int getSeqresSerial(Group g, Chain c) {
-		
-		// this is not very efficient, it would be nice to store the mapping in a cached map somewhere 
-		List<Group> seqresGroups = c.getSeqResGroups();
-		for (int i=0;i<seqresGroups.size();i++) {
-			if (seqresGroups.get(i) == g) 
-				return i+1;
-		}
-		// not found, return -1
-		return -1;
 	}
 	
 	public static boolean isDisulfideInteraction(AtomContact contact) {

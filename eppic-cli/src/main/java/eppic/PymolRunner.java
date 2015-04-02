@@ -640,9 +640,9 @@ public class PymolRunner {
 			// we need to escape the negative residues in pymol with a backslash
 			if (pdbSerial.startsWith("-")) pdbSerial = "\\"+pdbSerial;
 			
-			int currentSerial = DataModelAdaptor.getSeqresSerial(list.get(i), c);
+			int currentSerial = c.getCompound().getAlignedResIndex(list.get(i), c);
 			int prevSerial = -1;
-			if (i>0) prevSerial = DataModelAdaptor.getSeqresSerial(list.get(i-1),c);
+			if (i>0) prevSerial = c.getCompound().getAlignedResIndex(list.get(i-1),c);
 			
 			if (i==0) {
 				lastSerial =  currentSerial;

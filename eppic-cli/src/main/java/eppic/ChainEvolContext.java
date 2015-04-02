@@ -24,7 +24,6 @@ import org.biojava.nbio.structure.Atom;
 import org.biojava.nbio.structure.Chain;
 import org.biojava.nbio.structure.Compound;
 import org.biojava.nbio.structure.Group;
-import org.biojava.nbio.structure.ResidueNumber;
 import org.biojava.nbio.structure.StructureTools;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -117,10 +116,9 @@ public class ChainEvolContext implements Serializable {
 	
 	private ChainEvolContextList parent;
 	
-	private HashMap<ResidueNumber,Integer> resNumbers2SeqresSerials;
-	private HashMap<Integer, ResidueNumber> seqresSerials2resNumbers;
-	
 	private boolean isProtein;
+	
+	private Compound compound;
 	
 
 	/**
@@ -137,6 +135,7 @@ public class ChainEvolContext implements Serializable {
 		this.searchWithFullUniprot = true;
 		this.queryWarnings = new ArrayList<String>();
 		this.isProtein = true;
+		this.compound = null;
 	}
 	
 	/**
@@ -175,8 +174,7 @@ public class ChainEvolContext implements Serializable {
 		
 		this.isProtein = StructureTools.isProtein(chain);
 		
-		// we only do this mapping in the case that the input is from chain
-		initResNumberMaps(compound);
+		this.compound = compound;
 	}
 	
 	public String getSequenceId() {
@@ -1105,46 +1103,7 @@ public class ChainEvolContext implements Serializable {
 	 * @return the SEQRES serial (1 to n) or -1 if not found
 	 */
 	public int getSeqresSerial(Group g) {
-		Integer resSerial = resNumbers2SeqresSerials.get(g.getResidueNumber());
-		if (resSerial==null) return -1;
-		return (int)resSerial;			
-	}
-	
-	/**
-	 * Returns the ResidueNumber given the SEQRES serial
-	 * @param resser
-	 * @return the ResidueNumber or null if not found (for instance for any residue that has no AtomGroup)
-	 */
-	public ResidueNumber getResNumFromSerial(int resser) {
-		return seqresSerials2resNumbers.get(resser);
-	}
-	
-	/**
-	 * Return the SEQRES serial corresponding to the given ResidueNumber 
-	 * @param resNum
-	 * @return the SEQRES serial (1 to n) or -1 if not found
-	 */
-	public int getSerialFromResNum(ResidueNumber resNum) {
-		Integer resSerial = resNumbers2SeqresSerials.get(resNum);
-		if (resSerial==null) return -1;
-		return (int)resSerial;			
-	}
-	
-	private void initResNumberMaps(Compound compound) {
-		resNumbers2SeqresSerials = new HashMap<ResidueNumber, Integer>();
-		seqresSerials2resNumbers = new HashMap<Integer, ResidueNumber>();
-
-		// TODO revise it this would work for raw PDB files without an actual SEQRES: we choose the seqresGroups from each chain but I'm not sure it that would be valid in raw PDB file case
-		// we have to go through every Chain in the Compound to be sure that every observed residue in the whole Compound
-		// is included in the map
-		for (Chain c:compound.getChains()) {
-
-			List<Group> seqresGroups = c.getSeqResGroups();
-			for (int i=0;i<seqresGroups.size();i++) {			
-				resNumbers2SeqresSerials.put(seqresGroups.get(i).getResidueNumber(),i+1);
-				seqresSerials2resNumbers.put(i+1, seqresGroups.get(i).getResidueNumber());
-			}
-		}
+		return compound.getAlignedResIndex(g, compound.getRepresentative());
 	}
 	
 	/**
