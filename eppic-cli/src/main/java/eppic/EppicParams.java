@@ -339,7 +339,7 @@ public class EppicParams {
 				reducedAlphabet = Integer.parseInt(g.getOptarg());
 				switch (reducedAlphabet) {
 				case 20:
-					this.alphabet = new AAAlphabet(AAAlphabet.MURPHY_20);
+					this.alphabet = new AAAlphabet(AAAlphabet.STANDARD_20);
 					break;
 				case 15:
 					this.alphabet = new AAAlphabet(AAAlphabet.MURPHY_15);
