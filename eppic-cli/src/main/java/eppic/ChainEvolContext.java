@@ -35,6 +35,7 @@ import eppic.commons.blast.BlastHitList;
 import eppic.commons.blast.BlastHsp;
 import eppic.commons.blast.BlastRunner;
 import eppic.commons.blast.BlastXMLParser;
+import eppic.commons.sequence.AAAlphabet;
 import eppic.commons.sequence.HomologList;
 import eppic.commons.sequence.MultipleSequenceAlignment;
 import eppic.commons.sequence.NoMatchFoundException;
@@ -741,8 +742,8 @@ public class ChainEvolContext implements Serializable {
 	 * Compute the sequence entropies for all reference sequence (uniprot) positions
 	 * @param reducedAlphabet
 	 */
-	public void computeEntropies(int reducedAlphabet) {
-		homologs.computeEntropies(reducedAlphabet);
+	public void computeEntropies(AAAlphabet alphabet) {
+		homologs.computeEntropies(alphabet);
 	}
 	
 	/**
@@ -779,14 +780,6 @@ public class ChainEvolContext implements Serializable {
 	}
 	
 	/**
-	 * Gets the size of the reduced alphabet used for calculating entropies
-	 * @return the size of the reduced alphabet or 0 if no entropies have been computed
-	 */
-	public int getReducedAlphabet() {
-		return homologs.getReducedAlphabet();
-	}
-	
-	/**
 	 * Set the b-factors of the given pdb chain to conservation score values.
 	 * @param chain
 	 */
@@ -820,7 +813,7 @@ public class ChainEvolContext implements Serializable {
 				// or otherwise the residue would keep its original real bfactor and then possibly screw up the
 				// scaling of colors for the rest
 				// The most sensible value we can use is the max entropy so that it looks like a poorly conserved residue
-				double maxEntropy = Math.log(this.homologs.getReducedAlphabet())/Math.log(2);
+				double maxEntropy = Math.log(this.homologs.getReducedAlphabet().getNumLetters())/Math.log(2);
 				LOGGER.info("Residue {} ({}) of chain {} has no entropy value associated to it, will set its b-factor to max entropy ({})",
 						residue.getResidueNumber().toString(), residue.getPDBName(), residue.getChainId(), maxEntropy);
 				for (Atom atom:residue.getAtoms()) {

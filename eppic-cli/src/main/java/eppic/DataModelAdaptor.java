@@ -99,7 +99,7 @@ public class DataModelAdaptor {
 		runParameters.setHomHardIdCutoff(params.getHomHardIdCutoff());
 		runParameters.setQueryCovCutoff(params.getQueryCoverageCutoff());
 		runParameters.setMaxNumSeqsCutoff(params.getMaxNumSeqs());
-		runParameters.setReducedAlphabet(params.getReducedAlphabet());
+		runParameters.setAlphabet(params.getAlphabet().toString());
 		runParameters.setCaCutoffForGeom(params.getCAcutoffForGeom());
 		runParameters.setCaCutoffForCoreRim(params.getCAcutoffForRimCore());
 		runParameters.setCaCutoffForCoreSurface(params.getCAcutoffForZscore());

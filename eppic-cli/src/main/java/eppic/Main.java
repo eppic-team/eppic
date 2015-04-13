@@ -117,7 +117,7 @@ public class Main {
 			if (params.getConfigFile()!=null) {
 				LOGGER.info("Loading user configuration file given in command line " + params.getConfigFile());
 				params.readConfigFile(params.getConfigFile());
-				params.checkConfigFileInput();				
+				params.checkConfigFileInput();
 			} else if (userConfigFile.exists()) {
 				LOGGER.info("Loading user configuration file " + userConfigFile);
 				params.readConfigFile(userConfigFile);

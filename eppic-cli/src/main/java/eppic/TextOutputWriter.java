@@ -400,7 +400,8 @@ public class TextOutputWriter {
 		PrintStream ps = new PrintStream(params.getOutputFile("."+chainCluster.getRepChain()+EppicParams.ENTROPIES_FILE_SUFFIX));
 
 		ps.println("# Entropies for all observed residues of query sequence (reference UniProt: " +
-				chainCluster.getRefUniProtId()+") based on a " + pdbInfo.getRunParameters().getReducedAlphabet()+" letters alphabet.");
+				chainCluster.getRefUniProtId()+") based on a(n) " + pdbInfo.getRunParameters().getNumGroupsAlphabet() + "-letter alphabet.");
+		ps.println("# The maximum entropy value is " + Math.log(pdbInfo.getRunParameters().getNumGroupsAlphabet()) / Math.log(2) + ".");
 		ps.println("# seqres\tpdb\tuniprot\tpdb_res\tentropy");
  
 		List<ResidueDB> list = getResidueListForChain(chainCluster);
