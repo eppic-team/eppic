@@ -104,17 +104,17 @@ public class EppicParams {
 	private static final String   DEF_OUT_DIR = ".";
 	
 	// default entropy calculation 
-	public static final int       DEF_ENTROPY_ALPHABET = 10;
+	public static final int       DEF_ENTROPY_ALPHABET = 6;
 
 	// default cutoffs for the final bio/xtal call
-	public static final int       DEF_MIN_CORE_SIZE_FOR_BIO = 6;
-	public static final double    DEF_CORERIM_SCORE_CUTOFF = 0.75;
+	public static final int       DEF_MIN_CORE_SIZE_FOR_BIO = 8;
+	public static final double    DEF_CORERIM_SCORE_CUTOFF = 0.90;
 	public static final double    DEF_CORESURF_SCORE_CUTOFF = -1.00;
 	
 	// default core assignment thresholds
-	public static final double    DEF_CA_CUTOFF_FOR_GEOM = 0.95;
-	public static final double    DEF_CA_CUTOFF_FOR_RIMCORE = 0.70;
-	public static final double    DEF_CA_CUTOFF_FOR_ZSCORE = 0.70;
+	public static final double    DEF_CA_CUTOFF_FOR_GEOM = 0.90;
+	public static final double    DEF_CA_CUTOFF_FOR_RIMCORE = 0.80;
+	public static final double    DEF_CA_CUTOFF_FOR_ZSCORE = 0.80;
 
 	private static final int      DEF_MAX_NUM_SEQUENCES = 100;
 	
@@ -467,7 +467,8 @@ public class EppicParams {
 		"                  dir \n" +
 		"  [-r <int>]   :  specify the number of groups of aminoacids (reduced alphabet) to\n" +
 		"                  be used for entropy calculations.\n" +
-		"                  Valid values are 2, 4, 6, 8, 10, 15 and 20. Default: "+DEF_ENTROPY_ALPHABET+"\n" +
+		"                  Valid values are 2, 4, 6, 8, 10, 15 and 20. If 0, then a user-defined,\n"+ 
+		"                  alphabet is read from config file. Default: "+DEF_ENTROPY_ALPHABET+"\n" +
 		"  [-e <float>] :  the BSA/ASA cutoff for core assignment in geometry predictor.\n" +
 		"                  Default: "+String.format("%4.2f",DEF_CA_CUTOFF_FOR_GEOM)+"\n" +
 		"  [-c <float>] :  the BSA/ASA cutoff for core assignment in core-rim evolutionary \n" +
