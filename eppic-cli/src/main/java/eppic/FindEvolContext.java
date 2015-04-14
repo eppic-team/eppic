@@ -10,7 +10,7 @@ import org.apache.logging.log4j.core.LoggerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import eppic.commons.sequence.AminoAcid;
+import eppic.commons.sequence.AAAlphabet;
 import eppic.commons.sequence.Sequence;
 import gnu.getopt.Getopt;
 
@@ -178,8 +178,8 @@ public class FindEvolContext {
 			throw new EppicException(null, "Given file "+inputFile+" does not exist!", true);
 		}
 
-		if (!AminoAcid.isValidNumGroupsReducedAlphabet(params.getReducedAlphabet())) {
-			throw new EppicException(null, "Invalid number of amino acid groups specified ("+params.getReducedAlphabet()+")", true);
+		if (!AAAlphabet.isValidAlphabetIdentifier((params.getAlphabet().getNumLetters()))) {
+			throw new EppicException(null, "Invalid number of amino acid groups specified ("+params.getAlphabet().getNumLetters()+")", true);
 		}
 
 		if (params.getBaseName()==null) {

@@ -17,7 +17,7 @@ public class RunParametersDB implements Serializable {
 	private int minNumSeqsCutoff;
 	private int maxNumSeqsCutoff;
 	
-	private int reducedAlphabet;
+	private String alphabet;
 	
 	// core assignments cutoffs
 	private double caCutoffForGeom;
@@ -40,12 +40,16 @@ public class RunParametersDB implements Serializable {
 		
 	}
 	
-	public int getReducedAlphabet() {
-		return reducedAlphabet;
+	public String getAlphabet() {
+		return alphabet;
 	}
 	
-	public void setReducedAlphabet(int reducedAlphabet) {
-		this.reducedAlphabet = reducedAlphabet;
+	public void setAlphabet(String alphabet) {
+		this.alphabet = alphabet;
+	}
+	
+	public int getNumGroupsAlphabet() {
+		return alphabet.split(":").length;
 	}
 	
 	public int getMinNumSeqsCutoff() {

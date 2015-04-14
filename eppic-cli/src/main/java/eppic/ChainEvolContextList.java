@@ -396,7 +396,7 @@ public class ChainEvolContextList implements Serializable {
 				continue;
 			}
 			
-			chainEvCont.computeEntropies(params.getReducedAlphabet());
+			chainEvCont.computeEntropies(params.getAlphabet());
 		}
 	}
 	

@@ -27,7 +27,6 @@ public class InterfaceEvolContext implements Serializable {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(InterfaceEvolContext.class);
 	
-
 	// the 2 sides of the interface
 	public static final int FIRST  = 0;
 	public static final int SECOND = 1;
@@ -38,9 +37,6 @@ public class InterfaceEvolContext implements Serializable {
 
 	private EvolCoreRimPredictor evolCoreRimPredictor;
 	private EvolCoreSurfacePredictor evolCoreSurfacePredictor;
-
-
-	
 	
 	public InterfaceEvolContext(StructureInterface interf, InterfaceEvolContextList parent) {
 		this.interf = interf;
@@ -291,7 +287,7 @@ public class InterfaceEvolContext implements Serializable {
 				// or otherwise the residue would keep its original real bfactor and then possibly screw up the
 				// scaling of colors for the rest
 				// The most sensible value we can use is the max entropy so that it looks like a poorly conserved residue
-				double maxEntropy = Math.log(this.getChainEvolContext(molecId).getHomologs().getReducedAlphabet())/Math.log(2);
+				double maxEntropy = Math.log(this.getChainEvolContext(molecId).getHomologs().getReducedAlphabet().getNumLetters()) / Math.log(2);
 				LOGGER.info("Residue {} ({}) of chain {} has no entropy value associated to it, will set its b-factor to max entropy ({})",
 						residue.getResidueNumber().toString(), residue.getPDBName(), residue.getChainId(), maxEntropy);
 				for (Atom atom:residue.getAtoms()) {
