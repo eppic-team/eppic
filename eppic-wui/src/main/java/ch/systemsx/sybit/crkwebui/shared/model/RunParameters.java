@@ -23,7 +23,7 @@ public class RunParameters implements Serializable
 	private int minNumSeqsCutoff;
 	private int maxNumSeqsCutoff;
 	
-	private int reducedAlphabet;
+	private String alphabet;
 	
 	private double caCutoffForGeom;
 	private double caCutoffForCoreRim;
@@ -43,12 +43,12 @@ public class RunParameters implements Serializable
 		
 	}
 	
-	public int getReducedAlphabet() {
-		return reducedAlphabet;
+	public String getAlphabet() {
+		return alphabet;
 	}
 	
-	public void setReducedAlphabet(int reducedAlphabet) {
-		this.reducedAlphabet = reducedAlphabet;
+	public void setAlphabet(String alphabet) {
+		this.alphabet = alphabet;
 	}
 	
 	public int getMinNumSeqsCutOff() {
@@ -189,7 +189,7 @@ public class RunParameters implements Serializable
 		runParameters.setMaxNumSeqsCutoff(runParametersDB.getMaxNumSeqsCutoff());
 		runParameters.setGeomCallCutOff(runParametersDB.getGeomCallCutoff());
 		runParameters.setQueryCovCutoff(runParametersDB.getQueryCovCutoff());
-		runParameters.setReducedAlphabet(runParametersDB.getReducedAlphabet());
+		runParameters.setAlphabet(runParametersDB.getAlphabet());
 		runParameters.setUid(runParametersDB.getUid());
 		runParameters.setCsCallCutoff(runParametersDB.getCsCallCutoff());
 		runParameters.setUniprotVersion(runParametersDB.getUniProtVersion());

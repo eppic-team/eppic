@@ -112,7 +112,6 @@ public class FindEvolContext {
 				" -a : num threads"+
 				" -b : base name of output files\n"+
 				" -o : out dir \n" +
-				" -r : reduced amino-acid alphabet (number of classes)" +
 				" -d : homologs soft identity cutoff\n" +
 				" -D : homologs hard identity cutoff\n" +
 				" -q : max num homologs\n" +
@@ -140,9 +139,6 @@ public class FindEvolContext {
 				break;				
 			case 'o':
 				params.setOutDir(new File(g.getOptarg()));
-				break;
-			case 'r':
-				params.setReducedAlphabet(Integer.parseInt(g.getOptarg()));
 				break;
 			case 'd':
 				params.setHomSoftIdCutoff(Double.parseDouble(g.getOptarg()));

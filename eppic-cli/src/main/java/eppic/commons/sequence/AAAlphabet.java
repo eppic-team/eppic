@@ -7,12 +7,33 @@ public class AAAlphabet implements Serializable {
 	private static final long serialVersionUID = 1L;
 	
 	public static final String STANDARD_20 = "A:C:D:E:F:G:H:I:K:L:M:N:P:Q:R:S:T:V:W:Y";
+	/**
+	 * See Murphy L.R. et al. 2000 Protein Engineering (especially Fig.1)
+	 */
 	public static final String MURPHY_15   = "A:C:D:E:FY:G:H:ILMV:KR:N:P:Q:S:T:W";
+	/**
+	 * See Murphy L.R. et al. 2000 Protein Engineering (especially Fig.1)
+	 */
 	public static final String MURPHY_10   = "A:C:DENQ:FWY:G:H:ILMV:KR:P:ST";
+	/**
+	 * See Murphy L.R. et al. 2000 Protein Engineering (especially Fig.1)
+	 */
 	public static final String MURPHY_8    = "AG:CILMV:DENQ:FWY:H:KR:P:ST";
+	/**
+	 * See Mirny and Shakhnovich 1999 JMB.
+	 */
 	public static final String MIRNY_6     = "ACILMV:DE:FHWY:GP:KR:NQST";
+	/**
+	 * See Murphy L.R. et al. 2000 Protein Engineering (especially Fig.1)
+	 */
 	public static final String MURPHY_4    = "AGPST:CILMV:DEHKNQR:FWY";
+	/**
+	 * See Murphy L.R. et al. 2000 Protein Engineering (especially Fig.1)
+	 */
 	public static final String MURPHY_2    = "ACFGILMPSTVWY:DEHKNQR";
+	/**
+	 * Wang and Wang 1999, Nat Structural Biology 
+	 */
 	public static final String WANG_2      = "ADEGHKNPQRST:CFILMVWY";
 	
 	private int ala;

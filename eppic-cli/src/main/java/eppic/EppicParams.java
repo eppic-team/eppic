@@ -103,8 +103,8 @@ public class EppicParams {
 	
 	private static final String   DEF_OUT_DIR = ".";
 	
-	// default entropy calculation 
-	public static final int       DEF_ENTROPY_ALPHABET = 6;
+	// default alphabet for entropy calculation 
+	public static final AAAlphabet DEF_ENTROPY_ALPHABET = new AAAlphabet(AAAlphabet.MIRNY_6);
 
 	// default cutoffs for the final bio/xtal call
 	public static final int       DEF_MIN_CORE_SIZE_FOR_BIO = 8;
@@ -191,8 +191,6 @@ public class EppicParams {
 	private String baseName;
 	private File outDir;
 	private int numThreads;
-	private int reducedAlphabet;
-	private boolean useCustomAlphabet;
 	private AAAlphabet alphabet;
 	
 	private double caCutoffForGeom;
@@ -302,7 +300,6 @@ public class EppicParams {
 		this.baseName = null;
 		this.outDir = new File(DEF_OUT_DIR);
 		this.numThreads = DEF_NUMTHREADS;
-		this.reducedAlphabet = DEF_ENTROPY_ALPHABET;
 		this.caCutoffForGeom = DEF_CA_CUTOFF_FOR_GEOM;
 		this.caCutoffForRimCore = DEF_CA_CUTOFF_FOR_RIMCORE;
 		this.caCutoffForZscore = DEF_CA_CUTOFF_FOR_ZSCORE;
@@ -320,15 +317,13 @@ public class EppicParams {
 		this.debug = false;
 		this.homologsSearchMode = DEF_HOMOLOGS_SEARCH_MODE;
 		this.filterByDomain = false;
-		this.useCustomAlphabet = false;
-		this.alphabet = null;
 		
 	}
 	
 	public void parseCommandLine(String[] args, String programName, String help) {
 	
 
-		Getopt g = new Getopt(programName, args, "i:sa:b:o:r:e:c:z:m:x:y:d:D:q:H:G:OA:I:C:plwL:g:uh?");
+		Getopt g = new Getopt(programName, args, "i:sa:b:o:e:c:z:m:x:y:d:D:q:H:G:OA:I:C:plwL:g:uh?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch (c) {
@@ -347,36 +342,7 @@ public class EppicParams {
 				break;				
 			case 'o':
 				outDir = new File(g.getOptarg());
-				break;
-			case 'r':
-				reducedAlphabet = Integer.parseInt(g.getOptarg());
-				switch (reducedAlphabet) {
-					case 20:
-						this.alphabet = new AAAlphabet(AAAlphabet.STANDARD_20);
-						break;
-					case 15:
-						this.alphabet = new AAAlphabet(AAAlphabet.MURPHY_15);
-						break;
-					case 10:
-						this.alphabet = new AAAlphabet(AAAlphabet.MURPHY_10);
-						break;
-					case 8:
-						this.alphabet = new AAAlphabet(AAAlphabet.MURPHY_8);
-						break;
-					case 6:
-						this.alphabet = new AAAlphabet(AAAlphabet.MIRNY_6);
-						break;
-					case 4:
-						this.alphabet = new AAAlphabet(AAAlphabet.MURPHY_4);
-						break;
-					case 2:
-						this.alphabet = new AAAlphabet(AAAlphabet.MURPHY_2);
-						break;
-					case 0:
-						useCustomAlphabet = true;
-						break;
-					}
-				break;
+				break;			
 			case 'e':
 				caCutoffForGeom = Double.parseDouble(g.getOptarg());
 				break;
@@ -465,10 +431,6 @@ public class EppicParams {
 		"                  name\n"+
 		"  [-o <dir>]   :  output dir, where output files will be written. Default: current\n" +
 		"                  dir \n" +
-		"  [-r <int>]   :  specify the number of groups of aminoacids (reduced alphabet) to\n" +
-		"                  be used for entropy calculations.\n" +
-		"                  Valid values are 2, 4, 6, 8, 10, 15 and 20. If 0, then a user-defined,\n"+ 
-		"                  alphabet is read from config file. Default: "+DEF_ENTROPY_ALPHABET+"\n" +
 		"  [-e <float>] :  the BSA/ASA cutoff for core assignment in geometry predictor.\n" +
 		"                  Default: "+String.format("%4.2f",DEF_CA_CUTOFF_FOR_GEOM)+"\n" +
 		"  [-c <float>] :  the BSA/ASA cutoff for core assignment in core-rim evolutionary \n" +
@@ -554,10 +516,7 @@ public class EppicParams {
 			throw new EppicException(null, "Specified config file "+configFile+" doesn't exist",true);
 		}
 		
-		if (!AAAlphabet.isValidAlphabetIdentifier(reducedAlphabet)) {
-			throw new EppicException(null, "Invalid number of amino acid groups specified ("+reducedAlphabet+")", true);
-		}
-		
+	
 		if (homologsSearchMode==null) {
 			// invalid string passed as homologs search mode
 			throw new EppicException(null, "Invalid string specified as homologs search mode (-H).", true);
@@ -628,12 +587,7 @@ public class EppicParams {
 		}
 		
 		if (alphabet == null) {
-			if (isUseCustomAlphabet()) {
-				throw new EppicException(null, "Custom amino-acid alphabet requested but not defined in configuration file.", true);
-			}
-			else {
-				throw new EppicException(null, "Requested amino-acid alphabet not valid.", true);
-			}
+			throw new EppicException(null, "Missing or invalid alphabet in config file (CUSTOM_ALPHABET setting).", true);
 		}
 	}
 	
@@ -919,10 +873,9 @@ public class EppicParams {
 			usePdbResSer	 = Boolean.parseBoolean(p.getProperty("USE_PDB_RES_SER",new Boolean(DEF_USE_PDB_RES_SER).toString()));
 			
 			coreSurfaceScoreStrategy = Integer.parseInt(p.getProperty("CORE_SURFACE_SCORE_STRATEGY", new Integer(DEF_CORE_SURFACE_SCORE_STRATEGY).toString()));
+						
+			alphabet = new AAAlphabet(p.getProperty("CUSTOM_ALPHABET", DEF_ENTROPY_ALPHABET.toString()));
 			
-			if (isUseCustomAlphabet()) {
-				alphabet = new AAAlphabet(p.getProperty("CUSTOM_ALPHABET", ""));
-			}
 			
 		} catch (NumberFormatException e) {
 			System.err.println("A numerical value in the config file was incorrectly specified: "+e.getMessage()+".\n" +
@@ -1043,16 +996,8 @@ public class EppicParams {
 		return coreSurfaceScoreStrategy;
 	}
 	
-	public boolean isUseCustomAlphabet() {
-		return useCustomAlphabet;
-	}
-	
 	public AAAlphabet getAlphabet() {
 		return alphabet;
 	}
 	
-	public void setReducedAlphabet(int reducedAlphabet) {
-		this.reducedAlphabet = reducedAlphabet;
-	}
-
 }
