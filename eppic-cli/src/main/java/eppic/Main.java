@@ -41,13 +41,13 @@ import org.biojava.nbio.structure.symmetry.core.QuatSymmetryDetector;
 import org.biojava.nbio.structure.symmetry.core.QuatSymmetryParameters;
 import org.biojava.nbio.structure.symmetry.core.QuatSymmetryResults;
 import org.biojava.nbio.structure.xtal.CrystalBuilder;
-import org.biojava.nbio.structure.xtal.CrystalCell;
 import org.biojava.nbio.structure.xtal.SpaceGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import eppic.assembly.Assembly;
 import eppic.assembly.AssemblyFinder;
+import eppic.assembly.LatticeGraph;
 import eppic.commons.util.FileTypeGuesser;
 import eppic.commons.util.Goodies;
 import eppic.predictors.CombinedClusterPredictor;
@@ -72,6 +72,7 @@ public class Main {
 	private List<GeometryPredictor> gps;
 	private List<GeometryClusterPredictor> gcps;
 	
+	private LatticeGraph latticeGraph;
 	private Set<Assembly> validAssemblies;
 	
 	private File stepsLogFile;
@@ -354,6 +355,7 @@ public class Main {
 			return;
 		}
 		AssemblyFinder aFinder = new AssemblyFinder(pdb, interfaces);
+		latticeGraph = aFinder.getLatticeGraph();
 		validAssemblies = aFinder.getValidAssemblies();
 		StringBuilder sb = new StringBuilder();
 		for (Assembly a: validAssemblies) {
@@ -416,12 +418,9 @@ public class Main {
 			modelAdaptor.setAssemblies(validAssemblies);
 
 			// since the move to Biojava, we have decided to take the first PDB-annotated biounit ONLY, whatever its type
-			CrystalCell cell = null;
-			if (pdb.getCrystallographicInfo()!=null && pdb.isCrystallographic()) {
-				cell = pdb.getCrystallographicInfo().getCrystalCell();
-			}
 			String[] symmetries = getSymmetry(EppicParams.PDB_BIOUNIT_TO_USE);
-			modelAdaptor.setPdbBioUnits(pdb.getPDBHeader().getBioAssemblies().get(EppicParams.PDB_BIOUNIT_TO_USE),cell,symmetries);
+			modelAdaptor.setPdbBioUnits(pdb.getPDBHeader().getBioAssemblies().get(EppicParams.PDB_BIOUNIT_TO_USE),symmetries,
+					pdb, interfaces, latticeGraph.getGraph());
 		}
 	}
 	

@@ -77,6 +77,14 @@ public class Assembly {
 	public String getSymmetry() {
 		return symmetry;
 	}
+	
+	public int getTotalNumEntities() {
+		return totalNumEntities;
+	}
+	
+	public UndirectedGraph<ChainVertex,InterfaceEdge> getGraph() {
+		return graph;
+	}
 		
 	public int[] getStoichiometry() {
 		if (stoichiometry!=null) return stoichiometry;

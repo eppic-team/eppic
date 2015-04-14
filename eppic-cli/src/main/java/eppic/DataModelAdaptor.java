@@ -28,12 +28,15 @@ import org.biojava.nbio.structure.contact.StructureInterfaceList;
 import org.biojava.nbio.structure.quaternary.BioAssemblyInfo;
 import org.biojava.nbio.structure.xtal.CrystalCell;
 import org.biojava.nbio.structure.xtal.SpaceGroup;
+import org.jgrapht.UndirectedGraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import eppic.analysis.compare.InterfaceMatcher;
 import eppic.analysis.compare.SimpleInterface;
 import eppic.assembly.Assembly;
+import eppic.assembly.ChainVertex;
+import eppic.assembly.InterfaceEdge;
 import eppic.commons.sequence.Homolog;
 import eppic.commons.util.Goodies;
 import eppic.model.AssemblyDB;
@@ -309,26 +312,21 @@ public class DataModelAdaptor {
 			assembly.setPdbInfo(pdbInfo);
 			pdbInfo.addAssembly(assembly);
 			
-			StringBuilder interfClusterIdsCommaSep = new StringBuilder();
-			int i = 0;
 			Set<InterfaceClusterDB> interfaceClusters = new HashSet<InterfaceClusterDB>();
 			for (StructureInterfaceCluster ic:validAssembly.getInterfaceClusters()) {
 				InterfaceClusterDB icDB = pdbInfo.getInterfaceCluster(ic.getId());
 				interfaceClusters.add(icDB);
 				icDB.addAssembly(assembly);
-				interfClusterIdsCommaSep.append(ic.getId());
-				if (i!=validAssembly.getInterfaceClusters().size()-1) interfClusterIdsCommaSep.append(','); 
-				i++;
 			}
 			assembly.setInterfaceClusters(interfaceClusters);
-			
-			assembly.setInterfaceClusterIds(interfClusterIdsCommaSep.toString());
-			
+						
 			// other data
 			assembly.setPdbCode(pdbInfo.getPdbCode());			
 			
-			// TODO fill the size, composition, stoichiometry data
-			//assembly.setMmSize(validAssembly.getSize());
+			assembly.setInterfaceClusterIds(validAssembly.toString());
+			
+			assembly.setMmSize(validAssembly.getSize());
+			// TODO fill the composition, sym, stoichiometry data
 			//assembly.setComposition(composition);			
 			//assembly.setSymmetry(validAssembly.getSymmetry());
 			//assembly.setStoichiometry(validAssembly.getStoichiometry());
@@ -350,12 +348,19 @@ public class DataModelAdaptor {
 		}
 	}
 	
-	public void setPdbBioUnits(BioAssemblyInfo bioAssembly, CrystalCell cell, String[] symmetries) {
+	public void setPdbBioUnits(BioAssemblyInfo bioAssembly, String[] symmetries,
+			Structure structure, StructureInterfaceList interfaces, UndirectedGraph<ChainVertex,InterfaceEdge> graph) {
 
 		if (bioAssembly == null) {
 			LOGGER.info("No bio assembly annotation present, will not add bio assembly info to data model");
 			return;
 		}
+		
+		CrystalCell cell = null;
+		if (structure.getCrystallographicInfo()!=null && structure.isCrystallographic()) {
+			cell = structure.getCrystallographicInfo().getCrystalCell();
+		}
+
 		
 		// since the move to Biojava, we have decided to take the first PDB-annotated biounit ONLY whatever its type
 
@@ -412,7 +417,14 @@ public class DataModelAdaptor {
 		} else {
 			LOGGER.warn("PDB given assembly (interface clusters {}) does not match any of the topologically valid assemblies.",
 					matchingClusterIds.toString());
+
 			// the assembly is not one of our valid assemblies, we'll have to insert an invalid assembly to the list
+			boolean[] engagedSet = new boolean[interfaces.getClusters(EppicParams.CLUSTERING_CONTACT_OVERLAP_SCORE_CUTOFF).size()];
+			for (int clusterId:matchingClusterIds) {
+				engagedSet[clusterId-1] = true;
+			}
+			Assembly invalidAssembly = new Assembly(interfaces, graph, engagedSet, structure.getCompounds().size());
+			
 			AssemblyDB assembly = new AssemblyDB();
 			
 			assembly.setTopologicallyValid(false);
@@ -421,26 +433,21 @@ public class DataModelAdaptor {
 			assembly.setPdbInfo(pdbInfo);
 			pdbInfo.addAssembly(assembly);
 						
-			StringBuilder interfClusterIdsCommaSep = new StringBuilder();
-			int i = 0;
 			Set<InterfaceClusterDB> interfaceClusters = new HashSet<InterfaceClusterDB>();
 			for (int interfClusterId:matchingClusterIds) {
 				InterfaceClusterDB icDB = pdbInfo.getInterfaceCluster(interfClusterId);
 				interfaceClusters.add(icDB);
 				icDB.addAssembly(assembly);
-				interfClusterIdsCommaSep.append(interfClusterId);
-				if (i!=matchingClusterIds.size()-1) interfClusterIdsCommaSep.append(','); 
-				i++;
 			}
 			assembly.setInterfaceClusters(interfaceClusters);
 			
-			assembly.setInterfaceClusterIds(interfClusterIdsCommaSep.toString());
-			
 			// other data
 			assembly.setPdbCode(pdbInfo.getPdbCode());			
+
+			assembly.setInterfaceClusterIds(invalidAssembly.toString());
 			
-			// TODO fill the size, composition, symmetry, stoichiometry data
-			//assembly.setMmSize(size);
+			assembly.setMmSize(invalidAssembly.getSize());
+			// TODO fill the size, composition, symmetry, stoichiometry data			
 			//assembly.setComposition(composition);			
 			//assembly.setSymmetry(sym);
 			//assembly.setStoichiometry(stoic);
