@@ -140,7 +140,11 @@
 			<basic name="pdbCode">
 				<column length="4" />
 			</basic>
+			
+			<basic name="topologicallyValid"></basic>
 
+			<basic name="composition"></basic>
+			
 			<basic name="mmSize"></basic>
 			<basic name="symmetry">
 				<column length="10"/>
@@ -151,20 +155,49 @@
 			</basic>
 			<basic name="pseudoStoichiometry"></basic>
 
-			<basic name="method">
-				<column length="15" />
-			</basic>
-
-			<basic name="confidence"></basic>
+			<basic name="interfaceClusterIds"></basic>
 
 			<many-to-one name="pdbInfo">
 			</many-to-one>
-
-			<one-to-many name="interfaceClusterScores" mapped-by="assembly">
+			
+			<one-to-many name="assemblyScores" mapped-by="assembly">
 				<cascade>
 					<cascade-all />
 				</cascade>
 			</one-to-many>
+
+			<many-to-many name="interfaceClusters">
+				<join-table name="InterfaceClusterAssembly">
+					<join-column name="assembly_uid"
+						referenced-column-name="uid" />
+					<inverse-join-column name="interfaceCluster_uid"
+						referenced-column-name="uid" />
+				</join-table>
+			</many-to-many>			
+
+		</attributes>
+	</entity>
+
+	<entity class="eppic.model.AssemblyScoreDB" name="AssemblyScore">
+		<table name="AssemblyScore" />
+		<attributes>
+			<id name="uid">
+				<generated-value strategy="IDENTITY" />
+			</id>
+			
+			<basic name="pdbCode">
+				<column length="4" />
+			</basic>
+
+			<basic name="method">
+				<column length="15" />
+			</basic>
+
+			<basic name="score"></basic>
+			<basic name="confidence"></basic>
+
+			<many-to-one name="assembly">
+			</many-to-one>
 
 		</attributes>
 	</entity>
@@ -183,6 +216,10 @@
 			
 			<basic name="avgArea"></basic>
 			<basic name="avgContactOverlapScore"></basic>
+			
+			<basic name="infinite"></basic>
+			<basic name="isologous"></basic>
+			
 			<basic name="numMembers"></basic>
 			
 			<basic name="globalInterfClusterId"></basic>
@@ -201,6 +238,12 @@
 					<cascade-all />
 				</cascade>
 			</one-to-many>
+			
+			<many-to-many name="assemblies" mapped-by="interfaceClusters">
+				<cascade>
+					<cascade-all />
+				</cascade>
+			</many-to-many>
 
 		</attributes>
 	</entity>
@@ -238,10 +281,7 @@
 			<basic name="callReason">
 				<column column-definition="text" />
 			</basic>
-			<basic name="confidence"></basic>
-			
-			<many-to-one name="assembly">
-			</many-to-one>
+			<basic name="confidence"></basic>			
 
 			<many-to-one name="interfaceCluster">
 			</many-to-one>

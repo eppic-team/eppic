@@ -2,7 +2,9 @@ package eppic.model;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class InterfaceClusterDB implements Serializable {
 
@@ -16,11 +18,14 @@ public class InterfaceClusterDB implements Serializable {
 	private double avgArea;
 	private double avgContactOverlapScore;
 	
-	
+	private boolean infinite;
+	private boolean isologous;
 
 	private int numMembers;
 	
 	private int globalInterfClusterId;
+	
+	private Set<AssemblyDB> assemblies;
 	
 	private List<InterfaceDB> interfaces;
 	
@@ -30,6 +35,8 @@ public class InterfaceClusterDB implements Serializable {
 	
 	public InterfaceClusterDB() {
 		this.interfaceClusterScores = new ArrayList<InterfaceClusterScoreDB>();
+		this.assemblies = new HashSet<AssemblyDB>();
+		this.interfaces = new ArrayList<InterfaceDB>();
 	}
 
 	/**
@@ -44,6 +51,10 @@ public class InterfaceClusterDB implements Serializable {
 			if (ics.getMethod().equals(method)) return ics;				
 		}
 		return null;
+	}
+	
+	public void addAssembly(AssemblyDB assembly) {
+		assemblies.add(assembly);
 	}
 	
 	public int getUid() {
@@ -86,6 +97,22 @@ public class InterfaceClusterDB implements Serializable {
 		this.avgContactOverlapScore = avgContactOverlapScore;
 	}
 
+	public boolean isInfinite() {
+		return infinite;
+	}
+
+	public void setInfinite(boolean infinite) {
+		this.infinite = infinite;
+	}
+
+	public boolean isIsologous() {
+		return isologous;
+	}
+
+	public void setIsologous(boolean isologous) {
+		this.isologous = isologous;
+	}
+
 	public int getNumMembers() {
 		return numMembers;
 	}
@@ -100,6 +127,14 @@ public class InterfaceClusterDB implements Serializable {
 
 	public void setGlobalInterfClusterId(int globalInterfClusterId) {
 		this.globalInterfClusterId = globalInterfClusterId;
+	}
+
+	public Set<AssemblyDB> getAssemblies() {
+		return assemblies;
+	}
+
+	public void setAssemblies(Set<AssemblyDB> assemblies) {
+		this.assemblies = assemblies;
 	}
 
 	public List<InterfaceDB> getInterfaces() {

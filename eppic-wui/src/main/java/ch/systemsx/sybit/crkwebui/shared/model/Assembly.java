@@ -2,34 +2,40 @@ package ch.systemsx.sybit.crkwebui.shared.model;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import eppic.model.AssemblyDB;
-import eppic.model.InterfaceClusterScoreDB;
+import eppic.model.AssemblyScoreDB;
+import eppic.model.PdbInfoDB;
 
 
 public class Assembly implements Serializable {
 	
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 
 	private int uid;
+	
+	private boolean topologicallyValid;
+	
+	private String composition;
 
-	private String method;
 	private int mmSize;
 	private String symmetry;
 	private String stoichiometry;
 	private String pseudoSymmetry;
 	private String pseudoStoichiometry;
 	
-	private double confidence;
+	private PdbInfoDB pdbInfo;
 	
-	private List<InterfaceClusterScore> interfaceClusterScores;
+	private Set<InterfaceCluster> interfaceClusters;
+	
+	private List<AssemblyScore> assemblyScores;
 
 	public Assembly() {
-		this.interfaceClusterScores = new ArrayList<InterfaceClusterScore>();
+		this.interfaceClusters = new HashSet<InterfaceCluster>();
+		this.assemblyScores = new ArrayList<AssemblyScore>();
 	}
 
 	public int getUid() {
@@ -40,12 +46,20 @@ public class Assembly implements Serializable {
 		this.uid = uid;
 	}
 
-	public String getMethod() {
-		return method;
+	public boolean isTopologicallyValid() {
+		return topologicallyValid;
 	}
 
-	public void setMethod(String method) {
-		this.method = method;
+	public void setTopologicallyValid(boolean topologicallyValid) {
+		this.topologicallyValid = topologicallyValid;
+	}
+
+	public String getComposition() {
+		return composition;
+	}
+
+	public void setComposition(String composition) {
+		this.composition = composition;
 	}
 
 	public int getMmSize() {
@@ -88,20 +102,28 @@ public class Assembly implements Serializable {
 		this.pseudoStoichiometry = pseudoStoichiometry;
 	}
 
-	public double getConfidence() {
-		return confidence;
+	public PdbInfoDB getPdbInfo() {
+		return pdbInfo;
 	}
 
-	public void setConfidence(double confidence) {
-		this.confidence = confidence;
+	public void setPdbInfo(PdbInfoDB pdbInfo) {
+		this.pdbInfo = pdbInfo;
 	}
 
-	public List<InterfaceClusterScore> getInterfaceClusterScores() {
-		return interfaceClusterScores;
+	public Set<InterfaceCluster> getInterfaceClusters() {
+		return interfaceClusters;
 	}
 
-	public void setInterfaceClusterScores(List<InterfaceClusterScore> interfaceClusterScores) {
-		this.interfaceClusterScores = interfaceClusterScores;
+	public void setInterfaceClusters(Set<InterfaceCluster> interfaceClusters) {
+		this.interfaceClusters = interfaceClusters;
+	}
+
+	public List<AssemblyScore> getAssemblyScores() {
+		return assemblyScores;
+	}
+
+	public void setAssemblyScores(List<AssemblyScore> assemblyScores) {
+		this.assemblyScores = assemblyScores;
 	}
 
 	/**
@@ -119,22 +141,24 @@ public class Assembly implements Serializable {
 		assembly.setStoichiometry(assemblyDB.getStoichiometry());		
 		assembly.setPseudoSymmetry(assemblyDB.getPseudoSymmetry());
 		assembly.setPseudoStoichiometry(assemblyDB.getPseudoStoichiometry());
-		assembly.setMethod(assemblyDB.getMethod());
-		assembly.setConfidence(assemblyDB.getConfidence());
+		assembly.setTopologicallyValid(assemblyDB.isTopologicallyValid());
+		assembly.setComposition(assemblyDB.getComposition());
+		assembly.setPdbInfo(assemblyDB.getPdbInfo()); 
 		
-		if(assemblyDB.getInterfaceClusterScores() != null)
-		{
-			List<InterfaceClusterScoreDB> interfClusterScoreDBs = assemblyDB.getInterfaceClusterScores();
+		if(assemblyDB.getAssemblyScores() != null) {
 			
-			List<InterfaceClusterScore> clusterScores = new ArrayList<InterfaceClusterScore>();
+			List<AssemblyScoreDB> assemblyScoreDBs = assemblyDB.getAssemblyScores();
 			
-			for(InterfaceClusterScoreDB interfClusterScoreDB : interfClusterScoreDBs)
-			{
-				clusterScores.add(InterfaceClusterScore.create(interfClusterScoreDB));
+			List<AssemblyScore> assemblyScores = new ArrayList<AssemblyScore>();
+			
+			for(AssemblyScoreDB assemblyScoreDB : assemblyScoreDBs) {
+				assemblyScores.add(AssemblyScore.create(assemblyScoreDB));
 			}
 			
-			assembly.setInterfaceClusterScores(clusterScores);
+			assembly.setAssemblyScores(assemblyScores);
 		}
+		
+		// TODO initialise many-to-many relation to interface clusters
 		
 		return assembly;
 	}

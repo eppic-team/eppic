@@ -1,7 +1,10 @@
 package eppic.model;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class AssemblyDB implements Serializable {
 	
@@ -11,22 +14,36 @@ public class AssemblyDB implements Serializable {
 	
 	private String pdbCode;
 	
-	private String method;
+
+	private boolean topologicallyValid;
+	
 	private int mmSize;
+	
+	private String composition;
+	
 	private String symmetry;
 	private String stoichiometry;
+	
 	private String pseudoSymmetry;
 	private String pseudoStoichiometry;
-	
-	private double confidence;
+
+	private String interfaceClusterIds;
 	
 	private PdbInfoDB pdbInfo;
 	
-	private List<InterfaceClusterScoreDB> interfaceClusterScores;
+	private Set<InterfaceClusterDB> interfaceClusters;
+	
+	private List<AssemblyScoreDB> assemblyScores;
 
 	public AssemblyDB() {
+		assemblyScores = new ArrayList<AssemblyScoreDB>();
+		interfaceClusters = new HashSet<InterfaceClusterDB>();
 	}
 
+	public void addAssemblyScore(AssemblyScoreDB assemblyScore) {
+		assemblyScores.add(assemblyScore);
+	}
+	
 	public String getPdbCode() {
 		return pdbCode;
 	}
@@ -41,14 +58,6 @@ public class AssemblyDB implements Serializable {
 
 	public void setUid(int uid) {
 		this.uid = uid;
-	}
-
-	public String getMethod() {
-		return method;
-	}
-
-	public void setMethod(String type) {
-		this.method = type;
 	}
 
 	public int getMmSize() {
@@ -91,14 +100,6 @@ public class AssemblyDB implements Serializable {
 		this.pseudoStoichiometry = pseudoStoichiometry;
 	}
 
-	public double getConfidence() {
-		return confidence;
-	}
-	
-	public void setConfidence(double confidence) {
-		this.confidence = confidence;
-	}
-	
 	public PdbInfoDB getPdbInfo() {
 		return pdbInfo;
 	}
@@ -107,14 +108,45 @@ public class AssemblyDB implements Serializable {
 		this.pdbInfo = pdbInfo;
 	}
 
-	public List<InterfaceClusterScoreDB> getInterfaceClusterScores() {
-		return interfaceClusterScores;
+	public boolean isTopologicallyValid() {
+		return topologicallyValid;
 	}
 
-	public void setInterfaceClusterScores(List<InterfaceClusterScoreDB> interfaceClusterScores) {
-		this.interfaceClusterScores = interfaceClusterScores;
+	public void setTopologicallyValid(boolean topologicallyValid) {
+		this.topologicallyValid = topologicallyValid;
 	}
-	
+
+	public String getComposition() {
+		return composition;
+	}
+
+	public void setComposition(String composition) {
+		this.composition = composition;
+	}
+
+	public String getInterfaceClusterIds() {
+		return interfaceClusterIds;
+	}
+
+	public void setInterfaceClusterIds(String interfaceClusterIds) {
+		this.interfaceClusterIds = interfaceClusterIds;
+	}
+
+	public Set<InterfaceClusterDB> getInterfaceClusters() {
+		return interfaceClusters;
+	}
+
+	public void setInterfaceClusters(Set<InterfaceClusterDB> interfaceClusters) {
+		this.interfaceClusters = interfaceClusters;
+	}
+
+	public List<AssemblyScoreDB> getAssemblyScores() {
+		return assemblyScores;
+	}
+
+	public void setAssemblyScores(List<AssemblyScoreDB> assemblyScores) {
+		this.assemblyScores = assemblyScores;
+	}	
 	
 
 }

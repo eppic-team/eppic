@@ -25,8 +25,6 @@ public class InterfaceClusterScoreDB implements Serializable {
 	
 	private InterfaceClusterDB interfaceCluster;
 	
-	private AssemblyDB assembly;
-
 	public int getUid() {
 		return uid;
 	}
@@ -113,14 +111,6 @@ public class InterfaceClusterScoreDB implements Serializable {
 
 	public void setInterfaceCluster(InterfaceClusterDB interfaceCluster) {
 		this.interfaceCluster = interfaceCluster;
-	}
-
-	public AssemblyDB getAssembly() {
-		return assembly;
-	}
-
-	public void setAssembly(AssemblyDB assembly) {
-		this.assembly = assembly;
 	}
 
 }

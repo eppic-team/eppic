@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +13,7 @@ import eppic.commons.sequence.AlignmentConstructionException;
 import eppic.commons.sequence.MultipleSequenceAlignment;
 import eppic.commons.sequence.Sequence;
 import eppic.model.AssemblyDB;
+import eppic.model.AssemblyScoreDB;
 import eppic.model.ChainClusterDB;
 import eppic.model.ContactDB;
 import eppic.model.HomologDB;
@@ -281,15 +283,30 @@ public class TextOutputWriter {
 		
 		PrintStream ps = new PrintStream(params.getOutputFile(EppicParams.PDB_BIOUNIT_ASSIGN_FILE_SUFFIX));
 		
-		List<InterfaceClusterDB> interfaceClusters = pdbInfo.getInterfaceClusters();
+		AssemblyDB eppicAssembly = null;
+		AssemblyDB pdb1Assembly = null;
+		for (AssemblyDB assembly: pdbInfo.getAssemblies()) {
+			for (AssemblyScoreDB as:assembly.getAssemblyScores()) {
+				if (as.getMethod().equals(ScoringMethod.EPPIC_FINAL)) {
+					if (eppicAssembly==null) eppicAssembly = assembly;
+					else LOGGER.warn("More than 1 EPPIC assembly assignment!");
+				}
+				if (as.getMethod().equals(DataModelAdaptor.PDB_BIOUNIT_METHOD)) {
+					if (pdb1Assembly==null) pdb1Assembly = assembly;
+					else LOGGER.warn("More than 1 PDB1 assembly assignment!");					
+				}
+
+			}
+		}
 		
-		AssemblyDB eppicAssembly = pdbInfo.getAssembly(ScoringMethod.EPPIC_FINAL);
-		AssemblyDB pdb1Assembly = pdbInfo.getAssembly(DataModelAdaptor.PDB_BIOUNIT_METHOD);
+		List<InterfaceClusterDB> interfaceClusters = pdbInfo.getInterfaceClusters();		
 		
 		int eppicAssemblySize = 0;
 		int pdb1AssemblySize = 0;
 		String pdb1SymmetryStr = "";
 		String eppicSymmetryStr = "";
+		
+		Set<InterfaceClusterDB> pdb1InterfaceClusters = null;
 		
 		if (eppicAssembly!=null) {
 			eppicAssemblySize = eppicAssembly.getMmSize();
@@ -297,12 +314,15 @@ public class TextOutputWriter {
 				eppicSymmetryStr = ","+eppicAssembly.getSymmetry();
 		}
 		if (pdb1Assembly!=null) {
+			pdb1InterfaceClusters = pdb1Assembly.getInterfaceClusters();
 			pdb1AssemblySize = pdb1Assembly.getMmSize();
 			if (pdb1Assembly.getSymmetry()!=null)
 				pdb1SymmetryStr = ","+pdb1Assembly.getSymmetry();
 		}
 		
-		ps.printf("%7s\t%12s\t%10s\t%10s\n",
+		
+		
+		ps.printf("%7s\t%20s\t%10s\t%10s\n",
 				"clustId","members",
 				ScoringMethod.EPPIC_FINAL + "("+eppicAssemblySize+eppicSymmetryStr+")",
 				DataModelAdaptor.PDB_BIOUNIT_METHOD         + "("+pdb1AssemblySize+pdb1SymmetryStr+")"); 
@@ -312,21 +332,23 @@ public class TextOutputWriter {
 			for (InterfaceDB interfaceItem:interfaceCluster.getInterfaces()) {
 				membersStr += interfaceItem.getInterfaceId()+" ";
 			}
-			ps.printf("%7d\t%12s\t",interfaceCluster.getClusterId(),membersStr);
+			ps.printf("%7d\t%20s\t",interfaceCluster.getClusterId(),membersStr);
 
-			
-			InterfaceClusterScoreDB icsEppic = interfaceCluster.getInterfaceClusterScore(ScoringMethod.EPPIC_FINAL);
-			InterfaceClusterScoreDB icsPqs = interfaceCluster.getInterfaceClusterScore(DataModelAdaptor.PDB_BIOUNIT_METHOD);
+			// TODO we should also take the assembly for eppic method from the assembly mapping but for the moment we don't have assembly predictions yet and we take the raw pairwise calls
+			InterfaceClusterScoreDB icsEppic = interfaceCluster.getInterfaceClusterScore(ScoringMethod.EPPIC_FINAL);			
 			
 			if (icsEppic==null) {
 				ps.printf("%10s\t","");
 			} else {
 				ps.printf("%10s\t",icsEppic.getCallName());
 			}
-			if (icsPqs==null) {
+			if (pdb1InterfaceClusters==null) {
 				ps.printf("%10s","");
 			} else {
-				ps.printf("%10s",icsPqs.getCallName());
+				String call = null;
+				if (containsCluster(pdb1InterfaceClusters, interfaceCluster)) call = CallType.BIO.getName();
+				else call = CallType.CRYSTAL.getName();
+				ps.printf("%10s",call);
 			}
 			
 			
@@ -335,6 +357,13 @@ public class TextOutputWriter {
 		}
 		
 		ps.close();
+	}
+	
+	private static boolean containsCluster(Set<InterfaceClusterDB> interfClusterSet, InterfaceClusterDB interfCluster) {
+		for (InterfaceClusterDB ic:interfClusterSet) {
+			if (ic.getClusterId()==interfCluster.getClusterId()) return true;
+		}
+		return false;
 	}
 	
 	/**

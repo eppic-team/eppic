@@ -33,9 +33,11 @@ import org.slf4j.LoggerFactory;
 
 import eppic.analysis.compare.InterfaceMatcher;
 import eppic.analysis.compare.SimpleInterface;
+import eppic.assembly.Assembly;
 import eppic.commons.sequence.Homolog;
 import eppic.commons.util.Goodies;
 import eppic.model.AssemblyDB;
+import eppic.model.AssemblyScoreDB;
 import eppic.model.ChainClusterDB;
 import eppic.model.ContactDB;
 import eppic.model.HomologDB;
@@ -168,8 +170,10 @@ public class DataModelAdaptor {
 			icDBs.add(icDB);
 			icDB.setInterfaces(iDBs);
 			
+			boolean isClusterInfinite = false;
+			int isologousCount = 0;
+			
 			for (StructureInterface interf:ic.getMembers()) {
-				//System.out.println("Interface " + interf.getId());
 				
 				InterfaceDB interfaceDB = new InterfaceDB();
 				interfaceDB.setInterfaceId(interf.getId());
@@ -182,6 +186,7 @@ public class DataModelAdaptor {
 				interfaceDB.setOperator(SpaceGroup.getAlgebraicFromMatrix(interf.getTransforms().getSecond().getMatTransform()));
 				interfaceDB.setOperatorType(interf.getTransforms().getSecond().getTransformType().getShortName());
 				interfaceDB.setInfinite(interf.isInfinite());
+				
 				interfaceDB.setOperatorId(interf.getTransforms().getSecond().getTransformId());
 				interfaceDB.setXtalTrans_x(interf.getTransforms().getSecond().getCrystalTranslation().x);
 				interfaceDB.setXtalTrans_y(interf.getTransforms().getSecond().getCrystalTranslation().y);
@@ -192,6 +197,10 @@ public class DataModelAdaptor {
 				interfaceDB.setProt2(InterfaceEvolContext.isProtein(interf, InterfaceEvolContext.SECOND));
 				
 				interfaceDB.setPdbCode(pdbInfo.getPdbCode());
+				
+				// infinite/isologous for cluster
+				if (interfaceDB.isInfinite()) isClusterInfinite = true; // a single infinite sets the whole cluster as infinite
+				if (interfaceDB.isIsologous()) isologousCount++;
 				
 				// setting relations parent/child
 				iDBs.add(interfaceDB);				
@@ -269,9 +278,76 @@ public class DataModelAdaptor {
 				
 				
 			}
+			
+			// setting isologous and infinite for cluster
+			icDB.setInfinite(isClusterInfinite);
+
+			// at least half of them isologous and we set the whole cluster
+			if (isologousCount >= ((double)icDB.getNumMembers()/2.0)) {
+				icDB.setIsologous(true);
+			} else {
+				icDB.setIsologous(false);
+			}
+			
 		}
+		
+		
 		pdbInfo.setInterfaceClusters(icDBs);
 		
+	}
+	
+	public void setAssemblies(Set<Assembly> validAssemblies) {
+		
+		for (Assembly validAssembly:validAssemblies) {
+			AssemblyDB assembly = new AssemblyDB();
+			
+			// all assemblies that we pass are topologically valid, only externally calculated assemblies can be invalid (PDB, PISA)
+			// and would need to be added explicitly when adding external assembly predictions
+			assembly.setTopologicallyValid(true);
+			
+			// relations
+			assembly.setPdbInfo(pdbInfo);
+			pdbInfo.addAssembly(assembly);
+			
+			StringBuilder interfClusterIdsCommaSep = new StringBuilder();
+			int i = 0;
+			Set<InterfaceClusterDB> interfaceClusters = new HashSet<InterfaceClusterDB>();
+			for (StructureInterfaceCluster ic:validAssembly.getInterfaceClusters()) {
+				InterfaceClusterDB icDB = pdbInfo.getInterfaceCluster(ic.getId());
+				interfaceClusters.add(icDB);
+				icDB.addAssembly(assembly);
+				interfClusterIdsCommaSep.append(ic.getId());
+				if (i!=validAssembly.getInterfaceClusters().size()-1) interfClusterIdsCommaSep.append(','); 
+				i++;
+			}
+			assembly.setInterfaceClusters(interfaceClusters);
+			
+			assembly.setInterfaceClusterIds(interfClusterIdsCommaSep.toString());
+			
+			// other data
+			assembly.setPdbCode(pdbInfo.getPdbCode());			
+			
+			// TODO fill the size, composition, stoichiometry data
+			//assembly.setMmSize(validAssembly.getSize());
+			//assembly.setComposition(composition);			
+			//assembly.setSymmetry(validAssembly.getSymmetry());
+			//assembly.setStoichiometry(validAssembly.getStoichiometry());
+			
+			// TODO we can get pseudosymmetry data for PDB provided assemblies (using BJ qs detection), but can we do that for our calculated assemblies?
+			//assembly.setPseudoSymmetry(pseudoSymmetry);
+			//assembly.setPseudoStoichiometry(pseudoStoichiometry);
+						
+			
+			// TODO calculate our score and confidence! should we have scores for all or for our final prediction only?
+			//AssemblyScoreDB as = new AssemblyScoreDB();
+			//as.setMethod(ScoringMethod.EPPIC_FINAL);
+			//as.setScore(SCORE_NOT_AVAILABLE);
+			//as.setConfidence(CONFIDENCE_NOT_AVAILABLE);
+			//as.setPdbCode(pdbInfo.getPdbCode());
+			//assembly.addAssemblyScore(as);
+			
+			
+		}
 	}
 	
 	public void setPdbBioUnits(BioAssemblyInfo bioAssembly, CrystalCell cell, String[] symmetries) {
@@ -285,69 +361,108 @@ public class DataModelAdaptor {
 
 		Set<Integer> matchingClusterIds = matchToInterfaceClusters(bioAssembly, cell);		
 		
+		AssemblyDB matchingAssembly = null;
 
-		AssemblyDB assembly = new AssemblyDB();			
-		assembly.setMethod(PDB_BIOUNIT_METHOD);
-		assembly.setMmSize(bioAssembly.getMacromolecularSize());
-		assembly.setSymmetry(symmetries[0]);
-		assembly.setStoichiometry(symmetries[1]);
-		assembly.setPseudoSymmetry(symmetries[2]);
-		assembly.setPseudoStoichiometry(symmetries[3]);
-		assembly.setPdbCode(pdbInfo.getPdbCode());			
-		assembly.setConfidence(CONFIDENCE_NOT_AVAILABLE);
+		if (matchingClusterIds.isEmpty()) {
+				
+			for (AssemblyDB assembly: pdbInfo.getAssemblies()) {
+				if (assembly.getInterfaceClusters().isEmpty()) { 
+					matchingAssembly = assembly;
+					break;
+				}
+			}
+			if (matchingAssembly == null) 
+				LOGGER.warn("Could not find the empty assembly in list of valid assemblies, something is wrong");
+			
+		} else {
+			for (AssemblyDB validAssembly:pdbInfo.getAssemblies()) {
 
-		// setting relations parent/child
-		assembly.setPdbInfo(pdbInfo);
-		pdbInfo.addAssembly(assembly);
 
-		List<InterfaceClusterScoreDB> memberClusterScoresDB = new ArrayList<InterfaceClusterScoreDB>();
-		assembly.setInterfaceClusterScores(memberClusterScoresDB);
-		for (InterfaceClusterDB icDB:pdbInfo.getInterfaceClusters()) {
+				if (validAssembly.getInterfaceClusters().size()!=matchingClusterIds.size()) {
+					continue;
+				}
 
-			if (matchingClusterIds.contains(icDB.getClusterId())) {
-				// all member interface clusters are assigned bio
+				boolean matches = true;
 
-				InterfaceClusterScoreDB icsDB = new InterfaceClusterScoreDB();
-				memberClusterScoresDB.add(icsDB);				
+				for (InterfaceClusterDB icDB:validAssembly.getInterfaceClusters()) {
+					if (!matchingClusterIds.contains(icDB.getClusterId())) {
+						matches = false;
+					}
+				}
 
-				icsDB.setScore(SCORE_NOT_AVAILABLE);
-				icsDB.setScore1(SCORE_NOT_AVAILABLE);
-				icsDB.setScore2(SCORE_NOT_AVAILABLE);
-				icsDB.setCallName(CallType.BIO.getName());
-				icsDB.setConfidence(CONFIDENCE_NOT_AVAILABLE);
-				icsDB.setMethod(PDB_BIOUNIT_METHOD);				
-				icsDB.setClusterId(icDB.getClusterId());
-				icsDB.setPdbCode(pdbInfo.getPdbCode());
-
-				// setting relations parent/child
-				icsDB.setInterfaceCluster(icDB);
-				icDB.addInterfaceClusterScore(icsDB);
-
-				// only the bio interfaces are part of the assembly
-				icsDB.setAssembly(assembly);
-
-			} else {
-				// The rest (not members) are assigned xtal
-				// We need to do this otherwise there's no distinction between 
-				// missing annotations and real xtal annotations
-				InterfaceClusterScoreDB icsDB = new InterfaceClusterScoreDB();
-				icsDB.setScore(SCORE_NOT_AVAILABLE);
-				icsDB.setScore1(SCORE_NOT_AVAILABLE);
-				icsDB.setScore2(SCORE_NOT_AVAILABLE);
-				icsDB.setCallName(CallType.CRYSTAL.getName());
-				icsDB.setConfidence(CONFIDENCE_NOT_AVAILABLE);
-				icsDB.setMethod(PDB_BIOUNIT_METHOD);				
-				icsDB.setClusterId(icDB.getClusterId());
-				icsDB.setPdbCode(pdbInfo.getPdbCode());
-
-				// setting relations parent/child
-				icsDB.setInterfaceCluster(icDB);
-				icDB.addInterfaceClusterScore(icsDB);
-
+				if (matches) matchingAssembly = validAssembly;
 			}
 		}
+		
+		AssemblyScoreDB as = new AssemblyScoreDB();
+		as.setMethod(PDB_BIOUNIT_METHOD);
+		as.setScore(SCORE_NOT_AVAILABLE);
+		as.setConfidence(CONFIDENCE_NOT_AVAILABLE);
+		as.setPdbCode(pdbInfo.getPdbCode());
+		
+		if (matchingAssembly!=null) {
 
+			as.setAssembly(matchingAssembly);
+			
+			// TODO we should compare the sym calculated with biojava qs detection to our 
+			//      graph-calculated symmetries. If they don't coincide we should emit a warning
 
+			matchingAssembly.addAssemblyScore(as);
+			
+		} else {
+			LOGGER.warn("PDB given assembly (interface clusters {}) does not match any of the topologically valid assemblies.",
+					matchingClusterIds.toString());
+			// the assembly is not one of our valid assemblies, we'll have to insert an invalid assembly to the list
+			AssemblyDB assembly = new AssemblyDB();
+			
+			assembly.setTopologicallyValid(false);
+			
+			// relations
+			assembly.setPdbInfo(pdbInfo);
+			pdbInfo.addAssembly(assembly);
+						
+			StringBuilder interfClusterIdsCommaSep = new StringBuilder();
+			int i = 0;
+			Set<InterfaceClusterDB> interfaceClusters = new HashSet<InterfaceClusterDB>();
+			for (int interfClusterId:matchingClusterIds) {
+				InterfaceClusterDB icDB = pdbInfo.getInterfaceCluster(interfClusterId);
+				interfaceClusters.add(icDB);
+				icDB.addAssembly(assembly);
+				interfClusterIdsCommaSep.append(interfClusterId);
+				if (i!=matchingClusterIds.size()-1) interfClusterIdsCommaSep.append(','); 
+				i++;
+			}
+			assembly.setInterfaceClusters(interfaceClusters);
+			
+			assembly.setInterfaceClusterIds(interfClusterIdsCommaSep.toString());
+			
+			// other data
+			assembly.setPdbCode(pdbInfo.getPdbCode());			
+			
+			// TODO fill the size, composition, symmetry, stoichiometry data
+			//assembly.setMmSize(size);
+			//assembly.setComposition(composition);			
+			//assembly.setSymmetry(sym);
+			//assembly.setStoichiometry(stoic);
+			
+			// TODO we can get pseudosymmetries from BJ qs detection: should we do it like that here?
+			//assembly.setPseudoSymmetry(pseudoSymmetry);
+			//assembly.setPseudoStoichiometry(pseudoStoichiometry);
+
+			// this is how to get the sym info from biojava qs detected ones
+			//assembly.setMmSize(bioAssembly.getMacromolecularSize());
+			//assembly.setSymmetry(symmetries[0]);
+			//assembly.setStoichiometry(symmetries[1]);
+			//assembly.setPseudoSymmetry(symmetries[2]);
+			//assembly.setPseudoStoichiometry(symmetries[3]);
+			//assembly.setPdbCode(pdbInfo.getPdbCode());			
+
+			
+			
+			assembly.addAssemblyScore(as);
+			
+			as.setAssembly(assembly);
+		}
 
 	}
 	

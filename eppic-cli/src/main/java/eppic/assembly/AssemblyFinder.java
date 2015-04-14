@@ -93,6 +93,8 @@ public class AssemblyFinder {
 		
 		Assembly emptyAssembly = new Assembly(interfaces, lattice.getGraph(), new boolean[numInterfClusters], numEntities);
 		
+		validSet.add(emptyAssembly); // the empty assembly (no engaged interfaces) is always a valid assembly
+		
 		Set<Assembly> prevLevel = new HashSet<Assembly>();
 		prevLevel.add(emptyAssembly);
 		Set<Assembly> nextLevel = null;

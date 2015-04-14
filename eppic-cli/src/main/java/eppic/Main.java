@@ -72,6 +72,8 @@ public class Main {
 	private List<GeometryPredictor> gps;
 	private List<GeometryClusterPredictor> gcps;
 	
+	private Set<Assembly> validAssemblies;
+	
 	private File stepsLogFile;
 	private int stepCount;
 	
@@ -346,17 +348,24 @@ public class Main {
 	
 	public void doFindAssemblies() throws StructureException { 
 		
+		// TODO for the moment we are only doing assemblies for crystallographic structures, but we should also try to deal with NMR and EM
 		if (!pdb.isCrystallographic()) {
 			LOGGER.info("The input structure is not crystallographic: won't do analysis of assemblies");
 			return;
 		}
 		AssemblyFinder aFinder = new AssemblyFinder(pdb, interfaces);
-		Set<Assembly> validAssemblies = aFinder.getValidAssemblies();
+		validAssemblies = aFinder.getValidAssemblies();
 		StringBuilder sb = new StringBuilder();
 		for (Assembly a: validAssemblies) {
 			sb.append(a.toString()+" ");
 		}
 		LOGGER.info("There are {} topologically possible assemblies: {}", validAssemblies.size(), sb.toString());
+				
+	}
+	
+	public void doAssemblyScoring() {
+		
+		// TODO implement!
 	}
 	
 	public void doGeomScoring() throws EppicException {
@@ -399,16 +408,21 @@ public class Main {
 
 		// writing to the model: for the webui and csv output files
 		modelAdaptor.setInterfaces(interfaces); // this writes all interface geom info, including h-bonds, disulfides etc
-		// since the move to Biojava, we have decided to take the first PDB-annotated biounit ONLY, whatever its type
-		CrystalCell cell = null;
-		if (pdb.getCrystallographicInfo()!=null && pdb.isCrystallographic()) {
-			cell = pdb.getCrystallographicInfo().getCrystalCell();
-		}
-		String[] symmetries = getSymmetry(EppicParams.PDB_BIOUNIT_TO_USE);
-		modelAdaptor.setPdbBioUnits(pdb.getPDBHeader().getBioAssemblies().get(EppicParams.PDB_BIOUNIT_TO_USE),cell,symmetries);
 		modelAdaptor.setGeometryScores(gps, gcps);
 		modelAdaptor.setResidueDetails(interfaces);
-		
+
+		// TODO for the moment we are only doing assemblies for crystallographic structures, but we should also try to deal with NMR and EM
+		if (pdb.isCrystallographic()) {
+			modelAdaptor.setAssemblies(validAssemblies);
+
+			// since the move to Biojava, we have decided to take the first PDB-annotated biounit ONLY, whatever its type
+			CrystalCell cell = null;
+			if (pdb.getCrystallographicInfo()!=null && pdb.isCrystallographic()) {
+				cell = pdb.getCrystallographicInfo().getCrystalCell();
+			}
+			String[] symmetries = getSymmetry(EppicParams.PDB_BIOUNIT_TO_USE);
+			modelAdaptor.setPdbBioUnits(pdb.getPDBHeader().getBioAssemblies().get(EppicParams.PDB_BIOUNIT_TO_USE),cell,symmetries);
+		}
 	}
 	
 	/**
@@ -940,7 +954,10 @@ public class Main {
 			} else {
 				doFindInterfaces();
 			}
-						
+					
+			// 2 find the assemblies
+			doFindAssemblies();
+
 			
 			// TODO call doHBPlus when fixed
 			// try hbplus if executable is set, writes pdb files needed for it (which then are overwritten in doWritePdbFiles)
@@ -949,36 +966,37 @@ public class Main {
 			doGeomScoring();
 			
 			if (params.isDoEvolScoring()) {
-				// 2 finding evolutionary context
+				// 3 finding evolutionary context
 				if (params.getChainEvContextSerFile()!=null) {
 					doLoadEvolContextFromFile();
 				} else {
 					doFindEvolContext();
 				}
 
-				// 3 scoring
+				// 4 scoring
 				doEvolScoring();
 				
-				// 4 combined scoring
+				// 5 combined scoring
 				doCombinedScoring();
+				
+				// 6 score assemblies and predict most likely assembly
+				doAssemblyScoring();
 			}
 			
-			// 5 find the assemblies!
-			doFindAssemblies();
 			
-			// 6 write TSV files (only if not in -w) 	
+			// 7 write TSV files (only if not in -w) 	
 			doWriteTextOutputFiles();
 			
-			// 7 write pdb files (only if in -l)
+			// 8 write pdb files (only if in -l)
 			doWritePdbFiles();
 						
-			// 8 writing pymol files (only if in -l)
+			// 9 writing pymol files (only if in -l)
 			doWritePymolFiles();
 			
-			// 9 compressing files (only if in -l)
+			// 10 compressing files (only if in -l)
 			doCompressFiles();
 			
-			// 10 writing out the model serialized file and "finish" file for web ui (only if in -w)
+			// 11 writing out the model serialized file and "finish" file for web ui (only if in -w)
 			doWriteFinalFiles();
 
 			
