@@ -73,9 +73,6 @@ public class EppicParams {
 	public static final int 	   CLUSTERING_MINATOMS = 10;
 	public static final String     CLUSTERING_ATOM_TYPE = "CA";
 	public static final double	   CLUSTERING_CONTACT_OVERLAP_SCORE_CUTOFF = 0.2;
-	// the strategies for core-surface scoring
-	public static final int 	   CORE_SURFACE_SCORE_STRATEGY_CLASSIC = 0;
-	public static final int 	   CORE_SURFACE_SCORE_STRATEGY_ZSCORE = 1;
 	
 	// the distance for two atoms between chains to be considered a clashing pair
 	public static final double 	   CLASH_DISTANCE = 1.5;
@@ -176,9 +173,7 @@ public class EppicParams {
 	// default use pdb res serials for output
 	public static final boolean   DEF_USE_PDB_RES_SER = true;
 	
-	// default core-surface score strategy: 0 for classic, 1 for straight z-scores
-	private static final int 	  DEF_CORE_SURFACE_SCORE_STRATEGY = CORE_SURFACE_SCORE_STRATEGY_ZSCORE;
-	
+
 	// FIELDS
 	
 	// the parameters
@@ -273,7 +268,6 @@ public class EppicParams {
 	
 	private boolean  usePdbResSer;
 	
-	private int coreSurfaceScoreStrategy;
 	
 	// and finally the ones with no defaults
 	private String   blastDbDir; // no default
@@ -872,8 +866,6 @@ public class EppicParams {
 			
 			usePdbResSer	 = Boolean.parseBoolean(p.getProperty("USE_PDB_RES_SER",new Boolean(DEF_USE_PDB_RES_SER).toString()));
 			
-			coreSurfaceScoreStrategy = Integer.parseInt(p.getProperty("CORE_SURFACE_SCORE_STRATEGY", new Integer(DEF_CORE_SURFACE_SCORE_STRATEGY).toString()));
-						
 			alphabet = new AAAlphabet(p.getProperty("CUSTOM_ALPHABET", DEF_ENTROPY_ALPHABET.toString()));
 			
 			
@@ -990,10 +982,6 @@ public class EppicParams {
 	
 	public boolean isUsePdbResSer() {
 		return usePdbResSer;
-	}
-	
-	public int getCoreSurfaceScoreStrategy() {
-		return coreSurfaceScoreStrategy;
 	}
 	
 	public AAAlphabet getAlphabet() {
