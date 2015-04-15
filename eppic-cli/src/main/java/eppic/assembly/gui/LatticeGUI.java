@@ -86,6 +86,8 @@ public class LatticeGUI {
 	private Map<String,Point3d> chainCentroid;
 
 	private WrappingPolicy policy;
+	
+	private Set<Integer> debugInterfaceIds; // interface ids to display (for debugging, read from command line args), if null all displayed
 
 	public LatticeGUI(Structure struc) throws StructureException {
 		this(struc,null);
@@ -117,6 +119,17 @@ public class LatticeGUI {
 
 	}
 
+	public void setDebugInterfaceIds(String commaSepList) {
+		
+		if (commaSepList==null) return;
+		
+		debugInterfaceIds = new HashSet<Integer>();
+		String[] items = commaSepList.split(",");
+		for (String item:items) {
+			debugInterfaceIds.add(Integer.parseInt(item));
+		}
+	}
+	
 	private static Point3d getCentroid(Chain c) {
 		Atom[] ca = StructureTools.getRepresentativeAtomArray(c);
 		Atom centroidAtom = Calc.getCentroid(ca);
@@ -177,7 +190,7 @@ public class LatticeGUI {
 			ChainVertex source = g.getEdgeSource(edge);
 			ChainVertex target = g.getEdgeTarget(edge);
 			
-			if(debugInterfaceNum != null && edge.getInterfaceId() != debugInterfaceNum) {
+			if(debugInterfaceIds!=null && !debugInterfaceIds.contains(edge.getInterfaceId())) {
 				continue;
 			}
 			if(debugAUNum != null && source.getOpId() != debugAUNum) {
@@ -242,6 +255,7 @@ public class LatticeGUI {
 //				jmol.append( drawSphere("Mid"+source.getOpId(),Color.MAGENTA,sourceEdgePos[1],"Mid"+source.getOpId()));
 //				jmol.append( drawSphere("Target"+source.getOpId(),Color.GREEN,sourceEdgePos[2],"Target"+source.getOpId()));
 
+				//jmol.append( drawLabel("edge"+edge,getEdgeColor(edge),sourceEdgePos[1],getEdgeLabel(edge)));
 				jmol.append( drawInterfaceCircle(edge, sourceEdgePos[1], sourceEdgePos[0] ) );
 				jmol.append( drawEdge(edge, sourceEdgePos[0], sourceEdgePos[2]) );
 
@@ -258,6 +272,7 @@ public class LatticeGUI {
 
 
 				if( ! sourceEdgePos[2].epsilonEquals(targetEdgePos[2], 1e-4)) {
+					//jmol.append( drawLabel("edge"+edge,getEdgeColor(edge),targetEdgePos[1],getEdgeLabel(edge)));
 					jmol.append( drawInterfaceCircle(edge, targetEdgePos[1], targetEdgePos[0] ) );
 					jmol.append( drawEdge(edge, targetEdgePos[0], targetEdgePos[2]) );
 				} else {
@@ -470,17 +485,22 @@ public class LatticeGUI {
 		return String.format("[%f,%f,%f]", color.getRed()/256f,color.getGreen()/256f,color.getBlue()/256f);
 	}
 
-	private final Integer debugInterfaceNum = null; // For debugging, single interface to display or null for all
-	private final Integer debugAUNum = null; // single AU to display or null for all
+	private static final Integer debugAUNum = null; // single AU to display or null for all
 
 	public static void main(String[] args) throws IOException, StructureException {
 		
 		if (args.length<1) {
 			logger.error("No PDB code or file name given.");
+			logger.error("Usage: LatticeGUI <PDB code or file> [comma separated list of interfaces to display]");
 			System.exit(1);
 		}
 		
+		
 		String input = args[0];
+		String interfaceIdsCommaSep = null;
+		if (args.length==2) {
+			interfaceIdsCommaSep = args[1];
+		}
 
 		String filename;
 		Structure struc;
@@ -506,6 +526,7 @@ public class LatticeGUI {
 		}
 		
 		LatticeGUI gui = new LatticeGUI(struc);
+		gui.setDebugInterfaceIds(interfaceIdsCommaSep);
 		gui.display(filename);
 	}
 
