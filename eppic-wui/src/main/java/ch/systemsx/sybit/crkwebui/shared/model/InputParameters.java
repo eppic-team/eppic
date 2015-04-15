@@ -15,7 +15,6 @@ public class InputParameters implements Serializable
 	private static final long serialVersionUID = 1L;
 
 	private int maxNrOfSequences;
-	private int reducedAlphabet;
 	private String searchMode;
 
 	private float softIdentityCutoff;
@@ -31,14 +30,6 @@ public class InputParameters implements Serializable
 
 	public void setMaxNrOfSequences(int maxNrOfSequences) {
 		this.maxNrOfSequences = maxNrOfSequences;
-	}
-
-	public int getReducedAlphabet() {
-		return reducedAlphabet;
-	}
-
-	public void setReducedAlphabet(int reducedAlphabet) {
-		this.reducedAlphabet = reducedAlphabet;
 	}
 
 	public float getSoftIdentityCutoff() {

@@ -25,10 +25,6 @@ public class ApplicationSettings implements Serializable {
 	 */
 	private InputParameters defaultParametersValues;
 
-	/**
-	 * Available values for reduced alphabet.
-	 */
-	private List<Integer> reducedAlphabetList;
 	
 	/**
 	 * Available values for search mode.
@@ -176,22 +172,6 @@ public class ApplicationSettings implements Serializable {
 	 */
 	public InputParameters getDefaultParametersValues() {
 		return defaultParametersValues;
-	}
-
-	/**
-	 * Sets possible values of reduced alphabet.
-	 * @param reducedAlphabetList list of allowed values for reduced alphabet
-	 */
-	public void setReducedAlphabetList(List<Integer> reducedAlphabetList) {
-		this.reducedAlphabetList = reducedAlphabetList;
-	}
-
-	/**
-	 * Retrieves list of allowed values for reduced alphabet.
-	 * @return list of allowed values for reduced alphabet
-	 */
-	public List<Integer> getReducedAlphabetList() {
-		return reducedAlphabetList;
 	}
 
 	/**

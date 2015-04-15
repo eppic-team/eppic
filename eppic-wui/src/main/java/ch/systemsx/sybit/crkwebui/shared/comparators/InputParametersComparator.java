@@ -22,11 +22,6 @@ public class InputParametersComparator
 			return false;
 		}
 		
-		if(first.getReducedAlphabet() != second.getReducedAlphabet())
-		{
-			return false;
-		}
-		
 		if(Math.abs(first.getHardIdentityCutoff() - second.getHardIdentityCutoff()) > 0.0001)
 		{
 			return false;

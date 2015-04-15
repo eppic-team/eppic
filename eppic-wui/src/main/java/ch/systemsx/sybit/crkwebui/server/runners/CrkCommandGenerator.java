@@ -62,8 +62,6 @@ public class CrkCommandGenerator
 		command.add(String.valueOf(inputParameters.getSoftIdentityCutoff()));
 		command.add("-D");
 		command.add(String.valueOf(inputParameters.getHardIdentityCutoff()));
-		command.add("-r");
-		command.add(String.valueOf(inputParameters.getReducedAlphabet()));
 		command.add("-H");
 		command.add(inputParameters.getSearchMode().toLowerCase());
 		command.add("-a");

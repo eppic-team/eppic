@@ -56,11 +56,6 @@ public class InputParametersGenerator
 				{
 					setDefaultParameters(inputParametersNode, inputParameters);
 				}
-				else if(inputParametersNode.getNodeName().equals("reduced_alphabet"))
-				{
-					List<Integer> reducedAlphabetList = prepareReducedAlphabetList(inputParametersNode);
-					applicationSettings.setReducedAlphabetList(reducedAlphabetList);
-				}
 				else if(inputParametersNode.getNodeName().equals("search_mode"))
 				{
 					List<String> defaultMethods = prepareList(inputParametersNode);
@@ -120,36 +115,11 @@ public class InputParametersGenerator
 	{
 		Element defaultInputParameterElement = (Element)defaultInputParametersNodeRoot;
 		inputParameters.setMaxNrOfSequences(Integer.parseInt(defaultInputParameterElement.getElementsByTagName("max_nr_of_sequences").item(0).getFirstChild().getNodeValue()));
-		inputParameters.setReducedAlphabet(Integer.parseInt(defaultInputParameterElement.getElementsByTagName("reduced_alphabet").item(0).getFirstChild().getNodeValue()));
 		inputParameters.setSoftIdentityCutoff(Float.parseFloat(defaultInputParameterElement.getElementsByTagName("soft_identity_cutoff").item(0).getFirstChild().getNodeValue()));
 		inputParameters.setHardIdentityCutoff(Float.parseFloat(defaultInputParameterElement.getElementsByTagName("hard_identity_cutoff").item(0).getFirstChild().getNodeValue()));
 		inputParameters.setSearchMode(defaultInputParameterElement.getElementsByTagName("search_mode").item(0).getFirstChild().getNodeValue());
 	}
 
-	/**
-	 * Retrieves list of values for reduced alphabet.
-	 * @param reducedAlphabetNodeRoot reduced alphabet node root
-	 * @return list of values for reduced alphabet
-	 */
-	private static List<Integer> prepareReducedAlphabetList(Node reducedAlphabetNodeRoot) 
-	{
-		List<Integer> reducedAlphabetList = new ArrayList<Integer>();
-		
-		NodeList reducedAlphabetNodeList = reducedAlphabetNodeRoot.getChildNodes();
-		
-		for(int i=0; i<reducedAlphabetNodeList.getLength(); i++)
-		{
-			Node reducedAlphabetNode = reducedAlphabetNodeList.item(i);
-			
-			if(reducedAlphabetNode.getNodeType() == Node.ELEMENT_NODE)
-			{
-				Node reducedAlphabetValueNode = reducedAlphabetNode.getFirstChild();
-				reducedAlphabetList.add(Integer.parseInt(reducedAlphabetValueNode.getNodeValue()));
-			}
-		}
-		
-		return reducedAlphabetList;
-	}
 
 	/**
 	 * Prepares list of strings for specified node list root.

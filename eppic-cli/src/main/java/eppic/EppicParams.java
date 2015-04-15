@@ -100,9 +100,6 @@ public class EppicParams {
 	
 	private static final String   DEF_OUT_DIR = ".";
 	
-	// default alphabet for entropy calculation 
-	public static final AAAlphabet DEF_ENTROPY_ALPHABET = new AAAlphabet(AAAlphabet.MIRNY_6);
-
 	// default cutoffs for the final bio/xtal call
 	public static final int       DEF_MIN_CORE_SIZE_FOR_BIO = 8;
 	public static final double    DEF_CORERIM_SCORE_CUTOFF = 0.90;
@@ -114,9 +111,7 @@ public class EppicParams {
 	public static final double    DEF_CA_CUTOFF_FOR_ZSCORE = 0.80;
 
 	private static final int      DEF_MAX_NUM_SEQUENCES = 100;
-	
-	public static final int 	  DEF_NSPHEREPOINTS_ASA_CALC = 3000;
-	
+		
 	protected static final HomologsSearchMode DEF_HOMOLOGS_SEARCH_MODE = HomologsSearchMode.LOCAL;
 	
 	// DEFAULTS FOR CONFIG FILE ASSIGNABLE CONSTANTS
@@ -144,11 +139,16 @@ public class EppicParams {
 	// default hbplus exec
 	private static final File     DEF_HBPLUS_EXE = new File("/usr/bin/hbplus");
 	
+	// default sphere points for ASA calculations
+	public static final int 	  DEF_NSPHEREPOINTS_ASA_CALC = 3000;
 	// default minimum ASA for calling a residue surface
 	public static final double    DEF_MIN_ASA_FOR_SURFACE = 5;
 	// default minimum number of atoms for a cofactor to be considered for ASA calculations purposes, if -1 all ignored
 	public static final int		  DEF_MIN_SIZE_COFACTOR_FOR_ASA = 40;
 	
+	// default alphabet for entropy calculation 
+	public static final AAAlphabet DEF_ENTROPY_ALPHABET = new AAAlphabet(AAAlphabet.MIRNY_6);
+
 	// default cutoffs
 	private static final double   DEF_QUERY_COVERAGE_CUTOFF = 0.85;
 	public static final int       DEF_MIN_NUM_SEQUENCES = 10;
@@ -186,7 +186,6 @@ public class EppicParams {
 	private String baseName;
 	private File outDir;
 	private int numThreads;
-	private AAAlphabet alphabet;
 	
 	private double caCutoffForGeom;
 	private double caCutoffForRimCore;
@@ -196,8 +195,6 @@ public class EppicParams {
 	
 	private int maxNumSeqs;
 	
-	private int nSpherePointsASAcalc;
-
 	private double coreRimScoreCutoff;
 	
 	private double coreSurfScoreCutoff;
@@ -241,13 +238,14 @@ public class EppicParams {
 	private File     tcoffeeBin;
 	private File	 clustaloBin;
 	
-	private File     selectonBin;
-	private double   selectonEpsilon;
-
 	private File	 pymolExe;
+
+	private AAAlphabet alphabet;
+
+	private int 	 nSpherePointsASAcalc;
 	
-	private double minAsaForSurface;
-	private int minSizeCofactorForAsa;	
+	private double 	 minAsaForSurface;
+	private int 	 minSizeCofactorForAsa;	
 	
 	private double   queryCoverageCutoff;
 	private int      minNumSeqs;
@@ -274,7 +272,7 @@ public class EppicParams {
 	private String   blastDb;    // no default
 	
 	private String   localUniprotDbName; // no default
-	private File hbplusExe;
+	private File 	 hbplusExe;
 	
 	/**
 	 * 
@@ -299,7 +297,6 @@ public class EppicParams {
 		this.caCutoffForZscore = DEF_CA_CUTOFF_FOR_ZSCORE;
 		this.minCoreSizeForBio = DEF_MIN_CORE_SIZE_FOR_BIO;
 		this.maxNumSeqs = DEF_MAX_NUM_SEQUENCES;
-		this.nSpherePointsASAcalc = DEF_NSPHEREPOINTS_ASA_CALC;
 		this.coreRimScoreCutoff = DEF_CORERIM_SCORE_CUTOFF;
 		this.coreSurfScoreCutoff = DEF_CORESURF_SCORE_CUTOFF;
 		this.interfSerFile = null;
@@ -317,7 +314,7 @@ public class EppicParams {
 	public void parseCommandLine(String[] args, String programName, String help) {
 	
 
-		Getopt g = new Getopt(programName, args, "i:sa:b:o:e:c:z:m:x:y:d:D:q:H:G:OA:I:C:plwL:g:uh?");
+		Getopt g = new Getopt(programName, args, "i:sa:b:o:e:c:z:m:x:y:d:D:q:H:OI:C:plwL:g:uh?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch (c) {
@@ -369,9 +366,6 @@ public class EppicParams {
 				break;
 			case 'O':
 				filterByDomain = true;
-				break;
-			case 'A':
-				nSpherePointsASAcalc = Integer.parseInt(g.getOptarg());
 				break;
 			case 'I':
 				interfSerFile = new File(g.getOptarg());
@@ -453,9 +447,6 @@ public class EppicParams {
 		"                  Default "+DEF_HOMOLOGS_SEARCH_MODE.getName() + "\n"+
 		"  [-O]         :  restrict homologs search to those within the same domain of \n" +
 		"                  life as query\n"+
-		"  [-A <int>]   :  number of sphere points for ASA calculation, this parameter \n" +
-		"                  controls the accuracy of the ASA calculations, the bigger the\n" +
-		"                  more accurate (and slower). Default: "+DEF_NSPHEREPOINTS_ASA_CALC+"\n" +
 		"  [-I <file>]  :  binary file containing the interface enumeration output of a \n" +
 		"                  previous run of "+PROGRAM_NAME+"\n" +
 		"  [-C <file>]  :  binary file containing the evolutionary scores for a particular \n" +
@@ -701,14 +692,6 @@ public class EppicParams {
 		return minCoreSizeForBio;
 	}
 	
-	public double getSelectonEpsilon() {
-		return selectonEpsilon;
-	}
-	
-	public void setSelectonEpsilon(double selectonEpsilon) {
-		this.selectonEpsilon = selectonEpsilon;
-	}
-	
 	public int getMaxNumSeqs() {
 		return maxNumSeqs;
 	}
@@ -841,6 +824,8 @@ public class EppicParams {
 			
 			hbplusExe       = new File(p.getProperty("HBPLUS_EXE", DEF_HBPLUS_EXE.toString()));
 			
+			nSpherePointsASAcalc = Integer.parseInt(p.getProperty("NSPHEREPOINTS_ASA_CALC", new Integer(DEF_NSPHEREPOINTS_ASA_CALC).toString()));
+			
 			minAsaForSurface = Double.parseDouble(p.getProperty("MIN_ASA_FOR_SURFACE", new Double(DEF_MIN_ASA_FOR_SURFACE).toString()));
 			
 			minSizeCofactorForAsa = Integer.parseInt(p.getProperty("MIN_SIZE_COFACTOR_FOR_ASA", new Integer(DEF_MIN_SIZE_COFACTOR_FOR_ASA).toString()));
@@ -914,10 +899,6 @@ public class EppicParams {
 	
 	public File getClustaloBin() {
 		return clustaloBin;
-	}
-
-	public File getSelectonBin() {
-		return selectonBin;
 	}
 
 	public File getPymolExe() {
