@@ -474,28 +474,37 @@ public class LatticeGUI {
 	private final Integer debugAUNum = null; // single AU to display or null for all
 
 	public static void main(String[] args) throws IOException, StructureException {
-		String filename = null;
-		String name;
-		name = "1xyy";
-		//name = "1a99";
-//		name = "3vkx";
-//		name = "1ble";
-//		name = "2d3e";
+		
+		if (args.length<1) {
+			logger.error("No PDB code or file name given.");
+			System.exit(1);
+		}
+		
+		String input = args[0];
+
+		String filename;
 		Structure struc;
-		if( filename == null ) {
+		
+		if (new File(input).exists()) {
+			filename = input;
+			struc = StructureTools.getStructure(filename);
+		} else if (input.matches("\\d\\w\\w\\w")){
 			AtomCache cache = new AtomCache();
 			cache.setUseMmCif(true);
-			struc = cache.getStructure(name);
-			File file = getFile(cache,name);
+			struc = cache.getStructure(input);
+			File file = getFile(cache,input);
 			if(!file.exists() ) {
-				logger.error(String.format("Error loading %s from %s",name,file.getAbsolutePath()));
-				System.exit(1); return;
+				logger.error(String.format("Error loading %s from %s",input,file.getAbsolutePath()));
+				System.exit(1);
 			}
-			filename = file.getAbsolutePath();
+			filename = file.getAbsolutePath();			
 		} else {
-			struc = StructureTools.getStructure(filename);
+			filename = null;
+			struc = null;
+			logger.error("Input doesn't seem to be a file or a PDB code. Exiting");
+			System.exit(1);
 		}
-
+		
 		LatticeGUI gui = new LatticeGUI(struc);
 		gui.display(filename);
 	}
