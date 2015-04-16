@@ -270,6 +270,15 @@ public class Assembly {
 		int numEdges = subgraph.edgeSet().size();
 
 		logger.info("Subgraph of assembly {} has {} vertices and {} edges",this.toString(),numVertices, numEdges); 
+
+		// The PatonCycle detection does not work for multigraphs, e.g. in 1pfc engaging interfaces 1,5 it goes in an infinite loop
+		// Thus we need to pre-check multi-edges and discard whenever they have non-zero sum translations (which directly invalidates the whole subgraph)
+		// If the the subgraph is multi and this check still returns false, we'd have a multigraph to deal with below,
+		// but hopefully that doesn't happen (remember we've also removed all duplicate edges from the main graph in any case)
+		if (precheckMultiEdges(subgraph)) {
+			logger.info("Discarding assembly because some of its multi-edges have non-zero sum translations and thus can't be closed");
+			return false;
+		}
 		
 		//getStoichiometry();
 
@@ -362,6 +371,34 @@ public class Assembly {
 		return p.equals(new Point3i(0,0,0));
 	}
 
+	/**
+	 * Returns true if any of the multi-edges in given subgraph has non-zero sum translations,
+	 * false otherwise
+	 * @param subgraph
+	 * @return
+	 */
+	private boolean precheckMultiEdges(UndirectedGraph<ChainVertex,InterfaceEdge> subgraph) {
+		
+		for (InterfaceEdge edge:subgraph.edgeSet()) {
+			Set<InterfaceEdge> edges = subgraph.getAllEdges(subgraph.getEdgeSource(edge), subgraph.getEdgeTarget(edge));
+			if (edges.size()==1) continue;
+			
+			Point3i t = new Point3i(0,0,0);
+			for (InterfaceEdge e: edges) {
+				t.add(e.getXtalTrans());
+			}
+			if (!t.equals(new Point3i(0,0,0))) {
+				logger.info("Vertices {},{} are connected by {} edges with non-0 sum translation: {} ",
+						subgraph.getEdgeSource(edge), subgraph.getEdgeTarget(edge), edges.size(), t.toString()); 
+				return true; 
+			} else {
+				logger.warn("Unexpected multi-edge: vertices {},{} are connected by {} edges with 0 sum translation! ",
+						subgraph.getEdgeSource(edge), subgraph.getEdgeTarget(edge), edges.size());
+			}
+		}
+		return false;
+	}
+	
 	@Override
 	public boolean equals(Object other) {
 		if (! (other instanceof Assembly)) return false;
