@@ -326,10 +326,10 @@ public class DataModelAdaptor {
 			assembly.setInterfaceClusterIds(validAssembly.toString());
 			
 			assembly.setMmSize(validAssembly.getSize());
-			// TODO fill the composition, sym, stoichiometry data
-			//assembly.setComposition(composition);			
-			//assembly.setSymmetry(validAssembly.getSymmetry());
-			//assembly.setStoichiometry(validAssembly.getStoichiometry());
+			// TODO fill the composition
+			//assembly.setComposition(composition);	
+			assembly.setSymmetry(validAssembly.getSymmetry());
+			assembly.setStoichiometry(validAssembly.getStoichiometryString());
 			
 			// TODO we can get pseudosymmetry data for PDB provided assemblies (using BJ qs detection), but can we do that for our calculated assemblies?
 			//assembly.setPseudoSymmetry(pseudoSymmetry);
@@ -409,9 +409,15 @@ public class DataModelAdaptor {
 
 			as.setAssembly(matchingAssembly);
 			
-			// TODO we should compare the sym calculated with biojava qs detection to our 
-			//      graph-calculated symmetries. If they don't coincide we should emit a warning
-
+			if (!matchingAssembly.getSymmetry().equals(symmetries[0])) {
+				LOGGER.warn("Symmetry calculated from graph is {} whilst detected from biounit is {}",
+						matchingAssembly.getSymmetry(),symmetries[0]);
+			}
+			
+			if (!matchingAssembly.getStoichiometry().equals(symmetries[1])) {
+				LOGGER.warn("Stoichiometry calculated from graph is {} whilst detected from biounit is {}",
+						matchingAssembly.getStoichiometry(),symmetries[1]);
+			}
 			matchingAssembly.addAssemblyScore(as);
 			
 		} else {
@@ -423,7 +429,7 @@ public class DataModelAdaptor {
 			for (int clusterId:matchingClusterIds) {
 				engagedSet[clusterId-1] = true;
 			}
-			Assembly invalidAssembly = new Assembly(interfaces, graph, engagedSet, structure.getCompounds().size());
+			Assembly invalidAssembly = new Assembly(structure, interfaces, graph, engagedSet);
 			
 			AssemblyDB assembly = new AssemblyDB();
 			

@@ -20,7 +20,8 @@ public class AssemblyFinder {
 
 	private static final Logger logger = LoggerFactory.getLogger(AssemblyFinder.class);
 	
-	private LatticeGraph lattice;	
+	private LatticeGraph lattice;
+	private Structure structure;
 	private StructureInterfaceList interfaces;
 	
 	private int numEntities;
@@ -28,6 +29,7 @@ public class AssemblyFinder {
 	private int[] xtalStoichiometry;
 	
 	public AssemblyFinder(Structure structure, StructureInterfaceList interfaces) throws StructureException {
+		this.structure = structure;
 		this.lattice = new LatticeGraph(structure, interfaces);
 		this.interfaces = interfaces;
 		
@@ -58,6 +60,10 @@ public class AssemblyFinder {
 	
 	public LatticeGraph getLatticeGraph() {
 		return lattice;
+	}
+	
+	public Structure getStructure() {
+		return structure;
 	}
 	
 	public StructureInterfaceList getInterfaces() {
@@ -91,7 +97,7 @@ public class AssemblyFinder {
 		// the list of nodes in the tree found to be invalid: all of their children will also be invalid
 		List<Assembly> invalidNodes = new ArrayList<Assembly>();		
 		
-		Assembly emptyAssembly = new Assembly(interfaces, lattice.getGraph(), new boolean[numInterfClusters], numEntities);
+		Assembly emptyAssembly = new Assembly(structure, interfaces, lattice.getGraph(), new boolean[numInterfClusters]);
 		
 		validSet.add(emptyAssembly); // the empty assembly (no engaged interfaces) is always a valid assembly
 		

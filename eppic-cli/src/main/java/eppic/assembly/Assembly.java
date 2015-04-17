@@ -9,6 +9,7 @@ import java.util.Set;
 
 import javax.vecmath.Point3i;
 
+import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.contact.StructureInterface;
 import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
 import org.biojava.nbio.structure.contact.StructureInterfaceList;
@@ -36,6 +37,7 @@ public class Assembly {
 	 */
 	private boolean[] engagedSet;
 	
+	private Structure structure;
 	private StructureInterfaceList interfaces;
 	private UndirectedGraph<ChainVertex,InterfaceEdge> graph;
 	
@@ -45,16 +47,27 @@ public class Assembly {
 	private String symmetry;
 	private int[] stoichiometry;
 	
-	public Assembly(StructureInterfaceList interfaces, 
-			UndirectedGraph<ChainVertex,InterfaceEdge> graph, boolean[] engagedSet, int totalNumEntities) {
+	private UndirectedGraph<ChainVertex, InterfaceEdge> subgraph;
+	
+	public Assembly(Structure structure, StructureInterfaceList interfaces,
+			UndirectedGraph<ChainVertex,InterfaceEdge> graph, boolean[] engagedSet) {
 		this.engagedSet = engagedSet;
+		this.structure = structure;
 		this.interfaces = interfaces;
 		this.graph = graph;
-		this.totalNumEntities = totalNumEntities;
+		if (structure==null) {
+			this.totalNumEntities = 0;
+		} else {
+			this.totalNumEntities = structure.getCompounds().size();
+		}
 		
 		this.size = -1;
 		this.symmetry = null;
 		this.stoichiometry = null;
+	}
+	
+	public Assembly(boolean[] engagedSet) {
+		this.engagedSet = engagedSet;
 	}
 	
 	public List<StructureInterfaceCluster> getInterfaceClusters() {
@@ -71,11 +84,8 @@ public class Assembly {
 	}
 	
 	public int getSize() {
+		// TODO implement!
 		return size;
-	}
-	
-	public String getSymmetry() {
-		return symmetry;
 	}
 	
 	public int getTotalNumEntities() {
@@ -89,7 +99,7 @@ public class Assembly {
 	public int[] getStoichiometry() {
 		if (stoichiometry!=null) return stoichiometry;
 		
-		UndirectedGraph<ChainVertex, InterfaceEdge> subgraph = getSubgraph();
+		getSubgraph(); // lazily initialises the subgraph variable 
 		
 		ConnectivityInspector<ChainVertex, InterfaceEdge> ci = new ConnectivityInspector<ChainVertex, InterfaceEdge>(subgraph);
 		
@@ -106,15 +116,6 @@ public class Assembly {
 			}			
 		}
 		
-		// now we reduce to the common divisor
-		for (int[] s:stoichiometries) {
-			int divisor = gcd(s);
-			for (int i=0;i<s.length;i++) {
-				s[i] = s[i] / divisor;
-			}
-			logger.debug("Stoichiometry of connected component: {}", Arrays.toString(s));
-		}
-		
 		// we assign the first stoichiometry found, and check and warn if the others are different 
 		stoichiometry = stoichiometries.get(0);
 		for (int i=1;i<stoichiometries.size();i++) {
@@ -126,6 +127,17 @@ public class Assembly {
 		
 		logger.info("Stoichiometry of assembly {} is: {}",toString(),Arrays.toString(stoichiometry));
 		return stoichiometry;
+	}
+	
+	public String getStoichiometryString() {
+		StringBuilder stoSb = new StringBuilder();
+		int[] sto = getStoichiometry();
+		for (int i=0;i<sto.length;i++){
+			// note: this relies on mol ids in the PDB being 1 to n, that might not be true, we need to check!
+			stoSb.append(structure.getCompoundById(i+1).getRepresentative().getChainID());
+			stoSb.append(sto[i]);
+		}
+		return stoSb.toString();
 	}
 		
 	public int getNumEngagedInterfaceClusters() {
@@ -180,7 +192,7 @@ public class Assembly {
 			if (!this.engagedSet[i]) {
 				boolean[] c = this.engagedSet.clone();
 				c[i] = true;
-				Assembly a = new Assembly(interfaces, graph, c, totalNumEntities);
+				Assembly a = new Assembly(structure, interfaces, graph, c);
 				// first we need to check that this is not a child of another parent already known to be invalid
 				if (a.isChild(invalidParents)) continue;
 				
@@ -198,8 +210,9 @@ public class Assembly {
 	 */
 	private UndirectedGraph<ChainVertex, InterfaceEdge> getSubgraph() {
 		
+		if (subgraph != null) return subgraph; 
+		
 		// note that the subgraph will contain all vertices even if they are not connected to the rest by any interface
-		// TODO do we want that? or do we want a subgraph with no orphan vertices?
 		
 		Set<ChainVertex> vertexSet = graph.vertexSet();
 		Set<InterfaceEdge> edgeSubset = new HashSet<InterfaceEdge>();
@@ -211,7 +224,7 @@ public class Assembly {
 			}
 		}
 		
-		UndirectedGraph<ChainVertex, InterfaceEdge> subgraph = 
+		this.subgraph = 
 				new UndirectedSubgraph<ChainVertex, InterfaceEdge>(
 						graph, vertexSet, edgeSubset);
 				
@@ -226,14 +239,7 @@ public class Assembly {
 	 */
 	public boolean isValid() {
 		
-		// TODO rule iii is still missing here
-
-		
-		// first we check for infinites, like that we save to compute the graph cycles for infinite cases
-		if (containsInfinites()) {
-			logger.info("Discarding assembly {} because it contains infinite interfaces", toString());
-			return false;
-		}
+		// TODO rule iii is still missing here		
 		
 		return isClosedSymmetry();
 	}
@@ -251,6 +257,12 @@ public class Assembly {
 
 	public boolean isClosedSymmetry() {
 		
+		// first we check for infinites, like that we save to compute the graph cycles for infinite cases
+		if (containsInfinites()) {
+			logger.info("Discarding assembly {} because it contains infinite interfaces", toString());
+			return false;
+		}
+
 		// pre-check for assemblies with 1 engaged interface that is isologous: the cycle detection doesn't work for isologous
 		if (getNumEngagedInterfaceClusters()==1) {
 			for (StructureInterface interf : getInterfaceClusters().get(0).getMembers()) {
@@ -263,8 +275,7 @@ public class Assembly {
 		}
 		
 		// we check the cycles in the graph and whether they stay in same cell
-
-		UndirectedGraph<ChainVertex,InterfaceEdge> subgraph = getSubgraph();
+		getSubgraph(); // initialises subgraph variable
 
 		int numVertices = subgraph.vertexSet().size();
 		int numEdges = subgraph.edgeSet().size();
@@ -397,6 +408,56 @@ public class Assembly {
 			}
 		}
 		return false;
+	}
+	
+	/**
+	 * Return the symmetry string for this Assembly. This will only work on assemblies that have been previously checked
+	 * to be valid with {@link #isValid()}
+	 * @return
+	 */
+	public String getSymmetry() {
+		if (symmetry!=null) return symmetry;
+		
+		int[] sto = getStoichiometry();
+		
+		if (totalNumEntities!=1) {
+			logger.warn("Symmetry detection for heteromeric assemblies not supported yet, setting it to C1");
+			symmetry =  "unknown";
+			return symmetry;
+		}
+		
+		int n = sto[0];
+		
+		// for homomers of size n>1 is clear:
+		//  - if n==1: C1
+		//  - if n uneven: there should be only 1 interface cluster engaged (otherwise warn!) ==> Cn
+		//  - if n==2: there should be only 1 interface cluster engaged (otherwise warn!) ==> C2
+		//  - else if n even (n=2m): there can be either 1 or more interface clusters engaged:
+		//      if 1: Cn
+		//      if >1: Dm
+		
+		if (n==1) {
+			if (getNumEngagedInterfaceClusters()>0) {
+				logger.warn("Some interface cluster is engaged for an assembly of size 1. Something is wrong!");
+			}
+			symmetry = "C1";
+		} else if (n%2 != 0 || n==2) {
+			if (getNumEngagedInterfaceClusters()>1) {
+				logger.warn("More than 1 engaged interface clusters for a homomeric assembly of size {}. Something is wrong!",n);
+			}
+			symmetry = "C"+n;
+		} else { // even number larger than 2
+			if (getNumEngagedInterfaceClusters()==1) {
+				symmetry = "C"+n;
+			} else {
+				symmetry = "D"+(n/2);
+			}
+		}
+		
+		logger.info("Symmetry of assembly {} is {}",this.toString(),symmetry); 
+		// TODO detect tetrahedral, octahedral and icosahedral symmetries
+		
+		return symmetry;
 	}
 	
 	@Override

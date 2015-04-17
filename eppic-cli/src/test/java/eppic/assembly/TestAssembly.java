@@ -15,35 +15,35 @@ public class TestAssembly {
 	public void testIsChild() {
 		
 		boolean[] b1 = {false,false,false,false};
-		Assembly a1 = new Assembly(null,null, b1 ,1);
+		Assembly a1 = new Assembly(b1);
 		
 		boolean[] b2 = {true,false,false,false};
-		Assembly a2 = new Assembly(null,null, b2 ,1);
+		Assembly a2 = new Assembly(b2);
 		
 		assertTrue(a2.isChild(a1));
 		
 		boolean[] b3 = {true,false,true,false};
-		Assembly a3 = new Assembly(null,null, b3 ,1);
+		Assembly a3 = new Assembly(b3);
 		
 		assertTrue(a3.isChild(a2));
 		assertTrue(a3.isChild(a1));
 		
 		boolean[] b4 = {false,false,true,false};
-		Assembly a4 = new Assembly(null,null, b4 ,1);
+		Assembly a4 = new Assembly(b4);
 		
 		assertTrue(a4.isChild(a1));
 		assertFalse(a4.isChild(a2));
 		assertFalse(a4.isChild(a3));
 		
 		boolean[] b5 = {true,true,true,false};
-		Assembly a5 = new Assembly(null,null, b5 ,1);
+		Assembly a5 = new Assembly(b5);
 
 		assertTrue(a5.isChild(a1));
 		assertTrue(a5.isChild(a4));
 		assertTrue(a5.isChild(a3));
 		
 		boolean[] b6 = {false,true,false,true};
-		Assembly a6 = new Assembly(null,null, b6 ,1);
+		Assembly a6 = new Assembly(b6);
 
 		assertTrue(a6.isChild(a1));
 		assertFalse(a6.isChild(a2));
@@ -57,7 +57,7 @@ public class TestAssembly {
 
 		int size = 6;
 		
-		Assembly emptyAssembly = new Assembly(null, null, new boolean[size], 1);
+		Assembly emptyAssembly = new Assembly(new boolean[size]);
 		
 		Set<Assembly> prevLevel = new HashSet<Assembly>();
 		prevLevel.add(emptyAssembly);
