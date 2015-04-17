@@ -84,7 +84,11 @@ public class Assembly {
 	}
 	
 	public int getSize() {
-		// TODO implement!
+		getStoichiometry(); // lazily initialises stoichiometry var
+		size = 0; 
+		for (int i=0;i<stoichiometry.length;i++) {
+			size += stoichiometry[i];
+		}
 		return size;
 	}
 	
@@ -134,8 +138,10 @@ public class Assembly {
 		int[] sto = getStoichiometry();
 		for (int i=0;i<sto.length;i++){
 			// note: this relies on mol ids in the PDB being 1 to n, that might not be true, we need to check!
-			stoSb.append(structure.getCompoundById(i+1).getRepresentative().getChainID());
-			stoSb.append(sto[i]);
+			if (sto[i]>0) {
+				stoSb.append(structure.getCompoundById(i+1).getRepresentative().getChainID());			
+				if (sto[i]>1) stoSb.append(sto[i]); // for A1B1 we do AB (we ommit 1s)
+			}
 		}
 		return stoSb.toString();
 	}
@@ -239,7 +245,12 @@ public class Assembly {
 	 */
 	public boolean isValid() {
 		
-		// TODO rule iii is still missing here		
+		getSubgraph(); // initialises subgraph variable
+		
+		if (!checkSubgraphIsomorphism()) {
+			logger.info("Assembly {} contains non-isomorphic subgraphs, discarding it",this.toString());
+			return false;
+		}
 		
 		return isClosedSymmetry();
 	}
@@ -291,8 +302,6 @@ public class Assembly {
 			return false;
 		}
 		
-		//getStoichiometry();
-
 		PatonCycleBase<ChainVertex, InterfaceEdge> paton = new PatonCycleBase<ChainVertex, InterfaceEdge>(subgraph);
 
 		List<List<ChainVertex>> cycles = paton.findCycleBase();
@@ -304,8 +313,6 @@ public class Assembly {
 		}
 		
 		logger.info("{} cycles in total",cycles.size());
-		
-		// TODO check that all cycles are isomorphous, if they aren't this can't be an assembly
 		
 		for (List<ChainVertex> cycle:cycles) {
 			
@@ -408,6 +415,38 @@ public class Assembly {
 			}
 		}
 		return false;
+	}
+	
+	private boolean checkSubgraphIsomorphism() {
+		
+		// 1) Isomorphic in entities: i.e. all connected components need to have the same stoichiometry
+		
+		ConnectivityInspector<ChainVertex, InterfaceEdge> ci = new ConnectivityInspector<ChainVertex, InterfaceEdge>(subgraph);
+		
+		List<Set<ChainVertex>> ccs = ci.connectedSets();
+		
+		List<int[]> stoichiometries = new ArrayList<int[]>();
+		for (Set<ChainVertex> cc:ccs) {			
+			int [] s = new int[totalNumEntities];
+			stoichiometries.add(s);
+			for (ChainVertex v:cc) {
+				// note: this relies on mol ids in the PDB being 1 to n, that might not be true, we need to check!
+				s[v.getEntity()-1]++;
+			}			
+		}
+		
+		for (int i=1;i<stoichiometries.size();i++) {
+			if (!Arrays.equals(stoichiometries.get(0), stoichiometries.get(i))) {
+				logger.debug("Stoichiometry {} ({}) does not coincide with stoichiometry 0 ({})",
+						i, Arrays.toString(stoichiometries.get(i)), Arrays.toString(stoichiometries.get(0)));
+				return false;
+			}
+		}
+		
+		// 2) Isomorphic in connectivity
+		// TODO implement isomorphism check of graph connectivity
+		
+		return true;
 	}
 	
 	/**
