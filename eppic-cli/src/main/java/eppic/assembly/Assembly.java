@@ -2,14 +2,18 @@ package eppic.assembly;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.vecmath.Point3i;
 
+import org.biojava.nbio.structure.Chain;
 import org.biojava.nbio.structure.Structure;
+import org.biojava.nbio.structure.Compound;
 import org.biojava.nbio.structure.contact.StructureInterface;
 import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
 import org.biojava.nbio.structure.contact.StructureInterfaceList;
@@ -83,6 +87,10 @@ public class Assembly {
 		return interfaceClusters;
 	}
 	
+	/**
+	 * Return the macromolecular size of this assembly.
+	 * @return
+	 */
 	public int getSize() {
 		getStoichiometry(); // lazily initialises stoichiometry var
 		size = 0; 
@@ -99,7 +107,15 @@ public class Assembly {
 	public UndirectedGraph<ChainVertex,InterfaceEdge> getGraph() {
 		return graph;
 	}
-		
+	
+	/**
+	 * Gets the stoichiometry as an int array with counts of entities per entity id. 
+	 * The indices of the array are the entity ids, i.e. the molecule ids of each Compound, see {@link Compound#getMolId()}
+	 * The results are cached so that subsequent calls to this method don't recalculate them.
+	 * This will only work correctly on assemblies that have been previously checked
+	 * to be valid with {@link #isValid()}, otherwise if the assembly is not isomorphic a warning is logged
+	 * @return
+	 */
 	public int[] getStoichiometry() {
 		if (stoichiometry!=null) return stoichiometry;
 		
@@ -129,20 +145,73 @@ public class Assembly {
 			}
 		}
 		
-		logger.info("Stoichiometry of assembly {} is: {}",toString(),Arrays.toString(stoichiometry));
+		logger.info("Stoichiometry of assembly {} is: {}",toString(), getStoichiometryString());
 		return stoichiometry;
 	}
 	
+	/**
+	 * Return the stoichiometry string by using entities (actually representative chain ids of each entity)
+	 * @return
+	 */
 	public String getStoichiometryString() {
 		StringBuilder stoSb = new StringBuilder();
-		int[] sto = getStoichiometry();
-		for (int i=0;i<sto.length;i++){
+		getStoichiometry(); // this lazily initialises the stoichiometry variable
+		
+		for (int i=0;i<stoichiometry.length;i++){
 			// note: this relies on mol ids in the PDB being 1 to n, that might not be true, we need to check!
-			if (sto[i]>0) {
+			if (stoichiometry[i]>0) {
 				stoSb.append(structure.getCompoundById(i+1).getRepresentative().getChainID());			
-				if (sto[i]>1) stoSb.append(sto[i]); // for A1B1 we do AB (we ommit 1s)
+				if (stoichiometry[i]>1) stoSb.append(stoichiometry[i]); // for A1B1 we do AB (we ommit 1s)
 			}
 		}
+		return stoSb.toString();
+	}
+	
+	/**
+	 * Return the stoichiometry string by using chain ids (composition).
+	 * This will only work correctly on assemblies that have been previously checked
+	 * to be valid with {@link #isValid()}.
+	 * The chain ids will be those of the first connected component found in the subgraph.
+	 * @return
+	 */
+	public String getCompositionString() {
+		
+		getSubgraph(); // lazily initialises the subgraph variable 
+		
+		Map<String,Integer> chainIds2Idx = new HashMap<String,Integer>();
+		Map<Integer,String> idx2ChainIds = new HashMap<Integer,String>();
+		int i = 0;
+		for (Chain c:structure.getChains()) {
+			chainIds2Idx.put(c.getChainID(),i);
+			idx2ChainIds.put(i,c.getChainID());
+			i++;
+		}
+		
+		ConnectivityInspector<ChainVertex, InterfaceEdge> ci = new ConnectivityInspector<ChainVertex, InterfaceEdge>(subgraph);
+
+		List<Set<ChainVertex>> ccs = ci.connectedSets();
+
+		List<int[]> compositions = new ArrayList<int[]>();
+		for (Set<ChainVertex> cc:ccs) {
+			
+			int [] s = new int[structure.getChains().size()];
+			compositions.add(s);
+			for (ChainVertex v:cc) {
+				s[chainIds2Idx.get(v.getChainId())]++;
+			}			
+		}
+
+		// we assume that the assembly has been already checked to be isomorphic, we can just take the first composition found
+		
+		StringBuilder stoSb = new StringBuilder();
+		int[] comp = compositions.get(0);
+		for (i=0;i<comp.length;i++){
+			if (comp[i]>0) {
+				stoSb.append(idx2ChainIds.get(i));			
+				if (comp[i]>1) stoSb.append(comp[i]); // for A1B1 we do AB (we ommit 1s)
+			}
+		}
+		logger.info("The composition of assembly {} is {}",this.toString(), stoSb.toString());
 		return stoSb.toString();
 	}
 		
@@ -450,7 +519,8 @@ public class Assembly {
 	}
 	
 	/**
-	 * Return the symmetry string for this Assembly. This will only work on assemblies that have been previously checked
+	 * Return the symmetry string for this Assembly. 
+	 * This will only work correctly on assemblies that have been previously checked
 	 * to be valid with {@link #isValid()}
 	 * @return
 	 */

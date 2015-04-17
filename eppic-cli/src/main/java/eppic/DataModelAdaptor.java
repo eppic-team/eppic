@@ -326,8 +326,7 @@ public class DataModelAdaptor {
 			assembly.setInterfaceClusterIds(validAssembly.toString());
 			
 			assembly.setMmSize(validAssembly.getSize());
-			// TODO fill the composition
-			//assembly.setComposition(composition);	
+			assembly.setComposition(validAssembly.getCompositionString());	
 			assembly.setSymmetry(validAssembly.getSymmetry());
 			assembly.setStoichiometry(validAssembly.getStoichiometryString());
 			
