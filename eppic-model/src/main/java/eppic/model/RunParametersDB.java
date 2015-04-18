@@ -48,10 +48,6 @@ public class RunParametersDB implements Serializable {
 		this.alphabet = alphabet;
 	}
 	
-	public int getNumGroupsAlphabet() {
-		return alphabet.split(":").length;
-	}
-	
 	public int getMinNumSeqsCutoff() {
 		return minNumSeqsCutoff;
 	}

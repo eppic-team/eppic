@@ -495,7 +495,7 @@
 			<basic name="queryCovCutoff"></basic>
 			<basic name="minNumSeqsCutoff"></basic>
 			<basic name="maxNumSeqsCutoff"></basic>
-			<basic name="reducedAlphabet"></basic>
+			<basic name="alphabet"></basic>
 			<basic name="caCutoffForGeom"></basic>
 			<basic name="caCutoffForCoreRim"></basic>
 			<basic name="caCutoffForCoreSurface"></basic>
