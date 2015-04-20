@@ -354,6 +354,10 @@ public class Main {
 			LOGGER.info("The input structure is not crystallographic: won't do analysis of assemblies");
 			return;
 		}
+		if (pdb.getCrystallographicInfo().getSpaceGroup()==null) {
+			LOGGER.warn("No space group available, will not do analysis of assemblies");
+			return;
+		}
 		AssemblyFinder aFinder = new AssemblyFinder(pdb, interfaces);
 		latticeGraph = aFinder.getLatticeGraph();
 		validAssemblies = aFinder.getValidAssemblies();
@@ -414,7 +418,7 @@ public class Main {
 		modelAdaptor.setResidueDetails(interfaces);
 
 		// TODO for the moment we are only doing assemblies for crystallographic structures, but we should also try to deal with NMR and EM
-		if (pdb.isCrystallographic()) {
+		if (pdb.isCrystallographic() && pdb.getCrystallographicInfo().getSpaceGroup()!=null) {
 			modelAdaptor.setAssemblies(validAssemblies);
 
 			// since the move to Biojava, we have decided to take the first PDB-annotated biounit ONLY, whatever its type
