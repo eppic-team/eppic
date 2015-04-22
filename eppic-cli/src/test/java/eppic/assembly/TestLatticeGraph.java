@@ -318,6 +318,37 @@ public class TestLatticeGraph {
 		
 
 	}
+	
+	@Test
+	public void testIsomorphicDetection1a99() throws IOException, StructureException {
+
+		// 1a99 
+		// see issue https://github.com/eppic-team/eppic-science/issues/14
+		AssemblyFinder ab = getLatticeGraph("1a99");
+		
+		// cluster 1: non-isomorphic (even if isologous!)
+		Assembly a = generateAssembly(ab, 1);
+		assertTrue(a.isClosedSymmetry());
+		assertFalse(a.isValid());
+		assertFalse(a.isIsomorphic());
+		
+		// cluster 2: non-isomorphic
+		a = generateAssembly(ab, 2);
+		assertFalse(a.isValid());
+		assertFalse(a.isIsomorphic());		
+		
+		// cluster 3: non-isomorphic
+		a = generateAssembly(ab, 3);
+		assertFalse(a.isValid());
+		assertFalse(a.isIsomorphic());
+		
+		// clusters 4: isologous and isomorphic
+		a = generateAssembly(ab, 4);
+		assertTrue(a.isValid());
+		assertTrue(a.isIsomorphic());
+		
+
+	}
 
 	private AssemblyFinder getLatticeGraph(String pdbId) throws IOException, StructureException {
 		

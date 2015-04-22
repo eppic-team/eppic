@@ -45,11 +45,9 @@ public class Assembly {
 	private StructureInterfaceList interfaces;
 	private UndirectedGraph<ChainVertex,InterfaceEdge> graph;
 	
-	private int totalNumEntities;
-	
-	private int size;
 	private String symmetry;
-	private int[] stoichiometry;
+	
+	private List<Stoichiometry> stoichiometries;
 	
 	private UndirectedGraph<ChainVertex, InterfaceEdge> subgraph;
 	
@@ -59,15 +57,9 @@ public class Assembly {
 		this.structure = structure;
 		this.interfaces = interfaces;
 		this.graph = graph;
-		if (structure==null) {
-			this.totalNumEntities = 0;
-		} else {
-			this.totalNumEntities = structure.getCompounds().size();
-		}
-		
-		this.size = -1;
+				
 		this.symmetry = null;
-		this.stoichiometry = null;
+		this.stoichiometries = null;
 	}
 	
 	public Assembly(boolean[] engagedSet) {
@@ -92,16 +84,9 @@ public class Assembly {
 	 * @return
 	 */
 	public int getSize() {
-		getStoichiometry(); // lazily initialises stoichiometry var
-		size = 0; 
-		for (int i=0;i<stoichiometry.length;i++) {
-			size += stoichiometry[i];
-		}
-		return size;
-	}
-	
-	public int getTotalNumEntities() {
-		return totalNumEntities;
+		
+		Stoichiometry stoichiometry = getStoichiometry(); 
+		return stoichiometry.getTotalSize();
 	}
 	
 	public UndirectedGraph<ChainVertex,InterfaceEdge> getGraph() {
@@ -111,13 +96,35 @@ public class Assembly {
 	/**
 	 * Gets the stoichiometry as an int array with counts of entities per entity id. 
 	 * The indices of the array are the entity ids, i.e. the molecule ids of each Compound, see {@link Compound#getMolId()}
-	 * The results are cached so that subsequent calls to this method don't recalculate them.
 	 * This will only work correctly on assemblies that have been previously checked
 	 * to be valid with {@link #isValid()}, otherwise if the assembly is not isomorphic a warning is logged
 	 * @return
 	 */
-	public int[] getStoichiometry() {
-		if (stoichiometry!=null) return stoichiometry;
+	public Stoichiometry getStoichiometry() {
+		
+		getStoichiometries(); // lazily initialises the stoichiometries list
+		
+		// we assign the first stoichiometry found, and check and warn if the others are different 
+		Stoichiometry stoichiometry = stoichiometries.get(0);
+		for (int i=1;i<stoichiometries.size();i++) {
+			if (!stoichiometry.equals(stoichiometries.get(i))) {
+				logger.warn("Stoichiometry {} ({}) does not coincide with stoichiometry 0 ({})",
+						i, stoichiometries.get(i).toString(), stoichiometry.toString());
+			}
+		}
+		
+		logger.info("Stoichiometry of assembly {} is: {}",toString(), stoichiometry.toFormattedString());
+		return stoichiometry;
+	}
+	
+	/**
+	 * Gets the stoichiometries of each connected component in a List of stoichiometry vectors
+	 * The results are cached so that subsequent calls to this method don't recalculate them.
+	 * @return
+	 */
+	private List<Stoichiometry> getStoichiometries() {
+		
+		if (stoichiometries!=null) return stoichiometries;
 		
 		getSubgraph(); // lazily initialises the subgraph variable 
 		
@@ -126,27 +133,18 @@ public class Assembly {
 		List<Set<ChainVertex>> ccs = ci.connectedSets();
 		
 		logger.info("Total of {} connected components", ccs.size());
-		List<int[]> stoichiometries = new ArrayList<int[]>();
+		
+		stoichiometries = new ArrayList<Stoichiometry>();
 		for (Set<ChainVertex> cc:ccs) {			
-			int [] s = new int[totalNumEntities];
+			Stoichiometry s = new Stoichiometry(structure);
 			stoichiometries.add(s);
 			for (ChainVertex v:cc) {
 				// note: this relies on mol ids in the PDB being 1 to n, that might not be true, we need to check!
-				s[v.getEntity()-1]++;
+				s.addEntity(v.getEntity());
 			}			
 		}
 		
-		// we assign the first stoichiometry found, and check and warn if the others are different 
-		stoichiometry = stoichiometries.get(0);
-		for (int i=1;i<stoichiometries.size();i++) {
-			if (!Arrays.equals(stoichiometry, stoichiometries.get(i))) {
-				logger.warn("Stoichiometry {} ({}) does not coincide with stoichiometry 0 ({})",
-						i, Arrays.toString(stoichiometries.get(i)), Arrays.toString(stoichiometry));
-			}
-		}
-		
-		logger.info("Stoichiometry of assembly {} is: {}",toString(), getStoichiometryString());
-		return stoichiometry;
+		return stoichiometries;
 	}
 	
 	/**
@@ -154,17 +152,11 @@ public class Assembly {
 	 * @return
 	 */
 	public String getStoichiometryString() {
-		StringBuilder stoSb = new StringBuilder();
-		getStoichiometry(); // this lazily initialises the stoichiometry variable
 		
-		for (int i=0;i<stoichiometry.length;i++){
-			// note: this relies on mol ids in the PDB being 1 to n, that might not be true, we need to check!
-			if (stoichiometry[i]>0) {
-				stoSb.append(structure.getCompoundById(i+1).getRepresentative().getChainID());			
-				if (stoichiometry[i]>1) stoSb.append(stoichiometry[i]); // for A1B1 we do AB (we ommit 1s)
-			}
-		}
-		return stoSb.toString();
+		Stoichiometry stoichiometry = getStoichiometry();
+		
+		return stoichiometry.toFormattedString();
+		
 	}
 	
 	/**
@@ -316,7 +308,7 @@ public class Assembly {
 		
 		getSubgraph(); // initialises subgraph variable
 		
-		if (!checkSubgraphIsomorphism()) {
+		if (!isIsomorphic()) {
 			logger.info("Assembly {} contains non-isomorphic subgraphs, discarding it",this.toString());
 			return false;
 		}
@@ -486,33 +478,62 @@ public class Assembly {
 		return false;
 	}
 	
-	private boolean checkSubgraphIsomorphism() {
+	public boolean isIsomorphic() {
 		
-		// 1) Isomorphic in entities: i.e. all connected components need to have the same stoichiometry
 		
-		ConnectivityInspector<ChainVertex, InterfaceEdge> ci = new ConnectivityInspector<ChainVertex, InterfaceEdge>(subgraph);
+		getStoichiometries(); // this lazily initialises the stoichiometries list
 		
-		List<Set<ChainVertex>> ccs = ci.connectedSets();
+		// 1) Isomorphism of entities: they have to be all equals or if different then they must be orthogonal 
 		
-		List<int[]> stoichiometries = new ArrayList<int[]>();
-		for (Set<ChainVertex> cc:ccs) {			
-			int [] s = new int[totalNumEntities];
-			stoichiometries.add(s);
-			for (ChainVertex v:cc) {
-				// note: this relies on mol ids in the PDB being 1 to n, that might not be true, we need to check!
-				s[v.getEntity()-1]++;
-			}			
-		}
+		// first we find the unique stoichiometries
+		Set<Stoichiometry> uniqueStoichs = new HashSet<Stoichiometry>();
+		uniqueStoichs.addAll(stoichiometries);
 		
-		for (int i=1;i<stoichiometries.size();i++) {
-			if (!Arrays.equals(stoichiometries.get(0), stoichiometries.get(i))) {
-				logger.debug("Stoichiometry {} ({}) does not coincide with stoichiometry 0 ({})",
-						i, Arrays.toString(stoichiometries.get(i)), Arrays.toString(stoichiometries.get(0)));
-				return false;
+		// once we have the unique ones, if there is any kind of overlap then we have to discard, e.g. B2,B ; A2B,A
+		// otherwise they are all orthogonal to each other and the assembly is fine in terms of entity stoichiometry
+		boolean overlapExists = false;
+		int i = -1;
+		outer:
+		for (Stoichiometry iSto:uniqueStoichs) {
+			i++;			
+			int j = -1;
+			for (Stoichiometry jSto:uniqueStoichs) {
+				j++;
+				if (j<=i) continue;
+				if (iSto.isOverlapping(jSto)) {
+					overlapExists = true;
+					break outer;
+				}
+				
 			}
+			
 		}
 		
-		// 2) Isomorphic in connectivity
+		if (overlapExists) {
+			logger.info("Some stoichiometries of assembly {} are overlapping, assembly can't be isomorphic",this.toString());
+			return false;
+		}		
+		
+		// 2) Isomorphic in edge types: the count of edges per interface cluster type should be the same for all connected components
+		
+		// TODO implement
+		//ConnectivityInspector<ChainVertex, InterfaceEdge> ci = new ConnectivityInspector<ChainVertex, InterfaceEdge>(subgraph);
+		
+		//List<Set<ChainVertex>> ccs = ci.connectedSets();
+		
+		//List<int[]> edgeStoichiometries = new ArrayList<int[]>();
+		//for (Set<ChainVertex> cc:ccs) {
+		//	int[] edgeStoichiometry = new int[engagedSet.length];
+		//	edgeStoichiometries.add(edgeStoichiometry);
+		//	for (InterfaceEdge edge:cc.edgeSet()) {
+		//		edgeStoichiometry[edge.getClusterId()-1]++;
+		//	}
+		//}
+
+		
+		
+		
+		// 3) Isomorphic in connectivity
 		// TODO implement isomorphism check of graph connectivity
 		
 		return true;
@@ -527,15 +548,15 @@ public class Assembly {
 	public String getSymmetry() {
 		if (symmetry!=null) return symmetry;
 		
-		int[] sto = getStoichiometry();
+		Stoichiometry sto = getStoichiometry();
 		
-		if (totalNumEntities!=1) {
+		if (sto.getNumEntities()!=1) {
 			logger.warn("Symmetry detection for heteromeric assemblies not supported yet, setting it to C1");
 			symmetry =  "unknown";
 			return symmetry;
 		}
 		
-		int n = sto[0];
+		int n = sto.getCount(1);
 		
 		// for homomers of size n>1 is clear:
 		//  - if n==1: C1
