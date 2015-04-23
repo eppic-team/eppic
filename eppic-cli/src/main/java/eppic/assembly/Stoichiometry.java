@@ -61,6 +61,10 @@ public class Stoichiometry {
 		return sto.length;
 	}
 	
+	/**
+	 * Returns the stoichiometry represented as a vector of positive integers with counts per entity
+	 * @return
+	 */
 	public int[] getStoichiometry() {
 		return sto;
 	}
@@ -77,10 +81,21 @@ public class Stoichiometry {
 		return size;
 	}
 	
+	/**
+	 * Tells whether 2 stoichiometries are overlapping in any of their entities,
+	 * this is equivalent to !{@link #isOrthogonal(Stoichiometry)}
+	 * @param other
+	 * @return
+	 */
 	public boolean isOverlapping(Stoichiometry other) {
 		return !isOrthogonal(other);
 	}
 	
+	/**
+	 * Tells whether 2 stoichiometries are orthogonal: i.e. they don't share any of their entities
+	 * @param other
+	 * @return
+	 */
 	public boolean isOrthogonal(Stoichiometry other) {
 		if (this.getNumEntities()!=other.getNumEntities()) 
 			throw new IllegalArgumentException("Vectors of different length");
@@ -98,7 +113,6 @@ public class Stoichiometry {
 		StringBuilder stoSb = new StringBuilder();
 		
 		for (int i=0;i<getNumEntities();i++){
-			// note: this relies on mol ids in the PDB being 1 to n, that might not be true, we need to check!
 			if (sto[i]>0) {
 				stoSb.append(structure.getCompoundById(getEntityId(i)).getRepresentative().getChainID());			
 				if (sto[i]>1) stoSb.append(sto[i]); // for A1B1 we do AB (we ommit 1s)

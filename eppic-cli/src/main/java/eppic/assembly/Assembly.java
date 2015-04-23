@@ -13,7 +13,6 @@ import javax.vecmath.Point3i;
 
 import org.biojava.nbio.structure.Chain;
 import org.biojava.nbio.structure.Structure;
-import org.biojava.nbio.structure.Compound;
 import org.biojava.nbio.structure.contact.StructureInterface;
 import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
 import org.biojava.nbio.structure.contact.StructureInterfaceList;
@@ -59,6 +58,8 @@ public class Assembly {
 		this.interfaceClusters = interfaceClusters;
 		this.graph = graph;
 				
+		// these 3 are lazily initialised by their getters
+		this.subgraph = null;
 		this.symmetry = null;
 		this.stoichiometries = null;
 	}
@@ -95,10 +96,9 @@ public class Assembly {
 	}
 	
 	/**
-	 * Gets the stoichiometry as an int array with counts of entities per entity id. 
-	 * The indices of the array are the entity ids, i.e. the molecule ids of each Compound, see {@link Compound#getMolId()}
+	 * Gets the stoichiometry of this Assembly. 
 	 * This will only work correctly on assemblies that have been previously checked
-	 * to be valid with {@link #isValid()}, otherwise if the assembly is not isomorphic a warning is logged
+	 * to be valid with {@link #isValid()}, otherwise if the assembly is not isomorphic in stoichiometries a warning is logged
 	 * @return
 	 */
 	public Stoichiometry getStoichiometry() {
@@ -149,7 +149,9 @@ public class Assembly {
 	}
 	
 	/**
-	 * Return the stoichiometry string by using entities (actually representative chain ids of each entity)
+	 * Return the stoichiometry string by using entities (actually representative chain ids of each entity).
+	 * This will only work correctly on assemblies that have been previously checked
+	 * to be valid with {@link #isValid()}
 	 * @return
 	 */
 	public String getStoichiometryString() {
@@ -479,6 +481,11 @@ public class Assembly {
 		return false;
 	}
 	
+	/**
+	 * Checks whether this Assembly is isomorphic, that is if all the connected components of its subgraph
+	 * are isomorphic graphs in terms of vertex labels (i.e. they have the same stoichiometries) and edge labels
+	 * @return
+	 */
 	public boolean isIsomorphic() {
 		
 		
