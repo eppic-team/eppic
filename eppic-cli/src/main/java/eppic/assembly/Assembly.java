@@ -24,7 +24,6 @@ import org.jgrapht.graph.UndirectedSubgraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import eppic.EppicParams;
 
 /**
  * An Assembly of molecules within a crystal, represented by a set of engaged interface clusters.
@@ -52,12 +51,12 @@ public class Assembly {
 	
 	private UndirectedGraph<ChainVertex, InterfaceEdge> subgraph;
 	
-	public Assembly(Structure structure, StructureInterfaceList interfaces,
+	public Assembly(Structure structure, StructureInterfaceList interfaces, List<StructureInterfaceCluster> interfaceClusters,
 			UndirectedGraph<ChainVertex,InterfaceEdge> graph, boolean[] engagedSet) {
 		this.engagedSet = engagedSet;
 		this.structure = structure;
 		this.interfaces = interfaces;
-		this.interfaceClusters = interfaces.getClusters(EppicParams.CLUSTERING_CONTACT_OVERLAP_SCORE_CUTOFF);
+		this.interfaceClusters = interfaceClusters;
 		this.graph = graph;
 				
 		this.symmetry = null;
@@ -261,7 +260,7 @@ public class Assembly {
 			if (!this.engagedSet[i]) {
 				boolean[] c = this.engagedSet.clone();
 				c[i] = true;
-				Assembly a = new Assembly(structure, interfaces, graph, c);
+				Assembly a = new Assembly(structure, interfaces, interfaceClusters, graph, c);
 				// first we need to check that this is not a child of another parent already known to be invalid
 				if (a.isChild(invalidParents)) continue;
 				

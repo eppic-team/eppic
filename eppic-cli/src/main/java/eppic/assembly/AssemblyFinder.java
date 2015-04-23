@@ -8,6 +8,7 @@ import java.util.Set;
 import org.biojava.nbio.structure.Chain;
 import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.StructureException;
+import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
 import org.biojava.nbio.structure.contact.StructureInterfaceList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +23,7 @@ public class AssemblyFinder {
 	private LatticeGraph lattice;
 	private Structure structure;
 	private StructureInterfaceList interfaces;
+	private List<StructureInterfaceCluster> interfaceClusters;
 	
 	private int numInterfClusters;
 	private Stoichiometry xtalStoichiometry;
@@ -30,8 +32,8 @@ public class AssemblyFinder {
 		this.structure = structure;
 		this.lattice = new LatticeGraph(structure, interfaces);
 		this.interfaces = interfaces;
-		
-		this.numInterfClusters = interfaces.getClusters(EppicParams.CLUSTERING_CONTACT_OVERLAP_SCORE_CUTOFF).size();
+		this.interfaceClusters = interfaces.getClusters(EppicParams.CLUSTERING_CONTACT_OVERLAP_SCORE_CUTOFF);
+		this.numInterfClusters = interfaceClusters.size();
 		this.xtalStoichiometry = new Stoichiometry(structure);
 		
 		for (Chain c: structure.getChains()) {
@@ -55,6 +57,10 @@ public class AssemblyFinder {
 	
 	public StructureInterfaceList getInterfaces() {
 		return interfaces;
+	}
+	
+	public List<StructureInterfaceCluster> getInterfaceClusters() {
+		return interfaceClusters;
 	}
 	
 	/**
@@ -84,7 +90,7 @@ public class AssemblyFinder {
 		// the list of nodes in the tree found to be invalid: all of their children will also be invalid
 		List<Assembly> invalidNodes = new ArrayList<Assembly>();		
 		
-		Assembly emptyAssembly = new Assembly(structure, interfaces, lattice.getGraph(), new boolean[numInterfClusters]);
+		Assembly emptyAssembly = new Assembly(structure, interfaces, interfaceClusters, lattice.getGraph(), new boolean[numInterfClusters]);
 		
 		validSet.add(emptyAssembly); // the empty assembly (no engaged interfaces) is always a valid assembly
 		

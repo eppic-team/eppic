@@ -424,11 +424,12 @@ public class DataModelAdaptor {
 					matchingClusterIds.toString());
 
 			// the assembly is not one of our valid assemblies, we'll have to insert an invalid assembly to the list
-			boolean[] engagedSet = new boolean[interfaces.getClusters(EppicParams.CLUSTERING_CONTACT_OVERLAP_SCORE_CUTOFF).size()];
+			List<StructureInterfaceCluster> interfaceClusters = interfaces.getClusters(EppicParams.CLUSTERING_CONTACT_OVERLAP_SCORE_CUTOFF);
+			boolean[] engagedSet = new boolean[interfaceClusters.size()];
 			for (int clusterId:matchingClusterIds) {
 				engagedSet[clusterId-1] = true;
 			}
-			Assembly invalidAssembly = new Assembly(structure, interfaces, graph, engagedSet);
+			Assembly invalidAssembly = new Assembly(structure, interfaces, interfaceClusters, graph, engagedSet);
 			
 			AssemblyDB assembly = new AssemblyDB();
 			
@@ -438,13 +439,13 @@ public class DataModelAdaptor {
 			assembly.setPdbInfo(pdbInfo);
 			pdbInfo.addAssembly(assembly);
 						
-			Set<InterfaceClusterDB> interfaceClusters = new HashSet<InterfaceClusterDB>();
+			Set<InterfaceClusterDB> interfaceClustersDB = new HashSet<InterfaceClusterDB>();
 			for (int interfClusterId:matchingClusterIds) {
 				InterfaceClusterDB icDB = pdbInfo.getInterfaceCluster(interfClusterId);
-				interfaceClusters.add(icDB);
+				interfaceClustersDB.add(icDB);
 				icDB.addAssembly(assembly);
 			}
-			assembly.setInterfaceClusters(interfaceClusters);
+			assembly.setInterfaceClusters(interfaceClustersDB);
 			
 			// other data
 			assembly.setPdbCode(pdbInfo.getPdbCode());			
