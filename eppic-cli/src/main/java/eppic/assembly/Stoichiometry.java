@@ -1,7 +1,10 @@
 package eppic.assembly;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
+import org.biojava.nbio.structure.Compound;
 import org.biojava.nbio.structure.Structure;
 //import org.slf4j.Logger;
 //import org.slf4j.LoggerFactory;
@@ -20,17 +23,38 @@ public class Stoichiometry {
 	private Structure structure;
 	private int[] sto;
 	
+	private Map<Integer,Integer> entityId2Idx;
+	private Map<Integer,Integer> idx2EntityId;
+	
 	public Stoichiometry(Structure structure) {
 		
 		this.structure = structure;		
 		
-		int totalNumEntities = structure.getCompounds().size();		
+		int totalNumEntities = structure.getCompounds().size();
+		
+		// since the entityIds are not guaranteed to be 1 to n, we need to map them to indices
+		entityId2Idx = new HashMap<Integer,Integer>();
+		idx2EntityId = new HashMap<Integer,Integer>();
+		int i = 0;
+		for (Compound c:structure.getCompounds()) {
+			entityId2Idx.put(c.getMolId(),i);
+			idx2EntityId.put(i,c.getMolId());
+			i++;
+		}
 
 		sto = new int[totalNumEntities];
 	}
 	
+	private int getIndex(int entityId) {
+		return entityId2Idx.get(entityId);
+	}
+	
+	private int getEntityId(int index) {
+		return idx2EntityId.get(index);
+	}
+	
 	public void addEntity(int entityId) {
-		sto[entityId-1]++;
+		sto[getIndex(entityId)]++;
 	}
 	
 	public int getNumEntities() {
@@ -42,7 +66,7 @@ public class Stoichiometry {
 	}
 	
 	public int getCount(int entityId) {
-		return sto[entityId-1];
+		return sto[getIndex(entityId)];
 	}
 	
 	public int getTotalSize() {
@@ -76,7 +100,7 @@ public class Stoichiometry {
 		for (int i=0;i<getNumEntities();i++){
 			// note: this relies on mol ids in the PDB being 1 to n, that might not be true, we need to check!
 			if (sto[i]>0) {
-				stoSb.append(structure.getCompoundById(i+1).getRepresentative().getChainID());			
+				stoSb.append(structure.getCompoundById(getEntityId(i)).getRepresentative().getChainID());			
 				if (sto[i]>1) stoSb.append(sto[i]); // for A1B1 we do AB (we ommit 1s)
 			}
 		}
@@ -107,5 +131,37 @@ public class Stoichiometry {
 		if (!Arrays.equals(sto, other.sto))
 			return false;
 		return true;
+	}
+	
+	/**
+	 * Return the greatest common divisor (GCD, aka greatest common factor GCF) for the given ints
+	 * This is an implementation of the Euclidean algorithm:
+	 * http://en.wikipedia.org/wiki/Euclidean_algorithm
+	 * Thanks to this SO question: 
+	 * http://stackoverflow.com/questions/4009198/java-get-greatest-common-divisor
+	 * @param a
+	 * @param b
+	 * @return
+	 */
+	public static int gcd(int a, int b) {		
+		if (b==0) return a;
+		return gcd(b,a%b);
+	}
+
+	/**
+	 * Return the greatest common divisor (GCD) of the given array of ints
+	 * @param values
+	 * @return
+	 */
+	public static int gcd(int[] values) {
+		if (values.length==0) throw new IllegalArgumentException("Can't calculate GCD for an empty array");
+		
+		// we go recursively		
+		int result = values[0];
+		for(int i = 1; i < values.length; i++){
+		    result = gcd(result, values[i]);
+		}
+		return result;
+		
 	}
 }

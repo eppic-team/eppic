@@ -1,7 +1,6 @@
 package eppic.assembly;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -24,34 +23,22 @@ public class AssemblyFinder {
 	private Structure structure;
 	private StructureInterfaceList interfaces;
 	
-	private int numEntities;
 	private int numInterfClusters;
-	private int[] xtalStoichiometry;
+	private Stoichiometry xtalStoichiometry;
 	
 	public AssemblyFinder(Structure structure, StructureInterfaceList interfaces) throws StructureException {
 		this.structure = structure;
 		this.lattice = new LatticeGraph(structure, interfaces);
 		this.interfaces = interfaces;
 		
-		this.numEntities = structure.getCompounds().size();
 		this.numInterfClusters = interfaces.getClusters(EppicParams.CLUSTERING_CONTACT_OVERLAP_SCORE_CUTOFF).size();
-		this.xtalStoichiometry = new int[numEntities];
+		this.xtalStoichiometry = new Stoichiometry(structure);
 		
 		for (Chain c: structure.getChains()) {
-			// this relies on molId being 1 to n (we have to check that actually it is like that in the PDB)
-			xtalStoichiometry[c.getCompound().getMolId() - 1] ++;
+			xtalStoichiometry.addEntity(c.getCompound().getMolId());
 		}
-		
-		int divisor = Assembly.gcd(xtalStoichiometry);
-		for (int i=0;i<xtalStoichiometry.length;i++) {
-			xtalStoichiometry[i] = xtalStoichiometry[i] / divisor;
-		}		
-		
-		logger.info ("The stoichiometry of the crystal is {}", Arrays.toString(xtalStoichiometry));
-	}
-	
-	public int getNumEntities() {
-		return numEntities;
+				
+		logger.info ("The stoichiometry of the crystal is {}", xtalStoichiometry.toString());
 	}
 	
 	public int getNumInterfClusters() {

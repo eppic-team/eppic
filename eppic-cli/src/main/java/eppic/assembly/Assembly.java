@@ -43,6 +43,7 @@ public class Assembly {
 	
 	private Structure structure;
 	private StructureInterfaceList interfaces;
+	private List<StructureInterfaceCluster> interfaceClusters;
 	private UndirectedGraph<ChainVertex,InterfaceEdge> graph;
 	
 	private String symmetry;
@@ -56,6 +57,7 @@ public class Assembly {
 		this.engagedSet = engagedSet;
 		this.structure = structure;
 		this.interfaces = interfaces;
+		this.interfaceClusters = interfaces.getClusters(EppicParams.CLUSTERING_CONTACT_OVERLAP_SCORE_CUTOFF);
 		this.graph = graph;
 				
 		this.symmetry = null;
@@ -67,16 +69,16 @@ public class Assembly {
 	}
 	
 	public List<StructureInterfaceCluster> getInterfaceClusters() {
-		List<StructureInterfaceCluster> interfaceClusters = new ArrayList<StructureInterfaceCluster>();
+		List<StructureInterfaceCluster> engagedInterfaceClusters = new ArrayList<StructureInterfaceCluster>();
 		
-		for (StructureInterfaceCluster cluster:interfaces.getClusters(EppicParams.CLUSTERING_CONTACT_OVERLAP_SCORE_CUTOFF)) {
+		for (StructureInterfaceCluster cluster:interfaceClusters) {
 			for (int i=0;i<engagedSet.length;i++) {
 				if (engagedSet[i] && cluster.getId() == i+1) {
-					interfaceClusters.add(cluster);
+					engagedInterfaceClusters.add(cluster);
 				}
 			}
 		}
-		return interfaceClusters;
+		return engagedInterfaceClusters;
 	}
 	
 	/**
@@ -551,7 +553,7 @@ public class Assembly {
 		Stoichiometry sto = getStoichiometry();
 		
 		if (sto.getNumEntities()!=1) {
-			logger.warn("Symmetry detection for heteromeric assemblies not supported yet, setting it to C1");
+			logger.warn("Symmetry detection for heteromeric assemblies not supported yet, setting it to unknown");
 			symmetry =  "unknown";
 			return symmetry;
 		}
@@ -622,35 +624,4 @@ public class Assembly {
 		return sb.toString();
 	}
 
-	/**
-	 * Return the greatest common divisor (GCD, aka greatest common factor GCF) for the given ints
-	 * This is an implementation of the Euclidean algorithm:
-	 * http://en.wikipedia.org/wiki/Euclidean_algorithm
-	 * Thanks to this SO question: 
-	 * http://stackoverflow.com/questions/4009198/java-get-greatest-common-divisor
-	 * @param a
-	 * @param b
-	 * @return
-	 */
-	public static int gcd(int a, int b) {		
-		if (b==0) return a;
-		return gcd(b,a%b);
-	}
-
-	/**
-	 * Return the greatest common divisor (GCD) of the given array of ints
-	 * @param values
-	 * @return
-	 */
-	public static int gcd(int[] values) {
-		if (values.length==0) throw new IllegalArgumentException("Can't calculate GCD for an empty array");
-		
-		// we go recursively		
-		int result = values[0];
-		for(int i = 1; i < values.length; i++){
-		    result = gcd(result, values[i]);
-		}
-		return result;
-		
-	}
 }
