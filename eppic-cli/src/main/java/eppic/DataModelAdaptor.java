@@ -313,7 +313,7 @@ public class DataModelAdaptor {
 			pdbInfo.addAssembly(assembly);
 			
 			Set<InterfaceClusterDB> interfaceClusters = new HashSet<InterfaceClusterDB>();
-			for (StructureInterfaceCluster ic:validAssembly.getInterfaceClusters()) {
+			for (StructureInterfaceCluster ic:validAssembly.getEngagedInterfaceClusters()) {
 				InterfaceClusterDB icDB = pdbInfo.getInterfaceCluster(ic.getId());
 				interfaceClusters.add(icDB);
 				icDB.addAssembly(assembly);

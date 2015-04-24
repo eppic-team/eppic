@@ -49,6 +49,8 @@ public class Assembly {
 	private List<Stoichiometry> stoichiometries;
 	
 	private UndirectedGraph<ChainVertex, InterfaceEdge> subgraph;
+	private List<Set<ChainVertex>> connectedComponents;
+	
 	
 	public Assembly(Structure structure, StructureInterfaceList interfaces, List<StructureInterfaceCluster> interfaceClusters,
 			UndirectedGraph<ChainVertex,InterfaceEdge> graph, boolean[] engagedSet) {
@@ -58,17 +60,19 @@ public class Assembly {
 		this.interfaceClusters = interfaceClusters;
 		this.graph = graph;
 				
-		// these 3 are lazily initialised by their getters
+		// these 4 are lazily initialised by their getters
 		this.subgraph = null;
+		this.connectedComponents = null;
 		this.symmetry = null;
 		this.stoichiometries = null;
+		
 	}
 	
 	public Assembly(boolean[] engagedSet) {
 		this.engagedSet = engagedSet;
 	}
 	
-	public List<StructureInterfaceCluster> getInterfaceClusters() {
+	public List<StructureInterfaceCluster> getEngagedInterfaceClusters() {
 		List<StructureInterfaceCluster> engagedInterfaceClusters = new ArrayList<StructureInterfaceCluster>();
 		
 		for (StructureInterfaceCluster cluster:interfaceClusters) {
@@ -91,17 +95,13 @@ public class Assembly {
 		return stoichiometry.getTotalSize();
 	}
 	
-	public UndirectedGraph<ChainVertex,InterfaceEdge> getGraph() {
-		return graph;
-	}
-	
 	/**
 	 * Gets the stoichiometry of this Assembly. 
 	 * This will only work correctly on assemblies that have been previously checked
 	 * to be valid with {@link #isValid()}, otherwise if the assembly is not isomorphic in stoichiometries a warning is logged
 	 * @return
 	 */
-	public Stoichiometry getStoichiometry() {
+	private Stoichiometry getStoichiometry() {
 		
 		getStoichiometries(); // lazily initialises the stoichiometries list
 		
@@ -129,18 +129,11 @@ public class Assembly {
 		
 		getSubgraph(); // lazily initialises the subgraph variable 
 		
-		ConnectivityInspector<ChainVertex, InterfaceEdge> ci = new ConnectivityInspector<ChainVertex, InterfaceEdge>(subgraph);
-		
-		List<Set<ChainVertex>> ccs = ci.connectedSets();
-		
-		logger.info("Total of {} connected components", ccs.size());
-		
 		stoichiometries = new ArrayList<Stoichiometry>();
-		for (Set<ChainVertex> cc:ccs) {			
+		for (Set<ChainVertex> cc:connectedComponents) {			
 			Stoichiometry s = new Stoichiometry(structure);
 			stoichiometries.add(s);
 			for (ChainVertex v:cc) {
-				// note: this relies on mol ids in the PDB being 1 to n, that might not be true, we need to check!
 				s.addEntity(v.getEntity());
 			}			
 		}
@@ -182,12 +175,8 @@ public class Assembly {
 			i++;
 		}
 		
-		ConnectivityInspector<ChainVertex, InterfaceEdge> ci = new ConnectivityInspector<ChainVertex, InterfaceEdge>(subgraph);
-
-		List<Set<ChainVertex>> ccs = ci.connectedSets();
-
 		List<int[]> compositions = new ArrayList<int[]>();
-		for (Set<ChainVertex> cc:ccs) {
+		for (Set<ChainVertex> cc:connectedComponents) {
 			
 			int [] s = new int[structure.getChains().size()];
 			compositions.add(s);
@@ -274,7 +263,8 @@ public class Assembly {
 	}
 	
 	/**
-	 * Gets the subgraph containing only this assembly's engaged interface clusters
+	 * Gets the subgraph containing only this assembly's engaged interface clusters.
+	 * This initialises both the subgraph and connectedComponents members
 	 * @param clusterId
 	 * @return
 	 */
@@ -297,8 +287,24 @@ public class Assembly {
 		this.subgraph = 
 				new UndirectedSubgraph<ChainVertex, InterfaceEdge>(
 						graph, vertexSet, edgeSubset);
-				
+		 
+
 		
+		// initialising also the connected components
+		ConnectivityInspector<ChainVertex, InterfaceEdge> ci = new ConnectivityInspector<ChainVertex, InterfaceEdge>(subgraph);
+		
+		this.connectedComponents = ci.connectedSets();
+		
+		logger.info("Subgraph of assembly {} has {} vertices and {} edges, with {} connected components",
+				this.toString(), subgraph.vertexSet().size(), subgraph.edgeSet().size(), connectedComponents.size());
+		
+		StringBuilder sb = new StringBuilder();
+		for (Set<ChainVertex> cc:connectedComponents) {
+			sb.append(cc.size());
+			sb.append(' ');
+		}
+		logger.info("Connected component sizes: {}",sb.toString()); 
+	
 		return subgraph;		
 	}
 	
@@ -320,7 +326,7 @@ public class Assembly {
 	}
 	
 	private boolean containsInfinites() {
-		for (StructureInterfaceCluster cluster: getInterfaceClusters()) {
+		for (StructureInterfaceCluster cluster: getEngagedInterfaceClusters()) {
 			
 			for (StructureInterface interf:cluster.getMembers()) {
 				// if a single member of cluster is infinite we consider the cluster infinite
@@ -340,7 +346,7 @@ public class Assembly {
 
 		// pre-check for assemblies with 1 engaged interface that is isologous: the cycle detection doesn't work for isologous
 		if (getNumEngagedInterfaceClusters()==1) {
-			for (StructureInterface interf : getInterfaceClusters().get(0).getMembers()) {
+			for (StructureInterface interf : getEngagedInterfaceClusters().get(0).getMembers()) {
 				// with a single interface in cluster isologous, we call the whole isologous
 				if (interf.isIsologous()) {
 					logger.info("Assembly {} contains just 1 isologous interface cluster: closed symmetry, won't check cycles",toString());
@@ -351,11 +357,6 @@ public class Assembly {
 		
 		// we check the cycles in the graph and whether they stay in same cell
 		getSubgraph(); // initialises subgraph variable
-
-		int numVertices = subgraph.vertexSet().size();
-		int numEdges = subgraph.edgeSet().size();
-
-		logger.info("Subgraph of assembly {} has {} vertices and {} edges",this.toString(),numVertices, numEdges); 
 
 		// The PatonCycle detection does not work for multigraphs, e.g. in 1pfc engaging interfaces 1,5 it goes in an infinite loop
 		// Thus we need to pre-check multi-edges and discard whenever they have non-zero sum translations (which directly invalidates the whole subgraph)
@@ -384,15 +385,14 @@ public class Assembly {
 			for (ChainVertex c:cycle) {
 				sb.append(c.toString()+" -> ");
 			}
-			logger.info("Cycle of size {}: {}", cycle.size(),sb.toString());
+			logger.debug("Cycle of size {}: {}", cycle.size(),sb.toString());
 			
 			if (isZeroTranslation(subgraph, cycle)) {
-				logger.info("Closed cycle (0 translation)");
+				logger.debug("Closed cycle (0 translation)");
 				// we continue to next cycle, if all cycles are translation 0, then we'll return true below
 			} else {
-				logger.info("Non-closed cycle (non-0 translation)");
 				// one cycle has non-zero translation: we abort straight away: return false
-				logger.info("Assembly {} has a non-closed cycle: discarding", toString());
+				logger.info("Non-closed cycle (non-0 translation). Discarding assembly {}",toString());
 				return false;
 			}
 		}
@@ -525,20 +525,15 @@ public class Assembly {
 		// 2) Isomorphic in edge types: the count of edges per interface cluster type should be the same for all connected components
 		
 		// TODO implement
-		//ConnectivityInspector<ChainVertex, InterfaceEdge> ci = new ConnectivityInspector<ChainVertex, InterfaceEdge>(subgraph);
-		
-		//List<Set<ChainVertex>> ccs = ci.connectedSets();
 		
 		//List<int[]> edgeStoichiometries = new ArrayList<int[]>();
-		//for (Set<ChainVertex> cc:ccs) {
+		//for (Set<ChainVertex> connectedComponents) {
 		//	int[] edgeStoichiometry = new int[engagedSet.length];
 		//	edgeStoichiometries.add(edgeStoichiometry);
 		//	for (InterfaceEdge edge:cc.edgeSet()) {
 		//		edgeStoichiometry[edge.getClusterId()-1]++;
 		//	}
 		//}
-
-		
 		
 		
 		// 3) Isomorphic in connectivity
@@ -558,7 +553,7 @@ public class Assembly {
 		
 		Stoichiometry sto = getStoichiometry();
 		
-		if (sto.getNumEntities()!=1) {
+		if (sto.getNumEntities()>1) {
 			logger.warn("Symmetry detection for heteromeric assemblies not supported yet, setting it to unknown");
 			symmetry =  "unknown";
 			return symmetry;
