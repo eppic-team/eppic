@@ -1096,7 +1096,7 @@ public class ChainEvolContext implements Serializable {
 	 * @return the SEQRES serial (1 to n) or -1 if not found
 	 */
 	public int getSeqresSerial(Group g) {
-		return compound.getAlignedResIndex(g, compound.getRepresentative());
+		return compound.getAlignedResIndex(g, g.getChain());
 	}
 	
 	/**
