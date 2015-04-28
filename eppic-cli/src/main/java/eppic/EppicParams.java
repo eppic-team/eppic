@@ -57,7 +57,7 @@ public class EppicParams {
 	public static final double     MAX_ALLOWED_UNREL_RES = 0.1; 
 	// minimum number of core residues per interface member to calculate evol score (if fewer 
 	// we don't calculate anything because it would be too unreliable statistically)
-	public static final int        MIN_NUMBER_CORE_RESIDUES_EVOL_SCORE = 4;
+	public static final int        MIN_NUMBER_CORE_RESIDUES_EVOL_SCORE = 2;
 	// value to use when core/rim ratio is infinity (rim score=0), some arbitrary large value, unlikely to happen in realistic cases
 	public static final double     SCORERATIO_INFINITY_VALUE = 1000;
 	// for sequences (strictly) below this length value no blast will be performed
