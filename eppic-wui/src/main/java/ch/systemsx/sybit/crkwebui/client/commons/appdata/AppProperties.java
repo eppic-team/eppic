@@ -169,19 +169,9 @@ public interface AppProperties extends Constants
 	String interfaces_residues_combo_rimcore();
 	String interfaces_residues_combo_title();
 	
-	String interfaces_residues_summary_corerim_heading();
-	String interfaces_residues_summary_corerim_avgcore();
-	String interfaces_residues_summary_corerim_avgcore_hint();
-	String interfaces_residues_summary_corerim_avgrim();
-	String interfaces_residues_summary_corerim_avgrim_hint();
 	String interfaces_residues_summary_corerim_final();
 	String interfaces_residues_summary_corerim_final_hint();
 
-	String interfaces_residues_summary_coresurface_heading();
-	String interfaces_residues_summary_coresurface_mean();
-	String interfaces_residues_summary_coresurface_mean_hint();
-	String interfaces_residues_summary_coresurface_sd();
-	String interfaces_residues_summary_coresurface_sd_hint();
 	String interfaces_residues_summary_coresurface_final();
 	String interfaces_residues_summary_coresurface_final_hint();
 
@@ -190,6 +180,12 @@ public interface AppProperties extends Constants
 	String interfaces_residues_summary_sizes_cores_hint();
 	String interfaces_residues_summary_sizes_rims();
 	String interfaces_residues_summary_sizes_rims_hint();
+	
+	String interfaces_residues_legend_buried();
+	String interfaces_residues_legend_surface();
+	String interfaces_residues_legend_rim();
+	String interfaces_residues_legend_core_geom();
+	String interfaces_residues_legend_core_evol();
 	
 	String navigation_panel_home_link_label();
 	String navigation_panel_help_link_label();
