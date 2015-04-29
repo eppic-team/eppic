@@ -2,16 +2,13 @@ package eppic.assembly;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.vecmath.Point3i;
 
-import org.biojava.nbio.structure.Chain;
 import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.contact.StructureInterface;
 import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
@@ -42,11 +39,9 @@ public class Assembly {
 	private Structure structure;
 	private StructureInterfaceList interfaces;
 	private List<StructureInterfaceCluster> interfaceClusters;
-	private UndirectedGraph<ChainVertex,InterfaceEdge> graph;
+	private UndirectedGraph<ChainVertex, InterfaceEdge> graph;
 	
-	private String symmetry;
-	
-	private List<Stoichiometry> stoichiometries;
+	private StoichiometrySet stoichiometrySet;
 	
 	private UndirectedGraph<ChainVertex, InterfaceEdge> subgraph;
 	private List<Set<ChainVertex>> connectedComponents;
@@ -60,11 +55,8 @@ public class Assembly {
 		this.interfaceClusters = interfaceClusters;
 		this.graph = graph;
 				
-		// these 4 are lazily initialised by their getters
-		this.subgraph = null;
-		this.connectedComponents = null;
-		this.symmetry = null;
-		this.stoichiometries = null;
+		initSubgraph(); // inits subgraph and connectedComponents
+		this.stoichiometrySet = new StoichiometrySet(structure, this, connectedComponents);
 		
 	}
 	
@@ -83,120 +75,6 @@ public class Assembly {
 			}
 		}
 		return engagedInterfaceClusters;
-	}
-	
-	/**
-	 * Return the macromolecular size of this assembly.
-	 * @return
-	 */
-	public int getSize() {
-		
-		Stoichiometry stoichiometry = getStoichiometry(); 
-		return stoichiometry.getTotalSize();
-	}
-	
-	/**
-	 * Gets the stoichiometry of this Assembly. 
-	 * This will only work correctly on assemblies that have been previously checked
-	 * to be valid with {@link #isValid()}, otherwise if the assembly is not isomorphic in stoichiometries a warning is logged
-	 * @return
-	 */
-	private Stoichiometry getStoichiometry() {
-		
-		getStoichiometries(); // lazily initialises the stoichiometries list
-		
-		// we assign the first stoichiometry found, and check and warn if the others are different 
-		Stoichiometry stoichiometry = stoichiometries.get(0);
-		for (int i=1;i<stoichiometries.size();i++) {
-			if (!stoichiometry.equals(stoichiometries.get(i))) {
-				logger.warn("Stoichiometry {} ({}) does not coincide with stoichiometry 0 ({})",
-						i, stoichiometries.get(i).toString(), stoichiometry.toString());
-			}
-		}
-		
-		logger.info("Stoichiometry of assembly {} is: {}",toString(), stoichiometry.toFormattedString());
-		return stoichiometry;
-	}
-	
-	/**
-	 * Gets the stoichiometries of each connected component in a List of stoichiometry vectors
-	 * The results are cached so that subsequent calls to this method don't recalculate them.
-	 * @return
-	 */
-	private List<Stoichiometry> getStoichiometries() {
-		
-		if (stoichiometries!=null) return stoichiometries;
-		
-		getSubgraph(); // lazily initialises the subgraph variable 
-		
-		stoichiometries = new ArrayList<Stoichiometry>();
-		for (Set<ChainVertex> cc:connectedComponents) {			
-			Stoichiometry s = new Stoichiometry(structure);
-			stoichiometries.add(s);
-			for (ChainVertex v:cc) {
-				s.addEntity(v.getEntity());
-			}			
-		}
-		
-		return stoichiometries;
-	}
-	
-	/**
-	 * Return the stoichiometry string by using entities (actually representative chain ids of each entity).
-	 * This will only work correctly on assemblies that have been previously checked
-	 * to be valid with {@link #isValid()}
-	 * @return
-	 */
-	public String getStoichiometryString() {
-		
-		Stoichiometry stoichiometry = getStoichiometry();
-		
-		return stoichiometry.toFormattedString();
-		
-	}
-	
-	/**
-	 * Return the stoichiometry string by using chain ids (composition).
-	 * This will only work correctly on assemblies that have been previously checked
-	 * to be valid with {@link #isValid()}.
-	 * The chain ids will be those of the first connected component found in the subgraph.
-	 * @return
-	 */
-	public String getCompositionString() {
-		
-		getSubgraph(); // lazily initialises the subgraph variable 
-		
-		Map<String,Integer> chainIds2Idx = new HashMap<String,Integer>();
-		Map<Integer,String> idx2ChainIds = new HashMap<Integer,String>();
-		int i = 0;
-		for (Chain c:structure.getChains()) {
-			chainIds2Idx.put(c.getChainID(),i);
-			idx2ChainIds.put(i,c.getChainID());
-			i++;
-		}
-		
-		List<int[]> compositions = new ArrayList<int[]>();
-		for (Set<ChainVertex> cc:connectedComponents) {
-			
-			int [] s = new int[structure.getChains().size()];
-			compositions.add(s);
-			for (ChainVertex v:cc) {
-				s[chainIds2Idx.get(v.getChainId())]++;
-			}			
-		}
-
-		// we assume that the assembly has been already checked to be isomorphic, we can just take the first composition found
-		
-		StringBuilder stoSb = new StringBuilder();
-		int[] comp = compositions.get(0);
-		for (i=0;i<comp.length;i++){
-			if (comp[i]>0) {
-				stoSb.append(idx2ChainIds.get(i));			
-				if (comp[i]>1) stoSb.append(comp[i]); // for A1B1 we do AB (we ommit 1s)
-			}
-		}
-		logger.info("The composition of assembly {} is {}",this.toString(), stoSb.toString());
-		return stoSb.toString();
 	}
 		
 	public int getNumEngagedInterfaceClusters() {
@@ -263,14 +141,12 @@ public class Assembly {
 	}
 	
 	/**
-	 * Gets the subgraph containing only this assembly's engaged interface clusters.
+	 * Initialises the subgraph containing only this assembly's engaged interface clusters.
 	 * This initialises both the subgraph and connectedComponents members
 	 * @param clusterId
 	 * @return
 	 */
-	private UndirectedGraph<ChainVertex, InterfaceEdge> getSubgraph() {
-		
-		if (subgraph != null) return subgraph; 
+	private UndirectedGraph<ChainVertex, InterfaceEdge> initSubgraph() {
 		
 		// note that the subgraph will contain all vertices even if they are not connected to the rest by any interface
 		
@@ -315,8 +191,6 @@ public class Assembly {
 	 */
 	public boolean isValid() {
 		
-		getSubgraph(); // initialises subgraph variable
-		
 		if (!isIsomorphic()) {
 			logger.info("Assembly {} contains non-isomorphic subgraphs, discarding it",this.toString());
 			return false;
@@ -356,7 +230,6 @@ public class Assembly {
 		}
 		
 		// we check the cycles in the graph and whether they stay in same cell
-		getSubgraph(); // initialises subgraph variable
 
 		// The PatonCycle detection does not work for multigraphs, e.g. in 1pfc engaging interfaces 1,5 it goes in an infinite loop
 		// Thus we need to pre-check multi-edges and discard whenever they have non-zero sum translations (which directly invalidates the whole subgraph)
@@ -489,38 +362,12 @@ public class Assembly {
 	public boolean isIsomorphic() {
 		
 		
-		getStoichiometries(); // this lazily initialises the stoichiometries list
-		
 		// 1) Isomorphism of entities: they have to be all equals or if different then they must be orthogonal 
 		
-		// first we find the unique stoichiometries
-		Set<Stoichiometry> uniqueStoichs = new HashSet<Stoichiometry>();
-		uniqueStoichs.addAll(stoichiometries);
-		
-		// once we have the unique ones, if there is any kind of overlap then we have to discard, e.g. B2,B ; A2B,A
-		// otherwise they are all orthogonal to each other and the assembly is fine in terms of entity stoichiometry
-		boolean overlapExists = false;
-		int i = -1;
-		outer:
-		for (Stoichiometry iSto:uniqueStoichs) {
-			i++;			
-			int j = -1;
-			for (Stoichiometry jSto:uniqueStoichs) {
-				j++;
-				if (j<=i) continue;
-				if (iSto.isOverlapping(jSto)) {
-					overlapExists = true;
-					break outer;
-				}
-				
-			}
-			
-		}
-		
-		if (overlapExists) {
+		if (!stoichiometrySet.isIsomorphic()) {
 			logger.info("Some stoichiometries of assembly {} are overlapping, assembly can't be isomorphic",this.toString());
 			return false;
-		}		
+		}
 		
 		// 2) Isomorphic in edge types: the count of edges per interface cluster type should be the same for all connected components
 		
@@ -543,54 +390,27 @@ public class Assembly {
 	}
 	
 	/**
-	 * Return the symmetry string for this Assembly. 
-	 * This will only work correctly on assemblies that have been previously checked
-	 * to be valid with {@link #isValid()}
+	 * Returns the description corresponding to this Assembly as a list 
+	 * of AssemblyDescriptions per disjoint set,
+	 * e.g. in a crystal with 2 entities A,B and no engaged interfaces, 
+	 * this would return a List of size 2:
+	 * - AssemblyDescription 1: size 1, stoichiometry A, symmetry C1
+	 * - AssemblyDescription 2: size 1, stoichiometry B, symmetry C1
+	 * The same crystal where both A and B form a dimer would return a List of size 1
+	 * with an AssemblyDescription: size 2, stoichiometry AB, symmetry C1
 	 * @return
 	 */
-	public String getSymmetry() {
-		if (symmetry!=null) return symmetry;
-		
-		Stoichiometry sto = getStoichiometry();
-		
-		if (sto.getNumEntities()>1) {
-			logger.warn("Symmetry detection for heteromeric assemblies not supported yet, setting it to unknown");
-			symmetry =  "unknown";
-			return symmetry;
+	public List<AssemblyDescription> getDescription() {
+		List<AssemblyDescription> list = this.stoichiometrySet.getDescription();
+		StringBuilder sb = new StringBuilder();
+		int i = -1;
+		for (AssemblyDescription ad:list) {
+			i++;
+			sb.append(ad.getSize()+"/"+ad.getStoichiometry()+"/"+ad.getSymmetry());
+			if (i!=list.size()-1) sb.append(",");
 		}
-		
-		int n = sto.getCount(1);
-		
-		// for homomers of size n>1 is clear:
-		//  - if n==1: C1
-		//  - if n uneven: there should be only 1 interface cluster engaged (otherwise warn!) ==> Cn
-		//  - if n==2: there should be only 1 interface cluster engaged (otherwise warn!) ==> C2
-		//  - else if n even (n=2m): there can be either 1 or more interface clusters engaged:
-		//      if 1: Cn
-		//      if >1: Dm
-		
-		if (n==1) {
-			if (getNumEngagedInterfaceClusters()>0) {
-				logger.warn("Some interface cluster is engaged for an assembly of size 1. Something is wrong!");
-			}
-			symmetry = "C1";
-		} else if (n%2 != 0 || n==2) {
-			if (getNumEngagedInterfaceClusters()>1) {
-				logger.warn("More than 1 engaged interface clusters for a homomeric assembly of size {}. Something is wrong!",n);
-			}
-			symmetry = "C"+n;
-		} else { // even number larger than 2
-			if (getNumEngagedInterfaceClusters()==1) {
-				symmetry = "C"+n;
-			} else {
-				symmetry = "D"+(n/2);
-			}
-		}
-		
-		logger.info("Symmetry of assembly {} is {}",this.toString(),symmetry); 
-		// TODO detect tetrahedral, octahedral and icosahedral symmetries
-		
-		return symmetry;
+		logger.info("Assembly {} size/stoichometry/symmetry: {}",toString(),sb.toString()); 
+		return list;
 	}
 	
 	@Override

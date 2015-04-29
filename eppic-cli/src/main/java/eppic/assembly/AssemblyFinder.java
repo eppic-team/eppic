@@ -5,7 +5,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.biojava.nbio.structure.Chain;
 import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.StructureException;
 import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
@@ -26,7 +25,6 @@ public class AssemblyFinder {
 	private List<StructureInterfaceCluster> interfaceClusters;
 	
 	private int numInterfClusters;
-	private Stoichiometry xtalStoichiometry;
 	
 	public AssemblyFinder(Structure structure, StructureInterfaceList interfaces) throws StructureException {
 		this.structure = structure;
@@ -34,13 +32,6 @@ public class AssemblyFinder {
 		this.interfaces = interfaces;
 		this.interfaceClusters = interfaces.getClusters(EppicParams.CLUSTERING_CONTACT_OVERLAP_SCORE_CUTOFF);
 		this.numInterfClusters = interfaceClusters.size();
-		this.xtalStoichiometry = new Stoichiometry(structure);
-		
-		for (Chain c: structure.getChains()) {
-			xtalStoichiometry.addEntity(c.getCompound().getMolId());
-		}
-				
-		logger.info ("The stoichiometry of the crystal is {}", xtalStoichiometry.toString());
 	}
 	
 	public int getNumInterfClusters() {

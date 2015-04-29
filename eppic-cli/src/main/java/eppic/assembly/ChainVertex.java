@@ -1,5 +1,7 @@
 package eppic.assembly;
 
+import org.biojava.nbio.structure.Chain;
+
 
 /**
  * A vertex representing a single chain.
@@ -12,27 +14,30 @@ package eppic.assembly;
 public class ChainVertex {
 	// Primary Key:
 	private int opId; // operator to generate this position within the unit cell
-	private String chainId;
 	
-	// Metadata
-	private int entity; 
+	private Chain c;
+	 
 	
-	public ChainVertex(String chainId, int opId, int entity) {
-		this.chainId = chainId;
+	public ChainVertex(Chain c, int opId) {
+		this.c = c;
 		this.opId = opId;
-		this.entity = entity;
 	}
 
 	public String getChainId() {
-		return chainId;
+		return c.getChainID();
 	}
+	
 	public int getOpId() {
 		return opId;
 	}
 	
+	public Chain getChain() {
+		return c;
+	}
+	
 	@Override
 	public String toString() {
-		return chainId+opId;
+		return getChainId()+opId;
 	}
 	/**
 	 * Hash key based on chain and op
@@ -41,7 +46,7 @@ public class ChainVertex {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((chainId == null) ? 0 : chainId.hashCode());
+		result = prime * result + ((getChainId() == null) ? 0 : getChainId().hashCode());
 		result = prime * result + opId;
 		return result;
 	}
@@ -57,10 +62,10 @@ public class ChainVertex {
 		if (getClass() != obj.getClass())
 			return false;
 		ChainVertex other = (ChainVertex) obj;
-		if (chainId == null) {
-			if (other.chainId != null)
+		if (getChainId() == null) {
+			if (other.getChainId() != null)
 				return false;
-		} else if (!chainId.equals(other.chainId))
+		} else if (!getChainId().equals(other.getChainId()))
 			return false;
 		if (opId != other.opId)
 			return false;
@@ -68,10 +73,7 @@ public class ChainVertex {
 	}
 
 	public int getEntity() {
-		return entity;
+		return c.getCompound().getMolId();
 	}
 
-	public void setEntity(int entity) {
-		this.entity = entity;
-	}
 }

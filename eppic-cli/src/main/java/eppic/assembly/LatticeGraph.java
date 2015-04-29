@@ -43,8 +43,6 @@ public class LatticeGraph {
 
 	private UndirectedGraph<ChainVertex,InterfaceEdge> graph;
 
-	private Map<String, Integer> chainIds2entityIds;
-
 	private boolean globalReferencePoint;
 	private Map<String,Matrix4d[]> unitCellOperators = new HashMap<>(); // In crystal coordinates
 	private Map<String,Point3d> referencePoints = new HashMap<>(); // Chain ID -> centroid coordinate
@@ -58,8 +56,6 @@ public class LatticeGraph {
 
 		globalReferencePoint = true;
 
-
-		this.chainIds2entityIds = new HashMap<String, Integer>();
 
 		initLatticeGraphTopologically();
 		logGraph();
@@ -232,8 +228,7 @@ public class LatticeGraph {
 
 		for (Chain c:struct.getChains()) {
 			for (int i=0;i<numOps;i++) {
-				graph.addVertex(new ChainVertex(c.getChainID(), i, c.getCompound().getMolId()));
-				chainIds2entityIds.put(c.getChainID(), c.getCompound().getMolId());
+				graph.addVertex(new ChainVertex(c, i));
 			}
 		}
 
@@ -268,8 +263,8 @@ public class LatticeGraph {
 
 				InterfaceEdge edge = new InterfaceEdge(interf, xtalTrans);
 
-				ChainVertex sVertex = new ChainVertex(sourceChainId, j, chainIds2entityIds.get(sourceChainId));
-				ChainVertex tVertex = new ChainVertex(targetChainId, k, chainIds2entityIds.get(targetChainId));
+				ChainVertex sVertex = new ChainVertex(struct.getChainByPDB(sourceChainId), j);
+				ChainVertex tVertex = new ChainVertex(struct.getChainByPDB(targetChainId), k);
 
 				graph.addEdge(sVertex, tVertex, edge);
 

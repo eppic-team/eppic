@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
 import eppic.analysis.compare.InterfaceMatcher;
 import eppic.analysis.compare.SimpleInterface;
 import eppic.assembly.Assembly;
+import eppic.assembly.AssemblyDescription;
 import eppic.assembly.ChainVertex;
 import eppic.assembly.InterfaceEdge;
 import eppic.commons.sequence.Homolog;
@@ -325,10 +326,13 @@ public class DataModelAdaptor {
 			
 			assembly.setInterfaceClusterIds(validAssembly.toString());
 			
-			assembly.setMmSize(validAssembly.getSize());
-			assembly.setComposition(validAssembly.getCompositionString());	
-			assembly.setSymmetry(validAssembly.getSymmetry());
-			assembly.setStoichiometry(validAssembly.getStoichiometryString());
+			// TODO we need to redo the model to be able to store several descriptions, 
+			//      for the moment we write only the first description 
+			List<AssemblyDescription> description = validAssembly.getDescription();
+			assembly.setMmSize(description.get(0).getSize());
+			assembly.setComposition(description.get(0).getComposition());	
+			assembly.setSymmetry(description.get(0).getSymmetry());
+			assembly.setStoichiometry(description.get(0).getStoichiometry());
 			
 			// TODO we can get pseudosymmetry data for PDB provided assemblies (using BJ qs detection), but can we do that for our calculated assemblies?
 			//assembly.setPseudoSymmetry(pseudoSymmetry);
@@ -451,9 +455,9 @@ public class DataModelAdaptor {
 			assembly.setPdbCode(pdbInfo.getPdbCode());			
 
 			assembly.setInterfaceClusterIds(invalidAssembly.toString());
-			
-			assembly.setMmSize(invalidAssembly.getSize());
-			// TODO fill the size, composition, symmetry, stoichiometry data			
+						
+			// TODO fill the size, composition, symmetry, stoichiometry data
+			//assembly.setMmSize(invalidAssembly.getSize());
 			//assembly.setComposition(composition);			
 			//assembly.setSymmetry(sym);
 			//assembly.setStoichiometry(stoic);
