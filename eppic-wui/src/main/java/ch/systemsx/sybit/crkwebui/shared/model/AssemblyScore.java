@@ -2,7 +2,6 @@ package ch.systemsx.sybit.crkwebui.shared.model;
 
 import java.io.Serializable;
 
-import eppic.model.AssemblyDB;
 import eppic.model.AssemblyScoreDB;
 
 public class AssemblyScore implements Serializable {
@@ -13,7 +12,7 @@ public class AssemblyScore implements Serializable {
 	private double score;
 	private double confidence;
 	
-	private AssemblyDB assembly;
+	private Assembly assembly;
 	
 	public AssemblyScore() {
 		
@@ -43,11 +42,11 @@ public class AssemblyScore implements Serializable {
 		this.confidence = confidence;
 	}
 
-	public AssemblyDB getAssembly() {
+	public Assembly getAssembly() {
 		return assembly;
 	}
 
-	public void setAssembly(AssemblyDB assembly) {
+	public void setAssembly(Assembly assembly) {
 		this.assembly = assembly;
 	}
 	
@@ -58,7 +57,6 @@ public class AssemblyScore implements Serializable {
 	 */
 	public static AssemblyScore create(AssemblyScoreDB assemblyScoreDB) {
 		AssemblyScore assemblyScore = new AssemblyScore();
-		assemblyScore.setAssembly(assemblyScoreDB.getAssembly());
 		assemblyScore.setConfidence(assemblyScoreDB.getConfidence());
 		assemblyScore.setMethod(assemblyScoreDB.getMethod());
 		assemblyScore.setScore(assemblyScoreDB.getScore()); 

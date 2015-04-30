@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import eppic.model.AssemblyContentDB;
 import eppic.model.AssemblyDB;
 import eppic.model.AssemblyScoreDB;
 import eppic.model.PdbInfoDB;
@@ -32,6 +33,8 @@ public class Assembly implements Serializable {
 	private Set<InterfaceCluster> interfaceClusters;
 	
 	private List<AssemblyScore> assemblyScores;
+	
+	private List<AssemblyContent> assemblyContents;
 
 	public Assembly() {
 		this.interfaceClusters = new HashSet<InterfaceCluster>();
@@ -126,6 +129,14 @@ public class Assembly implements Serializable {
 		this.assemblyScores = assemblyScores;
 	}
 
+	public List<AssemblyContent> getAssemblyContents() {
+		return assemblyContents;
+	}
+
+	public void setAssemblyContents(List<AssemblyContent> assemblyContents) {
+		this.assemblyContents = assemblyContents;
+	}
+
 	/**
 	 * Converts DB model item into DTO one.
 	 * @param assemblyDB model item to convert
@@ -136,13 +147,7 @@ public class Assembly implements Serializable {
 		
 		assembly.setUid(assemblyDB.getUid());
 		
-		assembly.setMmSize(assemblyDB.getMmSize());
-		assembly.setSymmetry(assemblyDB.getSymmetry());
-		assembly.setStoichiometry(assemblyDB.getStoichiometry());		
-		assembly.setPseudoSymmetry(assemblyDB.getPseudoSymmetry());
-		assembly.setPseudoStoichiometry(assemblyDB.getPseudoStoichiometry());
 		assembly.setTopologicallyValid(assemblyDB.isTopologicallyValid());
-		assembly.setComposition(assemblyDB.getComposition());
 		assembly.setPdbInfo(assemblyDB.getPdbInfo()); 
 		
 		if(assemblyDB.getAssemblyScores() != null) {
@@ -152,10 +157,26 @@ public class Assembly implements Serializable {
 			List<AssemblyScore> assemblyScores = new ArrayList<AssemblyScore>();
 			
 			for(AssemblyScoreDB assemblyScoreDB : assemblyScoreDBs) {
-				assemblyScores.add(AssemblyScore.create(assemblyScoreDB));
+				AssemblyScore as = AssemblyScore.create(assemblyScoreDB);
+				as.setAssembly(assembly);
+				assemblyScores.add(as);
 			}
 			
 			assembly.setAssemblyScores(assemblyScores);
+		}
+		
+		if (assemblyDB.getAssemblyContents() != null) {
+			List<AssemblyContentDB> assemblyContentDBs = assemblyDB.getAssemblyContents();
+			
+			List<AssemblyContent> assemblyContents = new ArrayList<AssemblyContent>();
+			
+			for (AssemblyContentDB assemblyContentDB : assemblyContentDBs) {
+				AssemblyContent ac = AssemblyContent.create(assemblyContentDB);
+				ac.setAssembly(assembly);
+				assemblyContents.add(ac);
+			}
+			
+			assembly.setAssemblyContents(assemblyContents);
 		}
 		
 		// TODO initialise many-to-many relation to interface clusters

@@ -301,23 +301,23 @@ public class TextOutputWriter {
 		
 		List<InterfaceClusterDB> interfaceClusters = pdbInfo.getInterfaceClusters();		
 		
-		int eppicAssemblySize = 0;
-		int pdb1AssemblySize = 0;
+		String eppicAssemblySize = "";
+		String pdb1AssemblySize = ""; 
 		String pdb1SymmetryStr = "";
 		String eppicSymmetryStr = "";
 		
 		Set<InterfaceClusterDB> pdb1InterfaceClusters = null;
 		
-		if (eppicAssembly!=null) {
-			eppicAssemblySize = eppicAssembly.getMmSize();
-			if (eppicAssembly.getSymmetry()!=null)
-				eppicSymmetryStr = ","+eppicAssembly.getSymmetry();
+		if (eppicAssembly!=null && eppicAssembly.getAssemblyContents()!=null) {
+			eppicAssemblySize = DataModelAdaptor.getMmSizeString(eppicAssembly.getAssemblyContents());
+			
+			eppicSymmetryStr = "-"+DataModelAdaptor.getSymmetryString(eppicAssembly.getAssemblyContents());
 		}
 		if (pdb1Assembly!=null) {
 			pdb1InterfaceClusters = pdb1Assembly.getInterfaceClusters();
-			pdb1AssemblySize = pdb1Assembly.getMmSize();
-			if (pdb1Assembly.getSymmetry()!=null)
-				pdb1SymmetryStr = ","+pdb1Assembly.getSymmetry();
+			pdb1AssemblySize =  DataModelAdaptor.getMmSizeString(pdb1Assembly.getAssemblyContents());
+			
+			pdb1SymmetryStr = "-"+DataModelAdaptor.getSymmetryString(pdb1Assembly.getAssemblyContents());
 		}
 		
 		

@@ -17,16 +17,6 @@ public class AssemblyDB implements Serializable {
 
 	private boolean topologicallyValid;
 	
-	private int mmSize;
-	
-	private String composition;
-	
-	private String symmetry;
-	private String stoichiometry;
-	
-	private String pseudoSymmetry;
-	private String pseudoStoichiometry;
-
 	private String interfaceClusterIds;
 	
 	private PdbInfoDB pdbInfo;
@@ -34,6 +24,8 @@ public class AssemblyDB implements Serializable {
 	private Set<InterfaceClusterDB> interfaceClusters;
 	
 	private List<AssemblyScoreDB> assemblyScores;
+	
+	private List<AssemblyContentDB> assemblyContents;
 
 	public AssemblyDB() {
 		assemblyScores = new ArrayList<AssemblyScoreDB>();
@@ -60,46 +52,6 @@ public class AssemblyDB implements Serializable {
 		this.uid = uid;
 	}
 
-	public int getMmSize() {
-		return mmSize;
-	}
-
-	public void setMmSize(int mmSize) {
-		this.mmSize = mmSize;
-	}
-
-	public String getSymmetry() {
-		return symmetry;
-	}
-
-	public void setSymmetry(String symmetry) {
-		this.symmetry = symmetry;
-	}
-
-	public String getPseudoSymmetry() {
-		return pseudoSymmetry;
-	}
-
-	public void setPseudoSymmetry(String pseudoSymmetry) {
-		this.pseudoSymmetry = pseudoSymmetry;
-	}
-
-	public String getStoichiometry() {
-		return stoichiometry;
-	}
-
-	public void setStoichiometry(String stoichiometry) {
-		this.stoichiometry = stoichiometry;
-	}
-
-	public String getPseudoStoichiometry() {
-		return pseudoStoichiometry;
-	}
-
-	public void setPseudoStoichiometry(String pseudoStoichiometry) {
-		this.pseudoStoichiometry = pseudoStoichiometry;
-	}
-
 	public PdbInfoDB getPdbInfo() {
 		return pdbInfo;
 	}
@@ -114,14 +66,6 @@ public class AssemblyDB implements Serializable {
 
 	public void setTopologicallyValid(boolean topologicallyValid) {
 		this.topologicallyValid = topologicallyValid;
-	}
-
-	public String getComposition() {
-		return composition;
-	}
-
-	public void setComposition(String composition) {
-		this.composition = composition;
 	}
 
 	public String getInterfaceClusterIds() {
@@ -146,6 +90,14 @@ public class AssemblyDB implements Serializable {
 
 	public void setAssemblyScores(List<AssemblyScoreDB> assemblyScores) {
 		this.assemblyScores = assemblyScores;
+	}
+
+	public List<AssemblyContentDB> getAssemblyContents() {
+		return assemblyContents;
+	}
+
+	public void setAssemblyContents(List<AssemblyContentDB> assemblyContents) {
+		this.assemblyContents = assemblyContents;
 	}	
 	
 

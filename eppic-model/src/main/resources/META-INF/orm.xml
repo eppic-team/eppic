@@ -143,24 +143,18 @@
 			
 			<basic name="topologicallyValid"></basic>
 
-			<basic name="composition"></basic>
-			
-			<basic name="mmSize"></basic>
-			<basic name="symmetry">
-				<column length="10"/>
-			</basic>
-			<basic name="stoichiometry"></basic>
-			<basic name="pseudoSymmetry">
-				<column length="10"/>
-			</basic>
-			<basic name="pseudoStoichiometry"></basic>
-
 			<basic name="interfaceClusterIds"></basic>
 
 			<many-to-one name="pdbInfo">
 			</many-to-one>
 			
 			<one-to-many name="assemblyScores" mapped-by="assembly">
+				<cascade>
+					<cascade-all />
+				</cascade>
+			</one-to-many>
+
+			<one-to-many name="assemblyContents" mapped-by="assembly">
 				<cascade>
 					<cascade-all />
 				</cascade>
@@ -174,6 +168,30 @@
 						referenced-column-name="uid" />
 				</join-table>
 			</many-to-many>			
+
+		</attributes>
+	</entity>
+	
+	<entity class="eppic.model.AssemblyContentDB" name="AssemblyContent">
+		<table name="AssemblyContent" />
+		<attributes>
+			<id name="uid">
+				<generated-value strategy="IDENTITY" />
+			</id>
+			
+			<basic name="pdbCode">
+				<column length="4" />
+			</basic>
+			
+			<basic name="mmSize"></basic>
+			<basic name="symmetry">
+				<column length="10"/>
+			</basic>
+			<basic name="composition"></basic>
+			<basic name="stoichiometry"></basic>
+						
+			<many-to-one name="assembly">
+			</many-to-one>
 
 		</attributes>
 	</entity>

@@ -40,6 +40,7 @@ import eppic.assembly.ChainVertex;
 import eppic.assembly.InterfaceEdge;
 import eppic.commons.sequence.Homolog;
 import eppic.commons.util.Goodies;
+import eppic.model.AssemblyContentDB;
 import eppic.model.AssemblyDB;
 import eppic.model.AssemblyScoreDB;
 import eppic.model.ChainClusterDB;
@@ -326,18 +327,19 @@ public class DataModelAdaptor {
 			
 			assembly.setInterfaceClusterIds(validAssembly.toString());
 			
-			// TODO we need to redo the model to be able to store several descriptions, 
-			//      for the moment we write only the first description 
 			List<AssemblyDescription> description = validAssembly.getDescription();
-			assembly.setMmSize(description.get(0).getSize());
-			assembly.setComposition(description.get(0).getComposition());	
-			assembly.setSymmetry(description.get(0).getSymmetry());
-			assembly.setStoichiometry(description.get(0).getStoichiometry());
-			
-			// TODO we can get pseudosymmetry data for PDB provided assemblies (using BJ qs detection), but can we do that for our calculated assemblies?
-			//assembly.setPseudoSymmetry(pseudoSymmetry);
-			//assembly.setPseudoStoichiometry(pseudoStoichiometry);
-						
+			List<AssemblyContentDB> acDBs = new ArrayList<AssemblyContentDB>();
+			for (AssemblyDescription d:description) {
+				AssemblyContentDB acDB = new AssemblyContentDB();
+				acDB.setPdbCode(pdbInfo.getPdbCode());
+				acDB.setAssembly(assembly);
+				acDB.setMmSize(d.getSize());
+				acDB.setSymmetry(d.getSymmetry());
+				acDB.setStoichiometry(d.getStoichiometry());
+				acDB.setComposition(d.getComposition());
+				acDBs.add(acDB);
+			}
+			assembly.setAssemblyContents(acDBs);			
 			
 			// TODO calculate our score and confidence! should we have scores for all or for our final prediction only?
 			//AssemblyScoreDB as = new AssemblyScoreDB();
@@ -412,14 +414,14 @@ public class DataModelAdaptor {
 
 			as.setAssembly(matchingAssembly);
 			
-			if (!matchingAssembly.getSymmetry().equals(symmetries[0])) {
+			if (!getSymmetryString(matchingAssembly.getAssemblyContents()).equals(symmetries[0])) {
 				LOGGER.warn("Symmetry calculated from graph is {} whilst detected from biounit is {}",
-						matchingAssembly.getSymmetry(),symmetries[0]);
+						getSymmetryString(matchingAssembly.getAssemblyContents()),symmetries[0]);
 			}
 			
-			if (!matchingAssembly.getStoichiometry().equals(symmetries[1])) {
+			if (!getStoichiometryString(matchingAssembly.getAssemblyContents()).equals(symmetries[1])) {
 				LOGGER.warn("Stoichiometry calculated from graph is {} whilst detected from biounit is {}",
-						matchingAssembly.getStoichiometry(),symmetries[1]);
+						getStoichiometryString(matchingAssembly.getAssemblyContents()),symmetries[1]);
 			}
 			matchingAssembly.addAssemblyScore(as);
 			
@@ -456,16 +458,12 @@ public class DataModelAdaptor {
 
 			assembly.setInterfaceClusterIds(invalidAssembly.toString());
 						
-			// TODO fill the size, composition, symmetry, stoichiometry data
+			// TODO fill the AssemblyContents
 			//assembly.setMmSize(invalidAssembly.getSize());
 			//assembly.setComposition(composition);			
 			//assembly.setSymmetry(sym);
 			//assembly.setStoichiometry(stoic);
 			
-			// TODO we can get pseudosymmetries from BJ qs detection: should we do it like that here?
-			//assembly.setPseudoSymmetry(pseudoSymmetry);
-			//assembly.setPseudoStoichiometry(pseudoStoichiometry);
-
 			// this is how to get the sym info from biojava qs detected ones
 			//assembly.setMmSize(bioAssembly.getMacromolecularSize());
 			//assembly.setSymmetry(symmetries[0]);
@@ -531,6 +529,33 @@ public class DataModelAdaptor {
 		
 		
 		return matchingClusterIds;
+	}
+	
+	protected static String getSymmetryString(List<AssemblyContentDB> acDBs) {
+		StringBuilder sb = new StringBuilder();
+		for (int i=0;i<acDBs.size();i++	) {
+			sb.append(acDBs.get(i).getSymmetry());
+			if (i!=acDBs.size()-1) sb.append(",");
+		}
+		return sb.toString();
+	}
+	
+	protected static String getStoichiometryString(List<AssemblyContentDB> acDBs) {
+		StringBuilder sb = new StringBuilder();
+		for (int i=0;i<acDBs.size();i++	) {
+			sb.append(acDBs.get(i).getStoichiometry());
+			if (i!=acDBs.size()-1) sb.append(",");
+		}
+		return sb.toString();
+	}
+	
+	protected static String getMmSizeString(List<AssemblyContentDB> acDBs) {
+		StringBuilder sb = new StringBuilder();
+		for (int i=0;i<acDBs.size();i++	) {
+			sb.append(acDBs.get(i).getMmSize());
+			if (i!=acDBs.size()-1) sb.append(",");
+		}
+		return sb.toString();
 	}
 	
 	public void setGeometryScores(List<GeometryPredictor> gps, List<GeometryClusterPredictor> gcps) {

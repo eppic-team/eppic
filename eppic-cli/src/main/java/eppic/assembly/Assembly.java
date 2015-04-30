@@ -55,9 +55,10 @@ public class Assembly {
 		this.interfaceClusters = interfaceClusters;
 		this.graph = graph;
 				
-		initSubgraph(); // inits subgraph and connectedComponents
-		this.stoichiometrySet = new StoichiometrySet(structure, this, connectedComponents);
-		
+		if (graph!=null) {
+			initSubgraph(); // inits subgraph and connectedComponents
+			this.stoichiometrySet = new StoichiometrySet(structure, this, connectedComponents);
+		} 
 	}
 	
 	public Assembly(boolean[] engagedSet) {
@@ -146,7 +147,7 @@ public class Assembly {
 	 * @param clusterId
 	 * @return
 	 */
-	private UndirectedGraph<ChainVertex, InterfaceEdge> initSubgraph() {
+	private void initSubgraph() {		
 		
 		// note that the subgraph will contain all vertices even if they are not connected to the rest by any interface
 		
@@ -181,7 +182,7 @@ public class Assembly {
 		}
 		logger.info("Connected component sizes: {}",sb.toString()); 
 	
-		return subgraph;		
+				
 	}
 	
 	/**
