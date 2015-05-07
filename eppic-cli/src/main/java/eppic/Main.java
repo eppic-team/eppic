@@ -548,11 +548,11 @@ public class Main {
 			throw new EppicException(e, "Could not write interface scores file. "+e.getMessage(),true);
 		}
 		
-		// 3 write pdb biounit list file
+		// 3 write assemblies file
 		try {
-			toW.writePdbAssignments();
+			toW.writeAssembliesFile();
 		} catch (IOException e) {
-			throw new EppicException(e, "Could not write the PDB bio-unit assignments file: "+e.getMessage(), false);
+			throw new EppicException(e, "Could not write the assemblies file: "+e.getMessage(), false);
 		}
 		
 		// 4 write .A.log file

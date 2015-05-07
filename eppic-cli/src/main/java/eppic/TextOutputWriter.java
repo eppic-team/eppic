@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,8 +11,8 @@ import org.slf4j.LoggerFactory;
 import eppic.commons.sequence.AlignmentConstructionException;
 import eppic.commons.sequence.MultipleSequenceAlignment;
 import eppic.commons.sequence.Sequence;
+import eppic.model.AssemblyContentDB;
 import eppic.model.AssemblyDB;
-import eppic.model.AssemblyScoreDB;
 import eppic.model.ChainClusterDB;
 import eppic.model.ContactDB;
 import eppic.model.HomologDB;
@@ -279,93 +278,6 @@ public class TextOutputWriter {
 		// TODO should we display warnings? they are per InterfaceDB and not per InterfaceScoreDB
 	}
 	
-	public void writePdbAssignments() throws IOException{
-		
-		PrintStream ps = new PrintStream(params.getOutputFile(EppicParams.PDB_BIOUNIT_ASSIGN_FILE_SUFFIX));
-		
-		AssemblyDB eppicAssembly = null;
-		AssemblyDB pdb1Assembly = null;
-		for (AssemblyDB assembly: pdbInfo.getAssemblies()) {
-			for (AssemblyScoreDB as:assembly.getAssemblyScores()) {
-				if (as.getMethod().equals(ScoringMethod.EPPIC_FINAL)) {
-					if (eppicAssembly==null) eppicAssembly = assembly;
-					else LOGGER.warn("More than 1 EPPIC assembly assignment!");
-				}
-				if (as.getMethod().equals(DataModelAdaptor.PDB_BIOUNIT_METHOD)) {
-					if (pdb1Assembly==null) pdb1Assembly = assembly;
-					else LOGGER.warn("More than 1 PDB1 assembly assignment!");					
-				}
-
-			}
-		}
-		
-		List<InterfaceClusterDB> interfaceClusters = pdbInfo.getInterfaceClusters();		
-		
-		String eppicAssemblySize = "";
-		String pdb1AssemblySize = ""; 
-		String pdb1SymmetryStr = "";
-		String eppicSymmetryStr = "";
-		
-		Set<InterfaceClusterDB> pdb1InterfaceClusters = null;
-		
-		if (eppicAssembly!=null && eppicAssembly.getAssemblyContents()!=null) {
-			eppicAssemblySize = DataModelAdaptor.getMmSizeString(eppicAssembly.getAssemblyContents());
-			
-			eppicSymmetryStr = "-"+DataModelAdaptor.getSymmetryString(eppicAssembly.getAssemblyContents());
-		}
-		if (pdb1Assembly!=null) {
-			pdb1InterfaceClusters = pdb1Assembly.getInterfaceClusters();
-			pdb1AssemblySize =  DataModelAdaptor.getMmSizeString(pdb1Assembly.getAssemblyContents());
-			
-			pdb1SymmetryStr = "-"+DataModelAdaptor.getSymmetryString(pdb1Assembly.getAssemblyContents());
-		}
-		
-		
-		
-		ps.printf("%7s\t%20s\t%10s\t%10s\n",
-				"clustId","members",
-				ScoringMethod.EPPIC_FINAL + "("+eppicAssemblySize+eppicSymmetryStr+")",
-				DataModelAdaptor.PDB_BIOUNIT_METHOD         + "("+pdb1AssemblySize+pdb1SymmetryStr+")"); 
-		
-		for (InterfaceClusterDB interfaceCluster:interfaceClusters) {
-			String membersStr = "";
-			for (InterfaceDB interfaceItem:interfaceCluster.getInterfaces()) {
-				membersStr += interfaceItem.getInterfaceId()+" ";
-			}
-			ps.printf("%7d\t%20s\t",interfaceCluster.getClusterId(),membersStr);
-
-			// TODO we should also take the assembly for eppic method from the assembly mapping but for the moment we don't have assembly predictions yet and we take the raw pairwise calls
-			InterfaceClusterScoreDB icsEppic = interfaceCluster.getInterfaceClusterScore(ScoringMethod.EPPIC_FINAL);			
-			
-			if (icsEppic==null) {
-				ps.printf("%10s\t","");
-			} else {
-				ps.printf("%10s\t",icsEppic.getCallName());
-			}
-			if (pdb1InterfaceClusters==null) {
-				ps.printf("%10s","");
-			} else {
-				String call = null;
-				if (containsCluster(pdb1InterfaceClusters, interfaceCluster)) call = CallType.BIO.getName();
-				else call = CallType.CRYSTAL.getName();
-				ps.printf("%10s",call);
-			}
-			
-			
-			ps.println();
-			
-		}
-		
-		ps.close();
-	}
-	
-	private static boolean containsCluster(Set<InterfaceClusterDB> interfClusterSet, InterfaceClusterDB interfCluster) {
-		for (InterfaceClusterDB ic:interfClusterSet) {
-			if (ic.getClusterId()==interfCluster.getClusterId()) return true;
-		}
-		return false;
-	}
-	
 	/**
 	 * Writes to files (one per ChainCluster) a summary of the query and uniprot/cds identifiers and homologs with 
 	 * their uniprot/cds identifiers
@@ -581,4 +493,64 @@ public class TextOutputWriter {
 	}
 
 	
+	public void writeAssembliesFile() throws IOException {
+		PrintStream ps = new PrintStream(params.getOutputFile(EppicParams.ASSEMBLIES_FILE_SUFFIX));
+		ps.println("# Topologically valid assemblies in "+(params.isInputAFile()?params.getInFile().getName():params.getPdbCode()));		
+		
+		ps.printf("%20s %10s %15s %15s %15s\n",
+				"Interf cluster ids",
+				"Size",
+				"Stoichiometry",
+				"Symmetry",
+				"Predicted by");
+		
+		boolean hasTopInvalidAssemblies = false;
+		for (AssemblyDB assembly:pdbInfo.getAssemblies()) {
+			if (assembly.isTopologicallyValid()) {
+				printAssemblyInfo(ps, assembly);
+			} else {
+				hasTopInvalidAssemblies = true;
+			}
+		}
+		
+		if (hasTopInvalidAssemblies) {
+			//ps.println("# ---------------------------------");
+			ps.println("# Topologically invalid assemblies:");
+
+
+			for (AssemblyDB assembly:pdbInfo.getAssemblies()) {
+				if (!assembly.isTopologicallyValid()) {
+					printAssemblyInfo(ps, assembly);
+				}
+			}
+		}
+		
+		ps.close();
+	}
+	
+	private void printAssemblyInfo(PrintStream ps, AssemblyDB assembly) {
+		// first we gather the assembly predictions
+		StringBuilder sb = new StringBuilder();
+		for (int i=0;i<assembly.getAssemblyScores().size();i++) {
+			sb.append(assembly.getAssemblyScores().get(i).getMethod());
+			if (i!=assembly.getAssemblyScores().size()-1) sb.append(',');
+		}
+		// now we print everything
+		List<AssemblyContentDB> contents = assembly.getAssemblyContents();
+		String mmSizeString = "";
+		String stoString = "";
+		String symString = "";
+		if (contents!=null) {
+			mmSizeString = DataModelAdaptor.getMmSizeString(contents);
+			stoString = DataModelAdaptor.getStoichiometryString(contents);
+			symString = DataModelAdaptor.getSymmetryString(contents);
+		}
+		ps.printf("%20s %10s %15s %15s %15s\n", 
+				assembly.getInterfaceClusterIds(),
+				mmSizeString,
+				stoString,
+				symString,
+				sb.toString());
+	}
+		
 }
