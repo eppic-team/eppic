@@ -42,7 +42,6 @@ import eppic.commons.sequence.NoMatchFoundException;
 import eppic.commons.sequence.Sequence;
 import eppic.commons.sequence.SiftsConnection;
 import eppic.commons.sequence.SiftsFeature;
-import eppic.commons.sequence.UniprotVerMisMatchException;
 import eppic.commons.sequence.UnirefEntry;
 import eppic.commons.util.Interval;
 
@@ -556,7 +555,7 @@ public class ChainEvolContext implements Serializable {
 	
 	
 	public void blastForHomologs(EppicParams params) 
-	throws IOException, BlastException, UniprotVerMisMatchException, InterruptedException {
+	throws IOException, BlastException, InterruptedException {
 		
 		
 		File blastPlusBlastp = params.getBlastpBin();
@@ -619,10 +618,9 @@ public class ChainEvolContext implements Serializable {
 	/**
 	 * Retrieves the Uniprot data and metadata
 	 * @throws IOException
-	 * @throws UniprotVerMisMatchException
 	 * @throws SQLException 
 	 */
-	public void retrieveHomologsData() throws IOException, UniprotVerMisMatchException, SQLException {
+	public void retrieveHomologsData() throws IOException, SQLException {
 		if (parent.isUseLocalUniprot()) {
 			homologs.retrieveUniprotKBData(parent.getUniProtLocalConnection());
 		} else {
@@ -680,7 +678,7 @@ public class ChainEvolContext implements Serializable {
 				
 	}
 
-	public void align(EppicParams params) throws IOException, InterruptedException, UniprotVerMisMatchException { 
+	public void align(EppicParams params) throws IOException, InterruptedException { 
 		File clustaloBin = params.getClustaloBin();
 		int nThreads = params.getNumThreads();
 		

@@ -19,7 +19,6 @@ import eppic.commons.sequence.Sequence;
 import eppic.commons.sequence.SiftsConnection;
 import eppic.commons.sequence.UniProtConnection;
 import eppic.commons.sequence.UniprotLocalConnection;
-import eppic.commons.sequence.UniprotVerMisMatchException;
 
 
 public class ChainEvolContextList implements Serializable {
@@ -258,8 +257,6 @@ public class ChainEvolContextList implements Serializable {
 			try {
 				chainEvCont.blastForHomologs(params);
 
-			} catch (UniprotVerMisMatchException e) {
-				throw new EppicException(e, "Mismatch of Uniprot versions! "+e.getMessage(), true);
 			} catch (BlastException e) {
 				throw new EppicException(e,"Couldn't run blast to retrieve homologs: "+e.getMessage() ,true);
 			} catch (IOException e) {
@@ -288,8 +285,6 @@ public class ChainEvolContextList implements Serializable {
 			
 			try {
 				chainEvCont.retrieveHomologsData();
-			} catch (UniprotVerMisMatchException e) {
-				throw new EppicException(e, "Mismatch of UniProt versions! "+e.getMessage(), true);
 			} catch (IOException e) {
 				throw new EppicException(e, "Problems while retrieving homologs data: "+e.getMessage(),true);
 			} catch (SQLException e) {
@@ -381,9 +376,7 @@ public class ChainEvolContextList implements Serializable {
 				throw new EppicException(e, "Problems while running "+alignProgram+" to align protein sequences: "+e.getMessage(),true);
 			} catch (InterruptedException e) {
 				throw new EppicException(e, "Thread interrupted while running "+alignProgram+" to align protein sequences: "+e.getMessage(),true);
-			} catch (UniprotVerMisMatchException e) {
-				throw new EppicException(e, "Uniprot versions mismatch while trying to read cached alignment: "+e.getMessage(),true);
-			}
+			} 
 
 		}
 		params.getProgressLog().println();

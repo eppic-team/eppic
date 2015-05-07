@@ -135,11 +135,10 @@ public class HomologList implements  Serializable {//Iterable<UniprotHomolog>,
 	 * @param cacheFile a file with the cached gzipped xml blast output file, if null blast will be always run
 	 * @throws IOException
 	 * @throws BlastException
-	 * @throws UniprotVerMisMatchException if uniprot versions of cacheFile given and blastDbDir do not coincide
 	 * @throws InterruptedException
 	 */
 	public void searchWithBlast(File blastPlusBlastp, String blastDbDir, String blastDb, int blastNumThreads, int maxNumSeqs, File cacheFile) 
-			throws IOException, BlastException, UniprotVerMisMatchException, InterruptedException {
+			throws IOException, BlastException, InterruptedException {
 		
 		File outBlast = null;
 		boolean fromCache = false;
@@ -173,8 +172,8 @@ public class HomologList implements  Serializable {//Iterable<UniprotHomolog>,
 								" does not match the id from the sequence: "+this.ref.getUniId());
 					}
 					String uniprotVerFromCache = readUniprotVer(cacheFile.getParent());
-					if (!uniprotVerFromCache.equals(uniprotVer)) {
-						throw new UniprotVerMisMatchException("Uniprot version from blast db dir "+blastDbDir+
+					if (!uniprotVerFromCache.equals(uniprotVer)) {						
+						LOGGER.warn("Uniprot version from blast db dir "+blastDbDir+
 								" ("+uniprotVer+") does not match version in cache dir "+cacheFile.getParent()+" ("+uniprotVerFromCache+")");
 					}
 					if (!blastList.getDb().substring(blastList.getDb().lastIndexOf("/")+1).equals(blastDb)) {
@@ -273,7 +272,7 @@ public class HomologList implements  Serializable {//Iterable<UniprotHomolog>,
 			
 			BufferedReader br = new BufferedReader(new FileReader(uniprotVerFile));
 			String line;
-			Pattern p = Pattern.compile("^UniProt\\sKnowledgebase\\sRelease\\s([\\d._]+)\\s.*");
+			Pattern p = Pattern.compile("^UniProt.*Release\\s([\\d._]+)\\s.*");
 			while ((line=br.readLine())!=null){
 				Matcher m = p.matcher(line);
 				if (m.matches()) {
@@ -292,13 +291,12 @@ public class HomologList implements  Serializable {//Iterable<UniprotHomolog>,
 	 * Retrieves from UniprotKB the sequence, taxonomy and EMBL CDS ids data,
 	 * by using the remote Uniprot API
 	 * @param uniprotConn
-	 * @throws UniprotVerMisMatchException 
 	 * @throws IOException
 	 */
-	public void retrieveUniprotKBData(UniProtConnection uniprotConn) throws UniprotVerMisMatchException, IOException {
+	public void retrieveUniprotKBData(UniProtConnection uniprotConn) throws IOException {
 		String japiVer = uniprotConn.getVersion();
 		if (!japiVer.equals(this.uniprotVer)){
-			throw new UniprotVerMisMatchException("UniProt version used for blast ("+uniprotVer+") and UniProt version being queried with JAPI ("+japiVer+") don't match!");
+			LOGGER.warn("UniProt version used for blast ("+uniprotVer+") and UniProt version being queried with JAPI ("+japiVer+") don't match!");
 		}
 		List<String> uniprotIds = new ArrayList<String>();
 		for (Homolog hom:subList) {
@@ -366,12 +364,11 @@ public class HomologList implements  Serializable {//Iterable<UniprotHomolog>,
 	/**
 	 * Retrieves both uniprot and uniparc data from local db
 	 * @param uniprotConn
-	 * @throws UniprotVerMisMatchException
 	 * @throws SQLException
 	 */
-	public void retrieveUniprotKBData(UniprotLocalConnection uniprotConn) throws UniprotVerMisMatchException, SQLException {
+	public void retrieveUniprotKBData(UniprotLocalConnection uniprotConn) throws SQLException {
 		if (!uniprotConn.getVersion().equals(this.uniprotVer)){
-			throw new UniprotVerMisMatchException("UniProt version used for blast ("+uniprotVer+") and UniProt version being queried from local database ("+uniprotConn.getVersion()+") don't match!");
+			LOGGER.warn("UniProt version used for blast ("+uniprotVer+") and UniProt version being queried from local database ("+uniprotConn.getVersion()+") don't match!");
 		}
 		List<String> uniIds = new ArrayList<String>();
 		for (Homolog hom:subList) {
@@ -457,11 +454,10 @@ public class HomologList implements  Serializable {//Iterable<UniprotHomolog>,
 	 * @param clustaloBin
 	 * @param nThreads number of CPU cores t_coffee should use
 	 * @param alnCacheFile
-	 * @throws IOException
-	 * @throws UniprotVerMisMatchException 
+	 * @throws IOException 
 	 */
 	public void computeAlignment(File clustaloBin, int nThreads, File alnCacheFile) 
-			throws IOException, InterruptedException, UniprotVerMisMatchException {
+			throws IOException, InterruptedException {
 				
 		// we have to catch the special case when there are no homologs at all, we then will set an "alignment" that contains just the query sequence
 		if (getSizeFilteredSubset()==0) {
@@ -484,7 +480,7 @@ public class HomologList implements  Serializable {//Iterable<UniprotHomolog>,
 			String uniprotVerFromCacheDir = readUniprotVer(alnCacheFile.getParent());
 			String uniprotVerFromBlast = this.uniprotVer; // this can be either actually from blast db dir (if blast was run) or read from blast cache dir
 			if (!uniprotVerFromBlast.equals(uniprotVerFromCacheDir)) {
-				throw new UniprotVerMisMatchException("Uniprot version used for blast "+
+				LOGGER.warn("Uniprot version used for blast "+
 						" ("+uniprotVerFromBlast+") does not match version in alignment cache dir "+
 						alnCacheFile.getParent()+" ("+uniprotVerFromCacheDir+")");
 			}
