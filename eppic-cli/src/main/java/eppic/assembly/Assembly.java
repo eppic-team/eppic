@@ -230,6 +230,12 @@ public class Assembly {
 			}
 		}
 		
+		// for heteromeric assemblies, uneven stoichiometries implies non-closed. We can discard uneven ones straight away
+		if (!stoichiometrySet.isEven()) {
+			logger.info("Uneven stoichiometry for assembly {}, can't be a closed symmetry. Discarding",toString());
+			return false;
+		}
+		
 		// we check the cycles in the graph and whether they stay in same cell
 
 		// The PatonCycle detection does not work for multigraphs, e.g. in 1pfc engaging interfaces 1,5 it goes in an infinite loop

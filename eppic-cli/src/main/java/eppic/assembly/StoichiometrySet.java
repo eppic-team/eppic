@@ -66,6 +66,18 @@ public class StoichiometrySet {
 	}	
 	
 	/**
+	 * Return true if all stoichiometries of this set are even
+	 * @return
+	 * @see {@link Stoichiometry#isEven()}
+	 */
+	public boolean isEven() {
+		for (Stoichiometry sto:uniqueStoichiometries) {
+			if (!sto.isEven()) return false;
+		}
+		return true;
+	}
+	
+	/**
 	 * Returns the description corresponding to this StoichiometrySet as a list 
 	 * of AssemblyDescriptions per disjoint set.
 	 * @return

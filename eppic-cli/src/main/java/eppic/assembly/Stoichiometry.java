@@ -144,6 +144,29 @@ public class Stoichiometry {
 		return scalarProduct == 0;
 	}
 	
+	/**
+	 * Tells whether this stoichiometry is even: a stoichiometry is even if and
+	 * only if all of its non-zero members have the same count
+	 * @return true if even, false otherwise, if all members have 0 count it also returns false
+	 */
+	public boolean isEven() {
+		int nonzero = -1;
+		for (int i=0;i<this.getNumEntities();i++) {
+			if (sto[i]>0) {
+				nonzero = sto[i];
+				break;
+			}
+		}
+		// all are zero
+		if (nonzero == -1) return false;
+		
+		for (int i=0;i<this.getNumEntities();i++) {
+			if (sto[i]>0 && sto[i]!=nonzero) return false;
+		}
+		
+		return true;
+	}
+	
 	public String toFormattedString() {
 		StringBuilder stoSb = new StringBuilder();
 		
