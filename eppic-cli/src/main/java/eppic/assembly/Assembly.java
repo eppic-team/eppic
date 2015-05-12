@@ -211,6 +211,14 @@ public class Assembly {
 		return false;
 	}
 
+	private boolean containsHeteromeric() {
+		Set<InterfaceEdge> edges = subgraph.edgeSet();
+		for (InterfaceEdge edge: edges) {
+			if (!edge.getInterface().isHomomeric()) return true;
+		}
+		return false;
+	}
+	
 	public boolean isClosedSymmetry() {
 		
 		// first we check for infinites, like that we save to compute the graph cycles for infinite cases
@@ -228,6 +236,7 @@ public class Assembly {
 					return true;
 				}
 			}
+			
 		}
 		
 		// for heteromeric assemblies, uneven stoichiometries implies non-closed. We can discard uneven ones straight away
@@ -252,7 +261,14 @@ public class Assembly {
 		List<List<ChainVertex>> cycles = paton.findCycleBase();
 		
 		if (cycles.size()==0) {
-			// no cycles at all: can't be closed!
+			// no cycles at all:
+			// heteromeric interfaces are ok
+			if (containsHeteromeric()) {
+				logger.info("Assembly {} contains heteromeric interfaces and no cycles, assuming it has closed-symmetry",toString());
+				return true;
+			}
+			// homomeric aren't
+			// homomeric interfaces and no cycles: can't be closed!
 			logger.info("No cycles in assembly {}: discarding because it can't be a closed-symmetry", toString());
 			return false;
 		}

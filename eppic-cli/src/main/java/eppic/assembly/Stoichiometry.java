@@ -182,7 +182,7 @@ public class Stoichiometry {
 	public String toFormattedCompositionString() {
 		StringBuilder stoSb = new StringBuilder();
 		
-		for (int i=0;i<getNumEntities();i++){
+		for (int i=0;i<structure.getChains().size();i++){
 			if (comp[i]>0) {
 				stoSb.append(getChainId(i));			
 				if (comp[i]>1) stoSb.append(comp[i]); // for A1B1 we do AB (we ommit 1s)
