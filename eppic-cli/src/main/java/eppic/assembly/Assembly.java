@@ -86,6 +86,26 @@ public class Assembly {
 		return count;
 	}
 	
+	public int getNumHomoEngagedInterfaceClusters() {
+		int count=0;
+		for (StructureInterfaceCluster cluster: getEngagedInterfaceClusters()) {
+			if (cluster.getMembers().get(0).isHomomeric()) {
+				count++;
+			}
+		}
+		return count;
+	}
+	
+	public int getNumHeteroEngagedInterfaceClusters() {
+		int count=0;
+		for (StructureInterfaceCluster cluster: getEngagedInterfaceClusters()) {
+			if (!cluster.getMembers().get(0).isHomomeric()) {
+				count++;
+			}
+		}
+		return count;
+	}
+	
 	/**
 	 * Returns true if this assembly is a child of any of the given parents, false otherwise
 	 * @param parents
@@ -212,9 +232,11 @@ public class Assembly {
 	}
 
 	private boolean containsHeteromeric() {
-		Set<InterfaceEdge> edges = subgraph.edgeSet();
-		for (InterfaceEdge edge: edges) {
-			if (!edge.getInterface().isHomomeric()) return true;
+		for (StructureInterfaceCluster cluster: getEngagedInterfaceClusters()) {
+			
+			for (StructureInterface interf:cluster.getMembers()) {
+				if (!interf.isHomomeric()) return true;
+			}
 		}
 		return false;
 	}

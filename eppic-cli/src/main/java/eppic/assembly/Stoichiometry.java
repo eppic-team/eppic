@@ -150,13 +150,7 @@ public class Stoichiometry {
 	 * @return true if even, false otherwise, if all members have 0 count it also returns false
 	 */
 	public boolean isEven() {
-		int nonzero = -1;
-		for (int i=0;i<this.getNumEntities();i++) {
-			if (sto[i]>0) {
-				nonzero = sto[i];
-				break;
-			}
-		}
+		int nonzero = getFirstNonZero();
 		// all are zero
 		if (nonzero == -1) return false;
 		
@@ -165,6 +159,21 @@ public class Stoichiometry {
 		}
 		
 		return true;
+	}
+	
+	/**
+	 * Return the first non-zero count or -1 if all are 0
+	 * @return
+	 */
+	private int getFirstNonZero() {
+		int nonzero = -1;
+		for (int i=0;i<this.getNumEntities();i++) {
+			if (sto[i]>0) {
+				nonzero = sto[i];
+				break;
+			}
+		}
+		return nonzero;
 	}
 	
 	public String toFormattedString() {
@@ -198,44 +207,92 @@ public class Stoichiometry {
 	 * @return
 	 */
 	public String getSymmetry() {
-		
+
 		String symmetry = null;
-		
-		if (getNumEntities()>1) {
-			logger.warn("Symmetry detection for heteromeric assemblies not supported yet, setting it to unknown");
-			symmetry =  "unknown";
-			return symmetry;
-		}
-		
-		int n = sto[0];
-		
-		// for homomers of size n>1 it's clear:
-		//  - if n==1: C1
-		//  - if n uneven: there should be only 1 interface cluster engaged (otherwise warn!) ==> Cn
-		//  - if n==2: there should be only 1 interface cluster engaged (otherwise warn!) ==> C2
-		//  - else if n even (n=2m): there can be either 1 or more interface clusters engaged:
-		//      if 1: Cn
-		//      if >1: Dm
-		
-		if (n==1) {
-			if (assembly.getNumEngagedInterfaceClusters()>0) {
-				logger.warn("Some interface cluster is engaged for an assembly of size 1. Something is wrong!");
-			}
-			symmetry = "C1";
-		} else if (n%2 != 0 || n==2) {
-			if (assembly.getNumEngagedInterfaceClusters()>1) {
-				logger.warn("More than 1 engaged interface clusters for a homomeric assembly of size {}. Something is wrong!",n);
-			}
-			symmetry = "C"+n;
-		} else { // even number larger than 2
-			if (assembly.getNumEngagedInterfaceClusters()==1) {
+
+		// 1 HOMOMERS
+		if (getNumEntities()==1) {
+
+			// for homomers of size n>1 it's clear:
+			//  - if n==1: C1
+			//  - if n uneven: there should be only 1 interface cluster engaged (otherwise warn!) ==> Cn
+			//  - if n==2: there should be only 1 interface cluster engaged (otherwise warn!) ==> C2
+			//  - else if n even (n=2m): there can be either 1 or more interface clusters engaged:
+			//      if 1: Cn
+			//      if >1: Dm
+
+			
+			int n = sto[0];
+			int numDistinctInterfaces = assembly.getNumEngagedInterfaceClusters();
+
+			if (n==1) {
+				if (numDistinctInterfaces>0) {
+					logger.warn("Some interface cluster is engaged for an assembly of size 1. Something is wrong!");
+				}
+				symmetry = "C1";
+			} else if (n%2 != 0 || n==2) {
+				if (numDistinctInterfaces>1) {
+					logger.warn("More than 1 engaged interface clusters for a homomeric assembly of size {}. Something is wrong!",n);
+				}
 				symmetry = "C"+n;
+			} else { // even number larger than 2
+				if (numDistinctInterfaces==1) {
+					symmetry = "C"+n;
+				} else {
+					symmetry = "D"+(n/2);
+				}
+			}
+
+			// TODO detect tetrahedral, octahedral and icosahedral symmetries
+
+		// 2 HETEROMERS
+		} else {
+
+			if (!isEven()) {
+				// this should not happen since we disallow uneven stoichiometries in the search for valid assemblies
+				logger.warn("Uneven stoichiometry found while getting symmetry. Something is wrong!");
+				symmetry = "unknown";
 			} else {
-				symmetry = "D"+(n/2);
+				int n = getFirstNonZero();
+				if (n==-1) {
+					logger.warn("All counts are 0 for this stoichiometry. Something is wrong!");
+					symmetry = "unknown";
+				}
+				else if (n==1) {				
+					symmetry = "C1";
+				} 
+				else if (n==2) {
+					symmetry = "C2";
+				}
+				else if (n%2 != 0) {
+					symmetry = "C"+n;
+				}
+				// case left is n%2==0 with n>2: it's either D or C depending on interfaces
+				else {
+					// let's consider the oligomerisation occurs through homomeric interfaces only (over simplification!)
+					// TODO avoid the simplification and do it properly!
+					int numHomos = assembly.getNumHomoEngagedInterfaceClusters();
+					if (numHomos==1) {
+						// C symmetry
+						symmetry = "C"+n;
+					} else if (numHomos>1){
+						// D symmetry
+						symmetry = "D"+(n/2);
+					} else {
+						// no homo interfaces at all!
+						int numHeteros = assembly.getNumHeteroEngagedInterfaceClusters();
+						logger.warn("Heteromeric assembly with no homomeric interfaces and {} heteromeric. Can't say what's the symmetry, setting it to unknown",
+								numHeteros);
+						symmetry =  "unknown";
+
+					}
+					
+				}
+				
+				// TODO detect heteromeric tetrahedral, octahedral and icosahedral symmetries
 			}
 		}
-		 
-		// TODO detect tetrahedral, octahedral and icosahedral symmetries
+		
 		
 		return symmetry;
 	}
