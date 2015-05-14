@@ -41,6 +41,12 @@
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
+			<groupId>com.google.gwt</groupId>
+			<artifactId>gwt-codeserver</artifactId>
+			<version>${gwt.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>com.sencha.gxt</groupId>
 			<artifactId>gxt</artifactId>
 			<version>3.1.1</version>
@@ -51,6 +57,15 @@
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-entitymanager</artifactId>
 			<version>3.6.2.Final</version>
+			<!-- because hibernate has a subdependency on asm, it causes a clash with
+			     gwt 2.7. It needs to be excluded here. See
+			     https://groups.google.com/forum/#!topic/google-web-toolkit/D1qoc8U0cGk -->
+			<exclusions>
+				<exclusion>
+					<artifactId>asm</artifactId>
+					<groupId>asm</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<dependency>
@@ -117,11 +132,13 @@
 			<artifactId>gwtp-processors</artifactId>
 			<version>1.2.1</version>
 		</dependency>
+		<!--
 		<dependency>
 			<groupId>cglib</groupId>
 			<artifactId>cglib</artifactId>
 			<version>2.2</version>
 		</dependency>
+		-->
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
