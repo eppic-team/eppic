@@ -7,7 +7,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.Properties;
 import java.util.regex.Matcher;
@@ -87,11 +86,7 @@ public class EppicParams {
 	// the PDB biounit that we take as the PDB biounit annotation: since introduction of Biojava 
 	// we have decided to use biounit 1 (whatever its type) and ignore the rest
 	public static final int		   PDB_BIOUNIT_TO_USE = 1;
-	
-	// PROPERTY FILES
-	protected static final InputStream COLORS_PROPERTIES_IS = EppicParams.class.getResourceAsStream("/eppic/chain_colors.dat");
-	protected static final InputStream PYMOL_COLOR_MAPPINGS_IS = EppicParams.class.getResourceAsStream("/eppic/pymol.colors");
-	
+		
 	// DEFAULTS FOR COMMAND LINE PARAMETERS
 	public static final double    DEF_HOM_SOFT_ID_CUTOFF = 0.6;
 	public static final double    DEF_HOM_HARD_ID_CUTOFF = 0.5;

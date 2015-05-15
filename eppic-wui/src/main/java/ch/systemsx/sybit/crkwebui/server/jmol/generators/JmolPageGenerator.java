@@ -17,12 +17,11 @@ public class JmolPageGenerator
      * @param serverUrl url to the server where jmol and results are stored
      * @param resultsLocation path to results on the server
      * @param fileName name of the pdb file
-     * @param pr
      * @param interfData 
      * @return html page with jmol aplet
      */
 	public static String generatePage(String title, String size, String serverUrl, String resultsLocation,
-			String fileName, PymolRunner pr, Interface interfData)  {
+			String fileName, Interface interfData)  {
 		
 		char chain1 = interfData.getChain1().charAt(0);		
 		char chain2 = interfData.getChain2().charAt(0); 
@@ -30,14 +29,14 @@ public class JmolPageGenerator
 		
 		if (chain1==chain2) {
 			isSymRelated = true;
-			chain2 = pr.getNextLetter(chain1);
+			chain2 = PymolRunner.getNextLetter(chain1);
 		}
 		
-		String color1 = pr.getChainColor(chain1, 0, isSymRelated);
-		String color2 = pr.getChainColor(chain2, 1, isSymRelated);
+		String color1 = PymolRunner.getHexColorCode0x(PymolRunner.getChainColor(chain1, 0, isSymRelated));
+		String color2 = PymolRunner.getHexColorCode0x(PymolRunner.getChainColor(chain2, 1, isSymRelated));
 		
-		String colorCore1 = "red"; // TODO: pr.getInterf1Color();
-		String colorCore2 = "red"; // TODO: pr.getInterf2Color();
+		String colorCore1 = PymolRunner.getHexColorCode0x(PymolRunner.getInterf1Color());
+		String colorCore2 = PymolRunner.getHexColorCode0x(PymolRunner.getInterf2Color());
 		
 		//System.out.println("isSymRelated="+isSymRelated+", color1="+color1+" color2="+color2);
 		

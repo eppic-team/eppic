@@ -19,19 +19,18 @@ import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.contact.StructureInterface;
 import org.biojava.nbio.structure.contact.StructureInterfaceList;
 import org.biojava.nbio.structure.io.PDBFileParser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class PymolRunner {
 	
-	/**
-	 * We use 26 colors corresponding to chain letters A to Z (second 13 are repeated from first 13)
-	 */
-	private static final String[] DEF_CHAIN_COLORS = 
-	{"green","cyan","yellow","white","lightblue","magenta","red","orange","wheat","limon","salmon","palegreen","lightorange",
-	 "green","cyan","yellow","white","lightblue","magenta","red","orange","wheat","limon","salmon","palegreen","lightorange",};
-	
-	private static final String DEF_SYM_RELATED_CHAIN_COLOR = "grey";
-	
+	// PROPERTY FILES
+	public static final InputStream COLORS_PROPERTIES_IS = EppicParams.class.getResourceAsStream("/eppic/chain_colors.dat");
+	public static final InputStream PYMOL_COLOR_MAPPINGS_IS = EppicParams.class.getResourceAsStream("/eppic/pymol.colors");
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(PymolRunner.class);
+
 	private static final String[] DEF_CHAIN_COLORS_ASU_ALLINTERFACES = 
 		{"green", "tv_green", "chartreuse", "splitpea", "smudge", "palegreen", "limegreen", "lime", "limon", "forest"};
 	
@@ -42,23 +41,43 @@ public class PymolRunner {
 	
 	private static final double MIN_INTERF_AREA_TO_DISPLAY = 400;
 	
-	private File pymolExec;
-	private String[] chainColors;
-	private String symRelatedColor;
-	private String interf1color;
-	private String interf2color;
+	/**
+	 * We use 26 colors corresponding to chain letters A to Z (second 13 are repeated from first 13)
+	 */
+	private static final String[] DEF_CHAIN_COLORS = 
+	{"green","cyan","yellow","white","lightblue","magenta","red","orange","wheat","limon","salmon","palegreen","lightorange",
+	 "green","cyan","yellow","white","lightblue","magenta","red","orange","wheat","limon","salmon","palegreen","lightorange",};
 	
-	private HashMap<String, String> colorMappings;
+	private static final String DEF_SYM_RELATED_CHAIN_COLOR = "grey";
+	
+	private static final String DEF_INTERF_COLOR = "red";
+	
+	
+	private static String[] chainColors;
+	private static String symRelatedColor;
+	private static String interf1color;
+	private static String interf2color;
+	
+	private static HashMap<String, String> colorMappings;
+	
+	static {
+		try {
+			readColorMappingsFromResourceFile(PYMOL_COLOR_MAPPINGS_IS);
+			readColorsFromPropertiesFile(COLORS_PROPERTIES_IS);
+		} catch (IOException e) {
+			LOGGER.warn("Couldn't read color mappings and properties from resource files. Will use defaults.");
+			chainColors = DEF_CHAIN_COLORS;
+			symRelatedColor = DEF_SYM_RELATED_CHAIN_COLOR;
+			interf1color = DEF_INTERF_COLOR;
+			interf2color = DEF_INTERF_COLOR;
+			colorMappings = new HashMap<String, String>();
+		}
+	}
+	
+	private File pymolExec;
 	
 	public PymolRunner(File pymolExec) {
 		this.pymolExec = pymolExec;
-		chainColors = DEF_CHAIN_COLORS;
-		symRelatedColor = DEF_SYM_RELATED_CHAIN_COLOR;
-	}
-	
-	public void setColors(String[] chainColors, String symRelatedColor) {
-		this.chainColors = chainColors;
-		this.symRelatedColor = symRelatedColor;
 	}
 	
 	/**
@@ -598,7 +617,7 @@ public class PymolRunner {
 	}
 
 	
-	public String getChainColor(char letter, int index, boolean isSymRelated) {
+	public  static String getChainColor(char letter, int index, boolean isSymRelated) {
 		String color = null;
 		if (isSymRelated && index!=0) {
 			color = symRelatedColor;
@@ -707,7 +726,7 @@ public class PymolRunner {
 	 * @param is
 	 * @throws IOException
 	 */
-	public void readColorsFromPropertiesFile(InputStream is) throws IOException {
+	private static void readColorsFromPropertiesFile(InputStream is) throws IOException {
 		
 		Properties p = new Properties();
 		p.load(is);
@@ -728,7 +747,7 @@ public class PymolRunner {
 	 * @param is
 	 * @throws IOException
 	 */
-	public void readColorMappingsFromResourceFile(InputStream is) throws IOException {
+	private static void readColorMappingsFromResourceFile(InputStream is) throws IOException {
 		colorMappings = new HashMap<String, String>();
 		BufferedReader br = new BufferedReader(new InputStreamReader(is));
 		String line;
@@ -743,23 +762,36 @@ public class PymolRunner {
 	
 	/**
 	 * Given a pymol color name (e.g. "raspberry") returns the hex RGB color code, e.g. #b24c66
-	 * or null if no such color name exists.
 	 * @param pymolColor
-	 * @return
+	 * @return the hex color or #00ffff (cyan) if no such color name exists
 	 */
-	public String getHexColorCode(String pymolColor) {
-		return colorMappings.get(pymolColor);
+	public static String getHexColorCode(String pymolColor) {
+		String col = colorMappings.get(pymolColor);
+		if (col==null) return "#00ffff";
+		return col;
+	}
+	
+	/**
+	 * Given a pymol color name (e.g. "raspberry") returns the hex RGB color code, e.g. 0xb24c66
+	 * @param pymolColor
+	 * @return the hex color or 0x00ffff (cyan) if no such color name exists
+	 */
+	public static String getHexColorCode0x(String pymolColor) {
+		String col = colorMappings.get(pymolColor);
+		if (col==null) return "0x00ffff";
+		col = col.replace("#", "0x");
+		return col;
 	}
 
-	public String getInterf1Color() {
+	public static String getInterf1Color() {
 		return interf1color;
 	}
 	
-	public String getInterf2Color() {
+	public static String getInterf2Color() {
 		return interf2color;
 	}
 	
-	public char getNextLetter(char letter) {
+	public static char getNextLetter(char letter) {
 
 		char newLetter = letter;
 		// if both chains are named equally we want to still named them differently in the output pdb file

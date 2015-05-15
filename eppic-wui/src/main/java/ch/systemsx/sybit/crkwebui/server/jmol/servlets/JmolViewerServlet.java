@@ -24,7 +24,6 @@ import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.ValidationException;
 import ch.systemsx.sybit.crkwebui.shared.model.Interface;
 import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
-import eppic.PymolRunner;
 
 /**
  * Servlet used to open jmol.
@@ -81,14 +80,12 @@ public class JmolViewerServlet extends BaseServlet
 		{
 			JmolViewerServletInputValidator.validateJmolViewerInput(jobId, interfaceId, input, size);
 
-			PymolRunner pr = new PymolRunner(null);
-			//pr.readColorMappingsFromResourceFile(EppicParams.PYMOL_COLOR_MAPPINGS_IS); 
 
 			Interface interfData = getInterfaceData(jobId, Integer.parseInt(interfaceId));
 			
 
 			String jmolPage = JmolPageGenerator.generatePage(jobId + " - " + interfaceId + "\n", size, serverUrl,
-					resultsLocation + jobId, input + "." + interfaceId + ".pdb", pr,  
+					resultsLocation + jobId, input + "." + interfaceId + ".pdb",   
 					interfData);
 
 
