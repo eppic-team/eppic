@@ -1,5 +1,8 @@
 package ch.systemsx.sybit.crkwebui.server.jmol.generators;
 
+import ch.systemsx.sybit.crkwebui.shared.model.Interface;
+import eppic.PymolRunner;
+
 public class JmolPageGenerator 
 {
     /**
@@ -13,44 +16,51 @@ public class JmolPageGenerator
      * @param version 
      * @return html page with jmol aplet
      */
-    public static String generatePage(String title, String size, String serverUrl, String resultsLocation,
-	    String fileName, String jmolScript, String version)  {
-	jmolScript = jmolScript.replaceAll("\n", "");
+	public static String generatePage(String title, String size, String serverUrl, String resultsLocation,
+			String fileName, PymolRunner pr, String version, Interface interfData)  {
+		
 
-	StringBuffer jmolPage = new StringBuffer();
+		boolean isSymRelated = interfData.getChain1().equals(interfData.getChain2());		
+		String color1 = pr.getChainColor(interfData.getChain1().charAt(0), 0, isSymRelated);
+		String color2 = pr.getChainColor(interfData.getChain2().charAt(0), 1, isSymRelated);
+		
+		System.out.println("isSymRelated="+isSymRelated+", color1="+color1+" color2="+color2);
+		
+		//String color1 = "cyan";
+		//String color2 = "green";
+		
+		StringBuffer jmolPage = new StringBuffer();
 
-	jmolPage.append("<html>" + "\n");
-	jmolPage.append("<head>" + "\n");
-	jmolPage.append("<title>" + "\n");
-	jmolPage.append(title);
-	jmolPage.append("</title>" + "\n");
-	jmolPage.append("<script type=\"text/javascript\" language=\"javascript\" src=\"" + 
-		serverUrl + "/resources/jmol/JSmol.min.js\"></script>" + "\n");
-	if(version != null && version.equals("js"))
-	    jmolPage.append("<script type=\"text/javascript\" language=\"javascript\" src=\"" + 
-		serverUrl + "/resources/jmol/Jmol2js.js\"></script>" + "\n");
-	else {
-	    jmolPage.append("<script type=\"text/javascript\" language=\"javascript\" src=\"https://www.java.com/js/deployJava.js\"></script>" + "\n");
-	    jmolPage.append("<script type=\"text/javascript\" language=\"javascript\">"
-	    	+ " function checkJava() {"
-	    	+ "	if(deployJava.getJREs().length == 0) { window.location = document.URL + '&version=js'; } }"
-	    	+ "</script>");
-	    jmolPage.append("<script type=\"text/javascript\" language=\"javascript\" src=\"" + 
-		serverUrl + "/resources/jmol/Jmol2.js\"></script>" + "\n");
-	}
-	jmolPage.append("</head>" + "\n");
-	jmolPage.append("<body onload=\"checkJava();\">" + "\n");
-	jmolPage.append("<script>" + "\n");
-	jmolPage.append("jmolInitialize(\"" + serverUrl + "/resources/jmol\");" + "\n");
-	jmolPage.append("jmolSetCallback(\"language\", \"en\");" + "\n");
-	if(version != null && version.equals("js"))
-	    jmolPage.append("jmolApplet(" + size + ", 'load " + serverUrl + "/" + resultsLocation + "/" + fileName + "; "+ jmolScript + "');" + "\n");
-	else
-	    jmolPage.append("jmolApplet(" + size + ", 'load " + serverUrl + "/" + resultsLocation + "/" + fileName + ".gz; "+ jmolScript + "');" + "\n");
-	jmolPage.append("</script>" + "\n");
-	jmolPage.append("</body>" + "\n");
-	jmolPage.append("</html>" + "\n");
+		String fileUrl = serverUrl + "/" + resultsLocation + "/" + fileName;
 
-	return jmolPage.toString();
+		jmolPage.append("<html>" + "\n");
+		jmolPage.append("<head>" + "\n");
+		jmolPage.append("<title>" + "\n");
+		jmolPage.append(title);
+		jmolPage.append("</title>" + "\n");
+
+		jmolPage.append("<script src=\"http://3Dmol.csb.pitt.edu/build/3Dmol-min.js\"></script> ");
+
+		jmolPage.append("</head>" + "\n");
+		jmolPage.append("<body>" + "\n");
+
+		
+		jmolPage.append(
+				"<div style=\"height: "+size+"px; width: "+size+"px; position: relative;\" "+
+				"class='viewer_3Dmoljs' data-href='"+fileUrl+"' data-backgroundcolor='0xffffff' "+
+				
+				// chain 1
+				"data-select1='chain:"+interfData.getChain1()+"' "+
+				"data-style1='cartoon:color="+color1+"'"+
+
+				// chain 2
+				"data-select2='chain:"+interfData.getChain2()+"' "+
+				"data-style2='cartoon:color="+color2+"'"+
+						
+				"</div>");
+		jmolPage.append("</body>" + "\n");
+		jmolPage.append("</html>" + "\n");
+
+		return jmolPage.toString();
     }
 }

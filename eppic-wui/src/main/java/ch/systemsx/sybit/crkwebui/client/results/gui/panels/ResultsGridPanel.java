@@ -489,7 +489,8 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 
 					model.setInterfaceId(interfaceItem.getInterfaceId());
 					model.setClusterId(interfaceItem.getClusterId());
-					model.setName(interfaceItem.getChain1() + "+" + interfaceItem.getChain2());
+					model.setChain1(interfaceItem.getChain1());
+					model.setChain2(interfaceItem.getChain2());
 					model.setArea(interfaceItem.getArea());
 					model.setOperator(interfaceItem.getOperator());
 					model.setOperatorType(interfaceItem.getOperatorType());
