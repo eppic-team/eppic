@@ -68,7 +68,7 @@ public class JmolViewerServlet extends BaseServlet
 		String interfaceId = request.getParameter("interface");
 		String input = request.getParameter("input");
 		String size = request.getParameter("size");
-		String version = request.getParameter("version");
+		//String version = request.getParameter("version");
 
 		String serverName = request.getServerName();
 		int serverPort = request.getServerPort();
@@ -88,7 +88,7 @@ public class JmolViewerServlet extends BaseServlet
 			
 
 			String jmolPage = JmolPageGenerator.generatePage(jobId + " - " + interfaceId + "\n", size, serverUrl,
-					resultsLocation + jobId, input + "." + interfaceId + ".pdb", pr, version, 
+					resultsLocation + jobId, input + "." + interfaceId + ".pdb", pr,  
 					interfData);
 
 

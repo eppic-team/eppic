@@ -1,23 +1,28 @@
 package ch.systemsx.sybit.crkwebui.server.jmol.generators;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import ch.systemsx.sybit.crkwebui.shared.model.Interface;
+import ch.systemsx.sybit.crkwebui.shared.model.Residue;
 import eppic.PymolRunner;
+import eppic.model.ResidueDB;
 
 public class JmolPageGenerator 
 {
     /**
      * Generates html page containing jmol aplet.
      * @param title title of the page
-     * @param size size of aplet
+     * @param size 
      * @param serverUrl url to the server where jmol and results are stored
      * @param resultsLocation path to results on the server
      * @param fileName name of the pdb file
-     * @param jmolScript script to execute
-     * @param version 
+     * @param pr
+     * @param interfData 
      * @return html page with jmol aplet
      */
 	public static String generatePage(String title, String size, String serverUrl, String resultsLocation,
-			String fileName, PymolRunner pr, String version, Interface interfData)  {
+			String fileName, PymolRunner pr, Interface interfData)  {
 		
 		char chain1 = interfData.getChain1().charAt(0);		
 		char chain2 = interfData.getChain2().charAt(0); 
@@ -31,10 +36,20 @@ public class JmolPageGenerator
 		String color1 = pr.getChainColor(chain1, 0, isSymRelated);
 		String color2 = pr.getChainColor(chain2, 1, isSymRelated);
 		
-		System.out.println("isSymRelated="+isSymRelated+", color1="+color1+" color2="+color2);
+		//System.out.println("isSymRelated="+isSymRelated+", color1="+color1+" color2="+color2);
 		
-		//String color1 = "cyan";
-		//String color2 = "green";
+		List<Residue> coreResidues1 = new ArrayList<Residue>();
+		List<Residue> coreResidues2 = new ArrayList<Residue>();
+		for (Residue residue:interfData.getResidues() ) {
+			
+			if (residue.getRegion()==ResidueDB.CORE_EVOLUTIONARY) {
+				if (residue.getSide()==1) {
+					coreResidues1.add(residue);
+				} else if (residue.getSide()==2) {
+					coreResidues2.add(residue);
+				}
+			}
+		}
 		
 		StringBuffer jmolPage = new StringBuffer();
 
@@ -63,11 +78,30 @@ public class JmolPageGenerator
 				// chain 2
 				"data-select2='chain:"+chain2+"' "+
 				"data-style2='cartoon:color="+color2+"'"+
-						
+				
+				// core residues 1
+				"data-select3='resi:"+getCommaSeparatedList(coreResidues1)+";chain:"+chain1+"'"+
+				"data-style3='cartoon:color="+color1+";stick:color=red'"+
+				
+				// core residues 1
+				"data-select4='resi:"+getCommaSeparatedList(coreResidues2)+";chain:"+chain2+"'"+
+				"data-style4='cartoon:color="+color2+";stick:color=raspberry'"+
+
+				
 				"</div>");
+		
 		jmolPage.append("</body>" + "\n");
 		jmolPage.append("</html>" + "\n");
 
 		return jmolPage.toString();
     }
+	
+	private static String getCommaSeparatedList(List<Residue> residues) {
+		StringBuilder sb = new StringBuilder();
+		for (int i=0;i<residues.size();i++){
+			sb.append(residues.get(i).getPdbResidueNumber());
+			if (i!=residues.size()-1) sb.append(',');
+		}
+		return sb.toString();
+	}
 }
