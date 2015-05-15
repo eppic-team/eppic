@@ -163,9 +163,13 @@ public class PymolRunner {
 			pngFiles[i] = new File(pdbFile.getParent(),base+"."+DEF_TN_WIDTHS[i]+"x"+DEF_TN_HEIGHTS[i]+".png");
 		}
 		
-		// TODO before Biojava move, for second chain we used to have getSecondPdbChainCodeForOutput (i.e. the next one from first if they were equal)
+		// before Biojava move, for second chain we used to have getSecondPdbChainCodeForOutput (i.e. the next one from first if they were equal)
 		char chain1 = interf.getMoleculeIds().getFirst().charAt(0);
 		char chain2 = interf.getMoleculeIds().getSecond().charAt(0);
+		
+		if (chain1==chain2) {
+			chain2 = getNextLetter(chain1);
+		}
 		
 		String color1 = getChainColor(chain1, 0, interf.isSymRelated());
 		String color2 = getChainColor(chain2, 1, interf.isSymRelated());
@@ -753,5 +757,20 @@ public class PymolRunner {
 	
 	public String getInterf2Color() {
 		return interf2color;
+	}
+	
+	public char getNextLetter(char letter) {
+
+		char newLetter = letter;
+		// if both chains are named equally we want to still named them differently in the output pdb file
+		// so that molecular viewers can handle properly the 2 chains as separate entities 
+
+		if (letter!='Z' && letter!='z') {
+			newLetter = (char)(letter+1); // i.e. next letter in alphabet
+		} else {
+			newLetter = (char)(letter-25); //i.e. 'A' or 'a'
+		}
+
+		return newLetter;
 	}
 }

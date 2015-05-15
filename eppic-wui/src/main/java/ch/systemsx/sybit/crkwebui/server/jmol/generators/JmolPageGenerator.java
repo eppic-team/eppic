@@ -19,10 +19,17 @@ public class JmolPageGenerator
 	public static String generatePage(String title, String size, String serverUrl, String resultsLocation,
 			String fileName, PymolRunner pr, String version, Interface interfData)  {
 		
-
-		boolean isSymRelated = interfData.getChain1().equals(interfData.getChain2());		
-		String color1 = pr.getChainColor(interfData.getChain1().charAt(0), 0, isSymRelated);
-		String color2 = pr.getChainColor(interfData.getChain2().charAt(0), 1, isSymRelated);
+		char chain1 = interfData.getChain1().charAt(0);		
+		char chain2 = interfData.getChain2().charAt(0); 
+		boolean isSymRelated = false;
+		
+		if (chain1==chain2) {
+			isSymRelated = true;
+			chain2 = pr.getNextLetter(chain1);
+		}
+		
+		String color1 = pr.getChainColor(chain1, 0, isSymRelated);
+		String color2 = pr.getChainColor(chain2, 1, isSymRelated);
 		
 		System.out.println("isSymRelated="+isSymRelated+", color1="+color1+" color2="+color2);
 		
@@ -50,11 +57,11 @@ public class JmolPageGenerator
 				"class='viewer_3Dmoljs' data-href='"+fileUrl+"' data-backgroundcolor='0xffffff' "+
 				
 				// chain 1
-				"data-select1='chain:"+interfData.getChain1()+"' "+
+				"data-select1='chain:"+chain1+"' "+
 				"data-style1='cartoon:color="+color1+"'"+
 
 				// chain 2
-				"data-select2='chain:"+interfData.getChain2()+"' "+
+				"data-select2='chain:"+chain2+"' "+
 				"data-style2='cartoon:color="+color2+"'"+
 						
 				"</div>");
