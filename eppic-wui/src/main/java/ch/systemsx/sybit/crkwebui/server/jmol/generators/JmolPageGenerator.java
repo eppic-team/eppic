@@ -36,17 +36,29 @@ public class JmolPageGenerator
 		String color1 = pr.getChainColor(chain1, 0, isSymRelated);
 		String color2 = pr.getChainColor(chain2, 1, isSymRelated);
 		
+		String colorCore1 = "red"; // TODO: pr.getInterf1Color();
+		String colorCore2 = "red"; // TODO: pr.getInterf2Color();
+		
 		//System.out.println("isSymRelated="+isSymRelated+", color1="+color1+" color2="+color2);
 		
 		List<Residue> coreResidues1 = new ArrayList<Residue>();
+		List<Residue> rimResidues1 = new ArrayList<Residue>();
 		List<Residue> coreResidues2 = new ArrayList<Residue>();
+		List<Residue> rimResidues2 = new ArrayList<Residue>();
+		
 		for (Residue residue:interfData.getResidues() ) {
 			
-			if (residue.getRegion()==ResidueDB.CORE_EVOLUTIONARY) {
+			if (residue.getRegion()==ResidueDB.CORE_EVOLUTIONARY || residue.getRegion()==ResidueDB.CORE_GEOMETRY) {
 				if (residue.getSide()==1) {
 					coreResidues1.add(residue);
 				} else if (residue.getSide()==2) {
 					coreResidues2.add(residue);
+				}
+			} else if (residue.getRegion()==ResidueDB.RIM_EVOLUTIONARY) {
+				if (residue.getSide()==1) {
+					rimResidues1.add(residue);
+				} else if (residue.getSide()==2) {
+					rimResidues2.add(residue);
 				}
 			}
 		}
@@ -81,12 +93,19 @@ public class JmolPageGenerator
 				
 				// core residues 1
 				"data-select3='resi:"+getCommaSeparatedList(coreResidues1)+";chain:"+chain1+"'"+
-				"data-style3='cartoon:color="+color1+";stick:color=red'"+
-				
-				// core residues 1
-				"data-select4='resi:"+getCommaSeparatedList(coreResidues2)+";chain:"+chain2+"'"+
-				"data-style4='cartoon:color="+color2+";stick:color=raspberry'"+
+				"data-style3='cartoon:color="+color1+";stick:color="+colorCore1+"'"+
 
+				// rim residues 1
+				"data-select4='resi:"+getCommaSeparatedList(rimResidues1)+";chain:"+chain1+"'"+
+				"data-style4='cartoon:color="+color1+";stick:color="+color1+"'"+
+
+				// core residues 1
+				"data-select5='resi:"+getCommaSeparatedList(coreResidues2)+";chain:"+chain2+"'"+
+				"data-style5='cartoon:color="+color2+";stick:color="+colorCore2+"'"+
+
+				//rim residues 1
+				"data-select6='resi:"+getCommaSeparatedList(rimResidues2)+";chain:"+chain2+"'"+
+				"data-style6='cartoon:color="+color2+";stick:color="+color2+"'"+
 				
 				"</div>");
 		
