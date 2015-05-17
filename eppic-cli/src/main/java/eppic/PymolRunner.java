@@ -182,10 +182,10 @@ public class PymolRunner {
 			pngFiles[i] = new File(pdbFile.getParent(),base+"."+DEF_TN_WIDTHS[i]+"x"+DEF_TN_HEIGHTS[i]+".png");
 		}
 		
-		// before Biojava move, for second chain we used to have getSecondPdbChainCodeForOutput (i.e. the next one from first if they were equal)
 		char chain1 = interf.getMoleculeIds().getFirst().charAt(0);
 		char chain2 = interf.getMoleculeIds().getSecond().charAt(0);
 		
+		// this relies on pdb files having been produced with the same chain-renaming scheme
 		if (chain1==chain2) {
 			chain2 = getNextLetter(chain1);
 		}
@@ -382,9 +382,13 @@ public class PymolRunner {
 		for (File interfPdbFile:interfacePdbFiles) {
 			StructureInterface interf = interfaces.get(i);
 			
-			// TODO before Biojava move, for second chain we used to have getSecondPdbChainCodeForOutput (i.e. the next one from first if they were equal)
 			char chain1 = interf.getMoleculeIds().getFirst().charAt(0); // TODO this won't work for new mega files, we need to write mmCIF!
 			char chain2 = interf.getMoleculeIds().getSecond().charAt(0);
+			
+			// this relies on pdb files having been produced with the same chain-renaming scheme
+			if (chain1==chain2) {
+				chain2 = getNextLetter(chain1);
+			}
 			
 			String symMolecName = getPymolMolecName(interfPdbFile);
 			
@@ -791,6 +795,12 @@ public class PymolRunner {
 		return interf2color;
 	}
 	
+	/**
+	 * Returns the next letter in alphabet with matching case, or if input is 'z' or 'Z'
+	 * returns 'a' or 'A'
+	 * @param letter
+	 * @return
+	 */
 	public static char getNextLetter(char letter) {
 
 		char newLetter = letter;
