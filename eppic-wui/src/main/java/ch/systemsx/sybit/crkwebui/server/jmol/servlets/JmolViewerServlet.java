@@ -10,8 +10,8 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-//import org.slf4j.Logger;
-//import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import ch.systemsx.sybit.crkwebui.server.commons.servlets.BaseServlet;
 import ch.systemsx.sybit.crkwebui.server.db.dao.InterfaceDAO;
@@ -34,7 +34,7 @@ public class JmolViewerServlet extends BaseServlet
 
 	private static final long serialVersionUID = 1L;
 
-	//private static final Logger logger = LoggerFactory.getLogger(JmolViewerServlet.class);
+	private static final Logger logger = LoggerFactory.getLogger(JmolViewerServlet.class);
 	
 	private String resultsLocation;
 	private String protocol;
@@ -74,6 +74,8 @@ public class JmolViewerServlet extends BaseServlet
 
 		String serverUrl = protocol + "://" + serverName + ":" + serverPort + "/" + servletContPath;
 
+		logger.info("Requested 3D viewer page for jobId={}, input={}, interfaceId={}, size=",jobId,input,interfaceId,size);
+		
 		ServletOutputStream outputStream = null;
 
 		try
