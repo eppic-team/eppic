@@ -5,7 +5,7 @@ import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.shared.model.Interface;
 import ch.systemsx.sybit.crkwebui.shared.model.Residue;
-import eppic.PymolRunner;
+import eppic.MolViewersHelper;
 import eppic.model.ResidueDB;
 
 public class JmolPageGenerator 
@@ -29,14 +29,14 @@ public class JmolPageGenerator
 		
 		if (chain1==chain2) {
 			isSymRelated = true;
-			chain2 = PymolRunner.getNextLetter(chain1);
+			chain2 = MolViewersHelper.getNextLetter(chain1);
 		}
 		
-		String color1 = PymolRunner.getHexColorCode0x(PymolRunner.getChainColor(chain1, 0, isSymRelated));
-		String color2 = PymolRunner.getHexColorCode0x(PymolRunner.getChainColor(chain2, 1, isSymRelated));
+		String color1 = MolViewersHelper.getHexColorCode0x(MolViewersHelper.getChainColor(chain1, 0, isSymRelated));
+		String color2 = MolViewersHelper.getHexColorCode0x(MolViewersHelper.getChainColor(chain2, 1, isSymRelated));
 		
-		String colorCore1 = PymolRunner.getHexColorCode0x(PymolRunner.getInterf1Color());
-		String colorCore2 = PymolRunner.getHexColorCode0x(PymolRunner.getInterf2Color());
+		String colorCore1 = MolViewersHelper.getHexColorCode0x(MolViewersHelper.getInterf1Color());
+		String colorCore2 = MolViewersHelper.getHexColorCode0x(MolViewersHelper.getInterf2Color());
 		
 		//System.out.println("isSymRelated="+isSymRelated+", color1="+color1+" color2="+color2);
 		
