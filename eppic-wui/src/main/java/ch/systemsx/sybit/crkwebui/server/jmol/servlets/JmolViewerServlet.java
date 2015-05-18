@@ -74,7 +74,7 @@ public class JmolViewerServlet extends BaseServlet
 
 		String serverUrl = protocol + "://" + serverName + ":" + serverPort + "/" + servletContPath;
 
-		logger.info("Requested 3D viewer page for jobId={}, input={}, interfaceId={}, size=",jobId,input,interfaceId,size);
+		logger.info("Requested 3D viewer page for jobId={}, input={}, interfaceId={}, size={}",jobId,input,interfaceId,size);
 		
 		ServletOutputStream outputStream = null;
 
@@ -100,11 +100,11 @@ public class JmolViewerServlet extends BaseServlet
 		}
 		catch(IOException e)
 		{
-			response.sendError(HttpServletResponse.SC_NO_CONTENT, "Error during preparation of jmol page.");
+			response.sendError(HttpServletResponse.SC_NO_CONTENT, "Error during preparation of 3D viewer page.");
 		}
 		catch(DaoException e)
 		{
-			response.sendError(HttpServletResponse.SC_NO_CONTENT, "Error during preparation of jmol page.");
+			response.sendError(HttpServletResponse.SC_NO_CONTENT, "Error during preparation of 3D viewer page.");
 		}
 		finally
 		{

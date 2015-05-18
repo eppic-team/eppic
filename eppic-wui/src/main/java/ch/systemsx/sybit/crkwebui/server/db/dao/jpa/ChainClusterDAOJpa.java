@@ -37,7 +37,7 @@ import eppic.model.SeqClusterDB_;
  */
 public class ChainClusterDAOJpa implements ChainClusterDAO {
 
-    private static final Logger log = LoggerFactory.getLogger(ChainClusterDAOJpa.class);
+    private static final Logger logger = LoggerFactory.getLogger(ChainClusterDAOJpa.class);
 
 
     @Override
@@ -162,7 +162,7 @@ public class ChainClusterDAOJpa implements ChainClusterDAO {
 	    SingularAttribute<SeqClusterDB, Integer> sequenceClusterTypeColumn = getSequenceClusterTypeColumn(sequenceClusterType);
 	    long clusterId = getClusterId(pdbCode, repChain, sequenceClusterTypeColumn);
 	    if(clusterId == 0 || clusterId == -1) {
-		log.warn("clusterId is " + clusterId + " for pdbCode " + pdbCode + " repChain " + repChain + " sequenceClusterType " + sequenceClusterType);
+		logger.warn("clusterId is " + clusterId + " for pdbCode " + pdbCode + " repChain " + repChain + " sequenceClusterType " + sequenceClusterType);
 		return null;
 	    }
 
@@ -175,7 +175,7 @@ public class ChainClusterDAOJpa implements ChainClusterDAO {
 	    @SuppressWarnings("unchecked")
 	    List<PdbInfoDB> pdbItemDBs = query.getResultList();
 	    long duration = System.currentTimeMillis() - start;
-	    log.debug("Querying pdbitems for pdb " + pdbCode + " and seq " + sequenceClusterType + " with level " + sequenceClusterType + " took: " + duration + " ms");
+	    logger.debug("Querying pdbitems for pdb " + pdbCode + " and seq " + sequenceClusterType + " with level " + sequenceClusterType + " took: " + duration + " ms");
 	    start = System.currentTimeMillis();
 	    for(PdbInfoDB pdbItemDB: pdbItemDBs){
 		PDBSearchResult result = new PDBSearchResult(pdbItemDB.getUid(),
@@ -198,13 +198,13 @@ public class ChainClusterDAOJpa implements ChainClusterDAO {
 		resultList.add(result);
 	    }
 	    duration = System.currentTimeMillis() - start;
-	    log.debug("Converting pdbitems for pdb " + pdbCode + " and seq " + sequenceClusterType + " with level " + sequenceClusterType + " took: " + duration + " ms");
+	    logger.debug("Converting pdbitems for pdb " + pdbCode + " and seq " + sequenceClusterType + " with level " + sequenceClusterType + " took: " + duration + " ms");
 	    return resultList;
 
 	}
 	catch(Throwable e)
 	{
-	    log.error("Query failed:", e);
+	    logger.error("Query failed:", e);
 	    return Collections.emptyList();
 	}
 	finally
@@ -242,12 +242,12 @@ public class ChainClusterDAOJpa implements ChainClusterDAO {
 	List<Integer> res = query.getResultList();
 	
 	long duration = System.currentTimeMillis() - start;
-	log.debug("Getting chain cluster ids for cluster id " + clusterId + "  with level " + sequenceClusterTypeColumn + " took: " + duration + " ms");
+	logger.debug("Getting chain cluster ids for cluster id " + clusterId + "  with level " + sequenceClusterTypeColumn + " took: " + duration + " ms");
 
 	return res;
 	}catch(Throwable e)
 	{
-	    log.error("Query failed:", e);
+	    logger.error("Query failed:", e);
 	    return Collections.emptyList();
 	}
 	finally
@@ -306,12 +306,12 @@ public class ChainClusterDAOJpa implements ChainClusterDAO {
 
 	    Integer res = (Integer)query.getSingleResult();
 	    long duration = System.currentTimeMillis() - start;
-	    log.debug("Querying clusterid for pdb " + pdbCode + " and seq " + repChain + " with level " + certanityColumn + " took: " + duration + " ms");
+	    logger.debug("Querying clusterid for pdb " + pdbCode + " and seq " + repChain + " with level " + certanityColumn + " took: " + duration + " ms");
 
 	    return res;
 
 	}catch(NoResultException e) {
-	    log.warn("No cluster id.");
+	    logger.warn("No cluster id.");
 	    return -1;
 	}
 	catch(Throwable e)
