@@ -76,18 +76,21 @@
 		<dependency>
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-c3p0</artifactId>
-			<version>3.6.3.Final</version>
+			<version>3.6.10.Final</version>
 		</dependency>
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
 			<version>5.1.14</version>
 		</dependency>
+		<!-- excluding the explicit dependency as hibernate-c3p0 already 
+		     contains it (with a slightly different version that conflicts with this one) 
 		<dependency>
 			<groupId>com.mchange</groupId>
 			<artifactId>c3p0</artifactId>
 			<version>0.9.2</version>
 		</dependency>
+		-->
 
 		<dependency>
 			<groupId>us.levk</groupId>
