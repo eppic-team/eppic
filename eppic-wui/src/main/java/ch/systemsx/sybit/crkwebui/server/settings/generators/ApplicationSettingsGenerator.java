@@ -4,6 +4,9 @@ import java.io.InputStream;
 import java.util.Map;
 import java.util.Properties;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import ch.systemsx.sybit.crkwebui.shared.exceptions.ParsingException;
 import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
 
@@ -12,6 +15,10 @@ import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
  */
 public class ApplicationSettingsGenerator 
 {
+	
+	private static final Logger logger = LoggerFactory.getLogger(ApplicationSettingsGenerator.class);
+	
+	
 	public static final String DEVELOPMENT_MODE = "development_mode";
 	/**
 	 * General server settings.
@@ -58,7 +65,7 @@ public class ApplicationSettingsGenerator
 		if(globalProperties.getProperty("resolution_cutoff")!=null)
 			resolutionCutOff = Double.parseDouble(globalProperties.getProperty("resolution_cutoff"));
 		else{
-			System.err.println("Warning: Resolution cut off value not found from the server properties file.");
+			logger.warn("Resolution cut off value not found from the server properties file.");
 			resolutionCutOff = -2;
 		}
 
@@ -66,7 +73,7 @@ public class ApplicationSettingsGenerator
 		if(globalProperties.getProperty("rfree_cutoff")!=null)
 			rfreeCutOff = Double.parseDouble(globalProperties.getProperty("rfree_cutoff"));
 		else{
-			System.err.println("Warning: R-Free cut off value not found from the server properties file.");
+			logger.warn("R-Free cut off value not found from the server properties file.");
 			rfreeCutOff = -2;
 		}
 		
@@ -75,7 +82,7 @@ public class ApplicationSettingsGenerator
 			maxXMLCalls = Integer.parseInt(globalProperties.getProperty("max_jobs_in_one_call"));
 		}
 		else{
-			System.err.println("Warning: Max XML jobs value not found from the server properties file.");
+			logger.warn("Warning: Max XML jobs value not found from the server properties file.");
 			maxXMLCalls = 1;
 		}
 		
@@ -84,7 +91,7 @@ public class ApplicationSettingsGenerator
 			javaVM = globalProperties.getProperty("java_VM_exec");
 		}
 		else{
-			System.err.println("Warning: java VM not found from the server properties file using default value 'java'");
+			logger.info("java VM not found from the server properties file, using default value 'java'");
 			javaVM = "java";
 		}
 		
