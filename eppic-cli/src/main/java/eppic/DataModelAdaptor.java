@@ -37,6 +37,7 @@ import eppic.analysis.compare.SimpleInterface;
 import eppic.assembly.Assembly;
 import eppic.assembly.AssemblyDescription;
 import eppic.assembly.ChainVertex;
+import eppic.assembly.CrystalAssemblies;
 import eppic.assembly.InterfaceEdge;
 import eppic.commons.sequence.Homolog;
 import eppic.commons.util.Goodies;
@@ -301,7 +302,7 @@ public class DataModelAdaptor {
 		
 	}
 	
-	public void setAssemblies(Set<Assembly> validAssemblies) {
+	public void setAssemblies(CrystalAssemblies validAssemblies) {
 		
 		for (Assembly validAssembly:validAssemblies) {
 			AssemblyDB assembly = new AssemblyDB();

@@ -72,18 +72,18 @@ public class AssemblyFinder {
 	 * pruned top nodes.
 	 * @return
 	 */
-	public Set<Assembly> getValidAssemblies() {
+	public CrystalAssemblies getValidAssemblies() {
 		
 		lattice.removeDuplicateEdges();
 		
-		Set<Assembly> validSet = new HashSet<Assembly>();
-
+		Set<Assembly> validAssemblies = new HashSet<Assembly>();;
+		
 		// the list of nodes in the tree found to be invalid: all of their children will also be invalid
 		List<Assembly> invalidNodes = new ArrayList<Assembly>();		
 		
 		Assembly emptyAssembly = new Assembly(structure, interfaces, interfaceClusters, lattice.getGraph(), new boolean[numInterfClusters]);
 		
-		validSet.add(emptyAssembly); // the empty assembly (no engaged interfaces) is always a valid assembly
+		validAssemblies.add(emptyAssembly); // the empty assembly (no engaged interfaces) is always a valid assembly
 		
 		Set<Assembly> prevLevel = new HashSet<Assembly>();
 		prevLevel.add(emptyAssembly);
@@ -108,7 +108,7 @@ public class AssemblyFinder {
 						// then it's not added and thus the whole branch is pruned
 						nextLevel.add(c);
 						// add assembly as valid
-						validSet.add(c);
+						validAssemblies.add(c);
 					}
 				}
 			}
@@ -118,7 +118,7 @@ public class AssemblyFinder {
 		
 		
 
-		return validSet;
+		return new CrystalAssemblies(validAssemblies);
 	}
 	
 	

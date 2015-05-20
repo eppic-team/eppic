@@ -108,6 +108,10 @@ public class Stoichiometry {
 		return sto[getEntityIndex(entityId)];
 	}
 	
+	public int getCountForIndex(int i) {
+		return sto[i];
+	}
+	
 	public int getTotalSize() {
 		int size = 0; 
 		for (int i=0;i<getNumEntities();i++) {
@@ -295,6 +299,18 @@ public class Stoichiometry {
 		
 		
 		return symmetry;
+	}
+	
+	/**
+	 * Returns true if this stoichiometry covers all entities, i.e. it has 
+	 * a count >0 for all of its member molecules. False otherwise
+	 * @return
+	 */
+	public boolean isFullyCovering() {
+		for (int i=0;i<sto.length;i++) {
+			if (sto[i]==0) return false;
+		}
+		return true;
 	}
 	
 	public String toString() {

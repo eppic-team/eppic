@@ -458,6 +458,14 @@ public class Assembly {
 		return list;
 	}
 	
+	public boolean isFullyCovering() {
+		return stoichiometrySet.isFullyCovering();
+	}
+	
+	public StoichiometrySet getStoichiometrySet() {
+		return stoichiometrySet;
+	}
+	
 	@Override
 	public boolean equals(Object other) {
 		if (! (other instanceof Assembly)) return false;

@@ -15,7 +15,6 @@ import java.net.UnknownHostException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.zip.GZIPOutputStream;
 
 import org.apache.logging.log4j.LogManager;
@@ -47,6 +46,7 @@ import org.slf4j.LoggerFactory;
 
 import eppic.assembly.Assembly;
 import eppic.assembly.AssemblyFinder;
+import eppic.assembly.CrystalAssemblies;
 import eppic.assembly.LatticeGraph;
 import eppic.commons.util.FileTypeGuesser;
 import eppic.commons.util.Goodies;
@@ -73,7 +73,7 @@ public class Main {
 	private List<GeometryClusterPredictor> gcps;
 	
 	private LatticeGraph latticeGraph;
-	private Set<Assembly> validAssemblies;
+	private CrystalAssemblies validAssemblies;
 	
 	private File stepsLogFile;
 	private int stepCount;
@@ -366,7 +366,7 @@ public class Main {
 			sb.append(a.toString()+" ");
 		}
 		LOGGER.info("There are {} topologically possible assemblies: {}", validAssemblies.size(), sb.toString());
-				
+					
 	}
 	
 	public void doAssemblyScoring() {

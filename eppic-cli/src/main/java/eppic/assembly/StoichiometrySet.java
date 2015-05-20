@@ -66,7 +66,7 @@ public class StoichiometrySet {
 	}	
 	
 	/**
-	 * Return true if all stoichiometries of this set are even
+	 * Returns true if all stoichiometries of this set are even
 	 * @return
 	 * @see {@link Stoichiometry#isEven()}
 	 */
@@ -75,6 +75,26 @@ public class StoichiometrySet {
 			if (!sto.isEven()) return false;
 		}
 		return true;
+	}
+	
+	/**
+	 * Returns true if this set is composed of only 1 unique 
+	 * stoichiometry covering all entities in crystal.
+	 * @return
+	 * @see {@link Stoichiometry#isFullyCovering()}
+	 */
+	public boolean isFullyCovering() {
+		if (uniqueStoichiometries.size()>1) return false;
+		
+		return getFirst().isFullyCovering();
+	}
+	
+	public Stoichiometry getFirst() {
+		return uniqueStoichiometries.iterator().next();
+	}
+	
+	public Set<Stoichiometry> getUniqueStoichiometries() {
+		return uniqueStoichiometries;
 	}
 	
 	/**
