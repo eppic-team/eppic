@@ -10,6 +10,12 @@ import java.util.TreeMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * A representation of all valid assemblies in the crystal.
+ * 
+ * @author duarte_j
+ *
+ */
 public class CrystalAssemblies implements Iterable<Assembly> {
 	
 	
@@ -19,13 +25,13 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 	/**
 	 * The set of all valid assemblies in the crystal.
 	 */
-	private Set<Assembly> all;
+	private Set<Assembly> all;	
 	
 	/**
-	 * The reduced list of assemblies where equivalent assemblies are represented by the
-	 * maximal one (the one with most engaged interface clusters)
+	 * Each of the clusters of equivalent assemblies.
+	 * The representative is the first member and the maximal Assembly in terms of number of engaged interface clusters.
 	 */
-	private List<Assembly> clusteredList;
+	private List<AssemblyGroup> clusters;
 	
 	private Map<Integer,AssemblyGroup> groups;
 	
@@ -36,14 +42,11 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 		
 		initClusters();
 		
-		// not clustered would be like this: (commenting out initGroups and initClusters)
-		//clusteredList = new ArrayList<Assembly>();
-		//clusteredList.addAll(all);
 		
 	}
 	
 	public int size() {
-		return clusteredList.size();
+		return clusters.size();
 	}
 	
 	private void initGroups() {
@@ -81,30 +84,30 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 	
 	private void initClusters() {
 		
-		clusteredList = new ArrayList<Assembly>();
+		clusters = new ArrayList<AssemblyGroup>();
 		
 		for (int size:groups.keySet()) {
 			AssemblyGroup ag = groups.get(size);
 
 			if (size>0) {
-				List<AssemblyGroup> clusters = ag.sortIntoClusters();
+				List<AssemblyGroup> clustersForGroup = ag.sortIntoClusters();
 
-				logger.debug("{} assemblies with size {} group into {} clusters",ag.size(),size,clusters.size());
+				logger.debug("{} assemblies with size {} group into {} clusters",ag.size(),size,clustersForGroup.size());
 
 
-				for (int i=0;i<clusters.size();i++) {
+				for (int i=0;i<clustersForGroup.size();i++) {
 
-					if (clusters.get(i).size()>1) 
-						logger.info("Using assembly {} as representative for assembly cluster {}",clusters.get(i).get(0),clusters.get(i));
+					if (clustersForGroup.get(i).size()>1) 
+						logger.info("Using assembly {} as representative for assembly cluster {}",clustersForGroup.get(i).get(0),clustersForGroup.get(i));
 
-					// we use the first member of each cluster (which is the maximal group, see 
-					// AssemblyGroup.sortIntoClusters() ) as the representative
-					clusteredList.add(clusters.get(i).get(0)); 
+					this.clusters.add(clustersForGroup.get(i)); 
 				}
 			} else {
 				// for those in the "-1" group we just add each assembly as a single-member cluster
 				for (Assembly assembly:ag) {
-					clusteredList.add(assembly);
+					AssemblyGroup g = new AssemblyGroup();
+					g.add(assembly);
+					clusters.add(g);
 				}
 			}
 		}
@@ -113,17 +116,37 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 	@Override
 	public Iterator<Assembly> iterator() {
 		
-		return clusteredList.iterator();
+		return getClusteredAssemblies().iterator();
 	}
 	
+	/**
+	 * Get all valid assemblies in the crystal, unclustered by equivalent ones.
+	 * @return
+	 */
 	public Set<Assembly> getAllAssemblies() {
 		return all;
 	}
 	
+	/**
+	 * Returns the list of unique valid assemblies in the crystal, that is the representatives 
+	 * of each of the assembly clusters. The representatives are chosen to be those assemblies that
+	 * have maximal number of engaged interface clusters out of the group of equivalent assemblies 
+	 * in the assembly cluster.
+	 * @return
+	 */
 	public List<Assembly> getClusteredAssemblies() {
-		return clusteredList;
+		List<Assembly> representatives = new ArrayList<Assembly>();
+		for (AssemblyGroup cluster:clusters) {
+			// we use the first member of each cluster (which is the maximal group, see 
+			// AssemblyGroup.sortIntoClusters() ) as the representative
+			representatives.add(cluster.get(0));
+		}
+		return representatives;
 	}
 	
+	public List<AssemblyGroup> getClusters() {
+		return clusters;
+	}
 	
 	
 }
