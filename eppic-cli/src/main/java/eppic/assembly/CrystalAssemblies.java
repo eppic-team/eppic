@@ -116,12 +116,13 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 	@Override
 	public Iterator<Assembly> iterator() {
 		
-		return getClusteredAssemblies().iterator();
+		return getUniqueAssemblies().iterator();
 	}
 	
 	/**
-	 * Get all valid assemblies in the crystal, unclustered by equivalent ones.
+	 * Get all valid assemblies in the crystal (unclustered)
 	 * @return
+	 * @see #getUniqueAssemblies()
 	 */
 	public Set<Assembly> getAllAssemblies() {
 		return all;
@@ -134,7 +135,7 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 	 * in the assembly cluster.
 	 * @return
 	 */
-	public List<Assembly> getClusteredAssemblies() {
+	public List<Assembly> getUniqueAssemblies() {
 		List<Assembly> representatives = new ArrayList<Assembly>();
 		for (AssemblyGroup cluster:clusters) {
 			// we use the first member of each cluster (which is the maximal group, see 

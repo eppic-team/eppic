@@ -192,7 +192,7 @@ public class Assembly {
 		
 		this.connectedComponents = ci.connectedSets();
 		
-		logger.info("Subgraph of assembly {} has {} vertices and {} edges, with {} connected components",
+		logger.debug("Subgraph of assembly {} has {} vertices and {} edges, with {} connected components",
 				this.toString(), subgraph.vertexSet().size(), subgraph.edgeSet().size(), connectedComponents.size());
 		
 		StringBuilder sb = new StringBuilder();
@@ -200,7 +200,7 @@ public class Assembly {
 			sb.append(cc.size());
 			sb.append(' ');
 		}
-		logger.info("Connected component sizes: {}",sb.toString()); 
+		logger.debug("Connected component sizes: {}",sb.toString()); 
 	
 				
 	}
@@ -213,7 +213,7 @@ public class Assembly {
 	public boolean isValid() {
 		
 		if (!isIsomorphic()) {
-			logger.info("Assembly {} contains non-isomorphic subgraphs, discarding it",this.toString());
+			logger.debug("Assembly {} contains non-isomorphic subgraphs, discarding it",this.toString());
 			return false;
 		}
 		
@@ -245,7 +245,7 @@ public class Assembly {
 		
 		// first we check for infinites, like that we save to compute the graph cycles for infinite cases
 		if (containsInfinites()) {
-			logger.info("Discarding assembly {} because it contains infinite interfaces", toString());
+			logger.debug("Discarding assembly {} because it contains infinite interfaces", toString());
 			return false;
 		}
 
@@ -254,7 +254,7 @@ public class Assembly {
 			for (StructureInterface interf : getEngagedInterfaceClusters().get(0).getMembers()) {
 				// with a single interface in cluster isologous, we call the whole isologous
 				if (interf.isIsologous()) {
-					logger.info("Assembly {} contains just 1 isologous interface cluster: closed symmetry, won't check cycles",toString());
+					logger.debug("Assembly {} contains just 1 isologous interface cluster: closed symmetry, won't check cycles",toString());
 					return true;
 				}
 			}
@@ -263,7 +263,7 @@ public class Assembly {
 		
 		// for heteromeric assemblies, uneven stoichiometries implies non-closed. We can discard uneven ones straight away
 		if (!stoichiometrySet.isEven()) {
-			logger.info("Uneven stoichiometry for assembly {}, can't be a closed symmetry. Discarding",toString());
+			logger.debug("Uneven stoichiometry for assembly {}, can't be a closed symmetry. Discarding",toString());
 			return false;
 		}
 		
@@ -291,11 +291,11 @@ public class Assembly {
 			}
 			// homomeric aren't
 			// homomeric interfaces and no cycles: can't be closed!
-			logger.info("No cycles in assembly {}: discarding because it can't be a closed-symmetry", toString());
+			logger.debug("No cycles in assembly {}: discarding because it can't be a closed-symmetry", toString());
 			return false;
 		}
 		
-		logger.info("{} cycles in total",cycles.size());
+		logger.debug("{} cycles in total",cycles.size());
 		
 		for (List<ChainVertex> cycle:cycles) {
 			
@@ -310,13 +310,13 @@ public class Assembly {
 				// we continue to next cycle, if all cycles are translation 0, then we'll return true below
 			} else {
 				// one cycle has non-zero translation: we abort straight away: return false
-				logger.info("Non-closed cycle (non-0 translation). Discarding assembly {}",toString());
+				logger.debug("Non-closed cycle (non-0 translation). Discarding assembly {}",toString());
 				return false;
 			}
 		}
 		
 
-		logger.info("All cycles of assembly {} are closed: valid assembly",toString());
+		logger.debug("All cycles of assembly {} are closed: valid assembly",toString());
 		return true;
 	}
 	
@@ -358,7 +358,7 @@ public class Assembly {
 					trans2.negate();
 				}
 				if(!trans.equals(trans2)) {
-					logger.info("Multiple edges with unequal translation between vertices {},{} of cycle {}",
+					logger.debug("Multiple edges with unequal translation between vertices {},{} of cycle {}",
 							s.toString(),t.toString(),cycle.toString());
 					return false;
 				}
@@ -367,7 +367,7 @@ public class Assembly {
 			p.add(trans);
 		}
 		
-		logger.info("Total translation is [{}, {}, {}] ",p.x, p.y, p.z);
+		logger.debug("Total translation is [{}, {}, {}] ",p.x, p.y, p.z);
 		return p.equals(new Point3i(0,0,0));
 	}
 
@@ -388,7 +388,7 @@ public class Assembly {
 				t.add(e.getXtalTrans());
 			}
 			if (!t.equals(new Point3i(0,0,0))) {
-				logger.info("Vertices {},{} are connected by {} edges with non-0 sum translation: {} ",
+				logger.debug("Vertices {},{} are connected by {} edges with non-0 sum translation: {} ",
 						subgraph.getEdgeSource(edge), subgraph.getEdgeTarget(edge), edges.size(), t.toString()); 
 				return true; 
 			} else {
@@ -410,7 +410,7 @@ public class Assembly {
 		// 1) Isomorphism of entities: they have to be all equals or if different then they must be orthogonal 
 		
 		if (!stoichiometrySet.isIsomorphic()) {
-			logger.info("Some stoichiometries of assembly {} are overlapping, assembly can't be isomorphic",this.toString());
+			logger.debug("Some stoichiometries of assembly {} are overlapping, assembly can't be isomorphic",this.toString());
 			return false;
 		}
 		
