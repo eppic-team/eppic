@@ -388,7 +388,7 @@ public class TestLatticeGraph {
 			engagedSet[clusterId-1] = true;
 		}
 		
-		Assembly a = new Assembly(ab.getStructure(), ab.getInterfaces(), ab.getInterfaceClusters(), ab.getLatticeGraph().getGraph(),engagedSet);
+		Assembly a = new Assembly(ab.getStructure(), ab.getInterfaces(), ab.getInterfaceClusters(), ab.getLatticeGraph(),engagedSet);
 		
 		return a;
 	}

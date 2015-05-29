@@ -28,7 +28,6 @@ import org.biojava.nbio.structure.contact.StructureInterfaceList;
 import org.biojava.nbio.structure.quaternary.BioAssemblyInfo;
 import org.biojava.nbio.structure.xtal.CrystalCell;
 import org.biojava.nbio.structure.xtal.SpaceGroup;
-import org.jgrapht.UndirectedGraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,9 +35,8 @@ import eppic.analysis.compare.InterfaceMatcher;
 import eppic.analysis.compare.SimpleInterface;
 import eppic.assembly.Assembly;
 import eppic.assembly.AssemblyDescription;
-import eppic.assembly.ChainVertex;
 import eppic.assembly.CrystalAssemblies;
-import eppic.assembly.InterfaceEdge;
+import eppic.assembly.LatticeGraph;
 import eppic.commons.sequence.Homolog;
 import eppic.commons.util.Goodies;
 import eppic.model.AssemblyContentDB;
@@ -355,7 +353,7 @@ public class DataModelAdaptor {
 	}
 	
 	public void setPdbBioUnits(BioAssemblyInfo bioAssembly, String[] symmetries,
-			Structure structure, StructureInterfaceList interfaces, UndirectedGraph<ChainVertex,InterfaceEdge> graph) {
+			Structure structure, StructureInterfaceList interfaces, LatticeGraph graph) {
 
 		if (bioAssembly == null) {
 			LOGGER.info("No bio assembly annotation present, will not add bio assembly info to data model");

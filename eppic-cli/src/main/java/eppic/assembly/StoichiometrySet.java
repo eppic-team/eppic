@@ -8,6 +8,7 @@ import java.util.Set;
 import org.biojava.nbio.structure.Structure;
 //import org.slf4j.Logger;
 //import org.slf4j.LoggerFactory;
+import org.jgrapht.UndirectedGraph;
 
 public class StoichiometrySet {
 	
@@ -15,13 +16,13 @@ public class StoichiometrySet {
 	
 
 	private Structure structure;
-	private List<Set<ChainVertex>> connectedComponents;
+	private List<UndirectedGraph<ChainVertex, InterfaceEdge>> connectedComponents;
 	
 	private List<Stoichiometry> stoichiometries;
 	
 	private Set<Stoichiometry> uniqueStoichiometries;
 	
-	public StoichiometrySet(Structure structure, Assembly assembly, List<Set<ChainVertex>> connectedComponents) {
+	public StoichiometrySet(Structure structure, Assembly assembly, List<UndirectedGraph<ChainVertex, InterfaceEdge>> connectedComponents) {
 		this.structure = structure;
 		this.connectedComponents = connectedComponents;
 		initStoichiometries(assembly);
@@ -29,10 +30,10 @@ public class StoichiometrySet {
 	
 	private void initStoichiometries(Assembly assembly) {
 		stoichiometries = new ArrayList<Stoichiometry>();
-		for (Set<ChainVertex> cc:connectedComponents) {			
+		for (UndirectedGraph<ChainVertex, InterfaceEdge> cc:connectedComponents) {			
 			Stoichiometry s = new Stoichiometry(structure, assembly);
 			stoichiometries.add(s);
-			for (ChainVertex v:cc) {
+			for (ChainVertex v:cc.vertexSet()) {
 				s.add(v.getChain());
 			}			
 		}

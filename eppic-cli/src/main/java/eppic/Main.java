@@ -424,7 +424,7 @@ public class Main {
 			// since the move to Biojava, we have decided to take the first PDB-annotated biounit ONLY, whatever its type
 			String[] symmetries = getSymmetry(EppicParams.PDB_BIOUNIT_TO_USE);
 			modelAdaptor.setPdbBioUnits(pdb.getPDBHeader().getBioAssemblies().get(EppicParams.PDB_BIOUNIT_TO_USE),symmetries,
-					pdb, interfaces, latticeGraph.getGraph());
+					pdb, interfaces, latticeGraph);
 		}
 	}
 	
@@ -593,6 +593,19 @@ public class Main {
 					File pdbFile = params.getOutputFile("." + iec.getInterface().getId() + ".pdb.gz");
 					iec.writePdbFile(pdbFile);
 				}
+			}
+			// assembly files
+			int i = 0;
+			for (Assembly a:validAssemblies) {
+				i++;
+				try {
+					File pdbFile = params.getOutputFile(".assembly." + i + ".pdb.gz");
+					a.writeToPdbFile(pdbFile);
+				} catch (StructureException e) {
+					LOGGER.error("Could not write assembly PDB file {}: {}",i,e.getMessage());
+					continue;
+				}
+				
 			}
 			
 		} catch (IOException e) {

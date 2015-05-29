@@ -81,7 +81,7 @@ public class AssemblyFinder {
 		// the list of nodes in the tree found to be invalid: all of their children will also be invalid
 		List<Assembly> invalidNodes = new ArrayList<Assembly>();		
 		
-		Assembly emptyAssembly = new Assembly(structure, interfaces, interfaceClusters, lattice.getGraph(), new boolean[numInterfClusters]);
+		Assembly emptyAssembly = new Assembly(structure, interfaces, interfaceClusters, lattice, new boolean[numInterfClusters]);
 		
 		validAssemblies.add(emptyAssembly); // the empty assembly (no engaged interfaces) is always a valid assembly
 		

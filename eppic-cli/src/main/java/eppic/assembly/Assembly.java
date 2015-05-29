@@ -1,20 +1,32 @@
 package eppic.assembly;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.zip.GZIPOutputStream;
 
+import javax.vecmath.Matrix4d;
+import javax.vecmath.Point3d;
 import javax.vecmath.Point3i;
+import javax.vecmath.Vector3d;
 
+import org.biojava.nbio.structure.Calc;
+import org.biojava.nbio.structure.Chain;
 import org.biojava.nbio.structure.Structure;
+import org.biojava.nbio.structure.StructureException;
 import org.biojava.nbio.structure.contact.StructureInterface;
 import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
 import org.biojava.nbio.structure.contact.StructureInterfaceList;
 import org.jgrapht.UndirectedGraph;
 import org.jgrapht.alg.ConnectivityInspector;
+import org.jgrapht.alg.DijkstraShortestPath;
 import org.jgrapht.alg.cycle.PatonCycleBase;
 import org.jgrapht.graph.UndirectedSubgraph;
 import org.slf4j.Logger;
@@ -39,21 +51,21 @@ public class Assembly {
 	private Structure structure;
 	private StructureInterfaceList interfaces;
 	private List<StructureInterfaceCluster> interfaceClusters;
-	private UndirectedGraph<ChainVertex, InterfaceEdge> graph;
+	private LatticeGraph latticeGraph;
 	
 	private StoichiometrySet stoichiometrySet;
 	
 	private UndirectedGraph<ChainVertex, InterfaceEdge> subgraph;
-	private List<Set<ChainVertex>> connectedComponents;
+	private List<UndirectedGraph<ChainVertex, InterfaceEdge>> connectedComponents;
 	
 	
 	public Assembly(Structure structure, StructureInterfaceList interfaces, List<StructureInterfaceCluster> interfaceClusters,
-			UndirectedGraph<ChainVertex,InterfaceEdge> graph, boolean[] engagedSet) {
+			LatticeGraph graph, boolean[] engagedSet) {
 		this.engagedSet = engagedSet;
 		this.structure = structure;
 		this.interfaces = interfaces;
 		this.interfaceClusters = interfaceClusters;
-		this.graph = graph;
+		this.latticeGraph = graph;
 				
 		if (graph!=null) {
 			initSubgraph(); // inits subgraph and connectedComponents
@@ -150,7 +162,7 @@ public class Assembly {
 			if (!this.engagedSet[i]) {
 				boolean[] c = this.engagedSet.clone();
 				c[i] = true;
-				Assembly a = new Assembly(structure, interfaces, interfaceClusters, graph, c);
+				Assembly a = new Assembly(structure, interfaces, interfaceClusters, latticeGraph, c);
 				// first we need to check that this is not a child of another parent already known to be invalid
 				if (a.isChild(invalidParents)) continue;
 				
@@ -171,9 +183,9 @@ public class Assembly {
 		
 		// note that the subgraph will contain all vertices even if they are not connected to the rest by any interface
 		
-		Set<ChainVertex> vertexSet = graph.vertexSet();
+		Set<ChainVertex> vertexSet = latticeGraph.getGraph().vertexSet();
 		Set<InterfaceEdge> edgeSubset = new HashSet<InterfaceEdge>();
-		for(InterfaceEdge edge:graph.edgeSet()) {
+		for(InterfaceEdge edge:latticeGraph.getGraph().edgeSet()) {
 			for (int i=0;i<this.engagedSet.length;i++) {
 				if (this.engagedSet[i]  && edge.getClusterId()==i+1) {
 					edgeSubset.add(edge);
@@ -183,26 +195,46 @@ public class Assembly {
 		
 		this.subgraph = 
 				new UndirectedSubgraph<ChainVertex, InterfaceEdge>(
-						graph, vertexSet, edgeSubset);
+						latticeGraph.getGraph(), vertexSet, edgeSubset);
 		 
 
 		
 		// initialising also the connected components
 		ConnectivityInspector<ChainVertex, InterfaceEdge> ci = new ConnectivityInspector<ChainVertex, InterfaceEdge>(subgraph);
 		
-		this.connectedComponents = ci.connectedSets();
+		List<Set<ChainVertex>> connectedSets = ci.connectedSets();
 		
 		logger.debug("Subgraph of assembly {} has {} vertices and {} edges, with {} connected components",
-				this.toString(), subgraph.vertexSet().size(), subgraph.edgeSet().size(), connectedComponents.size());
+				this.toString(), subgraph.vertexSet().size(), subgraph.edgeSet().size(), connectedSets.size());
 		
 		StringBuilder sb = new StringBuilder();
-		for (Set<ChainVertex> cc:connectedComponents) {
+		for (Set<ChainVertex> cc:connectedSets) {
 			sb.append(cc.size());
 			sb.append(' ');
 		}
 		logger.debug("Connected component sizes: {}",sb.toString()); 
 	
-				
+		// now we create the sub-subgraphs from the sets of connected vertices
+		connectedComponents = new ArrayList<UndirectedGraph<ChainVertex,InterfaceEdge>>(connectedSets.size());
+		for (Set<ChainVertex> vertexSubsubSet:connectedSets) {
+			Set<InterfaceEdge> edgeSubsubSet = new HashSet<InterfaceEdge>();
+			// fill the edges
+			int i = -1;
+			for (ChainVertex iVertex:vertexSubsubSet) {
+				i++;
+				int j = -1;
+				for (ChainVertex jVertex:vertexSubsubSet) {
+					j++;
+					if (j>i) {
+						edgeSubsubSet.addAll(subgraph.getAllEdges(iVertex, jVertex));
+					}
+				}
+			}
+			
+			connectedComponents.add(
+					new UndirectedSubgraph<ChainVertex, InterfaceEdge>(
+							subgraph, vertexSubsubSet, edgeSubsubSet));
+		}
 	}
 	
 	/**
@@ -464,6 +496,78 @@ public class Assembly {
 	
 	public StoichiometrySet getStoichiometrySet() {
 		return stoichiometrySet;
+	}
+	
+	/**
+	 * Gets the coordinates corresponding to this Assembly.
+	 * The Assembly must be a valid assembly, checked with {@link #isValid()}
+	 * The output assembly will have chain identifiers like the original chains
+	 * before applying symmetry operators. Thus in general a PDB file written straight from 
+	 * the output will not be read correctly by other software since it will contain
+	 * duplicate chain identifiers.
+	 * @return
+	 * @throws StructureException 
+	 */
+	public List<Chain> getStructure() throws StructureException {
+
+		List<Chain> chains = new ArrayList<Chain>();
+		
+		// we assume this is a valid assembly
+		// we get any of the isomorphic connected components, let's say the first one
+
+		UndirectedGraph<ChainVertex, InterfaceEdge> firstCc = connectedComponents.get(0);
+		
+		
+		Iterator<ChainVertex> it = firstCc.vertexSet().iterator();
+		
+		ChainVertex refVertex = it.next();
+		// transform refVertex, no translations for it
+		Matrix4d m = latticeGraph.getUnitCellTransformationOrthonormal(refVertex.getChainId(), refVertex.getOpId());
+		Chain chain = (Chain) structure.getChainByPDB(refVertex.getChainId()).clone();
+		Calc.transform(chain, m);
+		chains.add(chain);
+		
+		while (it.hasNext()) {
+			ChainVertex v = it.next();
+			m = latticeGraph.getUnitCellTransformationOrthonormal(v.getChainId(), v.getOpId());
+			// transform the chain
+			chain = (Chain) structure.getChainByPDB(v.getChainId()).clone();
+			Calc.transform(chain, m);
+			chains.add(chain);
+			
+
+			// we still need to get the xtal translation from the edges in the path from refVertex to current vertex
+			Point3d trans = new Point3d(0,0,0);
+			List<InterfaceEdge> path = DijkstraShortestPath.findPathBetween(firstCc, refVertex, v);
+			for (InterfaceEdge e:path) {
+				trans.add(new Point3d(e.getXtalTrans().x,e.getXtalTrans().y,e.getXtalTrans().z));
+			}
+			structure.getCrystallographicInfo().getCrystalCell().transfToOrthonormal(trans);
+			
+			Calc.translate(chain, new Vector3d(trans.x,trans.y,trans.z)); 
+		}
+		
+		return chains;
+	}
+	
+	/**
+	 * Writes this Assembly to PDB file (gzipped) with a model per chain.
+	 * @param file
+	 * @throws StructureException
+	 * @throws IOException
+	 */
+	public void writeToPdbFile(File file) throws StructureException, IOException {
+		PrintStream ps = new PrintStream(new GZIPOutputStream(new FileOutputStream(file)));
+		int modelId = 1;
+		for (Chain c:getStructure()) {
+			ps.println("MODEL"+String.format("%9d",modelId));
+			ps.print(c.toPDB());
+			ps.println("TER");
+			ps.println("ENDMDL");
+			modelId++;
+		}
+		ps.println("END");
+		ps.close();
 	}
 	
 	@Override
