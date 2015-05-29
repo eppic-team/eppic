@@ -24,6 +24,8 @@ import org.biojava.nbio.structure.StructureException;
 import org.biojava.nbio.structure.contact.StructureInterface;
 import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
 import org.biojava.nbio.structure.contact.StructureInterfaceList;
+import org.jgrapht.GraphPath;
+import org.jgrapht.Graphs;
 import org.jgrapht.UndirectedGraph;
 import org.jgrapht.alg.ConnectivityInspector;
 import org.jgrapht.alg.DijkstraShortestPath;
@@ -521,6 +523,7 @@ public class Assembly {
 		Iterator<ChainVertex> it = firstCc.vertexSet().iterator();
 		
 		ChainVertex refVertex = it.next();
+		
 		// transform refVertex, no translations for it
 		Matrix4d m = latticeGraph.getUnitCellTransformationOrthonormal(refVertex.getChainId(), refVertex.getOpId());
 		Chain chain = (Chain) structure.getChainByPDB(refVertex.getChainId()).clone();
@@ -538,9 +541,26 @@ public class Assembly {
 
 			// we still need to get the xtal translation from the edges in the path from refVertex to current vertex
 			Point3d trans = new Point3d(0,0,0);
-			List<InterfaceEdge> path = DijkstraShortestPath.findPathBetween(firstCc, refVertex, v);
-			for (InterfaceEdge e:path) {
-				trans.add(new Point3d(e.getXtalTrans().x,e.getXtalTrans().y,e.getXtalTrans().z));
+			DijkstraShortestPath<ChainVertex, InterfaceEdge> dsp = 
+					new DijkstraShortestPath<ChainVertex, InterfaceEdge>(firstCc, refVertex, v);
+			GraphPath<ChainVertex,InterfaceEdge> gp = dsp.getPath();
+			
+			List<ChainVertex> visitedVertices = Graphs.getPathVertexList(gp);
+			List<InterfaceEdge> path = gp.getEdgeList();
+			
+			
+			//List<InterfaceEdge> path = DijkstraShortestPath.findPathBetween(firstCc, refVertex, v);
+			
+			for (int i=0;i<path.size();i++) {
+				InterfaceEdge e = path.get(i);
+				ChainVertex s = firstCc.getEdgeSource(e);
+				Point3d currentTrans = new Point3d(e.getXtalTrans().x,e.getXtalTrans().y,e.getXtalTrans().z);
+				
+				// making sure we get the direction correctly
+				if (!s.equals(visitedVertices.get(i))) {
+					currentTrans.negate();
+				}
+				trans.add(currentTrans);
 			}
 			structure.getCrystallographicInfo().getCrystalCell().transfToOrthonormal(trans);
 			
