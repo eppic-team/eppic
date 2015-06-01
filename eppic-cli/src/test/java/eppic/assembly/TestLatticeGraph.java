@@ -64,16 +64,16 @@ public class TestLatticeGraph {
 	public void testCycleDetection1smt() throws IOException, StructureException {
 
 		// 1smt (P 1 21 1 with 1 entity and 2 molecules A,B)
-		AssemblyFinder ab = getLatticeGraph("1smt");
+		CrystalAssemblies ab = getCrystalAssemblies("1smt");
 		
 		// cluster 1: isologous between A+B
-		Assembly a = generateAssembly(ab, 1);		
+		Assembly a = ab.generateAssembly(1);		
 		assertTrue(a.isValid());
 		assertTrue(a.isClosedSymmetry());
 		
 		
 		// cluster 3: classic infinite A+A on screw axis
-		a = generateAssembly(ab, 3);
+		a = ab.generateAssembly(3);
 		assertFalse(a.isValid());
 		assertFalse(a.isClosedSymmetry());
 		
@@ -84,10 +84,10 @@ public class TestLatticeGraph {
 
 		// 1r1z (P 1 with 1 entity and 4 molecules A,B,C,D)
 		// the crystal contains a "hidden" cycle, see issue https://github.com/eppic-team/eppic-science/issues/45
-		AssemblyFinder ab = getLatticeGraph("1r1z");
+		CrystalAssemblies ab = getCrystalAssemblies("1r1z");
 		
 		// cluster 1: a C4 cycle
-		Assembly a = generateAssembly(ab, 1);		
+		Assembly a = ab.generateAssembly(1);		
 		assertTrue(a.isValid());
 		assertTrue(a.isClosedSymmetry());
 		
@@ -97,16 +97,16 @@ public class TestLatticeGraph {
 	public void testCycleDetection1ble() throws IOException, StructureException {
 
 		// 1ble (P 43 3 2 with 1 entity and 1 molecule A): high symmetry with lots of in-cell translations
-		AssemblyFinder ab = getLatticeGraph("1ble");
+		CrystalAssemblies ab = getCrystalAssemblies("1ble");
 		
 		// cluster 1: a C3 cycle
-		Assembly a = generateAssembly(ab, 1);		
+		Assembly a = ab.generateAssembly(1);		
 		assertTrue(a.isValid());
 		assertTrue(a.isClosedSymmetry());
 		
 		
 		// cluster 3: isologous
-		a = generateAssembly(ab, 3);
+		a = ab.generateAssembly(3);
 		assertTrue(a.isValid());
 		assertTrue(a.isClosedSymmetry());
 		
@@ -116,31 +116,31 @@ public class TestLatticeGraph {
 	public void testCycleDetection4mml() throws IOException, StructureException {
 
 		// 4mml (P 6 with 1 entity and 1 molecule A)
-		AssemblyFinder ab = getLatticeGraph("4mml");
+		CrystalAssemblies ab = getCrystalAssemblies("4mml");
 		
 		// cluster 1: a C6 cycle
-		Assembly a = generateAssembly(ab, 1);		
+		Assembly a = ab.generateAssembly(1);		
 		assertTrue(a.isValid());
 		assertTrue(a.isClosedSymmetry());
 		
 		
 		// cluster 2: isologous
-		a = generateAssembly(ab, 2);		
+		a = ab.generateAssembly(2);		
 		assertTrue(a.isValid());
 		assertTrue(a.isClosedSymmetry());
 
 		// cluster 3: classic infinite
-		a = generateAssembly(ab, 3);		
+		a = ab.generateAssembly(3);		
 		assertFalse(a.isValid());
 		assertFalse(a.isClosedSymmetry());
 
 		// cluster 4: classic infinite
-		a = generateAssembly(ab, 4);		
+		a = ab.generateAssembly(4);		
 		assertFalse(a.isValid());
 		assertFalse(a.isClosedSymmetry());
 
 		// clusters 1+2: an open cycle
-		a = generateAssembly(ab, new int[]{1,2});		
+		a = ab.generateAssembly(new int[]{1,2});		
 		assertFalse(a.isValid());
 		assertFalse(a.isClosedSymmetry());
 
@@ -151,20 +151,20 @@ public class TestLatticeGraph {
 
 		// 4jf3 (P 3 with 1 entity and 2 molecules A,B): 
 		// A,B are related by a pseudo 2-fold screw (actually the lattice is really a P 63 lattice)
-		AssemblyFinder ab = getLatticeGraph("4jf3");
+		CrystalAssemblies ab = getCrystalAssemblies("4jf3");
 		
 		// cluster 1: a C3 cycle
-		Assembly a = generateAssembly(ab, 1);		
+		Assembly a = ab.generateAssembly(1);		
 		assertTrue(a.isValid());
 		assertTrue(a.isClosedSymmetry());
 		
 		// cluster 2: a pseudo 3-fold screw
-		a = generateAssembly(ab, 2);
+		a = ab.generateAssembly(2);
 		assertFalse(a.isValid());
 		assertFalse(a.isClosedSymmetry());		
 		
 		// cluster 3: pseudo 2-fold screw
-		a = generateAssembly(ab, 3);
+		a = ab.generateAssembly(3);
 		assertFalse(a.isValid());
 		assertFalse(a.isClosedSymmetry());
 		
@@ -174,25 +174,25 @@ public class TestLatticeGraph {
 	public void testCycleDetection3vkx() throws IOException, StructureException {
 
 		// 3vkx (I 21 3 with 1 entity and 1 molecule A): high symmetry with lots of in-cell translations  
-		AssemblyFinder ab = getLatticeGraph("3vkx");
+		CrystalAssemblies ab = getCrystalAssemblies("3vkx");
 		
 		// cluster 1: a C3 cycle
-		Assembly a = generateAssembly(ab, 1);		
+		Assembly a = ab.generateAssembly(1);		
 		assertTrue(a.isValid());
 		assertTrue(a.isClosedSymmetry());
 		
 		// cluster 2: isologous
-		a = generateAssembly(ab, 2);
+		a = ab.generateAssembly(2);
 		assertTrue(a.isValid());
 		assertTrue(a.isClosedSymmetry());		
 		
 		// cluster 3: isologous
-		a = generateAssembly(ab, 3);
+		a = ab.generateAssembly(3);
 		assertTrue(a.isValid());
 		assertTrue(a.isClosedSymmetry());
 
 		// cluster 4: 3-fold screw, classic infinite
-		a = generateAssembly(ab, 4);
+		a = ab.generateAssembly(4);
 		assertFalse(a.isValid());
 		assertFalse(a.isClosedSymmetry());
 
@@ -202,30 +202,30 @@ public class TestLatticeGraph {
 	public void testCycleDetection3riq() throws IOException, StructureException {
 
 		// 3riq (I 21 3 with 1 entity and 1 molecule A): high symmetry with lots of in-cell translations  
-		AssemblyFinder ab = getLatticeGraph("3riq");
+		CrystalAssemblies ab = getCrystalAssemblies("3riq");
 		
 		// cluster 1: a C3 cycle
-		Assembly a = generateAssembly(ab, 1);		
+		Assembly a = ab.generateAssembly(1);		
 		assertTrue(a.isValid());
 		assertTrue(a.isClosedSymmetry());
 		
 		// cluster 2: isologous
-		a = generateAssembly(ab, 2);
+		a = ab.generateAssembly(2);
 		assertTrue(a.isValid());
 		assertTrue(a.isClosedSymmetry());		
 		
 		// cluster 3: open cycle, classic infinite
-		a = generateAssembly(ab, 3);
+		a = ab.generateAssembly(3);
 		assertFalse(a.isValid());
 		assertFalse(a.isClosedSymmetry());
 
 		// cluster 4: isologous
-		a = generateAssembly(ab, 4);
+		a = ab.generateAssembly(4);
 		assertTrue(a.isValid());
 		assertTrue(a.isClosedSymmetry());
 		
 		// cluster 5: pure fractional translation, classic infinite
-		a = generateAssembly(ab, 5);
+		a = ab.generateAssembly(5);
 		assertFalse(a.isValid());
 		assertFalse(a.isClosedSymmetry());
 		
@@ -236,20 +236,20 @@ public class TestLatticeGraph {
 	public void testCycleDetection4b29() throws IOException, StructureException {
 
 		// 4b29 (I 21 3 with 1 entity and 1 molecule A): high symmetry with lots of in-cell translations  
-		AssemblyFinder ab = getLatticeGraph("4b29");
+		CrystalAssemblies ab = getCrystalAssemblies("4b29");
 		
 		// cluster 1: isologous
-		Assembly a = generateAssembly(ab, 1);		
+		Assembly a = ab.generateAssembly(1);		
 		assertTrue(a.isValid());
 		assertTrue(a.isClosedSymmetry());
 		
 		// cluster 2: closed C3 cycle
-		a = generateAssembly(ab, 2);
+		a = ab.generateAssembly(2);
 		assertTrue(a.isValid());
 		assertTrue(a.isClosedSymmetry());		
 		
 		// cluster 3: open C3 cycle (classic infinite)
-		a = generateAssembly(ab, 3);
+		a = ab.generateAssembly(3);
 		assertFalse(a.isValid());
 		assertFalse(a.isClosedSymmetry());		
 
@@ -259,30 +259,30 @@ public class TestLatticeGraph {
 	public void testCycleDetection4nla() throws IOException, StructureException {
 
 		// 4nla (I 2 3 with 1 entity and 1 molecule A): high symmetry with lots of in-cell translations  
-		AssemblyFinder ab = getLatticeGraph("4nla");
+		CrystalAssemblies ab = getCrystalAssemblies("4nla");
 		
 		// cluster 1: a C3 cycle
-		Assembly a = generateAssembly(ab, 1);		
+		Assembly a = ab.generateAssembly(1);		
 		assertTrue(a.isValid());
 		assertTrue(a.isClosedSymmetry());
 		
 		// cluster 2: open 3 cycle
-		a = generateAssembly(ab, 2);
+		a = ab.generateAssembly(2);
 		assertFalse(a.isValid());
 		assertFalse(a.isClosedSymmetry());		
 
 		// cluster 3: isologous
-		a = generateAssembly(ab, 3);
+		a = ab.generateAssembly(3);
 		assertTrue(a.isValid());
 		assertTrue(a.isClosedSymmetry());
 
 		// cluster 4: isologous
-		a = generateAssembly(ab, 4);
+		a = ab.generateAssembly(4);
 		assertTrue(a.isValid());
 		assertTrue(a.isClosedSymmetry());
 		
 		// cluster 5: closed C3 cycle
-		a = generateAssembly(ab, 5);
+		a = ab.generateAssembly(5);
 		assertTrue(a.isValid());
 		assertTrue(a.isClosedSymmetry());
 		
@@ -294,25 +294,25 @@ public class TestLatticeGraph {
 
 		// 3iue (P 1 21 1 with 1 entity and 2 molecules A,B)
 		// see issue https://jira-bsse.ethz.ch/browse/CRK-121
-		AssemblyFinder ab = getLatticeGraph("3iue");
+		CrystalAssemblies ab = getCrystalAssemblies("3iue");
 		
 		// cluster 1: isologous through NCS
-		Assembly a = generateAssembly(ab, 1);		
+		Assembly a = ab.generateAssembly(1);		
 		assertTrue(a.isValid());
 		assertTrue(a.isClosedSymmetry());
 		
 		// cluster 2: isologous
-		a = generateAssembly(ab, 2);
+		a = ab.generateAssembly(2);
 		assertTrue(a.isValid());
 		assertTrue(a.isClosedSymmetry());		
 		
 		// cluster 3: classic infinite
-		a = generateAssembly(ab, 3);
+		a = ab.generateAssembly(3);
 		assertFalse(a.isValid());
 		assertFalse(a.isClosedSymmetry());
 		
 		// clusters 1+2: open cycle
-		a = generateAssembly(ab, new int[]{1,2});
+		a = ab.generateAssembly(new int[]{1,2});
 		assertFalse(a.isValid());
 		assertFalse(a.isClosedSymmetry());
 		
@@ -324,33 +324,33 @@ public class TestLatticeGraph {
 
 		// 1a99 
 		// see issue https://github.com/eppic-team/eppic-science/issues/14
-		AssemblyFinder ab = getLatticeGraph("1a99");
+		CrystalAssemblies ab = getCrystalAssemblies("1a99");
 		
 		// cluster 1: non-isomorphic (even if isologous!)
-		Assembly a = generateAssembly(ab, 1);
+		Assembly a = ab.generateAssembly(1);
 		assertTrue(a.isClosedSymmetry());
 		assertFalse(a.isValid());
 		assertFalse(a.isIsomorphic());
 		
 		// cluster 2: non-isomorphic
-		a = generateAssembly(ab, 2);
+		a = ab.generateAssembly(2);
 		assertFalse(a.isValid());
 		assertFalse(a.isIsomorphic());		
 		
 		// cluster 3: non-isomorphic
-		a = generateAssembly(ab, 3);
+		a = ab.generateAssembly(3);
 		assertFalse(a.isValid());
 		assertFalse(a.isIsomorphic());
 		
 		// clusters 4: isologous and isomorphic
-		a = generateAssembly(ab, 4);
+		a = ab.generateAssembly(4);
 		assertTrue(a.isValid());
 		assertTrue(a.isIsomorphic());
 		
 
 	}
 
-	private AssemblyFinder getLatticeGraph(String pdbId) throws IOException, StructureException {
+	private CrystalAssemblies getCrystalAssemblies(String pdbId) throws IOException, StructureException {
 		
 		logger.info("Calculating interfaces for "+pdbId);
 		
@@ -368,28 +368,10 @@ public class TestLatticeGraph {
 		interfaces.removeInterfacesBelowArea();
 		interfaces.getClusters(EppicParams.CLUSTERING_CONTACT_OVERLAP_SCORE_CUTOFF);
 		
-		AssemblyFinder ab = new AssemblyFinder(s, interfaces);
+		CrystalAssemblies crystalAssemblies = new CrystalAssemblies(s, interfaces);
 		
-		ab.getLatticeGraph().removeDuplicateEdges();
-		
-		return ab; 
+		return crystalAssemblies; 
 	}
 	
-	private Assembly generateAssembly(AssemblyFinder ab, int interfaceClusterId) {
-		int[] interfaceClusterIds = new int[] {interfaceClusterId};
-		return generateAssembly(ab, interfaceClusterIds);
-	}
 	
-	private Assembly generateAssembly(AssemblyFinder ab, int[] interfaceClusterIds) {
-		
-		boolean[] engagedSet = new boolean[ab.getNumInterfClusters()];
-		
-		for (int clusterId:interfaceClusterIds) {
-			engagedSet[clusterId-1] = true;
-		}
-		
-		Assembly a = new Assembly(ab.getStructure(), ab.getInterfaces(), ab.getInterfaceClusters(), ab.getLatticeGraph(),engagedSet);
-		
-		return a;
-	}
 }

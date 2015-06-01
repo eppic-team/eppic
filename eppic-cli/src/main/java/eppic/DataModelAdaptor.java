@@ -36,7 +36,6 @@ import eppic.analysis.compare.SimpleInterface;
 import eppic.assembly.Assembly;
 import eppic.assembly.AssemblyDescription;
 import eppic.assembly.CrystalAssemblies;
-import eppic.assembly.LatticeGraph;
 import eppic.commons.sequence.Homolog;
 import eppic.commons.util.Goodies;
 import eppic.model.AssemblyContentDB;
@@ -353,7 +352,7 @@ public class DataModelAdaptor {
 	}
 	
 	public void setPdbBioUnits(BioAssemblyInfo bioAssembly, String[] symmetries,
-			Structure structure, StructureInterfaceList interfaces, LatticeGraph graph) {
+			CrystalAssemblies validAssemblies) {
 
 		if (bioAssembly == null) {
 			LOGGER.info("No bio assembly annotation present, will not add bio assembly info to data model");
@@ -361,8 +360,8 @@ public class DataModelAdaptor {
 		}
 		
 		CrystalCell cell = null;
-		if (structure.getCrystallographicInfo()!=null && structure.isCrystallographic()) {
-			cell = structure.getCrystallographicInfo().getCrystalCell();
+		if (validAssemblies.getStructure().getCrystallographicInfo()!=null && validAssemblies.getStructure().isCrystallographic()) {
+			cell = validAssemblies.getStructure().getCrystallographicInfo().getCrystalCell();
 		}
 
 		
@@ -429,12 +428,14 @@ public class DataModelAdaptor {
 					matchingClusterIds.toString());
 
 			// the assembly is not one of our valid assemblies, we'll have to insert an invalid assembly to the list
-			List<StructureInterfaceCluster> interfaceClusters = interfaces.getClusters(EppicParams.CLUSTERING_CONTACT_OVERLAP_SCORE_CUTOFF);
-			boolean[] engagedSet = new boolean[interfaceClusters.size()];
+			int[] interfaceClusterIds = new int[matchingClusterIds.size()];
+			int i = 0;
 			for (int clusterId:matchingClusterIds) {
-				engagedSet[clusterId-1] = true;
+				interfaceClusterIds[i] = clusterId;
+				i++;
 			}
-			Assembly invalidAssembly = new Assembly(structure, interfaces, interfaceClusters, graph, engagedSet);
+			
+			Assembly invalidAssembly = validAssemblies.generateAssembly(interfaceClusterIds);
 			
 			AssemblyDB assembly = new AssemblyDB();
 			

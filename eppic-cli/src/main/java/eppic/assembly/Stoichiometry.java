@@ -7,6 +7,7 @@ import java.util.Map;
 import org.biojava.nbio.structure.Chain;
 import org.biojava.nbio.structure.Compound;
 import org.biojava.nbio.structure.Structure;
+import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -240,10 +241,25 @@ public class Stoichiometry {
 				}
 				symmetry = "C"+n;
 			} else { // even number larger than 2
+				
 				if (numDistinctInterfaces==1) {
 					symmetry = "C"+n;
 				} else {
+					//NOTE: in principle we could just assume that if numDistinctInterfaces>1 this is will be a D,
+					//      but! it can happen that a Cn assembly has cross-interfaces, e.g. 4hi5 (a C4)
+					
+					// we assume D n/2 except if we find that there are edges with n multiplicity, which indicates a Cn
 					symmetry = "D"+(n/2);
+					
+					for (StructureInterfaceCluster interfCluster:assembly.getEngagedInterfaceClusters()) {
+						int multiplicity = assembly.getCrystalAssemblies().getEdgeMultiplicity(interfCluster.getId());
+						
+						if (multiplicity==n) {
+							symmetry = "C"+n;
+							break;
+						}
+					}
+					
 				}
 			}
 
@@ -280,8 +296,20 @@ public class Stoichiometry {
 						// C symmetry
 						symmetry = "C"+n;
 					} else if (numHomos>1){
-						// D symmetry
+						//NOTE: in principle we could just assume that if numHomos>1 this is will be a D,
+						//      but! it can happen that a Cn assembly has cross-interfaces, e.g. 4hi5 (a C4)
+
+						// we assume D n/2 except if we find that there are edges with n multiplicity, which indicates a Cn
 						symmetry = "D"+(n/2);
+						
+						for (StructureInterfaceCluster interfCluster:assembly.getHomoEngagedInterfaceClusters()) {
+							int multiplicity = assembly.getCrystalAssemblies().getEdgeMultiplicity(interfCluster.getId());
+							
+							if (multiplicity==n) {
+								symmetry = "C"+n;
+								break;
+							}
+						}
 					} else {
 						// no homo interfaces at all!
 						int numHeteros = assembly.getNumHeteroEngagedInterfaceClusters();

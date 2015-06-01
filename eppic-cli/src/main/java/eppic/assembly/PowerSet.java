@@ -2,15 +2,13 @@ package eppic.assembly;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
+
+
 
 /**
- * Class containing methods to compute the power set
+ * Class to encapsulate a power set representation as a boolean array
+ * 
  * See:
  * http://en.wikipedia.org/wiki/Combination
  * http://en.wikipedia.org/wiki/Power_set
@@ -20,207 +18,114 @@ import java.util.TreeMap;
  */
 public class PowerSet {
 
+	private boolean[] set;
+
+	public PowerSet(int size) {
+		this.set = new boolean[size];
+	}
+	
+	public PowerSet(boolean[] set) {
+		this.set = set;
+	}
+	
 	/**
-	 * Finds the power set (all combinations) of a set of integers {0,...,n-1},
-	 * e.g. for n=3 (set {0,1,2}), the result is {}, {0}, {1}, {2}, {0,1}, {0,2}, {1,2}, {0,1,2}
-	 * The results are sorted in group sizes (the key of the map)
-	 * See 
-	 * http://en.wikipedia.org/wiki/Combination
-	 * http://en.wikipedia.org/wiki/Power_set
-	 * @param n an integer with max value 31
+	 * Copy constructor
+	 * @param powerSet
+	 */
+	public PowerSet(PowerSet powerSet) {
+		this.set = powerSet.set.clone();
+	}
+	
+	public void switchOn(int i) {
+		this.set[i] = true;
+	}
+	
+	public void switchOff(int i) {
+		this.set[i] = false;
+	}
+	
+	public boolean isOn(int i) {
+		return set[i];
+	}
+	
+	public boolean isOff(int i) {
+		return !set[i];
+	}
+	
+	/**
+	 * Returns true if this set is a child of any of the given parents, false otherwise
+	 * @param parents
 	 * @return
 	 */
-	public static Map<Integer,List<int[]>> powerSet(int n) {
-		
-		
-		if (n>=32) throw new IllegalArgumentException("Can't enumerate all combinations for more than 32 elements!");
-		
-		Map<Integer,List<int[]>> groups = new TreeMap<Integer,List<int[]>>();
-		
-		for (int k=0;k<=n;k++) {
-			groups.put(k, new ArrayList<int[]>());
+	public boolean isChild(List<PowerSet> parents) {
+
+		for (PowerSet invalidGroup:parents) {
+			if (this.isChild(invalidGroup)) return true;
 		}
+		return false;
+	}
+	
+	/**
+	 * Returns true if this set is child of the given potentialParent
+	 * 
+	 * @param potentialParent
+	 * @return true if is a child false if not
+	 */
+	public boolean isChild(PowerSet potentialParent) {
 		
-		// the set of all combinations corresponds to a boolean array of size n with number of nodes 2^n (including the empty set)
-		// thus a full enumeration is simply counting from 0 to 2^n and getting the boolean array corresponding to it 
-
-		// see for instance: 
-		// http://jvalentino.blogspot.ch/2007/02/shortcut-to-calculating-power-set-using.html
-		// http://en.wikipedia.org/wiki/Power_set
-
-		
-		// note this only works for numInterfClusters<=32 ! (anyway it scales like 2^n so there's no way that we could go beyond that)
-		for (int i=0;i< (int) Math.pow(2,n);i++) {
-			
-			boolean[] v = intToBooleanArray(i, n);
-
-			int k = countGroupSize(v);
-						
-			List<int[]> sizeKGroups = groups.get(k);
-			int[] g = new int[k];
-			sizeKGroups.add(g);
-			int l = 0;
-			for (int j=0;j<v.length;j++) {
-				if (v[j]) {
-					g[l++] = j; 
-				}
+		for (int i=0;i<set.length;i++) {
+			if (potentialParent.set[i]) {
+				if (!set[i]) return false;
 			}
-			
-			
 		}
-		return groups;
+		return true;
 	}
 
-	private static boolean[] intToBooleanArray(int input, int n) {
+	/**
+	 * Gets all sets that are children of this set, not adding those that are also
+	 * children of other invalidParents
+	 * @param invalidParents
+	 * @return
+	 */
+	public List<PowerSet> getChildren(List<PowerSet> invalidParents) {
 		
-		// see http://stackoverflow.com/questions/8151435/integer-to-binary-array
-		
-		if (n>=32) throw new IllegalArgumentException("Can't do int to bin array for more than 32!");
-	    boolean[] bits = new boolean[n];
-	    for (int i = n-1; i >= 0; i--) {
-	        bits[i] = (input & (1 << i)) != 0;
-	    }
-	    return bits;
-	}
-	
-	private static int countGroupSize(boolean[] v) {
-		int count=0;
-		for (int i=0;i<v.length;i++) {
-			if (v[i]) count++;
-		}
-		return count;
-	}
-	
-	public static void printCombinations(Map<Integer,List<int[]>> combinations, int n) {
-		
-		for (int k = 0; k<=n;k++) {
-			
-			List<int[]> kSizeGroups = combinations.get(k);
+		List<PowerSet> children = new ArrayList<PowerSet>();
 
-			System.out.printf("Groups of size %d (%2d): ", k, kSizeGroups.size());
-			for (int[] g:kSizeGroups) {
-				System.out.print(Arrays.toString(g)+" "); 
+		for (int i=0;i<this.set.length;i++) {
+
+			if (!this.set[i]) {				
+				PowerSet a = new PowerSet(this);
+				a.switchOn(i);
+				// first we need to check that this is not a child of one of the invalidParents
+				if (a.isChild(invalidParents)) continue;
+				
+				children.add(a);
 			}
-			System.out.println();
 		}
-	}
 
-	/**
-	 * Finds the power set (all combinations) of a set of integers {0,...,n-1} representing the result as a boolean array,
-	 * e.g. for n=3 (set {0,1,2}), the result is (in binary):
-	 * [0,0,0] [1,0,0] [0,1,0] [0,0,1] [1,1,0] [1,0,1] [0,1,1] [1,1,1]
-	 * The results are sorted in group sizes (the index of the outer array)
-	 * See 
-	 * http://en.wikipedia.org/wiki/Combination
-	 * http://en.wikipedia.org/wiki/Power_set
-	 * @param n an integer with max value 31
-	 * @return
-	 */
-	public static List<boolean[]>[] powerSetBinary(int n) {
-		
-		
-		if (n>=32) throw new IllegalArgumentException("Can't enumerate all combinations for more than 32 elements!");
-		
-		int numGroups = (int) Math.pow(2,n);
-		
-		@SuppressWarnings("unchecked")
-		List<boolean[]>[] groups = (List<boolean[]>[]) new List[n+1];
-		for (int k=0;k<=n;k++) {
-			groups[k] = new ArrayList<boolean[]>();
-		}
-		
-		// the set of all combinations corresponds to a boolean array of size n with number of nodes 2^n (including the empty set)
-		// thus a full enumeration is simply counting from 0 to 2^n and getting the boolean array corresponding to it 
-
-		// see for instance: 
-		// http://jvalentino.blogspot.ch/2007/02/shortcut-to-calculating-power-set-using.html
-		// http://en.wikipedia.org/wiki/Power_set
-
-		
-		// note this only works for numInterfClusters<=32 ! (anyway it scales like 2^n so there's no way that we could go beyond that)
-		for (int i=0;i< numGroups; i++) {
-			
-			boolean[] v = intToBooleanArray(i, n);
-			
-			int k = countGroupSize(v);
-			
-			groups[k].add(v);
-			
-		}
-		return groups;
-	}
-
-	/**
-	 * A recursive approach to finding the power set as explained here:
-	 * http://stackoverflow.com/questions/1670862/obtaining-a-powerset-of-a-set-in-java
-	 * @param originalSet
-	 * @return
-	 */
-	public static <T> Set<Set<T>> powerSet(Set<T> originalSet) {
-		Set<Set<T>> sets = new HashSet<Set<T>>();
-		if (originalSet.isEmpty()) {
-			sets.add(new HashSet<T>());
-			return sets;
-		}
-		List<T> list = new ArrayList<T>(originalSet);
-		T head = list.get(0);
-		Set<T> rest = new HashSet<T>(list.subList(1, list.size())); 
-		for (Set<T> set : powerSet(rest)) {
-			Set<T> newSet = new HashSet<T>();
-			newSet.add(head);
-			newSet.addAll(set);
-			sets.add(newSet);
-			sets.add(set);
-		}		
-		return sets;
-	}
-
-
-	/**
-	 * A recursive approach to getting the power set as explained here:
-	 * http://stackoverflow.com/questions/20551862/find-the-powerest-of-a-set-recursively
-	 * @param originalSet
-	 * @return
-	 */
-	public static <T> List<List<T>> powerSet(final LinkedList<T> originalSet) {
-	    final List<List<T>> powerset = new LinkedList<List<T>>();
-	    //Base case: empty set
-	    if (originalSet.isEmpty()) {
-	        final List<T> set = new ArrayList<T>();
-	        //System.out.println(set);
-	        powerset.add(set);
-	    } else { 
-	        //Recursive case:
-	        final T firstElement = originalSet.removeFirst();
-	        final List<List<T>> prevPowerset = powerSet(originalSet);
-	        powerset.addAll(prevPowerset);
-	        //Add firstElement to each of the set of the previuos powerset
-	        for (final List<T> prevSet : prevPowerset) {
-	            final List<T> newSet = new ArrayList<T>(prevSet);
-	            newSet.add(firstElement);
-	            //System.out.println(newSet); 
-	            powerset.add(newSet);
-	        }
-	    }
-	    return powerset;
+		return children;
 	}
 	
-	public static void main (String[] args) {
-		System.out.println("Power set with recursive approach: ");
-		LinkedList<Integer> list = new LinkedList<Integer>();
-		list.add(0);
-		list.add(1);
-		list.add(2);
-		list.add(3);
-		List<List<Integer>> pw = powerSet(list);
-		System.out.println("The final power set has size "+pw.size()+":");
-		for (List<Integer> l:pw) {
-			System.out.println(l);
-		}
-		
-		System.out.println("Power set with binary approach: ");
-		Map<Integer,List<int[]>> power = powerSet(4);
-		printCombinations(power, 4);
+	public int size() {
+		return this.set.length;
 	}
-
+	
+	@Override
+	public boolean equals(Object other) {
+		if (! (other instanceof PowerSet)) return false;
+		
+		PowerSet o = (PowerSet) other;
+		
+		return Arrays.equals(this.set, o.set);
+		
+	}
+	
+	@Override
+	public int hashCode() {
+		return Arrays.hashCode(this.set);
+	}
+	
+	public String toString() {
+		return this.set.toString();
+	}
 }

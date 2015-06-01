@@ -15,35 +15,35 @@ public class TestAssembly {
 	public void testIsChild() {
 		
 		boolean[] b1 = {false,false,false,false};
-		Assembly a1 = new Assembly(b1);
+		PowerSet a1 = new PowerSet(b1);
 		
 		boolean[] b2 = {true,false,false,false};
-		Assembly a2 = new Assembly(b2);
+		PowerSet a2 = new PowerSet(b2);
 		
 		assertTrue(a2.isChild(a1));
 		
 		boolean[] b3 = {true,false,true,false};
-		Assembly a3 = new Assembly(b3);
+		PowerSet a3 = new PowerSet(b3);
 		
 		assertTrue(a3.isChild(a2));
 		assertTrue(a3.isChild(a1));
 		
 		boolean[] b4 = {false,false,true,false};
-		Assembly a4 = new Assembly(b4);
+		PowerSet a4 = new PowerSet(b4);
 		
 		assertTrue(a4.isChild(a1));
 		assertFalse(a4.isChild(a2));
 		assertFalse(a4.isChild(a3));
 		
 		boolean[] b5 = {true,true,true,false};
-		Assembly a5 = new Assembly(b5);
+		PowerSet a5 = new PowerSet(b5);
 
 		assertTrue(a5.isChild(a1));
 		assertTrue(a5.isChild(a4));
 		assertTrue(a5.isChild(a3));
 		
 		boolean[] b6 = {false,true,false,true};
-		Assembly a6 = new Assembly(b6);
+		PowerSet a6 = new PowerSet(b6);
 
 		assertTrue(a6.isChild(a1));
 		assertFalse(a6.isChild(a2));
@@ -57,22 +57,22 @@ public class TestAssembly {
 
 		int size = 6;
 		
-		Assembly emptyAssembly = new Assembly(new boolean[size]);
+		PowerSet emptyPowerSet = new PowerSet(new boolean[size]);
 		
-		Set<Assembly> prevLevel = new HashSet<Assembly>();
-		prevLevel.add(emptyAssembly);
-		Set<Assembly> nextLevel = null;
+		Set<PowerSet> prevLevel = new HashSet<PowerSet>();
+		prevLevel.add(emptyPowerSet);
+		Set<PowerSet> nextLevel = null;
 
 		
 		for (int k = 1; k<=size;k++) {
 
 
-			nextLevel = new HashSet<Assembly>();
+			nextLevel = new HashSet<PowerSet>();
 
-			for (Assembly p:prevLevel) {
-				List<Assembly> children = p.getChildren(new ArrayList<Assembly>());
+			for (PowerSet p:prevLevel) {
+				List<PowerSet> children = p.getChildren(new ArrayList<PowerSet>());
 
-				for (Assembly c:children) {
+				for (PowerSet c:children) {
 					
 					// testing that all members of the current children list is a child of the parent
 					assertTrue(c.isChild(p));
@@ -81,7 +81,7 @@ public class TestAssembly {
 					
 				}
 			}
-			prevLevel = new HashSet<Assembly>(nextLevel);
+			prevLevel = new HashSet<PowerSet>(nextLevel);
 			
 
 		}

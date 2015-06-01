@@ -45,9 +45,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import eppic.assembly.Assembly;
-import eppic.assembly.AssemblyFinder;
 import eppic.assembly.CrystalAssemblies;
-import eppic.assembly.LatticeGraph;
 import eppic.commons.util.FileTypeGuesser;
 import eppic.commons.util.Goodies;
 import eppic.predictors.CombinedClusterPredictor;
@@ -72,7 +70,6 @@ public class Main {
 	private List<GeometryPredictor> gps;
 	private List<GeometryClusterPredictor> gcps;
 	
-	private LatticeGraph latticeGraph;
 	private CrystalAssemblies validAssemblies;
 	
 	private File stepsLogFile;
@@ -358,9 +355,8 @@ public class Main {
 			LOGGER.warn("No space group available, will not do analysis of assemblies");
 			return;
 		}
-		AssemblyFinder aFinder = new AssemblyFinder(pdb, interfaces);
-		latticeGraph = aFinder.getLatticeGraph();
-		validAssemblies = aFinder.getValidAssemblies();
+		validAssemblies = new CrystalAssemblies(pdb, interfaces); 
+
 		StringBuilder sb = new StringBuilder();
 		for (Assembly a: validAssemblies) {
 			sb.append(a.toString()+" ");
@@ -423,8 +419,9 @@ public class Main {
 
 			// since the move to Biojava, we have decided to take the first PDB-annotated biounit ONLY, whatever its type
 			String[] symmetries = getSymmetry(EppicParams.PDB_BIOUNIT_TO_USE);
-			modelAdaptor.setPdbBioUnits(pdb.getPDBHeader().getBioAssemblies().get(EppicParams.PDB_BIOUNIT_TO_USE),symmetries,
-					pdb, interfaces, latticeGraph);
+			modelAdaptor.setPdbBioUnits(pdb.getPDBHeader().getBioAssemblies().get(EppicParams.PDB_BIOUNIT_TO_USE),
+					symmetries,
+					validAssemblies);
 		}
 	}
 	

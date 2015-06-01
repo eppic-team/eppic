@@ -5,7 +5,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -19,11 +18,9 @@ import javax.vecmath.Vector3d;
 
 import org.biojava.nbio.structure.Calc;
 import org.biojava.nbio.structure.Chain;
-import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.StructureException;
 import org.biojava.nbio.structure.contact.StructureInterface;
 import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
-import org.biojava.nbio.structure.contact.StructureInterfaceList;
 import org.jgrapht.GraphPath;
 import org.jgrapht.Graphs;
 import org.jgrapht.UndirectedGraph;
@@ -38,7 +35,7 @@ import org.slf4j.LoggerFactory;
 /**
  * An Assembly of molecules within a crystal, represented by a set of engaged interface clusters.
  * 
- * @author jose
+ * @author duarte_j
  *
  */
 public class Assembly {
@@ -48,12 +45,9 @@ public class Assembly {
 	/**
 	 * The set of engaged interface clusters, represented as a boolean vector.
 	 */
-	private boolean[] engagedSet;
+	private PowerSet engagedSet;
 	
-	private Structure structure;
-	private StructureInterfaceList interfaces;
-	private List<StructureInterfaceCluster> interfaceClusters;
-	private LatticeGraph latticeGraph;
+	private CrystalAssemblies crystalAssemblies;
 	
 	private StoichiometrySet stoichiometrySet;
 	
@@ -61,32 +55,34 @@ public class Assembly {
 	private List<UndirectedGraph<ChainVertex, InterfaceEdge>> connectedComponents;
 	
 	
-	public Assembly(Structure structure, StructureInterfaceList interfaces, List<StructureInterfaceCluster> interfaceClusters,
-			LatticeGraph graph, boolean[] engagedSet) {
+	public Assembly(CrystalAssemblies crystalAssemblies, PowerSet engagedSet) {
+		this.crystalAssemblies = crystalAssemblies;
 		this.engagedSet = engagedSet;
-		this.structure = structure;
-		this.interfaces = interfaces;
-		this.interfaceClusters = interfaceClusters;
-		this.latticeGraph = graph;
 				
-		if (graph!=null) {
-			initSubgraph(); // inits subgraph and connectedComponents
-			this.stoichiometrySet = new StoichiometrySet(structure, this, connectedComponents);
-		} 
-	}
-	
-	public Assembly(boolean[] engagedSet) {
-		this.engagedSet = engagedSet;
+		initSubgraph(); // inits subgraph and connectedComponents
+		this.stoichiometrySet = new StoichiometrySet(crystalAssemblies.getStructure(), this, connectedComponents);
+ 
 	}
 	
 	public List<StructureInterfaceCluster> getEngagedInterfaceClusters() {
 		List<StructureInterfaceCluster> engagedInterfaceClusters = new ArrayList<StructureInterfaceCluster>();
 		
-		for (StructureInterfaceCluster cluster:interfaceClusters) {
-			for (int i=0;i<engagedSet.length;i++) {
-				if (engagedSet[i] && cluster.getId() == i+1) {
+		for (StructureInterfaceCluster cluster:crystalAssemblies.getInterfaceClusters()) {
+			for (int i=0;i<engagedSet.size();i++) {
+				if (engagedSet.isOn(i) && cluster.getId() == i+1) {
 					engagedInterfaceClusters.add(cluster);
 				}
+			}
+		}
+		return engagedInterfaceClusters;
+	}
+	
+	public List<StructureInterfaceCluster> getHomoEngagedInterfaceClusters() {
+		List<StructureInterfaceCluster> engagedInterfaceClusters = new ArrayList<StructureInterfaceCluster>();
+		
+		for (StructureInterfaceCluster cluster: getEngagedInterfaceClusters()) {
+			if (cluster.getMembers().get(0).isHomomeric()) {
+				engagedInterfaceClusters.add(cluster);
 			}
 		}
 		return engagedInterfaceClusters;
@@ -94,8 +90,8 @@ public class Assembly {
 		
 	public int getNumEngagedInterfaceClusters() {
 		int count=0;
-		for (int i=0;i<engagedSet.length;i++) {
-			if (engagedSet[i]) count++;
+		for (int i=0;i<engagedSet.size();i++) {
+			if (engagedSet.isOn(i)) count++;
 		}
 		return count;
 	}
@@ -120,6 +116,10 @@ public class Assembly {
 		return count;
 	}
 	
+	public CrystalAssemblies getCrystalAssemblies() {
+		return crystalAssemblies;
+	}
+	
 	/**
 	 * Returns true if this assembly is a child of any of the given parents, false otherwise
 	 * @param parents
@@ -141,12 +141,8 @@ public class Assembly {
 	 */
 	public boolean isChild(Assembly potentialParent) {
 		
-		for (int i=0;i<this.engagedSet.length;i++) {
-			if (potentialParent.engagedSet[i]) {
-				if (!this.engagedSet[i]) return false;
-			}
-		}
-		return true;
+		return this.engagedSet.isChild(potentialParent.engagedSet);
+		
 	}
 
 	/**
@@ -156,22 +152,20 @@ public class Assembly {
 	 * @return
 	 */
 	public List<Assembly> getChildren(List<Assembly> invalidParents) {
-		
-		List<Assembly> children = new ArrayList<Assembly>();
 
-		for (int i=0;i<this.engagedSet.length;i++) {
-
-			if (!this.engagedSet[i]) {
-				boolean[] c = this.engagedSet.clone();
-				c[i] = true;
-				Assembly a = new Assembly(structure, interfaces, interfaceClusters, latticeGraph, c);
-				// first we need to check that this is not a child of another parent already known to be invalid
-				if (a.isChild(invalidParents)) continue;
-				
-				children.add(a);
-			}
+		List<PowerSet> powersetInvalidParents = new ArrayList<PowerSet>();
+		for (Assembly ia:invalidParents) {
+			powersetInvalidParents.add(ia.engagedSet);
 		}
-
+		
+		List<PowerSet> powersetChildren = this.engagedSet.getChildren(powersetInvalidParents);
+		
+		List<Assembly> children = new ArrayList<Assembly>();		
+		
+		for (PowerSet c:powersetChildren) {
+			children.add(new Assembly(crystalAssemblies, c));
+		}
+		
 		return children;
 	}
 	
@@ -185,11 +179,11 @@ public class Assembly {
 		
 		// note that the subgraph will contain all vertices even if they are not connected to the rest by any interface
 		
-		Set<ChainVertex> vertexSet = latticeGraph.getGraph().vertexSet();
+		Set<ChainVertex> vertexSet = crystalAssemblies.getLatticeGraph().getGraph().vertexSet();
 		Set<InterfaceEdge> edgeSubset = new HashSet<InterfaceEdge>();
-		for(InterfaceEdge edge:latticeGraph.getGraph().edgeSet()) {
-			for (int i=0;i<this.engagedSet.length;i++) {
-				if (this.engagedSet[i]  && edge.getClusterId()==i+1) {
+		for(InterfaceEdge edge:crystalAssemblies.getLatticeGraph().getGraph().edgeSet()) {
+			for (int i=0;i<this.engagedSet.size();i++) {
+				if (this.engagedSet.isOn(i)  && edge.getClusterId()==i+1) {
 					edgeSubset.add(edge);
 				}
 			}
@@ -197,7 +191,7 @@ public class Assembly {
 		
 		this.subgraph = 
 				new UndirectedSubgraph<ChainVertex, InterfaceEdge>(
-						latticeGraph.getGraph(), vertexSet, edgeSubset);
+						crystalAssemblies.getLatticeGraph().getGraph(), vertexSet, edgeSubset);
 		 
 
 		
@@ -525,16 +519,16 @@ public class Assembly {
 		ChainVertex refVertex = it.next();
 		
 		// transform refVertex, no translations for it
-		Matrix4d m = latticeGraph.getUnitCellTransformationOrthonormal(refVertex.getChainId(), refVertex.getOpId());
-		Chain chain = (Chain) structure.getChainByPDB(refVertex.getChainId()).clone();
+		Matrix4d m = crystalAssemblies.getLatticeGraph().getUnitCellTransformationOrthonormal(refVertex.getChainId(), refVertex.getOpId());
+		Chain chain = (Chain) crystalAssemblies.getStructure().getChainByPDB(refVertex.getChainId()).clone();
 		Calc.transform(chain, m);
 		chains.add(chain);
 		
 		while (it.hasNext()) {
 			ChainVertex v = it.next();
-			m = latticeGraph.getUnitCellTransformationOrthonormal(v.getChainId(), v.getOpId());
+			m = crystalAssemblies.getLatticeGraph().getUnitCellTransformationOrthonormal(v.getChainId(), v.getOpId());
 			// transform the chain
-			chain = (Chain) structure.getChainByPDB(v.getChainId()).clone();
+			chain = (Chain) crystalAssemblies.getStructure().getChainByPDB(v.getChainId()).clone();
 			Calc.transform(chain, m);
 			chains.add(chain);
 			
@@ -562,7 +556,7 @@ public class Assembly {
 				}
 				trans.add(currentTrans);
 			}
-			structure.getCrystallographicInfo().getCrystalCell().transfToOrthonormal(trans);
+			crystalAssemblies.getStructure().getCrystallographicInfo().getCrystalCell().transfToOrthonormal(trans);
 			
 			Calc.translate(chain, new Vector3d(trans.x,trans.y,trans.z)); 
 		}
@@ -590,19 +584,44 @@ public class Assembly {
 		ps.close();
 	}
 	
+	// TODO implement a writeToMmCifFile method that could produce assembly files with single 
+	//      models by renaming chains to chainId+opId
+	//      We need the mmCIF writer in Biojava as a prerequisite
+	
+	/**
+	 * Returns the number of edges with given interfaceClusterId in the first connected 
+	 * component of this Assembly.
+	 * @return
+	 */
+	public int getEdgeCountInFirstConnectedComponent(int interfaceClusterId) {
+
+		// we assume this is a valid assembly
+		// we get any of the isomorphic connected components, let's say the first one
+
+		int count = 0;
+		
+		UndirectedGraph<ChainVertex, InterfaceEdge> firstCc = connectedComponents.get(0);
+		for (InterfaceEdge edge:firstCc.edgeSet()) {
+			if (edge.getClusterId() == interfaceClusterId) count++;
+		}
+		
+		return count;
+	}
+	
+	
 	@Override
 	public boolean equals(Object other) {
 		if (! (other instanceof Assembly)) return false;
 		
 		Assembly o = (Assembly) other;
 		
-		return Arrays.equals(this.engagedSet, o.engagedSet);
+		return this.engagedSet.equals(o.engagedSet);
 		
 	}
 	
 	@Override
 	public int hashCode() {
-		return Arrays.hashCode(this.engagedSet);
+		return this.engagedSet.hashCode();
 	}
 	
 	@Override
@@ -611,8 +630,8 @@ public class Assembly {
 		int numClusters = getNumEngagedInterfaceClusters();
 		sb.append("{");
 		int e = 0;
-		for (int i=0;i<engagedSet.length;i++) {
-			if (engagedSet[i]) {
+		for (int i=0;i<engagedSet.size();i++) {
+			if (engagedSet.isOn(i)) {
 				sb.append(i+1);
 				e++;
 				if (e!=numClusters) sb.append(",");
