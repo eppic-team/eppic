@@ -330,23 +330,23 @@ public class ChainEvolContext implements Serializable {
 
 			}  catch (NoMatchFoundException e) {
 				if (parent.isUseLocalUniprot()) {
-					LOGGER.error("Couldn't find UniProt id "+queryUniprotId+" (reference for chain "+sequenceId+") in local database. Obsolete?");
+					LOGGER.warn("Couldn't find UniProt id "+queryUniprotId+" (reference for chain "+sequenceId+") in local database. Obsolete?");
 				} else {
-					LOGGER.error("Couldn't find UniProt id "+queryUniprotId+" (reference for chain "+sequenceId+") through UniProt JAPI. Obsolete?");	
+					LOGGER.warn("Couldn't find UniProt id "+queryUniprotId+" (reference for chain "+sequenceId+") through UniProt JAPI. Obsolete?");	
 				}				
-				LOGGER.error("Won't do evolution analysis for chain "+sequenceId);
+				LOGGER.warn("Won't do evolution analysis for chain "+sequenceId);
 				query = null;
 				hasQueryMatch = false;
 			} catch (SQLException e) {
-				LOGGER.error("Could not retrieve the UniProt data for UniProt id "+queryUniprotId+" from local database "+params.getLocalUniprotDbName()+", error: "+e.getMessage());
-				LOGGER.error("Won't do evolution analysis for chain "+sequenceId);
+				LOGGER.warn("Could not retrieve the UniProt data for UniProt id "+queryUniprotId+" from local database "+params.getLocalUniprotDbName()+", error: "+e.getMessage());
+				LOGGER.warn("Won't do evolution analysis for chain "+sequenceId);
 				query = null;
 				hasQueryMatch = false;
 			} catch (CompoundNotFoundException e) {
-				LOGGER.error("Some unknown compounds in PDB or UniProt protein sequences, error: "+e.getMessage());
-				LOGGER.error("Sequences: ");
-				LOGGER.error("PDB: {}",sequence);
-				LOGGER.error("UniProt ({}): {}",query.getUniId(), query.getSequence());
+				LOGGER.warn("Some unknown compounds in PDB or UniProt protein sequences, error: "+e.getMessage());
+				LOGGER.warn("Sequences: ");
+				LOGGER.warn("PDB: {}",sequence);
+				LOGGER.warn("UniProt ({}): {}",query.getUniId(), query.getSequence());
 				query = null;
 				hasQueryMatch = false;
 			}
