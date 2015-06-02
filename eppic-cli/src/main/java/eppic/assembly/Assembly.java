@@ -608,6 +608,24 @@ public class Assembly {
 		return count;
 	}
 	
+	/**
+	 * For each of the engaged interfaces in this assembly, finds out their multiplicity 
+	 * when they are considered as single-engaged-interface assemblies.
+	 * @return
+	 */
+	public int[] getMultiplicityOfEngagedInterfClusters() {
+		int[] mult = new int[getNumEngagedInterfaceClusters()];
+		
+		int i = 0;
+		for (StructureInterfaceCluster interfCluster:getHomoEngagedInterfaceClusters()) {
+			
+			mult[i] = getCrystalAssemblies().getEdgeMultiplicity(interfCluster.getId());
+			i++;
+		}
+		
+		return mult;
+	}
+	
 	
 	@Override
 	public boolean equals(Object other) {
