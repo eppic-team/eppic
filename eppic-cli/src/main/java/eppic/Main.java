@@ -355,6 +355,10 @@ public class Main {
 			LOGGER.warn("No space group available, will not do analysis of assemblies");
 			return;
 		}
+		if (pdb.getCrystallographicInfo().getCrystalCell()==null) {
+			LOGGER.warn("No crystal cell definition, will not do analysis of assemblies");
+			return;
+		}
 		validAssemblies = new CrystalAssemblies(pdb, interfaces); 
 
 		StringBuilder sb = new StringBuilder();
@@ -414,7 +418,10 @@ public class Main {
 		modelAdaptor.setResidueDetails(interfaces);
 
 		// TODO for the moment we are only doing assemblies for crystallographic structures, but we should also try to deal with NMR and EM
-		if (pdb.isCrystallographic() && pdb.getCrystallographicInfo().getSpaceGroup()!=null) {
+		if (pdb.isCrystallographic() && 
+				pdb.getCrystallographicInfo().getSpaceGroup()!=null &&
+				pdb.getCrystallographicInfo().getCrystalCell()!=null) {
+			
 			modelAdaptor.setAssemblies(validAssemblies);
 
 			// since the move to Biojava, we have decided to take the first PDB-annotated biounit ONLY, whatever its type
@@ -592,17 +599,22 @@ public class Main {
 				}
 			}
 			// assembly files
-			int i = 0;
-			for (Assembly a:validAssemblies) {
-				i++;
-				try {
-					File pdbFile = params.getOutputFile(".assembly." + i + ".pdb.gz");
-					a.writeToPdbFile(pdbFile);
-				} catch (StructureException e) {
-					LOGGER.error("Could not write assembly PDB file {}: {}",i,e.getMessage());
-					continue;
+			// TODO for the moment we are only doing assemblies for crystallographic structures, but we should also try to deal with NMR and EM
+			if (pdb.isCrystallographic() && 
+					pdb.getCrystallographicInfo().getSpaceGroup()!=null &&
+					pdb.getCrystallographicInfo().getCrystalCell()!=null) {
+				int i = 0;
+				for (Assembly a:validAssemblies) {
+					i++;
+					try {
+						File pdbFile = params.getOutputFile(".assembly." + i + ".pdb.gz");
+						a.writeToPdbFile(pdbFile);
+					} catch (StructureException e) {
+						LOGGER.error("Could not write assembly PDB file {}: {}",i,e.getMessage());
+						continue;
+					}
+
 				}
-				
 			}
 			
 		} catch (IOException e) {
