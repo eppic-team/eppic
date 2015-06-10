@@ -20,7 +20,9 @@ public class InterfaceItemModel implements Serializable {
 	private int clusterId;
 	
 	private double area;
-	private String name;
+	private String chain1;
+	private String chain2;
+	
 	private String sizes;
 	
 	private String operator;
@@ -53,7 +55,8 @@ public class InterfaceItemModel implements Serializable {
 		interfaceId = 0;
 		clusterId = 0;
 		area = 0;
-		name = "";
+		chain1 = "";
+		chain2 = "";
 		sizes = "";
 		geometryCall = "";
 		coreRimCall = "";
@@ -134,13 +137,25 @@ public class InterfaceItemModel implements Serializable {
 	}
 
 	public String getName() {
-		return name;
+		return chain1+"+"+chain2;
+	}
+	
+	public String getChain1() {
+		return chain1;
 	}
 
-	public void setName(String name) {
-		this.name = name;
+	public void setChain1(String chain1) {
+		this.chain1 = chain1;
 	}
-
+	
+	public String getChain2() {
+		return chain2;
+	}
+	
+	public void setChain2(String chain2) {
+		this.chain2 = chain2;
+	}
+	
 	public String getSizes() {
 		return sizes;
 	}

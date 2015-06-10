@@ -37,4 +37,6 @@ public interface InterfaceDAO
 	 * @throws DaoException when can not retrieve interface items
 	 */
 	public List<Interface> getInterfacesWithResidues(int interfaceClusterUid) throws DaoException;
+	
+	public Interface getInterfaceWithResidues(int pdbInfoUid, int interfaceId)throws DaoException;
 }

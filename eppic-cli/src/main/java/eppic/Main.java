@@ -670,14 +670,8 @@ public class Main {
 		params.getProgressLog().println("Writing PyMOL files");
 		writeStep("Generating Thumbnails and PyMOL Files");
 		LOGGER.info("Generating PyMOL files");
-		try {
-			pr = new PymolRunner(params.getPymolExe());
-			pr.readColorsFromPropertiesFile(EppicParams.COLORS_PROPERTIES_IS);
-			pr.readColorMappingsFromResourceFile(EppicParams.PYMOL_COLOR_MAPPINGS_IS);
 
-		} catch (IOException e) {
-			throw new EppicException(e,"Couldn't read colors file. Won't generate thumbnails or pse/pml files. " + e.getMessage(),true);
-		}		
+		pr = new PymolRunner(params.getPymolExe());
 
 		try {
 			for (StructureInterface interf:interfaces) {
@@ -688,8 +682,7 @@ public class Main {
 						params.getOutputFile("."+interf.getId()+".pml"),
 						params.getBaseName()+"."+interf.getId()	);
 				LOGGER.info("Generated PyMOL files for interface "+interf.getId());
-				MolViewersAdaptor.writeJmolScriptFile(interf, params.getCAcutoffForGeom(), params.getMinAsaForSurface(), pr, 
-						params.getOutDir(), params.getBaseName());
+				
 			}
 
 			if (params.isDoEvolScoring()) {
