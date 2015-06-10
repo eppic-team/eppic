@@ -126,6 +126,6 @@ public class PowerSet {
 	}
 	
 	public String toString() {
-		return this.set.toString();
+		return Arrays.toString(this.set);
 	}
 }
