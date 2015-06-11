@@ -1,13 +1,8 @@
 package eppic;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.zip.GZIPOutputStream;
 
 import org.apache.commons.math.random.RandomDataImpl;
 import org.biojava.nbio.structure.Atom;
@@ -225,27 +220,16 @@ public class InterfaceEvolContext implements Serializable {
 	}
 	
 	/**
-	 * Writes out a gzipped PDB file with the 2 chains of this interface with evolutionary scores 
-	 * as b-factors. 
-	 * In order for the file to be handled properly by molecular viewers whenever the two
-	 * chains have the same code we rename the second one to the next letter in alphabet.
-	 * PDB chain codes are used for the output, not CIF codes.  
-	 * @param file
-	 * @throws IOException
+	 * Set the b-factors of the interface to conservation score values (at the
+	 * moment, only entropy supported). 
 	 */
-	public void writePdbFile(File file) throws IOException {
-		
+	public void setConservationScoresAsBfactors() {
 		if (getChainEvolContext(FIRST)!=null && getChainEvolContext(FIRST).isProtein()) {
 			setConservationScoresAsBfactors(FIRST);
 		}
 		if (getChainEvolContext(SECOND)!=null && getChainEvolContext(SECOND).isProtein()) {
 			setConservationScoresAsBfactors(SECOND);
 		}
-		
-		PrintStream ps = new PrintStream(new GZIPOutputStream(new FileOutputStream(file)));
-		ps.print(interf.toPDB());
-		ps.close();
-		
 	}
 	
 	/**

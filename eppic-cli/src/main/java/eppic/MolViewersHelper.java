@@ -20,7 +20,7 @@ public class MolViewersHelper {
 
 	
 
-
+	// TODO use RCSB's color brewer instead? https://github.com/rcsb/colorbrewer
 	/**
 	 * We use 26 colors corresponding to chain letters A to Z (second 13 are repeated from first 13)
 	 */
@@ -125,11 +125,14 @@ public class MolViewersHelper {
 		return interf2color;
 	}
 	
-	public  static String getChainColor(char letter, int index, boolean isSymRelated) {
+	public  static String getChainColor(String chainId, int index, boolean isSymRelated) {
 		String color = null;
 		if (isSymRelated && index!=0) {
 			color = symRelatedColor;
 		} else {
+			// TODO we use the first character for coloring, we need to make it more general and treat properly chainIds >1 characters
+			// TODO use RCSB's color brewer instead? (https://github.com/rcsb/colorbrewer)
+			char letter = chainId.charAt(0);
 			if (letter<'A' || letter>'Z') {
 				// if out of the range A-Z then we assign simply a color based on the chain index
 				color = chainColors[index%chainColors.length];

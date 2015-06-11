@@ -1,7 +1,6 @@
 package eppic;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
@@ -11,10 +10,8 @@ import java.util.Set;
 
 import org.biojava.nbio.structure.Chain;
 import org.biojava.nbio.structure.Group;
-import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.contact.StructureInterface;
 import org.biojava.nbio.structure.contact.StructureInterfaceList;
-import org.biojava.nbio.structure.io.PDBFileParser;
 
 
 public class PymolRunner {
@@ -37,83 +34,15 @@ public class PymolRunner {
 	}
 	
 	/**
-	 * Generates png images of the desired heights and widths with the specified style and 
-	 * coloring each chain with a color as given in {@link MolViewersHelper}
-	 * @param pdbFile
-	 * @param outPngFiles output png file names
-	 * @param style can be cartoon, surface, spheres
-	 * @param bgColor the background color for the image: black, white, gray
-	 * @param heights
-	 * @param widths 
-	 * @throws IOException 
-	 * @throws InterruptedException 
-	 * @throws IllegalArgumentException if heights length differs from widths length
-	 */
-	public void generatePng(File pdbFile, File[] outPngFiles, String style, String bgColor, int[] heights, int[] widths) 
-	throws IOException, InterruptedException {
-		
-		if (heights.length!=widths.length || heights.length!=outPngFiles.length) 
-			throw new IllegalArgumentException("The number of heights is different from the number of widths or the number of output png files");
-		String molecName = pdbFile.getName().substring(0, pdbFile.getName().lastIndexOf('.'));
-		
-		PDBFileParser pdbpars = new PDBFileParser();
-
-		Structure s = pdbpars.parsePDBFile(new FileInputStream(pdbFile)) ;
-
-		List<Chain> chains = s.getChains();
-		
-		List<String> command = new ArrayList<String>();
-		command.add(pymolExec.getAbsolutePath());
-		command.add("-q");
-		command.add("-c");
-
-		StringBuffer pymolScriptBuilder = new StringBuffer();
-		
-		pymolScriptBuilder.append("load "+pdbFile.getAbsolutePath() + ";");
-		
-		pymolScriptBuilder.append("bg "+bgColor + ";");
-	
-		pymolScriptBuilder.append("orient;");
-
-		pymolScriptBuilder.append("remove solvent;");
-		
-		pymolScriptBuilder.append("as "+style + ";");
-		for (int c=0;c<chains.size();c++) {
-			char letter = chains.get(c).getChainID().charAt(0);
-			String color = MolViewersHelper.getChainColor(letter, c, false);
-			
-			pymolScriptBuilder.append("color "+color+", "+molecName+" and chain "+letter + ";");
-		}
-
-		for (int i=0;i<heights.length;i++) {
-			pymolScriptBuilder.append("viewport "+heights[i]+","+widths[i] + ";");
-			
-			pymolScriptBuilder.append("ray;");
-			
-			pymolScriptBuilder.append("png "+outPngFiles[i].getAbsolutePath() + ";");
-		}
-		
-		pymolScriptBuilder.append("quit;");
-		
-		command.add("-d");
-		command.add(pymolScriptBuilder.toString());
-		
-		Process pymolProcess = new ProcessBuilder(command).start();
-		int exit = pymolProcess.waitFor();
-		if (exit!=0) {
-			throw new IOException("Pymol exited with error status "+exit);
-		}
-	}
-	
-	/**
 	 * Generates png file, pymol pse file and pml script for given interface producing a 
 	 * mixed cartoon/surface representation of interface with selections 
 	 * coloring each chain with a color as set in {@link #setColors(String[], String)} and 
 	 * through {@link #readColorsFromPropertiesFile(InputStream)}
+	 * NOTE that multi-chain letters only work from PyMOL 1.7.4+
 	 * @param interf
 	 * @param caCutoff
 	 * @param minAsaForSurface
-	 * @param pdbFile
+	 * @param mmcifFile
 	 * @param pseFile
 	 * @param pmlFile
 	 * @param base
@@ -121,22 +50,22 @@ public class PymolRunner {
 	 * @throws InterruptedException 
 	 */
 	public void generateInterfPngPsePml(StructureInterface interf, double caCutoff, double minAsaForSurface, 
-			File pdbFile, File pseFile, File pmlFile, String base) 
+			File mmcifFile, File pseFile, File pmlFile, String base) 
 	throws IOException, InterruptedException {
 		
-		String molecName = getPymolMolecName(pdbFile);
+		String molecName = getPymolMolecName(mmcifFile);
 
 		File[] pngFiles = new File[DEF_TN_HEIGHTS.length];
 		for (int i=0;i<DEF_TN_HEIGHTS.length;i++) {
-			pngFiles[i] = new File(pdbFile.getParent(),base+"."+DEF_TN_WIDTHS[i]+"x"+DEF_TN_HEIGHTS[i]+".png");
+			pngFiles[i] = new File(mmcifFile.getParent(),base+"."+DEF_TN_WIDTHS[i]+"x"+DEF_TN_HEIGHTS[i]+".png");
 		}
 		
-		char chain1 = interf.getMoleculeIds().getFirst().charAt(0);
-		char chain2 = interf.getMoleculeIds().getSecond().charAt(0);
+		String chain1 = interf.getMoleculeIds().getFirst();
+		String chain2 = interf.getMoleculeIds().getSecond();
 		
-		// this relies on pdb files having been produced with the same chain-renaming scheme
-		if (chain1==chain2) {
-			chain2 = MolViewersHelper.getNextLetter(chain1);
+		if (chain1.equals(chain2)) {
+			// this is as done in StructureInterface.toMMCIF()
+			chain2 = chain2+"_"+interf.getTransforms().getSecond().getTransformId();
 		}
 		
 		String color1 = MolViewersHelper.getChainColor(chain1, 0, interf.isSymRelated());
@@ -157,7 +86,7 @@ public class PymolRunner {
 		StringBuffer pymolScriptBuilder = new StringBuffer();
 		PrintStream pml = new PrintStream(pmlFile);
 		
-		pymolScriptBuilder.append("load "+pdbFile.getAbsolutePath()+";");
+		pymolScriptBuilder.append("load "+mmcifFile.getAbsolutePath()+";");
 				
 		String cmd;
 
@@ -389,7 +318,7 @@ public class PymolRunner {
 	 * @param caCutoffGeom
 	 * @param caCutoffCoreSurf
 	 * @param minAsaForSurface
-	 * @param pdbFile
+	 * @param mmcifFile
 	 * @param pseFile
 	 * @param pmlFile 
 	 * @param iconPngFile
@@ -404,12 +333,12 @@ public class PymolRunner {
 	 */
 	public void generateChainPse(Chain chain, StructureInterfaceList interfaces, 
 			double caCutoffGeom, double caCutoffCoreSurf, double minAsaForSurface, 
-			File pdbFile, File pseFile, File pmlFile,
+			File mmcifFile, File pseFile, File pmlFile,
 			File iconPngFile, int iconWidth, int iconHeight,
 			double minScore, double maxScore) 
 	throws IOException, InterruptedException {
 		
-		String molecName = getPymolMolecName(pdbFile);
+		String molecName = getPymolMolecName(mmcifFile);
 
 		//char chain1 = chain.getPdbChainCode().charAt(0);
 		
@@ -428,7 +357,7 @@ public class PymolRunner {
 		StringBuffer pymolScriptBuilder = new StringBuffer();
 		PrintStream pml = new PrintStream(pmlFile);
 		
-		pymolScriptBuilder.append("load "+pdbFile.getAbsolutePath()+";");
+		pymolScriptBuilder.append("load "+mmcifFile.getAbsolutePath()+";");
 				
 		String cmd;
 
@@ -644,7 +573,7 @@ public class PymolRunner {
 		return cs.toString(); // to write pymol selection 3-6+11+15-17 or resi 34-45,47,78
 	}
 
-	private String getSelString(String namePrefix, char chainName, List<Group> list) {
+	private String getSelString(String namePrefix, String chainName, List<Group> list) {
 		return "select "+namePrefix+chainName+", chain "+chainName+" and ( resi "+getResiSelString(list)+")";
 	}
 

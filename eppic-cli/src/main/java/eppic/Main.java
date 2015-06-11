@@ -9,7 +9,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
-import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.sql.SQLException;
@@ -576,29 +575,39 @@ public class Main {
 		
 	}
 	
-	public void doWritePdbFiles() throws EppicException {
+	public void doWriteCoordFiles() throws EppicException {
 
 		if (interfaces.size() == 0) return;
 		
-		if (!params.isGenerateInterfacesPdbFiles()) return;
+		if (!params.isGenerateOutputCoordFiles()) return;
+		
+		
 		
 		try {
-			if (!params.isDoEvolScoring()) {
-				// no evol scoring: plain PDB files without altered bfactors
-				for (StructureInterface interf : interfaces) {
-					File pdbFile = params.getOutputFile("." + interf.getId() + ".pdb.gz");
-					PrintStream ps = new PrintStream(new GZIPOutputStream(new FileOutputStream(pdbFile)));
-					ps.print(interf.toPDB());
-					ps.close();
-				}
-			} else {
-				// writing PDB files with entropies as bfactors
-				for (InterfaceEvolContext iec:iecList) {
-					File pdbFile = params.getOutputFile("." + iec.getInterface().getId() + ".pdb.gz");
-					iec.writePdbFile(pdbFile);
+			if (params.isDoEvolScoring()) {
+				// we set the entropies as bfactors in case we are in evol scoring (-s)
+				// this will reset the bfactors in the Chain objects of the StructureInterface objects
+				// so both interfaces and assembly files will be written with reset bfactors
+				for (InterfaceEvolContext iec:iecList) {				
+					iec.setConservationScoresAsBfactors();
 				}
 			}
-			// assembly files
+			
+			// INTERFACE files
+			for (StructureInterface interf : interfaces) {
+				File outputFile = params.getOutputFile("." + interf.getId() + EppicParams.MMCIF_FILE_EXTENSION);
+				PrintStream ps = new PrintStream(new GZIPOutputStream(new FileOutputStream(outputFile)));				
+				ps.print(interf.toMMCIF());
+				ps.close();
+				if (params.isGeneratePdbFiles()) { 
+					outputFile = params.getOutputFile("." + interf.getId() + EppicParams.PDB_FILE_EXTENSION);
+					ps = new PrintStream(new GZIPOutputStream(new FileOutputStream(outputFile)));
+					ps.print(interf.toPDB());
+					ps.close();
+				}				
+			}
+				
+			// ASSEMBLY files
 			// TODO for the moment we are only doing assemblies for crystallographic structures, but we should also try to deal with NMR and EM
 			if (pdb.isCrystallographic() && 
 					pdb.getCrystallographicInfo().getSpaceGroup()!=null &&
@@ -606,11 +615,17 @@ public class Main {
 				int i = 0;
 				for (Assembly a:validAssemblies) {
 					i++;
-					try {
-						File pdbFile = params.getOutputFile(".assembly." + i + ".pdb.gz");
-						a.writeToPdbFile(pdbFile);
+					File outputFile= params.getOutputFile(EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX+"." + i + EppicParams.MMCIF_FILE_EXTENSION);
+					
+					try {								
+						a.writeToMmCifFile(outputFile);
+						if (params.isGeneratePdbFiles()) {
+							outputFile= params.getOutputFile(EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX+"." + i +  EppicParams.PDB_FILE_EXTENSION);
+							a.writeToPdbFile(outputFile);
+						}
+						
 					} catch (StructureException e) {
-						LOGGER.error("Could not write assembly PDB file {}: {}",i,e.getMessage());
+						LOGGER.error("Could not write assembly coordinates file {}: {}",i,e.getMessage());
 						continue;
 					}
 
@@ -677,7 +692,7 @@ public class Main {
 			for (StructureInterface interf:interfaces) {
 				pr.generateInterfPngPsePml(interf, 
 						params.getCAcutoffForGeom(), params.getMinAsaForSurface(), 
-						params.getOutputFile("."+interf.getId()+".pdb.gz"), 
+						params.getOutputFile("."+interf.getId()+ EppicParams.MMCIF_FILE_EXTENSION), 
 						params.getOutputFile("."+interf.getId()+".pse"),
 						params.getOutputFile("."+interf.getId()+".pml"),
 						params.getBaseName()+"."+interf.getId()	);
@@ -689,17 +704,17 @@ public class Main {
 				for (ChainEvolContext cec:cecs.getAllChainEvolContext()) {
 					Chain chain = pdb.getChainByPDB(cec.getRepresentativeChainCode());
 					cec.setConservationScoresAsBfactors(chain);
-					File chainPdbFile = params.getOutputFile("."+cec.getRepresentativeChainCode()+EppicParams.ENTROPIES_FILE_SUFFIX+".pdb");
+					File chainMmCifFile = params.getOutputFile("."+cec.getRepresentativeChainCode()+EppicParams.ENTROPIES_FILE_SUFFIX+EppicParams.MMCIF_FILE_EXTENSION);
 					File chainPseFile = params.getOutputFile("."+cec.getRepresentativeChainCode()+EppicParams.ENTROPIES_FILE_SUFFIX+".pse");
 					File chainPmlFile = params.getOutputFile("."+cec.getRepresentativeChainCode()+EppicParams.ENTROPIES_FILE_SUFFIX+".pml");
 					File chainIconPngFile = params.getOutputFile("."+cec.getRepresentativeChainCode()+EppicParams.ENTROPIES_FILE_SUFFIX+".png");
-										
-					PrintWriter pw = new PrintWriter(chainPdbFile);
-					pw.write(chain.toPDB());
+						
+					PrintStream pw = new PrintStream(new GZIPOutputStream(new FileOutputStream(chainMmCifFile)));
+					pw.print(chain.toMMCIF());
 					pw.close();
 					pr.generateChainPse(chain, interfaces, 
 							params.getCAcutoffForGeom(), params.getCAcutoffForZscore(), params.getMinAsaForSurface(),
-							chainPdbFile, 
+							chainMmCifFile, 
 							chainPseFile, 
 							chainPmlFile,
 							chainIconPngFile,
@@ -710,9 +725,9 @@ public class Main {
 			}
 			
 		} catch (IOException e) {
-			throw new EppicException(e, "Couldn't write thumbnails, PyMOL pse/pml files or jmol files. "+e.getMessage(),true);
+			throw new EppicException(e, "Couldn't write thumbnails, PyMOL pse/pml files. "+e.getMessage(),true);
 		} catch (InterruptedException e) {
-			throw new EppicException(e, "Couldn't generate thumbnails, PyMOL pse/pml files or jmol files, PyMOL thread interrupted: "+e.getMessage(),true);
+			throw new EppicException(e, "Couldn't generate thumbnails, PyMOL pse/pml files, PyMOL thread interrupted: "+e.getMessage(),true);
 		} catch (StructureException e) {
 			throw new EppicException(e, "Couldn't find chain id in input structure, something is wrong! "+e.getMessage(), true);
 		}
@@ -724,7 +739,7 @@ public class Main {
 		if (interfaces.size()==0) return;
 		
 		if (!params.isGenerateThumbnails()) return;
-		// from here only if in -l mode: compress pse, chain pses and pdbs, create zip
+		// from here only if in -l mode: compress interface pses and chain pses
 		
 		params.getProgressLog().println("Compressing files");
 		LOGGER.info("Compressing files");
@@ -734,9 +749,14 @@ public class Main {
 				File pseFile = params.getOutputFile("."+interf.getId()+".pse");
 				File gzipPseFile = params.getOutputFile("."+interf.getId()+".pse.gz");
 
-				// pse (only if in -l mode)
+				if (!pseFile.exists()) {
+					LOGGER.warn("Can't find PSE file {} to compress",pseFile);
+					continue;
+				} 
+
 				Goodies.gzipFile(pseFile, gzipPseFile);
-				pseFile.delete();				
+				pseFile.delete();
+
 			}
 			
 			if (params.isDoEvolScoring()) {
@@ -745,21 +765,18 @@ public class Main {
 							params.getOutputFile("."+cec.getRepresentativeChainCode()+EppicParams.ENTROPIES_FILE_SUFFIX+".pse");
 					File gzipPseFile = 
 							params.getOutputFile("."+cec.getRepresentativeChainCode()+EppicParams.ENTROPIES_FILE_SUFFIX+".pse.gz");
-					File pdbFile = 
-							params.getOutputFile("."+cec.getRepresentativeChainCode()+EppicParams.ENTROPIES_FILE_SUFFIX+".pdb");
-					File gzipPdbFile = 
-							params.getOutputFile("."+cec.getRepresentativeChainCode()+EppicParams.ENTROPIES_FILE_SUFFIX+".pdb.gz");
-					// pse
+
+					if (!pseFile.exists()) {
+						LOGGER.warn("Can't find PSE file {} to compress",pseFile);
+						continue;
+					} 
 					Goodies.gzipFile(pseFile, gzipPseFile);
 					pseFile.delete();
-					// pdb
-					Goodies.gzipFile(pdbFile, gzipPdbFile);
-					pdbFile.delete();
 
 				}
 			}
 		} catch (IOException e) {
-			throw new EppicException(e, "PSE or PDB files could not be gzipped. "+e.getMessage(),true);
+			throw new EppicException(e, "PSE files could not be gzipped. "+e.getMessage(),true);
 		}
 		
 	}
@@ -1004,8 +1021,8 @@ public class Main {
 			// 7 write TSV files (only if not in -w) 	
 			doWriteTextOutputFiles();
 			
-			// 8 write pdb files (only if in -l)
-			doWritePdbFiles();
+			// 8 write coordinate files (only if in -l)
+			doWriteCoordFiles();
 						
 			// 9 writing pymol files (only if in -l)
 			doWritePymolFiles();

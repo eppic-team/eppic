@@ -21,6 +21,8 @@ import org.biojava.nbio.structure.Chain;
 import org.biojava.nbio.structure.StructureException;
 import org.biojava.nbio.structure.contact.StructureInterface;
 import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
+import org.biojava.nbio.structure.io.FileConvert;
+import org.biojava.nbio.structure.io.mmcif.SimpleMMcifParser;
 import org.jgrapht.GraphPath;
 import org.jgrapht.Graphs;
 import org.jgrapht.UndirectedGraph;
@@ -504,9 +506,9 @@ public class Assembly {
 	 * @return
 	 * @throws StructureException 
 	 */
-	public List<Chain> getStructure() throws StructureException {
+	public List<ChainVertex> getStructure() throws StructureException {
 
-		List<Chain> chains = new ArrayList<Chain>();
+		List<ChainVertex> chains = new ArrayList<ChainVertex>();
 		
 		// we assume this is a valid assembly
 		// we get any of the isomorphic connected components, let's say the first one
@@ -522,7 +524,7 @@ public class Assembly {
 		Matrix4d m = crystalAssemblies.getLatticeGraph().getUnitCellTransformationOrthonormal(refVertex.getChainId(), refVertex.getOpId());
 		Chain chain = (Chain) crystalAssemblies.getStructure().getChainByPDB(refVertex.getChainId()).clone();
 		Calc.transform(chain, m);
-		chains.add(chain);
+		chains.add(new ChainVertex(chain, refVertex.getOpId()));
 		
 		while (it.hasNext()) {
 			ChainVertex v = it.next();
@@ -530,7 +532,7 @@ public class Assembly {
 			// transform the chain
 			chain = (Chain) crystalAssemblies.getStructure().getChainByPDB(v.getChainId()).clone();
 			Calc.transform(chain, m);
-			chains.add(chain);
+			chains.add(new ChainVertex(chain,v.getOpId()));
 			
 
 			// we still need to get the xtal translation from the edges in the path from refVertex to current vertex
@@ -573,9 +575,9 @@ public class Assembly {
 	public void writeToPdbFile(File file) throws StructureException, IOException {
 		PrintStream ps = new PrintStream(new GZIPOutputStream(new FileOutputStream(file)));
 		int modelId = 1;
-		for (Chain c:getStructure()) {
+		for (ChainVertex cv:getStructure()) {
 			ps.println("MODEL"+String.format("%9d",modelId));
-			ps.print(c.toPDB());
+			ps.print(cv.getChain().toPDB());
 			ps.println("TER");
 			ps.println("ENDMDL");
 			modelId++;
@@ -584,9 +586,32 @@ public class Assembly {
 		ps.close();
 	}
 	
-	// TODO implement a writeToMmCifFile method that could produce assembly files with single 
-	//      models by renaming chains to chainId+opId
-	//      We need the mmCIF writer in Biojava as a prerequisite
+	/**
+	 * Writes this Assembly to mmCIF file (gzipped) with chain ids as follows:
+	 *  <li> author_ids: chainId_operatorId</li>
+	 *  <li> asym_ids: chainId_operatorId</li>
+	 * Note that PyMOL supports multi-letter chain ids only from 1.7.4
+	 * @param file
+	 * @throws IOException
+	 * @throws StructureException
+	 */
+	public void writeToMmCifFile(File file) throws IOException, StructureException {
+		
+		PrintStream ps = new PrintStream(new GZIPOutputStream(new FileOutputStream(file)));
+
+		ps.println(SimpleMMcifParser.MMCIF_TOP_HEADER+"eppic_assembly_"+toString());
+		
+		ps.print(FileConvert.getAtomSiteHeader());
+		
+		for (ChainVertex cv:getStructure()) {
+			
+			String chainId = cv.getChain().getChainID()+"_"+cv.getOpId();
+			//ps.print(FileConvert.toMMCIF(cv.getChain(), 
+			//		cv.getChain().getChainID(), chainId, false));
+			ps.print(FileConvert.toMMCIF(cv.getChain(), chainId, chainId, false));
+		}
+		ps.close();
+	}
 	
 	/**
 	 * Returns the number of edges with given interfaceClusterId in the first connected 
