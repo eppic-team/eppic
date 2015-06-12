@@ -34,17 +34,15 @@ import org.biojava.nbio.structure.xtal.CrystalBuilder;
 import org.biojava.nbio.structure.xtal.CrystalCell;
 import org.biojava.nbio.structure.xtal.CrystalTransform;
 import org.jcolorbrewer.ColorBrewer;
-import org.jgraph.JGraph;
-import org.jgraph.graph.DefaultEdge;
-import org.jgraph.graph.DefaultGraphCell;
-import org.jgraph.graph.GraphConstants;
 import org.jgrapht.UndirectedGraph;
-import org.jgrapht.ext.JGraphModelAdapter;
+import org.jgrapht.ext.JGraphXAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.jgraph.layout.JGraphFacade;
-import com.jgraph.layout.organic.JGraphFastOrganicLayout;
+import com.mxgraph.layout.mxFastOrganicLayout;
+import com.mxgraph.model.mxICell;
+import com.mxgraph.swing.mxGraphComponent;
+import com.mxgraph.util.mxConstants;
 
 import eppic.assembly.ChainVertex;
 import eppic.assembly.InterfaceEdge;
@@ -191,48 +189,41 @@ public class LatticeGUI {
 		return jmol;
 	}
 	
-	@SuppressWarnings("rawtypes")
 	public void display2D() {
-		JGraphModelAdapter<ChainVertex, InterfaceEdge> adaptor = new JGraphModelAdapter<ChainVertex,InterfaceEdge>(graph.getGraph());
-		final JGraph jgraph = new JGraph( adaptor);
+		JGraphXAdapter<ChainVertex, InterfaceEdge> jgraph = new JGraphXAdapter<ChainVertex,InterfaceEdge>(graph.getGraph());
 
+		mxGraphComponent graphComponent = new mxGraphComponent(jgraph);
+		graphComponent.setSize(700, 700);
+
+		
 		//Layout
-		final JGraphFastOrganicLayout layout = new JGraphFastOrganicLayout();
+		final mxFastOrganicLayout layout = new mxFastOrganicLayout(jgraph);
 		//default 50
 		layout.setForceConstant(100);
 		layout.setInitialTemp(500);
-		layout.setMaxIterations(2000);
+		layout.setMaxIterations(10000);
 		System.out.format("Force=%s\tTemp=%s\tIter=%s%n",layout.getForceConstant(),layout.getInitialTemp(),layout.getMaxIterations());
-		final JGraphFacade graphFacade = new JGraphFacade(jgraph);
-		layout.run(graphFacade);
-		final Map nestedMap = graphFacade.createNestedMap(true, true);
-		jgraph.getGraphLayoutCache().edit(nestedMap);
+		layout.execute(jgraph.getDefaultParent());
 
 		//Colors
 		for(Entry<ChainVertex,Color> entry: vertexColors.entrySet()) {
-			DefaultGraphCell cell = adaptor.getVertexCell( entry.getKey() );
-			Map              attr = cell.getAttributes(  );
-			//Rectangle2D      b    = GraphConstants.getBounds( attr );
-			GraphConstants.setForeground(attr, Color.WHITE);
-			GraphConstants.setBackground(attr, entry.getValue());
-
-			Map<DefaultGraphCell,Map> cellAttr = new HashMap<DefaultGraphCell,Map>(  );
-			cellAttr.put( cell, attr );
-			adaptor.edit( cellAttr, null, null, null );
+			mxICell cell = jgraph.getVertexToCellMap().get(entry.getKey());
+			Color color = entry.getValue();
+			String hexColor = String.format("#%02x%02x%02x", color.getRed(),color.getGreen(),color.getBlue());
+			jgraph.setCellStyles(mxConstants.STYLE_FILLCOLOR, hexColor, new Object[] {cell});
+			jgraph.setCellStyles(mxConstants.STYLE_FONTCOLOR, "#FFFFFF", new Object[] {cell});
 		}
-//		for(Entry<InterfaceEdge,Color> entry: edgeColors.entrySet()) {
-//			DefaultEdge cell = adaptor.getEdgeCell(entry.getKey());
-//			Map              attr = cell.getAttributes(  );
-//			//Rectangle2D      b    = GraphConstants.getBounds( attr );
-//			GraphConstants.setLineColor(attr, entry.getValue());
-//
-//			Map<DefaultGraphCell,Map> cellAttr = new HashMap<DefaultGraphCell,Map>(  );
-//			cellAttr.put( cell, attr );
-//			adaptor.edit( cellAttr, null, null, null );
-//		}
+		for(Entry<InterfaceEdge,Color> entry: edgeColors.entrySet()) {
+			mxICell cell = jgraph.getEdgeToCellMap().get(entry.getKey());
+			Color color = entry.getValue();
+			String hexColor = String.format("#%02x%02x%02x", color.getRed(),color.getGreen(),color.getBlue());
+			jgraph.setCellStyles(mxConstants.STYLE_STROKECOLOR, hexColor, new Object[] {cell});
+			jgraph.setCellStyles(mxConstants.STYLE_FONTCOLOR, hexColor, new Object[] {cell});
+			
+		}
 		
 		JFrame frame = new JFrame("JGraph");
-		frame.getContentPane().add(jgraph);
+		frame.getContentPane().add(graphComponent);
 		frame.pack();
 		frame.setVisible(true);
 	}
