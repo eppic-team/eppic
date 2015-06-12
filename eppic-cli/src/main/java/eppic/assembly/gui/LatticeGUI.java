@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.swing.JFrame;
@@ -34,8 +35,16 @@ import org.biojava.nbio.structure.xtal.CrystalCell;
 import org.biojava.nbio.structure.xtal.CrystalTransform;
 import org.jcolorbrewer.ColorBrewer;
 import org.jgrapht.UndirectedGraph;
+import org.jgrapht.ext.JGraphXAdapter;
+import org.jgrapht.graph.MaskFunctor;
+import org.jgrapht.graph.UndirectedMaskSubgraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.mxgraph.layout.mxFastOrganicLayout;
+import com.mxgraph.model.mxICell;
+import com.mxgraph.swing.mxGraphComponent;
+import com.mxgraph.util.mxConstants;
 
 import eppic.assembly.ChainVertex;
 import eppic.assembly.InterfaceEdge;
@@ -180,6 +189,65 @@ public class LatticeGUI {
 		jmol.getFrame().setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		return jmol;
+	}
+	
+	public void display2D() {
+		MaskFunctor<ChainVertex, InterfaceEdge> mask = new MaskFunctor<ChainVertex, InterfaceEdge>() {
+			@Override
+			public boolean isEdgeMasked(InterfaceEdge edge) {
+				if(debugInterfaceIds!=null && !debugInterfaceIds.contains(edge.getInterfaceId())) {
+					return true;
+				}
+				ChainVertex source = graph.getGraph().getEdgeSource(edge);
+				if(debugAUNum != null && source.getOpId() != debugAUNum) {
+					return true;
+				}
+				return false;
+			}
+
+			@Override
+			public boolean isVertexMasked(ChainVertex vertex) {
+				return false;
+			}
+		};
+		UndirectedGraph<ChainVertex,InterfaceEdge> subgraph = new UndirectedMaskSubgraph<ChainVertex,InterfaceEdge>(this.graph.getGraph(), mask);
+		JGraphXAdapter<ChainVertex, InterfaceEdge> jgraph = new JGraphXAdapter<ChainVertex,InterfaceEdge>(subgraph);
+
+		mxGraphComponent graphComponent = new mxGraphComponent(jgraph);
+		graphComponent.setSize(700, 700);
+
+		
+		//Layout
+		final mxFastOrganicLayout layout = new mxFastOrganicLayout(jgraph);
+		//default 50
+//		layout.setForceConstant(100);
+//		layout.setInitialTemp(500);
+//		layout.setMaxIterations(1000);
+		layout.setMaxDistanceLimit(300);
+		System.out.format("Force=%f\tTemp=%f\tIter=%f\tlimits=%f-%f%n",layout.getForceConstant(),layout.getInitialTemp(),layout.getMaxIterations(),layout.getMinDistanceLimit(),layout.getMaxDistanceLimit());
+		layout.execute(jgraph.getDefaultParent());
+
+		//Colors
+		for(Entry<ChainVertex,Color> entry: vertexColors.entrySet()) {
+			mxICell cell = jgraph.getVertexToCellMap().get(entry.getKey());
+			Color color = entry.getValue();
+			String hexColor = String.format("#%02x%02x%02x", color.getRed(),color.getGreen(),color.getBlue());
+			jgraph.setCellStyles(mxConstants.STYLE_FILLCOLOR, hexColor, new Object[] {cell});
+			jgraph.setCellStyles(mxConstants.STYLE_FONTCOLOR, "#FFFFFF", new Object[] {cell});
+		}
+		for(Entry<InterfaceEdge,Color> entry: edgeColors.entrySet()) {
+			mxICell cell = jgraph.getEdgeToCellMap().get(entry.getKey());
+			Color color = entry.getValue();
+			String hexColor = String.format("#%02x%02x%02x", color.getRed(),color.getGreen(),color.getBlue());
+			jgraph.setCellStyles(mxConstants.STYLE_STROKECOLOR, hexColor, new Object[] {cell});
+			jgraph.setCellStyles(mxConstants.STYLE_FONTCOLOR, hexColor, new Object[] {cell});
+			
+		}
+		
+		JFrame frame = new JFrame("JGraph");
+		frame.getContentPane().add(graphComponent);
+		frame.pack();
+		frame.setVisible(true);
 	}
 
 	private String drawEdges() throws StructureException {
@@ -643,6 +711,7 @@ public class LatticeGUI {
 		LatticeGUI gui = new LatticeGUI(struc);
 		gui.setDebugInterfaceIds(interfaceIdsCommaSep);
 		gui.display(filename);
+		gui.display2D();
 	}
 
 	/**
