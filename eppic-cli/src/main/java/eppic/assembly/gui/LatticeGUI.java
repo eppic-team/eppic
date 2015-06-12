@@ -3,8 +3,11 @@ package eppic.assembly.gui;
 import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -29,6 +32,7 @@ import org.biojava.nbio.structure.io.PDBFileReader;
 import org.biojava.nbio.structure.xtal.CrystalBuilder;
 import org.biojava.nbio.structure.xtal.CrystalCell;
 import org.biojava.nbio.structure.xtal.CrystalTransform;
+import org.jcolorbrewer.ColorBrewer;
 import org.jgrapht.UndirectedGraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -89,6 +93,10 @@ public class LatticeGUI {
 	
 	private Set<Integer> debugInterfaceIds; // interface ids to display (for debugging, read from command line args), if null all displayed
 
+	// colors
+	private Map<ChainVertex,Color> vertexColors = null;
+	private Map<InterfaceEdge,Color> edgeColors = null;
+
 	public LatticeGUI(Structure struc) throws StructureException {
 		this(struc,null);
 	}
@@ -117,6 +125,8 @@ public class LatticeGUI {
 			chainCentroid.put(c.getChainID(), getCentroid(c));
 		}
 
+		//assignColorsById();
+		assignColorsByEntity();
 	}
 
 	public void setDebugInterfaceIds(String commaSepList) {
@@ -474,10 +484,106 @@ public class LatticeGUI {
 		return pos;
 	}
 
+
+	private void assignColorsById() {
+		// Generate list of equivalent chains
+		Map<String,List<ChainVertex>> vClusters = new HashMap<String, List<ChainVertex>>();
+		for( ChainVertex vert : graph.getGraph().vertexSet()) {
+			String id = vert.getChainId();
+			List<ChainVertex> lst = vClusters.get(id);
+			if(lst == null) {
+				lst = new LinkedList<ChainVertex>();
+				vClusters.put(id, lst);
+			}
+			lst.add(vert);
+		}
+
+		// Assign colors for vertices
+		vertexColors = assignColors(vClusters.values(),ColorBrewer.Dark2);
+
+		// Generate list of equivalent edges
+		Map<Integer,List<InterfaceEdge>> eClusters = new HashMap<Integer, List<InterfaceEdge>>();
+		for( InterfaceEdge edge : graph.getGraph().edgeSet()) {
+			Integer id = edge.getInterfaceId();
+			List<InterfaceEdge> lst = eClusters.get(id);
+			if(lst == null) {
+				lst = new LinkedList<InterfaceEdge>();
+				eClusters.put(id, lst);
+			}
+			lst.add(edge);
+		}
+		// Assign colors for edges
+		edgeColors = assignColors(eClusters.values(),ColorBrewer.Set2);
+	}
+	private void assignColorsByEntity() {
+		// Generate list of equivalent chains
+		Map<Integer,List<ChainVertex>> vClusters = new HashMap<Integer, List<ChainVertex>>();
+		for( ChainVertex vert : graph.getGraph().vertexSet()) {
+			Integer id = vert.getEntity();
+			List<ChainVertex> lst = vClusters.get(id);
+			if(lst == null) {
+				lst = new LinkedList<ChainVertex>();
+				vClusters.put(id, lst);
+			}
+			lst.add(vert);
+		}
+
+		// Assign colors for vertices
+		vertexColors = assignColors(vClusters.values(),ColorBrewer.Dark2);
+
+		// Generate list of equivalent edges
+		Map<Integer,List<InterfaceEdge>> eClusters = new HashMap<Integer, List<InterfaceEdge>>();
+		for( InterfaceEdge edge : graph.getGraph().edgeSet()) {
+			Integer id = edge.getClusterId();
+			List<InterfaceEdge> lst = eClusters.get(id);
+			if(lst == null) {
+				lst = new LinkedList<InterfaceEdge>();
+				eClusters.put(id, lst);
+			}
+			lst.add(edge);
+		}
+		// Assign colors for edges
+		edgeColors = assignColors(eClusters.values(),ColorBrewer.Set2);
+	}
+	
+	/**
+	 * Takes a list of lists. For each row, assigns a color to all list members.
+	 * Returns a map from the list members to the color
+	 * @param inputs Collection of clustered objects which should be colored alike
+	 * @param palette Defaults to Dark2 if null
+	 * @return
+	 */
+	private static <V> Map<V,Color> assignColors(Collection<? extends Collection<V>> clusters,ColorBrewer palette) {
+
+		// Get color palette
+		if(palette == null)
+			palette = ColorBrewer.Dark2;
+		int numColors = clusters.size();
+		Color[] colors = palette.getColorPalette(Math.min(numColors,palette.getMaximumColorCount()));
+		
+		// Assign colors for vertices
+		Map<V,Color> colorMap = new HashMap<V, Color>();
+		int col = 0;
+		for( Collection<V> clust : clusters) {
+			for(V vert : clust) {
+				colorMap.put(vert, colors[col]);
+			}
+			col = (col+1) % colors.length; // reuse colors if needed
+		}
+		return colorMap;
+	}
+	
+	
 	private Color getColor(ChainVertex v) {
+		if(vertexColors != null && vertexColors.containsKey(v)) {
+			return vertexColors.get(v);
+		}
 		return Color.yellow;
 	}
 	private Color getEdgeColor(InterfaceEdge e) {
+		if(edgeColors != null && edgeColors.containsKey(e)) {
+			return edgeColors.get(e);
+		}
 		return Color.GRAY;
 	}
 	private static String toJmolColor(Color color) {
