@@ -36,6 +36,8 @@ import org.biojava.nbio.structure.xtal.CrystalTransform;
 import org.jcolorbrewer.ColorBrewer;
 import org.jgrapht.UndirectedGraph;
 import org.jgrapht.ext.JGraphXAdapter;
+import org.jgrapht.graph.MaskFunctor;
+import org.jgrapht.graph.UndirectedMaskSubgraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -190,7 +192,26 @@ public class LatticeGUI {
 	}
 	
 	public void display2D() {
-		JGraphXAdapter<ChainVertex, InterfaceEdge> jgraph = new JGraphXAdapter<ChainVertex,InterfaceEdge>(graph.getGraph());
+		MaskFunctor<ChainVertex, InterfaceEdge> mask = new MaskFunctor<ChainVertex, InterfaceEdge>() {
+			@Override
+			public boolean isEdgeMasked(InterfaceEdge edge) {
+				if(debugInterfaceIds!=null && !debugInterfaceIds.contains(edge.getInterfaceId())) {
+					return true;
+				}
+				ChainVertex source = graph.getGraph().getEdgeSource(edge);
+				if(debugAUNum != null && source.getOpId() != debugAUNum) {
+					return true;
+				}
+				return false;
+			}
+
+			@Override
+			public boolean isVertexMasked(ChainVertex vertex) {
+				return false;
+			}
+		};
+		UndirectedGraph<ChainVertex,InterfaceEdge> subgraph = new UndirectedMaskSubgraph<ChainVertex,InterfaceEdge>(this.graph.getGraph(), mask);
+		JGraphXAdapter<ChainVertex, InterfaceEdge> jgraph = new JGraphXAdapter<ChainVertex,InterfaceEdge>(subgraph);
 
 		mxGraphComponent graphComponent = new mxGraphComponent(jgraph);
 		graphComponent.setSize(700, 700);
@@ -199,10 +220,11 @@ public class LatticeGUI {
 		//Layout
 		final mxFastOrganicLayout layout = new mxFastOrganicLayout(jgraph);
 		//default 50
-		layout.setForceConstant(100);
-		layout.setInitialTemp(500);
-		layout.setMaxIterations(10000);
-		System.out.format("Force=%s\tTemp=%s\tIter=%s%n",layout.getForceConstant(),layout.getInitialTemp(),layout.getMaxIterations());
+//		layout.setForceConstant(100);
+//		layout.setInitialTemp(500);
+//		layout.setMaxIterations(1000);
+		layout.setMaxDistanceLimit(300);
+		System.out.format("Force=%f\tTemp=%f\tIter=%f\tlimits=%f-%f%n",layout.getForceConstant(),layout.getInitialTemp(),layout.getMaxIterations(),layout.getMinDistanceLimit(),layout.getMaxDistanceLimit());
 		layout.execute(jgraph.getDefaultParent());
 
 		//Colors
