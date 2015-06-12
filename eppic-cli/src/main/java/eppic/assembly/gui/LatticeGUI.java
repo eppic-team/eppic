@@ -158,6 +158,7 @@ public class LatticeGUI {
 				Runtime.getRuntime().availableProcessors(),
 				StructureInterfaceList.DEFAULT_MIN_COFACTOR_SIZE);
 		interfaces.removeInterfacesBelowArea();
+		interfaces.getClusters();
 		logger.info("Found "+interfaces.size()+" interfaces");
 		return interfaces;
 	}
