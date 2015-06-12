@@ -5,9 +5,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.zip.GZIPOutputStream;
 
@@ -21,6 +25,7 @@ import org.biojava.nbio.structure.Calc;
 import org.biojava.nbio.structure.Chain;
 import org.biojava.nbio.structure.Group;
 import org.biojava.nbio.structure.StructureException;
+import org.biojava.nbio.structure.contact.Pair;
 import org.biojava.nbio.structure.contact.StructureInterface;
 import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
 import org.biojava.nbio.structure.io.FileConvert;
@@ -32,6 +37,7 @@ import org.jgrapht.UndirectedGraph;
 import org.jgrapht.alg.ConnectivityInspector;
 import org.jgrapht.alg.DijkstraShortestPath;
 import org.jgrapht.alg.cycle.PatonCycleBase;
+import org.jgrapht.graph.Pseudograph;
 import org.jgrapht.graph.UndirectedSubgraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -87,6 +93,17 @@ public class Assembly {
 		
 		for (StructureInterfaceCluster cluster: getEngagedInterfaceClusters()) {
 			if (cluster.getMembers().get(0).isHomomeric()) {
+				engagedInterfaceClusters.add(cluster);
+			}
+		}
+		return engagedInterfaceClusters;
+	}
+	
+	public List<StructureInterfaceCluster> getHeteroEngagedInterfaceClusters() {
+		List<StructureInterfaceCluster> engagedInterfaceClusters = new ArrayList<StructureInterfaceCluster>();
+		
+		for (StructureInterfaceCluster cluster: getEngagedInterfaceClusters()) {
+			if (!cluster.getMembers().get(0).isHomomeric()) {
 				engagedInterfaceClusters.add(cluster);
 			}
 		}
@@ -694,6 +711,91 @@ public class Assembly {
 		}
 		
 		return mult;
+	}
+	
+	/**
+	 * 
+	 * 
+	 * See https://en.wikipedia.org/wiki/Edge_contraction
+	 * @return
+	 */
+	protected UndirectedGraph<ChainVertex, InterfaceEdge> getContractedHomomericGraph() {
+		
+		// we are assuming here that this assembly is valid, we can take any of the 
+		// connected components of the isomorphic subgraphs
+		
+		UndirectedGraph<ChainVertex,InterfaceEdge> g = connectedComponents.get(0);
+		
+		int numEntities = stoichiometrySet.getFirst().getNumEntities();
+		
+		// homomer: we don't have to modify the graph
+		if (numEntities==1) return g;
+		
+		List<StructureInterfaceCluster> heteroInterfaces = getHeteroEngagedInterfaceClusters();
+				
+		if (numEntities>heteroInterfaces.size()+1) {
+			logger.warn("Not enough heteromeric interfaces to produce a contracted graph: {} entities and {} heteromeric interfaces",
+					numEntities, heteroInterfaces.size());
+			return g;
+		}
+
+		
+		
+		Map<Pair<Integer>,List<InterfaceEdge>> entityPair2EdgeSet = new HashMap<Pair<Integer>,List<InterfaceEdge>>();
+		
+		for (InterfaceEdge edge:g.edgeSet()) {
+			ChainVertex s = g.getEdgeSource(edge);
+			ChainVertex t = g.getEdgeTarget(edge);
+			
+			if (s.getEntity()!=t.getEntity()) {
+				// heteromeric edge
+			
+				int lowEntity = Math.min(s.getEntity(),t.getEntity());
+				int highEntity = Math.max(s.getEntity(),t.getEntity());
+				Pair<Integer> pair = new Pair<Integer>(lowEntity, highEntity);
+				if (entityPair2EdgeSet.containsKey(pair)) {
+					List<InterfaceEdge> list = entityPair2EdgeSet.get(pair);
+					list.add(edge);
+				} else {
+					List<InterfaceEdge> list = new ArrayList<InterfaceEdge>();
+					entityPair2EdgeSet.put(pair, list);
+					list.add(edge);
+				}
+				
+			}
+		}
+		
+		Set<InterfaceEdge> toCollapse = new HashSet<InterfaceEdge>();
+
+		for (List<InterfaceEdge> list:entityPair2EdgeSet.values()) {
+			Collections.sort(list, new Comparator<InterfaceEdge>() {
+				@Override
+				public int compare(InterfaceEdge o1, InterfaceEdge o2) {
+					return Double.compare(o1.getInterface().getTotalArea(), o2.getInterface().getTotalArea());
+				}
+			});
+			
+			// the largest area edge between the 2: the one we will collapse
+			toCollapse.add(list.get(0));
+		}
+				
+		
+		UndirectedGraph<ChainVertex,InterfaceEdge> cg = new Pseudograph<ChainVertex, InterfaceEdge>(InterfaceEdge.class);
+		
+		for (InterfaceEdge edge:toCollapse) {
+			ChainVertex s = g.getEdgeSource(edge);
+			ChainVertex t = g.getEdgeSource(edge);
+			
+			
+			// the collapsed vertex: what kind of object should it be?
+			//ChainVertex c = new ChainVertex();
+		}
+
+
+		
+		//TODO finish implementing
+		
+		return cg;
 	}
 	
 	
