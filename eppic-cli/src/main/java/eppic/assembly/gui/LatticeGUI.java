@@ -486,7 +486,11 @@ public class LatticeGUI {
 	}
 
 
-	private void assignColorsById() {
+	/**
+	 * Color vertices according to the chain ID and edges by interface ID
+	 * @see #assignColorsByEntity()
+	 */
+	public void assignColorsById() {
 		// Generate list of equivalent chains
 		Map<String,List<ChainVertex>> vClusters = new HashMap<String, List<ChainVertex>>();
 		for( ChainVertex vert : graph.getGraph().vertexSet()) {
@@ -516,7 +520,11 @@ public class LatticeGUI {
 		// Assign colors for edges
 		edgeColors = assignColors(eClusters.values(),ColorBrewer.Set2);
 	}
-	private void assignColorsByEntity() {
+	/**
+	 * Color vertices by entity and edges by interface cluster (default)
+	 * @see #assignColorsById()
+	 */
+	public void assignColorsByEntity() {
 		// Generate list of equivalent chains
 		Map<Integer,List<ChainVertex>> vClusters = new HashMap<Integer, List<ChainVertex>>();
 		for( ChainVertex vert : graph.getGraph().vertexSet()) {
