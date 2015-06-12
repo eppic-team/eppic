@@ -16,12 +16,15 @@ import javax.vecmath.Point3d;
 import javax.vecmath.Point3i;
 import javax.vecmath.Vector3d;
 
+import org.biojava.nbio.structure.Atom;
 import org.biojava.nbio.structure.Calc;
 import org.biojava.nbio.structure.Chain;
+import org.biojava.nbio.structure.Group;
 import org.biojava.nbio.structure.StructureException;
 import org.biojava.nbio.structure.contact.StructureInterface;
 import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
 import org.biojava.nbio.structure.io.FileConvert;
+import org.biojava.nbio.structure.io.mmcif.MMCIFFileTools;
 import org.biojava.nbio.structure.io.mmcif.SimpleMMcifParser;
 import org.jgrapht.GraphPath;
 import org.jgrapht.Graphs;
@@ -590,6 +593,9 @@ public class Assembly {
 	 * Writes this Assembly to mmCIF file (gzipped) with chain ids as follows:
 	 *  <li> author_ids: chainId_operatorId</li>
 	 *  <li> asym_ids: chainId_operatorId</li>
+	 * The atom ids will be renumbered if the Assembly contains symmetry-related molecules,
+	 * otherwise some molecular viewers (e.g. 3Dmol.js) won't be able to read the atoms
+	 * as distinct.
 	 * Note that PyMOL supports multi-letter chain ids only from 1.7.4
 	 * @param file
 	 * @throws IOException
@@ -597,19 +603,58 @@ public class Assembly {
 	 */
 	public void writeToMmCifFile(File file) throws IOException, StructureException {
 		
+		// Some molecular viewers like 3Dmol.js need globally unique atom identifiers (across chains)
+		// With the approach below we add an offset to atom ids of sym-related molecules to avoid repeating atom ids
+		
+		// we only do renumbering in the case that there are sym-related chains in the assembly
+		// that way we stay as close to the original as possible
+		boolean symRelatedChainsExist = false;
+		int numChains = getStructure().size();
+		Set<String> uniqueChains = new HashSet<String>();
+		for (ChainVertex cv:getStructure()) {
+			uniqueChains.add(cv.getChain().getChainID());
+		}
+		if (numChains != uniqueChains.size()) symRelatedChainsExist = true;
+		
+		
 		PrintStream ps = new PrintStream(new GZIPOutputStream(new FileOutputStream(file)));
 
 		ps.println(SimpleMMcifParser.MMCIF_TOP_HEADER+"eppic_assembly_"+toString());
 		
 		ps.print(FileConvert.getAtomSiteHeader());
 		
+		List<Object> atomSites = new ArrayList<Object>();
+		
+		int atomId = 1;
 		for (ChainVertex cv:getStructure()) {
-			
 			String chainId = cv.getChain().getChainID()+"_"+cv.getOpId();
-			//ps.print(FileConvert.toMMCIF(cv.getChain(), 
-			//		cv.getChain().getChainID(), chainId, false));
-			ps.print(FileConvert.toMMCIF(cv.getChain(), chainId, chainId, false));
+			
+			for (Group g: cv.getChain().getAtomGroups()) {
+				for (Atom a: g.getAtoms()) {
+					if (symRelatedChainsExist) 
+						atomSites.add(MMCIFFileTools.convertAtomToAtomSite(a, 1, chainId, chainId, atomId));
+					else 
+						atomSites.add(MMCIFFileTools.convertAtomToAtomSite(a, 1, chainId, chainId));
+					
+					atomId++;
+				}
+				for (Group altG:g.getAltLocs()) {
+					for (Atom a: altG.getAtoms()) {
+						
+						if (symRelatedChainsExist)
+							atomSites.add(MMCIFFileTools.convertAtomToAtomSite(a, 1, chainId, chainId, atomId));
+						else
+							atomSites.add(MMCIFFileTools.convertAtomToAtomSite(a, 1, chainId, chainId));
+						
+						atomId++;
+					}					
+				}
+			}
 		}
+				
+		ps.print(MMCIFFileTools.toMMCIF(atomSites));
+		
+		
 		ps.close();
 	}
 	
