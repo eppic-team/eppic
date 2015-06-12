@@ -99,7 +99,18 @@
 			<artifactId>jgrapht-core</artifactId>
 			<version>0.9.0</version>
 		</dependency>
-                     
+
+		<!-- 2D graph visualization -->
+		<dependency>
+			<groupId>org.jgrapht</groupId>
+			<artifactId>jgrapht-ext</artifactId>
+			<version>0.9.0</version>
+		</dependency>
+		<dependency>
+			<groupId>jgraph</groupId>
+			<artifactId>jgraph</artifactId>
+			<version>5.13.0.0</version>
+		</dependency>
 		<!-- others -->
 
 		<dependency>

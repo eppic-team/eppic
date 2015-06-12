@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.swing.JFrame;
@@ -33,9 +34,17 @@ import org.biojava.nbio.structure.xtal.CrystalBuilder;
 import org.biojava.nbio.structure.xtal.CrystalCell;
 import org.biojava.nbio.structure.xtal.CrystalTransform;
 import org.jcolorbrewer.ColorBrewer;
+import org.jgraph.JGraph;
+import org.jgraph.graph.DefaultEdge;
+import org.jgraph.graph.DefaultGraphCell;
+import org.jgraph.graph.GraphConstants;
 import org.jgrapht.UndirectedGraph;
+import org.jgrapht.ext.JGraphModelAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.jgraph.layout.JGraphFacade;
+import com.jgraph.layout.organic.JGraphFastOrganicLayout;
 
 import eppic.assembly.ChainVertex;
 import eppic.assembly.InterfaceEdge;
@@ -180,6 +189,52 @@ public class LatticeGUI {
 		jmol.getFrame().setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		return jmol;
+	}
+	
+	@SuppressWarnings("rawtypes")
+	public void display2D() {
+		JGraphModelAdapter<ChainVertex, InterfaceEdge> adaptor = new JGraphModelAdapter<ChainVertex,InterfaceEdge>(graph.getGraph());
+		final JGraph jgraph = new JGraph( adaptor);
+
+		//Layout
+		final JGraphFastOrganicLayout layout = new JGraphFastOrganicLayout();
+		//default 50
+		layout.setForceConstant(100);
+		layout.setInitialTemp(500);
+		layout.setMaxIterations(2000);
+		System.out.format("Force=%s\tTemp=%s\tIter=%s%n",layout.getForceConstant(),layout.getInitialTemp(),layout.getMaxIterations());
+		final JGraphFacade graphFacade = new JGraphFacade(jgraph);
+		layout.run(graphFacade);
+		final Map nestedMap = graphFacade.createNestedMap(true, true);
+		jgraph.getGraphLayoutCache().edit(nestedMap);
+
+		//Colors
+		for(Entry<ChainVertex,Color> entry: vertexColors.entrySet()) {
+			DefaultGraphCell cell = adaptor.getVertexCell( entry.getKey() );
+			Map              attr = cell.getAttributes(  );
+			//Rectangle2D      b    = GraphConstants.getBounds( attr );
+			GraphConstants.setForeground(attr, Color.WHITE);
+			GraphConstants.setBackground(attr, entry.getValue());
+
+			Map<DefaultGraphCell,Map> cellAttr = new HashMap<DefaultGraphCell,Map>(  );
+			cellAttr.put( cell, attr );
+			adaptor.edit( cellAttr, null, null, null );
+		}
+//		for(Entry<InterfaceEdge,Color> entry: edgeColors.entrySet()) {
+//			DefaultEdge cell = adaptor.getEdgeCell(entry.getKey());
+//			Map              attr = cell.getAttributes(  );
+//			//Rectangle2D      b    = GraphConstants.getBounds( attr );
+//			GraphConstants.setLineColor(attr, entry.getValue());
+//
+//			Map<DefaultGraphCell,Map> cellAttr = new HashMap<DefaultGraphCell,Map>(  );
+//			cellAttr.put( cell, attr );
+//			adaptor.edit( cellAttr, null, null, null );
+//		}
+		
+		JFrame frame = new JFrame("JGraph");
+		frame.getContentPane().add(jgraph);
+		frame.pack();
+		frame.setVisible(true);
 	}
 
 	private String drawEdges() throws StructureException {
@@ -643,6 +698,7 @@ public class LatticeGUI {
 		LatticeGUI gui = new LatticeGUI(struc);
 		gui.setDebugInterfaceIds(interfaceIdsCommaSep);
 		gui.display(filename);
+		gui.display2D();
 	}
 
 	/**
