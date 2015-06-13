@@ -1,5 +1,8 @@
 package ch.systemsx.sybit.crkwebui.server.files.downloader.generators;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import ch.systemsx.sybit.crkwebui.server.files.downloader.servlets.FileDownloadServlet;
 
 
@@ -9,6 +12,8 @@ import ch.systemsx.sybit.crkwebui.server.files.downloader.servlets.FileDownloadS
 public class FileToDownloadNameSuffixGenerator 
 {
 
+	private static final Logger logger = LoggerFactory.getLogger(FileToDownloadNameSuffixGenerator.class);
+	
 	/**
 	 * Creates file suffix for specified input parameters (with compression).
 	 * @param type type of the file
@@ -60,7 +65,7 @@ public class FileToDownloadNameSuffixGenerator
 	{
 		String pattern = null;
 		
-		if(type.equals(FileDownloadServlet.PARAM_TYPE))
+		if(type.equals(FileDownloadServlet.TYPE_VALUE_INTERFACE))
 		{
 			if (format.equals(FileDownloadServlet.COORDS_FORMAT_VALUE_PDB)) {
 				pattern = "." + interfaceId + ".pdb";
@@ -68,6 +73,10 @@ public class FileToDownloadNameSuffixGenerator
 				pattern = "." + interfaceId + ".cif";
 			} else if (format.equals(FileDownloadServlet.COORDS_FORMAT_VALUE_PSE)) {
 				pattern = "." + interfaceId + ".pse";
+			} else {
+				// default pdb to be as backwards compatible 
+				logger.info("No format specified for type=interface, using pdb as default format");
+				pattern = "." + interfaceId + ".pdb"; 
 			}
 		}
 		else if(type.equals(FileDownloadServlet.TYPE_VALUE_MSA)) {
