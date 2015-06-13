@@ -66,21 +66,22 @@ public class FileToDownloadNameSuffixGenerator
 	{
 		String pattern = null;
 		
-		if(type.equals(FileDownloadServlet.TYPE_VALUE_INTERFACE))
-		{
+		if(type.equals(FileDownloadServlet.TYPE_VALUE_INTERFACE)) {
+			
 			if (format.equals(FileDownloadServlet.COORDS_FORMAT_VALUE_PDB)) {
-				pattern = "." + interfaceId + ".pdb";
+				pattern = EppicParams.INTERFACES_COORD_FILES_SUFFIX + "." + interfaceId + ".pdb";
 			} else if (format.equals(FileDownloadServlet.COORDS_FORMAT_VALUE_CIF)) {
-				pattern = "." + interfaceId + ".cif";
+				pattern = EppicParams.INTERFACES_COORD_FILES_SUFFIX + "." + interfaceId + ".cif";
 			} else if (format.equals(FileDownloadServlet.COORDS_FORMAT_VALUE_PSE)) {
-				pattern = "." + interfaceId + ".pse";
+				pattern = EppicParams.INTERFACES_COORD_FILES_SUFFIX + "." + interfaceId + ".pse";
 			} else {
 				// default pdb to be backwards compatible 
 				logger.info("No format specified for type=interface, using pdb as default format");
-				pattern = "." + interfaceId + ".pdb"; 
+				pattern = EppicParams.INTERFACES_COORD_FILES_SUFFIX + "." + interfaceId + ".pdb"; 
 			}
 		}
 		else if (type.equals(FileDownloadServlet.TYPE_VALUE_ASSEMBLY)) {
+			
 			if (format.equals(FileDownloadServlet.COORDS_FORMAT_VALUE_PDB)) {
 				pattern = EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX + "." + assemblyId + ".pdb";
 			} else if (format.equals(FileDownloadServlet.COORDS_FORMAT_VALUE_CIF)) {
