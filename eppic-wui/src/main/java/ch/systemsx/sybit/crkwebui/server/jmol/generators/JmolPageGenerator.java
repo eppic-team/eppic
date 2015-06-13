@@ -23,13 +23,14 @@ public class JmolPageGenerator
 	public static String generatePage(String title, String size, String serverUrl, String resultsLocation,
 			String fileName, Interface interfData)  {
 		
-		char chain1 = interfData.getChain1().charAt(0);		
-		char chain2 = interfData.getChain2().charAt(0); 
+		String chain1 = interfData.getChain1();		
+		String chain2 = interfData.getChain2(); 
 		boolean isSymRelated = false;
 		
-		if (chain1==chain2) {
+		if (chain1.equals(chain2)) {
+			// exactly as done in StructureInterface.toMMCIF()
 			isSymRelated = true;
-			chain2 = MolViewersHelper.getNextLetter(chain1);
+			chain2 = chain2 +"_"+ interfData.getOperatorId();
 		}
 		
 		String color1 = MolViewersHelper.getHexColorCode0x(MolViewersHelper.getChainColor(chain1, 0, isSymRelated));

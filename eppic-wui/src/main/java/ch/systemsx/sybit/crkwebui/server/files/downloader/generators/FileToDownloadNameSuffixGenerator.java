@@ -25,7 +25,8 @@ public class FileToDownloadNameSuffixGenerator
 		if(suffix != null)
 		{
 			if((suffix.endsWith(".pdb")) ||
-			   (suffix.endsWith(".pse")))
+			   (suffix.endsWith(".cif")) ||
+			   (suffix.endsWith(".pse")) )
 			{
 				suffix = suffix + ".gz";
 			}
