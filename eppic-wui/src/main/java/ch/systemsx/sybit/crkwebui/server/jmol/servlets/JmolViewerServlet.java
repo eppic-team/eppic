@@ -25,6 +25,7 @@ import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.ValidationException;
 import ch.systemsx.sybit.crkwebui.shared.model.Interface;
 import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
+import eppic.EppicParams;
 
 /**
  * Servlet used to open jmol.
@@ -106,7 +107,7 @@ public class JmolViewerServlet extends BaseServlet
 			String jmolPage = JmolPageGenerator.generatePage(jobId + " - " + interfaceId + "\n", 
 					size, serverUrl,
 					resultsLocation + jobId, 
-					input + "." + interfaceId + extension,   
+					input + EppicParams.INTERFACES_COORD_FILES_SUFFIX + "." + interfaceId + extension,   
 					interfData);
 
 

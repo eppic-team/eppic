@@ -692,10 +692,10 @@ public class Main {
 			for (StructureInterface interf:interfaces) {
 				pr.generateInterfPngPsePml(interf, 
 						params.getCAcutoffForGeom(), params.getMinAsaForSurface(), 
-						params.getOutputFile("."+interf.getId()+ EppicParams.MMCIF_FILE_EXTENSION), 
+						params.getOutputFile(EppicParams.INTERFACES_COORD_FILES_SUFFIX+"."+interf.getId()+ EppicParams.MMCIF_FILE_EXTENSION), 
 						params.getOutputFile(EppicParams.INTERFACES_COORD_FILES_SUFFIX+"."+interf.getId()+".pse"),
 						params.getOutputFile(EppicParams.INTERFACES_COORD_FILES_SUFFIX+"."+interf.getId()+".pml"),
-						params.getBaseName()+"."+interf.getId()	);
+						params.getBaseName()+EppicParams.INTERFACES_COORD_FILES_SUFFIX+"."+interf.getId()	);
 				LOGGER.info("Generated PyMOL files for interface "+interf.getId());
 				
 			}
@@ -746,8 +746,8 @@ public class Main {
 		
 		try {
 			for (StructureInterface interf:interfaces) {
-				File pseFile = params.getOutputFile("."+interf.getId()+".pse");
-				File gzipPseFile = params.getOutputFile("."+interf.getId()+".pse.gz");
+				File pseFile = params.getOutputFile(EppicParams.INTERFACES_COORD_FILES_SUFFIX+"."+interf.getId()+".pse");
+				File gzipPseFile = params.getOutputFile(EppicParams.INTERFACES_COORD_FILES_SUFFIX+"."+interf.getId()+".pse.gz");
 
 				if (!pseFile.exists()) {
 					LOGGER.warn("Can't find PSE file {} to compress",pseFile);
