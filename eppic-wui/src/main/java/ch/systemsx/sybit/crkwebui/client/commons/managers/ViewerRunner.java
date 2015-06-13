@@ -54,6 +54,8 @@ public class ViewerRunner
 		
 		// NOTE we have set now CIF as the default format, JD 2015-06-13
 		
+		//TODO add type=interface/assembly as parameter, so that assemblies can also be supported
+		
 		String jmolViewerUrl = GWT.getModuleBaseURL() + JmolViewerServlet.SERVLET_NAME;
 		jmolViewerUrl += "?"+FileDownloadServlet.PARAM_ID+"=" + ApplicationContext.getPdbInfo().getJobId() + 
 						 "&"+JmolViewerServlet.PARAM_INPUT+"=" + ApplicationContext.getPdbInfo().getTruncatedInputName() + 

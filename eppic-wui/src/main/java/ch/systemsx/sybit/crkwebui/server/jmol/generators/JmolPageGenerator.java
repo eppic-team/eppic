@@ -16,12 +16,13 @@ public class JmolPageGenerator
      * @param size 
      * @param serverUrl url to the server where jmol and results are stored
      * @param resultsLocation path to results on the server
-     * @param fileName name of the pdb file
+     * @param fileName name of the cif file
      * @param interfData 
+     * @param url3dmoljs
      * @return html page with jmol aplet
      */
 	public static String generatePage(String title, String size, String serverUrl, String resultsLocation,
-			String fileName, Interface interfData)  {
+			String fileName, Interface interfData, String url3dmoljs)  {
 		
 		String chain1 = interfData.getChain1();		
 		String chain2 = interfData.getChain2(); 
@@ -73,7 +74,7 @@ public class JmolPageGenerator
 		jmolPage.append(title);
 		jmolPage.append("</title>" + "\n");
 
-		jmolPage.append("<script src=\"http://3Dmol.csb.pitt.edu/build/3Dmol-min.js\"></script> ");
+		jmolPage.append("<script src=\""+url3dmoljs+"\"></script> ");
 
 		jmolPage.append("</head>" + "\n");
 		jmolPage.append("<body>" + "\n");
@@ -82,6 +83,7 @@ public class JmolPageGenerator
 		jmolPage.append(
 				"<div style=\"height: "+size+"px; width: "+size+"px; position: relative;\" "+
 				"class='viewer_3Dmoljs' data-href='"+fileUrl+"' data-backgroundcolor='0xffffff' "+
+				"data-type='cif' " +
 				
 				// chain 1
 				"data-select1='chain:"+chain1+"' "+

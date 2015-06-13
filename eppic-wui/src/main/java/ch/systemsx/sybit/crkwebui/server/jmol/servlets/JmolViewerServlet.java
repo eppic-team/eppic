@@ -82,6 +82,12 @@ public class JmolViewerServlet extends BaseServlet
 
 		String serverUrl = protocol + "://" + serverName + ":" + serverPort + "/" + servletContPath;
 
+		String url3dmoljs = properties.getProperty("url3dmoljs");
+		if (url3dmoljs == null || url3dmoljs.equals("")) {
+			logger.error("The URL for 3Dmol js is not set in config file!");
+			return;
+		}
+		
 		logger.info("Requested 3D viewer page for jobId={}, input={}, interfaceId={}, size={}",jobId,input,interfaceId,size);
 		
 		ServletOutputStream outputStream = null;
@@ -108,7 +114,8 @@ public class JmolViewerServlet extends BaseServlet
 					size, serverUrl,
 					resultsLocation + jobId, 
 					input + EppicParams.INTERFACES_COORD_FILES_SUFFIX + "." + interfaceId + extension,   
-					interfData);
+					interfData,
+					url3dmoljs);
 
 
 			outputStream = response.getOutputStream();
