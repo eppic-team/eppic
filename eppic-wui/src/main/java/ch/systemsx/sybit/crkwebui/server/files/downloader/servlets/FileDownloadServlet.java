@@ -29,11 +29,63 @@ import ch.systemsx.sybit.crkwebui.shared.exceptions.ValidationException;
  */
 public class FileDownloadServlet extends BaseServlet 
 {
-	/**
-	 * 
-	 */
+	
 	private static final long serialVersionUID = 1L;
+	
+	public static final String SERVLET_NAME = "fileDownload";
 
+	/**
+	 * The type of file requested.
+	 * Valid values are interface, assembly, msa (was fasta), entropiespse.
+	 * "pse" used to be valid value, now in {@link #PARAM_COORDS_FORMAT}
+	 */
+	public static final String PARAM_TYPE = "type";
+	
+	/**
+	 * The job identifier (PDB code or long alphanumerical String)
+	 */
+	public static final String PARAM_ID = "id";
+	
+	/**
+	 * The interface identifier (int)
+	 */
+	public static final String PARAM_INTERFACE_ID = "interfaceId"; // was "interface"
+	
+	/**
+	 * The assembly identifier (int), to be used with {@value #PARAM_TYPE}="msa"
+	 */
+	public static final String PARAM_ASSEMBLY_ID = "assemblyId";
+	
+	/**
+	 * The representative chain identifier (a String)
+	 */
+	public static final String PARAM_REP_CHAIN_ID = "repChainId"; // was "alignment"
+	
+	/**
+	 * The file format for the coordinate files requested with {@value #PARAM_TYPE}="interface","assembly"
+	 * Valid values are pdb, cif, pse, pdb.gz, cif.gz
+	 */
+	public static final String PARAM_COORDS_FORMAT = "coordsFormat";
+	
+	
+	// the values for PARAM_TYPE
+	public static final String TYPE_VALUE_INTERFACE = "interface";
+	public static final String TYPE_VALUE_ASSEMBLY = "assembly";
+	public static final String TYPE_VALUE_MSA = "msa"; // was "fasta"
+	public static final String TYPE_VALUE_ENTROPIESPSE = "entropiespse";
+	
+	// the values for PARAM_COORDS_FORMAT
+	public static final String COORDS_FORMAT_VALUE_PDB = "pdb";
+	public static final String COORDS_FORMAT_VALUE_CIF = "cif";
+	public static final String COORDS_FORMAT_VALUE_PSE = "pse";
+	public static final String COORDS_FORMAT_VALUE_PDBGZ = "pdbgz";
+	public static final String COORDS_FORMAT_VALUE_CIFGZ = "cifgz";
+	
+	
+	
+	
+	
+	
 	@Override
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
@@ -47,19 +99,21 @@ public class FileDownloadServlet extends BaseServlet
 	{
 		boolean acceptGzipEncoding = RequestUtil.checkIfAcceptGzipEncoding(request);
 		
-		String type = request.getParameter("type");
-		String jobId = request.getParameter("id");
-		String interfaceId = request.getParameter("interface");
-		String alignment = request.getParameter("alignment");
+		String type = request.getParameter(PARAM_TYPE);
+		String jobId = request.getParameter(PARAM_ID);
+		String interfaceId = request.getParameter(PARAM_INTERFACE_ID);
+		String assemblyId = request.getParameter(PARAM_ASSEMBLY_ID);
+		String repChainId = request.getParameter(PARAM_REP_CHAIN_ID);
+		String format = request.getParameter(PARAM_COORDS_FORMAT);
 
 		try
 		{
-			FileDownloadServletInputValidator.validateFileDownloadInput(type, jobId, interfaceId, alignment);
+			FileDownloadServletInputValidator.validateFileDownloadInput(type, jobId, interfaceId, assemblyId, repChainId, format);
 			
 			File fileToDownloadLocation = new File(properties.getProperty("destination_path"), jobId);
 			FileToDownloadLocationValidator.validateLocation(fileToDownloadLocation);
 			
-			String suffix = FileToDownloadNameSuffixGenerator.generateFileNameSuffix(type, jobId, interfaceId, alignment);
+			String suffix = FileToDownloadNameSuffixGenerator.generateFileNameSuffix(type, jobId, interfaceId, assemblyId, repChainId, format);
 			FileToDownloadNameSuffixValidator.validateSuffix(suffix);
 			
 			boolean isContentGzipped = ResponseUtil.checkIfDoGzipEncoding(acceptGzipEncoding, suffix);

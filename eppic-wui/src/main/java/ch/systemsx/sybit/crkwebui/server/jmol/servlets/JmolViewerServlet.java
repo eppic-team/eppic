@@ -18,6 +18,7 @@ import ch.systemsx.sybit.crkwebui.server.db.dao.InterfaceDAO;
 import ch.systemsx.sybit.crkwebui.server.db.dao.PDBInfoDAO;
 import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.InterfaceDAOJpa;
 import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.PDBInfoDAOJpa;
+import ch.systemsx.sybit.crkwebui.server.files.downloader.servlets.FileDownloadServlet;
 import ch.systemsx.sybit.crkwebui.server.jmol.generators.JmolPageGenerator;
 import ch.systemsx.sybit.crkwebui.server.jmol.validators.JmolViewerServletInputValidator;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
@@ -33,6 +34,11 @@ public class JmolViewerServlet extends BaseServlet
 {
 
 	private static final long serialVersionUID = 1L;
+	
+	public static final String SERVLET_NAME = "jmolViewer";
+	
+	public static final String PARAM_INPUT = "input";
+	public static final String PARAM_SIZE = "size";
 
 	private static final Logger logger = LoggerFactory.getLogger(JmolViewerServlet.class);
 	
@@ -63,11 +69,12 @@ public class JmolViewerServlet extends BaseServlet
 	protected void doGet(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException
 	{
-		String jobId = request.getParameter("id");
-		String interfaceId = request.getParameter("interface");
-		String input = request.getParameter("input");
-		String size = request.getParameter("size");
-		//String version = request.getParameter("version");
+		String jobId = request.getParameter(FileDownloadServlet.PARAM_ID);
+		String interfaceId = request.getParameter(FileDownloadServlet.PARAM_INTERFACE_ID);
+		String assemblyId = request.getParameter(FileDownloadServlet.PARAM_ASSEMBLY_ID);
+		String format = request.getParameter(FileDownloadServlet.PARAM_COORDS_FORMAT);
+		String input = request.getParameter(PARAM_INPUT);
+		String size = request.getParameter(PARAM_SIZE);
 
 		String serverName = request.getServerName();
 		int serverPort = request.getServerPort();
@@ -80,14 +87,26 @@ public class JmolViewerServlet extends BaseServlet
 
 		try
 		{
-			JmolViewerServletInputValidator.validateJmolViewerInput(jobId, interfaceId, input, size);
+			JmolViewerServletInputValidator.validateJmolViewerInput(jobId, interfaceId, assemblyId, format, input, size);
 
 
 			Interface interfData = getInterfaceData(jobId, Integer.parseInt(interfaceId));
 			
+			// TODO implement assembly data retrieval once assemblies are implemented (what kind of data would we need for assemblies?
+			
+			String extension;
+			if (format.equals(FileDownloadServlet.COORDS_FORMAT_VALUE_PDB)) {
+				extension = ".pdb";
+			} else if (format.equals(FileDownloadServlet.COORDS_FORMAT_VALUE_CIF)) {
+				extension = ".cif";
+			} else {
+				extension = ".cif"; // we set the default to cif just in case format is not set
+			}
 
-			String jmolPage = JmolPageGenerator.generatePage(jobId + " - " + interfaceId + "\n", size, serverUrl,
-					resultsLocation + jobId, input + "." + interfaceId + ".pdb",   
+			String jmolPage = JmolPageGenerator.generatePage(jobId + " - " + interfaceId + "\n", 
+					size, serverUrl,
+					resultsLocation + jobId, 
+					input + "." + interfaceId + extension,   
 					interfData);
 
 

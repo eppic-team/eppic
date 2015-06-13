@@ -12,12 +12,16 @@ public class JmolViewerServletInputValidator
 	 * Validates correctness of input data necessary to run jmol viewer.
 	 * @param jobId identifier of the job
 	 * @param interfaceId identifier of the interface
+	 * @param assemblyId assembly identifier
+	 * @param format the format of the coordinates file to use (either pdb or cif)
 	 * @param input input 
 	 * @param size size of the picture
 	 * @throws ValidationException when validation fails
 	 */
 	public static void validateJmolViewerInput(String jobId,
 											   String interfaceId,
+											   String assemblyId,
+											   String format,
 											   String input,
 											   String size) throws ValidationException
 	{
@@ -28,6 +32,10 @@ public class JmolViewerServletInputValidator
 		else if(interfaceId == null)
 		{
 			throw new ValidationException("Interface identifier is not specified.");
+		}
+		// TODO implement validator for assemblyId once assemblies are added
+		else if(format == null) {
+			throw new ValidationException("Coordinates file format is not specified.");
 		}
 		else if(input == null)
 		{

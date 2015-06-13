@@ -1,5 +1,7 @@
 package ch.systemsx.sybit.crkwebui.server.files.downloader.generators;
 
+import ch.systemsx.sybit.crkwebui.server.files.downloader.servlets.FileDownloadServlet;
+
 
 /**
  * This class is used to create suffix of the file to download.
@@ -12,15 +14,19 @@ public class FileToDownloadNameSuffixGenerator
 	 * @param type type of the file
 	 * @param jobId identifier of the job
 	 * @param interfaceId identifier of the interface
-	 * @param alignment alignment identifier
+	 * @param assemblyId assembly identifier
+	 * @param repChainId alignment identifier
+	 * @param format
 	 * @return suffix of the file
 	 */
 	public static String generateFileNameSuffix(String type,
 												String jobId,
 												String interfaceId,
-												String alignment)
+												String assemblyId,
+												String repChainId,
+												String format)
 	{
-		String suffix = generateFileNameSuffixWithoutCompression(type, jobId, interfaceId, alignment);
+		String suffix = generateFileNameSuffixWithoutCompression(type, jobId, interfaceId, assemblyId, repChainId, format);
 		
 		if(suffix != null)
 		{
@@ -40,34 +46,35 @@ public class FileToDownloadNameSuffixGenerator
 	 * @param type type of the file
 	 * @param jobId identifier of the job
 	 * @param interfaceId identifier of the interface
-	 * @param alignment alignment identifier
+	 * @param assemblyId
+	 * @param repChainId alignment identifier
+	 * @param format the format of the coordinates file
 	 * @return suffix of the file
 	 */
 	private static String generateFileNameSuffixWithoutCompression(String type,
 																   String jobId,
 																   String interfaceId,
-																   String alignment)
+																   String assemblyId,
+																   String repChainId,
+																   String format)
 	{
 		String pattern = null;
 		
-		if(type.equals("zip"))
+		if(type.equals(FileDownloadServlet.PARAM_TYPE))
 		{
-			pattern = ".zip";
+			if (format.equals(FileDownloadServlet.COORDS_FORMAT_VALUE_PDB)) {
+				pattern = "." + interfaceId + ".pdb";
+			} else if (format.equals(FileDownloadServlet.COORDS_FORMAT_VALUE_CIF)) {
+				pattern = "." + interfaceId + ".cif";
+			} else if (format.equals(FileDownloadServlet.COORDS_FORMAT_VALUE_PSE)) {
+				pattern = "." + interfaceId + ".pse";
+			}
 		}
-		else if(type.equals("interface"))
-		{
-			pattern = "." + interfaceId + ".pdb";
+		else if(type.equals(FileDownloadServlet.TYPE_VALUE_MSA)) {
+			pattern = "." + repChainId + ".aln";
 		}
-		else if(type.equals("pse"))
-		{
-			pattern = "." + interfaceId + ".pse";
-		}
-		else if(type.equals("fasta"))
-		{
-			pattern = "." + alignment + ".aln";
-		}
-		else if(type.equals("entropiespse")) {
-			pattern = "." + alignment + ".entropies.pse";
+		else if(type.equals(FileDownloadServlet.TYPE_VALUE_ENTROPIESPSE)) {
+			pattern = "." + repChainId + ".entropies.pse";
 		}
 		
 		return pattern;

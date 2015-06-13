@@ -27,7 +27,7 @@ public class EppicParams {
 	protected static final String  MMCIF_FILE_EXTENSION = ".cif.gz";
 	protected static final String  PDB_FILE_EXTENSION   = ".pdb.gz";
 	
-	protected static final String  ENTROPIES_FILE_SUFFIX = ".entropies";
+	public static final String     ENTROPIES_FILE_SUFFIX = ".entropies";
 	protected static final String  INTERFACES_FILE_SUFFIX = ".interfaces";
 	protected static final String  CONTACTS_FILE_SUFFIX = ".contacts";
 	protected static final String  INTERFACESDAT_FILE_SUFFIX = ".interfaces.dat";

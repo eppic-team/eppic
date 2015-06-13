@@ -2,6 +2,7 @@ package ch.systemsx.sybit.crkwebui.client.results.gui.panels;
 
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.links.LinkWithTooltip;
+import ch.systemsx.sybit.crkwebui.server.files.downloader.servlets.DataDownloadServlet;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.ui.HTML;
@@ -72,7 +73,7 @@ public class IdentifierHeaderPanel extends HorizontalLayoutContainer
 	public void setDownloadResultsLink(String jobId){
 
 		downloadResultsLink .changeData(AppPropertiesManager.CONSTANTS.info_panel_download_results_link(),
-				GWT.getModuleBaseURL() + "dataDownload?type=xml&id=" + jobId);
+				GWT.getModuleBaseURL() + DataDownloadServlet.SERVLET_NAME+"?type=xml&id=" + jobId);
 
 	}
 	

@@ -3,6 +3,8 @@ package ch.systemsx.sybit.crkwebui.client.commons.managers;
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowErrorEvent;
+import ch.systemsx.sybit.crkwebui.server.files.downloader.servlets.FileDownloadServlet;
+import ch.systemsx.sybit.crkwebui.server.jmol.servlets.JmolViewerServlet;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Window;
@@ -24,11 +26,11 @@ public class ViewerRunner
 		}
 		else if(ApplicationContext.getSelectedViewer().equals(AppPropertiesManager.CONSTANTS.viewer_local()))
 		{
-			downloadFileFromServer("interface", interfaceId);
+			downloadFileFromServer(FileDownloadServlet.TYPE_VALUE_INTERFACE, interfaceId, FileDownloadServlet.COORDS_FORMAT_VALUE_PDB);
 		}
 		else if(ApplicationContext.getSelectedViewer().equals(AppPropertiesManager.CONSTANTS.viewer_pse()))
 		{
-			downloadFileFromServer("pse", interfaceId);
+			downloadFileFromServer(FileDownloadServlet.TYPE_VALUE_INTERFACE, interfaceId, FileDownloadServlet.COORDS_FORMAT_VALUE_PSE);
 		}
 		else
 		{
@@ -50,11 +52,14 @@ public class ViewerRunner
 		
 		int jmolAppletSize = size - 40;
 		
-		String jmolViewerUrl = GWT.getModuleBaseURL() + "jmolViewer";
-		jmolViewerUrl += "?id=" + ApplicationContext.getPdbInfo().getJobId() + 
-						 "&input=" + ApplicationContext.getPdbInfo().getTruncatedInputName() + 
-						 "&interface=" + interfaceNr +
-						 "&size=" + jmolAppletSize;
+		// NOTE we have set now CIF as the default format, JD 2015-06-13
+		
+		String jmolViewerUrl = GWT.getModuleBaseURL() + JmolViewerServlet.SERVLET_NAME;
+		jmolViewerUrl += "?"+FileDownloadServlet.PARAM_ID+"=" + ApplicationContext.getPdbInfo().getJobId() + 
+						 "&"+JmolViewerServlet.PARAM_INPUT+"=" + ApplicationContext.getPdbInfo().getTruncatedInputName() + 
+						 "&"+FileDownloadServlet.PARAM_INTERFACE_ID+"=" + interfaceNr +
+						 "&"+FileDownloadServlet.PARAM_COORDS_FORMAT+"=" + FileDownloadServlet.COORDS_FORMAT_VALUE_CIF+
+						 "&"+JmolViewerServlet.PARAM_SIZE+"=" + jmolAppletSize;
 		
 		Window.open(jmolViewerUrl, "", "width=" + size + "," +
 										"height=" + size);
@@ -66,10 +71,15 @@ public class ViewerRunner
 	 * @param type type of the file to download
 	 * @param interfaceId identifier of the interface
 	 */
-	private static void downloadFileFromServer(String type, String interfaceId)
+	private static void downloadFileFromServer(String type, String interfaceId, String format)
 	{
-		String fileDownloadServletUrl = GWT.getModuleBaseURL() + "fileDownload";
-		fileDownloadServletUrl += "?type=" + type + "&id=" + ApplicationContext.getPdbInfo().getJobId() + "&interface=" + interfaceId;
+		String fileDownloadServletUrl = GWT.getModuleBaseURL() + FileDownloadServlet.SERVLET_NAME;
+		fileDownloadServletUrl += 
+				"?"+FileDownloadServlet.PARAM_TYPE+"=" + type + 
+				"&"+FileDownloadServlet.PARAM_ID+"=" + ApplicationContext.getPdbInfo().getJobId() + 
+				"&"+FileDownloadServlet.PARAM_INTERFACE_ID+"=" + interfaceId + 
+				"&"+FileDownloadServlet.PARAM_COORDS_FORMAT+"=" + format;
+		
 		Window.open(fileDownloadServletUrl, "", "");
 	}
 }
