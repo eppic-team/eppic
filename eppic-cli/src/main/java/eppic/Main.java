@@ -595,12 +595,12 @@ public class Main {
 			
 			// INTERFACE files
 			for (StructureInterface interf : interfaces) {
-				File outputFile = params.getOutputFile(EppicParams.INTERFACES_COORD_FILES_SUFFIX + interf.getId() + EppicParams.MMCIF_FILE_EXTENSION);
+				File outputFile = params.getOutputFile(EppicParams.INTERFACES_COORD_FILES_SUFFIX + "." + interf.getId() + EppicParams.MMCIF_FILE_EXTENSION);
 				PrintStream ps = new PrintStream(new GZIPOutputStream(new FileOutputStream(outputFile)));				
 				ps.print(interf.toMMCIF());
 				ps.close();
 				if (params.isGeneratePdbFiles()) { 
-					outputFile = params.getOutputFile(EppicParams.INTERFACES_COORD_FILES_SUFFIX + interf.getId() + EppicParams.PDB_FILE_EXTENSION);
+					outputFile = params.getOutputFile(EppicParams.INTERFACES_COORD_FILES_SUFFIX + "." + interf.getId() + EppicParams.PDB_FILE_EXTENSION);
 					ps = new PrintStream(new GZIPOutputStream(new FileOutputStream(outputFile)));
 					ps.print(interf.toPDB());
 					ps.close();
