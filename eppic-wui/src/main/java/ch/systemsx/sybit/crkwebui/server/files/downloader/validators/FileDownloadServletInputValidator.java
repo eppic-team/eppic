@@ -27,9 +27,7 @@ public class FileDownloadServletInputValidator
 		if((type == null) || (type.equals("")))
 		{
 			throw new ValidationException("File type not specified.");
-		} else if (format == null || format.equals("")) {
-			throw new ValidationException("Coordinates file format not specified");
-		}
+		} 
 		else if((jobId == null) || (jobId.equals("")))
 		{
 			throw new ValidationException("Job identifier not specified.");

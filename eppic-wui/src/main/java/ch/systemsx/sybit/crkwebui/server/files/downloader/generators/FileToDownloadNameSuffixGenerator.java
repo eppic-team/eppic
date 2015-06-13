@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ch.systemsx.sybit.crkwebui.server.files.downloader.servlets.FileDownloadServlet;
+import eppic.EppicParams;
 
 
 /**
@@ -74,9 +75,22 @@ public class FileToDownloadNameSuffixGenerator
 			} else if (format.equals(FileDownloadServlet.COORDS_FORMAT_VALUE_PSE)) {
 				pattern = "." + interfaceId + ".pse";
 			} else {
-				// default pdb to be as backwards compatible 
+				// default pdb to be backwards compatible 
 				logger.info("No format specified for type=interface, using pdb as default format");
 				pattern = "." + interfaceId + ".pdb"; 
+			}
+		}
+		else if (type.equals(FileDownloadServlet.TYPE_VALUE_ASSEMBLY)) {
+			if (format.equals(FileDownloadServlet.COORDS_FORMAT_VALUE_PDB)) {
+				pattern = EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX + "." + assemblyId + ".pdb";
+			} else if (format.equals(FileDownloadServlet.COORDS_FORMAT_VALUE_CIF)) {
+				pattern = EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX + "." + assemblyId + ".cif";
+			} else if (format.equals(FileDownloadServlet.COORDS_FORMAT_VALUE_PSE)) {
+				pattern = EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX + "." + assemblyId + ".pse";
+			} else {
+				// default pdb to be backwards compatible 
+				logger.info("No format specified for type=assembly, using pdb as default format");
+				pattern = EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX + "." + assemblyId + ".pdb";
 			}
 		}
 		else if(type.equals(FileDownloadServlet.TYPE_VALUE_MSA)) {
