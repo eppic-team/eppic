@@ -61,7 +61,7 @@ public class JmolViewerServletInputValidator
 		{
 			throw new ValidationException("Size is not specified.");
 		}
-		else if(interfaceId!=null && interfaceId.matches("^[0-9]+$"))
+		else if(interfaceId!=null && !interfaceId.matches("^[0-9]+$"))
 		{
 			throw new ValidationException("Interface identifier has incorrect format.");
 		}
