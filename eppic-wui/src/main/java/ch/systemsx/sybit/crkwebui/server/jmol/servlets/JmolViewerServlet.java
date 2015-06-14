@@ -70,7 +70,12 @@ public class JmolViewerServlet extends BaseServlet
 	protected void doGet(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException
 	{
+		
+		//TODO add type=interface/assembly as parameter, so that assemblies can also be supported
+		
+		
 		String jobId = request.getParameter(FileDownloadServlet.PARAM_ID);
+		String type = request.getParameter(FileDownloadServlet.PARAM_TYPE);
 		String interfaceId = request.getParameter(FileDownloadServlet.PARAM_INTERFACE_ID);
 		String assemblyId = request.getParameter(FileDownloadServlet.PARAM_ASSEMBLY_ID);
 		String format = request.getParameter(FileDownloadServlet.PARAM_COORDS_FORMAT);
@@ -94,13 +99,9 @@ public class JmolViewerServlet extends BaseServlet
 
 		try
 		{
-			JmolViewerServletInputValidator.validateJmolViewerInput(jobId, interfaceId, assemblyId, format, input, size);
+			JmolViewerServletInputValidator.validateJmolViewerInput(jobId, type, interfaceId, assemblyId, format, input, size);
 
 
-			Interface interfData = getInterfaceData(jobId, Integer.parseInt(interfaceId));
-			
-			// TODO implement assembly data retrieval once assemblies are implemented (what kind of data would we need for assemblies?
-			
 			String extension;
 			if (format.equals(FileDownloadServlet.COORDS_FORMAT_VALUE_PDB)) {
 				extension = ".pdb";
@@ -109,11 +110,32 @@ public class JmolViewerServlet extends BaseServlet
 			} else {
 				extension = ".cif"; // we set the default to cif just in case format is not set
 			}
+			
+			Interface interfData;
+			
+			String fileName;
+			if (type.equals(FileDownloadServlet.TYPE_VALUE_INTERFACE)) {
+				fileName = input + EppicParams.INTERFACES_COORD_FILES_SUFFIX + "." + interfaceId + extension;
+				interfData = getInterfaceData(jobId, Integer.parseInt(interfaceId));
+				
+			} else if (type.equals(FileDownloadServlet.TYPE_VALUE_ASSEMBLY)) {
+				fileName = input + EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX+ "." + assemblyId + extension;
+				// interfdata would have to be null in this case
+				interfData = null;
+				// TODO we need some assembly data instead
+				// TODO implement assembly data retrieval: what kind of data would we need for assemblies?
+				
+				
+			} else {
+				// the validator shouldn't allow this case, but anyway let's set a default 
+				fileName = input + EppicParams.INTERFACES_COORD_FILES_SUFFIX + "." + interfaceId + extension;
+				interfData = getInterfaceData(jobId, Integer.parseInt(interfaceId));
+			}
 
 			String jmolPage = JmolPageGenerator.generatePage(jobId + " - " + interfaceId + "\n", 
 					size, serverUrl,
 					resultsLocation + jobId, 
-					input + EppicParams.INTERFACES_COORD_FILES_SUFFIX + "." + interfaceId + extension,   
+					fileName,   
 					interfData,
 					url3dmoljs);
 

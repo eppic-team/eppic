@@ -24,6 +24,69 @@ public class JmolPageGenerator
 	public static String generatePage(String title, String size, String serverUrl, String resultsLocation,
 			String fileName, Interface interfData, String url3dmoljs)  {
 		
+		String selectionCode;
+		if (interfData != null) {
+			selectionCode = generateInterfaceSelection3dmolCode(interfData);
+		} else {
+			// TODO for assemblies we'd need to do something with the assembly data	
+			//selectionCode = generateAssemblySelection3dmolCode();
+			selectionCode = "";
+		}
+		
+		
+		
+		
+		
+		String dataTypeString = ""; // if neither of the 2 cases then we leave it blank so that 3dmol guesses
+		if (fileName.endsWith("cif")) {
+			dataTypeString = "data-type='cif' ";
+		} else if (fileName.endsWith("pdb")) {
+			dataTypeString = "data-type='pdb' ";
+		}
+		
+		StringBuffer jmolPage = new StringBuffer();
+
+		String fileUrl = serverUrl + "/" + resultsLocation + "/" + fileName;
+
+		jmolPage.append("<html>" + "\n");
+		jmolPage.append("<head>" + "\n");
+		jmolPage.append("<title>" + "\n");
+		jmolPage.append(title);
+		jmolPage.append("</title>" + "\n");
+
+		jmolPage.append("<script src=\""+url3dmoljs+"\"></script> \n");
+
+		jmolPage.append("</head>" + "\n");
+		jmolPage.append("<body>" + "\n");
+
+		
+		jmolPage.append(
+				"<div style=\"height: "+size+"px; width: "+size+"px; position: relative;\" "+
+				"class='viewer_3Dmoljs' data-href='"+fileUrl+"' data-backgroundcolor='0xffffff' "+
+				dataTypeString +
+				"\n"+
+				
+				selectionCode +
+				
+				
+				"</div>\n");
+		
+		jmolPage.append("</body>" + "\n");
+		jmolPage.append("</html>" + "\n");
+
+		return jmolPage.toString();
+    }
+	
+	private static String getCommaSeparatedList(List<Residue> residues) {
+		StringBuilder sb = new StringBuilder();
+		for (int i=0;i<residues.size();i++){
+			sb.append(residues.get(i).getPdbResidueNumber());
+			if (i!=residues.size()-1) sb.append(',');
+		}
+		return sb.toString();
+	}
+	
+	private static String generateInterfaceSelection3dmolCode(Interface interfData) {
 		String chain1 = interfData.getChain1();		
 		String chain2 = interfData.getChain2(); 
 		boolean isSymRelated = false;
@@ -39,9 +102,7 @@ public class JmolPageGenerator
 		
 		String colorCore1 = MolViewersHelper.getHexColorCode0x(MolViewersHelper.getInterf1Color());
 		String colorCore2 = MolViewersHelper.getHexColorCode0x(MolViewersHelper.getInterf2Color());
-		
-		//System.out.println("isSymRelated="+isSymRelated+", color1="+color1+" color2="+color2);
-		
+				
 		List<Residue> coreResidues1 = new ArrayList<Residue>();
 		List<Residue> rimResidues1 = new ArrayList<Residue>();
 		List<Residue> coreResidues2 = new ArrayList<Residue>();
@@ -63,66 +124,37 @@ public class JmolPageGenerator
 				}
 			}
 		}
-		
-		StringBuffer jmolPage = new StringBuffer();
 
-		String fileUrl = serverUrl + "/" + resultsLocation + "/" + fileName;
-
-		jmolPage.append("<html>" + "\n");
-		jmolPage.append("<head>" + "\n");
-		jmolPage.append("<title>" + "\n");
-		jmolPage.append(title);
-		jmolPage.append("</title>" + "\n");
-
-		jmolPage.append("<script src=\""+url3dmoljs+"\"></script> ");
-
-		jmolPage.append("</head>" + "\n");
-		jmolPage.append("<body>" + "\n");
-
-		
-		jmolPage.append(
-				"<div style=\"height: "+size+"px; width: "+size+"px; position: relative;\" "+
-				"class='viewer_3Dmoljs' data-href='"+fileUrl+"' data-backgroundcolor='0xffffff' "+
-				"data-type='cif' " +
-				
+		return 
 				// chain 1
 				"data-select1='chain:"+chain1+"' "+
-				"data-style1='cartoon:color="+color1+"'"+
+				"data-style1='cartoon:color="+color1+"' "+
+				"\n"+
 
 				// chain 2
 				"data-select2='chain:"+chain2+"' "+
-				"data-style2='cartoon:color="+color2+"'"+
-				
-				// core residues 1
-				"data-select3='resi:"+getCommaSeparatedList(coreResidues1)+";chain:"+chain1+"'"+
-				"data-style3='cartoon:color="+color1+";stick:color="+colorCore1+"'"+
-
-				// rim residues 1
-				"data-select4='resi:"+getCommaSeparatedList(rimResidues1)+";chain:"+chain1+"'"+
-				"data-style4='cartoon:color="+color1+";stick:color="+color1+"'"+
-
-				// core residues 1
-				"data-select5='resi:"+getCommaSeparatedList(coreResidues2)+";chain:"+chain2+"'"+
-				"data-style5='cartoon:color="+color2+";stick:color="+colorCore2+"'"+
-
-				//rim residues 1
-				"data-select6='resi:"+getCommaSeparatedList(rimResidues2)+";chain:"+chain2+"'"+
-				"data-style6='cartoon:color="+color2+";stick:color="+color2+"'"+
-				
-				"</div>");
+				"data-style2='cartoon:color="+color2+"' "+
+				"\n"+
 		
-		jmolPage.append("</body>" + "\n");
-		jmolPage.append("</html>" + "\n");
+				// core residues 1
+				"data-select3='resi:"+getCommaSeparatedList(coreResidues1)+";chain:"+chain1+"' "+
+				"data-style3='cartoon:color="+color1+";stick:color="+colorCore1+"' "+
+				"\n"+
+		
+				// rim residues 1
+				"data-select4='resi:"+getCommaSeparatedList(rimResidues1)+";chain:"+chain1+"' "+
+				"data-style4='cartoon:color="+color1+";stick:color="+color1+"' "+
+				"\n"+
+		
+				// core residues 1
+				"data-select5='resi:"+getCommaSeparatedList(coreResidues2)+";chain:"+chain2+"' "+
+				"data-style5='cartoon:color="+color2+";stick:color="+colorCore2+"' "+
+				"\n"+
+		
+				//rim residues 1
+				"data-select6='resi:"+getCommaSeparatedList(rimResidues2)+";chain:"+chain2+"' "+
+				"data-style6='cartoon:color="+color2+";stick:color="+color2+"' "+
+				"\n";
 
-		return jmolPage.toString();
-    }
-	
-	private static String getCommaSeparatedList(List<Residue> residues) {
-		StringBuilder sb = new StringBuilder();
-		for (int i=0;i<residues.size();i++){
-			sb.append(residues.get(i).getPdbResidueNumber());
-			if (i!=residues.size()-1) sb.append(',');
-		}
-		return sb.toString();
 	}
 }
