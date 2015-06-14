@@ -108,18 +108,24 @@ public class JmolViewerServlet extends BaseServlet
 			} else if (format.equals(FileDownloadServlet.COORDS_FORMAT_VALUE_CIF)) {
 				extension = ".cif";
 			} else {
-				extension = ".cif"; // we set the default to cif just in case format is not set
+				// the validator shouldn't allow this case, but anyway we set a default
+				extension = ".cif"; 
 			}
 			
 			Interface interfData;
 			
 			String fileName;
+			
+			String title;
+			
 			if (type.equals(FileDownloadServlet.TYPE_VALUE_INTERFACE)) {
 				fileName = input + EppicParams.INTERFACES_COORD_FILES_SUFFIX + "." + interfaceId + extension;
 				interfData = getInterfaceData(jobId, Integer.parseInt(interfaceId));
+				title = jobId + " - Interface " + interfaceId;
 				
 			} else if (type.equals(FileDownloadServlet.TYPE_VALUE_ASSEMBLY)) {
 				fileName = input + EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX+ "." + assemblyId + extension;
+				title = jobId + " - Assembly " + assemblyId;
 				// interfdata would have to be null in this case
 				interfData = null;
 				// TODO we need some assembly data instead
@@ -130,9 +136,10 @@ public class JmolViewerServlet extends BaseServlet
 				// the validator shouldn't allow this case, but anyway let's set a default 
 				fileName = input + EppicParams.INTERFACES_COORD_FILES_SUFFIX + "." + interfaceId + extension;
 				interfData = getInterfaceData(jobId, Integer.parseInt(interfaceId));
+				title = jobId + " - Interface " + interfaceId;
 			}
 
-			String jmolPage = JmolPageGenerator.generatePage(jobId + " - " + interfaceId + "\n", 
+			String jmolPage = JmolPageGenerator.generatePage(title, 
 					size, serverUrl,
 					resultsLocation + jobId, 
 					fileName,   

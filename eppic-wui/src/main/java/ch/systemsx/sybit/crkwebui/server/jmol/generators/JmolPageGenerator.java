@@ -51,7 +51,7 @@ public class JmolPageGenerator
 		jmolPage.append("<html>" + "\n");
 		jmolPage.append("<head>" + "\n");
 		jmolPage.append("<title>" + "\n");
-		jmolPage.append(title);
+		jmolPage.append(title+"\n"); 
 		jmolPage.append("</title>" + "\n");
 
 		jmolPage.append("<script src=\""+url3dmoljs+"\"></script> \n");
@@ -62,12 +62,14 @@ public class JmolPageGenerator
 		
 		jmolPage.append(
 				"<div style=\"height: "+size+"px; width: "+size+"px; position: relative;\" "+
-				"class='viewer_3Dmoljs' data-href='"+fileUrl+"' data-backgroundcolor='0xffffff' "+
+				"class='viewer_3Dmoljs' \n" +
+				"data-href='"+fileUrl+"' data-backgroundcolor='0xffffff' "+
 				dataTypeString +
 				"\n"+
 				
 				selectionCode +
 				
+				">\n"+
 				
 				"</div>\n");
 		
@@ -146,12 +148,12 @@ public class JmolPageGenerator
 				"data-style4='cartoon:color="+color1+";stick:color="+color1+"' "+
 				"\n"+
 		
-				// core residues 1
+				// core residues 2
 				"data-select5='resi:"+getCommaSeparatedList(coreResidues2)+";chain:"+chain2+"' "+
 				"data-style5='cartoon:color="+color2+";stick:color="+colorCore2+"' "+
 				"\n"+
 		
-				//rim residues 1
+				//rim residues 2
 				"data-select6='resi:"+getCommaSeparatedList(rimResidues2)+";chain:"+chain2+"' "+
 				"data-style6='cartoon:color="+color2+";stick:color="+color2+"' "+
 				"\n";
