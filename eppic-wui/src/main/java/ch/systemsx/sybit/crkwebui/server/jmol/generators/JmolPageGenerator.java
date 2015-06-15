@@ -24,25 +24,26 @@ public class JmolPageGenerator
 	public static String generatePage(String title, String size, String serverUrl, String resultsLocation,
 			String fileName, Interface interfData, String url3dmoljs)  {
 		
+		
+		boolean isCif = true;
+		String dataTypeString = ""; // if neither of the 2 cases then we leave it blank so that 3dmol guesses
+		if (fileName.endsWith("cif")) {
+			dataTypeString = "data-type='cif' ";
+			isCif = true;
+		} else if (fileName.endsWith("pdb")) {
+			dataTypeString = "data-type='pdb' ";
+			isCif = false;
+		}
+		
 		String selectionCode;
 		if (interfData != null) {
-			selectionCode = generateInterfaceSelection3dmolCode(interfData);
+			selectionCode = generateInterfaceSelection3dmolCode(interfData, isCif);
 		} else {
 			// TODO for assemblies we'd need to do something with the assembly data	
 			//selectionCode = generateAssemblySelection3dmolCode();
 			selectionCode = "";
 		}
 		
-		
-		
-		
-		
-		String dataTypeString = ""; // if neither of the 2 cases then we leave it blank so that 3dmol guesses
-		if (fileName.endsWith("cif")) {
-			dataTypeString = "data-type='cif' ";
-		} else if (fileName.endsWith("pdb")) {
-			dataTypeString = "data-type='pdb' ";
-		}
 		
 		StringBuffer jmolPage = new StringBuffer();
 
@@ -88,15 +89,21 @@ public class JmolPageGenerator
 		return sb.toString();
 	}
 	
-	private static String generateInterfaceSelection3dmolCode(Interface interfData) {
+	private static String generateInterfaceSelection3dmolCode(Interface interfData, boolean isCif) {
 		String chain1 = interfData.getChain1();		
 		String chain2 = interfData.getChain2(); 
 		boolean isSymRelated = false;
 		
 		if (chain1.equals(chain2)) {
-			// exactly as done in StructureInterface.toMMCIF()
 			isSymRelated = true;
-			chain2 = chain2 +"_"+ interfData.getOperatorId();
+			if (isCif) {
+				// exactly as done in StructureInterface.toMMCIF()
+				chain2 = chain2 +"_"+ interfData.getOperatorId();
+			} else {
+				// exactly as done in StructureInterface.toPDB()
+				// NOTE this won't work with chain ids of more than 1 char
+				chain2 = Character.toString(MolViewersHelper.getNextLetter(chain1.charAt(0)));
+			}
 		}
 		
 		String color1 = MolViewersHelper.getHexColorCode0x(MolViewersHelper.getChainColor(chain1, 0, isSymRelated));
