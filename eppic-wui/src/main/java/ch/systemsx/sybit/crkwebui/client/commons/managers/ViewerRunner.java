@@ -44,24 +44,22 @@ public class ViewerRunner
 	 */
 	private static void showJmolViewer(String interfaceNr)
 	{
-		int size = ApplicationContext.getWindowData().getWindowHeight() - 20;
-		if(size > ApplicationContext.getWindowData().getWindowWidth() - 20)
+		int size = ApplicationContext.getWindowData().getWindowHeight() - 60;
+		if(size > ApplicationContext.getWindowData().getWindowWidth() - 60)
 		{
-			size = ApplicationContext.getWindowData().getWindowWidth() - 20;
+			size = ApplicationContext.getWindowData().getWindowWidth() - 60;
 		}
 		
 		int jmolAppletSize = size - 40;
 		
-		// TODO switch to cif format : at the moment it doesn't work because 3dmol.js doesn't support cig.gz but does support pdb.gz
-		// if a file with file.pdb is given, it takes file.pdb.gz and filters it through the gzip decoder
-		
+		// note we have set the default format to CIF - JD 2015-06-15
 		
 		String jmolViewerUrl = GWT.getModuleBaseURL() + JmolViewerServlet.SERVLET_NAME;
 		jmolViewerUrl += "?"+FileDownloadServlet.PARAM_ID+"=" + ApplicationContext.getPdbInfo().getJobId() + 
 						 "&"+FileDownloadServlet.PARAM_TYPE + "=" + FileDownloadServlet.TYPE_VALUE_INTERFACE + 
 						 "&"+JmolViewerServlet.PARAM_INPUT+"=" + ApplicationContext.getPdbInfo().getTruncatedInputName() + 
 						 "&"+FileDownloadServlet.PARAM_INTERFACE_ID+"=" + interfaceNr +
-						 "&"+FileDownloadServlet.PARAM_COORDS_FORMAT+"=" + FileDownloadServlet.COORDS_FORMAT_VALUE_PDB+
+						 "&"+FileDownloadServlet.PARAM_COORDS_FORMAT+"=" + FileDownloadServlet.COORDS_FORMAT_VALUE_CIF+
 						 "&"+JmolViewerServlet.PARAM_SIZE+"=" + jmolAppletSize;
 		
 		Window.open(jmolViewerUrl, "", "width=" + size + "," +
