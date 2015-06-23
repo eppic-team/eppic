@@ -612,20 +612,20 @@ public class Main {
 			if (pdb.isCrystallographic() && 
 					pdb.getCrystallographicInfo().getSpaceGroup()!=null &&
 					pdb.getCrystallographicInfo().getCrystalCell()!=null) {
-				int i = 0;
+
 				for (Assembly a:validAssemblies) {
-					i++;
-					File outputFile= params.getOutputFile(EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX+"." + i + EppicParams.MMCIF_FILE_EXTENSION);
+
+					File outputFile= params.getOutputFile(EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX+"." + a.getId() + EppicParams.MMCIF_FILE_EXTENSION);
 					
 					try {								
 						a.writeToMmCifFile(outputFile);
 						if (params.isGeneratePdbFiles()) {
-							outputFile= params.getOutputFile(EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX+"." + i +  EppicParams.PDB_FILE_EXTENSION);
+							outputFile= params.getOutputFile(EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX+"." + a.getId() +  EppicParams.PDB_FILE_EXTENSION);
 							a.writeToPdbFile(outputFile);
 						}
 						
 					} catch (StructureException e) {
-						LOGGER.error("Could not write assembly coordinates file {}: {}",i,e.getMessage());
+						LOGGER.error("Could not write assembly coordinates file {}: {}",a.getId(),e.getMessage());
 						continue;
 					}
 

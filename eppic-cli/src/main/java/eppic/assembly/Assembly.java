@@ -48,6 +48,11 @@ public class Assembly {
 	private static final Logger logger = LoggerFactory.getLogger(Assembly.class);
 
 	/**
+	 * A numerical identifier for the assembly, from 1 to n
+	 */
+	private int id;
+	
+	/**
 	 * The set of engaged interface clusters, represented as a boolean vector.
 	 */
 	private PowerSet engagedSet;
@@ -696,6 +701,21 @@ public class Assembly {
 		return mult;
 	}
 	
+	/**
+	 * Get this Assembly's identifier
+	 * @return
+	 */
+	public int getId() {
+		return id;
+	}
+	
+	/**
+	 * Set this Assembly's identifier
+	 * @param id
+	 */
+	public void setId(int id) {
+		this.id = id;
+	}
 	
 	@Override
 	public boolean equals(Object other) {

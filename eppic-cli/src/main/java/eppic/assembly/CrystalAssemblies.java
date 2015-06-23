@@ -1,6 +1,8 @@
 package eppic.assembly;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -228,15 +230,37 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 	 * of each of the assembly clusters. The representatives are chosen to be those assemblies that
 	 * have maximal number of engaged interface clusters out of the group of equivalent assemblies 
 	 * in the assembly cluster.
+	 * The output list is sorted ascending on size of assemblies, with {@link Assembly#getId()} assigned
+	 * according to that sorting.
 	 * @return
 	 */
 	public List<Assembly> getUniqueAssemblies() {
 		List<Assembly> representatives = new ArrayList<Assembly>();
+		
+		
 		for (AssemblyGroup cluster:clusters) {
 			// we use the first member of each cluster (which is the maximal group, see 
 			// AssemblyGroup.sortIntoClusters() ) as the representative
 			representatives.add(cluster.get(0));
 		}
+		
+		Collections.sort(representatives, new Comparator<Assembly>() {
+
+			@Override
+			public int compare(Assembly arg0, Assembly arg1) {
+				int firstSize = arg0.getStoichiometrySet().getFirst().getCountForIndex(0);
+				int secondSize = arg1.getStoichiometrySet().getFirst().getCountForIndex(0);
+				return Integer.compare(firstSize, secondSize);
+			}
+			
+		});
+
+		int id = 1;
+		for (Assembly a:representatives) {
+			a.setId(id);
+			id++;
+		}
+		
 		return representatives;
 	}
 	
