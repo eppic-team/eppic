@@ -18,6 +18,8 @@ public class Assembly implements Serializable {
 
 	private int uid;
 	
+	private int id;
+	
 	private boolean topologicallyValid;
 	
 	private String composition;
@@ -49,6 +51,14 @@ public class Assembly implements Serializable {
 		this.uid = uid;
 	}
 
+	public int getId() {
+		return id;
+	}
+	
+	public void setId(int id) {
+		this.id = id;
+	}
+	
 	public boolean isTopologicallyValid() {
 		return topologicallyValid;
 	}
@@ -146,6 +156,7 @@ public class Assembly implements Serializable {
 		Assembly assembly = new Assembly();
 		
 		assembly.setUid(assemblyDB.getUid());
+		assembly.setId(assemblyDB.getId());
 		
 		assembly.setTopologicallyValid(assemblyDB.isTopologicallyValid());
 		assembly.setPdbInfo(assemblyDB.getPdbInfo()); 

@@ -137,6 +137,8 @@
 				<generated-value strategy="IDENTITY" />
 			</id>
 			
+			<basic name="id"></basic>
+			
 			<basic name="pdbCode">
 				<column length="4" />
 			</basic>
