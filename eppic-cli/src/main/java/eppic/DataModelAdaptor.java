@@ -77,6 +77,8 @@ public class DataModelAdaptor {
 	
 	public static final String PDB_BIOUNIT_METHOD = "pdb1";
 	
+	public static final int INVALID_ASSEMBLY_ID = 0;
+	
 	private PdbInfoDB pdbInfo;
 	
 	private EppicParams params;
@@ -304,6 +306,8 @@ public class DataModelAdaptor {
 		for (Assembly validAssembly:validAssemblies) {
 			AssemblyDB assembly = new AssemblyDB();
 			
+			assembly.setId(validAssembly.getId());
+			
 			// all assemblies that we pass are topologically valid, only externally calculated assemblies can be invalid (PDB, PISA)
 			// and would need to be added explicitly when adding external assembly predictions
 			assembly.setTopologicallyValid(true);
@@ -438,6 +442,8 @@ public class DataModelAdaptor {
 			Assembly invalidAssembly = validAssemblies.generateAssembly(interfaceClusterIds);
 			
 			AssemblyDB assembly = new AssemblyDB();
+			
+			assembly.setId(INVALID_ASSEMBLY_ID);
 			
 			assembly.setTopologicallyValid(false);
 			
