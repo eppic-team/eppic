@@ -22,16 +22,32 @@ import ch.systemsx.sybit.crkwebui.server.files.downloader.validators.FileToDownl
 import ch.systemsx.sybit.crkwebui.shared.exceptions.ValidationException;
 
 /**
- * Servlet used to download stored on the server side files.
+ * Servlet used to download files stored in the server.
  * 
- * @author srebniak_a
+ * The following are the valid values for the parameters:
+ * <pre>
  * 
+ * Parameter name 					Parameter value
+ * --------------					---------------
+ * type								"interface", "assembly", "msa" (was "fasta"), "entropiespse" ("pse","zip" now removed)
+ * id								int (the jobId)
+ * assemblyId						int (with type="assembly")
+ * interfaceId (was interface)		int (with type="interface")
+ * repChainId (was alignment)		String (the representative chain id) (with type="msa")
+ * coordsFormat						"pdb", "cif", "pdb.gz", "cif.gz", "pse" (with type="interface","assembly")
+ * 
+ * </pre>
+ * 
+ * @author srebniak_a 
  */
 public class FileDownloadServlet extends BaseServlet 
 {
 	
 	private static final long serialVersionUID = 1L;
 	
+	/**
+	 * The servlet name, note that the name is defined in the web.xml file.
+	 */
 	public static final String SERVLET_NAME = "fileDownload";
 
 	/**

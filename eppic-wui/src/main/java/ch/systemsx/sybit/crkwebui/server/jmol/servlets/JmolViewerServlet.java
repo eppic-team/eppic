@@ -36,6 +36,9 @@ public class JmolViewerServlet extends BaseServlet
 
 	private static final long serialVersionUID = 1L;
 	
+	/**
+	 * The servlet name, note that the name is defined in the web.xml file.
+	 */
 	public static final String SERVLET_NAME = "jmolViewer";
 	
 	public static final String PARAM_INPUT = "input";
