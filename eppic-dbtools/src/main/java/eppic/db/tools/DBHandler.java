@@ -65,7 +65,7 @@ public class DBHandler {
 		try {
 			properties = DbConfigGenerator.createDatabaseProperties(configurationFile, dbName);
 			
-			System.out.println("Using database "+dbName+" in host "+properties.get("host")); 
+			System.out.println("Using database "+dbName+", jdbc url is: "+properties.get("javax.persistence.jdbc.url")); 
 			
 		} catch (IOException e) {
 			System.err.println("Problems while reading the configuration file "+configurationFile+". Error: "+e.getMessage());
