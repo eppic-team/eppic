@@ -360,7 +360,7 @@ public class ChainEvolContextList implements Serializable {
 	
 	public void align(EppicParams params) throws EppicException {
 		
-		String alignProgram = params.getTcoffeeBin()==null?"clustalo":"t_coffee"; 
+		String alignProgram = "clustalo"; 
 		params.getProgressLog().println("Aligning protein sequences with "+ alignProgram);
 		params.getProgressLog().print("chains: ");
 		for (ChainEvolContext chainEvCont:cecs.values()) {

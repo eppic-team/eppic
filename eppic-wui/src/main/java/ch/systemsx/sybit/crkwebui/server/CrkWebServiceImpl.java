@@ -249,19 +249,19 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 		int nrOfThreadForSubmission = Integer.parseInt(properties.getProperty("nr_of_threads_for_submission","1"));
 		int assignedMemory = Integer.parseInt(properties.getProperty("assigned_memory","512"));
 
-		Properties crkProperties = new Properties();
+		Properties eppicProperties = new Properties();
 
 		try
 		{
-			File crkPropertiesFile = new File(System.getProperty("user.home"), EppicParams.CONFIG_FILE_NAME);
-			crkProperties.load(new FileInputStream(crkPropertiesFile));
+			File eppicConfigFile = new File(System.getProperty("user.home"), EppicParams.CONFIG_FILE_NAME);
+			eppicProperties.load(new FileInputStream(eppicConfigFile));
 		}
 		catch (IOException e)
 		{
 			throw new ServletException("EPPIC config file ("+EppicParams.CONFIG_FILE_NAME+") can not be read in home directory. Error: "+e.getMessage());
 		}
 
-		localCifDir = crkProperties.getProperty("LOCAL_CIF_DIR");
+		localCifDir = eppicProperties.getProperty("LOCAL_CIF_DIR");
 
 		if (localCifDir==null || !new File(localCifDir).isDirectory()) {
 			logger.warn("The LOCAL_CIF_DIR path is either not set or not pointing to a readable directory.");	

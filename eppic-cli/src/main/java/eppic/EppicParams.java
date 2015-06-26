@@ -73,9 +73,9 @@ public class EppicParams {
 	public static final double	   HIGH_CONFIDENCE_BIOCALL_AREA = 2200; 
 	public static final double 	   HIGH_CONFIDENCE_XTALCALL_AREA  = 400;   
 	// interface clustering constants
-	public static final double 	   CLUSTERING_RMSD_CUTOFF = 2.0;
-	public static final int 	   CLUSTERING_MINATOMS = 10;
-	public static final String     CLUSTERING_ATOM_TYPE = "CA";
+	//public static final double   CLUSTERING_RMSD_CUTOFF = 2.0;
+	//public static final int 	   CLUSTERING_MINATOMS = 10;
+	//public static final String   CLUSTERING_ATOM_TYPE = "CA";
 	public static final double	   CLUSTERING_CONTACT_OVERLAP_SCORE_CUTOFF = 0.2;
 	
 	// the distance for two atoms between chains to be considered a clashing pair
@@ -117,8 +117,6 @@ public class EppicParams {
 	// DEFAULTS FOR CONFIG FILE ASSIGNABLE CONSTANTS
 	// defaults for pdb data location
 	private static final String   DEF_LOCAL_CIF_DIR = "/pdbdata/pdb/data/structures/all/mmCIF";
-	private static final String   DEF_PDB_FTP_CIF_URL = "ftp://ftp.wwpdb.org/pub/pdb/data/structures/all/mmCIF/";
-	private static final boolean  DEF_USE_ONLINE_PDB = false;
 
 	// default sifts file location
 	private static final String   DEF_SIFTS_FILE = "ftp://ftp.ebi.ac.uk/pub/databases/msd/sifts/text/pdb_chain_uniprot.lst";	
@@ -130,7 +128,6 @@ public class EppicParams {
 	private static final String   DEF_BLAST_DATA_DIR = "/usr/share/blast";
 	
 	// default aligner programs execs: blank files, so that we can control that one and only one is set (see checkConfigFileInput)
-	private static final File	  DEF_TCOFFEE_BIN = new File("");
 	private static final File	  DEF_CLUSTALO_BIN = new File("");
 	
 	// default pymol exec
@@ -225,8 +222,6 @@ public class EppicParams {
 	
 	// fields assignable from config file
 	private String   localCifDir;
-	private String   pdbFtpCifUrl;
-	private boolean  useOnlinePdb;
 	
 	private String   siftsFile;
 	
@@ -237,7 +232,6 @@ public class EppicParams {
 	
 	private String   blastDataDir; // dir with blosum matrices only needed for blastclust
 	
-	private File     tcoffeeBin;
 	private File	 clustaloBin;
 	
 	private File	 pymolExe;
@@ -527,16 +521,17 @@ public class EppicParams {
 	public void checkConfigFileInput() throws EppicException {
 		
 		if (!isInputAFile()) {
-			if (!isUseOnlinePdb()) {
-				if (localCifDir==null || ! new File(localCifDir).isDirectory()) {
-					throw new EppicException(null,
-						"To be able to use PDB codes as input with -i option, a valid LOCAL_CIF_DIR must be set in config file. " +
-						"It must contain the PDB mmCIF compressed file repository as in "+DEF_PDB_FTP_CIF_URL+
-						". Alternatively you can set USE_ONLINE_PDB to true and the default PDB ftp server will be used (or the one set in PDB_FTP_CIF_URL)",true);
-				}
-			} 		
+
+			if (localCifDir==null || ! new File(localCifDir).isDirectory()) {
+				throw new EppicException(null,
+					"To be able to use PDB codes as input with -i option, a valid LOCAL_CIF_DIR must be set in config file. " +
+					"It must contain the PDB mmCIF compressed file repository "+
+					". Alternatively you can set USE_ONLINE_PDB to true and the default PDB ftp server will be used (or the one set in PDB_FTP_CIF_URL)",
+								true);
+			}
+
 		}
-		
+
 		if (isDoEvolScoring()) {
 			if (blastDbDir==null || ! new File(blastDbDir).isDirectory()) {
 				throw new EppicException(null,"BLAST_DB_DIR has not been set to a valid value in config file",true);
@@ -565,20 +560,18 @@ public class EppicParams {
 			}
 			
 			// alignment programs: we allow one and only one to be set
-			if (!tcoffeeBin.exists() && !clustaloBin.exists()) {
-				throw new EppicException(null,"Either TCOFFEE_BIN or CLUSTALO_BIN must be set to a valid value in config file.",true);
-			} else if (tcoffeeBin.exists() && clustaloBin.exists()){
-				throw new EppicException(null,"Both TCOFFEE_BIN and CLUSTALO_BIN are set in config file. Only one of the 2 programs can be set at the same time.",true);
+			if (!clustaloBin.exists()) {
+				throw new EppicException(null,"CLUSTALO_BIN must be set to a valid value in config file.",true);
 			}
-			if (tcoffeeBin.exists()) {
-				clustaloBin = null;
-			} else {
-				tcoffeeBin = null;
-			}
+			
 		}
 		
 		if (isGenerateThumbnails()) {
-			//TODO check for Pymol
+			// we only check for pymol if generating pymol files was requested
+			if (!pymolExe.exists()) {
+				throw new EppicException(null, "PYMOL_EXE must be set to a valid value in config file.", true);
+			}
+			
 		}
 		
 		if (alphabet == null) {
@@ -816,9 +809,8 @@ public class EppicParams {
 			
 			localUniprotDbName = p.getProperty("LOCAL_UNIPROT_DB_NAME");
 
+			// TODO need to redefine what localCifDir is to adapt to BioJava. At the moment this has no effect
 			localCifDir   	= p.getProperty("LOCAL_CIF_DIR", DEF_LOCAL_CIF_DIR);
-			pdbFtpCifUrl 	= p.getProperty("PDB_FTP_URL", DEF_PDB_FTP_CIF_URL);
-			useOnlinePdb  	= Boolean.parseBoolean(p.getProperty("USE_ONLINE_PDB", new Boolean(DEF_USE_ONLINE_PDB).toString()));
 			
 			siftsFile       = p.getProperty("SIFTS_FILE", DEF_SIFTS_FILE);
 			useSifts        = Boolean.parseBoolean(p.getProperty("USE_SIFTS", new Boolean(DEF_USE_SIFTS).toString()));
@@ -830,8 +822,6 @@ public class EppicParams {
 			blastDataDir    = p.getProperty("BLAST_DATA_DIR", DEF_BLAST_DATA_DIR);
 			
 			// for alignment programs we either read them or set them to null
-			tcoffeeBin 		= new File(p.getProperty("TCOFFEE_BIN", DEF_TCOFFEE_BIN.toString()));
-			
 			clustaloBin		= new File(p.getProperty("CLUSTALO_BIN", DEF_CLUSTALO_BIN.toString()));
 			
 			pymolExe		= new File(p.getProperty("PYMOL_EXE", DEF_PYMOL_EXE.toString()));
@@ -879,14 +869,6 @@ public class EppicParams {
 		return localCifDir;
 	}
 
-	public String getPdbFtpCifUrl() {
-		return pdbFtpCifUrl;
-	}
-
-	public boolean isUseOnlinePdb() {
-		return useOnlinePdb;
-	}
-
 	public String getSiftsFile() {
 		return siftsFile;
 	}
@@ -905,10 +887,6 @@ public class EppicParams {
 
 	public String getBlastDataDir() {
 		return blastDataDir;
-	}
-	
-	public File getTcoffeeBin() {
-		return tcoffeeBin;
 	}
 	
 	public File getClustaloBin() {
