@@ -150,5 +150,31 @@ public class Assembly implements Serializable {
 		return assembly;
 	}
 	
+	public String getSymmetryString() {
+		StringBuilder sb = new StringBuilder();
+		for (int i=0;i<getAssemblyContents().size();i++	) {
+			sb.append(getAssemblyContents().get(i).getSymmetry());
+			if (i!=getAssemblyContents().size()-1) sb.append(",");
+		}
+		return sb.toString();
+	}
+	
+	public String getStoichiometryString() {
+		StringBuilder sb = new StringBuilder();
+		for (int i=0;i<getAssemblyContents().size();i++	) {
+			sb.append(getAssemblyContents().get(i).getStoichiometry());
+			if (i!=getAssemblyContents().size()-1) sb.append(",");
+		}
+		return sb.toString();
+	}
+	
+	public String getMmSizeString() {
+		StringBuilder sb = new StringBuilder();
+		for (int i=0;i<getAssemblyContents().size();i++	) {
+			sb.append(getAssemblyContents().get(i).getMmSize());
+			if (i!=getAssemblyContents().size()-1) sb.append(",");
+		}
+		return sb.toString();
+	}
 	
 }
