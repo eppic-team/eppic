@@ -22,14 +22,6 @@ public class Assembly implements Serializable {
 	
 	private boolean topologicallyValid;
 	
-	private String composition;
-
-	private int mmSize;
-	private String symmetry;
-	private String stoichiometry;
-	private String pseudoSymmetry;
-	private String pseudoStoichiometry;
-	
 	private PdbInfoDB pdbInfo;
 	
 	private Set<InterfaceCluster> interfaceClusters;
@@ -38,6 +30,8 @@ public class Assembly implements Serializable {
 	
 	private List<AssemblyContent> assemblyContents;
 
+	private String interfaceClusterIds;
+	
 	public Assembly() {
 		this.interfaceClusters = new HashSet<InterfaceCluster>();
 		this.assemblyScores = new ArrayList<AssemblyScore>();
@@ -65,54 +59,6 @@ public class Assembly implements Serializable {
 
 	public void setTopologicallyValid(boolean topologicallyValid) {
 		this.topologicallyValid = topologicallyValid;
-	}
-
-	public String getComposition() {
-		return composition;
-	}
-
-	public void setComposition(String composition) {
-		this.composition = composition;
-	}
-
-	public int getMmSize() {
-		return mmSize;
-	}
-
-	public void setMmSize(int mMSize) {
-		this.mmSize = mMSize;
-	}
-
-	public String getSymmetry() {
-		return symmetry;
-	}
-
-	public void setSymmetry(String symmetry) {
-		this.symmetry = symmetry;
-	}
-
-	public String getPseudoSymmetry() {
-		return pseudoSymmetry;
-	}
-
-	public void setPseudoSymmetry(String pseudoSymmetry) {
-		this.pseudoSymmetry = pseudoSymmetry;
-	}
-
-	public String getStoichiometry() {
-		return stoichiometry;
-	}
-
-	public void setStoichiometry(String stoichiometry) {
-		this.stoichiometry = stoichiometry;
-	}
-
-	public String getPseudoStoichiometry() {
-		return pseudoStoichiometry;
-	}
-
-	public void setPseudoStoichiometry(String pseudoStoichiometry) {
-		this.pseudoStoichiometry = pseudoStoichiometry;
 	}
 
 	public PdbInfoDB getPdbInfo() {
@@ -147,6 +93,14 @@ public class Assembly implements Serializable {
 		this.assemblyContents = assemblyContents;
 	}
 
+	public String getInterfaceClusterIds() {
+		return interfaceClusterIds;
+	}
+	
+	public void setInterfaceClusterIds(String interfaceClusterIds) {
+		this.interfaceClusterIds = interfaceClusterIds;
+	}
+	
 	/**
 	 * Converts DB model item into DTO one.
 	 * @param assemblyDB model item to convert
@@ -157,6 +111,7 @@ public class Assembly implements Serializable {
 		
 		assembly.setUid(assemblyDB.getUid());
 		assembly.setId(assemblyDB.getId());
+		assembly.setInterfaceClusterIds(assemblyDB.getInterfaceClusterIds());
 		
 		assembly.setTopologicallyValid(assemblyDB.isTopologicallyValid());
 		assembly.setPdbInfo(assemblyDB.getPdbInfo()); 
