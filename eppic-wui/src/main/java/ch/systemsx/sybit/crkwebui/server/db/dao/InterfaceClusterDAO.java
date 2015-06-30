@@ -14,11 +14,20 @@ public interface InterfaceClusterDAO
 {
 
 	/**
-	 * Retrieves list of interface clusters with scores  and withour interfaces for pdb score item.
-	 * @param pdbInfoUid uid of pdb score item
-	 * @return list of interface clusters without interfaces for pdb score item
-	 * @throws DaoException when can not retrieve interface items
+	 * Retrieves list of interface clusters with scores and without interfaces for a given pdb info item.
+	 * @param pdbInfoUid uid of pdb info item
+	 * @return list of interface clusters without interfaces for pdb info item
+	 * @throws DaoException when interface cluster items can't be retrieved
 	 */
 	public List<InterfaceCluster> getInterfaceClustersWithoutInterfaces(int pdbInfoUid) throws DaoException;
-	
+
+	/**
+	 * Retrieves list of interface clusters with scores and without interfaces for a given 
+	 * pdb info item and a list of interface cluster ids
+	 * @param pdbInfoUid
+	 * @param interfaceClusterIds
+	 * @return
+	 * @throws DaoException
+	 */
+	public List<InterfaceCluster> getInterfaceClustersWithoutInterfaces(int pdbInfoUid, List<Integer> interfaceClusterIds) throws DaoException;
 }

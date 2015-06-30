@@ -9,6 +9,7 @@ import java.util.Set;
 import eppic.model.AssemblyContentDB;
 import eppic.model.AssemblyDB;
 import eppic.model.AssemblyScoreDB;
+import eppic.model.InterfaceClusterDB;
 import eppic.model.PdbInfoDB;
 
 
@@ -30,7 +31,7 @@ public class Assembly implements Serializable {
 	
 	private List<AssemblyContent> assemblyContents;
 
-	private String interfaceClusterIds;
+	private String interfaceClusterIdsString;
 	
 	public Assembly() {
 		this.interfaceClusters = new HashSet<InterfaceCluster>();
@@ -93,12 +94,12 @@ public class Assembly implements Serializable {
 		this.assemblyContents = assemblyContents;
 	}
 
-	public String getInterfaceClusterIds() {
-		return interfaceClusterIds;
+	public String getInterfaceClusterIdsString() {
+		return interfaceClusterIdsString;
 	}
 	
-	public void setInterfaceClusterIds(String interfaceClusterIds) {
-		this.interfaceClusterIds = interfaceClusterIds;
+	public void setInterfaceClusterIdsString(String interfaceClusterIdsString) {
+		this.interfaceClusterIdsString = interfaceClusterIdsString;
 	}
 	
 	/**
@@ -111,7 +112,7 @@ public class Assembly implements Serializable {
 		
 		assembly.setUid(assemblyDB.getUid());
 		assembly.setId(assemblyDB.getId());
-		assembly.setInterfaceClusterIds(assemblyDB.getInterfaceClusterIds());
+		assembly.setInterfaceClusterIdsString(assemblyDB.getInterfaceClusterIds());
 		
 		assembly.setTopologicallyValid(assemblyDB.isTopologicallyValid());
 		assembly.setPdbInfo(assemblyDB.getPdbInfo()); 
@@ -145,9 +146,34 @@ public class Assembly implements Serializable {
 			assembly.setAssemblyContents(assemblyContents);
 		}
 		
-		// TODO initialise many-to-many relation to interface clusters
+		// NOTE the interface clusters here will be new objects, thus no direct link to the actual objects  
+		// created in InterfaceCluster class. 
+		// The connection between them has to go through the uids 
+		if (assemblyDB.getInterfaceClusters()!=null) {
+			Set<InterfaceCluster> interfaceClusters = new HashSet<InterfaceCluster>();
+			
+			for (InterfaceClusterDB icDB:assemblyDB.getInterfaceClusters()) {
+				interfaceClusters.add(InterfaceCluster.create(icDB));
+			}
+			assembly.setInterfaceClusters(interfaceClusters);
+		}
+		
+		// The opposite relation (interfaceCluster to assembly) is not added here. 
+		// It could be added in the initialisation of InterfaceCluster if needed at some point
 		
 		return assembly;
+	}
+	
+	/**
+	 * Get the list of interface cluster ids of all interface clusters belonging to this Assembly
+	 * @return
+	 */
+	public List<Integer> getInterfaceClusterIds() {
+		List<Integer> ids = new ArrayList<Integer>();
+		for (InterfaceCluster ic:getInterfaceClusters()) {
+			ids.add(ic.getClusterId());
+		}
+		return ids;
 	}
 	
 	public String getSymmetryString() {
