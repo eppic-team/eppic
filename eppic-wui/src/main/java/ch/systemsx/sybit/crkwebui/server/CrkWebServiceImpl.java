@@ -28,6 +28,7 @@ import ch.systemsx.sybit.crkwebui.server.commons.util.log.LogHandler;
 import ch.systemsx.sybit.crkwebui.server.commons.validators.PreSubmitValidator;
 import ch.systemsx.sybit.crkwebui.server.commons.validators.RunJobDataValidator;
 import ch.systemsx.sybit.crkwebui.server.commons.validators.SessionValidator;
+import ch.systemsx.sybit.crkwebui.server.db.dao.AssemblyDAO;
 import ch.systemsx.sybit.crkwebui.server.db.dao.ChainClusterDAO;
 import ch.systemsx.sybit.crkwebui.server.db.dao.InterfaceClusterDAO;
 import ch.systemsx.sybit.crkwebui.server.db.dao.InterfaceDAO;
@@ -35,6 +36,7 @@ import ch.systemsx.sybit.crkwebui.server.db.dao.JobDAO;
 import ch.systemsx.sybit.crkwebui.server.db.dao.PDBInfoDAO;
 import ch.systemsx.sybit.crkwebui.server.db.dao.ResidueDAO;
 import ch.systemsx.sybit.crkwebui.server.db.dao.UserSessionDAO;
+import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.AssemblyDAOJpa;
 import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.ChainClusterDAOJpa;
 import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.InterfaceClusterDAOJpa;
 import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.InterfaceDAOJpa;
@@ -57,6 +59,7 @@ import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.JobHandlerException;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.JobManagerException;
 import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
+import ch.systemsx.sybit.crkwebui.shared.model.Assembly;
 import ch.systemsx.sybit.crkwebui.shared.model.ChainCluster;
 import ch.systemsx.sybit.crkwebui.shared.model.Interface;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceCluster;
@@ -84,9 +87,10 @@ import eppic.commons.util.DbConfigGenerator;
  * @author srebniak_a
  */
 @PersistenceContext(name="eppicjpa", unitName="eppicjpa")
-@SuppressWarnings("serial")
 public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements CrkWebService
 {
+	private static final long serialVersionUID = 1L;
+
 	private static final Logger logger = LoggerFactory.getLogger(CrkWebServiceImpl.class);
 
 	// NOTE for the unaware reader: the EPPIC program used to be call CRK, thus the prevalence of that name in the code
@@ -666,9 +670,9 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 	}
 
 	/**
-	 * Retrieves pdb score item for job.
+	 * Retrieves pdbInfo item for a given job id.
 	 * @param jobId identifier of the job
-	 * @return pdb score item
+	 * @return pdbInfo item
 	 * @throws Exception when can not retrieve result of the job
 	 */
 	private PdbInfo getResultData(String jobId) throws Exception
@@ -692,7 +696,12 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 		ChainClusterDAO chainClusterDAO = new ChainClusterDAOJpa();
 		List<ChainCluster> chainClusters = chainClusterDAO.getChainClusters(pdbInfo.getUid());
 		pdbInfo.setChainClusters(chainClusters);
+		
+		AssemblyDAO assemblyDAO = new AssemblyDAOJpa();
+		List<Assembly> assemblies = assemblyDAO.getAssemblies(pdbInfo.getUid());
 
+		pdbInfo.setAssemblies(assemblies);
+		
 		pdbInfo.setInputType(input.getInputType());
 		pdbInfo.setInputName(input.getInputName());
 

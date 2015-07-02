@@ -2,15 +2,12 @@ package ch.systemsx.sybit.crkwebui.shared.model;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import eppic.model.AssemblyContentDB;
 import eppic.model.AssemblyDB;
 import eppic.model.AssemblyScoreDB;
 import eppic.model.InterfaceClusterDB;
-import eppic.model.PdbInfoDB;
 
 
 public class Assembly implements Serializable {
@@ -22,10 +19,8 @@ public class Assembly implements Serializable {
 	private int id;
 	
 	private boolean topologicallyValid;
-	
-	private PdbInfoDB pdbInfo;
-	
-	private Set<InterfaceCluster> interfaceClusters;
+		
+	private List<InterfaceCluster> interfaceClusters;
 	
 	private List<AssemblyScore> assemblyScores;
 	
@@ -34,7 +29,7 @@ public class Assembly implements Serializable {
 	private String interfaceClusterIdsString;
 	
 	public Assembly() {
-		this.interfaceClusters = new HashSet<InterfaceCluster>();
+		this.interfaceClusters = new ArrayList<InterfaceCluster>();
 		this.assemblyScores = new ArrayList<AssemblyScore>();
 	}
 
@@ -62,19 +57,11 @@ public class Assembly implements Serializable {
 		this.topologicallyValid = topologicallyValid;
 	}
 
-	public PdbInfoDB getPdbInfo() {
-		return pdbInfo;
-	}
-
-	public void setPdbInfo(PdbInfoDB pdbInfo) {
-		this.pdbInfo = pdbInfo;
-	}
-
-	public Set<InterfaceCluster> getInterfaceClusters() {
+	public List<InterfaceCluster> getInterfaceClusters() {
 		return interfaceClusters;
 	}
 
-	public void setInterfaceClusters(Set<InterfaceCluster> interfaceClusters) {
+	public void setInterfaceClusters(List<InterfaceCluster> interfaceClusters) {
 		this.interfaceClusters = interfaceClusters;
 	}
 
@@ -115,7 +102,6 @@ public class Assembly implements Serializable {
 		assembly.setInterfaceClusterIdsString(assemblyDB.getInterfaceClusterIds());
 		
 		assembly.setTopologicallyValid(assemblyDB.isTopologicallyValid());
-		assembly.setPdbInfo(assemblyDB.getPdbInfo()); 
 		
 		if(assemblyDB.getAssemblyScores() != null) {
 			
@@ -150,7 +136,7 @@ public class Assembly implements Serializable {
 		// created in InterfaceCluster class. 
 		// The connection between them has to go through the uids 
 		if (assemblyDB.getInterfaceClusters()!=null) {
-			Set<InterfaceCluster> interfaceClusters = new HashSet<InterfaceCluster>();
+			List<InterfaceCluster> interfaceClusters = new ArrayList<InterfaceCluster>();
 			
 			for (InterfaceClusterDB icDB:assemblyDB.getInterfaceClusters()) {
 				interfaceClusters.add(InterfaceCluster.create(icDB));
