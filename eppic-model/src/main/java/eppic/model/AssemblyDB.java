@@ -2,7 +2,9 @@ package eppic.model;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class AssemblyDB implements Serializable {
 	
@@ -21,7 +23,7 @@ public class AssemblyDB implements Serializable {
 	
 	private PdbInfoDB pdbInfo;
 	
-	private List<InterfaceClusterDB> interfaceClusters;
+	private Set<InterfaceClusterDB> interfaceClusters;
 	
 	private List<AssemblyScoreDB> assemblyScores;
 	
@@ -29,7 +31,7 @@ public class AssemblyDB implements Serializable {
 
 	public AssemblyDB() {
 		assemblyScores = new ArrayList<AssemblyScoreDB>();
-		interfaceClusters = new ArrayList<InterfaceClusterDB>();
+		interfaceClusters = new HashSet<InterfaceClusterDB>();
 	}
 
 	public void addAssemblyScore(AssemblyScoreDB assemblyScore) {
@@ -84,11 +86,11 @@ public class AssemblyDB implements Serializable {
 		this.interfaceClusterIds = interfaceClusterIds;
 	}
 
-	public List<InterfaceClusterDB> getInterfaceClusters() {
+	public Set<InterfaceClusterDB> getInterfaceClusters() {
 		return interfaceClusters;
 	}
 
-	public void setInterfaceClusters(List<InterfaceClusterDB> interfaceClusters) {
+	public void setInterfaceClusters(Set<InterfaceClusterDB> interfaceClusters) {
 		this.interfaceClusters = interfaceClusters;
 	}
 
