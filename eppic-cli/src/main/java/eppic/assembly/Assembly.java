@@ -36,6 +36,8 @@ import org.jgrapht.graph.UndirectedSubgraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import eppic.CallType;
+
 
 /**
  * An Assembly of molecules within a crystal, represented by a set of engaged interface clusters.
@@ -63,6 +65,8 @@ public class Assembly {
 	
 	private UndirectedGraph<ChainVertex, InterfaceEdge> subgraph;
 	private List<UndirectedGraph<ChainVertex, InterfaceEdge>> connectedComponents;
+	
+	private CallType call;
 	
 	
 	public Assembly(CrystalAssemblies crystalAssemblies, PowerSet engagedSet) {
@@ -684,7 +688,7 @@ public class Assembly {
 	}
 	
 	/**
-	 * For each of the engaged interfaces in this assembly, finds out their multiplicity 
+	 * For each of the homomeric engaged interfaces in this assembly, finds out their multiplicity 
 	 * when they are considered as single-engaged-interface assemblies.
 	 * @return
 	 */
@@ -702,6 +706,28 @@ public class Assembly {
 	}
 	
 	/**
+	 * Return the first interface cluster that has the given multiplicity (when edges are considered 
+	 * as single-engaged-interface assemblies)
+	 * @param multiplicity
+	 * @return the first interface cluster with the desired multiplicity or null if no interface cluster has the 
+	 * desired multiplicity
+	 * @see #getMultiplicityOfEngagedInterfClusters()
+	 */
+	public StructureInterfaceCluster getInterfClusterWithMultiplicity(int multiplicity) {
+		
+		for (StructureInterfaceCluster interfCluster:getHomoEngagedInterfaceClusters()) {
+			
+			if (multiplicity == getCrystalAssemblies().getEdgeMultiplicity(interfCluster.getId())) {
+				return interfCluster;
+			}
+			
+		}
+		
+		return null;
+	}
+
+	
+	/**
 	 * Get this Assembly's identifier
 	 * @return
 	 */
@@ -715,6 +741,14 @@ public class Assembly {
 	 */
 	public void setId(int id) {
 		this.id = id;
+	}
+	
+	public void setCall(CallType call) {
+		this.call = call;
+	}
+	
+	public CallType getCall() {
+		return call;
 	}
 	
 	@Override
@@ -749,4 +783,87 @@ public class Assembly {
 		return sb.toString();
 	}
 
+	public void score() {
+		// for the moment we'll take first stoichiometry
+		// TODO need to double check what do to for cases where that's not valid
+
+		StoichiometrySet stoSet = getStoichiometrySet();
+		Stoichiometry sto = stoSet.getFirst();
+		int size = sto.getCountForIndex(0);
+
+		String sym = sto.getSymmetry();
+
+		String multStr = sym.substring(1, sym.length());
+
+		int multiplicity = 0;
+		try {
+			multiplicity = Integer.parseInt(multStr);
+		} catch (NumberFormatException e) {
+			logger.warn("Symmetry string {} is mal-formed", sym);
+			return;
+		}
+
+		// assuming homomers for the moment
+		// TODO treat heteromers as well
+		int numDistinctInterfaces = getNumEngagedInterfaceClusters();
+
+		setCall(CallType.CRYSTAL); // set crystal as default call, only if found to be bio it will be overridden below
+
+		if (size==1) {
+			// a monomeric assembly, no scoring at this stage
+			return;
+		}
+		
+		if (sym.startsWith("C")) {
+
+			StructureInterfaceCluster interfCluster = null;
+
+			if (sym.startsWith("C2")) {
+				if (numDistinctInterfaces>1) {
+					logger.warn("More than 1 engaged interface cluster for a C2 symmetry. Something is wrong.");
+				}
+
+				interfCluster = getEngagedInterfaceClusters().get(0);
+
+			} else {
+
+				// getInterClusterWithMultiplicity doesn't work for mult=2
+				interfCluster = getInterfClusterWithMultiplicity(multiplicity);
+
+			}
+
+			// the call for the Cn interface will be the call for the assembly
+			CallType call = getCrystalAssemblies().getInterfaceEvolContextList().getCombinedClusterPredictor(interfCluster.getId()).getCall();
+
+			setCall(call);
+
+
+		} else if (sym.startsWith("D")) {
+			
+			// In a D assembly there's at least 2 distinct interfaces.
+			// Most usually the 2 largest interfaces are the 2 isologous, 
+			// the 3rd one being the heterologous
+
+			// let's simply take the 2 largest interfaces: if both bio that's a sufficient condition
+			// the list should be sorted from largest to smallest
+			List<StructureInterfaceCluster> list = getEngagedInterfaceClusters(); 
+			
+			StructureInterfaceCluster first = list.get(0); // the largest
+			StructureInterfaceCluster second = list.get(1); // the second largest
+			
+			CallType firstCall = getCrystalAssemblies().getInterfaceEvolContextList().getCombinedClusterPredictor(first.getId()).getCall();
+			CallType secondCall = getCrystalAssemblies().getInterfaceEvolContextList().getCombinedClusterPredictor(second.getId()).getCall();
+			
+			if (firstCall == CallType.BIO && secondCall == CallType.BIO) {
+				setCall(CallType.BIO);
+			}
+			
+		} else {
+			logger.warn("Assembly scoring for symmetry {} not supported yet", sym);
+			return;
+		}
+
+
+
+	}
 }

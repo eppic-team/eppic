@@ -17,7 +17,9 @@ import org.biojava.nbio.structure.contact.StructureInterfaceList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import eppic.CallType;
 import eppic.EppicParams;
+import eppic.InterfaceEvolContextList;
 
 /**
  * A representation of all valid assemblies in a crystal structure.
@@ -47,6 +49,7 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 	
 	private Map<Integer,AssemblyGroup> groups;
 	
+	private InterfaceEvolContextList interfEvolContextList;
 	
 	public CrystalAssemblies(Structure structure, StructureInterfaceList interfaces) throws StructureException {
 		
@@ -299,6 +302,63 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 		
 		return singleInterfaceClusterAssembly.getEdgeCountInFirstConnectedComponent(interfaceClusterId);
 
+	}
+	
+	public InterfaceEvolContextList getInterfaceEvolContextList() {
+		return interfEvolContextList;		
+	}
+	
+	public void setInterfaceEvolContextList(InterfaceEvolContextList interfEvolContextList) {
+		this.interfEvolContextList = interfEvolContextList;
+	}
+	
+	public void score() {
+
+		// this gets each of the unique assembly clusters, represented by the maximal member
+		List<Assembly> uniques = getUniqueAssemblies();
+
+		// 1 Do individual assemblies scoring
+		for (Assembly a:uniques) {			
+			a.score();							
+		}
+		
+		// 2 Look at all calls and keep only the largest bio assembly. If no bios at all then assign bio to monomers
+		Assembly maxSizeBioAssembly = null;
+		int maxSize = 0;
+		for (Assembly a:uniques) {
+			
+			// TODO this asssumes homomers, treat heteromers properly
+			StoichiometrySet stoSet = a.getStoichiometrySet();
+			Stoichiometry sto = stoSet.getFirst();
+			int size = sto.getCountForIndex(0);
+			
+			if (a.getCall() == CallType.BIO && maxSize<size) {
+				maxSizeBioAssembly = a;
+				maxSize = size;
+			}
+		}
+		
+		if (maxSizeBioAssembly == null) {
+			// no assemblies were BIO
+			
+			for (Assembly a:uniques) {
+				
+				// TODO this only works for homomers: treat heteromers properly
+				
+				if (a.getNumEngagedInterfaceClusters()==0) {
+					a.setCall(CallType.BIO);
+				}
+			}
+			
+		} else {			
+			
+			for (Assembly a:uniques) {			
+				if (a == maxSizeBioAssembly) continue;
+				
+				a.setCall(CallType.CRYSTAL);
+				
+			}
+		}
 	}
 	
 }

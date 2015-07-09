@@ -369,8 +369,29 @@ public class Main {
 	}
 	
 	public void doAssemblyScoring() {
+
 		
-		// TODO implement!
+		// TODO for the moment we are only doing assemblies for crystallographic structures, but we should also try to deal with NMR and EM
+		if (pdb.isCrystallographic() && 
+			pdb.getCrystallographicInfo().getSpaceGroup()!=null &&
+			pdb.getCrystallographicInfo().getCrystalCell()!=null) {
+
+			if (params.isDoEvolScoring()) {
+				validAssemblies.setInterfaceEvolContextList(iecList);
+
+				validAssemblies.score();
+			}
+
+
+			modelAdaptor.setAssemblies(validAssemblies);
+
+			// since the move to Biojava, we have decided to take the first PDB-annotated biounit ONLY, whatever its type
+			String[] symmetries = getSymmetry(EppicParams.PDB_BIOUNIT_TO_USE);
+			modelAdaptor.setPdbBioUnits(pdb.getPDBHeader().getBioAssemblies().get(EppicParams.PDB_BIOUNIT_TO_USE),
+					symmetries,
+					validAssemblies);
+		}
+
 	}
 	
 	public void doGeomScoring() throws EppicException {
@@ -416,19 +437,6 @@ public class Main {
 		modelAdaptor.setGeometryScores(gps, gcps);
 		modelAdaptor.setResidueDetails(interfaces);
 
-		// TODO for the moment we are only doing assemblies for crystallographic structures, but we should also try to deal with NMR and EM
-		if (pdb.isCrystallographic() && 
-				pdb.getCrystallographicInfo().getSpaceGroup()!=null &&
-				pdb.getCrystallographicInfo().getCrystalCell()!=null) {
-			
-			modelAdaptor.setAssemblies(validAssemblies);
-
-			// since the move to Biojava, we have decided to take the first PDB-annotated biounit ONLY, whatever its type
-			String[] symmetries = getSymmetry(EppicParams.PDB_BIOUNIT_TO_USE);
-			modelAdaptor.setPdbBioUnits(pdb.getPDBHeader().getBioAssemblies().get(EppicParams.PDB_BIOUNIT_TO_USE),
-					symmetries,
-					validAssemblies);
-		}
 	}
 	
 	/**
@@ -921,10 +929,14 @@ public class Main {
 							gcps.get(i),
 							iecList.getEvolCoreRimClusterPredictor(clusterId),
 							iecList.getEvolCoreSurfaceClusterPredictor(clusterId));
+			
 			ccp.computeScores();
 			ccps.add(ccp);
 			i++;
+			
+			iecList.setCombinedClusterPredictor(clusterId, ccp);
 		}
+				
 
 		modelAdaptor.setCombinedPredictors(cps, ccps);
 
@@ -1013,10 +1025,10 @@ public class Main {
 				// 5 combined scoring
 				doCombinedScoring();
 				
-				// 6 score assemblies and predict most likely assembly
-				doAssemblyScoring();
 			}
 			
+			// 6 score assemblies and predict most likely assembly
+			doAssemblyScoring();
 			
 			// 7 write TSV files (only if not in -w) 	
 			doWriteTextOutputFiles();

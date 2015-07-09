@@ -342,14 +342,18 @@ public class DataModelAdaptor {
 				acDBs.add(acDB);
 			}
 			assembly.setAssemblyContents(acDBs);			
-			
-			// TODO calculate our score and confidence! should we have scores for all or for our final prediction only?
-			//AssemblyScoreDB as = new AssemblyScoreDB();
-			//as.setMethod(ScoringMethod.EPPIC_FINAL);
-			//as.setScore(SCORE_NOT_AVAILABLE);
-			//as.setConfidence(CONFIDENCE_NOT_AVAILABLE);
-			//as.setPdbCode(pdbInfo.getPdbCode());
-			//assembly.addAssemblyScore(as);
+						
+			AssemblyScoreDB as = new AssemblyScoreDB();
+			as.setMethod(ScoringMethod.EPPIC_FINAL);
+			if (validAssembly.getCall()==null) 
+				LOGGER.warn("Call is null for assembly {}", validAssembly.getId());
+			else 
+				as.setCallName(validAssembly.getCall().getName());			
+			as.setCallReason(""); // what do we put in here?
+			as.setScore(SCORE_NOT_AVAILABLE);
+			as.setConfidence(CONFIDENCE_NOT_AVAILABLE);
+			as.setPdbCode(pdbInfo.getPdbCode());
+			assembly.addAssemblyScore(as);
 			
 			
 		}
@@ -408,6 +412,8 @@ public class DataModelAdaptor {
 		
 		AssemblyScoreDB as = new AssemblyScoreDB();
 		as.setMethod(PDB_BIOUNIT_METHOD);
+		as.setCallName(CallType.BIO.getName());
+		as.setCallReason(""); // empty for the moment, perhaps we could use it for authors/pisa
 		as.setScore(SCORE_NOT_AVAILABLE);
 		as.setConfidence(CONFIDENCE_NOT_AVAILABLE);
 		as.setPdbCode(pdbInfo.getPdbCode());
@@ -485,6 +491,22 @@ public class DataModelAdaptor {
 			as.setAssembly(assembly);
 		}
 
+		
+		// fill all the other assemblies with XTAL AssemblyScores
+		
+		for (AssemblyDB assembly: pdbInfo.getAssemblies()) {
+			if (matchingAssembly!=null && assembly == matchingAssembly) continue;
+			
+			AssemblyScoreDB asxtal = new AssemblyScoreDB();
+			asxtal.setMethod(PDB_BIOUNIT_METHOD);
+			asxtal.setCallName(CallType.CRYSTAL.getName());
+			asxtal.setCallReason(""); // empty for the moment, perhaps we could use it for authors/pisa
+			asxtal.setScore(SCORE_NOT_AVAILABLE);
+			asxtal.setConfidence(CONFIDENCE_NOT_AVAILABLE);
+			asxtal.setPdbCode(pdbInfo.getPdbCode());
+			
+			assembly.addAssemblyScore(asxtal);
+		}
 	}
 	
 	/**

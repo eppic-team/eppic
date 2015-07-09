@@ -12,6 +12,10 @@ public class AssemblyScore implements Serializable {
 	private double score;
 	private double confidence;
 	
+	private String callName;
+	private String callReason;
+	
+	
 	private Assembly assembly;
 	
 	public AssemblyScore() {
@@ -50,6 +54,22 @@ public class AssemblyScore implements Serializable {
 		this.assembly = assembly;
 	}
 	
+	public String getCallName() {
+		return callName;
+	}
+
+	public void setCallName(String callName) {
+		this.callName = callName;
+	}
+
+	public String getCallReason() {
+		return callReason;
+	}
+
+	public void setCallReason(String callReason) {
+		this.callReason = callReason;
+	}
+
 	/**
 	 * Converts DB model item into DTO one.
 	 * @param assemblyScoreDB model item to convert
@@ -59,7 +79,9 @@ public class AssemblyScore implements Serializable {
 		AssemblyScore assemblyScore = new AssemblyScore();
 		assemblyScore.setConfidence(assemblyScoreDB.getConfidence());
 		assemblyScore.setMethod(assemblyScoreDB.getMethod());
-		assemblyScore.setScore(assemblyScoreDB.getScore()); 
+		assemblyScore.setScore(assemblyScoreDB.getScore());
+		assemblyScore.setCallName(assemblyScoreDB.getCallName());
+		assemblyScore.setCallReason(assemblyScoreDB.getCallReason());
 		return assemblyScore;
 	}
 }
