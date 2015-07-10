@@ -5,6 +5,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -19,8 +21,10 @@ import javax.vecmath.Vector3d;
 import org.biojava.nbio.structure.Atom;
 import org.biojava.nbio.structure.Calc;
 import org.biojava.nbio.structure.Chain;
+import org.biojava.nbio.structure.Compound;
 import org.biojava.nbio.structure.Group;
 import org.biojava.nbio.structure.StructureException;
+import org.biojava.nbio.structure.contact.Pair;
 import org.biojava.nbio.structure.contact.StructureInterface;
 import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
 import org.biojava.nbio.structure.io.FileConvert;
@@ -91,6 +95,21 @@ public class Assembly {
 		return engagedInterfaceClusters;
 	}
 	
+	public List<StructureInterfaceCluster> getEngagedInterfaceClusters(Stoichiometry sto) {
+		
+		Set<Integer> entityIdsInSto = sto.getEntityIds();
+		
+		List<StructureInterfaceCluster> engagedInterfaceClusters = new ArrayList<StructureInterfaceCluster>();
+		
+		for (StructureInterfaceCluster cluster:getEngagedInterfaceClusters()) {
+			StructureInterface interf = cluster.getMembers().get(0);
+			if (isInterfaceInEntityIds(interf, entityIdsInSto)) {				
+				engagedInterfaceClusters.add(cluster);
+			}
+		}
+		return engagedInterfaceClusters;
+	}
+	
 	public List<StructureInterfaceCluster> getHomoEngagedInterfaceClusters() {
 		List<StructureInterfaceCluster> engagedInterfaceClusters = new ArrayList<StructureInterfaceCluster>();
 		
@@ -100,6 +119,36 @@ public class Assembly {
 			}
 		}
 		return engagedInterfaceClusters;
+	}
+	
+	public List<StructureInterfaceCluster> getHomoEngagedInterfaceClusters(Stoichiometry sto) {
+		
+		Set<Integer> entityIdsInSto = sto.getEntityIds();
+		
+		List<StructureInterfaceCluster> engagedInterfaceClusters = new ArrayList<StructureInterfaceCluster>();
+		
+		for (StructureInterfaceCluster cluster: getEngagedInterfaceClusters()) {
+			StructureInterface interf = cluster.getMembers().get(0);
+			if (interf.isHomomeric() && 
+				isInterfaceInEntityIds(interf, entityIdsInSto) )  {
+				
+				engagedInterfaceClusters.add(cluster);
+			}
+		}
+		return engagedInterfaceClusters;
+	}
+	
+	private boolean isInterfaceInEntityIds(StructureInterface interf, Set<Integer> entityIds) {
+		Pair<Compound> comps = interf.getParentCompounds();
+		
+		// in some rare cases the compounds are missing, we can't do much: return false
+		if (comps.getFirst() == null || comps.getSecond() == null) return false;
+		
+		if (entityIds.contains(comps.getFirst().getMolId()) && 
+			entityIds.contains(comps.getSecond().getMolId()) ) {
+			return true;
+		}
+		return false;
 	}
 		
 	public int getNumEngagedInterfaceClusters() {
@@ -126,6 +175,64 @@ public class Assembly {
 			if (!cluster.getMembers().get(0).isHomomeric()) {
 				count++;
 			}
+		}
+		return count;
+	}
+	
+	/**
+	 * Get the number of engaged interface clusters that involve entities present in the given stoichiometry
+	 * @param sto
+	 * @return
+	 */
+	public int getNumEngagedInterfaceClusters(Stoichiometry sto) {
+		int count = 0;
+		Set<Integer> entityIdsInSto = sto.getEntityIds();
+		for (StructureInterfaceCluster cluster: getEngagedInterfaceClusters()) {
+			StructureInterface interf = cluster.getMembers().get(0);
+			if (isInterfaceInEntityIds(interf, entityIdsInSto)  ) {
+				// both sides are part of chains present in stoichiometry
+				count++;
+			}			
+		}
+		return count;
+	}
+	
+	/**
+	 * Get the number of homomeric engaged interface clusters that involve entities present in the given stoichiometry
+	 * @param sto
+	 * @return
+	 */
+	public int getNumHomoEngagedInterfaceClusters(Stoichiometry sto) {
+		int count = 0;
+		Set<Integer> entityIdsInSto = sto.getEntityIds();
+		for (StructureInterfaceCluster cluster: getEngagedInterfaceClusters()) {
+			StructureInterface interf = cluster.getMembers().get(0);				
+			if (interf.isHomomeric() && 
+				isInterfaceInEntityIds(interf, entityIdsInSto)   ) {
+				// both sides are part of chains present in stoichiometry
+				count++;
+			}
+			
+		}
+		return count;
+	}
+	
+	/**
+	 * Get the number of heteromeric engaged interface clusters that involve entities present in the given stoichiometry
+	 * @param sto
+	 * @return
+	 */
+	public int getNumHeteroEngagedInterfaceClusters(Stoichiometry sto) {
+		int count = 0;
+		Set<Integer> entityIdsInSto = sto.getEntityIds();
+		for (StructureInterfaceCluster cluster: getEngagedInterfaceClusters()) {
+			StructureInterface interf = cluster.getMembers().get(0);				
+			if (!interf.isHomomeric() && 
+				isInterfaceInEntityIds(interf, entityIdsInSto)   ) {
+				// both sides are part of chains present in stoichiometry
+				count++;
+			}
+			
 		}
 		return count;
 	}
@@ -693,10 +800,29 @@ public class Assembly {
 	 * @return
 	 */
 	public int[] getMultiplicityOfEngagedInterfClusters() {
-		int[] mult = new int[getNumEngagedInterfaceClusters()];
+		int[] mult = new int[getNumHomoEngagedInterfaceClusters()];
 		
 		int i = 0;
 		for (StructureInterfaceCluster interfCluster:getHomoEngagedInterfaceClusters()) {
+			
+			mult[i] = getCrystalAssemblies().getEdgeMultiplicity(interfCluster.getId());
+			i++;
+		}
+		
+		return mult;
+	}
+	
+	/**
+	 * For each of the homomeric engaged interfaces (present in given stoichiometry) in this assembly, 
+	 * finds out their multiplicity when they are considered as single-engaged-interface assemblies.
+	 * @param sto
+	 * @return
+	 */
+	public int[] getMultiplicityOfEngagedInterfClusters(Stoichiometry sto) {
+		int[] mult = new int[getNumHomoEngagedInterfaceClusters(sto)];
+		
+		int i = 0;
+		for (StructureInterfaceCluster interfCluster:getHomoEngagedInterfaceClusters(sto)) {
 			
 			mult[i] = getCrystalAssemblies().getEdgeMultiplicity(interfCluster.getId());
 			i++;
@@ -716,6 +842,28 @@ public class Assembly {
 	public StructureInterfaceCluster getInterfClusterWithMultiplicity(int multiplicity) {
 		
 		for (StructureInterfaceCluster interfCluster:getHomoEngagedInterfaceClusters()) {
+			
+			if (multiplicity == getCrystalAssemblies().getEdgeMultiplicity(interfCluster.getId())) {
+				return interfCluster;
+			}
+			
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * Return the first interface cluster (present in given stoichiometry) that has the given 
+	 * multiplicity (when edges are considered as single-engaged-interface assemblies)
+	 * @param multiplicity
+	 * @param sto
+	 * @return the first interface cluster with the desired multiplicity or null if no interface cluster has the 
+	 * desired multiplicity
+	 * @see #getMultiplicityOfEngagedInterfClusters()
+	 */
+	public StructureInterfaceCluster getInterfClusterWithMultiplicity(int multiplicity, Stoichiometry sto) {
+		
+		for (StructureInterfaceCluster interfCluster:getHomoEngagedInterfaceClusters(sto)) {
 			
 			if (multiplicity == getCrystalAssemblies().getEdgeMultiplicity(interfCluster.getId())) {
 				return interfCluster;
@@ -784,33 +932,56 @@ public class Assembly {
 	}
 
 	public void score() {
-		// for the moment we'll take first stoichiometry
-		// TODO need to double check what do to for cases where that's not valid
 
+		// note: the code here goes along the same lines of Stoichiometry.getSymmetry()
+		// we should try to unify them a bit and to reuse the common parts
+		
 		StoichiometrySet stoSet = getStoichiometrySet();
+
+		// we won't support non-fully-covering stoichiometries for the moment
+		// TODO support them: most likely requires a more complex data model where we can have score/calls for each of the subcomponents of the assembly
+		if (!stoSet.isFullyCovering()) {
+			logger.warn("Assembly {} does not cover all entities, assembly scoring will be done for first stoichiometry only", toString());
+		}
+		
 		Stoichiometry sto = stoSet.getFirst();
-		int size = sto.getCountForIndex(0);
-
-		String sym = sto.getSymmetry();
-
-		String multStr = sym.substring(1, sym.length());
-
-		int multiplicity = 0;
-		try {
-			multiplicity = Integer.parseInt(multStr);
-		} catch (NumberFormatException e) {
-			logger.warn("Symmetry string {} is mal-formed", sym);
+				
+		int n = sto.getFirstNonZero();
+		
+		if (n==-1) {
+			logger.warn("All counts are 0 for first stoichiometry of assembly {}. Something is wrong: can't score assembly!",toString());
 			return;
 		}
+		
+		
+		int numEntities = sto.getNumPresentEntities();
+		
+		boolean heteromer = false;
+		if (numEntities>1) heteromer = true;
 
-		// assuming homomers for the moment
-		// TODO treat heteromers as well
-		int numDistinctInterfaces = getNumEngagedInterfaceClusters();
+		String sym = sto.getSymmetry();
+		
 
 		setCall(CallType.CRYSTAL); // set crystal as default call, only if found to be bio it will be overridden below
 
-		if (size==1) {
-			// a monomeric assembly, no scoring at this stage
+		if (n==1) {
+			
+			if (!heteromer) {
+				// a C1 assembly (i.e. monomeric if homomeric):
+				// no scoring at this stage, later we look at all assemblies and if no larger assembly is bio, we assign bios to C1 assemblies
+				
+			} else {
+				// C1 heteromeric: 1:1:1 stoichiometry
+				List<StructureInterfaceCluster> list = getEngagedInterfaceClusters(sto);
+				boolean allBio = true;
+				for (StructureInterfaceCluster interfCluster:list) {
+					if (getCrystalAssemblies().getInterfaceEvolContextList().
+							getCombinedClusterPredictor(interfCluster.getId()).getCall() != CallType.BIO ) {
+						allBio = false;
+					}
+				}
+				if (allBio) setCall(CallType.BIO);
+			}
 			return;
 		}
 		
@@ -819,16 +990,21 @@ public class Assembly {
 			StructureInterfaceCluster interfCluster = null;
 
 			if (sym.startsWith("C2")) {
-				if (numDistinctInterfaces>1) {
-					logger.warn("More than 1 engaged interface cluster for a C2 symmetry. Something is wrong.");
-				}
 
-				interfCluster = getEngagedInterfaceClusters().get(0);
+				List<StructureInterfaceCluster> list = getEngagedInterfaceClusters(sto);
+				// we consider oligomerisation occurs through homomeric interfaces only (over simplification)
+				// TODO avoid the simplification and do it properly
+				// For instance in case of hemoglobin (1ye2) this fails misserably because the main 
+				// oligomerisation interfaces are heteromeric. In contrast, for symmetry detection this 
+				// simplification works fine in hemoglobin (and many other cases).
+				if (heteromer) list = getHomoEngagedInterfaceClusters(sto);
+				
+				interfCluster = list.get(0);
 
 			} else {
 
 				// getInterClusterWithMultiplicity doesn't work for mult=2
-				interfCluster = getInterfClusterWithMultiplicity(multiplicity);
+				interfCluster = getInterfClusterWithMultiplicity(n, sto);
 
 			}
 
@@ -846,7 +1022,10 @@ public class Assembly {
 
 			// let's simply take the 2 largest interfaces: if both bio that's a sufficient condition
 			// the list should be sorted from largest to smallest
-			List<StructureInterfaceCluster> list = getEngagedInterfaceClusters(); 
+			List<StructureInterfaceCluster> list = getEngagedInterfaceClusters(sto);
+			// we consider oligomerisation occurs through homomeric interfaces only (over simplification)
+			// TODO avoid the simplification and do it properly
+			if (heteromer) list = getHomoEngagedInterfaceClusters(sto);
 			
 			StructureInterfaceCluster first = list.get(0); // the largest
 			StructureInterfaceCluster second = list.get(1); // the second largest
@@ -865,5 +1044,21 @@ public class Assembly {
 
 
 
+	}
+	
+	/**
+	 * Sorts given list of interface clusters by descending descending areas
+	 * @param list
+	 */
+	@SuppressWarnings("unused")
+	private void sortStructureInterfaceClusterList(List<StructureInterfaceCluster> list) {
+		
+		Collections.sort(list, new Comparator<StructureInterfaceCluster>() {
+
+			@Override
+			public int compare(StructureInterfaceCluster o1, StructureInterfaceCluster o2) {
+				return Double.compare(o2.getTotalArea(), o1.getTotalArea());
+			}
+		});
 	}
 }

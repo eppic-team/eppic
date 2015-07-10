@@ -327,10 +327,10 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 		int maxSize = 0;
 		for (Assembly a:uniques) {
 			
-			// TODO this asssumes homomers, treat heteromers properly
 			StoichiometrySet stoSet = a.getStoichiometrySet();
+			// TODO this ignores other non-overlapping stoichiometries, must take care of that
 			Stoichiometry sto = stoSet.getFirst();
-			int size = sto.getCountForIndex(0);
+			int size = sto.getTotalSize();
 			
 			if (a.getCall() == CallType.BIO && maxSize<size) {
 				maxSizeBioAssembly = a;
@@ -343,7 +343,7 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 			
 			for (Assembly a:uniques) {
 				
-				// TODO this only works for homomers: treat heteromers properly
+				// TODO check how this would work with heteromers
 				
 				if (a.getNumEngagedInterfaceClusters()==0) {
 					a.setCall(CallType.BIO);

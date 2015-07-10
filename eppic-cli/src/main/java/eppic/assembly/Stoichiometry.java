@@ -2,7 +2,9 @@ package eppic.assembly;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.biojava.nbio.structure.Chain;
 import org.biojava.nbio.structure.Compound;
@@ -81,6 +83,20 @@ public class Stoichiometry {
 		return idx2ChainIds.get(chainIdx);
 	}
 	
+	/**
+	 * Get all entity ids present in this stoichiometry
+	 * @return
+	 */
+	public Set<Integer> getEntityIds() {
+		Set<Integer> entityIds = new HashSet<Integer>();
+		for (int i=0;i<getNumEntities();i++) {
+			if (sto[i]>0) {
+				entityIds.add(getEntityId(i));
+			}
+		}
+		return entityIds;
+	}
+	
 	public void add(Chain c) {
 		sto[getEntityIndex(c.getCompound().getMolId())]++;
 		comp[getChainIndex(c.getChainID())]++;
@@ -88,6 +104,16 @@ public class Stoichiometry {
 	
 	public int getNumEntities() {
 		return sto.length;
+	}
+	
+	public int getNumPresentEntities() {
+		int numPresentEntities = 0;
+		for (int i=0;i<this.getNumEntities();i++) {
+			if (sto[i]>0) {
+				numPresentEntities ++;
+			}
+		}
+		return numPresentEntities;
 	}
 	
 	/**
@@ -171,7 +197,7 @@ public class Stoichiometry {
 	 * Return the first non-zero count or -1 if all are 0
 	 * @return
 	 */
-	private int getFirstNonZero() {
+	protected int getFirstNonZero() {
 		int nonzero = -1;
 		for (int i=0;i<this.getNumEntities();i++) {
 			if (sto[i]>0) {
@@ -209,13 +235,14 @@ public class Stoichiometry {
 	/**
 	 * Return the symmetry string for this stoichiometry in its assembly:
 	 * cyclic Cn, dihedral Dn, tetrahedral T, octahedral O or icosahedral I 
-	 * This will only work correctly on assemblies that have been previously checked
+	 * This will work correctly only on assemblies that have been previously checked
 	 * to be valid with {@link Assembly#isValid()}
 	 * @return
 	 */
 	public String getSymmetry() {
 		
-		int numEntities = getNumEntities();
+		// we get the number of present entities in this stoichiometry (those with count>0)
+		int numEntities = getNumPresentEntities();
 		
 		boolean heteromer = false;
 		if (numEntities>1) heteromer = true;
@@ -227,13 +254,13 @@ public class Stoichiometry {
 			return UNKNOWN_SYMMETRY;
 		}
 				 
-		int numDistinctInterfaces = assembly.getNumEngagedInterfaceClusters();
+		int numDistinctInterfaces = assembly.getNumEngagedInterfaceClusters(this);
 		
 		if (heteromer) {
 			// let's consider the oligomerisation occurs through homomeric interfaces only (over simplification!)
 			// TODO avoid the simplification and do it properly!
 
-			numDistinctInterfaces = assembly.getNumHomoEngagedInterfaceClusters();
+			numDistinctInterfaces = assembly.getNumHomoEngagedInterfaceClusters(this);
 		}
 		
 		if (heteromer && !isEven()) { 
@@ -270,7 +297,7 @@ public class Stoichiometry {
 
 		if (numDistinctInterfaces==0) {
 			// no homo interfaces at all!
-			int numHeteros = assembly.getNumHeteroEngagedInterfaceClusters();
+			int numHeteros = assembly.getNumHeteroEngagedInterfaceClusters(this);
 			logger.warn("Heteromeric assembly with no homomeric interfaces and {} heteromeric. Can't say what's the symmetry, setting it to unknown",
 					numHeteros);
 			return UNKNOWN_SYMMETRY;
@@ -290,7 +317,7 @@ public class Stoichiometry {
 		boolean fourMultExists = false;
 		boolean fiveMultExists = false;
 
-		for (int mult:assembly.getMultiplicityOfEngagedInterfClusters()) {
+		for (int mult:assembly.getMultiplicityOfEngagedInterfClusters(this)) {
 			if (mult==n) nMultExists = true;
 			if (mult==3) threeMultExists = true;
 			if (mult==4) fourMultExists = true;
