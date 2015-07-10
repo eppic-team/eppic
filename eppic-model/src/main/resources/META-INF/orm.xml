@@ -213,6 +213,9 @@
 				<column length="15" />
 			</basic>
 
+			<basic name="callName"></basic>
+			<basic name="callReason"></basic>
+			
 			<basic name="score"></basic>
 			<basic name="confidence"></basic>
 
