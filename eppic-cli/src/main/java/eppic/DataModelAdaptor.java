@@ -353,6 +353,7 @@ public class DataModelAdaptor {
 			as.setScore(SCORE_NOT_AVAILABLE);
 			as.setConfidence(CONFIDENCE_NOT_AVAILABLE);
 			as.setPdbCode(pdbInfo.getPdbCode());
+			as.setAssembly(assembly);
 			assembly.addAssemblyScore(as);
 			
 			
@@ -504,6 +505,7 @@ public class DataModelAdaptor {
 			asxtal.setScore(SCORE_NOT_AVAILABLE);
 			asxtal.setConfidence(CONFIDENCE_NOT_AVAILABLE);
 			asxtal.setPdbCode(pdbInfo.getPdbCode());
+			asxtal.setAssembly(assembly);
 			
 			assembly.addAssemblyScore(asxtal);
 		}
