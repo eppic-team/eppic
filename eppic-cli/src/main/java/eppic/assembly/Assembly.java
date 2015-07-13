@@ -779,14 +779,27 @@ public class Assembly {
 	 * component of this Assembly.
 	 * @return
 	 */
-	public int getEdgeCountInFirstConnectedComponent(int interfaceClusterId) {
+	protected int getEdgeCountInFirstConnectedComponent(int interfaceClusterId) {
 
 		// we assume this is a valid assembly
-		// we get any of the isomorphic connected components, let's say the first one
 
 		int count = 0;
+
+		// we get any of the isomorphic connected components that have a compatible stoichiometry,
+		// i.e. an stoichiometry that overlaps that of the given interfaceCluster
+		StructureInterfaceCluster interfCluster = null;
+		for (StructureInterfaceCluster engagedInterfCluster: getEngagedInterfaceClusters()) {
+			if (engagedInterfCluster.getId() == interfaceClusterId) interfCluster = engagedInterfCluster;
+		}
+		Pair<Chain> chains = interfCluster.getMembers().get(0).getParentChains();
+		Stoichiometry sto = new Stoichiometry(getCrystalAssemblies().getStructure(), this);
+		sto.add(chains.getFirst());
+		sto.add(chains.getSecond());
+		List<Integer> indices = stoichiometrySet.getIndicesWithOverlappingStoichiometry(sto);
+
+		// from any of the relevant isomorphic connected components we get the first one
+		UndirectedGraph<ChainVertex, InterfaceEdge> firstCc = connectedComponents.get(indices.get(0));
 		
-		UndirectedGraph<ChainVertex, InterfaceEdge> firstCc = connectedComponents.get(0);
 		for (InterfaceEdge edge:firstCc.edgeSet()) {
 			if (edge.getClusterId() == interfaceClusterId) count++;
 		}
