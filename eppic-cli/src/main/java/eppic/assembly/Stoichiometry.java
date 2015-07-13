@@ -286,7 +286,8 @@ public class Stoichiometry {
 		// CASE B) n==2 or n is odd
 		
 		if (n%2 != 0 || n==2) {
-			if (numDistinctInterfaces>1) {
+			if (!heteromer && numDistinctInterfaces>1) {
+				// we don't warn in case of heteromers, because this happens often in heteromer assemblies, e.g. 1ef2, assembly {1,4,6}
 				logger.warn("More than 1 engaged homomeric interface clusters for an assembly of size {}. Something is wrong!",n);
 			}
 			return "C"+n;

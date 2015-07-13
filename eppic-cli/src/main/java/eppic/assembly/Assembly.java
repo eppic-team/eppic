@@ -1018,6 +1018,16 @@ public class Assembly {
 
 				// getInterClusterWithMultiplicity doesn't work for mult=2
 				interfCluster = getInterfClusterWithMultiplicity(n, sto);
+				
+				// the above won't work properly for heteromers in the general case
+				if (interfCluster == null && heteromer) {
+					logger.warn("Could not find the C{} interface for heteromeric assembly {}. Assembly scoring will be based on largest engaged interface",
+							n,toString());
+					interfCluster = getEngagedInterfaceClusters(sto).get(0);
+				} else if (interfCluster==null) {
+					// in homomer case, it should have worked, we've screwed up somewhere
+					logger.error("Could not find the C{} interface in homomeric assembly {}. Something is wrong!",n,toString());
+				}
 
 			}
 
