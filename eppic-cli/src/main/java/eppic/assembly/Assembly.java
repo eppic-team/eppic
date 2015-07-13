@@ -1012,7 +1012,15 @@ public class Assembly {
 				// simplification works fine in hemoglobin (and many other cases).
 				if (heteromer) list = getHomoEngagedInterfaceClusters(sto);
 				
-				interfCluster = list.get(0);
+				if (list.isEmpty() && heteromer) {
+					logger.warn("Empty list of engaged interface clusters for a heteromeric C2 symmetry");
+				} else if (list.isEmpty()) {
+					logger.error("Empty list of engaged interface clusters for a homomeric C2 symmetry. Something is wrong!");
+					
+				} else {
+				
+					interfCluster = list.get(0);
+				}
 
 			} else {
 
@@ -1031,10 +1039,16 @@ public class Assembly {
 
 			}
 
-			// the call for the Cn interface will be the call for the assembly
-			CallType call = getCrystalAssemblies().getInterfaceEvolContextList().getCombinedClusterPredictor(interfCluster.getId()).getCall();
+			if (interfCluster!=null) {
+				// the call for the Cn interface will be the call for the assembly
+				CallType call = getCrystalAssemblies().getInterfaceEvolContextList().getCombinedClusterPredictor(interfCluster.getId()).getCall();
+				setCall(call);
 
-			setCall(call);
+			} else {
+				logger.warn("Could not find the relevant C{} interface, assembly {} will be NOPRED",n,toString());
+				setCall(CallType.NO_PREDICTION);
+			}
+
 
 
 		} else if (sym.startsWith("D")) {
