@@ -260,6 +260,7 @@ public class Stoichiometry {
 			// let's consider the oligomerisation occurs through homomeric interfaces only (over simplification!)
 			// TODO avoid the simplification and do it properly!
 
+			//UndirectedGraph<ChainVertex, InterfaceEdge> cg = assembly.getCrystalAssemblies().getLatticeGraph().getContractedHomomericGraph();
 			numDistinctInterfaces = assembly.getNumHomoEngagedInterfaceClusters(this);
 		}
 		

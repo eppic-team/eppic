@@ -22,6 +22,7 @@ import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.StructureException;
 import org.biojava.nbio.structure.StructureTools;
 import org.biojava.nbio.structure.contact.StructureInterface;
+import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
 import org.biojava.nbio.structure.contact.StructureInterfaceList;
 import org.biojava.nbio.structure.xtal.CrystalCell;
 import org.biojava.nbio.structure.xtal.SpaceGroup;
@@ -29,6 +30,8 @@ import org.jgrapht.UndirectedGraph;
 import org.jgrapht.graph.Pseudograph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import eppic.EppicParams;
 
 
 
@@ -426,6 +429,102 @@ public class LatticeGraph {
 			unitCellOperators = new HashMap<String, Matrix4d[]>();
 			this.globalReferencePoint = globalReferencePoint;
 		}
+	}
+	
+	/**
+	 * Get a list of interface cluster ids of interface clusters that exist 
+	 * between entities with the given entity ids.
+	 * The list is sorted descendent by interface cluster average area.
+	 * @param entity1
+	 * @param entity2
+	 * @return
+	 */
+	public List<Integer> getInterfaceClusterIds(int entity1, int entity2) {
+		
+		Set<Integer> interfaceClusterIds = new HashSet<Integer>();
+		
+		for (InterfaceEdge edge:graph.edgeSet()) {
+			ChainVertex s = graph.getEdgeSource(edge);
+			ChainVertex t = graph.getEdgeTarget(edge);
+			
+			if ( (s.getEntity()==entity1 && t.getEntity()==entity2) ||
+				 (s.getEntity()==entity2 && t.getEntity()==entity1) ) {
+			
+				interfaceClusterIds.add(edge.getClusterId());
+				
+			}
+		}
+		
+		List<StructureInterfaceCluster> clusters = interfaces.getClusters(EppicParams.CLUSTERING_CONTACT_OVERLAP_SCORE_CUTOFF);
+		
+		List<StructureInterfaceCluster> sublist = new ArrayList<StructureInterfaceCluster>();
+		
+		for (int clusterId:interfaceClusterIds) {
+			sublist.add(clusters.get(clusterId - 1));			
+		}
+		
+		Collections.sort(sublist, new Comparator<StructureInterfaceCluster>() {
+
+			@Override
+			public int compare(StructureInterfaceCluster o1, StructureInterfaceCluster o2) {
+				return Double.compare(o2.getTotalArea(), o1.getTotalArea());
+			}
+		});
+		
+		List<Integer> ids = new ArrayList<Integer>();
+		for (StructureInterfaceCluster interfCluster:sublist) {
+			ids.add(interfCluster.getId());
+		}
+		return ids;
+	}
+	
+	/**
+	 * 
+	 * 
+	 * See https://en.wikipedia.org/wiki/Edge_contraction
+	 * @return
+	 */
+	public UndirectedGraph<ChainVertex, InterfaceEdge> getContractedHomomericGraph() {
+				
+		Set<Integer> entities = getAllEntities();
+				
+		// homomer: we don't have to modify the graph
+		if (entities.size()==1) return GraphTools.copyGraph(graph);
+		
+		// TODO we should first check that there's enough edges to produce contracted graph
+		//List<StructureInterfaceCluster> heteroInterfaces = getHeteroEngagedInterfaceClusters();
+		//		
+		//if (entities.size()>heteroInterfaces.size()+1) {
+		//	logger.warn("Not enough heteromeric interfaces to produce a contracted graph: {} entities and {} heteromeric interfaces",
+		//			entities.size(), heteroInterfaces.size());
+		//	return GraphTools.copyGraph(graph);
+		//}
+
+		List<Integer> clusterIdsToContract = new ArrayList<Integer>();
+		int i = -1;
+		for (int iEntity:entities) {
+			i++;
+			int j = -1;
+			for (int jEntity:entities) {
+				j++;
+				if (j<=i) continue;
+				List<Integer> clusterIds = getInterfaceClusterIds(iEntity, jEntity);
+				
+				// we take the largest interface cluster for every pair of entities
+				clusterIdsToContract.add(clusterIds.get(0));
+				
+			}
+		}
+		
+		return GraphTools.contract(graph, clusterIdsToContract);
+	}
+	
+	private Set<Integer> getAllEntities() {
+		Set<Integer> entities = new HashSet<Integer>();
+		for (ChainVertex v:graph.vertexSet()) {
+			entities.add(v.getEntity());
+		}
+		return entities;
 	}
 
 }
