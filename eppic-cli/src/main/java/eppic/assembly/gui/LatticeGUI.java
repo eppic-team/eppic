@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.vecmath.Matrix4d;
 import javax.vecmath.Point3d;
@@ -244,6 +245,7 @@ public class LatticeGUI {
 			
 		}
 		
+		graphComponent.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 		JFrame frame = new JFrame("JGraph");
 		frame.getContentPane().add(graphComponent);
 		frame.pack();

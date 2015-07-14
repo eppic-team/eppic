@@ -21,6 +21,9 @@ public class ContentTypeGenerator
 			{
 				contentType = "chemical/x-pdb";
 			}
+			else if (fileName.endsWith(".cif.gz")) {
+				contentType = "chemical/x-cif";
+			}
 			else if(fileName.endsWith(".zip"))
 			{
 				contentType = "application/zip";

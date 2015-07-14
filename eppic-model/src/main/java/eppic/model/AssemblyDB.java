@@ -12,6 +12,8 @@ public class AssemblyDB implements Serializable {
 
 	private int uid;
 	
+	private int id;
+	
 	private String pdbCode;
 	
 
@@ -50,6 +52,14 @@ public class AssemblyDB implements Serializable {
 
 	public void setUid(int uid) {
 		this.uid = uid;
+	}
+
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
 	}
 
 	public PdbInfoDB getPdbInfo() {

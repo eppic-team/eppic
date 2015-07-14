@@ -52,6 +52,10 @@ import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 @PersistenceContext(name="eppicjpa", unitName="eppicjpa")
 public class DataDownloadServlet extends BaseServlet{
 
+	/**
+	 * The servlet name, note that the name is defined in the web.xml file.
+	 */
+	public static final String SERVLET_NAME = "dataDownload";
 	
 	private static final long serialVersionUID = 1L;
 	

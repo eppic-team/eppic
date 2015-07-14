@@ -10,11 +10,9 @@ import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -32,6 +30,7 @@ import javax.persistence.metamodel.SingularAttribute;
 
 import ch.systemsx.sybit.shared.model.InputType;
 import ch.systemsx.sybit.shared.model.StatusOfJob;
+import eppic.commons.util.DbConfigGenerator;
 import eppic.model.ChainClusterDB;
 import eppic.model.ChainClusterDB_;
 import eppic.model.JobDB;
@@ -62,7 +61,16 @@ public class DBHandler {
 	public DBHandler(String dbName) {
 
 		File configurationFile = new File(System.getProperty("user.home"), CONFIG_FILE_NAME);
-		Map<String, String> properties = createDatabaseProperties(configurationFile, dbName);
+		Map<String, String> properties = null;
+		try {
+			properties = DbConfigGenerator.createDatabaseProperties(configurationFile, dbName);
+			
+			System.out.println("Using database "+dbName+", jdbc url is: "+properties.get("javax.persistence.jdbc.url")); 
+			
+		} catch (IOException e) {
+			System.err.println("Problems while reading the configuration file "+configurationFile+". Error: "+e.getMessage());
+			System.exit(1);
+		}
 		
 		try {
 			this.emf = Persistence.createEntityManagerFactory(PERSISTENCE_UNIT_NAME, properties);
@@ -73,60 +81,6 @@ public class DBHandler {
 			System.err.println("Error initializing Entity Manager Factory");
 			System.err.println("Please check that the database '"+dbName+"' is really present and that the login parameters are correct in file "+configurationFile);
 			System.exit(1);
-		}
-	}
-
-	private Map<String, String> createDatabaseProperties(File configurationFile, String dbName) {
-		try {
-			Properties properties = new Properties();
-			properties.load(new FileInputStream(configurationFile));
-			Map<String, String> map = new HashMap<>();
-			map.put("javax.persistence.jdbc.driver", "com.mysql.jdbc.Driver");
-			map.put("javax.persistence.nonJtaDataSource", "");
-			map.put("hibernate.c3p0.min_size", "5");
-			map.put("hibernate.c3p0.max_size", "20");
-			map.put("hibernate.c3p0.timeout", "1800");
-			map.put("hibernate.c3p0.max_statements", "50");
-			
-			String port = "3306"; // default mysql port
-			String host = null;
-			
-			String user = null;
-			String pwd = null;
-			
-			// port is the only optional property
-			if (properties.getProperty("port")!=null && !properties.getProperty("port").isEmpty()) 
-				port = properties.getProperty("port").trim();
-
-			if (properties.getProperty("user")!=null && !properties.getProperty("user").isEmpty()) {
-				user = properties.getProperty("user").trim();
-			} else {
-				throw new IOException("Missing property 'user' in config file "+configurationFile);
-			}
-			if (properties.getProperty("password")!=null && !properties.getProperty("password").isEmpty()) {
-				pwd = properties.getProperty("password").trim();
-			} else {
-				throw new IOException("Missing property 'password' in config file "+configurationFile);
-			}
-			if (properties.getProperty("host")!=null && !properties.getProperty("host").isEmpty()) {
-				host = properties.getProperty("host").trim();
-			} else {
-				throw new IOException("Missing property 'host' in config file "+configurationFile);
-			}
-			
-			System.out.println("Using database "+dbName+" in host "+host);
-			
-			String url = "jdbc:mysql://"+host+":"+port+"/"+dbName;
-			map.put("javax.persistence.jdbc.url", url);
-			map.put("javax.persistence.jdbc.user", user); 
-			map.put("javax.persistence.jdbc.password", pwd);
-			
-			return map;
-			
-		} catch (IOException e) {
-			System.err.println("Problems while reading the configuration file "+configurationFile+". Error: "+e.getMessage());
-			System.exit(1);
-			return null;
 		}
 	}
 

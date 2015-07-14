@@ -79,6 +79,7 @@ import com.sencha.gxt.widget.core.client.tips.ToolTip;
 import com.sencha.gxt.widget.core.client.tips.ToolTipConfig;
 import com.sencha.gxt.widget.core.client.toolbar.ToolBar;
 
+import eppic.EppicParams;
 import eppic.model.ScoringMethod;
 
 public class ResultsGridPanel extends VerticalLayoutContainer
@@ -499,11 +500,13 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 					String thumbnailUrl = ApplicationContext.getSettings().getResultsLocation() +
 							ApplicationContext.getPdbInfo().getJobId() + 
 							"/" + ApplicationContext.getPdbInfo().getTruncatedInputName() +
+							EppicParams.INTERFACES_COORD_FILES_SUFFIX +
 							"." + interfaceItem.getInterfaceId() + ".75x75.png";
 					if(ApplicationContext.getPdbInfo().getJobId().length() == 4)
 						thumbnailUrl = ApplicationContext.getSettings().getResultsLocation() +
 							ApplicationContext.getPdbInfo().getJobId().toLowerCase() + 
 							"/" + ApplicationContext.getPdbInfo().getTruncatedInputName() +
+							EppicParams.INTERFACES_COORD_FILES_SUFFIX + 
 							"." + interfaceItem.getInterfaceId() + ".75x75.png";
 					model.setThumbnailUrl(thumbnailUrl);
 

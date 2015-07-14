@@ -369,8 +369,29 @@ public class Main {
 	}
 	
 	public void doAssemblyScoring() {
+
 		
-		// TODO implement!
+		// TODO for the moment we are only doing assemblies for crystallographic structures, but we should also try to deal with NMR and EM
+		if (pdb.isCrystallographic() && 
+			pdb.getCrystallographicInfo().getSpaceGroup()!=null &&
+			pdb.getCrystallographicInfo().getCrystalCell()!=null) {
+
+			if (params.isDoEvolScoring()) {
+				validAssemblies.setInterfaceEvolContextList(iecList);
+
+				validAssemblies.score();
+			}
+
+
+			modelAdaptor.setAssemblies(validAssemblies);
+
+			// since the move to Biojava, we have decided to take the first PDB-annotated biounit ONLY, whatever its type
+			String[] symmetries = getSymmetry(EppicParams.PDB_BIOUNIT_TO_USE);
+			modelAdaptor.setPdbBioUnits(pdb.getPDBHeader().getBioAssemblies().get(EppicParams.PDB_BIOUNIT_TO_USE),
+					symmetries,
+					validAssemblies);
+		}
+
 	}
 	
 	public void doGeomScoring() throws EppicException {
@@ -416,19 +437,6 @@ public class Main {
 		modelAdaptor.setGeometryScores(gps, gcps);
 		modelAdaptor.setResidueDetails(interfaces);
 
-		// TODO for the moment we are only doing assemblies for crystallographic structures, but we should also try to deal with NMR and EM
-		if (pdb.isCrystallographic() && 
-				pdb.getCrystallographicInfo().getSpaceGroup()!=null &&
-				pdb.getCrystallographicInfo().getCrystalCell()!=null) {
-			
-			modelAdaptor.setAssemblies(validAssemblies);
-
-			// since the move to Biojava, we have decided to take the first PDB-annotated biounit ONLY, whatever its type
-			String[] symmetries = getSymmetry(EppicParams.PDB_BIOUNIT_TO_USE);
-			modelAdaptor.setPdbBioUnits(pdb.getPDBHeader().getBioAssemblies().get(EppicParams.PDB_BIOUNIT_TO_USE),
-					symmetries,
-					validAssemblies);
-		}
 	}
 	
 	/**
@@ -595,12 +603,12 @@ public class Main {
 			
 			// INTERFACE files
 			for (StructureInterface interf : interfaces) {
-				File outputFile = params.getOutputFile("." + interf.getId() + EppicParams.MMCIF_FILE_EXTENSION);
+				File outputFile = params.getOutputFile(EppicParams.INTERFACES_COORD_FILES_SUFFIX + "." + interf.getId() + EppicParams.MMCIF_FILE_EXTENSION);
 				PrintStream ps = new PrintStream(new GZIPOutputStream(new FileOutputStream(outputFile)));				
 				ps.print(interf.toMMCIF());
 				ps.close();
 				if (params.isGeneratePdbFiles()) { 
-					outputFile = params.getOutputFile("." + interf.getId() + EppicParams.PDB_FILE_EXTENSION);
+					outputFile = params.getOutputFile(EppicParams.INTERFACES_COORD_FILES_SUFFIX + "." + interf.getId() + EppicParams.PDB_FILE_EXTENSION);
 					ps = new PrintStream(new GZIPOutputStream(new FileOutputStream(outputFile)));
 					ps.print(interf.toPDB());
 					ps.close();
@@ -612,20 +620,20 @@ public class Main {
 			if (pdb.isCrystallographic() && 
 					pdb.getCrystallographicInfo().getSpaceGroup()!=null &&
 					pdb.getCrystallographicInfo().getCrystalCell()!=null) {
-				int i = 0;
+
 				for (Assembly a:validAssemblies) {
-					i++;
-					File outputFile= params.getOutputFile(EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX+"." + i + EppicParams.MMCIF_FILE_EXTENSION);
+
+					File outputFile= params.getOutputFile(EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX+"." + a.getId() + EppicParams.MMCIF_FILE_EXTENSION);
 					
 					try {								
 						a.writeToMmCifFile(outputFile);
 						if (params.isGeneratePdbFiles()) {
-							outputFile= params.getOutputFile(EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX+"." + i +  EppicParams.PDB_FILE_EXTENSION);
+							outputFile= params.getOutputFile(EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX+"." + a.getId() +  EppicParams.PDB_FILE_EXTENSION);
 							a.writeToPdbFile(outputFile);
 						}
 						
 					} catch (StructureException e) {
-						LOGGER.error("Could not write assembly coordinates file {}: {}",i,e.getMessage());
+						LOGGER.error("Could not write assembly coordinates file {}: {}",a.getId(),e.getMessage());
 						continue;
 					}
 
@@ -692,10 +700,10 @@ public class Main {
 			for (StructureInterface interf:interfaces) {
 				pr.generateInterfPngPsePml(interf, 
 						params.getCAcutoffForGeom(), params.getMinAsaForSurface(), 
-						params.getOutputFile("."+interf.getId()+ EppicParams.MMCIF_FILE_EXTENSION), 
-						params.getOutputFile("."+interf.getId()+".pse"),
-						params.getOutputFile("."+interf.getId()+".pml"),
-						params.getBaseName()+"."+interf.getId()	);
+						params.getOutputFile(EppicParams.INTERFACES_COORD_FILES_SUFFIX+"."+interf.getId()+ EppicParams.MMCIF_FILE_EXTENSION), 
+						params.getOutputFile(EppicParams.INTERFACES_COORD_FILES_SUFFIX+"."+interf.getId()+".pse"),
+						params.getOutputFile(EppicParams.INTERFACES_COORD_FILES_SUFFIX+"."+interf.getId()+".pml"),
+						params.getBaseName()+EppicParams.INTERFACES_COORD_FILES_SUFFIX+"."+interf.getId()	);
 				LOGGER.info("Generated PyMOL files for interface "+interf.getId());
 				
 			}
@@ -746,8 +754,8 @@ public class Main {
 		
 		try {
 			for (StructureInterface interf:interfaces) {
-				File pseFile = params.getOutputFile("."+interf.getId()+".pse");
-				File gzipPseFile = params.getOutputFile("."+interf.getId()+".pse.gz");
+				File pseFile = params.getOutputFile(EppicParams.INTERFACES_COORD_FILES_SUFFIX+"."+interf.getId()+".pse");
+				File gzipPseFile = params.getOutputFile(EppicParams.INTERFACES_COORD_FILES_SUFFIX+"."+interf.getId()+".pse.gz");
 
 				if (!pseFile.exists()) {
 					LOGGER.warn("Can't find PSE file {} to compress",pseFile);
@@ -921,10 +929,14 @@ public class Main {
 							gcps.get(i),
 							iecList.getEvolCoreRimClusterPredictor(clusterId),
 							iecList.getEvolCoreSurfaceClusterPredictor(clusterId));
+			
 			ccp.computeScores();
 			ccps.add(ccp);
 			i++;
+			
+			iecList.setCombinedClusterPredictor(clusterId, ccp);
 		}
+				
 
 		modelAdaptor.setCombinedPredictors(cps, ccps);
 
@@ -1013,10 +1025,10 @@ public class Main {
 				// 5 combined scoring
 				doCombinedScoring();
 				
-				// 6 score assemblies and predict most likely assembly
-				doAssemblyScoring();
 			}
 			
+			// 6 score assemblies and predict most likely assembly
+			doAssemblyScoring();
 			
 			// 7 write TSV files (only if not in -w) 	
 			doWriteTextOutputFiles();

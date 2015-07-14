@@ -95,6 +95,11 @@ public class ApplicationSettingsGenerator
 			javaVM = "java";
 		}
 		
+		String url3dmoljs = globalProperties.getProperty("url3dmoljs");
+		if (url3dmoljs==null || url3dmoljs.equals("")) {
+			logger.error("The URL for 3Dmol.js is not set in server.properties file!");
+		}
+		
 		settings.setCaptchaPublicKey(captchaPublicKey);
 		settings.setUseCaptcha(useCaptcha);
 		settings.setNrOfAllowedSubmissionsWithoutCaptcha(nrOfAllowedSubmissionsWithoutCaptcha);

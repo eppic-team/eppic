@@ -1,8 +1,13 @@
 package ch.systemsx.sybit.crkwebui.shared.model;
 
+import java.io.Serializable;
+
 import eppic.model.AssemblyContentDB;
 
-public class AssemblyContent {
+public class AssemblyContent implements Serializable {
+
+	private static final long serialVersionUID = 1L;
+
 
 	private int uid;
 	

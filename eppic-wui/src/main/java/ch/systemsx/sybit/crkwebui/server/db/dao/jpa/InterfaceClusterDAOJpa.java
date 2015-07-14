@@ -23,8 +23,7 @@ public class InterfaceClusterDAOJpa implements InterfaceClusterDAO
 {
 
 	@Override
-	public List<InterfaceCluster> getInterfaceClustersWithoutInterfaces(int pdbInfoUid)
-			throws DaoException 
+	public List<InterfaceCluster> getInterfaceClustersWithoutInterfaces(int pdbInfoUid)	throws DaoException 
 	{
 		EntityManager entityManager = null;
 		
@@ -72,4 +71,54 @@ public class InterfaceClusterDAOJpa implements InterfaceClusterDAO
 		}
 	}
 
+	@Override
+	public List<InterfaceCluster> getInterfaceClustersWithoutInterfaces(int pdbInfoUid, List<Integer> interfaceClusterIds) 
+			throws DaoException {
+		
+		EntityManager entityManager = null;
+		
+		try
+		{
+			List<InterfaceCluster> result = new ArrayList<InterfaceCluster>();
+			
+			entityManager = EntityManagerHandler.getEntityManager();
+			
+			CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+			CriteriaQuery<InterfaceClusterDB> criteriaQuery = criteriaBuilder.createQuery(InterfaceClusterDB.class);
+			
+			Root<InterfaceClusterDB> interfaceClusterRoot = criteriaQuery.from(InterfaceClusterDB.class);
+			Path<PdbInfoDB> pdbInfoDB = interfaceClusterRoot.get(InterfaceClusterDB_.pdbInfo);
+			criteriaQuery.where(criteriaBuilder.equal(pdbInfoDB.get(PdbInfoDB_.uid), pdbInfoUid));
+			
+			Query query = entityManager.createQuery(criteriaQuery);
+			
+			@SuppressWarnings("unchecked")
+			List<InterfaceClusterDB> interfaceClusterDBs = query.getResultList();
+			
+			for(InterfaceClusterDB interfaceClusterDB : interfaceClusterDBs) {
+				interfaceClusterDB.setInterfaces(null);
+				if (interfaceClusterIds.contains(interfaceClusterDB.getClusterId())) { 
+					result.add(InterfaceCluster.create(interfaceClusterDB));
+				}
+			}
+			
+			return result;
+		}
+		catch(Throwable e)
+		{
+			e.printStackTrace();
+			throw new DaoException(e);
+		}
+		finally
+		{
+			try
+			{
+				entityManager.close();
+			}
+			catch(Throwable t)
+			{
+				t.printStackTrace();
+			}
+		}
+	}
 }

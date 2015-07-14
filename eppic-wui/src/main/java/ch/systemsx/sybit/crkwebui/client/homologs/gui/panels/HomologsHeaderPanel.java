@@ -6,6 +6,7 @@ package ch.systemsx.sybit.crkwebui.client.homologs.gui.panels;
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.links.ImageLinkWithTooltip;
+import ch.systemsx.sybit.crkwebui.server.files.downloader.servlets.FileDownloadServlet;
 import ch.systemsx.sybit.crkwebui.shared.model.ChainCluster;
 import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 
@@ -16,6 +17,8 @@ import com.sencha.gxt.widget.core.client.container.HorizontalLayoutContainer;
 import com.sencha.gxt.widget.core.client.container.SimpleContainer;
 import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer;
 import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer.VerticalLayoutData;
+
+import eppic.EppicParams;
 
 /**
  * Panel containing information on the homogs info item
@@ -84,8 +87,13 @@ public class HomologsHeaderPanel extends HorizontalLayoutContainer{
 	 */
 	private void fillDownloadsLink(ChainCluster chainCluster, String jobId) {
 		String source = "resources/icons/download.png";
-		String alignmentId = chainCluster.getRepChain();
-    	String downloadLink = GWT.getModuleBaseURL() + "fileDownload?type=fasta&id=" + jobId + "&alignment=" + alignmentId;
+		String repChainId = chainCluster.getRepChain();
+    	String downloadLink = GWT.getModuleBaseURL() + 
+    			FileDownloadServlet.SERVLET_NAME + "?" +
+    			FileDownloadServlet.PARAM_TYPE+"=" + FileDownloadServlet.TYPE_VALUE_MSA + 
+    			"&"+FileDownloadServlet.PARAM_ID+"=" + jobId + 
+    			"&"+FileDownloadServlet.PARAM_REP_CHAIN_ID+"=" + repChainId;
+    	
 		downloadImage.setData(source, 
 						20, 20, 
 						AppPropertiesManager.CONSTANTS.homologs_window_downloads_tooltip(), 
@@ -132,14 +140,18 @@ public class HomologsHeaderPanel extends HorizontalLayoutContainer{
 		SimpleContainer vlc = new SimpleContainer();
 		
 		// from SequenceInfoPanel
-		String alignmentId = chainCluster.getRepChain();
+		String repChainId = chainCluster.getRepChain();
 		String pdbName = pdbInfo.getTruncatedInputName();
 		String downloadPseLink = GWT.getModuleBaseURL() + 
-				"fileDownload?type=entropiespse&id=" + jobId + "&alignment=" + alignmentId; 
+				FileDownloadServlet.SERVLET_NAME + "?" +
+				FileDownloadServlet.PARAM_TYPE+"=" + FileDownloadServlet.TYPE_VALUE_ENTROPIESPSE+
+				"&"+FileDownloadServlet.PARAM_ID+"=" + jobId + 
+				"&"+FileDownloadServlet.PARAM_REP_CHAIN_ID+"=" + repChainId;
+		
 		String colorPseIconImgSrc = 
 				ApplicationContext.getSettings().getResultsLocation() + 
 				jobId+"/"+
-				pdbName +"."+alignmentId+".entropies.png";
+				pdbName +"."+repChainId+EppicParams.ENTROPIES_FILE_SUFFIX+".png";
 
 		potatoImage = new ImageLinkWithTooltip(colorPseIconImgSrc, 
 						40, 40, 

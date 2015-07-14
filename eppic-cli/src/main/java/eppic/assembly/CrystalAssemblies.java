@@ -1,6 +1,8 @@
 package eppic.assembly;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -15,7 +17,9 @@ import org.biojava.nbio.structure.contact.StructureInterfaceList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import eppic.CallType;
 import eppic.EppicParams;
+import eppic.InterfaceEvolContextList;
 
 /**
  * A representation of all valid assemblies in a crystal structure.
@@ -45,6 +49,7 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 	
 	private Map<Integer,AssemblyGroup> groups;
 	
+	private InterfaceEvolContextList interfEvolContextList;
 	
 	public CrystalAssemblies(Structure structure, StructureInterfaceList interfaces) throws StructureException {
 		
@@ -228,15 +233,37 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 	 * of each of the assembly clusters. The representatives are chosen to be those assemblies that
 	 * have maximal number of engaged interface clusters out of the group of equivalent assemblies 
 	 * in the assembly cluster.
+	 * The output list is sorted ascending on size of assemblies, with {@link Assembly#getId()} assigned
+	 * according to that sorting.
 	 * @return
 	 */
 	public List<Assembly> getUniqueAssemblies() {
 		List<Assembly> representatives = new ArrayList<Assembly>();
+		
+		
 		for (AssemblyGroup cluster:clusters) {
 			// we use the first member of each cluster (which is the maximal group, see 
 			// AssemblyGroup.sortIntoClusters() ) as the representative
 			representatives.add(cluster.get(0));
 		}
+		
+		Collections.sort(representatives, new Comparator<Assembly>() {
+
+			@Override
+			public int compare(Assembly arg0, Assembly arg1) {
+				int firstSize = arg0.getStoichiometrySet().getFirst().getCountForIndex(0);
+				int secondSize = arg1.getStoichiometrySet().getFirst().getCountForIndex(0);
+				return Integer.compare(firstSize, secondSize);
+			}
+			
+		});
+
+		int id = 1;
+		for (Assembly a:representatives) {
+			a.setId(id);
+			id++;
+		}
+		
 		return representatives;
 	}
 	
@@ -275,6 +302,63 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 		
 		return singleInterfaceClusterAssembly.getEdgeCountInFirstConnectedComponent(interfaceClusterId);
 
+	}
+	
+	public InterfaceEvolContextList getInterfaceEvolContextList() {
+		return interfEvolContextList;		
+	}
+	
+	public void setInterfaceEvolContextList(InterfaceEvolContextList interfEvolContextList) {
+		this.interfEvolContextList = interfEvolContextList;
+	}
+	
+	public void score() {
+
+		// this gets each of the unique assembly clusters, represented by the maximal member
+		List<Assembly> uniques = getUniqueAssemblies();
+
+		// 1 Do individual assemblies scoring
+		for (Assembly a:uniques) {			
+			a.score();							
+		}
+		
+		// 2 Look at all calls and keep only the largest bio assembly. If no bios at all then assign bio to monomers
+		Assembly maxSizeBioAssembly = null;
+		int maxSize = 0;
+		for (Assembly a:uniques) {
+			
+			StoichiometrySet stoSet = a.getStoichiometrySet();
+			// TODO this ignores other non-overlapping stoichiometries, must take care of that
+			Stoichiometry sto = stoSet.getFirst();
+			int size = sto.getTotalSize();
+			
+			if (a.getCall() == CallType.BIO && maxSize<size) {
+				maxSizeBioAssembly = a;
+				maxSize = size;
+			}
+		}
+		
+		if (maxSizeBioAssembly == null) {
+			// no assemblies were BIO
+			
+			for (Assembly a:uniques) {
+				
+				// TODO check how this would work with heteromers
+				
+				if (a.getNumEngagedInterfaceClusters()==0) {
+					a.setCall(CallType.BIO);
+				}
+			}
+			
+		} else {			
+			
+			for (Assembly a:uniques) {			
+				if (a == maxSizeBioAssembly) continue;
+				
+				a.setCall(CallType.CRYSTAL);
+				
+			}
+		}
 	}
 	
 }

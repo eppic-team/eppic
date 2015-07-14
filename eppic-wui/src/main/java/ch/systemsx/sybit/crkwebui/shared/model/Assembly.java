@@ -2,14 +2,12 @@ package ch.systemsx.sybit.crkwebui.shared.model;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import eppic.model.AssemblyContentDB;
 import eppic.model.AssemblyDB;
 import eppic.model.AssemblyScoreDB;
-import eppic.model.PdbInfoDB;
+import eppic.model.InterfaceClusterDB;
 
 
 public class Assembly implements Serializable {
@@ -18,26 +16,20 @@ public class Assembly implements Serializable {
 
 	private int uid;
 	
+	private int id;
+	
 	private boolean topologicallyValid;
-	
-	private String composition;
-
-	private int mmSize;
-	private String symmetry;
-	private String stoichiometry;
-	private String pseudoSymmetry;
-	private String pseudoStoichiometry;
-	
-	private PdbInfoDB pdbInfo;
-	
-	private Set<InterfaceCluster> interfaceClusters;
+		
+	private List<InterfaceCluster> interfaceClusters;
 	
 	private List<AssemblyScore> assemblyScores;
 	
 	private List<AssemblyContent> assemblyContents;
 
+	private String interfaceClusterIdsString;
+	
 	public Assembly() {
-		this.interfaceClusters = new HashSet<InterfaceCluster>();
+		this.interfaceClusters = new ArrayList<InterfaceCluster>();
 		this.assemblyScores = new ArrayList<AssemblyScore>();
 	}
 
@@ -49,6 +41,14 @@ public class Assembly implements Serializable {
 		this.uid = uid;
 	}
 
+	public int getId() {
+		return id;
+	}
+	
+	public void setId(int id) {
+		this.id = id;
+	}
+	
 	public boolean isTopologicallyValid() {
 		return topologicallyValid;
 	}
@@ -57,67 +57,11 @@ public class Assembly implements Serializable {
 		this.topologicallyValid = topologicallyValid;
 	}
 
-	public String getComposition() {
-		return composition;
-	}
-
-	public void setComposition(String composition) {
-		this.composition = composition;
-	}
-
-	public int getMmSize() {
-		return mmSize;
-	}
-
-	public void setMmSize(int mMSize) {
-		this.mmSize = mMSize;
-	}
-
-	public String getSymmetry() {
-		return symmetry;
-	}
-
-	public void setSymmetry(String symmetry) {
-		this.symmetry = symmetry;
-	}
-
-	public String getPseudoSymmetry() {
-		return pseudoSymmetry;
-	}
-
-	public void setPseudoSymmetry(String pseudoSymmetry) {
-		this.pseudoSymmetry = pseudoSymmetry;
-	}
-
-	public String getStoichiometry() {
-		return stoichiometry;
-	}
-
-	public void setStoichiometry(String stoichiometry) {
-		this.stoichiometry = stoichiometry;
-	}
-
-	public String getPseudoStoichiometry() {
-		return pseudoStoichiometry;
-	}
-
-	public void setPseudoStoichiometry(String pseudoStoichiometry) {
-		this.pseudoStoichiometry = pseudoStoichiometry;
-	}
-
-	public PdbInfoDB getPdbInfo() {
-		return pdbInfo;
-	}
-
-	public void setPdbInfo(PdbInfoDB pdbInfo) {
-		this.pdbInfo = pdbInfo;
-	}
-
-	public Set<InterfaceCluster> getInterfaceClusters() {
+	public List<InterfaceCluster> getInterfaceClusters() {
 		return interfaceClusters;
 	}
 
-	public void setInterfaceClusters(Set<InterfaceCluster> interfaceClusters) {
+	public void setInterfaceClusters(List<InterfaceCluster> interfaceClusters) {
 		this.interfaceClusters = interfaceClusters;
 	}
 
@@ -137,6 +81,14 @@ public class Assembly implements Serializable {
 		this.assemblyContents = assemblyContents;
 	}
 
+	public String getInterfaceClusterIdsString() {
+		return interfaceClusterIdsString;
+	}
+	
+	public void setInterfaceClusterIdsString(String interfaceClusterIdsString) {
+		this.interfaceClusterIdsString = interfaceClusterIdsString;
+	}
+	
 	/**
 	 * Converts DB model item into DTO one.
 	 * @param assemblyDB model item to convert
@@ -146,9 +98,10 @@ public class Assembly implements Serializable {
 		Assembly assembly = new Assembly();
 		
 		assembly.setUid(assemblyDB.getUid());
+		assembly.setId(assemblyDB.getId());
+		assembly.setInterfaceClusterIdsString(assemblyDB.getInterfaceClusterIds());
 		
 		assembly.setTopologicallyValid(assemblyDB.isTopologicallyValid());
-		assembly.setPdbInfo(assemblyDB.getPdbInfo()); 
 		
 		if(assemblyDB.getAssemblyScores() != null) {
 			
@@ -179,10 +132,61 @@ public class Assembly implements Serializable {
 			assembly.setAssemblyContents(assemblyContents);
 		}
 		
-		// TODO initialise many-to-many relation to interface clusters
+		// NOTE the interface clusters here will be new objects, thus no direct link to the actual objects  
+		// created in InterfaceCluster class. 
+		// The connection between them has to go through the uids 
+		if (assemblyDB.getInterfaceClusters()!=null) {
+			List<InterfaceCluster> interfaceClusters = new ArrayList<InterfaceCluster>();
+			
+			for (InterfaceClusterDB icDB:assemblyDB.getInterfaceClusters()) {
+				interfaceClusters.add(InterfaceCluster.create(icDB));
+			}
+			assembly.setInterfaceClusters(interfaceClusters);
+		}
+		
+		// The opposite relation (interfaceCluster to assembly) is not added here. 
+		// It could be added in the initialisation of InterfaceCluster if needed at some point
 		
 		return assembly;
 	}
 	
+	/**
+	 * Get the list of interface cluster ids of all interface clusters belonging to this Assembly
+	 * @return
+	 */
+	public List<Integer> getInterfaceClusterIds() {
+		List<Integer> ids = new ArrayList<Integer>();
+		for (InterfaceCluster ic:getInterfaceClusters()) {
+			ids.add(ic.getClusterId());
+		}
+		return ids;
+	}
+	
+	public String getSymmetryString() {
+		StringBuilder sb = new StringBuilder();
+		for (int i=0;i<getAssemblyContents().size();i++	) {
+			sb.append(getAssemblyContents().get(i).getSymmetry());
+			if (i!=getAssemblyContents().size()-1) sb.append(",");
+		}
+		return sb.toString();
+	}
+	
+	public String getStoichiometryString() {
+		StringBuilder sb = new StringBuilder();
+		for (int i=0;i<getAssemblyContents().size();i++	) {
+			sb.append(getAssemblyContents().get(i).getStoichiometry());
+			if (i!=getAssemblyContents().size()-1) sb.append(",");
+		}
+		return sb.toString();
+	}
+	
+	public String getMmSizeString() {
+		StringBuilder sb = new StringBuilder();
+		for (int i=0;i<getAssemblyContents().size();i++	) {
+			sb.append(getAssemblyContents().get(i).getMmSize());
+			if (i!=getAssemblyContents().size()-1) sb.append(",");
+		}
+		return sb.toString();
+	}
 	
 }

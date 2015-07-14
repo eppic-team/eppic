@@ -4,28 +4,29 @@
     "http://java.sun.com/dtd/web-app_2_3.dtd">
 
 <web-app>
-	<context-param> 
-       	<param-name>serverName</param-name> 
-       	<param-value>mpc1153.psi.ch</param-value> 
-    </context-param> 
-    <context-param> 
-       	<param-name>serverPort</param-name> 
-       	<param-value>8081</param-value> 
-    </context-param>
+
     <context-param> 
        	<param-name>servletContPath</param-name> 
        	<param-value>ewui</param-value> 
     </context-param>
+    
     <context-param>
   		<param-name>gwt.xsrf.session_cookie_name</param-name>
   		<param-value>JSESSIONID</param-value>
 	</context-param>
-
+	
 	<filter>
 		<filter-name>GzipFilter</filter-name>
+		<!-- The gzip filter for older versions of jetty-->
 		<!-- <filter-class>org.mortbay.servlet.jetty.IncludableGzipFilter</filter-class> -->
-		  <filter-class>org.eclipse.jetty.servlets.GzipFilter</filter-class> 
-		<!--   <filter-class>org.mortbay.servlet.GzipFilter</filter-class> --> 
+		<!-- <filter-class>org.mortbay.servlet.GzipFilter</filter-class> -->
+
+		<!-- The gzip filter for jetty 8.1 and 9.2 -->
+		<filter-class>org.eclipse.jetty.servlets.GzipFilter</filter-class>
+		
+		<!-- The gzip filter for jetty 9.3 -->
+		<!-- <filter-class>org.eclipse.jetty.server.handler.gzip.GzipHandler</filter-class> -->	
+		 
 		<init-param>
 			<param-name>mimeTypes</param-name>
 			<param-value>text/html,text/plain,text/xml,application/xhtml+xml,text/css,application/javascript,image/svg+xml</param-value>
@@ -117,10 +118,4 @@
 		<welcome-file>Ewui.html</welcome-file>
 	</welcome-file-list>
 
-	<resource-ref>
-	    <description>EPPIC Database</description>
-	    <res-ref-name>jdbc/eppicDB</res-ref-name>
-	    <res-type>javax.sql.DataSource</res-type>
-    	<res-auth>Container</res-auth>
-  	</resource-ref>
 </web-app>

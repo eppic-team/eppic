@@ -497,7 +497,8 @@ public class TextOutputWriter {
 		PrintStream ps = new PrintStream(params.getOutputFile(EppicParams.ASSEMBLIES_FILE_SUFFIX));
 		ps.println("# Topologically valid assemblies in "+(params.isInputAFile()?params.getInFile().getName():params.getPdbCode()));		
 		
-		ps.printf("%20s %10s %15s %15s %15s\n",
+		ps.printf("%3s %20s %10s %15s %15s %15s\n",
+				"id",
 				"Interf cluster ids",
 				"Size",
 				"Stoichiometry",
@@ -532,8 +533,13 @@ public class TextOutputWriter {
 		// first we gather the assembly predictions
 		StringBuilder sb = new StringBuilder();
 		for (int i=0;i<assembly.getAssemblyScores().size();i++) {
-			sb.append(assembly.getAssemblyScores().get(i).getMethod());
-			if (i!=assembly.getAssemblyScores().size()-1) sb.append(',');
+			
+			if (assembly.getAssemblyScores().get(i).getCallName().equals(CallType.BIO.getName())) {
+				if (sb.length()>0) sb.append(','); // only add comma if there's already another method before
+				
+				sb.append(assembly.getAssemblyScores().get(i).getMethod());
+			}
+			
 		}
 		// now we print everything
 		List<AssemblyContentDB> contents = assembly.getAssemblyContents();
@@ -545,7 +551,8 @@ public class TextOutputWriter {
 			stoString = DataModelAdaptor.getStoichiometryString(contents);
 			symString = DataModelAdaptor.getSymmetryString(contents);
 		}
-		ps.printf("%20s %10s %15s %15s %15s\n", 
+		ps.printf("%3d %20s %10s %15s %15s %15s\n",
+				assembly.getId(),
 				assembly.getInterfaceClusterIds(),
 				mmSizeString,
 				stoString,
