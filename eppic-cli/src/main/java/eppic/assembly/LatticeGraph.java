@@ -479,8 +479,11 @@ public class LatticeGraph {
 	}
 	
 	/**
-	 * 
-	 * 
+	 * Contract the full heteromeric graph by contracting the 
+	 * largest area edge between every pair of entities.
+	 * Only one of the 2 vertices in each edge contracted is kept, always the 
+	 * one corresponding to a certain reference entity. The final result is 
+	 * a pseudo-homomeric graph
 	 * See https://en.wikipedia.org/wiki/Edge_contraction
 	 * @return
 	 */
@@ -491,15 +494,6 @@ public class LatticeGraph {
 		// homomer: we don't have to modify the graph
 		if (entities.size()==1) return GraphTools.copyGraph(graph);
 		
-		// TODO we should first check that there's enough edges to produce contracted graph
-		//List<StructureInterfaceCluster> heteroInterfaces = getHeteroEngagedInterfaceClusters();
-		//		
-		//if (entities.size()>heteroInterfaces.size()+1) {
-		//	logger.warn("Not enough heteromeric interfaces to produce a contracted graph: {} entities and {} heteromeric interfaces",
-		//			entities.size(), heteroInterfaces.size());
-		//	return GraphTools.copyGraph(graph);
-		//}
-
 		List<Integer> clusterIdsToContract = new ArrayList<Integer>();
 		int i = -1;
 		for (int iEntity:entities) {
@@ -509,6 +503,11 @@ public class LatticeGraph {
 				j++;
 				if (j<=i) continue;
 				List<Integer> clusterIds = getInterfaceClusterIds(iEntity, jEntity);
+				
+				if (clusterIds.isEmpty()) {
+					logger.warn("No interfaces found between entities {} and {}. Can't contract this pair", iEntity, jEntity);
+					continue;
+				}
 				
 				// we take the largest interface cluster for every pair of entities
 				clusterIdsToContract.add(clusterIds.get(0));

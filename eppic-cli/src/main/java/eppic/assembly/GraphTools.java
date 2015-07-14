@@ -32,6 +32,15 @@ public class GraphTools {
 		return contract(g, toRemove);
 	}
 	
+	/**
+	 * Contract all edges in given toRemove set in given graph g.
+	 * Only one of the 2 vertices of each removed edge is kept (always the one corresponding
+	 * to a certain arbitrary reference entity id). The edges belonging to the removed vertex are
+	 * then attached to the remaining vertex.
+	 * @param g
+	 * @param toRemove
+	 * @return
+	 */
 	public static UndirectedGraph<ChainVertex, InterfaceEdge> contract(UndirectedGraph<ChainVertex, InterfaceEdge> g, Set<InterfaceEdge> toRemove) {
 		UndirectedGraph<ChainVertex, InterfaceEdge> cg = copyGraph(g);
 		
