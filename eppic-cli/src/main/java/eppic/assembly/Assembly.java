@@ -805,17 +805,33 @@ public class Assembly {
 		Pair<Chain> chains = interfCluster.getMembers().get(0).getParentChains();
 		Stoichiometry sto = new Stoichiometry(getCrystalAssemblies().getStructure(), this);
 		sto.add(chains.getFirst());
-		sto.add(chains.getSecond());
-		List<Integer> indices = stoichiometrySet.getIndicesWithOverlappingStoichiometry(sto);
+		sto.add(chains.getSecond());		
 
-		// from any of the relevant isomorphic connected components we get the first one
-		UndirectedGraph<ChainVertex, InterfaceEdge> firstCc = connectedComponents.get(indices.get(0));
+		UndirectedGraph<ChainVertex, InterfaceEdge> firstCc = getFirstRelevantConnectedComponent(sto);
 		
 		for (InterfaceEdge edge:firstCc.edgeSet()) {
 			if (edge.getClusterId() == interfaceClusterId) count++;
 		}
 		
 		return count;
+	}
+	
+	/**
+	 * Get the first connected component graph that involves only entities overlapping given stoichiometry.
+	 * Useful to look at any of the isomorphic graphs of valid assemblies.
+	 * @param sto the stoichiometry from which the involved entities are selected, if null 
+	 * then the first connected component is returned 
+	 * @return
+	 */
+	public UndirectedGraph<ChainVertex, InterfaceEdge> getFirstRelevantConnectedComponent(Stoichiometry sto) {
+		
+		if (sto==null) return connectedComponents.get(0);
+		
+		// we first get the indices of connected components with the right composition (matching given sto)
+		List<Integer> indices = stoichiometrySet.getIndicesWithOverlappingStoichiometry(sto);
+
+		// from any of the relevant isomorphic connected components we get the first one
+		return connectedComponents.get(indices.get(0));		
 	}
 	
 	/**

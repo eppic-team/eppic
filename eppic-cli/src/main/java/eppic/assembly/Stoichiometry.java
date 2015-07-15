@@ -260,6 +260,16 @@ public class Stoichiometry {
 			// let's consider the oligomerisation occurs through homomeric interfaces only (over simplification!)
 			// TODO avoid the simplification and do it properly!
 			numDistinctInterfaces = assembly.getNumHomoEngagedInterfaceClusters(this);
+			
+			
+			//UndirectedGraph<ChainVertex, InterfaceEdge> g = assembly.getFirstRelevantConnectedComponent(this);
+			//List<StructureInterfaceCluster> heteroInterfaces = assembly.getHeteroEngagedInterfaceClusters();
+			//if (numEntities>2) 
+			//	logger.warn("More than 2 entities in assembly {}. Heteromeric symmetry detection not supported yet!",assembly.toString(), this.toString());
+			// we use the largest hetero-interface to obtain the pseudo-homomeric graph
+			//GraphContractor gctr = new GraphContractor(g);
+			//UndirectedGraph<ChainVertex, InterfaceEdge> cg = gctr.contract(heteroInterfaces.get(0).getId());
+			
 		}
 		
 		if (heteromer && !isEven()) { 

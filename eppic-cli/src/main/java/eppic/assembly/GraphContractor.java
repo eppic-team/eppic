@@ -1,7 +1,9 @@
 package eppic.assembly;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.jgrapht.Graph;
@@ -10,60 +12,56 @@ import org.jgrapht.graph.Pseudograph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class GraphTools {
+public class GraphContractor {
+	
+	private static final Logger logger = LoggerFactory.getLogger(GraphContractor.class);
 
-	private static final Logger logger = LoggerFactory.getLogger(GraphTools.class);
+	/**
+	 * The original graph
+	 */
+	private UndirectedGraph<ChainVertex, InterfaceEdge> g;
 	
 	/**
-	 * Contract the given graph by contracting one of the given interface clusters at a time.
-	 * @param g
-	 * @param clusterIds
-	 * @return
+	 * The contracted graph
 	 */
-	public static UndirectedGraph<ChainVertex, InterfaceEdge> contract(
-			UndirectedGraph<ChainVertex, InterfaceEdge> g, List<Integer> clusterIds) {
-		
-		UndirectedGraph<ChainVertex, InterfaceEdge> cg = g;
-		
-		// we contract one interface cluster at a time
-		for (int interfClusterId:clusterIds) {
-			cg = contract(cg, interfClusterId);
-		}
-		
-		return cg;
+	private UndirectedGraph<ChainVertex, InterfaceEdge> cg;
+	
+	private Map<ChainVertex,ChainVertex> contractedVertices;
+	
+	public GraphContractor(UndirectedGraph<ChainVertex, InterfaceEdge> g) {
+		this.g = g;
+		this.contractedVertices = new HashMap<ChainVertex, ChainVertex>();
 	}
 	
 	/**
-	 * Contract all edges in given toRemove set in given graph g.
+	 * Contract all edges in given interfClusterId.
 	 * Only one of the 2 vertices of each removed edge is kept (always the one corresponding
 	 * to a certain arbitrary reference entity id). The edges belonging to the removed vertex are
 	 * then attached to the remaining vertex.
-	 * @param g
 	 * @param interfClusterId 
 	 * @return
 	 */
-	public static UndirectedGraph<ChainVertex, InterfaceEdge> contract(
-			UndirectedGraph<ChainVertex, InterfaceEdge> g, int interfClusterId) {
+	public UndirectedGraph<ChainVertex, InterfaceEdge> contract(int interfClusterId) {
 		
 		// let's first gather the edges to remove: all of them correspond to a single interface cluster and thus 
 		// source and target nodes will be always the same 2 entities
 		Set<InterfaceEdge> toRemove = getEdgesWithInterfClusterId(g, interfClusterId);
-		
-		UndirectedGraph<ChainVertex, InterfaceEdge> cg = copyGraph(g);
-		
+
+		this.cg = copyGraph(g);
+
 		int referenceEntityId = -1;
-		
+
 		for (InterfaceEdge e:toRemove) {
-			
+
 			logger.debug("Removing edge {}", e.toString());
-						
+
 			ChainVertex s = g.getEdgeSource(e);			
 			ChainVertex t = g.getEdgeTarget(e);			
-			
+
 			if (s.getEntity()<0) logger.error("Entity id for vertex {} is negative!",s.getEntity());
-			
+
 			if (referenceEntityId<0) referenceEntityId = s.getEntity();
-			
+
 			// we will keep the vertices matching referenceEntityId
 			ChainVertex vToRemove = null;
 			ChainVertex vToKeep = null;
@@ -76,24 +74,23 @@ public class GraphTools {
 			} else {
 				logger.warn("Neither vertex matched entity id {}. Something is wrong!",referenceEntityId);
 			}
-			
+
 			logger.debug("Graph has {} vertices and {} edges, before removing anything", cg.vertexSet().size(), cg.edgeSet().size());
-			
-			//cg.removeEdge(s,t);
+
 			cg.removeVertex(vToRemove);
 			
+			contractedVertices.put(vToRemove, vToKeep);
+
 			logger.debug("Graph has {} vertices and {} edges, before add edges loop", cg.vertexSet().size(), cg.edgeSet().size());
-			
+
 			// we need to add to vToKeep all edges that were connecting vToRemove to any other vertex 
-			for (InterfaceEdge eToAdd : g.edgesOf(vToRemove)) {
-				
-				logger.debug("Graph has {} vertices and {} edges", cg.vertexSet().size(), cg.edgeSet().size());
-				
+			for (InterfaceEdge eToAdd : g.edgesOf(vToRemove)) {				
+
 				if (eToAdd == e) {
 					logger.debug("Won't add the joining edge as a self-edge");
 					continue;
 				}
-				
+
 				boolean invert = false;
 				ChainVertex target = null;
 				if (vToRemove.equals(g.getEdgeSource(eToAdd))) {
@@ -105,25 +102,61 @@ public class GraphTools {
 					logger.error("vToRemove is neither source nor target");
 					continue;
 				}
-				
+
 				if (!cg.containsVertex(target)) {
-					logger.debug("Vertex {}, needed to add new edge is not in graph, skipping", target);
-					continue;
+					logger.debug("Vertex {}, needed to add new edge {} is not in graph, replacing it by its contracted vertex {}", 
+							target, eToAdd, contractedVertices.get(target));
+					target = contractedVertices.get(target);
 				}
-				
+
 				// we make sure we put them back in the same direction as we encountered them
-				if (!invert) 
+				logger.debug("Adding edge {} between {} {} {}. Before it was {}-{}", 
+						eToAdd.toString(), vToKeep.toString(), ( invert?"<-":"->" ), target.toString(),vToRemove.toString(),target.toString());
+				if (!invert) 					
 					cg.addEdge(vToKeep, target, eToAdd);
 				else
 					cg.addEdge(target, vToKeep, eToAdd);
-				
-				
+
+
+
+				logger.debug("Graph has {} vertices and {} edges", cg.vertexSet().size(), cg.edgeSet().size());
 			}
 		}
-		
-		
-		
+
+
+
 		return cg;
+	}
+	
+	/**
+	 * Contract the graph by contracting one of the given interface clusters at a time.
+	 * @param clusterIds
+	 * @return
+	 */
+	public UndirectedGraph<ChainVertex, InterfaceEdge> contract(List<Integer> clusterIds) {
+		
+		// TODO implement
+		
+		//UndirectedGraph<ChainVertex, InterfaceEdge> cg = g;		
+		// we contract one interface cluster at a time
+		//for (int interfClusterId:clusterIds) {
+		//	cg = contract(cg, interfClusterId);
+		//}		
+		//return cg;
+		
+		return null;
+	}
+
+	public UndirectedGraph<ChainVertex, InterfaceEdge> getOriginalGraph() {
+		return g;
+	}
+	
+	public UndirectedGraph<ChainVertex, InterfaceEdge> getContractedGraph() {
+		return cg;
+	}
+	
+	public ChainVertex getContractedVertex(ChainVertex v) {
+		return contractedVertices.get(v);
 	}
 	
 	/**
@@ -132,9 +165,9 @@ public class GraphTools {
 	 * @param g
 	 * @return
 	 */
-	public static UndirectedGraph<ChainVertex, InterfaceEdge> copyGraph(UndirectedGraph<ChainVertex, InterfaceEdge> g) {
+	private static UndirectedGraph<ChainVertex, InterfaceEdge> copyGraph(UndirectedGraph<ChainVertex, InterfaceEdge> g) {
 		
-		if (! (g instanceof Pseudograph)) throw new IllegalArgumentException("Given graph is not a pseudograph!");
+		//if (! (g instanceof Pseudograph)) throw new IllegalArgumentException("Given graph is not a pseudograph!");
 		
 		UndirectedGraph<ChainVertex, InterfaceEdge> og = new Pseudograph<ChainVertex, InterfaceEdge>(InterfaceEdge.class);
 		

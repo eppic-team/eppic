@@ -120,7 +120,7 @@ public class StoichiometrySet {
 	 * @param sto
 	 * @return
 	 */
-	public List<Integer> getIndicesWithOverlappingStoichiometry(Stoichiometry sto) {
+	protected List<Integer> getIndicesWithOverlappingStoichiometry(Stoichiometry sto) {
 		List<Integer> indices = new ArrayList<Integer>();
 		
 		for (int i=0;i<stoichiometries.size();i++) {
