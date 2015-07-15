@@ -14,22 +14,23 @@ public class GraphTools {
 
 	private static final Logger logger = LoggerFactory.getLogger(GraphTools.class);
 	
-	
-	public static UndirectedGraph<ChainVertex, InterfaceEdge> contract(UndirectedGraph<ChainVertex, InterfaceEdge> g, List<Integer> clusterIds) {
-		Set<InterfaceEdge> toRemove = new HashSet<InterfaceEdge>();
+	/**
+	 * Contract the given graph by contracting one of the given interface clusters at a time.
+	 * @param g
+	 * @param clusterIds
+	 * @return
+	 */
+	public static UndirectedGraph<ChainVertex, InterfaceEdge> contract(
+			UndirectedGraph<ChainVertex, InterfaceEdge> g, List<Integer> clusterIds) {
+		
+		UndirectedGraph<ChainVertex, InterfaceEdge> cg = g;
+		
+		// we contract one interface cluster at a time
 		for (int interfClusterId:clusterIds) {
-			toRemove.addAll(getEdgesWithInterfClusterId(g, interfClusterId));
+			cg = contract(cg, interfClusterId);
 		}
 		
-		return contract(g, toRemove);
-	}
-	
-	public static UndirectedGraph<ChainVertex, InterfaceEdge> contract(UndirectedGraph<ChainVertex, InterfaceEdge> g, int interfClusterId) {
-		
-		// let's first gather the edges to remove
-		Set<InterfaceEdge> toRemove = getEdgesWithInterfClusterId(g, interfClusterId);
-		
-		return contract(g, toRemove);
+		return cg;
 	}
 	
 	/**
@@ -38,10 +39,16 @@ public class GraphTools {
 	 * to a certain arbitrary reference entity id). The edges belonging to the removed vertex are
 	 * then attached to the remaining vertex.
 	 * @param g
-	 * @param toRemove
+	 * @param interfClusterId 
 	 * @return
 	 */
-	public static UndirectedGraph<ChainVertex, InterfaceEdge> contract(UndirectedGraph<ChainVertex, InterfaceEdge> g, Set<InterfaceEdge> toRemove) {
+	public static UndirectedGraph<ChainVertex, InterfaceEdge> contract(
+			UndirectedGraph<ChainVertex, InterfaceEdge> g, int interfClusterId) {
+		
+		// let's first gather the edges to remove: all of them correspond to a single interface cluster and thus 
+		// source and target nodes will be always the same 2 entities
+		Set<InterfaceEdge> toRemove = getEdgesWithInterfClusterId(g, interfClusterId);
+		
 		UndirectedGraph<ChainVertex, InterfaceEdge> cg = copyGraph(g);
 		
 		int referenceEntityId = -1;
@@ -86,9 +93,6 @@ public class GraphTools {
 					logger.debug("Won't add the joining edge as a self-edge");
 					continue;
 				}
-				
-				// first we remove it, in case removing the vertex didn't do it implicitly
-				//cg.removeEdge(eToAdd); 
 				
 				boolean invert = false;
 				ChainVertex target = null;

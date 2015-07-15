@@ -478,52 +478,5 @@ public class LatticeGraph {
 		return ids;
 	}
 	
-	/**
-	 * Contract the full heteromeric graph by contracting the 
-	 * largest area edge between every pair of entities.
-	 * Only one of the 2 vertices in each edge contracted is kept, always the 
-	 * one corresponding to a certain reference entity. The final result is 
-	 * a pseudo-homomeric graph
-	 * See https://en.wikipedia.org/wiki/Edge_contraction
-	 * @return
-	 */
-	public UndirectedGraph<ChainVertex, InterfaceEdge> getContractedHomomericGraph() {
-				
-		Set<Integer> entities = getAllEntities();
-				
-		// homomer: we don't have to modify the graph
-		if (entities.size()==1) return GraphTools.copyGraph(graph);
-		
-		List<Integer> clusterIdsToContract = new ArrayList<Integer>();
-		int i = -1;
-		for (int iEntity:entities) {
-			i++;
-			int j = -1;
-			for (int jEntity:entities) {
-				j++;
-				if (j<=i) continue;
-				List<Integer> clusterIds = getInterfaceClusterIds(iEntity, jEntity);
-				
-				if (clusterIds.isEmpty()) {
-					logger.warn("No interfaces found between entities {} and {}. Can't contract this pair", iEntity, jEntity);
-					continue;
-				}
-				
-				// we take the largest interface cluster for every pair of entities
-				clusterIdsToContract.add(clusterIds.get(0));
-				
-			}
-		}
-		
-		return GraphTools.contract(graph, clusterIdsToContract);
-	}
-	
-	private Set<Integer> getAllEntities() {
-		Set<Integer> entities = new HashSet<Integer>();
-		for (ChainVertex v:graph.vertexSet()) {
-			entities.add(v.getEntity());
-		}
-		return entities;
-	}
 
 }
