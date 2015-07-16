@@ -954,14 +954,21 @@ public class Assembly {
 
 		UndirectedGraph<ChainVertex, InterfaceEdge> g = getFirstRelevantConnectedComponent(sto);
 		GraphContractor gctr = new GraphContractor(g);
-
+		
+		
 		if (heteromer) {
 			if (numEntities>2) 
 				logger.warn("More than 2 entities in assembly {}. Heteromeric assembly scoring not supported yet!",toString(), this.toString());
 
 			// we use the largest hetero-interface to obtain the pseudo-homomeric graph
 			List<StructureInterfaceCluster> heteroInterfaces = getHeteroEngagedInterfaceClusters(sto);
-			g = gctr.contract(heteroInterfaces.get(0).getId());
+			StructureInterfaceCluster interfClusterToContract = heteroInterfaces.get(0);
+			g = gctr.contract(interfClusterToContract.getId());
+			
+			// TODO for the moment just warning if XTAL, we should score properly based on call of contracted interfaces and other interfaces below
+			CallType call = getCrystalAssemblies().getInterfaceEvolContextList().getCombinedClusterPredictor(interfClusterToContract.getId()).getCall();			
+			if (call == CallType.CRYSTAL) 
+				logger.warn("Contracting edge {} with call XTAL", interfClusterToContract.getId());
 		}
 
 		
