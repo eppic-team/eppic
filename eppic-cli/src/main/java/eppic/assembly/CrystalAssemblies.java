@@ -289,21 +289,6 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 		return a;
 	}
 	
-	/**
-	 * Returns the multiplicity of the given interfaceClusterId, i.e. the number of edges of the 
-	 * the given type present in the Assembly result of engaging just the given interface.
-	 * For a valid assembly with cyclic symmetry, this will give the order n of the Cn symmetry
-	 * @param interfaceClusterId
-	 * @return
-	 */
-	public int getEdgeMultiplicity(int interfaceClusterId) {
-		
-		Assembly singleInterfaceClusterAssembly = generateAssembly(interfaceClusterId);
-		
-		return singleInterfaceClusterAssembly.getEdgeCountInFirstConnectedComponent(interfaceClusterId);
-
-	}
-	
 	public InterfaceEvolContextList getInterfaceEvolContextList() {
 		return interfEvolContextList;		
 	}

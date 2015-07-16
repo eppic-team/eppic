@@ -2,6 +2,7 @@ package eppic.assembly;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -123,7 +124,8 @@ public class GraphContractor {
 			}
 		}
 
-
+		// let's now remove duplicated edges
+		trim();
 
 		return cg;
 	}
@@ -157,6 +159,75 @@ public class GraphContractor {
 	
 	public ChainVertex getContractedVertex(ChainVertex v) {
 		return contractedVertices.get(v);
+	}
+	
+	private void trim() {
+		
+		Set<InterfaceEdge> toRemove = new HashSet<InterfaceEdge>();
+
+		int i = -1;
+		for (ChainVertex iVertex:cg.vertexSet()) {
+			i++;
+			int j = -1;
+			for (ChainVertex jVertex:cg.vertexSet()) {
+				j++;
+				if (j<i) continue; // i.e. we include i==j (to remove loop edges)
+
+				Set<InterfaceEdge> edges = cg.getAllEdges(iVertex, jVertex);
+				Map<Integer,Set<InterfaceEdge>> groups = groupIntoTypes(edges);
+
+				for (int interfaceId:groups.keySet()){
+					Set<InterfaceEdge> group = groups.get(interfaceId);
+
+					if (group.size()==0) {
+						continue;
+					} else if (group.size()==1) {
+						continue;
+					} 
+					// now we are in case 2 or more edges 
+					// we keep first and remove the rest
+					Iterator<InterfaceEdge> it = group.iterator();
+					it.next(); // first edge: we keep it
+					while (it.hasNext()) {						
+						InterfaceEdge edge = it.next();
+						toRemove.add(edge);
+						logger.debug("Removed edge with interface id {} between vertices {},{} ", 
+								interfaceId,iVertex.toString(),jVertex.toString());
+					}
+
+				}
+
+
+			}
+
+		}
+		// now we do the removal
+		for (InterfaceEdge edge:toRemove) {
+			cg.removeEdge(edge);
+		}
+
+	}
+	
+	/**
+	 * Given a set of edges groups them into interface cluster id groups
+	 * @param edges
+	 * @return a map of interface cluster ids to sets of edges with the corresponding interface cluster id
+	 */
+	private Map<Integer,Set<InterfaceEdge>> groupIntoTypes(Set<InterfaceEdge> edges) {
+		Map<Integer,Set<InterfaceEdge>> map = new HashMap<Integer,Set<InterfaceEdge>>();
+
+		for (InterfaceEdge edge:edges) {
+			Set<InterfaceEdge> set = null;
+			if (!map.containsKey(edge.getClusterId())) {
+				set = new HashSet<InterfaceEdge>();
+				map.put(edge.getClusterId(), set);
+			} else {
+				set = map.get(edge.getClusterId());
+			}
+			set.add(edge);
+
+		}
+		return map;
 	}
 	
 	/**

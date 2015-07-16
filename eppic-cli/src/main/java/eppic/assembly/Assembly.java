@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.zip.GZIPOutputStream;
 
 import javax.vecmath.Matrix4d;
@@ -126,6 +127,21 @@ public class Assembly {
 		
 		for (StructureInterfaceCluster cluster: getEngagedInterfaceClusters()) {
 			if (!cluster.getMembers().get(0).isHomomeric()) {
+				engagedInterfaceClusters.add(cluster);
+			}
+		}
+		return engagedInterfaceClusters;
+	}
+	
+	public List<StructureInterfaceCluster> getHeteroEngagedInterfaceClusters(Stoichiometry sto) {
+		
+		Set<Integer> entityIdsInSto = sto.getEntityIds();
+		
+		List<StructureInterfaceCluster> engagedInterfaceClusters = new ArrayList<StructureInterfaceCluster>();
+		
+		for (StructureInterfaceCluster cluster: getEngagedInterfaceClusters()) {
+			StructureInterface interf = cluster.getMembers().get(0);
+			if (!interf.isHomomeric() && isInterfaceInEntityIds(interf, entityIdsInSto)) {
 				engagedInterfaceClusters.add(cluster);
 			}
 		}
@@ -786,37 +802,6 @@ public class Assembly {
 	}
 	
 	/**
-	 * Returns the number of edges with given interfaceClusterId in the first connected 
-	 * component of this Assembly.
-	 * @return
-	 */
-	protected int getEdgeCountInFirstConnectedComponent(int interfaceClusterId) {
-
-		// we assume this is a valid assembly
-
-		int count = 0;
-
-		// we get any of the isomorphic connected components that have a compatible stoichiometry,
-		// i.e. an stoichiometry that overlaps that of the given interfaceCluster
-		StructureInterfaceCluster interfCluster = null;
-		for (StructureInterfaceCluster engagedInterfCluster: getEngagedInterfaceClusters()) {
-			if (engagedInterfCluster.getId() == interfaceClusterId) interfCluster = engagedInterfCluster;
-		}
-		Pair<Chain> chains = interfCluster.getMembers().get(0).getParentChains();
-		Stoichiometry sto = new Stoichiometry(getCrystalAssemblies().getStructure(), this);
-		sto.add(chains.getFirst());
-		sto.add(chains.getSecond());		
-
-		UndirectedGraph<ChainVertex, InterfaceEdge> firstCc = getFirstRelevantConnectedComponent(sto);
-		
-		for (InterfaceEdge edge:firstCc.edgeSet()) {
-			if (edge.getClusterId() == interfaceClusterId) count++;
-		}
-		
-		return count;
-	}
-	
-	/**
 	 * Get the first connected component graph that involves only entities overlapping given stoichiometry.
 	 * Useful to look at any of the isomorphic graphs of valid assemblies.
 	 * @param sto the stoichiometry from which the involved entities are selected, if null 
@@ -835,77 +820,18 @@ public class Assembly {
 	}
 	
 	/**
-	 * For each of the homomeric engaged interfaces in this assembly, finds out their multiplicity 
-	 * when they are considered as single-engaged-interface assemblies.
-	 * @return
-	 */
-	public int[] getMultiplicityOfEngagedInterfClusters() {
-		int[] mult = new int[getNumHomoEngagedInterfaceClusters()];
-		
-		int i = 0;
-		for (StructureInterfaceCluster interfCluster:getHomoEngagedInterfaceClusters()) {
-			
-			mult[i] = getCrystalAssemblies().getEdgeMultiplicity(interfCluster.getId());
-			i++;
-		}
-		
-		return mult;
-	}
-	
-	/**
-	 * For each of the homomeric engaged interfaces (present in given stoichiometry) in this assembly, 
-	 * finds out their multiplicity when they are considered as single-engaged-interface assemblies.
-	 * @param sto
-	 * @return
-	 */
-	public int[] getMultiplicityOfEngagedInterfClusters(Stoichiometry sto) {
-		int[] mult = new int[getNumHomoEngagedInterfaceClusters(sto)];
-		
-		int i = 0;
-		for (StructureInterfaceCluster interfCluster:getHomoEngagedInterfaceClusters(sto)) {
-			
-			mult[i] = getCrystalAssemblies().getEdgeMultiplicity(interfCluster.getId());
-			i++;
-		}
-		
-		return mult;
-	}
-	
-	/**
-	 * Return the first interface cluster that has the given multiplicity (when edges are considered 
-	 * as single-engaged-interface assemblies)
-	 * @param multiplicity
-	 * @return the first interface cluster with the desired multiplicity or null if no interface cluster has the 
-	 * desired multiplicity
-	 * @see #getMultiplicityOfEngagedInterfClusters()
-	 */
-	public StructureInterfaceCluster getInterfClusterWithMultiplicity(int multiplicity) {
-		
-		for (StructureInterfaceCluster interfCluster:getHomoEngagedInterfaceClusters()) {
-			
-			if (multiplicity == getCrystalAssemblies().getEdgeMultiplicity(interfCluster.getId())) {
-				return interfCluster;
-			}
-			
-		}
-		
-		return null;
-	}
-	
-	/**
 	 * Return the first interface cluster (present in given stoichiometry) that has the given 
-	 * multiplicity (when edges are considered as single-engaged-interface assemblies)
+	 * multiplicity.
 	 * @param multiplicity
 	 * @param sto
 	 * @return the first interface cluster with the desired multiplicity or null if no interface cluster has the 
 	 * desired multiplicity
-	 * @see #getMultiplicityOfEngagedInterfClusters()
 	 */
 	public StructureInterfaceCluster getInterfClusterWithMultiplicity(int multiplicity, Stoichiometry sto) {
 		
 		for (StructureInterfaceCluster interfCluster:getHomoEngagedInterfaceClusters(sto)) {
 			
-			if (multiplicity == getCrystalAssemblies().getEdgeMultiplicity(interfCluster.getId())) {
+			if (multiplicity == getEdgeMultiplicity(getFirstRelevantConnectedComponent(sto), interfCluster.getId())) {
 				return interfCluster;
 			}
 			
@@ -1025,51 +951,59 @@ public class Assembly {
 			return;
 		}
 		
+
+		UndirectedGraph<ChainVertex, InterfaceEdge> g = getFirstRelevantConnectedComponent(sto);
+		GraphContractor gctr = new GraphContractor(g);
+
+		if (heteromer) {
+			if (numEntities>2) 
+				logger.warn("More than 2 entities in assembly {}. Heteromeric assembly scoring not supported yet!",toString(), this.toString());
+
+			// we use the largest hetero-interface to obtain the pseudo-homomeric graph
+			List<StructureInterfaceCluster> heteroInterfaces = getHeteroEngagedInterfaceClusters(sto);
+			g = gctr.contract(heteroInterfaces.get(0).getId());
+		}
+
+		
+		TreeMap<Integer,Integer> clusterIdsToMult = getMultiplicities(g);
+		
+		
 		if (sym.startsWith("C")) {
 
 			StructureInterfaceCluster interfCluster = null;
 
-			if (sym.startsWith("C2")) {
-
-				List<StructureInterfaceCluster> list = getEngagedInterfaceClusters(sto);
-				// we consider oligomerisation occurs through homomeric interfaces only (over simplification)
-				// TODO avoid the simplification and do it properly
-				// For instance in case of hemoglobin (1ye2) this fails misserably because the main 
-				// oligomerisation interfaces are heteromeric. In contrast, for symmetry detection this 
-				// simplification works fine in hemoglobin (and many other cases).
-				if (heteromer) list = getHomoEngagedInterfaceClusters(sto);
+			if (sym.startsWith("C2")) {				
+				// we've got to treat the C2 case especially because multiplicity=2 won't be detected in graph
 				
-				if (list.isEmpty() && heteromer) {
-					logger.warn("Empty list of engaged interface clusters for a heteromeric C2 symmetry");
-				} else if (list.isEmpty()) {
+				if (clusterIdsToMult.isEmpty()) {
 					logger.error("Empty list of engaged interface clusters for a homomeric C2 symmetry. Something is wrong!");
 					
 				} else {
-				
-					interfCluster = list.get(0);
+					int clusterId = clusterIdsToMult.firstKey(); // the largest interface present (interface cluster ids are sorted on areas)
+					interfCluster = crystalAssemblies.getInterfaceClusters().get(clusterId-1);
 				}
 
 			} else {
 
-				// getInterClusterWithMultiplicity doesn't work for mult=2
-				interfCluster = getInterfClusterWithMultiplicity(n, sto);
-				
-				// the above won't work properly for heteromers in the general case
-				if (interfCluster == null && heteromer) {
-					logger.warn("Could not find the C{} interface for heteromeric assembly {}. Assembly scoring will be based on largest engaged interface",
-							n,toString());
-					interfCluster = getEngagedInterfaceClusters(sto).get(0);
-				} else if (interfCluster==null) {
-					// in homomer case, it should have worked, we've screwed up somewhere
-					logger.error("Could not find the C{} interface in homomeric assembly {}. Something is wrong!",n,toString());
+				int clusterId = -1;
+				for (int cId: clusterIdsToMult.keySet()) {
+					if (clusterIdsToMult.get(cId) == n) clusterId = cId;
 				}
-
+				
+				if (clusterId == -1) {
+					logger.warn("Could not find the C{} interface for assembly {}. Something is wrong!",
+							n,toString());
+				} else {				
+					interfCluster = crystalAssemblies.getInterfaceClusters().get(clusterId-1);
+				
+				}
 			}
 
 			if (interfCluster!=null) {
 				// the call for the Cn interface will be the call for the assembly
 				CallType call = getCrystalAssemblies().getInterfaceEvolContextList().getCombinedClusterPredictor(interfCluster.getId()).getCall();
 				setCall(call);
+				// TODO in heteromeric cases we should check that the edges that we have contracted have also the same call
 
 			} else {
 				logger.warn("Could not find the relevant C{} interface, assembly {} will be NOPRED",n,toString());
@@ -1085,14 +1019,14 @@ public class Assembly {
 			// the 3rd one being the heterologous
 
 			// let's simply take the 2 largest interfaces: if both bio that's a sufficient condition
-			// the list should be sorted from largest to smallest
-			List<StructureInterfaceCluster> list = getEngagedInterfaceClusters(sto);
-			// we consider oligomerisation occurs through homomeric interfaces only (over simplification)
-			// TODO avoid the simplification and do it properly
-			if (heteromer) list = getHomoEngagedInterfaceClusters(sto);
+			// the keys of the map should be sorted from first cluster id to last cluster id (in turn sorted by areas)
+
+			Iterator<Integer> it = clusterIdsToMult.keySet().iterator();
+			int clusterId1 = it.next(); // the largest
+			int clusterId2 = it.next(); // the second largest
 			
-			StructureInterfaceCluster first = list.get(0); // the largest
-			StructureInterfaceCluster second = list.get(1); // the second largest
+			StructureInterfaceCluster first = crystalAssemblies.getInterfaceClusters().get(clusterId1-1); // the largest
+			StructureInterfaceCluster second = crystalAssemblies.getInterfaceClusters().get(clusterId2-1); // the second largest
 			
 			CallType firstCall = getCrystalAssemblies().getInterfaceEvolContextList().getCombinedClusterPredictor(first.getId()).getCall();
 			CallType secondCall = getCrystalAssemblies().getInterfaceEvolContextList().getCombinedClusterPredictor(second.getId()).getCall();
@@ -1115,7 +1049,7 @@ public class Assembly {
 	 * @param list
 	 */
 	@SuppressWarnings("unused")
-	private void sortStructureInterfaceClusterList(List<StructureInterfaceCluster> list) {
+	private static void sortStructureInterfaceClusterList(List<StructureInterfaceCluster> list) {
 		
 		Collections.sort(list, new Comparator<StructureInterfaceCluster>() {
 
@@ -1124,5 +1058,72 @@ public class Assembly {
 				return Double.compare(o2.getTotalArea(), o1.getTotalArea());
 			}
 		});
+	}
+	
+	/**
+	 * Returns the multiplicity of the given interface cluster id in the given graph,
+	 * i.e. how many types an edge with that interface cluster id is present in the given graph
+	 * @param g
+	 * @param interfClusterId
+	 * @return
+	 */
+	public static int getEdgeMultiplicity(UndirectedGraph<ChainVertex, InterfaceEdge> g, int interfClusterId) {
+		int count = 0;
+		for (InterfaceEdge edge:g.edgeSet()) {
+			if (edge.getClusterId() == interfClusterId) count++;
+		}
+		return count;
+	}
+	
+	/**
+	 * For each of the given interface clusters, finds out their multiplicity in the given graph.
+	 * @param sto
+	 * @return
+	 */
+	public static int[] getMultiplicities(List<StructureInterfaceCluster> interfaceClusters, UndirectedGraph<ChainVertex,InterfaceEdge> g) {
+		
+		int[] mult = new int[interfaceClusters.size()];
+		
+		int i = 0;
+		for (StructureInterfaceCluster interfCluster:interfaceClusters) {
+			
+			mult[i] = getEdgeMultiplicity(g, interfCluster.getId());
+			i++;
+		}
+		
+		return mult;
+	}
+	
+	/**
+	 * Get the multiplicities of all interface clusters present in the given graph
+	 * @param g
+	 * @return a map of interface cluster ids to interface cluster count
+	 */
+	public static TreeMap<Integer,Integer> getMultiplicities(UndirectedGraph<ChainVertex, InterfaceEdge> g) {
+		TreeMap<Integer,Integer> counts = new TreeMap<Integer,Integer>();
+		
+		for (InterfaceEdge e:g.edgeSet()) {
+			if (counts.containsKey(e.getClusterId())) {
+				counts.put(e.getClusterId(), e.getClusterId()+1);
+			} else {
+				counts.put(e.getClusterId(), 1);
+			}
+		}
+		
+		return counts;
+	}
+	
+	/**
+	 * Count the number of distinct interface clusters in the given graph via looking at the number
+	 * of distinct interface cluster ids
+	 * @param g
+	 * @return
+	 */
+	public static int getDistinctInterfaceCount(UndirectedGraph<ChainVertex, InterfaceEdge> g) {
+		Set<Integer> interfClusterIds = new HashSet<Integer>();
+		for (InterfaceEdge e:g.edgeSet()) {
+			interfClusterIds.add(e.getClusterId());
+		}
+		return interfClusterIds.size();
 	}
 }
