@@ -146,7 +146,12 @@ public class GraphContractor {
 		
 		cg = g;
 
+		int i = 0;
 		while (true) {
+			i++;
+			logger.debug("Round {} of contraction: contracting interface cluster {}",i,interfClusterId);
+			logger.debug("Starting graph before contraction has {} vertices and {} edges",cg.vertexSet().size(),cg.edgeSet().size());
+			
 			cg = contractInterfaceCluster(cg, interfClusterId);
 			
 			// we get the interfClusterId for next iteration

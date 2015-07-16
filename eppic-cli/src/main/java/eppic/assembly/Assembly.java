@@ -1135,7 +1135,11 @@ public class Assembly {
 	public static int getLargestHeteroInterfaceCluster(UndirectedGraph<ChainVertex, InterfaceEdge> g) {
 		TreeSet<Integer> clusterIds = new TreeSet<Integer>();
 		for (InterfaceEdge e:g.edgeSet()) {
-			if (!e.getInterface().isHomomeric()) {
+			
+			ChainVertex s = g.getEdgeSource(e);
+			ChainVertex t = g.getEdgeTarget(e);
+			
+			if (s.getEntity() != t.getEntity()) { // i.e. heteromeric
 				clusterIds.add(e.getClusterId());
 			}
 		}
