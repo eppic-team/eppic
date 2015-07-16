@@ -12,6 +12,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.zip.GZIPOutputStream;
 
 import javax.vecmath.Matrix4d;
@@ -957,18 +958,10 @@ public class Assembly {
 		
 		
 		if (heteromer) {
-			if (numEntities>2) 
-				logger.warn("More than 2 entities in assembly {}. Heteromeric assembly scoring not supported yet!",toString(), this.toString());
 
-			// we use the largest hetero-interface to obtain the pseudo-homomeric graph
-			List<StructureInterfaceCluster> heteroInterfaces = getHeteroEngagedInterfaceClusters(sto);
-			StructureInterfaceCluster interfClusterToContract = heteroInterfaces.get(0);
-			g = gctr.contract(interfClusterToContract.getId());
+			g = gctr.contract();
 			
-			// TODO for the moment just warning if XTAL, we should score properly based on call of contracted interfaces and other interfaces below
-			CallType call = getCrystalAssemblies().getInterfaceEvolContextList().getCombinedClusterPredictor(interfClusterToContract.getId()).getCall();			
-			if (call == CallType.CRYSTAL) 
-				logger.warn("Contracting edge {} with call XTAL", interfClusterToContract.getId());
+			// TODO we should check the call of contracted interfaces and score properly based on them and the relevant interfaces below
 		}
 
 		
@@ -1069,7 +1062,7 @@ public class Assembly {
 	
 	/**
 	 * Returns the multiplicity of the given interface cluster id in the given graph,
-	 * i.e. how many types an edge with that interface cluster id is present in the given graph
+	 * i.e. how many times an edge with that interface cluster id is present in the given graph
 	 * @param g
 	 * @param interfClusterId
 	 * @return
@@ -1132,5 +1125,23 @@ public class Assembly {
 			interfClusterIds.add(e.getClusterId());
 		}
 		return interfClusterIds.size();
+	}
+	
+	/**
+	 * Get the interface cluster id corresponding to the largest interface cluster present in given graph
+	 * @param g
+	 * @return the largest heteromeric interface cluster id, or -1 if none found
+	 */
+	public static int getLargestHeteroInterfaceCluster(UndirectedGraph<ChainVertex, InterfaceEdge> g) {
+		TreeSet<Integer> clusterIds = new TreeSet<Integer>();
+		for (InterfaceEdge e:g.edgeSet()) {
+			if (!e.getInterface().isHomomeric()) {
+				clusterIds.add(e.getClusterId());
+			}
+		}
+		
+		if (clusterIds.isEmpty()) return -1;
+		
+		return clusterIds.first();
 	}
 }

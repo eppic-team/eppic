@@ -3,14 +3,12 @@ package eppic.assembly;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.biojava.nbio.structure.Chain;
 import org.biojava.nbio.structure.Compound;
 import org.biojava.nbio.structure.Structure;
-import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
 import org.jgrapht.UndirectedGraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -266,12 +264,7 @@ public class Stoichiometry {
 
 		if (heteromer) {
 			
-			if (numEntities>2) 
-				logger.warn("More than 2 entities in assembly {}. Heteromeric symmetry detection not supported yet!",assembly.toString(), this.toString());
-			
-			// we use the largest hetero-interface to obtain the pseudo-homomeric graph
-			List<StructureInterfaceCluster> heteroInterfaces = assembly.getHeteroEngagedInterfaceClusters(this);
-			g = gctr.contract(heteroInterfaces.get(0).getId());
+			g = gctr.contract();
 			
 		}		
 		
