@@ -1104,7 +1104,7 @@ public class Assembly {
 		
 		for (InterfaceEdge e:g.edgeSet()) {
 			if (counts.containsKey(e.getClusterId())) {
-				counts.put(e.getClusterId(), e.getClusterId()+1);
+				counts.put(e.getClusterId(), counts.get(e.getClusterId())+1);
 			} else {
 				counts.put(e.getClusterId(), 1);
 			}

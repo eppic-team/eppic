@@ -319,7 +319,10 @@ public class Stoichiometry {
 			if (mult==5) fiveMultExists = true;
 		}
 
-		if (nMultExists) {
+		// numDistinctInterface<=2 is to avoid calling Cn in cases that are 
+		// actually Dn/2 and happen to have an n-multiplicity interface, 
+		// e.g. 3hbx assembly {1,2,4} is a D3, but interface 4 is multiplicity 6
+		if (nMultExists && numDistinctInterfaces<=2) {
 			return "C"+n;
 		}
 
