@@ -46,7 +46,6 @@ public class AssemblyDAOJpa implements AssemblyDAO {
 			for(AssemblyDB assemblyDB : assemblyDBs) {
 				result.add(Assembly.create(assemblyDB));
 			}
-			
 			return result;
 		}
 		catch(Throwable e)

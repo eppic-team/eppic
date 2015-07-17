@@ -73,7 +73,7 @@ public class StatusPanel extends DisplayPanel
 		dock = new DockLayoutPanel(Unit.PX);
 		dock.addStyleName("eppic-default-font");
 		
-		identifierHeaderPanel = new IdentifierHeaderPanel(ApplicationContext.getWindowData().getWindowWidth() - 150);
+		identifierHeaderPanel = new IdentifierHeaderPanel(ApplicationContext.getWindowData().getWindowWidth() - 150, null); 
 		dock.addNorth(identifierHeaderPanel,50);
 		
 		statusContainer = createStatusContainer();

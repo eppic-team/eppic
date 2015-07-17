@@ -21,6 +21,7 @@ import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.History;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.XsrfTokenServiceAsync;
 import com.sencha.gxt.core.client.GXT;
 
@@ -51,8 +52,7 @@ public class CrkWebServiceControllerImpl implements CrkWebServiceController
 
 	@Override
 	public void getResultsOfProcessing(String jobId) {
-		crkWebService.getResultsOfProcessing(jobId, 
-				new GetResultsOfProcessingCallback(jobId));
+		crkWebService.getResultsOfProcessing(jobId, new GetResultsOfProcessingCallback(jobId));
 	}
 	
 	@Override
@@ -98,6 +98,7 @@ public class CrkWebServiceControllerImpl implements CrkWebServiceController
 	
 	@Override
 	public void getCurrentStatusData(String jobId) {
+		System.out.println("CrkWebServiceControllerImpl.java in getCurrentStatusData()");
 		crkWebService.getResultsOfProcessing(jobId, new GetCurrentStatusDataCallback(jobId));
 	}
 

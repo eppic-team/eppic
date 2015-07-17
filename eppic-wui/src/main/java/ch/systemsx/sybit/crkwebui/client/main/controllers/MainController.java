@@ -15,9 +15,11 @@ import ch.systemsx.sybit.crkwebui.client.commons.events.RefreshStatusDataEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.SearchResultsDataRetrievedEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowAboutEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowAlignmentsEvent;
+import ch.systemsx.sybit.crkwebui.client.commons.events.ShowAssembliesEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowErrorEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowHomologsEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowInterfaceResiduesEvent;
+import ch.systemsx.sybit.crkwebui.client.commons.events.ShowInterfacesOfAssemblyDataEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowMessageEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowNoResultsDataEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowResultsDataEvent;
@@ -43,6 +45,7 @@ import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowAlignmentsHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowErrorHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowHomologsHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowInterfaceResiduesWindowHandler;
+import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowInterfacesOfAssemblyDataHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowMessageHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowNoResultsDataHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowResultsDataHandler;
@@ -132,7 +135,17 @@ public class MainController
 			
 			@Override
 			public void onShowResultsData(ShowResultsDataEvent event) {
-				displayResultView(event.getPdbScoreItem());
+				displayResultView(event.getPdbScoreItem(), ResultsPanel.ASSEMBLIES_VIEW); //the new default view
+				//displayResultView(event.getPdbScoreItem(), ResultsPanel.INTERFACES_VIEW);
+			}
+		});
+		
+		
+		EventBusManager.EVENT_BUS.addHandler(ShowInterfacesOfAssemblyDataEvent.TYPE, new ShowInterfacesOfAssemblyDataHandler() {
+			
+			@Override
+			public void onShowInterfacesOfAssembly(ShowInterfacesOfAssemblyDataEvent event) {
+				displayResultView(event.getPdbScoreItem(), ResultsPanel.INTERFACES_VIEW); //the new default view
 			}
 		});
 		
@@ -367,12 +380,23 @@ public class MainController
 	 */
 	public void displayView(String token)
 	{
+		//Window.alert("token is " + token);
 		EventBusManager.EVENT_BUS.fireEvent(new HideAllWindowsEvent());
 		EventBusManager.EVENT_BUS.fireEvent(new ShowTopPanelSearchBoxEvent());
-		if ((token != null) && (token.length() > 3) && (token.startsWith("id")))
+		if ((token != null) && (token.length() > 3) && (token.startsWith("id"))) //main results screen - show list of assemblies
 		{
+			//Window.alert("MainController.java main results screen - show list of assemblies. job is " + token.substring(3));
 			Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_loading());
 			ApplicationContext.setSelectedJobId(token.substring(3));
+			//Window.alert("job id is " + token.substring(3));
+			displayAssemblyResults();
+		}
+		else if ((token != null) && (token.length() > 9) && (token.startsWith("assembly"))) //show list of interfaces belonging to assembly x
+		{
+			//Window.alert("MainController.java show list of interfaces belonging to assembly x");
+			Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_loading());
+			ApplicationContext.setSelectedJobId(token.substring(9));
+			//Window.alert("job id is " + token.substring(9));
 			displayResults();
 		}
 		else if ((token != null) && (token.length() > 14) && (token.startsWith("searchUniprot")))
@@ -553,10 +577,23 @@ public class MainController
 	}
 
 	/**
+	 * Retrieves results of processing for displaying central panel content.
+	 */
+	public void displayAssemblyResults()
+	{
+		mainViewPort.mask(AppPropertiesManager.CONSTANTS.defaultmask());
+		if(mainViewPort.getResultsPanel() != null){
+			EventBusManager.EVENT_BUS.fireEvent(new ShowAssembliesEvent());
+		}
+		CrkWebServiceProvider.getServiceController().getResultsOfProcessing(ApplicationContext.getSelectedJobId());
+	}
+	
+	
+	/**
 	 * Displays results data panel.
 	 * @param resultData results of processing
 	 */
-	private void displayResultView(PdbInfo resultData)
+	private void displayResultView(PdbInfo resultData, int viewType)
 	{
 		ApplicationContext.setDoStatusPanelRefreshing(false);
 
@@ -566,20 +603,20 @@ public class MainController
 		   (mainViewPort.getCenterPanel().getDisplayPanel() instanceof ResultsPanel))
 		{
 			resultsPanel = (ResultsPanel)mainViewPort.getCenterPanel().getDisplayPanel();
-			resultsPanel.fillResultsPanel(resultData);
+			resultsPanel.fillResultsPanel(resultData, viewType);
 			//resultsPanel.layout();
 		}
 		else if(mainViewPort.getResultsPanel() != null)
 		{
 			resultsPanel = mainViewPort.getResultsPanel();
-			resultsPanel.fillResultsPanel(resultData);
+			resultsPanel.fillResultsPanel(resultData, viewType);
 			mainViewPort.getCenterPanel().setDisplayPanel(resultsPanel);
 			resultsPanel.resizeContent();
 		}
 		else
 		{
-			resultsPanel = new ResultsPanel(resultData);
-			resultsPanel.fillResultsPanel(resultData);
+			resultsPanel = new ResultsPanel(resultData, viewType);
+			resultsPanel.fillResultsPanel(resultData, viewType);
 			mainViewPort.setResultsPanel(resultsPanel);
 			mainViewPort.getCenterPanel().setDisplayPanel(resultsPanel);
 			resultsPanel.resizeContent();

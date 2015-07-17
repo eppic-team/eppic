@@ -9,7 +9,9 @@ import ch.systemsx.sybit.crkwebui.client.commons.util.EscapedStringGenerator;
 import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
+import com.google.gwt.user.client.ui.Widget;
 import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer;
 import com.sencha.gxt.core.client.dom.ScrollSupport.ScrollMode;
 import com.sencha.gxt.core.client.util.Margins;
@@ -25,17 +27,27 @@ public class ResultsPanel extends DisplayPanel
 	private VerticalLayoutContainer resultsContainer;
 	
 	private InformationPanel informationPanel;
+	private AssemblyResultsGridPanel assemblyResultsGridContainer;
 	private ResultsGridPanel resultsGridContainer;
+	private VerticalLayoutContainer mainContainer;
+	public final static int ASSEMBLIES_VIEW = 1;
+	public final static int INTERFACES_VIEW = 2;
+	private int viewType;
 
-	public ResultsPanel(PdbInfo pdbScoreItem)
+
+	public ResultsPanel(PdbInfo pdbScoreItem, int viewType)
 	{
+		
+		this.viewType = viewType;
+		
 		DockLayoutPanel dock = new DockLayoutPanel(Unit.PX);
 
-		headerPanel = new IdentifierHeaderPanel(ApplicationContext.getWindowData().getWindowWidth() - 150);
-		dock.addNorth(headerPanel, 70);
+		headerPanel = new IdentifierHeaderPanel(ApplicationContext.getWindowData().getWindowWidth() - 150, pdbScoreItem);
+		dock.addNorth(headerPanel, 100); //set the height of the info
 		
 		resultsContainer = createResultsContainer(pdbScoreItem);
 		dock.add(resultsContainer);
+		//Window.alert("ResultsPanel: added results container. ");
 		
 		this.setData(dock);
 		
@@ -46,14 +58,19 @@ public class ResultsPanel extends DisplayPanel
 	 * Creates the results container with information panel, grid panel
 	 */
 	private VerticalLayoutContainer createResultsContainer(PdbInfo pdbScoreItem){
-		VerticalLayoutContainer mainContainer = new VerticalLayoutContainer();
+		mainContainer = new VerticalLayoutContainer();
 		mainContainer.setScrollMode(ScrollMode.AUTOY);
 		
 		informationPanel = new InformationPanel(pdbScoreItem, ApplicationContext.getWindowData().getWindowWidth() - 180);
 		mainContainer.add(informationPanel, new VerticalLayoutData(-1, 135, new Margins(10,0,10,0)));
 
 		resultsGridContainer = new ResultsGridPanel(ApplicationContext.getWindowData().getWindowWidth() - 180);
-		mainContainer.add(resultsGridContainer, new VerticalLayoutData(-1, 1, new Margins(0)));
+		assemblyResultsGridContainer = new AssemblyResultsGridPanel(ApplicationContext.getWindowData().getWindowWidth() - 180);
+		
+		if(viewType == ASSEMBLIES_VIEW)
+			mainContainer.add(assemblyResultsGridContainer, new VerticalLayoutData(-1, 1, new Margins(0)));
+		else if(viewType == INTERFACES_VIEW)
+			mainContainer.add(resultsGridContainer, new VerticalLayoutData(-1, 1, new Margins(0)));
 		
 		return mainContainer;
 	}
@@ -62,9 +79,25 @@ public class ResultsPanel extends DisplayPanel
 	 * Sets content of results panel.
 	 * @param resultsData results data of selected job
 	 */
-	public void fillResultsPanel(PdbInfo resultsData) 
+	public void fillResultsPanel(PdbInfo resultsData, int viewType) 
 	{
-		resultsGridContainer.fillResultsGrid(resultsData);
+		this.viewType = viewType;
+		
+		if(viewType == ASSEMBLIES_VIEW)
+			assemblyResultsGridContainer.fillResultsGrid(resultsData);
+		else if(viewType == INTERFACES_VIEW){
+			resultsGridContainer.fillResultsGrid(resultsData);
+			mainContainer.remove(assemblyResultsGridContainer);
+			//int index = 0;
+			/*while(mainContainer.iterator().hasNext()){
+				Window.alert("index is " + index);
+				Widget w = mainContainer.iterator().next();
+				index++;
+			}*/
+			
+			mainContainer.add(resultsGridContainer);
+		}
+				
 		informationPanel.fillInfoPanel(resultsData);
 		
 		headerPanel.setPDBText(resultsData.getInputName(),
@@ -79,6 +112,7 @@ public class ResultsPanel extends DisplayPanel
 		headerPanel.setPDBIdentifierSubtitle(EscapedStringGenerator.generateEscapedString(resultsData.getTitle()));
 		
 		headerPanel.setDownloadResultsLink(resultsData.getJobId());
+		//Window.alert("ResultsPanel.java end of consstructor");
 	}
 
 	public void resizeContent() 
@@ -86,6 +120,7 @@ public class ResultsPanel extends DisplayPanel
 		int width = ApplicationContext.getWindowData().getWindowWidth() - 180;
 		
 		if(width < MIN_WIDTH) width = MIN_WIDTH-20;
+		assemblyResultsGridContainer.resizeContent(width);
 		resultsGridContainer.resizeContent(width);
 		headerPanel.resizePanel(width + 30);
 		informationPanel.resizePanel(width);

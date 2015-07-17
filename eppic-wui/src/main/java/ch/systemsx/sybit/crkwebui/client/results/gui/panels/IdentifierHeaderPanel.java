@@ -3,10 +3,13 @@ package ch.systemsx.sybit.crkwebui.client.results.gui.panels;
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.links.LinkWithTooltip;
 import ch.systemsx.sybit.crkwebui.server.files.downloader.servlets.DataDownloadServlet;
+import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Image;
+import com.google.gwt.user.client.ui.VerticalPanel;
 import com.sencha.gxt.widget.core.client.container.HorizontalLayoutContainer;
 import com.sencha.gxt.widget.core.client.container.SimpleContainer;
 import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer;
@@ -28,7 +31,7 @@ public class IdentifierHeaderPanel extends HorizontalLayoutContainer
     
     private HTML eppicVersionLabel;
 
-    public IdentifierHeaderPanel(int width){
+    public IdentifierHeaderPanel(int width, PdbInfo resultsData){
     	
     	this.setWidth(width);
     	this.addStyleName("eppic-results-header-panel");
@@ -40,6 +43,15 @@ public class IdentifierHeaderPanel extends HorizontalLayoutContainer
 
     	pdbIdentifierSubtitlePanel = new PDBIdentifierSubtitlePanel();
     	pdbInfo.add(pdbIdentifierSubtitlePanel, new VerticalLayoutData(-1, -1, new Margins(0, 0, 0, 0)));
+
+    	String html_experiment_info = "";
+    	html_experiment_info += "<b>" + AppPropertiesManager.CONSTANTS.info_panel_experiment() + "</b> " + resultsData.getExpMethod();
+    	html_experiment_info += "&nbsp;&nbsp;&nbsp;&nbsp;<b>" + AppPropertiesManager.CONSTANTS.info_panel_spacegroup() + "</b> " + resultsData.getSpaceGroup();
+    	html_experiment_info += "&nbsp;&nbsp;&nbsp;&nbsp;<b>" + AppPropertiesManager.CONSTANTS.info_panel_resolution() + "</b> " + resultsData.getResolution();
+    	html_experiment_info += "&nbsp;&nbsp;&nbsp;&nbsp;<b>" + AppPropertiesManager.CONSTANTS.info_panel_rfree() + "</b> " + resultsData.getRfreeValue();
+    	final HTML experimentinfo = new HTML(html_experiment_info);
+    	pdbInfo.add(experimentinfo);
+    	this.add(pdbInfo,  new HorizontalLayoutData(1,-1));
     	
     	downloadResultsPanel = new HorizontalLayoutContainer();
     	downloadResultsPanel.setBorders(false);
@@ -50,8 +62,6 @@ public class IdentifierHeaderPanel extends HorizontalLayoutContainer
 		
 		downloadResultsPanel.add(downloadResultsLink);
     	pdbInfo.add(downloadResultsPanel, new VerticalLayoutData(-1, -1, new Margins(0, 0, 10, 0)));
-
-    	this.add(pdbInfo,  new HorizontalLayoutData(1,-1));
 
     	eppicLogoPanel = new VerticalLayoutContainer();
     	eppicLogoPanel.setWidth(120);
