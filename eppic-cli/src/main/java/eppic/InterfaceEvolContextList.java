@@ -13,6 +13,7 @@ import org.biojava.nbio.structure.contact.StructureInterfaceList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import eppic.predictors.CombinedClusterPredictor;
 import eppic.predictors.EvolCoreRimClusterPredictor;
 import eppic.predictors.EvolCoreRimPredictor;
 import eppic.predictors.EvolCoreSurfaceClusterPredictor;
@@ -35,6 +36,7 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 	
 	private Map<Integer,EvolCoreRimClusterPredictor> ecrcPredictors;
 	private Map<Integer,EvolCoreSurfaceClusterPredictor> ecscPredictors;
+	private Map<Integer,CombinedClusterPredictor> ccPredictors;
 	
 	/**
 	 * Constructs a InterfaceEvolContextList given a ChainInterfaceList with all 
@@ -55,6 +57,7 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 
 		this.ecrcPredictors = new TreeMap<Integer, EvolCoreRimClusterPredictor>();
 		this.ecscPredictors = new TreeMap<Integer, EvolCoreSurfaceClusterPredictor>();
+		this.ccPredictors = new TreeMap<Integer, CombinedClusterPredictor>();
 		
 		
 		for (StructureInterface pi:interfaces) {
@@ -208,7 +211,12 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 		return getChainEvolContextList().getChainEvolContext(pdbChainCode);
 	}
 	
-
+	public void setCombinedClusterPredictor(int clusterId, CombinedClusterPredictor ccp) {
+		ccPredictors.put(clusterId, ccp);
+	}
 	
+	public CombinedClusterPredictor getCombinedClusterPredictor(int clusterId) {
+		return ccPredictors.get(clusterId);
+	}
 
 }

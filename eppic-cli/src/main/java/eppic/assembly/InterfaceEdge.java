@@ -28,7 +28,7 @@ public class InterfaceEdge {
 	
 	@Override
 	public String toString() {
-		return String.format("-%d-",interf.getId());
+		return String.format("-%d(%d)-",interf.getId(),interf.getCluster().getId());
 	}
 
 	public StructureInterface getInterface() {

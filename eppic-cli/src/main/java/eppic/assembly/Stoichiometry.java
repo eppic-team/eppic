@@ -2,11 +2,14 @@ package eppic.assembly;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.biojava.nbio.structure.Chain;
 import org.biojava.nbio.structure.Compound;
 import org.biojava.nbio.structure.Structure;
+import org.jgrapht.UndirectedGraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,6 +84,20 @@ public class Stoichiometry {
 		return idx2ChainIds.get(chainIdx);
 	}
 	
+	/**
+	 * Get all entity ids present in this stoichiometry
+	 * @return
+	 */
+	public Set<Integer> getEntityIds() {
+		Set<Integer> entityIds = new HashSet<Integer>();
+		for (int i=0;i<getNumEntities();i++) {
+			if (sto[i]>0) {
+				entityIds.add(getEntityId(i));
+			}
+		}
+		return entityIds;
+	}
+	
 	public void add(Chain c) {
 		sto[getEntityIndex(c.getCompound().getMolId())]++;
 		comp[getChainIndex(c.getChainID())]++;
@@ -88,6 +105,16 @@ public class Stoichiometry {
 	
 	public int getNumEntities() {
 		return sto.length;
+	}
+	
+	public int getNumPresentEntities() {
+		int numPresentEntities = 0;
+		for (int i=0;i<this.getNumEntities();i++) {
+			if (sto[i]>0) {
+				numPresentEntities ++;
+			}
+		}
+		return numPresentEntities;
 	}
 	
 	/**
@@ -171,7 +198,7 @@ public class Stoichiometry {
 	 * Return the first non-zero count or -1 if all are 0
 	 * @return
 	 */
-	private int getFirstNonZero() {
+	protected int getFirstNonZero() {
 		int nonzero = -1;
 		for (int i=0;i<this.getNumEntities();i++) {
 			if (sto[i]>0) {
@@ -209,13 +236,16 @@ public class Stoichiometry {
 	/**
 	 * Return the symmetry string for this stoichiometry in its assembly:
 	 * cyclic Cn, dihedral Dn, tetrahedral T, octahedral O or icosahedral I 
-	 * This will only work correctly on assemblies that have been previously checked
+	 * This will work correctly only on assemblies that have been previously checked
 	 * to be valid with {@link Assembly#isValid()}
 	 * @return
 	 */
 	public String getSymmetry() {
 		
-		int numEntities = getNumEntities();
+		
+		// we get the number of present entities in this stoichiometry (those with count>0)
+		int numEntities = getNumPresentEntities();
+
 		
 		boolean heteromer = false;
 		if (numEntities>1) heteromer = true;
@@ -226,15 +256,17 @@ public class Stoichiometry {
 			logger.warn("All counts are 0 for this stoichiometry. Something is wrong!");
 			return UNKNOWN_SYMMETRY;
 		}
-				 
-		int numDistinctInterfaces = assembly.getNumEngagedInterfaceClusters();
 		
-		if (heteromer) {
-			// let's consider the oligomerisation occurs through homomeric interfaces only (over simplification!)
-			// TODO avoid the simplification and do it properly!
+		
+		UndirectedGraph<ChainVertex, InterfaceEdge> g = assembly.getFirstRelevantConnectedComponent(this);
+		GraphContractor gctr = new GraphContractor(g);
 
-			numDistinctInterfaces = assembly.getNumHomoEngagedInterfaceClusters();
-		}
+
+		if (heteromer) {
+			
+			g = gctr.contract();
+			
+		}		
 		
 		if (heteromer && !isEven()) { 
 			// this should not happen since we disallow uneven stoichiometries in the search for valid assemblies
@@ -243,15 +275,14 @@ public class Stoichiometry {
 		}
 		
 		// FINDING SYMMETRY:
+
+		// this should work fine for both homomer and pseudo-homomer graph
+		int numDistinctInterfaces = Assembly.getDistinctInterfaceCount(g);
 		
 		// CASE A) n==1
 		
 		if (n==1) {
-			if (!heteromer && numDistinctInterfaces>0) {
-				// we don't warn in case of heteromers because in disjoint assembly cases this happens: e.g. 1ye2, assembly {4}
-				logger.warn("Some interface cluster is engaged for assembly of size 1: {}. Something is wrong!",
-						assembly.toString());
-			}
+			
 			return "C1";
 			
 		} 
@@ -259,23 +290,13 @@ public class Stoichiometry {
 		// CASE B) n==2 or n is odd
 		
 		if (n%2 != 0 || n==2) {
-			if (numDistinctInterfaces>1) {
-				logger.warn("More than 1 engaged homomeric interface clusters for an assembly of size {}. Something is wrong!",n);
-			}
+			
 			return "C"+n;
 
 		} 
 		
 		// CASE C) even number larger than 2 (n%2==0 with n>2)
 
-		if (numDistinctInterfaces==0) {
-			// no homo interfaces at all!
-			int numHeteros = assembly.getNumHeteroEngagedInterfaceClusters();
-			logger.warn("Heteromeric assembly with no homomeric interfaces and {} heteromeric. Can't say what's the symmetry, setting it to unknown",
-					numHeteros);
-			return UNKNOWN_SYMMETRY;
-		}
-		
 		if (numDistinctInterfaces==1) {
 			return "C"+n;			
 		} 
@@ -290,14 +311,18 @@ public class Stoichiometry {
 		boolean fourMultExists = false;
 		boolean fiveMultExists = false;
 
-		for (int mult:assembly.getMultiplicityOfEngagedInterfClusters()) {
+		// this should work fine for both homomer and pseudo-homomer graph
+		for (int mult:Assembly.getMultiplicities(g).values()) {
 			if (mult==n) nMultExists = true;
 			if (mult==3) threeMultExists = true;
 			if (mult==4) fourMultExists = true;
 			if (mult==5) fiveMultExists = true;
 		}
 
-		if (nMultExists) {
+		// numDistinctInterface<=2 is to avoid calling Cn in cases that are 
+		// actually Dn/2 and happen to have an n-multiplicity interface, 
+		// e.g. 3hbx assembly {1,2,4} is a D3, but interface 4 is multiplicity 6
+		if (nMultExists && numDistinctInterfaces<=2) {
 			return "C"+n;
 		}
 

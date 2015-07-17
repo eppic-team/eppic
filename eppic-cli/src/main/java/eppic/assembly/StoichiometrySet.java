@@ -115,5 +115,20 @@ public class StoichiometrySet {
 		return ds;
 	}	
 	
+	/**
+	 * Get all indices of stoichiometries in this set with given stoichiometry content
+	 * @param sto
+	 * @return
+	 */
+	protected List<Integer> getIndicesWithOverlappingStoichiometry(Stoichiometry sto) {
+		List<Integer> indices = new ArrayList<Integer>();
+		
+		for (int i=0;i<stoichiometries.size();i++) {
+			if (stoichiometries.get(i).isOverlapping(sto)) {
+				indices.add(i);
+			}
+		}
+		return indices;
+	}
 	
 }

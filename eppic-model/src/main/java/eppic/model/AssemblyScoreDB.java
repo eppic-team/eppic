@@ -12,6 +12,9 @@ public class AssemblyScoreDB implements Serializable {
 	private double score;
 	private double confidence;
 	
+	private String callName;
+	private String callReason;
+	
 	private String pdbCode;
 	
 	private AssemblyDB assembly;
@@ -62,5 +65,21 @@ public class AssemblyScoreDB implements Serializable {
 
 	public void setAssembly(AssemblyDB assembly) {
 		this.assembly = assembly;
+	}
+
+	public String getCallName() {
+		return callName;
+	}
+
+	public void setCallName(String callName) {
+		this.callName = callName;
+	}
+
+	public String getCallReason() {
+		return callReason;
+	}
+
+	public void setCallReason(String callReason) {
+		this.callReason = callReason;
 	}
 }

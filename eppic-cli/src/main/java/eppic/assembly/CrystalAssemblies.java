@@ -17,7 +17,9 @@ import org.biojava.nbio.structure.contact.StructureInterfaceList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import eppic.CallType;
 import eppic.EppicParams;
+import eppic.InterfaceEvolContextList;
 
 /**
  * A representation of all valid assemblies in a crystal structure.
@@ -47,6 +49,7 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 	
 	private Map<Integer,AssemblyGroup> groups;
 	
+	private InterfaceEvolContextList interfEvolContextList;
 	
 	public CrystalAssemblies(Structure structure, StructureInterfaceList interfaces) throws StructureException {
 		
@@ -248,9 +251,32 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 
 			@Override
 			public int compare(Assembly arg0, Assembly arg1) {
-				int firstSize = arg0.getStoichiometrySet().getFirst().getCountForIndex(0);
-				int secondSize = arg1.getStoichiometrySet().getFirst().getCountForIndex(0);
-				return Integer.compare(firstSize, secondSize);
+				int firstSize = arg0.getStoichiometrySet().getFirst().getTotalSize();
+				int secondSize = arg1.getStoichiometrySet().getFirst().getTotalSize();
+				
+				if (firstSize != secondSize) {
+					return Integer.compare(firstSize, secondSize);
+				} 
+				
+				// if both of same size, we sort based on engaged interface cluster ids
+				List<StructureInterfaceCluster> interfClusters0 = arg0.getEngagedInterfaceClusters();
+				List<StructureInterfaceCluster> interfClusters1 = arg1.getEngagedInterfaceClusters();
+				if (interfClusters0.size()!=interfClusters1.size()) {
+					// if different number of interface clusters we put the one with the most clusters first
+					return Integer.compare(interfClusters1.size(),interfClusters0.size());
+				}
+
+				for (int i=0;i<interfClusters0.size();i++) {
+					int id0 = interfClusters0.get(i).getId();
+					int id1 = interfClusters1.get(i).getId();
+					
+					if (id0==id1) continue;
+					
+					return Integer.compare(id0,id1);
+				}
+				
+				// this would happen if both are size 0
+				return 0;
 			}
 			
 		});
@@ -286,19 +312,61 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 		return a;
 	}
 	
-	/**
-	 * Returns the multiplicity of the given interfaceClusterId, i.e. the number of edges of the 
-	 * the given type present in the Assembly result of engaging just the given interface.
-	 * For a valid assembly with cyclic symmetry, this will give the order n of the Cn symmetry
-	 * @param interfaceClusterId
-	 * @return
-	 */
-	public int getEdgeMultiplicity(int interfaceClusterId) {
-		
-		Assembly singleInterfaceClusterAssembly = generateAssembly(interfaceClusterId);
-		
-		return singleInterfaceClusterAssembly.getEdgeCountInFirstConnectedComponent(interfaceClusterId);
+	public InterfaceEvolContextList getInterfaceEvolContextList() {
+		return interfEvolContextList;		
+	}
+	
+	public void setInterfaceEvolContextList(InterfaceEvolContextList interfEvolContextList) {
+		this.interfEvolContextList = interfEvolContextList;
+	}
+	
+	public void score() {
 
+		// this gets each of the unique assembly clusters, represented by the maximal member
+		List<Assembly> uniques = getUniqueAssemblies();
+
+		// 1 Do individual assemblies scoring
+		for (Assembly a:uniques) {			
+			a.score();							
+		}
+		
+		// 2 Look at all calls and keep only the largest bio assembly. If no bios at all then assign bio to monomers
+		Assembly maxSizeBioAssembly = null;
+		int maxSize = 0;
+		for (Assembly a:uniques) {
+			
+			StoichiometrySet stoSet = a.getStoichiometrySet();
+			// TODO this ignores other non-overlapping stoichiometries, must take care of that
+			Stoichiometry sto = stoSet.getFirst();
+			int size = sto.getTotalSize();
+			
+			if (a.getCall() == CallType.BIO && maxSize<size) {
+				maxSizeBioAssembly = a;
+				maxSize = size;
+			}
+		}
+		
+		if (maxSizeBioAssembly == null) {
+			// no assemblies were BIO
+			
+			for (Assembly a:uniques) {
+				
+				// TODO check how this would work with heteromers
+				
+				if (a.getNumEngagedInterfaceClusters()==0) {
+					a.setCall(CallType.BIO);
+				}
+			}
+			
+		} else {			
+			
+			for (Assembly a:uniques) {			
+				if (a == maxSizeBioAssembly) continue;
+				
+				a.setCall(CallType.CRYSTAL);
+				
+			}
+		}
 	}
 	
 }
