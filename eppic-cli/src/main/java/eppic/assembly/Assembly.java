@@ -940,14 +940,14 @@ public class Assembly {
 			} else {
 				// C1 heteromeric: 1:1:1 stoichiometry
 				List<StructureInterfaceCluster> list = getEngagedInterfaceClusters(sto);
-				boolean allBio = true;
+				int countBio = 0;
 				for (StructureInterfaceCluster interfCluster:list) {
 					if (getCrystalAssemblies().getInterfaceEvolContextList().
-							getCombinedClusterPredictor(interfCluster.getId()).getCall() != CallType.BIO ) {
-						allBio = false;
+							getCombinedClusterPredictor(interfCluster.getId()).getCall() == CallType.BIO ) {
+						countBio++;
 					}
 				}
-				if (allBio) setCall(CallType.BIO);
+				if (countBio>= (numEntities-1) ) setCall(CallType.BIO);
 			}
 			return;
 		}

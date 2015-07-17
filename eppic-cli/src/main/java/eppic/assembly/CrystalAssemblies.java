@@ -251,9 +251,32 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 
 			@Override
 			public int compare(Assembly arg0, Assembly arg1) {
-				int firstSize = arg0.getStoichiometrySet().getFirst().getCountForIndex(0);
-				int secondSize = arg1.getStoichiometrySet().getFirst().getCountForIndex(0);
-				return Integer.compare(firstSize, secondSize);
+				int firstSize = arg0.getStoichiometrySet().getFirst().getTotalSize();
+				int secondSize = arg1.getStoichiometrySet().getFirst().getTotalSize();
+				
+				if (firstSize != secondSize) {
+					return Integer.compare(firstSize, secondSize);
+				} 
+				
+				// if both of same size, we sort based on engaged interface cluster ids
+				List<StructureInterfaceCluster> interfClusters0 = arg0.getEngagedInterfaceClusters();
+				List<StructureInterfaceCluster> interfClusters1 = arg1.getEngagedInterfaceClusters();
+				if (interfClusters0.size()!=interfClusters1.size()) {
+					// if different number of interface clusters we put the one with the most clusters first
+					return Integer.compare(interfClusters1.size(),interfClusters0.size());
+				}
+
+				for (int i=0;i<interfClusters0.size();i++) {
+					int id0 = interfClusters0.get(i).getId();
+					int id1 = interfClusters1.get(i).getId();
+					
+					if (id0==id1) continue;
+					
+					return Integer.compare(id0,id1);
+				}
+				
+				// this would happen if both are size 0
+				return 0;
 			}
 			
 		});
