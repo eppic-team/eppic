@@ -699,18 +699,11 @@ public class Main {
 		try {
 			for (StructureInterface interf:interfaces) {
 				File cifFile = params.getOutputFile(EppicParams.INTERFACES_COORD_FILES_SUFFIX+"."+interf.getId()+ EppicParams.MMCIF_FILE_EXTENSION);
-				File pseFile = params.getOutputFile(EppicParams.INTERFACES_COORD_FILES_SUFFIX+"."+interf.getId()+".pse");
-				File pmlFile = params.getOutputFile(EppicParams.INTERFACES_COORD_FILES_SUFFIX+"."+interf.getId()+".pml");
-				pr.generateInterfPngPsePml(interf, 
-						params.getCAcutoffForGeom(), params.getMinAsaForSurface(), 
+				pr.generateInterfacePng(interf, 
 						cifFile, 
-						pseFile,
-						pmlFile,
 						params.getBaseName()+EppicParams.INTERFACES_COORD_FILES_SUFFIX+"."+interf.getId()	);
 				LOGGER.info("Generated PyMOL files for interface "+interf.getId());
 				
-				// we remove pml file if we are in -w mode (to reduce file number in server)
-				if (params.isGenerateModelSerializedFile()) pmlFile.deleteOnExit();
 			}
 
 			if (params.isDoEvolScoring()) {
@@ -734,7 +727,10 @@ public class Main {
 							EppicParams.COLOR_ENTROPIES_ICON_WIDTH,
 							EppicParams.COLOR_ENTROPIES_ICON_HEIGHT,
 							0,params.getMaxEntropy() );
+					
+					if (params.isGenerateModelSerializedFile()) chainPmlFile.deleteOnExit();
 				}
+				
 			}
 			
 			for (Assembly a:validAssemblies) {
@@ -764,20 +760,7 @@ public class Main {
 		params.getProgressLog().println("Compressing files");
 		LOGGER.info("Compressing files");
 		
-		try {
-			for (StructureInterface interf:interfaces) {
-				File pseFile = params.getOutputFile(EppicParams.INTERFACES_COORD_FILES_SUFFIX+"."+interf.getId()+".pse");
-				File gzipPseFile = params.getOutputFile(EppicParams.INTERFACES_COORD_FILES_SUFFIX+"."+interf.getId()+".pse.gz");
-
-				if (!pseFile.exists()) {
-					LOGGER.warn("Can't find PSE file {} to compress",pseFile);
-					continue;
-				} 
-
-				Goodies.gzipFile(pseFile, gzipPseFile);
-				pseFile.delete();
-
-			}
+		try {			
 			
 			if (params.isDoEvolScoring()) {
 				for (ChainEvolContext cec:cecs.getAllChainEvolContext()) {

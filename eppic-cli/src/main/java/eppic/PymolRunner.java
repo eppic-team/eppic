@@ -45,17 +45,12 @@ public class PymolRunner {
 	 * through {@link #readColorsFromPropertiesFile(InputStream)}
 	 * NOTE that multi-chain letters only work from PyMOL 1.7.4+
 	 * @param interf
-	 * @param caCutoff
-	 * @param minAsaForSurface
 	 * @param mmcifFile
-	 * @param pseFile
-	 * @param pmlFile
 	 * @param base
 	 * @throws IOException 
 	 * @throws InterruptedException 
 	 */
-	public void generateInterfPngPsePml(StructureInterface interf, double caCutoff, double minAsaForSurface, 
-			File mmcifFile, File pseFile, File pmlFile, String base) 
+	public void generateInterfacePng(StructureInterface interf, File mmcifFile, String base) 
 	throws IOException, InterruptedException {
 		
 		String molecName = getPymolMolecName(mmcifFile);
@@ -89,82 +84,13 @@ public class PymolRunner {
 		
 		
 		StringBuffer pymolScriptBuilder = new StringBuffer();
-		PrintStream pml = new PrintStream(pmlFile);
 		
 		pymolScriptBuilder.append("load "+mmcifFile.getAbsolutePath()+";");
 				
-		String cmd;
-
-		cmd = "orient";
-		writeCommand(cmd, pml);
+		pymolScriptBuilder.append("orient;");
 		
-		cmd = "remove solvent";
-		writeCommand(cmd, pml);
+		pymolScriptBuilder.append("remove solvent;");
 		
-		cmd = "as cartoon";
-		writeCommand(cmd, pml);
-		
-		cmd = "color "+color1+", "+molecName+" and chain "+chain1;
-		writeCommand(cmd, pml);
-		cmd = "color "+color2+", "+molecName+" and chain "+chain2;
-		writeCommand(cmd, pml);
-		
-		cmd = "select chain"+chain1+", chain "+chain1;
-		writeCommand(cmd, pml);
-		cmd = "select chain"+chain2+", chain "+chain2;
-		writeCommand(cmd, pml);
-		
-		cmd = getSelString("core", chain1, interf.getCoreResidues(caCutoff, minAsaForSurface).getFirst());
-		writeCommand(cmd, pml);
-		cmd = getSelString("core", chain2, interf.getCoreResidues(caCutoff, minAsaForSurface).getSecond());
-		writeCommand(cmd, pml);
-		cmd = getSelString("rim", chain1, interf.getRimResidues(caCutoff, minAsaForSurface).getFirst());
-		writeCommand(cmd, pml);
-		cmd = getSelString("rim", chain2, interf.getRimResidues(caCutoff, minAsaForSurface).getSecond());
-		writeCommand(cmd, pml);
-		
-		cmd = "select interface"+chain1+", core"+chain1+" or rim"+chain1;
-		writeCommand(cmd, pml);
-		cmd = "select interface"+chain2+", core"+chain2+" or rim"+chain2;
-		writeCommand(cmd, pml);
-		cmd = "select bothinterf , interface"+chain1+" or interface"+chain2;
-		writeCommand(cmd, pml);
-		// not showing surface anymore, was not so useful 
-		//cmd = "show surface, chain "+chain1;
-		//writeCommand(cmd, pml);
-		//cmd = "show surface, chain "+chain2;
-		//writeCommand(cmd, pml);
-		//pymolScriptBuilder.append("color blue, core"+chains[0]+";");
-		//pymolScriptBuilder.append("color red, rim"+chains[0]+";");
-		cmd = "color "+MolViewersHelper.getInterf1Color()+", core"+chain1;
-		writeCommand(cmd, pml);
-		//pymolScriptBuilder.append("color slate, core"+chains[1]+";");
-		//pymolScriptBuilder.append("color raspberry, rim"+chains[1]+";");
-		cmd = "color "+MolViewersHelper.getInterf2Color()+", core"+chain2;
-		writeCommand(cmd, pml);
-		cmd = "show sticks, bothinterf";
-		writeCommand(cmd, pml);
-		//cmd = "set transparency, 0.35";
-		//writeCommand(cmd, pml);
-		//pymolScriptBuilder.append("zoom bothinterf"+";");
-		
-		// TODO do we need to check something before issuing the cofactors command???
-		//if (interf.hasCofactors()) {
-		cmd = "select cofactors, org;";
-		writeCommand(cmd, pml);
-		cmd = "show sticks, cofactors;";
-		writeCommand(cmd, pml);
-		//}
-		
-		cmd = "select none";// so that the last selection is deactivated
-		writeCommand(cmd, pml);
-		
-		pml.close();
-		
-		pymolScriptBuilder.append("@ "+pmlFile+";");
-		
-		pymolScriptBuilder.append("save "+pseFile+";");
-
 		// and now creating the png thumbnail
 		pymolScriptBuilder.append("bg "+DEF_TN_BG_COLOR+";");
 		
@@ -654,6 +580,7 @@ public class PymolRunner {
 		return cs.toString(); // to write pymol selection 3-6+11+15-17 or resi 34-45,47,78
 	}
 
+	@SuppressWarnings("unused")
 	private String getSelString(String namePrefix, String chainName, List<Group> list) {
 		return "select "+namePrefix+chainName+", chain "+chainName+" and ( resi "+getResiSelString(list)+")";
 	}
