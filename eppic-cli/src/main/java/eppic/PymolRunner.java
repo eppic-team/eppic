@@ -12,6 +12,11 @@ import org.biojava.nbio.structure.Chain;
 import org.biojava.nbio.structure.Group;
 import org.biojava.nbio.structure.contact.StructureInterface;
 import org.biojava.nbio.structure.contact.StructureInterfaceList;
+import org.jgrapht.UndirectedGraph;
+
+import eppic.assembly.Assembly;
+import eppic.assembly.ChainVertex;
+import eppic.assembly.InterfaceEdge;
 
 
 public class PymolRunner {
@@ -192,6 +197,82 @@ public class PymolRunner {
 		command.add(pymolScriptBuilder.toString());
 
 		
+		Process pymolProcess = new ProcessBuilder(command).start();
+		int exit = pymolProcess.waitFor();
+		if (exit!=0) {
+			throw new IOException("Pymol exited with error status "+exit);
+		}
+	}
+	
+	public void generateAssemblyPng(Assembly a, File mmcifFile, String base) throws IOException, InterruptedException {
+		
+		String molecName = getPymolMolecName(mmcifFile);
+		
+		File[] pngFiles = new File[DEF_TN_HEIGHTS.length];
+		for (int i=0;i<DEF_TN_HEIGHTS.length;i++) {
+			pngFiles[i] = new File(mmcifFile.getParent(),base+"."+DEF_TN_WIDTHS[i]+"x"+DEF_TN_HEIGHTS[i]+".png");
+		}
+		
+		UndirectedGraph<ChainVertex, InterfaceEdge> g = a.getFirstConnectedComponent();
+		
+		String[] chains = new String[g.vertexSet().size()];
+		String[] colors = new String[g.vertexSet().size()];
+		
+		int i = 0;
+		for (ChainVertex v:g.vertexSet()) {
+			// the same identifiers given in Assembly.writeToMmCifFile()
+			String chain = v.getChainId()+"_"+v.getOpId();
+			chains[i] = chain;
+			colors[i] = MolViewersHelper.getChainColor(chain, i, false);
+			i++;
+		}
+		
+		List<String> command = new ArrayList<String>();
+		command.add(pymolExec.getAbsolutePath());
+		command.add("-q");
+		command.add("-c");
+
+
+		// NOTE we used to pass all commands in one string after -d (with the pymolScriptBuilder StringBuffer.
+		//      But pymol 1.3 and 1.4 seem to have problems with very long strings (causing segfaults)
+		//      Because of that now we write most commands to pml file (which we were doing anyway so that users can 
+		//      use the pml scripts if they want) and then load the pmls with pymol "@" command
+		
+		
+		StringBuffer pymolScriptBuilder = new StringBuffer();
+		
+		pymolScriptBuilder.append("load "+mmcifFile.getAbsolutePath()+";");
+				
+		pymolScriptBuilder.append("orient;");
+		
+		pymolScriptBuilder.append("remove solvent;");
+
+		pymolScriptBuilder.append("bg "+DEF_TN_BG_COLOR+";");
+
+		pymolScriptBuilder.append("as "+DEF_TN_STYLE+";");
+
+		
+		for (i=0;i<chains.length;i++) {
+			pymolScriptBuilder.append("color "+colors[i]+", "+molecName+" and chain "+chains[i] + ";");
+		}
+		
+		pymolScriptBuilder.append("set ray_opaque_background, off;");
+
+		for (int j=0;j<DEF_TN_HEIGHTS.length;j++) {
+			pymolScriptBuilder.append("viewport "+DEF_TN_HEIGHTS[j]+","+DEF_TN_WIDTHS[j] + ";");
+
+			pymolScriptBuilder.append("ray;");
+
+			pymolScriptBuilder.append("png "+pngFiles[j].getAbsolutePath() + ";");
+		}
+
+		pymolScriptBuilder.append("quit;");
+
+		command.add("-d");
+
+		command.add(pymolScriptBuilder.toString());
+
+
 		Process pymolProcess = new ProcessBuilder(command).start();
 		int exit = pymolProcess.waitFor();
 		if (exit!=0) {

@@ -698,14 +698,19 @@ public class Main {
 
 		try {
 			for (StructureInterface interf:interfaces) {
+				File cifFile = params.getOutputFile(EppicParams.INTERFACES_COORD_FILES_SUFFIX+"."+interf.getId()+ EppicParams.MMCIF_FILE_EXTENSION);
+				File pseFile = params.getOutputFile(EppicParams.INTERFACES_COORD_FILES_SUFFIX+"."+interf.getId()+".pse");
+				File pmlFile = params.getOutputFile(EppicParams.INTERFACES_COORD_FILES_SUFFIX+"."+interf.getId()+".pml");
 				pr.generateInterfPngPsePml(interf, 
 						params.getCAcutoffForGeom(), params.getMinAsaForSurface(), 
-						params.getOutputFile(EppicParams.INTERFACES_COORD_FILES_SUFFIX+"."+interf.getId()+ EppicParams.MMCIF_FILE_EXTENSION), 
-						params.getOutputFile(EppicParams.INTERFACES_COORD_FILES_SUFFIX+"."+interf.getId()+".pse"),
-						params.getOutputFile(EppicParams.INTERFACES_COORD_FILES_SUFFIX+"."+interf.getId()+".pml"),
+						cifFile, 
+						pseFile,
+						pmlFile,
 						params.getBaseName()+EppicParams.INTERFACES_COORD_FILES_SUFFIX+"."+interf.getId()	);
 				LOGGER.info("Generated PyMOL files for interface "+interf.getId());
 				
+				// we remove pml file if we are in -w mode (to reduce file number in server)
+				if (params.isGenerateModelSerializedFile()) pmlFile.deleteOnExit();
 			}
 
 			if (params.isDoEvolScoring()) {
@@ -730,6 +735,13 @@ public class Main {
 							EppicParams.COLOR_ENTROPIES_ICON_HEIGHT,
 							0,params.getMaxEntropy() );
 				}
+			}
+			
+			for (Assembly a:validAssemblies) {
+				File cifFile = params.getOutputFile(EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX+"."+a.getId()+ EppicParams.MMCIF_FILE_EXTENSION);
+
+				pr.generateAssemblyPng(a, cifFile,  
+						params.getBaseName()+EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX+"."+a.getId());
 			}
 			
 		} catch (IOException e) {
