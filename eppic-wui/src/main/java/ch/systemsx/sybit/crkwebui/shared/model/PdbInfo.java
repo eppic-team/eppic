@@ -430,4 +430,12 @@ public class PdbInfo implements Serializable, ProcessingData
 		 pdbInfo.setCrystalFormId(pdbInfo.getCrystalFormId());
 		 return pdbInfo;
 	 }
+	 
+	 public Assembly getAssemblyById(int assemblyID){
+		 for(Assembly a :assemblies){
+			 if(assemblyID == a.getId())
+				 return a;
+		 }
+		 return null;
+	 }
 }

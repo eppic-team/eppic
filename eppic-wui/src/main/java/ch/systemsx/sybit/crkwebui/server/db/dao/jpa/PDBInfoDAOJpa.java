@@ -33,6 +33,7 @@ public class PDBInfoDAOJpa implements PDBInfoDAO
 	@Override
 	public PdbInfo getPDBInfo(String jobId) throws DaoException
 	{
+		System.out.println("PDBInfoDAOJpa.java: calling getPDBInfo().....");
 		EntityManager entityManager = null;
 		PdbInfo result = null;
 	
@@ -92,6 +93,7 @@ public class PDBInfoDAOJpa implements PDBInfoDAO
 	@Override
 	public void insertPDBInfo(PdbInfoDB pdbScoreItem) throws DaoException
 	{
+		System.out.println("PDBInfoDAOJpa.java: calling insertPDBInfo().....");
 		EntityManager entityManager = null;
 		
 		try

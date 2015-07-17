@@ -521,7 +521,7 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 	}
 
 	@Override
-	public ProcessingData getResultsOfProcessing(String jobId) throws Exception
+	public ProcessingData getResultsOfProcessing(String jobId) throws Exception //whaveter calls this fails
 	{
 		StatusOfJob status = null;
 
@@ -532,13 +532,15 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 		{
 			UserSessionDAO sessionDAO = new UserSessionDAOJpa();
 			sessionDAO.insertSessionForJob(getThreadLocalRequest().getSession().getId(), jobId, getThreadLocalRequest().getRemoteAddr());
-
 			if(status.equals(StatusOfJob.FINISHED))
 			{
+				System.out.println("CrkWebServiceImpl.java: Status of job - FINISHED!!!!");
+				//System.out.println("CrkWebServiceImpl.java: ID of first assembly is " + getResultData(jobId).getAssemblies().get(0).getUid()); //this fails
 				return getResultData(jobId);
 			}
 			else
 			{
+				System.out.println("Status of job - not FINISHED");
 				return getStatusData(jobId, status);
 			}
 		}
@@ -682,6 +684,10 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 
 		PDBInfoDAO pdbInfoDAO = new PDBInfoDAOJpa();
 		PdbInfo pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
+		
+		AssemblyDAO assemblyDAO = new AssemblyDAOJpa();
+		List<Assembly> assemblies = assemblyDAO.getAssemblies(pdbInfo.getUid());
+		pdbInfo.setAssemblies(assemblies); 
 
 		InterfaceClusterDAO clusterDAO = new InterfaceClusterDAOJpa();
 		List<InterfaceCluster> clusters = clusterDAO.getInterfaceClustersWithoutInterfaces(pdbInfo.getUid());
@@ -696,11 +702,6 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 		ChainClusterDAO chainClusterDAO = new ChainClusterDAOJpa();
 		List<ChainCluster> chainClusters = chainClusterDAO.getChainClusters(pdbInfo.getUid());
 		pdbInfo.setChainClusters(chainClusters);
-		
-		AssemblyDAO assemblyDAO = new AssemblyDAOJpa();
-		List<Assembly> assemblies = assemblyDAO.getAssemblies(pdbInfo.getUid());
-
-		pdbInfo.setAssemblies(assemblies);
 		
 		pdbInfo.setInputType(input.getInputType());
 		pdbInfo.setInputName(input.getInputName());

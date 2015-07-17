@@ -8,16 +8,22 @@ import java.util.Map;
 
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
+import ch.systemsx.sybit.crkwebui.client.commons.events.SelectAssemblyResultsRowEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.SelectResultsRowEvent;
+import ch.systemsx.sybit.crkwebui.client.commons.events.ShowAssembliesEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowDetailsEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowInterfaceResiduesEvent;
+import ch.systemsx.sybit.crkwebui.client.commons.events.ShowInterfacesOfAssemblyDataEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowThumbnailEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowViewerEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.UncheckClustersRadioEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.WindowHideEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.cell.TwoDecimalDoubleCell;
+import ch.systemsx.sybit.crkwebui.client.commons.handlers.SelectAssemblyResultsRowHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.SelectResultsRowHandler;
+import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowAssembliesHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowDetailsHandler;
+import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowInterfacesOfAssemblyDataHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowThumbnailHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowViewerHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.UncheckClustersRadioHandler;
@@ -25,17 +31,21 @@ import ch.systemsx.sybit.crkwebui.client.commons.handlers.WindowHideHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.managers.EventBusManager;
 import ch.systemsx.sybit.crkwebui.client.commons.managers.ViewerRunner;
 import ch.systemsx.sybit.crkwebui.client.commons.util.EscapedStringGenerator;
+import ch.systemsx.sybit.crkwebui.client.results.data.AssemblyItemModel;
+import ch.systemsx.sybit.crkwebui.client.results.data.AssemblyItemModelProperties;
 import ch.systemsx.sybit.crkwebui.client.results.data.InterfaceItemModel;
-import ch.systemsx.sybit.crkwebui.client.results.data.InterfaceItemModelProperties;
+import ch.systemsx.sybit.crkwebui.client.results.gui.cells.AssemblyMethodCallCell;
+import ch.systemsx.sybit.crkwebui.client.results.gui.cells.AssemblyOperatorTypeCell;
+import ch.systemsx.sybit.crkwebui.client.results.gui.cells.AssemblyWarningsCell;
 import ch.systemsx.sybit.crkwebui.client.results.gui.cells.DetailsButtonCell;
-import ch.systemsx.sybit.crkwebui.client.results.gui.cells.MethodCallCell;
-import ch.systemsx.sybit.crkwebui.client.results.gui.cells.OperatorTypeCell;
+import ch.systemsx.sybit.crkwebui.client.results.gui.cells.InterfacesButtonCell;
 import ch.systemsx.sybit.crkwebui.client.results.gui.cells.ThumbnailCell;
-import ch.systemsx.sybit.crkwebui.client.results.gui.cells.WarningsCell;
+import ch.systemsx.sybit.crkwebui.client.results.gui.grid.util.AssemblyClustersGridView;
+import ch.systemsx.sybit.crkwebui.client.results.gui.grid.util.AssemblyFinalCallSummaryRenderer;
+import ch.systemsx.sybit.crkwebui.client.results.gui.grid.util.AssemblyMethodsSummaryRenderer;
 import ch.systemsx.sybit.crkwebui.client.results.gui.grid.util.ClustersGridView;
-import ch.systemsx.sybit.crkwebui.client.results.gui.grid.util.FinalCallSummaryRenderer;
 import ch.systemsx.sybit.crkwebui.client.results.gui.grid.util.MethodSummaryType;
-import ch.systemsx.sybit.crkwebui.client.results.gui.grid.util.MethodsSummaryRenderer;
+import ch.systemsx.sybit.crkwebui.shared.model.Assembly;
 import ch.systemsx.sybit.crkwebui.shared.model.Interface;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceCluster;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceClusterScore;
@@ -68,6 +78,7 @@ import com.sencha.gxt.data.shared.SortDir;
 import com.sencha.gxt.data.shared.Store.StoreSortInfo;
 import com.sencha.gxt.widget.core.client.FramedPanel;
 import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer;
+import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer.VerticalLayoutData;
 import com.sencha.gxt.widget.core.client.form.ComboBox;
 import com.sencha.gxt.widget.core.client.grid.ColumnConfig;
 import com.sencha.gxt.widget.core.client.grid.ColumnModel;
@@ -83,29 +94,28 @@ import com.sencha.gxt.widget.core.client.toolbar.ToolBar;
 import eppic.EppicParams;
 import eppic.model.ScoringMethod;
 
-public class ResultsGridPanel extends VerticalLayoutContainer
+public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 {
 	private VerticalLayoutContainer panelContainer;
+	 
+	private ListStore<AssemblyItemModel> resultsStore;
+	private ColumnModel<AssemblyItemModel> resultsColumnModel;
+	private Grid<AssemblyItemModel> resultsGrid;
+	//private AssemblyClustersGridView clustersView;
+	PdbInfo resultsData;
 	
-	private ListStore<InterfaceItemModel> resultsStore;
-	private ColumnModel<InterfaceItemModel> resultsColumnModel;
-	private Grid<InterfaceItemModel> resultsGrid;
-	private ClustersGridView clustersView;
-	
-	private CheckBox clustersViewButton;
-	
-	private VerticalLayoutContainer noInterfaceFoundPanel;
+	//private VerticalLayoutContainer noInterfaceFoundPanel;
 	
 	private int panelWidth;
 	
-	private static final InterfaceItemModelProperties props = GWT.create(InterfaceItemModelProperties.class);
+	private static final AssemblyItemModelProperties props = GWT.create(AssemblyItemModelProperties.class);
 	
 	//Columns to be used later
-	ColumnConfig<InterfaceItemModel, String> thumbnailColumn;
-	ColumnConfig<InterfaceItemModel, String> warningsColumn;
-	SummaryColumnConfig<InterfaceItemModel, Integer> clusterIdColumn;
+	ColumnConfig<AssemblyItemModel, String> thumbnailColumn;
+	ColumnConfig<AssemblyItemModel, String> warningsColumn;
+	SummaryColumnConfig<AssemblyItemModel, Integer> clusterIdColumn;
 	
-	public ResultsGridPanel(int width)
+	public AssemblyResultsGridPanel(int width)
 	{
 		
 		this.panelWidth = width;
@@ -121,10 +131,10 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 		panelContainer.setScrollMode(ScrollMode.AUTO);
 		gridPanel.setWidget(panelContainer);
 		
-		resultsStore = new ListStore<InterfaceItemModel>(props.key());
-		List<ColumnConfig<InterfaceItemModel, ?>> resultsConfigs = createColumnConfig();
-		resultsColumnModel = new ColumnModel<InterfaceItemModel>(resultsConfigs);
-		clustersView = createClusterView();
+		resultsStore = new ListStore<AssemblyItemModel>(props.key());
+		List<ColumnConfig<AssemblyItemModel, ?>> resultsConfigs = createColumnConfig();
+		resultsColumnModel = new ColumnModel<AssemblyItemModel>(resultsConfigs);
+		//clustersView = createClusterView();
 		
 		resultsGrid = createResultsGrid();		
 		panelContainer.add(createSelectorToolBar(), new VerticalLayoutData(1,-1));
@@ -133,7 +143,7 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 		this.add(panelContainer, new VerticalLayoutData(1,-1));
 		
 		//Panel to display if no interfaces found
-		noInterfaceFoundPanel = new VerticalLayoutContainer();
+		//noInterfaceFoundPanel = new VerticalLayoutContainer();
 		
 		initializeEventsListeners();
 	}
@@ -147,20 +157,6 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 		toolBar.add(viewerSelectorBox);
 		toolBar.add(new HTML("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"));
 		
-		clustersViewButton = new CheckBox();
-		clustersViewButton.setHTML(AppPropertiesManager.CONSTANTS.results_grid_clusters_label());
-		new ToolTip(clustersViewButton, new ToolTipConfig(AppPropertiesManager.CONSTANTS.results_grid_clusters_tooltip()));
-		clustersViewButton.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
-
-			@Override
-			public void onValueChange(ValueChangeEvent<Boolean> event) {
-				onClustersRadioValueChange(event.getValue());
-				
-			}
-		});
-		clustersViewButton.setValue(false);
-		toolBar.add(clustersViewButton);
-		
 		return toolBar;
 	}
 	
@@ -168,26 +164,21 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 	 * Creates configurations of the columns for results grid.
 	 * @return list of columns configurations for results grid
 	 */
-	private List<ColumnConfig<InterfaceItemModel, ?>> createColumnConfig() 
+	private List<ColumnConfig<AssemblyItemModel, ?>> createColumnConfig() 
 	{
-		List<ColumnConfig<InterfaceItemModel, ?>> configs = new ArrayList<ColumnConfig<InterfaceItemModel, ?>>();
-		
-		clusterIdColumn = new SummaryColumnConfig<InterfaceItemModel, Integer>(props.clusterId());
-		configs.add(clusterIdColumn);
+		List<ColumnConfig<AssemblyItemModel, ?>> configs = new ArrayList<ColumnConfig<AssemblyItemModel, ?>>();
+				
+
+		configs.add(getIdColumn()); // the id value (same as identifier)
+		//configs.add(getCompositionColumn());
 		thumbnailColumn = getThumbnailColumn();
 		configs.add(thumbnailColumn);
-		configs.add(getIdColumn());
-		configs.add(getChainsColumn());
-		configs.add(getAreaColumn());
-		configs.add(getOperatorColumn());
-		configs.add(getSizesColumn());
-		configs.add(getMethodsColumn(props.geometryCall(),ScoringMethod.EPPIC_GEOMETRY));
-		configs.add(getMethodsColumn(props.coreRimCall(),ScoringMethod.EPPIC_CORERIM));
-		configs.add(getMethodsColumn(props.coreSurfaceCall(),ScoringMethod.EPPIC_CORESURFACE));
-		configs.add(getFinalCallColumn());
+		configs.add(getIdentifierColumn()); //what is displayed in the table (same as id)
+		configs.add(getMmSizeColumn());
+		configs.add(getStoichiometryColumn());
+		configs.add(getSymmetryColumn());
+		configs.add(getPredictionColumn());
 		configs.add(getDetailsColumn());
-		warningsColumn = getWarningsColumn();
-		configs.add(warningsColumn);
 
 		return configs;
 	}
@@ -201,13 +192,13 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 	 * @param column
 	 * @param type
 	 */
-	private void fillColumnSettings(ColumnConfig<InterfaceItemModel, ?> column, String type){
+	private void fillColumnSettings(ColumnConfig<AssemblyItemModel, ?> column, String type){
 		column.setColumnHeaderClassName("eppic-default-font");
-		column.setWidth(Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("results_"+type+"_width")));
+		column.setWidth(Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("assembly_results_"+type+"_width")));
 		column.setHeader(EscapedStringGenerator.generateSafeHtml(
-				ApplicationContext.getSettings().getGridProperties().get("results_"+type+"_header")));
+				ApplicationContext.getSettings().getGridProperties().get("assembly_results_"+type+"_header")));
 		
-		String tooltip = ApplicationContext.getSettings().getGridProperties().get("results_"+type+"_tooltip");
+		String tooltip = ApplicationContext.getSettings().getGridProperties().get("assembly_results_"+type+"_tooltip");
 		if(tooltip != null)
 			column.setToolTip(EscapedStringGenerator.generateSafeHtml(tooltip));
 		
@@ -215,122 +206,82 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 		column.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 		column.setMenuDisabled(true);
 	}
-	
-	private SummaryColumnConfig<InterfaceItemModel, String> getWarningsColumn() {
-		SummaryColumnConfig<InterfaceItemModel, String> column = 
-				new SummaryColumnConfig<InterfaceItemModel, String>(props.warningsImagePath());
-		column.setCell(new WarningsCell(resultsStore));
-		fillColumnSettings(column, "warnings");
-		return column;
-	}
 
-	private SummaryColumnConfig<InterfaceItemModel, String> getDetailsColumn() {
-		SummaryColumnConfig<InterfaceItemModel, String> column = 
-				new SummaryColumnConfig<InterfaceItemModel, String>(props.detailsButtonText());
-		column.setCell(new DetailsButtonCell());
-		fillColumnSettings(column, "details");
-		column.setResizable(false);
-		column.setSortable(false);
-		return column;
-	}
-	
-	private SummaryColumnConfig<InterfaceItemModel, String> getFinalCallColumn() {
-		SummaryColumnConfig<InterfaceItemModel, String> column = 
-				new SummaryColumnConfig<InterfaceItemModel, String>(props.finalCallName());
-		column.setCell(new MethodCallCell(resultsStore, ScoringMethod.EPPIC_FINAL));
-		column.setSummaryType(new MethodSummaryType.FinalCallSummaryType());
-		column.setSummaryRenderer(new FinalCallSummaryRenderer());
-		fillColumnSettings(column, "finalCallName");
-		column.setColumnTextClassName("eppic-results-final-call");
-		return column;
-	}
-	
-	private SummaryColumnConfig<InterfaceItemModel, ?> getMethodsColumn(
-			ValueProvider<InterfaceItemModel, String> vp,
-			String type) {
-		SummaryColumnConfig<InterfaceItemModel, String> column = new SummaryColumnConfig<InterfaceItemModel, String>(vp);
-		column.setCell(new MethodCallCell(resultsStore, type));
-		
-		boolean isSummarySet = false;
-		if(type.equals(ScoringMethod.EPPIC_CORERIM)){
-			column.setSummaryType(new MethodSummaryType.CoreRimSummaryType());
-			isSummarySet = true;
-		} else if(type.equals(ScoringMethod.EPPIC_CORESURFACE)){
-			column.setSummaryType(new MethodSummaryType.CoreSurfaceSummaryType());
-			isSummarySet = true;
-		} else if(type.equals(ScoringMethod.EPPIC_GEOMETRY)){
-			column.setSummaryType(new MethodSummaryType.GeometrySummaryType());
-			isSummarySet = true;
-		}
-		
-		if(isSummarySet) column.setSummaryRenderer(new MethodsSummaryRenderer());
-		fillColumnSettings(column, type);
-		
-		return column;
-	}
-
-	private SummaryColumnConfig<InterfaceItemModel, String> getSizesColumn() {
-		SummaryColumnConfig<InterfaceItemModel, String> sizesColumn = 
-				new SummaryColumnConfig<InterfaceItemModel, String>(props.sizes());
-		fillColumnSettings(sizesColumn, "sizes");
-		return sizesColumn;
-	}
-
-	private SummaryColumnConfig<InterfaceItemModel, String> getOperatorColumn() {
-		SummaryColumnConfig<InterfaceItemModel, String> operatorColumn = 
-				new SummaryColumnConfig<InterfaceItemModel, String>(props.operatorType());
-		operatorColumn.setCell(new OperatorTypeCell(resultsStore));
-		fillColumnSettings(operatorColumn, "operatorType");
-		return operatorColumn;
-	}
-
-	private SummaryColumnConfig<InterfaceItemModel, Double> getAreaColumn() {
-		SummaryColumnConfig<InterfaceItemModel, Double> areaColumn = 
-				new SummaryColumnConfig<InterfaceItemModel, Double>(props.area());
-		
-		areaColumn.setSummaryType(new SummaryType.AvgSummaryType<Double>());
-		areaColumn.setSummaryRenderer(new SummaryRenderer<InterfaceItemModel>() {
-
-			@Override
-			public SafeHtml render(
-					Number value,
-					Map<ValueProvider<? super InterfaceItemModel, ?>, Number> data) {
-				return SafeHtmlUtils.fromTrustedString(NumberFormat.getFormat("0.00").format(value));
-			}
-		});
-		
-		fillColumnSettings(areaColumn, "area");
-		areaColumn.setCell(new TwoDecimalDoubleCell());
-		return areaColumn;
-	}
-
-	private SummaryColumnConfig<InterfaceItemModel, String> getChainsColumn() {
-		SummaryColumnConfig<InterfaceItemModel, String> chainColumn = 
-				new SummaryColumnConfig<InterfaceItemModel, String>(props.name());
-		fillColumnSettings(chainColumn, "name");
-		return chainColumn;
-	}
-
-	private SummaryColumnConfig<InterfaceItemModel, Integer> getIdColumn() {
-		SummaryColumnConfig<InterfaceItemModel, Integer> idColumn = 
-				new SummaryColumnConfig<InterfaceItemModel, Integer>(props.interfaceId());
+	private SummaryColumnConfig<AssemblyItemModel, Integer> getIdColumn() {
+		SummaryColumnConfig<AssemblyItemModel, Integer> idColumn = 
+				new SummaryColumnConfig<AssemblyItemModel, Integer>(props.assemblyId());
 		fillColumnSettings(idColumn, "id");
 		return idColumn;
 	}
 	
-	private SummaryColumnConfig<InterfaceItemModel, String> getThumbnailColumn(){
-		SummaryColumnConfig<InterfaceItemModel, String> thumbnailColumn = 
-				new SummaryColumnConfig<InterfaceItemModel, String>(props.thumbnailUrl());
+	private ColumnConfig<AssemblyItemModel, String> getIdentifierColumn() {
+		ColumnConfig<AssemblyItemModel, String> identifierColumn = 
+				new ColumnConfig<AssemblyItemModel, String>(props.identifier());
+		fillColumnSettings(identifierColumn, "identifier");
+		return identifierColumn;
+	}
+	
+	private ColumnConfig<AssemblyItemModel, String> getCompositionColumn() {
+		ColumnConfig<AssemblyItemModel, String> compositionColumn = 
+				new ColumnConfig<AssemblyItemModel, String>(props.composition());
+		fillColumnSettings(compositionColumn, "composition");
+		return compositionColumn;
+	}
+	
+	private ColumnConfig<AssemblyItemModel, String> getMmSizeColumn() {
+		ColumnConfig<AssemblyItemModel, String> sizeColumn = 
+				new ColumnConfig<AssemblyItemModel, String>(props.mmSize());
+		fillColumnSettings(sizeColumn, "mmsize"); 
+		return sizeColumn;
+	}
+	
+	private SummaryColumnConfig<AssemblyItemModel, String> getSymmetryColumn() {
+		SummaryColumnConfig<AssemblyItemModel, String> symmetryColumn = 
+				new SummaryColumnConfig<AssemblyItemModel, String>(props.symmetry());
+		fillColumnSettings(symmetryColumn, "symmetry");
+		return symmetryColumn;
+	}
+	
+	private SummaryColumnConfig<AssemblyItemModel, String> getStoichiometryColumn() {
+		SummaryColumnConfig<AssemblyItemModel, String> stioColumn = 
+				new SummaryColumnConfig<AssemblyItemModel, String>(props.stoichiometry());
+		fillColumnSettings(stioColumn, "stoichiometry");
+		return stioColumn;
+	}
+	
+	private SummaryColumnConfig<AssemblyItemModel, String> getPredictionColumn() {
+		SummaryColumnConfig<AssemblyItemModel, String> predictionColumn = 
+				new SummaryColumnConfig<AssemblyItemModel, String>(props.prediction());
+		fillColumnSettings(predictionColumn, "prediction");
+		return predictionColumn;
+	}
+	
+	private SummaryColumnConfig<AssemblyItemModel, String> getDetailsColumn() {
+		SummaryColumnConfig<AssemblyItemModel, String> column = 
+				//new SummaryColumnConfig<AssemblyItemModel, String>(props.detailsButtonText());
+				new SummaryColumnConfig<AssemblyItemModel, String>(props.detailsButtonText()); 
+		column.setCell(new InterfacesButtonCell());
+		fillColumnSettings(column, "details"); 
+		column.setResizable(false);
+		column.setSortable(false);
+		return column; 
+	}
+
+	
+	private SummaryColumnConfig<AssemblyItemModel, String> getThumbnailColumn(){
+		SummaryColumnConfig<AssemblyItemModel, String> thumbnailColumn = 
+				new SummaryColumnConfig<AssemblyItemModel, String>(props.thumbnailUrl());
 
 		thumbnailColumn.setSummaryType(new SummaryType.CountSummaryType<String>());
-		thumbnailColumn.setSummaryRenderer(new SummaryRenderer<InterfaceItemModel>() {
+		thumbnailColumn.setSummaryRenderer(new SummaryRenderer<AssemblyItemModel>() {
 
 			@Override
 			public SafeHtml render(
 					Number value,
-					Map<ValueProvider<? super InterfaceItemModel, ?>, Number> data) {
+					Map<ValueProvider<? super AssemblyItemModel, ?>, Number> data) {
 				return SafeHtmlUtils.fromTrustedString(
-						value.intValue() > 1 ? "(" + value.intValue() + " Interfaces)" : "(1 Interface)");
+						//value.intValue() > 1 ? "(" + value.intValue() + " Interfaces)" : "(1 Interface)");
+						value.intValue() > 1 ? "(" + value.intValue() + " Assemblies)" : "(1 Assembly)");
 			}
 		});
 		
@@ -345,26 +296,26 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 	 * Creates the cluster view for the grid
 	 * @return view
 	 */
-	private ClustersGridView createClusterView()
+	/*private AssemblyClustersGridView createClusterView()
 	{
-		ClustersGridView summary = new ClustersGridView();
+		AssemblyClustersGridView summary = new AssemblyClustersGridView();
 		summary.setShowGroupedColumn(false);
 		summary.setShowDirtyCells(false);
 		summary.setStartCollapsed(false);
 		summary.setEnableGroupingMenu(true);
 		summary.setEnableNoGroups(true);
 		return summary;
-	}
+	}*/
 	
 	/**
 	 * Creates grid storing results of calculations for each of the interfaces.
 	 * @return interfaces grid
 	 */
-	private Grid<InterfaceItemModel> createResultsGrid()
+	private Grid<AssemblyItemModel> createResultsGrid()
 	{
-		final Grid<InterfaceItemModel> resultsGrid = new Grid<InterfaceItemModel>(resultsStore, resultsColumnModel);
+		final Grid<AssemblyItemModel> resultsGrid = new Grid<AssemblyItemModel>(resultsStore, resultsColumnModel);
 		resultsGrid.setBorders(false);
-		resultsGrid.setView(clustersView);
+		//resultsGrid.setView(clustersView);
 		resultsGrid.getView().setStripeRows(true);
 		resultsGrid.getView().setColumnLines(false);
 		resultsGrid.getView().setForceFit(true);
@@ -383,15 +334,14 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 			@Override
             public void onEnter(NativeEvent event) 
 			{
-				InterfaceItemModel interfaceItemModel = resultsGrid.getSelectionModel().getSelectedItem();
-				if(interfaceItemModel != null)
+				AssemblyItemModel model = resultsGrid.getSelectionModel().getSelectedItem();
+				if(model != null)
 				{
-					EventBusManager.EVENT_BUS.fireEvent(new ShowDetailsEvent());
+					EventBusManager.EVENT_BUS.fireEvent(new ShowInterfacesOfAssemblyDataEvent(resultsData));
 				}
 			}
 		};
 		
-
 		new QuickTip(resultsGrid);
 		// Since upgrade to GXT 3.1, the "blank tooltip" issue is gone (see CRK-148 in jira 
 		// and http://www.sencha.com/forum/showthread.php?194571-Use-of-QuickTip-leads-to-empty-tooltips)
@@ -405,182 +355,78 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 		return resultsGrid;
 	}
 	
-	/**
-	 * Sets content of results grid.
-	 * @param resultsData results data of selected job
-	 */
+	
 	public void fillResultsGrid(PdbInfo resultsData)
 	{
-		boolean hideWarnings = true;
-		
+		this.resultsData = resultsData;
 		resultsStore.clear();
 
-		List<InterfaceItemModel> data = new ArrayList<InterfaceItemModel>();
+		List<AssemblyItemModel> data = new ArrayList<AssemblyItemModel>();
 		
-		List<InterfaceCluster> interfaceClusters = resultsData.getInterfaceClusters();
-
-		if (interfaceClusters != null)
+		//List<InterfaceCluster> interfaceClusters = resultsData.getInterfaceClusters();
+		List<Assembly> assemblies = resultsData.getAssemblies(); 
+		//Window.alert("assemblies size " + assemblies.size());
+		if (assemblies != null)
 		{
-			for(InterfaceCluster cluster:interfaceClusters)
+			for(Assembly assembly : assemblies)
 			{
-				List<Interface> interfaceItems = cluster.getInterfaces();
-				for (Interface interfaceItem : interfaceItems) 
-				{
-					if((interfaceItem.getInterfaceWarnings() != null) &&
-							(interfaceItem.getInterfaceWarnings().size() > 0))
-					{
-						hideWarnings = false;
-					}
-
-					InterfaceItemModel model = new InterfaceItemModel();
-
-					//Set interface scores
-					for(InterfaceScore interfaceScore : interfaceItem.getInterfaceScores())
-					{
-						if(interfaceScore.getMethod().equals(ScoringMethod.EPPIC_GEOMETRY))
-						{
-							String size1 = String.valueOf(Math.round(interfaceScore.getScore1()));
-							String size2 = String.valueOf(Math.round(interfaceScore.getScore2()));
-							model.setGeometryCall(interfaceScore.getCallName());
-							model.setSizes(size1 + " + " + size2);
-						}
-
-						if(interfaceScore.getMethod().equals(ScoringMethod.EPPIC_CORERIM))
-						{
-							model.setCoreRimCall(interfaceScore.getCallName());
-						}
-
-						if(interfaceScore.getMethod().equals(ScoringMethod.EPPIC_CORESURFACE))
-						{
-							model.setCoreSurfaceCall(interfaceScore.getCallName());
-						}
-
-						if(interfaceScore.getMethod().equals(ScoringMethod.EPPIC_FINAL))
-						{
-							model.setFinalCallName(interfaceScore.getCallName());
-							model.setFinalConfidence(interfaceScore.getConfidence());
-						}
-					}
-
-					//Set interface cluster score
-					for(InterfaceClusterScore clusterScore: cluster.getInterfaceClusterScores())
-					{
-						if(clusterScore.getMethod().equals(ScoringMethod.EPPIC_GEOMETRY))
-						{
-							model.setClusterGeometryCall(clusterScore.getCallName());
-						}
-
-						if(clusterScore.getMethod().equals(ScoringMethod.EPPIC_CORERIM))
-						{
-							model.setClusterCoreRimCall(clusterScore.getCallName());
-						}
-
-						if(clusterScore.getMethod().equals(ScoringMethod.EPPIC_CORESURFACE))
-						{
-							model.setClusterCoreSurfaceCall(clusterScore.getCallName());
-						}
-
-						if(clusterScore.getMethod().equals(ScoringMethod.EPPIC_FINAL))
-						{
-							model.setClusterFinalCall(clusterScore.getCallName());
-							model.setClusterFinalConfidence(clusterScore.getConfidence());
-						}
-					}
-					model.setInterfaceId(interfaceItem.getInterfaceId());
-					model.setClusterId(interfaceItem.getClusterId());
-					model.setChain1(interfaceItem.getChain1());
-					model.setChain2(interfaceItem.getChain2());
-					model.setArea(interfaceItem.getArea());
-					model.setOperator(interfaceItem.getOperator());
-					model.setOperatorType(interfaceItem.getOperatorType());
-					model.setInfinite(interfaceItem.isInfinite());
-					model.setWarnings(interfaceItem.getInterfaceWarnings());
+				
+					AssemblyItemModel model = new AssemblyItemModel();
+					model.setAssemblyId(assembly.getId()); //not actually visible
+					model.setIdentifier(assembly.getIdentifierString());
+					
 					String thumbnailUrl = ApplicationContext.getSettings().getResultsLocation() +
 							ApplicationContext.getPdbInfo().getJobId() + 
 							"/" + ApplicationContext.getPdbInfo().getTruncatedInputName() +
-							EppicParams.INTERFACES_COORD_FILES_SUFFIX +
-							"." + interfaceItem.getInterfaceId() + ".75x75.png";
+							EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX +
+							"." + assembly.getId() + ".75x75.png";
 					if(ApplicationContext.getPdbInfo().getJobId().length() == 4)
 						thumbnailUrl = ApplicationContext.getSettings().getResultsLocation() +
 							ApplicationContext.getPdbInfo().getJobId().toLowerCase() + 
 							"/" + ApplicationContext.getPdbInfo().getTruncatedInputName() +
-							EppicParams.INTERFACES_COORD_FILES_SUFFIX + 
-							"." + interfaceItem.getInterfaceId() + ".75x75.png";
+							EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX + 
+							"." + assembly.getId() + ".75x75.png";
 					model.setThumbnailUrl(thumbnailUrl);
-
+					model.setMmSize(assembly.getMmSizeString());
+					model.setStoichiometry(assembly.getStoichiometryString());
+					model.setSymmetry(assembly.getSymmetryString());
+					model.setComposition(assembly.getCompositionString());
+					model.setPrediction(assembly.getPredictionString());
 					data.add(model);
-				}
 			}
-			
-			Collections.sort(data, new Comparator<InterfaceItemModel>() {
-
-				@Override
-				public int compare(InterfaceItemModel o1, InterfaceItemModel o2) {
-					return new Integer(o1.getInterfaceId()).compareTo(o2.getInterfaceId());
-				}
-			});
 		}
-		
+		//Window.alert("data size " + data.size());
+		//Window.alert("stio string of first record: " + data.get(0).getStoichiometry());
 		resultsStore.addAll(data);
+		//Window.alert("resultsStore size: " +resultsStore.size());
+		/*resultsGrid.reconfigure(resultsStore, resultsColumnModel);
 		
-		boolean resizeGrid = false;
-		int warningsColIndex = 0;
-		for(ColumnConfig<InterfaceItemModel, ?> col: resultsColumnModel.getColumns()){
-			if(col.equals(warningsColumn))
-			{
-				warningsColIndex = resultsColumnModel.indexOf(col);
-			}
-		}
-
-		if(resultsColumnModel.getColumn(warningsColIndex).isHidden() != hideWarnings)
-		{
-			resizeGrid = true;
-		}
-
-		resultsColumnModel.getColumn(warningsColIndex).setHidden(hideWarnings);
-
-		resultsGrid.reconfigure(resultsStore, resultsColumnModel); 
+		//TODO check if empty & put back the other code (see commented code below)
+		this.remove(panelContainer);
+		this.remove(noInterfaceFoundPanel);
+		this.add(panelContainer, new VerticalLayoutData(1,-1));*/
 		
-		if(resizeGrid)
-		{
-			resizeContent(panelWidth);
-		}
-		if(resultsStore.getAll().isEmpty()){
-			this.remove(panelContainer);
-			this.remove(noInterfaceFoundPanel);
-			noInterfaceFoundPanel = new VerticalLayoutContainer();
-			HTML noInterfaceFoundLabel = new HTML(AppPropertiesManager.CONSTANTS.no_interfaces_found_text());
-			noInterfaceFoundLabel.addStyleName("eppic-results-no-interfaces-found");
-			noInterfaceFoundPanel.add(noInterfaceFoundLabel);
-			
-			if(resultsData.getInputType() == InputType.FILE.getIndex()){
-				HTML noInterfaceFoundHint = new HTML(AppPropertiesManager.CONSTANTS.no_interfaces_found_hint());
-				noInterfaceFoundHint.addStyleName("eppic-results-no-interfaces-found-hint");
-				noInterfaceFoundPanel.add(noInterfaceFoundHint);
-			}
-			this.add(noInterfaceFoundPanel, new VerticalLayoutData(1,-1));
-		}else{
-			this.remove(panelContainer);
-			this.remove(noInterfaceFoundPanel);
-			this.add(panelContainer, new VerticalLayoutData(1,-1));
-		}
+	}
+	
+	
+	private void refreshResultsGrid(){
+		resultsGrid.getView().refresh(true);
 	}
 	
 	/**
 	 * 
 	 */
-	private void onClustersRadioValueChange(boolean value){
-		//Window.alert("ResultsGridPanel on value change onClustersRadioValueChange()............");
+	/*private void onClustersRadioValueChange(boolean value){
 		if (value) {
 			clustersView.groupBy(clusterIdColumn);
 		} else{
 			clustersView.groupBy(null);
-			resultsStore.addSortInfo(0, new StoreSortInfo<InterfaceItemModel>(props.interfaceId(), SortDir.ASC));
+			resultsStore.addSortInfo(0, new StoreSortInfo<AssemblyItemModel>(props.interfaceId(), SortDir.ASC));
 			//Hide cluster id column
 			resultsGrid.getColumnModel().getColumn(0).setHidden(true);
 			resultsGrid.getView().refresh(true);
 		}
-	}
+	}*/
 
 	/**
 	 * Creates combobox used to select molecular viewer.
@@ -667,10 +513,10 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 	 * sets the value of the cluster similar interfaces radio
 	 * @param value
 	 */
-	public void setClustersRadioValue(boolean value){
+	/*public void setClustersRadioValue(boolean value){
 		clustersViewButton.setValue(value);
 		onClustersRadioValueChange(value);
-	}
+	}*/
 	
 	/**
 	 * Adjusts size of the results grid based on the current screen size and
@@ -701,30 +547,39 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 			}
 		});
 		
-		EventBusManager.EVENT_BUS.addHandler(UncheckClustersRadioEvent.TYPE, new UncheckClustersRadioHandler() {
+		//not sure if this is needed or where it is called
+		EventBusManager.EVENT_BUS.addHandler(ShowAssembliesEvent.TYPE, new ShowAssembliesHandler() {
+					
+			@Override
+			public void onShowAssemblies(ShowAssembliesEvent event) {
+				refreshResultsGrid();				
+			}
+		});
+		
+		/*EventBusManager.EVENT_BUS.addHandler(UncheckClustersRadioEvent.TYPE, new UncheckClustersRadioHandler() {
 			
 			@Override
 			public void onUncheckClustersRadio(UncheckClustersRadioEvent event) {
 				setClustersRadioValue(false);
 				
 			}
-		});
+		});*/
 		
-		EventBusManager.EVENT_BUS.addHandler(ShowViewerEvent.TYPE, new ShowViewerHandler() 
+		/*EventBusManager.EVENT_BUS.addHandler(ShowViewerEvent.TYPE, new ShowViewerHandler() 
 		{
 			@Override
 			public void onShowViewer(ShowViewerEvent event) 
 			{
 				ViewerRunner.runViewer(String.valueOf(resultsGrid.getSelectionModel().getSelectedItem().getInterfaceId()));
 			}
-		}); 
+		});*/ 
 		
 		EventBusManager.EVENT_BUS.addHandler(ShowThumbnailEvent.TYPE, new ShowThumbnailHandler() {
 			
 			@Override
 			public void onShowThumbnail(ShowThumbnailEvent event)
 			{
-				for(ColumnConfig<InterfaceItemModel, ?> column : resultsGrid.getColumnModel().getColumns())
+				for(ColumnConfig<AssemblyItemModel, ?> column : resultsGrid.getColumnModel().getColumns())
 				{
 					if(column.equals(thumbnailColumn))
 					{
@@ -735,22 +590,55 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 			}
 		}); 
 		
+		//to handle when "enter" is pressed
+		/*EventBusManager.EVENT_BUS.addHandler(ShowInterfacesOfAssemblyDataEvent.TYPE, new ShowInterfacesOfAssemblyDataHandler() {
+			
+			@Override
+			public void onShowInterfacesOfAssembly(
+					ShowInterfacesOfAssemblyDataEvent event) {
+				//Window.alert("AssemblyResultsGridPanel.java onShowInterfacesOfAssembly - enter pressed!");
+				EventBusManager.EVENT_BUS.fireEvent(new ShowInterfacesOfAssemblyDataEvent(resultsData));
+				
+			}
+			
+		});*/
+		
+		/* this is a bad idea - links the other event to this event!!
 		EventBusManager.EVENT_BUS.addHandler(ShowDetailsEvent.TYPE, new ShowDetailsHandler() 
 		{
 			@Override
 			public void onShowDetails(ShowDetailsEvent event) 
 			{
-				EventBusManager.EVENT_BUS.fireEvent(new ShowInterfaceResiduesEvent((Integer)resultsGrid.getSelectionModel().getSelectedItem().getInterfaceId()));
+				Window.alert("AssemblyResultsGridPanel.java onShowDetails");
+				//EventBusManager.EVENT_BUS.fireEvent(new ShowInterfaceResiduesEvent((Integer)resultsGrid.getSelectionModel().getSelectedItem().getInterfaceId()));
 			}
-		}); 
+		});*/
 		
-		EventBusManager.EVENT_BUS.addHandler(SelectResultsRowEvent.TYPE, new SelectResultsRowHandler() {
+		/*EventBusManager.EVENT_BUS.addHandler(SelectResultsRowEvent.TYPE, new SelectResultsRowHandler() {
 			
 			@Override
 			public void onSelectResultsRow(SelectResultsRowEvent event) {
+				Window.alert("handling event");
 				resultsGrid.getSelectionModel().select(event.getRowIndex(), false);
+				EventBusManager.EVENT_BUS.fireEvent(new ShowInterfacesOfAssemblyDataEvent(resultsData));			
+			}
+		}); */
+		
+		EventBusManager.EVENT_BUS.addHandler(SelectAssemblyResultsRowEvent.TYPE, new SelectAssemblyResultsRowHandler() {
+						
+			@Override
+			public void onSelectAssemblyResultsRow(SelectAssemblyResultsRowEvent event) {
+				resultsGrid.getSelectionModel().select(event.getRowIndex(), false);
+								
+				int assemblyID = resultsGrid.getSelectionModel().getSelectedItem().getAssemblyId();
+				PdbInfo newResultsData = resultsData;
+				newResultsData = resultsData;
+				List<InterfaceCluster> interfaceClusters = resultsData.getAssemblyById(assemblyID).getInterfaceClusters();
+				newResultsData.setInterfaceClusters(interfaceClusters);
+				EventBusManager.EVENT_BUS.fireEvent(new ShowInterfacesOfAssemblyDataEvent(newResultsData));			
 			}
 		}); 
+		
 	}
 	
 }

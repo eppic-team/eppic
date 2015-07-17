@@ -14,6 +14,7 @@ import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingData;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
 
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 /**
@@ -27,6 +28,7 @@ public class GetCurrentStatusDataCallback implements AsyncCallback<ProcessingDat
 
 	public GetCurrentStatusDataCallback(String jobId) 
 	{
+		System.out.println("GetCurrentStatusDataCallback constructor...");
 		this.jobId = jobId;
 	}
 

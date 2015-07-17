@@ -10,7 +10,7 @@ import eppic.model.AssemblyScoreDB;
 import eppic.model.InterfaceClusterDB;
 
 
-public class Assembly implements Serializable {
+public class Assembly implements Serializable  {
 	
 	private static final long serialVersionUID = 1L;
 
@@ -33,6 +33,14 @@ public class Assembly implements Serializable {
 		this.assemblyScores = new ArrayList<AssemblyScore>();
 	}
 
+	public List<Interface> getInterfaces(){
+		List<Interface> interfaces = new ArrayList<Interface>();
+		for(InterfaceCluster cluster : interfaceClusters){
+			interfaces.addAll(cluster.getInterfaces());
+		}
+		return interfaces;
+	}
+	
 	public int getUid() {
 		return uid;
 	}
@@ -48,6 +56,7 @@ public class Assembly implements Serializable {
 	public void setId(int id) {
 		this.id = id;
 	}
+	
 	
 	public boolean isTopologicallyValid() {
 		return topologicallyValid;
@@ -187,6 +196,20 @@ public class Assembly implements Serializable {
 			if (i!=getAssemblyContents().size()-1) sb.append(",");
 		}
 		return sb.toString();
+	}
+	
+	//Not needed yet
+	public String getCompositionString() {
+		return "TODO Composition";
+	}
+	
+	//TODO by Jose
+	public String getPredictionString(){
+		return "TODO Prediction";
+	}
+	
+	public String getIdentifierString(){
+		return this.id+"";
 	}
 	
 }

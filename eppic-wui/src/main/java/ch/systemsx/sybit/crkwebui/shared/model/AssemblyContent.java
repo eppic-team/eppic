@@ -7,11 +7,7 @@ import eppic.model.AssemblyContentDB;
 public class AssemblyContent implements Serializable {
 
 	private static final long serialVersionUID = 1L;
-
-
-	private int uid;
-	
-	
+	private int uid;	
 	private int mmSize;
 	private String symmetry;
 	private String stoichiometry;

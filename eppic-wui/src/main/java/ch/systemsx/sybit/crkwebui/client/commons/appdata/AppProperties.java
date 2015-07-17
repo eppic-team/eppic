@@ -96,6 +96,7 @@ public interface AppProperties extends Constants
 	String info_panel_download_results_link_hint();
 	String info_panel_homologs_info();
 	String info_panel_general_info();
+	String info_panel_assembly_info();
 	String info_panel_uniprot();
 	String info_panel_crk();
 	String info_panel_experiment();
@@ -146,6 +147,7 @@ public interface AppProperties extends Constants
 	String myjobs_WAITING();
 	
 	String results_grid_details_button();
+	String results_grid_interfaces_button();
 	String results_grid_details_button_tooltip();
 	String results_grid_selector_button();
 	String results_grid_viewer_button();
