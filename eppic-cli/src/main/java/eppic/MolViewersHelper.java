@@ -1,5 +1,6 @@
 package eppic;
 
+import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,7 +21,6 @@ public class MolViewersHelper {
 
 	
 
-	// TODO use RCSB's color brewer instead? https://github.com/rcsb/colorbrewer
 	/**
 	 * We use 26 colors corresponding to chain letters A to Z (second 13 are repeated from first 13)
 	 */
@@ -28,13 +28,16 @@ public class MolViewersHelper {
 		{"green","cyan","yellow","white","lightblue","magenta","red","orange","wheat","limon","salmon","palegreen","lightorange",
 		"green","cyan","yellow","white","lightblue","magenta","red","orange","wheat","limon","salmon","palegreen","lightorange",};
 
-	private static final String DEF_SYM_RELATED_CHAIN_COLOR = "grey";
+	//private static final String DEF_SYM_RELATED_CHAIN_COLOR = "grey";
 
 	private static final String DEF_INTERF_COLOR = "red";
 
-
+	
+	
+	
+	
 	private static String[] chainColors;
-	private static String symRelatedColor;
+	//private static String symRelatedColor;
 	private static String interf1color;
 	private static String interf2color;
 
@@ -47,7 +50,7 @@ public class MolViewersHelper {
 		} catch (IOException e) {
 			LOGGER.warn("Couldn't read color mappings and properties from resource files. Will use defaults.");
 			chainColors = DEF_CHAIN_COLORS;
-			symRelatedColor = DEF_SYM_RELATED_CHAIN_COLOR;
+			//symRelatedColor = DEF_SYM_RELATED_CHAIN_COLOR;
 			interf1color = DEF_INTERF_COLOR;
 			interf2color = DEF_INTERF_COLOR;
 			colorMappings = new HashMap<String, String>();
@@ -71,7 +74,7 @@ public class MolViewersHelper {
 			chainColors[i] = p.getProperty(Character.toString(letter)); 
 			letter++;
 		}
-		symRelatedColor = p.getProperty("SYMCHAIN");
+		//symRelatedColor = p.getProperty("SYMCHAIN");
 		interf1color = p.getProperty("INTERF1");
 		interf2color = p.getProperty("INTERF2");
 	}	
@@ -99,7 +102,7 @@ public class MolViewersHelper {
 	 * @param pymolColor
 	 * @return the hex color or #00ffff (cyan) if no such color name exists
 	 */
-	public static String getHexColorCode(String pymolColor) {
+	private static String getHexColorCode(String pymolColor) {
 		String col = colorMappings.get(pymolColor);
 		if (col==null) return "#00ffff";
 		return col;
@@ -110,39 +113,19 @@ public class MolViewersHelper {
 	 * @param pymolColor
 	 * @return the hex color or 0x00ffff (cyan) if no such color name exists
 	 */
-	public static String getHexColorCode0x(String pymolColor) {
+	private static String getHexColorCode0x(String pymolColor) {
 		String col = colorMappings.get(pymolColor);
 		if (col==null) return "0x00ffff";
 		col = col.replace("#", "0x");
 		return col;
 	}
 
-	public static String getInterf1Color() {
-		return interf1color;
+	public static String getHexInterf1Color() {
+		return getHexColorCode0x(interf1color);
 	}
 
-	public static String getInterf2Color() {
-		return interf2color;
-	}
-	
-	public  static String getChainColor(String chainId, int index, boolean isSymRelated) {
-		String color = null;
-		if (isSymRelated && index!=0) {
-			color = symRelatedColor;
-		} else {
-			// TODO we use the first character for coloring, we need to make it more general and treat properly chainIds >1 characters
-			// TODO use RCSB's color brewer instead? (https://github.com/rcsb/colorbrewer)
-			char letter = chainId.charAt(0);
-			if (letter<'A' || letter>'Z') {
-				// if out of the range A-Z then we assign simply a color based on the chain index
-				color = chainColors[index%chainColors.length];
-			} else {
-				// A-Z correspond to ASCII codes 65 to 90. The letter ascii code modulo 65 gives an indexing of 0 (A) to 25 (Z)
-				// a given letter will always get the same color assigned
-				color = chainColors[letter%65];	
-			}
-		}
-		return color;
+	public static String getHexInterf2Color() {
+		return getHexColorCode0x(interf2color);
 	}
 	
 	public static String getChainColor(int index) {
@@ -169,4 +152,81 @@ public class MolViewersHelper {
 
 		return newLetter;
 	}
+	
+	/**
+	 * Get the hex color (0x-prefixed) understood by PyMOL or 3Dmol.js given a chainId
+	 * of the form &lt;chainIdString&gt;_&lt;opId&gt;, with chainIdString a String of 1 or 
+	 * more characters and opId an integer representing the operator identifier within the space group.
+	 * The first letter of chainIdString will be used to get one of a standard set of colors used by PyMOL
+	 * to color chains, if opId>0 then the color is darkened. 
+	 * @param chainId
+	 * @return
+	 */
+	public static String getHexChainColor(String chainId) {
+		
+		
+		String chain = chainId;
+		int opId = -1;
+		
+		if (chainId.contains("_")) {
+			String[] tokens = chainId.split("_");
+			if (tokens.length!=2) throw new IllegalArgumentException("Malformed chain identifier: "+chainId);
+			chain = tokens[0];
+			try {
+				opId = Integer.parseInt(tokens[1]);
+			} catch (NumberFormatException e) {
+				throw new IllegalArgumentException("Malformed chain identifier: "+chainId);
+			}
+		}
+		
+		int index = getIndex(chain);
+		
+		String pymolColString = chainColors[index%chainColors.length];
+		String hex = getHexColorCode(pymolColString);
+
+		Color color = Color.decode(hex);
+		
+		// in all other cases we keep the original: either when no opId given (opId==-1) or when opId==0
+		if (opId>0) {
+			color = darken(color);
+		}  
+
+		
+		return toHex0x(color);
+	}
+	
+	private static int getIndex(String chain) {
+		char c = chain.charAt(0);
+		if (Character.isUpperCase(c)) {
+			return c - 65; // 65 is the ascii decimal for A
+		} 
+		
+		if (Character.isLowerCase(c)) {
+			return c - 97; // 97 is the ascii decimal for a
+		}
+		
+		if (Character.isDigit(c)) {
+			return c - 48; // 48 is the ascii decimal for 0
+		}
+		
+		return 0;
+		
+	}
+	
+	private static String toHex0x(Color col) {
+		return "0x"+Integer.toHexString(col.getRGB() & 0xffffff);
+	}
+	
+	@SuppressWarnings("unused")
+	private static String toHexHash(Color col) {
+		return "#"+Integer.toHexString(col.getRGB() & 0xffffff);
+	}
+
+	private static Color darken(Color col) {
+		float[] hsv = Color.RGBtoHSB(col.getRed(), col.getGreen(), col.getBlue(), null);
+		hsv[2] = hsv[2] * 0.4f;
+		int newCol = Color.HSBtoRGB(hsv[0], hsv[1], hsv[2]);
+		return new Color(newCol);
+	}
+
 }

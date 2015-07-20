@@ -68,8 +68,8 @@ public class PymolRunner {
 			chain2 = chain2+"_"+interf.getTransforms().getSecond().getTransformId();
 		}
 		
-		String color1 = MolViewersHelper.getChainColor(chain1, 0, interf.isSymRelated());
-		String color2 = MolViewersHelper.getChainColor(chain2, 1, interf.isSymRelated());
+		String color1 = MolViewersHelper.getHexChainColor(chain1);
+		String color2 = MolViewersHelper.getHexChainColor(chain2);
 		
 		List<String> command = new ArrayList<String>();
 		command.add(pymolExec.getAbsolutePath());
@@ -139,17 +139,18 @@ public class PymolRunner {
 			pngFiles[i] = new File(mmcifFile.getParent(),base+"."+DEF_TN_WIDTHS[i]+"x"+DEF_TN_HEIGHTS[i]+".png");
 		}
 		
+		//TODO we might need getFirstRelevantConnectedComponent(sto) instead, but we need the stoichiometry for that
 		UndirectedGraph<ChainVertex, InterfaceEdge> g = a.getFirstConnectedComponent();
 		
 		String[] chains = new String[g.vertexSet().size()];
 		String[] colors = new String[g.vertexSet().size()];
-		
+				
 		int i = 0;
 		for (ChainVertex v:g.vertexSet()) {
 			// the same identifiers given in Assembly.writeToMmCifFile()
 			String chain = v.getChainId()+"_"+v.getOpId();
 			chains[i] = chain;
-			colors[i] = MolViewersHelper.getChainColor(chain, i, false);
+			colors[i] = MolViewersHelper.getHexChainColor(chain);
 			i++;
 		}
 		
