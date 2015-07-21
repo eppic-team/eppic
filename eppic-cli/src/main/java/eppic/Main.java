@@ -733,11 +733,17 @@ public class Main {
 				
 			}
 			
-			for (Assembly a:validAssemblies) {
-				File cifFile = params.getOutputFile(EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX+"."+a.getId()+ EppicParams.MMCIF_FILE_EXTENSION);
+			// TODO for the moment we are only doing assemblies for crystallographic structures, but we should also try to deal with NMR and EM
+			if (pdb.isCrystallographic() && 
+					pdb.getCrystallographicInfo().getSpaceGroup()!=null &&
+					pdb.getCrystallographicInfo().getCrystalCell()!=null) {
 
-				pr.generateAssemblyPng(a, cifFile,  
-						params.getBaseName()+EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX+"."+a.getId());
+				for (Assembly a:validAssemblies) {
+					File cifFile = params.getOutputFile(EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX+"."+a.getId()+ EppicParams.MMCIF_FILE_EXTENSION);
+
+					pr.generateAssemblyPng(a, cifFile,  
+							params.getBaseName()+EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX+"."+a.getId());
+				}
 			}
 			
 		} catch (IOException e) {
