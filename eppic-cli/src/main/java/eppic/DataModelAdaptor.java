@@ -418,18 +418,11 @@ public class DataModelAdaptor {
 			matchingAssemblyDB.addAssemblyScore(as);
 			
 		} else {
-			LOGGER.warn("PDB given assembly (interface clusters {}) does not match any of the topologically valid assemblies.",
-					matchingClusterIds.toString());
+			LOGGER.warn("PDB given assembly {} does not match any of the topologically valid assemblies.",
+					pdbAssembly.toString());
 
 			// the assembly is not one of our valid assemblies, we'll have to insert an invalid assembly to the list
-			int[] interfaceClusterIds = new int[matchingClusterIds.size()];
-			int i = 0;
-			for (int clusterId:matchingClusterIds) {
-				interfaceClusterIds[i] = clusterId;
-				i++;
-			}
 			
-			Assembly invalidAssembly = validAssemblies.generateAssembly(interfaceClusterIds);
 			
 			AssemblyDB assembly = new AssemblyDB();
 			
@@ -452,7 +445,7 @@ public class DataModelAdaptor {
 			// other data
 			assembly.setPdbCode(pdbInfo.getPdbCode());			
 
-			assembly.setInterfaceClusterIds(invalidAssembly.toString());
+			assembly.setInterfaceClusterIds(pdbAssembly.toString());
 						
 			// TODO fill the AssemblyContents
 			//assembly.setMmSize(invalidAssembly.getSize());
