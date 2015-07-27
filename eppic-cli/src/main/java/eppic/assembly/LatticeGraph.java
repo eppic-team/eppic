@@ -230,6 +230,12 @@ public class LatticeGraph {
 		final int numOps = struct.getCrystallographicInfo().getSpaceGroup().getNumOperators();
 
 		for (Chain c:struct.getChains()) {
+			
+			if (c.getCompound()==null) {
+				logger.warn("Chain {} will not be added to the graph because it does not have an entity associated to it.", c.getChainID());
+				continue;
+			}
+			
 			for (int i=0;i<numOps;i++) {
 				graph.addVertex(new ChainVertex(c, i));
 			}

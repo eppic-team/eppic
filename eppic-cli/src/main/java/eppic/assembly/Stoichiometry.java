@@ -99,10 +99,6 @@ public class Stoichiometry {
 	}
 	
 	public void add(Chain c) {
-		if (c.getCompound()==null) {
-			logger.warn("Can't find entity for chain {}. Ignoring this chain in assemblies.",c.getChainID());
-			return;
-		}
 		sto[getEntityIndex(c.getCompound().getMolId())]++;
 		comp[getChainIndex(c.getChainID())]++;
 	}
