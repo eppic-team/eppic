@@ -1,73 +1,38 @@
 package ch.systemsx.sybit.crkwebui.client.results.gui.panels;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.commons.events.SelectAssemblyResultsRowEvent;
-import ch.systemsx.sybit.crkwebui.client.commons.events.SelectResultsRowEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowAssembliesEvent;
-import ch.systemsx.sybit.crkwebui.client.commons.events.ShowDetailsEvent;
-import ch.systemsx.sybit.crkwebui.client.commons.events.ShowInterfaceResiduesEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowInterfacesOfAssemblyDataEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowThumbnailEvent;
-import ch.systemsx.sybit.crkwebui.client.commons.events.ShowViewerEvent;
-import ch.systemsx.sybit.crkwebui.client.commons.events.UncheckClustersRadioEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.WindowHideEvent;
-import ch.systemsx.sybit.crkwebui.client.commons.gui.cell.TwoDecimalDoubleCell;
-import ch.systemsx.sybit.crkwebui.client.commons.gui.labels.EppicLabel;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.SelectAssemblyResultsRowHandler;
-import ch.systemsx.sybit.crkwebui.client.commons.handlers.SelectResultsRowHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowAssembliesHandler;
-import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowDetailsHandler;
-import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowInterfacesOfAssemblyDataHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowThumbnailHandler;
-import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowViewerHandler;
-import ch.systemsx.sybit.crkwebui.client.commons.handlers.UncheckClustersRadioHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.WindowHideHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.managers.EventBusManager;
-import ch.systemsx.sybit.crkwebui.client.commons.managers.ViewerRunner;
 import ch.systemsx.sybit.crkwebui.client.commons.util.EscapedStringGenerator;
 import ch.systemsx.sybit.crkwebui.client.results.data.AssemblyItemModel;
 import ch.systemsx.sybit.crkwebui.client.results.data.AssemblyItemModelProperties;
-import ch.systemsx.sybit.crkwebui.client.results.data.InterfaceItemModel;
-import ch.systemsx.sybit.crkwebui.client.results.gui.cells.AssemblyMethodCallCell;
-import ch.systemsx.sybit.crkwebui.client.results.gui.cells.AssemblyOperatorTypeCell;
-import ch.systemsx.sybit.crkwebui.client.results.gui.cells.AssemblyWarningsCell;
-import ch.systemsx.sybit.crkwebui.client.results.gui.cells.DetailsButtonCell;
 import ch.systemsx.sybit.crkwebui.client.results.gui.cells.InterfacesButtonCell;
 import ch.systemsx.sybit.crkwebui.client.results.gui.cells.ThumbnailCell;
-import ch.systemsx.sybit.crkwebui.client.results.gui.grid.util.AssemblyClustersGridView;
-import ch.systemsx.sybit.crkwebui.client.results.gui.grid.util.AssemblyFinalCallSummaryRenderer;
-import ch.systemsx.sybit.crkwebui.client.results.gui.grid.util.AssemblyMethodsSummaryRenderer;
-import ch.systemsx.sybit.crkwebui.client.results.gui.grid.util.ClustersGridView;
-import ch.systemsx.sybit.crkwebui.client.results.gui.grid.util.MethodSummaryType;
 import ch.systemsx.sybit.crkwebui.client.results.gui.panels.ResultsPanel;
 import ch.systemsx.sybit.crkwebui.shared.model.Assembly;
-import ch.systemsx.sybit.crkwebui.shared.model.Interface;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceCluster;
-import ch.systemsx.sybit.crkwebui.shared.model.InterfaceClusterScore;
-import ch.systemsx.sybit.crkwebui.shared.model.InterfaceScore;
 import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
-import ch.systemsx.sybit.shared.model.InputType;
-
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
-import com.google.gwt.event.logical.shared.ValueChangeEvent;
-import com.google.gwt.event.logical.shared.ValueChangeHandler;
-import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.History;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.sencha.gxt.cell.core.client.form.ComboBoxCell.TriggerAction;
@@ -77,11 +42,8 @@ import com.sencha.gxt.core.client.util.KeyNav;
 import com.sencha.gxt.data.shared.LabelProvider;
 import com.sencha.gxt.data.shared.ListStore;
 import com.sencha.gxt.data.shared.ModelKeyProvider;
-import com.sencha.gxt.data.shared.SortDir;
-import com.sencha.gxt.data.shared.Store.StoreSortInfo;
 import com.sencha.gxt.widget.core.client.FramedPanel;
 import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer;
-import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer.VerticalLayoutData;
 import com.sencha.gxt.widget.core.client.form.ComboBox;
 import com.sencha.gxt.widget.core.client.grid.ColumnConfig;
 import com.sencha.gxt.widget.core.client.grid.ColumnModel;
@@ -90,12 +52,9 @@ import com.sencha.gxt.widget.core.client.grid.SummaryColumnConfig;
 import com.sencha.gxt.widget.core.client.grid.SummaryRenderer;
 import com.sencha.gxt.widget.core.client.grid.SummaryType;
 import com.sencha.gxt.widget.core.client.tips.QuickTip;
-import com.sencha.gxt.widget.core.client.tips.ToolTip;
 import com.sencha.gxt.widget.core.client.tips.ToolTipConfig;
 import com.sencha.gxt.widget.core.client.toolbar.ToolBar;
-
 import eppic.EppicParams;
-import eppic.model.ScoringMethod;
 
 public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 {
@@ -136,16 +95,12 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 		resultsStore = new ListStore<AssemblyItemModel>(props.key());
 		List<ColumnConfig<AssemblyItemModel, ?>> resultsConfigs = createColumnConfig();
 		resultsColumnModel = new ColumnModel<AssemblyItemModel>(resultsConfigs);
-		//clustersView = createClusterView();
 		
 		resultsGrid = createResultsGrid();		
 		panelContainer.add(createSelectorToolBar(), new VerticalLayoutData(1,-1));
 		panelContainer.add(resultsGrid, new VerticalLayoutData(-1,-1));
 		
 		this.add(panelContainer, new VerticalLayoutData(1,-1));
-		
-		//Panel to display if no interfaces found
-		//noInterfaceFoundPanel = new VerticalLayoutContainer();
 		
 		initializeEventsListeners();
 	}
@@ -158,7 +113,6 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 		assembliesToolBar.add(new HTML(AppPropertiesManager.CONSTANTS.results_grid_viewer_combo_label()+":&nbsp;"));
 		assembliesToolBar.add(viewerSelectorBox);
 		assembliesToolBar.add(new HTML("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"));
-		//assembliesToolBar.add(new HTML("<a href='/ewui/#interfaces/"+ApplicationContext.getPdbInfo().getPdbCode()+"'>View All Interfaces</a>"));	
 		
 		assemblies_toolbar_link = new HTML("<a href='" + GWT.getHostPageBaseURL() + "#interfaces/"+ApplicationContext.getPdbInfo().getPdbCode()+"'>View All Interfaces</a>");
 		assembliesToolBar.add(assemblies_toolbar_link);
@@ -613,7 +567,7 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 		}); */
 		
 		EventBusManager.EVENT_BUS.addHandler(SelectAssemblyResultsRowEvent.TYPE, new SelectAssemblyResultsRowHandler() {
-						
+						 
 			@Override
 			public void onSelectAssemblyResultsRow(SelectAssemblyResultsRowEvent event) {
 				resultsGrid.getSelectionModel().select(event.getRowIndex(), false);							
@@ -624,11 +578,12 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 				List<InterfaceCluster> interfaceClusters = resultsData.getAssemblyById(assemblyID).getInterfaceClusters();
 				newResultsData.setInterfaceClusters(interfaceClusters);
 				EventBusManager.EVENT_BUS.fireEvent(new ShowInterfacesOfAssemblyDataEvent(newResultsData));		
-				History.newItem("interfaces/" + pdbCode + "/"+assemblyID);		
+				History.newItem("interfaces/" + pdbCode + "/" + assemblyID);		
 				ResultsPanel.headerPanel.pdbIdentifierPanel.informationLabel.setHTML(EscapedStringGenerator.generateEscapedString(
 								AppPropertiesManager.CONSTANTS.info_panel_interface_pdb_identifier() + ": "));
-				ResultsPanel.headerPanel.pdbIdentifierPanel.pdbNameLabel.setHTML("Assembly " + assemblyID + " in " + pdbCode);
-				
+				ResultsPanel.headerPanel.pdbIdentifierPanel.pdbNameLabel.setHTML("Assembly " + assemblyID + " in ");// + pdbCode);
+				ResultsPanel.headerPanel.pdbIdentifierPanel.pdbNameLabel.setHTML("<a target='_blank' href='http://www.pdb.org/pdb/explore/explore.do?structureId="+pdbCode+"'>"+pdbCode+"</a>");
+				ResultsPanel.informationPanel.assemblyInfoPanel.setHeadingHtml("General Information");				
 			}
 		}); 
 		

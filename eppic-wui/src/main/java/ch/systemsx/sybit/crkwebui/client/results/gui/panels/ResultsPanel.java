@@ -27,12 +27,13 @@ import com.sencha.gxt.core.client.util.Margins;
 public class ResultsPanel extends DisplayPanel
 {
 	public static IdentifierHeaderPanel headerPanel;
-	private VerticalLayoutContainer resultsContainer;
+	public static InformationPanel informationPanel;
 	
-	private InformationPanel informationPanel;
+	private VerticalLayoutContainer resultsContainer;	
 	private AssemblyResultsGridPanel assemblyResultsGridContainer;
 	private ResultsGridPanel resultsGridContainer;
 	private VerticalLayoutContainer mainContainer;
+	private HTML spacer;
 	public final static int ASSEMBLIES_VIEW = 1;
 	public final static int INTERFACES_VIEW = 2;
 	private int viewType;
@@ -63,7 +64,7 @@ public class ResultsPanel extends DisplayPanel
 	private VerticalLayoutContainer createResultsContainer(PdbInfo pdbScoreItem){
 		mainContainer = new VerticalLayoutContainer();
 		mainContainer.setScrollMode(ScrollMode.AUTOY);
-		
+		spacer = new HTML("<br>");
 		informationPanel = new InformationPanel(pdbScoreItem, ApplicationContext.getWindowData().getWindowWidth() - 180);
 		mainContainer.add(informationPanel, new VerticalLayoutData(-1, 135, new Margins(10,0,10,0)));
 
@@ -72,13 +73,10 @@ public class ResultsPanel extends DisplayPanel
 		
 		if(viewType == ASSEMBLIES_VIEW){
 			mainContainer.add(assemblyResultsGridContainer, new VerticalLayoutData(-1, 1, new Margins(0)));
-			//ResultsPanel.headerPanel.pdbIdentifierPanel.informationLabel.setHTML("Assembly Analysis of ");
-			//ResultsPanel.headerPanel.pdbIdentifierPanel.pdbNameLabel.setHTML(pdbScoreItem.getPdbCode());
 		}
 		else if(viewType == INTERFACES_VIEW){
+			mainContainer.add(spacer);
 			mainContainer.add(resultsGridContainer, new VerticalLayoutData(-1, 1, new Margins(0)));
-			//ResultsPanel.headerPanel.pdbIdentifierPanel.informationLabel.setHTML("All Interfaces of ");
-			//ResultsPanel.headerPanel.pdbIdentifierPanel.pdbNameLabel.setHTML(pdbScoreItem.getPdbCode());
 		}
 		return mainContainer;
 	}
@@ -90,20 +88,19 @@ public class ResultsPanel extends DisplayPanel
 	public void fillResultsPanel(PdbInfo resultsData, int viewType) 
 	{
 		this.viewType = viewType;
+
 		if(viewType == ASSEMBLIES_VIEW){
 			AssemblyResultsGridPanel.assemblies_toolbar_link.setHTML("<a href='" + GWT.getHostPageBaseURL() + "#interfaces/"+ApplicationContext.getPdbInfo().getPdbCode()+"'>View All Interfaces</a>");
 			assemblyResultsGridContainer.fillResultsGrid(resultsData);
 			mainContainer.add(assemblyResultsGridContainer);
+			mainContainer.remove(spacer);
 			mainContainer.remove(resultsGridContainer);
 		}else if(viewType == INTERFACES_VIEW){
 			ResultsGridPanel.toolbar_link.setHTML("<a href='" + GWT.getHostPageBaseURL() + "#id/"+ApplicationContext.getPdbInfo().getPdbCode()+"'>View All Assemblies</a>");	
 			resultsGridContainer.fillResultsGrid(resultsData);
 			mainContainer.remove(assemblyResultsGridContainer);
+			mainContainer.add(spacer);
 			mainContainer.add(resultsGridContainer);
-			/*if(ApplicationContext.getSelectedAssemblyId() == -1){
-				ResultsPanel.headerPanel.pdbIdentifierPanel.informationLabel.setHTML("All Interfaces of ");
-				ResultsPanel.headerPanel.pdbIdentifierPanel.pdbNameLabel.setHTML(ApplicationContext.getPdbInfo().getPdbCode());
-			}*/
 		}
 		informationPanel.fillInfoPanel(resultsData);
 		
