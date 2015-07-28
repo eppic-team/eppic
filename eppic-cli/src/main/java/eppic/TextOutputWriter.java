@@ -534,7 +534,9 @@ public class TextOutputWriter {
 		StringBuilder sb = new StringBuilder();
 		for (int i=0;i<assembly.getAssemblyScores().size();i++) {
 			
-			if (assembly.getAssemblyScores().get(i).getCallName().equals(CallType.BIO.getName())) {
+			if (assembly.getAssemblyScores().get(i).getCallName()!=null && 
+				assembly.getAssemblyScores().get(i).getCallName().equals(CallType.BIO.getName())) {
+				
 				if (sb.length()>0) sb.append(','); // only add comma if there's already another method before
 				
 				sb.append(assembly.getAssemblyScores().get(i).getMethod());

@@ -446,13 +446,19 @@ public class Main {
 	 */
 	private String[] getSymmetry(int bioUnitNumber) {
 		
-		List<BiologicalAssemblyTransformation> transformations = 
-				pdb.getPDBHeader().getBioAssemblies().get(bioUnitNumber).getTransforms();
 		
-		if ( transformations == null || transformations.size() == 0){
+		if (pdb.getPDBHeader().getBioAssemblies().get(bioUnitNumber)==null || 
+			pdb.getPDBHeader().getBioAssemblies().get(bioUnitNumber).getTransforms() == null || 
+			pdb.getPDBHeader().getBioAssemblies().get(bioUnitNumber).getTransforms().size() == 0){
+			
 			LOGGER.warn("Could not load transformations for PDB biounit {}. Will not assign a symmetry value to it.", bioUnitNumber);
 			return new String[]{null,null,null,null};
 		}
+		
+		List<BiologicalAssemblyTransformation> transformations = 
+				pdb.getPDBHeader().getBioAssemblies().get(bioUnitNumber).getTransforms();
+
+		
 		BiologicalAssemblyBuilder builder = new BiologicalAssemblyBuilder();
 
 		Structure bioAssembly = builder.rebuildQuaternaryStructure(pdb, transformations);
