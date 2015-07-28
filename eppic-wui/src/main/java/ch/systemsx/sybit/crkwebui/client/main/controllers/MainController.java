@@ -688,6 +688,7 @@ public class MainController
 	 */
 	private void displayResultView(PdbInfo resultData, int viewType)
 	{
+		
 		ApplicationContext.setDoStatusPanelRefreshing(false);
 
 		ResultsPanel resultsPanel = null;

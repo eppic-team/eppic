@@ -168,9 +168,9 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 		});
 		clustersViewButton.setValue(false);
 		toolBar.add(clustersViewButton);
-		
 		toolBar.add(new HTML("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"));
-		toolbar_link = new HTML("<a href='/ewui/#id/"+ApplicationContext.getPdbInfo().getPdbCode()+"'>View All Assemblies</a>");
+		toolbar_link = new HTML("<a href='/#id/" + GWT.getHostPageBaseURL() + "'>View All Assemblies</a>");
+		//toolbar_link = new HTML("<a href='/#id/"+ApplicationContext.getPdbInfo().getPdbCode()+"'>View All Assemblies</a>");
 		toolBar.add(toolbar_link);
 			
 		return toolBar;

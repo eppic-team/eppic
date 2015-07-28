@@ -9,6 +9,7 @@ import ch.systemsx.sybit.crkwebui.client.commons.managers.EventBusManager;
 import ch.systemsx.sybit.crkwebui.client.commons.util.EscapedStringGenerator;
 import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
@@ -90,12 +91,13 @@ public class ResultsPanel extends DisplayPanel
 	{
 		this.viewType = viewType;
 		if(viewType == ASSEMBLIES_VIEW){
-			AssemblyResultsGridPanel.assemblies_toolbar_link.setHTML("<a href='/ewui/#interfaces/"+ApplicationContext.getPdbInfo().getPdbCode()+"'>View All Interfaces</a>");
+			AssemblyResultsGridPanel.assemblies_toolbar_link.setHTML("<a href='" + GWT.getHostPageBaseURL() + "#interfaces/"+ApplicationContext.getPdbInfo().getPdbCode()+"'>View All Interfaces</a>");
 			assemblyResultsGridContainer.fillResultsGrid(resultsData);
 			mainContainer.add(assemblyResultsGridContainer);
 			mainContainer.remove(resultsGridContainer);
 		}else if(viewType == INTERFACES_VIEW){
-			ResultsGridPanel.toolbar_link.setHTML("<a href='/ewui/#id/"+ApplicationContext.getPdbInfo().getPdbCode()+"'>View All Assemblies</a>");
+			ResultsGridPanel.toolbar_link.setHTML("<a href='" + GWT.getHostPageBaseURL() + "#id/"+ApplicationContext.getPdbInfo().getPdbCode()+"'>View All Assemblies</a>");	
+			//ResultsGridPanel.toolbar_link.setHTML("<a href='/#id/"+ApplicationContext.getPdbInfo().getPdbCode()+"'>View All Assemblies</a>");
 			resultsGridContainer.fillResultsGrid(resultsData);
 			mainContainer.add(resultsGridContainer);
 			mainContainer.remove(assemblyResultsGridContainer);
