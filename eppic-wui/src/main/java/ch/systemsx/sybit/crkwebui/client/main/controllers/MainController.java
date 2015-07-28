@@ -144,6 +144,13 @@ public class MainController
 				}else if(ApplicationContext.getSelectedViewType() == ResultsPanel.INTERFACES_VIEW){
 					//show the interfaces view
 					displayResultView(event.getPdbScoreItem(), ResultsPanel.INTERFACES_VIEW);
+					if(ApplicationContext.getSelectedAssemblyId() == -1){
+						ResultsPanel.headerPanel.pdbIdentifierPanel.informationLabel.setHTML("All Interfaces of: ");
+						ResultsPanel.headerPanel.pdbIdentifierPanel.pdbNameLabel.setHTML(event.getPdbScoreItem().getPdbCode());
+					}else{
+						ResultsPanel.headerPanel.pdbIdentifierPanel.informationLabel.setHTML("Interface Analysis of: Assembly " + ApplicationContext.getSelectedAssemblyId() + " in ");
+						ResultsPanel.headerPanel.pdbIdentifierPanel.pdbNameLabel.setHTML(event.getPdbScoreItem().getPdbCode());						
+					}
 				}
 			}
 		});
@@ -696,26 +703,22 @@ public class MainController
 		if(ApplicationContext.getSelectedAssemblyId() != -1){
 			Assembly assembly = newResultsData.getAssemblyById(ApplicationContext.getSelectedAssemblyId());
 			if(assembly != null){
-				//Window.alert("MainController.displayResultView 1");
 				List<InterfaceCluster> interfaceClusters = assembly.getInterfaceClusters();
 				newResultsData.setInterfaceClusters(interfaceClusters);
-				ResultsPanel.headerPanel.pdbIdentifierPanel.informationLabel.setHTML(EscapedStringGenerator.generateEscapedString(
+				/*ResultsPanel.headerPanel.pdbIdentifierPanel.informationLabel.setHTML(EscapedStringGenerator.generateEscapedString(
 						AppPropertiesManager.CONSTANTS.info_panel_interface_pdb_identifier() + ": Assembly " + ApplicationContext.getSelectedAssemblyId() + " in "));
-				ResultsPanel.headerPanel.pdbIdentifierPanel.pdbNameLabel.setHTML(resultData.getPdbCode());
+				ResultsPanel.headerPanel.pdbIdentifierPanel.pdbNameLabel.setHTML(resultData.getPdbCode());*/
 			}
 		}
 
 		if((mainViewPort.getCenterPanel().getDisplayPanel() != null) &&
 		   (mainViewPort.getCenterPanel().getDisplayPanel() instanceof ResultsPanel))
 		{
-			//Window.alert("MainController.displayResultView 2");			
 			resultsPanel = (ResultsPanel)mainViewPort.getCenterPanel().getDisplayPanel();
 			resultsPanel.fillResultsPanel(newResultsData, viewType);
-			//resultsPanel.layout();
 		}
 		else if(mainViewPort.getResultsPanel() != null)
 		{
-			//Window.alert("MainController.displayResultView 3");
 			resultsPanel = mainViewPort.getResultsPanel();
 			resultsPanel.fillResultsPanel(newResultsData, viewType);
 			mainViewPort.getCenterPanel().setDisplayPanel(resultsPanel);
@@ -723,14 +726,12 @@ public class MainController
 		}
 		else
 		{
-			//Window.alert("MainController.displayResultView 4");
 			resultsPanel = new ResultsPanel(newResultsData, viewType);
 			resultsPanel.fillResultsPanel(newResultsData, viewType);
 			mainViewPort.setResultsPanel(resultsPanel);
 			mainViewPort.getCenterPanel().setDisplayPanel(resultsPanel);
 			resultsPanel.resizeContent();
 		}
-		//com.google.gwt.user.client.Window.Location = 
 		EventBusManager.EVENT_BUS.fireEvent(new GetFocusOnJobsListEvent());
 		Window.setTitle(resultData.getTruncatedInputName() + " - " + AppPropertiesManager.CONSTANTS.window_title_results() );
 	}

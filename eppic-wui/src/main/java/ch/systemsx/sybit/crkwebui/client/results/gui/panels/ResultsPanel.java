@@ -97,13 +97,14 @@ public class ResultsPanel extends DisplayPanel
 			mainContainer.remove(resultsGridContainer);
 		}else if(viewType == INTERFACES_VIEW){
 			ResultsGridPanel.toolbar_link.setHTML("<a href='" + GWT.getHostPageBaseURL() + "#id/"+ApplicationContext.getPdbInfo().getPdbCode()+"'>View All Assemblies</a>");	
-			//ResultsGridPanel.toolbar_link.setHTML("<a href='/#id/"+ApplicationContext.getPdbInfo().getPdbCode()+"'>View All Assemblies</a>");
 			resultsGridContainer.fillResultsGrid(resultsData);
-			mainContainer.add(resultsGridContainer);
 			mainContainer.remove(assemblyResultsGridContainer);
 			mainContainer.add(resultsGridContainer);
+			/*if(ApplicationContext.getSelectedAssemblyId() == -1){
+				ResultsPanel.headerPanel.pdbIdentifierPanel.informationLabel.setHTML("All Interfaces of ");
+				ResultsPanel.headerPanel.pdbIdentifierPanel.pdbNameLabel.setHTML(ApplicationContext.getPdbInfo().getPdbCode());
+			}*/
 		}
-				
 		informationPanel.fillInfoPanel(resultsData);
 		
 		headerPanel.setPDBText(resultsData.getInputName(),
@@ -118,7 +119,6 @@ public class ResultsPanel extends DisplayPanel
 		headerPanel.setPDBIdentifierSubtitle(EscapedStringGenerator.generateEscapedString(resultsData.getTitle()));
 		
 		headerPanel.setDownloadResultsLink(resultsData.getJobId());
-		//Window.alert("ResultsPanel.java end of consstructor");
 	}
 
 	public void resizeContent() 

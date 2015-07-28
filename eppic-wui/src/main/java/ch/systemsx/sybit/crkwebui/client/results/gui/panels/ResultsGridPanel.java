@@ -103,11 +103,6 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 	
 	private static final InterfaceItemModelProperties props = GWT.create(InterfaceItemModelProperties.class);
 	
-	//public static String toolbar_links = "";
-	//private static HTML toolbar_links;
-	
-	//public static ToolBar toolBar;
-	
 	//Columns to be used later
 	ColumnConfig<InterfaceItemModel, String> thumbnailColumn;
 	ColumnConfig<InterfaceItemModel, String> warningsColumn;
@@ -170,7 +165,6 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 		toolBar.add(clustersViewButton);
 		toolBar.add(new HTML("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"));
 		toolbar_link = new HTML("<a href='/#id/" + GWT.getHostPageBaseURL() + "'>View All Assemblies</a>");
-		//toolbar_link = new HTML("<a href='/#id/"+ApplicationContext.getPdbInfo().getPdbCode()+"'>View All Assemblies</a>");
 		toolBar.add(toolbar_link);
 			
 		return toolBar;
