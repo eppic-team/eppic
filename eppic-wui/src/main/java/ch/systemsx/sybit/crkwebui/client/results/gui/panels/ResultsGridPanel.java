@@ -98,7 +98,15 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 	
 	private int panelWidth;
 	
+	public static ToolBar toolBar;
+	public static HTML toolbar_link;
+	
 	private static final InterfaceItemModelProperties props = GWT.create(InterfaceItemModelProperties.class);
+	
+	//public static String toolbar_links = "";
+	//private static HTML toolbar_links;
+	
+	//public static ToolBar toolBar;
 	
 	//Columns to be used later
 	ColumnConfig<InterfaceItemModel, String> thumbnailColumn;
@@ -139,7 +147,7 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 	}
 	
 	private ToolBar createSelectorToolBar(){
-		ToolBar toolBar = new ToolBar();
+		toolBar = new ToolBar();
 		
 		ComboBox<String> viewerSelectorBox = createViewerTypeCombobox();
 		viewerSelectorBox.setStyleName("eppic-default-label");
@@ -161,8 +169,13 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 		clustersViewButton.setValue(false);
 		toolBar.add(clustersViewButton);
 		
+		toolBar.add(new HTML("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"));
+		toolbar_link = new HTML("<a href='/ewui/#id/"+ApplicationContext.getPdbInfo().getPdbCode()+"'>View All Assemblies</a>");
+		toolBar.add(toolbar_link);
+			
 		return toolBar;
 	}
+	
 	
 	/**
 	 * Creates configurations of the columns for results grid.

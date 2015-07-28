@@ -1,5 +1,6 @@
 package ch.systemsx.sybit.crkwebui.client.results.gui.panels;
 
+import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ApplicationWindowResizeEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.panels.DisplayPanel;
@@ -11,6 +12,7 @@ import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
+import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Widget;
 import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer;
 import com.sencha.gxt.core.client.dom.ScrollSupport.ScrollMode;
@@ -23,7 +25,7 @@ import com.sencha.gxt.core.client.util.Margins;
  */
 public class ResultsPanel extends DisplayPanel
 {
-	private IdentifierHeaderPanel headerPanel;
+	public static IdentifierHeaderPanel headerPanel;
 	private VerticalLayoutContainer resultsContainer;
 	
 	private InformationPanel informationPanel;
@@ -42,7 +44,7 @@ public class ResultsPanel extends DisplayPanel
 		
 		DockLayoutPanel dock = new DockLayoutPanel(Unit.PX);
 
-		headerPanel = new IdentifierHeaderPanel(ApplicationContext.getWindowData().getWindowWidth() - 150, pdbScoreItem);
+		headerPanel = new IdentifierHeaderPanel(ApplicationContext.getWindowData().getWindowWidth() - 150, pdbScoreItem, viewType);
 		dock.addNorth(headerPanel, 100); //set the height of the info
 		
 		resultsContainer = createResultsContainer(pdbScoreItem);
@@ -67,11 +69,16 @@ public class ResultsPanel extends DisplayPanel
 		resultsGridContainer = new ResultsGridPanel(ApplicationContext.getWindowData().getWindowWidth() - 180);
 		assemblyResultsGridContainer = new AssemblyResultsGridPanel(ApplicationContext.getWindowData().getWindowWidth() - 180);
 		
-		if(viewType == ASSEMBLIES_VIEW)
+		if(viewType == ASSEMBLIES_VIEW){
 			mainContainer.add(assemblyResultsGridContainer, new VerticalLayoutData(-1, 1, new Margins(0)));
-		else if(viewType == INTERFACES_VIEW)
+			//ResultsPanel.headerPanel.pdbIdentifierPanel.informationLabel.setHTML("Assembly Analysis of ");
+			//ResultsPanel.headerPanel.pdbIdentifierPanel.pdbNameLabel.setHTML(pdbScoreItem.getPdbCode());
+		}
+		else if(viewType == INTERFACES_VIEW){
 			mainContainer.add(resultsGridContainer, new VerticalLayoutData(-1, 1, new Margins(0)));
-		
+			//ResultsPanel.headerPanel.pdbIdentifierPanel.informationLabel.setHTML("All Interfaces of ");
+			//ResultsPanel.headerPanel.pdbIdentifierPanel.pdbNameLabel.setHTML(pdbScoreItem.getPdbCode());
+		}
 		return mainContainer;
 	}
 	
@@ -82,19 +89,16 @@ public class ResultsPanel extends DisplayPanel
 	public void fillResultsPanel(PdbInfo resultsData, int viewType) 
 	{
 		this.viewType = viewType;
-		
-		if(viewType == ASSEMBLIES_VIEW)
+		if(viewType == ASSEMBLIES_VIEW){
+			AssemblyResultsGridPanel.assemblies_toolbar_link.setHTML("<a href='/ewui/#interfaces/"+ApplicationContext.getPdbInfo().getPdbCode()+"'>View All Interfaces</a>");
 			assemblyResultsGridContainer.fillResultsGrid(resultsData);
-		else if(viewType == INTERFACES_VIEW){
+			mainContainer.add(assemblyResultsGridContainer);
+			mainContainer.remove(resultsGridContainer);
+		}else if(viewType == INTERFACES_VIEW){
+			ResultsGridPanel.toolbar_link.setHTML("<a href='/ewui/#id/"+ApplicationContext.getPdbInfo().getPdbCode()+"'>View All Assemblies</a>");
 			resultsGridContainer.fillResultsGrid(resultsData);
+			mainContainer.add(resultsGridContainer);
 			mainContainer.remove(assemblyResultsGridContainer);
-			//int index = 0;
-			/*while(mainContainer.iterator().hasNext()){
-				Window.alert("index is " + index);
-				Widget w = mainContainer.iterator().next();
-				index++;
-			}*/
-			
 			mainContainer.add(resultsGridContainer);
 		}
 				

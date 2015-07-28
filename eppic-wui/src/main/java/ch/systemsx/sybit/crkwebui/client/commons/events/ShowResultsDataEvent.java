@@ -17,10 +17,12 @@ public class ShowResultsDataEvent extends GwtEvent<ShowResultsDataHandler>
 	 * Pdb score result item to display.
 	 */
 	private final PdbInfo pdbScoreItem;
+	//private final int viewType;
 	
 	public ShowResultsDataEvent(PdbInfo pdbScoreItem)
 	{
 		this.pdbScoreItem = pdbScoreItem;
+		//this.viewType = viewType;
 	}
 	
 	@Override
@@ -42,4 +44,8 @@ public class ShowResultsDataEvent extends GwtEvent<ShowResultsDataHandler>
 	public PdbInfo getPdbScoreItem() {
 		return pdbScoreItem;
 	}
+	
+	/*public int getViewType(){
+		return viewType;
+	}*/
 }

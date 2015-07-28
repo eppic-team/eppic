@@ -90,6 +90,7 @@ public interface AppProperties extends Constants
 	String status_panel_error_message();
 	
 	String info_panel_pdb_identifier();
+	String info_panel_interface_pdb_identifier();
 	String info_panel_input_parameters();
 	String info_panel_input_parameters_hint();
 	String info_panel_download_results_link();

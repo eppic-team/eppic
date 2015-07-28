@@ -30,6 +30,7 @@ import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.safehtml.shared.UriUtils;
 import com.google.gwt.user.client.History;
+import com.google.gwt.user.client.Window;
 import com.sencha.gxt.core.client.Style.SelectionMode;
 import com.sencha.gxt.core.client.util.IconHelper;
 import com.sencha.gxt.core.client.util.KeyNav;
@@ -193,23 +194,23 @@ public class MyJobsPanel extends ContentPanel
 			
 			@Override
 			public void onCellClick(CellClickEvent event) {
-				History.newItem("id/" + myJobsStore.get(event.getRowIndex()).getJobid());
+					History.newItem("id/" + myJobsStore.get(event.getRowIndex()).getJobid());
 				
 			}
 		});
 
-		myJobsGrid.getSelectionModel().addSelectionHandler(new SelectionHandler<MyJobsModel>() {
+		/*myJobsGrid.getSelectionModel().addSelectionHandler(new SelectionHandler<MyJobsModel>() {
 
 			@Override
 			public void onSelection(SelectionEvent<MyJobsModel> event) {
 				if(event.getSelectedItem() != null )
 				{
-						History.newItem("id/" + event.getSelectedItem().getJobid());
+					History.newItem("id/" + event.getSelectedItem().getJobid());
 				}
 				
 			}
 			
-		});
+		});*/
 
 		new KeyNav(myJobsGrid)
 		{

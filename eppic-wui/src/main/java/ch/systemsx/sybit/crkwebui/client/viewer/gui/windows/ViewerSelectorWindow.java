@@ -3,6 +3,7 @@ package ch.systemsx.sybit.crkwebui.client.viewer.gui.windows;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Cookies;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HTMLPanel;
 import com.google.gwt.user.client.ui.HasValue;
 import com.sencha.gxt.core.client.util.Margins;
@@ -96,6 +97,7 @@ public class ViewerSelectorWindow extends ResizableWindow{
 			
 			@Override
 			public void onValueChange(ValueChangeEvent<HasValue<Boolean>> event) {
+				Window.alert("ViewerSelectorWindow onValueChange");
 				ToggleGroup group = (ToggleGroup)event.getSource();
 		        CheckBox box = (CheckBox)group.getValue();
 		        Cookies.setCookie("crkviewer", box.getName());

@@ -19,6 +19,7 @@ import ch.systemsx.sybit.crkwebui.client.commons.events.ShowViewerEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.UncheckClustersRadioEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.WindowHideEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.cell.TwoDecimalDoubleCell;
+import ch.systemsx.sybit.crkwebui.client.commons.gui.labels.EppicLabel;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.SelectAssemblyResultsRowHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.SelectResultsRowHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowAssembliesHandler;
@@ -45,6 +46,7 @@ import ch.systemsx.sybit.crkwebui.client.results.gui.grid.util.AssemblyFinalCall
 import ch.systemsx.sybit.crkwebui.client.results.gui.grid.util.AssemblyMethodsSummaryRenderer;
 import ch.systemsx.sybit.crkwebui.client.results.gui.grid.util.ClustersGridView;
 import ch.systemsx.sybit.crkwebui.client.results.gui.grid.util.MethodSummaryType;
+import ch.systemsx.sybit.crkwebui.client.results.gui.panels.ResultsPanel;
 import ch.systemsx.sybit.crkwebui.shared.model.Assembly;
 import ch.systemsx.sybit.crkwebui.shared.model.Interface;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceCluster;
@@ -63,6 +65,7 @@ import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.user.client.Cookies;
+import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.HTML;
@@ -101,19 +104,18 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 	private ListStore<AssemblyItemModel> resultsStore;
 	private ColumnModel<AssemblyItemModel> resultsColumnModel;
 	private Grid<AssemblyItemModel> resultsGrid;
-	//private AssemblyClustersGridView clustersView;
 	PdbInfo resultsData;
-	
-	//private VerticalLayoutContainer noInterfaceFoundPanel;
 	
 	private int panelWidth;
 	
 	private static final AssemblyItemModelProperties props = GWT.create(AssemblyItemModelProperties.class);
 	
-	//Columns to be used later
 	ColumnConfig<AssemblyItemModel, String> thumbnailColumn;
 	ColumnConfig<AssemblyItemModel, String> warningsColumn;
 	SummaryColumnConfig<AssemblyItemModel, Integer> clusterIdColumn;
+	
+	public static ToolBar assembliesToolBar;
+	public static HTML assemblies_toolbar_link;
 	
 	public AssemblyResultsGridPanel(int width)
 	{
@@ -149,15 +151,19 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 	}
 	
 	private ToolBar createSelectorToolBar(){
-		ToolBar toolBar = new ToolBar();
+		assembliesToolBar = new ToolBar();
 		
 		ComboBox<String> viewerSelectorBox = createViewerTypeCombobox();
 		viewerSelectorBox.setStyleName("eppic-default-label");
-		toolBar.add(new HTML(AppPropertiesManager.CONSTANTS.results_grid_viewer_combo_label()+":&nbsp;"));
-		toolBar.add(viewerSelectorBox);
-		toolBar.add(new HTML("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"));
+		assembliesToolBar.add(new HTML(AppPropertiesManager.CONSTANTS.results_grid_viewer_combo_label()+":&nbsp;"));
+		assembliesToolBar.add(viewerSelectorBox);
+		assembliesToolBar.add(new HTML("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"));
+		//assembliesToolBar.add(new HTML("<a href='/ewui/#interfaces/"+ApplicationContext.getPdbInfo().getPdbCode()+"'>View All Interfaces</a>"));	
 		
-		return toolBar;
+		assemblies_toolbar_link = new HTML("<a href='/ewui/#interfaces/"+ApplicationContext.getPdbInfo().getPdbCode()+"'>View All Interfaces</a>");
+		assembliesToolBar.add(assemblies_toolbar_link);
+		
+		return assembliesToolBar;
 	}
 	
 	/**
@@ -292,20 +298,7 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 		return thumbnailColumn;
 	}
 
-	/**
-	 * Creates the cluster view for the grid
-	 * @return view
-	 */
-	/*private AssemblyClustersGridView createClusterView()
-	{
-		AssemblyClustersGridView summary = new AssemblyClustersGridView();
-		summary.setShowGroupedColumn(false);
-		summary.setShowDirtyCells(false);
-		summary.setStartCollapsed(false);
-		summary.setEnableGroupingMenu(true);
-		summary.setEnableNoGroups(true);
-		return summary;
-	}*/
+
 	
 	/**
 	 * Creates grid storing results of calculations for each of the interfaces.
@@ -358,6 +351,7 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 	
 	public void fillResultsGrid(PdbInfo resultsData)
 	{
+		//Window.alert("in fillResultsGrid");
 		this.resultsData = resultsData;
 		resultsStore.clear();
 
@@ -374,6 +368,7 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 					AssemblyItemModel model = new AssemblyItemModel();
 					model.setAssemblyId(assembly.getId()); //not actually visible
 					model.setIdentifier(assembly.getIdentifierString());
+					model.setPdbCode(resultsData.getPdbCode());
 					
 					String thumbnailUrl = ApplicationContext.getSettings().getResultsLocation() +
 							ApplicationContext.getPdbInfo().getJobId() + 
@@ -395,16 +390,7 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 					data.add(model);
 			}
 		}
-		//Window.alert("data size " + data.size());
-		//Window.alert("stio string of first record: " + data.get(0).getStoichiometry());
 		resultsStore.addAll(data);
-		//Window.alert("resultsStore size: " +resultsStore.size());
-		/*resultsGrid.reconfigure(resultsStore, resultsColumnModel);
-		
-		//TODO check if empty & put back the other code (see commented code below)
-		this.remove(panelContainer);
-		this.remove(noInterfaceFoundPanel);
-		this.add(panelContainer, new VerticalLayoutData(1,-1));*/
 		
 	}
 	
@@ -552,7 +538,9 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 					
 			@Override
 			public void onShowAssemblies(ShowAssembliesEvent event) {
-				refreshResultsGrid();				
+				refreshResultsGrid();	
+				//displayResultView(event.getPdbScoreItem(), ResultsPanel.ASSEMBLIES_VIEW);
+				//displayResultView(event.getPdbScoreItem(), ResultsPanel.ASSEMBLIES_VIEW);
 			}
 		});
 		
@@ -628,14 +616,19 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 						
 			@Override
 			public void onSelectAssemblyResultsRow(SelectAssemblyResultsRowEvent event) {
-				resultsGrid.getSelectionModel().select(event.getRowIndex(), false);
-								
+				resultsGrid.getSelectionModel().select(event.getRowIndex(), false);							
 				int assemblyID = resultsGrid.getSelectionModel().getSelectedItem().getAssemblyId();
+				String pdbCode = resultsGrid.getSelectionModel().getSelectedItem().getPdbCode();
 				PdbInfo newResultsData = resultsData;
 				newResultsData = resultsData;
 				List<InterfaceCluster> interfaceClusters = resultsData.getAssemblyById(assemblyID).getInterfaceClusters();
 				newResultsData.setInterfaceClusters(interfaceClusters);
-				EventBusManager.EVENT_BUS.fireEvent(new ShowInterfacesOfAssemblyDataEvent(newResultsData));			
+				EventBusManager.EVENT_BUS.fireEvent(new ShowInterfacesOfAssemblyDataEvent(newResultsData));		
+				History.newItem("interfaces/1smt/"+assemblyID);		
+				ResultsPanel.headerPanel.pdbIdentifierPanel.informationLabel.setHTML(EscapedStringGenerator.generateEscapedString(
+								AppPropertiesManager.CONSTANTS.info_panel_interface_pdb_identifier() + ": "));
+				ResultsPanel.headerPanel.pdbIdentifierPanel.pdbNameLabel.setHTML("Assembly " + assemblyID + " in " + pdbCode);
+				
 			}
 		}); 
 		

@@ -28,7 +28,9 @@ public class ApplicationContext
 	 */
 	private static ApplicationSettings settings;
 
+	private static int selectedViewType;
 	
+	private static int selectedAssemblyId;
 	
 	/**
 	 * Identifier of selected job.
@@ -215,6 +217,30 @@ public class ApplicationContext
 	 */
 	public static int getSelectedInterface() {
 		return selectedInterface;
+	}
+	
+	/**
+	 * Retrieves selected view type.
+	 * @return selected interface id
+	 */
+	public static int getSelectedViewType() {
+		return selectedViewType;
+	}
+	
+	public static void setSelectedViewType(int selectedViewType) {
+		ApplicationContext.selectedViewType = selectedViewType;
+	}
+	
+	/**
+	 * Retrieves selected assembly.
+	 * @return selected assembly id ; no selected assembly = -1
+	 */
+	public static int getSelectedAssemblyId() {
+		return selectedAssemblyId;
+	}
+	
+	public static void setSelectedAssemblyId(int selectedAssemblyId) {
+		ApplicationContext.selectedAssemblyId = selectedAssemblyId;
 	}
 	
 	/**
