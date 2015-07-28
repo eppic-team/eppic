@@ -137,32 +137,45 @@ public class MainController
 		EventBusManager.EVENT_BUS.addHandler(ShowResultsDataEvent.TYPE, new ShowResultsDataHandler() {
 			@Override
 			public void onShowResultsData(ShowResultsDataEvent event) {
-				//ApplicationContext.setSelectedViewType(ResultsPanel.INTERFACES_VIEW);
+				int num_interfaces = 0;
+				List<InterfaceCluster> clusters = ApplicationContext.getPdbInfo().getInterfaceClusters();
+				for(InterfaceCluster ic : clusters){
+					num_interfaces += ic.getInterfaces().size();
+				}
 				if(ApplicationContext.getSelectedViewType() == ResultsPanel.ASSEMBLIES_VIEW){
 					///show the assemblies view 
 					displayResultView(event.getPdbScoreItem(), ResultsPanel.ASSEMBLIES_VIEW); //the new default view
+					ResultsPanel.informationPanel.assemblyInfoPanel.setHeadingHtml("General Information");				
+					ResultsPanel.informationPanel.assemblyInfoPanel.assembly_info.setHTML("<table cellpadding=0 cellspacing=0><tr><td width='150px'><b>Assemblies</b></td><td>" + ApplicationContext.getPdbInfo().getAssemblies().size() + "</td></tr><tr><td><b>Interfaces</b></td><td>" + num_interfaces + "</td></tr><tr><td><b>Interface clusters</b></td><td>" + ApplicationContext.getPdbInfo().getInterfaceClusters().size()+"</td></tr></table>");
 				}else if(ApplicationContext.getSelectedViewType() == ResultsPanel.INTERFACES_VIEW){
 					//show the interfaces view
 					displayResultView(event.getPdbScoreItem(), ResultsPanel.INTERFACES_VIEW);
 					if(ApplicationContext.getSelectedAssemblyId() == -1){
 						ResultsPanel.headerPanel.pdbIdentifierPanel.informationLabel.setHTML("All Interfaces of: ");
-						ResultsPanel.headerPanel.pdbIdentifierPanel.pdbNameLabel.setHTML(event.getPdbScoreItem().getPdbCode());
+						ResultsPanel.headerPanel.pdbIdentifierPanel.pdbNameLabel.setHTML("<a target='_blank' href='http://www.pdb.org/pdb/explore/explore.do?structureId="+event.getPdbScoreItem().getPdbCode()+"'>"+event.getPdbScoreItem().getPdbCode()+"</a>");
+						ResultsPanel.informationPanel.assemblyInfoPanel.setHeadingHtml("General Information");				
+						ResultsPanel.informationPanel.assemblyInfoPanel.assembly_info.setHTML("<table cellpadding=0 cellspacing=0><tr><td width='150px'><b>Assemblies</b></td><td>" + ApplicationContext.getPdbInfo().getAssemblies().size() + "</td></tr><tr><td><b>Interfaces</b></td><td>" + num_interfaces + "</td></tr><tr><td><b>Interface clusters</b></td><td>" + ApplicationContext.getPdbInfo().getInterfaceClusters().size()+"</td></tr></table>");
 					}else{
 						ResultsPanel.headerPanel.pdbIdentifierPanel.informationLabel.setHTML("Interface Analysis of: Assembly " + ApplicationContext.getSelectedAssemblyId() + " in ");
-						ResultsPanel.headerPanel.pdbIdentifierPanel.pdbNameLabel.setHTML(event.getPdbScoreItem().getPdbCode());						
+						ResultsPanel.headerPanel.pdbIdentifierPanel.pdbNameLabel.setHTML("<a target='_blank' href='http://www.pdb.org/pdb/explore/explore.do?structureId="+event.getPdbScoreItem().getPdbCode()+"'>"+event.getPdbScoreItem().getPdbCode()+"</a>");
+						int assemblyID = ApplicationContext.getSelectedAssemblyId();
+						List<Assembly> assemblies = ApplicationContext.getPdbInfo().getAssemblies();
+						String assembly_string = "";
+						for(Assembly a : assemblies){
+							if(a.getId() == assemblyID){
+								assembly_string += "<table cellpadding=0 cellspacing=0><tr><td width='150px'><b>Macromolecular Size</b></td><td>&nbsp;&nbsp;" + a.getMmSizeString() + "</td></tr>";
+								assembly_string += "<tr><td><b>Stiochiometry</b></td><td>&nbsp;&nbsp;" + a.getStoichiometryString() + "</td></tr>";
+								assembly_string += "<tr><td><b>Symmetry</b></td><td>&nbsp;&nbsp;" + a.getSymmetryString() + "</td></tr>";
+								assembly_string += "<tr><td><b>Prediction</b></td><td>&nbsp;&nbsp;" + a.getPredictionString() + "</td></tr></table>";
+								break;
+							}
+						}
+						ResultsPanel.informationPanel.assemblyInfoPanel.assembly_info.setHTML(assembly_string);
+						ResultsPanel.informationPanel.assemblyInfoPanel.setHeadingHtml("Assembly " + assemblyID + " of " + assemblies.size());
 					}
 				}
 			}
 		});
-		
-		
-		/*EventBusManager.EVENT_BUS.addHandler(ShowInterfacesOfAssemblyDataEvent.TYPE, new ShowInterfacesOfAssemblyDataHandler() {
-			
-			@Override
-			public void onShowInterfacesOfAssembly(ShowInterfacesOfAssemblyDataEvent event) {
-				displayResultView(event.getPdbScoreItem(), ResultsPanel.INTERFACES_VIEW); 
-			}
-		});*/
 		
 		EventBusManager.EVENT_BUS.addHandler(SearchResultsDataRetrievedEvent.TYPE, new SearchResultsDataRetrievedHandler() {
 			
