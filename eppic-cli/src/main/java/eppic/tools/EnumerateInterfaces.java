@@ -339,9 +339,8 @@ public class EnumerateInterfaces {
 				pw.close();
 				interfPdbFiles[i] = pdbFile; 
 				if (generatePngs) {
-					pr.generateInterfPngPsePml(interf, BSATOASA_CUTOFF, MIN_ASA_FOR_SURFACE, pdbFile, 
-							new File(writeDir,outBaseName+"."+(i+1)+".pse"), 
-							new File(writeDir,outBaseName+"."+(i+1)+".pml"), outBaseName);
+					// TODO this expects now a mmcif file...
+					pr.generateInterfacePng(interf, pdbFile, outBaseName);
 				}
 			}
 		}

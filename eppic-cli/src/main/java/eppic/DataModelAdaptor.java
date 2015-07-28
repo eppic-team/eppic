@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -376,38 +377,20 @@ public class DataModelAdaptor {
 		
 		// since the move to Biojava, we have decided to take the first PDB-annotated biounit ONLY whatever its type
 
-		Set<Integer> matchingClusterIds = matchToInterfaceClusters(bioAssembly, cell);		
+		Set<Integer> matchingClusterIds = matchToInterfaceClusters(bioAssembly, cell);	
+		int[] matchingClusterIdsArray = new int[matchingClusterIds.size()];
+		Iterator<Integer> it = matchingClusterIds.iterator();
+		for (int i=0;i<matchingClusterIds.size();i++) matchingClusterIdsArray[i] = it.next(); 
 		
-		AssemblyDB matchingAssembly = null;
-
-		if (matchingClusterIds.isEmpty()) {
-				
-			for (AssemblyDB assembly: pdbInfo.getAssemblies()) {
-				if (assembly.getInterfaceClusters().isEmpty()) { 
-					matchingAssembly = assembly;
-					break;
+		Assembly pdbAssembly = validAssemblies.generateAssembly(matchingClusterIdsArray);
+		
+		Assembly matchingAssembly = getMatchingAssembly(pdbAssembly, validAssemblies);
+		AssemblyDB matchingAssemblyDB = null;
+		if (matchingAssembly!=null) {
+			for (AssemblyDB a:pdbInfo.getAssemblies()) {
+				if (a.getId() == matchingAssembly.getId()) {
+					matchingAssemblyDB = a;
 				}
-			}
-			if (matchingAssembly == null) 
-				LOGGER.warn("Could not find the empty assembly in list of valid assemblies, something is wrong");
-			
-		} else {
-			for (AssemblyDB validAssembly:pdbInfo.getAssemblies()) {
-
-
-				if (validAssembly.getInterfaceClusters().size()!=matchingClusterIds.size()) {
-					continue;
-				}
-
-				boolean matches = true;
-
-				for (InterfaceClusterDB icDB:validAssembly.getInterfaceClusters()) {
-					if (!matchingClusterIds.contains(icDB.getClusterId())) {
-						matches = false;
-					}
-				}
-
-				if (matches) matchingAssembly = validAssembly;
 			}
 		}
 		
@@ -419,34 +402,27 @@ public class DataModelAdaptor {
 		as.setConfidence(CONFIDENCE_NOT_AVAILABLE);
 		as.setPdbCode(pdbInfo.getPdbCode());
 		
-		if (matchingAssembly!=null) {
+		if (matchingAssemblyDB!=null) {
 
-			as.setAssembly(matchingAssembly);
+			as.setAssembly(matchingAssemblyDB);
 			
-			if (!getSymmetryString(matchingAssembly.getAssemblyContents()).equals(symmetries[0])) {
+			if (!getSymmetryString(matchingAssemblyDB.getAssemblyContents()).equals(symmetries[0])) {
 				LOGGER.warn("Symmetry calculated from graph is {} whilst detected from biounit is {}",
-						getSymmetryString(matchingAssembly.getAssemblyContents()),symmetries[0]);
+						getSymmetryString(matchingAssemblyDB.getAssemblyContents()),symmetries[0]);
 			}
 			
-			if (!getStoichiometryString(matchingAssembly.getAssemblyContents()).equals(symmetries[1])) {
+			if (!getStoichiometryString(matchingAssemblyDB.getAssemblyContents()).equals(symmetries[1])) {
 				LOGGER.warn("Stoichiometry calculated from graph is {} whilst detected from biounit is {}",
-						getStoichiometryString(matchingAssembly.getAssemblyContents()),symmetries[1]);
+						getStoichiometryString(matchingAssemblyDB.getAssemblyContents()),symmetries[1]);
 			}
-			matchingAssembly.addAssemblyScore(as);
+			matchingAssemblyDB.addAssemblyScore(as);
 			
 		} else {
-			LOGGER.warn("PDB given assembly (interface clusters {}) does not match any of the topologically valid assemblies.",
-					matchingClusterIds.toString());
+			LOGGER.warn("PDB given assembly {} does not match any of the topologically valid assemblies.",
+					pdbAssembly.toString());
 
 			// the assembly is not one of our valid assemblies, we'll have to insert an invalid assembly to the list
-			int[] interfaceClusterIds = new int[matchingClusterIds.size()];
-			int i = 0;
-			for (int clusterId:matchingClusterIds) {
-				interfaceClusterIds[i] = clusterId;
-				i++;
-			}
 			
-			Assembly invalidAssembly = validAssemblies.generateAssembly(interfaceClusterIds);
 			
 			AssemblyDB assembly = new AssemblyDB();
 			
@@ -469,7 +445,7 @@ public class DataModelAdaptor {
 			// other data
 			assembly.setPdbCode(pdbInfo.getPdbCode());			
 
-			assembly.setInterfaceClusterIds(invalidAssembly.toString());
+			assembly.setInterfaceClusterIds(pdbAssembly.toString());
 						
 			// TODO fill the AssemblyContents
 			//assembly.setMmSize(invalidAssembly.getSize());
@@ -496,7 +472,7 @@ public class DataModelAdaptor {
 		// fill all the other assemblies with XTAL AssemblyScores
 		
 		for (AssemblyDB assembly: pdbInfo.getAssemblies()) {
-			if (matchingAssembly!=null && assembly == matchingAssembly) continue;
+			if (matchingAssemblyDB!=null && assembly == matchingAssemblyDB) continue;
 			
 			AssemblyScoreDB asxtal = new AssemblyScoreDB();
 			asxtal.setMethod(PDB_BIOUNIT_METHOD);
@@ -509,6 +485,38 @@ public class DataModelAdaptor {
 			
 			assembly.addAssemblyScore(asxtal);
 		}
+	}
+	
+	private static Assembly getMatchingAssembly(Assembly pdbAssembly, CrystalAssemblies validAssemblies) {
+		
+		for (Assembly a:validAssemblies) {
+			if (a.equals(pdbAssembly)) return a;
+		}
+		
+		// if nothing returns, we still have to try whether any of our assemblies is a parent of pdbAssembly
+		// We need this kind of matching for cases like 3cfh (see issue https://github.com/eppic-team/eppic/issues/47):
+		//   in 3cfh the list of engaged interfaces that we detect from the PDB contains 
+		//   a tiny interface cluster (12) that is thrown away by our validity detector (the
+		//   edge that would make the graph isomorphic is missing because it falls below the 35A2 area cutoff)
+		//   Thus none of our valid assemblies match the PDB one strictly and we need to do the trick below
+		
+		Assembly matching = null;
+		
+		for (Assembly a:validAssemblies) {
+			if (pdbAssembly.isChild(a) && 
+					pdbAssembly.getStoichiometrySet().getFirst().getCountForIndex(0) ==
+					a.getStoichiometrySet().getFirst().getCountForIndex(0)) {
+				
+				if (matching!=null) 
+					LOGGER.warn("More than 1 assembly in list of valid assemblies matches the PDB annotated bio unit assembly. Only last one {} will be considered",a.toString());
+				
+				matching = a;
+			}
+		}
+		
+		// if no match it will be null
+		return matching;
+		
 	}
 	
 	/**

@@ -12,6 +12,11 @@ import org.biojava.nbio.structure.Chain;
 import org.biojava.nbio.structure.Group;
 import org.biojava.nbio.structure.contact.StructureInterface;
 import org.biojava.nbio.structure.contact.StructureInterfaceList;
+import org.jgrapht.UndirectedGraph;
+
+import eppic.assembly.Assembly;
+import eppic.assembly.ChainVertex;
+import eppic.assembly.InterfaceEdge;
 
 
 public class PymolRunner {
@@ -40,17 +45,12 @@ public class PymolRunner {
 	 * through {@link #readColorsFromPropertiesFile(InputStream)}
 	 * NOTE that multi-chain letters only work from PyMOL 1.7.4+
 	 * @param interf
-	 * @param caCutoff
-	 * @param minAsaForSurface
 	 * @param mmcifFile
-	 * @param pseFile
-	 * @param pmlFile
 	 * @param base
 	 * @throws IOException 
 	 * @throws InterruptedException 
 	 */
-	public void generateInterfPngPsePml(StructureInterface interf, double caCutoff, double minAsaForSurface, 
-			File mmcifFile, File pseFile, File pmlFile, String base) 
+	public void generateInterfacePng(StructureInterface interf, File mmcifFile, String base) 
 	throws IOException, InterruptedException {
 		
 		String molecName = getPymolMolecName(mmcifFile);
@@ -68,8 +68,8 @@ public class PymolRunner {
 			chain2 = chain2+"_"+interf.getTransforms().getSecond().getTransformId();
 		}
 		
-		String color1 = MolViewersHelper.getChainColor(chain1, 0, interf.isSymRelated());
-		String color2 = MolViewersHelper.getChainColor(chain2, 1, interf.isSymRelated());
+		String color1 = MolViewersHelper.getHexChainColor(chain1);
+		String color2 = MolViewersHelper.getHexChainColor(chain2);
 		
 		List<String> command = new ArrayList<String>();
 		command.add(pymolExec.getAbsolutePath());
@@ -84,82 +84,13 @@ public class PymolRunner {
 		
 		
 		StringBuffer pymolScriptBuilder = new StringBuffer();
-		PrintStream pml = new PrintStream(pmlFile);
 		
 		pymolScriptBuilder.append("load "+mmcifFile.getAbsolutePath()+";");
 				
-		String cmd;
-
-		cmd = "orient";
-		writeCommand(cmd, pml);
+		pymolScriptBuilder.append("orient;");
 		
-		cmd = "remove solvent";
-		writeCommand(cmd, pml);
+		pymolScriptBuilder.append("remove solvent;");
 		
-		cmd = "as cartoon";
-		writeCommand(cmd, pml);
-		
-		cmd = "color "+color1+", "+molecName+" and chain "+chain1;
-		writeCommand(cmd, pml);
-		cmd = "color "+color2+", "+molecName+" and chain "+chain2;
-		writeCommand(cmd, pml);
-		
-		cmd = "select chain"+chain1+", chain "+chain1;
-		writeCommand(cmd, pml);
-		cmd = "select chain"+chain2+", chain "+chain2;
-		writeCommand(cmd, pml);
-		
-		cmd = getSelString("core", chain1, interf.getCoreResidues(caCutoff, minAsaForSurface).getFirst());
-		writeCommand(cmd, pml);
-		cmd = getSelString("core", chain2, interf.getCoreResidues(caCutoff, minAsaForSurface).getSecond());
-		writeCommand(cmd, pml);
-		cmd = getSelString("rim", chain1, interf.getRimResidues(caCutoff, minAsaForSurface).getFirst());
-		writeCommand(cmd, pml);
-		cmd = getSelString("rim", chain2, interf.getRimResidues(caCutoff, minAsaForSurface).getSecond());
-		writeCommand(cmd, pml);
-		
-		cmd = "select interface"+chain1+", core"+chain1+" or rim"+chain1;
-		writeCommand(cmd, pml);
-		cmd = "select interface"+chain2+", core"+chain2+" or rim"+chain2;
-		writeCommand(cmd, pml);
-		cmd = "select bothinterf , interface"+chain1+" or interface"+chain2;
-		writeCommand(cmd, pml);
-		// not showing surface anymore, was not so useful 
-		//cmd = "show surface, chain "+chain1;
-		//writeCommand(cmd, pml);
-		//cmd = "show surface, chain "+chain2;
-		//writeCommand(cmd, pml);
-		//pymolScriptBuilder.append("color blue, core"+chains[0]+";");
-		//pymolScriptBuilder.append("color red, rim"+chains[0]+";");
-		cmd = "color "+MolViewersHelper.getInterf1Color()+", core"+chain1;
-		writeCommand(cmd, pml);
-		//pymolScriptBuilder.append("color slate, core"+chains[1]+";");
-		//pymolScriptBuilder.append("color raspberry, rim"+chains[1]+";");
-		cmd = "color "+MolViewersHelper.getInterf2Color()+", core"+chain2;
-		writeCommand(cmd, pml);
-		cmd = "show sticks, bothinterf";
-		writeCommand(cmd, pml);
-		//cmd = "set transparency, 0.35";
-		//writeCommand(cmd, pml);
-		//pymolScriptBuilder.append("zoom bothinterf"+";");
-		
-		// TODO do we need to check something before issuing the cofactors command???
-		//if (interf.hasCofactors()) {
-		cmd = "select cofactors, org;";
-		writeCommand(cmd, pml);
-		cmd = "show sticks, cofactors;";
-		writeCommand(cmd, pml);
-		//}
-		
-		cmd = "select none";// so that the last selection is deactivated
-		writeCommand(cmd, pml);
-		
-		pml.close();
-		
-		pymolScriptBuilder.append("@ "+pmlFile+";");
-		
-		pymolScriptBuilder.append("save "+pseFile+";");
-
 		// and now creating the png thumbnail
 		pymolScriptBuilder.append("bg "+DEF_TN_BG_COLOR+";");
 		
@@ -192,6 +123,83 @@ public class PymolRunner {
 		command.add(pymolScriptBuilder.toString());
 
 		
+		Process pymolProcess = new ProcessBuilder(command).start();
+		int exit = pymolProcess.waitFor();
+		if (exit!=0) {
+			throw new IOException("Pymol exited with error status "+exit);
+		}
+	}
+	
+	public void generateAssemblyPng(Assembly a, File mmcifFile, String base) throws IOException, InterruptedException {
+		
+		String molecName = getPymolMolecName(mmcifFile);
+		
+		File[] pngFiles = new File[DEF_TN_HEIGHTS.length];
+		for (int i=0;i<DEF_TN_HEIGHTS.length;i++) {
+			pngFiles[i] = new File(mmcifFile.getParent(),base+"."+DEF_TN_WIDTHS[i]+"x"+DEF_TN_HEIGHTS[i]+".png");
+		}
+		
+		//TODO we might need getFirstRelevantConnectedComponent(sto) instead, but we need the stoichiometry for that
+		UndirectedGraph<ChainVertex, InterfaceEdge> g = a.getFirstConnectedComponent();
+		
+		String[] chains = new String[g.vertexSet().size()];
+		String[] colors = new String[g.vertexSet().size()];
+				
+		int i = 0;
+		for (ChainVertex v:g.vertexSet()) {
+			// the same identifiers given in Assembly.writeToMmCifFile()
+			String chain = v.getChainId()+"_"+v.getOpId();
+			chains[i] = chain;
+			colors[i] = MolViewersHelper.getHexChainColor(chain);
+			i++;
+		}
+		
+		List<String> command = new ArrayList<String>();
+		command.add(pymolExec.getAbsolutePath());
+		command.add("-q");
+		command.add("-c");
+
+
+		// NOTE we used to pass all commands in one string after -d (with the pymolScriptBuilder StringBuffer.
+		//      But pymol 1.3 and 1.4 seem to have problems with very long strings (causing segfaults)
+		//      Because of that now we write most commands to pml file (which we were doing anyway so that users can 
+		//      use the pml scripts if they want) and then load the pmls with pymol "@" command
+		
+		
+		StringBuffer pymolScriptBuilder = new StringBuffer();
+		
+		pymolScriptBuilder.append("load "+mmcifFile.getAbsolutePath()+";");
+				
+		pymolScriptBuilder.append("orient;");
+		
+		pymolScriptBuilder.append("remove solvent;");
+
+		pymolScriptBuilder.append("bg "+DEF_TN_BG_COLOR+";");
+
+		pymolScriptBuilder.append("as "+DEF_TN_STYLE+";");
+
+		
+		for (i=0;i<chains.length;i++) {
+			pymolScriptBuilder.append("color "+colors[i]+", "+molecName+" and chain "+chains[i] + ";");
+		}
+		
+		pymolScriptBuilder.append("set ray_opaque_background, off;");
+
+		for (int j=0;j<DEF_TN_HEIGHTS.length;j++) {
+			pymolScriptBuilder.append("viewport "+DEF_TN_HEIGHTS[j]+","+DEF_TN_WIDTHS[j] + ";");
+
+			pymolScriptBuilder.append("ray;");
+
+			pymolScriptBuilder.append("png "+pngFiles[j].getAbsolutePath() + ";");
+		}
+
+		pymolScriptBuilder.append("quit;");
+
+		command.add("-d");
+
+		command.add(pymolScriptBuilder.toString());
+
+
 		Process pymolProcess = new ProcessBuilder(command).start();
 		int exit = pymolProcess.waitFor();
 		if (exit!=0) {
@@ -573,6 +581,7 @@ public class PymolRunner {
 		return cs.toString(); // to write pymol selection 3-6+11+15-17 or resi 34-45,47,78
 	}
 
+	@SuppressWarnings("unused")
 	private String getSelString(String namePrefix, String chainName, List<Group> list) {
 		return "select "+namePrefix+chainName+", chain "+chainName+" and ( resi "+getResiSelString(list)+")";
 	}

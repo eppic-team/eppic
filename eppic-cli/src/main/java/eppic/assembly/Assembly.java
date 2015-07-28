@@ -763,7 +763,7 @@ public class Assembly {
 		
 		PrintStream ps = new PrintStream(new GZIPOutputStream(new FileOutputStream(file)));
 
-		ps.println(SimpleMMcifParser.MMCIF_TOP_HEADER+"eppic_assembly_"+toString());
+		ps.println(SimpleMMcifParser.MMCIF_TOP_HEADER+"eppic_assembly_"+getId());
 		
 		ps.print(FileConvert.getAtomSiteHeader());
 		
@@ -811,13 +811,22 @@ public class Assembly {
 	 */
 	public UndirectedGraph<ChainVertex, InterfaceEdge> getFirstRelevantConnectedComponent(Stoichiometry sto) {
 		
-		if (sto==null) return connectedComponents.get(0);
+		if (sto==null) return getFirstConnectedComponent();
 		
 		// we first get the indices of connected components with the right composition (matching given sto)
 		List<Integer> indices = stoichiometrySet.getIndicesWithOverlappingStoichiometry(sto);
 
 		// from any of the relevant isomorphic connected components we get the first one
 		return connectedComponents.get(indices.get(0));		
+	}
+	
+	/**
+	 * Get the first connected component graph of this assembly.
+	 * Useful to look at any of the isomorphic graphs of valid assemblies.
+	 * @return
+	 */
+	public UndirectedGraph<ChainVertex, InterfaceEdge> getFirstConnectedComponent() {
+		return connectedComponents.get(0);
 	}
 	
 	/**

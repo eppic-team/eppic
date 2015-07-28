@@ -698,11 +698,9 @@ public class Main {
 
 		try {
 			for (StructureInterface interf:interfaces) {
-				pr.generateInterfPngPsePml(interf, 
-						params.getCAcutoffForGeom(), params.getMinAsaForSurface(), 
-						params.getOutputFile(EppicParams.INTERFACES_COORD_FILES_SUFFIX+"."+interf.getId()+ EppicParams.MMCIF_FILE_EXTENSION), 
-						params.getOutputFile(EppicParams.INTERFACES_COORD_FILES_SUFFIX+"."+interf.getId()+".pse"),
-						params.getOutputFile(EppicParams.INTERFACES_COORD_FILES_SUFFIX+"."+interf.getId()+".pml"),
+				File cifFile = params.getOutputFile(EppicParams.INTERFACES_COORD_FILES_SUFFIX+"."+interf.getId()+ EppicParams.MMCIF_FILE_EXTENSION);
+				pr.generateInterfacePng(interf, 
+						cifFile, 
 						params.getBaseName()+EppicParams.INTERFACES_COORD_FILES_SUFFIX+"."+interf.getId()	);
 				LOGGER.info("Generated PyMOL files for interface "+interf.getId());
 				
@@ -729,6 +727,22 @@ public class Main {
 							EppicParams.COLOR_ENTROPIES_ICON_WIDTH,
 							EppicParams.COLOR_ENTROPIES_ICON_HEIGHT,
 							0,params.getMaxEntropy() );
+					
+					if (params.isGenerateModelSerializedFile()) chainPmlFile.deleteOnExit();
+				}
+				
+			}
+			
+			// TODO for the moment we are only doing assemblies for crystallographic structures, but we should also try to deal with NMR and EM
+			if (pdb.isCrystallographic() && 
+					pdb.getCrystallographicInfo().getSpaceGroup()!=null &&
+					pdb.getCrystallographicInfo().getCrystalCell()!=null) {
+
+				for (Assembly a:validAssemblies) {
+					File cifFile = params.getOutputFile(EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX+"."+a.getId()+ EppicParams.MMCIF_FILE_EXTENSION);
+
+					pr.generateAssemblyPng(a, cifFile,  
+							params.getBaseName()+EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX+"."+a.getId());
 				}
 			}
 			
@@ -752,20 +766,7 @@ public class Main {
 		params.getProgressLog().println("Compressing files");
 		LOGGER.info("Compressing files");
 		
-		try {
-			for (StructureInterface interf:interfaces) {
-				File pseFile = params.getOutputFile(EppicParams.INTERFACES_COORD_FILES_SUFFIX+"."+interf.getId()+".pse");
-				File gzipPseFile = params.getOutputFile(EppicParams.INTERFACES_COORD_FILES_SUFFIX+"."+interf.getId()+".pse.gz");
-
-				if (!pseFile.exists()) {
-					LOGGER.warn("Can't find PSE file {} to compress",pseFile);
-					continue;
-				} 
-
-				Goodies.gzipFile(pseFile, gzipPseFile);
-				pseFile.delete();
-
-			}
+		try {			
 			
 			if (params.isDoEvolScoring()) {
 				for (ChainEvolContext cec:cecs.getAllChainEvolContext()) {

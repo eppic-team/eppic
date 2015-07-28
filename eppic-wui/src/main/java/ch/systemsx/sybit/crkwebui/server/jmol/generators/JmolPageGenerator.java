@@ -92,10 +92,10 @@ public class JmolPageGenerator
 	private static String generateInterfaceSelection3dmolCode(Interface interfData, boolean isCif) {
 		String chain1 = interfData.getChain1();		
 		String chain2 = interfData.getChain2(); 
-		boolean isSymRelated = false;
+		///boolean isSymRelated = false;
 		
 		if (chain1.equals(chain2)) {
-			isSymRelated = true;
+			//isSymRelated = true;
 			if (isCif) {
 				// exactly as done in StructureInterface.toMMCIF()
 				chain2 = chain2 +"_"+ interfData.getOperatorId();
@@ -106,11 +106,11 @@ public class JmolPageGenerator
 			}
 		}
 		
-		String color1 = MolViewersHelper.getHexColorCode0x(MolViewersHelper.getChainColor(chain1, 0, isSymRelated));
-		String color2 = MolViewersHelper.getHexColorCode0x(MolViewersHelper.getChainColor(chain2, 1, isSymRelated));
+		String color1 = MolViewersHelper.getHexChainColor(chain1);
+		String color2 = MolViewersHelper.getHexChainColor(chain2);
 		
-		String colorCore1 = MolViewersHelper.getHexColorCode0x(MolViewersHelper.getInterf1Color());
-		String colorCore2 = MolViewersHelper.getHexColorCode0x(MolViewersHelper.getInterf2Color());
+		String colorCore1 = MolViewersHelper.getHexInterf1Color();
+		String colorCore2 = MolViewersHelper.getHexInterf2Color();
 				
 		List<Residue> coreResidues1 = new ArrayList<Residue>();
 		List<Residue> rimResidues1 = new ArrayList<Residue>();
