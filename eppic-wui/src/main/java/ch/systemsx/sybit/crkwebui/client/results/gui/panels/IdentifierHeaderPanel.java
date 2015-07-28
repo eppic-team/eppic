@@ -19,7 +19,7 @@ import com.sencha.gxt.core.client.util.Margins;
 
 public class IdentifierHeaderPanel extends HorizontalLayoutContainer
 {
-    private PDBIdentifierPanel pdbIdentifierPanel;
+    public static PDBIdentifierPanel pdbIdentifierPanel;
     private PDBIdentifierSubtitlePanel pdbIdentifierSubtitlePanel;
     private HorizontalLayoutContainer downloadResultsPanel;
     
@@ -31,14 +31,14 @@ public class IdentifierHeaderPanel extends HorizontalLayoutContainer
     
     private HTML eppicVersionLabel;
 
-    public IdentifierHeaderPanel(int width, PdbInfo resultsData){
+    public IdentifierHeaderPanel(int width, PdbInfo resultsData, int viewType){
     	
     	this.setWidth(width);
     	this.addStyleName("eppic-results-header-panel");
     	this.setScrollMode(ScrollMode.AUTOY);
     	
     	pdbInfo = new VerticalLayoutContainer();
-    	pdbIdentifierPanel = new PDBIdentifierPanel();
+    	pdbIdentifierPanel = new PDBIdentifierPanel(viewType);
     	pdbInfo.add(pdbIdentifierPanel, new VerticalLayoutData(1, 30, new Margins(0, 0, 0, 0)));
 
     	pdbIdentifierSubtitlePanel = new PDBIdentifierSubtitlePanel();
@@ -76,6 +76,10 @@ public class IdentifierHeaderPanel extends HorizontalLayoutContainer
     	this.add(eppicLogoPanel, new HorizontalLayoutData(-1,1));
     }
 
+    //public void updateTitle(int viewType){
+    //	this.pdbIdentifierPanel
+    //}
+    
     /**
 	 * sets the link in the Download Results 
 	 * @param PdbInfo

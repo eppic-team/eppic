@@ -21,11 +21,11 @@ public class PDBIdentifierPanel extends HorizontalLayoutContainer
 {
 	private FlexTable panelTable;
 	
-	private EppicLabel informationLabel;
-	private EppicLabel pdbNameLabel;
+	public static EppicLabel informationLabel;
+	public static EppicLabel pdbNameLabel;
 	private LabelWithTooltip warningLabel;
 	
-	public PDBIdentifierPanel()
+	public PDBIdentifierPanel(int viewType)
 	{
 		panelTable = new FlexTable();
 		panelTable.setCellPadding(0);
@@ -33,11 +33,29 @@ public class PDBIdentifierPanel extends HorizontalLayoutContainer
 		
 		this.add(panelTable, new HorizontalLayoutData(-1,-1));
 		
-		informationLabel = new EppicLabel(
+		//switchTitle(viewType);
+		if(viewType ==ResultsPanel.ASSEMBLIES_VIEW)
+			informationLabel = new EppicLabel(
 				EscapedStringGenerator.generateEscapedString(
 						AppPropertiesManager.CONSTANTS.info_panel_pdb_identifier() + ": "));
+		else if(viewType ==ResultsPanel.INTERFACES_VIEW)
+		informationLabel = new EppicLabel(
+				EscapedStringGenerator.generateEscapedString(
+						AppPropertiesManager.CONSTANTS.info_panel_interface_pdb_identifier() + ": "));
+
 		informationLabel.addStyleName("eppic-pdb-identifier-label");
 		
+	}
+	
+	public void switchTitle(int viewType){
+		if(viewType ==ResultsPanel.ASSEMBLIES_VIEW)
+			informationLabel = new EppicLabel(
+				EscapedStringGenerator.generateEscapedString(
+						AppPropertiesManager.CONSTANTS.info_panel_pdb_identifier() + ": "));
+		else if(viewType ==ResultsPanel.INTERFACES_VIEW)
+		informationLabel = new EppicLabel(
+				EscapedStringGenerator.generateEscapedString(
+						AppPropertiesManager.CONSTANTS.info_panel_interface_pdb_identifier() + ": "));
 	}
 	
 	/**

@@ -25,7 +25,14 @@ public class AssemblyItemModel implements Serializable {
 	private String detailsButtonText = AppPropertiesManager.CONSTANTS.results_grid_interfaces_button();
 	private String prediction;	
 	private String thumbnailUrl = "";
+	private String pdbCode;
 	
+	public String getPdbCode() {
+		return pdbCode;
+	}
+	public void setPdbCode(String pdbCode) {
+		this.pdbCode = pdbCode;
+	}
 	public String getPrediction() {
 		return prediction;
 	}
