@@ -36,7 +36,7 @@ public class PdbToUniProtMapper {
 	 * If the sequence comes from SEQRES only 1 alignment for the representative sequence is stored,
 	 * if the sequence comes from ATOM, then an alignment for every chain is stored.
 	 */
-	private Map<String, SequencePair<ProteinSequence,AminoAcidCompound>> alnPdb2Uniprot;
+	private Map<String, SequencePair<ProteinSequence,AminoAcidCompound>> alignments;
 	
 	private Compound compound;
 	private Map<String, String> sequences;
@@ -116,7 +116,7 @@ public class PdbToUniProtMapper {
 	
 	private void initAlignments() throws CompoundNotFoundException {
 		
-		this.alnPdb2Uniprot = new TreeMap<String, SequencePair<ProteinSequence,AminoAcidCompound>>();
+		this.alignments = new TreeMap<String, SequencePair<ProteinSequence,AminoAcidCompound>>();
 		
 		if (sequenceFromAtom) {
 			LOGGER.info("PDB sequences are from ATOM, will have one alignment per member chain of entity {}",compound.getMolId());
@@ -127,7 +127,7 @@ public class PdbToUniProtMapper {
 			
 			SequencePair<ProteinSequence,AminoAcidCompound> alignment = getAlignment(chainId, uniProtReference.getSequence());
 			
-			alnPdb2Uniprot.put(chainId, alignment);
+			alignments.put(chainId, alignment);
 			
 			
 			LOGGER.info("Chain "+chainId+" PDB "+(sequenceFromAtom?"ATOM":"SEQRES")+" to UniProt alignmnent:\n"+getAlignmentString(alignment));
@@ -168,9 +168,9 @@ public class PdbToUniProtMapper {
 	public String checkAlignments() {
 		
 		
-		for (String chainId : alnPdb2Uniprot.keySet()) {
+		for (String chainId : alignments.keySet()) {
 
-			SequencePair<ProteinSequence,AminoAcidCompound> alignment = alnPdb2Uniprot.get(chainId);
+			SequencePair<ProteinSequence,AminoAcidCompound> alignment = alignments.get(chainId);
 
 			int shortestSeqLength = Math.min(uniProtReference.getLength(), sequences.get(chainId).length());
 			double id = (double)alignment.getNumIdenticals()/(double)shortestSeqLength;
@@ -194,35 +194,118 @@ public class PdbToUniProtMapper {
 		return null;
 	}
 	
-	public String getMappingSiftsFormat() {
+	/**
+	 * Get the PDB-to-UniProt mapping in SIFTS tabular format
+	 * TODO this doesn't work well yet, because SEQRES groups don't have a residue number
+	 * @param chainId
+	 * @return
+	 */
+	public String getMappingSiftsFormat(String chainId) {
 
-		// TODO there's no easy way to do this with Biojava right now, let's drop the feature for now
-		// (the issue is that PDB serials are only defined for AtomGroups and not for something that is only in the SEQRES, e.g. it fails for 1smtA residue 1)
+		// TODO this can't be done properly with BioJava:
+		// the issue is that PDB serials are only defined for AtomGroups and not for something 
+		// that is only in the SEQRES, e.g. it fails for 1smtA residue 1.
 
-		//	// a nice goody for the log: outputting our mapping in SIFTS tab format
-		//	// e.g.: 1dan	L	P08709	1	152	1	152	61	212
-		//	int uniprotStart = getFirstMatchingPos(alnPdb2Uniprot,false);
-		//	int uniprotEnd   = getLastMatchingPos(alnPdb2Uniprot, false);
-		//	int seqresStart = getPDBPosForQueryUniprotPos(uniprotStart);
-		//	int seqresEnd = getPDBPosForQueryUniprotPos(uniprotEnd);
-		//	String pdbStart = getResNumFromSerial(seqresStart).toString();
-		//	String pdbEnd = getResNumFromSerial(seqresEnd).toString(); 
-		//
-		//	LOGGER.info("Our mapping in SIFTS format: "+parent.getPdb().getPdbId()+"\t"+
-		//					sequenceName+"\t"+
-		//					queryUniprotId+"\t"+
-		//					seqresStart+"\t"+seqresEnd+"\t"+
-		//					pdbStart+"\t"+pdbEnd+"\t"+
-		//					uniprotStart+"\t"+uniprotEnd);
+		// our mapping in SIFTS tab format,
+		// e.g.: 1dan	L	P08709	1	152	1	152	61	212
 		
-		return null;
-		
+		int uniprotBeg = matchingIntervalUniProtCoords.beg;
+		int uniprotEnd = matchingIntervalUniProtCoords.end;
 
+		Group groupBeg = getPdbGroupFromUniProtIndex(uniprotBeg, chainId);
+		Group groupEnd = getPdbGroupFromUniProtIndex(uniprotEnd, chainId);
+
+		String pdbId = "xxxx";
+		if (groupBeg!=null && groupBeg.getChain()!=null && groupBeg.getChain().getParent()!=null &&
+				groupBeg.getChain().getParent().getPDBCode()!=null && 
+				!groupBeg.getChain().getParent().getPDBCode().isEmpty()) {
+			
+			pdbId = groupBeg.getChain().getParent().getPDBCode();
+		}
+		
+		int seqresBeg = 0;
+		int seqresEnd = 0;
+		String pdbBeg = "0";
+		String pdbEnd = "0";
+		
+		if (groupBeg!=null) {
+			seqresBeg = getSeqresSerial(groupBeg);
+			if (groupBeg.getResidueNumber()==null) LOGGER.warn("No residue number for group '{}'",groupBeg.toString()); 
+			else pdbBeg = groupBeg.getResidueNumber().toString();
+		}
+		if (groupEnd!=null) {
+			seqresEnd = getSeqresSerial(groupEnd);
+			if (groupEnd.getResidueNumber()==null) LOGGER.warn("No residue number for group '{}'",groupEnd.toString()); 
+			else pdbEnd = groupEnd.getResidueNumber().toString();
+		}
+
+		
+		return 	pdbId+"\t"+
+				chainId+"\t"+
+				uniProtReference.getUniId()+"\t"+
+				seqresBeg+"\t"+seqresEnd+"\t"+
+				pdbBeg+"\t"+pdbEnd+"\t"+
+				uniprotBeg+"\t"+uniprotEnd;
+		
 	}
-	
-	public String getMappingDbrefFormat() {
-		// TODO we should try outputting in DBREF format too
-		return null;
+
+	/**
+	 * Get the PDB-to-UniProt mapping in DBREF format
+	 * TODO this doesn't work well yet, because SEQRES groups don't have a residue number
+	 * @param chainId
+	 * @return
+	 */
+	public String getMappingDbrefFormat(String chainId) {
+		// TODO this can't be done properly with BioJava:
+		// the issue is that PDB serials are only defined for AtomGroups and not for something 
+		// that is only in the SEQRES, e.g. it fails for 1smtA residue 1.
+
+		// our mapping in DEBREF format,
+		// e.g.: 1DAN L    1   152  UNP    P08709   FA7_HUMAN       61    212
+
+		int uniprotBeg = matchingIntervalUniProtCoords.beg;
+		int uniprotEnd = matchingIntervalUniProtCoords.end;
+
+		Group groupBeg = getPdbGroupFromUniProtIndex(uniprotBeg, chainId);
+		Group groupEnd = getPdbGroupFromUniProtIndex(uniprotEnd, chainId);
+
+		String pdbId = "xxxx";
+		if (groupBeg!=null && groupBeg.getChain()!=null && groupBeg.getChain().getParent()!=null &&
+				groupBeg.getChain().getParent().getPDBCode()!=null && 
+				!groupBeg.getChain().getParent().getPDBCode().isEmpty()) {
+
+			pdbId = groupBeg.getChain().getParent().getPDBCode();
+		}
+		
+		int pdbSeqNumBeg = 0;
+		int pdbSeqNumEnd = 0;
+		char pdbInsBeg = ' ';
+		char pdbInsEnd = ' ';
+		
+		if (groupBeg!=null) {
+			if (groupBeg.getResidueNumber()==null) LOGGER.warn("No residue number for group '{}'",groupBeg.toString()); 
+			else {
+				pdbSeqNumBeg = groupBeg.getResidueNumber().getSeqNum();
+				pdbInsBeg = groupBeg.getResidueNumber().getInsCode();
+			}
+		}
+		if (groupEnd!=null) {
+			if (groupEnd.getResidueNumber()==null) LOGGER.warn("No residue number for group '{}'",groupEnd.toString()); 
+			else {
+				pdbSeqNumEnd = groupEnd.getResidueNumber().getSeqNum();
+				pdbInsEnd = groupEnd.getResidueNumber().getInsCode();
+			}
+		}
+
+
+		return 	pdbId + " " + chainId + " " + 
+				String.format("%4d",pdbSeqNumBeg)+pdbInsBeg+" "+
+				String.format("%4d",pdbSeqNumEnd)+pdbInsEnd+" "+
+				"UNP   "+" "+
+				String.format("%-8s", uniProtReference.getUniId())+" "+
+				String.format("%12s", "") + " "+
+				String.format("%5d", uniprotBeg)+"  "+
+				String.format("%5d", uniprotEnd)+ " ";
 	}
 
 	/**
@@ -232,7 +315,7 @@ public class PdbToUniProtMapper {
 	 * @return
 	 */
 	public SequencePair<ProteinSequence,AminoAcidCompound> getAlignment() {
-		return alnPdb2Uniprot.values().iterator().next();
+		return alignments.values().iterator().next();
 	}
 	
 	/**
@@ -334,7 +417,7 @@ public class PdbToUniProtMapper {
 		int pdbBeg = -1;
 		int pdbEnd = -1;
 		
-		for (SequencePair<ProteinSequence,AminoAcidCompound> pair:this.alnPdb2Uniprot.values()) {
+		for (SequencePair<ProteinSequence,AminoAcidCompound> pair:this.alignments.values()) {
 			int upBeg = getFirstMatchingPos(pair, false);
 			int upEnd = getLastMatchingPos(pair, false);
 			
@@ -377,11 +460,11 @@ public class PdbToUniProtMapper {
 		SequencePair<ProteinSequence,AminoAcidCompound>  alignment = null;
 		if (sequenceFromAtom) {
 			// we get the corresponding alignment for the chain
-			alignment = alnPdb2Uniprot.get(c.getChainID());
+			alignment = alignments.get(c.getChainID());
 		} else {
 			// we should have just the one alignment for the SEQRES sequence
-			alignment = alnPdb2Uniprot.values().iterator().next();
-			if (compound.getChains().size()>1 && alnPdb2Uniprot.size()>1) 
+			alignment = alignments.values().iterator().next();
+			if (compound.getChains().size()>1 && alignments.size()>1) 
 				LOGGER.warn("More than 1 alignment for entity {} contained in pdb-to-uniprot mapper, expected only 1: something is wrong!",
 						compound.getMolId());
 		}
@@ -424,11 +507,11 @@ public class PdbToUniProtMapper {
 		SequencePair<ProteinSequence,AminoAcidCompound>  alignment = null;
 		if (sequenceFromAtom) {
 			// we get the corresponding alignment for the chain
-			alignment = alnPdb2Uniprot.get(c.getChainID());
+			alignment = alignments.get(c.getChainID());
 		} else {
 			// we should have just the one alignment for the SEQRES sequence
-			alignment = alnPdb2Uniprot.values().iterator().next();
-			if (compound.getChains().size()>1 && alnPdb2Uniprot.size()>1) 
+			alignment = alignments.values().iterator().next();
+			if (compound.getChains().size()>1 && alignments.size()>1) 
 				LOGGER.warn("More than 1 alignment for entity {} contained in pdb-to-uniprot mapper, expected only 1: something is wrong!",
 						compound.getMolId());
 		}
@@ -466,24 +549,61 @@ public class PdbToUniProtMapper {
 		}
 	}
 	
-//	/**
-//	 * Given a sequence index of the query UniProt sequence (starting at 1), returns its
-//	 * corresponding PDB SEQRES position (starting at 1)
-//	 * @param queryPos
-//	 * @return the mapped PDB SEQRES sequence position or -1 if it maps to a gap
-//	 */
-//	private int getPDBPosForQueryUniprotPos(int queryPos) {
-//		int alnIdx = alnPdb2Uniprot.getTarget().getAlignmentIndexAt(queryPos);		
-//		if (alnPdb2Uniprot.hasGap(alnIdx)) {
-//			return -1;
-//		}
-//		return alnPdb2Uniprot.getIndexInQueryAt(alnIdx);
-//	}
+	/**
+	 * Given a sequence index of the query UniProt sequence (1-based), returns its
+	 * corresponding group in the structure (from chain as given in chainId).
+	 * TODO beware this does not work well yet when sequence is from ATOM 
+	 * @param uniProtIndex the 1-based index in the full UniProt sequence
+	 * @param chainId the chainId of the chain where we want to extract the group from
+	 * @return the mapped PDB group or null if it maps to a gap
+	 */
+	public Group getPdbGroupFromUniProtIndex(int uniProtIndex, String chainId) {
+		
+		SequencePair<ProteinSequence,AminoAcidCompound>  alignment = null;
+		if (sequenceFromAtom) {
+			// we get the corresponding alignment for the chain
+			alignment = alignments.get(chainId);
+		} else {
+			// we should have just the one alignment for the SEQRES sequence
+			alignment = alignments.values().iterator().next();
+			if (compound.getChains().size()>1 && alignments.size()>1) 
+				LOGGER.warn("More than 1 alignment for entity {} contained in pdb-to-uniprot mapper, expected only 1: something is wrong!",
+						compound.getMolId());
+		}
+		
+		int alnIdx = alignment.getTarget().getAlignmentIndexAt(uniProtIndex);		
+		if (alignment.hasGap(alnIdx)) {
+			return null;
+		}
+		
+		int resser = alignment.getIndexInQueryAt(alnIdx);
+		
+		// getting the relevant chain
+		Chain chain = null;
+		for (Chain c:compound.getChains()) {
+			if (c.getChainID().equals(chainId)) {
+				chain = c;
+			}
+		}
+		
+		if (sequenceFromAtom){
+			// this should revert what chain.getAtomSequence() does but!
+			// TODO there is an issue: in chain.getAtomSequence only amino groups are added, if there are
+			// het groups in between this will fail!
+			return chain.getAtomGroups().get(resser-1);
+		} else {
+			// this reverts what chain.getSeqResSequence() does
+			return chain.getSeqResGroups().get(resser-1);
+		}
+	}
 	
 	/**
 	 * Return the SEQRES serial of the Group g in the Chain c.
 	 * If no SEQRES serials are available, then the index in the atom groups
-	 * of the corresponding chain is returned (1-based)
+	 * of the corresponding chain is returned (1-based).
+	 * 
+	 * NOTE: in current implementation, this does not work for groups that are
+	 * only in SEQRES and not in ATOM
 	 * @param g
 	 * @return the SEQRES serial (1 to n) or -1 if not found
 	 */
@@ -498,6 +618,8 @@ public class PdbToUniProtMapper {
 		} 
 		
 		else { 
+			// IMPORTANT NOTE: this won't work for groups that are not in ATOM groups, due to
+			// seqres groups not having residue numbers in BioJava
 			return compound.getAlignedResIndex(g, g.getChain());
 		}
 	}

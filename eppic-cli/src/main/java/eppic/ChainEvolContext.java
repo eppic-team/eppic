@@ -251,6 +251,10 @@ public class ChainEvolContext implements Serializable {
 					query = null;
 					hasQueryMatch = false;
 				}
+				
+				// the back-mapping to pdb is not working well yet, commented out
+				//LOGGER.info("Our mapping in SIFTS tab format: "+pdbToUniProtMapper.getMappingSiftsFormat(sequenceId));
+				//LOGGER.info("Our mapping in DBREF PDB format: "+pdbToUniProtMapper.getMappingDbrefFormat(sequenceId));
 
 			}  catch (NoMatchFoundException e) {
 				if (parent.isUseLocalUniprot()) {
