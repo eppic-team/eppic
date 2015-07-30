@@ -366,8 +366,10 @@ public class TextOutputWriter {
 			
 			int uniprotSerial = 0;
 			if (aln!=null) {
-				int resser = list.get(i).getResidueNumber();
-				if (resser==-1) continue; // most likely a het atom, we skip or otherwise al2seq below would fail as the hetatm would not be in alignment
+				// NOTE here we use resser to map to the uniprot reference position based on the alignment found
+				// in the database. Thus what we need is not the actual residue number but the index of the sequence
+				// as it is in the alignment (i+1).
+				int resser = i + 1;
 				uniprotSerial = aln.al2seq("uniprot", aln.seq2al("pdb", resser));
 			}
 			

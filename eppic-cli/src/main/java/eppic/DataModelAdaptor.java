@@ -697,15 +697,16 @@ public class DataModelAdaptor {
 				chainClusterDB.setLastTaxon(cec.getQuery().getLastTaxon());
 				
 				chainClusterDB.setMsaAlignedSeq(cec.getAlignment().getAlignedSequence(cec.getQuery().getUniId()));
-				 
-				chainClusterDB.setRefUniProtStart(cec.getQueryInterval().beg);
-				chainClusterDB.setRefUniProtEnd(cec.getQueryInterval().end);
 				
-				chainClusterDB.setPdbStart(cec.getPDBPosForQueryUniprotPos(cec.getQueryInterval().beg));
-				chainClusterDB.setPdbEnd(cec.getPDBPosForQueryUniprotPos(cec.getQueryInterval().end));
+				chainClusterDB.setRefUniProtStart(cec.getPdbToUniProtMapper().getMatchingIntervalUniProtCoords().beg);
+				chainClusterDB.setRefUniProtEnd(cec.getPdbToUniProtMapper().getMatchingIntervalUniProtCoords().end);
 				
-				chainClusterDB.setPdbAlignedSeq(cec.getPdb2uniprotAln().getAlignedSequence(1).getSequenceAsString());
-				chainClusterDB.setRefAlignedSeq(cec.getPdb2uniprotAln().getAlignedSequence(2).getSequenceAsString());
+				chainClusterDB.setPdbStart(cec.getPdbToUniProtMapper().getMatchingIntervalPdbCoords().beg);
+				chainClusterDB.setPdbEnd(cec.getPdbToUniProtMapper().getMatchingIntervalPdbCoords().end);
+				
+				chainClusterDB.setPdbAlignedSeq(cec.getPdbToUniProtMapper().getAlignment().getAlignedSequence(1).getSequenceAsString());
+				chainClusterDB.setRefAlignedSeq(cec.getPdbToUniProtMapper().getAlignment().getAlignedSequence(2).getSequenceAsString());
+				
 				chainClusterDB.setSeqIdCutoff(cec.getIdCutoff());
 				chainClusterDB.setClusteringSeqId(cec.getUsedClusteringPercentId()/100.0);
 				
@@ -947,8 +948,10 @@ public class DataModelAdaptor {
 			if (group.isWater()) continue;
 
 			GroupAsa groupAsa = null;
-			if (molecId==InterfaceEvolContext.FIRST) groupAsa = interf.getFirstGroupAsa(group.getResidueNumber());
-			else if (molecId==InterfaceEvolContext.SECOND) groupAsa = interf.getSecondGroupAsa(group.getResidueNumber());
+			if (molecId==InterfaceEvolContext.FIRST) 
+				groupAsa = interf.getFirstGroupAsa(group.getResidueNumber());
+			else if (molecId==InterfaceEvolContext.SECOND) 
+				groupAsa = interf.getSecondGroupAsa(group.getResidueNumber());
 
 			// if we have no groupAsa that means that this is a Residue for which we don't calculate ASA (most likely HETATM)
 			if (groupAsa==null) continue;
@@ -985,10 +988,35 @@ public class DataModelAdaptor {
 
 
 			ResidueDB iri = new ResidueDB();
-			if (chain.getCompound()==null)
+			if (chain.getCompound()==null) {
 				iri.setResidueNumber(UNKNOWN_RESIDUE_INDEX);
-			else 
+			}
+			else {
+				// NOTE, here there can be 2 behaviours:
+				// 1) there is a SEQRES and getAlignedResIndex gives the actual SEQRES indices
+				// 2) there is no SEQRES and getAlignedResIndex gives the PDB residue number without the insertion codes:
+				//    thus it can be wrong or misaligned.
+				// Another possibility for 2) is that we used the UniProt reference alignment to give proper 
+				// indices (based on the UniProt alignment). Of course they wouldn't coincide necessarily
+				// with what the authors had in mind for the SEQRES construct. However we can't do that here,
+				// because at this time we don't have the alignment yet, only later we can do it in addEntropyToResidueDetails
+				//
+				// E.g. in 1n7y, chain A:
+				//                                             1       10        20        30
+				// SEQRES  ------------------------------------AEAGITGTWYEQLGSTFIVTAGADGALTGTYESAVGNAESRYVL
+				//                                                1       10        20
+				// ATOM    ---------------------------------------GITGTWYEQLGSTFIVTAGADGALTGTY-------ESRYVL
+				//                                                |||||||.||||||||||||||||||||       ||||||
+				// UNIPROT MRKIVVAAIAVSLTTVSITASASADPSKDSKAQVSAAEAGITGTWYNQLGSTFIVTAGADGALTGTYESAVGNAESRYVL
+				//         1       10        20        30        40        50        60        70
+				// For the different cases, the 3 first observed residues would get:
+				// 1)  4 G,  5 I,  6 T
+				// 2) 16 G, 17 I, 18 T
+				// And with UniProt numbering:
+				//    40 G, 41 I, 42 T
+
 				iri.setResidueNumber(chain.getCompound().getAlignedResIndex(group, chain));
+			}
 			iri.setPdbResidueNumber(group.getResidueNumber().toString());
 			iri.setResidueType(resType);
 			iri.setAsa(asa);
@@ -1033,8 +1061,10 @@ public class DataModelAdaptor {
 					// skipping of residues: we follow exact same procedure as in addResidueDetailsOfPartner(), otherwise indices won't match
 					if (residue.isWater()) continue;
 					GroupAsa groupAsa = null;
-					if (molecId==InterfaceEvolContext.FIRST) groupAsa = interf.getFirstGroupAsa(residue.getResidueNumber());
-					else if (molecId==InterfaceEvolContext.SECOND) groupAsa = interf.getSecondGroupAsa(residue.getResidueNumber());
+					if (molecId==InterfaceEvolContext.FIRST) 
+						groupAsa = interf.getFirstGroupAsa(residue.getResidueNumber());
+					else if (molecId==InterfaceEvolContext.SECOND) 
+						groupAsa = interf.getSecondGroupAsa(residue.getResidueNumber());
 					
 					if (groupAsa==null) continue;
 
@@ -1043,9 +1073,7 @@ public class DataModelAdaptor {
 					int queryUniprotPos = -1;
 					// TODO before Biojava move we used to have here !mol.isNonPolyChain() as first condition, how do we do that now?
 					if (cec.hasQueryMatch()) {
-						int resser = cec.getSeqresSerial(residue);
-						if (resser!=-1) 
-							queryUniprotPos = cec.getQueryUniprotPosForPDBPos(resser);
+						queryUniprotPos = cec.getPdbToUniProtMapper().getUniProtIndexForPdbGroup(residue, !cec.isSearchWithFullUniprot());
 					}
 
 					float entropy = -1;
@@ -1055,6 +1083,11 @@ public class DataModelAdaptor {
 						if (queryUniprotPos!=-1) entropy = (float) entropies.get(queryUniprotPos-1).doubleValue();
 					}
 
+					// as outlined in addResidueDetailsOfPartner, we follow here the strategy of renumbering the
+					// residue serials to UniProt numbering if no SEQRES was available
+					if (cec.getPdbToUniProtMapper().isSequenceFromAtom()) {
+						iri.setResidueNumber(cec.getPdbToUniProtMapper().getUniProtIndexForPdbGroup(residue, false));
+					}
 					iri.setEntropyScore(entropy); 
 					i++;
 				}
