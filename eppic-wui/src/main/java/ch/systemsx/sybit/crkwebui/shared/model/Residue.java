@@ -5,7 +5,7 @@ import java.io.Serializable;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 
-import eppic.model.ResidueDB;
+import eppic.model.ResidueBurialDB;
 
 /**
  * DTO class for Residue.
@@ -140,7 +140,7 @@ public class Residue implements Serializable
 	 * @param residueDB model item to convert
 	 * @return DTO representation of model item
 	 */
-	public static Residue create(ResidueDB residueDB)
+	public static Residue create(ResidueBurialDB residueDB)
 	{
 		Residue residue = new Residue();
 		residue.setAsa(residueDB.getAsa());

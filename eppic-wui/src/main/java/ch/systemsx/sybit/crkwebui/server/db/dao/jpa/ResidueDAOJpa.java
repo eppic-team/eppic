@@ -23,7 +23,7 @@ import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
 import ch.systemsx.sybit.crkwebui.shared.model.Residue;
 import ch.systemsx.sybit.crkwebui.shared.model.ResiduesList;
 import eppic.model.InterfaceDB;
-import eppic.model.ResidueDB;
+import eppic.model.ResidueBurialDB;
 import eppic.model.JobDB;
 import eppic.model.PdbInfoDB;
 
@@ -46,18 +46,18 @@ public class ResidueDAOJpa implements ResidueDAO
 			entityManager = EntityManagerHandler.getEntityManager();
 			
 			CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-			CriteriaQuery<ResidueDB> criteriaQuery = criteriaBuilder.createQuery(ResidueDB.class);
+			CriteriaQuery<ResidueBurialDB> criteriaQuery = criteriaBuilder.createQuery(ResidueBurialDB.class);
 			
-			Root<ResidueDB> residueRoot = criteriaQuery.from(ResidueDB.class);
+			Root<ResidueBurialDB> residueRoot = criteriaQuery.from(ResidueBurialDB.class);
 			Path<InterfaceDB> interfaceItem = residueRoot.get(ResidueDB_.interfaceItem);
 			criteriaQuery.where(criteriaBuilder.equal(interfaceItem.get(InterfaceDB_.uid), interfaceUid));
 			
 			Query query = entityManager.createQuery(criteriaQuery);
 			
 			@SuppressWarnings("unchecked")
-			List<ResidueDB> interfaceResidueItemDBs = query.getResultList();
+			List<ResidueBurialDB> interfaceResidueItemDBs = query.getResultList();
 			
-			for(ResidueDB interfaceResidueItemDB : interfaceResidueItemDBs)
+			for(ResidueBurialDB interfaceResidueItemDB : interfaceResidueItemDBs)
 			{
 				result.add(Residue.create(interfaceResidueItemDB));
 			}
@@ -94,9 +94,9 @@ public class ResidueDAOJpa implements ResidueDAO
 			entityManager = EntityManagerHandler.getEntityManager();
 			
 			CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-			CriteriaQuery<ResidueDB> criteriaQuery = criteriaBuilder.createQuery(ResidueDB.class);
+			CriteriaQuery<ResidueBurialDB> criteriaQuery = criteriaBuilder.createQuery(ResidueBurialDB.class);
 			
-			Root<ResidueDB> interfaceResidueItemRoot = criteriaQuery.from(ResidueDB.class);
+			Root<ResidueBurialDB> interfaceResidueItemRoot = criteriaQuery.from(ResidueBurialDB.class);
 			Path<InterfaceDB> interfaceItem = interfaceResidueItemRoot.get(ResidueDB_.interfaceItem);
 			Path<InterfaceClusterDB> interfaceClusterItem = interfaceItem.get(InterfaceDB_.interfaceCluster);
 			Path<PdbInfoDB> pdbScoreItem = interfaceClusterItem.get(InterfaceClusterDB_.pdbInfo);
@@ -106,9 +106,9 @@ public class ResidueDAOJpa implements ResidueDAO
 			Query query = entityManager.createQuery(criteriaQuery);
 			
 			@SuppressWarnings("unchecked")
-			List<ResidueDB> interfaceResidueItemDBs = query.getResultList();
+			List<ResidueBurialDB> interfaceResidueItemDBs = query.getResultList();
 			
-			for(ResidueDB interfaceResidueItemDB : interfaceResidueItemDBs)
+			for(ResidueBurialDB interfaceResidueItemDB : interfaceResidueItemDBs)
 			{
 				if(residuesForInterfaces.get(interfaceResidueItemDB.getInterfaceItem().getInterfaceId()) == null)
 				{

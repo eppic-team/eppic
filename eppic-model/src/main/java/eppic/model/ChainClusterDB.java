@@ -49,6 +49,8 @@ public class ChainClusterDB implements Serializable {
 	
 	private SeqClusterDB seqCluster;
 	
+	private List<ResidueInfoDB> residueInfos;
+	
 	public ChainClusterDB() {
 		
 	}
@@ -60,6 +62,14 @@ public class ChainClusterDB implements Serializable {
 		this.pdbAlignedSeq = pdbAlignedSeq;
 		this.msaAlignedSeq = msaAlignedSeq;
 		this.refAlignedSeq = refAlignedSeq;
+	}
+	
+	public ResidueInfoDB getResidue(int resSerial) {
+		for (ResidueInfoDB res:residueInfos) {
+			if (res.getResidueNumber()==resSerial) 
+				return res;
+		}
+		return null;
 	}
 	
 	public void setPdbInfo(PdbInfoDB pdbInfo) {
@@ -252,6 +262,14 @@ public class ChainClusterDB implements Serializable {
 
 	public void setSeqCluster(SeqClusterDB seqCluster) {
 		this.seqCluster = seqCluster;
+	}
+
+	public List<ResidueInfoDB> getResidueInfos() {
+		return residueInfos;
+	}
+
+	public void setResidueInfos(List<ResidueInfoDB> residueInfos) {
+		this.residueInfos = residueInfos;
 	}
 
 

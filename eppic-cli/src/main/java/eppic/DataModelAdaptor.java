@@ -19,6 +19,7 @@ import org.biojava.nbio.structure.ExperimentalTechnique;
 import org.biojava.nbio.structure.Group;
 import org.biojava.nbio.structure.PDBCrystallographicInfo;
 import org.biojava.nbio.structure.Structure;
+import org.biojava.nbio.structure.StructureTools;
 import org.biojava.nbio.structure.asa.GroupAsa;
 import org.biojava.nbio.structure.contact.AtomContact;
 import org.biojava.nbio.structure.contact.GroupContact;
@@ -51,7 +52,8 @@ import eppic.model.InterfaceDB;
 import eppic.model.InterfaceScoreDB;
 import eppic.model.InterfaceWarningDB;
 import eppic.model.PdbInfoDB;
-import eppic.model.ResidueDB;
+import eppic.model.ResidueBurialDB;
+import eppic.model.ResidueInfoDB;
 import eppic.model.RunParametersDB;
 import eppic.model.ScoringMethod;
 import eppic.model.UniProtRefWarningDB;
@@ -154,6 +156,84 @@ public class DataModelAdaptor {
 			pdbInfo.setCellBeta(cc.getBeta());
 			pdbInfo.setCellGamma(cc.getGamma());			
 		}
+		
+		List<ChainClusterDB> chainClusterDBs = new ArrayList<ChainClusterDB>();
+
+		for (Compound compound:pdb.getCompounds()) {
+			
+			// in mmCIF files some sugars are annotated as compounds with no chains linked to them, e.g. 3s26
+			if (compound.getChains().isEmpty()) continue;
+
+			chainClusterDBs.add(createChainCluster(compound));
+		}
+		pdbInfo.setNumChainClusters(pdb.getCompounds().size());
+		pdbInfo.setChainClusters(chainClusterDBs);
+	}
+	
+	private ChainClusterDB createChainCluster(Compound compound) {
+		ChainClusterDB chainClusterDB = new ChainClusterDB();
+		
+		chainClusterDB.setPdbCode(pdbInfo.getPdbCode());
+		
+		chainClusterDB.setRepChain(compound.getRepresentative().getChainID());
+		chainClusterDB.setMemberChains(getMemberChainsString(compound));
+		chainClusterDB.setNumMembers(compound.getChainIds().size());
+		chainClusterDB.setProtein(StructureTools.isProtein(compound.getRepresentative()));
+		
+		chainClusterDB.setPdbInfo(pdbInfo);
+		
+		List<ResidueInfoDB> residueInfoDBs = new ArrayList<ResidueInfoDB>();
+		
+		chainClusterDB.setResidueInfos(residueInfoDBs);
+		
+		for (Group g:compound.getRepresentative().getAtomGroups()) {
+			
+			if (g.isWater()) continue;
+			
+			ResidueInfoDB residueInfoDB = new ResidueInfoDB();
+			
+			residueInfoDBs.add(residueInfoDB);
+			
+			residueInfoDB.setChainCluster(chainClusterDB);			
+			
+			residueInfoDB.setPdbCode(pdbInfo.getPdbCode());
+			residueInfoDB.setRepChain(compound.getRepresentative().getChainID());
+			
+			// NOTE, here there can be 2 behaviours:
+			// 1) there is a SEQRES and getAlignedResIndex gives the actual SEQRES indices
+			// 2) there is no SEQRES and getAlignedResIndex gives the PDB residue number without the insertion codes:
+			//    thus it can be wrong or misaligned.
+			// Another possibility for 2) is that we used the UniProt reference alignment to give proper 
+			// indices (based on the UniProt alignment). Of course they wouldn't coincide necessarily
+			// with what the authors had in mind for the SEQRES construct. 
+			// However we can't do that here, because at this time we don't have the alignment yet, 
+			// only later we can do it when we add the evol details
+			//
+			// E.g. in 1n7y, chain A:
+			//                                             1       10        20        30
+			// SEQRES  ------------------------------------AEAGITGTWYEQLGSTFIVTAGADGALTGTYESAVGNAESRYVL
+			//                                                1       10        20
+			// ATOM    ---------------------------------------GITGTWYEQLGSTFIVTAGADGALTGTY-------ESRYVL
+			//                                                |||||||.||||||||||||||||||||       ||||||
+			// UNIPROT MRKIVVAAIAVSLTTVSITASASADPSKDSKAQVSAAEAGITGTWYNQLGSTFIVTAGADGALTGTYESAVGNAESRYVL
+			//         1       10        20        30        40        50        60        70
+			// For the different cases, the 3 first observed residues would get:
+			// 1)  4 G,  5 I,  6 T
+			// 2) 16 G, 17 I, 18 T
+			// And with UniProt numbering:
+			//    40 G, 41 I, 42 T
+
+			// TODO revise (read the above!)
+			residueInfoDB.setResidueNumber(compound.getAlignedResIndex(g, g.getChain()));
+			
+			residueInfoDB.setPdbResidueNumber(g.getResidueNumber().toString());
+			
+			residueInfoDB.setResidueType(g.getPDBName());
+			
+		}
+		
+		
+		return chainClusterDB;
 	}
 	
 	public void setInterfaces(StructureInterfaceList interfaces) {
@@ -655,26 +735,14 @@ public class DataModelAdaptor {
 
 	public void setEvolScores(InterfaceEvolContextList iecl) {
 		
-		List<ChainClusterDB> chainClusterDBs = new ArrayList<ChainClusterDB>();
 		
 		ChainEvolContextList cecl = iecl.getChainEvolContextList();
-		pdbInfo.setNumChainClusters(cecl.size());
 		
 		for (ChainEvolContext cec:cecl.getAllChainEvolContext()) {
-			ChainClusterDB chainClusterDB = new ChainClusterDB();
-			Compound cc = null;
-			for (Compound compound:cecl.getPdb().getCompounds()) {
-				// in mmCIF files some sugars are annotated as compounds with no chains linked to them, e.g. 3s26
-				if (compound.getChains().isEmpty()) continue;
-
-				if (compound.getRepresentative().getChainID().equals(cec.getRepresentativeChainCode())) {
-					cc = compound;
-				}
-			}
-			chainClusterDB.setRepChain(cc.getRepresentative().getChainID());
-			chainClusterDB.setMemberChains(getMemberChainsString(cc));
-			chainClusterDB.setNumMembers(cc.getChainIds().size());
-			chainClusterDB.setProtein(cec.isProtein());
+			
+			// we first retrieved the corresponding chainClusterDB added in setPdbMetaData
+			ChainClusterDB chainClusterDB = pdbInfo.getChainCluster(cec.getRepresentativeChainCode());
+			
 			chainClusterDB.setHasUniProtRef(cec.hasQueryMatch());
 			
 			List<UniProtRefWarningDB> queryWarningItemDBs = new ArrayList<UniProtRefWarningDB>();
@@ -687,7 +755,6 @@ public class DataModelAdaptor {
 			}
 			
 			chainClusterDB.setUniProtRefWarnings(queryWarningItemDBs);
-			chainClusterDB.setPdbCode(pdbInfo.getPdbCode());
 			
 			if (cec.hasQueryMatch()) { //all other fields remain null otherwise
 				
@@ -710,6 +777,7 @@ public class DataModelAdaptor {
 				chainClusterDB.setSeqIdCutoff(cec.getIdCutoff());
 				chainClusterDB.setClusteringSeqId(cec.getUsedClusteringPercentId()/100.0);
 				
+				// homologs
 				List<HomologDB> homologDBs = new ArrayList<HomologDB>();
 				for (Homolog hom:cec.getHomologs().getFilteredSubset()) {
 					HomologDB homologDB = new HomologDB();
@@ -733,23 +801,51 @@ public class DataModelAdaptor {
 				}
 				
 				chainClusterDB.setHomologs(homologDBs);
+				
+				
+				// evol data adding to ResidueInfo
+				if ( cec.isProtein() ) {
+
+					List<Double> entropies = cec.getConservationScores();
+					
+					int i = 0;
+					for (Group g:cec.getCompound().getRepresentative().getAtomGroups()) {
+						
+						// following the same procedure as when we added the ResidueInfoDBs in createChainCluster
+						// thus the indices will coincide
+						if (g.isWater()) continue;
+					
+
+						ResidueInfoDB residueInfo = chainClusterDB.getResidueInfos().get(i);
+						
+						int	queryUniprotPos = cec.getPdbToUniProtMapper().getUniProtIndexForPdbGroup(g, !cec.isSearchWithFullUniprot());
+
+						float entropy = -1;
+						// we used to have here: "&& residue instanceof AaResidue" but that was preventing entropy values of mismatch-to-ref-uniprot-residues to be passed
+						// for het residues we do have entropy values too as the entropy values are calculated on the reference uniprot sequence (where no het residues are present)
+						if (entropies!=null && queryUniprotPos!=-1) {
+							entropy = (float) entropies.get(queryUniprotPos-1).doubleValue();
+						}
+
+						if (queryUniprotPos==-1) 
+							residueInfo.setMismatchToRef(true);
+						else 
+							residueInfo.setMismatchToRef(false);
+						residueInfo.setUniProtNumber(queryUniprotPos);
+						residueInfo.setEntropyScore(entropy);
+						
+						i++;
+					}
+				}
 			} 
 
-			chainClusterDB.setPdbInfo(pdbInfo);
-			chainClusterDBs.add(chainClusterDB);	
 		}
-		
-		pdbInfo.setChainClusters(chainClusterDBs);
-		
+				
 
 		for (int i=0;i<iecl.size();i++) {
 			
 			InterfaceEvolContext iec = iecl.get(i);
 			InterfaceDB ii = pdbInfo.getInterface(i+1);
-			
-			// 1) we add entropy values to the residue details
-			addEntropyToResidueDetails(ii.getResidues(), iec);
-			
 			
 			// 2) core-surface scores
 			EvolCoreSurfacePredictor ecsp = iec.getEvolCoreSurfacePredictor();
@@ -914,34 +1010,36 @@ public class DataModelAdaptor {
 		}
 	}
 	
-	public void setResidueDetails(StructureInterfaceList interfaces) {
+	public void setResidueBurialDetails(StructureInterfaceList interfaces) {
 		for (StructureInterface interf:interfaces) {
 			
 			InterfaceDB ii = pdbInfo.getInterface(interf.getId());
 
 			// we add the residue details
-			addResidueDetails(ii, interf, params.isDoEvolScoring());
+			
+			List<ResidueBurialDB> iril = new ArrayList<ResidueBurialDB>();
+			ii.setResidues(iril);
+
+			addResidueBurialDetailsOfPartner(iril, interf, InterfaceEvolContext.FIRST);
+			addResidueBurialDetailsOfPartner(iril, interf, InterfaceEvolContext.SECOND);
+
+			for(ResidueBurialDB iri : iril) {
+				iri.setInterfaceItem(ii);
+			}
+
 		}
 	}
 	
-	private void addResidueDetails(InterfaceDB ii, StructureInterface interf, boolean includeEntropy) {
-		
-		List<ResidueDB> iril = new ArrayList<ResidueDB>();
-		ii.setResidues(iril);
-
-		addResidueDetailsOfPartner(iril, interf, InterfaceEvolContext.FIRST);
-		addResidueDetailsOfPartner(iril, interf, InterfaceEvolContext.SECOND);
-
-		for(ResidueDB iri : iril) {
-			iri.setInterfaceItem(ii);
-		}
-	}
-	
-	private void addResidueDetailsOfPartner(List<ResidueDB> iril, StructureInterface interf, int molecId) {
+	private void addResidueBurialDetailsOfPartner(List<ResidueBurialDB> iril, StructureInterface interf, int molecId) {
 
 		Chain chain = null;
-		if (molecId == InterfaceEvolContext.FIRST) chain =  interf.getMolecules().getFirst()[0].getGroup().getChain();
-		else if (molecId == InterfaceEvolContext.SECOND) chain = interf.getMolecules().getSecond()[0].getGroup().getChain();
+		if (molecId == InterfaceEvolContext.FIRST) 
+			chain =	interf.getParentChains().getFirst();
+		else if (molecId == InterfaceEvolContext.SECOND) 
+			chain =	interf.getParentChains().getSecond();
+		
+		String repChainId = chain.getCompound().getRepresentative().getChainID();
+		ChainClusterDB chainCluster = pdbInfo.getChainCluster(repChainId);
 		
 		for (Group group:chain.getAtomGroups()) {
 
@@ -956,8 +1054,7 @@ public class DataModelAdaptor {
 			// if we have no groupAsa that means that this is a Residue for which we don't calculate ASA (most likely HETATM)
 			if (groupAsa==null) continue;
 
-			String resType = group.getPDBName();
-			int assignment = ResidueDB.OTHER;
+			short assignment = ResidueBurialDB.OTHER;
 
 			double asa = groupAsa.getAsaU();
 			double bsa = groupAsa.getBsa();
@@ -974,129 +1071,54 @@ public class DataModelAdaptor {
 				// NOTE: we use here caCutoffForRimCore as the one and only for both evol methods
 				// NOTE2: we are assuming that caCutoffForRimCore<caCutoffForGeom, if that doesn't hold this won't work!
 				if (groupAsa.getBsaToAsaRatio()<params.getCAcutoffForRimCore()) {
-					assignment = ResidueDB.RIM_EVOLUTIONARY;
+					assignment = ResidueBurialDB.RIM_EVOLUTIONARY;
 				} else if (groupAsa.getBsaToAsaRatio()<params.getCAcutoffForGeom()){
-					assignment = ResidueDB.CORE_EVOLUTIONARY; 
+					assignment = ResidueBurialDB.CORE_EVOLUTIONARY; 
 				} else {
-					assignment = ResidueDB.CORE_GEOMETRY;
+					assignment = ResidueBurialDB.CORE_GEOMETRY;
 				} 
 
 				// residues not in interface but still with more ASA than minimum required are called surface
 			} else if (groupAsa.getAsaU()>params.getMinAsaForSurface()) {
-				assignment = ResidueDB.SURFACE;
+				assignment = ResidueBurialDB.SURFACE;
 			}
 
 
-			ResidueDB iri = new ResidueDB();
-			if (chain.getCompound()==null) {
-				iri.setResidueNumber(UNKNOWN_RESIDUE_INDEX);
-			}
-			else {
-				// NOTE, here there can be 2 behaviours:
-				// 1) there is a SEQRES and getAlignedResIndex gives the actual SEQRES indices
-				// 2) there is no SEQRES and getAlignedResIndex gives the PDB residue number without the insertion codes:
-				//    thus it can be wrong or misaligned.
-				// Another possibility for 2) is that we used the UniProt reference alignment to give proper 
-				// indices (based on the UniProt alignment). Of course they wouldn't coincide necessarily
-				// with what the authors had in mind for the SEQRES construct. However we can't do that here,
-				// because at this time we don't have the alignment yet, only later we can do it in addEntropyToResidueDetails
-				//
-				// E.g. in 1n7y, chain A:
-				//                                             1       10        20        30
-				// SEQRES  ------------------------------------AEAGITGTWYEQLGSTFIVTAGADGALTGTYESAVGNAESRYVL
-				//                                                1       10        20
-				// ATOM    ---------------------------------------GITGTWYEQLGSTFIVTAGADGALTGTY-------ESRYVL
-				//                                                |||||||.||||||||||||||||||||       ||||||
-				// UNIPROT MRKIVVAAIAVSLTTVSITASASADPSKDSKAQVSAAEAGITGTWYNQLGSTFIVTAGADGALTGTYESAVGNAESRYVL
-				//         1       10        20        30        40        50        60        70
-				// For the different cases, the 3 first observed residues would get:
-				// 1)  4 G,  5 I,  6 T
-				// 2) 16 G, 17 I, 18 T
-				// And with UniProt numbering:
-				//    40 G, 41 I, 42 T
+			ResidueBurialDB iri = new ResidueBurialDB();
 
-				iri.setResidueNumber(chain.getCompound().getAlignedResIndex(group, chain));
-			}
-			iri.setPdbResidueNumber(group.getResidueNumber().toString());
-			iri.setResidueType(resType);
+			iril.add(iri);
+			
 			iri.setAsa(asa);
 			iri.setBsa(bsa);
 			iri.setRegion(assignment);
-			iri.setEntropyScore(-1.0);
-			iri.setSide(molecId+1); // structure ids are 1 and 2 while molecId are 0 and 1
 
+			// side: false(0) for FIRST, true(1) for SECOND (used to be 1,2)
+			boolean side = false;
+			if (molecId==InterfaceEvolContext.SECOND) 
+				side = true;
+			
+			iri.setSide(side);
+
+			// relations
 			iri.setInterfaceItem(pdbInfo.getInterface(interf.getId()));
-			iril.add(iri);
+			
+			// TODO revise!
+			// this is a difficult operation: we are in a single chain and we connect to the equivalent
+			// residue in the representative chain (the one we store in the residueInfos in chainCluster).
+			// Thus the issues with residue serials in SEQRES/no SEQRES case will hit here!
+			// See the comment in createChainCluster
+			int resser = chain.getCompound().getAlignedResIndex(group, chain);
+			if (resser==-1) {
+				LOGGER.warn("Could not get a residue serial for group '{}' to connect ResidueBurial to ResidueInfo", group.toString());
+			} else {
+				
+				ResidueInfoDB residueInfo = chainCluster.getResidue(resser);
+
+				iri.setResidueInfo(residueInfo);
+			}
 		}
 	}
 
-	private void addEntropyToResidueDetails(List<ResidueDB> iril, InterfaceEvolContext iec) {
-		StructureInterface interf = iec.getInterface();
-		
-		
-		int[] molecIds = new int[2];
-		molecIds[0] = InterfaceEvolContext.FIRST;
-		molecIds[1] = InterfaceEvolContext.SECOND;
-
-		// beware the counter is global for both molecule 1 and 2 (as the List<ResidueDB> contains both, identified by a structure id 1 or 2)
-		int i = 0;  
-
-		for (int molecId:molecIds) { 
-			ChainEvolContext cec = iec.getChainEvolContext(molecId);
-			Chain mol = null;
-			if (molecId==InterfaceEvolContext.FIRST) {
-				mol = interf.getMolecules().getFirst()[0].getGroup().getChain();
-			}
-			else if (molecId==InterfaceEvolContext.SECOND) {
-				mol = interf.getMolecules().getSecond()[0].getGroup().getChain();
-			}
-
-			if ( cec!=null && cec.isProtein() ) {
-				 
-				List<Double> entropies = null;
-				if (cec.hasQueryMatch()) 
-					entropies = cec.getConservationScores();
-				for (Group residue:mol.getAtomGroups()) {
-					
-					// skipping of residues: we follow exact same procedure as in addResidueDetailsOfPartner(), otherwise indices won't match
-					if (residue.isWater()) continue;
-					GroupAsa groupAsa = null;
-					if (molecId==InterfaceEvolContext.FIRST) 
-						groupAsa = interf.getFirstGroupAsa(residue.getResidueNumber());
-					else if (molecId==InterfaceEvolContext.SECOND) 
-						groupAsa = interf.getSecondGroupAsa(residue.getResidueNumber());
-					
-					if (groupAsa==null) continue;
-
-	 				ResidueDB iri = iril.get(i);
-					
-					int queryUniprotPos = -1;
-					// TODO before Biojava move we used to have here !mol.isNonPolyChain() as first condition, how do we do that now?
-					if (cec.hasQueryMatch()) {
-						queryUniprotPos = cec.getPdbToUniProtMapper().getUniProtIndexForPdbGroup(residue, !cec.isSearchWithFullUniprot());
-					}
-
-					float entropy = -1;
-					// we used to have here: "&& residue instanceof AaResidue" but that was preventing entropy values of mismatch-to-ref-uniprot-residues to be passed
-					// for het residues we do have entropy values too as the entropy values are calculated on the reference uniprot sequence (where no het residues are present)
-					if (entropies!=null) {	
-						if (queryUniprotPos!=-1) entropy = (float) entropies.get(queryUniprotPos-1).doubleValue();
-					}
-
-					// as outlined in addResidueDetailsOfPartner, we follow here the strategy of renumbering the
-					// residue serials to UniProt numbering if no SEQRES was available
-					if (cec.getPdbToUniProtMapper().isSequenceFromAtom()) {
-						iri.setResidueNumber(cec.getPdbToUniProtMapper().getUniProtIndexForPdbGroup(residue, false));
-					}
-					iri.setEntropyScore(entropy); 
-					i++;
-				}
-			}
-		}
-		
-		
-	}
-	
 	public void setUniProtVersion(String uniProtVersion) {
 		this.runParameters.setUniProtVersion(uniProtVersion);
 	}

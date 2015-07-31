@@ -362,7 +362,7 @@
 				</cascade>
 			</one-to-many>
 
-			<one-to-many name="residues" mapped-by="interfaceItem">
+			<one-to-many name="residueBurials" mapped-by="interfaceItem">
 				<cascade>
 					<cascade-all />
 				</cascade>
@@ -387,30 +387,71 @@
 		</attributes>
 	</entity>
 
-	<entity class="eppic.model.ResidueDB" name="Residue">
-		<table name="Residue" />
+	<entity class="eppic.model.ResidueBurialDB" name="ResidueBurial">
+		<table name="ResidueBurial" />
 		<entity-listeners>
 			<entity-listener
-				class="ch.systemsx.sybit.server.db.entitylisteners.ResidueListener">
+				class="ch.systemsx.sybit.server.db.entitylisteners.ResidueBurialListener">
 			</entity-listener>
 		</entity-listeners>
 		<attributes>
 			<id name="uid">
 				<generated-value strategy="IDENTITY" />
 			</id>
+
 			<basic name="side"></basic>
+			
+			<basic name="asa"></basic>
+			<basic name="bsa"></basic>
+			
+			<!-- TODO the field is now a short, we should double check that it translates to a data
+			     type that takes less space than int in mysql. Other solution would be to force type 
+			     smallint here but I don't know how to do that -->
+			<basic name="region"></basic>
+
+
+			<many-to-one name="interfaceItem">
+			</many-to-one>
+			
+			<many-to-one name="residueInfo">
+			</many-to-one>
+			
+		</attributes>
+	</entity>
+	
+	<entity class="eppic.model.ResidueInfoDB" name="ResidueInfo">
+		<table name="ResidueInfo"/>
+		<entity-listeners>
+			<entity-listener
+				class="ch.systemsx.sybit.server.db.entitylisteners.ResidueInfoListener">
+			</entity-listener>
+		</entity-listeners>
+		<attributes>
+			<id name="uid">
+				<generated-value strategy="IDENTITY" />
+			</id>
+		
 			<basic name="residueNumber"></basic>
 			<basic name="pdbResidueNumber"></basic>
 			<basic name="residueType">
 				<column length="3" />
 			</basic>
-			<basic name="asa"></basic>
-			<basic name="bsa"></basic>
-			<basic name="region"></basic>
+			
+			<basic name="uniProtNumber"></basic>
+			<basic name="mismatchToRef"></basic>
+			
 			<basic name="entropyScore"></basic>
-
-			<many-to-one name="interfaceItem">
+			
+			
+			<many-to-one name="chainCluster">
 			</many-to-one>
+			
+			<one-to-many name="residueBurials" mapped-by="residueInfo">
+				<cascade>
+					<cascade-all />
+				</cascade>
+			</one-to-many>
+		
 		</attributes>
 	</entity>
 	
@@ -595,11 +636,18 @@
 					<cascade-all />
 				</cascade>
 			</one-to-many>
+			
 			<one-to-many name="homologs" mapped-by="chainCluster">
 				<cascade>
 					<cascade-all />
 				</cascade>
 			</one-to-many>
+			
+			<one-to-many name="residueInfos" mapped-by="chainCluster">
+				<cascade>
+					<cascade-all />
+				</cascade>
+			</one-to-many>			
 			
 			<one-to-one name="seqCluster" mapped-by="chainCluster">
  				<cascade>

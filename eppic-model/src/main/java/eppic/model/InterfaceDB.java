@@ -51,7 +51,7 @@ public class InterfaceDB implements Serializable {
 	private List<InterfaceWarningDB> interfaceWarnings;
 	
 	private List<InterfaceScoreDB> interfaceScores;
-	private List<ResidueDB> residues;
+	private List<ResidueBurialDB> residueBurials;
 	private List<ContactDB> contacts;
 	
 	private InterfaceClusterDB interfaceCluster;
@@ -59,7 +59,7 @@ public class InterfaceDB implements Serializable {
 	public InterfaceDB() {
 		interfaceScores = new ArrayList<InterfaceScoreDB>();
 		interfaceWarnings = new ArrayList<InterfaceWarningDB>();
-		residues = new ArrayList<ResidueDB>();
+		residueBurials = new ArrayList<ResidueBurialDB>();
 
 	}
 	
@@ -242,12 +242,12 @@ public class InterfaceDB implements Serializable {
 		return interfaceCluster;
 	}
 
-	public List<ResidueDB> getResidues() {
-		return residues;
+	public List<ResidueBurialDB> getResidues() {
+		return residueBurials;
 	}
 
-	public void setResidues(List<ResidueDB> interfaceResidues) {
-		this.residues = interfaceResidues;
+	public void setResidues(List<ResidueBurialDB> interfaceResidues) {
+		this.residueBurials = interfaceResidues;
 	}
 
 	public List<ContactDB> getContacts() {

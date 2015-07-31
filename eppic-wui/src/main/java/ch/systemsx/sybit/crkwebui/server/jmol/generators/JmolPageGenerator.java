@@ -6,7 +6,7 @@ import java.util.List;
 import ch.systemsx.sybit.crkwebui.shared.model.Interface;
 import ch.systemsx.sybit.crkwebui.shared.model.Residue;
 import eppic.MolViewersHelper;
-import eppic.model.ResidueDB;
+import eppic.model.ResidueBurialDB;
 
 public class JmolPageGenerator 
 {
@@ -119,13 +119,13 @@ public class JmolPageGenerator
 		
 		for (Residue residue:interfData.getResidues() ) {
 			
-			if (residue.getRegion()==ResidueDB.CORE_EVOLUTIONARY || residue.getRegion()==ResidueDB.CORE_GEOMETRY) {
+			if (residue.getRegion()==ResidueBurialDB.CORE_EVOLUTIONARY || residue.getRegion()==ResidueBurialDB.CORE_GEOMETRY) {
 				if (residue.getSide()==1) {
 					coreResidues1.add(residue);
 				} else if (residue.getSide()==2) {
 					coreResidues2.add(residue);
 				}
-			} else if (residue.getRegion()==ResidueDB.RIM_EVOLUTIONARY) {
+			} else if (residue.getRegion()==ResidueBurialDB.RIM_EVOLUTIONARY) {
 				if (residue.getSide()==1) {
 					rimResidues1.add(residue);
 				} else if (residue.getSide()==2) {

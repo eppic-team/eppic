@@ -16,7 +16,7 @@ import com.sencha.gxt.core.client.dom.XElement;
 import com.sencha.gxt.core.client.util.Margins;
 import com.sencha.gxt.widget.core.client.container.CssFloatLayoutContainer;
 
-import eppic.model.ResidueDB;
+import eppic.model.ResidueBurialDB;
 import eppic.model.ScoringMethod;
 
 /**
@@ -146,12 +146,12 @@ public class ResiduesSummaryPanel extends CssFloatLayoutContainer
 
 		for(Residue interfResItem : residues) {
 
-			if ((interfResItem.getRegion() == ResidueDB.CORE_EVOLUTIONARY) ||
-				(interfResItem.getRegion() == ResidueDB.CORE_GEOMETRY)	)
+			if ((interfResItem.getRegion() == ResidueBurialDB.CORE_EVOLUTIONARY) ||
+				(interfResItem.getRegion() == ResidueBurialDB.CORE_GEOMETRY)	)
 			{
 				coreSize++;
 			}
-			else if (interfResItem.getRegion() == ResidueDB.RIM_EVOLUTIONARY) 
+			else if (interfResItem.getRegion() == ResidueBurialDB.RIM_EVOLUTIONARY) 
 			{
 				rimSize++;
 			}

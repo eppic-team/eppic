@@ -5,12 +5,9 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 
-import eppic.commons.sequence.AlignmentConstructionException;
-import eppic.commons.sequence.MultipleSequenceAlignment;
-import eppic.commons.sequence.Sequence;
 import eppic.model.AssemblyContentDB;
 import eppic.model.AssemblyDB;
 import eppic.model.ChainClusterDB;
@@ -21,12 +18,13 @@ import eppic.model.InterfaceClusterScoreDB;
 import eppic.model.InterfaceDB;
 import eppic.model.InterfaceScoreDB;
 import eppic.model.PdbInfoDB;
-import eppic.model.ResidueDB;
+import eppic.model.ResidueBurialDB;
+import eppic.model.ResidueInfoDB;
 import eppic.model.ScoringMethod;
 
 public class TextOutputWriter {
 	
-	private static final Logger LOGGER = LoggerFactory.getLogger(TextOutputWriter.class);
+	//private static final Logger LOGGER = LoggerFactory.getLogger(TextOutputWriter.class);
 	
 	private PdbInfoDB pdbInfo;
 	private EppicParams params;
@@ -58,29 +56,29 @@ public class TextOutputWriter {
 						interfaceItem.getChain1()+"+"+interfaceItem.getChain2(),interfaceItem.getOperator());
 				
 				ps.print("## ");
-				this.printInterfacesMolInfo(ps, interfaceItem, 1, usePdbResSer);				
+				this.printInterfacesMolInfo(ps, interfaceItem, false, usePdbResSer);				
 				
 				ps.print("## ");
-				this.printInterfacesMolInfo(ps, interfaceItem, 2, usePdbResSer);
+				this.printInterfacesMolInfo(ps, interfaceItem, true, usePdbResSer);
 				
 			}
 		}
 	}
 	
-	private void printInterfacesMolInfo(PrintStream ps, InterfaceDB interfaceItem, int side, boolean usePdbResSer) {
+	private void printInterfacesMolInfo(PrintStream ps, InterfaceDB interfaceItem, boolean side, boolean usePdbResSer) {
 		
-		List<ResidueDB> cores = new ArrayList<ResidueDB>();
+		List<ResidueBurialDB> cores = new ArrayList<ResidueBurialDB>();
 		
-		for (ResidueDB residue:interfaceItem.getResidues()) {
+		for (ResidueBurialDB residue:interfaceItem.getResidues()) {
 			if (residue.getSide()==side) {
 				
-				if (residue.getRegion()==ResidueDB.CORE_GEOMETRY) cores.add(residue);
+				if (residue.getRegion()==ResidueBurialDB.CORE_GEOMETRY) cores.add(residue);
 			}
 		}
 		
 		String pdbChainCode = null;
-		if (side==1) pdbChainCode = interfaceItem.getChain1();
-		if (side==2) pdbChainCode = interfaceItem.getChain2();
+		if (side==false) pdbChainCode = interfaceItem.getChain1();
+		if (side==true)  pdbChainCode = interfaceItem.getChain2();
 		
 		ps.println(side+"\t"+pdbChainCode+"\tprotein");
 
@@ -89,9 +87,22 @@ public class TextOutputWriter {
 		}
 		ps.println("## seqres pdb res asa bsa burial(percent)");
 
-		for (ResidueDB residue:interfaceItem.getResidues()) {	
+		for (ResidueBurialDB residue:interfaceItem.getResidues()) {	
 			if (residue.getSide()==side) {
-				ps.printf("%d\t%s\t%s\t%6.2f\t%6.2f",residue.getResidueNumber(),residue.getPdbResidueNumber(),residue.getResidueType(),residue.getAsa(),residue.getBsa());
+				ResidueInfoDB residueInfo = residue.getResidueInfo();
+				int resNum = 0;
+				String pdbResNum = "0";
+				String resType = "XXX";
+				if (residueInfo!=null) {
+					resNum = residueInfo.getResidueNumber();
+					pdbResNum = residueInfo.getPdbResidueNumber();
+					resType = residueInfo.getResidueType();
+				}
+				ps.printf("%d\t%s\t%s\t%6.2f\t%6.2f",
+						resNum,
+						pdbResNum,
+						resType,
+						residue.getAsa(),residue.getBsa());
 				double percentBurial = 100.0*residue.getBsa()/residue.getAsa();
 				if (percentBurial>0.1) {
 					ps.printf("\t%5.1f\n",percentBurial);
@@ -102,14 +113,14 @@ public class TextOutputWriter {
 		}
 	}
 	
-	private String getResString(List<ResidueDB> residues, boolean usePdbResSer) {
+	private String getResString(List<ResidueBurialDB> residues, boolean usePdbResSer) {
 		String str = "";
 		for (int i=0;i<residues.size();i++) {
 			String serial = null;
 			if (usePdbResSer) {
-				serial = residues.get(i).getPdbResidueNumber();
+				serial = residues.get(i).getResidueInfo().getPdbResidueNumber();
 			} else {
-				serial = ""+residues.get(i).getResidueNumber();
+				serial = ""+residues.get(i).getResidueInfo().getResidueNumber();
 			}
 			if (i!=residues.size()-1)
 				str+=serial+",";
@@ -348,82 +359,24 @@ public class TextOutputWriter {
 		ps.println("# The maximum entropy value is " + Math.log(numGroupsAlphabet) / Math.log(2) + ".");
 		ps.println("# seqres\tpdb\tuniprot\tpdb_res\tentropy");
  
-		List<ResidueDB> list = getResidueListForChain(chainCluster);
 
+		List<ResidueInfoDB> residueInfos = chainCluster.getResidueInfos();
 				
-		List<Sequence> sequences = new ArrayList<Sequence>(2);
-		sequences.add(new Sequence("pdb",chainCluster.getPdbAlignedSeq()));
-		sequences.add(new Sequence("uniprot",chainCluster.getRefAlignedSeq()));
-		
-		MultipleSequenceAlignment aln = null;
-		try {
-			aln = new MultipleSequenceAlignment(sequences);
-		} catch (AlignmentConstructionException e) {
-			LOGGER.warn("Could not create alignment from PDB aligned sequence and UniProt reference aligned sequence. Entropies file will contain no UniProt numbering, error: "+e.getMessage());			
-		}
-		
-		for (int i=0;i<list.size();i++) {
+		for (int i=0;i<residueInfos.size();i++) {
 			
-			int uniprotSerial = 0;
-			if (aln!=null) {
-				// TODO here we don't have a solution yet for all inputs:
-				
-				// 1) This works with entries with only ATOM (no SEQRES)
-				// here we use resser to map to the uniprot reference position based on the alignment found
-				// in the database. Thus what we need is not the actual residue number but the index of the sequence
-				// as it is in the alignment (i+1).
-				//int resser = i + 1;
-				
-				
-				// 2) This works with entries with SEQRES (what we used to have):
-				int resser = list.get(i).getResidueNumber();
-				if (resser==-1) continue; // most likely a het atom, we skip or otherwise al2seq below would fail as the hetatm would not be in alignment
-				// a good testing structure is 1n7y (with and without SEQRES)
-				
-				
-				uniprotSerial = aln.al2seq("uniprot", aln.seq2al("pdb", resser));
-			}
+			ResidueInfoDB residueInfo = residueInfos.get(i);
+			
 			
 			ps.printf("%4d\t%4s\t%4d\t%3s\t%5.2f\n",
-					list.get(i).getResidueNumber(), 
-					list.get(i).getPdbResidueNumber(),  
-					uniprotSerial, 
-					list.get(i).getResidueType(), 
-					list.get(i).getEntropyScore());
+					residueInfo.getResidueNumber(), 
+					residueInfo.getPdbResidueNumber(),  
+					residueInfo.getUniProtNumber(), 
+					residueInfo.getResidueType(), 
+					residueInfo.getEntropyScore());
 		}
 		
 		
 		ps.close();
-	}
-	
-	private List<ResidueDB> getResidueListForChain (ChainClusterDB chainCluster) {
-		List<ResidueDB> list = new ArrayList<ResidueDB>();
-		
-		String repChain = chainCluster.getRepChain();
-		
-		cluster:
-		for (InterfaceClusterDB interfaceCluster: pdbInfo.getInterfaceClusters()) {
-			
-			for (InterfaceDB interfaceItem:interfaceCluster.getInterfaces()) {
-				int side = 0;
-				if (interfaceItem.getChain1().equals(repChain)) {
-					side = 1;
-				} else if (interfaceItem.getChain2().equals(repChain)) {
-					side = 2;
-				} else {
-					continue;
-				}
-				
-				List<ResidueDB> residues = interfaceItem.getResidues();
-				for (ResidueDB residue:residues) {
-					if (residue.getSide()==side) list.add(residue);
-				}
-				break cluster;
-
-			}
-		}
-		
-		return list;
 	}
 	
 	public void writeAlnFiles() throws IOException {

@@ -154,6 +154,10 @@ public class ChainEvolContext implements Serializable {
 		return isProtein;
 	}
 	
+	public Compound getCompound() { 
+		return compound;
+	}
+	
 	/**
 	 * Retrieves the UniProt mapping corresponding to the query PDB sequence 
 	 * @throws IOException
