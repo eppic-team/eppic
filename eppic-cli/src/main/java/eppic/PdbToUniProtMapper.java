@@ -30,8 +30,8 @@ public class PdbToUniProtMapper {
 
 	
 	/**
-	 * The alignments between the PDB sequence and the UniProt reference sequence
-	 * Beware in Biojava SequencePair the first sequence is called "query" (the PDB sequence here)
+	 * The alignments between the PDB sequence and the UniProt reference sequence.
+	 * In SequencePair the first sequence is called "query" (the PDB sequence here)
 	 * and the second sequence is called "target" (the UniProt sequence here).
 	 * If the sequence comes from SEQRES only 1 alignment for the representative sequence is stored,
 	 * if the sequence comes from ATOM, then an alignment for every chain is stored.
