@@ -6,7 +6,7 @@ import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.labels.LabelWithTooltip;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceScore;
 import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
-import ch.systemsx.sybit.crkwebui.shared.model.Residue;
+import ch.systemsx.sybit.crkwebui.shared.model.ResidueBurial;
 
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.ui.FlexTable;
@@ -61,7 +61,7 @@ public class ResiduesSummaryPanel extends CssFloatLayoutContainer
 	 */
 	public void fillResultsSummary(PdbInfo pdbScoreItem,
 			 int selectedInterfaceId,
-			 List<Residue> residues){
+			 List<ResidueBurial> residues){
 		calculateData(pdbScoreItem, selectedInterfaceId, residues);
 		
 		summaryTable.setWidget(0, 1, createRightAlignedLabel(Integer.toString(coreSize)));
@@ -107,7 +107,7 @@ public class ResiduesSummaryPanel extends CssFloatLayoutContainer
 	
 	private void calculateData(PdbInfo pdbScoreItem,
 			int selectedInterfaceId,
-			List<Residue> residues) {
+			List<ResidueBurial> residues) {
 
 		int interfId = selectedInterfaceId;
 		
@@ -144,7 +144,7 @@ public class ResiduesSummaryPanel extends CssFloatLayoutContainer
 			}
 		}
 
-		for(Residue interfResItem : residues) {
+		for(ResidueBurial interfResItem : residues) {
 
 			if ((interfResItem.getRegion() == ResidueBurialDB.CORE_EVOLUTIONARY) ||
 				(interfResItem.getRegion() == ResidueBurialDB.CORE_GEOMETRY)	)

@@ -45,7 +45,7 @@ public class ResidueBurialDB implements Serializable {
 		this.bsa = bsa;
 	}
 	
-	public int getRegion() {
+	public short getRegion() {
 		return this.region;
 	}
 	

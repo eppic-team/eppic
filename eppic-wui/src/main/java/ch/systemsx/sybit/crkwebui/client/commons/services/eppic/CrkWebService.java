@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
-import ch.systemsx.sybit.crkwebui.shared.model.Residue;
+import ch.systemsx.sybit.crkwebui.shared.model.ResidueBurial;
 import ch.systemsx.sybit.crkwebui.shared.model.ResiduesList;
 import ch.systemsx.sybit.crkwebui.shared.model.JobsForSession;
 import ch.systemsx.sybit.crkwebui.shared.model.PDBSearchResult;
@@ -65,7 +65,7 @@ public interface CrkWebService extends RemoteService
 	 * @throws Exception when an asynchronous call fails to complete normally
 	 */
 	@NoXsrfProtect
-	public HashMap<Integer, List<Residue>> getInterfaceResidues(int interfaceUid) throws Exception;
+	public HashMap<Integer, List<ResidueBurial>> getInterfaceResidues(int interfaceUid) throws Exception;
 	
 	/**
 	 * Kills selected job.

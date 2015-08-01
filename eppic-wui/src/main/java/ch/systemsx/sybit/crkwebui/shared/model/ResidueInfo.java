@@ -1,16 +1,20 @@
-package eppic.model;
+package ch.systemsx.sybit.crkwebui.shared.model;
 
 import java.io.Serializable;
+import eppic.model.ResidueInfoDB;
 
-public class ResidueInfoDB implements Serializable {
+/**
+ * DTO class for ResidueInfo
+ * @author duarte_j
+ *
+ */
+public class ResidueInfo implements Serializable {
 
 	private static final long serialVersionUID = 1L;
-
+	
+	
 	
 	private int uid;
-
-	private String pdbCode;
-	private String repChain;
 
 	private int residueNumber;
 	private String pdbResidueNumber;
@@ -22,52 +26,47 @@ public class ResidueInfoDB implements Serializable {
 	
 	private double entropyScore;
 	
-	private ChainClusterDB chainCluster;
 	
+	
+	public ResidueInfo() {
+		
+	}
+
 
 	public int getUid() {
 		return uid;
 	}
 
+
 	public void setUid(int uid) {
 		this.uid = uid;
 	}
 
-	public String getPdbCode() {
-		return pdbCode;
-	}
-
-	public void setPdbCode(String pdbCode) {
-		this.pdbCode = pdbCode;
-	}
-
-	public String getRepChain() {
-		return repChain;
-	}
-
-	public void setRepChain(String repChain) {
-		this.repChain = repChain;
-	}
 
 	public int getResidueNumber() {
 		return residueNumber;
 	}
 
+
 	public void setResidueNumber(int residueNumber) {
 		this.residueNumber = residueNumber;
 	}
+
 
 	public String getPdbResidueNumber() {
 		return pdbResidueNumber;
 	}
 
+
 	public void setPdbResidueNumber(String pdbResidueNumber) {
 		this.pdbResidueNumber = pdbResidueNumber;
 	}
 
+
 	public String getResidueType() {
 		return residueType;
 	}
+
 
 	public void setResidueType(String residueType) {
 		this.residueType = residueType;
@@ -78,34 +77,54 @@ public class ResidueInfoDB implements Serializable {
 		return uniProtNumber;
 	}
 
+
 	public void setUniProtNumber(int uniProtNumber) {
 		this.uniProtNumber = uniProtNumber;
 	}
+
 
 	public boolean isMismatchToRef() {
 		return mismatchToRef;
 	}
 
+
 	public void setMismatchToRef(boolean mismatchToRef) {
 		this.mismatchToRef = mismatchToRef;
 	}
+
 
 	public double getEntropyScore() {
 		return entropyScore;
 	}
 
+
 	public void setEntropyScore(double entropyScore) {
 		this.entropyScore = entropyScore;
 	}
 
-	public ChainClusterDB getChainCluster() {
-		return chainCluster;
-	}
 
-	public void setChainCluster(ChainClusterDB chainCluster) {
-		this.chainCluster = chainCluster;
+	/**
+	 * Converts DB model item into DTO one.
+	 * @param residueInfoDB model item to convert
+	 * @return DTO representation of model item
+	 */
+	public static ResidueInfo create(ResidueInfoDB residueInfoDB)
+	{
+		ResidueInfo residue = new ResidueInfo();
+		
+		residue.setResidueNumber(residueInfoDB.getResidueNumber());
+		residue.setPdbResidueNumber(residueInfoDB.getPdbResidueNumber());
+		residue.setResidueType(residueInfoDB.getResidueType());
+		residue.setUniProtNumber(residueInfoDB.getUniProtNumber());
+		residue.setMismatchToRef(residueInfoDB.isMismatchToRef());
+		residue.setEntropyScore(residueInfoDB.getEntropyScore()); 
+		
+		residue.setUid(residueInfoDB.getUid());
+		
+		return residue;
 	}
-
 	
 	
+	
+
 }

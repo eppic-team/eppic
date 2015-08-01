@@ -9,7 +9,7 @@ import java.util.List;
  * @author AS
  *
  */
-public class ResiduesList extends HashMap<Integer, HashMap<Integer, List<Residue>>> implements Serializable 
+public class ResiduesList extends HashMap<Integer, HashMap<Integer, List<ResidueBurial>>> implements Serializable 
 {
 	/**
 	 * 

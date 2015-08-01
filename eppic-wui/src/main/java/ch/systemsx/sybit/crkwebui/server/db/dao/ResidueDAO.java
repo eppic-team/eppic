@@ -3,7 +3,7 @@ package ch.systemsx.sybit.crkwebui.server.db.dao;
 import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
-import ch.systemsx.sybit.crkwebui.shared.model.Residue;
+import ch.systemsx.sybit.crkwebui.shared.model.ResidueBurial;
 import ch.systemsx.sybit.crkwebui.shared.model.ResiduesList;
 
 /**
@@ -19,7 +19,7 @@ public interface ResidueDAO {
 	 * @return list of interface residue items for specified interface
 	 * @throws DaoException when can not retrieve list of residue items
 	 */
-	public List<Residue> getResiduesForInterface(int interfaceUid) throws DaoException;
+	public List<ResidueBurial> getResiduesForInterface(int interfaceUid) throws DaoException;
 	
 	/**
 	 * Retrieves list of interface residue items for all interfaces.

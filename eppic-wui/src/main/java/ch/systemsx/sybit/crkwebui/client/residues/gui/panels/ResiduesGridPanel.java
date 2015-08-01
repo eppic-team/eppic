@@ -7,7 +7,7 @@ import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.cell.TwoDecimalDoubleCell;
 import ch.systemsx.sybit.crkwebui.client.commons.util.EscapedStringGenerator;
 import ch.systemsx.sybit.crkwebui.client.residues.gui.grid.utils.ResiduePagingMemoryProxy;
-import ch.systemsx.sybit.crkwebui.shared.model.Residue;
+import ch.systemsx.sybit.crkwebui.shared.model.ResidueBurial;
 
 import com.google.gwt.core.shared.GWT;
 import com.google.gwt.editor.client.Editor.Path;
@@ -45,19 +45,19 @@ public class ResiduesGridPanel extends VerticalLayoutContainer
      * @author biyani_n
      *
      */
-	public interface ResidueProperties extends PropertyAccess<Residue> {
+	public interface ResidueProperties extends PropertyAccess<ResidueBurial> {
 		
 		  @Path("residueNumber")
-		  ModelKeyProvider<Residue> key();
+		  ModelKeyProvider<ResidueBurial> key();
 		 
-		  ValueProvider<Residue, Integer> residueNumber();	  
-		  ValueProvider<Residue, String> pdbResidueNumber();
-		  ValueProvider<Residue, String> residueType();
-		  ValueProvider<Residue, Double> asa();
-		  ValueProvider<Residue, Double> bsa();
-		  ValueProvider<Residue, Double> bsaPercentage();
-		  ValueProvider<Residue, Integer> region();
-		  ValueProvider<Residue, Double> entropyScore();
+		  ValueProvider<ResidueBurial, Integer> residueNumber();	  
+		  ValueProvider<ResidueBurial, String> pdbResidueNumber();
+		  ValueProvider<ResidueBurial, String> residueType();
+		  ValueProvider<ResidueBurial, Double> asa();
+		  ValueProvider<ResidueBurial, Double> bsa();
+		  ValueProvider<ResidueBurial, Double> bsaPercentage();
+		  ValueProvider<ResidueBurial, Integer> region();
+		  ValueProvider<ResidueBurial, Double> entropyScore();
 	}
 	
 	private static final ResidueProperties props = GWT.create(ResidueProperties.class);
@@ -65,17 +65,17 @@ public class ResiduesGridPanel extends VerticalLayoutContainer
     private static final int ROW_HEIGHT = 22;
     private static final int PAGING_TOOL_BAR_HEIGHT = 27;
 	
-    private List<ColumnConfig<Residue, ?>> residuesConfigs;
-    private ListStore<Residue> residuesStore;
-    private ColumnModel<Residue> residuesColumnModel;
-    private Grid<Residue> residuesGrid;
+    private List<ColumnConfig<ResidueBurial, ?>> residuesConfigs;
+    private ListStore<ResidueBurial> residuesStore;
+    private ColumnModel<ResidueBurial> residuesColumnModel;
+    private Grid<ResidueBurial> residuesGrid;
 
     private ResiduePagingMemoryProxy proxy;
-    private PagingLoader<PagingLoadConfig, PagingLoadResult<Residue>> loader;
+    private PagingLoader<PagingLoadConfig, PagingLoadResult<ResidueBurial>> loader;
     private PagingToolBar pagingToolbar;
     private boolean useBufferedView = false;
 
-    private List<Residue> data;
+    private List<ResidueBurial> data;
 
     private int nrOfRows = 20;
 
@@ -99,17 +99,17 @@ public class ResiduesGridPanel extends VerticalLayoutContainer
 
     	residuesConfigs = createColumnConfig();
 
-    	data = new ArrayList<Residue>();
+    	data = new ArrayList<ResidueBurial>();
     	proxy = new ResiduePagingMemoryProxy(data);
     	
-    	residuesStore = new ListStore<Residue>(props.key());
+    	residuesStore = new ListStore<ResidueBurial>(props.key());
     	    	
-    	loader = new PagingLoader<PagingLoadConfig, PagingLoadResult<Residue>>(proxy);
+    	loader = new PagingLoader<PagingLoadConfig, PagingLoadResult<ResidueBurial>>(proxy);
         loader.setRemoteSort(true);
-        loader.addLoadHandler(new LoadResultListStoreBinding<PagingLoadConfig, Residue, PagingLoadResult<Residue>>(residuesStore));
+        loader.addLoadHandler(new LoadResultListStoreBinding<PagingLoadConfig, ResidueBurial, PagingLoadResult<ResidueBurial>>(residuesStore));
     	//loader.setSortField("residueNumber");
 
-    	residuesColumnModel = new ColumnModel<Residue>(residuesConfigs);
+    	residuesColumnModel = new ColumnModel<ResidueBurial>(residuesConfigs);
 
     	residuesGrid = createResiduesGrid();
     	this.add(residuesGrid, new VerticalLayoutData(1, 1));
@@ -127,7 +127,7 @@ public class ResiduesGridPanel extends VerticalLayoutContainer
     /**
      * Fills in with the general grid properties
      */
-    private void fillColumnProperties(ColumnConfig<Residue,?> column, String type){
+    private void fillColumnProperties(ColumnConfig<ResidueBurial,?> column, String type){
     	column.setColumnHeaderClassName("eppic-default-font");
 		column.setWidth(Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("residues_"+type+"_width")));
 		column.setHeader(EscapedStringGenerator.generateSafeHtml(
@@ -139,45 +139,45 @@ public class ResiduesGridPanel extends VerticalLayoutContainer
      * Creates columns configurations for residues grid.
      * @return list of columns configurations for residues grid
      */
-    private List<ColumnConfig<Residue,?>> createColumnConfig()
+    private List<ColumnConfig<ResidueBurial,?>> createColumnConfig()
     {
-    	List<ColumnConfig<Residue,?>> configs = new ArrayList<ColumnConfig<Residue, ?>>();
+    	List<ColumnConfig<ResidueBurial,?>> configs = new ArrayList<ColumnConfig<ResidueBurial, ?>>();
     	
-    	ColumnConfig<Residue,Integer> residueNumberCol = 
-    			new ColumnConfig<Residue, Integer>(props.residueNumber());
+    	ColumnConfig<ResidueBurial,Integer> residueNumberCol = 
+    			new ColumnConfig<ResidueBurial, Integer>(props.residueNumber());
     	fillColumnProperties(residueNumberCol, "residueNumber");
     	residueNumberCol.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
     	
-    	ColumnConfig<Residue,String> pdbResidueNumberCol = 
-    			new ColumnConfig<Residue, String>(props.pdbResidueNumber());
+    	ColumnConfig<ResidueBurial,String> pdbResidueNumberCol = 
+    			new ColumnConfig<ResidueBurial, String>(props.pdbResidueNumber());
     	fillColumnProperties(pdbResidueNumberCol, "pdbResidueNumber");
     	pdbResidueNumberCol.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
     	
-    	ColumnConfig<Residue,String> residueTypeCol = 
-    			new ColumnConfig<Residue, String>(props.residueType());
+    	ColumnConfig<ResidueBurial,String> residueTypeCol = 
+    			new ColumnConfig<ResidueBurial, String>(props.residueType());
         fillColumnProperties(residueTypeCol, "residueType");
     	residueTypeCol.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
     	
-    	ColumnConfig<Residue, Double> asaCol = 
-    			new ColumnConfig<Residue, Double>(props.asa());
+    	ColumnConfig<ResidueBurial, Double> asaCol = 
+    			new ColumnConfig<ResidueBurial, Double>(props.asa());
         fillColumnProperties(asaCol, "asa");
     	asaCol.setCell(new TwoDecimalDoubleCell());
     	asaCol.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
     	
-    	ColumnConfig<Residue,Double> bsaCol = 
-    			new ColumnConfig<Residue, Double>(props.bsa());
+    	ColumnConfig<ResidueBurial,Double> bsaCol = 
+    			new ColumnConfig<ResidueBurial, Double>(props.bsa());
         fillColumnProperties(bsaCol, "bsa");
     	bsaCol.setCell(new TwoDecimalDoubleCell());
     	bsaCol.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
    
-    	ColumnConfig<Residue,Double> bsaPercentageCol = 
-    			new ColumnConfig<Residue, Double>(props.bsaPercentage());
+    	ColumnConfig<ResidueBurial,Double> bsaPercentageCol = 
+    			new ColumnConfig<ResidueBurial, Double>(props.bsaPercentage());
     	fillColumnProperties(bsaPercentageCol, "bsaPercentage");
     	bsaPercentageCol.setCell(new TwoDecimalDoubleCell());
     	bsaPercentageCol.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
     	
-    	ColumnConfig<Residue,Double> entropyScoreCol = 
-    			new ColumnConfig<Residue, Double>(props.entropyScore());
+    	ColumnConfig<ResidueBurial,Double> entropyScoreCol = 
+    			new ColumnConfig<ResidueBurial, Double>(props.entropyScore());
     	fillColumnProperties(entropyScoreCol, "entropyScore");
     	entropyScoreCol.setCell(new TwoDecimalDoubleCell());
     	entropyScoreCol.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
@@ -197,9 +197,9 @@ public class ResiduesGridPanel extends VerticalLayoutContainer
      * Generates grid used to store residues items.
      * @return residues grid
      */
-    private Grid<Residue> createResiduesGrid()
+    private Grid<ResidueBurial> createResiduesGrid()
     {
-    	Grid<Residue> residuesGrid = new Grid<Residue>(residuesStore, residuesColumnModel);
+    	Grid<ResidueBurial> residuesGrid = new Grid<ResidueBurial>(residuesStore, residuesColumnModel);
     	
     	residuesGrid.setBorders(false);
     	residuesGrid.getView().setStripeRows(false);
@@ -213,14 +213,14 @@ public class ResiduesGridPanel extends VerticalLayoutContainer
 
     	if(useBufferedView)
     	{
-    		LiveGridView<Residue> view = new LiveGridView<Residue>();
+    		LiveGridView<ResidueBurial> view = new LiveGridView<ResidueBurial>();
     		//view.setRowHeight(20);
     		residuesGrid.setView(view);
     	}
 
-    	residuesGrid.getView().setViewConfig(new GridViewConfig<Residue>(){
+    	residuesGrid.getView().setViewConfig(new GridViewConfig<ResidueBurial>(){
     		@Override
-    		public String getRowStyle(Residue model, int rowIndex) {
+    		public String getRowStyle(ResidueBurial model, int rowIndex) {
     			if (model != null)
     			{
     				if (model.getRegion() == ResidueBurialDB.SURFACE)
@@ -250,8 +250,8 @@ public class ResiduesGridPanel extends VerticalLayoutContainer
 
 			@Override
 			public String getColStyle(
-					Residue model,
-					ValueProvider<? super Residue, ?> valueProvider,
+					ResidueBurial model,
+					ValueProvider<? super ResidueBurial, ?> valueProvider,
 					int rowIndex, int colIndex) {
 				return "";
 			}
@@ -264,11 +264,11 @@ public class ResiduesGridPanel extends VerticalLayoutContainer
      * Sets content of residues grid.
      * @param residueValues list of items to add to the grid
      */
-    public void fillResiduesGrid(List<Residue> residueValues)
+    public void fillResiduesGrid(List<ResidueBurial> residueValues)
     {
     	residuesStore.clear();
 
-    	data = new ArrayList<Residue>();
+    	data = new ArrayList<ResidueBurial>();
 
     	if (residueValues != null) {
     		data = residueValues;
@@ -281,8 +281,8 @@ public class ResiduesGridPanel extends VerticalLayoutContainer
      */
     public void applyFilter(boolean isShowAll)
     {
-    	List<Residue> dataToSet = new ArrayList<Residue>();
-    	for(Residue item : data)
+    	List<ResidueBurial> dataToSet = new ArrayList<ResidueBurial>();
+    	for(ResidueBurial item : data)
     	{
     		if((isShowAll) ||
     				((item.getRegion() == ResidueBurialDB.CORE_GEOMETRY) ||

@@ -62,7 +62,7 @@ public class Interface implements Serializable, Comparable<Interface>
 
 	@XmlElementWrapper(name = "residues")
 	@XmlElement(name = "residue")
-	private List<Residue> residues;
+	private List<ResidueBurial> residues;
 	
 	
 	
@@ -220,11 +220,11 @@ public class Interface implements Serializable, Comparable<Interface>
 		this.interfaceScores.add(interfaceScore);
 	}
 
-	public List<Residue> getResidues() {
+	public List<ResidueBurial> getResidues() {
 		return residues;
 	}
 
-	public void setResidues(List<Residue> residues) {
+	public void setResidues(List<ResidueBurial> residues) {
 		this.residues = residues;
 	}
 
@@ -267,11 +267,11 @@ public class Interface implements Serializable, Comparable<Interface>
 		{
 			List<ResidueBurialDB> residueDBs = interfaceDB.getResidues();
 			
-			List<Residue> residues = new ArrayList<Residue>();
+			List<ResidueBurial> residues = new ArrayList<ResidueBurial>();
 			
 			for(ResidueBurialDB residueDB : residueDBs)
 			{
-				residues.add(Residue.create(residueDB));
+				residues.add(ResidueBurial.create(residueDB));
 			}
 			
 			interfaceItem.setResidues(residues);

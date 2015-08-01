@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
-import ch.systemsx.sybit.crkwebui.shared.model.Residue;
+import ch.systemsx.sybit.crkwebui.shared.model.ResidueBurial;
 import ch.systemsx.sybit.crkwebui.shared.model.ResiduesList;
 import ch.systemsx.sybit.crkwebui.shared.model.JobsForSession;
 import ch.systemsx.sybit.crkwebui.shared.model.PDBSearchResult;
@@ -29,7 +29,7 @@ public interface CrkWebServiceAsync
 	public void getJobsForCurrentSession(AsyncCallback<JobsForSession> callback);
 	
 	public void getInterfaceResidues(int interfaceUid,
-									 AsyncCallback<HashMap<Integer, List<Residue>>> callback);
+									 AsyncCallback<HashMap<Integer, List<ResidueBurial>>> callback);
 	
 	public void stopJob(String jobToStop,
 			AsyncCallback<String> stopJobsCallback);
