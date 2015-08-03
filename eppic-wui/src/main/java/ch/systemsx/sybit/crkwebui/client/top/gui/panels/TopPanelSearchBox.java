@@ -1,5 +1,8 @@
 package ch.systemsx.sybit.crkwebui.client.top.gui.panels;
 
+import java.util.Iterator;
+import java.util.List;
+
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.commons.events.HideTopPanelSearchBoxEvent;
@@ -8,6 +11,10 @@ import ch.systemsx.sybit.crkwebui.client.commons.gui.info.PopUpInfo;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.HideTopPanelSearchBoxHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowTopPanelSearchBoxHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.managers.EventBusManager;
+import ch.systemsx.sybit.crkwebui.client.jobs.data.MyJobsModel;
+import ch.systemsx.sybit.crkwebui.client.jobs.gui.panels.MyJobsPanel;
+import ch.systemsx.sybit.crkwebui.client.results.gui.panels.ResultsPanel;
+import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 import ch.systemsx.sybit.crkwebui.shared.validators.PdbCodeVerifier;
 
 import com.google.gwt.event.dom.client.KeyCodes;
@@ -15,7 +22,9 @@ import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.History;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.FlexTable;
+import com.sencha.gxt.data.shared.ListStore;
 import com.sencha.gxt.widget.core.client.button.IconButton;
 import com.sencha.gxt.widget.core.client.button.IconButton.IconConfig;
 import com.sencha.gxt.widget.core.client.container.HorizontalLayoutContainer;
@@ -59,6 +68,19 @@ public class TopPanelSearchBox extends HorizontalLayoutContainer {
 			protected void onClick(Event event) {
 				super.onClick(event);
 				loadPdbData();
+				//current selected item
+				//List<MyJobsModel> jobs = MyJobsPanel.myJobsGrid.getSelectionModel().getSelection();
+				ListStore<MyJobsModel> jobs = MyJobsPanel.myJobsGrid.getStore();
+				int selectedjob = -1;
+				for(int i=0; i<jobs.size(); i++){
+					MyJobsModel job = jobs.get(i);
+					if(pdbCode.trim().equalsIgnoreCase(job.getJobid())){
+						selectedjob = i;
+						break;
+					}
+				}
+				if(selectedjob != -1)
+					MyJobsPanel.myJobsGrid.getSelectionModel().select(selectedjob, false);
 			}
 		};
 		iconButton.setPixelSize(22, 22);
@@ -66,9 +88,9 @@ public class TopPanelSearchBox extends HorizontalLayoutContainer {
 		
 		return iconButton;
 	}
-
+	String pdbCode = "";
 	protected void loadPdbData() {
-		String pdbCode = searchField.getCurrentValue();
+		pdbCode = searchField.getCurrentValue();
 		if( pdbCode != null){
 			pdbCode = pdbCode.toLowerCase().trim();
 			if(PdbCodeVerifier.isTrimmedValid(pdbCode)){
@@ -85,7 +107,6 @@ public class TopPanelSearchBox extends HorizontalLayoutContainer {
 				searchField.focus();
 			}
 		}
-		
 	}
 
 	private TextField createSearchField() {
@@ -98,8 +119,21 @@ public class TopPanelSearchBox extends HorizontalLayoutContainer {
 			
 			@Override
 			public void onKeyDown(KeyDownEvent event) {
-				if(event.getNativeKeyCode() == KeyCodes.KEY_ENTER)
+				if(event.getNativeKeyCode() == KeyCodes.KEY_ENTER){
 					loadPdbData();
+					//MyJobsPanel.myJobsGrid.setSelectionModel(null); //so that it doesn't display the wrong job selected!
+					ListStore<MyJobsModel> jobs = MyJobsPanel.myJobsGrid.getStore();
+					int selectedjob = -1;
+					for(int i=0; i<jobs.size(); i++){
+						MyJobsModel job = jobs.get(i);
+						if(pdbCode.trim().equalsIgnoreCase(job.getJobid())){
+							selectedjob = i;
+							break;
+						}
+					}
+					if(selectedjob != -1)
+						MyJobsPanel.myJobsGrid.getSelectionModel().select(selectedjob, false);
+				}
 			}
 		});
 		

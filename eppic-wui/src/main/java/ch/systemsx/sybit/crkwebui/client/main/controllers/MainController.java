@@ -111,6 +111,18 @@ public class MainController
 		initializeEventsListeners();
 	}
 	
+	public void setExperimentalInfo(){
+		PdbInfo resultsData = ApplicationContext.getPdbInfo();
+		String html_experiment_info = "";
+		if(resultsData !=null){
+			html_experiment_info += "<b>" + AppPropertiesManager.CONSTANTS.info_panel_experiment() + "</b> " + resultsData.getExpMethod();
+			html_experiment_info += "&nbsp;&nbsp;&nbsp;&nbsp;<b>" + AppPropertiesManager.CONSTANTS.info_panel_spacegroup() + "</b> " + resultsData.getSpaceGroup();
+			html_experiment_info += "&nbsp;&nbsp;&nbsp;&nbsp;<b>" + AppPropertiesManager.CONSTANTS.info_panel_resolution() + "</b> " + resultsData.getResolution();
+			html_experiment_info += "&nbsp;&nbsp;&nbsp;&nbsp;<b>" + AppPropertiesManager.CONSTANTS.info_panel_rfree() + "</b> " + resultsData.getRfreeValue();
+		}
+		ResultsPanel.headerPanel.experimentinfo.setHTML(html_experiment_info);
+	}
+	
 	private void initializeEventsListeners()
 	{
 		EventBusManager.EVENT_BUS.addHandler(ApplicationInitEvent.TYPE, new ApplicationInitHandler() {
@@ -134,9 +146,15 @@ public class MainController
 			}
 		});
 		
+
+		
 		EventBusManager.EVENT_BUS.addHandler(ShowResultsDataEvent.TYPE, new ShowResultsDataHandler() {
 			@Override
 			public void onShowResultsData(ShowResultsDataEvent event) {
+
+				/*	*/	
+				
+				
 				int num_interfaces = 0;
 				List<InterfaceCluster> clusters = ApplicationContext.getPdbInfo().getInterfaceClusters();
 				for(InterfaceCluster ic : clusters){
@@ -147,6 +165,7 @@ public class MainController
 					displayResultView(event.getPdbScoreItem(), ResultsPanel.ASSEMBLIES_VIEW); //the new default view
 					ResultsPanel.informationPanel.assemblyInfoPanel.setHeadingHtml("General Information");				
 					ResultsPanel.informationPanel.assemblyInfoPanel.assembly_info.setHTML("<table cellpadding=0 cellspacing=0><tr><td width='150px'><b>Assemblies</b></td><td>" + ApplicationContext.getPdbInfo().getAssemblies().size() + "</td></tr><tr><td><b>Interfaces</b></td><td>" + num_interfaces + "</td></tr><tr><td><b>Interface clusters</b></td><td>" + ApplicationContext.getPdbInfo().getInterfaceClusters().size()+"</td></tr></table>");
+					setExperimentalInfo();
 				}else if(ApplicationContext.getSelectedViewType() == ResultsPanel.INTERFACES_VIEW){
 					//show the interfaces view
 					displayResultView(event.getPdbScoreItem(), ResultsPanel.INTERFACES_VIEW);
@@ -155,6 +174,7 @@ public class MainController
 						ResultsPanel.headerPanel.pdbIdentifierPanel.pdbNameLabel.setHTML("<a target='_blank' href='http://www.pdb.org/pdb/explore/explore.do?structureId="+event.getPdbScoreItem().getPdbCode()+"'>"+event.getPdbScoreItem().getPdbCode()+"</a>");
 						ResultsPanel.informationPanel.assemblyInfoPanel.setHeadingHtml("General Information");				
 						ResultsPanel.informationPanel.assemblyInfoPanel.assembly_info.setHTML("<table cellpadding=0 cellspacing=0><tr><td width='150px'><b>Assemblies</b></td><td>" + ApplicationContext.getPdbInfo().getAssemblies().size() + "</td></tr><tr><td><b>Interfaces</b></td><td>" + num_interfaces + "</td></tr><tr><td><b>Interface clusters</b></td><td>" + ApplicationContext.getPdbInfo().getInterfaceClusters().size()+"</td></tr></table>");
+						setExperimentalInfo();
 					}else{
 						ResultsPanel.headerPanel.pdbIdentifierPanel.informationLabel.setHTML("Interface Analysis of: Assembly " + ApplicationContext.getSelectedAssemblyId() + " in ");
 						ResultsPanel.headerPanel.pdbIdentifierPanel.pdbNameLabel.setHTML("<a target='_blank' href='http://www.pdb.org/pdb/explore/explore.do?structureId="+event.getPdbScoreItem().getPdbCode()+"'>"+event.getPdbScoreItem().getPdbCode()+"</a>");
@@ -172,6 +192,7 @@ public class MainController
 						}
 						ResultsPanel.informationPanel.assemblyInfoPanel.assembly_info.setHTML(assembly_string);
 						ResultsPanel.informationPanel.assemblyInfoPanel.setHeadingHtml("Assembly " + assemblyID + " of " + assemblies.size());
+						setExperimentalInfo();	
 					}
 				}
 			}

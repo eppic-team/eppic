@@ -63,8 +63,8 @@ import com.sencha.gxt.widget.core.client.toolbar.ToolBar;
  */
 public class MyJobsPanel extends ContentPanel
 {	
-	private Grid<MyJobsModel> myJobsGrid;
-	private ListStore<MyJobsModel> myJobsStore;
+	public static Grid<MyJobsModel> myJobsGrid;
+	public static ListStore<MyJobsModel> myJobsStore;
 	
 	private static final MyJobsModelProperties props = GWT.create(MyJobsModelProperties.class);
 
@@ -84,7 +84,11 @@ public class MyJobsPanel extends ContentPanel
 		mainContainer.add(myJobsToolBar, new VerticalLayoutData(1, -1, new Margins(0)));
 		
 		myJobsGrid = createJobsGrid(myJobsColumnModel);
+		
+		
 		mainContainer.add(myJobsGrid, new VerticalLayoutData(1, 1, new Margins(0)));
+		
+		//MyJobsPanel.myJobsGrid.setSelectionModel(null); //so that it doesn't display the wrong job selected!
 		
 		this.setWidget(mainContainer);
 		
@@ -197,16 +201,8 @@ public class MyJobsPanel extends ContentPanel
 			
 			@Override
 			public void onCellClick(CellClickEvent event) {
-				History.newItem("id/" + myJobsStore.get(event.getRowIndex()).getJobid());				
-				PdbInfo resultsData = ApplicationContext.getPdbInfo();
-				String html_experiment_info = "";
-				if(resultsData !=null){
-			    	html_experiment_info += "<b>" + AppPropertiesManager.CONSTANTS.info_panel_experiment() + "</b> " + resultsData.getExpMethod();
-			    	html_experiment_info += "&nbsp;&nbsp;&nbsp;&nbsp;<b>" + AppPropertiesManager.CONSTANTS.info_panel_spacegroup() + "</b> " + resultsData.getSpaceGroup();
-			    	html_experiment_info += "&nbsp;&nbsp;&nbsp;&nbsp;<b>" + AppPropertiesManager.CONSTANTS.info_panel_resolution() + "</b> " + resultsData.getResolution();
-			    	html_experiment_info += "&nbsp;&nbsp;&nbsp;&nbsp;<b>" + AppPropertiesManager.CONSTANTS.info_panel_rfree() + "</b> " + resultsData.getRfreeValue();
-		    	}
-				ResultsPanel.headerPanel.experimentinfo.setHTML(html_experiment_info);
+				History.newItem("id/" + myJobsStore.get(event.getRowIndex()).getJobid());	
+				//myJobsGrid.setSelectionModel(null); //so that it doesn't display the wrong job selected!
 			}
 		});
 
