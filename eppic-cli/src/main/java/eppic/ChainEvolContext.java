@@ -11,15 +11,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.biojava.nbio.alignment.NeedlemanWunsch;
-import org.biojava.nbio.alignment.SimpleGapPenalty;
-import org.biojava.nbio.alignment.SubstitutionMatrixHelper;
-import org.biojava.nbio.alignment.template.GapPenalty;
-import org.biojava.nbio.alignment.template.SequencePair;
-import org.biojava.nbio.alignment.template.SubstitutionMatrix;
 import org.biojava.nbio.core.exceptions.CompoundNotFoundException;
-import org.biojava.nbio.core.sequence.ProteinSequence;
-import org.biojava.nbio.core.sequence.compound.AminoAcidCompound;
 import org.biojava.nbio.structure.Atom;
 import org.biojava.nbio.structure.Chain;
 import org.biojava.nbio.structure.Compound;
@@ -53,8 +45,6 @@ public class ChainEvolContext implements Serializable {
 	private static final Logger LOGGER = LoggerFactory.getLogger(ChainEvolContext.class);
 	
 	private static final double ROUNDING_MARGIN = 0.0001;
-	
-	private static final double MAX_QUERY_TO_UNIPROT_DISAGREEMENT = 0.1;
 	
 	private static final Pattern ALLX_SEQ_PATTERN = Pattern.compile("^X+$");
 	
@@ -96,14 +86,9 @@ public class ChainEvolContext implements Serializable {
 	private String sequence;
 	
 	private UnirefEntry query;							// the uniprot info (id,seq) corresponding to this chain's sequence
-	private Interval queryInterv;						// the interval of the query uniprot reference sequence that is actually used in the blast search
 	private boolean hasQueryMatch;						// whether we could find the query's uniprot match or not
-	/**
-	 * The alignment between the PDB sequence and the UniProt sequence (query)
-	 * Beware in Biojava SequencePair the first sequence is called "query" (the PDB sequence here)
-	 * and the second sequence is called "target" (the UniProt sequence)
-	 */
-	private SequencePair<ProteinSequence,AminoAcidCompound> alnPdb2Uniprot; 	
+	
+	private PdbToUniProtMapper pdbToUniProtMapper;
 	
 	private double idCutoff;
 	private double queryCov;
@@ -146,27 +131,7 @@ public class ChainEvolContext implements Serializable {
 	public ChainEvolContext(ChainEvolContextList parent, Compound compound) {
 		this.parent = parent;
 		Chain chain = compound.getRepresentative();
-		// it looks like biojava interprets MSEs as METs, at least for the sequence, so no issues here
-		this.sequence = chain.getSeqResSequence();
-		// for files without a SEQRES, it will be empty, we get it from atom groups
-		if (this.sequence.isEmpty()) {
-			LOGGER.warn("Could not get a sequence from SEQRES for chain {}. Getting it from ATOM instead",chain.getChainID());
-			int maxLength = 0;
-			Chain chainWithMaxAtomSeqLength = null;
-			for (Chain c:compound.getChains()) {
-				this.sequence = c.getAtomSequence();
-				if (this.sequence.length()>=maxLength) {
-					chainWithMaxAtomSeqLength = c;
-				}
-				maxLength = this.sequence.length();
-			}
-			LOGGER.info("ATOM sequence for chain cluster {} will come from chain {} since it is the chain with max length",
-					chain.getChainID(), chainWithMaxAtomSeqLength.getChainID());
-			
-			if (this.sequence.isEmpty()) {
-				LOGGER.warn("Sequence from ATOM records for chain {} has length 0",chain.getChainID());
-			}
-		}
+		
 		this.sequenceId = chain.getChainID();
 		this.hasQueryMatch = false;
 		this.searchWithFullUniprot = true;
@@ -175,6 +140,10 @@ public class ChainEvolContext implements Serializable {
 		this.isProtein = StructureTools.isProtein(chain);
 		
 		this.compound = compound;
+		
+		this.pdbToUniProtMapper = new PdbToUniProtMapper(compound);
+		
+		this.sequence = pdbToUniProtMapper.getPdbSequence();
 	}
 	
 	public String getSequenceId() {
@@ -273,60 +242,19 @@ public class ChainEvolContext implements Serializable {
 					LOGGER.warn("Replacing 'O' by 'X' in UniProt reference "+query.getUniId());
 				}
 
-				// and finally we align the 2 sequences (in case of mapping from SIFTS we rather do this than trusting the SIFTS alignment info)
-				SubstitutionMatrix<AminoAcidCompound> matrix = SubstitutionMatrixHelper.getBlosum50();
-				// setting (20,1) to have a large enough difference so that behaviour is like eppic 2  
-				GapPenalty penalty = new SimpleGapPenalty(20, 1);
-
-				// before move to Biojava, we had as tags of the sequences:  "chain"+representativeChain and query.getUniId()
-				ProteinSequence s1 = new ProteinSequence(sequence);
-				ProteinSequence s2 = new ProteinSequence(query.getSequence());
-
-				NeedlemanWunsch<ProteinSequence,AminoAcidCompound> nw = 
-						new NeedlemanWunsch<ProteinSequence,AminoAcidCompound>(s1,s2, penalty, matrix);
-				alnPdb2Uniprot = nw.getPair();
-
-				LOGGER.info("Chain "+sequenceId+" PDB SEQRES to UniProt alignmnent:\n"+getQueryPdbToUniprotAlnString());
-				LOGGER.info("Query (chain "+sequenceId+") length: "+sequence.length());
-				LOGGER.info("UniProt ("+query.getUniId()+") length: "+query.getLength());
-				LOGGER.info("Alignment length: "+alnPdb2Uniprot.getLength());
-				int shortestSeqLength = Math.min(query.getLength(), sequence.length());
-				double id = (double)alnPdb2Uniprot.getNumIdenticals()/(double)shortestSeqLength;
-				LOGGER.info("Query (chain "+sequenceId+") to reference UniProt percent identity: "+String.format("%6.2f%%",id*100.0));
-				LOGGER.info("UniProt reference coverage of query's (chain "+sequenceId+") sequence: "+
-						String.format("%6.2f%%",100.0*(double)sequence.length()/(double)query.getLength()));
-				// in strange cases like 3try (a racemic mixture with a chain composed of L and D aminoacids) the SIFTS-mapped
-				// UniProt entry does not align at all to the PDB SEQRES (mostly 'X'), we have to check for this
-				if (id<MAX_QUERY_TO_UNIPROT_DISAGREEMENT) {
-					String msg = "Identity of PDB to UniProt reference alignment is below maximum allowed threshold ("+
-							String.format("%2.0f%%", 100.0*MAX_QUERY_TO_UNIPROT_DISAGREEMENT)+"). " +
-							"Will not use the UniProt reference "+query.getUniId();
-					LOGGER.warn(msg);
-					queryWarnings.add(msg);
+				// this initialises the alignment that maps PDB-to-UniProt
+				pdbToUniProtMapper.setUniProtReference(query);
+				
+				String warning = pdbToUniProtMapper.checkAlignments();
+				if (warning!=null) {
+					queryWarnings.add(warning);
 					query = null;
 					hasQueryMatch = false;
-				} 
-				else {
-
-					// TODO there's no easy way to do this with Biojava right now, let's drop the feature for now
-					// (the issue is that PDB serials are only defined for AtomGroups and not for something that is only in the SEQRES, e.g. it fails for 1smtA residue 1)
-
-//					// a nice goody for the log: outputting our mapping in SIFTS tab format
-//					// e.g.: 1dan	L	P08709	1	152	1	152	61	212
-//					int uniprotStart = getFirstMatchingPos(alnPdb2Uniprot,false);
-//					int uniprotEnd   = getLastMatchingPos(alnPdb2Uniprot, false);
-//					int seqresStart = getPDBPosForQueryUniprotPos(uniprotStart);
-//					int seqresEnd = getPDBPosForQueryUniprotPos(uniprotEnd);
-//					String pdbStart = getResNumFromSerial(seqresStart).toString();
-//					String pdbEnd = getResNumFromSerial(seqresEnd).toString(); 
-//
-//					LOGGER.info("Our mapping in SIFTS format: "+parent.getPdb().getPdbId()+"\t"+
-//							sequenceName+"\t"+
-//							queryUniprotId+"\t"+
-//							seqresStart+"\t"+seqresEnd+"\t"+
-//							pdbStart+"\t"+pdbEnd+"\t"+
-//							uniprotStart+"\t"+uniprotEnd);
 				}
+				
+				// the back-mapping to pdb is not working well yet, commented out
+				//LOGGER.info("Our mapping in SIFTS tab format: "+pdbToUniProtMapper.getMappingSiftsFormat(sequenceId));
+				//LOGGER.info("Our mapping in DBREF PDB format: "+pdbToUniProtMapper.getMappingDbrefFormat(sequenceId));
 
 			}  catch (NoMatchFoundException e) {
 				if (parent.isUseLocalUniprot()) {
@@ -376,12 +304,17 @@ public class ChainEvolContext implements Serializable {
 							", SIFTS mapping is "+interv.beg+"-"+interv.end);
 
 					// For any other case we check that our mappings coincide and warn if not
-				} else if ( (getFirstMatchingPos(alnPdb2Uniprot,false))!=interv.beg ||
-						(getLastMatchingPos(alnPdb2Uniprot,false))!=interv.end) {
-					LOGGER.warn("The SIFTS mapping does not coincide with our mapping for chain "+sequenceId+", UniProt id "+query.getUniId()+
+				} else {
+					
+					Interval ourInterv = pdbToUniProtMapper.getMatchingIntervalUniProtCoords();
+					
+					if (ourInterv.beg!=interv.beg || ourInterv.end!=interv.end ) {
+						
+						LOGGER.warn("The SIFTS mapping does not coincide with our mapping for chain "+sequenceId+", UniProt id "+query.getUniId()+
 							": ours is "+
-							(getFirstMatchingPos(alnPdb2Uniprot,false))+"-"+(getLastMatchingPos(alnPdb2Uniprot,false))+
+							ourInterv.beg+"-"+ourInterv.end+
 							", SIFTS is "+interv.beg+"-"+interv.end);
+					}
 				}
 			}
 		}
@@ -555,7 +488,7 @@ public class ChainEvolContext implements Serializable {
 	
 	
 	public void blastForHomologs(EppicParams params) 
-	throws IOException, BlastException, InterruptedException {
+			throws IOException, BlastException, InterruptedException {
 		
 		
 		File blastPlusBlastp = params.getBlastpBin();
@@ -566,17 +499,22 @@ public class ChainEvolContext implements Serializable {
 		HomologsSearchMode searchMode = params.getHomologsSearchMode();
 		boolean useUniparc = params.isUseUniparc();			
 		
-		queryInterv = new Interval(1,query.getLength());
+		Interval queryInterv = pdbToUniProtMapper.getHomologsSearchInterval(searchMode);
 		
 		LOGGER.info("Homologs search mode: "+searchMode.getName());
 		if (searchMode==HomologsSearchMode.GLOBAL) {
+						
+			LOGGER.info("Using full UniProt sequence {} {}-{} for blast search (entity {})",
+					query.getUniId(), queryInterv.beg, queryInterv.end, compound.getMolId());
+
 			searchWithFullUniprot = true;
-			LOGGER.info("Using full UniProt sequence "+query.getUniId()+" for blast search"+" (chain "+getRepresentativeChainCode()+")");
 		} else if (searchMode==HomologsSearchMode.LOCAL) {
-			searchWithFullUniprot = false;
-			queryInterv = new Interval(getFirstMatchingPos(alnPdb2Uniprot,false),getLastMatchingPos(alnPdb2Uniprot,false));
-			LOGGER.info("Using UniProt "+query.getUniId()+" subsequence "+queryInterv.beg+"-"+queryInterv.end+" for blast search"+" (chain "+getRepresentativeChainCode()+")");
+						
+			LOGGER.info("Using UniProt {} subsequence {}-{} for blast search (entity {})",
+					query.getUniId(), queryInterv.beg, queryInterv.end, compound.getMolId());
+			searchWithFullUniprot = false;			
 		} 
+		
 		
 		homologs = new HomologList(query,queryInterv);
 		
@@ -687,7 +625,8 @@ public class ChainEvolContext implements Serializable {
 		// beware we only try to use cache file if we are in default mode: uniparc=true, filter by domain=false
 		if (params.getAlnCacheDir()!=null && params.isUseUniparc() && !params.isFilterByDomain()) {
 
-			String intervStr = "."+getQueryInterval().beg+"-"+getQueryInterval().end;
+			Interval interv = pdbToUniProtMapper.getHomologsSearchInterval(params.getHomologsSearchMode());
+			String intervStr = "."+interv.beg+"-"+interv.end;
 			
 			// a cache file will look like  Q9UKX7.i60.c85.m60.1-109.aln (that corresponds to 3tj3C) 
 			//                              P52294.i60.c85.m60.aln       (that corresponds to 3tj3A)
@@ -705,23 +644,6 @@ public class ChainEvolContext implements Serializable {
 	
 	public MultipleSequenceAlignment getAlignment() {
 		return homologs.getAlignment();
-	}
-	
-	/**
-	 * Returns the query's PDB SEQRES to UniProt alignment as a nicely formatted
-	 * alignment string in several lines with a middle line of matching characters,
-	 * e.g. 
-	 * chainA  AAAA--BCDEFGICCC
-	 *         ||.|  ||.|||:|||
-	 * QABCD1  AABALCBCJEFGLCCC
-	 * @return
-	 */
-	public String getQueryPdbToUniprotAlnString() {
-		return alnPdb2Uniprot.toString(100);
-	}
-	
-	public SequencePair<ProteinSequence,AminoAcidCompound> getPdb2uniprotAln() {
-		return alnPdb2Uniprot;
 	}
 	
 	/**
@@ -759,11 +681,8 @@ public class ChainEvolContext implements Serializable {
 		double totalWeight = 0.0;
 		List<Double> conservScores = getConservationScores();
 		for (Group res:residues){
-			int resSer = getSeqresSerial(res); 
-			
-			if (resSer==-1) continue;
 
-			int queryPos = getQueryUniprotPosForPDBPos(resSer); 
+			int queryPos = pdbToUniProtMapper.getUniProtIndexForPdbGroup(res, !isSearchWithFullUniprot()); 
 			 
 			if (queryPos!=-1) {   
 				double weight = 1.0;
@@ -792,16 +711,8 @@ public class ChainEvolContext implements Serializable {
 			
 			if (residue.isWater()) continue;
 			
-			int resser = getSeqresSerial(residue);
-			if (resser == -1) {
-				LOGGER.info("Residue {} ({}) of chain {} could not be mapped to a serial, will not set its b-factor to an entropy value",
-						residue.getResidueNumber().toString(), residue.getPDBName(), residue.getChainId());
-				continue;
-			}
+			int queryPos = pdbToUniProtMapper.getUniProtIndexForPdbGroup(residue, !isSearchWithFullUniprot());
 			
-			
-			int queryPos = getQueryUniprotPosForPDBPos(resser); 
- 
 			if (queryPos!=-1) { 
 				for (Atom atom:residue.getAtoms()) {
 					atom.setTempFactor(conservationScores.get(queryPos-1));
@@ -834,63 +745,7 @@ public class ChainEvolContext implements Serializable {
 		return sequence;
 	}
 	
-	/**
-	 * Tells whether a given position of the reference PDB sequence (starting at 1)
-	 * is reliable with respect to the PDB to UniProt matching (mismatches occur 
-	 * mostly because of engineered residues in PDB)
-	 * @param resser the (cif) PDB residue serial corresponding to the SEQRES record, starting at 1
-	 * @return
-	 */
-	public boolean isPdbSeqPositionMatchingUniprot(int resser) {
-		
-		int alnIdx = alnPdb2Uniprot.getQuery().getAlignmentIndexAt(resser);
-		AminoAcidCompound cmpnd1 = alnPdb2Uniprot.getCompoundInQueryAt(alnIdx);
-		AminoAcidCompound cmpnd2 = alnPdb2Uniprot.getCompoundInTargetAt(alnIdx);
-		// a gap-to-gap matching is in principle impossible
-		if (cmpnd1.getShortName().equals("-") && cmpnd2.getShortName().equals("-")) {
-			LOGGER.error("Alignment position {} maps to gaps in both PDB and UniProt reference sequences, this is most likely a bug!",
-					alnIdx);
-		}
-		return cmpnd1.equals(cmpnd2);
-	}
-	
-	/**
-	 * Given a residue serial of the reference PDB SEQRES sequence (starting at 1), returns
-	 * its corresponding UniProt's sequence index within subinterval (starting at 1)
-	 * @param resser
-	 * @return the mapped UniProt sequence position or -1 if it maps to a gap
-	 */
-	public int getQueryUniprotPosForPDBPos(int resser) {
-		int alnIdx = alnPdb2Uniprot.getQuery().getAlignmentIndexAt(resser);
-		if (alnPdb2Uniprot.hasGap(alnIdx)) {
-			// maps to gap in target (UniProt)
-			return -1;
-		}
-		// this gets the position in uniprot sequence with indices starting at 1
-		int uniprotPos = alnPdb2Uniprot.getIndexInTargetAt(alnIdx);
 
-		// the position in the subsequence that was used for blasting
-		int pos = uniprotPos - (queryInterv.beg -1); 
-		// check if it is out of the subsequence: can happen when his tags or other engineered residues at termini 
-		// in n-terminal (pos<0), e.g. 3n1e
-		// or c-terminal (pos>=subsequence length) e.g. 2eyi
-		if (pos<=0 || pos>queryInterv.getLength()) return -1;  
-		return pos;
-	}
-	
-	/**
-	 * Given a sequence index of the query UniProt sequence (starting at 1), returns its
-	 * corresponding PDB SEQRES position (starting at 1)
-	 * @param queryPos
-	 * @return the mapped PDB SEQRES sequence position or -1 if it maps to a gap
-	 */
-	public int getPDBPosForQueryUniprotPos(int queryPos) {
-		int alnIdx = alnPdb2Uniprot.getTarget().getAlignmentIndexAt(queryPos);		
-		if (alnPdb2Uniprot.hasGap(alnIdx)) {
-			return -1;
-		}
-		return alnPdb2Uniprot.getIndexInQueryAt(alnIdx);
-	}
 	
 	private String findUniprotMapping(File blastPlusBlastp, String blastDbDir, String blastDb, int blastNumThreads, double pdb2uniprotIdThreshold, double pdb2uniprotQcovThreshold, boolean useUniparc) 
 			throws IOException, BlastException, InterruptedException {
@@ -1031,12 +886,8 @@ public class ChainEvolContext implements Serializable {
 		return query;
 	}
 	
-	/**
-	 * The interval in the UniProt match (query) that is considered for the blast search
-	 * @return
-	 */
-	public Interval getQueryInterval() {
-		return queryInterv;
+	public PdbToUniProtMapper getPdbToUniProtMapper() {
+		return pdbToUniProtMapper;
 	}
 	
 	/**
@@ -1088,59 +939,8 @@ public class ChainEvolContext implements Serializable {
 		return homologs;
 	}
 	
-	/**
-	 * Return the SEQRES serial of the Group g in the Chain c
-	 * @param g
-	 * @return the SEQRES serial (1 to n) or -1 if not found
-	 */
-	public int getSeqresSerial(Group g) {
-		return compound.getAlignedResIndex(g, g.getChain());
-	}
+
 	
-	/**
-	 * Return the position (in sequence 1 or 2 depending of parameter) of the first occurrence of a match (identity)
-	 * 
-	 * @param pair the pair of aligned sequences
-	 * @param first true if we want the position in sequence 1, false if we want the position in sequence 2  
-	 * @return the position or -1 if there are no matches
-	 */
-	private static int getFirstMatchingPos(SequencePair<ProteinSequence,AminoAcidCompound> pair, boolean first) {
-		int pos1 = 1;
-		int pos2 = 1;
-		for (int i=1;i<=pair.getLength();i++) {
-			AminoAcidCompound current1 = pair.getCompoundAt(1, i);
-			AminoAcidCompound current2 = pair.getCompoundAt(2, i);
-			if (current1.equals(current2)) {
-				if (first) return pos1;
-				else return pos2;
-			}
-			if (!current1.getShortName().equals("-")) pos1++;
-			if (!current2.getShortName().equals("-")) pos2++;
-		}
-		return -1;
-	}
-	
-	/**
-	 * Return the position (in sequence 1 or 2 depending of parameter) of the last occurrence of a match (identity)
-	 * 
-	 * @param pair the pair of aligned sequences 
-	 * @param first true if we want the position in sequence 1, false if we want the position in sequence 2  
-	 * @return the position or -1 if there are no matches
-	 */
-	private static int getLastMatchingPos(SequencePair<ProteinSequence,AminoAcidCompound> pair, boolean first) {
-		int pos1 = pair.getQuery().getOriginalSequence().getLength();
-		int pos2 = pair.getTarget().getOriginalSequence().getLength();
-		for (int i=pair.getLength();i>0;i--) {
-			AminoAcidCompound current1 = pair.getCompoundAt(1, i);
-			AminoAcidCompound current2 = pair.getCompoundAt(2, i);
-			if (current1.equals(current2)) {
-				if (first) return pos1;
-				else return pos2;
-			}
-			if (!current1.getShortName().equals("-")) pos1--;
-			if (!current2.getShortName().equals("-")) pos2--;
-		}
-		return -1;		
-	}
+
 	
 }

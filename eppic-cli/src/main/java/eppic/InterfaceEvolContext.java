@@ -136,11 +136,8 @@ public class InterfaceEvolContext implements Serializable {
 	 */
 	public boolean isReferenceMismatch(Group residue, int molecId) {
 		ChainEvolContext chain = getChainEvolContext(molecId);
-		int resSer = chain.getSeqresSerial(residue);
-		if (resSer!=-1 && !chain.isPdbSeqPositionMatchingUniprot(resSer)) {
-			return true;
-		}
-		return false;
+
+		return !chain.getPdbToUniProtMapper().isPdbGroupMatchingUniProt(residue); 
 	}
 	
 	public String getReferenceMismatchWarningMsg(List<Group> unreliableResidues, String typeOfResidues) {
@@ -251,16 +248,8 @@ public class InterfaceEvolContext implements Serializable {
 			
 			if (residue.isWater()) continue;
 
-			int resser = getChainEvolContext(molecId).getSeqresSerial(residue);
+			int queryPos = getChainEvolContext(molecId).getPdbToUniProtMapper().getUniProtIndexForPdbGroup(residue, !getChainEvolContext(molecId).isSearchWithFullUniprot());
 			
-			if (resser == -1) {
-				LOGGER.info("Residue {} ({}) of chain {} could not be mapped to a serial, will not set its b-factor to an entropy value",
-						residue.getResidueNumber().toString(), residue.getPDBName(), residue.getChainId());
-				continue;
-			}
-				
-			int queryPos = getChainEvolContext(molecId).getQueryUniprotPosForPDBPos(resser); 
-			 
 			if (queryPos!=-1) {
 				for (Atom atom:residue.getAtoms()) {
 					atom.setTempFactor(conservationScores.get(queryPos-1));

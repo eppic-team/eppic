@@ -366,8 +366,21 @@ public class TextOutputWriter {
 			
 			int uniprotSerial = 0;
 			if (aln!=null) {
+				// TODO here we don't have a solution yet for all inputs:
+				
+				// 1) This works with entries with only ATOM (no SEQRES)
+				// here we use resser to map to the uniprot reference position based on the alignment found
+				// in the database. Thus what we need is not the actual residue number but the index of the sequence
+				// as it is in the alignment (i+1).
+				//int resser = i + 1;
+				
+				
+				// 2) This works with entries with SEQRES (what we used to have):
 				int resser = list.get(i).getResidueNumber();
 				if (resser==-1) continue; // most likely a het atom, we skip or otherwise al2seq below would fail as the hetatm would not be in alignment
+				// a good testing structure is 1n7y (with and without SEQRES)
+				
+				
 				uniprotSerial = aln.al2seq("uniprot", aln.seq2al("pdb", resser));
 			}
 			

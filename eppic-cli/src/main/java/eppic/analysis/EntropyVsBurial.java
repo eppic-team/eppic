@@ -169,7 +169,7 @@ public class EntropyVsBurial {
 			double asa = groupAsa.getAsaU();
 			double bsa = groupAsa.getBsa();
 			double rsa = groupAsa.getRelativeAsaU();
-			int uniprotPos = cec.getQueryUniprotPosForPDBPos(cec.getSeqresSerial(groupAsa.getGroup()));
+			int uniprotPos = cec.getPdbToUniProtMapper().getUniProtIndexForPdbGroup(groupAsa.getGroup(),!cec.isSearchWithFullUniprot());
 			if (uniprotPos==-1) continue;
 			double entropy = cec.getConservationScores().get(uniprotPos-1);
 
