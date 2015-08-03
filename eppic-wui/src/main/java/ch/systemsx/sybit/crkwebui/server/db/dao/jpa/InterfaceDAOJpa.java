@@ -53,7 +53,7 @@ public class InterfaceDAOJpa implements InterfaceDAO
 			
 			for(InterfaceDB interfaceItemDB : interfaceItemDBs)
 			{
-				interfaceItemDB.setResidues(null);
+				interfaceItemDB.setResidueBurials(null);
 				result.add(Interface.create(interfaceItemDB));
 			}
 			

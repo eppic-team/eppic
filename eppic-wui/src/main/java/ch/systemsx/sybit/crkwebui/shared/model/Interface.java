@@ -263,9 +263,9 @@ public class Interface implements Serializable, Comparable<Interface>
 		interfaceItem.setXtalTrans_z(interfaceDB.getXtalTrans_z());
 		interfaceItem.setGlobalInterfClusterId(interfaceDB.getGlobalInterfClusterId());
 		
-		if(interfaceDB.getResidues() != null)
+		if(interfaceDB.getResidueBurials() != null)
 		{
-			List<ResidueBurialDB> residueDBs = interfaceDB.getResidues();
+			List<ResidueBurialDB> residueDBs = interfaceDB.getResidueBurials();
 			
 			List<ResidueBurial> residues = new ArrayList<ResidueBurial>();
 			

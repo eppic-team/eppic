@@ -242,11 +242,11 @@ public class InterfaceDB implements Serializable {
 		return interfaceCluster;
 	}
 
-	public List<ResidueBurialDB> getResidues() {
+	public List<ResidueBurialDB> getResidueBurials() {
 		return residueBurials;
 	}
 
-	public void setResidues(List<ResidueBurialDB> interfaceResidues) {
+	public void setResidueBurials(List<ResidueBurialDB> interfaceResidues) {
 		this.residueBurials = interfaceResidues;
 	}
 

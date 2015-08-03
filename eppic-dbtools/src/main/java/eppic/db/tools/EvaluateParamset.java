@@ -215,7 +215,7 @@ public class EvaluateParamset {
 			// GET LEFT AND RIGHT LISTS OF (ASA,BSA) PAIRS FOR RESIDUES
 			List<InterfaceClusterDB> interfaceClusters = pdbInfo.getInterfaceClusters();
 			InterfaceDB theInterface = getInterfaceFromInterfaceClustersByInterfaceId(interfaceClusters, interfaceNumber);
-			List<ResidueBurialDB> residues = theInterface.getResidues();
+			List<ResidueBurialDB> residues = theInterface.getResidueBurials();
 			ArrayList<ArrayList<Double>> firstAsaBsas = new ArrayList<ArrayList<Double>>();
 			ArrayList<ArrayList<Double>> secondAsaBsas = new ArrayList<ArrayList<Double>>();
 			

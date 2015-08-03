@@ -69,7 +69,7 @@ public class TextOutputWriter {
 		
 		List<ResidueBurialDB> cores = new ArrayList<ResidueBurialDB>();
 		
-		for (ResidueBurialDB residue:interfaceItem.getResidues()) {
+		for (ResidueBurialDB residue:interfaceItem.getResidueBurials()) {
 			if (residue.getSide()==side) {
 				
 				if (residue.getRegion()==ResidueBurialDB.CORE_GEOMETRY) cores.add(residue);
@@ -87,7 +87,7 @@ public class TextOutputWriter {
 		}
 		ps.println("## seqres pdb res asa bsa burial(percent)");
 
-		for (ResidueBurialDB residue:interfaceItem.getResidues()) {	
+		for (ResidueBurialDB residue:interfaceItem.getResidueBurials()) {	
 			if (residue.getSide()==side) {
 				ResidueInfoDB residueInfo = residue.getResidueInfo();
 				int resNum = 0;

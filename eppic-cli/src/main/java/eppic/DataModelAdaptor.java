@@ -1018,7 +1018,7 @@ public class DataModelAdaptor {
 			// we add the residue details
 			
 			List<ResidueBurialDB> iril = new ArrayList<ResidueBurialDB>();
-			ii.setResidues(iril);
+			ii.setResidueBurials(iril);
 
 			addResidueBurialDetailsOfPartner(iril, interf, InterfaceEvolContext.FIRST);
 			addResidueBurialDetailsOfPartner(iril, interf, InterfaceEvolContext.SECOND);

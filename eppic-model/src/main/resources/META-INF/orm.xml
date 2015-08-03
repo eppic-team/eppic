@@ -430,6 +430,9 @@
 			<id name="uid">
 				<generated-value strategy="IDENTITY" />
 			</id>
+			
+			<basic name="repChain"></basic>
+			<basic name="pdbCode"></basic>
 		
 			<basic name="residueNumber"></basic>
 			<basic name="pdbResidueNumber"></basic>
@@ -446,11 +449,15 @@
 			<many-to-one name="chainCluster">
 			</many-to-one>
 			
+			<!-- Not adding the one to many to ResidueBurials because it's not so useful.
+				 It's only needed in the other direction -->
+			<!-- 
 			<one-to-many name="residueBurials" mapped-by="residueInfo">
 				<cascade>
 					<cascade-all />
 				</cascade>
 			</one-to-many>
+			-->
 		
 		</attributes>
 	</entity>
