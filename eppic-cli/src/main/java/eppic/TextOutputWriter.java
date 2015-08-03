@@ -366,6 +366,7 @@ public class TextOutputWriter {
 			
 			ResidueInfoDB residueInfo = residueInfos.get(i);
 			
+			if (residueInfo.getResidueNumber()<=0) continue;
 			
 			ps.printf("%4d\t%4s\t%4d\t%3s\t%5.2f\n",
 					residueInfo.getResidueNumber(), 

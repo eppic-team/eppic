@@ -186,9 +186,11 @@ public class DataModelAdaptor {
 		
 		chainClusterDB.setResidueInfos(residueInfoDBs);
 		
-		for (Group g:compound.getRepresentative().getAtomGroups()) {
+		List<Group> groups = getGroups(compound); 
+		
+		for (int i=0;i<groups.size();i++) {
 			
-			if (g.isWater()) continue;
+			Group g = groups.get(i);
 			
 			ResidueInfoDB residueInfoDB = new ResidueInfoDB();
 			
@@ -226,7 +228,8 @@ public class DataModelAdaptor {
 			// TODO revise (read the above!)
 			residueInfoDB.setResidueNumber(compound.getAlignedResIndex(g, g.getChain()));
 			
-			residueInfoDB.setPdbResidueNumber(g.getResidueNumber().toString());
+			// for seqres residues the pdb res number is unavailable in biojava
+			residueInfoDB.setPdbResidueNumber( (g.getResidueNumber()==null?null:g.getResidueNumber().toString()) );
 			
 			residueInfoDB.setResidueType(g.getPDBName());
 			
@@ -234,6 +237,26 @@ public class DataModelAdaptor {
 		
 		
 		return chainClusterDB;
+	}
+	
+	private List<Group> getGroups(Compound compound) {
+		
+		List<Group> groups = new ArrayList<Group>();
+		
+		List<Group> gs = compound.getRepresentative().getSeqResGroups();
+		
+		if (gs==null || gs.isEmpty()) {
+			gs = compound.getRepresentative().getAtomGroups();
+		}
+		
+		for (Group g : gs) {
+			
+			if (g.isWater()) continue;
+			
+			groups.add(g);
+		}	
+		
+		return groups;
 	}
 	
 	public void setInterfaces(StructureInterfaceList interfaces) {
@@ -807,14 +830,13 @@ public class DataModelAdaptor {
 				if ( cec.isProtein() ) {
 
 					List<Double> entropies = cec.getConservationScores();
+
 					
+					// following the same procedure as when we added the ResidueInfoDBs in createChainCluster
+					// thus the indices will coincide
+
 					int i = 0;
-					for (Group g:cec.getCompound().getRepresentative().getAtomGroups()) {
-						
-						// following the same procedure as when we added the ResidueInfoDBs in createChainCluster
-						// thus the indices will coincide
-						if (g.isWater()) continue;
-					
+					for (Group g : getGroups(cec.getCompound())) {
 
 						ResidueInfoDB residueInfo = chainClusterDB.getResidueInfos().get(i);
 						
