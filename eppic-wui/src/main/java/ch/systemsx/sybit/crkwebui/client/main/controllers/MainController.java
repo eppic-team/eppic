@@ -599,61 +599,12 @@ public class MainController
 	/**
 	 * Retrieves results of processing for displaying central panel content.
 	 */
+	//the original method
 	/*public void displayResults()
 	{
-		Window.alert("in displayResults()");
 		mainViewPort.mask(AppPropertiesManager.CONSTANTS.defaultmask());
 		if(mainViewPort.getResultsPanel() != null){
 			EventBusManager.EVENT_BUS.fireEvent(new UncheckClustersRadioEvent());
-		}
-		CrkWebServiceProvider.getServiceController().getResultsOfProcessing(ApplicationContext.getSelectedJobId());
-	}*/
-	
-	//show all interfaces of an assembly (or all interfaces of a pdbCode)
-	/*public void displayResults(int assemblyID)
-	{
-		//mainViewPort.mask(AppPropertiesManager.CONSTANTS.defaultmask()); not sure what this is?
-		//if(mainViewPort.getResultsPanel() != null){
-		//EventBusManager.EVENT_BUS.fireEvent(new ShowAssembliesEvent());
-		Window.alert("in displayResults() and job id is " + ApplicationContext.getSelectedJobId());
-		String pdbCode = ApplicationContext.getPdbInfo().getPdbCode();
-		PdbInfo newResultsData = ApplicationContext.getPdbInfo();
-		Assembly assembly = newResultsData.getAssemblyById(assemblyID);
-		if(assembly != null){
-			List<InterfaceCluster> interfaceClusters = assembly.getInterfaceClusters();
-			newResultsData.setInterfaceClusters(interfaceClusters);
-		}
-		//EventBusManager.EVENT_BUS.fireEvent(new ShowInterfacesOfAssemblyDataEvent(newResultsData));		
-		//ResultsPanel.headerPanel.pdbIdentifierPanel.informationLabel.setHTML("Interfaces");
-		ResultsPanel.headerPanel.pdbIdentifierPanel.informationLabel.setHTML(EscapedStringGenerator.generateEscapedString(
-						AppPropertiesManager.CONSTANTS.info_panel_interface_pdb_identifier() + ": "));
-		ResultsPanel.headerPanel.pdbIdentifierPanel.pdbNameLabel.setHTML("Assembly " + assemblyID + " in " + pdbCode);
-		
-		
-		//EventBusManager.EVENT_BUS.fireEvent(new ShowInterfacesOfAssemblyDataEvent(ApplicationContext.getPdbInfo()));
-			
-		//}
-		//need to redeploy to see this change
-		CrkWebServiceProvider.getServiceController().getResultsOfProcessing(ApplicationContext.getSelectedJobId());
-	}*/
-
-	//show all assemblies of a pdb code
-	/*public void displayResults(PdbInfo pdbInfo, int assemblyID)
-	{
-		mainViewPort.mask(AppPropertiesManager.CONSTANTS.defaultmask());
-		if(mainViewPort.getResultsPanel() != null){
-			//String pdbCode = pdbInfo.getPdbCode();
-			//PdbInfo newResultsData = pdbInfo;
-			EventBusManager.EVENT_BUS.fireEvent(new ShowAssembliesEvent());
-			Assembly assembly = newResultsData.getAssemblyById(assemblyID);
-			if(assembly != null){
-				List<InterfaceCluster> interfaceClusters = assembly.getInterfaceClusters();
-				newResultsData.setInterfaceClusters(interfaceClusters);
-			}
-			ResultsPanel.headerPanel.pdbIdentifierPanel.informationLabel.setHTML(EscapedStringGenerator.generateEscapedString(
-					AppPropertiesManager.CONSTANTS.info_panel_interface_pdb_identifier() + ": "));
-			ResultsPanel.headerPanel.pdbIdentifierPanel.pdbNameLabel.setHTML("Assembly " + assemblyID + " in " + pdbCode);
-			//EventBusManager.EVENT_BUS.fireEvent(new ShowInterfacesOfAssemblyDataEvent(newResultsData));			
 		}
 		CrkWebServiceProvider.getServiceController().getResultsOfProcessing(ApplicationContext.getSelectedJobId());
 	}*/
@@ -662,8 +613,6 @@ public class MainController
 	{
 		mainViewPort.mask(AppPropertiesManager.CONSTANTS.defaultmask());
 		//History.newItem("interfaces/1smt"); this works
-		/**/
-		/**/
 		CrkWebServiceProvider.getServiceController().getResultsOfProcessing(ApplicationContext.getSelectedJobId());
 		if(ApplicationContext.getSelectedViewType() == ResultsPanel.ASSEMBLIES_VIEW){
 			displayResultView(ApplicationContext.getPdbInfo(), ResultsPanel.ASSEMBLIES_VIEW);
@@ -671,37 +620,17 @@ public class MainController
 			ResultsPanel.headerPanel.pdbIdentifierPanel.informationLabel.setHTML("Assembly Analysis of: ");
 			ResultsPanel.headerPanel.pdbIdentifierPanel.pdbNameLabel.setHTML(ApplicationContext.getPdbInfo().getPdbCode());		
 		}else if(ApplicationContext.getSelectedViewType() == ResultsPanel.INTERFACES_VIEW){
-			/*if(ApplicationContext.getSelectedAssemblyId() == -1){
-				Window.alert("in MainController.displayResults() 5");
-				//should put back!
-				ResultsPanel.headerPanel.pdbIdentifierPanel.informationLabel.setHTML("All Interfaces of: ");
-				ResultsPanel.headerPanel.pdbIdentifierPanel.pdbNameLabel.setHTML(ApplicationContext.getPdbInfo().getPdbCode());
+			//if(ApplicationContext.getSelectedAssemblyId() == -1){
 				//somehow this strangely worked without the line below???
-				displayResultView(ApplicationContext.getPdbInfo(), ResultsPanel.INTERFACES_VIEW);
-				Window.alert("in MainController.displayResults() 6");
-			}else{
-				Window.alert("in MainController.displayResults() 7");
-				ResultsPanel.headerPanel.pdbIdentifierPanel.informationLabel.setHTML("Interface Analysis of: Assembly " + ApplicationContext.getSelectedAssemblyId() + " in ");
-				ResultsPanel.headerPanel.pdbIdentifierPanel.pdbNameLabel.setHTML(ApplicationContext.getPdbInfo().getPdbCode());
+				//displayResultView(ApplicationContext.getPdbInfo(), ResultsPanel.INTERFACES_VIEW);
+			//}else{
 				//somehow this strangely worked without the line below???
-				displayResultView(ApplicationContext.getPdbInfo(), ResultsPanel.INTERFACES_VIEW);
-				Window.alert("in MainController.displayResults() 8");
-			}*/
+				//displayResultView(ApplicationContext.getPdbInfo(), ResultsPanel.INTERFACES_VIEW);
+			//}
 		}
 	}
 	  
 
-	//show all assemblies of a pdb code
-	/*public void displayAssemblyResults()
-	{
-		mainViewPort.mask(AppPropertiesManager.CONSTANTS.defaultmask());
-		if(mainViewPort.getResultsPanel() != null){
-			EventBusManager.EVENT_BUS.fireEvent(new ShowAssembliesEvent());
-		}
-		CrkWebServiceProvider.getServiceController().getResultsOfProcessing(ApplicationContext.getSelectedJobId());
-	}*/
-	
-	
 	/**
 	 * Displays results data panel.
 	 * @param resultData results of processing
@@ -718,9 +647,6 @@ public class MainController
 			if(assembly != null){
 				List<InterfaceCluster> interfaceClusters = assembly.getInterfaceClusters();
 				newResultsData.setInterfaceClusters(interfaceClusters);
-				/*ResultsPanel.headerPanel.pdbIdentifierPanel.informationLabel.setHTML(EscapedStringGenerator.generateEscapedString(
-						AppPropertiesManager.CONSTANTS.info_panel_interface_pdb_identifier() + ": Assembly " + ApplicationContext.getSelectedAssemblyId() + " in "));
-				ResultsPanel.headerPanel.pdbIdentifierPanel.pdbNameLabel.setHTML(resultData.getPdbCode());*/
 			}
 		}
 
@@ -842,7 +768,6 @@ public class MainController
 		}
 
 		//mainViewPort.getCenterPanel().layout();
-
 		EventBusManager.EVENT_BUS.fireEvent(new GetFocusOnJobsListEvent());
 		Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_processing() + " - " + 
 						statusData.getInputName());

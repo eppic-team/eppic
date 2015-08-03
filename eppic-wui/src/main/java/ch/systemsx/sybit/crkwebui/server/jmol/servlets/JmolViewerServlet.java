@@ -67,7 +67,6 @@ public class JmolViewerServlet extends BaseServlet
 		//generalDestinationDirectoryName = properties.getProperty("destination_path");
 
 		servletContPath = getServletContext().getInitParameter("servletContPath");
-		System.out.println("servletContPath is ::::::::::::::::::::::::::::::::: " + servletContPath);
 	}
 
 	@Override

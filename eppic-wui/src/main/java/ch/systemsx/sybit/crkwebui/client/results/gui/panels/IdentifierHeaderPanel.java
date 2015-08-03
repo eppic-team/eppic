@@ -7,6 +7,7 @@ import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.i18n.client.NumberFormat;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.VerticalPanel;
@@ -25,41 +26,50 @@ public class IdentifierHeaderPanel extends HorizontalLayoutContainer
     
     private LinkWithTooltip downloadResultsLink;
     
-    private VerticalLayoutContainer pdbInfo;
+    public static VerticalLayoutContainer pdbInfo;
     
     private VerticalLayoutContainer eppicLogoPanel;
     
     private HTML eppicVersionLabel;
+    
+    public static HTML experimentinfo;
 
+    //IdentifierHeaderPanel.pdbInfo.experimentinfo.setHTML("new info!!");
     public IdentifierHeaderPanel(int width, PdbInfo resultsData, int viewType){
     	
     	this.setWidth(width);
     	this.addStyleName("eppic-results-header-panel");
     	this.setScrollMode(ScrollMode.AUTOY);
-    	
+
     	pdbInfo = new VerticalLayoutContainer();
     	pdbIdentifierPanel = new PDBIdentifierPanel(viewType);
+
     	pdbInfo.add(pdbIdentifierPanel, new VerticalLayoutData(1, 30, new Margins(0, 0, 0, 0)));
 
     	pdbIdentifierSubtitlePanel = new PDBIdentifierSubtitlePanel();
+
     	pdbInfo.add(pdbIdentifierSubtitlePanel, new VerticalLayoutData(-1, -1, new Margins(0, 0, 0, 0)));
 
-    	String html_experiment_info = "";
-    	html_experiment_info += "<b>" + AppPropertiesManager.CONSTANTS.info_panel_experiment() + "</b> " + resultsData.getExpMethod();
-    	html_experiment_info += "&nbsp;&nbsp;&nbsp;&nbsp;<b>" + AppPropertiesManager.CONSTANTS.info_panel_spacegroup() + "</b> " + resultsData.getSpaceGroup();
-    	html_experiment_info += "&nbsp;&nbsp;&nbsp;&nbsp;<b>" + AppPropertiesManager.CONSTANTS.info_panel_resolution() + "</b> " + resultsData.getResolution();
-    	html_experiment_info += "&nbsp;&nbsp;&nbsp;&nbsp;<b>" + AppPropertiesManager.CONSTANTS.info_panel_rfree() + "</b> " + resultsData.getRfreeValue();
-    	final HTML experimentinfo = new HTML(html_experiment_info);
-    	pdbInfo.add(experimentinfo);
-    	this.add(pdbInfo,  new HorizontalLayoutData(1,-1));
+    	if(resultsData !=null){
+	    	String html_experiment_info = "";
+	    	html_experiment_info += "<b>" + AppPropertiesManager.CONSTANTS.info_panel_experiment() + "</b> " + resultsData.getExpMethod();
+	    	html_experiment_info += "&nbsp;&nbsp;&nbsp;&nbsp;<b>" + AppPropertiesManager.CONSTANTS.info_panel_spacegroup() + "</b> " + resultsData.getSpaceGroup();
+	    	html_experiment_info += "&nbsp;&nbsp;&nbsp;&nbsp;<b>" + AppPropertiesManager.CONSTANTS.info_panel_resolution() + "</b> " + resultsData.getResolution();
+	    	html_experiment_info += "&nbsp;&nbsp;&nbsp;&nbsp;<b>" + AppPropertiesManager.CONSTANTS.info_panel_rfree() + "</b> " + resultsData.getRfreeValue();
+	    	experimentinfo = new HTML(html_experiment_info);
+	
+	    	pdbInfo.add(experimentinfo);
+    	}
     	
+    	this.add(pdbInfo,  new HorizontalLayoutData(1,-1));
+
     	downloadResultsPanel = new HorizontalLayoutContainer();
     	downloadResultsPanel.setBorders(false);
-		
-		downloadResultsLink = new LinkWithTooltip(AppPropertiesManager.CONSTANTS.info_panel_download_results_link(),
+
+    	downloadResultsLink = new LinkWithTooltip(AppPropertiesManager.CONSTANTS.info_panel_download_results_link(),
 				AppPropertiesManager.CONSTANTS.info_panel_download_results_link_hint(), "");
 		downloadResultsLink.addStyleName("eppic-download-link");
-		
+
 		downloadResultsPanel.add(downloadResultsLink);
     	pdbInfo.add(downloadResultsPanel, new VerticalLayoutData(-1, -1, new Margins(0, 0, 10, 0)));
 
@@ -72,7 +82,7 @@ public class IdentifierHeaderPanel extends HorizontalLayoutContainer
     	eppicVersionLabel = new HTML("");
     	eppicVersionLabel.addStyleName("eppic-version");
     	eppicLogoPanel.add(eppicVersionLabel, new VerticalLayoutData(-1, -1, new Margins(0)));
-    	
+
     	this.add(eppicLogoPanel, new HorizontalLayoutData(-1,1));
     }
 

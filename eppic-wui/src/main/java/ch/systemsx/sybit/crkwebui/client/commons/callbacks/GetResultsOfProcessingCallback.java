@@ -90,7 +90,6 @@ public class GetResultsOfProcessingCallback implements AsyncCallback<ProcessingD
 			
 			EventBusManager.EVENT_BUS.fireEvent(new ShowMessageEvent(AppPropertiesManager.CONSTANTS.callback_job_not_found_error(), msg));
 		}
-		System.out.println("GetResultsOfProcessingCallback.onSuccess exiting method");
 		EventBusManager.EVENT_BUS.fireEvent(new UnmaskMainViewEvent());
 	}
 

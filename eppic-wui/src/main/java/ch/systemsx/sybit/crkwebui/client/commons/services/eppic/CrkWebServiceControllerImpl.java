@@ -98,7 +98,6 @@ public class CrkWebServiceControllerImpl implements CrkWebServiceController
 	
 	@Override
 	public void getCurrentStatusData(String jobId) {
-		System.out.println("CrkWebServiceControllerImpl.java in getCurrentStatusData()");
 		crkWebService.getResultsOfProcessing(jobId, new GetCurrentStatusDataCallback(jobId));
 	}
 

@@ -88,7 +88,6 @@ public class ResultsPanel extends DisplayPanel
 	public void fillResultsPanel(PdbInfo resultsData, int viewType) 
 	{
 		this.viewType = viewType;
-
 		if(viewType == ASSEMBLIES_VIEW){
 			AssemblyResultsGridPanel.assemblies_toolbar_link.setHTML("<a href='" + GWT.getHostPageBaseURL() + "#interfaces/"+ApplicationContext.getPdbInfo().getPdbCode()+"'>View All Interfaces</a>");
 			assemblyResultsGridContainer.fillResultsGrid(resultsData);

@@ -21,6 +21,8 @@ import ch.systemsx.sybit.crkwebui.client.jobs.data.MyJobsModelProperties;
 import ch.systemsx.sybit.crkwebui.client.jobs.gui.cells.InputCell;
 import ch.systemsx.sybit.crkwebui.client.jobs.gui.cells.JobStatusCell;
 import ch.systemsx.sybit.crkwebui.client.jobs.gui.grids.contextmenus.JobsPanelContextMenu;
+import ch.systemsx.sybit.crkwebui.client.results.gui.panels.ResultsPanel;
+import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
 import ch.systemsx.sybit.shared.model.StatusOfJob;
 
@@ -31,6 +33,7 @@ import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.safehtml.shared.UriUtils;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.HTML;
 import com.sencha.gxt.core.client.Style.SelectionMode;
 import com.sencha.gxt.core.client.util.IconHelper;
 import com.sencha.gxt.core.client.util.KeyNav;
@@ -194,8 +197,16 @@ public class MyJobsPanel extends ContentPanel
 			
 			@Override
 			public void onCellClick(CellClickEvent event) {
-					History.newItem("id/" + myJobsStore.get(event.getRowIndex()).getJobid());
-				
+				History.newItem("id/" + myJobsStore.get(event.getRowIndex()).getJobid());				
+				PdbInfo resultsData = ApplicationContext.getPdbInfo();
+				String html_experiment_info = "";
+				if(resultsData !=null){
+			    	html_experiment_info += "<b>" + AppPropertiesManager.CONSTANTS.info_panel_experiment() + "</b> " + resultsData.getExpMethod();
+			    	html_experiment_info += "&nbsp;&nbsp;&nbsp;&nbsp;<b>" + AppPropertiesManager.CONSTANTS.info_panel_spacegroup() + "</b> " + resultsData.getSpaceGroup();
+			    	html_experiment_info += "&nbsp;&nbsp;&nbsp;&nbsp;<b>" + AppPropertiesManager.CONSTANTS.info_panel_resolution() + "</b> " + resultsData.getResolution();
+			    	html_experiment_info += "&nbsp;&nbsp;&nbsp;&nbsp;<b>" + AppPropertiesManager.CONSTANTS.info_panel_rfree() + "</b> " + resultsData.getRfreeValue();
+		    	}
+				ResultsPanel.headerPanel.experimentinfo.setHTML(html_experiment_info);
 			}
 		});
 

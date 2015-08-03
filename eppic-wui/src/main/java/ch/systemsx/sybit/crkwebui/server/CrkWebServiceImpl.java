@@ -534,13 +534,10 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 			sessionDAO.insertSessionForJob(getThreadLocalRequest().getSession().getId(), jobId, getThreadLocalRequest().getRemoteAddr());
 			if(status.equals(StatusOfJob.FINISHED))
 			{
-				System.out.println("CrkWebServiceImpl.java: Status of job - FINISHED!!!!");
-				//System.out.println("CrkWebServiceImpl.java: ID of first assembly is " + getResultData(jobId).getAssemblies().get(0).getUid()); //this fails
 				return getResultData(jobId);
 			}
 			else
 			{
-				System.out.println("Status of job - not FINISHED");
 				return getStatusData(jobId, status);
 			}
 		}
@@ -552,6 +549,7 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 
 	private ProcessingInProgressData getStatusData(final String jobId, StatusOfJob status) throws Exception
 	{
+		
 		JobDAO jobDAO = new JobDAOJpa();
 
 		ProcessingInProgressData statusData = null;
@@ -705,7 +703,7 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 		
 		pdbInfo.setInputType(input.getInputType());
 		pdbInfo.setInputName(input.getInputName());
-
+		
 		return pdbInfo;
 	}
 
