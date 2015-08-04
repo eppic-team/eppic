@@ -841,6 +841,7 @@ public class DataModelAdaptor {
 						ResidueInfoDB residueInfo = chainClusterDB.getResidueInfos().get(i);
 						
 						int	queryUniprotPos = cec.getPdbToUniProtMapper().getUniProtIndexForPdbGroup(g, !cec.isSearchWithFullUniprot());
+						int queryUniprotPosAbsolute = cec.getPdbToUniProtMapper().getUniProtIndexForPdbGroup(g, false);
 
 						float entropy = -1;
 						// we used to have here: "&& residue instanceof AaResidue" but that was preventing entropy values of mismatch-to-ref-uniprot-residues to be passed
@@ -853,7 +854,7 @@ public class DataModelAdaptor {
 							residueInfo.setMismatchToRef(true);
 						else 
 							residueInfo.setMismatchToRef(false);
-						residueInfo.setUniProtNumber(queryUniprotPos);
+						residueInfo.setUniProtNumber(queryUniprotPosAbsolute);
 						residueInfo.setEntropyScore(entropy);
 						
 						i++;
