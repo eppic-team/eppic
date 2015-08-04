@@ -116,11 +116,13 @@ public class TextOutputWriter {
 	private String getResString(List<ResidueBurialDB> residues, boolean usePdbResSer) {
 		String str = "";
 		for (int i=0;i<residues.size();i++) {
-			String serial = null;
-			if (usePdbResSer) {
-				serial = residues.get(i).getResidueInfo().getPdbResidueNumber();
-			} else {
-				serial = ""+residues.get(i).getResidueInfo().getResidueNumber();
+			String serial = "0";
+			if (residues.get(i).getResidueInfo()!=null) {
+				if (usePdbResSer) {
+					serial = residues.get(i).getResidueInfo().getPdbResidueNumber();
+				} else {
+					serial = ""+residues.get(i).getResidueInfo().getResidueNumber();
+				}
 			}
 			if (i!=residues.size()-1)
 				str+=serial+",";
@@ -368,12 +370,26 @@ public class TextOutputWriter {
 			
 			if (residueInfo.getResidueNumber()<=0) continue;
 			
+			int resNum = 0;
+			String pdbResNum = "0";
+			int uniprotNum = 0;
+			String resType = "XXX";
+			double entropy = -1;
+			if (residueInfo!=null) {
+				resNum = residueInfo.getResidueNumber();
+				pdbResNum = residueInfo.getPdbResidueNumber();
+				uniprotNum = residueInfo.getUniProtNumber();
+				resType = residueInfo.getResidueType();
+				entropy = residueInfo.getEntropyScore();
+			}
+			
+			
 			ps.printf("%4d\t%4s\t%4d\t%3s\t%5.2f\n",
-					residueInfo.getResidueNumber(), 
-					residueInfo.getPdbResidueNumber(),  
-					residueInfo.getUniProtNumber(), 
-					residueInfo.getResidueType(), 
-					residueInfo.getEntropyScore());
+					resNum, 
+					pdbResNum,  
+					uniprotNum, 
+					resType, 
+					entropy);
 		}
 		
 		

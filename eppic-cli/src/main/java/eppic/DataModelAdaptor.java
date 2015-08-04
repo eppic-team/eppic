@@ -225,7 +225,9 @@ public class DataModelAdaptor {
 			// And with UniProt numbering:
 			//    40 G, 41 I, 42 T
 
-			// TODO revise (read the above!)
+			// TODO here there are unresolved problems with no-SEQRES files (e.g. 3ddo with no SEQRES), 
+			//      see also the todo in addResidueBurialDetailsOfPartner()
+			
 			residueInfoDB.setResidueNumber(compound.getAlignedResIndex(g, g.getChain()));
 			
 			// for seqres residues the pdb res number is unavailable in biojava
@@ -853,9 +855,20 @@ public class DataModelAdaptor {
 						if (queryUniprotPos==-1) 
 							residueInfo.setMismatchToRef(true);
 						else 
-							residueInfo.setMismatchToRef(false);
+							residueInfo.setMismatchToRef(false);						
+						
 						residueInfo.setUniProtNumber(queryUniprotPosAbsolute);
 						residueInfo.setEntropyScore(entropy);
+						
+						// TODO revise the no-SEQRES case (see other related TODOs in this file)
+						// Do we want something like this here ? : 
+						// (the idea is to assign uniprot numbers as residue serials so that we can reliably map
+						//  between different chains when there's no SEQRES in the file)
+						//if (cec.getPdbToUniProtMapper().isSequenceFromAtom()) {
+						//	iri.setResidueNumber(cec.getPdbToUniProtMapper().getUniProtIndexForPdbGroup(residue, false));
+						//}
+						
+
 						
 						i++;
 					}
@@ -1034,6 +1047,21 @@ public class DataModelAdaptor {
 	}
 	
 	public void setResidueBurialDetails(StructureInterfaceList interfaces) {
+		
+		boolean noseqres = false;
+		if (interfaces.size()>0) {
+			Chain chain = interfaces.iterator().next().getParentChains().getFirst();
+			if (chain.getSeqResGroups()==null || chain.getSeqResGroups().isEmpty()) {
+				noseqres = true;
+			}
+
+			if (noseqres) 
+				LOGGER.warn("There are no SEQRES groups available. "
+						+ "There can be problems in residue mapping if the residue numbering is inconsistent "
+						+ "across different chains of the same entity.", 
+						chain.getChainID());
+		}
+		
 		for (StructureInterface interf:interfaces) {
 			
 			InterfaceDB ii = pdbInfo.getInterface(interf.getId());
@@ -1043,8 +1071,8 @@ public class DataModelAdaptor {
 			List<ResidueBurialDB> iril = new ArrayList<ResidueBurialDB>();
 			ii.setResidueBurials(iril);
 
-			addResidueBurialDetailsOfPartner(iril, interf, InterfaceEvolContext.FIRST);
-			addResidueBurialDetailsOfPartner(iril, interf, InterfaceEvolContext.SECOND);
+			addResidueBurialDetailsOfPartner(iril, interf, InterfaceEvolContext.FIRST, noseqres);
+			addResidueBurialDetailsOfPartner(iril, interf, InterfaceEvolContext.SECOND, noseqres);
 
 			for(ResidueBurialDB iri : iril) {
 				iri.setInterfaceItem(ii);
@@ -1053,7 +1081,7 @@ public class DataModelAdaptor {
 		}
 	}
 	
-	private void addResidueBurialDetailsOfPartner(List<ResidueBurialDB> iril, StructureInterface interf, int molecId) {
+	private void addResidueBurialDetailsOfPartner(List<ResidueBurialDB> iril, StructureInterface interf, int molecId, boolean noseqres) {
 
 		Chain chain = null;
 		if (molecId == InterfaceEvolContext.FIRST) 
@@ -1063,6 +1091,7 @@ public class DataModelAdaptor {
 		
 		String repChainId = chain.getCompound().getRepresentative().getChainID();
 		ChainClusterDB chainCluster = pdbInfo.getChainCluster(repChainId);
+		
 		
 		for (Group group:chain.getAtomGroups()) {
 
@@ -1125,7 +1154,6 @@ public class DataModelAdaptor {
 			// relations
 			iri.setInterfaceItem(pdbInfo.getInterface(interf.getId()));
 			
-			// TODO revise!
 			// this is a difficult operation: we are in a single chain and we connect to the equivalent
 			// residue in the representative chain (the one we store in the residueInfos in chainCluster).
 			// Thus the issues with residue serials in SEQRES/no SEQRES case will hit here!
@@ -1135,8 +1163,23 @@ public class DataModelAdaptor {
 				LOGGER.warn("Could not get a residue serial for group '{}' to connect ResidueBurial to ResidueInfo", group.toString());
 			} else {
 				
+				// Here getResidue(resser) matches the residue serials via the residue serials we added earlier 
+				// to ResidueInfo. Those were coming from getAlignedResIndex, thus they should match correctly
+
 				ResidueInfoDB residueInfo = chainCluster.getResidue(resser);
 
+				// TODO in no-SEQRES case if the residues are not consistently named across different chains of 
+				//      same entity, this will fail and return a null! e.g. 3ddo without seqres
+				//      The ideal solution to this would be to go through our UniProt alignments and get a proper 
+				//      mapping from there, but at this point we don't have an alignment yet... so it is complicated
+				
+				if (residueInfo==null && !noseqres) {
+					// we only warn if we have seqres and find a null, case noseqres==true emits only 1 warning above
+					LOGGER.warn("Could not find the ResidueInfo corresponding to ResidueBurial of group '{}', the mapped residue serial is {}.",
+							group.toString(), resser);
+				}
+						
+				
 				iri.setResidueInfo(residueInfo);
 			}
 		}
