@@ -1160,7 +1160,10 @@ public class DataModelAdaptor {
 			// See the comment in createChainCluster
 			int resser = chain.getCompound().getAlignedResIndex(group, chain);
 			if (resser==-1) {
-				LOGGER.warn("Could not get a residue serial for group '{}' to connect ResidueBurial to ResidueInfo", group.toString());
+				if (noseqres) 
+					LOGGER.warn("Could not get a residue serial for group '{}' to connect ResidueBurial to ResidueInfo", group.toString());
+				else 
+					LOGGER.info("Could not get a residue serial for group '{}' to connect ResidueBurial to ResidueInfo", group.toString());
 			} else {
 				
 				// Here getResidue(resser) matches the residue serials via the residue serials we added earlier 
