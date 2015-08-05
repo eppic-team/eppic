@@ -2,7 +2,7 @@ package ch.systemsx.sybit.crkwebui.client.residues.gui.grid.utils;
 
 import java.util.List;
 
-import ch.systemsx.sybit.crkwebui.shared.model.ResidueBurial;
+import ch.systemsx.sybit.crkwebui.shared.model.Residue;
 
 import com.google.gwt.core.client.Callback;
 import com.sencha.gxt.data.shared.SortDir;
@@ -17,18 +17,18 @@ import com.sencha.gxt.data.shared.loader.PagingLoadResultBean;
  * @author nikhil
  *
  */
-public class ResiduePagingMemoryProxy extends MemoryProxy<PagingLoadConfig, PagingLoadResult<ResidueBurial>> {
+public class ResiduePagingMemoryProxy extends MemoryProxy<PagingLoadConfig, PagingLoadResult<Residue>> {
 
-    private List<ResidueBurial> totalList;
+    private List<Residue> totalList;
 
-    public ResiduePagingMemoryProxy(List<ResidueBurial> totalList) {
+    public ResiduePagingMemoryProxy(List<Residue> totalList) {
 	super(null);
 	this.totalList = totalList;
     }
 
     @Override
-    public void load(PagingLoadConfig config, Callback<PagingLoadResult<ResidueBurial>, Throwable> callback) {
-	List<ResidueBurial> list = totalList;
+    public void load(PagingLoadConfig config, Callback<PagingLoadResult<Residue>, Throwable> callback) {
+	List<Residue> list = totalList;
 
 	if(!list.isEmpty()){
 	    if (config.getSortInfo() != null && config.getSortInfo().size() > 0) {
@@ -41,13 +41,13 @@ public class ResiduePagingMemoryProxy extends MemoryProxy<PagingLoadConfig, Pagi
 	    int listStartIdx = config.getOffset();
 	    int listEndIdx = config.getOffset()+ config.getLimit();
 	    if(listEndIdx > list.size()-1) listEndIdx = list.size();
-	    List<ResidueBurial>results = list.subList(listStartIdx, listEndIdx);
-	    callback.onSuccess(new PagingLoadResultBean<ResidueBurial>(results, list.size(), config.getOffset()));
+	    List<Residue>results = list.subList(listStartIdx, listEndIdx);
+	    callback.onSuccess(new PagingLoadResultBean<Residue>(results, list.size(), config.getOffset()));
 	}
 
     }
 
-    public void setList(List<ResidueBurial> residueList){
+    public void setList(List<Residue> residueList){
 	this.totalList = residueList;
     }
 }

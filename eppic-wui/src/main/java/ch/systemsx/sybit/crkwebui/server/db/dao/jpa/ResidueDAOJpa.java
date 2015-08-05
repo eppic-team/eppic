@@ -11,6 +11,9 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Root;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import eppic.model.InterfaceClusterDB;
 import eppic.model.InterfaceClusterDB_;
 import eppic.model.InterfaceDB_;
@@ -20,7 +23,7 @@ import eppic.model.ResidueBurialDB_;
 import ch.systemsx.sybit.crkwebui.server.db.EntityManagerHandler;
 import ch.systemsx.sybit.crkwebui.server.db.dao.ResidueDAO;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
-import ch.systemsx.sybit.crkwebui.shared.model.ResidueBurial;
+import ch.systemsx.sybit.crkwebui.shared.model.Residue;
 import ch.systemsx.sybit.crkwebui.shared.model.ResiduesList;
 import eppic.model.InterfaceDB;
 import eppic.model.ResidueBurialDB;
@@ -34,12 +37,16 @@ import eppic.model.PdbInfoDB;
  */
 public class ResidueDAOJpa implements ResidueDAO 
 {
+	
+	private static final Logger logger = LoggerFactory.getLogger(ResidueDAOJpa.class);
+	
+	
 	@Override
-	public List<ResidueBurial> getResiduesForInterface(int interfaceUid) throws DaoException
+	public List<Residue> getResiduesForInterface(int interfaceUid) throws DaoException
 	{
 		EntityManager entityManager = null;
 		
-		List<ResidueBurial> result = new ArrayList<ResidueBurial>();
+		List<Residue> result = new ArrayList<Residue>();
 		
 		try
 		{
@@ -59,7 +66,7 @@ public class ResidueDAOJpa implements ResidueDAO
 			
 			for(ResidueBurialDB interfaceResidueItemDB : interfaceResidueItemDBs)
 			{
-				result.add(ResidueBurial.create(interfaceResidueItemDB));
+				result.add(Residue.create(interfaceResidueItemDB));
 			}
 		}
 		catch(Throwable e)
@@ -78,6 +85,8 @@ public class ResidueDAOJpa implements ResidueDAO
 				t.printStackTrace();
 			}
 		}
+		
+		logger.debug("Got {} residues for interface uid {}", result.size(), interfaceUid);
 		
 		return result;
 	}
@@ -112,9 +121,9 @@ public class ResidueDAOJpa implements ResidueDAO
 			{
 				if(residuesForInterfaces.get(interfaceResidueItemDB.getInterfaceItem().getInterfaceId()) == null)
 				{
-					HashMap<Integer, List<ResidueBurial>> structures = new HashMap<Integer, List<ResidueBurial>>();
-					List<ResidueBurial> firstStructureResidues = new ArrayList<ResidueBurial>();
-					List<ResidueBurial> secondStructureResidues = new ArrayList<ResidueBurial>();
+					HashMap<Integer, List<Residue>> structures = new HashMap<Integer, List<Residue>>();
+					List<Residue> firstStructureResidues = new ArrayList<Residue>();
+					List<Residue> secondStructureResidues = new ArrayList<Residue>();
 					structures.put(1, firstStructureResidues);
 					structures.put(2, secondStructureResidues);
 					
@@ -124,7 +133,7 @@ public class ResidueDAOJpa implements ResidueDAO
 					
 				}
 				
-				ResidueBurial residue = ResidueBurial.create(interfaceResidueItemDB);
+				Residue residue = Residue.create(interfaceResidueItemDB);
 				
 				if(residue.getSide() == false)
 				{
@@ -153,6 +162,8 @@ public class ResidueDAOJpa implements ResidueDAO
 				t.printStackTrace();
 			}
 		}
+		
+		logger.debug("Got residues for {} interfaces belonging to job id {}", residuesForInterfaces.size() , jobId);
 		
 		return residuesForInterfaces;
 	}

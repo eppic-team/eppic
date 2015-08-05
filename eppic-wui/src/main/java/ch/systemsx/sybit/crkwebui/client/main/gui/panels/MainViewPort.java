@@ -28,7 +28,7 @@ import ch.systemsx.sybit.crkwebui.client.search.gui.panels.SearchPanel;
 import ch.systemsx.sybit.crkwebui.client.viewer.gui.windows.ViewerSelectorWindow;
 import ch.systemsx.sybit.crkwebui.shared.model.ChainCluster;
 import ch.systemsx.sybit.crkwebui.shared.model.Interface;
-import ch.systemsx.sybit.crkwebui.shared.model.ResidueBurial;
+import ch.systemsx.sybit.crkwebui.shared.model.Residue;
 import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 
 import com.google.gwt.core.client.Scheduler;
@@ -215,7 +215,7 @@ public class MainViewPort extends BorderLayoutContainer
 	 * Fills content of interface residues window.
 	 * @param interfaceResidues interface residues
 	 */
-	public void fillInterfacesWindow(HashMap<Integer, List<ResidueBurial>> interfaceResidues,
+	public void fillInterfacesWindow(HashMap<Integer, List<Residue>> interfaceResidues,
 									 PdbInfo pdbScoreItem,
 									 int selectedInterface)
 	{

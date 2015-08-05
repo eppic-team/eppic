@@ -11,7 +11,7 @@ import ch.systemsx.sybit.crkwebui.client.commons.events.ShowWaitingEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.UpdateStatusLabelEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.data.StatusMessageType;
 import ch.systemsx.sybit.crkwebui.client.commons.managers.EventBusManager;
-import ch.systemsx.sybit.crkwebui.shared.model.ResidueBurial;
+import ch.systemsx.sybit.crkwebui.shared.model.Residue;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
@@ -20,7 +20,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
  * @author srebniak_a
  *
  */
-public class GetInterfaceResiduesCallback implements AsyncCallback<HashMap<Integer, List<ResidueBurial>>>
+public class GetInterfaceResiduesCallback implements AsyncCallback<HashMap<Integer, List<Residue>>>
 {
 	private String jobId;
 	private int interfaceId;
@@ -39,7 +39,7 @@ public class GetInterfaceResiduesCallback implements AsyncCallback<HashMap<Integ
 	}
 
 	@Override
-	public void onSuccess(HashMap<Integer, List<ResidueBurial>> result) 
+	public void onSuccess(HashMap<Integer, List<Residue>> result) 
 	{
 		EventBusManager.EVENT_BUS.fireEvent(new ShowWaitingEvent("Loading"));
 		
@@ -50,18 +50,6 @@ public class GetInterfaceResiduesCallback implements AsyncCallback<HashMap<Integ
 			{
 				EventBusManager.EVENT_BUS.fireEvent(new InterfaceResiduesDataRetrievedEvent(result));
 				
-//				if(GXT.isIE8)
-//				{
-//					if(mainController.getInterfaceResiduesItemsList() == null)
-//					{
-//						mainController.setResiduesForInterface(new ResiduesList());
-//					}
-//					
-//					if(mainController.getInterfaceResiduesItemsList().get(interfaceId) == null)
-//					{
-//						mainController.getInterfaceResiduesItemsList().put(interfaceId, result);
-//					}
-//				}
 			}
 		}
 		else 

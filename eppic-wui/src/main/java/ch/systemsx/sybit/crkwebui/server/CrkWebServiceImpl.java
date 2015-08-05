@@ -68,7 +68,7 @@ import ch.systemsx.sybit.crkwebui.shared.model.PDBSearchResult;
 import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingData;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
-import ch.systemsx.sybit.crkwebui.shared.model.ResidueBurial;
+import ch.systemsx.sybit.crkwebui.shared.model.Residue;
 import ch.systemsx.sybit.crkwebui.shared.model.ResiduesList;
 import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
 import ch.systemsx.sybit.crkwebui.shared.model.SequenceClusterType;
@@ -718,17 +718,17 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 	}
 
 	@Override
-	public HashMap<Integer, List<ResidueBurial>> getInterfaceResidues(int interfaceUid) throws Exception
+	public HashMap<Integer, List<Residue>> getInterfaceResidues(int interfaceUid) throws Exception
 	{
 		ResidueDAO residueDAO = new ResidueDAOJpa();
-		List<ResidueBurial> interfaceResidues = residueDAO.getResiduesForInterface(interfaceUid);
+		List<Residue> interfaceResidues = residueDAO.getResiduesForInterface(interfaceUid);
 
-		HashMap<Integer, List<ResidueBurial>> structures = new HashMap<Integer, List<ResidueBurial>>();
+		HashMap<Integer, List<Residue>> structures = new HashMap<Integer, List<Residue>>();
 
-		List<ResidueBurial> firstStructureResidues = new ArrayList<ResidueBurial>();
-		List<ResidueBurial> secondStructureResidues = new ArrayList<ResidueBurial>();
+		List<Residue> firstStructureResidues = new ArrayList<Residue>();
+		List<Residue> secondStructureResidues = new ArrayList<Residue>();
 
-		for(ResidueBurial residue : interfaceResidues)
+		for(Residue residue : interfaceResidues)
 		{
 			if(residue.getSide() == false)
 			{

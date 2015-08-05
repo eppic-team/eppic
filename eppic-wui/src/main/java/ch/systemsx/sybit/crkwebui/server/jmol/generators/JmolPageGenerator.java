@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.shared.model.Interface;
-import ch.systemsx.sybit.crkwebui.shared.model.ResidueBurial;
+import ch.systemsx.sybit.crkwebui.shared.model.Residue;
 import eppic.MolViewersHelper;
 import eppic.model.ResidueBurialDB;
 
@@ -80,10 +80,10 @@ public class JmolPageGenerator
 		return jmolPage.toString();
     }
 	
-	private static String getCommaSeparatedList(List<ResidueBurial> residues) {
+	private static String getCommaSeparatedList(List<Residue> residues) {
 		StringBuilder sb = new StringBuilder();
 		for (int i=0;i<residues.size();i++){
-			sb.append(residues.get(i).getResidueInfo().getPdbResidueNumber());
+			sb.append(residues.get(i).getPdbResidueNumber());
 			if (i!=residues.size()-1) sb.append(',');
 		}
 		return sb.toString();
@@ -112,12 +112,12 @@ public class JmolPageGenerator
 		String colorCore1 = MolViewersHelper.getHexInterf1Color();
 		String colorCore2 = MolViewersHelper.getHexInterf2Color();
 				
-		List<ResidueBurial> coreResidues1 = new ArrayList<ResidueBurial>();
-		List<ResidueBurial> rimResidues1 = new ArrayList<ResidueBurial>();
-		List<ResidueBurial> coreResidues2 = new ArrayList<ResidueBurial>();
-		List<ResidueBurial> rimResidues2 = new ArrayList<ResidueBurial>();
+		List<Residue> coreResidues1 = new ArrayList<Residue>();
+		List<Residue> rimResidues1 = new ArrayList<Residue>();
+		List<Residue> coreResidues2 = new ArrayList<Residue>();
+		List<Residue> rimResidues2 = new ArrayList<Residue>();
 		
-		for (ResidueBurial residue:interfData.getResidues() ) {
+		for (Residue residue:interfData.getResidues() ) {
 			
 			if (residue.getRegion()==ResidueBurialDB.CORE_EVOLUTIONARY || residue.getRegion()==ResidueBurialDB.CORE_GEOMETRY) {
 				if (residue.getSide()==false) {

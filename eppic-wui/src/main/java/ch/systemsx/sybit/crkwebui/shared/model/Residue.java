@@ -5,14 +5,17 @@ import java.io.Serializable;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 
+
 import eppic.model.ResidueBurialDB;
 
 /**
  * DTO class for ResidueBurial.
+ * Note this class doesn't correspond one-to-one to ResidueBurialDB, but rather
+ * pulls data from both ResidueBurialDB and ResidueInfoDB
  * @author AS
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-public class ResidueBurial implements Serializable
+public class Residue implements Serializable
 {
 
 	private static final long serialVersionUID = 1L;
@@ -24,11 +27,14 @@ public class ResidueBurial implements Serializable
 	private double bsa;
 	private double bsaPercentage;
 	private short region; // one of the constants above: SURFACE, RIM, CORE
-	
-	private ResidueInfo residueInfo;
+
+	private int residueNumber;	  
+	private String pdbResidueNumber;
+	private String residueType;
+	private double entropyScore;
 	
 
-	public ResidueBurial(double asa, double bsa, short region) { 
+	public Residue(double asa, double bsa, short region) { 
 					
 		this.asa = asa;
 		this.bsa = bsa;
@@ -36,7 +42,7 @@ public class ResidueBurial implements Serializable
 		this.region = region;
 	}
 	
-	public ResidueBurial()
+	public Residue()
 	{
 		
 	}
@@ -67,7 +73,7 @@ public class ResidueBurial implements Serializable
 		this.bsaPercentage = bsaPercentage;
 	}
 
-	public int getRegion() {
+	public short getRegion() {
 		return this.region;
 	}
 	
@@ -91,12 +97,38 @@ public class ResidueBurial implements Serializable
 		return uid;
 	}
 	
-	public ResidueInfo getResidueInfo() {
-		return residueInfo;
+	
+
+	public int getResidueNumber() {
+		return residueNumber;
 	}
 
-	public void setResidueInfo(ResidueInfo residueInfo) {
-		this.residueInfo = residueInfo;
+	public void setResidueNumber(int residueNumber) {
+		this.residueNumber = residueNumber;
+	}
+
+	public String getPdbResidueNumber() {
+		return pdbResidueNumber;
+	}
+
+	public void setPdbResidueNumber(String pdbResidueNumber) {
+		this.pdbResidueNumber = pdbResidueNumber;
+	}
+
+	public String getResidueType() {
+		return residueType;
+	}
+
+	public void setResidueType(String residueType) {
+		this.residueType = residueType;
+	}
+
+	public double getEntropyScore() {
+		return entropyScore;
+	}
+
+	public void setEntropyScore(double entropyScore) {
+		this.entropyScore = entropyScore;
 	}
 
 	/**
@@ -104,9 +136,9 @@ public class ResidueBurial implements Serializable
 	 * @param residueBurialDB model item to convert
 	 * @return DTO representation of model item
 	 */
-	public static ResidueBurial create(ResidueBurialDB residueBurialDB)
+	public static Residue create(ResidueBurialDB residueBurialDB)
 	{
-		ResidueBurial residue = new ResidueBurial();
+		Residue residue = new Residue();
 		residue.setAsa(residueBurialDB.getAsa());
 		residue.setRegion(residueBurialDB.getRegion());
 		residue.setBsa(residueBurialDB.getBsa());
@@ -116,7 +148,12 @@ public class ResidueBurial implements Serializable
 		residue.setSide(residueBurialDB.getSide());
 		residue.setUid(residueBurialDB.getUid());
 		
-		residue.setResidueInfo(ResidueInfo.create(residueBurialDB.getResidueInfo()));
+		if (residueBurialDB.getResidueInfo()!=null) {
+			residue.setResidueNumber(residueBurialDB.getResidueInfo().getResidueNumber());
+			residue.setPdbResidueNumber(residueBurialDB.getResidueInfo().getPdbResidueNumber());
+			residue.setResidueType(residueBurialDB.getResidueInfo().getResidueType());
+			residue.setEntropyScore(residueBurialDB.getResidueInfo().getEntropyScore());
+		}
 		
 		return residue;
 	}

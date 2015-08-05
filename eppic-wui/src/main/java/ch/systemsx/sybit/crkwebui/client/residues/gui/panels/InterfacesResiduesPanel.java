@@ -3,7 +3,7 @@ package ch.systemsx.sybit.crkwebui.client.residues.gui.panels;
 import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
-import ch.systemsx.sybit.crkwebui.shared.model.ResidueBurial;
+import ch.systemsx.sybit.crkwebui.shared.model.Residue;
 import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 
 import com.google.gwt.event.logical.shared.SelectionEvent;
@@ -154,7 +154,7 @@ public class InterfacesResiduesPanel extends VerticalLayoutContainer
 	public void fillStructurePanel(int structureNr,
 								   PdbInfo pdbScoreItem,
 								   int selectedInterface,
-								   List<ResidueBurial> residues)
+								   List<Residue> residues)
 	{
 		if(structureNr == 1)
 		{
