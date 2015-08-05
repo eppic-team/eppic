@@ -7,7 +7,7 @@ import eppic.model.HomologDB;
 import eppic.model.InterfaceClusterDB;
 import eppic.model.InterfaceDB;
 import eppic.model.PdbInfoDB;
-import eppic.model.ResidueDB;
+import eppic.model.ResidueBurialDB;
 import gnu.getopt.Getopt;
 
 import java.io.BufferedReader;
@@ -215,7 +215,7 @@ public class EvaluateParamset {
 			// GET LEFT AND RIGHT LISTS OF (ASA,BSA) PAIRS FOR RESIDUES
 			List<InterfaceClusterDB> interfaceClusters = pdbInfo.getInterfaceClusters();
 			InterfaceDB theInterface = getInterfaceFromInterfaceClustersByInterfaceId(interfaceClusters, interfaceNumber);
-			List<ResidueDB> residues = theInterface.getResidues();
+			List<ResidueBurialDB> residues = theInterface.getResidueBurials();
 			ArrayList<ArrayList<Double>> firstAsaBsas = new ArrayList<ArrayList<Double>>();
 			ArrayList<ArrayList<Double>> secondAsaBsas = new ArrayList<ArrayList<Double>>();
 			
@@ -230,9 +230,9 @@ public class EvaluateParamset {
 			String secondREF = secondChainCluster.getRefAlignedSeq();
 			MultipleSequenceAlignment firstPairwise = new MultipleSequenceAlignment(new String[] {"firstPDB", "firstREF"}, new String[] {firstPDB, firstREF});
 			MultipleSequenceAlignment secondPairwise = new MultipleSequenceAlignment(new String[] {"secondPDB", "secondREF"}, new String[] {secondPDB, secondREF});
-			for (ResidueDB aResidue : residues) {
-				if (aResidue.getSide() == 1) {
-					int mapFrom = aResidue.getResidueNumber();
+			for (ResidueBurialDB aResidue : residues) {
+				if (aResidue.getSide() == false) {
+					int mapFrom = aResidue.getResidueInfo().getResidueNumber();
 					if (mapFrom >= firstChainCluster.getPdbStart() && mapFrom <= firstChainCluster.getPdbEnd()) {
 						int correspondingRefIndex = firstPairwise.al2seq("firstREF", firstPairwise.seq2al("firstPDB", mapFrom)) - 1;
 						if (correspondingRefIndex > 0) {
@@ -242,12 +242,12 @@ public class EvaluateParamset {
 							pairAsaBsa.add(aResidue.getAsa());
 							pairAsaBsa.add(aResidue.getBsa());
 							firstAsaBsas.add(pairAsaBsa);
-							firstResids.add(aResidue.getResidueNumber());
+							firstResids.add(aResidue.getResidueInfo().getResidueNumber());
 							firstMapping.put(mapFrom, mapTo);
 						}
 					}
-				} else if (aResidue.getSide() == 2) {
-					int mapFrom = aResidue.getResidueNumber();
+				} else if (aResidue.getSide() == true) {
+					int mapFrom = aResidue.getResidueInfo().getResidueNumber();
 					if (mapFrom >= secondChainCluster.getPdbStart() && mapFrom <= secondChainCluster.getPdbEnd()) {
 						int correspondingRefIndex = secondPairwise.al2seq("secondREF", secondPairwise.seq2al("secondPDB", mapFrom)) - 1;
 						if (correspondingRefIndex > 0) {
@@ -257,7 +257,7 @@ public class EvaluateParamset {
 							pairAsaBsa.add(aResidue.getAsa());
 							pairAsaBsa.add(aResidue.getBsa());
 							secondAsaBsas.add(pairAsaBsa);
-							secondResids.add(aResidue.getResidueNumber());
+							secondResids.add(aResidue.getResidueInfo().getResidueNumber());
 							secondMapping.put(mapFrom, mapTo);
 						}
 					}
@@ -343,18 +343,18 @@ public class EvaluateParamset {
 	}
 	
 	private static int getRegion(double asa, double bsa) {
-		int assignment = ResidueDB.OTHER;
+		int assignment = ResidueBurialDB.OTHER;
 		double ratio = bsa / asa;
 		if (asa > minSurfaceASA && bsa > 0) {
 			if (ratio < evolCutoff) {
-				assignment = ResidueDB.RIM_EVOLUTIONARY;
+				assignment = ResidueBurialDB.RIM_EVOLUTIONARY;
 			} else if (ratio < geomCutoff) {
-				assignment = ResidueDB.CORE_EVOLUTIONARY; 
+				assignment = ResidueBurialDB.CORE_EVOLUTIONARY; 
 			} else {
-				assignment = ResidueDB.CORE_GEOMETRY;
+				assignment = ResidueBurialDB.CORE_GEOMETRY;
 			}
 		} else if (asa > minSurfaceASA) {
-			assignment = ResidueDB.SURFACE;
+			assignment = ResidueBurialDB.SURFACE;
 		}		
 		return assignment;
 	}
@@ -374,10 +374,10 @@ public class EvaluateParamset {
 			int thisRegion = thisRegions.get(i); // get the region at this index
 			int mapFrom = thisResidues.get(i); // get the residue number at this index
 			int mapped = thisMapping.get(mapFrom); // use mapping to get column number from residue number
-			if (thisRegion == ResidueDB.CORE_EVOLUTIONARY || thisRegion == ResidueDB.CORE_GEOMETRY) {
+			if (thisRegion == ResidueBurialDB.CORE_EVOLUTIONARY || thisRegion == ResidueBurialDB.CORE_GEOMETRY) {
 				coreEntropies.add(thisMSA.getColumnEntropy(mapped, aaAlphabet)); // add column entropy to core list iff core
 			}
-			if (thisRegion != ResidueDB.OTHER) { // not other -> one of surface/rimevol/coreevol/coregeom = the real surface
+			if (thisRegion != ResidueBurialDB.OTHER) { // not other -> one of surface/rimevol/coreevol/coregeom = the real surface
 				surfaceEntropies.add(thisMSA.getColumnEntropy(mapped, aaAlphabet)); // add column entropy to surface list iff surface
 			}
 		}

@@ -10,7 +10,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 
 import eppic.model.InterfaceDB;
-import eppic.model.ResidueDB;
+import eppic.model.ResidueBurialDB;
 import eppic.model.InterfaceScoreDB;
 import eppic.model.InterfaceWarningDB;
 
@@ -263,13 +263,13 @@ public class Interface implements Serializable, Comparable<Interface>
 		interfaceItem.setXtalTrans_z(interfaceDB.getXtalTrans_z());
 		interfaceItem.setGlobalInterfClusterId(interfaceDB.getGlobalInterfClusterId());
 		
-		if(interfaceDB.getResidues() != null)
+		if(interfaceDB.getResidueBurials() != null)
 		{
-			List<ResidueDB> residueDBs = interfaceDB.getResidues();
+			List<ResidueBurialDB> residueDBs = interfaceDB.getResidueBurials();
 			
 			List<Residue> residues = new ArrayList<Residue>();
 			
-			for(ResidueDB residueDB : residueDBs)
+			for(ResidueBurialDB residueDB : residueDBs)
 			{
 				residues.add(Residue.create(residueDB));
 			}

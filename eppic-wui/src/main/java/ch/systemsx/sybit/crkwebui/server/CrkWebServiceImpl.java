@@ -728,11 +728,11 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 
 		for(Residue residue : interfaceResidues)
 		{
-			if(residue.getSide() == 1)
+			if(residue.getSide() == false)
 			{
 				firstStructureResidues.add(residue);
 			}
-			else if(residue.getSide() == 2)
+			else if(residue.getSide() == true)
 			{
 				secondStructureResidues.add(residue);
 			}

@@ -1,5 +1,6 @@
 package eppic;
 
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -12,9 +13,11 @@ import org.biojava.nbio.alignment.template.SubstitutionMatrix;
 import org.biojava.nbio.core.exceptions.CompoundNotFoundException;
 import org.biojava.nbio.core.sequence.ProteinSequence;
 import org.biojava.nbio.core.sequence.compound.AminoAcidCompound;
+import org.biojava.nbio.structure.AminoAcid;
 import org.biojava.nbio.structure.Chain;
 import org.biojava.nbio.structure.Compound;
 import org.biojava.nbio.structure.Group;
+import org.biojava.nbio.structure.GroupType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -96,7 +99,9 @@ public class PdbToUniProtMapper {
 					compound.getMolId(), compound.getChainIds().toString());
 			
 			for (Chain c:compound.getChains()) {
-				String seq = c.getAtomSequence();
+				
+				String seq = getAtomSequence(c);
+				
 				sequences.put(c.getChainID(), seq);
 				if (seq.isEmpty()) {
 					LOGGER.warn("Sequence from ATOM records for chain {} has length 0",chain.getChainID());
@@ -597,6 +602,20 @@ public class PdbToUniProtMapper {
 		}
 	}
 	
+	private static String getAtomSequence(Chain c) {
+		// TODO we could do a better job in identifying non-standard aminoacids if we used chem comps
+		StringBuilder seqBuilder = new StringBuilder();
+		
+		List<Group> groups = c.getAtomGroups(GroupType.AMINOACID);
+		for (Group g:groups) {
+			if (g instanceof AminoAcid) {
+				AminoAcid a = (AminoAcid) g;
+				seqBuilder.append(a.getAminoType());
+			}
+		}
+		return seqBuilder.toString();
+	}
+	
 	/**
 	 * Return the SEQRES serial of the Group g in the Chain c.
 	 * If no SEQRES serials are available, then the index in the atom groups
@@ -610,8 +629,18 @@ public class PdbToUniProtMapper {
 	private int getSeqresSerial(Group g) {
 		if (sequenceFromAtom) {	
 			// this numbering would correspond to each of the strings in sequences
-			for (int i=0;i<g.getChain().getAtomGroups().size();i++) {
-				if (g == g.getChain().getAtomGroups().get(i)) 
+			// thus this has to behave exactly in the same way as how the sequences were initialised 
+			// with getAtomSequence(Chain)
+
+			// TODO we could do a better job in identifying non-standard aminoacids if we used chem comps 
+
+			List<Group> groups = g.getChain().getAtomGroups(GroupType.AMINOACID);
+			
+			for (int i=0;i<groups.size();i++) {
+				
+				Group group = groups.get(i);
+				
+				if (g == group) 
 					return i+1; 
 			}
 			return -1;

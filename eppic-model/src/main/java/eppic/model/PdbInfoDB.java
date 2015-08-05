@@ -118,6 +118,20 @@ public class PdbInfoDB implements Serializable {
 		return null;
 	}
 	
+	/**
+	 * Returns the corresponding ChainClusterDB given the representative chain id
+	 * @param repChainId
+	 * @return
+	 */
+	public ChainClusterDB getChainCluster(String repChainId) {
+		for (ChainClusterDB cc:chainClusters) {
+			if (cc.getRepChain().equals(repChainId)) {
+				return cc;
+			}
+		}
+		return null;
+	}
+	
 	public List<AssemblyDB> getAssemblies() {
 		return assemblies;
 	}

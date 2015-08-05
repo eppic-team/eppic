@@ -31,7 +31,7 @@ import com.sencha.gxt.widget.core.client.grid.GridViewConfig;
 import com.sencha.gxt.widget.core.client.grid.LiveGridView;
 import com.sencha.gxt.widget.core.client.toolbar.PagingToolBar;
 
-import eppic.model.ResidueDB;
+import eppic.model.ResidueBurialDB;
 
 /**
  * Panel used to display residues data for one structure.
@@ -223,19 +223,19 @@ public class ResiduesGridPanel extends VerticalLayoutContainer
     		public String getRowStyle(Residue model, int rowIndex) {
     			if (model != null)
     			{
-    				if (model.getRegion() == ResidueDB.SURFACE)
+    				if (model.getRegion() == ResidueBurialDB.SURFACE)
     				{
     					return "eppic-grid-row-surface";
     				}
-    				else if(model.getRegion() == ResidueDB.CORE_EVOLUTIONARY)
+    				else if(model.getRegion() == ResidueBurialDB.CORE_EVOLUTIONARY)
     				{
     					return "eppic-grid-row-core-evolutionary";
     				}
-    				else if(model.getRegion() == ResidueDB.CORE_GEOMETRY)
+    				else if(model.getRegion() == ResidueBurialDB.CORE_GEOMETRY)
     				{
     					return "eppic-grid-row-core-geometry";
     				}
-    				else if(model.getRegion() == ResidueDB.RIM_EVOLUTIONARY)
+    				else if(model.getRegion() == ResidueBurialDB.RIM_EVOLUTIONARY)
     				{
     					return "eppic-grid-row-rim";
     				}
@@ -285,9 +285,9 @@ public class ResiduesGridPanel extends VerticalLayoutContainer
     	for(Residue item : data)
     	{
     		if((isShowAll) ||
-    				((item.getRegion() == ResidueDB.CORE_GEOMETRY) ||
-    						(item.getRegion() == ResidueDB.CORE_EVOLUTIONARY) ||
-    						(item.getRegion() == ResidueDB.RIM_EVOLUTIONARY)))
+    				((item.getRegion() == ResidueBurialDB.CORE_GEOMETRY) ||
+    						(item.getRegion() == ResidueBurialDB.CORE_EVOLUTIONARY) ||
+    						(item.getRegion() == ResidueBurialDB.RIM_EVOLUTIONARY)))
     		{
     			dataToSet.add(item);
     		}

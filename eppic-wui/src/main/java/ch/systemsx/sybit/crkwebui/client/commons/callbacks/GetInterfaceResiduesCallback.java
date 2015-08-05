@@ -50,18 +50,6 @@ public class GetInterfaceResiduesCallback implements AsyncCallback<HashMap<Integ
 			{
 				EventBusManager.EVENT_BUS.fireEvent(new InterfaceResiduesDataRetrievedEvent(result));
 				
-//				if(GXT.isIE8)
-//				{
-//					if(mainController.getInterfaceResiduesItemsList() == null)
-//					{
-//						mainController.setResiduesForInterface(new ResiduesList());
-//					}
-//					
-//					if(mainController.getInterfaceResiduesItemsList().get(interfaceId) == null)
-//					{
-//						mainController.getInterfaceResiduesItemsList().put(interfaceId, result);
-//					}
-//				}
 			}
 		}
 		else 
