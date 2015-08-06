@@ -30,6 +30,8 @@ import org.biojava.nbio.structure.contact.StructureInterfaceList;
 import org.biojava.nbio.structure.io.FileParsingParameters;
 import org.biojava.nbio.structure.io.LocalPDBDirectory.FetchBehavior;
 import org.biojava.nbio.structure.io.PDBFileParser;
+import org.biojava.nbio.structure.io.mmcif.ChemCompGroupFactory;
+import org.biojava.nbio.structure.io.mmcif.DownloadChemCompProvider;
 import org.biojava.nbio.structure.io.mmcif.MMcifParser;
 import org.biojava.nbio.structure.io.mmcif.SimpleMMcifConsumer;
 import org.biojava.nbio.structure.io.mmcif.SimpleMMcifParser;
@@ -137,6 +139,17 @@ public class Main {
 	}
 
 	public void doLoadPdb() throws EppicException {	
+		
+		// Before loading anything we make sure that BioJava is set to DownloadChemCompProvider.
+		// This is in case the default is ReducedChemCompProvider.
+		// That has a huge effect in the understanding of the chemical components, for instance 
+		// what residues are non-standar aminoacids
+		
+		// TODO if BioJava 4.2 changes the default or the behavior of DownloadChemCompProvider
+		//      we will need to revise this
+		
+		ChemCompGroupFactory.setChemCompProvider(new DownloadChemCompProvider());
+		
 		
 		params.getProgressLog().println("Loading PDB data: "+(params.getInFile()==null?params.getPdbCode():params.getInFile().getName()));
 		writeStep("Calculating Interfaces");
