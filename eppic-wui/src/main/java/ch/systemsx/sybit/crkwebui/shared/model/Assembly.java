@@ -202,10 +202,26 @@ public class Assembly implements Serializable  {
 	public String getCompositionString() {
 		return "TODO Composition";
 	}
-	
-	//TODO by Jose
+
+	/**
+	 * Returns the call corresponding to the eppic method
+	 * @return
+	 */
 	public String getPredictionString(){
-		return "TODO Prediction";
+		
+		AssemblyScore score = null;
+		for (AssemblyScore as:assemblyScores) {
+			if (as.getMethod().equals("eppic")) { 
+				score = as;
+			}
+		}
+		
+		if (score==null) {
+			return "NOPRED";
+		}
+		
+		return score.getCallName().toUpperCase();
+		
 	}
 	
 	public String getIdentifierString(){
