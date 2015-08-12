@@ -234,6 +234,19 @@ public class Stoichiometry {
 		return stoSb.toString();
 	}
 	
+	public String getChainIdsString() {
+		UndirectedGraph<ChainVertex,InterfaceEdge> g = assembly.getFirstRelevantConnectedComponent(this);
+		StringBuilder sb = new StringBuilder();
+		int i = 0;
+		for (ChainVertex v:g.vertexSet()) {
+			if (i!=0) sb.append(',');
+			sb.append(v.getChainId()+"_"+v.getOpId());
+			i++;
+		}
+		
+		return sb.toString();
+	}
+	
 	/**
 	 * Return the symmetry string for this stoichiometry in its assembly:
 	 * cyclic Cn, dihedral Dn, tetrahedral T, octahedral O or icosahedral I 

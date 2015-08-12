@@ -14,11 +14,14 @@ public class AssemblyDescription {
 	private String composition;
 	private String stoichiometry;
 	
-	public AssemblyDescription(int size, String symmetry, String composition, String stoichiometry) {
+	private String chainIds; // the chain identifiers comma-separated: chainId+_+opId
+	
+	public AssemblyDescription(int size, String symmetry, String composition, String stoichiometry, String chainIds) {
 		this.size = size;
 		this.symmetry = symmetry;
 		this.composition = composition;
 		this.stoichiometry = stoichiometry;
+		this.chainIds = chainIds;
 	}
 
 	public int getSize() {
@@ -51,6 +54,14 @@ public class AssemblyDescription {
 
 	public void setStoichiometry(String stoichiometry) {
 		this.stoichiometry = stoichiometry;
+	}
+
+	public String getChainIds() {
+		return chainIds;
+	}
+
+	public void setChainIds(String chainIds) {
+		this.chainIds = chainIds;
 	}
 
 	public String toString() {
