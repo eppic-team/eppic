@@ -427,6 +427,7 @@ public class MainController
 	 */
 	public void displayView(String token)
 	{
+		token = token.replaceAll(" ", "");
 		EventBusManager.EVENT_BUS.fireEvent(new HideAllWindowsEvent());
 		EventBusManager.EVENT_BUS.fireEvent(new ShowTopPanelSearchBoxEvent());
 		if ((token != null) && (token.length() > 3) && (token.startsWith("id"))) //main results screen - show list of assemblies
@@ -631,21 +632,11 @@ public class MainController
 	public void displayResults()
 	{
 		mainViewPort.mask(AppPropertiesManager.CONSTANTS.defaultmask());
-		//History.newItem("interfaces/1smt"); this works
 		CrkWebServiceProvider.getServiceController().getResultsOfProcessing(ApplicationContext.getSelectedJobId());
 		if(ApplicationContext.getSelectedViewType() == ResultsPanel.ASSEMBLIES_VIEW){
 			displayResultView(ApplicationContext.getPdbInfo(), ResultsPanel.ASSEMBLIES_VIEW);
-			//EventBusManager.EVENT_BUS.fireEvent(new ShowAssembliesEvent());
 			ResultsPanel.headerPanel.pdbIdentifierPanel.informationLabel.setHTML("Assembly Analysis of: ");
 			ResultsPanel.headerPanel.pdbIdentifierPanel.pdbNameLabel.setHTML(ApplicationContext.getPdbInfo().getPdbCode());		
-		}else if(ApplicationContext.getSelectedViewType() == ResultsPanel.INTERFACES_VIEW){
-			//if(ApplicationContext.getSelectedAssemblyId() == -1){
-				//somehow this strangely worked without the line below???
-				//displayResultView(ApplicationContext.getPdbInfo(), ResultsPanel.INTERFACES_VIEW);
-			//}else{
-				//somehow this strangely worked without the line below???
-				//displayResultView(ApplicationContext.getPdbInfo(), ResultsPanel.INTERFACES_VIEW);
-			//}
 		}
 	}
 	  

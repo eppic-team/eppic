@@ -563,39 +563,6 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 			}
 		}); 
 		
-		//to handle when "enter" is pressed
-		/*EventBusManager.EVENT_BUS.addHandler(ShowInterfacesOfAssemblyDataEvent.TYPE, new ShowInterfacesOfAssemblyDataHandler() {
-			
-			@Override
-			public void onShowInterfacesOfAssembly(
-					ShowInterfacesOfAssemblyDataEvent event) {
-				//Window.alert("AssemblyResultsGridPanel.java onShowInterfacesOfAssembly - enter pressed!");
-				EventBusManager.EVENT_BUS.fireEvent(new ShowInterfacesOfAssemblyDataEvent(resultsData));
-				
-			}
-			
-		});*/
-		
-		/* this is a bad idea - links the other event to this event!!
-		EventBusManager.EVENT_BUS.addHandler(ShowDetailsEvent.TYPE, new ShowDetailsHandler() 
-		{
-			@Override
-			public void onShowDetails(ShowDetailsEvent event) 
-			{
-				Window.alert("AssemblyResultsGridPanel.java onShowDetails");
-				//EventBusManager.EVENT_BUS.fireEvent(new ShowInterfaceResiduesEvent((Integer)resultsGrid.getSelectionModel().getSelectedItem().getInterfaceId()));
-			}
-		});*/
-		
-		/*EventBusManager.EVENT_BUS.addHandler(SelectResultsRowEvent.TYPE, new SelectResultsRowHandler() {
-			
-			@Override
-			public void onSelectResultsRow(SelectResultsRowEvent event) {
-				Window.alert("handling event");
-				resultsGrid.getSelectionModel().select(event.getRowIndex(), false);
-				EventBusManager.EVENT_BUS.fireEvent(new ShowInterfacesOfAssemblyDataEvent(resultsData));			
-			}
-		}); */
 		
 		EventBusManager.EVENT_BUS.addHandler(SelectAssemblyResultsRowEvent.TYPE, new SelectAssemblyResultsRowHandler() {
 						 

@@ -37,6 +37,7 @@ public class ResultsPanel extends DisplayPanel
 	public final static int ASSEMBLIES_VIEW = 1;
 	public final static int INTERFACES_VIEW = 2;
 	private int viewType;
+	private boolean hasSpacer = true;
 
 
 	public ResultsPanel(PdbInfo pdbScoreItem, int viewType)
@@ -66,17 +67,16 @@ public class ResultsPanel extends DisplayPanel
 		mainContainer.setScrollMode(ScrollMode.AUTOY);
 		spacer = new HTML("<br>");
 		informationPanel = new InformationPanel(pdbScoreItem, ApplicationContext.getWindowData().getWindowWidth() - 180);
-		mainContainer.add(informationPanel, new VerticalLayoutData(-1, 135, new Margins(10,0,10,0)));
-
+		//mainContainer.add(informationPanel, new VerticalLayoutData(-1, 135, new Margins(10,0,10,0)));
+		mainContainer.add(spacer);
+		mainContainer.add(informationPanel, new VerticalLayoutData(-1, 135, new Margins(0,0,0,0)));
 		resultsGridContainer = new ResultsGridPanel(ApplicationContext.getWindowData().getWindowWidth() - 180);
 		assemblyResultsGridContainer = new AssemblyResultsGridPanel(ApplicationContext.getWindowData().getWindowWidth() - 180);
-		
 		if(viewType == ASSEMBLIES_VIEW){
-			mainContainer.add(assemblyResultsGridContainer, new VerticalLayoutData(-1, 1, new Margins(0)));
+			mainContainer.add(assemblyResultsGridContainer);
 		}
 		else if(viewType == INTERFACES_VIEW){
-			mainContainer.add(spacer);
-			mainContainer.add(resultsGridContainer, new VerticalLayoutData(-1, 1, new Margins(0)));
+			mainContainer.add(resultsGridContainer);
 		}
 		return mainContainer;
 	}
@@ -88,21 +88,7 @@ public class ResultsPanel extends DisplayPanel
 	public void fillResultsPanel(PdbInfo resultsData, int viewType) 
 	{
 		this.viewType = viewType;
-		if(viewType == ASSEMBLIES_VIEW){
-			AssemblyResultsGridPanel.assemblies_toolbar_link.setHTML("<a href='" + GWT.getHostPageBaseURL() + "#interfaces/"+ApplicationContext.getPdbInfo().getPdbCode()+"'>View All Interfaces</a>");
-			assemblyResultsGridContainer.fillResultsGrid(resultsData);
-			mainContainer.add(assemblyResultsGridContainer);
-			mainContainer.remove(spacer);
-			mainContainer.remove(resultsGridContainer);
-		}else if(viewType == INTERFACES_VIEW){
-			ResultsGridPanel.toolbar_link.setHTML("<a href='" + GWT.getHostPageBaseURL() + "#id/"+ApplicationContext.getPdbInfo().getPdbCode()+"'>View All Assemblies</a>");	
-			resultsGridContainer.fillResultsGrid(resultsData);
-			mainContainer.remove(assemblyResultsGridContainer);
-			mainContainer.add(spacer);
-			mainContainer.add(resultsGridContainer);
-		}
-		informationPanel.fillInfoPanel(resultsData);
-		
+
 		headerPanel.setPDBText(resultsData.getInputName(),
 							  	 	resultsData.getSpaceGroup(),
 							  	 	resultsData.getExpMethod(),
@@ -115,6 +101,20 @@ public class ResultsPanel extends DisplayPanel
 		headerPanel.setPDBIdentifierSubtitle(EscapedStringGenerator.generateEscapedString(resultsData.getTitle()));
 		
 		headerPanel.setDownloadResultsLink(resultsData.getJobId());
+		
+		informationPanel.fillInfoPanel(resultsData);
+		
+		if(viewType == ASSEMBLIES_VIEW){
+			AssemblyResultsGridPanel.assemblies_toolbar_link.setHTML("<a href='" + GWT.getHostPageBaseURL() + "#interfaces/"+ApplicationContext.getPdbInfo().getPdbCode()+"'>View All Interfaces</a>");
+			assemblyResultsGridContainer.fillResultsGrid(resultsData);
+			mainContainer.add(assemblyResultsGridContainer);
+			mainContainer.remove(resultsGridContainer);
+		}else if(viewType == INTERFACES_VIEW){
+			ResultsGridPanel.toolbar_link.setHTML("<a href='" + GWT.getHostPageBaseURL() + "#id/"+ApplicationContext.getPdbInfo().getPdbCode()+"'>View All Assemblies</a>");	
+			mainContainer.remove(assemblyResultsGridContainer);
+			resultsGridContainer.fillResultsGrid(resultsData);
+			mainContainer.add(resultsGridContainer);
+		}				
 	}
 
 	public void resizeContent() 

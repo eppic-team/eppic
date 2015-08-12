@@ -108,11 +108,11 @@ public class ViewerRunner
 		}
 		else if(ApplicationContext.getSelectedViewer().equals(AppPropertiesManager.CONSTANTS.viewer_local()))
 		{
-			downloadFileFromServer(FileDownloadServlet.TYPE_VALUE_ASSEMBLY, assemblyId, FileDownloadServlet.COORDS_FORMAT_VALUE_CIF);
+			downloadAssemblyFileFromServer(FileDownloadServlet.TYPE_VALUE_ASSEMBLY, assemblyId, FileDownloadServlet.COORDS_FORMAT_VALUE_CIF);
 		}
 		else if(ApplicationContext.getSelectedViewer().equals(AppPropertiesManager.CONSTANTS.viewer_pse()))
 		{
-			downloadFileFromServer(FileDownloadServlet.TYPE_VALUE_ASSEMBLY, assemblyId, FileDownloadServlet.COORDS_FORMAT_VALUE_PSE);
+			downloadAssemblyFileFromServer(FileDownloadServlet.TYPE_VALUE_ASSEMBLY, assemblyId, FileDownloadServlet.COORDS_FORMAT_VALUE_PSE);
 		}
 		else
 		{
@@ -137,4 +137,22 @@ public class ViewerRunner
 		
 		Window.open(fileDownloadServletUrl, "", "");
 	}
+	
+	/**
+	 * Downloads file from the server.
+	 * @param type type of the file to download
+	 * @param interfaceId identifier of the interface
+	 */
+	private static void downloadAssemblyFileFromServer(String type, String interfaceId, String format)
+	{
+		String fileDownloadServletUrl = GWT.getModuleBaseURL() + FileDownloadServlet.SERVLET_NAME;
+		fileDownloadServletUrl += 
+				"?"+FileDownloadServlet.PARAM_TYPE+"=" + type + 
+				"&"+FileDownloadServlet.PARAM_ID+"=" + ApplicationContext.getPdbInfo().getJobId() + 
+				"&"+FileDownloadServlet.PARAM_ASSEMBLY_ID+"=" + interfaceId + 
+				"&"+FileDownloadServlet.PARAM_COORDS_FORMAT+"=" + format;
+		
+		Window.open(fileDownloadServletUrl, "", "");
+	}	
+	
 }
