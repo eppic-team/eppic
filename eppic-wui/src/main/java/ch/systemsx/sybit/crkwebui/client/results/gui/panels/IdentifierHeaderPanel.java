@@ -49,17 +49,18 @@ public class IdentifierHeaderPanel extends HorizontalLayoutContainer
     	pdbIdentifierSubtitlePanel = new PDBIdentifierSubtitlePanel();
 
     	pdbInfo.add(pdbIdentifierSubtitlePanel, new VerticalLayoutData(-1, -1, new Margins(0, 0, 0, 0)));
-
+    	
     	if(resultsData !=null){
 	    	String html_experiment_info = "";
-	    	html_experiment_info += "<b>" + AppPropertiesManager.CONSTANTS.info_panel_experiment() + "</b> " + resultsData.getExpMethod();
-	    	html_experiment_info += "&nbsp;&nbsp;&nbsp;&nbsp;<b>" + AppPropertiesManager.CONSTANTS.info_panel_spacegroup() + "</b> " + resultsData.getSpaceGroup();
-	    	html_experiment_info += "&nbsp;&nbsp;&nbsp;&nbsp;<b>" + AppPropertiesManager.CONSTANTS.info_panel_resolution() + "</b> " + resultsData.getResolution();
-	    	html_experiment_info += "&nbsp;&nbsp;&nbsp;&nbsp;<b>" + AppPropertiesManager.CONSTANTS.info_panel_rfree() + "</b> " + resultsData.getRfreeValue();
+			html_experiment_info += "<span class='eppic-general-info-label-new'>" + AppPropertiesManager.CONSTANTS.info_panel_experiment() + "</span> <span class='eppic-general-info-label-value-new'>" + resultsData.getExpMethod() + "</span>";
+			html_experiment_info += "&nbsp;&nbsp;&nbsp;&nbsp;<span class='eppic-general-info-label-new'>" + AppPropertiesManager.CONSTANTS.info_panel_spacegroup() + "</span> <span class='eppic-general-info-label-value-new'>" + resultsData.getSpaceGroup() + "</span>";
+			html_experiment_info += "&nbsp;&nbsp;&nbsp;&nbsp;<span class='eppic-general-info-label-new'>" + AppPropertiesManager.CONSTANTS.info_panel_resolution() + "</span> <span class='eppic-general-info-label-value-new'>" + resultsData.getResolution() + "</span>";
+			html_experiment_info += "&nbsp;&nbsp;&nbsp;&nbsp;<span class='eppic-general-info-label-new'>" + AppPropertiesManager.CONSTANTS.info_panel_rfree() + "</span> <span class='eppic-general-info-label-value-new'>" + resultsData.getRfreeValue() + "</span>";
 	    	experimentinfo = new HTML(html_experiment_info);
-	
+		
 	    	pdbInfo.add(experimentinfo);
     	}
+    	
     	
     	this.add(pdbInfo,  new HorizontalLayoutData(1,-1));
 

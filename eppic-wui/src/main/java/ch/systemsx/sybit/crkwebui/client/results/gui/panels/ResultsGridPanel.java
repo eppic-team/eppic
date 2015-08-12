@@ -150,6 +150,11 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 		toolBar.add(viewerSelectorBox);
 		toolBar.add(new HTML("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"));
 		
+		toolbar_link = new HTML("<a href='/#id/" + GWT.getHostPageBaseURL() + "'>View All Assemblies</a>");
+		toolBar.add(toolbar_link);
+		toolBar.add(new HTML("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"));		
+		
+		
 		clustersViewButton = new CheckBox();
 		clustersViewButton.setHTML(AppPropertiesManager.CONSTANTS.results_grid_clusters_label());
 		new ToolTip(clustersViewButton, new ToolTipConfig(AppPropertiesManager.CONSTANTS.results_grid_clusters_tooltip()));
@@ -163,9 +168,8 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 		});
 		clustersViewButton.setValue(false);
 		toolBar.add(clustersViewButton);
-		toolBar.add(new HTML("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"));
-		toolbar_link = new HTML("<a href='/#id/" + GWT.getHostPageBaseURL() + "'>View All Assemblies</a>");
-		toolBar.add(toolbar_link);
+
+		
 			
 		return toolBar;
 	}
@@ -577,7 +581,6 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 	 * 
 	 */
 	private void onClustersRadioValueChange(boolean value){
-		//Window.alert("ResultsGridPanel on value change onClustersRadioValueChange()............");
 		if (value) {
 			clustersView.groupBy(clusterIdColumn);
 		} else{
@@ -604,7 +607,7 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 
 		store.add(AppPropertiesManager.CONSTANTS.viewer_local());
 		store.add(AppPropertiesManager.CONSTANTS.viewer_jmol());
-		store.add(AppPropertiesManager.CONSTANTS.viewer_pse());
+		//store.add(AppPropertiesManager.CONSTANTS.viewer_pse());
 
 		final ComboBox<String> viewerTypeComboBox = new ComboBox<String>(store, new LabelProvider<String>() {
 			@Override

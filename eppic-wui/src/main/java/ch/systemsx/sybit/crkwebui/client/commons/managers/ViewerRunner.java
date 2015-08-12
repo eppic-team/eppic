@@ -68,6 +68,60 @@ public class ViewerRunner
 	}
 
 	/**
+	 * Displays jmol viewer.
+	 * @param interfaceNr interface identifier
+	 */
+	private static void showJmolViewerAssembly(String assemblyNr)
+	{
+		int size = ApplicationContext.getWindowData().getWindowHeight() - 60;
+		if(size > ApplicationContext.getWindowData().getWindowWidth() - 60)
+		{
+			size = ApplicationContext.getWindowData().getWindowWidth() - 60;
+		}
+		
+		int jmolAppletSize = size - 40;
+		
+		// note we have set the default format to CIF - JD 2015-06-15
+		
+		String jmolViewerUrl = GWT.getModuleBaseURL() + JmolViewerServlet.SERVLET_NAME;
+		jmolViewerUrl += "?"+FileDownloadServlet.PARAM_ID+"=" + ApplicationContext.getPdbInfo().getJobId() + 
+						 "&"+FileDownloadServlet.PARAM_TYPE + "=" + FileDownloadServlet.TYPE_VALUE_ASSEMBLY + 
+						 "&"+JmolViewerServlet.PARAM_INPUT+"=" + ApplicationContext.getPdbInfo().getTruncatedInputName() + 
+						 "&"+FileDownloadServlet.PARAM_ASSEMBLY_ID+"=" + assemblyNr +
+						 "&"+FileDownloadServlet.PARAM_COORDS_FORMAT+"=" + FileDownloadServlet.COORDS_FORMAT_VALUE_CIF+
+						 "&"+JmolViewerServlet.PARAM_SIZE+"=" + jmolAppletSize;
+		
+		Window.open(jmolViewerUrl, "", "width=" + size + "," +
+										"height=" + size);
+
+	}
+	
+	/**
+	 * Starts selected viewer. Type of the viewer is determined based on the option selected in viewer selector.
+	 * @param interfaceId identifier of the interface
+	 */
+	public static void runViewerAssembly(String assemblyId)
+	{
+		if(ApplicationContext.getSelectedViewer().equals(AppPropertiesManager.CONSTANTS.viewer_jmol()))
+		{
+			showJmolViewerAssembly(assemblyId);
+		}
+		else if(ApplicationContext.getSelectedViewer().equals(AppPropertiesManager.CONSTANTS.viewer_local()))
+		{
+			downloadFileFromServer(FileDownloadServlet.TYPE_VALUE_ASSEMBLY, assemblyId, FileDownloadServlet.COORDS_FORMAT_VALUE_CIF);
+		}
+		else if(ApplicationContext.getSelectedViewer().equals(AppPropertiesManager.CONSTANTS.viewer_pse()))
+		{
+			downloadFileFromServer(FileDownloadServlet.TYPE_VALUE_ASSEMBLY, assemblyId, FileDownloadServlet.COORDS_FORMAT_VALUE_PSE);
+		}
+		else
+		{
+			EventBusManager.EVENT_BUS.fireEvent(new ShowErrorEvent("No viewer selected"));
+		}
+	}
+	
+	
+	/**
 	 * Downloads file from the server.
 	 * @param type type of the file to download
 	 * @param interfaceId identifier of the interface

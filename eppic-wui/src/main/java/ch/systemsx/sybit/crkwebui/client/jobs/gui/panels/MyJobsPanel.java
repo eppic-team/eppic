@@ -28,6 +28,8 @@ import ch.systemsx.sybit.shared.model.StatusOfJob;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.NativeEvent;
+import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.safehtml.shared.UriUtils;
@@ -202,7 +204,6 @@ public class MyJobsPanel extends ContentPanel
 			@Override
 			public void onCellClick(CellClickEvent event) {
 				History.newItem("id/" + myJobsStore.get(event.getRowIndex()).getJobid());	
-				//myJobsGrid.setSelectionModel(null); //so that it doesn't display the wrong job selected!
 			}
 		});
 
@@ -229,7 +230,28 @@ public class MyJobsPanel extends ContentPanel
 				{
 					CrkWebServiceProvider.getServiceController().deleteJob(selectedItem.getJobid());
 				}
+			}	
+			
+			@Override
+            public void onDown(NativeEvent event)
+			{
+				MyJobsModel selectedItem = myJobsGrid.getSelectionModel().getSelectedItem();
+				if(selectedItem != null )
+				{
+					History.newItem("id/" + selectedItem.getJobid());
+				}
+			}	
+			
+			@Override
+            public void onUp(NativeEvent event)
+			{
+				MyJobsModel selectedItem = myJobsGrid.getSelectionModel().getSelectedItem();
+				if(selectedItem != null )
+				{
+					History.newItem("id/" + selectedItem.getJobid());
+				}
 			}
+			
 		};
 		
 		new QuickTip(myJobsGrid);

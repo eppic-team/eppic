@@ -8,23 +8,37 @@ import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.commons.events.SelectAssemblyResultsRowEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowAssembliesEvent;
+import ch.systemsx.sybit.crkwebui.client.commons.events.ShowAssemblyViewerEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowInterfacesOfAssemblyDataEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowThumbnailEvent;
+import ch.systemsx.sybit.crkwebui.client.commons.events.ShowViewerEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.WindowHideEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.SelectAssemblyResultsRowHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowAssembliesHandler;
+import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowAssemblyViewerHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowThumbnailHandler;
+import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowViewerHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.WindowHideHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.managers.EventBusManager;
+import ch.systemsx.sybit.crkwebui.client.commons.managers.ViewerRunner;
 import ch.systemsx.sybit.crkwebui.client.commons.util.EscapedStringGenerator;
 import ch.systemsx.sybit.crkwebui.client.results.data.AssemblyItemModel;
 import ch.systemsx.sybit.crkwebui.client.results.data.AssemblyItemModelProperties;
+import ch.systemsx.sybit.crkwebui.client.results.data.InterfaceItemModel;
+import ch.systemsx.sybit.crkwebui.client.results.gui.cells.AssemblyMethodCallCell;
+import ch.systemsx.sybit.crkwebui.client.results.gui.cells.AssemblyThumbnailCell;
 import ch.systemsx.sybit.crkwebui.client.results.gui.cells.InterfacesButtonCell;
+import ch.systemsx.sybit.crkwebui.client.results.gui.cells.MethodCallCell;
 import ch.systemsx.sybit.crkwebui.client.results.gui.cells.ThumbnailCell;
+import ch.systemsx.sybit.crkwebui.client.results.gui.grid.util.AssemblyMethodSummaryType;
+import ch.systemsx.sybit.crkwebui.client.results.gui.grid.util.AssemblyMethodsSummaryRenderer;
+import ch.systemsx.sybit.crkwebui.client.results.gui.grid.util.FinalCallSummaryRenderer;
+import ch.systemsx.sybit.crkwebui.client.results.gui.grid.util.MethodSummaryType;
 import ch.systemsx.sybit.crkwebui.client.results.gui.panels.ResultsPanel;
 import ch.systemsx.sybit.crkwebui.shared.model.Assembly;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceCluster;
 import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
+
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.logical.shared.SelectionEvent;
@@ -33,6 +47,7 @@ import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.History;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.sencha.gxt.cell.core.client.form.ComboBoxCell.TriggerAction;
@@ -54,7 +69,9 @@ import com.sencha.gxt.widget.core.client.grid.SummaryType;
 import com.sencha.gxt.widget.core.client.tips.QuickTip;
 import com.sencha.gxt.widget.core.client.tips.ToolTipConfig;
 import com.sencha.gxt.widget.core.client.toolbar.ToolBar;
+
 import eppic.EppicParams;
+import eppic.model.ScoringMethod;
 
 public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 {
@@ -212,9 +229,24 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 	private SummaryColumnConfig<AssemblyItemModel, String> getPredictionColumn() {
 		SummaryColumnConfig<AssemblyItemModel, String> predictionColumn = 
 				new SummaryColumnConfig<AssemblyItemModel, String>(props.prediction());
+		predictionColumn.setCell(new AssemblyMethodCallCell(resultsStore,ScoringMethod.EPPIC_FINAL));		
+		predictionColumn.setSummaryType(new AssemblyMethodSummaryType.FinalCallSummaryType());
+		predictionColumn.setSummaryRenderer(new AssemblyMethodsSummaryRenderer());
 		fillColumnSettings(predictionColumn, "prediction");
+		predictionColumn.setColumnTextClassName("eppic-results-final-call");
 		return predictionColumn;
 	}
+	
+	/*private SummaryColumnConfig<InterfaceItemModel, String> getPredictionColumn() {
+		SummaryColumnConfig<AssemblyItemModel, String> column = 
+				new SummaryColumnConfig<AssemblyItemModel, String>(props.prediction());
+		column.setCell(new MethodCallCell(resultsStore, ScoringMethod.EPPIC_FINAL));
+		column.setSummaryType(new MethodSummaryType.FinalCallSummaryType());
+		column.setSummaryRenderer(new FinalCallSummaryRenderer());
+		fillColumnSettings(column, "finalCallName");
+		column.setColumnTextClassName("eppic-results-final-call");
+		return column;
+	}*/	
 	
 	private SummaryColumnConfig<AssemblyItemModel, String> getDetailsColumn() {
 		SummaryColumnConfig<AssemblyItemModel, String> column = 
@@ -245,7 +277,7 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 			}
 		});
 		
-		thumbnailColumn.setCell(new ThumbnailCell());
+		thumbnailColumn.setCell(new AssemblyThumbnailCell());
 		fillColumnSettings(thumbnailColumn, "thumbnail");
 		thumbnailColumn.setResizable(false);
 
@@ -305,7 +337,6 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 	
 	public void fillResultsGrid(PdbInfo resultsData)
 	{
-		//Window.alert("in fillResultsGrid");
 		this.resultsData = resultsData;
 		resultsStore.clear();
 
@@ -383,7 +414,7 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 
 		store.add(AppPropertiesManager.CONSTANTS.viewer_local());
 		store.add(AppPropertiesManager.CONSTANTS.viewer_jmol());
-		store.add(AppPropertiesManager.CONSTANTS.viewer_pse());
+		//store.add(AppPropertiesManager.CONSTANTS.viewer_pse());
 
 		final ComboBox<String> viewerTypeComboBox = new ComboBox<String>(store, new LabelProvider<String>() {
 			@Override
@@ -507,14 +538,14 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 			}
 		});*/
 		
-		/*EventBusManager.EVENT_BUS.addHandler(ShowViewerEvent.TYPE, new ShowViewerHandler() 
-		{
+		EventBusManager.EVENT_BUS.addHandler(ShowAssemblyViewerEvent.TYPE, new ShowAssemblyViewerHandler() {
+			
 			@Override
-			public void onShowViewer(ShowViewerEvent event) 
+			public void onShowAssemblyViewer(ShowAssemblyViewerEvent event) 
 			{
-				ViewerRunner.runViewer(String.valueOf(resultsGrid.getSelectionModel().getSelectedItem().getInterfaceId()));
+				ViewerRunner.runViewerAssembly(String.valueOf(resultsGrid.getSelectionModel().getSelectedItem().getAssemblyId()));
 			}
-		});*/ 
+		}); 
 		
 		EventBusManager.EVENT_BUS.addHandler(ShowThumbnailEvent.TYPE, new ShowThumbnailHandler() {
 			

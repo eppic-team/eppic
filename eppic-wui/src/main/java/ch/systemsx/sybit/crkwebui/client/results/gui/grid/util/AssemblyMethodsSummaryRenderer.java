@@ -7,6 +7,7 @@ import ch.systemsx.sybit.crkwebui.client.results.data.InterfaceItemModel;
 
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
+import com.google.gwt.user.client.Window;
 import com.sencha.gxt.core.client.ValueProvider;
 import com.sencha.gxt.widget.core.client.grid.SummaryRenderer;
 

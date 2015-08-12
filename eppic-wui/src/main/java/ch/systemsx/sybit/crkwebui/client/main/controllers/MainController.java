@@ -72,6 +72,7 @@ import ch.systemsx.sybit.shared.model.StatusOfJob;
 
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
@@ -115,10 +116,10 @@ public class MainController
 		PdbInfo resultsData = ApplicationContext.getPdbInfo();
 		String html_experiment_info = "";
 		if(resultsData !=null){
-			html_experiment_info += "<b>" + AppPropertiesManager.CONSTANTS.info_panel_experiment() + "</b> " + resultsData.getExpMethod();
-			html_experiment_info += "&nbsp;&nbsp;&nbsp;&nbsp;<b>" + AppPropertiesManager.CONSTANTS.info_panel_spacegroup() + "</b> " + resultsData.getSpaceGroup();
-			html_experiment_info += "&nbsp;&nbsp;&nbsp;&nbsp;<b>" + AppPropertiesManager.CONSTANTS.info_panel_resolution() + "</b> " + resultsData.getResolution();
-			html_experiment_info += "&nbsp;&nbsp;&nbsp;&nbsp;<b>" + AppPropertiesManager.CONSTANTS.info_panel_rfree() + "</b> " + resultsData.getRfreeValue();
+			html_experiment_info += "<span class='eppic-general-info-label-new'>" + AppPropertiesManager.CONSTANTS.info_panel_experiment() + "</span> <span class='eppic-general-info-label-value-new'>" + resultsData.getExpMethod() + "</span>";
+			html_experiment_info += "&nbsp;&nbsp;&nbsp;&nbsp;<span class='eppic-general-info-label-new'>" + AppPropertiesManager.CONSTANTS.info_panel_spacegroup() + "</span> <span class='eppic-general-info-label-value-new'>" + resultsData.getSpaceGroup() + "</span>";
+			html_experiment_info += "&nbsp;&nbsp;&nbsp;&nbsp;<span class='eppic-general-info-label-new'>" + AppPropertiesManager.CONSTANTS.info_panel_resolution() + "</span> <span class='eppic-general-info-label-value-new'>" + NumberFormat.getFormat("0.0").format(resultsData.getResolution()) + "</span>";
+			html_experiment_info += "&nbsp;&nbsp;&nbsp;&nbsp;<span class='eppic-general-info-label-new'>" + AppPropertiesManager.CONSTANTS.info_panel_rfree() + "</span> <span class='eppic-general-info-label-value-new'>" +  NumberFormat.getFormat("0.00").format(resultsData.getRfreeValue()) + "</span>";
 		}
 		ResultsPanel.headerPanel.experimentinfo.setHTML(html_experiment_info);
 	}
@@ -152,9 +153,6 @@ public class MainController
 			@Override
 			public void onShowResultsData(ShowResultsDataEvent event) {
 
-				/*	*/	
-				
-				
 				int num_interfaces = 0;
 				List<InterfaceCluster> clusters = ApplicationContext.getPdbInfo().getInterfaceClusters();
 				for(InterfaceCluster ic : clusters){
@@ -164,7 +162,7 @@ public class MainController
 					///show the assemblies view 
 					displayResultView(event.getPdbScoreItem(), ResultsPanel.ASSEMBLIES_VIEW); //the new default view
 					ResultsPanel.informationPanel.assemblyInfoPanel.setHeadingHtml("General Information");				
-					ResultsPanel.informationPanel.assemblyInfoPanel.assembly_info.setHTML("<table cellpadding=0 cellspacing=0><tr><td width='150px'><b>Assemblies</b></td><td>" + ApplicationContext.getPdbInfo().getAssemblies().size() + "</td></tr><tr><td><b>Interfaces</b></td><td>" + num_interfaces + "</td></tr><tr><td><b>Interface clusters</b></td><td>" + ApplicationContext.getPdbInfo().getInterfaceClusters().size()+"</td></tr></table>");
+					ResultsPanel.informationPanel.assemblyInfoPanel.assembly_info.setHTML("<table cellpadding=0 cellspacing=0><tr><td width='150px'><span class='eppic-general-info-label-new'>Assemblies</span></td><td><span class='eppic-general-info-label-value-new'>" + ApplicationContext.getPdbInfo().getAssemblies().size() + "</span></td></tr><tr><td><span class='eppic-general-info-label-new'>Interfaces</span></td><td><span class='eppic-general-info-label-value-new'>" + num_interfaces + "</span></td></tr><tr><td><span class='eppic-general-info-label-new'>Interface clusters</span></td><td><span class='eppic-general-info-label-value-new'>" + ApplicationContext.getPdbInfo().getInterfaceClusters().size()+"</span></td></tr></table>");
 					setExperimentalInfo();
 				}else if(ApplicationContext.getSelectedViewType() == ResultsPanel.INTERFACES_VIEW){
 					//show the interfaces view
@@ -173,7 +171,7 @@ public class MainController
 						ResultsPanel.headerPanel.pdbIdentifierPanel.informationLabel.setHTML("All Interfaces of: ");
 						ResultsPanel.headerPanel.pdbIdentifierPanel.pdbNameLabel.setHTML("<a target='_blank' href='http://www.pdb.org/pdb/explore/explore.do?structureId="+event.getPdbScoreItem().getPdbCode()+"'>"+event.getPdbScoreItem().getPdbCode()+"</a>");
 						ResultsPanel.informationPanel.assemblyInfoPanel.setHeadingHtml("General Information");				
-						ResultsPanel.informationPanel.assemblyInfoPanel.assembly_info.setHTML("<table cellpadding=0 cellspacing=0><tr><td width='150px'><b>Assemblies</b></td><td>" + ApplicationContext.getPdbInfo().getAssemblies().size() + "</td></tr><tr><td><b>Interfaces</b></td><td>" + num_interfaces + "</td></tr><tr><td><b>Interface clusters</b></td><td>" + ApplicationContext.getPdbInfo().getInterfaceClusters().size()+"</td></tr></table>");
+						ResultsPanel.informationPanel.assemblyInfoPanel.assembly_info.setHTML("<table cellpadding=0 cellspacing=0><tr><td width='150px'><span class='eppic-general-info-label-new'>Assemblies</span></td><td><span class='eppic-general-info-label-value-new'>" + ApplicationContext.getPdbInfo().getAssemblies().size() + "</span></td></tr><tr><td><span class='eppic-general-info-label-new'>Interfaces</span></td><td><span class='eppic-general-info-label-value-new'>" + num_interfaces + "</span></td></tr><tr><td><span class='eppic-general-info-label-new'>Interface clusters</span></td><td><span class='eppic-general-info-label-value-new'>" + ApplicationContext.getPdbInfo().getInterfaceClusters().size()+"</span></td></tr></table>");
 						setExperimentalInfo();
 					}else{
 						ResultsPanel.headerPanel.pdbIdentifierPanel.informationLabel.setHTML("Interface Analysis of: Assembly " + ApplicationContext.getSelectedAssemblyId() + " in ");
@@ -183,10 +181,10 @@ public class MainController
 						String assembly_string = "";
 						for(Assembly a : assemblies){
 							if(a.getId() == assemblyID){
-								assembly_string += "<table cellpadding=0 cellspacing=0><tr><td width='150px'><b>Macromolecular Size</b></td><td>&nbsp;&nbsp;" + a.getMmSizeString() + "</td></tr>";
-								assembly_string += "<tr><td><b>Stiochiometry</b></td><td>&nbsp;&nbsp;" + a.getStoichiometryString() + "</td></tr>";
-								assembly_string += "<tr><td><b>Symmetry</b></td><td>&nbsp;&nbsp;" + a.getSymmetryString() + "</td></tr>";
-								assembly_string += "<tr><td><b>Prediction</b></td><td>&nbsp;&nbsp;" + a.getPredictionString() + "</td></tr></table>";
+								assembly_string += "<table cellpadding=0 cellspacing=0><tr><td width='150px'><span class='eppic-general-info-label-new'>Macromolecular Size</span></td><td>&nbsp;&nbsp;<span class='eppic-general-info-label-value-new'>" + a.getMmSizeString() + "</span></td></tr>";
+								assembly_string += "<tr><td><span class='eppic-general-info-label-new'>Stiochiometry</span></td><td>&nbsp;&nbsp;<span class='eppic-general-info-label-value-new'>" + a.getStoichiometryString() + "</span></td></tr>";
+								assembly_string += "<tr><td><span class='eppic-general-info-label-new'>Symmetry</span></td><td>&nbsp;&nbsp;<span class='eppic-general-info-label-value-new'>" + a.getSymmetryString() + "</span></td></tr>";
+								assembly_string += "<tr><td><span class='eppic-general-info-label-new'>Prediction</span></td><td>&nbsp;&nbsp;<span class='eppic-general-info-label-value-new'>" + a.getPredictionString() + "</span></td></tr></table>";
 								break;
 							}
 						}

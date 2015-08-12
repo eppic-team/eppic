@@ -420,11 +420,25 @@
 	margin-right: 15px;
 }
 
+.eppic-general-info-label-new{
+	text-decoration: none; 
+	font-weight:bold; 
+	font-size: 14px; 
+	color: #434350;
+}
+
+
 .eppic-general-info-label-value{
 	text-decoration: none;  
 	font-size: 14px; 
 	color: #434350;
 	margin-left: 5px;
+}
+
+.eppic-general-info-label-value-new{
+	text-decoration: none;  
+	font-size: 14px; 
+	color: #434350;
 }
 
 .eppic-top-panel-search-button{
