@@ -51,6 +51,13 @@
 			<code>http://www.eppic-web.org/ewui/ewui/fileDownload?type=interface&amp;id=PDB_code&amp;interface=Interface_id</code>
 		</p>
 		<p>
+			Please note that the server uses gzip encoding. Thus if you use wget, you will need the following syntax:
+		</p>
+		<p>
+			<code>wget --header="accept-encoding: gzip" "http://www.eppic-web.org/ewui/ewui/fileDownload?type=interface&amp;id=PDB_code&amp;interface=Interface_id" 
+			-O PDB_code_Interface_id.pdb.gz</code>
+		</p>
+		<p>
 			The interface ids are those calculated by EPPIC from largest (1) to smallest (n). 
 			Note that the downloaded PDB files contain both partners of the interface with the b-factors replaced
 			by the corresponding sequence entropy values per residue. If the interface happens between two 
@@ -183,6 +190,8 @@
 			<li><a href="../downloads/ManyBio.txt"  target="_blank">BioMany set</a>: a large
 				dataset of biological interfaces</li>
 		</ul>
+
+		
 
 		<p>
 			Please note that the original publications also contain the datasets including 

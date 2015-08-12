@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import org.biojava.nbio.structure.Chain;
 import org.biojava.nbio.structure.Compound;
@@ -306,35 +307,45 @@ public class Stoichiometry {
 		//      but! it can happen that a Cn assembly has cross-interfaces, e.g. 4hi5 (a C4)
 
 		
-		boolean nMultExists = false;
-		boolean threeMultExists = false;
-		boolean fourMultExists = false;
-		boolean fiveMultExists = false;
-
-		// this should work fine for both homomer and pseudo-homomer graph
-		for (int mult:Assembly.getMultiplicities(g).values()) {
-			if (mult==n) nMultExists = true;
-			if (mult==3) threeMultExists = true;
-			if (mult==4) fourMultExists = true;
-			if (mult==5) fiveMultExists = true;
+		TreeMap<Integer, Integer> cycleSizes = Assembly.getCycleMultiplicities(g);
+		boolean nMultCycleExists = false;
+		boolean threeMultCycleExists = false;
+		boolean fourMultCycleExists = false;
+		boolean fiveMultCycleExists = false;
+		
+		for (int cycleMult:cycleSizes.values()) {
+			if (cycleMult==n) nMultCycleExists = true;
+			if (cycleMult==3) threeMultCycleExists = true;
+			if (cycleMult==4) fourMultCycleExists = true;
+			if (cycleMult==5) fiveMultCycleExists = true;
 		}
+		
+//		boolean nMultExists = false;
+//		boolean threeMultExists = false;
+//		boolean fourMultExists = false;
+//		boolean fiveMultExists = false;
+//
+//		// this should work fine for both homomer and pseudo-homomer graph
+//		for (int mult:Assembly.getMultiplicities(g).values()) {
+//			if (mult==n) nMultExists = true;
+//			if (mult==3) threeMultExists = true;
+//			if (mult==4) fourMultExists = true;
+//			if (mult==5) fiveMultExists = true;
+//		}
 
-		// numDistinctInterface<=2 is to avoid calling Cn in cases that are 
-		// actually Dn/2 and happen to have an n-multiplicity interface, 
-		// e.g. 3hbx assembly {1,2,4} is a D3, but interface 4 is multiplicity 6
-		if (nMultExists && numDistinctInterfaces<=2) {
+		if (nMultCycleExists) {
 			return "C"+n;
 		}
 
-		if (n==12 && threeMultExists) {
+		if (n==12 && threeMultCycleExists) {
 			// tetrahedral
 			return "T";
 		}
-		if (n==24 && fourMultExists) {
+		if (n==24 && fourMultCycleExists) {
 			// octahedral
 			return "O";
 		}
-		if (n==60 && fiveMultExists) {
+		if (n==60 && fiveMultCycleExists) {
 			// icosahedral
 			return "I";
 		}

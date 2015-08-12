@@ -350,7 +350,7 @@ public class TestLatticeGraph {
 
 	}
 
-	private CrystalAssemblies getCrystalAssemblies(String pdbId) throws IOException, StructureException {
+	public static CrystalAssemblies getCrystalAssemblies(String pdbId) throws IOException, StructureException {
 		
 		logger.info("Calculating interfaces for "+pdbId);
 		

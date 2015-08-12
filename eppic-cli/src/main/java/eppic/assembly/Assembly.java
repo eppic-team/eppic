@@ -1123,6 +1123,62 @@ public class Assembly {
 	}
 	
 	/**
+	 * For each interface cluster id present in the given graph, find out the cycle size for
+	 * a subgraph containing only each interface cluster id
+	 * @param g
+	 * @return a map of interface cluster ids to cycle sizes
+	 */
+	public static TreeMap<Integer,Integer> getCycleMultiplicities(UndirectedGraph<ChainVertex, InterfaceEdge> g) {
+		
+		TreeSet<Integer> interfaceClusterIds = new TreeSet<Integer>();
+		TreeMap<Integer,Integer> counts = new TreeMap<Integer,Integer>();
+				
+		
+		for (InterfaceEdge e:g.edgeSet()) {
+			interfaceClusterIds.add(e.getClusterId());
+		}
+		
+		for (int interfaceClusterId:interfaceClusterIds) {
+			UndirectedGraph<ChainVertex, InterfaceEdge> singleInterfClusterG = 
+					getSubgraphWithSingleInterfaceCluster(g, interfaceClusterId);
+
+			PatonCycleBase<ChainVertex, InterfaceEdge> paton = new PatonCycleBase<ChainVertex, InterfaceEdge>(singleInterfClusterG);
+
+			List<List<ChainVertex>> cycles = paton.findCycleBase();
+			if (cycles.size()==0) {
+				counts.put(interfaceClusterId, 0);
+			} else if (cycles.size()==1) {
+				counts.put(interfaceClusterId, cycles.get(0).size());
+			} else {
+				int count = cycles.get(0).size();
+				for (int i=1;i<cycles.size();i++) {
+					if (cycles.get(i).size()!=count) 
+						logger.warn("Found {} cycle bases in subgraph with single interface cluster {} with different sizes ({} and {}). Will use only first size",
+								cycles.size(), interfaceClusterId, count, cycles.get(i).size());
+				}
+				counts.put(interfaceClusterId, cycles.get(0).size());
+			}
+		}
+
+		
+		return counts;
+	}
+	
+	public static UndirectedGraph<ChainVertex, InterfaceEdge> getSubgraphWithSingleInterfaceCluster(
+			UndirectedGraph<ChainVertex, InterfaceEdge> g, int interfaceClusterId) {
+
+		
+		Set<InterfaceEdge> edges = new HashSet<InterfaceEdge>();
+		
+		for (InterfaceEdge e:g.edgeSet()) {
+			if (e.getClusterId() == interfaceClusterId) edges.add(e);
+		}
+		
+		// we create the subgraph with a single engaged interface cluster
+		return new UndirectedSubgraph<ChainVertex, InterfaceEdge>(g, g.vertexSet(), edges);
+	}
+	
+	/**
 	 * Count the number of distinct interface clusters in the given graph via looking at the number
 	 * of distinct interface cluster ids
 	 * @param g
