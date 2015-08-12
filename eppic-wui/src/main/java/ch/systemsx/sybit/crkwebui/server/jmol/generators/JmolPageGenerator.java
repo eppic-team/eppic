@@ -3,6 +3,7 @@ package ch.systemsx.sybit.crkwebui.server.jmol.generators;
 import java.util.ArrayList;
 import java.util.List;
 
+import ch.systemsx.sybit.crkwebui.shared.model.Assembly;
 import ch.systemsx.sybit.crkwebui.shared.model.Interface;
 import ch.systemsx.sybit.crkwebui.shared.model.Residue;
 import eppic.MolViewersHelper;
@@ -22,7 +23,7 @@ public class JmolPageGenerator
      * @return html page with jmol aplet
      */
 	public static String generatePage(String title, String size, String serverUrl, String resultsLocation,
-			String fileName, Interface interfData, String url3dmoljs)  {
+			String fileName, Interface interfData, Assembly assemblyData, String url3dmoljs)  {
 		
 		
 		boolean isCif = true;
@@ -38,10 +39,11 @@ public class JmolPageGenerator
 		String selectionCode;
 		if (interfData != null) {
 			selectionCode = generateInterfaceSelection3dmolCode(interfData, isCif);
+		} else if (assemblyData !=null ){
+			selectionCode = generateAssemblySelection3dmolCode(assemblyData, isCif);
 		} else {
-			// TODO for assemblies we'd need to do something with the assembly data	
-			//selectionCode = generateAssemblySelection3dmolCode();
-			selectionCode = "";
+			// a default that at least shows a cartoon
+			return "data-style='cartoon'\n";
 		}
 		
 		
@@ -165,5 +167,30 @@ public class JmolPageGenerator
 				"data-style6='cartoon:color="+color2+";stick:color="+color2+"' "+
 				"\n";
 
+	}
+	
+	private static String generateAssemblySelection3dmolCode(Assembly assemblyData, boolean isCif) {
+		String chainIdsString = assemblyData.getChainIdsString();
+		
+		
+		
+		if (chainIdsString!=null) {
+			StringBuilder sb = new StringBuilder();
+			String[] chainIds = chainIdsString.split(",");
+			
+			int i = 1;
+			for (String chainId:chainIds) {
+				sb.append(
+				"data-select"+i+"='chain:"+chainId+"' "+
+				"data-style"+i+"='cartoon:color="+MolViewersHelper.getHexChainColor(chainId)+"' "+
+				"\n");
+				i++;
+			}
+			
+			return sb.toString();
+		}
+		
+		// no chainIds, simply cartoon with same color for all
+		return "data-style='cartoon'\n";
 	}
 }

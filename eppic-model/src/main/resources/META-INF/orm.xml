@@ -191,6 +191,7 @@
 			</basic>
 			<basic name="composition"></basic>
 			<basic name="stoichiometry"></basic>
+			<basic name="chainIds"></basic>
 						
 			<many-to-one name="assembly">
 			</many-to-one>

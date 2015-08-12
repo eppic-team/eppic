@@ -1,7 +1,6 @@
 package ch.systemsx.sybit.crkwebui.server.jmol.servlets;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.ServletConfig;
@@ -14,8 +13,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ch.systemsx.sybit.crkwebui.server.commons.servlets.BaseServlet;
+import ch.systemsx.sybit.crkwebui.server.db.dao.AssemblyDAO;
 import ch.systemsx.sybit.crkwebui.server.db.dao.InterfaceDAO;
 import ch.systemsx.sybit.crkwebui.server.db.dao.PDBInfoDAO;
+import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.AssemblyDAOJpa;
 import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.InterfaceDAOJpa;
 import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.PDBInfoDAOJpa;
 import ch.systemsx.sybit.crkwebui.server.files.downloader.servlets.FileDownloadServlet;
@@ -23,6 +24,7 @@ import ch.systemsx.sybit.crkwebui.server.jmol.generators.JmolPageGenerator;
 import ch.systemsx.sybit.crkwebui.server.jmol.validators.JmolViewerServletInputValidator;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.ValidationException;
+import ch.systemsx.sybit.crkwebui.shared.model.Assembly;
 import ch.systemsx.sybit.crkwebui.shared.model.Interface;
 import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 import eppic.EppicParams;
@@ -117,6 +119,8 @@ public class JmolViewerServlet extends BaseServlet
 			
 			Interface interfData;
 			
+			Assembly assemblyData;
+			
 			String fileName;
 			
 			String title;
@@ -124,6 +128,7 @@ public class JmolViewerServlet extends BaseServlet
 			if (type.equals(FileDownloadServlet.TYPE_VALUE_INTERFACE)) {
 				fileName = input + EppicParams.INTERFACES_COORD_FILES_SUFFIX + "." + interfaceId + extension;
 				interfData = getInterfaceData(jobId, Integer.parseInt(interfaceId));
+				assemblyData = null;
 				title = jobId + " - Interface " + interfaceId;
 				
 			} else if (type.equals(FileDownloadServlet.TYPE_VALUE_ASSEMBLY)) {
@@ -131,14 +136,14 @@ public class JmolViewerServlet extends BaseServlet
 				title = jobId + " - Assembly " + assemblyId;
 				// interfdata would have to be null in this case
 				interfData = null;
-				// TODO we need some assembly data instead
-				// TODO implement assembly data retrieval: what kind of data would we need for assemblies?
+				assemblyData = getAssemblyData(jobId, Integer.parseInt(assemblyId));
 				
 				
 			} else {
 				// the validator shouldn't allow this case, but anyway let's set a default 
 				fileName = input + EppicParams.INTERFACES_COORD_FILES_SUFFIX + "." + interfaceId + extension;
 				interfData = getInterfaceData(jobId, Integer.parseInt(interfaceId));
+				assemblyData = null;
 				title = jobId + " - Interface " + interfaceId;
 			}
 
@@ -147,6 +152,7 @@ public class JmolViewerServlet extends BaseServlet
 					resultsLocation + jobId, 
 					fileName,   
 					interfData,
+					assemblyData,
 					url3dmoljs);
 
 
@@ -180,10 +186,6 @@ public class JmolViewerServlet extends BaseServlet
 	
 	private Interface getInterfaceData(String jobId, int interfaceId) throws DaoException {
 		
-		List<Integer> interfaceIdList = new ArrayList<Integer>();
-		interfaceIdList.add(interfaceId);
-		
-
 		PDBInfoDAO pdbInfoDAO = new PDBInfoDAOJpa();
 		PdbInfo pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
 				
@@ -192,5 +194,23 @@ public class JmolViewerServlet extends BaseServlet
 		
 
 		return interf;
+	}
+
+	private Assembly getAssemblyData(String jobId, int assemblyId) throws DaoException {
+
+		PDBInfoDAO pdbInfoDAO = new PDBInfoDAOJpa();
+		PdbInfo pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
+
+		AssemblyDAO assemblyDAO = new AssemblyDAOJpa();
+		
+		List<Assembly> assemblies = assemblyDAO.getAssemblies(pdbInfo.getUid());
+		
+		Assembly assembly = null;
+		for (Assembly a:assemblies) {
+			if (a.getId() == assemblyId) assembly = a;
+		}
+		
+		return assembly;
+		
 	}
 }

@@ -108,7 +108,8 @@ public class StoichiometrySet {
 		List<AssemblyDescription> ds = new ArrayList<AssemblyDescription>();
 		for (Stoichiometry s:uniqueStoichiometries) {
 			AssemblyDescription ad = 
-					new AssemblyDescription(s.getTotalSize(), s.getSymmetry(), s.toFormattedCompositionString(), s.toFormattedString());
+					new AssemblyDescription(
+							s.getTotalSize(), s.getSymmetry(), s.toFormattedCompositionString(), s.toFormattedString(), s.getChainIdsString());
 			ds.add(ad);
 		}
 		

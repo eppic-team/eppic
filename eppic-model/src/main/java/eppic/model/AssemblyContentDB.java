@@ -13,6 +13,8 @@ public class AssemblyContentDB implements Serializable {
 	private String stoichiometry;
 	private String composition;
 	
+	private String chainIds; // comma separated list of chainId+_+opId belonging to assembly
+	
 	private AssemblyDB assembly;
 
 	public int getUid() {
@@ -61,6 +63,14 @@ public class AssemblyContentDB implements Serializable {
 
 	public void setComposition(String composition) {
 		this.composition = composition;
+	}
+
+	public String getChainIds() {
+		return chainIds;
+	}
+
+	public void setChainIds(String chains) {
+		this.chainIds = chains;
 	}
 
 	public AssemblyDB getAssembly() {

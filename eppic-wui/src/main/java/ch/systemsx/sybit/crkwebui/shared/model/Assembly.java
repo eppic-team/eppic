@@ -224,6 +224,13 @@ public class Assembly implements Serializable  {
 		
 	}
 	
+	public String getChainIdsString() {
+		// TODO this returns the first only, we should consider what to do with the others
+		
+		if (assemblyContents.size()==0) return null;
+		return assemblyContents.get(0).getChainIds();
+	}
+	
 	public String getIdentifierString(){
 		return this.id+"";
 	}
