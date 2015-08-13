@@ -996,7 +996,11 @@ public class Assembly {
 
 				int clusterId = -1;
 				for (int cId: clusterIdsToMult.keySet()) {
-					if (clusterIdsToMult.get(cId) == n) clusterId = cId;
+					if (clusterId==-1 && clusterIdsToMult.get(cId) == n) 
+						clusterId = cId;
+					else if (clusterIdsToMult.get(cId)==n) 
+						logger.info("Assembly {} has more than 1 interface cluster with multiplicity {}. Taking assembly call from first one.", 
+								toString(), n);
 				}
 				
 				if (clusterId == -1) {
