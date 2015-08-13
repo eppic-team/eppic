@@ -974,7 +974,7 @@ public class Assembly {
 		}
 
 		
-		TreeMap<Integer,Integer> clusterIdsToMult = getMultiplicities(g);
+		TreeMap<Integer,Integer> clusterIdsToMult = getCycleMultiplicities(g);
 		
 		
 		if (sym.startsWith("C")) {
@@ -999,7 +999,7 @@ public class Assembly {
 					if (clusterId==-1 && clusterIdsToMult.get(cId) == n) 
 						clusterId = cId;
 					else if (clusterIdsToMult.get(cId)==n) 
-						logger.info("Assembly {} has more than 1 interface cluster with multiplicity {}. Taking assembly call from first one.", 
+						logger.info("Assembly {} has more than 1 interface cluster with cycle multiplicity {}. Taking assembly call from first one.", 
 								toString(), n);
 				}
 				
