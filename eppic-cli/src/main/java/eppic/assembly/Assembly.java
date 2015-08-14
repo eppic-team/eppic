@@ -970,7 +970,8 @@ public class Assembly {
 
 			g = gctr.contract();
 			
-			// TODO we should check the call of contracted interfaces and score properly based on them and the relevant interfaces below
+			// TODO we should check the call of contracted interfaces and score properly based on 
+			// them and the relevant interfaces below
 		}
 
 		
@@ -1025,14 +1026,23 @@ public class Assembly {
 
 
 
-		} else if (sym.startsWith("D")) {
+		} else if (sym.startsWith("D") || sym.equals("T") || sym.equals("O") || sym.equals("I")) {
 			
-			// In a D assembly there's at least 2 distinct interfaces.
-			// Most usually the 2 largest interfaces are the 2 isologous, 
-			// the 3rd one being the heterologous
+			// In all other point group symmetries there's always 2 essential interfaces out of all of
+			// the engaged ones that are needed to form the symmetry. 
+			// Then a third one follows necessarily (though it might be too small and not show up in our 
+			// list) because the other 2 are at the right angles to produce a third one. 
+			
+			// A possible strategy for scoring is simply taking the 2 largest interfaces and checking that both 
+			// have a BIO call (that would be a sufficient condition), otherwise is XTAL. 
+			// Another possibility would be to take any 2 interfaces out of the list and check if at 
+			// least 2 are BIO.
+						
+			// In a D assembly most usually the 2 largest interfaces are the 2 isologous, 
+			// the 3rd one being the heterologous. But that's not a general rule at all! there are counter-examples
 
-			// let's simply take the 2 largest interfaces: if both bio that's a sufficient condition
-			// the keys of the map should be sorted from first cluster id to last cluster id (in turn sorted by areas)
+
+			// the keys of the map should be sorted from first cluster id to last cluster id (which are sorted by areas)
 
 			Iterator<Integer> it = clusterIdsToMult.keySet().iterator();
 			int clusterId1 = it.next(); // the largest
