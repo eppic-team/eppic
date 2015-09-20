@@ -32,7 +32,7 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 	
 	private static final Logger logger = LoggerFactory.getLogger(CrystalAssemblies.class);
 
-	private LatticeGraph latticeGraph;
+	private LatticeGraph<ChainVertex,InterfaceEdge> latticeGraph;
 	private Structure structure;
 	private List<StructureInterfaceCluster> interfaceClusters;
 
@@ -54,7 +54,7 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 	public CrystalAssemblies(Structure structure, StructureInterfaceList interfaces) throws StructureException {
 		
 		this.structure = structure;
-		this.latticeGraph = new LatticeGraph(structure, interfaces);
+		this.latticeGraph = new LatticeGraph<ChainVertex,InterfaceEdge>(structure, interfaces,ChainVertex.class,InterfaceEdge.class);
 		this.interfaceClusters = interfaces.getClusters(EppicParams.CLUSTERING_CONTACT_OVERLAP_SCORE_CUTOFF);
 		
 		findValidAssemblies();
@@ -220,7 +220,7 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 		return structure;
 	}
 	
-	public LatticeGraph getLatticeGraph() {
+	public LatticeGraph<ChainVertex, InterfaceEdge> getLatticeGraph() {
 		return latticeGraph;
 	}
 	
