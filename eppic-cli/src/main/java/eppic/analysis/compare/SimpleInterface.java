@@ -79,6 +79,7 @@ public class SimpleInterface {
 		this.operator2 = operator2;
 	}
 	
+	@Override
 	public String toString() {
 		return id+":"+chain1+"|"+chain2+"("+SpaceGroup.getAlgebraicFromMatrix(operator1)+"|"+SpaceGroup.getAlgebraicFromMatrix(operator2)+")"; 
 	}

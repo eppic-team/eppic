@@ -115,6 +115,7 @@ public class PisaResidue implements Serializable{
 		this.solvEnergy = solvEnergy;
 	}
 	
+	@Override
 	public String toString() {
 		return resType+resSerial;
 	}

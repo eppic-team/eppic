@@ -225,6 +225,7 @@ public class UnirefEntry implements Serializable {
 		return (id==null || (uniprotId==null && uniparcId==null) || uniparcId==null || (uniprotId!=null && ncbiTaxId==0) || sequence==null);
 	}
 	
+	@Override
 	public String toString() {
 		return id+"\t"+uniprotId+"\t"+uniparcId+"\t"+ncbiTaxId+"\t"+sequence;
 	}

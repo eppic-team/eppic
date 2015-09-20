@@ -70,6 +70,7 @@ public class ChainEvolContext implements Serializable {
 		public int compareTo(MappingCoverage o) {
 			return new Integer(totalCoverage).compareTo(o.totalCoverage);
 		}
+		@Override
 		public String toString() {
 			return uniprotId+"-"+totalCoverage;
 		}

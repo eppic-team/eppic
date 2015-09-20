@@ -101,6 +101,7 @@ public class SiftsFeature {
 	/**
 	 * @return a string representation of this feature (position, pdb code, pdb positions)
 	 */
+	@Override
 	public String toString() {
 		return uniPosition.first().beg + "-" + uniPosition.first().end + " " + this.description + "(cif:" + cifPosition + ", pdb:" + pdbBeg + "-" + pdbEnd + ")";
 	}

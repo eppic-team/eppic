@@ -381,6 +381,7 @@ public class Stoichiometry {
 		return true;
 	}
 	
+	@Override
 	public String toString() {
 		return Arrays.toString(sto);
 	}
