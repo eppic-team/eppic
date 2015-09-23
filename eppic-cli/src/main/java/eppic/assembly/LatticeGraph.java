@@ -76,6 +76,14 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 	private Map<String,Matrix4d[]> unitCellOperators = new HashMap<>(); // In crystal coordinates
 	private Map<String,Point3d> referencePoints = new HashMap<>(); // Chain ID -> centroid coordinate
 
+	/**
+	 * Create the graph, initializing given the input structure and interfaces.
+	 * @param struct
+	 * @param interfaces
+	 * @param vertexClass
+	 * @param edgeClass
+	 * @throws StructureException
+	 */
 	public LatticeGraph(Structure struct, StructureInterfaceList interfaces, Class<? extends V> vertexClass,Class<? extends E> edgeClass) throws StructureException {
 
 		this.struct = struct;
