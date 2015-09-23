@@ -4,8 +4,10 @@ eppic
 EPPIC is a software package for the analysis of interfaces present in protein crystal structures. It uses mainly evolutionary criteria to try to assess whether interfaces are biologically relevant or simply crystal contacts.
 
 The software is divided into submodules: 
-* eppic-cli: the command line interface
-* eppic-wui: the web graphical user interface, a front-end to the command line tool. You can see it working live at http://www.eppic-web.org
+* **[eppic-cli](eppic-cli/README.md):** the command line interface
+* **[eppic-wui](eppic-wui/README.md):** the web graphical user interface, a front-end to the command line tool. You can see it working live at http://www.eppic-web.org
+* **eppic-model:** Hybernate model for communicating with the database
+* **eppic-dbtools:** Tools for managing the database
 
 Please note that the project was previously in two separate repositories (eppic-cli and eppic-wui) and has now been unified into a single repository here.
 
