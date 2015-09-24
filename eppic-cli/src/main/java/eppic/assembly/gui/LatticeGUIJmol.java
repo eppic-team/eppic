@@ -124,7 +124,7 @@ public class LatticeGUIJmol {
 		
 		if (args.length>=2) {
 			String interfaceIdsCommaSep = args[arg++];
-			String[] splitIds = interfaceIdsCommaSep.split("\\w*,\\w*");
+			String[] splitIds = interfaceIdsCommaSep.split("\\s*,\\s*");
 			interfaceIds = new ArrayList<Integer>(splitIds.length);
 			for(String idStr : splitIds) {
 				try {
@@ -166,7 +166,9 @@ public class LatticeGUIJmol {
 		}
 		
 		LatticeGUIJmol gui = new LatticeGUIJmol(struc, file, interfaceIds);
-		
+		if(interfaceIds != null) {
+			gui.getGraph().filterEngagedInterfaces(interfaceIds);
+		}
 
 		System.out.println(gui.getJmolCommands());
 		gui.display();

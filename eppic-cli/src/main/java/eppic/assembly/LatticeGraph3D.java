@@ -29,12 +29,14 @@ import org.biojava.nbio.structure.xtal.CrystalCell;
 import org.biojava.nbio.structure.xtal.CrystalTransform;
 import org.jcolorbrewer.ColorBrewer;
 import org.jgrapht.UndirectedGraph;
+import org.jgrapht.graph.MaskFunctor;
+import org.jgrapht.graph.UndirectedMaskSubgraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class LatticeGraph3D {
 
-	private static Logger logger = LoggerFactory.getLogger(LatticeGraph3D.class);
+	private static final Logger logger = LoggerFactory.getLogger(LatticeGraph3D.class);
 
 	private final double defaultInterfaceRadius = 2.5;
 	private final double defaultArcHeight = 0;//4
@@ -45,6 +47,8 @@ public class LatticeGraph3D {
 		DUPLICATE, // Duplicate edges on each side of the cell boundary
 	}
 
+	// subgraph, filtered for engaged interfaces
+	private UndirectedGraph<ChainVertex3D, InterfaceEdge3D> subgraph;
 
 	//	private static interface VertexPositioner {
 	//		public Point3d getUnitCellPos(Chain chain, int au);
@@ -75,14 +79,14 @@ public class LatticeGraph3D {
 	//		}
 	//	}
 
-	private Structure structure;
-	private CrystalCell cell;
+	private final Structure structure;
+	private final CrystalCell cell;
 
-	private LatticeGraph<ChainVertex3D, InterfaceEdge3D> graph;
+	private final LatticeGraph<ChainVertex3D, InterfaceEdge3D> graph;
 
-	private Map<String,Point3d> chainCentroid;
+	private final Map<String,Point3d> chainCentroid;
 	
-	private WrappingPolicy policy;
+	private final WrappingPolicy policy;
 
 	public LatticeGraph3D(Structure struc) throws StructureException {
 		this(struc,null);
@@ -121,6 +125,7 @@ public class LatticeGraph3D {
 		// Assign colors
 		//assignColorsById();
 		assignColorsByEntity();
+		subgraph = graph.getGraph();
 	}
 
 	/**
@@ -504,20 +509,36 @@ public class LatticeGraph3D {
 			return segments;
 		}
 	 */
+	
+	public void filterEngagedInterfaces(final List<Integer> interfaces) {
+		MaskFunctor<ChainVertex3D, InterfaceEdge3D> mask = new MaskFunctor<ChainVertex3D, InterfaceEdge3D>() {
+			@Override
+			public boolean isVertexMasked(ChainVertex3D vertex) {
+				return false;
+			}
+
+			@Override
+			public boolean isEdgeMasked(InterfaceEdge3D edge) {
+				return !interfaces.contains(edge.getClusterId());
+			}
+		};
+		subgraph = new UndirectedMaskSubgraph<ChainVertex3D, InterfaceEdge3D>(graph.getGraph(), mask);
+	}
 
 	public Set<ChainVertex3D> getVertices() {
-		return graph.getGraph().vertexSet();
+		return subgraph.vertexSet();
 	}
 	
 
 	public Set<InterfaceEdge3D> getEdges() {
-		return graph.getGraph().edgeSet();
+		return subgraph.edgeSet();
 	}
 	
 	public ChainVertex3D getEdgeSource(InterfaceEdge3D edge) {
-		return graph.getGraph().getEdgeSource(edge);
+		return subgraph.getEdgeSource(edge);
 	}
 	public ChainVertex3D getEdgeTarget(InterfaceEdge3D edge) {
-		return graph.getGraph().getEdgeTarget(edge);
+		return subgraph.getEdgeTarget(edge);
+	}
 	}
 }

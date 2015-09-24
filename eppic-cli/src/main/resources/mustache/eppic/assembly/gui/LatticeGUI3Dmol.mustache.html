@@ -95,9 +95,16 @@ function axes(viewer) {
          end:new $3Dmol.Vector3( {{perpendicular.x}},{{perpendicular.y}},{{perpendicular.z}} ),
          radius:{{radius}},toCap:true,fromCap:true,
          color:'{{colorStr}}{{^colorStr}}white{{/colorStr}}'});
+     viewer.addLabel("{{clusterId}}",{
+         fontColor:'{{colorStr}}{{^colorStr}}white{{/colorStr}}',
+         fontSize:10,
+         showBackground: false,
+         infront:false,
+         position:{ x:{{center.x}},y:{{center.y}},z:{{center.z}} }
+         });
 {{/circles}}
 {{/graph.edges}}
-     var uc = viewer.addUnitCell(viewer.getModel(0));
+     viewer.addUnitCell(viewer.getModel(0));
      viewer.zoomTo({});
      viewer.render();
      });

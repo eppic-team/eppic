@@ -19,10 +19,16 @@ set defaultDrawArrowScale 8;
 	}}{ {{start.x}},{{start.y}},{{start.z}} } {{!
 	}}{ {{mid.x}},{{mid.y}},{{mid.z}} } {{!
 	}}{ {{end.x}},{{end.y}},{{end.z}} } {{!
-	}}COLOR {{colorStr}}{{^colorStr}}[1,1,1]{{/colorStr}};{{!
-}}{{/segments}}
-{{#circles}}draw ID "{{uniqueName}}" "{{toString}}" CIRCLE { {{center.x}},{{center.y}},{{center.z}} } { {{perpendicular.x}},{{perpendicular.y}},{{perpendicular.z}} } DIAMETER {{diameter}} COLOR {{colorStr}};{{/circles}}
-{{/graph.edges}}
+	}}COLOR {{colorStr}}{{^colorStr}}[1,1,1]{{/colorStr}};
+{{/segments}}{{!
+}}{{#circles}}{{!
+	}}draw ID "{{uniqueName}}" "{{clusterId}}" {{!
+	}}CIRCLE { {{center.x}},{{center.y}},{{center.z}} } {{!
+	}}{ {{perpendicular.x}},{{perpendicular.y}},{{perpendicular.z}} } {{!
+	}}DIAMETER {{diameter}} {{!
+	}}COLOR {{colorStr}};
+{{/circles}}{{!
+}}{{/graph.edges}}
 
 // Display:
 {{! cartoon }}

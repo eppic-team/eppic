@@ -3,42 +3,22 @@ package eppic.assembly.gui;
 import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
-import javax.swing.JFrame;
-import javax.vecmath.Matrix4d;
 import javax.vecmath.Point3d;
 import javax.vecmath.Vector3d;
 
-import org.biojava.nbio.structure.Atom;
-import org.biojava.nbio.structure.Calc;
-import org.biojava.nbio.structure.Chain;
-import org.biojava.nbio.structure.PDBCrystallographicInfo;
 import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.StructureException;
 import org.biojava.nbio.structure.StructureTools;
 import org.biojava.nbio.structure.align.util.AtomCache;
-import org.biojava.nbio.structure.contact.Pair;
-import org.biojava.nbio.structure.contact.StructureInterfaceList;
-import org.biojava.nbio.structure.gui.BiojavaJmol;
 import org.biojava.nbio.structure.io.MMCIFFileReader;
 import org.biojava.nbio.structure.io.PDBFileReader;
 import org.biojava.nbio.structure.io.util.FileDownloadUtils;
-import org.biojava.nbio.structure.xtal.CrystalBuilder;
-import org.biojava.nbio.structure.xtal.CrystalCell;
-import org.biojava.nbio.structure.xtal.CrystalTransform;
-import org.jcolorbrewer.ColorBrewer;
-import org.jgrapht.UndirectedGraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,11 +26,8 @@ import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
 
-import eppic.assembly.ChainVertex;
 import eppic.assembly.ChainVertex3D;
-import eppic.assembly.InterfaceEdge;
 import eppic.assembly.InterfaceEdge3D;
-import eppic.assembly.LatticeGraph;
 import eppic.assembly.LatticeGraph3D;
 import eppic.assembly.OrientedCircle;
 import eppic.assembly.ParametricCircularArc;
@@ -173,7 +150,7 @@ public class LatticeGUI3Dmol {
 		
 		if (args.length>arg) {
 			String interfaceIdsCommaSep = args[arg++];
-			String[] splitIds = interfaceIdsCommaSep.split("\\w*,\\w*");
+			String[] splitIds = interfaceIdsCommaSep.split("\\s*,\\s*");
 			interfaceIds = new ArrayList<Integer>(splitIds.length);
 			for(String idStr : splitIds) {
 				try {
@@ -216,8 +193,11 @@ public class LatticeGUI3Dmol {
 		
 		LatticeGUI3Dmol gui = new LatticeGUI3Dmol(struc, file, interfaceIds);
 		
+		if(interfaceIds != null) {
+			gui.getGraph().filterEngagedInterfaces(interfaceIds);
+		}
 		gui.get3DmolCommands(out);
-		
+
 		if( !output.equals("-")) {
 			out.close();
 		}
