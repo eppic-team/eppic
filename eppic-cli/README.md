@@ -90,8 +90,14 @@ Linux or downloading java from http://java.com/en/download/index.jsp
      http://www.tcoffee.org/Projects_home_page/t_coffee_home_page.html
      
    - The UniProt JAPI, downloadable from
-     http://www.ebi.ac.uk/uniprot/remotingAPI/download/uniprotjapi.jar 
-     
+     http://www.ebi.ac.uk/uniprot/remotingAPI/download/uniprotjapi.jar
+     (can be automatically installed by the eppic script).
+
+2. Building:
+   - A pre-built package is available from http://eppic-web.org/downloads/eppic.zip
+   - To build from source, run `mvn package` (optionally with the `-DskipTests` option)
+     from the top-level or eppic-cli directory. This will generate the package
+     `eppic-cli/target/eppic-cli-<version>.zip`
 
 2. Configuring it: 
    
@@ -99,16 +105,17 @@ Linux or downloading java from http://java.com/en/download/index.jsp
      a few files in it (including this README) and two subdirectories bin
      and lib.
      
-   - Copy the downloaded uniprotjapi.jar to the lib subdirectory.
+   - (Optional) To use a local copy of `uniprotjapi.jar`, copy or symlink it to the `lib/` subdirectory.
+     Otherwise, this will be automatically downloaded on the first run.
    
    - Copy the eppic.conf file provided to your home directory with the 
-     name .eppic.conf. Edit it and set the parameters:
+     name `.eppic.conf`. Edit it and set the parameters:
    
-      BLAST_DB_DIR
-      BLAST_DB
-      BLASTCLUST_BIN
-      BLASTP_BIN
-      CLUSTALO_BIN or TCOFFEE_BIN
+     - BLAST_DB_DIR
+     - BLAST_DB
+     - BLASTCLUST_BIN
+     - BLASTP_BIN
+     - CLUSTALO_BIN or TCOFFEE_BIN
    
      to their appropriate paths. 
      Optionally you can also set PYMOL_EXE (needed for -l option) and 
