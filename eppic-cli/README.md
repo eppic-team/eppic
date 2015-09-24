@@ -12,6 +12,7 @@ If you use this software for your research, please cite:
 >
 > http://www.biomedcentral.com/1471-2105/13/334
 
+The software is released under the GNU General Public License (GPL).
 
 
 USAGE
