@@ -22,7 +22,7 @@ set defaultDrawArrowScale 8;
 	}}COLOR {{colorStr}}{{^colorStr}}[1,1,1]{{/colorStr}};
 {{/segments}}{{!
 }}{{#circles}}{{!
-	}}draw ID "{{uniqueName}}" "{{clusterId}}" {{!
+	}}draw ID "{{uniqueName}}" "{{interfaceId}}" {{!
 	}}CIRCLE { {{center.x}},{{center.y}},{{center.z}} } {{!
 	}}{ {{perpendicular.x}},{{perpendicular.y}},{{perpendicular.z}} } {{!
 	}}DIAMETER {{diameter}} {{!

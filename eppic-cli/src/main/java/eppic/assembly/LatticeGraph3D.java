@@ -519,7 +519,7 @@ public class LatticeGraph3D {
 
 			@Override
 			public boolean isEdgeMasked(InterfaceEdge3D edge) {
-				return !interfaces.contains(edge.getClusterId());
+				return !interfaces.contains(edge.getInterfaceId());
 			}
 		};
 		subgraph = new UndirectedMaskSubgraph<ChainVertex3D, InterfaceEdge3D>(graph.getGraph(), mask);
