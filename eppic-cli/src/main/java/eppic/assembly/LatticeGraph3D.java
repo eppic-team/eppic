@@ -39,7 +39,7 @@ public class LatticeGraph3D {
 	private static final Logger logger = LoggerFactory.getLogger(LatticeGraph3D.class);
 
 	private final double defaultInterfaceRadius = 2.5;
-	private final double defaultArcHeight = 0;//4
+	private final double defaultArcHeight = 4;
 
 	public enum WrappingPolicy {
 		DONT_WRAP, // Don't wrap edges. Draw directly between vertices
