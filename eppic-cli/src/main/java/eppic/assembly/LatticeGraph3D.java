@@ -40,6 +40,7 @@ public class LatticeGraph3D {
 
 	private final double defaultInterfaceRadius = 2.5;
 	private final double defaultArcHeight = 4;
+	private final double defaultArrowOffset = 6;
 
 	public enum WrappingPolicy {
 		DONT_WRAP, // Don't wrap edges. Draw directly between vertices
@@ -250,6 +251,10 @@ public class LatticeGraph3D {
 
 				} else {
 					logger.debug("Source and target for {} within unit cell",edge);
+				}
+				
+				for(ParametricCircularArc seg : segments) {
+					seg.shrinkAbsolute(defaultArrowOffset);
 				}
 				
 				edge.setSegments(segments);

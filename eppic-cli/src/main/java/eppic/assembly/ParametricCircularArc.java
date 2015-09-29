@@ -119,6 +119,12 @@ public class ParametricCircularArc {
 		}
 	}
 
+	public void shrinkAbsolute(double abslen) {
+		double angle = abslen/radius;
+		startAngle += angle;
+		endAngle -= angle;
+	}
+
 	public Point3d getStart() {
 		return getRelativePosition(0);
 	}
