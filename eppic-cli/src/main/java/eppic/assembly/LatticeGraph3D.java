@@ -1,14 +1,20 @@
 package eppic.assembly;
 
 import java.awt.Color;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.zip.GZIPOutputStream;
 import java.util.Set;
 
 import javax.vecmath.Matrix4d;
@@ -18,12 +24,16 @@ import javax.vecmath.Vector3d;
 import org.biojava.nbio.structure.Atom;
 import org.biojava.nbio.structure.Calc;
 import org.biojava.nbio.structure.Chain;
+import org.biojava.nbio.structure.Group;
 import org.biojava.nbio.structure.PDBCrystallographicInfo;
 import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.StructureException;
 import org.biojava.nbio.structure.StructureTools;
 import org.biojava.nbio.structure.contact.Pair;
 import org.biojava.nbio.structure.contact.StructureInterfaceList;
+import org.biojava.nbio.structure.io.FileConvert;
+import org.biojava.nbio.structure.io.mmcif.MMCIFFileTools;
+import org.biojava.nbio.structure.io.mmcif.SimpleMMcifParser;
 import org.biojava.nbio.structure.xtal.CrystalBuilder;
 import org.biojava.nbio.structure.xtal.CrystalCell;
 import org.biojava.nbio.structure.xtal.CrystalTransform;
@@ -424,6 +434,92 @@ public class LatticeGraph3D {
 		return intersection;
 	}
 
+
+	/**
+	 * Writes this Assembly to mmCIF file (gzipped) with chain ids as follows:
+	 *  <li> author_ids: chainId_operatorId</li>
+	 *  <li> asym_ids: chainId_operatorId</li>
+	 * The atom ids will be renumbered if the Assembly contains symmetry-related molecules,
+	 * otherwise some molecular viewers (e.g. 3Dmol.js) won't be able to read the atoms
+	 * as distinct.
+	 * Note that PyMOL supports multi-letter chain ids only from 1.7.4
+	 * @param file
+	 * @throws IOException
+	 * @throws StructureException
+	 */
+	public void writeCellToMmCifFile(File file) throws IOException, StructureException {
+		
+		// Some molecular viewers like 3Dmol.js need globally unique atom identifiers (across chains)
+		// With the approach below we add an offset to atom ids of sym-related molecules to avoid repeating atom ids
+		
+		// we only do renumbering in the case that there are sym-related chains in the assembly
+		// that way we stay as close to the original as possible
+		boolean symRelatedChainsExist = false;
+		int numChains = structure.size();
+		Set<String> uniqueChains = new HashSet<String>();
+		for (ChainVertex3D cv:getVertices()) {
+			uniqueChains.add(cv.getChain().getChainID());
+		}
+		if (numChains != uniqueChains.size()) symRelatedChainsExist = true;
+
+
+		PrintStream ps = new PrintStream(new GZIPOutputStream(new FileOutputStream(file)));
+
+		ps.println(SimpleMMcifParser.MMCIF_TOP_HEADER+"eppic_unit_cell");
+
+		// Cell and space group info
+		PDBCrystallographicInfo crystalInfo = structure.getCrystallographicInfo();
+		if(crystalInfo == null) {
+			logger.error("No crystallographic info set for this structure.");
+			// leads to NullPointer
+		} else {
+			ps.print(MMCIFFileTools.toMMCIF("_cell", MMCIFFileTools.convertCrystalCellToCell(cell)));
+			ps.print(MMCIFFileTools.toMMCIF("_symmetry", MMCIFFileTools.convertSpaceGroupToSymmetry(crystalInfo.getSpaceGroup())));
+		}
+
+		ps.print(FileConvert.getAtomSiteHeader());
+
+		List<Object> atomSites = new ArrayList<Object>();
+
+		int atomId = 1;
+		for (ChainVertex3D cv:getVertices()) {
+			String chainId = cv.getChain().getChainID()+"_"+cv.getOpId();
+			//TODO maybe need to clone and transform here?
+			Matrix4d m = graph.getUnitCellTransformationOrthonormal(chainId, cv.getOpId());
+			//Point3d refCoord = graph.getReferenceCoordinate(cv.getChainId());
+
+			Chain newChain = (Chain) cv.getChain().clone();
+			Calc.transform(newChain, m);
+
+			for (Group g: newChain.getAtomGroups()) {
+				for (Atom a: g.getAtoms()) {
+					if (symRelatedChainsExist) 
+						atomSites.add(MMCIFFileTools.convertAtomToAtomSite(a, 1, chainId, chainId, atomId));
+					else 
+						atomSites.add(MMCIFFileTools.convertAtomToAtomSite(a, 1, chainId, chainId));
+
+					atomId++;
+				}
+				for (Group altG:g.getAltLocs()) {
+					for (Atom a: altG.getAtoms()) {
+
+						if (symRelatedChainsExist)
+							atomSites.add(MMCIFFileTools.convertAtomToAtomSite(a, 1, chainId, chainId, atomId));
+						else
+							atomSites.add(MMCIFFileTools.convertAtomToAtomSite(a, 1, chainId, chainId));
+
+						atomId++;
+					}
+				}
+			}
+		}
+
+		ps.print(MMCIFFileTools.toMMCIF(atomSites));
+
+
+		ps.close();
+	}
+	
 	/**
 	 *
 	 * @param edge The edge to add segments to
@@ -545,5 +641,11 @@ public class LatticeGraph3D {
 	public ChainVertex3D getEdgeTarget(InterfaceEdge3D edge) {
 		return subgraph.getEdgeTarget(edge);
 	}
+	
+	public Point3d cellCenter() {
+		Point3d center = new Point3d(.5,.5,.5);
+		cell.transfToOrthonormal(center);
+		cell.transfToOriginCell(center);
+		return center;
 	}
 }

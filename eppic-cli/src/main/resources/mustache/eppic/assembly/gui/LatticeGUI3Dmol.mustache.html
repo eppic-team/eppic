@@ -4,7 +4,8 @@
     <meta charset='utf-8'>
     <title>Lattice for {{name}}</title>
     <!--script src="http://3Dmol.csb.pitt.edu/build/3Dmol-min.js"></script-->
-    <script src="http://3Dmol.csb.pitt.edu/build/3Dmol.js"></script>
+    <!--script src="http://3Dmol.csb.pitt.edu/build/3Dmol.js"></script-->
+    <script src="3Dmol.js"></script>
     <style type="text/css">
     #molviewer {
         min-width:200px;
@@ -72,44 +73,61 @@ function axes(viewer) {
     <script>
 (function() {
  var viewer = $3Dmol.createViewer($("#molviewer"));
- $3Dmol.download("pdb:{{pdbId}}",viewer,{},function(){
-     viewer.setBackgroundColor(0xffffffff);
-     viewer.setStyle({},{cartoon:{color:'spectrum',opacity:.4}});
-     //Vertices
-{{#graph.vertices}}
-     viewer.addSphere({center:new $3Dmol.Vector3({{center.x}},{{center.y}},{{center.z}}),
-         radius:5.0,
-         color:'{{colorStr}}{{^colorStr}}white{{/colorStr}}'});
-{{/graph.vertices}}
-     //Edges
-{{#graph.edges}}
-{{#segments}}
-     viewer.addArrow({
-         start:new $3Dmol.Vector3( {{start.x}},{{start.y}},{{start.z}} ),
-         end:new $3Dmol.Vector3( {{end.x}},{{end.y}},{{end.z}} ),
-         color:'{{colorStr}}{{^colorStr}}white{{/colorStr}}'});
-{{/segments}}
-{{#circles}}
-     viewer.addCylinder({
-         start:new $3Dmol.Vector3( {{center.x}},{{center.y}},{{center.z}} ),
-         end:new $3Dmol.Vector3( {{perpendicular.x}},{{perpendicular.y}},{{perpendicular.z}} ),
-         radius:{{radius}},toCap:true,fromCap:true,
-         color:'{{colorStr}}{{^colorStr}}white{{/colorStr}}'});
-     viewer.addLabel("{{clusterId}}",{
-         fontColor:'{{colorStr}}{{^colorStr}}white{{/colorStr}}',
-         fontSize:10,
-         showBackground: false,
-         infront:false,
-         position:{ x:{{center.x}},y:{{center.y}},z:{{center.z}} }
-         });
-{{/circles}}
-{{/graph.edges}}
+ viewer.setBackgroundColor(0xffffffff);
+
+ //http://pc11467.psi.ch:8081/files_2014_06/2cx6/2cx6.assembly.2.cif';
+ var uri = '{{strucURI}}';
+ $.get(uri, function(ret) {
+    console.log("Success!");
+    var mol = viewer.addAsOneMolecule(ret,'cif');
+    viewer.setStyle({},{cartoon:{color:'spectrum',opacity:.4}});
+    viewer.addUnitCell(viewer.getModel(0));
+    viewer.zoomTo();
+    viewer.render();
+ }); 
+
+/*  $3Dmol.download("pdb:{{pdbId}}",viewer,{},function(){
      viewer.addUnitCell(viewer.getModel(0));
+     console.log(viewer.getView());
+     viewer.translate(-100,100);
+     console.log(viewer.getView());
+     viewer.zoomTo({x:{{graph.cellCenter.x}}, y:{{graph.cellCenter.y}},z:{{graph.cellCenter.z}} });
+     console.log(viewer.getView());
      viewer.zoomTo({});
      viewer.render();
+ }); */
+ //Vertices
+{{#graph.vertices}}
+ viewer.addSphere({center:new $3Dmol.Vector3({{center.x}},{{center.y}},{{center.z}}),
+     radius:5.0,
+     color:'{{colorStr}}{{^colorStr}}white{{/colorStr}}'});
+{{/graph.vertices}}
+ //Edges
+{{#graph.edges}}
+{{#segments}}
+ viewer.addArrow({
+     start:new $3Dmol.Vector3( {{start.x}},{{start.y}},{{start.z}} ),
+     end:new $3Dmol.Vector3( {{end.x}},{{end.y}},{{end.z}} ),
+     color:'{{colorStr}}{{^colorStr}}white{{/colorStr}}'});
+{{/segments}}
+{{#circles}}
+ viewer.addCylinder({
+     start:new $3Dmol.Vector3( {{center.x}},{{center.y}},{{center.z}} ),
+     end:new $3Dmol.Vector3( {{perpendicular.x}},{{perpendicular.y}},{{perpendicular.z}} ),
+     radius:{{radius}},toCap:true,fromCap:true,
+     color:'{{colorStr}}{{^colorStr}}white{{/colorStr}}'});
+ viewer.addLabel("{{clusterId}}",{
+     fontColor:'{{colorStr}}{{^colorStr}}white{{/colorStr}}',
+     fontSize:10,
+     showBackground: false,
+     infront:false,
+     position:{ x:{{center.x}},y:{{center.y}},z:{{center.z}} }
      });
+{{/circles}}
+{{/graph.edges}}
+
  //axes(viewer)();
- })();
+})();
 
     </script>
     </body>

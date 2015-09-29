@@ -4,6 +4,8 @@ import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -15,9 +17,6 @@ import javax.vecmath.Vector3d;
 import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.StructureException;
 import org.biojava.nbio.structure.StructureTools;
-import org.biojava.nbio.structure.align.util.AtomCache;
-import org.biojava.nbio.structure.io.MMCIFFileReader;
-import org.biojava.nbio.structure.io.PDBFileReader;
 import org.biojava.nbio.structure.io.util.FileDownloadUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,16 +32,17 @@ import eppic.assembly.OrientedCircle;
 import eppic.assembly.ParametricCircularArc;
 
 public class LatticeGUI3Dmol {
-	private static Logger logger = LoggerFactory.getLogger(LatticeGUI3Dmol.class);
-	private LatticeGraph3D graph;
-	private File strucFile;
+	private static final Logger logger = LoggerFactory.getLogger(LatticeGUI3Dmol.class);
+
+	private final LatticeGraph3D graph;
+	private final File strucFile;
+	private final URI strucURI;
 	private String pdbId; //TODO use file instead
-	
-	public LatticeGUI3Dmol(Structure struc, File strucFile,List<Integer> interfaceIds) throws StructureException {
+
+	public LatticeGUI3Dmol(Structure struc, File strucFile,URI strucURI,List<Integer> interfaceIds) throws StructureException {
 		this.graph = new LatticeGraph3D(struc);
 		if( interfaceIds != null ) {
-			//TODO
-			//gui = rawGui.restrict(interfaceIds);
+			graph.filterEngagedInterfaces(interfaceIds);
 		}
 		
 		// Compute Jmol names and colors
@@ -86,6 +86,7 @@ public class LatticeGUI3Dmol {
 			}
 		}
 		this.strucFile = strucFile;
+		this.strucURI = strucURI;
 		//TODO support custom files
 		pdbId = struc.getPdbId();
 		if(pdbId == null || pdbId.length() != 4) {
@@ -128,11 +129,11 @@ public class LatticeGUI3Dmol {
 	}
 
 	public static void main(String[] args) throws IOException, StructureException {
-		final String usage = String.format("Usage: %s <PDB code or file> <output file> [comma separated list of interfaces to display]",LatticeGUIJmol.class.getSimpleName());
+		final String usage = String.format("Usage: %s <PDB code or file> <output.html> [list,of,interfaces,or,* [<output.cif.gz> <http://path/to/cif>]]",LatticeGUIJmol.class.getSimpleName());
 		if (args.length<1) {
 			logger.error("Expected at least 2 arguments");
 			logger.error(usage);
-			System.exit(1);
+			System.exit(1);return;
 		}
 		
 		// Parse arguments
@@ -141,97 +142,79 @@ public class LatticeGUI3Dmol {
 		List<Integer> interfaceIds = null;
 		
 		String output = args[arg++];
-		PrintWriter out;
+		PrintWriter htmlOut;
 		if(output.equals("-")) {
-			out = new PrintWriter(System.out);
+			htmlOut = new PrintWriter(System.out);
 		} else {
-			out = new PrintWriter(FileDownloadUtils.expandUserHome(output));
+			htmlOut = new PrintWriter(FileDownloadUtils.expandUserHome(output));
 		}
 		
 		if (args.length>arg) {
 			String interfaceIdsCommaSep = args[arg++];
-			String[] splitIds = interfaceIdsCommaSep.split("\\s*,\\s*");
-			interfaceIds = new ArrayList<Integer>(splitIds.length);
-			for(String idStr : splitIds) {
-				try {
-					interfaceIds.add(new Integer(idStr));
-				} catch( NumberFormatException e) {
-					logger.error("Invalid interface IDs. Expected comma-separated list, got {}",interfaceIdsCommaSep);
-					System.exit(1);
+			// '*' for all interfaces
+			if(!interfaceIdsCommaSep.equals("*")) {
+				String[] splitIds = interfaceIdsCommaSep.split("\\s*,\\s*");
+				interfaceIds = new ArrayList<Integer>(splitIds.length);
+				for(String idStr : splitIds) {
+					try {
+						interfaceIds.add(new Integer(idStr));
+					} catch( NumberFormatException e) {
+						logger.error("Invalid interface IDs. Expected comma-separated list, got {}",interfaceIdsCommaSep);
+						System.exit(1);return;
+					}
 				}
+			}
+		}
+
+		File outStrucFile = null;
+		URI uri = null;
+		if(args.length>arg) {
+			// need both filename and url
+			String outFilename = args[arg++];
+			if (args.length<=arg) {
+				logger.error("No URL specified.",arg);
+				logger.error(usage);
+				System.exit(1);
+			}
+			String uriStr = args[arg++];
+			
+			outStrucFile = new File(FileDownloadUtils.expandUserHome(outFilename));
+			try {
+				uri = new URI(uriStr);
+			} catch (URISyntaxException e) {
+				logger.error(e.getMessage());
+				System.exit(1);return;
 			}
 		}
 
 		if (args.length>arg) {
 			logger.error("Expected at most {} arguments.",arg);
 			logger.error(usage);
-			System.exit(1);
+			System.exit(1);return;
 		}
 		// Done parsing
 
 		// Load input structure
-		Structure struc;
-		
-		File file = new File(FileDownloadUtils.expandUserHome(input)); // try as filename
-		if (file.exists()) {
-			struc = StructureTools.getStructure(file.getAbsolutePath());
-		} else if (input.matches("\\d\\w\\w\\w")){ // try as PDB id
-			AtomCache cache = new AtomCache();
-			cache.setUseMmCif(true);
-			struc = cache.getStructure(input);
-			file = getFile(cache,input);
-			if(!file.exists() ) {
-				logger.error(String.format("Error loading {} from {}",input,file.getAbsolutePath()));
-				System.exit(1);
-			}
-		} else { // give up
-			file = null;
-			struc = null;
-			logger.error("Unable to read structure or file {}",input);
-			System.exit(1);
+		Structure struc = StructureTools.getStructure(input);
+
+		LatticeGUI3Dmol gui = new LatticeGUI3Dmol(struc, outStrucFile, uri, interfaceIds);
+
+		if(outStrucFile != null) {
+			gui.writeCIFfile(outStrucFile);
 		}
 		
-		LatticeGUI3Dmol gui = new LatticeGUI3Dmol(struc, file, interfaceIds);
-		
-		if(interfaceIds != null) {
-			gui.getGraph().filterEngagedInterfaces(interfaceIds);
-		}
-		gui.get3DmolCommands(out);
+		gui.get3DmolCommands(htmlOut);
 
 		if( !output.equals("-")) {
-			out.close();
+			htmlOut.close();
 		}
 	}
 	
 
-	/**
-	 * Tries to guess the file location from an AtomCache
-	 * @param cache
-	 * @param name
-	 * @return
-	 */
-	private static File getFile(AtomCache cache, String name) {
-		if(cache.isUseMmCif()) {
-			MMCIFFileReader reader = new MMCIFFileReader(cache.getPath());
-			reader.setFetchBehavior(cache.getFetchBehavior());
-			reader.setObsoleteBehavior(cache.getObsoleteBehavior());
-
-			File file = reader.getLocalFile(name);
-			return file;
-		} else {
-			PDBFileReader reader = new PDBFileReader(cache.getPath());
-			reader.setFetchBehavior(cache.getFetchBehavior());
-			reader.setObsoleteBehavior(cache.getObsoleteBehavior());
-
-			reader.setFileParsingParameters(cache.getFileParsingParams());
-
-			File file = reader.getLocalFile(name); 
-
-			return file;
-		}
+	private void writeCIFfile(File outFile) throws IOException, StructureException {
+		graph.writeCellToMmCifFile(outFile);
 	}
-	
-	
+
 	public void get3DmolCommands(PrintWriter out) {
 		MustacheFactory mf = new DefaultMustacheFactory();
 		String template = "mustache/eppic/assembly/gui/LatticeGUI3Dmol.mustache.html";
@@ -250,8 +233,14 @@ public class LatticeGUI3Dmol {
 	public File getStrucFile() {
 		return strucFile;
 	}
+	public URI getStrucURI() {
+		return strucURI;
+	}
+
 	public String getPdbId() {
 		return pdbId;
 	}
-
+	public String getPdbIdMiddle2() {
+		return getPdbId().substring(1, 3);
+	}
 }
