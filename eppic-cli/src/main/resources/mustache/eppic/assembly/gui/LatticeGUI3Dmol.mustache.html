@@ -27,29 +27,15 @@ $(document).ready(function() {
         });
 });
 
-function setStyle(viewer,s) {
-    return function() {
-        //alert(s);
-        //viewer.setBackgroundColor(0x00000000);
-        //viewer.setStyle({chain:'A'},{cartoon:{color:'blue'}});
-        var styleobj = {}
-        styleobj[s] = {color:'spectrum'};
-        viewer.setStyle({},styleobj);
-        viewer.render();
-    }
-}
-
 function axes(viewer) {
-    return function() {
-        var l = 15;
-        var r = 1;
-        var center = viewer.addSphere({center:new $3Dmol.Vector3(), radius:r,color:'grey'});
-        var x = viewer.addArrow({start:new $3Dmol.Vector3(0,0,0), end:new $3Dmol.Vector3(l,0,0),radius:r,color:'red'});
-        var y = viewer.addArrow({start:new $3Dmol.Vector3(), end:new $3Dmol.Vector3(0,l,0),radius:r,color:'green'});
-        var z = viewer.addArrow({start:new $3Dmol.Vector3(), end:new $3Dmol.Vector3(0,0,l),radius:r,color:'blue'});
-        viewer.render();
-        return {x:x,y:y,z:z,center:center};
-    }
+    var l = 15;
+    var r = 1;
+    var center = viewer.addSphere({center:new $3Dmol.Vector3(), radius:r,color:'grey'});
+    var x = viewer.addArrow({start:new $3Dmol.Vector3(0,0,0), end:new $3Dmol.Vector3(l,0,0),radius:r,color:'red'});
+    var y = viewer.addArrow({start:new $3Dmol.Vector3(), end:new $3Dmol.Vector3(0,l,0),radius:r,color:'green'});
+    var z = viewer.addArrow({start:new $3Dmol.Vector3(), end:new $3Dmol.Vector3(0,0,l),radius:r,color:'blue'});
+    viewer.render();
+    return {x:x,y:y,z:z,center:center};
 }
 
     </script>
@@ -65,10 +51,6 @@ function axes(viewer) {
            });
         });
     </script>
-    <!--div style="height: 400px; width: 400px; position: relative;"
-        class='viewer_3Dmoljs' data-pdb='2POR'
-        data-backgroundcolor='0xffffff'
-        data-style='stick'></div-->
     <div id="molviewer" ></div>
     <script>
 (function() {
@@ -86,16 +68,6 @@ function axes(viewer) {
     viewer.render();
  }); 
 
-/*  $3Dmol.download("pdb:{{pdbId}}",viewer,{},function(){
-     viewer.addUnitCell(viewer.getModel(0));
-     console.log(viewer.getView());
-     viewer.translate(-100,100);
-     console.log(viewer.getView());
-     viewer.zoomTo({x:{{graph.cellCenter.x}}, y:{{graph.cellCenter.y}},z:{{graph.cellCenter.z}} });
-     console.log(viewer.getView());
-     viewer.zoomTo({});
-     viewer.render();
- }); */
  //Vertices
 {{#graph.vertices}}
  viewer.addSphere({center:new $3Dmol.Vector3({{center.x}},{{center.y}},{{center.z}}),
@@ -126,7 +98,7 @@ function axes(viewer) {
 {{/circles}}
 {{/graph.edges}}
 
- //axes(viewer)();
+ axes(viewer);
 })();
 
     </script>

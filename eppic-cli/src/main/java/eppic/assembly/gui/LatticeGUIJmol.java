@@ -26,8 +26,6 @@ import org.slf4j.LoggerFactory;
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
-import com.github.mustachejava.TemplateFunction;
-import com.google.common.base.Function;
 
 import eppic.assembly.ChainVertex3D;
 import eppic.assembly.InterfaceEdge3D;
@@ -35,33 +33,44 @@ import eppic.assembly.LatticeGraph3D;
 import eppic.assembly.OrientedCircle;
 import eppic.assembly.ParametricCircularArc;
 
-
+/**
+ * Jmol viewer for LatticeGraph.
+ * 
+ * @author blivens
+ *
+ */
 public class LatticeGUIJmol {
+	private static final String MUSTACHE_TEMPLATE_JMOL = "mustache/eppic/assembly/gui/LatticeGUIJmol.mustache.jmol";
+
 	private static Logger logger = LoggerFactory.getLogger(LatticeGUIJmol.class);
-	
+
 	private LatticeGraph3D graph;
 	private File strucFile;
-	
+
+	/**
+	 * Due to limitations in the way structures are passed to Jmol,
+	 * Jmol needs to load the structure directly from strucFile.
+	 * @param struc Structure to build the graph
+	 * @param strucFile Path to the structure of the asymmetric unit.
+	 * @param interfaceIds List of interfaces to show, or null for all
+	 * @throws StructureException
+	 */
 	public LatticeGUIJmol(Structure struc, File strucFile,List<Integer> interfaceIds) throws StructureException {
 		this.graph = new LatticeGraph3D(struc);
-		if( interfaceIds != null ) {
-			//TODO
-			//gui = rawGui.restrict(interfaceIds);
-		}
-		
+
 		// Compute Jmol names and colors
 		for(ChainVertex3D v : graph.getVertices()) {
 			v.setUniqueName(toUniqueJmolID("chain"+v.toString()));
 			v.setColorStr(toJmolColor(v.getColor()));
 		}
-		
+
 		for(InterfaceEdge3D e : graph.getEdges()) {
 			ChainVertex3D source = graph.getEdgeSource(e);
 			ChainVertex3D target = graph.getEdgeTarget(e);
-			
+
 			String edgeName = String.format("edge_%s_%s",source,target);
 			e.setUniqueName(toUniqueJmolID(edgeName));
-			
+
 			String colorStr = toJmolColor(e.getColor());
 			e.setColorStr(colorStr);
 
@@ -82,7 +91,8 @@ public class LatticeGUIJmol {
 		}
 		this.strucFile = strucFile;
 	}
-	
+
+	// Set of previously used jmol ids
 	private Set<String> jmolIDs = new HashSet<String>();
 	/**
 	 * Insures that a Jmol identifier is unique. If an identifier has been used
@@ -103,35 +113,43 @@ public class LatticeGUIJmol {
 		}
 		return uid;
 	}
-	
+
+	/**
+	 * Convert a color to a Jmol tuple, e.g. "[.5,.5,.5]" (grey)
+	 * @param color
+	 * @return
+	 */
 	private static String toJmolColor(Color color) {
 		if(color == null) return null;
 		return String.format("[%f,%f,%f]", color.getRed()/256f,color.getGreen()/256f,color.getBlue()/256f);
 	}
 
 	public static void main(String[] args) throws IOException, StructureException {
-		
+
 		if (args.length<1) {
 			logger.error("Expected at least 1 argument.");
 			logger.error("Usage: %s <PDB code or file> [comma separated list of interfaces to display]",LatticeGUIJmol.class.getSimpleName());
 			System.exit(1);
 		}
-		
+
 		// Parse arguments
 		int arg = 0;
 		String input = args[arg++];
 		List<Integer> interfaceIds = null;
-		
+
 		if (args.length>=2) {
 			String interfaceIdsCommaSep = args[arg++];
-			String[] splitIds = interfaceIdsCommaSep.split("\\s*,\\s*");
-			interfaceIds = new ArrayList<Integer>(splitIds.length);
-			for(String idStr : splitIds) {
-				try {
-					interfaceIds.add(new Integer(idStr));
-				} catch( NumberFormatException e) {
-					logger.error("Invalid interface IDs. Expected comma-separated list, got {}",interfaceIdsCommaSep);
-					System.exit(1);
+			// '*' for all interfaces
+			if(!interfaceIdsCommaSep.equals("*")) {
+				String[] splitIds = interfaceIdsCommaSep.split("\\s*,\\s*");
+				interfaceIds = new ArrayList<Integer>(splitIds.length);
+				for(String idStr : splitIds) {
+					try {
+						interfaceIds.add(new Integer(idStr));
+					} catch( NumberFormatException e) {
+						logger.error("Invalid interface IDs. Expected comma-separated list, got {}",interfaceIdsCommaSep);
+						System.exit(1);
+					}
 				}
 			}
 		}
@@ -145,7 +163,7 @@ public class LatticeGUIJmol {
 
 		// Load input structure
 		Structure struc;
-		
+
 		File file = new File(FileDownloadUtils.expandUserHome(input)); // try as filename
 		if (file.exists()) {
 			struc = StructureTools.getStructure(file.getAbsolutePath());
@@ -164,7 +182,7 @@ public class LatticeGUIJmol {
 			logger.error("Unable to read structure or file {}",input);
 			System.exit(1);
 		}
-		
+
 		LatticeGUIJmol gui = new LatticeGUIJmol(struc, file, interfaceIds);
 		if(interfaceIds != null) {
 			gui.getGraph().filterEngagedInterfaces(interfaceIds);
@@ -173,7 +191,7 @@ public class LatticeGUIJmol {
 		System.out.println(gui.getJmolCommands());
 		gui.display();
 	}
-	
+
 
 	/**
 	 * Tries to guess the file location from an AtomCache
@@ -201,13 +219,16 @@ public class LatticeGUIJmol {
 			return file;
 		}
 	}
-	
-	// Show Jmol window
+
+	/**
+	 * Show Jmol window
+	 * @return
+	 */
 	public BiojavaJmol display() {
 		BiojavaJmol jmol = new BiojavaJmol();
 		jmol.setTitle(strucFile.getName());
 		//jmol.setStructure(struc);
-		
+
 		jmol.evalString(getJmolCommands());
 
 		jmol.getFrame().setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -215,10 +236,16 @@ public class LatticeGUIJmol {
 		return jmol;
 
 	}
-	
+
+	/**
+	 * Construct a jmol script to load the structure and display the graph
+	 * 
+	 * The script is generated from a template file.
+	 * @return
+	 */
 	public String getJmolCommands() {
 		MustacheFactory mf = new DefaultMustacheFactory();
-		String template = "mustache/eppic/assembly/gui/LatticeGUIJmol.mustache.jmol";
+		String template = MUSTACHE_TEMPLATE_JMOL;
 		Mustache mustache = mf.compile(template);
 		StringWriter out = new StringWriter();
 		try {
@@ -229,12 +256,20 @@ public class LatticeGUIJmol {
 		return out.toString();
 	}
 
+	/**
+	 * Get the underlying lattice graph datastructure
+	 * @return
+	 */
 	public LatticeGraph3D getGraph() {
 		return graph;
 	}
 
+	/**
+	 * Used by Jmol to load the structure directly from the filesystem
+	 * @return
+	 */
 	public File getStrucFile() {
 		return strucFile;
 	}
-	
+
 }

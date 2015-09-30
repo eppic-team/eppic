@@ -2,14 +2,14 @@ package eppic.assembly.gui;
 
 import java.awt.Color;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.zip.GZIPOutputStream;
 
 import javax.vecmath.Point3d;
 import javax.vecmath.Vector3d;
@@ -29,47 +29,49 @@ import eppic.assembly.ChainVertex3D;
 import eppic.assembly.InterfaceEdge3D;
 import eppic.assembly.LatticeGraph3D;
 import eppic.assembly.OrientedCircle;
-import eppic.assembly.ParametricCircularArc;
 
+/**
+ * 3Dmol viewer for LatticeGraph.
+ * 
+ * 3Dmol requires a html file with the commands and an mmcif file with the full
+ * unit cell. These are written with the {@link #write3DmolCommands(PrintWriter)}
+ * and {@link #writeCIFfile(PrintWriter)} functions.
+ * @author blivens
+ *
+ */
 public class LatticeGUI3Dmol {
 	private static final Logger logger = LoggerFactory.getLogger(LatticeGUI3Dmol.class);
 
+	private static final String MUSTACHE_TEMPLATE_3DMOL = "mustache/eppic/assembly/gui/LatticeGUI3Dmol.mustache.html";
+
 	private final LatticeGraph3D graph;
-	private final File strucFile;
-	private final URI strucURI;
+	private URI strucURI;
 	private String pdbId; //TODO use file instead
 
-	public LatticeGUI3Dmol(Structure struc, File strucFile,URI strucURI,List<Integer> interfaceIds) throws StructureException {
+	/**
+	 * 
+	 * @param struc Structure used to create the graph (must have cell info)
+	 * @param strucFile Location on the filesystem for the unit cell mmcif file
+	 * @param strucURI URI to access strucFile through the browser
+	 * @param interfaceIds List of interface numbers, or null for all interfaces
+	 * @throws StructureException For errors parsing the structure
+	 */
+	public LatticeGUI3Dmol(Structure struc,URI strucURI,List<Integer> interfaceIds) throws StructureException {
 		this.graph = new LatticeGraph3D(struc);
 		if( interfaceIds != null ) {
 			graph.filterEngagedInterfaces(interfaceIds);
 		}
-		
+
 		// Compute Jmol names and colors
 		for(ChainVertex3D v : graph.getVertices()) {
-			v.setUniqueName(toUniqueJmolID("chain"+v.toString()));
 			v.setColorStr(toHTMLColor(v.getColor()));
 		}
-		
+
 		for(InterfaceEdge3D e : graph.getEdges()) {
-			ChainVertex3D source = graph.getEdgeSource(e);
-			ChainVertex3D target = graph.getEdgeTarget(e);
-			
-			String edgeName = String.format("edge_%s_%s",source,target);
-			e.setUniqueName(toUniqueJmolID(edgeName));
-			
 			String colorStr = toHTMLColor(e.getColor());
 			e.setColorStr(colorStr);
 
-			if(e.getSegments() != null) {
-				int i=1;
-				for(ParametricCircularArc seg : e.getSegments()) {
-					seg.setUniqueName(toUniqueJmolID(edgeName+"_seg"+i));
-					i++;
-				}
-			}
 			if(e.getCircles() != null) {
-				int i=1;
 				for(OrientedCircle circ: e.getCircles()) {
 					//rescale perpendicular vector
 					final double thickness = .5;
@@ -79,13 +81,9 @@ public class LatticeGUI3Dmol {
 					Point3d newPerp = new Point3d(ab);
 					newPerp.scaleAdd(thickness/len, circ.getCenter());
 					circ.setPerpendicular(newPerp);
-					
-					circ.setUniqueName(toUniqueJmolID(edgeName+"_circle"+i));
-					i++;
 				}
 			}
 		}
-		this.strucFile = strucFile;
 		this.strucURI = strucURI;
 		//TODO support custom files
 		pdbId = struc.getPdbId();
@@ -96,28 +94,7 @@ public class LatticeGUI3Dmol {
 			logger.error("Unable to get PDB ID.");
 		}
 	}
-	
-	private Set<String> jmolIDs = new HashSet<String>();
-	/**
-	 * Insures that a Jmol identifier is unique. If an identifier has been used
-	 * previously, appends an integer sequentially until it is unique
-	 * @param name Seed identifier
-	 * @return a unique string starting with name
-	 */
-	private String toUniqueJmolID(String name) {
-		if(name == null) return null;
-		String uid = name;
-		int i = 0;
-		synchronized(jmolIDs) {
-			while(jmolIDs.contains(uid)) {
-				uid = String.format("%s #%d",name,i);
-				i++;
-			}
-			jmolIDs.add(uid);
-		}
-		return uid;
-	}
-	
+
 	/**
 	 * hex verson of the color (e.g. '0xFF00CC')
 	 * @param color
@@ -135,12 +112,12 @@ public class LatticeGUI3Dmol {
 			logger.error(usage);
 			System.exit(1);return;
 		}
-		
+
 		// Parse arguments
 		int arg = 0;
 		String input = args[arg++];
 		List<Integer> interfaceIds = null;
-		
+
 		String output = args[arg++];
 		PrintWriter htmlOut;
 		if(output.equals("-")) {
@@ -148,7 +125,7 @@ public class LatticeGUI3Dmol {
 		} else {
 			htmlOut = new PrintWriter(FileDownloadUtils.expandUserHome(output));
 		}
-		
+
 		if (args.length>arg) {
 			String interfaceIdsCommaSep = args[arg++];
 			// '*' for all interfaces
@@ -166,19 +143,24 @@ public class LatticeGUI3Dmol {
 			}
 		}
 
-		File outStrucFile = null;
+		PrintWriter cifOut = null;
 		URI uri = null;
 		if(args.length>arg) {
 			// need both filename and url
-			String outFilename = args[arg++];
+			String cifFilename = args[arg++];
 			if (args.length<=arg) {
 				logger.error("No URL specified.",arg);
 				logger.error(usage);
 				System.exit(1);
 			}
 			String uriStr = args[arg++];
-			
-			outStrucFile = new File(FileDownloadUtils.expandUserHome(outFilename));
+
+			if(cifFilename.equals("-")) {
+				cifOut = new PrintWriter(System.out);
+			} else {
+				File cifFile = new File(FileDownloadUtils.expandUserHome(cifFilename));
+				cifOut = new PrintWriter(new GZIPOutputStream( new FileOutputStream( cifFile )));
+			}
 			try {
 				uri = new URI(uriStr);
 			} catch (URISyntaxException e) {
@@ -197,27 +179,38 @@ public class LatticeGUI3Dmol {
 		// Load input structure
 		Structure struc = StructureTools.getStructure(input);
 
-		LatticeGUI3Dmol gui = new LatticeGUI3Dmol(struc, outStrucFile, uri, interfaceIds);
+		LatticeGUI3Dmol gui = new LatticeGUI3Dmol(struc, uri, interfaceIds);
 
-		if(outStrucFile != null) {
-			gui.writeCIFfile(outStrucFile);
+		if(cifOut != null) {
+			gui.writeCIFfile(cifOut);
 		}
-		
-		gui.get3DmolCommands(htmlOut);
+
+		gui.write3DmolCommands(htmlOut);
 
 		if( !output.equals("-")) {
 			htmlOut.close();
 		}
 	}
-	
 
-	private void writeCIFfile(File outFile) throws IOException, StructureException {
-		graph.writeCellToMmCifFile(outFile);
+	/**
+	 * Write a cif file containing the unit cell.
+	 * @param out
+	 * @throws IOException
+	 * @throws StructureException
+	 */
+	public void writeCIFfile(PrintWriter out) throws IOException, StructureException {
+		graph.writeCellToMmCifFile(out);
 	}
 
-	public void get3DmolCommands(PrintWriter out) {
+	/**
+	 * Write an HTML page containing a 3Dmol canvas with this LatticeGraph.
+	 * 
+	 * The page is constructed from a template file.
+	 * @param out Output stream for the html commands
+	 */
+	public void write3DmolCommands(PrintWriter out) {
 		MustacheFactory mf = new DefaultMustacheFactory();
-		String template = "mustache/eppic/assembly/gui/LatticeGUI3Dmol.mustache.html";
+		String template = MUSTACHE_TEMPLATE_3DMOL;
 		Mustache mustache = mf.compile(template);
 		try {
 			mustache.execute(out, this).flush();
@@ -230,16 +223,37 @@ public class LatticeGUI3Dmol {
 		return graph;
 	}
 
-	public File getStrucFile() {
-		return strucFile;
-	}
+	/**
+	 * get the URL for the CIF structure to write. Defaults to "[PDBID].cif"
+	 * @return
+	 */
 	public URI getStrucURI() {
+		if(strucURI == null) {
+			try {
+				strucURI = new URI(String.format("%s.cif",getPdbId()));
+			} catch (URISyntaxException e) {
+				// Give up, return null
+			}
+		}
 		return strucURI;
 	}
-
+	public void setStrucURI(URI strucURI) {
+		this.strucURI = strucURI;
+	}
+	/**
+	 * Get the PDB ID. By default, takes this from the structure name.
+	 * @return
+	 */
 	public String getPdbId() {
 		return pdbId;
 	}
+	public void setPdbId(String pdbId) {
+		this.pdbId = pdbId;
+	}
+
+	/**
+	 * @return The second and third characters of {@link #getPdbId()}
+	 */
 	public String getPdbIdMiddle2() {
 		return getPdbId().substring(1, 3);
 	}

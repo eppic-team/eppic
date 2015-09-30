@@ -1,10 +1,8 @@
 package eppic.assembly;
 
 import java.awt.Color;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -14,7 +12,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.zip.GZIPOutputStream;
 import java.util.Set;
 
 import javax.vecmath.Matrix4d;
@@ -447,7 +444,7 @@ public class LatticeGraph3D {
 	 * @throws IOException
 	 * @throws StructureException
 	 */
-	public void writeCellToMmCifFile(File file) throws IOException, StructureException {
+	public void writeCellToMmCifFile(PrintWriter out) throws IOException, StructureException {
 		
 		// Some molecular viewers like 3Dmol.js need globally unique atom identifiers (across chains)
 		// With the approach below we add an offset to atom ids of sym-related molecules to avoid repeating atom ids
@@ -462,10 +459,7 @@ public class LatticeGraph3D {
 		}
 		if (numChains != uniqueChains.size()) symRelatedChainsExist = true;
 
-
-		PrintStream ps = new PrintStream(new GZIPOutputStream(new FileOutputStream(file)));
-
-		ps.println(SimpleMMcifParser.MMCIF_TOP_HEADER+"eppic_unit_cell");
+		out.println(SimpleMMcifParser.MMCIF_TOP_HEADER+"eppic_unit_cell");
 
 		// Cell and space group info
 		PDBCrystallographicInfo crystalInfo = structure.getCrystallographicInfo();
@@ -473,11 +467,11 @@ public class LatticeGraph3D {
 			logger.error("No crystallographic info set for this structure.");
 			// leads to NullPointer
 		} else {
-			ps.print(MMCIFFileTools.toMMCIF("_cell", MMCIFFileTools.convertCrystalCellToCell(cell)));
-			ps.print(MMCIFFileTools.toMMCIF("_symmetry", MMCIFFileTools.convertSpaceGroupToSymmetry(crystalInfo.getSpaceGroup())));
+			out.print(MMCIFFileTools.toMMCIF("_cell", MMCIFFileTools.convertCrystalCellToCell(cell)));
+			out.print(MMCIFFileTools.toMMCIF("_symmetry", MMCIFFileTools.convertSpaceGroupToSymmetry(crystalInfo.getSpaceGroup())));
 		}
 
-		ps.print(FileConvert.getAtomSiteHeader());
+		out.print(FileConvert.getAtomSiteHeader());
 
 		List<Object> atomSites = new ArrayList<Object>();
 
@@ -514,10 +508,10 @@ public class LatticeGraph3D {
 			}
 		}
 
-		ps.print(MMCIFFileTools.toMMCIF(atomSites));
+		out.print(MMCIFFileTools.toMMCIF(atomSites));
 
 
-		ps.close();
+		out.close();
 	}
 	
 	/**
