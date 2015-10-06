@@ -27,6 +27,7 @@ import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.StructureException;
 import org.biojava.nbio.structure.StructureTools;
 import org.biojava.nbio.structure.contact.Pair;
+import org.biojava.nbio.structure.contact.StructureInterface;
 import org.biojava.nbio.structure.contact.StructureInterfaceList;
 import org.biojava.nbio.structure.io.FileConvert;
 import org.biojava.nbio.structure.io.mmcif.MMCIFFileTools;
@@ -40,6 +41,8 @@ import org.jgrapht.graph.MaskFunctor;
 import org.jgrapht.graph.UndirectedMaskSubgraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Lists;
 
 public class LatticeGraph3D {
 
@@ -99,7 +102,7 @@ public class LatticeGraph3D {
 	public LatticeGraph3D(Structure struc) throws StructureException {
 		this(struc,null);
 	}
-	public LatticeGraph3D(Structure struc, StructureInterfaceList interfaces) throws StructureException {
+	public LatticeGraph3D(Structure struc, List<StructureInterface> interfaces) throws StructureException {
 		this.structure = struc;
 		this.policy = WrappingPolicy.DUPLICATE;
 
@@ -152,7 +155,7 @@ public class LatticeGraph3D {
 	 * @param struc
 	 * @return
 	 */
-	private static StructureInterfaceList calculateInterfaces(Structure struc) {
+	private static List<StructureInterface> calculateInterfaces(Structure struc) {
 		CrystalBuilder builder = new CrystalBuilder(struc);
 		StructureInterfaceList interfaces = builder.getUniqueInterfaces();
 		logger.info("Calculating ASA for "+interfaces.size()+" potential interfaces");
@@ -162,7 +165,7 @@ public class LatticeGraph3D {
 		interfaces.removeInterfacesBelowArea();
 		interfaces.getClusters();
 		logger.info("Found "+interfaces.size()+" interfaces");
-		return interfaces;
+		return Lists.newArrayList(interfaces);
 	}
 
 
@@ -259,11 +262,7 @@ public class LatticeGraph3D {
 				} else {
 					logger.debug("Source and target for {} within unit cell",edge);
 				}
-				
-				for(ParametricCircularArc seg : segments) {
-					seg.shrinkAbsolute(defaultArrowOffset);
-				}
-				
+
 				edge.setSegments(segments);
 				edge.setCircles(circles);
 

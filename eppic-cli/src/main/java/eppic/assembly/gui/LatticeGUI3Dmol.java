@@ -5,8 +5,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.GZIPOutputStream;
@@ -17,6 +15,7 @@ import javax.vecmath.Vector3d;
 import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.StructureException;
 import org.biojava.nbio.structure.StructureTools;
+import org.biojava.nbio.structure.contact.StructureInterface;
 import org.biojava.nbio.structure.io.util.FileDownloadUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,11 +42,14 @@ public class LatticeGUI3Dmol {
 	private static final Logger logger = LoggerFactory.getLogger(LatticeGUI3Dmol.class);
 
 	private static final String MUSTACHE_TEMPLATE_3DMOL = "mustache/eppic/assembly/gui/LatticeGUI3Dmol.mustache.html";
-
+	private static final String DEFAULT_URL_3DMOL = "http://3Dmol.csb.pitt.edu/build/3Dmol-min.js";
+	
 	private final LatticeGraph3D graph;
-	private URI strucURI;
+	private String strucURI;
 	private String pdbId; //TODO use file instead
-
+	private String title; //Title for HTML page
+	private String url3Dmol = DEFAULT_URL_3DMOL;
+	
 	/**
 	 * 
 	 * @param struc Structure used to create the graph (must have cell info)
@@ -56,11 +58,16 @@ public class LatticeGUI3Dmol {
 	 * @param interfaceIds List of interface numbers, or null for all interfaces
 	 * @throws StructureException For errors parsing the structure
 	 */
-	public LatticeGUI3Dmol(Structure struc,URI strucURI,List<Integer> interfaceIds) throws StructureException {
-		this.graph = new LatticeGraph3D(struc);
+	public LatticeGUI3Dmol(Structure struc,String strucURI,List<Integer> interfaceIds) throws StructureException {
+		this(struc,strucURI,interfaceIds,null);
+	}
+	public LatticeGUI3Dmol(Structure struc,String strucURI,List<Integer> interfaceIds,List<StructureInterface> allInterfaces) throws StructureException {
+		this.graph = new LatticeGraph3D(struc,allInterfaces);
 		if( interfaceIds != null ) {
+			logger.info("Filtering LatticeGraph3D to edges {}",interfaceIds);
 			graph.filterEngagedInterfaces(interfaceIds);
 		}
+		logger.info("Generated LatticeGraph3D with {} vertices and {} edges",graph.getVertices().size(),graph.getEdges().size());
 
 		// Compute Jmol names and colors
 		for(ChainVertex3D v : graph.getVertices()) {
@@ -93,6 +100,8 @@ public class LatticeGUI3Dmol {
 		if(pdbId == null || pdbId.length() != 4) {
 			logger.error("Unable to get PDB ID.");
 		}
+		
+		this.title = String.format("Lattice for %s",getPdbId());
 	}
 
 	/**
@@ -106,7 +115,7 @@ public class LatticeGUI3Dmol {
 	}
 
 	public static void main(String[] args) throws IOException, StructureException {
-		final String usage = String.format("Usage: %s <PDB code or file> <output.html> [list,of,interfaces,or,* [<output.cif.gz> <http://path/to/cif>]]",LatticeGUIJmol.class.getSimpleName());
+		final String usage = String.format("Usage: %s <PDB code or file> <output.html> [list,of,interfaces,or,* [<output.cif.gz> <http://path/to/cif>]]",LatticeGUI3Dmol.class.getSimpleName());
 		if (args.length<1) {
 			logger.error("Expected at least 2 arguments");
 			logger.error(usage);
@@ -128,23 +137,16 @@ public class LatticeGUI3Dmol {
 
 		if (args.length>arg) {
 			String interfaceIdsCommaSep = args[arg++];
-			// '*' for all interfaces
-			if(!interfaceIdsCommaSep.equals("*")) {
-				String[] splitIds = interfaceIdsCommaSep.split("\\s*,\\s*");
-				interfaceIds = new ArrayList<Integer>(splitIds.length);
-				for(String idStr : splitIds) {
-					try {
-						interfaceIds.add(new Integer(idStr));
-					} catch( NumberFormatException e) {
-						logger.error("Invalid interface IDs. Expected comma-separated list, got {}",interfaceIdsCommaSep);
-						System.exit(1);return;
-					}
-				}
+			try {
+				interfaceIds = parseInterfaceList(interfaceIdsCommaSep);
+			} catch( NumberFormatException e) {
+				logger.error("Invalid interface IDs. Expected comma-separated list, got {}",interfaceIdsCommaSep);
+				System.exit(1);return;
 			}
 		}
 
 		PrintWriter cifOut = null;
-		URI uri = null;
+		String uri = null;
 		if(args.length>arg) {
 			// need both filename and url
 			String cifFilename = args[arg++];
@@ -153,19 +155,13 @@ public class LatticeGUI3Dmol {
 				logger.error(usage);
 				System.exit(1);
 			}
-			String uriStr = args[arg++];
+			uri = args[arg++];
 
 			if(cifFilename.equals("-")) {
 				cifOut = new PrintWriter(System.out);
 			} else {
 				File cifFile = new File(FileDownloadUtils.expandUserHome(cifFilename));
 				cifOut = new PrintWriter(new GZIPOutputStream( new FileOutputStream( cifFile )));
-			}
-			try {
-				uri = new URI(uriStr);
-			} catch (URISyntaxException e) {
-				logger.error(e.getMessage());
-				System.exit(1);return;
 			}
 		}
 
@@ -227,17 +223,13 @@ public class LatticeGUI3Dmol {
 	 * get the URL for the CIF structure to write. Defaults to "[PDBID].cif"
 	 * @return
 	 */
-	public URI getStrucURI() {
+	public String getStrucURI() {
 		if(strucURI == null) {
-			try {
-				strucURI = new URI(String.format("%s.cif",getPdbId()));
-			} catch (URISyntaxException e) {
-				// Give up, return null
-			}
+			strucURI = String.format("%s.cif",getPdbId());
 		}
 		return strucURI;
 	}
-	public void setStrucURI(URI strucURI) {
+	public void setStrucURI(String strucURI) {
 		this.strucURI = strucURI;
 	}
 	/**
@@ -256,5 +248,37 @@ public class LatticeGUI3Dmol {
 	 */
 	public String getPdbIdMiddle2() {
 		return getPdbId().substring(1, 3);
+	}
+	public String getTitle() {
+		return title;
+	}
+	public void setTitle(String title) {
+		this.title = title;
+	}
+	public String getUrl3Dmol() {
+		return url3Dmol;
+	}
+	public void setUrl3Dmol(String url3Dmol) {
+		this.url3Dmol = url3Dmol;
+	}
+	
+	/**
+	 * Parses a comma-separated list of digits.
+	 * returns null for '*', indicating all interfaces.
+	 * @param list Input string
+	 * @return list of interface ids, or null for all interfaces
+	 * @throws NumberFormatException for invalid input
+	 */
+	public static List<Integer> parseInterfaceList(String list) throws NumberFormatException{
+		// '*' for all interfaces
+		if(list == null || list.isEmpty() || list.equals("*") ) {
+			return null;// all interfaces
+		}
+		String[] splitIds = list.split("\\s*,\\s*");
+		List<Integer> interfaceIds = new ArrayList<Integer>(splitIds.length);
+		for(String idStr : splitIds) {
+			interfaceIds.add(new Integer(idStr));
+		}
+		return interfaceIds;
 	}
 }

@@ -42,6 +42,8 @@ import eppic.assembly.ParametricCircularArc;
 public class LatticeGUIJmol {
 	private static final String MUSTACHE_TEMPLATE_JMOL = "mustache/eppic/assembly/gui/LatticeGUIJmol.mustache.jmol";
 
+	private final double defaultArrowOffset = 6;
+
 	private static Logger logger = LoggerFactory.getLogger(LatticeGUIJmol.class);
 
 	private LatticeGraph3D graph;
@@ -78,6 +80,7 @@ public class LatticeGUIJmol {
 				int i=1;
 				for(ParametricCircularArc seg : e.getSegments()) {
 					seg.setUniqueName(toUniqueJmolID(edgeName+"_seg"+i));
+					seg.shrinkAbsolute(defaultArrowOffset);
 					i++;
 				}
 			}
@@ -128,7 +131,7 @@ public class LatticeGUIJmol {
 
 		if (args.length<1) {
 			logger.error("Expected at least 1 argument.");
-			logger.error("Usage: %s <PDB code or file> [comma separated list of interfaces to display]",LatticeGUIJmol.class.getSimpleName());
+			logger.error("Usage: {} <PDB code or file> [comma separated list of interfaces to display]",LatticeGUIJmol.class.getSimpleName());
 			System.exit(1);
 		}
 
@@ -156,7 +159,7 @@ public class LatticeGUIJmol {
 
 		if (args.length>2) {
 			logger.error("Expected at most 3 arguments.");
-			logger.error("Usage: %s <PDB code or file> <output.js> [comma separated list of interfaces to display]",LatticeGUIJmol.class.getSimpleName());
+			logger.error("Usage: {} <PDB code or file> <output.js> [comma separated list of interfaces to display]",LatticeGUIJmol.class.getSimpleName());
 			System.exit(1);
 		}
 		// Done parsing

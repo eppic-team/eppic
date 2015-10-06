@@ -22,7 +22,6 @@ import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.StructureException;
 import org.biojava.nbio.structure.StructureTools;
 import org.biojava.nbio.structure.contact.StructureInterface;
-import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
 import org.biojava.nbio.structure.contact.StructureInterfaceList;
 import org.biojava.nbio.structure.xtal.CrystalCell;
 import org.biojava.nbio.structure.xtal.SpaceGroup;
@@ -35,7 +34,7 @@ import org.jgrapht.graph.Pseudograph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import eppic.EppicParams;
+import com.google.common.collect.Lists;
 
 
 
@@ -65,7 +64,7 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 
 
 	private final Structure struct;
-	private StructureInterfaceList interfaces;
+	private List<StructureInterface> interfaces;
 
 	private UndirectedGraph<V,E> graph;
 	
@@ -84,7 +83,7 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 	 * @param edgeClass
 	 * @throws StructureException
 	 */
-	public LatticeGraph(Structure struct, StructureInterfaceList interfaces, Class<? extends V> vertexClass,Class<? extends E> edgeClass) throws StructureException {
+	public LatticeGraph(Structure struct, List<StructureInterface> interfaces, Class<? extends V> vertexClass,Class<? extends E> edgeClass) throws StructureException {
 
 		this.struct = struct;
 		this.interfaces = interfaces;
@@ -99,6 +98,12 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 		initLatticeGraphTopologically();
 		logGraph();
 
+	}
+
+	public LatticeGraph(Structure structure,
+			StructureInterfaceList interfaces, Class<? extends V> vertexClass,
+			Class<? extends E> edgeClass) throws StructureException {
+		this(structure, Lists.newArrayList(interfaces),vertexClass,edgeClass);
 	}
 
 	/**
@@ -482,53 +487,5 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 			this.globalReferencePoint = globalReferencePoint;
 		}
 	}
-	
-	/**
-	 * Get a list of interface cluster ids of interface clusters that exist 
-	 * between entities with the given entity ids.
-	 * The list is sorted descendent by interface cluster average area.
-	 * @param entity1
-	 * @param entity2
-	 * @return
-	 */
-	public List<Integer> getInterfaceClusterIds(int entity1, int entity2) {
-		
-		Set<Integer> interfaceClusterIds = new HashSet<Integer>();
-		
-		for (E edge:graph.edgeSet()) {
-			V s = graph.getEdgeSource(edge);
-			V t = graph.getEdgeTarget(edge);
-			
-			if ( (s.getEntity()==entity1 && t.getEntity()==entity2) ||
-				 (s.getEntity()==entity2 && t.getEntity()==entity1) ) {
-			
-				interfaceClusterIds.add(edge.getClusterId());
-				
-			}
-		}
-		
-		List<StructureInterfaceCluster> clusters = interfaces.getClusters(EppicParams.CLUSTERING_CONTACT_OVERLAP_SCORE_CUTOFF);
-		
-		List<StructureInterfaceCluster> sublist = new ArrayList<StructureInterfaceCluster>();
-		
-		for (int clusterId:interfaceClusterIds) {
-			sublist.add(clusters.get(clusterId - 1));			
-		}
-		
-		Collections.sort(sublist, new Comparator<StructureInterfaceCluster>() {
-
-			@Override
-			public int compare(StructureInterfaceCluster o1, StructureInterfaceCluster o2) {
-				return Double.compare(o2.getTotalArea(), o1.getTotalArea());
-			}
-		});
-		
-		List<Integer> ids = new ArrayList<Integer>();
-		for (StructureInterfaceCluster interfCluster:sublist) {
-			ids.add(interfCluster.getId());
-		}
-		return ids;
-	}
-	
 
 }

@@ -2,10 +2,8 @@
 <html>
 <head>
     <meta charset='utf-8'>
-    <title>Lattice for {{name}}</title>
-    <!--script src="http://3Dmol.csb.pitt.edu/build/3Dmol-min.js"></script-->
-    <!--script src="http://3Dmol.csb.pitt.edu/build/3Dmol.js"></script-->
-    <script src="3Dmol.js"></script>
+    <title>{{title}}</title>
+    <script src="{{url3Dmol}}"></script>
     <style type="text/css">
     #molviewer {
         min-width:200px;
@@ -57,7 +55,6 @@ function axes(viewer) {
  var viewer = $3Dmol.createViewer($("#molviewer"));
  viewer.setBackgroundColor(0xffffffff);
 
- //http://pc11467.psi.ch:8081/files_2014_06/2cx6/2cx6.assembly.2.cif';
  var uri = '{{strucURI}}';
  $.get(uri, function(ret) {
     console.log("Success!");

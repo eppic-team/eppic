@@ -39,4 +39,12 @@ public interface InterfaceDAO
 	public List<Interface> getInterfacesWithResidues(int interfaceClusterUid) throws DaoException;
 	
 	public Interface getInterfaceWithResidues(int pdbInfoUid, int interfaceId)throws DaoException;
+
+	/**
+	 * Get a list of all interfaces (without residues or score) for a particular PDB
+	 * @param pdbInfoUid
+	 * @return
+	 * @throws DaoException 
+	 */
+	public List<Interface> getAllInterfaces(int pdbInfoUid) throws DaoException;
 }
