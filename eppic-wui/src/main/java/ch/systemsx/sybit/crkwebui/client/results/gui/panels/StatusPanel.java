@@ -43,7 +43,7 @@ public class StatusPanel extends DisplayPanel
 	
 	private FormPanel formPanel;
 
-	private IdentifierHeaderPanel identifierHeaderPanel;
+	//private IdentifierHeaderPanel identifierHeaderPanel;
 	
 	//Displays when the job is running
 	private HorizontalLayoutContainer statusContainer;
@@ -74,8 +74,8 @@ public class StatusPanel extends DisplayPanel
 		dock = new DockLayoutPanel(Unit.PX);
 		dock.addStyleName("eppic-default-font");
 		
-		identifierHeaderPanel = new IdentifierHeaderPanel(ApplicationContext.getWindowData().getWindowWidth() - 150, null, ResultsPanel.ASSEMBLIES_VIEW); 
-		dock.addNorth(identifierHeaderPanel,50);
+		//identifierHeaderPanel = new IdentifierHeaderPanel(ApplicationContext.getWindowData().getWindowWidth() - 150, null, ResultsPanel.ASSEMBLIES_VIEW); 
+		//dock.addNorth(identifierHeaderPanel,50);
 		
 		statusContainer = createStatusContainer();
 		
@@ -130,6 +130,10 @@ public class StatusPanel extends DisplayPanel
 		statusContainer.add(formPanel, new HorizontalLayoutData(0.90,1));
 		statusContainer.add(new SimpleContainer(), new HorizontalLayoutData(0.05,1));
 		
+		//TRY THIS BUT DOUBT IT WILL WORK!!!
+		//ResultsPanel.headerPanel.pdbIdentifierPanel.informationLabel.setHTML("Assembly Analysis of: ");
+		//ResultsPanel.headerPanel.pdbIdentifierPanel.pdbNameLabel.setHTML("<a target='_blank' href='http://www.pdb.org/pdb/explore/explore.do?structureId="+ApplicationContext.getPdbInfo().getPdbCode()+"'>"+ApplicationContext.getPdbInfo().getPdbCode()+"</a>");
+
 		return statusContainer;
 	}
 	
@@ -256,8 +260,8 @@ public class StatusPanel extends DisplayPanel
 
 		status.setHTML(String.valueOf(statusData.getStatus()));
 		jobId.setHTML(statusData.getJobId());
-		identifierHeaderPanel.setPDBText(statusData.getInputName(), null, null, 0, 0, statusData.getInputType());
-		identifierHeaderPanel.setEmptyDownloadResultsLink();
+		//identifierHeaderPanel.setPDBText(statusData.getInputName(), null, null, 0, 0, statusData.getInputType());
+		//identifierHeaderPanel.setEmptyDownloadResultsLink();
 
 		if(status.getHTML() != null){
 			if ((status.getHTML().equals(StatusOfJob.RUNNING.getName())) ||
@@ -288,6 +292,8 @@ public class StatusPanel extends DisplayPanel
 				statusBar.updateProgress(processCompleted, progressText);
 				if(status.getHTML().equals(StatusOfJob.ERROR.getName())){
 				    	disableControls();
+				    //here was the message
+				    status.setHTML(StatusOfJob.ERROR.getName() + ": " + statusData.getInputName());
 					userMessage.setHTML(createErrorMessage().toString());
 				}
 
@@ -296,7 +302,7 @@ public class StatusPanel extends DisplayPanel
 				userMessage.setHTML(AppPropertiesManager.CONSTANTS.status_panel_stopped_text());
 				killJob.setVisible(false);
 				runningImage.setVisible(false);
-				statusBar.updateProgress(0.0, StatusOfJob.STOPPED.getName());
+				statusBar.updateProgress(0.0, StatusOfJob.STOPPED.getName() + ": " + statusData.getInputName());
 			}
 		}
 		else
@@ -328,9 +334,9 @@ public class StatusPanel extends DisplayPanel
 		log.setValue("");
 		status.setHTML("");
 		jobId.setHTML("");
-		identifierHeaderPanel.setPDBText("", null, null, 0, 0, InputType.NONE.getIndex());
+		//identifierHeaderPanel.setPDBText("", null, null, 0, 0, InputType.NONE.getIndex());
 		userMessage.setHTML("");
 		statusBar.updateProgress(0, "");
-		identifierHeaderPanel.setEmptyDownloadResultsLink();
+		//identifierHeaderPanel.setEmptyDownloadResultsLink();
 	}
 }

@@ -37,7 +37,6 @@ public class ResultsPanel extends DisplayPanel
 	public final static int ASSEMBLIES_VIEW = 1;
 	public final static int INTERFACES_VIEW = 2;
 	private int viewType;
-	private boolean hasSpacer = true;
 
 
 	public ResultsPanel(PdbInfo pdbScoreItem, int viewType)
@@ -52,7 +51,6 @@ public class ResultsPanel extends DisplayPanel
 		
 		resultsContainer = createResultsContainer(pdbScoreItem);
 		dock.add(resultsContainer);
-		//Window.alert("ResultsPanel: added results container. ");
 		
 		this.setData(dock);
 		

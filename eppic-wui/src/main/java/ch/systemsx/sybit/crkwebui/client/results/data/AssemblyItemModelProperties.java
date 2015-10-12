@@ -17,6 +17,8 @@ public interface AssemblyItemModelProperties extends PropertyAccess<AssemblyItem
 	 
 	  ValueProvider<AssemblyItemModel, Integer> assemblyId();
 	  
+	  ValueProvider<AssemblyItemModel, String> numInterfaces();
+	  
 	  ValueProvider<AssemblyItemModel, String> identifier();
 	  
 	  ValueProvider<AssemblyItemModel, String> composition();
@@ -32,4 +34,6 @@ public interface AssemblyItemModelProperties extends PropertyAccess<AssemblyItem
 	  ValueProvider<AssemblyItemModel, String> detailsButtonText();
 	   
 	  ValueProvider<AssemblyItemModel, String> thumbnailUrl();
+	  
+	  
 }

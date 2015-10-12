@@ -207,7 +207,8 @@ public class MyJobsPanel extends ContentPanel
 			}
 		});
 
-		/*myJobsGrid.getSelectionModel().addSelectionHandler(new SelectionHandler<MyJobsModel>() {
+		/*
+		myJobsGrid.getSelectionModel().addSelectionHandler(new SelectionHandler<MyJobsModel>() {
 
 			@Override
 			public void onSelection(SelectionEvent<MyJobsModel> event) {
@@ -248,7 +249,7 @@ public class MyJobsPanel extends ContentPanel
 				MyJobsModel selectedItem = myJobsGrid.getSelectionModel().getSelectedItem();
 				if(selectedItem != null )
 				{
-					History.newItem("id/" + selectedItem.getJobid());
+					History.newItem("id/" + selectedItem.getJobid());	
 				}
 			}
 			

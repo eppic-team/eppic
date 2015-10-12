@@ -28,6 +28,7 @@ import ch.systemsx.sybit.crkwebui.client.results.data.InterfaceItemModel;
 import ch.systemsx.sybit.crkwebui.client.results.gui.cells.AssemblyMethodCallCell;
 import ch.systemsx.sybit.crkwebui.client.results.gui.cells.AssemblyThumbnailCell;
 import ch.systemsx.sybit.crkwebui.client.results.gui.cells.InterfacesButtonCell;
+import ch.systemsx.sybit.crkwebui.client.results.gui.cells.InterfacesLinkCell;
 import ch.systemsx.sybit.crkwebui.client.results.gui.cells.MethodCallCell;
 import ch.systemsx.sybit.crkwebui.client.results.gui.cells.ThumbnailCell;
 import ch.systemsx.sybit.crkwebui.client.results.gui.grid.util.AssemblyMethodSummaryType;
@@ -155,7 +156,8 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 		configs.add(getStoichiometryColumn());
 		configs.add(getSymmetryColumn());
 		configs.add(getPredictionColumn());
-		configs.add(getDetailsColumn());
+		configs.add(getNumInterfacesColumn());
+		//configs.add(getDetailsColumn());
 
 		return configs;
 	}
@@ -212,6 +214,28 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 		return sizeColumn;
 	}
 	
+	private ColumnConfig<AssemblyItemModel, String> getNumInterfacesColumn() {
+		SummaryColumnConfig<AssemblyItemModel, String> numInterfacesColumn = 
+				new SummaryColumnConfig<AssemblyItemModel, String>(props.numInterfaces());
+		numInterfacesColumn.setCell(new InterfacesLinkCell());
+		fillColumnSettings(numInterfacesColumn, "numinterfaces"); 
+		numInterfacesColumn.setResizable(false);
+		numInterfacesColumn.setSortable(false);
+		return numInterfacesColumn; 
+	}	
+	
+	/*private SummaryColumnConfig<AssemblyItemModel, String> getDetailsColumn() {
+		SummaryColumnConfig<AssemblyItemModel, String> column = 
+				//new SummaryColumnConfig<AssemblyItemModel, String>(props.identifier());
+				new SummaryColumnConfig<AssemblyItemModel, String>(props.detailsButtonText()); 
+		column.setCell(new InterfacesButtonCell());
+		fillColumnSettings(column, "details"); 
+		column.setResizable(false);
+		column.setSortable(false);
+		return column; 
+	}*/
+	
+	
 	private SummaryColumnConfig<AssemblyItemModel, String> getSymmetryColumn() {
 		SummaryColumnConfig<AssemblyItemModel, String> symmetryColumn = 
 				new SummaryColumnConfig<AssemblyItemModel, String>(props.symmetry());
@@ -236,29 +260,6 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 		predictionColumn.setColumnTextClassName("eppic-results-final-call");
 		return predictionColumn;
 	}
-	
-	/*private SummaryColumnConfig<InterfaceItemModel, String> getPredictionColumn() {
-		SummaryColumnConfig<AssemblyItemModel, String> column = 
-				new SummaryColumnConfig<AssemblyItemModel, String>(props.prediction());
-		column.setCell(new MethodCallCell(resultsStore, ScoringMethod.EPPIC_FINAL));
-		column.setSummaryType(new MethodSummaryType.FinalCallSummaryType());
-		column.setSummaryRenderer(new FinalCallSummaryRenderer());
-		fillColumnSettings(column, "finalCallName");
-		column.setColumnTextClassName("eppic-results-final-call");
-		return column;
-	}*/	
-	
-	private SummaryColumnConfig<AssemblyItemModel, String> getDetailsColumn() {
-		SummaryColumnConfig<AssemblyItemModel, String> column = 
-				//new SummaryColumnConfig<AssemblyItemModel, String>(props.detailsButtonText());
-				new SummaryColumnConfig<AssemblyItemModel, String>(props.detailsButtonText()); 
-		column.setCell(new InterfacesButtonCell());
-		fillColumnSettings(column, "details"); 
-		column.setResizable(false);
-		column.setSortable(false);
-		return column; 
-	}
-
 	
 	private SummaryColumnConfig<AssemblyItemModel, String> getThumbnailColumn(){
 		SummaryColumnConfig<AssemblyItemModel, String> thumbnailColumn = 
@@ -342,9 +343,8 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 
 		List<AssemblyItemModel> data = new ArrayList<AssemblyItemModel>();
 		
-		//List<InterfaceCluster> interfaceClusters = resultsData.getInterfaceClusters();
 		List<Assembly> assemblies = resultsData.getAssemblies(); 
-		//Window.alert("assemblies size " + assemblies.size());
+
 		if (assemblies != null)
 		{
 			for(Assembly assembly : assemblies)
@@ -372,6 +372,15 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 					model.setSymmetry(assembly.getSymmetryString());
 					model.setComposition(assembly.getCompositionString());
 					model.setPrediction(assembly.getPredictionString());
+					//model.setNumInterfaces(assembly.getInterfaces().size()+"");
+					if(assembly.getInterfaces().size() == 0)
+						model.setNumInterfaces("0 Interfaces");
+					else if(assembly.getInterfaces().size() == 1)
+						//model.setNumInterfaces("<a href='/ewui/#interfaces/1'>" + assembly.getInterfaces().size() + " Interface</a>");
+						model.setNumInterfaces("<a href='" + GWT.getHostPageBaseURL() + "#interfaces/"+ApplicationContext.getPdbInfo().getPdbCode()+"'>"+ assembly.getInterfaces().size() + " Interface</a>");
+					else 
+						model.setNumInterfaces("<a href='" + GWT.getHostPageBaseURL() + "#interfaces/"+ApplicationContext.getPdbInfo().getPdbCode()+"'>"+ assembly.getInterfaces().size() + " Interfaces</a>");
+										
 					data.add(model);
 			}
 		}

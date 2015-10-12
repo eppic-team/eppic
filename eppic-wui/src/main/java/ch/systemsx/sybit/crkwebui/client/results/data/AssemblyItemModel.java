@@ -26,6 +26,7 @@ public class AssemblyItemModel implements Serializable {
 	private String prediction;	
 	private String thumbnailUrl = "";
 	private String pdbCode;
+	private String numInterfaces;
 	
 	public String getPdbCode() {
 		return pdbCode;
@@ -89,4 +90,12 @@ public class AssemblyItemModel implements Serializable {
 	public void setThumbnailUrl(String thumbnailUrl) {
 		this.thumbnailUrl = thumbnailUrl;
 	}
+	
+	public String getNumInterfaces() {
+		return numInterfaces;
+	}
+	public void setNumInterfaces(String numInterfaces) { 
+		this.numInterfaces = numInterfaces;
+	}
+	
 }

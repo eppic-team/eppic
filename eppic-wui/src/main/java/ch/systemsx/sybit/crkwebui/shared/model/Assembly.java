@@ -27,7 +27,7 @@ public class Assembly implements Serializable  {
 	private List<AssemblyContent> assemblyContents;
 
 	private String interfaceClusterIdsString;
-	
+		
 	public Assembly() {
 		this.interfaceClusters = new ArrayList<InterfaceCluster>();
 		this.assemblyScores = new ArrayList<AssemblyScore>();

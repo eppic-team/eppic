@@ -25,12 +25,22 @@ import com.google.gwt.user.client.Window;
  */
 public class InterfacesButtonCell extends AbstractCell<String>
 {
+	String someval;
+	public InterfacesButtonCell(String someval){
+		this.someval = someval;
+	}
+	
+	public InterfacesButtonCell(){
+		
+	}
+	
 	@Override
 	public void render(Context context,
 			String value, SafeHtmlBuilder sb) {
 		String imageHtml = "<img src=\"resources/icons/details_button.png\" "
 				+ "onmouseover=\"this.src='resources/icons/details_button_over.png';\" "
 				+ "onmouseout=\"this.src='resources/icons/details_button.png';\" />";
+		//String imageHtml = "<a href='www.google.com'>" + someval + "</a>";
 		sb.appendHtmlConstant(imageHtml);	
 	}
 	

@@ -9,7 +9,9 @@ import ch.systemsx.sybit.crkwebui.client.commons.util.EscapedStringGenerator;
 import ch.systemsx.sybit.crkwebui.shared.model.ExperimentalWarnings;
 import ch.systemsx.sybit.shared.model.InputType;
 
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.FlexTable;
+import com.google.gwt.user.client.ui.HTML;
 import com.sencha.gxt.widget.core.client.container.HorizontalLayoutContainer;
 
 /**
@@ -21,8 +23,11 @@ public class PDBIdentifierPanel extends HorizontalLayoutContainer
 {
 	private FlexTable panelTable;
 	
-	public static EppicLabel informationLabel;
-	public static EppicLabel pdbNameLabel;
+	//public static EppicLabel informationLabel;
+	//public static EppicLabel pdbNameLabel;
+	public static HTML informationLabel;
+	public static HTML pdbNameLabel;
+	
 	private LabelWithTooltip warningLabel;
 	
 	public PDBIdentifierPanel(int viewType)
@@ -33,21 +38,26 @@ public class PDBIdentifierPanel extends HorizontalLayoutContainer
 		
 		this.add(panelTable, new HorizontalLayoutData(-1,-1));
 		
-		//switchTitle(viewType);
-		if(viewType ==ResultsPanel.ASSEMBLIES_VIEW)
-			informationLabel = new EppicLabel(
-				EscapedStringGenerator.generateEscapedString(
+		/*if(viewType == ResultsPanel.ASSEMBLIES_VIEW){
+			informationLabel = new EppicLabel(EscapedStringGenerator.generateEscapedString(
 						AppPropertiesManager.CONSTANTS.info_panel_pdb_identifier() + ": "));
-		else if(viewType ==ResultsPanel.INTERFACES_VIEW)
-		informationLabel = new EppicLabel(
-				EscapedStringGenerator.generateEscapedString(
+		}else if(viewType == ResultsPanel.INTERFACES_VIEW){
+			informationLabel = new EppicLabel(EscapedStringGenerator.generateEscapedString(
 						AppPropertiesManager.CONSTANTS.info_panel_interface_pdb_identifier() + ": "));
-
+		}*/
+		if(viewType == ResultsPanel.ASSEMBLIES_VIEW){
+			informationLabel = new HTML(EscapedStringGenerator.generateEscapedString(
+						AppPropertiesManager.CONSTANTS.info_panel_pdb_identifier() + ": "));
+		}else if(viewType == ResultsPanel.INTERFACES_VIEW){
+			informationLabel = new HTML(EscapedStringGenerator.generateEscapedString(
+						AppPropertiesManager.CONSTANTS.info_panel_interface_pdb_identifier() + ": "));
+		}
+		
 		informationLabel.addStyleName("eppic-pdb-identifier-label");
 		
 	}
 	
-	public void switchTitle(int viewType){
+	/*public void switchTitle(int viewType){
 		if(viewType ==ResultsPanel.ASSEMBLIES_VIEW)
 			informationLabel = new EppicLabel(
 				EscapedStringGenerator.generateEscapedString(
@@ -56,7 +66,7 @@ public class PDBIdentifierPanel extends HorizontalLayoutContainer
 		informationLabel = new EppicLabel(
 				EscapedStringGenerator.generateEscapedString(
 						AppPropertiesManager.CONSTANTS.info_panel_interface_pdb_identifier() + ": "));
-	}
+	}*/
 	
 	/**
 	 * Sets values of pdb identifier.
@@ -73,9 +83,21 @@ public class PDBIdentifierPanel extends HorizontalLayoutContainer
 			  			   double rfreeValue,
 			  			   int inputType)
 	{
-		panelTable.clear();
 		
-		if(inputType == InputType.PDBCODE.getIndex())
+		//panelTable.clear();
+		//Window.alert("setting PDBText with " + ApplicationContext.getPdbInfo().getPdbCode());
+		//could really set this here with the navigation text, that's the only place we can locate it here
+		//pdbNameLabel = new HTML(ApplicationContext.getPdbInfo().getPdbCode() + "!");
+		
+		
+		//this gets set first, always!! and then the stuff in MainController gets called. 
+		//pdbNameLabel = new HTML(inputName);
+		//pdbNameLabel = new HTML("xxx");
+		
+		
+		pdbNameLabel = new HTML(inputName);
+		
+		/*if(inputType == InputType.PDBCODE.getIndex())
 		{
 			pdbNameLabel = new LinkWithTooltip(EscapedStringGenerator.generateEscapedString(inputName),
 								AppPropertiesManager.CONSTANTS.pdb_identifier_panel_label_hint(),
@@ -85,7 +107,10 @@ public class PDBIdentifierPanel extends HorizontalLayoutContainer
 		{
 			pdbNameLabel = new EppicLabel(EscapedStringGenerator.generateEscapedString(inputName));
 			
-		}
+		}*/
+		//String code = ApplicationContext.getPdbInfo().getPdbCode();
+		//pdbNameLabel = new EppicLabel(code);
+		
 		
 		//Check for warnings
 		ExperimentalWarnings warnings = new ExperimentalWarnings(spaceGroup, expMethod, resolution, rfreeValue);
@@ -107,6 +132,14 @@ public class PDBIdentifierPanel extends HorizontalLayoutContainer
 			panelTable.setWidget(0, 2, warningLabel);
 		
 	}
+	
+	public static void setPDBText(String inputName)
+	{
+		pdbNameLabel = new HTML(inputName);
+	}	
+	
+	
+	
 	
 	private LabelWithTooltip createWarningLabel(String text){
 		LabelWithTooltip label = new LabelWithTooltip("*"+text+"*", AppPropertiesManager.CONSTANTS.pdb_identifier_panel_warning_hint());
