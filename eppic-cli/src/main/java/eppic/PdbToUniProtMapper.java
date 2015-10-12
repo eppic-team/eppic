@@ -221,11 +221,11 @@ public class PdbToUniProtMapper {
 		Group groupEnd = getPdbGroupFromUniProtIndex(uniprotEnd, chainId);
 
 		String pdbId = "xxxx";
-		if (groupBeg!=null && groupBeg.getChain()!=null && groupBeg.getChain().getParent()!=null &&
-				groupBeg.getChain().getParent().getPDBCode()!=null && 
-				!groupBeg.getChain().getParent().getPDBCode().isEmpty()) {
+		if (groupBeg!=null && groupBeg.getChain()!=null && groupBeg.getChain().getStructure()!=null &&
+				groupBeg.getChain().getStructure().getPDBCode()!=null && 
+				!groupBeg.getChain().getStructure().getPDBCode().isEmpty()) {
 			
-			pdbId = groupBeg.getChain().getParent().getPDBCode();
+			pdbId = groupBeg.getChain().getStructure().getPDBCode();
 		}
 		
 		int seqresBeg = 0;
@@ -275,11 +275,11 @@ public class PdbToUniProtMapper {
 		Group groupEnd = getPdbGroupFromUniProtIndex(uniprotEnd, chainId);
 
 		String pdbId = "xxxx";
-		if (groupBeg!=null && groupBeg.getChain()!=null && groupBeg.getChain().getParent()!=null &&
-				groupBeg.getChain().getParent().getPDBCode()!=null && 
-				!groupBeg.getChain().getParent().getPDBCode().isEmpty()) {
+		if (groupBeg!=null && groupBeg.getChain()!=null && groupBeg.getChain().getStructure()!=null &&
+				groupBeg.getChain().getStructure().getPDBCode()!=null && 
+				!groupBeg.getChain().getStructure().getPDBCode().isEmpty()) {
 
-			pdbId = groupBeg.getChain().getParent().getPDBCode();
+			pdbId = groupBeg.getChain().getStructure().getPDBCode();
 		}
 		
 		int pdbSeqNumBeg = 0;
