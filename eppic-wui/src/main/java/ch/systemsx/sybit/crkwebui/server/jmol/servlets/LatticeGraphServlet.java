@@ -1,5 +1,6 @@
 package ch.systemsx.sybit.crkwebui.server.jmol.servlets;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
@@ -15,8 +16,10 @@ import org.slf4j.LoggerFactory;
 
 import ch.systemsx.sybit.crkwebui.server.commons.servlets.BaseServlet;
 import ch.systemsx.sybit.crkwebui.server.db.dao.InterfaceDAO;
+import ch.systemsx.sybit.crkwebui.server.db.dao.JobDAO;
 import ch.systemsx.sybit.crkwebui.server.db.dao.PDBInfoDAO;
 import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.InterfaceDAOJpa;
+import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.JobDAOJpa;
 import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.PDBInfoDAOJpa;
 import ch.systemsx.sybit.crkwebui.server.files.downloader.servlets.FileDownloadServlet;
 import ch.systemsx.sybit.crkwebui.server.jmol.generators.LatticeGraphPageGenerator;
@@ -27,6 +30,7 @@ import ch.systemsx.sybit.crkwebui.shared.model.Interface;
 import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 import eppic.EppicParams;
 import eppic.assembly.gui.LatticeGUI3Dmol;
+import eppic.model.JobDB;
 
 /**
  * Servlet used to display a LatticeGraph3Dmol page.
@@ -37,8 +41,9 @@ import eppic.assembly.gui.LatticeGUI3Dmol;
  * Parameter name 					Parameter value
  * --------------					---------------
  * id								String (the jobId hash)
- * input							Name of input file within the jobId directory
- * 									(Note this differs from JmolViewer, which strips the extension)
+ * input							The job's inputName (Name of input file within the jobId directory),
+ * 									or else the PDB ID for precalculated jobs
+ * 									(Note this differs from JmolViewer, which uses the truncated inputName)
  * interfaces						String (comma-separated list of interface ids)
 
  * @author Spencer Bliven
@@ -58,9 +63,6 @@ public class LatticeGraphServlet extends BaseServlet
 	private static final Logger logger = LoggerFactory.getLogger(LatticeGraphServlet.class);
 
 	private String resultsLocation;
-	private String protocol;
-	//private String generalDestinationDirectoryName;
-	private String servletContPath;
 	private String destination_path;
 
 	@Override
@@ -70,16 +72,6 @@ public class LatticeGraphServlet extends BaseServlet
 
 		resultsLocation = properties.getProperty("results_location");
 		destination_path = properties.getProperty("destination_path");
-
-		protocol = "http";
-		if(properties.getProperty("protocol") != null)
-		{
-			protocol = properties.getProperty("protocol");
-		}
-
-		//generalDestinationDirectoryName = properties.getProperty("destination_path");
-
-		servletContPath = getServletContext().getInitParameter("servletContPath");
 	}
 
 	@Override
@@ -91,13 +83,7 @@ public class LatticeGraphServlet extends BaseServlet
 
 
 		String jobId = request.getParameter(FileDownloadServlet.PARAM_ID);
-		String input = request.getParameter(JmolViewerServlet.PARAM_INPUT);
 		String requestedIfacesStr = request.getParameter(PARAM_INTERFACES);
-
-		String serverName = request.getServerName();
-		int serverPort = request.getServerPort();
-
-		String serverUrl = protocol + "://" + serverName + ":" + serverPort + "/" + servletContPath;
 
 		String url3dmoljs = properties.getProperty("url3dmoljs");
 		if (url3dmoljs == null || url3dmoljs.equals("")) {
@@ -105,27 +91,30 @@ public class LatticeGraphServlet extends BaseServlet
 			return;
 		}
 
-		logger.info("Requested 3D viewer page for jobId={}, input={},interfaces={}, size={}",jobId,input,requestedIfacesStr);
+		logger.info("Requested Lattice Graph page for jobId={},interfaces={}",jobId,requestedIfacesStr);
 
 		PrintWriter outputStream = null;
 
 		try
 		{
-			LatticeGraphServletInputValidator.validateLatticeGraphInput(jobId, input,requestedIfacesStr);
+			LatticeGraphServletInputValidator.validateLatticeGraphInput(jobId,requestedIfacesStr);
 
-			String dir = destination_path + jobId + "/";
-			String inputFilename = dir + input;
+			PdbInfo pdbInfo = getPdbInfo(jobId);
+			String input = pdbInfo.getInputName();
+			String inputPrefix = pdbInfo.getTruncatedInputName();
+			
+			// job directory on local filesystem
+			File dir = new File(destination_path + jobId);
 			
 			// Construct UC filename
-			String inputPrefix = input.replaceAll("\\.(cif|pdb)(\\.gz)?$", "");
-			String ucFilename = dir+inputPrefix + EppicParams.UNIT_CELL_COORD_FILES_SUFFIX + ".cif";
+			File ucFile = new File(dir,inputPrefix + EppicParams.UNIT_CELL_COORD_FILES_SUFFIX + ".cif.gz");
 			String ucURI = resultsLocation + jobId + "/" + inputPrefix + EppicParams.UNIT_CELL_COORD_FILES_SUFFIX + ".cif";
 			
 			//TODO better to filter interfaces here before construction, or afterwards?
 			List<Integer> requestedIfaces = LatticeGUI3Dmol.parseInterfaceList(requestedIfacesStr);
 			//requestedIfaces = null; //Filter afterwards
 
-			List<Interface> ifaceList = getInterfaceList(jobId);
+			List<Interface> ifaceList = getInterfaceList(pdbInfo);
 			String title = jobId + " - Lattice Graph";
 			if(requestedIfaces != null && !requestedIfaces.isEmpty()) {
 				title += " for interfaces "+requestedIfacesStr;
@@ -133,7 +122,7 @@ public class LatticeGraphServlet extends BaseServlet
 
 			outputStream = new PrintWriter(response.getOutputStream());
 			
-			LatticeGraphPageGenerator.generatePage(inputFilename, ucFilename, ucURI, title, ifaceList, requestedIfaces, url3dmoljs,outputStream);
+			LatticeGraphPageGenerator.generatePage(dir,input, ucFile, ucURI, title, ifaceList, requestedIfaces, url3dmoljs,outputStream);
 
 		}
 		catch(ValidationException e)
@@ -142,13 +131,17 @@ public class LatticeGraphServlet extends BaseServlet
 		}
 		catch(IOException e)
 		{
-			response.sendError(HttpServletResponse.SC_NO_CONTENT, "Error during preparation of 3D viewer page.");
-		}
-		catch(DaoException e)
-		{
-			response.sendError(HttpServletResponse.SC_NO_CONTENT, "Error during preparation of 3D viewer page.");
+			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error during preparation of Lattice Graph page.");
+			logger.error("Error during preparation of Lattice Graph page.",e);
+		} catch(DaoException e) {
+			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error during preparation of Lattice Graph page.");
+			logger.error("Error during preparation of Lattice Graph page.",e);
 		} catch (StructureException e) {
-			response.sendError(HttpServletResponse.SC_NO_CONTENT, "Error during preparation of 3D viewer page.");
+			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error during preparation of Lattice Graph page.");
+			logger.error("Error during preparation of Lattice Graph page.",e);
+		} catch (Exception e) {
+			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error during preparation of Lattice Graph page.");
+			logger.error("Error during preparation of Lattice Graph page.",e);
 		}
 		finally
 		{
@@ -162,11 +155,19 @@ public class LatticeGraphServlet extends BaseServlet
 			}
 		}
 	}
+	
+	private PdbInfo getPdbInfo(String jobId) throws DaoException {
+		PDBInfoDAO pdbDao = new PDBInfoDAOJpa();
+		PdbInfo pdbinfo = pdbDao.getPDBInfo(jobId);
+		// Set additional job properties
+		JobDAO jobdao = new JobDAOJpa();
+		JobDB job = jobdao.getJob(jobId);
+		pdbinfo.setInputName(job.getInputName());
+		pdbinfo.setInputType(job.getInputType());
+		return pdbinfo;
+	}
 
-	private List<Interface> getInterfaceList(String jobId) throws DaoException {
-		PDBInfoDAO pdbInfoDAO = new PDBInfoDAOJpa();
-		PdbInfo pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
-
+	private List<Interface> getInterfaceList(PdbInfo pdbInfo) throws DaoException {
 		InterfaceDAO interfaceDAO = new InterfaceDAOJpa();
 			return interfaceDAO.getAllInterfaces(pdbInfo.getUid());
 	}

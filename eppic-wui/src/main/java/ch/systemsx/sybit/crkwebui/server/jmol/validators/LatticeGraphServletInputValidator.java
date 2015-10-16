@@ -11,27 +11,17 @@ public class LatticeGraphServletInputValidator
 	/**
 	 * Validates correctness of input data necessary to run jmol viewer.
 	 * @param jobId identifier of the job
-	 * @param type
-	 * @param interfaceId identifier of the interface
-	 * @param assemblyId assembly identifier
-	 * @param format the format of the coordinates file to use (either pdb or cif)
-	 * @param input input 
-	 * @param size size of the picture
+	 * @param interfaces list of interface identifiers
 	 * @throws ValidationException when validation fails
 	 */
-	public static void validateLatticeGraphInput(String jobId,String input,
+	public static void validateLatticeGraphInput(String jobId,
 			String interfaces) throws ValidationException
 	{
 		if(jobId == null) {
 			throw new ValidationException("Job identifier is not specified.");
 		}
-		else if(input == null)
-		{
-			throw new ValidationException("Input is not specified.");
-		}
 
 		RunJobDataValidator.validateJobId(jobId);
-		RunJobDataValidator.validateInput(input);
 		validateInterfaceList(interfaces);
 	}
 

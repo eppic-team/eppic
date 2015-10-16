@@ -2,6 +2,7 @@ package ch.systemsx.sybit.crkwebui.server.db.dao.jpa;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Path;
@@ -63,8 +64,8 @@ public class PDBInfoDAOJpa implements PDBInfoDAO
 									  pdbScoreItemRoot.get(PdbInfoDB_.crystalFormId),
 									  pdbScoreItemRoot.get(PdbInfoDB_.runParameters));
 			
-			Query query = entityManager.createQuery(criteriaQuery);
-			PdbInfoDB pdbScoreItemDB = (PdbInfoDB)query.getSingleResult();
+			TypedQuery<PdbInfoDB> query = entityManager.createQuery(criteriaQuery);
+			PdbInfoDB pdbScoreItemDB = query.getSingleResult();
 			
 			result = PdbInfo.create(pdbScoreItemDB);
 			result.setJobId(jobId);
