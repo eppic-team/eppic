@@ -377,9 +377,9 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 						model.setNumInterfaces("0 Interfaces");
 					else if(assembly.getInterfaces().size() == 1)
 						//model.setNumInterfaces("<a href='/ewui/#interfaces/1'>" + assembly.getInterfaces().size() + " Interface</a>");
-						model.setNumInterfaces("<a href='" + GWT.getHostPageBaseURL() + "#interfaces/"+ApplicationContext.getPdbInfo().getPdbCode()+"'>"+ assembly.getInterfaces().size() + " Interface</a>");
+						model.setNumInterfaces("<a href='" + GWT.getHostPageBaseURL() + "#interfaces/"+ApplicationContext.getPdbInfo().getPdbCode()+"/"+assembly.getId() +"'>"+ assembly.getInterfaces().size() + " Interface</a>");
 					else 
-						model.setNumInterfaces("<a href='" + GWT.getHostPageBaseURL() + "#interfaces/"+ApplicationContext.getPdbInfo().getPdbCode()+"'>"+ assembly.getInterfaces().size() + " Interfaces</a>");
+						model.setNumInterfaces("<a href='" + GWT.getHostPageBaseURL() + "#interfaces/"+ApplicationContext.getPdbInfo().getPdbCode()+"/"+assembly.getId() +"'>"+ assembly.getInterfaces().size() + " Interfaces</a>");
 										
 					data.add(model);
 			}
