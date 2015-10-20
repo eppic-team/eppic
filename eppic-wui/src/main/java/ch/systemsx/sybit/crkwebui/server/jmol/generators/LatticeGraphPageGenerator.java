@@ -57,18 +57,6 @@ public class LatticeGraphPageGenerator {
 			String ucURI, String title, List<Interface> interfaces,
 			List<Integer> requestedIfaces, String url3dmoljs, PrintWriter out) throws IOException, StructureException {
 
-		out.println("<!--");
-		out.println("input="+inputName);
-		out.println("exists="+(new File(directory,inputName).exists()?"true":"false"));
-		out.println("ucFilename="+ucFile);
-		out.println("interfaces="+interfaces);
-		out.println("ucURI="+ucURI);
-		out.println("title="+title);
-		out.println("PWD="+(new File(".").getAbsolutePath()));
-		out.println("-->");
-		//out.close();
-		//if(true)return;
-		
 		// Read input structure
 		Structure auStruct;
 		File structFile = new File(directory,inputName);
@@ -82,7 +70,7 @@ public class LatticeGraphPageGenerator {
 				// The Consumer builds up the BioJava - structure object.
 				// you could also hook in your own and build up you own data model.
 				parser.addMMcifConsumer(consumer);
-				
+
 				InputStream inStream = new FileInputStream(structFile);
 				parser.parse(inStream);
 
@@ -90,7 +78,7 @@ public class LatticeGraphPageGenerator {
 				auStruct = consumer.getStructure();
 			} else {
 				PDBFileParser parser = new PDBFileParser();
-				
+
 				InputStream inStream = new FileInputStream(structFile);
 				auStruct = parser.parsePDBFile(inStream);
 			}
@@ -114,7 +102,7 @@ public class LatticeGraphPageGenerator {
 			String firstMoleculeId = iface.getChain1();
 			String secondMoleculeId = iface.getChain2();
 			AtomContactSet contacts = null;
-			int interfaceId = iface.getInterfaceId()-1;
+			int interfaceId = iface.getInterfaceId();
 			int opId = iface.getOperatorId();
 			if(opId < 0 || opId >= sg.getNumOperators() ) {
 				logger.error("Found interface {} in the database, but only {} operators in spacegroup",opId, sg.getNumOperators());
@@ -123,6 +111,8 @@ public class LatticeGraphPageGenerator {
 			CrystalTransform firstTransf = new CrystalTransform(sg, 0);
 			CrystalTransform secondTransf = new CrystalTransform(sg,
 					opId);
+			secondTransf.setMatTransform(SpaceGroup.getMatrixFromAlgebraic(iface.getOperator()));
+			
 			StructureInterface siface = new StructureInterface(
 					firstMolecule, secondMolecule, firstMoleculeId,
 					secondMoleculeId, contacts, firstTransf, secondTransf);
