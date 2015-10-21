@@ -228,6 +228,7 @@ public class BlastHitList implements Iterable<BlastHit> {
 	 * Returns and iterator over this blast hits list
 	 * @return
 	 */
+	@Override
 	public Iterator<BlastHit> iterator() {
 		return this.hits.iterator();
 	}

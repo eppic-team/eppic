@@ -14,6 +14,7 @@ public class EppicException extends Exception {
 		this.fatal = fatal;
 	}
 	
+	@Override
 	public String getMessage() {
 		return message;
 	}

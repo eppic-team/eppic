@@ -9,6 +9,7 @@ import java.util.Set;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Path;
@@ -814,8 +815,8 @@ public class JobDAOJpa implements JobDAO
 			criteriaQuery.where(criteriaBuilder.equal(jobRoot.get(JobDB_.jobId), jobId));
 			criteriaQuery.select(jobRoot);
 			
-			Query query = entityManager.createQuery(criteriaQuery);
-			job = (JobDB) query.getSingleResult();
+			TypedQuery<JobDB> query = entityManager.createQuery(criteriaQuery);
+			job = query.getSingleResult();
 			
 		}
 		catch(Throwable e)
@@ -825,5 +826,10 @@ public class JobDAOJpa implements JobDAO
 		}
 		
 		return job;
+	}
+
+	@Override
+	public JobDB getJob(String jobId) throws DaoException {
+		return getJob(EntityManagerHandler.getEntityManager(),jobId);
 	}
 }

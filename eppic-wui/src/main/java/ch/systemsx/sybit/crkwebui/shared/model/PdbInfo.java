@@ -327,26 +327,28 @@ public class PdbInfo implements Serializable, ProcessingData
 	 * This method should be used to read in files like thumbnails etc..
 	 * @return
 	 */
-	 public String getTruncatedInputName(){
+	public String getTruncatedInputName(){
 		return truncateFileName(inputName);
-	 }
+	}
 
-	 /**
-	  * Truncates the given fileName by removing anything after the last dot.
-	  * If no dot present in fileName then nothing is truncated.
-	  * @param fileName
-	  * @return
-	  */
-	 public static String truncateFileName(String fileName) {
-		 String newName = fileName;
-		 int lastPeriodPos = fileName.lastIndexOf('.');
-		 if (lastPeriodPos >= 0)
-		 {
-			 newName = fileName.substring(0, lastPeriodPos);
-		 }
-		 return newName;
+	/**
+	 * Truncates the given fileName by removing anything after the last dot.
+	 * If no dot present in fileName then nothing is truncated.
+	 * @param fileName
+	 * @return
+	 */
+	public static String truncateFileName(String fileName) {
+		if( fileName == null) return null;
+		
+		String newName = fileName;
+		int lastPeriodPos = fileName.lastIndexOf('.');
+		if (lastPeriodPos >= 0)
+		{
+			newName = fileName.substring(0, lastPeriodPos);
+		}
+		return newName;
 
-	 }
+	}
 
 	 /**
 	  * return an interface with the id
@@ -399,16 +401,16 @@ public class PdbInfo implements Serializable, ProcessingData
 
 		 if(pdbInfoDB.getChainClusters() != null)
 		 {
-			 List<ChainClusterDB> homologsInfoItemDBs = pdbInfoDB.getChainClusters();
+			 List<ChainClusterDB> chainClusters = pdbInfoDB.getChainClusters();
 
-			 List<ChainCluster> homologsStringItems = new ArrayList<ChainCluster>();
+			 List<ChainCluster> clustersCopy = new ArrayList<ChainCluster>();
 
-			 for(ChainClusterDB homologsStringItemDB : homologsInfoItemDBs)
+			 for(ChainClusterDB cluster : chainClusters)
 			 {
-				 homologsStringItems.add(ChainCluster.create(homologsStringItemDB));
+				 clustersCopy.add(ChainCluster.create(cluster));
 			 }
 
-			 pdbInfo.setChainClusters(homologsStringItems);
+			 pdbInfo.setChainClusters(clustersCopy);
 		 }
 
 		 pdbInfo.setPdbCode(pdbInfoDB.getPdbCode());

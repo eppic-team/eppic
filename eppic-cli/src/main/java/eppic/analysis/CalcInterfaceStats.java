@@ -41,6 +41,7 @@ public class CalcInterfaceStats extends Thread {
 		public Counter(List<CalcInterfaceStats> ciss) {
 			this.ciss = ciss;
 		}
+		@Override
 		public void run() {
 			total = 0;
 			for (CalcInterfaceStats cis:ciss) {

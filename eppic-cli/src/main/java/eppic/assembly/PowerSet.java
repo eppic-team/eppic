@@ -125,6 +125,7 @@ public class PowerSet {
 		return Arrays.hashCode(this.set);
 	}
 	
+	@Override
 	public String toString() {
 		return Arrays.toString(this.set);
 	}

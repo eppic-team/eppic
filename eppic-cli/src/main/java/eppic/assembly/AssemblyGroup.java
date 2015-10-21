@@ -92,6 +92,7 @@ public class AssemblyGroup implements Iterable<Assembly> {
 		return list.size();
 	}
 	
+	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		for (Assembly a:list) {

@@ -279,6 +279,7 @@ public enum AminoAcid {
 		AminoAcid[] newValues = new AminoAcid[values.length];
 		System.arraycopy(values, 0, newValues, 0, values.length);
 		java.util.Arrays.sort(newValues, new Comparator<AminoAcid>() {
+			@Override
 			public int compare(AminoAcid a, AminoAcid b) {
 				return new Double(a.hydrophobicity).compareTo(new Double(b.hydrophobicity));
 			}

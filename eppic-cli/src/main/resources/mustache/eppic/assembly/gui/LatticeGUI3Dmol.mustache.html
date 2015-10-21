@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <title>{{title}}</title>
+    <script src="{{url3Dmol}}"></script>
+    <style type="text/css">
+    #molviewer {
+        min-width:200px;
+        max-width:800px;
+        min-height: 200px;
+        max-height: 800px;
+        height: 600px;
+        position: relative;
+        border:solid grey 1px;
+    }
+    </style>
+    <script type="text/javascript">
+
+$(document).ready(function() {
+    //install a right-click handler on every canvas to export png
+    $('canvas').bind('contextmenu',function(e) {
+        var dt = e.currentTarget.toDataURL('image/png');
+        window.location = dt;
+        });
+});
+
+function axes(viewer) {
+    var l = 15;
+    var r = 1;
+    var center = viewer.addSphere({center:new $3Dmol.Vector3(), radius:r,color:'grey'});
+    var x = viewer.addArrow({start:new $3Dmol.Vector3(0,0,0), end:new $3Dmol.Vector3(l,0,0),radius:r,color:'red'});
+    var y = viewer.addArrow({start:new $3Dmol.Vector3(), end:new $3Dmol.Vector3(0,l,0),radius:r,color:'green'});
+    var z = viewer.addArrow({start:new $3Dmol.Vector3(), end:new $3Dmol.Vector3(0,0,l),radius:r,color:'blue'});
+    viewer.render();
+    return {x:x,y:y,z:z,center:center};
+}
+
+    </script>
+</head>
+<body>
+    <h1>3Dmol.js Test</h1>
+    <script>
+        $(document).ready(function() {
+           //install a right-click handler on every canvas to export png
+           $('canvas').bind('contextmenu',function(e) {
+           var dt = e.currentTarget.toDataURL('image/png');
+           window.location = dt;
+           });
+        });
+    </script>
+    <div id="molviewer" ></div>
+    <script>
+(function() {
+ var viewer = $3Dmol.createViewer($("#molviewer"));
+ viewer.setBackgroundColor(0xffffffff);
+
+ var uri = '{{strucURI}}';
+ $.get(uri, function(ret) {
+    console.log("Success!");
+    var mol = viewer.addAsOneMolecule(ret,'cif');
+    viewer.setStyle({},{cartoon:{color:'spectrum',opacity:.4}});
+    viewer.addUnitCell(viewer.getModel(0));
+    viewer.zoomTo();
+    viewer.render();
+ }); 
+
+ //Vertices
+{{#graph.vertices}}
+ viewer.addSphere({center:new $3Dmol.Vector3({{center.x}},{{center.y}},{{center.z}}),
+     radius:5.0,
+     color:'{{colorStr}}{{^colorStr}}white{{/colorStr}}'});
+{{/graph.vertices}}
+ //Edges
+{{#graph.edges}}
+{{#segments}}
+ viewer.addArrow({
+     start:new $3Dmol.Vector3( {{start.x}},{{start.y}},{{start.z}} ),
+     end:new $3Dmol.Vector3( {{end.x}},{{end.y}},{{end.z}} ),
+     color:'{{colorStr}}{{^colorStr}}white{{/colorStr}}'});
+{{/segments}}
+{{#circles}}
+ viewer.addCylinder({
+     start:new $3Dmol.Vector3( {{center.x}},{{center.y}},{{center.z}} ),
+     end:new $3Dmol.Vector3( {{perpendicular.x}},{{perpendicular.y}},{{perpendicular.z}} ),
+     radius:{{radius}},toCap:true,fromCap:true,
+     color:'{{colorStr}}{{^colorStr}}white{{/colorStr}}'});
+ viewer.addLabel("{{interfaceId}}",{
+     fontColor:'{{colorStr}}{{^colorStr}}white{{/colorStr}}',
+     fontSize:10,
+     showBackground: false,
+     infront:false,
+     position:{ x:{{center.x}},y:{{center.y}},z:{{center.z}} }
+     });
+{{/circles}}
+{{/graph.edges}}
+
+ axes(viewer);
+})();
+
+    </script>
+    </body>
+</html>

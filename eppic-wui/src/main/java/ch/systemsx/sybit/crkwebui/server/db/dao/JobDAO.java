@@ -148,4 +148,12 @@ public interface JobDAO
 	 * @throws DaoException when can not retrieve submission id
 	 */
 	public String getSubmissionIdForJobId(String jobId) throws DaoException;
+
+	/**
+	 * Fetch a Job from the database
+	 * @param jobId identifier of the job
+	 * @return
+	 * @throws DaoException when can not find the job
+	 */
+	public JobDB getJob(String jobId) throws DaoException;
 }
