@@ -8,7 +8,7 @@
 	<packaging>pom</packaging>
 
 	<modules>
-	    	<module>eppic-model</module>
+		<module>eppic-model</module>
 		<module>eppic-cli</module>
 		<module>eppic-wui</module>
 		<module>eppic-dbtools</module>
@@ -57,4 +57,13 @@
 			</plugins>
 		</pluginManagement>
 	</build>
+
+	<repositories>
+		<repository>
+			<id>snapshots-repo</id>
+			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+			<snapshots><enabled>true</enabled></snapshots>
+		</repository>
+	</repositories>
+
 </project>

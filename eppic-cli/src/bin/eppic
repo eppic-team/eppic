@@ -1,14 +1,57 @@
-#!/bin/sh
+#!/bin/bash
+# Wrapper script to run eppic.
+#
+# Checks for the uniprot prerequisite and downloads it when possible.
+# Other prerequisites should be configured in ~/.eppic.conf
+#
+# Examples:
+#   eppic -h
+#   eppic -i 1smt -s
+#   eppic -i 1smt.cif -s
 
-dir=`dirname $0`
 
-uniprotjar=$dir/../lib/uniprotjapi.jar
-eppicjar=`ls $dir/../lib/uber-eppic*.jar`
+# Get the base directory of the script.
+# Can resolve single symlinks if readlink is installed
+function scriptdir {
+	local CDPATH="" #Disable unintuitive behavior
+	cd "$(dirname "$1")"
+	cd "$(dirname "$(readlink "$1" 2>/dev/null || basename "$1" )")"
+	pwd
+}
+DIR="$(scriptdir "$0" )"
 
+LIB="$DIR/../lib"
+# Unitprot executable path
+uniprotjar="$LIB/uniprotjapi.jar"
+uniprotjarurl="http://www.ebi.ac.uk/uniprot/remotingAPI/download/uniprotjapi.jar"
+# Resolve eppic to a specific version
+eppicjar="$(ls "$LIB"/uber-eppic*.jar)"
+
+# Download a file using wget
+function download {
+	local url="$1"
+	local out="$2"
+
+	if [ ! -x $(which wget) ]; then
+		echo "No wget command. Unable to download $1." >&2
+		return 1
+	fi
+
+	/usr/bin/env wget -O "$out" -- "$url"
+	return $?
+}
+
+# Ensure uniprotjar is installed
 if [ ! -f "$uniprotjar" ]
 then
-        echo "$uniprotjar is missing in $dir/../lib directory. Can't run eppic without it."
-        exit 1
+	download "$uniprotjarurl" "$uniprotjar" ||
+	echo "Error downloading $uniprotjar from $uniprotjarurl." >&2 &&
+	exit 1
+fi
+if [ ! -f "$uniprotjar" ]
+then
+	echo "$uniprotjar is missing and unable to download. Can't run eppic without it." >&2
+	exit 1
 fi
 
 java -cp $uniprotjar:$eppicjar eppic.Main $*

@@ -97,7 +97,6 @@ public class ViewerSelectorWindow extends ResizableWindow{
 			
 			@Override
 			public void onValueChange(ValueChangeEvent<HasValue<Boolean>> event) {
-				Window.alert("ViewerSelectorWindow onValueChange");
 				ToggleGroup group = (ToggleGroup)event.getSource();
 		        CheckBox box = (CheckBox)group.getValue();
 		        Cookies.setCookie("crkviewer", box.getName());
