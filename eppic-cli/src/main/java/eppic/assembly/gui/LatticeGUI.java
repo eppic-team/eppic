@@ -94,7 +94,7 @@ public class LatticeGUI {
 	private Structure structure;
 	private CrystalCell cell;
 
-	private LatticeGraph graph;
+	private LatticeGraph<ChainVertex, InterfaceEdge> graph;
 
 	// Position of each chain in the asymmetric unit
 	private Map<String,Point3d> chainCentroid;
@@ -119,7 +119,7 @@ public class LatticeGUI {
 			interfaces = calculateInterfaces(struc);
 		}
 
-		this.graph = new LatticeGraph(struc, interfaces);
+		this.graph = new LatticeGraph<ChainVertex, InterfaceEdge>(struc, interfaces,ChainVertex.class, InterfaceEdge.class);
 
 		// Cell and space group info
 		PDBCrystallographicInfo crystalInfo = structure.getCrystallographicInfo();

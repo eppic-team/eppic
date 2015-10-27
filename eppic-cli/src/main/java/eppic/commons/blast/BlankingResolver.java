@@ -27,7 +27,8 @@ import org.xml.sax.SAXException;
 public class BlankingResolver implements EntityResolver
 {
 
-    public InputSource resolveEntity( String arg0, String arg1 ) throws SAXException,
+    @Override
+	public InputSource resolveEntity( String arg0, String arg1 ) throws SAXException,
             IOException
     {
 

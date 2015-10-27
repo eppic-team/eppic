@@ -1,0 +1,44 @@
+load "{{getStrucFile.getAbsolutePath}}" {1 1 1};
+set unitcell {0 0 0};
+background white;
+
+// Vertices:
+{{#graph.vertices}}
+isosurface ID "{{uniqueName}}" COLOR {{colorStr}}{{^colorStr}}[1,1,1]{{/colorStr}} CENTER { {{center.x}},{{center.y}},{{center.z}} } SPHERE 5.0;
+set echo ID "echo{{uniqueName}}" { {{center.x}},{{center.y}},{{center.z}} };
+color echo {{colorStr}}{{^colorStr}}[1,1,1]{{/colorStr}};
+echo "  {{toString}}";
+{{/graph.vertices}}
+
+// Edges:
+set defaultDrawArrowScale 8;
+{{#graph.edges}}
+//Edge {{toString}}
+{{#segments}}{{!
+	}}draw ID "{{uniqueName}}" ARROW {{!
+	}}{ {{start.x}},{{start.y}},{{start.z}} } {{!
+	}}{ {{mid.x}},{{mid.y}},{{mid.z}} } {{!
+	}}{ {{end.x}},{{end.y}},{{end.z}} } {{!
+	}}COLOR {{colorStr}}{{^colorStr}}[1,1,1]{{/colorStr}};
+{{/segments}}{{!
+}}{{#circles}}{{!
+	}}draw ID "{{uniqueName}}" "{{interfaceId}}" {{!
+	}}CIRCLE { {{center.x}},{{center.y}},{{center.z}} } {{!
+	}}{ {{perpendicular.x}},{{perpendicular.y}},{{perpendicular.z}} } {{!
+	}}DIAMETER {{diameter}} {{!
+	}}COLOR {{colorStr}};
+{{/circles}}{{!
+}}{{/graph.edges}}
+
+// Display:
+{{! cartoon }}
+{{! hide null; select all;  spacefill off; wireframe off; backbone off; cartoon on;  select ligand; wireframe 0.16;spacefill 0.5; color cpk;  select *.FE; spacefill 0.7; color cpk ;  select *.CU; spacefill 0.7; color cpk ;  select *.ZN; spacefill 0.7; color cpk ;  select alls ON; }}
+select all;
+spacefill off;
+wireframe off;
+backbone off;
+cartoon off;
+restrict not water;
+select none;
+set axes molecular;
+

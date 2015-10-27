@@ -29,7 +29,7 @@
 		 
 		<init-param>
 			<param-name>mimeTypes</param-name>
-			<param-value>text/html,text/plain,text/xml,application/xhtml+xml,text/css,application/javascript,image/svg+xml</param-value>
+			<param-value>text/html,text/plain,text/xml,application/xhtml+xml,text/css,application/javascript,image/svg+xml,chemical/x-cif</param-value>
 		</init-param>
 	</filter>
 	
@@ -77,7 +77,12 @@
 	    <servlet-name>JmolViewerService</servlet-name>
 	    <servlet-class>ch.systemsx.sybit.crkwebui.server.jmol.servlets.JmolViewerServlet</servlet-class>
 	</servlet>
-	
+
+	<servlet>
+	    <servlet-name>LatticeGraphService</servlet-name>
+	    <servlet-class>ch.systemsx.sybit.crkwebui.server.jmol.servlets.LatticeGraphServlet</servlet-class>
+	</servlet>
+
 	<servlet-mapping>
 		<servlet-name>CrkService</servlet-name>
 		<url-pattern>/ewui/crk</url-pattern>
@@ -106,6 +111,11 @@
  	<servlet-mapping>
 	    <servlet-name>JmolViewerService</servlet-name>
 	    <url-pattern>/ewui/jmolViewer</url-pattern>
+ 	</servlet-mapping>
+ 	
+ 	<servlet-mapping>
+	    <servlet-name>LatticeGraphService</servlet-name>
+	    <url-pattern>/ewui/latticeGraph</url-pattern>
  	</servlet-mapping>
  	
  	<!-- Session timeout: if the client is idle for more than this time (in minutes) 

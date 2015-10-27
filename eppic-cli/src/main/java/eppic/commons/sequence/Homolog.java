@@ -93,6 +93,7 @@ public class Homolog implements Serializable {
 				getBlastHsp().getSubjectStart()+"-"+getBlastHsp().getSubjectEnd();
 	}
 	
+	@Override
 	public String toString() {
 		return getUniId();
 	}

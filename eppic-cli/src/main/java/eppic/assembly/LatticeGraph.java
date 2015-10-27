@@ -22,40 +22,75 @@ import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.StructureException;
 import org.biojava.nbio.structure.StructureTools;
 import org.biojava.nbio.structure.contact.StructureInterface;
-import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
 import org.biojava.nbio.structure.contact.StructureInterfaceList;
 import org.biojava.nbio.structure.xtal.CrystalCell;
 import org.biojava.nbio.structure.xtal.SpaceGroup;
+import org.jgrapht.EdgeFactory;
 import org.jgrapht.UndirectedGraph;
+import org.jgrapht.VertexFactory;
+import org.jgrapht.graph.ClassBasedEdgeFactory;
+import org.jgrapht.graph.ClassBasedVertexFactory;
 import org.jgrapht.graph.Pseudograph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import eppic.EppicParams;
+import com.google.common.collect.Lists;
 
 
 
-
-public class LatticeGraph {
+/**
+ * Graph representation of the interfaces in a unit cell.
+ * 
+ * Nodes are {@link ChainVertex} objects, which are identified by a chain
+ * (in the asymmetric unit) and a crystallographic operator giving the
+ * transform to the unit cell.
+ * 
+ * Edges are {@link InterfaceEdge} objects, identified by an EPPIC interface
+ * and associated with a vector indicating whether the edge connects to
+ * adjacent cells.
+ * 
+ * The class is generic, allowing other properties to be associated with
+ * nodes and edges through subclasses. For instance, {@link LatticeGraph3D}
+ * includes information for visualizing the graph.
+ * 
+ * @author Spencer Bliven, Jose Duarte
+ *
+ * @param <V>
+ * @param <E>
+ */
+public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 
 	private static final Logger logger = LoggerFactory.getLogger(LatticeGraph.class);
 
 
 	private final Structure struct;
-	private StructureInterfaceList interfaces;
+	private List<StructureInterface> interfaces;
 
-	private UndirectedGraph<ChainVertex,InterfaceEdge> graph;
+	private UndirectedGraph<V,E> graph;
+	
+	VertexFactory<V> vertexFactory;
+	EdgeFactory<V,E> edgeFactory;
 
 	private boolean globalReferencePoint;
 	private Map<String,Matrix4d[]> unitCellOperators = new HashMap<>(); // In crystal coordinates
 	private Map<String,Point3d> referencePoints = new HashMap<>(); // Chain ID -> centroid coordinate
 
-	public LatticeGraph(Structure struct, StructureInterfaceList interfaces) throws StructureException {
+	/**
+	 * Create the graph, initializing given the input structure and interfaces.
+	 * @param struct
+	 * @param interfaces
+	 * @param vertexClass
+	 * @param edgeClass
+	 * @throws StructureException
+	 */
+	public LatticeGraph(Structure struct, List<StructureInterface> interfaces, Class<? extends V> vertexClass,Class<? extends E> edgeClass) throws StructureException {
 
 		this.struct = struct;
 		this.interfaces = interfaces;
 
-		this.graph = new Pseudograph<ChainVertex, InterfaceEdge>(InterfaceEdge.class);
+		vertexFactory = new ClassBasedVertexFactory<V>(vertexClass);
+		edgeFactory = new ClassBasedEdgeFactory<V, E>(edgeClass);
+		this.graph = new Pseudograph<V,E>(edgeFactory);
 
 		globalReferencePoint = true;
 
@@ -63,6 +98,12 @@ public class LatticeGraph {
 		initLatticeGraphTopologically();
 		logGraph();
 
+	}
+
+	public LatticeGraph(Structure structure,
+			StructureInterfaceList interfaces, Class<? extends V> vertexClass,
+			Class<? extends E> edgeClass) throws StructureException {
+		this(structure, Lists.newArrayList(interfaces),vertexClass,edgeClass);
 	}
 
 	/**
@@ -192,25 +233,25 @@ public class LatticeGraph {
 	}
 
 
-	public UndirectedGraph<ChainVertex, InterfaceEdge> getGraph() {
+	public UndirectedGraph<V, E> getGraph() {
 		return graph;
 	}
 
 	private void logGraph() {
 		logger.info("Found {} vertices and {} edges in unit cell", graph.vertexSet().size(), graph.edgeSet().size());
 
-		List<InterfaceEdge> sortedEdges = new ArrayList<InterfaceEdge>();
+		List<E> sortedEdges = new ArrayList<E>();
 		sortedEdges.addAll(graph.edgeSet());
-		Collections.sort(sortedEdges, new Comparator<InterfaceEdge>() {
+		Collections.sort(sortedEdges, new Comparator<E>() {
 			@Override
-			public int compare(InterfaceEdge o1, InterfaceEdge o2) {
+			public int compare(E o1, E o2) {
 				return new Integer(o1.getInterfaceId()).compareTo(new Integer(o2.getInterfaceId()));
 			}			
 		});
 
-		for (InterfaceEdge edge:sortedEdges) {
-			ChainVertex first = graph.getEdgeSource(edge);
-			ChainVertex second = graph.getEdgeTarget(edge);
+		for (E edge:sortedEdges) {
+			V first = graph.getEdgeSource(edge);
+			V second = graph.getEdgeTarget(edge);
 			Point3i xtalT = edge.getXtalTrans();
 			logger.info("Edge {} ({}) between {} ({}) - {} ({})"+
 					String.format(" [%2d,%2d,%2d]", xtalT.x,xtalT.y,xtalT.z), 
@@ -237,7 +278,10 @@ public class LatticeGraph {
 			}
 			
 			for (int i=0;i<numOps;i++) {
-				graph.addVertex(new ChainVertex(c, i));
+				V vertex = vertexFactory.createVertex();
+				vertex.setChain(c);
+				vertex.setOpId(i);
+				graph.addVertex(vertex);
 			}
 		}
 
@@ -270,11 +314,18 @@ public class LatticeGraph {
 				Point3i xtalTrans = new Point3i(
 						(int) Math.round(X.m03), (int) Math.round(X.m13), (int) Math.round(X.m23));
 
-				InterfaceEdge edge = new InterfaceEdge(interf, xtalTrans);
 
-				ChainVertex sVertex = new ChainVertex(struct.getChainByPDB(sourceChainId), j);
-				ChainVertex tVertex = new ChainVertex(struct.getChainByPDB(targetChainId), k);
+				V sVertex = vertexFactory.createVertex();
+				sVertex.setChain(struct.getChainByPDB(sourceChainId));
+				sVertex.setOpId(j);
+				V tVertex = vertexFactory.createVertex();
+				tVertex.setChain(struct.getChainByPDB(targetChainId));
+				tVertex.setOpId(k);
 
+				E edge = edgeFactory.createEdge(sVertex, tVertex);
+				edge.setInterface(interf);
+				edge.setXtalTrans(xtalTrans);
+				
 				graph.addEdge(sVertex, tVertex, edge);
 
 			}
@@ -344,21 +395,21 @@ public class LatticeGraph {
 	 */
 	public void removeDuplicateEdges() {
 
-		Set<InterfaceEdge> toRemove = new HashSet<InterfaceEdge>();
+		Set<E> toRemove = new HashSet<E>();
 
 		int i = -1;
-		for (ChainVertex iVertex:graph.vertexSet()) {
+		for (V iVertex:graph.vertexSet()) {
 			i++;
 			int j = -1;
-			for (ChainVertex jVertex:graph.vertexSet()) {
+			for (V jVertex:graph.vertexSet()) {
 				j++;
 				if (j<i) continue; // i.e. we include i==j (to remove loop edges)
 
-				Set<InterfaceEdge> edges = graph.getAllEdges(iVertex, jVertex);
-				Map<Integer,Set<InterfaceEdge>> groups = groupIntoTypes(edges);
+				Set<E> edges = graph.getAllEdges(iVertex, jVertex);
+				Map<Integer,Set<E>> groups = groupIntoTypes(edges);
 
 				for (int interfaceId:groups.keySet()){
-					Set<InterfaceEdge> group = groups.get(interfaceId);
+					Set<E> group = groups.get(interfaceId);
 
 					if (group.size()==0) {
 						continue;
@@ -371,10 +422,10 @@ public class LatticeGraph {
 					}
 					// now we are in case 2 or more edges 
 					// we keep first and remove the rest
-					Iterator<InterfaceEdge> it = group.iterator();
+					Iterator<E> it = group.iterator();
 					it.next(); // first edge: we keep it
 					while (it.hasNext()) {						
-						InterfaceEdge edge = it.next();
+						E edge = it.next();
 						toRemove.add(edge);
 						logger.info("Removed edge with interface id {} between vertices {},{} ", 
 								interfaceId,iVertex.toString(),jVertex.toString());
@@ -387,7 +438,7 @@ public class LatticeGraph {
 
 		}
 		// now we do the removal
-		for (InterfaceEdge edge:toRemove) {
+		for (E edge:toRemove) {
 			graph.removeEdge(edge);
 		}
 
@@ -398,13 +449,13 @@ public class LatticeGraph {
 	 * @param edges
 	 * @return a map of interface ids to sets of edges with the corresponding interface id
 	 */
-	private Map<Integer,Set<InterfaceEdge>> groupIntoTypes(Set<InterfaceEdge> edges) {
-		Map<Integer,Set<InterfaceEdge>> map = new HashMap<Integer,Set<InterfaceEdge>>();
+	private Map<Integer,Set<E>> groupIntoTypes(Set<E> edges) {
+		Map<Integer,Set<E>> map = new HashMap<Integer,Set<E>>();
 
-		for (InterfaceEdge edge:edges) {
-			Set<InterfaceEdge> set = null;
+		for (E edge:edges) {
+			Set<E> set = null;
 			if (!map.containsKey(edge.getInterfaceId())) {
-				set = new HashSet<InterfaceEdge>();
+				set = new HashSet<E>();
 				map.put(edge.getInterfaceId(), set);
 			} else {
 				set = map.get(edge.getInterfaceId());
@@ -436,53 +487,5 @@ public class LatticeGraph {
 			this.globalReferencePoint = globalReferencePoint;
 		}
 	}
-	
-	/**
-	 * Get a list of interface cluster ids of interface clusters that exist 
-	 * between entities with the given entity ids.
-	 * The list is sorted descendent by interface cluster average area.
-	 * @param entity1
-	 * @param entity2
-	 * @return
-	 */
-	public List<Integer> getInterfaceClusterIds(int entity1, int entity2) {
-		
-		Set<Integer> interfaceClusterIds = new HashSet<Integer>();
-		
-		for (InterfaceEdge edge:graph.edgeSet()) {
-			ChainVertex s = graph.getEdgeSource(edge);
-			ChainVertex t = graph.getEdgeTarget(edge);
-			
-			if ( (s.getEntity()==entity1 && t.getEntity()==entity2) ||
-				 (s.getEntity()==entity2 && t.getEntity()==entity1) ) {
-			
-				interfaceClusterIds.add(edge.getClusterId());
-				
-			}
-		}
-		
-		List<StructureInterfaceCluster> clusters = interfaces.getClusters(EppicParams.CLUSTERING_CONTACT_OVERLAP_SCORE_CUTOFF);
-		
-		List<StructureInterfaceCluster> sublist = new ArrayList<StructureInterfaceCluster>();
-		
-		for (int clusterId:interfaceClusterIds) {
-			sublist.add(clusters.get(clusterId - 1));			
-		}
-		
-		Collections.sort(sublist, new Comparator<StructureInterfaceCluster>() {
-
-			@Override
-			public int compare(StructureInterfaceCluster o1, StructureInterfaceCluster o2) {
-				return Double.compare(o2.getTotalArea(), o1.getTotalArea());
-			}
-		});
-		
-		List<Integer> ids = new ArrayList<Integer>();
-		for (StructureInterfaceCluster interfCluster:sublist) {
-			ids.add(interfCluster.getId());
-		}
-		return ids;
-	}
-	
 
 }

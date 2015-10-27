@@ -206,6 +206,7 @@ public class Sequence implements Serializable {
 	/**
 	 * @return the string representation of this sequence (without header)
 	 */
+	@Override
 	public String toString() {
 		return this.seq.toString();
 	}

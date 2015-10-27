@@ -64,6 +64,7 @@ public class AssemblyDescription {
 		this.chainIds = chainIds;
 	}
 
+	@Override
 	public String toString() {
 		return stoichiometry+"["+symmetry+"]";
 	}

@@ -20,6 +20,7 @@ public class Interval implements Comparable<Interval>, Serializable {
 		this.end=end;
 	}
 	
+	@Override
 	public int compareTo(Interval other) {
 		if (this.beg>other.beg){
 			return 1;
@@ -54,6 +55,7 @@ public class Interval implements Comparable<Interval>, Serializable {
 		return false;
 	}
 
+	@Override
 	public boolean equals(Object o){
 		Interval other = (Interval) o;
 		if (this.beg==other.beg && this.end==other.end){
@@ -62,6 +64,7 @@ public class Interval implements Comparable<Interval>, Serializable {
 		return false;
 	}
 
+	@Override
 	public String toString() {
 		return this.beg+" "+this.end;
 	}

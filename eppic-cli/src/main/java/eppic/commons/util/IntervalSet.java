@@ -63,6 +63,7 @@ public class IntervalSet extends TreeSet<Interval> implements Comparable<Interva
 	/**
 	 * Compares two IntevalSets according to a lexicographical-like ordering.
 	 */
+	@Override
 	public int compareTo(IntervalSet other) {
 		// whichever set has a smaller first element is smaller
 		int compare = this.first().compareTo(other.first());
@@ -85,6 +86,7 @@ public class IntervalSet extends TreeSet<Interval> implements Comparable<Interva
 		return 0;
 	}
 	
+	@Override
 	public String toString() {
 		String str = "[";
 
