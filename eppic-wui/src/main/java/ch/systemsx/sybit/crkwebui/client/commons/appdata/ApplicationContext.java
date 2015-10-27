@@ -1,8 +1,10 @@
 package ch.systemsx.sybit.crkwebui.client.commons.appdata;
 
 import java.util.Collections;
+import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
+import ch.systemsx.sybit.crkwebui.shared.model.InterfaceCluster;
 import ch.systemsx.sybit.crkwebui.shared.model.ResiduesList;
 import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 import ch.systemsx.sybit.crkwebui.shared.model.WindowData;
@@ -333,4 +335,14 @@ public class ApplicationContext
 	public static void setAnyJobRunning(boolean isAnyJobRunning) {
 		ApplicationContext.isAnyJobRunning = isAnyJobRunning;
 	}
+	
+	public static int getNumberOfInterfaces(){
+		List<InterfaceCluster> clusters = pdbInfo.getInterfaceClusters();
+		int count = 0;
+		for(InterfaceCluster c : clusters){
+			count = count + c.getInterfaces().size();
+		}
+		return count;
+	}
+	
 }
