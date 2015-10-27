@@ -53,6 +53,7 @@ import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.user.client.Cookies;
+import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.HTML;
@@ -89,10 +90,10 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 	
 	private ListStore<InterfaceItemModel> resultsStore;
 	private ColumnModel<InterfaceItemModel> resultsColumnModel;
-	private Grid<InterfaceItemModel> resultsGrid;
-	private ClustersGridView clustersView;
+	private Grid<InterfaceItemModel> resultsGrid; 
+	public static ClustersGridView clustersView; //temp static
 	
-	private CheckBox clustersViewButton;
+	public static CheckBox clustersViewButton;
 	
 	private VerticalLayoutContainer noInterfaceFoundPanel;
 	
@@ -106,7 +107,7 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 	//Columns to be used later
 	ColumnConfig<InterfaceItemModel, String> thumbnailColumn;
 	ColumnConfig<InterfaceItemModel, String> warningsColumn;
-	SummaryColumnConfig<InterfaceItemModel, Integer> clusterIdColumn;
+	public static SummaryColumnConfig<InterfaceItemModel, Integer> clusterIdColumn;
 	
 	public ResultsGridPanel(int width)
 	{
@@ -141,6 +142,10 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 		initializeEventsListeners();
 	}
 	
+	/*public static CheckBox getClustersViewButton(){
+		return clustersViewButton;
+	}*/
+	
 	private ToolBar createSelectorToolBar(){
 		toolBar = new ToolBar();
 		
@@ -158,6 +163,7 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 		clustersViewButton = new CheckBox();
 		clustersViewButton.setHTML(AppPropertiesManager.CONSTANTS.results_grid_clusters_label());
 		new ToolTip(clustersViewButton, new ToolTipConfig(AppPropertiesManager.CONSTANTS.results_grid_clusters_tooltip()));
+		//clustersViewButton.setValue(true);
 		clustersViewButton.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
 
 			@Override
@@ -589,6 +595,7 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 			//Hide cluster id column
 			resultsGrid.getColumnModel().getColumn(0).setHidden(true);
 			resultsGrid.getView().refresh(true);
+			History.newItem("interfaces/" + ApplicationContext.getPdbInfo().getPdbCode());
 		}
 	}
 
@@ -715,8 +722,7 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 			
 			@Override
 			public void onUncheckClustersRadio(UncheckClustersRadioEvent event) {
-				setClustersRadioValue(false);
-				
+				setClustersRadioValue(false);				
 			}
 		});
 		
