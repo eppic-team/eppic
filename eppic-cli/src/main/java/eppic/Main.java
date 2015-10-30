@@ -18,6 +18,7 @@ import java.util.zip.GZIPOutputStream;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
+import org.biojava.nbio.core.sequence.io.util.IOUtils;
 import org.biojava.nbio.structure.Chain;
 import org.biojava.nbio.structure.Compound;
 import org.biojava.nbio.structure.Structure;
@@ -195,7 +196,7 @@ public class Main {
 
 					parser.addMMcifConsumer(consumer);
 
-					parser.parse(new BufferedReader(new InputStreamReader(new FileInputStream(params.getInFile())))); 
+					parser.parse(new BufferedReader(new InputStreamReader(IOUtils.openFile(params.getInFile())))); 
 
 					pdb = consumer.getStructure();
 					
