@@ -57,7 +57,7 @@ public class LatticeGUIJmol {
 	 * @param interfaceIds List of interfaces to show, or null for all
 	 * @throws StructureException
 	 */
-	public LatticeGUIJmol(Structure struc, File strucFile,List<Integer> interfaceIds) throws StructureException {
+	public LatticeGUIJmol(Structure struc, File strucFile) throws StructureException {
 		this.graph = new LatticeGraph3D(struc);
 
 		// Compute Jmol names and colors
@@ -186,7 +186,7 @@ public class LatticeGUIJmol {
 			System.exit(1);
 		}
 
-		LatticeGUIJmol gui = new LatticeGUIJmol(struc, file, interfaceIds);
+		LatticeGUIJmol gui = new LatticeGUIJmol(struc, file);
 		if(interfaceIds != null) {
 			gui.getGraph().filterEngagedInterfaces(interfaceIds);
 		}

@@ -634,6 +634,9 @@ public class LatticeGraph3D {
 	public ChainVertex3D getEdgeTarget(InterfaceEdge3D edge) {
 		return subgraph.getEdgeTarget(edge);
 	}
+	public UndirectedGraph<ChainVertex3D, InterfaceEdge3D> getGraph(){
+		return subgraph;
+	}
 	
 	public Point3d cellCenter() {
 		Point3d center = new Point3d(.5,.5,.5);
