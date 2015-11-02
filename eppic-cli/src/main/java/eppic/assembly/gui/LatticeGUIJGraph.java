@@ -1,12 +1,27 @@
+/*
+ * PNG code thanks to Rob Camick (https://tips4java.wordpress.com/2008/10/13/screen-image/).
+ * Public domain.
+ */
 package eppic.assembly.gui;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 
 import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.StructureException;
@@ -19,12 +34,18 @@ import org.slf4j.LoggerFactory;
 import com.mxgraph.layout.mxFastOrganicLayout;
 import com.mxgraph.model.mxICell;
 import com.mxgraph.swing.mxGraphComponent;
+import com.mxgraph.swing.mxGraphComponent.mxGraphControl;
 import com.mxgraph.util.mxConstants;
 
 import eppic.assembly.ChainVertex3D;
 import eppic.assembly.InterfaceEdge3D;
 import eppic.assembly.LatticeGraph3D;
 
+/**
+ * 
+ * @author Spencer Bliven
+ *
+ */
 public class LatticeGUIJGraph {
 	private static Logger logger = LoggerFactory.getLogger(LatticeGUIJGraph.class);
 
@@ -34,7 +55,7 @@ public class LatticeGUIJGraph {
 	public LatticeGUIJGraph(Structure struc) throws StructureException {
 		this.graph = new LatticeGraph3D(struc);
 		this.view = createView(this.graph.getGraph());
-		organicLayout(this.view); //quick initial layout
+		organicLayout(); //quick initial layout
 	}
 
 	/**
@@ -45,12 +66,106 @@ public class LatticeGUIJGraph {
 		graphComponent.setSize(700, 700);
 
 		graphComponent.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
 		JFrame frame = new JFrame("JGraph");
 		frame.getContentPane().add(graphComponent);
 		frame.pack();
 		frame.setVisible(true);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		return frame;
+	}
+
+	public void writePNG(File out) throws IOException {
+
+		mxGraphComponent graphComponent = new mxGraphComponent(view);
+		
+		JPanel control = new JPanel();
+		control.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+		control.add(graphComponent.getGraphControl());
+		
+		BufferedImage image = createImage(control);
+		ImageIO.write(image, "PNG", out);
+	}
+	
+
+	/*
+	 *  Create a BufferedImage for Swing components.
+	 *  The entire component will be captured to an image.
+	 *
+	 *  @param  component Swing component to create image from
+	 *  @return	image the image for the given region
+	*/
+	public static BufferedImage createImage(JComponent component)
+	{
+		Dimension d = component.getSize();
+
+		if (d.width == 0 || d.height == 0)
+		{
+			d = component.getPreferredSize();
+			component.setSize( d );
+		}
+
+		Rectangle region = new Rectangle(0, 0, d.width, d.height);
+		return createImage(component, region);
+	}
+
+	/*
+	 *  Create a BufferedImage for Swing components.
+	 *  All or part of the component can be captured to an image.
+	 *
+	 *  @param  component Swing component to create image from
+	 *  @param  region The region of the component to be captured to an image
+	 *  @return	image the image for the given region
+	*/
+	public static BufferedImage createImage(JComponent component, Rectangle region)
+	{
+        //  Make sure the component has a size and has been layed out.
+        //  (necessary check for components not added to a realized frame)
+
+		if (! component.isDisplayable())
+		{
+			Dimension d = component.getSize();
+
+			if (d.width == 0 || d.height == 0)
+			{
+				d = component.getPreferredSize();
+				component.setSize( d );
+			}
+
+			layoutComponent( component );
+		}
+
+		BufferedImage image = new BufferedImage(region.width, region.height, BufferedImage.TYPE_INT_RGB);
+		Graphics2D g2d = image.createGraphics();
+
+		//  Paint a background for non-opaque components,
+		//  otherwise the background will be black
+
+		if (! component.isOpaque())
+		{
+			g2d.setColor( component.getBackground() );
+			g2d.fillRect(region.x, region.y, region.width, region.height);
+		}
+
+		g2d.translate(-region.x, -region.y);
+		component.paint( g2d );
+		g2d.dispose();
+		return image;
+	}
+	static void layoutComponent(Component component)
+	{
+		synchronized (component.getTreeLock())
+		{
+			component.doLayout();
+
+			if (component instanceof Container)
+			{
+				for (Component child : ((Container)component).getComponents())
+				{
+					layoutComponent(child);
+				}
+			}
+		}
 	}
 
 	/**
@@ -83,7 +198,10 @@ public class LatticeGUIJGraph {
 		}
 		return jgraph;
 	}
-	
+
+	private void organicLayout() {
+		organicLayout(view);
+	}
 	private static void organicLayout(JGraphXAdapter<ChainVertex3D, InterfaceEdge3D> jgraph) {
 
 		//Layout
@@ -110,7 +228,7 @@ public class LatticeGUIJGraph {
 
 		if (args.length<1) {
 			logger.error("No PDB code or file name given.");
-			logger.error("Usage: LatticeGUI <PDB code or file> [comma separated list of interfaces to display]");
+			logger.error("Usage: LatticeGUI <PDB code or file> [comma separated list of interfaces to display] [pngfile]");
 			System.exit(1);
 		}
 
@@ -134,10 +252,15 @@ public class LatticeGUIJGraph {
 				}
 			}
 		}
+		File pngFile = null;
+		if( args.length >= 3) {
+			String pngFilename = args[arg++];
+			pngFile = new File(pngFilename);
+		}
 
-		if (args.length>2) {
+		if (args.length>3) {
 			logger.error("Expected at most 3 arguments.");
-			logger.error("Usage: {} <PDB code or file> <output.js> [comma separated list of interfaces to display]",LatticeGUIJmol.class.getSimpleName());
+			logger.error("Usage: {} <PDB code or file> [comma separated list of interfaces to display] [pngfile]",LatticeGUIJmol.class.getSimpleName());
 			System.exit(1);
 		}
 		// Done parsing
@@ -150,6 +273,9 @@ public class LatticeGUIJGraph {
 			gui.getGraph().filterEngagedInterfaces(interfaceIds);
 		}
 		gui.display();
+		if(pngFile != null) {
+			gui.writePNG(pngFile);
+		}
 	}
 
 }
