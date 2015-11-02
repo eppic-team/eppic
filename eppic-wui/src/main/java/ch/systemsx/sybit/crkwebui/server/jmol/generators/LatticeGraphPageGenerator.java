@@ -6,8 +6,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.zip.GZIPOutputStream;
 
@@ -55,7 +55,7 @@ public class LatticeGraphPageGenerator {
 	 */
 	public static void generatePage(File directory, String inputName, File ucFile,
 			String ucURI, String title, List<Interface> interfaces,
-			List<Integer> requestedIfaces, String url3dmoljs, PrintWriter out) throws IOException, StructureException {
+			Collection<Integer> requestedIfaces, String url3dmoljs, PrintWriter out) throws IOException, StructureException {
 
 		// Read input structure
 		Structure auStruct;

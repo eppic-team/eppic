@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.zip.GZIPOutputStream;
 
@@ -58,10 +59,10 @@ public class LatticeGUI3Dmol {
 	 * @param interfaceIds List of interface numbers, or null for all interfaces
 	 * @throws StructureException For errors parsing the structure
 	 */
-	public LatticeGUI3Dmol(Structure struc,String strucURI,List<Integer> interfaceIds) throws StructureException {
+	public LatticeGUI3Dmol(Structure struc,String strucURI,Collection<Integer> interfaceIds) throws StructureException {
 		this(struc,strucURI,interfaceIds,null);
 	}
-	public LatticeGUI3Dmol(Structure struc,String strucURI,List<Integer> interfaceIds,List<StructureInterface> allInterfaces) throws StructureException {
+	public LatticeGUI3Dmol(Structure struc,String strucURI,Collection<Integer> interfaceIds,List<StructureInterface> allInterfaces) throws StructureException {
 		this.graph = new LatticeGraph3D(struc,allInterfaces);
 		if( interfaceIds != null ) {
 			logger.info("Filtering LatticeGraph3D to edges {}",interfaceIds);
@@ -125,7 +126,7 @@ public class LatticeGUI3Dmol {
 		// Parse arguments
 		int arg = 0;
 		String input = args[arg++];
-		List<Integer> interfaceIds = null;
+		Collection<Integer> interfaceIds = null;
 
 		String output = args[arg++];
 		PrintWriter htmlOut;
@@ -281,4 +282,5 @@ public class LatticeGUI3Dmol {
 		}
 		return interfaceIds;
 	}
+
 }

@@ -15,7 +15,7 @@ public class LatticeGraphServletInputValidator
 	 * @throws ValidationException when validation fails
 	 */
 	public static void validateLatticeGraphInput(String jobId,
-			String interfaces) throws ValidationException
+			String interfaces, String clusters) throws ValidationException
 	{
 		if(jobId == null) {
 			throw new ValidationException("Job identifier is not specified.");
@@ -23,6 +23,7 @@ public class LatticeGraphServletInputValidator
 
 		RunJobDataValidator.validateJobId(jobId);
 		validateInterfaceList(interfaces);
+		validateInterfaceList(clusters); // same format as interfaces
 	}
 
 	/**
