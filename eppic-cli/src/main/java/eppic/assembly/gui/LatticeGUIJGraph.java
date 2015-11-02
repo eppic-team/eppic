@@ -29,19 +29,62 @@ public class LatticeGUIJGraph {
 	private static Logger logger = LoggerFactory.getLogger(LatticeGUIJGraph.class);
 
 	private LatticeGraph3D graph;
+	private JGraphXAdapter<ChainVertex3D, InterfaceEdge3D> view;
 
 	public LatticeGUIJGraph(Structure struc) throws StructureException {
 		this.graph = new LatticeGraph3D(struc);
+		this.view = createView(this.graph.getGraph());
+		organicLayout(this.view); //quick initial layout
 	}
 
-	public void display() {
-
-		UndirectedGraph<ChainVertex3D, InterfaceEdge3D> subgraph = this.graph.getGraph();
-		JGraphXAdapter<ChainVertex3D, InterfaceEdge3D> jgraph = new JGraphXAdapter<ChainVertex3D,InterfaceEdge3D>(subgraph);
-
-		mxGraphComponent graphComponent = new mxGraphComponent(jgraph);
+	/**
+	 * Display graph in a JFrame
+	 */
+	public JFrame display() {
+		mxGraphComponent graphComponent = new mxGraphComponent(view);
 		graphComponent.setSize(700, 700);
 
+		graphComponent.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+		JFrame frame = new JFrame("JGraph");
+		frame.getContentPane().add(graphComponent);
+		frame.pack();
+		frame.setVisible(true);
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		return frame;
+	}
+
+	/**
+	 * @param graph
+	 * @return
+	 */
+	private static JGraphXAdapter<ChainVertex3D, InterfaceEdge3D> createView(
+			UndirectedGraph<ChainVertex3D, InterfaceEdge3D> graph) {
+		JGraphXAdapter<ChainVertex3D, InterfaceEdge3D> jgraph = new JGraphXAdapter<ChainVertex3D,InterfaceEdge3D>(graph);
+
+
+		//Colors
+		for(ChainVertex3D vert: graph.vertexSet()) {
+			mxICell cell = jgraph.getVertexToCellMap().get(vert);
+			Color color = vert.getColor();
+			if(color != null) {
+				String hexColor = String.format("#%02x%02x%02x", color.getRed(),color.getGreen(),color.getBlue());
+				jgraph.setCellStyles(mxConstants.STYLE_FILLCOLOR, hexColor, new Object[] {cell});
+			}
+			jgraph.setCellStyles(mxConstants.STYLE_FONTCOLOR, "#FFFFFF", new Object[] {cell});
+		}
+		for(InterfaceEdge3D edge: graph.edgeSet()) {
+			mxICell cell = jgraph.getEdgeToCellMap().get(edge);
+			Color color = edge.getColor();
+			if(color != null) {
+				String hexColor = String.format("#%02x%02x%02x", color.getRed(),color.getGreen(),color.getBlue());
+				jgraph.setCellStyles(mxConstants.STYLE_STROKECOLOR, hexColor, new Object[] {cell});
+				jgraph.setCellStyles(mxConstants.STYLE_FONTCOLOR, hexColor, new Object[] {cell});
+			}
+		}
+		return jgraph;
+	}
+	
+	private static void organicLayout(JGraphXAdapter<ChainVertex3D, InterfaceEdge3D> jgraph) {
 
 		//Layout
 		final mxFastOrganicLayout layout = new mxFastOrganicLayout(jgraph);
@@ -52,32 +95,6 @@ public class LatticeGUIJGraph {
 		layout.setMaxDistanceLimit(300);
 		System.out.format("Force=%f\tTemp=%f\tIter=%f\tlimits=%f-%f%n",layout.getForceConstant(),layout.getInitialTemp(),layout.getMaxIterations(),layout.getMinDistanceLimit(),layout.getMaxDistanceLimit());
 		layout.execute(jgraph.getDefaultParent());
-
-		//Colors
-		for(ChainVertex3D vert: subgraph.vertexSet()) {
-			mxICell cell = jgraph.getVertexToCellMap().get(vert);
-			Color color = vert.getColor();
-			if(color != null) {
-				String hexColor = String.format("#%02x%02x%02x", color.getRed(),color.getGreen(),color.getBlue());
-				jgraph.setCellStyles(mxConstants.STYLE_FILLCOLOR, hexColor, new Object[] {cell});
-			}
-			jgraph.setCellStyles(mxConstants.STYLE_FONTCOLOR, "#FFFFFF", new Object[] {cell});
-		}
-		for(InterfaceEdge3D edge: subgraph.edgeSet()) {
-			mxICell cell = jgraph.getEdgeToCellMap().get(edge);
-			Color color = edge.getColor();
-			if(color != null) {
-				String hexColor = String.format("#%02x%02x%02x", color.getRed(),color.getGreen(),color.getBlue());
-				jgraph.setCellStyles(mxConstants.STYLE_STROKECOLOR, hexColor, new Object[] {cell});
-				jgraph.setCellStyles(mxConstants.STYLE_FONTCOLOR, hexColor, new Object[] {cell});
-			}
-		}
-
-		graphComponent.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-		JFrame frame = new JFrame("JGraph");
-		frame.getContentPane().add(graphComponent);
-		frame.pack();
-		frame.setVisible(true);
 	}
 
 
