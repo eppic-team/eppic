@@ -590,14 +590,20 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 		if (value) { //check clusters event
 			clustersView.groupBy(clusterIdColumn);
 			ResultsPanel.informationPanel.assemblyInfoPanel.assembly_info.setHTML("<table cellpadding=0 cellspacing=0><tr><td width='150px'><span class='eppic-general-info-label-new'>Assemblies</span></td><td><span class='eppic-general-info-label-value-new'><a href='" + GWT.getHostPageBaseURL() + "#id/"+ApplicationContext.getPdbInfo().getPdbCode()+"'>" + ApplicationContext.getPdbInfo().getAssemblies().size() + "</a></span></td></tr><tr><td><span class='eppic-general-info-label-new'>Interfaces</span></td><td><span class='eppic-general-info-label-value-new'><a href='" + GWT.getHostPageBaseURL() + "#interfaces/"+ApplicationContext.getPdbInfo().getPdbCode()+"'>" + ApplicationContext.getNumberOfInterfaces() + "</a></span></td></tr><tr><td><span class='eppic-general-info-label-new'>Interface clusters</span></td><td><span class='eppic-general-info-label-value-new'>" + ApplicationContext.getPdbInfo().getInterfaceClusters().size()+"</span></td></tr></table>");
-			History.newItem("clusters/" + ApplicationContext.getPdbInfo().getPdbCode());
+			if(ApplicationContext.getSelectedAssemblyId() > 0)
+				History.newItem("clusters/" + ApplicationContext.getPdbInfo().getPdbCode() + "/" + ApplicationContext.getSelectedAssemblyId());
+			else
+				History.newItem("clusters/" + ApplicationContext.getPdbInfo().getPdbCode());
 		} else{ //uncheck clusters event
 			clustersView.groupBy(null);
 			resultsStore.addSortInfo(0, new StoreSortInfo<InterfaceItemModel>(props.interfaceId(), SortDir.ASC));
 			//Hide cluster id column
 			resultsGrid.getColumnModel().getColumn(0).setHidden(true);
 			resultsGrid.getView().refresh(true);
-			History.newItem("interfaces/" + ApplicationContext.getPdbInfo().getPdbCode());
+			if(ApplicationContext.getSelectedAssemblyId() > 0)
+				History.newItem("interfaces/" + ApplicationContext.getPdbInfo().getPdbCode() + "/" + ApplicationContext.getSelectedAssemblyId());
+			else
+				History.newItem("interfaces/" + ApplicationContext.getPdbInfo().getPdbCode());
 			//todo put a method in applicationcontext to get the number of interfaces
 			ResultsPanel.informationPanel.assemblyInfoPanel.assembly_info.setHTML("<table cellpadding=0 cellspacing=0><tr><td width='150px'><span class='eppic-general-info-label-new'>Assemblies</span></td><td><span class='eppic-general-info-label-value-new'><a href='" + GWT.getHostPageBaseURL() + "#id/"+ApplicationContext.getPdbInfo().getPdbCode()+"'>" + ApplicationContext.getPdbInfo().getAssemblies().size() + "</a></span></td></tr><tr><td><span class='eppic-general-info-label-new'>Interfaces</span></td><td><span class='eppic-general-info-label-value-new'>" + ApplicationContext.getNumberOfInterfaces() + "</span></td></tr><tr><td><span class='eppic-general-info-label-new'>Interface clusters</span></td><td><span class='eppic-general-info-label-value-new'><a href='" + GWT.getHostPageBaseURL() + "#clusters/"+ApplicationContext.getPdbInfo().getPdbCode()+"'>" + ApplicationContext.getPdbInfo().getInterfaceClusters().size()+"</a></span></td></tr></table>");
 		}
