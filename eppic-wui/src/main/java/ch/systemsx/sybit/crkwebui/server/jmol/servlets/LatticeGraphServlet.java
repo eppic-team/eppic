@@ -3,7 +3,10 @@ package ch.systemsx.sybit.crkwebui.server.jmol.servlets;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -41,11 +44,9 @@ import eppic.model.JobDB;
  * Parameter name 					Parameter value
  * --------------					---------------
  * id								String (the jobId hash)
- * input							The job's inputName (Name of input file within the jobId directory),
- * 									or else the PDB ID for precalculated jobs
- * 									(Note this differs from JmolViewer, which uses the truncated inputName)
  * interfaces						String (comma-separated list of interface ids)
-
+ * clusters							String (comma-separated list of interface cluster ids). Superseded by interfaces.
+ *
  * @author Spencer Bliven
  */
 public class LatticeGraphServlet extends BaseServlet
@@ -59,6 +60,7 @@ public class LatticeGraphServlet extends BaseServlet
 	public static final String SERVLET_NAME = "latticeGraph";
 
 	public static final String PARAM_INTERFACES = "interfaces";
+	public static final String PARAM_CLUSTERS = "clusters";
 
 	private static final Logger logger = LoggerFactory.getLogger(LatticeGraphServlet.class);
 
@@ -84,6 +86,7 @@ public class LatticeGraphServlet extends BaseServlet
 
 		String jobId = request.getParameter(FileDownloadServlet.PARAM_ID);
 		String requestedIfacesStr = request.getParameter(PARAM_INTERFACES);
+		String requestedClusterStr = request.getParameter(PARAM_CLUSTERS);
 
 		String url3dmoljs = properties.getProperty("url3dmoljs");
 		if (url3dmoljs == null || url3dmoljs.equals("")) {
@@ -91,37 +94,38 @@ public class LatticeGraphServlet extends BaseServlet
 			return;
 		}
 
-		logger.info("Requested Lattice Graph page for jobId={},interfaces={}",jobId,requestedIfacesStr);
+		logger.info("Requested Lattice Graph page for jobId={},interfaces={},clusters={}",jobId,requestedIfacesStr,requestedClusterStr);
 
 		PrintWriter outputStream = null;
 
 		try
 		{
-			LatticeGraphServletInputValidator.validateLatticeGraphInput(jobId,requestedIfacesStr);
+			LatticeGraphServletInputValidator.validateLatticeGraphInput(jobId,requestedIfacesStr,requestedClusterStr);
 
 			PdbInfo pdbInfo = getPdbInfo(jobId);
 			String input = pdbInfo.getInputName();
 			String inputPrefix = pdbInfo.getTruncatedInputName();
-			
+
 			// job directory on local filesystem
 			File dir = new File(destination_path + jobId);
-			
+
 			// Construct UC filename
 			File ucFile = new File(dir,inputPrefix + EppicParams.UNIT_CELL_COORD_FILES_SUFFIX + ".cif.gz");
 			String ucURI = resultsLocation + jobId + "/" + inputPrefix + EppicParams.UNIT_CELL_COORD_FILES_SUFFIX + ".cif";
-			
-			//TODO better to filter interfaces here before construction, or afterwards?
-			List<Integer> requestedIfaces = LatticeGUI3Dmol.parseInterfaceList(requestedIfacesStr);
-			//requestedIfaces = null; //Filter afterwards
 
 			List<Interface> ifaceList = getInterfaceList(pdbInfo);
+
+			//TODO better to filter interfaces here before construction, or afterwards?
+			Collection<Integer> requestedIfaces = parseInterfaceListWithClusters(requestedIfacesStr,requestedClusterStr,ifaceList);;
+
 			String title = jobId + " - Lattice Graph";
 			if(requestedIfaces != null && !requestedIfaces.isEmpty()) {
 				title += " for interfaces "+requestedIfacesStr;
 			}
 
+
 			outputStream = new PrintWriter(response.getOutputStream());
-			
+
 			LatticeGraphPageGenerator.generatePage(dir,input, ucFile, ucURI, title, ifaceList, requestedIfaces, url3dmoljs,outputStream);
 
 		}
@@ -170,5 +174,53 @@ public class LatticeGraphServlet extends BaseServlet
 	private List<Interface> getInterfaceList(PdbInfo pdbInfo) throws DaoException {
 		InterfaceDAO interfaceDAO = new InterfaceDAOJpa();
 			return interfaceDAO.getAllInterfaces(pdbInfo.getUid());
+	}
+	
+	/**
+	 * Combines a list of clusters and a list of interfaces, taking the union.
+	 * @param requestedIfacesStr
+	 * @param requestedClusterStr
+	 * @param ifaceList
+	 * @return
+	 */
+	private static Collection<Integer> parseInterfaceListWithClusters(
+			String ifaceStr, String clusterStr,
+			List<Interface> ifaceList) {
+		// If one of interfaces and clusters is specified, return it
+		// If either are '*', return null (all)
+		// If both are specified, return their union
+		if( ifaceStr == null || ifaceStr.isEmpty() ) {
+			if(clusterStr == null || clusterStr.isEmpty()) {
+				// If neither are specified, return null (all)
+				return null;
+			}
+			// Only clusters specified
+			if(clusterStr.equals('*'))
+				return null;
+			List<Integer> clusterList = LatticeGUI3Dmol.parseInterfaceList(clusterStr);
+			return mapClusters(new HashSet<Integer>(clusterList),ifaceList);
+		} else {
+			if(clusterStr == null || clusterStr.isEmpty()) {
+				// Only interfaces specified
+				return LatticeGUI3Dmol.parseInterfaceList(ifaceStr);
+			}
+			// Both specified
+			if(ifaceStr.equals('*') || clusterStr.equals('*') )
+				return null;
+			Set<Integer> interfaces = mapClusters(new HashSet<Integer>(LatticeGUI3Dmol.parseInterfaceList(ifaceStr)),ifaceList);
+			interfaces.addAll(LatticeGUI3Dmol.parseInterfaceList(ifaceStr));
+			return interfaces;
+		}
+	}
+	private static Set<Integer> mapClusters(Set<Integer> clusters,
+			Collection<Interface> ifaceList) {
+		Set<Integer> interfaces = new HashSet<Integer>();
+		for(Interface iface : ifaceList) {
+			if(clusters.contains(iface.getClusterId())) {
+				// Only interfaces specified
+				interfaces.add(iface.getInterfaceId());
+			}
+		}
+		return interfaces;
 	}
 }

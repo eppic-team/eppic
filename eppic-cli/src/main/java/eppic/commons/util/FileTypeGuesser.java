@@ -3,10 +3,12 @@ package eppic.commons.util;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.biojava.nbio.core.sequence.io.util.IOUtils;
 
 /** 
  * Class: 		FileTypeGuesser
@@ -79,7 +81,8 @@ public class FileTypeGuesser {
 	 * @return the determined file type or UNKNOWN_FILE_TYPE
 	 */
 	public static int guessFileType(File file) throws FileNotFoundException, IOException {
-		BufferedReader in = new BufferedReader(new FileReader(file));
+		
+		BufferedReader in = new BufferedReader(new InputStreamReader(IOUtils.openFile(file)));
 		String firstLine = in.readLine();
 		if(firstLine != null) {
 			// be lenient here and allow one empty line at the beginning

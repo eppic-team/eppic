@@ -604,7 +604,7 @@ public class LatticeGraph3D {
 		}
 	 */
 	
-	public void filterEngagedInterfaces(final List<Integer> interfaces) {
+	public void filterEngagedInterfaces(final Collection<Integer> interfaces) {
 		MaskFunctor<ChainVertex3D, InterfaceEdge3D> mask = new MaskFunctor<ChainVertex3D, InterfaceEdge3D>() {
 			@Override
 			public boolean isVertexMasked(ChainVertex3D vertex) {
