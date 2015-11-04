@@ -5,10 +5,11 @@ import static java.lang.Math.cos;
 import static java.lang.Math.sin;
 import static java.lang.Math.sqrt;
 
-import javax.vecmath.Matrix3d;
 import javax.vecmath.Matrix4d;
 import javax.vecmath.Point3d;
 import javax.vecmath.Vector3d;
+
+import eppic.commons.util.GeomTools;
 
 public class ParametricCircularArc {
 
@@ -23,7 +24,7 @@ public class ParametricCircularArc {
 	 * Create a unit circle in the XY plane
 	 */
 	public ParametricCircularArc() {
-		this(1, 0, 2*PI, getIdentityMatrix() );
+		this(1, 0, 2*PI, GeomTools.getIdentityMatrix() );
 	}
 	/**
 	 * Create an arc around the specified circle.
@@ -74,7 +75,7 @@ public class ParametricCircularArc {
 		// construct orthonormal basis from center->start and h
 		Point3d ch = new Point3d();
 		ch.add(center, pinnacle);
-		transformation = matrixFromPlane(center, start, ch);
+		transformation = GeomTools.matrixFromPlane(center, start, ch);
 
 		startAngle = 0;
 		// ||ab||^2 = ||ca||^2+||cb||^2-2*||ca||*||cb||*cos(acb)
@@ -86,7 +87,7 @@ public class ParametricCircularArc {
 	}
 
 	public ParametricCircularArc(Point3d start, Point3d end, double height) {
-		this(start,end, randomOrthogonalVector(start,end,height) );
+		this(start,end, GeomTools.randomOrthogonalVector(start,end,height) );
 	}
 
 	/**
@@ -179,132 +180,5 @@ public class ParametricCircularArc {
 	public void setUniqueName(String uniqueName) {
 		this.uniqueName = uniqueName;
 	}
-	/**
-	 * Generate a vector perpendicular to the input vector, in a random direction.
-	 * 
-	 * Used for randomly orienting arcs.
-	 * @param n The plane normal
-	 * @return A random normalized vector orthogonal to n
-	 */
-	private static Vector3d randomOrthogonalVector(Vector3d n) {
-		Vector3d random;
-		do {
-			// Sample uniformly at random from unit sphere
-			random = new Vector3d( Math.random()*2-1.0, Math.random()*2-1.0, Math.random()*2-1.0 );
-		} while( random.lengthSquared() > 1);
 
-		// Project random onto the plane defined by n and the origin
-		Vector3d vecToPlane = new Vector3d(n);
-		vecToPlane.normalize();
-		vecToPlane.scale( random.dot(vecToPlane) );
-		random.sub(vecToPlane);
-
-		// Normalize
-		random.normalize();
-		return random;
-	}
-	/**
-	 * Generate a vector perpendicular to the input vector, in a random direction
-	 * and with the specified length.
-	 * 
-	 * Used for randomly orienting arcs.
-	 * @param n The plane normal
-	 * @param length The length of the returned vector
-	 * @return A random vector orthogonal to n
-	 */
-	private static Vector3d randomOrthogonalVector(Vector3d n,double length) {
-		Vector3d random = randomOrthogonalVector(n);
-		random.scale(length);
-		return random;
-	}
-	/**
-	 * Generate a vector perpendicular to the line between two point, in a
-	 * random direction and with the specified length.
-	 * 
-	 * Used for randomly orienting arcs.
-	 * @param start First point
-	 * @param end Second point
-	 * @param length The length of the returned vector
-	 * @return A random vector orthogonal to the line between start and end
-	 */
-	private static Vector3d randomOrthogonalVector(Point3d start, Point3d end,
-			double height) {
-		Vector3d ab = new Vector3d();
-		ab.sub(end,start);
-		return randomOrthogonalVector(ab,height);
-	}
-
-	/**
-	 * Get the identity matrix
-	 */
-	private static Matrix4d getIdentityMatrix() {
-		Matrix4d i = new Matrix4d();
-		i.setIdentity();
-		return i;
-	}
-
-	/**
-	 * Calculates the transformation matrix to convert between a point on a plane
-	 * and its 3D coordinates. The plane goes through the origin and is
-	 * specified by two vectors in the plane. The vectors need not be orthogonal, as
-	 * the Gram–Schmidt process is used to create a valid transformation matrix.
-	 * <p>
-	 * The inverse of the returned matrix can be used to project points
-	 * back onto the plane.
-	 * <p>
-	 * For planes which do not go through though the origin, use the three-point
-	 * plane specification with {@link #matrixFromPlane(Point3d, Point3d, Point3d)}.
-	 * @param v1 A vector parallel to the plane
-	 * @param v2 A second vector parallel to the plane (but not parallel to v1)
-	 * @return The transformation matrix converting the plane's frame of reference
-	 *  to cartesian coordinates.
-	 */
-	public static Matrix3d matrixFromPlane(Vector3d v1, Vector3d v2) {
-		// Use Gram–Schmidt process to orthonormalize the v1,v2 space
-		Vector3d u1 = new Vector3d(v1);
-		u1.normalize();
-
-		// <v1,v2>/<v1,v1>
-		double dot = v1.dot(v2)/v1.lengthSquared();
-		// v2 - <v1,v2>/<v1,v1>*v1
-		Vector3d u2 = new Vector3d(v1);
-		u2.scaleAdd(-dot, new Vector3d(v2));
-		if(u2.epsilonEquals(new Vector3d(), 1e-10)) {
-			throw new IllegalArgumentException("Input vectors are parallel");
-		}
-		u2.normalize();
-
-		Vector3d u3 = new Vector3d();
-		u3.cross(u1, u2);
-
-		//combine vectors into a matrix
-		Matrix3d m = new Matrix3d();
-		m.setColumn(0, u1);
-		m.setColumn(1, u2);
-		m.setColumn(2, u3);
-		return m;
-	}
-	/**
-	 * Calculates the transformation matrix to convert between a point on a plane
-	 * and its 3D coordinates. The plane is specified by a origin point
-	 * and two vectors in the plane. The vectors need not be orthogonal, as
-	 * the Gram–Schmidt process is used to create a valid transformation matrix.
-	 * <p>
-	 * The inverse of the returned matrix can be used to project points
-	 * back onto the plane.
-	 * @param center A point on the plane to use as the origin for the transformed system
-	 * @param p1 A point on the plane
-	 * @param v2 A second point on the plane. Should not be on the line between center and p1.
-	 * @return The transformation matrix converting the plane's frame of reference
-	 *  to cartesian coordinates.
-	 */
-	public static Matrix4d matrixFromPlane(Point3d center, Point3d p1, Point3d p2) {
-		Vector3d v1 = new Vector3d();
-		v1.sub(p1, center);
-		Vector3d v2 = new Vector3d();
-		v2.sub(p2,center);
-		Matrix3d rot = matrixFromPlane(v1, v2);
-		Matrix4d m = new Matrix4d(rot, new Vector3d(center), 1.);
-		return m;
-	}
 }
