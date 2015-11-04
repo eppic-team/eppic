@@ -140,4 +140,36 @@ public class GeomTools {
 		Matrix4d m = new Matrix4d(rot, new Vector3d(center), 1.);
 		return m;
 	}
+	
+	/**
+	 * Yet another way to construct an orthonormal orientation matrix, this time
+	 * using the plane normal rather than two vectors in the plane.
+	 * @param center Origin point
+	 * @param normal Vector normal to the plane
+	 * @param axis (Optional) A reference axis. If null, chooses an axis based on
+	 *  either the x or the y axes, depending on the orientation of the plane.
+	 * @return The transformation matrix converting the plane's frame of reference
+	 *  to cartesian coordinates.
+	 */
+	public static Matrix4d matrixFromPlane(Point3d center, Vector3d normal, Vector3d axis) {
+
+		// Default axis to X (or Y if normal is X)
+		if( axis == null ) {
+			axis = new Vector3d(1,0,0);
+			// If the normal points generally towards x
+			if( Math.abs(axis.dot(normal)) > 1/Math.sqrt(2) )
+				axis = new Vector3d(0,1,0);
+		}
+
+		// Rotation matrix for a permuted coordinate system with normal along the x
+		// and axis along the y (e.g. [Z|X|Y])
+		Matrix3d ortho = matrixFromPlane(normal, axis);
+
+		Matrix4d mat = new Matrix4d(
+				ortho.m01, ortho.m02, ortho.m00, center.x,
+				ortho.m11, ortho.m12, ortho.m10, center.y,
+				ortho.m21, ortho.m22, ortho.m20, center.z,
+				0,0,0,1 );
+		return mat;
+	}
 }

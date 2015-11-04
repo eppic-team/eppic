@@ -4,6 +4,7 @@ import static org.junit.Assert.assertTrue;
 
 import javax.vecmath.Matrix4d;
 import javax.vecmath.Point3d;
+import javax.vecmath.Vector3d;
 
 import org.junit.Test;
 
@@ -13,7 +14,7 @@ public class TestGeomTools {
 	private final double tol = 1e-8;
 
 	@Test
-	public void testMatrixFromPlane() {
+	public void testMatrixFromPlanePoints() {
 		Point3d center, p1, p2;
 		Matrix4d result, expected;
 		final double sq2 = 1/Math.sqrt(2);
@@ -61,5 +62,35 @@ public class TestGeomTools {
 				0,0,0,1);
 		result = GeomTools.matrixFromPlane(center, p1, p2);
 		assertTrue(String.format("Incorrect matrix from %s,%s,%s",center,p1,p2),expected.epsilonEquals(result, tol));
+	}
+	
+	@Test
+	public void testMatrixFromPlaneNormal() {
+		Point3d center, p, expected;
+		Vector3d normal, axis;
+		Matrix4d mat;
+		int i=0;
+		
+		// Rotation by 45 deg around y
+		center = new Point3d(1,1,1);
+		normal = new Vector3d(1,0,1);
+		axis = new Vector3d(1,0,0);
+		mat = GeomTools.matrixFromPlane(center, normal, axis);
+		
+		p = new Point3d(0,0,0);
+		expected = new Point3d(1,1,1);
+		mat.transform(p);
+		assertTrue("Test "+(i++),expected.epsilonEquals(p, tol));
+
+		p = new Point3d(Math.sqrt(2),0,0);
+		expected = new Point3d(2,1,0);
+		mat.transform(p);
+		assertTrue("Test "+(i++),expected.epsilonEquals(p, tol));
+		
+		p = new Point3d(0,0,Math.sqrt(2));
+		expected = new Point3d(2,1,2);
+		mat.transform(p);
+		assertTrue("Test "+(i++),expected.epsilonEquals(p, tol));
+
 	}
 }
