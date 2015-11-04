@@ -153,6 +153,9 @@ public class GeomTools {
 	 */
 	public static Matrix4d matrixFromPlane(Point3d center, Vector3d normal, Vector3d axis) {
 
+		normal = new Vector3d(normal);
+		normal.normalize();
+		
 		// Default axis to X (or Y if normal is X)
 		if( axis == null ) {
 			axis = new Vector3d(1,0,0);

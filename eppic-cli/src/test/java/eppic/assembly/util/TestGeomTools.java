@@ -92,5 +92,16 @@ public class TestGeomTools {
 		mat.transform(p);
 		assertTrue("Test "+(i++),expected.epsilonEquals(p, tol));
 
+		// Normal defaults to x
+		Matrix4d mat2 = GeomTools.matrixFromPlane(center, normal, null);
+		assertTrue("Default X axis at 45 deg",mat.epsilonEquals(mat2, tol));
+		
+		center = new Point3d();
+		normal = new Vector3d(0,0,1);
+		mat = GeomTools.matrixFromPlane(center,normal, null);
+		assertTrue("Default X axis",GeomTools.getIdentityMatrix().epsilonEquals(mat, tol));
+		
+		
+
 	}
 }
