@@ -4,7 +4,6 @@
  */
 package eppic.assembly.gui;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
@@ -22,6 +21,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.vecmath.Point3d;
 
 import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.StructureException;
@@ -34,7 +34,6 @@ import org.slf4j.LoggerFactory;
 import com.mxgraph.layout.mxFastOrganicLayout;
 import com.mxgraph.model.mxICell;
 import com.mxgraph.swing.mxGraphComponent;
-import com.mxgraph.swing.mxGraphComponent.mxGraphControl;
 import com.mxgraph.util.mxConstants;
 
 import eppic.assembly.ChainVertex3D;
@@ -51,18 +50,22 @@ public class LatticeGUIJGraph {
 
 	private LatticeGraph3D graph;
 	private JGraphXAdapter<ChainVertex3D, InterfaceEdge3D> view;
+	private boolean layedOut;
 
 	public LatticeGUIJGraph(Structure struc) throws StructureException {
 		this.graph = new LatticeGraph3D(struc);
-		this.view = createView(this.graph.getGraph());
-		organicLayout(); //quick initial layout
+		this.view = null;
+		this.layedOut = false;
 	}
 
 	/**
 	 * Display graph in a JFrame
 	 */
 	public JFrame display() {
-		mxGraphComponent graphComponent = new mxGraphComponent(view);
+		if(!layedOut) {
+			organicLayout();
+		}
+		mxGraphComponent graphComponent = new mxGraphComponent(getView());
 		graphComponent.setSize(700, 700);
 
 		graphComponent.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
@@ -76,8 +79,10 @@ public class LatticeGUIJGraph {
 	}
 
 	public void writePNG(File out) throws IOException {
-
-		mxGraphComponent graphComponent = new mxGraphComponent(view);
+		if(!layedOut) {
+			organicLayout();
+		}
+		mxGraphComponent graphComponent = new mxGraphComponent(getView());
 		
 		JPanel control = new JPanel();
 		control.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
@@ -169,6 +174,19 @@ public class LatticeGUIJGraph {
 	}
 
 	/**
+	 * Called to indicate that the underlying graph has changed.
+	 * After calling this, any layout and display methods should be re-called.
+	 */
+	public void update() {
+		view = null;
+	}
+
+	private JGraphXAdapter<ChainVertex3D, InterfaceEdge3D> getView() {
+		if(view == null)
+			view = createView(this.graph.getGraph());
+		return view;
+	}
+	/**
 	 * @param graph
 	 * @return
 	 */
@@ -195,13 +213,16 @@ public class LatticeGUIJGraph {
 				jgraph.setCellStyles(mxConstants.STYLE_STROKECOLOR, hexColor, new Object[] {cell});
 				jgraph.setCellStyles(mxConstants.STYLE_FONTCOLOR, hexColor, new Object[] {cell});
 			}
+			jgraph.setCellStyles(mxConstants.STYLE_SHAPE, mxConstants.SHAPE_CURVE, new Object[] {cell});
 		}
 		return jgraph;
 	}
 
-	private void organicLayout() {
-		organicLayout(view);
+	public void organicLayout() {
+		organicLayout(getView());
+		layedOut = true;
 	}
+
 	private static void organicLayout(JGraphXAdapter<ChainVertex3D, InterfaceEdge3D> jgraph) {
 
 		//Layout
@@ -212,6 +233,17 @@ public class LatticeGUIJGraph {
 		//		layout.setMaxIterations(1000);
 		layout.setMaxDistanceLimit(300);
 		System.out.format("Force=%f\tTemp=%f\tIter=%f\tlimits=%f-%f%n",layout.getForceConstant(),layout.getInitialTemp(),layout.getMaxIterations(),layout.getMinDistanceLimit(),layout.getMaxDistanceLimit());
+		layout.execute(jgraph.getDefaultParent());
+	}
+	
+	public void stereographicLayout(Point3d center, Point3d zenith) {
+		stereographicLayout(getView(),center,zenith);
+		layedOut = true;
+	}
+	private static void stereographicLayout(JGraphXAdapter<ChainVertex3D, InterfaceEdge3D> jgraph,
+			Point3d center, Point3d zenith) {
+		final StereographicLayout layout = new StereographicLayout(jgraph,
+				center, zenith);
 		layout.execute(jgraph.getDefaultParent());
 	}
 
@@ -271,7 +303,15 @@ public class LatticeGUIJGraph {
 		LatticeGUIJGraph gui = new LatticeGUIJGraph(struc);
 		if(interfaceIds != null) {
 			gui.getGraph().filterEngagedInterfaces(interfaceIds);
+			gui.update();
 		}
+
+//		Point3d center = new Point3d(.5,.5,.5);
+//		struc.getCrystallographicInfo().getCrystalCell().transfToOrthonormal(center);
+//		Point3d zenith = new Point3d(.5,.5,1);
+//		struc.getCrystallographicInfo().getCrystalCell().transfToOrthonormal(zenith);
+//		gui.stereographicLayout(center,zenith);
+
 		gui.display();
 		if(pngFile != null) {
 			gui.writePNG(pngFile);
