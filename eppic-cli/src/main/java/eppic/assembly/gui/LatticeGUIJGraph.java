@@ -15,19 +15,32 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.vecmath.AxisAngle4d;
 import javax.vecmath.Point3d;
 
 import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.StructureException;
 import org.biojava.nbio.structure.StructureTools;
+import org.biojava.nbio.structure.symmetry.core.AxisAligner;
+import org.biojava.nbio.structure.symmetry.core.QuatSymmetryDetector;
+import org.biojava.nbio.structure.symmetry.core.QuatSymmetryParameters;
+import org.biojava.nbio.structure.symmetry.core.QuatSymmetryResults;
+import org.biojava.nbio.structure.symmetry.core.Rotation;
+import org.biojava.nbio.structure.symmetry.core.RotationGroup;
+import org.biojava.nbio.structure.symmetry.core.Subunits;
+import org.jgrapht.Graph;
 import org.jgrapht.UndirectedGraph;
+import org.jgrapht.alg.ConnectivityInspector;
 import org.jgrapht.ext.JGraphXAdapter;
+import org.jgrapht.graph.MaskFunctor;
+import org.jgrapht.graph.UndirectedMaskSubgraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,14 +61,20 @@ import eppic.assembly.LatticeGraph3D;
 public class LatticeGUIJGraph {
 	private static Logger logger = LoggerFactory.getLogger(LatticeGUIJGraph.class);
 
-	private LatticeGraph3D graph;
+	private Graph<ChainVertex3D, InterfaceEdge3D> graph;
 	private JGraphXAdapter<ChainVertex3D, InterfaceEdge3D> view;
 	private boolean layedOut;
+	
+	private String name = "JGraph";
 
 	public LatticeGUIJGraph(Structure struc) throws StructureException {
-		this.graph = new LatticeGraph3D(struc);
+		this(new LatticeGraph3D(struc).getGraph());
+	}
+	public LatticeGUIJGraph(Graph<ChainVertex3D, InterfaceEdge3D> graph) {
+		this.graph = graph;
 		this.view = null;
 		this.layedOut = false;
+
 	}
 
 	/**
@@ -70,7 +89,7 @@ public class LatticeGUIJGraph {
 
 		graphComponent.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-		JFrame frame = new JFrame("JGraph");
+		JFrame frame = new JFrame(name);
 		frame.getContentPane().add(graphComponent);
 		frame.pack();
 		frame.setVisible(true);
@@ -183,7 +202,7 @@ public class LatticeGUIJGraph {
 
 	private JGraphXAdapter<ChainVertex3D, InterfaceEdge3D> getView() {
 		if(view == null)
-			view = createView(this.graph.getGraph());
+			view = createView(this.graph);
 		return view;
 	}
 	/**
@@ -191,7 +210,7 @@ public class LatticeGUIJGraph {
 	 * @return
 	 */
 	private static JGraphXAdapter<ChainVertex3D, InterfaceEdge3D> createView(
-			UndirectedGraph<ChainVertex3D, InterfaceEdge3D> graph) {
+			Graph<ChainVertex3D, InterfaceEdge3D> graph) {
 		JGraphXAdapter<ChainVertex3D, InterfaceEdge3D> jgraph = new JGraphXAdapter<ChainVertex3D,InterfaceEdge3D>(graph);
 
 
@@ -250,9 +269,10 @@ public class LatticeGUIJGraph {
 
 	/**
 	 * Get the underlying lattice graph datastructure
+	 * @return 
 	 * @return
 	 */
-	public LatticeGraph3D getGraph() {
+	public Graph<ChainVertex3D, InterfaceEdge3D> getGraph() {
 		return graph;
 	}
 
@@ -300,11 +320,40 @@ public class LatticeGUIJGraph {
 		// Load input structure
 		Structure struc = StructureTools.getStructure(input);
 
-		LatticeGUIJGraph gui = new LatticeGUIJGraph(struc);
+		LatticeGraph3D latticeGraph = new LatticeGraph3D(struc);
+		
 		if(interfaceIds != null) {
-			gui.getGraph().filterEngagedInterfaces(interfaceIds);
-			gui.update();
+			latticeGraph.filterEngagedInterfaces(interfaceIds);
 		}
+		ConnectivityInspector<ChainVertex3D, InterfaceEdge3D> connectivity = new ConnectivityInspector<ChainVertex3D, InterfaceEdge3D>(latticeGraph.getGraph());
+		for( Set<ChainVertex3D> connected : connectivity.connectedSets()) {
+			if(!connected.iterator().next().toString().equals("D3")) { //A8
+				//continue;
+			}
+			// Focus on one complex
+			UndirectedGraph<ChainVertex3D, InterfaceEdge3D> subgraph = getVertexSubgraph(latticeGraph.getGraph(), connected);
+			// Orient
+			QuatSymmetryResults gSymmetry = getPointGroup(subgraph);
+			RotationGroup pointgroup = gSymmetry.getRotationGroup();
+			AxisAligner aligner = AxisAligner.getInstance(gSymmetry);
+			Point3d center = aligner.getGeometricCenter();
+			
+			Rotation rotation = pointgroup.getRotation(pointgroup.getHigherOrderRotationAxis());
+			AxisAngle4d axis = rotation.getAxisAngle();
+			Point3d zenith = new Point3d(axis.x,axis.y,axis.z);
+			zenith.add(center);
+			
+			logger.info("Connected Component containing {} has center {} and zenith {} angle {}",
+					connected.iterator().next(), center, zenith, axis.angle);
+			
+			LatticeGUIJGraph gui = new LatticeGUIJGraph(subgraph);
+			gui.setName("Connected Component around "+connected.iterator().next());
+			gui.stereographicLayout(center, zenith);
+			gui.display();
+
+			//break;
+		}
+		LatticeGUIJGraph gui = new LatticeGUIJGraph(latticeGraph.getGraph());
 
 //		Point3d center = new Point3d(.5,.5,.5);
 //		struc.getCrystallographicInfo().getCrystalCell().transfToOrthonormal(center);
@@ -316,6 +365,74 @@ public class LatticeGUIJGraph {
 		if(pngFile != null) {
 			gui.writePNG(pngFile);
 		}
+	}
+	private static QuatSymmetryResults getPointGroup(
+			UndirectedGraph<ChainVertex3D, InterfaceEdge3D> subgraph) {
+
+		List<Point3d[]> caCoords = new ArrayList<Point3d[]>();
+		List<Integer> folds = new ArrayList<Integer>();
+		List<Boolean> pseudo = new ArrayList<Boolean>();
+		List<String> chainIds = new ArrayList<String>();
+		List<Integer> models = new ArrayList<Integer>();
+		List<Double> seqIDmin = new ArrayList<Double>();
+		List<Double> seqIDmax = new ArrayList<Double>();
+		List<Integer> clusterIDs = new ArrayList<Integer>();
+		int fold = 1;
+		Character chain = 'A';
+
+		for (ChainVertex3D vert : subgraph.vertexSet() ){
+			Point3d centroid = vert.getCenter();
+			caCoords.add(new Point3d[] {centroid});
+			
+			if (subgraph.vertexSet().size() % fold == 0){
+				folds.add(fold); //the folds are the common denominators
+			}
+			fold++;
+			pseudo.add(false);
+			chainIds.add(chain+"");
+			chain++;
+			models.add(0);
+			seqIDmax.add(1.0);
+			seqIDmin.add(1.0);
+			clusterIDs.add(0);
+		}
+
+		//Create directly the subunits, because we know the aligned CA
+		Subunits globalSubunits = new Subunits(caCoords, clusterIDs, 
+				pseudo, seqIDmin, seqIDmax, 
+				folds, chainIds, models);
+
+		//Quaternary Symmetry Detection
+		QuatSymmetryParameters param = new QuatSymmetryParameters();
+
+		QuatSymmetryResults gSymmetry = 
+				QuatSymmetryDetector.calcQuatSymmetry(globalSubunits, param);
+
+		return gSymmetry;
+	}
+	private static UndirectedMaskSubgraph<ChainVertex3D, InterfaceEdge3D> getVertexSubgraph(
+			final UndirectedGraph<ChainVertex3D, InterfaceEdge3D> graph,
+			final Set<ChainVertex3D> connected) {
+		MaskFunctor<ChainVertex3D, InterfaceEdge3D> mask = new MaskFunctor<ChainVertex3D, InterfaceEdge3D>() {
+			@Override
+			public boolean isVertexMasked(ChainVertex3D vertex) {
+				return !connected.contains(vertex);
+			}
+
+			@Override
+			public boolean isEdgeMasked(InterfaceEdge3D edge) {
+				ChainVertex3D s = graph.getEdgeSource(edge);
+				ChainVertex3D t = graph.getEdgeTarget(edge);
+				return !(connected.contains(s) && connected.contains(t));
+			}
+		};
+		return new UndirectedMaskSubgraph<ChainVertex3D, InterfaceEdge3D>(graph, mask);
+	}
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
 	}
 
 }
