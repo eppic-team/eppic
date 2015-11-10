@@ -142,9 +142,6 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 		initializeEventsListeners();
 	}
 	
-	/*public static CheckBox getClustersViewButton(){
-		return clustersViewButton;
-	}*/
 	
 	private ToolBar createSelectorToolBar(){
 		toolBar = new ToolBar();
@@ -191,6 +188,7 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 		
 		clusterIdColumn = new SummaryColumnConfig<InterfaceItemModel, Integer>(props.clusterId());
 		configs.add(clusterIdColumn);
+		clusterIdColumn.setHidden(true);
 		thumbnailColumn = getThumbnailColumn();
 		configs.add(thumbnailColumn);
 		configs.add(getIdColumn());
@@ -600,6 +598,7 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 			//Hide cluster id column
 			resultsGrid.getColumnModel().getColumn(0).setHidden(true);
 			resultsGrid.getView().refresh(true);
+			
 			if(ApplicationContext.getSelectedAssemblyId() > 0)
 				History.newItem("interfaces/" + ApplicationContext.getPdbInfo().getPdbCode() + "/" + ApplicationContext.getSelectedAssemblyId());
 			else
