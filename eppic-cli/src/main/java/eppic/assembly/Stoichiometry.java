@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory;
 /**
  * A representation of the stoichiometry of an Assembly in a crystal structure
  * 
- * 
+ * The stoichiometry can be considered either in terms of chain or entities.
  * @author duarte_j
  *
  */
@@ -29,12 +29,16 @@ public class Stoichiometry {
 			
 	private Structure structure;
 	private Assembly assembly;
+	// Stoichiometry for each entity
 	private int[] sto;
+	// Stoichiometry for each chain
 	private int[] comp;
 	
+	// Maps entity IDs to indices in sto
 	private Map<Integer,Integer> entityId2Idx;
 	private Map<Integer,Integer> idx2EntityId;
 	
+	// Map chain Ids to indices in comp
 	private Map<String,Integer> chainIds2Idx;
 	private Map<Integer,String> idx2ChainIds;
 	
@@ -222,18 +226,27 @@ public class Stoichiometry {
 		return stoSb.toString();
 	}
 	
+	/**
+	 * 
+	 * @return A string representing the chain composition, e.g. "A2B"
+	 */
 	public String toFormattedCompositionString() {
 		StringBuilder stoSb = new StringBuilder();
-		
+
 		for (int i=0;i<structure.getChains().size();i++){
 			if (comp[i]>0) {
-				stoSb.append(getChainId(i));			
+				stoSb.append(getChainId(i));
 				if (comp[i]>1) stoSb.append(comp[i]); // for A1B1 we do AB (we ommit 1s)
 			}
 		}
 		return stoSb.toString();
 	}
 	
+	/**
+	 * Get a comma-separated list of ChainVertexes (as "Chain_Op") which participate
+	 * in some connected component with this stoichiometry
+	 * @return String with chain IDs, e.g. "A_0,B_0,A_1,B_1"
+	 */
 	public String getChainIdsString() {
 		UndirectedGraph<ChainVertex,InterfaceEdge> g = assembly.getFirstRelevantConnectedComponent(this);
 		StringBuilder sb = new StringBuilder();

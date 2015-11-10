@@ -667,7 +667,12 @@ public class Assembly {
 		LatticeGraph<ChainVertex, InterfaceEdge> latticeGraph = crystalAssemblies.getLatticeGraph();
 		CrystalCell cell = crystalAssemblies.getStructure().getCrystallographicInfo().getCrystalCell();
 
-		for(UndirectedGraph<ChainVertex, InterfaceEdge> cc : connectedComponents) {
+
+		Set<Stoichiometry> uniqueStoich = getStoichiometrySet().getUniqueStoichiometries();
+
+		for(Stoichiometry stoich : uniqueStoich) {
+			UndirectedGraph<ChainVertex, InterfaceEdge> cc = this.getFirstRelevantConnectedComponent(stoich);
+
 			Map<ChainVertex, Point3i> placements = positionVertices(cc);
 			for(Entry<ChainVertex, Point3i> entry : placements.entrySet()) {
 				ChainVertex v = entry.getKey();
@@ -688,7 +693,7 @@ public class Assembly {
 				chains.add(new ChainVertex(chain,v.getOpId()));
 			}
 
-			break;
+			//break;
 		}
 		return chains;
 	}

@@ -645,7 +645,8 @@ public class Main {
 
 					File outputFile= params.getOutputFile(EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX+"." + a.getId() + EppicParams.MMCIF_FILE_EXTENSION);
 					
-					try {								
+					try {
+						LOGGER.info("Writing assembly {} to {}",a.getId(),outputFile);
 						a.writeToMmCifFile(outputFile);
 						if (params.isGeneratePdbFiles()) {
 							outputFile= params.getOutputFile(EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX+"." + a.getId() +  EppicParams.PDB_FILE_EXTENSION);

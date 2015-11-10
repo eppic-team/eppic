@@ -16,7 +16,6 @@ public class StoichiometrySet {
 	
 
 	private Structure structure;
-	private List<UndirectedGraph<ChainVertex, InterfaceEdge>> connectedComponents;
 	
 	private List<Stoichiometry> stoichiometries;
 	
@@ -24,13 +23,12 @@ public class StoichiometrySet {
 	
 	public StoichiometrySet(Structure structure, Assembly assembly, List<UndirectedGraph<ChainVertex, InterfaceEdge>> connectedComponents) {
 		this.structure = structure;
-		this.connectedComponents = connectedComponents;
-		initStoichiometries(assembly);
+		initStoichiometries(assembly,connectedComponents);
 	}
 	
-	private void initStoichiometries(Assembly assembly) {
+	private void initStoichiometries(Assembly assembly, List<UndirectedGraph<ChainVertex, InterfaceEdge>> connectedComponents) {
 		stoichiometries = new ArrayList<Stoichiometry>();
-		for (UndirectedGraph<ChainVertex, InterfaceEdge> cc:connectedComponents) {			
+		for (UndirectedGraph<ChainVertex, InterfaceEdge> cc:connectedComponents) {
 			Stoichiometry s = new Stoichiometry(structure, assembly);
 			stoichiometries.add(s);
 			for (ChainVertex v:cc.vertexSet()) {
