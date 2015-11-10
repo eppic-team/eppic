@@ -535,12 +535,10 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 			sessionDAO.insertSessionForJob(getThreadLocalRequest().getSession().getId(), jobId, getThreadLocalRequest().getRemoteAddr());
 			if(status.equals(StatusOfJob.FINISHED))
 			{
-				System.out.println("IN CrkWebServiceImpl.java in getResultsOfProcessing before calling getResultData");
 				return getResultData(jobId);
 			}
 			else
 			{
-				System.out.println("IN CrkWebServiceImpl.java in getResultsOfProcessing before calling getStatusData");
 				return getStatusData(jobId, status);
 			}
 		}

@@ -9,6 +9,7 @@ import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.commons.events.SelectAssemblyResultsRowEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowAssembliesEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowAssemblyViewerEvent;
+import ch.systemsx.sybit.crkwebui.client.commons.events.ShowDiagramViewerEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowInterfacesOfAssemblyDataEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowThumbnailEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowViewerEvent;
@@ -16,15 +17,18 @@ import ch.systemsx.sybit.crkwebui.client.commons.events.WindowHideEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.SelectAssemblyResultsRowHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowAssembliesHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowAssemblyViewerHandler;
+import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowDiagramViewerHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowThumbnailHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowViewerHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.WindowHideHandler;
+import ch.systemsx.sybit.crkwebui.client.commons.managers.DiagramViewerRunner;
 import ch.systemsx.sybit.crkwebui.client.commons.managers.EventBusManager;
 import ch.systemsx.sybit.crkwebui.client.commons.managers.ViewerRunner;
 import ch.systemsx.sybit.crkwebui.client.commons.util.EscapedStringGenerator;
 import ch.systemsx.sybit.crkwebui.client.results.data.AssemblyItemModel;
 import ch.systemsx.sybit.crkwebui.client.results.data.AssemblyItemModelProperties;
 import ch.systemsx.sybit.crkwebui.client.results.data.InterfaceItemModel;
+import ch.systemsx.sybit.crkwebui.client.results.gui.cells.AssemblyDiagramCell;
 import ch.systemsx.sybit.crkwebui.client.results.gui.cells.AssemblyMethodCallCell;
 import ch.systemsx.sybit.crkwebui.client.results.gui.cells.AssemblyThumbnailCell;
 import ch.systemsx.sybit.crkwebui.client.results.gui.cells.InterfacesButtonCell;
@@ -88,6 +92,7 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 	private static final AssemblyItemModelProperties props = GWT.create(AssemblyItemModelProperties.class);
 	
 	ColumnConfig<AssemblyItemModel, String> thumbnailColumn;
+	ColumnConfig<AssemblyItemModel, String> diagramColumn;
 	ColumnConfig<AssemblyItemModel, String> warningsColumn;
 	SummaryColumnConfig<AssemblyItemModel, Integer> clusterIdColumn;
 	
@@ -151,6 +156,8 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 		//configs.add(getCompositionColumn());
 		thumbnailColumn = getThumbnailColumn();
 		configs.add(thumbnailColumn);
+		diagramColumn = getDiagramColumn();
+		configs.add(diagramColumn);		
 		configs.add(getIdentifierColumn()); //what is displayed in the table (same as id)
 		configs.add(getMmSizeColumn());
 		configs.add(getStoichiometryColumn());
@@ -285,6 +292,30 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 		return thumbnailColumn;
 	}
 
+	
+	private SummaryColumnConfig<AssemblyItemModel, String> getDiagramColumn(){
+		SummaryColumnConfig<AssemblyItemModel, String> diagramColumn = 
+				new SummaryColumnConfig<AssemblyItemModel, String>(props.thumbnailUrl());
+
+		diagramColumn.setSummaryType(new SummaryType.CountSummaryType<String>());
+		diagramColumn.setSummaryRenderer(new SummaryRenderer<AssemblyItemModel>() {
+
+			@Override
+			public SafeHtml render(
+					Number value,
+					Map<ValueProvider<? super AssemblyItemModel, ?>, Number> data) {
+				return SafeHtmlUtils.fromTrustedString(
+						//value.intValue() > 1 ? "(" + value.intValue() + " Interfaces)" : "(1 Interface)");
+						value.intValue() > 1 ? "(" + value.intValue() + " Assemblies)" : "(1 Assembly)");
+			}
+		});
+		
+		diagramColumn.setCell(new AssemblyDiagramCell());
+		fillColumnSettings(diagramColumn, "thumbnail");
+		diagramColumn.setResizable(false);
+
+		return diagramColumn;
+	}	
 
 	
 	/**
@@ -555,6 +586,15 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 				ViewerRunner.runViewerAssembly(String.valueOf(resultsGrid.getSelectionModel().getSelectedItem().getAssemblyId()));
 			}
 		}); 
+		
+		EventBusManager.EVENT_BUS.addHandler(ShowDiagramViewerEvent.TYPE, new ShowDiagramViewerHandler() {
+			
+			@Override
+			public void onShowDiagramViewer(ShowDiagramViewerEvent event) 
+			{
+				DiagramViewerRunner.runViewerAssembly(String.valueOf(resultsGrid.getSelectionModel().getSelectedItem().getAssemblyId()));
+			}
+		});		
 		
 		EventBusManager.EVENT_BUS.addHandler(ShowThumbnailEvent.TYPE, new ShowThumbnailHandler() {
 			
