@@ -114,6 +114,7 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 			logGraph();
 	}
 	
+
 	/**
 	 * Copy constructor. This performs a shallow copy of the graph; edges and
 	 * vertices are cloned, but the referenced chains and interfaces are not cloned.
@@ -125,7 +126,8 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 	 * @param vertexClass Class of vertices, used to create new nodes
 	 * @param edgeClass Class of edges, used to create new edges
 	 */
-	public <VV extends V,EE extends E> LatticeGraph(LatticeGraph<VV,EE> other, Class<? extends V> vertexClass, Class<? extends E> edgeClass) {
+	public <VV extends ChainVertex,EE extends InterfaceEdge> LatticeGraph(LatticeGraph<VV,EE> other,
+			Class<? extends V> vertexClass, Class<? extends E> edgeClass) {
 		this.structure = other.structure;
 		this.globalReferencePoint = other.globalReferencePoint;
 		
@@ -135,8 +137,8 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 		this.graph = new Pseudograph<V,E>(edgeFactory);
 		this.subgraph = graph;
 		
-		Map<V,V> vertMap = new HashMap<V, V>(other.graph.vertexSet().size());
-		for(V oVert : other.graph.vertexSet()) {
+		Map<VV,V> vertMap = new HashMap<VV, V>(other.graph.vertexSet().size());
+		for(VV oVert : other.graph.vertexSet()) {
 			V vert = vertexFactory.createVertex();
 			vert.setChain(oVert.getChain());
 			vert.setOpId(oVert.getOpId());
@@ -159,6 +161,7 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 			Class<? extends E> edgeClass) throws StructureException {
 		this(struct, Lists.newArrayList(interfaces),vertexClass,edgeClass);
 	}
+
 
 	/**
 	 * Get the reference coordinate for a particular chain.

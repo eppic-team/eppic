@@ -90,6 +90,44 @@ public class LatticeGraph3D extends LatticeGraph<ChainVertex3D,InterfaceEdge3D> 
 		assignColorsByEntity();
 	}
 
+//TODO figure out how to do this while preserving the vertex mapping from old to new
+//     For now, just recalculate all 3D-specific properties
+//	public LatticeGraph3D(LatticeGraph3D other) {
+//		// Clone graph & basic properties
+//		super(other, ChainVertex3D.class, InterfaceEdge3D.class);
+//		
+//		this.policy = other.policy;
+//		this.chainCentroid = other.chainCentroid;
+//		
+//		otherVert = 
+//	}
+	/**
+	 * Copy the other LatticeGraph. Recalculates all 3D position information
+	 * @param other
+	 * @throws StructureException
+	 */
+	public LatticeGraph3D(LatticeGraph<? extends ChainVertex, ? extends InterfaceEdge> other) throws StructureException {
+		// Clone graph & basic properties
+		super(other,ChainVertex3D.class,InterfaceEdge3D.class);
+		
+		
+		this.policy = WrappingPolicy.DUPLICATE;
+
+		// Compute centroids in AU
+		chainCentroid = new HashMap<String,Point3d>();
+		for(Chain c: structure.getChains() ) {
+			chainCentroid.put(c.getChainID(), getCentroid(c));
+		}
+		
+		// Compute 3D layout
+		positionVertices();
+		positionEdges();
+		
+		// Assign colors
+		//assignColorsById();
+		assignColorsByEntity();
+	}
+
 	/**
 	 * Calculates the centroid in the asymmetric unit
 	 * @param c
