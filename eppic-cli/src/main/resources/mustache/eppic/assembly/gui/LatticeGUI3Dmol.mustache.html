@@ -66,13 +66,13 @@ function axes(viewer) {
  }); 
 
  //Vertices
-{{#graph.vertices}}
+{{#graph.graph.vertexSet}}
  viewer.addSphere({center:new $3Dmol.Vector3({{center.x}},{{center.y}},{{center.z}}),
      radius:5.0,
      color:'{{colorStr}}{{^colorStr}}white{{/colorStr}}'});
-{{/graph.vertices}}
+{{/graph.graph.vertexSet}}
  //Edges
-{{#graph.edges}}
+{{#graph.graph.edgeSet}}
 {{#segments}}
  viewer.addArrow({
      start:new $3Dmol.Vector3( {{start.x}},{{start.y}},{{start.z}} ),
@@ -93,7 +93,7 @@ function axes(viewer) {
      position:{ x:{{center.x}},y:{{center.y}},z:{{center.z}} }
      });
 {{/circles}}
-{{/graph.edges}}
+{{/graph.graph.edgeSet}}
 
  axes(viewer);
 })();

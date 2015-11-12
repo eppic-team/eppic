@@ -18,6 +18,7 @@ import org.biojava.nbio.structure.StructureException;
 import org.biojava.nbio.structure.StructureTools;
 import org.biojava.nbio.structure.contact.StructureInterface;
 import org.biojava.nbio.structure.io.util.FileDownloadUtils;
+import org.jgrapht.UndirectedGraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,7 +46,7 @@ public class LatticeGUI3Dmol {
 	private static final String MUSTACHE_TEMPLATE_3DMOL = "mustache/eppic/assembly/gui/LatticeGUI3Dmol.mustache.html";
 	private static final String DEFAULT_URL_3DMOL = "http://3Dmol.csb.pitt.edu/build/3Dmol-min.js";
 	
-	private final LatticeGraph3D graph;
+	private final LatticeGraph3D latticeGraph;
 	private String strucURI;
 	private String pdbId; //TODO use file instead
 	private String title; //Title for HTML page
@@ -63,19 +64,20 @@ public class LatticeGUI3Dmol {
 		this(struc,strucURI,interfaceIds,null);
 	}
 	public LatticeGUI3Dmol(Structure struc,String strucURI,Collection<Integer> interfaceIds,List<StructureInterface> allInterfaces) throws StructureException {
-		this.graph = new LatticeGraph3D(struc,allInterfaces);
+		this.latticeGraph = new LatticeGraph3D(struc,allInterfaces);
+		UndirectedGraph<ChainVertex3D, InterfaceEdge3D> graph = latticeGraph.getGraph();
 		if( interfaceIds != null ) {
 			logger.info("Filtering LatticeGraph3D to edges {}",interfaceIds);
-			graph.filterEngagedInterfaces(interfaceIds);
+			latticeGraph.filterEngagedInterfaces(interfaceIds);
 		}
-		logger.info("Generated LatticeGraph3D with {} vertices and {} edges",graph.getVertices().size(),graph.getEdges().size());
+		logger.info("Generated LatticeGraph3D with {} vertices and {} edges",graph.vertexSet().size(),graph.edgeSet().size());
 
 		// Compute Jmol names and colors
-		for(ChainVertex3D v : graph.getVertices()) {
+		for(ChainVertex3D v : graph.vertexSet()) {
 			v.setColorStr(toHTMLColor(v.getColor()));
 		}
 
-		for(InterfaceEdge3D e : graph.getEdges()) {
+		for(InterfaceEdge3D e : graph.edgeSet()) {
 			String colorStr = toHTMLColor(e.getColor());
 			e.setColorStr(colorStr);
 
@@ -196,7 +198,7 @@ public class LatticeGUI3Dmol {
 	 * @throws StructureException
 	 */
 	public void writeCIFfile(PrintWriter out) throws IOException, StructureException {
-		graph.writeCellToMmCifFile(out);
+		latticeGraph.writeCellToMmCifFile(out);
 	}
 
 	/**
@@ -217,7 +219,7 @@ public class LatticeGUI3Dmol {
 	}
 
 	public LatticeGraph3D getGraph() {
-		return graph;
+		return latticeGraph;
 	}
 
 	/**

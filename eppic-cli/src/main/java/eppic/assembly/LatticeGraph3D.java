@@ -28,29 +28,22 @@ import org.biojava.nbio.structure.StructureException;
 import org.biojava.nbio.structure.StructureTools;
 import org.biojava.nbio.structure.contact.Pair;
 import org.biojava.nbio.structure.contact.StructureInterface;
-import org.biojava.nbio.structure.contact.StructureInterfaceList;
 import org.biojava.nbio.structure.io.FileConvert;
 import org.biojava.nbio.structure.io.mmcif.MMCIFFileTools;
 import org.biojava.nbio.structure.io.mmcif.SimpleMMcifParser;
-import org.biojava.nbio.structure.xtal.CrystalBuilder;
 import org.biojava.nbio.structure.xtal.CrystalCell;
 import org.biojava.nbio.structure.xtal.CrystalTransform;
 import org.jcolorbrewer.ColorBrewer;
-import org.jgrapht.UndirectedGraph;
-import org.jgrapht.graph.MaskFunctor;
-import org.jgrapht.graph.UndirectedMaskSubgraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Lists;
-
-public class LatticeGraph3D {
+public class LatticeGraph3D extends LatticeGraph<ChainVertex3D,InterfaceEdge3D> {
 
 	private static final Logger logger = LoggerFactory.getLogger(LatticeGraph3D.class);
 
 	private final double defaultInterfaceRadius = 2.5;
 	private final double defaultArcHeight = 4;
-	private final double defaultArrowOffset = 6;
+	//private final double defaultArrowOffset = 6;
 
 	public enum WrappingPolicy {
 		DONT_WRAP, // Don't wrap edges. Draw directly between vertices
@@ -58,70 +51,29 @@ public class LatticeGraph3D {
 		DUPLICATE, // Duplicate edges on each side of the cell boundary
 	}
 
-	// subgraph, filtered for engaged interfaces
-	private UndirectedGraph<ChainVertex3D, InterfaceEdge3D> subgraph;
-
-	//	private static interface VertexPositioner {
-	//		public Point3d getUnitCellPos(Chain chain, int au);
-	//	}
-	//	private static class GlobalCentroidPositioner implements VertexPositioner{
-	//		private Matrix4d[] unitCellOps;
-	//		private Point3d refPoint;
-	//		
-	//		public GlobalCentroidPositioner(Structure s, CrystalCell cell, Matrix4d[] spaceOps) {
-	//			// Compute reference point to locate in unit cell
-	//			// This could also be done for each chain separately, to match Jmol positions
-	//			Atom[] ca = StructureTools.getRepresentativeAtomArray(s);
-	//			Atom centroidAtom = Calc.getCentroid(ca);
-	//			refPoint = new Point3d(centroidAtom.getCoords());
-	//			
-	//			unitCellOps = cell.transfToOriginCell(spaceOps, refPoint);
-	//		}
-	//		
-	//		public Point3d getUnitCellPos(Chain chain, int au) {
-	//			// Get chain centroid
-	//			Atom[] ca = StructureTools.getRepresentativeAtomArray(chain);
-	//			Atom centroidAtom = Calc.getCentroid(ca);
-	//			Point3d auPos = new Point3d(centroidAtom.getCoords());
-	//
-	//			// Transform via spaceOp
-	//			unitCellOps[au].transform(auPos);
-	//			return auPos;
-	//		}
-	//	}
-
-	private final Structure structure;
-	private final CrystalCell cell;
-
-	private final LatticeGraph<ChainVertex3D, InterfaceEdge3D> graph;
-
 	private final Map<String,Point3d> chainCentroid;
 	
 	private final WrappingPolicy policy;
 
+	/**
+	 * Create the graph after calculating the interfaces
+	 * @param struc
+	 * @throws StructureException
+	 */
 	public LatticeGraph3D(Structure struc) throws StructureException {
 		this(struc,null);
 	}
+	/**
+	 * 
+	 * @param struc Structure, which must include crystallographic info
+	 * @param interfaces (Optional) list of interfaces from struct. If null, will
+	 *  be calculated from the structure (slow).
+	 * @throws StructureException
+	 */
 	public LatticeGraph3D(Structure struc, List<StructureInterface> interfaces) throws StructureException {
-		this.structure = struc;
+		super(struc,interfaces,ChainVertex3D.class, InterfaceEdge3D.class);
+		
 		this.policy = WrappingPolicy.DUPLICATE;
-
-		// calculate interfaces
-		if(interfaces == null) {
-			interfaces = calculateInterfaces(struc);
-		}
-
-		// Initialize the graph topology
-		this.graph = new LatticeGraph<ChainVertex3D, InterfaceEdge3D>(struc, interfaces,
-				ChainVertex3D.class, InterfaceEdge3D.class);
-
-		// Cell and space group info
-		PDBCrystallographicInfo crystalInfo = structure.getCrystallographicInfo();
-		if(crystalInfo == null) {
-			logger.error("No crystallographic info set for this structure.");
-			// leads to NullPointer
-		}
-		cell = crystalInfo.getCrystalCell();
 
 		// Compute centroids in AU
 		chainCentroid = new HashMap<String,Point3d>();
@@ -136,7 +88,6 @@ public class LatticeGraph3D {
 		// Assign colors
 		//assignColorsById();
 		assignColorsByEntity();
-		subgraph = graph.getGraph();
 	}
 
 	/**
@@ -150,32 +101,14 @@ public class LatticeGraph3D {
 		return new Point3d(centroidAtom.getCoords());
 	}
 
-	/**
-	 * Calculates the interfaces for a structure
-	 * @param struc
-	 * @return
-	 */
-	private static List<StructureInterface> calculateInterfaces(Structure struc) {
-		CrystalBuilder builder = new CrystalBuilder(struc);
-		StructureInterfaceList interfaces = builder.getUniqueInterfaces();
-		logger.info("Calculating ASA for "+interfaces.size()+" potential interfaces");
-		interfaces.calcAsas(StructureInterfaceList.DEFAULT_ASA_SPHERE_POINTS/3, //fewer for performance
-				Runtime.getRuntime().availableProcessors(),
-				StructureInterfaceList.DEFAULT_MIN_COFACTOR_SIZE);
-		interfaces.removeInterfacesBelowArea();
-		interfaces.getClusters();
-		logger.info("Found "+interfaces.size()+" interfaces");
-		return Lists.newArrayList(interfaces);
-	}
-
 
 	/**
 	 * Calculate vertex positions and colors
 	 * @throws StructureException
 	 */
-	private void positionVertices() throws StructureException {
+	private final void positionVertices() throws StructureException {
 
-		Set<ChainVertex3D> vertices = graph.getGraph().vertexSet();
+		Set<ChainVertex3D> vertices = graph.vertexSet();
 		for(ChainVertex3D v : vertices) {
 			// Unit cell pos
 			Point3d pos = getPosition(v);
@@ -184,13 +117,16 @@ public class LatticeGraph3D {
 	}
 
 
-	
-	private void positionEdges() throws StructureException {
-		UndirectedGraph<ChainVertex3D, InterfaceEdge3D> g = graph.getGraph();
-		Set<InterfaceEdge3D> edges = g.edgeSet();
+	/**
+	 * Initialize edge positions. Should be called during initialization after
+	 * {@link #positionVertices()}.
+	 * @throws StructureException
+	 */
+	private final void positionEdges() throws StructureException {
+		Set<InterfaceEdge3D> edges = graph.edgeSet();
 		for(InterfaceEdge3D edge : edges) {
-			ChainVertex3D source = g.getEdgeSource(edge);
-			ChainVertex3D target = g.getEdgeTarget(edge);
+			ChainVertex3D source = graph.getEdgeSource(edge);
+			ChainVertex3D target = graph.getEdgeTarget(edge);
 
 			logger.info("Edge {}{} -{}- {}{} translation: {}",
 					source.getChainId(),source.getOpId(),
@@ -222,6 +158,9 @@ public class LatticeGraph3D {
 					logger.error("Non-identity source transformation:\n{}",transA);
 				}
 
+				CrystalCell cell = structure.getCrystallographicInfo().getCrystalCell();
+
+
 				// Vertex positions within the unit cell
 				Point3d sourcePos = getPosition(source);
 
@@ -229,7 +168,7 @@ public class LatticeGraph3D {
 				Point3d unwrappedTarget = new Point3d(chainCentroid.get(target.getChainId()));
 				Matrix4d transBOrtho = cell.transfToOrthonormal(transB);
 				transBOrtho.transform(unwrappedTarget);
-				graph.getUnitCellTransformationOrthonormal(source.getChainId(), source.getOpId()).transform(unwrappedTarget);
+				getUnitCellTransformationOrthonormal(source.getChainId(), source.getOpId()).transform(unwrappedTarget);
 
 				// Location of interface circle
 				Point3d midPoint = new Point3d();
@@ -237,8 +176,8 @@ public class LatticeGraph3D {
 				midPoint.scale(.5);
 
 				// wrap to source
-				Point3d sourceReference = new Point3d(graph.getReferenceCoordinate(source.getChainId()));
-				graph.getUnitCellTransformationOrthonormal(source.getChainId(), source.getOpId()).transform(sourceReference);
+				Point3d sourceReference = new Point3d(getReferenceCoordinate(source.getChainId()));
+				getUnitCellTransformationOrthonormal(source.getChainId(), source.getOpId()).transform(sourceReference);
 				Point3d[] sourceEdgePos = new Point3d[] {new Point3d(sourcePos),new Point3d(midPoint), new Point3d(unwrappedTarget)};
 				cell.transfToOriginCell(sourceEdgePos,sourceReference);
 
@@ -248,9 +187,9 @@ public class LatticeGraph3D {
 				segments.add(new ParametricCircularArc(sourceEdgePos[0], sourceEdgePos[2], defaultArcHeight));
 
 				// wrap to target
-				Point3d targetReference = new Point3d(graph.getReferenceCoordinate(target.getChainId()));
+				Point3d targetReference = new Point3d(getReferenceCoordinate(target.getChainId()));
 				transBOrtho.transform(targetReference);
-				graph.getUnitCellTransformationOrthonormal(source.getChainId(), source.getOpId()).transform(targetReference);
+				getUnitCellTransformationOrthonormal(source.getChainId(), source.getOpId()).transform(targetReference);
 				Point3d[] targetEdgePos = new Point3d[] {new Point3d(sourcePos),new Point3d(midPoint), new Point3d(unwrappedTarget)};
 				cell.transfToOriginCell(targetEdgePos,targetReference);
 
@@ -282,7 +221,7 @@ public class LatticeGraph3D {
 		// AU pos
 		Point3d pos = new Point3d( chainCentroid.get(chainId) );
 		// Unit cell pos
-		graph.getUnitCellTransformationOrthonormal(chainId, au).transform(pos);
+		getUnitCellTransformationOrthonormal(chainId, au).transform(pos);
 		return pos;
 	}
 
@@ -294,7 +233,7 @@ public class LatticeGraph3D {
 	public void assignColorsById() {
 		// Generate list of equivalent chains
 		Map<String,List<ChainVertex3D>> vClusters = new HashMap<String, List<ChainVertex3D>>();
-		for( ChainVertex3D vert : graph.getGraph().vertexSet()) {
+		for( ChainVertex3D vert : graph.vertexSet()) {
 			String id = vert.getChainId();
 			List<ChainVertex3D> lst = vClusters.get(id);
 			if(lst == null) {
@@ -312,7 +251,7 @@ public class LatticeGraph3D {
 
 		// Generate list of equivalent edges
 		Map<Integer,List<InterfaceEdge3D>> eClusters = new HashMap<Integer, List<InterfaceEdge3D>>();
-		for( InterfaceEdge3D edge : graph.getGraph().edgeSet()) {
+		for( InterfaceEdge3D edge : graph.edgeSet()) {
 			Integer id = edge.getInterfaceId();
 			List<InterfaceEdge3D> lst = eClusters.get(id);
 			if(lst == null) {
@@ -334,7 +273,7 @@ public class LatticeGraph3D {
 	public void assignColorsByEntity() {
 		// Generate list of equivalent chains
 		Map<Integer,List<ChainVertex3D>> vClusters = new HashMap<Integer, List<ChainVertex3D>>();
-		for( ChainVertex3D vert : graph.getGraph().vertexSet()) {
+		for( ChainVertex3D vert : graph.vertexSet()) {
 			Integer id = vert.getEntity();
 			List<ChainVertex3D> lst = vClusters.get(id);
 			if(lst == null) {
@@ -352,7 +291,7 @@ public class LatticeGraph3D {
 
 		// Generate list of equivalent edges
 		Map<Integer,List<InterfaceEdge3D>> eClusters = new HashMap<Integer, List<InterfaceEdge3D>>();
-		for( InterfaceEdge3D edge : graph.getGraph().edgeSet()) {
+		for( InterfaceEdge3D edge : graph.edgeSet()) {
 			Integer id = edge.getClusterId();
 			List<InterfaceEdge3D> lst = eClusters.get(id);
 			if(lst == null) {
@@ -405,7 +344,7 @@ public class LatticeGraph3D {
 	 * @param normal
 	 */
 	@SuppressWarnings("unused")
-	private Point3d planeIntersection(Point3d segA, Point3d segB, Point3d origin, Vector3d normal) {
+	private static Point3d planeIntersection(Point3d segA, Point3d segB, Point3d origin, Vector3d normal) {
 		double tol = 1e-6; //tolerance for equality
 
 		Vector3d line = new Vector3d(); // vector B-A
@@ -453,7 +392,7 @@ public class LatticeGraph3D {
 		boolean symRelatedChainsExist = false;
 		int numChains = structure.size();
 		Set<String> uniqueChains = new HashSet<String>();
-		for (ChainVertex3D cv:getVertices()) {
+		for (ChainVertex3D cv:getGraph().vertexSet()) {
 			uniqueChains.add(cv.getChain().getChainID());
 		}
 		if (numChains != uniqueChains.size()) symRelatedChainsExist = true;
@@ -466,7 +405,7 @@ public class LatticeGraph3D {
 			logger.error("No crystallographic info set for this structure.");
 			// leads to NullPointer
 		} else {
-			out.print(MMCIFFileTools.toMMCIF("_cell", MMCIFFileTools.convertCrystalCellToCell(cell)));
+			out.print(MMCIFFileTools.toMMCIF("_cell", MMCIFFileTools.convertCrystalCellToCell(crystalInfo.getCrystalCell())));
 			out.print(MMCIFFileTools.toMMCIF("_symmetry", MMCIFFileTools.convertSpaceGroupToSymmetry(crystalInfo.getSpaceGroup())));
 		}
 
@@ -475,10 +414,10 @@ public class LatticeGraph3D {
 		List<Object> atomSites = new ArrayList<Object>();
 
 		int atomId = 1;
-		for (ChainVertex3D cv:getVertices()) {
+		for (ChainVertex3D cv:getGraph().vertexSet()) {
 			String chainId = cv.getChain().getChainID()+"_"+cv.getOpId();
 			//TODO maybe need to clone and transform here?
-			Matrix4d m = graph.getUnitCellTransformationOrthonormal(chainId, cv.getOpId());
+			Matrix4d m = getUnitCellTransformationOrthonormal(chainId, cv.getOpId());
 			//Point3d refCoord = graph.getReferenceCoordinate(cv.getChainId());
 
 			Chain newChain = (Chain) cv.getChain().clone();
@@ -604,42 +543,9 @@ public class LatticeGraph3D {
 		}
 	 */
 	
-	public void filterEngagedInterfaces(final Collection<Integer> interfaces) {
-		MaskFunctor<ChainVertex3D, InterfaceEdge3D> mask = new MaskFunctor<ChainVertex3D, InterfaceEdge3D>() {
-			@Override
-			public boolean isVertexMasked(ChainVertex3D vertex) {
-				return false;
-			}
-
-			@Override
-			public boolean isEdgeMasked(InterfaceEdge3D edge) {
-				return !interfaces.contains(edge.getInterfaceId());
-			}
-		};
-		subgraph = new UndirectedMaskSubgraph<ChainVertex3D, InterfaceEdge3D>(graph.getGraph(), mask);
-	}
-
-	public Set<ChainVertex3D> getVertices() {
-		return subgraph.vertexSet();
-	}
-	
-
-	public Set<InterfaceEdge3D> getEdges() {
-		return subgraph.edgeSet();
-	}
-	
-	public ChainVertex3D getEdgeSource(InterfaceEdge3D edge) {
-		return subgraph.getEdgeSource(edge);
-	}
-	public ChainVertex3D getEdgeTarget(InterfaceEdge3D edge) {
-		return subgraph.getEdgeTarget(edge);
-	}
-	public UndirectedGraph<ChainVertex3D, InterfaceEdge3D> getGraph(){
-		return subgraph;
-	}
-	
 	public Point3d cellCenter() {
 		Point3d center = new Point3d(.5,.5,.5);
+		CrystalCell cell = structure.getCrystallographicInfo().getCrystalCell();
 		cell.transfToOrthonormal(center);
 		cell.transfToOriginCell(center);
 		return center;

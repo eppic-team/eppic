@@ -67,32 +67,6 @@ public class InterfaceEdge3D extends InterfaceEdge {
 		this.colorStr = colorStr;
 	}
 
-	public String getXtalTransString() {
-		return InterfaceEdge3D.getXtalTransString(getXtalTrans());
-	}
-	public static String getXtalTransString(Point3i xtalTrans) {
-		int[] coords = new int[3];
-		xtalTrans.get(coords);
-		final String[] letters = new String[] {"a","b","c"};
-
-		StringBuilder str = new StringBuilder();
-		for(int i=0;i<3;i++) {
-			if( coords[i] != 0) {
-				if( Math.abs(coords[i]) == 1 ) {
-					if(str.length()>0)
-						str.append(',');
-					String sign = coords[i] > 0 ? "+" : "-";
-					str.append(sign+letters[i]);
-				} else {
-					if(str.length()>0)
-						str.append(',');
-					str.append(String.format("%d%s",coords[i],letters[i]));
-				}
-			}
-		}
-		return str.toString();
-	}
-
 	public List<OrientedCircle> getCircles() {
 		return circles;
 	}
