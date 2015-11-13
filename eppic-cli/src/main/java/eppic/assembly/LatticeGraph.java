@@ -539,7 +539,7 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 			this.globalReferencePoint = globalReferencePoint;
 		}
 	}
-	
+
 	/**
 	 * Filter the edges of this graph down to the selected interfaces
 	 * @param interfaces List of interfaces to include, or null to reset to all interfaces
@@ -560,6 +560,28 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 			}
 		};
 		subgraph = new UndirectedMaskSubgraph<V,E>(graph, mask);
+	}
+	/**
+	 * Filter the edges of this graph down to the selected interface clusters
+	 * @param interfaces List of clusters to include, or null to reset to all interfaces
+	 */
+	public void filterEngagedClusters(final Collection<Integer> clusterIds) {
+		if(clusterIds == null ) {
+			subgraph = graph;
+		}
+		MaskFunctor<V,E> mask = new MaskFunctor<V,E>() {
+			@Override
+			public boolean isVertexMasked(V vertex) {
+				return false;
+			}
+
+			@Override
+			public boolean isEdgeMasked(E edge) {
+				return !clusterIds.contains(edge.getClusterId());
+			}
+		};
+		subgraph = new UndirectedMaskSubgraph<V,E>(graph, mask);
+
 	}
 
 	public UndirectedGraph<V, E> getGraph() {

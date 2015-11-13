@@ -212,6 +212,12 @@ public class LatticeGraphServlet extends BaseServlet
 			return interfaces;
 		}
 	}
+	/**
+	 * Expand a list of interface cluster numbers to a full list of interfaces
+	 * @param clusters
+	 * @param ifaceList
+	 * @return
+	 */
 	private static Set<Integer> mapClusters(Set<Integer> clusters,
 			Collection<Interface> ifaceList) {
 		Set<Integer> interfaces = new HashSet<Integer>();

@@ -13,7 +13,9 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.zip.GZIPOutputStream;
 
 import org.apache.logging.log4j.LogManager;
@@ -48,6 +50,8 @@ import org.slf4j.LoggerFactory;
 
 import eppic.assembly.Assembly;
 import eppic.assembly.CrystalAssemblies;
+import eppic.assembly.LatticeGraph3D;
+import eppic.assembly.gui.LatticeGUIJGraph;
 import eppic.commons.util.FileTypeGuesser;
 import eppic.commons.util.Goodies;
 import eppic.predictors.CombinedClusterPredictor;
@@ -665,7 +669,53 @@ public class Main {
 			throw new EppicException(e, "Couldn't write interface PDB files. " + e.getMessage(), true);
 		} 
 	}
-	
+
+	public void doWriteAssemblyDiagrams() throws EppicException {
+		if (interfaces.size() == 0) return;
+
+		if (!params.isGenerateDiagrams()) return;
+
+		try {
+			// ASSEMBLY files
+			// TODO for the moment we are only doing assemblies for crystallographic structures, but we should also try to deal with NMR and EM
+			if (pdb.isCrystallographic() && 
+					pdb.getCrystallographicInfo().getSpaceGroup()!=null &&
+					pdb.getCrystallographicInfo().getCrystalCell()!=null) {
+
+				LatticeGraph3D latticeGraph = new LatticeGraph3D(validAssemblies.getLatticeGraph());
+				for (Assembly a:validAssemblies) {
+
+					File outputFile= params.getOutputFile(EppicParams.ASSEMBLIES_DIAGRAM_FILES_SUFFIX+"." + a.getId() + ".png");
+
+					LOGGER.info("Writing diagram for assembly {} to {}",a.getId(),outputFile);
+					
+					// Filter down to this assembly
+					List<StructureInterfaceCluster> clusters = a.getEngagedInterfaceClusters();
+					Set<Integer> clusterIds = new HashSet<Integer>(clusters.size());
+					for(StructureInterfaceCluster cluster : clusters) {
+						clusterIds.add(cluster.getId());
+					}
+					latticeGraph.filterEngagedClusters(clusterIds);
+					
+					// Extract connected components
+					
+					// Prevent wrapped edges
+					
+					// Recenter
+					
+					LatticeGUIJGraph gui = new LatticeGUIJGraph(latticeGraph.getGraph());
+					gui.writePNG(outputFile);
+				}
+			}
+
+
+		} catch( IOException e) {
+			throw new EppicException(e, "Couldn't write assembly diagrams. " + e.getMessage(), true);
+		} catch (StructureException e) {
+			throw new EppicException(e, "Couldn't write assembly diagrams. " + e.getMessage(), true);
+		}
+	}
+
 	// TODO implement the HBplus stuff
 //	public void doHBPlus() throws EppicException {
 //
@@ -1057,14 +1107,17 @@ public class Main {
 			
 			// 8 write coordinate files (only if in -l)
 			doWriteCoordFiles();
-						
-			// 9 writing pymol files (only if in -l)
+			
+			// 9 write assembly diagrams (only if in -P)
+			doWriteAssemblyDiagrams();
+			
+			// 10 writing pymol files (only if in -l)
 			doWritePymolFiles();
 			
-			// 10 compressing files (only if in -l)
+			// 11 compressing files (only if in -l)
 			doCompressFiles();
 			
-			// 11 writing out the model serialized file and "finish" file for web ui (only if in -w)
+			// 12 writing out the model serialized file and "finish" file for web ui (only if in -w)
 			doWriteFinalFiles();
 
 			
