@@ -334,7 +334,7 @@ public class LatticeGUIJGraph {
 			// Focus on one complex
 			UndirectedGraph<ChainVertex3D, InterfaceEdge3D> subgraph = getVertexSubgraph(latticeGraph.getGraph(), connected);
 			// Orient
-			QuatSymmetryResults gSymmetry = getPointGroup(subgraph);
+			QuatSymmetryResults gSymmetry = getQuatSymm(subgraph);
 			RotationGroup pointgroup = gSymmetry.getRotationGroup();
 			AxisAligner aligner = AxisAligner.getInstance(gSymmetry);
 			Point3d center = aligner.getGeometricCenter();
@@ -367,7 +367,7 @@ public class LatticeGUIJGraph {
 			gui.writePNG(pngFile);
 		}
 	}
-	private static QuatSymmetryResults getPointGroup(
+	private static QuatSymmetryResults getQuatSymm(
 			UndirectedGraph<ChainVertex3D, InterfaceEdge3D> subgraph) {
 
 		List<Point3d[]> caCoords = new ArrayList<Point3d[]>();

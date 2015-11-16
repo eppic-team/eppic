@@ -1,10 +1,15 @@
 package eppic.assembly;
 
+import java.awt.Dimension;
+import java.awt.geom.Dimension2D;
+import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -14,11 +19,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.zip.GZIPOutputStream;
 
+import javax.vecmath.AxisAngle4d;
 import javax.vecmath.Matrix4d;
+import javax.vecmath.Point3d;
 import javax.vecmath.Point3i;
 import javax.vecmath.Vector3d;
 
@@ -27,13 +35,23 @@ import org.biojava.nbio.structure.Calc;
 import org.biojava.nbio.structure.Chain;
 import org.biojava.nbio.structure.Compound;
 import org.biojava.nbio.structure.Group;
+import org.biojava.nbio.structure.GroupType;
+import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.StructureException;
+import org.biojava.nbio.structure.StructureTools;
 import org.biojava.nbio.structure.contact.Pair;
 import org.biojava.nbio.structure.contact.StructureInterface;
 import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
 import org.biojava.nbio.structure.io.FileConvert;
 import org.biojava.nbio.structure.io.mmcif.MMCIFFileTools;
 import org.biojava.nbio.structure.io.mmcif.SimpleMMcifParser;
+import org.biojava.nbio.structure.symmetry.core.AxisAligner;
+import org.biojava.nbio.structure.symmetry.core.QuatSymmetryDetector;
+import org.biojava.nbio.structure.symmetry.core.QuatSymmetryParameters;
+import org.biojava.nbio.structure.symmetry.core.QuatSymmetryResults;
+import org.biojava.nbio.structure.symmetry.core.Rotation;
+import org.biojava.nbio.structure.symmetry.core.RotationGroup;
+import org.biojava.nbio.structure.symmetry.core.Subunits;
 import org.biojava.nbio.structure.xtal.CrystalCell;
 import org.jgrapht.UndirectedGraph;
 import org.jgrapht.alg.ConnectivityInspector;
@@ -48,6 +66,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import eppic.CallType;
+import eppic.commons.util.GeomTools;
 
 
 /**
@@ -661,7 +680,7 @@ public class Assembly {
 	 * @throws StructureException 
 	 */
 	public List<ChainVertex> getStructure() throws StructureException {
-
+		// Place chains within unit cell
 		List<ChainVertex> chains = new ArrayList<ChainVertex>();
 
 		LatticeGraph<ChainVertex, InterfaceEdge> latticeGraph = crystalAssemblies.getLatticeGraph();
@@ -674,30 +693,238 @@ public class Assembly {
 			UndirectedGraph<ChainVertex, InterfaceEdge> cc = this.getFirstRelevantConnectedComponent(stoich);
 
 			Map<ChainVertex, Point3i> placements = positionVertices(cc);
-			for(Entry<ChainVertex, Point3i> entry : placements.entrySet()) {
-				ChainVertex v = entry.getKey();
-
-				// transformation to 0,0,0 cell
-				Matrix4d m = latticeGraph.getUnitCellTransformationOrthonormal(v.getChainId(), v.getOpId());
-
-				// add translation
-				Point3i placement = entry.getValue();
-				Vector3d trans = new Vector3d(placement.x,placement.y,placement.z);
-				cell.transfToOrthonormal(trans);
-				Matrix4d transmat = new Matrix4d();
-				transmat.set(1., trans);
-				transmat.mul(m);
-
-				Chain chain = (Chain) crystalAssemblies.getStructure().getChainByPDB(v.getChainId()).clone();
-				Calc.transform(chain, transmat);
-				chains.add(new ChainVertex(chain,v.getOpId()));
-			}
-
-			//break;
+			transformChains(placements, crystalAssemblies.getStructure(),latticeGraph, cell, chains);
 		}
 		return chains;
 	}
+
+
+	public List<ChainVertex> getStructurePacked() throws StructureException {
+
+
+		LatticeGraph<ChainVertex, InterfaceEdge> latticeGraph = crystalAssemblies.getLatticeGraph();
+		CrystalCell cell = crystalAssemblies.getStructure().getCrystallographicInfo().getCrystalCell();
+
+
+		Set<Stoichiometry> uniqueStoich = getStoichiometrySet().getUniqueStoichiometries();
+
+		List<Entry<Dimension2D, List<ChainVertex>>> boxes = new ArrayList<Map.Entry<Dimension2D,List<ChainVertex>>>();
+
+		for(Stoichiometry stoich : uniqueStoich) {
+			UndirectedGraph<ChainVertex, InterfaceEdge> cc = this.getFirstRelevantConnectedComponent(stoich);
+
+			// Position connected component to avoid wrapping
+			Map<ChainVertex, Point3i> placements = positionVertices(cc);
+			List<ChainVertex> chains = transformChains(placements, crystalAssemblies.getStructure(),latticeGraph, cell, null);
+		
+			// Transform to be centered with the major axis vertically
+			QuatSymmetryResults symm = getQuatSymm(chains);
+			RotationGroup pointgroup = symm.getRotationGroup();
+			AxisAligner aligner = AxisAligner.getInstance(symm);
+
+			Matrix4d transformation;
+			if(pointgroup.getOrder() < 1) {
+				// Failed?
+				logger.warn("Error finding point group for complex containing {}",cc.vertexSet().iterator().next());
+				Vector3d centroid = new Vector3d();
+				int n = 0;
+				for(ChainVertex vert : cc.vertexSet()) {
+					for(Group g: vert.getChain().getAtomGroups(GroupType.AMINOACID) ) {
+						for(Atom a : g.getAtoms()) {
+							centroid.add(new Point3d(a.getCoords()));
+							n++;
+						}
+					}
+				}
+				centroid.scale(1./n);
+				centroid.negate();
+				transformation = GeomTools.getIdentityMatrix();
+				transformation.setTranslation(centroid);
+			} else {
+				// Find major symmetry axes
+				SortedMap<Integer, Vector3d> sortedAxes = new TreeMap<Integer, Vector3d>();
+
+				//TODO select axes more intelligently
+				for(int i=0; i<pointgroup.getOrder(); i++) {
+					Rotation rot = pointgroup.getRotation( i );
+					int fold = rot.getFold();
+					if(fold < 2)
+						continue; //skip identity
+					AxisAngle4d axis = rot.getAxisAngle();
+					Vector3d curr = new Vector3d(axis.x,axis.y,axis.z);
+					sortedAxes.put(-fold, curr);
+				}
+				Vector3d normal, otheraxis;
+				if(sortedAxes.isEmpty()) {
+					normal = new Vector3d(0,0,1);
+					otheraxis = null;
+				} else {
+					Integer largest = sortedAxes.firstKey();
+					normal = sortedAxes.get(largest);
+					normal.normalize();
+					otheraxis = null;
+					for(Vector3d o : sortedAxes.values()) {
+						o.normalize();
+						if( Math.abs(o.dot(normal)) < 1 ) {
+							otheraxis = o;
+							break;
+						}
+					}
+				}
+				
+//				// align z-axis to highest-order group
+//				int highOrderAxis = pointgroup.getHigherOrderRotationAxis();
+//				
+//				Vector3d normal = n
+//				
+//				// find another axis
+//				int principalAxis = pointgroup.getPrincipalAxisIndex();
+//				if(principalAxis != highOrderAxis) {
+//					Rotation principalRot = pointgroup.getRotation(principalAxis);
+//					AxisAngle4d pAxis = principalRot.getAxisAngle();
+//					otheraxis = new Vector3d(pAxis.x,pAxis.y,pAxis.z);
+//				}
+//				if( otheraxis == null && pointgroup.getOrder() > 0) {
+//					// Choose any other axis
+//					Rotation principalRot = pointgroup.getRotation(highOrderAxis!=1 ? 1:2);
+//					AxisAngle4d pAxis = principalRot.getAxisAngle();
+//					otheraxis = new Vector3d(pAxis.x,pAxis.y,pAxis.z);
+//				}
+				
+				
+				Point3d center = aligner.getGeometricCenter();
+				transformation = GeomTools.matrixFromPlane(center, normal, otheraxis);
+				transformation.invert();
+			}
+			
+			// Transform chains to the origin
+			for(ChainVertex vert:chains) {
+				Calc.transform(vert.getChain(), transformation);
+			}
+			
+			// Calculate bounding box
+			Vector3d dim = aligner.getDimension();
+			// pad space around the protein and make it an even multiple
+			final double padding = 10;
+			int x = (int)(Math.ceil( dim.x * 2./padding + 1 )*padding);
+			int y = (int)(Math.ceil( dim.y * 2./padding + 1 )*padding);
+			Dimension2D dim2 = new Dimension(x,y);
+			boxes.add(new SimpleEntry<Dimension2D,List<ChainVertex>>(dim2,chains));
+		}
+		
+		// Pack complexes in XY plane
+		BinaryBinPacker<List<ChainVertex>> packer = new BinaryBinPacker<List<ChainVertex>>(boxes);
+		List<Entry<List<ChainVertex>, Rectangle2D>> placements = packer.getPlacements();
+		Rectangle2D container = packer.getBounds();
+		
+		List<ChainVertex> allchains = new ArrayList<ChainVertex>();
+		for(Entry<List<ChainVertex>, Rectangle2D> entry : placements) {
+			List<ChainVertex> chains = entry.getKey();
+			
+			// Center proteins in each box; center container at origin
+			Rectangle2D place = entry.getValue();
+			double x = place.getX() + place.getWidth()/2. - container.getWidth()/2.;
+			double y = place.getY() + place.getHeight()/2. - container.getHeight()/2.;
+			Vector3d center = new Vector3d(x,y,0);
+			
+			// Transform to XY location
+			for(ChainVertex chain : chains) {
+				Calc.translate(chain.getChain(), center);
+			}
+			allchains.addAll(chains);
+		}
+		return allchains;
+	}
+	/**
+	 * 
+	 * @param vertices List of vertices. Constituent chains should be pre-transformed into an orientation with closed symmetry
+	 * @return
+	 */
+	private static QuatSymmetryResults getQuatSymm( Collection<ChainVertex> vertices) {
+
+		List<Point3d[]> caCoords = new ArrayList<Point3d[]>();
+		List<Integer> folds = new ArrayList<Integer>();
+		List<Boolean> pseudo = new ArrayList<Boolean>();
+		List<String> chainIds = new ArrayList<String>();
+		List<Integer> models = new ArrayList<Integer>();
+		List<Double> seqIDmin = new ArrayList<Double>();
+		List<Double> seqIDmax = new ArrayList<Double>();
+		List<Integer> clusterIDs = new ArrayList<Integer>();
+		int fold = 1;
+		Character chain = 'A';
+
+		for (ChainVertex vert : vertices ){
+			Atom[] atoms = StructureTools.getRepresentativeAtomArray(vert.getChain());
+			caCoords.add(Calc.atomsToPoints(atoms));
+			
+			if (vertices.size() % fold == 0){
+				folds.add(fold); //the folds are the common denominators
+			}
+			fold++;
+			pseudo.add(false);
+			chainIds.add(chain+"");
+			chain++;
+			models.add(0);
+			seqIDmax.add(1.0);
+			seqIDmin.add(1.0);
+			clusterIDs.add(0);
+		}
+
+		//Create directly the subunits, because we know the aligned CA
+		Subunits globalSubunits = new Subunits(caCoords, clusterIDs, 
+				pseudo, seqIDmin, seqIDmax, 
+				folds, chainIds, models);
+
+		//Quaternary Symmetry Detection
+		QuatSymmetryParameters param = new QuatSymmetryParameters();
+
+		QuatSymmetryResults gSymmetry = 
+				QuatSymmetryDetector.calcQuatSymmetry(globalSubunits, param);
+
+		return gSymmetry;
+	}
 	
+	/**
+	 * Takes a map of chain position from {@link #positionVertices(UndirectedGraph)}
+	 * and create a new set of ChainVertex objects with transformed chains.
+	 * The original ChainVertexes are not modified, but rather cloned.
+	 * 
+	 * @param placements Placement of each chain relative to the 0,0,0 unit cell
+	 * @param latticeGraph Root graph, for calculation of the starting chain positions
+	 * @param cell Unit cell
+	 * @param chains (Optional) Output list to insert transformed chains into
+	 * @return chains with appended elements, or a new list of transformed Chain objects if chains was null
+	 * @throws StructureException
+	 */
+	private static List<ChainVertex> transformChains(Map<ChainVertex, Point3i> placements,
+			Structure structure, LatticeGraph<ChainVertex, InterfaceEdge> latticeGraph,
+			CrystalCell cell, List<ChainVertex> chains)
+			throws StructureException
+	{
+		if( chains == null) {
+			chains = new ArrayList<ChainVertex>();
+		}
+		for(Entry<ChainVertex, Point3i> entry : placements.entrySet()) {
+			ChainVertex v = entry.getKey();
+
+			// transformation to 0,0,0 cell
+			Matrix4d m = latticeGraph.getUnitCellTransformationOrthonormal(v.getChainId(), v.getOpId());
+
+			// add translation
+			Point3i placement = entry.getValue();
+			Vector3d trans = new Vector3d(placement.x,placement.y,placement.z);
+			cell.transfToOrthonormal(trans);
+			Matrix4d transmat = new Matrix4d();
+			transmat.set(1., trans);
+			transmat.mul(m);
+
+			Chain chain = (Chain) structure.getChainByPDB(v.getChainId()).clone();
+			Calc.transform(chain, transmat);
+			chains.add(new ChainVertex(chain,v.getOpId()));
+		}
+		return chains;
+	}
+
 	/**
 	 * Given a valid lattice graph (i.e. one where there are no infinite assemblies), 
 	 * this method chooses a unit cell for each vertex such that no edges wrap
@@ -867,7 +1094,7 @@ public class Assembly {
 	public void writeToPdbFile(File file) throws StructureException, IOException {
 		PrintStream ps = new PrintStream(new GZIPOutputStream(new FileOutputStream(file)));
 		int modelId = 1;
-		for (ChainVertex cv:getStructure()) {
+		for (ChainVertex cv:getStructurePacked()) {
 			ps.println("MODEL"+String.format("%9d",modelId));
 			ps.print(cv.getChain().toPDB());
 			ps.println("TER");
@@ -898,7 +1125,7 @@ public class Assembly {
 		// we only do renumbering in the case that there are sym-related chains in the assembly
 		// that way we stay as close to the original as possible
 		boolean symRelatedChainsExist = false;
-		List<ChainVertex> structure = getStructure();
+		List<ChainVertex> structure = getStructurePacked();
 		int numChains = structure.size();
 		Set<String> uniqueChains = new HashSet<String>();
 		for (ChainVertex cv:structure) {
