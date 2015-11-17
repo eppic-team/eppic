@@ -7,6 +7,7 @@ import java.util.List;
 //import org.slf4j.LoggerFactory;
 
 
+
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ApplicationWindowResizeEvent;
@@ -30,10 +31,12 @@ import ch.systemsx.sybit.crkwebui.shared.model.UniProtRefWarning;
 
 
 
+
 //import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.History;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Image;
@@ -290,24 +293,7 @@ public class SequenceInfoPanel extends FieldSet
 
 		final LabelWithTooltip chainsLink = createChainLink(chainCluster);
 		items.add(chainsLink);
-
-		IconButton chainsLinkButton = createMoreInfoButton(AppPropertiesManager.CONSTANTS.homologs_panel_chains_hint());		
-		chainsLinkButton.getElement().setMargins(new Margins(0, 10, 0, 0));
-		chainsLinkButton.addSelectHandler(new SelectHandler() {
-
-			@Override
-			public void onSelect(SelectEvent event) {
-				EventBusManager.EVENT_BUS.fireEvent(new ShowAlignmentsEvent(
-						chainCluster, 
-						pdbName,
-						chainsLink.getAbsoluteLeft() + chainsLink.getElement().getClientWidth(),
-						chainsLink.getAbsoluteTop() + chainsLink.getElement().getClientHeight() + 10));
-			}
-
-		});
-
-		items.add(chainsLinkButton);
-
+		
 		int nrOfHomologs = chainCluster.getNumHomologs();
 		String nrOfHomologsText = String.valueOf(nrOfHomologs) + " homolog";
 
@@ -316,32 +302,60 @@ public class SequenceInfoPanel extends FieldSet
 			nrOfHomologsText += "s";
 		}
 
-		//String alignmentId = chainCluster.getRepChain();
-
 		final HTML nrHomologsLabel = new HTML(nrOfHomologsText);
-
 		nrHomologsLabel.addStyleName("eppic-action");
 		items.add(nrHomologsLabel);
-
-		IconButton nrHoButton = createMoreInfoButton(AppPropertiesManager.CONSTANTS.homologs_panel_nrhomologs_hint());
-		nrHoButton.getElement().setMargins(new Margins(0, 10, 0, 0));
-
-		nrHoButton.addSelectHandler(new SelectHandler() {
-
+		
+		Image sequenceIcon = new Image("resources/icons/sequence_14.png");
+		sequenceIcon.getElement().<XElement>cast().applyStyles("verticalAlign:bottom;");
+		sequenceIcon.addClickHandler(new ClickHandler() {		
 			@Override
-			public void onSelect(SelectEvent event) {
+			public void onClick(ClickEvent event) {
+				EventBusManager.EVENT_BUS.fireEvent(new ShowAlignmentsEvent(
+						chainCluster, 
+						pdbName,
+						chainsLink.getAbsoluteLeft() + chainsLink.getElement().getClientWidth(),
+						chainsLink.getAbsoluteTop() + chainsLink.getElement().getClientHeight() + 10));
+			}
+			
+		});
+		items.add(sequenceIcon);
+		
+		Image homologsIcon = new Image("resources/icons/homologs_14.png");
+		homologsIcon.getElement().<XElement>cast().applyStyles("verticalAlign:bottom;");
+		homologsIcon.addClickHandler(new ClickHandler() {	
+			@Override
+			public void onClick(ClickEvent event) {
 				EventBusManager.EVENT_BUS.fireEvent(new ShowHomologsEvent(
 						chainCluster, 
 						selectedJobId,
 						pdbScoreItem,
 						nrHomologsLabel.getAbsoluteLeft() + nrHomologsLabel.getElement().getClientWidth(),
 						nrHomologsLabel.getAbsoluteTop() + nrHomologsLabel.getElement().getClientHeight() + 10));
-
 			}
 		});
-
-		items.add(nrHoButton);
-
+		items.add(homologsIcon);
+		
+		Image similarStructuresIcon = new Image("resources/icons/related_14.png");
+		similarStructuresIcon.getElement().<XElement>cast().applyStyles("verticalAlign:bottom;");
+		similarStructuresIcon.addClickHandler(new ClickHandler() {	
+			@Override
+			public void onClick(ClickEvent event) {
+				Window.alert("showing similar structures");
+			}
+		});
+		items.add(similarStructuresIcon);		
+		
+		Image potatoIcon = new Image("resources/icons/potato_14.png");
+		potatoIcon.getElement().<XElement>cast().applyStyles("verticalAlign:bottom;");
+		potatoIcon.addClickHandler(new ClickHandler() {	
+			@Override
+			public void onClick(ClickEvent event) {
+				Window.alert("showing potato");
+			}
+		});
+		items.add(potatoIcon);
+		
 		
 		// we only add the search link if a precomputed entry & not null chain cluster & we have sequence clusters for it
 		if (precomputed && chainCluster!=null && chainCluster.getSeqCluster()!=null) {
