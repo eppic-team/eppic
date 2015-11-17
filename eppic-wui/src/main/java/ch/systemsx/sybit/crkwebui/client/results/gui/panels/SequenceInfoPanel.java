@@ -336,7 +336,7 @@ public class SequenceInfoPanel extends FieldSet
 		});
 		items.add(homologsIcon);
 		
-		Image similarStructuresIcon = new Image("resources/icons/related_14.png");
+		/*Image similarStructuresIcon = new Image("resources/icons/related_14.png");
 		similarStructuresIcon.getElement().<XElement>cast().applyStyles("verticalAlign:bottom;");
 		similarStructuresIcon.addClickHandler(new ClickHandler() {	
 			@Override
@@ -344,7 +344,12 @@ public class SequenceInfoPanel extends FieldSet
 				Window.alert("showing similar structures");
 			}
 		});
-		items.add(similarStructuresIcon);		
+		items.add(similarStructuresIcon);*/
+		
+		// we only add the search link if a precomputed entry & not null chain cluster & we have sequence clusters for it
+		if (precomputed && chainCluster!=null && chainCluster.getSeqCluster()!=null) {
+			items.add(createSearchSimilarStructuresIcon(chainCluster));
+		}
 		
 		Image potatoIcon = new Image("resources/icons/potato_14.png");
 		potatoIcon.getElement().<XElement>cast().applyStyles("verticalAlign:bottom;");
@@ -357,15 +362,11 @@ public class SequenceInfoPanel extends FieldSet
 		items.add(potatoIcon);
 		
 		
-		// we only add the search link if a precomputed entry & not null chain cluster & we have sequence clusters for it
-		if (precomputed && chainCluster!=null && chainCluster.getSeqCluster()!=null) {
-			final EmptyLinkWithTooltip searchLink = createSearchLink(chainCluster);
-			items.add(searchLink);
-		}
+
 		return items;
 	}
 
-	private EmptyLinkWithTooltip createSearchLink(final ChainCluster chainCluster) {
+	/*private EmptyLinkWithTooltip createSearchLink(final ChainCluster chainCluster) {
 		final EmptyLinkWithTooltip searchLink = 
 				new EmptyLinkWithTooltip(AppPropertiesManager.CONSTANTS.homologs_panel_search_text(),
 						AppPropertiesManager.CONSTANTS.homologs_panel_search_tip());
@@ -380,6 +381,18 @@ public class SequenceInfoPanel extends FieldSet
 			}
 		});
 		return searchLink;
+	}*/
+	
+	private Image createSearchSimilarStructuresIcon(final ChainCluster chainCluster) {
+		Image similarStructuresIcon = new Image("resources/icons/related_14.png");
+		similarStructuresIcon.getElement().<XElement>cast().applyStyles("verticalAlign:bottom;");
+		similarStructuresIcon.addClickHandler(new ClickHandler() {	
+			@Override
+			public void onClick(ClickEvent event) {
+				History.newItem("searchPdb/"+chainCluster.getPdbCode() + "/" + chainCluster.getRepChain());
+			}
+		});
+		return similarStructuresIcon;
 	}
 
 	private LabelWithTooltip createChainLink(final ChainCluster chainCluster) {
