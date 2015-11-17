@@ -698,7 +698,50 @@ public class Assembly {
 		return chains;
 	}
 
+	/**
+	 * For each complex in the assembly, transform it so that the complex is
+	 * centered at the origin and aligned towards the z axis.
+	 * 
+	 * Note that disjoint complexes can overlap in 3D space. Use {@link #getStructurePacked()}
+	 * to avoid this.
+	 * @return For each connected component in the assembly, give a list of
+	 *  vertices with transformed chains.
+	 * @throws StructureException
+	 */
+	public List<List<ChainVertex>> getStructureCentered() throws StructureException {
 
+		LatticeGraph<ChainVertex, InterfaceEdge> latticeGraph = crystalAssemblies.getLatticeGraph();
+		CrystalCell cell = crystalAssemblies.getStructure().getCrystallographicInfo().getCrystalCell();
+
+		Set<Stoichiometry> uniqueStoich = getStoichiometrySet().getUniqueStoichiometries();
+
+		List<List<ChainVertex>> components = new ArrayList<List<ChainVertex>>(uniqueStoich.size());
+
+		for(Stoichiometry stoich : uniqueStoich) {
+			UndirectedGraph<ChainVertex, InterfaceEdge> cc = this.getFirstRelevantConnectedComponent(stoich);
+
+			// Position connected component to avoid wrapping
+			Map<ChainVertex, Point3i> placements = positionVertices(cc);
+			List<ChainVertex> chains = transformChains(placements, crystalAssemblies.getStructure(),latticeGraph, cell, null);
+
+			centerSymmetrically(cc, chains);
+
+			components.add(chains);
+		}
+
+		return components;
+	}
+
+	/**
+	 * Generate the 2D-packed structure for this assembly.
+	 * 
+	 * For each complex in the assembly, gather the subunits into a closed conformation,
+	 * align them in the XY plane with the major axis along Z, and pack multiple
+	 * complexes to avoid overlaps
+	 * @return A list of all vertices, with their Chain objects transformed to
+	 *  the correct 3D positions
+	 * @throws StructureException
+	 */
 	public List<ChainVertex> getStructurePacked() throws StructureException {
 
 
@@ -716,62 +759,112 @@ public class Assembly {
 			// Position connected component to avoid wrapping
 			Map<ChainVertex, Point3i> placements = positionVertices(cc);
 			List<ChainVertex> chains = transformChains(placements, crystalAssemblies.getStructure(),latticeGraph, cell, null);
-		
-			// Transform to be centered with the major axis vertically
-			QuatSymmetryResults symm = getQuatSymm(chains);
-			RotationGroup pointgroup = symm.getRotationGroup();
-			AxisAligner aligner = AxisAligner.getInstance(symm);
 
-			Matrix4d transformation;
-			if(pointgroup.getOrder() < 1) {
-				// Failed?
-				logger.warn("Error finding point group for complex containing {}",cc.vertexSet().iterator().next());
-				Vector3d centroid = new Vector3d();
-				int n = 0;
-				for(ChainVertex vert : cc.vertexSet()) {
-					for(Group g: vert.getChain().getAtomGroups(GroupType.AMINOACID) ) {
-						for(Atom a : g.getAtoms()) {
-							centroid.add(new Point3d(a.getCoords()));
-							n++;
-						}
+			// Center at origin
+			Vector3d dim = centerSymmetrically(cc, chains);
+
+			// pad space around the protein and make it an even multiple
+			final double padding = 10;
+			int x = (int)(Math.ceil( dim.x * 2./padding + 1 )*padding);
+			int y = (int)(Math.ceil( dim.y * 2./padding + 1 )*padding);
+			Dimension2D dim2 = new Dimension(x,y);
+			boxes.add(new SimpleEntry<Dimension2D,List<ChainVertex>>(dim2,chains));
+		}
+
+		// Pack complexes in XY plane
+		BinaryBinPacker<List<ChainVertex>> packer = new BinaryBinPacker<List<ChainVertex>>(boxes);
+		List<Entry<List<ChainVertex>, Rectangle2D>> placements = packer.getPlacements();
+		Rectangle2D container = packer.getBounds();
+
+		List<ChainVertex> allchains = new ArrayList<ChainVertex>();
+		for(Entry<List<ChainVertex>, Rectangle2D> entry : placements) {
+			List<ChainVertex> chains = entry.getKey();
+
+			// Center proteins in each box; center container at origin
+			Rectangle2D place = entry.getValue();
+			double x = place.getX() + place.getWidth()/2. - container.getWidth()/2.;
+			double y = place.getY() + place.getHeight()/2. - container.getHeight()/2.;
+			Vector3d center = new Vector3d(x,y,0);
+
+			// Transform to XY location
+			for(ChainVertex chain : chains) {
+				Calc.translate(chain.getChain(), center);
+			}
+			allchains.addAll(chains);
+		}
+		return allchains;
+	}
+
+	/**
+	 * Takes a graph representing a single complex. The vertex's chains should
+	 * be pre-transformed so that no edges wrap around the unit cell (i.e. with
+	 * {@link #transformChains(Map, Structure, LatticeGraph, CrystalCell, List)}).
+	 * 
+	 * This method further transforms the chains of the vertices so that the
+	 * complex is centered at the origin and aligned the major symmetry axis.
+	 * @param cc
+	 * @param chains
+	 * @return The extent of the bounding box for the complex (i.e. half the
+	 *  dimensions of the bounding polyhedron).
+	 */
+	private Vector3d centerSymmetrically(
+			UndirectedGraph<ChainVertex, InterfaceEdge> cc,
+			List<ChainVertex> chains) {
+		// Transform to be centered with the major axis vertically
+		QuatSymmetryResults symm = getQuatSymm(chains);
+		RotationGroup pointgroup = symm.getRotationGroup();
+		AxisAligner aligner = AxisAligner.getInstance(symm);
+
+		Matrix4d transformation;
+		if(pointgroup.getOrder() < 1) {
+			// Failed?
+			logger.warn("Error finding point group for complex containing {}",cc.vertexSet().iterator().next());
+			Vector3d centroid = new Vector3d();
+			int n = 0;
+			for(ChainVertex vert : cc.vertexSet()) {
+				for(Group g: vert.getChain().getAtomGroups(GroupType.AMINOACID) ) {
+					for(Atom a : g.getAtoms()) {
+						centroid.add(new Point3d(a.getCoords()));
+						n++;
 					}
 				}
-				centroid.scale(1./n);
-				centroid.negate();
-				transformation = GeomTools.getIdentityMatrix();
-				transformation.setTranslation(centroid);
+			}
+			centroid.scale(1./n);
+			centroid.negate();
+			transformation = GeomTools.getIdentityMatrix();
+			transformation.setTranslation(centroid);
+		} else {
+			// Find major symmetry axes
+			SortedMap<Integer, Vector3d> sortedAxes = new TreeMap<Integer, Vector3d>();
+
+			//TODO select axes more intelligently
+			for(int i=0; i<pointgroup.getOrder(); i++) {
+				Rotation rot = pointgroup.getRotation( i );
+				int fold = rot.getFold();
+				if(fold < 2)
+					continue; //skip identity
+				AxisAngle4d axis = rot.getAxisAngle();
+				Vector3d curr = new Vector3d(axis.x,axis.y,axis.z);
+				sortedAxes.put(-fold, curr);
+			}
+			Vector3d normal, otheraxis;
+			if(sortedAxes.isEmpty()) {
+				normal = new Vector3d(0,0,1);
+				otheraxis = null;
 			} else {
-				// Find major symmetry axes
-				SortedMap<Integer, Vector3d> sortedAxes = new TreeMap<Integer, Vector3d>();
-
-				//TODO select axes more intelligently
-				for(int i=0; i<pointgroup.getOrder(); i++) {
-					Rotation rot = pointgroup.getRotation( i );
-					int fold = rot.getFold();
-					if(fold < 2)
-						continue; //skip identity
-					AxisAngle4d axis = rot.getAxisAngle();
-					Vector3d curr = new Vector3d(axis.x,axis.y,axis.z);
-					sortedAxes.put(-fold, curr);
-				}
-				Vector3d normal, otheraxis;
-				if(sortedAxes.isEmpty()) {
-					normal = new Vector3d(0,0,1);
-					otheraxis = null;
-				} else {
-					Integer largest = sortedAxes.firstKey();
-					normal = sortedAxes.get(largest);
-					normal.normalize();
-					otheraxis = null;
-					for(Vector3d o : sortedAxes.values()) {
-						o.normalize();
-						if( Math.abs(o.dot(normal)) < 1 ) {
-							otheraxis = o;
-							break;
-						}
+				Integer largest = sortedAxes.firstKey();
+				normal = sortedAxes.get(largest);
+				normal.normalize();
+				otheraxis = null;
+				for(Vector3d o : sortedAxes.values()) {
+					o.normalize();
+					if( Math.abs(o.dot(normal)) < 1 ) {
+						otheraxis = o;
+						break;
 					}
 				}
-				
+			}
+
 //				// align z-axis to highest-order group
 //				int highOrderAxis = pointgroup.getHigherOrderRotationAxis();
 //				
@@ -790,58 +883,28 @@ public class Assembly {
 //					AxisAngle4d pAxis = principalRot.getAxisAngle();
 //					otheraxis = new Vector3d(pAxis.x,pAxis.y,pAxis.z);
 //				}
-				
-				
-				Point3d center = aligner.getGeometricCenter();
-				transformation = GeomTools.matrixFromPlane(center, normal, otheraxis);
-				transformation.invert();
-			}
-			
-			// Transform chains to the origin
-			for(ChainVertex vert:chains) {
-				Calc.transform(vert.getChain(), transformation);
-			}
-			
-			// Calculate bounding box
-			Vector3d dim = aligner.getDimension();
-			// pad space around the protein and make it an even multiple
-			final double padding = 10;
-			int x = (int)(Math.ceil( dim.x * 2./padding + 1 )*padding);
-			int y = (int)(Math.ceil( dim.y * 2./padding + 1 )*padding);
-			Dimension2D dim2 = new Dimension(x,y);
-			boxes.add(new SimpleEntry<Dimension2D,List<ChainVertex>>(dim2,chains));
+
+
+			Point3d center = aligner.getGeometricCenter();
+			transformation = GeomTools.matrixFromPlane(center, normal, otheraxis);
+			transformation.invert();
 		}
-		
-		// Pack complexes in XY plane
-		BinaryBinPacker<List<ChainVertex>> packer = new BinaryBinPacker<List<ChainVertex>>(boxes);
-		List<Entry<List<ChainVertex>, Rectangle2D>> placements = packer.getPlacements();
-		Rectangle2D container = packer.getBounds();
-		
-		List<ChainVertex> allchains = new ArrayList<ChainVertex>();
-		for(Entry<List<ChainVertex>, Rectangle2D> entry : placements) {
-			List<ChainVertex> chains = entry.getKey();
-			
-			// Center proteins in each box; center container at origin
-			Rectangle2D place = entry.getValue();
-			double x = place.getX() + place.getWidth()/2. - container.getWidth()/2.;
-			double y = place.getY() + place.getHeight()/2. - container.getHeight()/2.;
-			Vector3d center = new Vector3d(x,y,0);
-			
-			// Transform to XY location
-			for(ChainVertex chain : chains) {
-				Calc.translate(chain.getChain(), center);
-			}
-			allchains.addAll(chains);
+
+		// Transform chains to the origin
+		for(ChainVertex vert:chains) {
+			Calc.transform(vert.getChain(), transformation);
 		}
-		return allchains;
+		//TODO is this really half the bounding box?
+		return aligner.getDimension();
 	}
+
 	/**
-	 * 
+	 * Calculate point group symmetry for a complex
 	 * @param vertices List of vertices. Constituent chains should be pre-transformed into an orientation with closed symmetry
 	 * @return
 	 */
 	private static QuatSymmetryResults getQuatSymm( Collection<ChainVertex> vertices) {
-
+		// hack subunits
 		List<Point3d[]> caCoords = new ArrayList<Point3d[]>();
 		List<Integer> folds = new ArrayList<Integer>();
 		List<Boolean> pseudo = new ArrayList<Boolean>();
@@ -856,7 +919,7 @@ public class Assembly {
 		for (ChainVertex vert : vertices ){
 			Atom[] atoms = StructureTools.getRepresentativeAtomArray(vert.getChain());
 			caCoords.add(Calc.atomsToPoints(atoms));
-			
+
 			if (vertices.size() % fold == 0){
 				folds.add(fold); //the folds are the common denominators
 			}
@@ -883,7 +946,7 @@ public class Assembly {
 
 		return gSymmetry;
 	}
-	
+
 	/**
 	 * Takes a map of chain position from {@link #positionVertices(UndirectedGraph)}
 	 * and create a new set of ChainVertex objects with transformed chains.
