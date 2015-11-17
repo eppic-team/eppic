@@ -8,6 +8,7 @@ import java.util.List;
 
 
 
+
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ApplicationWindowResizeEvent;
@@ -18,6 +19,7 @@ import ch.systemsx.sybit.crkwebui.client.commons.events.ShowQueryWarningsEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.images.ImageWithTooltip;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.labels.LabelWithTooltip;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.links.EmptyLinkWithTooltip;
+import ch.systemsx.sybit.crkwebui.client.commons.gui.links.ImageLinkWithTooltip;
 //import ch.systemsx.sybit.crkwebui.client.commons.gui.links.ImageLinkWithTooltip;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ApplicationWindowResizeHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.HideAllWindowsHandler;
@@ -25,6 +27,7 @@ import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowQueryWarningsHandl
 import ch.systemsx.sybit.crkwebui.client.commons.managers.EventBusManager;
 import ch.systemsx.sybit.crkwebui.client.commons.util.EscapedStringGenerator;
 import ch.systemsx.sybit.crkwebui.client.commons.util.StyleGenerator;
+import ch.systemsx.sybit.crkwebui.server.files.downloader.servlets.FileDownloadServlet;
 import ch.systemsx.sybit.crkwebui.shared.model.ChainCluster;
 import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 import ch.systemsx.sybit.crkwebui.shared.model.UniProtRefWarning;
@@ -32,6 +35,8 @@ import ch.systemsx.sybit.crkwebui.shared.model.UniProtRefWarning;
 
 
 
+
+import com.google.gwt.core.client.GWT;
 //import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -47,11 +52,14 @@ import com.sencha.gxt.core.client.util.Margins;
 import com.sencha.gxt.widget.core.client.button.IconButton;
 import com.sencha.gxt.widget.core.client.button.IconButton.IconConfig;
 import com.sencha.gxt.widget.core.client.container.CssFloatLayoutContainer;
+import com.sencha.gxt.widget.core.client.container.SimpleContainer;
 import com.sencha.gxt.widget.core.client.event.SelectEvent;
 import com.sencha.gxt.widget.core.client.event.SelectEvent.SelectHandler;
 import com.sencha.gxt.widget.core.client.form.FieldSet;
 import com.sencha.gxt.widget.core.client.tips.ToolTip;
 import com.sencha.gxt.widget.core.client.tips.ToolTipConfig;
+
+import eppic.EppicParams;
 
 /**
  * Panel containing information about the sequences and their homologs.
@@ -306,8 +314,7 @@ public class SequenceInfoPanel extends FieldSet
 		nrHomologsLabel.addStyleName("eppic-action");
 		items.add(nrHomologsLabel);
 		
-		Image sequenceIcon = new Image("resources/icons/sequence_14.png");
-		sequenceIcon.getElement().<XElement>cast().applyStyles("verticalAlign:bottom;");
+		ImageWithTooltip sequenceIcon = new ImageWithTooltip("resources/icons/sequence_14.png", null, AppPropertiesManager.CONSTANTS.homologs_panel_chains_hint());
 		sequenceIcon.addClickHandler(new ClickHandler() {		
 			@Override
 			public void onClick(ClickEvent event) {
@@ -319,10 +326,9 @@ public class SequenceInfoPanel extends FieldSet
 			}
 			
 		});
-		items.add(sequenceIcon);
+		items.add(sequenceIcon);	
 		
-		Image homologsIcon = new Image("resources/icons/homologs_14.png");
-		homologsIcon.getElement().<XElement>cast().applyStyles("verticalAlign:bottom;");
+		ImageWithTooltip homologsIcon = new ImageWithTooltip("resources/icons/homologs_14.png", null, AppPropertiesManager.CONSTANTS.homologs_panel_nrhomologs_hint());
 		homologsIcon.addClickHandler(new ClickHandler() {	
 			@Override
 			public void onClick(ClickEvent event) {
@@ -334,56 +340,51 @@ public class SequenceInfoPanel extends FieldSet
 						nrHomologsLabel.getAbsoluteTop() + nrHomologsLabel.getElement().getClientHeight() + 10));
 			}
 		});
-		items.add(homologsIcon);
-		
-		/*Image similarStructuresIcon = new Image("resources/icons/related_14.png");
-		similarStructuresIcon.getElement().<XElement>cast().applyStyles("verticalAlign:bottom;");
-		similarStructuresIcon.addClickHandler(new ClickHandler() {	
-			@Override
-			public void onClick(ClickEvent event) {
-				Window.alert("showing similar structures");
-			}
-		});
-		items.add(similarStructuresIcon);*/
+		items.add(homologsIcon);		
 		
 		// we only add the search link if a precomputed entry & not null chain cluster & we have sequence clusters for it
 		if (precomputed && chainCluster!=null && chainCluster.getSeqCluster()!=null) {
-			items.add(createSearchSimilarStructuresIcon(chainCluster));
+			//Image similarStructuresImage = createSearchSimilarStructuresIcon(chainCluster);
+			ImageLinkWithTooltip similarStructuresImage = createSearchSimilarStructuresIcon(chainCluster);
+			items.add(similarStructuresImage);
 		}
-		
-		Image potatoIcon = new Image("resources/icons/potato_14.png");
-		potatoIcon.getElement().<XElement>cast().applyStyles("verticalAlign:bottom;");
-		potatoIcon.addClickHandler(new ClickHandler() {	
-			@Override
-			public void onClick(ClickEvent event) {
-				Window.alert("showing potato");
-			}
-		});
-		items.add(potatoIcon);
-		
-		
+		items.add(createPotatoImageLink(chainCluster, ApplicationContext.getPdbInfo().getJobId(), ApplicationContext.getPdbInfo()));
 
 		return items;
 	}
-
-	/*private EmptyLinkWithTooltip createSearchLink(final ChainCluster chainCluster) {
-		final EmptyLinkWithTooltip searchLink = 
-				new EmptyLinkWithTooltip(AppPropertiesManager.CONSTANTS.homologs_panel_search_text(),
-						AppPropertiesManager.CONSTANTS.homologs_panel_search_tip());
-
-		searchLink.addStyleName("eppic-action");
-		searchLink.getElement().<XElement>cast().applyStyles("marginLeft:5px");
-		searchLink.addClickHandler(new ClickHandler() {
-
-			@Override
-			public void onClick(ClickEvent event) {
-				History.newItem("searchPdb/"+chainCluster.getPdbCode() + "/" + chainCluster.getRepChain());
-			}
-		});
-		return searchLink;
-	}*/
 	
-	private Image createSearchSimilarStructuresIcon(final ChainCluster chainCluster) {
+	private ImageLinkWithTooltip createPotatoImageLink(ChainCluster chainCluster, String jobId, PdbInfo pdbInfo) {
+		
+		String repChainId = chainCluster.getRepChain();
+		//String pdbName = pdbInfo.getTruncatedInputName();
+		String downloadPseLink = GWT.getModuleBaseURL() + 
+				FileDownloadServlet.SERVLET_NAME + "?" +
+				FileDownloadServlet.PARAM_TYPE+"=" + FileDownloadServlet.TYPE_VALUE_ENTROPIESPSE+
+				"&"+FileDownloadServlet.PARAM_ID+"=" + jobId + 
+				"&"+FileDownloadServlet.PARAM_REP_CHAIN_ID+"=" + repChainId;
+		
+		String colorPseIconImgSrc = "resources/icons/potato_14.png";
+
+		ImageLinkWithTooltip potatoImage = new ImageLinkWithTooltip(colorPseIconImgSrc, 
+						14, 14, 
+						AppPropertiesManager.CONSTANTS.homologs_panel_entropiespse_hint(), 
+						downloadPseLink);
+		
+		return potatoImage;
+		
+	}
+
+	private ImageLinkWithTooltip createSearchSimilarStructuresIcon(final ChainCluster chainCluster) {
+		String url = "searchPdb/"+chainCluster.getPdbCode() + "/" + chainCluster.getRepChain();
+		ImageLinkWithTooltip imagelink = new ImageLinkWithTooltip("resources/icons/related_14.png", 
+				14, 14, 
+				AppPropertiesManager.CONSTANTS.homologs_panel_entropiespse_hint(), 
+				url);
+		return imagelink;
+	}
+	
+	//alternative implementation
+	/*private Image createSearchSimilarStructuresIcon(final ChainCluster chainCluster) {
 		Image similarStructuresIcon = new Image("resources/icons/related_14.png");
 		similarStructuresIcon.getElement().<XElement>cast().applyStyles("verticalAlign:bottom;");
 		similarStructuresIcon.addClickHandler(new ClickHandler() {	
@@ -393,7 +394,7 @@ public class SequenceInfoPanel extends FieldSet
 			}
 		});
 		return similarStructuresIcon;
-	}
+	}*/
 
 	private LabelWithTooltip createChainLink(final ChainCluster chainCluster) {
 		String chainStr = chainCluster.getRepChain();
