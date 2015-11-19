@@ -15,13 +15,10 @@ import javax.vecmath.Matrix4d;
 import javax.vecmath.Point3d;
 import javax.vecmath.Point3i;
 
-import org.biojava.nbio.structure.Atom;
-import org.biojava.nbio.structure.Calc;
 import org.biojava.nbio.structure.Chain;
 import org.biojava.nbio.structure.PDBCrystallographicInfo;
 import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.StructureException;
-import org.biojava.nbio.structure.StructureTools;
 import org.biojava.nbio.structure.contact.StructureInterface;
 import org.biojava.nbio.structure.contact.StructureInterfaceList;
 import org.biojava.nbio.structure.xtal.CrystalCell;
@@ -38,6 +35,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
+
+import eppic.commons.util.GeomTools;
 
 
 
@@ -176,14 +175,14 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 		if( globalReferencePoint ) {
 			// null is AU centroid
 			if( ! referencePoints.containsKey(null) ) {
-				Point3d globalCentroid = getCentroid(structure);
+				Point3d globalCentroid = GeomTools.getCentroid(structure);
 				referencePoints.put(null, globalCentroid);
 				return globalCentroid;
 			}
 			return referencePoints.get(null);
 		} else {
 			if( ! referencePoints.containsKey(chainId)) {
-				Point3d centroid = getCentroid(structure.getChainByPDB(chainId));
+				Point3d centroid = GeomTools.getCentroid(structure.getChainByPDB(chainId));
 				referencePoints.put(chainId,centroid);
 				return centroid;
 			}
@@ -268,26 +267,7 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 		return chainTransformations;
 	}
 
-	/**
-	 * Calculate the centroid for a chain
-	 * @param c
-	 * @return
-	 */
-	private static Point3d getCentroid(Chain c) {
-		Atom[] ca = StructureTools.getRepresentativeAtomArray(c);
-		Atom centroidAtom = Calc.getCentroid(ca);
-		return new Point3d(centroidAtom.getCoords());
-	}
-	/**
-	 * Calculate the centroid for a whole structure
-	 * @param c
-	 * @return
-	 */
-	private static Point3d getCentroid(Structure c) {
-		Atom[] ca = StructureTools.getRepresentativeAtomArray(c);
-		Atom centroidAtom = Calc.getCentroid(ca);
-		return new Point3d(centroidAtom.getCoords());
-	}
+
 
 	private void logGraph() {
 		logger.info("Found {} vertices and {} edges in unit cell", graph.vertexSet().size(), graph.edgeSet().size());

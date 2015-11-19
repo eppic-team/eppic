@@ -25,7 +25,6 @@ import org.biojava.nbio.structure.Group;
 import org.biojava.nbio.structure.PDBCrystallographicInfo;
 import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.StructureException;
-import org.biojava.nbio.structure.StructureTools;
 import org.biojava.nbio.structure.contact.Pair;
 import org.biojava.nbio.structure.contact.StructureInterface;
 import org.biojava.nbio.structure.io.FileConvert;
@@ -36,6 +35,8 @@ import org.biojava.nbio.structure.xtal.CrystalTransform;
 import org.jcolorbrewer.ColorBrewer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import eppic.commons.util.GeomTools;
 
 public class LatticeGraph3D extends LatticeGraph<ChainVertex3D,InterfaceEdge3D> {
 
@@ -78,7 +79,7 @@ public class LatticeGraph3D extends LatticeGraph<ChainVertex3D,InterfaceEdge3D> 
 		// Compute centroids in AU
 		chainCentroid = new HashMap<String,Point3d>();
 		for(Chain c: structure.getChains() ) {
-			chainCentroid.put(c.getChainID(), getCentroid(c));
+			chainCentroid.put(c.getChainID(), GeomTools.getCentroid(c));
 		}
 		
 		// Compute 3D layout
@@ -116,7 +117,7 @@ public class LatticeGraph3D extends LatticeGraph<ChainVertex3D,InterfaceEdge3D> 
 		// Compute centroids in AU
 		chainCentroid = new HashMap<String,Point3d>();
 		for(Chain c: structure.getChains() ) {
-			chainCentroid.put(c.getChainID(), getCentroid(c));
+			chainCentroid.put(c.getChainID(), GeomTools.getCentroid(c));
 		}
 		
 		// Compute 3D layout
@@ -127,18 +128,6 @@ public class LatticeGraph3D extends LatticeGraph<ChainVertex3D,InterfaceEdge3D> 
 		//assignColorsById();
 		assignColorsByEntity();
 	}
-
-	/**
-	 * Calculates the centroid in the asymmetric unit
-	 * @param c
-	 * @return
-	 */
-	private static Point3d getCentroid(Chain c) {
-		Atom[] ca = StructureTools.getRepresentativeAtomArray(c);
-		Atom centroidAtom = Calc.getCentroid(ca);
-		return new Point3d(centroidAtom.getCoords());
-	}
-
 
 	/**
 	 * Calculate vertex positions and colors

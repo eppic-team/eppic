@@ -13,25 +13,30 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.zip.GZIPOutputStream;
+
+import javax.vecmath.Point3d;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.biojava.nbio.core.sequence.io.util.IOUtils;
+import org.biojava.nbio.structure.Atom;
 import org.biojava.nbio.structure.Chain;
 import org.biojava.nbio.structure.Compound;
 import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.StructureException;
 import org.biojava.nbio.structure.StructureIO;
+import org.biojava.nbio.structure.StructureTools;
 import org.biojava.nbio.structure.align.util.AtomCache;
 import org.biojava.nbio.structure.contact.StructureInterface;
 import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
 import org.biojava.nbio.structure.contact.StructureInterfaceList;
 import org.biojava.nbio.structure.io.FileParsingParameters;
-import org.biojava.nbio.structure.io.LocalPDBDirectory.FetchBehavior;
 import org.biojava.nbio.structure.io.PDBFileParser;
 import org.biojava.nbio.structure.io.mmcif.ChemCompGroupFactory;
 import org.biojava.nbio.structure.io.mmcif.DownloadChemCompProvider;
@@ -49,10 +54,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import eppic.assembly.Assembly;
+import eppic.assembly.ChainVertex;
+import eppic.assembly.ChainVertex3D;
 import eppic.assembly.CrystalAssemblies;
 import eppic.assembly.LatticeGraph3D;
 import eppic.assembly.gui.LatticeGUIJGraph;
+import eppic.assembly.gui.StereographicLayout.VertexPositioner;
 import eppic.commons.util.FileTypeGuesser;
+import eppic.commons.util.GeomTools;
 import eppic.commons.util.Goodies;
 import eppic.predictors.CombinedClusterPredictor;
 import eppic.predictors.CombinedPredictor;
@@ -166,7 +175,7 @@ public class Main {
 								
 				cache.setUseMmCif(true);
 				// we set default fetch behavior to FETCH_IF_OUTDATED which is the closest to rsync
-				cache.setFetchBehavior(FetchBehavior.FETCH_IF_OUTDATED);
+				//cache.setFetchBehavior(FetchBehavior.FETCH_IF_OUTDATED);
 				FileParsingParameters fileParsingParams = new FileParsingParameters();
 				fileParsingParams.setAlignSeqRes(true);
 				fileParsingParams.setParseBioAssembly(true);
@@ -697,13 +706,34 @@ public class Main {
 					}
 					latticeGraph.filterEngagedClusters(clusterIds);
 					
-					// Extract connected components
+					// Filter down to unique stoichiometry
+					//TODO
 					
-					// Prevent wrapped edges
 					
-					// Recenter
+					// Position chains at origin towards z axis
+					List<List<ChainVertex>> positions = a.getStructureCentered();
+					// We have a problem mapping the positions of the transformed chains
+					// back to the original vertices (ChainVertex objects are created anew).
+					// For now, use the vertex's string representation as a key, assuming uniqueness
+					final Map<String,Point3d> centroids = computeCentroidsAgain(positions);
+					// Create a vertex positioner based on the centroids
+					VertexPositioner<ChainVertex3D> positioner = new VertexPositioner<ChainVertex3D>() {
+						@Override
+						public Point3d getPosition(ChainVertex3D vertex) {
+							String key = vertex.toString();
+							Point3d centroid = centroids.get(key);
+							if(centroid == null) {
+								LOGGER.error("Unable to match vertex {} to a 3D position",key);
+								// Use point towards zenith, which maps to infinity
+								centroid = new Point3d(0,0,1);
+							}
+							return centroid;
+						}
+					};
 					
+					// Steriographic projection
 					LatticeGUIJGraph gui = new LatticeGUIJGraph(latticeGraph.getGraph());
+					gui.stereographicLayout(new Point3d(0,0,0),new Point3d(0,0,1),positioner);
 					gui.writePNG(outputFile);
 				}
 			}
@@ -754,6 +784,33 @@ public class Main {
 //		}
 //	}
 	
+	/**
+	 * Compute centroids for the Chains and store as a map: chainId_opId -> centroid.
+	 * 
+	 * These should be available elsewhere already, but for now it's easier to 
+	 * recompute than to pass them along. (TODO)
+	 * @param positions list of vertices with pre-transformed chains
+	 * @return A map between chain/op ids and the centroid
+	 */
+	private Map<String, Point3d> computeCentroidsAgain(
+			List<List<ChainVertex>> positions) {
+		Map<String, Point3d> map = new HashMap<String, Point3d>();
+		for(List<ChainVertex> complex:positions) {
+			for(ChainVertex vert : complex) {
+				String ident = vert.toString();
+				Atom[] atoms = StructureTools.getRepresentativeAtomArray(vert.getChain());
+				Point3d centroid = GeomTools.getCentroid(vert.getChain());
+				if(map.containsKey(ident)) {
+					LOGGER.error("Vertices have non-unique mapping ({}). Layout will fail.",ident);
+				}
+				map.put(ident, centroid);
+			}
+		}
+		return map;
+	}
+
+
+
 	public void doWritePymolFiles() throws EppicException {
 		
 		if (!params.isGenerateThumbnails()) return;

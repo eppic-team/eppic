@@ -8,6 +8,7 @@ import org.biojava.nbio.structure.Chain;
 
 import eppic.assembly.gui.LatticeGUI3Dmol;
 import eppic.assembly.gui.LatticeGUIJmol;
+import eppic.assembly.gui.StereographicLayout.VertexPositioner;
 
 /**
  * ChainVertex, extended with properties for 3D display.
@@ -83,6 +84,26 @@ public class ChainVertex3D extends ChainVertex {
 	public boolean equals(Object obj) {
 		return super.equals(obj);
 	}
-	
 
+	/**
+	 * Abstraction for how to get the 3D position of this vertex
+	 */
+	protected static class ChainVertex3DPositioner implements VertexPositioner<ChainVertex3D> {
+		@Override
+		public Point3d getPosition(ChainVertex3D vertex) {
+			return vertex.getCenter();
+		}
+	};
+	private static ChainVertex3DPositioner positioner = null; // Singleton
+	/**
+	 * Get a singleton VertexPositioner object for this class.
+	 * It returns {@link #getCenter()} for each vertex
+	 * @return
+	 */
+	public static VertexPositioner<ChainVertex3D> getVertexPositioner() {
+		if(positioner == null) {
+			positioner = new ChainVertex3DPositioner();
+		}
+		return positioner;
+	}
 }

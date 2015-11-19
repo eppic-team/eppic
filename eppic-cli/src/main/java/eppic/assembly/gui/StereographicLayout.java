@@ -17,25 +17,46 @@ import com.mxgraph.layout.mxGraphLayout;
 import com.mxgraph.model.mxICell;
 import com.mxgraph.model.mxIGraphModel;
 
-import eppic.assembly.ChainVertex3D;
-import eppic.assembly.InterfaceEdge3D;
 import eppic.commons.util.GeomTools;
 
-public class StereographicLayout extends mxGraphLayout {
+/**
+ * Layout vertices based on a steriographic projection of their 3D positions.
+ * 
+ * Positions are specified for each vertex by creating a VertexPositioner instance.
+ * These 3D points are first spherically projected onto a unit sphere defined by
+ * the center and zenith points. Then, points are projected from the zenith onto
+ * the equitorial plane. Points too close to the zenith (as defined by maxRadius)
+ * will be shuttled to one of the corners of the layout box.
+ * @author Spencer Bliven
+ *
+ * @param <V> Vertex type
+ * @param <E> Edge type
+ */
+public class StereographicLayout<V,E> extends mxGraphLayout {
+	
+	public static interface VertexPositioner<V> {
+		Point3d getPosition(V vertex);
+	}
+	
+	
 	private static final Logger logger = LoggerFactory.getLogger(StereographicLayout.class);
 	
-	private final JGraphXAdapter<ChainVertex3D, InterfaceEdge3D> jgraph;
+	private final JGraphXAdapter<V, E> jgraph;
 	private Point3d center;
 	private Point3d zenith;
+	
+	private VertexPositioner<V> vertexPositioner;
+	
 	private int maxWidth = 500;
 	private int maxHeight = 500;
 	private int maxRadius = 4;
-	public StereographicLayout(JGraphXAdapter<ChainVertex3D, InterfaceEdge3D> graph,
+	public StereographicLayout(JGraphXAdapter<V, E> graph, VertexPositioner<V> positioner,
 			Point3d center, Point3d zenith ) {
 		super(graph);
 		this.jgraph = graph;
 		this.center = center;
 		this.zenith = zenith;
+		this.vertexPositioner = positioner;
 	}
 
 	@Override
@@ -54,16 +75,16 @@ public class StereographicLayout extends mxGraphLayout {
 			
 			int childCount = model.getChildCount(parent);
 
-			HashMap<mxICell, ChainVertex3D> cell2Vert = jgraph.getCellToVertexMap();
-
+			HashMap<mxICell, V> cell2Vert = jgraph.getCellToVertexMap();
+			
 			for (int i = 0; i < childCount; i++) {
 				Object cell = model.getChildAt(parent, i);
 
 				if (!isVertexIgnored(cell)) {
 					if( isVertexMovable(cell) ) {
-						ChainVertex3D vert = cell2Vert.get(cell);
+						V vert = cell2Vert.get(cell);
 						if( vert != null ) {
-							Point3d pos = vert.getCenter();
+							Point3d pos = vertexPositioner.getPosition(vert);
 							// Project onto the sphere
 							Point3d angles = sphericalCoord(pos, center, zenith);
 							Point2d stereo = stereographicProjection(angles, maxRadius);
@@ -190,6 +211,42 @@ public class StereographicLayout extends mxGraphLayout {
 		double azimuthAng = Math.atan2(newPos.y, newPos.x);
 		
 		return new Point3d(r,azimuthAng,zenithAng);
+	}
+
+	public int getMaxWidth() {
+		return maxWidth;
+	}
+
+	public void setMaxWidth(int maxWidth) {
+		this.maxWidth = maxWidth;
+	}
+
+	public int getMaxHeight() {
+		return maxHeight;
+	}
+
+	public void setMaxHeight(int maxHeight) {
+		this.maxHeight = maxHeight;
+	}
+
+	public int getMaxRadius() {
+		return maxRadius;
+	}
+
+	public void setMaxRadius(int maxRadius) {
+		this.maxRadius = maxRadius;
+	}
+
+	public Point3d getCenter() {
+		return center;
+	}
+
+	public Point3d getZenith() {
+		return zenith;
+	}
+
+	public VertexPositioner<V> getVertexPositioner() {
+		return vertexPositioner;
 	}
 	
 }

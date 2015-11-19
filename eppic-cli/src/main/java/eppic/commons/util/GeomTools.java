@@ -1,9 +1,19 @@
 package eppic.commons.util;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import javax.vecmath.Matrix3d;
 import javax.vecmath.Matrix4d;
 import javax.vecmath.Point3d;
 import javax.vecmath.Vector3d;
+
+import org.biojava.nbio.structure.Atom;
+import org.biojava.nbio.structure.Calc;
+import org.biojava.nbio.structure.Chain;
+import org.biojava.nbio.structure.Structure;
+import org.biojava.nbio.structure.StructureTools;
 
 /**
  * Helper functions for geometric calculations
@@ -174,5 +184,41 @@ public class GeomTools {
 				ortho.m21, ortho.m22, ortho.m20, center.z,
 				0,0,0,1 );
 		return mat;
+	}
+	
+	/**
+	 * Calculate the centroid for a chain
+	 * @param c Chain
+	 * @return centroid for all representative atoms
+	 */
+	public static Point3d getCentroid(Chain c) {
+		Atom[] ca = StructureTools.getRepresentativeAtomArray(c);
+		Atom centroidAtom = Calc.getCentroid(ca);
+		return new Point3d(centroidAtom.getCoords());
+	}
+	/**
+	 * Calculate the centroid for a whole structure
+	 * @param s
+	 * @return centroid for all representative atoms
+	 */
+	public static Point3d getCentroid(Structure s) {
+		Atom[] ca = StructureTools.getRepresentativeAtomArray(s);
+		Atom centroidAtom = Calc.getCentroid(ca);
+		return new Point3d(centroidAtom.getCoords());
+	}
+	
+	/**
+	 * Calculate the centroid for a list of chains
+	 * @param chains
+	 * @return centroid for all representative atoms
+	 */
+	public static Point3d getCentroid(List<Chain> chains) {
+		List<Atom> atoms = new ArrayList<>();
+		for(Chain c : chains) {
+			Atom[] ca = StructureTools.getRepresentativeAtomArray(c);
+			Collections.addAll(atoms, ca);
+		}
+		Atom centroidAtom = Calc.getCentroid(atoms.toArray(new Atom[atoms.size()]));
+		return new Point3d(centroidAtom.getCoords());
 	}
 }

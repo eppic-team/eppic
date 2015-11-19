@@ -35,7 +35,6 @@ import org.biojava.nbio.structure.Calc;
 import org.biojava.nbio.structure.Chain;
 import org.biojava.nbio.structure.Compound;
 import org.biojava.nbio.structure.Group;
-import org.biojava.nbio.structure.GroupType;
 import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.StructureException;
 import org.biojava.nbio.structure.StructureTools;
@@ -819,17 +818,15 @@ public class Assembly {
 		if(pointgroup.getOrder() < 1) {
 			// Failed?
 			logger.warn("Error finding point group for complex containing {}",cc.vertexSet().iterator().next());
-			Vector3d centroid = new Vector3d();
-			int n = 0;
+			
+			// Find centroid
+			List<Chain> chainList = new ArrayList<Chain>(cc.vertexSet().size());
 			for(ChainVertex vert : cc.vertexSet()) {
-				for(Group g: vert.getChain().getAtomGroups(GroupType.AMINOACID) ) {
-					for(Atom a : g.getAtoms()) {
-						centroid.add(new Point3d(a.getCoords()));
-						n++;
-					}
-				}
+				chainList.add(vert.getChain());
 			}
-			centroid.scale(1./n);
+			Vector3d centroid = new Vector3d(GeomTools.getCentroid(chainList));
+
+			// Translate centroid to origin
 			centroid.negate();
 			transformation = GeomTools.getIdentityMatrix();
 			transformation.setTranslation(centroid);
@@ -986,6 +983,28 @@ public class Assembly {
 			chains.add(new ChainVertex(chain,v.getOpId()));
 		}
 		return chains;
+	}
+	private static void transformChainsInPlace(Map<ChainVertex, Point3i> placements,
+			Structure structure, LatticeGraph<ChainVertex, InterfaceEdge> latticeGraph,
+			CrystalCell cell)
+					throws StructureException
+	{
+		for(Entry<ChainVertex, Point3i> entry : placements.entrySet()) {
+			ChainVertex v = entry.getKey();
+
+			// transformation to 0,0,0 cell
+			Matrix4d m = latticeGraph.getUnitCellTransformationOrthonormal(v.getChainId(), v.getOpId());
+
+			// add translation
+			Point3i placement = entry.getValue();
+			Vector3d trans = new Vector3d(placement.x,placement.y,placement.z);
+			cell.transfToOrthonormal(trans);
+			Matrix4d transmat = new Matrix4d();
+			transmat.set(1., trans);
+			transmat.mul(m);
+
+			Calc.transform(v.getChain(), transmat);
+		}
 	}
 
 	/**

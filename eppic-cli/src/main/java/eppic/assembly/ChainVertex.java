@@ -51,7 +51,7 @@ public class ChainVertex {
 	
 	@Override
 	public String toString() {
-		return getChainId()+opId;
+		return getChainId()+"_"+opId;
 	}
 	/**
 	 * Hash key based on chain and op

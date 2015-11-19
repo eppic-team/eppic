@@ -49,10 +49,10 @@ import com.mxgraph.model.mxICell;
 import com.mxgraph.swing.mxGraphComponent;
 import com.mxgraph.util.mxConstants;
 
-import eppic.assembly.Assembly;
 import eppic.assembly.ChainVertex3D;
 import eppic.assembly.InterfaceEdge3D;
 import eppic.assembly.LatticeGraph3D;
+import eppic.assembly.gui.StereographicLayout.VertexPositioner;
 
 /**
  * 
@@ -257,14 +257,22 @@ public class LatticeGUIJGraph {
 	}
 	
 	public void stereographicLayout(Point3d center, Point3d zenith) {
-		stereographicLayout(getView(),center,zenith);
+		stereographicLayout(getView(),center,zenith,ChainVertex3D.getVertexPositioner());
+		layedOut = true;
+	}
+	public void stereographicLayout(Point3d center, Point3d zenith,VertexPositioner<ChainVertex3D> positioner) {
+		stereographicLayout(getView(),center,zenith,positioner);
 		layedOut = true;
 	}
 	private static void stereographicLayout(JGraphXAdapter<ChainVertex3D, InterfaceEdge3D> jgraph,
-			Point3d center, Point3d zenith) {
-		final StereographicLayout layout = new StereographicLayout(jgraph,
-				center, zenith);
+			Point3d center, Point3d zenith, VertexPositioner<ChainVertex3D> positioner) {
+		final StereographicLayout<ChainVertex3D, InterfaceEdge3D> layout =
+				new StereographicLayout<ChainVertex3D, InterfaceEdge3D>(
+						jgraph,positioner,center, zenith);
 		layout.execute(jgraph.getDefaultParent());
+		final ConnectedComponentLayout<ChainVertex3D, InterfaceEdge3D> layout2 = 
+				new ConnectedComponentLayout<ChainVertex3D, InterfaceEdge3D>(jgraph);
+		layout2.execute(jgraph.getDefaultParent());
 	}
 
 
