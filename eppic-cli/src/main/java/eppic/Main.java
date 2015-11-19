@@ -50,6 +50,8 @@ import org.biojava.nbio.structure.symmetry.core.QuatSymmetryParameters;
 import org.biojava.nbio.structure.symmetry.core.QuatSymmetryResults;
 import org.biojava.nbio.structure.xtal.CrystalBuilder;
 import org.biojava.nbio.structure.xtal.SpaceGroup;
+import org.jgrapht.graph.MaskFunctor;
+import org.jgrapht.graph.UndirectedMaskSubgraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,6 +59,7 @@ import eppic.assembly.Assembly;
 import eppic.assembly.ChainVertex;
 import eppic.assembly.ChainVertex3D;
 import eppic.assembly.CrystalAssemblies;
+import eppic.assembly.InterfaceEdge3D;
 import eppic.assembly.LatticeGraph3D;
 import eppic.assembly.gui.LatticeGUIJGraph;
 import eppic.assembly.gui.StereographicLayout.VertexPositioner;
@@ -706,16 +709,29 @@ public class Main {
 					}
 					latticeGraph.filterEngagedClusters(clusterIds);
 					
-					// Filter down to unique stoichiometry
-					//TODO
-					
-					
 					// Position chains at origin towards z axis
 					List<List<ChainVertex>> positions = a.getStructureCentered();
 					// We have a problem mapping the positions of the transformed chains
 					// back to the original vertices (ChainVertex objects are created anew).
 					// For now, use the vertex's string representation as a key, assuming uniqueness
 					final Map<String,Point3d> centroids = computeCentroidsAgain(positions);
+
+					// Filter down to unique stoichiometry
+					MaskFunctor<ChainVertex3D, InterfaceEdge3D> mask = new MaskFunctor<ChainVertex3D, InterfaceEdge3D>() {
+						@Override
+						public boolean isEdgeMasked(InterfaceEdge3D edge) {
+							return false;
+						}
+
+						@Override
+						public boolean isVertexMasked(ChainVertex3D vertex) {
+							return !centroids.containsKey(vertex.toString());
+						}
+						
+					};
+					UndirectedMaskSubgraph<ChainVertex3D, InterfaceEdge3D> filtered = new UndirectedMaskSubgraph<>(latticeGraph.getGraph(), mask);
+					
+					
 					// Create a vertex positioner based on the centroids
 					VertexPositioner<ChainVertex3D> positioner = new VertexPositioner<ChainVertex3D>() {
 						@Override
@@ -732,7 +748,7 @@ public class Main {
 					};
 					
 					// Steriographic projection
-					LatticeGUIJGraph gui = new LatticeGUIJGraph(latticeGraph.getGraph());
+					LatticeGUIJGraph gui = new LatticeGUIJGraph(filtered);
 					gui.stereographicLayout(new Point3d(0,0,0),new Point3d(0,0,1),positioner);
 					gui.writePNG(outputFile);
 				}
