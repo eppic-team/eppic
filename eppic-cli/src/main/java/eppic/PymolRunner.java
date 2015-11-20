@@ -22,7 +22,7 @@ import eppic.assembly.Stoichiometry;
 
 public class PymolRunner {
 	
-	private static final String DEF_TN_STYLE = "cartoon";
+	private static final String DEF_TN_STYLE = "ribbon";
 	private static final String DEF_TN_BG_COLOR = "white";
 	private static final int[] DEF_TN_HEIGHTS = {75};
 	private static final int[] DEF_TN_WIDTHS = {75};
@@ -97,6 +97,14 @@ public class PymolRunner {
 		
 		pymolScriptBuilder.append("as "+DEF_TN_STYLE+";");
 		
+		if(DEF_TN_STYLE.equalsIgnoreCase("ribbon")) {
+			pymolScriptBuilder.append("set ribbon_radius, 2;");
+			pymolScriptBuilder.append("set dash_length, 100;");
+			pymolScriptBuilder.append("set dash_radius, 2;");
+			pymolScriptBuilder.append("set ray_trace_gain, 0;");
+			pymolScriptBuilder.append("set ray_trace_disco_factor, 1;");
+		}
+		
 		// TODO do we need to check something before issuing the cofactors command???
 		//if (interf.hasCofactors()) {
 		pymolScriptBuilder.append("show sticks, org;");
@@ -108,6 +116,12 @@ public class PymolRunner {
 		pymolScriptBuilder.append("set ray_opaque_background, off;");
 		
 		for (int i=0;i<DEF_TN_HEIGHTS.length;i++) {
+			if(DEF_TN_HEIGHTS[i]>=200 && DEF_TN_WIDTHS[i]>=200) {
+				pymolScriptBuilder.append("set ray_trace_mode, 3;");
+			} else {
+				pymolScriptBuilder.append("set ray_trace_mode, 0;");
+			}
+
 			pymolScriptBuilder.append("viewport "+DEF_TN_HEIGHTS[i]+","+DEF_TN_WIDTHS[i] + ";");
 
 			pymolScriptBuilder.append("ray;");
@@ -173,13 +187,22 @@ public class PymolRunner {
 
 		//pymolScriptBuilder.append("orient;");
 		// Orient to Z axis, since coordinates are pre-transformed
-		pymolScriptBuilder.append("set_view (1,0,0, 0,1,0, 0,0,1, 0,0,-1000, 0,0,0, 500,1500, -20); zoom;");
+		pymolScriptBuilder.append("set_view (1,0,0, 0,1,0, 0,0,1, 0,0,-1000, 0,0,0, 500,1500, -20);");
+		pymolScriptBuilder.append("zoom all, complete=1, buffer=5;");
 
 		pymolScriptBuilder.append("remove solvent;");
 
 		pymolScriptBuilder.append("bg "+DEF_TN_BG_COLOR+";");
 
 		pymolScriptBuilder.append("as "+DEF_TN_STYLE+";");
+
+		if(DEF_TN_STYLE.equalsIgnoreCase("ribbon")) {
+			pymolScriptBuilder.append("set ribbon_radius, 2;");
+			pymolScriptBuilder.append("set dash_length, 100;");
+			pymolScriptBuilder.append("set dash_radius, 2;");
+			pymolScriptBuilder.append("set ray_trace_gain, 0;");
+			pymolScriptBuilder.append("set ray_trace_disco_factor, 1;");
+		}
 
 
 		for (int i=0;i<chains.size();i++) {
@@ -189,6 +212,11 @@ public class PymolRunner {
 		pymolScriptBuilder.append("set ray_opaque_background, off;");
 
 		for (int j=0;j<DEF_TN_HEIGHTS.length;j++) {
+			if(DEF_TN_HEIGHTS[j]>=200 && DEF_TN_WIDTHS[j]>=200) {
+				pymolScriptBuilder.append("set ray_trace_mode, 3;");
+			} else {
+				pymolScriptBuilder.append("set ray_trace_mode, 0;");
+			}
 			pymolScriptBuilder.append("viewport "+DEF_TN_HEIGHTS[j]+","+DEF_TN_WIDTHS[j] + ";");
 
 			pymolScriptBuilder.append("ray;");
