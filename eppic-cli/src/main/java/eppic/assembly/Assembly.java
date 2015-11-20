@@ -1108,7 +1108,7 @@ public class Assembly {
 			// Traverse connected component
 			placements.put(root, rootCell);
 			unprocessed.remove(root);
-			logger.info("Placing {} at {}",root,rootCell);
+			logger.debug("Placing {} at {}",root,rootCell);
 			BreadthFirstIterator<V,E> it = new BreadthFirstIterator<V,E>(graph,root);
 			it.addTraversalListener(new TraversalListener<V, E>() {
 				@Override
@@ -1136,7 +1136,7 @@ public class Assembly {
 						tPlacement.add(xtalTrans);
 						placements.put(t,tPlacement);
 						unprocessed.remove(t);
-						logger.info("Placing {} at {}",t,tPlacement);
+						logger.debug("Placing {} at {}",t,tPlacement);
 					} else if( placements.containsKey(t)){
 						Point3i tPlacement = placements.get(t);
 						Point3i xtalTrans = edge.getXtalTrans();
@@ -1144,7 +1144,7 @@ public class Assembly {
 						sPlacement.sub(xtalTrans);
 						placements.put(s, sPlacement);
 						unprocessed.remove(s);
-						logger.info("Placing {} at {}",s,sPlacement);
+						logger.debug("Placing {} at {}",s,sPlacement);
 					} else {
 						// Forbidden by BFS contract
 						logger.error("Traversed {} from {} to {}, but neither is positioned yet.",edge,s,t);

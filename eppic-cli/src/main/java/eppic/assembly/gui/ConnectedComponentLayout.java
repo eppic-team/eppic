@@ -36,37 +36,34 @@ import eppic.assembly.BinaryBinPacker;
  */
 public class ConnectedComponentLayout<V,E> extends mxGraphLayout {
 	private static final Logger logger = LoggerFactory.getLogger(ConnectedComponentLayout.class);
-	private final JGraphXAdapter<V, E> jgraph;
 
 	private int padding; // units to leave around each component
 	public ConnectedComponentLayout(JGraphXAdapter<V, E> graph) {
 		super(graph);
-		
-		jgraph = graph;
+
 		padding = 10;
 	}
-	
+
 	@Override
 	public void execute(Object parent) {
 		mxIGraphModel model = graph.getModel();
-		
+
 		model.beginUpdate();
 		try {
-			//HashMap<mxICell, V> vertexMap = jgraph.getCellToVertexMap();
-			
+
 			// Get bounding boxes
 			Map<List<Object>,Rectangle> bounds = getConnectedComponentBounds(parent, model);
-			
-			if(logger.isInfoEnabled()) {
+
+			if(logger.isDebugEnabled()) {
 				for( List<Object> cc : bounds.keySet()) {
-					logger.info("Rectangle {} contains the following cells:",bounds.get(cc));
+					logger.debug("Rectangle {} contains the following cells:",bounds.get(cc));
 					for(Object cell : cc) {
 						Object val = model.getValue(cell);
-						logger.info("    ({}) {}",val.getClass().getSimpleName(),val);
+						logger.debug("    ({}) {}",val.getClass().getSimpleName(),val);
 					}
 				}
 			}
-			
+
 			// Pack it
 			List<Entry<Dimension2D, List<Object>>> boxes = new ArrayList<>(bounds.size());
 			for( Entry<List<Object>, Rectangle> entry:bounds.entrySet()) {
@@ -77,7 +74,7 @@ public class ConnectedComponentLayout<V,E> extends mxGraphLayout {
 			BinaryBinPacker<List<Object>> packer = new BinaryBinPacker<>(boxes);
 			Rectangle2D fullBounds = packer.getBounds();
 			List<Entry<List<Object>, Rectangle2D>> placements = packer.getPlacements();
-			
+
 			// Transform each connected component
 			for( Entry<List<Object>, Rectangle2D> entry : placements) {
 				List<Object> cc = entry.getKey();
@@ -86,7 +83,7 @@ public class ConnectedComponentLayout<V,E> extends mxGraphLayout {
 				double dx = finalPlace.getX() - fullBounds.getX() + padding - originalPlace.getX();
 				double dy = finalPlace.getY() - fullBounds.getY() + padding - originalPlace.getY();
 				for(Object cell : cc) {
-					
+
 					if(!isVertexIgnored(cell) && isVertexMovable(cell) ) {
 						mxGeometry geom = model.getGeometry(cell);
 						setVertexLocation(cell, geom.getX()+dx, geom.getY()+dy);
@@ -110,36 +107,36 @@ public class ConnectedComponentLayout<V,E> extends mxGraphLayout {
 	private static Map<List<Object>, Rectangle> getConnectedComponentBounds(Object parent,
 			mxIGraphModel model) {
 		Map<List<Object>, Rectangle> bounds = new HashMap<>();
-		
+
 		// Values are a list of all connected components
 		// Each element of the list should be a key to the list
 		Map<Object,List<Object>> connected = new HashMap<>();
 		for(int i=0,childcount=model.getChildCount(parent);i<childcount;i++) {
 			Object cell = model.getChildAt(parent, i);
 
-//				logger.info("Cell ({}): {}",cell.getClass(),cell);
-//				logger.info("Type: {}",model.isVertex(cell)?"vertex":(model.isEdge(cell)?"edge":"other"));
-//				logger.info("Children: {}",model.getChildCount(cell));
-//				logger.info("Edges: {}",model.getEdgeCount(cell));
-//				logger.info("Value ({}): {}",model.getValue(cell).getClass(),model.getValue(cell));
+			//				logger.info("Cell ({}): {}",cell.getClass(),cell);
+			//				logger.info("Type: {}",model.isVertex(cell)?"vertex":(model.isEdge(cell)?"edge":"other"));
+			//				logger.info("Children: {}",model.getChildCount(cell));
+			//				logger.info("Edges: {}",model.getEdgeCount(cell));
+			//				logger.info("Value ({}): {}",model.getValue(cell).getClass(),model.getValue(cell));
 
 			if(connected.containsKey(cell)) {
 				// cell was already processed as a connected component
 				continue;
 			}
-			
+
 			// New connected component
 			List<Object> cc = new LinkedList<Object>();
 			Queue<Object> children = new LinkedList<Object>();
 			children.add(cell);
-			
-//				Rectangle bound = geom.getRectangle();
+
+			//				Rectangle bound = geom.getRectangle();
 			Rectangle bound = new Rectangle(-1,-1);
 			if(model.isVertex(cell)||model.isEdge(cell)) {
 				mxGeometry geom = model.getGeometry(cell);
 				bound = geom.getRectangle();
 			}
-			
+
 			while(!children.isEmpty()) {
 				// pop next child
 				Object child = children.remove();
