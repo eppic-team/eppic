@@ -855,7 +855,7 @@ public class Assembly {
 				otheraxis = null;
 				for(Vector3d o : sortedAxes.values()) {
 					o.normalize();
-					if( Math.abs(o.dot(normal)) < 1 ) {
+					if( Math.abs(o.dot(normal)) < 1 - 1e-6 ) {
 						otheraxis = o;
 						break;
 					}
