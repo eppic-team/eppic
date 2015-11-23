@@ -914,8 +914,8 @@ public class Assembly {
 		Character chain = 'A';
 
 		for (ChainVertex vert : vertices ){
-			Atom[] atoms = StructureTools.getRepresentativeAtomArray(vert.getChain());
-			caCoords.add(Calc.atomsToPoints(atoms));
+			Point3d centroid = GeomTools.getCentroid(vert.getChain());
+			caCoords.add(new Point3d[] {centroid});
 
 			if (vertices.size() % fold == 0){
 				folds.add(fold); //the folds are the common denominators
