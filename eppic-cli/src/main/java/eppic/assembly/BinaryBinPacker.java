@@ -60,47 +60,6 @@ public class BinaryBinPacker<T> {
 	private static final Logger logger = LoggerFactory.getLogger(BinaryBinPacker.class);
 
 	/**
-	 * Double implementation of Dimension2D, which is oddly omitted from java.awt.geom
-	 */
-	public class Dimension2DDouble extends Dimension2D {
-		private double width;
-		private double height;
-		public Dimension2DDouble() {
-			this(0.,0.);
-		}
-		public Dimension2DDouble(double w, double h) {
-			setSize(w,h);
-		}
-		public Dimension2DDouble(Dimension2D dim) {
-			this(dim.getWidth(),dim.getHeight());
-		}
-		@Override
-		public void setSize(double width, double height) {
-			this.width = width;
-			this.height = height;
-		}
-		@Override
-		public double getWidth() {
-			return width;
-		}
-		public void setWidth(Double width) {
-			this.width = width;
-		}
-		@Override
-		public double getHeight() {
-			return height;
-		}
-		public void setHeight(double height) {
-			this.height = height;
-		}
-		@Override
-		public String toString() {
-			return "Dimension2DDouble [width=" + width + ", height=" + height
-					+ "]";
-		}
-	}
-
-	/**
 	 * Node in the tree of containers. Bins can have an optional contents, which
 	 * is assumed to be in the top-left corner, and up to two children.
 	 * The bin's contents extend to the right child along the x and to the down
@@ -289,9 +248,9 @@ public class BinaryBinPacker<T> {
 	 */
 	private Bin growNode(Dimension2D box) {
 		// Calculate dimensions of new container for vertical or horizontal layout
-		Dimension2D vertical = new Dimension2DDouble(Math.max(root.bounds.getWidth(),box.getWidth()),
+		Dimension2D vertical = new eppic.assembly.Dimension2D.Double(Math.max(root.bounds.getWidth(),box.getWidth()),
 				root.bounds.getHeight()+box.getHeight());
-		Dimension2D horizontal = new Dimension2DDouble( root.bounds.getWidth()+box.getWidth(),
+		Dimension2D horizontal = new eppic.assembly.Dimension2D.Double( root.bounds.getWidth()+box.getWidth(),
 				Math.max(root.bounds.getHeight(),box.getHeight()));
 		// Use whichever is closer to square
 		boolean useHorizontal = Math.abs( vertical.getWidth()-vertical.getHeight() ) > 
