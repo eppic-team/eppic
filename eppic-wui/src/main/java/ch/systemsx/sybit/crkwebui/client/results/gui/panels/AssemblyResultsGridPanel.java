@@ -231,16 +231,6 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 		return numInterfacesColumn; 
 	}	
 	
-	/*private SummaryColumnConfig<AssemblyItemModel, String> getDetailsColumn() {
-		SummaryColumnConfig<AssemblyItemModel, String> column = 
-				//new SummaryColumnConfig<AssemblyItemModel, String>(props.identifier());
-				new SummaryColumnConfig<AssemblyItemModel, String>(props.detailsButtonText()); 
-		column.setCell(new InterfacesButtonCell());
-		fillColumnSettings(column, "details"); 
-		column.setResizable(false);
-		column.setSortable(false);
-		return column; 
-	}*/
 	
 	
 	private SummaryColumnConfig<AssemblyItemModel, String> getSymmetryColumn() {
@@ -354,14 +344,7 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 		};
 		
 		new QuickTip(resultsGrid);
-		// Since upgrade to GXT 3.1, the "blank tooltip" issue is gone (see CRK-148 in jira 
-		// and http://www.sencha.com/forum/showthread.php?194571-Use-of-QuickTip-leads-to-empty-tooltips)
-		// Thus the code below (needed to fix the issue in 3.0.1) is not needed anymore
-		//QuickTip gridQT = new QuickTip(resultsGrid);
-		//Bug-Fix in GXt 3.0.1
-		//To fix the issue of blank Tooltips we set the delay
-		//gridQT.setQuickShowInterval(0);
-		//gridQT.getToolTipConfig().setShowDelay(0);
+
 		
 		return resultsGrid;
 	}
@@ -424,20 +407,6 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 		resultsGrid.getView().refresh(true);
 	}
 	
-	/**
-	 * 
-	 */
-	/*private void onClustersRadioValueChange(boolean value){
-		if (value) {
-			clustersView.groupBy(clusterIdColumn);
-		} else{
-			clustersView.groupBy(null);
-			resultsStore.addSortInfo(0, new StoreSortInfo<AssemblyItemModel>(props.interfaceId(), SortDir.ASC));
-			//Hide cluster id column
-			resultsGrid.getColumnModel().getColumn(0).setHidden(true);
-			resultsGrid.getView().refresh(true);
-		}
-	}*/
 
 	/**
 	 * Creates combobox used to select molecular viewer.
@@ -520,14 +489,6 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 		return viewerTypeDescription;
 	}
 	
-	/**
-	 * sets the value of the cluster similar interfaces radio
-	 * @param value
-	 */
-	/*public void setClustersRadioValue(boolean value){
-		clustersViewButton.setValue(value);
-		onClustersRadioValueChange(value);
-	}*/
 	
 	/**
 	 * Adjusts size of the results grid based on the current screen size and
@@ -564,19 +525,9 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 			@Override
 			public void onShowAssemblies(ShowAssembliesEvent event) {
 				refreshResultsGrid();	
-				//displayResultView(event.getPdbScoreItem(), ResultsPanel.ASSEMBLIES_VIEW);
-				//displayResultView(event.getPdbScoreItem(), ResultsPanel.ASSEMBLIES_VIEW);
 			}
 		});
-		
-		/*EventBusManager.EVENT_BUS.addHandler(UncheckClustersRadioEvent.TYPE, new UncheckClustersRadioHandler() {
-			
-			@Override
-			public void onUncheckClustersRadio(UncheckClustersRadioEvent event) {
-				setClustersRadioValue(false);
-				
-			}
-		});*/
+
 		
 		EventBusManager.EVENT_BUS.addHandler(ShowAssemblyViewerEvent.TYPE, new ShowAssemblyViewerHandler() {
 			

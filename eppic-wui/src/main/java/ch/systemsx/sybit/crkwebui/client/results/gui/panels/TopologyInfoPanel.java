@@ -1,7 +1,9 @@
 package ch.systemsx.sybit.crkwebui.client.results.gui.panels;
 
 
+import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.images.ImageWithTooltip;
+import ch.systemsx.sybit.crkwebui.client.commons.managers.ViewerRunner;
 import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -40,12 +42,7 @@ public class TopologyInfoPanel extends FieldSet {
 		mockupImage1.addClickHandler(new ClickHandler() {		
 			@Override
 			public void onClick(ClickEvent event) {
-				/*EventBusManager.EVENT_BUS.fireEvent(new ShowAlignmentsEvent(
-						chainCluster, 
-						pdbName,
-						chainsLink.getAbsoluteLeft() + chainsLink.getElement().getClientWidth(),
-						chainsLink.getAbsoluteTop() + chainsLink.getElement().getClientHeight() + 10));*/
-				Window.alert("clicking on image 1");
+				ViewerRunner.runViewer(ApplicationContext.getSelectedAssemblyId()+"");
 			}
 			
 		}); 
