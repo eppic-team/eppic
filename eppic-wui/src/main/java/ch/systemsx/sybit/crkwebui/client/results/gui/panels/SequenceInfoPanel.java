@@ -9,6 +9,7 @@ import java.util.List;
 
 
 
+
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ApplicationWindowResizeEvent;
@@ -36,6 +37,7 @@ import ch.systemsx.sybit.crkwebui.shared.model.UniProtRefWarning;
 
 
 
+
 import com.google.gwt.core.client.GWT;
 //import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -52,6 +54,7 @@ import com.sencha.gxt.core.client.util.Margins;
 import com.sencha.gxt.widget.core.client.button.IconButton;
 import com.sencha.gxt.widget.core.client.button.IconButton.IconConfig;
 import com.sencha.gxt.widget.core.client.container.CssFloatLayoutContainer;
+import com.sencha.gxt.widget.core.client.container.HorizontalLayoutContainer.HorizontalLayoutData;
 import com.sencha.gxt.widget.core.client.container.SimpleContainer;
 import com.sencha.gxt.widget.core.client.event.SelectEvent;
 import com.sencha.gxt.widget.core.client.event.SelectEvent.SelectHandler;
@@ -326,6 +329,7 @@ public class SequenceInfoPanel extends FieldSet
 			}
 			
 		});
+		sequenceIcon.getElement().<XElement>cast().applyStyles("verticalAlign:bottom;");
 		items.add(sequenceIcon);	
 		
 		ImageWithTooltip homologsIcon = new ImageWithTooltip("resources/icons/homologs_14.png", null, AppPropertiesManager.CONSTANTS.homologs_panel_nrhomologs_hint());
@@ -340,12 +344,13 @@ public class SequenceInfoPanel extends FieldSet
 						nrHomologsLabel.getAbsoluteTop() + nrHomologsLabel.getElement().getClientHeight() + 10));
 			}
 		});
+		homologsIcon.getElement().<XElement>cast().applyStyles("verticalAlign:bottom;");
 		items.add(homologsIcon);		
 		
 		// we only add the search link if a precomputed entry & not null chain cluster & we have sequence clusters for it
 		if (precomputed && chainCluster!=null && chainCluster.getSeqCluster()!=null) {
-			//Image similarStructuresImage = createSearchSimilarStructuresIcon(chainCluster);
 			ImageLinkWithTooltip similarStructuresImage = createSearchSimilarStructuresIcon(chainCluster);
+			similarStructuresImage.getElement().<XElement>cast().applyStyles("verticalAlign:bottom;");
 			items.add(similarStructuresImage);
 		}
 		items.add(createPotatoImageLink(chainCluster, ApplicationContext.getPdbInfo().getJobId(), ApplicationContext.getPdbInfo()));
@@ -369,7 +374,11 @@ public class SequenceInfoPanel extends FieldSet
 						14, 14, 
 						AppPropertiesManager.CONSTANTS.homologs_panel_entropiespse_hint(), 
 						downloadPseLink);
-		
+		String html = potatoImage.getHTML();
+		int insertat = html.indexOf("></a>");
+		if (insertat != -1)
+			html = html.substring(0,insertat) + " style='position:relative;top:3px'" + html.substring(insertat,html.length());
+		potatoImage.setHTML(html);
 		return potatoImage;
 		
 	}
@@ -380,6 +389,7 @@ public class SequenceInfoPanel extends FieldSet
 				14, 14, 
 				AppPropertiesManager.CONSTANTS.homologs_panel_entropiespse_hint(), 
 				url);
+		imagelink.getElement().<XElement>cast().applyStyles("verticalAlign:bottom;");
 		return imagelink;
 	}
 	
