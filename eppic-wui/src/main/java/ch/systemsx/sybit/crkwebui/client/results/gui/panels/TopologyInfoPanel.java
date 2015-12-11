@@ -38,12 +38,12 @@ public class TopologyInfoPanel extends FieldSet {
 		HorizontalLayoutContainer imagesContainer = new HorizontalLayoutContainer();  
 		imagesContainer.setHeight(75);
     
-		ImageWithTooltip mockupImage1 = new ImageWithTooltip("resources/icons/mockup3.png", null, "tooltip 1");
-		mockupImage1.setWidth("75px");
+		ImageWithTooltip leftimage = new ImageWithTooltip("resources/icons/mockup3.png", null, "Click to open in 3D viewer");
+		leftimage.setWidth("75px");
     	HTML spacer2 = new HTML("<div style='width:10px'></div>");
-		ImageWithTooltip mockupImage2 = new ImageWithTooltip("resources/icons/mockup4.png", null, "tooltip 2");
+		ImageWithTooltip rightimage = new ImageWithTooltip("resources/icons/mockup4.png", null, "Click to open a 3D representation of the lattice graph");
 		
-		mockupImage1.addClickHandler(new ClickHandler() {		
+		leftimage.addClickHandler(new ClickHandler() {		
 			@Override
 			public void onClick(ClickEvent event) {
 				ViewerRunner.runViewer(ApplicationContext.getSelectedAssemblyId()+"");
@@ -51,7 +51,7 @@ public class TopologyInfoPanel extends FieldSet {
 			
 		}); 
 		
-		mockupImage2.addClickHandler(new ClickHandler() {		
+		rightimage.addClickHandler(new ClickHandler() {		
 			@Override
 			public void onClick(ClickEvent event) {
 				DiagramViewerRunner.runViewerAssembly(ApplicationContext.getSelectedAssemblyId()+"");
@@ -59,9 +59,9 @@ public class TopologyInfoPanel extends FieldSet {
 		
 		});		
 		
-		imagesContainer.add(mockupImage1);
+		imagesContainer.add(leftimage);
 		imagesContainer.add(spacer2);
-		imagesContainer.add(mockupImage2);
+		imagesContainer.add(rightimage);
 		mainContainer.add(imagesContainer);
 		
     	HorizontalLayoutContainer linkContainer = new HorizontalLayoutContainer();
