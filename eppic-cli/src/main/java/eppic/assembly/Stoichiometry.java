@@ -291,7 +291,7 @@ public class Stoichiometry {
 		// FINDING SYMMETRY:
 
 		// this should work fine for both homomer and pseudo-homomer graph
-		int numDistinctInterfaces = Assembly.getDistinctInterfaceCount(g);
+		int numDistinctInterfaces = GraphUtils.getDistinctInterfaceCount(g);
 		
 		// CASE A) n==1
 		
@@ -320,7 +320,7 @@ public class Stoichiometry {
 		//      but! it can happen that a Cn assembly has cross-interfaces, e.g. 4hi5 (a C4)
 
 		
-		TreeMap<Integer, Integer> cycleSizes = Assembly.getCycleMultiplicities(g);
+		TreeMap<Integer, Integer> cycleSizes = GraphUtils.getCycleMultiplicities(g);
 		boolean nMultCycleExists = false;
 		boolean threeMultCycleExists = false;
 		boolean fourMultCycleExists = false;

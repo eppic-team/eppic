@@ -12,7 +12,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.zip.GZIPOutputStream;
 
 import javax.vecmath.Matrix4d;
@@ -841,7 +840,7 @@ public class Assembly {
 		
 		for (StructureInterfaceCluster interfCluster:getHomoEngagedInterfaceClusters(sto)) {
 			
-			if (multiplicity == getEdgeMultiplicity(getFirstRelevantConnectedComponent(sto), interfCluster.getId())) {
+			if (multiplicity == GraphUtils.getEdgeMultiplicity(getFirstRelevantConnectedComponent(sto), interfCluster.getId())) {
 				return interfCluster;
 			}
 			
@@ -975,7 +974,7 @@ public class Assembly {
 		}
 
 		
-		TreeMap<Integer,Integer> clusterIdsToMult = getCycleMultiplicities(g);
+		TreeMap<Integer,Integer> clusterIdsToMult = GraphUtils.getCycleMultiplicities(g);
 		
 		
 		if (sym.startsWith("C")) {
@@ -1083,148 +1082,5 @@ public class Assembly {
 		});
 	}
 	
-	/**
-	 * Returns the multiplicity of the given interface cluster id in the given graph,
-	 * i.e. how many times an edge with that interface cluster id is present in the given graph
-	 * @param g
-	 * @param interfClusterId
-	 * @return
-	 */
-	public static int getEdgeMultiplicity(UndirectedGraph<ChainVertex, InterfaceEdge> g, int interfClusterId) {
-		int count = 0;
-		for (InterfaceEdge edge:g.edgeSet()) {
-			if (edge.getClusterId() == interfClusterId) count++;
-		}
-		return count;
-	}
-	
-	/**
-	 * For each of the given interface clusters, finds out their multiplicity in the given graph.
-	 * @param sto
-	 * @return
-	 */
-	public static int[] getMultiplicities(List<StructureInterfaceCluster> interfaceClusters, UndirectedGraph<ChainVertex,InterfaceEdge> g) {
-		
-		int[] mult = new int[interfaceClusters.size()];
-		
-		int i = 0;
-		for (StructureInterfaceCluster interfCluster:interfaceClusters) {
-			
-			mult[i] = getEdgeMultiplicity(g, interfCluster.getId());
-			i++;
-		}
-		
-		return mult;
-	}
-	
-	/**
-	 * Get the multiplicities of all interface clusters present in the given graph
-	 * @param g
-	 * @return a map of interface cluster ids to interface cluster count
-	 */
-	public static TreeMap<Integer,Integer> getMultiplicities(UndirectedGraph<ChainVertex, InterfaceEdge> g) {
-		TreeMap<Integer,Integer> counts = new TreeMap<Integer,Integer>();
-		
-		for (InterfaceEdge e:g.edgeSet()) {
-			if (counts.containsKey(e.getClusterId())) {
-				counts.put(e.getClusterId(), counts.get(e.getClusterId())+1);
-			} else {
-				counts.put(e.getClusterId(), 1);
-			}
-		}
-		
-		return counts;
-	}
-	
-	/**
-	 * For each interface cluster id present in the given graph, find out the cycle size for
-	 * a subgraph containing only each interface cluster id
-	 * @param g
-	 * @return a map of interface cluster ids to cycle sizes
-	 */
-	public static TreeMap<Integer,Integer> getCycleMultiplicities(UndirectedGraph<ChainVertex, InterfaceEdge> g) {
-		
-		TreeSet<Integer> interfaceClusterIds = new TreeSet<Integer>();
-		TreeMap<Integer,Integer> counts = new TreeMap<Integer,Integer>();
-				
-		
-		for (InterfaceEdge e:g.edgeSet()) {
-			interfaceClusterIds.add(e.getClusterId());
-		}
-		
-		for (int interfaceClusterId:interfaceClusterIds) {
-			UndirectedGraph<ChainVertex, InterfaceEdge> singleInterfClusterG = 
-					getSubgraphWithSingleInterfaceCluster(g, interfaceClusterId);
 
-			PatonCycleBase<ChainVertex, InterfaceEdge> paton = new PatonCycleBase<ChainVertex, InterfaceEdge>(singleInterfClusterG);
-
-			List<List<ChainVertex>> cycles = paton.findCycleBase();
-			if (cycles.size()==0) {
-				counts.put(interfaceClusterId, 0);
-			} else if (cycles.size()==1) {
-				counts.put(interfaceClusterId, cycles.get(0).size());
-			} else {
-				int count = cycles.get(0).size();
-				for (int i=1;i<cycles.size();i++) {
-					if (cycles.get(i).size()!=count) 
-						logger.warn("Found {} cycle bases in subgraph with single interface cluster {} with different sizes ({} and {}). Will use only first size",
-								cycles.size(), interfaceClusterId, count, cycles.get(i).size());
-				}
-				counts.put(interfaceClusterId, cycles.get(0).size());
-			}
-		}
-
-		
-		return counts;
-	}
-	
-	public static UndirectedGraph<ChainVertex, InterfaceEdge> getSubgraphWithSingleInterfaceCluster(
-			UndirectedGraph<ChainVertex, InterfaceEdge> g, int interfaceClusterId) {
-
-		
-		Set<InterfaceEdge> edges = new HashSet<InterfaceEdge>();
-		
-		for (InterfaceEdge e:g.edgeSet()) {
-			if (e.getClusterId() == interfaceClusterId) edges.add(e);
-		}
-		
-		// we create the subgraph with a single engaged interface cluster
-		return new UndirectedSubgraph<ChainVertex, InterfaceEdge>(g, g.vertexSet(), edges);
-	}
-	
-	/**
-	 * Count the number of distinct interface clusters in the given graph via looking at the number
-	 * of distinct interface cluster ids
-	 * @param g
-	 * @return
-	 */
-	public static int getDistinctInterfaceCount(UndirectedGraph<ChainVertex, InterfaceEdge> g) {
-		Set<Integer> interfClusterIds = new HashSet<Integer>();
-		for (InterfaceEdge e:g.edgeSet()) {
-			interfClusterIds.add(e.getClusterId());
-		}
-		return interfClusterIds.size();
-	}
-	
-	/**
-	 * Get the interface cluster id corresponding to the largest interface cluster present in given graph
-	 * @param g
-	 * @return the largest heteromeric interface cluster id, or -1 if none found
-	 */
-	public static int getLargestHeteroInterfaceCluster(UndirectedGraph<ChainVertex, InterfaceEdge> g) {
-		TreeSet<Integer> clusterIds = new TreeSet<Integer>();
-		for (InterfaceEdge e:g.edgeSet()) {
-			
-			ChainVertex s = g.getEdgeSource(e);
-			ChainVertex t = g.getEdgeTarget(e);
-			
-			if (s.getEntity() != t.getEntity()) { // i.e. heteromeric
-				clusterIds.add(e.getClusterId());
-			}
-		}
-		
-		if (clusterIds.isEmpty()) return -1;
-		
-		return clusterIds.first();
-	}
 }
