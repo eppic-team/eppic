@@ -166,7 +166,7 @@ public class DataModelAdaptor {
 
 			chainClusterDBs.add(createChainCluster(compound));
 		}
-		pdbInfo.setNumChainClusters(pdb.getCompounds().size());
+		pdbInfo.setNumChainClusters(chainClusterDBs.size());
 		pdbInfo.setChainClusters(chainClusterDBs);
 	}
 	
