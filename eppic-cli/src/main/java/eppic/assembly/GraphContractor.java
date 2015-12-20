@@ -4,13 +4,16 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.jgrapht.Graph;
 import org.jgrapht.UndirectedGraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 
 public class GraphContractor {
 	
@@ -62,7 +65,10 @@ public class GraphContractor {
 
 			if (s.getEntity()<0) logger.error("Entity id for vertex {} is negative!",s.getEntity());
 
-			if (referenceEntityId<0) referenceEntityId = s.getEntity();
+			if (referenceEntityId<0) {
+				referenceEntityId = s.getEntity();
+				logger.debug("Chose reference entity id {}. Vertices that have this entity id will be kept.", referenceEntityId); 
+			}
 
 			// we will keep the vertices matching referenceEntityId
 			ChainVertex vToRemove = null;
@@ -128,6 +134,19 @@ public class GraphContractor {
 		// let's now remove duplicated edges
 		trim(contGraph);
 
+		// logging the entity counts
+		if (logger.isDebugEnabled()) {
+			
+			Map<Integer, Integer> counts = getEntityCounts(contGraph);
+			
+			logger.debug("Counts per entities of contracted graph:");
+			for (Entry<Integer, Integer> entry:counts.entrySet()) {
+				logger.debug("  entity {} -> {} vertices", entry.getKey(), entry.getValue());
+			}
+			
+			
+		}
+		
 		return contGraph;
 	}
 	
@@ -150,6 +169,19 @@ public class GraphContractor {
 			i++;
 			logger.debug("Round {} of contraction: contracting interface cluster {}",i,interfClusterId);
 			logger.debug("Starting graph before contraction has {} vertices and {} edges",cg.vertexSet().size(),cg.edgeSet().size());
+			// logging the entity counts
+			if (logger.isDebugEnabled()) {
+				
+				Map<Integer, Integer> counts = getEntityCounts(cg);
+				
+				logger.debug("Counts per entities of starting graph:");
+				for (Entry<Integer, Integer> entry:counts.entrySet()) {
+					logger.debug("  entity {} -> {} vertices", entry.getKey(), entry.getValue());
+				}
+				
+				
+			}
+
 			
 			cg = contractInterfaceCluster(cg, interfClusterId);
 			
@@ -290,5 +322,24 @@ public class GraphContractor {
 		}
 		
 		return toRemove;
+	}
+	
+	/**
+	 * Gets a map of entity ids to counts of vertices of that entity for the given graph
+	 * @param g
+	 * @return
+	 */
+	private static Map<Integer,Integer> getEntityCounts(UndirectedGraph<ChainVertex, InterfaceEdge> g) {
+		Map<Integer, Integer> counts = new TreeMap<Integer,Integer>();
+		for (ChainVertex v:g.vertexSet()) {
+			int currentEntity = v.getEntity();
+			if (!counts.containsKey(currentEntity)) {
+				counts.put(currentEntity, 0);
+			} 
+			
+			counts.put(currentEntity, counts.get(currentEntity)+1);
+			
+		}
+		return counts;
 	}
 }
