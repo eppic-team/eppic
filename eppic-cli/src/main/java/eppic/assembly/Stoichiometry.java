@@ -1,15 +1,11 @@
 package eppic.assembly;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
 import org.biojava.nbio.structure.Chain;
-import org.biojava.nbio.structure.Compound;
-import org.biojava.nbio.structure.Structure;
 import org.jgrapht.UndirectedGraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,63 +23,18 @@ public class Stoichiometry {
 	
 	private static final String UNKNOWN_SYMMETRY =  "unknown";
 			
-	private Structure structure;
 	private Assembly assembly;
 	private int[] sto;
 	private int[] comp;
 	
-	private Map<Integer,Integer> entityId2Idx;
-	private Map<Integer,Integer> idx2EntityId;
-	
-	private Map<String,Integer> chainIds2Idx;
-	private Map<Integer,String> idx2ChainIds;
-	
-	public Stoichiometry(Structure structure, Assembly assembly) {
+	public Stoichiometry(Assembly assembly) {
 		
-		this.structure = structure;		
 		this.assembly = assembly;
-		
-		int totalNumEntities = structure.getCompounds().size();
-		
-		// since the entityIds are not guaranteed to be 1 to n, we need to map them to indices
-		entityId2Idx = new HashMap<Integer,Integer>();
-		idx2EntityId = new HashMap<Integer,Integer>();
-		chainIds2Idx = new HashMap<String, Integer>();
-		idx2ChainIds = new HashMap<Integer, String>();
-		
-		int i = 0;
-		for (Compound c:structure.getCompounds()) {
-			entityId2Idx.put(c.getMolId(),i);
-			idx2EntityId.put(i,c.getMolId());
-			i++;
-		}
-
-		i = 0;
-		for (Chain c:structure.getChains()) {
-			chainIds2Idx.put(c.getChainID(),i);
-			idx2ChainIds.put(i,c.getChainID());
-			i++;
-		}
-		
-		sto = new int[totalNumEntities];
-		comp = new int[structure.getChains().size()];
+				
+		sto = new int[assembly.getCrystalAssemblies().getNumEntitiesInStructure()];
+		comp = new int[assembly.getCrystalAssemblies().getNumChainsInStructure()];
 	}
 	
-	public int getEntityIndex(int entityId) {
-		return entityId2Idx.get(entityId);
-	}
-	
-	public int getEntityId(int index) {
-		return idx2EntityId.get(index);
-	}
-	
-	public int getChainIndex(String chainId) {
-		return chainIds2Idx.get(chainId);
-	}
-	
-	public String getChainId(int chainIdx) {
-		return idx2ChainIds.get(chainIdx);
-	}
 	
 	/**
 	 * Get all entity ids present in this stoichiometry
@@ -93,18 +44,18 @@ public class Stoichiometry {
 		Set<Integer> entityIds = new HashSet<Integer>();
 		for (int i=0;i<getNumEntities();i++) {
 			if (sto[i]>0) {
-				entityIds.add(getEntityId(i));
+				entityIds.add(assembly.getCrystalAssemblies().getEntityId(i));
 			}
 		}
 		return entityIds;
 	}
 	
 	public void add(Chain c) {
-		sto[getEntityIndex(c.getCompound().getMolId())]++;
-		comp[getChainIndex(c.getChainID())]++;
+		sto[assembly.getCrystalAssemblies().getEntityIndex(c.getCompound().getMolId())]++;
+		comp[assembly.getCrystalAssemblies().getChainIndex(c.getChainID())]++;
 	}
 	
-	public int getNumEntities() {
+	private int getNumEntities() {
 		return sto.length;
 	}
 	
@@ -135,7 +86,7 @@ public class Stoichiometry {
 	}
 	
 	public int getCount(int entityId) {
-		return sto[getEntityIndex(entityId)];
+		return sto[assembly.getCrystalAssemblies().getEntityIndex(entityId)];
 	}
 	
 	public int getCountForIndex(int i) {
@@ -215,7 +166,7 @@ public class Stoichiometry {
 		
 		for (int i=0;i<getNumEntities();i++){
 			if (sto[i]>0) {
-				stoSb.append(structure.getCompoundById(getEntityId(i)).getRepresentative().getChainID());			
+				stoSb.append(assembly.getCrystalAssemblies().getRepresentativeChainIdForEntityIndex(i));			
 				if (sto[i]>1) stoSb.append(sto[i]); // for A1B1 we do AB (we ommit 1s)
 			}
 		}
@@ -225,9 +176,9 @@ public class Stoichiometry {
 	public String toFormattedCompositionString() {
 		StringBuilder stoSb = new StringBuilder();
 		
-		for (int i=0;i<structure.getChains().size();i++){
+		for (int i=0;i<assembly.getCrystalAssemblies().getNumChainsInStructure();i++){
 			if (comp[i]>0) {
-				stoSb.append(getChainId(i));			
+				stoSb.append(assembly.getCrystalAssemblies().getChainId(i));			
 				if (comp[i]>1) stoSb.append(comp[i]); // for A1B1 we do AB (we ommit 1s)
 			}
 		}

@@ -3,6 +3,7 @@ package eppic.assembly;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -10,6 +11,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.biojava.nbio.structure.Chain;
+import org.biojava.nbio.structure.Compound;
 import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.StructureException;
 import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
@@ -51,11 +54,28 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 	
 	private InterfaceEvolContextList interfEvolContextList;
 	
+	// the entity/chain maps: to map between indices used in Stoichiometry arrays and entity ids/chain ids
+	private Map<Integer,Integer> entityId2Idx;
+	private Map<Integer,Integer> idx2EntityId;
+	
+	private Map<String,Integer> chainIds2Idx;
+	private Map<Integer,String> idx2ChainIds;
+	
+	
+	
+	/**
+	 * 
+	 * @param structure
+	 * @param interfaces
+	 * @throws StructureException
+	 */
 	public CrystalAssemblies(Structure structure, StructureInterfaceList interfaces) throws StructureException {
 		
 		this.structure = structure;
 		this.latticeGraph = new LatticeGraph<ChainVertex,InterfaceEdge>(structure, interfaces,ChainVertex.class,InterfaceEdge.class);
 		this.interfaceClusters = interfaces.getClusters(EppicParams.CLUSTERING_CONTACT_OVERLAP_SCORE_CUTOFF);
+		
+		initEntityMaps();
 		
 		findValidAssemblies();
 		
@@ -200,6 +220,90 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 			}
 		}
 	}
+	
+	private void initEntityMaps() {
+		// since the entityIds are not guaranteed to be 1 to n, we need to map them to indices
+		entityId2Idx = new HashMap<Integer,Integer>();
+		idx2EntityId = new HashMap<Integer,Integer>();
+		chainIds2Idx = new HashMap<String, Integer>();
+		idx2ChainIds = new HashMap<Integer, String>();
+
+		int i = 0;
+		for (Compound c:structure.getCompounds()) {
+			entityId2Idx.put(c.getMolId(),i);
+			idx2EntityId.put(i,c.getMolId());
+			i++;
+		}
+
+		i = 0;
+		for (Chain c:structure.getChains()) {
+			chainIds2Idx.put(c.getChainID(),i);
+			idx2ChainIds.put(i,c.getChainID());
+			i++;
+		}
+	}
+	
+	/**
+	 * Given an entity id returns the entity index as used by Stoichiometry arrays
+	 * @param entityId
+	 * @return
+	 */
+	public int getEntityIndex(int entityId) {
+		return entityId2Idx.get(entityId);
+	}
+	
+	/**
+	 * Given and entity index as used in Stoichiometry arrays, returns the entity id
+	 * @param index
+	 * @return
+	 */
+	public int getEntityId(int index) {
+		return idx2EntityId.get(index);
+	}
+	
+	/**
+	 * Given a chain id returns a chain index as used in Stoichiometry arrays
+	 * @param chainId
+	 * @return
+	 */
+	public int getChainIndex(String chainId) {
+		return chainIds2Idx.get(chainId);
+	}
+	
+	/**
+	 * Given a chain index as used in Stoichiometry arrays, returns a chain id
+	 * @param chainIdx
+	 * @return
+	 */
+	public String getChainId(int chainIdx) {
+		return idx2ChainIds.get(chainIdx);
+	}
+	
+	/**
+	 * Given an entity index as used in Stoichiometry arrays, returns the representative chain id for that entity
+	 * @param index
+	 * @return
+	 */
+	public String getRepresentativeChainIdForEntityIndex(int index) {
+		return structure.getCompoundById(getEntityId(index)).getRepresentative().getChainID();
+	}
+	
+	/**
+	 * Get the number of chains in the Structure
+	 * @return
+	 */
+	public int getNumChainsInStructure() {
+		return structure.getChains().size();
+	}
+	
+	/**
+	 * Get the number of entities in the Structure
+	 * @return
+	 */
+	public int getNumEntitiesInStructure() {
+		return structure.getCompounds().size();
+	}
+
 
 	@Override
 	public Iterator<Assembly> iterator() {

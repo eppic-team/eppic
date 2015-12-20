@@ -79,7 +79,7 @@ public class Assembly {
 		this.engagedSet = engagedSet;
 				
 		initSubgraph(); // inits subgraph and connectedComponents
-		this.stoichiometrySet = new StoichiometrySet(crystalAssemblies.getStructure(), this, connectedComponents);
+		this.stoichiometrySet = new StoichiometrySet(this, connectedComponents);
  
 	}
 	
