@@ -162,13 +162,11 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 
 		for (Assembly assembly:all) {
 
-			StoichiometrySet stoSet = assembly.getStoichiometrySet();
-
 			// we classify into groups those that are fully covering
 
-			if (stoSet.isFullyCovering()) {
+			if (assembly.getAssemblyGraph().isFullyCovering()) {
 				// we assume they are valid, which implies even stoichiometry (thus the size of first will give the size for all)			
-				int size = stoSet.getFirst().getCountForIndex(0);
+				int size = assembly.getAssemblyGraph().getSubAssemblies().get(0).getStoichiometry().getCountForIndex(0);
 
 				if (!groups.containsKey(size)) {
 					AssemblyGroup group = new AssemblyGroup();
@@ -355,8 +353,8 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 
 			@Override
 			public int compare(Assembly arg0, Assembly arg1) {
-				int firstSize = arg0.getStoichiometrySet().getFirst().getTotalSize();
-				int secondSize = arg1.getStoichiometrySet().getFirst().getTotalSize();
+				int firstSize = arg0.getAssemblyGraph().getSubAssemblies().get(0).getStoichiometry().getTotalSize();
+				int secondSize = arg1.getAssemblyGraph().getSubAssemblies().get(0).getStoichiometry().getTotalSize();
 				
 				if (firstSize != secondSize) {
 					return Integer.compare(firstSize, secondSize);
@@ -438,10 +436,9 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 		Assembly maxSizeBioAssembly = null;
 		int maxSize = 0;
 		for (Assembly a:uniques) {
-			
-			StoichiometrySet stoSet = a.getStoichiometrySet();
+						
 			// TODO this ignores other non-overlapping stoichiometries, must take care of that
-			Stoichiometry sto = stoSet.getFirst();
+			Stoichiometry sto = a.getAssemblyGraph().getSubAssemblies().get(0).getStoichiometry();
 			int size = sto.getTotalSize();
 			
 			if (a.getCall() == CallType.BIO && maxSize<size) {

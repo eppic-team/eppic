@@ -140,7 +140,7 @@ public class PymolRunner {
 		}
 		
 		//TODO we might need getFirstRelevantConnectedComponent(sto) instead, but we need the stoichiometry for that
-		UndirectedGraph<ChainVertex, InterfaceEdge> g = a.getFirstConnectedComponent();
+		UndirectedGraph<ChainVertex, InterfaceEdge> g = a.getAssemblyGraph().getFirstConnectedComponent();
 		
 		String[] chains = new String[g.vertexSet().size()];
 		String[] colors = new String[g.vertexSet().size()];
