@@ -1,10 +1,16 @@
 package eppic.assembly;
 
+import java.util.Iterator;
+import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
+import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
 import org.jgrapht.UndirectedGraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import eppic.CallType;
 
 /**
  * Each of the sub-assemblies corresponding to the connected component subgraphs of an Assembly
@@ -20,11 +26,14 @@ public class SubAssembly {
 	
 	private static final Logger logger = LoggerFactory.getLogger(SubAssembly.class);
 
+	private CrystalAssemblies crystalAssemblies;
+	
 	private UndirectedGraph<ChainVertex, InterfaceEdge> connectedGraph;
 	private Stoichiometry sto;
 	
 	public SubAssembly(UndirectedGraph<ChainVertex, InterfaceEdge> connectedGraph, CrystalAssemblies crystalAssemblies) {
 		this.connectedGraph = connectedGraph;
+		this.crystalAssemblies = crystalAssemblies;
 		
 		this.sto = new Stoichiometry(connectedGraph, crystalAssemblies);
 	}
@@ -157,6 +166,177 @@ public class SubAssembly {
 		return "D"+(n/2);
 
 
+	}
+	
+	public CallType score() {
+
+		// TODO note: the code here goes along the same lines of getSymmetry, we should try to unify them a bit and to reuse the common parts
+
+		CallType call = null;
+						
+		int n = sto.getFirstNonZero();
+		
+		if (n==-1) {
+			logger.warn("All counts are 0 for first stoichiometry of assembly {}. Something is wrong: can't score assembly!",toString());
+			return null;
+		}
+		
+		
+		int numEntities = sto.getNumPresentEntities();
+		
+		boolean heteromer = false;
+		if (numEntities>1) heteromer = true;
+
+		String sym = getSymmetry();
+		
+
+		call = CallType.CRYSTAL; // set crystal as default call, only if found to be bio it will be overridden below
+
+		if (n==1) {
+			
+			if (!heteromer) {
+				// a C1 assembly (i.e. monomeric if homomeric):
+				// no scoring at this stage, later we look at all assemblies and if no larger assembly is bio, we assign bios to C1 assemblies
+				
+			} else {
+				// C1 heteromeric: 1:1:1 stoichiometry
+				Set<Integer> set = getInterfaceClusterIds();
+				int countBio = 0;
+				for (int interfClusterId:set) {
+					if (crystalAssemblies.getInterfaceEvolContextList().
+							getCombinedClusterPredictor(interfClusterId).getCall() == CallType.BIO ) {
+						countBio++;
+					}
+				}
+				if (countBio>= (numEntities-1) ) call = CallType.BIO;
+			}
+			return call;
+		}
+		
+
+		UndirectedGraph<ChainVertex, InterfaceEdge> g = connectedGraph;
+		GraphContractor gctr = new GraphContractor(g);
+		
+		
+		if (heteromer) {
+
+			g = gctr.contract();
+			
+			// TODO we should check the call of contracted interfaces and score properly based on 
+			// them and the relevant interfaces below
+		}
+
+		
+		TreeMap<Integer,Integer> clusterIdsToMult = GraphUtils.getCycleMultiplicities(g);
+		
+		
+		if (sym.startsWith("C")) {
+
+			StructureInterfaceCluster interfCluster = null;
+
+			if (sym.startsWith("C2")) {				
+				// we've got to treat the C2 case especially because multiplicity=2 won't be detected in graph
+				
+				if (clusterIdsToMult.isEmpty()) {
+					logger.error("Empty list of engaged interface clusters for a homomeric C2 symmetry. Something is wrong!");
+					
+				} else {
+					int clusterId = clusterIdsToMult.firstKey(); // the largest interface present (interface cluster ids are sorted on areas)
+					interfCluster = crystalAssemblies.getInterfaceClusters().get(clusterId-1);
+				}
+
+			} else {
+
+				int clusterId = -1;
+				for (int cId: clusterIdsToMult.keySet()) {
+					if (clusterId==-1 && clusterIdsToMult.get(cId) == n) 
+						clusterId = cId;
+					else if (clusterIdsToMult.get(cId)==n) 
+						logger.info("Assembly {} has more than 1 interface cluster with cycle multiplicity {}. Taking assembly call from first one.", 
+								toString(), n);
+				}
+				
+				if (clusterId == -1) {
+					logger.warn("Could not find the C{} interface for assembly {}. Something is wrong!",
+							n,toString());
+				} else {				
+					interfCluster = crystalAssemblies.getInterfaceClusters().get(clusterId-1);
+				
+				}
+			}
+
+			if (interfCluster!=null) {
+				// the call for the Cn interface will be the call for the assembly
+				call = crystalAssemblies.getInterfaceEvolContextList().getCombinedClusterPredictor(interfCluster.getId()).getCall();
+				// TODO in heteromeric cases we should check that the edges that we have contracted have also the same call
+
+			} else {
+				logger.warn("Could not find the relevant C{} interface, assembly {} will be NOPRED",n,toString());
+				call = CallType.NO_PREDICTION;
+			}
+
+
+
+		} else if (sym.startsWith("D") || sym.equals("T") || sym.equals("O") || sym.equals("I")) {
+			
+			// In all other point group symmetries there's always 2 essential interfaces out of all of
+			// the engaged ones that are needed to form the symmetry. 
+			// Then a third one follows necessarily (though it might be too small and not show up in our 
+			// list) because the other 2 are at the right angles to produce a third one. 
+			
+			// A possible strategy for scoring is simply taking the 2 largest interfaces and checking that both 
+			// have a BIO call (that would be a sufficient condition), otherwise is XTAL. 
+			// Another possibility would be to take any 2 interfaces out of the list and check if at 
+			// least 2 are BIO.
+						
+			// In a D assembly most usually the 2 largest interfaces are the 2 isologous, 
+			// the 3rd one being the heterologous. But that's not a general rule at all! there are counter-examples
+
+
+			// the keys of the map should be sorted from first cluster id to last cluster id (which are sorted by areas)
+
+			Iterator<Integer> it = clusterIdsToMult.keySet().iterator();
+			int clusterId1 = it.next(); // the largest
+			int clusterId2 = it.next(); // the second largest
+			
+			StructureInterfaceCluster first = crystalAssemblies.getInterfaceClusters().get(clusterId1-1); // the largest
+			StructureInterfaceCluster second = crystalAssemblies.getInterfaceClusters().get(clusterId2-1); // the second largest
+			
+			CallType firstCall = crystalAssemblies.getInterfaceEvolContextList().getCombinedClusterPredictor(first.getId()).getCall();
+			CallType secondCall = crystalAssemblies.getInterfaceEvolContextList().getCombinedClusterPredictor(second.getId()).getCall();
+			
+			if (firstCall == CallType.BIO && secondCall == CallType.BIO) {
+				call = CallType.BIO;
+			}
+			
+		} else {
+			logger.warn("Assembly scoring for symmetry {} not supported yet", sym);
+		}
+
+		return call;
+
+	}
+	
+	/**
+	 * Get the set of all unique interface cluster ids in this SubGraph
+	 * @return
+	 */
+	private Set<Integer> getInterfaceClusterIds() {
+		
+		Set<Integer> interfaceClusterIds = new TreeSet<Integer>();
+		
+		// TODO I'm not sure if it's even needed to check that the edges are contained in entities, I'd say that by definiton of SubAssembly they are... should double-check - JD 2015-12-21
+		Set<Integer> entities = sto.getEntityIds();
+		
+		for (InterfaceEdge e : connectedGraph.edgeSet()) {
+			ChainVertex s = connectedGraph.getEdgeSource(e);
+			ChainVertex t = connectedGraph.getEdgeTarget(e);
+			
+			if (entities.contains(s.getEntity()) && entities.contains(t.getEntity())) {
+				interfaceClusterIds.add(e.getClusterId());
+			}
+		}
+		return interfaceClusterIds;
 	}
 	
 	public String getChainIdsString() {
