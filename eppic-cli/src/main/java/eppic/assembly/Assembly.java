@@ -73,10 +73,9 @@ public class Assembly {
 	 */
 	private AssemblyGraph assemblyGraph;
 		
-	
-		
 	private CallType call;
 	
+
 	
 	public Assembly(CrystalAssemblies crystalAssemblies, PowerSet engagedSet) {
 		this.crystalAssemblies = crystalAssemblies;
@@ -116,28 +115,6 @@ public class Assembly {
 		for (StructureInterfaceCluster cluster:getEngagedInterfaceClusters()) {
 			StructureInterface interf = cluster.getMembers().get(0);
 			if (isInterfaceInEntityIds(interf, entityIdsInSto)) {				
-				engagedInterfaceClusters.add(cluster);
-			}
-		}
-		return engagedInterfaceClusters;
-	}
-	
-	public List<StructureInterfaceCluster> getHomoEngagedInterfaceClusters() {
-		List<StructureInterfaceCluster> engagedInterfaceClusters = new ArrayList<StructureInterfaceCluster>();
-		
-		for (StructureInterfaceCluster cluster: getEngagedInterfaceClusters()) {
-			if (cluster.getMembers().get(0).isHomomeric()) {
-				engagedInterfaceClusters.add(cluster);
-			}
-		}
-		return engagedInterfaceClusters;
-	}
-	
-	public List<StructureInterfaceCluster> getHeteroEngagedInterfaceClusters() {
-		List<StructureInterfaceCluster> engagedInterfaceClusters = new ArrayList<StructureInterfaceCluster>();
-		
-		for (StructureInterfaceCluster cluster: getEngagedInterfaceClusters()) {
-			if (!cluster.getMembers().get(0).isHomomeric()) {
 				engagedInterfaceClusters.add(cluster);
 			}
 		}
@@ -193,26 +170,6 @@ public class Assembly {
 		int count=0;
 		for (int i=0;i<engagedSet.size();i++) {
 			if (engagedSet.isOn(i)) count++;
-		}
-		return count;
-	}
-	
-	public int getNumHomoEngagedInterfaceClusters() {
-		int count=0;
-		for (StructureInterfaceCluster cluster: getEngagedInterfaceClusters()) {
-			if (cluster.getMembers().get(0).isHomomeric()) {
-				count++;
-			}
-		}
-		return count;
-	}
-	
-	public int getNumHeteroEngagedInterfaceClusters() {
-		int count=0;
-		for (StructureInterfaceCluster cluster: getEngagedInterfaceClusters()) {
-			if (!cluster.getMembers().get(0).isHomomeric()) {
-				count++;
-			}
 		}
 		return count;
 	}
@@ -275,6 +232,10 @@ public class Assembly {
 		return count;
 	}
 	
+	/**
+	 * Get the parent CrystalAssemly object containing references to all other Assemblies and to the original Structure
+	 * @return
+	 */
 	public CrystalAssemblies getCrystalAssemblies() {
 		return crystalAssemblies;
 	}
@@ -844,7 +805,7 @@ public class Assembly {
 	}
 	
 	/**
-	 * Sorts given list of interface clusters by descending descending areas
+	 * Sorts given list of interface clusters by descending areas
 	 * @param list
 	 */
 	@SuppressWarnings("unused")

@@ -108,11 +108,14 @@ public class AssemblyGraph {
 			subAssemblies.add(new SubAssembly(new UndirectedSubgraph<ChainVertex, InterfaceEdge>(subgraph, vertexSubsubSet, edgeSubsubSet), assembly.getCrystalAssemblies()));
 		}
 				
+		
+		// now we find the unique stoichiometries present in all subAssemblies
 		Set<Stoichiometry> uniqueStoichiometries = new HashSet<Stoichiometry>();
 		for (SubAssembly subAssembly: subAssemblies) {
 			uniqueStoichiometries.add(subAssembly.getStoichiometry());
 		}
 		
+		// and with those we can group subAssemblies by stoichiometries
 		subAssembliesGroupedByStoichiometries = new ArrayList<List<SubAssembly>>();
 		for (Stoichiometry uniqueSto: uniqueStoichiometries) {
 		
@@ -165,7 +168,7 @@ public class AssemblyGraph {
 	}
 	
 	/**
-	 * 
+	 * Returns true if this AssemblyGraph is entity-isomorphic, i.e. if none of the unique stoichiometries overlap
 	 * @return
 	 */
 	public boolean isEntityIsomorphic() {
