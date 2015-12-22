@@ -190,6 +190,9 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 	
 	private void initClusters() {
 		
+		logger.info("Number of assemblies before clustering: {}", all.size());
+		logger.info("Number of assembly groups: {}", groups.size());
+		
 		clusters = new ArrayList<AssemblyGroup>();
 		
 		for (int size:groups.keySet()) {
@@ -217,6 +220,8 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 				}
 			}
 		}
+		
+		logger.info("Number of assemblies after clustering: {}", clusters.size());
 	}
 	
 	private void initEntityMaps() {

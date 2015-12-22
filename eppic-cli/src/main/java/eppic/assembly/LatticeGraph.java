@@ -68,8 +68,8 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 
 	private UndirectedGraph<V,E> graph;
 	
-	VertexFactory<V> vertexFactory;
-	EdgeFactory<V,E> edgeFactory;
+	private VertexFactory<V> vertexFactory;
+	private EdgeFactory<V,E> edgeFactory;
 
 	private boolean globalReferencePoint;
 	private Map<String,Matrix4d[]> unitCellOperators = new HashMap<>(); // In crystal coordinates

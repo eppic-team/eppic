@@ -221,12 +221,12 @@ public class AssemblyGraph {
 			// no cycles at all:
 			// heteromeric interfaces are ok
 			if (containsHeteromeric()) {
-				logger.info("Assembly {} contains heteromeric interfaces and no cycles, assuming it has closed-symmetry",toString());
+				logger.info("Assembly {} contains heteromeric interfaces and no cycles, assuming it has closed-symmetry", assembly.toString());
 				return true;
 			}
 			// homomeric aren't
 			// homomeric interfaces and no cycles: can't be closed!
-			logger.debug("No cycles in assembly {}: discarding because it can't be a closed-symmetry", toString());
+			logger.debug("No cycles in assembly {}: discarding because it can't be a closed-symmetry", assembly.toString());
 			return false;
 		}
 
@@ -245,7 +245,7 @@ public class AssemblyGraph {
 				// we continue to next cycle, if all cycles are translation 0, then we'll return true below
 			} else {
 				// one cycle has non-zero translation: we abort straight away: return false
-				logger.debug("Non-closed cycle (non-0 translation). Discarding assembly {}",toString());
+				logger.debug("Non-closed cycle (non-0 translation). Discarding assembly {}", assembly.toString());
 				return false;
 			}
 		}
