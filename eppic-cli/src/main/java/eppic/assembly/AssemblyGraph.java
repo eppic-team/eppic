@@ -196,38 +196,6 @@ public class AssemblyGraph {
 
 		return true;
 	}
-	
-	/**
-	 * Get the first connected component graph that involves only entities overlapping given stoichiometry.
-	 * Useful to look at any of the isomorphic graphs of valid assemblies.
-	 * @param sto the stoichiometry from which the involved entities are selected, if null 
-	 * then the first connected component is returned 
-	 * @return
-	 */
-	public UndirectedGraph<ChainVertex, InterfaceEdge> getFirstRelevantConnectedComponent(Stoichiometry sto) {
-		
-		if (sto==null) return getFirstConnectedComponent();
-		
-		for (List<SubAssembly> group : subAssembliesGroupedByStoichiometries) {
-			
-			// TODO to me it looks like we should replace isOverlapping() by equals() but I'm not sure about it right now - JD 2015-12-21
-			if (group.get(0).getStoichiometry().isOverlapping(sto)) 
-				return group.get(0).getConnectedGraph(); 
-		}
-		
-		logger.warn("Could not find any sub assemblies matching stoichiometry {}", sto.toString());
-		
-		return null;
-	}
-	
-	/**
-	 * Get the first connected component graph of this assembly.
-	 * Useful to look at any of the isomorphic graphs of valid assemblies.
-	 * @return
-	 */
-	public UndirectedGraph<ChainVertex, InterfaceEdge> getFirstConnectedComponent() {
-		return subAssemblies.get(0).getConnectedGraph();
-	}
 
 	/**
 	 * Return true if all cycles in subgraph are closed, false otherwise.

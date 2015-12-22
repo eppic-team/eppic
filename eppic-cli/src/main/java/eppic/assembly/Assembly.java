@@ -306,7 +306,7 @@ public class Assembly {
 		// we assume this is a valid assembly
 		// we get any of the isomorphic connected components, let's say the first one
 
-		UndirectedGraph<ChainVertex, InterfaceEdge> firstCc = assemblyGraph.getFirstConnectedComponent();
+		UndirectedGraph<ChainVertex, InterfaceEdge> firstCc = assemblyGraph.getSubAssemblies().get(0).getConnectedGraph();
 		
 		
 		Iterator<ChainVertex> it = firstCc.vertexSet().iterator();
@@ -504,6 +504,9 @@ public class Assembly {
 		return sb.toString();
 	}
 
+	/**
+	 * Assign a call to this Assembly, retrieve the call subsequently with {@link #getCall()}
+	 */
 	public void score() {
 
 		// we won't support non-fully-covering stoichiometries for the moment
