@@ -21,7 +21,6 @@ import eppic.CallType;
  */
 public class SubAssembly {
 	
-	private static final String UNKNOWN_SYMMETRY =  "unknown";	
 	
 	private static final Logger logger = LoggerFactory.getLogger(SubAssembly.class);
 
@@ -46,13 +45,13 @@ public class SubAssembly {
 	}
 	
 	/**
-	 * Return the symmetry string for this SubAssembly:
+	 * Return the PointGroupSymmetry for this SubAssembly:
 	 * cyclic Cn, dihedral Dn, tetrahedral T, octahedral O or icosahedral I. 
 	 * This will work correctly only on assemblies that have been previously checked
 	 * to be valid with {@link Assembly#isValid()}
-	 * @return
+	 * @return the PointGroupSymmetry or null if it can't be found
 	 */
-	public String getSymmetry() {
+	public PointGroupSymmetry getSymmetry() {
 		
 		
 		// we get the number of present entities in this stoichiometry (those with count>0)
@@ -66,7 +65,7 @@ public class SubAssembly {
 		
 		if (n==-1) {
 			logger.warn("All counts are 0 for this stoichiometry. Something is wrong!");
-			return UNKNOWN_SYMMETRY;
+			return null;
 		}
 		
 		
@@ -83,7 +82,7 @@ public class SubAssembly {
 		if (heteromer && !sto.isEven()) { 
 			// this should not happen since we disallow uneven stoichiometries in the search for valid assemblies
 			logger.warn("Uneven stoichiometry found while getting symmetry. Something is wrong!");
-			return UNKNOWN_SYMMETRY;
+			return null;
 		}
 		
 		// FINDING SYMMETRY:
@@ -95,7 +94,7 @@ public class SubAssembly {
 		
 		if (n==1) {
 			
-			return "C1";
+			return new PointGroupSymmetry('C', 1);
 			
 		} 
 		
@@ -103,14 +102,14 @@ public class SubAssembly {
 		
 		if (n%2 != 0 || n==2) {
 			
-			return "C"+n;
+			return new PointGroupSymmetry('C', n);
 
 		} 
 		
 		// CASE C) even number larger than 2 (n%2==0 with n>2)
 
 		if (numDistinctInterfaces==1) {
-			return "C"+n;			
+			return new PointGroupSymmetry('C', n);			
 		} 
 
 
@@ -145,24 +144,24 @@ public class SubAssembly {
 //		}
 
 		if (nMultCycleExists) {
-			return "C"+n;
+			return new PointGroupSymmetry('C', n);
 		}
 
 		if (n==12 && threeMultCycleExists) {
 			// tetrahedral
-			return "T";
+			return new PointGroupSymmetry('T', 0);
 		}
 		if (n==24 && fourMultCycleExists) {
 			// octahedral
-			return "O";
+			return new PointGroupSymmetry('O', 0);
 		}
 		if (n==60 && fiveMultCycleExists) {
 			// icosahedral
-			return "I";
+			return new PointGroupSymmetry('I', 0);
 		}
 		
 		// none of the above return: it has to be a D n/2
-		return "D"+(n/2);
+		return new PointGroupSymmetry('D', n/2);
 
 
 	}
@@ -190,7 +189,7 @@ public class SubAssembly {
 		boolean heteromer = false;
 		if (numEntities>1) heteromer = true;
 
-		String sym = getSymmetry();
+		PointGroupSymmetry sym = getSymmetry();
 		
 
 		call = CallType.CRYSTAL; // set crystal as default call, only if found to be bio it will be overridden below
@@ -233,11 +232,11 @@ public class SubAssembly {
 		TreeMap<Integer,Integer> clusterIdsToMult = GraphUtils.getCycleMultiplicities(g);
 		
 		
-		if (sym.startsWith("C")) {
+		if (sym.isCyclic()) {
 			
 			int clusterId = -1;
 
-			if (sym.startsWith("C2")) {				
+			if (sym.getMultiplicity()==2) {				
 				// we've got to treat the C2 case especially because multiplicity=2 won't be detected in graph
 				
 				if (clusterIdsToMult.isEmpty()) {
@@ -272,8 +271,8 @@ public class SubAssembly {
 			}
 
 
-
-		} else if (sym.startsWith("D") || sym.equals("T") || sym.equals("O") || sym.equals("I")) {
+			
+		} else {  // non-cyclic symmetries: Dn, T, O, I
 			
 			// In all other point group symmetries there's always 2 essential interfaces out of all of
 			// the engaged ones that are needed to form the symmetry. 
@@ -302,9 +301,9 @@ public class SubAssembly {
 				call = CallType.BIO;
 			}
 			
-		} else {
-			logger.warn("Assembly scoring for symmetry {} not supported yet", sym);
-		}
+		} 
+		
+		// can there be other symmetries?
 
 		return call;
 

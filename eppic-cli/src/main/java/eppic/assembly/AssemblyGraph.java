@@ -358,11 +358,19 @@ public class AssemblyGraph {
 		List<AssemblyDescription> ds = new ArrayList<AssemblyDescription>();
 		
 		for (List<SubAssembly> group : subAssembliesGroupedByStoichiometries) {
-			Stoichiometry s = group.get(0).getStoichiometry();
+			
+			SubAssembly subAssembly = group.get(0);
+			
+			String symString = PointGroupSymmetry.UNKNOWN;
+			if (subAssembly.getSymmetry()!=null) symString = subAssembly.getSymmetry().toString();
 		
 			AssemblyDescription ad = 
 					new AssemblyDescription(
-							s.getTotalSize(), group.get(0).getSymmetry(), s.toFormattedCompositionString(), s.toFormattedString(), group.get(0).getChainIdsString());
+							subAssembly.getStoichiometry().getTotalSize(), 
+							symString, 
+							subAssembly.getStoichiometry().toFormattedCompositionString(), 
+							subAssembly.getStoichiometry().toFormattedString(), 
+							subAssembly.getChainIdsString());
 			ds.add(ad);
 		}
 		
