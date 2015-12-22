@@ -5,7 +5,6 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
 import org.jgrapht.UndirectedGraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -168,6 +167,10 @@ public class SubAssembly {
 
 	}
 	
+	/**
+	 * Get a call (bio/xtal prediction) for this SubAssembly
+	 * @return
+	 */
 	public CallType score() {
 
 		// TODO note: the code here goes along the same lines of getSymmetry, we should try to unify them a bit and to reuse the common parts
@@ -203,12 +206,12 @@ public class SubAssembly {
 				Set<Integer> set = getInterfaceClusterIds();
 				int countBio = 0;
 				for (int interfClusterId:set) {
-					if (crystalAssemblies.getInterfaceEvolContextList().
-							getCombinedClusterPredictor(interfClusterId).getCall() == CallType.BIO ) {
+					if (crystalAssemblies.getInterfaceEvolContextList().getCombinedClusterPredictor(interfClusterId).getCall() == CallType.BIO ) {
 						countBio++;
 					}
 				}
-				if (countBio>= (numEntities-1) ) call = CallType.BIO;
+				if (countBio>= (numEntities-1) ) 
+					call = CallType.BIO;
 			}
 			return call;
 		}
@@ -231,8 +234,8 @@ public class SubAssembly {
 		
 		
 		if (sym.startsWith("C")) {
-
-			StructureInterfaceCluster interfCluster = null;
+			
+			int clusterId = -1;
 
 			if (sym.startsWith("C2")) {				
 				// we've got to treat the C2 case especially because multiplicity=2 won't be detected in graph
@@ -241,33 +244,26 @@ public class SubAssembly {
 					logger.error("Empty list of engaged interface clusters for a homomeric C2 symmetry. Something is wrong!");
 					
 				} else {
-					int clusterId = clusterIdsToMult.firstKey(); // the largest interface present (interface cluster ids are sorted on areas)
-					interfCluster = crystalAssemblies.getInterfaceClusters().get(clusterId-1);
+					clusterId = clusterIdsToMult.firstKey(); // the largest interface present (interface cluster ids are sorted on areas)
 				}
 
 			} else {
 
-				int clusterId = -1;
 				for (int cId: clusterIdsToMult.keySet()) {
 					if (clusterId==-1 && clusterIdsToMult.get(cId) == n) 
 						clusterId = cId;
 					else if (clusterIdsToMult.get(cId)==n) 
-						logger.info("Assembly {} has more than 1 interface cluster with cycle multiplicity {}. Taking assembly call from first one.", 
-								toString(), n);
+						logger.info("Assembly {} has more than 1 interface cluster with cycle multiplicity {}. Taking assembly call from first one.", toString(), n);
 				}
 				
 				if (clusterId == -1) {
-					logger.warn("Could not find the C{} interface for assembly {}. Something is wrong!",
-							n,toString());
-				} else {				
-					interfCluster = crystalAssemblies.getInterfaceClusters().get(clusterId-1);
-				
-				}
+					logger.warn("Could not find the C{} interface for assembly {}. Something is wrong!", n, toString());
+				} 
 			}
 
-			if (interfCluster!=null) {
+			if (clusterId!=-1) {
 				// the call for the Cn interface will be the call for the assembly
-				call = crystalAssemblies.getInterfaceEvolContextList().getCombinedClusterPredictor(interfCluster.getId()).getCall();
+				call = crystalAssemblies.getInterfaceEvolContextList().getCombinedClusterPredictor(clusterId).getCall();
 				// TODO in heteromeric cases we should check that the edges that we have contracted have also the same call
 
 			} else {
@@ -299,11 +295,8 @@ public class SubAssembly {
 			int clusterId1 = it.next(); // the largest
 			int clusterId2 = it.next(); // the second largest
 			
-			StructureInterfaceCluster first = crystalAssemblies.getInterfaceClusters().get(clusterId1-1); // the largest
-			StructureInterfaceCluster second = crystalAssemblies.getInterfaceClusters().get(clusterId2-1); // the second largest
-			
-			CallType firstCall = crystalAssemblies.getInterfaceEvolContextList().getCombinedClusterPredictor(first.getId()).getCall();
-			CallType secondCall = crystalAssemblies.getInterfaceEvolContextList().getCombinedClusterPredictor(second.getId()).getCall();
+			CallType firstCall = crystalAssemblies.getInterfaceEvolContextList().getCombinedClusterPredictor(clusterId1).getCall();
+			CallType secondCall = crystalAssemblies.getInterfaceEvolContextList().getCombinedClusterPredictor(clusterId2).getCall();
 			
 			if (firstCall == CallType.BIO && secondCall == CallType.BIO) {
 				call = CallType.BIO;
