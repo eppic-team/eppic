@@ -77,7 +77,7 @@ public class AssemblyGraph {
 		List<Set<ChainVertex>> connectedSets = ci.connectedSets();
 		
 		logger.debug("Subgraph of assembly {} has {} vertices and {} edges, with {} connected components",
-				this.toString(), subgraph.vertexSet().size(), subgraph.edgeSet().size(), connectedSets.size());
+				assembly.toString(), subgraph.vertexSet().size(), subgraph.edgeSet().size(), connectedSets.size());
 		
 		StringBuilder sb = new StringBuilder();
 		for (Set<ChainVertex> cc:connectedSets) {
@@ -375,5 +375,13 @@ public class AssemblyGraph {
 		}
 		
 		return ds;
+	}
+	
+	public String toString() {
+		return  "(" + 
+					subAssemblies.size()+ " sub-assemblies - "+
+					subAssembliesGroupedByStoichiometries.size() + " sub-assembly groups - " + 
+					subgraph.toString() +
+				")";
 	}
 }

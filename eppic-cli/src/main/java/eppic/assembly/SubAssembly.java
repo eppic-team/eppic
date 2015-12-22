@@ -343,4 +343,11 @@ public class SubAssembly {
 		return sb.toString();
 	}
 
+	public String toString() {
+		return "(Stoichiometry:"+ sto.toString() + " - " +
+				connectedGraph.vertexSet().size() + " vertices - " +
+				connectedGraph.edgeSet().size() + " edges" +
+				")"
+				;
+	}
 }
