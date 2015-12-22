@@ -299,7 +299,16 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 	 * @return
 	 */
 	public int getNumEntitiesInStructure() {
-		return structure.getCompounds().size();
+		
+		int size = 0;
+		// in mmCIF files some sugars are annotated as compounds with no chains linked to them, e.g. 3s26, 4uo5
+		// we need to skip those to count the entities here
+		for (Compound comp: structure.getCompounds()) {
+			if (comp.getChains().isEmpty()) continue;
+			size++;
+		}
+					
+		return size;
 	}
 
 
