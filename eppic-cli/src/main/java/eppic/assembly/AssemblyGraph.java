@@ -130,6 +130,9 @@ public class AssemblyGraph {
 				
 	}
 	
+	public UndirectedGraph<ChainVertex, InterfaceEdge> getSubgraph() {
+		return subgraph;
+	}
 	
 	public List<SubAssembly> getSubAssemblies() {
 		return subAssemblies;

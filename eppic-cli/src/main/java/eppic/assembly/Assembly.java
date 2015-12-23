@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.zip.GZIPOutputStream;
 
 import javax.vecmath.Matrix4d;
@@ -96,16 +97,14 @@ public class Assembly {
 	}
 	
 	public List<StructureInterfaceCluster> getEngagedInterfaceClusters() {
-		List<StructureInterfaceCluster> engagedInterfaceClusters = new ArrayList<StructureInterfaceCluster>();
-		
-		for (StructureInterfaceCluster cluster:crystalAssemblies.getInterfaceClusters()) {
-			for (int i=0;i<engagedSet.size();i++) {
-				if (engagedSet.isOn(i) && cluster.getId() == i+1) {
-					engagedInterfaceClusters.add(cluster);
-				}
-			}
+		TreeMap<Integer, StructureInterfaceCluster> map = new TreeMap<Integer, StructureInterfaceCluster>();
+		for (InterfaceEdge e : assemblyGraph.getSubgraph().edgeSet()) {
+			map.put ( e.getClusterId(), e.getInterfaceCluster());
 		}
-		return engagedInterfaceClusters;
+		
+		List<StructureInterfaceCluster> list = new ArrayList<StructureInterfaceCluster>();
+		list.addAll(map.values());
+		return list;
 	}
 	
 	public int getNumEngagedInterfaceClusters() {

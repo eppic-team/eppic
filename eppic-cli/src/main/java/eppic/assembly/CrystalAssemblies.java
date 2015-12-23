@@ -21,7 +21,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import eppic.CallType;
-import eppic.EppicParams;
 import eppic.InterfaceEvolContextList;
 
 /**
@@ -35,9 +34,10 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 	
 	private static final Logger logger = LoggerFactory.getLogger(CrystalAssemblies.class);
 
+	private static final int MAX_ALLOWED_ASSEMBLIES = 1000;
+	
 	private LatticeGraph<ChainVertex,InterfaceEdge> latticeGraph;
 	private Structure structure;
-	private List<StructureInterfaceCluster> interfaceClusters;
 
 	/**
 	 * The set of all valid assemblies in the crystal.
@@ -60,8 +60,8 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 	
 	private Map<String,Integer> chainIds2Idx;
 	private Map<Integer,String> idx2ChainIds;
-	
-	
+		
+	private boolean largeNumAssemblies;
 	
 	/**
 	 * 
@@ -71,9 +71,10 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 	 */
 	public CrystalAssemblies(Structure structure, StructureInterfaceList interfaces) throws StructureException {
 		
+		this.largeNumAssemblies = false;
+		
 		this.structure = structure;
 		this.latticeGraph = new LatticeGraph<ChainVertex,InterfaceEdge>(structure, interfaces,ChainVertex.class,InterfaceEdge.class);
-		this.interfaceClusters = interfaces.getClusters(EppicParams.CLUSTERING_CONTACT_OVERLAP_SCORE_CUTOFF);
 		
 		initEntityMaps();
 		
@@ -88,6 +89,20 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 	
 	public int size() {
 		return clusters.size();
+	}
+	
+	private void findValidAssemblies() {
+		
+		latticeGraph.removeDuplicateEdges();
+		
+		findValidAssembliesFull();
+		
+		if (largeNumAssemblies) {
+			
+			logger.error("Structures with heteromeric interfaces and large number of assemblies are not supported yet! Assembly list will be empty.");
+			// TODO implement! basically it is the same code, but using the contracted graph within Assembly...			
+			//findValidAssembliesContract();
+		}
 	}
 	
 	/**
@@ -108,34 +123,32 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 	 * pruned top nodes.
 	 * @return
 	 */
-	private void findValidAssemblies() {
-		
-		latticeGraph.removeDuplicateEdges();
-		
+	private void findValidAssembliesFull() {
+				
 		Set<Assembly> validAssemblies = new HashSet<Assembly>();;
 		
 		// the list of nodes in the tree found to be invalid: all of their children will also be invalid
 		List<Assembly> invalidNodes = new ArrayList<Assembly>();		
 		
-		Assembly emptyAssembly = new Assembly(this, new PowerSet(interfaceClusters.size()));
+		Assembly emptyAssembly = new Assembly(this, new PowerSet(latticeGraph.getNumInterfaceClusters()));
 		
 		validAssemblies.add(emptyAssembly); // the empty assembly (no engaged interfaces) is always a valid assembly
 		
 		Set<Assembly> prevLevel = new HashSet<Assembly>();
 		prevLevel.add(emptyAssembly);
 		Set<Assembly> nextLevel = null;
-		
-		for (int k = 1; k<=interfaceClusters.size();k++) {
-			
+
+		for (int k = 1; k<=latticeGraph.getNumInterfaceClusters();k++) {
+
 			logger.debug("Traversing level {} of tree: {} parent nodes",k,prevLevel.size());
-			
+
 			nextLevel = new HashSet<Assembly>();
-					
+
 			for (Assembly p:prevLevel) {
 				List<Assembly> children = p.getChildren(invalidNodes);
-				
+
 				for (Assembly c:children) {
-					
+
 					if (!c.isValid()) {
 						logger.debug("Node {} is invalid, will prune off all of its children",c.toString());
 						invalidNodes.add(c);
@@ -145,18 +158,25 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 						nextLevel.add(c);
 						// add assembly as valid
 						validAssemblies.add(c);
+
+						if (validAssemblies.size() > MAX_ALLOWED_ASSEMBLIES) {
+							logger.warn("Exceeded the default max number of allowed assemblies ({}). Will do assembly enumeration from contracted graph", MAX_ALLOWED_ASSEMBLIES);
+							largeNumAssemblies = true;
+							all = new HashSet<Assembly>();
+							return;
+						}
 					}
 				}
 			}
 			prevLevel = new HashSet<Assembly>(nextLevel); 
-			
+
 		}
-		
+
 		this.all = validAssemblies;
 		
 
 	}
-	
+
 	private void initGroups() {
 		this.groups = new TreeMap<Integer, AssemblyGroup>();
 
@@ -340,10 +360,6 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 		return latticeGraph;
 	}
 	
-	public List<StructureInterfaceCluster> getInterfaceClusters() {
-		return interfaceClusters;
-	}
-	
 	/**
 	 * Returns the list of unique valid assemblies in the crystal, that is the representatives 
 	 * of each of the assembly clusters. The representatives are chosen to be those assemblies that
@@ -417,7 +433,7 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 	
 	public Assembly generateAssembly(int[] interfaceClusterIds) {
 		
-		PowerSet engagedSet = new PowerSet(interfaceClusters.size());
+		PowerSet engagedSet = new PowerSet(latticeGraph.getNumInterfaceClusters());
 		
 		for (int clusterId:interfaceClusterIds) {
 			engagedSet.switchOn(clusterId-1);
