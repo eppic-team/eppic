@@ -482,7 +482,7 @@ public class PymolRunner {
 		
 		pymolScriptBuilder.append("@ "+pmlFile+";");
 		
-		pymolScriptBuilder.append("set pse_export_version, 1.5");
+		pymolScriptBuilder.append("set pse_export_version, 1.5;");
 		pymolScriptBuilder.append("save "+pseFile+";");
 		
 		// writing finally the icon png (we don't need this in pml)
