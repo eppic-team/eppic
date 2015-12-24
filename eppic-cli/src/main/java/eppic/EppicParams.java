@@ -8,11 +8,19 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.biojava.nbio.structure.align.util.UserConfiguration;
+import org.biojava.nbio.structure.io.LocalPDBDirectory.FetchBehavior;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class EppicParams {
+	
+	private static final Logger LOGGER = LoggerFactory.getLogger(EppicParams.class);
 	
 	// CONSTANTS
 	public static final String     PROGRAM_NAME    = "eppic";
@@ -116,8 +124,8 @@ public class EppicParams {
 	protected static final HomologsSearchMode DEF_HOMOLOGS_SEARCH_MODE = HomologsSearchMode.LOCAL;
 	
 	// DEFAULTS FOR CONFIG FILE ASSIGNABLE CONSTANTS
-	// defaults for pdb data location
-	private static final String   DEF_LOCAL_CIF_DIR = "/pdbdata/pdb/data/structures/all/mmCIF";
+	// default fetch behavior is FETCH_IF_OUTDATED so that it is as close as possible to an rsync
+	public static final FetchBehavior DEF_FETCH_BEHAVIOR = FetchBehavior.FETCH_IF_OUTDATED;
 
 	// default sifts file location
 	private static final String   DEF_SIFTS_FILE = "ftp://ftp.ebi.ac.uk/pub/databases/msd/sifts/text/pdb_chain_uniprot.lst";	
@@ -222,7 +230,8 @@ public class EppicParams {
 	private File inFile;
 	
 	// fields assignable from config file
-	private String   localCifDir;
+	private String   atomCachePath;
+	private FetchBehavior  fetchBehavior;
 	
 	private String   siftsFile;
 	
@@ -522,15 +531,26 @@ public class EppicParams {
 	public void checkConfigFileInput() throws EppicException {
 		
 		if (!isInputAFile()) {
-
-			if (localCifDir==null || ! new File(localCifDir).isDirectory()) {
-				throw new EppicException(null,
-					"To be able to use PDB codes as input with -i option, a valid LOCAL_CIF_DIR must be set in config file. " +
-					"It must contain the PDB mmCIF compressed file repository "+
-					". Alternatively you can set USE_ONLINE_PDB to true and the default PDB ftp server will be used (or the one set in PDB_FTP_CIF_URL)",
-								true);
+			
+			if (atomCachePath!=null && ! new File(atomCachePath).isDirectory()) {
+				throw new EppicException(null, "ATOM_CACHE_PATH wasn't set to a valid directory."
+						+ " For -i option to work with PDB codes as input, you must set ATOM_CACHE_PATH to "
+						+ "a directory where the mmCIF files will be cached with same layout as PDB ftp."
+						+ " You can also set it through environment variable PDB_DIR. ", true);
 			}
+			
+			Map<String,String> env = System.getenv();
 
+			if( env.containsKey(UserConfiguration.PDB_DIR) && !env.get(UserConfiguration.PDB_DIR).trim().isEmpty()) {
+				LOGGER.info("Detected PDB_DIR environment variable with dir {}", env.get(UserConfiguration.PDB_DIR));
+			} else {
+
+				if (atomCachePath==null || ! new File(atomCachePath).isDirectory()) {
+					throw new EppicException(null,
+							"To be able to use PDB codes as input with -i option, a valid ATOM_CACHE_PATH must be set in config file, or through environment variable PDB_DIR. " +
+							"It must contain the PDB mmCIF gzip file repository in same divided layout as PDB ftp.", true);
+				}
+			}
 		}
 
 		if (isDoEvolScoring()) {
@@ -810,8 +830,15 @@ public class EppicParams {
 			
 			localUniprotDbName = p.getProperty("LOCAL_UNIPROT_DB_NAME");
 
-			// TODO need to redefine what localCifDir is to adapt to BioJava. At the moment this has no effect
-			localCifDir   	= p.getProperty("LOCAL_CIF_DIR", DEF_LOCAL_CIF_DIR);
+			atomCachePath      = p.getProperty("ATOM_CACHE_PATH");
+						
+			try {
+				fetchBehavior = FetchBehavior.valueOf(p.getProperty("FETCH_BEHAVIOR", DEF_FETCH_BEHAVIOR.name()));
+			} catch (IllegalArgumentException e) {
+				LOGGER.warn("FETCH_BEHAVIOR specified in config file '{}' is not valid. Will use default FETCH_BEHAVIOR '{}'", 
+						p.getProperty("FETCH_BEHAVIOR"), DEF_FETCH_BEHAVIOR.name());
+				fetchBehavior = DEF_FETCH_BEHAVIOR;
+			}
 			
 			siftsFile       = p.getProperty("SIFTS_FILE", DEF_SIFTS_FILE);
 			useSifts        = Boolean.parseBoolean(p.getProperty("USE_SIFTS", new Boolean(DEF_USE_SIFTS).toString()));
@@ -866,10 +893,14 @@ public class EppicParams {
 		}
 	}
 
-	public String getLocalCifDir() {
-		return localCifDir;
+	public String getAtomCachePath() {
+		return atomCachePath;
 	}
 
+	public FetchBehavior getFetchBehavior() {
+		return fetchBehavior;
+	}
+	
 	public String getSiftsFile() {
 		return siftsFile;
 	}

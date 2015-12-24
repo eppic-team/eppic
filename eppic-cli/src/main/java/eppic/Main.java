@@ -29,7 +29,6 @@ import org.biojava.nbio.structure.contact.StructureInterface;
 import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
 import org.biojava.nbio.structure.contact.StructureInterfaceList;
 import org.biojava.nbio.structure.io.FileParsingParameters;
-import org.biojava.nbio.structure.io.LocalPDBDirectory.FetchBehavior;
 import org.biojava.nbio.structure.io.PDBFileParser;
 import org.biojava.nbio.structure.io.mmcif.ChemCompGroupFactory;
 import org.biojava.nbio.structure.io.mmcif.DownloadChemCompProvider;
@@ -161,8 +160,16 @@ public class Main {
 				AtomCache cache = new AtomCache();
 								
 				cache.setUseMmCif(true);
+				if (params.getAtomCachePath()!=null) {
+					LOGGER.info("Path given in ATOM_CACHE_PATH, setting AtomCache to {} and ignoring env variable PDB_DIR");
+					cache.setPath(params.getAtomCachePath());
+				}
 				// we set default fetch behavior to FETCH_IF_OUTDATED which is the closest to rsync
-				cache.setFetchBehavior(FetchBehavior.FETCH_IF_OUTDATED);
+				if (params.getFetchBehavior()!=null) {
+					cache.setFetchBehavior(params.getFetchBehavior());
+				} else {
+					cache.setFetchBehavior(EppicParams.DEF_FETCH_BEHAVIOR);
+				}
 				FileParsingParameters fileParsingParams = new FileParsingParameters();
 				fileParsingParams.setAlignSeqRes(true);
 				fileParsingParams.setParseBioAssembly(true);
@@ -359,6 +366,7 @@ public class Main {
 	
 	public void doFindAssemblies() throws StructureException { 
 		
+		params.getProgressLog().println("Calculating possible assemblies...");
 		// TODO for the moment we are only doing assemblies for crystallographic structures, but we should also try to deal with NMR and EM
 		if (!pdb.isCrystallographic()) {
 			LOGGER.info("The input structure is not crystallographic: won't do analysis of assemblies");
@@ -380,6 +388,7 @@ public class Main {
 		}
 		LOGGER.info("There are {} topologically possible assemblies: {}", validAssemblies.size(), sb.toString());
 					
+		params.getProgressLog().println("Done");
 	}
 	
 	public void doAssemblyScoring() {
