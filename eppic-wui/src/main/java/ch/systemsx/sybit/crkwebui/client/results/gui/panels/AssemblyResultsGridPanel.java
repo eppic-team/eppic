@@ -40,6 +40,7 @@ import ch.systemsx.sybit.crkwebui.client.results.gui.grid.util.AssemblyMethodsSu
 import ch.systemsx.sybit.crkwebui.client.results.gui.grid.util.FinalCallSummaryRenderer;
 import ch.systemsx.sybit.crkwebui.client.results.gui.grid.util.MethodSummaryType;
 import ch.systemsx.sybit.crkwebui.client.results.gui.panels.ResultsPanel;
+import ch.systemsx.sybit.crkwebui.server.commons.util.io.DirLocatorUtil;
 import ch.systemsx.sybit.crkwebui.shared.model.Assembly;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceCluster;
 import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
@@ -382,14 +383,14 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 					model.setIdentifier(assembly.getIdentifierString());
 					model.setPdbCode(resultsData.getPdbCode());
 					
-					String thumbnailUrl = ApplicationContext.getSettings().getResultsLocation() +
-							ApplicationContext.getPdbInfo().getJobId() + 
+					String thumbnailUrl = 
+							DirLocatorUtil.getJobUrlPath(ApplicationContext.getSettings().getResultsLocation(), ApplicationContext.getPdbInfo().getJobId()) + 
 							"/" + ApplicationContext.getPdbInfo().getTruncatedInputName() +
 							EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX +
 							"." + assembly.getId() + ".75x75.png";
 					if(ApplicationContext.getPdbInfo().getJobId().length() == 4)
-						thumbnailUrl = ApplicationContext.getSettings().getResultsLocation() +
-							ApplicationContext.getPdbInfo().getJobId().toLowerCase() + 
+						thumbnailUrl = 
+							DirLocatorUtil.getJobUrlPath(ApplicationContext.getSettings().getResultsLocation(), ApplicationContext.getPdbInfo().getJobId().toLowerCase()) + 
 							"/" + ApplicationContext.getPdbInfo().getTruncatedInputName() +
 							EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX + 
 							"." + assembly.getId() + ".75x75.png";

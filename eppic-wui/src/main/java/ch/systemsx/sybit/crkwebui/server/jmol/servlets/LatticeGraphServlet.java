@@ -112,7 +112,7 @@ public class LatticeGraphServlet extends BaseServlet
 
 			// Construct UC filename
 			File ucFile = new File(dir,inputPrefix + EppicParams.UNIT_CELL_COORD_FILES_SUFFIX + ".cif.gz");
-			String ucURI = resultsLocation + jobId + "/" + inputPrefix + EppicParams.UNIT_CELL_COORD_FILES_SUFFIX + ".cif";
+			String ucURI = DirLocatorUtil.getJobUrlPath(resultsLocation, jobId) + "/" + inputPrefix + EppicParams.UNIT_CELL_COORD_FILES_SUFFIX + ".cif";
 
 			List<Interface> ifaceList = getInterfaceList(pdbInfo);
 

@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ch.systemsx.sybit.crkwebui.server.commons.servlets.BaseServlet;
+import ch.systemsx.sybit.crkwebui.server.commons.util.io.DirLocatorUtil;
 import ch.systemsx.sybit.crkwebui.server.db.dao.AssemblyDAO;
 import ch.systemsx.sybit.crkwebui.server.db.dao.InterfaceDAO;
 import ch.systemsx.sybit.crkwebui.server.db.dao.PDBInfoDAO;
@@ -149,7 +150,7 @@ public class JmolViewerServlet extends BaseServlet
 
 			String jmolPage = JmolPageGenerator.generatePage(title, 
 					size, serverUrl,
-					resultsLocation + jobId, 
+					DirLocatorUtil.getJobUrlPath(resultsLocation, jobId), 
 					fileName,   
 					interfData,
 					assemblyData,
