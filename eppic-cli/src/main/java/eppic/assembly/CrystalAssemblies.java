@@ -34,6 +34,10 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 	
 	private static final Logger logger = LoggerFactory.getLogger(CrystalAssemblies.class);
 
+	/**
+	 * If this max number of assemblies is exceeded the assembly enumeration will happen on
+	 * the heteromeric-contracted graph instead of on the full graph.
+	 */
 	private static final int MAX_ALLOWED_ASSEMBLIES = 1000;
 	
 	private LatticeGraph<ChainVertex,InterfaceEdge> latticeGraph;
@@ -125,12 +129,14 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 	 */
 	private void findValidAssembliesFull() {
 				
-		Set<Assembly> validAssemblies = new HashSet<Assembly>();;
+		Set<Assembly> validAssemblies = new HashSet<Assembly>();
+		
+		int numInterfaceClusters = latticeGraph.getNumInterfaceClusters();
 		
 		// the list of nodes in the tree found to be invalid: all of their children will also be invalid
 		List<Assembly> invalidNodes = new ArrayList<Assembly>();		
 		
-		Assembly emptyAssembly = new Assembly(this, new PowerSet(latticeGraph.getNumInterfaceClusters()));
+		Assembly emptyAssembly = new Assembly(this, new PowerSet(numInterfaceClusters));
 		
 		validAssemblies.add(emptyAssembly); // the empty assembly (no engaged interfaces) is always a valid assembly
 		
@@ -138,7 +144,7 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 		prevLevel.add(emptyAssembly);
 		Set<Assembly> nextLevel = null;
 
-		for (int k = 1; k<=latticeGraph.getNumInterfaceClusters();k++) {
+		for (int k = 1; k<=numInterfaceClusters; k++) {
 
 			logger.debug("Traversing level {} of tree: {} parent nodes",k,prevLevel.size());
 
@@ -160,7 +166,7 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 						validAssemblies.add(c);
 
 						if (validAssemblies.size() > MAX_ALLOWED_ASSEMBLIES) {
-							logger.warn("Exceeded the default max number of allowed assemblies ({}). Will do assembly enumeration from contracted graph", MAX_ALLOWED_ASSEMBLIES);
+							logger.warn("Exceeded the default max number of allowed assemblies ({}). Will do assembly enumeration from heteromeric-contracted graph", MAX_ALLOWED_ASSEMBLIES);
 							largeNumAssemblies = true;
 							all = new HashSet<Assembly>();
 							return;
