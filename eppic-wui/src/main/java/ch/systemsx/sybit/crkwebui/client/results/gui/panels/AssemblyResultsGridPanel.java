@@ -12,14 +12,12 @@ import ch.systemsx.sybit.crkwebui.client.commons.events.ShowAssemblyViewerEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowDiagramViewerEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowInterfacesOfAssemblyDataEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowThumbnailEvent;
-import ch.systemsx.sybit.crkwebui.client.commons.events.ShowViewerEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.WindowHideEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.SelectAssemblyResultsRowHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowAssembliesHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowAssemblyViewerHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowDiagramViewerHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowThumbnailHandler;
-import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowViewerHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.WindowHideHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.managers.DiagramViewerRunner;
 import ch.systemsx.sybit.crkwebui.client.commons.managers.EventBusManager;
@@ -27,20 +25,13 @@ import ch.systemsx.sybit.crkwebui.client.commons.managers.ViewerRunner;
 import ch.systemsx.sybit.crkwebui.client.commons.util.EscapedStringGenerator;
 import ch.systemsx.sybit.crkwebui.client.results.data.AssemblyItemModel;
 import ch.systemsx.sybit.crkwebui.client.results.data.AssemblyItemModelProperties;
-import ch.systemsx.sybit.crkwebui.client.results.data.InterfaceItemModel;
 import ch.systemsx.sybit.crkwebui.client.results.gui.cells.AssemblyDiagramCell;
 import ch.systemsx.sybit.crkwebui.client.results.gui.cells.AssemblyMethodCallCell;
 import ch.systemsx.sybit.crkwebui.client.results.gui.cells.AssemblyThumbnailCell;
-import ch.systemsx.sybit.crkwebui.client.results.gui.cells.InterfacesButtonCell;
 import ch.systemsx.sybit.crkwebui.client.results.gui.cells.InterfacesLinkCell;
-import ch.systemsx.sybit.crkwebui.client.results.gui.cells.MethodCallCell;
-import ch.systemsx.sybit.crkwebui.client.results.gui.cells.ThumbnailCell;
 import ch.systemsx.sybit.crkwebui.client.results.gui.grid.util.AssemblyMethodSummaryType;
 import ch.systemsx.sybit.crkwebui.client.results.gui.grid.util.AssemblyMethodsSummaryRenderer;
-import ch.systemsx.sybit.crkwebui.client.results.gui.grid.util.FinalCallSummaryRenderer;
-import ch.systemsx.sybit.crkwebui.client.results.gui.grid.util.MethodSummaryType;
 import ch.systemsx.sybit.crkwebui.client.results.gui.panels.ResultsPanel;
-import ch.systemsx.sybit.crkwebui.server.commons.util.io.DirLocatorUtil;
 import ch.systemsx.sybit.crkwebui.shared.model.Assembly;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceCluster;
 import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
@@ -53,7 +44,6 @@ import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.History;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.sencha.gxt.cell.core.client.form.ComboBoxCell.TriggerAction;
@@ -384,13 +374,13 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 					model.setPdbCode(resultsData.getPdbCode());
 					
 					String thumbnailUrl = 
-							DirLocatorUtil.getJobUrlPath(ApplicationContext.getSettings().getResultsLocation(), ApplicationContext.getPdbInfo().getJobId()) + 
+							ApplicationContext.getSettings().getResultsLocationForJob(ApplicationContext.getPdbInfo().getJobId()) + 
 							"/" + ApplicationContext.getPdbInfo().getTruncatedInputName() +
 							EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX +
 							"." + assembly.getId() + ".75x75.png";
 					if(ApplicationContext.getPdbInfo().getJobId().length() == 4)
 						thumbnailUrl = 
-							DirLocatorUtil.getJobUrlPath(ApplicationContext.getSettings().getResultsLocation(), ApplicationContext.getPdbInfo().getJobId().toLowerCase()) + 
+							ApplicationContext.getSettings().getResultsLocationForJob(ApplicationContext.getPdbInfo().getJobId().toLowerCase()) + 
 							"/" + ApplicationContext.getPdbInfo().getTruncatedInputName() +
 							EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX + 
 							"." + assembly.getId() + ".75x75.png";

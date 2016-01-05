@@ -36,7 +36,6 @@ import ch.systemsx.sybit.crkwebui.client.results.gui.grid.util.ClustersGridView;
 import ch.systemsx.sybit.crkwebui.client.results.gui.grid.util.FinalCallSummaryRenderer;
 import ch.systemsx.sybit.crkwebui.client.results.gui.grid.util.MethodSummaryType;
 import ch.systemsx.sybit.crkwebui.client.results.gui.grid.util.MethodsSummaryRenderer;
-import ch.systemsx.sybit.crkwebui.server.commons.util.io.DirLocatorUtil;
 import ch.systemsx.sybit.crkwebui.shared.model.Interface;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceCluster;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceClusterScore;
@@ -55,7 +54,6 @@ import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.History;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
@@ -512,13 +510,13 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 					model.setInfinite(interfaceItem.isInfinite());
 					model.setWarnings(interfaceItem.getInterfaceWarnings());
 					String thumbnailUrl = 
-							DirLocatorUtil.getJobUrlPath(ApplicationContext.getSettings().getResultsLocation(), ApplicationContext.getPdbInfo().getJobId()) + 
+							ApplicationContext.getSettings().getResultsLocationForJob(ApplicationContext.getPdbInfo().getJobId()) + 
 							"/" + ApplicationContext.getPdbInfo().getTruncatedInputName() +
 							EppicParams.INTERFACES_COORD_FILES_SUFFIX +
 							"." + interfaceItem.getInterfaceId() + ".75x75.png";
 					if(ApplicationContext.getPdbInfo().getJobId().length() == 4)
 						thumbnailUrl =
-							DirLocatorUtil.getJobUrlPath(ApplicationContext.getSettings().getResultsLocation(), ApplicationContext.getPdbInfo().getJobId().toLowerCase()) + 
+							ApplicationContext.getSettings().getResultsLocationForJob(ApplicationContext.getPdbInfo().getJobId().toLowerCase()) + 
 							"/" + ApplicationContext.getPdbInfo().getTruncatedInputName() +
 							EppicParams.INTERFACES_COORD_FILES_SUFFIX + 
 							"." + interfaceItem.getInterfaceId() + ".75x75.png";

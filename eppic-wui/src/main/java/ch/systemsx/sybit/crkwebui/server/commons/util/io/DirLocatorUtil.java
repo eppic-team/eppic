@@ -2,6 +2,8 @@ package ch.systemsx.sybit.crkwebui.server.commons.util.io;
 
 import java.io.File;
 
+import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
+
 public class DirLocatorUtil {
 	
 	/**
@@ -41,8 +43,10 @@ public class DirLocatorUtil {
 	 * <li>
 	 * If jobId is a long alphanumerical string (more than 4 characters): the URL is directly under baseUrl: baseUrl/jobId
 	 * </li>
+	 * See ApplicationSettings#getResultsLocationForJob(String) for the equivalent client side call
 	 * @param baseUrl
 	 * @param jobId
+	 * @see ApplicationSettings#getResultsLocationForJob(String) 
 	 * @return
 	 */
 	public static String getJobUrlPath(String baseUrl, String jobId) {

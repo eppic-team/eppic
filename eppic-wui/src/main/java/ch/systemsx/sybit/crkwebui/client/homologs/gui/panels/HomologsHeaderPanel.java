@@ -6,7 +6,6 @@ package ch.systemsx.sybit.crkwebui.client.homologs.gui.panels;
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.links.ImageLinkWithTooltip;
-import ch.systemsx.sybit.crkwebui.server.commons.util.io.DirLocatorUtil;
 import ch.systemsx.sybit.crkwebui.server.files.downloader.servlets.FileDownloadServlet;
 import ch.systemsx.sybit.crkwebui.shared.model.ChainCluster;
 import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
@@ -150,7 +149,7 @@ public class HomologsHeaderPanel extends HorizontalLayoutContainer{
 				"&"+FileDownloadServlet.PARAM_REP_CHAIN_ID+"=" + repChainId;
 		
 		String colorPseIconImgSrc = 
-				DirLocatorUtil.getJobUrlPath(ApplicationContext.getSettings().getResultsLocation(), jobId) + "/" +
+				ApplicationContext.getSettings().getResultsLocationForJob(jobId) + "/" +
 				pdbName +"."+repChainId+EppicParams.ENTROPIES_FILE_SUFFIX+".png";
 
 		potatoImage = new ImageLinkWithTooltip(colorPseIconImgSrc, 
