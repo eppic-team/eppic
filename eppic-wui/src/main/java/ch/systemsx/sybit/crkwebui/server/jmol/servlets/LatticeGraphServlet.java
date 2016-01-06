@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ch.systemsx.sybit.crkwebui.server.commons.servlets.BaseServlet;
+import ch.systemsx.sybit.crkwebui.server.commons.util.io.DirLocatorUtil;
 import ch.systemsx.sybit.crkwebui.server.db.dao.InterfaceDAO;
 import ch.systemsx.sybit.crkwebui.server.db.dao.JobDAO;
 import ch.systemsx.sybit.crkwebui.server.db.dao.PDBInfoDAO;
@@ -107,11 +108,11 @@ public class LatticeGraphServlet extends BaseServlet
 			String inputPrefix = pdbInfo.getTruncatedInputName();
 
 			// job directory on local filesystem
-			File dir = new File(destination_path + jobId);
+			File dir = DirLocatorUtil.getJobDir(new File(destination_path), jobId);
 
 			// Construct UC filename
 			File ucFile = new File(dir,inputPrefix + EppicParams.UNIT_CELL_COORD_FILES_SUFFIX + ".cif.gz");
-			String ucURI = resultsLocation + jobId + "/" + inputPrefix + EppicParams.UNIT_CELL_COORD_FILES_SUFFIX + ".cif";
+			String ucURI = DirLocatorUtil.getJobUrlPath(resultsLocation, jobId) + "/" + inputPrefix + EppicParams.UNIT_CELL_COORD_FILES_SUFFIX + ".cif";
 
 			List<Interface> ifaceList = getInterfaceList(pdbInfo);
 

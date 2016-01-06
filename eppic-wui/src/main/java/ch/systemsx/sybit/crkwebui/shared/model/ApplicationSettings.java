@@ -199,6 +199,41 @@ public class ApplicationSettings implements Serializable {
 	}
 
 	/**
+	 * Given a jobId, returns the URL where the results for the job are located:
+	 * <li>
+	 * If jobId is a PDB id (4 characters): the URL will be: resultsLocation/divided/mid-2-letters-from-PDB-id/jobId
+	 * </li>
+	 * <li>
+	 * If jobId is a long alphanumerical string (more than 4 characters): the URL is directly under resultsLocation: resultsLocation/jobId
+	 * </li>
+	 * @param baseUrl
+	 * @param jobId
+	 * @return
+	 */
+	public String getResultsLocationForJob(String jobId) {
+		
+		String baseUrl = resultsLocation;
+		
+		if (baseUrl.endsWith("/")) 
+			baseUrl = baseUrl.substring(0, baseUrl.length()-1);
+
+		
+		// CASE 1: jobId is a PDB id (4 letters): we direct to divided layout
+		if (jobId.length()==4) {
+			
+			String midPdbIndex = jobId.substring(1,3);
+						
+			return baseUrl + "/" + "divided" + "/" + midPdbIndex + "/" + jobId;
+			
+		// CASE 2: jobId is a long alphanumerical string (user job): directory directly under baseDir
+		} else {
+			
+			return baseUrl +"/" + jobId;
+		} 
+		
+	}
+	
+	/**
 	 * Sets location where results are accessible.
 	 * @param resultsLocation location where results are accessible
 	 */

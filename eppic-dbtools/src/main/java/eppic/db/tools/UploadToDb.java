@@ -152,6 +152,10 @@ public class UploadToDb {
 		
 		EntityManager em = dbh.getEntityManager();
 		
+		int countPresent = 0;
+		int countUploaded = 0;
+		int countRemoved = 0;
+		int countErrorJob = 0;
 		
 		for (File jobDirectory : jobsDirectories) {
 			i++;
@@ -217,17 +221,27 @@ public class UploadToDb {
 						}
 						else {
 							dbh.persistErrorJob(em, currentPDB);
+							countErrorJob++;
 						}
+						countUploaded++;
 					}
-					else System.out.print(" Already Present.. Skipping.. ");
+					else {
+						countPresent++;
+						System.out.print(" Already Present.. Skipping.. ");
+					}
 					//continue;
 				}
 
 				//MODE REMOVE
 				if (modeRemove) {
 					boolean ifRemoved = dbh.removeJob(currentPDB);
-					if (ifRemoved) System.out.print(" Removed.. ");
-					else System.out.print(" Not Found.. ");
+					if (ifRemoved) {
+						System.out.print(" Removed.. ");
+						countRemoved++;
+					}
+					else {
+						System.out.print(" Not Found.. ");
+					}
 					//continue;
 				}
 
@@ -268,6 +282,11 @@ public class UploadToDb {
 		long totalEnd = System.currentTimeMillis();
 		
 		System.out.println("Completed all "+jobsDirectories.length+" entries in "+((totalEnd-totalStart)/1000)+" s");
+		if (modeNew) {
+			System.out.println("Already present: "+countPresent+", uploaded: "+countUploaded+", couldn't insert: "+pdbsWithWarnings.size());
+			System.out.println("There were "+countErrorJob+" error jobs in "+countUploaded+" uploaded entries.");
+		}
+		if (modeRemove) System.out.println("Removed: "+countRemoved);
 
 		if (!pdbsWithWarnings.isEmpty()) {
 			System.out.println("These PDBs had problems while inserting to db: ");

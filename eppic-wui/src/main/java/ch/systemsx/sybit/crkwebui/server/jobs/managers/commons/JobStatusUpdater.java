@@ -6,6 +6,7 @@ import java.io.ObjectInputStream;
 import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.server.CrkWebServiceImpl;
+import ch.systemsx.sybit.crkwebui.server.commons.util.io.DirLocatorUtil;
 import ch.systemsx.sybit.crkwebui.server.commons.util.io.DirectoryContentReader;
 import ch.systemsx.sybit.crkwebui.server.commons.util.io.FileContentReader;
 import ch.systemsx.sybit.crkwebui.server.commons.util.log.LogHandler;
@@ -72,7 +73,7 @@ public class JobStatusUpdater implements Runnable
 
 						if(savedStatus != currentStatus)
 						{
-							File logFileDirectory = new File(generalDestinationDirectoryName, unfinishedJob.getJobId());
+							File logFileDirectory = DirLocatorUtil.getJobDir(new File(generalDestinationDirectoryName), unfinishedJob.getJobId());
 							File logFile = new File(logFileDirectory, CrkWebServiceImpl.PROGRESS_LOG_FILE_NAME);
 
 							if(currentStatus == StatusOfJob.FINISHED)
@@ -141,7 +142,7 @@ public class JobStatusUpdater implements Runnable
 
 	    webuiFileName += ".webui.dat";
 
-	    File resultsDirectory = new File(generalDestinationDirectoryName, jobStatusDetails.getJobId());
+	    File resultsDirectory =  DirLocatorUtil.getJobDir(new File(generalDestinationDirectoryName), jobStatusDetails.getJobId());
 	    File resultsFile = new File(resultsDirectory, webuiFileName);
 		PdbInfoDB pdbScoreItem = retrieveResult(resultsFile);
 		jobDAO.setPdbScoreItemForJob(jobStatusDetails.getJobId(), pdbScoreItem);
@@ -165,7 +166,7 @@ public class JobStatusUpdater implements Runnable
 	 */
 	private void handleJobFinishedWithError(JobStatusDetails jobStatusDetails) throws DaoException
 	{
-		File jobDirectory = new File(generalDestinationDirectoryName, jobStatusDetails.getJobId());
+		File jobDirectory = DirLocatorUtil.getJobDir(new File(generalDestinationDirectoryName), jobStatusDetails.getJobId());
 		
 		File directoryContent[] = DirectoryContentReader.getFilesNamesWithPrefix(jobDirectory,
 																					jobStatusDetails.getJobId() + ".e");

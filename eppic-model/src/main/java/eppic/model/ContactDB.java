@@ -20,10 +20,10 @@ public class ContactDB implements Serializable {
 	
 	private int numAtoms;
 	
-	private boolean isClash;
+	private boolean clash;
 	
 	private int numHBonds;
-	private boolean isDisulfide;
+	private boolean disulfide;
 	
 	private int interfaceId;
 	private String pdbCode;
@@ -103,11 +103,11 @@ public class ContactDB implements Serializable {
 	}
 
 	public boolean isClash() {
-		return isClash;
+		return clash;
 	}
 
 	public void setClash(boolean isClash) {
-		this.isClash = isClash;
+		this.clash = isClash;
 	}
 
 	public int getNumHBonds() {
@@ -119,11 +119,11 @@ public class ContactDB implements Serializable {
 	}
 
 	public boolean isDisulfide() {
-		return isDisulfide;
+		return disulfide;
 	}
 
 	public void setDisulfide(boolean isDisulfide) {
-		this.isDisulfide = isDisulfide;
+		this.disulfide = isDisulfide;
 	}
 
 	public int getInterfaceId() {

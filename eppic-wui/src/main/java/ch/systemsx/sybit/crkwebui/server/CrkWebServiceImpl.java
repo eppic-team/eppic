@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ch.systemsx.sybit.crkwebui.client.commons.services.eppic.CrkWebService;
+import ch.systemsx.sybit.crkwebui.server.commons.util.io.DirLocatorUtil;
 import ch.systemsx.sybit.crkwebui.server.commons.util.io.DirectoryContentReader;
 import ch.systemsx.sybit.crkwebui.server.commons.util.io.FileContentReader;
 import ch.systemsx.sybit.crkwebui.server.commons.util.io.IOUtil;
@@ -557,7 +558,7 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 
 		if((jobId != null) && (!jobId.equals("")))
 		{
-			File dataDirectory = new File(generalDestinationDirectoryName, jobId);
+			File dataDirectory = DirLocatorUtil.getJobDir(new File(generalDestinationDirectoryName), jobId);
 
 			if (IOUtil.checkIfDirectoryExist(dataDirectory))
 			{
@@ -635,7 +636,7 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 		stepStatus.setCurrentStepNumber(0);
 		stepStatus.setCurrentStep("Waiting");
 
-		File dataDirectory = new File(generalDestinationDirectoryName, jobId);
+		File dataDirectory = DirLocatorUtil.getJobDir(new File(generalDestinationDirectoryName), jobId);
 
 		if (IOUtil.checkIfDirectoryExist(dataDirectory))
 		{
@@ -775,7 +776,7 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 			JobDAO jobDAO = new JobDAOJpa();
 			String submissionId = jobDAO.getSubmissionIdForJobId(jobId);
 
-			File jobDirectory = new File(generalDestinationDirectoryName, jobId);
+			File jobDirectory = DirLocatorUtil.getJobDir(new File(generalDestinationDirectoryName), jobId);
 			File logFile = new File(jobDirectory, PROGRESS_LOG_FILE_NAME);
 			File killFile = new File(jobDirectory, KILLED_FILE_NAME);
 			killFile.createNewFile();

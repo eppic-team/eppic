@@ -149,8 +149,7 @@ public class HomologsHeaderPanel extends HorizontalLayoutContainer{
 				"&"+FileDownloadServlet.PARAM_REP_CHAIN_ID+"=" + repChainId;
 		
 		String colorPseIconImgSrc = 
-				ApplicationContext.getSettings().getResultsLocation() + 
-				jobId+"/"+
+				ApplicationContext.getSettings().getResultsLocationForJob(jobId) + "/" +
 				pdbName +"."+repChainId+EppicParams.ENTROPIES_FILE_SUFFIX+".png";
 
 		potatoImage = new ImageLinkWithTooltip(colorPseIconImgSrc, 
