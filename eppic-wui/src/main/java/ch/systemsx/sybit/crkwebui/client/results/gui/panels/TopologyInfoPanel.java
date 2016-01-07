@@ -6,6 +6,7 @@ import ch.systemsx.sybit.crkwebui.client.commons.gui.images.ImageWithTooltip;
 import ch.systemsx.sybit.crkwebui.client.commons.managers.DiagramViewerRunner;
 import ch.systemsx.sybit.crkwebui.client.commons.managers.ViewerRunner;
 import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
+import eppic.EppicParams;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -36,7 +37,21 @@ public class TopologyInfoPanel extends FieldSet {
 		HorizontalLayoutContainer imagesContainer = new HorizontalLayoutContainer();  
 		imagesContainer.setHeight(75);
     
-		ImageWithTooltip leftimage = new ImageWithTooltip("resources/icons/mockup3.png", null, "Click to open in 3D viewer");
+		
+		String thumbnailUrl = 
+				ApplicationContext.getSettings().getResultsLocationForJob(ApplicationContext.getPdbInfo().getJobId()) + 
+				"/" + ApplicationContext.getPdbInfo().getTruncatedInputName() +
+				EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX +
+				"." + ApplicationContext.getSelectedAssemblyId() + ".75x75.png";
+		if(ApplicationContext.getPdbInfo().getJobId().length() == 4)
+			thumbnailUrl = 
+				ApplicationContext.getSettings().getResultsLocationForJob(ApplicationContext.getPdbInfo().getJobId().toLowerCase()) + 
+				"/" + ApplicationContext.getPdbInfo().getTruncatedInputName() +
+				EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX + 
+				"." + ApplicationContext.getSelectedAssemblyId() + ".75x75.png";
+		
+		
+		ImageWithTooltip leftimage = new ImageWithTooltip(thumbnailUrl, null, "Click to open in 3D viewer");
 		leftimage.setWidth("75px");
     	HTML spacer2 = new HTML("<div style='width:10px'></div>");
 		ImageWithTooltip rightimage = new ImageWithTooltip("resources/icons/mockup4.png", null, "Click to open a 3D representation of the lattice graph");
