@@ -9,10 +9,8 @@ import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.Hyperlink;
 import com.sencha.gxt.widget.core.client.container.HorizontalLayoutContainer;
 import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer;
 import com.sencha.gxt.widget.core.client.form.FieldSet;
@@ -46,7 +44,7 @@ public class TopologyInfoPanel extends FieldSet {
 		leftimage.addClickHandler(new ClickHandler() {		
 			@Override
 			public void onClick(ClickEvent event) {
-				ViewerRunner.runViewer(ApplicationContext.getSelectedAssemblyId()+"");
+				ViewerRunner.runViewerAssembly(ApplicationContext.getSelectedAssemblyId()+"");
 			}
 			
 		}); 
