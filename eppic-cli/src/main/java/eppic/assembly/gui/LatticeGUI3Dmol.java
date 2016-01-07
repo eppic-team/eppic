@@ -49,6 +49,7 @@ public class LatticeGUI3Dmol {
 	private String strucURI;
 	private String pdbId; //TODO use file instead
 	private String title; //Title for HTML page
+	private String size; // size of the div where 3dmol is placed
 	private String url3Dmol = DEFAULT_URL_3DMOL;
 	
 	/**
@@ -103,6 +104,7 @@ public class LatticeGUI3Dmol {
 		}
 		
 		this.title = String.format("Lattice for %s",getPdbId());
+		this.size = "800";
 	}
 
 	/**
@@ -255,6 +257,12 @@ public class LatticeGUI3Dmol {
 	}
 	public void setTitle(String title) {
 		this.title = title;
+	}
+	public String getSize() {
+		return size;
+	}
+	public void setSize(String size) {
+		this.size = size;
 	}
 	public String getUrl3Dmol() {
 		return url3Dmol;

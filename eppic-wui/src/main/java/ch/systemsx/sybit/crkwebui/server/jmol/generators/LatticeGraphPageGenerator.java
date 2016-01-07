@@ -46,15 +46,17 @@ public class LatticeGraphPageGenerator {
 	 * @param ucFilename Path to the unit cell structure. Will be generated if doesn't exist
 	 * @param ucURI URL to reach ucFilename within the browser
 	 * @param title Page title [default: structure name]
+	 * @param size the canvas size 
 	 * @param interfaces List of all interfaces to build the latticegraph
 	 * @param requestedIfaces 
 	 * @param url3dmoljs 3Dmol script URL. (default: http://3Dmol.csb.pitt.edu/build/3Dmol-min.js)
+	 * @param out
 	 * @return the HTML page
 	 * @throws StructureException For errors parsing the input structure
 	 * @throws IOException For errors reading or writing files
 	 */
 	public static void generatePage(File directory, String inputName, File ucFile,
-			String ucURI, String title, List<Interface> interfaces,
+			String ucURI, String title, String size, List<Interface> interfaces,
 			Collection<Integer> requestedIfaces, String url3dmoljs, PrintWriter out) throws IOException, StructureException {
 
 		// Read input structure
@@ -131,6 +133,8 @@ public class LatticeGraphPageGenerator {
 		// Override some properties if needed
 		if(title != null)
 			gui.setTitle(title);
+		if(size != null) 
+			gui.setSize(size);
 		if(url3dmoljs != null)
 			gui.setUrl3Dmol(url3dmoljs);
 
