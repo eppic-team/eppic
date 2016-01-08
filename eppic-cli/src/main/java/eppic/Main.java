@@ -148,8 +148,11 @@ public class Main {
 		// TODO if BioJava 4.2 changes the default or the behavior of DownloadChemCompProvider
 		//      we will need to revise this
 		
-		ChemCompGroupFactory.setChemCompProvider(new DownloadChemCompProvider());
 		
+		if (params.getAtomCachePath()!=null)
+			ChemCompGroupFactory.setChemCompProvider(new DownloadChemCompProvider(params.getAtomCachePath()));
+		else 
+			ChemCompGroupFactory.setChemCompProvider(new DownloadChemCompProvider());
 		
 		params.getProgressLog().println("Loading PDB data: "+(params.getInFile()==null?params.getPdbCode():params.getInFile().getName()));
 		writeStep("Calculating Interfaces");
@@ -157,13 +160,16 @@ public class Main {
 		try {
 			if (!params.isInputAFile()) {
 				
-				AtomCache cache = new AtomCache();
+				AtomCache cache = null;
 								
-				cache.setUseMmCif(true);
 				if (params.getAtomCachePath()!=null) {
-					LOGGER.info("Path given in ATOM_CACHE_PATH, setting AtomCache to {} and ignoring env variable PDB_DIR");
-					cache.setPath(params.getAtomCachePath());
+					LOGGER.info("Path given in ATOM_CACHE_PATH, setting AtomCache to {} and ignoring env variable PDB_DIR", params.getAtomCachePath());
+					cache = new AtomCache(params.getAtomCachePath());
+				} else {
+					cache = new AtomCache();
 				}
+				cache.setUseMmCif(true);
+				
 				// we set default fetch behavior to FETCH_IF_OUTDATED which is the closest to rsync
 				if (params.getFetchBehavior()!=null) {
 					cache.setFetchBehavior(params.getFetchBehavior());
