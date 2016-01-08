@@ -88,6 +88,7 @@ public class LatticeGraphServlet extends BaseServlet
 		String jobId = request.getParameter(FileDownloadServlet.PARAM_ID);
 		String requestedIfacesStr = request.getParameter(PARAM_INTERFACES);
 		String requestedClusterStr = request.getParameter(PARAM_CLUSTERS);
+		String size = request.getParameter(JmolViewerServlet.PARAM_SIZE);
 
 		String url3dmoljs = properties.getProperty("url3dmoljs");
 		if (url3dmoljs == null || url3dmoljs.equals("")) {
@@ -127,7 +128,7 @@ public class LatticeGraphServlet extends BaseServlet
 
 			outputStream = new PrintWriter(response.getOutputStream());
 
-			LatticeGraphPageGenerator.generatePage(dir,input, ucFile, ucURI, title, ifaceList, requestedIfaces, url3dmoljs,outputStream);
+			LatticeGraphPageGenerator.generatePage(dir,input, ucFile, ucURI, title, size, ifaceList, requestedIfaces, url3dmoljs,outputStream);
 
 		}
 		catch(ValidationException e)
