@@ -80,6 +80,8 @@ public class PdbInfo implements Serializable, ProcessingData
 	@XmlElement(name = "interfaceCluster")
 	private List<InterfaceCluster> interfaceClusters;
 
+	@XmlElementWrapper(name = "assemblies")
+	@XmlElement(name = "assembly")
 	private List<Assembly> assemblies;
 
 	@XmlTransient
