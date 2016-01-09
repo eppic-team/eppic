@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ch.systemsx.sybit.crkwebui.server.CrkWebServiceImpl;
+import eppic.EppicParams;
 
 /**
  * Base class for other servlets.
@@ -28,6 +29,7 @@ public class BaseServlet extends HttpServlet {
 	private static final Logger logger = LoggerFactory.getLogger(BaseServlet.class);
 
 	protected Properties properties;
+	protected Properties propertiesCli;
 
 	public void init(ServletConfig config) throws ServletException 
 	{
@@ -41,12 +43,24 @@ public class BaseServlet extends HttpServlet {
 			InputStream propertiesStream = 
 					new FileInputStream(new File(CrkWebServiceImpl.SERVER_PROPERTIES_FILE));
 
-			properties.load(propertiesStream);
+			properties.load(propertiesStream);			
+			
 		}
 		catch (IOException e) 
 		{
-			//e.printStackTrace();
+			
 			throw new ServletException("Properties file '"+CrkWebServiceImpl.SERVER_PROPERTIES_FILE+"' can not be read. Error: "+e.getMessage());
+		}
+		
+		File eppicCliConfFile = new File(System.getProperty("user.home"), EppicParams.CONFIG_FILE_NAME);
+		
+		try {
+			logger.info("Reading CLI properties file {} ", eppicCliConfFile.toString());
+			
+			propertiesCli.load(new FileInputStream(eppicCliConfFile));
+
+		} catch (IOException e) {
+			throw new ServletException("Properties file '"+eppicCliConfFile+"' can not be read. Error: "+e.getMessage());
 		}
 	}
 

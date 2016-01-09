@@ -67,6 +67,8 @@ public class LatticeGraphServlet extends BaseServlet
 
 	private String resultsLocation;
 	private String destination_path;
+	
+	private String atomCachePath;
 
 	@Override
 	public void init(ServletConfig config) throws ServletException
@@ -75,6 +77,10 @@ public class LatticeGraphServlet extends BaseServlet
 
 		resultsLocation = properties.getProperty("results_location");
 		destination_path = properties.getProperty("destination_path");
+		atomCachePath = propertiesCli.getProperty("ATOM_CACHE_PATH");
+		
+		if (atomCachePath == null) 
+			logger.warn("ATOM_CACHE_PATH is not set in config file, will not be able to reuse cache for PDB cif.gz files!");
 	}
 
 	@Override
@@ -128,7 +134,7 @@ public class LatticeGraphServlet extends BaseServlet
 
 			outputStream = new PrintWriter(response.getOutputStream());
 
-			LatticeGraphPageGenerator.generatePage(dir,input, ucFile, ucURI, title, size, ifaceList, requestedIfaces, url3dmoljs,outputStream);
+			LatticeGraphPageGenerator.generatePage(dir,input, atomCachePath, ucFile, ucURI, title, size, ifaceList, requestedIfaces, url3dmoljs,outputStream);
 
 		}
 		catch(ValidationException e)

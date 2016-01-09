@@ -16,9 +16,11 @@ import org.biojava.nbio.structure.PDBCrystallographicInfo;
 import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.StructureException;
 import org.biojava.nbio.structure.StructureIO;
+import org.biojava.nbio.structure.align.util.AtomCache;
 import org.biojava.nbio.structure.contact.AtomContactSet;
 import org.biojava.nbio.structure.contact.StructureInterface;
 import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
+import org.biojava.nbio.structure.io.LocalPDBDirectory.FetchBehavior;
 import org.biojava.nbio.structure.io.PDBFileParser;
 import org.biojava.nbio.structure.io.mmcif.MMcifParser;
 import org.biojava.nbio.structure.io.mmcif.SimpleMMcifConsumer;
@@ -42,8 +44,9 @@ public class LatticeGraphPageGenerator {
 	 * Generates html page containing the 3Dmol canvas.
 	 * 
 	 * @param directory path to the job directory
-	 * @param structFilename Path to the input structure
-	 * @param ucFilename Path to the unit cell structure. Will be generated if doesn't exist
+	 * @param inputName the input: either a PDB id or the file name as input by user
+	 * @param atomCachePath the path for Biojava's AtomCache
+	 * @param ucFile Path to the unit cell structure. Will be generated if doesn't exist
 	 * @param ucURI URL to reach ucFilename within the browser
 	 * @param title Page title [default: structure name]
 	 * @param size the canvas size 
@@ -55,7 +58,7 @@ public class LatticeGraphPageGenerator {
 	 * @throws StructureException For errors parsing the input structure
 	 * @throws IOException For errors reading or writing files
 	 */
-	public static void generatePage(File directory, String inputName, File ucFile,
+	public static void generatePage(File directory, String inputName, String atomCachePath, File ucFile,
 			String ucURI, String title, String size, List<Interface> interfaces,
 			Collection<Integer> requestedIfaces, String url3dmoljs, PrintWriter out) throws IOException, StructureException {
 
@@ -84,7 +87,23 @@ public class LatticeGraphPageGenerator {
 				InputStream inStream = new FileInputStream(structFile);
 				auStruct = parser.parsePDBFile(inStream);
 			}
+		} else if (!inputName.matches("^\\d\\w\\w\\w$")) {
+				logger.error("Could not find file {} and the inputName '{}' does not look like a PDB id. Can't produce the lattice graph page!", structFile.toString(), inputName);
+				return;
 		} else {
+			// it is like a PDB id, leave it to AtomCache
+			AtomCache atomCache = null;
+			if (atomCachePath ==null) 
+				atomCache = new AtomCache();
+			else 
+				atomCache = new AtomCache(atomCachePath);
+		
+			// we set it to FETCH_FILES to avoid going to the PDB ftp server, because we trust in principle what we have in our cache dir (which is rsynced externally or by the eppic cli run)
+			atomCache.setFetchBehavior(FetchBehavior.FETCH_FILES);
+			
+			StructureIO.setAtomCache(atomCache);
+		
+			
 			// leave it to atomcache
 			auStruct = StructureIO.getStructure(inputName);
 		}
