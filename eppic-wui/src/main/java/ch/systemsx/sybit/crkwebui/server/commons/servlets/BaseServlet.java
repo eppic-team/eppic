@@ -36,6 +36,7 @@ public class BaseServlet extends HttpServlet {
 		super.init(config);
 
 		properties = new Properties();
+		propertiesCli = new Properties();
 
 		try {
 			
