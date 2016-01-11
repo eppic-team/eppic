@@ -140,7 +140,7 @@ public class PymolRunner {
 		}
 		
 		//TODO we might need getFirstRelevantConnectedComponent(sto) instead, but we need the stoichiometry for that
-		UndirectedGraph<ChainVertex, InterfaceEdge> g = a.getFirstConnectedComponent();
+		UndirectedGraph<ChainVertex, InterfaceEdge> g = a.getAssemblyGraph().getSubAssemblies().get(0).getConnectedGraph();
 		
 		String[] chains = new String[g.vertexSet().size()];
 		String[] colors = new String[g.vertexSet().size()];
@@ -482,7 +482,11 @@ public class PymolRunner {
 		
 		pymolScriptBuilder.append("@ "+pmlFile+";");
 		
-		pymolScriptBuilder.append("set pse_export_version, 1.5");
+		// set pse_export_version is only supported from pymol 1.7.6 
+		// in older pymols it produces an error and makes the rest of the script fail
+		// Commenting it out for now, ideally we should detect the version and then
+		// use it if version is good - JD 2015-12-22
+		//pymolScriptBuilder.append("set pse_export_version, 1.5;");
 		pymolScriptBuilder.append("save "+pseFile+";");
 		
 		// writing finally the icon png (we don't need this in pml)

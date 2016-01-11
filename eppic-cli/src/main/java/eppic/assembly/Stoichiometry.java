@@ -1,18 +1,12 @@
 package eppic.assembly;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 
-import org.biojava.nbio.structure.Chain;
-import org.biojava.nbio.structure.Compound;
-import org.biojava.nbio.structure.Structure;
 import org.jgrapht.UndirectedGraph;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 
 /**
  * A representation of the stoichiometry of an Assembly in a crystal structure
@@ -23,67 +17,28 @@ import org.slf4j.LoggerFactory;
  */
 public class Stoichiometry {
 
-	private static final Logger logger = LoggerFactory.getLogger(Stoichiometry.class);
+	//private static final Logger logger = LoggerFactory.getLogger(Stoichiometry.class);
 	
-	private static final String UNKNOWN_SYMMETRY =  "unknown";
-			
-	private Structure structure;
-	private Assembly assembly;
+	private CrystalAssemblies crystalAssemblies;
+	
 	private int[] sto;
 	private int[] comp;
 	
-	private Map<Integer,Integer> entityId2Idx;
-	private Map<Integer,Integer> idx2EntityId;
-	
-	private Map<String,Integer> chainIds2Idx;
-	private Map<Integer,String> idx2ChainIds;
-	
-	public Stoichiometry(Structure structure, Assembly assembly) {
+	public Stoichiometry(UndirectedGraph<ChainVertex, InterfaceEdge> connectedGraph, CrystalAssemblies crystalAssemblies) {
 		
-		this.structure = structure;		
-		this.assembly = assembly;
+		this.crystalAssemblies = crystalAssemblies;
 		
-		int totalNumEntities = structure.getCompounds().size();
-		
-		// since the entityIds are not guaranteed to be 1 to n, we need to map them to indices
-		entityId2Idx = new HashMap<Integer,Integer>();
-		idx2EntityId = new HashMap<Integer,Integer>();
-		chainIds2Idx = new HashMap<String, Integer>();
-		idx2ChainIds = new HashMap<Integer, String>();
-		
-		int i = 0;
-		for (Compound c:structure.getCompounds()) {
-			entityId2Idx.put(c.getMolId(),i);
-			idx2EntityId.put(i,c.getMolId());
-			i++;
+		sto = new int[crystalAssemblies.getNumEntitiesInStructure()];
+		comp = new int[crystalAssemblies.getNumChainsInStructure()];
+
+		for (ChainVertex v:connectedGraph.vertexSet()) {
+			sto[crystalAssemblies.getEntityIndex(v.getChain().getCompound().getMolId())]++;
+			comp[crystalAssemblies.getChainIndex(v.getChain().getChainID())]++;
 		}
 
-		i = 0;
-		for (Chain c:structure.getChains()) {
-			chainIds2Idx.put(c.getChainID(),i);
-			idx2ChainIds.put(i,c.getChainID());
-			i++;
-		}
 		
-		sto = new int[totalNumEntities];
-		comp = new int[structure.getChains().size()];
 	}
 	
-	public int getEntityIndex(int entityId) {
-		return entityId2Idx.get(entityId);
-	}
-	
-	public int getEntityId(int index) {
-		return idx2EntityId.get(index);
-	}
-	
-	public int getChainIndex(String chainId) {
-		return chainIds2Idx.get(chainId);
-	}
-	
-	public String getChainId(int chainIdx) {
-		return idx2ChainIds.get(chainIdx);
-	}
 	
 	/**
 	 * Get all entity ids present in this stoichiometry
@@ -93,18 +48,13 @@ public class Stoichiometry {
 		Set<Integer> entityIds = new HashSet<Integer>();
 		for (int i=0;i<getNumEntities();i++) {
 			if (sto[i]>0) {
-				entityIds.add(getEntityId(i));
+				entityIds.add(crystalAssemblies.getEntityId(i));
 			}
 		}
 		return entityIds;
 	}
 	
-	public void add(Chain c) {
-		sto[getEntityIndex(c.getCompound().getMolId())]++;
-		comp[getChainIndex(c.getChainID())]++;
-	}
-	
-	public int getNumEntities() {
+	private int getNumEntities() {
 		return sto.length;
 	}
 	
@@ -135,7 +85,7 @@ public class Stoichiometry {
 	}
 	
 	public int getCount(int entityId) {
-		return sto[getEntityIndex(entityId)];
+		return sto[crystalAssemblies.getEntityIndex(entityId)];
 	}
 	
 	public int getCountForIndex(int i) {
@@ -215,7 +165,7 @@ public class Stoichiometry {
 		
 		for (int i=0;i<getNumEntities();i++){
 			if (sto[i]>0) {
-				stoSb.append(structure.getCompoundById(getEntityId(i)).getRepresentative().getChainID());			
+				stoSb.append(crystalAssemblies.getRepresentativeChainIdForEntityIndex(i));			
 				if (sto[i]>1) stoSb.append(sto[i]); // for A1B1 we do AB (we ommit 1s)
 			}
 		}
@@ -225,148 +175,13 @@ public class Stoichiometry {
 	public String toFormattedCompositionString() {
 		StringBuilder stoSb = new StringBuilder();
 		
-		for (int i=0;i<structure.getChains().size();i++){
+		for (int i=0;i<crystalAssemblies.getNumChainsInStructure();i++){
 			if (comp[i]>0) {
-				stoSb.append(getChainId(i));			
+				stoSb.append(crystalAssemblies.getChainId(i));			
 				if (comp[i]>1) stoSb.append(comp[i]); // for A1B1 we do AB (we ommit 1s)
 			}
 		}
 		return stoSb.toString();
-	}
-	
-	public String getChainIdsString() {
-		UndirectedGraph<ChainVertex,InterfaceEdge> g = assembly.getFirstRelevantConnectedComponent(this);
-		StringBuilder sb = new StringBuilder();
-		int i = 0;
-		for (ChainVertex v:g.vertexSet()) {
-			if (i!=0) sb.append(',');
-			sb.append(v.getChainId()+"_"+v.getOpId());
-			i++;
-		}
-		
-		return sb.toString();
-	}
-	
-	/**
-	 * Return the symmetry string for this stoichiometry in its assembly:
-	 * cyclic Cn, dihedral Dn, tetrahedral T, octahedral O or icosahedral I 
-	 * This will work correctly only on assemblies that have been previously checked
-	 * to be valid with {@link Assembly#isValid()}
-	 * @return
-	 */
-	public String getSymmetry() {
-		
-		
-		// we get the number of present entities in this stoichiometry (those with count>0)
-		int numEntities = getNumPresentEntities();
-
-		
-		boolean heteromer = false;
-		if (numEntities>1) heteromer = true;
-
-		int n = getFirstNonZero();
-		
-		if (n==-1) {
-			logger.warn("All counts are 0 for this stoichiometry. Something is wrong!");
-			return UNKNOWN_SYMMETRY;
-		}
-		
-		
-		UndirectedGraph<ChainVertex, InterfaceEdge> g = assembly.getFirstRelevantConnectedComponent(this);
-		GraphContractor gctr = new GraphContractor(g);
-
-
-		if (heteromer) {
-			
-			g = gctr.contract();
-			
-		}		
-		
-		if (heteromer && !isEven()) { 
-			// this should not happen since we disallow uneven stoichiometries in the search for valid assemblies
-			logger.warn("Uneven stoichiometry found while getting symmetry. Something is wrong!");
-			return UNKNOWN_SYMMETRY;
-		}
-		
-		// FINDING SYMMETRY:
-
-		// this should work fine for both homomer and pseudo-homomer graph
-		int numDistinctInterfaces = GraphUtils.getDistinctInterfaceCount(g);
-		
-		// CASE A) n==1
-		
-		if (n==1) {
-			
-			return "C1";
-			
-		} 
-		
-		// CASE B) n==2 or n is odd
-		
-		if (n%2 != 0 || n==2) {
-			
-			return "C"+n;
-
-		} 
-		
-		// CASE C) even number larger than 2 (n%2==0 with n>2)
-
-		if (numDistinctInterfaces==1) {
-			return "C"+n;			
-		} 
-
-
-		//NOTE: in principle we could just assume that if numDistinctInterfaces>1 this will be a D,
-		//      but! it can happen that a Cn assembly has cross-interfaces, e.g. 4hi5 (a C4)
-
-		
-		TreeMap<Integer, Integer> cycleSizes = GraphUtils.getCycleMultiplicities(g);
-		boolean nMultCycleExists = false;
-		boolean threeMultCycleExists = false;
-		boolean fourMultCycleExists = false;
-		boolean fiveMultCycleExists = false;
-		
-		for (int cycleMult:cycleSizes.values()) {
-			if (cycleMult==n) nMultCycleExists = true;
-			if (cycleMult==3) threeMultCycleExists = true;
-			if (cycleMult==4) fourMultCycleExists = true;
-			if (cycleMult==5) fiveMultCycleExists = true;
-		}
-		
-//		boolean nMultExists = false;
-//		boolean threeMultExists = false;
-//		boolean fourMultExists = false;
-//		boolean fiveMultExists = false;
-//
-//		// this should work fine for both homomer and pseudo-homomer graph
-//		for (int mult:Assembly.getMultiplicities(g).values()) {
-//			if (mult==n) nMultExists = true;
-//			if (mult==3) threeMultExists = true;
-//			if (mult==4) fourMultExists = true;
-//			if (mult==5) fiveMultExists = true;
-//		}
-
-		if (nMultCycleExists) {
-			return "C"+n;
-		}
-
-		if (n==12 && threeMultCycleExists) {
-			// tetrahedral
-			return "T";
-		}
-		if (n==24 && fourMultCycleExists) {
-			// octahedral
-			return "O";
-		}
-		if (n==60 && fiveMultCycleExists) {
-			// icosahedral
-			return "I";
-		}
-		
-		// none of the above return: it has to be a D n/2
-		return "D"+(n/2);
-
-
 	}
 	
 	/**

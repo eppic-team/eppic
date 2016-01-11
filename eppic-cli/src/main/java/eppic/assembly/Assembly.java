@@ -16,16 +16,13 @@ import java.util.zip.GZIPOutputStream;
 
 import javax.vecmath.Matrix4d;
 import javax.vecmath.Point3d;
-import javax.vecmath.Point3i;
 import javax.vecmath.Vector3d;
 
 import org.biojava.nbio.structure.Atom;
 import org.biojava.nbio.structure.Calc;
 import org.biojava.nbio.structure.Chain;
-import org.biojava.nbio.structure.Compound;
 import org.biojava.nbio.structure.Group;
 import org.biojava.nbio.structure.StructureException;
-import org.biojava.nbio.structure.contact.Pair;
 import org.biojava.nbio.structure.contact.StructureInterface;
 import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
 import org.biojava.nbio.structure.io.FileConvert;
@@ -34,10 +31,7 @@ import org.biojava.nbio.structure.io.mmcif.SimpleMMcifParser;
 import org.jgrapht.GraphPath;
 import org.jgrapht.Graphs;
 import org.jgrapht.UndirectedGraph;
-import org.jgrapht.alg.ConnectivityInspector;
 import org.jgrapht.alg.DijkstraShortestPath;
-import org.jgrapht.alg.cycle.PatonCycleBase;
-import org.jgrapht.graph.UndirectedSubgraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,7 +41,15 @@ import eppic.CallType;
 /**
  * An Assembly of molecules within a crystal, represented by a set of engaged interface clusters.
  * 
- * @author duarte_j
+ * Each Assembly contains 1 (and only 1) AssemblyGraph which represents the subgraph of the lattice graph
+ * corresponding to the set of engaged interface clusters.
+ * 
+ * The data structure hierarchy is:
+ * <pre>
+ *   Assembly - AssemblyGraph -< SubAssembly
+ * </pre>
+ * 
+ * @author Jose Duarte
  *
  */
 public class Assembly {
@@ -64,120 +66,47 @@ public class Assembly {
 	 */
 	private PowerSet engagedSet;
 	
+	/**
+	 * The parent object containing references to all other assemblies and to the original structure
+	 */
 	private CrystalAssemblies crystalAssemblies;
 	
-	private StoichiometrySet stoichiometrySet;
-	
-	private UndirectedGraph<ChainVertex, InterfaceEdge> subgraph;
-	private List<UndirectedGraph<ChainVertex, InterfaceEdge>> connectedComponents;
-	
+	/**
+	 * The AssemblyGraph object containing the subgraph and its connected components
+	 */
+	private AssemblyGraph assemblyGraph;
+		
 	private CallType call;
 	
+
 	
 	public Assembly(CrystalAssemblies crystalAssemblies, PowerSet engagedSet) {
 		this.crystalAssemblies = crystalAssemblies;
 		this.engagedSet = engagedSet;
 				
-		initSubgraph(); // inits subgraph and connectedComponents
-		this.stoichiometrySet = new StoichiometrySet(crystalAssemblies.getStructure(), this, connectedComponents);
- 
+		assemblyGraph = new AssemblyGraph(this);
+		
+	}
+	
+	public PowerSet getEngagedSet() {
+		return engagedSet;
+	}
+	
+	public AssemblyGraph getAssemblyGraph() {
+		return assemblyGraph;
 	}
 	
 	public List<StructureInterfaceCluster> getEngagedInterfaceClusters() {
-		List<StructureInterfaceCluster> engagedInterfaceClusters = new ArrayList<StructureInterfaceCluster>();
-		
-		for (StructureInterfaceCluster cluster:crystalAssemblies.getInterfaceClusters()) {
-			for (int i=0;i<engagedSet.size();i++) {
-				if (engagedSet.isOn(i) && cluster.getId() == i+1) {
-					engagedInterfaceClusters.add(cluster);
-				}
-			}
+		TreeMap<Integer, StructureInterfaceCluster> map = new TreeMap<Integer, StructureInterfaceCluster>();
+		for (InterfaceEdge e : assemblyGraph.getSubgraph().edgeSet()) {
+			map.put ( e.getClusterId(), e.getInterfaceCluster());
 		}
-		return engagedInterfaceClusters;
+		
+		List<StructureInterfaceCluster> list = new ArrayList<StructureInterfaceCluster>();
+		list.addAll(map.values());
+		return list;
 	}
 	
-	public List<StructureInterfaceCluster> getEngagedInterfaceClusters(Stoichiometry sto) {
-		
-		Set<Integer> entityIdsInSto = sto.getEntityIds();
-		
-		List<StructureInterfaceCluster> engagedInterfaceClusters = new ArrayList<StructureInterfaceCluster>();
-		
-		for (StructureInterfaceCluster cluster:getEngagedInterfaceClusters()) {
-			StructureInterface interf = cluster.getMembers().get(0);
-			if (isInterfaceInEntityIds(interf, entityIdsInSto)) {				
-				engagedInterfaceClusters.add(cluster);
-			}
-		}
-		return engagedInterfaceClusters;
-	}
-	
-	public List<StructureInterfaceCluster> getHomoEngagedInterfaceClusters() {
-		List<StructureInterfaceCluster> engagedInterfaceClusters = new ArrayList<StructureInterfaceCluster>();
-		
-		for (StructureInterfaceCluster cluster: getEngagedInterfaceClusters()) {
-			if (cluster.getMembers().get(0).isHomomeric()) {
-				engagedInterfaceClusters.add(cluster);
-			}
-		}
-		return engagedInterfaceClusters;
-	}
-	
-	public List<StructureInterfaceCluster> getHeteroEngagedInterfaceClusters() {
-		List<StructureInterfaceCluster> engagedInterfaceClusters = new ArrayList<StructureInterfaceCluster>();
-		
-		for (StructureInterfaceCluster cluster: getEngagedInterfaceClusters()) {
-			if (!cluster.getMembers().get(0).isHomomeric()) {
-				engagedInterfaceClusters.add(cluster);
-			}
-		}
-		return engagedInterfaceClusters;
-	}
-	
-	public List<StructureInterfaceCluster> getHeteroEngagedInterfaceClusters(Stoichiometry sto) {
-		
-		Set<Integer> entityIdsInSto = sto.getEntityIds();
-		
-		List<StructureInterfaceCluster> engagedInterfaceClusters = new ArrayList<StructureInterfaceCluster>();
-		
-		for (StructureInterfaceCluster cluster: getEngagedInterfaceClusters()) {
-			StructureInterface interf = cluster.getMembers().get(0);
-			if (!interf.isHomomeric() && isInterfaceInEntityIds(interf, entityIdsInSto)) {
-				engagedInterfaceClusters.add(cluster);
-			}
-		}
-		return engagedInterfaceClusters;
-	}
-	
-	public List<StructureInterfaceCluster> getHomoEngagedInterfaceClusters(Stoichiometry sto) {
-		
-		Set<Integer> entityIdsInSto = sto.getEntityIds();
-		
-		List<StructureInterfaceCluster> engagedInterfaceClusters = new ArrayList<StructureInterfaceCluster>();
-		
-		for (StructureInterfaceCluster cluster: getEngagedInterfaceClusters()) {
-			StructureInterface interf = cluster.getMembers().get(0);
-			if (interf.isHomomeric() && 
-				isInterfaceInEntityIds(interf, entityIdsInSto) )  {
-				
-				engagedInterfaceClusters.add(cluster);
-			}
-		}
-		return engagedInterfaceClusters;
-	}
-	
-	private boolean isInterfaceInEntityIds(StructureInterface interf, Set<Integer> entityIds) {
-		Pair<Compound> comps = interf.getParentCompounds();
-		
-		// in some rare cases the compounds are missing, we can't do much: return false
-		if (comps.getFirst() == null || comps.getSecond() == null) return false;
-		
-		if (entityIds.contains(comps.getFirst().getMolId()) && 
-			entityIds.contains(comps.getSecond().getMolId()) ) {
-			return true;
-		}
-		return false;
-	}
-		
 	public int getNumEngagedInterfaceClusters() {
 		int count=0;
 		for (int i=0;i<engagedSet.size();i++) {
@@ -186,84 +115,10 @@ public class Assembly {
 		return count;
 	}
 	
-	public int getNumHomoEngagedInterfaceClusters() {
-		int count=0;
-		for (StructureInterfaceCluster cluster: getEngagedInterfaceClusters()) {
-			if (cluster.getMembers().get(0).isHomomeric()) {
-				count++;
-			}
-		}
-		return count;
-	}
-	
-	public int getNumHeteroEngagedInterfaceClusters() {
-		int count=0;
-		for (StructureInterfaceCluster cluster: getEngagedInterfaceClusters()) {
-			if (!cluster.getMembers().get(0).isHomomeric()) {
-				count++;
-			}
-		}
-		return count;
-	}
-	
 	/**
-	 * Get the number of engaged interface clusters that involve entities present in the given stoichiometry
-	 * @param sto
+	 * Get the parent CrystalAssemly object containing references to all other Assemblies and to the original Structure
 	 * @return
 	 */
-	public int getNumEngagedInterfaceClusters(Stoichiometry sto) {
-		int count = 0;
-		Set<Integer> entityIdsInSto = sto.getEntityIds();
-		for (StructureInterfaceCluster cluster: getEngagedInterfaceClusters()) {
-			StructureInterface interf = cluster.getMembers().get(0);
-			if (isInterfaceInEntityIds(interf, entityIdsInSto)  ) {
-				// both sides are part of chains present in stoichiometry
-				count++;
-			}			
-		}
-		return count;
-	}
-	
-	/**
-	 * Get the number of homomeric engaged interface clusters that involve entities present in the given stoichiometry
-	 * @param sto
-	 * @return
-	 */
-	public int getNumHomoEngagedInterfaceClusters(Stoichiometry sto) {
-		int count = 0;
-		Set<Integer> entityIdsInSto = sto.getEntityIds();
-		for (StructureInterfaceCluster cluster: getEngagedInterfaceClusters()) {
-			StructureInterface interf = cluster.getMembers().get(0);				
-			if (interf.isHomomeric() && 
-				isInterfaceInEntityIds(interf, entityIdsInSto)   ) {
-				// both sides are part of chains present in stoichiometry
-				count++;
-			}
-			
-		}
-		return count;
-	}
-	
-	/**
-	 * Get the number of heteromeric engaged interface clusters that involve entities present in the given stoichiometry
-	 * @param sto
-	 * @return
-	 */
-	public int getNumHeteroEngagedInterfaceClusters(Stoichiometry sto) {
-		int count = 0;
-		Set<Integer> entityIdsInSto = sto.getEntityIds();
-		for (StructureInterfaceCluster cluster: getEngagedInterfaceClusters()) {
-			StructureInterface interf = cluster.getMembers().get(0);				
-			if (!interf.isHomomeric() && 
-				isInterfaceInEntityIds(interf, entityIdsInSto)   ) {
-				// both sides are part of chains present in stoichiometry
-				count++;
-			}
-			
-		}
-		return count;
-	}
-	
 	public CrystalAssemblies getCrystalAssemblies() {
 		return crystalAssemblies;
 	}
@@ -317,69 +172,7 @@ public class Assembly {
 		return children;
 	}
 	
-	/**
-	 * Initialises the subgraph containing only this assembly's engaged interface clusters.
-	 * This initialises both the subgraph and connectedComponents members
-	 * @param clusterId
-	 * @return
-	 */
-	private void initSubgraph() {		
-		
-		// note that the subgraph will contain all vertices even if they are not connected to the rest by any interface
-		
-		Set<ChainVertex> vertexSet = crystalAssemblies.getLatticeGraph().getGraph().vertexSet();
-		Set<InterfaceEdge> edgeSubset = new HashSet<InterfaceEdge>();
-		for(InterfaceEdge edge:crystalAssemblies.getLatticeGraph().getGraph().edgeSet()) {
-			for (int i=0;i<this.engagedSet.size();i++) {
-				if (this.engagedSet.isOn(i)  && edge.getClusterId()==i+1) {
-					edgeSubset.add(edge);
-				}
-			}
-		}
-		
-		this.subgraph = 
-				new UndirectedSubgraph<ChainVertex, InterfaceEdge>(
-						crystalAssemblies.getLatticeGraph().getGraph(), vertexSet, edgeSubset);
-		 
-
-		
-		// initialising also the connected components
-		ConnectivityInspector<ChainVertex, InterfaceEdge> ci = new ConnectivityInspector<ChainVertex, InterfaceEdge>(subgraph);
-		
-		List<Set<ChainVertex>> connectedSets = ci.connectedSets();
-		
-		logger.debug("Subgraph of assembly {} has {} vertices and {} edges, with {} connected components",
-				this.toString(), subgraph.vertexSet().size(), subgraph.edgeSet().size(), connectedSets.size());
-		
-		StringBuilder sb = new StringBuilder();
-		for (Set<ChainVertex> cc:connectedSets) {
-			sb.append(cc.size());
-			sb.append(' ');
-		}
-		logger.debug("Connected component sizes: {}",sb.toString()); 
 	
-		// now we create the sub-subgraphs from the sets of connected vertices
-		connectedComponents = new ArrayList<UndirectedGraph<ChainVertex,InterfaceEdge>>(connectedSets.size());
-		for (Set<ChainVertex> vertexSubsubSet:connectedSets) {
-			Set<InterfaceEdge> edgeSubsubSet = new HashSet<InterfaceEdge>();
-			// fill the edges
-			int i = -1;
-			for (ChainVertex iVertex:vertexSubsubSet) {
-				i++;
-				int j = -1;
-				for (ChainVertex jVertex:vertexSubsubSet) {
-					j++;
-					if (j>i) {
-						edgeSubsubSet.addAll(subgraph.getAllEdges(iVertex, jVertex));
-					}
-				}
-			}
-			
-			connectedComponents.add(
-					new UndirectedSubgraph<ChainVertex, InterfaceEdge>(
-							subgraph, vertexSubsubSet, edgeSubsubSet));
-		}
-	}
 	
 	/**
 	 * Returns true if this Assembly (i.e. this set of engaged interface clusters)
@@ -406,16 +199,6 @@ public class Assembly {
 		}
 		return false;
 	}
-
-	private boolean containsHeteromeric() {
-		for (StructureInterfaceCluster cluster: getEngagedInterfaceClusters()) {
-			
-			for (StructureInterface interf:cluster.getMembers()) {
-				if (!interf.isHomomeric()) return true;
-			}
-		}
-		return false;
-	}
 	
 	public boolean isClosedSymmetry() {
 		
@@ -438,142 +221,13 @@ public class Assembly {
 		}
 		
 		// for heteromeric assemblies, uneven stoichiometries implies non-closed. We can discard uneven ones straight away
-		if (!stoichiometrySet.isEven()) {
+		if (!assemblyGraph.isStoichiometryEven()) {
 			logger.debug("Uneven stoichiometry for assembly {}, can't be a closed symmetry. Discarding",toString());
 			return false;
 		}
-		
-		// we check the cycles in the graph and whether they stay in same cell
-
-		// The PatonCycle detection does not work for multigraphs, e.g. in 1pfc engaging interfaces 1,5 it goes in an infinite loop
-		// Thus we need to pre-check multi-edges and discard whenever they have non-zero sum translations (which directly invalidates the whole subgraph)
-		// If the the subgraph is multi and this check still returns false, we'd have a multigraph to deal with below,
-		// but hopefully that doesn't happen (remember we've also removed all duplicate edges from the main graph in any case)
-		if (precheckMultiEdges(subgraph)) {
-			logger.info("Discarding assembly because some of its multi-edges have non-zero sum translations and thus can't be closed");
-			return false;
-		}
-		
-		PatonCycleBase<ChainVertex, InterfaceEdge> paton = new PatonCycleBase<ChainVertex, InterfaceEdge>(subgraph);
-
-		List<List<ChainVertex>> cycles = paton.findCycleBase();
-		
-		if (cycles.size()==0) {
-			// no cycles at all:
-			// heteromeric interfaces are ok
-			if (containsHeteromeric()) {
-				logger.info("Assembly {} contains heteromeric interfaces and no cycles, assuming it has closed-symmetry",toString());
-				return true;
-			}
-			// homomeric aren't
-			// homomeric interfaces and no cycles: can't be closed!
-			logger.debug("No cycles in assembly {}: discarding because it can't be a closed-symmetry", toString());
-			return false;
-		}
-		
-		logger.debug("{} cycles in total",cycles.size());
-		
-		for (List<ChainVertex> cycle:cycles) {
-			
-			StringBuilder sb = new StringBuilder();
-			for (ChainVertex c:cycle) {
-				sb.append(c.toString()+" -> ");
-			}
-			logger.debug("Cycle of size {}: {}", cycle.size(),sb.toString());
-			
-			if (isZeroTranslation(subgraph, cycle)) {
-				logger.debug("Closed cycle (0 translation)");
-				// we continue to next cycle, if all cycles are translation 0, then we'll return true below
-			} else {
-				// one cycle has non-zero translation: we abort straight away: return false
-				logger.debug("Non-closed cycle (non-0 translation). Discarding assembly {}",toString());
-				return false;
-			}
-		}
-		
-
-		logger.debug("All cycles of assembly {} are closed: valid assembly",toString());
-		return true;
-	}
 	
-	private boolean isZeroTranslation(UndirectedGraph<ChainVertex, InterfaceEdge> subgraph, List<ChainVertex> cycle) {
-			
-		Point3i p = new Point3i(0,0,0);
-		for (int i=0;i<cycle.size();i++) {
-			ChainVertex s = cycle.get(i);
-			ChainVertex t = cycle.get( (i+1)%cycle.size());
-			Set<InterfaceEdge> edges = subgraph.getAllEdges(s,t);
-			
-			if (edges.isEmpty()) {
-				// this should not happen, but there's a bug in jgrapht Paton's implementation
-				// where cycles between 2 vertices are reported with a duplicate vertex,
-				// e.g. for graph A0=A1 the vertices given as belonging to cycle are A0,A1,A0, when it should be just A0,A1
-				logger.warn("Empty list of edges between vertices {},{} belonging to cycle {}",
-						s.toString(),t.toString(), cycle.toString());
-				continue;
-			}
-			
-			Iterator<InterfaceEdge> edgeIt = edges.iterator();
-			InterfaceEdge edge = edgeIt.next();
-			Point3i trans = new Point3i(edge.getXtalTrans());
-			// this is a way to decide an arbitrary directionality and invert if the directionality is not the right one
-			if(!s.equals(subgraph.getEdgeSource(edge))) {
-				if (!s.equals(subgraph.getEdgeTarget(edge))) {
-					// a sanity check: should not happen unless there is a bug in jgrapht
-					logger.warn("Something is wrong: edge {} hasn't got expected vertex source {} or target {}",
-							edge.toString(), s.toString(), t.toString());
-				}
-				trans.negate();
-			}
-
-			// Check that any other edges have same xtaltrans
-			while (edgeIt.hasNext()) {
-				InterfaceEdge edge2 = edgeIt.next();
-				Point3i trans2 = new Point3i(edge2.getXtalTrans());
-				if(!s.equals(subgraph.getEdgeSource(edge2))) {
-					trans2.negate();
-				}
-				if(!trans.equals(trans2)) {
-					logger.debug("Multiple edges with unequal translation between vertices {},{} of cycle {}",
-							s.toString(),t.toString(),cycle.toString());
-					return false;
-				}
-			}
-			
-			p.add(trans);
-		}
-		
-		logger.debug("Total translation is [{}, {}, {}] ",p.x, p.y, p.z);
-		return p.equals(new Point3i(0,0,0));
-	}
-
-	/**
-	 * Returns true if any of the multi-edges in given subgraph has non-zero sum translations,
-	 * false otherwise
-	 * @param subgraph
-	 * @return
-	 */
-	private boolean precheckMultiEdges(UndirectedGraph<ChainVertex,InterfaceEdge> subgraph) {
-		
-		for (InterfaceEdge edge:subgraph.edgeSet()) {
-			Set<InterfaceEdge> edges = subgraph.getAllEdges(subgraph.getEdgeSource(edge), subgraph.getEdgeTarget(edge));
-			if (edges.size()==1) continue;
-			
-			Point3i t = new Point3i(0,0,0);
-			for (InterfaceEdge e: edges) {
-				t.add(e.getXtalTrans());
-			}
-			if (!t.equals(new Point3i(0,0,0))) {
-				logger.debug("Vertices {},{} are connected by {} edges with non-0 sum translation: {} ",
-						subgraph.getEdgeSource(edge), subgraph.getEdgeTarget(edge), edges.size(), t.toString()); 
-				return true; 
-			} else {
-				logger.warn("Unexpected multi-edge: vertices {},{} are connected by {} edges with 0 sum translation! ",
-						subgraph.getEdgeSource(edge), subgraph.getEdgeTarget(edge), edges.size());
-			}
-		}
-		return false;
-	}
+		return assemblyGraph.areAllCyclesClosed();
+	}	
 	
 	/**
 	 * Checks whether this Assembly is isomorphic, that is if all the connected components of its subgraph
@@ -585,7 +239,7 @@ public class Assembly {
 		
 		// 1) Isomorphism of entities: they have to be all equals or if different then they must be orthogonal 
 		
-		if (!stoichiometrySet.isIsomorphic()) {
+		if (!assemblyGraph.isEntityIsomorphic()) {
 			logger.debug("Some stoichiometries of assembly {} are overlapping, assembly can't be isomorphic",this.toString());
 			return false;
 		}
@@ -622,7 +276,7 @@ public class Assembly {
 	 * @return
 	 */
 	public List<AssemblyDescription> getDescription() {
-		List<AssemblyDescription> list = this.stoichiometrySet.getDescription();
+		List<AssemblyDescription> list = assemblyGraph.getDescription();
 		StringBuilder sb = new StringBuilder();
 		int i = -1;
 		for (AssemblyDescription ad:list) {
@@ -632,14 +286,6 @@ public class Assembly {
 		}
 		logger.info("Assembly {} size/stoichometry/symmetry: {}",toString(),sb.toString()); 
 		return list;
-	}
-	
-	public boolean isFullyCovering() {
-		return stoichiometrySet.isFullyCovering();
-	}
-	
-	public StoichiometrySet getStoichiometrySet() {
-		return stoichiometrySet;
 	}
 	
 	/**
@@ -659,7 +305,7 @@ public class Assembly {
 		// we assume this is a valid assembly
 		// we get any of the isomorphic connected components, let's say the first one
 
-		UndirectedGraph<ChainVertex, InterfaceEdge> firstCc = connectedComponents.get(0);
+		UndirectedGraph<ChainVertex, InterfaceEdge> firstCc = assemblyGraph.getSubAssemblies().get(0).getConnectedGraph();
 		
 		
 		Iterator<ChainVertex> it = firstCc.vertexSet().iterator();
@@ -802,55 +448,6 @@ public class Assembly {
 	}
 	
 	/**
-	 * Get the first connected component graph that involves only entities overlapping given stoichiometry.
-	 * Useful to look at any of the isomorphic graphs of valid assemblies.
-	 * @param sto the stoichiometry from which the involved entities are selected, if null 
-	 * then the first connected component is returned 
-	 * @return
-	 */
-	public UndirectedGraph<ChainVertex, InterfaceEdge> getFirstRelevantConnectedComponent(Stoichiometry sto) {
-		
-		if (sto==null) return getFirstConnectedComponent();
-		
-		// we first get the indices of connected components with the right composition (matching given sto)
-		List<Integer> indices = stoichiometrySet.getIndicesWithOverlappingStoichiometry(sto);
-
-		// from any of the relevant isomorphic connected components we get the first one
-		return connectedComponents.get(indices.get(0));		
-	}
-	
-	/**
-	 * Get the first connected component graph of this assembly.
-	 * Useful to look at any of the isomorphic graphs of valid assemblies.
-	 * @return
-	 */
-	public UndirectedGraph<ChainVertex, InterfaceEdge> getFirstConnectedComponent() {
-		return connectedComponents.get(0);
-	}
-	
-	/**
-	 * Return the first interface cluster (present in given stoichiometry) that has the given 
-	 * multiplicity.
-	 * @param multiplicity
-	 * @param sto
-	 * @return the first interface cluster with the desired multiplicity or null if no interface cluster has the 
-	 * desired multiplicity
-	 */
-	public StructureInterfaceCluster getInterfClusterWithMultiplicity(int multiplicity, Stoichiometry sto) {
-		
-		for (StructureInterfaceCluster interfCluster:getHomoEngagedInterfaceClusters(sto)) {
-			
-			if (multiplicity == GraphUtils.getEdgeMultiplicity(getFirstRelevantConnectedComponent(sto), interfCluster.getId())) {
-				return interfCluster;
-			}
-			
-		}
-		
-		return null;
-	}
-
-	
-	/**
 	 * Get this Assembly's identifier
 	 * @return
 	 */
@@ -906,168 +503,26 @@ public class Assembly {
 		return sb.toString();
 	}
 
+	/**
+	 * Assign a call to this Assembly, retrieve the call subsequently with {@link #getCall()}
+	 */
 	public void score() {
-
-		// note: the code here goes along the same lines of Stoichiometry.getSymmetry()
-		// we should try to unify them a bit and to reuse the common parts
-		
-		StoichiometrySet stoSet = getStoichiometrySet();
 
 		// we won't support non-fully-covering stoichiometries for the moment
 		// TODO support them: most likely requires a more complex data model where we can have score/calls for each of the subcomponents of the assembly
-		if (!stoSet.isFullyCovering()) {
-			logger.warn("Assembly {} does not cover all entities, assembly scoring will be done for first stoichiometry only", toString());
-		}
-		
-		Stoichiometry sto = stoSet.getFirst();
-				
-		int n = sto.getFirstNonZero();
-		
-		if (n==-1) {
-			logger.warn("All counts are 0 for first stoichiometry of assembly {}. Something is wrong: can't score assembly!",toString());
-			return;
+		if (!assemblyGraph.isFullyCovering()) {
+			logger.warn("Assembly {} does not cover all entities, assembly scoring will be done for first sub-assembly only", toString());
 		}
 		
 		
-		int numEntities = sto.getNumPresentEntities();
+		SubAssembly firstSubAssembly = assemblyGraph.getSubAssemblies().get(0);
 		
-		boolean heteromer = false;
-		if (numEntities>1) heteromer = true;
-
-		String sym = sto.getSymmetry();
-		
-
-		setCall(CallType.CRYSTAL); // set crystal as default call, only if found to be bio it will be overridden below
-
-		if (n==1) {
-			
-			if (!heteromer) {
-				// a C1 assembly (i.e. monomeric if homomeric):
-				// no scoring at this stage, later we look at all assemblies and if no larger assembly is bio, we assign bios to C1 assemblies
+		setCall(firstSubAssembly.score());
 				
-			} else {
-				// C1 heteromeric: 1:1:1 stoichiometry
-				List<StructureInterfaceCluster> list = getEngagedInterfaceClusters(sto);
-				int countBio = 0;
-				for (StructureInterfaceCluster interfCluster:list) {
-					if (getCrystalAssemblies().getInterfaceEvolContextList().
-							getCombinedClusterPredictor(interfCluster.getId()).getCall() == CallType.BIO ) {
-						countBio++;
-					}
-				}
-				if (countBio>= (numEntities-1) ) setCall(CallType.BIO);
-			}
-			return;
-		}
-		
-
-		UndirectedGraph<ChainVertex, InterfaceEdge> g = getFirstRelevantConnectedComponent(sto);
-		GraphContractor gctr = new GraphContractor(g);
-		
-		
-		if (heteromer) {
-
-			g = gctr.contract();
-			
-			// TODO we should check the call of contracted interfaces and score properly based on 
-			// them and the relevant interfaces below
-		}
-
-		
-		TreeMap<Integer,Integer> clusterIdsToMult = GraphUtils.getCycleMultiplicities(g);
-		
-		
-		if (sym.startsWith("C")) {
-
-			StructureInterfaceCluster interfCluster = null;
-
-			if (sym.startsWith("C2")) {				
-				// we've got to treat the C2 case especially because multiplicity=2 won't be detected in graph
-				
-				if (clusterIdsToMult.isEmpty()) {
-					logger.error("Empty list of engaged interface clusters for a homomeric C2 symmetry. Something is wrong!");
-					
-				} else {
-					int clusterId = clusterIdsToMult.firstKey(); // the largest interface present (interface cluster ids are sorted on areas)
-					interfCluster = crystalAssemblies.getInterfaceClusters().get(clusterId-1);
-				}
-
-			} else {
-
-				int clusterId = -1;
-				for (int cId: clusterIdsToMult.keySet()) {
-					if (clusterId==-1 && clusterIdsToMult.get(cId) == n) 
-						clusterId = cId;
-					else if (clusterIdsToMult.get(cId)==n) 
-						logger.info("Assembly {} has more than 1 interface cluster with cycle multiplicity {}. Taking assembly call from first one.", 
-								toString(), n);
-				}
-				
-				if (clusterId == -1) {
-					logger.warn("Could not find the C{} interface for assembly {}. Something is wrong!",
-							n,toString());
-				} else {				
-					interfCluster = crystalAssemblies.getInterfaceClusters().get(clusterId-1);
-				
-				}
-			}
-
-			if (interfCluster!=null) {
-				// the call for the Cn interface will be the call for the assembly
-				CallType call = getCrystalAssemblies().getInterfaceEvolContextList().getCombinedClusterPredictor(interfCluster.getId()).getCall();
-				setCall(call);
-				// TODO in heteromeric cases we should check that the edges that we have contracted have also the same call
-
-			} else {
-				logger.warn("Could not find the relevant C{} interface, assembly {} will be NOPRED",n,toString());
-				setCall(CallType.NO_PREDICTION);
-			}
-
-
-
-		} else if (sym.startsWith("D") || sym.equals("T") || sym.equals("O") || sym.equals("I")) {
-			
-			// In all other point group symmetries there's always 2 essential interfaces out of all of
-			// the engaged ones that are needed to form the symmetry. 
-			// Then a third one follows necessarily (though it might be too small and not show up in our 
-			// list) because the other 2 are at the right angles to produce a third one. 
-			
-			// A possible strategy for scoring is simply taking the 2 largest interfaces and checking that both 
-			// have a BIO call (that would be a sufficient condition), otherwise is XTAL. 
-			// Another possibility would be to take any 2 interfaces out of the list and check if at 
-			// least 2 are BIO.
-						
-			// In a D assembly most usually the 2 largest interfaces are the 2 isologous, 
-			// the 3rd one being the heterologous. But that's not a general rule at all! there are counter-examples
-
-
-			// the keys of the map should be sorted from first cluster id to last cluster id (which are sorted by areas)
-
-			Iterator<Integer> it = clusterIdsToMult.keySet().iterator();
-			int clusterId1 = it.next(); // the largest
-			int clusterId2 = it.next(); // the second largest
-			
-			StructureInterfaceCluster first = crystalAssemblies.getInterfaceClusters().get(clusterId1-1); // the largest
-			StructureInterfaceCluster second = crystalAssemblies.getInterfaceClusters().get(clusterId2-1); // the second largest
-			
-			CallType firstCall = getCrystalAssemblies().getInterfaceEvolContextList().getCombinedClusterPredictor(first.getId()).getCall();
-			CallType secondCall = getCrystalAssemblies().getInterfaceEvolContextList().getCombinedClusterPredictor(second.getId()).getCall();
-			
-			if (firstCall == CallType.BIO && secondCall == CallType.BIO) {
-				setCall(CallType.BIO);
-			}
-			
-		} else {
-			logger.warn("Assembly scoring for symmetry {} not supported yet", sym);
-			return;
-		}
-
-
-
 	}
 	
 	/**
-	 * Sorts given list of interface clusters by descending descending areas
+	 * Sorts given list of interface clusters by descending areas
 	 * @param list
 	 */
 	@SuppressWarnings("unused")
