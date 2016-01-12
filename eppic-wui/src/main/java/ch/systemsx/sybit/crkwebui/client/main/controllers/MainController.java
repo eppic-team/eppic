@@ -168,7 +168,6 @@ public class MainController
 		EventBusManager.EVENT_BUS.addHandler(ShowResultsDataEvent.TYPE, new ShowResultsDataHandler() {
 			@Override
 			public void onShowResultsData(ShowResultsDataEvent event) {
-
 				int num_interfaces = 0;
 				List<InterfaceCluster> clusters = ApplicationContext.getPdbInfo().getInterfaceClusters();
 				for(InterfaceCluster ic : clusters){
