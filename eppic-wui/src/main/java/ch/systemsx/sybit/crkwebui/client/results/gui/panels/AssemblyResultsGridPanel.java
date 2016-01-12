@@ -580,7 +580,8 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 				List<InterfaceCluster> interfaceClusters = resultsData.getAssemblyById(assemblyID).getInterfaceClusters();
 				newResultsData.setInterfaceClusters(interfaceClusters);
 				EventBusManager.EVENT_BUS.fireEvent(new ShowInterfacesOfAssemblyDataEvent(newResultsData));		
-				History.newItem("interfaces/" + pdbCode + "/" + assemblyID);		
+				//History.newItem("interfaces/" + pdbCode + "/" + assemblyID);		
+				History.newItem("interfaces/" + ApplicationContext.getPdbInfo().getJobId() + "/" + assemblyID);		
 				ResultsPanel.headerPanel.pdbIdentifierPanel.informationLabel.setHTML(EscapedStringGenerator.generateEscapedString(
 								AppPropertiesManager.CONSTANTS.info_panel_interface_pdb_identifier() + ": "));
 				ResultsPanel.headerPanel.pdbIdentifierPanel.pdbNameLabel.setHTML("Assembly " + assemblyID + " in ");// + pdbCode);
