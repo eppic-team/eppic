@@ -95,8 +95,8 @@ public class JmolViewerServlet extends BaseServlet
 
 		String url3dmoljs = properties.getProperty("url3dmoljs");
 		if (url3dmoljs == null || url3dmoljs.equals("")) {
-			logger.error("The URL for 3Dmol js is not set in config file!");
-			return;
+			logger.info("The URL for 3Dmol js is not set in config file. Will use the js file from eppic");
+			url3dmoljs = "3Dmol-min.js"; //we set it to the js file within eppic
 		}
 		
 		logger.info("Requested 3D viewer page for jobId={}, input={}, interfaceId={}, size={}",jobId,input,interfaceId,size);
