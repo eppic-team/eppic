@@ -70,6 +70,7 @@ import ch.systemsx.sybit.crkwebui.shared.model.InterfaceCluster;
 import ch.systemsx.sybit.crkwebui.shared.model.PDBSearchResult;
 import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
+import ch.systemsx.sybit.shared.model.InputType;
 import ch.systemsx.sybit.shared.model.StatusOfJob;
 
 import com.google.gwt.core.client.GWT;
@@ -177,8 +178,11 @@ public class MainController
 					///show the assemblies view 
 					displayResultView(event.getPdbScoreItem(), ResultsPanel.ASSEMBLIES_VIEW); //the new default view
 					ResultsPanel.headerPanel.pdbIdentifierPanel.informationLabel.setHTML("Assembly Analysis of: ");
-					//getSelectedJobId
-					ResultsPanel.headerPanel.pdbIdentifierPanel.pdbNameLabel.setHTML("<a target='_blank' href='http://www.pdb.org/pdb/explore/explore.do?structureId="+ApplicationContext.getPdbInfo().getInputName()+"'>"+ApplicationContext.getSelectedJobId()+"</a>");
+					//only show a link for precomputed jobs
+					if(ApplicationContext.getPdbInfo().getInputType() == InputType.PDBCODE.getIndex()) //precomputed
+						ResultsPanel.headerPanel.pdbIdentifierPanel.pdbNameLabel.setHTML("<a target='_blank' href='http://www.pdb.org/pdb/explore/explore.do?structureId="+ApplicationContext.getPdbInfo().getInputName()+"'>"+ApplicationContext.getPdbInfo().getInputName()+"</a>");
+					else if(ApplicationContext.getPdbInfo().getInputType() == InputType.FILE.getIndex()) //user uploaded jobs
+						ResultsPanel.headerPanel.pdbIdentifierPanel.pdbNameLabel.setHTML(ApplicationContext.getPdbInfo().getInputName());						
 					ResultsPanel.informationPanel.assemblyInfoPanel.setHeadingHtml("General Information " + ApplicationContext.getPdbInfo().getInputName());											
 					ResultsPanel.informationPanel.assemblyInfoPanel.assembly_info.setHTML("<table cellpadding=0 cellspacing=0><tr><td width='150px'><span class='eppic-general-info-label-new'>Assemblies</span></td><td><span class='eppic-general-info-label-value-new'>" + ApplicationContext.getPdbInfo().getAssemblies().size() + "</span></td></tr><tr><td><span class='eppic-general-info-label-new'>Interfaces</span></td><td><span class='eppic-general-info-label-value-new'><a href='" + GWT.getHostPageBaseURL() + "#interfaces/"+ApplicationContext.getSelectedJobId()+"'>" + num_interfaces + "</a></span></td></tr><tr><td><span class='eppic-general-info-label-new'>Interface clusters</span></td><td><span class='eppic-general-info-label-value-new'><a href='" + GWT.getHostPageBaseURL() + "#clusters/"+ApplicationContext.getSelectedJobId()+"'>" + ApplicationContext.getPdbInfo().getInterfaceClusters().size()+"</a></span></td></tr></table>");	
 					ResultsPanel.informationPanel.removeTopologyPanel(ApplicationContext.getPdbInfo());
@@ -188,11 +192,12 @@ public class MainController
 					displayResultView(event.getPdbScoreItem(), ResultsPanel.INTERFACES_VIEW);
 					if(ApplicationContext.getSelectedAssemblyId() == -1){
 						ResultsPanel.headerPanel.pdbIdentifierPanel.informationLabel.setHTML("All Interfaces of: ");
-						ResultsPanel.headerPanel.pdbIdentifierPanel.pdbNameLabel.setHTML("<a target='_blank' href='http://www.pdb.org/pdb/explore/explore.do?structureId="+ApplicationContext.getSelectedJobId()+"'>"+ApplicationContext.getPdbInfo().getInputName()+"</a>");
+						//only show a link for precomputed jobs
+						if(ApplicationContext.getPdbInfo().getInputType() == InputType.PDBCODE.getIndex()) //precomputed
+							ResultsPanel.headerPanel.pdbIdentifierPanel.pdbNameLabel.setHTML("<a target='_blank' href='http://www.pdb.org/pdb/explore/explore.do?structureId="+ApplicationContext.getSelectedJobId()+"'>"+ApplicationContext.getPdbInfo().getInputName()+"</a>");
+						else if(ApplicationContext.getPdbInfo().getInputType() == InputType.FILE.getIndex()) //user uploaded jobs
+							ResultsPanel.headerPanel.pdbIdentifierPanel.pdbNameLabel.setHTML(ApplicationContext.getPdbInfo().getInputName());							
 						ResultsPanel.informationPanel.assemblyInfoPanel.setHeadingHtml("General Information");				
-						//ResultsPanel.informationPanel.assemblyInfoPanel.assembly_info.setHTML("<table cellpadding=0 cellspacing=0><tr><td width='150px'><span class='eppic-general-info-label-new'>Assemblies</span></td><td><span class='eppic-general-info-label-value-new'>" + ApplicationContext.getPdbInfo().getAssemblies().size() + "</span></td></tr><tr><td><span class='eppic-general-info-label-new'>Interfaces</span></td><td><span class='eppic-general-info-label-value-new'>" + num_interfaces + "</span></td></tr><tr><td><span class='eppic-general-info-label-new'>Interface clusters</span></td><td><span class='eppic-general-info-label-value-new'>" + ApplicationContext.getPdbInfo().getInterfaceClusters().size()+"</span></td></tr></table>");
-						//		assemblies_toolbar_link = new HTML("<a href='" + GWT.getHostPageBaseURL() + "#interfaces/"+ApplicationContext.getPdbInfo().getPdbCode()+"'>View All Interfaces</a>");
-						
 						if(History.getToken().contains("clusters"))
 							ResultsPanel.informationPanel.assemblyInfoPanel.assembly_info.setHTML("<table cellpadding=0 cellspacing=0><tr><td width='150px'><span class='eppic-general-info-label-new'>Assemblies</span></td><td><span class='eppic-general-info-label-value-new'><a href='" + GWT.getHostPageBaseURL() + "#id/"+ApplicationContext.getSelectedJobId()+"'>" + ApplicationContext.getPdbInfo().getAssemblies().size() + "</a></span></td></tr><tr><td><span class='eppic-general-info-label-new'>Interfaces</span></td><td><span class='eppic-general-info-label-value-new'><a href='" + GWT.getHostPageBaseURL() + "#interfaces/"+ApplicationContext.getSelectedJobId()+"'>" + num_interfaces + "</a></span></td></tr><tr><td><span class='eppic-general-info-label-new'>Interface clusters</span></td><td><span class='eppic-general-info-label-value-new'>" + ApplicationContext.getPdbInfo().getInterfaceClusters().size()+"</span></td></tr></table>");
 						if(History.getToken().contains("interfaces")){
@@ -207,7 +212,10 @@ public class MainController
 						setExperimentalInfo();
 					}else{
 						ResultsPanel.headerPanel.pdbIdentifierPanel.informationLabel.setHTML("Interface Analysis of: Assembly " + ApplicationContext.getSelectedAssemblyId() + " in ");
-						ResultsPanel.headerPanel.pdbIdentifierPanel.pdbNameLabel.setHTML("<a target='_blank' href='http://www.pdb.org/pdb/explore/explore.do?structureId="+ApplicationContext.getSelectedJobId()+"'>"+event.getPdbScoreItem().getInputName()+"</a>");
+						if(ApplicationContext.getPdbInfo().getInputType() == InputType.PDBCODE.getIndex()) //precomputed
+							ResultsPanel.headerPanel.pdbIdentifierPanel.pdbNameLabel.setHTML("<a target='_blank' href='http://www.pdb.org/pdb/explore/explore.do?structureId="+ApplicationContext.getSelectedJobId()+"'>"+event.getPdbScoreItem().getInputName()+"</a>");
+						else if(ApplicationContext.getPdbInfo().getInputType() == InputType.FILE.getIndex()) //user uploaded jobs
+							ResultsPanel.headerPanel.pdbIdentifierPanel.pdbNameLabel.setHTML(event.getPdbScoreItem().getInputName());
 						int assemblyID = ApplicationContext.getSelectedAssemblyId();
 						List<Assembly> assemblies = ApplicationContext.getPdbInfo().getAssemblies();
 						String assembly_string = "";
@@ -479,7 +487,12 @@ public class MainController
 		{
 			ApplicationContext.setSelectedViewType(ResultsPanel.INTERFACES_VIEW);
 			Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_loading());
-			ApplicationContext.setSelectedJobId(token.substring(11,15));
+			//ApplicationContext.setSelectedJobId(token.substring(11,15));
+			int to = token.indexOf("/",11);
+			if(to != -1)
+				ApplicationContext.setSelectedJobId(token.substring(11,to));
+			else
+				ApplicationContext.setSelectedJobId(token.substring(11));
 			int assemblyId = -1;
 			String idString = token.substring(16,token.length());
 			try {
@@ -496,7 +509,12 @@ public class MainController
 		{
 			ApplicationContext.setSelectedViewType(ResultsPanel.INTERFACES_VIEW);
 			Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_loading());
-			ApplicationContext.setSelectedJobId(token.substring(9,13));
+			//ApplicationContext.setSelectedJobId(token.substring(9,13));
+			int to = token.indexOf("/",9);
+			if(to != -1)
+				ApplicationContext.setSelectedJobId(token.substring(9,to));
+			else
+				ApplicationContext.setSelectedJobId(token.substring(9));
 			int assemblyId = -1;
 			String idString = token.substring(14,token.length());
 			try {

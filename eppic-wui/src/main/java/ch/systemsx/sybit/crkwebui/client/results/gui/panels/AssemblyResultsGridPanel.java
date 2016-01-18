@@ -128,7 +128,7 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 		assembliesToolBar.add(viewerSelectorBox);
 		assembliesToolBar.add(new HTML("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"));
 		
-		assemblies_toolbar_link = new HTML("<a href='" + GWT.getHostPageBaseURL() + "#interfaces/"+ApplicationContext.getPdbInfo().getPdbCode()+"'>View All Interfaces</a>");
+		assemblies_toolbar_link = new HTML("<a href='" + GWT.getHostPageBaseURL() + "#interfaces/"+ApplicationContext.getSelectedJobId()+"'>View All Interfaces</a>");
 		assembliesToolBar.add(assemblies_toolbar_link);
 		
 		return assembliesToolBar;
@@ -395,9 +395,9 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 						model.setNumInterfaces("0 Interfaces");
 					else if(assembly.getInterfaces().size() == 1)
 						//model.setNumInterfaces("<a href='/ewui/#interfaces/1'>" + assembly.getInterfaces().size() + " Interface</a>");
-						model.setNumInterfaces("<a href='" + GWT.getHostPageBaseURL() + "#interfaces/"+ApplicationContext.getPdbInfo().getPdbCode()+"/"+assembly.getId() +"'>"+ assembly.getInterfaces().size() + " Interface</a>");
+						model.setNumInterfaces("<a href='" + GWT.getHostPageBaseURL() + "#interfaces/"+ApplicationContext.getSelectedJobId()+"/"+assembly.getId() +"'>"+ assembly.getInterfaces().size() + " Interface</a>");
 					else 
-						model.setNumInterfaces("<a href='" + GWT.getHostPageBaseURL() + "#interfaces/"+ApplicationContext.getPdbInfo().getPdbCode()+"/"+assembly.getId() +"'>"+ assembly.getInterfaces().size() + " Interfaces</a>");
+						model.setNumInterfaces("<a href='" + GWT.getHostPageBaseURL() + "#interfaces/"+ApplicationContext.getSelectedJobId()+"/"+assembly.getId() +"'>"+ assembly.getInterfaces().size() + " Interfaces</a>");
 										
 					data.add(model);
 			}
@@ -580,7 +580,7 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 				List<InterfaceCluster> interfaceClusters = resultsData.getAssemblyById(assemblyID).getInterfaceClusters();
 				newResultsData.setInterfaceClusters(interfaceClusters);
 				EventBusManager.EVENT_BUS.fireEvent(new ShowInterfacesOfAssemblyDataEvent(newResultsData));		
-				History.newItem("interfaces/" + pdbCode + "/" + assemblyID);		
+				History.newItem("interfaces/" + pdbCode + "/" + assemblyID);	
 				ResultsPanel.headerPanel.pdbIdentifierPanel.informationLabel.setHTML(EscapedStringGenerator.generateEscapedString(
 								AppPropertiesManager.CONSTANTS.info_panel_interface_pdb_identifier() + ": "));
 				ResultsPanel.headerPanel.pdbIdentifierPanel.pdbNameLabel.setHTML("Assembly " + assemblyID + " in ");// + pdbCode);
