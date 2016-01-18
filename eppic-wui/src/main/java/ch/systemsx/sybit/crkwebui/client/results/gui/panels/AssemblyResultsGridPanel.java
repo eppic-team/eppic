@@ -274,19 +274,11 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 
 	
 	private SummaryColumnConfig<AssemblyItemModel, String> getDiagramColumn(){
-		//this gets executed only once! so... not the best location here.
 		int numinterfaces = 0;
 		List<InterfaceCluster> clusters = ApplicationContext.getPdbInfo().getInterfaceClusters();
 		for(InterfaceCluster ic : clusters){
 			numinterfaces=+ ic.getInterfaces().size();
 		}
-		//String thumbnailtext = "no text";
-		//if (numinterfaces != 0)
-		//	thumbnailtext = "text here";
-		
-		
-		//SummaryColumnConfig<AssemblyItemModel, String> diagramColumn = 
-				//new SummaryColumnConfig<AssemblyItemModel, String>(props.thumbnailUrl());
 		
 		SummaryColumnConfig<AssemblyItemModel, String> diagramColumn = null;
 		if(numinterfaces != 0)
@@ -307,7 +299,7 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 		});
 		
 		diagramColumn.setCell(new AssemblyDiagramCell());
-		fillColumnSettings(diagramColumn, "thumbnail");
+		fillColumnSettings(diagramColumn, "diagram");
 		diagramColumn.setResizable(false);
 
 		return diagramColumn;

@@ -14,6 +14,7 @@ import com.google.gwt.cell.client.ValueUpdater;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
+import com.google.gwt.user.client.Window;
 
 /**
  * Cell used to display interfaces thumbnails.
@@ -23,7 +24,7 @@ import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 public class AssemblyThumbnailCell extends AbstractCell<String>{
 	
 	@Override
-	public void render(Context context,	String value, SafeHtmlBuilder sb) {		
+	public void render(Context context,	String value, SafeHtmlBuilder sb) {	
 		sb.appendHtmlConstant("<img src='"+ value + 
 				"' qtip='" + AppPropertiesManager.CONSTANTS.results_grid_thumbnail_tooltip_text() + "'/>");
 	}

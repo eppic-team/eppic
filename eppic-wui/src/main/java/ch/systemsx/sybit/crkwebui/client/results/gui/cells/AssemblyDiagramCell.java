@@ -25,9 +25,9 @@ import com.google.gwt.user.client.Window;
 public class AssemblyDiagramCell extends AbstractCell<String>{
 	
 	@Override
-	public void render(Context context,	String value, SafeHtmlBuilder sb) {		
+	public void render(Context context,	String value, SafeHtmlBuilder sb) {	
 		sb.appendHtmlConstant("<img src='"+ value + 
-				"' qtip='" + AppPropertiesManager.CONSTANTS.results_grid_thumbnail_tooltip_text() + "'/>");
+				"' qtip='" + AppPropertiesManager.CONSTANTS.results_grid_diagram_tooltip_text() + "'/>");
 	}
 	
 	@Override
