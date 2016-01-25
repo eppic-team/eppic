@@ -494,7 +494,9 @@ public class MainController
 			else
 				ApplicationContext.setSelectedJobId(token.substring(11));
 			int assemblyId = -1;
-			String idString = token.substring(16,token.length());
+			//String idString = token.substring(16,token.length());
+			int from = token.lastIndexOf("/");
+			String idString = token.substring(from+1,token.length());
 			try {
 				assemblyId = Integer.parseInt(idString);
 			} catch (Exception e) {}
