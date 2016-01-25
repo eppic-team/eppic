@@ -46,6 +46,7 @@ public class EppicParams {
 	protected static final String  BLAST_CACHE_FILE_SUFFIX = ".blast.xml.gz";
 	protected static final String  ASSEMBLIES_FILE_SUFFIX = ".assemblies";
 	public static final String     ASSEMBLIES_COORD_FILES_SUFFIX = ".assembly";
+	public static final String     ASSEMBLIES_DIAGRAM_FILES_SUFFIX = ".diagram";
 	public static final String     INTERFACES_COORD_FILES_SUFFIX = ".interface";
 	public static final String     UNIT_CELL_COORD_FILES_SUFFIX = ".cell";
 	
