@@ -25,6 +25,7 @@ public class AssemblyItemModel implements Serializable {
 	private String detailsButtonText = AppPropertiesManager.CONSTANTS.results_grid_interfaces_button();
 	private String prediction;	
 	private String thumbnailUrl = "";
+	private String diagramUrl = "";
 	private String pdbCode;
 	private String numInterfaces;
 	
@@ -91,6 +92,14 @@ public class AssemblyItemModel implements Serializable {
 		this.thumbnailUrl = thumbnailUrl;
 	}
 	
+	public String getDiagramUrl() {
+		return diagramUrl;
+	}
+
+	public void setDiagramUrl(String diagramUrl) {
+		this.diagramUrl = diagramUrl;
+	}
+		
 	public String getNumInterfaces() {
 		return numInterfaces;
 	}

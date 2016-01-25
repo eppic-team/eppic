@@ -35,5 +35,7 @@ public interface AssemblyItemModelProperties extends PropertyAccess<AssemblyItem
 	   
 	  ValueProvider<AssemblyItemModel, String> thumbnailUrl();
 	  
+	  ValueProvider<AssemblyItemModel, String> diagramUrl();
+	  
 	  
 }

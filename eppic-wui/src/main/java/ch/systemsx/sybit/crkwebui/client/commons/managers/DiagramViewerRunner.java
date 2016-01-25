@@ -17,10 +17,19 @@ import com.google.gwt.user.client.Window;
  */
 public class DiagramViewerRunner
 {
-	/**
-	 * Shows the lattice graph viewer
-	 * @param assemblyId assembly to consider
-	 */
+	//new method - shows the image in the diagramUrl in a popup
+	public static void runViewerAssembly(String assemblyId, String diagramUrl)
+	{	
+		//attention: hard coded values! this will not work if the dimensions are changed in the file names!
+		String enlargedDiagramUrl = diagramUrl.replace("75x75", "800x800");
+				
+		//Window.open("https://upload.wikimedia.org/wikipedia/commons/6/65/Baby.tux-800x800.png", "_blank", "width=700,height=700");
+		Window.open(enlargedDiagramUrl, "_blank", "width=700,height=700");
+		
+		
+	}
+	
+	//original method - servlet implementation
 	public static void runViewerAssembly(String assemblyId)
 	{
 		// we use the same size approach as with the jmol viewer - JD 2016-01-06
@@ -41,16 +50,21 @@ public class DiagramViewerRunner
 		}
 		if(interfaceids.length()>0)
 			interfaceids = interfaceids.substring(0,interfaceids.length()-1);
+		//else
+			//Window.alert("No interfaces to show!");
 
 		String url = GWT.getModuleBaseURL() + LatticeGraphServlet.SERVLET_NAME;
 		url +=  "?" + FileDownloadServlet.PARAM_ID + "=" + ApplicationContext.getPdbInfo().getJobId() +
 				"&" + LatticeGraphServlet.PARAM_INTERFACES + "=" + interfaceids +
-				"&" + JmolViewerServlet.PARAM_SIZE+"=" + canvasSize;;
+				"&" + JmolViewerServlet.PARAM_SIZE+"=" + canvasSize;
 
-		if(!interfaceids.equals("")) {
-			
-			Window.open(url,"_blank","width="+size+",height="+size);
-		}
+		//show only when interface count > 0
+		//if(!interfaceids.equals("")) 	
+			//Window.open(url,"_blank","width="+size+",height="+size);
+		
+		Window.open(url,"_blank","width="+size+",height="+size);		
+		
 	}
+	
 
 }

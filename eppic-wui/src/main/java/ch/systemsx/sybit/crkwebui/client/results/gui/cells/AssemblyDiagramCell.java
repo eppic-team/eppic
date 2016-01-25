@@ -40,7 +40,7 @@ public class AssemblyDiagramCell extends AbstractCell<String>{
     @Override
     public void onBrowserEvent(Context context, Element parent, String value, NativeEvent event, ValueUpdater<String> valueUpdater) {
     	super.onBrowserEvent(context, parent, value, event, valueUpdater);
-        if (parent.getFirstChildElement().isOrHasChild(Element.as(event.getEventTarget()))) {
+    	if (parent.getFirstChildElement().isOrHasChild(Element.as(event.getEventTarget()))) {
 	        int row = context.getIndex();
 	        EventBusManager.EVENT_BUS.fireEvent(new SelectResultsRowEvent(row));
 			EventBusManager.EVENT_BUS.fireEvent(new ShowDiagramViewerEvent());

@@ -282,7 +282,7 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 		
 		SummaryColumnConfig<AssemblyItemModel, String> diagramColumn = null;
 		if(numinterfaces != 0)
-			diagramColumn = new SummaryColumnConfig<AssemblyItemModel, String>(props.thumbnailUrl());
+			diagramColumn = new SummaryColumnConfig<AssemblyItemModel, String>(props.diagramUrl());
 		else
 			diagramColumn = new SummaryColumnConfig<AssemblyItemModel, String>(null);
 
@@ -377,6 +377,14 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 							EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX + 
 							"." + assembly.getId() + ".75x75.png";
 					model.setThumbnailUrl(thumbnailUrl);
+					
+					String diagramUrl = 
+							ApplicationContext.getSettings().getResultsLocationForJob(ApplicationContext.getPdbInfo().getJobId().toLowerCase()) + 
+							"/" + ApplicationContext.getPdbInfo().getTruncatedInputName() +
+							".diagram" +
+							"." + assembly.getId() + ".75x75.png";
+					model.setDiagramUrl(diagramUrl);
+					
 					model.setMmSize(assembly.getMmSizeString());
 					model.setStoichiometry(assembly.getStoichiometryString());
 					model.setSymmetry(assembly.getSymmetryString());
@@ -539,8 +547,8 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 			@Override
 			public void onShowDiagramViewer(ShowDiagramViewerEvent event) 
 			{
-				DiagramViewerRunner.runViewerAssembly(String.valueOf(resultsGrid.getSelectionModel().getSelectedItem().getAssemblyId()));
-			}
+				DiagramViewerRunner.runViewerAssembly(String.valueOf(resultsGrid.getSelectionModel().getSelectedItem().getAssemblyId()),resultsGrid.getSelectionModel().getSelectedItem().getDiagramUrl());
+			} 
 		});		
 		
 		EventBusManager.EVENT_BUS.addHandler(ShowThumbnailEvent.TYPE, new ShowThumbnailHandler() {
