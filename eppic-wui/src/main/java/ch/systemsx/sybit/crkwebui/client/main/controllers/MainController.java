@@ -222,13 +222,15 @@ public class MainController
 						for(Assembly a : assemblies){
 							if(a.getId() == assemblyID){
 								//do the color
+								assembly_string += "<table cellpadding=0 cellspacing=0>";
 								if (a.getPredictionString() != null && a.getPredictionString().equalsIgnoreCase("xtal"))
-									assembly_string += "<table cellpadding=0 cellspacing=0><tr><td><span class='eppic-general-info-label-new'>Prediction</span></td><td>&nbsp;&nbsp;<span class='eppic-general-info-label-value-new' style='color:red'><b>" + a.getPredictionString() + "</b></span></td></tr>";
+									assembly_string += "<tr><td><span class='eppic-general-info-label-new'>Prediction</span></td><td>&nbsp;&nbsp;<span class='eppic-general-info-label-value-new' style='color:red'><b>" + a.getPredictionString() + "</b></span></td></tr>";
 								if (a.getPredictionString() != null && a.getPredictionString().equalsIgnoreCase("bio"))
-									assembly_string += "<table cellpadding=0 cellspacing=0><tr><td><span class='eppic-general-info-label-new'>Prediction</span></td><td>&nbsp;&nbsp;<span class='eppic-general-info-label-value-new' style='color:green'><b>" + a.getPredictionString() + "</b></span></td></tr>";
+									assembly_string += "<tr><td><span class='eppic-general-info-label-new'>Prediction</span></td><td>&nbsp;&nbsp;<span class='eppic-general-info-label-value-new' style='color:green'><b>" + a.getPredictionString() + "</b></span></td></tr>";
 								assembly_string += "<tr><td width='150px'><span class='eppic-general-info-label-new'>Macromolecular Size</span></td><td>&nbsp;&nbsp;<span class='eppic-general-info-label-value-new'>" + a.getMmSizeString() + "</span></td></tr>";
 								assembly_string += "<tr><td><span class='eppic-general-info-label-new'>Stoichiometry</span></td><td>&nbsp;&nbsp;<span class='eppic-general-info-label-value-new'>" + a.getStoichiometryString() + "</span></td></tr>";
-								assembly_string += "<tr><td><span class='eppic-general-info-label-new'>Symmetry</span></td><td>&nbsp;&nbsp;<span class='eppic-general-info-label-value-new'>" + a.getSymmetryString() + "</span></td></tr></table>";
+								assembly_string += "<tr><td><span class='eppic-general-info-label-new'>Symmetry</span></td><td>&nbsp;&nbsp;<span class='eppic-general-info-label-value-new'>" + a.getSymmetryString() + "</span></td></tr>";
+								assembly_string += "</table>";
 								break;
 							}
 						}
