@@ -50,7 +50,7 @@ public class LatticeGraph3D {
 
 	private final double defaultInterfaceRadius = 2.5;
 	private final double defaultArcHeight = 4;
-	private final double defaultArrowOffset = 6;
+	//private final double defaultArrowOffset = 6;
 
 	public enum WrappingPolicy {
 		DONT_WRAP, // Don't wrap edges. Draw directly between vertices

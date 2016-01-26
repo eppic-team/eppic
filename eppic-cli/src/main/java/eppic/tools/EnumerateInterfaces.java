@@ -210,7 +210,7 @@ public class EnumerateInterfaces {
 		}
 
 
-		System.out.println(pdb.getPdbId()+" - "+pdb.getChains()+" chains ("+pdb.getCompounds().size()+" sequence unique) ");
+		System.out.println(pdb.getPDBCode()+" - "+pdb.getChains()+" chains ("+pdb.getCompounds().size()+" sequence unique) ");
 
 		for (Compound chainCluster:pdb.getCompounds()) {
 			// in mmCIF files some sugars are annotated as compounds with no chains linked to them, e.g. 3s26

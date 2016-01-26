@@ -197,7 +197,7 @@ public class ChainEvolContext implements Serializable {
 		List<SiftsFeature> mappings = null;
 		
 		if (!params.isInputAFile() || params.isUsePdbCodeFromFile()) {
-			String pdbCode = parent.getPdb().getPdbId().toLowerCase();
+			String pdbCode = parent.getPdb().getPDBCode().toLowerCase();
 			if (useSifts) {
 				if (pdbCode==null || !pdbCode.matches("\\d\\w\\w\\w")) {
 					LOGGER.info("Could not read a PDB code in file. Will blast to find query-to-UniProt mapping.");
