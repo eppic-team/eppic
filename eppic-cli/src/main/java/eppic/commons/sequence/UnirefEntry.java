@@ -152,17 +152,19 @@ public class UnirefEntry implements Serializable {
 	
 	/**
 	 * Returns the domain of life (what used to be kingdom) for this entry 
-	 * @return
+	 * @return first taxon or null if no taxon info available
 	 */
 	public String getFirstTaxon() {
+		if (taxons==null) return null;
 		return this.taxons.get(0);
 	}
 	
 	/**
 	 * Returns the most specific taxonomy annotation (species) for this entry
-	 * @return
+	 * @return last taxon or null if no taxon info available
 	 */
 	public String getLastTaxon() {
+		if (taxons==null) return null;
 		return this.taxons.get(this.taxons.size()-1);
 	}
 	

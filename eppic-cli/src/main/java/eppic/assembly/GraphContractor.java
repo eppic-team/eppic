@@ -4,14 +4,16 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.jgrapht.Graph;
 import org.jgrapht.UndirectedGraph;
-import org.jgrapht.graph.Pseudograph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 
 public class GraphContractor {
 	
@@ -50,7 +52,7 @@ public class GraphContractor {
 		// source and target nodes will be always the same 2 entities
 		Set<InterfaceEdge> toRemove = getEdgesWithInterfClusterId(inputGraph, interfClusterId);
 
-		UndirectedGraph<ChainVertex, InterfaceEdge> contGraph = copyGraph(inputGraph);
+		UndirectedGraph<ChainVertex, InterfaceEdge> contGraph = GraphUtils.copyGraph(inputGraph);
 
 		int referenceEntityId = -1;
 
@@ -63,7 +65,10 @@ public class GraphContractor {
 
 			if (s.getEntity()<0) logger.error("Entity id for vertex {} is negative!",s.getEntity());
 
-			if (referenceEntityId<0) referenceEntityId = s.getEntity();
+			if (referenceEntityId<0) {
+				referenceEntityId = s.getEntity();
+				logger.debug("Chose reference entity id {}. Vertices that have this entity id will be kept.", referenceEntityId); 
+			}
 
 			// we will keep the vertices matching referenceEntityId
 			ChainVertex vToRemove = null;
@@ -129,6 +134,19 @@ public class GraphContractor {
 		// let's now remove duplicated edges
 		trim(contGraph);
 
+		// logging the entity counts
+		if (logger.isDebugEnabled()) {
+			
+			Map<Integer, Integer> counts = getEntityCounts(contGraph);
+			
+			logger.debug("Counts per entities of contracted graph:");
+			for (Entry<Integer, Integer> entry:counts.entrySet()) {
+				logger.debug("  entity {} -> {} vertices", entry.getKey(), entry.getValue());
+			}
+			
+			
+		}
+		
 		return contGraph;
 	}
 	
@@ -142,7 +160,7 @@ public class GraphContractor {
 	public UndirectedGraph<ChainVertex, InterfaceEdge> contract() {
 			
 		// for first iteration
-		int interfClusterId = Assembly.getLargestHeteroInterfaceCluster(g);
+		int interfClusterId = GraphUtils.getLargestHeteroInterfaceCluster(g);
 		
 		cg = g;
 
@@ -151,11 +169,24 @@ public class GraphContractor {
 			i++;
 			logger.debug("Round {} of contraction: contracting interface cluster {}",i,interfClusterId);
 			logger.debug("Starting graph before contraction has {} vertices and {} edges",cg.vertexSet().size(),cg.edgeSet().size());
+			// logging the entity counts
+			if (logger.isDebugEnabled()) {
+				
+				Map<Integer, Integer> counts = getEntityCounts(cg);
+				
+				logger.debug("Counts per entities of starting graph:");
+				for (Entry<Integer, Integer> entry:counts.entrySet()) {
+					logger.debug("  entity {} -> {} vertices", entry.getKey(), entry.getValue());
+				}
+				
+				
+			}
+
 			
 			cg = contractInterfaceCluster(cg, interfClusterId);
 			
 			// we get the interfClusterId for next iteration
-			interfClusterId = Assembly.getLargestHeteroInterfaceCluster(cg);
+			interfClusterId = GraphUtils.getLargestHeteroInterfaceCluster(cg);
 			
 			// if no more heteromeric interfaces we break: end of iteration
 			if (interfClusterId == -1) break;
@@ -211,7 +242,7 @@ public class GraphContractor {
 				if (j<i) continue; // i.e. we include i==j (to remove loop edges)
 
 				Set<InterfaceEdge> edges = contGraph.getAllEdges(iVertex, jVertex);
-				Map<Integer,Set<InterfaceEdge>> groups = groupIntoTypes(edges);
+				Map<Integer,Set<InterfaceEdge>> groups = GraphUtils.groupIntoTypes(edges, true);
 
 				for (int interfaceId:groups.keySet()){
 					Set<InterfaceEdge> group = groups.get(interfaceId);
@@ -248,51 +279,6 @@ public class GraphContractor {
 			contGraph.removeEdge(edge);
 		}
 
-	}
-	
-	/**
-	 * Given a set of edges groups them into interface cluster id groups
-	 * @param edges
-	 * @return a map of interface cluster ids to sets of edges with the corresponding interface cluster id
-	 */
-	private static Map<Integer,Set<InterfaceEdge>> groupIntoTypes(Set<InterfaceEdge> edges) {
-		Map<Integer,Set<InterfaceEdge>> map = new HashMap<Integer,Set<InterfaceEdge>>();
-
-		for (InterfaceEdge edge:edges) {
-			Set<InterfaceEdge> set = null;
-			if (!map.containsKey(edge.getClusterId())) {
-				set = new HashSet<InterfaceEdge>();
-				map.put(edge.getClusterId(), set);
-			} else {
-				set = map.get(edge.getClusterId());
-			}
-			set.add(edge);
-
-		}
-		return map;
-	}
-	
-	/**
-	 * Copies the given Graph to a new Graph with same vertices and edges.
-	 * The vertices and edges are the same references as the original Graph.  
-	 * @param g
-	 * @return
-	 */
-	private static UndirectedGraph<ChainVertex, InterfaceEdge> copyGraph(UndirectedGraph<ChainVertex, InterfaceEdge> g) {
-		
-		//if (! (g instanceof Pseudograph)) throw new IllegalArgumentException("Given graph is not a pseudograph!");
-		
-		UndirectedGraph<ChainVertex, InterfaceEdge> og = new Pseudograph<ChainVertex, InterfaceEdge>(InterfaceEdge.class);
-		
-		for (ChainVertex v:g.vertexSet()) {
-			og.addVertex(v);
-		}
-		
-		for (InterfaceEdge e:g.edgeSet()) {
-			og.addEdge(g.getEdgeSource(e), g.getEdgeTarget(e), e);
-		}
-		
-		return og;
 	}
 	
 	/**
@@ -336,5 +322,24 @@ public class GraphContractor {
 		}
 		
 		return toRemove;
+	}
+	
+	/**
+	 * Gets a map of entity ids to counts of vertices of that entity for the given graph
+	 * @param g
+	 * @return
+	 */
+	private static Map<Integer,Integer> getEntityCounts(UndirectedGraph<ChainVertex, InterfaceEdge> g) {
+		Map<Integer, Integer> counts = new TreeMap<Integer,Integer>();
+		for (ChainVertex v:g.vertexSet()) {
+			int currentEntity = v.getEntity();
+			if (!counts.containsKey(currentEntity)) {
+				counts.put(currentEntity, 0);
+			} 
+			
+			counts.put(currentEntity, counts.get(currentEntity)+1);
+			
+		}
+		return counts;
 	}
 }

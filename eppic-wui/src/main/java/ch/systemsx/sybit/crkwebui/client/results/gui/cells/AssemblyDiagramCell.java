@@ -6,6 +6,7 @@ import java.util.Set;
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.commons.events.SelectResultsRowEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowAssemblyViewerEvent;
+import ch.systemsx.sybit.crkwebui.client.commons.events.ShowDiagramViewerEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowViewerEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.managers.EventBusManager;
 
@@ -21,12 +22,12 @@ import com.google.gwt.user.client.Window;
  * @author nikhil
  *
  */
-public class AssemblyThumbnailCell extends AbstractCell<String>{
+public class AssemblyDiagramCell extends AbstractCell<String>{
 	
 	@Override
 	public void render(Context context,	String value, SafeHtmlBuilder sb) {	
 		sb.appendHtmlConstant("<img src='"+ value + 
-				"' qtip='" + AppPropertiesManager.CONSTANTS.results_grid_thumbnail_tooltip_text() + "'/>");
+				"' qtip='" + AppPropertiesManager.CONSTANTS.results_grid_diagram_tooltip_text() + "'/>");
 	}
 	
 	@Override
@@ -38,11 +39,11 @@ public class AssemblyThumbnailCell extends AbstractCell<String>{
 
     @Override
     public void onBrowserEvent(Context context, Element parent, String value, NativeEvent event, ValueUpdater<String> valueUpdater) {
-        super.onBrowserEvent(context, parent, value, event, valueUpdater);
-        if (parent.getFirstChildElement().isOrHasChild(Element.as(event.getEventTarget()))) {
+    	super.onBrowserEvent(context, parent, value, event, valueUpdater);
+    	if (parent.getFirstChildElement().isOrHasChild(Element.as(event.getEventTarget()))) {
 	        int row = context.getIndex();
 	        EventBusManager.EVENT_BUS.fireEvent(new SelectResultsRowEvent(row));
-			EventBusManager.EVENT_BUS.fireEvent(new ShowAssemblyViewerEvent());
+			EventBusManager.EVENT_BUS.fireEvent(new ShowDiagramViewerEvent());
         }
     }
 	

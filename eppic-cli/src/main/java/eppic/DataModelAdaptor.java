@@ -166,7 +166,7 @@ public class DataModelAdaptor {
 
 			chainClusterDBs.add(createChainCluster(compound));
 		}
-		pdbInfo.setNumChainClusters(pdb.getCompounds().size());
+		pdbInfo.setNumChainClusters(chainClusterDBs.size());
 		pdbInfo.setChainClusters(chainClusterDBs);
 	}
 	
@@ -610,8 +610,8 @@ public class DataModelAdaptor {
 		
 		for (Assembly a:validAssemblies) {
 			if (pdbAssembly.isChild(a) && 
-					pdbAssembly.getStoichiometrySet().getFirst().getCountForIndex(0) ==
-					a.getStoichiometrySet().getFirst().getCountForIndex(0)) {
+					pdbAssembly.getAssemblyGraph().getSubAssemblies().get(0).getStoichiometry().getCountForIndex(0) ==
+					a.getAssemblyGraph().getSubAssemblies().get(0).getStoichiometry().getCountForIndex(0)) {
 				
 				if (matching!=null) 
 					LOGGER.warn("More than 1 assembly in list of valid assemblies matches the PDB annotated bio unit assembly. Only last one {} will be considered",a.toString());

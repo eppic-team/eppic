@@ -2,7 +2,7 @@ package eppic.db;
 
 import java.util.Map;
 
-import org.biojava.nbio.alignment.template.SequencePair;
+import org.biojava.nbio.core.alignment.template.SequencePair;
 import org.biojava.nbio.core.sequence.ProteinSequence;
 import org.biojava.nbio.core.sequence.compound.AminoAcidCompound;
 import org.biojava.nbio.structure.contact.Pair;

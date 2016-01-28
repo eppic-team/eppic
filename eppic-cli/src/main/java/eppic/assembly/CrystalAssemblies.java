@@ -3,6 +3,7 @@ package eppic.assembly;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -10,6 +11,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.biojava.nbio.structure.Chain;
+import org.biojava.nbio.structure.Compound;
 import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.StructureException;
 import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
@@ -18,7 +21,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import eppic.CallType;
-import eppic.EppicParams;
 import eppic.InterfaceEvolContextList;
 
 /**
@@ -32,9 +34,14 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 	
 	private static final Logger logger = LoggerFactory.getLogger(CrystalAssemblies.class);
 
+	/**
+	 * If this max number of assemblies is exceeded the assembly enumeration will happen on
+	 * the heteromeric-contracted graph instead of on the full graph.
+	 */
+	private static final int MAX_ALLOWED_ASSEMBLIES = 1000;
+	
 	private LatticeGraph<ChainVertex,InterfaceEdge> latticeGraph;
 	private Structure structure;
-	private List<StructureInterfaceCluster> interfaceClusters;
 
 	/**
 	 * The set of all valid assemblies in the crystal.
@@ -51,11 +58,29 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 	
 	private InterfaceEvolContextList interfEvolContextList;
 	
+	// the entity/chain maps: to map between indices used in Stoichiometry arrays and entity ids/chain ids
+	private Map<Integer,Integer> entityId2Idx;
+	private Map<Integer,Integer> idx2EntityId;
+	
+	private Map<String,Integer> chainIds2Idx;
+	private Map<Integer,String> idx2ChainIds;
+		
+	private boolean largeNumAssemblies;
+	
+	/**
+	 * 
+	 * @param structure
+	 * @param interfaces
+	 * @throws StructureException
+	 */
 	public CrystalAssemblies(Structure structure, StructureInterfaceList interfaces) throws StructureException {
+		
+		this.largeNumAssemblies = false;
 		
 		this.structure = structure;
 		this.latticeGraph = new LatticeGraph<ChainVertex,InterfaceEdge>(structure, interfaces,ChainVertex.class,InterfaceEdge.class);
-		this.interfaceClusters = interfaces.getClusters(EppicParams.CLUSTERING_CONTACT_OVERLAP_SCORE_CUTOFF);
+		
+		initEntityMaps();
 		
 		findValidAssemblies();
 		
@@ -68,6 +93,20 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 	
 	public int size() {
 		return clusters.size();
+	}
+	
+	private void findValidAssemblies() {
+		
+		latticeGraph.removeDuplicateEdges();
+		
+		findValidAssembliesFull();
+		
+		if (largeNumAssemblies) {
+			
+			logger.error("Structures with heteromeric interfaces and large number of assemblies are not supported yet! Assembly list will be empty.");
+			// TODO implement! basically it is the same code, but using the contracted graph within Assembly...			
+			//findValidAssembliesContract();
+		}
 	}
 	
 	/**
@@ -88,34 +127,34 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 	 * pruned top nodes.
 	 * @return
 	 */
-	private void findValidAssemblies() {
+	private void findValidAssembliesFull() {
+				
+		Set<Assembly> validAssemblies = new HashSet<Assembly>();
 		
-		latticeGraph.removeDuplicateEdges();
-		
-		Set<Assembly> validAssemblies = new HashSet<Assembly>();;
+		int numInterfaceClusters = latticeGraph.getNumInterfaceClusters();
 		
 		// the list of nodes in the tree found to be invalid: all of their children will also be invalid
 		List<Assembly> invalidNodes = new ArrayList<Assembly>();		
 		
-		Assembly emptyAssembly = new Assembly(this, new PowerSet(interfaceClusters.size()));
+		Assembly emptyAssembly = new Assembly(this, new PowerSet(numInterfaceClusters));
 		
 		validAssemblies.add(emptyAssembly); // the empty assembly (no engaged interfaces) is always a valid assembly
 		
 		Set<Assembly> prevLevel = new HashSet<Assembly>();
 		prevLevel.add(emptyAssembly);
 		Set<Assembly> nextLevel = null;
-		
-		for (int k = 1; k<=interfaceClusters.size();k++) {
-			
+
+		for (int k = 1; k<=numInterfaceClusters; k++) {
+
 			logger.debug("Traversing level {} of tree: {} parent nodes",k,prevLevel.size());
-			
+
 			nextLevel = new HashSet<Assembly>();
-					
+
 			for (Assembly p:prevLevel) {
 				List<Assembly> children = p.getChildren(invalidNodes);
-				
+
 				for (Assembly c:children) {
-					
+
 					if (!c.isValid()) {
 						logger.debug("Node {} is invalid, will prune off all of its children",c.toString());
 						invalidNodes.add(c);
@@ -125,30 +164,35 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 						nextLevel.add(c);
 						// add assembly as valid
 						validAssemblies.add(c);
+
+						if (validAssemblies.size() > MAX_ALLOWED_ASSEMBLIES) {
+							logger.warn("Exceeded the default max number of allowed assemblies ({}). Will do assembly enumeration from heteromeric-contracted graph", MAX_ALLOWED_ASSEMBLIES);
+							largeNumAssemblies = true;
+							all = new HashSet<Assembly>();
+							return;
+						}
 					}
 				}
 			}
 			prevLevel = new HashSet<Assembly>(nextLevel); 
-			
+
 		}
-		
+
 		this.all = validAssemblies;
 		
 
 	}
-	
+
 	private void initGroups() {
 		this.groups = new TreeMap<Integer, AssemblyGroup>();
 
 		for (Assembly assembly:all) {
 
-			StoichiometrySet stoSet = assembly.getStoichiometrySet();
-
 			// we classify into groups those that are fully covering
 
-			if (stoSet.isFullyCovering()) {
+			if (assembly.getAssemblyGraph().isFullyCovering()) {
 				// we assume they are valid, which implies even stoichiometry (thus the size of first will give the size for all)			
-				int size = stoSet.getFirst().getCountForIndex(0);
+				int size = assembly.getAssemblyGraph().getSubAssemblies().get(0).getStoichiometry().getCountForIndex(0);
 
 				if (!groups.containsKey(size)) {
 					AssemblyGroup group = new AssemblyGroup();
@@ -171,6 +215,9 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 	}
 	
 	private void initClusters() {
+		
+		logger.info("Number of assemblies before clustering: {}", all.size());
+		logger.info("Number of assembly groups: {}", groups.size());
 		
 		clusters = new ArrayList<AssemblyGroup>();
 		
@@ -199,7 +246,102 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 				}
 			}
 		}
+		
+		logger.info("Number of assemblies after clustering: {}", clusters.size());
 	}
+	
+	private void initEntityMaps() {
+		// since the entityIds are not guaranteed to be 1 to n, we need to map them to indices
+		entityId2Idx = new HashMap<Integer,Integer>();
+		idx2EntityId = new HashMap<Integer,Integer>();
+		chainIds2Idx = new HashMap<String, Integer>();
+		idx2ChainIds = new HashMap<Integer, String>();
+
+		int i = 0;
+		for (Compound c:structure.getCompounds()) {
+			entityId2Idx.put(c.getMolId(),i);
+			idx2EntityId.put(i,c.getMolId());
+			i++;
+		}
+
+		i = 0;
+		for (Chain c:structure.getChains()) {
+			chainIds2Idx.put(c.getChainID(),i);
+			idx2ChainIds.put(i,c.getChainID());
+			i++;
+		}
+	}
+	
+	/**
+	 * Given an entity id returns the entity index as used by Stoichiometry arrays
+	 * @param entityId
+	 * @return
+	 */
+	public int getEntityIndex(int entityId) {
+		return entityId2Idx.get(entityId);
+	}
+	
+	/**
+	 * Given and entity index as used in Stoichiometry arrays, returns the entity id
+	 * @param index
+	 * @return
+	 */
+	public int getEntityId(int index) {
+		return idx2EntityId.get(index);
+	}
+	
+	/**
+	 * Given a chain id returns a chain index as used in Stoichiometry arrays
+	 * @param chainId
+	 * @return
+	 */
+	public int getChainIndex(String chainId) {
+		return chainIds2Idx.get(chainId);
+	}
+	
+	/**
+	 * Given a chain index as used in Stoichiometry arrays, returns a chain id
+	 * @param chainIdx
+	 * @return
+	 */
+	public String getChainId(int chainIdx) {
+		return idx2ChainIds.get(chainIdx);
+	}
+	
+	/**
+	 * Given an entity index as used in Stoichiometry arrays, returns the representative chain id for that entity
+	 * @param index
+	 * @return
+	 */
+	public String getRepresentativeChainIdForEntityIndex(int index) {
+		return structure.getCompoundById(getEntityId(index)).getRepresentative().getChainID();
+	}
+	
+	/**
+	 * Get the number of chains in the Structure
+	 * @return
+	 */
+	public int getNumChainsInStructure() {
+		return structure.getChains().size();
+	}
+	
+	/**
+	 * Get the number of entities in the Structure
+	 * @return
+	 */
+	public int getNumEntitiesInStructure() {
+		
+		int size = 0;
+		// in mmCIF files some sugars are annotated as compounds with no chains linked to them, e.g. 3s26, 4uo5
+		// we need to skip those to count the entities here
+		for (Compound comp: structure.getCompounds()) {
+			if (comp.getChains().isEmpty()) continue;
+			size++;
+		}
+					
+		return size;
+	}
+
 
 	@Override
 	public Iterator<Assembly> iterator() {
@@ -222,10 +364,6 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 	
 	public LatticeGraph<ChainVertex, InterfaceEdge> getLatticeGraph() {
 		return latticeGraph;
-	}
-	
-	public List<StructureInterfaceCluster> getInterfaceClusters() {
-		return interfaceClusters;
 	}
 	
 	/**
@@ -251,8 +389,8 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 
 			@Override
 			public int compare(Assembly arg0, Assembly arg1) {
-				int firstSize = arg0.getStoichiometrySet().getFirst().getTotalSize();
-				int secondSize = arg1.getStoichiometrySet().getFirst().getTotalSize();
+				int firstSize = arg0.getAssemblyGraph().getSubAssemblies().get(0).getStoichiometry().getTotalSize();
+				int secondSize = arg1.getAssemblyGraph().getSubAssemblies().get(0).getStoichiometry().getTotalSize();
 				
 				if (firstSize != secondSize) {
 					return Integer.compare(firstSize, secondSize);
@@ -301,7 +439,7 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 	
 	public Assembly generateAssembly(int[] interfaceClusterIds) {
 		
-		PowerSet engagedSet = new PowerSet(interfaceClusters.size());
+		PowerSet engagedSet = new PowerSet(latticeGraph.getNumInterfaceClusters());
 		
 		for (int clusterId:interfaceClusterIds) {
 			engagedSet.switchOn(clusterId-1);
@@ -334,10 +472,9 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 		Assembly maxSizeBioAssembly = null;
 		int maxSize = 0;
 		for (Assembly a:uniques) {
-			
-			StoichiometrySet stoSet = a.getStoichiometrySet();
+						
 			// TODO this ignores other non-overlapping stoichiometries, must take care of that
-			Stoichiometry sto = stoSet.getFirst();
+			Stoichiometry sto = a.getAssemblyGraph().getSubAssemblies().get(0).getStoichiometry();
 			int size = sto.getTotalSize();
 			
 			if (a.getCall() == CallType.BIO && maxSize<size) {

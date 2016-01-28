@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ch.systemsx.sybit.crkwebui.server.commons.servlets.BaseServlet;
+import ch.systemsx.sybit.crkwebui.server.commons.util.io.DirLocatorUtil;
 import ch.systemsx.sybit.crkwebui.server.db.dao.InterfaceDAO;
 import ch.systemsx.sybit.crkwebui.server.db.dao.JobDAO;
 import ch.systemsx.sybit.crkwebui.server.db.dao.PDBInfoDAO;
@@ -66,6 +67,8 @@ public class LatticeGraphServlet extends BaseServlet
 
 	private String resultsLocation;
 	private String destination_path;
+	
+	private String atomCachePath;
 
 	@Override
 	public void init(ServletConfig config) throws ServletException
@@ -74,6 +77,10 @@ public class LatticeGraphServlet extends BaseServlet
 
 		resultsLocation = properties.getProperty("results_location");
 		destination_path = properties.getProperty("destination_path");
+		atomCachePath = propertiesCli.getProperty("ATOM_CACHE_PATH");
+		
+		if (atomCachePath == null) 
+			logger.warn("ATOM_CACHE_PATH is not set in config file, will not be able to reuse cache for PDB cif.gz files!");
 	}
 
 	@Override
@@ -87,11 +94,12 @@ public class LatticeGraphServlet extends BaseServlet
 		String jobId = request.getParameter(FileDownloadServlet.PARAM_ID);
 		String requestedIfacesStr = request.getParameter(PARAM_INTERFACES);
 		String requestedClusterStr = request.getParameter(PARAM_CLUSTERS);
+		String size = request.getParameter(JmolViewerServlet.PARAM_SIZE);
 
 		String url3dmoljs = properties.getProperty("url3dmoljs");
 		if (url3dmoljs == null || url3dmoljs.equals("")) {
-			logger.error("The URL for 3Dmol js is not set in config file!");
-			return;
+			logger.info("The URL for 3Dmol js is not set in config file. Will use the js file from eppic");
+			url3dmoljs = "3Dmol-min.js"; //we set it to the js file within eppic
 		}
 
 		logger.info("Requested Lattice Graph page for jobId={},interfaces={},clusters={}",jobId,requestedIfacesStr,requestedClusterStr);
@@ -107,11 +115,11 @@ public class LatticeGraphServlet extends BaseServlet
 			String inputPrefix = pdbInfo.getTruncatedInputName();
 
 			// job directory on local filesystem
-			File dir = new File(destination_path + jobId);
+			File dir = DirLocatorUtil.getJobDir(new File(destination_path), jobId);
 
 			// Construct UC filename
 			File ucFile = new File(dir,inputPrefix + EppicParams.UNIT_CELL_COORD_FILES_SUFFIX + ".cif.gz");
-			String ucURI = resultsLocation + jobId + "/" + inputPrefix + EppicParams.UNIT_CELL_COORD_FILES_SUFFIX + ".cif";
+			String ucURI = DirLocatorUtil.getJobUrlPath(resultsLocation, jobId) + "/" + inputPrefix + EppicParams.UNIT_CELL_COORD_FILES_SUFFIX + ".cif";
 
 			List<Interface> ifaceList = getInterfaceList(pdbInfo);
 
@@ -126,7 +134,7 @@ public class LatticeGraphServlet extends BaseServlet
 
 			outputStream = new PrintWriter(response.getOutputStream());
 
-			LatticeGraphPageGenerator.generatePage(dir,input, ucFile, ucURI, title, ifaceList, requestedIfaces, url3dmoljs,outputStream);
+			LatticeGraphPageGenerator.generatePage(dir,input, atomCachePath, ucFile, ucURI, title, size, ifaceList, requestedIfaces, url3dmoljs,outputStream);
 
 		}
 		catch(ValidationException e)

@@ -54,7 +54,6 @@ import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.History;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
@@ -142,9 +141,6 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 		initializeEventsListeners();
 	}
 	
-	/*public static CheckBox getClustersViewButton(){
-		return clustersViewButton;
-	}*/
 	
 	private ToolBar createSelectorToolBar(){
 		toolBar = new ToolBar();
@@ -191,6 +187,7 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 		
 		clusterIdColumn = new SummaryColumnConfig<InterfaceItemModel, Integer>(props.clusterId());
 		configs.add(clusterIdColumn);
+		clusterIdColumn.setHidden(true);
 		thumbnailColumn = getThumbnailColumn();
 		configs.add(thumbnailColumn);
 		configs.add(getIdColumn());
@@ -512,14 +509,14 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 					model.setOperatorType(interfaceItem.getOperatorType());
 					model.setInfinite(interfaceItem.isInfinite());
 					model.setWarnings(interfaceItem.getInterfaceWarnings());
-					String thumbnailUrl = ApplicationContext.getSettings().getResultsLocation() +
-							ApplicationContext.getPdbInfo().getJobId() + 
+					String thumbnailUrl = 
+							ApplicationContext.getSettings().getResultsLocationForJob(ApplicationContext.getPdbInfo().getJobId()) + 
 							"/" + ApplicationContext.getPdbInfo().getTruncatedInputName() +
 							EppicParams.INTERFACES_COORD_FILES_SUFFIX +
 							"." + interfaceItem.getInterfaceId() + ".75x75.png";
 					if(ApplicationContext.getPdbInfo().getJobId().length() == 4)
-						thumbnailUrl = ApplicationContext.getSettings().getResultsLocation() +
-							ApplicationContext.getPdbInfo().getJobId().toLowerCase() + 
+						thumbnailUrl =
+							ApplicationContext.getSettings().getResultsLocationForJob(ApplicationContext.getPdbInfo().getJobId().toLowerCase()) + 
 							"/" + ApplicationContext.getPdbInfo().getTruncatedInputName() +
 							EppicParams.INTERFACES_COORD_FILES_SUFFIX + 
 							"." + interfaceItem.getInterfaceId() + ".75x75.png";
@@ -583,31 +580,29 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 		}
 	}
 	
-	/**
-	 * 
-	 */
 	private void onClustersRadioValueChange(boolean value){
 		if (value) { //check clusters event
 			clustersView.groupBy(clusterIdColumn);
-			ResultsPanel.informationPanel.assemblyInfoPanel.assembly_info.setHTML("<table cellpadding=0 cellspacing=0><tr><td width='150px'><span class='eppic-general-info-label-new'>Assemblies</span></td><td><span class='eppic-general-info-label-value-new'><a href='" + GWT.getHostPageBaseURL() + "#id/"+ApplicationContext.getPdbInfo().getPdbCode()+"'>" + ApplicationContext.getPdbInfo().getAssemblies().size() + "</a></span></td></tr><tr><td><span class='eppic-general-info-label-new'>Interfaces</span></td><td><span class='eppic-general-info-label-value-new'><a href='" + GWT.getHostPageBaseURL() + "#interfaces/"+ApplicationContext.getPdbInfo().getPdbCode()+"'>" + ApplicationContext.getNumberOfInterfaces() + "</a></span></td></tr><tr><td><span class='eppic-general-info-label-new'>Interface clusters</span></td><td><span class='eppic-general-info-label-value-new'>" + ApplicationContext.getPdbInfo().getInterfaceClusters().size()+"</span></td></tr></table>");
+			ResultsPanel.informationPanel.assemblyInfoPanel.assembly_info.setHTML("<table cellpadding=0 cellspacing=0><tr><td width='150px'><span class='eppic-general-info-label-new'>Assemblies</span></td><td><span class='eppic-general-info-label-value-new'><a href='" + GWT.getHostPageBaseURL() + "#id/"+ApplicationContext.getSelectedJobId()+"'>" + ApplicationContext.getPdbInfo().getAssemblies().size() + "</a></span></td></tr><tr><td><span class='eppic-general-info-label-new'>Interfaces</span></td><td><span class='eppic-general-info-label-value-new'><a href='" + GWT.getHostPageBaseURL() + "#interfaces/"+ApplicationContext.getSelectedJobId()+"'>" + ApplicationContext.getNumberOfInterfaces() + "</a></span></td></tr><tr><td><span class='eppic-general-info-label-new'>Interface clusters</span></td><td><span class='eppic-general-info-label-value-new'>" + ApplicationContext.getPdbInfo().getInterfaceClusters().size()+"</span></td></tr></table>");
 			if(ApplicationContext.getSelectedAssemblyId() > 0)
-				History.newItem("clusters/" + ApplicationContext.getPdbInfo().getPdbCode() + "/" + ApplicationContext.getSelectedAssemblyId());
+				History.newItem("clusters/" + ApplicationContext.getSelectedJobId() + "/" + ApplicationContext.getSelectedAssemblyId());
 			else
-				History.newItem("clusters/" + ApplicationContext.getPdbInfo().getPdbCode());
+				History.newItem("clusters/" + ApplicationContext.getSelectedJobId());
 		} else{ //uncheck clusters event
 			clustersView.groupBy(null);
 			resultsStore.addSortInfo(0, new StoreSortInfo<InterfaceItemModel>(props.interfaceId(), SortDir.ASC));
 			//Hide cluster id column
 			resultsGrid.getColumnModel().getColumn(0).setHidden(true);
 			resultsGrid.getView().refresh(true);
+			
 			if(ApplicationContext.getSelectedAssemblyId() > 0)
-				History.newItem("interfaces/" + ApplicationContext.getPdbInfo().getPdbCode() + "/" + ApplicationContext.getSelectedAssemblyId());
+				History.newItem("interfaces/" + ApplicationContext.getSelectedJobId() + "/" + ApplicationContext.getSelectedAssemblyId());
 			else
-				History.newItem("interfaces/" + ApplicationContext.getPdbInfo().getPdbCode());
+				History.newItem("interfaces/" + ApplicationContext.getSelectedJobId());
 			//todo put a method in applicationcontext to get the number of interfaces
-			ResultsPanel.informationPanel.assemblyInfoPanel.assembly_info.setHTML("<table cellpadding=0 cellspacing=0><tr><td width='150px'><span class='eppic-general-info-label-new'>Assemblies</span></td><td><span class='eppic-general-info-label-value-new'><a href='" + GWT.getHostPageBaseURL() + "#id/"+ApplicationContext.getPdbInfo().getPdbCode()+"'>" + ApplicationContext.getPdbInfo().getAssemblies().size() + "</a></span></td></tr><tr><td><span class='eppic-general-info-label-new'>Interfaces</span></td><td><span class='eppic-general-info-label-value-new'>" + ApplicationContext.getNumberOfInterfaces() + "</span></td></tr><tr><td><span class='eppic-general-info-label-new'>Interface clusters</span></td><td><span class='eppic-general-info-label-value-new'><a href='" + GWT.getHostPageBaseURL() + "#clusters/"+ApplicationContext.getPdbInfo().getPdbCode()+"'>" + ApplicationContext.getPdbInfo().getInterfaceClusters().size()+"</a></span></td></tr></table>");
+			ResultsPanel.informationPanel.assemblyInfoPanel.assembly_info.setHTML("<table cellpadding=0 cellspacing=0><tr><td width='150px'><span class='eppic-general-info-label-new'>Assemblies</span></td><td><span class='eppic-general-info-label-value-new'><a href='" + GWT.getHostPageBaseURL() + "#id/"+ApplicationContext.getSelectedJobId()+"'>" + ApplicationContext.getPdbInfo().getAssemblies().size() + "</a></span></td></tr><tr><td><span class='eppic-general-info-label-new'>Interfaces</span></td><td><span class='eppic-general-info-label-value-new'>" + ApplicationContext.getNumberOfInterfaces() + "</span></td></tr><tr><td><span class='eppic-general-info-label-new'>Interface clusters</span></td><td><span class='eppic-general-info-label-value-new'><a href='" + GWT.getHostPageBaseURL() + "#clusters/"+ApplicationContext.getSelectedJobId()+"'>" + ApplicationContext.getPdbInfo().getInterfaceClusters().size()+"</a></span></td></tr></table>");
 		}
-	}
+	}	
 
 	/**
 	 * Creates combobox used to select molecular viewer.

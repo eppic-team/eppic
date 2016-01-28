@@ -12,6 +12,7 @@ import ch.systemsx.sybit.crkwebui.server.commons.servlets.BaseServlet;
 import ch.systemsx.sybit.crkwebui.server.commons.servlets.util.RequestUtil;
 import ch.systemsx.sybit.crkwebui.server.commons.servlets.util.ResponseUtil;
 import ch.systemsx.sybit.crkwebui.server.commons.util.http.ContentTypeGenerator;
+import ch.systemsx.sybit.crkwebui.server.commons.util.io.DirLocatorUtil;
 import ch.systemsx.sybit.crkwebui.server.commons.util.io.DirectoryContentReader;
 import ch.systemsx.sybit.crkwebui.server.files.downloader.generators.FileToDownloadNameGenerator;
 import ch.systemsx.sybit.crkwebui.server.files.downloader.generators.FileToDownloadNameSuffixGenerator;
@@ -126,7 +127,7 @@ public class FileDownloadServlet extends BaseServlet
 		{
 			FileDownloadServletInputValidator.validateFileDownloadInput(type, jobId, interfaceId, assemblyId, repChainId, format);
 			
-			File fileToDownloadLocation = new File(properties.getProperty("destination_path"), jobId);
+			File fileToDownloadLocation = DirLocatorUtil.getJobDir(new File(properties.getProperty("destination_path")), jobId);
 			FileToDownloadLocationValidator.validateLocation(fileToDownloadLocation);
 			
 			String suffix = FileToDownloadNameSuffixGenerator.generateFileNameSuffix(type, jobId, interfaceId, assemblyId, repChainId, format);

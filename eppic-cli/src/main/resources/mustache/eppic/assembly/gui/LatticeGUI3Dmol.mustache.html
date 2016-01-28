@@ -7,10 +7,10 @@
     <style type="text/css">
     #molviewer {
         min-width:200px;
-        max-width:800px;
-        min-height: 200px;
-        max-height: 800px;
-        height: 600px;
+        max-width:{{size}}px;
+        min-height:200px;
+        max-height:{{size}}px;
+        height: {{size}}px;
         position: relative;
         border:solid grey 1px;
     }
@@ -39,7 +39,7 @@ function axes(viewer) {
     </script>
 </head>
 <body>
-    <h1>3Dmol.js Test</h1>
+
     <script>
         $(document).ready(function() {
            //install a right-click handler on every canvas to export png

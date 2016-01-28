@@ -155,6 +155,7 @@ public interface AppProperties extends Constants
 	String results_grid_viewer_button_tooltip();
 	String results_grid_viewer_combo_label();
 	String results_grid_thumbnail_tooltip_text();
+	String results_grid_diagram_tooltip_text();
 	String results_grid_warnings_tooltip_title();
 	String results_grid_clusters_label();
 	String results_grid_clusters_tooltip();

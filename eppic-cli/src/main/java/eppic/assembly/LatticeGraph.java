@@ -568,4 +568,15 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 		return subgraph;
 	}
 
+	/**
+	 * Get the number of unique interface clusters present in the graph
+	 * @return
+	 */
+	public int getNumInterfaceClusters() {
+		HashSet<Integer> uniqueInterfClusters = new HashSet<Integer>();
+		for (E e : graph.edgeSet()) {
+			uniqueInterfClusters.add(e.getClusterId());
+		}
+		return uniqueInterfClusters.size();		
+	}
 }
