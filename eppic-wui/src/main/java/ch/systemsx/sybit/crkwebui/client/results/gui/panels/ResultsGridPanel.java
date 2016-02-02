@@ -1,5 +1,6 @@
 package ch.systemsx.sybit.crkwebui.client.results.gui.panels;
 
+import java.awt.Window;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -217,7 +218,27 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 	 */
 	private void fillColumnSettings(ColumnConfig<InterfaceItemModel, ?> column, String type){
 		column.setColumnHeaderClassName("eppic-default-font");
-		column.setWidth(Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("results_"+type+"_width")));
+		
+		//use this line of code to use the pre-defined widths in the properties file
+		//column.setWidth(Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("results_"+type+"_width")));
+		
+		int preconfiguredScreenWidth = 400;
+		int actualScreenWidth = 650;
+		try {
+			actualScreenWidth = Integer.parseInt(this.width);
+		}catch(Exception e) {}
+		int preconfiguredColumnSize = 1;
+		int extraColumnMargin = 0;
+		try{
+			extraColumnMargin = Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("results_"+type+"_width"));
+		}catch (Exception e) {}
+		if (actualScreenWidth > 800)
+			extraColumnMargin = actualScreenWidth / preconfiguredColumnSize;
+		
+		//double ratio = preconfiguredColumnSize/preconfiguredScreenWidth;
+		//extraColumnMargin = Integer.parseInt(Math.round(ratio * actualScreenWidth)+""); //temp solution for testing
+		column.setWidth(Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("results_"+type+"_width"))+extraColumnMargin+25);
+
 		column.setHeader(EscapedStringGenerator.generateSafeHtml(
 				ApplicationContext.getSettings().getGridProperties().get("results_"+type+"_header")));
 		
@@ -382,6 +403,7 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 		resultsGrid.getView().setStripeRows(true);
 		resultsGrid.getView().setColumnLines(false);
 		resultsGrid.getView().setForceFit(true);
+		
 		//resultsGrid.setContextMenu(new ResultsPanelContextMenu());
 		
 		resultsGrid.getView().setEmptyText(AppPropertiesManager.CONSTANTS.no_interfaces_found_text());
