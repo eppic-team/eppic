@@ -384,10 +384,10 @@ public class SequenceInfoPanel extends FieldSet
 	}
 
 	private ImageLinkWithTooltip createSearchSimilarStructuresIcon(final ChainCluster chainCluster) {
-		String url = "searchPdb/"+chainCluster.getPdbCode() + "/" + chainCluster.getRepChain();
+		String url = "#searchPdb/"+chainCluster.getPdbCode() + "/" + chainCluster.getRepChain();
 		ImageLinkWithTooltip imagelink = new ImageLinkWithTooltip("resources/icons/related_14.png", 
 				14, 14, 
-				AppPropertiesManager.CONSTANTS.homologs_panel_entropiespse_hint(), 
+				AppPropertiesManager.CONSTANTS.homologs_panel_search_tip(), 
 				url);
 		imagelink.getElement().<XElement>cast().applyStyles("verticalAlign:bottom;");
 		return imagelink;
@@ -400,7 +400,7 @@ public class SequenceInfoPanel extends FieldSet
 		similarStructuresIcon.addClickHandler(new ClickHandler() {	
 			@Override
 			public void onClick(ClickEvent event) {
-				History.newItem("searchPdb/"+chainCluster.getPdbCode() + "/" + chainCluster.getRepChain());
+				History.newItem("#searchPdb/"+chainCluster.getPdbCode() + "/" + chainCluster.getRepChain());
 			}
 		});
 		return similarStructuresIcon;
