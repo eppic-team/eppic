@@ -22,12 +22,14 @@ import org.slf4j.LoggerFactory;
 
 import ch.systemsx.sybit.crkwebui.server.commons.servlets.BaseServlet;
 import ch.systemsx.sybit.crkwebui.server.db.dao.DataDownloadTrackingDAO;
+import ch.systemsx.sybit.crkwebui.server.db.dao.AssemblyDAO;
 import ch.systemsx.sybit.crkwebui.server.db.dao.ChainClusterDAO;
 import ch.systemsx.sybit.crkwebui.server.db.dao.InterfaceClusterDAO;
 import ch.systemsx.sybit.crkwebui.server.db.dao.InterfaceDAO;
 import ch.systemsx.sybit.crkwebui.server.db.dao.JobDAO;
 import ch.systemsx.sybit.crkwebui.server.db.dao.PDBInfoDAO;
 import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.DataDownloadTrackingDAOJpa;
+import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.AssemblyDAOJpa;
 import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.ChainClusterDAOJpa;
 import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.InterfaceClusterDAOJpa;
 import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.InterfaceDAOJpa;
@@ -39,6 +41,7 @@ import ch.systemsx.sybit.crkwebui.server.files.downloader.validators.DataDownloa
 import ch.systemsx.sybit.crkwebui.server.ip.validators.IPVerifier;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.ValidationException;
+import ch.systemsx.sybit.crkwebui.shared.model.Assembly;
 import ch.systemsx.sybit.crkwebui.shared.model.ChainCluster;
 import ch.systemsx.sybit.crkwebui.shared.model.Interface;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceCluster;
@@ -182,6 +185,13 @@ public class DataDownloadServlet extends BaseServlet{
 		
 		pdbInfo.setInputType(input.getInputType());
 		pdbInfo.setInputName(input.getInputName());
+		
+		
+		// assemblies info
+		AssemblyDAO assemblyDAO = new AssemblyDAOJpa();
+		
+		List<Assembly> assemblies = assemblyDAO.getAssemblies(pdbInfo.getUid());
+		pdbInfo.setAssemblies(assemblies);
 		
 		return pdbInfo;
 	}
