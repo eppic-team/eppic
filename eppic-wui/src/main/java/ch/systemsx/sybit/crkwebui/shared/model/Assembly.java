@@ -129,7 +129,6 @@ public class Assembly implements Serializable  {
 			
 			for(AssemblyScoreDB assemblyScoreDB : assemblyScoreDBs) {
 				AssemblyScore as = AssemblyScore.create(assemblyScoreDB);
-				as.setAssembly(assembly);
 				assemblyScores.add(as);
 			}
 			
@@ -143,7 +142,6 @@ public class Assembly implements Serializable  {
 			
 			for (AssemblyContentDB assemblyContentDB : assemblyContentDBs) {
 				AssemblyContent ac = AssemblyContent.create(assemblyContentDB);
-				ac.setAssembly(assembly);
 				assemblyContents.add(ac);
 			}
 			

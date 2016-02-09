@@ -50,13 +50,13 @@ public class AssemblyDAOJpa implements AssemblyDAO {
 			
 			for(AssemblyDB assemblyDB : assemblyDBs) {
 				if (assemblyDB.getAssemblyScores()!=null)
-					logger.info("Number of assembly scores for assembly {}: {}", assemblyDB.getId(), assemblyDB.getAssemblyScores().size());
+					logger.debug("Number of assembly scores for assembly {}: {}", assemblyDB.getId(), assemblyDB.getAssemblyScores().size());
 				else 
-					logger.info("Assembly scores is null for assembly {}", assemblyDB.getId());
+					logger.debug("Assembly scores is null for assembly {}", assemblyDB.getId());
 				if (assemblyDB.getAssemblyContents()!=null)
-					logger.info("Number of assembly contents for assembly {}: {}", assemblyDB.getId(), assemblyDB.getAssemblyContents().size());
+					logger.debug("Number of assembly contents for assembly {}: {}", assemblyDB.getId(), assemblyDB.getAssemblyContents().size());
 				else 
-					logger.info("Assembly contents is null for assembly {}", assemblyDB.getId());
+					logger.debug("Assembly contents is null for assembly {}", assemblyDB.getId());
 				
 				
 				result.add(Assembly.create(assemblyDB));

@@ -19,7 +19,6 @@ public class AssemblyContent implements Serializable {
 	
 	private String chainIds;
 	
-	private Assembly assembly;
 	
 	public int getUid() {
 		return uid;
@@ -67,14 +66,6 @@ public class AssemblyContent implements Serializable {
 
 	public void setChainIds(String chainIds) {
 		this.chainIds = chainIds;
-	}
-
-	public Assembly getAssembly() {
-		return assembly;
-	}
-
-	public void setAssembly(Assembly assembly) {
-		this.assembly = assembly;
 	}
 
 	public static AssemblyContent create(AssemblyContentDB assemblyContentDB) {
