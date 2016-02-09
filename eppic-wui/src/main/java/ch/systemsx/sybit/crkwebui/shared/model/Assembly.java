@@ -8,6 +8,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
+import javax.xml.bind.annotation.XmlTransient;
 
 import eppic.model.AssemblyContentDB;
 import eppic.model.AssemblyDB;
@@ -25,6 +26,8 @@ public class Assembly implements Serializable  {
 	
 	private boolean topologicallyValid;
 		
+	// we don't want back references to the interface clusters in the xml file or it gets way too long: we make them XmlTransient
+	@XmlTransient
 	private List<InterfaceCluster> interfaceClusters;
 	
 	@XmlElementWrapper(name = "assemblyScores")
