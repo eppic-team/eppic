@@ -62,7 +62,7 @@ public class DumpToXml {
 		// TODO gzip the file as we write it
 		PrintWriter pw = new PrintWriter(file);
 		
-		DataDownloadServlet.serializePdbInfoList(list, pw);
+		//DataDownloadServlet.serializePdbInfoList(list, pw);
 	}
 
 }
