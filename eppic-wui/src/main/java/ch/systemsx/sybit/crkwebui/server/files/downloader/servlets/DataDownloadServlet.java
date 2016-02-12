@@ -215,7 +215,7 @@ public class DataDownloadServlet extends BaseServlet{
 
 	}
 
-	void serializePdbInfoList(List<PdbInfo> pdbList, PrintWriter writer) throws JAXBException {
+	public static void serializePdbInfoList(List<PdbInfo> pdbList, PrintWriter writer) throws JAXBException {
 	    // create JAXB context and initializing Marshaller
 	    JAXBContext jaxbContext = JAXBContext.newInstance(PdbInfo.class);
 	    Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
