@@ -28,7 +28,7 @@ public class DumpToXml {
 	public static void main(String[] args) {
 		
 		if (args.length<2) {
-			System.err.println("Usage: DumpToXml <database name> <output directory> [<limit to first n PDB ids>]"); 
+			System.err.println("Usage: DumpToXml <database name> <output directory (will be written in divided layout)> [<limit to first n PDB ids>]"); 
 			System.exit(1);
 		}
 		
@@ -43,12 +43,13 @@ public class DumpToXml {
 		
 		List<String> pdbCodes = dbh.getAllPdbCodes();
 
+		int size = pdbCodes.size();
+		if (limit>0) size = limit;
 		
-		for (int i=0; i<pdbCodes.size(); i++) {
+		for (int i=0; i<size; i++) {
 			
 			try {
-				dumpToXml(pdbCodes.get(i));
-				if (limit>0 && i>limit) break; 
+				dumpToXml(pdbCodes.get(i)); 
 			} catch (IOException|JAXBException e) {
 				System.err.println("Failed creating xml file for "+pdbCodes.get(i)+". Error: "+e.getMessage());
 			}
