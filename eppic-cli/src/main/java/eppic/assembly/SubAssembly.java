@@ -358,6 +358,7 @@ public class SubAssembly {
 						getStoichiometry().getTotalSize(), 
 						symString, 
 						getStoichiometry().toFormattedCompositionString(), 
+						getStoichiometry().toFormattedCompositionRepChainIdString(),
 						getStoichiometry().toFormattedString(), 
 						getChainIdsString());
 		return ad;

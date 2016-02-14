@@ -16,6 +16,7 @@ public class AssemblyContent implements Serializable {
 	private String symmetry;
 	private String stoichiometry;
 	private String composition;
+	private String compositionRepChainIds;
 	
 	private String chainIds;
 	
@@ -60,6 +61,14 @@ public class AssemblyContent implements Serializable {
 		this.composition = composition;
 	}
 	
+	public String getCompositionRepChainIds() {
+		return compositionRepChainIds;
+	}
+
+	public void setCompositionRepChainIds(String compositionRepChainIds) {
+		this.compositionRepChainIds = compositionRepChainIds;
+	}
+
 	public String getChainIds() {
 		return chainIds;
 	}
@@ -74,6 +83,7 @@ public class AssemblyContent implements Serializable {
 		ac.setSymmetry(assemblyContentDB.getSymmetry());
 		ac.setStoichiometry(assemblyContentDB.getStoichiometry());
 		ac.setComposition(assemblyContentDB.getComposition());
+		ac.setCompositionRepChainIds(assemblyContentDB.getCompositionRepChainId());
 		ac.setChainIds(assemblyContentDB.getChainIds());
 		return ac;
 	}
