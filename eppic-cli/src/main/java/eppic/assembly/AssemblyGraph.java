@@ -364,17 +364,7 @@ public class AssemblyGraph {
 			
 			SubAssembly subAssembly = group.get(0);
 			
-			String symString = PointGroupSymmetry.UNKNOWN;
-			if (subAssembly.getSymmetry()!=null) symString = subAssembly.getSymmetry().toString();
-		
-			AssemblyDescription ad = 
-					new AssemblyDescription(
-							subAssembly.getStoichiometry().getTotalSize(), 
-							symString, 
-							subAssembly.getStoichiometry().toFormattedCompositionString(), 
-							subAssembly.getStoichiometry().toFormattedString(), 
-							subAssembly.getChainIdsString());
-			ds.add(ad);
+			ds.add(subAssembly.getDescription());
 		}
 		
 		return ds;
