@@ -3,9 +3,9 @@ package ch.systemsx.sybit.crkwebui.server.db.dao;
 import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
+import ch.systemsx.sybit.crkwebui.shared.helpers.PDBSearchResult;
 import ch.systemsx.sybit.crkwebui.shared.model.SequenceClusterType;
 import ch.systemsx.sybit.crkwebui.shared.model.ChainCluster;
-import ch.systemsx.sybit.crkwebui.shared.model.PDBSearchResult;
 
 /**
  * DAO for HomologsInfo item.

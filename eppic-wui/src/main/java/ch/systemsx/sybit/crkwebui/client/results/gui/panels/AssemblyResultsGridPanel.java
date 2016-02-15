@@ -44,6 +44,7 @@ import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.History;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.sencha.gxt.cell.core.client.form.ComboBoxCell.TriggerAction;
@@ -171,7 +172,24 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 	 */
 	private void fillColumnSettings(ColumnConfig<AssemblyItemModel, ?> column, String type){
 		column.setColumnHeaderClassName("eppic-default-font");
-		column.setWidth(Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("assembly_results_"+type+"_width")));
+		
+		//this was the old way of getting column widths
+		//column.setWidth(Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("assembly_results_"+type+"_width")));
+		
+		int actualScreenWidth = 800;
+		try {
+			actualScreenWidth = Integer.parseInt(this.width);
+		}catch(Exception e) {}
+		int preconfiguredColumnSize = 1;
+		int extraColumnMargin = 0;
+		try{
+			extraColumnMargin = Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("assembly_results_"+type+"_width"));
+		}catch (Exception e) {}
+		if (actualScreenWidth > 800)
+			extraColumnMargin = actualScreenWidth / preconfiguredColumnSize;
+		
+		column.setWidth(Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("assembly_results_"+type+"_width"))+extraColumnMargin+75);
+		
 		column.setHeader(EscapedStringGenerator.generateSafeHtml(
 				ApplicationContext.getSettings().getGridProperties().get("assembly_results_"+type+"_header")));
 		

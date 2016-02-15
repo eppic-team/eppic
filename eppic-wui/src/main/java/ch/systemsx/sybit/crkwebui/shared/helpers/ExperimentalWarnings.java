@@ -1,4 +1,4 @@
-package ch.systemsx.sybit.crkwebui.shared.model;
+package ch.systemsx.sybit.crkwebui.shared.helpers;
 
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
 

@@ -252,7 +252,7 @@ public class InterfaceEvolContext implements Serializable {
 			
 			if (queryPos!=-1) {
 				for (Atom atom:residue.getAtoms()) {
-					atom.setTempFactor(conservationScores.get(queryPos-1));
+					atom.setTempFactor(conservationScores.get(queryPos-1).floatValue());
 				}
 			} else {
 				
@@ -264,7 +264,7 @@ public class InterfaceEvolContext implements Serializable {
 				LOGGER.info("Residue {} ({}) of chain {} has no entropy value associated to it, will set its b-factor to max entropy ({})",
 						residue.getResidueNumber().toString(), residue.getPDBName(), residue.getChainId(), maxEntropy);
 				for (Atom atom:residue.getAtoms()) {
-					atom.setTempFactor(maxEntropy);
+					atom.setTempFactor((float)maxEntropy);
 				}
 			}
 		}

@@ -1,10 +1,12 @@
-package ch.systemsx.sybit.crkwebui.shared.model;
+package ch.systemsx.sybit.crkwebui.shared.helpers;
 
 import java.io.Serializable;
 import java.util.Comparator;
 import java.util.Date;
 
 import com.sencha.gxt.data.shared.SortDir;
+
+import ch.systemsx.sybit.crkwebui.shared.model.SequenceClusterType;
 
 /**
  * A class used to display the Search Results in the interface

@@ -444,7 +444,8 @@ public class DataModelAdaptor {
 				acDB.setMmSize(d.getSize());
 				acDB.setSymmetry(d.getSymmetry());
 				acDB.setStoichiometry(d.getStoichiometry());
-				acDB.setComposition(d.getComposition());
+				acDB.setComposition(d.getCompositionChainIds());
+				acDB.setCompositionRepChainId(d.getCompositionRepChainIds());
 				acDB.setChainIds(d.getChainIds()); 
 				acDBs.add(acDB);
 			}

@@ -6,7 +6,7 @@ import ch.systemsx.sybit.crkwebui.client.commons.gui.labels.EppicLabel;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.labels.LabelWithTooltip;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.links.LinkWithTooltip;
 import ch.systemsx.sybit.crkwebui.client.commons.util.EscapedStringGenerator;
-import ch.systemsx.sybit.crkwebui.shared.model.ExperimentalWarnings;
+import ch.systemsx.sybit.crkwebui.shared.helpers.ExperimentalWarnings;
 import ch.systemsx.sybit.shared.model.InputType;
 
 import com.google.gwt.user.client.Window;

@@ -27,6 +27,25 @@
 	</dependencies>
 
 	<build>
+		<!-- This solves the 'no source code is available' problem for gwt compilation -->
+ 
+		<resources>
+        	<resource>
+            <directory>src/main/java</directory>
+            <includes>
+                <include>**/*.java</include>
+            </includes>
+        	</resource>
+        	<resource>
+            <directory>src/main/resources</directory>
+            <includes>
+                <include>**/*.*xml</include>
+                <include>**/*.*properties</include>
+            </includes>
+        	</resource>
+    	</resources>
+
+	
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -83,6 +102,17 @@
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>gwt-maven-plugin</artifactId>
 				<version>${gwt.version}</version>
+				
+				<!-- This solution from http://stackoverflow.com/questions/9549303/no-source-code-is-available-for-type-gwt-compilation-error 
+				     did not solve the problem of 'no source code available' for gwt compilation. Including the sources explicitly (see above) did solve it -->
+				<!-- 
+				<configuration>
+                    <compileSourcesArtifacts>
+                        <compileSourcesArtifact>org.eppic-web:eppic-model</compileSourcesArtifact>
+                    </compileSourcesArtifacts>
+                </configuration>
+                -->
+                
 				<executions>
 					<execution>
 						<goals>

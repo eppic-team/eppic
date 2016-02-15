@@ -114,7 +114,7 @@ public class MatchPisaToEppic {
 		eppicInterfaces.getClusters(EppicParams.CLUSTERING_CONTACT_OVERLAP_SCORE_CUTOFF);
 		dma.setInterfaces(eppicInterfaces);
 		PdbInfoDB pdbInfo = dma.getPdbInfo();
-		pdbInfo.setPdbCode(pdb.getPdbId());
+		pdbInfo.setPdbCode(pdb.getPDBCode());
 		return pdbInfo;
 	}
 	

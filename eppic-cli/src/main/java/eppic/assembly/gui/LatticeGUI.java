@@ -31,6 +31,7 @@ import org.biojava.nbio.structure.contact.StructureInterfaceList;
 import org.biojava.nbio.structure.gui.BiojavaJmol;
 import org.biojava.nbio.structure.io.MMCIFFileReader;
 import org.biojava.nbio.structure.io.PDBFileReader;
+import org.biojava.nbio.structure.io.util.FileDownloadUtils;
 import org.biojava.nbio.structure.xtal.CrystalBuilder;
 import org.biojava.nbio.structure.xtal.CrystalCell;
 import org.biojava.nbio.structure.xtal.CrystalTransform;
@@ -690,8 +691,8 @@ public class LatticeGUI {
 		String filename;
 		Structure struc;
 		
-		if (new File(input).exists()) {
-			filename = input;
+		if (new File(FileDownloadUtils.expandUserHome(input)).exists()) {
+			filename = FileDownloadUtils.expandUserHome(input);
 			struc = StructureTools.getStructure(filename);
 		} else if (input.matches("\\d\\w\\w\\w")){
 			AtomCache cache = new AtomCache();
@@ -702,7 +703,7 @@ public class LatticeGUI {
 				logger.error(String.format("Error loading %s from %s",input,file.getAbsolutePath()));
 				System.exit(1);
 			}
-			filename = file.getAbsolutePath();			
+			filename = file.getAbsolutePath();
 		} else {
 			filename = null;
 			struc = null;

@@ -197,7 +197,7 @@ public class ChainEvolContext implements Serializable {
 		List<SiftsFeature> mappings = null;
 		
 		if (!params.isInputAFile() || params.isUsePdbCodeFromFile()) {
-			String pdbCode = parent.getPdb().getPdbId().toLowerCase();
+			String pdbCode = parent.getPdb().getPDBCode().toLowerCase();
 			if (useSifts) {
 				if (pdbCode==null || !pdbCode.matches("\\d\\w\\w\\w")) {
 					LOGGER.info("Could not read a PDB code in file. Will blast to find query-to-UniProt mapping.");
@@ -720,7 +720,7 @@ public class ChainEvolContext implements Serializable {
 			
 			if (queryPos!=-1) { 
 				for (Atom atom:residue.getAtoms()) {
-					atom.setTempFactor(conservationScores.get(queryPos-1));
+					atom.setTempFactor(conservationScores.get(queryPos-1).floatValue());
 				}	
 			} else {
 				// when no entropy info is available for a residue we still want to assign a value for it
@@ -731,7 +731,7 @@ public class ChainEvolContext implements Serializable {
 				LOGGER.info("Residue {} ({}) of chain {} has no entropy value associated to it, will set its b-factor to max entropy ({})",
 						residue.getResidueNumber().toString(), residue.getPDBName(), residue.getChainId(), maxEntropy);
 				for (Atom atom:residue.getAtoms()) {
-					atom.setTempFactor(maxEntropy);
+					atom.setTempFactor((float)maxEntropy);
 				}	
 			}
 		}
