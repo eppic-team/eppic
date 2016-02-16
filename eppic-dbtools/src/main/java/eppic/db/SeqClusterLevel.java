@@ -22,4 +22,9 @@ public enum SeqClusterLevel {
 		
 		return null;
 	}
+	
+	@Override
+	public String toString() {
+		return Integer.toString(level);
+	}
 }

@@ -109,6 +109,8 @@ public class PdbInfo {
 	public LatticeMatchMatrix calcLatticeOverlapMatrix(PdbInfo other, SeqClusterLevel seqClusterLevel, double minArea, boolean debug) 
 			 {
 	
+		// Maps from a pair of chain Ids to their alignment
+		// Only includes chains from the same sequence cluster
 		Map<Pair<String>,SequencePair<ProteinSequence,AminoAcidCompound>> map = getAlignmentsPool(other, seqClusterLevel);
 		
 		if (debug) {
@@ -137,10 +139,14 @@ public class PdbInfo {
 	}
 	
 	/**
+	 * Calculate alignments between all pairs of chains in two structures.
 	 * 
-	 * @param other
-	 * @param seqClusterLevel
-	 * @return
+	 * All representative chains are found for each structure. Chains from
+	 * the same sequence cluster are aligned (those from different clusters
+	 * are ignored). Returned is a map from the two chainIds to the aligned sequences.
+	 * @param other Structure to compare to
+	 * @param seqClusterLevel Minimum sequence identity to compare chains
+	 * @return A map from the pair of chains to the alignment
 	 */
 	private Map<Pair<String>,SequencePair<ProteinSequence,AminoAcidCompound>> getAlignmentsPool(PdbInfo other, SeqClusterLevel seqClusterLevel) 
 		 {

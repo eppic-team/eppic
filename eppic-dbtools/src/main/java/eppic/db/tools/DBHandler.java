@@ -10,6 +10,7 @@ import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +25,7 @@ import javax.persistence.PersistenceException;
 import javax.persistence.PersistenceUnit;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Join;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.persistence.metamodel.SingularAttribute;
@@ -33,10 +35,18 @@ import ch.systemsx.sybit.shared.model.StatusOfJob;
 import eppic.commons.util.DbConfigGenerator;
 import eppic.model.ChainClusterDB;
 import eppic.model.ChainClusterDB_;
+import eppic.model.InterfaceClusterDB;
+import eppic.model.InterfaceClusterDB_;
+import eppic.model.InterfaceDB;
+import eppic.model.InterfaceDB_;
 import eppic.model.JobDB;
 import eppic.model.JobDB_;
 import eppic.model.PdbInfoDB;
 import eppic.model.PdbInfoDB_;
+import eppic.model.ResidueBurialDB;
+import eppic.model.ResidueBurialDB_;
+import eppic.model.ResidueInfoDB;
+import eppic.model.ResidueInfoDB_;
 import eppic.model.SeqClusterDB;
 import eppic.model.SeqClusterDB_;
 
@@ -494,7 +504,7 @@ public class DBHandler {
 	 * @param clusterLevel
 	 * @return
 	 */
-	public int getClusteIdForPdbCode(String pdbCode, String repChain, int clusterLevel) {
+	public int getClusterIdForPdbCode(String pdbCode, String repChain, int clusterLevel) {
 		
 		EntityManager em = this.getEntityManager();
 		
@@ -539,6 +549,145 @@ public class DBHandler {
 		}
 		
 		return -1;
+	}
+	/**
+	 * Gets the sequence cluster id for given pdbCode and clusterLevel
+	 * @param pdbCode
+	 * @param chain A chain (not necessarily the representative one
+	 * @param clusterLevel
+	 * @return
+	 */
+	public int getClusterIdForPdbCodeAndChain(String pdbCode, String chain, int clusterLevel) {
+		SingularAttribute<SeqClusterDB, Integer> attribute = getSeqClusterDBAttribute(clusterLevel);
+		if(attribute == null) {
+			System.err.println("Invalid cluster level "+clusterLevel);
+			return -1;
+		}
+		
+		EntityManager em = this.getEntityManager();
+		
+		CriteriaBuilder cb = em.getCriteriaBuilder();
+
+		CriteriaQuery<Integer> cq = cb.createQuery(Integer.class);
+		Root<SeqClusterDB> root = cq.from(SeqClusterDB.class);
+		Join<SeqClusterDB, ChainClusterDB> join = root.join(SeqClusterDB_.chainCluster);
+		
+		cq.where(cb.equal(root.get(SeqClusterDB_.pdbCode), pdbCode), cb.or(
+				cb.equal(join.get(ChainClusterDB_.memberChains),chain),
+				cb.like(join.get(ChainClusterDB_.memberChains),chain+",%"),
+				cb.like(join.get(ChainClusterDB_.memberChains),"%,"+chain),
+				cb.like(join.get(ChainClusterDB_.memberChains),"%,"+chain+",%")
+				));
+
+		cq.select(root.get(attribute));
+		
+		List<Integer> results = em.createQuery(cq).getResultList();
+		
+		//em.close();
+		
+		if (results.size()==0) return -1;
+		else if (results.size()>1) {
+			System.err.println("More than 1 SeqClusterDB returned for given PDB code and chain: "+pdbCode+chain);
+			return -1;
+		}
+
+		return results.get(0);
+	}
+	
+	/**
+	 * Gets the ChainClusters for all members of a sequence cluster
+	 * @param clusterLevel
+	 * @param seqClusterUid
+	 * @return
+	 */
+	public List<ChainClusterDB> getClusterMembers(int clusterLevel, int seqClusterUid) {
+		EntityManager em = this.getEntityManager();
+		
+		CriteriaBuilder cb = em.getCriteriaBuilder();
+
+		CriteriaQuery<ChainClusterDB> cq = cb.createQuery(ChainClusterDB.class);
+		Root<SeqClusterDB> root = cq.from(SeqClusterDB.class);
+
+		cq.where(cb.equal(root.get(getSeqClusterDBAttribute(clusterLevel)), seqClusterUid));
+
+		cq.select(root.get(SeqClusterDB_.chainCluster));
+		
+		List<ChainClusterDB> results = em.createQuery(cq).getResultList();
+		return results;
+	}
+	
+	/**
+	 * Get a list of all interfaces which have one partner in a particular cluster.
+	 * 
+	 * Each interface is mapped to an integer indicating whether chain1 (1),
+	 * chain 2 (2), or both (3) matches the query cluster.
+	 * @param cluster Query ChainCluster
+	 * @return
+	 */
+	public Map<InterfaceDB,Integer> getInterfacesForChainCluster(ChainClusterDB cluster) {
+		EntityManager em = this.getEntityManager();
+		
+		CriteriaBuilder cb = em.getCriteriaBuilder();
+		
+		String[] chains = cluster.getMemberChains().split(",");
+		PdbInfoDB pdbInfo = cluster.getPdbInfo();
+
+		// Start with list of interfaces which match chain1
+		CriteriaQuery<InterfaceDB> cq = cb.createQuery(InterfaceDB.class);
+		Root<InterfaceDB> root = cq.from(InterfaceDB.class);
+		Join<InterfaceDB,InterfaceClusterDB> clust = root.join(InterfaceDB_.interfaceCluster);
+
+		Predicate[] chainPredicates = new Predicate[chains.length];
+		for(int i=0;i<chains.length;i++) {
+			chainPredicates[i] = cb.equal(root.get(InterfaceDB_.chain1), chains[i]);
+		}
+		
+		// Same PDB and any of the chains as chain1
+		cq.where(cb.and(
+				cb.equal(clust.get(InterfaceClusterDB_.pdbInfo), pdbInfo),
+				cb.or(chainPredicates) ));
+		
+		cq.select(clust.getParent());
+		
+		List<InterfaceDB> results = em.createQuery(cq).getResultList();
+		
+		// add to the map with "1"
+		Map<InterfaceDB, Integer> interfaces = new HashMap<>();
+		for(InterfaceDB r : results) {
+			interfaces.put(r,1);
+		}
+		
+		// Now search for chain2
+
+		cq = cb.createQuery(InterfaceDB.class);
+		root = cq.from(InterfaceDB.class);
+		clust = root.join(InterfaceDB_.interfaceCluster);
+
+		chainPredicates = new Predicate[chains.length];
+		for(int i=0;i<chains.length;i++) {
+			chainPredicates[i] = cb.equal(root.get(InterfaceDB_.chain2), chains[i]);
+		}
+		
+		// Same PDB and any of the chains as chain1
+		cq.where(cb.and(
+				cb.equal(clust.get(InterfaceClusterDB_.pdbInfo), pdbInfo),
+				cb.or(chainPredicates) ));
+		
+		cq.select(clust.getParent());
+		
+		results = em.createQuery(cq).getResultList();
+
+		// add to the map with "2"
+		for(InterfaceDB r : results) {
+			if( interfaces.containsKey(r)) {
+				interfaces.put(r,3);
+			} else {
+				interfaces.put(r,2);
+			}
+		}
+		
+		return interfaces;
+
 	}
 	
 	/**
@@ -713,11 +862,32 @@ public class DBHandler {
 	 * @param seqCluster
 	 */
 	public void persistSeqCluster(SeqClusterDB seqCluster) {
-		EntityManager em = this.emf.createEntityManager();
+		EntityManager em = this.getEntityManager();
 				
 		em.getTransaction().begin();
 		em.persist(seqCluster);
 		em.getTransaction().commit();
 		em.close();
 	}
+	
+	public List<ResidueInfoDB> getResiduesForInterface(InterfaceDB face, boolean side, short region) {
+		EntityManager em = this.getEntityManager();
+
+		CriteriaBuilder cb = em.getCriteriaBuilder();
+
+		CriteriaQuery<ResidueInfoDB> cq = cb.createQuery(ResidueInfoDB.class);
+		Root<ResidueBurialDB> root = cq.from(ResidueBurialDB.class);
+		
+		cq.where(cb.and(
+				cb.equal(root.get(ResidueBurialDB_.interfaceItem),face),
+				cb.equal(root.get(ResidueBurialDB_.side), side),
+				cb.greaterThanOrEqualTo(root.get(ResidueBurialDB_.region), region)));
+		
+		cq.select(root.get(ResidueBurialDB_.residueInfo));
+		
+		List<ResidueInfoDB> results = em.createQuery(cq).getResultList();
+
+		return results;
+	}
+	
 }

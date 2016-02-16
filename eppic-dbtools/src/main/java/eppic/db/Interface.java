@@ -81,6 +81,11 @@ public class Interface {
 		return (this.getChainCluster(FIRST).isSameSeqCluster(this.getChainCluster(SECOND), seqClusterLevel));
 	}
 	
+	/**
+	 * Get the ChainCluster for one of the chains in this interface
+	 * @param molecId Either {@link #FIRST} or {@link #SECOND}
+	 * @return
+	 */
 	public ChainCluster getChainCluster(int molecId) {
 		
 		if (molecId==FIRST) 
@@ -92,6 +97,19 @@ public class Interface {
 		return null;
 	}
 	
+	/**
+	 * Calculate the interface overlap between this interface and another.
+	 * 
+	 * The alnPool provides pre-calculated pairwise alignments. It should
+	 * include, at a minimum, an entry (this.chain1, other.chain1) and
+	 * (this.chain2, other.chain2).
+	 * @param other
+	 * @param alnPool Pool of pre-calculated pairwise alignments
+	 * @param seqClusterLevel
+	 * @param debug
+	 * @return
+	 * @see {@link PdbInfo#getAlignmentsPool}
+	 */
 	public double calcInterfaceOverlap(Interface other, Map<Pair<String>,SequencePair<ProteinSequence,AminoAcidCompound>> alnPool, SeqClusterLevel seqClusterLevel, boolean debug) {
 		
 		InterfaceComparator csComp = new InterfaceComparator(this,other,alnPool,seqClusterLevel);

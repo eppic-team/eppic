@@ -145,7 +145,7 @@ public class ClusterCrystalForms {
 			String pdbCode = pdbString.substring(0, 4);		
 			String repChain = pdbString.substring(4); 
 
-			int clusterId = dbh.getClusteIdForPdbCode(pdbCode, repChain, seqClusterLevel.getLevel());
+			int clusterId = dbh.getClusterIdForPdbCode(pdbCode, repChain, seqClusterLevel.getLevel());
 			
 			if (clusterId==-1) {
 				System.err.println("Could not find sequence cluster (at "+seqClusterLevel.getLevel()+"%) for "+pdbCode+" and representative chain "+repChain);
