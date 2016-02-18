@@ -27,8 +27,8 @@ public class InterfaceComparator {
 	 * Calculate the interface overlap between this interface and another.
 	 * 
 	 * The alnPool provides pre-calculated pairwise alignments. It should
-	 * include, at a minimum, an entry (this.chain1, other.chain1) and
-	 * (this.chain2, other.chain2).
+	 * include, at a minimum, four entries comparing each chain from the first
+	 * interface with each chain of the second.
 	 * @param interf1
 	 * @param interf2
 	 * @param alnPool Pool of pre-calculated pairwise alignments
