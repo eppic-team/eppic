@@ -93,8 +93,9 @@ public class ContactSet {
 		//    for those we take original coordinates
 		// b) alignments passed are not null: only for the second contact in comparison we map back 
 		//    to coordinates of chains in first contact via the alignment
-		
-		if (aln11!=null && aln22!=null && aln12!=null && aln21!=null) {
+		boolean directalignment = aln11!=null && aln22!=null;
+		boolean indirectalignment = aln12!=null && aln21!=null;
+		if (directalignment) {
 			
 			// second contact in comparison: we need both direct and inverted contact and mapping via alignments 
 			// in both direct and inverse cases
@@ -110,11 +111,12 @@ public class ContactSet {
 					new SimpleResidue(resSerial2));
 
 			directSet.add(directPair);
-			
+		}
+		if( indirectalignment) {
 			
 			// inverse
-			resSerial1 = getMapping2To1(aln21, contact.getFirstResNumber());
-			resSerial2 = getMapping2To1(aln12, contact.getSecondResNumber());
+			int resSerial1 = getMapping2To1(aln21, contact.getFirstResNumber());
+			int resSerial2 = getMapping2To1(aln12, contact.getSecondResNumber());
 			//TODO if they map to -1 that means they map to gap: what to do then?
 
 			
@@ -124,7 +126,8 @@ public class ContactSet {
 			
 			inverseSet.add(invertedPair);
 			
-		} else {
+		}
+		if( directalignment || indirectalignment) {
 			
 			// first contact in comparison: we need no inverse set, and no mapping through alignment
 			
