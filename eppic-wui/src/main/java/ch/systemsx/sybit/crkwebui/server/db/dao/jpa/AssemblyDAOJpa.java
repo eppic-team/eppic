@@ -10,6 +10,9 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Root;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import ch.systemsx.sybit.crkwebui.server.db.EntityManagerHandler;
 import ch.systemsx.sybit.crkwebui.server.db.dao.AssemblyDAO;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
@@ -21,6 +24,8 @@ import eppic.model.PdbInfoDB_;
 
 public class AssemblyDAOJpa implements AssemblyDAO {
 
+	private static final Logger logger = LoggerFactory.getLogger(AssemblyDAOJpa.class);
+	
 	@Override
 	public List<Assembly> getAssemblies(int pdbInfoUid) throws DaoException {
 		EntityManager entityManager = null;
@@ -44,13 +49,22 @@ public class AssemblyDAOJpa implements AssemblyDAO {
 			List<AssemblyDB> assemblyDBs = query.getResultList();
 			
 			for(AssemblyDB assemblyDB : assemblyDBs) {
+				if (assemblyDB.getAssemblyScores()!=null)
+					logger.debug("Number of assembly scores for assembly {}: {}", assemblyDB.getId(), assemblyDB.getAssemblyScores().size());
+				else 
+					logger.debug("Assembly scores is null for assembly {}", assemblyDB.getId());
+				if (assemblyDB.getAssemblyContents()!=null)
+					logger.debug("Number of assembly contents for assembly {}: {}", assemblyDB.getId(), assemblyDB.getAssemblyContents().size());
+				else 
+					logger.debug("Assembly contents is null for assembly {}", assemblyDB.getId());
+				
+				
 				result.add(Assembly.create(assemblyDB));
 			}
 			return result;
 		}
 		catch(Throwable e)
 		{
-			e.printStackTrace();
 			throw new DaoException(e);
 		}
 		finally

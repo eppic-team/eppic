@@ -190,6 +190,7 @@
 				<column length="10"/>
 			</basic>
 			<basic name="composition"></basic>
+			<basic name="compositionRepChainIds"></basic>
 			<basic name="stoichiometry"></basic>
 			<basic name="chainIds"></basic>
 						

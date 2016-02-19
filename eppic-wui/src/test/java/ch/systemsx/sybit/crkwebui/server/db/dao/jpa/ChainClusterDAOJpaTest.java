@@ -7,8 +7,8 @@ import java.util.List;
 import org.junit.Test;
 
 import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
+import ch.systemsx.sybit.crkwebui.shared.helpers.PDBSearchResult;
 import ch.systemsx.sybit.crkwebui.shared.model.SequenceClusterType;
-import ch.systemsx.sybit.crkwebui.shared.model.PDBSearchResult;
 
 
 public class ChainClusterDAOJpaTest {

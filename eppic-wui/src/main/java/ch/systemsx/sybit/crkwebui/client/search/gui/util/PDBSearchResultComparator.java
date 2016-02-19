@@ -2,10 +2,10 @@ package ch.systemsx.sybit.crkwebui.client.search.gui.util;
 
 import java.util.Comparator;
 
-import ch.systemsx.sybit.crkwebui.shared.model.PDBSearchResult;
-
 import com.sencha.gxt.data.shared.SortDir;
 import com.sencha.gxt.data.shared.SortInfo;
+
+import ch.systemsx.sybit.crkwebui.shared.helpers.PDBSearchResult;
 
 public class PDBSearchResultComparator implements Comparator<PDBSearchResult> {
 

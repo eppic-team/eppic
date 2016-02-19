@@ -869,7 +869,7 @@ public class DBHandler {
 		em.getTransaction().commit();
 		em.close();
 	}
-	
+
 	public List<ResidueInfoDB> getResiduesForInterface(InterfaceDB face, boolean side, short region) {
 		EntityManager em = this.getEntityManager();
 
@@ -877,17 +877,39 @@ public class DBHandler {
 
 		CriteriaQuery<ResidueInfoDB> cq = cb.createQuery(ResidueInfoDB.class);
 		Root<ResidueBurialDB> root = cq.from(ResidueBurialDB.class);
-		
+
 		cq.where(cb.and(
 				cb.equal(root.get(ResidueBurialDB_.interfaceItem),face),
 				cb.equal(root.get(ResidueBurialDB_.side), side),
 				cb.greaterThanOrEqualTo(root.get(ResidueBurialDB_.region), region)));
-		
+
 		cq.select(root.get(ResidueBurialDB_.residueInfo));
-		
+
 		List<ResidueInfoDB> results = em.createQuery(cq).getResultList();
 
 		return results;
 	}
+
+	public List<String> getAllPdbCodes() {
+		EntityManager em = this.getEntityManager();
 	
+		CriteriaBuilder cb = em.getCriteriaBuilder();
+
+		CriteriaQuery<PdbInfoDB> cq = cb.createQuery(PdbInfoDB.class);
+		Root<PdbInfoDB> root = cq.from(PdbInfoDB.class);
+
+		cq.where(cb.isNotNull(root.get(PdbInfoDB_.pdbCode)));
+		
+		//cq.multiselect(root.get(PdbInfoDB_.pdbCode));
+		
+		List<PdbInfoDB> results = em.createQuery(cq).getResultList();
+		
+		List<String> pdbCodes = new ArrayList<String>();
+		
+		for (PdbInfoDB result:results) {
+			pdbCodes.add(result.getPdbCode());
+		}
+		
+		return pdbCodes;
+	}
 }

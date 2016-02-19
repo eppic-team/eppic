@@ -3,14 +3,14 @@ package ch.systemsx.sybit.crkwebui.client.search.gui.util;
 import java.util.Collections;
 import java.util.List;
 
-import ch.systemsx.sybit.crkwebui.shared.model.PDBSearchResult;
-
 import com.google.gwt.core.client.Callback;
 import com.sencha.gxt.data.shared.SortInfo;
 import com.sencha.gxt.data.shared.loader.DataProxy;
 import com.sencha.gxt.data.shared.loader.PagingLoadConfig;
 import com.sencha.gxt.data.shared.loader.PagingLoadResult;
 import com.sencha.gxt.data.shared.loader.PagingLoadResultBean;
+
+import ch.systemsx.sybit.crkwebui.shared.helpers.PDBSearchResult;
 
 public class PagingMemoryProxy implements DataProxy<PagingLoadConfig, PagingLoadResult<PDBSearchResult>> {
 
