@@ -83,6 +83,14 @@ public class InterfaceComparator {
 		
 	}
 	
+	/**
+	 * Calculates the fraction of contacts shared by the two interfaces. That is,
+	 * (# equivalent contacts)/(average number of contacts)
+	 * 
+	 * Interfaces are considered in both directions, with the maximum overlap
+	 * being returned.
+	 * @return
+	 */
 	public double calcOverlap() {
 		
 		if (! sameContent) {

@@ -119,6 +119,7 @@ public class Interface {
 		
 	}
 	
+	@Override
 	public boolean equals(Object o) {
 		if (!(o instanceof Interface)) return false;
 		
@@ -127,6 +128,7 @@ public class Interface {
 				this.interf.getInterfaceId()==other.interf.getInterfaceId());
 	}
 	
+	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
@@ -135,4 +137,8 @@ public class Interface {
 		return result;
 	}
 	
+	@Override
+	public String toString() {
+		return String.format("%4s-%s",interf.getPdbCode(),interf.getInterfaceId());
+	}
 }

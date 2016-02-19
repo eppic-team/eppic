@@ -4,7 +4,6 @@ import static eppic.db.Interface.*;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
@@ -16,23 +15,22 @@ import javax.vecmath.GMatrix;
 
 import org.biojava.nbio.alignment.Alignments;
 import org.biojava.nbio.core.alignment.SimpleProfile;
-import org.biojava.nbio.core.alignment.SimpleSequencePair;
 import org.biojava.nbio.core.alignment.template.AlignedSequence;
 import org.biojava.nbio.core.alignment.template.Profile;
-import org.biojava.nbio.core.alignment.template.SequencePair;
 import org.biojava.nbio.core.exceptions.CompoundNotFoundException;
 import org.biojava.nbio.core.sequence.ProteinSequence;
 import org.biojava.nbio.core.sequence.compound.AminoAcidCompound;
-import org.biojava.nbio.structure.contact.Pair;
+import org.biojava.nbio.core.util.ConcurrencyTools;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import eppic.db.ChainCluster;
+import eppic.db.DirectedInterface;
 import eppic.db.Interface;
-import eppic.db.InterfaceComparator;
+import eppic.db.MultipleInterfaceComparator;
 import eppic.db.PdbInfo;
 import eppic.db.SeqClusterLevel;
 import eppic.model.ChainClusterDB;
+import eppic.model.ContactDB;
 import eppic.model.InterfaceDB;
 import gnu.getopt.Getopt;
 
@@ -41,29 +39,6 @@ public class FindBiomimics {
 	
 	private static final SeqClusterLevel DEFAULT_SEQ_CLUSTER_LEVEL = SeqClusterLevel.C100;
 
-	private static class DirectedInterface {
-		private Interface iface;
-		private int direction;// Interface.FIRST or Interface.SECOND
-		public DirectedInterface(Interface iface, int dir) {
-			if( dir != FIRST && dir != SECOND) {
-				throw new IllegalArgumentException("Illegal direction");
-			}
-			this.iface = iface;
-			this.direction = dir;
-		}
-		/**
-		 * @return the iface
-		 */
-		public Interface getInterface() {
-			return iface;
-		}
-		/**
-		 * @return the direction
-		 */
-		public int getDirection() {
-			return direction;
-		}
-	}
 	private static class InterfaceComparison {
 		public DirectedInterface a;
 		public DirectedInterface b;
@@ -75,7 +50,7 @@ public class FindBiomimics {
 
 	private final List<List<DirectedInterface>> interfaces;
 	
-	private final GMatrix overlapMat;
+	private MultipleInterfaceComparator comparisons;
 	
 	public FindBiomimics(String pdbCode, String chainId, DBHandler dbh, SeqClusterLevel seqClusterLevel) throws CompoundNotFoundException {
 		// Sequence cluster that the query belongs to
@@ -85,14 +60,21 @@ public class FindBiomimics {
 		// Get list of all members of that cluster
 		clusterMembers = dbh.getClusterMembers(seqClusterLevel.getLevel(), repCluster);
 		
+		
 		ListIterator<ChainClusterDB> it = clusterMembers.listIterator();
 		Pattern xray = Pattern.compile("x-?ray diffraction", Pattern.CASE_INSENSITIVE);
 		while(it.hasNext()) {
 			ChainClusterDB clust = it.next();
 			// filter to proteins from xray crystals
 			String expMethod = clust.getPdbInfo().getExpMethod();
-			if(!clust.isProtein() || !xray.matcher(expMethod).matches())
+			if(!clust.isProtein() || !xray.matcher(expMethod).matches() || clust.getPdbCode()==null)
 				it.remove();
+			
+			else if( !( clust.getPdbCode().equals("1faa") ||
+					clust.getPdbCode().equals("2pvo") ||
+							clust.getPdbCode().equals("1f9m") ))
+				it.remove();
+
 		}
 		logger.info("Found {} other members",clusterMembers.size()-1);
 
@@ -116,6 +98,12 @@ public class FindBiomimics {
 				InterfaceDB ifaceDb = entry.getKey();
 				int direction = entry.getValue();
 
+				//for debugging
+				if( !( ifaceDb.getPdbCode().equals("1faa") && ifaceDb.getInterfaceId()==1 ||
+						ifaceDb.getPdbCode().equals("2pvo") && ifaceDb.getInterfaceId()==2 ||
+						ifaceDb.getPdbCode().equals("1f9m") && ifaceDb.getInterfaceId()==2 ))
+					continue;
+				
 				Interface iface = new Interface(ifaceDb, pdbInfo);
 				
 				// only use protein-protein interfaces
@@ -128,7 +116,7 @@ public class FindBiomimics {
 				if( (direction & 1) > 0) {
 					clustInterfaces.add(new DirectedInterface(iface,FIRST));
 				}
-				if( (direction & 2) > 0) {
+				if( (direction & 2) > 0 && !ifaceDb.isIsologous()) {
 					clustInterfaces.add(new DirectedInterface(iface,SECOND));
 				}
 
@@ -136,52 +124,23 @@ public class FindBiomimics {
 			interfaces.add(clustInterfaces);
 		}
 		
-		// Do pairwise comparisons
 		List<DirectedInterface> flatInterfaces = getInterfaces();
-		overlapMat = new GMatrix(flatInterfaces.size(),flatInterfaces.size());
-		overlapMat.setZero();
-		
-		for(int i=1;i<interfaces.size();i++) {
-			DirectedInterface di = flatInterfaces.get(i);
-			ChainCluster clusti = di.getInterface().getChainCluster(di.getDirection());
-			AlignedSequence<ProteinSequence, AminoAcidCompound> seqi = alignedSeq.get(clusti.getChainCluster());
-			String chaini;
-			if(di.direction == FIRST) {
-				chaini = di.getInterface().getInterface().getChain1();
-			} else {
-				chaini = di.getInterface().getInterface().getChain2();
-			}
-
-			for(int j=0;j<=i;j++) {
-				DirectedInterface dj = flatInterfaces.get(j);
-				
-				ChainCluster clustj = dj.getInterface().getChainCluster(dj.getDirection());
-				AlignedSequence<ProteinSequence, AminoAcidCompound> seqj = alignedSeq.get(clustj.getChainCluster());
-				String chainj;
-				if(dj.direction == FIRST) {
-					chainj = dj.getInterface().getInterface().getChain1();
-				} else {
-					chainj = dj.getInterface().getInterface().getChain2();
-				}
-				
-				
-				Pair<String> chainIds = new Pair<>(chaini,chainj);
-				SequencePair<ProteinSequence, AminoAcidCompound> seqs = new SimpleSequencePair<>(seqi,seqj);
-				
-				Map<Pair<String>, SequencePair<ProteinSequence, AminoAcidCompound>> alnPool = Collections.singletonMap(chainIds, seqs);
-				
-				final boolean debug = false;
-				InterfaceComparator comp = new InterfaceComparator(di.getInterface(),dj.getInterface(), alnPool, seqClusterLevel);
-				comp.setDebug(debug);
-				double overlap = comp.calcOverlap();
-				
-				overlapMat.setElement(i, j, overlap);
-				overlapMat.setElement(j, i, overlap);
-			}
+		Profile<ProteinSequence, AminoAcidCompound> alignment = getAlignment();
+		// Get contacts
+		List<List<ContactDB>> contacts = new ArrayList<>(flatInterfaces.size());
+		for(DirectedInterface iface : flatInterfaces) {
+			contacts.add(iface.getInterface().getInterface().getContacts());
 		}
+		// Do pairwise comparisons
+		comparisons = new MultipleInterfaceComparator(flatInterfaces, alignment, contacts);
 	}
 	
+	/**
+	 * Return a list of all interfaces to be considered
+	 * @return
+	 */
 	public List<DirectedInterface> getInterfaces() {
+		// flatten interfaces
 		List<DirectedInterface> oriented = new ArrayList<>();
 		for(List<DirectedInterface> l : interfaces) {
 			for(DirectedInterface i : l) {
@@ -190,9 +149,40 @@ public class FindBiomimics {
 		}
 		return oriented;
 	}
+	
+	/**
+	 * Return an alignment of the active side of each interface. The Profile
+	 * will have one row for each interface returned by {@link #getInterfaces()}.
+	 * The active side of an interface is given by
+	 * {@link DirectedInterface#getDirection()}, and is either {@link Interface#FIRST}
+	 * (chain1) or  {@link Interface#SECOND} (chain2).
+	 * @return
+	 */
+	public Profile<ProteinSequence,AminoAcidCompound> getAlignment() {
+		// Duplicate sequences to match getInterfaces()
+		List<AlignedSequence<ProteinSequence,AminoAcidCompound>> alignedSequences =
+				new ArrayList<>();
+		for(int i=0;i<interfaces.size();i++) {
+			List<DirectedInterface> l = interfaces.get(i);
+			AlignedSequence<ProteinSequence, AminoAcidCompound> seq = profile.getAlignedSequence(i+1);
+			for(int j=0;j<l.size();j++) {
+				alignedSequences.add(seq);
+			}
+		}
+		return new SimpleProfile<ProteinSequence,AminoAcidCompound>(alignedSequences );
+	}
 
 	public GMatrix getOverlap() {
-		return overlapMat;
+		GMatrix overlap = new GMatrix(comparisons.size(),comparisons.size());
+		for(int i=0;i<comparisons.size();i++) {
+			for(int j=0;j<=i;j++) {
+				double o = comparisons.getJaccard(i, j);
+//				double o = comparisons.getOverlap(i, j);
+				overlap.setElement(i, j, o);
+				overlap.setElement(j, i, o);
+			}
+		}
+		return overlap;
 	}
 	public void printOverlap(PrintWriter out) {
 		List<DirectedInterface> flatInterfaces = getInterfaces();
@@ -202,11 +192,24 @@ public class FindBiomimics {
 		for(DirectedInterface interf : flatInterfaces) {
 			InterfaceDB interfDB = interf.getInterface().getInterface();
 			String name = String.format("%4s-%s%s",interfDB.getPdbCode(),interfDB.getInterfaceId(),
-					interf.direction==FIRST ? ">" : "<");
+					interf.getDirection()==FIRST ? ">" : "<");
 			headers[i++] = name;
 		}
 		
+		
 		printMatrix(out,getOverlap(),headers,headers);
+		printSparseMatrix(out,getOverlap(),headers,headers);
+	}
+	private static void printSparseMatrix(PrintWriter out, GMatrix m, String[] rowheaders, String[] colheaders) {
+		for(int i=0;i<rowheaders.length;i++) {
+			for(int j=0;j<colheaders.length;j++) {
+				if(Math.abs(m.getElement(i, j)) > 1e-15) {
+					out.format("%s\t%s\t%f%n", rowheaders[i],colheaders[j], m.getElement(i, j));
+				}
+			}
+		}
+		out.flush();
+
 	}
 	private static void printMatrix(PrintWriter out, GMatrix m, String[] rowheaders, String[] colheaders) {
 		if( m.getNumRow() != rowheaders.length || m.getNumCol() != colheaders.length) {
@@ -328,7 +331,7 @@ public class FindBiomimics {
 			logger.error("Invalid sequence",e);
 			System.exit(1); return;
 		}
-
+		ConcurrencyTools.shutdown();
 	}
 
 }
