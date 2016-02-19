@@ -53,6 +53,9 @@ public class MultipleInterfaceComparator {
 				case SECOND: seqIndex = contact.getSecondResNumber(); break;
 				default: throw new IllegalStateException("Unknown direction");
 				}
+				if(seqIndex == -1) {
+					continue; //ligand
+				}
 				int alignIndex = seq.getAlignmentIndexAt(seqIndex);
 				indices.add(alignIndex);
 			}
