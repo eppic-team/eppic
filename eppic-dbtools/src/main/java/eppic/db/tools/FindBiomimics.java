@@ -340,7 +340,7 @@ public class FindBiomimics {
 		SeqClusterLevel seqClusterLevel = DEFAULT_SEQ_CLUSTER_LEVEL;
 		double overlapThreshold = DEFAULT_JACCARD_OVERLAP_THRESHOLD;
 		
-		Getopt g = new Getopt("ClusterSequences", args, "D:p:c:l:k:h?");
+		Getopt g = new Getopt("FindBiomimics", args, "D:p:c:l:o:h?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
@@ -356,7 +356,7 @@ public class FindBiomimics {
 			case 'l':
 				seqClusterLevel = SeqClusterLevel.getByLevel(Integer.parseInt(g.getOptarg())); 
 				break;
-			case 'k':
+			case 'o':
 				overlapThreshold = Integer.parseInt(g.getOptarg());
 				break;
 			case 'h':
