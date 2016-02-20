@@ -10,6 +10,10 @@ import org.biojava.nbio.structure.contact.Pair;
 
 import eppic.model.ContactDB;
 
+/**
+ * Represents a set of contacting residues for interface alignment. Contacts
+ * are stored as a set of pairs of residue indices.
+ */
 public class ContactSet {
 	
 	private HashSet<Pair<SimpleResidue>> directSet;
@@ -20,6 +24,22 @@ public class ContactSet {
 	private SequencePair<ProteinSequence,AminoAcidCompound> aln12;
 	private SequencePair<ProteinSequence,AminoAcidCompound> aln21;
 	
+	/**
+	 * Create a new contact set from a list of contacts.
+	 * 
+	 * If the alignments are null, the paired residue numbers are simply
+	 * extracted from the input contacts.
+	 * 
+	 * If the alignments are not null, they should specify an alignment between
+	 * some reference interface (the query in each alignment) and the interface
+	 * from the contacts. Contacts are then mapped back to the residue indices
+	 * of the query sequence.
+	 * @param contacts List of contacting residues from the second interface
+	 * @param aln11 Alignment between first chains of each interface (direct), or null
+	 * @param aln22 Alignment between second chains of each interface (direct), or null
+	 * @param aln12 Alignment between first chain of first interface and second of second interface (indirect), or null
+	 * @param aln21 Alignment between second chain of first interface and first of second interface (indirect), or null
+	 */
 	public ContactSet(List<ContactDB> contacts, 
 			SequencePair<ProteinSequence,AminoAcidCompound> aln11, SequencePair<ProteinSequence,AminoAcidCompound> aln22,
 			SequencePair<ProteinSequence,AminoAcidCompound> aln12, SequencePair<ProteinSequence,AminoAcidCompound> aln21 ) {
@@ -53,6 +73,13 @@ public class ContactSet {
 		return directSet;
 	}
 	
+	/**
+	 * Add a contact to the set. If alignments were specified upon creation,
+	 * assumes the contact is from the second sequence in the alignment and maps
+	 * the contact back onto indices in the first sequence. If the contacting
+	 * residues are unaligned, adds a contact to or from index -1.
+	 * @param contact
+	 */
 	public void addContact(ContactDB contact) {
 		
 		// first we check if the contact is with a hetatom residue not part of the polymer (they have -1 as res number)
@@ -66,8 +93,9 @@ public class ContactSet {
 		//    for those we take original coordinates
 		// b) alignments passed are not null: only for the second contact in comparison we map back 
 		//    to coordinates of chains in first contact via the alignment
-		
-		if (aln11!=null && aln22!=null && aln12!=null && aln21!=null) {
+		boolean directalignment = aln11!=null && aln22!=null;
+		boolean indirectalignment = aln12!=null && aln21!=null;
+		if (directalignment) {
 			
 			// second contact in comparison: we need both direct and inverted contact and mapping via alignments 
 			// in both direct and inverse cases
@@ -83,11 +111,12 @@ public class ContactSet {
 					new SimpleResidue(resSerial2));
 
 			directSet.add(directPair);
-			
+		}
+		if( indirectalignment) {
 			
 			// inverse
-			resSerial1 = getMapping2To1(aln21, contact.getFirstResNumber());
-			resSerial2 = getMapping2To1(aln12, contact.getSecondResNumber());
+			int resSerial1 = getMapping2To1(aln21, contact.getFirstResNumber());
+			int resSerial2 = getMapping2To1(aln12, contact.getSecondResNumber());
 			//TODO if they map to -1 that means they map to gap: what to do then?
 
 			
@@ -97,7 +126,8 @@ public class ContactSet {
 			
 			inverseSet.add(invertedPair);
 			
-		} else {
+		}
+		if( directalignment || indirectalignment) {
 			
 			// first contact in comparison: we need no inverse set, and no mapping through alignment
 			
@@ -114,6 +144,13 @@ public class ContactSet {
 		
 	}
 	
+	/**
+	 * Given an alignment, convert an index in the second sequence to the
+	 * equivalent position in the first sequence
+	 * @param aln alignment
+	 * @param resNumber 1-based index in the second sequence
+	 * @return 1-based index of the equivalent position in the first sequence
+	 */
 	private static int getMapping2To1(SequencePair<ProteinSequence, AminoAcidCompound> aln, int resNumber) {
 		
 		int alnIdx = aln.getTarget().getAlignmentIndexAt(resNumber);
