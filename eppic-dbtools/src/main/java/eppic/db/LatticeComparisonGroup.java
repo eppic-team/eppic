@@ -21,20 +21,16 @@ public class LatticeComparisonGroup {
 	
 	
 	private PdbInfoList pdbInfoList;
-	
-	private double minArea;
-	
+		
 	private LatticeOverlapScore[][] latticeOverlapMatrix;
 	private double[][] interfCompMatrix;
 
-	public LatticeComparisonGroup(PdbInfoList pdbInfoList, double minArea) {
+	public LatticeComparisonGroup(PdbInfoList pdbInfoList) {
 		this.pdbInfoList = pdbInfoList;
 		
 		this.latticeOverlapMatrix = new LatticeOverlapScore[pdbInfoList.size()][pdbInfoList.size()];
-		
-		this.minArea = minArea;
-		
-		int numInterfaces = pdbInfoList.getNumInterfaces(minArea);
+				
+		int numInterfaces = pdbInfoList.getNumInterfaces();
 		
 		this.interfCompMatrix = new double[numInterfaces][numInterfaces];
 	}
@@ -49,8 +45,8 @@ public class LatticeComparisonGroup {
 		
 		for (int k=0;k<coMatrix.length;k++) {
 			for (int l=0;l<coMatrix[k].length;l++){
-				interfCompMatrix [k + pdbInfoList.getOffset(minArea, i)]
-								 [l + pdbInfoList.getOffset(minArea, j)] = coMatrix[k][l];
+				interfCompMatrix [k + pdbInfoList.getOffset(i)]
+								 [l + pdbInfoList.getOffset(j)] = coMatrix[k][l];
 			}
 		}
 	}
@@ -111,7 +107,7 @@ public class LatticeComparisonGroup {
 			InterfaceCluster interfCluster = new InterfaceCluster(clusterId);
 			for (int member:cls.get(clusterId)) {
 				
-				interfCluster.addMember(pdbInfoList.getInterface(this.minArea, member)); 
+				interfCluster.addMember(pdbInfoList.getInterface(member)); 
 				
 			}
 			set.add(interfCluster);

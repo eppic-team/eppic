@@ -3,6 +3,11 @@ package eppic.db;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * A cluster of interfaces, clustering similar interfaces across different PDB ids in the whole database. 
+ * 
+ * @author Jose Duarte
+ */
 public class InterfaceCluster implements Comparable<InterfaceCluster> {
 
 	private int id;

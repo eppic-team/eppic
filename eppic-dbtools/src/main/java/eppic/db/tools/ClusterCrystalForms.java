@@ -182,11 +182,13 @@ public class ClusterCrystalForms {
 		long end = System.currentTimeMillis();		
 
 		PdbInfoList pdbList = new PdbInfoList(pdbInfoList);
+		pdbList.setMinArea(minArea);
+		
 		System.out.println ("### Sequence cluster id ("+seqClusterLevel.getLevel()+"%): "+clusterId+" ("+pdbList.size()+" members)");
 		System.out.println("Done deserialization in "+((end - start)/1000)+" s");
 		
 		start = System.currentTimeMillis();
-		LatticeComparisonGroup cfMatrix = pdbList.calcLatticeOverlapMatrix(seqClusterLevel, coCutoff, minArea);
+		LatticeComparisonGroup cfMatrix = pdbList.calcLatticeOverlapMatrix(seqClusterLevel, coCutoff);
 		end = System.currentTimeMillis();
 
 		
@@ -246,13 +248,13 @@ public class ClusterCrystalForms {
 		// the interface comparison mega-matrix (only printed in debug mode)
 		if (debug) {
 			System.out.printf("%7s","");
-			for (int i=0;i<pdbList.getNumInterfaces(minArea);i++) {
-				Interface iInterf = pdbList.getInterface(minArea,i);
+			for (int i=0;i<pdbList.getNumInterfaces();i++) {
+				Interface iInterf = pdbList.getInterface(i);
 				System.out.printf("%4s:%02d\t", iInterf.getInterface().getPdbCode(),iInterf.getInterface().getInterfaceId());
 			}
 			System.out.println();
 			for (int i=0;i<cfMatrix.getInterfaceComparisonMatrix().length;i++) {
-				Interface iInterf = pdbList.getInterface(minArea, i);
+				Interface iInterf = pdbList.getInterface(i);
 				System.out.printf("%4s:%02d",iInterf.getInterface().getPdbCode(),iInterf.getInterface().getInterfaceId() );
 				for (int j=0;j<cfMatrix.getInterfaceComparisonMatrix()[i].length;j++) {
 					System.out.printf("%7.3f\t",cfMatrix.getInterfaceComparisonMatrix()[i][j]);
