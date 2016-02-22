@@ -8,13 +8,13 @@ import java.util.Set;
  * 
  * @author Jose Duarte
  */
-public class InterfaceCluster implements Comparable<InterfaceCluster> {
+public class GlobalInterfaceCluster implements Comparable<GlobalInterfaceCluster> {
 
 	private int id;
 	
 	private HashSet<Interface> members;
 	
-	public InterfaceCluster(int id) {
+	public GlobalInterfaceCluster(int id) {
 		this.id = id;
 		members = new HashSet<Interface>();
 	}
@@ -32,9 +32,9 @@ public class InterfaceCluster implements Comparable<InterfaceCluster> {
 	}
 	
 	public boolean equals(Object o) {
-		if (!(o instanceof InterfaceCluster)) return false;
+		if (!(o instanceof GlobalInterfaceCluster)) return false;
 		
-		InterfaceCluster other = (InterfaceCluster)o;
+		GlobalInterfaceCluster other = (GlobalInterfaceCluster)o;
 		
 		return this.id==other.id;
 	}
@@ -44,7 +44,7 @@ public class InterfaceCluster implements Comparable<InterfaceCluster> {
 	}
 
 	@Override
-	public int compareTo(InterfaceCluster o) {
+	public int compareTo(GlobalInterfaceCluster o) {
 		
 		return new Integer(id).compareTo(o.id); 
 	}

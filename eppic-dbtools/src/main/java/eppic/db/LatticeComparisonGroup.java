@@ -92,7 +92,7 @@ public class LatticeComparisonGroup {
 		return set;
 	}
 	
-	public Collection<InterfaceCluster> getInterfClusters(double coCutoff) {
+	public Collection<GlobalInterfaceCluster> getInterfClusters(double coCutoff) {
 		
 		// note that the clusterer alters the matrix, keep that in mind if we wanted to use the matrix down the line
 		SingleLinkageClusterer cl = new SingleLinkageClusterer(interfCompMatrix, true);
@@ -101,10 +101,10 @@ public class LatticeComparisonGroup {
 		
 		
 		// return the unique list sorted by ids (thanks to equals, hashCode and compareTo)
-		Set<InterfaceCluster> set = new TreeSet<InterfaceCluster>();
+		Set<GlobalInterfaceCluster> set = new TreeSet<GlobalInterfaceCluster>();
 		
 		for (int clusterId:cls.keySet()) {
-			InterfaceCluster interfCluster = new InterfaceCluster(clusterId);
+			GlobalInterfaceCluster interfCluster = new GlobalInterfaceCluster(clusterId);
 			for (int member:cls.get(clusterId)) {
 				
 				interfCluster.addMember(pdbInfoList.getInterface(member)); 

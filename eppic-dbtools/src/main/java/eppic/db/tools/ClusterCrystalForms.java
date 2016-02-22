@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Set;
 
 import eppic.db.Interface;
-import eppic.db.InterfaceCluster;
+import eppic.db.GlobalInterfaceCluster;
 import eppic.db.LatticeComparisonGroup;
 import eppic.db.PdbInfo;
 import eppic.db.PdbInfoCluster;
@@ -266,11 +266,11 @@ public class ClusterCrystalForms {
 		// interface clusters
 		System.out.println("Calculating interface clusters...");
 		start = System.currentTimeMillis();
-		Collection<InterfaceCluster> interfClusters = cfMatrix.getInterfClusters(coCutoff);
+		Collection<GlobalInterfaceCluster> interfClusters = cfMatrix.getInterfClusters(coCutoff);
 		end = System.currentTimeMillis();
 		System.out.println("Interfaces clusters calculated in "+((end - start)/1000)+" s");
 		System.out.println("Total number of interface clusters: "+interfClusters.size());
-		for (InterfaceCluster cluster:interfClusters) {
+		for (GlobalInterfaceCluster cluster:interfClusters) {
 
 			// first we find the number of distinct crystal forms in cluster to print it in the header of each cluster
 			Set<Integer> distinctCFsInCluster = new HashSet<Integer>();

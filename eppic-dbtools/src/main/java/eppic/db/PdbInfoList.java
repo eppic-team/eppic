@@ -83,6 +83,11 @@ public class PdbInfoList {
 		return count;
 	}
 	
+	/**
+	 * Given an index in the all-interfaces list returns the corresponding interface
+	 * @param i
+	 * @return
+	 */
 	public Interface getInterface (int i) {
 		
 		if (interfaceLookup==null) getNumInterfaces();
@@ -90,6 +95,11 @@ public class PdbInfoList {
 		return interfaceLookup.get(i);
 	}
 	
+	/**
+	 * Given an index in this PdbInfoList corresponding to a PdbInfo, returns the index of first interface for that PdbInfo in the all-interfaces list
+	 * @param i
+	 * @return
+	 */
 	public int getOffset(int i) {
 		
 		if (interfaceLookup==null) getNumInterfaces();
