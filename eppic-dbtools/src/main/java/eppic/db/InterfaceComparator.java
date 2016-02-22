@@ -23,6 +23,17 @@ public class InterfaceComparator {
 	
 	private Map<Pair<String>,SequencePair<ProteinSequence,AminoAcidCompound>> alignmentsPool;
 	
+	/**
+	 * Calculate the interface overlap between this interface and another.
+	 * 
+	 * The alnPool provides pre-calculated pairwise alignments. It should
+	 * include, at a minimum, four entries comparing each chain from the first
+	 * interface with each chain of the second.
+	 * @param interf1
+	 * @param interf2
+	 * @param alnPool Pool of pre-calculated pairwise alignments
+	 * @param seqClusterLevel Used for determining whether interfaces are comparable or not
+	 */
 	public InterfaceComparator(Interface interf1, Interface interf2, 
 			Map<Pair<String>, SequencePair<ProteinSequence,AminoAcidCompound>> alignmentsPool, SeqClusterLevel seqClusterLevel) {
 		
@@ -72,6 +83,14 @@ public class InterfaceComparator {
 		
 	}
 	
+	/**
+	 * Calculates the fraction of contacts shared by the two interfaces. That is,
+	 * (# equivalent contacts)/(average number of contacts)
+	 * 
+	 * Interfaces are considered in both directions, with the maximum overlap
+	 * being returned.
+	 * @return
+	 */
 	public double calcOverlap() {
 		
 		if (! sameContent) {

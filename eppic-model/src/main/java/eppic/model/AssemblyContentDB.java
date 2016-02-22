@@ -22,7 +22,7 @@ public class AssemblyContentDB implements Serializable {
 	/**
 	 * Composition based on representative chain ids
 	 */
-	private String compositionRepChainId;
+	private String compositionRepChainIds;
 	
 	private String chainIds; // comma separated list of chainId+_+opId belonging to assembly
 	
@@ -76,12 +76,12 @@ public class AssemblyContentDB implements Serializable {
 		this.composition = composition;
 	}
 
-	public String getCompositionRepChainId() {
-		return compositionRepChainId;
+	public String getCompositionRepChainIds() {
+		return compositionRepChainIds;
 	}
 
-	public void setCompositionRepChainId(String compositionRepChainId) {
-		this.compositionRepChainId = compositionRepChainId;
+	public void setCompositionRepChainIds(String compositionRepChainIds) {
+		this.compositionRepChainIds = compositionRepChainIds;
 	}
 
 	public String getChainIds() {

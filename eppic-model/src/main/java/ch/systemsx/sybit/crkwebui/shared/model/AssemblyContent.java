@@ -83,7 +83,7 @@ public class AssemblyContent implements Serializable {
 		ac.setSymmetry(assemblyContentDB.getSymmetry());
 		ac.setStoichiometry(assemblyContentDB.getStoichiometry());
 		ac.setComposition(assemblyContentDB.getComposition());
-		ac.setCompositionRepChainIds(assemblyContentDB.getCompositionRepChainId());
+		ac.setCompositionRepChainIds(assemblyContentDB.getCompositionRepChainIds());
 		ac.setChainIds(assemblyContentDB.getChainIds());
 		return ac;
 	}
