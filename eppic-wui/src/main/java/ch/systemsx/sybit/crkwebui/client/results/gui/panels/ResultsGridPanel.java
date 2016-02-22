@@ -26,6 +26,7 @@ import ch.systemsx.sybit.crkwebui.client.commons.handlers.WindowHideHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.managers.EventBusManager;
 import ch.systemsx.sybit.crkwebui.client.commons.managers.ViewerRunner;
 import ch.systemsx.sybit.crkwebui.client.commons.util.EscapedStringGenerator;
+import ch.systemsx.sybit.crkwebui.client.results.data.AssemblyItemModel;
 import ch.systemsx.sybit.crkwebui.client.results.data.InterfaceItemModel;
 import ch.systemsx.sybit.crkwebui.client.results.data.InterfaceItemModelProperties;
 import ch.systemsx.sybit.crkwebui.client.results.gui.cells.DetailsButtonCell;
@@ -216,7 +217,7 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 	 * @param column
 	 * @param type
 	 */
-	private void fillColumnSettings(ColumnConfig<InterfaceItemModel, ?> column, String type){
+	/*private void fillColumnSettings(ColumnConfig<InterfaceItemModel, ?> column, String type){
 		column.setColumnHeaderClassName("eppic-default-font");
 		
 		//use this line of code to use the pre-defined widths in the properties file
@@ -249,7 +250,47 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 		column.setColumnTextClassName("eppic-results-grid-common-cells");
 		column.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 		column.setMenuDisabled(true);
-	}
+	}*/
+	
+	private void fillColumnSettings(ColumnConfig<InterfaceItemModel, ?> column, String type){
+		column.setColumnHeaderClassName("eppic-default-font");
+		
+		//this was the old way of getting column widths
+		//column.setWidth(Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("results_"+type+"_width")));
+		
+		//the sum of total column width of all the columns as configured in grid.properties
+		float TOTAL_COLUMN_WIDTH = 865;
+		
+		//standard screen size by default
+		float ACTUAL_SCREEN_SIZE = 870;
+
+		try {
+			ACTUAL_SCREEN_SIZE = Integer.parseInt(this.width.replace("px", "")); //actual size of the screen in user's browser
+		}catch(Exception e) {}
+		
+		float preconfiguredColumnSize = 0;
+		float columnWidth = 0;
+
+		try{
+			preconfiguredColumnSize = Float.parseFloat(ApplicationContext.getSettings().getGridProperties().get("results_"+type+"_width"));
+		}catch (Exception e) {}
+		if (ACTUAL_SCREEN_SIZE > TOTAL_COLUMN_WIDTH)
+			columnWidth = (preconfiguredColumnSize / TOTAL_COLUMN_WIDTH) * ACTUAL_SCREEN_SIZE;
+		
+		int columnWidthInt = Math.round(columnWidth);
+		column.setWidth(columnWidthInt);
+		
+		column.setHeader(EscapedStringGenerator.generateSafeHtml(
+				ApplicationContext.getSettings().getGridProperties().get("results_"+type+"_header")));
+		
+		String tooltip = ApplicationContext.getSettings().getGridProperties().get("results_"+type+"_tooltip");
+		if(tooltip != null)
+			column.setToolTip(EscapedStringGenerator.generateSafeHtml(tooltip));
+		
+		column.setColumnTextClassName("eppic-results-grid-common-cells");
+		column.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+		column.setMenuDisabled(true);
+	}	
 	
 	private SummaryColumnConfig<InterfaceItemModel, String> getWarningsColumn() {
 		SummaryColumnConfig<InterfaceItemModel, String> column = 
