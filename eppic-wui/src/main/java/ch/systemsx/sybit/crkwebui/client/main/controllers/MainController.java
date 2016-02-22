@@ -131,7 +131,7 @@ public class MainController
 			// if resolution >=99 don't display Resolution
 			double resolution = resultsData.getResolution();
 			if(resolution < 99)
-				html_experiment_info += "&nbsp;&nbsp;&nbsp;&nbsp;<span class='eppic-general-info-label-new'>" + AppPropertiesManager.CONSTANTS.info_panel_resolution() + "</span> <span class='eppic-general-info-label-value-new'>" + NumberFormat.getFormat("0.0").format(resultsData.getResolution()) + "</span>";
+				html_experiment_info += "&nbsp;&nbsp;&nbsp;&nbsp;<span class='eppic-general-info-label-new'>" + AppPropertiesManager.CONSTANTS.info_panel_resolution() + " </span> <span class='eppic-general-info-label-value-new'>" + NumberFormat.getFormat("0.0").format(resultsData.getResolution()) + " &#8491;</span>";
 			
 			//if Rfree>=1 don't display Rfree
 			double rfree = Double.parseDouble(NumberFormat.getFormat("0.00").format(resultsData.getRfreeValue()));
