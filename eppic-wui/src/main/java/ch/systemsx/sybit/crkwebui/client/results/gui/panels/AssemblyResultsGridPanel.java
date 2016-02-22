@@ -170,7 +170,7 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 	 * @param column
 	 * @param type
 	 */
-	private void fillColumnSettings(ColumnConfig<AssemblyItemModel, ?> column, String type){
+	/*private void fillColumnSettings(ColumnConfig<AssemblyItemModel, ?> column, String type){
 		column.setColumnHeaderClassName("eppic-default-font");
 		
 		//this was the old way of getting column widths
@@ -200,8 +200,54 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 		column.setColumnTextClassName("eppic-results-grid-common-cells");
 		column.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 		column.setMenuDisabled(true);
-	}
+	}*/
 
+	private void fillColumnSettings(ColumnConfig<AssemblyItemModel, ?> column, String type){
+		column.setColumnHeaderClassName("eppic-default-font");
+		
+		//this was the old way of getting column widths
+		//column.setWidth(Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("assembly_results_"+type+"_width")));
+		
+		//the sum of total column width of all the columns as configured in grid.properties
+		float TOTAL_COLUMN_WIDTH = 535;
+		
+		//standard screen size by default
+		float ACTUAL_SCREEN_SIZE = 800;
+		//Window.alert("screen width is " + this.width);
+		try {
+			ACTUAL_SCREEN_SIZE = Integer.parseInt(this.width.replace("px", "")); //actual size of the screen in user's browser
+		}catch(Exception e) {}
+		
+		//int preconfiguredColumnSize = 1;
+		float preconfiguredColumnSize = 0;
+		float columnWidth = 0;
+		//Window.alert(ApplicationContext.getSettings().getGridProperties().get("assembly_results_"+type+"_width"));
+		try{
+			preconfiguredColumnSize = Float.parseFloat(ApplicationContext.getSettings().getGridProperties().get("assembly_results_"+type+"_width"));
+		}catch (Exception e) {}
+		//Window.alert("preconfiguredColumnSize " + preconfiguredColumnSize + " TOTAL_COLUMN_WIDTH " + TOTAL_COLUMN_WIDTH  + " ACTUAL_SCREEN_SIZE " + ACTUAL_SCREEN_SIZE);
+		if (ACTUAL_SCREEN_SIZE > TOTAL_COLUMN_WIDTH)
+			//extraColumnMargin = TOTAL_COLUMN_WIDTH / preconfiguredColumnSize;
+			columnWidth = (preconfiguredColumnSize / TOTAL_COLUMN_WIDTH) * ACTUAL_SCREEN_SIZE;
+		
+		//column.setWidth(Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("assembly_results_"+type+"_width"))+extraColumnMargin+75);
+		//Window.alert("columnWidth is " + columnWidth);
+		int columnWidthInt = Math.round(columnWidth);
+		column.setWidth(columnWidthInt);
+		
+		column.setHeader(EscapedStringGenerator.generateSafeHtml(
+				ApplicationContext.getSettings().getGridProperties().get("assembly_results_"+type+"_header")));
+		
+		String tooltip = ApplicationContext.getSettings().getGridProperties().get("assembly_results_"+type+"_tooltip");
+		if(tooltip != null)
+			column.setToolTip(EscapedStringGenerator.generateSafeHtml(tooltip));
+		
+		column.setColumnTextClassName("eppic-results-grid-common-cells");
+		column.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+		column.setMenuDisabled(true);
+	}	
+	
+	
 	private SummaryColumnConfig<AssemblyItemModel, Integer> getIdColumn() {
 		SummaryColumnConfig<AssemblyItemModel, Integer> idColumn = 
 				new SummaryColumnConfig<AssemblyItemModel, Integer>(props.assemblyId());
