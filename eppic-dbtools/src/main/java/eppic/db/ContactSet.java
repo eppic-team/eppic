@@ -127,7 +127,7 @@ public class ContactSet {
 			inverseSet.add(invertedPair);
 			
 		}
-		if( directalignment || indirectalignment) {
+		if( !directalignment && !indirectalignment) {
 			
 			// first contact in comparison: we need no inverse set, and no mapping through alignment
 			
