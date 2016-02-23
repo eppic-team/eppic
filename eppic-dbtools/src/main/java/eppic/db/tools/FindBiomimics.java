@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 
 import eppic.db.DirectedInterface;
 import eppic.db.Interface;
+import eppic.db.InterfaceCluster;
 import eppic.db.MultipleInterfaceComparator;
 import eppic.db.PdbInfo;
 import eppic.db.SeqClusterLevel;
@@ -136,7 +137,7 @@ public class FindBiomimics {
 //						ifaceDb.getPdbCode().equals("1f9m") && ifaceDb.getInterfaceId()==2 ))
 //					continue;
 				
-				Interface iface = new Interface(ifaceDb, pdbInfo);
+				Interface iface = new Interface(ifaceDb, new InterfaceCluster(ifaceDb.getInterfaceCluster(), pdbInfo));
 				
 				// only use protein-protein interfaces
 				if(! iface.getChainCluster(FIRST).getChainCluster().isProtein() ||

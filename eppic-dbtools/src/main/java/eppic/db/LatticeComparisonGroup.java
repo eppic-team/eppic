@@ -30,9 +30,9 @@ public class LatticeComparisonGroup {
 		
 		this.latticeOverlapMatrix = new LatticeOverlapScore[pdbInfoList.size()][pdbInfoList.size()];
 				
-		int numInterfaces = pdbInfoList.getNumInterfaces();
+		int numInterfaceClusters = pdbInfoList.getNumInterfaceClusters();
 		
-		this.interfCompMatrix = new double[numInterfaces][numInterfaces];
+		this.interfCompMatrix = new double[numInterfaceClusters][numInterfaceClusters];
 	}
 	
 	public void setElement(int i, int j, LatticeOverlapScore los, LatticeMatchMatrix lmm) {
@@ -59,7 +59,7 @@ public class LatticeComparisonGroup {
 		return interfCompMatrix;
 	}
 	
-	public Collection<PdbInfoCluster> getCFClusters(double losCutoff) {
+	public Collection<GlobalPdbInfoCluster> getCFClusters(double losCutoff) {
 		
 		
 		// first we convert the latticeOverlapMatrix into a double matrix
@@ -76,10 +76,10 @@ public class LatticeComparisonGroup {
 		Map<Integer,Set<Integer>> cls = cl.getClusters(losCutoff);
 		
 		// return the unique list sorted by ids (thanks to equals, hashCode and compareTo)
-		Set<PdbInfoCluster> set = new TreeSet<PdbInfoCluster>();
+		Set<GlobalPdbInfoCluster> set = new TreeSet<GlobalPdbInfoCluster>();
 		
 		for (int clusterId:cls.keySet()) {
-			PdbInfoCluster pdbInfoCluster = new PdbInfoCluster(clusterId);
+			GlobalPdbInfoCluster pdbInfoCluster = new GlobalPdbInfoCluster(clusterId);
 			for (int member:cls.get(clusterId)) {
 				
 				pdbInfoCluster.addMember(pdbInfoList.get(member));
@@ -104,13 +104,13 @@ public class LatticeComparisonGroup {
 		Set<GlobalInterfaceCluster> set = new TreeSet<GlobalInterfaceCluster>();
 		
 		for (int clusterId:cls.keySet()) {
-			GlobalInterfaceCluster interfCluster = new GlobalInterfaceCluster(clusterId);
+			GlobalInterfaceCluster glocalInterfCluster = new GlobalInterfaceCluster(clusterId);
 			for (int member:cls.get(clusterId)) {
 				
-				interfCluster.addMember(pdbInfoList.getInterface(member)); 
+				glocalInterfCluster.addMember(pdbInfoList.getInterfaceCluster(member));
 				
 			}
-			set.add(interfCluster);
+			set.add(glocalInterfCluster);
 			
 		}
 		

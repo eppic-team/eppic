@@ -9,17 +9,27 @@ import org.biojava.nbio.structure.contact.Pair;
 
 import eppic.model.InterfaceDB;
 
+/**
+ * A class to wrap an Interface as extracted from the EPPIC database.
+ * 
+ * Maps 1:1 to an InterfaceDB.
+ * 
+ * 
+ * @author Jose Duarte
+ *
+ */
 public class Interface {
 
 	public static final int FIRST = 0;
 	public static final int SECOND = 1;
 	
 	private InterfaceDB interf;
-	private PdbInfo pdb;
+	private InterfaceCluster ic;
 	
-	public Interface(InterfaceDB interf, PdbInfo pdb) {
+	
+	public Interface(InterfaceDB interf, InterfaceCluster ic) {
 		this.interf = interf;
-		this.pdb = pdb;
+		this.ic = ic;
 				
 	}
 	
@@ -28,7 +38,7 @@ public class Interface {
 	}
 	
 	public PdbInfo getPdbInfo() {
-		return pdb;
+		return ic.getPdbInfo();
 	}
 	
 	/**
@@ -124,7 +134,7 @@ public class Interface {
 		if (!(o instanceof Interface)) return false;
 		
 		Interface other = (Interface)o;
-		return (this.pdb.getPdbInfo().getPdbCode().equals(other.pdb.getPdbInfo().getPdbCode()) &&
+		return (this.getPdbInfo().getPdbInfo().getPdbCode().equals(other.getPdbInfo().getPdbInfo().getPdbCode()) &&
 				this.interf.getInterfaceId()==other.interf.getInterfaceId());
 	}
 	
@@ -132,7 +142,7 @@ public class Interface {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((this.pdb.getPdbInfo().getPdbCode() == null) ? 0 : this.pdb.getPdbInfo().getPdbCode().hashCode());
+		result = prime * result + ((this.getPdbInfo().getPdbInfo().getPdbCode() == null) ? 0 : this.getPdbInfo().getPdbInfo().getPdbCode().hashCode());
 		result = prime * result + ((this.interf == null) ? 0 : new Integer(this.interf.getInterfaceId()).hashCode());
 		return result;
 	}

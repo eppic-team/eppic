@@ -4,7 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 
-public class PdbInfoCluster implements Comparable<PdbInfoCluster> {
+public class GlobalPdbInfoCluster implements Comparable<GlobalPdbInfoCluster> {
 
 	private int id;
 	
@@ -12,7 +12,7 @@ public class PdbInfoCluster implements Comparable<PdbInfoCluster> {
 	
 	private HashSet<PdbInfo> members;
 	
-	public PdbInfoCluster(int id) {
+	public GlobalPdbInfoCluster(int id) {
 		this.id = id;
 		members = new HashSet<PdbInfo>();
 	}
@@ -30,9 +30,9 @@ public class PdbInfoCluster implements Comparable<PdbInfoCluster> {
 	}
 	
 	public boolean equals(Object o) {
-		if (!(o instanceof PdbInfoCluster)) return false;
+		if (!(o instanceof GlobalPdbInfoCluster)) return false;
 		
-		PdbInfoCluster other = (PdbInfoCluster)o;
+		GlobalPdbInfoCluster other = (GlobalPdbInfoCluster)o;
 		
 		return this.id==other.id;
 	}
@@ -42,7 +42,7 @@ public class PdbInfoCluster implements Comparable<PdbInfoCluster> {
 	}
 
 	@Override
-	public int compareTo(PdbInfoCluster o) {
+	public int compareTo(GlobalPdbInfoCluster o) {
 		
 		return new Integer(id).compareTo(o.id); 
 	}

@@ -7,13 +7,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import eppic.db.Interface;
+import eppic.db.InterfaceCluster;
 import eppic.db.GlobalInterfaceCluster;
 import eppic.db.LatticeComparisonGroup;
 import eppic.db.PdbInfo;
-import eppic.db.PdbInfoCluster;
+import eppic.db.GlobalPdbInfoCluster;
 import eppic.db.PdbInfoList;
 import eppic.db.SeqClusterLevel;
+import eppic.model.InterfaceDB;
 import eppic.model.PdbInfoDB;
 import gnu.getopt.Getopt;
 
@@ -145,14 +146,14 @@ public class ClusterCrystalForms {
 			String pdbCode = pdbString.substring(0, 4);		
 			String repChain = pdbString.substring(4); 
 
-			int clusterId = dbh.getClusterIdForPdbCode(pdbCode, repChain, seqClusterLevel.getLevel());
+			int seqClusterId = dbh.getClusterIdForPdbCode(pdbCode, repChain, seqClusterLevel.getLevel());
 			
-			if (clusterId==-1) {
+			if (seqClusterId==-1) {
 				System.err.println("Could not find sequence cluster (at "+seqClusterLevel.getLevel()+"%) for "+pdbCode+" and representative chain "+repChain);
 				System.err.println("Make sure that the PDB code is in the database and that the representative chain id is valid");
 			} else {
 			
-				calcCluster(clusterId, dbh, seqClusterLevel, coCutoff, minArea, losClusterCutoff, null, null);
+				calcCluster(seqClusterId, dbh, seqClusterLevel, coCutoff, minArea, losClusterCutoff, null, null);
 			}
 			
 		} else {
@@ -173,18 +174,18 @@ public class ClusterCrystalForms {
 		}
 	}
 	
-	private static void calcCluster(int clusterId, DBHandler dbh, SeqClusterLevel seqClusterLevel, double coCutoff, double minArea, double losClusterCutoff,
+	private static void calcCluster(int seqClusterId, DBHandler dbh, SeqClusterLevel seqClusterLevel, double coCutoff, double minArea, double losClusterCutoff,
 			PrintWriter cfcPw, PrintWriter icPw) 
 			{
 		
 		long start = System.currentTimeMillis();
-		List<PdbInfoDB> pdbInfoList = dbh.deserializeSeqCluster(clusterId, seqClusterLevel.getLevel());
+		List<PdbInfoDB> pdbInfoList = dbh.deserializeSeqCluster(seqClusterId, seqClusterLevel.getLevel());
 		long end = System.currentTimeMillis();		
 
 		PdbInfoList pdbList = new PdbInfoList(pdbInfoList);
 		pdbList.setMinArea(minArea);
 		
-		System.out.println ("### Sequence cluster id ("+seqClusterLevel.getLevel()+"%): "+clusterId+" ("+pdbList.size()+" members)");
+		System.out.println ("### Sequence cluster id ("+seqClusterLevel.getLevel()+"%): "+seqClusterId+" ("+pdbList.size()+" members)");
 		System.out.println("Done deserialization in "+((end - start)/1000)+" s");
 		
 		start = System.currentTimeMillis();
@@ -220,14 +221,14 @@ public class ClusterCrystalForms {
 		// crystal form clusters
 		System.out.println("Calculating crystal form clusters...");
 		start = System.currentTimeMillis();
-		Collection<PdbInfoCluster> clusters = cfMatrix.getCFClusters(losClusterCutoff);
+		Collection<GlobalPdbInfoCluster> cfClusters = cfMatrix.getCFClusters(losClusterCutoff);
 		end = System.currentTimeMillis();
 		System.out.println("Crystal form clusters calculated in "+((end - start)/1000)+" s");
-		System.out.println("Total number of crystal form clusters: "+clusters.size());
-		for (PdbInfoCluster cluster:clusters) {
-			System.out.print("Cluster "+cluster.getId()+": ");			
+		System.out.println("Total number of crystal form clusters: "+cfClusters.size());
+		for (GlobalPdbInfoCluster cfCluster:cfClusters) {
+			System.out.print("Cluster "+cfCluster.getId()+": ");			
 			
-			for (PdbInfo member:cluster.getMembers()) {
+			for (PdbInfo member:cfCluster.getMembers()) {
 				
 				member.getPdbInfo().setCrystalFormId(crystalFormId);
 				
@@ -235,8 +236,8 @@ public class ClusterCrystalForms {
 				
 				if (cfcPw !=null ) cfcPw.println( member.getPdbInfo().getUid()+"\t"+
 												member.getPdbInfo().getPdbCode()+"\t"+
-												clusterId+"\t"+
-												cluster.getId()+"\t"+
+												seqClusterId+"\t"+
+												cfCluster.getId()+"\t"+
 												crystalFormId);
 			}
 			crystalFormId++;
@@ -248,14 +249,14 @@ public class ClusterCrystalForms {
 		// the interface comparison mega-matrix (only printed in debug mode)
 		if (debug) {
 			System.out.printf("%7s","");
-			for (int i=0;i<pdbList.getNumInterfaces();i++) {
-				Interface iInterf = pdbList.getInterface(i);
-				System.out.printf("%4s:%02d\t", iInterf.getInterface().getPdbCode(),iInterf.getInterface().getInterfaceId());
+			for (int i=0;i<pdbList.getNumInterfaceClusters();i++) {
+				InterfaceCluster iInterf = pdbList.getInterfaceCluster(i);
+				System.out.printf("%4s:%02d\t", iInterf.getRepresentative().getInterface().getPdbCode(),iInterf.getInterfaceClusterDB().getClusterId());
 			}
 			System.out.println();
 			for (int i=0;i<cfMatrix.getInterfaceComparisonMatrix().length;i++) {
-				Interface iInterf = pdbList.getInterface(i);
-				System.out.printf("%4s:%02d",iInterf.getInterface().getPdbCode(),iInterf.getInterface().getInterfaceId() );
+				InterfaceCluster iInterf = pdbList.getInterfaceCluster(i);
+				System.out.printf("%4s:%02d",iInterf.getRepresentative().getInterface().getPdbCode(),iInterf.getInterfaceClusterDB().getClusterId() );
 				for (int j=0;j<cfMatrix.getInterfaceComparisonMatrix()[i].length;j++) {
 					System.out.printf("%7.3f\t",cfMatrix.getInterfaceComparisonMatrix()[i][j]);
 				}
@@ -274,23 +275,34 @@ public class ClusterCrystalForms {
 
 			// first we find the number of distinct crystal forms in cluster to print it in the header of each cluster
 			Set<Integer> distinctCFsInCluster = new HashSet<Integer>();
-			for (Interface member:cluster.getMembers()) {
-				distinctCFsInCluster.add(member.getInterface().getInterfaceCluster().getPdbInfo().getCrystalFormId());
+			for (InterfaceCluster member:cluster.getMembers()) {
+				distinctCFsInCluster.add(member.getRepresentative().getInterface().getInterfaceCluster().getPdbInfo().getCrystalFormId());
 			}
 			
 			System.out.printf("Cluster %3d, in %2d/%2d (%4.2f) of CFs: ",
 					cluster.getId(), 
-					distinctCFsInCluster.size(), clusters.size(), 
-					(double)distinctCFsInCluster.size()/(double)clusters.size() );
+					distinctCFsInCluster.size(), cfClusters.size(), 
+					(double)distinctCFsInCluster.size()/(double)cfClusters.size() );
 
-			for (Interface member:cluster.getMembers()) {
-				distinctCFsInCluster.add(member.getInterface().getInterfaceCluster().getPdbInfo().getCrystalFormId());
-				System.out.print(member.getInterface().getPdbCode()+"-"+member.getInterface().getInterfaceId()+" ");
+			for (InterfaceCluster member:cluster.getMembers()) {
+				distinctCFsInCluster.add(member.getRepresentative().getInterface().getInterfaceCluster().getPdbInfo().getCrystalFormId());
 				
-				if (icPw !=null ) icPw.println( member.getInterface().getUid()+"\t"+
-												member.getInterface().getPdbCode()+"\t"+
-												member.getInterface().getInterfaceId()+"\t"+
-												clusterId+"\t"+
+				// we identify the interface cluster by its id, with the member interfaces in square brackets 
+				StringBuilder interfaceId = new StringBuilder(String.valueOf(member.getInterfaceClusterDB().getClusterId()) + "[");
+				int i = 0;
+				for (InterfaceDB idb: member.getInterfaceClusterDB().getInterfaces()) {
+					if (i!=0) interfaceId.append(",");
+					interfaceId.append(idb.getInterfaceId());
+					i++;
+				}
+				interfaceId.append("]");
+				
+				System.out.print(member.getRepresentative().getInterface().getPdbCode()+"-"+interfaceId+" ");
+				
+				if (icPw !=null ) icPw.println( member.getInterfaceClusterDB().getUid()+"\t"+
+												member.getInterfaceClusterDB().getPdbCode()+"\t"+
+												member.getInterfaceClusterDB().getClusterId()+"\t"+
+												seqClusterId+"\t"+
 												cluster.getId()+"\t"+
 												interfClusterGlobalId);
 			}

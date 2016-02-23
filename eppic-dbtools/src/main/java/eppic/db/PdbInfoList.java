@@ -25,7 +25,7 @@ public class PdbInfoList {
 	 */
 	private double minArea;
 
-	private HashMap<Integer, Interface> interfaceLookup;
+	private HashMap<Integer, InterfaceCluster> interfaceLookup;
 	private HashMap<Integer, Integer> offsets;
 	
 	public PdbInfoList(List<PdbInfoDB> pdbInfoList) {
@@ -66,16 +66,16 @@ public class PdbInfoList {
 		return pdbList.get(i);
 	}
 	
-	public int getNumInterfaces() {
-		interfaceLookup = new HashMap<Integer, Interface>();
+	public int getNumInterfaceClusters() {
+		interfaceLookup = new HashMap<Integer, InterfaceCluster>();
 		offsets = new HashMap<Integer, Integer>();
 		
 		int count = 0;
 		int i = 0;
 		for (PdbInfo pdb:this.pdbList) {
 			offsets.put(i,count);
-			for (Interface interf: pdb.getInterfacesAboveArea(minArea)) {
-				interfaceLookup.put(count, interf);
+			for (InterfaceCluster interfCluster: pdb.getInterfaceClustersAboveArea(minArea)) {
+				interfaceLookup.put(count, interfCluster);
 				count++;
 			}			
 			i++;
@@ -84,25 +84,25 @@ public class PdbInfoList {
 	}
 	
 	/**
-	 * Given an index in the all-interfaces list returns the corresponding interface
+	 * Given an index in the all-interfaceClusters list returns the corresponding interfaceCluster
 	 * @param i
 	 * @return
 	 */
-	public Interface getInterface (int i) {
-		
-		if (interfaceLookup==null) getNumInterfaces();
+	public InterfaceCluster getInterfaceCluster (int i) {
+		 
+		if (interfaceLookup==null) getNumInterfaceClusters();
 		
 		return interfaceLookup.get(i);
 	}
 	
 	/**
-	 * Given an index in this PdbInfoList corresponding to a PdbInfo, returns the index of first interface for that PdbInfo in the all-interfaces list
+	 * Given an index in this PdbInfoList corresponding to a PdbInfo, returns the index of first interfaceCluster for that PdbInfo in the all-interfaceClusters list
 	 * @param i
 	 * @return
 	 */
 	public int getOffset(int i) {
 		
-		if (interfaceLookup==null) getNumInterfaces();
+		if (interfaceLookup==null) getNumInterfaceClusters();
 		
 		return offsets.get(i);
 	}

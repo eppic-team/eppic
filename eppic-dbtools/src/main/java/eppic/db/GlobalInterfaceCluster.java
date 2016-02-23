@@ -4,7 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * A cluster of interfaces, clustering similar interfaces across different PDB ids in the whole database. 
+ * A group of interface clusters, clustering similar interface clusters across different PDB ids in the whole database. 
  * 
  * @author Jose Duarte
  */
@@ -12,14 +12,14 @@ public class GlobalInterfaceCluster implements Comparable<GlobalInterfaceCluster
 
 	private int id;
 	
-	private HashSet<Interface> members;
+	private HashSet<InterfaceCluster> members;
 	
 	public GlobalInterfaceCluster(int id) {
 		this.id = id;
-		members = new HashSet<Interface>();
+		members = new HashSet<InterfaceCluster>();
 	}
 	
-	public boolean addMember(Interface member) {
+	public boolean addMember(InterfaceCluster member) {
 		return members.add(member);
 	}
 
@@ -27,7 +27,7 @@ public class GlobalInterfaceCluster implements Comparable<GlobalInterfaceCluster
 		return id;
 	}
 	
-	public Set<Interface> getMembers() {
+	public Set<InterfaceCluster> getMembers() {
 		return members;
 	}
 	
