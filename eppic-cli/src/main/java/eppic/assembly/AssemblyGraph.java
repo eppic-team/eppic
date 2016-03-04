@@ -199,6 +199,32 @@ public class AssemblyGraph {
 
 		return true;
 	}
+	
+	/**
+	 * Returns true if at least 1 edge in this graph is infinite, i.e. interfaces that are between 2 identical chains related by a pure translation or screw operation  
+	 * @return
+	 */
+	public boolean containsInfinites() {
+		for (InterfaceEdge e: subgraph.edgeSet()) {
+			
+			if (e.isInfinite()) return true;
+			
+		}
+		return false;
+	}
+	
+	/**
+	 * Returns true if at least 1 edge in this graph corresponds to an isologous interface
+	 * @return
+	 */
+	public boolean containsIsologous() {
+		for (InterfaceEdge e : subgraph.edgeSet()) {
+			if (e.isIsologous()) {				
+				return true;
+			}
+		}
+		return false;
+	}
 
 	/**
 	 * Return true if all cycles in subgraph are closed, false otherwise.
@@ -377,4 +403,5 @@ public class AssemblyGraph {
 					subgraph.toString() +
 				")";
 	}
+
 }
