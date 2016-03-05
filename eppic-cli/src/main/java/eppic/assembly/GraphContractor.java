@@ -155,7 +155,7 @@ public class GraphContractor {
 	 * in order to create a pseudo-homomeric graph.
 	 * Contracted vertices can be obtained subsequently with {@link #getContractedVertices()} and their 
 	 * replacements by {@link #getContractedVertex(ChainVertex)} 
-	 * @return
+	 * @return the contracted graph, also accessible via {@link #getContractedGraph()}
 	 */
 	public UndirectedGraph<ChainVertex, InterfaceEdge> contract() {
 			

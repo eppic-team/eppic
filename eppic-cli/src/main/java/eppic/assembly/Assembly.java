@@ -215,7 +215,7 @@ public class Assembly {
 		}
 
 		// pre-check for assemblies with 1 engaged interface that is isologous: the cycle detection doesn't work for isologous
-		if (getNumEngagedInterfaceClusters()==1) {
+		if (GraphUtils.getDistinctInterfaceCount(assemblyGraph.getSubgraph())==1) { 
 			if (assemblyGraph.containsIsologous()) {
 				logger.debug("Assembly {} contains just 1 isologous interface cluster: closed symmetry, won't check cycles",toString());
 				return true;

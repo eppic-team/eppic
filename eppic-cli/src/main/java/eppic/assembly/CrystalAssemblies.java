@@ -17,6 +17,7 @@ import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.StructureException;
 import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
 import org.biojava.nbio.structure.contact.StructureInterfaceList;
+import org.jgrapht.UndirectedGraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,7 +27,7 @@ import eppic.InterfaceEvolContextList;
 /**
  * A representation of all valid assemblies in a crystal structure.
  * 
- * @author duarte_j
+ * @author Jose Duarte
  *
  */
 public class CrystalAssemblies implements Iterable<Assembly> {
@@ -76,17 +77,37 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 	public CrystalAssemblies(Structure structure, StructureInterfaceList interfaces) throws StructureException {
 		
 		this.largeNumAssemblies = false;
-		
+				
 		this.structure = structure;
-		this.latticeGraph = new LatticeGraph<ChainVertex,InterfaceEdge>(structure, interfaces,ChainVertex.class,InterfaceEdge.class);
+		this.latticeGraph = new LatticeGraph<ChainVertex,InterfaceEdge>(structure, interfaces,ChainVertex.class,InterfaceEdge.class);		
 		
 		initEntityMaps();
 		
+		latticeGraph.removeDuplicateEdges();
 		findValidAssemblies();
 		
 		initGroups();
 		
 		initClusters();
+		
+		
+	}
+	
+	public CrystalAssemblies(Structure structure, StructureInterfaceList interfaces, boolean forceContracted) throws StructureException {
+		
+		this.largeNumAssemblies = false;
+				
+		this.structure = structure;
+		this.latticeGraph = new LatticeGraph<ChainVertex,InterfaceEdge>(structure, interfaces,ChainVertex.class,InterfaceEdge.class);		
+		
+		initEntityMaps();
+		
+		latticeGraph.removeDuplicateEdges();
+		findValidAssembliesContracted();
+		
+		//initGroups();
+		
+		//initClusters();
 		
 		
 	}
@@ -97,15 +118,13 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 	
 	private void findValidAssemblies() {
 		
-		latticeGraph.removeDuplicateEdges();
-		
 		findValidAssembliesFull();
 		
 		if (largeNumAssemblies) {
 			
-			logger.error("Structures with heteromeric interfaces and large number of assemblies are not supported yet! Assembly list will be empty.");
-			// TODO implement! basically it is the same code, but using the contracted graph within Assembly...			
-			//findValidAssembliesContract();
+			logger.info("Structure has more than {} assemblies in full enumeration, will contract heteromeric interfaces to enumerate assemblies.", MAX_ALLOWED_ASSEMBLIES);
+			
+			findValidAssembliesContracted();
 		}
 	}
 	
@@ -132,6 +151,65 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 		Set<Assembly> validAssemblies = new HashSet<Assembly>();
 		
 		int numInterfaceClusters = latticeGraph.getNumInterfaceClusters();
+		
+		// the list of nodes in the tree found to be invalid: all of their children will also be invalid
+		List<Assembly> invalidNodes = new ArrayList<Assembly>();		
+		
+		Assembly emptyAssembly = new Assembly(this, new PowerSet(numInterfaceClusters));
+		
+		validAssemblies.add(emptyAssembly); // the empty assembly (no engaged interfaces) is always a valid assembly
+		
+		Set<Assembly> prevLevel = new HashSet<Assembly>();
+		prevLevel.add(emptyAssembly);
+		Set<Assembly> nextLevel = null;
+
+		for (int k = 1; k<=numInterfaceClusters; k++) {
+
+			logger.debug("Traversing level {} of tree: {} parent nodes",k,prevLevel.size());
+
+			nextLevel = new HashSet<Assembly>();
+
+			for (Assembly p:prevLevel) {
+				List<Assembly> children = p.getChildren(invalidNodes);
+
+				for (Assembly c:children) {
+
+					if (!c.isValid()) {
+						logger.debug("Node {} is invalid, will prune off all of its children",c.toString());
+						invalidNodes.add(c);
+					} else {
+						// we only add a child for next level if we know it's valid, if it wasn't valid 
+						// then it's not added and thus the whole branch is pruned
+						nextLevel.add(c);
+						// add assembly as valid
+						validAssemblies.add(c);
+
+						if (validAssemblies.size() > MAX_ALLOWED_ASSEMBLIES) {
+							logger.warn("Exceeded the default max number of allowed assemblies ({}). Will do assembly enumeration from heteromeric-contracted graph", MAX_ALLOWED_ASSEMBLIES);
+							largeNumAssemblies = true;
+							all = new HashSet<Assembly>();
+							return;
+						}
+					}
+				}
+			}
+			prevLevel = new HashSet<Assembly>(nextLevel); 
+
+		}
+
+		this.all = validAssemblies;
+		
+
+	}
+	
+	private void findValidAssembliesContracted() {
+		
+		Set<Assembly> validAssemblies = new HashSet<Assembly>();
+		
+		GraphContractor contractor = new GraphContractor(latticeGraph.getGraph());
+		UndirectedGraph<ChainVertex, InterfaceEdge> cg = contractor.contract();
+		
+		int numInterfaceClusters = GraphUtils.getDistinctInterfaceCount(cg); 
 		
 		// the list of nodes in the tree found to be invalid: all of their children will also be invalid
 		List<Assembly> invalidNodes = new ArrayList<Assembly>();		
@@ -341,8 +419,7 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 					
 		return size;
 	}
-
-
+	
 	@Override
 	public Iterator<Assembly> iterator() {
 		

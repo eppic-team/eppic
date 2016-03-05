@@ -351,6 +351,10 @@ public class TestLatticeGraph {
 	}
 
 	public static CrystalAssemblies getCrystalAssemblies(String pdbId) throws IOException, StructureException {
+		return getCrystalAssemblies(pdbId, false);
+	}
+	
+	public static CrystalAssemblies getCrystalAssemblies(String pdbId, boolean forceContracted) throws IOException, StructureException {
 		
 		logger.info("Calculating interfaces for "+pdbId);
 		
@@ -368,7 +372,7 @@ public class TestLatticeGraph {
 		interfaces.removeInterfacesBelowArea();
 		interfaces.getClusters(EppicParams.CLUSTERING_CONTACT_OVERLAP_SCORE_CUTOFF);
 		
-		CrystalAssemblies crystalAssemblies = new CrystalAssemblies(s, interfaces);
+		CrystalAssemblies crystalAssemblies = new CrystalAssemblies(s, interfaces, forceContracted);
 		
 		return crystalAssemblies; 
 	}
