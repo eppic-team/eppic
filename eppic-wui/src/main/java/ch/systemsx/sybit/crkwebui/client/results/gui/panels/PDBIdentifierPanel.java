@@ -27,8 +27,8 @@ public class PDBIdentifierPanel extends HorizontalLayoutContainer
 	//public static EppicLabel pdbNameLabel;
 	public static HTML informationLabel;
 	public static HTML pdbNameLabel;
-	
-	private LabelWithTooltip warningLabel;
+	//private LabelWithTooltip warningLabel;
+	public static LabelWithTooltip warningLabel;
 	
 	public PDBIdentifierPanel(int viewType)
 	{
@@ -111,10 +111,11 @@ public class PDBIdentifierPanel extends HorizontalLayoutContainer
 		//String code = ApplicationContext.getPdbInfo().getPdbCode();
 		//pdbNameLabel = new EppicLabel(code);
 		
-		
 		//Check for warnings
 		ExperimentalWarnings warnings = new ExperimentalWarnings(spaceGroup, expMethod, resolution, rfreeValue);
-		if (warnings.isEmWarning()) {
+		warningLabel = warnings.getWarningLabel();
+		//moved this somewhere else - now consolidated inside the ExperimentalWarnings object
+		/*if (warnings.isEmWarning()) {
 			warningLabel = createWarningLabel(AppPropertiesManager.CONSTANTS.warning_EM_title());			
 		}
 		else if(warnings.isResolutionWarning()) {			
@@ -123,15 +124,24 @@ public class PDBIdentifierPanel extends HorizontalLayoutContainer
 			warningLabel = createWarningLabel(AppPropertiesManager.CONSTANTS.warning_HighRfree_title());
 		}else{
 			warningLabel = null;
-		}
+		}*/
 		
 		pdbNameLabel.addStyleName("eppic-pdb-identifier-label");
 		panelTable.setWidget(0, 0, informationLabel);
 		panelTable.setWidget(0, 1, pdbNameLabel);
+		
+		//if(warningLabel != null)
+		//	panelTable.setWidget(0, 2, warningLabel);
+		
+		//test only: force a warning
 		if(warningLabel != null)
 			panelTable.setWidget(0, 2, warningLabel);
+		else
+			panelTable.setWidget(0, 2, createEmptyWarningLabel(""));
+
 		
 	}
+	
 	
 	public static void setPDBText(String inputName)
 	{
@@ -140,9 +150,16 @@ public class PDBIdentifierPanel extends HorizontalLayoutContainer
 	
 	
 	
-	
-	private LabelWithTooltip createWarningLabel(String text){
+	//moved this
+	/*private LabelWithTooltip createWarningLabel(String text){
 		LabelWithTooltip label = new LabelWithTooltip("*"+text+"*", AppPropertiesManager.CONSTANTS.pdb_identifier_panel_warning_hint());
+		label.addStyleName("eppic-header-warning");
+		label.addStyleName("eppic-pdb-identifier-label");
+		return label;
+	}*/
+	
+	private LabelWithTooltip createEmptyWarningLabel(String text){
+		LabelWithTooltip label = new LabelWithTooltip("", AppPropertiesManager.CONSTANTS.pdb_identifier_panel_warning_hint());
 		label.addStyleName("eppic-header-warning");
 		label.addStyleName("eppic-pdb-identifier-label");
 		return label;
