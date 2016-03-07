@@ -23,7 +23,6 @@ import org.biojava.nbio.structure.Calc;
 import org.biojava.nbio.structure.Chain;
 import org.biojava.nbio.structure.Group;
 import org.biojava.nbio.structure.StructureException;
-import org.biojava.nbio.structure.contact.StructureInterface;
 import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
 import org.biojava.nbio.structure.io.FileConvert;
 import org.biojava.nbio.structure.io.mmcif.MMCIFFileTools;
@@ -189,33 +188,37 @@ public class Assembly {
 		return isClosedSymmetry();
 	}
 	
-	private boolean containsInfinites() {
-		for (StructureInterfaceCluster cluster: getEngagedInterfaceClusters()) {
-			
-			for (StructureInterface interf:cluster.getMembers()) {
-				// if a single member of cluster is infinite we consider the cluster infinite
-				if (interf.isInfinite()) return true;
-			}
-		}
-		return false;
-	}
 	
+	/**
+	 * Checks whether this Assembly has closed symmetry, i.e. that all cycles in graph are closed.
+	 * The implementation goes through a few shortcuts:
+	 * <li>
+	 * if Assembly contains infinite interfaces return false
+	 * </li>
+	 * <li>
+	 * if Assembly contains just 1 isologous interface returns true
+	 * </li>
+	 * <li>
+	 * if Assembly is heteromeric and stoichiometry is uneven returns false
+	 * </li>
+	 * <li>
+	 * finally checks that all cycles are closed by enumerating cycles and checking the translations add up to 0
+	 * </li>
+	 * @return
+	 */
 	public boolean isClosedSymmetry() {
 		
 		// first we check for infinites, like that we save to compute the graph cycles for infinite cases
-		if (containsInfinites()) {
+		if (assemblyGraph.containsInfinites()) {
 			logger.debug("Discarding assembly {} because it contains infinite interfaces", toString());
 			return false;
 		}
 
 		// pre-check for assemblies with 1 engaged interface that is isologous: the cycle detection doesn't work for isologous
 		if (getNumEngagedInterfaceClusters()==1) {
-			for (StructureInterface interf : getEngagedInterfaceClusters().get(0).getMembers()) {
-				// with a single interface in cluster isologous, we call the whole isologous
-				if (interf.isIsologous()) {
-					logger.debug("Assembly {} contains just 1 isologous interface cluster: closed symmetry, won't check cycles",toString());
-					return true;
-				}
+			if (assemblyGraph.containsIsologous()) {
+				logger.debug("Assembly {} contains just 1 isologous interface cluster: closed symmetry, won't check cycles",toString());
+				return true;
 			}
 			
 		}

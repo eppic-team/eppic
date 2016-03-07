@@ -21,22 +21,18 @@ public class LatticeComparisonGroup {
 	
 	
 	private PdbInfoList pdbInfoList;
-	
-	private double minArea;
-	
+		
 	private LatticeOverlapScore[][] latticeOverlapMatrix;
 	private double[][] interfCompMatrix;
 
-	public LatticeComparisonGroup(PdbInfoList pdbInfoList, double minArea) {
+	public LatticeComparisonGroup(PdbInfoList pdbInfoList) {
 		this.pdbInfoList = pdbInfoList;
 		
 		this.latticeOverlapMatrix = new LatticeOverlapScore[pdbInfoList.size()][pdbInfoList.size()];
+				
+		int numInterfaceClusters = pdbInfoList.getNumInterfaceClusters();
 		
-		this.minArea = minArea;
-		
-		int numInterfaces = pdbInfoList.getNumInterfaces(minArea);
-		
-		this.interfCompMatrix = new double[numInterfaces][numInterfaces];
+		this.interfCompMatrix = new double[numInterfaceClusters][numInterfaceClusters];
 	}
 	
 	public void setElement(int i, int j, LatticeOverlapScore los, LatticeMatchMatrix lmm) {
@@ -49,8 +45,8 @@ public class LatticeComparisonGroup {
 		
 		for (int k=0;k<coMatrix.length;k++) {
 			for (int l=0;l<coMatrix[k].length;l++){
-				interfCompMatrix [k + pdbInfoList.getOffset(minArea, i)]
-								 [l + pdbInfoList.getOffset(minArea, j)] = coMatrix[k][l];
+				interfCompMatrix [k + pdbInfoList.getOffset(i)]
+								 [l + pdbInfoList.getOffset(j)] = coMatrix[k][l];
 			}
 		}
 	}
@@ -63,7 +59,7 @@ public class LatticeComparisonGroup {
 		return interfCompMatrix;
 	}
 	
-	public Collection<PdbInfoCluster> getCFClusters(double losCutoff) {
+	public Collection<GlobalPdbInfoCluster> getCFClusters(double losCutoff) {
 		
 		
 		// first we convert the latticeOverlapMatrix into a double matrix
@@ -80,10 +76,10 @@ public class LatticeComparisonGroup {
 		Map<Integer,Set<Integer>> cls = cl.getClusters(losCutoff);
 		
 		// return the unique list sorted by ids (thanks to equals, hashCode and compareTo)
-		Set<PdbInfoCluster> set = new TreeSet<PdbInfoCluster>();
+		Set<GlobalPdbInfoCluster> set = new TreeSet<GlobalPdbInfoCluster>();
 		
 		for (int clusterId:cls.keySet()) {
-			PdbInfoCluster pdbInfoCluster = new PdbInfoCluster(clusterId);
+			GlobalPdbInfoCluster pdbInfoCluster = new GlobalPdbInfoCluster(clusterId);
 			for (int member:cls.get(clusterId)) {
 				
 				pdbInfoCluster.addMember(pdbInfoList.get(member));
@@ -96,7 +92,7 @@ public class LatticeComparisonGroup {
 		return set;
 	}
 	
-	public Collection<InterfaceCluster> getInterfClusters(double coCutoff) {
+	public Collection<GlobalInterfaceCluster> getInterfClusters(double coCutoff) {
 		
 		// note that the clusterer alters the matrix, keep that in mind if we wanted to use the matrix down the line
 		SingleLinkageClusterer cl = new SingleLinkageClusterer(interfCompMatrix, true);
@@ -105,16 +101,16 @@ public class LatticeComparisonGroup {
 		
 		
 		// return the unique list sorted by ids (thanks to equals, hashCode and compareTo)
-		Set<InterfaceCluster> set = new TreeSet<InterfaceCluster>();
+		Set<GlobalInterfaceCluster> set = new TreeSet<GlobalInterfaceCluster>();
 		
 		for (int clusterId:cls.keySet()) {
-			InterfaceCluster interfCluster = new InterfaceCluster(clusterId);
+			GlobalInterfaceCluster glocalInterfCluster = new GlobalInterfaceCluster(clusterId);
 			for (int member:cls.get(clusterId)) {
 				
-				interfCluster.addMember(pdbInfoList.getInterface(this.minArea, member)); 
+				glocalInterfCluster.addMember(pdbInfoList.getInterfaceCluster(member));
 				
 			}
-			set.add(interfCluster);
+			set.add(glocalInterfCluster);
 			
 		}
 		

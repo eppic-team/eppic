@@ -18,7 +18,6 @@ import org.biojava.nbio.structure.contact.Pair;
 
 import eppic.model.ChainClusterDB;
 import eppic.model.InterfaceClusterDB;
-import eppic.model.InterfaceDB;
 import eppic.model.PdbInfoDB;
 
 /**
@@ -72,38 +71,20 @@ public class PdbInfo {
 		return list;
 	}
 	
-	/**
-	 * Returns all Interface's for this PdbInfo by looping over all interface clusters
-	 * @return
-	 */
-	public List<Interface> getInterfaces() {
-		List<Interface> list = new ArrayList<Interface>();
-		for (InterfaceClusterDB ic:pdbInfo.getInterfaceClusters()) {
-			for (InterfaceDB interf:ic.getInterfaces()) {
-				list.add(new Interface(interf, this));
-			}
-		}
-		return list;
-	}
-	
-	public int getNumInterfacesAboveArea(double area) {
+	public int getNumInterfaceClustersAboveArea(double area) {
 		int count = 0;
-		for (InterfaceClusterDB ic:pdbInfo.getInterfaceClusters()) {
-			for (InterfaceDB interf:ic.getInterfaces()) {
-				if (interf.getArea()>area) count++;	
-			}			
+		for (InterfaceClusterDB ic:pdbInfo.getInterfaceClusters()) {			
+			if (ic.getAvgArea()>area) count++;							
 		}
 		return count;
 	}
 	
-	public List<Interface> getInterfacesAboveArea(double area) {
-		List<Interface> list = new ArrayList<Interface>();
-		for (InterfaceClusterDB ic:pdbInfo.getInterfaceClusters()) {
-			for (InterfaceDB interf:ic.getInterfaces()) {				
-				if (interf.getArea()>area) list.add(new Interface(interf,this));
-			}
+	public List<InterfaceCluster> getInterfaceClustersAboveArea(double area) {
+		List<InterfaceCluster> list = new ArrayList<InterfaceCluster>();
+		for (InterfaceClusterDB ic:pdbInfo.getInterfaceClusters()) {							
+			if (ic.getAvgArea()>area) list.add(new InterfaceCluster(ic,this));			
 		}
-		return list;
+		return list;		
 	}
 	
 	public LatticeMatchMatrix calcLatticeOverlapMatrix(PdbInfo other, SeqClusterLevel seqClusterLevel, double minArea, boolean debug) 
@@ -120,16 +101,16 @@ public class PdbInfo {
 			}
 		}
 		
-		int interfCount1 = this.getNumInterfacesAboveArea(minArea);
-		int interfCount2 = other.getNumInterfacesAboveArea(minArea);
+		int interfCount1 = this.getNumInterfaceClustersAboveArea(minArea);
+		int interfCount2 = other.getNumInterfaceClustersAboveArea(minArea);
 	
 		double[][] matrix = new double[interfCount1][interfCount2];
 
-		for (Interface thisInterf : this.getInterfacesAboveArea(minArea)) {
-			for (Interface otherInterf : other.getInterfacesAboveArea(minArea)) {
+		for (InterfaceCluster thisInterfCluster : this.getInterfaceClustersAboveArea(minArea)) {
+			for (InterfaceCluster otherInterfCluster : other.getInterfaceClustersAboveArea(minArea)) {
 								
-				double co = thisInterf.calcInterfaceOverlap(otherInterf, map, seqClusterLevel, debug);
-				matrix[thisInterf.getInterface().getInterfaceId()-1][otherInterf.getInterface().getInterfaceId()-1] = co;
+				double co = thisInterfCluster.getRepresentative().calcInterfaceOverlap(otherInterfCluster.getRepresentative(), map, seqClusterLevel, debug);
+				matrix[thisInterfCluster.getInterfaceClusterDB().getClusterId()-1][otherInterfCluster.getInterfaceClusterDB().getClusterId()-1] = co;
 			}
 		}	
 		

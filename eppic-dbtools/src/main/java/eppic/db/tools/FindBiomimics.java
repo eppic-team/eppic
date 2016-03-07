@@ -9,8 +9,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 
@@ -28,14 +28,18 @@ import org.biojava.nbio.core.util.SingleLinkageClusterer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import eppic.CallType;
 import eppic.db.DirectedInterface;
 import eppic.db.Interface;
+import eppic.db.InterfaceCluster;
 import eppic.db.MultipleInterfaceComparator;
 import eppic.db.PdbInfo;
 import eppic.db.SeqClusterLevel;
 import eppic.model.ChainClusterDB;
 import eppic.model.ContactDB;
 import eppic.model.InterfaceDB;
+import eppic.model.InterfaceScoreDB;
+import eppic.model.ScoringMethod;
 import gnu.getopt.Getopt;
 
 public class FindBiomimics {
@@ -45,18 +49,19 @@ public class FindBiomimics {
 	private static double DEFAULT_JACCARD_OVERLAP_THRESHOLD = 0.2;
 
 	private final List<ChainClusterDB> clusterMembers;
-	private final Profile<ProteinSequence, AminoAcidCompound> profile; //Row for each chain
+	private final Profile<ProteinSequence, AminoAcidCompound> profile; //Row  for each chain
 
 
 	private final List<List<DirectedInterface>> interfaces;
 
-	private MultipleInterfaceComparator comparisons;
-
+	private final MultipleInterfaceComparator comparisons;
+	private final List<CallType> predictions;
+	
 	public FindBiomimics(String pdbCode, String chainId, DBHandler dbh, SeqClusterLevel seqClusterLevel) throws CompoundNotFoundException {
 		// Sequence cluster that the query belongs to
-		int repCluster = dbh.getClusterIdForPdbCodeAndChain(pdbCode, chainId, seqClusterLevel.getLevel());
-		logger.info("{}.{} belongs to {}% SeqCluster {}",pdbCode, chainId, seqClusterLevel.getLevel(), repCluster);
-
+		this(dbh.getClusterIdForPdbCodeAndChain(pdbCode, chainId, seqClusterLevel.getLevel()), dbh, seqClusterLevel);
+	}
+	public FindBiomimics(int repCluster, DBHandler dbh, SeqClusterLevel seqClusterLevel) throws CompoundNotFoundException {
 		// Get list of all members of that cluster
 		clusterMembers = initClusterMembers(dbh,seqClusterLevel,repCluster);
 		logger.info("Found {} other members",clusterMembers.size()-1);
@@ -83,6 +88,13 @@ public class FindBiomimics {
 		}
 		// Do pairwise comparisons
 		comparisons = new MultipleInterfaceComparator(flatInterfaces, alignment, contacts);
+		
+		// Assign predictions
+		predictions = new ArrayList<>(flatInterfaces.size());
+		for(DirectedInterface iface : flatInterfaces) {
+			InterfaceScoreDB score = iface.getInterface().getInterface().getInterfaceScore(ScoringMethod.EPPIC_FINAL);
+			predictions.add( CallType.getByName(score.getCallName()) );
+		}
 	}
 	
 
@@ -136,7 +148,7 @@ public class FindBiomimics {
 //						ifaceDb.getPdbCode().equals("1f9m") && ifaceDb.getInterfaceId()==2 ))
 //					continue;
 				
-				Interface iface = new Interface(ifaceDb, pdbInfo);
+				Interface iface = new Interface(ifaceDb, new InterfaceCluster(ifaceDb.getInterfaceCluster(), pdbInfo));
 				
 				// only use protein-protein interfaces
 				if(! iface.getChainCluster(FIRST).getChainCluster().isProtein() ||
@@ -238,6 +250,11 @@ public class FindBiomimics {
 		}
 		return overlap;
 	}
+	
+	public List<CallType> getPredictions() {
+		return predictions;
+	}
+	
 	public void printOverlap(PrintWriter out) {
 		List<DirectedInterface> flatInterfaces = getInterfaces();
 		String[] headers = new String[flatInterfaces.size()];
@@ -386,12 +403,21 @@ public class FindBiomimics {
 		try {
 			FindBiomimics mimics = new FindBiomimics(pdbCode, chainId, dbh, seqClusterLevel);
 			//mimics.printOverlap(out);
-			
+			out.println("Key: > compare chain1; < compare chain2; * biological interface; ~ no prediction for interface");
 			Map<Integer, Set<DirectedInterface>> clusters = mimics.getClusters(overlapThreshold);
 			for(Integer clustNum : new TreeSet<>(clusters.keySet())) {
 				out.format("Cluster %d: ",clustNum);
 				for(DirectedInterface i:clusters.get(clustNum)) {
+					InterfaceScoreDB score = i.getInterface().getInterface().getInterfaceScore(ScoringMethod.EPPIC_FINAL);
+					CallType call = CallType.getByName(score.getCallName());
+					
 					out.print(i);
+					switch(call) {
+					case BIO:           out.print('*'); break;
+					case CRYSTAL:       break;
+					case NO_PREDICTION: out.print('~'); break;
+					default: throw new IllegalStateException("Unknown call: "+call);
+					}
 					out.print(' ');
 				}
 				out.println();
