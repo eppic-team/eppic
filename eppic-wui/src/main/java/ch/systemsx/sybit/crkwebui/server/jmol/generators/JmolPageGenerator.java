@@ -36,21 +36,22 @@ public class JmolPageGenerator
 			isCif = false;
 		}
 		
-		String selectionCode;
-		if (interfData != null) {
-			selectionCode = generateInterfaceSelection3dmolCode(interfData, isCif);
-		} else if (assemblyData !=null ){
-			selectionCode = generateAssemblySelection3dmolCode(assemblyData, isCif);
-		} else {
-			// a default that at least shows a cartoon
-			return "data-style='cartoon'\n";
-		}
+//		String selectionCode;
+//		if (interfData != null) {
+//			selectionCode = generateInterfaceSelection3dmolCode(interfData, isCif);
+//		} else if (assemblyData !=null ){
+//			selectionCode = generateAssemblySelection3dmolCode(assemblyData, isCif);
+//		} else {
+//			// a default that at least shows a cartoon
+//			return "data-style='cartoon'\n";
+//		}
 		
 		
 		StringBuffer jmolPage = new StringBuffer();
 
 		String fileUrl = serverUrl + "/" + resultsLocation + "/" + fileName;
 
+		jmolPage.append("<!DOCTYPE html>");
 		jmolPage.append("<html>" + "\n");
 		jmolPage.append("<head>" + "\n");
 		jmolPage.append("<title>" + "\n");
@@ -62,19 +63,39 @@ public class JmolPageGenerator
 		jmolPage.append("</head>" + "\n");
 		jmolPage.append("<body>" + "\n");
 
-		
 		jmolPage.append(
-				"<div style=\"height: "+size+"px; width: "+size+"px; position: relative;\" "+
-				"class='viewer_3Dmoljs' \n" +
-				"data-href='"+fileUrl+"' data-backgroundcolor='0xffffff' "+
-				dataTypeString +
-				"\n"+
-				
-				selectionCode +
-				
-				">\n"+
-				
-				"</div>\n");
+		
+		"<script>"+
+
+		"if( !Detector.webgl ) Detector.addGetWebGLMessage();"+
+
+		"NGL.mainScriptFilePath = \""+url3dmoljs+"\";"+
+
+		"function onInit(){"+
+		"	var stage = new NGL.Stage( \"viewport\" );"+
+		"	stage.loadFile( \""+fileUrl+"\", { defaultRepresentation: true } );"+
+		"}"+
+
+		"document.addEventListener( \"DOMContentLoaded\", function() {"+
+		"	NGL.init( onInit );"+
+		"} );"+
+
+		"</script>"+
+
+		"<div id=\"viewport\" style=\"width:"+size+"px; height:"+size+"px;\"></div>");
+		
+//		jmolPage.append(
+//				"<div style=\"height: "+size+"px; width: "+size+"px; position: relative;\" "+
+//				"class='viewer_3Dmoljs' \n" +
+//				"data-href='"+fileUrl+"' data-backgroundcolor='0xffffff' "+
+//				dataTypeString +
+//				"\n"+
+//				
+//				selectionCode +
+//				
+//				">\n"+
+//				
+//				"</div>\n");
 		
 		jmolPage.append("</body>" + "\n");
 		jmolPage.append("</html>" + "\n");
