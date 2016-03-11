@@ -94,7 +94,6 @@ public class JmolPageGenerator
 		jmolPage.append(
 		
 		"<script>\n"+
-		"var stage;" +
 		
 		NGL_JS_FUNCTIONS +
 
@@ -103,7 +102,7 @@ public class JmolPageGenerator
 		"NGL.mainScriptFilePath = \""+url3dmoljs+"\";\n"+
 
 		"function onInit(){\n"+
-		"	var stage = new NGL.Stage( \"viewport\" );\n"+
+		"	stage = new NGL.Stage( \"viewport\" );\n"+
 		"	stage.loadFile( \""+fileUrl+"\", { defaultRepresentation: false } )\n" +
 		"   .then(function(structComp) {initRepr(structComp) });\n"+
 		"}\n"+
