@@ -11,6 +11,33 @@ import eppic.model.ResidueBurialDB;
 
 public class JmolPageGenerator 
 {
+	
+	private static final String NGL_JS_FUNCTIONS = 
+			"function initRepr(structComp) {\r\n" + 
+			"\r\n" + 
+			"	structureComponent = structComp;\r\n" + 
+			"\r\n" + 
+			"	ligandRepr = structComp.addRepresentation('ball+stick', {\r\n" + 
+			"		color : 'element',\r\n" + 
+			"		scale : 3.0,\r\n" + 
+			"		aspectRatio : 1.3,\r\n" + 
+			"		sele : 'hetero and not (water or ion)' \r\n" + 
+			"	});			\r\n" + 
+			"\r\n" + 
+			"	cartoonRepr = structureComponent.addRepresentation('cartoon', {\r\n" + 
+			"		colorScheme: 'chainindex',\r\n" + 
+			"		colorScale : 'RdYlBu',\r\n" + 
+			"		aspectRatio : 5,\r\n" + 
+			"		quality : 'medium'\r\n" + 
+			"	});\r\n" + 
+			"\r\n" + 
+			"	stage.centerView();\r\n" + 
+			"\r\n" + 
+			"}"; 
+	
+	
+	
+	
     /**
      * Generates html page containing jmol aplet.
      * @param title title of the page
@@ -54,6 +81,7 @@ public class JmolPageGenerator
 		jmolPage.append("<!DOCTYPE html>");
 		jmolPage.append("<html>" + "\n");
 		jmolPage.append("<head>" + "\n");
+		jmolPage.append("<meta charset=\"utf-8\">");
 		jmolPage.append("<title>" + "\n");
 		jmolPage.append(title+"\n"); 
 		jmolPage.append("</title>" + "\n");
@@ -65,24 +93,27 @@ public class JmolPageGenerator
 
 		jmolPage.append(
 		
-		"<script>"+
+		"<script>\n"+
+		
+		NGL_JS_FUNCTIONS +
 
-		"if( !Detector.webgl ) Detector.addGetWebGLMessage();"+
+		"if( !Detector.webgl ) Detector.addGetWebGLMessage();\n"+
 
-		"NGL.mainScriptFilePath = \""+url3dmoljs+"\";"+
+		"NGL.mainScriptFilePath = \""+url3dmoljs+"\";\n"+
 
-		"function onInit(){"+
-		"	var stage = new NGL.Stage( \"viewport\" );"+
-		"	stage.loadFile( \""+fileUrl+"\", { defaultRepresentation: true } );"+
-		"}"+
+		"function onInit(){\n"+
+		"	var stage = new NGL.Stage( \"viewport\" );\n"+
+		"	stage.loadFile( \""+fileUrl+"\", { defaultRepresentation: false } )\n" +
+		"   .then(function(structComp) {initRepr(structComp) });\n"+
+		"}\n"+
 
-		"document.addEventListener( \"DOMContentLoaded\", function() {"+
-		"	NGL.init( onInit );"+
-		"} );"+
+		"document.addEventListener( \"DOMContentLoaded\", function() {\n"+
+		"	NGL.init( onInit );\n"+
+		"} );\n"+
 
-		"</script>"+
+		"</script>\n"+
 
-		"<div id=\"viewport\" style=\"width:"+size+"px; height:"+size+"px;\"></div>");
+		"<div id=\"viewport\" style=\"width:"+size+"px; height:"+size+"px;\"></div>\n");
 		
 //		jmolPage.append(
 //				"<div style=\"height: "+size+"px; width: "+size+"px; position: relative;\" "+
