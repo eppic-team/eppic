@@ -12,31 +12,7 @@ import eppic.model.ResidueBurialDB;
 public class JmolPageGenerator 
 {
 	
-	private static final String NGL_JS_FUNCTIONS = 
-			"function initRepr(structComp) {\r\n" + 
-			"\r\n" + 
-			"	structureComponent = structComp;\r\n" + 
-			"\r\n" + 
-			"	ligandRepr = structComp.addRepresentation('ball+stick', {\r\n" + 
-			"		color : 'element',\r\n" + 
-			"		scale : 3.0,\r\n" + 
-			"		aspectRatio : 1.3,\r\n" + 
-			"		sele : 'hetero and not (water or ion)' \r\n" + 
-			"	});			\r\n" + 
-			"\r\n" + 
-			"	cartoonRepr = structureComponent.addRepresentation('cartoon', {\r\n" + 
-			"		colorScheme: 'chainindex',\r\n" + 
-			"		colorScale : 'RdYlBu',\r\n" + 
-			"		aspectRatio : 5,\r\n" + 
-			"		quality : 'medium'\r\n" + 
-			"	});\r\n" + 
-			"\r\n" + 
-			"	stage.centerView();\r\n" + 
-			"\r\n" + 
-			"}\n\n"; 
-	
-	
-	
+	private static final String EPPIC_NGL_JS_FUNCTIONS = "/eppic_ngl.js";
 	
     /**
      * Generates html page containing jmol aplet.
@@ -87,6 +63,7 @@ public class JmolPageGenerator
 		jmolPage.append("</title>" + "\n");
 
 		jmolPage.append("<script src=\""+url3dmoljs+"\"></script> \n");
+		jmolPage.append("<script src=\""+EPPIC_NGL_JS_FUNCTIONS+"\"></script>\n");
 
 		jmolPage.append("</head>" + "\n");
 		jmolPage.append("<body>" + "\n");
@@ -95,8 +72,6 @@ public class JmolPageGenerator
 		
 		"<script>\n"+
 		
-		NGL_JS_FUNCTIONS +
-
 		"if( !Detector.webgl ) Detector.addGetWebGLMessage();\n"+
 
 		"NGL.mainScriptFilePath = \""+url3dmoljs+"\";\n"+
