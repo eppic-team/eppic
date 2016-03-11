@@ -33,7 +33,7 @@ public class JmolPageGenerator
 			"\r\n" + 
 			"	stage.centerView();\r\n" + 
 			"\r\n" + 
-			"}"; 
+			"}\n\n"; 
 	
 	
 	
@@ -94,6 +94,7 @@ public class JmolPageGenerator
 		jmolPage.append(
 		
 		"<script>\n"+
+		"var stage;" +
 		
 		NGL_JS_FUNCTIONS +
 
