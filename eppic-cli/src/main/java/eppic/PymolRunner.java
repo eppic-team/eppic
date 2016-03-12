@@ -68,8 +68,8 @@ public class PymolRunner {
 			chain2 = chain2+"_"+interf.getTransforms().getSecond().getTransformId();
 		}
 		
-		String color1 = MolViewersHelper.getHexChainColor(chain1);
-		String color2 = MolViewersHelper.getHexChainColor(chain2);
+		String color1 = MolViewersHelper.getHexChainColor(chain1, false);
+		String color2 = MolViewersHelper.getHexChainColor(chain2, false);
 		
 		List<String> command = new ArrayList<String>();
 		command.add(pymolExec.getAbsolutePath());
@@ -150,7 +150,7 @@ public class PymolRunner {
 			// the same identifiers given in Assembly.writeToMmCifFile()
 			String chain = v.getChainId()+"_"+v.getOpId();
 			chains[i] = chain;
-			colors[i] = MolViewersHelper.getHexChainColor(chain);
+			colors[i] = MolViewersHelper.getHexChainColor(chain, false);
 			i++;
 		}
 		
