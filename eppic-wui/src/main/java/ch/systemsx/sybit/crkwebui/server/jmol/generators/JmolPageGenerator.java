@@ -61,7 +61,7 @@ public class JmolPageGenerator
 		
 		"<script>\n"+
 
-		"var inputFile = "+fileUrl+";\n"+
+		"var inputFile = \""+fileUrl+"\";\n"+
 		
 		jsVariables +
 		
@@ -119,8 +119,8 @@ public class JmolPageGenerator
 			chains.add(chain1);
 			chains.add(chain2);
 
-			String color1 = MolViewersHelper.getHexChainColor(chain1);
-			String color2 = MolViewersHelper.getHexChainColor(chain2);
+			String color1 = MolViewersHelper.getHexChainColor(chain1, true);
+			String color2 = MolViewersHelper.getHexChainColor(chain2, true);
 
 			String colorCore1 = MolViewersHelper.getHexInterf1Color();
 			String colorCore2 = MolViewersHelper.getHexInterf2Color();
@@ -183,7 +183,7 @@ public class JmolPageGenerator
 	private static List<String> getColorsForChains(List<String> chains) {
 		List<String> colors = new ArrayList<>();
 		for (String chain:chains) {
-			colors.add(MolViewersHelper.getHexChainColor(chain));
+			colors.add(MolViewersHelper.getHexChainColor(chain, true));
 		}
 		
 		return colors;

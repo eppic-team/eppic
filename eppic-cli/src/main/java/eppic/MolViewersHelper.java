@@ -154,15 +154,16 @@ public class MolViewersHelper {
 	}
 	
 	/**
-	 * Get the hex color (0x-prefixed) understood by PyMOL or 3Dmol.js given a chainId
+	 * Get the hex color (0x or #-prefixed) understood by PyMOL or 3Dmol.js given a chainId
 	 * of the form &lt;chainIdString&gt;_&lt;opId&gt;, with chainIdString a String of 1 or 
 	 * more characters and opId an integer representing the operator identifier within the space group.
 	 * The first letter of chainIdString will be used to get one of a standard set of colors used by PyMOL
 	 * to color chains, if opId>0 then the color is darkened. 
 	 * @param chainId
+	 * @param hashPrefixed if true the color is prefixed with a '#', if false with a '0x'
 	 * @return
 	 */
-	public static String getHexChainColor(String chainId) {
+	public static String getHexChainColor(String chainId, boolean hashPrefixed) {
 		
 		
 		String chain = chainId;
@@ -191,8 +192,13 @@ public class MolViewersHelper {
 			color = darken(color);
 		}  
 
+		if (hashPrefixed) {
+			return toHexHash(color);
+		} else {
+			return toHex0x(color);	
+		}
 		
-		return toHex0x(color);
+		
 	}
 	
 	private static int getIndex(String chain) {
@@ -217,7 +223,6 @@ public class MolViewersHelper {
 		return "0x"+Integer.toHexString(col.getRGB() & 0xffffff);
 	}
 	
-	@SuppressWarnings("unused")
 	private static String toHexHash(Color col) {
 		return "#"+Integer.toHexString(col.getRGB() & 0xffffff);
 	}
