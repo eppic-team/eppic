@@ -84,11 +84,21 @@ public class JmolPageGenerator
 		return jmolPage.toString();
     }
 	
+	@SuppressWarnings("unused")
 	private static String getCommaSeparatedList(List<Residue> residues) {
 		StringBuilder sb = new StringBuilder();
 		for (int i=0;i<residues.size();i++){
 			sb.append(residues.get(i).getPdbResidueNumber());
 			if (i!=residues.size()-1) sb.append(',');
+		}
+		return sb.toString();
+	}
+	
+	private static String getOrSeparatedList(List<Residue> residues) {
+		StringBuilder sb = new StringBuilder();
+		for (int i=0;i<residues.size();i++){
+			sb.append(residues.get(i).getPdbResidueNumber());
+			if (i!=residues.size()-1) sb.append(" or ");
 		}
 		return sb.toString();
 	}
@@ -210,7 +220,7 @@ public class JmolPageGenerator
 	private static String getSeleVarStr(String varName, List<Residue> residues, String chain) {
 		if (residues==null || residues.isEmpty()) return "";
 		
-		return "var "+varName+"  = \""+getCommaSeparatedList(residues) + ":"+ chain + "\";\n";
+		return "var "+varName+"  = \"("+getOrSeparatedList(residues) + ") and :"+ chain + "\";\n";
 	}
 	
 	 
