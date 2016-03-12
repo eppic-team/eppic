@@ -39,28 +39,28 @@ function initRepr(structComp) {
 	
 	// from here the interface stuff that's only valid if interface vars are defined
 	
-	if (colorCore1!==undefined && seleCore1!==undefined) { 
+	if (typeof colorCore1!= 'undefined' && typeof seleCore1!= 'undefined') { 
 		core1Repr = structureComponent.addRepresentation('licorice', {
 			color : colorCore1,
 			sele: seleCore1
 		});
 	}
 
-	if (colorCore2!==undefined && seleCore2!==undefined) {
+	if (typeof colorCore2!= 'undefined' && typeof seleCore2!= 'undefined') {
 		core2Repr = structureComponent.addRepresentation('licorice', {
 			color : colorCore2,
 			sele: seleCore2
 		});
 	}
 
-	if (colorRim1!==undefined && seleRim1!==undefined) {
+	if (typeof colorRim1!= 'undefined' && typeof seleRim1!= 'undefined') {
 		rim1Repr = structureComponent.addRepresentation('licorice', {
 			color : colorRim1,
 			sele: seleRim1
 		});
 	}
 
-	if (colorRim2!==undefined && seleRim2!==undefined) {
+	if (typeof colorRim2!= 'undefined' && typeof seleRim2!= 'undefined') {
 		rim2Repr = structureComponent.addRepresentation('licorice', {
 			color : colorRim2,
 			sele: seleRim2

@@ -120,12 +120,20 @@ public class MolViewersHelper {
 		return col;
 	}
 
-	public static String getHexInterf1Color() {
-		return getHexColorCode0x(interf1color);
+	public static String getHexInterf1Color(boolean hashPrefixed) {
+		if (hashPrefixed) {
+			return getHexColorCode(interf1color);
+		} else {
+			return getHexColorCode0x(interf1color);
+		}
 	}
 
-	public static String getHexInterf2Color() {
-		return getHexColorCode0x(interf2color);
+	public static String getHexInterf2Color(boolean hashPrefixed) {
+		if (hashPrefixed) {
+			return getHexColorCode(interf2color);
+		} else {
+			return getHexColorCode0x(interf2color);
+		}
 	}
 	
 	public static String getChainColor(int index) {
@@ -220,11 +228,13 @@ public class MolViewersHelper {
 	}
 	
 	private static String toHex0x(Color col) {
-		return "0x"+Integer.toHexString(col.getRGB() & 0xffffff);
+		return String.format("0x%02x%02x%02x", col.getRed(), col.getGreen(), col.getBlue());
+		//return "0x"+Integer.toHexString(col.getRGB() & 0xffffff);
 	}
 	
 	private static String toHexHash(Color col) {
-		return "#"+Integer.toHexString(col.getRGB() & 0xffffff);
+		return String.format("#%02x%02x%02x", col.getRed(), col.getGreen(), col.getBlue());  
+		//return "#"+Integer.toHexString(col.getRGB() & 0xffffff);
 	}
 
 	private static Color darken(Color col) {

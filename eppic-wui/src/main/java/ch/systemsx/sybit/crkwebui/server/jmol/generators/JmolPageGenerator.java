@@ -122,8 +122,8 @@ public class JmolPageGenerator
 			String color1 = MolViewersHelper.getHexChainColor(chain1, true);
 			String color2 = MolViewersHelper.getHexChainColor(chain2, true);
 
-			String colorCore1 = MolViewersHelper.getHexInterf1Color();
-			String colorCore2 = MolViewersHelper.getHexInterf2Color();
+			String colorCore1 = MolViewersHelper.getHexInterf1Color(true);
+			String colorCore2 = MolViewersHelper.getHexInterf2Color(true);
 
 			List<Residue> coreResidues1 = new ArrayList<Residue>();
 			List<Residue> rimResidues1 = new ArrayList<Residue>();
@@ -147,15 +147,21 @@ public class JmolPageGenerator
 				}
 			}
 			
+			String seleCore1VarStr = getSeleVarStr("seleCore1", coreResidues1, chain1);
+			String seleCore2VarStr = getSeleVarStr("seleCore2", coreResidues2, chain2);
+			String seleRim1VarStr = getSeleVarStr("seleRim1", rimResidues1, chain1);
+			String seleRim2VarStr = getSeleVarStr("seleRim2", rimResidues2, chain2);
+
+			
 			coreRimSelectionVarsStr = 				
-					"	var colorCore1 = \""+colorCore1+"\";\n" + 
-					"	var colorCore2 = \""+colorCore2+"\";\n" + 
-					"	var seleCore1  = \""+getCommaSeparatedList(coreResidues1) + ":"+ chain1 + "\";\n" + 
-					"	var seleCore2  = \""+getCommaSeparatedList(coreResidues2) + ":"+ chain2 + "\";\n" + 
-					"	var colorRim1  = \""+color1+"\";\n" + 
-					"	var colorRim2  = \""+color2+"\";\n" + 
-					"	var seleRim1   = \""+getCommaSeparatedList(rimResidues1)+ ":"+ chain1 + "\";\n" + 
-					"	var seleRim2   = \""+getCommaSeparatedList(rimResidues2)+ ":"+ chain2 + "\";\n" ; 
+					"var colorCore1 = \""+colorCore1+"\";\n" + 
+					"var colorCore2 = \""+colorCore2+"\";\n" + 
+					seleCore1VarStr + 
+					seleCore2VarStr + 
+					"var colorRim1  = \""+color1+"\";\n" + 
+					"var colorRim2  = \""+color2+"\";\n" + 
+					seleRim1VarStr + 
+					seleRim2VarStr ; 
 
 		}
 		
@@ -173,8 +179,8 @@ public class JmolPageGenerator
 		
 		
 		return 
-				"   var chains     = " + toJsArray(chains) + ";\n" +
-				"   var colors     = " + toJsArray(getColorsForChains(chains)) + ";\n" +
+				"var chains     = " + toJsArray(chains) + ";\n" +
+				"var colors     = " + toJsArray(getColorsForChains(chains)) + ";\n" +
 				coreRimSelectionVarsStr;
 
 
@@ -199,6 +205,12 @@ public class JmolPageGenerator
 		sb.append("]");
 		return sb.toString();
 		
+	}
+	
+	private static String getSeleVarStr(String varName, List<Residue> residues, String chain) {
+		if (residues==null || residues.isEmpty()) return "";
+		
+		return "var "+varName+"  = \""+getCommaSeparatedList(residues) + ":"+ chain + "\";\n";
 	}
 	
 	 
