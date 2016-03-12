@@ -1,6 +1,7 @@
 package ch.systemsx.sybit.crkwebui.server.jmol.generators;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.shared.model.Assembly;
@@ -30,25 +31,13 @@ public class JmolPageGenerator
 		
 		
 		boolean isCif = true;
-		String dataTypeString = ""; // if neither of the 2 cases then we leave it blank so that 3dmol guesses
 		if (fileName.endsWith("cif")) {
-			dataTypeString = "data-type='cif' ";
 			isCif = true;
 		} else if (fileName.endsWith("pdb")) {
-			dataTypeString = "data-type='pdb' ";
 			isCif = false;
 		}
 		
-//		String selectionCode;
-//		if (interfData != null) {
-//			selectionCode = generateInterfaceSelection3dmolCode(interfData, isCif);
-//		} else if (assemblyData !=null ){
-//			selectionCode = generateAssemblySelection3dmolCode(assemblyData, isCif);
-//		} else {
-//			// a default that at least shows a cartoon
-//			return "data-style='cartoon'\n";
-//		}
-		
+		String jsVariables = generateSelectionVarsNgl(interfData, assemblyData, isCif);		
 		
 		StringBuffer jmolPage = new StringBuffer();
 
@@ -71,16 +60,14 @@ public class JmolPageGenerator
 		jmolPage.append(
 		
 		"<script>\n"+
+
+		"var inputFile = "+fileUrl+";\n"+
+		
+		jsVariables +
 		
 		"if( !Detector.webgl ) Detector.addGetWebGLMessage();\n"+
 
 		"NGL.mainScriptFilePath = \""+url3dmoljs+"\";\n"+
-
-		"function onInit(){\n"+
-		"	stage = new NGL.Stage( \"viewport\" );\n"+
-		"	stage.loadFile( \""+fileUrl+"\", { defaultRepresentation: false } )\n" +
-		"   .then(function(structComp) {initRepr(structComp) });\n"+
-		"}\n"+
 
 		"document.addEventListener( \"DOMContentLoaded\", function() {\n"+
 		"	NGL.init( onInit );\n"+
@@ -90,18 +77,6 @@ public class JmolPageGenerator
 
 		"<div id=\"viewport\" style=\"width:"+size+"px; height:"+size+"px;\"></div>\n");
 		
-//		jmolPage.append(
-//				"<div style=\"height: "+size+"px; width: "+size+"px; position: relative;\" "+
-//				"class='viewer_3Dmoljs' \n" +
-//				"data-href='"+fileUrl+"' data-backgroundcolor='0xffffff' "+
-//				dataTypeString +
-//				"\n"+
-//				
-//				selectionCode +
-//				
-//				">\n"+
-//				
-//				"</div>\n");
 		
 		jmolPage.append("</body>" + "\n");
 		jmolPage.append("</html>" + "\n");
@@ -118,106 +93,113 @@ public class JmolPageGenerator
 		return sb.toString();
 	}
 	
-	private static String generateInterfaceSelection3dmolCode(Interface interfData, boolean isCif) {
-		String chain1 = interfData.getChain1();		
-		String chain2 = interfData.getChain2(); 
-		///boolean isSymRelated = false;
+	private static String generateSelectionVarsNgl(Interface interfData, Assembly assemblyData, boolean isCif) {
 		
-		if (chain1.equals(chain2)) {
-			//isSymRelated = true;
-			if (isCif) {
-				// exactly as done in StructureInterface.toMMCIF()
-				chain2 = chain2 +"_"+ interfData.getOperatorId();
-			} else {
-				// exactly as done in StructureInterface.toPDB()
-				// NOTE this won't work with chain ids of more than 1 char
-				chain2 = Character.toString(MolViewersHelper.getNextLetter(chain1.charAt(0)));
-			}
-		}
+		List<String> chains = new ArrayList<>();
+		String coreRimSelectionVarsStr = "";
 		
-		String color1 = MolViewersHelper.getHexChainColor(chain1);
-		String color2 = MolViewersHelper.getHexChainColor(chain2);
-		
-		String colorCore1 = MolViewersHelper.getHexInterf1Color();
-		String colorCore2 = MolViewersHelper.getHexInterf2Color();
-				
-		List<Residue> coreResidues1 = new ArrayList<Residue>();
-		List<Residue> rimResidues1 = new ArrayList<Residue>();
-		List<Residue> coreResidues2 = new ArrayList<Residue>();
-		List<Residue> rimResidues2 = new ArrayList<Residue>();
-		
-		for (Residue residue:interfData.getResidues() ) {
+		if (interfData != null) {
+			String chain1 = interfData.getChain1();		
+			String chain2 = interfData.getChain2(); 
+			///boolean isSymRelated = false;
 			
-			if (residue.getRegion()==ResidueBurialDB.CORE_EVOLUTIONARY || residue.getRegion()==ResidueBurialDB.CORE_GEOMETRY) {
-				if (residue.getSide()==false) {
-					coreResidues1.add(residue);
-				} else if (residue.getSide()==true) {
-					coreResidues2.add(residue);
-				}
-			} else if (residue.getRegion()==ResidueBurialDB.RIM_EVOLUTIONARY) {
-				if (residue.getSide()==false) {
-					rimResidues1.add(residue);
-				} else if (residue.getSide()==true) {
-					rimResidues2.add(residue);
+
+			if (chain1.equals(chain2)) {
+				//isSymRelated = true;
+				if (isCif) {
+					// exactly as done in StructureInterface.toMMCIF()
+					chain2 = chain2 +"_"+ interfData.getOperatorId();
+				} else {
+					// exactly as done in StructureInterface.toPDB()
+					// NOTE this won't work with chain ids of more than 1 char
+					chain2 = Character.toString(MolViewersHelper.getNextLetter(chain1.charAt(0)));
 				}
 			}
+			
+			chains.add(chain1);
+			chains.add(chain2);
+
+			String color1 = MolViewersHelper.getHexChainColor(chain1);
+			String color2 = MolViewersHelper.getHexChainColor(chain2);
+
+			String colorCore1 = MolViewersHelper.getHexInterf1Color();
+			String colorCore2 = MolViewersHelper.getHexInterf2Color();
+
+			List<Residue> coreResidues1 = new ArrayList<Residue>();
+			List<Residue> rimResidues1 = new ArrayList<Residue>();
+			List<Residue> coreResidues2 = new ArrayList<Residue>();
+			List<Residue> rimResidues2 = new ArrayList<Residue>();
+
+			for (Residue residue:interfData.getResidues() ) {
+
+				if (residue.getRegion()==ResidueBurialDB.CORE_EVOLUTIONARY || residue.getRegion()==ResidueBurialDB.CORE_GEOMETRY) {
+					if (residue.getSide()==false) {
+						coreResidues1.add(residue);
+					} else if (residue.getSide()==true) {
+						coreResidues2.add(residue);
+					}
+				} else if (residue.getRegion()==ResidueBurialDB.RIM_EVOLUTIONARY) {
+					if (residue.getSide()==false) {
+						rimResidues1.add(residue);
+					} else if (residue.getSide()==true) {
+						rimResidues2.add(residue);
+					}
+				}
+			}
+			
+			coreRimSelectionVarsStr = 				
+					"	var colorCore1 = \""+colorCore1+"\";\n" + 
+					"	var colorCore2 = \""+colorCore2+"\";\n" + 
+					"	var seleCore1  = \""+getCommaSeparatedList(coreResidues1) + ":"+ chain1 + "\";\n" + 
+					"	var seleCore2  = \""+getCommaSeparatedList(coreResidues2) + ":"+ chain2 + "\";\n" + 
+					"	var colorRim1  = \""+color1+"\";\n" + 
+					"	var colorRim2  = \""+color2+"\";\n" + 
+					"	var seleRim1   = \""+getCommaSeparatedList(rimResidues1)+ ":"+ chain1 + "\";\n" + 
+					"	var seleRim2   = \""+getCommaSeparatedList(rimResidues2)+ ":"+ chain2 + "\";\n" ; 
+
 		}
-
+		
+		
+		if (assemblyData!=null) {
+			
+			String chainIdsString = assemblyData.getChainIdsString();
+			
+			if (chainIdsString!=null) {				
+				String[] chainIds = chainIdsString.split(",");
+				chains = Arrays.asList(chainIds);
+			}
+		} 
+		// else it stays empty and then the array var is empty
+		
+		
 		return 
-				// chain 1
-				"data-select1='chain:"+chain1+"' "+
-				"data-style1='cartoon:color="+color1+"' "+
-				"\n"+
+				"   var chains     = " + toJsArray(chains) + ";\n" +
+				"   var colors     = " + toJsArray(getColorsForChains(chains)) + ";\n" +
+				coreRimSelectionVarsStr;
 
-				// chain 2
-				"data-select2='chain:"+chain2+"' "+
-				"data-style2='cartoon:color="+color2+"' "+
-				"\n"+
-		
-				// core residues 1
-				"data-select3='resi:"+getCommaSeparatedList(coreResidues1)+";chain:"+chain1+"' "+
-				"data-style3='cartoon:color="+color1+";stick:color="+colorCore1+"' "+
-				"\n"+
-		
-				// rim residues 1
-				"data-select4='resi:"+getCommaSeparatedList(rimResidues1)+";chain:"+chain1+"' "+
-				"data-style4='cartoon:color="+color1+";stick:color="+color1+"' "+
-				"\n"+
-		
-				// core residues 2
-				"data-select5='resi:"+getCommaSeparatedList(coreResidues2)+";chain:"+chain2+"' "+
-				"data-style5='cartoon:color="+color2+";stick:color="+colorCore2+"' "+
-				"\n"+
-		
-				//rim residues 2
-				"data-select6='resi:"+getCommaSeparatedList(rimResidues2)+";chain:"+chain2+"' "+
-				"data-style6='cartoon:color="+color2+";stick:color="+color2+"' "+
-				"\n";
 
 	}
 	
-	private static String generateAssemblySelection3dmolCode(Assembly assemblyData, boolean isCif) {
-		String chainIdsString = assemblyData.getChainIdsString();
-		
-		
-		
-		if (chainIdsString!=null) {
-			StringBuilder sb = new StringBuilder();
-			String[] chainIds = chainIdsString.split(",");
-			
-			int i = 1;
-			for (String chainId:chainIds) {
-				sb.append(
-				"data-select"+i+"='chain:"+chainId+"' "+
-				"data-style"+i+"='cartoon:color="+MolViewersHelper.getHexChainColor(chainId)+"' "+
-				"\n");
-				i++;
-			}
-			
-			return sb.toString();
+	private static List<String> getColorsForChains(List<String> chains) {
+		List<String> colors = new ArrayList<>();
+		for (String chain:chains) {
+			colors.add(MolViewersHelper.getHexChainColor(chain));
 		}
 		
-		// no chainIds, simply cartoon with same color for all
-		return "data-style='cartoon'\n";
+		return colors;
 	}
+	
+	private static String toJsArray(List<String> list) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("[");
+		for (int i = 0; i<list.size(); i++) {		
+			if (i!=0) sb.append(", ");
+			sb.append("\""+list.get(i)+"\"");
+		}
+		sb.append("]");
+		return sb.toString();
+		
+	}
+	
+	 
 }
