@@ -13,22 +13,24 @@ import eppic.model.ResidueBurialDB;
 
 public class JmolPageGenerator 
 {
-	
+	/**
+	 * Note that the leading '/' is important in order to point to the in-war location (without it, it points to ewui/)
+	 */
 	private static final String EPPIC_NGL_JS_FUNCTIONS = "/eppic_ngl.js";
 	
     /**
-     * Generates html page containing jmol aplet.
+     * Generates html page containing the 3D viewer.
      * @param title title of the page
      * @param size 
      * @param serverUrl url to the server where jmol and results are stored
      * @param resultsLocation path to results on the server
      * @param fileName name of the cif file
      * @param interfData 
-     * @param url3dmoljs
+     * @param nglJsUrl
      * @return html page with jmol aplet
      */
 	public static String generatePage(String title, String size, String serverUrl, String resultsLocation,
-			String fileName, Interface interfData, Assembly assemblyData, String url3dmoljs)  {
+			String fileName, Interface interfData, Assembly assemblyData, String nglJsUrl)  {
 		
 		
 		boolean isCif = true;
@@ -55,7 +57,7 @@ public class JmolPageGenerator
 		jmolPage.append(title+"\n"); 
 		jmolPage.append("</title>" + "\n");
 
-		jmolPage.append("<script src=\""+url3dmoljs+"\"></script> \n");
+		jmolPage.append("<script src=\""+nglJsUrl+"\"></script> \n");
 		jmolPage.append("<script src=\""+EPPIC_NGL_JS_FUNCTIONS+"\"></script>\n");
 
 		jmolPage.append("</head>" + "\n");
@@ -65,6 +67,7 @@ public class JmolPageGenerator
 		
 		"<script>\n"+
 
+		// note that variable names must match those in file EPPIC_NGL_JS_FUNCTIONS
 		"var inputFile = \""+fileUrl+"\";\n"+
 		"var maxEntropy = "+String.format("%.4f",maxEntropy)+";\n"+
 		
@@ -72,7 +75,7 @@ public class JmolPageGenerator
 		
 		"if( !Detector.webgl ) Detector.addGetWebGLMessage();\n"+
 
-		"NGL.mainScriptFilePath = \""+url3dmoljs+"\";\n"+
+		"NGL.mainScriptFilePath = \""+nglJsUrl+"\";\n"+
 
 		"document.addEventListener( \"DOMContentLoaded\", function() {\n"+
 		"	NGL.init( onInit );\n"+
@@ -167,7 +170,7 @@ public class JmolPageGenerator
 			String seleRim1VarStr = getSeleVarStr("seleRim1", rimResidues1, chain1);
 			String seleRim2VarStr = getSeleVarStr("seleRim2", rimResidues2, chain2);
 
-			
+			// note that variable names must match those in file EPPIC_NGL_JS_FUNCTIONS
 			coreRimSelectionVarsStr = 				
 					"var colorCore1 = \""+colorCore1+"\";\n" + 
 					"var colorCore2 = \""+colorCore2+"\";\n" + 
@@ -192,7 +195,7 @@ public class JmolPageGenerator
 		} 
 		// else it stays empty and then the array var is empty
 		
-		
+		// note that variable names must match those in file EPPIC_NGL_JS_FUNCTIONS
 		return 
 				"var chains     = " + toJsArray(chains) + ";\n" +
 				"var colors     = " + toJsArray(getColorsForChains(chains)) + ";\n" +
