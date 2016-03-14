@@ -109,7 +109,8 @@ function toggleSurface() {
 }
 
 function nextSurface() {
-	if (surfaceOn) {
+	if (surfaceOn && chains.length>1) {
+		surf.dispose();
 		currentChainSurfIndex++;
 		if (currentChainSurfIndex==chains.length) currentChainSurfIndex = 0;
 		showSurface(chains[currentChainSurfIndex]);
