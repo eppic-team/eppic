@@ -99,6 +99,9 @@ public class TestJmolPageGenerator {
 		}
 		
 		
+		// checking that no string has 0x prefixing it (to make sure that colors are prefixed with # and not with 0x)
+		assertFalse(thepage.contains("0x"));
+		
 	}
 
 }

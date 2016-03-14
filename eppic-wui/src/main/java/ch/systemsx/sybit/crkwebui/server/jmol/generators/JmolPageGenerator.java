@@ -7,6 +7,7 @@ import java.util.List;
 import ch.systemsx.sybit.crkwebui.shared.model.Assembly;
 import ch.systemsx.sybit.crkwebui.shared.model.Interface;
 import ch.systemsx.sybit.crkwebui.shared.model.Residue;
+import eppic.EppicParams;
 import eppic.MolViewersHelper;
 import eppic.model.ResidueBurialDB;
 
@@ -37,7 +38,10 @@ public class JmolPageGenerator
 			isCif = false;
 		}
 		
-		String jsVariables = generateSelectionVarsNgl(interfData, assemblyData, isCif);		
+		String jsVariables = generateSelectionVarsNgl(interfData, assemblyData, isCif);	
+		
+		// we assume that the alphabet is the default (since in wui there's no way that user can change it)
+		double maxEntropy = Math.log(EppicParams.DEF_ENTROPY_ALPHABET.getNumLetters()) / Math.log(2);
 		
 		StringBuffer jmolPage = new StringBuffer();
 
@@ -62,6 +66,7 @@ public class JmolPageGenerator
 		"<script>\n"+
 
 		"var inputFile = \""+fileUrl+"\";\n"+
+		"var maxEntropy = "+String.format("%.4f",maxEntropy)+";\n"+
 		
 		jsVariables +
 		

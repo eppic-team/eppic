@@ -9,7 +9,7 @@ document.onkeypress = function (e) {
     e = e || window.event;
 
     if (e !== undefined && e.which == 112) { // 112 is p
-    	console.log("p was pressed, toggling surface");
+    	//console.log("p was pressed, toggling surface");
     	toggleSurface();
     }
     
@@ -121,9 +121,9 @@ function showSurface(chain) {
 	surf = structureComponent.addRepresentation('surface', {
 		colorScheme: 'bfactor',
 		//opacity: 0.7,
-		colorDomain: [2.58,0],
+		colorDomain: [maxEntropy, 0],
 		colorScale: 'roygb',
 		//surfaceType: 'sas',
-		sele: ':'+chain
+		sele: ':'+chain+" and polymer" // we need to select polymer only or otherwise water and ligands are also displayed
 	});
 }
