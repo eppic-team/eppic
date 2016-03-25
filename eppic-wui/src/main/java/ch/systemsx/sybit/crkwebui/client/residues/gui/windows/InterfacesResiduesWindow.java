@@ -111,7 +111,7 @@ public class InterfacesResiduesWindow extends ResizableWindow
 	{
 		NumberFormat number = NumberFormat.getFormat("0.00");
 		String formattedArea = number.format(area);
-		this.setHeadingHtml(AppPropertiesManager.CONSTANTS.interfaces_residues_window_title() + " " + selectedInterface + " (" + formattedArea + " A<sup>2</sup>)");
+		this.setHeadingHtml(AppPropertiesManager.CONSTANTS.interfaces_residues_window_title() + " " + selectedInterface + " (" + formattedArea + " &#8491;)");
 		
 		interfacesResiduesPanel.fillHeaders(firstChainName,
 											secondChainName);
