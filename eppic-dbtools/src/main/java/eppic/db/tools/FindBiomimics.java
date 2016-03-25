@@ -11,6 +11,8 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 
@@ -21,6 +23,7 @@ import org.biojava.nbio.core.alignment.SimpleProfile;
 import org.biojava.nbio.core.alignment.template.AlignedSequence;
 import org.biojava.nbio.core.alignment.template.Profile;
 import org.biojava.nbio.core.exceptions.CompoundNotFoundException;
+import org.biojava.nbio.core.sequence.AccessionID;
 import org.biojava.nbio.core.sequence.ProteinSequence;
 import org.biojava.nbio.core.sequence.compound.AminoAcidCompound;
 import org.biojava.nbio.core.util.ConcurrencyTools;
@@ -68,11 +71,7 @@ public class FindBiomimics {
 
 		// build alignment of all chains
 		profile = multipleAlignment(clusterMembers);
-		Map<ChainClusterDB,AlignedSequence<ProteinSequence, AminoAcidCompound>> alignedSeq = new HashMap<>();
-		for(int i=0;i<clusterMembers.size();i++) {
-			alignedSeq.put(clusterMembers.get(i), profile.getAlignedSequence(i+1));
-		}
-		logger.info("Alignment:\n{}",profile);
+		logger.info("Alignment:\n{}",profile.toString(120));
 
 		// Get list of all interfaces in that cluster
 		interfaces = initInterfaces(dbh,clusterMembers);
@@ -320,20 +319,35 @@ public class FindBiomimics {
 			String seq = clust.getPdbAlignedSeq();
 			seq = stripDashes(seq);
 			ProteinSequence prot = new ProteinSequence(seq);
+			AccessionID a = new AccessionID(String.format("%s.%s", clust.getPdbCode(), clust.getRepChain()) );
+			a.setIdentifier("1"); // Use alternate identifier to store index
+			prot.setAccession(a);
 			return new SimpleProfile<ProteinSequence, AminoAcidCompound>(prot);
 		} else if(clusterMembers.isEmpty()) {
 			throw new IllegalArgumentException("Empty cluster");
 		}
 		// Align all members
 		List<ProteinSequence> lst = new ArrayList<>();
+		int i=1;
 		for (ChainClusterDB clust : clusterMembers) {
 			String seq = clust.getPdbAlignedSeq();
 			seq = stripDashes(seq);
 			ProteinSequence prot = new ProteinSequence(seq);
+			AccessionID a = new AccessionID(String.format("%s.%s", clust.getPdbCode(), clust.getRepChain()) );
+			a.setIdentifier(Integer.toString(i)); // Use alternate identifier to store index
+			prot.setAccession(a);
+			i++;
 			lst.add(prot);
 		}
 		Profile<ProteinSequence, AminoAcidCompound> profile = Alignments.getMultipleSequenceAlignment(lst);
-		return profile;
+		// Reorder based on accessions
+		SortedMap<Integer, AlignedSequence<ProteinSequence, AminoAcidCompound>> sorted = new TreeMap<>();
+		for(AlignedSequence<ProteinSequence, AminoAcidCompound> seq : profile.getAlignedSequences()) {
+			int index = Integer.parseInt(seq.getAccession().getIdentifier());
+			sorted.put(index,seq);
+		}
+		Profile<ProteinSequence, AminoAcidCompound> sortedProfile = new SimpleProfile<ProteinSequence, AminoAcidCompound>(sorted.values());
+		return sortedProfile;
 	}
 
 	private static String stripDashes(String seq) {
