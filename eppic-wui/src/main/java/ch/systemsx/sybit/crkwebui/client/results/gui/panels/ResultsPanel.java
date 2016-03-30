@@ -11,6 +11,7 @@ import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.HTML;
@@ -30,8 +31,8 @@ public class ResultsPanel extends DisplayPanel
 	public static InformationPanel informationPanel;
 	
 	private VerticalLayoutContainer resultsContainer;	
-	private AssemblyResultsGridPanel assemblyResultsGridContainer;
-	private ResultsGridPanel resultsGridContainer;
+	public static AssemblyResultsGridPanel assemblyResultsGridContainer;
+	public static ResultsGridPanel resultsGridContainer;
 	private VerticalLayoutContainer mainContainer;
 	private HTML spacer;
 	public final static int ASSEMBLIES_VIEW = 1;

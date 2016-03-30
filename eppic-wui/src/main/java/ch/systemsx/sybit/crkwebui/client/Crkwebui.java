@@ -59,5 +59,6 @@ public class Crkwebui implements EntryPoint, ValueChangeHandler<String>
 	{
 		String historyToken = event.getValue();
 		mainController.displayView(historyToken);
+
 	}
 }
