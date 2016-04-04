@@ -6,6 +6,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import eppic.db.InterfaceCluster;
 import eppic.db.GlobalInterfaceCluster;
@@ -14,6 +16,7 @@ import eppic.db.PdbInfo;
 import eppic.db.GlobalPdbInfoCluster;
 import eppic.db.PdbInfoList;
 import eppic.db.SeqClusterLevel;
+import eppic.model.ChainClusterDB;
 import eppic.model.InterfaceDB;
 import eppic.model.PdbInfoDB;
 import gnu.getopt.Getopt;
@@ -122,7 +125,7 @@ public class ClusterCrystalForms {
 		if (!calcAllClusters) {
 			cfClustersFile = null;
 			interfClustersFile = null;
-			if (pdbString.length()<5) {
+			if (pdbString.length()<4) {
 				System.err.println("A PDB code + chain id have to be provided with -i, e.g. 1b8gA");
 				System.exit(1);
 			}
@@ -143,10 +146,28 @@ public class ClusterCrystalForms {
 		}
 		
 		if (!calcAllClusters) {
-			String pdbCode = pdbString.substring(0, 4);		
-			String repChain = pdbString.substring(4); 
+			Matcher match = Pattern.compile("^(....)\\.?(.*)$").matcher(pdbString);
+			if( !match.matches() ) {
+				System.err.println("Invalid PDB code: "+pdbString);
+				System.exit(1); return;
+			}
+			String pdbCode = match.group(1);
+			String repChain = match.group(2);
+			
+			// try to guess chain
+			if(repChain == null || repChain.isEmpty()) {
+				PdbInfoDB pdbInfo = dbh.deserializePdb(pdbCode);
+				List<ChainClusterDB> clusters = pdbInfo.getChainClusters();
+				// Handle single chain PDBs
+				repChain = clusters.get(0).getRepChain();
+				if(clusters.size() > 1) {
+					// Ambiguous chain
+					System.err.format("PDB %s contains %d unique chains. Please specify one, e.g. %s%s",pdbCode,clusters.size(),pdbCode,repChain);
+					System.exit(1); return;
+				}
+			}
 
-			int seqClusterId = dbh.getClusterIdForPdbCode(pdbCode, repChain, seqClusterLevel.getLevel());
+			int seqClusterId = dbh.getClusterIdForPdbCodeAndChain(pdbCode, repChain, seqClusterLevel.getLevel());
 			
 			if (seqClusterId==-1) {
 				System.err.println("Could not find sequence cluster (at "+seqClusterLevel.getLevel()+"%) for "+pdbCode+" and representative chain "+repChain);
