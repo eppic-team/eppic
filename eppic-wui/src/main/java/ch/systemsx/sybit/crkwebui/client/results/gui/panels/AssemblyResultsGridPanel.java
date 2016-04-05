@@ -40,6 +40,8 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.user.client.Cookies;
@@ -90,6 +92,7 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 	
 	public static ToolBar assembliesToolBar;
 	public static HTML assemblies_toolbar_link;
+	public static ComboBox<String> viewerSelectorBox;
 	
 	public AssemblyResultsGridPanel(int width)
 	{
@@ -123,8 +126,9 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 	private ToolBar createSelectorToolBar(){
 		assembliesToolBar = new ToolBar();
 		
-		ComboBox<String> viewerSelectorBox = createViewerTypeCombobox();
+		viewerSelectorBox = createViewerTypeCombobox();
 		viewerSelectorBox.setStyleName("eppic-default-label");
+
 		assembliesToolBar.add(new HTML(AppPropertiesManager.CONSTANTS.results_grid_viewer_combo_label()+":&nbsp;"));
 		assembliesToolBar.add(viewerSelectorBox);
 		assembliesToolBar.add(new HTML("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"));
@@ -452,8 +456,9 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 			}
 		});
 
-		store.add(AppPropertiesManager.CONSTANTS.viewer_local());
+		
 		store.add(AppPropertiesManager.CONSTANTS.viewer_jmol());
+		store.add(AppPropertiesManager.CONSTANTS.viewer_local());
 		//store.add(AppPropertiesManager.CONSTANTS.viewer_pse());
 
 		final ComboBox<String> viewerTypeComboBox = new ComboBox<String>(store, new LabelProvider<String>() {
@@ -470,6 +475,7 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 
 		viewerTypeComboBox.setToolTipConfig(createViewerTypeComboBoxToolTipConfig());
 		
+		//to set the default.
 		String viewerCookie = Cookies.getCookie("crkviewer");
 		if (viewerCookie != null) {
 			viewerTypeComboBox.setValue(viewerCookie);
@@ -484,8 +490,7 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 			public void onSelection(SelectionEvent<String> event) {
 				Cookies.setCookie("crkviewer", event.getSelectedItem());
 				ApplicationContext.setSelectedViewer(event.getSelectedItem());
-				
-			}
+			}			
 		});
 		
 		return viewerTypeComboBox;
