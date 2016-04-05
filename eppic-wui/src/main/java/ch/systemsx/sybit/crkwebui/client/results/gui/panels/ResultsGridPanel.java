@@ -756,6 +756,7 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 			@Override
 			public void onShowViewer(ShowViewerEvent event) 
 			{
+				
 				ViewerRunner.runViewer(String.valueOf(resultsGrid.getSelectionModel().getSelectedItem().getInterfaceId()));
 			}
 		}); 
