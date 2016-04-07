@@ -1,46 +1,47 @@
 package eppic.db;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
-public class InterfaceCluster implements Comparable<InterfaceCluster> {
+import eppic.model.InterfaceClusterDB;
+import eppic.model.InterfaceDB;
 
-	private int id;
-	
-	private HashSet<Interface> members;
-	
-	public InterfaceCluster(int id) {
-		this.id = id;
-		members = new HashSet<Interface>();
-	}
-	
-	public boolean addMember(Interface member) {
-		return members.add(member);
-	}
+/**
+ * A class to wrap an interface cluster within a PDB entry as extracted from the EPPIC database.
+ * It maps 1:1 to an InterfaceClusterDB
+ * 
+ * 
+ * @author Jose Duarte
+ *
+ */
+public class InterfaceCluster {
 
-	public int getId() {
-		return id;
-	}
+	private PdbInfo pdb;
 	
-	public Set<Interface> getMembers() {
-		return members;
-	}
+	private InterfaceClusterDB icDB;
+	private List<Interface> members;
 	
-	public boolean equals(Object o) {
-		if (!(o instanceof InterfaceCluster)) return false;
+	public InterfaceCluster(InterfaceClusterDB icDB, PdbInfo pdb) {
+		this.icDB = icDB;
+		this.pdb = pdb;
 		
-		InterfaceCluster other = (InterfaceCluster)o;
+		this.members = new ArrayList<>();
 		
-		return this.id==other.id;
+		for (InterfaceDB iDB:icDB.getInterfaces()) {
+			members.add(new Interface(iDB, this));
+			
+		}
 	}
 	
-	public int hashCode() {
-		return new Integer(id).hashCode();
+	public Interface getRepresentative() {
+		return members.get(0);
 	}
-
-	@Override
-	public int compareTo(InterfaceCluster o) {
-		
-		return new Integer(id).compareTo(o.id); 
+	
+	public PdbInfo getPdbInfo() {
+		return pdb;
+	}
+	
+	public InterfaceClusterDB getInterfaceClusterDB() {
+		return icDB;
 	}
 }

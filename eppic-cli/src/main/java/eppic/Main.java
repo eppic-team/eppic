@@ -333,12 +333,11 @@ public class Main {
 
 		if (!params.isGenerateModelSerializedFile()) {
 			// we only produce the interfaces.dat file if not in -w mode (for WUI not to produce so many files)
-			// TODO need everything in Biojava to be serializable for this to work
-//			try {
-//				Goodies.serialize(params.getOutputFile(EppicParams.INTERFACESDAT_FILE_SUFFIX),interfaces);
-//			} catch (IOException e) {
-//				throw new EppicException(e,"Couldn't write serialized ChainInterfaceList object to file: "+e.getMessage(),false);
-//			}
+			try {
+				Goodies.serialize(params.getOutputFile(EppicParams.INTERFACESDAT_FILE_SUFFIX),interfaces);
+			} catch (IOException e) {
+				throw new EppicException(e,"Couldn't write serialized StructureInterfaceList object to file: "+e.getMessage(),false);
+			}
 		}
 		
 	}
@@ -1027,7 +1026,9 @@ public class Main {
 		cecs.computeEntropies(params);
 		
 		if (!params.isGenerateModelSerializedFile()) {
-			// TODO to write the serialized file with Biojava we need to make everything Serializable
+			// TODO to write the serialized file with Biojava we need to make everything Serializable, 
+			//      including MANY classes related to alignments and sequences in core package, perhaps
+			//      we should just use our db model classes to serialize and give up on this
 			// we only produce the chainevolcontext.dat file if not in -w mode (for WUI not to produce so many files)
 			//try {
 			//	Goodies.serialize(params.getOutputFile(EppicParams.CHAINEVCONTEXTDAT_FILE_SUFFIX),cecs);

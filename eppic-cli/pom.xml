@@ -9,7 +9,7 @@
         <artifactId>eppic-cli</artifactId>
 
 	<properties>
-		<biojava.version>4.1.1-SNAPSHOT</biojava.version>
+		<biojava.version>4.2.0</biojava.version>
 	</properties>
 	
 	<repositories>
@@ -102,14 +102,14 @@
 		<dependency>
 			<groupId>org.jgrapht</groupId>
 			<artifactId>jgrapht-core</artifactId>
-			<version>0.9.1</version>
+			<version>0.9.2</version>
 		</dependency>
 
 		<!-- 2D graph visualization -->
 		<dependency>
 			<groupId>org.jgrapht</groupId>
 			<artifactId>jgrapht-ext</artifactId>
-			<version>0.9.1</version>
+			<version>0.9.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.tinyjee.jgraphx</groupId>

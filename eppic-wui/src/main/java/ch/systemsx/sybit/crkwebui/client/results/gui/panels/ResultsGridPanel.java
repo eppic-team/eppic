@@ -1,5 +1,6 @@
 package ch.systemsx.sybit.crkwebui.client.results.gui.panels;
 
+import java.awt.Window;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -25,6 +26,7 @@ import ch.systemsx.sybit.crkwebui.client.commons.handlers.WindowHideHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.managers.EventBusManager;
 import ch.systemsx.sybit.crkwebui.client.commons.managers.ViewerRunner;
 import ch.systemsx.sybit.crkwebui.client.commons.util.EscapedStringGenerator;
+import ch.systemsx.sybit.crkwebui.client.results.data.AssemblyItemModel;
 import ch.systemsx.sybit.crkwebui.client.results.data.InterfaceItemModel;
 import ch.systemsx.sybit.crkwebui.client.results.data.InterfaceItemModelProperties;
 import ch.systemsx.sybit.crkwebui.client.results.gui.cells.DetailsButtonCell;
@@ -100,6 +102,7 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 	
 	public static ToolBar toolBar;
 	public static HTML toolbar_link;
+	public static ComboBox<String> viewerSelectorBox;
 	
 	private static final InterfaceItemModelProperties props = GWT.create(InterfaceItemModelProperties.class);
 	
@@ -144,9 +147,10 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 	
 	private ToolBar createSelectorToolBar(){
 		toolBar = new ToolBar();
-		
-		ComboBox<String> viewerSelectorBox = createViewerTypeCombobox();
+
+		viewerSelectorBox = createViewerTypeCombobox();
 		viewerSelectorBox.setStyleName("eppic-default-label");
+
 		toolBar.add(new HTML(AppPropertiesManager.CONSTANTS.results_grid_viewer_combo_label()+":&nbsp;"));
 		toolBar.add(viewerSelectorBox);
 		toolBar.add(new HTML("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"));
@@ -155,24 +159,20 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 		toolBar.add(toolbar_link);
 		toolBar.add(new HTML("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"));		
 		
-		
 		clustersViewButton = new CheckBox();
 		clustersViewButton.setHTML(AppPropertiesManager.CONSTANTS.results_grid_clusters_label());
 		new ToolTip(clustersViewButton, new ToolTipConfig(AppPropertiesManager.CONSTANTS.results_grid_clusters_tooltip()));
 		//clustersViewButton.setValue(true);
 		clustersViewButton.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
-
+			
 			@Override
 			public void onValueChange(ValueChangeEvent<Boolean> event) {
-				onClustersRadioValueChange(event.getValue());
-				
+				onClustersRadioValueChange(event.getValue());				
 			}
 		});
 		clustersViewButton.setValue(false);
 		toolBar.add(clustersViewButton);
 
-		
-			
 		return toolBar;
 	}
 	
@@ -206,18 +206,36 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 		return configs;
 	}
 	
-	/**
-	 * Fills in the column with following settings:
-	 * width - taken from grid.properties
-	 * header - taken from grid.properties
-	 * tooltip - taken from grid.properties
-	 * styles, alignment
-	 * @param column
-	 * @param type
-	 */
+
+	
 	private void fillColumnSettings(ColumnConfig<InterfaceItemModel, ?> column, String type){
 		column.setColumnHeaderClassName("eppic-default-font");
-		column.setWidth(Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("results_"+type+"_width")));
+		
+		//this was the old way of getting column widths
+		//column.setWidth(Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("results_"+type+"_width")));
+		
+		//the sum of total column width of all the columns as configured in grid.properties
+		float TOTAL_COLUMN_WIDTH = 865;
+		
+		//standard screen size by default
+		float ACTUAL_SCREEN_SIZE = 870;
+
+		try {
+			ACTUAL_SCREEN_SIZE = Integer.parseInt(this.width.replace("px", "")); //actual size of the screen in user's browser
+		}catch(Exception e) {}
+		
+		float preconfiguredColumnSize = 0;
+		float columnWidth = 0;
+
+		try{
+			preconfiguredColumnSize = Float.parseFloat(ApplicationContext.getSettings().getGridProperties().get("results_"+type+"_width"));
+		}catch (Exception e) {}
+		if (ACTUAL_SCREEN_SIZE > TOTAL_COLUMN_WIDTH)
+			columnWidth = (preconfiguredColumnSize / TOTAL_COLUMN_WIDTH) * ACTUAL_SCREEN_SIZE;
+		
+		int columnWidthInt = Math.round(columnWidth);
+		column.setWidth(columnWidthInt);
+		
 		column.setHeader(EscapedStringGenerator.generateSafeHtml(
 				ApplicationContext.getSettings().getGridProperties().get("results_"+type+"_header")));
 		
@@ -228,7 +246,7 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 		column.setColumnTextClassName("eppic-results-grid-common-cells");
 		column.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 		column.setMenuDisabled(true);
-	}
+	}	
 	
 	private SummaryColumnConfig<InterfaceItemModel, String> getWarningsColumn() {
 		SummaryColumnConfig<InterfaceItemModel, String> column = 
@@ -382,6 +400,7 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 		resultsGrid.getView().setStripeRows(true);
 		resultsGrid.getView().setColumnLines(false);
 		resultsGrid.getView().setForceFit(true);
+		
 		//resultsGrid.setContextMenu(new ResultsPanelContextMenu());
 		
 		resultsGrid.getView().setEmptyText(AppPropertiesManager.CONSTANTS.no_interfaces_found_text());
@@ -610,6 +629,7 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 	 */
 	private ComboBox<String> createViewerTypeCombobox()
 	{
+
 		ListStore<String> store = new ListStore<String>(new ModelKeyProvider<String>() {
 			@Override
 			public String getKey(String item) {
@@ -617,8 +637,8 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 			}
 		});
 
-		store.add(AppPropertiesManager.CONSTANTS.viewer_local());
 		store.add(AppPropertiesManager.CONSTANTS.viewer_jmol());
+		store.add(AppPropertiesManager.CONSTANTS.viewer_local());
 		//store.add(AppPropertiesManager.CONSTANTS.viewer_pse());
 
 		final ComboBox<String> viewerTypeComboBox = new ComboBox<String>(store, new LabelProvider<String>() {
@@ -635,6 +655,7 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 
 		viewerTypeComboBox.setToolTipConfig(createViewerTypeComboBoxToolTipConfig());
 		
+		//to set the default combo value
 		String viewerCookie = Cookies.getCookie("crkviewer");
 		if (viewerCookie != null) {
 			viewerTypeComboBox.setValue(viewerCookie);
@@ -649,7 +670,6 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 			public void onSelection(SelectionEvent<String> event) {
 				Cookies.setCookie("crkviewer", event.getSelectedItem());
 				ApplicationContext.setSelectedViewer(event.getSelectedItem());
-				
 			}
 		});
 		
@@ -736,6 +756,7 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 			@Override
 			public void onShowViewer(ShowViewerEvent event) 
 			{
+				
 				ViewerRunner.runViewer(String.valueOf(resultsGrid.getSelectionModel().getSelectedItem().getInterfaceId()));
 			}
 		}); 

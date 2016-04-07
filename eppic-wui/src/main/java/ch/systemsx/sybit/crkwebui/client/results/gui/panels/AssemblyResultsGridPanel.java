@@ -40,10 +40,13 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.History;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.sencha.gxt.cell.core.client.form.ComboBoxCell.TriggerAction;
@@ -89,6 +92,7 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 	
 	public static ToolBar assembliesToolBar;
 	public static HTML assemblies_toolbar_link;
+	public static ComboBox<String> viewerSelectorBox;
 	
 	public AssemblyResultsGridPanel(int width)
 	{
@@ -122,8 +126,9 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 	private ToolBar createSelectorToolBar(){
 		assembliesToolBar = new ToolBar();
 		
-		ComboBox<String> viewerSelectorBox = createViewerTypeCombobox();
+		viewerSelectorBox = createViewerTypeCombobox();
 		viewerSelectorBox.setStyleName("eppic-default-label");
+
 		assembliesToolBar.add(new HTML(AppPropertiesManager.CONSTANTS.results_grid_viewer_combo_label()+":&nbsp;"));
 		assembliesToolBar.add(viewerSelectorBox);
 		assembliesToolBar.add(new HTML("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"));
@@ -171,7 +176,32 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 	 */
 	private void fillColumnSettings(ColumnConfig<AssemblyItemModel, ?> column, String type){
 		column.setColumnHeaderClassName("eppic-default-font");
-		column.setWidth(Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("assembly_results_"+type+"_width")));
+		
+		//this was the old way of getting column widths
+		//column.setWidth(Integer.parseInt(ApplicationContext.getSettings().getGridProperties().get("assembly_results_"+type+"_width")));
+		
+		//the sum of total column width of all the columns as configured in grid.properties
+		float TOTAL_COLUMN_WIDTH = 535;
+		
+		//standard screen size by default
+		float ACTUAL_SCREEN_SIZE = 800;
+
+		try {
+			ACTUAL_SCREEN_SIZE = Integer.parseInt(this.width.replace("px", "")); //actual size of the screen in user's browser
+		}catch(Exception e) {}
+		
+		float preconfiguredColumnSize = 0;
+		float columnWidth = 0;
+
+		try{
+			preconfiguredColumnSize = Float.parseFloat(ApplicationContext.getSettings().getGridProperties().get("assembly_results_"+type+"_width"));
+		}catch (Exception e) {}
+		if (ACTUAL_SCREEN_SIZE > TOTAL_COLUMN_WIDTH)
+			columnWidth = (preconfiguredColumnSize / TOTAL_COLUMN_WIDTH) * ACTUAL_SCREEN_SIZE;
+		
+		int columnWidthInt = Math.round(columnWidth);
+		column.setWidth(columnWidthInt);
+		
 		column.setHeader(EscapedStringGenerator.generateSafeHtml(
 				ApplicationContext.getSettings().getGridProperties().get("assembly_results_"+type+"_header")));
 		
@@ -182,8 +212,9 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 		column.setColumnTextClassName("eppic-results-grid-common-cells");
 		column.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 		column.setMenuDisabled(true);
-	}
-
+	}	
+	
+	
 	private SummaryColumnConfig<AssemblyItemModel, Integer> getIdColumn() {
 		SummaryColumnConfig<AssemblyItemModel, Integer> idColumn = 
 				new SummaryColumnConfig<AssemblyItemModel, Integer>(props.assemblyId());
@@ -425,8 +456,9 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 			}
 		});
 
-		store.add(AppPropertiesManager.CONSTANTS.viewer_local());
+		
 		store.add(AppPropertiesManager.CONSTANTS.viewer_jmol());
+		store.add(AppPropertiesManager.CONSTANTS.viewer_local());
 		//store.add(AppPropertiesManager.CONSTANTS.viewer_pse());
 
 		final ComboBox<String> viewerTypeComboBox = new ComboBox<String>(store, new LabelProvider<String>() {
@@ -443,6 +475,7 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 
 		viewerTypeComboBox.setToolTipConfig(createViewerTypeComboBoxToolTipConfig());
 		
+		//to set the default.
 		String viewerCookie = Cookies.getCookie("crkviewer");
 		if (viewerCookie != null) {
 			viewerTypeComboBox.setValue(viewerCookie);
@@ -457,8 +490,7 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 			public void onSelection(SelectionEvent<String> event) {
 				Cookies.setCookie("crkviewer", event.getSelectedItem());
 				ApplicationContext.setSelectedViewer(event.getSelectedItem());
-				
-			}
+			}			
 		});
 		
 		return viewerTypeComboBox;

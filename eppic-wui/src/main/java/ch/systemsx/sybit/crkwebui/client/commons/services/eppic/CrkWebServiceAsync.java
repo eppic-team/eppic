@@ -3,11 +3,11 @@ package ch.systemsx.sybit.crkwebui.client.commons.services.eppic;
 import java.util.HashMap;
 import java.util.List;
 
+import ch.systemsx.sybit.crkwebui.shared.helpers.PDBSearchResult;
 import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
 import ch.systemsx.sybit.crkwebui.shared.model.Residue;
 import ch.systemsx.sybit.crkwebui.shared.model.ResiduesList;
 import ch.systemsx.sybit.crkwebui.shared.model.JobsForSession;
-import ch.systemsx.sybit.crkwebui.shared.model.PDBSearchResult;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingData;
 import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
 

@@ -65,9 +65,10 @@ import ch.systemsx.sybit.crkwebui.client.results.gui.panels.ResultsGridPanel;
 import ch.systemsx.sybit.crkwebui.client.results.gui.panels.ResultsPanel;
 import ch.systemsx.sybit.crkwebui.client.results.gui.panels.StatusPanel;
 import ch.systemsx.sybit.crkwebui.client.search.gui.panels.SearchPanel;
+import ch.systemsx.sybit.crkwebui.shared.helpers.ExperimentalWarnings;
+import ch.systemsx.sybit.crkwebui.shared.helpers.PDBSearchResult;
 import ch.systemsx.sybit.crkwebui.shared.model.Assembly;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceCluster;
-import ch.systemsx.sybit.crkwebui.shared.model.PDBSearchResult;
 import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
 import ch.systemsx.sybit.shared.model.InputType;
@@ -77,6 +78,7 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.i18n.client.NumberFormat;
+import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
@@ -131,7 +133,7 @@ public class MainController
 			// if resolution >=99 don't display Resolution
 			double resolution = resultsData.getResolution();
 			if(resolution < 99)
-				html_experiment_info += "&nbsp;&nbsp;&nbsp;&nbsp;<span class='eppic-general-info-label-new'>" + AppPropertiesManager.CONSTANTS.info_panel_resolution() + "</span> <span class='eppic-general-info-label-value-new'>" + NumberFormat.getFormat("0.0").format(resultsData.getResolution()) + "</span>";
+				html_experiment_info += "&nbsp;&nbsp;&nbsp;&nbsp;<span class='eppic-general-info-label-new'>" + AppPropertiesManager.CONSTANTS.info_panel_resolution() + " </span> <span class='eppic-general-info-label-value-new'>" + NumberFormat.getFormat("0.0").format(resultsData.getResolution()) + " &#8491;</span>";
 			
 			//if Rfree>=1 don't display Rfree
 			double rfree = Double.parseDouble(NumberFormat.getFormat("0.00").format(resultsData.getRfreeValue()));
@@ -174,8 +176,7 @@ public class MainController
 				for(InterfaceCluster ic : clusters){
 					num_interfaces += ic.getInterfaces().size();
 				}
-				if(ApplicationContext.getSelectedViewType() == ResultsPanel.ASSEMBLIES_VIEW){
-					///show the assemblies view 
+				if(ApplicationContext.getSelectedViewType() == ResultsPanel.ASSEMBLIES_VIEW){					
 					displayResultView(event.getPdbScoreItem(), ResultsPanel.ASSEMBLIES_VIEW); //the new default view
 					ResultsPanel.headerPanel.pdbIdentifierPanel.informationLabel.setHTML("Assembly Analysis of: ");
 					//only show a link for precomputed jobs
@@ -186,11 +187,12 @@ public class MainController
 					ResultsPanel.informationPanel.assemblyInfoPanel.setHeadingHtml("General Information " + ApplicationContext.getPdbInfo().getInputName());											
 					ResultsPanel.informationPanel.assemblyInfoPanel.assembly_info.setHTML("<table cellpadding=0 cellspacing=0><tr><td width='150px'><span class='eppic-general-info-label-new'>Assemblies</span></td><td><span class='eppic-general-info-label-value-new'>" + ApplicationContext.getPdbInfo().getAssemblies().size() + "</span></td></tr><tr><td><span class='eppic-general-info-label-new'>Interfaces</span></td><td><span class='eppic-general-info-label-value-new'><a href='" + GWT.getHostPageBaseURL() + "#interfaces/"+ApplicationContext.getSelectedJobId()+"'>" + num_interfaces + "</a></span></td></tr><tr><td><span class='eppic-general-info-label-new'>Interface clusters</span></td><td><span class='eppic-general-info-label-value-new'><a href='" + GWT.getHostPageBaseURL() + "#clusters/"+ApplicationContext.getSelectedJobId()+"'>" + ApplicationContext.getPdbInfo().getInterfaceClusters().size()+"</a></span></td></tr></table>");	
 					ResultsPanel.informationPanel.removeTopologyPanel(ApplicationContext.getPdbInfo());
-					setExperimentalInfo();					
+					setExperimentalInfo();	
+					ResultsPanel.assemblyResultsGridContainer.viewerSelectorBox.setValue(ApplicationContext.getSelectedViewer());
 				}else if(ApplicationContext.getSelectedViewType() == ResultsPanel.INTERFACES_VIEW){
-					//show the interfaces view
 					displayResultView(event.getPdbScoreItem(), ResultsPanel.INTERFACES_VIEW);
-					if(ApplicationContext.getSelectedAssemblyId() == -1){
+					//if(ApplicationContext.getSelectedAssemblyId() == -1){
+					if(ApplicationContext.getSelectedAssemblyId() == -1 || ApplicationContext.getSelectedAssemblyId() == 0){
 						ResultsPanel.headerPanel.pdbIdentifierPanel.informationLabel.setHTML("All Interfaces of: ");
 						//only show a link for precomputed jobs
 						if(ApplicationContext.getPdbInfo().getInputType() == InputType.PDBCODE.getIndex()) //precomputed
@@ -210,6 +212,7 @@ public class MainController
 						}	
 						ResultsPanel.informationPanel.removeTopologyPanel(ApplicationContext.getPdbInfo());						
 						setExperimentalInfo();
+						ResultsPanel.resultsGridContainer.viewerSelectorBox.setValue(ApplicationContext.getSelectedViewer());
 					}else{
 						ResultsPanel.headerPanel.pdbIdentifierPanel.informationLabel.setHTML("Interface Analysis of: Assembly " + ApplicationContext.getSelectedAssemblyId() + " in ");
 						if(ApplicationContext.getPdbInfo().getInputType() == InputType.PDBCODE.getIndex()) //precomputed
@@ -724,8 +727,7 @@ public class MainController
 	 * @param resultData results of processing
 	 */
 	private void displayResultView(PdbInfo resultData, int viewType)
-	{
-		
+	{		
 		ApplicationContext.setDoStatusPanelRefreshing(false);
 
 		ResultsPanel resultsPanel = null;
@@ -761,6 +763,7 @@ public class MainController
 		}
 		EventBusManager.EVENT_BUS.fireEvent(new GetFocusOnJobsListEvent());
 		Window.setTitle(resultData.getTruncatedInputName() + " - " + AppPropertiesManager.CONSTANTS.window_title_results() );
+
 	}
 	
 	/**

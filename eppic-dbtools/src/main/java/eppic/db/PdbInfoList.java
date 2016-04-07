@@ -6,12 +6,26 @@ import java.util.List;
 
 import eppic.model.PdbInfoDB;
 
+/**
+ * A container for a list of PDB structures coming from database.
+ * Used to hold a set of PDB structures coming from the same sequence cluster in 
+ * order to compare their lattices.
+ * 
+ * @author Jose Duarte
+ *
+ */
 public class PdbInfoList {
 	
 	private List<PdbInfo> pdbList;
 	private boolean debug;
+	
+	/**
+	 * The minimum area to consider an interface for comparisons. Interfaces below this area
+	 * will not be used for comparing lattices.
+	 */
+	private double minArea;
 
-	private HashMap<Integer, Interface> interfaceLookup;
+	private HashMap<Integer, InterfaceCluster> interfaceLookup;
 	private HashMap<Integer, Integer> offsets;
 	
 	public PdbInfoList(List<PdbInfoDB> pdbInfoList) {
@@ -21,9 +35,13 @@ public class PdbInfoList {
 		}		
 	}
 	
-	public LatticeComparisonGroup calcLatticeOverlapMatrix(SeqClusterLevel seqClusterLevel, double coCutoff, double minArea) {
+	public void setMinArea(double minArea) {
+		this.minArea = minArea;
+	}
+	
+	public LatticeComparisonGroup calcLatticeOverlapMatrix(SeqClusterLevel seqClusterLevel, double coCutoff) { 
 		
-		LatticeComparisonGroup cfCompare = new LatticeComparisonGroup(this, minArea);
+		LatticeComparisonGroup cfCompare = new LatticeComparisonGroup(this);
 		
 		for (int i=0;i<pdbList.size();i++) {
 			for (int j=0;j<pdbList.size();j++) {
@@ -48,16 +66,16 @@ public class PdbInfoList {
 		return pdbList.get(i);
 	}
 	
-	public int getNumInterfaces(double minArea) {
-		interfaceLookup = new HashMap<Integer, Interface>();
+	public int getNumInterfaceClusters() {
+		interfaceLookup = new HashMap<Integer, InterfaceCluster>();
 		offsets = new HashMap<Integer, Integer>();
 		
 		int count = 0;
 		int i = 0;
 		for (PdbInfo pdb:this.pdbList) {
 			offsets.put(i,count);
-			for (Interface interf: pdb.getInterfacesAboveArea(minArea)) {
-				interfaceLookup.put(count, interf);
+			for (InterfaceCluster interfCluster: pdb.getInterfaceClustersAboveArea(minArea)) {
+				interfaceLookup.put(count, interfCluster);
 				count++;
 			}			
 			i++;
@@ -65,16 +83,26 @@ public class PdbInfoList {
 		return count;
 	}
 	
-	public Interface getInterface (double minArea, int i) {
-		
-		if (interfaceLookup==null) getNumInterfaces(minArea);
+	/**
+	 * Given an index in the all-interfaceClusters list returns the corresponding interfaceCluster
+	 * @param i
+	 * @return
+	 */
+	public InterfaceCluster getInterfaceCluster (int i) {
+		 
+		if (interfaceLookup==null) getNumInterfaceClusters();
 		
 		return interfaceLookup.get(i);
 	}
 	
-	public int getOffset(double minArea, int i) {
+	/**
+	 * Given an index in this PdbInfoList corresponding to a PdbInfo, returns the index of first interfaceCluster for that PdbInfo in the all-interfaceClusters list
+	 * @param i
+	 * @return
+	 */
+	public int getOffset(int i) {
 		
-		if (interfaceLookup==null) getNumInterfaces(minArea);
+		if (interfaceLookup==null) getNumInterfaceClusters();
 		
 		return offsets.get(i);
 	}

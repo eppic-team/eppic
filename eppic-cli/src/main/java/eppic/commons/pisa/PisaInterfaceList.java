@@ -87,7 +87,7 @@ public class PisaInterfaceList implements Iterable<PisaInterface> {
 	 * @throws IllegalArgumentException if the pdb code of given pdb does not match this PisaInterface's code
 	 */
 	public StructureInterfaceList convertToChainInterfaceList(Structure pdb) {
-		if (!pdb.getPdbId().equals(this.pdbCode)) {
+		if (!pdb.getPDBCode().equals(this.pdbCode)) {
 			throw new IllegalArgumentException("Pdb code of given PdbAsymUnit does not match pdb code from PISA");
 		}
 		StructureInterfaceList interfList = new StructureInterfaceList();

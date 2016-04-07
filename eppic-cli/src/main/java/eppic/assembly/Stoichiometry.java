@@ -162,7 +162,46 @@ public class Stoichiometry {
 		return nonzero;
 	}
 	
+	/**
+	 * Return a string representation of the Stoichiometry where each entity is represented as 
+	 * sequential letters: A, ... Z, AA, AB, ... AZ, BA, BB, ... ZZ
+	 * Thus the letters have no relation to the actual chain identifiers. 
+	 * @return
+	 */
 	public String toFormattedString() {
+		StringBuilder stoSb = new StringBuilder();
+
+		for (int i=0;i<getNumEntities();i++){
+			
+			if (sto[i]>0) {
+				stoSb.append(indexToLetters(i));			
+				if (sto[i]>1) stoSb.append(sto[i]); // for A1B1 we do AB (we ommit 1s)
+			}
+			
+		}
+		return stoSb.toString();
+	}
+	
+	private static String indexToLetters(int i) {
+		
+		// ascii A==65, Z==90, 26 letters in total
+		
+		char l0 = (char) (65 + (i%26));
+		//char l1 = 
+		String l1 = "";
+		if (i>=26)
+			l1 = Character.toString( (char) (65 + i/26 - 1) );
+		
+		return l1 + l0;
+	}
+
+
+	/**
+	 * Return a string representation of the Stouchiometry where each entity is represented by its 
+	 * representative (for the entity/chain cluster) chain identifier.
+	 * @return
+	 */
+	public String toFormattedCompositionRepChainIdString() {
 		StringBuilder stoSb = new StringBuilder();
 		
 		for (int i=0;i<getNumEntities();i++){
@@ -175,7 +214,8 @@ public class Stoichiometry {
 	}
 	
 	/**
-	 * 
+	 * Return a string representation of the Stoichiometry where each entity is represented by its 
+	 * chain identifier. 
 	 * @return A string representing the chain composition, e.g. "A2B"
 	 */
 	public String toFormattedCompositionString() {
@@ -260,5 +300,11 @@ public class Stoichiometry {
 		}
 		return result;
 		
+	}
+	
+	public static void main (String[] args) {
+		for (int i=0;i<200;i++) {
+			System.out.print(indexToLetters(i)+",");
+		}
 	}
 }

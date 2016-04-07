@@ -20,8 +20,6 @@ public class AssemblyScore implements Serializable {
 	private String callReason;
 	
 	
-	private Assembly assembly;
-	
 	public AssemblyScore() {
 		
 	}
@@ -50,14 +48,6 @@ public class AssemblyScore implements Serializable {
 		this.confidence = confidence;
 	}
 
-	public Assembly getAssembly() {
-		return assembly;
-	}
-
-	public void setAssembly(Assembly assembly) {
-		this.assembly = assembly;
-	}
-	
 	public String getCallName() {
 		return callName;
 	}

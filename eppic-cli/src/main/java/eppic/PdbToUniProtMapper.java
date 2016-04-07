@@ -1,5 +1,6 @@
 package eppic;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -24,7 +25,9 @@ import org.slf4j.LoggerFactory;
 import eppic.commons.sequence.UnirefEntry;
 import eppic.commons.util.Interval;
 
-public class PdbToUniProtMapper {
+public class PdbToUniProtMapper implements Serializable {
+
+	private static final long serialVersionUID = 1L;
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(PdbToUniProtMapper.class);
 	

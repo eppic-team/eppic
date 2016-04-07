@@ -342,6 +342,27 @@ public class SubAssembly {
 		
 		return sb.toString();
 	}
+	
+	/**
+	 * Returns the description corresponding to this AssemblyGraph as a list 
+	 * of AssemblyDescriptions per disjoint set.
+	 * @return
+	 */
+	public AssemblyDescription getDescription() {
+		
+		String symString = PointGroupSymmetry.UNKNOWN;
+		if (getSymmetry()!=null) symString = getSymmetry().toString();
+
+		AssemblyDescription ad = 
+				new AssemblyDescription(
+						getStoichiometry().getTotalSize(), 
+						symString, 
+						getStoichiometry().toFormattedCompositionString(), 
+						getStoichiometry().toFormattedCompositionRepChainIdString(),
+						getStoichiometry().toFormattedString(), 
+						getChainIdsString());
+		return ad;
+	}
 
 	public String toString() {
 		return "(Stoichiometry:"+ sto.toString() + " - " +

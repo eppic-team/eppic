@@ -10,8 +10,19 @@ public class AssemblyContentDB implements Serializable {
 	private String pdbCode;
 	private int mmSize;
 	private String symmetry;
+	
+	/**
+	 * Composition based on sequential letters, A, ... Z, AA, ..., AZ, BA, ... ZZ
+	 */
 	private String stoichiometry;
+	/**
+	 * Composition based on chain ids
+	 */
 	private String composition;
+	/**
+	 * Composition based on representative chain ids
+	 */
+	private String compositionRepChainIds;
 	
 	private String chainIds; // comma separated list of chainId+_+opId belonging to assembly
 	
@@ -63,6 +74,14 @@ public class AssemblyContentDB implements Serializable {
 
 	public void setComposition(String composition) {
 		this.composition = composition;
+	}
+
+	public String getCompositionRepChainIds() {
+		return compositionRepChainIds;
+	}
+
+	public void setCompositionRepChainIds(String compositionRepChainIds) {
+		this.compositionRepChainIds = compositionRepChainIds;
 	}
 
 	public String getChainIds() {

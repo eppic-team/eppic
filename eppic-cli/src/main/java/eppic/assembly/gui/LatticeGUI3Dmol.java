@@ -97,7 +97,7 @@ public class LatticeGUI3Dmol {
 		}
 		this.strucURI = strucURI;
 		//TODO support custom files
-		pdbId = struc.getPdbId();
+		pdbId = struc.getPDBCode();
 		if(pdbId == null || pdbId.length() != 4) {
 			pdbId = struc.getName();
 		}

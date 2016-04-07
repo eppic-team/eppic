@@ -9,17 +9,27 @@ import org.biojava.nbio.structure.contact.Pair;
 
 import eppic.model.InterfaceDB;
 
+/**
+ * A class to wrap an Interface as extracted from the EPPIC database.
+ * 
+ * Maps 1:1 to an InterfaceDB.
+ * 
+ * 
+ * @author Jose Duarte
+ *
+ */
 public class Interface {
 
 	public static final int FIRST = 0;
 	public static final int SECOND = 1;
 	
 	private InterfaceDB interf;
-	private PdbInfo pdb;
+	private InterfaceCluster ic;
 	
-	public Interface(InterfaceDB interf, PdbInfo pdb) {
+	
+	public Interface(InterfaceDB interf, InterfaceCluster ic) {
 		this.interf = interf;
-		this.pdb = pdb;
+		this.ic = ic;
 				
 	}
 	
@@ -28,7 +38,7 @@ public class Interface {
 	}
 	
 	public PdbInfo getPdbInfo() {
-		return pdb;
+		return ic.getPdbInfo();
 	}
 	
 	/**
@@ -81,6 +91,11 @@ public class Interface {
 		return (this.getChainCluster(FIRST).isSameSeqCluster(this.getChainCluster(SECOND), seqClusterLevel));
 	}
 	
+	/**
+	 * Get the ChainCluster for one of the chains in this interface
+	 * @param molecId Either {@link #FIRST} or {@link #SECOND}
+	 * @return
+	 */
 	public ChainCluster getChainCluster(int molecId) {
 		
 		if (molecId==FIRST) 
@@ -92,6 +107,19 @@ public class Interface {
 		return null;
 	}
 	
+	/**
+	 * Calculate the interface overlap between this interface and another.
+	 * 
+	 * The alnPool provides pre-calculated pairwise alignments. It should
+	 * include, at a minimum, an entry (this.chain1, other.chain1) and
+	 * (this.chain2, other.chain2).
+	 * @param other
+	 * @param alnPool Pool of pre-calculated pairwise alignments
+	 * @param seqClusterLevel
+	 * @param debug
+	 * @return
+	 * @see {@link PdbInfo#getAlignmentsPool}
+	 */
 	public double calcInterfaceOverlap(Interface other, Map<Pair<String>,SequencePair<ProteinSequence,AminoAcidCompound>> alnPool, SeqClusterLevel seqClusterLevel, boolean debug) {
 		
 		InterfaceComparator csComp = new InterfaceComparator(this,other,alnPool,seqClusterLevel);
@@ -101,20 +129,26 @@ public class Interface {
 		
 	}
 	
+	@Override
 	public boolean equals(Object o) {
 		if (!(o instanceof Interface)) return false;
 		
 		Interface other = (Interface)o;
-		return (this.pdb.getPdbInfo().getPdbCode().equals(other.pdb.getPdbInfo().getPdbCode()) &&
+		return (this.getPdbInfo().getPdbInfo().getPdbCode().equals(other.getPdbInfo().getPdbInfo().getPdbCode()) &&
 				this.interf.getInterfaceId()==other.interf.getInterfaceId());
 	}
 	
+	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((this.pdb.getPdbInfo().getPdbCode() == null) ? 0 : this.pdb.getPdbInfo().getPdbCode().hashCode());
+		result = prime * result + ((this.getPdbInfo().getPdbInfo().getPdbCode() == null) ? 0 : this.getPdbInfo().getPdbInfo().getPdbCode().hashCode());
 		result = prime * result + ((this.interf == null) ? 0 : new Integer(this.interf.getInterfaceId()).hashCode());
 		return result;
 	}
 	
+	@Override
+	public String toString() {
+		return String.format("%4s-%s",interf.getPdbCode(),interf.getInterfaceId());
+	}
 }
