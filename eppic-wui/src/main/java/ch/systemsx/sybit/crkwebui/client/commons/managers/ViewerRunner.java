@@ -24,9 +24,11 @@ public class ViewerRunner
 		{
 			showJmolViewer(interfaceId);
 		}
+		//case that PDB viewer selected 
 		else if(ApplicationContext.getSelectedViewer().equals(AppPropertiesManager.CONSTANTS.viewer_local()))
 		{
-			downloadFileFromServer(FileDownloadServlet.TYPE_VALUE_INTERFACE, interfaceId, FileDownloadServlet.COORDS_FORMAT_VALUE_PDB);
+			//downloadFileFromServer(FileDownloadServlet.TYPE_VALUE_INTERFACE, interfaceId, FileDownloadServlet.COORDS_FORMAT_VALUE_PDB);
+			downloadFileFromServer(FileDownloadServlet.TYPE_VALUE_INTERFACE, interfaceId, FileDownloadServlet.COORDS_FORMAT_VALUE_CIF);
 		}
 		else if(ApplicationContext.getSelectedViewer().equals(AppPropertiesManager.CONSTANTS.viewer_pse()))
 		{
@@ -106,6 +108,7 @@ public class ViewerRunner
 		{
 			showJmolViewerAssembly(assemblyId);
 		}
+		//PDB CASE
 		else if(ApplicationContext.getSelectedViewer().equals(AppPropertiesManager.CONSTANTS.viewer_local()))
 		{
 			downloadAssemblyFileFromServer(FileDownloadServlet.TYPE_VALUE_ASSEMBLY, assemblyId, FileDownloadServlet.COORDS_FORMAT_VALUE_CIF);
@@ -126,6 +129,8 @@ public class ViewerRunner
 	 * @param type type of the file to download
 	 * @param interfaceId identifier of the interface
 	 */
+	//an example file is
+	//http://pc11467.psi.ch:8081/ewui/fileDownload?type=interface&id=1smt&interfaceId=1&type=interface&coordsFormat=cif
 	private static void downloadFileFromServer(String type, String interfaceId, String format)
 	{
 		String fileDownloadServletUrl = GWT.getModuleBaseURL() + FileDownloadServlet.SERVLET_NAME;

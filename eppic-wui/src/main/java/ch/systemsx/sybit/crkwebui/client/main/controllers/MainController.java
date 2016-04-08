@@ -191,7 +191,8 @@ public class MainController
 					ResultsPanel.assemblyResultsGridContainer.viewerSelectorBox.setValue(ApplicationContext.getSelectedViewer());
 				}else if(ApplicationContext.getSelectedViewType() == ResultsPanel.INTERFACES_VIEW){
 					displayResultView(event.getPdbScoreItem(), ResultsPanel.INTERFACES_VIEW);
-					if(ApplicationContext.getSelectedAssemblyId() == -1){
+					//if(ApplicationContext.getSelectedAssemblyId() == -1){
+					if(ApplicationContext.getSelectedAssemblyId() == -1 || ApplicationContext.getSelectedAssemblyId() == 0){
 						ResultsPanel.headerPanel.pdbIdentifierPanel.informationLabel.setHTML("All Interfaces of: ");
 						//only show a link for precomputed jobs
 						if(ApplicationContext.getPdbInfo().getInputType() == InputType.PDBCODE.getIndex()) //precomputed
