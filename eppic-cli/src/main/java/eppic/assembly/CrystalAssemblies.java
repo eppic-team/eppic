@@ -103,11 +103,26 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 		initEntityMaps();
 		
 		latticeGraph.removeDuplicateEdges();
-		findValidAssembliesContracted();
 		
-		//initGroups();
 		
-		//initClusters();
+		if (forceContracted) {
+			
+			findValidAssembliesContracted();
+			
+			//initGroups();
+			
+			//initClusters();
+			
+		} else {
+			
+			findValidAssemblies();
+			
+			initGroups();
+			
+			initClusters();
+			
+		}
+		
 		
 		
 	}
