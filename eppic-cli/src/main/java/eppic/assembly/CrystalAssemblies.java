@@ -68,6 +68,8 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 		
 	private boolean largeNumAssemblies;
 	
+	private UndirectedGraph<ChainVertex, InterfaceEdge> graph;
+	
 	/**
 	 * 
 	 * @param structure
@@ -80,6 +82,8 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 				
 		this.structure = structure;
 		this.latticeGraph = new LatticeGraph<ChainVertex,InterfaceEdge>(structure, interfaces,ChainVertex.class,InterfaceEdge.class);		
+		
+		this.graph = latticeGraph.getGraph();
 		
 		initEntityMaps();
 		
@@ -98,7 +102,9 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 		this.largeNumAssemblies = false;
 				
 		this.structure = structure;
-		this.latticeGraph = new LatticeGraph<ChainVertex,InterfaceEdge>(structure, interfaces,ChainVertex.class,InterfaceEdge.class);		
+		this.latticeGraph = new LatticeGraph<ChainVertex,InterfaceEdge>(structure, interfaces,ChainVertex.class,InterfaceEdge.class);
+		
+		this.graph = latticeGraph.getGraph();
 		
 		initEntityMaps();
 		
@@ -107,11 +113,15 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 		
 		if (forceContracted) {
 			
+			GraphContractor contractor = new GraphContractor(latticeGraph.getGraph());
+			this.graph = contractor.contract();
+
+			
 			findValidAssembliesContracted();
 			
-			//initGroups();
+			initGroups();
 			
-			//initClusters();
+			initClusters();
 			
 		} else {
 			
@@ -221,10 +231,8 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 		
 		Set<Assembly> validAssemblies = new HashSet<Assembly>();
 		
-		GraphContractor contractor = new GraphContractor(latticeGraph.getGraph());
-		UndirectedGraph<ChainVertex, InterfaceEdge> cg = contractor.contract();
 		
-		int numInterfaceClusters = GraphUtils.getDistinctInterfaceCount(cg); 
+		int numInterfaceClusters = GraphUtils.getDistinctInterfaceCount(graph); 
 		
 		// the list of nodes in the tree found to be invalid: all of their children will also be invalid
 		List<Assembly> invalidNodes = new ArrayList<Assembly>();		
@@ -456,6 +464,15 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 	
 	public LatticeGraph<ChainVertex, InterfaceEdge> getLatticeGraph() {
 		return latticeGraph;
+	}
+	
+	/**
+	 * Returns the graph object representing the lattice.
+	 * If on contracted graph enumeration, then the contracted graph will be returned.
+	 * @return
+	 */
+	public UndirectedGraph<ChainVertex, InterfaceEdge> getGraph() {
+		return graph;
 	}
 	
 	/**
