@@ -26,6 +26,8 @@ public class TestJmolPageGenerator {
 		Residue res2 = new Residue();
 		Residue res3 = new Residue();
 		Residue res4 = new Residue();
+		Residue res7 = new Residue();
+
 		res1.setPdbResidueNumber("1");
 		res1.setSide(false);
 		res2.setPdbResidueNumber("2A"); // an insertion code (should be represented as 2^A)
@@ -34,10 +36,14 @@ public class TestJmolPageGenerator {
 		res3.setSide(false);
 		res4.setPdbResidueNumber("4");
 		res4.setSide(false);
+		res7.setPdbResidueNumber(null);
+		res7.setSide(false);
 		res1.setRegion(ResidueBurialDB.CORE_GEOMETRY);
 		res2.setRegion(ResidueBurialDB.CORE_GEOMETRY); 
 		res3.setRegion(ResidueBurialDB.RIM_EVOLUTIONARY);
 		res4.setRegion(ResidueBurialDB.RIM_EVOLUTIONARY);
+		res4.setRegion(ResidueBurialDB.RIM_EVOLUTIONARY);
+		res7.setRegion(ResidueBurialDB.RIM_EVOLUTIONARY);
 		
 		Residue res5 = new Residue();
 		Residue res6 = new Residue();
@@ -49,12 +55,14 @@ public class TestJmolPageGenerator {
 		res6.setRegion(ResidueBurialDB.CORE_GEOMETRY);
 		
 		
+		
 		residues.add(res1);
 		residues.add(res2);
 		residues.add(res3);
 		residues.add(res4);
 		residues.add(res5);
 		residues.add(res6);
+		residues.add(res7);
 		
 		Interface interfData = new Interface();
 		interfData.setChain1("A"); 

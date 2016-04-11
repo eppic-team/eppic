@@ -103,16 +103,29 @@ public class JmolPageGenerator
 	}
 	
 	private static String getOrSeparatedList(List<Residue> residues, String chain) {
-		StringBuilder sb = new StringBuilder();
+		
 		// TODO we should use range selections (with hyphens) to get better performance and shorter strings
+		
+		StringBuilder sb = new StringBuilder();
+
 		for (int i=0;i<residues.size();i++){
+			
 			String pdbResNum = residues.get(i).getPdbResidueNumber();
+			// in some cases (e.g. 1pmo chain B we have null PdbResidueNumber for some residues 
+			// because of the way biojava is mapping the residues (in 1pmo residues 4-11 exist in chain B but are missing in chain A)
+			// until we get a better solution in biojava, we need to skip that here so that we don't get a null pointer
+			if (pdbResNum==null) {
+				continue;
+			}
+			
+			if (sb.length()!=0) sb.append(" or ");
+			
 			if (!Character.isDigit(pdbResNum.charAt(pdbResNum.length()-1)) ) {
 				// in ngl insertion codes are specified with a "^", see https://github.com/arose/ngl/issues/19
 				pdbResNum = pdbResNum.substring(0, pdbResNum.length()-1) + "^" + pdbResNum.charAt(pdbResNum.length()-1); 
 			}
 			sb.append(pdbResNum+":"+chain);
-			if (i!=residues.size()-1) sb.append(" or ");
+			
 		}
 		return sb.toString();
 	}
