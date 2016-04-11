@@ -28,7 +28,7 @@ public class TestJmolPageGenerator {
 		Residue res4 = new Residue();
 		res1.setPdbResidueNumber("1");
 		res1.setSide(false);
-		res2.setPdbResidueNumber("2A");
+		res2.setPdbResidueNumber("2A"); // an insertion code (should be represented as 2^A)
 		res2.setSide(false);
 		res3.setPdbResidueNumber("3");
 		res3.setSide(false);
@@ -101,6 +101,11 @@ public class TestJmolPageGenerator {
 		
 		// checking that no string has 0x prefixing it (to make sure that colors are prefixed with # and not with 0x)
 		assertFalse(thepage.contains("0x"));
+		
+		// checking that the insertion code is represented like "2^A"		
+		p = Pattern.compile(".*or 2\\^A\\).*", Pattern.DOTALL);
+		m = p.matcher(thepage);
+		assertTrue(m.matches());
 		
 	}
 

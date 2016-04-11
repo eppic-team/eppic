@@ -105,7 +105,12 @@ public class JmolPageGenerator
 	private static String getOrSeparatedList(List<Residue> residues) {
 		StringBuilder sb = new StringBuilder();
 		for (int i=0;i<residues.size();i++){
-			sb.append(residues.get(i).getPdbResidueNumber());
+			String pdbResNum = residues.get(i).getPdbResidueNumber();
+			if (!Character.isDigit(pdbResNum.charAt(pdbResNum.length()-1)) ) {
+				// in ngl insertion codes are specified with a "^", see https://github.com/arose/ngl/issues/19
+				pdbResNum = pdbResNum.substring(0, pdbResNum.length()-1) + "^" + pdbResNum.charAt(pdbResNum.length()-1); 
+			}
+			sb.append(pdbResNum);
 			if (i!=residues.size()-1) sb.append(" or ");
 		}
 		return sb.toString();
