@@ -103,7 +103,7 @@ public class TestJmolPageGenerator {
 		assertFalse(thepage.contains("0x"));
 		
 		// checking that the insertion code is represented like "2^A"		
-		p = Pattern.compile(".*or 2\\^A\\).*", Pattern.DOTALL);
+		p = Pattern.compile(".*or 2\\^A.*", Pattern.DOTALL);
 		m = p.matcher(thepage);
 		assertTrue(m.matches());
 		

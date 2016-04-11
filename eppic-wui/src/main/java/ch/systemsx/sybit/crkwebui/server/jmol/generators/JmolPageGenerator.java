@@ -102,15 +102,16 @@ public class JmolPageGenerator
 		return sb.toString();
 	}
 	
-	private static String getOrSeparatedList(List<Residue> residues) {
+	private static String getOrSeparatedList(List<Residue> residues, String chain) {
 		StringBuilder sb = new StringBuilder();
+		// TODO we should use range selections (with hyphens) to get better performance and shorter strings
 		for (int i=0;i<residues.size();i++){
 			String pdbResNum = residues.get(i).getPdbResidueNumber();
 			if (!Character.isDigit(pdbResNum.charAt(pdbResNum.length()-1)) ) {
 				// in ngl insertion codes are specified with a "^", see https://github.com/arose/ngl/issues/19
 				pdbResNum = pdbResNum.substring(0, pdbResNum.length()-1) + "^" + pdbResNum.charAt(pdbResNum.length()-1); 
 			}
-			sb.append(pdbResNum);
+			sb.append(pdbResNum+":"+chain);
 			if (i!=residues.size()-1) sb.append(" or ");
 		}
 		return sb.toString();
@@ -233,7 +234,7 @@ public class JmolPageGenerator
 	private static String getSeleVarStr(String varName, List<Residue> residues, String chain) {
 		if (residues==null || residues.isEmpty()) return "";
 		
-		return "var "+varName+"  = \"("+getOrSeparatedList(residues) + ") and :"+ chain + "\";\n";
+		return "var "+varName+"  = \""+getOrSeparatedList(residues, chain) + "\";\n";
 	}
 	
 	 
