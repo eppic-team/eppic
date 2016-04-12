@@ -1,0 +1,13 @@
+PDBID: {{pdbId}}
+Title: {{title}}
+Size: {{size}}
+Vertices:
+{{#graph.graph.vertexSet}}
+  {{center.x}},{{center.y}},{{center.z}},
+{{/graph.graph.vertexSet}}
+Edges:
+{{#graph.graph.edgeSet}}
+{{#segments}}
+  {{start.x}},{{start.y}},{{start.z}} to {{end.x}},{{end.y}},{{end.z}}, 
+{{/segments}}
+{{/graph.graph.edgeSet}}

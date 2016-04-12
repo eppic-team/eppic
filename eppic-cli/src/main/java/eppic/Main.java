@@ -762,7 +762,7 @@ public class Main {
 						}
 					};
 					
-					// Steriographic projection
+					// Stereographic projection
 					LatticeGUIJGraph gui = new LatticeGUIJGraph(filtered);
 					gui.stereographicLayout(new Point3d(0,0,0),new Point3d(0,0,1),positioner);
 					gui.writePNG(outputFile);

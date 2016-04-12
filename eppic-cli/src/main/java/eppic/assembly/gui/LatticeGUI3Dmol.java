@@ -40,17 +40,13 @@ import eppic.assembly.OrientedCircle;
  * @author blivens
  *
  */
-public class LatticeGUI3Dmol {
+public class LatticeGUI3Dmol extends LatticeGUIMustache {
 	private static final Logger logger = LoggerFactory.getLogger(LatticeGUI3Dmol.class);
 
-	private static final String MUSTACHE_TEMPLATE_3DMOL = "mustache/eppic/assembly/gui/LatticeGUI3Dmol.mustache.html";
-	private static final String DEFAULT_URL_3DMOL = "http://3Dmol.csb.pitt.edu/build/3Dmol-min.js";
+	static final String MUSTACHE_TEMPLATE_3DMOL = "/mustache/eppic/assembly/gui/LatticeGUI3Dmol.mustache.html";
+	static final String DEFAULT_URL_3DMOL = "http://3Dmol.csb.pitt.edu/build/3Dmol-min.js";
 	
-	private final LatticeGraph3D latticeGraph;
 	private String strucURI;
-	private String pdbId; //TODO use file instead
-	private String title; //Title for HTML page
-	private String size; // size of the div where 3dmol is placed
 	private String url3Dmol = DEFAULT_URL_3DMOL;
 	
 	/**
@@ -62,61 +58,35 @@ public class LatticeGUI3Dmol {
 	 * @throws StructureException For errors parsing the structure
 	 */
 	public LatticeGUI3Dmol(Structure struc,String strucURI,Collection<Integer> interfaceIds) throws StructureException {
-		this(struc,strucURI,interfaceIds,null);
+		this(MUSTACHE_TEMPLATE_3DMOL,struc,strucURI,interfaceIds,null);
 	}
 	public LatticeGUI3Dmol(Structure struc,String strucURI,Collection<Integer> interfaceIds,List<StructureInterface> allInterfaces) throws StructureException {
-		this.latticeGraph = new LatticeGraph3D(struc,allInterfaces);
-		UndirectedGraph<ChainVertex3D, InterfaceEdge3D> graph = latticeGraph.getGraph();
-		if( interfaceIds != null ) {
-			logger.info("Filtering LatticeGraph3D to edges {}",interfaceIds);
-			latticeGraph.filterEngagedInterfaces(interfaceIds);
-		}
-		logger.info("Generated LatticeGraph3D with {} vertices and {} edges",graph.vertexSet().size(),graph.edgeSet().size());
+		this(MUSTACHE_TEMPLATE_3DMOL,struc,strucURI,interfaceIds,allInterfaces);
+	}
+	public LatticeGUI3Dmol(String template, Structure struc,String strucURI,Collection<Integer> interfaceIds,List<StructureInterface> allInterfaces) throws StructureException {
+		super(template, struc,interfaceIds, allInterfaces);
 
-		// Compute Jmol names and colors
-		for(ChainVertex3D v : graph.vertexSet()) {
-			v.setColorStr(toHTMLColor(v.getColor()));
-		}
-
-		for(InterfaceEdge3D e : graph.edgeSet()) {
-			String colorStr = toHTMLColor(e.getColor());
-			e.setColorStr(colorStr);
-
-			if(e.getCircles() != null) {
-				for(OrientedCircle circ: e.getCircles()) {
-					//rescale perpendicular vector
-					final double thickness = .5;
-					Vector3d ab = new Vector3d();
-					ab.sub(circ.getPerpendicular(),circ.getCenter());
-					double len = ab.length();
-					Point3d newPerp = new Point3d(ab);
-					newPerp.scaleAdd(thickness/len, circ.getCenter());
-					circ.setPerpendicular(newPerp);
-				}
-			}
-		}
 		this.strucURI = strucURI;
-		//TODO support custom files
-		pdbId = struc.getPDBCode();
-		if(pdbId == null || pdbId.length() != 4) {
-			pdbId = struc.getName();
-		}
-		if(pdbId == null || pdbId.length() != 4) {
-			logger.error("Unable to get PDB ID.");
-		}
-		
-		this.title = String.format("Lattice for %s",getPdbId());
-		this.size = "800";
 	}
 
 	/**
-	 * hex verson of the color (e.g. '0xFF00CC')
-	 * @param color
+	 * get the URL for the CIF structure to write. Defaults to "[PDBID].cif"
 	 * @return
 	 */
-	private static String toHTMLColor(Color color) {
-		if(color == null) return null;
-		return String.format("0x%2x%2x%2x", color.getRed(),color.getGreen(),color.getBlue());
+	public String getStrucURI() {
+		if(strucURI == null) {
+			strucURI = String.format("%s.cif",getPdbId());
+		}
+		return strucURI;
+	}
+	public void setStrucURI(String strucURI) {
+		this.strucURI = strucURI;
+	}
+	public String getUrl3Dmol() {
+		return url3Dmol;
+	}
+	public void setUrl3Dmol(String url3Dmol) {
+		this.url3Dmol = url3Dmol;
 	}
 
 	public static void main(String[] args) throws IOException, StructureException {
@@ -186,111 +156,11 @@ public class LatticeGUI3Dmol {
 			gui.writeCIFfile(cifOut);
 		}
 
-		gui.write3DmolCommands(htmlOut);
+		gui.execute(htmlOut);
 
 		if( !output.equals("-")) {
 			htmlOut.close();
 		}
-	}
-
-	/**
-	 * Write a cif file containing the unit cell.
-	 * @param out
-	 * @throws IOException
-	 * @throws StructureException
-	 */
-	public void writeCIFfile(PrintWriter out) throws IOException, StructureException {
-		latticeGraph.writeCellToMmCifFile(out);
-	}
-
-	/**
-	 * Write an HTML page containing a 3Dmol canvas with this LatticeGraph.
-	 * 
-	 * The page is constructed from a template file.
-	 * @param out Output stream for the html commands
-	 */
-	public void write3DmolCommands(PrintWriter out) {
-		MustacheFactory mf = new DefaultMustacheFactory();
-		String template = MUSTACHE_TEMPLATE_3DMOL;
-		Mustache mustache = mf.compile(template);
-		try {
-			mustache.execute(out, this).flush();
-		} catch (IOException e) {
-			logger.error("Error generating 3Dmol commands from template "+template,e);
-		}
-	}
-
-	public LatticeGraph3D getGraph() {
-		return latticeGraph;
-	}
-
-	/**
-	 * get the URL for the CIF structure to write. Defaults to "[PDBID].cif"
-	 * @return
-	 */
-	public String getStrucURI() {
-		if(strucURI == null) {
-			strucURI = String.format("%s.cif",getPdbId());
-		}
-		return strucURI;
-	}
-	public void setStrucURI(String strucURI) {
-		this.strucURI = strucURI;
-	}
-	/**
-	 * Get the PDB ID. By default, takes this from the structure name.
-	 * @return
-	 */
-	public String getPdbId() {
-		return pdbId;
-	}
-	public void setPdbId(String pdbId) {
-		this.pdbId = pdbId;
-	}
-
-	/**
-	 * @return The second and third characters of {@link #getPdbId()}
-	 */
-	public String getPdbIdMiddle2() {
-		return getPdbId().substring(1, 3);
-	}
-	public String getTitle() {
-		return title;
-	}
-	public void setTitle(String title) {
-		this.title = title;
-	}
-	public String getSize() {
-		return size;
-	}
-	public void setSize(String size) {
-		this.size = size;
-	}
-	public String getUrl3Dmol() {
-		return url3Dmol;
-	}
-	public void setUrl3Dmol(String url3Dmol) {
-		this.url3Dmol = url3Dmol;
-	}
-	
-	/**
-	 * Parses a comma-separated list of digits.
-	 * returns null for '*', indicating all interfaces.
-	 * @param list Input string
-	 * @return list of interface ids, or null for all interfaces
-	 * @throws NumberFormatException for invalid input
-	 */
-	public static List<Integer> parseInterfaceList(String list) throws NumberFormatException{
-		// '*' for all interfaces
-		if(list == null || list.isEmpty() || list.equals("*") ) {
-			return null;// all interfaces
-		}
-		String[] splitIds = list.split("\\s*,\\s*");
-		List<Integer> interfaceIds = new ArrayList<Integer>(splitIds.length);
-		for(String idStr : splitIds) {
-			interfaceIds.add(new Integer(idStr));
-		}
-		return interfaceIds;
 	}
 
 }
