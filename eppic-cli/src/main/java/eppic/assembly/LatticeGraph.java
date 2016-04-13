@@ -526,20 +526,21 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 	 */
 	public void filterEngagedInterfaces(final Collection<Integer> interfaces) {
 		if(interfaces == null ) {
-			subgraph = graph;
-		}
-		MaskFunctor<V,E> mask = new MaskFunctor<V,E>() {
-			@Override
-			public boolean isVertexMasked(V vertex) {
-				return false;
-			}
+			setSubgraph(graph);
+		} else {
+			MaskFunctor<V,E> mask = new MaskFunctor<V,E>() {
+				@Override
+				public boolean isVertexMasked(V vertex) {
+					return false;
+				}
 
-			@Override
-			public boolean isEdgeMasked(E edge) {
-				return !interfaces.contains(edge.getInterfaceId());
-			}
-		};
-		subgraph = new UndirectedMaskSubgraph<V,E>(graph, mask);
+				@Override
+				public boolean isEdgeMasked(E edge) {
+					return !interfaces.contains(edge.getInterfaceId());
+				}
+			};
+			setSubgraph( new UndirectedMaskSubgraph<V,E>(graph, mask));
+		}
 	}
 	/**
 	 * Filter the edges of this graph down to the selected interface clusters
@@ -547,25 +548,34 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 	 */
 	public void filterEngagedClusters(final Collection<Integer> clusterIds) {
 		if(clusterIds == null ) {
-			subgraph = graph;
+			setSubgraph(graph);
+		} else {
+			MaskFunctor<V,E> mask = new MaskFunctor<V,E>() {
+				@Override
+				public boolean isVertexMasked(V vertex) {
+					return false;
+				}
+
+				@Override
+				public boolean isEdgeMasked(E edge) {
+					return !clusterIds.contains(edge.getClusterId());
+				}
+			};
+			setSubgraph( new UndirectedMaskSubgraph<V,E>(graph, mask));
 		}
-		MaskFunctor<V,E> mask = new MaskFunctor<V,E>() {
-			@Override
-			public boolean isVertexMasked(V vertex) {
-				return false;
-			}
-
-			@Override
-			public boolean isEdgeMasked(E edge) {
-				return !clusterIds.contains(edge.getClusterId());
-			}
-		};
-		subgraph = new UndirectedMaskSubgraph<V,E>(graph, mask);
-
 	}
 
 	public UndirectedGraph<V, E> getGraph() {
 		return subgraph;
+	}
+	
+	/**
+	 * Set the subgraph. Subclasses may override this method to reset additional
+	 * variables that might depend on the subgraph.
+	 * @param newGraph
+	 */
+	protected void setSubgraph(UndirectedGraph<V, E> newGraph) {
+		this.subgraph = newGraph;
 	}
 
 	/**

@@ -6,13 +6,10 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URL;
 import java.nio.file.DirectoryStream;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.PathMatcher;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -31,7 +28,6 @@ import org.slf4j.LoggerFactory;
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
-import com.google.common.collect.Lists;
 
 import eppic.assembly.ChainVertex3D;
 import eppic.assembly.InterfaceEdge3D;
@@ -48,8 +44,6 @@ import eppic.assembly.OrientedCircle;
 public class LatticeGUIMustache {
 	private static final Logger logger = LoggerFactory.getLogger(LatticeGUIMustache.class);
 
-	private static final String MUSTACHE_TEMPLATE_DIR = "mustache/eppic/assembly/gui";
-	
 	private final LatticeGraph3D latticeGraph;
 	private final String template;
 
@@ -57,6 +51,11 @@ public class LatticeGUIMustache {
 	private String title; // Title for HTML page
 	private String size; // Target size for content
 	
+	// cache for getGraph2D
+	private UndirectedGraph<ChainVertex3D, InterfaceEdge3DSourced<ChainVertex3D>> graph2d = null;
+
+	private StereographicLayout layout2d = null;
+
 	/**
 	 * Factory method for known templates. Most templates use this class directly.
 	 * A few known methods will use special subclasses (eg 3Dmol)
@@ -107,10 +106,11 @@ public class LatticeGUIMustache {
 			return attempt.getAbsolutePath();
 		
 		// See if we have a single unique shortname
-		String glob = String.format("LatticeGUI[%s%s]%s.mustache.*",
+		String glob = String.format("{LatticeGUI[%s%s]%s,%s}.mustache.*",
 				template.substring(0, 1).toLowerCase(),
 				template.substring(0, 1).toUpperCase(),
-				template.substring(1) );
+				template.substring(1),
+				template );
 		try( DirectoryStream<Path> mustacheDirStream = Files.newDirectoryStream(mustacheDir.toPath(), glob) ) {
 			Iterator<Path> it = mustacheDirStream.iterator();
 			if(it.hasNext()) {
@@ -201,7 +201,7 @@ public class LatticeGUIMustache {
 	 */
 	private static String toHTMLColor(Color color) {
 		if(color == null) return null;
-		return String.format("0x%2x%2x%2x", color.getRed(),color.getGreen(),color.getBlue());
+		return String.format("#%2x%2x%2x", color.getRed(),color.getGreen(),color.getBlue());
 	}
 
 
@@ -294,7 +294,43 @@ public class LatticeGUIMustache {
 	public void writeCIFfile(PrintWriter out) throws IOException, StructureException {
 		latticeGraph.writeCellToMmCifFile(out);
 	}
+	
+	/**
+	 * @return the current 2D layout
+	 */
+	public StereographicLayout getLayout2D() {
+		return layout2d;
+	}
+	/**
+	 * @param layout2d the 2D layout to set
+	 */
+	public void setLayout2D(StereographicLayout layout2d) {
+		if(this.layout2d != null && !this.layout2d.equals(layout2d)) {
+			// graph2d depends on the layout
+			this.graph2d = null;
+		}
+		this.layout2d = layout2d;
+		
+	}
 
+	/**
+	 * Get a version of the graph where all 3D coordinates have z=0.
+	 * This is achieved by performing a stereographic projection of the 3D
+	 * coordinates.
+	 * @param layout
+	 * @return
+	 */
+	public UndirectedGraph<ChainVertex3D, InterfaceEdge3DSourced<ChainVertex3D>> getGraph2D() {
+		if( graph2d == null) {
+			if(layout2d == null) {
+				throw new IllegalStateException("No 2D layout set for calculating the 2D graph");
+			}
+			UndirectedGraph<ChainVertex3D, InterfaceEdge3D> graph3d = getGraph().getGraph();
+			UndirectedGraph<ChainVertex3D, InterfaceEdge3D> graph2dUnsorced = layout2d.projectLatticeGraph(graph3d);
+			graph2d = InterfaceEdge3DSourced.addSources(graph2dUnsorced);
+		}
+		return graph2d;
+	}
 
 	public static void main(String[] args) throws IOException, StructureException {
 		final String usage = String.format("Usage: %s template structure output [interfacelist]",LatticeGUIMustache.class.getSimpleName());
@@ -346,6 +382,10 @@ public class LatticeGUIMustache {
 			System.err.println(e.getMessage());
 			System.exit(1); return;
 		}
+		Point3d center = new Point3d();
+		Point3d zenith = new Point3d(0,0,1);
+		StereographicLayout layout2d = new StereographicLayout(center , zenith);
+		gui.setLayout2D(layout2d );
 		gui.execute(mainOut);
 
 		if( !output.equals("-")) {

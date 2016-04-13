@@ -38,6 +38,14 @@ public class ChainVertex3D extends ChainVertex {
 		setCenter(center);
 	}
 
+	public ChainVertex3D(ChainVertex3D vert) {
+		super(vert);
+		this.center = new Point3d(vert.center);
+		this.uniqueName = vert.uniqueName;
+		this.color = vert.color;
+		this.colorStr = vert.colorStr;
+	}
+
 	public Point3d getCenter() {
 		return center;
 	}

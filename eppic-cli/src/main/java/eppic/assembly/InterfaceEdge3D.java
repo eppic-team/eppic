@@ -1,6 +1,7 @@
 package eppic.assembly;
 
 import java.awt.Color;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.vecmath.Point3i;
@@ -34,6 +35,24 @@ public class InterfaceEdge3D extends InterfaceEdge {
 		super(interf, xtalTrans);
 	}
 
+	/**
+	 * Perform a deep copy of the edge
+	 * @param e
+	 */
+	public InterfaceEdge3D(InterfaceEdge3D e) {
+		super(e);
+		this.segments = new ArrayList<>(e.segments.size());
+		for(ParametricCircularArc s :e.segments) {
+			this.segments.add(new ParametricCircularArc(s));
+		}
+		this.uniqueName = e.uniqueName;
+		this.color = e.color;
+		this.colorStr = e.colorStr;
+		this.circles = new ArrayList<>(e.circles.size());
+		for(OrientedCircle cir : e.circles) {
+			this.circles.add(new OrientedCircle(cir));
+		}
+	}
 	public List<ParametricCircularArc> getSegments() {
 		return segments;
 	}

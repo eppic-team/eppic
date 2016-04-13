@@ -266,8 +266,8 @@ public class LatticeGUIJGraph {
 	}
 	private static void stereographicLayout(JGraphXAdapter<ChainVertex3D, InterfaceEdge3D> jgraph,
 			Point3d center, Point3d zenith, VertexPositioner<ChainVertex3D> positioner) {
-		final StereographicLayout<ChainVertex3D, InterfaceEdge3D> layout =
-				new StereographicLayout<ChainVertex3D, InterfaceEdge3D>(
+		final mxStereographicLayout<ChainVertex3D, InterfaceEdge3D> layout =
+				new mxStereographicLayout<ChainVertex3D, InterfaceEdge3D>(
 						jgraph,positioner,center, zenith);
 		layout.execute(jgraph.getDefaultParent());
 		final ConnectedComponentLayout<ChainVertex3D, InterfaceEdge3D> layout2 = 

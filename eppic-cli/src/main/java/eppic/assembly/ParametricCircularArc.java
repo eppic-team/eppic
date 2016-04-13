@@ -90,6 +90,14 @@ public class ParametricCircularArc {
 		this(start,end, GeomTools.randomOrthogonalVector(start,end,height) );
 	}
 
+	/** Copy constructor */
+	public ParametricCircularArc(ParametricCircularArc o) {
+		this.radius = o.radius;
+		this.startAngle = o.startAngle;
+		this.endAngle = o.endAngle;
+		this.transformation = new Matrix4d(o.transformation);
+		this.uniqueName = o.uniqueName;
+	}
 	/**
 	 * Interpolate between the start (pos=0) and the end (pos=1)
 	 * @param relpos Position along the arc, from 0 to 1

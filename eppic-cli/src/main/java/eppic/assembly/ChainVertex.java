@@ -32,6 +32,12 @@ public class ChainVertex {
 	}
 
 
+	/** Copy constructor */
+	public ChainVertex(ChainVertex vert) {
+		this.opId = vert.opId;
+		this.c = vert.c;
+	}
+
 	public int getOpId() {
 		return opId;
 	}

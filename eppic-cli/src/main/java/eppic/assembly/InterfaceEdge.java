@@ -37,7 +37,11 @@ public class InterfaceEdge {
 		this.xtalTrans = xtalTrans;
 	}
 	
-	
+	/** Copy constructor */
+	public InterfaceEdge(InterfaceEdge o) {
+		this.interf = o.interf;
+		this.xtalTrans = o.xtalTrans;
+	}
 	
 	@Override
 	public String toString() {

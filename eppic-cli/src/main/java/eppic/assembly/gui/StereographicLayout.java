@@ -1,150 +1,217 @@
 package eppic.assembly.gui;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
-import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.vecmath.Matrix4d;
 import javax.vecmath.Point2d;
 import javax.vecmath.Point3d;
 import javax.vecmath.Vector3d;
 
-import org.jgrapht.ext.JGraphXAdapter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.jgrapht.UndirectedGraph;
+import org.jgrapht.graph.Pseudograph;
 
-import com.mxgraph.layout.mxGraphLayout;
-import com.mxgraph.model.mxICell;
-import com.mxgraph.model.mxIGraphModel;
-
+import eppic.assembly.ChainVertex3D;
+import eppic.assembly.InterfaceEdge3D;
 import eppic.commons.util.GeomTools;
 
 /**
- * Layout vertices based on a steriographic projection of their 3D positions.
+ * Class for laying out vertices based on a stereographic projection of
+ * their 3D positions.
  * 
- * Positions are specified for each vertex by creating a VertexPositioner instance.
- * These 3D points are first spherically projected onto a unit sphere defined by
+ * 3D points are first spherically projected onto a unit sphere defined by
  * the center and zenith points. Then, points are projected from the zenith onto
- * the equitorial plane. Points too close to the zenith (as defined by maxRadius)
+ * the equatorial plane. Points too close to the zenith (as defined by maxRadius)
  * will be shuttled to one of the corners of the layout box.
  * @author Spencer Bliven
  *
  * @param <V> Vertex type
  * @param <E> Edge type
  */
-public class StereographicLayout<V,E> extends mxGraphLayout {
+public class StereographicLayout {
 	
 	public static interface VertexPositioner<V> {
 		Point3d getPosition(V vertex);
 	}
+
+	//private static final Logger logger = LoggerFactory.getLogger(StereographicLayout.class);
 	
-	
-	private static final Logger logger = LoggerFactory.getLogger(StereographicLayout.class);
-	
-	private final JGraphXAdapter<V, E> jgraph;
 	private Point3d center;
 	private Point3d zenith;
-	
-	private VertexPositioner<V> vertexPositioner;
-	
+		
 	private int maxWidth = 500;
 	private int maxHeight = 500;
 	private int maxRadius = 4;
-	public StereographicLayout(JGraphXAdapter<V, E> graph, VertexPositioner<V> positioner,
-			Point3d center, Point3d zenith ) {
-		super(graph);
-		this.jgraph = graph;
+	
+	private VertexPositioner<ChainVertex3D> vertexPositioner;
+
+	public StereographicLayout(Point3d center, Point3d zenith ) {
+		this(ChainVertex3D.getVertexPositioner(),center,zenith);
+	}
+	public StereographicLayout(VertexPositioner<ChainVertex3D> positioner,Point3d center, Point3d zenith ) {
+		this.vertexPositioner = positioner;
 		this.center = center;
 		this.zenith = zenith;
-		this.vertexPositioner = positioner;
 	}
 
-	@Override
-	public void execute(Object parent) {
-		
-		mxIGraphModel model = graph.getModel();
+	/**
+	 * Constructs a new graph with the same topology as the input graph, but
+	 * with all coordinates modified by stereographic projection. All
+	 * coordinates will have z=0 component after projection, so they can
+	 * safely be considered as 2D points.
+	 * @param oldGraph
+	 * @return
+	 */
+	public UndirectedGraph<ChainVertex3D,InterfaceEdge3D> projectLatticeGraph(UndirectedGraph<ChainVertex3D, InterfaceEdge3D> oldGraph) {
 
-		// Moves the vertices to build a circle. Makes sure the
-		// radius is large enough for the vertices to not
-		// overlap
-		model.beginUpdate();
-		try
-		{
-			// Non-normalized coordinates for vertices
-			Map<Object,Point2d> centeredCoords = new HashMap<Object, Point2d>();
-			
-			int childCount = model.getChildCount(parent);
+		// Mappings from old graph to new
+		Map<ChainVertex3D,ChainVertex3D> newVertices = new HashMap<>(oldGraph.vertexSet().size());
+		Map<InterfaceEdge3D,InterfaceEdge3D> newEdges = new HashMap<>(oldGraph.edgeSet().size());
 
-			HashMap<mxICell, V> cell2Vert = jgraph.getCellToVertexMap();
-			
-			for (int i = 0; i < childCount; i++) {
-				Object cell = model.getChildAt(parent, i);
+		// Non-normalized coordinates for vertices
+		Set<Point2d> centeredCoords = new HashSet<>();
 
-				if (!isVertexIgnored(cell)) {
-					if( isVertexMovable(cell) ) {
-						V vert = cell2Vert.get(cell);
-						if( vert != null ) {
-							Point3d pos = vertexPositioner.getPosition(vert);
-							// Project onto the sphere
-							Point3d angles = sphericalCoord(pos, center, zenith);
-							Point2d stereo = stereographicProjection(angles, maxRadius);
-							centeredCoords.put(cell, stereo);
-						} else {
-							logger.error("Vertex not associated with a ChainVertex3D.");
-							// keep previous location
-						}
-					}
-				} else if (!isEdgeIgnored(cell)) {
-					graph.resetEdge(cell);
-				}
-			}
-			
-			// Calculate bounds, leaving the origin centered
-			double maxX = 0;
-			double maxY = 0;
-			for(Point2d p : centeredCoords.values()) {
-				if( maxX < Math.abs(p.x) && Math.abs(p.x) < maxRadius ) {
-					maxX = Math.abs(p.x);
-				}
-				if( maxY < Math.abs(p.y) && Math.abs(p.y) < maxRadius ) {
-					maxY = Math.abs(p.y);
-				}
-			}
-			//maxX = maxRadius;
-			//maxY = maxRadius;
-			double scale = Math.min( maxWidth/maxX/2, maxHeight/maxY/2 ); //pixels per unit
-			// Normalize the coordinates & move the vertices
-			for(Entry<Object, Point2d> entry: centeredCoords.entrySet()) {
-				Point2d pos = entry.getValue();
-				int x,y;
-				// Place (NaN,NaN) at top right corner
-				if(Double.isNaN(pos.x) && Double.isNaN(pos.y)) {
-					x = maxWidth;
-					y = maxHeight;
-				} else {
-					if( Double.isNaN(pos.x) ) {
-						x = maxWidth/2;
-					} else {
-						x = (int)(scale*pos.x + maxWidth/2.);
-						x = Math.min(Math.max(0,x), maxWidth);
-					}
-					if( Double.isNaN(pos.y) ) {
-						y = maxHeight/2;
-					} else {
-						// invert y axis
-						y = (int)(-scale*pos.y + maxHeight/2.);
-						y = Math.min(Math.max(0,y), maxHeight);
-					}
-				}
+		// Project vertices (unnormalized, centered at 0,0)
+		for(ChainVertex3D vert : oldGraph.vertexSet()) {
+			Point3d pos = vertexPositioner.getPosition(vert);
+			// Project onto the sphere
+			Point3d angles = sphericalCoord(pos, center, zenith);
+			Point2d stereo = stereographicProjection(angles, maxRadius);
+			centeredCoords.add( stereo );
 
-				setVertexLocation(entry.getKey(), x, y);
-			}
-			
+			ChainVertex3D newVert = new ChainVertex3D(vert);
+			newVert.setCenter(new Point3d(stereo.x, stereo.y, 0));
+			newVertices.put(vert,newVert);
 		}
-		finally
-		{
-			model.endUpdate();
+		// Project edges (unnormalized, centered at 0,0)
+		for(InterfaceEdge3D edge :oldGraph.edgeSet()) {
+			InterfaceEdge3D newEdge = new InterfaceEdge3D(edge);
+//			for( OrientedCircle circ : newEdge.getCircles()) {
+//				Point3d pos = circ.getCenter();
+//				// Project onto the sphere
+//				Point3d angles = sphericalCoord(pos, center, zenith);
+//				Point2d stereo = stereographicProjection(angles, maxRadius);
+//				//centeredCoords.add( stereo ); // Include edge centers in bounds calculation
+//				circ.setCenter(new Point3d(stereo.x, stereo.y, 0));
+//			}
+//			List<ParametricCircularArc> newSegs = new ArrayList<>(newEdge.getSegments().size());
+//			for( ParametricCircularArc seg : newEdge.getSegments()) {
+//				// Get control points
+//				Point3d start = seg.getStart();
+//				Point3d end = seg.getEnd();
+//				Point3d pinnacle = seg.getMid();
+//				Point3d mid = new Point3d();
+//				mid.sub(end,start);
+//
+//				// Project each control
+//				Point3d angles = sphericalCoord(start, center,zenith);
+//				Point2d stereoStart = stereographicProjection(angles, maxRadius);
+//				angles = sphericalCoord(end, center,zenith);
+//				Point2d stereoEnd = stereographicProjection(angles, maxRadius);
+//				angles = sphericalCoord(pinnacle, center,zenith);
+//				Point2d stereoPinn = stereographicProjection(angles, maxRadius);
+//				angles = sphericalCoord(mid, center,zenith);
+//				Point2d stereoMid = stereographicProjection(angles, maxRadius);
+//
+//				Vector2d pinnDir = new Vector2d();
+//				pinnDir.sub(stereoPinn, stereoMid);
+//
+//				ParametricCircularArc newSeg = new ParametricCircularArc(
+//						new Point3d(stereoStart.x,stereoStart.y,0),
+//						new Point3d(stereoEnd.x,stereoEnd.y,0),
+//						new Vector3d(pinnDir.x,pinnDir.y,0) );
+//
+//				newSegs.add(newSeg);
+//			}
+//			newEdge.setSegments(newSegs);
+			newEdges.put(edge, newEdge);
 		}
+
+		// Calculate bounds, leaving the origin centered
+		double maxX = 0;
+		double maxY = 0;
+		for(Point2d p : centeredCoords) {
+			if( maxX < Math.abs(p.x) && Math.abs(p.x) < maxRadius ) {
+				maxX = Math.abs(p.x);
+			}
+			if( maxY < Math.abs(p.y) && Math.abs(p.y) < maxRadius ) {
+				maxY = Math.abs(p.y);
+			}
+		}
+		//maxX = maxRadius;
+		//maxY = maxRadius;
+		double scale = Math.min( maxWidth/maxX/2, maxHeight/maxY/2 ); //pixels per unit
+
+		// Normalize the coordinates & move the vertices
+		for(ChainVertex3D vert : newVertices.values()) {
+			Point3d center = normalizePos(vert.getCenter(), scale);
+			vert.setCenter(center);
+		}
+		// Normalize edges
+//		for(InterfaceEdge3D edge :newEdges.values()) {
+//			for( OrientedCircle circ : edge.getCircles()) {
+//				Point3d center = normalizePos(circ.getCenter(), scale);
+//				circ.setCenter(center);
+//			}
+//			List<ParametricCircularArc> newSegs = new ArrayList<>(edge.getSegments().size());
+//			for( ParametricCircularArc seg : edge.getSegments()) {
+//				// Get control points
+//				Point3d start    = normalizePos(seg.getStart(), scale);
+//				Point3d end      = normalizePos(seg.getEnd(), scale);
+//				Point3d pinnacle = normalizePos(seg.getMid(), scale);
+//				Point3d mid = new Point3d();
+//				mid.sub(end,start);
+//
+//				Vector3d pinnDir = new Vector3d();
+//				pinnDir.sub(pinnacle, mid);
+//
+//				ParametricCircularArc newSeg = new ParametricCircularArc(
+//						start,end,pinnDir);
+//
+//				newSegs.add(newSeg);
+//			}
+//			edge.setSegments(newSegs);
+//		}
+		// convert old graph to new one
+		UndirectedGraph<ChainVertex3D,InterfaceEdge3D> newGraph = new Pseudograph<>(InterfaceEdge3D.class);
+
+		for(ChainVertex3D vert : newVertices.values()) {
+			newGraph.addVertex(vert);
+		}
+		for(InterfaceEdge3D edge : oldGraph.edgeSet()) {
+			ChainVertex3D source = newVertices.get( oldGraph.getEdgeSource(edge) );
+			ChainVertex3D target = newVertices.get( oldGraph.getEdgeTarget(edge) );
+			InterfaceEdge3D newEdge = newEdges.get( edge );
+			newGraph.addEdge(source, target, newEdge);
+		}
+		return newGraph;
+	}
+
+	private Point3d normalizePos(Point3d pos, double scale) {
+		int x,y;
+		// Place (NaN,NaN) at top right corner
+		if(Double.isNaN(pos.x) && Double.isNaN(pos.y)) {
+			x = maxWidth;
+			y = maxHeight;
+		} else {
+			if( Double.isNaN(pos.x) ) {
+				x = maxWidth/2;
+			} else {
+				x = (int)(scale*pos.x + maxWidth/2.);
+				x = Math.min(Math.max(0,x), maxWidth);
+			}
+			if( Double.isNaN(pos.y) ) {
+				y = maxHeight/2;
+			} else {
+				// invert y axis
+				y = (int)(-scale*pos.y + maxHeight/2.);
+				y = Math.min(Math.max(0,y), maxHeight);
+			}
+		}
+		Point3d newPos = new Point3d(x, y, 0);
+		return newPos;
 	}
 
 	/**
@@ -244,9 +311,4 @@ public class StereographicLayout<V,E> extends mxGraphLayout {
 	public Point3d getZenith() {
 		return zenith;
 	}
-
-	public VertexPositioner<V> getVertexPositioner() {
-		return vertexPositioner;
-	}
-	
 }
