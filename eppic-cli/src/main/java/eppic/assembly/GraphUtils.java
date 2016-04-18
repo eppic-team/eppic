@@ -214,4 +214,45 @@ public class GraphUtils {
 		
 		return clusterIds.first();
 	}
+	
+	/**
+	 * Checks that the given graph is automorphic in terms of entities and interface clusters.
+	 * i.e. if every vertex of entity i has the same type of edges (interface cluster ids) 
+	 * that any other vertex with entity i
+	 * @param g
+	 * @return
+	 */
+	public static boolean isAutomorphic(UndirectedGraph<ChainVertex, InterfaceEdge> g) {
+		
+		
+		// we'll store in a map each of the first vertex types seen with their components in terms of interface clusters
+		Map<Integer, Set<Integer>> repVs = new HashMap<>();
+		
+		// go through all vertices
+		for (ChainVertex v: g.vertexSet()) {
+			
+			
+			if (!repVs.containsKey(v.getEntity())) {
+				// this kind of entity wasn't seen yet, first of the kind will be the representative
+				repVs.put(v.getEntity(), getInterfaceClusterIdsForVertex(g, v));
+			} else {
+				// we already have a representative for this kind, let's check it has the same content
+				Set<Integer> content = getInterfaceClusterIdsForVertex(g, v);
+				Set<Integer> repContent = repVs.get(v.getEntity());
+				if (!repContent.equals(content)) 
+					return false; 
+			}
+		}
+		
+		return true;
+	}
+	
+	private static Set<Integer> getInterfaceClusterIdsForVertex(UndirectedGraph<ChainVertex, InterfaceEdge> g, ChainVertex v) {
+		Set<Integer> set = new HashSet<>();
+		Set<InterfaceEdge> edges = g.edgesOf(v);
+		for (InterfaceEdge e:edges) {
+			set.add(e.getClusterId());
+		}
+		return set;
+	}
 }
