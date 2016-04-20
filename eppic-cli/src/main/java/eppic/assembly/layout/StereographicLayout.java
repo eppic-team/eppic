@@ -1,8 +1,6 @@
 package eppic.assembly.layout;
 
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 import javax.vecmath.Matrix4d;
@@ -11,10 +9,7 @@ import javax.vecmath.Point3d;
 import javax.vecmath.Vector3d;
 
 import org.jgrapht.UndirectedGraph;
-import org.jgrapht.graph.Pseudograph;
 
-import eppic.assembly.ChainVertex3D;
-import eppic.assembly.InterfaceEdge3D;
 import eppic.commons.util.GeomTools;
 
 /**
@@ -30,7 +25,7 @@ import eppic.commons.util.GeomTools;
  * @param <V> Vertex type
  * @param <E> Edge type
  */
-public class StereographicLayout implements GraphLayout<ChainVertex3D,InterfaceEdge3D> {
+public class StereographicLayout<V,E> implements GraphLayout<V,E> {
 
 	//private static final Logger logger = LoggerFactory.getLogger(StereographicLayout.class);
 	
@@ -41,50 +36,39 @@ public class StereographicLayout implements GraphLayout<ChainVertex3D,InterfaceE
 	private int maxHeight = 500;
 	private int maxRadius = 4;
 	
-	private VertexPositioner<ChainVertex3D> vertexPositioner;
+	private final VertexPositioner<V> vertexPositioner;
 
-	public StereographicLayout(Point3d center, Point3d zenith ) {
-		this(ChainVertex3D.getVertexPositioner(),center,zenith);
-	}
-	public StereographicLayout(VertexPositioner<ChainVertex3D> positioner,Point3d center, Point3d zenith ) {
+	public StereographicLayout(VertexPositioner<V> positioner,Point3d center, Point3d zenith ) {
 		this.vertexPositioner = positioner;
 		this.center = center;
 		this.zenith = zenith;
 	}
 
 	/**
-	 * Constructs a new graph with the same topology as the input graph, but
-	 * with all coordinates modified by stereographic projection. All
+	 * Updates the coordinates of all vertices by stereographic projection. All
 	 * coordinates will have z=0 component after projection, so they can
 	 * safely be considered as 2D points.
-	 * @param oldGraph
+	 * @param graph
 	 * @return
 	 */
 	@Override
-	public UndirectedGraph<ChainVertex3D,InterfaceEdge3D> projectLatticeGraph(UndirectedGraph<ChainVertex3D, InterfaceEdge3D> oldGraph) {
-
-		// Mappings from old graph to new
-		Map<ChainVertex3D,ChainVertex3D> newVertices = new HashMap<>(oldGraph.vertexSet().size());
-		Map<InterfaceEdge3D,InterfaceEdge3D> newEdges = new HashMap<>(oldGraph.edgeSet().size());
+	public void projectLatticeGraph(UndirectedGraph<V,E> graph) {
 
 		// Non-normalized coordinates for vertices
 		Set<Point2d> centeredCoords = new HashSet<>();
 
 		// Project vertices (unnormalized, centered at 0,0)
-		for(ChainVertex3D vert : oldGraph.vertexSet()) {
+		for(V vert : graph.vertexSet()) {
 			Point3d pos = vertexPositioner.getPosition(vert);
 			// Project onto the sphere
 			Point3d angles = sphericalCoord(pos, center, zenith);
 			Point2d stereo = stereographicProjection(angles, maxRadius);
 			centeredCoords.add( stereo );
 
-			ChainVertex3D newVert = new ChainVertex3D(vert);
-			newVert.setCenter(new Point3d(stereo.x, stereo.y, 0));
-			newVertices.put(vert,newVert);
+			vertexPositioner.setPosition(vert,new Point3d(stereo.x, stereo.y, 0));
 		}
 		// Project edges (unnormalized, centered at 0,0)
-		for(InterfaceEdge3D edge :oldGraph.edgeSet()) {
-			InterfaceEdge3D newEdge = new InterfaceEdge3D(edge);
+//		for(E edge :oldGraph.edgeSet()) {
 //			for( OrientedCircle circ : newEdge.getCircles()) {
 //				Point3d pos = circ.getCenter();
 //				// Project onto the sphere
@@ -123,8 +107,8 @@ public class StereographicLayout implements GraphLayout<ChainVertex3D,InterfaceE
 //				newSegs.add(newSeg);
 //			}
 //			newEdge.setSegments(newSegs);
-			newEdges.put(edge, newEdge);
-		}
+//			newEdges.put(edge, newEdge);
+//		}
 
 		// Calculate bounds, leaving the origin centered
 		double maxX = 0;
@@ -142,9 +126,9 @@ public class StereographicLayout implements GraphLayout<ChainVertex3D,InterfaceE
 		double scale = Math.min( maxWidth/maxX/2, maxHeight/maxY/2 ); //pixels per unit
 
 		// Normalize the coordinates & move the vertices
-		for(ChainVertex3D vert : newVertices.values()) {
-			Point3d center = normalizePos(vert.getCenter(), scale);
-			vert.setCenter(center);
+		for(V vert : graph.vertexSet()) {
+			Point3d center = normalizePos(vertexPositioner.getPosition(vert), scale);
+			vertexPositioner.setPosition(vert,center);
 		}
 		// Normalize edges
 //		for(InterfaceEdge3D edge :newEdges.values()) {
@@ -171,19 +155,6 @@ public class StereographicLayout implements GraphLayout<ChainVertex3D,InterfaceE
 //			}
 //			edge.setSegments(newSegs);
 //		}
-		// convert old graph to new one
-		UndirectedGraph<ChainVertex3D,InterfaceEdge3D> newGraph = new Pseudograph<>(InterfaceEdge3D.class);
-
-		for(ChainVertex3D vert : newVertices.values()) {
-			newGraph.addVertex(vert);
-		}
-		for(InterfaceEdge3D edge : oldGraph.edgeSet()) {
-			ChainVertex3D source = newVertices.get( oldGraph.getEdgeSource(edge) );
-			ChainVertex3D target = newVertices.get( oldGraph.getEdgeTarget(edge) );
-			InterfaceEdge3D newEdge = newEdges.get( edge );
-			newGraph.addEdge(source, target, newEdge);
-		}
-		return newGraph;
 	}
 
 	private Point3d normalizePos(Point3d pos, double scale) {
@@ -307,5 +278,13 @@ public class StereographicLayout implements GraphLayout<ChainVertex3D,InterfaceE
 
 	public Point3d getZenith() {
 		return zenith;
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public VertexPositioner<V> getVertexPositioner() {
+		return vertexPositioner;
 	}
 }

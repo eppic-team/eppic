@@ -10,8 +10,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import javax.vecmath.Point3d;
 import javax.vecmath.Vector3d;
@@ -22,6 +24,7 @@ import org.biojava.nbio.structure.StructureTools;
 import org.biojava.nbio.structure.contact.StructureInterface;
 import org.biojava.nbio.structure.io.util.FileDownloadUtils;
 import org.jgrapht.UndirectedGraph;
+import org.jgrapht.graph.Pseudograph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,7 +58,7 @@ public class LatticeGUIMustache {
 	// cache for getGraph2D
 	private UndirectedGraph<ChainVertex3D, InterfaceEdge3DSourced<ChainVertex3D>> graph2d = null;
 
-	private StereographicLayout layout2d = null;
+	private StereographicLayout<ChainVertex3D,InterfaceEdge3D> layout2d = null;
 
 	/**
 	 * Factory method for known templates. Most templates use this class directly.
@@ -299,13 +302,13 @@ public class LatticeGUIMustache {
 	/**
 	 * @return the current 2D layout
 	 */
-	public StereographicLayout getLayout2D() {
+	public StereographicLayout<ChainVertex3D,InterfaceEdge3D> getLayout2D() {
 		return layout2d;
 	}
 	/**
 	 * @param layout2d the 2D layout to set
 	 */
-	public void setLayout2D(StereographicLayout layout2d) {
+	public void setLayout2D(StereographicLayout<ChainVertex3D,InterfaceEdge3D> layout2d) {
 		if(this.layout2d != null && !this.layout2d.equals(layout2d)) {
 			// graph2d depends on the layout
 			this.graph2d = null;
@@ -327,12 +330,39 @@ public class LatticeGUIMustache {
 				throw new IllegalStateException("No 2D layout set for calculating the 2D graph");
 			}
 			UndirectedGraph<ChainVertex3D, InterfaceEdge3D> graph3d = getGraph().getGraph();
-			UndirectedGraph<ChainVertex3D, InterfaceEdge3D> graph2dUnsorced = layout2d.projectLatticeGraph(graph3d);
+			UndirectedGraph<ChainVertex3D, InterfaceEdge3D> graph2dUnsorced = cloneGraph3D(graph3d);
+			layout2d.projectLatticeGraph(graph2dUnsorced);
 			graph2d = InterfaceEdge3DSourced.addSources(graph2dUnsorced);
 		}
 		return graph2d;
 	}
 
+	private static UndirectedGraph<ChainVertex3D, InterfaceEdge3D> cloneGraph3D(
+			UndirectedGraph<ChainVertex3D, InterfaceEdge3D> oldGraph) {
+		// Mappings from old graph to new
+		Map<ChainVertex3D,ChainVertex3D> newVertices = new HashMap<>(oldGraph.vertexSet().size());
+		Map<InterfaceEdge3D,InterfaceEdge3D> newEdges = new HashMap<>(oldGraph.edgeSet().size());
+		for(ChainVertex3D vert : oldGraph.vertexSet()) {
+			ChainVertex3D newVert = new ChainVertex3D(vert);
+			newVertices.put(vert,newVert);
+		}
+		for(InterfaceEdge3D edge :oldGraph.edgeSet()) {
+			InterfaceEdge3D newEdge = new InterfaceEdge3D(edge);
+			newEdges.put(edge, newEdge);
+		}
+		// convert old graph to new one
+		UndirectedGraph<ChainVertex3D,InterfaceEdge3D> newGraph = new Pseudograph<>(InterfaceEdge3D.class);
+		for(ChainVertex3D vert : newVertices.values()) {
+			newGraph.addVertex(vert);
+		}
+		for(InterfaceEdge3D edge : oldGraph.edgeSet()) {
+			ChainVertex3D source = newVertices.get( oldGraph.getEdgeSource(edge) );
+			ChainVertex3D target = newVertices.get( oldGraph.getEdgeTarget(edge) );
+			InterfaceEdge3D newEdge = newEdges.get( edge );
+			newGraph.addEdge(source, target, newEdge);
+		}
+		return newGraph;
+	}
 	public static void main(String[] args) throws IOException, StructureException {
 		final String usage = String.format("Usage: %s template structure output [interfacelist]",LatticeGUIMustache.class.getSimpleName());
 		if (args.length<2) {
@@ -385,7 +415,7 @@ public class LatticeGUIMustache {
 		}
 		Point3d center = new Point3d();
 		Point3d zenith = new Point3d(0,0,1);
-		StereographicLayout layout2d = new StereographicLayout(center , zenith);
+		StereographicLayout<ChainVertex3D,InterfaceEdge3D> layout2d = new StereographicLayout<>(ChainVertex3D.getVertexPositioner(), center , zenith);
 		gui.setLayout2D(layout2d );
 		gui.execute(mainOut);
 

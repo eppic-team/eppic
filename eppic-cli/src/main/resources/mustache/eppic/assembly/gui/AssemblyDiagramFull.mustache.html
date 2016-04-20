@@ -22,7 +22,7 @@
   // create an array with nodes
   var nodes = new vis.DataSet([
 {{#graph2D.vertexSet}}
-    {id: '{{toString}}', label: '{{chain}}{{interfaceId}}', x: {{center.x}}, y: {{center.y}}, color: '{{colorStr}}'},
+    {id: '{{toString}}', label: '{{toString}}', x: {{center.x}}, y: {{center.y}}, color: '{{colorStr}}'},
 {{/graph2D.vertexSet}}
   ]);
 
@@ -53,7 +53,7 @@
     nodes: {
       shape: 'circle',
       size: 10,
-      title: 'This text can be shown when the user mouses over the node.',
+      //title: 'This text can be shown when the user mouses over the node.',
       physics: false,
     },
     edges: {

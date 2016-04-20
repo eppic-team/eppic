@@ -15,6 +15,16 @@ import org.jgrapht.UndirectedGraph;
  */
 public interface GraphLayout<V,E> {
 
-	UndirectedGraph<V,E> projectLatticeGraph(UndirectedGraph<V,E> oldGraph);
+	/**
+	 * Helper object to control getting and setting 3D coordinates for the vertex
+	 * @return
+	 */
+	VertexPositioner<V> getVertexPositioner();
+	
+	/**
+	 * Update the coordinates of all vertices
+	 * @param graph
+	 */
+	void projectLatticeGraph(UndirectedGraph<V,E> graph);
 
 }
