@@ -52,7 +52,9 @@ import com.mxgraph.util.mxConstants;
 import eppic.assembly.ChainVertex3D;
 import eppic.assembly.InterfaceEdge3D;
 import eppic.assembly.LatticeGraph3D;
-import eppic.assembly.gui.StereographicLayout.VertexPositioner;
+import eppic.assembly.layout.VertexPositioner;
+import eppic.assembly.layout.mxgraph.mxConnectedComponentLayout;
+import eppic.assembly.layout.mxgraph.mxStereographicLayout;
 
 /**
  * 
@@ -270,8 +272,8 @@ public class LatticeGUIJGraph {
 				new mxStereographicLayout<ChainVertex3D, InterfaceEdge3D>(
 						jgraph,positioner,center, zenith);
 		layout.execute(jgraph.getDefaultParent());
-		final ConnectedComponentLayout<ChainVertex3D, InterfaceEdge3D> layout2 = 
-				new ConnectedComponentLayout<ChainVertex3D, InterfaceEdge3D>(jgraph);
+		final mxConnectedComponentLayout<ChainVertex3D, InterfaceEdge3D> layout2 = 
+				new mxConnectedComponentLayout<ChainVertex3D, InterfaceEdge3D>(jgraph);
 		layout2.execute(jgraph.getDefaultParent());
 	}
 

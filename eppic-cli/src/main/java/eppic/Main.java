@@ -62,7 +62,7 @@ import eppic.assembly.CrystalAssemblies;
 import eppic.assembly.InterfaceEdge3D;
 import eppic.assembly.LatticeGraph3D;
 import eppic.assembly.gui.LatticeGUIJGraph;
-import eppic.assembly.gui.StereographicLayout.VertexPositioner;
+import eppic.assembly.layout.VertexPositioner;
 import eppic.commons.util.FileTypeGuesser;
 import eppic.commons.util.GeomTools;
 import eppic.commons.util.Goodies;
@@ -759,6 +759,11 @@ public class Main {
 								centroid = new Point3d(0,0,1);
 							}
 							return centroid;
+						}
+
+						@Override
+						public void setPosition(ChainVertex3D vertex, Point3d pos) {
+							throw new UnsupportedOperationException("Read-only vertex");
 						}
 					};
 					

@@ -1,4 +1,4 @@
-package eppic.assembly.gui;
+package eppic.assembly.layout.mxgraph;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -15,7 +15,8 @@ import com.mxgraph.layout.mxGraphLayout;
 import com.mxgraph.model.mxICell;
 import com.mxgraph.model.mxIGraphModel;
 
-import eppic.assembly.gui.StereographicLayout.VertexPositioner;
+import eppic.assembly.layout.StereographicLayout;
+import eppic.assembly.layout.VertexPositioner;
 
 /**
  * A jGraphX layout for LatticeGraph3D networks.

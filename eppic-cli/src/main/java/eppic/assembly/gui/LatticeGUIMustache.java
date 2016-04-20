@@ -33,6 +33,7 @@ import eppic.assembly.ChainVertex3D;
 import eppic.assembly.InterfaceEdge3D;
 import eppic.assembly.LatticeGraph3D;
 import eppic.assembly.OrientedCircle;
+import eppic.assembly.layout.StereographicLayout;
 
 /**
  * Create viewers for LatticeGraph based on the Mustache template system. This

@@ -1,4 +1,4 @@
-package eppic.assembly.gui;
+package eppic.assembly.layout.mxgraph;
 
 import java.awt.Dimension;
 import java.awt.Rectangle;
@@ -34,11 +34,11 @@ import eppic.assembly.BinaryBinPacker;
  * @param <V> Vertex type
  * @param <E> Edge type
  */
-public class ConnectedComponentLayout<V,E> extends mxGraphLayout {
-	private static final Logger logger = LoggerFactory.getLogger(ConnectedComponentLayout.class);
+public class mxConnectedComponentLayout<V,E> extends mxGraphLayout {
+	private static final Logger logger = LoggerFactory.getLogger(mxConnectedComponentLayout.class);
 
 	private int padding; // units to leave around each component
-	public ConnectedComponentLayout(JGraphXAdapter<V, E> graph) {
+	public mxConnectedComponentLayout(JGraphXAdapter<V, E> graph) {
 		super(graph);
 
 		padding = 10;

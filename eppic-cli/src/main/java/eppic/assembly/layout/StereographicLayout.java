@@ -1,4 +1,4 @@
-package eppic.assembly.gui;
+package eppic.assembly.layout;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -30,11 +30,7 @@ import eppic.commons.util.GeomTools;
  * @param <V> Vertex type
  * @param <E> Edge type
  */
-public class StereographicLayout {
-	
-	public static interface VertexPositioner<V> {
-		Point3d getPosition(V vertex);
-	}
+public class StereographicLayout implements GraphLayout<ChainVertex3D,InterfaceEdge3D> {
 
 	//private static final Logger logger = LoggerFactory.getLogger(StereographicLayout.class);
 	
@@ -64,6 +60,7 @@ public class StereographicLayout {
 	 * @param oldGraph
 	 * @return
 	 */
+	@Override
 	public UndirectedGraph<ChainVertex3D,InterfaceEdge3D> projectLatticeGraph(UndirectedGraph<ChainVertex3D, InterfaceEdge3D> oldGraph) {
 
 		// Mappings from old graph to new
