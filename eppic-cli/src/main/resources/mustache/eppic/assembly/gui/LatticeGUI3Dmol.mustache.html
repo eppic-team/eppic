@@ -69,7 +69,7 @@ function axes(viewer) {
 {{#graph.graph.vertexSet}}
  viewer.addSphere({center:new $3Dmol.Vector3({{center.x}},{{center.y}},{{center.z}}),
      radius:5.0,
-     color:'{{colorStr}}{{^colorStr}}white{{/colorStr}}'});
+     color:'{{#colorStr}}0x{{colorStr}}{{/colorStr}}{{^colorStr}}white{{/colorStr}}'});
 {{/graph.graph.vertexSet}}
  //Edges
 {{#graph.graph.edgeSet}}
@@ -77,16 +77,16 @@ function axes(viewer) {
  viewer.addArrow({
      start:new $3Dmol.Vector3( {{start.x}},{{start.y}},{{start.z}} ),
      end:new $3Dmol.Vector3( {{end.x}},{{end.y}},{{end.z}} ),
-     color:'{{colorStr}}{{^colorStr}}white{{/colorStr}}'});
+     color:'{{#colorStr}}0x{{colorStr}}{{/colorStr}}{{^colorStr}}white{{/colorStr}}'});
 {{/segments}}
 {{#circles}}
  viewer.addCylinder({
      start:new $3Dmol.Vector3( {{center.x}},{{center.y}},{{center.z}} ),
      end:new $3Dmol.Vector3( {{perpendicular.x}},{{perpendicular.y}},{{perpendicular.z}} ),
      radius:{{radius}},toCap:true,fromCap:true,
-     color:'{{colorStr}}{{^colorStr}}white{{/colorStr}}'});
+     color:'{{#colorStr}}0x{{colorStr}}{{/colorStr}}{{^colorStr}}white{{/colorStr}}'});
  viewer.addLabel("{{interfaceId}}",{
-     fontColor:'{{colorStr}}{{^colorStr}}white{{/colorStr}}',
+     fontColor:'{{#colorStr}}0x{{colorStr}}{{/colorStr}}{{^colorStr}}white{{/colorStr}}',
      fontSize:10,
      showBackground: false,
      infront:false,

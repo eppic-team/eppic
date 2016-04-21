@@ -22,7 +22,13 @@
   // create an array with nodes
   var nodes = new vis.DataSet([
 {{#graph2D.vertexSet}}
-    {id: '{{toString}}', label: '{{toString}}', x: {{center.x}}, y: {{center.y}}, color: '{{colorStr}}'},
+    {
+      id: '{{toString}}',
+      label: '{{toString}}',
+      x: {{center.x}},
+      y: {{center.y}},
+{{#colorStr}}     color: '#{{colorStr}}',{{/colorStr}}
+	},
 {{/graph2D.vertexSet}}
   ]);
 
@@ -34,7 +40,7 @@
       to: '{{target}}',
       label: '{{interfaceId}}',
       title: '{{xtalTrans}}',
-{{#colorStr}}      color: '{{colorStr}}',{{/colorStr}}
+{{#colorStr}}      color: '#{{colorStr}}',{{/colorStr}}
     },
 {{/graph2D.edgeSet}}
   ]);

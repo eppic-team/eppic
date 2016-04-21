@@ -28,19 +28,15 @@ import javax.vecmath.Point3d;
 import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.StructureException;
 import org.biojava.nbio.structure.StructureTools;
+import org.biojava.nbio.structure.align.util.AtomCache;
 import org.biojava.nbio.structure.symmetry.core.AxisAligner;
-import org.biojava.nbio.structure.symmetry.core.QuatSymmetryDetector;
-import org.biojava.nbio.structure.symmetry.core.QuatSymmetryParameters;
 import org.biojava.nbio.structure.symmetry.core.QuatSymmetryResults;
 import org.biojava.nbio.structure.symmetry.core.Rotation;
 import org.biojava.nbio.structure.symmetry.core.RotationGroup;
-import org.biojava.nbio.structure.symmetry.core.Subunits;
 import org.jgrapht.Graph;
 import org.jgrapht.UndirectedGraph;
 import org.jgrapht.alg.ConnectivityInspector;
 import org.jgrapht.ext.JGraphXAdapter;
-import org.jgrapht.graph.MaskFunctor;
-import org.jgrapht.graph.UndirectedMaskSubgraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,6 +48,7 @@ import com.mxgraph.util.mxConstants;
 import eppic.assembly.ChainVertex3D;
 import eppic.assembly.InterfaceEdge3D;
 import eppic.assembly.LatticeGraph3D;
+import eppic.assembly.layout.QuaternaryOrientationLayout;
 import eppic.assembly.layout.VertexPositioner;
 import eppic.assembly.layout.mxgraph.mxConnectedComponentLayout;
 import eppic.assembly.layout.mxgraph.mxStereographicLayout;
@@ -329,7 +326,10 @@ public class LatticeGUIJGraph {
 		// Done parsing
 
 		// Load input structure
-		Structure struc = StructureTools.getStructure(input);
+		AtomCache cache = new AtomCache();
+		cache.getFileParsingParams().setAlignSeqRes(true);
+		cache.setUseMmCif(true);
+		Structure struc = cache.getStructure(input);
 
 		LatticeGraph3D latticeGraph = new LatticeGraph3D(struc);
 		
@@ -342,9 +342,9 @@ public class LatticeGUIJGraph {
 				//continue;
 			}
 			// Focus on one complex
-			UndirectedGraph<ChainVertex3D, InterfaceEdge3D> subgraph = getVertexSubgraph(latticeGraph.getGraph(), connected);
+			UndirectedGraph<ChainVertex3D, InterfaceEdge3D> subgraph = QuaternaryOrientationLayout.getVertexSubgraph(latticeGraph.getGraph(), connected);
 			// Orient
-			QuatSymmetryResults gSymmetry = getQuatSymm(subgraph);
+			QuatSymmetryResults gSymmetry = QuaternaryOrientationLayout.getQuatSymm(subgraph,ChainVertex3D.getVertexPositioner());
 			RotationGroup pointgroup = gSymmetry.getRotationGroup();
 			AxisAligner aligner = AxisAligner.getInstance(gSymmetry);
 			Point3d center = aligner.getGeometricCenter();
@@ -376,68 +376,6 @@ public class LatticeGUIJGraph {
 		if(pngFile != null) {
 			gui.writePNG(pngFile);
 		}
-	}
-	private static QuatSymmetryResults getQuatSymm(
-			UndirectedGraph<ChainVertex3D, InterfaceEdge3D> subgraph) {
-
-		List<Point3d[]> caCoords = new ArrayList<Point3d[]>();
-		List<Integer> folds = new ArrayList<Integer>();
-		List<Boolean> pseudo = new ArrayList<Boolean>();
-		List<String> chainIds = new ArrayList<String>();
-		List<Integer> models = new ArrayList<Integer>();
-		List<Double> seqIDmin = new ArrayList<Double>();
-		List<Double> seqIDmax = new ArrayList<Double>();
-		List<Integer> clusterIDs = new ArrayList<Integer>();
-		int fold = 1;
-		Character chain = 'A';
-
-		for (ChainVertex3D vert : subgraph.vertexSet() ){
-			Point3d centroid = vert.getCenter();
-			caCoords.add(new Point3d[] {centroid});
-			
-			if (subgraph.vertexSet().size() % fold == 0){
-				folds.add(fold); //the folds are the common denominators
-			}
-			fold++;
-			pseudo.add(false);
-			chainIds.add(chain+"");
-			chain++;
-			models.add(0);
-			seqIDmax.add(1.0);
-			seqIDmin.add(1.0);
-			clusterIDs.add(0);
-		}
-
-		//Create directly the subunits, because we know the aligned CA
-		Subunits globalSubunits = new Subunits(caCoords, clusterIDs, 
-				pseudo, seqIDmin, seqIDmax, 
-				folds, chainIds, models);
-
-		//Quaternary Symmetry Detection
-		QuatSymmetryParameters param = new QuatSymmetryParameters();
-
-		QuatSymmetryResults gSymmetry = 
-				QuatSymmetryDetector.calcQuatSymmetry(globalSubunits, param);
-
-		return gSymmetry;
-	}
-	private static UndirectedMaskSubgraph<ChainVertex3D, InterfaceEdge3D> getVertexSubgraph(
-			final UndirectedGraph<ChainVertex3D, InterfaceEdge3D> graph,
-			final Set<ChainVertex3D> connected) {
-		MaskFunctor<ChainVertex3D, InterfaceEdge3D> mask = new MaskFunctor<ChainVertex3D, InterfaceEdge3D>() {
-			@Override
-			public boolean isVertexMasked(ChainVertex3D vertex) {
-				return !connected.contains(vertex);
-			}
-
-			@Override
-			public boolean isEdgeMasked(InterfaceEdge3D edge) {
-				ChainVertex3D s = graph.getEdgeSource(edge);
-				ChainVertex3D t = graph.getEdgeTarget(edge);
-				return !(connected.contains(s) && connected.contains(t));
-			}
-		};
-		return new UndirectedMaskSubgraph<ChainVertex3D, InterfaceEdge3D>(graph, mask);
 	}
 	public String getName() {
 		return name;

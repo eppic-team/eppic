@@ -174,6 +174,7 @@ public class LatticeGUIJmol {
 			struc = StructureTools.getStructure(file.getAbsolutePath());
 		} else if (input.matches("\\d\\w\\w\\w")){ // try as PDB id
 			AtomCache cache = new AtomCache();
+			cache.getFileParsingParams().setAlignSeqRes(true);
 			cache.setUseMmCif(true);
 			struc = cache.getStructure(input);
 			file = getFile(cache,input);

@@ -20,7 +20,7 @@ import javax.vecmath.Vector3d;
 
 import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.StructureException;
-import org.biojava.nbio.structure.StructureTools;
+import org.biojava.nbio.structure.align.util.AtomCache;
 import org.biojava.nbio.structure.contact.StructureInterface;
 import org.biojava.nbio.structure.io.util.FileDownloadUtils;
 import org.jgrapht.UndirectedGraph;
@@ -39,7 +39,7 @@ import eppic.assembly.OrientedCircle;
 import eppic.assembly.layout.ComboLayout;
 import eppic.assembly.layout.ConnectedComponentLayout;
 import eppic.assembly.layout.GraphLayout;
-import eppic.assembly.layout.StereographicLayout;
+import eppic.assembly.layout.QuaternaryOrientationLayout;
 import eppic.assembly.layout.VertexPositioner;
 
 /**
@@ -81,8 +81,8 @@ public class LatticeGUIMustache {
 		template = expandTemplatePath(template);
 		
 		File templateFile = new File(template);
-		if( templateFile.getName().equalsIgnoreCase("LatticeGUI3Dmol") ) {
-			LatticeGUI3Dmol gui = new LatticeGUI3Dmol(struc, null, interfaceIds);
+		if( templateFile.getName().toLowerCase().startsWith("LatticeGUI3Dmol".toLowerCase()) ) {
+			LatticeGUI3Dmol gui = new LatticeGUI3Dmol(template,struc, null, interfaceIds);
 			//TODO work out how to set this
 			gui.setStrucURI(struc.getIdentifier()+".cif");
 			return gui;
@@ -96,16 +96,18 @@ public class LatticeGUIMustache {
 	 * @throws IllegalArgumentException if the template couldn't be found or was ambiguous
 	 */
 	private static String expandTemplatePath(String template) {
+		ClassLoader cl = Thread.currentThread().getContextClassLoader();
+
 		// Try loading template directly
-		URL url = LatticeGUIMustache.class.getResource(template);
+		URL url = cl.getResource(template);
 		if( url != null) {
 			return template;
 		}
 		// Assume that it refers to something in our template directory
-		URL knownTemplate = LatticeGUIMustache.class.getResource(LatticeGUI3Dmol.MUSTACHE_TEMPLATE_3DMOL);
+		URL knownTemplate = cl.getResource(LatticeGUI3Dmol.MUSTACHE_TEMPLATE_3DMOL);
 		if( knownTemplate == null ) {
 			throw new IllegalStateException("Unable to find template resource. Error building jar file?");
-		}
+		} else System.out.println("root: "+knownTemplate);
 		File mustacheDir = new File(knownTemplate.getPath()).getParentFile();
 		
 		// Try template as file's basename
@@ -166,11 +168,11 @@ public class LatticeGUIMustache {
 
 		// Compute names and colors
 		for(ChainVertex3D v : graph.vertexSet()) {
-			v.setColorStr(toHTMLColor(v.getColor()));
+			v.setColorStr(toHexColor(v.getColor()));
 		}
 
 		for(InterfaceEdge3D e : graph.edgeSet()) {
-			String colorStr = toHTMLColor(e.getColor());
+			String colorStr = toHexColor(e.getColor());
 			e.setColorStr(colorStr);
 			
 			if(e.getCircles() != null) {
@@ -203,13 +205,13 @@ public class LatticeGUIMustache {
 	}
 
 	/**
-	 * hex verson of the color (e.g. '0xFF00CC')
+	 * hex version of the color (e.g. 'FF00CC')
 	 * @param color
 	 * @return
 	 */
-	private static String toHTMLColor(Color color) {
+	private static String toHexColor(Color color) {
 		if(color == null) return null;
-		return String.format("#%2x%2x%2x", color.getRed(),color.getGreen(),color.getBlue());
+		return String.format("%2x%2x%2x", color.getRed(),color.getGreen(),color.getBlue());
 	}
 
 
@@ -330,12 +332,13 @@ public class LatticeGUIMustache {
 	 */
 	public UndirectedGraph<ChainVertex3D, InterfaceEdge3DSourced<ChainVertex3D>> getGraph2D() {
 		if( graph2d == null) {
-			if(layout2d == null) {
-				throw new IllegalStateException("No 2D layout set for calculating the 2D graph");
-			}
 			UndirectedGraph<ChainVertex3D, InterfaceEdge3D> graph3d = getGraph().getGraph();
 			UndirectedGraph<ChainVertex3D, InterfaceEdge3D> graph2dUnsorced = cloneGraph3D(graph3d);
-			layout2d.projectLatticeGraph(graph2dUnsorced);
+			if(layout2d == null) {
+				logger.warn("No 2D layout set for calculating the 2D graph. Defaulting to z-projection");
+			} else {
+				layout2d.projectLatticeGraph(graph2dUnsorced);
+			}
 			graph2d = InterfaceEdge3DSourced.addSources(graph2dUnsorced);
 		}
 		return graph2d;
@@ -408,7 +411,9 @@ public class LatticeGUIMustache {
 		// Done parsing
 
 		// Load input structure
-		Structure struc = StructureTools.getStructure(input);
+		AtomCache cache = new AtomCache();
+		cache.getFileParsingParams().setAlignSeqRes(true);
+		Structure struc = cache.getStructure(input);
 
 		LatticeGUIMustache gui;
 		try {
@@ -417,12 +422,16 @@ public class LatticeGUIMustache {
 			System.err.println(e.getMessage());
 			System.exit(1); return;
 		}
-		Point3d center = new Point3d();
-		Point3d zenith = new Point3d(0,0,1);
 
 		VertexPositioner<ChainVertex3D> vertexPositioner = ChainVertex3D.getVertexPositioner();
 		List<GraphLayout<ChainVertex3D,InterfaceEdge3D>> layouts = new ArrayList<>();
-		layouts.add(new StereographicLayout<ChainVertex3D,InterfaceEdge3D>(vertexPositioner , center , zenith));
+
+		QuaternaryOrientationLayout<ChainVertex3D,InterfaceEdge3D> stereo = new QuaternaryOrientationLayout<>(vertexPositioner);
+		
+//		Point3d center = new Point3d();
+//		Point3d zenith = new Point3d(0,0,1);
+//		StereographicLayout<ChainVertex3D,InterfaceEdge3D> stereo = new StereographicLayout<>(vertexPositioner , center , zenith));
+		layouts.add(stereo);
 		
 		ConnectedComponentLayout<ChainVertex3D, InterfaceEdge3D> packer = new ConnectedComponentLayout<>(vertexPositioner);
 		packer.setPadding(100);
