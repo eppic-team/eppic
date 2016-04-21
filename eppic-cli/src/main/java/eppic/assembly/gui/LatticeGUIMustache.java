@@ -36,7 +36,11 @@ import eppic.assembly.ChainVertex3D;
 import eppic.assembly.InterfaceEdge3D;
 import eppic.assembly.LatticeGraph3D;
 import eppic.assembly.OrientedCircle;
+import eppic.assembly.layout.ComboLayout;
+import eppic.assembly.layout.ConnectedComponentLayout;
+import eppic.assembly.layout.GraphLayout;
 import eppic.assembly.layout.StereographicLayout;
+import eppic.assembly.layout.VertexPositioner;
 
 /**
  * Create viewers for LatticeGraph based on the Mustache template system. This
@@ -58,7 +62,7 @@ public class LatticeGUIMustache {
 	// cache for getGraph2D
 	private UndirectedGraph<ChainVertex3D, InterfaceEdge3DSourced<ChainVertex3D>> graph2d = null;
 
-	private StereographicLayout<ChainVertex3D,InterfaceEdge3D> layout2d = null;
+	private GraphLayout<ChainVertex3D,InterfaceEdge3D> layout2d = null;
 
 	/**
 	 * Factory method for known templates. Most templates use this class directly.
@@ -302,13 +306,13 @@ public class LatticeGUIMustache {
 	/**
 	 * @return the current 2D layout
 	 */
-	public StereographicLayout<ChainVertex3D,InterfaceEdge3D> getLayout2D() {
+	public GraphLayout<ChainVertex3D,InterfaceEdge3D> getLayout2D() {
 		return layout2d;
 	}
 	/**
 	 * @param layout2d the 2D layout to set
 	 */
-	public void setLayout2D(StereographicLayout<ChainVertex3D,InterfaceEdge3D> layout2d) {
+	public void setLayout2D(GraphLayout<ChainVertex3D,InterfaceEdge3D> layout2d) {
 		if(this.layout2d != null && !this.layout2d.equals(layout2d)) {
 			// graph2d depends on the layout
 			this.graph2d = null;
@@ -415,8 +419,16 @@ public class LatticeGUIMustache {
 		}
 		Point3d center = new Point3d();
 		Point3d zenith = new Point3d(0,0,1);
-		StereographicLayout<ChainVertex3D,InterfaceEdge3D> layout2d = new StereographicLayout<>(ChainVertex3D.getVertexPositioner(), center , zenith);
-		gui.setLayout2D(layout2d );
+
+		VertexPositioner<ChainVertex3D> vertexPositioner = ChainVertex3D.getVertexPositioner();
+		List<GraphLayout<ChainVertex3D,InterfaceEdge3D>> layouts = new ArrayList<>();
+		layouts.add(new StereographicLayout<ChainVertex3D,InterfaceEdge3D>(vertexPositioner , center , zenith));
+		
+		ConnectedComponentLayout<ChainVertex3D, InterfaceEdge3D> packer = new ConnectedComponentLayout<>(vertexPositioner);
+		packer.setPadding(100);
+		layouts.add(packer);
+		
+		gui.setLayout2D(new ComboLayout<>(layouts) );
 		gui.execute(mainOut);
 
 		if( !output.equals("-")) {

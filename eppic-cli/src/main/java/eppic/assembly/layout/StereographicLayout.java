@@ -25,7 +25,7 @@ import eppic.commons.util.GeomTools;
  * @param <V> Vertex type
  * @param <E> Edge type
  */
-public class StereographicLayout<V,E> implements GraphLayout<V,E> {
+public class StereographicLayout<V,E> extends AbstractGraphLayout<V,E> {
 
 	//private static final Logger logger = LoggerFactory.getLogger(StereographicLayout.class);
 	
@@ -36,10 +36,9 @@ public class StereographicLayout<V,E> implements GraphLayout<V,E> {
 	private int maxHeight = 500;
 	private int maxRadius = 4;
 	
-	private final VertexPositioner<V> vertexPositioner;
 
 	public StereographicLayout(VertexPositioner<V> positioner,Point3d center, Point3d zenith ) {
-		this.vertexPositioner = positioner;
+		super(positioner);
 		this.center = center;
 		this.zenith = zenith;
 	}
@@ -278,13 +277,5 @@ public class StereographicLayout<V,E> implements GraphLayout<V,E> {
 
 	public Point3d getZenith() {
 		return zenith;
-	}
-	
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public VertexPositioner<V> getVertexPositioner() {
-		return vertexPositioner;
 	}
 }
