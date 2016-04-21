@@ -40,8 +40,8 @@ public class InterfaceEdge3DSourced<V> extends InterfaceEdge3D {
 	 * @param graph
 	 * @return graph, with InterfaceEdge3D replaced by InterfaceEdge3DSourced
 	 */
+	@SuppressWarnings("unchecked")
 	public static <V> Pseudograph<V,InterfaceEdge3DSourced<V>> addSources( Graph<V,InterfaceEdge3D> graph ){
-		@SuppressWarnings("unchecked")
 		Pseudograph<V,InterfaceEdge3DSourced<V>> out = new Pseudograph<V, InterfaceEdge3DSourced<V>>((Class<? extends InterfaceEdge3DSourced<V>>) InterfaceEdge3DSourced.class);
 		for(V vert : graph.vertexSet() ) {
 			out.addVertex(vert);
