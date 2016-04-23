@@ -168,7 +168,7 @@ public class LatticeGraphServlet extends BaseServlet
 		}
 	}
 	
-	private PdbInfo getPdbInfo(String jobId) throws DaoException {
+	static PdbInfo getPdbInfo(String jobId) throws DaoException {
 		PDBInfoDAO pdbDao = new PDBInfoDAOJpa();
 		PdbInfo pdbinfo = pdbDao.getPDBInfo(jobId);
 		// Set additional job properties
@@ -179,7 +179,7 @@ public class LatticeGraphServlet extends BaseServlet
 		return pdbinfo;
 	}
 
-	private List<Interface> getInterfaceList(PdbInfo pdbInfo) throws DaoException {
+	static List<Interface> getInterfaceList(PdbInfo pdbInfo) throws DaoException {
 		InterfaceDAO interfaceDAO = new InterfaceDAOJpa();
 			return interfaceDAO.getAllInterfaces(pdbInfo.getUid());
 	}
@@ -191,7 +191,7 @@ public class LatticeGraphServlet extends BaseServlet
 	 * @param ifaceList
 	 * @return
 	 */
-	private static Collection<Integer> parseInterfaceListWithClusters(
+	static Collection<Integer> parseInterfaceListWithClusters(
 			String ifaceStr, String clusterStr,
 			List<Interface> ifaceList) {
 		// If one of interfaces and clusters is specified, return it

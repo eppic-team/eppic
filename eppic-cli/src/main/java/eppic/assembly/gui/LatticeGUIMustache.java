@@ -1,19 +1,26 @@
 package eppic.assembly.gui;
 
 import java.awt.Color;
-import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.file.DirectoryStream;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystemNotFoundException;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import javax.vecmath.Point3d;
 import javax.vecmath.Vector3d;
@@ -51,6 +58,12 @@ import eppic.assembly.layout.VertexPositioner;
  */
 public class LatticeGUIMustache {
 	private static final Logger logger = LoggerFactory.getLogger(LatticeGUIMustache.class);
+	
+	// Some pre-defined templates for use with createLatticeGUIMustache
+	public static final String TEMPLATE_ASSEMBLY_DIAGRAM_FULL = "mustache/eppic/assembly/gui/AssemblyDiagramFull.mustache.html";// "AssemblyDiagramFull";
+	public static final String TEMPLATE_3DMOL = LatticeGUI3Dmol.MUSTACHE_TEMPLATE_3DMOL;//"LatticeGUI3Dmol";
+
+	
 
 	private final LatticeGraph3D latticeGraph;
 	private final String template;
@@ -77,17 +90,17 @@ public class LatticeGUIMustache {
 	 * @return
 	 * @throws StructureException 
 	 */
-	public static LatticeGUIMustache createLatticeGUIMustache(String template,Structure struc,Collection<Integer> interfaceIds) throws StructureException {
-		template = expandTemplatePath(template);
-		
-		File templateFile = new File(template);
-		if( templateFile.getName().toLowerCase().startsWith("LatticeGUI3Dmol".toLowerCase()) ) {
-			LatticeGUI3Dmol gui = new LatticeGUI3Dmol(template,struc, null, interfaceIds);
+	public static LatticeGUIMustache createLatticeGUIMustache(String template,Structure struc,Collection<Integer> interfaceIds,List<StructureInterface> allInterfaces) throws StructureException {
+		String templatePath = expandTemplatePath(template);
+		logger.info("Loading mustache template from {}",templatePath);
+
+		if( templatePath.toLowerCase().contains(TEMPLATE_3DMOL.toLowerCase()) ) {
+			LatticeGUI3Dmol gui = new LatticeGUI3Dmol(templatePath.toString(),struc, null, interfaceIds);
 			//TODO work out how to set this
 			gui.setStrucURI(struc.getIdentifier()+".cif");
 			return gui;
 		}
-		return new LatticeGUIMustache(template, struc, interfaceIds);
+		return new LatticeGUIMustache(templatePath.toString(), struc, interfaceIds);
 	}
 	/**
 	 * 
@@ -96,43 +109,76 @@ public class LatticeGUIMustache {
 	 * @throws IllegalArgumentException if the template couldn't be found or was ambiguous
 	 */
 	private static String expandTemplatePath(String template) {
+		// Mustache loads templates through the classloader, so we want a path it understands
 		ClassLoader cl = Thread.currentThread().getContextClassLoader();
-
-		// Try loading template directly
-		URL url = cl.getResource(template);
-		if( url != null) {
-			return template;
-		}
-		// Assume that it refers to something in our template directory
-		URL knownTemplate = cl.getResource(LatticeGUI3Dmol.MUSTACHE_TEMPLATE_3DMOL);
-		if( knownTemplate == null ) {
-			throw new IllegalStateException("Unable to find template resource. Error building jar file?");
-		} else System.out.println("root: "+knownTemplate);
-		File mustacheDir = new File(knownTemplate.getPath()).getParentFile();
-		
-		// Try template as file's basename
-		File attempt = new File(mustacheDir,template);
-		if( attempt.exists())
-			return attempt.getAbsolutePath();
-		
-		// See if we have a single unique shortname
-		String glob = String.format("{LatticeGUI[%s%s]%s,%s}.mustache.*",
-				template.substring(0, 1).toLowerCase(),
-				template.substring(0, 1).toUpperCase(),
-				template.substring(1),
-				template );
-		try( DirectoryStream<Path> mustacheDirStream = Files.newDirectoryStream(mustacheDir.toPath(), glob) ) {
-			Iterator<Path> it = mustacheDirStream.iterator();
-			if(it.hasNext()) {
-				Path first = it.next();
-				if(it.hasNext()) {
-					// not unique
-					throw new IllegalArgumentException("Multiple templates match "+template+", starting with "+first+" and "+it.next());
-				}
-				return first.toAbsolutePath().toString();
+		try {
+			// Try loading template directly
+			URL url = cl.getResource(template);
+			if( url != null) {
+				logger.debug("Matched template {} directly.",template);
+				return template;
 			}
-			// no matches
-		} catch (IOException e) {}
+			
+			//TODO this doesn't work with jar files 
+
+
+			// classloader root
+			url = cl.getResource("mustache");
+			if( url == null) {
+				throw new IllegalStateException("No root resource?");
+			}
+			Path root = Paths.get(url.toURI());
+			logger.debug("Root: {}",root);
+			logger.debug("Root filesystem: {}",root.getFileSystem());
+			
+			// Try matching against known templates
+			URL knownTemplate = cl.getResource(LatticeGUI3Dmol.MUSTACHE_TEMPLATE_3DMOL);
+			if( knownTemplate == null ) {
+				throw new IllegalStateException("Unable to find template resource. Error building jar file?");
+			}
+			logger.debug("Known template at {}",knownTemplate);
+			Path mustacheDir;
+			try {
+				// Fails for jar resources
+				mustacheDir = Paths.get(knownTemplate.toURI()).getParent();
+			} catch( FileSystemNotFoundException e) {
+				FileSystem fs = FileSystems.newFileSystem(knownTemplate.toURI(), Collections.<String,Object>emptyMap());
+				mustacheDir = fs.getPath(LatticeGUI3Dmol.MUSTACHE_TEMPLATE_3DMOL);
+			}
+			logger.debug("Checking for templates in {}",mustacheDir);
+
+			
+			mustacheDir = root.relativize(mustacheDir);
+			
+			
+			// See if any of the templates match as a short name
+			Pattern longNameRE = Pattern.compile("^(LatticeGUI)?"+template+"(\\.mustache\\..*)?$", Pattern.CASE_INSENSITIVE);
+			try(Stream<Path> walk = Files.walk(root.resolve(mustacheDir), 1) ) {
+				Path matchedPath = null;
+				for(Iterator<Path> it = walk.iterator(); it.hasNext();) {
+					Path longName = it.next();
+					logger.error("Walking {}",longName);
+					String baseName = longName.getFileName().toString();
+					Matcher match = longNameRE.matcher(baseName);
+					if(match.matches()) {
+						if(matchedPath != null) {
+							throw new IllegalArgumentException("Multiple templates match "+template+", starting with "+matchedPath+" and "+longName);
+						}
+						matchedPath = root.relativize(longName);
+					}
+				}
+				if( matchedPath != null) {
+					url = cl.getResource(matchedPath.toString());
+					if( url != null) {
+						return matchedPath.toString();
+					}
+
+				}
+			}
+		} catch (URISyntaxException|IOException e) {
+			// thrown below
+		}
+
 		throw new IllegalArgumentException("No matching template found for "+template);
 	}
 	
@@ -155,7 +201,7 @@ public class LatticeGUIMustache {
 	 *  If not null it avoids recalculating the full list.
 	 * @throws StructureException
 	 */
-	public LatticeGUIMustache(String template, Structure struc,Collection<Integer> interfaceIds,List<StructureInterface> allInterfaces) throws StructureException {
+	public LatticeGUIMustache(String template, Structure struc,Collection<Integer> interfaceIds, List<StructureInterface> allInterfaces) throws StructureException {
 		this.latticeGraph = new LatticeGraph3D(struc,allInterfaces);
 		this.template = template;
 		
@@ -417,7 +463,7 @@ public class LatticeGUIMustache {
 
 		LatticeGUIMustache gui;
 		try {
-			gui = createLatticeGUIMustache(template, struc, interfaceIds);
+			gui = createLatticeGUIMustache(template, struc, interfaceIds,null);
 		} catch( IllegalArgumentException e) {
 			System.err.println(e.getMessage());
 			System.exit(1); return;

@@ -83,6 +83,11 @@
 	    <servlet-class>ch.systemsx.sybit.crkwebui.server.jmol.servlets.LatticeGraphServlet</servlet-class>
 	</servlet>
 
+	<servlet>
+	    <servlet-name>AssemblyDiagramService</servlet-name>
+	    <servlet-class>ch.systemsx.sybit.crkwebui.server.jmol.servlets.AssemblyDiagramServlet</servlet-class>
+	</servlet>
+
 	<servlet-mapping>
 		<servlet-name>CrkService</servlet-name>
 		<url-pattern>/ewui/crk</url-pattern>
@@ -117,7 +122,12 @@
 	    <servlet-name>LatticeGraphService</servlet-name>
 	    <url-pattern>/ewui/latticeGraph</url-pattern>
  	</servlet-mapping>
- 	
+
+ 	<servlet-mapping>
+	    <servlet-name>AssemblyDiagramService</servlet-name>
+	    <url-pattern>/ewui/assemblyDiagram</url-pattern>
+ 	</servlet-mapping>
+
  	<!-- Session timeout: if the client is idle for more than this time (in minutes) 
          then the session is lost. 1440min = 24x60min -->
  	 <session-config>
