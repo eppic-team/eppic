@@ -67,5 +67,13 @@ public class DiagramViewerRunner
 		
 	}
 	
+	public static String getViewerAssemblyURL(){
+		String url = GWT.getModuleBaseURL() + LatticeGraphServlet.SERVLET_NAME;
+		url +=  "?" + FileDownloadServlet.PARAM_ID + "=" + ApplicationContext.getPdbInfo().getJobId() +
+				"&" + LatticeGraphServlet.PARAM_INTERFACES + "=*";
+		return url;
+		
+	}
+	
 
 }
