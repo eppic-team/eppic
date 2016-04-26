@@ -9,6 +9,7 @@ import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.commons.events.SelectAssemblyResultsRowEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowAssembliesEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowAssemblyViewerEvent;
+import ch.systemsx.sybit.crkwebui.client.commons.events.ShowAssemblyViewerInNewTabEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowDiagramViewerEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowInterfacesOfAssemblyDataEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowThumbnailEvent;
@@ -16,6 +17,7 @@ import ch.systemsx.sybit.crkwebui.client.commons.events.WindowHideEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.SelectAssemblyResultsRowHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowAssembliesHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowAssemblyViewerHandler;
+import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowAssemblyViewerInNewTabHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowDiagramViewerHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowThumbnailHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.WindowHideHandler;
@@ -38,6 +40,8 @@ import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.NativeEvent;
+import com.google.gwt.event.dom.client.DoubleClickEvent;
+import com.google.gwt.event.dom.client.DoubleClickHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
@@ -563,7 +567,6 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 				refreshResultsGrid();	
 			}
 		});
-
 		
 		EventBusManager.EVENT_BUS.addHandler(ShowAssemblyViewerEvent.TYPE, new ShowAssemblyViewerHandler() {
 			
@@ -573,6 +576,15 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 				ViewerRunner.runViewerAssembly(String.valueOf(resultsGrid.getSelectionModel().getSelectedItem().getAssemblyId()));
 			}
 		}); 
+		
+		EventBusManager.EVENT_BUS.addHandler(ShowAssemblyViewerInNewTabEvent.TYPE, new ShowAssemblyViewerInNewTabHandler() {
+			
+			@Override
+			public void onShowAssemblyViewerInNewTab(
+					ShowAssemblyViewerInNewTabEvent event) {
+				ViewerRunner.runViewerAssemblyInNewTab(String.valueOf(resultsGrid.getSelectionModel().getSelectedItem().getAssemblyId()));
+			}
+		});
 		
 		EventBusManager.EVENT_BUS.addHandler(ShowDiagramViewerEvent.TYPE, new ShowDiagramViewerHandler() {
 			
