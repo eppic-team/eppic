@@ -201,7 +201,7 @@ public class MainController
 							ResultsPanel.headerPanel.pdbIdentifierPanel.pdbNameLabel.setHTML(ApplicationContext.getPdbInfo().getInputName());							
 						ResultsPanel.informationPanel.assemblyInfoPanel.setHeadingHtml("General Information");				
 						if(History.getToken().contains("clusters")){
-							ResultsPanel.headerPanel.pdbIdentifierPanel.informationLabel.setHTML("Interfaces Clusters of: ");
+							ResultsPanel.headerPanel.pdbIdentifierPanel.informationLabel.setHTML("Interface Clusters of: ");
 							ResultsPanel.informationPanel.assemblyInfoPanel.assembly_info.setHTML("<table cellpadding=0 cellspacing=0><tr><td width='150px'><span class='eppic-general-info-label-new'>Assemblies</span></td><td><span class='eppic-general-info-label-value-new'><a href='" + GWT.getHostPageBaseURL() + "#id/"+ApplicationContext.getSelectedJobId()+"'>" + ApplicationContext.getPdbInfo().getAssemblies().size() + "</a></span></td></tr><tr><td><span class='eppic-general-info-label-new'>Interfaces</span></td><td><span class='eppic-general-info-label-value-new'><a href='" + GWT.getHostPageBaseURL() + "#interfaces/"+ApplicationContext.getSelectedJobId()+"'>" + num_interfaces + "</a></span></td></tr><tr><td><span class='eppic-general-info-label-new'>Interface clusters</span></td><td><span class='eppic-general-info-label-value-new'>" + ApplicationContext.getPdbInfo().getInterfaceClusters().size()+"</span></td></tr></table>");
 						}
 						if(History.getToken().contains("interfaces")){
