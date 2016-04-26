@@ -62,7 +62,8 @@ public class DiagramViewerRunner
 		//if(!interfaceids.equals("")) 	
 			//Window.open(url,"_blank","width="+size+",height="+size);
 		
-		Window.open(url,"_blank","width="+size+",height="+size);		
+		//Window.open(url,"_blank","width="+size+",height="+size);
+		Window.open(url,"_blank","");
 		
 	}
 	
