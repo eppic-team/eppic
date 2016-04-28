@@ -41,6 +41,7 @@ import com.github.mustachejava.MustacheFactory;
 
 import eppic.assembly.ChainVertex3D;
 import eppic.assembly.InterfaceEdge3D;
+import eppic.assembly.LatticeGraph;
 import eppic.assembly.LatticeGraph3D;
 import eppic.assembly.OrientedCircle;
 import eppic.assembly.layout.ComboLayout;
@@ -380,6 +381,7 @@ public class LatticeGUIMustache {
 		if( graph2d == null) {
 			UndirectedGraph<ChainVertex3D, InterfaceEdge3D> graph3d = getGraph().getGraph();
 			UndirectedGraph<ChainVertex3D, InterfaceEdge3D> graph2dUnsorced = cloneGraph3D(graph3d);
+			graph2dUnsorced = LatticeGraph.filterUniqueStoichiometries(graph2dUnsorced);
 			if(layout2d == null) {
 				logger.warn("No 2D layout set for calculating the 2D graph. Defaulting to z-projection");
 			} else {
@@ -416,6 +418,8 @@ public class LatticeGUIMustache {
 		}
 		return newGraph;
 	}
+
+	
 	public static void main(String[] args) throws IOException, StructureException {
 		final String usage = String.format("Usage: %s template structure output [interfacelist]",LatticeGUIMustache.class.getSimpleName());
 		if (args.length<2) {
@@ -490,5 +494,4 @@ public class LatticeGUIMustache {
 			mainOut.close();
 		}
 	}
-	
 }

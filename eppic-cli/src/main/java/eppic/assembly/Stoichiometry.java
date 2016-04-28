@@ -1,68 +1,63 @@
 package eppic.assembly;
 
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-
-import org.jgrapht.UndirectedGraph;
+import java.util.Collection;
+import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 //import org.slf4j.Logger;
 //import org.slf4j.LoggerFactory;
 
 /**
- * A representation of the stoichiometry of an Assembly in a crystal structure
- * 
- * The stoichiometry can be considered either in terms of chain or entities.
+ * A representation of the stoichiometry of a set of entities.
+ * The stoichiometry is just the occurance counts of a fixed set of possible
+ * values.
  * @author duarte_j
  *
  */
-public class Stoichiometry {
-
+public class Stoichiometry<T> {
 	//private static final Logger logger = LoggerFactory.getLogger(Stoichiometry.class);
-	
-	private CrystalAssemblies crystalAssemblies;
-	
+
+	private final List<T> values;
 	//Stoichiometry for each entity
-	private int[] sto;
-	// Stoichiometry for each chain
-	private int[] comp;
-	
-	public Stoichiometry(UndirectedGraph<ChainVertex, InterfaceEdge> connectedGraph, CrystalAssemblies crystalAssemblies) {
-		
-		this.crystalAssemblies = crystalAssemblies;
-		
-		sto = new int[crystalAssemblies.getNumEntitiesInStructure()];
-		comp = new int[crystalAssemblies.getNumChainsInStructure()];
+	private final int[] sto;
 
-		for (ChainVertex v:connectedGraph.vertexSet()) {
-			sto[crystalAssemblies.getEntityIndex(v.getChain().getCompound().getMolId())]++;
-			comp[crystalAssemblies.getChainIndex(v.getChain().getChainID())]++;
-		}
-
-		
-	}
-	
-	
 	/**
-	 * Get all entity ids present in this stoichiometry
-	 * @return
+	 * Counts the occurrence of each element of `possibleValues` in `instances`.
+	 * 
+	 * The order of possibleValues is preserved, but duplicates will be removed.
+	 * @param instances Collection
+	 * @param possibleValues Set of all possible values. If null, the union of all
+	 *  elements in instances will be used.
+	 * @throws IndexOutOfBoundsException if instances contains values not in allValues
 	 */
-	public Set<Integer> getEntityIds() {
-		Set<Integer> entityIds = new HashSet<Integer>();
-		for (int i=0;i<getNumEntities();i++) {
-			if (sto[i]>0) {
-				entityIds.add(crystalAssemblies.getEntityId(i));
-			}
+	public Stoichiometry(Collection<T> instances, List<T> possibleValues) {
+		// Ensure unique
+		if(possibleValues == null) {
+			values = instances.stream().distinct().collect(Collectors.toList());
+		} else {
+			values = possibleValues.stream().distinct().collect(Collectors.toList());
 		}
-		return entityIds;
+
+		// count instances
+		sto = new int[values.size()];
+		for(T val : instances) {
+			sto[values.indexOf(val)]++;
+		}
 	}
 	
-	private int getNumEntities() {
-		return sto.length;
-	}
 	
-	public int getNumPresentEntities() {
+	public List<T> getValues() {
+		return values;
+	}
+
+	/**
+	 * @return The number of non-zero values
+	 */
+	public int getNumPresent() {
 		int numPresentEntities = 0;
-		for (int i=0;i<this.getNumEntities();i++) {
+		for (int i=0;i<sto.length;i++) {
 			if (sto[i]>0) {
 				numPresentEntities ++;
 			}
@@ -78,28 +73,20 @@ public class Stoichiometry {
 		return sto;
 	}
 	
-	/**
-	 * Returns the composition represented as a vector of positive integers with counts per chain 
-	 * @return
-	 */
-	public int[] getComposition() {
-		return comp;
-	}
-	
-	public int getCount(int entityId) {
-		return sto[crystalAssemblies.getEntityIndex(entityId)];
+	public int getCount(T val) {
+		return sto[values.indexOf(val)];
 	}
 	
 	public int getCountForIndex(int i) {
 		return sto[i];
 	}
 	
+	/**
+	 * Sum of the stoichiometry vector
+	 * @return
+	 */
 	public int getTotalSize() {
-		int size = 0; 
-		for (int i=0;i<getNumEntities();i++) {
-			size += sto[i];
-		}
-		return size;
+		return IntStream.of(sto).sum();
 	}
 	
 	/**
@@ -108,7 +95,7 @@ public class Stoichiometry {
 	 * @param other
 	 * @return
 	 */
-	public boolean isOverlapping(Stoichiometry other) {
+	public boolean isOverlapping(Stoichiometry<T> other) {
 		return !isOrthogonal(other);
 	}
 	
@@ -117,14 +104,14 @@ public class Stoichiometry {
 	 * @param other
 	 * @return
 	 */
-	public boolean isOrthogonal(Stoichiometry other) {
-		if (this.getNumEntities()!=other.getNumEntities()) 
-			throw new IllegalArgumentException("Vectors of different length");
-		if (this.getNumEntities()==0) 
+	public boolean isOrthogonal(Stoichiometry<T> other) {
+		if (this.values.equals(other.values) )
+			throw new IllegalArgumentException("Vectors have different values");
+		if (this.values.size() ==0) 
 			throw new IllegalArgumentException("Vectors have size 0"); 
 		
 		int scalarProduct = 0;
-		for (int i=0;i<this.getNumEntities();i++) {
+		for (int i=0;i<sto.length;i++) {
 			scalarProduct += sto[i]*other.sto[i];
 		}
 		return scalarProduct == 0;
@@ -140,7 +127,7 @@ public class Stoichiometry {
 		// all are zero
 		if (nonzero == -1) return false;
 		
-		for (int i=0;i<this.getNumEntities();i++) {
+		for (int i=0;i<this.sto.length;i++) {
 			if (sto[i]>0 && sto[i]!=nonzero) return false;
 		}
 		
@@ -152,83 +139,69 @@ public class Stoichiometry {
 	 * @return
 	 */
 	protected int getFirstNonZero() {
-		int nonzero = -1;
-		for (int i=0;i<this.getNumEntities();i++) {
+		for (int i=0;i<this.sto.length;i++) {
 			if (sto[i]>0) {
-				nonzero = sto[i];
-				break;
+				return sto[i];
 			}
 		}
-		return nonzero;
+		return -1;
 	}
 	
 	/**
 	 * Return a string representation of the Stoichiometry where each entity is represented as 
 	 * sequential letters: A, ... Z, AA, AB, ... AZ, BA, BB, ... ZZ
-	 * Thus the letters have no relation to the actual chain identifiers. 
+	 * Thus the letters have no relation to the actual values, and are
+	 * merely sorted in descending order of the number of copies
 	 * @return
 	 */
-	public String toFormattedString() {
-		StringBuilder stoSb = new StringBuilder();
-
-		for (int i=0;i<getNumEntities();i++){
-			
-			if (sto[i]>0) {
-				stoSb.append(indexToLetters(i));			
-				if (sto[i]>1) stoSb.append(sto[i]); // for A1B1 we do AB (we ommit 1s)
-			}
-			
-		}
-		return stoSb.toString();
+	public String toFormattedStringRelettered() {
+		// Sorted list of stoichiometries in decreasing order
+		List<Integer> sortedSto = IntStream.of(sto)
+			.filter(i -> i>0)
+			.boxed()
+			.sorted(  (i,j) -> j.compareTo(i))
+			.collect(Collectors.toList());
+		// Convert to string like "A(2) B"
+		return IntStream.range(0, sortedSto.size())
+			.mapToObj(i -> {int s = sortedSto.get(i); return indexToLetters(i) + ( s>1 ? "("+s+")" : ""); } )
+			.collect(Collectors.joining(" "));
 	}
 	
 	private static String indexToLetters(int i) {
-		
-		// ascii A==65, Z==90, 26 letters in total
-		
-		char l0 = (char) (65 + (i%26));
-		//char l1 = 
-		String l1 = "";
-		if (i>=26)
-			l1 = Character.toString( (char) (65 + i/26 - 1) );
-		
-		return l1 + l0;
+		int quot = i/26;
+		int rem = i%26;
+		char letter = (char) ('A' + rem);
+		if(quot == 0) {
+			return String.valueOf(letter);
+		} else {
+			return indexToLetters(quot-1) + letter;
+		}
 	}
 
 
 	/**
-	 * Return a string representation of the Stouchiometry where each entity is represented by its 
-	 * representative (for the entity/chain cluster) chain identifier.
+	 * Return a string representation of the Stoichiometry in the form of
+	 * "Value1(copies) Value2(copies) ...". The toString() method is used for
+	 * each value.
 	 * @return
 	 */
-	public String toFormattedCompositionRepChainIdString() {
-		StringBuilder stoSb = new StringBuilder();
-		
-		for (int i=0;i<getNumEntities();i++){
-			if (sto[i]>0) {
-				stoSb.append(crystalAssemblies.getRepresentativeChainIdForEntityIndex(i));			
-				if (sto[i]>1) stoSb.append(sto[i]); // for A1B1 we do AB (we ommit 1s)
-			}
-		}
-		return stoSb.toString();
+	public String toFormattedString() {
+		return toFormattedString(t -> t.toString());
 	}
-	
 	/**
-	 * Return a string representation of the Stoichiometry where each entity is represented by its 
-	 * chain identifier. 
-	 * @return A string representing the chain composition, e.g. "A2B"
+	 * Return a string representation of the Stoichiometry in the form of
+	 * "Value1(copies) Value2(copies) ...". A custom function is used to convert
+	 * values to strings.
+	 * @param getValueString Function mapping from a value to a string representation
+	 * @return
 	 */
-	public String toFormattedCompositionString() {
-		StringBuilder stoSb = new StringBuilder();
-
-		for (int i=0;i<crystalAssemblies.getNumChainsInStructure();i++){
-			if (comp[i]>0) {
-				stoSb.append(crystalAssemblies.getChainId(i));
-				if (comp[i]>1) stoSb.append(comp[i]); // for A1B1 we do AB (we ommit 1s)
-			}
-		}
-		return stoSb.toString();
+	public String toFormattedString(Function<T,String> getValueString) {
+		return IntStream.range(0, sto.length)
+				.filter(i -> sto[i] > 0)
+				.mapToObj(i -> {int s = sto[i]; return getValueString.apply(values.get(i)) + ( s>1 ? "("+s+")" : ""); } )
+				.collect(Collectors.joining(" "));
 	}
+
 
 
 	/**
@@ -253,6 +226,7 @@ public class Stoichiometry {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + Arrays.hashCode(sto);
+		result = prime * result + ((values == null) ? 0 : values.hashCode());
 		return result;
 	}
 
@@ -264,47 +238,55 @@ public class Stoichiometry {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		Stoichiometry other = (Stoichiometry) obj;
+		Stoichiometry<?> other = (Stoichiometry<?>) obj;
 		if (!Arrays.equals(sto, other.sto))
+			return false;
+		if (values == null) {
+			if (other.values != null)
+				return false;
+		} else if (!values.equals(other.values))
 			return false;
 		return true;
 	}
-	
-	/**
-	 * Return the greatest common divisor (GCD, aka greatest common factor GCF) for the given ints
-	 * This is an implementation of the Euclidean algorithm:
-	 * http://en.wikipedia.org/wiki/Euclidean_algorithm
-	 * Thanks to this SO question: 
-	 * http://stackoverflow.com/questions/4009198/java-get-greatest-common-divisor
-	 * @param a
-	 * @param b
-	 * @return
-	 */
-	public static int gcd(int a, int b) {		
-		if (b==0) return a;
-		return gcd(b,a%b);
-	}
 
-	/**
-	 * Return the greatest common divisor (GCD) of the given array of ints
-	 * @param values
-	 * @return
-	 */
-	public static int gcd(int[] values) {
-		if (values.length==0) throw new IllegalArgumentException("Can't calculate GCD for an empty array");
-		
-		// we go recursively		
-		int result = values[0];
-		for(int i = 1; i < values.length; i++){
-		    result = gcd(result, values[i]);
-		}
-		return result;
-		
-	}
+
+//	/**
+//	 * Return the greatest common divisor (GCD, aka greatest common factor GCF) for the given ints
+//	 * This is an implementation of the Euclidean algorithm:
+//	 * http://en.wikipedia.org/wiki/Euclidean_algorithm
+//	 * Thanks to this SO question: 
+//	 * http://stackoverflow.com/questions/4009198/java-get-greatest-common-divisor
+//	 * @param a
+//	 * @param b
+//	 * @return
+//	 */
+//	private static int gcd(int a, int b) {		
+//		if (b==0) return a;
+//		return gcd(b,a%b);
+//	}
+//
+//	/**
+//	 * Return the greatest common divisor (GCD) of the given array of ints
+//	 * @param values
+//	 * @return
+//	 */
+//	public static int gcd(int[] values) {
+//		if (values.length==0) throw new IllegalArgumentException("Can't calculate GCD for an empty array");
+//		
+//		// we go recursively		
+//		int result = values[0];
+//		for(int i = 1; i < values.length; i++){
+//		    result = gcd(result, values[i]);
+//		}
+//		return result;
+//		
+//	}
 	
 	public static void main (String[] args) {
-		for (int i=0;i<200;i++) {
+		for (int i=0;i<800;i++) {
 			System.out.print(indexToLetters(i)+",");
+			if(i%80 == 0)
+				System.out.println();
 		}
 	}
 }

@@ -1,9 +1,12 @@
 package eppic.assembly;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.jgrapht.UndirectedGraph;
 import org.slf4j.Logger;
@@ -27,16 +30,22 @@ public class SubAssembly {
 	private CrystalAssemblies crystalAssemblies;
 	
 	private UndirectedGraph<ChainVertex, InterfaceEdge> connectedGraph;
-	private Stoichiometry sto;
+	private Stoichiometry<Integer> sto;
 	
 	public SubAssembly(UndirectedGraph<ChainVertex, InterfaceEdge> connectedGraph, CrystalAssemblies crystalAssemblies) {
 		this.connectedGraph = connectedGraph;
 		this.crystalAssemblies = crystalAssemblies;
 		
-		this.sto = new Stoichiometry(connectedGraph, crystalAssemblies);
+		List<Integer> entities = IntStream.range(0, crystalAssemblies.getNumEntitiesInStructure())
+				.mapToObj(i -> crystalAssemblies.getEntityId(i))
+				.collect(Collectors.toList());
+		List<Integer> nodeEntities = connectedGraph.vertexSet().stream()
+				.map(v -> v.getChain().getCompound().getMolId())
+				.collect(Collectors.toList());
+		this.sto = new Stoichiometry<>(nodeEntities,entities);
 	}
 	
-	public Stoichiometry getStoichiometry() {
+	public Stoichiometry<Integer> getStoichiometry() {
 		return sto;
 	}
 	
@@ -55,7 +64,7 @@ public class SubAssembly {
 		
 		
 		// we get the number of present entities in this stoichiometry (those with count>0)
-		int numEntities = sto.getNumPresentEntities();
+		int numEntities = sto.getNumPresent();
 
 		
 		boolean heteromer = false;
@@ -184,7 +193,7 @@ public class SubAssembly {
 		}
 		
 		
-		int numEntities = sto.getNumPresentEntities();
+		int numEntities = sto.getNumPresent();
 		
 		boolean heteromer = false;
 		if (numEntities>1) heteromer = true;
@@ -318,7 +327,7 @@ public class SubAssembly {
 		Set<Integer> interfaceClusterIds = new TreeSet<Integer>();
 		
 		// TODO I'm not sure if it's even needed to check that the edges are contained in entities, I'd say that by definiton of SubAssembly they are... should double-check - JD 2015-12-21
-		Set<Integer> entities = sto.getEntityIds();
+		List<Integer> entities = sto.getValues();
 		
 		for (InterfaceEdge e : connectedGraph.edgeSet()) {
 			ChainVertex s = connectedGraph.getEdgeSource(e);
@@ -352,18 +361,29 @@ public class SubAssembly {
 		
 		String symString = PointGroupSymmetry.UNKNOWN;
 		if (getSymmetry()!=null) symString = getSymmetry().toString();
+		
+		List<String> chains = IntStream.range(0, crystalAssemblies.getNumChainsInStructure())
+				.mapToObj(i -> crystalAssemblies.getChainId(i))
+				.collect(Collectors.toList());
+		List<String> nodeChains = connectedGraph.vertexSet().stream()
+				.map(v -> v.getChain().getChainID())
+				.collect(Collectors.toList());
 
+		Stoichiometry<String> chainStoich = new Stoichiometry<>(nodeChains,chains);
 		AssemblyDescription ad = 
 				new AssemblyDescription(
 						getStoichiometry().getTotalSize(), 
 						symString, 
-						getStoichiometry().toFormattedCompositionString(), 
-						getStoichiometry().toFormattedCompositionRepChainIdString(),
-						getStoichiometry().toFormattedString(), 
+						chainStoich.toFormattedString(), 
+						getStoichiometry().toFormattedString(
+								entityId -> crystalAssemblies.getRepresentativeChainIdForEntityIndex(
+										crystalAssemblies.getEntityIndex(entityId))),
+						getStoichiometry().toFormattedStringRelettered(), 
 						getChainIdsString());
 		return ad;
 	}
 
+	@Override
 	public String toString() {
 		return "(Stoichiometry:"+ sto.toString() + " - " +
 				connectedGraph.vertexSet().size() + " vertices - " +

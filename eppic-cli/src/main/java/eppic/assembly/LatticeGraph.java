@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.vecmath.Matrix4d;
 import javax.vecmath.Point3d;
@@ -26,6 +27,7 @@ import org.biojava.nbio.structure.xtal.SpaceGroup;
 import org.jgrapht.EdgeFactory;
 import org.jgrapht.UndirectedGraph;
 import org.jgrapht.VertexFactory;
+import org.jgrapht.alg.ConnectivityInspector;
 import org.jgrapht.graph.ClassBasedEdgeFactory;
 import org.jgrapht.graph.ClassBasedVertexFactory;
 import org.jgrapht.graph.MaskFunctor;
@@ -588,5 +590,56 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 			uniqueInterfClusters.add(e.getClusterId());
 		}
 		return uniqueInterfClusters.size();		
+	}
+
+	/**
+	 * Filters a graph down to unique components.
+	 * 
+	 * Filtering occurs by calculating the stoichiometry of a connected component
+	 * (based on the entityId of the nodes). For performance, does not check
+	 * that the edges are the same in all equivalent components.
+	 * @param graph
+	 * @return
+	 */
+	public static <V extends ChainVertex,E extends InterfaceEdge>
+	UndirectedGraph<V,E> filterUniqueStoichiometries(UndirectedGraph<V,E> graph) {
+		// All entities for the graph
+		List<Integer> entityIds = graph.vertexSet().stream()
+				.map(v -> v.getChain().getCompound().getMolId())
+				.distinct()
+				.collect(Collectors.toList());
+
+		// Store vertices of subgraphs with unique stoich for filtering
+		Set<Stoichiometry<Integer>> entityStoich = new HashSet<>();
+		Set<V> uniqueVertices = new HashSet<>();
+
+		ConnectivityInspector<V,E> ci = new ConnectivityInspector<>(graph);
+		for(Set<V> cc : ci.connectedSets()) {
+			List<Integer> nodeEntities = cc.stream()
+					.map(v -> v.getChain().getCompound().getMolId())
+					.collect(Collectors.toList());
+			Stoichiometry<Integer> stoich = new Stoichiometry<Integer>(nodeEntities, entityIds);
+			if( !entityStoich.contains(stoich)) {
+				entityStoich.add(stoich);
+				uniqueVertices.addAll(cc);
+			}
+		}
+
+		// Filter down to unique stoichiometry
+		MaskFunctor<V,E> mask = new MaskFunctor<V,E>() {
+			@Override
+			public boolean isEdgeMasked(E edge) {
+				return false;
+			}
+
+			@Override
+			public boolean isVertexMasked(V vertex) {
+				return !uniqueVertices.contains(vertex);
+			}
+
+		};
+		UndirectedMaskSubgraph<V,E> filtered = new UndirectedMaskSubgraph<>(graph, mask);
+
+		return filtered;
 	}
 }
