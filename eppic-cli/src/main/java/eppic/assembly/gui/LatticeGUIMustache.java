@@ -48,6 +48,7 @@ import eppic.assembly.layout.ComboLayout;
 import eppic.assembly.layout.ConnectedComponentLayout;
 import eppic.assembly.layout.GraphLayout;
 import eppic.assembly.layout.QuaternaryOrientationLayout;
+import eppic.assembly.layout.UnitCellLayout;
 import eppic.assembly.layout.VertexPositioner;
 
 /**
@@ -382,8 +383,11 @@ public class LatticeGUIMustache {
 	public UndirectedGraph<ChainVertex3D, InterfaceEdge3DSourced<ChainVertex3D>> getGraph2D() {
 		if( graph2d == null) {
 			UndirectedGraph<ChainVertex3D, InterfaceEdge3D> graph3d = getGraph().getGraph();
+			//clone
 			UndirectedGraph<ChainVertex3D, InterfaceEdge3D> graph2dUnsorced = cloneGraph3D(graph3d);
+			//Filter duplicate components
 			graph2dUnsorced = LatticeGraph.filterUniqueStoichiometries(graph2dUnsorced);
+			//Layout
 			if(layout2d == null) {
 				logger.warn("No 2D layout set for calculating the 2D graph. Defaulting to z-projection");
 			} else {
@@ -478,6 +482,7 @@ public class LatticeGUIMustache {
 		VertexPositioner<ChainVertex3D> vertexPositioner = ChainVertex3D.getVertexPositioner();
 		List<GraphLayout<ChainVertex3D,InterfaceEdge3D>> layouts = new ArrayList<>();
 
+		layouts.add( new UnitCellLayout<>(vertexPositioner, struc.getCrystallographicInfo().getCrystalCell()));
 		QuaternaryOrientationLayout<ChainVertex3D,InterfaceEdge3D> stereo = new QuaternaryOrientationLayout<>(vertexPositioner);
 		
 //		Point3d center = new Point3d();
