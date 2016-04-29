@@ -79,7 +79,7 @@ public class TopologyInfoPanel extends FieldSet {
 		
     	HorizontalLayoutContainer linkContainer = new HorizontalLayoutContainer();
 
-    	Anchor anchor = new Anchor("View Unit Cell");
+    	Anchor anchor = new Anchor("View Assembly in Unit Cell");
     	anchor.addClickHandler(new ClickHandler() {		
 			@Override
 			public void onClick(ClickEvent event) {

@@ -62,7 +62,16 @@ public class DiagramViewerRunner
 		//if(!interfaceids.equals("")) 	
 			//Window.open(url,"_blank","width="+size+",height="+size);
 		
-		Window.open(url,"_blank","width="+size+",height="+size);		
+		//Window.open(url,"_blank","width="+size+",height="+size);
+		Window.open(url,"_blank","");
+		
+	}
+	
+	public static String getViewerAssemblyURL(){
+		String url = GWT.getModuleBaseURL() + LatticeGraphServlet.SERVLET_NAME;
+		url +=  "?" + FileDownloadServlet.PARAM_ID + "=" + ApplicationContext.getPdbInfo().getJobId() +
+				"&" + LatticeGraphServlet.PARAM_INTERFACES + "=*";
+		return url;
 		
 	}
 	
