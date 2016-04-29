@@ -49,6 +49,7 @@ import eppic.assembly.Assembly;
 import eppic.assembly.CrystalAssemblies;
 import eppic.commons.util.FileTypeGuesser;
 import eppic.commons.util.Goodies;
+import eppic.commons.util.StructureUtils;
 import eppic.predictors.CombinedClusterPredictor;
 import eppic.predictors.CombinedPredictor;
 import eppic.predictors.GeometryClusterPredictor;
@@ -239,9 +240,7 @@ public class Main {
 		if (pdb.getCrystallographicInfo()==null || pdb.getCrystallographicInfo().getCrystalCell()==null) {
 			LOGGER.warn("No crystal information found in source "+params.getPdbCode()+". Only asymmetric unit interfaces will be calculated.");
 		}
-		if (pdb.getCrystallographicInfo()!=null && pdb.getCrystallographicInfo().getNcsOperators()!=null) {
-			LOGGER.warn("NCS operators present in structure. Calculation of interfaces for NCS operators is not supported yet."); 
-		}
+		
 		
 		// for the webui
 		modelAdaptor = new DataModelAdaptor();
@@ -268,6 +267,7 @@ public class Main {
 	public void doFindInterfaces() throws EppicException {
 
 		params.getProgressLog().println("Calculating possible interfaces...");
+		StructureUtils.expandNcsOps(pdb);
 		LOGGER.info("Calculating possible interfaces");
 		CrystalBuilder interfFinder = new CrystalBuilder(pdb);
 		interfaces = interfFinder.getUniqueInterfaces(EppicParams.INTERFACE_DIST_CUTOFF);
