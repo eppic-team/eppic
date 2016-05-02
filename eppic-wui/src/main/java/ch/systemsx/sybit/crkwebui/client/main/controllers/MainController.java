@@ -233,7 +233,7 @@ public class MainController
 									if(stio.indexOf("(") != -1)
 										stio = stio.replace("(", "<sub>");
 									if(stio.indexOf(")") != -1)
-										stio = stio.replace("(", "</sub>");
+										stio = stio.replace(")", "</sub>");
 								}
 								assembly_string += "<table cellpadding=0 cellspacing=0>";
 								if (a.getPredictionString() != null && a.getPredictionString().equalsIgnoreCase("xtal"))
