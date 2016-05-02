@@ -33,7 +33,7 @@ import ch.systemsx.sybit.crkwebui.shared.exceptions.ValidationException;
 import ch.systemsx.sybit.crkwebui.shared.model.Interface;
 import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 import eppic.EppicParams;
-import eppic.assembly.gui.LatticeGUI3Dmol;
+import eppic.assembly.gui.LatticeGUIMustache;
 import eppic.model.JobDB;
 
 /**
@@ -205,18 +205,18 @@ public class LatticeGraphServlet extends BaseServlet
 			// Only clusters specified
 			if(clusterStr.equals('*'))
 				return null;
-			List<Integer> clusterList = LatticeGUI3Dmol.parseInterfaceList(clusterStr);
+			List<Integer> clusterList = LatticeGUIMustache.parseInterfaceList(clusterStr);
 			return mapClusters(new HashSet<Integer>(clusterList),ifaceList);
 		} else {
 			if(clusterStr == null || clusterStr.isEmpty()) {
 				// Only interfaces specified
-				return LatticeGUI3Dmol.parseInterfaceList(ifaceStr);
+				return LatticeGUIMustache.parseInterfaceList(ifaceStr);
 			}
 			// Both specified
 			if(ifaceStr.equals('*') || clusterStr.equals('*') )
 				return null;
-			Set<Integer> interfaces = mapClusters(new HashSet<Integer>(LatticeGUI3Dmol.parseInterfaceList(ifaceStr)),ifaceList);
-			interfaces.addAll(LatticeGUI3Dmol.parseInterfaceList(ifaceStr));
+			Set<Integer> interfaces = mapClusters(new HashSet<Integer>(LatticeGUIMustache.parseInterfaceList(ifaceStr)),ifaceList);
+			interfaces.addAll(LatticeGUIMustache.parseInterfaceList(ifaceStr));
 			return interfaces;
 		}
 	}

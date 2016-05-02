@@ -306,7 +306,7 @@ public class LatticeGUIMustache {
 	}
 
 	/**
-	 * Parses a comma-separated list of digits.
+	 * Parses a comma-separated list of numbers or ranges.
 	 * returns null for '*', indicating all interfaces.
 	 * @param list Input string
 	 * @return list of interface ids, or null for all interfaces
@@ -320,7 +320,19 @@ public class LatticeGUIMustache {
 		String[] splitIds = list.split("\\s*,\\s*");
 		List<Integer> interfaceIds = new ArrayList<Integer>(splitIds.length);
 		for(String idStr : splitIds) {
-			interfaceIds.add(new Integer(idStr));
+			String[] splitRange = idStr.split("\\s*-\\s*");
+			if(splitRange.length == 1) {
+				interfaceIds.add(new Integer(idStr));
+			} else if(splitRange.length == 2 ) {
+				// Range, eg 1-5
+				int start = Integer.parseInt(splitRange[0]);
+				int end = Integer.parseInt(splitRange[1]);
+				for(int i=start;i<=end;i++) {
+					interfaceIds.add(i);
+				}
+			} else {
+				throw new NumberFormatException("Invalid number or range");
+			}
 		}
 		return interfaceIds;
 	}
