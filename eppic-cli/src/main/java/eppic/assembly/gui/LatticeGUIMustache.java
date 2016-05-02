@@ -3,10 +3,10 @@ package eppic.assembly.gui;
 import java.awt.Color;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.FileSystem;
-import java.nio.file.FileSystemNotFoundException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -15,11 +15,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.vecmath.Point3d;
@@ -61,10 +60,10 @@ public class LatticeGUIMustache {
 	private static final Logger logger = LoggerFactory.getLogger(LatticeGUIMustache.class);
 	
 	// Some pre-defined templates for use with createLatticeGUIMustache
-	public static final String TEMPLATE_ASSEMBLY_DIAGRAM_FULL = "mustache/eppic/assembly/gui/AssemblyDiagramFull.mustache.html";// "AssemblyDiagramFull";
+	private static final String TEMPLATE_DIR = "mustache/eppic/assembly/gui/";
+	public static final String TEMPLATE_ASSEMBLY_DIAGRAM_FULL = TEMPLATE_DIR+"AssemblyDiagramFull.mustache.html";// "AssemblyDiagramFull";
 	public static final String TEMPLATE_3DMOL = LatticeGUI3Dmol.MUSTACHE_TEMPLATE_3DMOL;//"LatticeGUI3Dmol";
 
-	
 
 	private final LatticeGraph3D latticeGraph;
 	private final String template;
@@ -90,6 +89,7 @@ public class LatticeGUIMustache {
 	 * @param template String giving the path to the template.
 	 * @return
 	 * @throws StructureException 
+	 * @throws IllegalArgumentException if the template couldn't be found or was ambiguous
 	 */
 	public static LatticeGUIMustache createLatticeGUIMustache(String template,Structure struc,Collection<Integer> interfaceIds,List<StructureInterface> allInterfaces) throws StructureException {
 		String templatePath = expandTemplatePath(template);
@@ -112,77 +112,61 @@ public class LatticeGUIMustache {
 	private static String expandTemplatePath(String template) {
 		// Mustache loads templates through the classloader, so we want a path it understands
 		ClassLoader cl = Thread.currentThread().getContextClassLoader();
-		try {
-			// Try loading template directly
-			URL url = cl.getResource(template);
-			if( url != null) {
-				logger.debug("Matched template {} directly.",template);
-				return template;
-			}
-			
-			//TODO this doesn't work with jar files 
-
-
-			// classloader root
-			url = cl.getResource("mustache");
-			if( url == null) {
-				throw new IllegalStateException("No root resource?");
-			}
-			Path root = Paths.get(url.toURI());
-			logger.debug("Root: {}",root);
-			logger.debug("Root filesystem: {}",root.getFileSystem());
-			
-			// Try matching against known templates
-			URL knownTemplate = cl.getResource(LatticeGUI3Dmol.MUSTACHE_TEMPLATE_3DMOL);
-			if( knownTemplate == null ) {
-				throw new IllegalStateException("Unable to find template resource. Error building jar file?");
-			}
-			logger.debug("Known template at {}",knownTemplate);
-			Path mustacheDir;
-			try {
-				// Fails for jar resources
-				mustacheDir = Paths.get(knownTemplate.toURI()).getParent();
-			} catch( FileSystemNotFoundException e) {
-				FileSystem fs = FileSystems.newFileSystem(knownTemplate.toURI(), Collections.<String,Object>emptyMap());
-				mustacheDir = fs.getPath(LatticeGUI3Dmol.MUSTACHE_TEMPLATE_3DMOL);
-			}
-			logger.debug("Checking for templates in {}",mustacheDir);
-
-			
-			mustacheDir = root.relativize(mustacheDir);
-			
-			
-			// See if any of the templates match as a short name
-			Pattern longNameRE = Pattern.compile("^(LatticeGUI)?"+template+"(\\.mustache\\..*)?$", Pattern.CASE_INSENSITIVE);
-			try(Stream<Path> walk = Files.walk(root.resolve(mustacheDir), 1) ) {
-				Path matchedPath = null;
-				for(Iterator<Path> it = walk.iterator(); it.hasNext();) {
-					Path longName = it.next();
-					logger.error("Walking {}",longName);
-					String baseName = longName.getFileName().toString();
-					Matcher match = longNameRE.matcher(baseName);
-					if(match.matches()) {
-						if(matchedPath != null) {
-							throw new IllegalArgumentException("Multiple templates match "+template+", starting with "+matchedPath+" and "+longName);
-						}
-						matchedPath = root.relativize(longName);
-					}
-				}
-				if( matchedPath != null) {
-					url = cl.getResource(matchedPath.toString());
-					if( url != null) {
-						return matchedPath.toString();
-					}
-
-				}
-			}
-		} catch (URISyntaxException|IOException e) {
-			// thrown below
+		// Try loading template directly
+		URL url = cl.getResource(template);
+		if( url != null) {
+			logger.debug("Matched template {} directly.",template);
+			return template;
+		}
+		
+		//Try in template directory
+		String attempt = TEMPLATE_DIR+template;
+		url = cl.getResource(attempt);
+		if( url != null) {
+			logger.debug("Matched template {}",attempt);
+			return attempt;
 		}
 
+		// See if any of the known templates match as a short name
+		Pattern longNameRE = Pattern.compile(".*/(LatticeGUI)?"+template+"(\\.mustache\\..*)?$", Pattern.CASE_INSENSITIVE);
+		try {
+			List<String> knownTemplates = getKnownTemplates()
+					.filter(known ->longNameRE.matcher(known).matches())
+					.collect(Collectors.toList());
+			if(knownTemplates.size() > 1) {
+				throw new IllegalArgumentException("Multiple templates match "+template+": "+String.join(",", knownTemplates));
+			} else if(knownTemplates.size() == 1) {
+				return knownTemplates.get(0);
+			}
+		} catch (IOException e) {
+			// error below
+		}
+		// Give up
 		throw new IllegalArgumentException("No matching template found for "+template);
 	}
 	
+	public static Stream<String> getKnownTemplates() throws IOException {
+		ClassLoader cl = Thread.currentThread().getContextClassLoader();
+		URL knownDirURL = cl.getResource(TEMPLATE_DIR);
+		if( knownDirURL == null) {
+			throw new IllegalStateException("Unable to find mustache templates. Error building jar?");
+		}
+		URI knownDirURI;
+		try {
+			knownDirURI = knownDirURL.toURI();
+		} catch (URISyntaxException e) {
+			throw new IllegalStateException("Unable to find mustache templates. Error building jar?");
+		}
+		Path knownDirPath;
+		if(knownDirURI.getScheme().equals("jar")) {
+			FileSystem fs = FileSystems.newFileSystem(knownDirURI, Collections.<String,Object>emptyMap());
+			knownDirPath = fs.getPath(TEMPLATE_DIR);
+		} else {
+			knownDirPath = Paths.get(knownDirURI);
+		}
+		return Files.walk(knownDirPath, 1)
+				.map(path -> path.toString().charAt(0) == '/' ? path.toString().substring(1) : path.toString() );
+	}
 	
 	/**
 	 * @param template Path to the template file. Short names are supported for templates in the MUSTACHE_TEMPLATE_DIR
