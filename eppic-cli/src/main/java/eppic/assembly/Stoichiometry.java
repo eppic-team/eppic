@@ -1,5 +1,6 @@
 package eppic.assembly;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -8,6 +9,9 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 //import org.slf4j.Logger;
 //import org.slf4j.LoggerFactory;
+
+
+import org.biojava.nbio.structure.contact.Pair;
 
 /**
  * A representation of the stoichiometry of a set of entities.
@@ -45,6 +49,15 @@ public class Stoichiometry<T> {
 		for(T val : instances) {
 			sto[values.indexOf(val)]++;
 		}
+	}
+	public Stoichiometry(int[] stoichiometry, List<T> possibleValues) {
+		values = possibleValues.stream().distinct().collect(Collectors.toList());
+		if(stoichiometry.length != values.size()) {
+			throw new IllegalArgumentException(String.format(
+					"Array lengths don't match: %d stoichiometry values, but %d unique possible values.",
+					stoichiometry.length,values.size()));
+		}
+		sto = stoichiometry;
 	}
 	
 	
@@ -105,10 +118,18 @@ public class Stoichiometry<T> {
 	 * @return
 	 */
 	public boolean isOrthogonal(Stoichiometry<T> other) {
-		if (this.values.equals(other.values) )
-			throw new IllegalArgumentException("Vectors have different values");
-		if (this.values.size() ==0) 
+		if (this.values.size() ==0 || other.values.size()==0) 
 			throw new IllegalArgumentException("Vectors have size 0"); 
+
+		// Compare shared values
+		Stoichiometry<T> a = this;
+		Stoichiometry<T> b = other;
+		if (!this.values.equals(other.values) ) {
+			Pair<Stoichiometry<T>> merged = mergeValues(a, b);
+			a = merged.getFirst();
+			b = merged.getSecond();
+		}
+			
 		
 		int scalarProduct = 0;
 		for (int i=0;i<sto.length;i++) {
@@ -282,6 +303,60 @@ public class Stoichiometry<T> {
 //		
 //	}
 	
+	
+	/**
+	 * Takes two stoichiometries with potentially different sets of values and
+	 * expands them so that they range over the union of both {@link #getValues()}
+	 * lists. The resulting pair of stoichiometries will contain first the
+	 * values of a, followed by any values of b not contained in a.
+	 * @param a first stoichiometry
+	 * @param b second stoichiometry
+	 * @return a pair equivalent to (a,b) but expanded with zero counts so that they share value sets
+	 */
+	public static <V> Pair<Stoichiometry<V>> mergeValues(Stoichiometry<V> a, Stoichiometry<V> b) {
+		List<V> avals = a.getValues();
+		List<V> bvals = b.getValues();
+		
+		// Already merged
+		if( avals.equals(bvals)) {
+			return new Pair<>(a,b);
+		}
+		
+		// Calculate intersection
+		List<V> sharedvals = new ArrayList<>(avals.size()+bvals.size());
+		sharedvals.addAll(avals);
+		List<Integer> bSto = new ArrayList<>(avals.size()+bvals.size());
+		for(int i=0;i<avals.size();i++) {
+			bSto.add(0);
+		}
+		
+		for(int i=0;i<bvals.size();i++) {
+			// Shared contains index of the bval items into avals
+			int index =  avals.indexOf(bvals.get(i));
+			if(index >= 0) {
+				//shared
+				int sto = b.getCountForIndex(i);
+				bSto.set(index, sto);
+			} else {
+				// unique to b
+				sharedvals.add(bvals.get(i));
+				bSto.add(b.getCountForIndex(i));
+			}
+		}
+		
+		// Create new objects
+		int[] bStoArray = bSto.stream().mapToInt(Integer::intValue).toArray();
+		Stoichiometry<V> bmerged = new Stoichiometry<V>(bStoArray, sharedvals);
+		
+		int[] aStoArray = new int[bStoArray.length];
+		for(int i=0;i<avals.size();i++) { // leave array end at 0
+			aStoArray[i] = a.getCountForIndex(i);
+		}
+		Stoichiometry<V> amerged = new Stoichiometry<V>(aStoArray, sharedvals);
+		
+		return new Pair<>(amerged,bmerged);
+	}
+	
 	public static void main (String[] args) {
 		for (int i=0;i<800;i++) {
 			System.out.print(indexToLetters(i)+",");
@@ -289,4 +364,5 @@ public class Stoichiometry<T> {
 				System.out.println();
 		}
 	}
+
 }

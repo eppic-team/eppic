@@ -45,6 +45,11 @@ public class SubAssembly {
 		this.sto = new Stoichiometry<>(nodeEntities,entities);
 	}
 	
+	/**
+	 * Get the stoichiometry of this subassembly.
+	 * The stoichiometry values are vertex entity's molId numbers.
+	 * @return
+	 */
 	public Stoichiometry<Integer> getStoichiometry() {
 		return sto;
 	}

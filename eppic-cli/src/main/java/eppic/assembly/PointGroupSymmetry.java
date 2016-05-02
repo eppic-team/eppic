@@ -31,6 +31,7 @@ public final class PointGroupSymmetry {
 		return type == 'C';
 	}
 	
+	@Override
 	public String toString() {
 		
 		if (type == 'C' || type == 'D') 			
