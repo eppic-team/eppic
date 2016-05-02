@@ -31,6 +31,7 @@ import ch.systemsx.sybit.crkwebui.client.results.gui.cells.AssemblyDiagramCell;
 import ch.systemsx.sybit.crkwebui.client.results.gui.cells.AssemblyMethodCallCell;
 import ch.systemsx.sybit.crkwebui.client.results.gui.cells.AssemblyThumbnailCell;
 import ch.systemsx.sybit.crkwebui.client.results.gui.cells.InterfacesLinkCell;
+import ch.systemsx.sybit.crkwebui.client.results.gui.cells.SubscriptTypeCell;
 import ch.systemsx.sybit.crkwebui.client.results.gui.grid.util.AssemblyMethodSummaryType;
 import ch.systemsx.sybit.crkwebui.client.results.gui.grid.util.AssemblyMethodsSummaryRenderer;
 import ch.systemsx.sybit.crkwebui.client.results.gui.panels.ResultsPanel;
@@ -266,10 +267,21 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 		return symmetryColumn;
 	}
 	
-	private SummaryColumnConfig<AssemblyItemModel, String> getStoichiometryColumn() {
+	/*private SummaryColumnConfig<AssemblyItemModel, String> getStoichiometryColumn() {
 		SummaryColumnConfig<AssemblyItemModel, String> stioColumn = 
 				new SummaryColumnConfig<AssemblyItemModel, String>(props.stoichiometry());
 		fillColumnSettings(stioColumn, "stoichiometry");
+		return stioColumn;
+	}*/
+	
+	private SummaryColumnConfig<AssemblyItemModel, String> getStoichiometryColumn() {
+		SummaryColumnConfig<AssemblyItemModel, String> stioColumn = 
+				new SummaryColumnConfig<AssemblyItemModel, String>(props.stoichiometry());
+		stioColumn.setCell(new SubscriptTypeCell());		
+		stioColumn.setSummaryType(new AssemblyMethodSummaryType.FinalCallSummaryType());
+		//stioColumn.setSummaryRenderer(new AssemblyMethodsSummaryRenderer());
+		fillColumnSettings(stioColumn, "stoichiometry");
+		//predictionColumn.setColumnTextClassName("eppic-results-final-call");
 		return stioColumn;
 	}
 	
@@ -421,6 +433,11 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 					model.setDiagramUrl(diagramUrl);
 					
 					model.setMmSize(assembly.getMmSizeString());
+					//testing only
+					/*String stio = assembly.getStoichiometryString();
+					if (stio.indexOf("2") != -1)
+						stio = "A(2)";
+					model.setStoichiometry(stio);*/
 					model.setStoichiometry(assembly.getStoichiometryString());
 					model.setSymmetry(assembly.getSymmetryString());
 					model.setComposition(assembly.getCompositionString());
