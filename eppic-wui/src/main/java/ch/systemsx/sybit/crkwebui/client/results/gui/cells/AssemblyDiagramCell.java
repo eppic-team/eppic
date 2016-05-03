@@ -32,7 +32,7 @@ public class AssemblyDiagramCell extends AbstractCell<String>{
 	
 	@Override
     public Set<String> getConsumedEvents() {
-        Set<String> events = new HashSet<String>();
+        Set<String> events = new HashSet<String>(); 
         events.add("click");
         return events;
     }
@@ -41,7 +41,7 @@ public class AssemblyDiagramCell extends AbstractCell<String>{
     public void onBrowserEvent(Context context, Element parent, String value, NativeEvent event, ValueUpdater<String> valueUpdater) {
     	super.onBrowserEvent(context, parent, value, event, valueUpdater);
     	if (parent.getFirstChildElement().isOrHasChild(Element.as(event.getEventTarget()))) {
-	        int row = context.getIndex();
+    		int row = context.getIndex();
 	        EventBusManager.EVENT_BUS.fireEvent(new SelectResultsRowEvent(row));
 			EventBusManager.EVENT_BUS.fireEvent(new ShowDiagramViewerEvent());
         }
