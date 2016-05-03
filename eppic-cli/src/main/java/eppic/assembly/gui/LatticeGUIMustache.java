@@ -17,6 +17,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -158,14 +159,19 @@ public class LatticeGUIMustache {
 			throw new IllegalStateException("Unable to find mustache templates. Error building jar?");
 		}
 		Path knownDirPath;
+		//need to strip leading / from jars
+		
+		Function<Path,String> pathToStr;
 		if(knownDirURI.getScheme().equals("jar")) {
 			FileSystem fs = FileSystems.newFileSystem(knownDirURI, Collections.<String,Object>emptyMap());
 			knownDirPath = fs.getPath(TEMPLATE_DIR);
+			pathToStr = path -> path.toString().charAt(0) == '/' ? path.toString().substring(1) : path.toString();
 		} else {
 			knownDirPath = Paths.get(knownDirURI);
+			pathToStr = Path::toString;
 		}
 		return Files.walk(knownDirPath, 1)
-				.map(path -> path.toString().charAt(0) == '/' ? path.toString().substring(1) : path.toString() );
+				.map( pathToStr );
 	}
 	
 	/**
