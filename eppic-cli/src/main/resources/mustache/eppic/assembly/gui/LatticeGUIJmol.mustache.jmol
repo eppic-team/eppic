@@ -3,16 +3,16 @@ set unitcell {0 0 0};
 background white;
 
 // Vertices:
-{{#graph.vertices}}
+{{#graph.graph.vertexSet}}
 isosurface ID "{{uniqueName}}" COLOR {{colorStr}}{{^colorStr}}[1,1,1]{{/colorStr}} CENTER { {{center.x}},{{center.y}},{{center.z}} } SPHERE 5.0;
 set echo ID "echo{{uniqueName}}" { {{center.x}},{{center.y}},{{center.z}} };
 color echo {{colorStr}}{{^colorStr}}[1,1,1]{{/colorStr}};
 echo "  {{toString}}";
-{{/graph.vertices}}
+{{/graph.graph.vertexSet}}
 
 // Edges:
 set defaultDrawArrowScale 8;
-{{#graph.edges}}
+{{#graph.graph.edgeSet}}
 //Edge {{toString}}
 {{#segments}}{{!
 	}}draw ID "{{uniqueName}}" ARROW {{!
@@ -28,7 +28,7 @@ set defaultDrawArrowScale 8;
 	}}DIAMETER {{diameter}} {{!
 	}}COLOR {{colorStr}};
 {{/circles}}{{!
-}}{{/graph.edges}}
+}}{{/graph.graph.edgeSet}}
 
 // Display:
 {{! cartoon }}

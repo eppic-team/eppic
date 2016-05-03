@@ -2,14 +2,12 @@ package ch.systemsx.sybit.crkwebui.server.jmol.generators;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.zip.GZIPOutputStream;
 
 import org.biojava.nbio.structure.Atom;
 import org.biojava.nbio.structure.PDBCrystallographicInfo;
@@ -31,36 +29,40 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ch.systemsx.sybit.crkwebui.shared.model.Interface;
-import eppic.assembly.gui.LatticeGUI3Dmol;
+import eppic.assembly.ChainVertex3D;
+import eppic.assembly.InterfaceEdge3D;
+import eppic.assembly.gui.LatticeGUIMustache;
+import eppic.assembly.layout.ComboLayout;
+import eppic.assembly.layout.ConnectedComponentLayout;
+import eppic.assembly.layout.GraphLayout;
+import eppic.assembly.layout.QuaternaryOrientationLayout;
+import eppic.assembly.layout.VertexPositioner;
 
 /**
  * Helper class to generate the LatticeGraph HTML
  * @author Spencer Bliven
  *
  */
-public class LatticeGraphPageGenerator {
-	private static final Logger logger = LoggerFactory.getLogger(LatticeGraphPageGenerator.class);
+public class AssemblyDiagramPageGenerator {
+	private static final Logger logger = LoggerFactory.getLogger(AssemblyDiagramPageGenerator.class);
 	/**
 	 * Generates html page containing the 3Dmol canvas.
 	 * 
 	 * @param directory path to the job directory
 	 * @param inputName the input: either a PDB id or the file name as input by user
 	 * @param atomCachePath the path for Biojava's AtomCache
-	 * @param ucFile Path to the unit cell structure. Will be generated if doesn't exist
-	 * @param ucURI URL to reach ucFilename within the browser
 	 * @param title Page title [default: structure name]
 	 * @param size the canvas size 
 	 * @param interfaces List of all interfaces to build the latticegraph
 	 * @param requestedIfaces 
-	 * @param url3dmoljs 3Dmol script URL. (default: http://3Dmol.csb.pitt.edu/build/3Dmol-min.js)
 	 * @param out
 	 * @return the HTML page
 	 * @throws StructureException For errors parsing the input structure
 	 * @throws IOException For errors reading or writing files
 	 */
-	public static void generatePage(File directory, String inputName, String atomCachePath, File ucFile,
-			String ucURI, String title, String size, List<Interface> interfaces,
-			Collection<Integer> requestedIfaces, String url3dmoljs, PrintWriter out) throws IOException, StructureException {
+	public static void generatePage(File directory, String inputName, String atomCachePath,
+			String title, String size, List<Interface> interfaces,
+			Collection<Integer> requestedIfaces, PrintWriter out) throws IOException, StructureException {
 
 		// Read input structure
 		Structure auStruct;
@@ -88,7 +90,7 @@ public class LatticeGraphPageGenerator {
 				auStruct = parser.parsePDBFile(inStream);
 			}
 		} else if (!inputName.matches("^\\d\\w\\w\\w$")) {
-				logger.error("Could not find file {} and the inputName '{}' does not look like a PDB id. Can't produce the lattice graph page!", structFile.toString(), inputName);
+				logger.error("Could not find file {} and the inputName '{}' does not look like a PDB id. Can't produce the assembly diagram page!", structFile.toString(), inputName);
 				return;
 		} else {
 			// it is like a PDB id, leave it to AtomCache
@@ -145,28 +147,35 @@ public class LatticeGraphPageGenerator {
 			siList.add(siface);
 		}
 
+		LatticeGUIMustache gui = LatticeGUIMustache.createLatticeGUIMustache(LatticeGUIMustache.TEMPLATE_ASSEMBLY_DIAGRAM_FULL, auStruct, requestedIfaces, siList);
 
-		LatticeGUI3Dmol gui = new LatticeGUI3Dmol(auStruct, ucURI,
-				requestedIfaces, siList);
 
 		// Override some properties if needed
 		if(title != null)
 			gui.setTitle(title);
 		if(size != null) 
 			gui.setSize(size);
-		if(url3dmoljs != null)
-			gui.setUrl3Dmol(url3dmoljs);
 
-		// Write unit cell, if necessary
-		if( !ucFile.exists() ) {
-			logger.info("Writing Unit Cell file to {}",ucFile.getAbsolutePath());
-			PrintWriter cifOut = new PrintWriter(new GZIPOutputStream(new FileOutputStream(ucFile)));
-			gui.writeCIFfile(cifOut);
-			cifOut.close();
-		}
+		VertexPositioner<ChainVertex3D> vertexPositioner = ChainVertex3D.getVertexPositioner();
+		List<GraphLayout<ChainVertex3D,InterfaceEdge3D>> layouts = new ArrayList<>();
 
+		QuaternaryOrientationLayout<ChainVertex3D,InterfaceEdge3D> stereo = new QuaternaryOrientationLayout<>(vertexPositioner);
+		
+//		Point3d center = new Point3d();
+//		Point3d zenith = new Point3d(0,0,1);
+//		StereographicLayout<ChainVertex3D,InterfaceEdge3D> stereo = new StereographicLayout<>(vertexPositioner , center , zenith));
+		layouts.add(stereo);
+		
+		ConnectedComponentLayout<ChainVertex3D, InterfaceEdge3D> packer = new ConnectedComponentLayout<>(vertexPositioner);
+		packer.setPadding(100);
+		layouts.add(packer);
+		
+		gui.setLayout2D(new ComboLayout<>(layouts) );
+
+		
 		// Construct page
 		gui.execute(out);
 		out.flush();
 	}
+
 }

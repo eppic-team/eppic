@@ -6,7 +6,7 @@ import ch.systemsx.sybit.crkwebui.shared.exceptions.ValidationException;
 /**
  * Jmol data validator.
  */
-public class LatticeGraphServletInputValidator 
+public class AssemblyDiagramServletInputValidator 
 {
 	/**
 	 * Validates correctness of input data necessary to run jmol viewer.
@@ -33,7 +33,7 @@ public class LatticeGraphServletInputValidator
 	 * @throws ValidationException
 	 */
 	private static void validateInterfaceList(String interfaces) throws ValidationException {
-		if(interfaces != null && !interfaces.matches("^(\\*?|[0-9]+(-[0-9]+)?(,[0-9]+(-[0-9]+)?)*)$"))
+		if(interfaces != null && !interfaces.matches("^(\\*?|[0-9]+(,[0-9]+)*)$"))
 		{
 			throw new ValidationException( "Invalid interfaces ({}). Expected '*' or comma-separated list of integers");
 		}

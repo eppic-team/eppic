@@ -13,17 +13,25 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.zip.GZIPOutputStream;
+
+import javax.vecmath.Point3d;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.biojava.nbio.core.sequence.io.util.IOUtils;
+import org.biojava.nbio.structure.Atom;
 import org.biojava.nbio.structure.Chain;
 import org.biojava.nbio.structure.Compound;
 import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.StructureException;
 import org.biojava.nbio.structure.StructureIO;
+import org.biojava.nbio.structure.StructureTools;
 import org.biojava.nbio.structure.align.util.AtomCache;
 import org.biojava.nbio.structure.contact.StructureInterface;
 import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
@@ -42,12 +50,21 @@ import org.biojava.nbio.structure.symmetry.core.QuatSymmetryParameters;
 import org.biojava.nbio.structure.symmetry.core.QuatSymmetryResults;
 import org.biojava.nbio.structure.xtal.CrystalBuilder;
 import org.biojava.nbio.structure.xtal.SpaceGroup;
+import org.jgrapht.graph.MaskFunctor;
+import org.jgrapht.graph.UndirectedMaskSubgraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import eppic.assembly.Assembly;
+import eppic.assembly.ChainVertex;
+import eppic.assembly.ChainVertex3D;
 import eppic.assembly.CrystalAssemblies;
+import eppic.assembly.InterfaceEdge3D;
+import eppic.assembly.LatticeGraph3D;
+import eppic.assembly.gui.LatticeGUIJGraph;
+import eppic.assembly.layout.VertexPositioner;
 import eppic.commons.util.FileTypeGuesser;
+import eppic.commons.util.GeomTools;
 import eppic.commons.util.Goodies;
 import eppic.commons.util.StructureUtils;
 import eppic.predictors.CombinedClusterPredictor;
@@ -659,7 +676,8 @@ public class Main {
 
 					File outputFile= params.getOutputFile(EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX+"." + a.getId() + EppicParams.MMCIF_FILE_EXTENSION);
 					
-					try {								
+					try {
+						LOGGER.info("Writing assembly {} to {}",a.getId(),outputFile);
 						a.writeToMmCifFile(outputFile);
 						if (params.isGeneratePdbFiles()) {
 							outputFile= params.getOutputFile(EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX+"." + a.getId() +  EppicParams.PDB_FILE_EXTENSION);
@@ -678,7 +696,92 @@ public class Main {
 			throw new EppicException(e, "Couldn't write interface PDB files. " + e.getMessage(), true);
 		} 
 	}
-	
+
+	public void doWriteAssemblyDiagrams() throws EppicException {
+		if (interfaces.size() == 0) return;
+
+		if (!params.isGenerateDiagrams()) return;
+
+		try {
+			// ASSEMBLY files
+			// TODO for the moment we are only doing assemblies for crystallographic structures, but we should also try to deal with NMR and EM
+			if (pdb.isCrystallographic() && 
+					pdb.getCrystallographicInfo().getSpaceGroup()!=null &&
+					pdb.getCrystallographicInfo().getCrystalCell()!=null) {
+
+				LatticeGraph3D latticeGraph = new LatticeGraph3D(validAssemblies.getLatticeGraph());
+				for (Assembly a:validAssemblies) {
+
+					File outputFile= params.getOutputFile(EppicParams.ASSEMBLIES_DIAGRAM_FILES_SUFFIX+"." + a.getId() + ".png");
+
+					LOGGER.info("Writing diagram for assembly {} to {}",a.getId(),outputFile);
+					
+					// Filter down to this assembly
+					List<StructureInterfaceCluster> clusters = a.getEngagedInterfaceClusters();
+					Set<Integer> clusterIds = new HashSet<Integer>(clusters.size());
+					for(StructureInterfaceCluster cluster : clusters) {
+						clusterIds.add(cluster.getId());
+					}
+					latticeGraph.filterEngagedClusters(clusterIds);
+					
+					// Position chains at origin towards z axis
+					List<List<ChainVertex>> positions = a.getStructureCentered();
+					// We have a problem mapping the positions of the transformed chains
+					// back to the original vertices (ChainVertex objects are created anew).
+					// For now, use the vertex's string representation as a key, assuming uniqueness
+					final Map<String,Point3d> centroids = computeCentroidsAgain(positions);
+
+					// Filter down to unique stoichiometry
+					MaskFunctor<ChainVertex3D, InterfaceEdge3D> mask = new MaskFunctor<ChainVertex3D, InterfaceEdge3D>() {
+						@Override
+						public boolean isEdgeMasked(InterfaceEdge3D edge) {
+							return false;
+						}
+
+						@Override
+						public boolean isVertexMasked(ChainVertex3D vertex) {
+							return !centroids.containsKey(vertex.toString());
+						}
+						
+					};
+					UndirectedMaskSubgraph<ChainVertex3D, InterfaceEdge3D> filtered = new UndirectedMaskSubgraph<>(latticeGraph.getGraph(), mask);
+					
+					
+					// Create a vertex positioner based on the centroids
+					VertexPositioner<ChainVertex3D> positioner = new VertexPositioner<ChainVertex3D>() {
+						@Override
+						public Point3d getPosition(ChainVertex3D vertex) {
+							String key = vertex.toString();
+							Point3d centroid = centroids.get(key);
+							if(centroid == null) {
+								LOGGER.error("Unable to match vertex {} to a 3D position",key);
+								// Use point towards zenith, which maps to infinity
+								centroid = new Point3d(0,0,1);
+							}
+							return centroid;
+						}
+
+						@Override
+						public void setPosition(ChainVertex3D vertex, Point3d pos) {
+							throw new UnsupportedOperationException("Read-only vertex");
+						}
+					};
+					
+					// Stereographic projection
+					LatticeGUIJGraph gui = new LatticeGUIJGraph(filtered);
+					gui.stereographicLayout(new Point3d(0,0,0),new Point3d(0,0,1),positioner);
+					gui.writePNG(outputFile);
+				}
+			}
+
+
+		} catch( IOException e) {
+			throw new EppicException(e, "Couldn't write assembly diagrams. " + e.getMessage(), true);
+		} catch (StructureException e) {
+			throw new EppicException(e, "Couldn't write assembly diagrams. " + e.getMessage(), true);
+		}
+	}
+
 	// TODO implement the HBplus stuff
 //	public void doHBPlus() throws EppicException {
 //
@@ -717,6 +820,33 @@ public class Main {
 //		}
 //	}
 	
+	/**
+	 * Compute centroids for the Chains and store as a map: chainId_opId -> centroid.
+	 * 
+	 * These should be available elsewhere already, but for now it's easier to 
+	 * recompute than to pass them along. (TODO)
+	 * @param positions list of vertices with pre-transformed chains
+	 * @return A map between chain/op ids and the centroid
+	 */
+	private Map<String, Point3d> computeCentroidsAgain(
+			List<List<ChainVertex>> positions) {
+		Map<String, Point3d> map = new HashMap<String, Point3d>();
+		for(List<ChainVertex> complex:positions) {
+			for(ChainVertex vert : complex) {
+				String ident = vert.toString();
+				Atom[] atoms = StructureTools.getRepresentativeAtomArray(vert.getChain());
+				Point3d centroid = GeomTools.getCentroid(vert.getChain());
+				if(map.containsKey(ident)) {
+					LOGGER.error("Vertices have non-unique mapping ({}). Layout will fail.",ident);
+				}
+				map.put(ident, centroid);
+			}
+		}
+		return map;
+	}
+
+
+
 	public void doWritePymolFiles() throws EppicException {
 		
 		if (!params.isGenerateThumbnails()) return;
@@ -1072,14 +1202,17 @@ public class Main {
 			
 			// 8 write coordinate files (only if in -l)
 			doWriteCoordFiles();
-						
-			// 9 writing pymol files (only if in -l)
+			
+			// 9 write assembly diagrams (only if in -P)
+			doWriteAssemblyDiagrams();
+			
+			// 10 writing pymol files (only if in -l)
 			doWritePymolFiles();
 			
-			// 10 compressing files (only if in -l)
+			// 11 compressing files (only if in -l)
 			doCompressFiles();
 			
-			// 11 writing out the model serialized file and "finish" file for web ui (only if in -w)
+			// 12 writing out the model serialized file and "finish" file for web ui (only if in -w)
 			doWriteFinalFiles();
 
 			

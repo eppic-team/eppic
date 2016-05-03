@@ -17,11 +17,12 @@ import org.jgrapht.UndirectedGraph;
 import eppic.assembly.Assembly;
 import eppic.assembly.ChainVertex;
 import eppic.assembly.InterfaceEdge;
+import eppic.assembly.SubAssembly;
 
 
 public class PymolRunner {
 	
-	private static final String DEF_TN_STYLE = "cartoon";
+	private static final String DEF_TN_STYLE = "ribbon";
 	private static final String DEF_TN_BG_COLOR = "white";
 	private static final int[] DEF_TN_HEIGHTS = {75};
 	private static final int[] DEF_TN_WIDTHS = {75};
@@ -96,6 +97,14 @@ public class PymolRunner {
 		
 		pymolScriptBuilder.append("as "+DEF_TN_STYLE+";");
 		
+		if(DEF_TN_STYLE.equalsIgnoreCase("ribbon")) {
+			pymolScriptBuilder.append("set ribbon_radius, 2;");
+			pymolScriptBuilder.append("set dash_length, 100;");
+			pymolScriptBuilder.append("set dash_radius, 2;");
+			pymolScriptBuilder.append("set ray_trace_gain, 0;");
+			pymolScriptBuilder.append("set ray_trace_disco_factor, 1;");
+		}
+		
 		// TODO do we need to check something before issuing the cofactors command???
 		//if (interf.hasCofactors()) {
 		pymolScriptBuilder.append("show sticks, org;");
@@ -107,6 +116,12 @@ public class PymolRunner {
 		pymolScriptBuilder.append("set ray_opaque_background, off;");
 		
 		for (int i=0;i<DEF_TN_HEIGHTS.length;i++) {
+			if(DEF_TN_HEIGHTS[i]>=200 && DEF_TN_WIDTHS[i]>=200) {
+				pymolScriptBuilder.append("set ray_trace_mode, 3;");
+			} else {
+				pymolScriptBuilder.append("set ray_trace_mode, 0;");
+			}
+
 			pymolScriptBuilder.append("viewport "+DEF_TN_HEIGHTS[i]+","+DEF_TN_WIDTHS[i] + ";");
 
 			pymolScriptBuilder.append("ray;");
@@ -129,31 +144,32 @@ public class PymolRunner {
 			throw new IOException("Pymol exited with error status "+exit);
 		}
 	}
-	
+
 	public void generateAssemblyPng(Assembly a, File mmcifFile, String base) throws IOException, InterruptedException {
-		
+
 		String molecName = getPymolMolecName(mmcifFile);
-		
+
 		File[] pngFiles = new File[DEF_TN_HEIGHTS.length];
 		for (int i=0;i<DEF_TN_HEIGHTS.length;i++) {
 			pngFiles[i] = new File(mmcifFile.getParent(),base+"."+DEF_TN_WIDTHS[i]+"x"+DEF_TN_HEIGHTS[i]+".png");
 		}
-		
-		//TODO we might need getFirstRelevantConnectedComponent(sto) instead, but we need the stoichiometry for that
-		UndirectedGraph<ChainVertex, InterfaceEdge> g = a.getAssemblyGraph().getSubAssemblies().get(0).getConnectedGraph();
-		
-		String[] chains = new String[g.vertexSet().size()];
-		String[] colors = new String[g.vertexSet().size()];
-				
-		int i = 0;
-		for (ChainVertex v:g.vertexSet()) {
+
+		List<String> chains = new ArrayList<String>();
+		List<String> colors = new ArrayList<String>();
+
+		for (SubAssembly sub : a.getAssemblyGraph().getSubAssemblies()) {
+			//TODO we might need getFirstRelevantConnectedComponent(sto) instead, but we need the stoichiometry for that
+			UndirectedGraph<ChainVertex, InterfaceEdge> g = sub.getConnectedGraph();
+
 			// the same identifiers given in Assembly.writeToMmCifFile()
-			String chain = v.getChainId()+"_"+v.getOpId();
-			chains[i] = chain;
-			colors[i] = MolViewersHelper.getHexChainColor(chain);
-			i++;
+			for (ChainVertex v:g.vertexSet()) {
+
+				String chain = v.getChainId()+"_"+v.getOpId();
+				chains.add(chain);
+				colors.add(MolViewersHelper.getHexChainColor(chain));
+			}
 		}
-		
+
 		List<String> command = new ArrayList<String>();
 		command.add(pymolExec.getAbsolutePath());
 		command.add("-q");
@@ -164,28 +180,44 @@ public class PymolRunner {
 		//      But pymol 1.3 and 1.4 seem to have problems with very long strings (causing segfaults)
 		//      Because of that now we write most commands to pml file (which we were doing anyway so that users can 
 		//      use the pml scripts if they want) and then load the pmls with pymol "@" command
-		
-		
+
+
 		StringBuffer pymolScriptBuilder = new StringBuffer();
-		
+
 		pymolScriptBuilder.append("load "+mmcifFile.getAbsolutePath()+";");
-				
-		pymolScriptBuilder.append("orient;");
-		
+
+		//pymolScriptBuilder.append("orient;");
+		// Orient to Z axis, since coordinates are pre-transformed
+		pymolScriptBuilder.append("set_view (1,0,0, 0,1,0, 0,0,1, 0,0,-1000, 0,0,0, 500,1500, -20);");
+		pymolScriptBuilder.append("zoom all, complete=1, buffer=5;");
+
 		pymolScriptBuilder.append("remove solvent;");
 
 		pymolScriptBuilder.append("bg "+DEF_TN_BG_COLOR+";");
 
 		pymolScriptBuilder.append("as "+DEF_TN_STYLE+";");
 
-		
-		for (i=0;i<chains.length;i++) {
-			pymolScriptBuilder.append("color "+colors[i]+", "+molecName+" and chain "+chains[i] + ";");
+		if(DEF_TN_STYLE.equalsIgnoreCase("ribbon")) {
+			pymolScriptBuilder.append("set ribbon_radius, 2;");
+			pymolScriptBuilder.append("set dash_length, 100;");
+			pymolScriptBuilder.append("set dash_radius, 2;");
+			pymolScriptBuilder.append("set ray_trace_gain, 0;");
+			pymolScriptBuilder.append("set ray_trace_disco_factor, 1;");
 		}
-		
+
+
+		for (int i=0;i<chains.size();i++) {
+			pymolScriptBuilder.append("color "+colors.get(i)+", "+molecName+" and chain "+chains.get(i) + ";");
+		}
+
 		pymolScriptBuilder.append("set ray_opaque_background, off;");
 
 		for (int j=0;j<DEF_TN_HEIGHTS.length;j++) {
+			if(DEF_TN_HEIGHTS[j]>=200 && DEF_TN_WIDTHS[j]>=200) {
+				pymolScriptBuilder.append("set ray_trace_mode, 3;");
+			} else {
+				pymolScriptBuilder.append("set ray_trace_mode, 0;");
+			}
 			pymolScriptBuilder.append("viewport "+DEF_TN_HEIGHTS[j]+","+DEF_TN_WIDTHS[j] + ";");
 
 			pymolScriptBuilder.append("ray;");
