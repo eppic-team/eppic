@@ -2,6 +2,7 @@ package ch.systemsx.sybit.crkwebui.client.commons.managers;
 
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
+import ch.systemsx.sybit.crkwebui.client.commons.events.ShowAssemblyViewerInNewTabEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowErrorEvent;
 import ch.systemsx.sybit.crkwebui.server.files.downloader.servlets.FileDownloadServlet;
 import ch.systemsx.sybit.crkwebui.server.jmol.servlets.JmolViewerServlet;
@@ -93,10 +94,42 @@ public class ViewerRunner
 						 "&"+FileDownloadServlet.PARAM_COORDS_FORMAT+"=" + FileDownloadServlet.COORDS_FORMAT_VALUE_CIF+
 						 "&"+JmolViewerServlet.PARAM_SIZE+"=" + jmolAppletSize;
 		
-		Window.open(jmolViewerUrl, "", "width=" + size + "," +
-										"height=" + size);
+		//this opens the viewer in a popup window of fixed dimensions and it is not possible to modify the URL
+		//Window.open(jmolViewerUrl, "", "width=" + size + "," + "height=" + size);
+
+		//this opens the viewer in a new tab
+		Window.open(jmolViewerUrl,"_blank","");
 
 	}
+	
+	/**
+	 * This method is not currently used - it is intended to be separate  
+	 * for when ShowAssemblyViewerInNewTabEvent is triggered by pressing the shift key.
+	 */
+	private static void showJmolViewerAssemblyInNewTab(String assemblyNr)
+	{
+		int size = ApplicationContext.getWindowData().getWindowHeight() - 60;
+		if(size > ApplicationContext.getWindowData().getWindowWidth() - 60)
+		{
+			size = ApplicationContext.getWindowData().getWindowWidth() - 60;
+		}
+		
+		int jmolAppletSize = size - 40;
+		
+		// note we have set the default format to CIF - JD 2015-06-15
+		
+		String jmolViewerUrl = GWT.getModuleBaseURL() + JmolViewerServlet.SERVLET_NAME;
+		jmolViewerUrl += "?"+FileDownloadServlet.PARAM_ID+"=" + ApplicationContext.getPdbInfo().getJobId() + 
+						 "&"+FileDownloadServlet.PARAM_TYPE + "=" + FileDownloadServlet.TYPE_VALUE_ASSEMBLY + 
+						 "&"+JmolViewerServlet.PARAM_INPUT+"=" + ApplicationContext.getPdbInfo().getTruncatedInputName() + 
+						 "&"+FileDownloadServlet.PARAM_ASSEMBLY_ID+"=" + assemblyNr +
+						 "&"+FileDownloadServlet.PARAM_COORDS_FORMAT+"=" + FileDownloadServlet.COORDS_FORMAT_VALUE_CIF+
+						 "&"+JmolViewerServlet.PARAM_SIZE+"=" + jmolAppletSize;
+
+		Window.open(jmolViewerUrl,"_blank","");
+
+	}
+	
 	
 	/**
 	 * Starts selected viewer. Type of the viewer is determined based on the option selected in viewer selector.
@@ -123,6 +156,13 @@ public class ViewerRunner
 		}
 	}
 	
+	public static void runViewerAssemblyInNewTab(String assemblyId)
+	{
+		if(ApplicationContext.getSelectedViewer().equals(AppPropertiesManager.CONSTANTS.viewer_jmol()))
+		{
+			showJmolViewerAssemblyInNewTab(assemblyId);
+		}
+	}
 	
 	/**
 	 * Downloads file from the server.

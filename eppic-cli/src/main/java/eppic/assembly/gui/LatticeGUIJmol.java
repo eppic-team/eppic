@@ -20,6 +20,7 @@ import org.biojava.nbio.structure.gui.BiojavaJmol;
 import org.biojava.nbio.structure.io.MMCIFFileReader;
 import org.biojava.nbio.structure.io.PDBFileReader;
 import org.biojava.nbio.structure.io.util.FileDownloadUtils;
+import org.jgrapht.UndirectedGraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,6 +33,7 @@ import eppic.assembly.InterfaceEdge3D;
 import eppic.assembly.LatticeGraph3D;
 import eppic.assembly.OrientedCircle;
 import eppic.assembly.ParametricCircularArc;
+import eppic.commons.util.StructureUtils;
 
 /**
  * Jmol viewer for LatticeGraph.
@@ -46,7 +48,7 @@ public class LatticeGUIJmol {
 
 	private static Logger logger = LoggerFactory.getLogger(LatticeGUIJmol.class);
 
-	private LatticeGraph3D graph;
+	private LatticeGraph3D latticeGraph;
 	private File strucFile;
 
 	/**
@@ -57,16 +59,17 @@ public class LatticeGUIJmol {
 	 * @param interfaceIds List of interfaces to show, or null for all
 	 * @throws StructureException
 	 */
-	public LatticeGUIJmol(Structure struc, File strucFile,List<Integer> interfaceIds) throws StructureException {
-		this.graph = new LatticeGraph3D(struc);
+	public LatticeGUIJmol(Structure struc, File strucFile) throws StructureException {
+		this.latticeGraph = new LatticeGraph3D(struc);
+		UndirectedGraph<ChainVertex3D, InterfaceEdge3D> graph = latticeGraph.getGraph();
 
 		// Compute Jmol names and colors
-		for(ChainVertex3D v : graph.getVertices()) {
+		for(ChainVertex3D v : graph.vertexSet()) {
 			v.setUniqueName(toUniqueJmolID("chain"+v.toString()));
 			v.setColorStr(toJmolColor(v.getColor()));
 		}
 
-		for(InterfaceEdge3D e : graph.getEdges()) {
+		for(InterfaceEdge3D e : graph.edgeSet()) {
 			ChainVertex3D source = graph.getEdgeSource(e);
 			ChainVertex3D target = graph.getEdgeTarget(e);
 
@@ -172,6 +175,7 @@ public class LatticeGUIJmol {
 			struc = StructureTools.getStructure(file.getAbsolutePath());
 		} else if (input.matches("\\d\\w\\w\\w")){ // try as PDB id
 			AtomCache cache = new AtomCache();
+			cache.getFileParsingParams().setAlignSeqRes(true);
 			cache.setUseMmCif(true);
 			struc = cache.getStructure(input);
 			file = getFile(cache,input);
@@ -185,8 +189,10 @@ public class LatticeGUIJmol {
 			logger.error("Unable to read structure or file {}",input);
 			System.exit(1);
 		}
+		
+		StructureUtils.expandNcsOps(struc);
 
-		LatticeGUIJmol gui = new LatticeGUIJmol(struc, file, interfaceIds);
+		LatticeGUIJmol gui = new LatticeGUIJmol(struc, file);
 		if(interfaceIds != null) {
 			gui.getGraph().filterEngagedInterfaces(interfaceIds);
 		}
@@ -264,7 +270,7 @@ public class LatticeGUIJmol {
 	 * @return
 	 */
 	public LatticeGraph3D getGraph() {
-		return graph;
+		return latticeGraph;
 	}
 
 	/**

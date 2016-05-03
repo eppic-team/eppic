@@ -110,14 +110,14 @@ public class AssemblyGraph {
 				
 		
 		// now we find the unique stoichiometries present in all subAssemblies
-		Set<Stoichiometry> uniqueStoichiometries = new HashSet<Stoichiometry>();
+		Set<Stoichiometry<Integer>> uniqueStoichiometries = new HashSet<>();
 		for (SubAssembly subAssembly: subAssemblies) {
 			uniqueStoichiometries.add(subAssembly.getStoichiometry());
 		}
 		
 		// and with those we can group subAssemblies by stoichiometries
 		subAssembliesGroupedByStoichiometries = new ArrayList<List<SubAssembly>>();
-		for (Stoichiometry uniqueSto: uniqueStoichiometries) {
+		for (Stoichiometry<Integer> uniqueSto: uniqueStoichiometries) {
 		
 			List<SubAssembly> group = new ArrayList<SubAssembly>();
 			for (SubAssembly subAssembly: subAssemblies) {
@@ -150,7 +150,7 @@ public class AssemblyGraph {
 	 */
 	public boolean isStoichiometryEven() {
 		for (List<SubAssembly> group : subAssembliesGroupedByStoichiometries) {
-			Stoichiometry sto = group.get(0).getStoichiometry();
+			Stoichiometry<?> sto = group.get(0).getStoichiometry();
 			if (!sto.isEven()) return false;
 		}
 		return true;
@@ -182,11 +182,11 @@ public class AssemblyGraph {
 		
 		int i = -1;
 		for (List<SubAssembly> iGroup : subAssembliesGroupedByStoichiometries) {
-			Stoichiometry iSto = iGroup.get(0).getStoichiometry();
+			Stoichiometry<Integer> iSto = iGroup.get(0).getStoichiometry();
 			i++;			
 			int j = -1;
 			for (List<SubAssembly> jGroup : subAssembliesGroupedByStoichiometries) {
-				Stoichiometry jSto = jGroup.get(0).getStoichiometry();
+				Stoichiometry<Integer> jSto = jGroup.get(0).getStoichiometry();
 				j++;
 				if (j<=i) continue;
 				if (iSto.isOverlapping(jSto)) {
@@ -396,6 +396,7 @@ public class AssemblyGraph {
 		return ds;
 	}
 	
+	@Override
 	public String toString() {
 		return  "(" + 
 					subAssemblies.size()+ " sub-assemblies - "+

@@ -1,0 +1,17 @@
+PDBID: {{pdbId}}
+Title: {{title}}
+Size: {{size}}
+Vertices (3D):
+{{#graph.graph.vertexSet}}
+  {{center}}
+{{/graph.graph.vertexSet}}
+Vertices (2D):
+{{#graph2D.vertexSet}}
+  {{center}}
+{{/graph2D.vertexSet}}
+Edges:
+{{#graph.graph.edgeSet}}
+{{#segments}}
+  {{start.x}},{{start.y}},{{start.z}} to {{end.x}},{{end.y}},{{end.z}}, 
+{{/segments}}
+{{/graph.graph.edgeSet}}

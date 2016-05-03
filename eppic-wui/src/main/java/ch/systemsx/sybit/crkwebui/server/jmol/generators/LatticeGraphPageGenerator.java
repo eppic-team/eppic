@@ -166,7 +166,7 @@ public class LatticeGraphPageGenerator {
 		}
 
 		// Construct page
-		gui.write3DmolCommands(out);
+		gui.execute(out);
 		out.flush();
 	}
 }

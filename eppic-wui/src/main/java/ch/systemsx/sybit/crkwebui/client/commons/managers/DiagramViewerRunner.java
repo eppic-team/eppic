@@ -4,6 +4,7 @@ import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.server.files.downloader.servlets.FileDownloadServlet;
+import ch.systemsx.sybit.crkwebui.server.jmol.servlets.AssemblyDiagramServlet;
 import ch.systemsx.sybit.crkwebui.server.jmol.servlets.JmolViewerServlet;
 import ch.systemsx.sybit.crkwebui.server.jmol.servlets.LatticeGraphServlet;
 import ch.systemsx.sybit.crkwebui.shared.model.Assembly;
@@ -17,18 +18,6 @@ import com.google.gwt.user.client.Window;
  */
 public class DiagramViewerRunner
 {
-	//new method - shows the image in the diagramUrl in a popup
-	public static void runViewerAssembly(String assemblyId, String diagramUrl)
-	{	
-		//attention: hard coded values! this will not work if the dimensions are changed in the file names!
-		String enlargedDiagramUrl = diagramUrl.replace("75x75", "800x800");
-				
-		//Window.open("https://upload.wikimedia.org/wikipedia/commons/6/65/Baby.tux-800x800.png", "_blank", "width=700,height=700");
-		Window.open(enlargedDiagramUrl, "_blank", "width=700,height=700");
-		
-		
-	}
-	
 	//original method - servlet implementation
 	public static void runViewerAssembly(String assemblyId)
 	{
@@ -53,7 +42,7 @@ public class DiagramViewerRunner
 		//else
 			//Window.alert("No interfaces to show!");
 
-		String url = GWT.getModuleBaseURL() + LatticeGraphServlet.SERVLET_NAME;
+		String url = GWT.getModuleBaseURL() + AssemblyDiagramServlet.SERVLET_NAME;
 		url +=  "?" + FileDownloadServlet.PARAM_ID + "=" + ApplicationContext.getPdbInfo().getJobId() +
 				"&" + LatticeGraphServlet.PARAM_INTERFACES + "=" + interfaceids +
 				"&" + JmolViewerServlet.PARAM_SIZE+"=" + canvasSize;
@@ -62,7 +51,16 @@ public class DiagramViewerRunner
 		//if(!interfaceids.equals("")) 	
 			//Window.open(url,"_blank","width="+size+",height="+size);
 		
-		Window.open(url,"_blank","width="+size+",height="+size);		
+		//Window.open(url,"_blank","width="+size+",height="+size);
+		Window.open(url,"_blank","");
+		
+	}
+	
+	public static String getViewerAssemblyURL(){
+		String url = GWT.getModuleBaseURL() + LatticeGraphServlet.SERVLET_NAME;
+		url +=  "?" + FileDownloadServlet.PARAM_ID + "=" + ApplicationContext.getPdbInfo().getJobId() +
+				"&" + LatticeGraphServlet.PARAM_INTERFACES + "=*";
+		return url;
 		
 	}
 	
