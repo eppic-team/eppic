@@ -28,11 +28,23 @@
 			<scope>compile</scope>
 		</dependency>
 
+		<!-- GWT and GXT -->
 		<dependency>
 			<groupId>com.google.gwt</groupId>
 			<artifactId>gwt-user</artifactId>
 			<version>${gwt.version}</version>
 			<scope>provided</scope>
+			
+			<!-- because hibernate-validator has a subdependency on javax.validation-api 1.1, it causes a clash with
+			     gwt-user and gxt (both depending on validation-api 1.0). It needs to be excluded here. 
+			-->
+			<exclusions>
+				<exclusion>
+					<groupId>javax.validation</groupId>
+					<artifactId>validation-api</artifactId>					
+				</exclusion>
+			</exclusions>
+			
 		</dependency>
 		<dependency>
 			<groupId>com.google.gwt</groupId>
@@ -50,24 +62,24 @@
 			<groupId>com.sencha.gxt</groupId>
 			<artifactId>gxt</artifactId>
 			<version>3.1.1</version>
-		</dependency>
+			<!-- because hibernate-validator has a subdependency on javax.validation-api 1.1, it causes a clash with
+			     gwt-user and gxt (both depending on validation-api 1.0). It needs to be excluded here. 
+			-->
+			<exclusions>
+				<exclusion>
+					<groupId>javax.validation</groupId>
+					<artifactId>validation-api</artifactId>					
+				</exclusion>
+			</exclusions>
+		</dependency>		
 		<!-- needed for neptune theme (available since GXT 3.1 <dependency> <groupId>com.sencha.gxt</groupId> 
 			<artifactId>gxt-theme-neptune</artifactId> <version>3.1.1</version> </dependency> -->
+		
+		<!-- hibernate and mysql -->
 		<dependency>
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-entitymanager</artifactId>
 			<version>5.1.0.Final</version>
-			<!-- because hibernate has a subdependency on asm, it causes a clash with
-			     gwt 2.7. It needs to be excluded here. See
-			     https://groups.google.com/forum/#!topic/google-web-toolkit/D1qoc8U0cGk
-			     Note: the comment was for hibernate 3.x, haven't checked that it still applies to 5.x 
-			-->
-			<exclusions>
-				<exclusion>
-					<artifactId>asm</artifactId>
-					<groupId>asm</groupId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 
 		<dependency>
@@ -111,7 +123,7 @@
 		</dependency>
 
 		
-
+		<!--  others -->
 		<dependency>
 			<groupId>us.levk</groupId>
 			<artifactId>drmaa-common</artifactId>
