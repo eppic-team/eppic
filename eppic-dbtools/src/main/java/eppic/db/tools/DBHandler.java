@@ -46,7 +46,6 @@ import eppic.model.PdbInfoDB_;
 import eppic.model.ResidueBurialDB;
 import eppic.model.ResidueBurialDB_;
 import eppic.model.ResidueInfoDB;
-import eppic.model.ResidueInfoDB_;
 import eppic.model.SeqClusterDB;
 import eppic.model.SeqClusterDB_;
 
