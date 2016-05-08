@@ -63,7 +63,7 @@ public class LatticeGUIMustache {
 	
 	// Some pre-defined templates for use with createLatticeGUIMustache
 	private static final String TEMPLATE_DIR = "mustache/eppic/assembly/gui/";
-	public static final String TEMPLATE_ASSEMBLY_DIAGRAM_FULL = TEMPLATE_DIR+"AssemblyDiagramFull.mustache.html";// "AssemblyDiagramFull";
+	public static final String TEMPLATE_ASSEMBLY_DIAGRAM_FULL = TEMPLATE_DIR+"AssemblyDiagramFull.html.mustache";// "AssemblyDiagramFull";
 	public static final String TEMPLATE_3DMOL = LatticeGUI3Dmol.MUSTACHE_TEMPLATE_3DMOL;//"LatticeGUI3Dmol";
 
 
@@ -85,8 +85,8 @@ public class LatticeGUIMustache {
 	 * 
 	 * The template file can be given as a path to the mustache template, which
 	 * can be either a full path or a short name within the eppic.assembly.gui
-	 * resource directory. For instance, '3Dmol', 'LatticeGUI3Dmol.mustache.html'
-	 * and 'eppic-cli/src/main/resources/mustache/eppic/assembly/gui/LatticeGUI3Dmol.mustache.html'
+	 * resource directory. For instance, '3Dmol', 'LatticeGUI3Dmol.html.mustache'
+	 * and 'eppic-cli/src/main/resources/mustache/eppic/assembly/gui/LatticeGUI3Dmol.html.mustache'
 	 * should all locate the correct template.
 	 * @param template String giving the path to the template.
 	 * @return
@@ -130,7 +130,7 @@ public class LatticeGUIMustache {
 		}
 
 		// See if any of the known templates match as a short name
-		Pattern longNameRE = Pattern.compile(".*/(LatticeGUI)?"+template+"(\\.mustache\\..*)?$", Pattern.CASE_INSENSITIVE);
+		Pattern longNameRE = Pattern.compile(".*/(LatticeGUI)?"+template+"(\\..*mustache)?$", Pattern.CASE_INSENSITIVE);
 		try {
 			List<String> knownTemplates = getKnownTemplates()
 					.filter(known ->longNameRE.matcher(known).matches())

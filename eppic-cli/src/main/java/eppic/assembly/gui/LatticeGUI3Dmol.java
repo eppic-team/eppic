@@ -46,7 +46,7 @@ import eppic.assembly.OrientedCircle;
 public class LatticeGUI3Dmol extends LatticeGUIMustache {
 	private static final Logger logger = LoggerFactory.getLogger(LatticeGUI3Dmol.class);
 
-	static final String MUSTACHE_TEMPLATE_3DMOL = "mustache/eppic/assembly/gui/LatticeGUI3Dmol.mustache.html";
+	static final String MUSTACHE_TEMPLATE_3DMOL = "mustache/eppic/assembly/gui/LatticeGUI3Dmol.html.mustache";
 	static final String DEFAULT_URL_3DMOL = "http://3Dmol.csb.pitt.edu/build/3Dmol-min.js";
 	
 	private String strucURI;
