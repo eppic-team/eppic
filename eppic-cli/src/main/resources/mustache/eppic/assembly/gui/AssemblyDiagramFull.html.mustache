@@ -1,95 +1,100 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-  <title>{{title}}</title>
+	<title>{{title}}</title>
 
-  <style type="text/css">
-    #mynetwork {
-      border: 1px solid black;
-      background: white;
-      display: inline-block;
-    }
-  </style>
+	<style type="text/css">
+		#mynetwork {
+			background: white;
+			display: inline-block;
+			width: {{size}}px;
+			height: {{size}}px;
+			position: relative;
+			border:solid grey 1px;
+		}
+		#spinner {
+			margin-left: auto;
+			margin-right: auto;
+			width: 120px;
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			margin-right: -50%;
+			transform: translate(-50%, -50%) }
+		}
+	</style>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.9.0/vis.min.js"></script>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.9.0/vis.min.css" rel="stylesheet" type="text/css" />
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.9.0/vis.min.js"></script>
+	<link
+		href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.9.0/vis.min.css"
+		rel="stylesheet" type="text/css" />
 </head>
 <body>
 
-<div id="mynetwork"></div>
+	<div id="mynetwork">
+		<div id="spinner">
+			<img width=120 height=120 src="spinner_d1c5ka1.gif" />
+			<p>Loading...</p>
+		</div>
+	</div>
 
-<script type="text/javascript">
-  // create an array with nodes
-  var nodes = new vis.DataSet([
-{{#graph2D.vertexSet}}
-    {
-      id: '{{toString}}',
-      label: '{{toString}}',
-      x: {{center.x}},
-      y: {{center.y}},
-{{#colorStr}}     color: '#{{colorStr}}',{{/colorStr}}
+	<script type="text/javascript">
+(function() {
+// Load network data
+var data = {{>AssemblyDiagramFull.json}};
+data.nodes = new vis.DataSet(data.nodes);
+data.edges = new vis.DataSet(data.edges);
+// create a network
+var container = document.getElementById('mynetwork');
+var width = {{size}};
+var height = {{size}};
+var initialNodeSize = 10;
+var options = {
+	width: width + 'px',
+	height: height + 'px',
+	nodes: {
+		shape: 'dot',
+		size: initialNodeSize,
+		//title: 'This text can be shown when the user mouses over the node.',
+		physics: false,
 	},
-{{/graph2D.vertexSet}}
-  ]);
+	edges: {
+		smooth: {
+			enabled: true,
+			type: "dynamic",
+			roundness: 1.0
+		},
+		arrows: 'to',
+		physics: true,
+	},
+	interaction: {
+		//dragNodes: false,// do not allow dragging nodes
+		//zoomView: false, // do not allow zooming
+		//dragView: false, // do not allow dragging
+		//selectable: false, // do not allow selecting
+	}
+};
+var network = new vis.Network(container, data, options);
 
-  // create an array with edges
-  var edges = new vis.DataSet([
-{{#graph2D.edgeSet}}
-    {
-      from: '{{source}}',
-      to: '{{target}}',
-      label: '{{interfaceId}}',
-      title: '{{xtalTrans}}',
-{{#colorStr}}      color: '#{{colorStr}}',{{/colorStr}}
-    },
-{{/graph2D.edgeSet}}
-  ]);
+// Set the coordinate system of Network such that it exactly
+// matches the actual pixels of the HTML canvas on screen
+// this must correspond with the width and height set for
+// the networks container element.
+network.moveTo({
+	position: {x: 0, y: 0},
+	offset: {x: -width/2, y: -height/2},
+	scale: 1,
+});
+// Keep nodes the same size while zooming
+network.on("zoom", function (params) {
+	//document.getElementById('eventSpan').innerHTML = '<h2>zoom event:</h2>' + JSON.stringify(params, null, 4) + '<p>'+options.nodes.size+'</p>';
+	options.nodes.size = initialNodeSize/params.scale;
+	network.setOptions(options);
+});
 
-  // create a network
-  var container = document.getElementById('mynetwork');
-  var data = {
-    nodes: nodes,
-    edges: edges
-  };
-  var width = {{size}};
-  var height = {{size}};
-  var options = {
-    width: width + 'px',
-    height: height + 'px',
-    nodes: {
-      shape: 'circle',
-      size: 10,
-      //title: 'This text can be shown when the user mouses over the node.',
-      physics: false,
-    },
-    edges: {
-      smooth: {
-        enabled: true,
-        type: "dynamic",
-        roundness: 1.0
-      },
-      arrows: 'to',
-      physics: true,
-    },
-    interaction: {
-      //dragNodes: false,// do not allow dragging nodes
-      //zoomView: false, // do not allow zooming
-      //dragView: false, // do not allow dragging
-      //selectable: false, // do not allow selecting
-    }
-  };
-  var network = new vis.Network(container, data, options);
-  
-  // Set the coordinate system of Network such that it exactly
-  // matches the actual pixels of the HTML canvas on screen
-  // this must correspond with the width and height set for
-  // the networks container element.
-  network.moveTo({
-    position: {x: 0, y: 0},
-    offset: {x: -width/2, y: -height/2},
-    scale: 1,
-  })
-</script>
+})();
+	</script>
+	<!--div id='eventSpan'></div-->
 
 </body>
 </html>

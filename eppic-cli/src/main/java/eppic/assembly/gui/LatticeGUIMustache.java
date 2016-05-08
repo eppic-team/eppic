@@ -136,6 +136,15 @@ public class LatticeGUIMustache {
 					.filter(known ->longNameRE.matcher(known).matches())
 					.collect(Collectors.toList());
 			if(knownTemplates.size() > 1) {
+				// js and json tend to be partials, so de-prioritize them
+				List<String> notJSTemplates = knownTemplates.stream()
+						.filter( known -> ! known.toLowerCase().contains(".js"))
+						.collect(Collectors.toList());
+				if( notJSTemplates.size() == 1) {
+					knownTemplates = notJSTemplates;
+				}
+			}
+			if(knownTemplates.size() > 1) {
 				throw new IllegalArgumentException("Multiple templates match "+template+": "+String.join(",", knownTemplates));
 			} else if(knownTemplates.size() == 1) {
 				return knownTemplates.get(0);
