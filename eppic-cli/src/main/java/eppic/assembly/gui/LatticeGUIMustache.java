@@ -105,13 +105,18 @@ public class LatticeGUIMustache {
 		}
 		return new LatticeGUIMustache(templatePath.toString(), struc, interfaceIds);
 	}
+	
 	/**
+	 * Attempts to expand a short template name into a full path. For instance, '3Dmol', 'LatticeGUI3Dmol.html.mustache'
+	 * and 'eppic-cli/src/main/resources/mustache/eppic/assembly/gui/LatticeGUI3Dmol.html.mustache' should all locate
+	 * the correct template.
 	 * 
-	 * @param template
-	 * @return
-	 * @throws IllegalArgumentException if the template couldn't be found or was ambiguous
+	 * @param template Short template name
+	 * @return Path to a matching template which can be located using the current classloader
+	 * @throws IllegalArgumentException
+	 *             if the template couldn't be found or was ambiguous
 	 */
-	private static String expandTemplatePath(String template) {
+	public static String expandTemplatePath(String template) {
 		// Mustache loads templates through the classloader, so we want a path it understands
 		ClassLoader cl = Thread.currentThread().getContextClassLoader();
 		// Try loading template directly
@@ -488,26 +493,30 @@ public class LatticeGUIMustache {
 			System.exit(1); return;
 		}
 
-		VertexPositioner<ChainVertex3D> vertexPositioner = ChainVertex3D.getVertexPositioner();
-		List<GraphLayout<ChainVertex3D,InterfaceEdge3D>> layouts = new ArrayList<>();
-
-		layouts.add( new UnitCellLayout<>(vertexPositioner, struc.getCrystallographicInfo().getCrystalCell()));
-		QuaternaryOrientationLayout<ChainVertex3D,InterfaceEdge3D> stereo = new QuaternaryOrientationLayout<>(vertexPositioner);
-		
-//		Point3d center = new Point3d();
-//		Point3d zenith = new Point3d(0,0,1);
-//		StereographicLayout<ChainVertex3D,InterfaceEdge3D> stereo = new StereographicLayout<>(vertexPositioner , center , zenith));
-		layouts.add(stereo);
-		
-		ConnectedComponentLayout<ChainVertex3D, InterfaceEdge3D> packer = new ConnectedComponentLayout<>(vertexPositioner);
-		packer.setPadding(100);
-		layouts.add(packer);
-		
-		gui.setLayout2D(new ComboLayout<>(layouts) );
+		gui.setLayout2D( getDefaultLayout2D(struc) );
 		gui.execute(mainOut);
 
 		if( !output.equals("-")) {
 			mainOut.close();
 		}
+	}
+
+	public static GraphLayout<ChainVertex3D, InterfaceEdge3D> getDefaultLayout2D(
+			Structure struc) {
+		VertexPositioner<ChainVertex3D> vertexPositioner = ChainVertex3D.getVertexPositioner();
+		List<GraphLayout<ChainVertex3D,InterfaceEdge3D>> layouts = new ArrayList<>();
+
+		layouts.add( new UnitCellLayout<>(vertexPositioner, struc.getCrystallographicInfo().getCrystalCell()));
+		QuaternaryOrientationLayout<ChainVertex3D,InterfaceEdge3D> stereo = new QuaternaryOrientationLayout<>(vertexPositioner);
+
+//		Point3d center = new Point3d();
+//		Point3d zenith = new Point3d(0,0,1);
+//		StereographicLayout<ChainVertex3D,InterfaceEdge3D> stereo = new StereographicLayout<>(vertexPositioner , center , zenith));
+		layouts.add(stereo);
+
+		ConnectedComponentLayout<ChainVertex3D, InterfaceEdge3D> packer = new ConnectedComponentLayout<>(vertexPositioner);
+		packer.setPadding(100);
+		layouts.add(packer);
+		return new ComboLayout<>(layouts);
 	}
 }

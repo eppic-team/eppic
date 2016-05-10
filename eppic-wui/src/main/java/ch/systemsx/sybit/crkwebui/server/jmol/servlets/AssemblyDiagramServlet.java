@@ -51,6 +51,8 @@ public class AssemblyDiagramServlet extends BaseServlet
 
 	public static final String PARAM_INTERFACES = "interfaces";
 	public static final String PARAM_CLUSTERS = "clusters";
+	//public static final String NGL_URL = "https://rawgit.com/sbliven/ngl/master/js/build/ngl.embedded.js";
+	//public static final String VIS_JS_URL = "https://cdnjs.cloudflare.com/ajax/libs/vis/4.9.0/vis.min.js";
 
 	private static final Logger logger = LoggerFactory.getLogger(AssemblyDiagramServlet.class);
 
@@ -118,7 +120,9 @@ public class AssemblyDiagramServlet extends BaseServlet
 
 			outputStream = new PrintWriter(response.getOutputStream());
 
-			AssemblyDiagramPageGenerator.generatePage(dir,input, atomCachePath, title, size, ifaceList, requestedIfaces,outputStream);
+			AssemblyDiagramPageGenerator.generateHTMLPage(dir,input, atomCachePath, title, size, ifaceList, requestedIfaces,outputStream);
+
+			// TODO start generating JSON and unit cell already
 
 		}
 		catch(ValidationException e)

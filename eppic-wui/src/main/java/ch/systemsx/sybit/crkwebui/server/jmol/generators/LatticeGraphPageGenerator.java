@@ -2,6 +2,7 @@ package ch.systemsx.sybit.crkwebui.server.jmol.generators;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -63,57 +64,48 @@ public class LatticeGraphPageGenerator {
 			Collection<Integer> requestedIfaces, String url3dmoljs, PrintWriter out) throws IOException, StructureException {
 
 		// Read input structure
-		Structure auStruct;
-		File structFile = new File(directory,inputName);
-		if(structFile.exists()) {
-			// Match file type
-			if( structFile.getName().endsWith(".cif")) {
-				MMcifParser parser = new SimpleMMcifParser();
-
-				SimpleMMcifConsumer consumer = new SimpleMMcifConsumer();
-
-				// The Consumer builds up the BioJava - structure object.
-				// you could also hook in your own and build up you own data model.
-				parser.addMMcifConsumer(consumer);
-
-				InputStream inStream = new FileInputStream(structFile);
-				parser.parse(inStream);
-
-				// now get the protein structure.
-				auStruct = consumer.getStructure();
-			} else {
-				PDBFileParser parser = new PDBFileParser();
-
-				InputStream inStream = new FileInputStream(structFile);
-				auStruct = parser.parsePDBFile(inStream);
-			}
-		} else if (!inputName.matches("^\\d\\w\\w\\w$")) {
-				logger.error("Could not find file {} and the inputName '{}' does not look like a PDB id. Can't produce the lattice graph page!", structFile.toString(), inputName);
-				return;
-		} else {
-			// it is like a PDB id, leave it to AtomCache
-			AtomCache atomCache = null;
-			if (atomCachePath ==null) 
-				atomCache = new AtomCache();
-			else 
-				atomCache = new AtomCache(atomCachePath);
-		
-			// we set it to FETCH_FILES to avoid going to the PDB ftp server, because we trust in principle what we have in our cache dir (which is rsynced externally or by the eppic cli run)
-			atomCache.setFetchBehavior(FetchBehavior.FETCH_FILES);
-			
-			StructureIO.setAtomCache(atomCache);
-		
-			
-			// leave it to atomcache
-			auStruct = StructureIO.getStructure(inputName);
-		}
+		Structure auStruct = readStructure(directory, inputName, atomCachePath);
 
 		// Read spacegroup
 		PDBCrystallographicInfo crystInfo = auStruct
 				.getCrystallographicInfo();
 		SpaceGroup sg = crystInfo.getSpaceGroup();
 
-		// Convert `Interface` beans to full StructureInterface objects
+		List<StructureInterface> siList = createStructureInterfaces(interfaces, sg);
+
+
+		LatticeGUI3Dmol gui = new LatticeGUI3Dmol(auStruct, ucURI,
+				requestedIfaces, siList);
+
+		// Override some properties if needed
+		if(title != null)
+			gui.setTitle(title);
+		if(size != null) 
+			gui.setSize(size);
+		if(url3dmoljs != null)
+			gui.setUrl3Dmol(url3dmoljs);
+
+		// Write unit cell, if necessary
+		if( !ucFile.exists() ) {
+			logger.info("Writing Unit Cell file to {}",ucFile.getAbsolutePath());
+			PrintWriter cifOut = new PrintWriter(new GZIPOutputStream(new FileOutputStream(ucFile)));
+			gui.writeCIFfile(cifOut);
+			cifOut.close();
+		}
+
+		// Construct page
+		gui.execute(out);
+		out.flush();
+	}
+
+	/**
+	 * Convert `Interface` beans to full StructureInterface objects
+	 * @param interfaces
+	 * @param sg
+	 * @return
+	 */
+	public static List<StructureInterface> createStructureInterfaces(
+			List<Interface> interfaces, SpaceGroup sg) {
 		List<StructureInterface> siList = new ArrayList<StructureInterface>(
 				interfaces.size());
 		for (Interface iface : interfaces) {
@@ -144,29 +136,75 @@ public class LatticeGraphPageGenerator {
 			siface.setCluster(cluster );
 			siList.add(siface);
 		}
-
-
-		LatticeGUI3Dmol gui = new LatticeGUI3Dmol(auStruct, ucURI,
-				requestedIfaces, siList);
-
-		// Override some properties if needed
-		if(title != null)
-			gui.setTitle(title);
-		if(size != null) 
-			gui.setSize(size);
-		if(url3dmoljs != null)
-			gui.setUrl3Dmol(url3dmoljs);
-
-		// Write unit cell, if necessary
-		if( !ucFile.exists() ) {
-			logger.info("Writing Unit Cell file to {}",ucFile.getAbsolutePath());
-			PrintWriter cifOut = new PrintWriter(new GZIPOutputStream(new FileOutputStream(ucFile)));
-			gui.writeCIFfile(cifOut);
-			cifOut.close();
-		}
-
-		// Construct page
-		gui.execute(out);
-		out.flush();
+		return siList;
 	}
+	
+
+	/**
+	 * Loads a structure. First attempts to read from the filesystem based
+	 * on the inputName. If this doesn't work, falls back on downloading
+	 * it from the PDB.
+	 * @param directory Directory to search for the file
+	 * @param inputName Filename within the directory (.pdb or .cif), or PDB code
+	 * @param atomCachePath Path for downloaded CIF files
+	 * @return the parsed Structure
+	 * @throws FileNotFoundException
+	 * @throws IOException
+	 * @throws StructureException If inputName was neither a file nor a PDB code
+	 */
+	public static Structure readStructure(File directory, String inputName,
+			String atomCachePath) throws FileNotFoundException, IOException,
+			StructureException {
+		// Read input structure
+		Structure auStruct;
+		File structFile = new File(directory,inputName);
+		if(structFile.exists()) {
+			// Match file type
+			if( structFile.getName().endsWith(".cif")) {
+				MMcifParser parser = new SimpleMMcifParser();
+
+				SimpleMMcifConsumer consumer = new SimpleMMcifConsumer();
+
+				// The Consumer builds up the BioJava - structure object.
+				// you could also hook in your own and build up you own data model.
+				parser.addMMcifConsumer(consumer);
+
+				InputStream inStream = new FileInputStream(structFile);
+				parser.parse(inStream);
+
+				// now get the protein structure.
+				auStruct = consumer.getStructure();
+			} else {
+				PDBFileParser parser = new PDBFileParser();
+
+				InputStream inStream = new FileInputStream(structFile);
+				auStruct = parser.parsePDBFile(inStream);
+			}
+		} else if (!inputName.matches("^\\d\\w\\w\\w$")) {
+			throw new StructureException(String.format(
+					"Could not find file %s and the inputName '%s' does not look "
+					+ "like a PDB id. Can't produce the assembly diagram page!",
+					structFile, inputName));
+		} else {
+			// it is like a PDB id, leave it to AtomCache
+			AtomCache atomCache = null;
+			if (atomCachePath ==null) {
+				atomCache = new AtomCache();
+				logger.warn("Defaulting to downloading structures to {}. Please set the ATOM_CACHE_PATH property.",atomCache.getCachePath());
+			}
+			else 
+				atomCache = new AtomCache(atomCachePath);
+		
+			// we set it to FETCH_FILES to avoid going to the PDB ftp server, because we trust in principle what we have in our cache dir (which is rsynced externally or by the eppic cli run)
+			atomCache.setFetchBehavior(FetchBehavior.FETCH_FILES);
+			
+			StructureIO.setAtomCache(atomCache);
+		
+			
+			// leave it to atomcache
+			auStruct = StructureIO.getStructure(inputName);
+		}
+		return auStruct;
+	}
+
 }

@@ -1,38 +1,20 @@
 package eppic.assembly.gui;
 
-import java.awt.Color;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.zip.GZIPOutputStream;
 
-import javax.vecmath.Point3d;
-import javax.vecmath.Vector3d;
-
 import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.StructureException;
-import org.biojava.nbio.structure.StructureTools;
 import org.biojava.nbio.structure.align.util.AtomCache;
 import org.biojava.nbio.structure.contact.StructureInterface;
 import org.biojava.nbio.structure.io.util.FileDownloadUtils;
-import org.jgrapht.UndirectedGraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.github.mustachejava.DefaultMustacheFactory;
-import com.github.mustachejava.Mustache;
-import com.github.mustachejava.MustacheFactory;
-
-import eppic.assembly.ChainVertex3D;
-import eppic.assembly.InterfaceEdge3D;
-import eppic.assembly.LatticeGraph3D;
-import eppic.assembly.OrientedCircle;
 
 /**
  * 3Dmol viewer for LatticeGraph.
