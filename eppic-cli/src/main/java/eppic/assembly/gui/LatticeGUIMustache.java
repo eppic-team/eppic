@@ -263,7 +263,7 @@ public class LatticeGUIMustache {
 	 */
 	private static String toHexColor(Color color) {
 		if(color == null) return null;
-		return String.format("%2x%2x%2x", color.getRed(),color.getGreen(),color.getBlue());
+		return String.format("%02x%02x%02x", color.getRed(),color.getGreen(),color.getBlue());
 	}
 
 
