@@ -3,8 +3,12 @@ package ch.systemsx.sybit.crkwebui.server.jmol.servlets;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -51,6 +55,8 @@ public class AssemblyDiagramServlet extends BaseServlet
 
 	public static final String PARAM_INTERFACES = "interfaces";
 	public static final String PARAM_CLUSTERS = "clusters";
+	public static final String PARAM_FORMAT = "format";
+
 	//public static final String NGL_URL = "https://rawgit.com/sbliven/ngl/master/js/build/ngl.embedded.js";
 	//public static final String VIS_JS_URL = "https://cdnjs.cloudflare.com/ajax/libs/vis/4.9.0/vis.min.js";
 
@@ -86,6 +92,7 @@ public class AssemblyDiagramServlet extends BaseServlet
 		String requestedIfacesStr = request.getParameter(PARAM_INTERFACES);
 		String requestedClusterStr = request.getParameter(PARAM_CLUSTERS);
 		String size = request.getParameter(JmolViewerServlet.PARAM_SIZE);
+		String format = request.getParameter(PARAM_FORMAT);
 
 		String url3dmoljs = properties.getProperty("url3dmoljs");
 		if (url3dmoljs == null || url3dmoljs.equals("")) {
@@ -99,11 +106,22 @@ public class AssemblyDiagramServlet extends BaseServlet
 
 		try
 		{
-			AssemblyDiagramServletInputValidator.validateLatticeGraphInput(jobId,requestedIfacesStr,requestedClusterStr);
+			AssemblyDiagramServletInputValidator.validateLatticeGraphInput(jobId,requestedIfacesStr,requestedClusterStr,format);
 
 			PdbInfo pdbInfo = LatticeGraphServlet.getPdbInfo(jobId);
 			String input = pdbInfo.getInputName();
 
+			// Request URL, with format=json
+			StringBuffer jsonURL = request.getRequestURL();
+			Map<String, String[]> query = new LinkedHashMap<>(request.getParameterMap());
+			query.put("format", new String[] {"json"});
+			jsonURL.append('?')
+			.append(
+					query.entrySet().stream()
+					.<String>flatMap( entry -> Arrays.stream(entry.getValue()).map(s -> entry.getKey()+"="+s) )
+					.collect(Collectors.joining("&"))
+					);
+			
 			// job directory on local filesystem
 			File dir = DirLocatorUtil.getJobDir(new File(destination_path), jobId);
 
@@ -120,9 +138,13 @@ public class AssemblyDiagramServlet extends BaseServlet
 
 			outputStream = new PrintWriter(response.getOutputStream());
 
-			AssemblyDiagramPageGenerator.generateHTMLPage(dir,input, atomCachePath, title, size, ifaceList, requestedIfaces,outputStream);
+			if(format != null && format.equalsIgnoreCase("json")) {
+				AssemblyDiagramPageGenerator.generateJSONPage(dir,input, title, ifaceList, requestedIfaces,outputStream);
+			} else {
+				AssemblyDiagramPageGenerator.generateHTMLPage(dir,input, atomCachePath, title, size, jsonURL.toString(), ifaceList, requestedIfaces,outputStream);
+				// TODO start generating JSON now, since we know that request is coming
+			}
 
-			// TODO start generating JSON and unit cell already
 
 		}
 		catch(ValidationException e)

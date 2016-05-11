@@ -3,6 +3,7 @@ package ch.systemsx.sybit.crkwebui.server.jmol.generators;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Collection;
 import java.util.List;
 
@@ -70,14 +71,27 @@ public class AssemblyDiagramPageGenerator {
 		GraphLayout<ChainVertex3D, InterfaceEdge3D> layout2D = LatticeGUIMustache.getDefaultLayout2D(auStruct);
 		gui.setLayout2D( layout2D );
 
-		
-		// Construct page
-		gui.execute(out);
+
+		// Hack to work around Mustache limitations which prevent generating valid JSON
+		try(StringWriter sw = new StringWriter();
+				PrintWriter pw = new PrintWriter(sw);
+				) {
+
+			// Construct page
+			gui.execute(pw);
+
+			pw.flush();
+			sw.flush();
+			String json = sw.toString();
+			// Remove all trailing commas from lists (invalid JSON)
+			json = json.replaceAll(",(?=\\s*[}\\]])","");
+			out.write(json);
+		}
 		out.flush();
 	}
 	
 	public static void generateHTMLPage(File directory, String inputName, String atomCachePath,
-			String title, String size, List<Interface> interfaces,
+			String title, String size, String jsonURL, List<Interface> interfaces,
 			Collection<Integer> requestedIfaces, PrintWriter out) throws IOException, StructureException {
 		MustacheFactory mf = new DefaultMustacheFactory();
 		String template = LatticeGUIMustache.expandTemplatePath(TEMPLATE_ASSEMBLY_DIAGRAM_FULL_LAZY);
@@ -85,6 +99,7 @@ public class AssemblyDiagramPageGenerator {
 		LazyLatticeGraph3D page = new LazyLatticeGraph3D();
 		page.setSize(size);
 		page.setTitle(title);
+		page.setStrucURI(jsonURL);
 		try {
 			mustache.execute(out, page).flush();
 		} catch (IOException e) {
