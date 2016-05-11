@@ -197,8 +197,8 @@ public class LatticeGraphServlet extends BaseServlet
 		// If one of interfaces and clusters is specified, return it
 		// If either are '*', return null (all)
 		// If both are specified, return their union
-		if( ifaceStr == null || ifaceStr.isEmpty() ) {
-			if(clusterStr == null || clusterStr.isEmpty()) {
+		if( ifaceStr == null ) {
+			if(clusterStr == null ) {
 				// If neither are specified, return null (all)
 				return null;
 			}
@@ -208,7 +208,7 @@ public class LatticeGraphServlet extends BaseServlet
 			List<Integer> clusterList = LatticeGUIMustache.parseInterfaceList(clusterStr);
 			return mapClusters(new HashSet<Integer>(clusterList),ifaceList);
 		} else {
-			if(clusterStr == null || clusterStr.isEmpty()) {
+			if(clusterStr == null ) {
 				// Only interfaces specified
 				return LatticeGUIMustache.parseInterfaceList(ifaceStr);
 			}

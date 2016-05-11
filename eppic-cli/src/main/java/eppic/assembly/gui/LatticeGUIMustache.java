@@ -334,9 +334,17 @@ public class LatticeGUIMustache {
 	 * @throws NumberFormatException for invalid input
 	 */
 	public static List<Integer> parseInterfaceList(String list) throws NumberFormatException{
+
 		// '*' for all interfaces
-		if(list == null || list.isEmpty() || list.equals("*") ) {
+		if(list == null ) {
 			return null;// all interfaces
+		}
+		list = list.trim();
+		if( list.equals("*")) {
+			return null;// all interfaces
+		}
+		if(list.isEmpty()) {
+			return Collections.emptyList();
 		}
 		String[] splitIds = list.split("\\s*,\\s*");
 		List<Integer> interfaceIds = new ArrayList<Integer>(splitIds.length);
