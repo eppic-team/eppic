@@ -40,8 +40,6 @@ import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.NativeEvent;
-import com.google.gwt.event.dom.client.DoubleClickEvent;
-import com.google.gwt.event.dom.client.DoubleClickHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.safehtml.shared.SafeHtml;
@@ -421,11 +419,12 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 							"." + assembly.getId() + ".75x75.png";
 					model.setThumbnailUrl(thumbnailUrl);
 					
-					String diagramUrl = 
-							ApplicationContext.getSettings().getResultsLocationForJob(ApplicationContext.getPdbInfo().getJobId().toLowerCase()) + 
-							"/" + ApplicationContext.getPdbInfo().getTruncatedInputName() +
-							".diagram" +
-							"." + assembly.getId() + ".75x75.png";
+//					String diagramUrl = 
+//							ApplicationContext.getSettings().getResultsLocationForJob(ApplicationContext.getPdbInfo().getJobId().toLowerCase()) + 
+//							"/" + ApplicationContext.getPdbInfo().getTruncatedInputName() +
+//							EppicParams.ASSEMBLIES_DIAGRAM_FILES_SUFFIX +
+//							"." + assembly.getId() + ".75x75.png";
+					String diagramUrl = "/resources/icons/mockup4.png";
 					model.setDiagramUrl(diagramUrl);
 					
 					model.setMmSize(assembly.getMmSizeString());
