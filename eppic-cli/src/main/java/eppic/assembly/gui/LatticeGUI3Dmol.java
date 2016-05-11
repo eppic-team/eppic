@@ -1,38 +1,20 @@
 package eppic.assembly.gui;
 
-import java.awt.Color;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.zip.GZIPOutputStream;
 
-import javax.vecmath.Point3d;
-import javax.vecmath.Vector3d;
-
 import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.StructureException;
-import org.biojava.nbio.structure.StructureTools;
 import org.biojava.nbio.structure.align.util.AtomCache;
 import org.biojava.nbio.structure.contact.StructureInterface;
 import org.biojava.nbio.structure.io.util.FileDownloadUtils;
-import org.jgrapht.UndirectedGraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.github.mustachejava.DefaultMustacheFactory;
-import com.github.mustachejava.Mustache;
-import com.github.mustachejava.MustacheFactory;
-
-import eppic.assembly.ChainVertex3D;
-import eppic.assembly.InterfaceEdge3D;
-import eppic.assembly.LatticeGraph3D;
-import eppic.assembly.OrientedCircle;
 
 /**
  * 3Dmol viewer for LatticeGraph.
@@ -46,7 +28,7 @@ import eppic.assembly.OrientedCircle;
 public class LatticeGUI3Dmol extends LatticeGUIMustache {
 	private static final Logger logger = LoggerFactory.getLogger(LatticeGUI3Dmol.class);
 
-	static final String MUSTACHE_TEMPLATE_3DMOL = "mustache/eppic/assembly/gui/LatticeGUI3Dmol.mustache.html";
+	static final String MUSTACHE_TEMPLATE_3DMOL = "mustache/eppic/assembly/gui/LatticeGUI3Dmol.html.mustache";
 	static final String DEFAULT_URL_3DMOL = "http://3Dmol.csb.pitt.edu/build/3Dmol-min.js";
 	
 	private String strucURI;
