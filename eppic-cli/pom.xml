@@ -9,7 +9,7 @@
         <artifactId>eppic-cli</artifactId>
 
 	<properties>
-		<biojava.version>4.2.0</biojava.version>
+		<biojava.version>4.2.1</biojava.version>
 	</properties>
 	
 	<repositories>
@@ -238,6 +238,7 @@
 			<plugin>
   				<groupId>org.apache.maven.plugins</groupId>
   				<artifactId>maven-assembly-plugin</artifactId>
+  				<version>2.6</version>
   				<configuration>
     				<descriptor>src/assembly/bin.xml</descriptor>
     				<finalName>${project.artifactId}-${project.version}</finalName>
@@ -252,6 +253,7 @@
   				
   				<executions>
     				<execution>
+
       					<phase>package</phase>
       					<goals>
         					<goal>single</goal>

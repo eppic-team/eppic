@@ -15,28 +15,23 @@ public class AssemblyDiagramServletInputValidator
 	 * @throws ValidationException when validation fails
 	 */
 	public static void validateLatticeGraphInput(String jobId,
-			String interfaces, String clusters) throws ValidationException
+			String interfaces, String clusters, String format) throws ValidationException
 	{
 		if(jobId == null) {
 			throw new ValidationException("Job identifier is not specified.");
 		}
 
 		RunJobDataValidator.validateJobId(jobId);
-		validateInterfaceList(interfaces);
-		validateInterfaceList(clusters); // same format as interfaces
+		LatticeGraphServletInputValidator.validateInterfaceList(interfaces);
+		LatticeGraphServletInputValidator.validateInterfaceList(clusters); // same format as interfaces
+		validateFormat(format);
 	}
 
-	/**
-	 * Valid examples: "1", "1,2,3", "*", ""
-	 * Invalid: "one", null
-	 * @param interfaces
-	 * @throws ValidationException
-	 */
-	private static void validateInterfaceList(String interfaces) throws ValidationException {
-		if(interfaces != null && !interfaces.matches("^(\\*?|[0-9]+(,[0-9]+)*)$"))
-		{
-			throw new ValidationException( "Invalid interfaces ({}). Expected '*' or comma-separated list of integers");
-		}
+	private static void validateFormat(String format) throws ValidationException {
+		if(format == null || format.equalsIgnoreCase("html") || format.equalsIgnoreCase("json"))
+			return;
+		throw new ValidationException( "Invalid format ({}). Expected html or json.");
 	}
+
 }
  

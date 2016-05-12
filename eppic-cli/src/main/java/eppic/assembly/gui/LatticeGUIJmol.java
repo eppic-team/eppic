@@ -42,7 +42,7 @@ import eppic.commons.util.StructureUtils;
  *
  */
 public class LatticeGUIJmol {
-	private static final String MUSTACHE_TEMPLATE_JMOL = "mustache/eppic/assembly/gui/LatticeGUIJmol.mustache.jmol";
+	private static final String MUSTACHE_TEMPLATE_JMOL = "mustache/eppic/assembly/gui/LatticeGUIJmol.jmol.mustache";
 
 	private final double defaultArrowOffset = 6;
 

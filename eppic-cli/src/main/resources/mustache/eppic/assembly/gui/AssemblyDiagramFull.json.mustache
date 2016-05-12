@@ -1,0 +1,24 @@
+{
+	"nodes": [
+{{#graph2D.vertexSet}}
+	{
+		"id": "{{toString}}",
+		"label": "{{toString}}",
+		"x": {{center.x}},
+		"y": {{center.y}}{{#colorStr}},
+		"color": "#{{colorStr}}"{{/colorStr}}
+	},
+{{/graph2D.vertexSet}}
+	],
+	"edges": [
+{{#graph2D.edgeSet}}
+	{
+		"from": "{{source}}",
+		"to": "{{target}}",
+		"label": "{{interfaceId}}",
+		"title": "{{xtalTrans}}"{{#colorStr}},
+		"color": "#{{colorStr}}"{{/colorStr}}
+	},
+{{/graph2D.edgeSet}}
+	]
+}
