@@ -78,7 +78,7 @@ public class TestJmolPageGenerator {
 		assemblyData.setAssemblyContents(acs); 
 		
 		
-		String thepage = JmolPageGenerator.generatePage("test title", "200", "http://myserver", "../files", "1smt.cif", interfData, assemblyData, "/ngl.min.js");
+		String thepage = JmolPageGenerator.generatePage("test title", "200", "http://myserver", "../files", "1smt.cif", interfData, assemblyData, "/ngl.embedded.min.js");
 		
 		
 		System.out.println(thepage);
