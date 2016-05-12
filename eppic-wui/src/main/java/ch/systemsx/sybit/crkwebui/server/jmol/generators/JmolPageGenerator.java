@@ -73,12 +73,10 @@ public class JmolPageGenerator
 		
 		jsVariables +
 		
-		"if( !Detector.webgl ) Detector.addGetWebGLMessage();\n"+
-
 		"NGL.mainScriptFilePath = \""+nglJsUrl+"\";\n"+
 
 		"document.addEventListener( \"DOMContentLoaded\", function() {\n"+
-		"	NGL.init( onInit );\n"+
+		"	onInit();\n"+
 		"} );\n"+
 
 		"</script>\n"+
