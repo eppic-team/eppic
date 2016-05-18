@@ -3,7 +3,7 @@ package ch.systemsx.sybit.crkwebui.client.results.gui.panels;
 
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.images.ImageWithTooltip;
-import ch.systemsx.sybit.crkwebui.client.commons.managers.DiagramViewerRunner;
+import ch.systemsx.sybit.crkwebui.client.commons.managers.PopupRunner;
 import ch.systemsx.sybit.crkwebui.client.commons.managers.ViewerRunner;
 import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 import eppic.EppicParams;
@@ -67,7 +67,7 @@ public class TopologyInfoPanel extends FieldSet {
 		rightimage.addClickHandler(new ClickHandler() {		
 			@Override
 			public void onClick(ClickEvent event) {
-				DiagramViewerRunner.runViewerAssembly(ApplicationContext.getSelectedAssemblyId()+"");
+				PopupRunner.popupAssemblyDiagram(ApplicationContext.getSelectedAssemblyId()+"");
 			}
 		
 		});		
@@ -83,7 +83,7 @@ public class TopologyInfoPanel extends FieldSet {
     	anchor.addClickHandler(new ClickHandler() {		
 			@Override
 			public void onClick(ClickEvent event) {
-				DiagramViewerRunner.runViewerAssembly(ApplicationContext.getSelectedAssemblyId()+"");
+				PopupRunner.popupLatticeGraph(ApplicationContext.getSelectedAssemblyId()+"");
 			}
 		});
     	linkContainer.add(anchor);

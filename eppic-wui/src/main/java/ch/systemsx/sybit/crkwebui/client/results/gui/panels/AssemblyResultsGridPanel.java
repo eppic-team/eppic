@@ -21,7 +21,7 @@ import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowAssemblyViewerInNe
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowDiagramViewerHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowThumbnailHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.WindowHideHandler;
-import ch.systemsx.sybit.crkwebui.client.commons.managers.DiagramViewerRunner;
+import ch.systemsx.sybit.crkwebui.client.commons.managers.PopupRunner;
 import ch.systemsx.sybit.crkwebui.client.commons.managers.EventBusManager;
 import ch.systemsx.sybit.crkwebui.client.commons.managers.ViewerRunner;
 import ch.systemsx.sybit.crkwebui.client.commons.util.EscapedStringGenerator;
@@ -603,7 +603,7 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 			@Override
 			public void onShowDiagramViewer(ShowDiagramViewerEvent event) 
 			{
-				DiagramViewerRunner.runViewerAssembly(String.valueOf(resultsGrid.getSelectionModel().getSelectedItem().getAssemblyId()));
+				PopupRunner.popupAssemblyDiagram(String.valueOf(resultsGrid.getSelectionModel().getSelectedItem().getAssemblyId()));
 			} 
 		});		
 		
