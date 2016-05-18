@@ -78,7 +78,7 @@ public class LatticeGUI3Dmol extends LatticeGUIMustache {
 	}
 
 	public static void main(String[] args) throws IOException, StructureException {
-		final String usage = String.format("Usage: %s <PDB code or file> <output.html> [list,of,interfaces,or,* [<output.cif.gz> <http://path/to/cif>]]",LatticeGUI3Dmol.class.getSimpleName());
+		final String usage = String.format("Usage: %s [template] <PDB code or file> <output.html> [list,of,interfaces,or,* [<output.cif.gz> <http://path/to/cif>]]",LatticeGUI3Dmol.class.getSimpleName());
 		if (args.length<1) {
 			logger.error("Expected at least 2 arguments");
 			logger.error(usage);
@@ -87,6 +87,16 @@ public class LatticeGUI3Dmol extends LatticeGUIMustache {
 
 		// Parse arguments
 		int arg = 0;
+		
+		// Try to match to known template
+		String template;
+		try {
+			template = LatticeGUIMustache.expandTemplatePath(args[arg]);
+			arg++;
+		} catch(IllegalArgumentException e) {
+			template = MUSTACHE_TEMPLATE_3DMOL;
+		}
+		
 		String input = args[arg++];
 		Collection<Integer> interfaceIds = null;
 
@@ -140,7 +150,7 @@ public class LatticeGUI3Dmol extends LatticeGUIMustache {
 		cache.getFileParsingParams().setAlignSeqRes(true);
 		Structure struc = cache.getStructure(input);
 
-		LatticeGUI3Dmol gui = new LatticeGUI3Dmol(struc, uri, interfaceIds);
+		LatticeGUI3Dmol gui = new LatticeGUI3Dmol(template, struc, uri, interfaceIds);
 
 		if(cifOut != null) {
 			gui.writeCIFfile(cifOut);
