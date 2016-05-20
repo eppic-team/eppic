@@ -63,8 +63,10 @@ public class LatticeGUIMustache {
 	
 	// Some pre-defined templates for use with createLatticeGUIMustache
 	private static final String TEMPLATE_DIR = "mustache/eppic/assembly/gui/";
-	public static final String TEMPLATE_ASSEMBLY_DIAGRAM_FULL = TEMPLATE_DIR+"AssemblyDiagramFull.html.mustache";// "AssemblyDiagramFull";
+	public static final String TEMPLATE_ASSEMBLY_DIAGRAM_FULL = TEMPLATE_DIR+"AssemblyDiagramFull.html.mustache";
+	public static final String TEMPLATE_ASSEMBLY_DIAGRAM_THUMB = TEMPLATE_DIR+"AssemblyDiagramThumb.dot.mustache";
 	public static final String TEMPLATE_3DMOL = LatticeGUI3Dmol.MUSTACHE_TEMPLATE_3DMOL;//"LatticeGUI3Dmol";
+
 
 
 	private final LatticeGraph3D latticeGraph;
@@ -208,14 +210,37 @@ public class LatticeGUIMustache {
 	 * @throws StructureException
 	 */
 	public LatticeGUIMustache(String template, Structure struc,Collection<Integer> interfaceIds, List<StructureInterface> allInterfaces) throws StructureException {
-		this.latticeGraph = new LatticeGraph3D(struc,allInterfaces);
-		this.template = template;
-		
-		UndirectedGraph<ChainVertex3D, InterfaceEdge3D> graph = latticeGraph.getGraph();
+		this(template,new LatticeGraph3D(struc,allInterfaces));
+
 		if( interfaceIds != null ) {
 			logger.info("Filtering LatticeGraph3D to edges {}",interfaceIds);
 			latticeGraph.filterEngagedInterfaces(interfaceIds);
 		}
+
+		pdbId = struc.getStructureIdentifier().toCanonical().getPdbId();
+		if(pdbId == null || pdbId.length() != 4) {
+			pdbId = struc.getName();
+		}
+		if(pdbId == null || pdbId.length() != 4) {
+			pdbId = null;
+			logger.error("Unable to get PDB ID.");
+		}
+
+		this.title = String.format("Lattice for %s",getPdbId());
+	}
+	/**
+	 * Constructor from a latticeGraph directly.
+	 * The caller should pre-filter the engaged edges. The PdbId and Title
+	 * properties should be set manually as well.
+	 * @param template
+	 * @param latticeGraph
+	 * @throws StructureException
+	 */
+	public LatticeGUIMustache(String template, LatticeGraph3D latticeGraph) throws StructureException {
+		this.latticeGraph = latticeGraph;
+		this.template = template;
+
+		UndirectedGraph<ChainVertex3D, InterfaceEdge3D> graph = latticeGraph.getGraph();
 		logger.info("Using LatticeGraph3D with {} vertices and {} edges",graph.vertexSet().size(),graph.edgeSet().size());
 
 		// Compute names and colors
@@ -226,7 +251,7 @@ public class LatticeGUIMustache {
 		for(InterfaceEdge3D e : graph.edgeSet()) {
 			String colorStr = toHexColor(e.getColor());
 			e.setColorStr(colorStr);
-			
+
 			if(e.getCircles() != null) {
 				for(OrientedCircle circ: e.getCircles()) {
 					//rescale perpendicular vector
@@ -243,16 +268,8 @@ public class LatticeGUIMustache {
 		}
 
 		// Default parameters
-		pdbId = struc.getStructureIdentifier().toCanonical().getPdbId();
-		if(pdbId == null || pdbId.length() != 4) {
-			pdbId = struc.getName();
-		}
-		if(pdbId == null || pdbId.length() != 4) {
-			pdbId = null;
-			logger.error("Unable to get PDB ID.");
-		}
-
-		this.title = String.format("Lattice for %s",getPdbId());
+		pdbId = null;
+		title = null;
 		this.size = "800";
 	}
 

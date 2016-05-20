@@ -118,8 +118,8 @@ Linux or downloading java from http://java.com/en/download/index.jsp
      - CLUSTALO_BIN or TCOFFEE_BIN
    
      to their appropriate paths. 
-     Optionally you can also set PYMOL_EXE (needed for -l option) and 
-     LOCAL_CIF_DIR (needed to provide PDB codes with -i). 
+     Optionally you can also set PYMOL_EXE and GRAPHVIZ_EXE (needed for
+     -l option) and LOCAL_CIF_DIR (needed to provide PDB codes with -i). 
 
 
 3. Now you can run eppic:
