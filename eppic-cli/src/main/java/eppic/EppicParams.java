@@ -142,7 +142,10 @@ public class EppicParams {
 	
 	// default pymol exec
 	private static final File	  DEF_PYMOL_EXE = new File("/usr/bin/pymol");
-	
+
+	// default graphviz exec
+	private static final File	  DEF_GRAPHVIZ_EXE = new File("/usr/bin/dot");
+
 	// default hbplus exec
 	private static final File     DEF_HBPLUS_EXE = new File("/usr/bin/hbplus");
 	
@@ -247,6 +250,7 @@ public class EppicParams {
 	private File	 clustaloBin;
 	
 	private File	 pymolExe;
+	private File	 graphvizExe;
 
 	private AAAlphabet alphabet;
 
@@ -605,7 +609,10 @@ public class EppicParams {
 			if (!pymolExe.exists()) {
 				throw new EppicException(null, "PYMOL_EXE must be set to a valid value in config file.", true);
 			}
-			
+			if (!graphvizExe.exists()) {
+				throw new EppicException(null, "GRAPHVIZ_EXE must be set to a valid value in config file.", true);
+			}
+
 		}
 		
 		if (alphabet == null) {
@@ -871,6 +878,8 @@ public class EppicParams {
 			
 			pymolExe		= new File(p.getProperty("PYMOL_EXE", DEF_PYMOL_EXE.toString()));
 			
+			graphvizExe		= new File(p.getProperty("GRAPHVIZ_EXE", DEF_GRAPHVIZ_EXE.toString()));
+			
 			hbplusExe       = new File(p.getProperty("HBPLUS_EXE", DEF_HBPLUS_EXE.toString()));
 			
 			nSpherePointsASAcalc = Integer.parseInt(p.getProperty("NSPHEREPOINTS_ASA_CALC", new Integer(DEF_NSPHEREPOINTS_ASA_CALC).toString()));
@@ -944,6 +953,10 @@ public class EppicParams {
 
 	public File getPymolExe() {
 		return pymolExe;
+	}
+	
+	public File getGraphvizExe() {
+		return graphvizExe;
 	}
 	
 	public File getHbplusExe() {

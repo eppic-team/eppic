@@ -50,19 +50,14 @@ import org.biojava.nbio.structure.symmetry.core.QuatSymmetryParameters;
 import org.biojava.nbio.structure.symmetry.core.QuatSymmetryResults;
 import org.biojava.nbio.structure.xtal.CrystalBuilder;
 import org.biojava.nbio.structure.xtal.SpaceGroup;
-import org.jgrapht.graph.MaskFunctor;
-import org.jgrapht.graph.UndirectedMaskSubgraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import eppic.assembly.Assembly;
 import eppic.assembly.ChainVertex;
-import eppic.assembly.ChainVertex3D;
 import eppic.assembly.CrystalAssemblies;
-import eppic.assembly.InterfaceEdge3D;
 import eppic.assembly.LatticeGraph3D;
-import eppic.assembly.gui.LatticeGUIJGraph;
-import eppic.assembly.layout.VertexPositioner;
+import eppic.assembly.gui.LatticeGUIMustache;
 import eppic.commons.util.FileTypeGuesser;
 import eppic.commons.util.GeomTools;
 import eppic.commons.util.Goodies;
@@ -701,6 +696,10 @@ public class Main {
 		if (interfaces.size() == 0) return;
 
 		if (!params.isGenerateDiagrams()) return;
+		
+		params.getProgressLog().println("Writing Assembly Diagram files");
+		writeStep("Generating assembly diagram Thumbnails");
+		LOGGER.info("Generating Assembly Diagram files");
 
 		try {
 			// ASSEMBLY files
@@ -710,11 +709,12 @@ public class Main {
 					pdb.getCrystallographicInfo().getCrystalCell()!=null) {
 
 				LatticeGraph3D latticeGraph = new LatticeGraph3D(validAssemblies.getLatticeGraph());
+				GraphvizRunner runner = new GraphvizRunner(params.getGraphvizExe());
 				for (Assembly a:validAssemblies) {
 
-					File outputFile= params.getOutputFile(EppicParams.ASSEMBLIES_DIAGRAM_FILES_SUFFIX+"." + a.getId() + ".png");
+					File pngFile= params.getOutputFile(EppicParams.ASSEMBLIES_DIAGRAM_FILES_SUFFIX+"." + a.getId() + ".png");
 
-					LOGGER.info("Writing diagram for assembly {} to {}",a.getId(),outputFile);
+					LOGGER.info("Writing diagram for assembly {} to {}",a.getId(),pngFile);
 					
 					// Filter down to this assembly
 					List<StructureInterfaceCluster> clusters = a.getEngagedInterfaceClusters();
@@ -724,60 +724,25 @@ public class Main {
 					}
 					latticeGraph.filterEngagedClusters(clusterIds);
 					
-					// Position chains at origin towards z axis
-					List<List<ChainVertex>> positions = a.getStructureCentered();
-					// We have a problem mapping the positions of the transformed chains
-					// back to the original vertices (ChainVertex objects are created anew).
-					// For now, use the vertex's string representation as a key, assuming uniqueness
-					final Map<String,Point3d> centroids = computeCentroidsAgain(positions);
+					LatticeGUIMustache guiThumb = new LatticeGUIMustache(LatticeGUIMustache.TEMPLATE_ASSEMBLY_DIAGRAM_THUMB, latticeGraph);
+					guiThumb.setLayout2D(LatticeGUIMustache.getDefaultLayout2D(pdb));
+					guiThumb.setTitle("Assembly "+a.getId());
+					guiThumb.setPdbId(pdb.getPDBCode());
 
-					// Filter down to unique stoichiometry
-					MaskFunctor<ChainVertex3D, InterfaceEdge3D> mask = new MaskFunctor<ChainVertex3D, InterfaceEdge3D>() {
-						@Override
-						public boolean isEdgeMasked(InterfaceEdge3D edge) {
-							return false;
-						}
-
-						@Override
-						public boolean isVertexMasked(ChainVertex3D vertex) {
-							return !centroids.containsKey(vertex.toString());
-						}
-						
-					};
-					UndirectedMaskSubgraph<ChainVertex3D, InterfaceEdge3D> filtered = new UndirectedMaskSubgraph<>(latticeGraph.getGraph(), mask);
+					// Generate thumbs via dot file
+					//File dotFile= params.getOutputFile(EppicParams.ASSEMBLIES_DIAGRAM_FILES_SUFFIX+"." + a.getId() + ".dot");
+					//try (PrintWriter out = new PrintWriter(dotFile)) {
+					//	guiThumb.execute(out);
+					//}
+					//runner.generateFromDot(dotFile, pngFile, "png");
 					
-					
-					// Create a vertex positioner based on the centroids
-					VertexPositioner<ChainVertex3D> positioner = new VertexPositioner<ChainVertex3D>() {
-						@Override
-						public Point3d getPosition(ChainVertex3D vertex) {
-							String key = vertex.toString();
-							Point3d centroid = centroids.get(key);
-							if(centroid == null) {
-								LOGGER.error("Unable to match vertex {} to a 3D position",key);
-								// Use point towards zenith, which maps to infinity
-								centroid = new Point3d(0,0,1);
-							}
-							return centroid;
-						}
-
-						@Override
-						public void setPosition(ChainVertex3D vertex, Point3d pos) {
-							throw new UnsupportedOperationException("Read-only vertex");
-						}
-					};
-					
-					// Stereographic projection
-					LatticeGUIJGraph gui = new LatticeGUIJGraph(filtered);
-					gui.stereographicLayout(new Point3d(0,0,0),new Point3d(0,0,1),positioner);
-					gui.writePNG(outputFile);
+					// Generate thumbs via pipe
+					runner.generateFromDot(guiThumb, pngFile, "png");
 				}
 			}
 
 
-		} catch( IOException e) {
-			throw new EppicException(e, "Couldn't write assembly diagrams. " + e.getMessage(), true);
-		} catch (StructureException e) {
+		} catch( IOException|StructureException|InterruptedException e) {
 			throw new EppicException(e, "Couldn't write assembly diagrams. " + e.getMessage(), true);
 		}
 	}
@@ -853,12 +818,11 @@ public class Main {
 		
 		if (interfaces.size() == 0) return;
 		
-		PymolRunner pr = null;
 		params.getProgressLog().println("Writing PyMOL files");
 		writeStep("Generating Thumbnails and PyMOL Files");
 		LOGGER.info("Generating PyMOL files");
 
-		pr = new PymolRunner(params.getPymolExe());
+		PymolRunner pr = new PymolRunner(params.getPymolExe());
 
 		try {
 			for (StructureInterface interf:interfaces) {
