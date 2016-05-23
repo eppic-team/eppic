@@ -712,7 +712,7 @@ public class Main {
 				GraphvizRunner runner = new GraphvizRunner(params.getGraphvizExe());
 				for (Assembly a:validAssemblies) {
 
-					File pngFile= params.getOutputFile(EppicParams.ASSEMBLIES_DIAGRAM_FILES_SUFFIX+"." + a.getId() + ".png");
+					File pngFile= params.getOutputFile(EppicParams.ASSEMBLIES_DIAGRAM_FILES_SUFFIX+"." + a.getId() + ".75x75.png");
 
 					LOGGER.info("Writing diagram for assembly {} to {}",a.getId(),pngFile);
 					

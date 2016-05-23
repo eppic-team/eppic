@@ -419,12 +419,11 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 							"." + assembly.getId() + ".75x75.png";
 					model.setThumbnailUrl(thumbnailUrl);
 					
-//					String diagramUrl = 
-//							ApplicationContext.getSettings().getResultsLocationForJob(ApplicationContext.getPdbInfo().getJobId().toLowerCase()) + 
-//							"/" + ApplicationContext.getPdbInfo().getTruncatedInputName() +
-//							EppicParams.ASSEMBLIES_DIAGRAM_FILES_SUFFIX +
-//							"." + assembly.getId() + ".75x75.png";
-					String diagramUrl = "/resources/icons/mockup4.png";
+					String diagramUrl = 
+							ApplicationContext.getSettings().getResultsLocationForJob(ApplicationContext.getPdbInfo().getJobId().toLowerCase()) + 
+							"/" + ApplicationContext.getPdbInfo().getTruncatedInputName() +
+							EppicParams.ASSEMBLIES_DIAGRAM_FILES_SUFFIX +
+							"." + assembly.getId() + ".75x75.png";
 					model.setDiagramUrl(diagramUrl);
 					
 					model.setMmSize(assembly.getMmSizeString());
