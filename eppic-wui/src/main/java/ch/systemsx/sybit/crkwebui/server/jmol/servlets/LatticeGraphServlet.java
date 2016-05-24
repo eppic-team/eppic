@@ -4,9 +4,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -33,7 +33,8 @@ import ch.systemsx.sybit.crkwebui.shared.exceptions.ValidationException;
 import ch.systemsx.sybit.crkwebui.shared.model.Interface;
 import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 import eppic.EppicParams;
-import eppic.assembly.gui.LatticeGUIMustache;
+import eppic.commons.util.Interval;
+import eppic.commons.util.IntervalSet;
 import eppic.model.JobDB;
 
 /**
@@ -124,7 +125,8 @@ public class LatticeGraphServlet extends BaseServlet
 			List<Interface> ifaceList = getInterfaceList(pdbInfo);
 
 			//TODO better to filter interfaces here before construction, or afterwards?
-			Collection<Integer> requestedIfaces = parseInterfaceListWithClusters(requestedIfacesStr,requestedClusterStr,ifaceList);;
+			IntervalSet requestedIntervals = parseInterfaceListWithClusters(requestedIfacesStr,requestedClusterStr,ifaceList);
+			Collection<Integer> requestedIfaces = requestedIntervals.getIntegerSet();
 
 			String title = jobId + " - Lattice Graph";
 			if(requestedIfaces != null && !requestedIfaces.isEmpty()) {
@@ -191,7 +193,7 @@ public class LatticeGraphServlet extends BaseServlet
 	 * @param ifaceList
 	 * @return
 	 */
-	static Collection<Integer> parseInterfaceListWithClusters(
+	public static IntervalSet parseInterfaceListWithClusters(
 			String ifaceStr, String clusterStr,
 			List<Interface> ifaceList) {
 		// If one of interfaces and clusters is specified, return it
@@ -199,42 +201,45 @@ public class LatticeGraphServlet extends BaseServlet
 		// If both are specified, return their union
 		if( ifaceStr == null ) {
 			if(clusterStr == null ) {
-				// If neither are specified, return null (all)
-				return null;
+				// If neither are specified, return all
+				return new IntervalSet(Interval.INFINITE_INTERVAL);
 			}
 			// Only clusters specified
 			if(clusterStr.equals('*'))
-				return null;
-			List<Integer> clusterList = LatticeGUIMustache.parseInterfaceList(clusterStr);
-			return mapClusters(new HashSet<Integer>(clusterList),ifaceList);
+				return new IntervalSet(Interval.INFINITE_INTERVAL);
+
+			IntervalSet clusterSet = new IntervalSet(clusterStr);
+			return mapClusters(clusterSet,ifaceList);
 		} else {
 			if(clusterStr == null ) {
 				// Only interfaces specified
-				return LatticeGUIMustache.parseInterfaceList(ifaceStr);
+				return new IntervalSet(ifaceStr);
 			}
 			// Both specified
 			if(ifaceStr.equals('*') || clusterStr.equals('*') )
-				return null;
-			Set<Integer> interfaces = mapClusters(new HashSet<Integer>(LatticeGUIMustache.parseInterfaceList(ifaceStr)),ifaceList);
-			interfaces.addAll(LatticeGUIMustache.parseInterfaceList(ifaceStr));
-			return interfaces;
+				return new IntervalSet(Interval.INFINITE_INTERVAL);
+			IntervalSet clusterSet = new IntervalSet(clusterStr);
+			IntervalSet interfaces = mapClusters(clusterSet,ifaceList);
+			interfaces.addAll(new IntervalSet(ifaceStr));
+			return interfaces.getMergedIntervalSet();
 		}
 	}
+
 	/**
 	 * Expand a list of interface cluster numbers to a full list of interfaces
 	 * @param clusters
 	 * @param ifaceList
 	 * @return
 	 */
-	private static Set<Integer> mapClusters(Set<Integer> clusters,
+	private static IntervalSet mapClusters(IntervalSet clusters,
 			Collection<Interface> ifaceList) {
-		Set<Integer> interfaces = new HashSet<Integer>();
+		SortedSet<Integer> interfaces = new TreeSet<>();
 		for(Interface iface : ifaceList) {
 			if(clusters.contains(iface.getClusterId())) {
 				// Only interfaces specified
 				interfaces.add(iface.getInterfaceId());
 			}
 		}
-		return interfaces;
+		return new IntervalSet(interfaces);
 	}
 }

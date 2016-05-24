@@ -49,6 +49,42 @@ public class TestIntervalSet {
 		assertEquals(str,"1-6",merged.toSelectionString());
 	}
 	
+
+	@Test
+	public void testParseInterfaceList() {
+		IntervalSet result;
+
+		result = new IntervalSet("*");
+		assertEquals(1,result.size());
+		assertTrue(result.first().isInfinite());
+
+		result = new IntervalSet("");
+		assertEquals(0,result.size());
+		
+		result = new IntervalSet("1");
+		assertEquals(1,result.size());
+		assertEquals(new Interval(1),result.first());
+		
+		result = new IntervalSet("2,3");
+		assertEquals(2,result.size());
+		assertEquals(new Interval(2),result.first());
+		assertEquals(new Interval(3),result.last());
+
+		result = new IntervalSet("3-2,3");
+		assertEquals(2,result.size());
+		assertEquals(new Interval(2,3),result.first());
+		assertEquals(new Interval(3),result.last());
+
+		result = new IntervalSet("4-6");
+		assertEquals(1,result.size());
+		assertEquals(new Interval(4,6),result.first());
+
+		result = new IntervalSet(" 2,\n  3\t");
+		assertEquals(2,result.size());
+		assertEquals(new Interval(2),result.first());
+		assertEquals(new Interval(3),result.last());
+	}
+	
 	@Test
 	public void testOverlap() {
 		

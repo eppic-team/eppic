@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import eppic.assembly.LatticeGraph3D;
+import eppic.commons.util.IntervalSet;
 
 /**
  * 3Dmol viewer for LatticeGraph.
@@ -107,7 +108,7 @@ public class LatticeGUI3Dmol extends LatticeGUIMustache {
 		if (args.length>arg) {
 			String interfaceIdsCommaSep = args[arg++];
 			try {
-				interfaceIds = parseInterfaceList(interfaceIdsCommaSep);
+				interfaceIds = new IntervalSet(interfaceIdsCommaSep).getIntegerSet();
 			} catch( NumberFormatException e) {
 				logger.error("Invalid interface IDs. Expected comma-separated list, got {}",interfaceIdsCommaSep);
 				System.exit(1);return;

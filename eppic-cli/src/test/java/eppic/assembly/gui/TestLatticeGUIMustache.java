@@ -45,40 +45,4 @@ public class TestLatticeGUIMustache {
 				t -> t.endsWith(LatticeGUIMustache.TEMPLATE_ASSEMBLY_DIAGRAM_FULL))
 				);
 	}
-	
-	@Test
-	public void testParseInterfaceList() {
-		List<Integer> result;
-		
-		result = LatticeGUIMustache.parseInterfaceList(null);
-		assertNull(result);
-		
-		result = LatticeGUIMustache.parseInterfaceList("*");
-		assertNull(result);
-
-		result = LatticeGUIMustache.parseInterfaceList("");
-		assertEquals(0,result.size());
-		
-		result = LatticeGUIMustache.parseInterfaceList("1");
-		assertEquals(1,result.size());
-		assertEquals(1,(int)result.get(0));
-		
-		result = LatticeGUIMustache.parseInterfaceList("2,3");
-		assertEquals(2,result.size());
-		assertEquals(2,(int)result.get(0));
-		assertEquals(3,(int)result.get(1));
-
-		result = LatticeGUIMustache.parseInterfaceList("4-6");
-		assertEquals(3,result.size());
-		assertEquals(4,(int)result.get(0));
-		assertEquals(5,(int)result.get(1));
-		assertEquals(6,(int)result.get(2));
-		
-		result = LatticeGUIMustache.parseInterfaceList(" 2,\n  3\t");
-		assertEquals(2,result.size());
-		assertEquals(2,(int)result.get(0));
-		assertEquals(3,(int)result.get(1));
-
-	}
-
 }

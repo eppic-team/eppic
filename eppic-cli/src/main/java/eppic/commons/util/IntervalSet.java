@@ -1,5 +1,6 @@
 package eppic.commons.util;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -15,7 +16,7 @@ import java.util.regex.Pattern;
 public class IntervalSet extends TreeSet<Interval> implements Comparable<IntervalSet> {
 
 	private static final long serialVersionUID = 1L;
-		
+
 	/*---------------------------- public methods ---------------------------*/
 	
 	/**
@@ -72,28 +73,41 @@ public class IntervalSet extends TreeSet<Interval> implements Comparable<Interva
 		super();
 		if(!isValidSelectionString(selStr))
 			throw new IllegalArgumentException("Malformed interval string");
-		String[] tokens = selStr.trim().split(",");		// allow spaces around whole string
+		String[] tokens = selStr.split(",");
 		for(String t:tokens) {
 			t = t.trim(); // allow spaces around commas
-			if(t.contains("-")) {
+			if(t.equals("*")) {
+				// Wildcard
+				this.add(Interval.INFINITE_INTERVAL);
+			} else if(t.contains("-")) {
+				// Range
 				String[] range = t.split("-");
 				int from = Integer.parseInt(range[0]);
 				int to = Integer.parseInt(range[1]);
 				this.add(new Interval(from, to));
 			} else if( !t.isEmpty() ){
+				// Single int
 				int num = Integer.parseInt(t);
 				this.add(new Interval(num));
 			}
 		}
 	}
 
+	public IntervalSet(Interval... infiniteInterval) {
+		this(Arrays.asList(infiniteInterval));
+	}
+
 	/**
 	 * Returns an ordered set of integers resulting from the union of all Intervals in this set
-	 * @return
+	 * As a special case, infinite ranges return null rather than enumerating all integers.
+	 * @return the set of all integers contained in these intervals, or null for infinite intervals.
 	 */
 	public TreeSet<Integer> getIntegerSet() {
 		TreeSet<Integer> set = new TreeSet<Integer>();
 		for (Interval interv:this) {
+			if(interv.isInfinite()) {
+				return null;
+			}
 			for (int i=interv.getBeginning();i<=interv.getEnd();i++) {
 				set.add(i);
 			}
@@ -164,6 +178,20 @@ public class IntervalSet extends TreeSet<Interval> implements Comparable<Interva
 		return false;
 	}
 	
+	/**
+	 * Tests if any interval in this set contains the specified point
+	 * @param point
+	 * @return
+	 */
+	public boolean contains(Integer point) {
+		for(Interval i : this) {
+			if(i.contains(point)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	/*-------------------------- implemented methods ------------------------*/
 	
 	/**
@@ -212,7 +240,7 @@ public class IntervalSet extends TreeSet<Interval> implements Comparable<Interva
 	 * @return true if selStr is a syntactically correct selection string, false otherwise
 	 */
 	public static boolean isValidSelectionString(String selStr) {
-		Pattern p = Pattern.compile("^ *(\\d+(-\\d+)?( *, *\\d+(-\\d+)?)*)? *$");
+		Pattern p = Pattern.compile("^\\s*(\\*|(\\d+(-\\d+)?(\\s*,\\s*\\d+(-\\d+)?)*)?\\s*,?)\\s*$");
 		Matcher m = p.matcher(selStr.trim()); // allow spaces around whole string and around commas
 		return m.matches();
 	}

@@ -50,6 +50,7 @@ import eppic.assembly.layout.GraphLayout;
 import eppic.assembly.layout.QuaternaryOrientationLayout;
 import eppic.assembly.layout.UnitCellLayout;
 import eppic.assembly.layout.VertexPositioner;
+import eppic.commons.util.IntervalSet;
 
 /**
  * Create viewers for LatticeGraph based on the Mustache template system. This
@@ -344,47 +345,6 @@ public class LatticeGUIMustache {
 	}
 
 	/**
-	 * Parses a comma-separated list of numbers or ranges.
-	 * returns null for '*', indicating all interfaces.
-	 * @param list Input string
-	 * @return list of interface ids, or null for all interfaces
-	 * @throws NumberFormatException for invalid input
-	 */
-	public static List<Integer> parseInterfaceList(String list) throws NumberFormatException{
-
-		// '*' for all interfaces
-		if(list == null ) {
-			return null;// all interfaces
-		}
-		list = list.trim();
-		if( list.equals("*")) {
-			return null;// all interfaces
-		}
-		if(list.isEmpty()) {
-			return Collections.emptyList();
-		}
-		String[] splitIds = list.split("\\s*,\\s*");
-		List<Integer> interfaceIds = new ArrayList<Integer>(splitIds.length);
-		for(String idStr : splitIds) {
-			String[] splitRange = idStr.split("\\s*-\\s*");
-			if(splitRange.length == 1) {
-				interfaceIds.add(new Integer(idStr));
-			} else if(splitRange.length == 2 ) {
-				// Range, eg 1-5
-				int start = Integer.parseInt(splitRange[0]);
-				int end = Integer.parseInt(splitRange[1]);
-				for(int i=start;i<=end;i++) {
-					interfaceIds.add(i);
-				}
-			} else {
-				throw new NumberFormatException("Invalid number or range");
-			}
-		}
-		return interfaceIds;
-	}
-
-
-	/**
 	 * Write a cif file containing the unit cell.
 	 * @param out
 	 * @throws IOException
@@ -491,7 +451,8 @@ public class LatticeGUIMustache {
 		if (args.length>arg) {
 			String interfaceIdsCommaSep = args[arg++];
 			try {
-				interfaceIds = parseInterfaceList(interfaceIdsCommaSep);
+				// list all interfaces, or null for "*"
+				interfaceIds = new IntervalSet(interfaceIdsCommaSep).getIntegerSet();
 			} catch( NumberFormatException e) {
 				logger.error("Invalid interface IDs. Expected comma-separated list, got {}",interfaceIdsCommaSep);
 				System.exit(1);return;

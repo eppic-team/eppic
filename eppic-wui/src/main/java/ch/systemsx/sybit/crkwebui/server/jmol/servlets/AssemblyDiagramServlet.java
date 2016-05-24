@@ -28,6 +28,7 @@ import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.ValidationException;
 import ch.systemsx.sybit.crkwebui.shared.model.Interface;
 import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
+import eppic.commons.util.IntervalSet;
 
 /**
  * Servlet used to display an AssemblyDiagram page.
@@ -128,7 +129,8 @@ public class AssemblyDiagramServlet extends BaseServlet
 			List<Interface> ifaceList = LatticeGraphServlet.getInterfaceList(pdbInfo);
 
 			//TODO better to filter interfaces here before construction, or afterwards?
-			Collection<Integer> requestedIfaces = LatticeGraphServlet.parseInterfaceListWithClusters(requestedIfacesStr,requestedClusterStr,ifaceList);;
+			IntervalSet requestedIntervals = LatticeGraphServlet.parseInterfaceListWithClusters(requestedIfacesStr,requestedClusterStr,ifaceList);
+			Collection<Integer> requestedIfaces = requestedIntervals.getIntegerSet();
 
 			String title = jobId + " - Assembly Diagram";
 			if(requestedIfaces != null && !requestedIfaces.isEmpty()) {

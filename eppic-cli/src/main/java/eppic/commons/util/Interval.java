@@ -6,8 +6,10 @@ import java.io.Serializable;
  * and an end integer
  */
 public class Interval implements Comparable<Interval>, Serializable {
-	
-	private static final long serialVersionUID = 1L;
+
+	private static final long serialVersionUID = -9176989820409250996L;
+
+	public static final Interval INFINITE_INTERVAL = new Interval(Integer.MIN_VALUE,Integer.MAX_VALUE);
 
 	public final int beg;
 	public final int end;
@@ -85,6 +87,14 @@ public class Interval implements Comparable<Interval>, Serializable {
 		}
 		return false;
 	}
+	/**
+	 * Test if a point falls within this interval
+	 * @param i
+	 * @return
+	 */
+	public boolean contains(int i) {
+		return this.beg <= i && i <= this.end;
+	}
 
 	@Override
 	public boolean equals(Object o){
@@ -101,11 +111,21 @@ public class Interval implements Comparable<Interval>, Serializable {
 	}
 	
 	public String toSelectionString() {
-		if( beg != end ) {
+		if( this.isInfinite() ) {
+			return "*";
+		} else if( beg != end ) {
 			return String.format("%d-%d", beg,end);
 		} else {
 			return Integer.toString(beg);
 		}
+	}
+	
+	/**
+	 * Test if this interval contains all possible integers.
+	 * @return
+	 */
+	public boolean isInfinite() {
+		return this.equals(INFINITE_INTERVAL);
 	}
 }
 
