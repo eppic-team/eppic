@@ -141,7 +141,7 @@ public class AssemblyDiagramServlet extends BaseServlet
 			outputStream = new PrintWriter(response.getOutputStream());
 
 			if(format != null && format.equalsIgnoreCase("json")) {
-				AssemblyDiagramPageGenerator.generateJSONPage(dir,input, title, ifaceList, requestedIfaces,outputStream);
+				AssemblyDiagramPageGenerator.generateJSONPage(dir,input, atomCachePath, ifaceList, requestedIfaces,outputStream);
 			} else {
 				AssemblyDiagramPageGenerator.generateHTMLPage(dir,input, atomCachePath, title, size, jsonURL.toString(), ifaceList, requestedIfaces,outputStream);
 				// TODO start generating JSON now, since we know that request is coming

@@ -220,6 +220,8 @@
 				</executions>
 				<configuration>
 					<runTarget>index.html</runTarget>
+					<!-- Minification setting: OBF/PRETTY/DETAILED -->
+					<style>OBF</style>
 				</configuration>
 			</plugin>
 			<plugin>

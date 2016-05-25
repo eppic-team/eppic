@@ -156,7 +156,7 @@ public class Main {
 		// Before loading anything we make sure that BioJava is set to DownloadChemCompProvider.
 		// This is in case the default is ReducedChemCompProvider.
 		// That has a huge effect in the understanding of the chemical components, for instance 
-		// what residues are non-standar aminoacids
+		// what residues are non-standard aminoacids
 		
 		// TODO if BioJava 4.2 changes the default or the behavior of DownloadChemCompProvider
 		//      we will need to revise this
