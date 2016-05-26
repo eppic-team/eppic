@@ -1,0 +1,30 @@
+// Run with dot -Tpng -Kneato -O -n2 dotfile
+digraph "{{title}}" {
+	graph [
+		splines="curved"
+		size="1,1!"
+		dpi="72"
+		ratio="fill"
+		bgcolor="transparent"
+	]
+	node [
+		style="filled"
+		fillcolor="#a6cee3"
+		color="#a6cee3"
+		width="1.5"
+		regular="true"
+		label=""
+	]
+	edge [
+		dir="none"
+		penwidth="10"
+	]
+
+{{#graph2D.vertexSet}}
+	"{{toString}}" [ pos="{{center.x}},{{center.y}}"{{#colorStr}} color="#{{colorStr}}" fillcolor="#{{colorStr}}"{{/colorStr}}]
+{{/graph2D.vertexSet}}
+
+{{#graph2D.edgeSet}}
+	"{{source}}" -> "{{target}}" {{#colorStr}}[ color="#{{colorStr}}" ]{{/colorStr}}
+{{/graph2D.edgeSet}}
+}

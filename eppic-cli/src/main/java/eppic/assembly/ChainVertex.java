@@ -40,6 +40,12 @@ public class ChainVertex {
 	}
 
 
+	/** Copy constructor */
+	public ChainVertex(ChainVertex vert) {
+		this.opId = vert.opId;
+		this.c = vert.c;
+	}
+
 	public int getOpId() {
 		return opId;
 	}
@@ -65,7 +71,7 @@ public class ChainVertex {
 	
 	@Override
 	public String toString() {
-		return getChainId()+opId;
+		return getChainId()+"_"+opId;
 	}
 	/**
 	 * Hash key based on chain and op

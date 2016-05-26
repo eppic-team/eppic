@@ -32,8 +32,9 @@ public class LatticeGraphServletInputValidator
 	 * @param interfaces
 	 * @throws ValidationException
 	 */
-	private static void validateInterfaceList(String interfaces) throws ValidationException {
-		if(interfaces != null && !interfaces.matches("^(\\*?|[0-9]+(,[0-9]+)*)$"))
+	public static void validateInterfaceList(String interfaces) throws ValidationException {
+		// Either '*' or a non-whitespace version of IntervalSet.isValidSelectionString(interfaces);
+		if(interfaces != null && !interfaces.matches("^(\\*?|\\d+(-\\d+)?(,\\d+(-\\d+)?)*)$"))
 		{
 			throw new ValidationException( "Invalid interfaces ({}). Expected '*' or comma-separated list of integers");
 		}

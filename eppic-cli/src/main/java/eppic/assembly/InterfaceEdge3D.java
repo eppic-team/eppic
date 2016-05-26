@@ -1,6 +1,7 @@
 package eppic.assembly;
 
 import java.awt.Color;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.vecmath.Point3i;
@@ -34,6 +35,24 @@ public class InterfaceEdge3D extends InterfaceEdge {
 		super(interf, xtalTrans);
 	}
 
+	/**
+	 * Perform a deep copy of the edge
+	 * @param e
+	 */
+	public InterfaceEdge3D(InterfaceEdge3D e) {
+		super(e);
+		this.segments = new ArrayList<>(e.segments.size());
+		for(ParametricCircularArc s :e.segments) {
+			this.segments.add(new ParametricCircularArc(s));
+		}
+		this.uniqueName = e.uniqueName;
+		this.color = e.color;
+		this.colorStr = e.colorStr;
+		this.circles = new ArrayList<>(e.circles.size());
+		for(OrientedCircle cir : e.circles) {
+			this.circles.add(new OrientedCircle(cir));
+		}
+	}
 	public List<ParametricCircularArc> getSegments() {
 		return segments;
 	}
@@ -65,32 +84,6 @@ public class InterfaceEdge3D extends InterfaceEdge {
 
 	public void setColorStr(String colorStr) {
 		this.colorStr = colorStr;
-	}
-
-	public String getXtalTransString() {
-		return InterfaceEdge3D.getXtalTransString(getXtalTrans());
-	}
-	public static String getXtalTransString(Point3i xtalTrans) {
-		int[] coords = new int[3];
-		xtalTrans.get(coords);
-		final String[] letters = new String[] {"a","b","c"};
-
-		StringBuilder str = new StringBuilder();
-		for(int i=0;i<3;i++) {
-			if( coords[i] != 0) {
-				if( Math.abs(coords[i]) == 1 ) {
-					if(str.length()>0)
-						str.append(',');
-					String sign = coords[i] > 0 ? "+" : "-";
-					str.append(sign+letters[i]);
-				} else {
-					if(str.length()>0)
-						str.append(',');
-					str.append(String.format("%d%s",coords[i],letters[i]));
-				}
-			}
-		}
-		return str.toString();
 	}
 
 	public List<OrientedCircle> getCircles() {

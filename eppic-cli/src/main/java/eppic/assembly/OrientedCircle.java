@@ -14,6 +14,17 @@ public class OrientedCircle {
 		this.radius = radius;
 	}
 	
+	/**
+	 * Copy constructor
+	 * @param cir
+	 */
+	public OrientedCircle(OrientedCircle c) {
+		this.center = new Point3d(c.center);
+		this.perpendicular = new Point3d(c.perpendicular);
+		this.radius = c.radius;
+		this.uniqueName = c.uniqueName;
+	}
+
 	public Point3d getCenter() {
 		return center;
 	}

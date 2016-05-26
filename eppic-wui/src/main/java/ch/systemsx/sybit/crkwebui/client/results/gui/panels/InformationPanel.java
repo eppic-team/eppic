@@ -22,9 +22,9 @@ public class InformationPanel extends HorizontalLayoutContainer {
 		topologyInfoPanel = new TopologyInfoPanel(pdbScoreItem);
 		sequenceInfoPanel = new SequenceInfoPanel(pdbScoreItem);
 		assemblyInfoPanel = new AssemblyInfoPanel(pdbScoreItem);
-		this.add(topologyInfoPanel, new HorizontalLayoutData(193, 122,  new Margins(0, 10, 0, 0)));
-		this.add(assemblyInfoPanel, new HorizontalLayoutData(250, 122,  new Margins(0, 5, 0, 0)));
-		this.add(sequenceInfoPanel, new HorizontalLayoutData(1, 122, new Margins(0, 5, 0, 5)));
+		this.add(topologyInfoPanel, new HorizontalLayoutData(193, 125,  new Margins(0, 10, 0, 0)));
+		this.add(assemblyInfoPanel, new HorizontalLayoutData(250, 125,  new Margins(0, 5, 0, 0)));
+		this.add(sequenceInfoPanel, new HorizontalLayoutData(1, 125, new Margins(0, 5, 0, 5)));
 	}
 	
 	public void removeTopologyPanel(PdbInfo pdbScoreItem){

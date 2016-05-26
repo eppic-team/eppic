@@ -1,0 +1,117 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<title>{{title}}</title>
+
+	<style type="text/css">
+		#mynetwork {
+			background: white;
+			display: inline-block;
+			width: {{size}}px;
+			height: {{size}}px;
+			position: relative;
+			border:solid grey 1px;
+		}
+		#spinner {
+			margin-left: auto;
+			margin-right: auto;
+			width: 120px;
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			margin-right: -50%;
+			transform: translate(-50%, -50%);
+			text-align: center;
+		}
+	</style>
+
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.9.0/vis.min.js"></script>
+	<link
+		href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.9.0/vis.min.css"
+		rel="stylesheet" type="text/css" />
+		<script type="text/javascript">
+function fetchJSONFile(path, callback) {
+	var httpRequest = new XMLHttpRequest();
+	httpRequest.onreadystatechange = function() {
+		if (httpRequest.readyState === 4) {
+			if (httpRequest.status === 200) {
+				var data = JSON.parse(httpRequest.responseText);
+				if (callback) callback(data);
+			}
+		}
+	};
+	httpRequest.open('GET', path);
+	httpRequest.send(); 
+}
+
+function loadNetwork(data) {
+	// Load network data
+	data.nodes = new vis.DataSet(data.nodes);
+	data.edges = new vis.DataSet(data.edges);
+	// create a network
+	var container = document.getElementById('mynetwork');
+	var width = {{size}};
+	var height = {{size}};
+	var initialNodeSize = 10;
+	var options = {
+		width: width + 'px',
+		height: height + 'px',
+		nodes: {
+			shape: 'dot',
+			size: initialNodeSize,
+			//title: 'This text can be shown when the user mouses over the node.',
+			physics: false,
+		},
+		edges: {
+			smooth: {
+				enabled: true,
+				type: "dynamic",
+				roundness: 1.0
+			},
+			arrows: 'to',
+			physics: true,
+		},
+		interaction: {
+			//dragNodes: false,// do not allow dragging nodes
+			//zoomView: false, // do not allow zooming
+			//dragView: false, // do not allow dragging
+			//selectable: false, // do not allow selecting
+		}
+	};
+	var network = new vis.Network(container, data, options);
+	
+	// Set the coordinate system of Network such that it exactly
+	// matches the actual pixels of the HTML canvas on screen
+	// this must correspond with the width and height set for
+	// the networks container element.
+	network.moveTo({
+		position: {x: 0, y: 0},
+		offset: {x: -width/2, y: -height/2},
+		scale: 1,
+	});
+	// Keep nodes the same size while zooming
+	network.on("zoom", function (params) {
+		//document.getElementById('eventSpan').innerHTML = '<h2>zoom event:</h2>' + JSON.stringify(params, null, 4) + '<p>'+options.nodes.size+'</p>';
+		options.nodes.size = initialNodeSize/params.scale;
+		network.setOptions(options);
+	});
+}
+	</script>
+</head>
+<body>
+
+	<div id="mynetwork">
+		<div id="spinner">
+			<img width=120 height=120 src="/resources/images/spinner_d1c5ka1.gif" />
+			<p>Loading...</p>
+		</div>
+	</div>
+
+	<script type="text/javascript">
+// load network data
+fetchJSONFile('{{{strucURI}}}', loadNetwork);
+	</script>
+	<!--div id='eventSpan'></div-->
+
+</body>
+</html>
