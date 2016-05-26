@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -217,41 +218,57 @@ public class GraphUtils {
 	
 	/**
 	 * Checks that the given graph is automorphic in terms of entities and interface clusters.
-	 * i.e. if every vertex of entity i has the same type of edges (interface cluster ids) 
+	 * i.e. if every vertex of entity i has the same number and type of edges (interface cluster ids) 
 	 * that any other vertex with entity i
 	 * @param g
 	 * @return
 	 */
-	public static boolean isAutomorphic(UndirectedGraph<ChainVertex, InterfaceEdge> g) {
+	public static boolean isAutomorphic(UndirectedGraph<ChainVertexInterface, InterfaceEdgeInterface> g) {
 		
 		
-		// we'll store in a map each of the first vertex types seen with their components in terms of interface clusters
-		Map<Integer, Set<Integer>> repVs = new HashMap<>();
+		// we'll store in a map each of the first vertex types seen with their content in terms of interface cluster ids
+		Map<Integer, Map<Integer,Integer>> repVs = new HashMap<>();
 		
 		// go through all vertices
-		for (ChainVertex v: g.vertexSet()) {
+		for (ChainVertexInterface v: g.vertexSet()) {
 			
 			
-			if (!repVs.containsKey(v.getEntity())) {
+			if (!repVs.containsKey(v.getEntityId())) {
 				// this kind of entity wasn't seen yet, first of the kind will be the representative
-				repVs.put(v.getEntity(), getInterfaceClusterIdsForVertex(g, v));
+				repVs.put(v.getEntityId(), getInterfaceClusterIdsForVertex(g, v));
 			} else {
 				// we already have a representative for this kind, let's check it has the same content
-				Set<Integer> content = getInterfaceClusterIdsForVertex(g, v);
-				Set<Integer> repContent = repVs.get(v.getEntity());
-				if (!repContent.equals(content)) 
-					return false; 
+				Map<Integer,Integer> content = getInterfaceClusterIdsForVertex(g, v);
+				Map<Integer,Integer> repContent = repVs.get(v.getEntityId());
+				if (repContent.size() != content.size())
+					// the sizes (number of distinct interface cluster ids) doesn't coincide, can't be automorphic
+					return false;
+				
+				for (Entry<Integer, Integer> entry : repContent.entrySet()) {
+					
+					Integer count = content.get(entry.getKey());
+					if (count == null) 
+						// we don't have the interface cluster id in the list of edges: can't be automorphic
+						return false;
+					
+					if (count != entry.getValue()) 
+						// the count for the intercace cluster id doesn't coincide, can't be automorphic
+						return false;
+				}
 			}
 		}
 		
 		return true;
 	}
 	
-	private static Set<Integer> getInterfaceClusterIdsForVertex(UndirectedGraph<ChainVertex, InterfaceEdge> g, ChainVertex v) {
-		Set<Integer> set = new HashSet<>();
-		Set<InterfaceEdge> edges = g.edgesOf(v);
-		for (InterfaceEdge e:edges) {
-			set.add(e.getClusterId());
+	private static Map<Integer,Integer> getInterfaceClusterIdsForVertex(UndirectedGraph<ChainVertexInterface, InterfaceEdgeInterface> g, ChainVertexInterface v) {
+		Map<Integer,Integer> set = new HashMap<>();
+		for (InterfaceEdgeInterface e:g.edgesOf(v)) {
+			if (set.containsKey(e.getClusterId())) {
+				set.put(e.getClusterId(), set.get(e.getClusterId()) + 1 );
+			} else {
+				set.put(e.getClusterId(), 1);	
+			}							
 		}
 		return set;
 	}
