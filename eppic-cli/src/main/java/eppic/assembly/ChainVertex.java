@@ -16,10 +16,6 @@ public class ChainVertex {
 	private int opId; // operator to generate this position within the unit cell
 	
 	private Chain c;
-	
-	private int entityId;
-	
-	private String chainId;
 	 
 	/**
 	 * Default constructor for factory methods. After construction, at a minimum
@@ -28,15 +24,11 @@ public class ChainVertex {
 	 */
 	public ChainVertex() {
 		this(null,-1);
-		this.entityId = -1;
-		this.chainId = null;
 	}
 	
 	public ChainVertex(Chain c, int opId) {
 		this.c = c;
 		this.opId = opId;
-		this.entityId = c.getCompound().getMolId();
-		this.chainId = c.getChainID();
 	}
 
 
@@ -55,11 +47,7 @@ public class ChainVertex {
 	}
 	
 	public String getChainId() {
-		return chainId;
-	}
-	
-	public void setChainId(String chainId) {
-		this.chainId = chainId;
+		return c.getChainID();
 	}
 	
 	public Chain getChain() {
@@ -107,11 +95,7 @@ public class ChainVertex {
 	}
 
 	public int getEntity() {
-		return entityId;
-	}
-	
-	public void setEntity(int entityId) {
-		this.entityId = entityId;
+		return c.getCompound().getMolId();
 	}
 
 }
