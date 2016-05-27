@@ -20,4 +20,7 @@ public class SimpleInterfaceEdge implements InterfaceEdgeInterface {
 		return clusterId;
 	}
 
+	public String toString() {
+		return interfaceId+"-"+clusterId;
+	}
 }
