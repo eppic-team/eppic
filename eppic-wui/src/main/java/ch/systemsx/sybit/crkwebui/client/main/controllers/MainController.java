@@ -1,5 +1,8 @@
 package ch.systemsx.sybit.crkwebui.client.main.controllers;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
 import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
@@ -140,6 +143,20 @@ public class MainController
 			double rfree = Double.parseDouble(NumberFormat.getFormat("0.00").format(resultsData.getRfreeValue()));
 			if(rfree < 1)
 				html_experiment_info += "&nbsp;&nbsp;&nbsp;&nbsp;<span class='eppic-general-info-label-new'>" + AppPropertiesManager.CONSTANTS.info_panel_rfree() + "</span> <span class='eppic-general-info-label-value-new'>" +  NumberFormat.getFormat("0.00").format(resultsData.getRfreeValue()) + "</span>";
+		
+			//add the unit cell params here
+			
+			if (resultsData.getCellA() != 0 && resultsData.getCellB() != 0 && resultsData.getCellC() != 0 && resultsData.getCellAlpha() != 0 && resultsData.getCellBeta() != 0  && resultsData.getCellGamma() != 0){
+			
+				html_experiment_info += "<br><b><span class='eppic-general-info-label-new'>Unit Cell Parameters</span></b> " 
+									+ "&nbsp;&nbsp;&nbsp;&nbsp;<b>a</b> " + NumberFormat.getFormat("0.00").format(resultsData.getCellA()) + " &#8491; " 
+									+ "&nbsp;&nbsp;&nbsp;&nbsp;<b>b</b> " + NumberFormat.getFormat("0.00").format(resultsData.getCellB()) + " &#8491;" 
+									+ "&nbsp;&nbsp;&nbsp;&nbsp;<b>c</b> " + NumberFormat.getFormat("0.00").format(resultsData.getCellC()) + " &#8491;" 
+									+ "&nbsp;&nbsp;&nbsp;&nbsp;<b>&alpha;</b> " + NumberFormat.getFormat("0.00").format(resultsData.getCellAlpha()) + " &deg;" 
+									+ "&nbsp;&nbsp;&nbsp;&nbsp;<b>&beta;</b> " + NumberFormat.getFormat("0.00").format(resultsData.getCellBeta()) + " &deg;" 
+									+ "&nbsp;&nbsp;&nbsp;&nbsp;<b>&gamma;</b> " + NumberFormat.getFormat("0.00").format(resultsData.getCellGamma()) + " &deg;";
+			}
+
 		}
 		ResultsPanel.headerPanel.experimentinfo.setHTML(html_experiment_info);
 	}

@@ -48,7 +48,7 @@ public class ResultsPanel extends DisplayPanel
 		DockLayoutPanel dock = new DockLayoutPanel(Unit.PX);
 
 		headerPanel = new IdentifierHeaderPanel(ApplicationContext.getWindowData().getWindowWidth() - 150, pdbScoreItem, viewType);
-		dock.addNorth(headerPanel, 100); //set the height of the info
+		dock.addNorth(headerPanel, 115); //set the height of the info
 		
 		resultsContainer = createResultsContainer(pdbScoreItem);
 		dock.add(resultsContainer);
