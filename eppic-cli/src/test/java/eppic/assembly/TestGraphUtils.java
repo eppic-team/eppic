@@ -11,13 +11,18 @@ public class TestGraphUtils {
 	@Test
 	public void testIsAutomorphic() {
 		
+		System.out.println(1%3);
+		System.out.println(2%3);
+		System.out.println(3%3);
+		System.out.println(4%3);
+		
 		for (int n=2;n<10;n++) {
 			UndirectedGraph<ChainVertexInterface, InterfaceEdgeInterface> g = createCnGraph(n);
 
 			assertTrue(GraphUtils.isAutomorphic(g));
 		}
 		
-		for (int n=2;n<10;n++) {
+		for (int n=3;n<10;n++) {
 			UndirectedGraph<ChainVertexInterface, InterfaceEdgeInterface> g = createDnGraph(n);
 
 			assertTrue(GraphUtils.isAutomorphic(g));
@@ -81,10 +86,19 @@ public class TestGraphUtils {
 			if (v1.getChainId().equals("A")) {
 				
 				for (ChainVertexInterface v2 : g.vertexSet()) {
+					// adding a "straight" edge top to bottom
 					if (v2.getChainId().equals("B") && v2.getOpId() == v1.getOpId()) {
 						// the cross interfaces get a interfaceId 3 (but same clusterId that all others)
 						InterfaceEdgeInterface e = new SimpleInterfaceEdge(3, 1);
 						g.addEdge(v1, v2, e);
+					}
+					
+					// adding a "crossed" edge top to bottom
+					if (v2.getChainId().equals("B") && v2.getOpId() == ((v1.getOpId()+1)%n) + 1 ) {
+						// the cross interfaces get a interfaceId 4 (but same clusterId that all others)
+						InterfaceEdgeInterface e = new SimpleInterfaceEdge(4, 1);
+						g.addEdge(v1, v2, e);
+						
 					}
 						
 				}
