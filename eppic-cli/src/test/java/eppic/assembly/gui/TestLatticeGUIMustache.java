@@ -24,7 +24,7 @@
  
 package eppic.assembly.gui;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.util.List;
@@ -45,5 +45,4 @@ public class TestLatticeGUIMustache {
 				t -> t.endsWith(LatticeGUIMustache.TEMPLATE_ASSEMBLY_DIAGRAM_FULL))
 				);
 	}
-
 }

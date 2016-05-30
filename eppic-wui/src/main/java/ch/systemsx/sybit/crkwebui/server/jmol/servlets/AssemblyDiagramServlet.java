@@ -28,6 +28,7 @@ import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.ValidationException;
 import ch.systemsx.sybit.crkwebui.shared.model.Interface;
 import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
+import eppic.commons.util.IntervalSet;
 
 /**
  * Servlet used to display an AssemblyDiagram page.
@@ -128,7 +129,8 @@ public class AssemblyDiagramServlet extends BaseServlet
 			List<Interface> ifaceList = LatticeGraphServlet.getInterfaceList(pdbInfo);
 
 			//TODO better to filter interfaces here before construction, or afterwards?
-			Collection<Integer> requestedIfaces = LatticeGraphServlet.parseInterfaceListWithClusters(requestedIfacesStr,requestedClusterStr,ifaceList);;
+			IntervalSet requestedIntervals = LatticeGraphServlet.parseInterfaceListWithClusters(requestedIfacesStr,requestedClusterStr,ifaceList);
+			Collection<Integer> requestedIfaces = requestedIntervals.getIntegerSet();
 
 			String title = jobId + " - Assembly Diagram";
 			if(requestedIfaces != null && !requestedIfaces.isEmpty()) {
@@ -139,7 +141,7 @@ public class AssemblyDiagramServlet extends BaseServlet
 			outputStream = new PrintWriter(response.getOutputStream());
 
 			if(format != null && format.equalsIgnoreCase("json")) {
-				AssemblyDiagramPageGenerator.generateJSONPage(dir,input, title, ifaceList, requestedIfaces,outputStream);
+				AssemblyDiagramPageGenerator.generateJSONPage(dir,input, atomCachePath, ifaceList, requestedIfaces,outputStream);
 			} else {
 				AssemblyDiagramPageGenerator.generateHTMLPage(dir,input, atomCachePath, title, size, jsonURL.toString(), ifaceList, requestedIfaces,outputStream);
 				// TODO start generating JSON now, since we know that request is coming

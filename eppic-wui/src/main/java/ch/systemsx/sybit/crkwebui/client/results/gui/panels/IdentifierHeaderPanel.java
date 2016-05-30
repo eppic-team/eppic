@@ -56,7 +56,8 @@ public class IdentifierHeaderPanel extends HorizontalLayoutContainer
 			html_experiment_info += "&nbsp;&nbsp;&nbsp;&nbsp;<span class='eppic-general-info-label-new'>" + AppPropertiesManager.CONSTANTS.info_panel_spacegroup() + "</span> <span class='eppic-general-info-label-value-new'>" + resultsData.getSpaceGroup() + "</span>";
 			html_experiment_info += "&nbsp;&nbsp;&nbsp;&nbsp;<span class='eppic-general-info-label-new'>" + AppPropertiesManager.CONSTANTS.info_panel_resolution() + "</span> <span class='eppic-general-info-label-value-new'>" + resultsData.getResolution() + "</span>";
 			html_experiment_info += "&nbsp;&nbsp;&nbsp;&nbsp;<span class='eppic-general-info-label-new'>" + AppPropertiesManager.CONSTANTS.info_panel_rfree() + "</span> <span class='eppic-general-info-label-value-new'>" + resultsData.getRfreeValue() + "</span>";
-	    	experimentinfo = new HTML(html_experiment_info);
+			html_experiment_info += "<br>Unit Cell Parameters: " + resultsData.getCellA() + " " + resultsData.getCellB() + " " + resultsData.getCellC() + " " + resultsData.getCellAlpha() + " " + resultsData.getCellBeta() + " " + resultsData.getCellGamma();
+			experimentinfo = new HTML(html_experiment_info);
 		
 	    	pdbInfo.add(experimentinfo);
     	}

@@ -10,6 +10,7 @@ import ch.systemsx.sybit.crkwebui.shared.helpers.ExperimentalWarnings;
 import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 
 import com.google.gwt.i18n.client.NumberFormat;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Image;

@@ -50,6 +50,7 @@ import eppic.assembly.layout.GraphLayout;
 import eppic.assembly.layout.QuaternaryOrientationLayout;
 import eppic.assembly.layout.UnitCellLayout;
 import eppic.assembly.layout.VertexPositioner;
+import eppic.commons.util.IntervalSet;
 
 /**
  * Create viewers for LatticeGraph based on the Mustache template system. This
@@ -63,8 +64,10 @@ public class LatticeGUIMustache {
 	
 	// Some pre-defined templates for use with createLatticeGUIMustache
 	private static final String TEMPLATE_DIR = "mustache/eppic/assembly/gui/";
-	public static final String TEMPLATE_ASSEMBLY_DIAGRAM_FULL = TEMPLATE_DIR+"AssemblyDiagramFull.html.mustache";// "AssemblyDiagramFull";
+	public static final String TEMPLATE_ASSEMBLY_DIAGRAM_FULL = TEMPLATE_DIR+"AssemblyDiagramFull.html.mustache";
+	public static final String TEMPLATE_ASSEMBLY_DIAGRAM_THUMB = TEMPLATE_DIR+"AssemblyDiagramThumb.dot.mustache";
 	public static final String TEMPLATE_3DMOL = LatticeGUI3Dmol.MUSTACHE_TEMPLATE_3DMOL;//"LatticeGUI3Dmol";
+
 
 
 	private final LatticeGraph3D latticeGraph;
@@ -208,14 +211,37 @@ public class LatticeGUIMustache {
 	 * @throws StructureException
 	 */
 	public LatticeGUIMustache(String template, Structure struc,Collection<Integer> interfaceIds, List<StructureInterface> allInterfaces) throws StructureException {
-		this.latticeGraph = new LatticeGraph3D(struc,allInterfaces);
-		this.template = template;
-		
-		UndirectedGraph<ChainVertex3D, InterfaceEdge3D> graph = latticeGraph.getGraph();
+		this(template,new LatticeGraph3D(struc,allInterfaces));
+
 		if( interfaceIds != null ) {
 			logger.info("Filtering LatticeGraph3D to edges {}",interfaceIds);
 			latticeGraph.filterEngagedInterfaces(interfaceIds);
 		}
+
+		pdbId = struc.getStructureIdentifier().toCanonical().getPdbId();
+		if(pdbId == null || pdbId.length() != 4) {
+			pdbId = struc.getName();
+		}
+		if(pdbId == null || pdbId.length() != 4) {
+			pdbId = null;
+			logger.error("Unable to get PDB ID.");
+		}
+
+		this.title = String.format("Lattice for %s",getPdbId());
+	}
+	/**
+	 * Constructor from a latticeGraph directly.
+	 * The caller should pre-filter the engaged edges. The PdbId and Title
+	 * properties should be set manually as well.
+	 * @param template
+	 * @param latticeGraph
+	 * @throws StructureException
+	 */
+	public LatticeGUIMustache(String template, LatticeGraph3D latticeGraph) throws StructureException {
+		this.latticeGraph = latticeGraph;
+		this.template = template;
+
+		UndirectedGraph<ChainVertex3D, InterfaceEdge3D> graph = latticeGraph.getGraph();
 		logger.info("Using LatticeGraph3D with {} vertices and {} edges",graph.vertexSet().size(),graph.edgeSet().size());
 
 		// Compute names and colors
@@ -226,7 +252,7 @@ public class LatticeGUIMustache {
 		for(InterfaceEdge3D e : graph.edgeSet()) {
 			String colorStr = toHexColor(e.getColor());
 			e.setColorStr(colorStr);
-			
+
 			if(e.getCircles() != null) {
 				for(OrientedCircle circ: e.getCircles()) {
 					//rescale perpendicular vector
@@ -243,16 +269,8 @@ public class LatticeGUIMustache {
 		}
 
 		// Default parameters
-		pdbId = struc.getStructureIdentifier().toCanonical().getPdbId();
-		if(pdbId == null || pdbId.length() != 4) {
-			pdbId = struc.getName();
-		}
-		if(pdbId == null || pdbId.length() != 4) {
-			pdbId = null;
-			logger.error("Unable to get PDB ID.");
-		}
-
-		this.title = String.format("Lattice for %s",getPdbId());
+		pdbId = null;
+		title = null;
 		this.size = "800";
 	}
 
@@ -263,7 +281,7 @@ public class LatticeGUIMustache {
 	 */
 	private static String toHexColor(Color color) {
 		if(color == null) return null;
-		return String.format("%2x%2x%2x", color.getRed(),color.getGreen(),color.getBlue());
+		return String.format("%02x%02x%02x", color.getRed(),color.getGreen(),color.getBlue());
 	}
 
 
@@ -325,39 +343,6 @@ public class LatticeGUIMustache {
 	public void setSize(String size) {
 		this.size = size;
 	}
-
-	/**
-	 * Parses a comma-separated list of numbers or ranges.
-	 * returns null for '*', indicating all interfaces.
-	 * @param list Input string
-	 * @return list of interface ids, or null for all interfaces
-	 * @throws NumberFormatException for invalid input
-	 */
-	public static List<Integer> parseInterfaceList(String list) throws NumberFormatException{
-		// '*' for all interfaces
-		if(list == null || list.isEmpty() || list.equals("*") ) {
-			return null;// all interfaces
-		}
-		String[] splitIds = list.split("\\s*,\\s*");
-		List<Integer> interfaceIds = new ArrayList<Integer>(splitIds.length);
-		for(String idStr : splitIds) {
-			String[] splitRange = idStr.split("\\s*-\\s*");
-			if(splitRange.length == 1) {
-				interfaceIds.add(new Integer(idStr));
-			} else if(splitRange.length == 2 ) {
-				// Range, eg 1-5
-				int start = Integer.parseInt(splitRange[0]);
-				int end = Integer.parseInt(splitRange[1]);
-				for(int i=start;i<=end;i++) {
-					interfaceIds.add(i);
-				}
-			} else {
-				throw new NumberFormatException("Invalid number or range");
-			}
-		}
-		return interfaceIds;
-	}
-
 
 	/**
 	 * Write a cif file containing the unit cell.
@@ -466,7 +451,8 @@ public class LatticeGUIMustache {
 		if (args.length>arg) {
 			String interfaceIdsCommaSep = args[arg++];
 			try {
-				interfaceIds = parseInterfaceList(interfaceIdsCommaSep);
+				// list all interfaces, or null for "*"
+				interfaceIds = new IntervalSet(interfaceIdsCommaSep).getIntegerSet();
 			} catch( NumberFormatException e) {
 				logger.error("Invalid interface IDs. Expected comma-separated list, got {}",interfaceIdsCommaSep);
 				System.exit(1);return;

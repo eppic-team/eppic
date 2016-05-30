@@ -1,7 +1,13 @@
 package eppic.commons.util;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.Iterator;
+import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Class representing a unique, ordered (according to 
@@ -10,7 +16,7 @@ import java.util.TreeSet;
 public class IntervalSet extends TreeSet<Interval> implements Comparable<IntervalSet> {
 
 	private static final long serialVersionUID = 1L;
-		
+
 	/*---------------------------- public methods ---------------------------*/
 	
 	/**
@@ -21,14 +27,88 @@ public class IntervalSet extends TreeSet<Interval> implements Comparable<Interva
 		this.add(newInterval);
 	}
 		
+	public IntervalSet() {
+		super();
+	}
+
+	public IntervalSet(Collection<? extends Interval> c) {
+		super(c);
+	}
+
+	public IntervalSet(Comparator<? super Interval> comparator) {
+		super(comparator);
+	}
+
 	/**
-	 * Returns an ordered set of integers resulting from the intersection of all Intervals in this set
-	 * @return
+	 * Returns an IntervalSet created from a set of integers.
+	 */
+	public IntervalSet(SortedSet<Integer> intSet) {
+		if(intSet.size() > 0) {
+			// intSet is sorted because it's a TreeSet
+			int last = intSet.first();	// previous element
+			int start = last;			// start if current interval
+			for(int n:intSet) {
+				int i = n;
+				if(i > last+1) {
+					// output interval and start new one
+					add(new Interval(start, last));
+					start = i;
+					last = i;
+				} else if(i == last+1) {
+					last = i;
+				}
+			}
+			// output last interval
+			add(new Interval(start, last));
+		}
+	}
+
+	/**
+	 * Create a new TreeSet of integers from a selection string in 'comma-hyphen' nomenclature, e.g. 1-3,5,7-8.
+	 * The validity of a selection string can be checked by isValidSelectionString().
+	 * @param selStr Comma-separated string of intervals, e.g. "1-5,7,8-10"
+	 * @return A TreeSet of integers corresponding to the given selection string or null of string is invalid.
+	 */
+	public IntervalSet(String selStr) {
+		super();
+		if(!isValidSelectionString(selStr))
+			throw new IllegalArgumentException("Malformed interval string");
+		String[] tokens = selStr.split(",");
+		for(String t:tokens) {
+			t = t.trim(); // allow spaces around commas
+			if(t.equals("*")) {
+				// Wildcard
+				this.add(Interval.INFINITE_INTERVAL);
+			} else if(t.contains("-")) {
+				// Range
+				String[] range = t.split("-");
+				int from = Integer.parseInt(range[0]);
+				int to = Integer.parseInt(range[1]);
+				this.add(new Interval(from, to));
+			} else if( !t.isEmpty() ){
+				// Single int
+				int num = Integer.parseInt(t);
+				this.add(new Interval(num));
+			}
+		}
+	}
+
+	public IntervalSet(Interval... infiniteInterval) {
+		this(Arrays.asList(infiniteInterval));
+	}
+
+	/**
+	 * Returns an ordered set of integers resulting from the union of all Intervals in this set
+	 * As a special case, infinite ranges return null rather than enumerating all integers.
+	 * @return the set of all integers contained in these intervals, or null for infinite intervals.
 	 */
 	public TreeSet<Integer> getIntegerSet() {
 		TreeSet<Integer> set = new TreeSet<Integer>();
 		for (Interval interv:this) {
-			for (int i=interv.beg;i<=interv.end;i++) {
+			if(interv.isInfinite()) {
+				return null;
+			}
+			for (int i=interv.getBeginning();i<=interv.getEnd();i++) {
 				set.add(i);
 			}
 		}
@@ -40,7 +120,24 @@ public class IntervalSet extends TreeSet<Interval> implements Comparable<Interva
 	 * @return 
 	 */
 	public IntervalSet getMergedIntervalSet() {
-		return IntervalSet.createFromIntSet(this.getIntegerSet());
+		IntervalSet newSet = new IntervalSet();
+		if( !isEmpty() ) {
+			Iterator<Interval> it = this.iterator();
+			Interval last = it.next();
+			while(it.hasNext()) {
+				Interval next = it.next();
+				// Check for overlap
+				if(last.getEnd()+1 >= next.getBeginning()) {
+					// merge them
+					last = new Interval(last.getBeginning(), Math.max(last.getEnd(),next.getEnd()));
+				} else {
+					newSet.add(last);
+					last = next;
+				}
+			}
+			newSet.add(last);
+		}
+		return newSet;
 	}
 	
 	/**
@@ -49,10 +146,47 @@ public class IntervalSet extends TreeSet<Interval> implements Comparable<Interva
 	 * @return
 	 */
 	public boolean overlaps(IntervalSet other) {
-		// this can probably be implemented a lot more efficiently, now o(n2)
-		for (Interval thisInter:this) {
-			for (Interval otherInter:other) {
-				if (thisInter.overlaps(otherInter)) return true;
+		if( !this.isEmpty() && !other.isEmpty() ) {
+			Iterator<Interval> a = this.iterator();
+			Iterator<Interval> b = other.iterator();
+			Interval nextA = a.next();
+			Interval nextB = b.next();
+			
+			if(nextA.overlaps(nextB)) {
+				return true;
+			}
+			while(a.hasNext() || b.hasNext()) {
+				// Advance lower interval
+				if( nextA.getEnd() <= nextB.getEnd() ) {
+					if( a.hasNext() ) {
+						nextA = a.next();
+					} else {
+						return false;
+					}
+				} else {
+					if( b.hasNext() ) {
+						nextB = b.next();
+					} else {
+						return false;
+					}
+				}
+				if(nextA.overlaps(nextB)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
+	/**
+	 * Tests if any interval in this set contains the specified point
+	 * @param point
+	 * @return
+	 */
+	public boolean contains(Integer point) {
+		for(Interval i : this) {
+			if(i.contains(point)) {
+				return true;
 			}
 		}
 		return false;
@@ -100,23 +234,35 @@ public class IntervalSet extends TreeSet<Interval> implements Comparable<Interva
 	}
 	
 	/*---------------------------- static methods ---------------------------*/
-	
+
 	/**
-	 * Returns an IntervalSet created from a set of integers.
+	 * Returns true if selStr is a valid selection string in 'comma-hyphen' syntax, e.g. 1-3,5,7-8.
+	 * @return true if selStr is a syntactically correct selection string, false otherwise
 	 */
-	public static IntervalSet createFromIntSet(TreeSet<Integer> intSet) {
-		return Interval.getIntervals(intSet);
+	public static boolean isValidSelectionString(String selStr) {
+		Pattern p = Pattern.compile("^\\s*(\\*|(\\d+(-\\d+)?(\\s*,\\s*\\d+(-\\d+)?)*)?\\s*,?)\\s*$");
+		Matcher m = p.matcher(selStr.trim()); // allow spaces around whole string and around commas
+		return m.matches();
 	}
-	
+
 	/**
-	 * Convenience method to create a new interval set containing a single interval.
-	 * @param intv the initial interval
-	 * @return a new interval set containing a single interval
+	 * Convert to a comma-separated range, e.g. "1-6,8,10-11"
+	 * @return
 	 */
-	public static IntervalSet createFromInterval(Interval intv) {
-		IntervalSet newSet = new IntervalSet();
-		newSet.add(intv);
-		return newSet;
+	public String toSelectionString() {
+		if(isEmpty()) {
+			return "";
+		}
+		
+		StringBuilder str = null;
+		for( Interval range : this) {
+			if(str == null) {
+				str = new StringBuilder();
+			} else {
+				str.append(",");
+			}
+			str.append(range.toSelectionString());
+		}
+		return str.toString();
 	}
-	
 }
