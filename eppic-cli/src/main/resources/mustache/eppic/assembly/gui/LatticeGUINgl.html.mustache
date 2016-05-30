@@ -4,61 +4,102 @@
 	<meta charset="utf-8">
 </head>
 <body>
+
 	<script src="https://rawgit.com/sbliven/ngl/master/js/build/ngl.embedded.js"></script>
+
 	<script>
-	NGL.mainScriptFilePath = "https://rawgit.com/sbliven/ngl/master/js/build/ngl.embedded.js";
-	document.addEventListener( "DOMContentLoaded", function() {
+	 NGL.mainScriptFilePath = "https://rawgit.com/sbliven/ngl/master/js/build/ngl.embedded.js";
+	 document.addEventListener( "DOMContentLoaded", function() {
+
 		var stage = new NGL.Stage( "viewport" );
-		stage.setParameters({ theme:"light"} );
-		//stage.loadFile( "rcsb://1smt", { defaultRepresentation: true } ).then(function(o) {
+
+		stage.setParameters({ backgroundColor:"white"} );
+
 		stage.loadFile( "{{strucURI}}", { defaultRepresentation: false } ).then(function(o) {
-			o.addRepresentation( "ribbon", { transparent: true, opacity: .4, color: "chainindex" });
+			
+			//////// cartoon instead of ribbon ////////////////////////////////
+			o.addRepresentation( "cartoon", { opacity: 0.5, side: THREE.FrontSide } );
+			
 			////////  spheres  ///////////////////////////////////////////////
 			var spherePositions = [
 					{{#graph.graph.vertexSet}}
 					{{center.x}},{{center.y}},{{center.z}},
 					{{/graph.graph.vertexSet}}
-				];
+			];
+			
 			var sphereColors = [
 					{{#graph.graph.vertexSet}}
 					{{color.red}}/255., {{color.green}}/255.,{{color.blue}}/255.,
 					{{/graph.graph.vertexSet}}
-				];
+			];
+			
 			var sphereRadii = [
 					{{#graph.graph.vertexSet}}
 					5.0,
 					{{/graph.graph.vertexSet}}
-				];
+			];
+			
 			var sphereBuffer = new NGL.SphereBuffer(
 					new Float32Array( spherePositions ),  // position (xyz)
 					new Float32Array( sphereColors ),  // color (rgb) - first 3 numbers is the color code for 1 sphere
 					new Float32Array( sphereRadii )  // radius
 			);
+			
 			o.addBufferRepresentation( sphereBuffer );
+			
+			////////  sphere labels ///////////////////////////////////////////////
+			var textLabels = [
+					{{#graph.graph.vertexSet}}
+					"{{toString}}",
+					{{/graph.graph.vertexSet}}
+			];
+			
+			var labelColors = [
+					{{#graph.graph.vertexSet}}
+					0,0,0,
+					{{/graph.graph.vertexSet}}
+			];
+			
+			var textBuffer = new NGL.TextBuffer(
+					spherePositions, 
+					sphereRadii, // size
+					labelColors, // color
+					textLabels, // text
+					{zOffset: 10, yOffset:-1, xOffset:-2} // params
+			);
+			
+			o.addBufferRepresentation( textBuffer );
+			
 			////////  unit cell ///////////////////////////////////////////////
 			o.addRepresentation( "unitcell" );
+			
 			////////  cylinders ///////////////////////////////////////////////
 			//// cylinders - arrows /////
+			
 			var arrowsStartPositions = [
 					{{#graph.graph.edgeSet}}{{#segments}}
 					{{start.x}},{{start.y}},{{start.z}},
 					{{/segments}}{{/graph.graph.edgeSet}}
-				];
+			];
+			
 			var arrowsEndPositions =  [
 					{{#graph.graph.edgeSet}}{{#segments}}
 					{{end.x}},{{end.y}},{{end.z}},
 					{{/segments}}{{/graph.graph.edgeSet}}
-				];
+			];
+			
 			var arrowsColors = [
 					{{#graph.graph.edgeSet}}{{#segments}}
 					{{color.red}}/255., {{color.green}}/255.,{{color.blue}}/255.,
 					{{/segments}}{{/graph.graph.edgeSet}}
-				];
+			];
+			
 			var arrowsRadii = [
 					{{#graph.graph.edgeSet}}{{#segments}}
 					0.3,
 					{{/segments}}{{/graph.graph.edgeSet}}
-				];
+			];
+			
 			var arrowsCylinderBuffer = new NGL.CylinderBuffer(
 					new Float32Array( arrowsStartPositions ),  // from position (xyz)
 					new Float32Array( arrowsEndPositions ),  // to position (xyz)
@@ -66,28 +107,34 @@
 					new Float32Array( arrowsColors ),  // to color (rgb)
 					new Float32Array( arrowsRadii )  // radius
 			);
+			
 			o.addBufferRepresentation( arrowsCylinderBuffer );
+			
 			//// cylinders - circles /////
 			var circlesStartPositions = [
 					{{#graph.graph.edgeSet}}{{#circles}}
 					{{center.x}},{{center.y}},{{center.z}},
 					{{/circles}}{{/graph.graph.edgeSet}}
-				];
+			];
+							
 			var circlesEndPositions =  [
 					{{#graph.graph.edgeSet}}{{#circles}}
 					{{perpendicular.x}},{{perpendicular.y}},{{perpendicular.z}},
 					{{/circles}}{{/graph.graph.edgeSet}}
-				];
+			];
+			
 			var circlesColors = [
 					{{#graph.graph.edgeSet}}{{#circles}}
 					{{color.red}}/255., {{color.green}}/255.,{{color.blue}}/255.,
 					{{/circles}}{{/graph.graph.edgeSet}}
-				];
+			];
+			
 			var circlesRadii = [
 					{{#graph.graph.edgeSet}}{{#circles}}
 					{{radius}},
 					{{/circles}}{{/graph.graph.edgeSet}}
-				];
+			];
+			
 			var circlesCylinderBuffer = new NGL.CylinderBuffer(
 					new Float32Array( circlesStartPositions ),  // from position (xyz)
 					new Float32Array( circlesEndPositions ),  // to position (xyz)
@@ -95,14 +142,41 @@
 					new Float32Array( circlesColors ),  // to color (rgb)
 					new Float32Array( circlesRadii )  // radius
 			);
-			o.addBufferRepresentation( circlesCylinderBuffer );
-			//cylinders - disks?
-			//how to do labels?
 			
+			o.addBufferRepresentation( circlesCylinderBuffer );
+			
+			
+			/////////////// labels - circles ////////////////////////////////////
+			var textLabelsCircles = [
+					{{#graph.graph.edgeSet}}{{#circles}}
+					"{{interfaceId}}",
+					{{/circles}}{{/graph.graph.edgeSet}}				
+			];
+			
+			var labelColorsCircles = [
+					{{#graph.graph.vertexSet}}
+					0,0,0,
+					{{/graph.graph.vertexSet}}
+			];
+			
+			var textBufferCircles = new NGL.TextBuffer(
+					circlesStartPositions, 
+					circlesRadii, // size
+					labelColorsCircles, // color
+					textLabelsCircles, // text
+					{zOffset: 5} // params
+			);
+			
+			o.addBufferRepresentation( textBufferCircles );	
+					
 			stage.centerView();
+			
 		} ); //add event listener
 	} );
+	
 	</script>
+	
 	<div id="viewport" style="width:{{size}}px; height:{{size}}px;"></div>
+	
 </body>
 </html>
