@@ -699,7 +699,7 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 		String viewerTypeDescription = "To run selected 3D viewer please click one of the thumbnails on the list below. The following options are provided: " +
 									   "<div><ul class=\"eppic-tooltip-list\">" +
 									   "<li>PDB file downloadable to a local molecular viewer</li>" +
-									   "<li>Browser embedded 3Dmol.js viewer (no need for local viewer)</li>" +
+									   "<li>Browser embedded NGL viewer (no need for local viewer)</li>" +
 									   "<li>PyMol session file (.pse) to be opened in local PyMol</li>" +
 									   "</ul></div>";
 		return viewerTypeDescription;
