@@ -85,7 +85,7 @@ function initRepr(structComp) {
 			sele: seleRim2
 		});
 	}
-	stage.setParameters({ backgroundColor:"white"} );
+	stage.setParameters({ backgroundColor:"white", theme:"light"} );
 	stage.centerView();
 
 }
