@@ -42,10 +42,10 @@ function initRepr(structComp) {
 		sele : 'hetero and not (water or ion)'
 	});
 
-	waterRepr = structureComponent.addRepresentation('licorice',{
+	/*waterRepr = structureComponent.addRepresentation('licorice',{
 		color : 'element',
 		sele  : 'water'
-	});
+	});*/
 
 	for (i=0; i<chains.length; i++) {
 		structureComponent.addRepresentation('cartoon', {
@@ -85,7 +85,7 @@ function initRepr(structComp) {
 			sele: seleRim2
 		});
 	}
-
+	stage.setParameters({ backgroundColor:"white"} );
 	stage.centerView();
 
 }
