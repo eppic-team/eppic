@@ -96,12 +96,7 @@ public class LatticeGraphServlet extends BaseServlet
 		String requestedIfacesStr = request.getParameter(PARAM_INTERFACES);
 		String requestedClusterStr = request.getParameter(PARAM_CLUSTERS);
 		String size = request.getParameter(JmolViewerServlet.PARAM_SIZE);
-
-		String url3dmoljs = properties.getProperty("url3dmoljs");
-		if (url3dmoljs == null || url3dmoljs.equals("")) {
-			logger.info("The URL for 3Dmol js is not set in config file. Will use the js file from eppic");
-			url3dmoljs = "3Dmol-min.js"; //we set it to the js file within eppic
-		}
+		
 
 		logger.info("Requested Lattice Graph page for jobId={},interfaces={},clusters={}",jobId,requestedIfacesStr,requestedClusterStr);
 
@@ -136,7 +131,7 @@ public class LatticeGraphServlet extends BaseServlet
 
 			outputStream = new PrintWriter(response.getOutputStream());
 
-			LatticeGraphPageGenerator.generatePage(dir,input, atomCachePath, ucFile, ucURI, title, size, ifaceList, requestedIfaces, url3dmoljs,outputStream);
+			LatticeGraphPageGenerator.generatePage(dir,input, atomCachePath, ucFile, ucURI, title, size, ifaceList, requestedIfaces, outputStream);
 
 		}
 		catch(ValidationException e)
