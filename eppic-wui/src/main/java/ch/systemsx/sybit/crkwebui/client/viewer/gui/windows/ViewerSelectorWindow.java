@@ -3,7 +3,6 @@ package ch.systemsx.sybit.crkwebui.client.viewer.gui.windows;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Cookies;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HTMLPanel;
 import com.google.gwt.user.client.ui.HasValue;
 import com.sencha.gxt.core.client.util.Margins;
@@ -27,7 +26,6 @@ public class ViewerSelectorWindow extends ResizableWindow{
 	
 	private CheckBox local;
 	private CheckBox jmol;
-	private CheckBox pse;
 	private ToggleGroup viewerGroup;
 	
 	public ViewerSelectorWindow(WindowData windowData) {
@@ -57,7 +55,6 @@ public class ViewerSelectorWindow extends ResizableWindow{
 				if (viewerCookie != null) {
 					if(viewerCookie.equals(AppPropertiesManager.CONSTANTS.viewer_local())) local.setValue(true);
 					else if(viewerCookie.equals(AppPropertiesManager.CONSTANTS.viewer_jmol())) jmol.setValue(true);
-					else if(viewerCookie.equals(AppPropertiesManager.CONSTANTS.viewer_pse())) pse.setValue(true);
 				} else
 					jmol.setValue(true);
 				
@@ -81,18 +78,13 @@ public class ViewerSelectorWindow extends ResizableWindow{
 		jmol.setName(AppPropertiesManager.CONSTANTS.viewer_jmol());
 		jmol.setBoxLabel(AppPropertiesManager.CONSTANTS.viewer_jmol_label());
 		
-		pse =  new CheckBox();
-		pse.setName(AppPropertiesManager.CONSTANTS.viewer_pse());
-		pse.setBoxLabel(AppPropertiesManager.CONSTANTS.viewer_pse_label());
 		
 		con.add(jmol);
 		con.add(local);
-		con.add(pse);
 		
 		viewerGroup = new ToggleGroup();
 		viewerGroup.add(local);
 		viewerGroup.add(jmol);
-		viewerGroup.add(pse);
 		viewerGroup.addValueChangeHandler(new ValueChangeHandler<HasValue<Boolean>>() {
 			
 			@Override
