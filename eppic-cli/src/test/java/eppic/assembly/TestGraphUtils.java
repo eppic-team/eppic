@@ -11,10 +11,6 @@ public class TestGraphUtils {
 	@Test
 	public void testIsAutomorphic() {
 		
-		System.out.println(1%3);
-		System.out.println(2%3);
-		System.out.println(3%3);
-		System.out.println(4%3);
 		
 		for (int n=2;n<10;n++) {
 			UndirectedGraph<ChainVertexInterface, InterfaceEdgeInterface> g = createCnGraph(n);
