@@ -93,10 +93,10 @@ public class JmolViewerServlet extends BaseServlet
 
 		String serverUrl = protocol + "://" + serverName + ":" + serverPort + "/" + servletContPath;
 
-		String url3dmoljs = properties.getProperty("url3dmoljs");
-		if (url3dmoljs == null || url3dmoljs.equals("")) {
-			logger.info("The URL for 3Dmol js is not set in config file. Will use the js file from eppic");
-			url3dmoljs = "3Dmol-min.js"; //we set it to the js file within eppic
+		String nglJsUrl = properties.getProperty("urlNglJs");
+		if (nglJsUrl == null || nglJsUrl.equals("")) {
+			logger.info("The URL for NGL js is not set in config file. Will use the js file inside the ewui war");
+			nglJsUrl = "/ngl.embedded.min.js"; //we set it to the js file within the war, the leading '/' is important to point to the right path here
 		}
 		
 		logger.info("Requested 3D viewer page for jobId={}, input={}, interfaceId={}, size={}",jobId,input,interfaceId,size);
@@ -154,7 +154,7 @@ public class JmolViewerServlet extends BaseServlet
 					fileName,   
 					interfData,
 					assemblyData,
-					url3dmoljs);
+					nglJsUrl);
 
 
 			outputStream = response.getOutputStream();

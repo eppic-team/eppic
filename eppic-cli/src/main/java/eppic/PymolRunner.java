@@ -69,8 +69,8 @@ public class PymolRunner {
 			chain2 = chain2+"_"+interf.getTransforms().getSecond().getTransformId();
 		}
 		
-		String color1 = MolViewersHelper.getHexChainColor(chain1);
-		String color2 = MolViewersHelper.getHexChainColor(chain2);
+		String color1 = MolViewersHelper.getHexChainColor(chain1, false);
+		String color2 = MolViewersHelper.getHexChainColor(chain2, false);
 		
 		List<String> command = new ArrayList<String>();
 		command.add(pymolExec.getAbsolutePath());
@@ -166,7 +166,7 @@ public class PymolRunner {
 
 				String chain = v.getChainId()+"_"+v.getOpId();
 				chains.add(chain);
-				colors.add(MolViewersHelper.getHexChainColor(chain));
+				colors.add(MolViewersHelper.getHexChainColor(chain,false));
 			}
 		}
 

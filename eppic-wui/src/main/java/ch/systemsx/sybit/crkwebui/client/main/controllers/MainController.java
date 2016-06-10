@@ -149,12 +149,12 @@ public class MainController
 			if (resultsData.getCellA() != 0 && resultsData.getCellB() != 0 && resultsData.getCellC() != 0 && resultsData.getCellAlpha() != 0 && resultsData.getCellBeta() != 0  && resultsData.getCellGamma() != 0){
 			
 				html_experiment_info += "<br><b><span class='eppic-general-info-label-new'>Unit Cell Parameters</span></b> " 
-									+ "&nbsp;&nbsp;&nbsp;&nbsp;<b>a</b> " + NumberFormat.getFormat("0.00").format(resultsData.getCellA()) + " &#8491; " 
-									+ "&nbsp;&nbsp;&nbsp;&nbsp;<b>b</b> " + NumberFormat.getFormat("0.00").format(resultsData.getCellB()) + " &#8491;" 
-									+ "&nbsp;&nbsp;&nbsp;&nbsp;<b>c</b> " + NumberFormat.getFormat("0.00").format(resultsData.getCellC()) + " &#8491;" 
-									+ "&nbsp;&nbsp;&nbsp;&nbsp;<b>&alpha;</b> " + NumberFormat.getFormat("0.00").format(resultsData.getCellAlpha()) + " &deg;" 
-									+ "&nbsp;&nbsp;&nbsp;&nbsp;<b>&beta;</b> " + NumberFormat.getFormat("0.00").format(resultsData.getCellBeta()) + " &deg;" 
-									+ "&nbsp;&nbsp;&nbsp;&nbsp;<b>&gamma;</b> " + NumberFormat.getFormat("0.00").format(resultsData.getCellGamma()) + " &deg;";
+									+ "&nbsp;&nbsp;&nbsp;&nbsp;<b><span class='eppic-general-info-label-new'>a</span></b> <span class='eppic-general-info-label-value-new'>" + NumberFormat.getFormat("0.00").format(resultsData.getCellA()) + " &#8491;</span> " 
+									+ "&nbsp;&nbsp;&nbsp;&nbsp;<b><span class='eppic-general-info-label-new'>b</span></b> <span class='eppic-general-info-label-value-new'>" + NumberFormat.getFormat("0.00").format(resultsData.getCellB()) + " &#8491;</span>" 
+									+ "&nbsp;&nbsp;&nbsp;&nbsp;<b><span class='eppic-general-info-label-new'>c</span></b> <span class='eppic-general-info-label-value-new'>" + NumberFormat.getFormat("0.00").format(resultsData.getCellC()) + " &#8491;</span>" 
+									+ "&nbsp;&nbsp;&nbsp;&nbsp;<b><span class='eppic-general-info-label-new'>&alpha;</span></b> <span class='eppic-general-info-label-value-new'>" + NumberFormat.getFormat("0.00").format(resultsData.getCellAlpha()) + " &deg;</span>" 
+									+ "&nbsp;&nbsp;&nbsp;&nbsp;<b><span class='eppic-general-info-label-new'>&beta;</span></b> <span class='eppic-general-info-label-value-new'>" + NumberFormat.getFormat("0.00").format(resultsData.getCellBeta()) + " &deg;</span>" 
+									+ "&nbsp;&nbsp;&nbsp;&nbsp;<b><span class='eppic-general-info-label-new'>&gamma;</span></b> <span class='eppic-general-info-label-value-new'>" + NumberFormat.getFormat("0.00").format(resultsData.getCellGamma()) + " &deg;</span>";
 			}
 
 		}

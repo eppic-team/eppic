@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 
 import ch.systemsx.sybit.crkwebui.shared.model.Interface;
 import eppic.assembly.gui.LatticeGUI3Dmol;
+import eppic.assembly.gui.LatticeGUIMustache;
 
 /**
  * Helper class to generate the LatticeGraph HTML
@@ -73,8 +74,7 @@ public class LatticeGraphPageGenerator {
 
 		List<StructureInterface> siList = createStructureInterfaces(interfaces, sg);
 
-
-		LatticeGUI3Dmol gui = new LatticeGUI3Dmol(auStruct, ucURI,
+		LatticeGUI3Dmol gui = new LatticeGUI3Dmol(LatticeGUIMustache.MUSTACHE_TEMPLATE_NGL, auStruct, ucURI,
 				requestedIfaces, siList);
 
 		// Override some properties if needed
