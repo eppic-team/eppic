@@ -6,8 +6,8 @@ import java.util.Set;
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.commons.events.SelectResultsRowEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowAssemblyViewerEvent;
-import ch.systemsx.sybit.crkwebui.client.commons.events.ShowAssemblyViewerInNewTabEvent;
-import ch.systemsx.sybit.crkwebui.client.commons.events.ShowViewerEvent;
+//import ch.systemsx.sybit.crkwebui.client.commons.events.ShowAssemblyViewerInNewTabEvent;
+//import ch.systemsx.sybit.crkwebui.client.commons.events.ShowViewerEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.managers.EventBusManager;
 
 import com.google.gwt.cell.client.AbstractCell;
@@ -15,11 +15,10 @@ import com.google.gwt.cell.client.ValueUpdater;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
-import com.google.gwt.user.client.Window;
+//import com.google.gwt.user.client.Window;
 
 /**
- * Cell used to display interfaces thumbnails.
- * @author nikhil
+ * Cell used to display assembly thumbnails.
  *
  */
 public class AssemblyThumbnailCell extends AbstractCell<String>{

@@ -2,7 +2,6 @@ package ch.systemsx.sybit.crkwebui.client.commons.managers;
 
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
-import ch.systemsx.sybit.crkwebui.client.commons.events.ShowAssemblyViewerInNewTabEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowErrorEvent;
 import ch.systemsx.sybit.crkwebui.server.files.downloader.servlets.FileDownloadServlet;
 import ch.systemsx.sybit.crkwebui.server.jmol.servlets.JmolViewerServlet;
@@ -28,12 +27,7 @@ public class ViewerRunner
 		//case that PDB viewer selected 
 		else if(ApplicationContext.getSelectedViewer().equals(AppPropertiesManager.CONSTANTS.viewer_local()))
 		{
-			//downloadFileFromServer(FileDownloadServlet.TYPE_VALUE_INTERFACE, interfaceId, FileDownloadServlet.COORDS_FORMAT_VALUE_PDB);
 			downloadFileFromServer(FileDownloadServlet.TYPE_VALUE_INTERFACE, interfaceId, FileDownloadServlet.COORDS_FORMAT_VALUE_CIF);
-		}
-		else if(ApplicationContext.getSelectedViewer().equals(AppPropertiesManager.CONSTANTS.viewer_pse()))
-		{
-			downloadFileFromServer(FileDownloadServlet.TYPE_VALUE_INTERFACE, interfaceId, FileDownloadServlet.COORDS_FORMAT_VALUE_PSE);
 		}
 		else
 		{
@@ -141,14 +135,10 @@ public class ViewerRunner
 		{
 			showJmolViewerAssembly(assemblyId);
 		}
-		//PDB CASE
+		//mmCIF CASE (was PDB)
 		else if(ApplicationContext.getSelectedViewer().equals(AppPropertiesManager.CONSTANTS.viewer_local()))
 		{
 			downloadAssemblyFileFromServer(FileDownloadServlet.TYPE_VALUE_ASSEMBLY, assemblyId, FileDownloadServlet.COORDS_FORMAT_VALUE_CIF);
-		}
-		else if(ApplicationContext.getSelectedViewer().equals(AppPropertiesManager.CONSTANTS.viewer_pse()))
-		{
-			downloadAssemblyFileFromServer(FileDownloadServlet.TYPE_VALUE_ASSEMBLY, assemblyId, FileDownloadServlet.COORDS_FORMAT_VALUE_PSE);
 		}
 		else
 		{

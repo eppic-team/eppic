@@ -63,7 +63,7 @@ public class AssemblyDiagramServlet extends BaseServlet
 
 	private static final Logger logger = LoggerFactory.getLogger(AssemblyDiagramServlet.class);
 
-	private String resultsLocation;
+	//private String resultsLocation;
 	private String destination_path;
 	
 	private String atomCachePath;
@@ -73,7 +73,7 @@ public class AssemblyDiagramServlet extends BaseServlet
 	{
 		super.init(config);
 
-		resultsLocation = properties.getProperty("results_location");
+		//resultsLocation = properties.getProperty("results_location");
 		destination_path = properties.getProperty("destination_path");
 		atomCachePath = propertiesCli.getProperty("ATOM_CACHE_PATH");
 		
@@ -94,12 +94,6 @@ public class AssemblyDiagramServlet extends BaseServlet
 		String requestedClusterStr = request.getParameter(PARAM_CLUSTERS);
 		String size = request.getParameter(JmolViewerServlet.PARAM_SIZE);
 		String format = request.getParameter(PARAM_FORMAT);
-
-		String url3dmoljs = properties.getProperty("url3dmoljs");
-		if (url3dmoljs == null || url3dmoljs.equals("")) {
-			logger.info("The URL for 3Dmol js is not set in config file. Will use the js file from eppic");
-			url3dmoljs = "3Dmol-min.js"; //we set it to the js file within eppic
-		}
 
 		logger.info("Requested assemblyDiagram page for jobId={},interfaces={},clusters={}",jobId,requestedIfacesStr,requestedClusterStr);
 

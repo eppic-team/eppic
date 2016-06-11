@@ -95,12 +95,6 @@ public class ApplicationSettingsGenerator
 			javaVM = "java";
 		}
 		
-		String url3dmoljs = globalProperties.getProperty("url3dmoljs");
-		if (url3dmoljs==null || url3dmoljs.equals("")) {
-			logger.info("The URL for 3Dmol js is not set in config file. Will use the js file from eppic");
-			url3dmoljs = "3Dmol-min.js"; //we set it to the js file within eppic
-		}
-		
 		settings.setCaptchaPublicKey(captchaPublicKey);
 		settings.setUseCaptcha(useCaptcha);
 		settings.setNrOfAllowedSubmissionsWithoutCaptcha(nrOfAllowedSubmissionsWithoutCaptcha);

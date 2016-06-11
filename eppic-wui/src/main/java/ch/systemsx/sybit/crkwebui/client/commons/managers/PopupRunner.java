@@ -1,6 +1,8 @@
 package ch.systemsx.sybit.crkwebui.client.commons.managers;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
@@ -81,6 +83,12 @@ public class PopupRunner
 		for(Interface i : interfaces) {
 			ids.add(i.getInterfaceId());
 		}
+		Collections.sort(ids,new Comparator<Integer>() {
+			@Override
+			public int compare(Integer x, Integer y) {
+				return Integer.compare(x, y);
+			}
+		});
 		return joinRanges( ids );
 	}
 
@@ -92,6 +100,9 @@ public class PopupRunner
 	 * @return comma-separated list of elements, with sequential elements joined
 	 */
 	public static String joinRanges(List<Integer> elements) {
+		if(elements.isEmpty()) {
+			return "";
+		}
 		StringBuilder str = new StringBuilder();
 		Integer startRange=null;
 		Integer endRange=null;
@@ -106,6 +117,9 @@ public class PopupRunner
 					endRange = i;
 				} else {
 					// output old range
+					if(str.length() > 0) {
+						str.append(',');
+					}
 					str.append(startRange);
 					if(endRange > startRange) {
 						str.append('-');
@@ -116,6 +130,14 @@ public class PopupRunner
 					endRange = i;
 				}
 			}
+		}
+		if(str.length() > 0) {
+			str.append(',');
+		}
+		str.append(startRange);
+		if(endRange > startRange) {
+			str.append('-');
+			str.append(endRange);
 		}
 		return str.toString();
 	}
