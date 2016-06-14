@@ -133,6 +133,9 @@ public class GeneralInfoPanel extends FieldSet {
 		if(warnings.isRfreeWarning()){
 			panelTable.setWidget(RFREE_ROW, 1, getWarningImage(AppPropertiesManager.CONSTANTS.warning_HighRfree_text()));
 		}
+		if(warnings.isNoRfreeWarning()){
+			panelTable.setWidget(RFREE_ROW, 1, getWarningImage(AppPropertiesManager.CONSTANTS.warning_NoRfree_text()));
+		}
 		
 	}
 	
