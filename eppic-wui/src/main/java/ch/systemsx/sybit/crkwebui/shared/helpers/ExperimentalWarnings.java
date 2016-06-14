@@ -16,6 +16,7 @@ public class ExperimentalWarnings {
 	private boolean emWarning;
 	private boolean resolutionWarning;
 	private boolean rfreeWarning;
+	private boolean noRfreeWarning;
 	//public static LabelWithTooltip staticWarningsLabel = null;
 	
 
@@ -30,6 +31,7 @@ public class ExperimentalWarnings {
 				             resolution > ApplicationContext.getSettings().getResolutionCutOff() && resolution > 0 && resolution<99);
 		rfreeWarning = (ApplicationContext.getSettings().getRfreeCutOff() > 0 && 
 				        rFree > ApplicationContext.getSettings().getRfreeCutOff() && rFree > 0 && rFree<1);
+		noRfreeWarning = (rFree == 1);
 	}
 
 	public boolean isEmWarning() {
@@ -51,11 +53,15 @@ public class ExperimentalWarnings {
 	public boolean isRfreeWarning() {
 		return rfreeWarning;
 	}
+	
+	public boolean isNoRfreeWarning() {
+		return noRfreeWarning;
+	}
 
 	public void setRfreeWarning(boolean rfreeWarning) {
 		this.rfreeWarning = rfreeWarning;
 	}
-	
+
 	public LabelWithTooltip getWarningLabel(){
 		LabelWithTooltip warningLabel = null;
 		if (this.isEmWarning()) {
@@ -65,6 +71,8 @@ public class ExperimentalWarnings {
 			warningLabel = createWarningLabel(AppPropertiesManager.CONSTANTS.warning_LowRes_title());
 		}else if(this.isRfreeWarning()){
 			warningLabel = createWarningLabel(AppPropertiesManager.CONSTANTS.warning_HighRfree_title());
+		}else if(this.isNoRfreeWarning()){
+			warningLabel = createWarningLabel(AppPropertiesManager.CONSTANTS.warning_NoRfree_title());
 		}
 		return warningLabel;
 	} 
