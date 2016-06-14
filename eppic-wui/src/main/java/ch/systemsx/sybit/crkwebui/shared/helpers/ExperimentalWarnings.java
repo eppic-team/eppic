@@ -17,6 +17,7 @@ public class ExperimentalWarnings {
 	private boolean resolutionWarning;
 	private boolean rfreeWarning;
 	private boolean noRfreeWarning;
+	private String warningTooltip;
 	//public static LabelWithTooltip staticWarningsLabel = null;
 	
 
@@ -65,20 +66,23 @@ public class ExperimentalWarnings {
 	public LabelWithTooltip getWarningLabel(){
 		LabelWithTooltip warningLabel = null;
 		if (this.isEmWarning()) {
-			warningLabel = createWarningLabel(AppPropertiesManager.CONSTANTS.warning_EM_title());			
-		}
-		else if(this.isResolutionWarning()) {			
+			warningLabel = createWarningLabel(AppPropertiesManager.CONSTANTS.warning_EM_title());
+			warningTooltip = AppPropertiesManager.CONSTANTS.warning_EM_text();
+		}else if(this.isResolutionWarning()) {			
 			warningLabel = createWarningLabel(AppPropertiesManager.CONSTANTS.warning_LowRes_title());
+			warningTooltip = AppPropertiesManager.CONSTANTS.warning_LowRes_text();
 		}else if(this.isRfreeWarning()){
 			warningLabel = createWarningLabel(AppPropertiesManager.CONSTANTS.warning_HighRfree_title());
+			warningTooltip = AppPropertiesManager.CONSTANTS.warning_HighRfree_text();
 		}else if(this.isNoRfreeWarning()){
 			warningLabel = createWarningLabel(AppPropertiesManager.CONSTANTS.warning_NoRfree_title());
+			warningTooltip = AppPropertiesManager.CONSTANTS.warning_NoRfree_text();
 		}
 		return warningLabel;
 	} 
 	
 	private LabelWithTooltip createWarningLabel(String text){
-		LabelWithTooltip label = new LabelWithTooltip("*"+text+"*", AppPropertiesManager.CONSTANTS.pdb_identifier_panel_warning_hint());
+		LabelWithTooltip label = new LabelWithTooltip("*"+text+"*", warningTooltip);
 		label.addStyleName("eppic-header-warning");
 		label.addStyleName("eppic-pdb-identifier-label");
 		//this.staticWarningsLabel = label;
