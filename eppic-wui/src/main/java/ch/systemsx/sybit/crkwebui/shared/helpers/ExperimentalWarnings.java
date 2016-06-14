@@ -66,22 +66,22 @@ public class ExperimentalWarnings {
 	public LabelWithTooltip getWarningLabel(){
 		LabelWithTooltip warningLabel = null;
 		if (this.isEmWarning()) {
-			warningLabel = createWarningLabel(AppPropertiesManager.CONSTANTS.warning_EM_title());
 			warningTooltip = AppPropertiesManager.CONSTANTS.warning_EM_text();
-		}else if(this.isResolutionWarning()) {			
-			warningLabel = createWarningLabel(AppPropertiesManager.CONSTANTS.warning_LowRes_title());
+			warningLabel = createWarningLabel(AppPropertiesManager.CONSTANTS.warning_EM_title(), warningTooltip);	
+		}else if(this.isResolutionWarning()) {	
 			warningTooltip = AppPropertiesManager.CONSTANTS.warning_LowRes_text();
+			warningLabel = createWarningLabel(AppPropertiesManager.CONSTANTS.warning_LowRes_title(), warningTooltip);	
 		}else if(this.isRfreeWarning()){
-			warningLabel = createWarningLabel(AppPropertiesManager.CONSTANTS.warning_HighRfree_title());
 			warningTooltip = AppPropertiesManager.CONSTANTS.warning_HighRfree_text();
+			warningLabel = createWarningLabel(AppPropertiesManager.CONSTANTS.warning_HighRfree_title(), warningTooltip);
 		}else if(this.isNoRfreeWarning()){
-			warningLabel = createWarningLabel(AppPropertiesManager.CONSTANTS.warning_NoRfree_title());
 			warningTooltip = AppPropertiesManager.CONSTANTS.warning_NoRfree_text();
+			warningLabel = createWarningLabel(AppPropertiesManager.CONSTANTS.warning_NoRfree_title(), warningTooltip);	
 		}
 		return warningLabel;
 	} 
 	
-	private LabelWithTooltip createWarningLabel(String text){
+	private LabelWithTooltip createWarningLabel(String text, String tooltipText){
 		LabelWithTooltip label = new LabelWithTooltip("*"+text+"*", warningTooltip);
 		label.addStyleName("eppic-header-warning");
 		label.addStyleName("eppic-pdb-identifier-label");
