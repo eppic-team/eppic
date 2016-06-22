@@ -1,5 +1,8 @@
 package ch.systemsx.sybit.crkwebui.shared.helpers;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.google.gwt.user.client.Window;
 
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
@@ -62,8 +65,9 @@ public class ExperimentalWarnings {
 	public void setRfreeWarning(boolean rfreeWarning) {
 		this.rfreeWarning = rfreeWarning;
 	}
-
-	public LabelWithTooltip getWarningLabel(){
+	
+	//for single warnings only
+	/*public LabelWithTooltip getWarningLabel(){
 		LabelWithTooltip warningLabel = null;
 		if (this.isEmWarning()) {
 			warningTooltip = AppPropertiesManager.CONSTANTS.warning_EM_text();
@@ -79,10 +83,46 @@ public class ExperimentalWarnings {
 			warningLabel = createWarningLabel(AppPropertiesManager.CONSTANTS.warning_NoRfree_title(), warningTooltip);	
 		}
 		return warningLabel;
+	} */
+	
+	//for single and multiple warnings
+	public LabelWithTooltip getWarningLabel(){
+		LabelWithTooltip warningLabel = null;
+		int warningCount = 0;
+		String multiWarningTooltip = "WARNINGS<br>";
+		
+		if (this.isEmWarning()) {
+			warningTooltip = AppPropertiesManager.CONSTANTS.warning_EM_text();
+			warningLabel = createWarningLabel(AppPropertiesManager.CONSTANTS.warning_EM_title(), warningTooltip);
+			warningCount++;
+			multiWarningTooltip += "&bull; " + AppPropertiesManager.CONSTANTS.warning_EM_title().replace("Warning: ", "") + "<br>" + AppPropertiesManager.CONSTANTS.warning_EM_text() + "<br>";
+		}
+		if(this.isResolutionWarning()) {
+			warningTooltip = AppPropertiesManager.CONSTANTS.warning_LowRes_text();
+			warningLabel = createWarningLabel(AppPropertiesManager.CONSTANTS.warning_LowRes_title(), warningTooltip);	
+			warningCount++;
+			multiWarningTooltip += "&bull; " + AppPropertiesManager.CONSTANTS.warning_LowRes_title().replace("Warning: ", "") + "<br>" + AppPropertiesManager.CONSTANTS.warning_LowRes_text() + "<br>";
+		}
+		if(this.isRfreeWarning()){
+			warningTooltip = AppPropertiesManager.CONSTANTS.warning_HighRfree_text();
+			warningLabel = createWarningLabel(AppPropertiesManager.CONSTANTS.warning_HighRfree_title(), warningTooltip);
+			warningCount++;
+			multiWarningTooltip += "&bull; " + AppPropertiesManager.CONSTANTS.warning_HighRfree_title().replace("Warning: ", "") + "<br>" + AppPropertiesManager.CONSTANTS.warning_HighRfree_text() + "<br>";
+		}
+		if(this.isNoRfreeWarning()){
+			warningTooltip = AppPropertiesManager.CONSTANTS.warning_NoRfree_text();
+			warningLabel = createWarningLabel(AppPropertiesManager.CONSTANTS.warning_NoRfree_title(), warningTooltip);	
+			warningCount++;
+			multiWarningTooltip += "&bull; " + AppPropertiesManager.CONSTANTS.warning_NoRfree_title().replace("Warning: ", "") + "<br>" + AppPropertiesManager.CONSTANTS.warning_NoRfree_text() + "<br>";
+		}
+		if(warningCount > 1){
+			warningLabel = createWarningLabel(warningCount + " Warnings", multiWarningTooltip);
+		}
+		return warningLabel;
 	} 
 	
 	private LabelWithTooltip createWarningLabel(String text, String tooltipText){
-		LabelWithTooltip label = new LabelWithTooltip("<img src='resources/icons/warning_icon_xl.png' style='height:17px' />&nbsp;*"+text+"*", warningTooltip);
+		LabelWithTooltip label = new LabelWithTooltip("<img src='resources/icons/warning_icon_xl.png' style='height:17px' />&nbsp;*"+text+"*", tooltipText);
 		label.addStyleName("eppic-header-warning");
 		label.addStyleName("eppic-pdb-identifier-label");
 		//this.staticWarningsLabel = label;
