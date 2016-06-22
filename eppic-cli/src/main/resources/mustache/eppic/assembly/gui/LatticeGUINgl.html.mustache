@@ -5,10 +5,11 @@
 </head>
 <body>
 
-	<script src="https://rawgit.com/sbliven/ngl/master/js/build/ngl.embedded.js"></script>
+	<script src="{{url3Dmol}}"></script>
 
 	<script>
-	 NGL.mainScriptFilePath = "https://rawgit.com/sbliven/ngl/master/js/build/ngl.embedded.js";
+	// regen
+	 NGL.mainScriptFilePath = "{{url3Dmol}}";
 	 document.addEventListener( "DOMContentLoaded", function() {
 
 		var stage = new NGL.Stage( "viewport" );

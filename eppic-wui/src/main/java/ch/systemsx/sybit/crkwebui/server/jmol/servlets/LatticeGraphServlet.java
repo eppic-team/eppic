@@ -130,8 +130,16 @@ public class LatticeGraphServlet extends BaseServlet
 
 
 			outputStream = new PrintWriter(response.getOutputStream());
+			//String molviewerurl = properties.getProperty("urlNglJs");
+			
+			String nglJsUrl = properties.getProperty("urlNglJs");
+			if (nglJsUrl == null || nglJsUrl.equals("")) {
+				logger.info("The URL for NGL js is not set in config file. Will use the js file inside the ewui war");
+				nglJsUrl = JmolViewerServlet.DEFAULT_NGL_URL; //we set it to the js file within the war, the leading '/' is important to point to the right path here
+			}
+			
 
-			LatticeGraphPageGenerator.generatePage(dir,input, atomCachePath, ucFile, ucURI, title, size, ifaceList, requestedIfaces, outputStream);
+			LatticeGraphPageGenerator.generatePage(dir,input, atomCachePath, ucFile, ucURI, title, size, ifaceList, requestedIfaces, outputStream, nglJsUrl);
 
 		}
 		catch(ValidationException e)

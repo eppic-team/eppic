@@ -61,7 +61,7 @@ public class LatticeGraphPageGenerator {
 	 */
 	public static void generatePage(File directory, String inputName, String atomCachePath, File ucFile,
 			String ucURI, String title, String size, List<Interface> interfaces,
-			Collection<Integer> requestedIfaces, PrintWriter out) throws IOException, StructureException {
+			Collection<Integer> requestedIfaces, PrintWriter out, String urlMolViewer) throws IOException, StructureException {
 
 		// Read input structure
 		Structure auStruct = readStructure(directory, inputName, atomCachePath);
@@ -81,6 +81,9 @@ public class LatticeGraphPageGenerator {
 			gui.setTitle(title);
 		if(size != null) 
 			gui.setSize(size);
+		
+		//"https://cdn.rawgit.com/arose/ngl/v0.7.1a/js/build/ngl.embedded.min.js"
+		gui.setUrl3Dmol(urlMolViewer);
 		
 
 		// Write unit cell, if necessary
