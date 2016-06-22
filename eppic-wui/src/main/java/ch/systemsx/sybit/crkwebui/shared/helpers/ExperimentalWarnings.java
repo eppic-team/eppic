@@ -32,7 +32,7 @@ public class ExperimentalWarnings {
 				             resolution > ApplicationContext.getSettings().getResolutionCutOff() && resolution > 0 && resolution<99);
 		rfreeWarning = (ApplicationContext.getSettings().getRfreeCutOff() > 0 && 
 				        rFree > ApplicationContext.getSettings().getRfreeCutOff() && rFree > 0 && rFree<1);
-		noRfreeWarning = (rFree == 1);
+		noRfreeWarning = (rFree == 1 && expMethod.equals("X-RAY DIFFRACTION"));
 	}
 
 	public boolean isEmWarning() {
