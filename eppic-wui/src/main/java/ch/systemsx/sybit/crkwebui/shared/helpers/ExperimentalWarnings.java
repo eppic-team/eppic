@@ -82,7 +82,7 @@ public class ExperimentalWarnings {
 	} 
 	
 	private LabelWithTooltip createWarningLabel(String text, String tooltipText){
-		LabelWithTooltip label = new LabelWithTooltip("*"+text+"*", warningTooltip);
+		LabelWithTooltip label = new LabelWithTooltip("<img src='resources/icons/warning_icon_xl.png' style='height:17px' />&nbsp;*"+text+"*", warningTooltip);
 		label.addStyleName("eppic-header-warning");
 		label.addStyleName("eppic-pdb-identifier-label");
 		//this.staticWarningsLabel = label;
