@@ -88,9 +88,9 @@ public class LatticeGraphPageGenerator {
 
 		// Write unit cell, if necessary
 		if( !ucFile.exists() ) {
-			logger.info("Writing Unit Cell file to {}",ucFile.getAbsolutePath());
+			logger.info("Mmcif file of AU could not be found in {}, writing file to {}",ucFile.toString(), ucFile.toString());
 			PrintWriter cifOut = new PrintWriter(new GZIPOutputStream(new FileOutputStream(ucFile)));
-			gui.writeCIFfile(cifOut);
+			cifOut.println(auStruct.toMMCIF());
 			cifOut.close();
 		}
 

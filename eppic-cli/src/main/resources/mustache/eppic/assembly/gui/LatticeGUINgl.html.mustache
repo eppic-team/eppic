@@ -18,8 +18,8 @@
 
 		stage.loadFile( "{{strucURI}}", { defaultRepresentation: false } ).then(function(o) {
 			
-			//////// cartoon instead of ribbon ////////////////////////////////
-			o.addRepresentation( "cartoon", { opacity: 0.5, side: THREE.FrontSide } );
+			// show full unit cell
+			o.addRepresentation( "cartoon", { opacity: 0.5, side: THREE.FrontSide, assembly: "UNITCELL" } );
 			
 			////////  spheres  ///////////////////////////////////////////////
 			var spherePositions = [

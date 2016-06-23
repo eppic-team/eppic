@@ -32,7 +32,7 @@ public class LatticeGUI3Dmol extends LatticeGUIMustache {
 	private static final Logger logger = LoggerFactory.getLogger(LatticeGUI3Dmol.class);
 
 	static final String MUSTACHE_TEMPLATE_3DMOL = "mustache/eppic/assembly/gui/LatticeGUI3Dmol.html.mustache";
-	static final String DEFAULT_URL_3DMOL = "http://3Dmol.csb.pitt.edu/build/3Dmol-min.js";
+	static final String DEFAULT_URL_3DMOL = "https://cdn.rawgit.com/arose/ngl/v0.7.1a/js/build/ngl.embedded.min.js";
 	
 	private String strucURI;
 	private String url3Dmol = DEFAULT_URL_3DMOL;
@@ -160,7 +160,9 @@ public class LatticeGUI3Dmol extends LatticeGUIMustache {
 		LatticeGUI3Dmol gui = new LatticeGUI3Dmol(template, struc, uri, interfaceIds);
 
 		if(cifOut != null) {
-			gui.writeCIFfile(cifOut);
+			
+			cifOut.println(struc.toMMCIF());
+			//gui.writeCIFfile(cifOut);
 		}
 
 		gui.execute(htmlOut);

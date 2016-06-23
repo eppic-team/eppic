@@ -32,7 +32,6 @@ import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.ValidationException;
 import ch.systemsx.sybit.crkwebui.shared.model.Interface;
 import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
-import eppic.EppicParams;
 import eppic.commons.util.Interval;
 import eppic.commons.util.IntervalSet;
 import eppic.model.JobDB;
@@ -114,8 +113,8 @@ public class LatticeGraphServlet extends BaseServlet
 			File dir = DirLocatorUtil.getJobDir(new File(destination_path), jobId);
 
 			// Construct UC filename
-			File ucFile = new File(dir,inputPrefix + EppicParams.UNIT_CELL_COORD_FILES_SUFFIX + ".cif.gz");
-			String ucURI = DirLocatorUtil.getJobUrlPath(resultsLocation, jobId) + "/" + inputPrefix + EppicParams.UNIT_CELL_COORD_FILES_SUFFIX + ".cif";
+			File ucFile = new File(dir, inputPrefix + ".cif.gz");
+			String ucURI = DirLocatorUtil.getJobUrlPath(resultsLocation, jobId) + "/" + inputPrefix + ".cif";
 
 			List<Interface> ifaceList = getInterfaceList(pdbInfo);
 
