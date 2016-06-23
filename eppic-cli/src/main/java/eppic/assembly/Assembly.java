@@ -39,6 +39,7 @@ import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
 import org.biojava.nbio.structure.io.FileConvert;
 import org.biojava.nbio.structure.io.mmcif.MMCIFFileTools;
 import org.biojava.nbio.structure.io.mmcif.SimpleMMcifParser;
+import org.biojava.nbio.structure.io.mmcif.model.AtomSite;
 import org.biojava.nbio.structure.symmetry.core.AxisAligner;
 import org.biojava.nbio.structure.symmetry.core.QuatSymmetryDetector;
 import org.biojava.nbio.structure.symmetry.core.QuatSymmetryParameters;
@@ -623,6 +624,8 @@ public class Assembly {
 		}
 		return chains;
 	}
+	
+	@SuppressWarnings("unused")
 	private static void transformChainsInPlace(Map<ChainVertex, Point3i> placements,
 			Structure structure, LatticeGraph<ChainVertex, InterfaceEdge> latticeGraph,
 			CrystalCell cell)
@@ -861,7 +864,7 @@ public class Assembly {
 
 		ps.print(FileConvert.getAtomSiteHeader());
 
-		List<Object> atomSites = new ArrayList<Object>();
+		List<AtomSite> atomSites = new ArrayList<>();
 
 		int atomId = 1;
 		for (ChainVertex cv:structure) {
@@ -890,7 +893,7 @@ public class Assembly {
 			}
 		}
 
-		ps.print(MMCIFFileTools.toMMCIF(atomSites));
+		ps.print(MMCIFFileTools.toMMCIF(atomSites, AtomSite.class));
 
 
 		ps.close();
