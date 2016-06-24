@@ -303,9 +303,16 @@ public class LatticeGraphServlet extends BaseServlet
 
 				File sLink = new File(directory, structFile.getName());
 				if (!sLink.exists()) {
+					
+					// TODO downloading symlinks don't work with current server configuration, 
+					// TODO for now resorting to copy: must fix server config and do it with symlinks!
+					
+					logger.info("Copying to {} from file {}", sLink.toString(), structFile.toString());
+					Files.copy(structFile.toPath(), sLink.toPath() );
+					
 					// we create a symbolic link to the file in the atomcache dir
-					logger.info("Creating symbolic link {} to file {}", sLink.toString(), structFile.toString());
-					Files.createSymbolicLink(sLink.toPath(), structFile.toPath());
+					//logger.info("Creating symbolic link {} to file {}", sLink.toString(), structFile.toString());
+					//Files.createSymbolicLink(sLink.toPath(), structFile.toPath());
 				}
 				// and finally if no exception is thrown we return the symbolic link
 				structFile = sLink;
