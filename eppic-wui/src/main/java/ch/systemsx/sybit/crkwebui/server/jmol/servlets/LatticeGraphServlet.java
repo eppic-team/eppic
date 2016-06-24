@@ -118,11 +118,11 @@ public class LatticeGraphServlet extends BaseServlet
 			// Construct filename for AU cif file
 			File auFile = getAuFileName(dir, input, atomCachePath);
 			
-			String inputFileNameNoGz = input;
-			if (input.endsWith(".gz")) {
-				inputFileNameNoGz = input.substring(0, input.lastIndexOf(".gz"));
-			} else if (input.endsWith(".GZ")) {
-				inputFileNameNoGz = input.substring(0, input.lastIndexOf(".GZ"));
+			String inputFileNameNoGz = auFile.getName();
+			if (auFile.getName().endsWith(".gz")) {
+				inputFileNameNoGz = auFile.getName().substring(0, auFile.getName().lastIndexOf(".gz"));
+			} else if (auFile.getName().endsWith(".GZ")) {
+				inputFileNameNoGz = auFile.getName().substring(0, auFile.getName().lastIndexOf(".GZ"));
 					
 			}
 			// the URL has no gz at the end because it's served as plain text via content-encoding: gzip
@@ -300,12 +300,13 @@ public class LatticeGraphServlet extends BaseServlet
 					logger.error("The structure file {} does not exist in atom cache! Will not be able to display lattice graph", structFile.toString());
 					throw new IOException("Structure file " + structFile.toString()+" does not exist in atom cache");
 				}
-				
+
 				File sLink = new File(directory, structFile.getName());
-				// we create a symbolic link to the file in the atomcache dir
-				logger.info("Creating symbolic link {} to file {}", sLink.toString(), structFile.toString());
-				Files.createSymbolicLink(sLink.toPath(), structFile.toPath());
-				
+				if (!sLink.exists()) {
+					// we create a symbolic link to the file in the atomcache dir
+					logger.info("Creating symbolic link {} to file {}", sLink.toString(), structFile.toString());
+					Files.createSymbolicLink(sLink.toPath(), structFile.toPath());
+				}
 				// and finally if no exception is thrown we return the symbolic link
 				structFile = sLink;
 			}
