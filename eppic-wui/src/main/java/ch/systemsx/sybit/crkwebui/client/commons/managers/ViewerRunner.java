@@ -15,7 +15,7 @@ import com.google.gwt.user.client.Window;
 public class ViewerRunner 
 {
 	
-	private static final int VIEWER_SIZE_OFFSET = 40;
+	
 	
 	/**
 	 * Triggers selected action (viewer) when in interface results panel. 
@@ -51,7 +51,7 @@ public class ViewerRunner
 			size = ApplicationContext.getWindowData().getWindowWidth() - 60;
 		}
 		
-		int jmolAppletSize = size - VIEWER_SIZE_OFFSET;
+		int jmolAppletSize = size - PopupRunner.VIEWER_SIZE_OFFSET;
 		
 		// note we have set the default format to CIF - JD 2015-06-15
 		
@@ -63,11 +63,9 @@ public class ViewerRunner
 						 "&"+FileDownloadServlet.PARAM_COORDS_FORMAT+"=" + FileDownloadServlet.COORDS_FORMAT_VALUE_CIF+
 						 "&"+JmolViewerServlet.PARAM_SIZE+"=" + jmolAppletSize;
 		
-		//this opens the viewer in a popup window of fixed dimensions and it is not possible to modify the URL
-		//Window.open(jmolViewerUrl, "", "width=" + size + "," + "height=" + size);
 		
-		//this opens the viewer in a new tab
-		Window.open(jmolViewerUrl,"_blank","");
+		PopupRunner.popup(jmolViewerUrl, "");
+		
 
 	}
 
@@ -83,7 +81,7 @@ public class ViewerRunner
 			size = ApplicationContext.getWindowData().getWindowWidth() - 60;
 		}
 		
-		int jmolAppletSize = size - VIEWER_SIZE_OFFSET;
+		int jmolAppletSize = size - PopupRunner.VIEWER_SIZE_OFFSET;
 		
 		// note we have set the default format to CIF - JD 2015-06-15
 		
@@ -95,12 +93,7 @@ public class ViewerRunner
 						 "&"+FileDownloadServlet.PARAM_COORDS_FORMAT+"=" + FileDownloadServlet.COORDS_FORMAT_VALUE_CIF+
 						 "&"+JmolViewerServlet.PARAM_SIZE+"=" + jmolAppletSize;
 		
-		//this opens the viewer in a popup window of fixed dimensions and it is not possible to modify the URL
-		//Window.open(jmolViewerUrl, "", "width=" + size + "," + "height=" + size);
-
-		//this opens the viewer in a new tab
-		Window.open(jmolViewerUrl,"_blank","");
-
+		PopupRunner.popup(jmolViewerUrl, "");
 	}
 	
 	/**
@@ -116,7 +109,7 @@ public class ViewerRunner
 			size = ApplicationContext.getWindowData().getWindowWidth() - 60;
 		}
 		
-		int jmolAppletSize = size - VIEWER_SIZE_OFFSET;
+		int jmolAppletSize = size - PopupRunner.VIEWER_SIZE_OFFSET;
 		
 		// note we have set the default format to CIF - JD 2015-06-15
 		
@@ -128,7 +121,7 @@ public class ViewerRunner
 						 "&"+FileDownloadServlet.PARAM_COORDS_FORMAT+"=" + FileDownloadServlet.COORDS_FORMAT_VALUE_CIF+
 						 "&"+JmolViewerServlet.PARAM_SIZE+"=" + jmolAppletSize;
 
-		Window.open(jmolViewerUrl,"_blank","");
+		PopupRunner.popup(jmolViewerUrl, "");
 
 	}
 	
