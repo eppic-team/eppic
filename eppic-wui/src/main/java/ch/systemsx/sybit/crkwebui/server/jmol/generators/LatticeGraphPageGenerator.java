@@ -3,7 +3,6 @@ package ch.systemsx.sybit.crkwebui.server.jmol.generators;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -11,18 +10,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
 
 import org.biojava.nbio.structure.Atom;
 import org.biojava.nbio.structure.PDBCrystallographicInfo;
 import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.StructureException;
-import org.biojava.nbio.structure.StructureIO;
-import org.biojava.nbio.structure.align.util.AtomCache;
 import org.biojava.nbio.structure.contact.AtomContactSet;
 import org.biojava.nbio.structure.contact.StructureInterface;
 import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
-import org.biojava.nbio.structure.io.LocalPDBDirectory.FetchBehavior;
 import org.biojava.nbio.structure.io.PDBFileParser;
 import org.biojava.nbio.structure.io.mmcif.MMcifParser;
 import org.biojava.nbio.structure.io.mmcif.SimpleMMcifConsumer;
@@ -44,12 +39,11 @@ import eppic.assembly.gui.LatticeGUIMustache;
 public class LatticeGraphPageGenerator {
 	private static final Logger logger = LoggerFactory.getLogger(LatticeGraphPageGenerator.class);
 	/**
-	 * Generates html page containing the 3Dmol canvas.
+	 * Generates html page containing the NGL canvas.
 	 * 
 	 * @param directory path to the job directory
 	 * @param inputName the input: either a PDB id or the file name as input by user
-	 * @param atomCachePath the path for Biojava's AtomCache
-	 * @param auCifFile the file with the AU structure. Will be generated if doesn't exist
+	 * @param auFile the file with the AU structure (can be cif or pdb and gzipped or not)
 	 * @param auURI URL to reach auCifFile within the browser
 	 * @param title Page title [default: structure name]
 	 * @param size the canvas size 
@@ -60,13 +54,20 @@ public class LatticeGraphPageGenerator {
 	 * @throws StructureException For errors parsing the input structure
 	 * @throws IOException For errors reading or writing files
 	 */
-	public static void generatePage(File directory, String inputName, String atomCachePath, File auCifFile,
+	public static void generatePage(File directory, String inputName, File auFile,
 			String auURI, String title, String size, List<Interface> interfaces,
 			Collection<Integer> requestedIfaces, PrintWriter out, String urlMolViewer) throws IOException, StructureException {
 
+		
+		if( !auFile.exists() ) {
+			// this shouldn't happen...
+			throw new IOException("Could not find input AU file "+ auFile.toString());
+		
+		}
+		
 		// Read input structure
 		
-		Structure auStruct = readStructure(directory, inputName, atomCachePath);
+		Structure auStruct = readStructure(auFile);
 
 		// Read spacegroup
 		PDBCrystallographicInfo crystInfo = auStruct
@@ -87,16 +88,6 @@ public class LatticeGraphPageGenerator {
 		//"https://cdn.rawgit.com/arose/ngl/v0.7.1a/js/build/ngl.embedded.min.js"
 		gui.setUrl3Dmol(urlMolViewer);
 		
-
-		// Write unit cell, if necessary
-		if( !auCifFile.exists() ) {
-			// in the case of precomputed PDB entries, the original cif file should be there already and this shouldn't happen
-			// for user jobs, we generate the file at this point
-			logger.info("Mmcif file of AU could not be found in {}, writing file to {}",auCifFile.toString(), auCifFile.toString());
-			PrintWriter cifOut = new PrintWriter(new GZIPOutputStream(new FileOutputStream(auCifFile)));
-			cifOut.println(auStruct.toMMCIF());
-			cifOut.close();
-		}
 
 		// Construct page
 		gui.execute(out);
@@ -145,92 +136,58 @@ public class LatticeGraphPageGenerator {
 	}
 
 	/**
-	 * Loads a structure. First attempts to read from the filesystem based
-	 * on the inputName. If this doesn't work, falls back on downloading
-	 * it from the PDB.
-	 * @param directory Directory to search for the file
-	 * @param inputName Filename within the directory (.pdb or .cif), or PDB code
-	 * @param atomCachePath Path for downloaded CIF files
+	 * Loads a structure from given file path.
+	 * @param auFile
 	 * @return the parsed Structure
 	 * @throws FileNotFoundException
 	 * @throws IOException
 	 * @throws StructureException If inputName was neither a file nor a PDB code
 	 */
-	public static Structure readStructure(File directory, String inputName,
-			String atomCachePath) throws FileNotFoundException, IOException,
+	public static Structure readStructure(File auFile) throws FileNotFoundException, IOException,
 			StructureException {
 				
 		// Read input structure
 		Structure auStruct;
-		
-		// inputName will be the full file name in user jobs and the pdbId for precomputed jobs
-		File structFile = new File(directory,inputName);
-		logger.info("Trying to find the structure file for input name '{}'. Searching file in {}", inputName, structFile.toString());
-		
-		if(structFile.exists()) {
-			// Match file type
-			if( structFile.getName().endsWith(".cif") || structFile.getName().endsWith(".CIF")) { 
-				MMcifParser parser = new SimpleMMcifParser();
 
-				SimpleMMcifConsumer consumer = new SimpleMMcifConsumer();
+		// Match file type
+		if( auFile.getName().endsWith(".cif") || auFile.getName().endsWith(".CIF")) { 
+			MMcifParser parser = new SimpleMMcifParser();
 
-				parser.addMMcifConsumer(consumer);
+			SimpleMMcifConsumer consumer = new SimpleMMcifConsumer();
 
-				InputStream inStream = new FileInputStream(structFile);
-				parser.parse(inStream);
+			parser.addMMcifConsumer(consumer);
 
-				auStruct = consumer.getStructure();
-			} else if (structFile.getName().endsWith("cif.gz") || structFile.getName().endsWith("CIF.GZ") || structFile.getName().endsWith("CIF.gz") || structFile.getName().endsWith("cif.GZ")) {
-				MMcifParser parser = new SimpleMMcifParser();
+			InputStream inStream = new FileInputStream(auFile);
+			parser.parse(inStream);
 
-				SimpleMMcifConsumer consumer = new SimpleMMcifConsumer();
+			auStruct = consumer.getStructure();
+		} else if (auFile.getName().endsWith("cif.gz") || auFile.getName().endsWith("CIF.GZ") || auFile.getName().endsWith("CIF.gz") || auFile.getName().endsWith("cif.GZ")) {
+			MMcifParser parser = new SimpleMMcifParser();
 
-				parser.addMMcifConsumer(consumer);
+			SimpleMMcifConsumer consumer = new SimpleMMcifConsumer();
 
-				InputStream inStream = new GZIPInputStream(new FileInputStream(structFile));
-				parser.parse(inStream);
+			parser.addMMcifConsumer(consumer);
 
-				auStruct = consumer.getStructure();
-				
-				// assume it is a pdb file if extension different from cif, cif.gz				
-			} else if (structFile.getName().endsWith(".gz") || structFile.getName().endsWith(".GZ")) {
-				PDBFileParser parser = new PDBFileParser();
+			InputStream inStream = new GZIPInputStream(new FileInputStream(auFile));
+			parser.parse(inStream);
 
-				InputStream inStream = new GZIPInputStream(new FileInputStream(structFile));
-				auStruct = parser.parsePDBFile(inStream);
-				
-			} else {
+			auStruct = consumer.getStructure();
 
-				PDBFileParser parser = new PDBFileParser();
+			// assume it is a pdb file if extension different from cif, cif.gz				
+		} else if (auFile.getName().endsWith(".gz") || auFile.getName().endsWith(".GZ")) {
+			PDBFileParser parser = new PDBFileParser();
 
-				InputStream inStream = new FileInputStream(structFile);
-				auStruct = parser.parsePDBFile(inStream);
-			}
-		} else if (!inputName.matches("^\\d\\w\\w\\w$")) {
-			throw new StructureException(String.format(
-					"Could not find file %s and the inputName '%s' does not look "
-					+ "like a PDB id. Can't produce the assembly diagram page!",
-					structFile, inputName));
+			InputStream inStream = new GZIPInputStream(new FileInputStream(auFile));
+			auStruct = parser.parsePDBFile(inStream);
+
 		} else {
-			logger.info("Reading structure for input name '{}' from AtomCache", inputName);
-			// it is like a PDB id, leave it to AtomCache
-			AtomCache atomCache = null;
-			if (atomCachePath ==null) {
-				atomCache = new AtomCache();
-				logger.warn("Defaulting to downloading structures to {}. Please set the ATOM_CACHE_PATH property.",atomCache.getCachePath());
-			}
-			else 
-				atomCache = new AtomCache(atomCachePath);
-		
-			// we set it to FETCH_FILES to avoid going to the PDB ftp server, because we trust in principle what we have in our cache dir (which is rsynced externally or by the eppic cli run)
-			atomCache.setFetchBehavior(FetchBehavior.FETCH_FILES);
-			
-			StructureIO.setAtomCache(atomCache);
-		
-			
-			// leave it to atomcache
-			auStruct = StructureIO.getStructure(inputName);
+
+			PDBFileParser parser = new PDBFileParser();
+
+			InputStream inStream = new FileInputStream(auFile);
+			auStruct = parser.parsePDBFile(inStream);
 		}
+
 		return auStruct;
 	}
 
