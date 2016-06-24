@@ -10,6 +10,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 import org.biojava.nbio.structure.Atom;
@@ -48,8 +49,8 @@ public class LatticeGraphPageGenerator {
 	 * @param directory path to the job directory
 	 * @param inputName the input: either a PDB id or the file name as input by user
 	 * @param atomCachePath the path for Biojava's AtomCache
-	 * @param ucFile Path to the unit cell structure. Will be generated if doesn't exist
-	 * @param ucURI URL to reach ucFilename within the browser
+	 * @param auCifFile the file with the AU structure. Will be generated if doesn't exist
+	 * @param auURI URL to reach auCifFile within the browser
 	 * @param title Page title [default: structure name]
 	 * @param size the canvas size 
 	 * @param interfaces List of all interfaces to build the latticegraph
@@ -59,11 +60,12 @@ public class LatticeGraphPageGenerator {
 	 * @throws StructureException For errors parsing the input structure
 	 * @throws IOException For errors reading or writing files
 	 */
-	public static void generatePage(File directory, String inputName, String atomCachePath, File ucFile,
-			String ucURI, String title, String size, List<Interface> interfaces,
+	public static void generatePage(File directory, String inputName, String atomCachePath, File auCifFile,
+			String auURI, String title, String size, List<Interface> interfaces,
 			Collection<Integer> requestedIfaces, PrintWriter out, String urlMolViewer) throws IOException, StructureException {
 
 		// Read input structure
+		
 		Structure auStruct = readStructure(directory, inputName, atomCachePath);
 
 		// Read spacegroup
@@ -73,7 +75,7 @@ public class LatticeGraphPageGenerator {
 
 		List<StructureInterface> siList = createStructureInterfaces(interfaces, sg);
 
-		LatticeGUI3Dmol gui = new LatticeGUI3Dmol(LatticeGUIMustache.MUSTACHE_TEMPLATE_NGL, auStruct, ucURI,
+		LatticeGUI3Dmol gui = new LatticeGUI3Dmol(LatticeGUIMustache.MUSTACHE_TEMPLATE_NGL, auStruct, auURI,
 				requestedIfaces, siList);
 
 		// Override some properties if needed
@@ -87,9 +89,11 @@ public class LatticeGraphPageGenerator {
 		
 
 		// Write unit cell, if necessary
-		if( !ucFile.exists() ) {
-			logger.info("Mmcif file of AU could not be found in {}, writing file to {}",ucFile.toString(), ucFile.toString());
-			PrintWriter cifOut = new PrintWriter(new GZIPOutputStream(new FileOutputStream(ucFile)));
+		if( !auCifFile.exists() ) {
+			// in the case of precomputed PDB entries, the original cif file should be there already and this shouldn't happen
+			// for user jobs, we generate the file at this point
+			logger.info("Mmcif file of AU could not be found in {}, writing file to {}",auCifFile.toString(), auCifFile.toString());
+			PrintWriter cifOut = new PrintWriter(new GZIPOutputStream(new FileOutputStream(auCifFile)));
 			cifOut.println(auStruct.toMMCIF());
 			cifOut.close();
 		}
@@ -139,7 +143,6 @@ public class LatticeGraphPageGenerator {
 		}
 		return siList;
 	}
-	
 
 	/**
 	 * Loads a structure. First attempts to read from the filesystem based
@@ -156,26 +159,48 @@ public class LatticeGraphPageGenerator {
 	public static Structure readStructure(File directory, String inputName,
 			String atomCachePath) throws FileNotFoundException, IOException,
 			StructureException {
+				
 		// Read input structure
 		Structure auStruct;
+		
+		// inputName will be the full file name in user jobs and the pdbId for precomputed jobs
 		File structFile = new File(directory,inputName);
+		logger.info("Trying to find the structure file for input name '{}'. Searching file in {}", inputName, structFile.toString());
+		
 		if(structFile.exists()) {
 			// Match file type
-			if( structFile.getName().endsWith(".cif")) {
+			if( structFile.getName().endsWith(".cif") || structFile.getName().endsWith(".CIF")) { 
 				MMcifParser parser = new SimpleMMcifParser();
 
 				SimpleMMcifConsumer consumer = new SimpleMMcifConsumer();
 
-				// The Consumer builds up the BioJava - structure object.
-				// you could also hook in your own and build up you own data model.
 				parser.addMMcifConsumer(consumer);
 
 				InputStream inStream = new FileInputStream(structFile);
 				parser.parse(inStream);
 
-				// now get the protein structure.
 				auStruct = consumer.getStructure();
+			} else if (structFile.getName().endsWith("cif.gz") || structFile.getName().endsWith("CIF.GZ") || structFile.getName().endsWith("CIF.gz") || structFile.getName().endsWith("cif.GZ")) {
+				MMcifParser parser = new SimpleMMcifParser();
+
+				SimpleMMcifConsumer consumer = new SimpleMMcifConsumer();
+
+				parser.addMMcifConsumer(consumer);
+
+				InputStream inStream = new GZIPInputStream(new FileInputStream(structFile));
+				parser.parse(inStream);
+
+				auStruct = consumer.getStructure();
+				
+				// assume it is a pdb file if extension different from cif, cif.gz				
+			} else if (structFile.getName().endsWith(".gz") || structFile.getName().endsWith(".GZ")) {
+				PDBFileParser parser = new PDBFileParser();
+
+				InputStream inStream = new GZIPInputStream(new FileInputStream(structFile));
+				auStruct = parser.parsePDBFile(inStream);
+				
 			} else {
+
 				PDBFileParser parser = new PDBFileParser();
 
 				InputStream inStream = new FileInputStream(structFile);
@@ -187,6 +212,7 @@ public class LatticeGraphPageGenerator {
 					+ "like a PDB id. Can't produce the assembly diagram page!",
 					structFile, inputName));
 		} else {
+			logger.info("Reading structure for input name '{}' from AtomCache", inputName);
 			// it is like a PDB id, leave it to AtomCache
 			AtomCache atomCache = null;
 			if (atomCachePath ==null) {

@@ -112,9 +112,9 @@ public class LatticeGraphServlet extends BaseServlet
 			// job directory on local filesystem
 			File dir = DirLocatorUtil.getJobDir(new File(destination_path), jobId);
 
-			// Construct UC filename
-			File ucFile = new File(dir, inputPrefix + ".cif.gz");
-			String ucURI = DirLocatorUtil.getJobUrlPath(resultsLocation, jobId) + "/" + inputPrefix + ".cif";
+			// Construct filename for AU cif file
+			File auFile = new File(dir, inputPrefix + ".cif.gz");
+			String auURI = DirLocatorUtil.getJobUrlPath(resultsLocation, jobId) + "/" + inputPrefix + ".cif";
 
 			List<Interface> ifaceList = getInterfaceList(pdbInfo);
 
@@ -138,7 +138,7 @@ public class LatticeGraphServlet extends BaseServlet
 			}
 			
 
-			LatticeGraphPageGenerator.generatePage(dir,input, atomCachePath, ucFile, ucURI, title, size, ifaceList, requestedIfaces, outputStream, nglJsUrl);
+			LatticeGraphPageGenerator.generatePage(dir,input, atomCachePath, auFile, auURI, title, size, ifaceList, requestedIfaces, outputStream, nglJsUrl);
 
 		}
 		catch(ValidationException e)
