@@ -19,6 +19,7 @@ import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
 
+import ch.systemsx.sybit.crkwebui.server.jmol.servlets.LatticeGraphServlet;
 import ch.systemsx.sybit.crkwebui.shared.model.Interface;
 import eppic.assembly.ChainVertex3D;
 import eppic.assembly.InterfaceEdge3D;
@@ -56,7 +57,8 @@ public class AssemblyDiagramPageGenerator {
 			List<Interface> interfaces,
 			Collection<Integer> requestedIfaces, PrintWriter out) throws IOException, StructureException {
 
-		Structure auStruct = LatticeGraphPageGenerator.readStructure(directory, inputName, atomCachePath);
+		File auFile = LatticeGraphServlet.getAuFileName(directory, inputName, atomCachePath);
+		Structure auStruct = LatticeGraphPageGenerator.readStructure(auFile);
 		
 		// Read spacegroup
 		PDBCrystallographicInfo crystInfo = auStruct

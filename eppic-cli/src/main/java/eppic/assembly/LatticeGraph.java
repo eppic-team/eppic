@@ -74,7 +74,6 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 	// currently exposed graph
 	private UndirectedGraph<V,E> subgraph;
 
-
 	private boolean globalReferencePoint;
 	private Map<String,Matrix4d[]> unitCellOperators = new HashMap<>(); // In crystal coordinates
 	private Map<String,Point3d> referencePoints = new HashMap<>(); // Chain ID -> centroid coordinate

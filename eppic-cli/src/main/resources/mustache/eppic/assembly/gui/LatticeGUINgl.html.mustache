@@ -18,8 +18,32 @@
 
 		stage.loadFile( "{{strucURI}}", { defaultRepresentation: false } ).then(function(o) {
 			
-			//////// cartoon instead of ribbon ////////////////////////////////
-			o.addRepresentation( "cartoon", { opacity: 0.5, side: THREE.FrontSide } );
+			
+			// operators to create the unit cell
+			var operators = [
+			{{#graph.unitCellTransforms}} 
+			new THREE.Matrix4().set(
+				{{m00}}, {{m01}}, {{m02}}, {{m03}},
+				{{m10}}, {{m11}}, {{m12}}, {{m13}},
+				{{m20}}, {{m21}}, {{m22}}, {{m23}},
+				{{m30}}, {{m31}}, {{m32}}, {{m33}}),
+			{{/graph.unitCellTransforms}}
+			];
+			
+			// show full unit cell with NGL's built-in assembly
+			//o.addRepresentation( "cartoon", { opacity: 0.5, side: THREE.FrontSide, assembly: "UNITCELL" } );
+			
+			// show our own full unit cell from our operators list		
+			var assembly = new NGL.Assembly( "LATTICEGRAPH_UNITCELL" );
+			for (var i=0; i < operators.length; i++) {
+				assembly.addPart(
+					[ operators[i] ],
+					[]  // leave empty for all chains, otherwise author chainnames [ "A", "B" ]
+				);
+			}
+			o.structure.biomolDict[ "LATTICEGRAPH_UNITCELL" ] = assembly;
+			o.addRepresentation( "cartoon", { opacity: 0.5, side: THREE.FrontSide, assembly: "LATTICEGRAPH_UNITCELL" } );
+			
 			
 			////////  spheres  ///////////////////////////////////////////////
 			var spherePositions = [
