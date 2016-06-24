@@ -245,7 +245,8 @@ public class JmolPageGenerator
 	private static String getSeleVarStr(String varName, List<Residue> residues, String chain) {
 		if (residues==null || residues.isEmpty()) return "";
 		
-		return "var "+varName+"  = \""+getOrSeparatedList(residues, chain) + "\";\n";
+		//return "var "+varName+"  = \"("+getOrSeparatedList(residues, chain) + ") and (sidechain or .CA)\";\n";
+		return "var "+varName+"  = \"("+getOrSeparatedList(residues, chain) + ") and (sidechainAttached)\";\n";
 	}
 	
 	 

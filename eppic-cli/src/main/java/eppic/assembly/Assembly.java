@@ -623,6 +623,8 @@ public class Assembly {
 		}
 		return chains;
 	}
+	
+	@SuppressWarnings("unused")
 	private static void transformChainsInPlace(Map<ChainVertex, Point3i> placements,
 			Structure structure, LatticeGraph<ChainVertex, InterfaceEdge> latticeGraph,
 			CrystalCell cell)
@@ -861,7 +863,7 @@ public class Assembly {
 
 		ps.print(FileConvert.getAtomSiteHeader());
 
-		List<Object> atomSites = new ArrayList<Object>();
+		List<Object> atomSites = new ArrayList<>();
 
 		int atomId = 1;
 		for (ChainVertex cv:structure) {

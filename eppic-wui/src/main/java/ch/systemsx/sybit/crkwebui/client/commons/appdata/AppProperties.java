@@ -115,6 +115,8 @@ public interface AppProperties extends Constants
 	String warning_LowRes_text();
 	String warning_HighRfree_title();
 	String warning_HighRfree_text();
+	String warning_NoRfree_title();
+	String warning_NoRfree_text();	
 
 	String homologs_panel_chains_hint();
 	String homologs_panel_uniprot_hint();

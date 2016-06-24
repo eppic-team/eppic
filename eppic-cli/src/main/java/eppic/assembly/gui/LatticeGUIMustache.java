@@ -219,7 +219,9 @@ public class LatticeGUIMustache {
 			latticeGraph.filterEngagedInterfaces(interfaceIds);
 		}
 
-		pdbId = struc.getStructureIdentifier().toCanonical().getPdbId();
+		if (struc.getStructureIdentifier()!=null ) {
+			pdbId = struc.getStructureIdentifier().toCanonical().getPdbId();
+		}
 		if(pdbId == null || pdbId.length() != 4) {
 			pdbId = struc.getName();
 		}
