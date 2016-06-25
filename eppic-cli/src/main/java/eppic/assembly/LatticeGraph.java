@@ -291,9 +291,9 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 					edge.getInterfaceId(),
 					edge.getClusterId(),
 					first.getChainId()+first.getOpId(), 
-					first.getEntity(),
+					first.getEntityId(),
 					second.getChainId()+second.getOpId(),
-					second.getEntity());
+					second.getEntityId());
 
 		}
 

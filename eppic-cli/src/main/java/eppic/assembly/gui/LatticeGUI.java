@@ -599,7 +599,7 @@ public class LatticeGUI {
 		// Generate list of equivalent chains
 		Map<Integer,List<ChainVertex>> vClusters = new HashMap<Integer, List<ChainVertex>>();
 		for( ChainVertex vert : graph.getGraph().vertexSet()) {
-			Integer id = vert.getEntity();
+			Integer id = vert.getEntityId();
 			List<ChainVertex> lst = vClusters.get(id);
 			if(lst == null) {
 				lst = new LinkedList<ChainVertex>();

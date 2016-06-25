@@ -302,7 +302,7 @@ public class LatticeGraph3D extends LatticeGraph<ChainVertex3D,InterfaceEdge3D> 
 		// Generate list of equivalent chains
 		Map<Integer,List<ChainVertex3D>> vClusters = new HashMap<Integer, List<ChainVertex3D>>();
 		for( ChainVertex3D vert : graph.vertexSet()) {
-			Integer id = vert.getEntity();
+			Integer id = vert.getEntityId();
 			List<ChainVertex3D> lst = vClusters.get(id);
 			if(lst == null) {
 				lst = new LinkedList<ChainVertex3D>();

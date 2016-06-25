@@ -372,7 +372,7 @@ public class AssemblyGraph {
 			ChainVertex s = subgraph.getEdgeSource(e);
 			ChainVertex t = subgraph.getEdgeTarget(e);
 			
-			if (s.getEntity() != t.getEntity()) return true;
+			if (s.getEntityId() != t.getEntityId()) return true;
 		}
 		return false;
 	}

@@ -12,7 +12,7 @@ import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
  * @author spencer
  *
  */
-public class InterfaceEdge {
+public class InterfaceEdge implements InterfaceEdgeInterface {
 
 	private StructureInterface interf;
 	
@@ -59,10 +59,12 @@ public class InterfaceEdge {
 		return interf.getCluster();
 	}
 	
+	@Override
 	public int getInterfaceId() {
 		return interf.getId();
 	}
 
+	@Override
 	public int getClusterId() {
 		if(interf.getCluster() == null)
 			return -1;

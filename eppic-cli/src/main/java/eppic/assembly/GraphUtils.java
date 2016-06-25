@@ -206,7 +206,7 @@ public class GraphUtils {
 			ChainVertex s = g.getEdgeSource(e);
 			ChainVertex t = g.getEdgeTarget(e);
 			
-			if (s.getEntity() != t.getEntity()) { // i.e. heteromeric
+			if (s.getEntityId() != t.getEntityId()) { // i.e. heteromeric
 				clusterIds.add(e.getClusterId());
 			}
 		}
@@ -272,4 +272,5 @@ public class GraphUtils {
 		}
 		return set;
 	}
+	
 }

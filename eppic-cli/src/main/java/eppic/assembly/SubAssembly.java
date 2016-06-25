@@ -338,7 +338,7 @@ public class SubAssembly {
 			ChainVertex s = connectedGraph.getEdgeSource(e);
 			ChainVertex t = connectedGraph.getEdgeTarget(e);
 			
-			if (entities.contains(s.getEntity()) && entities.contains(t.getEntity())) {
+			if (entities.contains(s.getEntityId()) && entities.contains(t.getEntityId())) {
 				interfaceClusterIds.add(e.getClusterId());
 			}
 		}
