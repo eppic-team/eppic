@@ -223,14 +223,14 @@ public class GraphUtils {
 	 * @param g
 	 * @return
 	 */
-	public static boolean isAutomorphic(UndirectedGraph<ChainVertexInterface, InterfaceEdgeInterface> g) {
+	public static <V extends ChainVertexInterface,E extends InterfaceEdgeInterface> boolean isAutomorphic(UndirectedGraph<V, E> g) {
 		
 		
 		// we'll store in a map each of the first vertex types seen with their content in terms of interface cluster ids
 		Map<Integer, Map<Integer,Integer>> repVs = new HashMap<>();
 		
 		// go through all vertices
-		for (ChainVertexInterface v: g.vertexSet()) {
+		for (V v: g.vertexSet()) {
 			
 			
 			if (!repVs.containsKey(v.getEntityId())) {
@@ -261,7 +261,7 @@ public class GraphUtils {
 		return true;
 	}
 	
-	private static Map<Integer,Integer> getInterfaceClusterIdsForVertex(UndirectedGraph<ChainVertexInterface, InterfaceEdgeInterface> g, ChainVertexInterface v) {
+	private static <V extends ChainVertexInterface,E extends InterfaceEdgeInterface> Map<Integer,Integer> getInterfaceClusterIdsForVertex(UndirectedGraph<V, E> g, V v) {
 		Map<Integer,Integer> set = new HashMap<>();
 		for (InterfaceEdgeInterface e:g.edgesOf(v)) {
 			if (set.containsKey(e.getClusterId())) {
