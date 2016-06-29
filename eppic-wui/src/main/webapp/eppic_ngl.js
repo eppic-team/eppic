@@ -22,6 +22,7 @@ document.onkeypress = function (e) {
 
 function onInit() {
 	stage = new NGL.Stage("viewport");
+	stage.setParameters({ backgroundColor:"white", theme:"light"} );
 	stage.loadFile(inputFile, {
 		defaultRepresentation : false
 	}).then(function(structComp) {
@@ -85,7 +86,7 @@ function initRepr(structComp) {
 			sele: seleRim2
 		});
 	}
-	stage.setParameters({ backgroundColor:"white", theme:"light"} );
+	
 	stage.centerView();
 
 }
