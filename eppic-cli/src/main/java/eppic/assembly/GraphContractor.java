@@ -52,7 +52,7 @@ public class GraphContractor {
 		// source and target nodes will be always the same 2 entities
 		Set<InterfaceEdge> toRemove = getEdgesWithInterfClusterId(inputGraph, interfClusterId);
 
-		UndirectedGraph<ChainVertex, InterfaceEdge> contGraph = GraphUtils.copyGraph(inputGraph);
+		UndirectedGraph<ChainVertex, InterfaceEdge> contGraph = GraphUtils.copyGraph(inputGraph, InterfaceEdge.class);
 
 		int referenceEntityId = -1;
 

@@ -12,6 +12,7 @@ import java.util.TreeSet;
 import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
 import org.jgrapht.UndirectedGraph;
 import org.jgrapht.alg.cycle.PatonCycleBase;
+import org.jgrapht.graph.ClassBasedEdgeFactory;
 import org.jgrapht.graph.Pseudograph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,17 +28,17 @@ public class GraphUtils {
 	 * @param byClusters if true grouping is by interface cluster ids, if false grouping by interface ids
 	 * @return a map of interface ids (or interface cluster ids) to sets of edges with the corresponding id
 	 */
-	public static Map<Integer,Set<InterfaceEdge>> groupIntoTypes(Set<InterfaceEdge> edges, boolean byClusters) {
-		Map<Integer,Set<InterfaceEdge>> map = new HashMap<Integer,Set<InterfaceEdge>>();
+	public static <E extends InterfaceEdgeInterface> Map<Integer,Set<E>> groupIntoTypes(Set<E> edges, boolean byClusters) {
+		Map<Integer,Set<E>> map = new HashMap<>();
 
-		for (InterfaceEdge edge:edges) {
+		for (E edge:edges) {
 			int id = -1;
 			if (byClusters) id = edge.getClusterId();
 			else 			id = edge.getInterfaceId();
 			
-			Set<InterfaceEdge> set = null;
+			Set<E> set = null;
 			if (!map.containsKey(id)) {
-				set = new HashSet<InterfaceEdge>();
+				set = new HashSet<>();
 				map.put(id, set);
 			} else {
 				set = map.get(id);
@@ -51,20 +52,21 @@ public class GraphUtils {
 	/**
 	 * Copies the given Graph to a new Graph with same vertices and edges.
 	 * The vertices and edges are the same references as the original Graph.  
-	 * @param g
+	 * @param g the graph
+	 * @param edgeClass the class of the edges
 	 * @return
 	 */
-	public static UndirectedGraph<ChainVertex, InterfaceEdge> copyGraph(UndirectedGraph<ChainVertex, InterfaceEdge> g) {
+	public static <V extends ChainVertexInterface,E extends InterfaceEdgeInterface> UndirectedGraph<V, E> copyGraph(UndirectedGraph<V, E> g, Class<? extends E> edgeClass) {
 		
 		//if (! (g instanceof Pseudograph)) throw new IllegalArgumentException("Given graph is not a pseudograph!");
+				
+		UndirectedGraph<V, E> og = new Pseudograph<V, E>(new ClassBasedEdgeFactory<>(edgeClass)); 
 		
-		UndirectedGraph<ChainVertex, InterfaceEdge> og = new Pseudograph<ChainVertex, InterfaceEdge>(InterfaceEdge.class);
-		
-		for (ChainVertex v:g.vertexSet()) {
+		for (V v:g.vertexSet()) {
 			og.addVertex(v);
 		}
 		
-		for (InterfaceEdge e:g.edgeSet()) {
+		for (E e:g.edgeSet()) {
 			og.addEdge(g.getEdgeSource(e), g.getEdgeTarget(e), e);
 		}
 		
@@ -78,9 +80,9 @@ public class GraphUtils {
 	 * @param interfClusterId
 	 * @return
 	 */
-	public static int getEdgeMultiplicity(UndirectedGraph<ChainVertex, InterfaceEdge> g, int interfClusterId) {
+	public static <V extends ChainVertexInterface,E extends InterfaceEdgeInterface> int getEdgeMultiplicity(UndirectedGraph<V, E> g, int interfClusterId) {
 		int count = 0;
-		for (InterfaceEdge edge:g.edgeSet()) {
+		for (E edge:g.edgeSet()) {
 			if (edge.getClusterId() == interfClusterId) count++;
 		}
 		return count;
@@ -91,7 +93,7 @@ public class GraphUtils {
 	 * @param sto
 	 * @return
 	 */
-	public static int[] getMultiplicities(List<StructureInterfaceCluster> interfaceClusters, UndirectedGraph<ChainVertex,InterfaceEdge> g) {
+	public static <V extends ChainVertexInterface,E extends InterfaceEdgeInterface> int[] getMultiplicities(List<StructureInterfaceCluster> interfaceClusters, UndirectedGraph<V,E> g) {
 		
 		int[] mult = new int[interfaceClusters.size()];
 		
@@ -110,10 +112,10 @@ public class GraphUtils {
 	 * @param g
 	 * @return a map of interface cluster ids to interface cluster count
 	 */
-	public static TreeMap<Integer,Integer> getMultiplicities(UndirectedGraph<ChainVertex, InterfaceEdge> g) {
+	public static <V extends ChainVertexInterface,E extends InterfaceEdgeInterface> TreeMap<Integer,Integer> getMultiplicities(UndirectedGraph<V, E> g) {
 		TreeMap<Integer,Integer> counts = new TreeMap<Integer,Integer>();
 		
-		for (InterfaceEdge e:g.edgeSet()) {
+		for (E e:g.edgeSet()) {
 			if (counts.containsKey(e.getClusterId())) {
 				counts.put(e.getClusterId(), counts.get(e.getClusterId())+1);
 			} else {
@@ -130,23 +132,23 @@ public class GraphUtils {
 	 * @param g
 	 * @return a map of interface cluster ids to cycle sizes
 	 */
-	public static TreeMap<Integer,Integer> getCycleMultiplicities(UndirectedGraph<ChainVertex, InterfaceEdge> g) {
+	public static <V extends ChainVertexInterface,E extends InterfaceEdgeInterface> TreeMap<Integer,Integer> getCycleMultiplicities(UndirectedGraph<V, E> g) {
 		
 		TreeSet<Integer> interfaceClusterIds = new TreeSet<Integer>();
 		TreeMap<Integer,Integer> counts = new TreeMap<Integer,Integer>();
 				
 		
-		for (InterfaceEdge e:g.edgeSet()) {
+		for (E e:g.edgeSet()) {
 			interfaceClusterIds.add(e.getClusterId());
 		}
 		
 		for (int interfaceClusterId:interfaceClusterIds) {
-			UndirectedGraph<ChainVertex, InterfaceEdge> singleInterfClusterG = 
+			UndirectedGraph<V, E> singleInterfClusterG = 
 					getSubgraphWithSingleInterfaceCluster(g, interfaceClusterId);
 
-			PatonCycleBase<ChainVertex, InterfaceEdge> paton = new PatonCycleBase<ChainVertex, InterfaceEdge>(singleInterfClusterG);
+			PatonCycleBase<V, E> paton = new PatonCycleBase<V, E>(singleInterfClusterG);
 
-			List<List<ChainVertex>> cycles = paton.findCycleBase();
+			List<List<V>> cycles = paton.findCycleBase();
 			if (cycles.size()==0) {
 				counts.put(interfaceClusterId, 0);
 			} else if (cycles.size()==1) {
@@ -166,18 +168,18 @@ public class GraphUtils {
 		return counts;
 	}
 	
-	public static UndirectedGraph<ChainVertex, InterfaceEdge> getSubgraphWithSingleInterfaceCluster(
-			UndirectedGraph<ChainVertex, InterfaceEdge> g, int interfaceClusterId) {
+	public static <V extends ChainVertexInterface, E extends InterfaceEdgeInterface> UndirectedGraph<V, E> getSubgraphWithSingleInterfaceCluster(
+			UndirectedGraph<V, E> g, int interfaceClusterId) {
 
 		
-		Set<InterfaceEdge> edges = new HashSet<InterfaceEdge>();
+		Set<E> edges = new HashSet<>();
 		
-		for (InterfaceEdge e:g.edgeSet()) {
+		for (E e:g.edgeSet()) {
 			if (e.getClusterId() == interfaceClusterId) edges.add(e);
 		}
 		
 		// we create the subgraph with a single engaged interface cluster
-		return new UndirectedSubgraph<ChainVertex, InterfaceEdge>(g, g.vertexSet(), edges);
+		return new UndirectedSubgraph<V, E>(g, g.vertexSet(), edges);
 	}
 	
 	/**
@@ -186,9 +188,9 @@ public class GraphUtils {
 	 * @param g
 	 * @return
 	 */
-	public static int getDistinctInterfaceCount(UndirectedGraph<ChainVertex, InterfaceEdge> g) {
+	public static <V extends ChainVertexInterface,E extends InterfaceEdgeInterface> int getDistinctInterfaceCount(UndirectedGraph<V, E> g) {
 		Set<Integer> interfClusterIds = new HashSet<Integer>();
-		for (InterfaceEdge e:g.edgeSet()) {
+		for (E e:g.edgeSet()) {
 			interfClusterIds.add(e.getClusterId());
 		}
 		return interfClusterIds.size();
@@ -199,12 +201,12 @@ public class GraphUtils {
 	 * @param g
 	 * @return the largest heteromeric interface cluster id, or -1 if none found
 	 */
-	public static int getLargestHeteroInterfaceCluster(UndirectedGraph<ChainVertex, InterfaceEdge> g) {
+	public static <V extends ChainVertexInterface,E extends InterfaceEdgeInterface> int getLargestHeteroInterfaceCluster(UndirectedGraph<V, E> g) {
 		TreeSet<Integer> clusterIds = new TreeSet<Integer>();
-		for (InterfaceEdge e:g.edgeSet()) {
+		for (E e:g.edgeSet()) {
 			
-			ChainVertex s = g.getEdgeSource(e);
-			ChainVertex t = g.getEdgeTarget(e);
+			V s = g.getEdgeSource(e);
+			V t = g.getEdgeTarget(e);
 			
 			if (s.getEntityId() != t.getEntityId()) { // i.e. heteromeric
 				clusterIds.add(e.getClusterId());
