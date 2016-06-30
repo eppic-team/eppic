@@ -77,12 +77,15 @@ public class TestLatticeGraph {
 		Assembly a = ab.generateAssembly(1);		
 		assertTrue(a.isValid());
 		assertTrue(a.isClosedSymmetry());
+		assertTrue(a.getAssemblyGraph().getSubAssemblies().get(0).isAutomorphic());
 		
 		
 		// cluster 3: classic infinite A+A on screw axis
 		a = ab.generateAssembly(3);
 		assertFalse(a.isValid());
 		assertFalse(a.isClosedSymmetry());
+		// the graph is automorphic (even though it is not valid)
+		assertTrue(a.getAssemblyGraph().getSubAssemblies().get(0).isAutomorphic());
 		
 	}
 	
@@ -97,6 +100,7 @@ public class TestLatticeGraph {
 		Assembly a = ab.generateAssembly(1);		
 		assertTrue(a.isValid());
 		assertTrue(a.isClosedSymmetry());
+		assertTrue(a.getAssemblyGraph().getSubAssemblies().get(0).isAutomorphic());
 		
 	}
 	
@@ -110,6 +114,7 @@ public class TestLatticeGraph {
 		Assembly a = ab.generateAssembly(1);		
 		assertTrue(a.isValid());
 		assertTrue(a.isClosedSymmetry());
+		assertTrue(a.getAssemblyGraph().getSubAssemblies().get(0).isAutomorphic());
 		
 		
 		// cluster 3: isologous
@@ -129,7 +134,7 @@ public class TestLatticeGraph {
 		Assembly a = ab.generateAssembly(1);		
 		assertTrue(a.isValid());
 		assertTrue(a.isClosedSymmetry());
-		
+		assertTrue(a.getAssemblyGraph().getSubAssemblies().get(0).isAutomorphic());
 		
 		// cluster 2: isologous
 		a = ab.generateAssembly(2);		
@@ -140,11 +145,17 @@ public class TestLatticeGraph {
 		a = ab.generateAssembly(3);		
 		assertFalse(a.isValid());
 		assertFalse(a.isClosedSymmetry());
+		// the graph is automorphic (even though it is not valid)
+		assertTrue(a.getAssemblyGraph().getSubAssemblies().get(0).isAutomorphic());
+
 
 		// cluster 4: classic infinite
 		a = ab.generateAssembly(4);		
 		assertFalse(a.isValid());
 		assertFalse(a.isClosedSymmetry());
+		// the graph is automorphic (even though it is not valid)
+		assertTrue(a.getAssemblyGraph().getSubAssemblies().get(0).isAutomorphic());
+
 
 		// clusters 1+2: an open cycle
 		a = ab.generateAssembly(new int[]{1,2});		

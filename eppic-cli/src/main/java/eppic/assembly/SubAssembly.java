@@ -59,6 +59,16 @@ public class SubAssembly {
 	}
 	
 	/**
+	 * Checks that this SubAssembly is automorphic in terms of entities and interface clusters. i.e. if every 
+	 * vertex of entity i has the same number and type of edges (interface cluster ids) that any other vertex
+	 * with entity i
+	 * @return
+	 */
+	public boolean isAutomorphic() {
+		return GraphUtils.isAutomorphic(connectedGraph);
+	}
+	
+	/**
 	 * Return the PointGroupSymmetry for this SubAssembly:
 	 * cyclic Cn, dihedral Dn, tetrahedral T, octahedral O or icosahedral I. 
 	 * This will work correctly only on assemblies that have been previously checked

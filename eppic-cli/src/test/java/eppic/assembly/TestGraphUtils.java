@@ -24,6 +24,28 @@ public class TestGraphUtils {
 			assertTrue(GraphUtils.isAutomorphic(g));
 			
 		}
+		
+		
+	}
+	
+	@Test
+	public void testIsAutomorphicNegative() {
+		
+		// a simple negative case A ---1--- B ---2--- C   (all A,B,C same entity) 
+		UndirectedGraph<ChainVertexInterface, InterfaceEdgeInterface> g = new Pseudograph<>(SimpleInterfaceEdge.class);
+		SimpleChainVertex v1 = new SimpleChainVertex("A", 0, 1);
+		SimpleChainVertex v2 = new SimpleChainVertex("B", 0, 1);
+		SimpleChainVertex v3 = new SimpleChainVertex("C", 0, 1);
+		g.addVertex(v1);
+		g.addVertex(v2);
+		g.addVertex(v3);
+		SimpleInterfaceEdge e1 = new SimpleInterfaceEdge(1, 1);
+		SimpleInterfaceEdge e2 = new SimpleInterfaceEdge(2, 2);
+		g.addEdge(v1, v2, e1);
+		g.addEdge(v2, v3, e2);
+		assertFalse(GraphUtils.isAutomorphic(g));
+		
+				
 	}
 	
 	private static UndirectedGraph<ChainVertexInterface, InterfaceEdgeInterface> createCnGraph(int n) {
