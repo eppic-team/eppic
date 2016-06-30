@@ -130,7 +130,10 @@
 					sphereRadii, // size
 					labelColors, // color
 					textLabels, // text
-					{zOffset: 10, yOffset:-1, xOffset:-2} // params
+					// note "sdf:false" is to workaround an issue in firefox where labels are not shown
+					// see https://github.com/arose/ngl/issues/136
+					// we can remove it when next release is available (after 0.7.1.a)					
+					{zOffset: 10, yOffset:-1, xOffset:-2, sdf: false} // params
 			);
 			
 			o.addBufferRepresentation( textBuffer );
