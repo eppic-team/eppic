@@ -225,6 +225,21 @@ public class AssemblyGraph {
 		}
 		return false;
 	}
+	
+	/**
+	 * Checks that this AssemblyGraph is automorphic, which happens iff 
+	 * all its subassemblies are automorphic
+	 * @see {@link SubAssembly#isAutomorphic()}
+	 * @return
+	 */
+	public boolean isAutomorphic() {
+		for (SubAssembly s : subAssemblies) {
+			if (!s.isAutomorphic()) {
+				return false;
+			}
+		}
+		return true;
+	}
 
 	/**
 	 * Return true if all cycles in subgraph are closed, false otherwise.

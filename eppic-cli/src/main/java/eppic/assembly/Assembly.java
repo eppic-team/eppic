@@ -252,6 +252,11 @@ public class Assembly {
 			logger.debug("Uneven stoichiometry for assembly {}, can't be a closed symmetry. Discarding",toString());
 			return false;
 		}
+		
+		// graph automorphism is a necessary (but not sufficient) condition: all vertices of a certain entity must have the same kind and number of interfaces (interface cluster ids)
+		if (!assemblyGraph.isAutomorphic()) {
+			return false;
+		}
 	
 		return assemblyGraph.areAllCyclesClosed();
 	}	
