@@ -3,6 +3,7 @@ package ch.systemsx.sybit.crkwebui.server.jmol.servlets;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.file.Files;
 import java.util.Collection;
 import java.util.List;
 import java.util.SortedSet;
@@ -14,6 +15,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.biojava.nbio.structure.StructureException;
+import org.biojava.nbio.structure.align.util.AtomCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,7 +34,7 @@ import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.ValidationException;
 import ch.systemsx.sybit.crkwebui.shared.model.Interface;
 import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
-import eppic.EppicParams;
+import eppic.assembly.gui.LatticeGUI;
 import eppic.commons.util.Interval;
 import eppic.commons.util.IntervalSet;
 import eppic.model.JobDB;
@@ -108,14 +110,23 @@ public class LatticeGraphServlet extends BaseServlet
 
 			PdbInfo pdbInfo = getPdbInfo(jobId);
 			String input = pdbInfo.getInputName();
-			String inputPrefix = pdbInfo.getTruncatedInputName();
+			//String inputPrefix = pdbInfo.getTruncatedInputName();
 
 			// job directory on local filesystem
 			File dir = DirLocatorUtil.getJobDir(new File(destination_path), jobId);
 
-			// Construct UC filename
-			File ucFile = new File(dir,inputPrefix + EppicParams.UNIT_CELL_COORD_FILES_SUFFIX + ".cif.gz");
-			String ucURI = DirLocatorUtil.getJobUrlPath(resultsLocation, jobId) + "/" + inputPrefix + EppicParams.UNIT_CELL_COORD_FILES_SUFFIX + ".cif";
+			// Construct filename for AU cif file
+			File auFile = getAuFileName(dir, input, atomCachePath);
+			
+			String inputFileNameNoGz = auFile.getName();
+			if (auFile.getName().endsWith(".gz")) {
+				inputFileNameNoGz = auFile.getName().substring(0, auFile.getName().lastIndexOf(".gz"));
+			} else if (auFile.getName().endsWith(".GZ")) {
+				inputFileNameNoGz = auFile.getName().substring(0, auFile.getName().lastIndexOf(".GZ"));
+					
+			}
+			// the URL has no gz at the end because it's served as plain text via content-encoding: gzip
+			String auURI = DirLocatorUtil.getJobUrlPath(resultsLocation, jobId) + "/" + inputFileNameNoGz;
 
 			List<Interface> ifaceList = getInterfaceList(pdbInfo);
 
@@ -139,7 +150,7 @@ public class LatticeGraphServlet extends BaseServlet
 			}
 			
 
-			LatticeGraphPageGenerator.generatePage(dir,input, atomCachePath, ucFile, ucURI, title, size, ifaceList, requestedIfaces, outputStream, nglJsUrl);
+			LatticeGraphPageGenerator.generatePage(dir,input, auFile, auURI, title, size, ifaceList, requestedIfaces, outputStream, nglJsUrl);
 
 		}
 		catch(ValidationException e)
@@ -244,5 +255,70 @@ public class LatticeGraphServlet extends BaseServlet
 			}
 		}
 		return new IntervalSet(interfaces);
+	}
+	
+	/**
+	 * Returns the file name of the input structure: if user job it returns 
+	 * the path to the file in the job dir, if precomputed it finds the file path
+	 * in the local atom cache and creates a symbolic link to it in the job dir
+	 * @param directory Directory to search for the file
+	 * @param inputName either the input file name, or a PDB code
+	 * @param atomCachePath Path for downloaded CIF files
+	 * @return the path to the AU structure file in the job dir
+	 * @throws IOException if file is a user job file and can't be found, 
+	 * or if the input is a pdb id and its file can't be found in atom cache
+	 */
+	public static File getAuFileName(File directory, String inputName, String atomCachePath) throws IOException {
+		
+		// inputName will be the full file name in user jobs and the pdbId for precomputed jobs
+		File structFile = new File(directory,inputName);
+		logger.info("Trying to find the structure file for input name '{}'. Searching file in {}", inputName, structFile.toString());
+
+		if(!structFile.exists()){
+			if  (!inputName.matches("^\\d\\w\\w\\w$")) {
+				throw new IOException(String.format(
+						"Could not find file %s and the inputName '%s' does not look "
+								+ "like a PDB id. Can't produce the lattice graph page!",
+								structFile, inputName));
+			} else {
+				
+				// it is like a PDB id, leave it to AtomCache
+				AtomCache atomCache = null;
+				if (atomCachePath ==null) {
+					atomCache = new AtomCache();
+					logger.warn("Defaulting to downloading structures to {}. Please set the ATOM_CACHE_PATH property.",atomCache.getCachePath());
+				}
+				else {
+					atomCache = new AtomCache(atomCachePath);
+				}
+
+				atomCache.setUseMmCif(true);
+
+				structFile = LatticeGUI.getFile(atomCache, inputName);
+				
+				if (!structFile.exists()) {
+					logger.error("The structure file {} does not exist in atom cache! Will not be able to display lattice graph", structFile.toString());
+					throw new IOException("Structure file " + structFile.toString()+" does not exist in atom cache");
+				}
+
+				File sLink = new File(directory, structFile.getName());
+				if (!sLink.exists()) {
+					
+					// TODO downloading symlinks don't work with current server configuration, 
+					// TODO for now resorting to copy: must fix server config and do it with symlinks!
+					
+					logger.info("Copying to {} from file {}", sLink.toString(), structFile.toString());
+					Files.copy(structFile.toPath(), sLink.toPath() );
+					
+					// we create a symbolic link to the file in the atomcache dir
+					//logger.info("Creating symbolic link {} to file {}", sLink.toString(), structFile.toString());
+					//Files.createSymbolicLink(sLink.toPath(), structFile.toPath());
+				}
+				// and finally if no exception is thrown we return the symbolic link
+				structFile = sLink;
+			}
+		}
+		
+		return structFile;
 	}
 }

@@ -55,6 +55,7 @@ public class LatticeGraph3D extends LatticeGraph<ChainVertex3D,InterfaceEdge3D> 
 	private final Map<String,Point3d> chainCentroid;
 	
 	private final WrappingPolicy policy;
+		
 
 	/**
 	 * Create the graph after calculating the interfaces
@@ -398,14 +399,15 @@ public class LatticeGraph3D extends LatticeGraph<ChainVertex3D,InterfaceEdge3D> 
 
 
 	/**
-	 * Writes this Assembly to mmCIF file (gzipped) with chain ids as follows:
+	 * Writes to given PrintWriter the whole unit cell in mmCIF format, with chain ids as follows:
 	 *  <li> author_ids: chainId_operatorId</li>
 	 *  <li> asym_ids: chainId_operatorId</li>
-	 * The atom ids will be renumbered if the Assembly contains symmetry-related molecules,
-	 * otherwise some molecular viewers (e.g. 3Dmol.js) won't be able to read the atoms
+	 * The atom ids are renumbered, so that symmetry partners don't repeat them.
+	 * Otherwise some molecular viewers (e.g. 3Dmol.js) won't be able to read the atoms
 	 * as distinct.
+	 * <p>
 	 * Note that PyMOL supports multi-letter chain ids only from 1.7.4
-	 * @param file
+	 * @param out the writer to write the mmCIF data to
 	 * @throws IOException
 	 * @throws StructureException
 	 */
@@ -438,13 +440,13 @@ public class LatticeGraph3D extends LatticeGraph<ChainVertex3D,InterfaceEdge3D> 
 
 		out.print(FileConvert.getAtomSiteHeader());
 
-		List<Object> atomSites = new ArrayList<Object>();
+		List<Object> atomSites = new ArrayList<>();
 
 		int atomId = 1;
 		for (ChainVertex3D cv:getGraph().vertexSet()) {
 			String chainId = cv.getChain().getChainID()+"_"+cv.getOpId();
 			//TODO maybe need to clone and transform here?
-			Matrix4d m = getUnitCellTransformationOrthonormal(chainId, cv.getOpId());
+			Matrix4d m = getUnitCellTransformationOrthonormal(cv.getChain().getChainID(), cv.getOpId());
 			//Point3d refCoord = graph.getReferenceCoordinate(cv.getChainId());
 
 			Chain newChain = (Chain) cv.getChain().clone();
@@ -477,6 +479,22 @@ public class LatticeGraph3D extends LatticeGraph<ChainVertex3D,InterfaceEdge3D> 
 
 
 		out.close();
+	}
+	
+	/**
+	 * Returns a set of all unique transformations needed to create the unit cell (one per vertex in lattice graph).
+	 * @return
+	 * @throws StructureException if problems occur calculating centroids
+	 */
+	public Set<Matrix4d> getUnitCellTransforms() throws StructureException {
+		Set<Matrix4d> transforms = new HashSet<>();
+		for (ChainVertex3D cv:getGraph().vertexSet()) {
+			Matrix4d m = getUnitCellTransformationOrthonormal(cv.getChain().getChainID(), cv.getOpId());
+			
+			transforms.add(m);
+		}
+		
+		return transforms;
 	}
 	
 	/**

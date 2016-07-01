@@ -9,19 +9,51 @@ document.onkeypress = function (e) {
     e = e || window.event;
 
     if (e !== undefined && e.which == 112) { // 112 is p
-    	//console.log("p was pressed, toggling surface");
+    	console.log("p was pressed, toggling surface");
     	toggleSurface();
     }
     
     if (e !== undefined && e.which == 110) { // 110 is n
-    	//console.log("n was pressed, drawing next surface");
+    	console.log("n was pressed, drawing next surface");
     	nextSurface();
     }
+    
+	if (e !== undefined && e.which == 115) { // 115 is s
+		console.log("s was pressed: small screenshot (1x)");
+		screenshot(1);
+	}
+
+	if (e !== undefined && e.which == 109) { // 109 is m
+		console.log("m was pressed: medium screenshot (2x)");
+		screenshot(2);
+	}
+
+	if (e !== undefined && e.which == 108) { // 108 is l
+		console.log("l was pressed: large screenshot (3x)");
+		screenshot(3);
+	}
+
+	if (e !== undefined && e.which == 120) { // 120 is x
+		console.log("x was pressed: xtra large screenshot (4x)");
+		screenshot(4);
+	}
+
 
 };
 
+/**
+ * A function to trigger a png transparent screenshot with given factor
+ * @param factor the number of times the current canvas size will be multiplied by
+ */
+function screenshot(factor) {
+	if (stage!==undefined) {
+		stage.makeImage({factor: factor, antialias: true, trim: false, transparent: true}).then(function(blob) { NGL.download(blob) } )
+	}
+}
+
 function onInit() {
 	stage = new NGL.Stage("viewport");
+	stage.setParameters({ backgroundColor:"white", theme:"light"} );
 	stage.loadFile(inputFile, {
 		defaultRepresentation : false
 	}).then(function(structComp) {
@@ -85,7 +117,7 @@ function initRepr(structComp) {
 			sele: seleRim2
 		});
 	}
-	stage.setParameters({ backgroundColor:"white", theme:"light"} );
+	
 	stage.centerView();
 
 }

@@ -21,6 +21,14 @@ import com.google.gwt.user.client.Window;
  */
 public class PopupRunner
 {
+	
+	public static final int VIEWER_SIZE_OFFSET = 40;
+	
+	/**
+	 * A constant to use for when all interfaces and not only those of a particular assembly should be shown.
+	 */
+	public static final String ALL_INTERFACES = "*";
+	
 	/**
 	 * Open
 	 * @param assemblyId
@@ -29,46 +37,28 @@ public class PopupRunner
 	{
 		popupAssemblyView(LatticeGraphServlet.SERVLET_NAME,assemblyId);
 	}
+	
 	public static void popupAssemblyDiagram(String assemblyId)
 	{
 		popupAssemblyView(AssemblyDiagramServlet.SERVLET_NAME,assemblyId);
 	}
+	
 	private static void popupAssemblyView(String servlet, String assemblyId)
 	{
-		// we use the same size approach as with the jmol viewer - JD 2016-01-06
-		int size = Math.min( ApplicationContext.getWindowData().getWindowHeight() - 60,
-				ApplicationContext.getWindowData().getWindowWidth() - 60);
-		
-		int canvasSize = size - 40;
-		
-		String interfaceids = null;
-		List<Assembly> assemblies = ApplicationContext.getPdbInfo().getAssemblies();
-		for(Assembly a : assemblies){
-			if((a.getId()+"").equals(assemblyId)){
-				interfaceids = joinInterfaceIds( a.getInterfaces() );
-			}
-		}
-		//if(interfaceids == null)
-			//Window.alert("No interfaces to show!");
-
-		String url = GWT.getModuleBaseURL() + servlet;
-		url +=  "?" + FileDownloadServlet.PARAM_ID + "=" + ApplicationContext.getPdbInfo().getJobId() +
-				"&" + LatticeGraphServlet.PARAM_INTERFACES + "=" + interfaceids +
-				"&" + JmolViewerServlet.PARAM_SIZE+"=" + canvasSize;
-
-		//show only when interface count > 0
-		//if(!interfaceids.equals("")) 	
-			//Window.open(url,"_blank","width="+size+",height="+size);
+		String url = getGraphViewerUrl(servlet, assemblyId);
 		popup(url,"");
 	}
 	
 	/**
 	 * Consistent entry point to create new popup windows
 	 * @param url
-	 * @param features
+	 * @param features either empty string or something like "width=" + size + "," + "height=" + size
 	 */
 	public static void popup(String url,String features) {
-		//Window.open(url,"_blank","width="+size+",height="+size);
+		// this opens the viewer in a popup window of fixed dimensions, but it is not possible to modify the URL 
+		//Window.open(url,"","width=" + size + "," + "height=" + size);
+		
+		// this opens the viewer in a new tab, the url is modifiable
 		Window.open(url,"_blank",features);
 	}
 	
@@ -142,10 +132,42 @@ public class PopupRunner
 		return str.toString();
 	}
 
-	public static String getLatticeGraphURL(){
-		String url = GWT.getModuleBaseURL() + LatticeGraphServlet.SERVLET_NAME;
+	/**
+	 * Builds the graph viewer URL (either 3D lattice graph or 2D assembly diagram).
+	 * @param servlet the servlet name, e.g. {@link AssemblyDiagramServlet#SERVLET_NAME} or {@link LatticeGraphServlet#SERVLET_NAME}
+	 * @param assemblyId the assembly identifier or {@link PopupRunner#ALL_INTERFACES} if all interfaces to be shown  
+	 * @return
+	 */
+	public static String getGraphViewerUrl(String servlet, String assemblyId){
+
+		// we use the same size approach as with the jmol viewer - JD 2016-01-06
+		int size = Math.min( ApplicationContext.getWindowData().getWindowHeight() - 60,
+				ApplicationContext.getWindowData().getWindowWidth() - 60);
+
+		int canvasSize = size - VIEWER_SIZE_OFFSET;
+
+		
+		String interfaceids = null;
+
+		if (assemblyId == null || assemblyId.equals(ALL_INTERFACES)) {
+			interfaceids = "*";
+			
+		} else {
+
+			List<Assembly> assemblies = ApplicationContext.getPdbInfo().getAssemblies();
+			for(Assembly a : assemblies){
+				if((a.getId()+"").equals(assemblyId)){
+					interfaceids = joinInterfaceIds( a.getInterfaces() );
+				}
+			}
+		}
+
+		String url = GWT.getModuleBaseURL() + servlet;
 		url +=  "?" + FileDownloadServlet.PARAM_ID + "=" + ApplicationContext.getPdbInfo().getJobId() +
-				"&" + LatticeGraphServlet.PARAM_INTERFACES + "=*";
+				"&" + LatticeGraphServlet.PARAM_INTERFACES + "=" + interfaceids +
+				"&" + JmolViewerServlet.PARAM_SIZE+"=" + canvasSize;
+
+		
 		return url;
 		
 	}

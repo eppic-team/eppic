@@ -10,16 +10,80 @@
 	<script>
 	// regen
 	 NGL.mainScriptFilePath = "{{url3Dmol}}";
+	 
+	 // exposing the stage variable so that we can do things on the console
+	 var stage;	 
+	 
+	 document.onkeypress = function (e) {
+		e = e || window.event;
+
+		if (e !== undefined && e.which == 115) { // 115 is s
+			console.log("s was pressed: small screenshot (1x)");
+			screenshot(1);
+		}
+
+		if (e !== undefined && e.which == 109) { // 109 is m
+			console.log("m was pressed: medium screenshot (2x)");
+			screenshot(2);
+		}
+
+		if (e !== undefined && e.which == 108) { // 108 is l
+			console.log("l was pressed: large screenshot (3x)");
+			screenshot(3);
+		}
+
+		if (e !== undefined && e.which == 120) { // 120 is x
+			console.log("x was pressed: xtra large screenshot (4x)");
+			screenshot(4);
+		}
+
+	 };
+
+	 /**
+	  * A function to trigger a png transparent screenshot with given factor
+      * @param factor the number of times the current canvas size will be multiplied by
+	  */
+	 function screenshot(factor) {
+		if (stage!==undefined) {
+			stage.makeImage({factor: factor, antialias: true, trim: false, transparent: true}).then(function(blob) { NGL.download(blob) } )
+		}
+	 }
+	 
+	 
 	 document.addEventListener( "DOMContentLoaded", function() {
 
-		var stage = new NGL.Stage( "viewport" );
+		stage = new NGL.Stage( "viewport" );
 
 		stage.setParameters({ backgroundColor:"white"} );
 
 		stage.loadFile( "{{strucURI}}", { defaultRepresentation: false } ).then(function(o) {
 			
-			//////// cartoon instead of ribbon ////////////////////////////////
-			o.addRepresentation( "cartoon", { opacity: 0.5, side: THREE.FrontSide } );
+			
+			// operators to create the unit cell
+			var operators = [
+			{{#graph.unitCellTransforms}} 
+			new THREE.Matrix4().set(
+				{{m00}}, {{m01}}, {{m02}}, {{m03}},
+				{{m10}}, {{m11}}, {{m12}}, {{m13}},
+				{{m20}}, {{m21}}, {{m22}}, {{m23}},
+				{{m30}}, {{m31}}, {{m32}}, {{m33}}),
+			{{/graph.unitCellTransforms}}
+			];
+			
+			// show full unit cell with NGL's built-in assembly
+			//o.addRepresentation( "cartoon", { opacity: 0.5, side: THREE.FrontSide, assembly: "UNITCELL" } );
+			
+			// show our own full unit cell from our operators list		
+			var assembly = new NGL.Assembly( "LATTICEGRAPH_UNITCELL" );
+			for (var i=0; i < operators.length; i++) {
+				assembly.addPart(
+					[ operators[i] ],
+					[]  // leave empty for all chains, otherwise author chainnames [ "A", "B" ]
+				);
+			}
+			o.structure.biomolDict[ "LATTICEGRAPH_UNITCELL" ] = assembly;
+			o.addRepresentation( "cartoon", { opacity: 0.5, side: THREE.FrontSide, assembly: "LATTICEGRAPH_UNITCELL" } );
+			
 			
 			////////  spheres  ///////////////////////////////////////////////
 			var spherePositions = [
@@ -66,7 +130,10 @@
 					sphereRadii, // size
 					labelColors, // color
 					textLabels, // text
-					{zOffset: 10, yOffset:-1, xOffset:-2} // params
+					// note "sdf:false" is to workaround an issue in firefox where labels are not shown
+					// see https://github.com/arose/ngl/issues/136
+					// we can remove it when next release is available (after 0.7.1.a)					
+					{zOffset: 10, yOffset:-1, xOffset:-2, sdf: false} // params
 			);
 			
 			o.addBufferRepresentation( textBuffer );
@@ -165,7 +232,10 @@
 					circlesRadii, // size
 					labelColorsCircles, // color
 					textLabelsCircles, // text
-					{zOffset: 5} // params
+					// note "sdf:false" is to workaround an issue in firefox where labels are not shown
+					// see https://github.com/arose/ngl/issues/136
+					// we can remove it when next release is available (after 0.7.1.a)
+					{zOffset: 5, sdf: false} // params
 			);
 			
 			o.addBufferRepresentation( textBufferCircles );	

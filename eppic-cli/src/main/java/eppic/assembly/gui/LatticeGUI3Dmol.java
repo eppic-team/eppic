@@ -160,7 +160,10 @@ public class LatticeGUI3Dmol extends LatticeGUIMustache {
 		LatticeGUI3Dmol gui = new LatticeGUI3Dmol(template, struc, uri, interfaceIds);
 
 		if(cifOut != null) {
-			gui.writeCIFfile(cifOut);
+			
+			cifOut.println(struc.toMMCIF());
+			//gui.writeCIFfile(cifOut);
+			
 		}
 
 		gui.execute(htmlOut);
