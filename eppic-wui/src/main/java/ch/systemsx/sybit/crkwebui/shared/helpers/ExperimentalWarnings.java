@@ -25,7 +25,7 @@ public class ExperimentalWarnings {
 	private String warningTooltip;
 	//public static LabelWithTooltip staticWarningsLabel = null;
 	
-	public String[] spaceGroups = {"P 1", "P 2", "P 21", "P 1 2 1", "P 1 21 1", "C 2", "C 1 2 1", "P 2 2 2", "P 2 2 21", "P 21 21 2",
+	public String[] spaceGroups = {null, "P 1", "P 2", "P 21", "P 1 2 1", "P 1 21 1", "C 2", "C 1 2 1", "P 2 2 2", "P 2 2 21", "P 21 21 2",
 									"P 21 21 21", "C 2 2 2", "C 2 2 21", "F 2 2 2", "I 2 2 2", "I 21 21 21", "P 4", "P 41", "P 42",
 									"P 43", "I 4", "I 41", "P 4 2 2", "P 4 21 2", "P 41 2 2", "P 41 21 2", "P 42 2 2", "P 42 21 2",
 									"P 43 2 2", "P 43 21 2", "I 4 2 2", "I 4 21 2", "P 3", "P 31", "P 32", "R 3", "P 3 1 2",
