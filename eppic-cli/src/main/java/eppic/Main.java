@@ -712,7 +712,7 @@ public class Main {
 				GraphvizRunner runner = new GraphvizRunner(params.getGraphvizExe());
 				for (Assembly a:validAssemblies) {
 
-					File pngFile= params.getOutputFile(EppicParams.ASSEMBLIES_DIAGRAM_FILES_SUFFIX+"." + a.getId() + ".75x75.png");
+					File pngFile= params.getOutputFile(EppicParams.ASSEMBLIES_DIAGRAM_FILES_SUFFIX+"." + a.getId() + "."+EppicParams.THUMBNAILS_SIZE+"x"+EppicParams.THUMBNAILS_SIZE+".png");
 
 					LOGGER.info("Writing diagram for assembly {} to {}",a.getId(),pngFile);
 					
@@ -728,6 +728,10 @@ public class Main {
 					guiThumb.setLayout2D(LatticeGUIMustache.getDefaultLayout2D(pdb));
 					guiThumb.setTitle("Assembly "+a.getId());
 					guiThumb.setPdbId(pdb.getPDBCode());
+					int dpi = 72; // 72 dots per inch for output
+					// size is in inches
+					guiThumb.setSize(String.valueOf((double)EppicParams.THUMBNAILS_SIZE/(double)dpi));
+					guiThumb.setDpi(String.valueOf(dpi));
 
 					// Generate thumbs via dot file
 					//File dotFile= params.getOutputFile(EppicParams.ASSEMBLIES_DIAGRAM_FILES_SUFFIX+"." + a.getId() + ".dot");

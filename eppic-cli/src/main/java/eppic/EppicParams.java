@@ -101,6 +101,10 @@ public class EppicParams {
 	// the PDB biounit that we take as the PDB biounit annotation: since introduction of Biojava 
 	// we have decided to use biounit 1 (whatever its type) and ignore the rest
 	public static final int		   PDB_BIOUNIT_TO_USE = 1;
+	
+	// the size of the thumbnails for wui
+	public static final int       THUMBNAILS_SIZE = 75;
+
 		
 	// DEFAULTS FOR COMMAND LINE PARAMETERS
 	public static final double    DEF_HOM_SOFT_ID_CUTOFF = 0.6;
@@ -182,7 +186,7 @@ public class EppicParams {
 	
 	// default use pdb res serials for output
 	public static final boolean   DEF_USE_PDB_RES_SER = true;
-	
+		
 
 	// FIELDS
 	
