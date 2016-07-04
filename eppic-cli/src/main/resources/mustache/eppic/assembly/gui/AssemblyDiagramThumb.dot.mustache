@@ -1,7 +1,9 @@
 // Run with dot -Tpng -Kneato -O -n2 dotfile
 digraph "{{title}}" {
 	graph [
-		splines="curved"
+	    // we use splines="line" instead of "curved" to fix https://github.com/eppic-team/eppic/issues/134
+	    // whenever the problem is fixed in dot graphviz, we could switch back to curved 
+		splines="line"
 		size="{{size}},{{size}}!"
 		dpi="{{dpi}}"
 		ratio="fill"
