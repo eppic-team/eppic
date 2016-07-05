@@ -2,7 +2,14 @@ package eppic.assembly;
 
 import static org.junit.Assert.*;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.vecmath.Point3i;
 
@@ -70,12 +77,15 @@ public class TestLatticeGraph {
 		Assembly a = ab.generateAssembly(1);		
 		assertTrue(a.isValid());
 		assertTrue(a.isClosedSymmetry());
+		assertTrue(a.getAssemblyGraph().getSubAssemblies().get(0).isAutomorphic());
 		
 		
 		// cluster 3: classic infinite A+A on screw axis
 		a = ab.generateAssembly(3);
 		assertFalse(a.isValid());
 		assertFalse(a.isClosedSymmetry());
+		// the graph is automorphic (even though it is not valid)
+		assertTrue(a.getAssemblyGraph().getSubAssemblies().get(0).isAutomorphic());
 		
 	}
 	
@@ -90,6 +100,7 @@ public class TestLatticeGraph {
 		Assembly a = ab.generateAssembly(1);		
 		assertTrue(a.isValid());
 		assertTrue(a.isClosedSymmetry());
+		assertTrue(a.getAssemblyGraph().getSubAssemblies().get(0).isAutomorphic());
 		
 	}
 	
@@ -103,6 +114,7 @@ public class TestLatticeGraph {
 		Assembly a = ab.generateAssembly(1);		
 		assertTrue(a.isValid());
 		assertTrue(a.isClosedSymmetry());
+		assertTrue(a.getAssemblyGraph().getSubAssemblies().get(0).isAutomorphic());
 		
 		
 		// cluster 3: isologous
@@ -122,7 +134,7 @@ public class TestLatticeGraph {
 		Assembly a = ab.generateAssembly(1);		
 		assertTrue(a.isValid());
 		assertTrue(a.isClosedSymmetry());
-		
+		assertTrue(a.getAssemblyGraph().getSubAssemblies().get(0).isAutomorphic());
 		
 		// cluster 2: isologous
 		a = ab.generateAssembly(2);		
@@ -133,11 +145,17 @@ public class TestLatticeGraph {
 		a = ab.generateAssembly(3);		
 		assertFalse(a.isValid());
 		assertFalse(a.isClosedSymmetry());
+		// the graph is automorphic (even though it is not valid)
+		assertTrue(a.getAssemblyGraph().getSubAssemblies().get(0).isAutomorphic());
+
 
 		// cluster 4: classic infinite
 		a = ab.generateAssembly(4);		
 		assertFalse(a.isValid());
 		assertFalse(a.isClosedSymmetry());
+		// the graph is automorphic (even though it is not valid)
+		assertTrue(a.getAssemblyGraph().getSubAssemblies().get(0).isAutomorphic());
+
 
 		// clusters 1+2: an open cycle
 		a = ab.generateAssembly(new int[]{1,2});		
@@ -349,7 +367,73 @@ public class TestLatticeGraph {
 		
 
 	}
+	
+	@Test
+	public void testCellMmcifGeneration() throws IOException, StructureException {
+		
+		String pdbId = "2trx";
+				
+		logger.info("Calculating interfaces for "+pdbId);
+		
+		AtomCache cache = new AtomCache();
+		FileParsingParameters params = new FileParsingParameters();
+		params.setAlignSeqRes(true); 
+		cache.setFileParsingParams(params);
+		StructureIO.setAtomCache(cache);
+		
+		Structure s =  StructureIO.getStructure(pdbId);
+		CrystalBuilder cb = new CrystalBuilder(s);
+		StructureInterfaceList interfaces = cb.getUniqueInterfaces();
+		interfaces.calcAsas();
+		interfaces.removeInterfacesBelowArea();
+		interfaces.getClusters(EppicParams.CLUSTERING_CONTACT_OVERLAP_SCORE_CUTOFF);
+		
+		LatticeGraph3D lg3d = new LatticeGraph3D(s);
+		
+		ByteArrayOutputStream os = new ByteArrayOutputStream();
+		
+		PrintWriter out = new PrintWriter(os);
+		lg3d.writeCellToMmCifFile(out);
+		out.close();
+		
+		List<String> symmetryFields = new ArrayList<>();
+		
+		BufferedReader br = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(os.toByteArray())));
+		String line;
+		while ( (line = br.readLine())!=null) {
+			if (line.startsWith("_symmetry")) {
+				System.out.println(line);
+				String[] tokens = line.split("\\s+");
+				symmetryFields.add(tokens[0]);				
+			}
+		}
+		br.close();
+		
+		// here we test that the space group field has the right name (with a hyphen between H and M), see https://github.com/biojava/biojava/issues/480
+		
+		//_symmetry.entry_id                         2TRX 
+		//_symmetry.space_group_name_H-M             'C 1 2 1' 
+		//_symmetry.pdbx_full_space_group_name_H-M   ? 
+		//_symmetry.cell_setting                     ? 
+		//_symmetry.Int_Tables_number                ? 
 
+		assertTrue(symmetryFields.contains("_symmetry.entry_id"));
+		assertTrue(symmetryFields.contains("_symmetry.cell_setting"));
+		assertTrue(symmetryFields.contains("_symmetry.Int_Tables_number"));
+		// these are the problematic fields
+		assertTrue(symmetryFields.contains("_symmetry.space_group_name_H-M"));
+		assertTrue(symmetryFields.contains("_symmetry.pdbx_full_space_group_name_H-M"));
+		
+	}
+	
+
+	/**
+	 * Utility to facilitate testing of lattice graph related stuff: gets the CrystalAssemblies object for a given PDB id
+	 * @param pdbId
+	 * @return
+	 * @throws IOException
+	 * @throws StructureException
+	 */
 	public static CrystalAssemblies getCrystalAssemblies(String pdbId) throws IOException, StructureException {
 		return getCrystalAssemblies(pdbId, false);
 	}
@@ -376,6 +460,7 @@ public class TestLatticeGraph {
 		
 		return crystalAssemblies; 
 	}
+	
 	
 	
 }

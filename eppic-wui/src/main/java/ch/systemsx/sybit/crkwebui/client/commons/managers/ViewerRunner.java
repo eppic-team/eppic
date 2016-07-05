@@ -14,8 +14,12 @@ import com.google.gwt.user.client.Window;
  */
 public class ViewerRunner 
 {
+	
+	
+	
 	/**
-	 * Starts selected viewer. Type of the viewer is determined based on the option selected in viewer selector.
+	 * Triggers selected action (viewer) when in interface results panel. 
+	 * The type of the action (viewer) is determined based on the option selected in viewer selector.
 	 * @param interfaceId identifier of the interface
 	 */
 	public static void runViewer(String interfaceId)
@@ -27,12 +31,7 @@ public class ViewerRunner
 		//case that PDB viewer selected 
 		else if(ApplicationContext.getSelectedViewer().equals(AppPropertiesManager.CONSTANTS.viewer_local()))
 		{
-			//downloadFileFromServer(FileDownloadServlet.TYPE_VALUE_INTERFACE, interfaceId, FileDownloadServlet.COORDS_FORMAT_VALUE_PDB);
 			downloadFileFromServer(FileDownloadServlet.TYPE_VALUE_INTERFACE, interfaceId, FileDownloadServlet.COORDS_FORMAT_VALUE_CIF);
-		}
-		else if(ApplicationContext.getSelectedViewer().equals(AppPropertiesManager.CONSTANTS.viewer_pse()))
-		{
-			downloadFileFromServer(FileDownloadServlet.TYPE_VALUE_INTERFACE, interfaceId, FileDownloadServlet.COORDS_FORMAT_VALUE_PSE);
 		}
 		else
 		{
@@ -41,10 +40,10 @@ public class ViewerRunner
 	}
 
 	/**
-	 * Displays jmol viewer.
-	 * @param interfaceNr interface identifier
+	 * Displays 3D viewer for the given interface id.
+	 * @param interfaceId interface identifier
 	 */
-	private static void showJmolViewer(String interfaceNr)
+	private static void showJmolViewer(String interfaceId)
 	{
 		int size = ApplicationContext.getWindowData().getWindowHeight() - 60;
 		if(size > ApplicationContext.getWindowData().getWindowWidth() - 60)
@@ -52,7 +51,7 @@ public class ViewerRunner
 			size = ApplicationContext.getWindowData().getWindowWidth() - 60;
 		}
 		
-		int jmolAppletSize = size - 40;
+		int jmolAppletSize = size - PopupRunner.VIEWER_SIZE_OFFSET;
 		
 		// note we have set the default format to CIF - JD 2015-06-15
 		
@@ -60,20 +59,21 @@ public class ViewerRunner
 		jmolViewerUrl += "?"+FileDownloadServlet.PARAM_ID+"=" + ApplicationContext.getPdbInfo().getJobId() + 
 						 "&"+FileDownloadServlet.PARAM_TYPE + "=" + FileDownloadServlet.TYPE_VALUE_INTERFACE + 
 						 "&"+JmolViewerServlet.PARAM_INPUT+"=" + ApplicationContext.getPdbInfo().getTruncatedInputName() + 
-						 "&"+FileDownloadServlet.PARAM_INTERFACE_ID+"=" + interfaceNr +
+						 "&"+FileDownloadServlet.PARAM_INTERFACE_ID+"=" + interfaceId +
 						 "&"+FileDownloadServlet.PARAM_COORDS_FORMAT+"=" + FileDownloadServlet.COORDS_FORMAT_VALUE_CIF+
 						 "&"+JmolViewerServlet.PARAM_SIZE+"=" + jmolAppletSize;
 		
-		Window.open(jmolViewerUrl, "", "width=" + size + "," +
-										"height=" + size);
+		
+		PopupRunner.popup(jmolViewerUrl, "");
+		
 
 	}
 
 	/**
-	 * Displays jmol viewer.
-	 * @param interfaceNr interface identifier
+	 * Displays 3D viewer for the given assembly id.
+	 * @param assemblyId assembly identifier
 	 */
-	private static void showJmolViewerAssembly(String assemblyNr)
+	private static void showJmolViewerAssembly(String assemblyId)
 	{
 		int size = ApplicationContext.getWindowData().getWindowHeight() - 60;
 		if(size > ApplicationContext.getWindowData().getWindowWidth() - 60)
@@ -81,7 +81,7 @@ public class ViewerRunner
 			size = ApplicationContext.getWindowData().getWindowWidth() - 60;
 		}
 		
-		int jmolAppletSize = size - 40;
+		int jmolAppletSize = size - PopupRunner.VIEWER_SIZE_OFFSET;
 		
 		// note we have set the default format to CIF - JD 2015-06-15
 		
@@ -89,18 +89,47 @@ public class ViewerRunner
 		jmolViewerUrl += "?"+FileDownloadServlet.PARAM_ID+"=" + ApplicationContext.getPdbInfo().getJobId() + 
 						 "&"+FileDownloadServlet.PARAM_TYPE + "=" + FileDownloadServlet.TYPE_VALUE_ASSEMBLY + 
 						 "&"+JmolViewerServlet.PARAM_INPUT+"=" + ApplicationContext.getPdbInfo().getTruncatedInputName() + 
-						 "&"+FileDownloadServlet.PARAM_ASSEMBLY_ID+"=" + assemblyNr +
+						 "&"+FileDownloadServlet.PARAM_ASSEMBLY_ID+"=" + assemblyId +
 						 "&"+FileDownloadServlet.PARAM_COORDS_FORMAT+"=" + FileDownloadServlet.COORDS_FORMAT_VALUE_CIF+
 						 "&"+JmolViewerServlet.PARAM_SIZE+"=" + jmolAppletSize;
 		
-		Window.open(jmolViewerUrl, "", "width=" + size + "," +
-										"height=" + size);
-
+		PopupRunner.popup(jmolViewerUrl, "");
 	}
 	
 	/**
-	 * Starts selected viewer. Type of the viewer is determined based on the option selected in viewer selector.
-	 * @param interfaceId identifier of the interface
+	 * This method is not currently used - it is intended to be separate  
+	 * for when ShowAssemblyViewerInNewTabEvent is triggered by pressing the shift key.
+	 * @param assemblyId
+	 */
+	private static void showJmolViewerAssemblyInNewTab(String assemblyId)
+	{
+		int size = ApplicationContext.getWindowData().getWindowHeight() - 60;
+		if(size > ApplicationContext.getWindowData().getWindowWidth() - 60)
+		{
+			size = ApplicationContext.getWindowData().getWindowWidth() - 60;
+		}
+		
+		int jmolAppletSize = size - PopupRunner.VIEWER_SIZE_OFFSET;
+		
+		// note we have set the default format to CIF - JD 2015-06-15
+		
+		String jmolViewerUrl = GWT.getModuleBaseURL() + JmolViewerServlet.SERVLET_NAME;
+		jmolViewerUrl += "?"+FileDownloadServlet.PARAM_ID+"=" + ApplicationContext.getPdbInfo().getJobId() + 
+						 "&"+FileDownloadServlet.PARAM_TYPE + "=" + FileDownloadServlet.TYPE_VALUE_ASSEMBLY + 
+						 "&"+JmolViewerServlet.PARAM_INPUT+"=" + ApplicationContext.getPdbInfo().getTruncatedInputName() + 
+						 "&"+FileDownloadServlet.PARAM_ASSEMBLY_ID+"=" + assemblyId +
+						 "&"+FileDownloadServlet.PARAM_COORDS_FORMAT+"=" + FileDownloadServlet.COORDS_FORMAT_VALUE_CIF+
+						 "&"+JmolViewerServlet.PARAM_SIZE+"=" + jmolAppletSize;
+
+		PopupRunner.popup(jmolViewerUrl, "");
+
+	}
+	
+	
+	/**
+	 * Triggers selected action (viewer) when in assembly results panel. 
+	 * The type of the action (viewer) is determined based on the option selected in viewer selector.
+	 * @param assemblyId identifier of the assembly
 	 */
 	public static void runViewerAssembly(String assemblyId)
 	{
@@ -108,14 +137,10 @@ public class ViewerRunner
 		{
 			showJmolViewerAssembly(assemblyId);
 		}
-		//PDB CASE
+		//mmCIF CASE (was PDB)
 		else if(ApplicationContext.getSelectedViewer().equals(AppPropertiesManager.CONSTANTS.viewer_local()))
 		{
 			downloadAssemblyFileFromServer(FileDownloadServlet.TYPE_VALUE_ASSEMBLY, assemblyId, FileDownloadServlet.COORDS_FORMAT_VALUE_CIF);
-		}
-		else if(ApplicationContext.getSelectedViewer().equals(AppPropertiesManager.CONSTANTS.viewer_pse()))
-		{
-			downloadAssemblyFileFromServer(FileDownloadServlet.TYPE_VALUE_ASSEMBLY, assemblyId, FileDownloadServlet.COORDS_FORMAT_VALUE_PSE);
 		}
 		else
 		{
@@ -123,11 +148,19 @@ public class ViewerRunner
 		}
 	}
 	
+	public static void runViewerAssemblyInNewTab(String assemblyId)
+	{
+		if(ApplicationContext.getSelectedViewer().equals(AppPropertiesManager.CONSTANTS.viewer_jmol()))
+		{
+			showJmolViewerAssemblyInNewTab(assemblyId);
+		}
+	}
 	
 	/**
 	 * Downloads file from the server.
 	 * @param type type of the file to download
 	 * @param interfaceId identifier of the interface
+	 * @param format
 	 */
 	//an example file is
 	//http://pc11467.psi.ch:8081/ewui/fileDownload?type=interface&id=1smt&interfaceId=1&type=interface&coordsFormat=cif
@@ -146,15 +179,16 @@ public class ViewerRunner
 	/**
 	 * Downloads file from the server.
 	 * @param type type of the file to download
-	 * @param interfaceId identifier of the interface
+	 * @param assemblyId identifier of the interface
+	 * @param format
 	 */
-	private static void downloadAssemblyFileFromServer(String type, String interfaceId, String format)
+	private static void downloadAssemblyFileFromServer(String type, String assemblyId, String format)
 	{
 		String fileDownloadServletUrl = GWT.getModuleBaseURL() + FileDownloadServlet.SERVLET_NAME;
 		fileDownloadServletUrl += 
 				"?"+FileDownloadServlet.PARAM_TYPE+"=" + type + 
 				"&"+FileDownloadServlet.PARAM_ID+"=" + ApplicationContext.getPdbInfo().getJobId() + 
-				"&"+FileDownloadServlet.PARAM_ASSEMBLY_ID+"=" + interfaceId + 
+				"&"+FileDownloadServlet.PARAM_ASSEMBLY_ID+"=" + assemblyId + 
 				"&"+FileDownloadServlet.PARAM_COORDS_FORMAT+"=" + format;
 		
 		Window.open(fileDownloadServletUrl, "", "");

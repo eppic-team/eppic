@@ -1,6 +1,7 @@
 package eppic.assembly;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -9,18 +10,16 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.vecmath.Matrix4d;
 import javax.vecmath.Point3d;
 import javax.vecmath.Point3i;
 
-import org.biojava.nbio.structure.Atom;
-import org.biojava.nbio.structure.Calc;
 import org.biojava.nbio.structure.Chain;
 import org.biojava.nbio.structure.PDBCrystallographicInfo;
 import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.StructureException;
-import org.biojava.nbio.structure.StructureTools;
 import org.biojava.nbio.structure.contact.StructureInterface;
 import org.biojava.nbio.structure.contact.StructureInterfaceList;
 import org.biojava.nbio.structure.xtal.CrystalCell;
@@ -28,13 +27,18 @@ import org.biojava.nbio.structure.xtal.SpaceGroup;
 import org.jgrapht.EdgeFactory;
 import org.jgrapht.UndirectedGraph;
 import org.jgrapht.VertexFactory;
+import org.jgrapht.alg.ConnectivityInspector;
 import org.jgrapht.graph.ClassBasedEdgeFactory;
 import org.jgrapht.graph.ClassBasedVertexFactory;
+import org.jgrapht.graph.MaskFunctor;
 import org.jgrapht.graph.Pseudograph;
+import org.jgrapht.graph.UndirectedMaskSubgraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
+
+import eppic.commons.util.GeomTools;
 
 
 
@@ -63,13 +67,12 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 	private static final Logger logger = LoggerFactory.getLogger(LatticeGraph.class);
 
 
-	private final Structure struct;
-	private List<StructureInterface> interfaces;
+	protected final Structure structure;
 
-	private UndirectedGraph<V,E> graph;
-	
-	private VertexFactory<V> vertexFactory;
-	private EdgeFactory<V,E> edgeFactory;
+	// full graph
+	protected final UndirectedGraph<V,E> graph;
+	// currently exposed graph
+	private UndirectedGraph<V,E> subgraph;
 
 	private boolean globalReferencePoint;
 	private Map<String,Matrix4d[]> unitCellOperators = new HashMap<>(); // In crystal coordinates
@@ -77,34 +80,88 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 
 	/**
 	 * Create the graph, initializing given the input structure and interfaces.
-	 * @param struct
-	 * @param interfaces
-	 * @param vertexClass
-	 * @param edgeClass
+	 * @param struct Structure, which must include crystallographic info
+	 * @param interfaces (Optional) list of interfaces from struct. If null, will
+	 *  be calculated from the structure (slow).
+	 * @param vertexClass Class of vertices, used to create new nodes
+	 * @param edgeClass Class of edges, used to create new edges
 	 * @throws StructureException
 	 */
 	public LatticeGraph(Structure struct, List<StructureInterface> interfaces, Class<? extends V> vertexClass,Class<? extends E> edgeClass) throws StructureException {
 
-		this.struct = struct;
-		this.interfaces = interfaces;
-
-		vertexFactory = new ClassBasedVertexFactory<V>(vertexClass);
-		edgeFactory = new ClassBasedEdgeFactory<V, E>(edgeClass);
-		this.graph = new Pseudograph<V,E>(edgeFactory);
-
+		this.structure = struct;
 		globalReferencePoint = true;
 
+		VertexFactory<V> vertexFactory = new ClassBasedVertexFactory<V>(vertexClass);
+		EdgeFactory<V,E> edgeFactory = new ClassBasedEdgeFactory<V, E>(edgeClass);
 
-		initLatticeGraphTopologically();
-		logGraph();
+		this.graph = new Pseudograph<V,E>(edgeFactory);
+		this.subgraph = graph;
 
+		// calculate interfaces
+		if(interfaces == null) {
+			interfaces = Lists.newArrayList(StructureInterfaceList.calculateInterfaces(struct));
+		}
+
+		if(structure.getCrystallographicInfo() == null) {
+			logger.error("No crystallographic info set for this structure.");
+			throw new StructureException("No crystallographic information");
+		}
+
+		initLatticeGraphTopologically(interfaces,vertexFactory,edgeFactory);
+
+		if(logger.isInfoEnabled())
+			logGraph();
+	}
+	
+
+	/**
+	 * Copy constructor. This performs a shallow copy of the graph; edges and
+	 * vertices are cloned, but the referenced chains and interfaces are not cloned.
+	 * Only {@link ChainVertex} and {@link InterfaceEdge} base properties will
+	 * be copied over (by reference); properties of subclasses should be manually
+	 * copied after the constructor.
+	 * 
+	 * @param other LatticeGraph to copy
+	 * @param vertexClass Class of vertices, used to create new nodes
+	 * @param edgeClass Class of edges, used to create new edges
+	 */
+	public <VV extends ChainVertex,EE extends InterfaceEdge> LatticeGraph(LatticeGraph<VV,EE> other,
+			Class<? extends V> vertexClass, Class<? extends E> edgeClass) {
+		this.structure = other.structure;
+		this.globalReferencePoint = other.globalReferencePoint;
+		
+		VertexFactory<V> vertexFactory = new ClassBasedVertexFactory<V>(vertexClass);
+		EdgeFactory<V,E> edgeFactory = new ClassBasedEdgeFactory<V, E>(edgeClass);
+
+		this.graph = new Pseudograph<V,E>(edgeFactory);
+		this.subgraph = graph;
+		
+		Map<VV,V> vertMap = new HashMap<VV, V>(other.graph.vertexSet().size());
+		for(VV oVert : other.graph.vertexSet()) {
+			V vert = vertexFactory.createVertex();
+			vert.setChain(oVert.getChain());
+			vert.setOpId(oVert.getOpId());
+			vertMap.put(oVert, vert);
+			this.graph.addVertex(vert);
+		}
+
+		for(EE oEdge : other.graph.edgeSet()) {
+			V s = vertMap.get(other.graph.getEdgeSource(oEdge));
+			V t = vertMap.get(other.graph.getEdgeTarget(oEdge));
+			E edge = edgeFactory.createEdge(s, t);
+			edge.setInterface(oEdge.getInterface());
+			edge.setXtalTrans(oEdge.getXtalTrans());
+			this.graph.addEdge(s, t, edge);
+		}
 	}
 
-	public LatticeGraph(Structure structure,
+	public LatticeGraph(Structure struct,
 			StructureInterfaceList interfaces, Class<? extends V> vertexClass,
 			Class<? extends E> edgeClass) throws StructureException {
-		this(structure, Lists.newArrayList(interfaces),vertexClass,edgeClass);
+		this(struct, Lists.newArrayList(interfaces),vertexClass,edgeClass);
 	}
+
 
 	/**
 	 * Get the reference coordinate for a particular chain.
@@ -119,14 +176,14 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 		if( globalReferencePoint ) {
 			// null is AU centroid
 			if( ! referencePoints.containsKey(null) ) {
-				Point3d globalCentroid = getCentroid(struct);
+				Point3d globalCentroid = GeomTools.getCentroid(structure);
 				referencePoints.put(null, globalCentroid);
 				return globalCentroid;
 			}
 			return referencePoints.get(null);
 		} else {
 			if( ! referencePoints.containsKey(chainId)) {
-				Point3d centroid = getCentroid(struct.getChainByPDB(chainId));
+				Point3d centroid = GeomTools.getCentroid(structure.getChainByPDB(chainId));
 				referencePoints.put(chainId,centroid);
 				return centroid;
 			}
@@ -153,7 +210,7 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 	 * @throws StructureException if an error occurs calculating the centroid
 	 */
 	public Matrix4d[] getUnitCellTransformationsOrthonormal(String chainId) throws StructureException {
-		PDBCrystallographicInfo crystalInfo = struct.getCrystallographicInfo();
+		PDBCrystallographicInfo crystalInfo = structure.getCrystallographicInfo();
 		CrystalCell cell = crystalInfo.getCrystalCell();
 
 		Matrix4d[] crystalTrnsf = getUnitCellTransformationsCrystal(chainId);
@@ -187,7 +244,7 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 		Matrix4d[] chainTransformations;
 		synchronized(unitCellOperators) {
 			if( ! unitCellOperators.containsKey(chainId) ) {
-				PDBCrystallographicInfo crystalInfo = struct.getCrystallographicInfo();
+				PDBCrystallographicInfo crystalInfo = structure.getCrystallographicInfo();
 				SpaceGroup sg = crystalInfo.getSpaceGroup();
 				CrystalCell cell = crystalInfo.getCrystalCell();
 
@@ -211,31 +268,7 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 		return chainTransformations;
 	}
 
-	/**
-	 * Calculate the centroid for a chain
-	 * @param c
-	 * @return
-	 */
-	private static Point3d getCentroid(Chain c) {
-		Atom[] ca = StructureTools.getRepresentativeAtomArray(c);
-		Atom centroidAtom = Calc.getCentroid(ca);
-		return new Point3d(centroidAtom.getCoords());
-	}
-	/**
-	 * Calculate the centroid for a whole structure
-	 * @param c
-	 * @return
-	 */
-	private static Point3d getCentroid(Structure c) {
-		Atom[] ca = StructureTools.getRepresentativeAtomArray(c);
-		Atom centroidAtom = Calc.getCentroid(ca);
-		return new Point3d(centroidAtom.getCoords());
-	}
 
-
-	public UndirectedGraph<V, E> getGraph() {
-		return graph;
-	}
 
 	private void logGraph() {
 		logger.info("Found {} vertices and {} edges in unit cell", graph.vertexSet().size(), graph.edgeSet().size());
@@ -258,19 +291,19 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 					edge.getInterfaceId(),
 					edge.getClusterId(),
 					first.getChainId()+first.getOpId(), 
-					first.getEntity(),
+					first.getEntityId(),
 					second.getChainId()+second.getOpId(),
-					second.getEntity());
+					second.getEntityId());
 
 		}
 
 	}
 
-	private void initLatticeGraphTopologically() throws StructureException {		
+	private void initLatticeGraphTopologically(List<StructureInterface> interfaces, VertexFactory<V> vertexFactory, EdgeFactory<V, E> edgeFactory) throws StructureException {		
 
-		final int numOps = struct.getCrystallographicInfo().getSpaceGroup().getNumOperators();
+		final int numOps = structure.getCrystallographicInfo().getSpaceGroup().getNumOperators();
 
-		for (Chain c:struct.getChains()) {
+		for (Chain c:structure.getChains()) {
 			
 			if (c.getCompound()==null) {
 				logger.warn("Chain {} will not be added to the graph because it does not have an entity associated to it.", c.getChainID());
@@ -316,10 +349,10 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 
 
 				V sVertex = vertexFactory.createVertex();
-				sVertex.setChain(struct.getChainByPDB(sourceChainId));
+				sVertex.setChain(structure.getChainByPDB(sourceChainId));
 				sVertex.setOpId(j);
 				V tVertex = vertexFactory.createVertex();
-				tVertex.setChain(struct.getChainByPDB(targetChainId));
+				tVertex.setChain(structure.getChainByPDB(targetChainId));
 				tVertex.setOpId(k);
 
 				E edge = edgeFactory.createEdge(sVertex, tVertex);
@@ -489,6 +522,64 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 	}
 
 	/**
+	 * Filter the edges of this graph down to the selected interfaces
+	 * @param interfaces List of interfaces to include, or null to reset to all interfaces
+	 */
+	public void filterEngagedInterfaces(final Collection<Integer> interfaces) {
+		if(interfaces == null ) {
+			setSubgraph(graph);
+		} else {
+			MaskFunctor<V,E> mask = new MaskFunctor<V,E>() {
+				@Override
+				public boolean isVertexMasked(V vertex) {
+					return false;
+				}
+
+				@Override
+				public boolean isEdgeMasked(E edge) {
+					return !interfaces.contains(edge.getInterfaceId());
+				}
+			};
+			setSubgraph( new UndirectedMaskSubgraph<V,E>(graph, mask));
+		}
+	}
+	/**
+	 * Filter the edges of this graph down to the selected interface clusters
+	 * @param interfaces List of clusters to include, or null to reset to all interfaces
+	 */
+	public void filterEngagedClusters(final Collection<Integer> clusterIds) {
+		if(clusterIds == null ) {
+			setSubgraph(graph);
+		} else {
+			MaskFunctor<V,E> mask = new MaskFunctor<V,E>() {
+				@Override
+				public boolean isVertexMasked(V vertex) {
+					return false;
+				}
+
+				@Override
+				public boolean isEdgeMasked(E edge) {
+					return !clusterIds.contains(edge.getClusterId());
+				}
+			};
+			setSubgraph( new UndirectedMaskSubgraph<V,E>(graph, mask));
+		}
+	}
+
+	public UndirectedGraph<V, E> getGraph() {
+		return subgraph;
+	}
+	
+	/**
+	 * Set the subgraph. Subclasses may override this method to reset additional
+	 * variables that might depend on the subgraph.
+	 * @param newGraph
+	 */
+	protected void setSubgraph(UndirectedGraph<V, E> newGraph) {
+		this.subgraph = newGraph;
+	}
+
+	/**
 	 * Get the number of unique interface clusters present in the graph
 	 * @return
 	 */
@@ -498,5 +589,56 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 			uniqueInterfClusters.add(e.getClusterId());
 		}
 		return uniqueInterfClusters.size();		
+	}
+
+	/**
+	 * Filters a graph down to unique components.
+	 * 
+	 * Filtering occurs by calculating the stoichiometry of a connected component
+	 * (based on the entityId of the nodes). For performance, does not check
+	 * that the edges are the same in all equivalent components.
+	 * @param graph
+	 * @return
+	 */
+	public static <V extends ChainVertex,E extends InterfaceEdge>
+	UndirectedGraph<V,E> filterUniqueStoichiometries(UndirectedGraph<V,E> graph) {
+		// All entities for the graph
+		List<Integer> entityIds = graph.vertexSet().stream()
+				.map(v -> v.getChain().getCompound().getMolId())
+				.distinct()
+				.collect(Collectors.toList());
+
+		// Store vertices of subgraphs with unique stoich for filtering
+		Set<Stoichiometry<Integer>> entityStoich = new HashSet<>();
+		Set<V> uniqueVertices = new HashSet<>();
+
+		ConnectivityInspector<V,E> ci = new ConnectivityInspector<>(graph);
+		for(Set<V> cc : ci.connectedSets()) {
+			List<Integer> nodeEntities = cc.stream()
+					.map(v -> v.getChain().getCompound().getMolId())
+					.collect(Collectors.toList());
+			Stoichiometry<Integer> stoich = new Stoichiometry<Integer>(nodeEntities, entityIds);
+			if( !entityStoich.contains(stoich)) {
+				entityStoich.add(stoich);
+				uniqueVertices.addAll(cc);
+			}
+		}
+
+		// Filter down to unique stoichiometry
+		MaskFunctor<V,E> mask = new MaskFunctor<V,E>() {
+			@Override
+			public boolean isEdgeMasked(E edge) {
+				return false;
+			}
+
+			@Override
+			public boolean isVertexMasked(V vertex) {
+				return !uniqueVertices.contains(vertex);
+			}
+
+		};
+		UndirectedMaskSubgraph<V,E> filtered = new UndirectedMaskSubgraph<>(graph, mask);
+
+		return filtered;
 	}
 }

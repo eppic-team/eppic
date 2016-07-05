@@ -6,7 +6,8 @@ import java.util.Set;
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.commons.events.SelectResultsRowEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowAssemblyViewerEvent;
-import ch.systemsx.sybit.crkwebui.client.commons.events.ShowViewerEvent;
+//import ch.systemsx.sybit.crkwebui.client.commons.events.ShowAssemblyViewerInNewTabEvent;
+//import ch.systemsx.sybit.crkwebui.client.commons.events.ShowViewerEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.managers.EventBusManager;
 
 import com.google.gwt.cell.client.AbstractCell;
@@ -14,11 +15,10 @@ import com.google.gwt.cell.client.ValueUpdater;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
-import com.google.gwt.user.client.Window;
+//import com.google.gwt.user.client.Window;
 
 /**
- * Cell used to display interfaces thumbnails.
- * @author nikhil
+ * Cell used to display assembly thumbnails.
  *
  */
 public class AssemblyThumbnailCell extends AbstractCell<String>{
@@ -40,10 +40,27 @@ public class AssemblyThumbnailCell extends AbstractCell<String>{
     public void onBrowserEvent(Context context, Element parent, String value, NativeEvent event, ValueUpdater<String> valueUpdater) {
         super.onBrowserEvent(context, parent, value, event, valueUpdater);
         if (parent.getFirstChildElement().isOrHasChild(Element.as(event.getEventTarget()))) {
-	        int row = context.getIndex();
+        	int row = context.getIndex();
 	        EventBusManager.EVENT_BUS.fireEvent(new SelectResultsRowEvent(row));
 			EventBusManager.EVENT_BUS.fireEvent(new ShowAssemblyViewerEvent());
         }
     }
+    
+    
+	//Here is how to have 2 separate events - one event is fired with a simple click on the cell
+    //A different event is fired with shift+click on the cell
+    /*@Override
+    public void onBrowserEvent(Context context, Element parent, String value, NativeEvent event, ValueUpdater<String> valueUpdater) {
+        super.onBrowserEvent(context, parent, value, event, valueUpdater);
+        if (parent.getFirstChildElement().isOrHasChild(Element.as(event.getEventTarget()))) {
+	        if ( event.getShiftKey() ) { 
+	        	EventBusManager.EVENT_BUS.fireEvent(new ShowAssemblyViewerInNewTabEvent());
+	        }else{
+	        	int row = context.getIndex();
+		        EventBusManager.EVENT_BUS.fireEvent(new SelectResultsRowEvent(row));
+				EventBusManager.EVENT_BUS.fireEvent(new ShowAssemblyViewerEvent());
+	        }
+        }
+    }*/
 	
 }

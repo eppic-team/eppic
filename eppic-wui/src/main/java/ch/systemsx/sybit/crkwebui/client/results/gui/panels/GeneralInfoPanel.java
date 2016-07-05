@@ -10,6 +10,7 @@ import ch.systemsx.sybit.crkwebui.shared.helpers.ExperimentalWarnings;
 import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 
 import com.google.gwt.i18n.client.NumberFormat;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Image;
@@ -123,14 +124,19 @@ public class GeneralInfoPanel extends FieldSet {
 	 */
 	private void fillWarnings(ExperimentalWarnings warnings){
 		
-		if (warnings.isEmWarning()){
-			panelTable.setWidget(EXPERIMENT_ROW, 1, getWarningImage(AppPropertiesManager.CONSTANTS.warning_EM_text()));			
+		if(warnings.isNoRfreeWarning()){
+			panelTable.setWidget(RFREE_ROW, 1, getWarningImage(AppPropertiesManager.CONSTANTS.warning_NoRfree_text()));
 		}
-		if(warnings.isResolutionWarning()) {			
-			panelTable.setWidget(RESOLUTION_ROW, 1, getWarningImage(AppPropertiesManager.CONSTANTS.warning_LowRes_text()));
-		}
-		if(warnings.isRfreeWarning()){
-			panelTable.setWidget(RFREE_ROW, 1, getWarningImage(AppPropertiesManager.CONSTANTS.warning_HighRfree_text()));
+		else{
+			if (warnings.isEmWarning()){
+				panelTable.setWidget(EXPERIMENT_ROW, 1, getWarningImage(AppPropertiesManager.CONSTANTS.warning_EM_text()));			
+			}
+			if(warnings.isResolutionWarning()) {			
+				panelTable.setWidget(RESOLUTION_ROW, 1, getWarningImage(AppPropertiesManager.CONSTANTS.warning_LowRes_text()));
+			}
+			if(warnings.isRfreeWarning()){
+				panelTable.setWidget(RFREE_ROW, 1, getWarningImage(AppPropertiesManager.CONSTANTS.warning_HighRfree_text()));
+			}
 		}
 		
 	}

@@ -52,7 +52,7 @@ public class GraphContractor {
 		// source and target nodes will be always the same 2 entities
 		Set<InterfaceEdge> toRemove = getEdgesWithInterfClusterId(inputGraph, interfClusterId);
 
-		UndirectedGraph<ChainVertex, InterfaceEdge> contGraph = GraphUtils.copyGraph(inputGraph);
+		UndirectedGraph<ChainVertex, InterfaceEdge> contGraph = GraphUtils.copyGraph(inputGraph, InterfaceEdge.class);
 
 		int referenceEntityId = -1;
 
@@ -63,20 +63,20 @@ public class GraphContractor {
 			ChainVertex s = inputGraph.getEdgeSource(e);			
 			ChainVertex t = inputGraph.getEdgeTarget(e);			
 
-			if (s.getEntity()<0) logger.error("Entity id for vertex {} is negative!",s.getEntity());
+			if (s.getEntityId()<0) logger.error("Entity id for vertex {} is negative!",s.getEntityId());
 
 			if (referenceEntityId<0) {
-				referenceEntityId = s.getEntity();
+				referenceEntityId = s.getEntityId();
 				logger.debug("Chose reference entity id {}. Vertices that have this entity id will be kept.", referenceEntityId); 
 			}
 
 			// we will keep the vertices matching referenceEntityId
 			ChainVertex vToRemove = null;
 			ChainVertex vToKeep = null;
-			if (s.getEntity() == referenceEntityId) {
+			if (s.getEntityId() == referenceEntityId) {
 				vToRemove = t;
 				vToKeep = s;
-			} else if (t.getEntity() == referenceEntityId) {
+			} else if (t.getEntityId() == referenceEntityId) {
 				vToRemove = s;
 				vToKeep = t;
 			} else {
@@ -224,7 +224,7 @@ public class GraphContractor {
 		Set<Integer> set = new TreeSet<Integer>();
 		
 		for (ChainVertex v: contractedVertices.keySet()) {
-			set.add(v.getEntity());
+			set.add(v.getEntityId());
 		}
 		return set;
 	}
@@ -305,18 +305,18 @@ public class GraphContractor {
 				ChainVertex s = g.getEdgeSource(edge);
 				ChainVertex t = g.getEdgeTarget(edge);
 
-				if (s.getEntity() == t.getEntity()) 
+				if (s.getEntityId() == t.getEntityId()) 
 					logger.warn("This looks like a homomeric interface! We should not be contracting it, something is wrong!");
 				
 				if (sEntity>0 && tEntity>0) {
-					if ( !( sEntity == s.getEntity() && tEntity == t.getEntity() ) &&
-						 !( sEntity == t.getEntity() && tEntity == s.getEntity() )   ) {
+					if ( !( sEntity == s.getEntityId() && tEntity == t.getEntityId() ) &&
+						 !( sEntity == t.getEntityId() && tEntity == s.getEntityId() )   ) {
 						logger.warn("The source and target entity ids for edge {} don't match the expected ones. Something is wrong!", edge.toString());
 					}
 				} else {
 					// we set source and target as the reference ones the first time
-					sEntity = s.getEntity();
-					tEntity = t.getEntity();
+					sEntity = s.getEntityId();
+					tEntity = t.getEntityId();
 				}
 			}
 		}
@@ -332,7 +332,7 @@ public class GraphContractor {
 	private static Map<Integer,Integer> getEntityCounts(UndirectedGraph<ChainVertex, InterfaceEdge> g) {
 		Map<Integer, Integer> counts = new TreeMap<Integer,Integer>();
 		for (ChainVertex v:g.vertexSet()) {
-			int currentEntity = v.getEntity();
+			int currentEntity = v.getEntityId();
 			if (!counts.containsKey(currentEntity)) {
 				counts.put(currentEntity, 0);
 			} 

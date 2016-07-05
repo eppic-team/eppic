@@ -226,7 +226,7 @@ public class Assembly implements Serializable  {
 			}
 		}
 		
-		if (score==null) {
+		if (score==null || score.getCallName() == null) {
 			return "NOPRED";
 		}
 		

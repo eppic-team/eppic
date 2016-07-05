@@ -70,7 +70,7 @@ public class DbConfigGenerator {
 		Map<String, String> map = new HashMap<>();
 		
 		map.put("javax.persistence.jdbc.driver", "com.mysql.jdbc.Driver");
-		map.put("javax.persistence.nonJtaDataSource", "");
+		//map.put("javax.persistence.nonJtaDataSource", "");
 
 		String url = "jdbc:mysql://"+host+":"+port+"/"+dbName;
 		map.put("javax.persistence.jdbc.url", url);

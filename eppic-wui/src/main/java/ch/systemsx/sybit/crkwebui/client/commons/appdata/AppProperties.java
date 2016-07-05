@@ -115,6 +115,8 @@ public interface AppProperties extends Constants
 	String warning_LowRes_text();
 	String warning_HighRfree_title();
 	String warning_HighRfree_text();
+	String warning_NoRfree_title();
+	String warning_NoRfree_text();	
 
 	String homologs_panel_chains_hint();
 	String homologs_panel_uniprot_hint();
@@ -230,10 +232,9 @@ public interface AppProperties extends Constants
 	
 	String viewer_jmol();
 	String viewer_local();
-	String viewer_pse();
 	String viewer_jmol_label();
 	String viewer_local_label();
-	String viewer_pse_label();
+
 	
 	String viewer_window_title();
 	String viewer_window_box_title();

@@ -28,11 +28,23 @@
 			<scope>compile</scope>
 		</dependency>
 
+		<!-- GWT and GXT -->
 		<dependency>
 			<groupId>com.google.gwt</groupId>
 			<artifactId>gwt-user</artifactId>
 			<version>${gwt.version}</version>
 			<scope>provided</scope>
+			
+			<!-- because hibernate-validator has a subdependency on javax.validation-api 1.1, it causes a clash with
+			     gwt-user and gxt (both depending on validation-api 1.0). It needs to be excluded here. 
+			-->
+			<exclusions>
+				<exclusion>
+					<groupId>javax.validation</groupId>
+					<artifactId>validation-api</artifactId>					
+				</exclusion>
+			</exclusions>
+			
 		</dependency>
 		<dependency>
 			<groupId>com.google.gwt</groupId>
@@ -50,48 +62,68 @@
 			<groupId>com.sencha.gxt</groupId>
 			<artifactId>gxt</artifactId>
 			<version>3.1.1</version>
-		</dependency>
+			<!-- because hibernate-validator has a subdependency on javax.validation-api 1.1, it causes a clash with
+			     gwt-user and gxt (both depending on validation-api 1.0). It needs to be excluded here. 
+			-->
+			<exclusions>
+				<exclusion>
+					<groupId>javax.validation</groupId>
+					<artifactId>validation-api</artifactId>					
+				</exclusion>
+			</exclusions>
+		</dependency>		
 		<!-- needed for neptune theme (available since GXT 3.1 <dependency> <groupId>com.sencha.gxt</groupId> 
 			<artifactId>gxt-theme-neptune</artifactId> <version>3.1.1</version> </dependency> -->
+		
+		<!-- hibernate and mysql -->
 		<dependency>
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-entitymanager</artifactId>
-			<version>3.6.2.Final</version>
-			<!-- because hibernate has a subdependency on asm, it causes a clash with
-			     gwt 2.7. It needs to be excluded here. See
-			     https://groups.google.com/forum/#!topic/google-web-toolkit/D1qoc8U0cGk -->
-			<exclusions>
-				<exclusion>
-					<artifactId>asm</artifactId>
-					<groupId>asm</groupId>
-				</exclusion>
-			</exclusions>
+			<version>5.1.0.Final</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-validator</artifactId>
-			<version>4.2.0.Final</version>
+			<version>5.2.4.Final</version>
 		</dependency>
 		<dependency>
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-c3p0</artifactId>
-			<version>3.6.10.Final</version>
+			<version>5.1.0.Final</version>
 		</dependency>
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
 			<version>5.1.14</version>
 		</dependency>
-		<!-- excluding the explicit dependency as hibernate-c3p0 already 
-		     contains it (with a slightly different version that conflicts with this one) 
-		<dependency>
-			<groupId>com.mchange</groupId>
-			<artifactId>c3p0</artifactId>
-			<version>0.9.2</version>
-		</dependency>
+		
+		<!-- 
+			For some reason the 5.x hibernate dependencies 
+			don't solve their subdependencies properly The only way I found to solve 
+			it is to add the subdependencies manually or otherwise errors come at runtime: 
+		 	  jackson-databind, javax.el-api, javax.el 
 		-->
 
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>2.7.4</version>
+		</dependency>
+
+		<dependency>
+			<groupId>javax.el</groupId>
+			<artifactId>javax.el-api</artifactId>
+			<version>2.2.5</version>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.web</groupId>
+			<artifactId>javax.el</artifactId>
+			<version>2.2.6</version>
+		</dependency>
+
+		
+		<!--  others -->
 		<dependency>
 			<groupId>us.levk</groupId>
 			<artifactId>drmaa-common</artifactId>
@@ -144,11 +176,15 @@
 			<artifactId>commons-lang</artifactId>
 			<version>2.6</version>
 		</dependency>
+		
+		<!-- Removing javassist: clashes with a dependency of hibernate-entitymanager 
 		<dependency>
 			<groupId>javassist</groupId>
 			<artifactId>javassist</artifactId>
 			<version>3.12.0.GA</version>
 		</dependency>
+		-->
+		
 		
 		<!-- Test dependencies -->
 		<dependency>
@@ -184,6 +220,8 @@
 				</executions>
 				<configuration>
 					<runTarget>index.html</runTarget>
+					<!-- Minification setting: OBF/PRETTY/DETAILED -->
+					<style>OBF</style>
 				</configuration>
 			</plugin>
 			<plugin>

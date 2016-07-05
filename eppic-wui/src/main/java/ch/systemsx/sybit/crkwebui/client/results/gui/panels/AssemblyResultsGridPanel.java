@@ -9,6 +9,7 @@ import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.commons.events.SelectAssemblyResultsRowEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowAssembliesEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowAssemblyViewerEvent;
+import ch.systemsx.sybit.crkwebui.client.commons.events.ShowAssemblyViewerInNewTabEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowDiagramViewerEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowInterfacesOfAssemblyDataEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowThumbnailEvent;
@@ -16,10 +17,11 @@ import ch.systemsx.sybit.crkwebui.client.commons.events.WindowHideEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.SelectAssemblyResultsRowHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowAssembliesHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowAssemblyViewerHandler;
+import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowAssemblyViewerInNewTabHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowDiagramViewerHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowThumbnailHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.WindowHideHandler;
-import ch.systemsx.sybit.crkwebui.client.commons.managers.DiagramViewerRunner;
+import ch.systemsx.sybit.crkwebui.client.commons.managers.PopupRunner;
 import ch.systemsx.sybit.crkwebui.client.commons.managers.EventBusManager;
 import ch.systemsx.sybit.crkwebui.client.commons.managers.ViewerRunner;
 import ch.systemsx.sybit.crkwebui.client.commons.util.EscapedStringGenerator;
@@ -29,9 +31,9 @@ import ch.systemsx.sybit.crkwebui.client.results.gui.cells.AssemblyDiagramCell;
 import ch.systemsx.sybit.crkwebui.client.results.gui.cells.AssemblyMethodCallCell;
 import ch.systemsx.sybit.crkwebui.client.results.gui.cells.AssemblyThumbnailCell;
 import ch.systemsx.sybit.crkwebui.client.results.gui.cells.InterfacesLinkCell;
+import ch.systemsx.sybit.crkwebui.client.results.gui.cells.SubscriptTypeCell;
 import ch.systemsx.sybit.crkwebui.client.results.gui.grid.util.AssemblyMethodSummaryType;
 import ch.systemsx.sybit.crkwebui.client.results.gui.grid.util.AssemblyMethodsSummaryRenderer;
-import ch.systemsx.sybit.crkwebui.client.results.gui.panels.ResultsPanel;
 import ch.systemsx.sybit.crkwebui.shared.model.Assembly;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceCluster;
 import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
@@ -40,13 +42,10 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
-import com.google.gwt.event.logical.shared.ValueChangeEvent;
-import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.History;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.sencha.gxt.cell.core.client.form.ComboBoxCell.TriggerAction;
@@ -262,10 +261,21 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 		return symmetryColumn;
 	}
 	
-	private SummaryColumnConfig<AssemblyItemModel, String> getStoichiometryColumn() {
+	/*private SummaryColumnConfig<AssemblyItemModel, String> getStoichiometryColumn() {
 		SummaryColumnConfig<AssemblyItemModel, String> stioColumn = 
 				new SummaryColumnConfig<AssemblyItemModel, String>(props.stoichiometry());
 		fillColumnSettings(stioColumn, "stoichiometry");
+		return stioColumn;
+	}*/
+	
+	private SummaryColumnConfig<AssemblyItemModel, String> getStoichiometryColumn() {
+		SummaryColumnConfig<AssemblyItemModel, String> stioColumn = 
+				new SummaryColumnConfig<AssemblyItemModel, String>(props.stoichiometry());
+		stioColumn.setCell(new SubscriptTypeCell());		
+		stioColumn.setSummaryType(new AssemblyMethodSummaryType.FinalCallSummaryType());
+		//stioColumn.setSummaryRenderer(new AssemblyMethodsSummaryRenderer());
+		fillColumnSettings(stioColumn, "stoichiometry");
+		//predictionColumn.setColumnTextClassName("eppic-results-final-call");
 		return stioColumn;
 	}
 	
@@ -412,11 +422,16 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 					String diagramUrl = 
 							ApplicationContext.getSettings().getResultsLocationForJob(ApplicationContext.getPdbInfo().getJobId().toLowerCase()) + 
 							"/" + ApplicationContext.getPdbInfo().getTruncatedInputName() +
-							".diagram" +
+							EppicParams.ASSEMBLIES_DIAGRAM_FILES_SUFFIX +
 							"." + assembly.getId() + ".75x75.png";
 					model.setDiagramUrl(diagramUrl);
 					
 					model.setMmSize(assembly.getMmSizeString());
+					//testing only
+					/*String stio = assembly.getStoichiometryString();
+					if (stio.indexOf("2") != -1)
+						stio = "A(2)";
+					model.setStoichiometry(stio);*/
 					model.setStoichiometry(assembly.getStoichiometryString());
 					model.setSymmetry(assembly.getSymmetryString());
 					model.setComposition(assembly.getCompositionString());
@@ -518,9 +533,8 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 	{
 		String viewerTypeDescription = "To run selected 3D viewer please click one of the thumbnails on the list below. The following options are provided: " +
 									   "<div><ul class=\"eppic-tooltip-list\">" +
-									   "<li>PDB file downloadable to a local molecular viewer</li>" +
-									   "<li>Browser embedded 3Dmol.js viewer (no need for local viewer)</li>" +
-									   "<li>PyMol session file (.pse) to be opened in local PyMol</li>" +
+									   "<li>mmCIF file downloadable to a local molecular viewer</li>" +
+									   "<li>Browser embedded NGL viewer (no need for local viewer)</li>" +
 									   "</ul></div>";
 		return viewerTypeDescription;
 	}
@@ -563,7 +577,6 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 				refreshResultsGrid();	
 			}
 		});
-
 		
 		EventBusManager.EVENT_BUS.addHandler(ShowAssemblyViewerEvent.TYPE, new ShowAssemblyViewerHandler() {
 			
@@ -574,12 +587,21 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 			}
 		}); 
 		
+		EventBusManager.EVENT_BUS.addHandler(ShowAssemblyViewerInNewTabEvent.TYPE, new ShowAssemblyViewerInNewTabHandler() {
+			
+			@Override
+			public void onShowAssemblyViewerInNewTab(
+					ShowAssemblyViewerInNewTabEvent event) {
+				ViewerRunner.runViewerAssemblyInNewTab(String.valueOf(resultsGrid.getSelectionModel().getSelectedItem().getAssemblyId()));
+			}
+		});
+		
 		EventBusManager.EVENT_BUS.addHandler(ShowDiagramViewerEvent.TYPE, new ShowDiagramViewerHandler() {
 			
 			@Override
 			public void onShowDiagramViewer(ShowDiagramViewerEvent event) 
 			{
-				DiagramViewerRunner.runViewerAssembly(String.valueOf(resultsGrid.getSelectionModel().getSelectedItem().getAssemblyId()),resultsGrid.getSelectionModel().getSelectedItem().getDiagramUrl());
+				PopupRunner.popupAssemblyDiagram(String.valueOf(resultsGrid.getSelectionModel().getSelectedItem().getAssemblyId()));
 			} 
 		});		
 		

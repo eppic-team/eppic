@@ -3,7 +3,7 @@ package ch.systemsx.sybit.crkwebui.client.results.gui.panels;
 
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.images.ImageWithTooltip;
-import ch.systemsx.sybit.crkwebui.client.commons.managers.DiagramViewerRunner;
+import ch.systemsx.sybit.crkwebui.client.commons.managers.PopupRunner;
 import ch.systemsx.sybit.crkwebui.client.commons.managers.ViewerRunner;
 import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 import eppic.EppicParams;
@@ -37,26 +37,30 @@ public class TopologyInfoPanel extends FieldSet {
 		HorizontalLayoutContainer imagesContainer = new HorizontalLayoutContainer();  
 		imagesContainer.setHeight(75);
     
+		String jobId = ApplicationContext.getPdbInfo().getJobId();
+		// PdbCodes are case insensitive
+		if(ApplicationContext.getPdbInfo().getJobId().length() == 4)
+			jobId = jobId.toLowerCase();
 		
 		String thumbnailUrl = 
-				ApplicationContext.getSettings().getResultsLocationForJob(ApplicationContext.getPdbInfo().getJobId()) + 
+				ApplicationContext.getSettings().getResultsLocationForJob(jobId) +
 				"/" + ApplicationContext.getPdbInfo().getTruncatedInputName() +
 				EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX +
 				"." + ApplicationContext.getSelectedAssemblyId() + ".75x75.png";
-		if(ApplicationContext.getPdbInfo().getJobId().length() == 4)
-			thumbnailUrl = 
-				ApplicationContext.getSettings().getResultsLocationForJob(ApplicationContext.getPdbInfo().getJobId().toLowerCase()) + 
-				"/" + ApplicationContext.getPdbInfo().getTruncatedInputName() +
-				EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX + 
-				"." + ApplicationContext.getSelectedAssemblyId() + ".75x75.png";
-		
 		
 		ImageWithTooltip leftimage = new ImageWithTooltip(thumbnailUrl, null, "Click to open in 3D viewer");
 		leftimage.setWidth("75px");
     	HTML spacer2 = new HTML("<div style='width:10px'></div>");
-		ImageWithTooltip rightimage = new ImageWithTooltip("resources/icons/mockup4.png", null, "Click to open a 3D representation of the lattice graph");
+    	
+		String thumbnailUrl2 = 
+				ApplicationContext.getSettings().getResultsLocationForJob(jobId) +
+				"/" + ApplicationContext.getPdbInfo().getTruncatedInputName() +
+				EppicParams.ASSEMBLIES_DIAGRAM_FILES_SUFFIX +
+				"." + ApplicationContext.getSelectedAssemblyId() + ".75x75.png";
+
+		ImageWithTooltip rightimage = new ImageWithTooltip(thumbnailUrl2, null, "Click for detailed view");
 		
-		leftimage.addClickHandler(new ClickHandler() {		
+		leftimage.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				ViewerRunner.runViewerAssembly(ApplicationContext.getSelectedAssemblyId()+"");
@@ -64,10 +68,10 @@ public class TopologyInfoPanel extends FieldSet {
 			
 		}); 
 		
-		rightimage.addClickHandler(new ClickHandler() {		
+		rightimage.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				DiagramViewerRunner.runViewerAssembly(ApplicationContext.getSelectedAssemblyId()+"");
+				PopupRunner.popupAssemblyDiagram(ApplicationContext.getSelectedAssemblyId()+"");
 			}
 		
 		});		
@@ -79,11 +83,11 @@ public class TopologyInfoPanel extends FieldSet {
 		
     	HorizontalLayoutContainer linkContainer = new HorizontalLayoutContainer();
 
-    	Anchor anchor = new Anchor("View Unit Cell");
+    	Anchor anchor = new Anchor("View Assembly in Unit Cell");
     	anchor.addClickHandler(new ClickHandler() {		
 			@Override
 			public void onClick(ClickEvent event) {
-				DiagramViewerRunner.runViewerAssembly(ApplicationContext.getSelectedAssemblyId()+"");
+				PopupRunner.popupLatticeGraph(ApplicationContext.getSelectedAssemblyId()+"");
 			}
 		});
     	linkContainer.add(anchor);

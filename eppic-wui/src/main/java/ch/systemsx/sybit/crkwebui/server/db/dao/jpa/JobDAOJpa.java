@@ -17,6 +17,9 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.persistence.criteria.SetJoin;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import ch.systemsx.sybit.crkwebui.server.db.EntityManagerHandler;
 import ch.systemsx.sybit.crkwebui.server.db.dao.JobDAO;
 import ch.systemsx.sybit.crkwebui.server.db.dao.UserSessionDAO;
@@ -38,6 +41,8 @@ import eppic.model.UserSessionDB_;
  */
 public class JobDAOJpa implements JobDAO
 {
+	private static final Logger logger = LoggerFactory.getLogger(JobDAOJpa.class);
+	
 	@Override
 	public void insertNewJob(String jobId,
 							 String sessionId,
@@ -77,7 +82,7 @@ public class JobDAOJpa implements JobDAO
 		}
 		catch(Throwable e)
 		{
-			e.printStackTrace();
+			logger.error(e.getMessage(),e);
 
 			try
 			{
@@ -85,7 +90,7 @@ public class JobDAOJpa implements JobDAO
 			}
 			catch(Throwable t)
 			{
-				t.printStackTrace();
+				logger.error("Error rolling back EntityManager",t);
 			}
 
 			throw new DaoException(e);
@@ -98,7 +103,7 @@ public class JobDAOJpa implements JobDAO
 			}
 			catch(Throwable t)
 			{
-				t.printStackTrace();
+				logger.error("Error closing EntityManager",t);
 			}
 		}
 	}
@@ -121,7 +126,7 @@ public class JobDAOJpa implements JobDAO
 		}
 		catch(Throwable e)
 		{
-			e.printStackTrace();
+			logger.error(e.getMessage(),e);
 
 			try
 			{
@@ -129,7 +134,7 @@ public class JobDAOJpa implements JobDAO
 			}
 			catch(Throwable t)
 			{
-				t.printStackTrace();
+				logger.error("Error rolling back EntityManager",t);
 			}
 
 			throw new DaoException(e);
@@ -142,7 +147,7 @@ public class JobDAOJpa implements JobDAO
 			}
 			catch(Throwable t)
 			{
-				t.printStackTrace();
+				logger.error("Error closing EntityManager",t);
 			}
 		}
 	}
@@ -181,15 +186,14 @@ public class JobDAOJpa implements JobDAO
 		}
 		catch(Throwable e)
 		{
-			e.printStackTrace();
-
+			logger.error(e.getMessage(),e);
 			try
 			{
 				entityManager.getTransaction().rollback();
 			}
 			catch(Throwable t)
 			{
-				t.printStackTrace();
+				logger.error("Error rolling back EntityManager",t);
 			}
 
 			throw new DaoException(e);
@@ -202,7 +206,7 @@ public class JobDAOJpa implements JobDAO
 			}
 			catch(Throwable t)
 			{
-				t.printStackTrace();
+				logger.error("Error closing EntityManager",t);
 			}
 		}
 	}
@@ -245,7 +249,7 @@ public class JobDAOJpa implements JobDAO
 		}
 		catch(Throwable t)
 		{
-			t.printStackTrace();
+			logger.error(t.getMessage(),t);
 			throw new DaoException(t);
 		}
 		finally
@@ -256,7 +260,7 @@ public class JobDAOJpa implements JobDAO
 			}
 			catch(Throwable t)
 			{
-				t.printStackTrace();
+				logger.error("Error closing EntityManager",t);
 			}
 		}
 	}
@@ -285,7 +289,7 @@ public class JobDAOJpa implements JobDAO
 		}
 		catch(Throwable t)
 		{
-			t.printStackTrace();
+			logger.error(t.getMessage(),t);
 			throw new DaoException(t);
 		}
 		finally
@@ -296,7 +300,7 @@ public class JobDAOJpa implements JobDAO
 			}
 			catch(Throwable t)
 			{
-				t.printStackTrace();
+				logger.error("Error closing EntityManager",t);
 			}
 		}
 	}
@@ -332,7 +336,7 @@ public class JobDAOJpa implements JobDAO
 		}
 		catch(Throwable t)
 		{
-			t.printStackTrace();
+			logger.error(t.getMessage(),t);
 			throw new DaoException(t);
 		}
 		finally
@@ -343,7 +347,7 @@ public class JobDAOJpa implements JobDAO
 			}
 			catch(Throwable t)
 			{
-				t.printStackTrace();
+				logger.error("Error closing EntityManager",t);
 			}
 		}
 
@@ -373,7 +377,7 @@ public class JobDAOJpa implements JobDAO
 		}
 		catch(Throwable e)
 		{
-			e.printStackTrace();
+			logger.error(e.getMessage(),e);
 			throw new DaoException(e);
 		}
 		finally
@@ -384,7 +388,7 @@ public class JobDAOJpa implements JobDAO
 			}
 			catch(Throwable t)
 			{
-				t.printStackTrace();
+				logger.error("Error closing EntityManager",t);
 			}
 		}
 	}
@@ -438,7 +442,7 @@ public class JobDAOJpa implements JobDAO
 		}
 		catch(Throwable t)
 		{
-			t.printStackTrace();
+			logger.error(t.getMessage(),t);
 			throw new DaoException(t);
 		}
 		finally
@@ -449,7 +453,7 @@ public class JobDAOJpa implements JobDAO
 			}
 			catch(Throwable t)
 			{
-				t.printStackTrace();
+				logger.error("Error closing EntityManager",t);
 			}
 		}
 
@@ -500,7 +504,7 @@ public class JobDAOJpa implements JobDAO
 		}
 		catch(Throwable t)
 		{
-			t.printStackTrace();
+			logger.error(t.getMessage(),t);
 			throw new DaoException(t);
 		}
 		finally
@@ -511,7 +515,7 @@ public class JobDAOJpa implements JobDAO
 			}
 			catch(Throwable t)
 			{
-				t.printStackTrace();
+				logger.error("Error closing EntityManager",t);
 			}
 		}
 	}
@@ -572,7 +576,7 @@ public class JobDAOJpa implements JobDAO
 		}
 		catch(Throwable e)
 		{
-			e.printStackTrace();
+			logger.error(e.getMessage(),e);
 
 			try
 			{
@@ -580,7 +584,7 @@ public class JobDAOJpa implements JobDAO
 			}
 			catch(Throwable t)
 			{
-				t.printStackTrace();
+				logger.error("Error rolling back EntityManager",t);
 			}
 
 			throw new DaoException(e);
@@ -593,7 +597,7 @@ public class JobDAOJpa implements JobDAO
 			}
 			catch(Throwable t)
 			{
-				t.printStackTrace();
+				logger.error("Error closing EntityManager",t);
 			}
 		}
 	}
@@ -625,7 +629,7 @@ public class JobDAOJpa implements JobDAO
 		}
 		catch(Throwable e)
 		{
-			e.printStackTrace();
+			logger.error(e.getMessage(),e);
 			throw new DaoException(e);
 		}
 		finally
@@ -636,7 +640,7 @@ public class JobDAOJpa implements JobDAO
 			}
 			catch(Throwable t)
 			{
-				t.printStackTrace();
+				logger.error("Error closing EntityManager",t);
 			}
 		}
 	}
@@ -667,7 +671,7 @@ public class JobDAOJpa implements JobDAO
 		}
 		catch(Throwable e)
 		{
-			e.printStackTrace();
+			logger.error(e.getMessage(),e);
 
 			try
 			{
@@ -675,7 +679,7 @@ public class JobDAOJpa implements JobDAO
 			}
 			catch(Throwable t)
 			{
-				t.printStackTrace();
+				logger.error("Error rolling back EntityManager",t);
 			}
 
 			throw new DaoException(e);
@@ -688,7 +692,7 @@ public class JobDAOJpa implements JobDAO
 			}
 			catch(Throwable t)
 			{
-				t.printStackTrace();
+				logger.error("Error closing EntityManager",t);
 			}
 		}
 	}
@@ -731,7 +735,7 @@ public class JobDAOJpa implements JobDAO
 		}
 		catch(Throwable e)
 		{
-			e.printStackTrace();
+			logger.error(e.getMessage(),e);
 			throw new DaoException(e);
 		}
 		finally
@@ -742,7 +746,7 @@ public class JobDAOJpa implements JobDAO
 			}
 			catch(Throwable t)
 			{
-				t.printStackTrace();
+				logger.error("Error closing EntityManager",t);
 			}
 		}
 	}
@@ -770,7 +774,7 @@ public class JobDAOJpa implements JobDAO
 		}
 		catch(Throwable e)
 		{
-			e.printStackTrace();
+			logger.error(e.getMessage(),e);
 			throw new DaoException(e);
 		}
 		finally
@@ -781,7 +785,7 @@ public class JobDAOJpa implements JobDAO
 			}
 			catch(Throwable t)
 			{
-				t.printStackTrace();
+				logger.error("Error closing EntityManager",t);
 			}
 		}
 	}
@@ -821,7 +825,7 @@ public class JobDAOJpa implements JobDAO
 		}
 		catch(Throwable e)
 		{
-			e.printStackTrace();
+			logger.error(e.getMessage(),e);
 			throw new DaoException(e);
 		}
 		

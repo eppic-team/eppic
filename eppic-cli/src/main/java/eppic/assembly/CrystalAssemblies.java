@@ -583,7 +583,7 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 		for (Assembly a:uniques) {
 						
 			// TODO this ignores other non-overlapping stoichiometries, must take care of that
-			Stoichiometry sto = a.getAssemblyGraph().getSubAssemblies().get(0).getStoichiometry();
+			Stoichiometry<?> sto = a.getAssemblyGraph().getSubAssemblies().get(0).getStoichiometry();
 			int size = sto.getTotalSize();
 			
 			if (a.getCall() == CallType.BIO && maxSize<size) {
